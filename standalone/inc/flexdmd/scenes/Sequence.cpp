@@ -32,7 +32,7 @@ void Sequence::RemoveScene(const string& name)
 {
    if (m_pActiveScene->GetName() == name) {
       m_pActiveScene->Remove();
-      m_pActiveScene = NULL;
+      m_pActiveScene = nullptr;
    }
    m_pendingScenes.erase(std::remove_if(m_pendingScenes.begin(), m_pendingScenes.end(), [name](Group* p) {
       return p->GetName() == name;
@@ -40,7 +40,7 @@ void Sequence::RemoveScene(const string& name)
    m_finished = !m_pActiveScene && m_pendingScenes.size() == 0;
 }
 
-bool Sequence::IsFinished()
+bool Sequence::IsFinished() const
 {
    return m_finished;
 }
@@ -50,15 +50,15 @@ void Sequence::Update(float delta)
    Group::Update(delta);
    if (m_pActiveScene && m_pActiveScene->IsFinished()) {
       m_pActiveScene->Remove();
-      m_pActiveScene = NULL;
+      m_pActiveScene = nullptr;
    }
-   if (!m_pActiveScene && m_pendingScenes.size() > 0) {
+   if (!m_pActiveScene && !m_pendingScenes.empty()) {
       m_pActiveScene = m_pendingScenes[0];
       m_pendingScenes.erase(m_pendingScenes.begin());
-      AddActor((Actor*)m_pActiveScene);
+      AddActor(m_pActiveScene);
       m_pActiveScene->Update(0);
    }
-   m_finished = !m_pActiveScene && m_pendingScenes.size() == 0;
+   m_finished = !m_pActiveScene && m_pendingScenes.empty();
 }
 
 void Sequence::Draw(VP::SurfaceGraphics* pGraphics)

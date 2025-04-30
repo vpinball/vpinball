@@ -4,7 +4,7 @@
 #include "../Bitmap.h"
 #include "../AssetManager.h"
 
-class Image : public Actor
+class Image final : public Actor
 {
 public:
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);

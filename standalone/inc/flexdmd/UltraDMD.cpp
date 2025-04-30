@@ -25,19 +25,19 @@ UltraDMD::UltraDMD(FlexDMD* pFlexDMD)
 
    m_pFlexDMD->SetRenderMode(RenderMode_DMD_RGB);
 
-   m_pQueue = new Sequence(m_pFlexDMD, "");
+   m_pQueue = new Sequence(m_pFlexDMD, string());
    m_pQueue->SetFillParent(true);
 
-   m_pScoreFontText = new FontDef("FlexDMD.Resources.udmd-f4by5.fnt", RGB(168, 168, 168), RGB(255, 255, 255));
-   m_pScoreFontNormal = new FontDef("FlexDMD.Resources.udmd-f5by7.fnt", RGB(168, 168, 168), RGB(255, 255, 255));
-   m_pScoreFontHighlight = new FontDef("FlexDMD.Resources.udmd-f6by12.fnt", RGB(255, 255, 255), RGB(255, 255, 255));
+   m_pScoreFontText = new FontDef("FlexDMD.Resources.udmd-f4by5.fnt"s, RGB(168, 168, 168), RGB(255, 255, 255));
+   m_pScoreFontNormal = new FontDef("FlexDMD.Resources.udmd-f5by7.fnt"s, RGB(168, 168, 168), RGB(255, 255, 255));
+   m_pScoreFontHighlight = new FontDef("FlexDMD.Resources.udmd-f6by12.fnt"s, RGB(255, 255, 255), RGB(255, 255, 255));
 
-   m_singleLineFonts.push_back(new FontDef("FlexDMD.Resources.udmd-f14by26.fnt", RGB(255, 255, 255), RGB(255, 255, 255)));
-   m_singleLineFonts.push_back(new FontDef("FlexDMD.Resources.udmd-f12by24.fnt", RGB(255, 255, 255), RGB(255, 255, 255)));
-   m_singleLineFonts.push_back(new FontDef("FlexDMD.Resources.udmd-f7by13.fnt", RGB(255, 255, 255), RGB(255, 255, 255)));
+   m_singleLineFonts.push_back(new FontDef("FlexDMD.Resources.udmd-f14by26.fnt"s, RGB(255, 255, 255), RGB(255, 255, 255)));
+   m_singleLineFonts.push_back(new FontDef("FlexDMD.Resources.udmd-f12by24.fnt"s, RGB(255, 255, 255), RGB(255, 255, 255)));
+   m_singleLineFonts.push_back(new FontDef("FlexDMD.Resources.udmd-f7by13.fnt"s, RGB(255, 255, 255), RGB(255, 255, 255)));
 
-   m_pTwoLinesFontTop = new FontDef("FlexDMD.Resources.udmd-f5by7.fnt", RGB(255, 255, 255), RGB(255, 255, 255));
-   m_pTwoLinesFontBottom = new FontDef("FlexDMD.Resources.udmd-f6by12.fnt", RGB(255, 255, 255), RGB(255, 255, 255));
+   m_pTwoLinesFontTop = new FontDef("FlexDMD.Resources.udmd-f5by7.fnt"s, RGB(255, 255, 255), RGB(255, 255, 255));
+   m_pTwoLinesFontBottom = new FontDef("FlexDMD.Resources.udmd-f6by12.fnt"s, RGB(255, 255, 255), RGB(255, 255, 255));
 
    m_pScoreBoard = new ScoreBoard(m_pFlexDMD,
       m_pFlexDMD->NewFont(m_pScoreFontText->GetPath(), m_pScoreFontText->GetTint(), m_pScoreFontText->GetBorderTint(), m_pScoreFontText->GetBorderSize()),
@@ -181,16 +181,16 @@ STDMETHODIMP UltraDMD::SetVideoStretchMode(LONG mode)
 Label* UltraDMD::GetFittedLabel(const string& text, float fillBrightness, float outlineBrightness)
 {
    for (const auto& pFontDef : m_singleLineFonts) {
-      Label* pLabel = new Label(m_pFlexDMD, GetFont(pFontDef->GetPath(), fillBrightness, outlineBrightness), text, "");
-      pLabel->SetPosition((m_pFlexDMD->GetWidth() - pLabel->GetWidth()) / 2, (m_pFlexDMD->GetHeight() - pLabel->GetHeight()) / 2);
-      if ((pLabel->GetX() >= 0 && pLabel->GetY() >= 0) || pFontDef == m_singleLineFonts[m_singleLineFonts.size() - 1])
+      Label* pLabel = new Label(m_pFlexDMD, GetFont(pFontDef->GetPath(), fillBrightness, outlineBrightness), text, string());
+      pLabel->SetPosition((m_pFlexDMD->GetWidth() - pLabel->GetWidth()) / 2.f, (m_pFlexDMD->GetHeight() - pLabel->GetHeight()) / 2.f);
+      if ((pLabel->GetX() >= 0.f && pLabel->GetY() >= 0.f) || pFontDef == m_singleLineFonts[m_singleLineFonts.size() - 1])
          return pLabel;
       delete pLabel;
     }
-    return NULL;
+    return nullptr;
 }
 
-Font* UltraDMD::GetFont(const string& path, float brightness, float outlineBrightness)
+Font* UltraDMD::GetFont(const string& path, float brightness, float outlineBrightness) const
 {
    brightness = brightness > 1.f ? 1.f : brightness;
    outlineBrightness = outlineBrightness > 1.f ? 1.f : outlineBrightness;
@@ -229,9 +229,9 @@ Actor* UltraDMD::ResolveImage(const string& filename, bool useFrame)
 {
    int key;
    if (try_parse_int(filename, key) && m_preloads.find(key) != m_preloads.end()) {
-      VideoDef* pVideoDef = dynamic_cast<VideoDef*>(m_preloads[key]);
+      const VideoDef* const pVideoDef = dynamic_cast<const VideoDef*>(m_preloads[key]);
       if (pVideoDef) {
-         Video* pActor = Video::Create(m_pFlexDMD, pVideoDef->GetVideoFilename(), "", pVideoDef->GetLoop());
+         Video* const pActor = Video::Create(m_pFlexDMD, pVideoDef->GetVideoFilename(), string(), pVideoDef->GetLoop());
          if (pActor) {
             pActor->SetLoop(pVideoDef->GetLoop());
             pActor->SetScaling(pVideoDef->GetScaling());
@@ -240,9 +240,9 @@ Actor* UltraDMD::ResolveImage(const string& filename, bool useFrame)
          return pActor;
       }
       else {
-         ImageSequenceDef* pImageSequenceDef = dynamic_cast<ImageSequenceDef*>(m_preloads[key]);
+         const ImageSequenceDef* const pImageSequenceDef = dynamic_cast<const ImageSequenceDef*>(m_preloads[key]);
          if (pImageSequenceDef) {
-            ImageSequence* pVideo = ImageSequence::Create(m_pFlexDMD, m_pFlexDMD->GetAssetManager(), pImageSequenceDef->GetImages(), "", pImageSequenceDef->GetFPS(), pImageSequenceDef->GetLoop());
+            ImageSequence* const pVideo = ImageSequence::Create(m_pFlexDMD, m_pFlexDMD->GetAssetManager(), pImageSequenceDef->GetImages(), string(), pImageSequenceDef->GetFPS(), pImageSequenceDef->GetLoop());
             if (pVideo) {
                pVideo->SetFPS(pImageSequenceDef->GetFPS());
                pVideo->SetLoop(pImageSequenceDef->GetLoop());
@@ -255,19 +255,19 @@ Actor* UltraDMD::ResolveImage(const string& filename, bool useFrame)
    }
    else {
        string path = filename;
-       std::replace(path.begin(), path.end(), ',', '|');
+       std::ranges::replace(path.begin(), path.end(), ',', '|');
        if (path.find('|') != string::npos)
-          return ImageSequence::Create(m_pFlexDMD, m_pFlexDMD->GetAssetManager(), path, "", 30, true);
+          return ImageSequence::Create(m_pFlexDMD, m_pFlexDMD->GetAssetManager(), path, string(), 30, true);
        else {
-          AssetSrc* pAssetSrc = m_pFlexDMD->GetAssetManager()->ResolveSrc(path, NULL);
+          AssetSrc* pAssetSrc = m_pFlexDMD->GetAssetManager()->ResolveSrc(path, nullptr);
           AssetType assetType = pAssetSrc->GetAssetType();
           delete pAssetSrc;
 
           if (assetType == AssetType_Image)
-             return Image::Create(m_pFlexDMD, m_pFlexDMD->GetAssetManager(), path, "");
+             return Image::Create(m_pFlexDMD, m_pFlexDMD->GetAssetManager(), path, string());
           else if (assetType == AssetType_Video || assetType == AssetType_GIF) {
-             AnimatedActor* pActor = m_pFlexDMD->NewVideo(path, "");
-             if (pActor != NULL) {
+             AnimatedActor* pActor = m_pFlexDMD->NewVideo(path, string());
+             if (pActor != nullptr) {
                 switch (m_stretchMode) {
                    case 0:
                       pActor->SetScaling(Scaling_Stretch);
@@ -292,7 +292,7 @@ Actor* UltraDMD::ResolveImage(const string& filename, bool useFrame)
        }
    }
 
-   return useFrame ? new Frame(m_pFlexDMD, "") : new Actor(m_pFlexDMD, "");
+   return useFrame ? new Frame(m_pFlexDMD, string()) : new Actor(m_pFlexDMD, string());
 }
 
 STDMETHODIMP UltraDMD::CreateAnimationFromImages(LONG fps, VARIANT_BOOL loop, BSTR imagelist, LONG *pRetVal)
@@ -300,7 +300,7 @@ STDMETHODIMP UltraDMD::CreateAnimationFromImages(LONG fps, VARIANT_BOOL loop, BS
    int id = m_nextId;
 
    string szImagelist = MakeString(imagelist);
-   std::replace(szImagelist.begin(), szImagelist.end(), ',', '|');
+   std::ranges::replace(szImagelist.begin(), szImagelist.end(), ',', '|');
 
    m_preloads[id] = new ImageSequenceDef(szImagelist, fps, loop == VARIANT_TRUE);
 
@@ -313,7 +313,7 @@ STDMETHODIMP UltraDMD::CreateAnimationFromImages(LONG fps, VARIANT_BOOL loop, BS
 
 STDMETHODIMP UltraDMD::RegisterVideo(LONG videoStretchMode, VARIANT_BOOL loop, BSTR videoFilename, LONG *pRetVal)
 {
-   VideoDef* pVideoDef = new VideoDef(MakeString(videoFilename), loop == VARIANT_TRUE);
+   VideoDef* const pVideoDef = new VideoDef(MakeString(videoFilename), loop == VARIANT_TRUE);
 
    switch (videoStretchMode) {
       case 0:
@@ -335,7 +335,7 @@ STDMETHODIMP UltraDMD::RegisterVideo(LONG videoStretchMode, VARIANT_BOOL loop, B
    }
 
    for (const auto& kv : m_preloads) {
-      VideoDef* pObject = dynamic_cast<VideoDef*>(kv.second);
+      VideoDef* const pObject = dynamic_cast<VideoDef*>(kv.second);
       if (pObject) {
          if (*pObject == *pVideoDef) {
             *pRetVal = kv.first;
@@ -417,41 +417,41 @@ STDMETHODIMP UltraDMD::DisplayScene00Ex(BSTR background, BSTR toptext, LONG topB
 
 STDMETHODIMP UltraDMD::DisplayScene00ExWithId(BSTR sceneId, VARIANT_BOOL cancelPrevious, BSTR background, BSTR toptext, LONG topBrightness, LONG topOutlineBrightness, BSTR bottomtext, LONG bottomBrightness, LONG bottomOutlineBrightness, LONG animateIn, LONG pauseTime, LONG animateOut)
 {
-   string szSceneId = (sceneId != NULL) ? MakeString(sceneId) : string();
+   string szSceneId = (sceneId != nullptr) ? MakeString(sceneId) : string();
 
-   if (cancelPrevious == VARIANT_TRUE && szSceneId.length() > 0) {
+   if (cancelPrevious == VARIANT_TRUE && !szSceneId.empty()) {
       Scene* pScene = m_pQueue->GetActiveScene();
-      if (pScene != NULL && pScene->GetName() == szSceneId)
+      if (pScene != nullptr && pScene->GetName() == szSceneId)
          m_pQueue->RemoveScene(szSceneId);
    }
    m_pScoreBoard->SetVisible(false);
    m_pQueue->SetVisible(true);
 
-   string szTopText = (toptext != NULL) ? MakeString(toptext) : string();
-   string szBottomText = (bottomtext != NULL) ? MakeString(bottomtext) : string();
+   string szTopText = (toptext != nullptr) ? MakeString(toptext) : string();
+   string szBottomText = (bottomtext != nullptr) ? MakeString(bottomtext) : string();
 
-   if (szTopText.length() > 0 && szBottomText.length() > 0) {
-      Font* pFontTop = GetFont(m_pTwoLinesFontTop->GetPath(), topBrightness / 15.0f, topOutlineBrightness / 15.0f);
-      Font* pFontBottom = GetFont(m_pTwoLinesFontBottom->GetPath(), bottomBrightness / 15.0f, bottomOutlineBrightness / 15.0f);
+   if (!szTopText.empty() && !szBottomText.empty()) {
+      Font* const pFontTop = GetFont(m_pTwoLinesFontTop->GetPath(), topBrightness / 15.0f, topOutlineBrightness / 15.0f);
+      Font* const pFontBottom = GetFont(m_pTwoLinesFontBottom->GetPath(), bottomBrightness / 15.0f, bottomOutlineBrightness / 15.0f);
       TwoLineScene* pScene = new TwoLineScene(m_pFlexDMD, ResolveImage(MakeString(background), true), szTopText, pFontTop, szBottomText, pFontBottom, (AnimationType)animateIn, pauseTime / 1000.0f, (AnimationType)animateOut, szSceneId);
       m_pQueue->Enqueue(pScene);
    }
-   else if (szTopText.length() > 0) {
-      Label* pLabel = GetFittedLabel(szTopText, topBrightness / 15.0f, topOutlineBrightness / 15.0f);
+   else if (!szTopText.empty()) {
+      Label* const pLabel = GetFittedLabel(szTopText, topBrightness / 15.0f, topOutlineBrightness / 15.0f);
       pLabel->AddRef();
       SingleLineScene* pScene = new SingleLineScene(m_pFlexDMD, ResolveImage(MakeString(background), true), szTopText, pLabel->GetFont(), (AnimationType)animateIn, pauseTime / 1000.0f, (AnimationType)animateOut, false, szSceneId);
       pLabel->Release();
       m_pQueue->Enqueue(pScene);
    }
-   else if (szBottomText.length() > 0) {
-      Label* pLabel = GetFittedLabel(szBottomText, bottomBrightness / 15.0f, bottomOutlineBrightness / 15.0f);
+   else if (!szBottomText.empty()) {
+      Label* const pLabel = GetFittedLabel(szBottomText, bottomBrightness / 15.0f, bottomOutlineBrightness / 15.0f);
       pLabel->AddRef();
       SingleLineScene* pScene = new SingleLineScene(m_pFlexDMD, ResolveImage(MakeString(background), true), szBottomText, pLabel->GetFont(), (AnimationType)animateIn, pauseTime / 1000.0f, (AnimationType)animateOut, false, szSceneId);
       pLabel->Release();
       m_pQueue->Enqueue(pScene);
    }
    else {
-      BackgroundScene* pScene = new BackgroundScene(m_pFlexDMD, ResolveImage(MakeString(background), true), (AnimationType)animateIn, pauseTime / 1000.0f, (AnimationType)animateOut, szSceneId);
+      BackgroundScene* const pScene = new BackgroundScene(m_pFlexDMD, ResolveImage(MakeString(background), true), (AnimationType)animateIn, pauseTime / 1000.0f, (AnimationType)animateOut, szSceneId);
       m_pQueue->Enqueue(pScene);
    }
 
@@ -462,13 +462,13 @@ STDMETHODIMP UltraDMD::ModifyScene00(BSTR id, BSTR toptext, BSTR bottomtext)
 {
    string szId = (id != NULL) ? MakeString(id) : string();
 
-   Scene* pScene = m_pQueue->GetActiveScene();
-   if (pScene != NULL && szId.length() > 0 && pScene->GetName() == szId) {
-      TwoLineScene* pScene2 = dynamic_cast<TwoLineScene*>(pScene);
-      if (pScene2 != NULL)
+   Scene* const pScene = m_pQueue->GetActiveScene();
+   if (pScene != nullptr && !szId.empty() && pScene->GetName() == szId) {
+      TwoLineScene* const pScene2 = dynamic_cast<TwoLineScene*>(pScene);
+      if (pScene2 != nullptr)
          pScene2->SetText(MakeString(toptext), MakeString(bottomtext));
-      SingleLineScene* pScene1 = dynamic_cast<SingleLineScene*>(pScene);
-      if (pScene1 != NULL)
+      SingleLineScene* const pScene1 = dynamic_cast<SingleLineScene*>(pScene);
+      if (pScene1 != nullptr)
          pScene1->SetText(MakeString(toptext));
    }
 
@@ -479,15 +479,15 @@ STDMETHODIMP UltraDMD::ModifyScene00Ex(BSTR id, BSTR toptext, BSTR bottomtext, L
 {
    string szId = (id != NULL) ? MakeString(id) : string();
 
-   Scene* pScene = m_pQueue->GetActiveScene();
-   if (pScene != NULL && szId.length() > 0 && pScene->GetName() == szId) {
-      TwoLineScene* pScene2 = dynamic_cast<TwoLineScene*>(pScene);
-      if (pScene2 != NULL)
+   Scene* const pScene = m_pQueue->GetActiveScene();
+   if (pScene != nullptr && !szId.empty() && pScene->GetName() == szId) {
+      TwoLineScene* const pScene2 = dynamic_cast<TwoLineScene*>(pScene);
+      if (pScene2 != nullptr)
          pScene2->SetText(MakeString(toptext), MakeString(bottomtext));
-      SingleLineScene* pScene1 = dynamic_cast<SingleLineScene*>(pScene);
-      if (pScene1 != NULL)
+      SingleLineScene* const pScene1 = dynamic_cast<SingleLineScene*>(pScene);
+      if (pScene1 != nullptr)
          pScene1->SetText(MakeString(toptext));
-      pScene->SetPause(pScene->GetTime() + pauseTime / 1000.0f);
+      pScene->SetPause((float)(pScene->GetTime() + pauseTime / 1000.0));
    }
 
    return S_OK;
@@ -497,8 +497,8 @@ STDMETHODIMP UltraDMD::DisplayScene01(BSTR sceneId, BSTR background, BSTR text, 
 {
    string szSceneId = (sceneId != NULL) ? MakeString(sceneId) : string();
 
-   Font* pFont = GetFont(m_singleLineFonts[0]->GetPath(), textBrightness / 15.0f, textOutlineBrightness / 15.0f);
-   SingleLineScene* pScene = new SingleLineScene(m_pFlexDMD, ResolveImage(MakeString(background), false), MakeString(text), pFont, (AnimationType)animateIn, pauseTime / 1000.0f, (AnimationType)animateOut, true, szSceneId);
+   Font* const pFont = GetFont(m_singleLineFonts[0]->GetPath(), textBrightness / 15.0f, textOutlineBrightness / 15.0f);
+   SingleLineScene* const pScene = new SingleLineScene(m_pFlexDMD, ResolveImage(MakeString(background), false), MakeString(text), pFont, (AnimationType)animateIn, pauseTime / 1000.0f, (AnimationType)animateOut, true, szSceneId);
    m_pScoreBoard->SetVisible(false);
    m_pQueue->SetVisible(true);
    m_pQueue->Enqueue(pScene);
@@ -511,7 +511,7 @@ STDMETHODIMP UltraDMD::DisplayText(BSTR text, LONG textBrightness, LONG textOutl
    m_pScoreBoard->SetVisible(false);
    if (m_pQueue->IsFinished()) {
       m_pQueue->SetVisible(false);
-      Label* pLabel = GetFittedLabel(MakeString(text), textBrightness / 15.0f, textOutlineBrightness / 15.0f);
+      Label* const pLabel = GetFittedLabel(MakeString(text), textBrightness / 15.0f, textOutlineBrightness / 15.0f);
       pLabel->Draw(m_pFlexDMD->GetGraphics());
       delete pLabel;
    }
@@ -526,7 +526,7 @@ STDMETHODIMP UltraDMD::ScrollingCredits(BSTR background, BSTR text, LONG textBri
    vector<string> lines;
 
    string szText = MakeString(text);
-   std::replace(szText.begin(), szText.end(), '|', '\n');
+   std::ranges::replace(szText.begin(), szText.end(), '|', '\n');
 
    std::stringstream ss(szText);
    string line;

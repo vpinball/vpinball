@@ -94,7 +94,8 @@ void AnimatedActor::Advance(float delta)
    while (!m_endOfAnimation && m_time >= m_frameTime + m_frameDuration)
       ReadNextFrame();
 
-   if (m_endOfAnimation && m_loop) {
+   if (m_endOfAnimation && m_loop)
+   {
       float length = m_frameTime + m_frameDuration;
       m_time = fmod(m_time, length);
       Rewind();

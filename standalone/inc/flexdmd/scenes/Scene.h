@@ -9,19 +9,19 @@ class Scene : public Group
 {
 public:
    Scene(FlexDMD* pFlexDMD, AnimationType animateIn, float pauseS, AnimationType animateOut, const string& id);
-   ~Scene();
+   ~Scene() override;
 
    void UpdateState();
-   virtual void Begin() { };
+   virtual void Begin() { }
    float StartAnimation(AnimationType animation);
-   bool IsFinished();
+   bool IsFinished() const;
    void SetVisible(bool visible) override { Group::SetVisible(visible); UpdateState(); }
-   void SetAnimateIn(AnimationType animateIn) { m_animateIn = animateIn; };
-   void SetPause(float pauseS) { m_pause = pauseS; };
-   float GetTime() { return m_time; };
-   void SetAnimateOut(AnimationType animateOut) { m_animateOut = animateOut; };
+   void SetAnimateIn(AnimationType animateIn) { m_animateIn = animateIn; }
+   void SetPause(float pauseS) { m_pause = pauseS; }
+   float GetTime() const { return m_time; }
+   void SetAnimateOut(AnimationType animateOut) { m_animateOut = animateOut; }
    tweeny::tween<float>& AddTween(float from, float to, float duration, std::function<bool (float)> callback);
-   void Update(float delta) override;
+   void Update(float secondsElapsed) override;
    void OnStageStateChanged() override;
 
 private:

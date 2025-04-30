@@ -11,9 +11,9 @@
 #include "actors/Image.h"
 #include "BaseDef.h"
 
-#include <map>
+#include <unordered_dense>
 
-class UltraDMD : IDispatch
+class UltraDMD final : IDispatch
 {
 public:
    STDMETHOD(QueryInterface)(REFIID iid, void** ppv) {
@@ -94,8 +94,8 @@ public:
 
 private:
    Actor* ResolveImage(const string& filename, bool useFrame);
-   Font* GetFont(const string& path, float brightness, float outlineBrightness);
-   Label* GetFittedLabel(const string& text, float fillBrightness, float outlineBrightness);
+   Font* GetFont(const string& path, float brightness, float outlineBrightness) const;
+   Label* GetFittedLabel(const string& text, float fillBrightness, float outlineBrightness) const;
 
    Sequence* m_pQueue;
    ScoreBoard* m_pScoreBoard;
@@ -108,7 +108,7 @@ private:
    bool m_visible;
    int m_stretchMode;
    int m_nextId;
-   std::map<int, BaseDef*> m_preloads;
+   ankerl::unordered_dense::map<int, BaseDef*> m_preloads;
    FlexDMD* m_pFlexDMD;
 
    ULONG m_dwRef = 0;

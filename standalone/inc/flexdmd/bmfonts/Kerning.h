@@ -1,17 +1,17 @@
 #pragma once
 
-class Kerning {
+class Kerning final {
 public:
-   Kerning();
-   ~Kerning();
+   Kerning() = default;
+   ~Kerning() = default;
 
    int GetHash();
 
-   char GetFirstCharacter() { return m_firstCharacter; }
+   char GetFirstCharacter() const { return m_firstCharacter; }
    void SetFirstCharacter(char firstCharacter) { m_firstCharacter = firstCharacter; }
-   char GetSecondCharacter() { return m_secondCharacter; }
+   char GetSecondCharacter() const { return m_secondCharacter; }
    void SetSecondCharacter(char secondCharacter) { m_secondCharacter = secondCharacter; }
-   int GetAmount() { return m_amount; }
+   int GetAmount() const { return m_amount; }
    void SetAmount(int amount) { m_amount = amount; }
 
 private:

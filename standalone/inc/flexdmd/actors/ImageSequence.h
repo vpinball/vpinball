@@ -3,7 +3,7 @@
 #include "AnimatedActor.h"
 #include "Image.h"
 
-class ImageSequence : public AnimatedActor 
+class ImageSequence final : public AnimatedActor
 {
 public:
    ~ImageSequence();
@@ -11,9 +11,9 @@ public:
    static ImageSequence* Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const string& paths, const string& name, int fps, bool loop);
 
    void SetFPS(int fps) { m_fps = fps; }
-   single GetPrefWidth() override { return m_frames[0]->GetWidth(); };
-   single GetPrefHeight() override { return m_frames[0]->GetHeight(); };
-   float GetLength() override { return m_frames.size() * GetFrameDuration(); };
+   single GetPrefWidth() override { return m_frames[0]->GetWidth(); }
+   single GetPrefHeight() override { return m_frames[0]->GetHeight(); }
+   float GetLength() const override { return (float)m_frames.size() * GetFrameDuration(); }
    void Rewind() override;
    void ReadNextFrame() override;
    void Draw(VP::SurfaceGraphics* pGraphics) override;

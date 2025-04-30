@@ -9,9 +9,10 @@ Image::Image(FlexDMD* pFlexDMD, const string& name) : Actor(pFlexDMD, name)
 
 Image* Image::Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const string& image, const string& name)
 {
-   AssetSrc* pSrc = pAssetManager->ResolveSrc(image, NULL);
+   AssetSrc* pSrc = pAssetManager->ResolveSrc(image, nullptr);
    Bitmap* pBitmap = pAssetManager->GetBitmap(pSrc);
-   if (!pBitmap) {
+   if (!pBitmap)
+   {
        free(pSrc);
        return NULL;
    }
@@ -25,7 +26,7 @@ Image* Image::Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const strin
    pImage->SetPrefWidth(pBitmap->GetWidth());
    pImage->SetPrefHeight(pBitmap->GetHeight());
    pImage->Pack();
-   pImage->m_pBitmap = NULL;
+   pImage->m_pBitmap = nullptr;
 
    return pImage;
 }
@@ -68,7 +69,7 @@ void Image::Draw(VP::SurfaceGraphics* pGraphics)
       float y = 0;
       Layout::Align(m_alignment, w, h, GetWidth(), GetHeight(), x, y);
       SDL_Rect rect = { (int)(GetX() + x), (int)(GetY() + y), (int)w, (int)h };
-      pGraphics->DrawImage(m_pBitmap->GetSurface(), NULL, &rect);
+      pGraphics->DrawImage(m_pBitmap->GetSurface(), nullptr, &rect);
    }
 }
 

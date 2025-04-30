@@ -4,7 +4,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <unordered_set>
+
+#include <unordered_dense.h>
 
 BitmapFont::BitmapFont()
 {
@@ -15,7 +16,7 @@ BitmapFont::BitmapFont()
 
 BitmapFont::~BitmapFont()
 {
-   std::unordered_set<Character*> characters;
+   ankerl::unordered_dense::set<Character*> characters;
    for(const auto& pair : m_characters)
       characters.insert(pair.second);
 
@@ -24,18 +25,18 @@ BitmapFont::~BitmapFont()
 
    m_characters.clear();
 
-   for (auto it = m_kernings.begin(); it != m_kernings.end(); ++it)
-      delete it->second;
+   for (auto& it : m_kernings)
+      delete it.second;
 
    m_kernings.clear();
 
-   for (auto it = m_pages.begin(); it != m_pages.end(); ++it)
-      delete *it;
+   for (auto it : m_pages)
+      delete it;
 
    m_pages.clear();
 }
 
-BitmapFont* BitmapFont::Create(string fileName)
+BitmapFont* BitmapFont::Create(const string& fileName)
 {
    BitmapFont* obj = new BitmapFont();
    obj->Load(fileName);
@@ -45,20 +46,18 @@ BitmapFont* BitmapFont::Create(string fileName)
 
 int BitmapFont::GetKerning(char previous, char current)
 {
-    int result = 0;
-
     Kerning key;
     key.SetFirstCharacter(previous);
     key.SetSecondCharacter(current);
 
-    auto it = m_kernings.find(key.GetHash());
+    const auto it = m_kernings.find(key.GetHash());
     if (it != m_kernings.end())
-       result = it->second->GetAmount();
+       return it->second->GetAmount();
 
-    return result;
+    return 0;
 }
 
-void BitmapFont::Load(string fileName)
+void BitmapFont::Load(const string& fileName)
 {
    std::ifstream fontFile;
    fontFile.open(fileName, std::ifstream::in);
@@ -70,60 +69,61 @@ void BitmapFont::Load(string fileName)
 
    string line;
    while (std::getline(fontFile, line)) {
-      std::map<string, string> parts = ParseParts(trim_string(line));
+      const ankerl::unordered_dense::map<string, string> parts = ParseParts(trim_string(line));
 
-      if (parts.size() == 0)
+      if (parts.empty())
          continue;
 
-      if (parts["section"] == "info") {
-         m_szFamilyName = GetNamedString(parts, "face");
-         m_fontSize = GetNamedInt(parts, "size");
-         m_bold = GetNamedBool(parts, "bold");
-         m_italic = GetNamedBool(parts, "italic");
-         m_szCharset = GetNamedString(parts, "charset");
-         m_unicode = GetNamedBool(parts, "unicode");
-         m_stretchedHeight = GetNamedInt(parts, "stretchH");
-         m_smoothed = GetNamedBool(parts, "smooth");
-         m_superSampling = GetNamedInt(parts, "aa");
-         m_padding = ParsePadding(GetNamedString(parts, "padding"));
-         m_spacing = ParsePoint(GetNamedString(parts, "spacing"));
-         m_outlineSize = GetNamedInt(parts, "outline");
+      const auto& sec = parts.at("section"s);
+      if (sec == "info") {
+         m_szFamilyName = GetNamedString(parts, "face"s);
+         m_fontSize = GetNamedInt(parts, "size"s);
+         m_bold = GetNamedBool(parts, "bold"s);
+         m_italic = GetNamedBool(parts, "italic"s);
+         m_szCharset = GetNamedString(parts, "charset"s);
+         m_unicode = GetNamedBool(parts, "unicode"s);
+         m_stretchedHeight = GetNamedInt(parts, "stretchH"s);
+         m_smoothed = GetNamedBool(parts, "smooth"s);
+         m_superSampling = GetNamedInt(parts, "aa"s);
+         m_padding = ParsePadding(GetNamedString(parts, "padding"s));
+         m_spacing = ParsePoint(GetNamedString(parts, "spacing"s));
+         m_outlineSize = GetNamedInt(parts, "outline"s);
       }
-      else if (parts["section"] == "common") {
-         m_lineHeight = GetNamedInt(parts, "lineHeight");
-         m_baseHeight = GetNamedInt(parts, "base");
-         m_textureSize = { 0, 0, GetNamedInt(parts, "scaleW"), GetNamedInt(parts, "scaleH") };
-         m_packed = GetNamedBool(parts, "packed");
-         m_alphaChannel = GetNamedInt(parts, "alphaChnl");
-         m_redChannel = GetNamedInt(parts, "redChnl");
-         m_greenChannel = GetNamedInt(parts, "greenChnl");
-         m_blueChannel = GetNamedInt(parts, "blueChnl");
+      else if (sec == "common") {
+         m_lineHeight = GetNamedInt(parts, "lineHeight"s);
+         m_baseHeight = GetNamedInt(parts, "base"s);
+         m_textureSize = { 0, 0, GetNamedInt(parts, "scaleW"s), GetNamedInt(parts, "scaleH"s) };
+         m_packed = GetNamedBool(parts, "packed"s);
+         m_alphaChannel = GetNamedInt(parts, "alphaChnl"s);
+         m_redChannel = GetNamedInt(parts, "redChnl"s);
+         m_greenChannel = GetNamedInt(parts, "greenChnl"s);
+         m_blueChannel = GetNamedInt(parts, "blueChnl"s);
       }
-      else if (parts["section"] == "page") {
-         Page* pPage = new Page();
-         pPage->SetId(GetNamedInt(parts, "id"));
-         pPage->SetFilename(GetNamedString(parts, "file"));
+      else if (sec == "page") {
+         Page* const pPage = new Page();
+         pPage->SetId(GetNamedInt(parts, "id"s));
+         pPage->SetFilename(GetNamedString(parts, "file"s));
 
          m_pages.push_back(pPage);
       }
-      else if (parts["section"] == "char") {
-         char character = (char)GetNamedInt(parts, "id");
+      else if (sec == "char") {
+         char character = (char)GetNamedInt(parts, "id"s);
 
-         Character* pCharacter = new Character();
+         Character* const pCharacter = new Character();
          pCharacter->SetChar(character);
-         pCharacter->SetBounds({ GetNamedInt(parts, "x"), GetNamedInt(parts, "y"), GetNamedInt(parts, "width"), GetNamedInt(parts, "height") });
-         pCharacter->SetOffset({ GetNamedInt(parts, "xoffset"), GetNamedInt(parts, "yoffset") });
-         pCharacter->SetXAdvance(GetNamedInt(parts, "xadvance"));
-         pCharacter->SetTexturePage(GetNamedInt(parts, "page"));
-         pCharacter->SetChannel(GetNamedInt(parts, "chnl"));
+         pCharacter->SetBounds({ GetNamedInt(parts, "x"s), GetNamedInt(parts, "y"s), GetNamedInt(parts, "width"s), GetNamedInt(parts, "height"s) });
+         pCharacter->SetOffset({ GetNamedInt(parts, "xoffset"s), GetNamedInt(parts, "yoffset"s) });
+         pCharacter->SetXAdvance(GetNamedInt(parts, "xadvance"s));
+         pCharacter->SetTexturePage(GetNamedInt(parts, "page"s));
+         pCharacter->SetChannel(GetNamedInt(parts, "chnl"s));
 
          m_characters[character] = pCharacter;
       }
-      else if (parts["section"] == "kerning") {
-         Kerning* pKerning = new Kerning();
-         pKerning->SetFirstCharacter((char)GetNamedInt(parts, "first"));
-         pKerning->SetSecondCharacter((char)GetNamedInt(parts, "second"));
-         pKerning->SetAmount(GetNamedInt(parts, "amount"));
+      else if (sec == "kerning") {
+         Kerning* const pKerning = new Kerning();
+         pKerning->SetFirstCharacter((char)GetNamedInt(parts, "first"s));
+         pKerning->SetSecondCharacter((char)GetNamedInt(parts, "second"s));
+         pKerning->SetAmount(GetNamedInt(parts, "amount"s));
 
          auto it = m_kernings.find(pKerning->GetHash());
          if (it == m_kernings.end())
@@ -131,14 +131,14 @@ void BitmapFont::Load(string fileName)
       }
    }
 
-   std::sort(m_pages.begin(), m_pages.end(), [](const Page* a, const Page* b) {
+   std::ranges::sort(m_pages.begin(), m_pages.end(), [](const Page* a, const Page* b) {
      return a->GetId() < b->GetId();
    });
 }
 
 SDL_Rect BitmapFont::MeasureFont(const string& text, double maxWidth)
 {
-   if (text.length() == 0)
+   if (text.empty())
       return { 0, 0, 0, 0 };
 
    char previousCharacter = ' ';
@@ -146,14 +146,14 @@ SDL_Rect BitmapFont::MeasureFont(const string& text, double maxWidth)
    int currentLineHeight = m_lineHeight;
    int blockWidth = 0;
    int blockHeight = 0;
-   int length = text.length();
+   size_t length = text.length();
    vector<int> lineHeights;
-   int i;
 
-   for (i = 0; i < length; i++) {
-      const char* chars = text.c_str();
+   for (size_t i = 0; i < length; i++)
+   {
+      const char* const chars = text.c_str();
 
-      char character = chars[i];
+      const char character = chars[i];
 
       if (character == '\n' || character == '\r') {
          if (character == '\n' || i + 1 == length || chars[i + 1] != '\n') {
@@ -164,9 +164,9 @@ SDL_Rect BitmapFont::MeasureFont(const string& text, double maxWidth)
          }
       }
       else {
-         auto it = m_characters.find(character);
+         const auto it = m_characters.find(character);
          if (it != m_characters.end()) {
-            Character* data = m_characters[character];
+            Character* data = it->second;
             int width = data->GetXAdvance() + GetKerning(previousCharacter, character);
             if (maxWidth != NoMaxWidth && currentLineWidth + width >= maxWidth) {
                lineHeights.push_back(currentLineHeight);
@@ -182,30 +182,33 @@ SDL_Rect BitmapFont::MeasureFont(const string& text, double maxWidth)
       }
    }
 
+   // finish off the current line if required
    if (currentLineHeight != 0)
       lineHeights.push_back(currentLineHeight);
 
-   for (i = 0; i < (int)lineHeights.size() - 1; i++)
+   // reduce any lines other than the last back to the base
+   for (int i = 0; i < (int)lineHeights.size() - 1; i++)
       lineHeights[i] = m_lineHeight;
 
+   // calculate the final block height
    for (int lineHeight : lineHeights)
      blockHeight += lineHeight;
 
    return { 0, 0, max(currentLineWidth, blockWidth), blockHeight };
 }
 
-string BitmapFont::GetNamedString(const std::map<string, string>& parts, const string& name)
+string BitmapFont::GetNamedString(const ankerl::unordered_dense::map<string, string>& parts, const string& name)
 {
-   auto it = parts.find(name);
+   const auto it = parts.find(name);
    return (it != parts.end()) ? it->second : string();
 }
 
-int BitmapFont::GetNamedInt(const std::map<string, string>& parts, const string& name, int defaultValue)
+int BitmapFont::GetNamedInt(const ankerl::unordered_dense::map<string, string>& parts, const string& name, int defaultValue)
 {
    return string_to_int(GetNamedString(parts, name), defaultValue);
 }
 
-bool BitmapFont::GetNamedBool(const std::map<string, string>& parts, const string& name, bool defaultValue)
+bool BitmapFont::GetNamedBool(const ankerl::unordered_dense::map<string, string>& parts, const string& name, bool defaultValue)
 {
    return string_to_int(GetNamedString(parts, name), defaultValue ? 1 : 0) > 0;
 }
@@ -232,9 +235,9 @@ SDL_Point BitmapFont::ParsePoint(const string& s)
    return { parts[0], parts[1] };
 }
 
-std::map<string, string> BitmapFont::ParseParts(const string &line)
+ankerl::unordered_dense::map<string, string> BitmapFont::ParseParts(const string& line)
 {
-   std::map<std::string, std::string> result;
+   ankerl::unordered_dense::map<string, string> result;
    std::istringstream iss(line);
 
    string token;
@@ -244,7 +247,7 @@ std::map<string, string> BitmapFont::ParseParts(const string &line)
    bool isQuote = false;
 
    iss >> token;
-   result["section"] = token;
+   result["section"s] = token;
 
    while (iss) {
       char c;

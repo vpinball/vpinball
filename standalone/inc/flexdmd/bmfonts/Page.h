@@ -1,9 +1,9 @@
 #pragma once
 
-class Page {
+class Page final {
 public:
-   Page();
-   ~Page();
+   Page() = default;
+   ~Page() = default;
 
    int GetId() const { return m_id; }
    void SetId(int id) { m_id = id; }

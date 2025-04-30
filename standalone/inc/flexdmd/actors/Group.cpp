@@ -3,8 +3,8 @@
 #include "Group.h"
 #include "Label.h"
 #include "Frame.h"
-#include "Image.h"
 #include "AnimatedActor.h"
+#include "Image.h"
 
 Group::Group(FlexDMD* pFlexDMD, const string& name) : Actor(pFlexDMD, name)
 {
@@ -24,21 +24,26 @@ void Group::OnStageStateChanged()
 void Group::Update(float delta)
 {
    Actor::Update(delta);
-   if (!GetOnStage()) return;
+   if (!GetOnStage())
+      return;
    size_t i = 0;
-   while (i < m_children.size()) {
+   const size_t c = m_children.size();
+   while (i < c)
+   {
       Actor* child = m_children[i];
       child->Update(delta);
-      if (i < m_children.size() && child == m_children[i])
+      if (child == m_children[i])
          i++;
    }
 }
 
 void Group::Draw(VP::SurfaceGraphics* pGraphics)
 {
-   if (GetVisible()) {
+   if (GetVisible())
+   {
       pGraphics->TranslateTransform(GetX(), GetY());
-      if (m_clip) {
+      if (m_clip)
+      {
          pGraphics->SetClip({0, 0, (int)GetWidth(), (int)GetHeight()});
 
          Actor::Draw(pGraphics);
@@ -48,7 +53,8 @@ void Group::Draw(VP::SurfaceGraphics* pGraphics)
 
          pGraphics->ResetClip();
       }
-      else {
+      else
+      {
          Actor::Draw(pGraphics);
 
          for (Actor* child : m_children)
@@ -71,8 +77,10 @@ Actor* Group::Get(const string& name)
    if (GetName() == name)
       return this;
 
-   if (GetFlexDMD()->GetRuntimeVersion() <= 1008) {
-      for (Actor* child : m_children) {
+   if (GetFlexDMD()->GetRuntimeVersion() <= 1008)
+   {
+      for (Actor* child : m_children)
+      {
          if (child->GetName() == name)
             return child;
 
@@ -84,16 +92,20 @@ Actor* Group::Get(const string& name)
          }
       }
    }
-   else {
+   else
+   {
       size_t pos = name.find('/');
-      if (pos == string::npos) {
+      if (pos == string::npos)
+      {
          // direct child node search 'xx'
-         for (Actor* child : m_children) {
+         for (Actor* child : m_children)
+         {
             if (child->GetName() == name)
                return child;
          }
       }
-      else if (pos == 0) {
+      else if (pos == 0)
+      {
          // absolute path from root '/xx/yy/zz', note that stage node is named 'Stage'
          return GetRoot()->Get(name.substr(1));
       }
@@ -101,7 +113,8 @@ Actor* Group::Get(const string& name)
       {
          // relative path from current group 'xx/yy/zz'
          string groupName = name.substr(0, pos);
-         for (Actor* child : m_children) {
+         for (Actor* child : m_children)
+         {
             Group* group = dynamic_cast<Group*>(child);
             if (group != NULL && group->GetName() == groupName)
                return group->Get(name.substr(pos + 1));

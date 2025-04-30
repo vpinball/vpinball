@@ -12,13 +12,13 @@ ImageSequence* ImageSequence::Create(FlexDMD* pFlexDMD, AssetManager* pAssetMana
    std::stringstream ss(paths);
    string path;
    while (std::getline(ss, path, '|')) {
-      Image* pImage = Image::Create(pFlexDMD, pAssetManager, path, "");
+      Image* pImage = Image::Create(pFlexDMD, pAssetManager, path, string());
       if (pImage)
          frames.push_back(pImage);
       else {
          for (Image* pFrame : frames)
             delete pFrame;
-         return NULL;
+         return nullptr;
       }
    }
 
@@ -39,19 +39,19 @@ ImageSequence::~ImageSequence()
 
 void ImageSequence::OnStageStateChanged()
 {
-    for (Image* pFrame : m_frames)
-       pFrame->SetOnStage(GetOnStage());
+   for (Image* pFrame : m_frames)
+      pFrame->SetOnStage(GetOnStage());
 }
 
 void ImageSequence::Rewind() 
 {
-    AnimatedActor::Rewind();
-    m_frame = 0;
+   AnimatedActor::Rewind();
+   m_frame = 0;
 }
 
 void ImageSequence::ReadNextFrame()
 {
-    if (m_frame == m_frames.size() - 1)
+    if (m_frame == (int)m_frames.size() - 1)
        SetEndOfAnimation(true);
     else {
        m_frame++;

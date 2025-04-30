@@ -3,7 +3,7 @@
 #include "Actor.h"
 #include "Font.h"
 
-class Label : public Actor
+class Label final : public Actor
 {
 public:
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);

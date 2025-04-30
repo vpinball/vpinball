@@ -3,14 +3,14 @@
 #include "Group.h"
 #include "Label.h"
 
-class ScoreBoard : public Group
+class ScoreBoard final : public Group
 {
 public:
    ScoreBoard(FlexDMD* pFlexDMD, Font* pScoreFont, Font* pHighlightFont, Font* pTextFont);
    ~ScoreBoard();
 
-   Label* GetLowerLeft() { return m_pLowerLeft; }
-   Label* GetLowerRight() { return m_pLowerRight; }
+   Label* GetLowerLeft() const { return m_pLowerLeft; }
+   Label* GetLowerRight() const { return m_pLowerRight; }
    void SetBackground(Actor* background);
    void SetNPlayers(int nPlayers);
    void SetFonts(Font* scoreFont, Font* highlightFont, Font* textFont);

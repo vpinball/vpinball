@@ -2,7 +2,7 @@
 
 #include "Actor.h"
 
-class Frame : public Actor
+class Frame final : public Actor
 {
 public:
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);

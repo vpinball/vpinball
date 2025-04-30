@@ -104,22 +104,22 @@ public:
    void SetFlexDMD(FlexDMD* pFlexDMD) { m_pFlexDMD = pFlexDMD; }
    FlexDMD* GetFlexDMD() { return m_pFlexDMD; }
    void SetName(const string& szName) { m_szName = szName; }
-   const string& GetName() { return m_szName; }
-   single GetX() { return m_x; }
+   const string& GetName() const { return m_szName; }
+   single GetX() const { return m_x; }
    void SetX(single x) { m_x = x; }
-   single GetY() { return m_y; }
+   single GetY() const { return m_y; }
    void SetY(single y) { m_y = y; }
-   single GetWidth() { return m_width; }
+   single GetWidth() const { return m_width; }
    void SetWidth(single width) { m_width = width; }
-   single GetHeight() { return m_height; }
+   single GetHeight() const { return m_height; }
    void SetHeight(single height) { m_height = height; }
    virtual single GetPrefWidth() { return m_prefWidth; }
    void SetPrefWidth(single prefWidth) { m_prefWidth = prefWidth; }
    virtual single GetPrefHeight() { return m_prefHeight; }
    void SetPrefHeight(single prefHeight) { m_prefHeight = prefHeight; }
-   bool GetVisible() { return m_visible; }
+   bool GetVisible() const { return m_visible; }
    virtual void SetVisible( bool visible ) { m_visible = visible; }
-   bool GetOnStage() { return m_onStage; }
+   bool GetOnStage() const { return m_onStage; }
    void SetOnStage(bool onStage) { m_onStage = onStage; this->OnStageStateChanged(); }
    void SetFillParent(bool fillParent) { m_fillParent = fillParent; }
    Group* GetParent() { return m_parent; }

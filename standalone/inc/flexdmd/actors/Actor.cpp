@@ -260,23 +260,27 @@ STDMETHODIMP Actor::ClearActions()
 
 void Actor::Update(float secondsElapsed)
 {
-   if (!m_onStage) assert("Update was called on an actor which is not on stage.");
-   for (auto it = m_actions.begin(); it != m_actions.end(); ) {
+   if (!m_onStage)
+      assert("Update was called on an actor which is not on stage.");
+   for (auto it = m_actions.begin(); it != m_actions.end(); )
+   {
       if ((*it)->Update(secondsElapsed))
-        it = m_actions.erase(it);
+         it = m_actions.erase(it);
       else
-        ++it;
+         ++it;
    }
 
-   if (m_fillParent && m_parent != NULL)
+   if (m_fillParent && m_parent != nullptr)
       SetBounds(0, 0, m_parent->m_width, m_parent->m_height);
 }
 
 void Actor::Draw(VP::SurfaceGraphics* pGraphics)
 {
-   if (!m_onStage) assert("Update was called on an actor which is not on stage.");
-   if (m_visible && m_clearBackground) {
+   if (!m_onStage)
+      assert("Update was called on an actor which is not on stage.");
+   if (m_visible && m_clearBackground)
+   {
       pGraphics->SetColor(RGB(0, 0, 0));
-      pGraphics->FillRectangle( { (int)m_x, (int)m_y, (int)m_width, (int)m_height } );
+      pGraphics->FillRectangle({ (int)m_x, (int)m_y, (int)m_width, (int)m_height });
    }
 }
