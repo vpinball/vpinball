@@ -2,8 +2,8 @@
 
 class Character final {
 public:
-   Character() = default;
-   ~Character() = default;
+   Character();
+   ~Character();
 
    const SDL_Rect& GetBounds() const { return m_bounds; }
    void SetBounds(const SDL_Rect& bounds) { m_bounds = bounds; }

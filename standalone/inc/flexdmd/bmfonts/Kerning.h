@@ -2,8 +2,8 @@
 
 class Kerning final {
 public:
-   Kerning() = default;
-   ~Kerning() = default;
+   Kerning();
+   ~Kerning();
 
    int GetHash();
 

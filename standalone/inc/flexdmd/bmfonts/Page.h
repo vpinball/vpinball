@@ -2,8 +2,8 @@
 
 class Page final {
 public:
-   Page() = default;
-   ~Page() = default;
+   Page();
+   ~Page();
 
    int GetId() const { return m_id; }
    void SetId(int id) { m_id = id; }
