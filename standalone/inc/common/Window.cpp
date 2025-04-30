@@ -39,39 +39,41 @@ bool Window::Init()
    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, flags);
    m_pWindow = SDL_CreateWindowWithProperties(props);
    SDL_DestroyProperties(props);
-   if (m_pWindow) {
-      SDL_SetWindowPosition(m_pWindow, m_x, m_y);
 
-      m_pRenderer = SDL_CreateRenderer(m_pWindow, NULL);
-      if (m_pRenderer) {
-         SDL_SetRenderLogicalPresentation(m_pRenderer, m_w, m_h, SDL_LOGICAL_PRESENTATION_STRETCH);
-
-         m_id = SDL_GetWindowID(m_pWindow);
-
-         const char* pRendererName = SDL_GetRendererName(m_pRenderer);
-
-         if (m_rotation < 0 || m_rotation > 3)
-            m_rotation = 0;
-
-         PLOGI.printf("Window initialized: title=%s, id=%d, size=%dx%d, pos=%d,%d, z=%d, rotation=%d, visible=%d, renderer=%s",
-            m_szTitle.c_str(), m_id, m_w, m_h, m_x, m_y, m_z, m_rotation, m_visible, pRendererName ? pRendererName : "Unavailable");
-
-         if (m_visible)
-            SDL_ShowWindow(m_pWindow);
-
-         m_init = true;
-
-         return true;
-      }
-      else {
-        SDL_DestroyWindow(m_pWindow);
-        m_pWindow = nullptr;
-      }
+   if (!m_pWindow) {
+      PLOGE.printf("Failed to create window: title=%s error=%s", m_szTitle.c_str(), SDL_GetError());
+      return false;
    }
 
-   PLOGE.printf("Failed to initialize window: title=%s", m_szTitle.c_str());
+   SDL_SetWindowPosition(m_pWindow, m_x, m_y);
 
-   return false;
+   m_pRenderer = SDL_CreateRenderer(m_pWindow, NULL);
+
+   if (!m_pRenderer) {
+      PLOGE.printf("Failed to create renderer for window: title=%s error=%s", m_szTitle.c_str(), SDL_GetError());
+      SDL_DestroyWindow(m_pWindow);
+      m_pWindow = nullptr;
+      return false;
+   }
+
+   SDL_SetRenderLogicalPresentation(m_pRenderer, m_w, m_h, SDL_LOGICAL_PRESENTATION_STRETCH);
+
+   m_id = SDL_GetWindowID(m_pWindow);
+
+   const char* pRendererName = SDL_GetRendererName(m_pRenderer);
+
+   if (m_rotation < 0 || m_rotation > 3)
+      m_rotation = 0;
+
+   PLOGI.printf("Window initialized: title=%s, id=%d, size=%dx%d, pos=%d,%d, z=%d, rotation=%d, visible=%d, renderer=%s",
+      m_szTitle.c_str(), m_id, m_w, m_h, m_x, m_y, m_z, m_rotation, m_visible, pRendererName ? pRendererName : "Unavailable");
+
+   if (m_visible)
+      SDL_ShowWindow(m_pWindow);
+
+   m_init = true;
+
+   return true;
 }
 
 Window::~Window()
