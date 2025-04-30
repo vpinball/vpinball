@@ -9,7 +9,7 @@ class Scene : public Group
 {
 public:
    Scene(FlexDMD* pFlexDMD, AnimationType animateIn, float pauseS, AnimationType animateOut, const string& id);
-   ~Scene() override;
+   ~Scene();
 
    void UpdateState();
    virtual void Begin() { }
