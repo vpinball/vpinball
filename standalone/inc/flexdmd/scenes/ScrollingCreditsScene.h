@@ -7,7 +7,7 @@ class ScrollingCreditsScene final : public BackgroundScene
 {
 public:
    ScrollingCreditsScene(FlexDMD* pFlexDMD, Actor* pBackground, const vector<string>& text, Font* pFont, AnimationType animateIn, float pauseS, AnimationType animateOut, const string& id);
-   ~ScrollingCreditsScene() override;
+   ~ScrollingCreditsScene();
 
    void Begin() override;
    void Update(float delta) override;

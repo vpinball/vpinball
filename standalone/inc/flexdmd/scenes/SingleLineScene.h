@@ -7,7 +7,7 @@ class SingleLineScene final : public BackgroundScene
 {
 public:
    SingleLineScene(FlexDMD* pFlexDMD, Actor* pBackground, const string& text, Font* pFont, AnimationType animateIn, float pauseS, AnimationType animateOut, bool scroll, const string& id);
-   ~SingleLineScene() override;
+   ~SingleLineScene();
 
    void SetText(const string& text);
    void Begin() override;

@@ -178,10 +178,10 @@ STDMETHODIMP UltraDMD::SetVideoStretchMode(LONG mode)
    return S_OK;
 }
 
-Label* UltraDMD::GetFittedLabel(const string& text, float fillBrightness, float outlineBrightness)
+Label* UltraDMD::GetFittedLabel(const string& text, float fillBrightness, float outlineBrightness) const
 {
    for (const auto& pFontDef : m_singleLineFonts) {
-      Label* pLabel = new Label(m_pFlexDMD, GetFont(pFontDef->GetPath(), fillBrightness, outlineBrightness), text, string());
+      Label* const pLabel = new Label(m_pFlexDMD, GetFont(pFontDef->GetPath(), fillBrightness, outlineBrightness), text, string());
       pLabel->SetPosition((m_pFlexDMD->GetWidth() - pLabel->GetWidth()) / 2.f, (m_pFlexDMD->GetHeight() - pLabel->GetHeight()) / 2.f);
       if ((pLabel->GetX() >= 0.f && pLabel->GetY() >= 0.f) || pFontDef == m_singleLineFonts[m_singleLineFonts.size() - 1])
          return pLabel;
