@@ -98,15 +98,15 @@ Font* UltraDMD::GetFont(const string& path, float brightness, float outlineBrigh
    ColorRGBA32 baseColor = m_pFlexDMD->GetRenderMode() == RenderMode_DMD_RGB ? m_pFlexDMD->GetColor() : RGB(255, 255, 255);
 
    ColorRGBA32 tint = brightness >= 0.0f ? RGB(
-      min((GetRValue(baseColor) * brightness), 255.f),
-      min((GetGValue(baseColor) * brightness), 255.f),
-      min((GetBValue(baseColor) * brightness), 255.f)) : RGB(0, 0, 0);
+      min(GetRValue(baseColor) * brightness, 255.f),
+      min(GetGValue(baseColor) * brightness, 255.f),
+      min(GetBValue(baseColor) * brightness, 255.f)) : RGB(0, 0, 0);
 
    if (outlineBrightness >= 0.0f) {
       ColorRGBA32 borderTint = RGB(
-         min((GetRValue(baseColor) * outlineBrightness), 255.f),
-         min((GetGValue(baseColor) * outlineBrightness), 255.f),
-         min((GetBValue(baseColor) * outlineBrightness), 255.f));
+         min(GetRValue(baseColor) * outlineBrightness, 255.f),
+         min(GetGValue(baseColor) * outlineBrightness, 255.f),
+         min(GetBValue(baseColor) * outlineBrightness, 255.f));
 
       return m_pFlexDMD->NewFont(path, tint, borderTint, 1);
    }
@@ -130,7 +130,7 @@ Actor* UltraDMD::ResolveImage(const string& filename, bool useFrame)
    if (try_parse_int(filename, key) && ((k = m_preloads.find(key)) != m_preloads.end())) {
       const VideoDef* const pVideoDef = dynamic_cast<const VideoDef*>(k->second);
       if (pVideoDef) {
-         Video* pActor = Video::Create(m_pFlexDMD, pVideoDef->GetVideoFilename(), string(), pVideoDef->GetLoop());
+         Video* const pActor = Video::Create(m_pFlexDMD, pVideoDef->GetVideoFilename(), string(), pVideoDef->GetLoop());
          if (pActor) {
             pActor->SetLoop(pVideoDef->GetLoop());
             pActor->SetScaling(pVideoDef->GetScaling());
@@ -141,7 +141,7 @@ Actor* UltraDMD::ResolveImage(const string& filename, bool useFrame)
       else {
          const ImageSequenceDef* const pImageSequenceDef = dynamic_cast<const ImageSequenceDef*>(k->second);
          if (pImageSequenceDef) {
-            ImageSequence* pVideo = ImageSequence::Create(m_pFlexDMD, m_pFlexDMD->GetAssetManager(), pImageSequenceDef->GetImages(), string(), pImageSequenceDef->GetFPS(), pImageSequenceDef->GetLoop());
+            ImageSequence* const pVideo = ImageSequence::Create(m_pFlexDMD, m_pFlexDMD->GetAssetManager(), pImageSequenceDef->GetImages(), string(), pImageSequenceDef->GetFPS(), pImageSequenceDef->GetLoop());
             if (pVideo) {
                pVideo->SetFPS(pImageSequenceDef->GetFPS());
                pVideo->SetLoop(pImageSequenceDef->GetLoop());

@@ -8,7 +8,7 @@
 #include "resources/ResourceDef.h"
 #include "VPXPlugin.h"
 
-#include <unordered_dense>
+#include <unordered_dense.h>
 
 class UltraDMD final
 {
