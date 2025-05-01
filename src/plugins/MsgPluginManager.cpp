@@ -59,10 +59,12 @@ MsgPluginManager& MsgPluginManager::GetInstance()
 
 MsgPluginManager::MsgPluginManager()
 {
+   m_api.GetEndpointInfo = GetEndpointInfo;
    m_api.GetMsgID = GetMsgID;
    m_api.SubscribeMsg = SubscribeMsg;
    m_api.UnsubscribeMsg = UnsubscribeMsg;
    m_api.BroadcastMsg = BroadcastMsg;
+   m_api.SendMsg = SendMsg;
    m_api.ReleaseMsgID = ReleaseMsgID;
    m_api.GetSetting = GetSetting; 
    m_api.RunOnMainThread = RunOnMainThread;
@@ -78,6 +80,23 @@ MsgPluginManager::~MsgPluginManager()
 
 ///////////////////////////////////////////////////////////////////////////////
 // Message API
+
+void MsgPluginManager::GetEndpointInfo(const uint32_t endpointId, MsgEndpointInfo* info)
+{
+   MsgPluginManager& pm = GetInstance();
+#ifndef __LIBVPINBALL__
+   assert(std::this_thread::get_id() == pm.m_apiThread);
+#endif
+   auto item = std::ranges::find_if(pm.m_plugins, [endpointId](std::shared_ptr<MsgPlugin>& plg) { return plg->m_endpointId == endpointId; });
+   if (item == pm.m_plugins.end())
+      return;
+   info->id = (*item)->m_id.c_str();
+   info->name = (*item)->m_name.c_str();
+   info->description = (*item)->m_description.c_str();
+   info->author = (*item)->m_author.c_str();
+   info->version = (*item)->m_version.c_str();
+   info->link = (*item)->m_link.c_str();
+}
 
 unsigned int MsgPluginManager::GetMsgID(const char* name_space, const char* name)
 {
@@ -107,7 +126,7 @@ unsigned int MsgPluginManager::GetMsgID(const char* name_space, const char* name
    return freeMsg->id;
 }
 
-void MsgPluginManager::SubscribeMsg(const unsigned int endpointId, const unsigned int msgId, const msgpi_msg_callback callback, void* userData)
+void MsgPluginManager::SubscribeMsg(const uint32_t endpointId, const unsigned int msgId, const msgpi_msg_callback callback, void* userData)
 {
    MsgPluginManager& pm = GetInstance();
 #ifndef __LIBVPINBALL__
@@ -146,7 +165,7 @@ void MsgPluginManager::UnsubscribeMsg(const unsigned int msgId, const msgpi_msg_
    assert(false);
 }
 
-void MsgPluginManager::BroadcastMsg(const unsigned int endpointId, const unsigned int msgId, void* data)
+void MsgPluginManager::BroadcastMsg(const uint32_t endpointId, const unsigned int msgId, void* data)
 {
    MsgPluginManager& pm = GetInstance();
 #ifndef __LIBVPINBALL__
@@ -157,7 +176,24 @@ void MsgPluginManager::BroadcastMsg(const unsigned int endpointId, const unsigne
    assert(1 <= endpointId && endpointId < pm.m_nextEndpointId);
    for (const CallbackEntry entry : pm.m_msgs[msgId].callbacks)
       if (entry.endpointId != endpointId) // Don't broadcast to sender's endpoint
-         entry.callback(msgId, entry.userData, data);
+         entry.callback(msgId, entry.context, data);
+}
+
+void MsgPluginManager::SendMsg(const uint32_t endpointId, const unsigned int msgId, const uint32_t targetEndpointId, void* data)
+{
+   MsgPluginManager& pm = GetInstance();
+#ifndef __LIBVPINBALL__
+   assert(std::this_thread::get_id() == pm.m_apiThread);
+#endif
+   assert(msgId < pm.m_msgs.size());
+   assert(pm.m_msgs[msgId].refCount > 0);
+   assert(1 <= endpointId && endpointId < pm.m_nextEndpointId);
+   for (const CallbackEntry entry : pm.m_msgs[msgId].callbacks)
+      if (entry.endpointId == targetEndpointId)
+      {
+         entry.callback(msgId, entry.context, data);
+         break;
+      }
 }
 
 void MsgPluginManager::ReleaseMsgID(const unsigned int msgId)

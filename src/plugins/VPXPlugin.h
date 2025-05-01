@@ -39,22 +39,55 @@
 #define VPXPI_EVT_ON_SETTINGS_CHANGED   "OnSettingsChanged"   // Broadcasted when settings have been changed
 #define VPXPI_EVT_ON_ACTION_CHANGED     "OnActionChanged"     // Broadcasted when an action state change, event data is an VPXActionEvent whose isPressed field can be modified by plugins
 
-// Preliminary backglass rendering
-#define VPXPI_EVT_RENDER_BACKGLASS      "RenderBackglass"     // Broadcasted to request rendering of the backglass using the backglass render context provided as msg data
+// Anciliary window rendering
+#define VPXPI_MSG_GET_AUX_RENDERER      "GetAuxRenderer"      // Broadcasted with a GetAnciliaryRendererMsg to discover anciliary window renderer implemented in plugins
+#define VPXPI_EVT_AUX_RENDERER_CHG      "AuxRendererChanged"  // Broadcasted when an anciliray renderer is added or removed
 
 typedef void* VPXTexture;
 
-typedef struct VPXRenderBackglassContext
+typedef enum
 {
-   float outWidth;   // Target surface width, mostly to be used for apsect ratio computation, LOD and layout
-   float outHeight;  // Target surface height, mostly to be used for apsect ratio computation, LOD and layout
-   float srcWidth;   // Source surface width, used in DrawImage call, default to 1.0f
-   float srcHeight;  // Source surface height, used in DrawImage call, default to 1.0f
-   void(MSGPIAPI* DrawImage)(VPXRenderBackglassContext* ctx, VPXTexture texture,
+   VPXTEXFMT_sRGBA,
+} VPXTextureFormat;
+
+typedef enum
+{
+   VPXWINDOW_Backglass,
+   VPXWINDOW_ScoreView,
+   VPXWINDOW_Topper,
+} VPXAnciliaryWindow;
+
+typedef struct VPXRenderContext2D
+{
+   VPXAnciliaryWindow window; // Target window
+   float srcWidth;            // Source surface width, used in DrawImage call, default to target surface width
+   float srcHeight;           // Source surface height, used in DrawImage call, default to target surface height
+   float outWidth;            // Target surface width, mostly to be used for apsect ratio computation, LOD and layout
+   float outHeight;           // Target surface height, mostly to be used for apsect ratio computation, LOD and layout
+   void(MSGPIAPI* DrawImage)(VPXRenderContext2D* ctx, VPXTexture texture,
       const float tintR, const float tintG, const float tintB, const float alpha, // tint color and alpha (0..1)
       const float texX, const float texY, const float texW, const float texH,  // coordinates in texture surface (0..tex.width, 0..tex.height)
       const float srcX, const float srcY, const float srcW, const float srcH); // coordinates in source surface (0..srcWidth, 0..srcHeight)
-} VPXRenderBackglassContext;
+} VPXRenderContext2D;
+
+typedef struct AnciliaryRendererDef
+{
+   const char* name;          // Human readable name of the renderer
+   const char* description;   // Human readable description of the renderer
+   void* context;             // Custom context to be passed when requesting rendering
+   int(MSGPIAPI* Render)(VPXRenderContext2D* renderCtx, void* context);
+} AnciliaryRendererDef;
+
+typedef struct GetAnciliaryRendererMsg
+{
+   // Request
+   VPXAnciliaryWindow window; // Target window
+   unsigned int maxEntryCount; // see below
+   // Response
+   unsigned int count; // Number of entries, also position to put next entry
+   AnciliaryRendererDef* entries; // Pointer to an array of maxEntryCount entries to be filled
+} GetAnciliaryRendererMsg;
+
 
 // Core VPX settings pages
 // GetOption 'pageId' parameter is either the id of a loaded plugin or the id of one of the core VPX pages defined below
@@ -161,8 +194,9 @@ typedef struct VPXPluginAPI
    void(MSGPIAPI* SetInputState)(const uint64_t keyState, const float nudgeX, const float nudgeY, const float plunger);
 
    // Rendering
-   VPXTexture(MSGPIAPI* CreateTexture)(uint8_t* rawData, int size);
-   void(MSGPIAPI* GetTextureInfo)(VPXTexture texture, int* width, int* height);
-   void(MSGPIAPI* DeleteTexture)(VPXTexture texture);
+   VPXTexture(MSGPIAPI* CreateTexture)(uint8_t* rawData, int size); // Thread safe
+   void(MSGPIAPI* UpdateTexture)(VPXTexture* texture, int width, int height, VPXTextureFormat format, uint8_t* image); // NOT Thread safe
+   void(MSGPIAPI* GetTextureInfo)(VPXTexture texture, int* width, int* height); // NOT Thread safe
+   void(MSGPIAPI* DeleteTexture)(VPXTexture texture); // Thread safe
 
 } VPXPluginAPI;

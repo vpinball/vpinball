@@ -56,7 +56,7 @@ Window::Window(const string &title, const Settings::Section section, const strin
       else if (g_pvp->m_disEnableTrueFullscreen == 1)
          m_fullscreen = true;
    }
-   int w = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Width", m_fullscreen ? -1 : DEFAULT_PLAYER_WIDTH);
+   int w = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Width", m_fullscreen ? -1 : 1024);
    int h = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Height", w * 9 / 16);
    const int display = g_pvp->m_primaryDisplay ? -1 : settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Display", -1);
    const bool video10bit = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Render10Bit", false);

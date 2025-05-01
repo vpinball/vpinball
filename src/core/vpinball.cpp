@@ -1150,7 +1150,8 @@ void VPinball::DoPlay(const int playMode)
                   SDL_Window *sdlWnd = SDL_GetWindowFromID(e.motion.windowID);
                   std::vector<VPX::Window*> windows = {
                      g_pplayer->m_scoreviewOutput.GetWindow(),
-                     g_pplayer->m_backglassOutput.GetWindow()
+                     g_pplayer->m_backglassOutput.GetWindow(),
+                     g_pplayer->m_topperOutput.GetWindow(),
                   };
                   for (VPX::Window* wnd : windows)
                   {

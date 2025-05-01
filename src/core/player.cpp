@@ -153,8 +153,9 @@ LRESULT CALLBACK PlayerWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 Player::Player(PinTable *const editor_table, PinTable *const live_table, const int playMode)
    : m_pEditorTable(editor_table)
    , m_ptable(live_table)
-   , m_scoreviewOutput("Visual Pinball - Score"s, live_table->m_settings, Settings::DMD, "DMD")
+   , m_scoreviewOutput("Visual Pinball - Score"s, live_table->m_settings, Settings::ScoreView, "ScoreView")
    , m_backglassOutput("Visual Pinball - Backglass"s, live_table->m_settings, Settings::Backglass, "Backglass")
+   , m_topperOutput("Visual Pinball - Topper"s, live_table->m_settings, Settings::Topper, "Topper")
 {
    // For the time being, lots of access are made through the global singleton, so ensure we are unique, and define it as soon as needed
    assert(g_pplayer == nullptr);
@@ -466,6 +467,8 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
          m_renderer->m_renderDevice->AddWindow(m_scoreviewOutput.GetWindow());
       if (m_backglassOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
          m_renderer->m_renderDevice->AddWindow(m_backglassOutput.GetWindow());
+      if (m_topperOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
+         m_renderer->m_renderDevice->AddWindow(m_topperOutput.GetWindow());
 
       if (m_scoreviewOutput.GetMode() != VPX::RenderOutput::OM_DISABLED)
       {
@@ -723,7 +726,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    m_onGameStartMsgId = VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START);
    m_onPrepareFrameMsgId = VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
-   m_renderBackglassMsgId = VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_RENDER_BACKGLASS);
    m_onAudioUpdatedMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_ONAUDIO_UPDATE_MSG);
    MsgPluginManager::GetInstance().GetMsgAPI().SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onAudioUpdatedMsgId, OnAudioUpdated, this);
 
@@ -848,7 +850,6 @@ Player::~Player()
 
    // Release plugin message Ids
    MsgPluginManager::GetInstance().GetMsgAPI().UnsubscribeMsg(m_onAudioUpdatedMsgId, OnAudioUpdated);
-   VPXPluginAPIImpl::ReleaseMsgID(m_renderBackglassMsgId);
    VPXPluginAPIImpl::ReleaseMsgID(m_onAudioUpdatedMsgId);
    VPXPluginAPIImpl::ReleaseMsgID(m_onGameStartMsgId);
    VPXPluginAPIImpl::ReleaseMsgID(onGameEndMsgId);
@@ -953,7 +954,11 @@ Player::~Player()
    if (m_renderer->m_stereo3D == STEREO_VR)
       m_vrDevice->SaveVRSettings(g_pvp->m_settings);
 
-   m_ptable->StopAllSounds();
+   for (auto &sound : m_ptable->m_vsound)
+   {
+      sound->Stop();
+      sound->UnInitialize();
+   }
 
    // Stop all played musics, including ones streamed from plugins
    if (m_audio)
@@ -987,6 +992,8 @@ Player::~Player()
       renderable->GetIHitable()->RenderRelease();
    for (auto hitable : m_vhitables)
       hitable->GetIHitable()->TimerRelease();
+   for (int window = 0; window <= VPXAnciliaryWindow::VPXWINDOW_Topper; window++)
+      delete m_anciliaryWndHdrRT[window];
    assert(m_vballDelete.empty());
    m_vball.clear();
 
@@ -1933,30 +1940,21 @@ void Player::PrepareFrame(const std::function<void()>& sync)
    m_renderer->RenderFrame();
    RenderTarget *playfieldRT = rd->GetCurrentRenderTarget();
 
-   // Prepare scoreview
-   RenderTarget *scoreViewRT = nullptr;
-   if ((m_vrDevice == nullptr) && (m_scoreviewOutput.GetMode() != VPX::RenderOutput::OM_DISABLED))
-   {
-      m_scoreView.Render(m_scoreviewOutput);
-      scoreViewRT = rd->GetCurrentRenderTarget();
-   }
-
-   // Prepare backglass
-   RenderTarget *backglassRT = nullptr;
-   if ((m_vrDevice == nullptr) && (m_backglassOutput.GetMode() != VPX::RenderOutput::OM_DISABLED))
-   {
-      RenderBackglass(playfieldRT);
-      backglassRT = rd->GetCurrentRenderTarget();
-   }
+   // Prepare anciliary windows
+   RenderTarget *scoreViewRT = RenderAnciliaryWindow(VPXAnciliaryWindow::VPXWINDOW_ScoreView, playfieldRT);
+   RenderTarget *backglassRT = RenderAnciliaryWindow(VPXAnciliaryWindow::VPXWINDOW_Backglass, playfieldRT);
+   RenderTarget *topperRT = RenderAnciliaryWindow(VPXAnciliaryWindow::VPXWINDOW_Topper, playfieldRT);
    
    // Apply screenspace transforms (MSAA, AO, AA, stereo, ball motion blur, tonemapping, dithering, bloom,...)
-   rd->SetRenderTarget("PostProcess"s, m_renderer->GetBackBufferTexture(), true);
+   rd->SetRenderTarget("PostProcess"s, m_renderer->GetBackBufferTexture(), false);
    if (playfieldRT && playfieldRT != m_renderer->GetBackBufferTexture())
       rd->AddRenderTargetDependency(playfieldRT, true);
    if (scoreViewRT && scoreViewRT != m_renderer->GetBackBufferTexture())
       rd->AddRenderTargetDependency(scoreViewRT, false);
    if (backglassRT && backglassRT != m_renderer->GetBackBufferTexture())
       rd->AddRenderTargetDependency(backglassRT, false);
+   if (topperRT && topperRT != m_renderer->GetBackBufferTexture())
+      rd->AddRenderTargetDependency(topperRT, false);
    m_renderer->PrepareVideoBuffers(m_renderer->m_renderDevice->GetOutputBackBuffer());
 
    m_logicProfiler.ExitProfileSection();
@@ -2100,38 +2098,58 @@ void Player::FinishFrame()
 #endif
 }
 
-void Player::RenderBackglass(RenderTarget* playfieldRT)
+RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTarget *playfieldRT)
 {
    RenderDevice *const rd = m_renderer->m_renderDevice;
    int m_outputX, m_outputY, m_outputW, m_outputH;
 
-   RenderTarget *backglassRT;
-   #ifdef ENABLE_BGFX
-   if (m_backglassOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
+   VPX::RenderOutput &output = window == VPXAnciliaryWindow::VPXWINDOW_Backglass ? m_backglassOutput :
+                               window == VPXAnciliaryWindow::VPXWINDOW_ScoreView ? m_scoreviewOutput :
+                               /*window == VPXAnciliaryWindow::VPXWINDOW_Topper ? */ m_topperOutput;
+   const string renderPassName = window == VPXAnciliaryWindow::VPXWINDOW_Backglass ? "Backglass Render" :
+                                 window == VPXAnciliaryWindow::VPXWINDOW_ScoreView ? "ScoreView Render" :
+                                /*window == VPXAnciliaryWindow::VPXWINDOW_Topper ? */ "Topper Render";
+   const string tonemapPassName = window == VPXAnciliaryWindow::VPXWINDOW_Backglass ? "Backglass Tonemap" :
+                                  window == VPXAnciliaryWindow::VPXWINDOW_ScoreView ? "ScoreView Tonemap" :
+                                /*window == VPXAnciliaryWindow::VPXWINDOW_Topper ? */ "Topper Tonemap";
+   const string hdrRTName = window == VPXAnciliaryWindow::VPXWINDOW_Backglass ? "BackglassBackBuffer" :
+                            window == VPXAnciliaryWindow::VPXWINDOW_ScoreView ? "ScoreViewBackBuffer" :
+                          /*window == VPXAnciliaryWindow::VPXWINDOW_Topper ? */ "TopperBackBuffer";
+
+   // TODO implement rendering for VR (on a flasher)
+   if (m_vrDevice != nullptr)
+      return nullptr;
+
+   RenderTarget *outputRT;
+   if (output.GetMode() == VPX::RenderOutput::OM_DISABLED)
    {
-      backglassRT = m_backglassOutput.GetWindow()->GetBackBuffer();
-      m_outputW = backglassRT->GetWidth();
-      m_outputH = backglassRT->GetHeight();
-      m_outputX = m_outputY = 0;
-      m_backglassOutput.GetWindow()->Show();
+      return nullptr;
    }
-   else
-   #endif
+   #ifdef ENABLE_BGFX
+   else if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
    {
-      assert(m_backglassOutput.GetMode() == VPX::RenderOutput::OM_EMBEDDED);
-      backglassRT = playfieldRT;
-      m_outputW = m_backglassOutput.GetEmbeddedWindow()->GetWidth();
-      m_outputH = m_backglassOutput.GetEmbeddedWindow()->GetHeight();
-      m_backglassOutput.GetEmbeddedWindow()->GetPos(m_outputX, m_outputY);
-      m_outputY = backglassRT->GetHeight() - m_outputY - m_outputH;
+      outputRT = output.GetWindow()->GetBackBuffer();
+      m_outputW = outputRT->GetWidth();
+      m_outputH = outputRT->GetHeight();
+      m_outputX = m_outputY = 0;
+   }
+   #endif
+   else
+   {
+      assert(output.GetMode() == VPX::RenderOutput::OM_EMBEDDED);
+      outputRT = playfieldRT;
+      m_outputW = output.GetEmbeddedWindow()->GetWidth();
+      m_outputH = output.GetEmbeddedWindow()->GetHeight();
+      output.GetEmbeddedWindow()->GetPos(m_outputX, m_outputY);
+      m_outputY = outputRT->GetHeight() - m_outputY - m_outputH;
    }
       
    Matrix3D matWorldViewProj[2];
    matWorldViewProj[0] = Matrix3D::MatrixIdentity();
-   matWorldViewProj[0]._11 = 2.f * static_cast<float>(m_outputW) / static_cast<float>(backglassRT->GetWidth());
-   matWorldViewProj[0]._41 = -1.f + 2.f * m_outputX / static_cast<float>(backglassRT->GetWidth());
-   matWorldViewProj[0]._22 = -2.f * static_cast<float>(m_outputH) / static_cast<float>(backglassRT->GetHeight());
-   matWorldViewProj[0]._42 = 1.f - 2.f * m_outputY / static_cast<float>(backglassRT->GetHeight());
+   matWorldViewProj[0]._11 = 2.f * static_cast<float>(m_outputW) / static_cast<float>(outputRT->GetWidth());
+   matWorldViewProj[0]._41 = -1.f + 2.f * m_outputX / static_cast<float>(outputRT->GetWidth());
+   matWorldViewProj[0]._22 = -2.f * static_cast<float>(m_outputH) / static_cast<float>(outputRT->GetHeight());
+   matWorldViewProj[0]._42 = 1.f - 2.f * m_outputY / static_cast<float>(outputRT->GetHeight());
    const int eyes = rd->GetCurrentRenderTarget()->m_nLayers;
    if (eyes > 1)
       matWorldViewProj[1] = matWorldViewProj[0];
@@ -2146,37 +2164,33 @@ void Player::RenderBackglass(RenderTarget* playfieldRT)
    rd->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
    rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
 
-   // Performing linear rendering + tonemapping maybe overkill when used for legacy B2S which are already tonemapped
-   // (mostly a flipbook of prepared images), we should open the path for full HDR rendering but only use it when needed.
-   // Flag to disable HDR rendering (to be moved to some settings)
-   const bool m_disableBackglassHDR = false; // TODO still needs to implement sRGB image drawing when render target is non linear
+   // Performing linear rendering + tonemapping is overkill when used for LDR rendering (Pup pack, B2S,...)
+   const bool enableHDR = true; // TODO still needs to implement sRGB image drawing when render target is non linear
 
-   if (m_backglassOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
+   if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
    {
-      if (m_disableBackglassHDR)
+      if (enableHDR)
       {
-         rd->SetRenderTarget("BackglassView"s, backglassRT, false, true);
+         if (m_anciliaryWndHdrRT[window] == nullptr)
+            m_anciliaryWndHdrRT[window] = new RenderTarget(rd, SurfaceType::RT_DEFAULT, hdrRTName, m_outputW, m_outputH, colorFormat::RGBA16F, false, 1, "Fatal Error: unable to create anciliary window back buffer");
+         rd->SetRenderTarget(renderPassName, m_anciliaryWndHdrRT[window], false, true);
       }
       else
       {
-         if (m_backglassHdrRT == nullptr)
-            m_backglassHdrRT = new RenderTarget(
-               rd, SurfaceType::RT_DEFAULT, "BackglassBackBuffer"s, m_outputW, m_outputH, colorFormat::RGBA16F, false, 1, "Fatal Error: unable to create backglass back buffer");
-         rd->SetRenderTarget("BackglassView"s, m_backglassHdrRT, false, true);
+         rd->SetRenderTarget(renderPassName, outputRT, false, true);
       }
    }
    else
    {
-      rd->SetRenderTarget("BackglassView"s, backglassRT, true, true);
-      // FIXME place backglass rendering after main render pass, before postprocess
+      rd->SetRenderTarget(renderPassName, outputRT, true, true);
    }
-   // TODO evaluate and perform if clear is needed (when backglass does not have a default image covering the entire backglass, so far this never happened)
-      
-   VPXRenderBackglassContext context
+
+   VPXRenderContext2D context
    {
+      window,
       static_cast<float>(m_outputW), static_cast<float>(m_outputH),
-      1.f, 1.f,
-      [](VPXRenderBackglassContext* ctx, VPXTexture texture,
+      static_cast<float>(m_outputW), static_cast<float>(m_outputH),
+      [](VPXRenderContext2D *ctx, VPXTexture texture,
          const float tintR, const float tintG, const float tintB, const float alpha,
          const float srcX, const float srcY, const float srcW, const float srcH,
          const float dstX, const float dstY, const float dstW, const float dstH)
@@ -2202,21 +2216,61 @@ void Player::RenderBackglass(RenderTarget* playfieldRT)
             rd->DrawTexturedQuad(rd->m_basicShader, vertices, true, 0.f);
          }
    };
-   VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_renderBackglassMsgId, &context);
+
+   // TODO evaluate if clear is needed and perform it
+
+   // TODO cache all this, and priorize renderers according to user settings
+   const MsgPluginAPI *m_msgApi = &MsgPluginManager::GetInstance().GetMsgAPI();
+   unsigned int m_getAuxRendererId = 0, m_onAuxRendererChgId = 0;
+   m_getAuxRendererId = m_msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER);
+   m_onAuxRendererChgId = m_msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG);
+   GetAnciliaryRendererMsg getAuxRendererMsg { window };
+   getAuxRendererMsg.maxEntryCount = 256;
+   getAuxRendererMsg.entries = new AnciliaryRendererDef[getAuxRendererMsg.maxEntryCount];
+   m_msgApi->BroadcastMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_getAuxRendererId, &getAuxRendererMsg);
+   bool rendered = false;
+   for (unsigned int i = 0; i < getAuxRendererMsg.count; i++)
+   {
+      rendered = getAuxRendererMsg.entries[i].Render(&context, getAuxRendererMsg.entries[i].context);
+      if (rendered)
+         break;
+   }
+   delete[] getAuxRendererMsg.entries;
+   m_msgApi->ReleaseMsgID(m_getAuxRendererId);
+   m_msgApi->ReleaseMsgID(m_onAuxRendererChgId);
 
    m_renderer->UpdateBasicShaderMatrix();
 
-   if (!m_disableBackglassHDR && (m_backglassOutput.GetMode() == VPX::RenderOutput::OM_WINDOW))
+   if (!rendered)
+   {
+      // FIXME integrate score view in the global rendering scheme
+      if (window == VPXAnciliaryWindow::VPXWINDOW_ScoreView && m_scoreView.IsMatched())
+      {
+         m_scoreView.Render(m_scoreviewOutput);
+         #ifdef ENABLE_BGFX
+         if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
+            output.GetWindow()->Show();
+         #endif
+         return rd->GetCurrentRenderTarget();      
+      }
+      else
+      {
+         rd->SetRenderTarget("PostProcess"s, m_renderer->GetBackBufferTexture(), true);
+         return nullptr;
+      }
+   }
+
+   if (enableHDR && (output.GetMode() == VPX::RenderOutput::OM_WINDOW))
    {
       const float jitter = (float)((msec() & 2047) / 1000.0);
-      rd->SetRenderTarget("BackglassOutput"s, backglassRT, true, true);
-      rd->AddRenderTargetDependency(m_backglassHdrRT, false);
+      rd->SetRenderTarget(tonemapPassName, outputRT, true, true);
+      rd->AddRenderTargetDependency(m_anciliaryWndHdrRT[window], false);
       rd->m_FBShader->SetTextureNull(SHADER_tex_depth);
-      rd->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_backglassHdrRT->GetColorSampler());
-      rd->m_FBShader->SetTexture(SHADER_tex_fb_filtered, m_backglassHdrRT->GetColorSampler());
+      rd->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_anciliaryWndHdrRT[window]->GetColorSampler());
+      rd->m_FBShader->SetTexture(SHADER_tex_fb_filtered, m_anciliaryWndHdrRT[window]->GetColorSampler());
       rd->m_FBShader->SetVector(SHADER_bloom_dither_colorgrade,
          0.f, // Bloom
-         m_backglassOutput.GetWindow()->IsWCGBackBuffer()  ? 0.f : 1.f, // Dither
+         output.GetWindow()->IsWCGBackBuffer() ? 0.f : 1.f, // Dither
          0.f, // LUT colorgrade
          0.f);
       rd->m_FBShader->SetVector(SHADER_w_h_height, 
@@ -2236,12 +2290,12 @@ void Player::RenderBackglass(RenderTarget* playfieldRT)
       }
       rd->m_FBShader->SetTechnique(tonemapTechnique);
       const float m_exposure = 1.f; // TODO implement exposure
-      if (m_backglassOutput.GetWindow()->IsWCGBackBuffer())
+      if (output.GetWindow()->IsWCGBackBuffer())
       {
-         const float maxDisplayLuminance = m_backglassOutput.GetWindow()->GetHDRHeadRoom() * (m_backglassOutput.GetWindow()->GetSDRWhitePoint() * 80.f); // Maximum luminance of display in nits, note that GetSDRWhitePoint()*80 should usually be in the 200 nits range
+         const float maxDisplayLuminance = output.GetWindow()->GetHDRHeadRoom() * (output.GetWindow()->GetSDRWhitePoint() * 80.f); // Maximum luminance of display in nits, note that GetSDRWhitePoint()*80 should usually be in the 200 nits range
          rd->m_FBShader->SetVector(SHADER_exposure_wcg,
             m_exposure,
-            (m_backglassOutput.GetWindow()->GetSDRWhitePoint() * 80.f) / maxDisplayLuminance, // Apply SDR whitepoint (1.0 -> white point in nits), then scale down by maximum luminance (in nits) of display to get a relative value before before tonemapping, equal to 1/GetHDRHeadRoom()
+            (output.GetWindow()->GetSDRWhitePoint() * 80.f) / maxDisplayLuminance, // Apply SDR whitepoint (1.0 -> white point in nits), then scale down by maximum luminance (in nits) of display to get a relative value before before tonemapping, equal to 1/GetHDRHeadRoom()
             maxDisplayLuminance / 10000.f, // Apply back maximum luminance in nits of display after tonemapping, scaled down to PQ limits (1.0 is 10000 nits)
             1.f);
          float spline_params[6];
@@ -2259,6 +2313,13 @@ void Player::RenderBackglass(RenderTarget* playfieldRT)
       }
       rd->DrawFullscreenTexturedQuad(rd->m_FBShader);
    }
+
+   #ifdef ENABLE_BGFX
+   if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
+      output.GetWindow()->Show();
+   #endif
+
+   return rd->GetCurrentRenderTarget();
 }
 
 void Player::UpdateVolume()
@@ -2292,7 +2353,7 @@ void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgD
       if (msg.buffer != nullptr)
       {
          int pending = SDL_GetAudioStreamQueued(entry->second->m_pstream);
-         if (pending >= msg.bufferSize)
+         if (pending >= 0 && static_cast<unsigned int>(pending) >= msg.bufferSize)
          {
             double delay = 1000.0 * msg.bufferSize / (msg.sampleRate * ((msg.type == CTLPI_AUDIO_SRC_BACKGLASS_MONO) ? 1 : 2));
             PLOGI << "Dropping 1 sound frame (" << delay << "ms) as lag is exceeding 1 frame (" << msg.bufferSize << "bytes of " << ((msg.type == CTLPI_AUDIO_SRC_BACKGLASS_MONO)

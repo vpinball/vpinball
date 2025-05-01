@@ -139,8 +139,42 @@ void VPXPluginAPIImpl::SetInputState(const uint64_t keyState, const float nudgeX
 ///////////////////////////////////////////////////////////////////////////////
 // Rendering
 
+void VPXPluginAPIImpl::UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, uint8_t* image)
+{
+   assert(format == VPXTextureFormat::VPXTEXFMT_sRGBA);
+   const BaseTexture::Format texFormat = BaseTexture::SRGBA;
+   const int pixelSize = 4;
+   if (*texture != nullptr)
+   {
+      assert(std::this_thread::get_id() == VPXPluginAPIImpl::GetInstance().m_apiThread);
+      Texture* tex = static_cast<Texture*>(*texture);
+      if ((tex->m_width == width) && (tex->m_height == height) && (tex->m_pdsBuffer->m_format == texFormat))
+      {
+         assert(tex->m_pdsBuffer->pitch() * tex->m_pdsBuffer->height() == width * height * pixelSize);
+         memcpy(tex->m_pdsBuffer->data(), image, width * height * pixelSize);
+         g_pplayer->m_renderer->m_renderDevice->m_texMan.SetDirty(tex->m_pdsBuffer);
+         return;
+      }
+      else
+      {
+         // Delay texture deletion since it may be used by the render frame which is processed asynchronously. If so, deleting would cause a deadlock & invalid access
+         g_pplayer->m_renderer->m_renderDevice->AddEndOfFrameCmd(
+            [tex]
+            {
+               g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture(tex->m_pdsBuffer);
+               delete tex;
+            });
+      }
+   }
+   BaseTexture* baseTex = new BaseTexture(width, height, texFormat);
+   memcpy(baseTex->data(), image, width * height * pixelSize);
+   *texture = new Texture(baseTex);
+}
+
 VPXTexture VPXPluginAPIImpl::CreateTexture(uint8_t* rawData, int size)
 {
+   // BGFX allows to create texture from any thread
+   // assert(std::this_thread::get_id() == VPXPluginAPIImpl::GetInstance().m_apiThread);
    Texture* texture = new Texture();
    if (texture->LoadFromMemory(rawData, size))
       return texture;
@@ -150,13 +184,31 @@ VPXTexture VPXPluginAPIImpl::CreateTexture(uint8_t* rawData, int size)
 
 void VPXPluginAPIImpl::GetTextureInfo(VPXTexture texture, int* width, int* height)
 {
+   assert(std::this_thread::get_id() == VPXPluginAPIImpl::GetInstance().m_apiThread);
    *width = static_cast<Texture*>(texture)->m_width;
    *height = static_cast<Texture*>(texture)->m_height;
 }
 
 void VPXPluginAPIImpl::DeleteTexture(VPXTexture texture)
 {
-   delete texture;
+   if (std::this_thread::get_id() != VPXPluginAPIImpl::GetInstance().m_apiThread)
+   {
+      MsgPluginManager::GetInstance().GetMsgAPI().RunOnMainThread(0, [](void* context) { delete static_cast<Texture*>(context); }, texture);
+   }
+   else
+   {
+      // Delay texture deletion since it may be used by the render frame which is processed asynchronously. If so, deleting would cause a deadlock & invalid access
+      Texture* tex = static_cast<Texture*>(texture);
+      if (tex && g_pplayer)
+         g_pplayer->m_renderer->m_renderDevice->AddEndOfFrameCmd(
+            [tex]
+            {
+               g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture(tex->m_pdsBuffer);
+               delete tex;
+            });
+      else
+         delete static_cast<Texture*>(texture);
+   }
 }
 
 
@@ -168,9 +220,9 @@ void VPXPluginAPIImpl::PluginLog(unsigned int level, const char* message)
    VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
    switch (level)
    {
-   case LPI_LVL_DEBUG: PLOGD.printf(message); break;
-   case LPI_LVL_INFO: PLOGI.printf(message); break;
-   case LPI_LVL_ERROR: PLOGE.printf(message); break;
+   case LPI_LVL_DEBUG: PLOGD << message; break;
+   case LPI_LVL_INFO: PLOGI << message; break;
+   case LPI_LVL_ERROR: PLOGE << message; break;
    default: assert(false); PLOGE << "Invalid plugin log message level";
    }
 }
@@ -360,7 +412,7 @@ VPXPluginAPIImpl& VPXPluginAPIImpl::GetInstance()
    return instance;
 }
 
-VPXPluginAPIImpl::VPXPluginAPIImpl()
+VPXPluginAPIImpl::VPXPluginAPIImpl() : m_apiThread(std::this_thread::get_id())
 {
    // Message host
    const auto& msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
@@ -396,6 +448,7 @@ VPXPluginAPIImpl::VPXPluginAPIImpl()
    m_api.SetInputState = SetInputState;
 
    m_api.CreateTexture = CreateTexture;
+   m_api.UpdateTexture = UpdateTexture;
    m_api.GetTextureInfo = GetTextureInfo;
    m_api.DeleteTexture = DeleteTexture;
 

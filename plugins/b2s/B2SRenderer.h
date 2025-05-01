@@ -15,7 +15,7 @@ public:
 
    bool IsPinMAMEDriven() const;
 
-   void Render(VPXRenderBackglassContext* ctx);
+   bool Render(VPXRenderContext2D* context);
 
 private:
    float GetBrightness(const float localState, const B2SRomIDType romIdType, const int romId, const bool romInverted = false) const;

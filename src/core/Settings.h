@@ -36,9 +36,11 @@ public:
       Editor,
       Standalone,
       Player, /* Main playfield Rendering & Display */
-      DMD, /* DMD Rendering & Display */
-      Alpha, /* Alpha segment Rendering & Display */
-      Backglass, /* Backglass Rendering & Display */
+      DMD, /* DMD Rendering */
+      Alpha, /* Alpha segment Rendering */
+      Backglass, /* Backglass Display */
+      ScoreView, /* Scoreview Display */
+      Topper, /* Topper Display */
       PlayerVR,
       RecentDir,
       Version,

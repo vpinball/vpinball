@@ -39,6 +39,7 @@ private:
    std::shared_ptr<MsgPlugin> m_vpxPlugin;
    static void OnGetVPXPluginAPI(const unsigned int msgId, void* userData, void* msgData);
    VPXPluginAPI m_api;
+   const std::thread::id m_apiThread;
 
    static void GetTableInfo(VPXTableInfo* info);
 
@@ -54,6 +55,7 @@ private:
    static void SetInputState(const uint64_t keyState, const float nudgeX, const float nudgeY, const float plunger);
 
    static VPXTexture CreateTexture(uint8_t* rawData, int size);
+   static void UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, uint8_t* image);
    static void GetTextureInfo(VPXTexture texture, int* width, int* height);
    static void DeleteTexture(VPXTexture texture);
 

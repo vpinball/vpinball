@@ -556,7 +556,7 @@ void VideoOptionPropPage::UpdateFullscreenModesList()
          matchingPoints += 3;
       if (m_allVideoModes[i].height == screenheight)
          matchingPoints += 3;
-      if (m_allVideoModes[i].refreshrate == DEFAULT_PLAYER_FS_REFRESHRATE)
+      if (m_allVideoModes[i].refreshrate == 60.f)
          matchingPoints += 1;
       if (matchingPoints > bestMatchingPoints)
       {
@@ -1987,7 +1987,7 @@ ScoreViewOptPage::ScoreViewOptPage(Settings& appSettings, Settings& tableSetting
 BOOL ScoreViewOptPage::OnInitDialog()
 {
    VideoOptionPropPage::OnInitDialog();
-   InitDisplayControls(Settings::DMD, "DMD"s, true);
+   InitDisplayControls(Settings::ScoreView, "ScoreView"s, true);
    LoadSettings(GetEditedSettings());
    return TRUE;
 }
