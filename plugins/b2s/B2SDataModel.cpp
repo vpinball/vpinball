@@ -293,9 +293,9 @@ void B2SAnimation::Update(float elapsedInS)
    while (m_timeUntilNextStep < 0.f)
    {
       if (m_reverse)
-         m_currentStep = (m_currentStep - 1 + (unsigned int)m_animationSteps.size()) % (unsigned int)m_animationSteps.size();
+         m_currentStep = (m_currentStep - 1 + static_cast<int>(m_animationSteps.size())) % static_cast<int>(m_animationSteps.size());
       else
-         m_currentStep = (m_currentStep + 1) % (unsigned int)m_animationSteps.size();
+         m_currentStep = (m_currentStep + 1) % static_cast<int>(m_animationSteps.size());
 
 
 

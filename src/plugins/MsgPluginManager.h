@@ -95,10 +95,12 @@ private:
    MsgPluginManager();
 
    // API implementation
+   static void GetEndpointInfo(const uint32_t endpointId, MsgEndpointInfo* info);
    static unsigned int GetMsgID(const char* name_space, const char* name);
-   static void SubscribeMsg(const unsigned int endpointId, const unsigned int msgId, const msgpi_msg_callback callback, void* userData);
+   static void SubscribeMsg(const uint32_t endpointId, const unsigned int msgId, const msgpi_msg_callback callback, void* context);
    static void UnsubscribeMsg(const unsigned int msgId, const msgpi_msg_callback callback);
-   static void BroadcastMsg(const unsigned int endpointId, const unsigned int msgId, void* data);
+   static void BroadcastMsg(const uint32_t endpointId, const unsigned int msgId, void* data);
+   static void SendMsg(const uint32_t endpointId, const unsigned int msgId, const uint32_t targetEndpointId, void* data);
    static void ReleaseMsgID(const unsigned int msgId);
    static void GetSetting(const char* name_space, const char* name, char* valueBuf, unsigned int valueBufSize);
    static void RunOnMainThread(const double delayInS, const msgpi_timer_callback callback, void* userData);
@@ -107,9 +109,9 @@ private:
 
    struct CallbackEntry
    {
-      unsigned int endpointId;
+      uint32_t endpointId;
       msgpi_msg_callback callback;
-      void* userData;
+      void* context;
    };
    struct MsgEntry
    {

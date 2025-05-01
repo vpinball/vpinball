@@ -2217,6 +2217,9 @@
     <ProjectReference Include="plugin-b2s.vcxproj">
       <Project>{7D58C20E-53F4-4AD6-9004-CA6148082491}</Project>
     </ProjectReference>
+    <ProjectReference Include="plugin-pup.vcxproj">
+      <Project>{5DFB5344-B339-49BC-B93C-B3B8D307199B}</Project>
+    </ProjectReference>
     <ProjectReference Include="plugin-dmdutil.vcxproj">
       <Project>{DAFBE049-4233-430B-9A04-63223C3972E3}</Project>
     </ProjectReference>

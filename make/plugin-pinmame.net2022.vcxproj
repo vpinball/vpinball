@@ -151,17 +151,24 @@
         if not exist "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pinmame\" md "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pinmame\"
         xcopy /y /d /q "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pinmame\"
         xcopy /y /d /q "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pinmame\"
-		xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\*.*" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pinmame\"
 
         if not exist "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pinmame\" md "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pinmame\"
         xcopy /y /d /q "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pinmame\"
         xcopy /y /d /q "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pinmame\"
-		xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\*.*" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pinmame\"
 
         if not exist "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pinmame\" md "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pinmame\"
         xcopy /y /d /q "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pinmame\"
         xcopy /y /d /q "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pinmame\"
-		xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\*.*" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pinmame\"
+		
+		if $(Platform) EQU x64 (
+			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\pinmame64.dll" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pinmame\"
+			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\pinmame64.dll" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pinmame\"
+			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\pinmame64.dll" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pinmame\"
+		) ELSE (
+			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\pinmame.dll" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pinmame\"
+			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\pinmame.dll" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pinmame\"
+			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\pinmame.dll" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pinmame\"
+		)
       </Command>
     </PostBuildEvent>
     <ClCompile>

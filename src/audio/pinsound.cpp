@@ -1488,6 +1488,7 @@ void PinSound::EnumerateAudioDevices(vector<AudioDevice>& audioDevices)
    }
 
    // log default audio device
+   /* FIXME waiting for a fix of SDL 3.2.12
    SDL_AudioDeviceID devid = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, nullptr);
    const char *pDefaultDeviceName = SDL_GetAudioDeviceName(devid);
    if (pDefaultDeviceName) {
@@ -1500,7 +1501,7 @@ void PinSound::EnumerateAudioDevices(vector<AudioDevice>& audioDevices)
          PLOGE << "Failed to get name for Default Audio Device: " << pError;
       }
    }
-   SDL_CloseAudioDevice(devid);
+   SDL_CloseAudioDevice(devid);*/
 
    audioDevices.clear();
    int count;
