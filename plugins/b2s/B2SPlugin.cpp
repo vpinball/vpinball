@@ -220,9 +220,10 @@ PSC_CLASS_END(B2SServer)
 static MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
 static uint32_t endpointId;
-static unsigned int onGameStartId, onGameEndId, onRenderBackglassId;
+static unsigned int onGameStartId, onGameEndId, onGetAuxRendererId, onAuxRendererChgId;
+static std::thread::id apiThread;
 
-std::future<std::shared_ptr<B2STable>> loadedB2S; 
+std::future<std::shared_ptr<B2STable>> loadedB2S;
 B2SRenderer* renderer = nullptr;
 
 VPXTexture CreateTexture(uint8_t* rawData, int size)
@@ -250,7 +251,7 @@ void OnGameStart(const unsigned int eventId, void* userData, void* eventData)
    vpxApi->GetTableInfo(&tableInfo);
 
    if (loadedB2S.valid())
-      loadedB2S.get();
+      loadedB2S.get(); // Flush any loading in progress to trigger texture destruction and void memory leaks
 
    string b2sFilename = find_case_insensitive_file_path(TitleAndPathFromFilename(tableInfo.path) + ".directb2s");
    if (!b2sFilename.empty())
@@ -274,10 +275,6 @@ void OnGameStart(const unsigned int eventId, void* userData, void* eventData)
       // B2S file format is heavily unoptimized so perform loading asynchronously (all assets are directly included in the XML file using Base64 encoding)
       loadedB2S = std::async(std::launch::async, loadFile, b2sFilename);
    }
-   else
-   {
-      loadedB2S = std::future<std::shared_ptr<B2STable>>();
-   }
 }
 
 void OnGameEnd(const unsigned int eventId, void* userData, void* eventData)
@@ -288,16 +285,38 @@ void OnGameEnd(const unsigned int eventId, void* userData, void* eventData)
    renderer = nullptr;
 }
 
-void OnRenderBackglass(const unsigned int eventId, void* userData, void* eventData)
+int OnRender(VPXRenderContext2D* ctx, void*)
 {
+   if ((ctx->window != VPXAnciliaryWindow::VPXWINDOW_Backglass) && (ctx->window != VPXAnciliaryWindow::VPXWINDOW_ScoreView))
+      return false;
    if (renderer)
    {
-      renderer->Render(static_cast<VPXRenderBackglassContext*>(eventData));
+      return renderer->Render(ctx);
    }
    else if (loadedB2S.valid())
    {
-      renderer = new B2SRenderer(msgApi, endpointId, loadedB2S.get());
-      loadedB2S = std::future<std::shared_ptr<B2STable>>();
+      if (loadedB2S.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+      {
+         renderer = new B2SRenderer(msgApi, endpointId, loadedB2S.get());
+         renderer->Render(ctx);
+      }
+      return true; // Until loaded, we suppose that the file will succeeded load with the expected backglass/scoreview
+   }
+   else
+   {
+      return false;
+   }
+}
+
+void OnGetRenderer(const unsigned int msgId, void* context, void* msgData)
+{
+   GetAnciliaryRendererMsg* msg = static_cast<GetAnciliaryRendererMsg*>(msgData);
+   if ((msg->count < msg->maxEntryCount) && (msg->window == VPXAnciliaryWindow::VPXWINDOW_Backglass))
+   {
+      msg->entries[msg->count].name = "B2S Backglass";
+      msg->entries[msg->count].description = "Renderer for directb2s backglass files";
+      msg->entries[msg->count].Render = OnRender;
+      msg->count++;
    }
 }
 
@@ -306,6 +325,7 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
 {
    msgApi = api;
    endpointId = sessionId;
+   apiThread = std::this_thread::get_id();
 
    // Request and setup shared login API
    LPISetup(endpointId, msgApi);
@@ -316,15 +336,19 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
 
    msgApi->SubscribeMsg(endpointId, onGameStartId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START), OnGameStart, nullptr);
    msgApi->SubscribeMsg(endpointId, onGameEndId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END), OnGameEnd, nullptr);
-   msgApi->SubscribeMsg(endpointId, onRenderBackglassId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_RENDER_BACKGLASS), OnRenderBackglass, nullptr);
+
+   msgApi->SubscribeMsg(endpointId, onGetAuxRendererId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER), OnGetRenderer, nullptr);
+   msgApi->BroadcastMsg(endpointId, onAuxRendererChgId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG), nullptr);
 }
 
 MSGPI_EXPORT void MSGPIAPI PluginUnload()
 {
-   msgApi->UnsubscribeMsg(onRenderBackglassId, OnRenderBackglass);
+   msgApi->UnsubscribeMsg(onGetAuxRendererId, OnGetRenderer);
    msgApi->UnsubscribeMsg(onGameStartId, OnGameStart);
    msgApi->UnsubscribeMsg(onGameEndId, OnGameEnd);
-   msgApi->ReleaseMsgID(onRenderBackglassId);
+   msgApi->BroadcastMsg(endpointId, onAuxRendererChgId, nullptr);
+   msgApi->ReleaseMsgID(onGetAuxRendererId);
+   msgApi->ReleaseMsgID(onAuxRendererChgId);
    msgApi->ReleaseMsgID(onGameStartId);
    msgApi->ReleaseMsgID(onGameEndId);
    vpxApi = nullptr;

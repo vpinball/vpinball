@@ -11,6 +11,7 @@ public:
    ~ScoreView();
 
    bool HasLayouts() const { return !m_layouts.empty(); }
+   bool IsMatched() const { return m_bestLayout != nullptr && m_bestLayout->unmatchedVisuals == 0; }
    void Load(const string& path);
    void Reset() { m_layouts.clear(); }
    void Select(const VPX::RenderOutput& output);

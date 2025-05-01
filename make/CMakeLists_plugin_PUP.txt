@@ -1,0 +1,165 @@
+# plugin CMake file to be included in main project CMakelists
+
+# --- PUP plugin ---
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_C_STANDARD 99)
+
+add_library(PUPPlugin MODULE
+   plugins/pup/common.h
+   plugins/pup/common.cpp
+   plugins/pup/PUPPlugin.cpp
+   plugins/pup/PUPCustomPos.h
+   plugins/pup/PUPCustomPos.cpp
+   plugins/pup/PUPLabel.h
+   plugins/pup/PUPLabel.cpp
+   plugins/pup/PUPManager.h
+   plugins/pup/PUPManager.cpp
+   plugins/pup/PUPMediaManager.h
+   plugins/pup/PUPMediaManager.cpp
+   plugins/pup/PUPMediaPlayer.h
+   plugins/pup/PUPMediaPlayer.cpp
+   plugins/pup/PUPPinDisplay.h
+   plugins/pup/PUPPinDisplay.cpp
+   plugins/pup/PUPPlaylist.h
+   plugins/pup/PUPPlaylist.cpp
+   plugins/pup/PUPScreen.h
+   plugins/pup/PUPScreen.cpp
+   plugins/pup/PUPTrigger.h
+   plugins/pup/PUPTrigger.cpp
+)
+
+target_include_directories(PUPPlugin PUBLIC
+   plugins/pup
+   ${CMAKE_SOURCE_DIR}/third-party/include
+   src/plugins
+)
+
+if(PluginPlatform STREQUAL "windows")
+   add_compile_options(
+      $<$<CONFIG:RELEASE>:/Ob2>
+      $<$<CONFIG:RELEASE>:/O2>
+      $<$<CONFIG:RELEASE>:/Oi>
+      $<$<CONFIG:RELEASE>:/arch:SSE2>
+      $<$<CONFIG:RELEASE>:/fp:fast>
+      $<$<CONFIG:RELEASE>:/fp:except->
+      $<$<CONFIG:RELEASE>:/Ot>
+      $<$<CONFIG:RELEASE>:/GF>
+      $<$<CONFIG:RELEASE>:/GS->
+      $<$<CONFIG:RELEASE>:/Gy>
+      $<$<CONFIG:RELEASE>:/GR>
+      $<$<CONFIG:RELEASE>:/Oy>
+      $<$<CONFIG:RELEASE>:/GT>
+      $<$<CONFIG:RELEASE>:/GL>
+   )
+   set_target_properties(PUPPlugin PROPERTIES
+      MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
+   )
+   target_compile_options(PUPPlugin PUBLIC
+      $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+      $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
+   )
+   target_link_options(PUPPlugin PUBLIC
+      $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
+      $<$<CONFIG:RELEASE>:/OPT:REF>
+      $<$<CONFIG:RELEASE>:/OPT:ICF>
+      $<$<CONFIG:RELEASE>:/LTCG>
+      /SAFESEH:NO
+   )
+   if (PluginArch STREQUAL "x64")
+      set_target_properties(PUPPlugin PROPERTIES
+         OUTPUT_NAME "plugin-pup64"
+      )
+      target_link_directories(PUPPlugin PUBLIC ${CMAKE_SOURCE_DIR}/third-party/build-libs/windows-x64)
+      target_link_libraries(PUPPlugin
+         SDL364.lib
+         SDL3_image64.lib
+         SDL3_ttf64.lib
+         avcodec64.lib
+         avdevice64.lib
+         avfilter64.lib
+         avformat64.lib
+         avutil64.lib
+         swresample64.lib
+         swscale64.lib
+         pupdmd64.lib
+      )
+   else()
+      set_target_properties(PUPPlugin PROPERTIES
+         OUTPUT_NAME "plugin-pup"
+      )
+      target_link_directories(PUPPlugin PUBLIC ${CMAKE_SOURCE_DIR}/third-party/build-libs/windows-x86)
+      target_link_libraries(PUPPlugin
+         SDL3.lib
+         SDL3_image.lib
+         SDL3_ttf.lib
+         avcodec.lib
+         avdevice.lib
+         avfilter.lib
+         avformat.lib
+         avutil.lib
+         swresample.lib
+         swscale.lib
+         pupdmd.lib
+      )
+   endif()
+else()
+   set_target_properties(PUPPlugin PROPERTIES
+      PREFIX ""
+      OUTPUT_NAME "plugin-pup"
+   )
+   target_link_directories(PUPPlugin PUBLIC
+      ${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}
+   )
+   target_link_libraries(PUPPlugin PUBLIC
+      SDL3
+      SDL3_image
+      SDL3_ttf
+      avcodec
+      avdevice
+      avfilter
+      avformat
+      avutil
+      swresample
+      swscale
+      pupdmd
+   )
+endif()
+
+add_custom_command(TARGET PUPPlugin POST_BUILD
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/pup/plugin.cfg" "${PLUGINS_DIR}/pup/plugin.cfg"
+   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:PUPPlugin>" "${PLUGINS_DIR}/pup"
+   COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:PUPPlugin>"
+)
+
+if(PluginPlatform STREQUAL "windows")
+   if (PluginArch STREQUAL "x64")
+      add_custom_command(TARGET PUPPlugin POST_BUILD
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/SDL364.dll" "${PLUGINS_DIR}/pup/SDL364.dll"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/SDL3_image64.dll" "${PLUGINS_DIR}/pup/SDL3_image64.dll"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/SDL3_ttf64.dll" "${PLUGINS_DIR}/pup/SDL3_ttf64.dll"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/libiconv-2.dll" "${PLUGINS_DIR}/pup/libiconv-2.dll"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/libwinpthread-1.dll" "${PLUGINS_DIR}/pup/libwinpthread-1.dll"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/zlib1.dll" "${PLUGINS_DIR}/pup/zlib1.dll"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/AVCODEC64.dll" "${PLUGINS_DIR}/pup/AVCODEC64-61.dll"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/AVFORMAT64.dll" "${PLUGINS_DIR}/pup/AVFORMAT64-61.dll"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/AVUTIL64.dll" "${PLUGINS_DIR}/pup/AVUTIL64-59.dll"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/SWRESAMPLE64.dll" "${PLUGINS_DIR}/pup/SWRESAMPLE64-5.dll"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/SWSCALE64.dll" "${PLUGINS_DIR}/pup/SWSCALE64-8.dll"
+      )
+   elseif (PluginArch STREQUAL "x86")
+      add_custom_command(TARGET PUPPlugin POST_BUILD
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/SDL3.dll" "${PLUGINS_DIR}/pup/SDL3.dll"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/SDL3_image.dll" "${PLUGINS_DIR}/pup/SDL3_image.dll"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/SDL3_ttf.dll" "${PLUGINS_DIR}/pup/SDL3_ttf.dll"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/libiconv-2.dll" "${PLUGINS_DIR}/pup/libiconv-2.dll"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/libwinpthread-1.dll" "${PLUGINS_DIR}/pup/libwinpthread-1.dll"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/zlib1.dll" "${PLUGINS_DIR}/pup/zlib1.dll"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/AVCODEC.dll" "${PLUGINS_DIR}/pup/AVCODEC-61.dll"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/AVFORMAT.dll" "${PLUGINS_DIR}/pup/AVFORMAT-61.dll"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/AVUTIL.dll" "${PLUGINS_DIR}/pup/AVUTIL-59.dll"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/SWRESAMPLE.dll" "${PLUGINS_DIR}/pup/SWRESAMPLE-5.dll"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/SWSCALE.dll" "${PLUGINS_DIR}/pup/SWSCALE-8.dll"
+      )
+   endif()
+endif()

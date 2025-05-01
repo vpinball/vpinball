@@ -10,15 +10,10 @@
 #include "ui/LiveUI.h"
 #include "input/pininput.h"
 #include "plugins/CorePlugin.h"
+#include "plugins/VPXPlugin.h"
 #include "ResURIResolver.h"
 #include "ScoreView.h"
 #include "audio/pinsound.h"
-
-#define DEFAULT_PLAYER_WIDTH 1024
-#define DEFAULT_PLAYER_FS_WIDTH 1920
-#define DEFAULT_PLAYER_FS_REFRESHRATE 60
-
-constexpr int DBG_SPRITE_SIZE = 1024;
 
 class VRDevice;
 
@@ -274,19 +269,20 @@ public:
    int m_lastDmdFrameId = -1;
    VPX::RenderOutput m_scoreviewOutput;
    VPX::RenderOutput m_backglassOutput;
+   VPX::RenderOutput m_topperOutput;
    Renderer *m_renderer = nullptr;
    VRDevice *m_vrDevice = nullptr;
    bool m_headTracking = false;
    bool m_scaleFX_DMD = false;
-   unsigned int m_renderBackglassMsgId = 0;
-   RenderTarget *m_backglassHdrRT = nullptr;
+   RenderTarget* m_anciliaryWndHdrRT[VPXAnciliaryWindow::VPXWINDOW_Topper + 1] { nullptr };
 
 private:
    void PrepareFrame(const std::function<void()>& sync);
    void SubmitFrame();
    void FinishFrame();
 
-   void RenderBackglass(RenderTarget* playfieldRT);
+   RenderTarget *RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTarget *playfieldRT);
+
 #pragma endregion
 
 
