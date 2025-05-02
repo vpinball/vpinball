@@ -161,20 +161,20 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    else if (m_stereo3D == STEREO_SBS)
    {
       // Side by side fits the 2 views along the output width, so each view is rendered at half the output width
-      m_renderWidth = wnd->GetWidth() / 2;
-      m_renderHeight = wnd->GetHeight();
+      m_renderWidth = wnd->GetPixelWidth() / 2;
+      m_renderHeight = wnd->GetPixelHeight();
    }
    else if (m_stereo3D == STEREO_TB || m_stereo3D == STEREO_INT || m_stereo3D == STEREO_FLIPPED_INT)
    {
       // Top/Bottom (and interlaced) fits the 2 views along the output height, so each view is rendered at half the output height
-      m_renderWidth = wnd->GetWidth();
-      m_renderHeight = wnd->GetHeight() / 2;
+      m_renderWidth = wnd->GetPixelWidth();
+      m_renderHeight = wnd->GetPixelHeight() / 2;
    }
    else
    {
       // Default renders at the output window pixel resolution
-      m_renderWidth = wnd->GetWidth();
-      m_renderHeight = wnd->GetHeight();
+      m_renderWidth = wnd->GetPixelWidth();
+      m_renderHeight = wnd->GetPixelHeight();
    }
    const float AAfactor = m_table->m_settings.LoadValueWithDefault(Settings::Player, "AAFactor"s, m_table->m_settings.LoadValueWithDefault(Settings::Player, "USEAA"s, false) ? 2.0f : 1.0f);
    const int renderWidthAA = (int)((float)m_renderWidth * AAfactor);

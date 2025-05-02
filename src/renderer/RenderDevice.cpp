@@ -743,8 +743,8 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    if (m_outputWnd[0]->IsFullScreen())
       init.resolution.reset |= BGFX_RESET_FULLSCREEN;
 
-   init.resolution.width = wnd->GetWidth();
-   init.resolution.height = wnd->GetHeight();
+   init.resolution.width = wnd->GetPixelWidth();
+   init.resolution.height = wnd->GetPixelHeight();
    switch (wnd->GetBitDepth())
    {
    case 32: init.resolution.format = bgfx::TextureFormat::RGBA8; break;
@@ -1450,10 +1450,10 @@ void RenderDevice::AddWindow(VPX::Window* wnd)
 #else
    return nullptr;
 #endif // BX_PLATFORM_
-   bgfx::FrameBufferHandle fbh = bgfx::createFrameBuffer(nwh, uint16_t(wnd->GetWidth()), uint16_t(wnd->GetHeight()));
+   bgfx::FrameBufferHandle fbh = bgfx::createFrameBuffer(nwh, uint16_t(wnd->GetPixelWidth()), uint16_t(wnd->GetPixelHeight()));
    m_outputWnd[m_nOutputWnd] = wnd;
    m_nOutputWnd++;
-   wnd->SetBackBuffer(new RenderTarget(this, SurfaceType::RT_DEFAULT, fbh, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, "BackBuffer #" + std::to_string(m_nOutputWnd), wnd->GetWidth(), wnd->GetHeight(), fmt));
+   wnd->SetBackBuffer(new RenderTarget(this, SurfaceType::RT_DEFAULT, fbh, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, "BackBuffer #" + std::to_string(m_nOutputWnd), wnd->GetPixelWidth(), wnd->GetPixelHeight(), fmt));
 #endif
 }
 
