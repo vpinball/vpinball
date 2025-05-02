@@ -4,6 +4,13 @@ set -e
 
 source ./platforms/config.sh
 
+if [ -z "${MSYS2_PATH}" ]; then
+   MSYS2_PATH="/c/msys64"
+fi
+
+echo "MSYS2_PATH: ${MSYS2_PATH}"
+echo ""
+
 echo "Building external libraries..."
 echo "  SDL_SHA: ${SDL_SHA}"
 echo "  SDL_IMAGE_SHA: ${SDL_IMAGE_SHA}"
@@ -15,6 +22,7 @@ echo "  BGFX_PATCH_SHA: ${BGFX_PATCH_SHA}"
 echo "  PINMAME_SHA: ${PINMAME_SHA}"
 echo "  OPENXR_SHA: ${OPENXR_SHA}"
 echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
+echo "  FFMPEG_SHA: ${FFMPEG_SHA}"
 echo ""
 
 mkdir -p "external/windows-x86/${BUILD_TYPE}"
@@ -286,6 +294,45 @@ if [ "${LIBDMDUTIL_EXPECTED_SHA}" != "${LIBDMDUTIL_FOUND_SHA}" ]; then
 fi
 
 #
+# build ffmpeg
+#
+
+FFMPEG_EXPECTED_SHA="${FFMPEG_SHA}"
+FFMPEG_FOUND_SHA="$([ -f ffmpeg/cache.txt ] && cat ffmpeg/cache.txt || echo "")"
+
+if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
+   echo "Building ffmpeg. Expected: ${FFMPEG_EXPECTED_SHA}, Found: ${FFMPEG_FOUND_SHA}"
+
+   rm -rf ffmpeg
+   mkdir ffmpeg
+   cd ffmpeg
+
+   curl -sL https://github.com/FFmpeg/FFmpeg/archive/${FFMPEG_SHA}.tar.gz -o FFmpeg-${FFMPEG_SHA}.tar.gz
+   tar xzf FFmpeg-${FFMPEG_SHA}.tar.gz
+   mv FFmpeg-${FFMPEG_SHA} ffmpeg
+   cd ffmpeg
+   CURRENT_DIR="$(pwd)"
+   MSYSTEM=MINGW32 "${MSYS2_PATH}/usr/bin/bash.exe" -l -c "
+      cd \"${CURRENT_DIR}\" &&
+      pacman -S --noconfirm make diffutils yasm mingw-w64-i686-gcc &&
+      ./configure \
+        --enable-shared \
+        --disable-static \
+        --disable-programs \
+        --disable-doc \
+        --arch=\"x86\" \
+        --extra-cflags=\"-m32\" \
+        --extra-ldflags=\"-m32\" &&
+      make -j$(nproc)
+   "
+   cd ..
+
+   echo "$FFMPEG_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
+
+#
 # copy libraries
 #
 
@@ -345,3 +392,11 @@ cp libdmdutil/libdmdutil/third-party/build-libs/win/x86/sockpp.lib ../../../thir
 cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x86/sockpp.dll ../../../third-party/runtime-libs/windows-x86
 cp libdmdutil/libdmdutil/third-party/build-libs/win/x86/cargs.lib ../../../third-party/build-libs/windows-x86
 cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x86/cargs.dll ../../../third-party/runtime-libs/windows-x86
+
+for LIB in avcodec avdevice avfilter avformat avutil swresample swscale; do
+   DIR="lib${LIB}"
+   cp ffmpeg/ffmpeg/${DIR}/${LIB}.lib ../../../third-party/build-libs/windows-x86
+   cp ffmpeg/ffmpeg/${DIR}/${LIB}.dll ../../../third-party/runtime-libs/windows-x86
+   mkdir -p ../../../third-party/include/${DIR}
+   cp ffmpeg/ffmpeg/${DIR}/*.h ../../../third-party/include/${DIR}
+done
