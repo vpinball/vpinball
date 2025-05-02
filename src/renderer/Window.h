@@ -45,11 +45,12 @@ public:
    void GetPos(int&x, int &y) const;
    int GetWidth() const { return m_width; }
    int GetHeight() const { return m_height; }
+   int GetPixelWidth() const { return m_pixelWidth; }
+   int GetPixelHeight() const { return m_pixelHeight; }
    float GetRefreshRate() const { return m_refreshrate; } // Refresh rate of the device displaying the window. Window spread over multiple devices are not supported.
    bool IsFullScreen() const { return m_fullscreen; }
    int GetAdapterId() const { return m_adapter; }
    int GetBitDepth() const { return m_bitdepth; }
-   float GetHiDPIScale() const { return m_hidpiScale; } // HiDPI scale on Apple devices
    bool IsWCGDisplay() const { return m_wcgDisplay; } // Whether this window is on a WCG enabled display
    float GetSDRWhitePoint() const { return m_sdrWhitePoint; } // Selected SDR White Point of display in multiple of 80nits (so 3 gives 240nits for SDR white)
    float GetHDRHeadRoom() const { return m_hdrHeadRoom; } // Maximum luminance of display expressed in multiple of SDRWhitePoint (so 6 means 6 times the SDR whitepoint)
@@ -58,7 +59,7 @@ public:
    void Show(const bool show = true);
    void RaiseAndFocus(const bool raise = true);
 
-   void SetBackBuffer(RenderTarget* rt, const bool wcgBackbuffer = false) { assert(rt == nullptr || (rt->GetWidth() == m_width && rt->GetHeight() == m_height)); m_backBuffer = rt; m_wcgBackbuffer = wcgBackbuffer; }
+   void SetBackBuffer(RenderTarget* rt, const bool wcgBackbuffer = false) { assert(rt == nullptr || (rt->GetWidth() == m_pixelWidth && rt->GetHeight() == m_pixelHeight)); m_backBuffer = rt; m_wcgBackbuffer = wcgBackbuffer; }
    RenderTarget* GetBackBuffer() const { return m_backBuffer; }
    bool IsWCGBackBuffer() const { return m_wcgBackbuffer; } // Return true for HDR10/BT.2100 colorspace, otherwise Rec 709 colorspace
 
@@ -102,8 +103,8 @@ public:
    static void GetDisplayModes(const int display, vector<VideoMode>& modes);
 
 private:
-   float m_hidpiScale = 1.f;
    int m_width, m_height;
+   int m_pixelWidth, m_pixelHeight;
    int m_display, m_adapter;
    int m_screenwidth, m_screenheight;
    bool m_fullscreen;
