@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 
 #include <cmath>
+#include <cassert>
 
 // 2024.08.01 - Changes:
 // * replace bulb characteristics by values based on real bulb resistance measures using the algorithm given at the end of this file
@@ -257,7 +258,9 @@ double bulb_cool_down(const int bulb, double T, float duration)
          return 293.0;
       }
       #endif
+      const float old_duration = duration;
       duration -= dt;
+      assert(duration != old_duration); // duration is too large (fp32 precision issue then)
    }
    return T;
 }
@@ -310,7 +313,9 @@ double bulb_heat_up(const int bulb, double T, float duration, const float U, con
          dt = duration > 0.001f ? 0.001f : duration;
       }
       T += dt * energy;
+      const float old_duration = duration;
       duration -= dt;
+      assert(duration != old_duration); // duration is too large (fp32 precision issue then)
    }
    return T;
 }
