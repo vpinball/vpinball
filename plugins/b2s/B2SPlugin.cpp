@@ -33,7 +33,7 @@ PSC_ARRAY1(ByteArray, uint8, 0)
 PSC_ARRAY1(IntArray, int32, 0)
 #define PSC_VAR_SET_IntArray(variant, value) PSC_VAR_SET_array1(IntArray, variant, value)
 
-// Map a an array of struct to a 2 dimensions array of int32_t
+// Map an array of struct to a 2 dimensions array of int32_t
 PSC_ARRAY2(StructArray, int32, 0, 0)
 #define PSC_VAR_SET_StructArray2(structType, fieldName1, fieldName2, variant, value) { \
       const unsigned int nDimensions = 2; \

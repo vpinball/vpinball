@@ -15,12 +15,12 @@ enum class B2SRomIDType
 };
 
 
-class B2SImage
+class B2SImage final
 {
 public:
    B2SImage()
       : m_image(nullptr)
-      , m_filename("")
+      , m_filename(""s)
       , m_romId(0)
       , m_romIdType(B2SRomIDType::NotDefined)
    {
@@ -35,7 +35,7 @@ public:
    }
    B2SImage(const B2SImage&) = delete;
    B2SImage& operator=(const B2SImage&) = delete;
-   B2SImage(const tinyxml2::XMLNode& image);
+   B2SImage(const tinyxml2::XMLNode& root);
    ~B2SImage();
 
 public:
@@ -46,7 +46,7 @@ public:
 };
 
 
-class B2SReelImage
+class B2SReelImage final
 {
 public:
    B2SReelImage(const tinyxml2::XMLNode& image);
@@ -97,10 +97,10 @@ enum class B2SDualMode2
 };
 
 
-class B2SBulb
+class B2SBulb final
 {
 public:
-   B2SBulb(const tinyxml2::XMLNode& bulb);
+   B2SBulb(const tinyxml2::XMLNode& root);
    B2SBulb(B2SBulb&& other) noexcept;
    B2SBulb(const B2SBulb&) = delete;
    B2SBulb& operator=(const B2SBulb&) = delete;
@@ -145,10 +145,10 @@ public:
 };
 
 
-class B2SSound
+class B2SSound final
 {
 public:
-   B2SSound(const tinyxml2::XMLNode& image);
+   B2SSound(const tinyxml2::XMLNode& root);
 
 public:
    const string m_name;
@@ -166,10 +166,10 @@ enum class B2SDMDType
 };
 
 
-class B2SAnimationStep
+class B2SAnimationStep final
 {
 public:
-   B2SAnimationStep(const tinyxml2::XMLNode& image);
+   B2SAnimationStep(const tinyxml2::XMLNode& root);
 
 public:
    const int m_step;
@@ -210,10 +210,10 @@ enum class B2SAnimationStopBehaviour
 };
 
 
-class B2SAnimation
+class B2SAnimation final
 {
 public:
-   B2SAnimation(const tinyxml2::XMLNode& image);
+   B2SAnimation(const tinyxml2::XMLNode& root);
 
    void Update(float elapsedInS);
 
@@ -245,7 +245,7 @@ private:
 };
 
 
-class B2STable
+class B2STable final
 {
 public:
    B2STable(const tinyxml2::XMLNode& root); // Create from the root 'DirectB2SData' node

@@ -101,9 +101,9 @@ float B2SRenderer::GetBrightness(const float localState, const B2SRomIDType romI
    switch (romIdType)
    {
    case B2SRomIDType::NotDefined: return localState;
-   case B2SRomIDType::Solenoid: value = (0 < romId && romId <= m_nSolenoids) ? m_deviceStateSrc.GetFloatState(romId - 1) : 0.f; break;
-   case B2SRomIDType::GIString: value = (0 < romId && romId <= m_nGIs) ? m_deviceStateSrc.GetFloatState(m_GIIndex + romId - 1) : 0.f; break;
-   case B2SRomIDType::Lamp: value = (0 < romId && romId <= m_nLamps) ? m_deviceStateSrc.GetFloatState(m_LampIndex + romId - 1) : 0.f; break;
+   case B2SRomIDType::Solenoid: value = (0 < romId && (unsigned int)romId <= m_nSolenoids) ? m_deviceStateSrc.GetFloatState(romId - 1) : 0.f; break;
+   case B2SRomIDType::GIString: value = (0 < romId && (unsigned int)romId <= m_nGIs) ? m_deviceStateSrc.GetFloatState(m_GIIndex + romId - 1) : 0.f; break;
+   case B2SRomIDType::Lamp: value = (0 < romId && (unsigned int)romId <= m_nLamps) ? m_deviceStateSrc.GetFloatState(m_LampIndex + romId - 1) : 0.f; break;
    case B2SRomIDType::Mech: break; // TODO implement mech
    }
    return romInverted ? 1.f - value : value;
@@ -121,7 +121,7 @@ void B2SRenderer::Render(VPXRenderBackglassContext* ctx)
    for (auto animation : m_b2s->m_backglassAnimations)
       animation.Update(elapsed); // TODO implement slowdown settings/props (scale elapsed)
 
-   // Draw backgound
+   // Draw background
    {
       float backgroundLight = 0.f;
       if (m_b2s->m_backglassOnImage.m_image)
@@ -134,8 +134,8 @@ void B2SRenderer::Render(VPXRenderBackglassContext* ctx)
             GetTextureInfo(m_b2s->m_backglassImage.m_image, &bgW, &bgH);
             ctx->DrawImage(ctx, m_b2s->m_backglassImage.m_image,
                1.f, 1.f, 1.f, 1.f,
-               0.f, static_cast<float>(m_grillCut), static_cast<float>(bgW), static_cast<float>(bgH - m_grillCut),
-               0.f, 0.f, static_cast<float>(bgW), static_cast<float>(bgH - m_grillCut));
+               0.f, m_grillCut, static_cast<float>(bgW), static_cast<float>(bgH) - m_grillCut,
+               0.f, 0.f, static_cast<float>(bgW), static_cast<float>(bgH) - m_grillCut);
          }
          else if (m_b2s->m_backglassOffImage.m_image)
          {
@@ -143,8 +143,8 @@ void B2SRenderer::Render(VPXRenderBackglassContext* ctx)
             GetTextureInfo(m_b2s->m_backglassOffImage.m_image, &bgW, &bgH);
             ctx->DrawImage(ctx, m_b2s->m_backglassOffImage.m_image,
                1.f, 1.f, 1.f, 1.f,
-               0.f, static_cast<float>(m_grillCut), static_cast<float>(bgW), static_cast<float>(bgH - m_grillCut),
-               0.f, 0.f, static_cast<float>(bgW), static_cast<float>(bgH - m_grillCut));
+               0.f, m_grillCut, static_cast<float>(bgW), static_cast<float>(bgH) - m_grillCut,
+               0.f, 0.f, static_cast<float>(bgW), static_cast<float>(bgH) - m_grillCut);
       
          }
       }
@@ -154,8 +154,8 @@ void B2SRenderer::Render(VPXRenderBackglassContext* ctx)
          GetTextureInfo(m_b2s->m_backglassOnImage.m_image, &bgW, &bgH);
          ctx->DrawImage(ctx, m_b2s->m_backglassOnImage.m_image, 
             1.f, 1.f, 1.f, backgroundLight,
-            0.f, static_cast<float>(m_grillCut), static_cast<float>(bgW), static_cast<float>(bgH - m_grillCut),
-            0.f, 0.f, static_cast<float>(bgW), static_cast<float>(bgH - m_grillCut));
+            0.f, m_grillCut, static_cast<float>(bgW), static_cast<float>(bgH) - m_grillCut,
+            0.f, 0.f, static_cast<float>(bgW), static_cast<float>(bgH) - m_grillCut);
       }
    }
 

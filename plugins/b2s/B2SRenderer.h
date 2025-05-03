@@ -7,7 +7,7 @@
 #include "B2SDataModel.h"
 #include "CorePlugin.h"
 
-class B2SRenderer
+class B2SRenderer final
 {
 public:
    B2SRenderer(MsgPluginAPI* const msgApi, const unsigned int endpointId, std::shared_ptr<B2STable> b2s);
@@ -15,7 +15,7 @@ public:
 
    bool IsPinMAMEDriven() const;
 
-   void Render(VPXRenderBackglassContext* context);
+   void Render(VPXRenderBackglassContext* ctx);
 
 private:
    float GetBrightness(const float localState, const B2SRomIDType romIdType, const int romId, const bool romInverted = false) const;
@@ -27,7 +27,7 @@ private:
    unsigned int m_getDevSrcMsgId = 0, m_onDevChangedMsgId = 0;
    static void OnDevSrcChanged(const unsigned int msgId, void* userData, void* msgData);
    DevSrcId m_deviceStateSrc { 0 };
-   int m_nSolenoids = 0;
+   unsigned int m_nSolenoids = 0;
    int m_GIIndex = -1;
    unsigned int m_nGIs = 0;
    int m_LampIndex = -1;

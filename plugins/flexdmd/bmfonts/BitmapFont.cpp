@@ -16,12 +16,14 @@ BitmapFont::BitmapFont()
 
 BitmapFont::~BitmapFont()
 {
+   {
    ankerl::unordered_dense::set<Character*> characters;
    for(const auto& pair : m_characters)
       characters.insert(pair.second);
 
    for(Character* character : characters)
       delete character;
+   }
 
    m_characters.clear();
 

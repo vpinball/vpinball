@@ -3,7 +3,7 @@
 #include "common.h"
 #include "libpinmame.h"
 
-class B2SServer
+class B2SServer final
 {
 public:
    B2SServer();

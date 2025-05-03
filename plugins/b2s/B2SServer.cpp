@@ -1,5 +1,3 @@
-#pragma once
-
 #include "common.h"
 
 #include "B2SServer.h"
