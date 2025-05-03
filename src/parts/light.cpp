@@ -360,7 +360,7 @@ void Light::UpdateAnimation(const float diff_time_msec)
          if (m_d.m_intensity != 0.f && m_d.m_intensity_scale != 0.f)
          {
             const float inv_fadeSpeed = (m_currentIntensity < targetIntensity ? m_d.m_fadeSpeedUp : m_d.m_fadeSpeedDown) / (m_d.m_intensity * m_d.m_intensity_scale); // 1.0 / (Fade speed in ms)
-            const float remaining_time = diff_time_msec * (float)(0.001 * 40.0) * inv_fadeSpeed; // Apply a speed factor (a bulb with this characteristics reaches full power between 30 and 40ms so we modulate around this)
+            const float remaining_time = min(0.5f, diff_time_msec * static_cast<float>(0.001 * 40.0) * inv_fadeSpeed); // Apply a speed factor (a bulb with this characteristics reaches full power between 30 and 40ms so we modulate around this). We clamp at 500ms since it may cause precision issue and the bulb will reach a stable state anyway
             if (lightState != 0.f)
             {
                const float U = 6.3f * sqrtf(sqrtf(lightState)); //=powf(lightState, 0.25f); // Modulating by Emission^0.25 is not fully correct (ignoring visible/non visible wavelengths) but an acceptable approximation
