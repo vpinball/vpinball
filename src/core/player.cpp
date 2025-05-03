@@ -2291,7 +2291,18 @@ void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgD
    {
       if (msg.buffer != nullptr)
       {
-         entry->second->StreamUpdate(msg.buffer, msg.bufferSize);
+         int pending = SDL_GetAudioStreamQueued(entry->second->m_pstream);
+         if (pending >= msg.bufferSize)
+         {
+            double delay = 1000.0 * msg.bufferSize / (msg.sampleRate * ((msg.type == CTLPI_AUDIO_SRC_BACKGLASS_MONO) ? 1 : 2));
+            PLOGI << "Dropping 1 sound frame (" << delay << "ms) as lag is exceeding 1 frame (" << msg.bufferSize << "bytes of " << ((msg.type == CTLPI_AUDIO_SRC_BACKGLASS_MONO)
+               ? "mono" : "stereo") << " data at " << msg.sampleRate << "Hz)";
+         }
+         else
+         {
+            // PLOGD << "Pending: " << pending << " queuing: " << msg.bufferSize;
+            entry->second->StreamUpdate(msg.buffer, msg.bufferSize);
+         }
       }
       else
       {
