@@ -151,6 +151,8 @@ void WindowManager::ProcessUpdates()
             std::lock_guard<std::mutex> guard(m_mutex);
             for (Window* pWindow: m_windows)
                pWindow->OnUpdate();
+
+            SDL_RaiseWindow(g_pplayer->m_playfieldWnd->GetCore());
          }
       }
    }
