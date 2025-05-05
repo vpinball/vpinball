@@ -95,7 +95,7 @@ public:
    STDMETHOD(NewUltraDMD)(IUltraDMD **pRetVal);
 
    Font* NewFont(const string& szFont, OLE_COLOR tint, OLE_COLOR borderTint, LONG borderSize);
-   AnimatedActor* NewVideo(const string& name, const string& video)
+   AnimatedActor* NewVideo(const string& name, const string& video);
    LONG GetRuntimeVersion() const { return m_runtimeVersion; }
    int GetWidth() const { return m_width; }
    int GetHeight() const { return m_height; }
