@@ -54,6 +54,7 @@ cp make/CMakeLists_[target]_[platform].txt CMakeLists.txt
 <summary>windows-x64</summary>
 
 ```
+pacman -S --noconfirm make diffutils yasm mingw-w64-x86_64-gcc mingw-w64-x86_64-zlib mingw-w64-x86_64-libwinpthread mingw-w64-x86_64-libiconv
 platforms/windows-x64/external.sh
 cp make/CMakeLists_bgfx-windows-x64.txt CMakeLists.txt
 cmake -G "Visual Studio 17 2022" -A x64 -B build
@@ -65,6 +66,7 @@ cmake --build build --config Release
 <summary>windows-x86</summary>
 
 ```
+pacman -S --noconfirm make diffutils yasm mingw-w64-i686-gcc mingw-w64-i686-zlib mingw-w64-i686-libwinpthread mingw-w64-i686-libiconv
 platforms/windows-x86/external.sh
 cp make/CMakeLists_bgfx-windows-x86.txt CMakeLists.txt
 cmake -G "Visual Studio 17 2022" -A Win32 -B build
