@@ -5,9 +5,9 @@
 #include "FlexDMD.h"
 #include "UltraDMD.h"
 #include "actors/Group.h"
-#include "actors/Image.h"
-#include "actors/Frame.h"
 #include "actors/Label.h"
+#include "actors/Frame.h"
+#include "actors/Image.h"
 #include "actors/ImageSequence.h"
 #include "actors/GIFImage.h"
 #include "actors/Video.h"
@@ -619,22 +619,21 @@ Font* FlexDMD::NewFont(const string& font, OLE_COLOR tint, OLE_COLOR borderTint,
    return pFont;
 }
 
-AnimatedActor* FlexDMD::NewVideo(const string& szVideo, const string& szName)
+AnimatedActor* FlexDMD::NewVideo(const string& name, const string& video)
 {
-   if (szVideo.find('|') != string::npos)
-      return (AnimatedActor*)ImageSequence::Create(this, m_pAssetManager, szVideo, szName, 30, true);
+   if (video.find('|') != string::npos)
+      return (AnimatedActor*)ImageSequence::Create(this, m_pAssetManager, video, name, 30, true);
    else {
-      AssetSrc* pAssetSrc = m_pAssetManager->ResolveSrc(szVideo, NULL);
+      AssetSrc* pAssetSrc = m_pAssetManager->ResolveSrc(video, nullptr);
       AssetType assetType = pAssetSrc->GetAssetType();
       delete pAssetSrc;
 
       if (assetType == AssetType_Video)
-         return (AnimatedActor*)Video::Create(this, szVideo, szName, true);
+         return (AnimatedActor*)Video::Create(this, video, name, true);
       else if (assetType == AssetType_GIF)
-         return (AnimatedActor*)GIFImage::Create(this, m_pAssetManager, szVideo, szName);
+         return (AnimatedActor*)GIFImage::Create(this, m_pAssetManager, video, name);
       else if (assetType == AssetType_Image)
-         return (AnimatedActor*)ImageSequence::Create(this, m_pAssetManager, szVideo, szName, 30, true);
+         return (AnimatedActor*)ImageSequence::Create(this, m_pAssetManager, video, name, 30, true);
    }
-
-   return NULL;
+   return nullptr;
 }

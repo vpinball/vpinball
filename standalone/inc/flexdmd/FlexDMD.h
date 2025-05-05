@@ -12,7 +12,7 @@
 class Group;
 class AnimatedActor;
 
-class FlexDMD : public IDispatch
+class FlexDMD final : public IDispatch
 {
 public:
    STDMETHOD(QueryInterface)(REFIID iid, void** ppv) {
@@ -95,7 +95,7 @@ public:
    STDMETHOD(NewUltraDMD)(IUltraDMD **pRetVal);
 
    Font* NewFont(const string& szFont, OLE_COLOR tint, OLE_COLOR borderTint, LONG borderSize);
-   AnimatedActor* NewVideo(const string& szVideo, const string& szName);
+   AnimatedActor* NewVideo(const string& name, const string& video)
    LONG GetRuntimeVersion() const { return m_runtimeVersion; }
    int GetWidth() const { return m_width; }
    int GetHeight() const { return m_height; }
