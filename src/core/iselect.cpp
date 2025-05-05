@@ -256,14 +256,18 @@ static void SetPartGroup(ISelect* const me, const string& layerName)
 {
    if (me->GetIEditable() && (me->GetItemType() != eItemDragPoint) && (me->GetItemType() != eItemLightCenter))
    {
-      if (me->GetIEditable()->GetPartGroup())
+      // Not needed as part group are cleaned up after loading
+      /* if (me->GetIEditable()->GetPartGroup())
       {
          PartGroup* legacyPartGroup = me->GetIEditable()->GetPartGroup();
          me->GetIEditable()->SetPartGroup(nullptr);
          auto users = std::ranges::find_if(me->GetPTable()->m_vedit, [legacyPartGroup](IEditable *editable) { return editable->GetPartGroup() == legacyPartGroup; });
          if (users == me->GetPTable()->m_vedit.end())
+         {
             legacyPartGroup->GetISelect()->Uncreate();
-      }
+            legacyPartGroup->Release();
+         }
+      }*/
       auto partGroupF = std::ranges::find_if(me->GetPTable()->m_vedit,
          [layerName](IEditable *editable)
          {

@@ -226,7 +226,7 @@ class IEditable
 {
 public:
    IEditable();
-   virtual ~IEditable() { }
+   virtual ~IEditable();
 
    // this function draws the shape of the object with a solid fill
    // only used in the UI/editor and not the game
