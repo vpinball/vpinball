@@ -7,6 +7,11 @@ IEditable::IEditable()
    VariantInit(&m_uservalue);
 }
 
+IEditable::~IEditable()
+{
+   SetPartGroup(nullptr);
+}
+
 void IEditable::SetDirtyDraw()
 {
    GetPTable()->SetDirtyDraw();
