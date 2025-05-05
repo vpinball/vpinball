@@ -467,7 +467,7 @@ STDMETHODIMP FlexDMD::NewLabel(BSTR Name, IUnknown *Font_,BSTR Text, ILabelActor
 
 STDMETHODIMP FlexDMD::NewVideo(BSTR Name, BSTR video, IVideoActor **pRetVal)
 {
-   AnimatedActor* obj = NewVideo(MakeString(video), MakeString(Name));
+   AnimatedActor* obj = NewVideo(MakeString(Name), MakeString(video));
    if (obj)
       return obj->QueryInterface(IID_IVideoActor, (void**)pRetVal);
 
