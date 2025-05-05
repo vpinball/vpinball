@@ -83,6 +83,14 @@ jobs:
     steps:
       - if: (matrix.platform == 'windows')
         uses: microsoft/setup-msbuild@v2
+      - if: (matrix.platform == 'windows')
+        run: |
+          /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm make diffutils yasm"
+          if [[ "${{ matrix.arch }}" == "x64" ]]; then
+            /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm mingw-w64-x86_64-gcc mingw-w64-x86_64-zlib mingw-w64-x86_64-libwinpthread mingw-w64-x86_64-libiconv"
+          else
+            /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm mingw-w64-i686-gcc mingw-w64-i686-zlib mingw-w64-i686-libwinpthread mingw-w64-i686-libiconv"
+          fi
       - if: (matrix.platform == 'macos')
         run: |
           brew install bison autoconf automake libtool nasm
@@ -218,6 +226,14 @@ jobs:
           - { platform: windows, arch: x86, config: Debug }
     steps:
       - uses: microsoft/setup-msbuild@v2
+      - if: (matrix.platform == 'windows')
+        run: |
+          /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm make diffutils yasm"
+          if [[ "${{ matrix.arch }}" == "x64" ]]; then
+            /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm mingw-w64-x86_64-gcc mingw-w64-x86_64-zlib mingw-w64-x86_64-libwinpthread mingw-w64-x86_64-libiconv"
+          else
+            /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm mingw-w64-i686-gcc mingw-w64-i686-zlib mingw-w64-i686-libwinpthread mingw-w64-i686-libiconv"
+          fi
       - uses: actions/checkout@v4
       - uses: actions/cache@v4
         with:

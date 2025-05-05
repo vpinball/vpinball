@@ -316,14 +316,13 @@ if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
    CURRENT_DIR="$(pwd)"
    "${MSYS2_PATH}/usr/bin/bash.exe" -l -c "
       cd \"${CURRENT_DIR}\" &&
-      pacman -S --noconfirm make diffutils yasm mingw-w64-x86_64-gcc &&
       ./configure \
-        --enable-shared \
-        --disable-static \
-        --disable-programs \
-        --disable-doc \
-        --arch=\"x86_64\" \
-        --build-suffix=64 &&
+         --enable-shared \
+         --disable-static \
+         --disable-programs \
+         --disable-doc \
+         --arch=\"x86_64\" \
+         --build-suffix=64 &&
       make -j$(nproc)
    "
    cd ..
@@ -401,3 +400,7 @@ for LIB in avcodec avdevice avfilter avformat avutil swresample swscale; do
    mkdir -p ../../../third-party/include/${DIR}
    cp ffmpeg/ffmpeg/${DIR}/*.h ../../../third-party/include/${DIR}
 done
+
+cp "${MSYS2_PATH}/mingw64/bin/zlib1.dll" ../../../third-party/runtime-libs/windows-x64
+cp "${MSYS2_PATH}/mingw64/bin/libiconv-2.dll" ../../../third-party/runtime-libs/windows-x64
+cp "${MSYS2_PATH}/mingw64/bin/libwinpthread-1.dll" ../../../third-party/runtime-libs/windows-x64
