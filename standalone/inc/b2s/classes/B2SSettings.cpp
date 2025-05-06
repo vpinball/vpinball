@@ -17,16 +17,15 @@ B2SSettings::B2SSettings()
 {
    m_gameNameFound = false;
 
-   Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
-
-   m_pluginsOn = pSettings->LoadValueWithDefault(Settings::Standalone, "B2SPlugins"s, false);
-   m_pPluginHost = m_pluginsOn ? PluginHost::GetInstance() : NULL;
+   m_pluginsOn = false;
+   m_pPluginHost = PluginHost::GetInstance();
 
    ClearAll();
 }
 
-B2SSettings::~B2SSettings()
+void B2SSettings::Init()
 {
+   m_pluginsOn = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "B2SPlugins"s, false);
 }
 
 void B2SSettings::Load(bool resetLogs)

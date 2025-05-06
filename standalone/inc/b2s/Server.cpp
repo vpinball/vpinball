@@ -17,6 +17,8 @@
 Server::Server()
 {
    m_pB2SSettings = B2SSettings::GetInstance();
+   m_pB2SSettings->Init();
+
    m_pB2SData = B2SData::GetInstance();
 
    m_pFormBackglass = NULL;
@@ -707,7 +709,8 @@ STDMETHODIMP Server::get_GetMech(VARIANT number, VARIANT *pRetVal)
    V_VT(pRetVal) = VT_I4;
    V_I4(pRetVal) = val;
 
-   CheckGetMech(V_I4(&var0), val);
+   if (m_pB2SData->IsBackglassRunning())
+      CheckGetMech(V_I4(&var0), val);
 
    if (m_pB2SSettings->ArePluginsOn())
       m_pB2SSettings->GetPluginHost()->DataReceive('N', V_I4(&var0), val);
@@ -2112,88 +2115,87 @@ void Server::CheckLEDs(SAFEARRAY* psa)
 
 void Server::MyB2SSetData(int id, int value)
 {
-   if (!m_pB2SData->IsValid())
-      return;
-
-   // illumination stuff
-   if ((m_pFormBackglass->GetTopRomIDType() == eRomIDType_Lamp && m_pFormBackglass->GetTopRomID() == id) || (m_pFormBackglass->GetSecondRomIDType() == eRomIDType_Lamp && m_pFormBackglass->GetSecondRomID() == id)) {
-      bool topvisible = m_lastTopVisible;
-      bool secondvisible = m_lastSecondVisible;
-      if (m_pFormBackglass->GetTopRomIDType() == eRomIDType_Lamp && m_pFormBackglass->GetTopRomID() == id) {
-         topvisible = (value != 0);
-         if (m_pFormBackglass->IsTopRomInverted())
-            topvisible = !topvisible;
-      }
-      else if (m_pFormBackglass->GetSecondRomIDType() == eRomIDType_Lamp && m_pFormBackglass->GetSecondRomID() == id) {
-         secondvisible = (value != 0);
-         if (m_pFormBackglass->IsSecondRomInverted())
-            topvisible = !topvisible;
-      }
-      if (m_lastTopVisible != topvisible || m_lastSecondVisible != secondvisible || !m_isVisibleStateSet) {
-         m_pB2SData->SetOffImageVisible(false);
-         m_isVisibleStateSet = true;
-         m_lastTopVisible = topvisible;
-         m_lastSecondVisible = secondvisible;
-         if (topvisible && secondvisible)
-            m_pFormBackglass->SetBackgroundImage(m_pFormBackglass->GetTopAndSecondLightImage());
-         else if (topvisible)
-            m_pFormBackglass->SetBackgroundImage(m_pFormBackglass->GetTopLightImage());
-         else if (secondvisible)
-            m_pFormBackglass->SetBackgroundImage(m_pFormBackglass->GetSecondLightImage());
-         else {
-            m_pFormBackglass->SetBackgroundImage(m_pFormBackglass->GetDarkImage());
-            m_pB2SData->SetOffImageVisible(true);
+   if (m_pB2SData->IsBackglassRunning()) {
+      // illumination stuff
+      if ((m_pFormBackglass->GetTopRomIDType() == eRomIDType_Lamp && m_pFormBackglass->GetTopRomID() == id) || (m_pFormBackglass->GetSecondRomIDType() == eRomIDType_Lamp && m_pFormBackglass->GetSecondRomID() == id)) {
+         bool topvisible = m_lastTopVisible;
+         bool secondvisible = m_lastSecondVisible;
+         if (m_pFormBackglass->GetTopRomIDType() == eRomIDType_Lamp && m_pFormBackglass->GetTopRomID() == id) {
+            topvisible = (value != 0);
+            if (m_pFormBackglass->IsTopRomInverted())
+               topvisible = !topvisible;
+         }
+         else if (m_pFormBackglass->GetSecondRomIDType() == eRomIDType_Lamp && m_pFormBackglass->GetSecondRomID() == id) {
+            secondvisible = (value != 0);
+            if (m_pFormBackglass->IsSecondRomInverted())
+               topvisible = !topvisible;
+         }
+         if (m_lastTopVisible != topvisible || m_lastSecondVisible != secondvisible || !m_isVisibleStateSet) {
+            m_pB2SData->SetOffImageVisible(false);
+            m_isVisibleStateSet = true;
+            m_lastTopVisible = topvisible;
+            m_lastSecondVisible = secondvisible;
+            if (topvisible && secondvisible)
+               m_pFormBackglass->SetBackgroundImage(m_pFormBackglass->GetTopAndSecondLightImage());
+            else if (topvisible)
+               m_pFormBackglass->SetBackgroundImage(m_pFormBackglass->GetTopLightImage());
+            else if (secondvisible)
+               m_pFormBackglass->SetBackgroundImage(m_pFormBackglass->GetSecondLightImage());
+            else {
+               m_pFormBackglass->SetBackgroundImage(m_pFormBackglass->GetDarkImage());
+               m_pB2SData->SetOffImageVisible(true);
+            }
          }
       }
-   }
-   if (m_pB2SData->GetUsedRomLampIDs()->contains(id)) {
-      for(const auto& pBase : (*m_pB2SData->GetUsedRomLampIDs())[id]) {
-         B2SPictureBox* pPicbox = dynamic_cast<B2SPictureBox*>(pBase);
-         if (pPicbox && (!m_pB2SData->IsUseIlluminationLocks() || pPicbox->GetGroupName().empty() || !m_pB2SData->GetIlluminationLocks()->contains(pPicbox->GetGroupName()))) {
-            if (pPicbox->GetRomIDValue() > 0)
-               pPicbox->SetVisible(pPicbox->GetRomIDValue() == value);
-            else {
-               bool visible = (value != 0);
-               if (pPicbox->IsRomInverted())
-                  visible = !visible;
-               auto rotatingPictureBox = m_pB2SData->GetRotatingPictureBox();
-               if (m_pB2SData->IsUseRotatingImage() && rotatingPictureBox && (*rotatingPictureBox)[0] && pPicbox == (*rotatingPictureBox)[0]) {
-                  if (visible)
-                     m_pFormBackglass->StartRotation();
+      if (m_pB2SData->GetUsedRomLampIDs()->contains(id)) {
+         for(const auto& pBase : (*m_pB2SData->GetUsedRomLampIDs())[id]) {
+            B2SPictureBox* pPicbox = dynamic_cast<B2SPictureBox*>(pBase);
+            if (pPicbox && (!m_pB2SData->IsUseIlluminationLocks() || pPicbox->GetGroupName().empty() || !m_pB2SData->GetIlluminationLocks()->contains(pPicbox->GetGroupName()))) {
+               if (pPicbox->GetRomIDValue() > 0)
+                  pPicbox->SetVisible(pPicbox->GetRomIDValue() == value);
+               else {
+                  bool visible = (value != 0);
+                  if (pPicbox->IsRomInverted())
+                     visible = !visible;
+                  auto rotatingPictureBox = m_pB2SData->GetRotatingPictureBox();
+                  if (m_pB2SData->IsUseRotatingImage() && rotatingPictureBox && (*rotatingPictureBox)[0] && pPicbox == (*rotatingPictureBox)[0]) {
+                     if (visible)
+                        m_pFormBackglass->StartRotation();
+                     else
+                        m_pFormBackglass->StopRotation();
+                  }
                   else
-                     m_pFormBackglass->StopRotation();
+                     pPicbox->SetVisible(visible);
                }
-               else
-                  pPicbox->SetVisible(visible);
             }
          }
       }
-   }
-   if (m_pB2SData->GetUsedRomReelLampIDs()->contains(id)) {
-      for(const auto& pReelbox : (*m_pB2SData->GetUsedRomReelLampIDs())[id]) {
-         if (!m_pB2SData->IsUseIlluminationLocks() || pReelbox->GetGroupName().empty() || !m_pB2SData->GetIlluminationLocks()->contains(pReelbox->GetGroupName())) {
-            if (pReelbox->GetRomIDValue() > 0)
-               pReelbox->SetIlluminated(pReelbox->GetRomIDValue() == value);
-            else {
-               bool illuminated = (value != 0);
-               if (pReelbox->IsRomInverted())
-                  illuminated = !illuminated;
-               pReelbox->SetIlluminated(illuminated);
+      if (m_pB2SData->GetUsedRomReelLampIDs()->contains(id)) {
+         for(const auto& pReelbox : (*m_pB2SData->GetUsedRomReelLampIDs())[id]) {
+            if (!m_pB2SData->IsUseIlluminationLocks() || pReelbox->GetGroupName().empty() || !m_pB2SData->GetIlluminationLocks()->contains(pReelbox->GetGroupName())) {
+               if (pReelbox->GetRomIDValue() > 0)
+                  pReelbox->SetIlluminated(pReelbox->GetRomIDValue() == value);
+               else {
+                  bool illuminated = (value != 0);
+                  if (pReelbox->IsRomInverted())
+                     illuminated = !illuminated;
+                  pReelbox->SetIlluminated(illuminated);
+               }
             }
          }
       }
-   }
 
-   // animation stuff
-   if (m_pB2SData->GetUsedAnimationLampIDs()->contains(id)) {
-      for (const auto& animation : (*m_pB2SData->GetUsedAnimationLampIDs())[id]) {
-         bool start = (value != 0);
-         if (animation->IsInverted())
-            start = !start;
-         if (start)
-            m_pFormBackglass->StartAnimation(animation->GetAnimationName());
-         else
-            m_pFormBackglass->StopAnimation(animation->GetAnimationName());
+      // animation stuff
+      if (m_pB2SData->GetUsedAnimationLampIDs()->contains(id)) {
+         for (const auto& animation : (*m_pB2SData->GetUsedAnimationLampIDs())[id]) {
+            bool start = (value != 0);
+            if (animation->IsInverted())
+               start = !start;
+            if (start)
+               m_pFormBackglass->StartAnimation(animation->GetAnimationName());
+            else
+               m_pFormBackglass->StopAnimation(animation->GetAnimationName());
+         }
       }
    }
 
@@ -2203,7 +2205,7 @@ void Server::MyB2SSetData(int id, int value)
 
 void Server::MyB2SSetData(const string& groupname, int value)
 {
-   if (!m_pB2SData->IsValid())
+   if (!m_pB2SData->IsBackglassRunning())
       return;
 
    // only do the lightning stuff if the group has a name
@@ -2222,7 +2224,7 @@ void Server::MyB2SSetData(const string& groupname, int value)
 
 void Server::MyB2SSetPos(int id, int xpos, int ypos)
 {
-   if (!m_pB2SData->IsValid())
+   if (!m_pB2SData->IsBackglassRunning())
       return;
 
    SDL_FRect& rescaleBackglass = m_pFormBackglass->GetScaleFactor();
@@ -2246,7 +2248,7 @@ void Server::MyB2SSetPos(int id, int xpos, int ypos)
 
 void Server::MyB2SSetLED(int digit, int value)
 {
-   if (!m_pB2SData->IsValid())
+   if (!m_pB2SData->IsBackglassRunning())
       return;
 
    bool useLEDs = m_pB2SData->GetLEDs()->contains(string("LEDBox" + std::to_string(digit)).c_str()) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered;
@@ -2269,7 +2271,7 @@ void Server::MyB2SSetLED(int digit, int value)
 
 void Server::MyB2SSetLED(int digit, const string& value)
 {
-   if (!m_pB2SData->IsValid())
+   if (!m_pB2SData->IsBackglassRunning())
       return;
 
    bool useLEDs = m_pB2SData->GetLEDs()->contains(string("LEDBox" + std::to_string(digit)).c_str()) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered;
@@ -2289,7 +2291,7 @@ void Server::MyB2SSetLED(int digit, const string& value)
 
 void Server::MyB2SSetLEDDisplay(int display, const string& szText)
 {
-   if (!m_pB2SData->IsValid())
+   if (!m_pB2SData->IsBackglassRunning())
       return;
 
    int digit = GetFirstDigitOfDisplay(display);
@@ -2330,28 +2332,27 @@ int Server::GetFirstDigitOfDisplay(int display)
 
 void Server::MyB2SSetScore(int digit, int value, bool animateReelChange, bool useLEDs, bool useLEDDisplays, bool useReels, int reeltype, eLEDType ledtype)
 {
-   if (!m_pB2SData->IsValid())
-      return;
+   if (m_pB2SData->IsBackglassRunning()) {
+      if (digit > 0) {
+         useLEDs = (m_pB2SData->GetLEDs()->contains(string("LEDBox" + std::to_string(digit)).c_str()) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered);
+         useLEDDisplays = (m_pB2SData->GetLEDDisplayDigits()->contains(digit - 1) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Dream7);
+         useReels = m_pB2SData->GetReels()->contains(string("ReelBox" + std::to_string(digit)).c_str());
 
-   if (digit > 0) {
-      useLEDs = (m_pB2SData->GetLEDs()->contains(string("LEDBox" + std::to_string(digit)).c_str()) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered);
-      useLEDDisplays = (m_pB2SData->GetLEDDisplayDigits()->contains(digit - 1) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Dream7);
-      useReels = m_pB2SData->GetReels()->contains(string("ReelBox" + std::to_string(digit)).c_str());
-
-      if (useLEDs) {
-         // rendered LEDs are used
-         string ledname = "LEDBox" + std::to_string(digit);
-         (*m_pB2SData->GetLEDs())[ledname]->SetText(std::to_string(value));
-      }
-      else if (useLEDDisplays) {
-         // Dream 7 displays are used
-         LEDDisplayDigitLocation* pLEDDisplayDigitLocation = (*m_pB2SData->GetLEDDisplayDigits())[digit - 1];
-         pLEDDisplayDigitLocation->GetLEDDisplay()->SetValue(pLEDDisplayDigitLocation->GetDigit(), std::to_string(value));
-      }
-      else if (useReels) {
-         // reels are used
-         string reelname = "ReelBox" + std::to_string(digit);
-         (*m_pB2SData->GetReels())[reelname]->SetText(value, animateReelChange);
+         if (useLEDs) {
+            // rendered LEDs are used
+            string ledname = "LEDBox" + std::to_string(digit);
+            (*m_pB2SData->GetLEDs())[ledname]->SetText(std::to_string(value));
+         }
+         else if (useLEDDisplays) {
+            // Dream 7 displays are used
+            LEDDisplayDigitLocation* pLEDDisplayDigitLocation = (*m_pB2SData->GetLEDDisplayDigits())[digit - 1];
+            pLEDDisplayDigitLocation->GetLEDDisplay()->SetValue(pLEDDisplayDigitLocation->GetDigit(), std::to_string(value));
+         }
+         else if (useReels) {
+            // reels are used
+            string reelname = "ReelBox" + std::to_string(digit);
+            (*m_pB2SData->GetReels())[reelname]->SetText(value, animateReelChange);
+         }
       }
    }
 
@@ -2361,46 +2362,45 @@ void Server::MyB2SSetScore(int digit, int value, bool animateReelChange, bool us
 
 void Server::MyB2SSetScore(int digit, int score)
 {
-   if (!m_pB2SData->IsValid())
-      return;
+   if (m_pB2SData->IsBackglassRunning()) {
+      if (digit > 0) {
+         bool useLEDs = (m_pB2SData->GetLEDs()->contains(string("LEDBox" + std::to_string(digit)).c_str()) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered);
+         bool useLEDDisplays = (m_pB2SData->GetLEDDisplayDigits()->contains(digit - 1) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Dream7);
+         bool useReels = m_pB2SData->GetReels()->contains(string("ReelBox" + std::to_string(digit)).c_str());
 
-   if (digit > 0) {
-      bool useLEDs = (m_pB2SData->GetLEDs()->contains(string("LEDBox" + std::to_string(digit)).c_str()) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered);
-      bool useLEDDisplays = (m_pB2SData->GetLEDDisplayDigits()->contains(digit - 1) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Dream7);
-      bool useReels = m_pB2SData->GetReels()->contains(string("ReelBox" + std::to_string(digit)).c_str());
+         if (useLEDs) {
+            // check the passed digit
+            string led = "LEDBox" + std::to_string(digit);
 
-      if (useLEDs) {
-         // check the passed digit
-         string led = "LEDBox" + std::to_string(digit);
+            // get all necessary display data
+            int startdigit = (*m_pB2SData->GetLEDs())[led]->GetStartDigit();
+            int player = (*m_pB2SData->GetLEDs())[led]->GetID();
+            int digits = (*m_pB2SData->GetLEDs())[led]->GetDigits();
+            string scoreAsString = string(digits - std::to_string(score).length(), ' ') + std::to_string(score);
 
-         // get all necessary display data
-         int startdigit = (*m_pB2SData->GetLEDs())[led]->GetStartDigit();
-         int player = (*m_pB2SData->GetLEDs())[led]->GetID();
-         int digits = (*m_pB2SData->GetLEDs())[led]->GetDigits();
-         string scoreAsString = string(digits - std::to_string(score).length(), ' ') + std::to_string(score);
+            // set digits
+            for (int i = startdigit + digits - 1; i >= startdigit; i--)
+               (*m_pB2SData->GetLEDs())["LEDBox" + std::to_string(i)]->SetText(scoreAsString.substr(i - startdigit, 1));
+         }
+         else if (useLEDDisplays) {
+            LEDDisplayDigitLocation* pLEDDisplayDigitLocation = (*m_pB2SData->GetLEDDisplayDigits())[digit - 1];
+            // get all necessary display data
+            int digits = pLEDDisplayDigitLocation->GetLEDDisplay()->GetDigits();
+            string scoreAsString = string(digits - std::to_string(score).length(), ' ') + std::to_string(score);
 
-         // set digits
-         for (int i = startdigit + digits - 1; i >= startdigit; i--)
-            (*m_pB2SData->GetLEDs())["LEDBox" + std::to_string(i)]->SetText(scoreAsString.substr(i - startdigit, 1));
-      }
-      else if (useLEDDisplays) {
-         LEDDisplayDigitLocation* pLEDDisplayDigitLocation = (*m_pB2SData->GetLEDDisplayDigits())[digit - 1];
-         // get all necessary display data
-         int digits = pLEDDisplayDigitLocation->GetLEDDisplay()->GetDigits();
-         string scoreAsString = string(digits - std::to_string(score).length(), ' ') + std::to_string(score);
+            // set digits
+            for (int i = digits - 1; i >= 0; i--)
+               pLEDDisplayDigitLocation->GetLEDDisplay()->SetValue(i, scoreAsString.substr(i, 1));
+         }
+         else if (useReels) {
+            // get the necessary infos
+            string reelname = "ReelBox" + std::to_string(digit);
+            int id = (*m_pB2SData->GetReels())[reelname]->GetDisplayID();
 
-         // set digits
-         for (int i = digits - 1; i >= 0; i--)
-            pLEDDisplayDigitLocation->GetLEDDisplay()->SetValue(i, scoreAsString.substr(i, 1));
-      }
-      else if (useReels) {
-         // get the necessary infos
-         string reelname = "ReelBox" + std::to_string(digit);
-         int id = (*m_pB2SData->GetReels())[reelname]->GetDisplayID();
-
-         // set value
-         if (m_pB2SData->GetReelDisplays()->contains(id))
-            (*m_pB2SData->GetReelDisplays())[id]->SetScore_(score);
+            // set value
+            if (m_pB2SData->GetReelDisplays()->contains(id))
+               (*m_pB2SData->GetReelDisplays())[id]->SetScore_(score);
+         }
       }
    }
 
@@ -2410,12 +2410,11 @@ void Server::MyB2SSetScore(int digit, int score)
 
 void Server::MyB2SSetScorePlayer(int playerno, int score)
 {
-   if (!m_pB2SData->IsValid())
-      return;
-
-   if (playerno > 0) {
-      if (m_pB2SData->GetPlayers()->contains(playerno))
-         (*m_pB2SData->GetPlayers())[playerno]->SetScore(score);
+   if (m_pB2SData->IsBackglassRunning()) {
+      if (playerno > 0) {
+         if (m_pB2SData->GetPlayers()->contains(playerno))
+            (*m_pB2SData->GetPlayers())[playerno]->SetScore(score);
+      }
    }
 
    if (m_pB2SSettings->ArePluginsOn())
@@ -2424,7 +2423,7 @@ void Server::MyB2SSetScorePlayer(int playerno, int score)
 
 void Server::MyB2SStartAnimation(const string& animationname, bool playreverse)
 {
-   if (!m_pB2SData->IsValid())
+   if (!m_pB2SData->IsBackglassRunning())
       return;
 
    m_pFormBackglass->StartAnimation(animationname, playreverse);
@@ -2432,7 +2431,7 @@ void Server::MyB2SStartAnimation(const string& animationname, bool playreverse)
 
 void Server::MyB2SStopAnimation(const string& animationname)
 {
-   if (!m_pB2SData->IsValid())
+   if (!m_pB2SData->IsBackglassRunning())
       return;
 
    m_pFormBackglass->StopAnimation(animationname);
@@ -2440,7 +2439,7 @@ void Server::MyB2SStopAnimation(const string& animationname)
 
 void Server::MyB2SStopAllAnimations()
 {
-   if (!m_pB2SData->IsValid())
+   if (!m_pB2SData->IsBackglassRunning())
       return;
 
    m_pFormBackglass->StopAllAnimations();
@@ -2448,7 +2447,7 @@ void Server::MyB2SStopAllAnimations()
 
 bool Server::MyB2SIsAnimationRunning(const string& animationname)
 {
-   if (!m_pB2SData->IsValid())
+   if (!m_pB2SData->IsBackglassRunning())
       return false;
 
    return m_pFormBackglass->IsAnimationRunning(animationname);
@@ -2456,7 +2455,7 @@ bool Server::MyB2SIsAnimationRunning(const string& animationname)
 
 void Server::MyB2SStartRotation()
 {
-   if (!m_pB2SData->IsValid())
+   if (!m_pB2SData->IsBackglassRunning())
       return;
 
    m_pFormBackglass->StartRotation();
@@ -2464,7 +2463,7 @@ void Server::MyB2SStartRotation()
 
 void Server::MyB2SStopRotation()
 {
-   if (!m_pB2SData->IsValid())
+   if (!m_pB2SData->IsBackglassRunning())
       return;
 
    m_pFormBackglass->StopRotation();
@@ -2472,7 +2471,7 @@ void Server::MyB2SStopRotation()
 
 void Server::MyB2SShowOrHideScoreDisplays(bool visible)
 {
-   if (!m_pB2SData->IsValid())
+   if (!m_pB2SData->IsBackglassRunning())
       return;
 
    if (visible)
@@ -2483,7 +2482,7 @@ void Server::MyB2SShowOrHideScoreDisplays(bool visible)
 
 void Server::MyB2SPlaySound(const string& soundname)
 {
-   if (!m_pB2SData->IsValid())
+   if (!m_pB2SData->IsBackglassRunning())
       return;
 
    m_pFormBackglass->PlaySound(soundname);
@@ -2491,7 +2490,7 @@ void Server::MyB2SPlaySound(const string& soundname)
 
 void Server::MyB2SStopSound(const string& soundname)
 {
-   if (!m_pB2SData->IsValid())
+   if (!m_pB2SData->IsBackglassRunning())
       return;
 
    m_pFormBackglass->StopSound(soundname);
