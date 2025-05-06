@@ -18,6 +18,7 @@ public:
    PUPMediaPlayer();
    ~PUPMediaPlayer();
 
+   void SetScreen(PUPScreen* pScreen);
    void Play(const string& szFilename);
    bool IsPlaying();
    void Pause(bool pause);

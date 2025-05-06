@@ -12,7 +12,7 @@ B2SSettings::B2SSettings()
 
    ClearAll();
 
-    m_pluginsOn = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "B2SPlugins"s, false);
+   m_pluginsOn = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "B2SPlugins"s, true);
 }
 
 B2SSettings::~B2SSettings()

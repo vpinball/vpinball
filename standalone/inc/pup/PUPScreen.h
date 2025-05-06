@@ -12,6 +12,7 @@
 #include <condition_variable>
 #include <thread>
 
+class PUPWindow;
 class PUPCustomPos;
 class PUPMediaManager;
 class PUPLabel;
@@ -100,7 +101,7 @@ public:
    void AddTrigger(PUPTrigger* pTrigger);
    void SendToFront();
    void SetSize(int w, int h);
-   void Init(SDL_Renderer* pRenderer);
+   void Init(PUPWindow* pWindow = nullptr);
    void Start();
    bool IsLabelInit() const { return m_labelInit; }
    void SetLabelInit() { m_labelInit = true; }
@@ -109,6 +110,8 @@ public:
    void SendLabelToFront(PUPLabel* pLabel);
    void SendLabelToBack(PUPLabel* pLabel);
    void SetPage(int pagenum, int seconds);
+   bool CanRender();
+   SDL_Renderer* GetRenderer();
    void Render();
    const SDL_Rect& GetRect() const { return m_rect; }
    void SetBackground(PUPPlaylist* pPlaylist, const string& szPlayFile);
@@ -162,6 +165,7 @@ private:
    int m_defaultPagenum;
    VP::Timer* m_pPageTimer;
    PUPScreen* m_pParent;
+   PUPWindow* m_pWindow;
    vector<PUPScreen*> m_topChildren;
    vector<PUPScreen*> m_backChildren;
    vector<PUPScreen*> m_defaultChildren;

@@ -10,8 +10,6 @@ SurfaceGraphics::SurfaceGraphics(SDL_Surface* pSurface)
 {
    m_pSurface = pSurface;
 
-   m_width = pSurface->w;
-   m_height = pSurface->h;
    m_color = RGB(0, 0, 0);
    m_alpha = 255;
 

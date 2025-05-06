@@ -5,6 +5,9 @@
 
 PUPMediaManager::PUPMediaManager(PUPScreen* pScreen)
 {
+   m_player1.player.SetScreen(pScreen);
+   m_player2.player.SetScreen(pScreen);
+
    m_pMainPlayer = &m_player1;
    m_pBackgroundPlayer = nullptr;
    m_pScreen = pScreen;

@@ -65,7 +65,6 @@ public:
    bool IsInit() { return m_init; }
    void LoadConfig(const string& szRomName);
    void Unload();
-   const string& GetPath() { return m_szPath; }
    bool AddScreen(PUPScreen* pScreen);
    bool AddScreen(LONG lScreenNum);
    bool HasScreen(int screenNum);

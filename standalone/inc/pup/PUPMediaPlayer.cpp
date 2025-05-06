@@ -7,6 +7,7 @@
 
 #include "core/stdafx.h"
 #include "PUPMediaPlayer.h"
+#include "PUPScreen.h"
 
 #if defined(__clang__)
 #pragma clang diagnostic push
