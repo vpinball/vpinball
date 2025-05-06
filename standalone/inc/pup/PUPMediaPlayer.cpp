@@ -17,6 +17,8 @@
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
+constexpr size_t MAX_BUFFERED_FRAMES = 60;
+
 PUPMediaPlayer::PUPMediaPlayer()
 {
    m_loop = false;
@@ -305,6 +307,11 @@ void PUPMediaPlayer::Run()
                AVFrame* pClonedFrame = av_frame_clone(pFrame);
                if (pClonedFrame) {
                   std::lock_guard<std::mutex> lock(m_mutex);
+                  if (m_queue.size() >= MAX_BUFFERED_FRAMES) {
+                     AVFrame* oldFrame = m_queue.front();
+                     av_frame_free(&oldFrame);
+                     m_queue.pop();
+                  }
                   m_queue.push(pClonedFrame);
                }
             }
