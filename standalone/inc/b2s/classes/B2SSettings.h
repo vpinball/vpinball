@@ -30,10 +30,10 @@ class B2SSettings
 public:
    static B2SSettings* GetInstance();
 
+   void Init();
    string GetMinimumDirectB2SVersion() const { return "1.0"; }
    string GetBackglassFileVersion() const { return m_szBackglassFileVersion; }
    void SetBackglassFileVersion(const string& szBackglassFileVersion) { m_szBackglassFileVersion = szBackglassFileVersion; }
-
    bool ArePluginsOn() const { return m_pluginsOn; }
    PluginHost* GetPluginHost() const { return m_pPluginHost; }
    bool IsAllOut() const { return m_allOut; }
@@ -88,7 +88,7 @@ public:
 
 private:
    B2SSettings();
-   ~B2SSettings();
+   ~B2SSettings() {};
 
    string m_szBackglassFileVersion;
    bool m_pluginsOn;
