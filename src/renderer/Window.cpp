@@ -328,6 +328,43 @@ Window::Window(const string &title, const Settings::Section section, const strin
    }
 }
 
+Window::Window(const string &title, const Settings::Section section, const string &settingsPrefix, int x, int y, int w, int h)
+   : m_settingsSection(section)
+   , m_settingsPrefix(settingsPrefix)
+   , m_isVR(false)
+{
+   const Settings* settings = &(g_pvp->m_settings);
+   m_fullscreen = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "FullScreen", IsWindows10_1803orAbove());
+
+#ifdef ENABLE_SDL_VIDEO
+   Uint32 wnd_flags = 0;
+   wnd_flags |= SDL_WINDOW_UTILITY | SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+
+   if (m_fullscreen)
+      wnd_flags |= SDL_WINDOW_FULLSCREEN;
+
+   SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
+   SDL_PropertiesID props = SDL_CreateProperties();
+   SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, title.c_str());
+   SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, x);
+   SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, y);
+   SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, w);
+   SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, h);
+   SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, wnd_flags);
+   m_nwnd = SDL_CreateWindowWithProperties(props);
+   SDL_DestroyProperties(props);
+
+   m_wcgDisplay = SDL_GetBooleanProperty(props, SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN, false);
+   m_sdrWhitePoint = SDL_GetFloatProperty(props, SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, 1.0f);
+   m_hdrHeadRoom = SDL_GetFloatProperty(props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1.0f);
+
+   m_width = w;
+   m_height = h;
+
+   SDL_GetWindowSizeInPixels(m_nwnd, &m_pixelWidth, &m_pixelHeight);
+#endif
+}
+
 Window::~Window()
 {
    if (m_isVR)

@@ -5,6 +5,8 @@
 
 #include "DMDUtil/Config.h"
 
+#include "standalone/Standalone.h"
+
 void OnPUPCaptureTrigger(uint16_t id, void* pUserData)
 {
    PUPPlugin* pPlugin = (PUPPlugin*)pUserData;
@@ -13,7 +15,6 @@ void OnPUPCaptureTrigger(uint16_t id, void* pUserData)
 
 PUPPlugin::PUPPlugin() : Plugin()
 {
-   m_pManager = PUPManager::GetInstance();
 }
 
 PUPPlugin::~PUPPlugin()
@@ -28,12 +29,7 @@ const std::string& PUPPlugin::GetName() const
 
 void PUPPlugin::PluginInit(const string& szTableFilename, const string& szRomName)
 {
-   if (m_pManager->IsInit()) {
-      PLOGW.printf("PUP already initialized");
-      return;
-   }
-
-   m_pManager->LoadConfig(szRomName);
+   g_pStandalone->GetPUPManager()->LoadConfig(szRomName);
 
    DMDUtil::Config* pConfig = DMDUtil::Config::GetInstance();
    pConfig->SetPUPTriggerCallback(OnPUPCaptureTrigger, this);
@@ -44,10 +40,10 @@ void PUPPlugin::PluginFinish()
    DMDUtil::Config* pConfig = DMDUtil::Config::GetInstance();
    pConfig->SetPUPTriggerCallback(NULL, NULL);
 
-   m_pManager->Stop();
+   g_pStandalone->GetPUPManager()->Stop();
 }
 
 void PUPPlugin::DataReceive(char type, int number, int value)
 {
-   m_pManager->QueueTriggerData({ type, number, value });
+   g_pStandalone->GetPUPManager()->QueueTriggerData({ type, number, value });
 }

@@ -33,14 +33,10 @@ public:
    void ResetTransform();
    Matrix* GetTransform() const { return m_pModelMatrix; }
    void SetTransform(Matrix* pModelMatrix);
-   int GetWidth() const { return m_width; }
-   int GetHeight() const { return m_height; }
 
 private:
    SDL_Renderer* m_pRenderer;
-
-   int m_width;
-   int m_height;
+;
    int m_translateX;
    int m_translateY;
    VP::Matrix* m_pModelMatrix;

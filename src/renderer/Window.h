@@ -34,12 +34,12 @@ private:
 };
 
 // All coordinates are given in pixels, not logical units.
-// FIXME for MacOS/IOS HiDPI is applied (so giving 'logical' units with Retina scale factor but not user DPI)
 class Window final
 {
 public:
    Window(const string &title, const Settings::Section section, const string &settingsPrefix); // OS Window
    Window(const int width, const int height); // VR Output
+   Window(const string &title, const Settings::Section section, const string &settingsPrefix, int x, int y, int w, int h); // OS Window with position for defaults
    ~Window();
 
    void GetPos(int&x, int &y) const;
@@ -130,21 +130,30 @@ private:
 class RenderOutput final
 {
 public:
-   RenderOutput(const string& title, const Settings& settings, const Settings::Section section, const string& settingsPrefix)
+   enum OutputMode
+   {
+      OM_DISABLED, // Output is disabled
+      OM_EMBEDDED, // Output is embedded in another output
+      OM_WINDOW // Output is a native system window (maybe a window, exclusive fullscreen, VR headset,...)
+   };
+
+   RenderOutput(const string& title, Settings& settings, const Settings::Section section, const string& settingsPrefix, OutputMode mode = OutputMode::OM_DISABLED, int x = 0, int y = 0, int width = 640, int height = 480)
       : m_settingsSection(section)
       , m_settingsPrefix(settingsPrefix)
    {
-      m_mode = static_cast<OutputMode>(settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Output", OM_DISABLED));
+      m_mode = static_cast<OutputMode>(settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Output", mode));
       if (m_mode == OM_EMBEDDED)
-      {
-         const int x = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "WndX", 0);
-         const int y = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "WndY", 0);
-         const int width = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Width", 640);
-         const int height = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Height", 480);
-         m_embeddedWindow = new EmbeddedWindow(x, y, width, height);
-      }
+         m_embeddedWindow = new EmbeddedWindow(
+            settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "WndX", x),
+            settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "WndY", y),
+            settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Width", width),
+            settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Height", height));
       else if (m_mode == OM_WINDOW)
-         m_window = new Window(title, section, settingsPrefix);
+         m_window = new Window(title, section, settingsPrefix,
+            settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "WndX", x),
+            settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "WndY", y),
+            settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Width", width),
+            settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Height", height));
    }
 
    ~RenderOutput()
@@ -152,13 +161,6 @@ public:
       delete m_embeddedWindow;
       delete m_window;
    }
-
-   enum OutputMode
-   {
-      OM_DISABLED, // Output is disabled
-      OM_EMBEDDED, // Output is embedded in another output
-      OM_WINDOW // Output is a native system window (maybe a window, exclusive fullscreen, VR headset,...)
-   };
 
    OutputMode GetMode() const { return m_mode; }
    Window* GetWindow() const { return m_window; }

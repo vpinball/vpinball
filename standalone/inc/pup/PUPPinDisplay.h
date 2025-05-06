@@ -46,7 +46,7 @@ public:
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
 
 public:
-   PUPPinDisplay();
+   PUPPinDisplay(PUPManager* pManager);
    ~PUPPinDisplay();
 
    STDMETHOD(Init)(LONG ScreenNum, BSTR RootDir);

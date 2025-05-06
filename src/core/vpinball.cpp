@@ -14,6 +14,7 @@
 
 #ifdef __STANDALONE__
 #include "standalone/Standalone.h"
+#include "standalone/inc/common/WindowManager.h"
 #include <iostream>
 #endif
 
@@ -1152,6 +1153,10 @@ void VPinball::DoPlay(const int playMode)
                      g_pplayer->m_scoreviewOutput.GetWindow(),
                      g_pplayer->m_backglassOutput.GetWindow()
                   };
+                  #ifdef __STANDALONE__
+                  auto extraWindows = VP::WindowManager::GetInstance()->GetVPXWindows();
+                  windows.insert(windows.end(), extraWindows.begin(), extraWindows.end());
+                  #endif
                   for (VPX::Window* wnd : windows)
                   {
                      if (wnd && sdlWnd == wnd->GetCore())
@@ -1173,10 +1178,6 @@ void VPinball::DoPlay(const int playMode)
             if (isPFWnd)
                ImGui_ImplSDL3_ProcessEvent(&e);
 
-            #ifdef __STANDALONE__
-            g_pStandalone->ProcessEvent(&e);
-            #endif
-
             #ifdef ENABLE_SDL_INPUT
             g_pplayer->m_pininput.HandleSDLEvent(e);
             #endif
@@ -1185,10 +1186,6 @@ void VPinball::DoPlay(const int playMode)
             if ((usec() - startTick) > 1000ull)
                break;
          }
-
-         #ifdef __STANDALONE__
-         g_pStandalone->ProcessUpdates();
-         #endif
       };
 
       #elif !defined(__STANDALONE__)

@@ -90,18 +90,11 @@ FormBackglass::FormBackglass()
 
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
 
-   if (!pSettings->LoadValueWithDefault(Settings::Standalone, "B2SWindows"s, true)) {
-      PLOGI.printf("B2S Backglass window disabled");
-      return;
-   }
-
-   m_pWindow = new FormWindow(this, "B2SBackglass"s,
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassX"s, B2S_SETTINGS_BACKGLASSX),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassY"s, B2S_SETTINGS_BACKGLASSY),
+   m_pWindow = new FormWindow(this, "B2SBackglass"s, B2S_BACKGLASS_ZORDER,
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassWndX"s, B2S_SETTINGS_BACKGLASSX),
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassWndY"s, B2S_SETTINGS_BACKGLASSY),
       pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassWidth"s, B2S_SETTINGS_BACKGLASSWIDTH),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassHeight"s, B2S_SETTINGS_BACKGLASSHEIGHT),
-      B2S_BACKGLASS_ZORDER,
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassRotation"s, 0));
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassHeight"s, B2S_SETTINGS_BACKGLASSHEIGHT));
 }
 
 FormBackglass::~FormBackglass()
