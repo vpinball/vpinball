@@ -197,9 +197,9 @@ build/VPinballX_BGFX -play src/assets/exampleTable.vpx -disabletruefullscreen
 
 ```
 sudo apt-get update
-sudo apt install git pkg-config autoconf automake libtool cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa-dev libgles2-mesa libudev-dev libx11-dev libxrandr-dev libasound2-dev libpipewire-0.3-dev
+sudo apt install git pkg-config autoconf automake libtool cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa-dev libgles2-mesa libudev-dev libx11-dev libxrandr-dev libasound2-dev libpipewire-0.3-dev libwayland-dev
 platforms/linux-aarch64/external.sh
-cp make/CMakeLists_bgfx-linux-aarch64.txt CMakeLists.txt
+cp make/CMakeLists_gl-linux-aarch64.txt CMakeLists.txt
 cmake -DBUILD_RPI=ON -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build -- -j$(nproc)
 
