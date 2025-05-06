@@ -585,6 +585,8 @@ class VPinballManager {
     func setIniDefaults() {
         saveValue(.standalone, "RenderingModeOverride", loadValue(.standalone, "RenderingModeOverride", 2))
         saveValue(.player, "MaxTexDimension", loadValue(.player, "MaxTexDimension", 1024))
+        saveValue(.player, "BallTrail", loadValue(.player, "BallTrail", false))
+        saveValue(.dmd, "DMDOutput", loadValue(.dmd, "DMDOutput", 0))
         saveValue(.player, "ScreenWidth", loadValue(.player, "ScreenWidth", 15.4))
         saveValue(.player, "ScreenHeight", loadValue(.player, "ScreenHeight", 7.1))
     }
