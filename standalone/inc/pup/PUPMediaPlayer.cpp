@@ -308,8 +308,8 @@ void PUPMediaPlayer::Run()
                if (pClonedFrame) {
                   std::lock_guard<std::mutex> lock(m_mutex);
                   if (m_queue.size() >= MAX_BUFFERED_FRAMES) {
-                     AVFrame* oldFrame = m_queue.front();
-                     av_frame_free(&oldFrame);
+                     AVFrame* pOldFrame = m_queue.front();
+                     av_frame_free(&pOldFrame);
                      m_queue.pop();
                   }
                   m_queue.push(pClonedFrame);
