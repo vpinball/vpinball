@@ -1419,12 +1419,12 @@ PinTable::~PinTable()
    m_lightMap.clear();
    m_renderprobeMap.clear();
 
-   for (size_t i = 0; i < m_vedit.size(); i++)
-      m_vedit[i]->Release();
+   for (IEditable* edit : m_vedit)
+      edit->Release();
 
    // Stop all sounds
-   for (size_t i = 0; i < m_vsound.size(); i++)
-      m_vsound[i]->Stop();
+   for (PinSound* sound : m_vsound)
+      sound->Stop();
 
    if (!m_isLiveInstance)
    { // Sounds, Fonts and images are owned by the editor's table, live table instances just use shallow copy, so don't release them

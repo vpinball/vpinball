@@ -46,6 +46,7 @@ public:
    void SetDualBackglass(bool dualBackglass) { m_dualBackglass = dualBackglass; }
    bool IsLaunchBackglass() const { return m_launchBackglass; }
    void SetLaunchBackglass(bool launchBackglass) { m_launchBackglass = launchBackglass; }
+   bool IsBackglassRunning() const { return IsBackglassVisible(); }
    bool IsBackglassVisible() const { return m_backglassVisible; }
    void SetBackglassVisible(bool backglassVisible) { m_backglassVisible = backglassVisible; }
    bool IsUseIlluminationLocks() const { return m_useIlluminationLocks; }
@@ -132,8 +133,6 @@ public:
    bool IsUseLEDs() const;
    bool IsUseLEDDisplays() const;
    bool IsUseReels() const;
-   bool IsValid() const { return m_valid; }
-   void SetValid(bool valid) { m_valid = valid; }
 
 private:
    B2SData();
@@ -208,6 +207,5 @@ private:
 
    B2SSettings* m_pB2SSettings;
 
-   bool m_valid;
    static B2SData* m_pInstance;
 };
