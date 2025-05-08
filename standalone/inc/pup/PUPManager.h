@@ -57,9 +57,9 @@ class PUPWindow;
 class PUPManager
 {
 public:
+   PUPManager();
    ~PUPManager();
 
-   static PUPManager* GetInstance();
    bool IsInit() { return m_init; }
    void LoadConfig(const string& szRomName);
    const string& GetRootPath();
@@ -75,9 +75,7 @@ public:
    void Stop();
 
 private:
-   PUPManager();
-
-   void AddWindow(const string& szWindowName, int defaultScreen, int defaultX, int defaultY, int defaultWidth, int defaultHeight, int zOrder);
+   void AddWindow(const string& szWindowName, int screen, int z, int x, int y, int width, int height);
    void ProcessQueue();
    void LoadPlaylists();
 

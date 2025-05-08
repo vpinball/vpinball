@@ -25,7 +25,7 @@ B2SSettings::B2SSettings()
 
 void B2SSettings::Init()
 {
-   m_pluginsOn = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "B2SPlugins"s, false);
+   m_pluginsOn = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "B2SPlugins"s, true);
 }
 
 void B2SSettings::Load(bool resetLogs)

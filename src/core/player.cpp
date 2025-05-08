@@ -831,6 +831,10 @@ Player::~Player()
    VPinballLib::VPinball::SendEvent(VPinballLib::Event::PlayerClosing, nullptr);
 #endif
 
+#ifdef __STANDALONE__
+   g_pStandalone->Shutdown();
+#endif
+
    // Signal plugins early since most fields will become invalid
    const unsigned int onGameEndMsgId = VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END);
    VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(onGameEndMsgId, nullptr);
@@ -1935,6 +1939,7 @@ void Player::PrepareFrame(const std::function<void()>& sync)
 
    // Prepare scoreview
    RenderTarget *scoreViewRT = nullptr;
+
    if ((m_vrDevice == nullptr) && (m_scoreviewOutput.GetMode() != VPX::RenderOutput::OM_DISABLED))
    {
       m_scoreView.Render(m_scoreviewOutput);
@@ -1948,6 +1953,10 @@ void Player::PrepareFrame(const std::function<void()>& sync)
       RenderBackglass(playfieldRT);
       backglassRT = rd->GetCurrentRenderTarget();
    }
+
+   #ifdef __STANDALONE__
+   g_pStandalone->Render();
+   #endif
    
    // Apply screenspace transforms (MSAA, AO, AA, stereo, ball motion blur, tonemapping, dithering, bloom,...)
    rd->SetRenderTarget("PostProcess"s, m_renderer->GetBackBufferTexture(), true);
@@ -2052,10 +2061,6 @@ void Player::FinishFrame()
 #endif
       }
    }
-
-#ifdef __STANDALONE__
-   g_pStandalone->Render();
-#endif
 
    // Brute force stop: blast into space
    if (m_closing == CS_FORCE_STOP)
