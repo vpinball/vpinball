@@ -1510,10 +1510,10 @@ int PinSound::getChannel()
 void PinSound::EnumerateAudioDevices(vector<AudioDevice>& audioDevices)
 {
    if (!SDL_WasInit(SDL_INIT_AUDIO))
-   if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
-      PLOGE << "SDL Init Audio failed: " << SDL_GetError();
-      return;
-   }
+      if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
+         PLOGE << "SDL Init Audio failed: " << SDL_GetError();
+         return;
+      }
 
    //output name of audio driver
    const char *pdriverName;
@@ -1523,17 +1523,22 @@ void PinSound::EnumerateAudioDevices(vector<AudioDevice>& audioDevices)
       PLOGE << "SDL Get Audio Driver failed: " << SDL_GetError();
 
    // log default audio device
-   const char *pDefaultDevice;
    SDL_AudioDeviceID devid = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, nullptr);
-   if ( (pDefaultDevice = SDL_GetAudioDeviceName(devid) ) != nullptr)
-      PLOGI << "Default Audio Device: " << pDefaultDevice;
-   else
-      PLOGE << "SDL Failed to default device: " << SDL_GetError();
+   const char *pDefaultDeviceName = SDL_GetAudioDeviceName(devid);
+   if ( pDefaultDeviceName != nullptr) {
+      PLOGI << "Default Audio Device: " << pDefaultDeviceName;
+   }else
+   {
+      const char * error = SDL_GetError();
+      // workaround for https://github.com/libsdl-org/SDL/issues/12977
+      if (error != nullptr && error[0] != '\0')
+         PLOGE << "Failed to get name for Default Audio Device: " << error;
+   }
+   SDL_CloseAudioDevice(devid);
 
    audioDevices.clear();
    int count;
    SDL_AudioDeviceID* pAudioList = SDL_GetAudioPlaybackDevices(&count);
-
    for (int i = 0; i < count; ++i) {
       AudioDevice audioDevice = {};
       audioDevice.id = pAudioList[i];
