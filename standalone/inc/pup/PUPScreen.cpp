@@ -460,8 +460,8 @@ void PUPScreen::QueueBG(int mode)
 void PUPScreen::QueueTrigger(char type, int number, int value)
 {
    // we store the whole state to be able to mach later
-   const string name = string(1, type) + std::to_string(number);
-   m_triggersState[name] = value;
+   const string typeNumber = string(1, type) + std::to_string(number);
+   m_triggersState[typeNumber] = value;
 
    // The first trigger is the main trigger, the rest we just check
    vector<PUPTrigger*>* pTriggers = GetTriggers(type + std::to_string(number));
@@ -473,14 +473,14 @@ void PUPScreen::QueueTrigger(char type, int number, int value)
       if (!pTrigger->IsActive())
          continue;
 
-      for (const auto& [m_sName, value] : pTrigger->GetTriggers())
+      for (const auto& [expectedTypeNumber, expectedValue] : pTrigger->GetTriggers())
       {
-         auto currentValue = m_triggersState.find(m_sName);
+         auto currentValue = m_triggersState.find(expectedTypeNumber);
          if (currentValue == m_triggersState.end())
          {
             return;
          }
-         if (currentValue->second != value)
+         if (currentValue->second != expectedValue)
          {
             return;
          }
