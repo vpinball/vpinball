@@ -76,7 +76,8 @@ PUPTrigger::PUPTrigger(bool active, const string& szDescript, const std::vector<
 PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, string line)
 {
    vector<string> parts = parse_csv_line(line);
-   if (parts.size() != 14) {
+   if (parts.size() != 14)
+   {
       PLOGD.printf("Invalid trigger: %s", line.c_str());
       return nullptr;
    }
@@ -89,33 +90,39 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, string line)
       return nullptr;
 
    bool active = (string_to_int(parts[1], 0) == 1);
-   if (!active) {
+   if (!active)
+   {
       PLOGD.printf("Inactive trigger: %s", line.c_str());
       return nullptr;
    }
 
-   if (StrCompareNoCase(triggerPlayAction, "CustomFunc")) {
+   if (StrCompareNoCase(triggerPlayAction, "CustomFunc"))
+   {
       // TODO parse the custom function and call PUPPinDisplay::SendMSG when triggered
       PLOGW.printf("CustomFunc not implemented: %s", line.c_str());
       return nullptr;
    }
 
    // Sometimes an empty playlist but with description is used as a comment/separator.
-   if (triggerPlaylist.empty()) {
+   if (triggerPlaylist.empty())
+   {
       // TODO A PuP Pack Audit should mark these as comment triggers if the trigger is active
       return nullptr;
    }
 
    PUPPlaylist* pPlaylist = pScreen->GetPlaylist(triggerPlaylist);
-   if (!pPlaylist) {
+   if (!pPlaylist)
+   {
       PLOGW.printf("Playlist not found: %s", triggerPlaylist.c_str());
       return nullptr;
    }
 
    string szPlayFile = parts[6];
-   if (!szPlayFile.empty()) {
+   if (!szPlayFile.empty())
+   {
       szPlayFile = pPlaylist->GetPlayFile(szPlayFile);
-      if (szPlayFile.empty()) {
+      if (szPlayFile.empty())
+      {
          PLOGW.printf("PlayFile not found for playlist %s: %s", pPlaylist->GetFolder().c_str(), parts[6].c_str());
          return nullptr;
       }
@@ -159,39 +166,51 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, string line)
    );
 }
 
-std::vector<StateTrigger> PUPTrigger::ParseTriggers(const std::string& triggerString) {
+std::vector<StateTrigger> PUPTrigger::ParseTriggers(const std::string& triggerString)
+{
    std::vector<StateTrigger> vTriggers;
    std::istringstream stream(triggerString);
    std::string token;
 
-   while (std::getline(stream, token, ',')) {
-      if (token.empty()) {
+   while (std::getline(stream, token, ','))
+   {
+      if (token.empty())
+      {
          PLOGW.printf("Empty token found in trigger string: %s", triggerString.c_str());
          continue;
       }
 
-      try {
+      try
+      {
          size_t equalPos = token.find('=');
          StateTrigger trigger;
 
-         if (equalPos != std::string::npos) {
+         if (equalPos != std::string::npos)
+         {
             // Parse triggers with state (e.g., "W5=1")
             trigger.m_sName = token.substr(0, equalPos);
-            if (trigger.m_sName.empty()) {
+            if (trigger.m_sName.empty())
+            {
                PLOGW.printf("Invalid trigger name in token: %s", token.c_str());
                continue;
             }
             trigger.value = std::stoi(token.substr(equalPos + 1));
-         } else {
+         }
+         else
+         {
             // Parse triggers without state (e.g., "S10")
             trigger.m_sName = token;
             trigger.value = 1;
          }
 
          vTriggers.push_back(std::move(trigger));
-      } catch (const std::invalid_argument& e) {
+      }
+      catch (const std::invalid_argument& e)
+      {
          PLOGE.printf("Invalid trigger format: %s, error: %s", token.c_str(), e.what());
-      } catch (const std::out_of_range& e) {
+      }
+      catch (const std::out_of_range& e)
+      {
          PLOGE.printf("Trigger value out of range: %s, error: %s", token.c_str(), e.what());
       }
    }
@@ -210,10 +229,7 @@ bool PUPTrigger::IsResting()
    return (SDL_GetTicks() - m_lastTriggered) < (m_restSeconds * 1000);
 }
 
-void PUPTrigger::SetTriggered()
-{
-   m_lastTriggered = SDL_GetTicks();
-}
+void PUPTrigger::SetTriggered() { m_lastTriggered = SDL_GetTicks(); }
 
 string PUPTrigger::ToString() const {
    return string("active=") + ((m_active == true) ? "true" : "false") +
