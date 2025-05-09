@@ -3,11 +3,7 @@
 BasedOnStyle: WebKit
 AccessModifierOffset: -3
 AllowShortCaseLabelsOnASingleLine: true
-BreakBeforeBraces: Custom
-BraceWrapping:
-  AfterControlStatement: false
-  BeforeCatch: true
-  AfterFunction: true
+BreakBeforeBraces: Allman
 ColumnLimit: 190
 ConstructorInitializerIndentWidth : 3
 ContinuationIndentWidth: 3
