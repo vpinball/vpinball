@@ -43,14 +43,14 @@ public:
     */
    const string& GetMainTriggerName() const
    {
-      if (!m_vTriggers.empty()) {
-         return m_vTriggers.front().m_sName;
+      if (!m_triggers.empty()) {
+         return m_triggers.front().m_sName;
       }
       return NO_TRIGGER;
    }
    vector<StateTrigger> GetTriggers() const
    {
-      return m_vTriggers;
+      return m_triggers;
    }
    PUPScreen* GetScreen() const { return m_pScreen; }
    PUPPlaylist* GetPlaylist() const { return m_pPlaylist; }
@@ -70,7 +70,7 @@ private:
    PUPTrigger(bool active, const string& szDescript, const vector<StateTrigger>& m_vTriggers, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, int length, int counter, int restSeconds, PUP_TRIGGER_PLAY_ACTION playAction);
    bool m_active;
    string m_szDescript;
-   vector<StateTrigger> m_vTriggers;
+   vector<StateTrigger> m_triggers;
    PUPScreen* m_pScreen;
    PUPPlaylist* m_pPlaylist;
    string m_szPlayFile;
