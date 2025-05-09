@@ -54,7 +54,7 @@ PinSound::PinSound(const Settings& settings)
          Mix_QuerySpec(&m_audioSpecOutput.freq, &m_audioSpecOutput.format, &m_audioSpecOutput.channels);
 
          PLOGI << "Output Device Settings: " << "Freq: " << m_audioSpecOutput.freq << " Format (SDL_AudioFormat): " << m_audioSpecOutput.format
-         << " channels: " << m_audioSpecOutput.channels << ", driver: " << (pdriverName ? pdriverName : "NULL") ;
+            << " channels: " << m_audioSpecOutput.channels << ", driver: " << (pdriverName ? pdriverName : "NULL") ;
       }
    }
 
@@ -96,8 +96,7 @@ void PinSound::initSDLAudio(const Settings& settings)
    const bool good = settings.LoadValue(Settings::Player, "SoundDevice"s, soundDeviceName);
    const bool good2 = settings.LoadValue(Settings::Player, "SoundDeviceBG"s, soundDeviceBGName);
 
-    if (!good && !good2) // use the default SDL audio device
-    {
+    if (!good && !good2) { // use the default SDL audio device
       PLOGI << "Sound Device not set in VPinball.ini.  Using default";
       m_sdl_STD_idx = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
       m_sdl_BG_idx =  SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
@@ -108,31 +107,27 @@ void PinSound::initSDLAudio(const Settings& settings)
       for (size_t i = 0; i < allAudioDevices.size(); ++i) {
          const AudioDevice& audioDevice = allAudioDevices[i];
          if (audioDevice.name == soundDeviceName)
-         {
             m_sdl_STD_idx = audioDevice.id;
-         }
          if (audioDevice.name == soundDeviceBGName)
-         {
             m_sdl_BG_idx = audioDevice.id;
-         }
       }
 
-      if (m_sdl_STD_idx == SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK) // we didn't find a matching name
-      {
+      if (m_sdl_STD_idx == SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK) { // we didn't find a matching name
          PLOGE << "No sound device by that name found in VPinball.ini. " << "SoundDevice:\"" << soundDeviceName << "\" SoundDeviceBG:\"" << 
-           soundDeviceBGName << "\" Using default.";
+            soundDeviceBGName << "\" Using default.";
          m_sdl_STD_idx = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
          m_sdl_BG_idx  = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
       }
-    }
+   }
 
    PinSound::m_SoundMode3D = static_cast<SoundConfigTypes>(settings.LoadValueUInt(Settings::Player, "Sound3D"s));
 
-   if (!SDL_WasInit(SDL_INIT_AUDIO))
+   if (!SDL_WasInit(SDL_INIT_AUDIO)) {
       if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
          PLOGE << "Failed to initialize SDL Audio: " << SDL_GetError();
          return;
       }
+   }
 
    // change the AudioSpec param when we know what sound format output we want.  or get from device
    if (!Mix_OpenAudio(m_sdl_STD_idx, nullptr)) {
@@ -151,8 +146,7 @@ void PinSound::initSDLAudio(const Settings& settings)
 
 void PinSound::UnInitialize()
 {
-   if (m_assignedChannel != -1)
-   {
+   if (m_assignedChannel != -1) {
       const std::lock_guard<std::mutex> lg(m_channelUpdateMutex);
 
       Mix_HaltChannel(m_assignedChannel);
@@ -160,23 +154,19 @@ void PinSound::UnInitialize()
       m_assignedChannel = -1;
    }
 
-   if(m_pMixChunkOrg != nullptr)
-   {
+   if (m_pMixChunkOrg != nullptr) {
       Mix_FreeChunk(m_pMixChunkOrg);
       m_pMixChunkOrg = nullptr;
    }
-   if(m_pMixChunk != nullptr) // free the last converted sample
-   {
+   if (m_pMixChunk != nullptr) { // free the last converted sample
       Mix_FreeChunk(m_pMixChunk);
       m_pMixChunk = nullptr;
    }
-   if(m_pMixMusic != nullptr)
-   {
+   if (m_pMixMusic != nullptr) {
       Mix_FreeMusic(m_pMixMusic);
       m_pMixMusic = nullptr;
    }
-   if (m_pstream)
-   {
+   if (m_pstream) {
       SDL_DestroyAudioStream(m_pstream);
       m_pstream = nullptr;
    }
@@ -208,15 +198,13 @@ HRESULT PinSound::ReInitialize()
       return E_FAIL;
    }
 
-   if(! (m_pMixChunkOrg = Mix_LoadWAV_IO(psdlIOStream, true)))
-   {
+   if (!(m_pMixChunkOrg = Mix_LoadWAV_IO(psdlIOStream, true))) {
       PLOGE << "Failed to load sound via Mix_LoadWAV_IO: " << SDL_GetError();
       return E_FAIL;
    }
 
    // assign a channel to sound
-   if( (m_assignedChannel = getChannel()) == -1) // no more channels
-   {
+   if ((m_assignedChannel = getChannel()) == -1) { // no more channels
       PLOGE << "There are no more SDL mixer channels available to be allocated.";
       return E_FAIL;
    }
@@ -230,27 +218,22 @@ HRESULT PinSound::ReInitialize()
 
 void PinSound::UpdateVolume()
 {
-   if (m_outputTarget == SNDOUT_BACKGLASS)
-   {
-      if (m_pMixMusic != nullptr)
-      {
+   if (m_outputTarget == SNDOUT_BACKGLASS) {
+      if (m_pMixMusic != nullptr) {
          // Backglass music (requested volume is stored in the mix effect as for other sounds)
          MusicVolume(m_mixEffectsData.volume);
       }
-      else if (m_pstream != nullptr)
-      {
+      else if (m_pstream != nullptr) {
          // Backglass stream use stream volume (requested volume is stored in the mix effect as for other sounds)
          SDL_SetAudioStreamGain(m_pstream, m_streamVolume * (g_pplayer ? dequantizeSignedPercent(g_pplayer->m_MusicVolume) : 1.f));
       }
-      else if (m_assignedChannel != -1)
-      {
+      else if (m_assignedChannel != -1) {
          // Backglass sound use mixer volume (requested volume is stored in the mix effect as for other sounds)
          const int nVolume = static_cast<int>(m_mixEffectsData.volume * (g_pplayer ? dequantizeSignedPercent(g_pplayer->m_MusicVolume) : 1.f) * static_cast<float>(MIX_MAX_VOLUME));
          Mix_Volume(m_assignedChannel, nVolume);
       }
    }
-   else
-   {
+   else {
       // Playfield sounds use volume stored in m_mixEffectsData when rendering
       const float newSoundVolume = g_pplayer ? dequantizeSignedPercent(g_pplayer->m_SoundVolume) : 1.f;
       if (m_mixEffectsData.globalTableVolume == 0.f)
@@ -317,8 +300,7 @@ void PinSound::Play(float volume, const float randompitch, const int pitch,
    m_mixEffectsData.volume = clamp(volume, 0.0f, 1.0f);
 
    // BG Sound is handled differently then table sounds.  These are BG sounds stored in the table (vpx file).
-   if (m_outputTarget == SNDOUT_BACKGLASS)
-   {
+   if (m_outputTarget == SNDOUT_BACKGLASS) {
       // adjust volume against the tables global sound setting
       PlayBGSound(clamp(volume * (g_pplayer ? dequantizeSignedPercent(g_pplayer->m_MusicVolume) : 1.0f) + minVol, 0.0f, 1.0f), loopcount, usesame, restart);
       return;
@@ -334,8 +316,7 @@ void PinSound::Play(float volume, const float randompitch, const int pitch,
          Play_SNDCFG_SND3D2CH(m_mixEffectsData.nVolume, randompitch, pitch, pan, front_rear_fade, loopcount, usesame, restart);
          break;
       case SNDCFG_SND3DALLREAR:
-         if (m_mixEffectsData.outputChannels < 4) // channel count must be at least 4.  Front and Rear
-         {
+         if (m_mixEffectsData.outputChannels < 4) { // channel count must be at least 4.  Front and Rear
             PLOGE << "Your sound device does not have the required number of channels (4+) to support this mode. <SND3DALLREAR>";
             break;
          }
@@ -350,8 +331,7 @@ void PinSound::Play(float volume, const float randompitch, const int pitch,
       case SNDCFG_SND3D6CH:
          // we just fall through to the SSF.  This mode is same but it used two different pan and fade algos.  No need to have two different ones now.
       case SNDCFG_SND3DSSF:
-         if (m_mixEffectsData.outputChannels != 8)
-         {
+         if (m_mixEffectsData.outputChannels != 8) {
             PLOGE << "Your sound device does not have the required number of channels (8) to support this mode. <SNDCFG_SND3DSSF>";
             break;
          }
@@ -426,27 +406,22 @@ void PinSound::PlayBGSound(float volume, const int loopcount, const bool usesame
  */
 void PinSound::setPitch(int pitch, float randompitch)
 {
-   if(m_pMixChunk != nullptr) // free the last converted sample
-   {
+   if (m_pMixChunk != nullptr) { // free the last converted sample
       Mix_FreeChunk(m_pMixChunk);
       m_pMixChunk = nullptr;
    }
 
    // check for pitch and resample or pass the original mixchunk if pitch didn't change
-   if(pitch == 0 && randompitch == 0) // If the pitch isn't changed pass the original
-   {
+   if (pitch == 0 && randompitch == 0) // If the pitch isn't changed pass the original
       m_pMixChunk = copyMixChunk(m_pMixChunkOrg);
-   }
-   else
-   {
+   else {
       Mix_Chunk* const mixChunkConvert = (Mix_Chunk*)SDL_malloc(sizeof(Mix_Chunk)); // need to use SDL_malloc as SDL_free will be used when freeing the chunk
       mixChunkConvert->allocated = 1; // you need this set or it won't get freed with Mix_FreeChunk
       mixChunkConvert->volume = 128;
 
       int newFreq = 0;
 
-      if(randompitch > 0)
-      {
+      if (randompitch > 0) {
          const float rndh = rand_mt_01();
          const float rndl = rand_mt_01();
          int freq = (int)((float)m_mixEffectsData.outputFrequency + ((float)m_mixEffectsData.outputFrequency * randompitch * rndh * rndh) - ((float)m_mixEffectsData.outputFrequency * 
@@ -454,9 +429,8 @@ void PinSound::setPitch(int pitch, float randompitch)
          newFreq = freq + pitch; // add the normal pitch in if its set
          //PLOGI << " random: new freq = " << newFreq;
       }
-      else{ // just pitch is set
+      else // just pitch is set
          newFreq = m_mixEffectsData.outputFrequency + pitch;
-      }
 
       //PLOGI << "Channel: " << m_assignedChannel << " Current freq: " << m_mixEffectsData.outputFrequency << " Pitch: " << pitch << " Random pitch: " << randompitch << " Ending new freq = " << newFreq;
 
@@ -507,7 +481,7 @@ void PinSound::Play_SNDCFG_SND3DALLREAR(float nVolume, const float randompitch, 
         usesame <<  " Restart? " << restart; */
 
    if (Mix_Playing(m_assignedChannel)) {
-      if (restart || !usesame){ // stop and reload  
+      if (restart || !usesame) { // stop and reload  
          Mix_HaltChannel(m_assignedChannel);
          setPitch(pitch, randompitch);
          // register the effects.  must do this each time before PlayChannel and once the sound is done its unregistered automatically
@@ -555,7 +529,7 @@ void PinSound::Play_SNDCFG_SND3D2CH(float nVolume, const float randompitch, cons
       usesame <<  " Restart? " << restart; */
 
    if (Mix_Playing(m_assignedChannel)) {
-      if (restart || !usesame){ // stop and reload
+      if (restart || !usesame) { // stop and reload
          Mix_HaltChannel(m_assignedChannel);
          setPitch(pitch, randompitch);
          // register the effects.  must do this each time before PlayChannel and once the sound is done its unregistered automatically
@@ -605,7 +579,7 @@ void PinSound::Play_SNDCFG_SND3DSSF(float nVolume, const float randompitch, cons
       return;
 
    if (Mix_Playing(m_assignedChannel)) { 
-      if (restart || !usesame){ // stop and reload  
+      if (restart || !usesame) { // stop and reload  
          Mix_HaltChannel(m_assignedChannel);
          setPitch(pitch, randompitch);
          // register the effects.  must do this each time before PlayChannel.  When the sound is done playing its automatically unregistered.
@@ -646,7 +620,7 @@ void PinSound::Stop()
  */
 bool PinSound::SetMusicFile(const string& szFileName)
 {
-   if(m_pMixMusic != nullptr)
+   if (m_pMixMusic != nullptr)
       Mix_FreeMusic(m_pMixMusic);
 
    string path = find_case_insensitive_file_path(szFileName);
@@ -688,12 +662,11 @@ bool PinSound::MusicInit(const string& szFileName, const float volume)
 
    const string& filename = szFileName;
 
-   if(m_pMixMusic != nullptr)
+   if (m_pMixMusic != nullptr)
       Mix_FreeMusic(m_pMixMusic);
 
    // need to find the path of the music dir. This does hunt to find the file.
-   for (int i = 0; i < 5; ++i)
-   {
+   for (int i = 0; i < 5; ++i) {
       string path;
       switch (i)
       {
@@ -709,8 +682,7 @@ bool PinSound::MusicInit(const string& szFileName, const float volume)
       path = find_case_insensitive_file_path(path);
       #endif
 
-      if ((m_pMixMusic = Mix_LoadMUS(path.c_str())))
-      {
+      if ((m_pMixMusic = Mix_LoadMUS(path.c_str()))) {
          const float nVolume = volume;
          MusicVolume(nVolume);
          MusicPlay();
@@ -796,8 +768,7 @@ bool PinSound::StreamInit(DWORD frequency, int channels, const float volume)
    m_outputTarget = SNDOUT_BACKGLASS;
    m_pstream = SDL_OpenAudioDeviceStream(m_sdl_BG_idx, &audioSpec, nullptr, nullptr);
 
-   if (m_pstream)
-   {
+   if (m_pstream) {
       m_streamVolume = volume;
       SDL_SetAudioStreamGain(m_pstream, volume * (g_pplayer ? dequantizeSignedPercent(g_pplayer->m_MusicVolume) : 1.f));
       SDL_ResumeAudioStreamDevice(m_pstream); // it always stops paused
@@ -848,8 +819,7 @@ void PinSound::StreamUpdate(void* buffer, DWORD length)
 void PinSound::StreamVolume(const float volume)
 {
    //PLOGI << "STREAM VOL";
-   if (m_streamVolume != volume)
-   {
+   if (m_streamVolume != volume) {
       SDL_SetAudioStreamGain(m_pstream, volume * (g_pplayer ? dequantizeSignedPercent(g_pplayer->m_MusicVolume) : 1.f));
       m_streamVolume = volume;
    }
@@ -883,8 +853,7 @@ PinSound *PinSound::LoadFile(const string& strFileName)
    pps->m_szName = TitleFromFilename(strFileName);
 
    FILE *f;
-   if (fopen_s(&f, strFileName.c_str(), "rb") != 0 || !f)
-   {
+   if (fopen_s(&f, strFileName.c_str(), "rb") != 0 || !f) {
       ShowError("Could not open sound file.");
       return nullptr;
    }
@@ -892,8 +861,7 @@ PinSound *PinSound::LoadFile(const string& strFileName)
    pps->m_cdata = (int)ftell(f);
    fseek(f, 0, SEEK_SET);
    pps->m_pdata = new char[pps->m_cdata];
-   if (fread_s(pps->m_pdata, pps->m_cdata, 1, pps->m_cdata, f) < 1)
-   {
+   if (fread_s(pps->m_pdata, pps->m_cdata, 1, pps->m_cdata, f) < 1) {
       fclose(f);
       ShowError("Could not read from sound file.");
       return nullptr;
@@ -902,7 +870,7 @@ PinSound *PinSound::LoadFile(const string& strFileName)
 
    HRESULT res = pps->ReInitialize();
 
-   if(res == S_OK)
+   if (res == S_OK)
       return pps;
    else
       return nullptr;
@@ -910,7 +878,8 @@ PinSound *PinSound::LoadFile(const string& strFileName)
 
 Mix_Chunk* PinSound::copyMixChunk(const Mix_Chunk* const original)
 {
-   if (!original || original->abuf == nullptr) return nullptr;
+   if (!original || original->abuf == nullptr)
+      return nullptr;
 
    // Allocate a new Mix_Chunk
    Mix_Chunk* const copy = (Mix_Chunk*)SDL_malloc(sizeof(Mix_Chunk)); // need to use SDL_malloc as SDL_free will be used when freeing the chunk
@@ -1008,17 +977,13 @@ void PinSound::calcFade(float leftPanRatio, float rightPanRatio, float fadeRatio
 // static
 float PinSound::PanTo3D(float input)
 {
-	// DirectSound's position command does weird things at exactly 0. 
-	if (fabsf(input) < 0.0001f)
-		input = (input < 0.0f) ? -0.0001f : 0.0001f;
-	if (input < 0.0f)
-	{
-		return -powf(-max(input, -1.0f), (float)(1.0 / 10.0)) * 3.0f;
-	}
-	else
-	{
-		return powf(min(input, 1.0f), (float)(1.0 / 10.0)) * 3.0f;
-	}
+   // DirectSound's position command does weird things at exactly 0. 
+   if (fabsf(input) < 0.0001f)
+      input = (input < 0.0f) ? -0.0001f : 0.0001f;
+   if (input < 0.0f)
+      return -powf(-max(input, -1.0f), (float)(1.0 / 10.0)) * 3.0f;
+   else
+      return powf(min(input, 1.0f), (float)(1.0 / 10.0)) * 3.0f;
 }
 
 // This is a replacement function for PanTo3D() for sound effect panning (audio x-axis).
@@ -1028,68 +993,68 @@ float PinSound::PanTo3D(float input)
 // static
 float PinSound::PanSSF(float pan)
 {
-	// This math could probably be simplified but it is kept in long form
-	// to aid in fine tuning and clarity of function.
+   // This math could probably be simplified but it is kept in long form
+   // to aid in fine tuning and clarity of function.
 
-	// Clip the pan input range to -1.0 to 1.0
-	float x = clamp(pan, -1.f, 1.f);
+   // Clip the pan input range to -1.0 to 1.0
+   float x = clamp(pan, -1.f, 1.f);
 
-	// Rescale pan range from an exponential [-1,0] and [0,1] to a linear [-1.0, 1.0]
-	// Do not avoid values close to zero like PanTo3D() does as that
-	// prevents the middle range of the exponential curves converting back to 
-	// a linear scale (which would leave a gap in the center of the range).
-	// This basically undoes the Pan() fading function in the table scripts.
+   // Rescale pan range from an exponential [-1,0] and [0,1] to a linear [-1.0, 1.0]
+   // Do not avoid values close to zero like PanTo3D() does as that
+   // prevents the middle range of the exponential curves converting back to 
+   // a linear scale (which would leave a gap in the center of the range).
+   // This basically undoes the Pan() fading function in the table scripts.
 
-	x = (x < 0.0f) ? -powf(-x, 0.1f) : powf(x, 0.1f);
+   x = (x < 0.0f) ? -powf(-x, 0.1f) : powf(x, 0.1f);
 
-	// Increase the pan range from [-1.0, 1.0] to [-3.0, 3.0] to improve the surround sound fade effect
+   // Increase the pan range from [-1.0, 1.0] to [-3.0, 3.0] to improve the surround sound fade effect
 
-	x *= 3.0f;
+   x *= 3.0f;
 
-	// BASS pan effect is much better than VPX 10.6/DirectSound3d but it
-	// could still stand a little enhancement to exaggerate the effect.
-	// The effect goal is to place slingshot effects almost entirely left/right
-	// and flipper effects in the cross fade region (louder on their corresponding
-	// sides but still audible on the opposite side..)
+   // BASS pan effect is much better than VPX 10.6/DirectSound3d but it
+   // could still stand a little enhancement to exaggerate the effect.
+   // The effect goal is to place slingshot effects almost entirely left/right
+   // and flipper effects in the cross fade region (louder on their corresponding
+   // sides but still audible on the opposite side..)
 
-	// Rescale [-3.0,0.0) to [-3.00,-2.00] and [0,3.0] to [2.00,3.00]
+   // Rescale [-3.0,0.0) to [-3.00,-2.00] and [0,3.0] to [2.00,3.00]
 
-	// Reminder: Linear Conversion Formula [o1,o2] to [n1,n2]
-	// x' = ( (x - o1) / (o2 - o1) ) * (n2 - n1) + n1
-	//
-	// We retain the full formulas below to make it easier to tweak the values.
-	// The compiler will optimize away the excess math.
+   // Reminder: Linear Conversion Formula [o1,o2] to [n1,n2]
+   // x' = ( (x - o1) / (o2 - o1) ) * (n2 - n1) + n1
+   //
+   // We retain the full formulas below to make it easier to tweak the values.
+   // The compiler will optimize away the excess math.
 
-	if (x >= 0.0f)
-		x = ((x -  0.0f) / (3.0f -  0.0f)) * ( 3.0f -  2.0f) +  2.0f;
-	else
-		x = ((x - -3.0f) / (0.0f - -3.0f)) * (-2.0f - -3.0f) + -2.0f;
+   if (x >= 0.0f)
+      x = ((x -  0.0f) / (3.0f -  0.0f)) * ( 3.0f -  2.0f) +  2.0f;
+   else
+      x = ((x - -3.0f) / (0.0f - -3.0f)) * (-2.0f - -3.0f) + -2.0f;
 
-	// Clip the pan output range to 3.0 to -3.0
-	//
-	// This probably can never happen but is here in case the formulas above
-	// change or there is a rounding issue.
+   // Clip the pan output range to 3.0 to -3.0
+   //
+   // This probably can never happen but is here in case the formulas above
+   // change or there is a rounding issue.
 
-	if (x > 3.0f)
-		x = 3.0f;
-	else if (x < -3.0f)
-		x = -3.0f;
+   if (x > 3.0f)
+      x = 3.0f;
+   else if (x < -3.0f)
+      x = -3.0f;
 
-	// If the final value is sufficiently close to zero it causes sound to come from
-	// all speakers and lose it's positional effect. We scale well away from zero
-	// above but will keep this check to document the effect or catch the condition
-	// if the formula above is later changed to one that can result in x = 0.0.
+   // If the final value is sufficiently close to zero it causes sound to come from
+   // all speakers and lose it's positional effect. We scale well away from zero
+   // above but will keep this check to document the effect or catch the condition
+   // if the formula above is later changed to one that can result in x = 0.0.
 
-	// NOTE: This no longer seems to be the case with VPX 10.7/BASS
+   // NOTE: This no longer seems to be the case with VPX 10.7/BASS
 
-	// HOWEVER: Weird things still happen NEAR 0.0 or if both x and z are at 0.0.
-	//          So we keep the fix here with wider margins to prevent that case.
-	//          The current formula won't produce values in this weird range.
+   // HOWEVER: Weird things still happen NEAR 0.0 or if both x and z are at 0.0.
+   //          So we keep the fix here with wider margins to prevent that case.
+   //          The current formula won't produce values in this weird range.
 
-	if (fabsf(x) < 0.1f)
-		x = (x < 0.0f) ? -0.1f : 0.1f;
+   if (fabsf(x) < 0.1f)
+      x = (x < 0.0f) ? -0.1f : 0.1f;
 
-	return x;
+   return x;
 }
 
 // This is a replacement function for PanTo3D() for sound effect fading (audio z-axis).
@@ -1100,78 +1065,78 @@ float PinSound::PanSSF(float pan)
 // static
 float PinSound::FadeSSF(float front_rear_fade)
 {
-	float z;
+   float z;
 
-	// Clip the fade input range to -1.0 to 1.0
+   // Clip the fade input range to -1.0 to 1.0
 
-	if (front_rear_fade < -1.0f)
-		z = -1.0f;
-	else if (front_rear_fade > 1.0f)
-		z = 1.0f;
-	else
-		z = front_rear_fade;
+   if (front_rear_fade < -1.0f)
+      z = -1.0f;
+   else if (front_rear_fade > 1.0f)
+      z = 1.0f;
+   else
+      z = front_rear_fade;
 
-	// Rescale fade range from an exponential [0,-1] and [0,1] to a linear [-1.0, 1.0]
-	// Do not avoid values close to zero like PanTo3D() does at this point as that
-	// prevents the middle range of the exponential curves converting back to 
-	// a linear scale (which would leave a gap in the center of the range).
-	// This basically undoes the AudioFade() fading function in the table scripts.	
+   // Rescale fade range from an exponential [0,-1] and [0,1] to a linear [-1.0, 1.0]
+   // Do not avoid values close to zero like PanTo3D() does at this point as that
+   // prevents the middle range of the exponential curves converting back to 
+   // a linear scale (which would leave a gap in the center of the range).
+   // This basically undoes the AudioFade() fading function in the table scripts.   
 
-	z = (z < 0.0f) ? -powf(-z, 0.1f) : powf(z, 0.1f);
+   z = (z < 0.0f) ? -powf(-z, 0.1f) : powf(z, 0.1f);
 
-	// Increase the fade range from [-1.0, 1.0] to [-3.0, 3.0] to improve the surround sound fade effect
+   // Increase the fade range from [-1.0, 1.0] to [-3.0, 3.0] to improve the surround sound fade effect
 
-	z *= 3.0f;
+   z *= 3.0f;
 
-	// Rescale fade range from [-3.0,3.0] to [0.0,-2.5] in an attempt to remove all sound from
-	// the surround sound front (backbox) speakers and place them close to the surround sound
-	// side (cabinet rear) speakers.
-	//
-	// Reminder: Linear Conversion Formula [o1,o2] to [n1,n2]
-	// z' = ( (z - o1) / (o2 - o1) ) * (n2 - n1) + n1
-	//
-	// We retain the full formulas below to make it easier to tweak the values.
-	// The compiler will optimize away the excess math.
+   // Rescale fade range from [-3.0,3.0] to [0.0,-2.5] in an attempt to remove all sound from
+   // the surround sound front (backbox) speakers and place them close to the surround sound
+   // side (cabinet rear) speakers.
+   //
+   // Reminder: Linear Conversion Formula [o1,o2] to [n1,n2]
+   // z' = ( (z - o1) / (o2 - o1) ) * (n2 - n1) + n1
+   //
+   // We retain the full formulas below to make it easier to tweak the values.
+   // The compiler will optimize away the excess math.
 
-	// Rescale to -2.5 instead of -3.0 to further push sound away from rear channels
-	z = ((z - -3.0f) / (3.0f - -3.0f)) * (-2.5f - 0.0f) + 0.0f;
+   // Rescale to -2.5 instead of -3.0 to further push sound away from rear channels
+   z = ((z - -3.0f) / (3.0f - -3.0f)) * (-2.5f - 0.0f) + 0.0f;
 
-	// With BASS the above scaling is sufficient to keep the playfield sounds out of 
-	// the backbox. However playfield sounds are heavily weighted to the rear channels. 
-	// For BASS we do a simple scale of the top third [0,-1.0] BY 0.10 to favor
-	// the side channels. This is better than we could do in VPX 10.6 where z just
-	// had to be set to 0.0 as there was no fade range that didn't leak to the backbox
-	// as well.
-	
-	if (z > -1.0f)
-		z = z / 10.0f;
+   // With BASS the above scaling is sufficient to keep the playfield sounds out of 
+   // the backbox. However playfield sounds are heavily weighted to the rear channels. 
+   // For BASS we do a simple scale of the top third [0,-1.0] BY 0.10 to favor
+   // the side channels. This is better than we could do in VPX 10.6 where z just
+   // had to be set to 0.0 as there was no fade range that didn't leak to the backbox
+   // as well.
+   
+   if (z > -1.0f)
+      z = z / 10.0f;
 
-	// Clip the fade output range to 0.0 to -3.0
-	//
-	// This probably can never happen but is here in case the formulas above
-	// change or there is a rounding issue. A result even slightly greater
-	// than zero can bleed to the backbox speakers.
+   // Clip the fade output range to 0.0 to -3.0
+   //
+   // This probably can never happen but is here in case the formulas above
+   // change or there is a rounding issue. A result even slightly greater
+   // than zero can bleed to the backbox speakers.
 
-	if (z > 0.0f)
-		z = 0.0f;
-	else if (z < -3.0f)
-		z = -3.0f;
+   if (z > 0.0f)
+      z = 0.0f;
+   else if (z < -3.0f)
+      z = -3.0f;
 
-	// If the final value is sufficiently close to zero it causes sound to come from
-	// all speakers on some systems and lose it's positional effect. We do use 0.0 
-	// above and could set the safe value there. Instead will keep this check to document 
-	// the effect or catch the condition if the formula/conditions above are later changed
+   // If the final value is sufficiently close to zero it causes sound to come from
+   // all speakers on some systems and lose it's positional effect. We do use 0.0 
+   // above and could set the safe value there. Instead will keep this check to document 
+   // the effect or catch the condition if the formula/conditions above are later changed
 
-	// NOTE: This no longer seems to be the case with VPX 10.7/BASS
+   // NOTE: This no longer seems to be the case with VPX 10.7/BASS
 
-	// HOWEVER: Weird things still happen near 0.0 or if both x and z are at 0.0.
-	//          So we keep the fix here to prevent that case. This does push a tiny bit 
-	//          of audio to the rear channels but that is perfectly ok.
+   // HOWEVER: Weird things still happen near 0.0 or if both x and z are at 0.0.
+   //          So we keep the fix here to prevent that case. This does push a tiny bit 
+   //          of audio to the rear channels but that is perfectly ok.
 
-	if (fabsf(z) < 0.0001f)
-		z = -0.0001f;
+   if (fabsf(z) < 0.0001f)
+      z = -0.0001f;
 
-	return fabsf(z); // I changed this to get a positive range from 0 to 2.5. not sure why before they returned negative
+   return fabsf(z); // I changed this to get a positive range from 0 to 2.5. not sure why before they returned negative
 }
 
 /**
@@ -1269,8 +1234,7 @@ void PinSound::MoveFrontToRearEffect(int chan, void *stream, int len, void *udat
 
          // 8 channels (7.1): FL, FR, FC, LFE, BL, BR, SL, SR
          for (int index = 0; index < total_samples; index += channels) {
-            if(channels >= 4 && channels <= 8)
-            {
+            if (channels >= 4 && channels <= 8) {
                // Apply volume gains and copy them to rear
                samples[index+  offs] = (int16_t)((float)samples[index]   * leftPanRatio);  // copy FL to BL
                samples[index+1+offs] = (int16_t)((float)samples[index+1] * rightPanRatio); // copy FR to BR
@@ -1290,8 +1254,7 @@ void PinSound::MoveFrontToRearEffect(int chan, void *stream, int len, void *udat
          calcPan(leftPanRatio, rightPanRatio, med->nVolume, PinSound::PanTo3D(med->pan));
 
          for (int index = 0; index < total_samples; index += channels) {
-            if(channels >= 4 && channels <= 8)
-            {
+            if (channels >= 4 && channels <= 8) {
                // Apply volume gains and copy them to rear
                samples[index+  offs] = samples[index]   * leftPanRatio;  // copy FL to BL
                samples[index+1+offs] = samples[index+1] * rightPanRatio; // copy FR to BR
@@ -1453,9 +1416,9 @@ uint16_t PinSound::getChannelCountWav() const
     uint16_t bitsPerSample;    // Bits per sample
    };
    // Check that the data is at least the size of the WavHeader
-   if (m_cdata < (int)sizeof(WavHeader)) {
+   if (m_cdata < (int)sizeof(WavHeader))
       throw std::runtime_error("Invalid WAV data: too small to contain a valid header.");
-   }
+
    const WavHeader* header = reinterpret_cast<const WavHeader*>(m_pdata);
 
    // Return the number of channels
@@ -1476,12 +1439,12 @@ int PinSound::getChannel()
 {
    const std::lock_guard<std::mutex> lg(m_channelUpdateMutex);
 
-   for (size_t i = 0; i < m_channelInUse.size(); ++i)
-      if (!m_channelInUse[i])
-      {
+   for (size_t i = 0; i < m_channelInUse.size(); ++i) {
+      if (!m_channelInUse[i]) {
          m_channelInUse[i] = true;
          return (int)i;
       }
+   }
 
    // we're out of channels. increase by 100
    const int oldMaxSDLMixerChannels = (int)m_channelInUse.size();
@@ -1510,30 +1473,38 @@ int PinSound::getChannel()
 void PinSound::EnumerateAudioDevices(vector<AudioDevice>& audioDevices)
 {
    if (!SDL_WasInit(SDL_INIT_AUDIO))
-   if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
-      PLOGE << "SDL Init Audio failed: " << SDL_GetError();
-      return;
-   }
+      if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
+         PLOGE << "SDL Init Audio failed: " << SDL_GetError();
+         return;
+      }
 
    //output name of audio driver
    const char *pdriverName;
-   if( (pdriverName = SDL_GetCurrentAudioDriver() ) != nullptr)
+   if ((pdriverName = SDL_GetCurrentAudioDriver()) != nullptr) {
       PLOGI << "Current Audio Driver: " << pdriverName;
-   else
+   }
+   else {
       PLOGE << "SDL Get Audio Driver failed: " << SDL_GetError();
+   }
 
    // log default audio device
-   const char *pDefaultDevice;
    SDL_AudioDeviceID devid = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, nullptr);
-   if ( (pDefaultDevice = SDL_GetAudioDeviceName(devid) ) != nullptr)
-      PLOGI << "Default Audio Device: " << pDefaultDevice;
-   else
-      PLOGE << "SDL Failed to default device: " << SDL_GetError();
+   const char *pDefaultDeviceName = SDL_GetAudioDeviceName(devid);
+   if (pDefaultDeviceName) {
+      PLOGI << "Default Audio Device: " << pDefaultDeviceName;
+   }
+   else {
+      const char* pError = SDL_GetError();
+      // workaround for https://github.com/libsdl-org/SDL/issues/12977
+      if (pError && pError[0] != '\0') {
+         PLOGE << "Failed to get name for Default Audio Device: " << pError;
+      }
+   }
+   SDL_CloseAudioDevice(devid);
 
    audioDevices.clear();
    int count;
    SDL_AudioDeviceID* pAudioList = SDL_GetAudioPlaybackDevices(&count);
-
    for (int i = 0; i < count; ++i) {
       AudioDevice audioDevice = {};
       audioDevice.id = pAudioList[i];
@@ -1543,7 +1514,7 @@ void PinSound::EnumerateAudioDevices(vector<AudioDevice>& audioDevices)
       strcpy_s(audioDevice.name, SDL_GetAudioDeviceName(pAudioList[i]));
       #endif
       SDL_AudioSpec spec;
-      SDL_GetAudioDeviceFormat( pAudioList[i], &spec, nullptr);
+      SDL_GetAudioDeviceFormat(pAudioList[i], &spec, nullptr);
       audioDevice.channels = spec.channels;
       SDL_CloseAudioDevice(pAudioList[i]);
       audioDevices.push_back(audioDevice);

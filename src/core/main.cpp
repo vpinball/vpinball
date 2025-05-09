@@ -956,10 +956,21 @@ public:
       Logger::GetInstance()->SetupLogger(m_vpinball.m_settings.LoadValueBool(Settings::Editor, "EnableLog"s));
 
       PLOGI << "Starting VPX - " << VP_VERSION_STRING_FULL_LITERAL;
-      PLOGI << "Setting file is: " << m_szIniFileName;
+      PLOGI << "Settings file was loaded from " << m_szIniFileName;
+
+#ifdef ENABLE_SDL_VIDEO
+      SDL_SetHint(SDL_HINT_WINDOW_ALLOW_TOPMOST, "0");
+      if (!SDL_InitSubSystem(SDL_INIT_VIDEO)) {
+         PLOGE << "SDL_InitSubSystem(SDL_INIT_VIDEO) failed: " << SDL_GetError();
+         exit(1);
+      }
+#endif
 
 #ifdef __STANDALONE__
-      PLOGI << "Settings file was loaded from " << m_szIniFileName;
+      PLOGI << "SDL video driver: " << SDL_GetCurrentVideoDriver();
+
+      TTF_Init();
+
       PLOGI << "m_logicalNumberOfProcessors=" << m_vpinball.GetLogicalNumberOfProcessors();
       PLOGI << "m_szMyPath=" << m_vpinball.m_szMyPath;
       PLOGI << "m_szMyPrefPath=" << m_vpinball.m_szMyPrefPath;
@@ -995,12 +1006,12 @@ public:
       }
 
       if (m_listSnd) {
-         PLOGI << "Available sound devices:";
          vector<AudioDevice> allAudioDevices;
          PinSound::EnumerateAudioDevices(allAudioDevices);
+         PLOGI << "Available sound devices:";
          for (size_t i = 0; i < allAudioDevices.size(); ++i) {
             AudioDevice audioDevice = allAudioDevices.at(i);
-            PLOGI << "id " << audioDevice.id << ": name=" << audioDevice.name << ", channels=" << audioDevice.channels;
+            PLOGI << "  id " << audioDevice.id << ": name=" << audioDevice.name << ", channels=" << audioDevice.channels;
          }
       }
 
@@ -1311,21 +1322,6 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
          SetNVIDIAThreadOptimization(NV_THREAD_OPTIMIZATION_DISABLE);
       }
       #endif
-
-      #ifdef ENABLE_SDL_VIDEO
-         SDL_SetHint(SDL_HINT_WINDOW_ALLOW_TOPMOST, "0");
-         if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
-         {
-            PLOGE << "SDL_InitSubSystem(SDL_INIT_VIDEO) failed: " << SDL_GetError();
-            exit(1);
-         }
-         PLOGI << "Using video driver " << SDL_GetCurrentVideoDriver();
-      #endif
-
-      #ifdef __STANDALONE__
-         TTF_Init();
-      #endif
-
       // Start Win32++
       VPApp theApp(hInstance);
       theApp.InitInstance();
