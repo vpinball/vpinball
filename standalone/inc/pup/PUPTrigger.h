@@ -48,7 +48,7 @@ public:
       }
       return NO_TRIGGER;
    }
-   std::vector<StateTrigger> GetTriggers() const
+   vector<StateTrigger> GetTriggers() const
    {
       return m_vTriggers;
    }
@@ -66,11 +66,11 @@ public:
    string ToString() const;
 
 private:
-   static std::vector<StateTrigger> ParseTriggers(vector<string>::const_reference part);
-   PUPTrigger(bool active, const string& szDescript, const std::vector<StateTrigger>& m_vTriggers, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, int length, int counter, int restSeconds, PUP_TRIGGER_PLAY_ACTION playAction);
+   static vector<StateTrigger> ParseTriggers(vector<string>::const_reference part);
+   PUPTrigger(bool active, const string& szDescript, const vector<StateTrigger>& m_vTriggers, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, int length, int counter, int restSeconds, PUP_TRIGGER_PLAY_ACTION playAction);
    bool m_active;
    string m_szDescript;
-   std::vector<StateTrigger> m_vTriggers;
+   vector<StateTrigger> m_vTriggers;
    PUPScreen* m_pScreen;
    PUPPlaylist* m_pPlaylist;
    string m_szPlayFile;

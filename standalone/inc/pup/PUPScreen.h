@@ -80,8 +80,8 @@ class PUPScreen
 public:
    ~PUPScreen();
 
-   static PUPScreen* CreateFromCSV(const string& line, const std::vector<PUPPlaylist*>& playlists);
-   static PUPScreen* CreateDefault(int screenNum, const std::vector<PUPPlaylist*>& playlists);
+   static PUPScreen* CreateFromCSV(const string& line, const vector<PUPPlaylist*>& playlists);
+   static PUPScreen* CreateDefault(int screenNum, const vector<PUPPlaylist*>& playlists);
    PUP_SCREEN_MODE GetMode() const { return m_mode; }
    void SetMode(PUP_SCREEN_MODE mode) { m_mode = mode; }
    int GetScreenNum() const { return m_screenNum; }
@@ -113,13 +113,13 @@ public:
    void SetPage(int pagenum, int seconds);
    void Render();
    const SDL_Rect& GetRect() const { return m_rect; }
-   void SetBackground(PUPPlaylist* pPlaylist, const std::string& szPlayFile);
+   void SetBackground(PUPPlaylist* pPlaylist, const string& szPlayFile);
    void SetCustomPos(const string& string);
-   void SetOverlay(PUPPlaylist* pPlaylist, const std::string& szPlayFile);
-   void SetMedia(PUPPlaylist* pPlaylist, const std::string& szPlayFile, float volume, int priority, bool skipSamePriority);
+   void SetOverlay(PUPPlaylist* pPlaylist, const string& szPlayFile);
+   void SetMedia(PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, bool skipSamePriority);
    void StopMedia();
    void StopMedia(int priority);
-   void StopMedia(PUPPlaylist* pPlaylist, const std::string& szPlayFile);
+   void StopMedia(PUPPlaylist* pPlaylist, const string& szPlayFile);
    void SetLoop(int state);
    void SetBG(int mode);
    void QueuePlay(const string& szPlaylist, const string& szPlayFile, float volume, int priority);
@@ -130,7 +130,7 @@ public:
    string ToString(bool full = true) const;
 
 private:
-   PUPScreen(PUP_SCREEN_MODE mode, int screenNum, const string& screenDes, const string& backgroundPlaylist, const string& backgroundFilename, bool transparent, float volume, PUPCustomPos* pCustomPos, const std::vector<PUPPlaylist*>& playlists);
+   PUPScreen(PUP_SCREEN_MODE mode, int screenNum, const string& screenDes, const string& backgroundPlaylist, const string& backgroundFilename, bool transparent, float volume, PUPCustomPos* pCustomPos, const vector<PUPPlaylist*>& playlists);
 
    void LoadTriggers();
    void ProcessQueue();
@@ -173,5 +173,5 @@ private:
    bool m_isRunning;
    std::thread m_thread;
    std::mutex m_renderMutex;
-   std::unordered_map<std::string, int> m_triggersState;
+   std::unordered_map<string, int> m_triggersState;
 };

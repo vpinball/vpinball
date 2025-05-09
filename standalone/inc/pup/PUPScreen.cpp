@@ -57,7 +57,7 @@ const char* PUP_PINDISPLAY_REQUEST_TYPE_TO_STRING(PUP_PINDISPLAY_REQUEST_TYPE va
      CustomPos = CustomPos
 */
 
-PUPScreen::PUPScreen(PUP_SCREEN_MODE mode, int screenNum, const string& szScreenDes, const string& szBackgroundPlaylist, const string& szBackgroundFilename, bool transparent, float volume, PUPCustomPos* pCustomPos, const std::vector<PUPPlaylist*>& playlists)
+PUPScreen::PUPScreen(PUP_SCREEN_MODE mode, int screenNum, const string& szScreenDes, const string& szBackgroundPlaylist, const string& szBackgroundFilename, bool transparent, float volume, PUPCustomPos* pCustomPos, const vector<PUPPlaylist*>& playlists)
 {
    m_pManager = PUPManager::GetInstance();
 
@@ -127,7 +127,7 @@ PUPScreen::~PUPScreen()
       pChildren->clear();
 }
 
-PUPScreen* PUPScreen::CreateFromCSV(const string& line, const std::vector<PUPPlaylist*>& playlists)
+PUPScreen* PUPScreen::CreateFromCSV(const string& line, const vector<PUPPlaylist*>& playlists)
 {
    vector<string> parts = parse_csv_line(line);
    if (parts.size() != 8) {
@@ -166,7 +166,7 @@ PUPScreen* PUPScreen::CreateFromCSV(const string& line, const std::vector<PUPPla
       PUPCustomPos::CreateFromCSV(parts[7]), playlists);
 }
 
-PUPScreen* PUPScreen::CreateDefault(int screenNum, const std::vector<PUPPlaylist*>& playlists)
+PUPScreen* PUPScreen::CreateDefault(int screenNum, const vector<PUPPlaylist*>& playlists)
 {
    if (PUPManager::GetInstance()->HasScreen(screenNum)) {
       PLOGW.printf("Screen already exists: screenNum=%d", screenNum);
@@ -333,7 +333,7 @@ void PUPScreen::SetSize(int w, int h)
    }
 }
 
-void PUPScreen::SetBackground(PUPPlaylist* pPlaylist, const std::string& szPlayFile)
+void PUPScreen::SetBackground(PUPPlaylist* pPlaylist, const string& szPlayFile)
 {
    std::lock_guard<std::mutex> lock(m_renderMutex);
    LoadRenderable(&m_background, pPlaylist->GetPlayFilePath(szPlayFile));
@@ -346,13 +346,13 @@ void PUPScreen::SetCustomPos(const string& szCustomPos)
    m_pCustomPos = PUPCustomPos::CreateFromCSV(szCustomPos);
 }
 
-void PUPScreen::SetOverlay(PUPPlaylist* pPlaylist, const std::string& szPlayFile)
+void PUPScreen::SetOverlay(PUPPlaylist* pPlaylist, const string& szPlayFile)
 {
    std::lock_guard<std::mutex> lock(m_renderMutex);
    LoadRenderable(&m_overlay, pPlaylist->GetPlayFilePath(szPlayFile));
 }
 
-void PUPScreen::SetMedia(PUPPlaylist* pPlaylist, const std::string& szPlayFile, float volume, int priority, bool skipSamePriority)
+void PUPScreen::SetMedia(PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, bool skipSamePriority)
 {
    std::lock_guard<std::mutex> lock(m_renderMutex);
    m_pMediaPlayerManager->Play(pPlaylist, szPlayFile, m_pParent ? (volume / 100.0f) * m_pParent->GetVolume() : volume, priority, skipSamePriority);
@@ -370,7 +370,7 @@ void PUPScreen::StopMedia(int priority)
    m_pMediaPlayerManager->Stop(priority);
 }
 
-void PUPScreen::StopMedia(PUPPlaylist* pPlaylist, const std::string& szPlayFile)
+void PUPScreen::StopMedia(PUPPlaylist* pPlaylist, const string& szPlayFile)
 {
    std::lock_guard<std::mutex> lock(m_renderMutex);
    m_pMediaPlayerManager->Stop(pPlaylist, szPlayFile);
@@ -460,7 +460,7 @@ void PUPScreen::QueueBG(int mode)
 void PUPScreen::QueueTrigger(char type, int number, int value)
 {
    // we store the whole state to be able to mach later
-   const std::string name = std::string(1, type) + std::to_string(number);
+   const string name = string(1, type) + std::to_string(number);
    m_triggersState[name] = value;
 
    // The first trigger is the main trigger, the rest we just check

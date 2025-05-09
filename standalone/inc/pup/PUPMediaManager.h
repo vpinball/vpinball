@@ -29,7 +29,7 @@ public:
    ~PUPMediaManager() {};
 
    void SetRenderer(SDL_Renderer* pRenderer);
-   void Play(PUPPlaylist* pPlaylist, const std::string& szPlayFile, float volume, int priority, bool skipSamePriority);
+   void Play(PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, bool skipSamePriority);
    void SetBG(bool isBackground);
    void SetLoop(bool isLoop);
    void Stop();

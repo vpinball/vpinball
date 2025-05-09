@@ -20,9 +20,9 @@ PUPPlugin::~PUPPlugin()
 {
 }
 
-const std::string& PUPPlugin::GetName() const
+const string& PUPPlugin::GetName() const
 {
-   static const std::string name = "PinUpPlugin"s;
+   static const string name = "PinUpPlugin"s;
    return name;
 }
 

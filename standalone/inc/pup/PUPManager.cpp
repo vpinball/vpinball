@@ -120,7 +120,7 @@ void PUPManager::LoadPlaylists()
    std::ifstream playlistsFile;
    playlistsFile.open(szPlaylistsPath, std::ifstream::in);
    if (playlistsFile.is_open()) {
-      ankerl::unordered_dense::set<std::string> lowerPlaylistNames;
+      ankerl::unordered_dense::set<string> lowerPlaylistNames;
       string line;
       int i = 0;
       while (std::getline(playlistsFile, line)) {

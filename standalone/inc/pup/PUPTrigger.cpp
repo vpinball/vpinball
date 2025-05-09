@@ -56,7 +56,7 @@ const char* PUP_TRIGGER_PLAY_ACTION_TO_STRING(PUP_TRIGGER_PLAY_ACTION value)
      D = PupCap DMD Match
 */
 
-PUPTrigger::PUPTrigger(bool active, const string& szDescript, const std::vector<StateTrigger>& vTriggers, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, int length, int counter, int restSeconds, PUP_TRIGGER_PLAY_ACTION playAction)
+PUPTrigger::PUPTrigger(bool active, const string& szDescript, const vector<StateTrigger>& vTriggers, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, int length, int counter, int restSeconds, PUP_TRIGGER_PLAY_ACTION playAction)
 {
    m_active = active;
    m_szDescript = szDescript;
@@ -166,11 +166,11 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, string line)
    );
 }
 
-std::vector<StateTrigger> PUPTrigger::ParseTriggers(const std::string& triggerString)
+vector<StateTrigger> PUPTrigger::ParseTriggers(const string& triggerString)
 {
-   std::vector<StateTrigger> vTriggers;
+   vector<StateTrigger> vTriggers;
    std::istringstream stream(triggerString);
-   std::string token;
+   string token;
 
    while (std::getline(stream, token, ','))
    {
@@ -185,7 +185,7 @@ std::vector<StateTrigger> PUPTrigger::ParseTriggers(const std::string& triggerSt
          size_t equalPos = token.find('=');
          StateTrigger trigger;
 
-         if (equalPos != std::string::npos)
+         if (equalPos != string::npos)
          {
             // Parse triggers with state (e.g., "W5=1")
             trigger.m_sName = token.substr(0, equalPos);
@@ -194,7 +194,7 @@ std::vector<StateTrigger> PUPTrigger::ParseTriggers(const std::string& triggerSt
                PLOGW.printf("Invalid trigger name in token: %s", token.c_str());
                continue;
             }
-            trigger.value = std::stoi(token.substr(equalPos + 1));
+            trigger.value = stoi(token.substr(equalPos + 1));
          }
          else
          {
@@ -235,7 +235,7 @@ string PUPTrigger::ToString() const {
    return string("active=") + ((m_active == true) ? "true" : "false") +
       ", descript=" + m_szDescript +
       ", trigger=[" + [&]() {
-            std::string result;
+            string result;
             for (const auto& trigger : m_vTriggers) {
                if (!result.empty()) {
                   result += ", ";
