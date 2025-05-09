@@ -19,7 +19,8 @@ typedef enum
    PUP_TRIGGER_PLAY_ACTION_CUSTOM_FUNC     // Call a custom function
 } PUP_TRIGGER_PLAY_ACTION;
 
-struct PUPStateTrigger{
+struct PUPStateTrigger
+{
    string m_sName;
    int value;
 };
