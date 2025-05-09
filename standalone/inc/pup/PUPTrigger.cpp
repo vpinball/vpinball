@@ -4,7 +4,6 @@
 #include "PUPScreen.h"
 #include "PUPPlaylist.h"
 
-// clang-format off
 const char* PUP_TRIGGER_PLAY_ACTION_STRINGS[] = {
    "PUP_TRIGGER_PLAY_ACTION_NORMAL",
    "PUP_TRIGGER_PLAY_ACTION_LOOP",
@@ -17,7 +16,6 @@ const char* PUP_TRIGGER_PLAY_ACTION_STRINGS[] = {
    "PUP_TRIGGER_PLAY_ACTION_SKIP_SAME_PRTY",
    "PUP_TRIGGER_PLAY_ACTION_CUSTOM_FUNC"
 };
-// clang-format on
 
 const char* PUP_TRIGGER_PLAY_ACTION_TO_STRING(PUP_TRIGGER_PLAY_ACTION value)
 {
@@ -58,12 +56,12 @@ const char* PUP_TRIGGER_PLAY_ACTION_TO_STRING(PUP_TRIGGER_PLAY_ACTION value)
      D = PupCap DMD Match
 */
 
-PUPTrigger::PUPTrigger(bool active, const string& szDescript, const vector<PUPStateTrigger>& triggers, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const string& szPlayFile, float volume,
+PUPTrigger::PUPTrigger(bool active, const string& szDescript, const vector<PUPTriggerCondition>& triggers, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const string& szPlayFile, float volume,
    int priority, int length, int counter, int restSeconds, PUP_TRIGGER_PLAY_ACTION playAction)
 {
    m_active = active;
    m_szDescript = szDescript;
-   m_triggers = triggers;
+   m_conditions = triggers;
    m_pScreen = pScreen;
    m_pPlaylist = pPlaylist;
    m_szPlayFile = szPlayFile;
@@ -157,9 +155,9 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, string line)
       playAction);
 }
 
-vector<PUPStateTrigger> PUPTrigger::ParseTriggers(const string& triggerString)
+vector<PUPTriggerCondition> PUPTrigger::ParseTriggers(const string& triggerString)
 {
-   vector<PUPStateTrigger> vTriggers;
+   vector<PUPTriggerCondition> vTriggers;
    std::istringstream stream(triggerString);
    string token;
 
@@ -171,7 +169,7 @@ vector<PUPStateTrigger> PUPTrigger::ParseTriggers(const string& triggerString)
 
       try {
          size_t equalPos = token.find('=');
-         PUPStateTrigger trigger;
+         PUPTriggerCondition trigger;
 
          if (equalPos != string::npos) {
             // Parse triggers with state (e.g., "W5=1")
@@ -213,22 +211,21 @@ bool PUPTrigger::IsResting()
 
 void PUPTrigger::SetTriggered() { m_lastTriggered = SDL_GetTicks(); }
 
-const string& PUPTrigger::GetMainTriggerName() const
+const string& PUPTrigger::GetMainConditionName() const
 {
-   if (!m_triggers.empty()) {
-      return m_triggers.front().m_sName;
+   if (!m_conditions.empty()) {
+      return m_conditions.front().m_sName;
    }
-   return NO_TRIGGER;
+   return NO_CONDITIONS;
 }
 
 string PUPTrigger::ToString() const
 {
-   // clang-format off
    return string("active=") + ((m_active == true) ? "true" : "false") +
       ", descript=" + m_szDescript +
       ", trigger=[" + [&]() {
             string result;
-            for (const auto& trigger : m_triggers) {
+            for (const auto& trigger : m_conditions) {
                if (!result.empty()) {
                   result += ", ";
                }
@@ -245,5 +242,4 @@ string PUPTrigger::ToString() const
       ", count=" + std::to_string(m_counter) +
       ", restSeconds=" + std::to_string(m_restSeconds) +
       ", playAction=" + string(PUP_TRIGGER_PLAY_ACTION_TO_STRING(m_playAction));
-   // clang-format on
 }

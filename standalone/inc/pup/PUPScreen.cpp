@@ -257,7 +257,7 @@ void PUPScreen::AddTrigger(PUPTrigger* pTrigger)
    if (!pTrigger)
       return;
 
-   m_triggerMap[pTrigger->GetMainTriggerName()].push_back(pTrigger);
+   m_triggerMap[pTrigger->GetMainConditionName()].push_back(pTrigger);
 }
 
 vector<PUPTrigger*>* PUPScreen::GetTriggers(const string& szTrigger)
