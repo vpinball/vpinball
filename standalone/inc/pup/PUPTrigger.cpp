@@ -56,7 +56,7 @@ const char* PUP_TRIGGER_PLAY_ACTION_TO_STRING(PUP_TRIGGER_PLAY_ACTION value)
      D = PupCap DMD Match
 */
 
-PUPTrigger::PUPTrigger(bool active, const string& szDescript, const vector<StateTrigger>& triggers, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, int length, int counter, int restSeconds, PUP_TRIGGER_PLAY_ACTION playAction)
+PUPTrigger::PUPTrigger(bool active, const string& szDescript, const vector<PUPStateTrigger>& triggers, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, int length, int counter, int restSeconds, PUP_TRIGGER_PLAY_ACTION playAction)
 {
    m_active = active;
    m_szDescript = szDescript;
@@ -166,9 +166,9 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, string line)
    );
 }
 
-vector<StateTrigger> PUPTrigger::ParseTriggers(const string& triggerString)
+vector<PUPStateTrigger> PUPTrigger::ParseTriggers(const string& triggerString)
 {
-   vector<StateTrigger> vTriggers;
+   vector<PUPStateTrigger> vTriggers;
    std::istringstream stream(triggerString);
    string token;
 
@@ -183,7 +183,7 @@ vector<StateTrigger> PUPTrigger::ParseTriggers(const string& triggerString)
       try
       {
          size_t equalPos = token.find('=');
-         StateTrigger trigger;
+         PUPStateTrigger trigger;
 
          if (equalPos != string::npos)
          {
