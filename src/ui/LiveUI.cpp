@@ -1721,6 +1721,11 @@ void LiveUI::UpdateTweakPage()
 
 void LiveUI::HandleTweakInput()
 {
+   static U32 lastHandle = msec();
+   const U32 now = msec();
+   const U32 sinceLastInputHandleMs = now - lastHandle;
+   lastHandle = now;
+
    BackdropSetting activeTweakSetting = m_tweakPageOptions[m_activeTweakIndex];
    PinTable * const table = m_live_table;
 
@@ -1780,13 +1785,30 @@ void LiveUI::HandleTweakInput()
       if (keycode == eLeftFlipperKey || keycode == eRightFlipperKey)
       {
          static U32 startOfPress = 0;
+         static float floatFraction = 1.0f;
          if (keyEvent != 0)
+         {
             startOfPress = msec();
+            floatFraction = 1.0f;
+         }
          if (keyEvent == 2) // Do not react on key up (only key down or long press)
             continue;
          const bool up = keycode == eRightFlipperKey;
          const float step = up ? 1.f : -1.f;
-         const float incSpeed = step * 0.05f * min(10.f, 0.75f + (float)(msec() - startOfPress) / 500.0f);
+         const float absIncSpeed = sinceLastInputHandleMs * 0.001f * min(50.f, 0.75f + (float)(msec() - startOfPress) / 300.0f);
+         const float incSpeed = up ? absIncSpeed : -absIncSpeed;
+
+         // Since we need less than 1 int per frame for eg volume, we need to keep track of the float value
+         // and step every n frames.
+         floatFraction += absIncSpeed * 10.f;
+         int absIntStep = 0;
+         if (floatFraction >= 1.f)
+         {
+            absIntStep = static_cast<int>(floatFraction);
+            floatFraction = floatFraction - absIntStep;
+         }
+         const int intStep = up ? absIntStep : -absIntStep;
+
          ViewSetup &viewSetup = table->mViewSetups[table->m_BG_current_set];
          const bool isWindow = viewSetup.mMode == VLM_WINDOW;
          bool modified = true;
@@ -1857,7 +1879,7 @@ void LiveUI::HandleTweakInput()
          case BS_VRY: { Vertex3Ds pos = m_player->m_vrDevice->GetSceneOffset(); pos.y += 1.f * incSpeed; m_player->m_vrDevice->SetSceneOffset(pos); break; }
          case BS_VRZ: { Vertex3Ds pos = m_player->m_vrDevice->GetSceneOffset(); pos.z += 1.f * incSpeed; m_player->m_vrDevice->SetSceneOffset(pos); break; }
          case BS_AR_VR: if (keyEvent == 1) m_renderer->m_vrApplyColorKey = !m_renderer->m_vrApplyColorKey; break;
-      
+
          // Table customization
          case BS_DayNight:
             m_renderer->m_globalEmissionScale = clamp(m_renderer->m_globalEmissionScale + incSpeed * 0.05f, 0.f, 1.f);
@@ -1869,18 +1891,18 @@ void LiveUI::HandleTweakInput()
             m_live_table->FireOptionEvent(1); // Table option changed event
             break;
          case BS_Volume:
-            m_player->m_MusicVolume = clamp(m_player->m_MusicVolume + static_cast<int>(step), 0, 100);
-            m_player->m_SoundVolume = clamp(m_player->m_SoundVolume + static_cast<int>(step), 0, 100);
+            m_player->m_MusicVolume = clamp(m_player->m_MusicVolume + intStep, 0, 100);
+            m_player->m_SoundVolume = clamp(m_player->m_SoundVolume + intStep, 0, 100);
             m_player->UpdateVolume();
             m_live_table->FireOptionEvent(1); // Table option changed event
             break;
          case BS_BackglassVolume:
-            m_player->m_MusicVolume = clamp(m_player->m_MusicVolume + static_cast<int>(step), 0, 100);
+            m_player->m_MusicVolume = clamp(m_player->m_MusicVolume + intStep, 0, 100);
             m_player->UpdateVolume();
             m_live_table->FireOptionEvent(1); // Table option changed event
             break;
          case BS_PlayfieldVolume:
-            m_player->m_SoundVolume = clamp(m_player->m_SoundVolume + static_cast<int>(step), 0, 100);
+            m_player->m_SoundVolume = clamp(m_player->m_SoundVolume + intStep, 0, 100);
             m_player->UpdateVolume();
             m_live_table->FireOptionEvent(1); // Table option changed event
             break;
