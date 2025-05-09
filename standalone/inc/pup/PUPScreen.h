@@ -173,5 +173,5 @@ private:
    bool m_isRunning;
    std::thread m_thread;
    std::mutex m_renderMutex;
-   std::unordered_map<string, int> m_triggersState;
+   ankerl::unordered_dense::map<string, int> m_triggersState;
 };
