@@ -960,15 +960,15 @@ public:
 
 #ifdef ENABLE_SDL_VIDEO
       SDL_SetHint(SDL_HINT_WINDOW_ALLOW_TOPMOST, "0");
-      if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
-      {
+      if (!SDL_InitSubSystem(SDL_INIT_VIDEO)) {
          PLOGE << "SDL_InitSubSystem(SDL_INIT_VIDEO) failed: " << SDL_GetError();
          exit(1);
       }
-      PLOGI << "SDL video driver: " << SDL_GetCurrentVideoDriver();
 #endif
 
 #ifdef __STANDALONE__
+      PLOGI << "SDL video driver: " << SDL_GetCurrentVideoDriver();
+
       TTF_Init();
 
       PLOGI << "m_logicalNumberOfProcessors=" << m_vpinball.GetLogicalNumberOfProcessors();
