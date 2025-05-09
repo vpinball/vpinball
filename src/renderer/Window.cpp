@@ -79,9 +79,10 @@ Window::Window(const string &title, const Settings::Section section, const strin
          break;
       }
    }
+   const int configuredDisplay = m_display;
    for (const DisplayConfig& dispConf : displays)
    {
-      if (dispConf.isPrimary || dispConf.display == m_display)
+      if (dispConf.isPrimary || dispConf.display == configuredDisplay)
       {
          wnd_x = dispConf.left;
          wnd_y = dispConf.top;
