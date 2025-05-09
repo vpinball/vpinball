@@ -463,8 +463,8 @@ void PUPScreen::QueueTrigger(char type, int number, int value)
    const string typeNumber = string(1, type) + std::to_string(number);
    m_triggersState[typeNumber] = value;
 
-   // The first trigger is the main trigger, the rest we just check
-   vector<PUPTrigger*>* pTriggers = GetTriggers(type + std::to_string(number));
+   // The first condition is the main trigger, the rest is matched on their current state
+   vector<PUPTrigger*>* pTriggers = GetTriggers(typeNumber);
    if (!pTriggers)
       return;
 
