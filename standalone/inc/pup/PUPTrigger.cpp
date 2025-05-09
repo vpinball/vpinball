@@ -157,7 +157,7 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, string line)
 
 vector<PUPTriggerCondition> PUPTrigger::ParseTriggers(const string& triggerString)
 {
-   vector<PUPTriggerCondition> vTriggers;
+   vector<PUPTriggerCondition> conditions;
    std::istringstream stream(triggerString);
    string token;
 
@@ -179,13 +179,14 @@ vector<PUPTriggerCondition> PUPTrigger::ParseTriggers(const string& triggerStrin
                continue;
             }
             trigger.value = stoi(token.substr(equalPos + 1));
-         } else {
+         }
+         else {
             // Parse triggers without state (e.g., "S10")
             trigger.m_sName = token;
             trigger.value = 1;
          }
 
-         vTriggers.push_back(std::move(trigger));
+         conditions.push_back(std::move(trigger));
       }
       catch (const std::invalid_argument& e) {
          PLOGE.printf("Invalid trigger format: %s, error: %s", token.c_str(), e.what());
@@ -195,7 +196,7 @@ vector<PUPTriggerCondition> PUPTrigger::ParseTriggers(const string& triggerStrin
       }
    }
 
-   return vTriggers;
+   return conditions;
 }
 
 bool PUPTrigger::IsResting()
@@ -213,9 +214,9 @@ void PUPTrigger::SetTriggered() { m_lastTriggered = SDL_GetTicks(); }
 
 const string& PUPTrigger::GetMainConditionName() const
 {
-   if (!m_conditions.empty()) {
+   if (!m_conditions.empty())
       return m_conditions.front().m_sName;
-   }
+
    return NO_CONDITIONS;
 }
 

@@ -468,13 +468,11 @@ void PUPScreen::QueueTrigger(char type, int number, int value)
    if (!pTriggers)
       return;
 
-   for (PUPTrigger* pTrigger : *pTriggers)
-   {
+   for (PUPTrigger* pTrigger : *pTriggers) {
       if (!pTrigger->IsActive())
          continue;
 
-      for (const auto& [expectedTypeNumber, expectedValue] : pTrigger->GetTriggers())
-      {
+      for (const auto& [expectedTypeNumber, expectedValue] : pTrigger->GetTriggers()) {
          auto currentValue = m_triggersState.find(expectedTypeNumber);
          if (currentValue == m_triggersState.end() || currentValue->second != expectedValue)
             return;
