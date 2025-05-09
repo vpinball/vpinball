@@ -45,7 +45,7 @@ const char* PUP_TRIGGER_PLAY_ACTION_TO_STRING(PUP_TRIGGER_PLAY_ACTION value)
      Loop = PlayAction
      Defaults = ?
 
-   trigger names:
+   trigger name prefixes:
 
      S = Solenoid
      W = Switches
@@ -56,11 +56,12 @@ const char* PUP_TRIGGER_PLAY_ACTION_TO_STRING(PUP_TRIGGER_PLAY_ACTION value)
      D = PupCap DMD Match
 */
 
-PUPTrigger::PUPTrigger(bool active, const string& szDescript, const string& szTrigger, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, int length, int counter, int restSeconds, PUP_TRIGGER_PLAY_ACTION playAction)
+PUPTrigger::PUPTrigger(bool active, const string& szDescript, const vector<PUPTriggerCondition>& triggers, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const string& szPlayFile, float volume,
+   int priority, int length, int counter, int restSeconds, PUP_TRIGGER_PLAY_ACTION playAction)
 {
    m_active = active;
    m_szDescript = szDescript;
-   m_szTrigger = szTrigger;
+   m_conditions = triggers;
    m_pScreen = pScreen;
    m_pPlaylist = pPlaylist;
    m_szPlayFile = szPlayFile;
@@ -143,20 +144,59 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, string line)
    else
       playAction = PUP_TRIGGER_PLAY_ACTION_NORMAL;
 
-   return new PUPTrigger(
-      active,
+   return new PUPTrigger(active,
       parts[2], // descript
-      parts[3], // trigger
-      pScreen,
-      pPlaylist,
-      szPlayFile,
-      parts[7].empty() ? pPlaylist->GetVolume() : string_to_int(parts[7], 0), // volume
+      ParseTriggers(parts[3]), // trigger
+      pScreen, pPlaylist, szPlayFile, parts[7].empty() ? pPlaylist->GetVolume() : string_to_int(parts[7], 0), // volume
       parts[8].empty() ? pPlaylist->GetPriority() : string_to_int(parts[8], 0), // priority
       string_to_int(parts[9], 0), // length
       string_to_int(parts[10], 0), // counter
       parts[11].empty() ? pPlaylist->GetRestSeconds() : string_to_int(parts[11], 0), // rest seconds
-      playAction
-   );
+      playAction);
+}
+
+vector<PUPTriggerCondition> PUPTrigger::ParseTriggers(const string& triggerString)
+{
+   vector<PUPTriggerCondition> conditions;
+   std::istringstream stream(triggerString);
+   string token;
+
+   while (std::getline(stream, token, ',')) {
+      if (token.empty()) {
+         PLOGW.printf("Empty token found in trigger string: %s", triggerString.c_str());
+         continue;
+      }
+
+      try {
+         size_t equalPos = token.find('=');
+         PUPTriggerCondition trigger;
+
+         if (equalPos != string::npos) {
+            // Parse triggers with state (e.g., "W5=1")
+            trigger.m_sName = token.substr(0, equalPos);
+            if (trigger.m_sName.empty()) {
+               PLOGW.printf("Invalid trigger name in token: %s", token.c_str());
+               continue;
+            }
+            trigger.value = stoi(token.substr(equalPos + 1));
+         }
+         else {
+            // Parse triggers without state (e.g., "S10")
+            trigger.m_sName = token;
+            trigger.value = 1;
+         }
+
+         conditions.push_back(std::move(trigger));
+      }
+      catch (const std::invalid_argument& e) {
+         PLOGE.printf("Invalid trigger format: %s, error: %s", token.c_str(), e.what());
+      }
+      catch (const std::out_of_range& e) {
+         PLOGE.printf("Trigger value out of range: %s, error: %s", token.c_str(), e.what());
+      }
+   }
+
+   return conditions;
 }
 
 bool PUPTrigger::IsResting()
@@ -170,15 +210,30 @@ bool PUPTrigger::IsResting()
    return (SDL_GetTicks() - m_lastTriggered) < (m_restSeconds * 1000);
 }
 
-void PUPTrigger::SetTriggered()
+void PUPTrigger::SetTriggered() { m_lastTriggered = SDL_GetTicks(); }
+
+const string& PUPTrigger::GetMainConditionName() const
 {
-   m_lastTriggered = SDL_GetTicks();
+   if (!m_conditions.empty())
+      return m_conditions.front().m_sName;
+
+   return NO_CONDITIONS;
 }
 
-string PUPTrigger::ToString() const {
+string PUPTrigger::ToString() const
+{
    return string("active=") + ((m_active == true) ? "true" : "false") +
       ", descript=" + m_szDescript +
-      ", trigger=" + m_szTrigger +
+      ", trigger=[" + [&]() {
+            string result;
+            for (const auto& trigger : m_conditions) {
+               if (!result.empty()) {
+                  result += ", ";
+               }
+               result += "{name=" + trigger.m_sName + ", state=" + std::to_string(trigger.value) + "}";
+            }
+            return result;
+      }() + "]" +
       ", screen={" + m_pScreen->ToString().c_str() + "}" +
       ", playlist={" + m_pPlaylist->ToString().c_str() + "}" +
       ", playFile=" + m_szPlayFile +

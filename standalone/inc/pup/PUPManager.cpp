@@ -120,7 +120,7 @@ void PUPManager::LoadPlaylists()
    std::ifstream playlistsFile;
    playlistsFile.open(szPlaylistsPath, std::ifstream::in);
    if (playlistsFile.is_open()) {
-      ankerl::unordered_dense::set<std::string> lowerPlaylistNames;
+      ankerl::unordered_dense::set<string> lowerPlaylistNames;
       string line;
       int i = 0;
       while (std::getline(playlistsFile, line)) {
@@ -230,14 +230,10 @@ TTF_Font* PUPManager::GetFont(const string& szFont)
 
 void PUPManager::QueueTriggerData(PUPTriggerData data)
 {
-   if (data.value == 0)
-      return;
-
    {
       std::lock_guard<std::mutex> lock(m_queueMutex);
       m_triggerDataQueue.push({ data.type, data.number, data.value });
    }
-
    m_queueCondVar.notify_one();
 }
 
