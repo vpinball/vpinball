@@ -19,17 +19,39 @@ typedef enum
    PUP_TRIGGER_PLAY_ACTION_CUSTOM_FUNC     // Call a custom function
 } PUP_TRIGGER_PLAY_ACTION;
 
+struct StateTrigger{
+   string m_sName;
+   int value;
+};
+
+const string NO_TRIGGER = "";
+
 const char* PUP_TRIGGER_PLAY_ACTION_TO_STRING(PUP_TRIGGER_PLAY_ACTION value);
 
 class PUPTrigger
 {
 public:
-   ~PUPTrigger() {}
-
+   ~PUPTrigger() { }
    static PUPTrigger* CreateFromCSV(PUPScreen* pScreen, string line);
    bool IsActive() const { return m_active; }
    const string& GetDescription() const { return m_szDescript; }
-   const string& GetTrigger() const { return m_szTrigger; }
+   /**
+    * @brief Retrieves the name of the first trigger.
+    *
+    * @return The name of the first trigger as a `string`.
+    *         Returns NO_TRIGGER if no triggers are available.
+    */
+   const string& GetMainTriggerName() const
+   {
+      if (!m_vTriggers.empty()) {
+         return m_vTriggers.front().m_sName;
+      }
+      return NO_TRIGGER;
+   }
+   std::vector<StateTrigger> GetTriggers() const
+   {
+      return m_vTriggers;
+   }
    PUPScreen* GetScreen() const { return m_pScreen; }
    PUPPlaylist* GetPlaylist() const { return m_pPlaylist; }
    const string& GetPlayFile() const { return m_szPlayFile; }
@@ -44,10 +66,11 @@ public:
    string ToString() const;
 
 private:
-   PUPTrigger(bool active, const string& szDescript, const string& szTrigger, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, int length, int counter, int restSeconds, PUP_TRIGGER_PLAY_ACTION playAction);
+   static std::vector<StateTrigger> ParseTriggers(vector<string>::const_reference part);
+   PUPTrigger(bool active, const string& szDescript, const std::vector<StateTrigger>& m_vTriggers, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, int length, int counter, int restSeconds, PUP_TRIGGER_PLAY_ACTION playAction);
    bool m_active;
    string m_szDescript;
-   string m_szTrigger;
+   std::vector<StateTrigger> m_vTriggers;
    PUPScreen* m_pScreen;
    PUPPlaylist* m_pPlaylist;
    string m_szPlayFile;

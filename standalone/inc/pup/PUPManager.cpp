@@ -230,14 +230,10 @@ TTF_Font* PUPManager::GetFont(const string& szFont)
 
 void PUPManager::QueueTriggerData(PUPTriggerData data)
 {
-   if (data.value == 0)
-      return;
-
    {
       std::lock_guard<std::mutex> lock(m_queueMutex);
       m_triggerDataQueue.push({ data.type, data.number, data.value });
    }
-
    m_queueCondVar.notify_one();
 }
 

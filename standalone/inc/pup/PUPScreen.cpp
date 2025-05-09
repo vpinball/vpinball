@@ -257,7 +257,7 @@ void PUPScreen::AddTrigger(PUPTrigger* pTrigger)
    if (!pTrigger)
       return;
 
-   m_triggerMap[pTrigger->GetTrigger()].push_back(pTrigger);
+   m_triggerMap[pTrigger->GetMainTriggerName()].push_back(pTrigger);
 }
 
 vector<PUPTrigger*>* PUPScreen::GetTriggers(const string& szTrigger)
@@ -459,15 +459,30 @@ void PUPScreen::QueueBG(int mode)
 
 void PUPScreen::QueueTrigger(char type, int number, int value)
 {
-   if (value == 0)
-      return;
+   // we store the whole state to be able to mach later
+   const std::string name = std::string(1, type) + std::to_string(number);
+   m_triggersState[name] = value;
 
+   // The first trigger is the main trigger, the rest we just check
    vector<PUPTrigger*>* pTriggers = GetTriggers(type + std::to_string(number));
    if (!pTriggers)
       return;
 
    for (PUPTrigger* pTrigger : *pTriggers) {
-      PUPTriggerRequest* pRequest = new PUPTriggerRequest();
+      if (!pTrigger->IsActive())
+         continue;
+
+      for (const auto& [m_sName, value] : pTrigger->GetTriggers()) {
+         auto currentValue = m_triggersState.find(m_sName);
+         if (currentValue == m_triggersState.end()) {
+            return;
+         }
+         if (currentValue->second != value) {
+            return;
+         }
+      }
+
+      auto* pRequest = new PUPTriggerRequest();
       pRequest->pTrigger = pTrigger;
       pRequest->value = value;
 
