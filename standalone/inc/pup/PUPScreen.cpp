@@ -460,7 +460,7 @@ void PUPScreen::QueueBG(int mode)
 void PUPScreen::QueueTrigger(char type, int number, int value)
 {
    // we store the whole state to be able to mach later
-   const string typeNumber = string(1, type) + std::to_string(number);
+   const string typeNumber = type + std::to_string(number);
    m_triggersState[typeNumber] = value;
 
    // The first condition is the main trigger, the rest is matched on their current state
