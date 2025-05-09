@@ -231,6 +231,14 @@ bool PUPTrigger::IsResting()
 
 void PUPTrigger::SetTriggered() { m_lastTriggered = SDL_GetTicks(); }
 
+const string& PUPTrigger::GetMainTriggerName() const
+{
+   if (!m_triggers.empty()) {
+      return m_triggers.front().m_sName;
+   }
+   return NO_TRIGGER;
+}
+
 string PUPTrigger::ToString() const {
    return string("active=") + ((m_active == true) ? "true" : "false") +
       ", descript=" + m_szDescript +

@@ -36,23 +36,7 @@ public:
    static PUPTrigger* CreateFromCSV(PUPScreen* pScreen, string line);
    bool IsActive() const { return m_active; }
    const string& GetDescription() const { return m_szDescript; }
-   /**
-    * @brief Retrieves the name of the first trigger.
-    *
-    * @return The name of the first trigger as a `string`.
-    *         Returns NO_TRIGGER if no triggers are available.
-    */
-   const string& GetMainTriggerName() const
-   {
-      if (!m_triggers.empty()) {
-         return m_triggers.front().m_sName;
-      }
-      return NO_TRIGGER;
-   }
-   vector<PUPStateTrigger> GetTriggers() const
-   {
-      return m_triggers;
-   }
+   vector<PUPStateTrigger> GetTriggers() const { return m_triggers; }
    PUPScreen* GetScreen() const { return m_pScreen; }
    PUPPlaylist* GetPlaylist() const { return m_pPlaylist; }
    const string& GetPlayFile() const { return m_szPlayFile; }
@@ -64,6 +48,13 @@ public:
    PUP_TRIGGER_PLAY_ACTION GetPlayAction() const { return m_playAction; }
    bool IsResting();
    void SetTriggered();
+   /**
+    * @brief Retrieves the name of the first trigger.
+    *
+    * @return The name of the first trigger as a `string`.
+    *         Returns NO_TRIGGER if no triggers are available.
+    */
+   const string& GetMainTriggerName() const;
    string ToString() const;
 
 private:
