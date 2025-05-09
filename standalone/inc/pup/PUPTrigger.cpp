@@ -4,6 +4,7 @@
 #include "PUPScreen.h"
 #include "PUPPlaylist.h"
 
+// clang-format off
 const char* PUP_TRIGGER_PLAY_ACTION_STRINGS[] = {
    "PUP_TRIGGER_PLAY_ACTION_NORMAL",
    "PUP_TRIGGER_PLAY_ACTION_LOOP",
@@ -16,6 +17,7 @@ const char* PUP_TRIGGER_PLAY_ACTION_STRINGS[] = {
    "PUP_TRIGGER_PLAY_ACTION_SKIP_SAME_PRTY",
    "PUP_TRIGGER_PLAY_ACTION_CUSTOM_FUNC"
 };
+// clang-format on
 
 const char* PUP_TRIGGER_PLAY_ACTION_TO_STRING(PUP_TRIGGER_PLAY_ACTION value)
 {
@@ -56,7 +58,8 @@ const char* PUP_TRIGGER_PLAY_ACTION_TO_STRING(PUP_TRIGGER_PLAY_ACTION value)
      D = PupCap DMD Match
 */
 
-PUPTrigger::PUPTrigger(bool active, const string& szDescript, const vector<PUPStateTrigger>& triggers, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, int length, int counter, int restSeconds, PUP_TRIGGER_PLAY_ACTION playAction)
+PUPTrigger::PUPTrigger(bool active, const string& szDescript, const vector<PUPStateTrigger>& triggers, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const string& szPlayFile, float volume,
+   int priority, int length, int counter, int restSeconds, PUP_TRIGGER_PLAY_ACTION playAction)
 {
    m_active = active;
    m_szDescript = szDescript;
@@ -76,8 +79,7 @@ PUPTrigger::PUPTrigger(bool active, const string& szDescript, const vector<PUPSt
 PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, string line)
 {
    vector<string> parts = parse_csv_line(line);
-   if (parts.size() != 14)
-   {
+   if (parts.size() != 14) {
       PLOGD.printf("Invalid trigger: %s", line.c_str());
       return nullptr;
    }
@@ -90,39 +92,33 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, string line)
       return nullptr;
 
    bool active = (string_to_int(parts[1], 0) == 1);
-   if (!active)
-   {
+   if (!active) {
       PLOGD.printf("Inactive trigger: %s", line.c_str());
       return nullptr;
    }
 
-   if (StrCompareNoCase(triggerPlayAction, "CustomFunc"))
-   {
+   if (StrCompareNoCase(triggerPlayAction, "CustomFunc")) {
       // TODO parse the custom function and call PUPPinDisplay::SendMSG when triggered
       PLOGW.printf("CustomFunc not implemented: %s", line.c_str());
       return nullptr;
    }
 
    // Sometimes an empty playlist but with description is used as a comment/separator.
-   if (triggerPlaylist.empty())
-   {
+   if (triggerPlaylist.empty()) {
       // TODO A PuP Pack Audit should mark these as comment triggers if the trigger is active
       return nullptr;
    }
 
    PUPPlaylist* pPlaylist = pScreen->GetPlaylist(triggerPlaylist);
-   if (!pPlaylist)
-   {
+   if (!pPlaylist) {
       PLOGW.printf("Playlist not found: %s", triggerPlaylist.c_str());
       return nullptr;
    }
 
    string szPlayFile = parts[6];
-   if (!szPlayFile.empty())
-   {
+   if (!szPlayFile.empty()) {
       szPlayFile = pPlaylist->GetPlayFile(szPlayFile);
-      if (szPlayFile.empty())
-      {
+      if (szPlayFile.empty()) {
          PLOGW.printf("PlayFile not found for playlist %s: %s", pPlaylist->GetFolder().c_str(), parts[6].c_str());
          return nullptr;
       }
@@ -150,20 +146,15 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, string line)
    else
       playAction = PUP_TRIGGER_PLAY_ACTION_NORMAL;
 
-   return new PUPTrigger(
-      active,
+   return new PUPTrigger(active,
       parts[2], // descript
       ParseTriggers(parts[3]), // trigger
-      pScreen,
-      pPlaylist,
-      szPlayFile,
-      parts[7].empty() ? pPlaylist->GetVolume() : string_to_int(parts[7], 0), // volume
+      pScreen, pPlaylist, szPlayFile, parts[7].empty() ? pPlaylist->GetVolume() : string_to_int(parts[7], 0), // volume
       parts[8].empty() ? pPlaylist->GetPriority() : string_to_int(parts[8], 0), // priority
       string_to_int(parts[9], 0), // length
       string_to_int(parts[10], 0), // counter
       parts[11].empty() ? pPlaylist->GetRestSeconds() : string_to_int(parts[11], 0), // rest seconds
-      playAction
-   );
+      playAction);
 }
 
 vector<PUPStateTrigger> PUPTrigger::ParseTriggers(const string& triggerString)
@@ -172,32 +163,25 @@ vector<PUPStateTrigger> PUPTrigger::ParseTriggers(const string& triggerString)
    std::istringstream stream(triggerString);
    string token;
 
-   while (std::getline(stream, token, ','))
-   {
-      if (token.empty())
-      {
+   while (std::getline(stream, token, ',')) {
+      if (token.empty()) {
          PLOGW.printf("Empty token found in trigger string: %s", triggerString.c_str());
          continue;
       }
 
-      try
-      {
+      try {
          size_t equalPos = token.find('=');
          PUPStateTrigger trigger;
 
-         if (equalPos != string::npos)
-         {
+         if (equalPos != string::npos) {
             // Parse triggers with state (e.g., "W5=1")
             trigger.m_sName = token.substr(0, equalPos);
-            if (trigger.m_sName.empty())
-            {
+            if (trigger.m_sName.empty()) {
                PLOGW.printf("Invalid trigger name in token: %s", token.c_str());
                continue;
             }
             trigger.value = stoi(token.substr(equalPos + 1));
-         }
-         else
-         {
+         } else {
             // Parse triggers without state (e.g., "S10")
             trigger.m_sName = token;
             trigger.value = 1;
@@ -205,12 +189,10 @@ vector<PUPStateTrigger> PUPTrigger::ParseTriggers(const string& triggerString)
 
          vTriggers.push_back(std::move(trigger));
       }
-      catch (const std::invalid_argument& e)
-      {
+      catch (const std::invalid_argument& e) {
          PLOGE.printf("Invalid trigger format: %s, error: %s", token.c_str(), e.what());
       }
-      catch (const std::out_of_range& e)
-      {
+      catch (const std::out_of_range& e) {
          PLOGE.printf("Trigger value out of range: %s, error: %s", token.c_str(), e.what());
       }
    }
@@ -239,7 +221,9 @@ const string& PUPTrigger::GetMainTriggerName() const
    return NO_TRIGGER;
 }
 
-string PUPTrigger::ToString() const {
+string PUPTrigger::ToString() const
+{
+   // clang-format off
    return string("active=") + ((m_active == true) ? "true" : "false") +
       ", descript=" + m_szDescript +
       ", trigger=[" + [&]() {
@@ -261,4 +245,5 @@ string PUPTrigger::ToString() const {
       ", count=" + std::to_string(m_counter) +
       ", restSeconds=" + std::to_string(m_restSeconds) +
       ", playAction=" + string(PUP_TRIGGER_PLAY_ACTION_TO_STRING(m_playAction));
+   // clang-format on
 }
