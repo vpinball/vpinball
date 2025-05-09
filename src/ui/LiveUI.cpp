@@ -670,7 +670,10 @@ LiveUI::LiveUI(RenderDevice *const rd)
    else
    {
       // Use display DPI setting
-      m_dpi = SDL_GetWindowDisplayScale(m_player->m_playfieldWnd->GetCore());
+      // On macOS/iOS, keep m_dpi at 1.0f. ImGui_ImplSDL3_NewFrame applies a 2.0f DisplayFramebufferScale
+      // for SDL_WINDOW_HIGH_PIXEL_DENSITY windows. A m_dpi of 2.0 would cause the UI to scale at 400%.
+      // See: https://wiki.libsdl.org/SDL3/README/highdpi
+      m_dpi = SDL_GetWindowDisplayScale(m_player->m_playfieldWnd->GetCore()) / SDL_GetWindowPixelDensity(m_player->m_playfieldWnd->GetCore());
    }
 #else // Win32 Windowing
    ImGui_ImplWin32_Init(m_player->m_playfieldWnd->GetCore());
@@ -864,8 +867,8 @@ void LiveUI::Render()
 
    // Rendering must happen on a render target matching the dimension we used to prepare the UI frame
    const ImGuiIO &io = ImGui::GetIO();
-   assert( ((m_rotate == 0 || m_rotate == 2) && RenderTarget::GetCurrentRenderTarget()->GetWidth() == (int)io.DisplaySize.x && RenderTarget::GetCurrentRenderTarget()->GetHeight() == (int)io.DisplaySize.y)
-        || ((m_rotate == 1 || m_rotate == 3) && RenderTarget::GetCurrentRenderTarget()->GetWidth() == (int)io.DisplaySize.y && RenderTarget::GetCurrentRenderTarget()->GetHeight() == (int)io.DisplaySize.x));
+   assert( ((m_rotate == 0 || m_rotate == 2) && RenderTarget::GetCurrentRenderTarget()->GetWidth() == (int)io.DisplaySize.x * (int)io.DisplayFramebufferScale.x && RenderTarget::GetCurrentRenderTarget()->GetHeight() == (int)io.DisplaySize.y * (int)io.DisplayFramebufferScale.y)
+        || ((m_rotate == 1 || m_rotate == 3) && RenderTarget::GetCurrentRenderTarget()->GetWidth() == (int)io.DisplaySize.y * (int)io.DisplayFramebufferScale.y && RenderTarget::GetCurrentRenderTarget()->GetHeight() == (int)io.DisplaySize.x * (int)io.DisplayFramebufferScale.x));
 
    if (m_rotate != 0 && !m_rotation_callback_added)
    {
@@ -918,9 +921,12 @@ void LiveUI::Render()
    ImDrawData * const draw_data = ImGui::GetDrawData();
    if (m_rotate == 1 || m_rotate == 3)
    {
-      const float tmp = draw_data->DisplaySize.x;
+      const float size = draw_data->DisplaySize.x;
       draw_data->DisplaySize.x = draw_data->DisplaySize.y;
-      draw_data->DisplaySize.y = tmp;
+      draw_data->DisplaySize.y = size;
+      const float scale = draw_data->FramebufferScale.x;
+      draw_data->FramebufferScale.x = draw_data->FramebufferScale.y;
+      draw_data->FramebufferScale.y = scale;
    }
 
    #if defined(ENABLE_BGFX)
@@ -1355,17 +1361,18 @@ void LiveUI::Update(const int width, const int height)
    #endif
 
    ImGuiIO &io = ImGui::GetIO();
-   io.DisplaySize = ImVec2(static_cast<float>(width), static_cast<float>(height)); // The render size may not match the window size used by ImGui_ImplWin32_NewFrame (for example for VR)
-   io.DisplayFramebufferScale = ImVec2(1.f, 1.f); // Retina display scaling is already applied since we override the value fom NewFrame with the rt size 
    const bool isInteractiveUI = m_ShowUI || m_ShowSplashModal || m_ShowBAMModal;
    const bool isVR = m_renderer->m_stereo3D == STEREO_VR;
    // If we are only showing overlays (no mouse interaction), apply main camera rotation
    m_rotate = (isInteractiveUI || isVR) ? 0 : ((int)(m_player->m_ptable->mViewSetups[m_player->m_ptable->m_BG_current_set].GetRotation((int)io.DisplaySize.x, (int)io.DisplaySize.y) / 90.0f));
    if (m_rotate == 1 || m_rotate == 3)
    {
-      const float tmp = io.DisplaySize.x;
+      const float size = io.DisplaySize.x;
       io.DisplaySize.x = io.DisplaySize.y;
-      io.DisplaySize.y = tmp;
+      io.DisplaySize.y = size;
+      const float scale = io.DisplayFramebufferScale.x;
+      io.DisplayFramebufferScale.x = io.DisplayFramebufferScale.y;
+      io.DisplayFramebufferScale.y = scale;
    }
    ImGui::NewFrame();
 
