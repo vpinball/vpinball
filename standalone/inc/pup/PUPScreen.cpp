@@ -88,8 +88,6 @@ PUPScreen::PUPScreen(PUP_SCREEN_MODE mode, int screenNum, const string& szScreen
 
    LoadTriggers();
 
-   QueueTrigger('D', 0, 1);
-
    if (!m_backgroundPlaylist.empty()) {
       QueuePlay(m_backgroundPlaylist, m_backgroundFilename, m_volume, -1);
       QueueBG(true);
@@ -115,10 +113,8 @@ PUPScreen::~PUPScreen()
    for (auto& [key, pPlaylist] : m_playlistMap)
       delete pPlaylist;
 
-   for (auto& [key, pTriggers] : m_triggerMap) {
-      for (PUPTrigger* pTrigger : pTriggers)
-         delete pTrigger;
-   }
+   for (PUPTrigger* pTrigger : m_triggers)
+      delete pTrigger;
 
    for (PUPLabel* pLabel : m_labels)
       delete pLabel;
@@ -257,13 +253,7 @@ void PUPScreen::AddTrigger(PUPTrigger* pTrigger)
    if (!pTrigger)
       return;
 
-   m_triggerMap[pTrigger->GetMainConditionName()].push_back(pTrigger);
-}
-
-vector<PUPTrigger*>* PUPScreen::GetTriggers(const string& szTrigger)
-{
-   std::map<string, vector<PUPTrigger*>>::iterator it = m_triggerMap.find(szTrigger);
-   return it != m_triggerMap.end() ? &it->second : nullptr;
+   m_triggers.push_back(pTrigger);
 }
 
 void PUPScreen::AddLabel(PUPLabel* pLabel)
@@ -457,36 +447,18 @@ void PUPScreen::QueueBG(int mode)
    m_queueCondVar.notify_one();
 }
 
-void PUPScreen::QueueTrigger(char type, int number, int value)
+void PUPScreen::QueueTrigger(const PUPTriggerData& data)
 {
-   // we store the whole state to be able to mach later
-   const string typeNumber = type + std::to_string(number);
-   m_triggersState[typeNumber] = value;
-
-   // The first condition is the main trigger, the rest is matched on their current state
-   vector<PUPTrigger*>* pTriggers = GetTriggers(typeNumber);
-   if (!pTriggers)
-      return;
-
-   for (PUPTrigger* pTrigger : *pTriggers) {
-      if (!pTrigger->IsActive())
-         continue;
-
-      for (const auto& [expectedTypeNumber, expectedValue] : pTrigger->GetTriggers()) {
-         auto currentValue = m_triggersState.find(expectedTypeNumber);
-         if (currentValue == m_triggersState.end() || currentValue->second != expectedValue)
-            return;
+   for (PUPTrigger* pTrigger : m_triggers) {
+      if (pTrigger->Evaluate(m_pManager, data)) {
+         PUPTriggerRequest* pRequest = new PUPTriggerRequest();
+         pRequest->pTrigger = pTrigger;
+         {
+            std::lock_guard<std::mutex> lock(m_queueMutex);
+            m_queue.push(pRequest);
+         }
+         m_queueCondVar.notify_one();
       }
-
-      auto* pRequest = new PUPTriggerRequest();
-      pRequest->pTrigger = pTrigger;
-      pRequest->value = value;
-
-      {
-         std::lock_guard<std::mutex> lock(m_queueMutex);
-         m_queue.push(pRequest);
-      }
-      m_queueCondVar.notify_one();
    }
 }
 
@@ -589,13 +561,6 @@ void PUPScreen::ProcessPinDisplayRequest(PUPPinDisplayRequest* pRequest)
 void PUPScreen::ProcessTriggerRequest(PUPTriggerRequest* pRequest)
 {
    PUPTrigger* pTrigger = pRequest->pTrigger;
-   if (pTrigger->IsResting()) {
-      PLOGW.printf("skipping resting trigger: trigger={%s}", pTrigger->ToString().c_str());
-      return;
-   }
-   pTrigger->SetTriggered();
-
-   PLOGD.printf("processing trigger: trigger={%s}", pTrigger->ToString().c_str());
 
    switch(pTrigger->GetPlayAction()) {
       case PUP_TRIGGER_PLAY_ACTION_NORMAL:

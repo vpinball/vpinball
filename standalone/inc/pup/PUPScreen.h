@@ -65,7 +65,6 @@ struct PUPPinDisplayRequest : PUPScreenRequest
 struct PUPTriggerRequest : PUPScreenRequest
 {
    PUPTrigger* pTrigger;
-   int value;
 };
 
 struct PUPScreenRenderable
@@ -99,7 +98,6 @@ public:
    void AddPlaylist(PUPPlaylist* pPlaylist);
    PUPPlaylist* GetPlaylist(const string& szFolder);
    void AddTrigger(PUPTrigger* pTrigger);
-   vector<PUPTrigger*>* GetTriggers(const string& szTrigger);
    void SendToFront();
    void SetSize(int w, int h);
    void Init(SDL_Renderer* pRenderer);
@@ -126,7 +124,7 @@ public:
    void QueueStop();
    void QueueLoop(int state);
    void QueueBG(int mode);
-   void QueueTrigger(char type, int number, int value);
+   void QueueTrigger(const PUPTriggerData& data);
    string ToString(bool full = true) const;
 
 private:
@@ -154,7 +152,7 @@ private:
    vector<PUPLabel*> m_labels;
    std::map<string, PUPLabel*> m_labelMap;
    std::map<string, PUPPlaylist*> m_playlistMap;
-   std::map<string, vector<PUPTrigger*>> m_triggerMap;
+   vector<PUPTrigger*> m_triggers;
    SDL_Renderer* m_pRenderer;
    PUPScreenRenderable m_background;
    PUPScreenRenderable m_overlay;
@@ -173,5 +171,4 @@ private:
    bool m_isRunning;
    std::thread m_thread;
    std::mutex m_renderMutex;
-   ankerl::unordered_dense::map<string, int> m_triggersState;
 };

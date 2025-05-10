@@ -589,6 +589,8 @@ add_executable(vpinball
    standalone/inc/pup/PUPPlaylist.h
    standalone/inc/pup/PUPTrigger.cpp
    standalone/inc/pup/PUPTrigger.h
+   standalone/inc/pup/PUPTriggerCondition.cpp
+   standalone/inc/pup/PUPTriggerCondition.h
    standalone/inc/pup/PUPScreen.cpp
    standalone/inc/pup/PUPScreen.h
    standalone/inc/pup/PUPLabel.cpp

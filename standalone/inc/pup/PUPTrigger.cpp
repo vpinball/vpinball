@@ -1,6 +1,7 @@
 #include "core/stdafx.h"
 
 #include "PUPTrigger.h"
+#include "PUPTriggerCondition.h"
 #include "PUPScreen.h"
 #include "PUPPlaylist.h"
 
@@ -56,12 +57,12 @@ const char* PUP_TRIGGER_PLAY_ACTION_TO_STRING(PUP_TRIGGER_PLAY_ACTION value)
      D = PupCap DMD Match
 */
 
-PUPTrigger::PUPTrigger(bool active, const string& szDescript, const vector<PUPTriggerCondition>& triggers, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const string& szPlayFile, float volume,
+PUPTrigger::PUPTrigger(bool active, const string& szDescript, const vector<PUPTriggerCondition*>& conditions, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const string& szPlayFile, float volume,
    int priority, int length, int counter, int restSeconds, PUP_TRIGGER_PLAY_ACTION playAction)
 {
    m_active = active;
    m_szDescript = szDescript;
-   m_conditions = triggers;
+   m_conditions = conditions;
    m_pScreen = pScreen;
    m_pPlaylist = pPlaylist;
    m_szPlayFile = szPlayFile;
@@ -72,6 +73,12 @@ PUPTrigger::PUPTrigger(bool active, const string& szDescript, const vector<PUPTr
    m_restSeconds = restSeconds;
    m_playAction = playAction;
    m_lastTriggered = 0;
+}
+
+PUPTrigger::~PUPTrigger()
+{
+   for (auto* pCondition : m_conditions)
+      delete pCondition;
 }
 
 PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, string line)
@@ -92,6 +99,12 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, string line)
    bool active = (string_to_int(parts[1], 0) == 1);
    if (!active) {
       PLOGD.printf("Inactive trigger: %s", line.c_str());
+      return nullptr;
+   }
+
+   vector<PUPTriggerCondition*> conditions = PUPTriggerCondition::CreateFromCSV(parts[3]);
+   if (conditions.empty()) {
+      PLOGD.printf("No conditions: %s", line.c_str());
       return nullptr;
    }
 
@@ -146,57 +159,13 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, string line)
 
    return new PUPTrigger(active,
       parts[2], // descript
-      ParseTriggers(parts[3]), // trigger
+      conditions,
       pScreen, pPlaylist, szPlayFile, parts[7].empty() ? pPlaylist->GetVolume() : string_to_int(parts[7], 0), // volume
       parts[8].empty() ? pPlaylist->GetPriority() : string_to_int(parts[8], 0), // priority
       string_to_int(parts[9], 0), // length
       string_to_int(parts[10], 0), // counter
       parts[11].empty() ? pPlaylist->GetRestSeconds() : string_to_int(parts[11], 0), // rest seconds
       playAction);
-}
-
-vector<PUPTriggerCondition> PUPTrigger::ParseTriggers(const string& triggerString)
-{
-   vector<PUPTriggerCondition> conditions;
-   std::istringstream stream(triggerString);
-   string token;
-
-   while (std::getline(stream, token, ',')) {
-      if (token.empty()) {
-         PLOGW.printf("Empty token found in trigger string: %s", triggerString.c_str());
-         continue;
-      }
-
-      try {
-         size_t equalPos = token.find('=');
-         PUPTriggerCondition trigger;
-
-         if (equalPos != string::npos) {
-            // Parse triggers with state (e.g., "W5=1")
-            trigger.m_sName = token.substr(0, equalPos);
-            if (trigger.m_sName.empty()) {
-               PLOGW.printf("Invalid trigger name in token: %s", token.c_str());
-               continue;
-            }
-            trigger.value = stoi(token.substr(equalPos + 1));
-         }
-         else {
-            // Parse triggers without state (e.g., "S10")
-            trigger.m_sName = token;
-            trigger.value = 1;
-         }
-
-         conditions.push_back(std::move(trigger));
-      }
-      catch (const std::invalid_argument& e) {
-         PLOGE.printf("Invalid trigger format: %s, error: %s", token.c_str(), e.what());
-      }
-      catch (const std::out_of_range& e) {
-         PLOGE.printf("Trigger value out of range: %s, error: %s", token.c_str(), e.what());
-      }
-   }
-
-   return conditions;
 }
 
 bool PUPTrigger::IsResting()
@@ -210,27 +179,42 @@ bool PUPTrigger::IsResting()
    return (SDL_GetTicks() - m_lastTriggered) < (m_restSeconds * 1000);
 }
 
-void PUPTrigger::SetTriggered() { m_lastTriggered = SDL_GetTicks(); }
-
-const string& PUPTrigger::GetMainConditionName() const
+bool PUPTrigger::Evaluate(PUPManager* pManager, const PUPTriggerData& data)
 {
-   if (!m_conditions.empty())
-      return m_conditions.front().m_sName;
+   if (IsResting())
+      return false;
 
-   return NO_CONDITIONS;
+   // Make sure all conditions match, and at least one condition id matches the trigger id
+
+   bool foundId = false;
+   bool idMatch;
+
+   for (auto& pCondition : m_conditions) {
+      if (!pCondition->Evaluate(pManager, data, idMatch))
+         return false;
+
+      if (!foundId && idMatch)
+         foundId = true;
+   }
+
+   if (!foundId)
+      return false;
+
+   m_lastTriggered = SDL_GetTicks();
+
+   return true;
 }
 
 string PUPTrigger::ToString() const
 {
    return string("active=") + ((m_active == true) ? "true" : "false") +
       ", descript=" + m_szDescript +
-      ", trigger=[" + [&]() {
+      ", conditions=[" + [&]() {
             string result;
-            for (const auto& trigger : m_conditions) {
-               if (!result.empty()) {
+            for (const auto& pCondition : m_conditions) {
+               if (!result.empty())
                   result += ", ";
-               }
-               result += "{name=" + trigger.m_sName + ", state=" + std::to_string(trigger.value) + "}";
+               result += pCondition->ToString();
             }
             return result;
       }() + "]" +
