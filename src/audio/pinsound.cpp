@@ -1184,8 +1184,21 @@ void PinSound::Pan2ChannelEffect(int chan, void *stream, int len, void *udata)
          // 8 channels (7.1): FL, FR, FC, LFE, BL, BR, SL, SR
          for (int index = 0; index < total_samples; index += channels) {
             // Apply volume gains to Front Left and Right channels
-            samples[index  ] *= leftPanRatio;  // FL
+            samples[index] *= leftPanRatio;  // FL
             samples[index+1] *= rightPanRatio; // FR
+         }
+         break;
+      }
+      case SDL_AUDIO_S32LE:
+      {
+         int32_t* const samples = static_cast<int32_t*>(stream);
+         const int total_samples = len / (int)sizeof(int32_t);
+
+         // 8 channels (7.1): FL, FR, FC, LFE, BL, BR, SL, SR
+         for (int index = 0; index < total_samples; index += channels) {
+            // Apply volume gains to Front Left and Right channels
+            samples[index]   = (int32_t)((float)samples[index  ] * leftPanRatio);  // FL
+            samples[index+1] = (int32_t)((float)samples[index+1] * rightPanRatio); // FR
          }
          break;
       }
@@ -1236,7 +1249,7 @@ void PinSound::MoveFrontToRearEffect(int chan, void *stream, int len, void *udat
          for (int index = 0; index < total_samples; index += channels) {
             if (channels >= 4 && channels <= 8) {
                // Apply volume gains and copy them to rear
-               samples[index+  offs] = (int16_t)((float)samples[index]   * leftPanRatio);  // copy FL to BL
+               samples[index+offs] = (int16_t)((float)samples[index]   * leftPanRatio);  // copy FL to BL
                samples[index+1+offs] = (int16_t)((float)samples[index+1] * rightPanRatio); // copy FR to BR
             }
 
@@ -1256,13 +1269,34 @@ void PinSound::MoveFrontToRearEffect(int chan, void *stream, int len, void *udat
          for (int index = 0; index < total_samples; index += channels) {
             if (channels >= 4 && channels <= 8) {
                // Apply volume gains and copy them to rear
-               samples[index+  offs] = samples[index]   * leftPanRatio;  // copy FL to BL
+               samples[index+offs] = samples[index]   * leftPanRatio;  // copy FL to BL
                samples[index+1+offs] = samples[index+1] * rightPanRatio; // copy FR to BR
             }
 
             // wipe front channels
             samples[index]   = 0.f;
             samples[index+1] = 0.f;
+         }
+         break;
+      }
+      case SDL_AUDIO_S32LE:
+      {
+         int32_t* const samples = static_cast<int32_t*>(stream);
+         const int total_samples = len / (int)sizeof(int32_t);
+
+         calcPan(leftPanRatio, rightPanRatio, med->nVolume, PinSound::PanTo3D(med->pan));
+
+         // 8 channels (7.1): FL, FR, FC, LFE, BL, BR, SL, SR
+         for (int index = 0; index < total_samples; index += channels) {
+            if (channels >= 4 && channels <= 8) {
+               // Apply volume gains and copy them to rear
+               samples[index+offs] = (int32_t)((float)samples[index]   * leftPanRatio);  // copy FL to BL
+               samples[index+1+offs] = (int32_t)((float)samples[index+1] * rightPanRatio); // copy FR to BR
+            }
+
+            // wipe front channels
+            samples[index]   = 0;
+            samples[index+1] = 0;
          }
          break;
       }
@@ -1372,6 +1406,37 @@ void PinSound::SSFEffect(int chan, void *stream, int len, void *udata)
                samples[index + 5] = (samples[index+5] * rearRight); // BR
                samples[index + 6] = (samples[index+6] * sideLeft);  // SL
                samples[index + 7] = (samples[index+7] * sideRight); // SR
+
+               // wipe front channels
+               samples[index]   = 0;
+               samples[index+1] = 0;
+            }
+            break;
+         }
+         case SDL_AUDIO_S32LE:
+         {
+            int32_t* const samples = static_cast<int32_t*>(stream);
+            const int total_samples = len / (int)sizeof(int32_t);
+
+            // cap all vol not to be over 1.  Over 1, and you get distortion.
+            sideLeft = clamp(sideLeft, 0.f, 1.f);
+            sideRight = clamp(sideRight, 0.f, 1.f);
+            rearLeft = clamp(rearLeft, 0.f, 1.f);
+            rearRight = clamp(rearRight, 0.f, 1.f);
+
+            // 8 channels (7.1): FL, FR, FC, LFE, BL, BR, SL, SR
+            for (int index = 0; index < total_samples; index += channels) {
+               // copy the sound sample from Front to Back and Side channels.
+               samples[index + 4] = (samples[index]);   // COPY FL to BL
+               samples[index + 5] = (samples[index+1]); // Copy FR to BR
+               samples[index + 6] = (samples[index]);   // Copy FL to SL
+               samples[index + 7] = (samples[index+1]); // Copy FR to SR
+
+               // Apply volume gains to back and side channels
+               samples[index + 4] = (int32_t)((float)samples[index+4] * rearLeft);  // BL
+               samples[index + 5] = (int32_t)((float)samples[index+5] * rearRight); // BR
+               samples[index + 6] = (int32_t)((float)samples[index+6] * sideLeft);  // SL
+               samples[index + 7] = (int32_t)((float)samples[index+7] * sideRight); // SR
 
                // wipe front channels
                samples[index]   = 0;
