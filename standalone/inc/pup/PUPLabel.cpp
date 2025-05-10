@@ -478,7 +478,7 @@ void PUPLabel::UpdateLabelTexture(SDL_Renderer* pRenderer, SDL_Rect& rect)
          m_width = pMergedSurface->w;
          m_height = pMergedSurface->h;
 
-         m_dirty = true;
+         m_dirty = false;
       }
 
       SDL_DestroySurface(pMergedSurface);

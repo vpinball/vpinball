@@ -22,6 +22,8 @@ PUPManager::PUPManager()
    m_init = false;
    m_isRunning = false;
    m_szRootPath = find_case_insensitive_directory_path(g_pvp->m_currentTablePath + "pupvideos");
+
+   m_triggerDataQueue.push({ 'D', 0, 1 });
 }
 
 PUPManager::~PUPManager()
@@ -35,8 +37,7 @@ void PUPManager::LoadConfig(const string& szRomName)
       return;
    }
 
-   if (m_szRootPath.empty())
-   {
+   if (m_szRootPath.empty()) {
       PLOGI.printf("No pupvideos folder found, not initializing PUP");
       return;
    }
@@ -93,12 +94,10 @@ void PUPManager::LoadConfig(const string& szRomName)
       for (const auto& entry : std::filesystem::directory_iterator(szFontsPath)) {
          if (entry.is_regular_file()) {
             string szFontPath = entry.path().string();
-            if (extension_from_path(szFontPath) == "ttf")
-            {
+            if (extension_from_path(szFontPath) == "ttf") {
                if (TTF_Font* pFont = TTF_OpenFont(szFontPath.c_str(), 8))
-               {
                   AddFont(pFont, entry.path().filename());
-               }else{
+               else {
                   PLOGE.printf("Failed to load font: %s %s", szFontPath.c_str(), SDL_GetError());
                }
             }
@@ -228,13 +227,29 @@ TTF_Font* PUPManager::GetFont(const string& szFont)
    return nullptr;
 }
 
-void PUPManager::QueueTriggerData(PUPTriggerData data)
+void PUPManager::QueueTriggerData(const PUPTriggerData& data)
 {
+   const string triggerId = data.type + std::to_string(data.number);
+
    {
       std::lock_guard<std::mutex> lock(m_queueMutex);
-      m_triggerDataQueue.push({ data.type, data.number, data.value });
+
+      m_triggerMap.insert_or_assign(triggerId, data.value);
+      m_triggerDataQueue.push(data);
    }
+
    m_queueCondVar.notify_one();
+}
+
+int PUPManager::GetTriggerValue(const string& triggerId)
+{
+   std::lock_guard<std::mutex> lock(m_queueMutex);
+
+   auto it = m_triggerMap.find(triggerId);
+   if (it != m_triggerMap.end())
+      return it->second;
+
+   return 0;
 }
 
 void PUPManager::Start()
@@ -292,10 +307,11 @@ void PUPManager::Start()
    }
 
    m_isRunning = true;
-   m_thread = std::thread(&PUPManager::ProcessQueue, this);
 
    for (auto& [key, pScreen] : m_screenMap)
       pScreen->Start();
+
+   m_thread = std::thread(&PUPManager::ProcessQueue, this);
 }
 
 void PUPManager::AddWindow(const string& szWindowName, int screen, int x, int y, int width, int height, int zOrder)
@@ -351,7 +367,7 @@ void PUPManager::ProcessQueue()
       lock.unlock();
 
       for (auto& [key, pScreen] : m_screenMap)
-         pScreen->QueueTrigger(triggerData.type, triggerData.number, triggerData.value);
+         pScreen->QueueTrigger(triggerData);
    }
 }
 

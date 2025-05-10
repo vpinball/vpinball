@@ -4,6 +4,7 @@
 
 class PUPPlaylist;
 class PUPScreen;
+class PUPTriggerCondition;
 
 typedef enum
 {
@@ -19,24 +20,16 @@ typedef enum
    PUP_TRIGGER_PLAY_ACTION_CUSTOM_FUNC     // Call a custom function
 } PUP_TRIGGER_PLAY_ACTION;
 
-struct PUPTriggerCondition
-{
-   string m_sName;
-   int value;
-};
-
-const string NO_CONDITIONS = "";
-
 const char* PUP_TRIGGER_PLAY_ACTION_TO_STRING(PUP_TRIGGER_PLAY_ACTION value);
 
 class PUPTrigger
 {
 public:
-   ~PUPTrigger() { }
+   ~PUPTrigger();
+
    static PUPTrigger* CreateFromCSV(PUPScreen* pScreen, string line);
    bool IsActive() const { return m_active; }
    const string& GetDescription() const { return m_szDescript; }
-   vector<PUPTriggerCondition> GetTriggers() const { return m_conditions; }
    PUPScreen* GetScreen() const { return m_pScreen; }
    PUPPlaylist* GetPlaylist() const { return m_pPlaylist; }
    const string& GetPlayFile() const { return m_szPlayFile; }
@@ -46,28 +39,15 @@ public:
    int GetCounter() const { return m_counter; }
    int GetRestSeconds() const { return m_restSeconds; }
    PUP_TRIGGER_PLAY_ACTION GetPlayAction() const { return m_playAction; }
-   bool IsResting();
-   void SetTriggered();
-   /**
-    * @brief Retrieves the name of the first condition.
-    *
-    * @return The name of the first condition as a `string`.
-    *         Returns NO_CONDITIONS if no triggers are available.
-    */
-   const string& GetMainConditionName() const;
+   bool Evaluate(PUPManager* pManager, const PUPTriggerData& data);
    string ToString() const;
 
 private:
-   static vector<PUPTriggerCondition> ParseTriggers(vector<string>::const_reference part);
-   PUPTrigger(bool active, const string& szDescript, const vector<PUPTriggerCondition>& m_vTriggers, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, int length, int counter, int restSeconds, PUP_TRIGGER_PLAY_ACTION playAction);
+   PUPTrigger(bool active, const string& szDescript, const vector<PUPTriggerCondition*>& conditions, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, int length, int counter, int restSeconds, PUP_TRIGGER_PLAY_ACTION playAction);
+   bool IsResting();
    bool m_active;
    string m_szDescript;
-   /**
-    * @brief The vector of trigger conditions
-    *
-    * A trigger will only be activated if all conditions are met.
-    */
-   vector<PUPTriggerCondition> m_conditions;
+   vector<PUPTriggerCondition*> m_conditions;
    PUPScreen* m_pScreen;
    PUPPlaylist* m_pPlaylist;
    string m_szPlayFile;

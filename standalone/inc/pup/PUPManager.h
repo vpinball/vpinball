@@ -70,7 +70,8 @@ public:
    PUPScreen* GetScreen(int screenNum);
    bool AddFont(TTF_Font* pFont, const string& szFilename);
    TTF_Font* GetFont(const string& szFamily);
-   void QueueTriggerData(PUPTriggerData data);
+   void QueueTriggerData(const PUPTriggerData& data);
+   int GetTriggerValue(const string& triggerId);
    void Start();
    void Stop();
 
@@ -96,4 +97,5 @@ private:
    bool m_isRunning;
    std::thread m_thread;
    vector<PUPPlaylist*> m_playlists;
+   ankerl::unordered_dense::map<string, int> m_triggerMap;
 };
