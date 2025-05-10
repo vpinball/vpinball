@@ -35,8 +35,9 @@ private:
       string name;
       Sampler* sampler;
       bool forceLinearRGB;
+      BaseTexture* tex;
    };
    RenderDevice& m_rd;
-   ankerl::unordered_dense::map<BaseTexture*, MapEntry> m_map;
-   typedef ankerl::unordered_dense::map<BaseTexture*, MapEntry>::iterator Iter;
+   ankerl::unordered_dense::map<unsigned long long, MapEntry> m_map;
+   typedef ankerl::unordered_dense::map<unsigned long long, MapEntry>::iterator Iter;
 };

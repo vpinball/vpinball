@@ -1,5 +1,3 @@
-#pragma once
-
 #include "common.h"
 
 #include "B2SRenderer.h"
@@ -58,7 +56,7 @@ void B2SRenderer::OnDevSrcChanged(const unsigned int msgId, void* userData, void
    me->m_nGIs = 0;
    me->m_LampIndex = -1;
    me->m_nLamps = 0;
-   GetDevSrcMsg getSrcMsg = { 1024, 0, new IOSrcId[1024] };
+   GetDevSrcMsg getSrcMsg = { 1024, 0, new DevSrcId[1024] };
    me->m_msgApi->BroadcastMsg(me->m_endpointId, me->m_getDevSrcMsgId, &getSrcMsg);
    for (unsigned int i = 0; i < getSrcMsg.count; i++)
    {
@@ -109,10 +107,13 @@ float B2SRenderer::GetBrightness(const float localState, const B2SRomIDType romI
    return romInverted ? 1.f - value : value;
 }
 
-void B2SRenderer::Render(VPXRenderBackglassContext* ctx)
+bool B2SRenderer::Render(VPXRenderContext2D* ctx)
 {
    ctx->srcWidth = m_b2sWidth;
    ctx->srcHeight = m_b2sHeight;
+   
+   if (ctx->window != VPXAnciliaryWindow::VPXWINDOW_Backglass) // Not yet implemented
+      return false;
 
    // Update animations
    auto now = std::chrono::high_resolution_clock::now();
@@ -177,4 +178,6 @@ void B2SRenderer::Render(VPXRenderBackglassContext* ctx)
             x, y, w, h);
       }
    }
+
+   return true;
 }

@@ -93,17 +93,29 @@
 #endif
 
 // Callbacks
-typedef void (*msgpi_msg_callback)(const unsigned int msgId, void* userData, void* msgData);
+typedef void (*msgpi_msg_callback)(const unsigned int msgId, void* context, void* msgData);
 typedef void (*msgpi_timer_callback)(void* userData);
+
+typedef struct MsgEndpointInfo
+{
+   const char* id;          // Unique ID of the plugin, used to identify it
+   const char* name;        // Human-readable name of the plugin
+   const char* description; // Human-readable description of the plugin intent
+   const char* author;      // Human-readable author name
+   const char* version;     // Human-readable version
+   const char* link;        // Web link to online information
+} MsgEndpointInfo;
 
 typedef struct MsgPluginAPI
 {
    // Messaging
-   unsigned int (MSGPIAPI *GetMsgID)(const char* name_space, const char* name);
+   void (MSGPIAPI* GetEndpointInfo)(const uint32_t endpointId, MsgEndpointInfo* info);
+   unsigned int (MSGPIAPI* GetMsgID)(const char* name_space, const char* name);
    void (MSGPIAPI *SubscribeMsg)(const uint32_t endpointId, const unsigned int msgId, const msgpi_msg_callback callback, void* userData);
    void (MSGPIAPI *UnsubscribeMsg)(const unsigned int msgId, const msgpi_msg_callback callback);
-   void (MSGPIAPI *BroadcastMsg)(const uint32_t endpointId, const unsigned int msgId, void* data);
-   void (MSGPIAPI *ReleaseMsgID)(const unsigned int msgId);
+   void (MSGPIAPI* BroadcastMsg)(const uint32_t endpointId, const unsigned int msgId, void* data);
+   void (MSGPIAPI* SendMsg)(const uint32_t endpointId, const unsigned int msgId, const uint32_t targetEndpointId, void* data);
+   void (MSGPIAPI* ReleaseMsgID)(const unsigned int msgId);
    // Setting
    void (MSGPIAPI *GetSetting)(const char* name_space, const char* name, char* valueBuf, unsigned int valueBufSize);
    // Threading

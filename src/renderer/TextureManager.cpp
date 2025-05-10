@@ -9,7 +9,7 @@
 
 Sampler* TextureManager::LoadTexture(BaseTexture* const memtex, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV, const bool force_linear_rgb)
 {
-   const Iter it = m_map.find(memtex);
+   const Iter it = m_map.find(memtex->GetLiveHash());
    // During static part prerendering, trilinear/anisotropic filtering is disabled to get sharper results
    const bool isPreRender = g_pplayer->m_renderer && g_pplayer->m_renderer->IsRenderPass(Renderer::STATIC_ONLY);
    const SamplerFilter filter2 = (isPreRender && (filter == SamplerFilter::SF_ANISOTROPIC || filter == SamplerFilter::SF_TRILINEAR)) ? SamplerFilter::SF_BILINEAR : filter;
@@ -39,7 +39,8 @@ Sampler* TextureManager::LoadTexture(BaseTexture* const memtex, const SamplerFil
       #endif
       entry.sampler->m_dirty = false;
       entry.forceLinearRGB = force_linear_rgb;
-      m_map[memtex] = entry;
+      entry.tex = memtex;
+      m_map[memtex->GetLiveHash()] = entry;
       return entry.sampler;
    }
    else
@@ -61,26 +62,26 @@ vector<BaseTexture*> TextureManager::GetLoadedTextures() const
 {
    std::vector<BaseTexture*> keys;
    for (auto it = m_map.begin(); it != m_map.end(); ++it)
-      keys.push_back(it->first);
+      keys.push_back(it->second.tex);
    return keys;
 }
 
 bool TextureManager::IsLinearRGB(BaseTexture* memtex) const
 {
-   const auto it = m_map.find(memtex);
+   const auto it = m_map.find(memtex->GetLiveHash());
    return it == m_map.end() ? false : it->second.forceLinearRGB;
 }
 
 void TextureManager::SetDirty(BaseTexture* memtex)
 {
-   const Iter it = m_map.find(memtex);
+   const Iter it = m_map.find(memtex->GetLiveHash());
    if (it != m_map.end())
       it->second.sampler->m_dirty = true;
 }
 
 void TextureManager::UnloadTexture(BaseTexture* memtex)
 {
-   const Iter it = m_map.find(memtex);
+   const Iter it = m_map.find(memtex->GetLiveHash());
    if (it != m_map.end())
    {
       delete it->second.sampler;

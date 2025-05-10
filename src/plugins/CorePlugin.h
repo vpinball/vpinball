@@ -19,6 +19,9 @@
 //
 // This file defines a few core identifiers, messages and struct to ease plugin
 // collaboration around common controller's data.
+// 
+// The overall design is based around a service discovery approach: a GetSource
+// message is defined for each feature, together with a SourceChangeEvent.
 //
 
 #define CTLPI_NAMESPACE                       "Controller"
@@ -98,7 +101,7 @@ typedef struct DevSrcId
    DeviceDef* deviceDefs;                                            // Pointer to a block of nDevices DeviceDef
    uint8_t (MSGPIAPI* GetByteState)(const unsigned int deviceIndex); // Get the state of a device property
    float (MSGPIAPI* GetFloatState)(const unsigned int deviceIndex);  // Get the state of a device property
-} IOSrcId;
+} DevSrcId;
 
 typedef struct GetDevSrcMsg
 {

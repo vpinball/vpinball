@@ -74,6 +74,15 @@ if "%vsv%" == "2019" (
 
 
 REM ***************************************************************************************************
+copy /V /Y "plugin-pup.net2022.vcxproj" "../.build/vsproject/plugin-pup.vcxproj"
+copy /V /Y "plugin-pup.net2022.vcxproj.filters" "../.build/vsproject/plugin-pup.vcxproj.filters"
+
+if "%vsv%" == "2019" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-pup.vcxproj" /out:"../.build/vsproject/plugin-pup.vcxproj"
+)
+
+
+REM ***************************************************************************************************
 copy /V /Y "plugin-pinmame.net2022.vcxproj" "../.build/vsproject/plugin-pinmame.vcxproj"
 copy /V /Y "plugin-pinmame.net2022.vcxproj.filters" "../.build/vsproject/plugin-pinmame.vcxproj.filters"
 

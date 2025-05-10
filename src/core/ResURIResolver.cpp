@@ -26,22 +26,25 @@ ResURIResolver::ResURIResolver()
 
 ResURIResolver::~ResURIResolver()
 {
-   OnDevSrcChanged(0, this, nullptr);
+   OnDevSrcChanged(m_onDevChangedMsgId, this, nullptr);
    MsgPluginManager::GetInstance().GetMsgAPI().UnsubscribeMsg(m_onDevChangedMsgId, OnDevSrcChanged);
    VPXPluginAPIImpl::ReleaseMsgID(m_onDevChangedMsgId);
    VPXPluginAPIImpl::ReleaseMsgID(m_getDevSrcMsgId);
 
-   OnSegSrcChanged(0, this, nullptr);
+   OnSegSrcChanged(m_onSegChangedMsgId, this, nullptr);
    MsgPluginManager::GetInstance().GetMsgAPI().UnsubscribeMsg(m_onSegChangedMsgId, OnSegSrcChanged);
    VPXPluginAPIImpl::ReleaseMsgID(m_onSegChangedMsgId);
    VPXPluginAPIImpl::ReleaseMsgID(m_getSegSrcMsgId);
    VPXPluginAPIImpl::ReleaseMsgID(m_getSegMsgId);
 
-   OnDmdSrcChanged(0, this, nullptr);
+   OnDmdSrcChanged(m_onDmdChangedMsgId, this, nullptr);
    MsgPluginManager::GetInstance().GetMsgAPI().UnsubscribeMsg(m_onDmdChangedMsgId, OnDmdSrcChanged);
    VPXPluginAPIImpl::ReleaseMsgID(m_onDmdChangedMsgId);
    VPXPluginAPIImpl::ReleaseMsgID(m_getDmdSrcMsgId);
    VPXPluginAPIImpl::ReleaseMsgID(m_getDmdMsgId);
+
+   for (auto& disp : m_controllerDisplays)
+      delete disp.frame;
 }
 
 void ResURIResolver::RequestVisualUpdate()
@@ -59,7 +62,7 @@ void ResURIResolver::RequestPhysicsUpdate()
 void ResURIResolver::OnDevSrcChanged(const unsigned int msgId, void *userData, void *msgData)
 {
    ResURIResolver *me = static_cast<ResURIResolver *>(userData);
-   for (IOSrcId cache : me->m_controllerDevices)
+   for (DevSrcId cache : me->m_controllerDevices)
       delete cache.deviceDefs;
    me->m_controllerDevices.clear();
    me->m_outputCache.clear();
@@ -67,14 +70,14 @@ void ResURIResolver::OnDevSrcChanged(const unsigned int msgId, void *userData, v
 
 float ResURIResolver::GetControllerOutput(CtlResId id, const unsigned int outputId)
 {
-   IOSrcId *source = nullptr;
+   DevSrcId *source = nullptr;
 
-   auto existingSource = std::ranges::find_if(m_controllerDevices.begin(), m_controllerDevices.end(), [id](const IOSrcId &cd) { return cd.id.id == id.id; });
+   auto existingSource = std::ranges::find_if(m_controllerDevices.begin(), m_controllerDevices.end(), [id](const DevSrcId &cd) { return cd.id.id == id.id; });
    if (existingSource != m_controllerDevices.end())
       source = &(*existingSource);
    else
    {
-      GetDevSrcMsg getSrcMsg = { 1024, 0, new IOSrcId[1024] };
+      GetDevSrcMsg getSrcMsg = { 1024, 0, new DevSrcId[1024] };
       VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_getDevSrcMsgId, &getSrcMsg);
       for (unsigned int i = 0; i < getSrcMsg.count; i++)
       {
@@ -262,11 +265,12 @@ ResURIResolver::ControllerDisplay ResURIResolver::GetControllerDisplay(CtlResId 
    {
       // Delay texture deletion since it may be used by the render frame which is processed asynchronously. If so, deleting would cause a deadlock & invalid access
       BaseTexture *tex = display->frame;
-      g_pplayer->m_renderer->m_renderDevice->AddEndOfFrameCmd([tex]
-         {
-            g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture(tex);
-            delete tex; 
-         });
+      if (tex)
+         g_pplayer->m_renderer->m_renderDevice->AddEndOfFrameCmd([tex]
+            {
+               g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture(tex);
+               delete tex; 
+            });
       display->frame = new BaseTexture(display->dmdId.width, display->dmdId.height, format);
       display->frame->SetIsOpaque(true);
       display->frameId = -1;

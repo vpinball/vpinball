@@ -26,6 +26,8 @@ public:
    BaseTexture(const unsigned int w, const unsigned int h, const Format format);
    ~BaseTexture();
 
+   unsigned long long GetLiveHash() const { return m_liveHash; }
+
    unsigned int width() const  { return m_width; }
    unsigned int height() const { return m_height; }
    unsigned int pitch() const  { return (m_format == BW ? 1 : (has_alpha() ? 4 : 3)) * ((m_format == RGB_FP32 || m_format == RGBA_FP32) ? 4 : (m_format == RGB_FP16 || m_format == RGBA_FP16) ? 2 : 1) * m_width; } // pitch in bytes
@@ -59,6 +61,7 @@ private:
    void UpdateMD5() const;
    void UpdateOpaque() const;
 
+   const unsigned long long m_liveHash;
    const unsigned int m_width, m_height;
    BYTE* m_data;
 

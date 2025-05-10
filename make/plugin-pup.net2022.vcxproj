@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{5DFB5344-B339-49BC-B93C-B3B8D307199B}</ProjectGuid>
+    <RootNamespace>plugin-pup</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <TargetName Condition="'$(Platform)'=='Win32'">plugin-pup</TargetName>
+    <TargetName Condition="'$(Platform)'=='x64'">plugin-pup64</TargetName>
+    <OutDir>$(SolutionDir)..\bin\$(TargetName)\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)..\obj\$(TargetName)\$(Configuration)-$(Platform)\</IntDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)../../src/plugins</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup>
+    <PostBuildEvent>
+      <Command>
+        if not exist "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pup\" md "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+
+        if not exist "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pup\" md "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pup\"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pup\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pup\"
+
+        if not exist "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pup\" md "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pup\"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pup\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pup\"
+
+		xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\libiconv-2.dll" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+		xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\libiconv-2.dll" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pup\"
+		xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\libiconv-2.dll" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pup\"
+
+		xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\zlib1.dll" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+		xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\zlib1.dll" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pup\"
+		xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\zlib1.dll" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pup\"
+
+		xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\libwinpthread-1.dll" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+		xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\libwinpthread-1.dll" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pup\"
+		xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\libwinpthread-1.dll" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pup\"
+
+		if $(Platform) EQU x64 (
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL364.dll" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL364.dll" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL364.dll" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pup\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3_image64.dll" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3_image64.dll" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3_image64.dll" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pup\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3_ttf64.dll" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3_ttf64.dll" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3_ttf64.dll" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pup\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\pupdmd64.dll" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\pupdmd64.dll" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\pupdmd64.dll" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pup\"
+
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVCODEC64.DLL" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pup\AVCODEC64-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVCODEC64.dll" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pup\AVCODEC64-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVCODEC64.dll" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pup\AVCODEC64-61.DLL"
+
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVFORMAT64.DLL" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pup\AVFORMAT64-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVFORMAT64.DLL" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pup\AVFORMAT64-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVFORMAT64.DLL" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pup\AVFORMAT64-61.DLL"
+
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVUTIL64.DLL" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pup\AVUTIL64-59.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVUTIL64.DLL" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pup\AVUTIL64-59.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVUTIL64.DLL" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pup\AVUTIL64-59.DLL"
+
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SWRESAMPLE64.DLL" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pup\SWRESAMPLE64-5.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SWRESAMPLE64.DLL" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pup\SWRESAMPLE64-5.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SWRESAMPLE64.DLL" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pup\SWRESAMPLE64-5.DLL"
+
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SWSCALE64.DLL" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pup\SWSCALE64-8.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SWSCALE64.DLL" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pup\SWSCALE64-8.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SWSCALE64.DLL" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pup\SWSCALE64-8.DLL"
+
+		) ELSE (
+			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3.dll" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3.dll" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pup\"
+			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3.dll" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pup\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3_image.dll" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3_image.dll" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3_image.dll" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pup\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3_ttf.dll" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3_ttf.dll" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3_ttf.dll" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pup\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\pupdmd.dll" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\pupdmd.dll" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\pupdmd.dll" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pup\"
+
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVCODEC.dll" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pup\AVCODEC-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVCODEC.dll" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pup\AVCODEC-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVCODEC.dll" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pup\AVCODEC-61.DLL"
+
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVFORMAT.dll" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pup\AVFORMAT-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVFORMAT.dll" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pup\AVFORMAT-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVFORMAT.dll" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pup\AVFORMAT-61.DLL"
+
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVUTIL.dll" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pup\AVUTIL-59.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVUTIL.dll" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pup\AVUTIL-59.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVUTIL.dll" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pup\AVUTIL-59.DLL"
+
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SWRESAMPLE.dll" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pup\SWRESAMPLE-5.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SWRESAMPLE.dll" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pup\SWRESAMPLE-5.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SWRESAMPLE.dll" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pup\SWRESAMPLE-5.DLL"
+
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SWSCALE.dll" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\pup\SWSCALE-8.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SWSCALE.dll" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\pup\SWSCALE-8.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SWSCALE.dll" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\pup\SWSCALE-8.DLL"
+		)
+      </Command>
+    </PostBuildEvent>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir)../../plugins/pup;$(SolutionDir)../../third-party/include/</AdditionalIncludeDirectories>
+      <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Speed</FavorSizeOrSpeed>
+      <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Speed</FavorSizeOrSpeed>
+      <FloatingPointModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Fast</FloatingPointModel>
+      <FloatingPointModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Fast</FloatingPointModel>
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</BufferSecurityCheck>
+      <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</BufferSecurityCheck>
+      <FloatingPointExceptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</FloatingPointExceptions>
+      <FloatingPointExceptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FloatingPointExceptions>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">$(SolutionDir)../../third-party/build-libs/windows-x64/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='Win32'">$(SolutionDir)../../third-party/build-libs/windows-x86/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies Condition="'$(Platform)'=='x64'">pupdmd64.lib;SDL364.lib;SDL3_image64.lib;SDL3_ttf64.lib;avcodec64.lib;avdevice64.lib;avfilter64.lib;avformat64.lib;avutil64.lib;swresample64.lib;swscale64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Platform)'=='Win32'">pupdmd.lib;SDL3.lib;SDL3_image.lib;SDL3_ttf.lib;avcodec.lib;avdevice.lib;avfilter.lib;avformat.lib;avutil.lib;swresample.lib;swscale.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="../../plugins/pup/common.cpp" />
+    <ClCompile Include="../../plugins/pup/PUPPlugin.cpp" />
+    <ClCompile Include="../../plugins/pup/PUPCustomPos.cpp" />
+    <ClCompile Include="../../plugins/pup/PUPLabel.cpp" />
+    <ClCompile Include="../../plugins/pup/PUPManager.cpp" />
+    <ClCompile Include="../../plugins/pup/PUPMediaManager.cpp" />
+    <ClCompile Include="../../plugins/pup/PUPMediaPlayer.cpp" />
+    <ClCompile Include="../../plugins/pup/PUPPinDisplay.cpp" />
+    <ClCompile Include="../../plugins/pup/PUPPlaylist.cpp" />
+    <ClCompile Include="../../plugins/pup/PUPScreen.cpp" />
+    <ClCompile Include="../../plugins/pup/PUPTrigger.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="../../plugins/pup/common.h" />
+    <ClInclude Include="../../plugins/pup/PUPCustomPos.h" />
+    <ClInclude Include="../../plugins/pup/PUPLabel.h" />
+    <ClInclude Include="../../plugins/pup/PUPManager.h" />
+    <ClInclude Include="../../plugins/pup/PUPMediaManager.h" />
+    <ClInclude Include="../../plugins/pup/PUPMediaPlayer.h" />
+    <ClInclude Include="../../plugins/pup/PUPPinDisplay.h" />
+    <ClInclude Include="../../plugins/pup/PUPPlaylist.h" />
+    <ClInclude Include="../../plugins/pup/PUPScreen.h" />
+    <ClInclude Include="../../plugins/pup/PUPTrigger.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="../../plugins/pup/plugin.cfg">
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

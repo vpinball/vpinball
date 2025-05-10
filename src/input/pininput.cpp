@@ -623,6 +623,38 @@ void PinInput::FireActionEvent(EnumAssignKeys action, bool isPressed)
       }
       break;
 
+   case eExitGame:
+      if (!g_pplayer->m_liveUI->IsOpened())
+      #ifdef __STANDALONE__
+         g_pplayer->SetCloseState(Player::CS_CLOSE_APP);
+      #else
+         g_pplayer->SetCloseState(Player::CS_STOP_PLAY);
+      #endif
+      break;
+
+   case eEscape:
+      if (!m_disable_esc)
+      {
+         // Do not trigger if the UI is already opened (keyboard is handled in it)
+         if (g_pplayer->m_liveUI->IsOpened())
+            m_exitPressTimestamp = 0;
+         else
+         {
+            m_gameStartedOnce = true; // Disable autostart as player has requested close
+            if (isPressed)
+            {
+               m_exitPressTimestamp = msec();
+            }
+            else
+            {
+               m_exitPressTimestamp = 0;
+               // Open UI on key up instead of key down since a long press should not trigger the UI but directly exit from the app
+               g_pplayer->SetCloseState(Player::CS_USER_INPUT);
+            }
+         }
+      }
+      break;
+
    case eTableRecenter:
       if (g_pplayer->m_vrDevice && isPressed)
          g_pplayer->m_vrDevice->RecenterTable();
@@ -651,29 +683,6 @@ void PinInput::FireActionEvent(EnumAssignKeys action, bool isPressed)
 
    if (!g_pplayer->m_liveUI->IsTweakMode() && !g_pplayer->m_liveUI->HasKeyboardCapture())
       g_pplayer->m_ptable->FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[action]);
-
-   if (((action == eEscape) && !m_disable_esc) || (action == eExitGame))
-   {
-      // Do not trigger if the UI is already opened (keyboard is handled in it)
-      if (!g_pplayer->m_liveUI->IsOpened())
-      {
-         m_gameStartedOnce = true; // Disable autostart as player has requested close
-         if (isPressed)
-         {
-            m_exitPressTimestamp = msec();
-         }
-         else
-         {
-            // Open UI on key up since a long press should not trigger the UI (direct exit from the app)
-            g_pplayer->SetCloseState(Player::CS_USER_INPUT);
-            m_exitPressTimestamp = 0;
-            #ifdef __STANDALONE__
-               if (action == eExitGame)
-                  g_pplayer->SetCloseState(Player::CS_CLOSE_APP);
-            #endif
-         }
-      }
-   }
 }
 
 void PinInput::Autostart(const U32 initialDelayMs, const U32 retryDelayMs)
