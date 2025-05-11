@@ -69,7 +69,7 @@ struct PUPScreenRenderable
    bool dirty = true;
 };
 
-class PUPScreen
+class PUPScreen final
 {
 public:
    ~PUPScreen();
@@ -85,11 +85,11 @@ public:
    bool IsTransparent() const { return m_transparent; }
    float GetVolume() const { return m_volume; }
    void SetVolume(float volume) { m_volume = volume; }
-   PUPCustomPos* GetCustomPos() { return m_pCustomPos; }
+   PUPCustomPos* GetCustomPos() const { return m_pCustomPos; }
    void AddChild(PUPScreen* pScreen);
    void SetParent(PUPScreen* pParent) { m_pParent = pParent; }
-   PUPScreen* GetParent() { return m_pParent; }
-   bool HasParent() { return m_pParent != nullptr;}
+   PUPScreen* GetParent() const { return m_pParent; }
+   bool HasParent() const { return m_pParent != nullptr;}
    void AddPlaylist(PUPPlaylist* pPlaylist);
    PUPPlaylist* GetPlaylist(const string& szFolder);
    void AddTrigger(PUPTrigger* pTrigger);
@@ -109,7 +109,7 @@ public:
    void Render(VPXRenderContext2D* const ctx);
    const SDL_Rect& GetRect() const { return m_rect; }
    void SetBackground(PUPPlaylist* pPlaylist, const std::string& szPlayFile);
-   void SetCustomPos(const string& string);
+   void SetCustomPos(const string& szCustomPos);
    void SetOverlay(PUPPlaylist* pPlaylist, const std::string& szPlayFile);
    void SetMedia(PUPPlaylist* pPlaylist, const std::string& szPlayFile, float volume, int priority, bool skipSamePriority);
    void StopMedia();

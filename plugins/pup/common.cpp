@@ -224,11 +224,10 @@ void SetThreadName(const string& name)
    if (size_needed == 0)
       return;
    std::wstring wstr(size_needed, 0);
-   if (MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, &wstr[0], size_needed) == 0)
+   if (MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, wstr.data(), size_needed) == 0)
       return;
    HRESULT hr = SetThreadDescription(GetCurrentThread(), wstr.c_str());
 }
 #else
 void SetThreadName(const string& name) { }
 #endif
-

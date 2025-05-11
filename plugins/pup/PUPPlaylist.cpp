@@ -1,6 +1,7 @@
 #include "PUPPlaylist.h"
 
 #include <filesystem>
+#include <algorithm>
 
 /*
    playlists.pup: ScreenNum,Folder,Des,AlphaSort,RestSeconds,Volume,Priority
@@ -31,7 +32,7 @@ const char* PUP_PLAYLIST_FUNCTION_STRINGS[] = {
 
 const char* PUP_PLAYLIST_FUNCTION_TO_STRING(PUP_PLAYLIST_FUNCTION value)
 {
-   if ((int)value < 0 || (size_t)value >= sizeof(PUP_PLAYLIST_FUNCTION_STRINGS) / sizeof(PUP_PLAYLIST_FUNCTION_STRINGS[0]))
+   if ((int)value < 0 || (size_t)value >= std::size(PUP_PLAYLIST_FUNCTION_STRINGS))
       return "UNKNOWN";
    return PUP_PLAYLIST_FUNCTION_STRINGS[value];
 }
@@ -72,7 +73,7 @@ PUPPlaylist::PUPPlaylist(PUPManager* manager, const string& szFolder, const stri
          }
       }
    }
-   std::sort(m_files.begin(), m_files.end());
+   std::ranges::sort(m_files.begin(), m_files.end());
 }
 
 PUPPlaylist::~PUPPlaylist()

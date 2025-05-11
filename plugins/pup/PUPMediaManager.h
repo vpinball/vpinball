@@ -12,7 +12,7 @@ struct PUPMediaManagerPlayer
    int priority;
 };
 
-class PUPMediaManager
+class PUPMediaManager final
 {
 private:
    PUPMediaManagerPlayer m_player1;

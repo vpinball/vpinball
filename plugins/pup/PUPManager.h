@@ -5,7 +5,7 @@
 #include "CorePlugin.h"
 
 #pragma warning(push)
-#pragma warning(disable : 4251) // In PupDMD: std::map<uint16_t,PUPDMD::Hash,std::less<uint16_t>,std::allocator<std::pair<const uint16_t,PUPDMD::Hash>>> » needs dll-interface
+#pragma warning(disable : 4251) // In PupDMD: std::map<uint16_t,PUPDMD::Hash,std::less<uint16_t>,std::allocator<std::pair<const uint16_t,PUPDMD::Hash>>> needs dll-interface
 #include "pupdmd.h"
 #pragma warning(pop)
 
@@ -27,20 +27,20 @@
 
 #define PUP_SCREEN_BACKGLASS          2
 #define PUP_SETTINGS_BACKGLASSX       PUP_SETTINGS_TOPPERX
-#define PUP_SETTINGS_BACKGLASSY       PUP_SETTINGS_TOPPERY + PUP_SETTINGS_TOPPERHEIGHT + 5
+#define PUP_SETTINGS_BACKGLASSY       (PUP_SETTINGS_TOPPERY + PUP_SETTINGS_TOPPERHEIGHT + 5)
 #define PUP_SETTINGS_BACKGLASSWIDTH   290
 #define PUP_SETTINGS_BACKGLASSHEIGHT  218
 #define PUP_ZORDER_BACKGLASS          150
 
 #define PUP_SCREEN_DMD                1
 #define PUP_SETTINGS_DMDX             PUP_SETTINGS_TOPPERX
-#define PUP_SETTINGS_DMDY             PUP_SETTINGS_BACKGLASSY + PUP_SETTINGS_BACKGLASSHEIGHT + 5
+#define PUP_SETTINGS_DMDY             (PUP_SETTINGS_BACKGLASSY + PUP_SETTINGS_BACKGLASSHEIGHT + 5)
 #define PUP_SETTINGS_DMDWIDTH         290
 #define PUP_SETTINGS_DMDHEIGHT        75
 #define PUP_ZORDER_DMD                200
 
 #define PUP_SCREEN_PLAYFIELD          3
-#define PUP_SETTINGS_PLAYFIELDX       PUP_SETTINGS_TOPPERX + PUP_SETTINGS_TOPPERWIDTH + 5
+#define PUP_SETTINGS_PLAYFIELDX       (PUP_SETTINGS_TOPPERX + PUP_SETTINGS_TOPPERWIDTH + 5)
 #define PUP_SETTINGS_PLAYFIELDY       PUP_SETTINGS_TOPPERY
 #define PUP_SETTINGS_PLAYFIELDWIDTH   216
 #define PUP_SETTINGS_PLAYFIELDHEIGHT  384
@@ -48,7 +48,7 @@
 
 #define PUP_SCREEN_FULLDMD            5
 #define PUP_SETTINGS_FULLDMDX         PUP_SETTINGS_TOPPERX
-#define PUP_SETTINGS_FULLDMDY         PUP_SETTINGS_DMDY + 5
+#define PUP_SETTINGS_FULLDMDY         (PUP_SETTINGS_DMDY + 5)
 #define PUP_SETTINGS_FULLDMDWIDTH     290
 #define PUP_SETTINGS_FULLDMDHEIGHT    150
 #define PUP_ZORDER_FULLDMD            200
@@ -63,24 +63,24 @@ class PUPScreen;
 class PUPPlaylist;
 class PUPTrigger;
 
-class PUPManager
+class PUPManager final
 {
 public:
    PUPManager(MsgPluginAPI* msgApi, uint32_t endpointId, const string& rootPath);
    ~PUPManager();
 
-   const string& GetRootPath() { return m_szRootPath; }
+   const string& GetRootPath() const { return m_szRootPath; }
 
-   bool IsInit() { return m_init; }
+   bool IsInit() const { return m_init; }
    void LoadConfig(const string& szRomName);
    void Unload();
-   const string& GetPath() { return m_szPath; }
+   const string& GetPath() const { return m_szPath; }
    bool AddScreen(PUPScreen* pScreen);
    bool AddScreen(int screenNum);
    bool HasScreen(int screenNum);
-   PUPScreen* GetScreen(int screenNum);
+   PUPScreen* GetScreen(int screenNum) const;
    bool AddFont(TTF_Font* pFont, const string& szFilename);
-   TTF_Font* GetFont(const string& szFamily);
+   TTF_Font* GetFont(const string& szFont);
    void QueueTriggerData(PUPTriggerData data);
    void Start();
    void Stop();

@@ -6,9 +6,9 @@
 #include <fstream>
 
 PUPManager::PUPManager(MsgPluginAPI* msgApi, uint32_t endpointId, const string& rootPath)
-   : m_msgApi(msgApi)
+   : m_szRootPath(rootPath)
+   , m_msgApi(msgApi)
    , m_endpointId(endpointId)
-   , m_szRootPath(rootPath)
 {
    constexpr unsigned int mapping4[] = { 0, 1, 4, 15 };
    for (int i = 0; i < 4; i++)
@@ -88,16 +88,16 @@ void PUPManager::LoadConfig(const string& szRomName)
    // Determine child screens, creating missing top screen if needed
    
    for (int i = 0; i < 6; i++)
-      if ((m_screenMap.find(i) == m_screenMap.end())
+      if (!m_screenMap.contains(i)
          && (std::ranges::find_if(m_screenMap, [i](auto& entry) { return entry.second->GetCustomPos() && entry.second->GetCustomPos()->GetSourceScreen() == i; }) != m_screenMap.end()))
          switch (i)
          {
-         case 0: AddScreen(PUPScreen::CreateFromCSV(this, "0,\"Topper\",\"\",,0,ForcePopBack,0,", m_playlists)); break;
-         case 1: AddScreen(PUPScreen::CreateFromCSV(this, "0,\"DMD\",\"\",,0,ForcePopBack,0,", m_playlists)); break;
-         case 2: AddScreen(PUPScreen::CreateFromCSV(this, "0,\"Backglass\",\"\",,0,ForcePopBack,0,", m_playlists)); break;
+         case 0: AddScreen(PUPScreen::CreateFromCSV(this, "0,\"Topper\",\"\",,0,ForcePopBack,0,"s, m_playlists)); break;
+         case 1: AddScreen(PUPScreen::CreateFromCSV(this, "0,\"DMD\",\"\",,0,ForcePopBack,0,"s, m_playlists)); break;
+         case 2: AddScreen(PUPScreen::CreateFromCSV(this, "0,\"Backglass\",\"\",,0,ForcePopBack,0,"s, m_playlists)); break;
          case 3: break; // Playfield
          case 4: break; // Music
-         case 5: AddScreen(PUPScreen::CreateFromCSV(this, "0,\"FullDMD\",\"\",,0,ForcePopBack,0,", m_playlists)); break;
+         case 5: AddScreen(PUPScreen::CreateFromCSV(this, "0,\"FullDMD\",\"\",,0,ForcePopBack,0,"s, m_playlists)); break;
          }
    for (auto& [key, pScreen] : m_screenMap) {
       PUPCustomPos* pCustomPos = pScreen->GetCustomPos();
@@ -230,13 +230,13 @@ bool PUPManager::HasScreen(int screenNum)
    return it != m_screenMap.end();
 }
 
-PUPScreen* PUPManager::GetScreen(int screenNum)
+PUPScreen* PUPManager::GetScreen(int screenNum) const
 {
    if (!m_init) {
       LOGE("Getting screen before initialization");
    }
 
-   std::map<int, PUPScreen*>::iterator it = m_screenMap.find(screenNum);
+   std::map<int, PUPScreen*>::const_iterator it = m_screenMap.find(screenNum);
    return it != m_screenMap.end() ? it->second : nullptr;
 }
 
@@ -249,14 +249,14 @@ bool PUPManager::AddFont(TTF_Font* pFont, const string& szFilename)
 
    const string szFamilyName = string(TTF_GetFontFamilyName(pFont));
 
-   const string szNormalizedFamilyName = lowerCase(string_replace_all(szFamilyName, "  ", " "));
+   const string szNormalizedFamilyName = lowerCase(string_replace_all(szFamilyName, "  "s, " "s));
    m_fontMap[szNormalizedFamilyName] = pFont;
 
    string szStyleName = string(TTF_GetFontStyleName(pFont));
    if (szStyleName != "Regular")
    {
       const string szFullName = szFamilyName + ' ' + szStyleName;
-      const string szNormalizedFullName = lowerCase(string_replace_all(szFullName, "  ", " "));
+      const string szNormalizedFullName = lowerCase(string_replace_all(szFullName, "  "s, " "s));
       m_fontMap[szNormalizedFullName] = pFont;
    }
 
@@ -270,7 +270,7 @@ bool PUPManager::AddFont(TTF_Font* pFont, const string& szFilename)
 
 TTF_Font* PUPManager::GetFont(const string& szFont)
 {
-   string szNormalizedFamilyName = lowerCase(string_replace_all(szFont, "  ", " "));
+   string szNormalizedFamilyName = lowerCase(string_replace_all(szFont, "  "s, " "s));
 
    std::map<string, TTF_Font*>::iterator it = m_fontMap.find(szNormalizedFamilyName);
    if (it != m_fontMap.end())
@@ -364,10 +364,10 @@ void PUPManager::ProcessQueue()
                      {
                         const int px = x * 2 + dx;
                         const int py = y * 2 + dy;
-                        const float weight = radius * radius - fabsf(dx - 0.5f) * fabsf(dy - 0.5f);
+                        const float weight = radius * radius - fabsf((float)dx - 0.5f) * fabsf((float)dy - 0.5f);
                         if (/*px >= 0 &&*/ static_cast<unsigned int>(px) < getDmdMsg.width
                            && /*py >= 0 &&*/ static_cast<unsigned int>(py) < getDmdMsg.height) // unsigned int tests include the >= 0 ones
-                           lum += getDmdMsg.frame[py * getDmdMsg.width + px] * weight;
+                           lum += (float)getDmdMsg.frame[py * getDmdMsg.width + px] * weight;
                         sum += weight;
                      }
                   }
@@ -731,4 +731,3 @@ void PUPManager::OnInputSrcChanged(const unsigned int eventId, void* userData, v
    }
    delete[] getSrcMsg.entries;
 }
-

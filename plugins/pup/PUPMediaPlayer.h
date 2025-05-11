@@ -14,7 +14,7 @@ extern "C" {
    #include "libavcodec/avcodec.h"
 }
 
-class PUPMediaPlayer
+class PUPMediaPlayer final
 {
 public:
    PUPMediaPlayer();
