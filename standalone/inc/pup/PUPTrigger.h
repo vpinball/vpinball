@@ -22,12 +22,12 @@ typedef enum
 
 const char* PUP_TRIGGER_PLAY_ACTION_TO_STRING(PUP_TRIGGER_PLAY_ACTION value);
 
-class PUPTrigger
+class PUPTrigger final
 {
 public:
    ~PUPTrigger();
 
-   static PUPTrigger* CreateFromCSV(PUPScreen* pScreen, string line);
+   static PUPTrigger* CreateFromCSV(PUPScreen* pScreen, const string& line);
    bool IsActive() const { return m_active; }
    const string& GetDescription() const { return m_szDescript; }
    PUPScreen* GetScreen() const { return m_pScreen; }
@@ -44,7 +44,7 @@ public:
 
 private:
    PUPTrigger(bool active, const string& szDescript, const vector<PUPTriggerCondition*>& conditions, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, int length, int counter, int restSeconds, PUP_TRIGGER_PLAY_ACTION playAction);
-   bool IsResting();
+   bool IsResting() const;
    bool m_active;
    string m_szDescript;
    vector<PUPTriggerCondition*> m_conditions;

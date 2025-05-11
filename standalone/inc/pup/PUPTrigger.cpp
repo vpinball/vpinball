@@ -81,7 +81,7 @@ PUPTrigger::~PUPTrigger()
       delete pCondition;
 }
 
-PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, string line)
+PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, const string& line)
 {
    vector<string> parts = parse_csv_line(line);
    if (parts.size() != 14) {
@@ -136,23 +136,23 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, string line)
    }
 
    PUP_TRIGGER_PLAY_ACTION playAction;
-   if (StrCompareNoCase(triggerPlayAction, "Loop"))
+   if (StrCompareNoCase(triggerPlayAction, "Loop"s))
       playAction = PUP_TRIGGER_PLAY_ACTION_LOOP;
-   else if (StrCompareNoCase(triggerPlayAction, "SplashReset"))
+   else if (StrCompareNoCase(triggerPlayAction, "SplashReset"s))
       playAction = PUP_TRIGGER_PLAY_ACTION_SPLASH_RESET;
-   else if (StrCompareNoCase(triggerPlayAction, "SplashReturn"))
-      playAction = PUP_TRIGGER_PLAY_ACTION_SPLASH_RESET;
-   else if (StrCompareNoCase(triggerPlayAction, "StopPlayer"))
+   else if (StrCompareNoCase(triggerPlayAction, "SplashReturn"s))
+      playAction = PUP_TRIGGER_PLAY_ACTION_SPLASH_RETURN;
+   else if (StrCompareNoCase(triggerPlayAction, "StopPlayer"s))
       playAction = PUP_TRIGGER_PLAY_ACTION_STOP_PLAYER;
-   else if (StrCompareNoCase(triggerPlayAction, "StopFile"))
+   else if (StrCompareNoCase(triggerPlayAction, "StopFile"s))
       playAction = PUP_TRIGGER_PLAY_ACTION_STOP_FILE;
-   else if (StrCompareNoCase(triggerPlayAction, "SetBG"))
+   else if (StrCompareNoCase(triggerPlayAction, "SetBG"s))
       playAction = PUP_TRIGGER_PLAY_ACTION_SET_BG;
-   else if (StrCompareNoCase(triggerPlayAction, "PlaySSF"))
+   else if (StrCompareNoCase(triggerPlayAction, "PlaySSF"s))
       playAction = PUP_TRIGGER_PLAY_ACTION_PLAY_SSF;
-   else if (StrCompareNoCase(triggerPlayAction, "SkipSamePrty"))
+   else if (StrCompareNoCase(triggerPlayAction, "SkipSamePrty"s))
       playAction = PUP_TRIGGER_PLAY_ACTION_SKIP_SAME_PRTY;
-   else if (StrCompareNoCase(triggerPlayAction, "CustomFunc"))
+   else if (StrCompareNoCase(triggerPlayAction, "CustomFunc"s))
       playAction = PUP_TRIGGER_PLAY_ACTION_CUSTOM_FUNC;
    else
       playAction = PUP_TRIGGER_PLAY_ACTION_NORMAL;
@@ -168,7 +168,7 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, string line)
       playAction);
 }
 
-bool PUPTrigger::IsResting()
+bool PUPTrigger::IsResting() const
 {
    if (m_restSeconds <= 0)
       return false;
@@ -218,8 +218,8 @@ string PUPTrigger::ToString() const
             }
             return result;
       }() + "]" +
-      ", screen={" + m_pScreen->ToString().c_str() + "}" +
-      ", playlist={" + m_pPlaylist->ToString().c_str() + "}" +
+      ", screen={" + m_pScreen->ToString() + '}' +
+      ", playlist={" + m_pPlaylist->ToString() + '}' +
       ", playFile=" + m_szPlayFile +
       ", volume=" + std::to_string(m_volume) +
       ", priority=" + std::to_string(m_priority) +
