@@ -28,7 +28,7 @@ BaseTexture::BaseTexture(const unsigned int w, const unsigned int h, const Forma
    , m_format(format)
    , m_width(w)
    , m_height(h)
-   , m_liveHash(static_cast<unsigned long long>(this) ^ usec() ^ ((unsigned long long)w << 16) ^ ((unsigned long long)h << 32) ^ format)
+   , m_liveHash(((unsigned long long)this) ^ usec() ^ ((unsigned long long)w << 16) ^ ((unsigned long long)h << 32) ^ format)
 {
    m_data = new BYTE[(format == RGBA || format == SRGBA || format == RGBA_FP16 ? 4 : (format == BW ? 1 : 3)) * ((format == RGB_FP32 || format == RGBA_FP32) ? 4 : (format == RGB_FP16 || format == RGBA_FP16) ? 2 : 1) * w * h];
 }
