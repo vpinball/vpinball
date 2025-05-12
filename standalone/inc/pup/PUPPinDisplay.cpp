@@ -718,7 +718,36 @@ STDMETHODIMP PUPPinDisplay::playevent(LONG ScreenNum, BSTR playlist, BSTR playfi
       return S_OK;
    }
 
-   PLOGW.printf("Not implemented: screenNum=%d, playlist=%s, playfilename=%s, volume=%d, priority=%d, playtype=%d, seconds=%d, special=%s", ScreenNum, MakeString(playlist).c_str(), MakeString(playfilename).c_str(), volume, priority, playtype, Seconds, MakeString(Special).c_str());
+   // TODO handle seconds and Special
+   pScreen->QueuePlay(MakeString(playlist), MakeString(playfilename), volume, priority);
+
+   //  'playtype for triggers
+   //  'ptNormal=0;
+   //  'ptLoop=1;
+   //  'ptSplashReset=2;
+   //  'ptSplashResume=3;
+   //  'ptStopScreen=4;
+   //  'ptStopFile=5;
+   //  'ptSetBG=6;
+   //  'ptPlaySSF=7;
+   //  'ptSkipSameP=8;
+   //  'ptCustomFunc=9;
+   //  'ptForcePlay=10;
+   //  'ptQueueSameP=11;
+   //  'ptQueueAlways=12;
+   switch (playtype) {
+      case 0:
+         // Normal
+         break;
+      case 1: // Loop
+         pScreen->QueueLoop(1);
+         break;
+      case 6: // SetBG
+         pScreen->QueueBG(1);
+         break;
+      default:
+         PLOGW.printf("Not implemented: playevent playtype=%d", playtype);
+   }
 
    return S_OK;
 }
