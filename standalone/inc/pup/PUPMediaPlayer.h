@@ -13,7 +13,7 @@ extern "C" {
    #include "libavcodec/avcodec.h"
 }
 
-class PUPMediaPlayer
+class PUPMediaPlayer final
 {
 public:
    PUPMediaPlayer();
@@ -26,38 +26,50 @@ public:
    const string& GetFilename() const { return m_szFilename; }
    int GetPriority() const { return m_priority; }
    void Stop();
-   void SetVolume(float volume);
    void SetLoop(bool loop);
-   void Render(const SDL_Rect& destRect);
+   void SetVolume(float volume);
+   void SetLength(int length);
+   void Render(SDL_Renderer* pRenderer, const SDL_Rect& destRect);
 
 private:
    void Run();
    AVCodecContext* OpenStream(AVFormatContext* pInputFormatContext, int stream);
-   SDL_PixelFormat GetVideoFormat(enum AVPixelFormat format);
-   void SetYUVConversionMode(AVFrame* pFrame);
    void HandleAudioFrame(AVFrame* pFrame);
+   void HandleVideoFrame(AVFrame* pFrame);
 
    string m_szFilename;
-   bool m_loop;
-   float m_volume;
-   int m_priority;
-   SDL_Renderer* m_pRenderer;
-   SDL_Texture* m_pTexture;
-   AVFormatContext* m_pFormatContext;
-   int m_videoStream;
-   AVCodecContext* m_pVideoContext;
-   struct SwsContext* m_pVideoConversionContext;
-   SDL_PixelFormat m_videoFormat;
-   int m_videoWidth;
-   int m_videoHeight;
-   int m_audioStream;
-   AVCodecContext* m_pAudioContext;
-   struct SwrContext* m_pAudioConversionContext;
-   AVSampleFormat m_audioFormat;
-   PinSound* m_pPinSound;
+   Uint64 m_startTimestamp = 0; // timestamp in ms when the play command was called
+   bool m_loop = false;
+   int m_playIndex = 0;
+   float m_volume = 100.f;
+   int m_length = 0;
+   int m_priority = -1;
+
+   bool m_paused = false;
+   double m_pauseTimestamp = 0.0;
+
+   AVFormatContext* m_pFormatContext = nullptr;
+
+   int m_videoStream = -1;
+   AVCodecContext* m_pVideoContext = nullptr;
+
+   SwsContext* m_swsContext = nullptr;
+   int m_nRgbFrames = 0; // Circular buffer of m_nRgbFrames frames, ready to be rendered if framePTS >= playPTS
+   int m_activeRgbFrame = 0;
+   AVFrame** m_rgbFrames = nullptr;
+   uint8_t** m_rgbFrameBuffers = nullptr;
+
+   SDL_Texture* m_videoTexture = nullptr;
+   unsigned int m_videoTextureId = 0;
+
+   int m_audioStream = -1;
+   AVCodecContext* m_pAudioContext = nullptr;
+   struct SwrContext* m_pAudioConversionContext = nullptr;
+   AVSampleFormat m_audioFormat = AV_SAMPLE_FMT_NONE;
+   PinSound* m_pPinSound = nullptr;
+
    std::queue<AVFrame*> m_queue;
    std::mutex m_mutex;
    std::thread m_thread;
-   bool m_running;
-   bool m_paused;
+   bool m_running = false;
 };

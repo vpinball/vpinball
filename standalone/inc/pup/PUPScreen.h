@@ -114,7 +114,7 @@ public:
    void SetBackground(PUPPlaylist* pPlaylist, const string& szPlayFile);
    void SetCustomPos(const string& string);
    void SetOverlay(PUPPlaylist* pPlaylist, const string& szPlayFile);
-   void SetMedia(PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, bool skipSamePriority);
+   void SetMedia(PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, bool skipSamePriority, int length);
    void StopMedia();
    void StopMedia(int priority);
    void StopMedia(PUPPlaylist* pPlaylist, const string& szPlayFile);
