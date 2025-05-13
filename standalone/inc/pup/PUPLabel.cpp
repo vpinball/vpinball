@@ -81,7 +81,7 @@ void PUPLabel::SetCaption(const string& szCaption)
          const string szExt = extension_from_path(szText);
          if (szExt == "gif" || szExt == "png" || szExt == "apng" || szExt == "bmp" || szExt == "jpg") {
             std::filesystem::path fs_path(normalize_path_separators(szText));
-            auto playlistFolder = fs_path.parent_path().string();
+            string playlistFolder = fs_path.parent_path().string();
             PUPPlaylist* pPlaylist = m_pScreen->GetPlaylist(playlistFolder);
             if (pPlaylist) {
                string szPath = pPlaylist->GetPlayFilePath(fs_path.filename().string());
