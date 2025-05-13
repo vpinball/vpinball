@@ -37,7 +37,7 @@ public:
    int GetPriority() const { return m_priority; }
    int GetLength() const { return m_length; }
    int GetCounter() const { return m_counter; }
-   int GetRestSeconds() const { return m_restSeconds; }
+   int GetRestMs() const { return m_restMs; }
    PUP_TRIGGER_PLAY_ACTION GetPlayAction() const { return m_playAction; }
    bool Evaluate(PUPManager* pManager, const PUPTriggerData& data);
    string ToString() const;
@@ -55,7 +55,7 @@ private:
    int m_priority;
    int m_length;
    int m_counter;
-   int m_restSeconds;
+   int m_restMs;
    PUP_TRIGGER_PLAY_ACTION m_playAction;
    Uint64 m_lastTriggered;
 };

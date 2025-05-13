@@ -23,7 +23,7 @@ PUPManager::PUPManager()
    m_isRunning = false;
    m_szRootPath = find_case_insensitive_directory_path(g_pvp->m_currentTablePath + "pupvideos");
 
-   m_triggerDataQueue.push({ 'D', 0, 1 });
+   QueueTriggerData({ 'D', 0, 1 });
 }
 
 PUPManager::~PUPManager()

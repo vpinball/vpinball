@@ -58,7 +58,7 @@ const char* PUP_TRIGGER_PLAY_ACTION_TO_STRING(PUP_TRIGGER_PLAY_ACTION value)
 */
 
 PUPTrigger::PUPTrigger(bool active, const string& szDescript, const vector<PUPTriggerCondition*>& conditions, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const string& szPlayFile, float volume,
-   int priority, int length, int counter, int restSeconds, PUP_TRIGGER_PLAY_ACTION playAction)
+   int priority, int length, int counter, int restMs, PUP_TRIGGER_PLAY_ACTION playAction)
 {
    m_active = active;
    m_szDescript = szDescript;
@@ -70,7 +70,7 @@ PUPTrigger::PUPTrigger(bool active, const string& szDescript, const vector<PUPTr
    m_priority = priority;
    m_length = length;
    m_counter = counter;
-   m_restSeconds = restSeconds;
+   m_restMs = restMs;
    m_playAction = playAction;
    m_lastTriggered = 0;
 }
@@ -157,6 +157,10 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, const string& line)
    else
       playAction = PUP_TRIGGER_PLAY_ACTION_NORMAL;
 
+   int restMs = string_to_int(parts[11], pPlaylist->GetRestSeconds());
+   if (abs(restMs) <= 99)
+      restMs *= 1000;
+
    return new PUPTrigger(active,
       parts[2], // descript
       conditions,
@@ -164,19 +168,19 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, const string& line)
       parts[8].empty() ? pPlaylist->GetPriority() : string_to_int(parts[8], 0), // priority
       string_to_int(parts[9], 0), // length
       string_to_int(parts[10], 0), // counter
-      parts[11].empty() ? pPlaylist->GetRestSeconds() : string_to_int(parts[11], 0), // rest seconds
+      restMs,
       playAction);
 }
 
 bool PUPTrigger::IsResting() const
 {
-   if (m_restSeconds <= 0)
+   if (m_restMs <= 0)
       return false;
 
    if (m_lastTriggered == 0)
       return false;
 
-   return (SDL_GetTicks() - m_lastTriggered) < (m_restSeconds * 1000);
+   return (SDL_GetTicks() - m_lastTriggered) < m_restMs;
 }
 
 bool PUPTrigger::Evaluate(PUPManager* pManager, const PUPTriggerData& data)
@@ -225,6 +229,6 @@ string PUPTrigger::ToString() const
       ", priority=" + std::to_string(m_priority) +
       ", length=" + std::to_string(m_length) +
       ", count=" + std::to_string(m_counter) +
-      ", restSeconds=" + std::to_string(m_restSeconds) +
+      ", restMs=" + std::to_string(m_restMs) +
       ", playAction=" + string(PUP_TRIGGER_PLAY_ACTION_TO_STRING(m_playAction));
 }
