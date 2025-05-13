@@ -20,6 +20,7 @@ public:
    static RenderTarget* GetCurrentRenderTarget();
    static int GetCurrentRenderLayer();
 
+   bool IsBackBuffer() const { return m_is_back_buffer; }
    Sampler* GetColorSampler() const { return m_color_sampler; }
    void UpdateDepthSampler(bool insideBeginEnd);
    Sampler* GetDepthSampler() const { return m_depth_sampler; }

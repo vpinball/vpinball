@@ -58,6 +58,7 @@ RenderCommand* RenderFrame::NewCommand()
 
 void RenderFrame::SortPasses(RenderPass* finalPass, vector<RenderPass*>& sortedPasses)
 {
+   assert(std::ranges::find(sortedPasses, finalPass) == sortedPasses.end());
    sortedPasses.reserve(m_passes.size());
    vector<RenderPass*> waitingPasses; // Used passes gathered recursively from final pass, waiting to be sorted
    waitingPasses.reserve(2 * m_passes.size());
@@ -184,6 +185,10 @@ bool RenderFrame::Execute(const bool log)
 
       // Sort passes to satisfy dependencies, avoid useless render target switching, allow merging passes for better draw call sorting/batching, drop passes that do not contribute to the final pass
       vector<RenderPass*> sortedPasses; // FIXME use list since we are populating through insertions
+      RenderPass* lastPass = m_passes.back();
+      for (auto pass : m_passes) // Always keep renderpasses rendering to an output window framebuffer
+         if (lastPass != pass && pass->m_rt->IsBackBuffer())
+            lastPass->AddPrecursor(pass);
       SortPasses(m_passes.back(), sortedPasses);
       // Sort commands & split on command level dependencies (commands that needs a pass to be executed just before them, used for refracting parts that uses a screen copy just before using it as a shading texture)
       for (std::vector<RenderPass*>::iterator itPass = sortedPasses.begin(); itPass != sortedPasses.end(); ++itPass)
