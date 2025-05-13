@@ -81,7 +81,8 @@ void PUPLabel::SetCaption(const string& szCaption)
          const string szExt = extension_from_path(szText);
          if (szExt == "gif" || szExt == "png" || szExt == "apng" || szExt == "bmp" || szExt == "jpg") {
             std::filesystem::path fs_path(normalize_path_separators(szText));
-            PUPPlaylist* pPlaylist = m_pScreen->GetPlaylist(fs_path.parent_path());
+            auto playlistFolder = fs_path.parent_path().string();
+            PUPPlaylist* pPlaylist = m_pScreen->GetPlaylist(playlistFolder);
             if (pPlaylist) {
                string szPath = pPlaylist->GetPlayFilePath(fs_path.filename().string());
                if (!szPath.empty()) {
@@ -92,6 +93,10 @@ void PUPLabel::SetCaption(const string& szCaption)
                   // we need to set a path otherwise the caption will be used as text
                   m_szPath = szText;
                }
+            }
+            else
+            {
+               PLOGE.printf("Image playlist not found: screen=%d, label=%s, path=%s, playlist=%s", m_pScreen->GetScreenNum(), m_szName.c_str(), szText.c_str(), playlistFolder.c_str());
             }
          }
 
