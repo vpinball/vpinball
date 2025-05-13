@@ -71,41 +71,6 @@ void PUPMediaPlayer::Play(const string& szFilename)
       m_videoStream = -1;
    }
 
-   // Create video frame conversion context and frame queue
-   if (m_pVideoContext)
-   {
-      const AVPixelFormat targetFormat = AV_PIX_FMT_RGBA;
-      const int targetWidth = m_pVideoContext->width; // TODO we could also apply downscaling to the expected render size
-      const int targetHeight = m_pVideoContext->height;
-      m_nRgbFrames = 3; // TODO shouldn't the queue size be adapted to the video characteristics ?
-      m_rgbFrames = new AVFrame*[m_nRgbFrames];
-      memset(m_rgbFrames, 0, sizeof(AVFrame*) * m_nRgbFrames);
-      m_rgbFrameBuffers = new uint8_t*[m_nRgbFrames];
-      memset(m_rgbFrameBuffers, 0, sizeof(uint8_t*) * m_nRgbFrames);
-      int rgbFrameSize = av_image_get_buffer_size(targetFormat, targetWidth, targetHeight, 1);
-      for (int i = 0; i < m_nRgbFrames; i++)
-      {
-         m_rgbFrames[i] = av_frame_alloc();
-         if (m_rgbFrames[i] == nullptr)
-         {
-            LOGE("Failed to create RGB buffer frame");
-            Stop();
-            return;
-         }
-         m_rgbFrameBuffers[i] = static_cast<uint8_t*>(av_malloc(rgbFrameSize * sizeof(uint8_t)));
-         if (m_rgbFrameBuffers[i] == nullptr)
-         {
-            LOGE("Failed to allocate RGB buffer");
-            Stop();
-            return;
-         }
-         m_rgbFrames[i]->width = targetWidth;
-         m_rgbFrames[i]->height = targetHeight;
-         m_rgbFrames[i]->format = targetFormat;
-         av_image_fill_arrays(m_rgbFrames[i]->data, m_rgbFrames[i]->linesize, m_rgbFrameBuffers[i], targetFormat, targetWidth, targetHeight, 1);
-      }
-   }
-
    // Find audio stream
    if (m_videoStream >= 0) {
       m_audioStream = av_find_best_stream(m_pFormatContext, AVMEDIA_TYPE_AUDIO, -1, m_videoStream, NULL, 0);
@@ -181,14 +146,6 @@ void PUPMediaPlayer::Stop()
    }
    if (m_thread.joinable())
       m_thread.join();
-   {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      while (!m_queue.empty()) {
-         AVFrame* pFrame = m_queue.front();
-         av_frame_free(&pFrame);
-         m_queue.pop();
-      }
-   }
 
    if (m_pFormatContext)
       avformat_close_input(&m_pFormatContext);
@@ -377,6 +334,41 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
    // Unknown frame format, don't process frame (would crash in getContext)
    if (frame->format < 0)
       return;
+
+   // Create video frame conversion context and frame queue
+   if (m_nRgbFrames == 0)
+   {
+      const AVPixelFormat targetFormat = AV_PIX_FMT_RGBA;
+      const int targetWidth = m_pVideoContext->width; // TODO we could also apply downscaling to the expected render size
+      const int targetHeight = m_pVideoContext->height;
+      m_nRgbFrames = 3; // TODO shouldn't the queue size be adapted to the video characteristics ?
+      m_rgbFrames = new AVFrame*[m_nRgbFrames];
+      memset(m_rgbFrames, 0, sizeof(AVFrame*) * m_nRgbFrames);
+      m_rgbFrameBuffers = new uint8_t*[m_nRgbFrames];
+      memset(m_rgbFrameBuffers, 0, sizeof(uint8_t*) * m_nRgbFrames);
+      int rgbFrameSize = av_image_get_buffer_size(targetFormat, targetWidth, targetHeight, 1);
+      for (int i = 0; i < m_nRgbFrames; i++)
+      {
+         m_rgbFrames[i] = av_frame_alloc();
+         if (m_rgbFrames[i] == nullptr)
+         {
+            LOGE("Failed to create RGB buffer frame");
+            m_running = false;
+            return;
+         }
+         m_rgbFrameBuffers[i] = static_cast<uint8_t*>(av_malloc(rgbFrameSize * sizeof(uint8_t)));
+         if (m_rgbFrameBuffers[i] == nullptr)
+         {
+            LOGE("Failed to allocate RGB buffer");
+            m_running = false;
+            return;
+         }
+         m_rgbFrames[i]->width = targetWidth;
+         m_rgbFrames[i]->height = targetHeight;
+         m_rgbFrames[i]->format = targetFormat;
+         av_image_fill_arrays(m_rgbFrames[i]->data, m_rgbFrames[i]->linesize, m_rgbFrameBuffers[i], targetFormat, targetWidth, targetHeight, 1);
+      }
+   }
 
    // m_activeRgbFrame points to the last frame (the one with the highest presentation timestamp)
    int nextFrame = (m_activeRgbFrame + 1) % m_nRgbFrames;
