@@ -594,7 +594,36 @@ void PUPPinDisplay::playevent(int screenNum, string playlist, string playfilenam
       LOGE("Screen not found: screenNum=%d", screenNum);
       return;
    }
-   LOGE("Not implemented: screenNum=%d, playlist=%s, playfilename=%s, volume=%d, priority=%d, playtype=%d, seconds=%d, special=%s", screenNum, playlist.c_str(), playfilename.c_str(), volume, priority, playtype, Seconds, Special.c_str());
+   // TODO handle seconds and Special
+   pScreen->QueuePlay(playlist, playfilename, volume, priority);
+
+   //  'playtype for triggers
+   //  'ptNormal=0;
+   //  'ptLoop=1;
+   //  'ptSplashReset=2;
+   //  'ptSplashResume=3;
+   //  'ptStopScreen=4;
+   //  'ptStopFile=5;
+   //  'ptSetBG=6;
+   //  'ptPlaySSF=7;
+   //  'ptSkipSameP=8;
+   //  'ptCustomFunc=9;
+   //  'ptForcePlay=10;
+   //  'ptQueueSameP=11;
+   //  'ptQueueAlways=12;
+   switch (playtype) {
+   case 0:
+      // Normal
+      break;
+   case 1: // Loop
+      pScreen->QueueLoop(1);
+      break;
+   case 6: // SetBG
+      pScreen->QueueBG(1);
+      break;
+   default:
+      LOGE("Not implemented: playevent playtype=%d", playtype);
+   }
 }
 
 void PUPPinDisplay::SetPosVideo(int screenNum, int StartPos, int EndPos, int Mode, string Special)
