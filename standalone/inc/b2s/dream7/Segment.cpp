@@ -55,7 +55,6 @@ Segment::Segment(float x, float y, float radius)
 
 Segment::~Segment()
 {
-   delete m_pStyle;
    delete m_pGlassPath;
    delete m_pLightPath;
    delete m_pExternMatrix;
@@ -269,5 +268,7 @@ void Segment::SetTransform(VP::RendererGraphics* pGraphics)
 
 void Segment::Transform(VP::Matrix* pMatrix)
 {
+   if (m_pExternMatrix)
+      delete m_pExternMatrix;
    m_pExternMatrix = pMatrix->Clone();
 }

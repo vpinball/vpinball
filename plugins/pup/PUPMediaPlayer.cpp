@@ -181,14 +181,6 @@ void PUPMediaPlayer::Stop()
    }
    if (m_thread.joinable())
       m_thread.join();
-   {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      while (!m_queue.empty()) {
-         AVFrame* pFrame = m_queue.front();
-         av_frame_free(&pFrame);
-         m_queue.pop();
-      }
-   }
 
    if (m_pFormatContext)
       avformat_close_input(&m_pFormatContext);

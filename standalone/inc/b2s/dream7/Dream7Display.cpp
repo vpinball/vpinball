@@ -24,6 +24,9 @@ Dream7Display::Dream7Display() : Control()
 Dream7Display::~Dream7Display()
 {
    delete m_pMatrix;
+
+   for (auto& pSegmentNumber : m_segmentNumbers)
+      delete pSegmentNumber;
 }
 
 void Dream7Display::OnPaint(VP::RendererGraphics* pGraphics)

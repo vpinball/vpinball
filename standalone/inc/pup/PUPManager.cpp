@@ -125,7 +125,8 @@ void PUPManager::LoadPlaylists()
       while (std::getline(playlistsFile, line)) {
          if (++i == 1)
             continue;
-         if (PUPPlaylist* pPlaylist = PUPPlaylist::CreateFromCSV(line)) {
+         PUPPlaylist* pPlaylist = PUPPlaylist::CreateFromCSV(line);
+         if (pPlaylist) {
             string folderNameLower = lowerCase(pPlaylist->GetFolder());
             if (lowerPlaylistNames.find(folderNameLower) == lowerPlaylistNames.end()) {
                m_playlists.push_back(pPlaylist);
@@ -133,6 +134,7 @@ void PUPManager::LoadPlaylists()
             }
             else {
                PLOGW.printf("Duplicate playlist: playlist=%s", pPlaylist->ToString().c_str());
+               delete pPlaylist;
             }
          }
       }

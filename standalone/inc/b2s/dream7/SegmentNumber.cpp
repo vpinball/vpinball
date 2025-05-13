@@ -87,7 +87,10 @@ void SegmentNumber::SetCharacter(const string& szCharacter)
 
 void SegmentNumber::InitSegments(const SegmentNumberType type, const float thickness)
 {
+   for (Segment* pSegment : m_segments)
+      delete pSegment;
    m_segments.clear();
+
    float TH = thickness;
    float T4 = TH / 4.0f;
    float T2 = TH / 2.0f;
@@ -151,6 +154,8 @@ void SegmentNumber::InitSegments(const SegmentNumberType type, const float thick
 
 void SegmentNumber::InitMatrix(const SDL_FPoint& location, VP::Matrix* pMatrix)
 {
+   if (m_pNumberMatrix != NULL)
+      delete m_pNumberMatrix;
    m_pNumberMatrix = pMatrix->Clone();
    m_pNumberMatrix->Translate(location.x, location.y);
    m_segments.Transform(m_pNumberMatrix);
