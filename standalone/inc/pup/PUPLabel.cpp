@@ -323,8 +323,9 @@ void PUPLabel::Render(SDL_Renderer* pRenderer, SDL_Rect& rect, int pagenum)
          else if (m_type == PUP_LABEL_TYPE_GIF) {
             m_pAnimation = IMG_LoadAnimation(m_szPath.c_str());
             if (m_pAnimation) {
-               m_frame = 0;
-               m_pTexture = SDL_CreateTextureFromSurface(pRenderer, m_pAnimation->frames[m_frame]);
+               m_animationFrame = -1;
+               m_animationStart = SDL_GetTicks();
+               m_pTexture = SDL_CreateTextureFromSurface(pRenderer, m_pAnimation->frames[0]);
                m_dirty = false;
             }
             else {
@@ -342,9 +343,11 @@ void PUPLabel::Render(SDL_Renderer* pRenderer, SDL_Rect& rect, int pagenum)
       return;
 
    if (m_pAnimation) {
-      if (++m_frame >= m_pAnimation->count)
-         m_frame = 0;
-      SDL_UpdateTexture(m_pTexture, nullptr, m_pAnimation->frames[m_frame]->pixels, m_pAnimation->frames[m_frame]->pitch);
+      int expectedFrame = static_cast<int>(static_cast<float>(SDL_GetTicks() - m_animationStart) * 60.f / 1000.f) % m_pAnimation->count;
+      if (expectedFrame != m_animationFrame) {
+         m_animationFrame = expectedFrame;
+         SDL_UpdateTexture(m_pTexture, nullptr, m_pAnimation->frames[m_animationFrame]->pixels, m_pAnimation->frames[m_animationFrame]->pitch);
+      }
    }
 
    float width;

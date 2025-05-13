@@ -193,6 +193,7 @@ void PUPManager::LoadPlaylists()
             }
             else {
                LOGE("Duplicate playlist: playlist=%s", pPlaylist->ToString().c_str());
+               delete pPlaylist;
             }
          }
       }

@@ -68,7 +68,6 @@ private:
    AVSampleFormat m_audioFormat = AV_SAMPLE_FMT_NONE;
    PinSound* m_pPinSound = nullptr;
 
-   std::queue<AVFrame*> m_queue;
    std::mutex m_mutex;
    std::thread m_thread;
    bool m_running = false;

@@ -91,7 +91,9 @@ void PUPMediaPlayer::Play(const string& szFilename)
       m_nRgbFrames = singleFrame ? 1 : 3; // TODO shouldn't the queue size be adapted to the video characteristics ?
 
       m_rgbFrames = new AVFrame*[m_nRgbFrames];
+      memset(m_rgbFrames, 0, sizeof(AVFrame*) * m_nRgbFrames);
       m_rgbFrameBuffers = new uint8_t*[m_nRgbFrames];
+      memset(m_rgbFrameBuffers, 0, sizeof(uint8_t*) * m_nRgbFrames);
       int rgbFrameSize = av_image_get_buffer_size(targetFormat, targetWidth, targetHeight, 1);
       for (int i = 0; i < m_nRgbFrames; i++)
       {
@@ -191,14 +193,6 @@ void PUPMediaPlayer::Stop()
    }
    if (m_thread.joinable())
       m_thread.join();
-   {
-      std::lock_guard<std::mutex> lock(m_mutex);
-      while (!m_queue.empty()) {
-         AVFrame* pFrame = m_queue.front();
-         av_frame_free(&pFrame);
-         m_queue.pop();
-      }
-   }
 
    if (m_pFormatContext)
       avformat_close_input(&m_pFormatContext);
@@ -217,7 +211,7 @@ void PUPMediaPlayer::Stop()
       delete[] m_rgbFrames;
       m_rgbFrames = nullptr;
    }
-   if (m_rgbFrames)
+   if (m_rgbFrameBuffers)
    {
       for (int i = 0; i < m_nRgbFrames; i++)
          if (m_rgbFrameBuffers[i])
@@ -504,6 +498,9 @@ AVCodecContext* PUPMediaPlayer::OpenStream(AVFormatContext* pInputFormatContext,
    AVCodecContext* pContext = avcodec_alloc_context3(NULL);
    if (!pContext)
       return NULL;
+
+   pContext->thread_count = std::max(1u, std::thread::hardware_concurrency() - 1);
+   pContext->thread_type  = FF_THREAD_FRAME;
 
    if (avcodec_parameters_to_context(pContext, pInputFormatContext->streams[stream]->codecpar) < 0) {
       avcodec_free_context(&pContext);

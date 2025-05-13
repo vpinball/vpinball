@@ -70,6 +70,7 @@ private:
    PUP_LABEL_TYPE m_type;
    IMG_Animation* m_pAnimation;
    string m_szPath;
-   int m_frame;
+   int m_animationFrame;
+   Uint64 m_animationStart;
    std::mutex m_mutex;
 };

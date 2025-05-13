@@ -27,7 +27,7 @@ public:
     Matrix();
     Matrix(const Matrix& matrix);
     Matrix(float m11, float m12, float m21, float m22, float dx, float dy);
-    
+
     void Rotate(float angle);
     void Multiply(const Matrix& other);
     void Translate(float x, float y);
