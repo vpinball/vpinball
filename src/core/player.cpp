@@ -1940,21 +1940,12 @@ void Player::PrepareFrame(const std::function<void()>& sync)
    m_renderer->RenderFrame();
    RenderTarget *playfieldRT = rd->GetCurrentRenderTarget();
 
-   // Prepare anciliary windows
+   // Prepare anciliary windows (for the time being always embedded in playfield anciliary windows)
    RenderTarget *scoreViewRT = RenderAnciliaryWindow(VPXAnciliaryWindow::VPXWINDOW_ScoreView, playfieldRT);
    RenderTarget *backglassRT = RenderAnciliaryWindow(VPXAnciliaryWindow::VPXWINDOW_Backglass, playfieldRT);
    RenderTarget *topperRT = RenderAnciliaryWindow(VPXAnciliaryWindow::VPXWINDOW_Topper, playfieldRT);
    
    // Apply screenspace transforms (MSAA, AO, AA, stereo, ball motion blur, tonemapping, dithering, bloom,...)
-   rd->SetRenderTarget("PostProcess"s, m_renderer->GetBackBufferTexture(), false);
-   if (playfieldRT && playfieldRT != m_renderer->GetBackBufferTexture())
-      rd->AddRenderTargetDependency(playfieldRT, true);
-   if (scoreViewRT && scoreViewRT != m_renderer->GetBackBufferTexture())
-      rd->AddRenderTargetDependency(scoreViewRT, false);
-   if (backglassRT && backglassRT != m_renderer->GetBackBufferTexture())
-      rd->AddRenderTargetDependency(backglassRT, false);
-   if (topperRT && topperRT != m_renderer->GetBackBufferTexture())
-      rd->AddRenderTargetDependency(topperRT, false);
    m_renderer->PrepareVideoBuffers(m_renderer->m_renderDevice->GetOutputBackBuffer());
 
    m_logicProfiler.ExitProfileSection();
@@ -2098,7 +2089,7 @@ void Player::FinishFrame()
 #endif
 }
 
-RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTarget *playfieldRT)
+RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTarget *embedRT)
 {
    RenderDevice *const rd = m_renderer->m_renderDevice;
    int m_outputX, m_outputY, m_outputW, m_outputH;
@@ -2137,7 +2128,7 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
    else
    {
       assert(output.GetMode() == VPX::RenderOutput::OM_EMBEDDED);
-      outputRT = playfieldRT;
+      outputRT = embedRT;
       m_outputW = output.GetEmbeddedWindow()->GetWidth();
       m_outputH = output.GetEmbeddedWindow()->GetHeight();
       output.GetEmbeddedWindow()->GetPos(m_outputX, m_outputY);

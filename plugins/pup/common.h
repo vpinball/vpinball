@@ -28,9 +28,11 @@ using std::vector;
 
 #define LONG long
 
+#ifndef GetRValue
 #define GetRValue(rgba32) static_cast<uint8_t>(rgba32)
 #define GetGValue(rgba32) static_cast<uint8_t>((rgba32) >> 8)
 #define GetBValue(rgba32) static_cast<uint8_t>((rgba32) >> 16)
+#endif
 
 
 // Shared logging

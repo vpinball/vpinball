@@ -79,7 +79,9 @@ void PUPMediaPlayer::Play(const string& szFilename)
       const int targetHeight = m_pVideoContext->height;
       m_nRgbFrames = 3; // TODO shouldn't the queue size be adapted to the video characteristics ?
       m_rgbFrames = new AVFrame*[m_nRgbFrames];
+      memset(m_rgbFrames, 0, sizeof(AVFrame*) * m_nRgbFrames);
       m_rgbFrameBuffers = new uint8_t*[m_nRgbFrames];
+      memset(m_rgbFrameBuffers, 0, sizeof(uint8_t*) * m_nRgbFrames);
       int rgbFrameSize = av_image_get_buffer_size(targetFormat, targetWidth, targetHeight, 1);
       for (int i = 0; i < m_nRgbFrames; i++)
       {
@@ -205,7 +207,7 @@ void PUPMediaPlayer::Stop()
       delete[] m_rgbFrames;
       m_rgbFrames = nullptr;
    }
-   if (m_rgbFrames)
+   if (m_rgbFrameBuffers)
    {
       for (int i = 0; i < m_nRgbFrames; i++)
          if (m_rgbFrameBuffers[i])

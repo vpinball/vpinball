@@ -595,7 +595,7 @@ void PUPPinDisplay::playevent(int screenNum, string playlist, string playfilenam
       return;
    }
    // TODO handle seconds and Special
-   pScreen->QueuePlay(playlist, playfilename, volume, priority);
+   pScreen->QueuePlay(playlist, playfilename, static_cast<float>(volume), priority);
 
    //  'playtype for triggers
    //  'ptNormal=0;
