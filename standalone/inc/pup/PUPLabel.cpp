@@ -15,12 +15,13 @@
 
 #include <filesystem>
 
-PUPLabel::PUPLabel(const string& szName, const string& szFont, float size, LONG color, float angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, float xPos, float yPos, int pagenum, bool visible)
+PUPLabel::PUPLabel(PUPManager* pManager, const string& szName, const string& szFont, float size, LONG color, float angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, float xPos, float yPos, int pagenum, bool visible)
 {
+   m_pManager = pManager;
    m_szName = szName;
 
    if (!szFont.empty()) {
-      TTF_Font* pFont = PUPManager::GetInstance()->GetFont(szFont);
+      TTF_Font* pFont = m_pManager->GetFont(szFont);
       if (!pFont) {
          PLOGE.printf("Font not found: label=%s, font=%s", szName.c_str(), szFont.c_str());
       }
@@ -145,7 +146,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
 
             if (json["fname"s].exists()) {
                string szFont = json["fname"s].as_str();
-               TTF_Font* pFont = PUPManager::GetInstance()->GetFont(szFont);
+               TTF_Font* pFont = m_pManager->GetFont(szFont);
                if (!pFont) {
                   PLOGE.printf("Label font not found: name=%s, font=%s", m_szName.c_str(), szFont.c_str());
                }

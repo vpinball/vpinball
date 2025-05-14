@@ -24,12 +24,13 @@ typedef enum
    PUP_LABEL_TYPE_GIF
 } PUP_LABEL_TYPE;
 
+class PUPManager;
 class PUPScreen;
 
 class PUPLabel
 {
 public:
-   PUPLabel(const string& szName, const string& szFont, float size, LONG color, float angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, float xPos, float yPos, int pagenum, bool visible);
+   PUPLabel(PUPManager* pManager, const string& szName, const string& szFont, float size, LONG color, float angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, float xPos, float yPos, int pagenum, bool visible);
    ~PUPLabel();
 
    const string& GetCaption() const { return m_szCaption; }
@@ -44,6 +45,7 @@ public:
 private:
    void UpdateLabelTexture(SDL_Renderer* pRenderer, SDL_Rect& rect);
 
+   PUPManager* m_pManager;
    TTF_Font* m_pFont;
    float m_size;
    LONG m_color;

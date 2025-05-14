@@ -55,8 +55,8 @@ Standalone::Standalone()
    sigIntHandler.sa_flags = 0;
    sigaction(SIGINT, &sigIntHandler, nullptr);
 
-   m_pPUPManager = PUPManager::GetInstance();
-   m_pWindowManager = VP::WindowManager::GetInstance();
+   m_pPUPManager = nullptr;
+   m_pWindowManager = nullptr;
 }
 
 Standalone::~Standalone()
@@ -66,6 +66,9 @@ Standalone::~Standalone()
 void Standalone::PreStartup()
 {
    PLOGI.printf("Performing pre-startup standalone actions");
+
+   m_pPUPManager = new PUPManager();
+   m_pWindowManager = VP::WindowManager::GetInstance();
 
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
 
@@ -114,4 +117,16 @@ void Standalone::Render()
 {
    if (m_pWindowManager->m_renderMode == VP::WindowManager::RenderMode::Default)
       m_pWindowManager->Render();
+}
+
+void Standalone::Shutdown()
+{
+   PLOGI.printf("Performing shutdown standalone actions");
+
+   m_pWindowManager->Stop();
+
+   PluginHost::GetInstance()->UnregisterAllPlugins();
+
+   delete m_pPUPManager;
+   m_pPUPManager = nullptr;
 }

@@ -2,7 +2,6 @@
 
 #include "PUPManager.h"
 #include "audio/pinsound.h"
-#include "../common/Window.h"
 
 extern "C" {
    #include "libavutil/imgutils.h"
@@ -19,15 +18,14 @@ public:
    PUPMediaPlayer();
    ~PUPMediaPlayer();
 
-   void SetRenderer(SDL_Renderer* pRenderer);
    void Play(const string& szFilename);
    bool IsPlaying();
    void Pause(bool pause);
    const string& GetFilename() const { return m_szFilename; }
    int GetPriority() const { return m_priority; }
    void Stop();
-   void SetLoop(bool loop);
    void SetVolume(float volume);
+   void SetLoop(bool loop);
    void SetLength(int length);
    void Render(SDL_Renderer* pRenderer, const SDL_Rect& destRect);
 
@@ -47,9 +45,9 @@ private:
 
    bool m_paused = false;
    double m_pauseTimestamp = 0.0;
-
+   
    AVFormatContext* m_pFormatContext = nullptr;
-
+   
    int m_videoStream = -1;
    AVCodecContext* m_pVideoContext = nullptr;
 
@@ -60,7 +58,7 @@ private:
    uint8_t** m_rgbFrameBuffers = nullptr;
 
    SDL_Texture* m_videoTexture = nullptr;
-   unsigned int m_videoTextureId = 0;
+   unsigned int m_videoTextureId = 0xFFFFFF;
 
    int m_audioStream = -1;
    AVCodecContext* m_pAudioContext = nullptr;

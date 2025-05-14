@@ -212,4 +212,11 @@ void WindowManager::Render()
    m_lastRenderTime = startTime;
 }
 
+void WindowManager::Stop()
+{
+   PLOGI.printf("Window manager stop");
+
+   m_running = false;
+}
+
 }

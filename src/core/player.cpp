@@ -1091,6 +1091,10 @@ Player::~Player()
    #endif
 #endif
 
+#ifdef __STANDALONE__
+   g_pStandalone->Shutdown();
+#endif
+
    PLOGI << "Player closed.";
 
 #ifdef __LIBVPINBALL__

@@ -13,13 +13,15 @@ typedef enum
 
 const char* PUP_PLAYLIST_FUNCTION_TO_STRING(PUP_PLAYLIST_FUNCTION value);
 
+class PUPManager;
+
 class PUPPlaylist
 {
 public:
-   PUPPlaylist(const string& szFolder, const string& szDescription, bool randomize, int restSeconds, float volume, int priority);
+   PUPPlaylist(PUPManager* pManager, const string& szFolder, const string& szDescription, bool randomize, int restSeconds, float volume, int priority);
    ~PUPPlaylist();
 
-   static PUPPlaylist* CreateFromCSV(const string& line);
+   static PUPPlaylist* CreateFromCSV(PUPManager* pManager, const string& line);
    const string& GetFolder() const { return m_szFolder; }
    const string& GetDescription() const { return m_szDescription; }
    bool IsRandomize() const { return m_randomize; }
@@ -33,6 +35,7 @@ public:
    string ToString() const;
 
 private:
+   PUPManager* m_pManager;
    string m_szFolder;
    string m_szDescription;
    bool m_randomize;

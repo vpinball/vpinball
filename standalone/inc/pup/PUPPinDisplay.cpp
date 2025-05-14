@@ -11,9 +11,11 @@
 
 #include "RSJparser/RSJparser.tcc"
 
+#include "standalone/Standalone.h"
+
 PUPPinDisplay::PUPPinDisplay()
 {
-   m_pManager = PUPManager::GetInstance();
+   m_pManager = Standalone::GetInstance()->GetPUPManager();
 }
 
 PUPPinDisplay::~PUPPinDisplay()
@@ -23,7 +25,7 @@ PUPPinDisplay::~PUPPinDisplay()
 
 STDMETHODIMP PUPPinDisplay::Init(LONG ScreenNum, BSTR RootDir)
 {
-   if (PUPManager::GetInstance()->HasScreen(ScreenNum)) {
+   if (m_pManager->HasScreen(ScreenNum)) {
       PLOGW.printf("Screen already exists: screenNum=%d", ScreenNum);
       return S_OK;
    }
@@ -45,7 +47,7 @@ STDMETHODIMP PUPPinDisplay::playlistadd(LONG ScreenNum, BSTR folder, LONG sort, 
       return S_OK;
    }
 
-   pScreen->AddPlaylist(new PUPPlaylist(MakeString(folder), "", sort, restSeconds, 100, 1));
+   pScreen->AddPlaylist(new PUPPlaylist(m_pManager, MakeString(folder), "", sort, restSeconds, 100, 1));
 
    return S_OK;
 }
@@ -504,7 +506,7 @@ STDMETHODIMP PUPPinDisplay::LabelNew(LONG ScreenNum, BSTR LabelName, BSTR FontNa
    }
 
    pScreen->AddLabel(
-      new PUPLabel(MakeString(LabelName), MakeString(FontName), Size, Color, Angle, (PUP_LABEL_XALIGN)xAlign, (PUP_LABEL_YALIGN)yAlign, xMargin, yMargin, PageNum, Visible));
+      new PUPLabel(m_pManager, MakeString(LabelName), MakeString(FontName), Size, Color, Angle, (PUP_LABEL_XALIGN)xAlign, (PUP_LABEL_YALIGN)yAlign, xMargin, yMargin, PageNum, Visible));
 
    return S_OK;
 }
