@@ -545,7 +545,7 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
    case VPXAnciliaryWindow::VPXWINDOW_Backglass: screen = me->GetScreen(2); break;
    case VPXAnciliaryWindow::VPXWINDOW_ScoreView: screen = me->GetScreen(5); break; // TODO select 1 or 5 (user settings ?)
    }
-   if (screen == nullptr)
+   if (screen == nullptr || screen->GetCustomPos() != nullptr)
       return false;
 
    renderCtx->srcWidth = renderCtx->outWidth;

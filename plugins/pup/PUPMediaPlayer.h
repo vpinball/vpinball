@@ -28,6 +28,7 @@ public:
    void Stop();
    void SetVolume(float volume);
    void SetLoop(bool loop);
+   void SetLength(int length);
    void Render(VPXRenderContext2D* const ctx, const SDL_Rect& destRect);
 
 private:
@@ -41,6 +42,7 @@ private:
    bool m_loop = false;
    int m_playIndex = 0;
    float m_volume = 100.f;
+   int m_length = 0;
    int m_priority = -1;
 
    bool m_paused = false;
@@ -58,7 +60,7 @@ private:
    uint8_t** m_rgbFrameBuffers = nullptr;
 
    VPXTexture m_videoTexture = nullptr;
-   unsigned int m_videoTextureId = 0;
+   unsigned int m_videoTextureId = 0xFFFFFF;
 
    int m_audioStream = -1;
    AVCodecContext* m_pAudioContext = nullptr;

@@ -213,6 +213,16 @@ void PUPMediaPlayer::SetVolume(float volume)
    }
 }
 
+void PUPMediaPlayer::SetLength(int length)
+{
+   std::lock_guard<std::mutex> lock(m_mutex);
+   if (m_length != length)
+   {
+      LOGD("setting length: length=%d", length);
+      m_length = length;
+   }
+}
+
 void PUPMediaPlayer::Run()
 {
    SetThreadName("PUPMediaPlayer.Run("s.append(m_szFilename).append(")"));
@@ -244,6 +254,8 @@ void PUPMediaPlayer::Run()
             SDL_Delay(100);
             continue;
          }
+         if (m_length != 0 && (static_cast<double>(SDL_GetTicks() - m_startTimestamp) / 1000.0) >= m_length)
+            break;
          loop = m_loop;
          // m_pPinSound->StreamVolume(m_volume / 100.0f);
       }
@@ -404,8 +416,16 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
 
 void PUPMediaPlayer::Render(VPXRenderContext2D* const ctx, const SDL_Rect& destRect)
 {
-   if (!m_running)
+   if (m_length != 0)
+   {
+      const int elapsed = static_cast<int>(SDL_GetTicks() - m_startTimestamp) / 1000;
+      if (elapsed >= m_length)
+         return;
+   }
+   else if (!m_running)
+   {
       return;
+   }
 
    // Search for the best frame to display and update the video texture accordingly (if needed)
    const double playPts = m_paused ? m_pauseTimestamp : static_cast<double>(SDL_GetTicks() - m_startTimestamp) / 1000.0;
@@ -449,7 +469,13 @@ AVCodecContext* PUPMediaPlayer::OpenStream(AVFormatContext* pInputFormatContext,
    if (!pContext)
       return NULL;
 
-   if (avcodec_parameters_to_context(pContext, pInputFormatContext->streams[stream]->codecpar) < 0) {
+   // Request to decode frames on different threads, limiting to the platform core minus 3 (magic number corresponding of the average core used by VPX)
+   // TODO Disabled as this delay the frame queue by one frame, breaking single frame videos (and still images used as video)
+   //pContext->thread_count = std::max(1u, std::min(16u, std::thread::hardware_concurrency() - 3));
+   //pContext->thread_type = FF_THREAD_FRAME;
+
+   if (avcodec_parameters_to_context(pContext, pInputFormatContext->streams[stream]->codecpar) < 0)
+   {
       avcodec_free_context(&pContext);
       return NULL;
    }

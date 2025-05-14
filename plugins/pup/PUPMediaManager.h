@@ -28,7 +28,7 @@ public:
    PUPMediaManager(PUPScreen* pScreen);
    ~PUPMediaManager() {};
 
-   void Play(PUPPlaylist* pPlaylist, const std::string& szPlayFile, float volume, int priority, bool skipSamePriority);
+   void Play(PUPPlaylist* pPlaylist, const std::string& szPlayFile, float volume, int priority, bool skipSamePriority, int length);
    void SetBG(bool isBackground);
    void SetLoop(bool isLoop);
    void Stop();

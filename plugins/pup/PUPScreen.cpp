@@ -347,10 +347,10 @@ void PUPScreen::SetOverlay(PUPPlaylist* pPlaylist, const std::string& szPlayFile
    LoadRenderable(&m_overlay, pPlaylist->GetPlayFilePath(szPlayFile));
 }
 
-void PUPScreen::SetMedia(PUPPlaylist* pPlaylist, const std::string& szPlayFile, float volume, int priority, bool skipSamePriority)
+void PUPScreen::SetMedia(PUPPlaylist* pPlaylist, const std::string& szPlayFile, float volume, int priority, bool skipSamePriority, int length)
 {
    std::lock_guard<std::mutex> lock(m_renderMutex);
-   m_pMediaPlayerManager->Play(pPlaylist, szPlayFile, m_pParent ? (volume / 100.0f) * m_pParent->GetVolume() : volume, priority, skipSamePriority);
+   m_pMediaPlayerManager->Play(pPlaylist, szPlayFile, m_pParent ? (volume / 100.0f) * m_pParent->GetVolume() : volume, priority, skipSamePriority, length);
 }
 
 void PUPScreen::StopMedia()
@@ -523,7 +523,7 @@ void PUPScreen::ProcessPinDisplayRequest(PUPPinDisplayRequest* pRequest)
       case PUP_PINDISPLAY_REQUEST_TYPE_NORMAL:
          switch (pRequest->pPlaylist->GetFunction()) {
             case PUP_PLAYLIST_FUNCTION_DEFAULT:
-               SetMedia(pRequest->pPlaylist, pRequest->szPlayFile, pRequest->volume, pRequest->priority, false);
+               SetMedia(pRequest->pPlaylist, pRequest->szPlayFile, pRequest->volume, pRequest->priority, false, 0);
                break;
             case PUP_PLAYLIST_FUNCTION_FRAMES:
                StopMedia();
@@ -568,8 +568,7 @@ void PUPScreen::ProcessTriggerRequest(PUPTriggerRequest* pRequest)
    switch(pTrigger->GetPlayAction()) {
       case PUP_TRIGGER_PLAY_ACTION_NORMAL:
          switch (pTrigger->GetPlaylist()->GetFunction()) {
-            case PUP_PLAYLIST_FUNCTION_DEFAULT:
-               SetMedia(pTrigger->GetPlaylist(), pTrigger->GetPlayFile(), pTrigger->GetVolume(), pTrigger->GetPriority(), false);
+            case PUP_PLAYLIST_FUNCTION_DEFAULT: SetMedia(pTrigger->GetPlaylist(), pTrigger->GetPlayFile(), pTrigger->GetVolume(), pTrigger->GetPriority(), false, pTrigger->GetLength());
                break;
             case PUP_PLAYLIST_FUNCTION_FRAMES:
                StopMedia();
@@ -586,15 +585,15 @@ void PUPScreen::ProcessTriggerRequest(PUPTriggerRequest* pRequest)
          }
          break;
       case PUP_TRIGGER_PLAY_ACTION_LOOP:
-         SetMedia(pTrigger->GetPlaylist(), pTrigger->GetPlayFile(), pTrigger->GetVolume(), pTrigger->GetPriority(), false);
+         SetMedia(pTrigger->GetPlaylist(), pTrigger->GetPlayFile(), pTrigger->GetVolume(), pTrigger->GetPriority(), false, pTrigger->GetLength());
          SetLoop(1);
          break;
       case PUP_TRIGGER_PLAY_ACTION_SET_BG:
-         SetMedia(pTrigger->GetPlaylist(), pTrigger->GetPlayFile(), pTrigger->GetVolume(), pTrigger->GetPriority(), false);
+         SetMedia(pTrigger->GetPlaylist(), pTrigger->GetPlayFile(), pTrigger->GetVolume(), pTrigger->GetPriority(), false, pTrigger->GetLength());
          SetBG(1);
          break;
       case PUP_TRIGGER_PLAY_ACTION_SKIP_SAME_PRTY:
-         SetMedia(pTrigger->GetPlaylist(), pTrigger->GetPlayFile(), pTrigger->GetVolume(), pTrigger->GetPriority(), true);
+         SetMedia(pTrigger->GetPlaylist(), pTrigger->GetPlayFile(), pTrigger->GetVolume(), pTrigger->GetPriority(), true, pTrigger->GetLength());
          break;
       case PUP_TRIGGER_PLAY_ACTION_STOP_PLAYER:
          StopMedia(pTrigger->GetPriority());
