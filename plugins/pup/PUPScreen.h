@@ -111,7 +111,7 @@ public:
    void SetBackground(PUPPlaylist* pPlaylist, const std::string& szPlayFile);
    void SetCustomPos(const string& szCustomPos);
    void SetOverlay(PUPPlaylist* pPlaylist, const std::string& szPlayFile);
-   void SetMedia(PUPPlaylist* pPlaylist, const std::string& szPlayFile, float volume, int priority, bool skipSamePriority);
+   void SetMedia(PUPPlaylist* pPlaylist, const std::string& szPlayFile, float volume, int priority, bool skipSamePriority, int length);
    void StopMedia();
    void StopMedia(int priority);
    void StopMedia(PUPPlaylist* pPlaylist, const std::string& szPlayFile);
