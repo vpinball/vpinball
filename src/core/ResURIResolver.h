@@ -2,7 +2,12 @@
 
 #pragma once
 
-#include "unordered_dense.h"
+#include <string>
+#include <vector>
+#include <unordered_dense.h>
+
+#include "plugins/ControllerPlugin.h"
+
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Warning: This is a not yet stable, pre-alpha syntax which will be validated over time
@@ -54,27 +59,25 @@ public:
    ResURIResolver(const MsgPluginAPI& msgAPI, unsigned int endpointId, bool trackDisplays, bool trackSegDisplays, bool trackInputs, bool trackDevices);
    ~ResURIResolver();
 
-   float GetFloatState(const string &link);
+   float GetFloatState(const std::string &link);
    
    struct DisplayState
    {
       DisplaySrcId *source = nullptr;
       DisplayFrame state;
    };
-   DisplayState GetDisplayState(const string &link);
+   DisplayState GetDisplayState(const std::string &link);
    
    struct SegDisplayState
    {
       const SegSrcId *source;
       SegDisplayFrame state;
    };
-   SegDisplayState GetSegDisplayState(const string &link);
+   SegDisplayState GetSegDisplayState(const std::string &link);
 
 private:
    const MsgPluginAPI& m_msgAPI;
    const unsigned int m_endpointId;
-
-   unsigned int GetPluginEndpoint(const string &pluginId) const;
 
    const unsigned int m_getDevSrcMsgId, m_onDevChangedMsgId;
    static void OnDevSrcChanged(const unsigned int msgId, void *userData, void *msgData);
@@ -84,20 +87,20 @@ private:
    static void OnInputSrcChanged(const unsigned int msgId, void *userData, void *msgData);
    std::vector<InputSrcId> m_inputSources;
 
-   typedef std::function<float(const string &)> floatCacheLambda;
-   ankerl::unordered_dense::map<string, floatCacheLambda> m_floatCache;
+   typedef std::function<float(const std::string &)> floatCacheLambda;
+   ankerl::unordered_dense::map<std::string, floatCacheLambda> m_floatCache;
 
    const unsigned int m_getSegSrcMsgId, m_onSegChangedMsgId;
    static void OnSegSrcChanged(const unsigned int msgId, void *userData, void *msgData);
-   vector<SegSrcId> m_segSources;
+   std::vector<SegSrcId> m_segSources;
 
-   typedef std::function<SegDisplayState(const string &)> segCacheLambda;
-   ankerl::unordered_dense::map<string, segCacheLambda> m_segCache;
+   typedef std::function<SegDisplayState(const std::string &)> segCacheLambda;
+   ankerl::unordered_dense::map<std::string, segCacheLambda> m_segCache;
 
    const unsigned int m_getDisplaySrcMsgId, m_onDisplayChangedMsgId;
    static void OnDisplaySrcChanged(const unsigned int msgId, void *userData, void *msgData);
-   vector<DisplaySrcId> m_displaySources;
+   std::vector<DisplaySrcId> m_displaySources;
 
-   typedef std::function<DisplayState(const string &)> displayCacheLambda;
-   ankerl::unordered_dense::map<string, displayCacheLambda> m_displayCache;
+   typedef std::function<DisplayState(const std::string &)> displayCacheLambda;
+   ankerl::unordered_dense::map<std::string, displayCacheLambda> m_displayCache;
 };

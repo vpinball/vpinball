@@ -75,13 +75,22 @@ MsgPluginManager::~MsgPluginManager()
 ///////////////////////////////////////////////////////////////////////////////
 // Message API
 
+unsigned int MsgPluginManager::GetPluginEndpoint(const char* id)
+{
+   MsgPluginManager& pm = GetInstance();
+   auto item = std::ranges::find_if(pm.m_plugins, [id](std::shared_ptr<MsgPlugin>& plg) { return plg->IsLoaded() && strcmp(plg->m_id.c_str(), id) == 0; });
+   if (item == pm.m_plugins.end())
+      return 0;
+   return item->get()->m_endpointId;
+}
+
 void MsgPluginManager::GetEndpointInfo(const uint32_t endpointId, MsgEndpointInfo* info)
 {
    MsgPluginManager& pm = GetInstance();
 #ifndef __LIBVPINBALL__
    assert(std::this_thread::get_id() == pm.m_apiThread);
 #endif
-   auto item = std::ranges::find_if(pm.m_plugins, [endpointId](std::shared_ptr<MsgPlugin>& plg) { return plg->m_endpointId == endpointId; });
+   auto item = std::ranges::find_if(pm.m_plugins, [endpointId](std::shared_ptr<MsgPlugin>& plg) { return plg->IsLoaded() && plg->m_endpointId == endpointId; });
    if (item == pm.m_plugins.end())
       return;
    info->id = (*item)->m_id.c_str();

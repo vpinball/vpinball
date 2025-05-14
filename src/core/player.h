@@ -12,7 +12,6 @@
 #include "plugins/ControllerPlugin.h"
 #include "plugins/VPXPlugin.h"
 #include "ResURIResolver.h"
-#include "ScoreView.h"
 #include "audio/pinsound.h"
 
 class VRDevice;
@@ -266,7 +265,6 @@ public:
 #pragma region Rendering
 public:
    VPX::Window *m_playfieldWnd = nullptr;
-   int m_lastDmdFrameId = -1;
    VPX::RenderOutput m_scoreviewOutput;
    VPX::RenderOutput m_backglassOutput;
    VPX::RenderOutput m_topperOutput;
@@ -274,7 +272,6 @@ public:
    VRDevice *m_vrDevice = nullptr;
    bool m_headTracking = false;
    bool m_scaleFX_DMD = false;
-   RenderTarget* m_anciliaryWndHdrRT[VPXAnciliaryWindow::VPXWINDOW_Topper + 1] { nullptr };
 
 private:
    void PrepareFrame(const std::function<void()>& sync);
@@ -282,6 +279,10 @@ private:
    void FinishFrame();
 
    RenderTarget *RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTarget *playfieldRT);
+   static void OnAuxRendererChanged(const unsigned int msgId, void *userData, void *msgData);
+   RenderTarget *m_anciliaryWndHdrRT[VPXAnciliaryWindow::VPXWINDOW_Topper + 1] { nullptr };
+   unsigned int m_getAuxRendererId = 0, m_onAuxRendererChgId = 0;
+   vector<AnciliaryRendererDef> m_anciliaryWndRenderers[VPXAnciliaryWindow::VPXWINDOW_Topper + 1];
 
 #pragma endregion
 
@@ -363,9 +364,6 @@ public:
    int m_dmdFrameId = 0;
 
    ResURIResolver m_resURIResolver;
-
-private:
-   ScoreView m_scoreView;
 
 
    // External audio sources

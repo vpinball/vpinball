@@ -314,7 +314,8 @@ void OnGetRenderer(const unsigned int msgId, void* context, void* msgData)
    {
       if (msg->count < msg->maxEntryCount)
       {
-         msg->entries[msg->count].name = "B2S Backglass";
+         msg->entries[msg->count].id = "B2S";
+         msg->entries[msg->count].name = "B2S Backglass & FullDMD";
          msg->entries[msg->count].description = "Renderer for directb2s backglass files";
          msg->entries[msg->count].Render = OnRender;
       }
@@ -328,8 +329,6 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
    msgApi = api;
    endpointId = sessionId;
    apiThread = std::this_thread::get_id();
-
-   // Request and setup shared login API
    LPISetup(endpointId, msgApi);
 
    unsigned int getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);

@@ -129,7 +129,7 @@ VPXTexture CreateTexture(SDL_Surface* surf)
 {
    VPXTexture texture = nullptr;
    SDL_LockSurface(surf);
-   UpdateTexture(&texture, surf->w, surf->h, VPXTextureFormat::VPXTEXFMT_sRGBA, static_cast<uint8_t*>(surf->pixels));
+   UpdateTexture(&texture, surf->w, surf->h, VPXTextureFormat::VPXTEXFMT_sRGBA8, static_cast<uint8_t*>(surf->pixels));
    SDL_UnlockSurface(surf);
    return texture;
 }

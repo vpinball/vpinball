@@ -1156,8 +1156,9 @@
     <ClCompile Include="../../src/core/Settings.cpp" />
     <ClCompile Include="../../src/core/TableDB.cpp" />
     <ClCompile Include="../../src/core/VPXPluginAPIImpl.cpp" />
-    <ClCompile Include="../../src/core/ResURIResolver.cpp" />
-    <ClCompile Include="../../src/core/ScoreView.cpp" />
+    <ClCompile Include="../../src/core/ResURIResolver.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="../../src/math/math.cpp" />
     <ClCompile Include="../../src/math/matrix.cpp" />
     <ClCompile Include="../../src/renderer/Backglass.cpp" />
@@ -1666,7 +1667,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../src\core\ResURIResolver.h" />
-    <ClInclude Include="../../src\core\ScoreView.h" />
     <ClInclude Include="../../src\input\DirectInputJoystickHandler.h" />
     <ClInclude Include="../../src\input\DirectInputKeyboardHandler.h" />
     <ClInclude Include="../../src\input\DirectInputMouseHandler.h" />
@@ -2213,6 +2213,9 @@
   <ItemGroup>
     <ProjectReference Include="plugin-alphadmd.vcxproj">
       <Project>{2bf90d88-9139-4e66-a778-4327311af7a7}</Project>
+    </ProjectReference>
+    <ProjectReference Include="plugin-scoreview.vcxproj">
+      <Project>{91425C91-FDB2-4170-A5C9-A068357E59E3}</Project>
     </ProjectReference>
     <ProjectReference Include="plugin-b2s.vcxproj">
       <Project>{7D58C20E-53F4-4AD6-9004-CA6148082491}</Project>

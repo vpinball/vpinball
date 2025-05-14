@@ -1256,7 +1256,7 @@ static Texture* LoadSegSDF(Texture& tex, const string& path)
 }
 
 void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const vec3& color, const float brightness, const SegmentFamily family, const SegElementType type, const float* segs, const ColorSpace colorSpace, Vertex3D_NoTex2* vertices,
-   const vec4& emitterPad, const vec3& glassTint, const float glassRougness, Texture* const glassTex, const vec4& glassArea, const vec3& glassAmbient)
+   const vec4& emitterPad, const vec3& glassTint, const float glassRougness, BaseTexture* const glassTex, const vec4& glassArea, const vec3& glassAmbient)
 {
    Texture* segSDF = nullptr;
    switch (type)
@@ -1336,7 +1336,7 @@ void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const ve
 }
 
 void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, BaseTexture* dmd, const float alpha, const ColorSpace colorSpace, Vertex3D_NoTex2* vertices,
-   const vec4& emitterPad, const vec3& glassTint, const float glassRougness, Texture* const glassTex, const vec4& glassArea, const vec3& glassAmbient)
+   const vec4& emitterPad, const vec3& glassTint, const float glassRougness, BaseTexture* const glassTex, const vec4& glassArea, const vec3& glassAmbient)
 {
    // Legacy DMD renderer
    #ifdef ENABLE_BGFX
