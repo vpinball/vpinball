@@ -24,6 +24,7 @@ public:
    void ProcessEvent(const SDL_Event* event);
    void ProcessUpdates();
    void Render();
+   void Stop();
 
    RenderMode m_renderMode;
 

@@ -38,8 +38,9 @@ const char* PUP_PLAYLIST_FUNCTION_TO_STRING(PUP_PLAYLIST_FUNCTION value)
    return PUP_PLAYLIST_FUNCTION_STRINGS[value];
 }
 
-PUPPlaylist::PUPPlaylist(const string& szFolder, const string& szDescription, bool randomize, int restSeconds, float volume, int priority)
+PUPPlaylist::PUPPlaylist(PUPManager* pManager, const string& szFolder, const string& szDescription, bool randomize, int restSeconds, float volume, int priority)
 {
+   m_pManager = pManager;
    m_szFolder = szFolder;
    m_szDescription = szDescription;
    m_randomize = randomize;
@@ -59,7 +60,7 @@ PUPPlaylist::PUPPlaylist(const string& szFolder, const string& szDescription, bo
    else
       m_function = PUP_PLAYLIST_FUNCTION_DEFAULT;
 
-   m_szBasePath = find_case_insensitive_directory_path(PUPManager::GetInstance()->GetPath() + szFolder);
+   m_szBasePath = find_case_insensitive_directory_path(m_pManager->GetPath() + szFolder);
    if (m_szBasePath.empty()) {
       PLOGE.printf("Playlist folder not found: %s", szFolder.c_str());
       return;
@@ -82,7 +83,7 @@ PUPPlaylist::~PUPPlaylist()
    m_files.clear();
 }
 
-PUPPlaylist* PUPPlaylist::CreateFromCSV(const string& line)
+PUPPlaylist* PUPPlaylist::CreateFromCSV(PUPManager* pManager, const string& line)
 {
    vector<string> parts = parse_csv_line(line);
    if (parts.size() != 7) {
@@ -90,7 +91,7 @@ PUPPlaylist* PUPPlaylist::CreateFromCSV(const string& line)
       return nullptr;
    }
 
-   string szFolderPath = find_case_insensitive_directory_path(PUPManager::GetInstance()->GetPath() + parts[1]);
+   string szFolderPath = find_case_insensitive_directory_path(pManager->GetPath() + parts[1]);
    if (szFolderPath.empty()) {
       PLOGW.printf("Playlist folder not found: %s", parts[1].c_str());
       return nullptr;
@@ -115,6 +116,7 @@ PUPPlaylist* PUPPlaylist::CreateFromCSV(const string& line)
    string szFolder = std::filesystem::path(szFolderPath).parent_path().filename().string();
 
    PUPPlaylist* pPlaylist = new PUPPlaylist(
+      pManager,
       szFolder,
       parts[2],
       (string_to_int(parts[3], 0) == 1),

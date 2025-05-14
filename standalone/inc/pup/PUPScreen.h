@@ -79,8 +79,8 @@ class PUPScreen
 public:
    ~PUPScreen();
 
-   static PUPScreen* CreateFromCSV(const string& line, const vector<PUPPlaylist*>& playlists);
-   static PUPScreen* CreateDefault(int screenNum, const vector<PUPPlaylist*>& playlists);
+   static PUPScreen* CreateFromCSV(PUPManager* pManager, const string& line, const vector<PUPPlaylist*>& playlists);
+   static PUPScreen* CreateDefault(PUPManager* pManager, int screenNum, const vector<PUPPlaylist*>& playlists);
    PUP_SCREEN_MODE GetMode() const { return m_mode; }
    void SetMode(PUP_SCREEN_MODE mode) { m_mode = mode; }
    int GetScreenNum() const { return m_screenNum; }
@@ -128,7 +128,7 @@ public:
    string ToString(bool full = true) const;
 
 private:
-   PUPScreen(PUP_SCREEN_MODE mode, int screenNum, const string& screenDes, const string& backgroundPlaylist, const string& backgroundFilename, bool transparent, float volume, PUPCustomPos* pCustomPos, const vector<PUPPlaylist*>& playlists);
+   PUPScreen(PUPManager* pManager, PUP_SCREEN_MODE mode, int screenNum, const string& screenDes, const string& backgroundPlaylist, const string& backgroundFilename, bool transparent, float volume, PUPCustomPos* pCustomPos, const vector<PUPPlaylist*>& playlists);
 
    void LoadTriggers();
    void ProcessQueue();

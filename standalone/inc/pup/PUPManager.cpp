@@ -7,16 +7,6 @@
 
 #include <filesystem>
 
-PUPManager* PUPManager::m_pInstance = NULL;
-
-PUPManager* PUPManager::GetInstance()
-{
-   if (!m_pInstance)
-      m_pInstance = new PUPManager();
-
-   return m_pInstance;
-}
-
 PUPManager::PUPManager()
 {
    m_init = false;
@@ -64,7 +54,7 @@ void PUPManager::LoadConfig(const string& szRomName)
          while (std::getline(screensFile, line)) {
             if (++i == 1)
                continue;
-            AddScreen(PUPScreen::CreateFromCSV(line, m_playlists));
+            AddScreen(PUPScreen::CreateFromCSV(this, line, m_playlists));
          }
       }
       else {
@@ -125,7 +115,7 @@ void PUPManager::LoadPlaylists()
       while (std::getline(playlistsFile, line)) {
          if (++i == 1)
             continue;
-         PUPPlaylist* pPlaylist = PUPPlaylist::CreateFromCSV(line);
+         PUPPlaylist* pPlaylist = PUPPlaylist::CreateFromCSV(this, line);
          if (pPlaylist) {
             string folderNameLower = lowerCase(pPlaylist->GetFolder());
             if (lowerPlaylistNames.find(folderNameLower) == lowerPlaylistNames.end()) {
@@ -168,7 +158,7 @@ bool PUPManager::AddScreen(PUPScreen* pScreen)
 
 bool PUPManager::AddScreen(LONG lScreenNum)
 {
-   return AddScreen(PUPScreen::CreateDefault(lScreenNum, m_playlists));
+   return AddScreen(PUPScreen::CreateDefault(this, lScreenNum, m_playlists));
 }
 
 bool PUPManager::HasScreen(int screenNum)
@@ -386,17 +376,18 @@ void PUPManager::Stop()
 
    for (auto pWindow : m_windows)
       delete pWindow;
-
    m_windows.clear();
 
    for (auto& [key, pScreen] : m_screenMap)
       delete pScreen;
-
    m_screenMap.clear();
+
+   for (auto& pPlaylist : m_playlists)
+      delete pPlaylist;
+   m_playlists.clear();
 
    for (auto& pFont : m_fonts)
       TTF_CloseFont(pFont);
-
    m_fonts.clear();
    m_fontMap.clear();
    m_fontFilenameMap.clear();

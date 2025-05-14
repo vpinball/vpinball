@@ -5,6 +5,8 @@
 
 #include "DMDUtil/Config.h"
 
+#include "standalone/Standalone.h"
+
 void OnPUPCaptureTrigger(uint16_t id, void* pUserData)
 {
    PUPPlugin* pPlugin = (PUPPlugin*)pUserData;
@@ -13,7 +15,7 @@ void OnPUPCaptureTrigger(uint16_t id, void* pUserData)
 
 PUPPlugin::PUPPlugin() : Plugin()
 {
-   m_pManager = PUPManager::GetInstance();
+   m_pManager = Standalone::GetInstance()->GetPUPManager();
 }
 
 PUPPlugin::~PUPPlugin()

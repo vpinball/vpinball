@@ -57,9 +57,9 @@ const char* PUP_PINDISPLAY_REQUEST_TYPE_TO_STRING(PUP_PINDISPLAY_REQUEST_TYPE va
      CustomPos = CustomPos
 */
 
-PUPScreen::PUPScreen(PUP_SCREEN_MODE mode, int screenNum, const string& szScreenDes, const string& szBackgroundPlaylist, const string& szBackgroundFilename, bool transparent, float volume, PUPCustomPos* pCustomPos, const vector<PUPPlaylist*>& playlists)
+PUPScreen::PUPScreen(PUPManager* pManager, PUP_SCREEN_MODE mode, int screenNum, const string& szScreenDes, const string& szBackgroundPlaylist, const string& szBackgroundFilename, bool transparent, float volume, PUPCustomPos* pCustomPos, const vector<PUPPlaylist*>& playlists)
 {
-   m_pManager = PUPManager::GetInstance();
+   m_pManager = pManager;
 
    m_mode = mode;
    m_screenNum = screenNum;
@@ -123,7 +123,7 @@ PUPScreen::~PUPScreen()
       pChildren->clear();
 }
 
-PUPScreen* PUPScreen::CreateFromCSV(const string& line, const vector<PUPPlaylist*>& playlists)
+PUPScreen* PUPScreen::CreateFromCSV(PUPManager* pManager, const string& line, const vector<PUPPlaylist*>& playlists)
 {
    vector<string> parts = parse_csv_line(line);
    if (parts.size() != 8) {
@@ -152,6 +152,7 @@ PUPScreen* PUPScreen::CreateFromCSV(const string& line, const vector<PUPPlaylist
    }
 
    return new PUPScreen(
+      pManager,
       mode,
       string_to_int(parts[0], 0), // screenNum
       parts[1], // screenDes
@@ -162,9 +163,9 @@ PUPScreen* PUPScreen::CreateFromCSV(const string& line, const vector<PUPPlaylist
       PUPCustomPos::CreateFromCSV(parts[7]), playlists);
 }
 
-PUPScreen* PUPScreen::CreateDefault(int screenNum, const vector<PUPPlaylist*>& playlists)
+PUPScreen* PUPScreen::CreateDefault(PUPManager* pManager, int screenNum, const vector<PUPPlaylist*>& playlists)
 {
-   if (PUPManager::GetInstance()->HasScreen(screenNum)) {
+   if (pManager->HasScreen(screenNum)) {
       PLOGW.printf("Screen already exists: screenNum=%d", screenNum);
       return nullptr;
    }
@@ -172,15 +173,15 @@ PUPScreen* PUPScreen::CreateDefault(int screenNum, const vector<PUPPlaylist*>& p
    PUPScreen* pScreen = nullptr;
    switch(screenNum) {
       case PUP_SCREEN_TOPPER:
-         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_TOPPER, "Topper"s, "", "", false, 100.0f, nullptr, playlists);
+         pScreen = new PUPScreen(pManager, PUP_SCREEN_MODE_SHOW, PUP_SCREEN_TOPPER, "Topper"s, "", "", false, 100.0f, nullptr, playlists);
       case PUP_SCREEN_DMD:
-         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_DMD, "DMD"s, "", "", false, 100.0f, nullptr, playlists);
+         pScreen = new PUPScreen(pManager, PUP_SCREEN_MODE_SHOW, PUP_SCREEN_DMD, "DMD"s, "", "", false, 100.0f, nullptr, playlists);
       case PUP_SCREEN_BACKGLASS:
-         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_BACKGLASS, "Backglass"s, "", "", false, 100.0f, nullptr, playlists);
+         pScreen = new PUPScreen(pManager, PUP_SCREEN_MODE_SHOW, PUP_SCREEN_BACKGLASS, "Backglass"s, "", "", false, 100.0f, nullptr, playlists);
       case PUP_SCREEN_PLAYFIELD:
-         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_PLAYFIELD, "Playfield"s, "", "", false, 100.0f, nullptr, playlists);
+         pScreen = new PUPScreen(pManager, PUP_SCREEN_MODE_SHOW, PUP_SCREEN_PLAYFIELD, "Playfield"s, "", "", false, 100.0f, nullptr, playlists);
       default:
-         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, screenNum, "Unknown"s, "", "", false, 100.0f, nullptr, playlists);
+         pScreen = new PUPScreen(pManager, PUP_SCREEN_MODE_SHOW, screenNum, "Unknown"s, "", "", false, 100.0f, nullptr, playlists);
    }
    return pScreen;
 }

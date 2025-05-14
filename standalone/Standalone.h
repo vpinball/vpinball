@@ -18,6 +18,8 @@ public:
    void ProcessEvent(const SDL_Event* pEvent);
    void ProcessUpdates();
    void Render();
+   void Shutdown();
+   PUPManager* GetPUPManager() { return m_pPUPManager; }
 
 private:
    Standalone();

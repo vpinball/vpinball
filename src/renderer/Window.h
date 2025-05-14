@@ -34,7 +34,6 @@ private:
 };
 
 // All coordinates are given in pixels, not logical units.
-// FIXME for MacOS/IOS HiDPI is applied (so giving 'logical' units with Retina scale factor but not user DPI)
 class Window final
 {
 public:

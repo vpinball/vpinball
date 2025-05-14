@@ -6,7 +6,6 @@
  */
 
 #include "core/stdafx.h"
-#include "audio/pinsound.h"
 #include "PUPMediaPlayer.h"
 
 #if defined(__clang__)
@@ -46,31 +45,21 @@ void PUPMediaPlayer::Play(const string& szFilename)
       return;
    }
 
-   // For image files, this will make sure width and height are set
-   if (avformat_find_stream_info(m_pFormatContext, nullptr) < 0) {
-      PLOGE.printf("Could not find stream info: filename=%s", szFilename.c_str());
-      return;
-   }
-
    // Find video stream
-   for (unsigned int i = 0; i < m_pFormatContext->nb_streams; i++) {
-      auto* pStream = m_pFormatContext->streams[i];
-      if (pStream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO &&
-          !(pStream->disposition & AV_DISPOSITION_ATTACHED_PIC)) {
-          m_videoStream = i;
-          break;
+   for (unsigned int i = 0; i < m_pFormatContext->nb_streams; i++)
+   {
+      if (m_pFormatContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO &&
+         !(m_pFormatContext->streams[i]->disposition & AV_DISPOSITION_ATTACHED_PIC)) {
+         m_videoStream = i;
+         break;
       }
    }
-
-   bool singleFrame = false;
 
    // Open video stream
    if (m_videoStream >= 0) {
       AVStream* pStream = m_pFormatContext->streams[m_videoStream];
       AVCodecParameters* pCodecParameters = pStream->codecpar;
       m_pVideoContext = OpenStream(m_pFormatContext, m_videoStream);
-      // Detect single-frame streams (static images)
-      singleFrame = pStream->nb_frames == 0;
       if (m_pVideoContext) {
          PLOGD.printf("Video stream: %s %dx%d", avcodec_get_name(m_pVideoContext->codec_id), pCodecParameters->width, pCodecParameters->height);
       }
@@ -80,42 +69,6 @@ void PUPMediaPlayer::Play(const string& szFilename)
    }
    else {
       m_videoStream = -1;
-   }
-
-   // Create video frame conversion context and frame queue
-   if (m_pVideoContext)
-   {
-      const AVPixelFormat targetFormat = AV_PIX_FMT_RGBA;
-      const int targetWidth = m_pVideoContext->width; // TODO we could also apply downscaling to the expected render size
-      const int targetHeight = m_pVideoContext->height;
-      m_nRgbFrames = singleFrame ? 1 : 3; // TODO shouldn't the queue size be adapted to the video characteristics ?
-
-      m_rgbFrames = new AVFrame*[m_nRgbFrames];
-      memset(m_rgbFrames, 0, sizeof(AVFrame*) * m_nRgbFrames);
-      m_rgbFrameBuffers = new uint8_t*[m_nRgbFrames];
-      memset(m_rgbFrameBuffers, 0, sizeof(uint8_t*) * m_nRgbFrames);
-      int rgbFrameSize = av_image_get_buffer_size(targetFormat, targetWidth, targetHeight, 1);
-      for (int i = 0; i < m_nRgbFrames; i++)
-      {
-         m_rgbFrames[i] = av_frame_alloc();
-         if (m_rgbFrames[i] == nullptr)
-         {
-            PLOGE.printf("Failed to create RGB buffer frame");
-            Stop();
-            return;
-         }
-         m_rgbFrameBuffers[i] = static_cast<uint8_t*>(av_malloc(rgbFrameSize * sizeof(uint8_t)));
-         if (m_rgbFrameBuffers[i] == nullptr)
-         {
-            PLOGE.printf("Failed to allocate RGB buffer");
-            Stop();
-            return;
-         }
-         m_rgbFrames[i]->width = targetWidth;
-         m_rgbFrames[i]->height = targetHeight;
-         m_rgbFrames[i]->format = targetFormat;
-         av_image_fill_arrays(m_rgbFrames[i]->data, m_rgbFrames[i]->linesize, m_rgbFrameBuffers[i], targetFormat, targetWidth, targetHeight, 1);
-      }
    }
 
    // Find audio stream
@@ -228,7 +181,6 @@ void PUPMediaPlayer::Stop()
 
    if (m_videoTexture)
       SDL_DestroyTexture(m_videoTexture);
-
    m_videoTexture = nullptr;
    m_videoTextureId = 0xFFFFFF;
 
@@ -264,9 +216,10 @@ void PUPMediaPlayer::SetVolume(float volume)
 void PUPMediaPlayer::SetLength(int length)
 {
    std::lock_guard<std::mutex> lock(m_mutex);
-   if (m_length != length) {
-       PLOGD.printf("setting length: length=%d", length);
-       m_length = length;
+   if (m_length != length)
+   {
+      PLOGD.printf("setting length: length=%d", length);
+      m_length = length;
    }
 }
 
@@ -299,11 +252,8 @@ void PUPMediaPlayer::Run()
             SDL_Delay(100);
             continue;
          }
-
-         double elapsed = (static_cast<double>(SDL_GetTicks() - m_startTimestamp) / 1000.0);
-         if (m_length != 0 && elapsed >= m_length)
+         if (m_length != 0 && (static_cast<double>(SDL_GetTicks() - m_startTimestamp) / 1000.0) >= m_length)
             break;
-
          loop = m_loop;
          m_pPinSound->StreamVolume(m_volume / 100.0f);
       }
@@ -395,6 +345,41 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
    if (frame->format < 0)
       return;
 
+   // Create video frame conversion context and frame queue
+   if (m_nRgbFrames == 0)
+   {
+      const AVPixelFormat targetFormat = AV_PIX_FMT_RGBA;
+      const int targetWidth = m_pVideoContext->width; // TODO we could also apply downscaling to the expected render size
+      const int targetHeight = m_pVideoContext->height;
+      m_nRgbFrames = 3; // TODO shouldn't the queue size be adapted to the video characteristics ?
+      m_rgbFrames = new AVFrame*[m_nRgbFrames];
+      memset(m_rgbFrames, 0, sizeof(AVFrame*) * m_nRgbFrames);
+      m_rgbFrameBuffers = new uint8_t*[m_nRgbFrames];
+      memset(m_rgbFrameBuffers, 0, sizeof(uint8_t*) * m_nRgbFrames);
+      int rgbFrameSize = av_image_get_buffer_size(targetFormat, targetWidth, targetHeight, 1);
+      for (int i = 0; i < m_nRgbFrames; i++)
+      {
+         m_rgbFrames[i] = av_frame_alloc();
+         if (m_rgbFrames[i] == nullptr)
+         {
+            PLOGE.printf("Failed to create RGB buffer frame");
+            m_running = false;
+            return;
+         }
+         m_rgbFrameBuffers[i] = static_cast<uint8_t*>(av_malloc(rgbFrameSize * sizeof(uint8_t)));
+         if (m_rgbFrameBuffers[i] == nullptr)
+         {
+            PLOGE.printf("Failed to allocate RGB buffer");
+            m_running = false;
+            return;
+         }
+         m_rgbFrames[i]->width = targetWidth;
+         m_rgbFrames[i]->height = targetHeight;
+         m_rgbFrames[i]->format = targetFormat;
+         av_image_fill_arrays(m_rgbFrames[i]->data, m_rgbFrames[i]->linesize, m_rgbFrameBuffers[i], targetFormat, targetWidth, targetHeight, 1);
+      }
+   }
+
    // m_activeRgbFrame points to the last frame (the one with the highest presentation timestamp)
    int nextFrame = (m_activeRgbFrame + 1) % m_nRgbFrames;
    AVFrame* rgbFrame = m_rgbFrames[nextFrame];
@@ -432,58 +417,48 @@ void PUPMediaPlayer::Render(SDL_Renderer* pRenderer, const SDL_Rect& destRect)
    if (!pRenderer)
       return;
 
-   double elapsed = (static_cast<double>(SDL_GetTicks() - m_startTimestamp) / 1000.0);
-   if (m_length != 0 && elapsed >= m_length)
-      return;
-
-   if (m_nRgbFrames == 1) {
-      AVFrame* rgbFrame = m_rgbFrames[0];
-      if (m_videoTexture && (m_videoTexture->w != rgbFrame->width || m_videoTexture->h != rgbFrame->height)) {
-         SDL_DestroyTexture(m_videoTexture);
-         m_videoTexture = nullptr;
-      }
-      if (!m_videoTexture)
-         m_videoTexture = SDL_CreateTexture(pRenderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, rgbFrame->width, rgbFrame->height);
-      if (m_videoTexture)
-         SDL_UpdateTexture(m_videoTexture, NULL, rgbFrame->data[0], rgbFrame->linesize[0]);
+   if (m_length != 0)
+   {
+      const int elapsed = static_cast<int>(SDL_GetTicks() - m_startTimestamp) / 1000;
+      if (elapsed >= m_length)
+         return;
    }
-   else if (m_running) {
-      // Search for the best frame to display and update the video texture accordingly (if needed)
-      const double playPts = m_paused ? m_pauseTimestamp : static_cast<double>(SDL_GetTicks() - m_startTimestamp) / 1000.0;
-      {
-         std::lock_guard<std::mutex> lock(m_mutex);
-         unsigned int m_renderFrameId = m_videoTextureId;
-         for (int i = 0; i < m_nRgbFrames; i++)
-         {
-            if (m_activeRgbFrame >= i)
-            {
-               const AVFrame* rgbFrame = m_rgbFrames[(m_activeRgbFrame + m_nRgbFrames - i) % m_nRgbFrames];
-               const double framePts = (static_cast<double>(rgbFrame->pts) * m_pVideoContext->pkt_timebase.num) / m_pVideoContext->pkt_timebase.den;
-               if (playPts <= framePts) // We select the first frame after (or at) the current play timestamp
-                  m_renderFrameId = m_activeRgbFrame - i;
-            }
-         }
-         if (m_videoTextureId != m_renderFrameId)
-         {
-            m_videoTextureId = m_renderFrameId;
-            AVFrame* rgbFrame = m_rgbFrames[m_renderFrameId % m_nRgbFrames];
-            if (m_videoTexture && (m_videoTexture->w != rgbFrame->width || m_videoTexture->h != rgbFrame->height)) {
-               SDL_DestroyTexture(m_videoTexture);
-               m_videoTexture = nullptr;
-            }
-            if (!m_videoTexture)
-               m_videoTexture = SDL_CreateTexture(pRenderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, rgbFrame->width, rgbFrame->height);
-            if (m_videoTexture)
-               SDL_UpdateTexture(m_videoTexture, NULL, rgbFrame->data[0], rgbFrame->linesize[0]);
+   else if (!m_running)
+   {
+      return;
+   }
 
-            //const double framePts = (static_cast<double>(rgbFrame->pts) * m_pVideoContext->pkt_timebase.num) / m_pVideoContext->pkt_timebase.den;
-            //PLOGD.printf("Video tex update: play time: %8.3fs / frame pts: %8.3fs / delta: %8.3fs  [%s]", playPts, framePts, framePts - playPts, m_szFilename.c_str());
+   // Search for the best frame to display and update the video texture accordingly (if needed)
+   const double playPts = m_paused ? m_pauseTimestamp : static_cast<double>(SDL_GetTicks() - m_startTimestamp) / 1000.0;
+   {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      unsigned int m_renderFrameId = m_videoTextureId;
+      for (int i = 0; i < m_nRgbFrames; i++)
+      {
+         if (m_activeRgbFrame >= i)
+         {
+            const AVFrame* rgbFrame = m_rgbFrames[(m_activeRgbFrame + m_nRgbFrames - i) % m_nRgbFrames];
+            const double framePts = (static_cast<double>(rgbFrame->pts) * m_pVideoContext->pkt_timebase.num) / m_pVideoContext->pkt_timebase.den;
+            if (playPts <= framePts) // We select the first frame after (or at) the current play timestamp
+               m_renderFrameId = m_activeRgbFrame - i;
          }
+      }
+      if (m_videoTextureId != m_renderFrameId)
+      {
+         m_videoTextureId = m_renderFrameId;
+         AVFrame* rgbFrame = m_rgbFrames[m_renderFrameId % m_nRgbFrames];
+         if (!m_videoTexture)
+            m_videoTexture = SDL_CreateTexture(pRenderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, rgbFrame->width, rgbFrame->height);
+         if (m_videoTexture)
+            SDL_UpdateTexture(m_videoTexture, NULL, rgbFrame->data[0], rgbFrame->linesize[0]);
+         //const double framePts = (static_cast<double>(rgbFrame->pts) * m_pVideoContext->pkt_timebase.num) / m_pVideoContext->pkt_timebase.den;
+         //PLOGD.printf("Video tex update: play time: %8.3fs / frame pts: %8.3fs / delta: %8.3fs  [%s]", playPts, framePts, framePts - playPts, m_szFilename.c_str());
       }
    }
 
    // Render image
-   if (m_videoTexture) {
+   if (m_videoTexture)
+   {
       SDL_FRect fDestRect;
       fDestRect.x = static_cast<float>(destRect.x);
       fDestRect.y = static_cast<float>(destRect.y);
@@ -499,10 +474,13 @@ AVCodecContext* PUPMediaPlayer::OpenStream(AVFormatContext* pInputFormatContext,
    if (!pContext)
       return NULL;
 
-   pContext->thread_count = std::max(1u, std::thread::hardware_concurrency() - 1);
-   pContext->thread_type  = FF_THREAD_FRAME;
+   // Request to decode frames on different threads, limiting to the platform core minus 3 (magic number corresponding of the average core used by VPX)
+   // TODO Disabled as this delay the frame queue by one frame, breaking single frame videos (and still images used as video)
+   //pContext->thread_count = std::max(1u, std::min(16u, std::thread::hardware_concurrency() - 3));
+   //pContext->thread_type = FF_THREAD_FRAME;
 
-   if (avcodec_parameters_to_context(pContext, pInputFormatContext->streams[stream]->codecpar) < 0) {
+   if (avcodec_parameters_to_context(pContext, pInputFormatContext->streams[stream]->codecpar) < 0)
+   {
       avcodec_free_context(&pContext);
       return NULL;
    }
