@@ -95,15 +95,16 @@ private:
    MsgPluginManager();
 
    // API implementation
-   static void GetEndpointInfo(const uint32_t endpointId, MsgEndpointInfo* info);
-   static unsigned int GetMsgID(const char* name_space, const char* name);
-   static void SubscribeMsg(const uint32_t endpointId, const unsigned int msgId, const msgpi_msg_callback callback, void* context);
-   static void UnsubscribeMsg(const unsigned int msgId, const msgpi_msg_callback callback);
-   static void BroadcastMsg(const uint32_t endpointId, const unsigned int msgId, void* data);
-   static void SendMsg(const uint32_t endpointId, const unsigned int msgId, const uint32_t targetEndpointId, void* data);
-   static void ReleaseMsgID(const unsigned int msgId);
-   static void GetSetting(const char* name_space, const char* name, char* valueBuf, unsigned int valueBufSize);
-   static void RunOnMainThread(const double delayInS, const msgpi_timer_callback callback, void* userData);
+   static unsigned int MSGPIAPI GetPluginEndpoint(const char* id);
+   static void MSGPIAPI GetEndpointInfo(const uint32_t endpointId, MsgEndpointInfo* info);
+   static unsigned int MSGPIAPI GetMsgID(const char* name_space, const char* name);
+   static void MSGPIAPI SubscribeMsg(const uint32_t endpointId, const unsigned int msgId, const msgpi_msg_callback callback, void* context);
+   static void MSGPIAPI UnsubscribeMsg(const unsigned int msgId, const msgpi_msg_callback callback);
+   static void MSGPIAPI BroadcastMsg(const uint32_t endpointId, const unsigned int msgId, void* data);
+   static void MSGPIAPI SendMsg(const uint32_t endpointId, const unsigned int msgId, const uint32_t targetEndpointId, void* data);
+   static void MSGPIAPI ReleaseMsgID(const unsigned int msgId);
+   static void MSGPIAPI GetSetting(const char* name_space, const char* name, char* valueBuf, unsigned int valueBufSize);
+   static void MSGPIAPI RunOnMainThread(const double delayInS, const msgpi_timer_callback callback, void* userData);
 
    std::vector<std::shared_ptr<MsgPlugin>> m_plugins;
 

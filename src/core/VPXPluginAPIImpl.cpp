@@ -139,12 +139,15 @@ void VPXPluginAPIImpl::SetInputState(const uint64_t keyState, const float nudgeX
 ///////////////////////////////////////////////////////////////////////////////
 // Rendering
 
-void VPXPluginAPIImpl::UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, uint8_t* image)
+void VPXPluginAPIImpl::UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const uint8_t* image)
 {
    BaseTexture** tex = reinterpret_cast<BaseTexture**>(texture);
    switch (format)
    {
-   case VPXTextureFormat::VPXTEXFMT_sRGBA: BaseTexture::Update(tex, width, height, BaseTexture::SRGBA, image); break;
+   case VPXTextureFormat::VPXTEXFMT_BW: BaseTexture::Update(tex, width, height, BaseTexture::BW, image); break;
+   case VPXTextureFormat::VPXTEXFMT_sRGB8: BaseTexture::Update(tex, width, height, BaseTexture::SRGB, image); break;
+   case VPXTextureFormat::VPXTEXFMT_sRGBA8: BaseTexture::Update(tex, width, height, BaseTexture::SRGBA, image); break;
+   case VPXTextureFormat::VPXTEXFMT_sRGB565: BaseTexture::Update(tex, width, height, BaseTexture::SRGB565, image); break;
    default: assert(false);
    }
 }

@@ -350,7 +350,7 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, SDL_Rect& rect, int pagenum
          m_animationFrame = expectedFrame;
          SDL_Surface* surf = m_renderState.m_pAnimation->frames[m_animationFrame];
          SDL_LockSurface(surf);
-         UpdateTexture(&m_renderState.m_pTexture, surf->w, surf->h, VPXTextureFormat::VPXTEXFMT_sRGBA, static_cast<uint8_t*>(surf->pixels));
+         UpdateTexture(&m_renderState.m_pTexture, surf->w, surf->h, VPXTextureFormat::VPXTEXFMT_sRGBA8, static_cast<uint8_t*>(surf->pixels));
          SDL_UnlockSurface(surf);
       }
    }

@@ -477,13 +477,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
          m_renderer->m_renderDevice->AddWindow(m_backglassOutput.GetWindow());
       if (m_topperOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
          m_renderer->m_renderDevice->AddWindow(m_topperOutput.GetWindow());
-
-      if (m_scoreviewOutput.GetMode() != VPX::RenderOutput::OM_DISABLED)
-      {
-         m_scoreView.Load(PathFromFilename(m_ptable->m_szFileName));
-         if (!m_scoreView.HasLayouts())
-            m_scoreView.Load(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR);
-      }
    }
    #endif
 
@@ -732,15 +725,20 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    wintimer_init();
    m_liveUI = new LiveUI(m_renderer->m_renderDevice);
 
-   m_onGameStartMsgId = VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START);
-   m_onPrepareFrameMsgId = VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
-   m_onAudioUpdatedMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_UPDATE_MSG);
-   MsgPluginManager::GetInstance().GetMsgAPI().SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onAudioUpdatedMsgId, OnAudioUpdated, this);
+   const MsgPluginAPI *msgApi = &MsgPluginManager::GetInstance().GetMsgAPI();
+
+   m_onGameStartMsgId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START);
+   m_onPrepareFrameMsgId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
+   m_onAudioUpdatedMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_UPDATE_MSG);
+   msgApi->SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onAudioUpdatedMsgId, OnAudioUpdated, this);
+
+   m_getAuxRendererId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER);
+   m_onAuxRendererChgId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG);
+   msgApi->SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onAuxRendererChgId, OnAuxRendererChanged, this);
+   OnAuxRendererChanged(m_onAuxRendererChgId, this, nullptr);
 
    // Signal plugins before performing static prerendering. The only thing not fully initialized is the physics (is this ok ?)
    VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_onGameStartMsgId, nullptr);
-
-   m_scoreView.Select(m_scoreviewOutput);
 
    // Open UI if requested (this also disables static prerendering, so must be done before performing it)
    if (playMode == 1)
@@ -857,11 +855,15 @@ Player::~Player()
    }
 
    // Release plugin message Ids
-   MsgPluginManager::GetInstance().GetMsgAPI().UnsubscribeMsg(m_onAudioUpdatedMsgId, OnAudioUpdated);
-   VPXPluginAPIImpl::ReleaseMsgID(m_onAudioUpdatedMsgId);
-   VPXPluginAPIImpl::ReleaseMsgID(m_onGameStartMsgId);
-   VPXPluginAPIImpl::ReleaseMsgID(onGameEndMsgId);
-   VPXPluginAPIImpl::ReleaseMsgID(m_onPrepareFrameMsgId);
+   const MsgPluginAPI *msgApi = &MsgPluginManager::GetInstance().GetMsgAPI();
+   msgApi->UnsubscribeMsg(m_onAudioUpdatedMsgId, OnAudioUpdated);
+   msgApi->ReleaseMsgID(m_onAudioUpdatedMsgId);
+   msgApi->ReleaseMsgID(m_onGameStartMsgId);
+   msgApi->ReleaseMsgID(onGameEndMsgId);
+   msgApi->ReleaseMsgID(m_onPrepareFrameMsgId);
+   msgApi->UnsubscribeMsg(m_onAuxRendererChgId, OnAuxRendererChanged);
+   msgApi->ReleaseMsgID(m_getAuxRendererId);
+   msgApi->ReleaseMsgID(m_onAuxRendererChgId);
 
    // Save list of used textures to avoid stuttering in next play
    if ((m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0) && FileExists(m_ptable->m_szFileName))
@@ -2094,6 +2096,31 @@ void Player::FinishFrame()
 #endif
 }
 
+void Player::OnAuxRendererChanged(const unsigned int msgId, void* userData, void* msgData)
+{
+   Player * const me = static_cast<Player *>(userData);
+   const MsgPluginAPI *m_msgApi = &MsgPluginManager::GetInstance().GetMsgAPI();
+   for (int i = 0; i <= VPXAnciliaryWindow::VPXWINDOW_Topper; i++)
+   {
+      const VPXAnciliaryWindow window = (VPXAnciliaryWindow) i;
+      const Settings::Section section = window == VPXAnciliaryWindow::VPXWINDOW_Backglass ? Settings::Backglass
+                                      : window == VPXAnciliaryWindow::VPXWINDOW_ScoreView ? Settings::ScoreView
+                                                                                          : Settings::Topper;
+      GetAnciliaryRendererMsg getAuxRendererMsg { window, 0, 0, nullptr };
+      m_msgApi->BroadcastMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), me->m_getAuxRendererId, &getAuxRendererMsg);
+      me->m_anciliaryWndRenderers[window].resize(getAuxRendererMsg.count);
+      getAuxRendererMsg = { window, getAuxRendererMsg.count, 0, me->m_anciliaryWndRenderers[window].data() };
+      m_msgApi->BroadcastMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), me->m_getAuxRendererId, &getAuxRendererMsg);
+      std::ranges::sort(me->m_anciliaryWndRenderers[window],
+         [&](const AnciliaryRendererDef &a, const AnciliaryRendererDef &b)
+         {
+            int pa = me->m_ptable->m_settings.LoadValueWithDefault(section, "Priority."s.append(a.id), 0);
+            int pb = me->m_ptable->m_settings.LoadValueWithDefault(section, "Priority."s.append(b.id), 0);
+            return pa > pb; // Sort in descending order (first is the most wanted)
+         });
+   }
+}
+
 RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTarget *embedRT)
 {
    RenderDevice *const rd = m_renderer->m_renderDevice;
@@ -2149,8 +2176,10 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
    if (eyes > 1)
       matWorldViewProj[1] = matWorldViewProj[0];
    rd->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
-   rd->m_basicShader->SetFloat(SHADER_alphaTestValue, 0.0f);
+   rd->m_basicShader->SetFloat(SHADER_alphaTestValue, -1.0f);
    rd->m_basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
+   rd->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
+   rd->m_DMDShader->SetFloat(SHADER_alphaTestValue, -1.0f);
    rd->ResetRenderState();
    rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
    rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
@@ -2180,84 +2209,144 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
       rd->SetRenderTarget(renderPassName, outputRT, true, true);
    }
 
+   // TODO evaluate if clear is needed and perform it, also handle embedded window and 3D render
+   if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
+   {
+      rd->ResetRenderState();
+      rd->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
+   }
+
    VPXRenderContext2D context
    {
       window,
       static_cast<float>(m_outputW), static_cast<float>(m_outputH),
       static_cast<float>(m_outputW), static_cast<float>(m_outputH),
+      // Draw an image
       [](VPXRenderContext2D *ctx, VPXTexture texture,
          const float tintR, const float tintG, const float tintB, const float alpha,
-         const float srcX, const float srcY, const float srcW, const float srcH,
-         const float dstX, const float dstY, const float dstW, const float dstH)
+         const float texX, const float texY, const float texW, const float texH,
+         const float srcX, const float srcY, const float srcW, const float srcH)
          {
             BaseTexture *const tex = static_cast<BaseTexture *>(texture);
             RenderDevice * const rd = g_pplayer->m_renderer->m_renderDevice;
             rd->SetRenderState(RenderState::ALPHABLENDENABLE, (alpha != 1.f || !tex->IsOpaque()) ? RenderState::RS_TRUE : RenderState::RS_FALSE);
             rd->m_basicShader->SetVector(SHADER_cBase_Alpha, tintR, tintG, tintB, alpha);
             rd->m_basicShader->SetTexture(SHADER_tex_base_color, tex);
-            const float vx1 = dstX / ctx->srcWidth;
-            const float vy1 = dstY / ctx->srcHeight;
-            const float vx2 = vx1 + dstW / ctx->srcWidth;
-            const float vy2 = vy1 + dstH / ctx->srcHeight;
-            const float tx1 = srcX / tex->width();
-            const float ty1 = 1.f - srcY / tex->height();
-            const float tx2 = (srcX + srcW) / tex->width();
-            const float ty2 = 1.f - (srcY + srcH) / tex->height();
+            const float vx1 = srcX / ctx->srcWidth;
+            const float vy1 = srcY / ctx->srcHeight;
+            const float vx2 = vx1 + srcW / ctx->srcWidth;
+            const float vy2 = vy1 + srcH / ctx->srcHeight;
+            const float tx1 = texX / tex->width();
+            const float ty1 = 1.f - texY / tex->height();
+            const float tx2 = (texX + texW) / tex->width();
+            const float ty2 = 1.f - (texY + texH) / tex->height();
             const Vertex3D_NoTex2 vertices[4] = {
                { vx2, vy1, 0.f, 0.f, 0.f, 1.f, tx2, ty2 },
                { vx1, vy1, 0.f, 0.f, 0.f, 1.f, tx1, ty2 },
                { vx2, vy2, 0.f, 0.f, 0.f, 1.f, tx2, ty1 },
                { vx1, vy2, 0.f, 0.f, 0.f, 1.f, tx1, ty1 } };
             rd->DrawTexturedQuad(rd->m_basicShader, vertices, true, 0.f);
+         },
+      // Draw a display (DMD, CRT, ...)
+      [](VPXRenderContext2D* ctx, VPXDisplayRenderStyle style,
+         VPXTexture glassTex, const float glassTintR, const float glassTintG, const float glassTintB, const float glassRoughness,
+         const float glassAreaX, const float glassAreaY, const float glassAreaW, const float glassAreaH,
+         const float glassAmbientR, const float glassAmbientG, const float glassAmbientB,
+         VPXTexture dispTex, const float dispTintR, const float dispTintG, const float dispTintB, const float brightness, const float alpha,
+         const float dispPadL, const float dispPadT, const float dispPadR, const float dispPadB,
+         const float srcX, const float srcY, const float srcW, const float srcH)
+         {
+            BaseTexture *const gTex = static_cast<BaseTexture *>(glassTex);
+            BaseTexture *const dTex = static_cast<BaseTexture *>(dispTex);
+            RenderDevice *const rd = g_pplayer->m_renderer->m_renderDevice;
+            rd->ResetRenderState();
+            rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+            rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+            rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+            rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+            g_pplayer->m_renderer->SetupDMDRender(style, false, 
+               vec3(dispTintR, dispTintG, dispTintB), brightness, dTex, alpha,
+               Renderer::ColorSpace::Reinhard, //output.GetMode() == VPX::RenderOutput::OM_WINDOW ? Renderer::ColorSpace::Reinhard_sRGB : Renderer::ColorSpace::Reinhard, nullptr, 
+               nullptr, // No parallax
+               vec4(dispPadL, dispPadT, dispPadR, dispPadB),
+               vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex,
+               vec4(glassAreaX, glassAreaY, glassAreaW, glassAreaH),
+               vec3(glassAmbientR, glassAmbientG, glassAmbientB));
+            const float vx1 = srcX / ctx->srcWidth;
+            const float vy1 = 1.f - srcY / ctx->srcHeight;
+            const float vx2 = (srcX + srcW) / ctx->srcWidth;
+            const float vy2 = 1.f - (srcY + srcH) / ctx->srcHeight;
+            const Vertex3D_NoTex2 vertices[4] = {
+               { vx2, vy1, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f },
+               { vx1, vy1, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f },
+               { vx2, vy2, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
+               { vx1, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f } };
+            rd->DrawTexturedQuad(rd->m_DMDShader, vertices, true, 0.f);
+         },
+      // Draw a segment display element (just one digit, using max blending to allow building a complete display)
+      [](VPXRenderContext2D* ctx, VPXSegDisplayRenderStyle style, VPXSegDisplayHint shapeHint,
+         VPXTexture glassTex, const float glassTintR, const float glassTintG, const float glassTintB, const float glassRoughness,
+         const float glassAreaX, const float glassAreaY, const float glassAreaW, const float glassAreaH,
+         const float glassAmbientR, const float glassAmbientG, const float glassAmbientB,
+         SegElementType type, const float *state, const float dispTintR, const float dispTintG, const float dispTintB, const float brightness, const float alpha,
+         const float dispPadL, const float dispPadT, const float dispPadR, const float dispPadB,
+         const float srcX, const float srcY, const float srcW, const float srcH)
+         {
+            BaseTexture *const gTex = static_cast<BaseTexture *>(glassTex);
+            RenderDevice *const rd = g_pplayer->m_renderer->m_renderDevice;
+            // Use max blending as segment may overlap in the glass diffuse: we retain the most lighted one which is wrong but looks ok (otherwise we would have to deal with colorspace conversions and layering between glass and emitter)
+            rd->ResetRenderState();
+            rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_MAX);
+            rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+            rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
+            rd->SetRenderState(RenderState::DESTBLEND, RenderState::ONE);
+            rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+            rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+            rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+            g_pplayer->m_renderer->SetupSegmentRenderer(style, false,
+               vec3(dispTintR, dispTintG, dispTintB), brightness, (Renderer::SegmentFamily)shapeHint,
+               type, state,
+               Renderer::ColorSpace::Reinhard, // output.GetMode() == VPX::RenderOutput::OM_WINDOW ? Renderer::ColorSpace::Reinhard_sRGB : Renderer::ColorSpace::Reinhard, nullptr, 
+               nullptr, // No parallax
+               vec4(dispPadL, dispPadT, dispPadR, dispPadB),
+               vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex,
+               vec4(glassAreaX, glassAreaY, glassAreaW, glassAreaH),
+               vec3(glassAmbientR, glassAmbientG, glassAmbientB));
+            const float vx1 = srcX / ctx->srcWidth;
+            const float vy1 = 1.f - srcY / ctx->srcHeight;
+            const float vx2 = (srcX + srcW) / ctx->srcWidth;
+            const float vy2 = 1.f - (srcY + srcH) / ctx->srcHeight;
+            const Vertex3D_NoTex2 vertices[4] = {
+               { vx2, vy1, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f },
+               { vx1, vy1, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f },
+               { vx2, vy2, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
+               { vx1, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f } };
+            rd->DrawTexturedQuad(rd->m_DMDShader, vertices, true, 0.f);
          }
    };
 
-   // TODO evaluate if clear is needed and perform it
-
-   // TODO cache all this, and priorize renderers according to user settings
-   const MsgPluginAPI *m_msgApi = &MsgPluginManager::GetInstance().GetMsgAPI();
-   unsigned int m_getAuxRendererId = 0, m_onAuxRendererChgId = 0;
-   m_getAuxRendererId = m_msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER);
-   m_onAuxRendererChgId = m_msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG);
-   GetAnciliaryRendererMsg getAuxRendererMsg { window };
-   getAuxRendererMsg.maxEntryCount = 256;
-   getAuxRendererMsg.entries = new AnciliaryRendererDef[getAuxRendererMsg.maxEntryCount];
-   m_msgApi->BroadcastMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_getAuxRendererId, &getAuxRendererMsg);
    bool rendered = false;
-   for (unsigned int i = 0; i < getAuxRendererMsg.count; i++)
+   for (auto& renderer : m_anciliaryWndRenderers[window])
    {
-      rendered = getAuxRendererMsg.entries[i].Render(&context, getAuxRendererMsg.entries[i].context);
+      rendered = renderer.Render(&context, renderer.context);
       if (rendered)
          break;
    }
-   delete[] getAuxRendererMsg.entries;
-   m_msgApi->ReleaseMsgID(m_getAuxRendererId);
-   m_msgApi->ReleaseMsgID(m_onAuxRendererChgId);
 
    m_renderer->UpdateBasicShaderMatrix();
 
    if (!rendered)
    {
-      // FIXME integrate score view in the global rendering scheme
-      if (window == VPXAnciliaryWindow::VPXWINDOW_ScoreView && m_scoreView.IsMatched())
-      {
-         m_scoreView.Render(m_scoreviewOutput);
-         #ifdef ENABLE_BGFX
-         if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
-            output.GetWindow()->Show();
-         #endif
-         return rd->GetCurrentRenderTarget();
-      }
-      else
-      {
-         rd->SetRenderTarget("PostProcess"s, m_renderer->GetBackBufferTexture(), true);
-         return nullptr;
-      }
+      rd->SetRenderTarget("PostProcess"s, m_renderer->GetBackBufferTexture(), true);
+      return nullptr;
    }
 
    if (enableHDR && (output.GetMode() == VPX::RenderOutput::OM_WINDOW))
    {
       const float jitter = (float)((msec() & 2047) / 1000.0);
+      rd->ResetRenderState();
+      rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+      rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
       rd->SetRenderTarget(tonemapPassName, outputRT, true, true);
       rd->AddRenderTargetDependency(m_anciliaryWndHdrRT[window], false);
       rd->m_FBShader->SetTextureNull(SHADER_tex_depth);

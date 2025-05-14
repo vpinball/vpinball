@@ -1,0 +1,73 @@
+# plugin CMake file to be included in main project CMakelists
+
+# --- ScoreView plugin ---
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_C_STANDARD 99)
+
+add_library(ScoreViewPlugin MODULE
+   plugins/scoreview/ScoreViewPlugin.cpp
+   plugins/scoreview/ScoreView.h
+   plugins/scoreview/ScoreView.cpp
+   src/core/ResURIResolver.h
+   src/core/ResURIResolver.cpp
+)
+
+target_include_directories(ScoreViewPlugin PUBLIC
+   plugins/scoreview
+   ${CMAKE_SOURCE_DIR}/third-party/include
+   src
+)
+
+if(PluginPlatform STREQUAL "windows")
+   add_compile_options(
+      $<$<CONFIG:RELEASE>:/Ob2>
+      $<$<CONFIG:RELEASE>:/O2>
+      $<$<CONFIG:RELEASE>:/Oi>
+      $<$<CONFIG:RELEASE>:/arch:SSE2>
+      $<$<CONFIG:RELEASE>:/fp:fast>
+      $<$<CONFIG:RELEASE>:/fp:except->
+      $<$<CONFIG:RELEASE>:/Ot>
+      $<$<CONFIG:RELEASE>:/GF>
+      $<$<CONFIG:RELEASE>:/GS->
+      $<$<CONFIG:RELEASE>:/Gy>
+      $<$<CONFIG:RELEASE>:/GR>
+      $<$<CONFIG:RELEASE>:/Oy>
+      $<$<CONFIG:RELEASE>:/GT>
+      $<$<CONFIG:RELEASE>:/GL>
+   )
+   set_target_properties(ScoreViewPlugin PROPERTIES
+      MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
+   )
+   target_compile_options(ScoreViewPlugin PUBLIC
+      $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+      $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
+   )
+   target_link_options(ScoreViewPlugin PUBLIC
+      $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
+      $<$<CONFIG:RELEASE>:/OPT:REF>
+      $<$<CONFIG:RELEASE>:/OPT:ICF>
+      $<$<CONFIG:RELEASE>:/LTCG>
+   )
+   if (PluginArch STREQUAL "x64")
+      set_target_properties(ScoreViewPlugin PROPERTIES
+         OUTPUT_NAME "plugin-scoreview64"
+      )
+   else()
+      set_target_properties(ScoreViewPlugin PROPERTIES
+         OUTPUT_NAME "plugin-scoreview"
+      )
+   endif()
+else()
+   set_target_properties(ScoreViewPlugin PROPERTIES
+      PREFIX ""
+      OUTPUT_NAME "plugin-scoreview"
+   )
+endif()
+
+add_custom_command(TARGET ScoreViewPlugin POST_BUILD
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/scoreview/plugin.cfg" "${PLUGINS_DIR}/scoreview/plugin.cfg"
+   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:ScoreViewPlugin>" "${PLUGINS_DIR}/scoreview"
+   COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/plugins/scoreview/layouts" "${PLUGINS_DIR}/scoreview/layouts"
+   COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:ScoreViewPlugin>"
+)

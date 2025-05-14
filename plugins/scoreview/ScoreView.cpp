@@ -1,44 +1,81 @@
 // license:GPLv3+
 
-#include "core/stdafx.h"
 #include "ScoreView.h"
-#include <filesystem>
-#include <sstream>
-#include <algorithm>
-#include <iostream>
-#include "plugins/ControllerPlugin.h"
-#include "core/VPXPluginAPIImpl.h"
 
-ScoreView::ScoreView()
+#include "plugins/ControllerPlugin.h"
+#include "plugins/LoggingPlugin.h"
+
+#include <math.h>
+#include <cassert>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <algorithm>
+
+LPI_USE();
+#define LOGD LPI_LOGD
+#define LOGI LPI_LOGI
+#define LOGE LPI_LOGE
+
+template <typename T> constexpr __forceinline T clamp(const T x, const T mn, const T mx) { return std::max(std::min(x, mx), mn); }
+
+string trim_string(const string& str)
 {
-   m_onDmdChangedMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
-   MsgPluginManager::GetInstance().GetMsgAPI().SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onDmdChangedMsgId, OnDmdChanged, this);
-   m_onSegChangedMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_ON_SRC_CHG_MSG);
-   MsgPluginManager::GetInstance().GetMsgAPI().SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onSegChangedMsgId, OnSegChanged, this);
+   string s;
+   try
+   {
+      s = str.substr(str.find_first_not_of(" \t\r\n"), str.find_last_not_of(" \t\r\n") - str.find_first_not_of(" \t\r\n") + 1);
+   }
+   catch (...)
+   {
+      //s.clear();
+   }
+   return s;
+}
+
+bool try_parse_float(const string& str, float& value)
+{
+   std::stringstream sstr(trim_string(str));
+   return ((sstr >> value) && sstr.eof());
+}
+
+bool try_parse_int(const string& str, int& value)
+{
+   std::stringstream sstr(trim_string(str));
+   return ((sstr >> value) && sstr.eof());
+}
+
+inline float InvsRGB(const float x) { return (x <= 0.04045f) ? (x * (float)(1.0 / 12.92)) : (powf(x * (float)(1.0 / 1.055) + (float)(0.055 / 1.055), 2.4f)); }
+
+ScoreView::ScoreView(MsgPluginAPI* api, unsigned int endpointId, VPXPluginAPI* vpxApi)
+   : m_msgApi(api)
+   , m_endpointId(endpointId)
+   , m_vpxApi(vpxApi)
+   , m_resURIResolver(*api, endpointId, true, true, false, false)
+{
+   m_onDmdChangedMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
+   m_msgApi->SubscribeMsg(m_endpointId, m_onDmdChangedMsgId, OnResChanged, this);
+   m_onSegChangedMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_ON_SRC_CHG_MSG);
+   m_msgApi->SubscribeMsg(m_endpointId, m_onSegChangedMsgId, OnResChanged, this);
 }
 
 ScoreView::~ScoreView()
 {
-   MsgPluginManager::GetInstance().GetMsgAPI().UnsubscribeMsg(m_onSegChangedMsgId, OnSegChanged);
-   VPXPluginAPIImpl::ReleaseMsgID(m_onSegChangedMsgId);
-   MsgPluginManager::GetInstance().GetMsgAPI().UnsubscribeMsg(m_onDmdChangedMsgId, OnDmdChanged);
-   VPXPluginAPIImpl::ReleaseMsgID(m_onDmdChangedMsgId);
+   m_msgApi->UnsubscribeMsg(m_onSegChangedMsgId, OnResChanged);
+   m_msgApi->ReleaseMsgID(m_onSegChangedMsgId);
+   m_msgApi->UnsubscribeMsg(m_onDmdChangedMsgId, OnResChanged);
+   m_msgApi->ReleaseMsgID(m_onDmdChangedMsgId);
    for (auto& image : m_images)
-      delete image.second;
+      m_vpxApi->DeleteTexture(image.second);
    for (auto& layout : m_layouts)
       for (auto& visual : layout.visuals)
-         delete visual.liveTexture;
-   m_images.clear();
+         if (visual.dmdTex)
+            m_vpxApi->DeleteTexture(visual.dmdTex);
 }
 
-void ScoreView::OnSegChanged(const unsigned int msgId, void* userData, void* msgData)
+void ScoreView::OnResChanged(const unsigned int msgId, void* userData, void* msgData)
 {
-   static_cast<ScoreView*>(userData)->Select(g_pplayer->m_scoreviewOutput);
-}
-
-void ScoreView::OnDmdChanged(const unsigned int msgId, void* userData, void* msgData)
-{
-   static_cast<ScoreView*>(userData)->Select(g_pplayer->m_scoreviewOutput);
+   static_cast<ScoreView*>(userData)->m_invalidBestLayout = true;
 }
 
 void ScoreView::Load(const string& path)
@@ -54,14 +91,14 @@ void ScoreView::Load(const string& path)
          if (!entry.is_directory() && entry.path().extension().string() == ".scv")
          {
             std::ifstream ifs(entry.path());
-            Parse(entry.path().string(), ifs);
+            Parse(entry.path(), ifs);
          }
       }
    }
    else
    {
       std::ifstream ifs(path);
-      Parse(path, ifs);
+      Parse(p, ifs);
    }
 }
 
@@ -87,9 +124,9 @@ static string TrimTrailing(const string& str, const std::string& whitespace)
    return string(strBegin, strEnd);
 }
 
-void ScoreView::Parse(const string& path, std::istream& content)
+void ScoreView::Parse(const std::filesystem::path& path, std::istream& content)
 {
-   #define CHECK_FIELD(check) if (!(check)) { PLOGE << "Invalid field '" << key << ": " << value << "' at line " << lineIndex << " in ScoreView file " << path; return; }
+   #define CHECK_FIELD(check) if (!(check)) { LOGE("Invalid field '%s: %s' at line %d in ScoreView file %s", key.c_str(), value.c_str(), lineIndex, path.c_str()); return; }
    static const string whitespace = " \t"s;
    Layout layout { string() };
    layout.path = path;
@@ -134,13 +171,13 @@ void ScoreView::Parse(const string& path, std::istream& content)
          indentSize = afterIndent;
       if ((indentSize != 0) && ((afterIndent % indentSize) != 0))
       {
-         PLOGE << "Invalid indentation at line " << lineIndex << " in ScoreView file " << path;
+         LOGE("Invalid indentation at line %d in ScoreView file %s", lineIndex, path.c_str());
          return;
       }
       size_t indent = indentSize == 0 ? 0 : afterIndent / indentSize;
       if (indent > expectedIndent)
       {
-         PLOGE << "Invalid indentation (" << indent << " while expecting " << expectedIndent << " at line " << lineIndex << " in ScoreView file " << path;
+         LOGE("Invalid indentation (%d while expecting %d at line %d in ScoreView file %s", indent, expectedIndent, lineIndex, path.c_str());
          return;
       }
       if (indent < expectedIndent)
@@ -154,12 +191,12 @@ void ScoreView::Parse(const string& path, std::istream& content)
       const auto colon = line.find(':');
       if (colon == string::npos)
       {
-         PLOGE << "Field is missing ':' separator at line " << lineIndex << " in ScoreView file " << path;
+         LOGE("Field is missing ':' separator at line %s in ScoreView file %s", lineIndex, path.c_str());
          return;
       }
       if (colon == afterIndent)
       {
-         PLOGE << "Field is missing a key before ':' separator at line " << lineIndex << " in ScoreView file " << path;
+         LOGE("Field is missing a key before ':' separator at line %d in ScoreView file %s", lineIndex, path.c_str());
          return;
       }
       const string key(line.cbegin() + afterIndent, line.cbegin() + colon);
@@ -205,7 +242,7 @@ void ScoreView::Parse(const string& path, std::istream& content)
          visual->glassAmbient = vec3(1.f, 1.f, 1.f);
          visual->glassPad = vec4(0.f, 0.f, 0.f, 0.f);
          visual->glassArea = vec4(0.f, 0.f, 0.f, 0.f);
-         visual->dmdSize = int2(-1, -1);
+         visual->dmdSize = vec2i(-1, -1);
       }
       else if (key == "- SegDisplay")
       {
@@ -221,7 +258,7 @@ void ScoreView::Parse(const string& path, std::istream& content)
          visual->glassPad = vec4(0.f, 0.f, 0.f, 0.f);
          visual->glassArea = vec4(0.f, 0.f, 0.f, 0.f);
          visual->nElements = -1;
-         visual->segFamilyHint = Renderer::Generic;
+         visual->segFamilyHint = VPXSegDisplayHint::Generic;
       }
       else if (key == "- Image")
       {
@@ -320,13 +357,13 @@ void ScoreView::Parse(const string& path, std::istream& content)
       {
          CHECK_FIELD((indent == 2) && (visual != nullptr) && (visual->type == VisualType::SegDisplay)); // Seg display hardware family hint
          if (value == "Atari")
-            visual->segFamilyHint = Renderer::Atari;
+            visual->segFamilyHint = VPXSegDisplayHint::Atari;
          else if (value == "Bally")
-            visual->segFamilyHint = Renderer::Bally;
+            visual->segFamilyHint = VPXSegDisplayHint::Bally;
          else if (value == "Gottlieb")
-            visual->segFamilyHint = Renderer::Gottlieb;
+            visual->segFamilyHint = VPXSegDisplayHint::Gottlieb;
          else if (value == "Williams")
-            visual->segFamilyHint = Renderer::Williams;
+            visual->segFamilyHint = VPXSegDisplayHint::Williams;
          else
          {
             // Invalid segment family hint
@@ -398,7 +435,7 @@ void ScoreView::Parse(const string& path, std::istream& content)
       case VisualType::DMD:
          if (visual.dmdSize.x < 0 || visual.dmdSize.y < 0)
          {
-            PLOGE << "DMD display needs Size to be defined in ScoreView file " << path;
+            LOGE("DMD display needs Size to be defined in ScoreView file %s", path.c_str());
             return;
          }
          break;
@@ -407,7 +444,7 @@ void ScoreView::Parse(const string& path, std::istream& content)
             visual.nElements = (int)visual.xOffsets.size();
          if (visual.nElements == 0)
          {
-            PLOGE << "Segment display needs at least one of XPos/NElements to be defined in ScoreView file " << path;                                                                      \
+            LOGE("Segment display needs at least one of XPos/NElements to be defined in ScoreView file %s", path.c_str());
             return;
          }
          if (visual.xOffsets.empty())
@@ -420,35 +457,50 @@ void ScoreView::Parse(const string& path, std::istream& content)
       }
    }
    // TODO avoid duplicates
+   m_invalidBestLayout = true;
    m_layouts.push_back(layout);
    #undef CHECK_FIELD
 }
 
-void ScoreView::Select(const VPX::RenderOutput& output)
+void ScoreView::LoadGlass(Visual& visual)
+{
+   assert((visual.type == VisualType::DMD) || (visual.type == VisualType::SegDisplay));
+   if ((visual.glass == nullptr) && !visual.glassPath.empty())
+   {
+      auto texImage = m_images.find(visual.glassPath);
+      if (texImage != m_images.end())
+         visual.glass = texImage->second;
+      else
+      {
+         const std::filesystem::path fullPath = m_bestLayout->path.remove_filename() / visual.glassPath;
+         std::ifstream file(fullPath, std::ios::binary | std::ios::ate);
+         if (file.is_open())
+         {
+            std::streamsize size = file.tellg();
+            file.seekg(0, std::ios::beg);
+            std::vector<uint8_t> buffer(size);
+            file.read(reinterpret_cast<char*>(buffer.data()), size);
+            file.close();
+            visual.glass = m_vpxApi->CreateTexture(buffer.data(), static_cast<int>(size));
+         }
+         else
+         {
+            LOGE("Missing glass file: %s", fullPath.c_str());
+            visual.glass = nullptr;
+         }
+         m_images[visual.glassPath] = visual.glass;
+      }
+   }
+}
+
+void ScoreView::Select(const float scoreW, const float scoreH)
 {
    m_bestLayout = nullptr;
-   Player* player = g_pplayer;
-   if (player == nullptr)
-      return;
    if (m_layouts.empty())
       return;
 
    // Evaluate output aspect ratio
-   int scoreW, scoreH;
-   switch (output.GetMode())
-   {
-   case VPX::RenderOutput::OM_WINDOW:
-      scoreW = output.GetWindow()->GetBackBuffer()->GetWidth();
-      scoreH = output.GetWindow()->GetBackBuffer()->GetHeight();
-      break;
-   case VPX::RenderOutput::OM_EMBEDDED:
-      scoreW = output.GetEmbeddedWindow()->GetWidth();
-      scoreH = output.GetEmbeddedWindow()->GetHeight();
-      break;
-   default:
-      return;
-   }
-   const float rtAR = static_cast<float>(scoreW) / static_cast<float>(scoreH);
+   const float rtAR = scoreW / scoreH;
 
    // Evaluate layouts against current context
    ResURIResolver::SegDisplayState segDisplay;
@@ -464,14 +516,14 @@ void ScoreView::Select(const VPX::RenderOutput& output)
          switch (visual.type)
          {
          case VisualType::DMD:
-            display = player->m_resURIResolver.GetDisplayState(visual.srcUri);
+            display = m_resURIResolver.GetDisplayState(visual.srcUri);
             if ((display.source == nullptr) || (display.source->width * visual.dmdSize.y != visual.dmdSize.x * display.source->height))
                layout.unmatchedVisuals++;
             else
-               layout.matchedVisuals+=10; // To favor DMD over alphanumerioc seg displays
+               layout.matchedVisuals += 10; // To favor DMD over alphanumerioc seg displays
             break;
          case VisualType::SegDisplay:
-            segDisplay = player->m_resURIResolver.GetSegDisplayState(visual.srcUri);
+            segDisplay = m_resURIResolver.GetSegDisplayState(visual.srcUri);
             if ((segDisplay.source == nullptr) || (segDisplay.source->nElements != visual.nElements))
                layout.unmatchedVisuals++;
             else
@@ -501,84 +553,32 @@ void ScoreView::Select(const VPX::RenderOutput& output)
       });
 }
 
-void ScoreView::LoadGlass(Visual& visual)
+bool ScoreView::Render(VPXRenderContext2D* ctx)
 {
-   assert((visual.type == VisualType::DMD) || (visual.type == VisualType::SegDisplay));
-   if ((visual.glass == nullptr) && !visual.glassPath.empty())
+   if (m_invalidBestLayout)
    {
-      auto texImage = m_images.find(visual.glassPath);
-      if (texImage != m_images.end())
-         visual.glass = texImage->second;
-      else
-      {
-         const std::filesystem::path path1 = std::filesystem::path(m_bestLayout->path).remove_filename();
-         const std::filesystem::path path2 = visual.glassPath;
-         const std::filesystem::path fullPath = path1 / path2;
-         Texture* tex = new Texture();
-         if (std::filesystem::exists(fullPath))
-         {
-            tex->LoadFromFile(fullPath.string());
-            tex->m_alphaTestValue = (float)(-1.0 / 255.0); // Disable alpha testing
-         }
-         visual.glass = tex;
-         m_images[visual.glassPath] = visual.glass;
-      }
+      m_invalidBestLayout = false;
+      Select(ctx->outWidth, ctx->outHeight);
    }
-}
 
-void ScoreView::Render(const VPX::RenderOutput& output)
-{
-   Player* player = g_pplayer;
-   if (player == nullptr)
-      return;
    if (m_bestLayout == nullptr)
-      return;
+      return false;
 
-   // Evaluate output surface
-   Renderer* renderer = player->m_renderer;
-   RenderTarget* sceneRT = renderer->m_renderDevice->GetCurrentRenderTarget();
-   RenderTarget* scoreRT = nullptr;
-   int scoreX, scoreY, scoreW, scoreH;
-   #ifdef ENABLE_BGFX
-   if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
-   {
-      output.GetWindow()->Show();
-      scoreRT = output.GetWindow()->GetBackBuffer();
-      scoreX = scoreY = 0;
-      scoreW = scoreRT->GetWidth();
-      scoreH = scoreRT->GetHeight();
-   }
-   else
-   #endif
-   if (output.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
-   {
-      output.GetEmbeddedWindow()->GetPos(scoreX, scoreY);
-      scoreRT = sceneRT;
-      scoreW = output.GetEmbeddedWindow()->GetWidth();
-      scoreH = output.GetEmbeddedWindow()->GetHeight();
-      scoreY = scoreRT->GetHeight() - scoreY - scoreH;
-   }
-   if (scoreRT == nullptr)
-      return;
-
-   // Render layout: we fit the layout inside the output (scoreXYWH) which is itself inside the window (scoreRT)
-   const float rtAR = static_cast<float>(scoreW) / static_cast<float>(scoreH);
+   // Fit the layout inside the output
+   const float outAR = ctx->outWidth / ctx->outHeight;
    const float layoutAR = m_bestLayout->width / m_bestLayout->height;
-   const float pw = 2.f * (rtAR > layoutAR ? layoutAR / rtAR : 1.f) * static_cast<float>(scoreW) / static_cast<float>(scoreRT->GetWidth());
-   const float ph = 2.f * (rtAR < layoutAR ? rtAR / layoutAR : 1.f) * static_cast<float>(scoreH) / static_cast<float>(scoreRT->GetHeight());
-   const float px = static_cast<float>(scoreX + scoreW / 2) / static_cast<float>(scoreRT->GetWidth()) * 2.f - 1.f - pw * 0.5f;
-   const float py = static_cast<float>(scoreY + scoreH / 2) / static_cast<float>(scoreRT->GetHeight()) * 2.f - 1.f - ph * 0.5f;
-   const float sx = pw / m_bestLayout->width;
-   const float sy = ph / m_bestLayout->height;
-
-   renderer->m_renderDevice->SetRenderTarget("ScoreView"s, scoreRT, true, true);
-   if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
+   float px = 0.f, py = 0.f;
+   if (outAR > layoutAR)
    {
-      renderer->m_renderDevice->Clear(clearType::TARGET, 0);
+      ctx->srcWidth = m_bestLayout->height * outAR;
+      ctx->srcHeight = m_bestLayout->height;
+      px = 0.5f * (ctx->srcWidth - m_bestLayout->width);
    }
    else
    {
-      // FIXME clear rect
+      ctx->srcWidth = m_bestLayout->width;
+      ctx->srcHeight = m_bestLayout->width / outAR;
+      py = 0.5f * (ctx->srcHeight - m_bestLayout->height);
    }
 
    for (auto& visual : m_bestLayout->visuals)
@@ -587,107 +587,76 @@ void ScoreView::Render(const VPX::RenderOutput& output)
       {
       case VisualType::DMD:
       {
-         ResURIResolver::DisplayState dmd = player->m_resURIResolver.GetDisplayState(visual.srcUri);
+         ResURIResolver::DisplayState dmd = m_resURIResolver.GetDisplayState(visual.srcUri);
          if (dmd.state.frame == nullptr)
             continue;
-         BaseTexture::Update(&visual.liveTexture, dmd.source->width, dmd.source->height, 
-              dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8    ? BaseTexture::BW
-            : dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565
-                                                                      : BaseTexture::SRGB,
-            dmd.state.frame);
          LoadGlass(visual);
-         renderer->m_renderDevice->ResetRenderState();
-         renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-         renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-         renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-         renderer->m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+         m_vpxApi->UpdateTexture(&visual.dmdTex, dmd.source->width, dmd.source->height,
+              dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8    ? VPXTextureFormat::VPXTEXFMT_BW
+            : dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? VPXTextureFormat::VPXTEXFMT_sRGB565
+                                                                      : VPXTextureFormat::VPXTEXFMT_sRGB8,
+            dmd.state.frame);
          vec4 glassArea;
          if (visual.glass == nullptr || visual.glassArea.z == 0.f || visual.glassArea.w == 0.f)
             glassArea = vec4(0.f, 0.f, 1.f, 1.f);
          else
          {
-            glassArea.x = visual.glassArea.x / (float)visual.glass->m_width;
-            glassArea.y = visual.glassArea.y / (float)visual.glass->m_height;
-            glassArea.z = visual.glassArea.z / (float)visual.glass->m_width;
-            glassArea.w = visual.glassArea.w / (float)visual.glass->m_height;
+            int gWidth, gHeight;
+            m_vpxApi->GetTextureInfo(visual.glass, &gWidth, &gHeight);
+            glassArea.x = visual.glassArea.x / static_cast<float>(gWidth);
+            glassArea.y = visual.glassArea.y / static_cast<float>(gHeight);
+            glassArea.z = visual.glassArea.z / static_cast<float>(gWidth);
+            glassArea.w = visual.glassArea.w / static_cast<float>(gHeight);
          }
-         renderer->SetupDMDRender(visual.liveStyle, true, visual.tint, 1.f, visual.liveTexture, 1.f,
-            output.GetMode() == VPX::RenderOutput::OM_WINDOW ? Renderer::ColorSpace::Reinhard_sRGB : Renderer::ColorSpace::Reinhard, nullptr,
-            visual.glassPad, visual.glassTint, visual.glassRoughness, visual.glass, glassArea, visual.glassAmbient);
-         const float vx1 = px  + visual.x * sx;
-         const float vy1 = py  + visual.y * sy;
-         const float vx2 = vx1 + visual.w * sx;
-         const float vy2 = vy1 + visual.h * sy;
-         const Vertex3D_NoTex2 vertices[4] = { 
-            { vx2, vy1, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f }, 
-            { vx1, vy1, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f }, 
-            { vx2, vy2, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
-            { vx1, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f } };
-         renderer->m_renderDevice->DrawTexturedQuad(renderer->m_renderDevice->m_DMDShader, vertices);
+         ctx->DrawDisplay(ctx, static_cast<VPXDisplayRenderStyle>(visual.liveStyle),
+            // First layer: glass
+            visual.glass, visual.glassTint.x, visual.glassTint.y, visual.glassTint.z, visual.glassRoughness, // Glass texture, tint and roughness
+            glassArea.x, glassArea.y, glassArea.z, glassArea.w, // Glass texture coordinates (inside overall glass texture)
+            visual.glassAmbient.x, visual.glassAmbient.y, visual.glassAmbient.z, // Glass lighting from room
+            // Second layer: emitter
+            visual.dmdTex, visual.tint.x, visual.tint.y, visual.tint.z, 1.f, 1.f, // DMD emitter, emitter tint, emitter brightness, emitter alpha
+            visual.glassPad.x, visual.glassPad.y, visual.glassPad.z, visual.glassPad.w, // Emitter padding (from glass border)
+            // Render quad
+            px + visual.x, py + visual.y, visual.w, visual.h);
          break;
       }
 
       case VisualType::SegDisplay:
       {
-         ResURIResolver::SegDisplayState frame = player->m_resURIResolver.GetSegDisplayState(visual.srcUri);
+         ResURIResolver::SegDisplayState frame = m_resURIResolver.GetSegDisplayState(visual.srcUri);
          if ((frame.state.frame == nullptr) || (frame.source->nElements != visual.nElements))
             continue;
          LoadGlass(visual);
-         renderer->m_renderDevice->ResetRenderState();
-         // We use max blending as segment may overlap in the glass diffuse: we retain the most lighted one which is wrong but looks ok (otherwise we would have to deal with colorspace conversions and layering between glass and emitter)
-         renderer->m_renderDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_MAX);
-         renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
-         renderer->m_renderDevice->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
-         renderer->m_renderDevice->SetRenderState(RenderState::DESTBLEND, RenderState::ONE);
-         renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-         renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-         renderer->m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-         // FIXME use hardware segment style
-         Renderer::SegmentFamily family = visual.segFamilyHint;
-         if (family == Renderer::SegmentFamily::Generic)
-         {
-            switch (frame.source->hardwareFamily)
-            {
-            case CTLPI_SEG_HARDWARE_NEON_PLASMA >> 16: break;
-            case CTLPI_SEG_HARDWARE_VFD_GREEN >> 16: break;
-            case CTLPI_SEG_HARDWARE_VFD_BLUE >> 16: family = Renderer::SegmentFamily ::Gottlieb; break;
-            }
-         }
          vec4 glassArea;
          if (visual.glass == nullptr || visual.glassArea.z == 0.f || visual.glassArea.w == 0.f)
             glassArea = vec4(0.f, 0.f, 1.f, 1.f);
          else
          {
-            glassArea.x = visual.glassArea.x / (float)visual.glass->m_width;
-            glassArea.y = visual.glassArea.y / (float)visual.glass->m_height;
-            glassArea.z = visual.glassArea.z / (float)visual.glass->m_width;
-            glassArea.w = visual.glassArea.w / (float)visual.glass->m_height;
+            int gWidth, gHeight;
+            m_vpxApi->GetTextureInfo(visual.glass, &gWidth, &gHeight);
+            glassArea.x = visual.glassArea.x / static_cast<float>(gWidth);
+            glassArea.y = visual.glassArea.y / static_cast<float>(gHeight);
+            glassArea.z = visual.glassArea.z / static_cast<float>(gWidth);
+            glassArea.w = visual.glassArea.w / static_cast<float>(gHeight);
          }
-         const float elementWidth = visual.h * (24.f / 32.f); // Each segment element SDF is 24x32, fitted on visual height
-         //const float elementXPad = visual.h * (4.f / 32.f); // Each segment element SDF has a 4 pad around the segments for SDF range
+         const float elementW = visual.h * (24.f / 32.f); // TODO allow to adjust. For the time being, each segment element SDF is 24x32, fitted on visual height
          const float hGlassScale = glassArea.z / visual.w;
          vec4 segGlassArea = glassArea;
-         segGlassArea.z = elementWidth * hGlassScale;
-         const float vy1 = py + sy * visual.y;
-         const float vy2 = vy1 + sy * visual.h;
-         Vertex3D_NoTex2 vertices[4] = { 
-            { 1.f, vy1, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f },
-            { 0.f, vy1, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f },
-            { 1.f, vy2, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
-            { 0.f, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f } };
+         segGlassArea.z = elementW * hGlassScale;
          for (size_t i = 0; i < frame.source->nElements; i++)
          {
             segGlassArea.x = glassArea.x + visual.xOffsets[i] * hGlassScale;
-            renderer->SetupSegmentRenderer(visual.liveStyle, true, visual.tint, 1.0f, family,
-               frame.source->elementType[i], &frame.state.frame[i * 16],
-               output.GetMode() == VPX::RenderOutput::OM_WINDOW ? Renderer::ColorSpace::Reinhard_sRGB : Renderer::ColorSpace::Reinhard, nullptr, 
-               visual.glassPad, visual.glassTint, visual.glassRoughness,
-               visual.glass, segGlassArea, visual.glassAmbient);
-            const float vx1 = px + sx * (visual.x + visual.xOffsets[i]);
-            const float vx2 = vx1 + sx * visual.h * (24.f / 32.f);
-            vertices[0].x = vertices[2].x = vx2;
-            vertices[1].x = vertices[3].x = vx1;
-            renderer->m_renderDevice->DrawTexturedQuad(renderer->m_renderDevice->m_DMDShader, vertices);
+            // FIXME use hardware segment style
+            ctx->DrawSegDisplay(ctx, static_cast<VPXSegDisplayRenderStyle>(visual.liveStyle), VPXSegDisplayHint::Generic,
+               // First layer: glass
+               visual.glass, visual.glassTint.x, visual.glassTint.y, visual.glassTint.z, visual.glassRoughness, // Glass texture, tint and roughness
+               segGlassArea.x, segGlassArea.y, segGlassArea.z, segGlassArea.w, // Glass texture coordinates (inside overall glass texture, cut for each element)
+               visual.glassAmbient.x, visual.glassAmbient.y, visual.glassAmbient.z, // Glass lighting from room
+               // Second layer: emitter
+               frame.source->elementType[i], frame.state.frame + 16 * i, visual.tint.x, visual.tint.y, visual.tint.z, 1.f, 1.f, // Segment emitter, emitter tint, emitter brightness, emitter alpha
+               visual.glassPad.x, visual.glassPad.y, visual.glassPad.z, visual.glassPad.w, // Emitter padding (from glass border)
+               // Render quad
+               px + visual.x + visual.xOffsets[i], py + visual.y, elementW, visual.h);
          }
          break;
       }
@@ -695,4 +664,5 @@ void ScoreView::Render(const VPX::RenderOutput& output)
       case VisualType::Image: break;
       }
    }
+   return true;
 }

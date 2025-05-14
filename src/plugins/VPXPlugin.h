@@ -3,6 +3,7 @@
 #pragma once
 
 #include "MsgPlugin.h"
+#include "ControllerPlugin.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // VPX plugins
@@ -47,7 +48,10 @@ typedef void* VPXTexture;
 
 typedef enum
 {
-   VPXTEXFMT_sRGBA,
+   VPXTEXFMT_BW,
+   VPXTEXFMT_sRGB8,
+   VPXTEXFMT_sRGBA8,
+   VPXTEXFMT_sRGB565,
 } VPXTextureFormat;
 
 typedef enum
@@ -56,6 +60,38 @@ typedef enum
    VPXWINDOW_ScoreView,
    VPXWINDOW_Topper,
 } VPXAnciliaryWindow;
+
+typedef enum
+{
+   VPXDMDStyle_Legacy,
+   VPXDMDStyle_Plasma,
+   VPXDMDStyle_RedLED,
+   VPXDMDStyle_GreenLED,
+   VPXDMDStyle_YellowLED,
+   VPXDMDStyle_GenPlasma,
+   VPXDMDStyle_GenLED,
+} VPXDisplayRenderStyle;
+
+typedef enum
+{
+   VPXSegStyle_Plasma,
+   VPXSegStyle_BlueVFD,
+   VPXSegStyle_GreenVFD,
+   VPXSegStyle_RedLED,
+   VPXSegStyle_GreenLED,
+   VPXSegStyle_YellowLED,
+   VPXSegStyle_GenPlasma,
+   VPXSegStyle_GenLED,
+} VPXSegDisplayRenderStyle;
+
+typedef enum
+{
+   Generic,
+   Gottlieb,
+   Williams,
+   Bally,
+   Atari,
+} VPXSegDisplayHint;
 
 typedef struct VPXRenderContext2D
 {
@@ -68,10 +104,30 @@ typedef struct VPXRenderContext2D
       const float tintR, const float tintG, const float tintB, const float alpha, // tint color and alpha (0..1)
       const float texX, const float texY, const float texW, const float texH,  // coordinates in texture surface (0..tex.width, 0..tex.height)
       const float srcX, const float srcY, const float srcW, const float srcH); // coordinates in source surface (0..srcWidth, 0..srcHeight)
+   void(MSGPIAPI* DrawDisplay)(VPXRenderContext2D* ctx, VPXDisplayRenderStyle style,
+      // First layer is an optional tinted glass
+      VPXTexture glassTex, const float glassTintR, const float glassTintG, const float glassTintB, const float glassRoughness,
+      const float glassAreaX, const float glassAreaY, const float glassAreaW, const float glassAreaH,
+      const float glassAmbientR, const float glassAmbientG, const float glassAmbientB,
+      // Second layer is the emitter
+      VPXTexture dispTex, const float dispTintR, const float dispTintG, const float dispTintB, const float brightness, const float alpha, // Emitter texture, tint, brightness and alpha
+      const float dispPadL, const float dispPadT, const float dispPadR, const float dispPadB, // Display padding from glass bounds
+      //
+      const float srcX, const float srcY, const float srcW, const float srcH); // coordinates in source surface (0..srcWidth, 0..srcHeight)
+   void(MSGPIAPI* DrawSegDisplay)(VPXRenderContext2D* ctx, VPXSegDisplayRenderStyle style, VPXSegDisplayHint shapeHint,
+      // First layer is an optional tinted glass
+      VPXTexture glassTex, const float glassTintR, const float glassTintG, const float glassTintB, const float glassRoughness, const float glassAreaX, const float glassAreaY,
+      const float glassAreaW, const float glassAreaH, const float glassAmbientR, const float glassAmbientG, const float glassAmbientB,
+      // Second layer is the emitter
+      SegElementType type, const float* state, const float dispTintR, const float dispTintG, const float dispTintB, const float brightness, const float alpha, // Emitter, tint, brightness and alpha
+      const float dispPadL, const float dispPadT, const float dispPadR, const float dispPadB, // Display padding from glass bounds
+      //
+      const float srcX, const float srcY, const float srcW, const float srcH); // coordinates in source surface (0..srcWidth, 0..srcHeight)
 } VPXRenderContext2D;
 
 typedef struct AnciliaryRendererDef
 {
+   const char* id;            // Unique id of the renderer (only alphanumeric characters, dots and underscore. Can be used for storing settings)
    const char* name;          // Human readable name of the renderer
    const char* description;   // Human readable description of the renderer
    void* context;             // Custom context to be passed when requesting rendering
@@ -195,7 +251,7 @@ typedef struct VPXPluginAPI
 
    // Rendering
    VPXTexture(MSGPIAPI* CreateTexture)(uint8_t* rawData, int size); // Thread safe
-   void(MSGPIAPI* UpdateTexture)(VPXTexture* texture, int width, int height, VPXTextureFormat format, uint8_t* image); // NOT Thread safe
+   void(MSGPIAPI* UpdateTexture)(VPXTexture* texture, int width, int height, VPXTextureFormat format, const uint8_t* image); // NOT Thread safe
    void(MSGPIAPI* GetTextureInfo)(VPXTexture texture, int* width, int* height); // NOT Thread safe
    void(MSGPIAPI* DeleteTexture)(VPXTexture texture); // Thread safe
 

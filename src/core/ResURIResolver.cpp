@@ -1,10 +1,36 @@
 // license:GPLv3+
 
-#include "core/stdafx.h"
+//#include "core/stdafx.h"
 
 #include "ResURIResolver.h"
 
+#include <sstream>
+using std::string;
+using namespace std::string_literals;
+using std::vector;
+
 #include "simple-uri-parser/uri_parser.h"
+
+static string trim_string(const string &str)
+{
+   string s;
+   try
+   {
+      s = str.substr(str.find_first_not_of(" \t\r\n"), str.find_last_not_of(" \t\r\n") - str.find_first_not_of(" \t\r\n") + 1);
+   }
+   catch (...)
+   {
+      //s.clear();
+   }
+   return s;
+}
+
+static bool try_parse_int(const string &str, int &value)
+{
+   std::stringstream sstr(trim_string(str));
+   return ((sstr >> value) && sstr.eof());
+}
+
 
 ResURIResolver::ResURIResolver(const MsgPluginAPI& msgAPI, unsigned int endpointId, bool trackDisplays, bool trackSegDisplays, bool trackInputs, bool trackDevices)
    : m_msgAPI(msgAPI)
@@ -116,13 +142,6 @@ void ResURIResolver::OnDisplaySrcChanged(const unsigned int msgId, void *userDat
    me->m_displayCache.clear();
 }
 
-unsigned int ResURIResolver::GetPluginEndpoint(const string& pluginId) const
-{
-   // TODO this should be part of the core message plugin API
-   std::shared_ptr<MsgPlugin> plugin = MsgPluginManager::GetInstance().GetPlugin(pluginId);
-   return plugin.get() ? plugin->m_endpointId : 0;
-}
-
 float ResURIResolver::GetFloatState(const string &link)
 {
    const auto &cache = m_floatCache.find(link);
@@ -133,7 +152,7 @@ float ResURIResolver::GetFloatState(const string &link)
    const auto uri = uri::parse_uri(link);
    if (uri.error != uri::Error::None)
    {
-      PLOGE << "Invalid resource URI: " << link;
+      // FIXME log PLOGE << "Invalid resource URI: " << link;
    }
    else if (uri.scheme == "ctrl")
    {
@@ -143,7 +162,7 @@ float ResURIResolver::GetFloatState(const string &link)
       }
       else
       {
-         const unsigned int plugin = GetPluginEndpoint(uri.authority.host);
+         const unsigned int plugin = m_msgAPI.GetPluginEndpoint(uri.authority.host.c_str());
          if (plugin)
          {
             int resId = 0;
@@ -213,7 +232,7 @@ ResURIResolver::SegDisplayState ResURIResolver::GetSegDisplayState(const string 
    const auto uri = uri::parse_uri(link);
    if (uri.error != uri::Error::None)
    {
-      PLOGE << "Invalid resource URI: " << link;
+      // FIXME log PLOGE << "Invalid resource URI: " << link;
    }
    else if ((uri.scheme == "ctrl") && (uri.path == "/seg"))
    {
@@ -243,7 +262,7 @@ ResURIResolver::SegDisplayState ResURIResolver::GetSegDisplayState(const string 
       }
       else
       {
-         const unsigned int plugin = GetPluginEndpoint(uri.authority.host);
+         const unsigned int plugin = m_msgAPI.GetPluginEndpoint(uri.authority.host.c_str());
          if (plugin)
          {
             int resId = 0;
@@ -299,7 +318,7 @@ ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
    const auto uri = uri::parse_uri(link);
    if (uri.error != uri::Error::None)
    {
-      PLOGE << "Invalid resource URI: " << link;
+      // FIXME log PLOGE << "Invalid resource URI: " << link;
    }
    else if ((uri.scheme == "ctrl") && (uri.path == "/display"))
    {
@@ -317,7 +336,7 @@ ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
       }
       else
       {
-         const unsigned int plugin = GetPluginEndpoint(uri.authority.host);
+         const unsigned int plugin = m_msgAPI.GetPluginEndpoint(uri.authority.host.c_str());
          if (plugin)
          {
             int resId = 0;

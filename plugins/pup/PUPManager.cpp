@@ -561,7 +561,8 @@ void PUPManager::OnGetRenderer(const unsigned int eventId, void* context, void* 
    {
       if (msg->count < msg->maxEntryCount) 
       {
-         msg->entries[msg->count].name = "PUP Backglass";
+         msg->entries[msg->count].id = "PUP";
+         msg->entries[msg->count].name = "PinUp Player";
          msg->entries[msg->count].description = "Renderer for PinUp player backglass";
          msg->entries[msg->count].context = me;
          msg->entries[msg->count].Render = Render;

@@ -2,23 +2,78 @@
 
 #pragma once
 
+#include "plugins/VPXPlugin.h"
+#include "core/ResURIResolver.h"
 
+#include <filesystem>
+
+#include <string>
+using std::string;
+using namespace std::string_literals;
+
+#include <vector>
+using std::vector;
+
+#include <unordered_dense.h>
+
+class vec2i
+{
+public:
+   constexpr vec2i() { }
+   constexpr vec2i(const int _x, const int _y)
+      : x(_x)
+      , y(_y)
+   {
+   }
+
+   int x, y;
+};
+
+class vec3
+{
+public:
+   constexpr vec3() { }
+   constexpr vec3(const float _x, const float _y, const float _z)
+      : x(_x)
+      , y(_y)
+      , z(_z)
+   {
+   }
+
+   float x, y, z;
+};
+
+class vec4
+{
+public:
+   constexpr vec4() { }
+   constexpr vec4(const float _x, const float _y, const float _z, const float _w)
+      : x(_x)
+      , y(_y)
+      , z(_z)
+      , w(_w)
+   {
+   }
+
+   float x, y, z, w;
+};
 
 class ScoreView final
 {
 public:
-   ScoreView();
+   ScoreView(MsgPluginAPI* api, unsigned int endpointId, VPXPluginAPI* vpxApi);
    ~ScoreView();
 
    bool HasLayouts() const { return !m_layouts.empty(); }
    bool IsMatched() const { return m_bestLayout != nullptr && m_bestLayout->unmatchedVisuals == 0; }
    void Load(const string& path);
    void Reset() { m_layouts.clear(); }
-   void Select(const VPX::RenderOutput& output);
-   void Render(const VPX::RenderOutput& output);
+
+   bool Render(VPXRenderContext2D* ctx);
 
 private:
-   void Parse(const string& path, std::istream& content);
+   void Parse(const std::filesystem::path& path, std::istream& content);
+   void Select(const float scoreW, const float scoreH);
 
    enum Fit
    {
@@ -47,20 +102,20 @@ private:
       string glassPath;
       vec4 glassArea;
       vec3 glassAmbient;
-      BaseTexture* liveTexture;
       // For segment displays
-      Renderer::SegmentFamily segFamilyHint;
+      VPXSegDisplayHint segFamilyHint;
       int nElements;
       std::vector<float> xOffsets;
       // For DMD displays
-      int2 dmdSize;
+      vec2i dmdSize;
       // Live data (not serialized)
-      Texture* glass;
+      VPXTexture glass;
+      VPXTexture dmdTex;
       int liveStyle;
    };
    struct Layout
    {
-      string path;
+      std::filesystem::path path;
       float width, height;
       Fit fit;
       vector<Visual> visuals;
@@ -71,12 +126,18 @@ private:
    };
 
    vector<Layout> m_layouts;
+   bool m_invalidBestLayout = true;
    Layout* m_bestLayout = nullptr;
 
+   ResURIResolver m_resURIResolver;
+
    void LoadGlass(Visual& visual);
-   ankerl::unordered_dense::map<string, Texture*> m_images;
+   ankerl::unordered_dense::map<string, VPXTexture> m_images;
+
+   VPXPluginAPI* const m_vpxApi;
+   MsgPluginAPI* const m_msgApi;
+   const unsigned int m_endpointId;
 
    unsigned int m_onDmdChangedMsgId, m_onSegChangedMsgId;
-   static void OnDmdChanged(const unsigned int msgId, void* userData, void* msgData);
-   static void OnSegChanged(const unsigned int msgId, void* userData, void* msgData);
+   static void OnResChanged(const unsigned int msgId, void* userData, void* msgData);
 };

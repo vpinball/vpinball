@@ -446,7 +446,7 @@ void PUPMediaPlayer::Render(VPXRenderContext2D* const ctx, const SDL_Rect& destR
       {
          m_videoTextureId = m_renderFrameId;
          AVFrame* rgbFrame = m_rgbFrames[m_renderFrameId % m_nRgbFrames];
-         UpdateTexture(&m_videoTexture, rgbFrame->width, rgbFrame->height, VPXTextureFormat::VPXTEXFMT_sRGBA, rgbFrame->data[0]);
+         UpdateTexture(&m_videoTexture, rgbFrame->width, rgbFrame->height, VPXTextureFormat::VPXTEXFMT_sRGBA8, rgbFrame->data[0]);
          //const double framePts = (static_cast<double>(rgbFrame->pts) * m_pVideoContext->pkt_timebase.num) / m_pVideoContext->pkt_timebase.den;
          //LOGD("Video tex update: play time: %8.3fs / frame pts: %8.3fs / delta: %8.3fs  [%s]", playPts, framePts, framePts - playPts, m_szFilename.c_str());
       }

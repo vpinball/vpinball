@@ -110,7 +110,8 @@ typedef struct MsgEndpointInfo
 typedef struct MsgPluginAPI
 {
    // Messaging
-   void (MSGPIAPI* GetEndpointInfo)(const uint32_t endpointId, MsgEndpointInfo* info);
+   unsigned int(MSGPIAPI* GetPluginEndpoint)(const char* id);
+   void(MSGPIAPI* GetEndpointInfo)(const uint32_t endpointId, MsgEndpointInfo* info);
    unsigned int (MSGPIAPI* GetMsgID)(const char* name_space, const char* name);
    void (MSGPIAPI *SubscribeMsg)(const uint32_t endpointId, const unsigned int msgId, const msgpi_msg_callback callback, void* userData);
    void (MSGPIAPI *UnsubscribeMsg)(const unsigned int msgId, const msgpi_msg_callback callback);
