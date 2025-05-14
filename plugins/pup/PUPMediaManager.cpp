@@ -9,7 +9,7 @@ PUPMediaManager::PUPMediaManager(PUPScreen* pScreen)
    m_pop = (pScreen->GetMode() == PUP_SCREEN_MODE_FORCE_POP_BACK || pScreen->GetMode() == PUP_SCREEN_MODE_FORCE_POP);
 }
 
-void PUPMediaManager::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, bool skipSamePriority)
+void PUPMediaManager::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, bool skipSamePriority, int length)
 {
    if (skipSamePriority && priority == m_pMainPlayer->priority) {
       LOGE("skipping same priority, screen={%s}, playlist={%s}, playFile=%s, priority=%d",
@@ -24,11 +24,12 @@ void PUPMediaManager::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, flo
       return;
    }
 
-   LOGD("screen={%s}, playlist={%s}, playFile=%s, path=%s, volume=%.1f, priority=%d",
-      m_pScreen->ToString(false).c_str(), pPlaylist->ToString().c_str(), szPlayFile.c_str(), szPath.c_str(), volume, priority);
+   LOGD("screen={%s}, playlist={%s}, playFile=%s, path=%s, volume=%.1f, priority=%d, length=%d", m_pScreen->ToString(false).c_str(), pPlaylist->ToString().c_str(),
+      szPlayFile.c_str(), szPath.c_str(), volume, priority, length);
 
    m_pMainPlayer->player.Play(szPath);
    m_pMainPlayer->player.SetVolume(volume);
+   m_pMainPlayer->player.SetLength(length);
    m_pMainPlayer->szPath = szPath;
    m_pMainPlayer->volume = volume;
    m_pMainPlayer->priority = priority;
