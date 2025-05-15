@@ -60,9 +60,11 @@ public:
    PUPManager();
    ~PUPManager();
 
+   const string& GetRootPath() const { return m_szRootPath; }
+
    bool IsInit() { return m_init; }
    void LoadConfig(const string& szRomName);
-   const string& GetRootPath();
+   void Unload();
    const string& GetPath() { return m_szPath; }
    bool AddScreen(PUPScreen* pScreen);
    bool AddScreen(LONG lScreenNum);
@@ -76,9 +78,9 @@ public:
    void Stop();
 
 private:
-   void AddWindow(const string& szWindowName, int defaultScreen, int defaultX, int defaultY, int defaultWidth, int defaultHeight, int zOrder);
-   void ProcessQueue();
    void LoadPlaylists();
+   void ProcessQueue();
+   void AddWindow(const string& szWindowName, int defaultScreen, int defaultX, int defaultY, int defaultWidth, int defaultHeight, int zOrder);
 
    bool m_init;
    string m_szRootPath;

@@ -12,12 +12,12 @@ PUPManager::PUPManager()
    m_init = false;
    m_isRunning = false;
    m_szRootPath = find_case_insensitive_directory_path(g_pvp->m_currentTablePath + "pupvideos");
-
-   QueueTriggerData({ 'D', 0, 1 });
 }
 
 PUPManager::~PUPManager()
 {
+   Stop();
+   Unload();
 }
 
 void PUPManager::LoadConfig(const string& szRomName)
@@ -100,7 +100,36 @@ void PUPManager::LoadConfig(const string& szRomName)
 
    m_init = true;
 
+   QueueTriggerData({ 'D', 0, 1 });
+
    return;
+}
+
+void PUPManager::Unload()
+{
+   if (!m_init)
+      return;
+
+   for (auto pWindow : m_windows)
+      delete pWindow;
+   m_windows.clear();
+
+   for (auto& [key, pScreen] : m_screenMap)
+      delete pScreen;
+   m_screenMap.clear();
+
+   for (auto& pPlaylist : m_playlists)
+      delete pPlaylist;
+   m_playlists.clear();
+
+   for (auto& pFont : m_fonts)
+      TTF_CloseFont(pFont);
+   m_fonts.clear();
+   m_fontMap.clear();
+   m_fontFilenameMap.clear();
+
+   m_szPath.clear();
+   m_init = false;
 }
 
 void PUPManager::LoadPlaylists()
@@ -129,11 +158,6 @@ void PUPManager::LoadPlaylists()
          }
       }
    }
-}
-
-const string& PUPManager::GetRootPath()
-{
-   return m_szRootPath;
 }
 
 bool PUPManager::AddScreen(PUPScreen* pScreen)
@@ -233,6 +257,27 @@ void PUPManager::QueueTriggerData(const PUPTriggerData& data)
    m_queueCondVar.notify_one();
 }
 
+void PUPManager::ProcessQueue()
+{
+   while (true) {
+      std::unique_lock<std::mutex> lock(m_queueMutex);
+      m_queueCondVar.wait(lock, [this] { return !m_triggerDataQueue.empty() || !m_isRunning; });
+
+      if (!m_isRunning) {
+         while (!m_triggerDataQueue.empty())
+            m_triggerDataQueue.pop();
+         break;
+      }
+
+      PUPTriggerData triggerData = m_triggerDataQueue.front();
+      m_triggerDataQueue.pop();
+      lock.unlock();
+
+      for (auto& [key, pScreen] : m_screenMap)
+         pScreen->QueueTrigger(triggerData);
+   }
+}
+
 int PUPManager::GetTriggerValue(const string& triggerId)
 {
    std::lock_guard<std::mutex> lock(m_queueMutex);
@@ -244,9 +289,45 @@ int PUPManager::GetTriggerValue(const string& triggerId)
    return 0;
 }
 
+void PUPManager::AddWindow(const string& szWindowName, int screen, int x, int y, int width, int height, int zOrder)
+{
+   Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
+
+   string szPrefix = "PUP" + szWindowName;
+
+   PUPScreen* pScreen = GetScreen(pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "Screen"s, screen));
+   if (!pScreen) {
+      PLOGW.printf("PUP %s screen not found", szWindowName.c_str());
+      return;
+   }
+
+   if (pScreen->HasParent()) {
+      PLOGI.printf("PUP %s screen is a child screen, window disabled", szWindowName.c_str());
+      return;
+   }
+
+   if (!pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "Window"s, true)) {
+      PLOGI.printf("PUP %s window disabled", szWindowName.c_str());
+      return;
+   }
+
+   PUPWindow* pWindow = new PUPWindow(pScreen, szPrefix,
+      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WindowX"s, x),
+      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WindowY"s, y),
+      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WindowWidth"s, width),
+      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WindowHeight"s, height),
+      zOrder,
+      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WindowRotation"s, 0));
+
+   if (pScreen->GetMode() != PUP_SCREEN_MODE_OFF)
+      pWindow->Show();
+
+   m_windows.push_back(pWindow);
+}
+
 void PUPManager::Start()
 {
-   if (!m_init)
+   if (!m_init || m_isRunning)
       return;
 
    PLOGI.printf("PUP start");
@@ -299,72 +380,17 @@ void PUPManager::Start()
    }
 
    m_isRunning = true;
+   m_thread = std::thread(&PUPManager::ProcessQueue, this);
 
    for (auto& [key, pScreen] : m_screenMap)
       pScreen->Start();
-
-   m_thread = std::thread(&PUPManager::ProcessQueue, this);
-}
-
-void PUPManager::AddWindow(const string& szWindowName, int screen, int x, int y, int width, int height, int zOrder)
-{
-   Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
-
-   string szPrefix = "PUP" + szWindowName;
-
-   PUPScreen* pScreen = GetScreen(pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "Screen"s, screen));
-   if (!pScreen) {
-      PLOGW.printf("PUP %s screen not found", szWindowName.c_str());
-      return;
-   }
-
-   if (pScreen->HasParent()) {
-      PLOGI.printf("PUP %s screen is a child screen, window disabled", szWindowName.c_str());
-      return;
-   }
-
-   if (!pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "Window"s, true)) {
-      PLOGI.printf("PUP %s window disabled", szWindowName.c_str());
-      return;
-   }
-
-   PUPWindow* pWindow = new PUPWindow(pScreen, szPrefix,
-      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WindowX"s, x),
-      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WindowY"s, y),
-      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WindowWidth"s, width),
-      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WindowHeight"s, height),
-      zOrder,
-      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WindowRotation"s, 0));
-
-   if (pScreen->GetMode() != PUP_SCREEN_MODE_OFF)
-      pWindow->Show();
-
-   m_windows.push_back(pWindow);
-}
-
-void PUPManager::ProcessQueue()
-{
-   while (true) {
-      std::unique_lock<std::mutex> lock(m_queueMutex);
-      m_queueCondVar.wait(lock, [this] { return !m_triggerDataQueue.empty() || !m_isRunning; });
-
-      if (!m_isRunning) {
-         while (!m_triggerDataQueue.empty())
-            m_triggerDataQueue.pop();
-         break;
-      }
-
-      PUPTriggerData triggerData = m_triggerDataQueue.front();
-      m_triggerDataQueue.pop();
-      lock.unlock();
-
-      for (auto& [key, pScreen] : m_screenMap)
-         pScreen->QueueTrigger(triggerData);
-   }
 }
 
 void PUPManager::Stop()
 {
+   if (!m_isRunning)
+      return;
+
    {
       std::lock_guard<std::mutex> lock(m_queueMutex);
       m_isRunning = false;
@@ -373,25 +399,4 @@ void PUPManager::Stop()
    m_queueCondVar.notify_all();
    if (m_thread.joinable())
       m_thread.join();
-
-   for (auto pWindow : m_windows)
-      delete pWindow;
-   m_windows.clear();
-
-   for (auto& [key, pScreen] : m_screenMap)
-      delete pScreen;
-   m_screenMap.clear();
-
-   for (auto& pPlaylist : m_playlists)
-      delete pPlaylist;
-   m_playlists.clear();
-
-   for (auto& pFont : m_fonts)
-      TTF_CloseFont(pFont);
-   m_fonts.clear();
-   m_fontMap.clear();
-   m_fontFilenameMap.clear();
-
-   m_szPath.clear();
-   m_init = false;
 }
