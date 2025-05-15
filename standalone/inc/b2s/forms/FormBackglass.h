@@ -30,24 +30,24 @@ public:
    SDL_FRect& GetScaleFactor();
    SDL_Surface* GetTopLightImage() const { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_pTopLightImage4Fantasy : m_pTopLightImage4Authentic; }
    SDL_Surface* GetTopLightImage4Authentic() const { return m_pTopLightImage4Authentic; }
-   void SetTopLightImage4Authentic(SDL_Surface* pTopLightImage4Authentic) { m_pTopLightImage4Authentic = pTopLightImage4Authentic; }
+   void SetTopLightImage4Authentic(SDL_Surface* pTopLightImage4Authentic) { if (m_pTopLightImage4Authentic) SDL_DestroySurface(m_pTopLightImage4Authentic); m_pTopLightImage4Authentic = pTopLightImage4Authentic;}
    SDL_Surface* GetTopLightImage4Fantasy() const { return m_pTopLightImage4Fantasy; }
-   void SetTopLightImage4Fantasy(SDL_Surface* pTopLightImage4Fantasy) { m_pTopLightImage4Fantasy = pTopLightImage4Fantasy; }
+   void SetTopLightImage4Fantasy(SDL_Surface* pTopLightImage4Fantasy) { if (m_pTopLightImage4Fantasy) SDL_DestroySurface(m_pTopLightImage4Fantasy); m_pTopLightImage4Fantasy = pTopLightImage4Fantasy; }
    SDL_Surface* GetSecondLightImage() const { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_pSecondLightImage4Fantasy : m_pSecondLightImage4Authentic; }
    SDL_Surface* GetSecondLightImage4Authentic() const { return m_pSecondLightImage4Authentic; }
-   void SetSecondLightImage4Authentic(SDL_Surface* pSecondLightImage4Authentic) { m_pSecondLightImage4Authentic = pSecondLightImage4Authentic; }
+   void SetSecondLightImage4Authentic(SDL_Surface* pSecondLightImage4Authentic) { if (m_pSecondLightImage4Authentic) SDL_DestroySurface(m_pSecondLightImage4Authentic); m_pSecondLightImage4Authentic = pSecondLightImage4Authentic; }
    SDL_Surface* GetSecondLightImage4Fantasy() const { return m_pSecondLightImage4Fantasy; }
-   void SetSecondLightImage4Fantasy(SDL_Surface* pSecondLightImage4Fantasy) { m_pSecondLightImage4Fantasy = pSecondLightImage4Fantasy; }
+   void SetSecondLightImage4Fantasy(SDL_Surface* pSecondLightImage4Fantasy) { if (m_pSecondLightImage4Fantasy) SDL_DestroySurface(m_pSecondLightImage4Fantasy); m_pSecondLightImage4Fantasy = pSecondLightImage4Fantasy; }
    SDL_Surface* GetTopAndSecondLightImage() const { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_pTopAndSecondLightImage4Fantasy : m_pTopAndSecondLightImage4Authentic; }
    SDL_Surface* GetTopAndSecondLightImage4Authentic() const { return m_pTopAndSecondLightImage4Authentic; }
-   void SetTopAndSecondLightImage4Authentic(SDL_Surface* pTopAndSecondLightImage4Authentic) { m_pTopAndSecondLightImage4Authentic = pTopAndSecondLightImage4Authentic; }
+   void SetTopAndSecondLightImage4Authentic(SDL_Surface* pTopAndSecondLightImage4Authentic) { if (m_pTopAndSecondLightImage4Authentic) SDL_DestroySurface(m_pTopAndSecondLightImage4Authentic); m_pTopAndSecondLightImage4Authentic = pTopAndSecondLightImage4Authentic; }
    SDL_Surface* GetTopAndSecondLightImage4Fantasy() const { return m_pTopAndSecondLightImage4Fantasy; }
-   void SetTopAndSecondLightImage4Fantasy(SDL_Surface* pTopAndSecondLightImage4Fantasy) { m_pTopAndSecondLightImage4Fantasy = pTopAndSecondLightImage4Fantasy; }
+   void SetTopAndSecondLightImage4Fantasy(SDL_Surface* pTopAndSecondLightImage4Fantasy) { if (m_pTopAndSecondLightImage4Fantasy) SDL_DestroySurface(m_pTopAndSecondLightImage4Fantasy); m_pTopAndSecondLightImage4Fantasy = pTopAndSecondLightImage4Fantasy; }
    SDL_Surface* GetDarkImage() const { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_pDarkImage4Fantasy : m_pDarkImage4Authentic; }
    SDL_Surface* GetDarkImage4Authentic() const { return m_pDarkImage4Authentic; }
-   void SetDarkImage4Authentic(SDL_Surface* pDarkImage4Authentic) { m_pDarkImage4Authentic = pDarkImage4Authentic; }
+   void SetDarkImage4Authentic(SDL_Surface* pDarkImage4Authentic) { if (m_pDarkImage4Authentic) SDL_DestroySurface(m_pDarkImage4Authentic); m_pDarkImage4Authentic = pDarkImage4Authentic; }
    SDL_Surface* GetDarkImage4Fantasy() const { return m_pDarkImage4Fantasy; }
-   void SetDarkImage4Fantasy(SDL_Surface* pDarkImage4Fantasy) { m_pDarkImage4Fantasy = pDarkImage4Fantasy; }
+   void SetDarkImage4Fantasy(SDL_Surface* pDarkImage4Fantasy) { if (m_pDarkImage4Fantasy) SDL_DestroySurface(m_pDarkImage4Fantasy); m_pDarkImage4Fantasy = pDarkImage4Fantasy; }
    int GetTopRomID() { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_topRomID4Fantasy : m_topRomID4Authentic; }
    int GetTopRomIDType() { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_topRomIDType4Fantasy : m_topRomIDType4Authentic; }
    bool IsTopRomInverted() { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_topRomInverted4Fantasy : m_topRomInverted4Authentic; }

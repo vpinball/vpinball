@@ -111,6 +111,30 @@ FormBackglass::~FormBackglass()
    delete m_pB2SAnimation;
    delete m_pFormDMD;
    delete m_pB2SScreen;
+
+   if (m_pDarkImage4Authentic)
+      SDL_DestroySurface(m_pDarkImage4Authentic);
+
+   if (m_pTopLightImage4Authentic)
+      SDL_DestroySurface(m_pTopLightImage4Authentic);
+
+   if (m_pSecondLightImage4Authentic)
+      SDL_DestroySurface(m_pSecondLightImage4Authentic);
+
+   if (m_pTopAndSecondLightImage4Authentic)
+      SDL_DestroySurface(m_pTopAndSecondLightImage4Authentic);
+
+   if (m_pDarkImage4Fantasy)
+      SDL_DestroySurface(m_pDarkImage4Fantasy);
+
+   if (m_pTopLightImage4Fantasy)
+      SDL_DestroySurface(m_pTopLightImage4Fantasy);
+
+   if (m_pSecondLightImage4Fantasy)
+      SDL_DestroySurface(m_pSecondLightImage4Fantasy);
+
+   if (m_pTopAndSecondLightImage4Fantasy)
+      SDL_DestroySurface(m_pTopAndSecondLightImage4Fantasy);
 }
 
 void FormBackglass::OnPaint(VP::RendererGraphics* pGraphics)
@@ -853,6 +877,8 @@ void FormBackglass::LoadB2SData()
             SDL_Surface* pImage = Base64ToImage(innerNode->Attribute("Image"));
             if (!m_pB2SData->GetReelImages()->contains(name))
                (*m_pB2SData->GetReelImages())[name] = pImage;
+            else
+               SDL_DestroySurface(pImage);
          }
       }
       else if (topnode->FirstChildElement("Reels")->FirstChildElement("Images") && topnode->FirstChildElement("Reels")->FirstChildElement("Images")->FirstChildElement("Image")) {
@@ -861,14 +887,18 @@ void FormBackglass::LoadB2SData()
             SDL_Surface* pImage = Base64ToImage(innerNode->Attribute("Image"));
             if (!m_pB2SData->GetReelImages()->contains(name))
                (*m_pB2SData->GetReelImages())[name] = pImage;
+            else
+               SDL_DestroySurface(pImage);
             // maybe get the intermediate reel images
             if (innerNode->FindAttribute("CountOfIntermediates")) {
                int countOfIntermediates = innerNode->IntAttribute("CountOfIntermediates");
                for (int i = 1; i <= countOfIntermediates; i++) {
                   string intname = name + '_' + std::to_string(i);
-                  SDL_Surface* intimage = Base64ToImage(innerNode->Attribute(("IntermediateImage" + std::to_string(i)).c_str()));
+                  SDL_Surface* pIntImage = Base64ToImage(innerNode->Attribute(("IntermediateImage" + std::to_string(i)).c_str()));
                   if (!m_pB2SData->GetReelIntermediateImages()->contains(intname))
-                     (*m_pB2SData->GetReelIntermediateImages())[intname] = intimage;
+                     (*m_pB2SData->GetReelIntermediateImages())[intname] = pIntImage;
+                  else
+                     SDL_DestroySurface(pIntImage);
                }
             }
          }
@@ -880,14 +910,18 @@ void FormBackglass::LoadB2SData()
                   SDL_Surface* pImage = Base64ToImage(innerNode->Attribute("Image"));
                   if (!m_pB2SData->GetReelIlluImages()->contains(name))
                      (*m_pB2SData->GetReelIlluImages())[name] = pImage;
+                  else
+                     SDL_DestroySurface(pImage);
                   // maybe get the intermediate reel images
                   if (innerNode->FindAttribute("CountOfIntermediates")) {
                      int countOfIntermediates = innerNode->IntAttribute("CountOfIntermediates");
                      for (int i = 1; i <= countOfIntermediates; i++) {
                         string intname = name + '_' + std::to_string(i);
-                        SDL_Surface* intimage = Base64ToImage(innerNode->Attribute(("IntermediateImage" + std::to_string(i)).c_str()));
+                        SDL_Surface* pIntImage = Base64ToImage(innerNode->Attribute(("IntermediateImage" + std::to_string(i)).c_str()));
                         if (!m_pB2SData->GetReelIntermediateIlluImages()->contains(intname))
-                           (*m_pB2SData->GetReelIntermediateIlluImages())[intname] = intimage;
+                           (*m_pB2SData->GetReelIntermediateIlluImages())[intname] = pIntImage;
+                        else
+                           SDL_DestroySurface(pIntImage);
                      }
                   }
                }
@@ -900,14 +934,18 @@ void FormBackglass::LoadB2SData()
                      SDL_Surface* pImage = Base64ToImage(innerNode->Attribute("Image"));
                      if (!m_pB2SData->GetReelIlluImages()->contains(name))
                         (*m_pB2SData->GetReelIlluImages())[name] = pImage;
+                     else
+                        SDL_DestroySurface(pImage);
                      // maybe get the intermediate reel images
                      if (innerNode->FindAttribute("CountOfIntermediates")) {
                         int countOfIntermediates = innerNode->IntAttribute("CountOfIntermediates");
                         for (int i = 1; i <= countOfIntermediates; i++) {
                            string intname = name + '_' + std::to_string(i);
-                           SDL_Surface* intimage = Base64ToImage(innerNode->Attribute(("IntermediateImage" + std::to_string(i)).c_str()));
+                           SDL_Surface* pIntImage = Base64ToImage(innerNode->Attribute(("IntermediateImage" + std::to_string(i)).c_str()));
                            if (!m_pB2SData->GetReelIntermediateIlluImages()->contains(intname))
-                              (*m_pB2SData->GetReelIntermediateIlluImages())[intname] = intimage;
+                              (*m_pB2SData->GetReelIntermediateIlluImages())[intname] = pIntImage;
+                           else
+                              SDL_DestroySurface(pIntImage);
                         }
                      }
                   }
@@ -939,16 +977,22 @@ void FormBackglass::LoadB2SData()
          m_pB2SData->SetOnAndOffImage(true);
          // get on and off image
          pOffImage = Base64ToImage(topnode->FirstChildElement("Images")->FirstChildElement("BackglassOffImage")->Attribute("Value"));
-         m_pDarkImage4Authentic = pOffImage;
-         if (m_pB2SData->IsDualBackglass())
-            m_pDarkImage4Fantasy = pOffImage;
+         if (pOffImage) {
+            m_pDarkImage4Authentic = SDL_DuplicateSurface(pOffImage);
+            if (m_pB2SData->IsDualBackglass())
+               m_pDarkImage4Fantasy = SDL_DuplicateSurface(pOffImage);
+            SDL_DestroySurface(pOffImage);
+         }
          auto onimagenode = topnode->FirstChildElement("Images")->FirstChildElement("BackglassOnImage");
          SDL_Surface* pOnImage = NULL;
          if (onimagenode) {
             pOnImage = Base64ToImage(onimagenode->Attribute("Value"));
-            m_pTopLightImage4Authentic = pOnImage;
-            if (m_pB2SData->IsDualBackglass())
-               m_pTopLightImage4Fantasy = pOnImage;
+            if (pOnImage) {
+               m_pTopLightImage4Authentic = SDL_DuplicateSurface(pOnImage);
+               if (m_pB2SData->IsDualBackglass())
+                  m_pTopLightImage4Fantasy = SDL_DuplicateSurface(pOnImage);
+               SDL_DestroySurface(pOnImage);
+            }
             auto romidnode = onimagenode->FindAttribute("RomID");
             if (romidnode) {
                m_topRomID4Authentic = romidnode->IntValue();
@@ -990,9 +1034,12 @@ void FormBackglass::LoadB2SData()
          SDL_Surface* pImage = NULL;
          if (topnode->FirstChildElement("Images")->FirstChildElement("BackglassImage")) {
             pImage = Base64ToImage(topnode->FirstChildElement("Images")->FirstChildElement("BackglassImage")->Attribute("Value"));
-            m_pDarkImage4Authentic = pImage;
-            if (m_pB2SData->IsDualBackglass())
-               m_pDarkImage4Fantasy = pImage;
+            if (pImage) {
+               m_pDarkImage4Authentic = SDL_DuplicateSurface(pImage);
+               if (m_pB2SData->IsDualBackglass())
+                  m_pDarkImage4Fantasy = SDL_DuplicateSurface(pImage);
+               SDL_DestroySurface(pImage);
+            }
          }
       }
       // starting image is the dark image
@@ -1007,6 +1054,8 @@ void FormBackglass::LoadB2SData()
                CheckDMDForm();
                m_pFormDMD->SetBackgroundImage(pImage);
             }
+            else
+               SDL_DestroySurface(pImage);
          }
       }
 
@@ -1050,29 +1099,29 @@ void FormBackglass::LoadB2SData()
       if (top4Authentic >= minSize4Image && mergeBulbs) {
          // create some light images
          if (m_pTopLightImage4Authentic == NULL) {
-            m_pTopLightImage4Authentic = CreateLightImage(m_pDarkImage4Authentic, eDualMode_Authentic, topkey4Authentic, "", m_topRomID4Authentic, m_topRomIDType4Authentic, m_topRomInverted4Authentic);
+            SetTopLightImage4Authentic(CreateLightImage(m_pDarkImage4Authentic, eDualMode_Authentic, topkey4Authentic, "", m_topRomID4Authentic, m_topRomIDType4Authentic, m_topRomInverted4Authentic));
             if (second4Authentic > minSize4Image) {
-               m_pSecondLightImage4Authentic = CreateLightImage(m_pDarkImage4Authentic, eDualMode_Authentic, secondkey4Authentic, "", m_secondRomID4Authentic, m_secondRomIDType4Authentic, m_secondRomInverted4Authentic);
-               m_pTopAndSecondLightImage4Authentic = CreateLightImage(m_pDarkImage4Authentic, eDualMode_Authentic, topkey4Authentic, secondkey4Authentic);
+               SetSecondLightImage4Authentic(CreateLightImage(m_pDarkImage4Authentic, eDualMode_Authentic, secondkey4Authentic, "", m_secondRomID4Authentic, m_secondRomIDType4Authentic, m_secondRomInverted4Authentic));
+               SetTopAndSecondLightImage4Authentic(CreateLightImage(m_pDarkImage4Authentic, eDualMode_Authentic, topkey4Authentic, secondkey4Authentic));
             }
          }
          else {
-            m_pSecondLightImage4Authentic = CreateLightImage(m_pDarkImage4Authentic, eDualMode_Authentic, topkey4Authentic, "", m_secondRomID4Authentic, m_secondRomIDType4Authentic, m_secondRomInverted4Authentic);
-            m_pTopAndSecondLightImage4Authentic = CreateLightImage(m_pTopLightImage4Authentic, eDualMode_Authentic, topkey4Authentic);
+            SetSecondLightImage4Authentic(CreateLightImage(m_pDarkImage4Authentic, eDualMode_Authentic, topkey4Authentic, "", m_secondRomID4Authentic, m_secondRomIDType4Authentic, m_secondRomInverted4Authentic));
+            SetTopAndSecondLightImage4Authentic(CreateLightImage(m_pTopLightImage4Authentic, eDualMode_Authentic, topkey4Authentic));
          }
       }
       if (m_pB2SData->IsDualBackglass() && top4Fantasy >= minSize4Image && mergeBulbs) {
          // create some light images
          if (m_pTopLightImage4Fantasy == NULL) {
-            m_pTopLightImage4Fantasy = CreateLightImage(m_pDarkImage4Fantasy, eDualMode_Fantasy, topkey4Fantasy, "", m_topRomID4Fantasy, m_topRomIDType4Fantasy, m_topRomInverted4Fantasy);
+            SetTopLightImage4Fantasy(CreateLightImage(m_pDarkImage4Fantasy, eDualMode_Fantasy, topkey4Fantasy, "", m_topRomID4Fantasy, m_topRomIDType4Fantasy, m_topRomInverted4Fantasy));
             if (second4Fantasy > minSize4Image) {
-               m_pSecondLightImage4Fantasy = CreateLightImage(m_pDarkImage4Fantasy, eDualMode_Fantasy, secondkey4Fantasy, "", m_secondRomID4Fantasy, m_secondRomIDType4Fantasy, m_secondRomInverted4Fantasy);
-               m_pTopAndSecondLightImage4Fantasy = CreateLightImage(m_pDarkImage4Fantasy, eDualMode_Fantasy, topkey4Fantasy, secondkey4Fantasy);
+               SetSecondLightImage4Fantasy(CreateLightImage(m_pDarkImage4Fantasy, eDualMode_Fantasy, secondkey4Fantasy, "", m_secondRomID4Fantasy, m_secondRomIDType4Fantasy, m_secondRomInverted4Fantasy));
+               SetTopAndSecondLightImage4Fantasy(CreateLightImage(m_pDarkImage4Fantasy, eDualMode_Fantasy, topkey4Fantasy, secondkey4Fantasy));
             }
          }
          else {
-            m_pSecondLightImage4Fantasy = CreateLightImage(m_pDarkImage4Fantasy, eDualMode_Fantasy, topkey4Fantasy, "", m_secondRomID4Fantasy, m_secondRomIDType4Fantasy, m_secondRomInverted4Fantasy);
-            m_pTopAndSecondLightImage4Fantasy = CreateLightImage(m_pTopLightImage4Fantasy, eDualMode_Fantasy, topkey4Fantasy);
+            SetSecondLightImage4Fantasy(CreateLightImage(m_pDarkImage4Fantasy, eDualMode_Fantasy, topkey4Fantasy, "", m_secondRomID4Fantasy, m_secondRomIDType4Fantasy, m_secondRomInverted4Fantasy));
+            SetTopAndSecondLightImage4Fantasy(CreateLightImage(m_pTopLightImage4Fantasy, eDualMode_Fantasy, topkey4Fantasy));
          }
       }
       m_pB2SData->SetUsedTopRomIDType4Authentic(m_topRomIDType4Authentic);
@@ -1262,61 +1311,38 @@ void FormBackglass::ResizeSomeImages()
    if (m_pDarkImage4Authentic) {
       int width = m_pDarkImage4Authentic->w;
       int height = m_pDarkImage4Authentic->h;
-      SDL_Surface* pImage = ResizeSurface(m_pDarkImage4Authentic, m_pB2SScreen->GetBackglassSize().w, m_pB2SScreen->GetBackglassSize().h);
-      SDL_DestroySurface(m_pDarkImage4Authentic);
-      m_pDarkImage4Authentic = pImage;
+      SetDarkImage4Authentic(ResizeSurface(m_pDarkImage4Authentic, m_pB2SScreen->GetBackglassSize().w, m_pB2SScreen->GetBackglassSize().h));
       xResizeFactor = (float)width / (float)m_pDarkImage4Authentic->w;
       yResizeFactor = (float)height / (float)m_pDarkImage4Authentic->h;
    }
    if (m_pDarkImage4Fantasy)
-      m_pDarkImage4Fantasy = m_pDarkImage4Authentic;
-   if (m_pTopLightImage4Authentic) {
-      SDL_Surface* pImage = ResizeSurface(m_pTopLightImage4Authentic, m_pB2SScreen->GetBackglassSize().w, m_pB2SScreen->GetBackglassSize().h);
-      SDL_DestroySurface(m_pTopLightImage4Authentic);
-      m_pTopLightImage4Authentic = pImage;
-   }
-   if (m_pTopLightImage4Fantasy) {
-      SDL_Surface* pImage = ResizeSurface(m_pTopLightImage4Fantasy, m_pB2SScreen->GetBackglassSize().w, m_pB2SScreen->GetBackglassSize().h);
-      SDL_DestroySurface(m_pTopLightImage4Fantasy);
-      m_pTopLightImage4Fantasy = pImage;
-   }
-   if (m_pSecondLightImage4Authentic) {
-      SDL_Surface* pImage = ResizeSurface(m_pSecondLightImage4Authentic, m_pB2SScreen->GetBackglassSize().w, m_pB2SScreen->GetBackglassSize().h);
-      SDL_DestroySurface(m_pSecondLightImage4Authentic);
-      m_pSecondLightImage4Authentic = pImage;
-   }
-   if (m_pSecondLightImage4Fantasy) {
-      SDL_Surface* pImage = ResizeSurface(m_pSecondLightImage4Fantasy, m_pB2SScreen->GetBackglassSize().w, m_pB2SScreen->GetBackglassSize().h);
-      SDL_DestroySurface(m_pSecondLightImage4Fantasy);
-      m_pSecondLightImage4Fantasy = pImage;
-   }
-   if (m_pTopAndSecondLightImage4Authentic) {
-      SDL_Surface* pImage = ResizeSurface(m_pTopAndSecondLightImage4Authentic, m_pB2SScreen->GetBackglassSize().w, m_pB2SScreen->GetBackglassSize().h);
-      SDL_DestroySurface(m_pTopAndSecondLightImage4Authentic);
-      m_pTopAndSecondLightImage4Authentic = pImage;
-   }
-   if (m_pTopAndSecondLightImage4Fantasy) {
-      SDL_Surface* pImage = ResizeSurface(m_pTopAndSecondLightImage4Fantasy, m_pB2SScreen->GetBackglassSize().w, m_pB2SScreen->GetBackglassSize().h);
-      SDL_DestroySurface(m_pTopAndSecondLightImage4Fantasy);
-      m_pTopAndSecondLightImage4Fantasy = pImage;
-   }
+      SetDarkImage4Fantasy(m_pDarkImage4Authentic ? SDL_DuplicateSurface(m_pDarkImage4Authentic) : NULL);
+   if (m_pTopLightImage4Authentic)
+      SetTopLightImage4Authentic(ResizeSurface(m_pTopLightImage4Authentic, m_pB2SScreen->GetBackglassSize().w, m_pB2SScreen->GetBackglassSize().h));
+   if (m_pTopLightImage4Fantasy)
+      SetTopLightImage4Fantasy(ResizeSurface(m_pTopLightImage4Fantasy, m_pB2SScreen->GetBackglassSize().w, m_pB2SScreen->GetBackglassSize().h));
+   if (m_pSecondLightImage4Authentic)
+      SetSecondLightImage4Authentic(ResizeSurface(m_pSecondLightImage4Authentic, m_pB2SScreen->GetBackglassSize().w, m_pB2SScreen->GetBackglassSize().h));
+   if (m_pSecondLightImage4Fantasy)
+      SetSecondLightImage4Fantasy(ResizeSurface(m_pSecondLightImage4Fantasy, m_pB2SScreen->GetBackglassSize().w, m_pB2SScreen->GetBackglassSize().h));
+   if (m_pTopAndSecondLightImage4Authentic)
+      SetTopAndSecondLightImage4Authentic(ResizeSurface(m_pTopAndSecondLightImage4Authentic, m_pB2SScreen->GetBackglassSize().w, m_pB2SScreen->GetBackglassSize().h));
+   if (m_pTopAndSecondLightImage4Fantasy)
+      SetTopAndSecondLightImage4Fantasy(ResizeSurface(m_pTopAndSecondLightImage4Fantasy, m_pB2SScreen->GetBackglassSize().w, m_pB2SScreen->GetBackglassSize().h));
    SetBackgroundImage(GetDarkImage());
 
    // now resize the detail images
    if (xResizeFactor != 1.0f || yResizeFactor != 1.0f) {
       for(const auto& [key, pPicbox] : *m_pB2SData->GetIlluminations()) {
          if (pPicbox->GetPictureBoxType() == ePictureBoxType_StandardImage) {
-            if (pPicbox->GetBackgroundImage()) {
-               SDL_FRect frect = { 0.0f, 0.0f, pPicbox->GetBackgroundImage()->w / xResizeFactor, pPicbox->GetBackgroundImage()->h / yResizeFactor };
+            SDL_Surface* pImage = pPicbox->GetBackgroundImage();
+            if (pImage) {  
+               SDL_FRect frect = { 0.0f, 0.0f, pImage->w / xResizeFactor, pImage->h / yResizeFactor };
                SDL_Rect rect = { 0, 0, (int)frect.w, (int)frect.h };
-               SDL_Surface* pImage = ResizeSurface(pPicbox->GetBackgroundImage(), rect.w, rect.h);
-               SDL_DestroySurface(pPicbox->GetBackgroundImage());
-               pPicbox->SetBackgroundImage(pImage);
-               if (pPicbox->GetOffImage()) {
-                  SDL_Surface* pOffImage = ResizeSurface(pPicbox->GetOffImage(), rect.w, rect.h);
-                  SDL_DestroySurface(pPicbox->GetOffImage());
-                  pPicbox->SetOffImage(pImage);
-               }
+               pPicbox->SetBackgroundImage(ResizeSurface(pImage, rect.w, rect.h));
+               SDL_DestroySurface(pImage);
+               if (pPicbox->GetOffImage())
+                  pPicbox->SetOffImage(ResizeSurface(pPicbox->GetOffImage(), rect.w, rect.h));
             }
          }
       }
@@ -1614,6 +1640,11 @@ SDL_Surface* FormBackglass::Base64ToImage(const string& image)
       return NULL;
 
    SDL_Surface* pImage = IMG_Load_IO(rwops, 0);
+   if (!pImage) {
+      size_t len = std::min<size_t>(image.size(), 40);
+      PLOGE.printf("Unable to load image: %s", image.substr(0, len).c_str());
+   }
+
    SDL_CloseIO(rwops);
 
    return pImage;

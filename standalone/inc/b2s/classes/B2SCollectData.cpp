@@ -21,6 +21,8 @@ bool B2SCollectData::Add(int key, CollectData* pCollectData)
          (*this)[key]->SetState(pCollectData->GetState());
       (*this)[key]->SetTypes((*this)[key]->GetTypes() | pCollectData->GetTypes());
       ret = true;
+
+      delete pCollectData;
    }
    else
       (*this)[key] = pCollectData;
@@ -43,7 +45,11 @@ bool B2SCollectData::ShowData() const
 void B2SCollectData::ClearData(int skipFrames)
 {
    m_mutex.lock();
+
+   for (auto& it : *this)
+      delete it.second;
    clear();
+
    m_mutex.unlock();
 
    if (m_skipFrames <= 0)

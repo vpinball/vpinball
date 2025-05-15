@@ -200,6 +200,7 @@ private:
             }
          }
       }
+      SDL_free(joystick_ids);
    }
 
    void ReleaseSDLDevice()
