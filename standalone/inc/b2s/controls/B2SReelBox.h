@@ -9,7 +9,7 @@
 class B2SReelBox : public B2SBaseBox
 {
 public:
-   B2SReelBox();
+   B2SReelBox(B2SData* pB2SData);
    virtual ~B2SReelBox();
 
    void OnPaint(VP::RendererGraphics* pGraphics) override;
@@ -63,5 +63,4 @@ private:
    int m_rollingInterval;
 
    int m_firstintermediatecount;
-   B2SData* m_pB2SData;
 };

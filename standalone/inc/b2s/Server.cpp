@@ -18,28 +18,21 @@ Server::Server()
 {
    m_pB2SSettings = B2SSettings::GetInstance();
    m_pB2SSettings->Init();
-
-   m_pB2SData = B2SData::GetInstance();
-
+   m_pB2SData = new B2SData();
    m_pFormBackglass = NULL;
-
    m_isVisibleStateSet = false;
    m_lastTopVisible = false;
    m_lastSecondVisible = false;
-
    m_lampThreshold = 0;
    m_giStringThreshold = 4;
-
    m_changedLampsCalled = false;
    m_changedSolenoidsCalled = false;
    m_changedGIStringsCalled = false;
    m_changedLEDsCalled = false;
-
    m_pCollectLampsData = new B2SCollectData(m_pB2SSettings->GetLampsSkipFrames());
    m_pCollectSolenoidsData = new B2SCollectData(m_pB2SSettings->GetSolenoidsSkipFrames());
    m_pCollectGIStringsData = new B2SCollectData(m_pB2SSettings->GetGIStringsSkipFrames());
    m_pCollectLEDsData = new B2SCollectData(m_pB2SSettings->GetLEDsSkipFrames());
-
    m_pTimer = new VP::Timer();
    m_pTimer->SetInterval(37);
    m_pTimer->SetElapsedListener(std::bind(&Server::TimerElapsed, this, std::placeholders::_1));
@@ -58,6 +51,8 @@ Server::~Server()
 
    if (m_pB2SSettings->ArePluginsOn())
       m_pB2SSettings->GetPluginHost()->UnregisterAllPlugins();
+
+   delete m_pB2SData;
 }
 
 void Server::TimerElapsed(VP::Timer* pTimer)
@@ -2413,7 +2408,7 @@ void Server::MyB2SSetScorePlayer(int playerno, int score)
    if (m_pB2SData->IsBackglassRunning()) {
       if (playerno > 0) {
          if (m_pB2SData->GetPlayers()->contains(playerno))
-            (*m_pB2SData->GetPlayers())[playerno]->SetScore(score);
+            (*m_pB2SData->GetPlayers())[playerno]->SetScore(m_pB2SData, score);
       }
    }
 
@@ -2504,7 +2499,7 @@ void Server::Startup()
 void Server::ShowBackglassForm()
 {
    if (!m_pFormBackglass)
-      m_pFormBackglass = new FormBackglass();
+      m_pFormBackglass = new FormBackglass(m_pB2SData);
 
    m_pFormBackglass->Show();
    m_pFormBackglass->SetTopMost(true);

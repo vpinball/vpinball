@@ -9,8 +9,9 @@
 #include "../controls/B2SLEDBox.h"
 #include "../dream7/Dream7Display.h"
 
-B2SScreen::B2SScreen()
+B2SScreen::B2SScreen(B2SData* pB2SData)
 {
+   m_pB2SData = pB2SData;
    m_pFormBackglass = NULL;
    m_pFormDMD = NULL;
    m_playfieldSize = { 0, 0, 0, 0 };
@@ -31,7 +32,6 @@ B2SScreen::B2SScreen()
    m_dmdToBeShown = false;
    m_rescaleBackglass = { 0, 0, 1.0f, 1.0f };
 
-   m_pB2SData = B2SData::GetInstance();
    m_pB2SSettings = B2SSettings::GetInstance();
 
    ReadB2SSettingsFromFile();

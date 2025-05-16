@@ -13,6 +13,7 @@ public:
    virtual ~B2SAnimation();
 
    void AddAnimation(
+      B2SData* pB2SData,
       const string& szName,
       Form* pForm,
       Form* pFormDMD,

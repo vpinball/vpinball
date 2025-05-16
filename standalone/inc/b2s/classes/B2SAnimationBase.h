@@ -8,6 +8,7 @@ class B2SAnimationBase : public VP::Timer
 {
 public:
    B2SAnimationBase(
+      B2SData* pB2SData,
       eDualMode dualMode,
       int interval,
       eType type,
@@ -24,6 +25,7 @@ public:
       int randomQuality);
    ~B2SAnimationBase();
 
+   B2SData* GetB2SData() const { return m_pB2SData; }
    B2SAnimation* GetB2SAnimation() const { return m_pB2SAnimation; }
    string GetName() const { return m_szName; }
    void SetName(const string& szName) { m_szName = szName; }
@@ -58,6 +60,7 @@ protected:
    void SwitchTimerElapsed(VP::Timer* pTimer);
 
 private:
+   B2SData* m_pB2SData;
    B2SAnimation* m_pB2SAnimation;
    string m_szName;
    eDualMode m_dualMode;

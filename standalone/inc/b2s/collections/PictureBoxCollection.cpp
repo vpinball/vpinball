@@ -6,12 +6,12 @@
 
 void PictureBoxCollection::Add(B2SPictureBox* pPicbox, eDualMode dualMode)
 {
-   B2SData* pB2SData = B2SData::GetInstance();
-
    if (!contains(pPicbox->GetName()))
       (*this)[pPicbox->GetName()] = pPicbox;
 
    if (pPicbox->GetRomID() > 0) {
+      B2SData* pB2SData = pPicbox->GetB2SData();
+
       std::map<int, vector<B2SBaseBox*>>* pUsedRomIDs4Authentic = NULL;
       std::map<int, vector<B2SBaseBox*>>* pUsedRomIDs4Fantasy = NULL;
       if (pPicbox->GetRomIDType() == eRomIDType_Lamp) {

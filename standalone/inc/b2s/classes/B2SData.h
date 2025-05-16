@@ -20,7 +20,8 @@ class B2SSettings;
 class B2SData
 {
 public:
-   static B2SData* GetInstance();
+   B2SData();
+   ~B2SData();
 
    void Stop();
    VPinMAMEController* GetVPinMAME();
@@ -135,9 +136,6 @@ public:
    bool IsUseReels() const;
 
 private:
-   B2SData();
-   ~B2SData();
-
    VPinMAMEController* m_pVPinMAME;
    string m_szTableName;
    string m_szTableFileName;

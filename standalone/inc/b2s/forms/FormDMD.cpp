@@ -6,11 +6,9 @@
 
 #include "../../common/WindowManager.h"
 
-FormDMD::FormDMD()
+FormDMD::FormDMD(B2SData* pB2SData) : Form(pB2SData)
 {
    SetName("formDMD");
-
-   m_pB2SData = B2SData::GetInstance();
 
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
 

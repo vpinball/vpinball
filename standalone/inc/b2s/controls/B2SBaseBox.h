@@ -3,11 +3,14 @@
 #include "../b2s_i.h"
 
 #include "Control.h"
+#include "../classes/B2SData.h"
 
-class B2SBaseBox : public Control {
+class B2SBaseBox : public Control
+{
 public:
-   B2SBaseBox();
+   B2SBaseBox(B2SData* pB2SData);
 
+   B2SData* GetB2SData() const { return m_pB2SData; }
    eType_2 GetType() const { return m_type; }
    void SetType(eType_2 type) { m_type = type; }
    int GetID() const { return m_id; }
@@ -32,6 +35,7 @@ public:
    void SetHidden(const bool hidden) { m_hidden = hidden; }
 
 private:
+   B2SData* m_pB2SData;
    eType_2 m_type;
    int m_id;
    int m_displayId;

@@ -1,20 +1,17 @@
 #include "core/stdafx.h"
 
 #include "B2SLEDBox.h"
-#include "../classes/B2SData.h"
 #include "../../common/GraphicsPath.h"
 
-B2SLEDBox::B2SLEDBox() : B2SBaseBox()
+B2SLEDBox::B2SLEDBox(B2SData* pB2SData) : B2SBaseBox(pB2SData)
 {
    SetBackColor(RGB(0, 0, 0));
    SetVisible(true);
-
-   m_pB2SData = B2SData::GetInstance();
 }
 
 void B2SLEDBox::OnResize()
 {
-   B2SData* pB2SData = B2SData::GetInstance();
+   B2SData* pB2SData = GetB2SData();
 
    // resize the led segments and load it into the current segment array
    float width = (float)GetWidth() / (float)pB2SData->GetLEDCoordMax();
