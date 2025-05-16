@@ -62,6 +62,7 @@ private:
    SDL_Surface* FlipImage(SDL_Surface* pSourceImage);
 
    B2SData* m_pB2SData;
+   B2SSettings* m_pB2SSettings;
    Form* m_pFormBackglass;
    Form* m_pFormDMD;
    SDL_Rect m_playfieldSize;
@@ -81,5 +82,4 @@ private:
    SDL_Rect m_backglassCutOff;
    bool m_dmdToBeShown;
    SDL_FRect m_rescaleBackglass;
-   B2SSettings* m_pB2SSettings;
 };

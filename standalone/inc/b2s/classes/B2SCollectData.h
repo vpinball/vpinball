@@ -9,6 +9,7 @@ class B2SCollectData : public std::map<int, CollectData*>
 {
 public:
    B2SCollectData(int skipFrames);
+   ~B2SCollectData();
 
    bool Add(int key, CollectData* pCollectData);
    void DataAdded();

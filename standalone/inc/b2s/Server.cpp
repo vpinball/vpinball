@@ -16,9 +16,8 @@
 
 Server::Server()
 {
-   m_pB2SSettings = B2SSettings::GetInstance();
-   m_pB2SSettings->Init();
-   m_pB2SData = new B2SData();
+   m_pB2SSettings = new B2SSettings();
+   m_pB2SData = new B2SData(m_pB2SSettings);
    m_pFormBackglass = NULL;
    m_isVisibleStateSet = false;
    m_lastTopVisible = false;
@@ -44,15 +43,17 @@ Server::~Server()
 {
    delete m_pTimer;
 
-   m_pB2SData->FreeVPinMAME();
-
    if (m_pFormBackglass)
       delete m_pFormBackglass;
 
-   if (m_pB2SSettings->ArePluginsOn())
-      m_pB2SSettings->GetPluginHost()->UnregisterAllPlugins();
-
    delete m_pB2SData;
+
+   delete m_pCollectLampsData;
+   delete m_pCollectSolenoidsData;
+   delete m_pCollectGIStringsData;
+   delete m_pCollectLEDsData;
+
+   delete m_pB2SSettings;
 }
 
 void Server::TimerElapsed(VP::Timer* pTimer)

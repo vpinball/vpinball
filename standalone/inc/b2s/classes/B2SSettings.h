@@ -28,9 +28,9 @@ class PluginHost;
 class B2SSettings
 {
 public:
-   static B2SSettings* GetInstance();
+   B2SSettings();
+   ~B2SSettings();
 
-   void Init();
    string GetMinimumDirectB2SVersion() const { return "1.0"; }
    string GetBackglassFileVersion() const { return m_szBackglassFileVersion; }
    void SetBackglassFileVersion(const string& szBackglassFileVersion) { m_szBackglassFileVersion = szBackglassFileVersion; }
@@ -87,8 +87,7 @@ public:
    void SetAllAnimationSlowDown(const int allAnimationSlowDown) { m_allAnimationSlowDown = allAnimationSlowDown; }
 
 private:
-   B2SSettings();
-   ~B2SSettings() {};
+
 
    string m_szBackglassFileVersion;
    bool m_pluginsOn;

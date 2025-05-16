@@ -26,7 +26,7 @@ FormBackglass::FormBackglass(B2SData* pB2SData) : Form(pB2SData)
 {
    SetName("formBackglass"s);
 
-   m_pB2SSettings = B2SSettings::GetInstance();
+   m_pB2SSettings = pB2SData->GetB2SSettings();
    m_pFormDMD = NULL;
    m_pStartupTimer = NULL;
    m_pRotateTimer = NULL;

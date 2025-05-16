@@ -4,8 +4,15 @@
 #include "B2SSettings.h"
 #include "B2SPlayer.h"
 
-B2SData::B2SData()
+#include "B2SReelDisplay.h"
+#include "LEDDisplayDigitLocation.h"
+#include "../controls/B2SReelBox.h"
+#include "../controls/B2SLEDBox.h"
+#include "../dream7/Dream7Display.h"
+
+B2SData::B2SData(B2SSettings* pB2SSettings)
 {
+   m_pB2SSettings = pB2SSettings;
    m_pVPinMAME = nullptr;
    m_tableType = 0;
    m_dmdType = 0;
@@ -71,12 +78,47 @@ B2SData::B2SData()
 
    // 16 segments
    m_led16Seg.push_back({ { 22, 5 }, { 26, 2 }, { 88, 2 }, { 92, 5 }, { 85, 11 }, { 29, 11 } });
-
-   m_pB2SSettings = B2SSettings::GetInstance();
 }
 
 B2SData::~B2SData()
 {
+   FreeVPinMAME();
+
+   for (auto& it : m_reels)
+      delete it.second;
+
+   for (auto& it : m_reelDisplays)
+      delete it.second;
+
+   for (auto& it : m_reelImages)
+      SDL_DestroySurface(it.second);
+
+   for (auto& it : m_reelIntermediateImages)
+      SDL_DestroySurface(it.second);
+
+   for (auto& it : m_reelIlluImages)
+      SDL_DestroySurface(it.second);
+
+   for (auto& it : m_reelIntermediateIlluImages)
+      SDL_DestroySurface(it.second);
+
+   for (auto& it : m_sounds)
+      delete it.second;
+
+   for (auto& it : m_ledAreas)
+      delete it.second;
+
+   for (auto& it : m_ledDisplayDigits)
+      delete it.second;
+
+   for (auto& it : m_leds)
+      delete it.second;
+
+   for (auto& it : m_ledDisplays)
+      delete it.second;
+
+   for (auto& it : m_players)
+      delete it.second;
 }
 
 void B2SData::Stop()

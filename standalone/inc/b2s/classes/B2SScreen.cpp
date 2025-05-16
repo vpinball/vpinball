@@ -12,6 +12,7 @@
 B2SScreen::B2SScreen(B2SData* pB2SData)
 {
    m_pB2SData = pB2SData;
+   m_pB2SSettings = m_pB2SData->GetB2SSettings();
    m_pFormBackglass = NULL;
    m_pFormDMD = NULL;
    m_playfieldSize = { 0, 0, 0, 0 };
@@ -31,8 +32,6 @@ B2SScreen::B2SScreen(B2SData* pB2SData)
    m_backglassCutOff = { 0, 0, 0, 0 };
    m_dmdToBeShown = false;
    m_rescaleBackglass = { 0, 0, 1.0f, 1.0f };
-
-   m_pB2SSettings = B2SSettings::GetInstance();
 
    ReadB2SSettingsFromFile();
 }

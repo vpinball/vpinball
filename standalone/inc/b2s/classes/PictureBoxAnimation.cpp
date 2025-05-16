@@ -93,13 +93,12 @@ void PictureBoxAnimation::Start()
    SetWouldBeStarted(true);
    SetStopMeLater(false);
 
-   B2SSettings* pB2SSettings = B2SSettings::GetInstance();
+   B2SData* pB2SData = GetB2SData();
+   B2SSettings* pB2SSettings = pB2SData->GetB2SSettings();
 
    // maybe get out here because animation is not allowed to start
    if (pB2SSettings->GetAllAnimationSlowDown() == 0 || GetSlowDown() == 0)
       return;
-
-   B2SData* pB2SData = GetB2SData();
 
    // maybe get out here because of not matching dual mode
    if (pB2SData->IsDualBackglass()) {
@@ -244,7 +243,7 @@ void PictureBoxAnimation::PictureBoxAnimationTick(VP::Timer* pTimer)
    if (!GetRunningAnimations()->Contains(GetName()))
       return;
 
-   B2SSettings* pB2SSettings = B2SSettings::GetInstance();
+   B2SSettings* pB2SSettings = GetB2SData()->GetB2SSettings();
 
    // show animation stuff
    if (!m_entries.empty()) {
