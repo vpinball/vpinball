@@ -102,12 +102,6 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, const string& line)
       return nullptr;
    }
 
-   vector<PUPTriggerCondition*> conditions = PUPTriggerCondition::CreateFromCSV(parts[3]);
-   if (conditions.empty()) {
-      PLOGD.printf("No conditions: %s", line.c_str());
-      return nullptr;
-   }
-
    if (StrCompareNoCase(triggerPlayAction, "CustomFunc")) {
       // TODO parse the custom function and call PUPPinDisplay::SendMSG when triggered
       PLOGW.printf("CustomFunc not implemented: %s", line.c_str());
@@ -133,6 +127,12 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, const string& line)
          PLOGW.printf("PlayFile not found for playlist %s: %s", pPlaylist->GetFolder().c_str(), parts[6].c_str());
          return nullptr;
       }
+   }
+
+   vector<PUPTriggerCondition*> conditions = PUPTriggerCondition::CreateFromCSV(parts[3]);
+   if (conditions.empty()) {
+      PLOGD.printf("No conditions: %s", line.c_str());
+      return nullptr;
    }
 
    PUP_TRIGGER_PLAY_ACTION playAction;

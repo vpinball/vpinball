@@ -21,6 +21,8 @@ void ControlCollection::Add(ControlInfo* pControlInfo)
       push_back(pControlInfo);
       m_digits += pControlInfo->GetDigits();
    }
+   else
+      delete pControlInfo;
 }
 
 void ControlCollection::SetScore(int score)

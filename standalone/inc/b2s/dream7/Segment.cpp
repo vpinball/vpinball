@@ -4,6 +4,7 @@
 
 Segment::Segment(const string& szName, float x, float y, float width, float height, float angle)
 {
+   m_on = false;
    m_glow = -1.0f;
    m_radius = 0.0f;
    m_pStyle = NULL;
@@ -17,6 +18,7 @@ Segment::Segment(const string& szName, float x, float y, float width, float heig
 
 Segment::Segment(const string& szName, float x, float y, float width, float height, float angle, SegmentCap topcap, SegmentCap bottomcap)
 {
+   m_on = false;
    m_glow = -1.0f;
    m_radius = 0.0f;
    m_pStyle = NULL;
@@ -30,6 +32,7 @@ Segment::Segment(const string& szName, float x, float y, float width, float heig
 
 Segment::Segment(const string& szName, float x, float y, float width, float height, float angle, SegmentCap topcap, SegmentCap bottomcap, float capangle)
 {
+   m_on = false;
    m_glow = -1.0f;
    m_radius = 0.0f;
    m_pStyle = NULL;
@@ -43,6 +46,7 @@ Segment::Segment(const string& szName, float x, float y, float width, float heig
 
 Segment::Segment(float x, float y, float radius)
 {
+   m_on = false;
    m_glow = -1.0f;
    m_pStyle = NULL;
    m_pGlassPath = NULL;

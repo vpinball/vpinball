@@ -17,3 +17,9 @@ B2SPictureBox::B2SPictureBox() : B2SBaseBox()
 
    SetVisible(false);
 }
+
+B2SPictureBox::~B2SPictureBox()
+{
+   if (m_pOffImage)
+      SDL_DestroySurface(m_pOffImage);
+}

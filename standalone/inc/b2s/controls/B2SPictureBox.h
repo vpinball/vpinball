@@ -8,6 +8,7 @@ class B2SPictureBox : public B2SBaseBox
 {
 public:
    B2SPictureBox();
+   ~B2SPictureBox();
 
    ePictureBoxType GetPictureBoxType() const { return m_pictureBoxType; }
    void SetPictureBoxType(ePictureBoxType pictureBoxType) { m_pictureBoxType = pictureBoxType; }
@@ -28,7 +29,7 @@ public:
    void SetVisible(bool visible) override { if (IsVisible() != visible) { m_setThruAnimation = visible; B2SBaseBox::SetVisible(visible); } };
    bool IsSetThruAnimation() const { return m_setThruAnimation; }
    SDL_Surface* GetOffImage() const { return m_pOffImage; }
-   void SetOffImage(SDL_Surface* pOffImage) { m_pOffImage = pOffImage; }
+   void SetOffImage(SDL_Surface* pOffImage) { if (m_pOffImage) SDL_DestroySurface(m_pOffImage); m_pOffImage = pOffImage; }
 
 private:
    ePictureBoxType m_pictureBoxType;
