@@ -8,6 +8,12 @@ B2SCollectData::B2SCollectData(int skipFrames)
    m_skipFrames = skipFrames;
 }
 
+B2SCollectData::~B2SCollectData()
+{
+   for (auto& it : *this)
+      delete it.second;
+}
+
 bool B2SCollectData::Add(int key, CollectData* pCollectData)
 {
    bool ret = false;
@@ -41,6 +47,7 @@ bool B2SCollectData::ShowData() const
 {
    return (m_skipFrames < 0);
 }
+
 
 void B2SCollectData::ClearData(int skipFrames)
 {

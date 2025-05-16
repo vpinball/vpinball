@@ -20,9 +20,10 @@ class B2SSettings;
 class B2SData
 {
 public:
-   B2SData();
+   B2SData(B2SSettings* pB2SSettings);
    ~B2SData();
 
+   B2SSettings* GetB2SSettings() const { return m_pB2SSettings; }
    void Stop();
    VPinMAMEController* GetVPinMAME();
    void FreeVPinMAME();
@@ -136,6 +137,7 @@ public:
    bool IsUseReels() const;
 
 private:
+   B2SSettings* m_pB2SSettings;
    VPinMAMEController* m_pVPinMAME;
    string m_szTableName;
    string m_szTableFileName;
@@ -195,15 +197,10 @@ private:
    vector<vector<SDL_FPoint>> m_led14Seg;
    vector<vector<SDL_FPoint>> m_led16Seg;
    int m_ledCoordMax;
-
    AnimationCollection m_usedAnimationLampIDs;
    AnimationCollection m_usedRandomAnimationLampIDs;
    AnimationCollection m_usedAnimationSolenoidIDs;
    AnimationCollection m_usedRandomAnimationSolenoidIDs;
    AnimationCollection m_usedAnimationGIStringIDs;
    AnimationCollection m_usedRandomAnimationGIStringIDs;
-
-   B2SSettings* m_pB2SSettings;
-
-   static B2SData* m_pInstance;
 };
