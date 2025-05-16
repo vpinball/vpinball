@@ -14,6 +14,7 @@ B2SAnimation::~B2SAnimation()
 }
 
 void B2SAnimation::AddAnimation(
+   B2SData* pB2SData,
    const string& szName,
    Form* pForm,
    Form* pFormDMD,
@@ -32,7 +33,7 @@ void B2SAnimation::AddAnimation(
    const vector<PictureBoxAnimationEntry*>& entries)
 {
    if (!m_pictureBoxAnimations.contains(szName))
-      m_pictureBoxAnimations[szName] = new PictureBoxAnimation(pForm, pFormDMD, szName, dualMode, interval, loops, startTimerAtVPActivate, lightsStateAtAnimationStart, lightsStateAtAnimationEnd, animationStopBehaviour, lockInvolvedLamps, hideScoreDisplays, bringToFront, randomStart, randomQuality, entries);
+      m_pictureBoxAnimations[szName] = new PictureBoxAnimation(pB2SData, pForm, pFormDMD, szName, dualMode, interval, loops, startTimerAtVPActivate, lightsStateAtAnimationStart, lightsStateAtAnimationEnd, animationStopBehaviour, lockInvolvedLamps, hideScoreDisplays, bringToFront, randomStart, randomQuality, entries);
 }
 
 void B2SAnimation::AutoStart()

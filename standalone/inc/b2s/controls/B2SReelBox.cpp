@@ -1,9 +1,8 @@
 #include "core/stdafx.h"
 
 #include "B2SReelBox.h"
-#include "../classes/B2SData.h"
 
-B2SReelBox::B2SReelBox() : B2SBaseBox()
+B2SReelBox::B2SReelBox(B2SData* pB2SData) : B2SBaseBox(pB2SData)
 {
    m_led = false;
    m_length = 1;
@@ -21,9 +20,7 @@ B2SReelBox::B2SReelBox() : B2SBaseBox()
    m_text = 0;
    m_rollingInterval = cTimerInterval;
    m_pTimer = new VP::Timer(m_rollingInterval, std::bind(&B2SReelBox::ReelAnimationTimerTick, this, std::placeholders::_1));
-
    m_firstintermediatecount = 1;
-   m_pB2SData = B2SData::GetInstance();
 }
 
 B2SReelBox::~B2SReelBox()
@@ -35,8 +32,10 @@ void B2SReelBox::OnPaint(VP::RendererGraphics* pGraphics)
 {
    if (IsVisible()) {
       if (!m_szReelIndex.empty()) {
-         GenericDictionaryIgnoreCase<SDL_Surface*>* pImages = (m_illuminated ? m_pB2SData->GetReelIlluImages() : m_pB2SData->GetReelImages());
-         GenericDictionaryIgnoreCase<SDL_Surface*>* pIntImages = (m_illuminated ? m_pB2SData->GetReelIntermediateIlluImages() : m_pB2SData->GetReelIntermediateImages());
+         B2SData* pB2SData = GetB2SData();
+
+         GenericDictionaryIgnoreCase<SDL_Surface*>* pImages = (m_illuminated ? pB2SData->GetReelIlluImages() : pB2SData->GetReelImages());
+         GenericDictionaryIgnoreCase<SDL_Surface*>* pIntImages = (m_illuminated ? pB2SData->GetReelIntermediateIlluImages() : pB2SData->GetReelIntermediateImages());
          string name;
          SDL_Rect rect = GetRect();
          if (m_intermediates == -1 && m_pTimer->IsEnabled()) {

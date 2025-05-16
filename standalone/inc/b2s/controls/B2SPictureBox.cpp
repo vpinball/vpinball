@@ -2,7 +2,7 @@
 
 #include "B2SPictureBox.h"
 
-B2SPictureBox::B2SPictureBox() : B2SBaseBox()
+B2SPictureBox::B2SPictureBox(B2SData* pB2SData) : B2SBaseBox(pB2SData)
 {
    m_pictureBoxType = ePictureBoxType_StandardImage;
    m_szGroupName.clear();

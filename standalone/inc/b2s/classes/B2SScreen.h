@@ -9,7 +9,7 @@ class B2SSettings;
 class B2SScreen
 {
 public:
-   B2SScreen();
+   B2SScreen(B2SData* pB2SData);
    ~B2SScreen();
 
    SDL_Rect& GetPlayfieldSize() { return m_playfieldSize; }
@@ -61,6 +61,7 @@ private:
    SDL_Surface* ResizeImage(SDL_Surface* pSourceImage, int grillheight);
    SDL_Surface* FlipImage(SDL_Surface* pSourceImage);
 
+   B2SData* m_pB2SData;
    Form* m_pFormBackglass;
    Form* m_pFormDMD;
    SDL_Rect m_playfieldSize;
@@ -80,7 +81,5 @@ private:
    SDL_Rect m_backglassCutOff;
    bool m_dmdToBeShown;
    SDL_FRect m_rescaleBackglass;
-
-   B2SData* m_pB2SData;
    B2SSettings* m_pB2SSettings;
 };

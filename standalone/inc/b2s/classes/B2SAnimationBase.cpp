@@ -4,6 +4,7 @@
 #include "B2SData.h"
 
 B2SAnimationBase::B2SAnimationBase(
+   B2SData* pB2SData,
    eDualMode dualMode,
    int interval,
    eType type,
@@ -19,6 +20,7 @@ B2SAnimationBase::B2SAnimationBase(
    bool randomStart,
    int randomQuality) : VP::Timer()
 {
+   m_pB2SData = pB2SData;
    m_dualMode = dualMode;
    SetInterval(interval);
    m_type = type;
@@ -67,9 +69,7 @@ void B2SAnimationBase::RaiseFinishedEvent()
 
 void B2SAnimationBase::SetSwitch(int switchid)
 {
-   B2SData* pB2SData = B2SData::GetInstance();
-
-   pB2SData->GetVPinMAME()->put_Switch(switchid, VARIANT_TRUE);
+   m_pB2SData->GetVPinMAME()->put_Switch(switchid, VARIANT_TRUE);
 
    if (!m_switches.contains(switchid))
       m_switches[switchid] = true;
@@ -88,10 +88,8 @@ void B2SAnimationBase::SwitchTimerElapsed(VP::Timer* pTimer)
 {
    m_pSwitchTimer->Stop();
 
-   B2SData* pB2SData = B2SData::GetInstance();
-
    for (auto& [switchid, value] : m_switches)
-      pB2SData->GetVPinMAME()->put_Switch(switchid, VARIANT_FALSE);
+      m_pB2SData->GetVPinMAME()->put_Switch(switchid, VARIANT_FALSE);
 
    m_switches.clear();
 }

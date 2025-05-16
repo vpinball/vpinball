@@ -25,10 +25,8 @@ void ControlCollection::Add(ControlInfo* pControlInfo)
       delete pControlInfo;
 }
 
-void ControlCollection::SetScore(int score)
+void ControlCollection::SetScore(B2SData* pB2SData, int score)
 {
-   B2SData* pB2SData = B2SData::GetInstance();
-
    string scoreAsString = std::to_string(score);
    if (scoreAsString.length() < m_digits)
       scoreAsString = string(m_digits - scoreAsString.length(), ' ') + scoreAsString;

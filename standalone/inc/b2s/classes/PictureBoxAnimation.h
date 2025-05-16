@@ -13,6 +13,7 @@ class PictureBoxAnimation : public B2SAnimationBase
 {
 public:
    PictureBoxAnimation(
+      B2SData* pB2SData,
       Form* pForm,
       Form* pFormDMD,
       const string& szName,
@@ -36,7 +37,6 @@ public:
 
 private:
    void PictureBoxAnimationTick(VP::Timer* pTimer);
-
    void LightGroup(const string& szGroupName, bool visible);
    void LightBulb(const string& szBulb, bool visible);
    eLEDTypes GetLEDType();

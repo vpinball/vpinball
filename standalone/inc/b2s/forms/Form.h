@@ -4,12 +4,13 @@
 #include "../../common/RendererGraphics.h"
 #include "../../common/Window.h"
 
+class B2SData;
 class FormWindow;
 
 class Form : public Control
 {
 public:
-   Form();
+   Form(B2SData* pB2SData);
    ~Form();
 
    void Show();
@@ -20,6 +21,7 @@ public:
    bool Render();
 
 protected:
+   B2SData* m_pB2SData;
    FormWindow* m_pWindow;
 
 private:

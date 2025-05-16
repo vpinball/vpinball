@@ -22,12 +22,11 @@
 
 #include <exception>
 
-FormBackglass::FormBackglass()
+FormBackglass::FormBackglass(B2SData* pB2SData) : Form(pB2SData)
 {
    SetName("formBackglass"s);
 
    m_pB2SSettings = B2SSettings::GetInstance();
-   m_pB2SData = B2SData::GetInstance();
    m_pFormDMD = NULL;
    m_pStartupTimer = NULL;
    m_pRotateTimer = NULL;
@@ -58,7 +57,7 @@ FormBackglass::FormBackglass()
    m_secondRomIDType4Fantasy = eRomIDType_NotDefined;
    m_secondRomInverted4Fantasy = false;
    m_pB2SAnimation = new B2SAnimation();
-   m_pB2SScreen = new B2SScreen();
+   m_pB2SScreen = new B2SScreen(pB2SData);
 
    // load settings
    m_pB2SSettings->Load();
@@ -532,7 +531,7 @@ void FormBackglass::LoadB2SData()
                pImage = pCroppedImage;
             }
          }
-         B2SPictureBox* pPicbox = new B2SPictureBox();
+         B2SPictureBox* pPicbox = new B2SPictureBox(m_pB2SData);
          bool isOnBackglass = (parent == "Backglass");
          pPicbox->SetName("PictureBox" + std::to_string(id));
          pPicbox->SetGroupName(name);
@@ -763,7 +762,7 @@ void FormBackglass::LoadB2SData()
             int x = loc.x + ((i - 1) * (width + spacing / 2));
             if (isRenderedLEDs || isDream7LEDs) {
                // add some self rendered LEDs
-               B2SLEDBox* pLed = new B2SLEDBox();
+               B2SLEDBox* pLed = new B2SLEDBox(m_pB2SData);
                pLed->SetID((b2sstartdigit > 0) ? b2sstartdigit : renderedandreelindex);
                pLed->SetDisplayID(id);
                pLed->SetName("LEDBox" + std::to_string(pLed->GetID()));
@@ -808,7 +807,7 @@ void FormBackglass::LoadB2SData()
                      soundName = "stille"s;
                }
                // add reel or LED pictures
-               B2SReelBox* pReel = new B2SReelBox();
+               B2SReelBox* pReel = new B2SReelBox(m_pB2SData);
                pReel->SetID((b2sstartdigit > 0) ? b2sstartdigit : renderedandreelindex);
                pReel->SetDisplayID(id);
                pReel->SetSetID(setid);
@@ -1200,7 +1199,7 @@ void FormBackglass::LoadB2SData()
          }
          // maybe add animation
          if (interval > 0 && entries.size() > 0) {
-            m_pB2SAnimation->AddAnimation(name, this, m_pFormDMD, dualmode, interval, loops, startAnimationAtBackglassStartup, 
+            m_pB2SAnimation->AddAnimation(m_pB2SData, name, this, m_pFormDMD, dualmode, interval, loops, startAnimationAtBackglassStartup, 
                lightsStateAtAnimationStart, lightsStateAtAnimationEnd, animationstopbehaviour, lockInvolvedLamps, hidescoredisplays,
                bringtofront, randomstart, randomquality, entries);
             // maybe set slowdown
@@ -1417,7 +1416,7 @@ void FormBackglass::RotateImage(B2SPictureBox* pPicbox, int rotationsteps, eSnip
 void FormBackglass::CheckDMDForm()
 {
    if (!m_pFormDMD && !m_pB2SSettings->IsHideB2SDMD())
-      m_pFormDMD = new FormDMD();
+      m_pFormDMD = new FormDMD(m_pB2SData);
 }
 
 SDL_Surface* FormBackglass::CreateLightImage(SDL_Surface* image, eDualMode dualmode, const string& firstromkey_)

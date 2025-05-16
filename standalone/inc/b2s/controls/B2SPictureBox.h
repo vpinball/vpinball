@@ -7,8 +7,8 @@
 class B2SPictureBox : public B2SBaseBox
 {
 public:
-   B2SPictureBox();
-   ~B2SPictureBox();
+   B2SPictureBox(B2SData* pB2SData);
+   virtual ~B2SPictureBox();
 
    ePictureBoxType GetPictureBoxType() const { return m_pictureBoxType; }
    void SetPictureBoxType(ePictureBoxType pictureBoxType) { m_pictureBoxType = pictureBoxType; }

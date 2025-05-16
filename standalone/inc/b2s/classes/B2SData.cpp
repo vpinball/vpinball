@@ -4,16 +4,6 @@
 #include "B2SSettings.h"
 #include "B2SPlayer.h"
 
-B2SData* B2SData::m_pInstance = nullptr;
-
-B2SData* B2SData::GetInstance()
-{
-   if (!m_pInstance)
-      m_pInstance = new B2SData();
-
-   return m_pInstance;
-}
-
 B2SData::B2SData()
 {
    m_pVPinMAME = nullptr;

@@ -12,11 +12,10 @@ class FormDMD;
 class FormBackglass : public Form
 {
 public:
-   FormBackglass();
+   FormBackglass(B2SData* pB2SData);
    ~FormBackglass();
 
    void OnPaint(VP::RendererGraphics* pGraphics) override;
-
    void StartAnimation(const string& szName, bool playReverse = false);
    void StopAnimation(const string& szName);
    void StopAllAnimations();
@@ -83,7 +82,6 @@ private:
    static constexpr int minSize4Image = 300000;
 
    B2SSettings* m_pB2SSettings;
-   B2SData* m_pB2SData;
    B2SScreen* m_pB2SScreen;
    B2SAnimation* m_pB2SAnimation;
    FormDMD* m_pFormDMD;

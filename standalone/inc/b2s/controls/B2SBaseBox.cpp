@@ -2,8 +2,9 @@
 
 #include "B2SBaseBox.h"
 
-B2SBaseBox::B2SBaseBox() : Control()
+B2SBaseBox::B2SBaseBox(B2SData* pB2SData) : Control()
 {
+   m_pB2SData = pB2SData;
    m_type = eType_2_NotDefined;
    m_romid = 0;
    m_romidtype = eRomIDType_NotDefined;

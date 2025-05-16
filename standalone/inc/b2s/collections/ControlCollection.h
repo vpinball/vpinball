@@ -3,13 +3,14 @@
 #include <map>
 
 class ControlInfo;
+class B2SData;
 
 class ControlCollection : public vector<ControlInfo*>
 {
 public:
    void Add(ControlInfo* pItem);
    int GetScore() const { return m_score; }
-   void SetScore(int score);
+   void SetScore(B2SData* pB2SData, int score);
 
 private:
    int m_digits;

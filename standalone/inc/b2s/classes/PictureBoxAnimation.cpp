@@ -12,6 +12,7 @@
 #include "B2SAnimation.h"
 
 PictureBoxAnimation::PictureBoxAnimation(
+   B2SData* pB2SData,
    Form* pForm,
    Form* pFormDMD,
    const string& szName,
@@ -27,7 +28,7 @@ PictureBoxAnimation::PictureBoxAnimation(
    bool bringToFront,
    bool randomStart,
    int randomQuality,
-   const vector<PictureBoxAnimationEntry*>& entries) : B2SAnimationBase(dualMode, interval, eType_ImageCollectionAtForm, loops, false,
+   const vector<PictureBoxAnimationEntry*>& entries) : B2SAnimationBase(pB2SData, dualMode, interval, eType_ImageCollectionAtForm, loops, false,
       startTimerAtVPActivate, lightsStateAtAnimationStart, lightsStateAtAnimationEnd, animationStopBehaviour,
       lockInvolvedLamps, hideScoreDisplays, bringToFront, randomStart, randomQuality)
 {
@@ -98,7 +99,7 @@ void PictureBoxAnimation::Start()
    if (pB2SSettings->GetAllAnimationSlowDown() == 0 || GetSlowDown() == 0)
       return;
 
-   B2SData* pB2SData = B2SData::GetInstance();
+   B2SData* pB2SData = GetB2SData();
 
    // maybe get out here because of not matching dual mode
    if (pB2SData->IsDualBackglass()) {
@@ -190,7 +191,7 @@ void PictureBoxAnimation::Stop()
    GetRunningAnimations()->Remove(GetName());
    VP::Timer::Stop();
 
-   B2SData* pB2SData = B2SData::GetInstance();
+   B2SData* pB2SData = GetB2SData();
 
    // maybe show score displays
    if (IsHideScoreDisplays()) {
@@ -306,7 +307,7 @@ void PictureBoxAnimation::PictureBoxAnimationTick(VP::Timer* pTimer)
 
 void PictureBoxAnimation::LightGroup(const string& szGroupName, bool visible)
 {
-   B2SData* pB2SData = B2SData::GetInstance();
+   B2SData* pB2SData = GetB2SData();
 
    // only do the lightning stuff if the group has a name
    if (!szGroupName.empty() && pB2SData->GetIlluminationGroups()->contains(szGroupName)) {
@@ -338,7 +339,7 @@ void PictureBoxAnimation::LightBulb(const string& szBulb, bool visible)
 
 eLEDTypes PictureBoxAnimation::GetLEDType()
 {
-   B2SData* pB2SData = B2SData::GetInstance();
+   B2SData* pB2SData = GetB2SData();
 
    eLEDTypes ret = eLEDTypes_Undefined;
    if (pB2SData->GetLEDDisplays()->size() > 0) {

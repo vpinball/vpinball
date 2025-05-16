@@ -6,11 +6,9 @@
 
 void ReelBoxCollection::Add(B2SReelBox* pReelbox)
 {
-   B2SData* pB2SData = B2SData::GetInstance();
-
    if (!contains(pReelbox->GetName()))
       (*this)[pReelbox->GetName()] = pReelbox;
 
    if (pReelbox->GetRomID() > 0)
-      (*pB2SData->GetUsedRomReelLampIDs())[pReelbox->GetRomID()].push_back(pReelbox);
+      (*pReelbox->GetB2SData()->GetUsedRomReelLampIDs())[pReelbox->GetRomID()].push_back(pReelbox);
 }
