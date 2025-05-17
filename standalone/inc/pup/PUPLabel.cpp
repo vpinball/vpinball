@@ -161,7 +161,9 @@ void PUPLabel::SetSpecial(const string& szSpecial)
             string szFont = json["fname"s].as_str();
                TTF_Font* pFont = m_pManager->GetFont(szFont);
                if (!pFont)
+               {
                   PLOGE.printf("Label font not found: name=%s, font=%s", m_szName.c_str(), szFont.c_str());
+               }
                m_pFont = pFont;
             m_dirty = true;
          }
@@ -278,13 +280,13 @@ void PUPLabel::SetSpecial(const string& szSpecial)
 
          if (json["width"s].exists())
          {
-            m_imageWidth = std::stof(json["width"s].as_str());
+            m_width = std::stof(json["width"s].as_str());
             m_dirty = true;
          }
 
          if (json["height"s].exists())
          {
-            m_imageHeight = std::stof(json["height"s].as_str());
+            m_height = std::stof(json["height"s].as_str());
             m_dirty = true;
          }
 
