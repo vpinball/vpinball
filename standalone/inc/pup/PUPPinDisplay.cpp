@@ -20,7 +20,6 @@ PUPPinDisplay::PUPPinDisplay()
 
 PUPPinDisplay::~PUPPinDisplay()
 {
-   m_pManager->Stop();
 }
 
 STDMETHODIMP PUPPinDisplay::Init(LONG ScreenNum, BSTR RootDir)

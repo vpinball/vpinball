@@ -1,6 +1,7 @@
 #include "core/stdafx.h"
 
 #include "PUPScreen.h"
+#include "PUPWindow.h"
 #include "PUPCustomPos.h"
 #include "PUPTrigger.h"
 #include "PUPManager.h"
@@ -60,7 +61,6 @@ const char* PUP_PINDISPLAY_REQUEST_TYPE_TO_STRING(PUP_PINDISPLAY_REQUEST_TYPE va
 PUPScreen::PUPScreen(PUPManager* pManager, PUP_SCREEN_MODE mode, int screenNum, const string& szScreenDes, const string& szBackgroundPlaylist, const string& szBackgroundFilename, bool transparent, float volume, PUPCustomPos* pCustomPos, const vector<PUPPlaylist*>& playlists)
 {
    m_pManager = pManager;
-
    m_mode = mode;
    m_screenNum = screenNum;
    m_screenDes = szScreenDes;
@@ -79,6 +79,7 @@ PUPScreen::PUPScreen(PUPManager* pManager, PUP_SCREEN_MODE mode, int screenNum, 
    m_pPageTimer->SetElapsedListener(std::bind(&PUPScreen::PageTimerElapsed, this, std::placeholders::_1));
    m_pParent = nullptr;
    m_isRunning = false;
+   m_pWindow = nullptr;
 
    for (const PUPPlaylist* pPlaylist : playlists) {
       // make a copy of the playlist
@@ -471,18 +472,16 @@ void PUPScreen::Start()
    m_thread = std::thread(&PUPScreen::ProcessQueue, this);
 }
 
-void PUPScreen::Init(SDL_Renderer* pRenderer)
+void PUPScreen::Init(PUPWindow* pWindow)
 {
    PLOGD.printf("Initializing: screen={%s}", ToString(false).c_str());
 
-   m_pRenderer = pRenderer;
+   m_pWindow = pWindow;
 
    for (auto pChildren : { &m_defaultChildren, &m_backChildren, &m_topChildren }) {
       for (PUPScreen* pScreen : *pChildren)
-         pScreen->Init(pRenderer);
+         pScreen->Init();
    }
-
-   m_pMediaPlayerManager->SetRenderer(pRenderer);
 }
 
 void PUPScreen::ProcessQueue()
@@ -608,25 +607,62 @@ void PUPScreen::ProcessTriggerRequest(PUPTriggerRequest* pRequest)
 
 void PUPScreen::Render()
 {
-   std::lock_guard<std::mutex> lock(m_renderMutex);
+   SDL_Renderer* pRenderer = GetRenderer();
+   if (!pRenderer)
+      return;
 
-   Render(&m_background);
+   {
+      std::lock_guard<std::mutex> lock(m_renderMutex);
 
-   m_pMediaPlayerManager->Render(m_rect);
+      Render(&m_background);
 
-   for (auto pChildren : { &m_defaultChildren, &m_backChildren, &m_topChildren }) {
-      for (PUPScreen* pScreen : *pChildren)
-         pScreen->Render();
+      m_pMediaPlayerManager->Render(m_rect);
+
+      for (auto pChildren : { &m_defaultChildren, &m_backChildren, &m_topChildren }) {
+         for (PUPScreen* pScreen : *pChildren)
+            pScreen->Render();
+      }
+
+      Render(&m_overlay);
+
+      SDL_SetRenderClipRect(pRenderer, &m_rect);
+
+      for (PUPLabel* pLabel : m_labels)
+         pLabel->Render(pRenderer, m_rect, m_pagenum);
+
+      SDL_SetRenderClipRect(pRenderer, NULL);
    }
+}
 
-   Render(&m_overlay);
+bool PUPScreen::CanRender()
+{
+   if (m_mode == PUP_SCREEN_MODE_OFF || m_mode == PUP_SCREEN_MODE_MUSIC_ONLY)
+      return false;
 
-   SDL_SetRenderClipRect(m_pRenderer, &m_rect);
+   if (m_pParent)
+      return m_pParent->CanRender();
 
-   for (PUPLabel* pLabel : m_labels)
-      pLabel->Render(m_pRenderer, m_rect, m_pagenum);
+   if (m_pWindow)
+      return m_pWindow->CanRender();
 
-   SDL_SetRenderClipRect(m_pRenderer, NULL);
+   return true;
+}
+
+SDL_Renderer* PUPScreen::GetRenderer()
+{
+   if (!CanRender())
+      return NULL;
+
+   if (m_mode == PUP_SCREEN_MODE_OFF || m_mode == PUP_SCREEN_MODE_MUSIC_ONLY)
+      return NULL;
+
+   if (m_pParent)
+      return m_pParent->GetRenderer();
+
+   if (m_pWindow)
+      return m_pWindow->GetRenderer();
+
+   return NULL;
 }
 
 void PUPScreen::LoadRenderable(PUPScreenRenderable* pRenderable, const string& szFile)
@@ -640,13 +676,17 @@ void PUPScreen::LoadRenderable(PUPScreenRenderable* pRenderable, const string& s
 
 void PUPScreen::Render(PUPScreenRenderable* pRenderable)
 {
+   SDL_Renderer* pRenderer = GetRenderer();
+   if (!pRenderer)
+      return;
+
    if (pRenderable->dirty) {
       if (pRenderable->pTexture) {
          SDL_DestroyTexture(pRenderable->pTexture);
          pRenderable->pTexture = NULL;
       }
       if (pRenderable->pSurface) {
-         pRenderable->pTexture = SDL_CreateTextureFromSurface(m_pRenderer, pRenderable->pSurface);
+         pRenderable->pTexture = SDL_CreateTextureFromSurface(pRenderer, pRenderable->pSurface);
          SDL_DestroySurface(pRenderable->pSurface);
          pRenderable->pSurface = NULL;
       }
@@ -659,7 +699,7 @@ void PUPScreen::Render(PUPScreenRenderable* pRenderable)
       fRect.y = static_cast<float>(m_rect.y);
       fRect.w = static_cast<float>(m_rect.w);
       fRect.h = static_cast<float>(m_rect.h);
-      SDL_RenderTexture(m_pRenderer,  pRenderable->pTexture, NULL, &fRect);
+      SDL_RenderTexture(pRenderer, pRenderable->pTexture, NULL, &fRect);
    }
 }
 
