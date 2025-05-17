@@ -2,13 +2,13 @@
 
 #include "PUPManager.h"
 
-class PUPCustomPos {
+class PUPCustomPos final {
 public:
    ~PUPCustomPos() {}
 
    static PUPCustomPos* CreateFromCSV(const string& line);
    int GetSourceScreen() const { return m_sourceScreen; }
-   SDL_Rect ScaledRect(int w, int h);
+   SDL_Rect ScaledRect(int w, int h) const;
    string ToString() const;
 
 private:
@@ -17,4 +17,3 @@ private:
    int m_sourceScreen;
    SDL_FRect m_frect;
 };
-

@@ -84,8 +84,10 @@ FIXES:
 - export of a sound from the sound manager will now export the sound file as-is (without adding a wave header in front of non-WAV files)
 - fix wrong/too-loud volume for the test play in the sound manager
 
-- respect the decimal point locale in more UI editboxes (e.g. video/vr/physics preferences)
+- respect the decimal point locale in more UI editboxes (e.g. video/vr/physics preferences, sound/dimension manager, element search, etc) for consistency,
   and be more robust against wrong inputs (including the .ini files)
+
+- reduce startup time (or even potential freezes/deadlocks) for large fade-speed bulb values
 
 - note that the support for ancient windows versions (e.g. Windows XP) for the DX9 build has been removed in order to be able to use newer compilers
 - due to this, VPX now allows to use the C++20 language feature set, which means that the windows build system requires Visual Studio 2019 or newer

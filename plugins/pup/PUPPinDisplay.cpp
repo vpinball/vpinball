@@ -13,6 +13,7 @@
 #include "RSJparser/RSJparser.tcc"
 #pragma warning(pop)
 
+static const string emptystring;
 
 PUPPinDisplay::PUPPinDisplay(PUPManager& manager)
    : m_pupManager(manager)
@@ -23,7 +24,7 @@ PUPPinDisplay::~PUPPinDisplay()
 {
 }
 
-void PUPPinDisplay::Init(int screenNum, string RootDir)
+void PUPPinDisplay::Init(int screenNum, const string& RootDir)
 {
    if (m_pupManager.HasScreen(screenNum))
    {
@@ -33,7 +34,7 @@ void PUPPinDisplay::Init(int screenNum, string RootDir)
    m_pupManager.AddScreen(screenNum);
 }
 
-void PUPPinDisplay::playlistadd(int screenNum, string folder, int sort, int restSeconds)
+void PUPPinDisplay::playlistadd(int screenNum, const string& folder, int sort, int restSeconds)
 {
    PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
    if (!pScreen) {
@@ -46,10 +47,10 @@ void PUPPinDisplay::playlistadd(int screenNum, string folder, int sort, int rest
       return;
    }
 
-   pScreen->AddPlaylist(new PUPPlaylist(&m_pupManager, folder, "", sort, restSeconds, 100, 1));
+   pScreen->AddPlaylist(new PUPPlaylist(&m_pupManager, folder, ""s, sort, restSeconds, 100, 1));
 }
 
-void PUPPinDisplay::playlistplay(int screenNum, string playlist)
+void PUPPinDisplay::playlistplay(int screenNum, const string& playlist)
 {
    PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
    if (!pScreen) {
@@ -59,7 +60,7 @@ void PUPPinDisplay::playlistplay(int screenNum, string playlist)
    LOGE("Not implemented: screenNum=%d, playlist=%s", screenNum, playlist.c_str());
 }
 
-void PUPPinDisplay::playlistplayex(int screenNum, string playlist, string playfilename, int volume, int forceplay)
+void PUPPinDisplay::playlistplayex(int screenNum, const string& playlist, const string& playfilename, int volume, int forceplay)
 {
    PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
    if (!pScreen) {
@@ -69,7 +70,7 @@ void PUPPinDisplay::playlistplayex(int screenNum, string playlist, string playfi
    pScreen->QueuePlay(playlist, playfilename, static_cast<float>(volume), forceplay);
 }
 
-void PUPPinDisplay::play(int screenNum, string playlist, string playfilename)
+void PUPPinDisplay::play(int screenNum, const string& playlist, const string& playfilename)
 {
    PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
    if (!pScreen) {
@@ -177,7 +178,7 @@ void PUPPinDisplay::CloseApp()
    LOGE("Not implemented");
 }
 
-bool PUPPinDisplay::GetisPlaying(int screenNum)
+bool PUPPinDisplay::GetisPlaying(int screenNum) const
 {
    PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
    if (!pScreen) {
@@ -269,7 +270,7 @@ void PUPPinDisplay::SetScreenEx(int screenNum, int xpos, int ypos, int swidth, i
    LOGE("Not fully implemented: screenNum=%d, xpos=%d, ypos=%d, swidth=%d, sheight=%d, popup=%d", screenNum, xpos, ypos, swidth, sheight, popup);
 }
 
-int PUPPinDisplay::GetSN()
+int PUPPinDisplay::GetSN() const
 {
    LOGE("Not implemented");
    return 0;
@@ -280,18 +281,18 @@ void PUPPinDisplay::SetSN(int Value)
    LOGE("Not implemented: value=%d", Value);
 }
 
-void PUPPinDisplay::B2SData(string tIndex, int Value)
+void PUPPinDisplay::B2SData(const string& tIndex, int Value)
 {
    m_pupManager.QueueTriggerData({ tIndex[0], std::stoi(tIndex.substr(1)), Value });
 }
 
-string PUPPinDisplay::GetB2SFilter()
+const string& PUPPinDisplay::GetB2SFilter() const
 {
    LOGE("Not implemented");
-   return ""s;
+   return emptystring;
 }
 
-void PUPPinDisplay::SetB2SFilter(string value)
+void PUPPinDisplay::SetB2SFilter(const string& value)
 {
    LOGE("Not implemented: value=%s", value.c_str());
 }
@@ -319,24 +320,24 @@ void PUPPinDisplay::Hide(int screenNum)
    pScreen->SetMode(PUP_SCREEN_MODE_MUSIC_ONLY);
 }
 
-void PUPPinDisplay::B2SInit(string tName, string romName)
+void PUPPinDisplay::B2SInit(const string& tName, const string& romName)
 {
    m_pupManager.LoadConfig(romName);
    m_pupManager.Start();
 }
 
-void PUPPinDisplay::SendMSG(string szMsg)
+void PUPPinDisplay::SendMSG(const string& szMsg)
 {
    RSJresource json(szMsg);
-   if (json["mt"].exists()) {
-      int mt = json["mt"].as<int>();
+   if (json["mt"s].exists()) {
+      int mt = json["mt"s].as<int>();
       switch(mt) {
          case 301:
-            if (json["SN"].exists() && json["FN"].exists()) {
-               int sn = json["SN"].as<int>();
+            if (json["SN"s].exists() && json["FN"s].exists()) {
+               int sn = json["SN"s].as<int>();
                PUPScreen* pScreen = m_pupManager.GetScreen(sn);
                if (pScreen) {
-                  int fn = json["FN"].as<int>();
+                  int fn = json["FN"s].as<int>();
                   switch (fn) {
                      case 4:
                         // set StayOnTop { "mt":301, "SN": XX, "FN":4, "FS":1/0 }
@@ -407,7 +408,7 @@ void PUPPinDisplay::SendMSG(string szMsg)
    PageNum   - IMPORTANT... this will assign this label to this 'page' or group
    Visible   - initial state of label. visible = 1 show, 0 = off
 */
-void PUPPinDisplay::LabelNew(int screenNum, string LabelName, string FontName, int Size, int Color, int Angle, int xAlign, int yAlign, int xMargin, int yMargin, int PageNum, bool Visible)
+void PUPPinDisplay::LabelNew(int screenNum, const string& LabelName, const string& FontName, int Size, int Color, int Angle, int xAlign, int yAlign, int xMargin, int yMargin, int PageNum, bool Visible)
 {
    PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
    if (!pScreen) {
@@ -441,7 +442,7 @@ void PUPPinDisplay::LabelNew(int screenNum, string LabelName, string FontName, i
               performance penalty like changing a fontname etc. for other items like position, there won't be a
               performance issue.
 */
-void PUPPinDisplay::LabelSet(int screenNum, string LabelName, string Caption, bool Visible, string Special)
+void PUPPinDisplay::LabelSet(int screenNum, const string& LabelName, const string& Caption, bool Visible, const string& Special)
 {
    static ankerl::unordered_dense::map<LONG, ankerl::unordered_dense::set<string>> warnedLabels;
 
@@ -481,7 +482,7 @@ void PUPPinDisplay::LabelSetEx()
    Special - future.
 */
 
-void PUPPinDisplay::LabelShowPage(int screenNum, int PageNum, int Seconds, string Special)
+void PUPPinDisplay::LabelShowPage(int screenNum, int PageNum, int Seconds, const string& Special)
 {
    PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
    if (!pScreen) {
@@ -501,38 +502,38 @@ void PUPPinDisplay::LabelInit(int screenNum)
    pScreen->SetLabelInit();
 }
 
-string PUPPinDisplay::GetGetGame()
+const string& PUPPinDisplay::GetGetGame() const
 {
    LOGE("Not implemented");
-   return "";
+   return emptystring;
 }
 
-void PUPPinDisplay::SetGetGame(string value)
+void PUPPinDisplay::SetGetGame(const string& value)
 {
    LOGE("Not implemented: value=%s", value.c_str());
 }
 
-string PUPPinDisplay::GetGetRoot()
+const string& PUPPinDisplay::GetGetRoot() const
 {
    return m_pupManager.GetRootPath();
 }
 
-void PUPPinDisplay::SetGetRoot(string value)
+void PUPPinDisplay::SetGetRoot(const string& value)
 {
    LOGE("Not implemented: value=%s", value.c_str());
 }
 
-void PUPPinDisplay::SoundAdd(string sname, string fname, int svol, double sX, double sy, string SP)
+void PUPPinDisplay::SoundAdd(const string& sname, const string& fname, int svol, double sX, double sy, const string& SP)
 {
    LOGE("Not implemented: sname=%s, fname=%s, svol=%d, sX=%f, sy=%f, SP=%s", sname.c_str(), fname.c_str(), svol, sX, sy, SP.c_str());
 }
 
-void PUPPinDisplay::SoundPlay(string sname)
+void PUPPinDisplay::SoundPlay(const string& sname)
 {
    LOGE("Not implemented: sname=%s", sname.c_str());
 }
 
-void PUPPinDisplay::PuPSound(string sname, int sX, int sy, int sz, int vol, string SP)
+void PUPPinDisplay::PuPSound(const string& sname, int sX, int sy, int sz, int vol, const string& SP)
 {
    LOGE("Not implemented: sname=%s, sX=%d, sy=%d, sz=%d, vol=%d, SP=%s", sname.c_str(), sX, sy, sz, vol, SP.c_str());
 }
@@ -542,10 +543,10 @@ void PUPPinDisplay::InitPuPMenu(int Param1)
    LOGE("Not implemented: param1=%d", Param1);
 }
 
-string PUPPinDisplay::GetB2SDisplays()
+const string& PUPPinDisplay::GetB2SDisplays() const
 {
    LOGE("Not implemented");
-   return ""s;
+   return emptystring;
 }
 
 void PUPPinDisplay::setVolumeCurrent(int screenNum, int vol)
@@ -558,7 +559,7 @@ void PUPPinDisplay::setVolumeCurrent(int screenNum, int vol)
    LOGE("Not implemented: screenNum=%d, vol=%d", screenNum, vol);
 }
 
-int PUPPinDisplay::GetGameUpdate(string GameTitle, int Func, int FuncData, string Extra)
+int PUPPinDisplay::GetGameUpdate(const string& GameTitle, int Func, int FuncData, const string& Extra) const
 {
    LOGE("Not implemented: gameTitle=%s, func=%d, funcData=%d, extra=%s", GameTitle.c_str(), Func, FuncData, Extra.c_str());
    return 0;
@@ -571,12 +572,12 @@ int PUPPinDisplay::GetGameUpdate(string GameTitle, int Func, int FuncData, strin
    return;
 }*/
 
-string PUPPinDisplay::GetVersion()
+string PUPPinDisplay::GetVersion() const
 {
-   int nVersionNo0 = 1;
-   int nVersionNo1 = 5;
-   int nVersionNo2 = 99;
-   int nVersionNo3 = 99;
+   constexpr int nVersionNo0 = 1;
+   constexpr int nVersionNo1 = 5;
+   constexpr int nVersionNo2 = 99;
+   constexpr int nVersionNo3 = 99;
    return std::to_string(nVersionNo0) + '.' + std::to_string(nVersionNo1) + '.' + std::to_string(nVersionNo2) + '.' + std::to_string(nVersionNo3);
 }
 
@@ -587,7 +588,7 @@ string PUPPinDisplay::GetVersion()
    return;
 }*/
 
-void PUPPinDisplay::playevent(int screenNum, string playlist, string playfilename, int volume, int priority, int playtype, int Seconds, string Special)
+void PUPPinDisplay::playevent(int screenNum, const string& playlist, const string& playfilename, int volume, int priority, int playtype, int Seconds, const string& Special)
 {
    PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
    if (!pScreen) {
@@ -626,7 +627,7 @@ void PUPPinDisplay::playevent(int screenNum, string playlist, string playfilenam
    }
 }
 
-void PUPPinDisplay::SetPosVideo(int screenNum, int StartPos, int EndPos, int Mode, string Special)
+void PUPPinDisplay::SetPosVideo(int screenNum, int StartPos, int EndPos, int Mode, const string& Special)
 {
    PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
    if (!pScreen) {

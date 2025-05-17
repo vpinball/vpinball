@@ -481,7 +481,7 @@ void PinSound::Play_SNDCFG_SND3DALLREAR(float nVolume, const float randompitch, 
         usesame <<  " Restart? " << restart; */
 
    if (Mix_Playing(m_assignedChannel)) {
-      if (restart || !usesame) { // stop and reload  
+      if (restart || !usesame) { // stop and reload
          Mix_HaltChannel(m_assignedChannel);
          setPitch(pitch, randompitch);
          // register the effects.  must do this each time before PlayChannel and once the sound is done its unregistered automatically
@@ -1184,7 +1184,7 @@ void PinSound::Pan2ChannelEffect(int chan, void *stream, int len, void *udata)
          // 8 channels (7.1): FL, FR, FC, LFE, BL, BR, SL, SR
          for (int index = 0; index < total_samples; index += channels) {
             // Apply volume gains to Front Left and Right channels
-            samples[index] *= leftPanRatio;  // FL
+            samples[index  ] *= leftPanRatio;  // FL
             samples[index+1] *= rightPanRatio; // FR
          }
          break;
@@ -1249,7 +1249,7 @@ void PinSound::MoveFrontToRearEffect(int chan, void *stream, int len, void *udat
          for (int index = 0; index < total_samples; index += channels) {
             if (channels >= 4 && channels <= 8) {
                // Apply volume gains and copy them to rear
-               samples[index+offs] = (int16_t)((float)samples[index]   * leftPanRatio);  // copy FL to BL
+               samples[index  +offs] = (int16_t)((float)samples[index]   * leftPanRatio);  // copy FL to BL
                samples[index+1+offs] = (int16_t)((float)samples[index+1] * rightPanRatio); // copy FR to BR
             }
 
@@ -1269,7 +1269,7 @@ void PinSound::MoveFrontToRearEffect(int chan, void *stream, int len, void *udat
          for (int index = 0; index < total_samples; index += channels) {
             if (channels >= 4 && channels <= 8) {
                // Apply volume gains and copy them to rear
-               samples[index+offs] = samples[index]   * leftPanRatio;  // copy FL to BL
+               samples[index  +offs] = samples[index]   * leftPanRatio;  // copy FL to BL
                samples[index+1+offs] = samples[index+1] * rightPanRatio; // copy FR to BR
             }
 
@@ -1290,7 +1290,7 @@ void PinSound::MoveFrontToRearEffect(int chan, void *stream, int len, void *udat
          for (int index = 0; index < total_samples; index += channels) {
             if (channels >= 4 && channels <= 8) {
                // Apply volume gains and copy them to rear
-               samples[index+offs] = (int32_t)((float)samples[index]   * leftPanRatio);  // copy FL to BL
+               samples[index  +offs] = (int32_t)((float)samples[index]   * leftPanRatio);  // copy FL to BL
                samples[index+1+offs] = (int32_t)((float)samples[index+1] * rightPanRatio); // copy FR to BR
             }
 
@@ -1371,7 +1371,7 @@ void PinSound::SSFEffect(int chan, void *stream, int len, void *udata)
             // 8 channels (7.1): FL, FR, FC, LFE, BL, BR, SL, SR
             for (int index = 0; index < total_samples; index += channels) {
                // copy the sound sample from Front to Back and Side channels.
-               samples[index + 4] = (samples[index]);   // COPY FL to BL
+               samples[index + 4] = (samples[index]);   // Copy FL to BL
                samples[index + 5] = (samples[index+1]); // Copy FR to BR
                samples[index + 6] = (samples[index]);   // Copy FL to SL
                samples[index + 7] = (samples[index+1]); // Copy FR to SR
@@ -1396,7 +1396,7 @@ void PinSound::SSFEffect(int chan, void *stream, int len, void *udata)
             // 8 channels (7.1): FL, FR, FC, LFE, BL, BR, SL, SR
             for (int index = 0; index < total_samples; index += channels) {
                // copy the sound sample from Front to Back and Side channels.
-               samples[index + 4] = (samples[index]);   // COPY FL to BL
+               samples[index + 4] = (samples[index]);   // Copy FL to BL
                samples[index + 5] = (samples[index+1]); // Copy FR to BR
                samples[index + 6] = (samples[index]);   // Copy FL to SL
                samples[index + 7] = (samples[index+1]); // Copy FR to SR
@@ -1427,7 +1427,7 @@ void PinSound::SSFEffect(int chan, void *stream, int len, void *udata)
             // 8 channels (7.1): FL, FR, FC, LFE, BL, BR, SL, SR
             for (int index = 0; index < total_samples; index += channels) {
                // copy the sound sample from Front to Back and Side channels.
-               samples[index + 4] = (samples[index]);   // COPY FL to BL
+               samples[index + 4] = (samples[index]);   // Copy FL to BL
                samples[index + 5] = (samples[index+1]); // Copy FR to BR
                samples[index + 6] = (samples[index]);   // Copy FL to SL
                samples[index + 7] = (samples[index+1]); // Copy FR to SR

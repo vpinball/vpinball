@@ -372,7 +372,7 @@ void UltraDMD::ScrollingCredits(const string& background, const string& text, in
       lines.push_back(line);
 
    Font* pFont = GetFont(m_pScoreFontText->GetPath(), textBrightness / 15.0f, -1);
-   ScrollingCreditsScene* pScene = new ScrollingCreditsScene(m_pFlexDMD, ResolveImage(background, false), lines, pFont, (AnimationType)animateIn, pauseTime / 1000.0f, (AnimationType)animateOut, "");
+   ScrollingCreditsScene* pScene = new ScrollingCreditsScene(m_pFlexDMD, ResolveImage(background, false), lines, pFont, (AnimationType)animateIn, pauseTime / 1000.0f, (AnimationType)animateOut, ""s);
    m_pQueue->SetVisible(true);
    m_pQueue->Enqueue(pScene);
 }

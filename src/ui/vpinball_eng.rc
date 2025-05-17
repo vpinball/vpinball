@@ -641,7 +641,7 @@ BEGIN
     EDITTEXT        IDC_Y_OFFSET_EDIT,66,136,75,11,ES_RIGHT | ES_AUTOHSCROLL
     LISTBOX         IDC_SIZELIST,12,107,129,99,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "Reset Window Position",IDC_RESET_WINDOW,13,211,127,14
-    LTEXT           "Backglass view is meant to display the pinball backglass, using one of the provided render source: 'B2S', 'PinUp' or '3D render'.",IDC_STATIC,155,10,283,35
+    LTEXT           "Backglass view is meant to display the pinball backglass, using one of the provided render sources: 'B2S', 'PinUp' or '3D render'.",IDC_STATIC,155,10,283,35
 END
 
 IDD_FONTDIALOG DIALOG 0, 0, 316, 167

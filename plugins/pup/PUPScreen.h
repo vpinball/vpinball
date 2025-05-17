@@ -94,7 +94,7 @@ public:
    PUPPlaylist* GetPlaylist(const string& szFolder);
    void AddTrigger(PUPTrigger* pTrigger);
    vector<PUPTrigger*>* GetTriggers(const string& szTrigger);
-   const std::map<string, vector<PUPTrigger*>>& GetTriggers() const { return m_triggerMap; }
+   const ankerl::unordered_dense::map<string, vector<PUPTrigger*>>& GetTriggers() const { return m_triggerMap; }
    void SendToFront();
    void SetSize(int w, int h);
    void Init();
@@ -151,9 +151,9 @@ private:
    PUPCustomPos* m_pCustomPos;
    SDL_Rect m_rect;
    vector<PUPLabel*> m_labels;
-   std::map<string, PUPLabel*> m_labelMap;
-   std::map<string, PUPPlaylist*> m_playlistMap;
-   std::map<string, vector<PUPTrigger*>> m_triggerMap;
+   ankerl::unordered_dense::map<string, PUPLabel*> m_labelMap;
+   ankerl::unordered_dense::map<string, PUPPlaylist*> m_playlistMap;
+   ankerl::unordered_dense::map<string, vector<PUPTrigger*>> m_triggerMap;
    PUPScreenRenderable m_background;
    PUPScreenRenderable m_overlay;
    PUPMediaManager* m_pMediaPlayerManager;

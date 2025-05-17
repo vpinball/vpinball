@@ -53,8 +53,9 @@ void PUPLabel::SetCaption(const string& szCaption)
    if (szCaption == "`u`")
       return;
 
-   string szText = string_replace_all(szCaption, "~", "\n");
-   szText = string_replace_all(szText, "\\r", "\n");
+   string szText = szCaption;
+   std::ranges::replace(szText.begin(), szText.end(), '~', '\n');
+   szText = string_replace_all(szText, "\\r"s, "\n"s);
 
    {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -343,7 +344,7 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, SDL_Rect& rect, int pagenum
 
    if (m_renderState.m_pAnimation)
    {
-      int expectedFrame = static_cast<int>(static_cast<float>(SDL_GetTicks() - m_animationStart) * 60.f / 1000.f) % m_renderState.m_pAnimation->count;
+      int expectedFrame = static_cast<int>(static_cast<float>(SDL_GetTicks() - m_animationStart) * (float)(60. / 1000.)) % m_renderState.m_pAnimation->count;
       if (expectedFrame != m_animationFrame)
       {
          m_animationFrame = expectedFrame;
@@ -401,7 +402,7 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, SDL_Rect& rect, int pagenum
          dest.y += (static_cast<float>(rect.h) - height);
    }
 
-   SDL_FPoint center = { height / 2.0f, 0 };
+   //SDL_FPoint center = { height / 2.0f, 0 };
 
    int texWidth, texHeight;
    GetTextureInfo(m_renderState.m_pTexture, &texWidth, &texHeight);
@@ -409,9 +410,9 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, SDL_Rect& rect, int pagenum
    // FIXME port SDL_RenderTextureRotated(m_pTexture, NULL, &dest, -m_angle / 10.0, &center, SDL_FLIP_NONE);
 }
 
-PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, string szPath)
+PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const string& szPath)
 {
-   SetThreadName("PUPLabel.Upd."s + m_szName);
+   SetThreadName("PUPLabel.Upd." + m_szName);
 
    RenderState rs;
 
@@ -440,9 +441,9 @@ PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, string s
    return rs;
 }
 
-PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, TTF_Font* pFont, string szCaption, float size, int color, int shadowstate, int shadowcolor, SDL_FPoint offset)
+PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, TTF_Font* pFont, const string& szCaption, float size, int color, int shadowstate, int shadowcolor, SDL_FPoint offset)
 {
-   SetThreadName("PUPLabel.Upd."s + m_szName);
+   SetThreadName("PUPLabel.Upd." + m_szName);
 
    // TTF_Font may not be accessed simultaneously from multiple thread so serialize updates using a mutex
    static std::mutex fontMutex;
@@ -463,7 +464,7 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, TTF_Font* pFon
       return rs;
    }
 
-   SDL_Surface* pMergedSurface = NULL;
+   SDL_Surface* pMergedSurface = nullptr;
 
    if (shadowstate)
    {
@@ -476,8 +477,8 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outHeight, TTF_Font* pFon
          return rs;
       }
 
-      int xoffset = (int)(((abs(offset.x) / 100.0) * height) / 2);
-      int yoffset = (int)(((abs(offset.y) / 100.0) * height) / 2);
+      int xoffset = (int)(((abs(offset.x) / 100.0f) * height) / 2.f);
+      int yoffset = (int)(((abs(offset.y) / 100.0f) * height) / 2.f);
 
       pMergedSurface = SDL_CreateSurface(pTextSurface->w + xoffset, pTextSurface->h + yoffset, SDL_PIXELFORMAT_RGBA32);
       if (pMergedSurface)

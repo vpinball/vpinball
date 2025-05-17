@@ -102,10 +102,10 @@ void PUPManager::LoadConfig(const string& szRomName)
    for (auto& [key, pScreen] : m_screenMap) {
       PUPCustomPos* pCustomPos = pScreen->GetCustomPos();
       if (pCustomPos) {
-         std::map<int, PUPScreen*>::iterator it = m_screenMap.find(pCustomPos->GetSourceScreen());
+         ankerl::unordered_dense::map<int, PUPScreen*>::const_iterator it = m_screenMap.find(pCustomPos->GetSourceScreen());
          if (it == m_screenMap.end())
             continue;
-         PUPScreen* pParentScreen = it->second;
+         PUPScreen* const pParentScreen = it->second;
          if (pParentScreen && pScreen != pParentScreen)
             pParentScreen->AddChild(pScreen);
       }
@@ -227,7 +227,7 @@ bool PUPManager::AddScreen(int screenNum)
 
 bool PUPManager::HasScreen(int screenNum)
 {
-   std::map<int, PUPScreen*>::iterator it = m_screenMap.find(screenNum);
+   ankerl::unordered_dense::map<int, PUPScreen*>::const_iterator it = m_screenMap.find(screenNum);
    return it != m_screenMap.end();
 }
 
@@ -237,7 +237,7 @@ PUPScreen* PUPManager::GetScreen(int screenNum) const
       LOGE("Getting screen before initialization");
    }
 
-   std::map<int, PUPScreen*>::const_iterator it = m_screenMap.find(screenNum);
+   ankerl::unordered_dense::map<int, PUPScreen*>::const_iterator it = m_screenMap.find(screenNum);
    return it != m_screenMap.end() ? it->second : nullptr;
 }
 
@@ -273,7 +273,7 @@ TTF_Font* PUPManager::GetFont(const string& szFont)
 {
    string szNormalizedFamilyName = lowerCase(string_replace_all(szFont, "  "s, " "s));
 
-   std::map<string, TTF_Font*>::iterator it = m_fontMap.find(szNormalizedFamilyName);
+   ankerl::unordered_dense::mapstring, TTF_Font*>::const_iterator it = m_fontMap.find(szNormalizedFamilyName);
    if (it != m_fontMap.end())
       return it->second;
    it = m_fontFilenameMap.find(lowerCase(szFont));

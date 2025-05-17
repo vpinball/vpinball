@@ -225,7 +225,7 @@ private:
    bool m_disable_esc = false; // Option for keyboard shortcuts
    int m_esc_mode = 0; // What to do if Esc is pressed while on splash screen (depends on why the splash was opened)
    U32 m_OpenUITime = 0; // Used to delay keyboard shortcut
-   U64 m_StartTime_msec = 0; // Used for timed splash overlays
+   U32 m_StartTime_msec = 0; // Used for timed splash overlays
 
    // Profiler display data
    int m_show_fps = 0; // 0=disabled / 1=FPS / 2=FPS+dynamic plot

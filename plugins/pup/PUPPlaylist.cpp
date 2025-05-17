@@ -22,6 +22,8 @@
      AlphaSort=0 is Randomize checked
 */
 
+static const string emptyString;
+
 const char* PUP_PLAYLIST_FUNCTION_STRINGS[] = {
    "PUP_PLAYLIST_FUNCTION_DEFAULT",
    "PUP_PLAYLIST_FUNCTION_OVERLAYS",
@@ -127,9 +129,7 @@ PUPPlaylist* PUPPlaylist::CreateFromCSV(PUPManager* manager, const string& line)
 
 const string& PUPPlaylist::GetPlayFile(const string& szFilename)
 {
-   static const string emptyString;
-
-   std::map<string, string>::iterator it = m_fileMap.find(lowerCase(szFilename));
+   ankerl::unordered_dense::map<string, string>::const_iterator it = m_fileMap.find(lowerCase(szFilename));
    return it != m_fileMap.end() ? it->second : emptyString;
 }
 
@@ -146,13 +146,11 @@ const string& PUPPlaylist::GetNextPlayFile()
 
 string PUPPlaylist::GetPlayFilePath(const string& szFilename)
 {
-   static const string emptyString;
-
    if (m_files.empty())
       return emptyString;
 
    if (!szFilename.empty()) {
-      std::map<string, string>::const_iterator it = m_fileMap.find(lowerCase(szFilename));
+      ankerl::unordered_dense::map<string, string>::const_iterator it = m_fileMap.find(lowerCase(szFilename));
       if (it != m_fileMap.end())
          return m_szBasePath + it->second;
       else

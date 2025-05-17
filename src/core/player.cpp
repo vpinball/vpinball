@@ -153,13 +153,13 @@ LRESULT CALLBACK PlayerWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 Player::Player(PinTable *const editor_table, PinTable *const live_table, const int playMode)
    : m_pEditorTable(editor_table)
    , m_ptable(live_table)
-   , m_scoreviewOutput("Visual Pinball - Score"s, live_table->m_settings, Settings::ScoreView, "ScoreView")
-   , m_backglassOutput("Visual Pinball - Backglass"s, live_table->m_settings, Settings::Backglass, "Backglass")
-   , m_topperOutput("Visual Pinball - Topper"s, live_table->m_settings, Settings::Topper, "Topper")
+   , m_scoreviewOutput("Visual Pinball - Score"s, live_table->m_settings, Settings::ScoreView, "ScoreView"s)
+   , m_backglassOutput("Visual Pinball - Backglass"s, live_table->m_settings, Settings::Backglass, "Backglass"s)
+   , m_topperOutput("Visual Pinball - Topper"s, live_table->m_settings, Settings::Topper, "Topper"s)
 {
    // For the time being, lots of access are made through the global singleton, so ensure we are unique, and define it as soon as needed
    assert(g_pplayer == nullptr);
-   g_pplayer = this; 
+   g_pplayer = this;
 
    m_logicProfiler.NewFrame(0);
    m_renderProfiler = new FrameProfiler();
@@ -2101,15 +2101,15 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
    VPX::RenderOutput &output = window == VPXAnciliaryWindow::VPXWINDOW_Backglass ? m_backglassOutput :
                                window == VPXAnciliaryWindow::VPXWINDOW_ScoreView ? m_scoreviewOutput :
                                /*window == VPXAnciliaryWindow::VPXWINDOW_Topper ? */ m_topperOutput;
-   const string renderPassName = window == VPXAnciliaryWindow::VPXWINDOW_Backglass ? "Backglass Render" :
-                                 window == VPXAnciliaryWindow::VPXWINDOW_ScoreView ? "ScoreView Render" :
-                                /*window == VPXAnciliaryWindow::VPXWINDOW_Topper ? */ "Topper Render";
-   const string tonemapPassName = window == VPXAnciliaryWindow::VPXWINDOW_Backglass ? "Backglass Tonemap" :
-                                  window == VPXAnciliaryWindow::VPXWINDOW_ScoreView ? "ScoreView Tonemap" :
-                                /*window == VPXAnciliaryWindow::VPXWINDOW_Topper ? */ "Topper Tonemap";
-   const string hdrRTName = window == VPXAnciliaryWindow::VPXWINDOW_Backglass ? "BackglassBackBuffer" :
-                            window == VPXAnciliaryWindow::VPXWINDOW_ScoreView ? "ScoreViewBackBuffer" :
-                          /*window == VPXAnciliaryWindow::VPXWINDOW_Topper ? */ "TopperBackBuffer";
+   const string renderPassName = window == VPXAnciliaryWindow::VPXWINDOW_Backglass ? "Backglass Render"s :
+                                 window == VPXAnciliaryWindow::VPXWINDOW_ScoreView ? "ScoreView Render"s :
+                                /*window == VPXAnciliaryWindow::VPXWINDOW_Topper ? */ "Topper Render"s;
+   const string tonemapPassName = window == VPXAnciliaryWindow::VPXWINDOW_Backglass ? "Backglass Tonemap"s :
+                                  window == VPXAnciliaryWindow::VPXWINDOW_ScoreView ? "ScoreView Tonemap"s :
+                                /*window == VPXAnciliaryWindow::VPXWINDOW_Topper ? */ "Topper Tonemap"s;
+   const string hdrRTName = window == VPXAnciliaryWindow::VPXWINDOW_Backglass ? "BackglassBackBuffer"s :
+                            window == VPXAnciliaryWindow::VPXWINDOW_ScoreView ? "ScoreViewBackBuffer"s :
+                          /*window == VPXAnciliaryWindow::VPXWINDOW_Topper ? */ "TopperBackBuffer"s;
 
    // TODO implement rendering for VR (on a flasher)
    if (m_vrDevice != nullptr)
@@ -2160,7 +2160,7 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
    rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
 
    // Performing linear rendering + tonemapping is overkill when used for LDR rendering (Pup pack, B2S,...)
-   const bool enableHDR = true; // TODO still needs to implement sRGB image drawing when render target is non linear
+   constexpr bool enableHDR = true; // TODO still needs to implement sRGB image drawing when render target is non linear
 
    if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
    {
@@ -2190,8 +2190,8 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
          const float srcX, const float srcY, const float srcW, const float srcH,
          const float dstX, const float dstY, const float dstW, const float dstH)
          {
-            Texture *tex = static_cast<Texture*>(texture);
-            RenderDevice *rd = g_pplayer->m_renderer->m_renderDevice;
+            Texture * const tex = static_cast<Texture*>(texture);
+            RenderDevice * const rd = g_pplayer->m_renderer->m_renderDevice;
             rd->SetRenderState(RenderState::ALPHABLENDENABLE, (alpha != 1.f || !tex->m_pdsBuffer->IsOpaque()) ? RenderState::RS_TRUE : RenderState::RS_FALSE);
             rd->m_basicShader->SetVector(SHADER_cBase_Alpha, tintR, tintG, tintB, alpha);
             rd->m_basicShader->SetTexture(SHADER_tex_base_color, tex->m_pdsBuffer);
@@ -2246,7 +2246,7 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
          if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
             output.GetWindow()->Show();
          #endif
-         return rd->GetCurrentRenderTarget();      
+         return rd->GetCurrentRenderTarget();
       }
       else
       {
@@ -2303,8 +2303,8 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
          rd->m_FBShader->SetVector(SHADER_exposure_wcg, 
             m_exposure,
             1.f, 
-            0.f, // Unused for SDR
-            0.f); // Tonemapping mode: 0 = SDR 
+            0.f,  // Unused for SDR
+            0.f); // Tonemapping mode: 0 = SDR
       }
       rd->DrawFullscreenTexturedQuad(rd->m_FBShader);
    }

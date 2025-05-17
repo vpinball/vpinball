@@ -9,7 +9,7 @@
 #include "pupdmd.h"
 #pragma warning(pop)
 
-#include <map>
+#include <unordered_dense.h>
 #include <vector>
 #include <queue>
 #include <mutex>
@@ -93,10 +93,10 @@ private:
    bool m_init = false;
    const string m_szRootPath;
    string m_szPath;
-   std::map<int, PUPScreen*> m_screenMap;
+   ankerl::unordered_dense::map<int, PUPScreen*> m_screenMap;
    vector<TTF_Font*> m_fonts;
-   std::map<string, TTF_Font*> m_fontMap;
-   std::map<string, TTF_Font*> m_fontFilenameMap;
+   ankerl::unordered_dense::map<string, TTF_Font*> m_fontMap;
+   ankerl::unordered_dense::map<string, TTF_Font*> m_fontFilenameMap;
    vector<PUPTriggerData> m_triggerDataQueue;
    std::mutex m_queueMutex;
    std::condition_variable m_queueCondVar;

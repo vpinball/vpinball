@@ -315,7 +315,7 @@ void PUPMediaPlayer::Run()
       // Process decoded frames
       // TODO This should be done on anciliary threads to improve synchronization and better balance the load between CPU cores
       // Here, the synchronization entirely rely on the fact that HandleVideoFrame will block, waiting for a free slot in the circular frame buffer
-      // This can causes audio overflow if there are no video (the stream is directly fully decoded) or audio glitches if the muxing is not great
+      // This can cause audio overflow if there are no video (the stream is directly fully decoded) or audio glitches if the muxing is not great
       // (video waiting for frame while audio buffer is exhausted, this one being unlikely).
       if (m_pAudioContext)
       {
@@ -558,7 +558,7 @@ void PUPMediaPlayer::HandleAudioFrame(AVFrame* pFrame)
          return;
       }
    }
-   int resampledDataSize = len2 * destChLayout.nb_channels * av_get_bytes_per_sample(destFmt);
+   //int resampledDataSize = len2 * destChLayout.nb_channels * av_get_bytes_per_sample(destFmt);
    //m_pPinSound->StreamUpdate(pBuffer, resampledDataSize);
 
    av_free(pBuffer);

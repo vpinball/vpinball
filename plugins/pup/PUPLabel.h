@@ -30,7 +30,7 @@ typedef enum
 
 class PUPScreen;
 
-class PUPLabel
+class PUPLabel final
 {
 public:
    PUPLabel(class PUPManager* manager, const string& szName, const string& szFont, float size, int color, float angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, float xPos, float yPos, int pagenum, bool visible);
@@ -75,7 +75,7 @@ private:
 
    std::mutex m_mutex;
 
-   class RenderState
+   class RenderState final
    {
    public:
       RenderState() { }
@@ -89,11 +89,11 @@ private:
       }
 
       RenderState(RenderState&& other) noexcept
-         : m_prerenderedHeight(other.m_prerenderedHeight)
-         , m_pTexture(other.m_pTexture)
-         , m_pAnimation(other.m_pAnimation)
+         : m_pTexture(other.m_pTexture)
+         , m_prerenderedHeight(other.m_prerenderedHeight)
          , m_width(other.m_width)
          , m_height(other.m_height)
+         , m_pAnimation(other.m_pAnimation)
       {
          other.m_pTexture = nullptr;
          other.m_pAnimation = nullptr;
@@ -126,8 +126,8 @@ private:
       float m_height = 0; // height of rendered text (unused for images)
       IMG_Animation* m_pAnimation = nullptr;
    };
-   RenderState UpdateImageTexture(PUP_LABEL_TYPE type, string szPath);
-   RenderState UpdateLabelTexture(int outHeight, TTF_Font* pFont, string szCaption, float size, int color, int shadowstate, int shadowcolor, SDL_FPoint offset);
+   RenderState UpdateImageTexture(PUP_LABEL_TYPE type, const string& szPath);
+   RenderState UpdateLabelTexture(int outHeight, TTF_Font* pFont, const string& szCaption, float size, int color, int shadowstate, int shadowcolor, SDL_FPoint offset);
 
    bool m_dirty = true;
    RenderState m_renderState;

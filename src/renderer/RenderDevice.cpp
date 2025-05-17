@@ -702,7 +702,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    string gfxBackend = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "GfxBackend"s, bgfxRendererNames[bgfx::RendererType::Vulkan]);
 #endif
    bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
-   int nRendererSupported = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers);
+   const int nRendererSupported = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers);
    string supportedRendererLog;
    for (int i = 0; i < nRendererSupported; ++i)
    {
@@ -809,7 +809,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    #endif
    default:
    {
-      ShowError("Invalid Output format: "s.append(std::to_string(mode->format)));
+      ShowError("Invalid Output format: " + std::to_string(mode->format));
       exit(-1);
    }
    }

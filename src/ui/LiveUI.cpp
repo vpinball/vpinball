@@ -1728,8 +1728,8 @@ void LiveUI::UpdateTweakPage()
 
 void LiveUI::HandleTweakInput()
 {
-   static U32 lastHandle = msec();
    const U32 now = msec();
+   static U32 lastHandle = now;
    const U32 sinceLastInputHandleMs = now - lastHandle;
    lastHandle = now;
 
@@ -1795,14 +1795,14 @@ void LiveUI::HandleTweakInput()
          static float floatFraction = 1.0f;
          if (keyEvent != 0)
          {
-            startOfPress = msec();
+            startOfPress = now;
             floatFraction = 1.0f;
          }
          if (keyEvent == 2) // Do not react on key up (only key down or long press)
             continue;
          const bool up = keycode == eRightFlipperKey;
          const float step = up ? 1.f : -1.f;
-         const float absIncSpeed = sinceLastInputHandleMs * 0.001f * min(50.f, 0.75f + (float)(msec() - startOfPress) / 300.0f);
+         const float absIncSpeed = sinceLastInputHandleMs * 0.001f * min(50.f, 0.75f + (float)(now - startOfPress) / 300.0f);
          const float incSpeed = up ? absIncSpeed : -absIncSpeed;
 
          // Since we need less than 1 int per frame for eg volume, we need to keep track of the float value
@@ -1945,12 +1945,12 @@ void LiveUI::HandleTweakInput()
                {
                   const auto& opt = customOptions[activeTweakSetting - BS_Custom];
                   float nTotalSteps = (opt.maxValue - opt.minValue) / opt.step;
-                  int nMsecPerStep = nTotalSteps < 20.f ? 500 : max(5, 250 - (int)(msec() - startOfPress) / 10); // discrete vs continuous sliding
-                  int nSteps = (msec() - m_lastTweakKeyDown) / nMsecPerStep;
+                  int nMsecPerStep = nTotalSteps < 20.f ? 500 : max(5, 250 - (int)(now - startOfPress) / 10); // discrete vs continuous sliding
+                  int nSteps = (now - m_lastTweakKeyDown) / nMsecPerStep;
                   if (keyEvent == 1)
                   {
                      nSteps = 1;
-                     m_lastTweakKeyDown = msec() - nSteps * nMsecPerStep;
+                     m_lastTweakKeyDown = now - nSteps * nMsecPerStep;
                   }
                   if (nSteps > 0)
                   {
@@ -2536,7 +2536,7 @@ void LiveUI::UpdateTweakModeUI()
       }
    }
    infos.push_back(activeTweakSetting == BS_Page ? "Flipper keys:   Previous/Next page"s : "Flipper keys:   Adjust highlighted value"s);
-   const int info = (((int)((msec() - m_StartTime_msec) / 2000ull))) % (int)infos.size();
+   const U32 info = ((msec() - m_StartTime_msec) / 2000u) % (U32)infos.size();
    ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
    HelpTextCentered(infos[info]);
    ImGui::PopStyleColor();

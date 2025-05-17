@@ -165,7 +165,7 @@ void OnPinMAMEGameStart(const unsigned int eventId, void* userData, void* eventD
    assert(msg != nullptr && msg->gameId != nullptr);
    if (pupManager->IsInit())
    {
-      LOGI("PinMAME started while Pup has already been directy initialized. Discarding initialization from PinMAME rom '%s'", msg->gameId);
+      LOGI("PinMAME started while Pup has already been directly initialized. Discarding initialization from PinMAME rom '%s'", msg->gameId);
    }
    else
    {

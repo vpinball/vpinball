@@ -42,6 +42,6 @@ private:
    PUP_PLAYLIST_FUNCTION m_function;
    int m_lastIndex;
    vector<string> m_files;
-   std::map<string, string> m_fileMap;
+   ankerl::unordered_dense::map<string, string> m_fileMap;
    string m_szBasePath;
 };

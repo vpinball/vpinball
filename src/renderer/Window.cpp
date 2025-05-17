@@ -417,7 +417,7 @@ void Window::SetPos(const int x, const int y)
 #if defined(_WIN32) || !defined(ENABLE_SDL_VIDEO)
 BOOL CALLBACK MonitorEnumList(__in  HMONITOR hMonitor, __in  HDC hdcMonitor, __in  LPRECT lprcMonitor, __in  LPARAM dwData)
 {
-   std::map<string, VPX::Window::DisplayConfig>* data = reinterpret_cast<std::map<string, VPX::Window::DisplayConfig>*>(dwData);
+   ankerl::unordered_dense::map<string, VPX::Window::DisplayConfig>* data = reinterpret_cast<ankerl::unordered_dense::map<string, VPX::Window::DisplayConfig>*>(dwData);
    MONITORINFOEX info;
    info.cbSize = sizeof(MONITORINFOEX);
    GetMonitorInfo(hMonitor, &info);
@@ -445,7 +445,7 @@ int Window::GetDisplays(vector<DisplayConfig>& displays)
    // SDL2 display identifier do not match the id of the native Windows settings
    // SDL2 does not offer a way to get the adapter (i.e. Graphics Card) associated with a display (i.e. Monitor) so we use the monitor name for both
    // Get the resolution of all enabled displays as they appear in the Windows settings UI.
-   std::map<string, DisplayConfig> displayMap;
+   ankerl::unordered_dense::map<string, DisplayConfig> displayMap;
    EnumDisplayMonitors(nullptr, nullptr, MonitorEnumList, reinterpret_cast<LPARAM>(&displayMap));
    int displayCount = 0;
    SDL_DisplayID* displayIDs = SDL_GetDisplays(&displayCount);
@@ -506,7 +506,7 @@ int Window::GetDisplays(vector<DisplayConfig>& displays)
    SDL_free(displayIDs);
 #else
    // Get the resolution of all enabled displays as they appear in the Windows settings UI.
-   std::map<string, DisplayConfig> displayMap;
+   ankerl::unordered_dense::map<string, DisplayConfig> displayMap;
    EnumDisplayMonitors(nullptr, nullptr, MonitorEnumList, reinterpret_cast<LPARAM>(&displayMap));
 
    IDirect3D9* pD3D = Direct3DCreate9(D3D_SDK_VERSION);
@@ -521,7 +521,7 @@ int Window::GetDisplays(vector<DisplayConfig>& displays)
    {
       D3DADAPTER_IDENTIFIER9 adapter;
       pD3D->GetAdapterIdentifier(i, 0, &adapter);
-      std::map<string, DisplayConfig>::iterator display = displayMap.find(adapter.DeviceName);
+      ankerl::unordered_dense::map<string, DisplayConfig>::iterator display = displayMap.find(adapter.DeviceName);
       if (display != displayMap.end())
       {
          display->second.adapter = i;
