@@ -118,9 +118,11 @@ LRESULT CALLBACK PlayerWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
    case WM_POINTERUP:
    {
 #ifndef TEST_TOUCH_WITH_MOUSE
+#if (WINVER < 0x0602)
       if (!GetPointerInfo)
          GetPointerInfo = (pGPI)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "GetPointerInfo");
       if (GetPointerInfo)
+#endif
 #endif
       {
          POINTER_INFO pointerInfo;
@@ -229,7 +231,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
                   useVR = m_vrDevice->IsOpenXRHMDReady();
                }
             }
-            else if (vrDetectionMode == 0) // 0 is VR on, tell the user that his choice will not be fullfilled
+            else if (vrDetectionMode == 0) // 0 is VR on, tell the user that the choice will not be fullfilled
                ShowError("VR mode activated but OpenXR initialization failed.");
             if (!useVR)
             {
@@ -345,9 +347,11 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
         && (GetSystemMetrics(SM_MAXIMUMTOUCHES) != 0);
 
    #if 1 // we do not want to handle WM_TOUCH
+   #if (WINVER < 0x0602)
        if (!UnregisterTouchWindow)
            UnregisterTouchWindow = (pUnregisterTouchWindow)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "UnregisterTouchWindow");
        if (UnregisterTouchWindow)
+   #endif
            UnregisterTouchWindow(m_playfieldWnd->GetCore());
    #else // would be useful if handling WM_TOUCH instead of WM_POINTERDOWN
        // Disable palm detection
@@ -387,9 +391,11 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    #endif
 
     // Disable visual feedback for touch, this saves one frame of latency on touch displays
+    #if (WINVER < 0x0602)
     if (!SetWindowFeedbackSetting)
         SetWindowFeedbackSetting = (pSWFS)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetWindowFeedbackSetting");
     if (SetWindowFeedbackSetting)
+    #endif
     {
         constexpr BOOL enabled = FALSE;
 

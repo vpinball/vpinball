@@ -247,8 +247,7 @@ void* AssetManager::Open(AssetSrc* pSrc)
       break;
       case AssetSrcType_FlexResource:
       {
-         string path = SDL_GetBasePath();
-         path = path + "plugins/flexdmd/assets" + PATH_SEPARATOR_CHAR + pSrc->GetPath();
+         string path = SDL_GetBasePath() + "plugins/flexdmd/assets"s + PATH_SEPARATOR_CHAR + pSrc->GetPath();
          #if SDL_PLATFORM_WINDOWS
             HMODULE hModule = nullptr;
             if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, _T("Open"), &hModule))
@@ -267,7 +266,7 @@ void* AssetManager::Open(AssetSrc* pSrc)
                   #else
                   path = fullpath;
                   #endif
-                  path = path + "assets" + PATH_SEPARATOR_CHAR + pSrc->GetPath();
+                  path += "assets"s + PATH_SEPARATOR_CHAR + pSrc->GetPath();
                }
             }
          #endif
