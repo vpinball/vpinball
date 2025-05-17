@@ -27,7 +27,7 @@ typedef enum
 class PUPManager;
 class PUPScreen;
 
-class PUPLabel
+class PUPLabel final
 {
 public:
    PUPLabel(PUPManager* pManager, const string& szName, const string& szFont, float size, LONG color, float angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, float xPos, float yPos, int pagenum, bool visible);

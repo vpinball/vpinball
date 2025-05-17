@@ -12,13 +12,15 @@ struct PUPMediaManagerPlayer
    int priority;
 };
 
-class PUPMediaManager
+class PUPMediaManager final
 {
 private:
    PUPMediaManagerPlayer m_player1;
    PUPMediaManagerPlayer m_player2;
+
    PUPMediaManagerPlayer* m_pMainPlayer;
    PUPMediaManagerPlayer* m_pBackgroundPlayer;
+
    PUPScreen* m_pScreen;
    bool m_pop;
    SDL_Renderer* m_pRenderer;

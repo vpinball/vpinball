@@ -46,7 +46,7 @@ const char* PUP_TRIGGER_PLAY_ACTION_TO_STRING(PUP_TRIGGER_PLAY_ACTION value)
      Loop = PlayAction
      Defaults = ?
 
-   trigger name prefixes:
+   trigger names:
 
      S = Solenoid
      W = Switches
@@ -54,7 +54,7 @@ const char* PUP_TRIGGER_PLAY_ACTION_TO_STRING(PUP_TRIGGER_PLAY_ACTION value)
      G = GIs
      E = DOFs
      M = Mechs
-     D = PupCap DMD Match
+     D = PupCap DMD Match or B2S LED
 */
 
 PUPTrigger::PUPTrigger(bool active, const string& szDescript, const vector<PUPTriggerCondition*>& conditions, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const string& szPlayFile, float volume,

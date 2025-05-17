@@ -22,7 +22,7 @@ const char* PUP_SCREEN_MODE_STRINGS[] = {
 
 const char* PUP_SCREEN_MODE_TO_STRING(PUP_SCREEN_MODE value)
 {
-   if ((int)value < 0 || (size_t)value >= sizeof(PUP_SCREEN_MODE_STRINGS) / sizeof(PUP_SCREEN_MODE_STRINGS[0]))
+   if ((int)value < 0 || (size_t)value >= std::size(PUP_SCREEN_MODE_STRINGS))
       return "UNKNOWN";
    return PUP_SCREEN_MODE_STRINGS[value];
 }
@@ -36,7 +36,7 @@ const char* PUP_PINDISPLAY_REQUEST_TYPE_STRINGS[] = {
 
 const char* PUP_PINDISPLAY_REQUEST_TYPE_TO_STRING(PUP_PINDISPLAY_REQUEST_TYPE value)
 {
-   if ((int)value < 0 || (size_t)value >= sizeof(PUP_PINDISPLAY_REQUEST_TYPE_STRINGS) / sizeof(PUP_PINDISPLAY_REQUEST_TYPE_STRINGS[0]))
+   if ((int)value < 0 || (size_t)value >= std::size(PUP_PINDISPLAY_REQUEST_TYPE_STRINGS))
       return "UNKNOWN";
    return PUP_PINDISPLAY_REQUEST_TYPE_STRINGS[value];
 }
@@ -132,19 +132,19 @@ PUPScreen* PUPScreen::CreateFromCSV(PUPManager* pManager, const string& line, co
    }
 
    PUP_SCREEN_MODE mode;
-   if (StrCompareNoCase(parts[5], "Show"))
+   if (StrCompareNoCase(parts[5], "Show"s))
       mode = PUP_SCREEN_MODE_SHOW;
-   else if (StrCompareNoCase(parts[5], "ForceON"))
+   else if (StrCompareNoCase(parts[5], "ForceON"s))
       mode = PUP_SCREEN_MODE_FORCE_ON;
-   else if (StrCompareNoCase(parts[5], "ForcePoP"))
+   else if (StrCompareNoCase(parts[5], "ForcePoP"s))
       mode = PUP_SCREEN_MODE_FORCE_POP;
-   else if (StrCompareNoCase(parts[5], "ForceBack"))
+   else if (StrCompareNoCase(parts[5], "ForceBack"s))
       mode = PUP_SCREEN_MODE_FORCE_BACK;
-   else if (StrCompareNoCase(parts[5], "ForcePopBack"))
+   else if (StrCompareNoCase(parts[5], "ForcePopBack"s))
       mode = PUP_SCREEN_MODE_FORCE_POP_BACK;
-   else if (StrCompareNoCase(parts[5], "MusicOnly"))
+   else if (StrCompareNoCase(parts[5], "MusicOnly"s))
       mode = PUP_SCREEN_MODE_MUSIC_ONLY;
-   else if (StrCompareNoCase(parts[5], "Off"))
+   else if (StrCompareNoCase(parts[5], "Off"s))
       mode = PUP_SCREEN_MODE_OFF;
    else {
       PLOGW.printf("Invalid screen mode: %s", parts[5].c_str());
@@ -173,15 +173,15 @@ PUPScreen* PUPScreen::CreateDefault(PUPManager* pManager, int screenNum, const v
    PUPScreen* pScreen = nullptr;
    switch(screenNum) {
       case PUP_SCREEN_TOPPER:
-         pScreen = new PUPScreen(pManager, PUP_SCREEN_MODE_SHOW, PUP_SCREEN_TOPPER, "Topper"s, "", "", false, 100.0f, nullptr, playlists);
+         pScreen = new PUPScreen(pManager, PUP_SCREEN_MODE_SHOW, PUP_SCREEN_TOPPER, "Topper"s, ""s, ""s, false, 100.0f, nullptr, playlists);
       case PUP_SCREEN_DMD:
-         pScreen = new PUPScreen(pManager, PUP_SCREEN_MODE_SHOW, PUP_SCREEN_DMD, "DMD"s, "", "", false, 100.0f, nullptr, playlists);
+         pScreen = new PUPScreen(pManager, PUP_SCREEN_MODE_SHOW, PUP_SCREEN_DMD, "DMD"s, ""s, ""s, false, 100.0f, nullptr, playlists);
       case PUP_SCREEN_BACKGLASS:
-         pScreen = new PUPScreen(pManager, PUP_SCREEN_MODE_SHOW, PUP_SCREEN_BACKGLASS, "Backglass"s, "", "", false, 100.0f, nullptr, playlists);
+         pScreen = new PUPScreen(pManager, PUP_SCREEN_MODE_SHOW, PUP_SCREEN_BACKGLASS, "Backglass"s, ""s, ""s, false, 100.0f, nullptr, playlists);
       case PUP_SCREEN_PLAYFIELD:
-         pScreen = new PUPScreen(pManager, PUP_SCREEN_MODE_SHOW, PUP_SCREEN_PLAYFIELD, "Playfield"s, "", "", false, 100.0f, nullptr, playlists);
+         pScreen = new PUPScreen(pManager, PUP_SCREEN_MODE_SHOW, PUP_SCREEN_PLAYFIELD, "Playfield"s, ""s, ""s, false, 100.0f, nullptr, playlists);
       default:
-         pScreen = new PUPScreen(pManager, PUP_SCREEN_MODE_SHOW, screenNum, "Unknown"s, "", "", false, 100.0f, nullptr, playlists);
+         pScreen = new PUPScreen(pManager, PUP_SCREEN_MODE_SHOW, screenNum, "Unknown"s, ""s, ""s, false, 100.0f, nullptr, playlists);
    }
    return pScreen;
 }
@@ -191,10 +191,12 @@ void PUPScreen::LoadTriggers()
    string szPlaylistsPath = find_case_insensitive_file_path(m_pManager->GetPath() + "triggers.pup");
    std::ifstream triggersFile;
    triggersFile.open(szPlaylistsPath, std::ifstream::in);
-   if (triggersFile.is_open()) {
+   if (triggersFile.is_open())
+   {
       string line;
       int i = 0;
-      while (std::getline(triggersFile, line)) {
+      while (std::getline(triggersFile, line))
+      {
          if (++i == 1)
             continue;
          AddTrigger(PUPTrigger::CreateFromCSV(this, line));
@@ -245,7 +247,7 @@ void PUPScreen::AddPlaylist(PUPPlaylist* pPlaylist)
 
 PUPPlaylist* PUPScreen::GetPlaylist(const string& szFolder)
 {
-   std::map<string, PUPPlaylist*>::iterator it = m_playlistMap.find(lowerCase(szFolder));
+   ankerl::unordered_dense::map<string, PUPPlaylist*>::const_iterator it = m_playlistMap.find(lowerCase(szFolder));
    return it != m_playlistMap.end() ? it->second : nullptr;
 }
 
@@ -682,7 +684,7 @@ string PUPScreen::ToString(bool full) const
          ", backgroundFilename=" + m_backgroundFilename +
          ", transparent=" + (m_transparent ? "true" : "false") +
          ", volume=" + std::to_string(m_volume) +
-         ", m_customPos={" + (m_pCustomPos ? m_pCustomPos->ToString() : "") + '}';
+         ", m_customPos={" + (m_pCustomPos ? m_pCustomPos->ToString() : ""s) + '}';
    }
 
    return "screenNum=" + std::to_string(m_screenNum) +

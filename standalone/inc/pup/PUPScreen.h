@@ -74,7 +74,7 @@ struct PUPScreenRenderable
    bool dirty;
 };
 
-class PUPScreen
+class PUPScreen final
 {
 public:
    ~PUPScreen();
@@ -90,11 +90,11 @@ public:
    bool IsTransparent() const { return m_transparent; }
    float GetVolume() const { return m_volume; }
    void SetVolume(float volume) { m_volume = volume; }
-   PUPCustomPos* GetCustomPos() { return m_pCustomPos; }
+   PUPCustomPos* GetCustomPos() const { return m_pCustomPos; }
    void AddChild(PUPScreen* pScreen);
    void SetParent(PUPScreen* pParent) { m_pParent = pParent; }
-   PUPScreen* GetParent() { return m_pParent; }
-   bool HasParent() { return m_pParent != nullptr;}
+   PUPScreen* GetParent() const { return m_pParent; }
+   bool HasParent() const { return m_pParent != nullptr;}
    void AddPlaylist(PUPPlaylist* pPlaylist);
    PUPPlaylist* GetPlaylist(const string& szFolder);
    void AddTrigger(PUPTrigger* pTrigger);
@@ -150,8 +150,8 @@ private:
    PUPCustomPos* m_pCustomPos;
    SDL_Rect m_rect;
    vector<PUPLabel*> m_labels;
-   std::map<string, PUPLabel*> m_labelMap;
-   std::map<string, PUPPlaylist*> m_playlistMap;
+   ankerl::unordered_dense::map<string, PUPLabel*> m_labelMap;
+   ankerl::unordered_dense::map<string, PUPPlaylist*> m_playlistMap;
    vector<PUPTrigger*> m_triggers;
    SDL_Renderer* m_pRenderer;
    PUPScreenRenderable m_background;

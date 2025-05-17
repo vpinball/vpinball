@@ -313,7 +313,6 @@ STDMETHODIMP PUPPinDisplay::SetScreenEx(LONG ScreenNum, LONG xpos, LONG ypos, LO
       PLOGW.printf("Screen not found: screenNum=%d", ScreenNum);
       return S_OK;
    }
-
    switch (popup) {
       case 0:
          pScreen->SetMode(PUP_SCREEN_MODE_SHOW);
@@ -412,15 +411,15 @@ STDMETHODIMP PUPPinDisplay::SendMSG(BSTR cMSG)
    string szMsg = MakeString(cMSG);
 
    RSJresource json(szMsg);
-   if (json["mt"].exists()) {
-      int mt = json["mt"].as<int>();
+   if (json["mt"s].exists()) {
+      int mt = json["mt"s].as<int>();
       switch(mt) {
          case 301:
-            if (json["SN"].exists() && json["FN"].exists()) {
-               int sn = json["SN"].as<int>();
+            if (json["SN"s].exists() && json["FN"s].exists()) {
+               int sn = json["SN"s].as<int>();
                PUPScreen* pScreen = m_pManager->GetScreen(sn);
                if (pScreen) {
-                  int fn = json["FN"].as<int>();
+                  int fn = json["FN"s].as<int>();
                   switch (fn) {
                      case 4:
                         // set StayOnTop { "mt":301, "SN": XX, "FN":4, "FS":1/0 }
@@ -539,7 +538,8 @@ STDMETHODIMP PUPPinDisplay::LabelSet(LONG ScreenNum, BSTR LabelName, BSTR Captio
    string szLabelName = MakeString(LabelName);
    PUPLabel* pLabel = pScreen->GetLabel(szLabelName);
    if (!pLabel) {
-      if (warnedLabels[ScreenNum].find(szLabelName) == warnedLabels[ScreenNum].end()) {
+      if (warnedLabels[ScreenNum].find(szLabelName) == warnedLabels[ScreenNum].end())
+      {
          PLOGW.printf("Invalid label: screen={%s}, labelName=%s", pScreen->ToString(false).c_str(), szLabelName.c_str());
          warnedLabels[ScreenNum].insert(szLabelName);
       }
@@ -577,7 +577,6 @@ STDMETHODIMP PUPPinDisplay::LabelShowPage(LONG ScreenNum, LONG PageNum, LONG Sec
       PLOGW.printf("Screen not found: screenNum=%d", ScreenNum);
       return S_OK;
    }
-
    pScreen->SetPage(PageNum, Seconds);
 
    return S_OK;
@@ -590,7 +589,6 @@ STDMETHODIMP PUPPinDisplay::LabelInit(LONG ScreenNum)
       PLOGW.printf("Screen not found: screenNum=%d", ScreenNum);
       return S_OK;
    }
-
    pScreen->SetLabelInit();
 
    return S_OK;
@@ -719,7 +717,6 @@ STDMETHODIMP PUPPinDisplay::playevent(LONG ScreenNum, BSTR playlist, BSTR playfi
       PLOGW.printf("Screen not found: screenNum=%d", ScreenNum);
       return S_OK;
    }
-
    // TODO handle seconds and Special
    pScreen->QueuePlay(MakeString(playlist), MakeString(playfilename), volume, priority);
 
@@ -738,17 +735,17 @@ STDMETHODIMP PUPPinDisplay::playevent(LONG ScreenNum, BSTR playlist, BSTR playfi
    //  'ptQueueSameP=11;
    //  'ptQueueAlways=12;
    switch (playtype) {
-      case 0:
-         // Normal
-         break;
-      case 1: // Loop
-         pScreen->QueueLoop(1);
-         break;
-      case 6: // SetBG
-         pScreen->QueueBG(1);
-         break;
-      default:
-         PLOGW.printf("Not implemented: playevent playtype=%d", playtype);
+   case 0:
+      // Normal
+      break;
+   case 1: // Loop
+      pScreen->QueueLoop(1);
+      break;
+   case 6: // SetBG
+      pScreen->QueueBG(1);
+      break;
+   default:
+      PLOGW.printf("Not implemented: playevent playtype=%d", playtype);
    }
 
    return S_OK;

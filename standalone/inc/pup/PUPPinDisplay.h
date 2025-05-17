@@ -4,7 +4,7 @@
 
 class PUPManager;
 
-class PUPPinDisplay : public IPinDisplay
+class PUPPinDisplay final : public IPinDisplay
 {
 public:
    STDMETHOD(QueryInterface)(REFIID iid, void** ppv) {

@@ -22,12 +22,14 @@ PUPManager::~PUPManager()
 
 void PUPManager::LoadConfig(const string& szRomName)
 {
-   if (m_init) {
+   if (m_init)
+   {
       PLOGW.printf("PUP already initialized");
       return;
    }
 
-   if (m_szRootPath.empty()) {
+   if (m_szRootPath.empty())
+   {
       PLOGI.printf("No pupvideos folder found, not initializing PUP");
       return;
    }
@@ -70,7 +72,7 @@ void PUPManager::LoadConfig(const string& szRomName)
    for (auto& [key, pScreen] : m_screenMap) {
       PUPCustomPos* pCustomPos = pScreen->GetCustomPos();
       if (pCustomPos) {
-         std::map<int, PUPScreen*>::iterator it = m_screenMap.find(pCustomPos->GetSourceScreen());
+         ankerl::unordered_dense::map<int, PUPScreen*>::const_iterator it = m_screenMap.find(pCustomPos->GetSourceScreen());
          PUPScreen* pParentScreen = it != m_screenMap.end() ? it->second : nullptr;
          if (pParentScreen && pScreen != pParentScreen)
             pParentScreen->AddChild(pScreen);
@@ -84,7 +86,8 @@ void PUPManager::LoadConfig(const string& szRomName)
       for (const auto& entry : std::filesystem::directory_iterator(szFontsPath)) {
          if (entry.is_regular_file()) {
             string szFontPath = entry.path().string();
-            if (extension_from_path(szFontPath) == "ttf") {
+            if (extension_from_path(szFontPath) == "ttf")
+            {
                if (TTF_Font* pFont = TTF_OpenFont(szFontPath.c_str(), 8))
                   AddFont(pFont, entry.path().filename());
                else {
@@ -101,8 +104,6 @@ void PUPManager::LoadConfig(const string& szRomName)
    m_init = true;
 
    QueueTriggerData({ 'D', 0, 1 });
-
-   return;
 }
 
 void PUPManager::Unload()
@@ -138,7 +139,7 @@ void PUPManager::LoadPlaylists()
    std::ifstream playlistsFile;
    playlistsFile.open(szPlaylistsPath, std::ifstream::in);
    if (playlistsFile.is_open()) {
-      ankerl::unordered_dense::set<string> lowerPlaylistNames;
+      ankerl::unordered_dense::set<std::string> lowerPlaylistNames;
       string line;
       int i = 0;
       while (std::getline(playlistsFile, line)) {
@@ -187,17 +188,17 @@ bool PUPManager::AddScreen(LONG lScreenNum)
 
 bool PUPManager::HasScreen(int screenNum)
 {
-   std::map<int, PUPScreen*>::iterator it = m_screenMap.find(screenNum);
+   ankerl::unordered_dense::map<int, PUPScreen*>::const_iterator it = m_screenMap.find(screenNum);
    return it != m_screenMap.end();
 }
 
-PUPScreen* PUPManager::GetScreen(int screenNum)
+PUPScreen* PUPManager::GetScreen(int screenNum) const
 {
    if (!m_init) {
       PLOGW.printf("Getting screen before initialization");
    }
 
-   std::map<int, PUPScreen*>::iterator it = m_screenMap.find(screenNum);
+   ankerl::unordered_dense::map<int, PUPScreen*>::const_iterator it = m_screenMap.find(screenNum);
    return it != m_screenMap.end() ? it->second : nullptr;
 }
 
@@ -210,14 +211,14 @@ bool PUPManager::AddFont(TTF_Font* pFont, const string& szFilename)
 
    const string szFamilyName = string(TTF_GetFontFamilyName(pFont));
 
-   const string szNormalizedFamilyName = lowerCase(string_replace_all(szFamilyName, "  ", " "));
+   const string szNormalizedFamilyName = lowerCase(string_replace_all(szFamilyName, "  "s, " "s));
    m_fontMap[szNormalizedFamilyName] = pFont;
 
    string szStyleName = string(TTF_GetFontStyleName(pFont));
    if (szStyleName != "Regular")
    {
       const string szFullName = szFamilyName + ' ' + szStyleName;
-      const string szNormalizedFullName = lowerCase(string_replace_all(szFullName, "  ", " "));
+      const string szNormalizedFullName = lowerCase(string_replace_all(szFullName, "  "s, " "s));
       m_fontMap[szNormalizedFullName] = pFont;
    }
 
@@ -231,9 +232,9 @@ bool PUPManager::AddFont(TTF_Font* pFont, const string& szFilename)
 
 TTF_Font* PUPManager::GetFont(const string& szFont)
 {
-   string szNormalizedFamilyName = lowerCase(string_replace_all(szFont, "  ", " "));
+   string szNormalizedFamilyName = lowerCase(string_replace_all(szFont, "  "s, " "s));
 
-   std::map<string, TTF_Font*>::iterator it = m_fontMap.find(szNormalizedFamilyName);
+   ankerl::unordered_dense::map<string, TTF_Font*>::const_iterator it = m_fontMap.find(szNormalizedFamilyName);
    if (it != m_fontMap.end())
       return it->second;
    it = m_fontFilenameMap.find(lowerCase(szFont));
@@ -253,7 +254,6 @@ void PUPManager::QueueTriggerData(const PUPTriggerData& data)
       m_triggerMap.insert_or_assign(triggerId, data.value);
       m_triggerDataQueue.push(data);
    }
-
    m_queueCondVar.notify_one();
 }
 

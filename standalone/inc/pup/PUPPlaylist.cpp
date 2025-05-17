@@ -23,6 +23,8 @@
      AlphaSort=0 is Randomize checked
 */
 
+static const string emptyString;
+
 const char* PUP_PLAYLIST_FUNCTION_STRINGS[] = {
    "PUP_PLAYLIST_FUNCTION_DEFAULT",
    "PUP_PLAYLIST_FUNCTION_OVERLAYS",
@@ -33,7 +35,7 @@ const char* PUP_PLAYLIST_FUNCTION_STRINGS[] = {
 
 const char* PUP_PLAYLIST_FUNCTION_TO_STRING(PUP_PLAYLIST_FUNCTION value)
 {
-   if ((int)value < 0 || (size_t)value >= sizeof(PUP_PLAYLIST_FUNCTION_STRINGS) / sizeof(PUP_PLAYLIST_FUNCTION_STRINGS[0]))
+   if ((int)value < 0 || (size_t)value >= std::size(PUP_PLAYLIST_FUNCTION_STRINGS))
       return "UNKNOWN";
    return PUP_PLAYLIST_FUNCTION_STRINGS[value];
 }
@@ -75,7 +77,7 @@ PUPPlaylist::PUPPlaylist(PUPManager* pManager, const string& szFolder, const str
          }
       }
    }
-   std::sort(m_files.begin(), m_files.end());
+   std::ranges::sort(m_files.begin(), m_files.end());
 }
 
 PUPPlaylist::~PUPPlaylist()
@@ -118,20 +120,18 @@ PUPPlaylist* PUPPlaylist::CreateFromCSV(PUPManager* pManager, const string& line
    PUPPlaylist* pPlaylist = new PUPPlaylist(
       pManager,
       szFolder,
-      parts[2],
-      (string_to_int(parts[3], 0) == 1),
-      string_to_int(parts[4], 0),
-      string_to_int(parts[5], 0),
-      string_to_int(parts[6], 0));
+      parts[2], // Description
+      (string_to_int(parts[3], 0) == 1), // Randomize
+      string_to_int(parts[4], 0), // Rest seconds
+      static_cast<float>(string_to_int(parts[5], 0)), // Volume
+      string_to_int(parts[6], 0)); // Priority
 
    return pPlaylist;
 }
 
 const string& PUPPlaylist::GetPlayFile(const string& szFilename)
 {
-   static const string emptyString;
-
-   std::map<string, string>::iterator it = m_fileMap.find(lowerCase(szFilename));
+   ankerl::unordered_dense::map<string, string>::const_iterator it = m_fileMap.find(lowerCase(szFilename));
    return it != m_fileMap.end() ? it->second : emptyString;
 }
 
@@ -148,13 +148,11 @@ const string& PUPPlaylist::GetNextPlayFile()
 
 string PUPPlaylist::GetPlayFilePath(const string& szFilename)
 {
-   static const string emptyString;
-
    if (m_files.empty())
       return emptyString;
 
    if (!szFilename.empty()) {
-      std::map<string, string>::const_iterator it = m_fileMap.find(lowerCase(szFilename));
+      ankerl::unordered_dense::map<string, string>::const_iterator it = m_fileMap.find(lowerCase(szFilename));
       if (it != m_fileMap.end())
          return m_szBasePath + it->second;
       else
