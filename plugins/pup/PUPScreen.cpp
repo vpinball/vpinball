@@ -254,7 +254,7 @@ void PUPScreen::AddTrigger(PUPTrigger* pTrigger)
 
 vector<PUPTrigger*>* PUPScreen::GetTriggers(const string& szTrigger)
 {
-   ankerl::unordered_dense::map<string, vector<PUPTrigger*>>::const_iterator it = m_triggerMap.find(szTrigger);
+   ankerl::unordered_dense::map<string, vector<PUPTrigger*>>::iterator it = m_triggerMap.find(szTrigger);
    return it != m_triggerMap.end() ? &it->second : nullptr;
 }
 

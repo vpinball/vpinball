@@ -273,7 +273,7 @@ TTF_Font* PUPManager::GetFont(const string& szFont)
 {
    string szNormalizedFamilyName = lowerCase(string_replace_all(szFont, "  "s, " "s));
 
-   ankerl::unordered_dense::mapstring, TTF_Font*>::const_iterator it = m_fontMap.find(szNormalizedFamilyName);
+   ankerl::unordered_dense::map<string, TTF_Font*>::const_iterator it = m_fontMap.find(szNormalizedFamilyName);
    if (it != m_fontMap.end())
       return it->second;
    it = m_fontFilenameMap.find(lowerCase(szFont));
