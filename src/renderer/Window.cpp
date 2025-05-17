@@ -41,13 +41,12 @@ Window::Window(const int width, const int height)
    m_backBuffer = nullptr;
 }
 
-Window::Window(const string &title, const Settings::Section section, const string &settingsPrefix)
+Window::Window(const string &title, const Settings& settings, const Settings::Section section, const string &settingsPrefix)
    : m_settingsSection(section)
    , m_settingsPrefix(settingsPrefix)
    , m_isVR(false)
 {
-   const Settings* settings = &(g_pvp->m_settings); // Always use main application settings (not overridable per table)
-   m_fullscreen = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "FullScreen", IsWindows10_1803orAbove());
+   m_fullscreen = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "FullScreen", IsWindows10_1803orAbove());
    // FIXME remove command line override => this is hacky and not needed anymore (use INI override instead)
    if (m_settingsSection == Settings::Player)
    {
@@ -56,11 +55,11 @@ Window::Window(const string &title, const Settings::Section section, const strin
       else if (g_pvp->m_disEnableTrueFullscreen == 1)
          m_fullscreen = true;
    }
-   int w = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Width", m_fullscreen ? -1 : 1024);
-   int h = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Height", w * 9 / 16);
-   const int display = g_pvp->m_primaryDisplay ? -1 : settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Display", -1);
-   const bool video10bit = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Render10Bit", false);
-   const float fsRefreshRate = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "RefreshRate", 0.f);
+   int w = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Width", m_fullscreen ? -1 : 1024);
+   int h = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Height", w * 9 / 16);
+   const int display = g_pvp->m_primaryDisplay ? -1 : settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Display", -1);
+   const bool video10bit = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Render10Bit", false);
+   const float fsRefreshRate = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "RefreshRate", 0.f);
    // FIXME FIXME FIXME
    const int fsBitDeth = (video10bit && m_fullscreen /* && stereo3D != STEREO_VR */) ? 30 : 32;
    if (video10bit && !m_fullscreen)
@@ -163,8 +162,8 @@ Window::Window(const string &title, const Settings::Section section, const strin
       // Restore saved position of non fullscreen windows
       if ((m_height != m_screenheight) || (m_width != m_screenwidth))
       {
-         const int xn = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "WndX", wnd_x);
-         const int yn = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "WndY", wnd_y);
+         const int xn = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "WndX", wnd_x);
+         const int yn = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "WndY", wnd_y);
          // Only apply saved position if they fit inside a display
          #ifdef ENABLE_SDL_VIDEO // SDL Windowing
             int displayCount = 0;
@@ -216,7 +215,10 @@ Window::Window(const string &title, const Settings::Section section, const strin
       #endif
       if (m_fullscreen)
          wnd_flags |= SDL_WINDOW_FULLSCREEN;
-         
+
+      if (m_settingsSection != Settings::Player)
+         wnd_flags |= SDL_WINDOW_UTILITY | SDL_WINDOW_ALWAYS_ON_TOP;
+
       // Prevent full screen window from minimizing when re-arranging external windows
       SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
       SDL_PropertiesID props = SDL_CreateProperties();
@@ -407,7 +409,7 @@ void Window::SetPos(const int x, const int y)
       rect.top = y;
       SetWindowPos(m_nwnd, nullptr, x, y, m_width, m_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
    #endif
-   Settings* settings = &(g_pvp->m_settings); // Always use main application settings (not overridable per table)
+   Settings* settings = (m_settingsSection == Settings::Player) ? &(g_pvp->m_settings) : &(g_pvp->m_ptableActive->m_settings);
    settings->SaveValue(m_settingsSection, m_settingsPrefix + "WndX", x);
    settings->SaveValue(m_settingsSection, m_settingsPrefix + "WndY", y);
 }
