@@ -29,12 +29,11 @@
 
 MsgPluginAPI* msgApi = nullptr;
 uint32_t endpointId;
-unsigned int getDmdSrcId, getDmdId, onGameStartId, onGameEndId, onSerumTriggerId;
+static unsigned int onGameStartId, onGameEndId, onSerumTriggerId, getDmdSrcId;
 
 static HMODULE dmdDevicePupDll = nullptr;
 static unsigned int lastFrameId = 0;
-CtlResId dmdId; 
-static std::chrono::high_resolution_clock::time_point lastFrameTick;
+static DisplaySrcId dmdId;
 
 typedef int (*pup_open)();
 typedef void (*pup_setGameName)(const char* cName, int len);
@@ -62,64 +61,69 @@ static uint8_t palette16[16 * 3];
 #define LOAD_LIBRARY_SEARCH_DEFAULT_DIRS 0x00001000
 #endif
 
-void processDMD(const GetRawDmdMsg& getDmdMsg, std::chrono::high_resolution_clock::time_point now)
+// Called every 1/60s to process at least one frame every 16ms
+void onUpdateDMD(void* userData)
 {
-   if (getDmdMsg.frame == nullptr)
-      return;
-
-   lastFrameTick = now;
-   if (getDmdMsg.frameId == lastFrameId)
+   if (dmdDevicePupDll == nullptr || dmdId.id.id == 0)
       return;
 
    uint8_t* palette;
-   if (getDmdMsg.format == CTLPI_GETDMD_FORMAT_BITPLANE2)
+   if (dmdId.identifyFormat == CTLPI_DISPLAY_ID_FORMAT_BITPLANE2)
       palette = palette4;
-   else if (getDmdMsg.format == CTLPI_GETDMD_FORMAT_BITPLANE4)
+   else if (dmdId.identifyFormat == CTLPI_DISPLAY_ID_FORMAT_BITPLANE4)
       palette = palette16;
    else
       return;
 
-   lastFrameId = getDmdMsg.frameId;
-   if (getDmdMsg.width == 128 && getDmdMsg.height == 32)
+   msgApi->RunOnMainThread(1. / 60., onUpdateDMD, nullptr);
+   
+   DisplayFrame frame = dmdId.GetIdentifyFrame(dmdId.id);
+
+   if (frame.frameId == lastFrameId)
+      return;
+
+   lastFrameId = frame.frameId;
+   if (dmdId.width == 128 && dmdId.height == 32)
    {
       for (unsigned int i = 0; i < 128 * 32; i++)
-         memcpy(&rgbFrame[i * 3], &palette[getDmdMsg.frame[i] * 3], 3);
+         memcpy(&rgbFrame[i * 3], &palette[frame.frame[i] * 3], 3);
    }
-   else if (getDmdMsg.width == 128 && getDmdMsg.height < 32)
+   else if (dmdId.width == 128 && dmdId.height < 32)
    {
-      const unsigned int ofsY = ((32 - getDmdMsg.height) / 2) * 128;
+      const unsigned int ofsY = ((32 - dmdId.height) / 2) * 128;
       for (unsigned int i = 0; i < 128 * 16; i++)
-         memcpy(&rgbFrame[(ofsY + i) * 3], &palette[getDmdMsg.frame[i] * 3], 3);
+         memcpy(&rgbFrame[(ofsY + i) * 3], &palette[frame.frame[i] * 3], 3);
    }
-   else if (getDmdMsg.width <= 256 && getDmdMsg.height == 64)
+   else if (dmdId.width <= 256 && dmdId.height == 64)
    {
       // Resize with a triangle filter to mimic what original implementation in Freezy's DmdExt (https://github.com/freezy/dmd-extensions)
       // does, that is to say:
       // - convert from luminance to RGB (with hue = 0, sat = 1)
       // - resize using Windows 8.1 API which in turn uses IWICBitmapScaler with Fant interpolation mode (hence the triangle filter)
       // - convert back from RGB to HSL and send luminance to PinUp
-      // 
+      //
       // Some references regarding Fant scaling:
       // - https://github.com/sarnold/urt/blob/master/tools/fant.c
       // - https://photosauce.net/blog/post/examining-iwicbitmapscaler-and-the-wicbitmapinterpolationmode-values
-      // 
+      //
       // The Baywatch Pup pack was used to validate this (the filter is still a guess since Windows code is not available)
-      const unsigned int ofsX = (128 - (getDmdMsg.width / 2)) / 2;
+      const unsigned int ofsX = (128 - (dmdId.width / 2)) / 2;
       for (unsigned int y = 0; y < 32; y++)
       {
-         for (unsigned int x = 0; x < getDmdMsg.width / 2; x++)
+         for (unsigned int x = 0; x < dmdId.width / 2; x++)
          {
             float lum = 0., sum = 0.;
             constexpr int radius = 1;
-            for (int dx = 1-radius; dx <= radius; dx++)
+            for (int dx = 1 - radius; dx <= radius; dx++)
             {
-               for (int dy = 1-radius; dy <= radius; dy++)
+               for (int dy = 1 - radius; dy <= radius; dy++)
                {
                   const int px = x * 2 + dx;
                   const int py = y * 2 + dy;
                   const float weight = radius * radius - fabsf(dx - 0.5f) * fabsf(dy - 0.5f);
-                  if (/*px >= 0 &&*/ static_cast<unsigned int>(px) < getDmdMsg.width && /*py >= 0 &&*/ static_cast<unsigned int>(py) < getDmdMsg.height) // unsigned int tests include the >= 0 ones
-                     lum += getDmdMsg.frame[py * getDmdMsg.width + px] * weight;
+                  if (/*px >= 0 &&*/ static_cast<unsigned int>(px) < dmdId.width
+                     && /*py >= 0 &&*/ static_cast<unsigned int>(py) < dmdId.height) // unsigned int tests include the >= 0 ones
+                     lum += frame.frame[py * dmdId.width + px] * weight;
                   sum += weight;
                }
             }
@@ -137,29 +141,6 @@ void processDMD(const GetRawDmdMsg& getDmdMsg, std::chrono::high_resolution_cloc
    pupRender_RGB24(128, 32, rgbFrame);
 }
 
-// Called every 1/60s to process at least one frame every 16ms
-void onUpdateDMD(void* userData)
-{
-   if (dmdDevicePupDll == nullptr)
-      return;
-   const auto now = std::chrono::high_resolution_clock::now();
-   if (now - lastFrameTick >= std::chrono::milliseconds(16))
-   {
-      GetRawDmdMsg getDmdMsg = { dmdId };
-      msgApi->BroadcastMsg(endpointId, getDmdId, &getDmdMsg);
-      processDMD(getDmdMsg, now);
-   }
-   msgApi->RunOnMainThread(1. / 60., onUpdateDMD, nullptr);
-}
-
-// Catch raw frame broadcasted for other uses
-void onGetDMD(const unsigned int eventId, void* userData, void* eventData)
-{
-   GetRawDmdMsg* getDmdMsg = static_cast<GetRawDmdMsg*>(eventData);
-   if (getDmdMsg->dmdId.id == dmdId.id)
-      processDMD(*getDmdMsg, std::chrono::high_resolution_clock::now());
-}
-
 // Broadcasted by Serum plugin when frame triggers are identified
 void onSerumTrigger(const unsigned int eventId, void* userData, void* eventData)
 {
@@ -170,15 +151,15 @@ void onSerumTrigger(const unsigned int eventId, void* userData, void* eventData)
 
 void onGameStart(const unsigned int eventId, void* userData, void* eventData)
 {
-   // Select main DMD from the list of DMD sources
+   // Select main DMD from the list of DMD sources (this is not fully clean as this rely on the fact that PinMAME sends the game start event after declaring its displays, we should listen for display source changes)
    bool mainDMDFound = false;
-   GetDmdSrcMsg getSrcMsg = { 1024, 0, new DmdSrcId[1024] };
+   GetDisplaySrcMsg getSrcMsg = { 1024, 0, new DisplaySrcId[1024] };
    msgApi->BroadcastMsg(endpointId, getDmdSrcId, &getSrcMsg);
    for (unsigned int i = 0; !mainDMDFound && (i < getSrcMsg.count); i++)
    {
       if (getSrcMsg.entries[i].width >= 128) // First DMD with a width of 128 or more is considered as the main one
       {
-         dmdId = getSrcMsg.entries[i].id;
+         dmdId = getSrcMsg.entries[i];
          mainDMDFound = true;
       }
    }
@@ -224,18 +205,17 @@ void onGameStart(const unsigned int eventId, void* userData, void* eventData)
    pupSetGameName(msg->gameId, static_cast<int>(strlen(msg->gameId)));
    lastFrameId = 123456;
    memset(rgbFrame, 0, sizeof(rgbFrame));
-   msgApi->SubscribeMsg(endpointId, getDmdId, onGetDMD, nullptr);
    onUpdateDMD(nullptr);
 }
 
 void onGameEnd(const unsigned int eventId, void* userData, void* eventData)
 {
+   dmdId = { 0 };
    if (dmdDevicePupDll)
    {
       pupClose();
       FreeLibrary(dmdDevicePupDll);
       dmdDevicePupDll = nullptr;
-      msgApi->UnsubscribeMsg(getDmdId, onGetDMD);
    }
 }
 
@@ -243,8 +223,7 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
 {
    msgApi = api;
    endpointId = sessionId; 
-   getDmdSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG);
-   getDmdId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_IDENTIFY_MSG);
+   getDmdSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
    msgApi->SubscribeMsg(sessionId, onGameStartId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_START), onGameStart, nullptr);
    msgApi->SubscribeMsg(sessionId, onGameEndId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_END), onGameEnd, nullptr);
    msgApi->SubscribeMsg(sessionId, onSerumTriggerId = msgApi->GetMsgID("Serum", "OnDmdTrigger"), onSerumTrigger, nullptr);
@@ -272,6 +251,5 @@ MSGPI_EXPORT void MSGPIAPI PluginUnload()
    msgApi->ReleaseMsgID(onGameEndId);
    msgApi->ReleaseMsgID(onSerumTriggerId);
    msgApi->ReleaseMsgID(getDmdSrcId);
-   msgApi->ReleaseMsgID(getDmdId);
    msgApi = nullptr;
 }

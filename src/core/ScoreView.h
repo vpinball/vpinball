@@ -47,6 +47,7 @@ private:
       string glassPath;
       vec4 glassArea;
       vec3 glassAmbient;
+      BaseTexture* liveTexture;
       // For segment displays
       Renderer::SegmentFamily segFamilyHint;
       int nElements;

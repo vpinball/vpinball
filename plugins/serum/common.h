@@ -20,4 +20,5 @@ LPI_USE();
 #define PATH_SEPARATOR_CHAR '/'
 #endif
 
+void SetThreadName(const std::string& name);
 string find_case_insensitive_directory_path(const string& szPath);

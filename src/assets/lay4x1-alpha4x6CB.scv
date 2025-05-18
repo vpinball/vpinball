@@ -7,7 +7,7 @@ Fit: Contain
 Visuals:
 	- SegDisplay:
 		Rect: [0,0,102.5,32]
-		Src: default://alpha?sub=0
+		Src: ctrl://default/seg?id=0
 		XPos: [0, 14.25, 28.5, 49.5, 63.75, 78]
 		Style: Blue VFD
 		Glass:
@@ -18,7 +18,7 @@ Visuals:
 		
 	- SegDisplay:
 		Rect: [178,0,102.5,32]
-		Src: default://alpha?sub=1
+		Src: ctrl://default/seg?id=1
 		XPos: [0, 14.25, 28.5, 49.5, 63.75, 78]
 		Style: Blue VFD
 		Glass:
@@ -29,7 +29,7 @@ Visuals:
 		
 	- SegDisplay:
 		Rect: [0,26,102.5,32]
-		Src: default://alpha?sub=2
+		Src: ctrl://default/seg?id=2
 		XPos: [0, 14.25, 28.5, 49.5, 63.75, 78]
 		Style: Blue VFD
 		Glass:
@@ -40,7 +40,7 @@ Visuals:
 		
 	- SegDisplay:
 		Rect: [178,26,102.5,32]
-		Src: default://alpha?sub=3
+		Src: ctrl://default/seg?id=3
 		XPos: [0, 14.25, 28.5, 49.5, 63.75, 78]
 		Style: Blue VFD
 		Glass:
@@ -51,7 +51,7 @@ Visuals:
 
 	- SegDisplay:
 		Rect: [107,50,54,24]
-		Src: default://alpha?sub=5
+		Src: ctrl://default/seg?id=4
 		XPos: [0, 13.5]
 		Style: Blue VFD
 		Glass:
@@ -62,7 +62,7 @@ Visuals:
 
 	- SegDisplay:
 		Rect: [140,50,54,24]
-		Src: default://alpha?sub=4
+		Src: ctrl://default/seg?id=5
 		XPos: [0, 13.5]
 		Style: Blue VFD
 		Glass:

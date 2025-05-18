@@ -24,47 +24,27 @@ Sampler::Sampler(RenderDevice* rd, const BaseTexture* const surf, const bool for
    , m_clampv(clampv)
    , m_filter(filter)
 {
-   m_rd->m_curTextureUpdates++;
 #if defined(ENABLE_BGFX)
    m_isLinear = true;
-   bool add_alpha = false;
    switch (surf->m_format)
    {
-   case BaseTexture::SRGBA: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA8; m_isLinear = force_linear_rgb; break;
-   case BaseTexture::RGBA: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA8; break;
-   case BaseTexture::SRGB: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA8; m_isLinear = force_linear_rgb; add_alpha = true; break;
-   case BaseTexture::RGB: m_bgfx_format = bgfx::TextureFormat::Enum::RGB8; break;
-   case BaseTexture::RGBA_FP16: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA16F; break;
-   case BaseTexture::RGB_FP16: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA16F; add_alpha = true; break;
-   case BaseTexture::RGB_FP32: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA32F; add_alpha = true; break;
-   case BaseTexture::RGBA_FP32: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA32F; break;
    case BaseTexture::BW: m_bgfx_format = bgfx::TextureFormat::Enum::R8; break;
+   case BaseTexture::RGB: m_bgfx_format = bgfx::TextureFormat::Enum::RGB8; break;
+   case BaseTexture::SRGB: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA8; m_isLinear = force_linear_rgb; break;
+   case BaseTexture::RGBA: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA8; break;
+   case BaseTexture::SRGBA: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA8; m_isLinear = force_linear_rgb; break;
+   case BaseTexture::SRGB565: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA8; m_isLinear = force_linear_rgb; break;
+   case BaseTexture::RGB_FP16: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA16F; break;
+   case BaseTexture::RGBA_FP16: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA16F; break;
+   case BaseTexture::RGB_FP32: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA32F; break;
+   case BaseTexture::RGBA_FP32: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA32F; break;
    default: assert(false); // Unsupported texture format
    }
-
-   const BaseTexture* upload = surf;
-   // TODO this is overkill since this leads to allocating/copying everything twice
-   if (add_alpha && surf != nullptr)
-   {
-      BaseTexture* tmp = new BaseTexture(m_width, m_height, surf->m_format);
-      memcpy(tmp->data(), surf->datac(), (size_t)surf->pitch() * surf->height());
-      tmp->AddAlpha();
-      upload = tmp;
-   }
-
-   // Trigger texture creation, upload and mipmap generation (on BGFX API thread)
-   const bgfx::Memory* data;
-   if (upload == nullptr)
-      data = nullptr;
-   else if (upload == surf)
-      data = bgfx::copy(upload->datac(), m_height * upload->pitch());
-   else {
-      auto releaseFn = [](void* _ptr, void* _userData) { delete static_cast<BaseTexture*>(_userData); };
-      data = bgfx::makeRef(upload->datac(), m_height * upload->pitch(), releaseFn, (void*)upload);
-   }
-   m_textureUpdate = data;
+   if (surf)
+      UpdateTexture(surf, force_linear_rgb);
 
 #elif defined(ENABLE_OPENGL)
+   m_rd->m_curTextureUpdates++;
    m_texTarget = GL_TEXTURE_2D;
    colorFormat format;
    if (surf->m_format == BaseTexture::RGB)
@@ -75,6 +55,8 @@ Sampler::Sampler(RenderDevice* rd, const BaseTexture* const surf, const bool for
       format = colorFormat::SRGB;
    else if (surf->m_format == BaseTexture::SRGBA)
       format = colorFormat::SRGBA;
+   else if (surf->m_format == BaseTexture::SRGB565)
+      format = colorFormat::RGB5;
    else if (surf->m_format == BaseTexture::RGB_FP16)
       format = colorFormat::RGB16F;
    else if (surf->m_format == BaseTexture::RGBA_FP16)
@@ -96,6 +78,7 @@ Sampler::Sampler(RenderDevice* rd, const BaseTexture* const surf, const bool for
    m_isLinear = format != colorFormat::SRGB && format != colorFormat::SRGBA;
 
 #elif defined(ENABLE_DX9)
+   m_rd->m_curTextureUpdates++;
    colorFormat texformat;
    IDirect3DTexture9* sysTex = CreateSystemTexture(surf, force_linear_rgb, texformat);
 
@@ -297,17 +280,74 @@ void Sampler::Unbind()
 #endif
 }
 
-void Sampler::UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb)
+void Sampler::UpdateTexture(const BaseTexture* const surf, const bool force_linear_rgb)
 {
+   m_rd->m_curTextureUpdates++;
+
 #if defined(ENABLE_BGFX)
    #ifdef DEBUG
-   bool linear = ((surf->m_format == BaseTexture::SRGBA) || (surf->m_format == BaseTexture::SRGB)) ? force_linear_rgb : true;
+   bool linear = ((surf->m_format == BaseTexture::SRGBA) || (surf->m_format == BaseTexture::SRGB) || (surf->m_format == BaseTexture::SRGB565)) ? force_linear_rgb : true;
    assert(linear == m_isLinear); // TODO BGFX we could support changing the linearRGB flag but is this really useful ?
    #endif
    const std::lock_guard<std::mutex> lock(m_textureUpdateMutex);
    if (m_textureUpdate)
       bgfx::release(m_textureUpdate);
-   m_textureUpdate = bgfx::copy(surf->data(), (size_t)surf->height() * surf->pitch());
+   switch (surf->m_format)
+   {
+   case BaseTexture::BW: assert(m_bgfx_format == bgfx::TextureFormat::Enum::R8); break;
+   case BaseTexture::RGB: assert(m_bgfx_format == bgfx::TextureFormat::Enum::RGB8); break;
+   case BaseTexture::RGBA: assert(m_bgfx_format == bgfx::TextureFormat::Enum::RGBA8); break;
+   case BaseTexture::SRGB:
+   {
+      assert(m_bgfx_format == bgfx::TextureFormat::Enum::RGBA8);
+      const unsigned int size = surf->height() * surf->width();
+      m_textureUpdate = bgfx::alloc(static_cast<uint32_t>(size * 4));
+      copy_rgb_rgba<false>((unsigned int*)m_textureUpdate->data, surf->datac(), static_cast<size_t>(size));
+      return;
+   }
+   case BaseTexture::SRGBA: assert(m_bgfx_format == bgfx::TextureFormat::Enum::RGBA8); break;
+   case BaseTexture::SRGB565:
+   {
+      assert(m_bgfx_format == bgfx::TextureFormat::Enum::RGBA8);
+      const unsigned int size = surf->height() * surf->width();
+      m_textureUpdate = bgfx::alloc(static_cast<uint32_t>(size * 4));
+      static constexpr UINT8 lum32[] = { 0, 8, 16, 25, 33, 41, 49, 58, 66, 74, 82, 90, 99, 107, 115, 123, 132, 140, 148, 156, 165, 173, 181, 189, 197, 206, 214, 222, 230, 239, 247, 255 };
+      static constexpr UINT8 lum64[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 45, 49, 53, 57, 61, 65, 69, 73, 77, 81, 85, 89, 93, 97, 101, 105, 109, 113, 117, 121, 125, 130, 134, 138,
+         142, 146, 150, 154, 158, 162, 166, 170, 174, 178, 182, 186, 190, 194, 198, 202, 206, 210, 215, 219, 223, 227, 231, 235, 239, 243, 247, 251, 255 };
+      uint32_t* const data = reinterpret_cast<uint32_t*>(m_textureUpdate->data);
+      const uint16_t* const frame = reinterpret_cast<const uint16_t*>(surf->datac());
+      for (unsigned int ofs = 0; ofs < size; ofs++)
+      {
+         const uint16_t rgb565 = frame[ofs];
+         data[ofs] = 0xFF000000 | (lum32[rgb565 & 0x1F] << 16) | (lum64[(rgb565 >> 5) & 0x3F] << 8) | lum32[(rgb565 >> 11) & 0x1F];
+      }
+      return;
+   }
+   case BaseTexture::RGB_FP16:
+      assert(m_bgfx_format == bgfx::TextureFormat::Enum::RGBA16F);
+      { // Add alpha
+         BaseTexture* tmp = new BaseTexture(surf->width(), surf->height(), surf->m_format);
+         memcpy(tmp->data(), surf->datac(), (size_t)surf->pitch() * surf->height());
+         tmp->AddAlpha();
+         auto releaseFn = [](void* _ptr, void* _userData) { delete static_cast<BaseTexture*>(_userData); };
+         m_textureUpdate = bgfx::makeRef(tmp->datac(), m_height * tmp->pitch(), releaseFn, (void*)tmp);
+      }
+      return;
+   case BaseTexture::RGBA_FP16: assert(m_bgfx_format == bgfx::TextureFormat::Enum::RGBA16F); break;
+   case BaseTexture::RGB_FP32:
+      assert(m_bgfx_format == bgfx::TextureFormat::Enum::RGBA32F);
+      { // Add alpha
+         BaseTexture* tmp = new BaseTexture(surf->width(), surf->height(), surf->m_format);
+         memcpy(tmp->data(), surf->datac(), (size_t)surf->pitch() * surf->height());
+         tmp->AddAlpha();
+         auto releaseFn = [](void* _ptr, void* _userData) { delete static_cast<BaseTexture*>(_userData); };
+         m_textureUpdate = bgfx::makeRef(tmp->datac(), m_height * tmp->pitch(), releaseFn, (void*)tmp);
+      }
+      break;
+   case BaseTexture::RGBA_FP32: assert(m_bgfx_format == bgfx::TextureFormat::Enum::RGBA32F); break;
+   default: assert(false); break;
+   }
+   m_textureUpdate = bgfx::copy(surf->datac(), static_cast<uint32_t>(surf->height() * surf->pitch()));
 
 #elif defined(ENABLE_OPENGL)
    colorFormat format;
@@ -319,6 +359,8 @@ void Sampler::UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb
       format = colorFormat::SRGB;
    else if (surf->m_format == BaseTexture::SRGBA)
       format = colorFormat::SRGBA;
+   else if (surf->m_format == BaseTexture::SRGB565)
+      format = colorFormat::RGB5;
    else if (surf->m_format == BaseTexture::RGB_FP16)
       format = colorFormat::RGB16F;
    else if (surf->m_format == BaseTexture::RGBA_FP16)
@@ -336,7 +378,7 @@ void Sampler::UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb
       else if (format == colorFormat::SRGBA)
          format = colorFormat::RGBA;
    }
-   const GLuint col_type = ((format == RGBA32F) || (format == RGB32F)) ? GL_FLOAT : ((format == RGB16F) || (format == RGBA16F)) ? GL_HALF_FLOAT : GL_UNSIGNED_BYTE;
+   const GLuint col_type = ((format == RGBA32F) || (format == RGB32F)) ? GL_FLOAT : ((format == RGB16F) || (format == RGBA16F)) ? GL_HALF_FLOAT : (format == RGB5) ? GL_UNSIGNED_SHORT_5_6_5 : GL_UNSIGNED_BYTE;
    const GLuint col_format = ((format == GREY8) || (format == RED16F))                                                                                                      ? GL_RED
       : ((format == GREY_ALPHA) || (format == RG16F))                                                                                                                       ? GL_RG
       : ((format == RGB) || (format == RGB8) || (format == SRGB) || (format == SRGB8) || (format == RGB5) || (format == RGB10) || (format == RGB16F) || (format == RGB32F)) ? GL_RGB
@@ -350,7 +392,7 @@ void Sampler::UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb
 
    glBindTexture(m_texTarget, m_texture);
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-   glTexSubImage2D(m_texTarget, 0, 0, 0, surf->width(), surf->height(), col_format, col_type, surf->data());
+   glTexSubImage2D(m_texTarget, 0, 0, 0, surf->width(), surf->height(), col_format, col_type, surf->datac());
    glGenerateMipmap(m_texTarget); // Generate mip-maps
    glBindTexture(m_texTarget, 0);
 
@@ -361,7 +403,6 @@ void Sampler::UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb
    SAFE_RELEASE(sysTex);
 
 #endif
-   m_rd->m_curTextureUpdates++;
 }
 
 void Sampler::SetClamp(const SamplerAddressMode clampu, const SamplerAddressMode clampv)
@@ -511,6 +552,10 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(const BaseTexture* const surf, c
    {
       texformat = colorFormat::RGBA32F;
    }
+   else if (basetexformat == BaseTexture::SRGB565)
+   {
+      texformat = colorFormat::RGB5;
+   }
    else
    {
       texformat = colorFormat::RGBA8;
@@ -590,6 +635,12 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(const BaseTexture* const surf, c
       sysRect.bottom = texheight;
       CHECKD3D(D3DXLoadSurfaceFromMemory(sysSurf, nullptr, nullptr, surf->datac(), (D3DFORMAT)colorFormat::RGBA8, surf->pitch(), nullptr, &sysRect, D3DX_FILTER_NONE, 0));
       SAFE_RELEASE_NO_RCC(sysSurf);*/
+   }
+   else if (basetexformat == BaseTexture::SRGB565 && texformat == colorFormat::RGB5)
+   {
+      unsigned short* const __restrict pdest = (unsigned short*)locked.pBits;
+      const unsigned short* const __restrict psrc = (const unsigned short*)(surf->datac());
+      memcpy(pdest, psrc, (size_t)texwidth * texheight * 2);
    }
    else
       assert(false); // Unsupported image format

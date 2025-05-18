@@ -8,7 +8,7 @@ Fit: Contain
 Visuals:
 	- SegDisplay:
 		Rect: [0,1.2,49.5,5]
-		Src: default://alpha?sub=0
+		Src: ctrl://default/seg?id=0
 		Type: Gottlieb
 		Style: Blue VFD
 		XPos: [0.00, 2.42, 4.84, 7.27, 9.69, 12.11, 14.53, 16.95, 19.38, 21.80, 24.22, 26.64, 29.06, 31.48, 33.91, 36.33, 38.75, 41.17, 43.59, 46.02]
@@ -21,7 +21,7 @@ Visuals:
 		
 	- SegDisplay:
 		Rect: [0,6.2,49.5,5]
-		Src: default://alpha?sub=1
+		Src: ctrl://default/seg?id=1
 		Type: Gottlieb
 		Style: Blue VFD
 		XPos: [0.00, 2.42, 4.84, 7.27, 9.69, 12.11, 14.53, 16.95, 19.38, 21.80, 24.22, 26.64, 29.06, 31.48, 33.91, 36.33, 38.75, 41.17, 43.59, 46.02]

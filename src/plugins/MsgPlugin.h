@@ -31,7 +31,8 @@
 // perform all needed synchronization and data copies. The 'RunOnMainThread' method
 // is the only one that may be called from any thread to request a callback to be
 // ran on the main thread, either as a blocking call if delay is negative, or as an
-// async call if delay is zero or positive.
+// async call if delay is zero or positive. Plugins may define and handle functions
+// with relaxed threading constraints, as long as this is clearly advertised.
 //
 // To avoid message collision, each message is defined by a unique name in a 'namespace'
 // which is expected to be unique for each host/plugin. MsgId are allocated/retrieved

@@ -4,6 +4,11 @@
 #include "CorePlugin.h"
 #include "LoggingPlugin.h"
 
+#include <vector>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <string>
 #include <cstring>
 #include <cstdint>
 #include <sstream>
@@ -25,24 +30,34 @@
 // - Generate DMD frame for rendering on DMD hardware
 // - Provide identification frames for alphanumeric to DMD colorizations
 //
-// This plugin only rely on the generic messaging plugin API and the core DMD
-// and segment API. It listen for alphanumeric source and, when found, broadcast
-// corresponding DMD sources (128x32 and 256x64 variants)
+// This plugin only rely on the generic messaging plugin API and the generic
+// controller display and segment API. It listen for alphanumeric source and, 
+// when found, provide corresponding DMD sources (128x32 and 256x64 variants)
+// with identify capabilities for the 128x32 variant.
+//
+// All rendering is done by an anciliary thread, causing a one frame delay, but
+// avoiding CPU load on the main thread.
 
 static MsgPluginAPI* msgApi = nullptr;
 static uint32_t endpointId;
-static unsigned int onDmdSrcChangedId, getDmdSrcId, getRenderDmdId, getIdentifyDmdId;
-static unsigned int onSegSrcChangedId, getSegSrcId, getSegId;
+static unsigned int onDmdSrcChangedId, getDmdSrcId;
+static unsigned int onSegSrcChangedId, getSegSrcId;
 
-static GetSegSrcMsg segSources;
-static int nSelectedSources = -1;
-static int selectedSource[32];
-static DmdSrcId dmd128Id, dmd256Id;
-static uint8_t dmd128Frame[128 * 32];
-static uint8_t dmd256Frame[256 * 64];
-static unsigned int frameId = 0;
+static std::vector<SegSrcId> selectedSources;
 
-static uint8_t lastIdentifyFrame[128*32] = {0};
+static std::mutex sourceMutex;
+static std::mutex renderMutex;
+static std::thread renderThread;
+static std::condition_variable updateCondVar;
+static bool isRunning = false;
+
+static DisplaySrcId dmd128Id, dmd256Id;
+static uint8_t renderFrame[128 * 32] = {0};
+static uint8_t dmd128Frame[128 * 32] = {0};
+static uint8_t dmd256Frame[256 * 64] = {0};
+static unsigned int renderFrameId = 0;
+
+static uint8_t identifyFrame[128*32] = {0};
 static unsigned int identifyFrameId = 0;
 
 LPI_USE();
@@ -65,7 +80,7 @@ typedef enum {
 } DmdLayouts;
 static DmdLayouts dmdLayout = DmdLayouts::Undefined;
 
-// Number of segments corresponding to CTLPI_GETSEG_LAYOUT_xxx
+// Number of segments corresponding to CTLPI_SEG_LAYOUT_xxx
 static constexpr int nSegments[] = { 7, 8, 8, 10, 10, 15, 15, 16, 16 };
 
 // Segment layouts, derived from PinMame, itself taking it from 'usbalphanumeric.h'
@@ -206,30 +221,30 @@ static void DrawChar(const int x, const int y, const segDisplay& display, const 
       {
          const int px = x + display.segs[seg].dots[i][0];
          const int py = y + display.segs[seg].dots[i][1];
-         int w = dmd128Frame[py * 128 + px] + v;
-         dmd128Frame[py * 128 + px] = w < 255 ? w : 255;
+         int w = renderFrame[py * 128 + px] + v;
+         renderFrame[py * 128 + px] = w < 255 ? w : 255;
       }
    }
 }
 
 static void DrawDisplay(int x, int y, float*& lum, int srcIndex, bool large)
 {
-   SegSrcId& segSrc = segSources.entries[srcIndex];
+   SegSrcId& segSrc = selectedSources[srcIndex];
    for (unsigned int i = 0; i < segSrc.nElements; i++)
    {
       const SegElementType type = segSrc.elementType[i];
       SegImgs img = SegImg_Invalid;
       switch (type)
       {
-      case CTLPI_GETSEG_LAYOUT_7:    img = large ? SegImg_Seg9C_8x10   : SegImg_Seg9C_8x6;    break;
-      case CTLPI_GETSEG_LAYOUT_7C:   img = large ? SegImg_Seg9C_8x10   : SegImg_Seg9C_8x6;    break;
-      case CTLPI_GETSEG_LAYOUT_7D:   img =         SegImg_Seg9D_8x10;                         break;
-      case CTLPI_GETSEG_LAYOUT_9:    img = large ? SegImg_Seg9C_8x10   : SegImg_Seg9C_8x6;    break;
-      case CTLPI_GETSEG_LAYOUT_9C:   img = large ? SegImg_Seg9C_8x10   : SegImg_Seg9C_8x6;    break;
-      case CTLPI_GETSEG_LAYOUT_14:   img = large ? SegImg_Seg14DC_8x10 : SegImg_Seg14DC_6x10; break;
-      case CTLPI_GETSEG_LAYOUT_14D:  img = large ? SegImg_Seg14DC_8x10 : SegImg_Seg14DC_6x10; break;
-      case CTLPI_GETSEG_LAYOUT_14DC: img = large ? SegImg_Seg14DC_8x10 : SegImg_Seg14DC_6x10; break;
-      case CTLPI_GETSEG_LAYOUT_16:   img =         SegImg_Seg16_8x10;                         break;
+      case CTLPI_SEG_LAYOUT_7:    img = large ? SegImg_Seg9C_8x10   : SegImg_Seg9C_8x6;    break;
+      case CTLPI_SEG_LAYOUT_7C:   img = large ? SegImg_Seg9C_8x10   : SegImg_Seg9C_8x6;    break;
+      case CTLPI_SEG_LAYOUT_7D:   img =         SegImg_Seg9D_8x10;                         break;
+      case CTLPI_SEG_LAYOUT_9:    img = large ? SegImg_Seg9C_8x10   : SegImg_Seg9C_8x6;    break;
+      case CTLPI_SEG_LAYOUT_9C:   img = large ? SegImg_Seg9C_8x10   : SegImg_Seg9C_8x6;    break;
+      case CTLPI_SEG_LAYOUT_14:   img = large ? SegImg_Seg14DC_8x10 : SegImg_Seg14DC_6x10; break;
+      case CTLPI_SEG_LAYOUT_14D:  img = large ? SegImg_Seg14DC_8x10 : SegImg_Seg14DC_6x10; break;
+      case CTLPI_SEG_LAYOUT_14DC: img = large ? SegImg_Seg14DC_8x10 : SegImg_Seg14DC_6x10; break;
+      case CTLPI_SEG_LAYOUT_16:   img =         SegImg_Seg16_8x10;                         break;
       default: assert(false); return; break;
       }
       DrawChar(x, y, segDisplays[img], lum, nSegments[type]);
@@ -238,341 +253,363 @@ static void DrawDisplay(int x, int y, float*& lum, int srcIndex, bool large)
    }
 }
 
-static void onGetDMDSrc(const unsigned int eventId, void* userData, void* msgData)
+#ifdef _WIN32
+#include <windows.h>
+#include <locale>
+void SetThreadName(const std::string& name)
 {
-   if ((nSelectedSources <= 0) || (dmdLayout == DmdLayouts::Undefined))
+   int size_needed = MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, NULL, 0);
+   if (size_needed == 0)
       return;
-   GetDmdSrcMsg& msg = *static_cast<GetDmdSrcMsg*>(msgData);
-   if (msg.count < msg.maxEntryCount)
-   {
-      msg.entries[msg.count] = dmd128Id;
-      msg.count++;
-   }
-   if (msg.count < msg.maxEntryCount)
-   {
-      msg.entries[msg.count] = dmd256Id;
-      msg.count++;
-   }
+   std::wstring wstr(size_needed, 0);
+   if (MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, wstr.data(), size_needed) == 0)
+      return;
+   HRESULT hr = SetThreadDescription(GetCurrentThread(), wstr.c_str());
 }
+#else
+void SetThreadName(const std::string& name) { }
+#endif   
 
-static void onGetRenderDMD(const unsigned int eventId, void* userData, void* msgData)
+static void RenderThread()
 {
-   if ((nSelectedSources <= 0) || (dmdLayout == DmdLayouts::Undefined))
-      return;
-   GetDmdMsg& getDmdMsg = *static_cast<GetDmdMsg*>(msgData);
-   if ((getDmdMsg.frame != nullptr) || (getDmdMsg.dmdId.id.endpointId != endpointId))
-      return;
-
-   GetSegMsg getSegMsg { { segSources.entries[0].id.endpointId, segSources.entries[0].id.resId } };
-   msgApi->BroadcastMsg(endpointId, getSegId, &getSegMsg);
-   if (getSegMsg.frame == nullptr)
-      return;
-   float* lum = getSegMsg.frame;
-
-   memset(dmd128Frame, 0, sizeof(dmd128Frame));
-   memset(dmd256Frame, 0, sizeof(dmd256Frame));
-   switch (dmdLayout)
+   SetThreadName("AlphaDMD.RenderThread");
+   uint16_t seg_data[128] = { 0 };
+   uint16_t seg_data2[128] = { 0 };
+   float groupLum[128 * 16] = { 0 };
+   std::vector<unsigned int> lastFrameId;
+   while (isRunning)
    {
-   case Layout_6x4_2x2: // S11 Bowl games
-      DrawDisplay( 0,  0, lum, selectedSource[0], true);
-      DrawDisplay(80,  0, lum, selectedSource[1], true);
-      DrawDisplay( 0, 11, lum, selectedSource[2], true);
-      DrawDisplay(80, 11, lum, selectedSource[3], true);
-      DrawDisplay( 0, 22, lum, selectedSource[4], true);
-      DrawDisplay(80, 22, lum, selectedSource[5], true);
-      DrawDisplay(56, 11, lum, selectedSource[6], true);
-      DrawDisplay(56, 22, lum, selectedSource[7], true);
-      break;
-   case Layout_4x6_2x2: // Lots of games (4 players + credit/ball)
-      DrawDisplay( 0,  0, lum, selectedSource[0], true);
-      DrawDisplay(80,  0, lum, selectedSource[1], true);
-      DrawDisplay( 0, 12, lum, selectedSource[2], true);
-      DrawDisplay(80, 12, lum, selectedSource[3], true);
-      DrawDisplay( 8, 24, lum, selectedSource[4], false);
-      DrawDisplay(32, 24, lum, selectedSource[5], false);
-      break;
-   case Layout_4x6_2x2_1x6: // Black Hole
-      DrawDisplay( 0,  0, lum, selectedSource[0], false);
-      DrawDisplay(80,  0, lum, selectedSource[1], false);
-      DrawDisplay( 0, 12, lum, selectedSource[2], false);
-      DrawDisplay(80, 12, lum, selectedSource[3], false);
-      DrawDisplay(56,  0, lum, selectedSource[4], false);
-      DrawDisplay(56, 12, lum, selectedSource[5], false);
-      DrawDisplay(40, 24, lum, selectedSource[6], false);
-      break;
-   case Layout_4x7:
-      DrawDisplay( 0,  2, lum, selectedSource[0], true);
-      DrawDisplay(72,  2, lum, selectedSource[1], true);
-      DrawDisplay( 0, 19, lum, selectedSource[2], true);
-      DrawDisplay(72, 19, lum, selectedSource[3], true);
-      break;
-   case Layout_4x7_2x2: // Lots of games (4 players + credit/ball)
-      DrawDisplay( 0,  0, lum, selectedSource[0], true);
-      DrawDisplay(72,  0, lum, selectedSource[1], true);
-      DrawDisplay( 0, 12, lum, selectedSource[2], true);
-      DrawDisplay(72, 12, lum, selectedSource[3], true);
-      DrawDisplay( 8, 24, lum, selectedSource[4], false);
-      DrawDisplay(32, 24, lum, selectedSource[5], false);
-      break;
-   case Layout_4x7_5x2: // Medusa
-      DrawDisplay(  0,  0, lum, selectedSource[0], true);
-      DrawDisplay( 72,  0, lum, selectedSource[1], true);
-      DrawDisplay(  0, 12, lum, selectedSource[2], true);
-      DrawDisplay( 72, 12, lum, selectedSource[3], true);
-      DrawDisplay( 16, 24, lum, selectedSource[4], false);
-      DrawDisplay( 40, 24, lum, selectedSource[5], false);
-      DrawDisplay( 64, 24, lum, selectedSource[6], false);
-      DrawDisplay( 88, 24, lum, selectedSource[7], false);
-      DrawDisplay(112, 24, lum, selectedSource[8], false);
-      break;
-   case Layout_2x16: // Lots of later games
-      DrawDisplay( 0,  2, lum, selectedSource[0], true);
-      DrawDisplay( 0, 19, lum, selectedSource[1], true);
-      break;
-   case Layout_1x7_2x16: // Police Force
-      DrawDisplay(68,  1, lum, selectedSource[0], false);
-      DrawDisplay( 0,  9, lum, selectedSource[1], true);
-      DrawDisplay( 0, 21, lum, selectedSource[2], true);
-      break;
-   case Layout_2x16_1x7: // Taxi
-      DrawDisplay( 0,  9, lum, selectedSource[0], true);
-      DrawDisplay( 0, 21, lum, selectedSource[1], true);
-      DrawDisplay(68,  1, lum, selectedSource[2], false);
-      break;
-   case Layout_1x7_1x4_2x16: // Riverboat Gambler
-      DrawDisplay( 0,  1, lum, selectedSource[0], false);
-      DrawDisplay(96,  1, lum, selectedSource[1], false);
-      DrawDisplay( 0,  9, lum, selectedSource[2], true);
-      DrawDisplay( 0, 21, lum, selectedSource[3], true);
-      break;
-   case Layout_2x7_2x2_1x16: // Hyperball
-      DrawDisplay( 0,  0, lum, selectedSource[0], true);
-      DrawDisplay(72,  0, lum, selectedSource[1], true);
-      DrawDisplay(16, 12, lum, selectedSource[2], false);
-      DrawDisplay(40, 12, lum, selectedSource[3], false);
-      DrawDisplay(16, 21, lum, selectedSource[4], true);
-      break;
-   case Layout_2x20: // Lots of later games
-      DrawDisplay( 4,  2, lum, selectedSource[0], false);
-      DrawDisplay( 4, 19, lum, selectedSource[1], false);
-      break;
-   default: break;
-   }
+      std::unique_lock<std::mutex> lock(sourceMutex);
+      updateCondVar.wait(lock);
 
-   frameId++;
-   if (memcmp(&getDmdMsg.dmdId, &dmd128Id, sizeof(DmdSrcId)) == 0)
-   {
-      getDmdMsg.frameId = frameId;
-      getDmdMsg.frame = dmd128Frame;
-   }
-   else if (memcmp(&getDmdMsg.dmdId, &dmd256Id, sizeof(DmdSrcId)) == 0)
-   {
-      for (int y = 0; y < 64; y++)
-         for (int x = 0; x < 256; x++)
-            dmd256Frame[x + y * 256] = dmd128Frame[(x >> 1) + (y >> 1) * 128];
-      getDmdMsg.frameId = frameId;
-      getDmdMsg.frame = dmd256Frame;
-   }
-}
+      if (!isRunning)
+         break;
+      
+      if (selectedSources.empty() || (dmdLayout == DmdLayouts::Undefined))
+         continue;
 
-
-static void onGetIdentifyDMD(const unsigned int eventId, void* userData, void* msgData)
-{
-   if ((nSelectedSources <= 0) || (dmdLayout == DmdLayouts::Undefined))
-      return;
-   GetRawDmdMsg& getDmdMsg = *static_cast<GetRawDmdMsg*>(msgData);
-   if ((getDmdMsg.frame != nullptr) || (getDmdMsg.dmdId.endpointId != endpointId))
-      return;
-
-   // Gather data and convert to a backward compatible bitset
-   GetSegMsg getSegMsg { { segSources.entries[0].id.endpointId, segSources.entries[0].id.resId } };
-   msgApi->BroadcastMsg(endpointId, getSegId, &getSegMsg);
-   if (getSegMsg.frame == nullptr)
-      return;
-   const float* lum = getSegMsg.frame;
-   static UINT16 seg_data[128] = { 0 };
-   static UINT16 seg_data2[128] = { 0 };
-   for (unsigned int i = 0, pos = 0; i < segSources.entries[0].nDisplaysInGroup; i++)
-   {
-      const SegSrcId& segSrc = segSources.entries[i];
-      for (unsigned int j = 0; j < segSrc.nElements; j++, pos++, lum += 16)
+      // Get segment display state and compute backward compatible binary version
+      float* lum = groupLum;
+      bool changed = false;
+      lastFrameId.resize(selectedSources.size());
+      for (int i = 0, pos = 0; i < selectedSources.size(); i++)
       {
-         const int nSegs = nSegments[segSrc.elementType[j]];
-         seg_data[pos] = 0;
-         for (int k = 0; k < nSegs; k++)
-            if (lum[k] > 0.5f)
-               seg_data[pos] |= 1 << k;
+         const SegDisplayFrame seg = selectedSources[i].GetState(selectedSources[i].id);
+         if (seg.frameId != lastFrameId[i])
+         {
+            changed = true;
+            lastFrameId[i] = seg.frameId;
+            memcpy(lum, seg.frame, selectedSources[i].nElements * 16 * sizeof(float));
+            for (unsigned int j = 0; j < selectedSources[i].nElements; j++)
+            {
+               const int nSegs = nSegments[selectedSources[i].elementType[j]];
+               seg_data[pos + j] = 0;
+               for (int k = 0; k < nSegs; k++)
+                  if (seg.frame[j * 16 + k] > 0.5f)
+                     seg_data[pos + j] |= 1 << k;
+            }
+         }
+         lum += selectedSources[i].nElements * 16;
+         pos += selectedSources[i].nElements;
+      }
+      if (!changed)
+         continue;
+
+      // Render for DMD
+      lum = groupLum;
+      memset(renderFrame, 0, sizeof(renderFrame));
+      switch (dmdLayout)
+      {
+      case Layout_6x4_2x2: // S11 Bowl games
+         DrawDisplay( 0,  0, lum, 0, true);
+         DrawDisplay(80,  0, lum, 1, true);
+         DrawDisplay( 0, 11, lum, 2, true);
+         DrawDisplay(80, 11, lum, 3, true);
+         DrawDisplay( 0, 22, lum, 4, true);
+         DrawDisplay(80, 22, lum, 5, true);
+         DrawDisplay(56, 11, lum, 6, true);
+         DrawDisplay(56, 22, lum, 7, true);
+         break;
+      case Layout_4x6_2x2: // Lots of games (4 players + credit/ball)
+         DrawDisplay( 0,  0, lum, 0, true);
+         DrawDisplay(80,  0, lum, 1, true);
+         DrawDisplay( 0, 12, lum, 2, true);
+         DrawDisplay(80, 12, lum, 3, true);
+         DrawDisplay( 8, 24, lum, 4, false);
+         DrawDisplay(32, 24, lum, 5, false);
+         break;
+      case Layout_4x6_2x2_1x6: // Black Hole
+         DrawDisplay( 0,  0, lum, 0, false);
+         DrawDisplay(80,  0, lum, 1, false);
+         DrawDisplay( 0, 12, lum, 2, false);
+         DrawDisplay(80, 12, lum, 3, false);
+         DrawDisplay(56,  0, lum, 4, false);
+         DrawDisplay(56, 12, lum, 5, false);
+         DrawDisplay(40, 24, lum, 6, false);
+         break;
+      case Layout_4x7:
+         DrawDisplay( 0,  2, lum, 0, true);
+         DrawDisplay(72,  2, lum, 1, true);
+         DrawDisplay( 0, 19, lum, 2, true);
+         DrawDisplay(72, 19, lum, 3, true);
+         break;
+      case Layout_4x7_2x2: // Lots of games (4 players + credit/ball)
+         DrawDisplay( 0,  0, lum, 0, true);
+         DrawDisplay(72,  0, lum, 1, true);
+         DrawDisplay( 0, 12, lum, 2, true);
+         DrawDisplay(72, 12, lum, 3, true);
+         DrawDisplay( 8, 24, lum, 4, false);
+         DrawDisplay(32, 24, lum, 5, false);
+         break;
+      case Layout_4x7_5x2: // Medusa
+         DrawDisplay(  0,  0, lum, 0, true);
+         DrawDisplay( 72,  0, lum, 1, true);
+         DrawDisplay(  0, 12, lum, 2, true);
+         DrawDisplay( 72, 12, lum, 3, true);
+         DrawDisplay( 16, 24, lum, 4, false);
+         DrawDisplay( 40, 24, lum, 5, false);
+         DrawDisplay( 64, 24, lum, 6, false);
+         DrawDisplay( 88, 24, lum, 7, false);
+         DrawDisplay(112, 24, lum, 8, false);
+         break;
+      case Layout_2x16: // Lots of later games
+         DrawDisplay( 0,  2, lum, 0, true);
+         DrawDisplay( 0, 19, lum, 1, true);
+         break;
+      case Layout_1x7_2x16: // Police Force
+         DrawDisplay(68,  1, lum, 0, false);
+         DrawDisplay( 0,  9, lum, 1, true);
+         DrawDisplay( 0, 21, lum, 2, true);
+         break;
+      case Layout_2x16_1x7: // Taxi
+         DrawDisplay( 0,  9, lum, 0, true);
+         DrawDisplay( 0, 21, lum, 1, true);
+         DrawDisplay(68,  1, lum, 2, false);
+         break;
+      case Layout_1x7_1x4_2x16: // Riverboat Gambler
+         DrawDisplay( 0,  1, lum, 0, false);
+         DrawDisplay(96,  1, lum, 1, false);
+         DrawDisplay( 0,  9, lum, 2, true);
+         DrawDisplay( 0, 21, lum, 3, true);
+         break;
+      case Layout_2x7_2x2_1x16: // Hyperball
+         DrawDisplay( 0,  0, lum, 0, true);
+         DrawDisplay(72,  0, lum, 1, true);
+         DrawDisplay(16, 12, lum, 2, false);
+         DrawDisplay(40, 12, lum, 3, false);
+         DrawDisplay(16, 21, lum, 4, true);
+         break;
+      case Layout_2x20: // Lots of later games
+         DrawDisplay( 4,  2, lum, 0, false);
+         DrawDisplay( 4, 19, lum, 1, false);
+         break;
+      default: break;
+      }
+      if (memcmp(dmd128Frame, renderFrame, 128 * 32) != 0)
+      {
+         //std::lock_guard<std::mutex> lock(renderMutex);
+         memcpy(dmd128Frame, renderFrame, 128 * 32);
+         for (int y = 0; y < 64; y++)
+            for (int x = 0; x < 256; x++)
+               dmd256Frame[x + y * 256] = dmd128Frame[(x >> 1) + (y >> 1) * 128];
+         renderFrameId++;
+      }
+      
+      // Render to bitplane surface for frame identification (backward compatible way of rendering to avoid breaking existing colorizations)
+      memset(AlphaNumericFrameBuffer, 0, sizeof(AlphaNumericFrameBuffer));
+      const SegElementType firstType = selectedSources[0].elementType[0];
+      switch (dmdLayout)
+      {
+      case Layout_6x4_2x2: _6x4Num_4x1Num(seg_data); break;
+      case Layout_4x6_2x2:
+         if ((firstType == CTLPI_SEG_LAYOUT_9) || (firstType == CTLPI_SEG_LAYOUT_9C))
+            _2x6Num10_2x6Num10_4x1Num(seg_data);
+         else
+            _2x6Num_2x6Num_4x1Num(seg_data);
+         break;
+      case Layout_4x6_2x2_1x6: return; // Unsupported
+      case Layout_4x7:
+         _2x7Alpha_2x7Num(seg_data); break;
+         _4x7Num10(seg_data); break;
+      case Layout_4x7_2x2:
+         if ((firstType == CTLPI_SEG_LAYOUT_9) || (firstType == CTLPI_SEG_LAYOUT_9C))
+            _2x7Num10_2x7Num10_4x1Num(seg_data);
+         else if ((firstType == CTLPI_SEG_LAYOUT_14) || (firstType == CTLPI_SEG_LAYOUT_14D) || (firstType == CTLPI_SEG_LAYOUT_14DC))
+            _2x7Alpha_2x7Num_4x1Num(seg_data);
+         else if (selectedSources[0].elementType[2] == CTLPI_SEG_LAYOUT_7) // No thousands comma
+            _2x7Num_2x7Num_4x1Num(seg_data);
+         else // With thousands comma
+            _2x7Num_2x7Num_4x1Num_gen7(seg_data);
+         break;
+      case Layout_4x7_5x2:      _2x7Num_2x7Num_10x1Num(seg_data,seg_data2); break; // FIXME Medusa: seg_data2 is not initialized. Is this really needed ?
+      case Layout_2x16:         _2x16Alpha(seg_data); break;
+      case Layout_1x7_2x16:     _1x7Num_1x16Alpha_1x16Num(seg_data); break;
+      case Layout_2x16_1x7:     _1x16Alpha_1x16Num_1x7Num(seg_data); break;
+      case Layout_1x7_1x4_2x16: _1x16Alpha_1x16Num_1x7Num_1x4Num(seg_data); break; // FIXME Riverboat Gambler: reverse order
+      case Layout_2x7_2x2_1x16: _2x7Num_4x1Num_1x16Alpha(seg_data); break;
+      case Layout_2x20:         _2x20Alpha(seg_data); break;
+      default: break;
+      }
+      if (memcmp(identifyFrame, AlphaNumericFrameBuffer, sizeof(AlphaNumericFrameBuffer)) != 0) {
+         //std::lock_guard<std::mutex> lock(renderMutex);
+         memcpy(identifyFrame, AlphaNumericFrameBuffer, sizeof(AlphaNumericFrameBuffer));
+         identifyFrameId++;
       }
    }
-
-   // Render to bitplane surface
-   memset(AlphaNumericFrameBuffer, 0, sizeof(AlphaNumericFrameBuffer));
-   const SegElementType firstType = segSources.entries[0].elementType[0];
-   switch (dmdLayout)
-   {
-   case Layout_6x4_2x2: _6x4Num_4x1Num(seg_data); break;
-   case Layout_4x6_2x2:
-      if ((firstType == CTLPI_GETSEG_LAYOUT_9) || (firstType == CTLPI_GETSEG_LAYOUT_9C))
-         _2x6Num10_2x6Num10_4x1Num(seg_data);
-      else
-         _2x6Num_2x6Num_4x1Num(seg_data);
-      break;
-   case Layout_4x6_2x2_1x6: return; // Unsupported
-   case Layout_4x7:
-      _2x7Alpha_2x7Num(seg_data); break;
-      _4x7Num10(seg_data); break;
-   case Layout_4x7_2x2:
-      if ((firstType == CTLPI_GETSEG_LAYOUT_9) || (firstType == CTLPI_GETSEG_LAYOUT_9C))
-         _2x7Num10_2x7Num10_4x1Num(seg_data);
-      else if ((firstType == CTLPI_GETSEG_LAYOUT_14) || (firstType == CTLPI_GETSEG_LAYOUT_14D) || (firstType == CTLPI_GETSEG_LAYOUT_14DC))
-         _2x7Alpha_2x7Num_4x1Num(seg_data);
-      else if (segSources.entries[0].elementType[2] == CTLPI_GETSEG_LAYOUT_7) // No thousands comma
-         _2x7Num_2x7Num_4x1Num(seg_data);
-      else // With thousands comma
-         _2x7Num_2x7Num_4x1Num_gen7(seg_data);
-      break;
-   case Layout_4x7_5x2:      _2x7Num_2x7Num_10x1Num(seg_data,seg_data2); break;
-   case Layout_2x16:         _2x16Alpha(seg_data); break;
-   case Layout_1x7_2x16:     _1x7Num_1x16Alpha_1x16Num(seg_data); break;
-   case Layout_2x16_1x7:     _1x16Alpha_1x16Num_1x7Num(seg_data); break;
-   case Layout_1x7_1x4_2x16: _1x16Alpha_1x16Num_1x7Num_1x4Num(seg_data); break; // FIXME reverse order (riverboat gambler)
-   case Layout_2x7_2x2_1x16: _2x7Num_4x1Num_1x16Alpha(seg_data); break;
-   case Layout_2x20:         _2x20Alpha(seg_data); break;
-   default: break;
-   }
-
-   if (memcmp(lastIdentifyFrame, AlphaNumericFrameBuffer, sizeof(AlphaNumericFrameBuffer)) != 0) {
-      memcpy(lastIdentifyFrame, AlphaNumericFrameBuffer, sizeof(AlphaNumericFrameBuffer));
-      identifyFrameId++;
-   }
-   getDmdMsg.format = CTLPI_GETDMD_FORMAT_BITPLANE2;
-   getDmdMsg.width = 128;
-   getDmdMsg.height = 32;
-   getDmdMsg.frameId = identifyFrameId;
-   getDmdMsg.frame = lastIdentifyFrame;
+   isRunning = false;
 }
 
-static void UpdateSegSources()
+static DisplayFrame GetRenderFrame(const CtlResId id) 
 {
-   bool wasRendering = nSelectedSources > 0;
+   // TODO To be fully clean we should do a lock on sourceLock and return a copy of the render
+   //std::lock_guard<std::mutex> lock(renderMutex);
+   updateCondVar.notify_one();
+   return { renderFrameId, id.resId == 0 ? dmd128Frame : dmd256Frame };
+}
 
-   // Update list of segment sources and select sources (simply the first one for the time being, maybe we oculd have some user setup on this)
-   segSources.count = 0;
-   msgApi->BroadcastMsg(endpointId, getSegSrcId, &segSources);
-   if (segSources.count == 0)
-   {
-      nSelectedSources = -1;
-   }
-   else
-   {
-      CtlResId& selectedSrc = segSources.entries[0].id;
+static DisplayFrame GetIdentifyFrame(const CtlResId id)
+{
+   // TODO To be fully clean we should do a lock on sourceLock and return a copy of the render
+   //std::lock_guard<std::mutex> lock(renderMutex);
+   updateCondVar.notify_one();
+   return { identifyFrameId, identifyFrame };
+}
 
-      // Select a DMD layout
-      nSelectedSources = 0;
-      for (unsigned int i = 0; (nSelectedSources < 32) && (i < segSources.count); i++)
+static void OnGetDisplaySrc(const unsigned int eventId, void* userData, void* msgData)
+{
+   if (selectedSources.empty() || (dmdLayout == DmdLayouts::Undefined))
+      return;
+   GetDisplaySrcMsg& msg = *static_cast<GetDisplaySrcMsg*>(msgData);
+   if (msg.count < msg.maxEntryCount)
+      msg.entries[msg.count] = dmd128Id;
+   msg.count++;
+   if (msg.count < msg.maxEntryCount)
+      msg.entries[msg.count] = dmd256Id;
+   msg.count++;
+}
+
+static void OnSegSrcChanged(const unsigned int eventId, void* userData, void* msgData)
+{
+   std::lock_guard<std::mutex> lock(sourceMutex);
+   bool wasRendering = !selectedSources.empty();
+   selectedSources.clear();
+
+   // Update list of segment sources and select sources (simply the first group for the time being, maybe we could have some user setup on this)
+   GetSegSrcMsg getSrcMsg = { 0, 0, nullptr };
+   msgApi->BroadcastMsg(endpointId, getSegSrcId, &getSrcMsg);
+   if (getSrcMsg.count > 0)
+   {
+      getSrcMsg = { getSrcMsg.count, 0, new SegSrcId[getSrcMsg.count] };
+      msgApi->BroadcastMsg(endpointId, getSegSrcId, &getSrcMsg);
+      for (unsigned int i = 0; i < getSrcMsg.count; i++)
       {
-         if (segSources.entries[i].id.id == selectedSrc.id)
+         if (getSrcMsg.entries[i].groupId.id == getSrcMsg.entries[0].groupId.id)
          {
-            selectedSource[nSelectedSources] = i;
-            nSelectedSources++;
+            selectedSources.push_back(getSrcMsg.entries[i]);
          }
       }
-      dmdLayout = DmdLayouts::Undefined;
-      static constexpr int layouts[13][16] = {
-         { DmdLayouts::Undefined, 0 }, { DmdLayouts::Layout_4x6_2x2, 6, 6, 6, 6, 6, 2, 2 }, // Bally, GTS1, GTS80, S3, S4, S6, ...
-         { DmdLayouts::Layout_4x7, 4, 7, 7, 7, 7 }, // Bally, S11, ...
-         { DmdLayouts::Layout_4x7_2x2, 6, 7, 7, 7, 7, 2, 2 }, // Bally, GTS1, GTS80, Data East, ...
-         { DmdLayouts::Layout_6x4_2x2, 8, 4, 4, 4, 4, 4, 4, 2, 2 }, // S11 bowling games
-         { DmdLayouts::Layout_2x16_1x7, 3, 16, 16, 7 }, // S11
-         { DmdLayouts::Layout_2x16, 2, 16, 16 }, // WPC, Data East, S11, ...
-         { DmdLayouts::Layout_2x20, 2, 20, 20 }, // Hankin, GTS3, GTS80B, ...
-         { DmdLayouts::Layout_2x7_2x2_1x16, 6, 7, 7, 2, 2, 16 }, // Hyperball
-         { DmdLayouts::Layout_1x7_2x16, 3, 7, 16, 16 }, // Police Force
-         { DmdLayouts::Layout_1x7_1x4_2x16, 4, 7, 4, 16, 16 }, // River Boat Gambler
-         { DmdLayouts::Layout_4x7_5x2, 9, 7, 7, 7, 7, 2, 2, 2, 2, 2 }, // Medusa
-         { DmdLayouts::Layout_4x6_2x2_1x6, 7, 6, 6, 6, 6, 2, 2, 6 }, // Black Hole
-      };
-      for (int i = 0; (dmdLayout == DmdLayouts::Undefined) && (i < 12); i++)
+   }
+
+   dmdLayout = DmdLayouts::Undefined;
+   static constexpr int layouts[13][16] = {
+      { DmdLayouts::Undefined, 0 },
+      { DmdLayouts::Layout_4x6_2x2, 6, 6, 6, 6, 6, 2, 2 }, // Bally, GTS1, GTS80, S3, S4, S6, ...
+      { DmdLayouts::Layout_4x7, 4, 7, 7, 7, 7 }, // Bally, S11, ...
+      { DmdLayouts::Layout_4x7_2x2, 6, 7, 7, 7, 7, 2, 2 }, // Bally, GTS1, GTS80, Data East, ...
+      { DmdLayouts::Layout_6x4_2x2, 8, 4, 4, 4, 4, 4, 4, 2, 2 }, // S11 bowling games
+      { DmdLayouts::Layout_2x16_1x7, 3, 16, 16, 7 }, // S11
+      { DmdLayouts::Layout_2x16, 2, 16, 16 }, // WPC, Data East, S11, ...
+      { DmdLayouts::Layout_2x20, 2, 20, 20 }, // Hankin, GTS3, GTS80B, ...
+      { DmdLayouts::Layout_2x7_2x2_1x16, 6, 7, 7, 2, 2, 16 }, // Hyperball
+      { DmdLayouts::Layout_1x7_2x16, 3, 7, 16, 16 }, // Police Force
+      { DmdLayouts::Layout_1x7_1x4_2x16, 4, 7, 4, 16, 16 }, // River Boat Gambler
+      { DmdLayouts::Layout_4x7_5x2, 9, 7, 7, 7, 7, 2, 2, 2, 2, 2 }, // Medusa
+      { DmdLayouts::Layout_4x6_2x2_1x6, 7, 6, 6, 6, 6, 2, 2, 6 }, // Black Hole
+   };
+   for (int i = 0; (dmdLayout == DmdLayouts::Undefined) && (i < 12); i++)
+   {
+      if (layouts[i][1] == selectedSources.size())
       {
-         if (layouts[i][1] == nSelectedSources)
+         dmdLayout = static_cast<DmdLayouts>(layouts[i][0]);
+         for (int j = 0; j < selectedSources.size(); j++)
          {
-            dmdLayout = static_cast<DmdLayouts>(layouts[i][0]);
-            for (int j = 0; j < nSelectedSources; j++)
+            if (layouts[i][j + 2] != selectedSources[j].nElements)
             {
-               if (layouts[i][j + 2] != segSources.entries[selectedSource[j]].nElements)
-               {
-                  dmdLayout = DmdLayouts::Undefined;
-                  break;
-               }
+               dmdLayout = DmdLayouts::Undefined;
+               break;
             }
          }
       }
-      if (dmdLayout == DmdLayouts::Undefined)
-      {
-         std::stringstream ss;
-         ss << "Unsupported segment layout (" << nSelectedSources << " displays: ";
-         for (int i = 0; i < nSelectedSources; i++)
-            ss << (i == 0 ? "" : ", ") << segSources.entries[selectedSource[i]].nElements;
-         ss << ')';
-         LPI_LOGI("%s", ss.str().c_str());
-      }
+   }
+   if (dmdLayout == DmdLayouts::Undefined)
+   {
+      std::stringstream ss;
+      ss << "Unsupported segment layout (" << selectedSources.size() << " displays: ";
+      for (int i = 0; i < selectedSources.size(); i++)
+         ss << (i == 0 ? "" : ", ") << selectedSources[i].nElements;
+      ss << ')';
+      LPI_LOGI("%s", ss.str().c_str());
    }
 
    // If we are starting or stopping rendering, report it
-   if (wasRendering != (nSelectedSources > 0))
+   if (wasRendering != (!selectedSources.empty()))
    {
-      if (nSelectedSources > 0)
-      {
-         msgApi->SubscribeMsg(endpointId, getDmdSrcId, onGetDMDSrc, nullptr);
-         msgApi->SubscribeMsg(endpointId, getRenderDmdId, onGetRenderDMD, nullptr);
-         msgApi->SubscribeMsg(endpointId, getIdentifyDmdId, onGetIdentifyDMD, nullptr);
-      }
+      if (selectedSources.empty())
+         msgApi->UnsubscribeMsg(getDmdSrcId, OnGetDisplaySrc);
       else
-      {
-         msgApi->UnsubscribeMsg(getDmdSrcId, onGetDMDSrc);
-         msgApi->UnsubscribeMsg(getRenderDmdId, onGetRenderDMD);
-         msgApi->UnsubscribeMsg(getIdentifyDmdId, onGetIdentifyDMD);
-      }
+         msgApi->SubscribeMsg(endpointId, getDmdSrcId, OnGetDisplaySrc, nullptr);
       msgApi->BroadcastMsg(endpointId, onDmdSrcChangedId, nullptr);
    }
 }
-
-static void onSegSrcChanged(const unsigned int eventId, void* userData, void* msgData) { UpdateSegSources(); }
 
 MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
 {
    msgApi = api;
    endpointId = sessionId;
-   segSources = { 1024, 0, new SegSrcId[1024] };
-   dmd128Id = { { endpointId, 0 }, 128, 32, CTLPI_GETDMD_FORMAT_LUM8 };
-   dmd256Id = { { endpointId, 1 }, 256, 64, CTLPI_GETDMD_FORMAT_LUM8 };
-   onDmdSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_ONDMD_SRC_CHG_MSG);
-   getDmdSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG);
-   getRenderDmdId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_RENDER_MSG);
-   getIdentifyDmdId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_IDENTIFY_MSG);
-   onSegSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_ONSEG_SRC_CHG_MSG);
-   getSegSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETSEG_SRC_MSG);
-   getSegId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETSEG_MSG);
-   msgApi->SubscribeMsg(endpointId, onSegSrcChangedId, onSegSrcChanged, nullptr);
-   UpdateSegSources();
+   dmd128Id = {
+      .id = { endpointId, 0 },
+      .groupId = { endpointId, 0 },
+      .overrideId = { 0, 0 },
+      .width = 128,
+      .height = 32,
+      .hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN,
+      .frameFormat = CTLPI_DISPLAY_FORMAT_LUM8,
+      .GetRenderFrame = &GetRenderFrame,
+      .identifyFormat = CTLPI_DISPLAY_ID_FORMAT_BITPLANE2,
+      .GetIdentifyFrame = &GetIdentifyFrame
+   };
+   dmd256Id = {
+      .id = { endpointId, 1 },
+      .groupId = { endpointId, 0 },
+      .overrideId = { 0, 0 },
+      .width = 256,
+      .height = 64,
+      .hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN,
+      .frameFormat = CTLPI_DISPLAY_FORMAT_LUM8,
+      .GetRenderFrame = &GetRenderFrame
+   };
+   isRunning = true;
+   renderThread = std::thread(RenderThread);
+   onDmdSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
+   getDmdSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
+   onSegSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_ON_SRC_CHG_MSG);
+   getSegSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_GET_SRC_MSG);
+   msgApi->SubscribeMsg(endpointId, onSegSrcChangedId, OnSegSrcChanged, nullptr);
+   OnSegSrcChanged(onSegSrcChangedId, nullptr, nullptr);
 }
 
 MSGPI_EXPORT void MSGPIAPI PluginUnload()
 {
-   if (segSources.count > 0)
-   {
-      msgApi->UnsubscribeMsg(getDmdSrcId, onGetDMDSrc);
-      msgApi->UnsubscribeMsg(getRenderDmdId, onGetRenderDMD);
-      msgApi->UnsubscribeMsg(getIdentifyDmdId, onGetIdentifyDMD);
-   }
-   msgApi->UnsubscribeMsg(onSegSrcChangedId, onSegSrcChanged);
+   isRunning = false;
+   updateCondVar.notify_all();
+   if (renderThread.joinable())
+      renderThread.join();
+   if (!selectedSources.empty())
+      msgApi->UnsubscribeMsg(getDmdSrcId, OnGetDisplaySrc);
+   msgApi->UnsubscribeMsg(onSegSrcChangedId, OnSegSrcChanged);
    msgApi->ReleaseMsgID(onDmdSrcChangedId);
    msgApi->ReleaseMsgID(getDmdSrcId);
-   msgApi->ReleaseMsgID(getRenderDmdId);
-   msgApi->ReleaseMsgID(getIdentifyDmdId);
    msgApi->ReleaseMsgID(onSegSrcChangedId);
    msgApi->ReleaseMsgID(getSegSrcId);
-   msgApi->ReleaseMsgID(getSegId);
-   delete[] segSources.entries;
    msgApi = nullptr;
 }

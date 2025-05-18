@@ -1255,31 +1255,31 @@ static Texture* LoadSegSDF(Texture& tex, const string& path)
    return &tex;
 }
 
-void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const vec3& color, const float brightness, const SegmentFamily family, const SegElementType type, float* segs, const ColorSpace colorSpace, Vertex3D_NoTex2* vertices,
+void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const vec3& color, const float brightness, const SegmentFamily family, const SegElementType type, const float* segs, const ColorSpace colorSpace, Vertex3D_NoTex2* vertices,
    const vec4& emitterPad, const vec3& glassTint, const float glassRougness, Texture* const glassTex, const vec4& glassArea, const vec3& glassAmbient)
 {
    Texture* segSDF = nullptr;
    switch (type)
    {
-   case CTLPI_GETSEG_LAYOUT_7: segSDF = LoadSegSDF(m_segDisplaySDF[family][0], 
+   case CTLPI_SEG_LAYOUT_7: segSDF = LoadSegSDF(m_segDisplaySDF[family][0], 
         (family == SegmentFamily::Gottlieb) ? g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-gts.png"
       : (family == SegmentFamily::Bally)    ? g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-bally.png"
       : (family == SegmentFamily::Atari)    ? g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-atari.png"
                                             : g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-williams.png"); break;
-   case CTLPI_GETSEG_LAYOUT_7C: segSDF = LoadSegSDF(m_segDisplaySDF[family][1],
+   case CTLPI_SEG_LAYOUT_7C: segSDF = LoadSegSDF(m_segDisplaySDF[family][1],
         (family == SegmentFamily::Bally)    ? g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-c-bally.png"
       : (family == SegmentFamily::Atari)    ? g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-c-atari.png"
                                             : g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-c-williams.png"); break;
    // TODO I did not found any reference for a dot only 7 segments display, so we use the comma one which is likely wrong
-   case CTLPI_GETSEG_LAYOUT_7D: segSDF = LoadSegSDF(m_segDisplaySDF[family][2], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-c-williams.png"); break;
-   case CTLPI_GETSEG_LAYOUT_9: segSDF = LoadSegSDF(m_segDisplaySDF[family][3], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "9seg-gts.png"); break;
-   case CTLPI_GETSEG_LAYOUT_9C: segSDF = LoadSegSDF(m_segDisplaySDF[family][4], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "9seg-c-gts.png"); break;
-   case CTLPI_GETSEG_LAYOUT_14: segSDF = LoadSegSDF(m_segDisplaySDF[family][5], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "14seg-williams.png"); break;
-   case CTLPI_GETSEG_LAYOUT_14D: segSDF = LoadSegSDF(m_segDisplaySDF[family][6], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "14seg-d-williams.png"); break;
-   case CTLPI_GETSEG_LAYOUT_14DC: segSDF = LoadSegSDF(m_segDisplaySDF[family][7],
+   case CTLPI_SEG_LAYOUT_7D: segSDF = LoadSegSDF(m_segDisplaySDF[family][2], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-c-williams.png"); break;
+   case CTLPI_SEG_LAYOUT_9: segSDF = LoadSegSDF(m_segDisplaySDF[family][3], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "9seg-gts.png"); break;
+   case CTLPI_SEG_LAYOUT_9C: segSDF = LoadSegSDF(m_segDisplaySDF[family][4], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "9seg-c-gts.png"); break;
+   case CTLPI_SEG_LAYOUT_14: segSDF = LoadSegSDF(m_segDisplaySDF[family][5], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "14seg-williams.png"); break;
+   case CTLPI_SEG_LAYOUT_14D: segSDF = LoadSegSDF(m_segDisplaySDF[family][6], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "14seg-d-williams.png"); break;
+   case CTLPI_SEG_LAYOUT_14DC: segSDF = LoadSegSDF(m_segDisplaySDF[family][7],
         (family == SegmentFamily::Gottlieb) ? g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "14seg-dc-gts.png"
                                             : g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "14seg-dc-williams.png"); break;
-   case CTLPI_GETSEG_LAYOUT_16: segSDF = LoadSegSDF(m_segDisplaySDF[family][8], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "16seg.png"); break;
+   case CTLPI_SEG_LAYOUT_16: segSDF = LoadSegSDF(m_segDisplaySDF[family][8], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "16seg.png"); break;
    }
    if (segSDF == nullptr)
       return;
@@ -1330,7 +1330,7 @@ void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const ve
    }
    m_renderDevice->m_DMDShader->SetVector(SHADER_glassArea, &glassArea);
    m_renderDevice->m_DMDShader->SetVector(SHADER_glassPad, emitterPad.x - parallaxU, emitterPad.z + parallaxU, emitterPad.y - parallaxV, emitterPad.w + parallaxV);
-   m_renderDevice->m_DMDShader->SetFloat4v(SHADER_alphaSegState, reinterpret_cast<vec4*>(segs), 4);
+   m_renderDevice->m_DMDShader->SetFloat4v(SHADER_alphaSegState, reinterpret_cast<const vec4*>(segs), 4);
    m_renderDevice->m_DMDShader->SetTexture(SHADER_displayTex, segSDF, SF_TRILINEAR, SA_CLAMP, SA_CLAMP, true);
    m_renderDevice->m_DMDShader->SetTechnique(isBackdrop ? SHADER_TECHNIQUE_display_Seg : SHADER_TECHNIQUE_display_Seg_world);
 }

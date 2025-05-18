@@ -320,6 +320,9 @@ Window::Window(const string &title, const Settings& settings, const Settings::Se
          SAFE_RELEASE(d3d);
       }
 
+      m_pixelWidth = m_width;
+      m_pixelHeight = m_height;
+
    #endif
 
    assert(m_width > 0);

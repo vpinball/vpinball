@@ -157,9 +157,9 @@ private:
 
    MsgPluginAPI* const m_msgApi;
    const unsigned int m_endpointId;
-   unsigned int m_getDmdMsgId, m_getDmdSrcMsgId, m_onDmdChangedMsgId;
-   GetDmdMsg m_defaultDmd { 0 };
-   void UpdateDmd();
+   unsigned int m_getDmdSrcMsgId, m_onDmdChangedMsgId;
+   DisplaySrcId m_defaultDmd { 0 };
+   void UpdateDmdSrc();
    static void OnDmdSrcChanged(const unsigned int msgId, void* userData, void* msgData);
 
    void (*m_onDestroyHandler)(Controller*) = nullptr;

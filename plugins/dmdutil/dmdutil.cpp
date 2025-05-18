@@ -7,7 +7,11 @@
 #include "VPXPlugin.h"
 #include "CorePlugin.h"
 #include "LoggingPlugin.h"
+
+#pragma warning(push)
+#pragma warning(disable : 4251) // xxx needs dll-interface
 #include "DMDUtil/DMDUtil.h"
+#pragma warning(pop)
 
 static MsgPluginAPI* msgApi = nullptr;
 static uint32_t endpointId;
@@ -15,11 +19,13 @@ static uint32_t endpointId;
 static unsigned int onGameEndId;
 static unsigned int onDmdSrcChangedId;
 static unsigned int getDmdSrcMsgId;
-static unsigned int getDmdMsgId;
+
+static std::mutex sourceMutex;
+static std::thread updateThread;
+static DisplaySrcId selectedDmdId = {0};
+static bool isRunning = false;
 
 static DMDUtil::DMD* pDmd = nullptr;
-static int lastFrameID = 0;
-static DmdSrcId m_defaultDmdId = {0};
 
 static uint8_t tintR = 255;
 static uint8_t tintG = 140;
@@ -32,86 +38,63 @@ LPI_USE();
 
 LPI_IMPLEMENT
 
-static void onUpdateDMD(void* userData)
+static void UpdateThread()
 {
-   if (!pDmd)
-      return;
+   int lastFrameID = 0;
+   while (isRunning && pDmd && selectedDmdId.id.id != 0)
+   {
+      // Fixed update at 60 FPS
+      std::this_thread::sleep_for(std::chrono::nanoseconds(16666));
 
-   GetDmdMsg getMsg = { m_defaultDmdId, 0, nullptr };
-   msgApi->BroadcastMsg( endpointId, getDmdMsgId, &getMsg);
+      std::lock_guard<std::mutex> lock(sourceMutex);
 
-   if (getMsg.frame && lastFrameID != getMsg.frameId) {
-      lastFrameID = getMsg.frameId;
+      const DisplayFrame frame = selectedDmdId.GetRenderFrame(selectedDmdId.id);
+      if (lastFrameID == frame.frameId)
+         continue;
+      lastFrameID = frame.frameId;
 
-      switch(getMsg.dmdId.format) {
-         case CTLPI_GETDMD_FORMAT_LUM8:
+      switch(selectedDmdId.frameFormat) {
+         case CTLPI_DISPLAY_FORMAT_LUM8:
          {
-            const uint8_t* const __restrict luminanceData = getMsg.frame;
-            uint8_t* const __restrict rgb24Data = (uint8_t*)malloc(getMsg.dmdId.width * getMsg.dmdId.height * 3);
+            const uint8_t* const __restrict luminanceData = frame.frame;
+            uint8_t* const __restrict rgb24Data = (uint8_t*)malloc(selectedDmdId.width * selectedDmdId.height * 3);
 
-            for (unsigned int i = 0; i < getMsg.dmdId.width * getMsg.dmdId.height; ++i) {
+            for (unsigned int i = 0; i < selectedDmdId.width * selectedDmdId.height; ++i) {
                 const uint32_t lum = luminanceData[i];
                 rgb24Data[i * 3    ] = (uint8_t)((lum * tintR) / 255u);
                 rgb24Data[i * 3 + 1] = (uint8_t)((lum * tintG) / 255u);
                 rgb24Data[i * 3 + 2] = (uint8_t)((lum * tintB) / 255u);
             }
 
-            pDmd->UpdateRGB24Data(rgb24Data, getMsg.dmdId.width, getMsg.dmdId.height);
+            pDmd->UpdateRGB24Data(rgb24Data, selectedDmdId.width, selectedDmdId.height);
             free(rgb24Data);
          }
          break;
 
-         case CTLPI_GETDMD_FORMAT_SRGB888:
-            pDmd->UpdateRGB24Data((const uint8_t*)getMsg.frame, getMsg.dmdId.width, getMsg.dmdId.height);
+         case CTLPI_DISPLAY_FORMAT_SRGB888:
+            pDmd->UpdateRGB24Data(frame.frame, selectedDmdId.width, selectedDmdId.height);
             break;
 
-         case CTLPI_GETDMD_FORMAT_SRGB565:
-            pDmd->UpdateRGB16Data((const uint16_t*)getMsg.frame, getMsg.dmdId.width, getMsg.dmdId.height);
+         case CTLPI_DISPLAY_FORMAT_SRGB565:
+            pDmd->UpdateRGB16Data((const uint16_t*)frame.frame, selectedDmdId.width, selectedDmdId.height);
             break;
       }
    }
-
-   msgApi->RunOnMainThread(1. / 60., onUpdateDMD, nullptr);
-}
-
-static void initDMD()
-{
-   pDmd = new DMDUtil::DMD();
-   pDmd->FindDisplays();
-
-   char value[256];
-   msgApi->GetSetting("DMDUtil", "LumTintR", value, sizeof(value));
-   if (value[0] != '\0')
-      tintR = (uint8_t)(strtol(value, NULL, 10) & 0xFF);
-
-   msgApi->GetSetting("DMDUtil", "LumTintG", value, sizeof(value));
-   if (value[0] != '\0')
-      tintG = (uint8_t)(strtol(value, NULL, 10) & 0xFF);
-
-   msgApi->GetSetting("DMDUtil", "LumTintB", value, sizeof(value));
-   if (value[0] != '\0')
-      tintB = (uint8_t)(strtol(value, NULL, 10) & 0xFF);
-
-   onUpdateDMD(nullptr);
-}
-
-static void onGameEnd(const unsigned int msgId, void* userData, void* msgData)
-{
-   delete pDmd;
-   pDmd = nullptr;
+   isRunning = false;
 }
 
 static void onDmdSrcChanged(const unsigned int msgId, void* userData, void* msgData)
 {
-   DmdSrcId newDmdId = { 0 };
+   DisplaySrcId newDmdId = { 0 };
 
-   GetDmdSrcMsg getSrcMsg = { 1024, 0, new DmdSrcId[1024] };
+   GetDisplaySrcMsg getSrcMsg = { 1024, 0, new DisplaySrcId[1024] };
    msgApi->BroadcastMsg( endpointId, getDmdSrcMsgId, &getSrcMsg);
 
    bool foundDMD = false;
 
+   // Select the largest color display
    for (unsigned int i = 0; i < getSrcMsg.count; i++) {
-      if (getSrcMsg.entries[i].format != CTLPI_GETDMD_FORMAT_LUM8) {
+      if (getSrcMsg.entries[i].frameFormat != CTLPI_DISPLAY_FORMAT_LUM8) {
           if (getSrcMsg.entries[i].width > newDmdId.width) {
               newDmdId = getSrcMsg.entries[i];
               foundDMD = true;
@@ -119,9 +102,10 @@ static void onDmdSrcChanged(const unsigned int msgId, void* userData, void* msgD
       }
    }
 
+   // Defaults to the largest monochrome display
    if (!foundDMD) {
       for (unsigned int i = 0; i < getSrcMsg.count; i++) {
-         if (getSrcMsg.entries[i].format == CTLPI_GETDMD_FORMAT_LUM8) {
+         if (getSrcMsg.entries[i].frameFormat == CTLPI_DISPLAY_FORMAT_LUM8) {
              if (getSrcMsg.entries[i].width > newDmdId.width) {
                newDmdId = getSrcMsg.entries[i];
                foundDMD = true;
@@ -132,14 +116,42 @@ static void onDmdSrcChanged(const unsigned int msgId, void* userData, void* msgD
 
    delete[] getSrcMsg.entries;
 
-   m_defaultDmdId = newDmdId;
+   std::lock_guard<std::mutex> lock(sourceMutex);
+   selectedDmdId = newDmdId;
 
    if (foundDMD) {
-      LOGI("DMD Source Changed: format=%d, width=%d, height=%d", newDmdId.format, newDmdId.width, newDmdId.height);
-
+      LOGI("DMD Source Changed: format=%d, width=%d, height=%d", newDmdId.frameFormat, newDmdId.width, newDmdId.height);
       if (!pDmd)
-         initDMD();
+      {
+         pDmd = new DMDUtil::DMD();
+         pDmd->FindDisplays();
+
+         char value[256];
+         msgApi->GetSetting("DMDUtil", "LumTintR", value, sizeof(value));
+         if (value[0] != '\0')
+            tintR = (uint8_t)(strtol(value, NULL, 10) & 0xFF);
+
+         msgApi->GetSetting("DMDUtil", "LumTintG", value, sizeof(value));
+         if (value[0] != '\0')
+            tintG = (uint8_t)(strtol(value, NULL, 10) & 0xFF);
+
+         msgApi->GetSetting("DMDUtil", "LumTintB", value, sizeof(value));
+         if (value[0] != '\0')
+            tintB = (uint8_t)(strtol(value, NULL, 10) & 0xFF);
+      }
+      isRunning = true;
+      if (!updateThread.joinable())
+         updateThread = std::thread(UpdateThread);
    }
+}
+
+static void onGameEnd(const unsigned int msgId, void* userData, void* msgData)
+{
+   isRunning = false;
+   if (updateThread.joinable())
+      updateThread.join();
+   delete pDmd;
+   pDmd = nullptr;
 }
 
 MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
@@ -147,25 +159,24 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
    msgApi = api;
    endpointId = sessionId;
 
-   // Request and setup shared login API
-   LPISetup(endpointId, msgApi);
+   LPISetup(endpointId, msgApi); // Request and setup shared login API
 
    msgApi->SubscribeMsg(endpointId, onGameEndId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END), onGameEnd, nullptr);
-   msgApi->SubscribeMsg(endpointId, onDmdSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_ONDMD_SRC_CHG_MSG), onDmdSrcChanged, nullptr);
+   msgApi->SubscribeMsg(endpointId, onDmdSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG), onDmdSrcChanged, nullptr);
 
-   getDmdSrcMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG);
-   getDmdMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_RENDER_MSG);
+   getDmdSrcMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
 }
 
 MSGPI_EXPORT void MSGPIAPI PluginUnload()
 {
+   onGameEnd(onGameEndId, nullptr, nullptr);
+
    msgApi->UnsubscribeMsg(onGameEndId, onGameEnd);
    msgApi->UnsubscribeMsg(onDmdSrcChangedId, onDmdSrcChanged);
 
    msgApi->ReleaseMsgID(onGameEndId);
    msgApi->ReleaseMsgID(onDmdSrcChangedId);
    msgApi->ReleaseMsgID(getDmdSrcMsgId);
-   msgApi->ReleaseMsgID(getDmdMsgId);
 
    msgApi = nullptr;
 }

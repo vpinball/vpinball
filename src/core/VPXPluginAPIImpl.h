@@ -79,10 +79,6 @@ private:
    ScriptablePluginAPI m_scriptableApi;
 
    // Contribute VPX API through plugin API
-   unsigned int m_getRenderDmdMsgId;
-   unsigned int m_getIdentifyDmdMsgId;
-
    static void ControllerOnGetDMDSrc(const unsigned int msgId, void* userData, void* msgData);
-   static void ControllerOnGetRenderDMD(const unsigned int msgId, void* userData, void* msgData);
-   static void ControllerOnGetIdentifyDMD(const unsigned int msgId, void* userData, void* msgData);
+   static DisplayFrame ControllerOnGetRenderDMD(const CtlResId id);
 };

@@ -31,12 +31,6 @@
 #include <d3dx9.h>
 #endif
 
-// Attempt to speed up STL which is very CPU costly, maybe we should look into using EASTL instead? http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2271.html https://github.com/electronicarts/EASTL
-#ifndef ENABLE_BGFX
-#define _SECURE_SCL 0
-#define _HAS_ITERATOR_DEBUGGING 0
-#endif
-
 #if defined(ENABLE_BGFX) || defined(__OPENGLES__)
 #define FLT_MIN_VALUE 0.00006103515625f
 #else
