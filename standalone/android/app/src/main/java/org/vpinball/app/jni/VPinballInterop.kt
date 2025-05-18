@@ -24,8 +24,10 @@ enum class VPinballSettingsSection(val value: Int) {
     DMD(4),
     ALPHA(5),
     BACKGLASS(6),
-    TABLE_OVERRIDE(11),
-    TABLE_OPTION(12);
+    SCORE_VIEW(7),
+    TOPPER(8),
+    TABLE_OVERRIDE(13),
+    TABLE_OPTION(14);
 
     companion object {
         @JvmStatic

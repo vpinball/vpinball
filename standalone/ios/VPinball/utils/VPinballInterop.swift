@@ -20,8 +20,10 @@ enum VPinballSettingsSection: CInt {
     case dmd = 4
     case alpha = 5
     case backglass = 6
-    case tableOverride = 11
-    case tableOption = 12
+    case scoreView = 7
+    case topper = 8
+    case tableOverride = 13
+    case tableOption = 14
 }
 
 enum VPinballViewMode: CInt {

@@ -25,8 +25,10 @@ enum class SettingsSection {
    DMD = 4,
    Alpha = 5,
    Backglass = 6,
-   TableOverride = 11,
-   TableOption = 12
+   ScoreView = 7,
+   Topper = 8,
+   TableOverride = 13,
+   TableOption = 14
 };
 
 enum class ScriptErrorType {

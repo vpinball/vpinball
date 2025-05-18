@@ -152,6 +152,18 @@ void WindowManager::ProcessUpdates()
             for (Window* pWindow: m_windows)
                pWindow->OnUpdate();
 
+            VPX::Window* pWindow = g_pplayer->m_backglassOutput.GetWindow();
+            if (pWindow)
+               SDL_RaiseWindow(pWindow->GetCore());
+
+            pWindow = g_pplayer->m_scoreviewOutput.GetWindow();
+            if (pWindow)
+               SDL_RaiseWindow(pWindow->GetCore());
+
+            pWindow = g_pplayer->m_topperOutput.GetWindow();
+            if (pWindow)
+               SDL_RaiseWindow(pWindow->GetCore());
+
             SDL_RaiseWindow(g_pplayer->m_playfieldWnd->GetCore());
          }
       }
