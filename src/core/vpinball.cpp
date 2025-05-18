@@ -1766,6 +1766,7 @@ int VPinball::MainMsgLoop()
    for (;;)
    {
       MSG msg;
+      MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
       if (PeekMessageA(&msg, nullptr, 0, 0, PM_REMOVE))
       {
          if (msg.message == WM_QUIT)

@@ -311,11 +311,14 @@ int OnRender(VPXRenderContext2D* ctx, void*)
 void OnGetRenderer(const unsigned int msgId, void* context, void* msgData)
 {
    GetAnciliaryRendererMsg* msg = static_cast<GetAnciliaryRendererMsg*>(msgData);
-   if ((msg->count < msg->maxEntryCount) && (msg->window == VPXAnciliaryWindow::VPXWINDOW_Backglass))
+   if (msg->window == VPXAnciliaryWindow::VPXWINDOW_Backglass)
    {
-      msg->entries[msg->count].name = "B2S Backglass";
-      msg->entries[msg->count].description = "Renderer for directb2s backglass files";
-      msg->entries[msg->count].Render = OnRender;
+      if (msg->count < msg->maxEntryCount)
+      {
+         msg->entries[msg->count].name = "B2S Backglass";
+         msg->entries[msg->count].description = "Renderer for directb2s backglass files";
+         msg->entries[msg->count].Render = OnRender;
+      }
       msg->count++;
    }
 }

@@ -22,6 +22,24 @@
 #include <iostream>
 #endif
 
+static inline int GetPixelSize(const BaseTexture::Format format)
+{
+   switch (format)
+   {
+   case BaseTexture::BW: return 1;
+   case BaseTexture::RGB: return 3;
+   case BaseTexture::RGBA: return 4;
+   case BaseTexture::SRGB: return 3;
+   case BaseTexture::SRGBA: return 4;
+   case BaseTexture::SRGB565: return 2;
+   case BaseTexture::RGB_FP16: return 2 * 3;
+   case BaseTexture::RGBA_FP16: return 2 * 4;
+   case BaseTexture::RGB_FP32: return 4 * 3;
+   case BaseTexture::RGBA_FP32: return 4 * 4;
+   default: assert(false); return 0;
+   }
+}
+
 BaseTexture::BaseTexture(const unsigned int w, const unsigned int h, const Format format)
    : m_realWidth(w)
    , m_realHeight(h)
@@ -29,8 +47,8 @@ BaseTexture::BaseTexture(const unsigned int w, const unsigned int h, const Forma
    , m_width(w)
    , m_height(h)
    , m_liveHash(((unsigned long long)this) ^ usec() ^ ((unsigned long long)w << 16) ^ ((unsigned long long)h << 32) ^ format)
+   , m_data(new BYTE[w * h * GetPixelSize(format)])
 {
-   m_data = new BYTE[(format == RGBA || format == SRGBA || format == RGBA_FP16 ? 4 : (format == BW ? 1 : 3)) * ((format == RGB_FP32 || format == RGBA_FP32) ? 4 : (format == RGB_FP16 || format == RGBA_FP16) ? 2 : 1) * w * h];
 }
 
 BaseTexture::~BaseTexture()
@@ -38,6 +56,42 @@ BaseTexture::~BaseTexture()
    delete[] m_data;
 }
 
+unsigned int BaseTexture::pitch() const
+{
+   return m_width * GetPixelSize(m_format);
+}
+
+void BaseTexture::Update(BaseTexture** texture, const unsigned int width, const unsigned int height, const Format texFormat, const uint8_t* image)
+{
+   const int pixelSize = GetPixelSize(texFormat);
+   if (*texture != nullptr)
+   {
+      BaseTexture* tex = *texture;
+      if ((tex->m_width == width) && (tex->m_height == height) && (tex->m_format == texFormat))
+      {
+         assert(tex->pitch() * tex->height() == width * height * pixelSize);
+         memcpy(tex->data(), image, width * height * pixelSize);
+         if (g_pplayer)
+            g_pplayer->m_renderer->m_renderDevice->m_texMan.SetDirty(tex);
+         return;
+      }
+      else if (g_pplayer)
+      {
+         // Delay texture deletion since it may be used by the render frame which is processed asynchronously. If so, deleting would cause a deadlock & invalid access
+         g_pplayer->m_renderer->m_renderDevice->AddEndOfFrameCmd([tex] {
+               g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture(tex);
+               delete tex;
+            });
+      }
+      else
+      {
+         delete tex;
+      }
+   }
+   BaseTexture* baseTex = new BaseTexture(width, height, texFormat);
+   memcpy(baseTex->data(), image, width * height * pixelSize);
+   *texture = baseTex;
+}
 
 BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_mem, unsigned int maxTexDim)
 {

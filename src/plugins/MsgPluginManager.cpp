@@ -1,11 +1,5 @@
 // license:GPLv3+
 
-// TODO this is defined for VPX compilation, but should be moved to build script
-#if !defined(ENABLE_BGFX) || !defined(_DEBUG)
-#define _SECURE_SCL 0
-#define _HAS_ITERATOR_DEBUGGING 0
-#endif
-
 #include "MsgPluginManager.h"
 
 #include <cassert>

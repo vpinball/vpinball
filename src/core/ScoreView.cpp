@@ -11,9 +11,9 @@
 
 ScoreView::ScoreView()
 {
-   m_onDmdChangedMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_ONDMD_SRC_CHG_MSG);
+   m_onDmdChangedMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
    MsgPluginManager::GetInstance().GetMsgAPI().SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onDmdChangedMsgId, OnDmdChanged, this);
-   m_onSegChangedMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_ONSEG_SRC_CHG_MSG);
+   m_onSegChangedMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_ON_SRC_CHG_MSG);
    MsgPluginManager::GetInstance().GetMsgAPI().SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onSegChangedMsgId, OnSegChanged, this);
 }
 
@@ -25,6 +25,9 @@ ScoreView::~ScoreView()
    VPXPluginAPIImpl::ReleaseMsgID(m_onDmdChangedMsgId);
    for (auto& image : m_images)
       delete image.second;
+   for (auto& layout : m_layouts)
+      for (auto& visual : layout.visuals)
+         delete visual.liveTexture;
    m_images.clear();
 }
 
@@ -195,7 +198,7 @@ void ScoreView::Parse(const string& path, std::istream& content)
          expectedIndent = indent + 1;
          layout.visuals.push_back({VisualType::DMD});
          visual = &layout.visuals.back();
-         visual->srcUri = "default://dmd";
+         visual->srcUri = "ctrl://default/display";
          visual->liveStyle = 1; // Default to Neon Plasma
          visual->tint = vec3(1.f, 1.f, 1.f);
          visual->glassTint = vec3(1.f, 1.f, 1.f);
@@ -448,8 +451,8 @@ void ScoreView::Select(const VPX::RenderOutput& output)
    const float rtAR = static_cast<float>(scoreW) / static_cast<float>(scoreH);
 
    // Evaluate layouts against current context
-   ResURIResolver::SegDisplay segDisplay;
-   BaseTexture* dmdFrame;
+   ResURIResolver::SegDisplayState segDisplay;
+   ResURIResolver::DisplayState display;
    for (auto& layout : m_layouts)
    {
       const float layoutAR = static_cast<float>(layout.width) / static_cast<float>(layout.height);
@@ -461,15 +464,15 @@ void ScoreView::Select(const VPX::RenderOutput& output)
          switch (visual.type)
          {
          case VisualType::DMD:
-            dmdFrame = player->m_resURIResolver.GetDisplay(visual.srcUri);
-            if ((dmdFrame == nullptr) || (dmdFrame->width() * visual.dmdSize.y != visual.dmdSize.x * dmdFrame->height()))
+            display = player->m_resURIResolver.GetDisplayState(visual.srcUri);
+            if ((display.source == nullptr) || (display.source->width * visual.dmdSize.y != visual.dmdSize.x * display.source->height))
                layout.unmatchedVisuals++;
             else
-               layout.matchedVisuals++;
+               layout.matchedVisuals+=10; // To favor DMD over alphanumerioc seg displays
             break;
          case VisualType::SegDisplay:
-            segDisplay = player->m_resURIResolver.GetSegDisplay(visual.srcUri);
-            if ((segDisplay.frame == nullptr) || (segDisplay.displays.size() != visual.nElements))
+            segDisplay = player->m_resURIResolver.GetSegDisplayState(visual.srcUri);
+            if ((segDisplay.source == nullptr) || (segDisplay.source->nElements != visual.nElements))
                layout.unmatchedVisuals++;
             else
                layout.matchedVisuals++;
@@ -584,9 +587,14 @@ void ScoreView::Render(const VPX::RenderOutput& output)
       {
       case VisualType::DMD:
       {
-         BaseTexture* frame = player->m_resURIResolver.GetDisplay(visual.srcUri);
-         if (frame == nullptr)
+         ResURIResolver::DisplayState dmd = player->m_resURIResolver.GetDisplayState(visual.srcUri);
+         if (dmd.state.frame == nullptr)
             continue;
+         BaseTexture::Update(&visual.liveTexture, dmd.source->width, dmd.source->height, 
+              dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8    ? BaseTexture::BW
+            : dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565
+                                                                      : BaseTexture::SRGB,
+            dmd.state.frame);
          LoadGlass(visual);
          renderer->m_renderDevice->ResetRenderState();
          renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
@@ -603,7 +611,7 @@ void ScoreView::Render(const VPX::RenderOutput& output)
             glassArea.z = visual.glassArea.z / (float)visual.glass->m_width;
             glassArea.w = visual.glassArea.w / (float)visual.glass->m_height;
          }
-         renderer->SetupDMDRender(visual.liveStyle, true, visual.tint, 1.f, frame, 1.f,
+         renderer->SetupDMDRender(visual.liveStyle, true, visual.tint, 1.f, visual.liveTexture, 1.f,
             output.GetMode() == VPX::RenderOutput::OM_WINDOW ? Renderer::ColorSpace::Reinhard_sRGB : Renderer::ColorSpace::Reinhard, nullptr,
             visual.glassPad, visual.glassTint, visual.glassRoughness, visual.glass, glassArea, visual.glassAmbient);
          const float vx1 = px  + visual.x * sx;
@@ -621,8 +629,8 @@ void ScoreView::Render(const VPX::RenderOutput& output)
 
       case VisualType::SegDisplay:
       {
-         ResURIResolver::SegDisplay frame = player->m_resURIResolver.GetSegDisplay(visual.srcUri);
-         if ((frame.frame == nullptr) || (frame.displays.size() != visual.nElements))
+         ResURIResolver::SegDisplayState frame = player->m_resURIResolver.GetSegDisplayState(visual.srcUri);
+         if ((frame.state.frame == nullptr) || (frame.source->nElements != visual.nElements))
             continue;
          LoadGlass(visual);
          renderer->m_renderDevice->ResetRenderState();
@@ -635,6 +643,16 @@ void ScoreView::Render(const VPX::RenderOutput& output)
          renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
          renderer->m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
          // FIXME use hardware segment style
+         Renderer::SegmentFamily family = visual.segFamilyHint;
+         if (family == Renderer::SegmentFamily::Generic)
+         {
+            switch (frame.source->hardwareFamily)
+            {
+            case CTLPI_SEG_HARDWARE_NEON_PLASMA >> 16: break;
+            case CTLPI_SEG_HARDWARE_VFD_GREEN >> 16: break;
+            case CTLPI_SEG_HARDWARE_VFD_BLUE >> 16: family = Renderer::SegmentFamily ::Gottlieb; break;
+            }
+         }
          vec4 glassArea;
          if (visual.glass == nullptr || visual.glassArea.z == 0.f || visual.glassArea.w == 0.f)
             glassArea = vec4(0.f, 0.f, 1.f, 1.f);
@@ -657,11 +675,11 @@ void ScoreView::Render(const VPX::RenderOutput& output)
             { 0.f, vy1, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f },
             { 1.f, vy2, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
             { 0.f, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f } };
-         for (size_t i = 0; i < frame.displays.size(); i++)
+         for (size_t i = 0; i < frame.source->nElements; i++)
          {
             segGlassArea.x = glassArea.x + visual.xOffsets[i] * hGlassScale;
-            renderer->SetupSegmentRenderer(visual.liveStyle, true, visual.tint, 1.0f, visual.segFamilyHint, 
-               frame.displays[i], &frame.frame[i * 16],
+            renderer->SetupSegmentRenderer(visual.liveStyle, true, visual.tint, 1.0f, family,
+               frame.source->elementType[i], &frame.state.frame[i * 16],
                output.GetMode() == VPX::RenderOutput::OM_WINDOW ? Renderer::ColorSpace::Reinhard_sRGB : Renderer::ColorSpace::Reinhard, nullptr, 
                visual.glassPad, visual.glassTint, visual.glassRoughness,
                visual.glass, segGlassArea, visual.glassAmbient);

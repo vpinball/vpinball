@@ -107,7 +107,7 @@ private:
    MsgPluginAPI* const m_msgApi;
    const uint32_t m_endpointId;
    unsigned int m_getAuxRendererId = 0, m_onAuxRendererChgId = 0;
-   unsigned int m_onDmdSrcChangedId = 0, m_getDmdSrcId = 0, m_getIdentifyDmdId = 0;
+   unsigned int m_onDmdSrcChangedId = 0, m_getDmdSrcId = 0;
    unsigned int m_onDevSrcChangedId = 0, m_getDevSrcId = 0;
    unsigned int m_onInputSrcChangedId = 0, m_getInputSrcId = 0;
    unsigned int m_onSerumTriggerId = 0;
@@ -121,18 +121,15 @@ private:
    InputSrcId m_b2sInputSrc { 0 };
 
    unsigned int m_lastFrameId = 0;
-   CtlResId m_dmdId { 0 };
-   std::chrono::high_resolution_clock::time_point m_lastFrameTick;
+   DisplaySrcId m_dmdId { 0 };
    std::unique_ptr<PUPDMD::DMD> m_dmd;
-   std::queue<GetRawDmdMsg> m_triggerDmdQueue;
+   std::queue<uint8_t*> m_triggerDmdQueue;
    uint8_t m_rgbFrame[128 * 32 * 3] { 0 };
    uint8_t m_palette4[4 * 3] { 0 };
    uint8_t m_palette16[16 * 3] { 0 };
-   void QueueDMDFrame(const GetRawDmdMsg& getDmdMsg);
 
    static int Render(VPXRenderContext2D* const renderCtx, void* context);
    static void OnGetRenderer(const unsigned int eventId, void* userData, void* eventData);
-   static void OnGetIdentifyDMD(const unsigned int eventId, void* userData, void* eventData);
    static void OnSerumTrigger(const unsigned int eventId, void* userData, void* eventData);
    static void OnDMDSrcChanged(const unsigned int eventId, void* userData, void* eventData);
    static void OnDevSrcChanged(const unsigned int eventId, void* userData, void* eventData);

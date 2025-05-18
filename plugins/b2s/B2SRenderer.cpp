@@ -18,8 +18,8 @@ B2SRenderer::B2SRenderer(MsgPluginAPI* const msgApi, const unsigned int endpoint
 
    if (IsPinMAMEDriven())
    {
-      m_getDevSrcMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDEV_SRC_MSG);
-      m_onDevChangedMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_ONDEV_SRC_CHG_MSG);
+      m_getDevSrcMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_GET_SRC_MSG);
+      m_onDevChangedMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_ON_SRC_CHG_MSG);
       m_msgApi->SubscribeMsg(m_endpointId, m_onDevChangedMsgId, OnDevSrcChanged, this);
       OnDevSrcChanged(m_onDevChangedMsgId, this, nullptr);
    }

@@ -158,6 +158,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    , m_scoreviewOutput("Visual Pinball - Score"s, live_table->m_settings, Settings::ScoreView, "ScoreView"s)
    , m_backglassOutput("Visual Pinball - Backglass"s, live_table->m_settings, Settings::Backglass, "Backglass"s)
    , m_topperOutput("Visual Pinball - Topper"s, live_table->m_settings, Settings::Topper, "Topper"s)
+   , m_resURIResolver(MsgPluginManager::GetInstance().GetMsgAPI(), VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), true, true, true, true)
 {
    // For the time being, lots of access are made through the global singleton, so ensure we are unique, and define it as soon as needed
    assert(g_pplayer == nullptr);
@@ -733,7 +734,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    m_onGameStartMsgId = VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START);
    m_onPrepareFrameMsgId = VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
-   m_onAudioUpdatedMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_ONAUDIO_UPDATE_MSG);
+   m_onAudioUpdatedMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_UPDATE_MSG);
    MsgPluginManager::GetInstance().GetMsgAPI().SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onAudioUpdatedMsgId, OnAudioUpdated, this);
 
    // Signal plugins before performing static prerendering. The only thing not fully initialized is the physics (is this ok ?)
@@ -1597,7 +1598,6 @@ void Player::GameLoop(std::function<void()> ProcessOSMessages)
          m_pininput.ProcessInput(); // Trigger key events to sync with controller
          m_physics->UpdatePhysics(); // Update physics (also triggering events, syncing with controller)
          // TODO These updates should also be done directly in the physics engine after collision events
-         m_resURIResolver.RequestPhysicsUpdate(); // Invalidate data bound to physics state
          FireSyncController(); // Trigger script sync event (to sync solenoids back)
       }
       MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
@@ -1842,8 +1842,6 @@ void Player::PrepareFrame(const std::function<void()>& sync)
 
    m_logicProfiler.NewFrame(m_time_msec);
    m_logicProfiler.EnterProfileSection(FrameProfiler::PROFILE_PREPARE_FRAME);
-
-   m_resURIResolver.RequestVisualUpdate();
 
    m_overall_frames++; // This causes the next VPinMame <-> VPX sync to update light status which can be heavy since it needs to perform PWM integration of all lights
    m_LastKnownGoodCounter++;
@@ -2123,9 +2121,13 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
       return nullptr;
 
    RenderTarget *outputRT;
-   if (output.GetMode() == VPX::RenderOutput::OM_DISABLED)
+   if (output.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
    {
-      return nullptr;
+      outputRT = embedRT;
+      m_outputW = output.GetEmbeddedWindow()->GetWidth();
+      m_outputH = output.GetEmbeddedWindow()->GetHeight();
+      output.GetEmbeddedWindow()->GetPos(m_outputX, m_outputY);
+      m_outputY = outputRT->GetHeight() - m_outputY - m_outputH;
    }
    #ifdef ENABLE_BGFX
    else if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
@@ -2138,12 +2140,7 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
    #endif
    else
    {
-      assert(output.GetMode() == VPX::RenderOutput::OM_EMBEDDED);
-      outputRT = embedRT;
-      m_outputW = output.GetEmbeddedWindow()->GetWidth();
-      m_outputH = output.GetEmbeddedWindow()->GetHeight();
-      output.GetEmbeddedWindow()->GetPos(m_outputX, m_outputY);
-      m_outputY = outputRT->GetHeight() - m_outputY - m_outputH;
+      return nullptr;
    }
       
    Matrix3D matWorldViewProj[2];
@@ -2197,19 +2194,19 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
          const float srcX, const float srcY, const float srcW, const float srcH,
          const float dstX, const float dstY, const float dstW, const float dstH)
          {
-            Texture * const tex = static_cast<Texture*>(texture);
+            BaseTexture *const tex = static_cast<BaseTexture *>(texture);
             RenderDevice * const rd = g_pplayer->m_renderer->m_renderDevice;
-            rd->SetRenderState(RenderState::ALPHABLENDENABLE, (alpha != 1.f || !tex->m_pdsBuffer->IsOpaque()) ? RenderState::RS_TRUE : RenderState::RS_FALSE);
+            rd->SetRenderState(RenderState::ALPHABLENDENABLE, (alpha != 1.f || !tex->IsOpaque()) ? RenderState::RS_TRUE : RenderState::RS_FALSE);
             rd->m_basicShader->SetVector(SHADER_cBase_Alpha, tintR, tintG, tintB, alpha);
-            rd->m_basicShader->SetTexture(SHADER_tex_base_color, tex->m_pdsBuffer);
+            rd->m_basicShader->SetTexture(SHADER_tex_base_color, tex);
             const float vx1 = dstX / ctx->srcWidth;
             const float vy1 = dstY / ctx->srcHeight;
             const float vx2 = vx1 + dstW / ctx->srcWidth;
             const float vy2 = vy1 + dstH / ctx->srcHeight;
-            const float tx1 = srcX / tex->m_width;
-            const float ty1 = 1.f - srcY / tex->m_height;
-            const float tx2 = (srcX + srcW) / tex->m_width;
-            const float ty2 = 1.f - (srcY + srcH) / tex->m_height;
+            const float tx1 = srcX / tex->width();
+            const float ty1 = 1.f - srcY / tex->height();
+            const float tx2 = (srcX + srcW) / tex->width();
+            const float ty2 = 1.f - (srcY + srcH) / tex->height();
             const Vertex3D_NoTex2 vertices[4] = {
                { vx2, vy1, 0.f, 0.f, 0.f, 1.f, tx2, ty2 },
                { vx1, vy1, 0.f, 0.f, 0.f, 1.f, tx1, ty2 },

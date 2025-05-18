@@ -17,6 +17,7 @@ public:
       RGBA,      // Linear RGB with alpha channel, 1 byte per channel
       SRGB,      // sRGB without alpha channel, 1 byte per channel
       SRGBA,     // sRGB with alpha channel, 1 byte per channel
+      SRGB565,   // sRGB without alpha channel, 5.6.5 RGB encoding
       RGB_FP16,  // Linear RGB, 1 half float per channel
       RGBA_FP16, // Linear RGB with alpha channel, 1 half float per channel
       RGB_FP32,  // Linear RGB, 1 float per channel
@@ -26,11 +27,17 @@ public:
    BaseTexture(const unsigned int w, const unsigned int h, const Format format);
    ~BaseTexture();
 
+   static BaseTexture *CreateFromHBitmap(const HBITMAP hbm, unsigned int maxTexDim, bool with_alpha = true);
+   static BaseTexture *CreateFromFile(const string &filename, unsigned int maxTexDim);
+   static BaseTexture *CreateFromData(const void *data, const size_t size, unsigned int maxTexDim);
+   static BaseTexture *CreateFromFreeImage(FIBITMAP *dib, bool resize_on_low_mem, unsigned int maxTexDim); // also free's/delete's the dib inside!
+   static void Update(BaseTexture **texture, const unsigned int w, const unsigned int h, const Format format, const uint8_t *image); // Update eventually recreating the texture
+
    unsigned long long GetLiveHash() const { return m_liveHash; }
 
    unsigned int width() const  { return m_width; }
    unsigned int height() const { return m_height; }
-   unsigned int pitch() const  { return (m_format == BW ? 1 : (has_alpha() ? 4 : 3)) * ((m_format == RGB_FP32 || m_format == RGBA_FP32) ? 4 : (m_format == RGB_FP16 || m_format == RGBA_FP16) ? 2 : 1) * m_width; } // pitch in bytes
+   unsigned int pitch() const; // pitch in bytes
    BYTE* data()                { return m_data; }
    const BYTE* datac() const   { return m_data; }
    bool has_alpha() const      { return m_format == RGBA || m_format == SRGBA || m_format == RGBA_FP16 || m_format == RGBA_FP32; }
@@ -41,11 +48,6 @@ public:
 
    unsigned int m_realWidth, m_realHeight;
    Format m_format;
-
-   static BaseTexture *CreateFromHBitmap(const HBITMAP hbm, unsigned int maxTexDim, bool with_alpha = true);
-   static BaseTexture *CreateFromFile(const string &filename, unsigned int maxTexDim);
-   static BaseTexture *CreateFromData(const void *data, const size_t size, unsigned int maxTexDim);
-   static BaseTexture *CreateFromFreeImage(FIBITMAP *dib, bool resize_on_low_mem, unsigned int maxTexDim); // also free's/delete's the dib inside!
 
    uint8_t* GetMD5Hash() { UpdateMD5(); return m_md5Hash; }
    bool IsOpaque() const { UpdateOpaque(); return m_isOpaque; }
@@ -68,7 +70,7 @@ private:
    // These field are (lazily) computed from the data, therefore they do not impact the constness of the object
    mutable bool m_isSigned = false;
    mutable bool m_isMD5Dirty = true;
-   mutable uint8_t m_md5Hash[16];
+   mutable uint8_t m_md5Hash[16] = { 0 };
    mutable bool m_isOpaqueDirty = true;
    mutable bool m_isOpaque = true;
 };

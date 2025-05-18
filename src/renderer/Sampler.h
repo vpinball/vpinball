@@ -67,7 +67,7 @@ public:
    ~Sampler();
 
    void Unbind();
-   void UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb);
+   void UpdateTexture(const BaseTexture* const surf, const bool force_linear_rgb);
    void SetClamp(const SamplerAddressMode clampu, const SamplerAddressMode clampv);
    void SetFilter(const SamplerFilter filter);
    void SetName(const string& name);

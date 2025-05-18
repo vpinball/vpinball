@@ -141,73 +141,47 @@ void VPXPluginAPIImpl::SetInputState(const uint64_t keyState, const float nudgeX
 
 void VPXPluginAPIImpl::UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, uint8_t* image)
 {
-   assert(format == VPXTextureFormat::VPXTEXFMT_sRGBA);
-   const BaseTexture::Format texFormat = BaseTexture::SRGBA;
-   const int pixelSize = 4;
-   if (*texture != nullptr)
+   BaseTexture** tex = reinterpret_cast<BaseTexture**>(texture);
+   switch (format)
    {
-      assert(std::this_thread::get_id() == VPXPluginAPIImpl::GetInstance().m_apiThread);
-      Texture* tex = static_cast<Texture*>(*texture);
-      if ((tex->m_width == width) && (tex->m_height == height) && (tex->m_pdsBuffer->m_format == texFormat))
-      {
-         assert(tex->m_pdsBuffer->pitch() * tex->m_pdsBuffer->height() == width * height * pixelSize);
-         memcpy(tex->m_pdsBuffer->data(), image, width * height * pixelSize);
-         g_pplayer->m_renderer->m_renderDevice->m_texMan.SetDirty(tex->m_pdsBuffer);
-         return;
-      }
-      else
-      {
-         // Delay texture deletion since it may be used by the render frame which is processed asynchronously. If so, deleting would cause a deadlock & invalid access
-         g_pplayer->m_renderer->m_renderDevice->AddEndOfFrameCmd(
-            [tex]
-            {
-               g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture(tex->m_pdsBuffer);
-               delete tex;
-            });
-      }
+   case VPXTextureFormat::VPXTEXFMT_sRGBA: BaseTexture::Update(tex, width, height, BaseTexture::SRGBA, image); break;
+   default: assert(false);
    }
-   BaseTexture* baseTex = new BaseTexture(width, height, texFormat);
-   memcpy(baseTex->data(), image, width * height * pixelSize);
-   *texture = new Texture(baseTex);
 }
 
 VPXTexture VPXPluginAPIImpl::CreateTexture(uint8_t* rawData, int size)
 {
    // BGFX allows to create texture from any thread
    // assert(std::this_thread::get_id() == VPXPluginAPIImpl::GetInstance().m_apiThread);
-   Texture* texture = new Texture();
-   if (texture->LoadFromMemory(rawData, size))
-      return texture;
-   delete texture;
-   return nullptr;
+   return BaseTexture::CreateFromData(rawData, size, 65536);
 }
 
 void VPXPluginAPIImpl::GetTextureInfo(VPXTexture texture, int* width, int* height)
 {
    assert(std::this_thread::get_id() == VPXPluginAPIImpl::GetInstance().m_apiThread);
-   *width = static_cast<Texture*>(texture)->m_width;
-   *height = static_cast<Texture*>(texture)->m_height;
+   *width = static_cast<BaseTexture*>(texture)->width();
+   *height = static_cast<BaseTexture*>(texture)->height();
 }
 
 void VPXPluginAPIImpl::DeleteTexture(VPXTexture texture)
 {
    if (std::this_thread::get_id() != VPXPluginAPIImpl::GetInstance().m_apiThread)
    {
-      MsgPluginManager::GetInstance().GetMsgAPI().RunOnMainThread(0, [](void* context) { delete static_cast<Texture*>(context); }, texture);
+      MsgPluginManager::GetInstance().GetMsgAPI().RunOnMainThread(0, [](void* context) { delete static_cast<BaseTexture*>(context); }, texture);
    }
    else
    {
       // Delay texture deletion since it may be used by the render frame which is processed asynchronously. If so, deleting would cause a deadlock & invalid access
-      Texture* tex = static_cast<Texture*>(texture);
+      BaseTexture* tex = static_cast<BaseTexture*>(texture);
       if (tex && g_pplayer)
          g_pplayer->m_renderer->m_renderDevice->AddEndOfFrameCmd(
             [tex]
             {
-               g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture(tex->m_pdsBuffer);
+               g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture(tex);
                delete tex;
             });
       else
-         delete static_cast<Texture*>(texture);
+         delete static_cast<BaseTexture*>(texture);
    }
 }
 
@@ -341,6 +315,17 @@ IDispatch* VPXPluginAPIImpl::CreateCOMPluginObject(const string& classId)
 
 #include "plugins/CorePlugin.h"
 
+DisplayFrame VPXPluginAPIImpl::ControllerOnGetRenderDMD(const CtlResId id)
+{
+   VPXPluginAPIImpl& me = VPXPluginAPIImpl::GetInstance();
+   if (g_pplayer == nullptr
+      || g_pplayer->m_dmdFrame->m_format != BaseTexture::BW // RGB is not yet supported
+      || id.endpointId != me.m_vpxPlugin->m_endpointId
+      || id.resId != 0)
+      return { 0, nullptr };
+   return { static_cast<unsigned int>(g_pplayer->m_dmdFrameId), g_pplayer->m_dmdFrame->data() };
+}
+
 void VPXPluginAPIImpl::ControllerOnGetDMDSrc(const unsigned int msgId, void* userData, void* msgData)
 {
    if (g_pplayer == nullptr)
@@ -348,57 +333,17 @@ void VPXPluginAPIImpl::ControllerOnGetDMDSrc(const unsigned int msgId, void* use
 
    // Report main script DMD (we do not report ancialliary DMD directly set on flashers, but only the main table one)
    // TODO supported RGB frame format are either sRGB888 or sRGB565, not sRGBA8888, therefore RGB frame can not be broadcasted on the plugin bus for the time being
-   GetDmdSrcMsg& msg = *static_cast<GetDmdSrcMsg*>(msgData);
+   GetDisplaySrcMsg& msg = *static_cast<GetDisplaySrcMsg*>(msgData);
    VPXPluginAPIImpl& me = *static_cast<VPXPluginAPIImpl*>(userData);
    if (g_pplayer->m_dmdFrame && msg.count < msg.maxEntryCount && g_pplayer->m_dmdFrame->m_format == BaseTexture::BW)
    {
+      msg.entries[msg.count] = { 0 };
       msg.entries[msg.count].id = { me.m_vpxPlugin->m_endpointId, 0 };
-      msg.entries[msg.count].format = g_pplayer->m_dmdFrame->m_format == BaseTexture::BW ? CTLPI_GETDMD_FORMAT_LUM8 : CTLPI_GETDMD_FORMAT_SRGB888;
       msg.entries[msg.count].width = g_pplayer->m_dmdFrame->width();
       msg.entries[msg.count].height = g_pplayer->m_dmdFrame->height();
+      msg.entries[msg.count].frameFormat = g_pplayer->m_dmdFrame->m_format == BaseTexture::BW ? CTLPI_DISPLAY_FORMAT_LUM8 : CTLPI_DISPLAY_FORMAT_SRGB888;
+      msg.entries[msg.count].GetRenderFrame = ControllerOnGetRenderDMD;
       msg.count++;
-   }
-}
-
-void VPXPluginAPIImpl::ControllerOnGetRenderDMD(const unsigned int msgId, void* userData, void* msgData)
-{
-   if (g_pplayer == nullptr)
-      return;
-   GetDmdMsg* msg = static_cast<GetDmdMsg*>(msgData);
-   if (msg->frame != nullptr) // Already answered
-      return;
-
-   // Script DMD
-   VPXPluginAPIImpl& me = *static_cast<VPXPluginAPIImpl*>(userData);
-   if ((msg->dmdId.id.endpointId == me.m_vpxPlugin->m_endpointId) && (msg->dmdId.id.resId == 0) 
-      && (msg->dmdId.format == (g_pplayer->m_dmdFrame->m_format == BaseTexture::BW ? CTLPI_GETDMD_FORMAT_LUM8 : CTLPI_GETDMD_FORMAT_SRGB888))
-      && (msg->dmdId.width == g_pplayer->m_dmdFrame->width()) && (msg->dmdId.height == g_pplayer->m_dmdFrame->height())
-      && g_pplayer->m_dmdFrame && g_pplayer->m_dmdFrame->m_format == BaseTexture::BW) // RGB is not yet supported
-   {
-      msg->frameId = g_pplayer->m_dmdFrameId;
-      msg->frame = g_pplayer->m_dmdFrame->data();
-   }
-}
-
-void VPXPluginAPIImpl::ControllerOnGetIdentifyDMD(const unsigned int msgId, void* userData, void* msgData)
-{
-   if (g_pplayer == nullptr)
-      return;
-   GetRawDmdMsg* msg = static_cast<GetRawDmdMsg*>(msgData);
-   if (msg->frame != nullptr) // Already answered
-      return;
-
-   // Script DMD
-   VPXPluginAPIImpl& me = *static_cast<VPXPluginAPIImpl*>(userData);
-   if ((msg->dmdId.endpointId == me.m_vpxPlugin->m_endpointId) && (msg->dmdId.resId == 0)
-      && g_pplayer->m_dmdFrame
-      && g_pplayer->m_dmdFrame->m_format == BaseTexture::BW) // RGB is not yet supported
-   {
-      msg->format = g_pplayer->m_dmdFrame->m_format == BaseTexture::BW ? CTLPI_GETDMD_FORMAT_LUM8 : CTLPI_GETDMD_FORMAT_SRGB888;
-      msg->width = g_pplayer->m_dmdFrame->width();
-      msg->height = g_pplayer->m_dmdFrame->height();
-      msg->frameId = g_pplayer->m_dmdFrameId;
-      msg->frame = g_pplayer->m_dmdFrame->data();
    }
 }
 
@@ -472,11 +417,7 @@ VPXPluginAPIImpl::VPXPluginAPIImpl() : m_apiThread(std::this_thread::get_id())
    msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, msgApi.GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API), &OnGetScriptablePluginAPI, nullptr);
 
    // Generic controller API
-   m_getRenderDmdMsgId = msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_RENDER_MSG);
-   m_getIdentifyDmdMsgId = msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_IDENTIFY_MSG);
-   msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, m_getRenderDmdMsgId, &ControllerOnGetRenderDMD, this);
-   msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, m_getIdentifyDmdMsgId, &ControllerOnGetIdentifyDMD, this);
-   msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG), &ControllerOnGetDMDSrc, this);
+   msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG), &ControllerOnGetDMDSrc, this);
 }
 
 void VPXPluginAPIImpl::OnGetVPXPluginAPI(const unsigned int msgId, void* userData, void* msgData)

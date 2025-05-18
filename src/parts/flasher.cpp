@@ -1357,9 +1357,21 @@ void Flasher::Render(const unsigned int renderMask)
 
       case FlasherData::DMD:
       {
-         BaseTexture *frame = g_pplayer->m_resURIResolver.GetDisplay(m_d.m_imageSrcLink);
-         if (frame == nullptr)
-            frame = m_dmdFrame != nullptr ? m_dmdFrame : g_pplayer->m_resURIResolver.GetControllerDisplay({ 0, 0 }).frame;
+         // We uses the last update of the DMD defined by script / the update coming from the source link.
+         // This supposes that old tables have there src link defined on load to the default dmd (or to the script DMD as this used to be the behavior)
+         if (!m_d.m_imageSrcLink.empty())
+         {
+            ResURIResolver::DisplayState dmd = g_pplayer->m_resURIResolver.GetDisplayState(m_d.m_imageSrcLink);
+            if (dmd.state.frame != nullptr)
+            {
+               BaseTexture::Update(&m_dmdFrame, dmd.source->width, dmd.source->height,
+                          dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8 ? BaseTexture::BW
+                     : dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565
+                                                                               : BaseTexture::SRGB,
+                  dmd.state.frame);
+            }
+         }
+         BaseTexture *frame = m_dmdFrame;
          if (frame == nullptr)
          {
             if (m_backglass)
@@ -1386,13 +1398,19 @@ void Flasher::Render(const unsigned int renderMask)
 
       case FlasherData::DISPLAY:
       {
-         BaseTexture *frame = g_pplayer->m_resURIResolver.GetDisplay(m_d.m_imageSrcLink);
-         if (frame == nullptr)
+         ResURIResolver::DisplayState display = g_pplayer->m_resURIResolver.GetDisplayState(m_d.m_imageSrcLink);
+         if (display.state.frame == nullptr)
          {
             if (m_backglass)
                g_pplayer->m_renderer->UpdateBasicShaderMatrix();
             return;
          }
+         // FIXME release texture, support 565
+         BaseTexture::Update(&m_dmdFrame, display.source->width, display.source->height, 
+                          display.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8 ? BaseTexture::BW
+                     : display.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565
+                                                                                   : BaseTexture::SRGB,
+            display.state.frame);
          if (m_d.m_modulate_vs_add < 1.f)
             m_rd->EnableAlphaBlend(m_d.m_addBlend);
          else
@@ -1402,7 +1420,7 @@ void Flasher::Render(const unsigned int renderMask)
          {
          case 0: // Pixelated
             // FIXME BGFX: if the same texture is used multiple times in the same frame with different clamp/filter then only one is applied (may happen here if a DMD window is also enabled with the same texture source)
-            m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, frame, SF_POINT);
+            m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, m_dmdFrame, SF_POINT);
             m_rd->m_flasherShader->SetVector(SHADER_staticColor_Alpha, color.x * color.w, color.y * color.w, color.z * color.w, 1.f);
             m_rd->m_flasherShader->SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, -1.f, -1.f, 0.f, m_d.m_addBlend ? 1.f : 0.f);
             m_rd->m_flasherShader->SetVector(SHADER_amount_blend_modulate_vs_add_flasherMode, 0.f, clampedModulateVsAdd, 0.f, 0.f);
@@ -1414,7 +1432,7 @@ void Flasher::Render(const unsigned int renderMask)
             m_rd->m_flasherShader->SetTechnique(SHADER_TECHNIQUE_basic_noLight);
             break;
          case 1: // Smoothed
-            m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, frame, SF_TRILINEAR);
+            m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, m_dmdFrame, SF_TRILINEAR);
             m_rd->m_flasherShader->SetVector(SHADER_staticColor_Alpha, color.x * color.w, color.y * color.w, color.z * color.w, 1.f);
             m_rd->m_flasherShader->SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, -1.f, -1.f, 0.f, m_d.m_addBlend ? 1.f : 0.f);
             m_rd->m_flasherShader->SetVector(SHADER_amount_blend_modulate_vs_add_flasherMode, 0.f, clampedModulateVsAdd, 0.f, 0.f);
@@ -1442,8 +1460,8 @@ void Flasher::Render(const unsigned int renderMask)
 
       case FlasherData::ALPHASEG:
       {
-         ResURIResolver::SegDisplay segs = g_pplayer->m_resURIResolver.GetSegDisplay(m_d.m_imageSrcLink);
-         if (segs.frame == nullptr || segs.displays.empty())
+         ResURIResolver::SegDisplayState segs = g_pplayer->m_resURIResolver.GetSegDisplayState(m_d.m_imageSrcLink);
+         if (segs.state.frame == nullptr || segs.source->nElements == 0)
             return;
          Texture *const glass = m_ptable->GetImage(m_d.m_szImageA);
          // We always use max blending as segment may overlap in the glass diffuse: we retain the most lighted one which is wrong but looks ok (otherwise we would have to deal with colorspace conversions and layering between glass and emitter)
@@ -1455,7 +1473,7 @@ void Flasher::Render(const unsigned int renderMask)
          const int renderStyle = clamp(m_d.m_renderStyle % 8, 0, 7); // Shading settings
          const Renderer::SegmentFamily segFamily = static_cast<Renderer::SegmentFamily>(clamp(m_d.m_renderStyle / 8, 0, 4)); // Segments shape
          g_pplayer->m_renderer->SetupSegmentRenderer(renderStyle, false, vec3(color.x, color.y, color.z), color.w,
-            segFamily, segs.displays[0], segs.frame, m_backglass ? Renderer::Reinhard : Renderer::Linear, m_transformedVertices,
+            segFamily, segs.source->elementType[0], segs.state.frame, m_backglass ? Renderer::Reinhard : Renderer::Linear, m_transformedVertices,
             vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom),
             vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness, glass, vec4(0.f, 0.f , 1.f, 1.f), 
             vec3(GetRValue(m_d.m_glassAmbient)/255.f, GetGValue(m_d.m_glassAmbient)/255.f, GetBValue(m_d.m_glassAmbient)/255.f));

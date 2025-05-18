@@ -14,9 +14,8 @@ Controller::Controller(MsgPluginAPI* api, unsigned int endpointId, PinmameConfig
 
    m_vpmPath = config.vpmPath;
 
-   m_getDmdSrcMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG);
-   m_getDmdMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_RENDER_MSG);
-   m_onDmdChangedMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_ONDMD_SRC_CHG_MSG);
+   m_getDmdSrcMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
+   m_onDmdChangedMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
    m_msgApi->SubscribeMsg(m_endpointId, m_onDmdChangedMsgId, OnDmdSrcChanged, this);
 }
 
@@ -25,7 +24,6 @@ Controller::~Controller()
    m_msgApi->UnsubscribeMsg(m_onDmdChangedMsgId, OnDmdSrcChanged);
    m_msgApi->ReleaseMsgID(m_onDmdChangedMsgId);
    m_msgApi->ReleaseMsgID(m_getDmdSrcMsgId);
-   m_msgApi->ReleaseMsgID(m_getDmdMsgId);
    if (m_onDestroyHandler)
       m_onDestroyHandler(this);
    delete m_pPinmameGame;
@@ -265,85 +263,85 @@ const vector<PinmameSolenoidState>& Controller::GetChangedSolenoids()
 void Controller::OnDmdSrcChanged(const unsigned int msgId, void* userData, void* msgData)
 {
    Controller* me = static_cast<Controller*>(userData);
-   me->m_defaultDmd.dmdId.id.id = 0;
+   me->m_defaultDmd.id.id = 0;
 }
 
-void Controller::UpdateDmd()
+void Controller::UpdateDmdSrc()
 {
-   if (m_defaultDmd.dmdId.id.id == 0)
+   if (m_defaultDmd.id.id == 0)
    {
       unsigned int largest = 128;
-      GetDmdSrcMsg getSrcMsg = { 1024, 0, new DmdSrcId[1024] };
+      GetDisplaySrcMsg getSrcMsg = { 1024, 0, new DisplaySrcId[1024] };
       m_msgApi->BroadcastMsg(m_endpointId, m_getDmdSrcMsgId, &getSrcMsg);
       for (unsigned int i = 0; i < getSrcMsg.count; i++)
       {
          if (getSrcMsg.entries[i].width >= largest)
          {
-            m_defaultDmd.dmdId = getSrcMsg.entries[i];
+            m_defaultDmd = getSrcMsg.entries[i];
             largest = getSrcMsg.entries[i].width;
          }
       }
    }
-   if (m_defaultDmd.dmdId.id.id != 0)
-      m_msgApi->BroadcastMsg(m_endpointId, m_getDmdMsgId, &m_defaultDmd);
 }
 
 int Controller::GetRawDmdWidth()
 {
-   UpdateDmd();
-   return m_defaultDmd.dmdId.id.id != 0 ? m_defaultDmd.dmdId.width : 0;
+   UpdateDmdSrc();
+   return m_defaultDmd.id.id != 0 ? m_defaultDmd.width : 0;
 }
 
 int Controller::GetRawDmdHeight()
 {
-   UpdateDmd();
-   return m_defaultDmd.dmdId.id.id != 0 ? m_defaultDmd.dmdId.height : 0;
+   UpdateDmdSrc();
+   return m_defaultDmd.id.id != 0 ? m_defaultDmd.height : 0;
 }
 
 std::vector<uint8_t> Controller::GetRawDmdPixels()
 {
-   UpdateDmd();
+   UpdateDmdSrc();
    std::vector<uint8_t> pixels;
-   if (m_defaultDmd.dmdId.id.id == 0)
+   if (m_defaultDmd.id.id == 0)
       return pixels;
-   const int size = m_defaultDmd.dmdId.width * m_defaultDmd.dmdId.height;
-   if (m_defaultDmd.dmdId.format == CTLPI_GETDMD_FORMAT_LUM8)
+   const DisplayFrame frame = m_defaultDmd.GetRenderFrame(m_defaultDmd.id);
+   const int size = m_defaultDmd.width * m_defaultDmd.height;
+   if (m_defaultDmd.frameFormat == CTLPI_DISPLAY_FORMAT_LUM8)
    {
       pixels.resize(size);
       for (int i = 0; i < size; i++)
-         pixels[i] = (uint32_t)m_defaultDmd.frame[i] * 100u / 255u;
+         pixels[i] = (uint32_t)frame.frame[i] * 100u / 255u;
    }
-   else if (m_defaultDmd.dmdId.format == CTLPI_GETDMD_FORMAT_SRGB888)
+   else if (m_defaultDmd.frameFormat == CTLPI_DISPLAY_FORMAT_SRGB888)
    {
       pixels.resize(size);
       for (int i = 0; i < size; i++)
-         pixels[i] = static_cast<uint8_t>(21.26f * (float)m_defaultDmd.frame[i * 3] + 71.52f * (float)m_defaultDmd.frame[i * 3 + 1] + 7.22f * (float)m_defaultDmd.frame[i * 3 + 2]);
+         pixels[i] = static_cast<uint8_t>(21.26f * (float)frame.frame[i * 3] + 71.52f * (float)frame.frame[i * 3 + 1] + 7.22f * (float)frame.frame[i * 3 + 2]);
    }
    return pixels;
 }
 
 std::vector<uint32_t> Controller::GetRawDmdColoredPixels()
 {
-   UpdateDmd();
+   UpdateDmdSrc();
    std::vector<uint32_t> pixels;
-   if (m_defaultDmd.dmdId.id.id == 0)
+   if (m_defaultDmd.id.id == 0)
       return pixels;
-   const int size = m_defaultDmd.dmdId.width * m_defaultDmd.dmdId.height;
-   if (m_defaultDmd.dmdId.format == CTLPI_GETDMD_FORMAT_LUM8)
+   const DisplayFrame frame = m_defaultDmd.GetRenderFrame(m_defaultDmd.id);
+   const int size = m_defaultDmd.width * m_defaultDmd.height;
+   if (m_defaultDmd.frameFormat == CTLPI_DISPLAY_FORMAT_LUM8)
    {
       pixels.resize(size);
       for (int i = 0; i < size; i++)
       {
          // TODO implement original PinMame / VPinMame coloring
-         const uint32_t lum = m_defaultDmd.frame[i];
+         const uint32_t lum = frame.frame[i];
          pixels[i] = (lum << 16) | (lum << 8) | lum;
       }
    }
-   else if (m_defaultDmd.dmdId.format == CTLPI_GETDMD_FORMAT_SRGB888)
+   else if (m_defaultDmd.frameFormat == CTLPI_DISPLAY_FORMAT_SRGB888)
    {
       pixels.resize(size);
       for (int i = 0; i < size; i++)
-         pixels[i] = ((uint32_t)m_defaultDmd.frame[i * 3] << 16) | ((uint32_t)m_defaultDmd.frame[i * 3 + 1] << 8) | (m_defaultDmd.frame[i * 3 + 2]);
+         pixels[i] = ((uint32_t)frame.frame[i * 3] << 16) | ((uint32_t)frame.frame[i * 3 + 1] << 8) | (frame.frame[i * 3 + 2]);
    }
    return pixels;
 }
