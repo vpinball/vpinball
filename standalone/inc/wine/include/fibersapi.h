@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1999 Patrik Stridvall
+ * Copyright (C) the Wine project
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,8 +16,23 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifdef _MSC_VER
-# pragma warning(disable:4103)
+#ifndef _FIBERS_H_
+#define _FIBERS_H_
+
+#include <minwindef.h>
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-#pragma pack(push,4)
+WINBASEAPI DWORD WINAPI FlsAlloc(PFLS_CALLBACK_FUNCTION);
+WINBASEAPI BOOL  WINAPI FlsFree(DWORD);
+WINBASEAPI void *WINAPI FlsGetValue(DWORD);
+WINBASEAPI BOOL  WINAPI FlsSetValue(DWORD,void*);
+WINBASEAPI BOOL  WINAPI IsThreadAFiber(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _FIBERS_H_ */
