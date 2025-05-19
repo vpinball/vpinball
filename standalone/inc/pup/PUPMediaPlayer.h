@@ -64,6 +64,7 @@ private:
    AVCodecContext* m_pAudioContext = nullptr;
    struct SwrContext* m_pAudioConversionContext = nullptr;
    AVSampleFormat m_audioFormat = AV_SAMPLE_FMT_NONE;
+   double m_audioPts = 0.0;
    PinSound* m_pPinSound = nullptr;
 
    std::mutex m_mutex;
