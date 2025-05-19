@@ -4,6 +4,9 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 05/19/25
+    * Bump Wine source to wine-7f833db11ffea4f3f4fa07be31d30559aff9c5fb (10.8)
+
 * 04/22/25
     * Fix long standing issue when score reels did not fully rotate in B2S (@superhac) 
     * Update all COM proxies to return VARIANT for SUCCEEDED(hres) instead of hres == S_OK (fixes ReadAll)

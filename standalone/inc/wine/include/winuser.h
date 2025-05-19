@@ -2104,30 +2104,48 @@ typedef struct tagMONITORINFO
     DWORD dwFlags;
 } MONITORINFO, *LPMONITORINFO;
 
-typedef struct tagMONITORINFOEXA
+#ifdef __cplusplus
+
+struct tagMONITORINFOEXA : public tagMONITORINFO
+{
+    CHAR szDevice[CCHDEVICENAME];
+};
+
+struct tagMONITORINFOEXW : public tagMONITORINFO
+{
+    WCHAR szDevice[CCHDEVICENAME];
+};
+
+#else
+
+struct tagMONITORINFOEXA
 {   /* the 4 first entries are the same as MONITORINFO */
     DWORD	cbSize;	
     RECT	rcMonitor;
     RECT	rcWork;
     DWORD	dwFlags;
     CHAR        szDevice[CCHDEVICENAME];
-} MONITORINFOEXA, *LPMONITORINFOEXA;
+};
 
-typedef struct tagMONITORINFOEXW
+struct tagMONITORINFOEXW
 {   /* the 4 first entries are the same as MONITORINFO */
     DWORD	cbSize;
     RECT	rcMonitor;
     RECT	rcWork;
     DWORD	dwFlags;
     WCHAR       szDevice[CCHDEVICENAME];
-} MONITORINFOEXW, *LPMONITORINFOEXW;
+};
 
+#endif
+
+typedef struct tagMONITORINFOEXA MONITORINFOEXA, *LPMONITORINFOEXA;
+typedef struct tagMONITORINFOEXW MONITORINFOEXW, *LPMONITORINFOEXW;
 DECL_WINELIB_TYPE_AW(MONITORINFOEX)
 DECL_WINELIB_TYPE_AW(LPMONITORINFOEX)
 
 typedef BOOL  (CALLBACK *MONITORENUMPROC)(HMONITOR,HDC,LPRECT,LPARAM);
 
-#include <pshpack2.h>
+#pragma pack(push,2)
 
 typedef struct tagDLGTEMPLATE
 {
@@ -2165,7 +2183,7 @@ typedef DLGITEMTEMPLATE *LPDLGITEMTEMPLATEA;
 typedef DLGITEMTEMPLATE *LPDLGITEMTEMPLATEW;
 DECL_WINELIB_TYPE_AW(LPDLGITEMTEMPLATE)
 
-#include <poppack.h>
+#pragma pack(pop)
 
   /* CBT hook values */
 #define HCBT_MOVESIZE	    0
@@ -3203,6 +3221,8 @@ typedef struct
 #define WINEVENT_SKIPOWNPROCESS 0x2
 #define WINEVENT_INCONTEXT      0x4
 
+#define ENDSESSION_CLOSEAPP  0x00000001
+#define ENDSESSION_CRITICAL  0x40000000
 #define ENDSESSION_LOGOFF    0x80000000
 
 /* Object Id's */
@@ -3844,6 +3864,7 @@ WINUSERAPI BOOL        WINAPI EnumDisplaySettingsExW(LPCWSTR,DWORD,LPDEVMODEW,DW
 WINUSERAPI LONG        WINAPI GetDisplayConfigBufferSizes(UINT32,UINT32*,UINT32*);
 WINUSERAPI BOOL        WINAPI UpdateLayeredWindow(HWND,HDC,POINT*,SIZE*,HDC,POINT*,COLORREF,BLENDFUNCTION*,DWORD);
 WINUSERAPI BOOL        WINAPI UpdateLayeredWindowIndirect(HWND,UPDATELAYEREDWINDOWINFO const*);
+WINUSERAPI LONG        WINAPI QueryDisplayConfig(UINT32,UINT32*,DISPLAYCONFIG_PATH_INFO*,UINT32*,DISPLAYCONFIG_MODE_INFO*,DISPLAYCONFIG_TOPOLOGY_ID*);
 #endif /* defined(_WINGDI_) && !defined(NOGDI) */
 
 WINUSERAPI HKL         WINAPI ActivateKeyboardLayout(HKL,UINT);

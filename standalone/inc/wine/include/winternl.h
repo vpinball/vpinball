@@ -2418,18 +2418,17 @@ typedef struct _MEMORY_RANGE_ENTRY
 } MEMORY_RANGE_ENTRY, *PMEMORY_RANGE_ENTRY;
 
 
-/* return type of RtlDetermineDosPathNameType_U (FIXME: not the correct names) */
-typedef enum
+typedef enum _RTL_PATH_TYPE
 {
-    INVALID_PATH = 0,
-    UNC_PATH,              /* "//foo" */
-    ABSOLUTE_DRIVE_PATH,   /* "c:/foo" */
-    RELATIVE_DRIVE_PATH,   /* "c:foo" */
-    ABSOLUTE_PATH,         /* "/foo" */
-    RELATIVE_PATH,         /* "foo" */
-    DEVICE_PATH,           /* "//./foo" */
-    UNC_DOT_PATH           /* "//." */
-} DOS_PATHNAME_TYPE;
+    RtlPathTypeUnknown = 0,
+    RtlPathTypeUncAbsolute,     /* "//foo" */
+    RtlPathTypeDriveAbsolute,   /* "c:/foo" */
+    RtlPathTypeDriveRelative,   /* "c:foo" */
+    RtlPathTypeRooted,          /* "/foo" */
+    RtlPathTypeRelative,        /* "foo" */
+    RtlPathTypeLocalDevice,     /* "//./foo" */
+    RtlPathTypeRootLocalDevice  /* "//." */
+} RTL_PATH_TYPE;
 
 
 /***********************************************************************
@@ -4532,6 +4531,7 @@ NTSYSAPI NTSTATUS  WINAPI NtCreatePort(PHANDLE,POBJECT_ATTRIBUTES,ULONG,ULONG,PU
 NTSYSAPI NTSTATUS  WINAPI NtCreateProcess(PHANDLE,ACCESS_MASK,POBJECT_ATTRIBUTES,HANDLE,BOOLEAN,HANDLE,HANDLE,HANDLE);
 NTSYSAPI NTSTATUS  WINAPI NtCreateProfile(PHANDLE,HANDLE,PVOID,ULONG,ULONG,PVOID,ULONG,KPROFILE_SOURCE,KAFFINITY);
 NTSYSAPI NTSTATUS  WINAPI NtCreateSection(HANDLE*,ACCESS_MASK,const OBJECT_ATTRIBUTES*,const LARGE_INTEGER*,ULONG,ULONG,HANDLE);
+NTSYSAPI NTSTATUS  WINAPI NtCreateSectionEx(HANDLE*,ACCESS_MASK,const OBJECT_ATTRIBUTES*,const LARGE_INTEGER*,ULONG,ULONG,HANDLE,MEM_EXTENDED_PARAMETER*,ULONG);
 NTSYSAPI NTSTATUS  WINAPI NtCreateSemaphore(PHANDLE,ACCESS_MASK,const OBJECT_ATTRIBUTES*,LONG,LONG);
 NTSYSAPI NTSTATUS  WINAPI NtCreateSymbolicLinkObject(PHANDLE,ACCESS_MASK,POBJECT_ATTRIBUTES,PUNICODE_STRING);
 NTSYSAPI NTSTATUS  WINAPI NtCreateThread(PHANDLE,ACCESS_MASK,POBJECT_ATTRIBUTES,HANDLE,PCLIENT_ID,PCONTEXT,PINITIAL_TEB,BOOLEAN);
@@ -4567,6 +4567,7 @@ NTSYSAPI NTSTATUS  WINAPI NtFreeVirtualMemory(HANDLE,PVOID*,SIZE_T*,ULONG);
 NTSYSAPI NTSTATUS  WINAPI NtFsControlFile(HANDLE,HANDLE,PIO_APC_ROUTINE,PVOID,PIO_STATUS_BLOCK,ULONG,PVOID,ULONG,PVOID,ULONG);
 NTSYSAPI NTSTATUS  WINAPI NtGetContextThread(HANDLE,CONTEXT*);
 NTSYSAPI ULONG     WINAPI NtGetCurrentProcessorNumber(void);
+NTSYSAPI NTSTATUS  WINAPI NtGetNextProcess(HANDLE,ACCESS_MASK,ULONG,ULONG,HANDLE*);
 NTSYSAPI NTSTATUS  WINAPI NtGetNextThread(HANDLE,HANDLE,ACCESS_MASK,ULONG,ULONG,HANDLE*);
 NTSYSAPI NTSTATUS  WINAPI NtGetNlsSectionPtr(ULONG,ULONG,void*,void**,SIZE_T*);
 NTSYSAPI NTSTATUS  WINAPI NtGetPlugPlayEvent(ULONG,ULONG,PVOID,ULONG);
@@ -4854,13 +4855,14 @@ NTSYSAPI NTSTATUS  WINAPI RtlDeleteTimerQueueEx(HANDLE, HANDLE);
 NTSYSAPI PRTL_USER_PROCESS_PARAMETERS WINAPI RtlDeNormalizeProcessParams(RTL_USER_PROCESS_PARAMETERS*);
 NTSYSAPI NTSTATUS  WINAPI RtlDeregisterWait(HANDLE);
 NTSYSAPI NTSTATUS  WINAPI RtlDeregisterWaitEx(HANDLE,HANDLE);
+NTSYSAPI NTSTATUS  WINAPI RtlDeriveCapabilitySidsFromName(UNICODE_STRING *cap_name, PSID cap_group_sid, PSID cap_sid);
 NTSYSAPI NTSTATUS  WINAPI RtlDestroyAtomTable(RTL_ATOM_TABLE);
 NTSYSAPI NTSTATUS  WINAPI RtlDestroyEnvironment(PWSTR);
 NTSYSAPI NTSTATUS  WINAPI RtlDestroyHandleTable(RTL_HANDLE_TABLE *);
 NTSYSAPI HANDLE    WINAPI RtlDestroyHeap(HANDLE);
 NTSYSAPI void      WINAPI RtlDestroyProcessParameters(RTL_USER_PROCESS_PARAMETERS*);
 NTSYSAPI NTSTATUS  WINAPI RtlDestroyQueryDebugBuffer(PDEBUG_BUFFER);
-NTSYSAPI DOS_PATHNAME_TYPE WINAPI RtlDetermineDosPathNameType_U(PCWSTR);
+NTSYSAPI RTL_PATH_TYPE WINAPI RtlDetermineDosPathNameType_U(PCWSTR);
 NTSYSAPI BOOLEAN   WINAPI RtlDllShutdownInProgress(void);
 NTSYSAPI BOOLEAN   WINAPI RtlDoesFileExists_U(LPCWSTR);
 NTSYSAPI BOOLEAN   WINAPI RtlDosPathNameToNtPathName_U(PCWSTR,PUNICODE_STRING,PWSTR*,CURDIR*);
@@ -4941,6 +4943,7 @@ NTSYSAPI NTSTATUS  WINAPI RtlGetExtendedContextLength2(ULONG,ULONG*,ULONG64);
 NTSYSAPI ULONG64   WINAPI RtlGetExtendedFeaturesMask(CONTEXT_EX*);
 NTSYSAPI TEB_ACTIVE_FRAME * WINAPI RtlGetFrame(void);
 NTSYSAPI ULONG     WINAPI RtlGetFullPathName_U(PCWSTR,ULONG,PWSTR,PWSTR*);
+NTSYSAPI ULONG     WINAPI RtlGetFullPathName_UEx(PCWSTR,ULONG,PWSTR,PWSTR*,RTL_PATH_TYPE*);
 NTSYSAPI NTSTATUS  WINAPI RtlGetGroupSecurityDescriptor(PSECURITY_DESCRIPTOR,PSID *,PBOOLEAN);
 NTSYSAPI NTSTATUS  WINAPI RtlGetLastNtStatus(void);
 NTSYSAPI DWORD     WINAPI RtlGetLastWin32Error(void);
@@ -5259,16 +5262,6 @@ NTSYSAPI NTSTATUS WINAPI wine_unix_to_nt_file_name( const char *name, WCHAR *buf
 /***********************************************************************
  * Inline functions
  */
-
-#define InitializeObjectAttributes(p,n,a,r,s) \
-    do { \
-        (p)->Length = sizeof(OBJECT_ATTRIBUTES); \
-        (p)->RootDirectory = r; \
-        (p)->Attributes = a; \
-        (p)->ObjectName = n; \
-        (p)->SecurityDescriptor = s; \
-        (p)->SecurityQualityOfService = NULL; \
-    } while (0)
 
 #define NtCurrentProcess() ((HANDLE)~(ULONG_PTR)0)
 #define NtCurrentThread()  ((HANDLE)~(ULONG_PTR)1)
