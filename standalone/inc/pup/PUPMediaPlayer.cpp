@@ -258,6 +258,17 @@ void PUPMediaPlayer::Run()
          m_pPinSound->StreamVolume(m_volume / 100.0f);
       }
 
+      // Throttle when playing audio-only streams
+      if (!m_pVideoContext && m_pAudioContext) {
+         double elapsed = (SDL_GetTicks() - m_startTimestamp) / 1000.0;
+         double ahead = m_audioPts - elapsed;
+         if (ahead > 0) {
+            Uint32 delay_ms = static_cast<Uint32>(ahead * 1000.0);
+            delay_ms = std::min(delay_ms, 50U);
+            SDL_Delay(delay_ms);
+         }
+      }
+
       // Read next frame from source
       const int rfRet = av_read_frame(m_pFormatContext, pPacket);
       if (rfRet == AVERROR_EOF)
@@ -565,8 +576,10 @@ void PUPMediaPlayer::HandleAudioFrame(AVFrame* pFrame)
    }
    int resampledDataSize = len2 * destChLayout.nb_channels * av_get_bytes_per_sample(destFmt);
    m_pPinSound->StreamUpdate(pBuffer, resampledDataSize);
-
    av_free(pBuffer);
+
+   if (pFrame->pts != AV_NOPTS_VALUE)
+      m_audioPts = (double)pFrame->pts * m_pAudioContext->pkt_timebase.num / m_pAudioContext->pkt_timebase.den;
 }
 
 #if defined(__clang__)
