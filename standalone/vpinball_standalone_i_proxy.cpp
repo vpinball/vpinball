@@ -7,7 +7,8 @@ STDMETHODIMP Collection::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UIN
 		DISPID dispId;
 	} namesIdsList[] = {
 			{ NULL },
-			{ L"Count", 8000 }
+			{ L"Count", 8000 },
+			{ L"Item", 8001 }
 	};
 
 	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
@@ -67,6 +68,18 @@ STDMETHODIMP Collection::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid,
 				hres = get_Count((LONG*)&V_I4(&res));
 			}
 			break;
+		}
+	   case 8001: {
+		   if (wFlags & DISPATCH_PROPERTYGET) {
+		      // line 455: [propget, id(0),helpcontext(0x5009003)]HRESULT Item([in] long Index, [out, retval] IDispatch **ppobject);
+		      VARIANT var0;
+		      V_VT(&var0) = VT_EMPTY;
+		      VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_I4);
+		      V_VT(&res) = VT_DISPATCH;
+		      hres = get_Item(V_I4(&var0), (IDispatch**)&V_DISPATCH(&res));
+		      VariantClear(&var0);
+		   }
+		   break;
 		}
 		default:
 		break;
