@@ -31,14 +31,14 @@ STDMETHODIMP WMPControls::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UI
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(namesIdsList[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = namesIdsList[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
@@ -53,6 +53,7 @@ STDMETHODIMP WMPControls::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid
 	switch(dispIdMember) {
 		case DISPID_VALUE: {
 			if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
 				hres = S_OK;
@@ -202,14 +203,6 @@ STDMETHODIMP WMPControls::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid
 	return hres;
 }
 
-STDMETHODIMP WMPControls::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
-	if (index == MEMBERID_NIL) {
-		*pBstrName = SysAllocString(L"WMPControls");
-		return S_OK;
-	}
-	return E_NOTIMPL;
-}
-
 STDMETHODIMP WMPSettings::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid, DISPID* rgDispId) {
 	static struct {
 		const WCHAR *name;
@@ -236,14 +229,14 @@ STDMETHODIMP WMPSettings::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UI
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(namesIdsList[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = namesIdsList[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
@@ -258,6 +251,7 @@ STDMETHODIMP WMPSettings::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid
 	switch(dispIdMember) {
 		case DISPID_VALUE: {
 			if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
 				hres = S_OK;
@@ -478,14 +472,6 @@ STDMETHODIMP WMPSettings::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid
 	return hres;
 }
 
-STDMETHODIMP WMPSettings::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
-	if (index == MEMBERID_NIL) {
-		*pBstrName = SysAllocString(L"WMPSettings");
-		return S_OK;
-	}
-	return E_NOTIMPL;
-}
-
 STDMETHODIMP WMPCore::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid, DISPID* rgDispId) {
 	static struct {
 		const WCHAR *name;
@@ -517,14 +503,14 @@ STDMETHODIMP WMPCore::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT c
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(namesIdsList[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = namesIdsList[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
@@ -539,6 +525,7 @@ STDMETHODIMP WMPCore::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 	switch(dispIdMember) {
 		case DISPID_VALUE: {
 			if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
 				hres = S_OK;
@@ -730,10 +717,3 @@ STDMETHODIMP WMPCore::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 	return hres;
 }
 
-STDMETHODIMP WMPCore::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
-	if (index == MEMBERID_NIL) {
-		*pBstrName = SysAllocString(L"WMPCore");
-		return S_OK;
-	}
-	return E_NOTIMPL;
-}

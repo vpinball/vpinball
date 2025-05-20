@@ -1,7 +1,7 @@
 void external_log_info(const char* format, ...);
 
 static HRESULT WINAPI RegExp_GetIDsOfNames(IRegExp *iface, REFIID riid, LPOLESTR *rgszNames,
-                UINT cNames, LCID lcid, DISPID *rgDispId)
+		UINT cNames, LCID lcid, DISPID *rgDispId)
 {
 	static struct {
 		const WCHAR *name;
@@ -21,22 +21,22 @@ static HRESULT WINAPI RegExp_GetIDsOfNames(IRegExp *iface, REFIID riid, LPOLESTR
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(names_ids_list[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = names_ids_list[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
 
 static HRESULT WINAPI RegExp_Invoke(IRegExp *iface, DISPID dispIdMember,
-                                      REFIID riid, LCID lcid, WORD wFlags,
-                                      DISPPARAMS *pDispParams, VARIANT *pVarResult,
-                                      EXCEPINFO *pExcepInfo, UINT *puArgErr)
+		REFIID riid, LCID lcid, WORD wFlags,
+		DISPPARAMS *pDispParams, VARIANT *pVarResult,
+		EXCEPINFO *pExcepInfo, UINT *puArgErr)
 {
 	int index = pDispParams->cArgs;
 	VARIANT res;
@@ -47,6 +47,7 @@ static HRESULT WINAPI RegExp_Invoke(IRegExp *iface, DISPID dispIdMember,
 	switch(dispIdMember) {
 		case DISPID_VALUE: {
 			if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = (IDispatch*)iface;
 				hres = S_OK;
@@ -151,13 +152,13 @@ static HRESULT WINAPI RegExp_Invoke(IRegExp *iface, DISPID dispIdMember,
 			VariantClear(&res);
 	}
 	else {
-		external_log_info("RegExp_Invoke: dispId=%d (0x%08x), wFlags=%d, hres=%d\n", dispIdMember, dispIdMember, wFlags, hres);
+		external_log_info("RegExp_Invoke: dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
 }
 
 static HRESULT WINAPI RegExp2_GetIDsOfNames(IRegExp2 *iface, REFIID riid, LPOLESTR *rgszNames,
-                UINT cNames, LCID lcid, DISPID *rgDispId)
+		UINT cNames, LCID lcid, DISPID *rgDispId)
 {
 	static struct {
 		const WCHAR *name;
@@ -178,22 +179,22 @@ static HRESULT WINAPI RegExp2_GetIDsOfNames(IRegExp2 *iface, REFIID riid, LPOLES
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(names_ids_list[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = names_ids_list[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
 
 static HRESULT WINAPI RegExp2_Invoke(IRegExp2 *iface, DISPID dispIdMember,
-                                      REFIID riid, LCID lcid, WORD wFlags,
-                                      DISPPARAMS *pDispParams, VARIANT *pVarResult,
-                                      EXCEPINFO *pExcepInfo, UINT *puArgErr)
+		REFIID riid, LCID lcid, WORD wFlags,
+		DISPPARAMS *pDispParams, VARIANT *pVarResult,
+		EXCEPINFO *pExcepInfo, UINT *puArgErr)
 {
 	int index = pDispParams->cArgs;
 	VARIANT res;
@@ -204,6 +205,7 @@ static HRESULT WINAPI RegExp2_Invoke(IRegExp2 *iface, DISPID dispIdMember,
 	switch(dispIdMember) {
 		case DISPID_VALUE: {
 			if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = (IDispatch*)iface;
 				hres = S_OK;
@@ -324,13 +326,13 @@ static HRESULT WINAPI RegExp2_Invoke(IRegExp2 *iface, DISPID dispIdMember,
 			VariantClear(&res);
 	}
 	else {
-		external_log_info("RegExp2_Invoke: dispId=%d (0x%08x), wFlags=%d, hres=%d\n", dispIdMember, dispIdMember, wFlags, hres);
+		external_log_info("RegExp2_Invoke: dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
 }
 
 static HRESULT WINAPI Match_GetIDsOfNames(IMatch *iface, REFIID riid, LPOLESTR *rgszNames,
-                UINT cNames, LCID lcid, DISPID *rgDispId)
+		UINT cNames, LCID lcid, DISPID *rgDispId)
 {
 	static struct {
 		const WCHAR *name;
@@ -338,7 +340,8 @@ static HRESULT WINAPI Match_GetIDsOfNames(IMatch *iface, REFIID riid, LPOLESTR *
 	} names_ids_list[] = {
 			{ NULL },
 			{ L"FirstIndex", DISPID_MATCH_FIRSTINDEX },
-			{ L"Length", DISPID_MATCH_LENGTH }
+			{ L"Length", DISPID_MATCH_LENGTH },
+			{ L"Value", DISPID_VALUE }
 	};
 
 	size_t min = 1, max = ARRAY_SIZE(names_ids_list) - 1, i;
@@ -346,22 +349,22 @@ static HRESULT WINAPI Match_GetIDsOfNames(IMatch *iface, REFIID riid, LPOLESTR *
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(names_ids_list[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = names_ids_list[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
 
 static HRESULT WINAPI Match_Invoke(IMatch *iface, DISPID dispIdMember,
-                                      REFIID riid, LCID lcid, WORD wFlags,
-                                      DISPPARAMS *pDispParams, VARIANT *pVarResult,
-                                      EXCEPINFO *pExcepInfo, UINT *puArgErr)
+		REFIID riid, LCID lcid, WORD wFlags,
+		DISPPARAMS *pDispParams, VARIANT *pVarResult,
+		EXCEPINFO *pExcepInfo, UINT *puArgErr)
 {
 	int index = pDispParams->cArgs;
 	VARIANT res;
@@ -377,6 +380,7 @@ static HRESULT WINAPI Match_Invoke(IMatch *iface, DISPID dispIdMember,
 				hres = Match_get_Value(iface, &V_BSTR(&res));
 			}
 			else if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = (IDispatch*)iface;
 				hres = S_OK;
@@ -409,13 +413,13 @@ static HRESULT WINAPI Match_Invoke(IMatch *iface, DISPID dispIdMember,
 			VariantClear(&res);
 	}
 	else {
-		external_log_info("Match_Invoke: dispId=%d (0x%08x), wFlags=%d, hres=%d\n", dispIdMember, dispIdMember, wFlags, hres);
+		external_log_info("Match_Invoke: dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
 }
 
 static HRESULT WINAPI Match2_GetIDsOfNames(IMatch2 *iface, REFIID riid, LPOLESTR *rgszNames,
-                UINT cNames, LCID lcid, DISPID *rgDispId)
+		UINT cNames, LCID lcid, DISPID *rgDispId)
 {
 	static struct {
 		const WCHAR *name;
@@ -424,7 +428,8 @@ static HRESULT WINAPI Match2_GetIDsOfNames(IMatch2 *iface, REFIID riid, LPOLESTR
 			{ NULL },
 			{ L"FirstIndex", DISPID_MATCH_FIRSTINDEX },
 			{ L"Length", DISPID_MATCH_LENGTH },
-			{ L"SubMatches", DISPID_MATCH_SUBMATCHES }
+			{ L"SubMatches", DISPID_MATCH_SUBMATCHES },
+			{ L"Value", DISPID_VALUE }
 	};
 
 	size_t min = 1, max = ARRAY_SIZE(names_ids_list) - 1, i;
@@ -432,22 +437,22 @@ static HRESULT WINAPI Match2_GetIDsOfNames(IMatch2 *iface, REFIID riid, LPOLESTR
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(names_ids_list[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = names_ids_list[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
 
 static HRESULT WINAPI Match2_Invoke(IMatch2 *iface, DISPID dispIdMember,
-                                      REFIID riid, LCID lcid, WORD wFlags,
-                                      DISPPARAMS *pDispParams, VARIANT *pVarResult,
-                                      EXCEPINFO *pExcepInfo, UINT *puArgErr)
+		REFIID riid, LCID lcid, WORD wFlags,
+		DISPPARAMS *pDispParams, VARIANT *pVarResult,
+		EXCEPINFO *pExcepInfo, UINT *puArgErr)
 {
 	int index = pDispParams->cArgs;
 	VARIANT res;
@@ -463,6 +468,7 @@ static HRESULT WINAPI Match2_Invoke(IMatch2 *iface, DISPID dispIdMember,
 				hres = Match2_get_Value(iface, &V_BSTR(&res));
 			}
 			else if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = (IDispatch*)iface;
 				hres = S_OK;
@@ -503,20 +509,21 @@ static HRESULT WINAPI Match2_Invoke(IMatch2 *iface, DISPID dispIdMember,
 			VariantClear(&res);
 	}
 	else {
-		external_log_info("Match2_Invoke: dispId=%d (0x%08x), wFlags=%d, hres=%d\n", dispIdMember, dispIdMember, wFlags, hres);
+		external_log_info("Match2_Invoke: dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
 }
 
 static HRESULT WINAPI MatchCollection_GetIDsOfNames(IMatchCollection *iface, REFIID riid, LPOLESTR *rgszNames,
-                UINT cNames, LCID lcid, DISPID *rgDispId)
+		UINT cNames, LCID lcid, DISPID *rgDispId)
 {
 	static struct {
 		const WCHAR *name;
 		DISPID dispId;
 	} names_ids_list[] = {
 			{ NULL },
-			{ L"Count", DISPID_MATCHCOLLECTION_COUNT }
+			{ L"Count", DISPID_MATCHCOLLECTION_COUNT },
+			{ L"Item", DISPID_VALUE }
 	};
 
 	size_t min = 1, max = ARRAY_SIZE(names_ids_list) - 1, i;
@@ -524,22 +531,22 @@ static HRESULT WINAPI MatchCollection_GetIDsOfNames(IMatchCollection *iface, REF
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(names_ids_list[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = names_ids_list[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
 
 static HRESULT WINAPI MatchCollection_Invoke(IMatchCollection *iface, DISPID dispIdMember,
-                                      REFIID riid, LCID lcid, WORD wFlags,
-                                      DISPPARAMS *pDispParams, VARIANT *pVarResult,
-                                      EXCEPINFO *pExcepInfo, UINT *puArgErr)
+		REFIID riid, LCID lcid, WORD wFlags,
+		DISPPARAMS *pDispParams, VARIANT *pVarResult,
+		EXCEPINFO *pExcepInfo, UINT *puArgErr)
 {
 	int index = pDispParams->cArgs;
 	VARIANT res;
@@ -559,6 +566,7 @@ static HRESULT WINAPI MatchCollection_Invoke(IMatchCollection *iface, DISPID dis
 				VariantClear(&var0);
 			}
 			else if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = (IDispatch*)iface;
 				hres = S_OK;
@@ -591,20 +599,21 @@ static HRESULT WINAPI MatchCollection_Invoke(IMatchCollection *iface, DISPID dis
 			VariantClear(&res);
 	}
 	else {
-		external_log_info("MatchCollection_Invoke: dispId=%d (0x%08x), wFlags=%d, hres=%d\n", dispIdMember, dispIdMember, wFlags, hres);
+		external_log_info("MatchCollection_Invoke: dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
 }
 
 static HRESULT WINAPI MatchCollection2_GetIDsOfNames(IMatchCollection2 *iface, REFIID riid, LPOLESTR *rgszNames,
-                UINT cNames, LCID lcid, DISPID *rgDispId)
+		UINT cNames, LCID lcid, DISPID *rgDispId)
 {
 	static struct {
 		const WCHAR *name;
 		DISPID dispId;
 	} names_ids_list[] = {
 			{ NULL },
-			{ L"Count", DISPID_MATCHCOLLECTION_COUNT }
+			{ L"Count", DISPID_MATCHCOLLECTION_COUNT },
+			{ L"Item", DISPID_VALUE }
 	};
 
 	size_t min = 1, max = ARRAY_SIZE(names_ids_list) - 1, i;
@@ -612,22 +621,22 @@ static HRESULT WINAPI MatchCollection2_GetIDsOfNames(IMatchCollection2 *iface, R
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(names_ids_list[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = names_ids_list[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
 
 static HRESULT WINAPI MatchCollection2_Invoke(IMatchCollection2 *iface, DISPID dispIdMember,
-                                      REFIID riid, LCID lcid, WORD wFlags,
-                                      DISPPARAMS *pDispParams, VARIANT *pVarResult,
-                                      EXCEPINFO *pExcepInfo, UINT *puArgErr)
+		REFIID riid, LCID lcid, WORD wFlags,
+		DISPPARAMS *pDispParams, VARIANT *pVarResult,
+		EXCEPINFO *pExcepInfo, UINT *puArgErr)
 {
 	int index = pDispParams->cArgs;
 	VARIANT res;
@@ -647,6 +656,7 @@ static HRESULT WINAPI MatchCollection2_Invoke(IMatchCollection2 *iface, DISPID d
 				VariantClear(&var0);
 			}
 			else if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = (IDispatch*)iface;
 				hres = S_OK;
@@ -679,20 +689,21 @@ static HRESULT WINAPI MatchCollection2_Invoke(IMatchCollection2 *iface, DISPID d
 			VariantClear(&res);
 	}
 	else {
-		external_log_info("MatchCollection2_Invoke: dispId=%d (0x%08x), wFlags=%d, hres=%d\n", dispIdMember, dispIdMember, wFlags, hres);
+		external_log_info("MatchCollection2_Invoke: dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
 }
 
 static HRESULT WINAPI SubMatches_GetIDsOfNames(ISubMatches *iface, REFIID riid, LPOLESTR *rgszNames,
-                UINT cNames, LCID lcid, DISPID *rgDispId)
+		UINT cNames, LCID lcid, DISPID *rgDispId)
 {
 	static struct {
 		const WCHAR *name;
 		DISPID dispId;
 	} names_ids_list[] = {
 			{ NULL },
-			{ L"Count", DISPID_SUBMATCHES_COUNT }
+			{ L"Count", DISPID_SUBMATCHES_COUNT },
+			{ L"Item", DISPID_VALUE }
 	};
 
 	size_t min = 1, max = ARRAY_SIZE(names_ids_list) - 1, i;
@@ -700,22 +711,22 @@ static HRESULT WINAPI SubMatches_GetIDsOfNames(ISubMatches *iface, REFIID riid, 
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(names_ids_list[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = names_ids_list[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
 
 static HRESULT WINAPI SubMatches_Invoke(ISubMatches *iface, DISPID dispIdMember,
-                                      REFIID riid, LCID lcid, WORD wFlags,
-                                      DISPPARAMS *pDispParams, VARIANT *pVarResult,
-                                      EXCEPINFO *pExcepInfo, UINT *puArgErr)
+		REFIID riid, LCID lcid, WORD wFlags,
+		DISPPARAMS *pDispParams, VARIANT *pVarResult,
+		EXCEPINFO *pExcepInfo, UINT *puArgErr)
 {
 	int index = pDispParams->cArgs;
 	VARIANT res;
@@ -734,6 +745,7 @@ static HRESULT WINAPI SubMatches_Invoke(ISubMatches *iface, DISPID dispIdMember,
 				VariantClear(&var0);
 			}
 			else if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = (IDispatch*)iface;
 				hres = S_OK;
@@ -766,7 +778,8 @@ static HRESULT WINAPI SubMatches_Invoke(ISubMatches *iface, DISPID dispIdMember,
 			VariantClear(&res);
 	}
 	else {
-		external_log_info("SubMatches_Invoke: dispId=%d (0x%08x), wFlags=%d, hres=%d\n", dispIdMember, dispIdMember, wFlags, hres);
+		external_log_info("SubMatches_Invoke: dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
 }
+

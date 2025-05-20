@@ -65,14 +65,14 @@ STDMETHODIMP PUPPinDisplay::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, 
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(namesIdsList[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = namesIdsList[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
@@ -87,6 +87,7 @@ STDMETHODIMP PUPPinDisplay::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lc
 	switch(dispIdMember) {
 		case DISPID_VALUE: {
 			if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
 				hres = S_OK;
@@ -967,3 +968,4 @@ STDMETHODIMP PUPPinDisplay::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lc
 	}
 	return hres;
 }
+

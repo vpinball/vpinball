@@ -28,14 +28,14 @@ STDMETHODIMP SequenceAction::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames,
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(namesIdsList[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = namesIdsList[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
@@ -50,6 +50,7 @@ STDMETHODIMP SequenceAction::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID l
 	switch(dispIdMember) {
 		case DISPID_VALUE: {
 			if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
 				hres = S_OK;
@@ -97,14 +98,14 @@ STDMETHODIMP ParallelAction::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames,
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(namesIdsList[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = namesIdsList[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
@@ -119,6 +120,7 @@ STDMETHODIMP ParallelAction::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID l
 	switch(dispIdMember) {
 		case DISPID_VALUE: {
 			if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
 				hres = S_OK;
@@ -166,14 +168,14 @@ STDMETHODIMP TweenAction::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UI
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(namesIdsList[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = namesIdsList[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
@@ -188,6 +190,7 @@ STDMETHODIMP TweenAction::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid
 	switch(dispIdMember) {
 		case DISPID_VALUE: {
 			if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
 				hres = S_OK;
@@ -251,14 +254,14 @@ STDMETHODIMP ActionFactory::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, 
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(namesIdsList[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = namesIdsList[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
@@ -273,6 +276,7 @@ STDMETHODIMP ActionFactory::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lc
 	switch(dispIdMember) {
 		case DISPID_VALUE: {
 			if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
 				hres = S_OK;
@@ -505,14 +509,14 @@ STDMETHODIMP Group::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNa
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(namesIdsList[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = namesIdsList[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
@@ -527,6 +531,7 @@ STDMETHODIMP Group::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 	switch(dispIdMember) {
 		case DISPID_VALUE: {
 			if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
 				hres = S_OK;
@@ -966,14 +971,14 @@ STDMETHODIMP Frame::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNa
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(namesIdsList[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = namesIdsList[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
@@ -988,6 +993,7 @@ STDMETHODIMP Frame::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 	switch(dispIdMember) {
 		case DISPID_VALUE: {
 			if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
 				hres = S_OK;
@@ -1362,14 +1368,14 @@ STDMETHODIMP Image::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNa
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(namesIdsList[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = namesIdsList[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
@@ -1384,6 +1390,7 @@ STDMETHODIMP Image::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 	switch(dispIdMember) {
 		case DISPID_VALUE: {
 			if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
 				hres = S_OK;
@@ -1652,14 +1659,7 @@ STDMETHODIMP Image::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 				V_VT(&res) = VT_DISPATCH;
 				hres = get_Bitmap((_Bitmap**)&V_DISPATCH(&res));
 			}
-            else if (wFlags & DISPATCH_PROPERTYPUT) {
-				VARIANT var0;
-				V_VT(&var0) = VT_EMPTY;
-				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
-				hres = putref_Bitmap((_Bitmap*)V_UNKNOWN(&var0));
-				VariantClear(&var0);
-			}
-			else if (wFlags & DISPATCH_PROPERTYPUTREF) {
+			else if ((wFlags & DISPATCH_PROPERTYPUTREF) || (wFlags & DISPATCH_PROPERTYPUT)) {
 				// line 554: [id(0x6002001b), propputref]HRESULT Bitmap([in] _Bitmap* pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
@@ -1721,14 +1721,14 @@ STDMETHODIMP AnimatedActor::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, 
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(namesIdsList[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = namesIdsList[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
@@ -1743,6 +1743,7 @@ STDMETHODIMP AnimatedActor::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lc
 	switch(dispIdMember) {
 		case DISPID_VALUE: {
 			if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
 				hres = S_OK;
@@ -2122,14 +2123,14 @@ STDMETHODIMP Label::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNa
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(namesIdsList[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = namesIdsList[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
@@ -2144,6 +2145,7 @@ STDMETHODIMP Label::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 	switch(dispIdMember) {
 		case DISPID_VALUE: {
 			if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
 				hres = S_OK;
@@ -2428,7 +2430,7 @@ STDMETHODIMP Label::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 				V_VT(&res) = VT_UNKNOWN;
 				hres = get_Font(&V_UNKNOWN(&res));
 			}
-			else if ((wFlags & DISPATCH_PROPERTYPUT) || (wFlags & DISPATCH_PROPERTYPUTREF)) {
+			else if ((wFlags & DISPATCH_PROPERTYPUTREF) || (wFlags & DISPATCH_PROPERTYPUT)) {
 				// line 738: [id(0x6002001f), propputref]HRESULT Font([in] IUnknown* pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
@@ -2507,14 +2509,14 @@ STDMETHODIMP FlexDMD::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT c
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(namesIdsList[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = namesIdsList[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
@@ -2529,6 +2531,7 @@ STDMETHODIMP FlexDMD::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 	switch(dispIdMember) {
 		case DISPID_VALUE: {
 			if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
 				hres = S_OK;
@@ -2734,14 +2737,7 @@ STDMETHODIMP FlexDMD::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 			break;
 		}
 		case 0x60020019: {
-			if (wFlags & DISPATCH_PROPERTYPUT) {
-				VARIANT var0;
-				V_VT(&var0) = VT_EMPTY;
-				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
-				hres = putref_Segments(var0);
-				VariantClear(&var0);
-			}
-			else if (wFlags & DISPATCH_PROPERTYPUTREF) {
+			if ((wFlags & DISPATCH_PROPERTYPUTREF) || (wFlags & DISPATCH_PROPERTYPUT)) {
 				// line 829: [id(0x60020019), propputref]HRESULT Segments([in] VARIANT rhs);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;

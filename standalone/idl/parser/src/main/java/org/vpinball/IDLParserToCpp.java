@@ -83,12 +83,18 @@ public class IDLParserToCpp {
 		return enumMap;
 	}
 
-	public void parse(String in, String out, List<IDLInterface> interfaceList) throws Exception {
+	public void parse(String in, String out, List<IDLInterface> interfaceList, List<String> includes, boolean excludeDocumentation) throws Exception {
 		Method.resetUnknownId();
 
-		HashMap<String, IDLInterface> interfaceMap = new HashMap<String, IDLInterface>();
-		for (IDLInterface idlClass:interfaceList) {
-			interfaceMap.put(idlClass.getInterfaceName(), idlClass);
+		HashMap<String,List<IDLInterface>> interfaceMap = new HashMap<>();
+		for (IDLInterface idlClass : interfaceList) {
+			String name = idlClass.getInterfaceName();
+			List<IDLInterface> list = interfaceMap.get(name);
+			if (list == null) {
+				list = new ArrayList<>();
+				interfaceMap.put(name, list);
+			}
+			list.add(idlClass);
 		}
 
 		LinkedHashMap<String, Dispatch> dispatchMap = new LinkedHashMap<String, Dispatch>();
@@ -100,12 +106,20 @@ public class IDLParserToCpp {
 
 		outputStream.write("#include \"core/stdafx.h\"\n".getBytes());
 		outputStream.write("#include \"olectl.h\"\n".getBytes());
+		
+		if (includes != null && includes.size() > 0) {
+			outputStream.write("\n".getBytes());
+			for (String include : includes) {
+				outputStream.write(("#include \"" + include + "\"\n").getBytes());
+			}
+		}
+		
 		outputStream.write("\n".getBytes());
 
 		int lineNo = 0;
 
 		ParseMode mode = ParseMode.NONE;
-		IDLInterface idlInterface = null;
+		List<IDLInterface> currentIDLInterfaces = null;
 
 		boolean foundMethod = false;
 		int methodLineNo = 0;
@@ -123,22 +137,26 @@ public class IDLParserToCpp {
 					String interfaceName = line.split(":")[0];
 					interfaceName = interfaceName.substring("interface ".length()).trim();
 
-					if (interfaceMap.containsKey(interfaceName)) {
-						mode = ParseMode.METHODS;
-						idlInterface = interfaceMap.get(interfaceName);
-						dispatchMap.clear();
-					}
-					else {
-						System.out.println("Interface not in map: " + interfaceName);
+					List<IDLInterface> idlInterfaces = interfaceMap.get(interfaceName);
+					if (idlInterfaces != null) {
+						if (interfaceMap.containsKey(interfaceName)) {
+							mode = ParseMode.METHODS;
+							currentIDLInterfaces = idlInterfaces;
+							dispatchMap.clear();
+						}
+						else {
+							System.out.println("Interface not in map: " + interfaceName);
+						}
 					}
 				}
 			}
 			else if (line.startsWith("dispinterface ")) {
 				String interfaceName = line.split(" ")[1].trim();
 
+				List<IDLInterface> idlInterfaces = interfaceMap.get(interfaceName);
 				if (interfaceMap.containsKey(interfaceName)) {
 					mode = ParseMode.EVENTS;
-					idlInterface = interfaceMap.get(interfaceName);
+					currentIDLInterfaces = idlInterfaces;
 					eventList.clear();
 				}
 			}
@@ -150,16 +168,18 @@ public class IDLParserToCpp {
 			}
 			else if (line.startsWith("}")) {
 				if (mode == ParseMode.METHODS) {
-					HashMap<String, IDLEnum> enumMap = null;
-
-					if (idlInterface.getEnumList() != null) {
-						enumMap = getEnums(in, idlInterface.getEnumList());
+					for (IDLInterface idlInterface : currentIDLInterfaces) {
+						HashMap<String, IDLEnum> enumMap = null;
+						if (idlInterface.getEnumList() != null) {
+							enumMap = getEnums(in, idlInterface.getEnumList());
+						}
+						outputStream.write(generateDispatch(idlInterface, dispatchMap, enumMap, excludeDocumentation).getBytes());
 					}
-
-					outputStream.write(generateDispatch(idlInterface, dispatchMap, interfaceMap, enumMap).getBytes());
 				}
 				else if (mode == ParseMode.EVENTS) {
-					outputStream.write(generateEvents(idlInterface, eventList).getBytes());
+					for (IDLInterface idlInterface : currentIDLInterfaces) {
+						outputStream.write(generateEvents(idlInterface, eventList).getBytes());
+					}
 				}
 
 				mode = ParseMode.NONE;
@@ -231,17 +251,17 @@ public class IDLParserToCpp {
 	}
 
 	private String generateDispatch(IDLInterface idlInterface, LinkedHashMap<String, Dispatch> dispatchMap,
-			HashMap<String, IDLInterface> interfaceMap, HashMap<String, IDLEnum> enumMap) throws Exception {
+			HashMap<String, IDLEnum> enumMap, boolean excludeDocumentation) throws Exception {
 		StringBuffer buffer = new StringBuffer();
-		
+
 		buffer.append("STDMETHODIMP " + idlInterface.getClassName() + "::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid, DISPID* rgDispId) {\n");
-		
+
 		buffer.append("static struct {\n");
 		buffer.append("const WCHAR *name;\n");
 		buffer.append("DISPID dispId;\n");
 		buffer.append("} namesIdsList[] = {\n");
 		buffer.append("{ NULL }");
-        
+
 		ArrayList<String> keys = new ArrayList<>(dispatchMap.keySet());
 
 		if (enumMap != null) {
@@ -250,13 +270,18 @@ public class IDLParserToCpp {
 
 		Collections.sort(keys, String.CASE_INSENSITIVE_ORDER);
 
+		boolean hasDispIdValue = false;
+
 		for (String key : keys) {
 			if (dispatchMap.containsKey(key)) {
 				Dispatch dispatch = dispatchMap.get(key);
 
-				if ("DISPID_NEWENUM".equals(dispatch.getId()) || 
-						"DISPID_VALUE".equals(dispatch.getId())) {
+				if (dispatch.isDispIdNewEnum()) {
 					continue;
+				}
+
+				if (dispatch.isDispIdValue()) {
+					hasDispIdValue = true;
 				}
 
 				buffer.append(",\n");
@@ -282,16 +307,16 @@ public class IDLParserToCpp {
 		buffer.append("while(min <= max) {\n");
 		buffer.append("i = (min + max) / 2;\n");
 		buffer.append("r = wcsicmp(namesIdsList[i].name, *rgszNames);\n");
-		buffer.append("if(!r) {\n");
+		buffer.append("if (!r) {\n");
 		buffer.append("*rgDispId = namesIdsList[i].dispId;\n");
-	    buffer.append("return S_OK;\n");
-	    buffer.append("}\n");
-	    buffer.append("if(r < 0)\n");
-	    buffer.append("   min = i+1;\n");
-	    buffer.append("else\n");
-	    buffer.append("   max = i-1;\n");
-	    buffer.append("}\n");
-	    buffer.append("return DISP_E_MEMBERNOTFOUND;\n");
+		buffer.append("return S_OK;\n");
+		buffer.append("}\n");
+		buffer.append("if (r < 0)\n");
+		buffer.append("\tmin = i+1;\n");
+		buffer.append("else\n");
+		buffer.append("\tmax = i-1;\n");
+		buffer.append("}\n");
+		buffer.append("return DISP_E_MEMBERNOTFOUND;\n");
 
 		buffer.append("}\n");
 		buffer.append("\n");
@@ -304,15 +329,19 @@ public class IDLParserToCpp {
 		buffer.append("V_VT(&res) = VT_EMPTY;\n");
 		buffer.append("\n");
 		buffer.append("switch(dispIdMember) {\n");
-		buffer.append("case DISPID_VALUE: {\n");
-		buffer.append("if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {\n");
-		buffer.append("V_VT(&res) = VT_DISPATCH;\n");
-		buffer.append("V_DISPATCH(&res) = this;\n");
-		buffer.append("hres = S_OK;\n");
-		buffer.append("}\n");
-		buffer.append("break;\n");
-		buffer.append("}\n");
-		
+
+		if (!hasDispIdValue) {
+			buffer.append("case DISPID_VALUE: {\n");
+			buffer.append("if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {\n");
+			buffer.append("// Default method\n");
+			buffer.append("V_VT(&res) = VT_DISPATCH;\n");
+			buffer.append("V_DISPATCH(&res) = this;\n");
+			buffer.append("hres = S_OK;\n");
+			buffer.append("}\n");
+			buffer.append("break;\n");
+			buffer.append("}\n");
+		}
+
 		for (String key : dispatchMap.keySet()) {
 			Dispatch dispatch = dispatchMap.get(key);
 
@@ -327,15 +356,25 @@ public class IDLParserToCpp {
 				buffer.append(generateMethod(method));
 				index++;
 			}
+
+			if (dispatch.isDispIdValue()) {
+				buffer.append("else if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {\n");
+				buffer.append("// Default method\n");
+				buffer.append("V_VT(&res) = VT_DISPATCH;\n");
+				buffer.append("V_DISPATCH(&res) = this;\n");
+				buffer.append("hres = S_OK;\n");
+				buffer.append("}\n");
+			}
+
 			buffer.append("break;\n"); 
 			buffer.append("}\n"); 
 		}
 
-        if (enumMap != null) {
-	        for (String key : enumMap.keySet()) {
-	            IDLEnum idlEnum = enumMap.get(key);
+		if (enumMap != null) {
+			for (String key : enumMap.keySet()) {
+				IDLEnum idlEnum = enumMap.get(key);
 
-	            buffer.append("case " + idlEnum.getId() + ": {\n");
+				buffer.append("case " + idlEnum.getId() + ": {\n");
 				buffer.append("if (wFlags & DISPATCH_PROPERTYGET) {\n");
 				buffer.append("V_VT(&res) = VT_I2;\n");
 				buffer.append("V_I2(&res) = " + idlEnum.getValue() + ";\n");
@@ -343,8 +382,8 @@ public class IDLParserToCpp {
 				buffer.append("}\n");
 				buffer.append("break;\n");
 				buffer.append("}\n");
-	        }
-        }
+			}
+		}
 
 		buffer.append("default:\n");
 		buffer.append("break;\n");
@@ -362,14 +401,16 @@ public class IDLParserToCpp {
 		buffer.append("}\n");
 		buffer.append("\n");
 
-		buffer.append("STDMETHODIMP " + idlInterface.getClassName() + "::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {\n");
-		buffer.append("if (index == MEMBERID_NIL) {\n");
-		buffer.append("*pBstrName = SysAllocString(L\"" + idlInterface.getDocumentationName() + "\");\n");
-		buffer.append("return S_OK;\n");
-		buffer.append("}\n");
-		buffer.append("return E_NOTIMPL;\n");
-		buffer.append("}\n");
-		buffer.append("\n");
+		if (!excludeDocumentation) {
+			buffer.append("STDMETHODIMP " + idlInterface.getClassName() + "::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {\n");
+			buffer.append("if (index == MEMBERID_NIL) {\n");
+			buffer.append("*pBstrName = SysAllocString(L\"" + idlInterface.getDocumentationName() + "\");\n");
+			buffer.append("return S_OK;\n");
+			buffer.append("}\n");
+			buffer.append("return E_NOTIMPL;\n");
+			buffer.append("}\n");
+			buffer.append("\n");
+		}
 
 		return indent(buffer.toString(), 0);
 	}
@@ -398,9 +439,9 @@ public class IDLParserToCpp {
 		eventDispIdMap.put("DISPID_AnimateEvents_Animate", 1404);
 
 		StringBuffer buffer = new StringBuffer();
-		
+
 		buffer.append("HRESULT " + idlInterface.getClassName() + "::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {\n");
-		
+
 		buffer.append("static struct {\n");
 		buffer.append("DISPID dispId;\n");
 		buffer.append("const WCHAR *name;\n");
@@ -477,9 +518,9 @@ public class IDLParserToCpp {
 		buffer.append("return DISP_E_MEMBERNOTFOUND;\n");
 		buffer.append("}\n");
 		buffer.append("else if (idsNamesList[i].dispId < dispid)\n");
-		buffer.append("   min = i+1;\n");
+		buffer.append("\tmin = i+1;\n");
 		buffer.append("else\n");
-		buffer.append("   max = i-1;\n");
+		buffer.append("\tmax = i-1;\n");
 		buffer.append("}\n");
 		buffer.append("return DISP_E_MEMBERNOTFOUND;\n");
 
@@ -524,7 +565,7 @@ public class IDLParserToCpp {
 				buffer.append("V_UI4(&var" + index + ") = " + param.getDefaultValue() + ";\n");
 			}
 			else if ("BSTR".equals(param.getType())) {
-				buffer.append("OLECHAR* pszDefault = L" + param.getDefaultValue() + ";\n");
+				buffer.append("OLECHAR* pszDefault = (OLECHAR*)L" + param.getDefaultValue() + ";\n");
 				buffer.append("V_VT(&var" + index + ") = VT_BSTR;\n");
 				buffer.append("V_BSTR(&var" + index + ") = SysAllocString(pszDefault);\n");
 			}
@@ -881,7 +922,7 @@ public class IDLParserToCpp {
 			}
 		}
 
-		return buffer.toString();		
+		return buffer.toString();
 	}
 
 
@@ -892,19 +933,25 @@ public class IDLParserToCpp {
 				"../../inc/b2s/B2S.idl",
 				"b2s_i_proxy.cpp",
 				Arrays.asList(
-						new IDLInterface("_Server", "Server")));
+						new IDLInterface("_Server", "Server")),
+				Arrays.asList("Server.h"),
+				true);
 		
 		parser.parse(
 				"../../inc/ultradmd/UltraDMD.idl",
 				"ultradmd_i_proxy.cpp",
 				Arrays.asList(
-						new IDLInterface("IDMDObject", "UltraDMDDMDObject")));
+						new IDLInterface("IDMDObject", "UltraDMDDMDObject")),
+				Arrays.asList("UltraDMDDMDObject.h"),
+				true);
 
 		parser.parse(
 			"../../inc/pup/PUP.idl",
 			"pup_i_proxy.cpp",
 			Arrays.asList(
-				new IDLInterface("IPinDisplay", "PUPPinDisplay", "PinDisplay")));
+				new IDLInterface("IPinDisplay", "PUPPinDisplay", "PinDisplay")),
+			Arrays.asList("PUPPinDisplay.h"),
+			true);
 
 		parser.parse(
 			"../../inc/flexdmd/FlexDMD.idl",
@@ -913,17 +960,38 @@ public class IDLParserToCpp {
 				new IDLInterface("IFlexDMD", "FlexDMD"),
 				new IDLInterface("IGroupActor", "Group", "Object"),
 				new IDLInterface("IFrameActor", "Frame", "Object"),
+				new IDLInterface("ICompositeAction", "SequenceAction", "Object"),
 				new IDLInterface("ICompositeAction", "ParallelAction", "Object"),
-                new IDLInterface("ICompositeAction", "SequenceAction", "Object"),
 				new IDLInterface("ITweenAction", "TweenAction", "Object"),
 				new IDLInterface("IActionFactory", "ActionFactory", "Object"),
 				new IDLInterface("IImageActor", "Image", "Object"),
-				new IDLInterface("IVideoActor", "Video", "Object"),
-				new IDLInterface("ILabelActor", "Label", "Object")));
+				new IDLInterface("IVideoActor", "AnimatedActor", "Object"),
+				new IDLInterface("ILabelActor", "Label", "Object")),
+			Arrays.asList(
+					"FlexDMD.h",
+					"actions/ActionFactory.h",
+					"actions/SequenceAction.h",
+					"actions/ParallelAction.h",
+					"actions/TweenAction.h",
+					"actors/Frame.h",
+					"actors/Group.h",
+					"actors/Image.h",
+					"actors/Label.h",
+					"actors/AnimatedActor.h"),
+			true);
+		
+		parser.parse(
+			"../../inc/ultradmd/UltraDMD.idl",
+			"flexudmd_i.proxy.cpp",
+			Arrays.asList(
+					new IDLInterface("IDMDObject", "UltraDMD")),
+			Arrays.asList(
+					"UltraDMD.h"),
+			true);
 
-        parser.parse(
-            "../../inc/vpinmame/VPinMAME.idl",
-            "vpinmame_i_proxy.cpp",
+		parser.parse(
+			"../../inc/vpinmame/VPinMAME.idl",
+			"vpinmame_i_proxy.cpp",
 			Arrays.asList(
 				new IDLInterface("IController", "VPinMAMEController", "Controller"),
 				new IDLInterface("IControllerSettings", "VPinMAMEControllerSettings", "ControllerSettings"),
@@ -931,7 +999,16 @@ public class IDLParserToCpp {
 				new IDLInterface("IGames", "VPinMAMEGames", "Games"),
 				new IDLInterface("IGameSettings", "VPinMAMEGameSettings", "GameSettings"),
 				new IDLInterface("IRom", "VPinMAMERom", "Rom"),
-				new IDLInterface("IRoms", "VPinMAMERoms", "Roms")));
+				new IDLInterface("IRoms", "VPinMAMERoms", "Roms")),
+			Arrays.asList(
+				"VPinMAMEController.h",
+				"VPinMAMEControllerSettings.h",
+				"VPinMAMEGame.h",
+				"VPinMAMEGames.h",
+				"VPinMAMEGameSettings.h",
+				"VPinMAMERom.h",
+				"VPinMAMERoms.h"),
+		true);
 
 		parser.parse(
 			"../../inc/wmp/wmp.idl",
@@ -939,7 +1016,12 @@ public class IDLParserToCpp {
 			Arrays.asList(
 				new IDLInterface("IWMPCore", "WMPCore"),
 				new IDLInterface("IWMPControls", "WMPControls"),
-				new IDLInterface("IWMPSettings", "WMPSettings")));
+				new IDLInterface("IWMPSettings", "WMPSettings")),
+			Arrays.asList(
+					"WMPControls.h",
+					"WMPCore.h",
+					"WMPSettings.h"),
+			true);
 
 		parser.parse(
 			"../../../src/core/vpinball.idl",
@@ -1012,6 +1094,8 @@ public class IDLParserToCpp {
 				new IDLInterface("IVPDebug", "DebuggerModule", "VPDebug"),
 				new IDLInterface("IDecal", "Decal"),
 				new IDLInterface("IBall", "Ball", "IBall"),
-				new IDLInterface("IBallEvents", "Ball")));
+				new IDLInterface("IBallEvents", "Ball")),
+			Arrays.asList(),
+			false);
 	}
 }
