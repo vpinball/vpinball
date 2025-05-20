@@ -982,7 +982,7 @@ public class IDLParserToCpp {
 		
 		parser.parse(
 			"../../inc/ultradmd/UltraDMD.idl",
-			"flexudmd_i.proxy.cpp",
+			"flexudmd_i_proxy.cpp",
 			Arrays.asList(
 					new IDLInterface("IDMDObject", "UltraDMD")),
 			Arrays.asList(
