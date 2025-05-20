@@ -30,7 +30,7 @@ STDMETHODIMP UltraDMDDMDObject::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNam
 			{ L"Height", 0x7002000b },
 			{ L"Init", 0x60020002 },
 			{ L"IsRendering", 0x60020009 },
-            { L"LoadSetup", 0x70020000 },
+			{ L"LoadSetup", 0x70020000 },
 			{ L"ModifyScene00", 0x6002001a },
 			{ L"ModifyScene00Ex", 0x6002001b },
 			{ L"RegisterFont", 0x60020012 },
@@ -51,14 +51,14 @@ STDMETHODIMP UltraDMDDMDObject::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNam
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(namesIdsList[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = namesIdsList[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
@@ -73,6 +73,7 @@ STDMETHODIMP UltraDMDDMDObject::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 	switch(dispIdMember) {
 		case DISPID_VALUE: {
 			if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
 				hres = S_OK;

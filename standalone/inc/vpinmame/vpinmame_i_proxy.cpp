@@ -31,14 +31,14 @@ STDMETHODIMP VPinMAMERom::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UI
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(namesIdsList[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = namesIdsList[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
@@ -53,6 +53,7 @@ STDMETHODIMP VPinMAMERom::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid
 	switch(dispIdMember) {
 		case DISPID_VALUE: {
 			if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
 				hres = S_OK;
@@ -159,6 +160,7 @@ STDMETHODIMP VPinMAMERoms::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, U
 			{ L"Audit", 4 },
 			{ L"Available", 1 },
 			{ L"Count", 8000 },
+			{ L"Item", DISPID_VALUE },
 			{ L"State", 2 },
 			{ L"StateDescription", 3 }
 	};
@@ -168,14 +170,14 @@ STDMETHODIMP VPinMAMERoms::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, U
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(namesIdsList[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = namesIdsList[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
@@ -188,6 +190,14 @@ STDMETHODIMP VPinMAMERoms::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lci
 	V_VT(&res) = VT_EMPTY;
 
 	switch(dispIdMember) {
+		case 8000: {
+			if (wFlags & DISPATCH_PROPERTYGET) {
+				// line 42: [propget] HRESULT Count([out, retval] long* pnCount);
+				V_VT(&res) = VT_I4;
+				hres = get_Count((LONG*)&V_I4(&res));
+			}
+			break;
+		}
 		case DISPID_VALUE: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 43: [propget, id(DISPID_VALUE)] HRESULT Item([in] VARIANT *pKey, [out, retval] IRom* *ppGame);
@@ -199,17 +209,10 @@ STDMETHODIMP VPinMAMERoms::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lci
 				VariantClear(&var0);
 			}
 			else if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
 				hres = S_OK;
-			}
-			break;
-		}
-		case 8000: {
-			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 42: [propget] HRESULT Count([out, retval] long* pnCount);
-				V_VT(&res) = VT_I4;
-				hres = get_Count((LONG*)&V_I4(&res));
 			}
 			break;
 		}
@@ -289,14 +292,14 @@ STDMETHODIMP VPinMAMEGameSettings::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgsz
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(namesIdsList[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = namesIdsList[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
@@ -311,6 +314,7 @@ STDMETHODIMP VPinMAMEGameSettings::Invoke(DISPID dispIdMember, REFIID /*riid*/, 
 	switch(dispIdMember) {
 		case DISPID_VALUE: {
 			if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
 				hres = S_OK;
@@ -416,14 +420,14 @@ STDMETHODIMP VPinMAMEGame::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, U
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(namesIdsList[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = namesIdsList[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
@@ -438,6 +442,7 @@ STDMETHODIMP VPinMAMEGame::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lci
 	switch(dispIdMember) {
 		case DISPID_VALUE: {
 			if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
 				hres = S_OK;
@@ -547,7 +552,8 @@ STDMETHODIMP VPinMAMEGames::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, 
 		DISPID dispId;
 	} namesIdsList[] = {
 			{ NULL },
-			{ L"Count", 8001 }
+			{ L"Count", 8001 },
+			{ L"Item", DISPID_VALUE }
 	};
 
 	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
@@ -555,14 +561,14 @@ STDMETHODIMP VPinMAMEGames::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, 
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(namesIdsList[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = namesIdsList[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
@@ -575,6 +581,14 @@ STDMETHODIMP VPinMAMEGames::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lc
 	V_VT(&res) = VT_EMPTY;
 
 	switch(dispIdMember) {
+		case 8001: {
+			if (wFlags & DISPATCH_PROPERTYGET) {
+				// line 115: [propget] HRESULT Count([out, retval] long* pnCount);
+				V_VT(&res) = VT_I4;
+				hres = get_Count((LONG*)&V_I4(&res));
+			}
+			break;
+		}
 		case DISPID_VALUE: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 116: [propget, id(DISPID_VALUE)] HRESULT Item([in] VARIANT *pKey, [out, retval] IGame* *ppGame);
@@ -586,17 +600,10 @@ STDMETHODIMP VPinMAMEGames::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lc
 				VariantClear(&var0);
 			}
 			else if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
 				hres = S_OK;
-			}
-			break;
-		}
-		case 8001: {
-			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 115: [propget] HRESULT Count([out, retval] long* pnCount);
-				V_VT(&res) = VT_I4;
-				hres = get_Count((LONG*)&V_I4(&res));
 			}
 			break;
 		}
@@ -640,14 +647,14 @@ STDMETHODIMP VPinMAMEControllerSettings::GetIDsOfNames(REFIID /*riid*/, LPOLESTR
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(namesIdsList[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = namesIdsList[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
@@ -662,6 +669,7 @@ STDMETHODIMP VPinMAMEControllerSettings::Invoke(DISPID dispIdMember, REFIID /*ri
 	switch(dispIdMember) {
 		case DISPID_VALUE: {
 			if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
 				hres = S_OK;
@@ -821,14 +829,14 @@ STDMETHODIMP VPinMAMEController::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNa
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(namesIdsList[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = namesIdsList[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
@@ -843,6 +851,7 @@ STDMETHODIMP VPinMAMEController::Invoke(DISPID dispIdMember, REFIID /*riid*/, LC
 	switch(dispIdMember) {
 		case DISPID_VALUE: {
 			if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
 				hres = S_OK;

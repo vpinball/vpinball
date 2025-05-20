@@ -116,14 +116,14 @@ STDMETHODIMP Server::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cN
 	while(min <= max) {
 		i = (min + max) / 2;
 		r = wcsicmp(namesIdsList[i].name, *rgszNames);
-		if(!r) {
+		if (!r) {
 			*rgDispId = namesIdsList[i].dispId;
 			return S_OK;
 		}
-		if(r < 0)
-		   min = i+1;
+		if (r < 0)
+			min = i+1;
 		else
-		   max = i-1;
+			max = i-1;
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
@@ -138,6 +138,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 	switch(dispIdMember) {
 		case DISPID_VALUE: {
 			if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				// Default method
 				V_VT(&res) = VT_DISPATCH;
 				V_DISPATCH(&res) = this;
 				hres = S_OK;
@@ -146,14 +147,14 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000001: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 905: [id(0x00000001)]HRESULT Dispose();
+				// line 908: [id(0x00000001)]HRESULT Dispose();
 				hres = Dispose();
 			}
 			break;
 		}
 		case 0x00000002: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 907: [id(0x00000002), propget]HRESULT B2SServerVersion([out, retval] BSTR* pRetVal);
+				// line 910: [id(0x00000002), propget]HRESULT B2SServerVersion([out, retval] BSTR* pRetVal);
 				V_VT(&res) = VT_BSTR;
 				hres = get_B2SServerVersion(&V_BSTR(&res));
 			}
@@ -161,7 +162,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000003: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 909: [id(0x00000003), propget]HRESULT B2SBuildVersion([out, retval] double* pRetVal);
+				// line 912: [id(0x00000003), propget]HRESULT B2SBuildVersion([out, retval] double* pRetVal);
 				V_VT(&res) = VT_R8;
 				hres = get_B2SBuildVersion((double*)&V_R8(&res));
 			}
@@ -169,7 +170,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000004: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 911: [id(0x00000004), propget]HRESULT B2SServerDirectory([out, retval] BSTR* pRetVal);
+				// line 914: [id(0x00000004), propget]HRESULT B2SServerDirectory([out, retval] BSTR* pRetVal);
 				V_VT(&res) = VT_BSTR;
 				hres = get_B2SServerDirectory(&V_BSTR(&res));
 			}
@@ -177,12 +178,12 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000005: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 913: [id(0x00000005), propget]HRESULT GameName([out, retval] BSTR* pRetVal);
+				// line 916: [id(0x00000005), propget]HRESULT GameName([out, retval] BSTR* pRetVal);
 				V_VT(&res) = VT_BSTR;
 				hres = get_GameName(&V_BSTR(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 915: [id(0x00000005), propput]HRESULT GameName([in] BSTR pRetVal);
+				// line 918: [id(0x00000005), propput]HRESULT GameName([in] BSTR pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
@@ -193,7 +194,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000006: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 917: [id(0x00000006), propget]HRESULT ROMName([out, retval] BSTR* pRetVal);
+				// line 920: [id(0x00000006), propget]HRESULT ROMName([out, retval] BSTR* pRetVal);
 				V_VT(&res) = VT_BSTR;
 				hres = get_ROMName(&V_BSTR(&res));
 			}
@@ -201,12 +202,12 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000007: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 919: [id(0x00000007), propget]HRESULT B2SName([out, retval] BSTR* pRetVal);
+				// line 922: [id(0x00000007), propget]HRESULT B2SName([out, retval] BSTR* pRetVal);
 				V_VT(&res) = VT_BSTR;
 				hres = get_B2SName(&V_BSTR(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 921: [id(0x00000007), propput]HRESULT B2SName([in] BSTR pRetVal);
+				// line 924: [id(0x00000007), propput]HRESULT B2SName([in] BSTR pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
@@ -217,12 +218,12 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000008: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 923: [id(0x00000008), propget]HRESULT TableName([out, retval] BSTR* pRetVal);
+				// line 926: [id(0x00000008), propget]HRESULT TableName([out, retval] BSTR* pRetVal);
 				V_VT(&res) = VT_BSTR;
 				hres = get_TableName(&V_BSTR(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 925: [id(0x00000008), propput]HRESULT TableName([in] BSTR pRetVal);
+				// line 928: [id(0x00000008), propput]HRESULT TableName([in] BSTR pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
@@ -233,7 +234,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000009: {
 			if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 927: [id(0x00000009), propput]HRESULT WorkingDir([in] BSTR rhs);
+				// line 930: [id(0x00000009), propput]HRESULT WorkingDir([in] BSTR rhs);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
@@ -244,7 +245,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000000a: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 929: [id(0x0000000a)]HRESULT SetPath([in] BSTR path);
+				// line 932: [id(0x0000000a)]HRESULT SetPath([in] BSTR path);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
@@ -255,7 +256,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000000b: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 931: [id(0x0000000b), propget]HRESULT Games([in] BSTR GameName,[out, retval] VARIANT* pRetVal);
+				// line 934: [id(0x0000000b), propget]HRESULT Games([in] BSTR GameName,[out, retval] VARIANT* pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
@@ -266,14 +267,14 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000000c: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 935: [id(0x0000000c), propget]HRESULT Settings([out, retval] VARIANT* pRetVal);
+				// line 938: [id(0x0000000c), propget]HRESULT Settings([out, retval] VARIANT* pRetVal);
 				hres = get_Settings(&res);
 			}
 			break;
 		}
 		case 0x0000000d: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 937: [id(0x0000000d), propget]HRESULT Running([out, retval] VARIANT_BOOL* pRetVal);
+				// line 940: [id(0x0000000d), propget]HRESULT Running([out, retval] VARIANT_BOOL* pRetVal);
 				V_VT(&res) = VT_BOOL;
 				hres = get_Running(&V_BOOL(&res));
 			}
@@ -281,7 +282,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000000e: {
 			if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 939: [id(0x0000000e), propput]HRESULT TimeFence([in] double rhs);
+				// line 942: [id(0x0000000e), propput]HRESULT TimeFence([in] double rhs);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_R8);
@@ -292,12 +293,12 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000000f: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 941: [id(0x0000000f), propget]HRESULT Pause([out, retval] VARIANT_BOOL* pRetVal);
+				// line 944: [id(0x0000000f), propget]HRESULT Pause([out, retval] VARIANT_BOOL* pRetVal);
 				V_VT(&res) = VT_BOOL;
 				hres = get_Pause(&V_BOOL(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 943: [id(0x0000000f), propput]HRESULT Pause([in] VARIANT_BOOL pRetVal);
+				// line 946: [id(0x0000000f), propput]HRESULT Pause([in] VARIANT_BOOL pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BOOL);
@@ -308,7 +309,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000010: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 945: [id(0x00000010), propget]HRESULT Version([out, retval] BSTR* pRetVal);
+				// line 948: [id(0x00000010), propget]HRESULT Version([out, retval] BSTR* pRetVal);
 				V_VT(&res) = VT_BSTR;
 				hres = get_Version(&V_BSTR(&res));
 			}
@@ -316,7 +317,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000011: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 947: [id(0x00000011), propget]HRESULT VPMBuildVersion([out, retval] BSTR* pRetVal);
+				// line 950: [id(0x00000011), propget]HRESULT VPMBuildVersion([out, retval] BSTR* pRetVal);
 				V_VT(&res) = VT_BSTR;
 				hres = get_VPMBuildVersion(&V_BSTR(&res));
 			}
@@ -324,7 +325,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000012: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 949: [id(0x00000012)]HRESULT Run([in, optional] VARIANT handle);
+				// line 952: [id(0x00000012)]HRESULT Run([in, optional] VARIANT handle);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, (index > 0) ? &pDispParams->rgvarg[--index] : &var0);
@@ -335,19 +336,19 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000013: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 951: [id(0x00000013)]HRESULT Stop();
+				// line 954: [id(0x00000013)]HRESULT Stop();
 				hres = Stop();
 			}
 			break;
 		}
 		case 0x00000014: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 953: [id(0x00000014), propget]HRESULT LaunchBackglass([out, retval] VARIANT_BOOL* pRetVal);
+				// line 956: [id(0x00000014), propget]HRESULT LaunchBackglass([out, retval] VARIANT_BOOL* pRetVal);
 				V_VT(&res) = VT_BOOL;
 				hres = get_LaunchBackglass(&V_BOOL(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 955: [id(0x00000014), propput]HRESULT LaunchBackglass([in] VARIANT_BOOL pRetVal);
+				// line 958: [id(0x00000014), propput]HRESULT LaunchBackglass([in] VARIANT_BOOL pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BOOL);
@@ -358,12 +359,12 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000015: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 957: [id(0x00000015), propget]HRESULT SplashInfoLine([out, retval] BSTR* pRetVal);
+				// line 960: [id(0x00000015), propget]HRESULT SplashInfoLine([out, retval] BSTR* pRetVal);
 				V_VT(&res) = VT_BSTR;
 				hres = get_SplashInfoLine(&V_BSTR(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 959: [id(0x00000015), propput]HRESULT SplashInfoLine([in] BSTR pRetVal);
+				// line 962: [id(0x00000015), propput]HRESULT SplashInfoLine([in] BSTR pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
@@ -374,12 +375,12 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000016: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 961: [id(0x00000016), propget]HRESULT ShowFrame([out, retval] VARIANT_BOOL* pRetVal);
+				// line 964: [id(0x00000016), propget]HRESULT ShowFrame([out, retval] VARIANT_BOOL* pRetVal);
 				V_VT(&res) = VT_BOOL;
 				hres = get_ShowFrame(&V_BOOL(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 963: [id(0x00000016), propput]HRESULT ShowFrame([in] VARIANT_BOOL pRetVal);
+				// line 966: [id(0x00000016), propput]HRESULT ShowFrame([in] VARIANT_BOOL pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BOOL);
@@ -390,12 +391,12 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000017: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 965: [id(0x00000017), propget]HRESULT ShowTitle([out, retval] VARIANT_BOOL* pRetVal);
+				// line 968: [id(0x00000017), propget]HRESULT ShowTitle([out, retval] VARIANT_BOOL* pRetVal);
 				V_VT(&res) = VT_BOOL;
 				hres = get_ShowTitle(&V_BOOL(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 967: [id(0x00000017), propput]HRESULT ShowTitle([in] VARIANT_BOOL pRetVal);
+				// line 970: [id(0x00000017), propput]HRESULT ShowTitle([in] VARIANT_BOOL pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BOOL);
@@ -406,12 +407,12 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000018: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 969: [id(0x00000018), propget]HRESULT ShowDMDOnly([out, retval] VARIANT_BOOL* pRetVal);
+				// line 972: [id(0x00000018), propget]HRESULT ShowDMDOnly([out, retval] VARIANT_BOOL* pRetVal);
 				V_VT(&res) = VT_BOOL;
 				hres = get_ShowDMDOnly(&V_BOOL(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 971: [id(0x00000018), propput]HRESULT ShowDMDOnly([in] VARIANT_BOOL pRetVal);
+				// line 974: [id(0x00000018), propput]HRESULT ShowDMDOnly([in] VARIANT_BOOL pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BOOL);
@@ -422,12 +423,12 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000019: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 973: [id(0x00000019), propget]HRESULT ShowPinDMD([out, retval] VARIANT_BOOL* pRetVal);
+				// line 976: [id(0x00000019), propget]HRESULT ShowPinDMD([out, retval] VARIANT_BOOL* pRetVal);
 				V_VT(&res) = VT_BOOL;
 				hres = get_ShowPinDMD(&V_BOOL(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 975: [id(0x00000019), propput]HRESULT ShowPinDMD([in] VARIANT_BOOL pRetVal);
+				// line 978: [id(0x00000019), propput]HRESULT ShowPinDMD([in] VARIANT_BOOL pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BOOL);
@@ -438,12 +439,12 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000001a: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 977: [id(0x0000001a), propget]HRESULT LockDisplay([out, retval] VARIANT_BOOL* pRetVal);
+				// line 980: [id(0x0000001a), propget]HRESULT LockDisplay([out, retval] VARIANT_BOOL* pRetVal);
 				V_VT(&res) = VT_BOOL;
 				hres = get_LockDisplay(&V_BOOL(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 979: [id(0x0000001a), propput]HRESULT LockDisplay([in] VARIANT_BOOL pRetVal);
+				// line 982: [id(0x0000001a), propput]HRESULT LockDisplay([in] VARIANT_BOOL pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BOOL);
@@ -454,12 +455,12 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000001b: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 981: [id(0x0000001b), propget]HRESULT DoubleSize([out, retval] VARIANT_BOOL* pRetVal);
+				// line 984: [id(0x0000001b), propget]HRESULT DoubleSize([out, retval] VARIANT_BOOL* pRetVal);
 				V_VT(&res) = VT_BOOL;
 				hres = get_DoubleSize(&V_BOOL(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 983: [id(0x0000001b), propput]HRESULT DoubleSize([in] VARIANT_BOOL pRetVal);
+				// line 986: [id(0x0000001b), propput]HRESULT DoubleSize([in] VARIANT_BOOL pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BOOL);
@@ -470,12 +471,12 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000001c: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 985: [id(0x0000001c), propget]HRESULT Hidden([out, retval] VARIANT_BOOL* pRetVal);
+				// line 988: [id(0x0000001c), propget]HRESULT Hidden([out, retval] VARIANT_BOOL* pRetVal);
 				V_VT(&res) = VT_BOOL;
 				hres = get_Hidden(&V_BOOL(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 987: [id(0x0000001c), propput]HRESULT Hidden([in] VARIANT_BOOL pRetVal);
+				// line 990: [id(0x0000001c), propput]HRESULT Hidden([in] VARIANT_BOOL pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BOOL);
@@ -486,7 +487,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000001d: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 989: [id(0x0000001d)]HRESULT SetDisplayPosition([in] VARIANT x,[in] VARIANT y,[in, optional] VARIANT handle);
+				// line 992: [id(0x0000001d)]HRESULT SetDisplayPosition([in] VARIANT x,[in] VARIANT y,[in, optional] VARIANT handle);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -505,7 +506,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000001e: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 994: [id(0x0000001e)]HRESULT ShowOptsDialog([in] VARIANT handle);
+				// line 997: [id(0x0000001e)]HRESULT ShowOptsDialog([in] VARIANT handle);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -516,7 +517,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000001f: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 996: [id(0x0000001f)]HRESULT ShowPathesDialog([in] VARIANT handle);
+				// line 999: [id(0x0000001f)]HRESULT ShowPathesDialog([in] VARIANT handle);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -527,7 +528,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000020: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 998: [id(0x00000020)]HRESULT ShowAboutDialog([in] VARIANT handle);
+				// line 1001: [id(0x00000020)]HRESULT ShowAboutDialog([in] VARIANT handle);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -538,7 +539,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000021: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1000: [id(0x00000021)]HRESULT CheckROMS([in] VARIANT showoptions,[in] VARIANT handle);
+				// line 1003: [id(0x00000021)]HRESULT CheckROMS([in] VARIANT showoptions,[in] VARIANT handle);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -553,12 +554,12 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000022: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 1004: [id(0x00000022), propget]HRESULT PuPHide([out, retval] VARIANT_BOOL* pRetVal);
+				// line 1007: [id(0x00000022), propget]HRESULT PuPHide([out, retval] VARIANT_BOOL* pRetVal);
 				V_VT(&res) = VT_BOOL;
 				hres = get_PuPHide(&V_BOOL(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 1006: [id(0x00000022), propput]HRESULT PuPHide([in] VARIANT_BOOL pRetVal);
+				// line 1009: [id(0x00000022), propput]HRESULT PuPHide([in] VARIANT_BOOL pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BOOL);
@@ -569,12 +570,12 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000023: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 1008: [id(0x00000023), propget]HRESULT HandleKeyboard([out, retval] VARIANT_BOOL* pRetVal);
+				// line 1011: [id(0x00000023), propget]HRESULT HandleKeyboard([out, retval] VARIANT_BOOL* pRetVal);
 				V_VT(&res) = VT_BOOL;
 				hres = get_HandleKeyboard(&V_BOOL(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 1010: [id(0x00000023), propput]HRESULT HandleKeyboard([in] VARIANT_BOOL pRetVal);
+				// line 1013: [id(0x00000023), propput]HRESULT HandleKeyboard([in] VARIANT_BOOL pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BOOL);
@@ -585,12 +586,12 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000024: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 1012: [id(0x00000024), propget]HRESULT HandleMechanics([out, retval] short* pRetVal);
+				// line 1015: [id(0x00000024), propget]HRESULT HandleMechanics([out, retval] short* pRetVal);
 				V_VT(&res) = VT_I2;
 				hres = get_HandleMechanics((short*)&V_I2(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 1014: [id(0x00000024), propput]HRESULT HandleMechanics([in] short pRetVal);
+				// line 1017: [id(0x00000024), propput]HRESULT HandleMechanics([in] short pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_I2);
@@ -601,28 +602,28 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000025: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 1016: [id(0x00000025), propget]HRESULT ChangedLamps([out, retval] VARIANT* pRetVal);
+				// line 1019: [id(0x00000025), propget]HRESULT ChangedLamps([out, retval] VARIANT* pRetVal);
 				hres = get_ChangedLamps(&res);
 			}
 			break;
 		}
 		case 0x00000026: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 1018: [id(0x00000026), propget]HRESULT ChangedSolenoids([out, retval] VARIANT* pRetVal);
+				// line 1021: [id(0x00000026), propget]HRESULT ChangedSolenoids([out, retval] VARIANT* pRetVal);
 				hres = get_ChangedSolenoids(&res);
 			}
 			break;
 		}
 		case 0x00000027: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 1020: [id(0x00000027), propget]HRESULT ChangedGIStrings([out, retval] VARIANT* pRetVal);
+				// line 1023: [id(0x00000027), propget]HRESULT ChangedGIStrings([out, retval] VARIANT* pRetVal);
 				hres = get_ChangedGIStrings(&res);
 			}
 			break;
 		}
 		case 0x00000028: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 1022: [id(0x00000028), propget]HRESULT ChangedLEDs([in] VARIANT mask2,[in] VARIANT mask1,[in, optional] VARIANT mask3,[in, optional] VARIANT mask4,[out, retval] VARIANT* pRetVal);
+				// line 1025: [id(0x00000028), propget]HRESULT ChangedLEDs([in] VARIANT mask2,[in] VARIANT mask1,[in, optional] VARIANT mask3,[in, optional] VARIANT mask4,[out, retval] VARIANT* pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -645,14 +646,14 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000029: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 1029: [id(0x00000029), propget]HRESULT NewSoundCommands([out, retval] VARIANT* pRetVal);
+				// line 1032: [id(0x00000029), propget]HRESULT NewSoundCommands([out, retval] VARIANT* pRetVal);
 				hres = get_NewSoundCommands(&res);
 			}
 			break;
 		}
 		case 0x0000002a: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 1031: [id(0x0000002a), propget]HRESULT Lamp([in] VARIANT number,[out, retval] VARIANT_BOOL* pRetVal);
+				// line 1034: [id(0x0000002a), propget]HRESULT Lamp([in] VARIANT number,[out, retval] VARIANT_BOOL* pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -664,7 +665,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000002b: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 1035: [id(0x0000002b), propget]HRESULT Solenoid([in] VARIANT number,[out, retval] VARIANT_BOOL* pRetVal);
+				// line 1038: [id(0x0000002b), propget]HRESULT Solenoid([in] VARIANT number,[out, retval] VARIANT_BOOL* pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -676,7 +677,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000002c: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 1039: [id(0x0000002c), propget]HRESULT GIString([in] VARIANT number,[out, retval] VARIANT_BOOL* pRetVal);
+				// line 1042: [id(0x0000002c), propget]HRESULT GIString([in] VARIANT number,[out, retval] VARIANT_BOOL* pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -688,7 +689,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000002d: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 1043: [id(0x0000002d), propget]HRESULT Switch([in] VARIANT number,[out, retval] VARIANT_BOOL* pRetVal);
+				// line 1046: [id(0x0000002d), propget]HRESULT Switch([in] VARIANT number,[out, retval] VARIANT_BOOL* pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -697,7 +698,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 				VariantClear(&var0);
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 1047: [id(0x0000002d), propput]HRESULT Switch([in] VARIANT number,[in] VARIANT_BOOL pRetVal);
+				// line 1050: [id(0x0000002d), propput]HRESULT Switch([in] VARIANT number,[in] VARIANT_BOOL pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -712,7 +713,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000002e: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 1051: [id(0x0000002e), propget]HRESULT Mech([in] VARIANT number,[out, retval] long* pRetVal);
+				// line 1054: [id(0x0000002e), propget]HRESULT Mech([in] VARIANT number,[out, retval] long* pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -721,7 +722,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 				VariantClear(&var0);
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 1055: [id(0x0000002e), propput]HRESULT Mech([in] VARIANT number,[in] long pRetVal);
+				// line 1058: [id(0x0000002e), propput]HRESULT Mech([in] VARIANT number,[in] long pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -736,7 +737,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000002f: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 1059: [id(0x0000002f), propget]HRESULT GetMech([in] VARIANT number,[out, retval] VARIANT* pRetVal);
+				// line 1062: [id(0x0000002f), propget]HRESULT GetMech([in] VARIANT number,[out, retval] VARIANT* pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -747,7 +748,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000030: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 1063: [id(0x00000030), propget]HRESULT Dip([in] VARIANT number,[out, retval] long* pRetVal);
+				// line 1066: [id(0x00000030), propget]HRESULT Dip([in] VARIANT number,[out, retval] long* pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -756,7 +757,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 				VariantClear(&var0);
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 1067: [id(0x00000030), propput]HRESULT Dip([in] VARIANT number,[in] long pRetVal);
+				// line 1070: [id(0x00000030), propput]HRESULT Dip([in] VARIANT number,[in] long pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -771,7 +772,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000031: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 1071: [id(0x00000031), propget]HRESULT SolMask([in] VARIANT number,[out, retval] long* pRetVal);
+				// line 1074: [id(0x00000031), propget]HRESULT SolMask([in] VARIANT number,[out, retval] long* pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -780,7 +781,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 				VariantClear(&var0);
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 1075: [id(0x00000031), propput]HRESULT SolMask([in] VARIANT number,[in] long pRetVal);
+				// line 1078: [id(0x00000031), propput]HRESULT SolMask([in] VARIANT number,[in] long pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -795,7 +796,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000032: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 1079: [id(0x00000032), propget]HRESULT RawDmdWidth([out, retval] long* pRetVal);
+				// line 1082: [id(0x00000032), propget]HRESULT RawDmdWidth([out, retval] long* pRetVal);
 				V_VT(&res) = VT_I4;
 				hres = get_RawDmdWidth((LONG*)&V_I4(&res));
 			}
@@ -803,7 +804,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000033: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 1081: [id(0x00000033), propget]HRESULT RawDmdHeight([out, retval] long* pRetVal);
+				// line 1084: [id(0x00000033), propget]HRESULT RawDmdHeight([out, retval] long* pRetVal);
 				V_VT(&res) = VT_I4;
 				hres = get_RawDmdHeight((LONG*)&V_I4(&res));
 			}
@@ -811,40 +812,40 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000034: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 1083: [id(0x00000034), propget]HRESULT RawDmdPixels([out, retval] VARIANT* pRetVal);
+				// line 1086: [id(0x00000034), propget]HRESULT RawDmdPixels([out, retval] VARIANT* pRetVal);
 				hres = get_RawDmdPixels(&res);
 			}
 			break;
 		}
 		case 0x00000035: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 1085: [id(0x00000035), propget]HRESULT RawDmdColoredPixels([out, retval] VARIANT* pRetVal);
+				// line 1088: [id(0x00000035), propget]HRESULT RawDmdColoredPixels([out, retval] VARIANT* pRetVal);
 				hres = get_RawDmdColoredPixels(&res);
 			}
 			break;
 		}
 		case 0x00000036: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 1087: [id(0x00000036), propget]HRESULT ChangedNVRAM([out, retval] VARIANT* pRetVal);
+				// line 1090: [id(0x00000036), propget]HRESULT ChangedNVRAM([out, retval] VARIANT* pRetVal);
 				hres = get_ChangedNVRAM(&res);
 			}
 			break;
 		}
 		case 0x00000037: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 1089: [id(0x00000037), propget]HRESULT NVRAM([out, retval] VARIANT* pRetVal);
+				// line 1092: [id(0x00000037), propget]HRESULT NVRAM([out, retval] VARIANT* pRetVal);
 				hres = get_NVRAM(&res);
 			}
 			break;
 		}
 		case 0x00000038: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 1091: [id(0x00000038), propget]HRESULT SoundMode([out, retval] long* pRetVal);
+				// line 1094: [id(0x00000038), propget]HRESULT SoundMode([out, retval] long* pRetVal);
 				V_VT(&res) = VT_I4;
 				hres = get_SoundMode((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 1093: [id(0x00000038), propput]HRESULT SoundMode([in] long pRetVal);
+				// line 1096: [id(0x00000038), propput]HRESULT SoundMode([in] long pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_I4);
@@ -855,7 +856,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000039: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1095: [id(0x00000039)]HRESULT B2SSetData([in] VARIANT idORname,[in] VARIANT value);
+				// line 1098: [id(0x00000039)]HRESULT B2SSetData([in] VARIANT idORname,[in] VARIANT value);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -870,7 +871,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000003a: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1099: [id(0x0000003a)]HRESULT B2SPulseData([in] VARIANT idORname);
+				// line 1102: [id(0x0000003a)]HRESULT B2SPulseData([in] VARIANT idORname);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -881,7 +882,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000003b: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1101: [id(0x0000003b)]HRESULT B2SSetPos([in] VARIANT idORname,[in] VARIANT xpos,[in] VARIANT ypos);
+				// line 1104: [id(0x0000003b)]HRESULT B2SSetPos([in] VARIANT idORname,[in] VARIANT xpos,[in] VARIANT ypos);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -900,7 +901,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000003c: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1106: [id(0x0000003c)]HRESULT B2SSetIllumination([in] VARIANT name,[in] VARIANT value);
+				// line 1109: [id(0x0000003c)]HRESULT B2SSetIllumination([in] VARIANT name,[in] VARIANT value);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -915,7 +916,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000003d: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1110: [id(0x0000003d)]HRESULT B2SSetLED([in] VARIANT digit,[in] VARIANT valueORtext);
+				// line 1113: [id(0x0000003d)]HRESULT B2SSetLED([in] VARIANT digit,[in] VARIANT valueORtext);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -930,7 +931,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000003e: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1114: [id(0x0000003e)]HRESULT B2SSetLEDDisplay([in] VARIANT display,[in] VARIANT text);
+				// line 1117: [id(0x0000003e)]HRESULT B2SSetLEDDisplay([in] VARIANT display,[in] VARIANT text);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -945,7 +946,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000003f: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1118: [id(0x0000003f)]HRESULT B2SSetReel([in] VARIANT digit,[in] VARIANT value);
+				// line 1121: [id(0x0000003f)]HRESULT B2SSetReel([in] VARIANT digit,[in] VARIANT value);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -960,7 +961,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000040: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1122: [id(0x00000040)]HRESULT B2SSetScore([in] VARIANT display,[in] VARIANT value);
+				// line 1125: [id(0x00000040)]HRESULT B2SSetScore([in] VARIANT display,[in] VARIANT value);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -975,7 +976,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000041: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1126: [id(0x00000041)]HRESULT B2SSetScorePlayer([in] VARIANT playerno,[in] VARIANT score);
+				// line 1129: [id(0x00000041)]HRESULT B2SSetScorePlayer([in] VARIANT playerno,[in] VARIANT score);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -990,7 +991,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000042: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1130: [id(0x00000042)]HRESULT B2SSetScorePlayer1([in] VARIANT score);
+				// line 1133: [id(0x00000042)]HRESULT B2SSetScorePlayer1([in] VARIANT score);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -1001,7 +1002,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000043: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1132: [id(0x00000043)]HRESULT B2SSetScorePlayer2([in] VARIANT score);
+				// line 1135: [id(0x00000043)]HRESULT B2SSetScorePlayer2([in] VARIANT score);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -1012,7 +1013,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000044: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1134: [id(0x00000044)]HRESULT B2SSetScorePlayer3([in] VARIANT score);
+				// line 1137: [id(0x00000044)]HRESULT B2SSetScorePlayer3([in] VARIANT score);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -1023,7 +1024,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000045: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1136: [id(0x00000045)]HRESULT B2SSetScorePlayer4([in] VARIANT score);
+				// line 1139: [id(0x00000045)]HRESULT B2SSetScorePlayer4([in] VARIANT score);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -1034,7 +1035,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000046: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1138: [id(0x00000046)]HRESULT B2SSetScorePlayer5([in] VARIANT score);
+				// line 1141: [id(0x00000046)]HRESULT B2SSetScorePlayer5([in] VARIANT score);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -1045,7 +1046,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000047: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1140: [id(0x00000047)]HRESULT B2SSetScorePlayer6([in] VARIANT score);
+				// line 1143: [id(0x00000047)]HRESULT B2SSetScorePlayer6([in] VARIANT score);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -1056,7 +1057,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000048: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1142: [id(0x00000048)]HRESULT B2SSetScoreDigit([in] VARIANT digit,[in] VARIANT value);
+				// line 1145: [id(0x00000048)]HRESULT B2SSetScoreDigit([in] VARIANT digit,[in] VARIANT value);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -1071,7 +1072,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000049: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1146: [id(0x00000049)]HRESULT B2SSetScoreRollover([in] VARIANT id,[in] VARIANT value);
+				// line 1149: [id(0x00000049)]HRESULT B2SSetScoreRollover([in] VARIANT id,[in] VARIANT value);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -1086,7 +1087,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000004a: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1150: [id(0x0000004a)]HRESULT B2SSetScoreRolloverPlayer1([in] VARIANT value);
+				// line 1153: [id(0x0000004a)]HRESULT B2SSetScoreRolloverPlayer1([in] VARIANT value);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -1097,7 +1098,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000004b: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1152: [id(0x0000004b)]HRESULT B2SSetScoreRolloverPlayer2([in] VARIANT value);
+				// line 1155: [id(0x0000004b)]HRESULT B2SSetScoreRolloverPlayer2([in] VARIANT value);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -1108,7 +1109,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000004c: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1154: [id(0x0000004c)]HRESULT B2SSetScoreRolloverPlayer3([in] VARIANT value);
+				// line 1157: [id(0x0000004c)]HRESULT B2SSetScoreRolloverPlayer3([in] VARIANT value);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -1119,7 +1120,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000004d: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1156: [id(0x0000004d)]HRESULT B2SSetScoreRolloverPlayer4([in] VARIANT value);
+				// line 1159: [id(0x0000004d)]HRESULT B2SSetScoreRolloverPlayer4([in] VARIANT value);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -1130,7 +1131,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000004e: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1158: [id(0x0000004e)]HRESULT B2SSetCredits([in] VARIANT digitORvalue,[in, optional] VARIANT value);
+				// line 1161: [id(0x0000004e)]HRESULT B2SSetCredits([in] VARIANT digitORvalue,[in, optional] VARIANT value);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -1145,7 +1146,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000004f: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1162: [id(0x0000004f)]HRESULT B2SSetPlayerUp([in] VARIANT idORvalue,[in, optional] VARIANT value);
+				// line 1165: [id(0x0000004f)]HRESULT B2SSetPlayerUp([in] VARIANT idORvalue,[in, optional] VARIANT value);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -1160,7 +1161,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000050: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1166: [id(0x00000050)]HRESULT B2SSetCanPlay([in] VARIANT idORvalue,[in, optional] VARIANT value);
+				// line 1169: [id(0x00000050)]HRESULT B2SSetCanPlay([in] VARIANT idORvalue,[in, optional] VARIANT value);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -1175,7 +1176,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000051: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1170: [id(0x00000051)]HRESULT B2SSetBallInPlay([in] VARIANT idORvalue,[in, optional] VARIANT value);
+				// line 1173: [id(0x00000051)]HRESULT B2SSetBallInPlay([in] VARIANT idORvalue,[in, optional] VARIANT value);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -1190,7 +1191,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000052: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1174: [id(0x00000052)]HRESULT B2SSetTilt([in] VARIANT idORvalue,[in, optional] VARIANT value);
+				// line 1177: [id(0x00000052)]HRESULT B2SSetTilt([in] VARIANT idORvalue,[in, optional] VARIANT value);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -1205,7 +1206,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000053: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1178: [id(0x00000053)]HRESULT B2SSetMatch([in] VARIANT idORvalue,[in, optional] VARIANT value);
+				// line 1181: [id(0x00000053)]HRESULT B2SSetMatch([in] VARIANT idORvalue,[in, optional] VARIANT value);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -1220,7 +1221,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000054: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1182: [id(0x00000054)]HRESULT B2SSetGameOver([in] VARIANT idORvalue,[in, optional] VARIANT value);
+				// line 1185: [id(0x00000054)]HRESULT B2SSetGameOver([in] VARIANT idORvalue,[in, optional] VARIANT value);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -1235,7 +1236,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000055: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1186: [id(0x00000055)]HRESULT B2SSetShootAgain([in] VARIANT idORvalue,[in, optional] VARIANT value);
+				// line 1189: [id(0x00000055)]HRESULT B2SSetShootAgain([in] VARIANT idORvalue,[in, optional] VARIANT value);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -1250,7 +1251,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000056: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1190: [id(0x00000056)]HRESULT B2SStartAnimation([in] BSTR animationname,[in, optional] VARIANT_BOOL playreverse);
+				// line 1193: [id(0x00000056)]HRESULT B2SStartAnimation([in] BSTR animationname,[in, optional] VARIANT_BOOL playreverse);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
@@ -1265,7 +1266,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000057: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1194: [id(0x00000057)]HRESULT B2SStartAnimationReverse([in] BSTR animationname);
+				// line 1197: [id(0x00000057)]HRESULT B2SStartAnimationReverse([in] BSTR animationname);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
@@ -1276,7 +1277,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000058: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1196: [id(0x00000058)]HRESULT B2SStopAnimation([in] BSTR animationname);
+				// line 1199: [id(0x00000058)]HRESULT B2SStopAnimation([in] BSTR animationname);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
@@ -1287,14 +1288,14 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000059: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1198: [id(0x00000059)]HRESULT B2SStopAllAnimations();
+				// line 1201: [id(0x00000059)]HRESULT B2SStopAllAnimations();
 				hres = B2SStopAllAnimations();
 			}
 			break;
 		}
 		case 0x0000005a: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1200: [id(0x0000005a)]HRESULT B2SIsAnimationRunning([in] BSTR animationname,[out, retval] VARIANT_BOOL* pRetVal);
+				// line 1203: [id(0x0000005a)]HRESULT B2SIsAnimationRunning([in] BSTR animationname,[out, retval] VARIANT_BOOL* pRetVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
@@ -1306,7 +1307,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000005b: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1204: [id(0x0000005b)]HRESULT StartAnimation([in] BSTR animationname,[in, optional] VARIANT_BOOL playreverse);
+				// line 1207: [id(0x0000005b)]HRESULT StartAnimation([in] BSTR animationname,[in, optional] VARIANT_BOOL playreverse);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
@@ -1321,7 +1322,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000005c: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1208: [id(0x0000005c)]HRESULT StopAnimation([in] BSTR animationname);
+				// line 1211: [id(0x0000005c)]HRESULT StopAnimation([in] BSTR animationname);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
@@ -1332,35 +1333,35 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x0000005d: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1210: [id(0x0000005d)]HRESULT B2SStartRotation();
+				// line 1213: [id(0x0000005d)]HRESULT B2SStartRotation();
 				hres = B2SStartRotation();
 			}
 			break;
 		}
 		case 0x0000005e: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1212: [id(0x0000005e)]HRESULT B2SStopRotation();
+				// line 1215: [id(0x0000005e)]HRESULT B2SStopRotation();
 				hres = B2SStopRotation();
 			}
 			break;
 		}
 		case 0x0000005f: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1214: [id(0x0000005f)]HRESULT B2SShowScoreDisplays();
+				// line 1217: [id(0x0000005f)]HRESULT B2SShowScoreDisplays();
 				hres = B2SShowScoreDisplays();
 			}
 			break;
 		}
 		case 0x00000060: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1216: [id(0x00000060)]HRESULT B2SHideScoreDisplays();
+				// line 1219: [id(0x00000060)]HRESULT B2SHideScoreDisplays();
 				hres = B2SHideScoreDisplays();
 			}
 			break;
 		}
 		case 0x00000061: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1218: [id(0x00000061)]HRESULT B2SStartSound([in] BSTR soundname);
+				// line 1221: [id(0x00000061)]HRESULT B2SStartSound([in] BSTR soundname);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
@@ -1371,7 +1372,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000062: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1220: [id(0x00000062)]HRESULT B2SPlaySound([in] BSTR soundname);
+				// line 1223: [id(0x00000062)]HRESULT B2SPlaySound([in] BSTR soundname);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
@@ -1382,7 +1383,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000063: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1222: [id(0x00000063)]HRESULT B2SStopSound([in] BSTR soundname);
+				// line 1225: [id(0x00000063)]HRESULT B2SStopSound([in] BSTR soundname);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
@@ -1393,7 +1394,7 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		}
 		case 0x00000064: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 1224: [id(0x00000064)]HRESULT B2SMapSound([in] VARIANT digit,[in] BSTR soundname);
+				// line 1227: [id(0x00000064)]HRESULT B2SMapSound([in] VARIANT digit,[in] BSTR soundname);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -1420,3 +1421,4 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 	}
 	return hres;
 }
+
