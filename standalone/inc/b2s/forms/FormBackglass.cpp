@@ -15,7 +15,6 @@
 #include "../controls/B2SReelBox.h"
 #include "../classes/ControlInfo.h"
 #include "../dream7/Dream7Display.h"
-#include "../../common/WindowManager.h"
 
 #include <SDL3_image/SDL_image.h>
 #include "tinyxml2/tinyxml2.h"
@@ -94,13 +93,7 @@ FormBackglass::FormBackglass(B2SData* pB2SData) : Form(pB2SData)
       return;
    }
 
-   m_pWindow = new FormWindow(this, "B2SBackglass"s,
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassX"s, B2S_SETTINGS_BACKGLASSX),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassY"s, B2S_SETTINGS_BACKGLASSY),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassWidth"s, B2S_SETTINGS_BACKGLASSWIDTH),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassHeight"s, B2S_SETTINGS_BACKGLASSHEIGHT),
-      B2S_BACKGLASS_ZORDER,
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassRotation"s, 0));
+   SetWindow(new FormWindow("B2SBackglass"s, this, VPXAnciliaryWindow::VPXWINDOW_Backglass));
 }
 
 FormBackglass::~FormBackglass()

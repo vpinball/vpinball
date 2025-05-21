@@ -5,16 +5,9 @@
 
 #include "mINI/ini.h"
 
-#include "../common/WindowManager.h"
 #include "audio/pinsound.h"
 
 #include <filesystem>
-
-#define PINMAME_SETTINGS_WINDOW_X      15
-#define PINMAME_SETTINGS_WINDOW_Y      30 + 218 + 5 + 75 + 5
-#define PINMAME_SETTINGS_WINDOW_WIDTH  290
-#define PINMAME_SETTINGS_WINDOW_HEIGHT 75
-#define PINMAME_ZORDER                 350
 
 void PINMAMECALLBACK VPinMAMEController::GetGameCallback(PinmameGame* pPinmameGame, void* const pUserData)
 {
@@ -222,20 +215,7 @@ VPinMAMEController::VPinMAMEController()
 
    m_pActiveDisplay = nullptr;
 
-   m_pDMDWindow = nullptr;
-
-   if (pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEWindow"s, true)) {
-      m_pDMDWindow = new VP::DMDWindow("PinMAME",
-         pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEWindowX"s, PINMAME_SETTINGS_WINDOW_X),
-         pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEWindowY"s, PINMAME_SETTINGS_WINDOW_Y),
-         pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEWindowWidth"s, PINMAME_SETTINGS_WINDOW_WIDTH),
-         pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEWindowHeight"s, PINMAME_SETTINGS_WINDOW_HEIGHT),
-         PINMAME_ZORDER,
-         pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEWindowRotation"s, 0));
-   }
-   else {
-      PLOGI.printf("PinMAME window disabled");
-   }
+   m_pDMDWindow = new VP::DMDWindow("VPinMAMEController"s);
 
    m_pPinSound = nullptr;
 

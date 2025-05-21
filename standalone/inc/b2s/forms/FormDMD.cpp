@@ -4,8 +4,6 @@
 #include "FormWindow.h"
 #include "../controls/B2SPictureBox.h"
 
-#include "../../common/WindowManager.h"
-
 FormDMD::FormDMD(B2SData* pB2SData) : Form(pB2SData)
 {
    SetName("formDMD");
@@ -17,13 +15,7 @@ FormDMD::FormDMD(B2SData* pB2SData) : Form(pB2SData)
       return;
    }
 
-   m_pWindow = new FormWindow(this, "B2SDMD",
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDX"s, B2S_SETTINGS_DMDX),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDY"s, B2S_SETTINGS_DMDY),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDWidth"s, B2S_SETTINGS_DMDWIDTH),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDHeight"s, B2S_SETTINGS_DMDHEIGHT),
-      B2S_DMD_ZORDER,
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDRotation"s, 0));
+   SetWindow(new FormWindow("B2SDMD"s, this, VPXAnciliaryWindow::VPXWINDOW_ScoreView));
 }
 
 FormDMD::~FormDMD()

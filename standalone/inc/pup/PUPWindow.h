@@ -2,19 +2,34 @@
 
 #include "PUPManager.h"
 
-#include "../common/Window.h"
-
 class PUPScreen;
 
-class PUPWindow : public VP::Window
+class PUPWindow
 {
 public:
-   PUPWindow(PUPScreen* pScreen, const string& szTitle, int x, int y, int w, int h, int rotation, int z);
+   PUPWindow(const string& szTitle, PUPScreen* pScreen, VPXAnciliaryWindow anciliaryWindow);
    ~PUPWindow();
 
-   bool Init() override;
-   void Render() override;
+   int Render(VPXRenderContext2D* const renderCtx);
+
+   void Show();
+   void Hide();
 
 private:
-   PUPScreen* m_pScreen;
+   static void OnGetRenderer(const unsigned int eventId, void* context, void* msgData);
+   static int Render(VPXRenderContext2D* const renderCtx, void* context);
+
+   PUPScreen* m_pScreen = nullptr;
+   string m_szTitle;
+   string m_szDescription;
+   MsgPluginAPI* m_pMsgApi = nullptr;
+   VPXPluginAPI* m_pVpxApi = nullptr;
+   std::shared_ptr<MsgPlugin> m_plugin;
+   uint32_t m_endpointId;
+   unsigned int m_getAuxRendererId;
+   unsigned int m_onAuxRendererChgId;
+   SDL_Surface* m_pSurface = nullptr;
+   SDL_Renderer* m_pRenderer = nullptr;
+   VPXTexture m_vpxTexture = nullptr;
+   VPXAnciliaryWindow m_anciliaryWindow;
 };

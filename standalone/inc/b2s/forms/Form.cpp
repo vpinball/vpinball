@@ -6,10 +6,6 @@
 Form::Form(B2SData* pB2SData)
 {
    m_pB2SData = pB2SData;
-
-   m_topMost = false;
-   m_pWindow = nullptr;
-   m_pGraphics = nullptr;
 }
 
 Form::~Form()

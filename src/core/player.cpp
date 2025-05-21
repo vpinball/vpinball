@@ -2051,10 +2051,6 @@ void Player::FinishFrame()
       }
    }
 
-#ifdef __STANDALONE__
-   g_pStandalone->Render();
-#endif
-
    // Brute force stop: blast into space
    if (m_closing == CS_FORCE_STOP)
       exit(-9999); 

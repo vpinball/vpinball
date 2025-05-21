@@ -1,23 +1,36 @@
 #pragma once
 
-#include "../../common/Window.h"
 #include "../../common/RendererGraphics.h"
 
 #include "Form.h"
 
-class FormWindow : public VP::Window
+class FormWindow
 {
 public:
-   FormWindow(Form* pForm, const string& szTitle, int x, int y, int w, int h, int z, int rotation);
+   FormWindow(const string& szTitle, Form* pForm, VPXAnciliaryWindow anciliaryWindow);
    ~FormWindow();
 
-   bool Init() override;
-   void Render() override;
+   int Render(VPXRenderContext2D* const renderCtx);
+
+   void Show();
+   void Hide();
 
 private:
-   SDL_FRect m_destRect;
-   int m_angle;
-   Form* m_pForm;
-   VP::RendererGraphics* m_pGraphics;
-   SDL_Texture* m_pTexture;
+   static void OnGetRenderer(const unsigned int eventId, void* context, void* msgData);
+   static int Render(VPXRenderContext2D* const renderCtx, void* context);
+
+   string m_szTitle;
+   string m_szDescription;
+   Form* m_pForm = nullptr;
+   MsgPluginAPI* m_pMsgApi = nullptr;
+   VPXPluginAPI* m_pVpxApi = nullptr;
+   std::shared_ptr<MsgPlugin> m_plugin;
+   uint32_t m_endpointId;
+   unsigned int m_getAuxRendererId;
+   unsigned int m_onAuxRendererChgId;
+   SDL_Surface* m_pSurface = nullptr;
+   SDL_Renderer* m_pRenderer = nullptr;
+   VPXTexture m_vpxTexture = nullptr;
+   VPXAnciliaryWindow m_anciliaryWindow;
+   VP::RendererGraphics* m_pGraphics = nullptr;
 };

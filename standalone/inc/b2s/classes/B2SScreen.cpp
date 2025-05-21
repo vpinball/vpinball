@@ -75,24 +75,13 @@ void B2SScreen::Start(Form* pFormBackglass, Form* pFormDMD, SDL_Point defaultDMD
 
 void B2SScreen::ReadB2SSettingsFromFile()
 {
-   Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
-
-   m_backglassSize = { 0, 0,
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassWidth"s, B2S_SETTINGS_BACKGLASSWIDTH),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassHeight"s, B2S_SETTINGS_BACKGLASSHEIGHT) };
-
-   m_backglassLocation = { 
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassX"s, B2S_SETTINGS_BACKGLASSX),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassY"s, B2S_SETTINGS_BACKGLASSY) };
+   m_backglassSize = { 0, 0, g_pplayer->m_backglassOutput.GetWidth(), g_pplayer->m_backglassOutput.GetHeight() };
+   g_pplayer->m_backglassOutput.GetPos(m_backglassLocation.x, m_backglassLocation.y);
   
-   m_dmdSize = { 0, 0,
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDWidth"s, B2S_SETTINGS_DMDWIDTH),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDHeight"s, B2S_SETTINGS_DMDHEIGHT) };
+   m_dmdSize = { 0, 0, g_pplayer->m_scoreviewOutput.GetWidth(), g_pplayer->m_scoreviewOutput.GetHeight() };
+   g_pplayer->m_scoreviewOutput.GetPos(m_dmdSize.x, m_dmdSize.y);
 
-   m_dmdLocation = {
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDX"s, B2S_SETTINGS_DMDX),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDY"s, B2S_SETTINGS_DMDY) };
-
+   Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
    m_dmdFlipY = pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDFlipY"s, false);
 }
 
@@ -190,8 +179,7 @@ void B2SScreen::GetB2SSettings(SDL_Point defaultDMDLocation, eDMDViewMode dmdVie
 void B2SScreen::Show()
 {
    // first of all get the info whether the DMD is to be shown or not
-
-   m_dmdToBeShown = (m_pFormDMD && !SDL_RectEmpty(&m_dmdSize) && !(m_dmdLocation.x == 0 && m_dmdLocation.y == 0) &&
+   m_dmdToBeShown = (m_pFormDMD && !SDL_RectEmpty(&m_dmdSize) && /* FIXME !(m_dmdLocation.x == 0 && m_dmdLocation.y == 0) && */
         ((m_dmdViewMode == eDMDViewMode_ShowDMD) ||
          (m_dmdViewMode == eDMDViewMode_ShowDMDOnlyAtDefaultLocation && m_dmdAtDefaultLocation) ||
          (m_dmdViewMode == eDMDViewMode_DoNotShowDMDAtDefaultLocation && !m_dmdAtDefaultLocation)));

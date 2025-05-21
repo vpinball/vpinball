@@ -2,7 +2,6 @@
 
 #include "Standalone.h"
 
-#include "inc/common/WindowManager.h"
 #include "inc/b2s/plugin/PluginHost.h"
 #include "inc/dof/DOFPlugin.h"
 #include "inc/pup/PUPPlugin.h"
@@ -56,7 +55,6 @@ Standalone::Standalone()
    sigaction(SIGINT, &sigIntHandler, nullptr);
 
    m_pPUPManager = nullptr;
-   m_pWindowManager = nullptr;
 }
 
 Standalone::~Standalone()
@@ -68,7 +66,6 @@ void Standalone::PreStartup()
    PLOGI.printf("Performing pre-startup standalone actions");
 
    m_pPUPManager = new PUPManager();
-   m_pWindowManager = VP::WindowManager::GetInstance();
 
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
 
@@ -100,30 +97,11 @@ void Standalone::PostStartup()
    PLOGI.printf("Performing post-startup standalone actions");
 
    m_pPUPManager->Start();
-   m_pWindowManager->Start();
-}
-
-void Standalone::ProcessEvent(const SDL_Event* pEvent)
-{
-   m_pWindowManager->ProcessEvent(pEvent);
-}
-
-void Standalone::ProcessUpdates()
-{
-   m_pWindowManager->ProcessUpdates();
-}
-
-void Standalone::Render()
-{
-   if (m_pWindowManager->m_renderMode == VP::WindowManager::RenderMode::Default)
-      m_pWindowManager->Render();
 }
 
 void Standalone::Shutdown()
 {
    PLOGI.printf("Performing shutdown standalone actions");
-
-   m_pWindowManager->Stop();
 
    PluginHost::GetInstance()->UnregisterAllPlugins();
 

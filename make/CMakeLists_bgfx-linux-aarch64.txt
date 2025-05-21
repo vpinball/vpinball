@@ -618,10 +618,6 @@ add_executable(vpinball
    standalone/inc/pup/pup_i.c
    standalone/inc/pup/pup_i.h
 
-   standalone/inc/common/WindowManager.cpp
-   standalone/inc/common/WindowManager.h
-   standalone/inc/common/Window.cpp
-   standalone/inc/common/Window.h
    standalone/inc/common/DMDWindow.cpp
    standalone/inc/common/DMDWindow.h
    standalone/inc/common/RendererGraphics.cpp
