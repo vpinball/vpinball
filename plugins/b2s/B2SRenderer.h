@@ -5,7 +5,7 @@
 
 #include "common.h"
 #include "B2SDataModel.h"
-#include "CorePlugin.h"
+#include "ControllerPlugin.h"
 
 class B2SRenderer final
 {

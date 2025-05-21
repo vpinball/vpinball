@@ -4,7 +4,7 @@
 #include <future>
 
 #include "MsgPlugin.h"
-#include "CorePlugin.h"
+#include "ControllerPlugin.h"
 #include "PinMamePlugin.h"
 
 #include "B2SDataModel.h"

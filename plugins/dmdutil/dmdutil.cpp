@@ -5,7 +5,7 @@
 #include <cstring>
 
 #include "VPXPlugin.h"
-#include "CorePlugin.h"
+#include "ControllerPlugin.h"
 #include "LoggingPlugin.h"
 
 #pragma warning(push)

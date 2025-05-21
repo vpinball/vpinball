@@ -4,7 +4,7 @@
 #include "MsgPlugin.h"
 #include "LoggingPlugin.h"
 #include "ScriptablePlugin.h"
-#include "CorePlugin.h"
+#include "ControllerPlugin.h"
 #include "PinMamePlugin.h"
 #include "VPXPlugin.h" // Only used for optional feature (locating pinmame files along a VPX table)
 
