@@ -8,7 +8,7 @@
 #include <thread>
 
 #include "MsgPlugin.h"
-#include "CorePlugin.h"
+#include "ControllerPlugin.h"
 #include "PinMamePlugin.h"
 #include "common.h"
 #include "serum-decode.h"

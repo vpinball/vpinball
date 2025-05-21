@@ -313,7 +313,7 @@ IDispatch* VPXPluginAPIImpl::CreateCOMPluginObject(const string& classId)
 ///////////////////////////////////////////////////////////////////////////////
 // Expose VPX contributions through plugin API
 
-#include "plugins/CorePlugin.h"
+#include "plugins/ControllerPlugin.h"
 
 DisplayFrame VPXPluginAPIImpl::ControllerOnGetRenderDMD(const CtlResId id)
 {

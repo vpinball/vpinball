@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common.h"
-#include "CorePlugin.h"
+#include "ControllerPlugin.h"
 
 class Game;
 

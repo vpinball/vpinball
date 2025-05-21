@@ -9,7 +9,7 @@
 #include "ui/Debugger.h"
 #include "ui/LiveUI.h"
 #include "input/pininput.h"
-#include "plugins/CorePlugin.h"
+#include "plugins/ControllerPlugin.h"
 #include "plugins/VPXPlugin.h"
 #include "ResURIResolver.h"
 #include "ScoreView.h"

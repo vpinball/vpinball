@@ -6,7 +6,7 @@
 #include <sstream>
 #include <algorithm>
 #include <iostream>
-#include "plugins/CorePlugin.h"
+#include "plugins/ControllerPlugin.h"
 #include "core/VPXPluginAPIImpl.h"
 
 ScoreView::ScoreView()

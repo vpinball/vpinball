@@ -208,7 +208,7 @@ add_executable(vpinball
    src/plugins/MsgPluginManager.h
    src/plugins/MsgPluginManager.cpp
    src/plugins/VPXPlugin.h
-   src/plugins/CorePlugin.h
+   src/plugins/ControllerPlugin.h
    src/plugins/ScriptablePlugin.h
 
    src/renderer/trace.h

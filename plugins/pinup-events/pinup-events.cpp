@@ -10,7 +10,7 @@
 #include <chrono>
 
 #include "MsgPlugin.h"
-#include "CorePlugin.h"
+#include "ControllerPlugin.h"
 #include "PinMamePlugin.h"
 
 ///////////////////////////////////////////////////////////////////////////////

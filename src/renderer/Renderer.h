@@ -7,7 +7,7 @@
 #include "renderer/RenderDevice.h"
 #include "renderer/Texture.h"
 #include "Backglass.h"
-#include "plugins/CorePlugin.h"
+#include "plugins/ControllerPlugin.h"
 #include "parts/PartGroup.h"
 
 class Renderable;
