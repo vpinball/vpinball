@@ -289,7 +289,7 @@ int PUPManager::GetTriggerValue(const string& triggerId)
    return 0;
 }
 
-void PUPManager::AddWindow(const string& szWindowName, int screen, int x, int y, int width, int height, int zOrder)
+void PUPManager::AddWindow(const string& szWindowName, int screen, VPXAnciliaryWindow anciliaryWindow)
 {
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
 
@@ -311,13 +311,7 @@ void PUPManager::AddWindow(const string& szWindowName, int screen, int x, int y,
       return;
    }
 
-   PUPWindow* pWindow = new PUPWindow(pScreen, szPrefix,
-      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WindowX"s, x),
-      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WindowY"s, y),
-      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WindowWidth"s, width),
-      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WindowHeight"s, height),
-      zOrder,
-      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WindowRotation"s, 0));
+   PUPWindow* pWindow = new PUPWindow(szPrefix, pScreen, anciliaryWindow);
 
    if (pScreen->GetMode() != PUP_SCREEN_MODE_OFF)
       pWindow->Show();
@@ -335,45 +329,10 @@ void PUPManager::Start()
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
 
    if (pSettings->LoadValueWithDefault(Settings::Standalone, "PUPWindows"s, true)) {
-      AddWindow("Topper",
-         PUP_SCREEN_TOPPER,
-         PUP_SETTINGS_TOPPERX,
-         PUP_SETTINGS_TOPPERY,
-         PUP_SETTINGS_TOPPERWIDTH,
-         PUP_SETTINGS_TOPPERHEIGHT,
-         PUP_ZORDER_TOPPER);
-
-      AddWindow("Backglass",
-         PUP_SCREEN_BACKGLASS,
-         PUP_SETTINGS_BACKGLASSX,
-         PUP_SETTINGS_BACKGLASSY,
-         PUP_SETTINGS_BACKGLASSWIDTH,
-         PUP_SETTINGS_BACKGLASSHEIGHT,
-         PUP_ZORDER_BACKGLASS);
-
-      AddWindow("DMD",
-         PUP_SCREEN_DMD,
-         PUP_SETTINGS_DMDX,
-         PUP_SETTINGS_DMDY,
-         PUP_SETTINGS_DMDWIDTH,
-         PUP_SETTINGS_DMDHEIGHT,
-         PUP_ZORDER_DMD);
-
-      AddWindow("Playfield",
-         PUP_SCREEN_PLAYFIELD,
-         PUP_SETTINGS_PLAYFIELDX,
-         PUP_SETTINGS_PLAYFIELDY,
-         PUP_SETTINGS_PLAYFIELDWIDTH,
-         PUP_SETTINGS_PLAYFIELDHEIGHT,
-         PUP_ZORDER_PLAYFIELD);
-
-      AddWindow("FullDMD",
-         PUP_SCREEN_FULLDMD,
-         PUP_SETTINGS_FULLDMDX,
-         PUP_SETTINGS_FULLDMDY,
-         PUP_SETTINGS_FULLDMDWIDTH,
-         PUP_SETTINGS_FULLDMDHEIGHT,
-         PUP_ZORDER_FULLDMD);
+      AddWindow("Topper", PUP_SCREEN_TOPPER, VPXAnciliaryWindow::VPXWINDOW_Topper);
+      AddWindow("DMD", PUP_SCREEN_DMD, VPXAnciliaryWindow::VPXWINDOW_ScoreView);
+      AddWindow("Backglass", PUP_SCREEN_BACKGLASS, VPXAnciliaryWindow::VPXWINDOW_Backglass);
+      AddWindow("FullDMD", PUP_SCREEN_FULLDMD, VPXAnciliaryWindow::VPXWINDOW_ScoreView);
    }
    else {
       PLOGI.printf("PUP windows disabled");

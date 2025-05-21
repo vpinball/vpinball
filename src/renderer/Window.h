@@ -163,6 +163,38 @@ public:
    Window* GetWindow() const { return m_window; }
    EmbeddedWindow* GetEmbeddedWindow() const { return m_embeddedWindow; }
 
+   int GetWidth() const
+   {
+      if (m_mode == OM_EMBEDDED)
+         return m_embeddedWindow->GetWidth();
+      else if (m_mode == OM_WINDOW)
+         return m_window->GetPixelWidth();
+      else
+         return 0;
+   }
+
+   int GetHeight() const
+   {
+      if (m_mode == OM_EMBEDDED)
+         return m_embeddedWindow->GetHeight();
+      else if (m_mode == OM_WINDOW)
+         return m_window->GetPixelHeight();
+      else
+         return 0;
+   }
+
+   void GetPos(int& x, int& y) const
+   {
+      if (m_mode == OM_EMBEDDED)
+         m_embeddedWindow->GetPos(x, y);
+      else if (m_mode == OM_WINDOW)
+         m_window->GetPos(x, y);
+      else {
+         x = 0;
+         y = 0;
+      }
+   }
+
 private:
    const Settings::Section m_settingsSection;
    const string m_settingsPrefix;

@@ -14,14 +14,6 @@
 
 #include "AssetManager.h"
 
-#include "../common/WindowManager.h"
-
-#define FLEXDMD_SETTINGS_WINDOW_X      15
-#define FLEXDMD_SETTINGS_WINDOW_Y      30 + 218 + 5 + 75 + 5
-#define FLEXDMD_SETTINGS_WINDOW_WIDTH  290
-#define FLEXDMD_SETTINGS_WINDOW_HEIGHT 75
-#define FLEXDMD_ZORDER                 350
-
 FlexDMD::FlexDMD()
 {
    m_width = 128;
@@ -43,18 +35,7 @@ FlexDMD::FlexDMD()
 
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
 
-   if (pSettings->LoadValueWithDefault(Settings::Standalone, "FlexDMDWindow"s, true)) {
-      m_pDMDWindow = new VP::DMDWindow("FlexDMD",
-         pSettings->LoadValueWithDefault(Settings::Standalone, "FlexDMDWindowX"s, FLEXDMD_SETTINGS_WINDOW_X),
-         pSettings->LoadValueWithDefault(Settings::Standalone, "FlexDMDWindowY"s, FLEXDMD_SETTINGS_WINDOW_Y),
-         pSettings->LoadValueWithDefault(Settings::Standalone, "FlexDMDWindowWidth"s, FLEXDMD_SETTINGS_WINDOW_WIDTH),
-         pSettings->LoadValueWithDefault(Settings::Standalone, "FlexDMDWindowHeight"s, FLEXDMD_SETTINGS_WINDOW_HEIGHT),
-         FLEXDMD_ZORDER,
-         pSettings->LoadValueWithDefault(Settings::Standalone, "FlexDMDWindowRotation"s, 0));
-   }
-   else {
-      PLOGI.printf("FlexDMD window disabled");
-   }
+   m_pDMDWindow = new VP::DMDWindow("FlexDMD"s);
 
    m_show = true;
 

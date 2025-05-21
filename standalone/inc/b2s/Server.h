@@ -6,7 +6,6 @@
 #include "forms/FormBackglass.h"
 #include "classes/B2SCollectData.h"
 #include "../common/Timer.h"
-#include "../common/Window.h"
 
 class Server : public IDispatch
 {
