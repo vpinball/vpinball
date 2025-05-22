@@ -1277,7 +1277,7 @@ Class cvpmDropTarget
 		Dim ii, mSwcopy
 
 '		vpmSolWall mDropObj(aNo-1), mDropSnd, True
-		CorePlaySoundAt mDropSnd, mDropObj(aNo-1), "HitTarget"
+		If TypeName(mDropObj(aNo-1)) = "HitTarget" Then CorePlaySoundAt mDropSnd, mDropObj(aNo-1) Else PlaySound mDropSnd
 		vpmSolWall mDropObj(aNo-1), False, True
 
 		mSwcopy = mDropSw(aNo-1)
@@ -1294,7 +1294,7 @@ Class cvpmDropTarget
 	Public Sub SolUnhit(aNo, aEnabled)
 		Dim mSwcopy
 		Dim ii : If Not aEnabled Then Exit Sub
-		CorePlaySoundAt mRaiseSnd, mDropObj(aNo-1), "HitTarget"
+		If TypeName(mDropObj(aNo-1)) = "HitTarget" Then CorePlaySoundAt mRaiseSnd, mDropObj(aNo-1) Else PlaySound mRaiseSnd
 		mSwcopy = mDropSw(aNo-1)
 		Controller.Switch(mSwcopy) = False
 		mAllDn = False : CheckAllDn False
@@ -1303,7 +1303,7 @@ Class cvpmDropTarget
 	Public Sub SolDropDown(aEnabled)
 		Dim mSwcopy
 		Dim ii : If Not aEnabled Then Exit Sub
-		CorePlaySoundAt mDropSnd, mDropObj(0) , "HitTarget"
+		If TypeName(mDropObj(0)) = "HitTarget" Then CorePlaySoundAt mDropSnd, mDropObj(0) Else PlaySound mDropSnd
 		For Each ii In mDropObj : vpmSolWall ii, False, True : Next
 		For Each ii In mDropSw	: mSwcopy = ii : Controller.Switch(mSwcopy) = True : Next
 		mAllDn = True : CheckAllDn True
@@ -1312,7 +1312,7 @@ Class cvpmDropTarget
 	Public Sub SolDropUp(aEnabled)
 		Dim mSwcopy
 		Dim ii : If Not aEnabled Then Exit Sub
-		CorePlaySoundAt mRaiseSnd, mDropObj(0), "HitTarget"
+		If TypeName(mDropObj(0)) = "HitTarget" Then CorePlaySoundAt mRaiseSnd, mDropObj(0) Else PlaySound mRaiseSnd
 		For Each ii In mDropObj : vpmSolWall ii, False, False : Next
 		For Each ii In mDropSw	: mSwcopy = ii : Controller.Switch(mSwcopy) = False : Next
 		mAllDn = False : CheckAllDn False
@@ -3032,9 +3032,9 @@ Private Function CoreAudioFade(ypar) 'calculates the audio fade of an table obje
 	End If
 End Function
 
-Private Sub CorePlaySoundAt(soundName, at, expectedType)
+Private Sub CorePlaySoundAt(soundName, at)
 	If IsEmpty(soundName) Then Exit Sub
-	If (IsEmpty(expectedType) And IsObject(at)) Or TypeName(at) = expectedType Then
+	If IsObject(at) Then
 		If VP8sound then
 			PlaySound soundName
 		ElseIf VP9sound then
