@@ -1405,7 +1405,6 @@ void Flasher::Render(const unsigned int renderMask)
                g_pplayer->m_renderer->UpdateBasicShaderMatrix();
             return;
          }
-         // FIXME release texture, support 565
          BaseTexture::Update(&m_dmdFrame, display.source->width, display.source->height, 
                           display.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8 ? BaseTexture::BW
                      : display.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565

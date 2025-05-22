@@ -5,7 +5,6 @@
 
 #include "MsgPlugin.h"
 #include "ControllerPlugin.h"
-#include "PinMamePlugin.h"
 
 #include "B2SDataModel.h"
 #include "B2SRenderer.h"

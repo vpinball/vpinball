@@ -5,7 +5,6 @@
 
 #include "MsgPlugin.h"
 #include "ControllerPlugin.h"
-#include "PinMamePlugin.h"
 
 #include "PUPManager.h"
 #include "PUPScreen.h"
@@ -161,7 +160,7 @@ void DeleteTexture(VPXTexture texture)
 
 void OnPinMAMEGameStart(const unsigned int eventId, void* userData, void* eventData)
 {
-   const PMPI_MSG_ON_GAME_START* msg = static_cast<const PMPI_MSG_ON_GAME_START*>(eventData);
+   const CtlOnGameStartMsg* msg = static_cast<const CtlOnGameStartMsg*>(eventData);
    assert(msg != nullptr && msg->gameId != nullptr);
    if (pupManager->IsInit())
    {
@@ -200,7 +199,7 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
    msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
    msgApi->ReleaseMsgID(getVpxApiId);
 
-   msgApi->SubscribeMsg(endpointId, onPinMAMEGameStartId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_START), OnPinMAMEGameStart, nullptr);
+   msgApi->SubscribeMsg(endpointId, onPinMAMEGameStartId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_START), OnPinMAMEGameStart, nullptr);
    msgApi->SubscribeMsg(endpointId, onGameEndId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END), OnGameEnd, nullptr);
 
    const unsigned int getScriptApiId = msgApi->GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API);

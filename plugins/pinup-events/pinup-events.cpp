@@ -11,7 +11,6 @@
 
 #include "MsgPlugin.h"
 #include "ControllerPlugin.h"
-#include "PinMamePlugin.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // PinUp Player DMD events plugin
@@ -168,7 +167,7 @@ void onGameStart(const unsigned int eventId, void* userData, void* eventData)
       return;
 
    // Find PUP interface dll and set it up
-   const PMPI_MSG_ON_GAME_START* msg = static_cast<const PMPI_MSG_ON_GAME_START*>(eventData);
+   const CtlOnGameStartMsg* msg = static_cast<const CtlOnGameStartMsg*>(eventData);
    assert(msg != nullptr && msg->gameId != nullptr);
    HMODULE hm = nullptr;
    if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, _T("PluginLoad"), &hm) == 0)
@@ -224,8 +223,8 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
    msgApi = api;
    endpointId = sessionId; 
    getDmdSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
-   msgApi->SubscribeMsg(sessionId, onGameStartId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_START), onGameStart, nullptr);
-   msgApi->SubscribeMsg(sessionId, onGameEndId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_END), onGameEnd, nullptr);
+   msgApi->SubscribeMsg(sessionId, onGameStartId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_START), onGameStart, nullptr);
+   msgApi->SubscribeMsg(sessionId, onGameEndId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_END), onGameEnd, nullptr);
    msgApi->SubscribeMsg(sessionId, onSerumTriggerId = msgApi->GetMsgID("Serum", "OnDmdTrigger"), onSerumTrigger, nullptr);
    dmdDevicePupDll = nullptr;
    constexpr unsigned int mapping4[] = { 0, 1, 4, 15 };
