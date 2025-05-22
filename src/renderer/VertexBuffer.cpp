@@ -56,8 +56,16 @@ SharedVertexBuffer::~SharedVertexBuffer()
       SAFE_RELEASE(m_vb);
       #endif
    }
-   for (PendingUpload upload : m_pendingUploads)
+   #if defined(ENABLE_BGFX)
+   for (const PendingUpload& upload : m_pendingUploads)
+      if (upload.mem)
+         delete upload.mem;
+      else
+         delete[] upload.data;
+   #else
+   for (const PendingUpload& upload : m_pendingUploads)
       delete[] upload.data;
+   #endif
 }
 
 void SharedVertexBuffer::Upload()
@@ -85,7 +93,7 @@ void SharedVertexBuffer::Upload()
       #endif
 
       // Fill data block
-      for (PendingUpload upload : m_pendingUploads)
+      for (const PendingUpload& upload : m_pendingUploads)
       {
          //assert(upload.offset >= 0);
          assert(upload.offset + upload.size <= size);
@@ -130,7 +138,7 @@ void SharedVertexBuffer::Upload()
    }
    else
    {
-      for (PendingUpload upload : m_pendingUploads)
+      for (const PendingUpload& upload : m_pendingUploads)
       {
          assert(!m_isStatic);
          #if defined(ENABLE_BGFX)

@@ -43,10 +43,13 @@ public:
          m_lock.data = m_lock.mem->data;
       }
       else
-      #endif
       {
+         m_lock.mem = nullptr;
          m_lock.data = new BYTE[m_lock.size];
       }
+      #else
+      m_lock.data = new BYTE[m_lock.size];
+      #endif
       data = m_lock.data;
    }
 
