@@ -9,7 +9,7 @@
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
-// Generic Virtual Pinball controller plugin
+// Generic pinball controller plugin
 //
 // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
 // This interface is part of a work in progress and will evolve likely a lot
@@ -25,8 +25,8 @@
 // - Matrix displays (dot matrix, CRT,...).
 // 
 // The overall design is based around a service discovery approach: a GetSource
-// message is defined for each feature (CTLPI_xxx_ON_SRC_CHG_MSG), together with 
-// a SourceChangeEvent (CTLPI_xxx_GET_SRC_MSG). Sources are advertised with the 
+// message is defined for each feature CTLPI_xxx_GET_SRC_MSG), together with a
+// SourceChangeEvent (CTLPI_xxx_ON_SRC_CHG_MSG). Sources are advertised with the 
 // function hooks that allow to request their state. These function hooks may or
 // may not be thread safe as advertised in their definition, and must be used 
 // and implemented accordingly.
@@ -60,6 +60,21 @@ typedef struct DeviceDef
       uint32_t mappingId;
    };
 } DeviceDef;
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Controller state
+//
+
+#define CTLPI_EVT_ON_GAME_START       "OnGameStart"       // Broadcasted when controller starts, msgData is a pointer to a CtlOnGameStartMsg struct
+#define CTLPI_EVT_ON_GAME_END         "OnGameEnd"         // Broadcasted when controller ends
+
+struct CtlOnGameStartMsg
+{
+   const char* gameId;
+};
+
 
 
 ///////////////////////////////////////////////////////////////////////////////

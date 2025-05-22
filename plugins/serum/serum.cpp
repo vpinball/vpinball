@@ -9,7 +9,6 @@
 
 #include "MsgPlugin.h"
 #include "ControllerPlugin.h"
-#include "PinMamePlugin.h"
 #include "common.h"
 #include "serum-decode.h"
 
@@ -31,7 +30,7 @@ LPI_IMPLEMENT // Implement shared login support
 
 static MsgPluginAPI* msgApi = nullptr;
 static uint32_t endpointId;
-static unsigned int onPinMAMEGameStartId, onPinMAMEGameEndId;
+static unsigned int onControllerGameStartId, onControllerGameEndId;
 static unsigned int onDmdSrcChangedId, getDmdSrcId, onDmdTrigger;
 
 static bool isRunning = false;
@@ -302,11 +301,11 @@ static void StopColorization()
    dmdId.id.id = 0;
 }
 
-static void OnPinMAMEGameStart(const unsigned int eventId, void* userData, void* msgData)
+static void OnControllerGameStart(const unsigned int eventId, void* userData, void* msgData)
 {
    StopColorization();
    // Setup Serum on the selected DMD
-   const PMPI_MSG_ON_GAME_START* msg = static_cast<const PMPI_MSG_ON_GAME_START*>(msgData);
+   const CtlOnGameStartMsg* msg = static_cast<const CtlOnGameStartMsg*>(msgData);
    assert(msg != nullptr && msg->gameId != nullptr);
    char crzFolder[512];
    msgApi->GetSetting("Serum", "CRZFolder", crzFolder, sizeof(crzFolder));
@@ -319,7 +318,7 @@ static void OnPinMAMEGameStart(const unsigned int eventId, void* userData, void*
    }
 }
 
-static void OnPinMAMEGameEnd(const unsigned int eventId, void* userData, void* msgData)
+static void OnControllerGameEnd(const unsigned int eventId, void* userData, void* msgData)
 {
    StopColorization();
 }
@@ -333,8 +332,8 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
    LPISetup(endpointId, msgApi);
 
    onDmdTrigger = msgApi->GetMsgID("Serum", "OnDmdTrigger");
-   msgApi->SubscribeMsg(endpointId, onPinMAMEGameStartId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_START), OnPinMAMEGameStart, nullptr);
-   msgApi->SubscribeMsg(endpointId, onPinMAMEGameEndId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_END), OnPinMAMEGameEnd, nullptr);
+   msgApi->SubscribeMsg(endpointId, onControllerGameStartId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_START), OnControllerGameStart, nullptr);
+   msgApi->SubscribeMsg(endpointId, onControllerGameEndId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_END), OnControllerGameEnd, nullptr);
    msgApi->SubscribeMsg(endpointId, onDmdSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG), OnDmdSrcChanged, nullptr);
    msgApi->SubscribeMsg(endpointId, getDmdSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG), OnGetRenderDMDSrc, nullptr);
 }
@@ -344,10 +343,10 @@ MSGPI_EXPORT void MSGPIAPI PluginUnload()
    StopColorization();
    msgApi->UnsubscribeMsg(getDmdSrcId, OnGetRenderDMDSrc);
    msgApi->UnsubscribeMsg(onDmdSrcChangedId, OnDmdSrcChanged);
-   msgApi->UnsubscribeMsg(onPinMAMEGameStartId, OnPinMAMEGameStart);
-   msgApi->UnsubscribeMsg(onPinMAMEGameEndId, OnPinMAMEGameEnd);
-   msgApi->ReleaseMsgID(onPinMAMEGameStartId);
-   msgApi->ReleaseMsgID(onPinMAMEGameEndId);
+   msgApi->UnsubscribeMsg(onControllerGameStartId, OnControllerGameStart);
+   msgApi->UnsubscribeMsg(onControllerGameEndId, OnControllerGameEnd);
+   msgApi->ReleaseMsgID(onControllerGameStartId);
+   msgApi->ReleaseMsgID(onControllerGameEndId);
    msgApi->ReleaseMsgID(onDmdTrigger);
    msgApi->ReleaseMsgID(onDmdSrcChangedId);
    msgApi->ReleaseMsgID(getDmdSrcId);
