@@ -44,13 +44,15 @@ SharedIndexBuffer::~SharedIndexBuffer()
       #endif
    }
    #if defined(ENABLE_BGFX)
-   if (IsCreated())
-      for (PendingUpload upload : m_pendingUploads)
+   for (const PendingUpload& upload : m_pendingUploads)
+      if (upload.mem)
          delete upload.mem;
-   else
-   #endif
-   for (PendingUpload upload : m_pendingUploads)
+      else
+         delete[] upload.data;
+   #else
+   for (const PendingUpload& upload : m_pendingUploads)
       delete[] upload.data;
+   #endif
 }
 
 void SharedIndexBuffer::Upload()
@@ -75,7 +77,7 @@ void SharedIndexBuffer::Upload()
       #endif
 
       // Fill data block
-      for (PendingUpload upload : m_pendingUploads)
+      for (const PendingUpload& upload : m_pendingUploads)
       {
          //assert(upload.offset >= 0);
          assert(upload.offset + upload.size <= size);
@@ -119,7 +121,7 @@ void SharedIndexBuffer::Upload()
    }
    else
    {
-      for (PendingUpload upload : m_pendingUploads)
+      for (const PendingUpload& upload : m_pendingUploads)
       {
          assert(!m_isStatic);
          #if defined(ENABLE_BGFX)
@@ -255,7 +257,7 @@ void IndexBuffer::ApplyOffset(VertexBuffer* vb)
    const unsigned int offset = vb->GetVertexOffset();
    if (offset == 0)
       return;
-   for (SharedIndexBuffer::PendingUpload upload : m_sharedBuffer->m_pendingUploads)
+   for (const SharedIndexBuffer::PendingUpload& upload : m_sharedBuffer->m_pendingUploads)
    {
       if (upload.buffer == this)
       {
