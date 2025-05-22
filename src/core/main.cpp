@@ -996,7 +996,7 @@ public:
          for (int display = 0; display < displays.size(); display++) {
             const SDL_DisplayMode* displayMode = SDL_GetDesktopDisplayMode(displays.at(display).adapter);
             PLOGI << "display " << displays.at(display).adapter << ": " << displayMode->w << 'x' << displayMode->h
-                  << " (refreshRate=" << displayMode->refresh_rate << ')';
+                  << " (refreshRate=" << displayMode->refresh_rate << ", pixelDensity=" << displayMode->pixel_density << ')';
          }
 
          PLOGI << "Available external window renderers:";
