@@ -6,15 +6,16 @@
 PUPMediaManager::PUPMediaManager(PUPScreen* pScreen)
 {
    m_pMainPlayer = &m_player1;
-   m_pBackgroundPlayer = nullptr;
    m_pScreen = pScreen;
    m_pop = (pScreen->GetMode() == PUP_SCREEN_MODE_FORCE_POP_BACK || pScreen->GetMode() == PUP_SCREEN_MODE_FORCE_POP);
-   m_pRenderer = nullptr;
 }
 
-void PUPMediaManager::SetRenderer(SDL_Renderer* pRenderer)
+void PUPMediaManager::SetVpxApi(VPXPluginAPI* pVpxApi)
 {
-   m_pRenderer = pRenderer;
+   m_pVpxApi = pVpxApi;
+
+   m_player1.player.SetVpxApi(m_pVpxApi);
+   m_player2.player.SetVpxApi(m_pVpxApi);
 }
 
 void PUPMediaManager::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, bool skipSamePriority, int length)
@@ -96,7 +97,7 @@ void PUPMediaManager::Stop(PUPPlaylist* pPlaylist, const string& szPlayFile)
    }
 }
 
-void PUPMediaManager::Render(const SDL_Rect& destRect)
+void PUPMediaManager::Render(VPXRenderContext2D* ctx, const SDL_Rect& destRect)
 {
    bool mainPlayerPlaying = m_pMainPlayer->player.IsPlaying();
    bool backgroundPlaying = false;
@@ -104,11 +105,11 @@ void PUPMediaManager::Render(const SDL_Rect& destRect)
    if (m_pBackgroundPlayer) {
       backgroundPlaying = m_pBackgroundPlayer->player.IsPlaying();
       if (backgroundPlaying || (!m_pop && !mainPlayerPlaying))
-          m_pBackgroundPlayer->player.Render(m_pRenderer, destRect);
+          m_pBackgroundPlayer->player.Render(ctx, destRect);
    }
 
    if (mainPlayerPlaying || (!m_pop && !backgroundPlaying)) {
-      m_pMainPlayer->player.Render(m_pRenderer, destRect);
+      m_pMainPlayer->player.Render(ctx, destRect);
    }
 
    if (m_pBackgroundPlayer)

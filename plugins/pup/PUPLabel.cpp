@@ -420,8 +420,12 @@ PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const st
    if (type == PUP_LABEL_TYPE_IMAGE)
    {
       SDL_Surface* image = IMG_Load(szPath.c_str());
-      if (image)
-      {
+      if (image && image->format != SDL_PIXELFORMAT_RGBA32) {
+         SDL_Surface* newImage = SDL_ConvertSurface(image, SDL_PIXELFORMAT_RGBA32);
+         SDL_DestroySurface(image);
+         image = newImage;
+      }
+      if (image) {
          rs.m_pTexture = CreateTexture(image);
          SDL_DestroySurface(image);
       }
@@ -433,8 +437,20 @@ PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const st
    else if (type == PUP_LABEL_TYPE_GIF)
    {
       rs.m_pAnimation = IMG_LoadAnimation(szPath.c_str());
-      if (rs.m_pAnimation)
-         rs.m_pTexture = CreateTexture(rs.m_pAnimation->frames[0]);
+      if (rs.m_pAnimation) {
+         SDL_Surface* image = rs.m_pAnimation->frames[0];
+         if (image) {
+            if (image->format == SDL_PIXELFORMAT_RGBA32)
+               rs.m_pTexture = CreateTexture(image);
+            else {
+               SDL_Surface* newImage = SDL_ConvertSurface(image, SDL_PIXELFORMAT_RGBA32);
+               if (newImage) {
+                  rs.m_pTexture = CreateTexture(newImage);
+                  SDL_DestroySurface(newImage);
+               }
+            }
+         }
+      }
       else
          LOGE("Unable to load animation: %s", szPath.c_str());
    }

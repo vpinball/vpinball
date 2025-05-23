@@ -1,5 +1,7 @@
 #pragma once
 
+#include <future>
+
 #include <SDL3_ttf/SDL_ttf.h>
 #include <SDL3_image/SDL_image.h>
 
@@ -24,31 +26,31 @@ typedef enum
    PUP_LABEL_TYPE_GIF
 } PUP_LABEL_TYPE;
 
-class PUPManager;
 class PUPScreen;
 
 class PUPLabel final
 {
 public:
-   PUPLabel(PUPManager* pManager, const string& szName, const string& szFont, float size, LONG color, float angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, float xPos, float yPos, int pagenum, bool visible);
+   PUPLabel(class PUPManager* manager, const string& szName, const string& szFont, float size, int color, float angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, float xPos, float yPos, int pagenum, bool visible);
    ~PUPLabel();
 
    const string& GetCaption() const { return m_szCaption; }
    void SetCaption(const string& szCaption);
    void SetVisible(bool visible);
    void SetSpecial(const string& szSpecial);
-   void Render(SDL_Renderer* renderer, SDL_Rect& rect, int pagenum);
+   void SetVpxApi(VPXPluginAPI* pVpxApi) { m_pVpxApi = pVpxApi; }
+   void Render(VPXRenderContext2D* const ctx, SDL_Rect& rect, int pagenum);
    const string& GetName() const { return m_szName; }
    void SetScreen(PUPScreen* pScreen) { m_pScreen = pScreen; }
    string ToString() const;
 
 private:
-   void UpdateLabelTexture(SDL_Renderer* pRenderer, SDL_Rect& rect);
+   class PUPManager* const m_pManager;
+   const string m_szName;
 
-   PUPManager* m_pManager;
    TTF_Font* m_pFont;
    float m_size;
-   LONG m_color;
+   int m_color;
    float m_angle;
    PUP_LABEL_XALIGN m_xAlign;
    PUP_LABEL_YALIGN m_yAlign;
@@ -57,22 +59,83 @@ private:
    bool m_visible;
    string m_szCaption;
    int m_pagenum;
-   LONG m_shadowColor;
-   int m_shadowState;
-   float m_xoffset;
-   float m_yoffset;
-   bool m_outline;
-   bool m_dirty;
-   PUPScreen* m_pScreen;
-   SDL_Texture* m_pTexture;
-   float m_width;
-   float m_height;
-   string m_szName;
-   int m_anigif;
-   PUP_LABEL_TYPE m_type;
-   IMG_Animation* m_pAnimation;
+   int m_shadowColor = 0;
+   int m_shadowState = 0;
+   float m_xoffset = 0;
+   float m_yoffset = 0;
+   bool m_outline = false;
+   PUPScreen* m_pScreen = nullptr;
+   int m_anigif = 0;
+
+   PUP_LABEL_TYPE m_type = PUP_LABEL_TYPE_TEXT;
    string m_szPath;
-   int m_animationFrame;
-   Uint64 m_animationStart;
+   float m_imageWidth = 0; // Width of image (unused for text)
+   float m_imageHeight = 0; // height of image (unused for text)
+
    std::mutex m_mutex;
+
+   VPXPluginAPI* m_pVpxApi = nullptr;
+
+   class RenderState final
+   {
+   public:
+      RenderState() { }
+
+      ~RenderState()
+      {
+         if (m_pTexture)
+            m_vpxApi->DeleteTexture(m_pTexture);
+         if (m_pAnimation)
+            IMG_FreeAnimation(m_pAnimation);
+      }
+
+      RenderState(RenderState&& other) noexcept
+         : m_pTexture(other.m_pTexture)
+         , m_prerenderedHeight(other.m_prerenderedHeight)
+         , m_width(other.m_width)
+         , m_height(other.m_height)
+         , m_pAnimation(other.m_pAnimation)
+         , m_vpxApi(other.m_vpxApi)
+      {
+         other.m_pTexture = nullptr;
+         other.m_pAnimation = nullptr;
+      }
+
+      RenderState& operator=(RenderState&& other) noexcept
+      {
+         if (this != &other)
+         {
+            if (m_pTexture)
+               m_vpxApi->DeleteTexture(m_pTexture);
+            if (m_pAnimation)
+               IMG_FreeAnimation(m_pAnimation);
+
+            m_prerenderedHeight = other.m_prerenderedHeight;
+            m_pTexture = other.m_pTexture;
+            m_pAnimation = other.m_pAnimation;
+            m_width = other.m_width;
+            m_height = other.m_height;
+            m_vpxApi = other.m_vpxApi;
+
+            other.m_pTexture = nullptr;
+            other.m_pAnimation = nullptr;
+         }
+         return *this;
+      }
+
+      VPXTexture m_pTexture = nullptr;
+      int m_prerenderedHeight = 0; // Height used to evaluate text rendering
+      float m_width = 0; // Width of rendered text (unused for images)
+      float m_height = 0; // height of rendered text (unused for images)
+      IMG_Animation* m_pAnimation = nullptr;
+      VPXPluginAPI* m_vpxApi = nullptr;
+   };
+   RenderState UpdateImageTexture(PUP_LABEL_TYPE type, const string& szPath);
+   RenderState UpdateLabelTexture(int outHeight, TTF_Font* pFont, const string& szCaption, float size, int color, int shadowstate, int shadowcolor, SDL_FPoint offset);
+
+   bool m_dirty = true;
+   RenderState m_renderState;
+   int m_animationFrame = 0;
+   Uint64 m_animationStart = 0;
+   std::future<RenderState> m_pendingTextureUpdate;
 };

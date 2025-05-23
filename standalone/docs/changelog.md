@@ -4,6 +4,9 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 05/23/25
+    * Switch all external windows to use new 10.8.1 ancillary windows
+
 * 05/19/25
     * Bump Wine source to wine-7f833db11ffea4f3f4fa07be31d30559aff9c5fb (10.8)
 

@@ -27,7 +27,8 @@ public:
    void SetVolume(float volume);
    void SetLoop(bool loop);
    void SetLength(int length);
-   void Render(SDL_Renderer* pRenderer, const SDL_Rect& destRect);
+   void SetVpxApi(VPXPluginAPI* pVpxApi) { m_pVpxApi = pVpxApi; }
+   void Render(VPXRenderContext2D* ctx, const SDL_Rect& destRect);
 
 private:
    void Run();
@@ -57,7 +58,7 @@ private:
    AVFrame** m_rgbFrames = nullptr;
    uint8_t** m_rgbFrameBuffers = nullptr;
 
-   SDL_Texture* m_videoTexture = nullptr;
+   VPXTexture m_videoTexture = nullptr;
    unsigned int m_videoTextureId = 0xFFFFFF;
 
    int m_audioStream = -1;
@@ -70,4 +71,6 @@ private:
    std::mutex m_mutex;
    std::thread m_thread;
    bool m_running = false;
+
+   VPXPluginAPI* m_pVpxApi = nullptr;
 };

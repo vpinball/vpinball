@@ -125,7 +125,7 @@ PUPScreen* PUPScreen::CreateFromCSV(PUPManager* manager, const string& line, con
 {
    vector<string> parts = parse_csv_line(line);
    if (parts.size() != 8) {
-      LOGD("Invalid screen: %s", line.c_str());
+      LOGE("Failed to parse screen line, expected 8 columns but got %d: %s", parts.size(), line.c_str());
       return nullptr;
    }
 
@@ -632,10 +632,20 @@ void PUPScreen::Render(VPXRenderContext2D* const ctx)
 
 void PUPScreen::LoadRenderable(PUPScreenRenderable* pRenderable, const string& szFile)
 {
-   if (pRenderable->pSurface)
+   if (pRenderable->pSurface) {
       SDL_DestroySurface(pRenderable->pSurface);
+      pRenderable->pSurface = nullptr;
+   }
 
-   pRenderable->pSurface = IMG_Load(szFile.c_str());
+   SDL_Surface* pSurface = IMG_Load(szFile.c_str());
+   if (pSurface) {
+      if (pSurface->format == SDL_PIXELFORMAT_RGBA32)
+         pRenderable->pSurface = pSurface;
+      else {
+         pRenderable->pSurface = SDL_ConvertSurface(pSurface, SDL_PIXELFORMAT_RGBA32);
+         SDL_DestroySurface(pSurface);
+      }
+   }
    pRenderable->dirty = true;
 }
 
