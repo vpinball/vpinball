@@ -58,11 +58,6 @@ PUPWindow::~PUPWindow()
    m_pMsgApi->ReleaseMsgID(m_getAuxRendererId);
    m_pMsgApi->ReleaseMsgID(m_onAuxRendererChgId);
 
-   SDL_DestroyRenderer(m_pRenderer);
-   SDL_DestroySurface(m_pSurface);
-
-   m_pVpxApi->DeleteTexture(m_vpxTexture);
-
    m_plugin->Unload();
 }
 
@@ -71,40 +66,13 @@ int PUPWindow::Render(VPXRenderContext2D* const renderCtx)
    renderCtx->srcWidth = renderCtx->outWidth;
    renderCtx->srcHeight = renderCtx->outHeight;
 
-   if (!m_pRenderer) {
-      m_pSurface = SDL_CreateSurface(renderCtx->srcWidth, renderCtx->srcHeight, SDL_PIXELFORMAT_RGBA32);
-      if (m_pSurface) {
-         m_pRenderer = SDL_CreateSoftwareRenderer(m_pSurface);
-         if (m_pRenderer)
-            m_pScreen->Init(m_pRenderer);
-         else {
-            SDL_DestroySurface(m_pSurface);
-            m_pSurface = nullptr;
-
-            return false;
-         }
-      }
-      else
-         return false;
+   if (!m_init) {
+      m_pScreen->Init(m_pVpxApi);
+      m_init = true;
    }
 
    m_pScreen->SetSize(static_cast<int>(renderCtx->outWidth), static_cast<int>(renderCtx->outHeight));
-
-   SDL_SetRenderDrawColor(m_pRenderer, 0, 0, 0, 255);
-   SDL_RenderClear(m_pRenderer);
-   m_pScreen->Render();
-   SDL_RenderPresent(m_pRenderer);
-
-   SDL_LockSurface(m_pSurface);
-   m_pVpxApi->UpdateTexture(&m_vpxTexture, m_pSurface->w, m_pSurface->h, VPXTextureFormat::VPXTEXFMT_sRGBA, static_cast<uint8_t*>(m_pSurface->pixels));
-   SDL_UnlockSurface(m_pSurface);
-
-   int texWidth, texHeight;
-   m_pVpxApi->GetTextureInfo(m_vpxTexture, &texWidth, &texHeight);
-
-   SDL_Rect rect = m_pScreen->GetRect();
-   renderCtx->DrawImage(renderCtx, m_vpxTexture, 1.f, 1.f, 1.f, 1.f, 0.f, 0.f,
-      static_cast<float>(texWidth), static_cast<float>(texHeight), rect.x, rect.y, rect.w, rect.h);
+   m_pScreen->Render(renderCtx);
 
    return true;
 }

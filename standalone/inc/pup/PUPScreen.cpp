@@ -127,7 +127,7 @@ PUPScreen* PUPScreen::CreateFromCSV(PUPManager* pManager, const string& line, co
 {
    vector<string> parts = parse_csv_line(line);
    if (parts.size() != 8) {
-      PLOGD.printf("Invalid screen: %s", line.c_str());
+      PLOGE.printf("Failed to parse screen line, expected 8 columns but got %d: %s", parts.size(), line.c_str());
       return nullptr;
    }
 
@@ -473,18 +473,18 @@ void PUPScreen::Start()
    m_thread = std::thread(&PUPScreen::ProcessQueue, this);
 }
 
-void PUPScreen::Init(SDL_Renderer* pRenderer)
+void PUPScreen::Init(VPXPluginAPI* pVpxApi)
 {
    PLOGD.printf("Initializing: screen={%s}", ToString(false).c_str());
 
-   m_pRenderer = pRenderer;
+   m_pVpxApi = pVpxApi;
 
    for (auto pChildren : { &m_defaultChildren, &m_backChildren, &m_topChildren }) {
       for (PUPScreen* pScreen : *pChildren)
-         pScreen->Init(pRenderer);
+         pScreen->Init(pVpxApi);
    }
 
-   m_pMediaPlayerManager->SetRenderer(pRenderer);
+   m_pMediaPlayerManager->SetVpxApi(m_pVpxApi);
 }
 
 void PUPScreen::ProcessQueue()
@@ -608,60 +608,77 @@ void PUPScreen::ProcessTriggerRequest(PUPTriggerRequest* pRequest)
    }
 }
 
-void PUPScreen::Render()
+void PUPScreen::Render(VPXRenderContext2D* ctx)
 {
    std::lock_guard<std::mutex> lock(m_renderMutex);
 
-   Render(&m_background);
+   Render(ctx, &m_background);
 
-   m_pMediaPlayerManager->Render(m_rect);
+   m_pMediaPlayerManager->Render(ctx, m_rect);
 
    for (auto pChildren : { &m_defaultChildren, &m_backChildren, &m_topChildren }) {
       for (PUPScreen* pScreen : *pChildren)
-         pScreen->Render();
+         pScreen->Render(ctx);
    }
 
-   Render(&m_overlay);
+   Render(ctx, &m_overlay);
 
-   SDL_SetRenderClipRect(m_pRenderer, &m_rect);
+   // FIXME
+   //SDL_SetRenderClipRect(m_pRenderer, &m_rect);
 
-   for (PUPLabel* pLabel : m_labels)
-      pLabel->Render(m_pRenderer, m_rect, m_pagenum);
+   for (PUPLabel* pLabel : m_labels) {
+      pLabel->SetVpxApi(m_pVpxApi);
+      pLabel->Render(ctx, m_rect, m_pagenum);
+   }
 
-   SDL_SetRenderClipRect(m_pRenderer, NULL);
+   // FIXME
+   //SDL_SetRenderClipRect(m_pRenderer, NULL);
 }
 
 void PUPScreen::LoadRenderable(PUPScreenRenderable* pRenderable, const string& szFile)
 {
-   if (pRenderable->pSurface)
+   if (pRenderable->pSurface) {
       SDL_DestroySurface(pRenderable->pSurface);
+      pRenderable->pSurface = nullptr;
+   }
 
-   pRenderable->pSurface = IMG_Load(szFile.c_str());
+   SDL_Surface* pSurface = IMG_Load(szFile.c_str());
+   if (pSurface) {
+      if (pSurface->format == SDL_PIXELFORMAT_RGBA32)
+         pRenderable->pSurface = pSurface;
+      else {
+         pRenderable->pSurface = SDL_ConvertSurface(pSurface, SDL_PIXELFORMAT_RGBA32);
+         SDL_DestroySurface(pSurface);
+      }
+   }
    pRenderable->dirty = true;
 }
 
-void PUPScreen::Render(PUPScreenRenderable* pRenderable)
+void PUPScreen::Render(VPXRenderContext2D* ctx, PUPScreenRenderable* pRenderable)
 {
    if (pRenderable->dirty) {
-      if (pRenderable->pTexture) {
-         SDL_DestroyTexture(pRenderable->pTexture);
-         pRenderable->pTexture = NULL;
+      if (pRenderable->vpxTexture) {
+         m_pVpxApi->DeleteTexture(pRenderable->vpxTexture);
+         pRenderable->vpxTexture = NULL;
       }
       if (pRenderable->pSurface) {
-         pRenderable->pTexture = SDL_CreateTextureFromSurface(m_pRenderer, pRenderable->pSurface);
+         SDL_LockSurface(pRenderable->pSurface);
+         m_pVpxApi->UpdateTexture(&pRenderable->vpxTexture, pRenderable->pSurface->w, pRenderable->pSurface->h,
+            VPXTextureFormat::VPXTEXFMT_sRGBA, static_cast<uint8_t*>(pRenderable->pSurface->pixels));
+         SDL_UnlockSurface(pRenderable->pSurface);
          SDL_DestroySurface(pRenderable->pSurface);
          pRenderable->pSurface = NULL;
       }
       pRenderable->dirty = false;
    }
 
-   if (pRenderable->pTexture) {
-      SDL_FRect fRect;
-      fRect.x = static_cast<float>(m_rect.x);
-      fRect.y = static_cast<float>(m_rect.y);
-      fRect.w = static_cast<float>(m_rect.w);
-      fRect.h = static_cast<float>(m_rect.h);
-      SDL_RenderTexture(m_pRenderer,  pRenderable->pTexture, NULL, &fRect);
+   if (pRenderable->vpxTexture)
+   {
+      int texWidth, texHeight;
+      m_pVpxApi->GetTextureInfo(pRenderable->vpxTexture, &texWidth, &texHeight);
+      ctx->DrawImage(ctx, pRenderable->vpxTexture, 1.f, 1.f, 1.f, 1.f,
+         0.f, 0.f, static_cast<float>(texWidth), static_cast<float>(texHeight),
+         static_cast<float>(m_rect.x), static_cast<float>(m_rect.y), static_cast<float>(m_rect.w), static_cast<float>(m_rect.h));
    }
 }
 
@@ -670,8 +687,10 @@ void PUPScreen::FreeRenderable(PUPScreenRenderable* pRenderable)
    if (pRenderable->pSurface)
       SDL_DestroySurface(pRenderable->pSurface);
 
-   if (pRenderable->pTexture)
-      SDL_DestroyTexture(pRenderable->pTexture);
+   if (pRenderable->vpxTexture) {
+      m_pVpxApi->DeleteTexture(pRenderable->vpxTexture);
+      pRenderable->vpxTexture = NULL;
+   }
 }
 
 string PUPScreen::ToString(bool full) const

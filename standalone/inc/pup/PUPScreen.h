@@ -69,9 +69,9 @@ struct PUPTriggerRequest : PUPScreenRequest
 
 struct PUPScreenRenderable
 {
-   SDL_Surface* pSurface;
-   SDL_Texture* pTexture;
-   bool dirty;
+   SDL_Surface* pSurface = nullptr;
+   VPXTexture vpxTexture = nullptr;
+   bool dirty = true;
 };
 
 class PUPScreen final
@@ -100,7 +100,7 @@ public:
    void AddTrigger(PUPTrigger* pTrigger);
    void SendToFront();
    void SetSize(int w, int h);
-   void Init(SDL_Renderer* pRenderer);
+   void Init(VPXPluginAPI* pVpxApi);
    void Start();
    bool IsLabelInit() const { return m_labelInit; }
    void SetLabelInit() { m_labelInit = true; }
@@ -109,7 +109,7 @@ public:
    void SendLabelToFront(PUPLabel* pLabel);
    void SendLabelToBack(PUPLabel* pLabel);
    void SetPage(int pagenum, int seconds);
-   void Render();
+   void Render(VPXRenderContext2D* ctx);
    const SDL_Rect& GetRect() const { return m_rect; }
    void SetBackground(PUPPlaylist* pPlaylist, const string& szPlayFile);
    void SetCustomPos(const string& string);
@@ -135,7 +135,7 @@ private:
    void ProcessPinDisplayRequest(PUPPinDisplayRequest* pRequest);
    void ProcessTriggerRequest(PUPTriggerRequest* pRequest);
    void LoadRenderable(PUPScreenRenderable* pRenderable, const string& szFile);
-   void Render(PUPScreenRenderable* pRenderable);
+   void Render(VPXRenderContext2D* ctx, PUPScreenRenderable* pRenderable);
    void FreeRenderable(PUPScreenRenderable* pRenderable);
    void PageTimerElapsed(VP::Timer* pTimer);
 
@@ -154,6 +154,7 @@ private:
    ankerl::unordered_dense::map<string, PUPPlaylist*> m_playlistMap;
    vector<PUPTrigger*> m_triggers;
    SDL_Renderer* m_pRenderer;
+   VPXPluginAPI* m_pVpxApi;
    PUPScreenRenderable m_background;
    PUPScreenRenderable m_overlay;
    PUPMediaManager* m_pMediaPlayerManager;

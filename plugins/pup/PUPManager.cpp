@@ -74,7 +74,9 @@ void PUPManager::LoadConfig(const string& szRomName)
          while (std::getline(screensFile, line)) {
             if (++i == 1)
                continue;
-            AddScreen(PUPScreen::CreateFromCSV(this, line, m_playlists));
+            PUPScreen* pScreen = PUPScreen::CreateFromCSV(this, line, m_playlists);
+            if (pScreen)
+               AddScreen(pScreen);
          }
       }
       else {
@@ -202,11 +204,6 @@ void PUPManager::LoadPlaylists()
 
 bool PUPManager::AddScreen(PUPScreen* pScreen)
 {
-   if (!pScreen) {
-      LOGE("Null screen argument");
-      return false;
-   }
-
    if (HasScreen(pScreen->GetScreenNum())) {
       LOGE("Duplicate screen: screen={%s}", pScreen->ToString(false).c_str());
       delete pScreen;
@@ -222,7 +219,11 @@ bool PUPManager::AddScreen(PUPScreen* pScreen)
 
 bool PUPManager::AddScreen(int screenNum)
 {
-   return AddScreen(PUPScreen::CreateDefault(this, screenNum, m_playlists));
+   PUPScreen* pScreen = PUPScreen::CreateDefault(this, screenNum, m_playlists);
+   if (!pScreen)
+      return false;
+
+   return AddScreen(pScreen);
 }
 
 bool PUPManager::HasScreen(int screenNum)

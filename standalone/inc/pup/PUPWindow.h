@@ -28,8 +28,6 @@ private:
    uint32_t m_endpointId;
    unsigned int m_getAuxRendererId;
    unsigned int m_onAuxRendererChgId;
-   SDL_Surface* m_pSurface = nullptr;
-   SDL_Renderer* m_pRenderer = nullptr;
-   VPXTexture m_vpxTexture = nullptr;
    VPXAnciliaryWindow m_anciliaryWindow;
+   bool m_init = false;
 };

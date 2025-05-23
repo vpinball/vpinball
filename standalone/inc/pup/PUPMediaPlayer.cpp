@@ -180,7 +180,7 @@ void PUPMediaPlayer::Stop()
    m_swsContext = nullptr;
 
    if (m_videoTexture)
-      SDL_DestroyTexture(m_videoTexture);
+      m_pVpxApi->DeleteTexture(m_videoTexture);
    m_videoTexture = nullptr;
    m_videoTextureId = 0xFFFFFF;
 
@@ -423,11 +423,8 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
    }
 }
 
-void PUPMediaPlayer::Render(SDL_Renderer* pRenderer, const SDL_Rect& destRect)
+void PUPMediaPlayer::Render(VPXRenderContext2D* ctx, const SDL_Rect& destRect)
 {
-   if (!pRenderer)
-      return;
-
    if (m_length != 0)
    {
       const int elapsed = static_cast<int>(SDL_GetTicks() - m_startTimestamp) / 1000;
@@ -458,10 +455,7 @@ void PUPMediaPlayer::Render(SDL_Renderer* pRenderer, const SDL_Rect& destRect)
       {
          m_videoTextureId = m_renderFrameId;
          AVFrame* rgbFrame = m_rgbFrames[m_renderFrameId % m_nRgbFrames];
-         if (!m_videoTexture)
-            m_videoTexture = SDL_CreateTexture(pRenderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, rgbFrame->width, rgbFrame->height);
-         if (m_videoTexture)
-            SDL_UpdateTexture(m_videoTexture, NULL, rgbFrame->data[0], rgbFrame->linesize[0]);
+         m_pVpxApi->UpdateTexture(&m_videoTexture, rgbFrame->width, rgbFrame->height, VPXTextureFormat::VPXTEXFMT_sRGBA, rgbFrame->data[0]);
          //const double framePts = (static_cast<double>(rgbFrame->pts) * m_pVideoContext->pkt_timebase.num) / m_pVideoContext->pkt_timebase.den;
          //PLOGD.printf("Video tex update: play time: %8.3fs / frame pts: %8.3fs / delta: %8.3fs  [%s]", playPts, framePts, framePts - playPts, m_szFilename.c_str());
       }
@@ -470,12 +464,11 @@ void PUPMediaPlayer::Render(SDL_Renderer* pRenderer, const SDL_Rect& destRect)
    // Render image
    if (m_videoTexture)
    {
-      SDL_FRect fDestRect;
-      fDestRect.x = static_cast<float>(destRect.x);
-      fDestRect.y = static_cast<float>(destRect.y);
-      fDestRect.w = static_cast<float>(destRect.w);
-      fDestRect.h = static_cast<float>(destRect.h);
-      SDL_RenderTexture(pRenderer, m_videoTexture, NULL, &fDestRect);
+      int texWidth, texHeight;
+      m_pVpxApi->GetTextureInfo(m_videoTexture, &texWidth, &texHeight);
+      ctx->DrawImage(ctx, m_videoTexture, 1.f, 1.f, 1.f, 1.f,
+         0.f, 0.f, static_cast<float>(texWidth), static_cast<float>(texHeight),
+         static_cast<float>(destRect.x), static_cast<float>(destRect.y), static_cast<float>(destRect.w), static_cast<float>(destRect.h));
    }
 }
 
