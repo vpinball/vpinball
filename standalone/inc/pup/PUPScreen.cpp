@@ -127,7 +127,7 @@ PUPScreen* PUPScreen::CreateFromCSV(PUPManager* pManager, const string& line, co
 {
    vector<string> parts = parse_csv_line(line);
    if (parts.size() != 8) {
-      PLOGD.printf("Invalid screen: %s", line.c_str());
+      PLOGE.printf("Failed to parse screen line, expected 8 columns but got %d: %s", parts.size(), line.c_str());
       return nullptr;
    }
 

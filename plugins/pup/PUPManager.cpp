@@ -74,7 +74,8 @@ void PUPManager::LoadConfig(const string& szRomName)
          while (std::getline(screensFile, line)) {
             if (++i == 1)
                continue;
-            AddScreen(PUPScreen::CreateFromCSV(this, line, m_playlists));
+            if (PUPScreen* pScreen = PUPScreen::CreateFromCSV(this, line, m_playlists))
+               AddScreen(pScreen);
          }
       }
       else {
