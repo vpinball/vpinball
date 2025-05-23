@@ -56,7 +56,7 @@ Window::Window(const string &title, const Settings& settings, const Settings::Se
          m_fullscreen = true;
    }
    int w = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Width", m_fullscreen ? -1 : 1024);
-   int h = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Height", w * 9 / 16);
+   int h = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Height", m_fullscreen ? -1 : w * 9 / 16);
    const int display = g_pvp->m_primaryDisplay ? -1 : settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Display", -1);
    const bool video10bit = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Render10Bit", false);
    const float fsRefreshRate = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "RefreshRate", 0.f);
@@ -85,6 +85,7 @@ Window::Window(const string &title, const Settings& settings, const Settings::Se
       {
          wnd_x = dispConf.left;
          wnd_y = dispConf.top;
+         // these are logical dimensions for non-fullscreen
          m_screenwidth = dispConf.width;
          m_screenheight = dispConf.height;
          m_adapter = dispConf.adapter;
@@ -94,9 +95,6 @@ Window::Window(const string &title, const Settings& settings, const Settings::Se
       }
    }
    assert(m_display != -1); // This should not be possible since we use either the requested display or at least the primary one
-
-   m_width = w <= 0 ? m_screenwidth : w;
-   m_height = h <= 0 ? m_screenheight : h;
 
    // FIXME implement bit depth validation and selection (only used for DX9 10bit monitors to limit banding and dithering needs)
    m_bitdepth = fsBitDeth;
@@ -110,17 +108,23 @@ Window::Window(const string &title, const Settings& settings, const Settings::Se
       GetDisplayModes(m_display, allVideoModes);
       for (VideoMode mode : allVideoModes)
       {
-         if ((mode.width == m_width) && (mode.height == m_height))
+         // If w or h are not set up in the config, use the first mode found that matches the fsRefreshRate.
+         // According to the SDL documentation, the first mode is the largest with the highest refresh rate.
+         if (w <= 0 || h <= 0 || (mode.width == w) && (mode.height == h))
          {
             if (fsRefreshRate == 0)
             {
                fsModeExists = true;
+               m_width = mode.width;
+               m_height = mode.height;
                validatedFSRefreshRate = mode.refreshrate;
                break;
             }
-            else if (mode.refreshrate == fsRefreshRate)
+            if (mode.refreshrate == fsRefreshRate)
             {
                fsModeExists = true;
+               m_width = mode.width;
+               m_height = mode.height;
                validatedFSRefreshRate = fsRefreshRate;
                break;
             }
@@ -243,33 +247,28 @@ Window::Window(const string &title, const Settings& settings, const Settings::Se
 
       if (m_fullscreen)
       {
-         mode = SDL_GetWindowFullscreenMode(m_nwnd);
-         m_refreshrate = mode ? mode->refresh_rate : 0;
-         m_screenwidth = m_width;
-         m_screenheight = m_height;
-         if (fsRefreshRate > 0 && validatedFSRefreshRate != m_refreshrate) // Adjust refresh rate if needed
-         {
-            Uint32 format = mode ? mode->format : 0;
-            bool found = false;
-            int num_modes = 0;
-            SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(m_adapter, &num_modes);
-            if (modes) {
-               for (int index = 0; index < num_modes; ++index) {
-                 mode = modes[index];
-                 if ((mode->w == m_width) && (mode->h == m_height) && (mode->refresh_rate == validatedFSRefreshRate) && (mode->format == format || format == 0))
-                 {
-                    SDL_SetWindowFullscreenMode(m_nwnd, mode);
-                    m_refreshrate = validatedFSRefreshRate;
-                    found = true;
-                    break;
-                 }
-               }
-               SDL_free(modes);
+         // From SDL_SetWindowFullscreen:
+         // By default a window in fullscreen state uses borderless fullscreen desktop mode,
+         // but a specific exclusive display mode can be set using SDL_SetWindowFullscreenMode().
+         bool found = false;
+         int num_modes = 0;
+         SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(m_adapter, &num_modes);
+         if (modes) {
+            for (int index = 0; index < num_modes; ++index) {
+              mode = modes[index];
+              if ((mode->w == m_width) && (mode->h == m_height) && (mode->refresh_rate == validatedFSRefreshRate))
+              {
+                 SDL_SetWindowFullscreenMode(m_nwnd, mode);
+                 m_refreshrate = validatedFSRefreshRate;
+                 found = true;
+                 break;
+              }
             }
-            if (!found) {
-               // Should not happen since the fullscreen values have been validated
-               PLOGE << "Failed to find a display mode matching the requested refresh rate [" << validatedFSRefreshRate << ']';
-            }
+            SDL_free(modes);
+         }
+         if (!found) {
+            // Should not happen since the fullscreen values have been validated
+            PLOGE << "Failed to find a display mode matching the requested refresh rate [" << validatedFSRefreshRate << ']';
          }
       }
       else
@@ -294,7 +293,7 @@ Window::Window(const string &title, const Settings& settings, const Settings::Se
             PLOGE << "Failed to load window icon: " << SDL_GetError();
          }
       #endif
-
+      SDL_SyncWindow(m_nwnd);
    #else // Win32 Windowing
       // TODO this window class is only suitable for main playfield window, use the right one depending on the use scheme
       m_nwnd = ::CreateWindowEx(0, _T("VPPlayer"), title.c_str(), WS_POPUP, wnd_x, wnd_y, m_width, m_height, NULL, NULL, g_pvp->theInstance, NULL);

@@ -1107,6 +1107,16 @@ void VPinball::DoPlay(const int playMode)
                isPFWnd = SDL_GetWindowFromID(e.window.windowID) == g_pplayer->m_playfieldWnd->GetCore();
                g_pvp->QuitPlayer(Player::CloseState::CS_STOP_PLAY);
                break;
+            case SDL_EVENT_WINDOW_RESIZED:
+               int ws, wh;
+               SDL_GetWindowSize(SDL_GetWindowFromID(e.window.windowID), &ws, &wh);
+               PLOGW << "Window resized to " << ws << "x" << wh;
+               SDL_GetWindowSizeInPixels(SDL_GetWindowFromID(e.window.windowID), &ws, &wh);
+               PLOGW << "Window resized to pixels " << ws << "x" << wh;
+               break;
+            case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+               PLOGW << "Window pixel size changed to " << SDL_GetWindowPixelDensity(SDL_GetWindowFromID(e.window.windowID));
+               break;
             case SDL_EVENT_KEY_UP:
             case SDL_EVENT_KEY_DOWN:
                isPFWnd = SDL_GetWindowFromID(e.key.windowID) == g_pplayer->m_playfieldWnd->GetCore();

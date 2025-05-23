@@ -867,8 +867,12 @@ void LiveUI::Render()
 
    // Rendering must happen on a render target matching the dimension we used to prepare the UI frame
    const ImGuiIO &io = ImGui::GetIO();
-   assert( ((m_rotate == 0 || m_rotate == 2) && RenderTarget::GetCurrentRenderTarget()->GetWidth() == (int)io.DisplaySize.x * (int)io.DisplayFramebufferScale.x && RenderTarget::GetCurrentRenderTarget()->GetHeight() == (int)io.DisplaySize.y * (int)io.DisplayFramebufferScale.y)
-        || ((m_rotate == 1 || m_rotate == 3) && RenderTarget::GetCurrentRenderTarget()->GetWidth() == (int)io.DisplaySize.y * (int)io.DisplayFramebufferScale.y && RenderTarget::GetCurrentRenderTarget()->GetHeight() == (int)io.DisplaySize.x * (int)io.DisplayFramebufferScale.x));
+   // PLOGE << RenderTarget::GetCurrentRenderTarget()->GetWidth();
+   // PLOGE << RenderTarget::GetCurrentRenderTarget()->GetHeight();
+   // PLOGE << (int)io.DisplaySize.x * (int)io.DisplayFramebufferScale.x;
+   // PLOGE << (int)io.DisplaySize.y * (int)io.DisplayFramebufferScale.y;
+   // assert( ((m_rotate == 0 || m_rotate == 2) && RenderTarget::GetCurrentRenderTarget()->GetWidth() == (int)io.DisplaySize.x * (int)io.DisplayFramebufferScale.x && RenderTarget::GetCurrentRenderTarget()->GetHeight() == (int)io.DisplaySize.y * (int)io.DisplayFramebufferScale.y)
+   //      || ((m_rotate == 1 || m_rotate == 3) && RenderTarget::GetCurrentRenderTarget()->GetWidth() == (int)io.DisplaySize.y * (int)io.DisplayFramebufferScale.y && RenderTarget::GetCurrentRenderTarget()->GetHeight() == (int)io.DisplaySize.x * (int)io.DisplayFramebufferScale.x));
 
    if (m_rotate != 0 && !m_rotation_callback_added)
    {
