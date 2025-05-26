@@ -278,7 +278,7 @@ static std::string unquote(const std::string& str)
    return str;
 }
 
-std::shared_ptr<MsgPlugin> MsgPluginManager::RegisterPlugin(const std::string& id, const std::string& name, const std::string& description, const std::string& author, const std::string& version, const std::string& link, const msgpi_load_plugin& loadPlugin, const msgpi_unload_plugin& unloadPlugin)
+std::shared_ptr<MsgPlugin> MsgPluginManager::RegisterPlugin(const std::string& id, const std::string& name, const std::string& description, const std::string& author, const std::string& version, const std::string& link, msgpi_load_plugin loadPlugin, msgpi_unload_plugin unloadPlugin)
 {
    assert(loadPlugin != nullptr);
    assert(unloadPlugin != nullptr);
