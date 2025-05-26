@@ -1,6 +1,7 @@
 #include "core/stdafx.h"
 #include "core/vpversion.h"
 #include "core/TableDB.h"
+#include "core/VPXPluginAPIImpl.h"
 
 #include "VPinballLib.h"
 #include "VPXProgress.h"
@@ -12,6 +13,12 @@
 #include "miniz/miniz.h"
 
 #include <filesystem>
+
+MSGPI_EXPORT void MSGPIAPI ScoreViewPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI ScoreViewPluginUnload();
+
+MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI PinMAMEPluginUnload();
 
 namespace VPinballLib {
 
@@ -70,6 +77,18 @@ void VPinball::Init(std::function<void*(Event, void*)> callback)
 
    m_pWebServer = new WebServer();
    m_eventCallback = callback;
+
+   VPXPluginAPIImpl::GetInstance();
+
+   auto scoreviewPlugin = MsgPluginManager::GetInstance().RegisterPlugin(
+       "ScoreView", "ScoreView", "ScoreView", "", "", "", 
+       &ScoreViewPluginLoad, &ScoreViewPluginUnload);
+   scoreviewPlugin->Load(&MsgPluginManager::GetInstance().GetMsgAPI());
+
+   auto pinMamePlugin = MsgPluginManager::GetInstance().RegisterPlugin(
+       "PinMame", "PinMame", "PinMame", "", "", "", 
+       &PinMAMEPluginLoad, &PinMAMEPluginUnload);
+   //pinMamePlugin->Load(&MsgPluginManager::GetInstance().GetMsgAPI());
 }
 
 string VPinball::GetVersionStringFull()

@@ -29,6 +29,10 @@ LPI_IMPLEMENT // Implement shared login support
 #define PATH_SEPARATOR_CHAR '/'
 #endif
 
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#endif
+
 namespace ScoreView
 {
 
@@ -51,7 +55,7 @@ string GetLibraryPath()
 }
 #endif
 
-string PathFromFilename(const string& szfilename)
+static string PathFromFilename(const string& szfilename)
 {
    const int len = (int)szfilename.length();
    // find the last '\' in the filename
@@ -101,16 +105,23 @@ int OnRender(VPXRenderContext2D* ctx, void*)
          if (GetModuleFileName(hm, path, MAX_PATH) == 0)
             return false;
          #ifdef _UNICODE
-            int size_needed = WideCharToMultiByte(CP_UTF8, 0, path, -1, NULL, 0, NULL, NULL);
-            fullpath.resize(size_needed, 0);
-            WideCharToMultiByte(CP_UTF8, 0, path, -1, &fullpath[0], size_needed, NULL, NULL);
+         int size_needed = WideCharToMultiByte(CP_UTF8, 0, path, -1, NULL, 0, NULL, NULL);
+         fullpath.resize(size_needed, 0);
+         WideCharToMultiByte(CP_UTF8, 0, path, -1, &fullpath[0], size_needed, NULL, NULL);
          #else
-            fullpath = string(path);
+         fullpath = string(path);
          #endif
+         fullpath = PathFromFilename(fullpath) + PATH_SEPARATOR_CHAR;
          #else
-         fullpath = GetLibraryPath();
+         #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
+         VPXInfo vpxInfo;
+         vpxApi->GetVpxInfo(&vpxInfo);
+         fullpath = string(vpxInfo.path) + PATH_SEPARATOR_CHAR + "plugins"s + PATH_SEPARATOR_CHAR + "scoreview"s + PATH_SEPARATOR_CHAR;
+         #else
+         fullpath = PathFromFilename(GetLibraryPath());
          #endif
-         scoreview->Load(PathFromFilename(fullpath) + PATH_SEPARATOR_CHAR + "layouts" + PATH_SEPARATOR_CHAR);
+         #endif
+         scoreview->Load(fullpath + "layouts" + PATH_SEPARATOR_CHAR);
       }
    }
    return scoreview->Render(ctx) ? 1 : 0;

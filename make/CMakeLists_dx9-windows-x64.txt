@@ -13,10 +13,6 @@ project(vpinball VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
 
-add_compile_definitions(
-   ENABLE_DX9
-)
-
 set_source_files_properties(
    third-party/include/miniz/miniz.c PROPERTIES LANGUAGE CXX
    third-party/include/hidapi/windows/hid.cpp PROPERTIES SKIP_PRECOMPILE_HEADERS ON
@@ -659,6 +655,10 @@ target_include_directories(vpinball PUBLIC
 
 target_precompile_headers(vpinball PUBLIC
    src/core/stdafx.h
+)
+
+target_compile_definitions(vpinball PRIVATE
+   ENABLE_DX9
 )
 
 set(OPT_COMMON /Ob2 /O2 /Oi /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR /Oy /GT /GL /w44005 /Zc:__cplusplus /std:c++20)

@@ -352,7 +352,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "BUNDLE_RESOURCES=\"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}\"\n\nrm -rf \"${BUNDLE_RESOURCES}/scripts\"\ncp -r \"$PROJECT_DIR/../../scripts\" \"${BUNDLE_RESOURCES}\"\n\nrm -rf \"${BUNDLE_RESOURCES}/assets\"\ncp -r \"$PROJECT_DIR/../../src/assets\" \"${BUNDLE_RESOURCES}\"\n\nrm -rf \"${BUNDLE_RESOURCES}/flexdmd\"\ncp -r \"$PROJECT_DIR/../../standalone/inc/flexdmd/resources\" \"${BUNDLE_RESOURCES}/flexdmd\"\n";
+			shellScript = "BUNDLE_RESOURCES=\"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}\"\n\nrm -rf \"${BUNDLE_RESOURCES}/scripts\"\ncp -r \"$PROJECT_DIR/../../scripts\" \"${BUNDLE_RESOURCES}\"\n\nrm -rf \"${BUNDLE_RESOURCES}/assets\"\ncp -r \"$PROJECT_DIR/../../src/assets\" \"${BUNDLE_RESOURCES}\"\n\nrm -rf \"${BUNDLE_RESOURCES}/flexdmd\"\ncp -r \"$PROJECT_DIR/../../standalone/inc/flexdmd/resources\" \"${BUNDLE_RESOURCES}/flexdmd\"\n\nrm -rf \"${BUNDLE_RESOURCES}/plugins\"\nmkdir -p \"${BUNDLE_RESOURCES}/plugins/scoreview\"\ncp -r \"$PROJECT_DIR/../../plugins/scoreview/layouts\" \"${BUNDLE_RESOURCES}/plugins/scoreview\"\n";
 		};
 		C1FF3F472CB8DD67004D238B /* Copy Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;

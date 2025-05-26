@@ -21,7 +21,7 @@ namespace ScoreView {
 
 template <typename T> constexpr __forceinline T clamp(const T x, const T mn, const T mx) { return std::max(std::min(x, mx), mn); }
 
-string trim_string(const string& str)
+static string trim_string(const string& str)
 {
    string s;
    try
@@ -35,13 +35,13 @@ string trim_string(const string& str)
    return s;
 }
 
-bool try_parse_float(const string& str, float& value)
+static bool try_parse_float(const string& str, float& value)
 {
    std::stringstream sstr(trim_string(str));
    return ((sstr >> value) && sstr.eof());
 }
 
-bool try_parse_int(const string& str, int& value)
+static bool try_parse_int(const string& str, int& value)
 {
    std::stringstream sstr(trim_string(str));
    return ((sstr >> value) && sstr.eof());

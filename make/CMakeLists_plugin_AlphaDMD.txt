@@ -5,64 +5,90 @@
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
 
-add_library(AlphaDMDPlugin MODULE
+set(ALPHADMD_PLUGIN_SOURCES
    plugins/alphadmd/alphadmd.cpp
 )
 
-target_include_directories(AlphaDMDPlugin PUBLIC
-   plugins/alphadmd
-   ${CMAKE_SOURCE_DIR}/third-party/include
-   src/plugins
-)
+if(BUILD_SHARED)
+   add_library(AlphaDMDPlugin MODULE ${ALPHADMD_PLUGIN_SOURCES})
 
-if(PluginPlatform STREQUAL "windows")
-   add_compile_options(
-      $<$<CONFIG:RELEASE>:/Ob2>
-      $<$<CONFIG:RELEASE>:/O2>
-      $<$<CONFIG:RELEASE>:/Oi>
-      $<$<CONFIG:RELEASE>:/arch:SSE2>
-      $<$<CONFIG:RELEASE>:/fp:fast>
-      $<$<CONFIG:RELEASE>:/fp:except->
-      $<$<CONFIG:RELEASE>:/Ot>
-      $<$<CONFIG:RELEASE>:/GF>
-      $<$<CONFIG:RELEASE>:/GS->
-      $<$<CONFIG:RELEASE>:/Gy>
-      $<$<CONFIG:RELEASE>:/GR>
-      $<$<CONFIG:RELEASE>:/Oy>
-      $<$<CONFIG:RELEASE>:/GT>
-      $<$<CONFIG:RELEASE>:/GL>
+   target_include_directories(AlphaDMDPlugin PUBLIC
+      plugins/alphadmd
+      ${CMAKE_SOURCE_DIR}/third-party/include
+      src/plugins
+      src
    )
-   set_target_properties(AlphaDMDPlugin PROPERTIES
-      MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
-   )
-   target_compile_options(AlphaDMDPlugin PUBLIC
-      $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
-      $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
-   )
-   target_link_options(AlphaDMDPlugin PUBLIC
-      $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
-      $<$<CONFIG:RELEASE>:/OPT:REF>
-      $<$<CONFIG:RELEASE>:/OPT:ICF>
-      $<$<CONFIG:RELEASE>:/LTCG>
-   )
-   if(PluginArch STREQUAL "x64")
-      set_target_properties(AlphaDMDPlugin PROPERTIES
-         OUTPUT_NAME "plugin-alphadmd64"
+
+   if(PluginPlatform STREQUAL "windows")
+      add_compile_options(
+         $<$<CONFIG:RELEASE>:/Ob2>
+         $<$<CONFIG:RELEASE>:/O2>
+         $<$<CONFIG:RELEASE>:/Oi>
+         $<$<CONFIG:RELEASE>:/arch:SSE2>
+         $<$<CONFIG:RELEASE>:/fp:fast>
+         $<$<CONFIG:RELEASE>:/fp:except->
+         $<$<CONFIG:RELEASE>:/Ot>
+         $<$<CONFIG:RELEASE>:/GF>
+         $<$<CONFIG:RELEASE>:/GS->
+         $<$<CONFIG:RELEASE>:/Gy>
+         $<$<CONFIG:RELEASE>:/GR>
+         $<$<CONFIG:RELEASE>:/Oy>
+         $<$<CONFIG:RELEASE>:/GT>
+         $<$<CONFIG:RELEASE>:/GL>
       )
+      set_target_properties(AlphaDMDPlugin PROPERTIES
+         MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
+      )
+      target_compile_options(AlphaDMDPlugin PUBLIC
+         $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+         $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
+      )
+      target_link_options(AlphaDMDPlugin PUBLIC
+         $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
+         $<$<CONFIG:RELEASE>:/OPT:REF>
+         $<$<CONFIG:RELEASE>:/OPT:ICF>
+         $<$<CONFIG:RELEASE>:/LTCG>
+      )
+      if(PluginArch STREQUAL "x64")
+         set_target_properties(AlphaDMDPlugin PROPERTIES
+            OUTPUT_NAME "plugin-alphadmd64"
+         )
+      else()
+         set_target_properties(AlphaDMDPlugin PROPERTIES
+            OUTPUT_NAME "plugin-alphadmd"
+         )
+      endif()
    else()
       set_target_properties(AlphaDMDPlugin PROPERTIES
+         PREFIX ""
          OUTPUT_NAME "plugin-alphadmd"
       )
+      if(PluginPlatform STREQUAL "macos")
+         set_target_properties(AlphaDMDPlugin PROPERTIES
+            SUFFIX ".dylib"
+         )
+      endif()
    endif()
-else()
+
+   add_custom_command(TARGET AlphaDMDPlugin POST_BUILD
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/alphadmd/plugin.cfg" "${PLUGINS_DIR}/alphadmd/plugin.cfg"
+      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:AlphaDMDPlugin>" "${PLUGINS_DIR}/alphadmd"
+      COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:AlphaDMDPlugin>"
+   )
+endif()
+
+if(BUILD_STATIC)
+   add_library(AlphaDMDPlugin STATIC ${ALPHADMD_PLUGIN_SOURCES})
+
+   target_include_directories(AlphaDMDPlugin PUBLIC
+      plugins/alphadmd
+      ${CMAKE_SOURCE_DIR}/third-party/include
+      src/plugins
+      src
+   )
+
    set_target_properties(AlphaDMDPlugin PROPERTIES
       PREFIX ""
       OUTPUT_NAME "plugin-alphadmd"
    )
 endif()
-
-add_custom_command(TARGET AlphaDMDPlugin POST_BUILD
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/alphadmd/plugin.cfg" "${PLUGINS_DIR}/alphadmd/plugin.cfg"
-   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:AlphaDMDPlugin>" "${PLUGINS_DIR}/alphadmd"
-   COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:AlphaDMDPlugin>"
-)

@@ -6,6 +6,19 @@
 ///////////////////////////////////////////////////////////////////////////////
 // General information API
 
+void VPXPluginAPIImpl::GetVpxInfo(VPXInfo* info)
+{
+   if (g_pplayer != nullptr)
+   {
+      info->path = g_pvp->m_szMyPath.c_str();
+      info->prefPath = g_pvp->m_szMyPrefPath.c_str();
+   }
+   else
+   {
+      memset(info, 0, sizeof(VPXInfo));
+   }
+}
+
 void VPXPluginAPIImpl::GetTableInfo(VPXTableInfo* info)
 {
    // Only valid in game
@@ -382,6 +395,7 @@ VPXPluginAPIImpl::VPXPluginAPIImpl() : m_apiThread(std::this_thread::get_id())
       });
 
    // VPX API
+   m_api.GetVpxInfo = GetVpxInfo;
    m_api.GetTableInfo = GetTableInfo;
 
    m_api.GetOption = GetOption;

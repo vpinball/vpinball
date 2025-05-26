@@ -43,28 +43,6 @@ find_package(BISON 3.8.2 REQUIRED)
 bison_target(vbsparser ${CMAKE_SOURCE_DIR}/standalone/inc/wine/dlls/vbscript/parser.y ${CMAKE_SOURCE_DIR}/standalone/inc/wine/dlls/vbscript/parser.tab.c 
 	     DEFINES_FILE ${CMAKE_SOURCE_DIR}/standalone/inc/wine/dlls/vbscript/parser.tab.h)
 
-add_compile_definitions(
-   __STANDALONE__
-   __LIBVPINBALL__
-
-   ENABLE_BGFX
-   ENABLE_SDL_VIDEO
-   ENABLE_SDL_INPUT
-
-   __WINESRC__
-   WINE_UNICODE_NATIVE
-
-   WINE_NO_TRACE_MSGS
-   WINE_NO_DEBUG_MSGS
-
-   $<$<CONFIG:DEBUG>:BX_CONFIG_DEBUG=1>
-   $<$<CONFIG:RELEASE>:BX_CONFIG_DEBUG=0>
-)
-
-add_definitions( 
-   "-D__forceinline=__attribute__((always_inline)) inline" 
-)
-
 set(VPINBALL_SOURCES
    src/core/def.h
    src/parts/dragpoint.cpp
@@ -697,6 +675,26 @@ target_include_directories(vpinball PUBLIC
 target_precompile_headers(vpinball PUBLIC
 )
 
+target_compile_definitions(vpinball PRIVATE
+    __STANDALONE__
+    __LIBVPINBALL__
+
+    ENABLE_BGFX
+    ENABLE_SDL_VIDEO
+    ENABLE_SDL_INPUT
+
+    __WINESRC__
+    WINE_UNICODE_NATIVE
+
+    WINE_NO_TRACE_MSGS
+    WINE_NO_DEBUG_MSGS
+
+    $<$<CONFIG:Debug>:BX_CONFIG_DEBUG=1>
+    $<$<CONFIG:Release>:BX_CONFIG_DEBUG=0>
+
+    "__forceinline=__attribute__((always_inline)) inline"
+)
+
 target_compile_options(vpinball PUBLIC
    -fvisibility=hidden
    -Wno-inconsistent-missing-override
@@ -745,6 +743,17 @@ target_link_libraries(vpinball PUBLIC
    avutil
    swresample
    swscale
+   AlphaDMDPlugin
+   B2SPlugin
+   DMDUtilPlugin
+   FlexDMDPlugin
+   HelloScriptPlugin
+   HelloWorldPlugin
+   PinMamePlugin
+   PUPPlugin
+   RemoteControlPlugin
+   ScoreViewPlugin
+   SerumPlugin
 )
 
 if(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator")
@@ -799,3 +808,7 @@ if(PLATFORM STREQUAL "android")
       COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PLATFORM}-${ARCH}/*.so" "$<TARGET_FILE_DIR:vpinball>"
    )
 endif()
+
+set(PluginPlatform "${PLATFORM}")
+set(PluginArch "${ARCH}")
+include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugins.txt")

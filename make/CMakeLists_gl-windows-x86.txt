@@ -25,13 +25,6 @@ set_target_properties(glad PROPERTIES
    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
 )
 
-add_compile_definitions(
-   ENABLE_SDL_INPUT
-   ENABLE_SDL_VIDEO
-   ENABLE_OPENGL
-   USE_DINPUT8
-)
-
 set_source_files_properties(
    third-party/include/miniz/miniz.c PROPERTIES LANGUAGE CXX
    third-party/include/hidapi/windows/hid.cpp PROPERTIES SKIP_PRECOMPILE_HEADERS ON
@@ -616,6 +609,13 @@ target_include_directories(vpinball PUBLIC
 
 target_precompile_headers(vpinball PUBLIC
    src/core/stdafx.h
+)
+
+target_compile_definitions(vpinball PRIVATE
+   ENABLE_SDL_INPUT
+   ENABLE_SDL_VIDEO
+   ENABLE_OPENGL
+   USE_DINPUT8
 )
 
 set(OPT_COMMON /Ob2 /O2 /Oi /arch:SSE2 /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR /Oy /GT /GL /w44005 /Zc:__cplusplus /std:c++20)

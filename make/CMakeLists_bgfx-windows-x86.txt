@@ -13,16 +13,6 @@ project(vpinball VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
 
-add_compile_definitions(
-   ENABLE_SDL_INPUT
-   ENABLE_SDL_VIDEO
-   ENABLE_BGFX
-   ENABLE_XR
-   USE_DINPUT8
-   $<$<CONFIG:DEBUG>:BX_CONFIG_DEBUG=1>
-   $<$<CONFIG:RELEASE>:BX_CONFIG_DEBUG=0>
-)
-
 set_source_files_properties(
    third-party/include/miniz/miniz.c PROPERTIES LANGUAGE CXX
    third-party/include/hidapi/windows/hid.cpp PROPERTIES SKIP_PRECOMPILE_HEADERS ON
@@ -611,6 +601,16 @@ target_include_directories(vpinball PUBLIC
 
 target_precompile_headers(vpinball PUBLIC
    src/core/stdafx.h
+)
+
+target_compile_definitions(vpinball PRIVATE
+   ENABLE_SDL_INPUT
+   ENABLE_SDL_VIDEO
+   ENABLE_BGFX
+   ENABLE_XR
+   USE_DINPUT8
+   $<$<CONFIG:DEBUG>:BX_CONFIG_DEBUG=1>
+   $<$<CONFIG:RELEASE>:BX_CONFIG_DEBUG=0>
 )
 
 set(OPT_COMMON /Ob2 /O2 /Oi /arch:SSE2 /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR /Oy /GT /GL /w44005 /Zc:__cplusplus /std:c++20)
