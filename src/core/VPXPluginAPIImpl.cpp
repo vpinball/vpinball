@@ -251,6 +251,11 @@ void VPXPluginAPIImpl::OnScriptError(unsigned int type, const char* message)
    // FIXME implement in DynamicDispatch
 }
 
+ScriptClassDef* VPXPluginAPIImpl::GetClassDef(const char* typeName)
+{
+   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
+   return pi.m_dynamicTypeLibrary.ResolveClass(typeName);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // API to support overriding legacy COM objects
@@ -431,6 +436,7 @@ VPXPluginAPIImpl::VPXPluginAPIImpl() : m_apiThread(std::this_thread::get_id())
    m_scriptableApi.SubmitTypeLibrary = SubmitTypeLibrary;
    m_scriptableApi.SetCOMObjectOverride = SetCOMObjectOverride;
    m_scriptableApi.OnError = OnScriptError;
+   m_scriptableApi.GetClassDef = GetClassDef;
    msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, msgApi.GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API), &OnGetScriptablePluginAPI, nullptr);
 
    // Generic controller API
