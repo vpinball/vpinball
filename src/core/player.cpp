@@ -2180,13 +2180,6 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
    rd->m_basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
    rd->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
    rd->m_DMDShader->SetFloat(SHADER_alphaTestValue, -1.0f);
-   rd->ResetRenderState();
-   rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-   rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-   rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-   rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
-   rd->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
-   rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
 
    // Performing linear rendering + tonemapping is overkill when used for LDR rendering (Pup pack, B2S,...)
    constexpr bool enableHDR = true; // TODO still needs to implement sRGB image drawing when render target is non linear
@@ -2229,6 +2222,13 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
          {
             BaseTexture *const tex = static_cast<BaseTexture *>(texture);
             RenderDevice * const rd = g_pplayer->m_renderer->m_renderDevice;
+            rd->ResetRenderState();
+            rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+            rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+            rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+            rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
+            rd->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
+            rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
             rd->SetRenderState(RenderState::ALPHABLENDENABLE, (alpha != 1.f || !tex->IsOpaque()) ? RenderState::RS_TRUE : RenderState::RS_FALSE);
             rd->m_basicShader->SetVector(SHADER_cBase_Alpha, tintR, tintG, tintB, alpha);
             rd->m_basicShader->SetTexture(SHADER_tex_base_color, tex);
