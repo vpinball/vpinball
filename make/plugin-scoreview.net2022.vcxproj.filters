@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="source">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="../../plugins/scoreview/ScoreViewPlugin.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="../../plugins/scoreview/ScoreView.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="../../src/core/ResURIResolver.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="../../plugins/scoreview/ScoreView.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="../../src/core/ResURIResolver.h">
+      <Filter>source</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="../../plugins/scoreview/plugin.cfg">
+      <Filter>source</Filter>
+    </CopyFileToFolders>
+  </ItemGroup>
+</Project>

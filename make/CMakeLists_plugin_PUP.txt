@@ -146,6 +146,7 @@ if(PluginPlatform STREQUAL "windows")
          COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/AVUTIL64.dll" "${PLUGINS_DIR}/pup/AVUTIL64-59.dll"
          COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/SWRESAMPLE64.dll" "${PLUGINS_DIR}/pup/SWRESAMPLE64-5.dll"
          COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/SWSCALE64.dll" "${PLUGINS_DIR}/pup/SWSCALE64-8.dll"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/pupdmd64.dll" "${PLUGINS_DIR}/pup/pupdmd64.dll"
       )
    elseif (PluginArch STREQUAL "x86")
       add_custom_command(TARGET PUPPlugin POST_BUILD
@@ -160,6 +161,7 @@ if(PluginPlatform STREQUAL "windows")
          COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/AVUTIL.dll" "${PLUGINS_DIR}/pup/AVUTIL-59.dll"
          COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/SWRESAMPLE.dll" "${PLUGINS_DIR}/pup/SWRESAMPLE-5.dll"
          COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/SWSCALE.dll" "${PLUGINS_DIR}/pup/SWSCALE-8.dll"
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/pupdmd.dll" "${PLUGINS_DIR}/pup/pupdmd.dll"
       )
    endif()
 endif()
