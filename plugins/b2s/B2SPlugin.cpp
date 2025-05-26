@@ -10,8 +10,6 @@
 #include "B2SRenderer.h"
 #include "B2SServer.h"
 
-#include "libpinmame.h"
-
 namespace B2S {
    
 LPI_IMPLEMENT // Implement shared login support
@@ -22,142 +20,51 @@ LPI_IMPLEMENT // Implement shared login support
 // - implement COM B2S Server which can be used as a game controller,
 //   in turn, eventually using PinMAME plugin if requested
 
+static MsgPluginAPI* msgApi = nullptr;
+static VPXPluginAPI* vpxApi = nullptr;
+static ScriptablePluginAPI* scriptApi = nullptr;
+static uint32_t endpointId;
+static unsigned int onGameStartId, onGameEndId, onGetAuxRendererId, onAuxRendererChgId;
+static std::thread::id apiThread;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Script interface
 //
 
-PSC_ARRAY1(ByteArray, uint8, 0)
-#define PSC_VAR_SET_ByteArray(variant, value) PSC_VAR_SET_array1(ByteArray, variant, value)
-#define PSC_VAR_ByteArray(variant) PSC_VAR_array1(uint8_t, variant)
+static ScriptClassDef* pinmameClassDef = nullptr;
+static void* pinmameInstance = nullptr;
+static int pinmameMemberStartIndex = 0;
 
-PSC_ARRAY1(IntArray, int32, 0)
-#define PSC_VAR_SET_IntArray(variant, value) PSC_VAR_SET_array1(IntArray, variant, value)
-
-// Map an array of struct to a 2 dimensions array of int32_t
-PSC_ARRAY2(StructArray, int32, 0, 0)
-#define PSC_VAR_SET_StructArray2(structType, fieldName1, fieldName2, variant, value) { \
-      const unsigned int nDimensions = 2; \
-      const std::vector<structType>& vec = (value); \
-      const size_t size0 = vec.size(); \
-      ScriptArray* array = static_cast<ScriptArray*>(malloc(sizeof(ScriptArray) + nDimensions * sizeof(int) + size0 * 2 * sizeof(int32_t))); \
-      array->Release = [](ScriptArray* me) { free(me); }; \
-      array->lengths[0] = static_cast<unsigned int>(vec.size()); \
-      array->lengths[1] = 2; \
-      int32_t* pData = reinterpret_cast<int32_t*>(&array->lengths[2]); \
-      for (size_t i = 0; i < size0; i++, pData += 2) { \
-         pData[0] = vec[i].fieldName1; \
-         pData[1] = vec[i].fieldName2; \
-      } \
-      (variant).vArray = array; \
-   }
-#define PSC_VAR_SET_StructArray3(structType, fieldName1, fieldName2, fieldName3, variant, value) { \
-      const unsigned int nDimensions = 3; \
-      const std::vector<structType>& vec = (value); \
-      const size_t size0 = vec.size(); \
-      ScriptArray* array = static_cast<ScriptArray*>(malloc(sizeof(ScriptArray) + nDimensions * sizeof(int) + size0 * 3 * sizeof(int32_t))); \
-      array->Release = [](ScriptArray* me) { free(me); }; \
-      array->lengths[0] = static_cast<unsigned int>(vec.size()); \
-      array->lengths[1] = 3; \
-      int32_t* pData = reinterpret_cast<int32_t*>(&array->lengths[2]); \
-      for (size_t i = 0; i < size0; i++, pData += 3) { \
-         pData[0] = vec[i].fieldName1; \
-         pData[1] = vec[i].fieldName2; \
-         pData[2] = vec[i].fieldName3; \
-      } \
-      (variant).vArray = array; \
-   }
-
-#define PSC_PROP_R_StructArray2(className, type, fieldName1, fieldName2, name) \
-   members.push_back( { { #name }, { "StructArray" }, 0, { }, \
-      [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         PSC_VAR_SET_StructArray2(type, fieldName1, fieldName2, *pRet, static_cast<className*>(me)->Get##name()); } });
-
-#define PSC_PROP_R_StructArray3(className, type, fieldName1, fieldName2, fieldName3, name) \
-   members.push_back( { { #name }, { "StructArray" }, 0, { }, \
-      [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         PSC_VAR_SET_StructArray3(type, fieldName1, fieldName2, fieldName3, *pRet, static_cast<className*>(me)->Get##name()); } });
-#define PSC_PROP_R_StructArray3_2(className, type, fieldName1, fieldName2, fieldName3, name, arg1, arg2) \
-   members.push_back( { { #name }, { "StructArray" }, 2, { { #arg1 }, { #arg2 } }, \
-      [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         PSC_VAR_SET_StructArray3(type, fieldName1, fieldName2, fieldName3, *pRet, static_cast<className*>(me)->Get##name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]) )); } } );
-#define PSC_PROP_R_StructArray3_3(className, type, fieldName1, fieldName2, fieldName3, name, arg1, arg2, arg3) \
-   members.push_back( { { #name }, { "StructArray"}, 3, { { #arg1 }, { #arg2 }, { #arg3 } }, \
-      [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         PSC_VAR_SET_StructArray3(type, fieldName1, fieldName2, fieldName3, *pRet, static_cast<className*>(me)->Get##name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]) )); } } );
-#define PSC_PROP_R_StructArray3_4(className, type, fieldName1, fieldName2, fieldName3, name, arg1, arg2, arg3, arg4) \
-   members.push_back( { { #name }, { "StructArray" }, 4, { { #arg1 }, { #arg2 }, { #arg3 }, { #arg4 } }, \
-      [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
-         PSC_VAR_SET_StructArray3(type, fieldName1, fieldName2, fieldName3, *pRet, static_cast<className*>(me)->Get##name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]) )); } } );
+void MSGPIAPI ForwardPinMAMECall(void* me, int memberIndex, ScriptVariant* pArgs, ScriptVariant* pRet)
+{
+   assert(pinmameClassDef);
+   if (pinmameClassDef == nullptr)
+      return;
+   if (pinmameInstance == nullptr)
+      pinmameInstance = pinmameClassDef->CreateObject();
+   const int index = memberIndex - pinmameMemberStartIndex;
+   pinmameClassDef->members[index].Call(pinmameInstance, index, pArgs, pRet);
+}
 
 PSC_CLASS_START(B2SServer)
    PSC_FUNCTION0(B2SServer, void, Dispose)
-   PSC_PROP_R(B2SServer, string, B2SServerVersion)
-   PSC_PROP_R(B2SServer, double, B2SBuildVersion)
-   PSC_PROP_R(B2SServer, string, B2SServerDirectory)
-
-   // PinMame encapsulation (more or less a mirror of VPinMame interface but not strictly, also impacting B2S controller state)
-   PSC_PROP_RW(B2SServer, string, GameName)
-   PSC_PROP_R(B2SServer, string, ROMName)
-   PSC_PROP_RW(B2SServer, string, B2SName)
    PSC_PROP_RW(B2SServer, string, TableName)
    PSC_PROP_W(B2SServer, string, WorkingDir)
    PSC_FUNCTION1(B2SServer, void, SetPath, string)
-   // [id(0x0000000b), propget] HRESULT Games([in] BSTR GameName, [out, retval] VARIANT* pRetVal);
-   // [id(0x0000000c), propget] HRESULT Settings([out, retval] VARIANT* pRetVal);
-   PSC_PROP_R(B2SServer, bool, Running)
-   PSC_PROP_W(B2SServer, double, TimeFence)
-   PSC_PROP_RW(B2SServer, bool, Pause)
-   PSC_PROP_R(B2SServer, string, Version)
    PSC_PROP_R(B2SServer, string, VPMBuildVersion)
-   PSC_FUNCTION0(B2SServer, void, Run)
-   PSC_FUNCTION1(B2SServer, void, Run, int32)
-   PSC_FUNCTION0(B2SServer, void, Stop)
    PSC_PROP_RW(B2SServer, bool, LaunchBackglass)
-   PSC_PROP_RW(B2SServer, string, SplashInfoLine)
-   PSC_PROP_RW(B2SServer, bool, ShowFrame)
-   PSC_PROP_RW(B2SServer, bool, ShowTitle)
-   PSC_PROP_RW(B2SServer, bool, ShowDMDOnly)
-   PSC_PROP_RW(B2SServer, bool, ShowPinDMD)
    PSC_PROP_RW(B2SServer, bool, LockDisplay)
-   PSC_PROP_RW(B2SServer, bool, DoubleSize)
-   PSC_PROP_RW(B2SServer, bool, Hidden)
-   // [id(0x0000001d)] HRESULT SetDisplayPosition([in] VARIANT x, [in] VARIANT y, [in, optional] VARIANT handle);
-   // [id(0x0000001e)] HRESULT ShowOptsDialog([in] VARIANT handle);
-   // [id(0x0000001f)] HRESULT ShowPathesDialog([in] VARIANT handle);
-   // [id(0x00000020)] HRESULT ShowAboutDialog([in] VARIANT handle);
-   // [id(0x00000021)] HRESULT CheckROMS([in] VARIANT showoptions, [in] VARIANT handle);
    PSC_PROP_RW(B2SServer, bool, PuPHide)
-   PSC_PROP_RW(B2SServer, bool, HandleKeyboard)
-   PSC_PROP_RW(B2SServer, bool, HandleMechanics)
-   PSC_PROP_R_StructArray2(B2SServer, PinmameLampState, lampNo, state, ChangedLamps);
-   PSC_PROP_R_StructArray2(B2SServer, PinmameSolenoidState, solNo, state, ChangedSolenoids);
-   PSC_PROP_R_StructArray2(B2SServer, PinmameGIState, giNo, state, ChangedGIStrings);
-   PSC_PROP_R_StructArray3_2(B2SServer, PinmameLEDState, ledNo, chgSeg, state, ChangedLEDs, int, int);
-   PSC_PROP_R_StructArray3_3(B2SServer, PinmameLEDState, ledNo, chgSeg, state, ChangedLEDs, int, int, int);
-   PSC_PROP_R_StructArray3_4(B2SServer, PinmameLEDState, ledNo, chgSeg, state, ChangedLEDs, int, int, int, int);
-   PSC_PROP_R_StructArray2(B2SServer, PinmameSoundCommand, sndNo, sndNo, NewSoundCommands); // 2nd field is unused
-   PSC_PROP_R_ARRAY1(B2SServer, bool, Lamp, int)
-   PSC_PROP_R_ARRAY1(B2SServer, bool, Solenoid, int)
-   PSC_PROP_R_ARRAY1(B2SServer, int32, GIString, int)
-   PSC_PROP_RW_ARRAY1(B2SServer, bool, Switch, int)
-   PSC_PROP_W_ARRAY1(B2SServer, int32, Mech, int)
-   PSC_PROP_R_ARRAY1(B2SServer, int32, GetMech, int)
-   PSC_PROP_RW_ARRAY1(B2SServer, int32, Dip, int)
-   PSC_PROP_RW_ARRAY1(B2SServer, int32, SolMask, int)
-   PSC_PROP_R(B2SServer, int, RawDmdWidth)
-   PSC_PROP_R(B2SServer, int, RawDmdHeight)
-   PSC_PROP_R(B2SServer, ByteArray, RawDmdPixels)
-   PSC_PROP_R(B2SServer, IntArray, RawDmdColoredPixels)
-   PSC_PROP_R_StructArray3(B2SServer, PinmameNVRAMState, nvramNo, oldStat, currStat, ChangedNVRAM);
-   // [id(0x00000037), propget] HRESULT NVRAM([out, retval] VARIANT* pRetVal);
-   PSC_PROP_RW(B2SServer, int, SoundMode)
-
+   PSC_PROP_RW(B2SServer, string, B2SName)
+   PSC_PROP_R(B2SServer, string, B2SServerVersion)
+   PSC_PROP_R(B2SServer, double, B2SBuildVersion)
+   PSC_PROP_R(B2SServer, string, B2SServerDirectory)
    PSC_FUNCTION2(B2SServer, void, B2SSetData, int, int)
    PSC_FUNCTION2(B2SServer, void, B2SSetData, string, int)
    PSC_FUNCTION1(B2SServer, void, B2SPulseData, int)
    PSC_FUNCTION1(B2SServer, void, B2SPulseData, string)
-/*   PSC_FUNCTION3(B2SServer, void, B2SSetPos, int, int, int)
+   PSC_FUNCTION3(B2SServer, void, B2SSetPos, int, int, int)
    PSC_FUNCTION3(B2SServer, void, B2SSetPos, string, int, int)
    PSC_FUNCTION2(B2SServer, void, B2SSetIllumination, string, int)
    PSC_FUNCTION2(B2SServer, void, B2SSetLED, int, int)
@@ -198,7 +105,7 @@ PSC_CLASS_START(B2SServer)
    PSC_FUNCTION2(B2SServer, void, B2SStartAnimation, string, bool)
    PSC_FUNCTION1(B2SServer, void, B2SStartAnimationReverse, string)
    PSC_FUNCTION1(B2SServer, void, B2SStopAnimation, string)
-   PSC_FUNCTION1(B2SServer, void, B2SStopAllAnimations, string)
+   PSC_FUNCTION0(B2SServer, void, B2SStopAllAnimations)
    PSC_PROP_R_ARRAY1(B2SServer, bool, B2SIsAnimationRunning, string)
    PSC_FUNCTION1(B2SServer, void, StartAnimation, string)
    PSC_FUNCTION2(B2SServer, void, StartAnimation, string, bool)
@@ -209,20 +116,26 @@ PSC_CLASS_START(B2SServer)
    PSC_FUNCTION0(B2SServer, void, B2SHideScoreDisplays)
    PSC_FUNCTION1(B2SServer, void, B2SStartSound, string)
    PSC_FUNCTION1(B2SServer, void, B2SPlaySound, string)
-   PSC_FUNCTION1(B2SServer, void, B2SStopSound, string)*/
-   // [id(0x00000064)] HRESULT B2SMapSound([in] VARIANT digit, [in] BSTR soundname);
+   PSC_FUNCTION1(B2SServer, void, B2SStopSound, string)
+   PSC_FUNCTION2(B2SServer, void, B2SMapSound, int, string)
+
+   // PinMame API mirroring inside B2SServer
+   if (pinmameClassDef)
+   {
+      pinmameMemberStartIndex = static_cast<int>(members.size());
+      for (unsigned int i = 0; i < pinmameClassDef->nMembers; i++)
+      {
+         ScriptClassMemberDef member = pinmameClassDef->members[i];
+         member.Call = ForwardPinMAMECall;
+         members.push_back(member);
+      }
+   }
 PSC_CLASS_END(B2SServer)
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // Renderer
 //
-
-static MsgPluginAPI* msgApi = nullptr;
-static VPXPluginAPI* vpxApi = nullptr;
-static uint32_t endpointId;
-static unsigned int onGameStartId, onGameEndId, onGetAuxRendererId, onAuxRendererChgId;
-static std::thread::id apiThread;
 
 std::future<std::shared_ptr<B2STable>> loadedB2S;
 B2SRenderer* renderer = nullptr;
@@ -284,6 +197,9 @@ void OnGameEnd(const unsigned int eventId, void* userData, void* eventData)
       loadedB2S.get();
    delete renderer;
    renderer = nullptr;
+   if (pinmameInstance)
+      PSC_RELEASE(pinmameClassDef, pinmameInstance);
+   pinmameInstance = nullptr;
 }
 
 int OnRender(VPXRenderContext2D* ctx, void*)
@@ -321,6 +237,28 @@ void OnGetRenderer(const unsigned int msgId, void* context, void* msgData)
    }
 }
 
+// Only register if PinMAME is available
+void RegisterServerObject(void* userData)
+{
+   pinmameClassDef = scriptApi->GetClassDef("Controller");
+   if (pinmameClassDef != nullptr)
+   {
+      auto regLambda = [&](ScriptClassDef* scd) { scriptApi->RegisterScriptClass(scd); };
+      RegisterB2SServerSCD(regLambda);
+      B2SServer_SCD->CreateObject = []()
+      {
+         B2SServer* server = new B2SServer();
+         return static_cast<void*>(server);
+      };
+      scriptApi->SubmitTypeLibrary();
+      scriptApi->SetCOMObjectOverride("B2S.Server", B2SServer_SCD);
+   }
+   else
+   {
+      msgApi->RunOnMainThread(0.1, RegisterServerObject, nullptr);
+   }
+}
+
 }
 
 using namespace B2S;
@@ -341,10 +279,18 @@ MSGPI_EXPORT void MSGPIAPI B2SPluginLoad(const uint32_t sessionId, MsgPluginAPI*
 
    msgApi->SubscribeMsg(endpointId, onGetAuxRendererId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER), OnGetRenderer, nullptr);
    msgApi->BroadcastMsg(endpointId, onAuxRendererChgId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG), nullptr);
+
+   // Contribute our API to the script engine
+   const unsigned int getScriptApiId = msgApi->GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API);
+   msgApi->BroadcastMsg(endpointId, getScriptApiId, &scriptApi);
+   msgApi->ReleaseMsgID(getScriptApiId);
+   RegisterServerObject(nullptr);
 }
 
 MSGPI_EXPORT void MSGPIAPI B2SPluginUnload()
 {
+   scriptApi->SetCOMObjectOverride("B2S.Server", nullptr);
+   // TODO we should unregister the script API contribution
    msgApi->UnsubscribeMsg(onGetAuxRendererId, OnGetRenderer);
    msgApi->UnsubscribeMsg(onGameStartId, OnGameStart);
    msgApi->UnsubscribeMsg(onGameEndId, OnGameEnd);

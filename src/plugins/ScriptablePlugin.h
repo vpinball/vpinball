@@ -134,6 +134,10 @@ typedef struct ScriptablePluginAPI
 
    // Allows to request a COM object to be overriden by our own implementation
    void (MSGPIAPI *SetCOMObjectOverride)(const char* className, const ScriptClassDef* classDef);
+   
+   // Allow to use declared type library by other plugin
+   ScriptClassDef* (MSGPIAPI *GetClassDef)(const char* typeName);
+
 } ScriptablePluginAPI;
 
 
@@ -141,11 +145,12 @@ typedef struct ScriptablePluginAPI
 
 ///////////////////////////////////////////////////////////////////////////////
 // 
-// The following helper macros are designed to easily bridge C++ objects,
-// they use assert and std::vector. A simple ref counted pointer is also
-// provided for easy integration.
+// The following helper macros are designed to easily expose C++ objects.
 //
 #ifdef __cplusplus
+
+#include <cassert>
+#include <vector>
 
 #define PSC_USE_ERROR() extern void PSCOnError(unsigned int type, const char* format, ...)
 #define PSC_FAIL(...) PSCOnError(PSC_ERR_FAIL, __VA_ARGS__)

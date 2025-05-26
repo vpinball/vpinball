@@ -112,7 +112,7 @@ private:
    unsigned int m_onDmdSrcChangedId = 0, m_getDmdSrcId = 0;
    unsigned int m_onDevSrcChangedId = 0, m_getDevSrcId = 0;
    unsigned int m_onInputSrcChangedId = 0, m_getInputSrcId = 0;
-   unsigned int m_onSerumTriggerId = 0;
+   unsigned int m_onSerumTriggerId = 0, m_onDmdTriggerId = 0;
    DevSrcId m_pinmameDevSrc { 0 };
    unsigned int m_nPMSolenoids = 0;
    int m_PMGIIndex = -1;

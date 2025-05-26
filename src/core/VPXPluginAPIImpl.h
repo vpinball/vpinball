@@ -74,6 +74,7 @@ private:
    static void SubmitTypeLibrary();
    static void OnScriptError(unsigned int type, const char* message);
    static void SetCOMObjectOverride(const char* className, const ScriptClassDef* classDef);
+   static ScriptClassDef* GetClassDef(const char* typeName);
 
    ankerl::unordered_dense::map<string, const ScriptClassDef*> m_scriptCOMObjectOverrides;
    DynamicTypeLibrary m_dynamicTypeLibrary;

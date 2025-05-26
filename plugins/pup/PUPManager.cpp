@@ -389,6 +389,22 @@ void PUPManager::ProcessQueue()
          dmdTrigger = m_dmd->Match(m_rgbFrame, 128, 32, false);
          if (dmdTrigger == 0) // 0 is unmatched for libpupdmd, but D0 is init trigger for PUP
             dmdTrigger = -1;
+         else
+         {
+            // Broadcast event on plugin message bus
+            struct DmdEvent
+            {
+               PUPManager* manager;
+               int dmdTrigger;
+            };
+            DmdEvent* event = new DmdEvent();
+            *event = { this, dmdTrigger };
+            m_msgApi->RunOnMainThread(0, [](void* userData) {
+               DmdEvent* event = static_cast<DmdEvent*>(userData);
+               event->manager->m_msgApi->BroadcastMsg(event->manager->m_endpointId, event->manager->m_onDmdTriggerId, &event->dmdTrigger);
+               delete event;
+            }, event);
+         }
       }
 
       for (auto& [key, screen] : m_screenMap)
@@ -475,6 +491,7 @@ void PUPManager::Start()
    m_getDmdSrcId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
    m_onDmdSrcChangedId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
    m_onSerumTriggerId = m_msgApi->GetMsgID("Serum", "OnDmdTrigger");
+   m_onDmdTriggerId = m_msgApi->GetMsgID("PinUp", "OnDmdTrigger");
 
    m_getDevSrcId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_GET_SRC_MSG);
    m_onDevSrcChangedId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_ON_SRC_CHG_MSG);
@@ -532,6 +549,7 @@ void PUPManager::Stop()
    m_msgApi->ReleaseMsgID(m_getDmdSrcId);
    m_msgApi->ReleaseMsgID(m_onDmdSrcChangedId);
    m_msgApi->ReleaseMsgID(m_onSerumTriggerId);
+   m_msgApi->ReleaseMsgID(m_onDmdTriggerId);
 }
 
 int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
