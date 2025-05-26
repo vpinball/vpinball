@@ -37,7 +37,7 @@ public:
       , m_loadPlugin(nullptr)
       , m_unloadPlugin(nullptr) { }
    MsgPlugin(const std::string& id, const std::string& name, const std::string& description, const std::string& author, const std::string& version, const std::string& link,
-      const msgpi_load_plugin& loadPlugin, const msgpi_unload_plugin& unloadPlugin, const unsigned int endpointId)
+      msgpi_load_plugin loadPlugin, msgpi_unload_plugin unloadPlugin, const unsigned int endpointId)
       : m_id(id)
       , m_name(name)
       , m_description(description)
@@ -83,7 +83,7 @@ public:
    static MsgPluginManager& GetInstance();
    ~MsgPluginManager();
 
-   std::shared_ptr<MsgPlugin> RegisterPlugin(const std::string& id, const std::string& name, const std::string& description, const std::string& author, const std::string& version, const std::string& link, const msgpi_load_plugin& loadPlugin, const msgpi_unload_plugin& unloadPlugin);
+   std::shared_ptr<MsgPlugin> RegisterPlugin(const std::string& id, const std::string& name, const std::string& description, const std::string& author, const std::string& version, const std::string& link, msgpi_load_plugin loadPlugin, msgpi_unload_plugin unloadPlugin);
    void ScanPluginFolder(const std::string& pluginDir, const std::function<void(MsgPlugin&)>& callback);
    std::shared_ptr<MsgPlugin> GetPlugin(const std::string& pluginId) const;
    const MsgPluginAPI& GetMsgAPI() const { return m_api; }
