@@ -6,7 +6,6 @@
 #include <cstdlib>
 #include <memory>
 
-
 #include "plugins/MsgPlugin.h"
 #include "plugins/VPXPlugin.h"
 #include "core/ResURIResolver.h"
@@ -29,9 +28,24 @@ static std::unique_ptr<ScoreView> scoreview;
 #include <locale>
 #include <codecvt>
 #define PATH_SEPARATOR_CHAR '\\'
-
 #else
+#include <dlfcn.h>
+#include <limits.h>
+#include <unistd.h>
 #define PATH_SEPARATOR_CHAR '/'
+#endif
+
+#ifndef _WIN32
+string GetLibraryPath()
+{
+   Dl_info info{};
+   if (dladdr((void*)&GetLibraryPath, &info) == 0 || !info.dli_fname)
+      return "";
+   char buf[PATH_MAX];
+   if (!realpath(info.dli_fname, buf))
+      return "";
+   return string(buf);
+}
 #endif
 
 string PathFromFilename(const string& szfilename)
@@ -75,8 +89,8 @@ int OnRender(VPXRenderContext2D* ctx, void*)
       {
          // Load default layouts provided with plugin
          // TODO this is implemented in a platform dependent manner as platforms like Android or iOS may need special handling (as plugins are statically linked, and we may embbed layouts in ressources or define a custom path scheme)
+         string fullpath;
          #ifdef _WIN32
-
          HMODULE hm = nullptr;
          if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, _T("PluginLoad"), &hm) == 0)
             return false;
@@ -85,14 +99,15 @@ int OnRender(VPXRenderContext2D* ctx, void*)
             return false;
          #ifdef _UNICODE
             int size_needed = WideCharToMultiByte(CP_UTF8, 0, path, -1, NULL, 0, NULL, NULL);
-            std::string fullpath(size_needed, 0);
+            fullpath.resize(size_needed, 0);
             WideCharToMultiByte(CP_UTF8, 0, path, -1, &fullpath[0], size_needed, NULL, NULL);
          #else
-            std::string fullpath(path);
+            fullpath = string(path);
+         #endif
+         #else
+         fullpath = GetLibraryPath();
          #endif
          scoreview->Load(PathFromFilename(fullpath) + PATH_SEPARATOR_CHAR + "layouts" + PATH_SEPARATOR_CHAR);
-
-         #endif
       }
    }
    return scoreview->Render(ctx) ? 1 : 0;
