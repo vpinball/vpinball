@@ -359,10 +359,10 @@ void KeysConfigDialog::AddWndProc(const int idc, const size_t MyKeyButtonProc, c
 
 BOOL KeysConfigDialog::OnInitDialog()
 {
-    bool on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PBWDefaultLayout"s, false);
+    bool on = g_pvp->m_settings.LoadValueBool(Settings::Player, "PBWDefaultLayout"s);
     SendDlgItemMessage(IDC_DefaultLayout, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "DisableESC"s, false);
+    on = g_pvp->m_settings.LoadValueBool(Settings::Player, "DisableESC"s);
     SendDlgItemMessage(IDC_DisableESC_CB, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
     on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PBWRotationCB"s, false);

@@ -283,7 +283,6 @@ private:
    RenderTarget *m_anciliaryWndHdrRT[VPXAnciliaryWindow::VPXWINDOW_Topper + 1] { nullptr };
    unsigned int m_getAuxRendererId = 0, m_onAuxRendererChgId = 0;
    vector<AnciliaryRendererDef> m_anciliaryWndRenderers[VPXAnciliaryWindow::VPXWINDOW_Topper + 1];
-
 #pragma endregion
 
 
