@@ -817,6 +817,9 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
          case VT_ARRAY | VT_VARIANT:
             // We should update the referenced array if needed, but for the time being, we do not allow byref arguments in script, so this may not happen
             break;
+         case VT_EMPTY:
+            // We should handle empty as well here
+            break;
          default:
             PLOGE << "Failed to update byref COM argument after call (not implemented)";
             assert(false);
