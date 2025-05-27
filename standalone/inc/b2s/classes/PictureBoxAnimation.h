@@ -50,4 +50,5 @@ private:
    vector<string> m_lightsInvolved;
    std::map<string, bool> m_lightsStateAtStartup;
    SDL_Surface* m_pMainFormBackgroundImage;
+   eLEDTypes m_selectedLEDType;
 };

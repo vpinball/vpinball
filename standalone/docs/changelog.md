@@ -4,6 +4,11 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 05/27/25
+    * Plugins are now built as static libraries for iOS and Android
+    * Plugins for MacOS are now suffixed with .dylib instead of .so
+    * Fix long standing disappearing LED displays in B2S (thanks @evilwraith)
+
 * 05/23/25
     * Switch all external windows to use new 10.8.1 ancillary windows
 

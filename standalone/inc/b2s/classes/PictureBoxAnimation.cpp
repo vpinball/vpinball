@@ -81,6 +81,8 @@ PictureBoxAnimation::PictureBoxAnimation(
             m_lightsInvolved.push_back(bulb);
       }
    }
+
+   m_selectedLEDType = eLEDTypes_Undefined;
 }
 
 PictureBoxAnimation::~PictureBoxAnimation() {
@@ -152,12 +154,12 @@ void PictureBoxAnimation::Start()
 
    // maybe hide score displays
    if (IsHideScoreDisplays()) {
-      eLEDTypes selectedLEDType = GetLEDType();
-      if (selectedLEDType == eLEDTypes_Dream7) {
+      m_selectedLEDType = GetLEDType();
+      if (m_selectedLEDType == eLEDTypes_Dream7) {
          for (auto& [key, pLedDisplay] : *pB2SData->GetLEDDisplays())
             pLedDisplay->SetVisible(false);
       }
-      else if (selectedLEDType == eLEDTypes_Rendered) {
+      else if (m_selectedLEDType == eLEDTypes_Rendered) {
          for (auto& [key, pLED] : *pB2SData->GetLEDs())
             pLED->SetVisible(false);
       }
@@ -194,12 +196,11 @@ void PictureBoxAnimation::Stop()
 
    // maybe show score displays
    if (IsHideScoreDisplays()) {
-      eLEDTypes selectedLEDType = GetLEDType();
-      if (selectedLEDType == eLEDTypes_Dream7) {
+      if (m_selectedLEDType == eLEDTypes_Dream7) {
          for (auto& [key, pLedDisplay] : *pB2SData->GetLEDDisplays())
             pLedDisplay->SetVisible(true);
       }
-      else if (selectedLEDType == eLEDTypes_Rendered) {
+      else if (m_selectedLEDType == eLEDTypes_Rendered) {
          for (auto& [key, pLED] : *pB2SData->GetLEDs())
             pLED->SetVisible(true);
       }
