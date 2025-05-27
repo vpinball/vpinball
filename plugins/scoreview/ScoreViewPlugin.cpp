@@ -118,16 +118,12 @@ int OnRender(VPXRenderContext2D* ctx, void*)
 
 void OnGetRenderer(const unsigned int msgId, void* context, void* msgData)
 {
+   static AnciliaryRendererDef entry = { "ScoreView", "ScoreView", "Renderer for generic score displays", OnRender };
    GetAnciliaryRendererMsg* msg = static_cast<GetAnciliaryRendererMsg*>(msgData);
    if (msg->window == VPXAnciliaryWindow::VPXWINDOW_ScoreView)
    {
       if (msg->count < msg->maxEntryCount)
-      {
-         msg->entries[msg->count].id = "ScoreView";
-         msg->entries[msg->count].name = "ScoreView";
-         msg->entries[msg->count].description = "Renderer for generic score displays";
-         msg->entries[msg->count].Render = OnRender;
-      }
+         msg->entries[msg->count] = entry;
       msg->count++;
    }
 }
