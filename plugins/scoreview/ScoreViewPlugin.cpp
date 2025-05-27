@@ -118,7 +118,7 @@ int OnRender(VPXRenderContext2D* ctx, void*)
 
 void OnGetRenderer(const unsigned int msgId, void* context, void* msgData)
 {
-   static AnciliaryRendererDef entry = { "ScoreView", "ScoreView", "Renderer for generic score displays", OnRender };
+   static AnciliaryRendererDef entry = { "ScoreView", "ScoreView", "Renderer for generic score displays", nullptr, OnRender };
    GetAnciliaryRendererMsg* msg = static_cast<GetAnciliaryRendererMsg*>(msgData);
    if (msg->window == VPXAnciliaryWindow::VPXWINDOW_ScoreView)
    {
