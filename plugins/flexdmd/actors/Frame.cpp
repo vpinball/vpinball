@@ -1,6 +1,8 @@
 #include "Frame.h"
 
-void Frame::Draw(VP::SurfaceGraphics* pGraphics)
+namespace Flex {
+
+void Frame::Draw(Flex::SurfaceGraphics* pGraphics)
 {
    Actor::Draw(pGraphics);
 
@@ -17,4 +19,6 @@ void Frame::Draw(VP::SurfaceGraphics* pGraphics)
          pGraphics->FillRectangle({ (int)(GetX() + GetWidth() - m_thickness), (int)(GetY() + m_thickness), m_thickness, (int)(GetHeight() - 2 * m_thickness) });
       }
    }
+}
+
 }

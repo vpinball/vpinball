@@ -3,6 +3,8 @@
 #include "common.h"
 #include "ScriptablePlugin.h"
 
+namespace PinMAME {
+
 class Rom final
 {
 public:
@@ -22,3 +24,5 @@ public:
    long GetExpChecksum() const { PSC_NOT_IMPLEMENTED("GetExpChecksum is not implemented"); return 0; }
    long GetFlags() const { PSC_NOT_IMPLEMENTED("GetFlags is not implemented"); return 0; }
 };
+
+}

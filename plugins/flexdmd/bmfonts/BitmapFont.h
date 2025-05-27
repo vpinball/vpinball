@@ -8,6 +8,8 @@
 #include "Page.h"
 #include <SDL3/SDL_surface.h>
 
+namespace Flex {
+
 class BitmapFont final
 {
 public:
@@ -63,3 +65,5 @@ private:
    int m_superSampling;
    SDL_Rect m_textureSize;
 };
+
+}

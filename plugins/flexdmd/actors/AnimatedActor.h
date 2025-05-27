@@ -4,6 +4,8 @@
 #include "VPXPlugin.h"
 #include <cassert>
 
+namespace Flex {
+
 class AnimatedActor : public Actor
 {
 public:
@@ -47,3 +49,5 @@ private:
    float m_length = 0.f;
    float m_playSpeed = 1.0f;
 };
+
+}

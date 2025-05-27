@@ -3,6 +3,8 @@
 #include "common.h"
 #include "ScriptablePlugin.h"
 
+namespace PinMAME {
+
 class Roms final
 {
 public:
@@ -19,3 +21,5 @@ public:
    //STDMETHOD(get_Item)(VARIANT *pKey, IRom **pRom);
    //STDMETHOD(get__NewEnum)(IUnknown **ppunkEnum);
 };
+
+}

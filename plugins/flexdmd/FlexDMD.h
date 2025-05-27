@@ -6,6 +6,8 @@
 #include "resources/AssetManager.h"
 #include "actors/Group.h"
 
+namespace Flex {
+
 class Frame;
 class Image;
 class Label;
@@ -101,7 +103,7 @@ public:
    void SetOnDMDChangedHandler(void (*handler)(FlexDMD*)) { m_onDMDChangedHandler = handler; }
    void SetOnDestroyHandler(void (*handler)(FlexDMD*)) { m_onDestroyHandler = handler; }
 
-   VP::SurfaceGraphics* GetGraphics() const { return m_pSurface; }
+   SurfaceGraphics* GetGraphics() const { return m_pSurface; }
 
    uint8_t* UpdateRGBFrame();
    uint8_t* UpdateLum8Frame();
@@ -156,8 +158,10 @@ private:
    bool m_show = true;
    bool m_run = false;
    uint32_t m_id = 0;
-   VP::SurfaceGraphics* m_pSurface = nullptr;
+   SurfaceGraphics* m_pSurface = nullptr;
 
    //std::thread* m_pThread;
    //void RenderLoop();
 };
+
+}

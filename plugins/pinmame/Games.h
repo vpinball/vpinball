@@ -3,6 +3,8 @@
 #include "common.h"
 #include "ScriptablePlugin.h"
 
+namespace PinMAME {
+
 class Games final
 {
 public:
@@ -15,3 +17,5 @@ public:
    //STDMETHOD(get_Item)(VARIANT* pKey, IGame** pGame);
    //STDMETHOD(get__NewEnum)(IUnknown** ppunkEnum);
 };
+
+}

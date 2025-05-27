@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <filesystem>
 
+namespace B2S {
+   
 static inline char cLower(char c)
 {
    if (c >= 'A' && c <= 'Z')
@@ -155,4 +157,6 @@ vector<unsigned char> base64_decode(const string &encoded_string)
    }
 
    return ret;
+}
+
 }

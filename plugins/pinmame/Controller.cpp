@@ -2,6 +2,8 @@
 #include "Game.h"
 #include <thread>
 
+namespace PinMAME {
+
 Controller::Controller(MsgPluginAPI* api, unsigned int endpointId, PinmameConfig& config)
    : m_msgApi(api)
    , m_endpointId(endpointId)
@@ -344,4 +346,6 @@ std::vector<uint32_t> Controller::GetRawDmdColoredPixels()
          pixels[i] = ((uint32_t)frame.frame[i * 3] << 16) | ((uint32_t)frame.frame[i * 3 + 1] << 8) | (frame.frame[i * 3 + 2]);
    }
    return pixels;
+}
+
 }

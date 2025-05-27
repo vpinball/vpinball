@@ -3,6 +3,8 @@
 #include "common.h"
 #include "libpinmame.h"
 
+namespace B2S {
+   
 class B2SServer final
 {
 public:
@@ -92,3 +94,5 @@ public:
 
 private:
 };
+
+}

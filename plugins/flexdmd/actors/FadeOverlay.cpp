@@ -1,7 +1,9 @@
 #include "FadeOverlay.h"
 #include "Group.h"
 
-void FadeOverlay::Draw(VP::SurfaceGraphics* pGraphics)
+namespace Flex {
+
+void FadeOverlay::Draw(Flex::SurfaceGraphics* pGraphics)
 {
    Actor::Draw(pGraphics);
 
@@ -13,4 +15,6 @@ void FadeOverlay::Draw(VP::SurfaceGraphics* pGraphics)
       pGraphics->SetColor(m_color, static_cast<uint8_t>(min(m_alpha * 255.f, 255.f)));
       pGraphics->FillRectangle({ (int)GetX(), (int)GetY(), (int)GetWidth(), (int)GetHeight() });
    }
+}
+
 }

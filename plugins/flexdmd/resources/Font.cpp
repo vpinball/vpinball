@@ -1,6 +1,8 @@
 #include "Font.h"
 #include "AssetManager.h"
 
+namespace Flex {
+
 Font::Font(AssetManager* pAssetManager, AssetSrc* pAssetSrc)
 {
    m_pBitmapFont = (BitmapFont*)pAssetManager->Open(pAssetSrc);
@@ -149,7 +151,7 @@ Font::~Font()
    }
 }
 
-void Font::DrawCharacter(VP::SurfaceGraphics* pGraphics, char character, char previousCharacter, float& x, float& y)
+void Font::DrawCharacter(Flex::SurfaceGraphics* pGraphics, char character, char previousCharacter, float& x, float& y)
 {
    if (character == '\n') {
       x = 0;
@@ -188,7 +190,7 @@ SDL_Rect Font::MeasureFont(const string& text)
    return m_pBitmapFont->MeasureFont(text);
 }
 
-void Font::DrawText_(VP::SurfaceGraphics* pGraphics, float x, float y, const string& text)
+void Font::DrawText_(Flex::SurfaceGraphics* pGraphics, float x, float y, const string& text)
 {
    char previousCharacter = ' ';
    for (size_t i = 0; i < text.length(); i++) {
@@ -196,4 +198,6 @@ void Font::DrawText_(VP::SurfaceGraphics* pGraphics, float x, float y, const str
       DrawCharacter(pGraphics, character, previousCharacter, x, y);
       previousCharacter = character;
    }
+}
+
 }

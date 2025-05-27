@@ -4,6 +4,8 @@
 #include "AssetSrc.h"
 #include <SDL3/SDL_surface.h>
 
+namespace Flex {
+
 class Bitmap final
 {
 public:
@@ -26,3 +28,5 @@ private:
    AssetType m_assetType;
    void* m_pData;
 };
+
+}

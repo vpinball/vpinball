@@ -3,6 +3,8 @@
 #include "common.h"
 #include "ScriptablePlugin.h"
 
+namespace Flex {
+
 typedef enum {
    AssetSrcType_File = 0,
    AssetSrcType_FlexResource = 1,
@@ -56,3 +58,5 @@ private:
 
    vector<BitmapFilter*> m_bitmapFilters;
 };
+
+}

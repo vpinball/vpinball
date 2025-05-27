@@ -2,6 +2,8 @@
 
 #include "BitmapFilter.h"
 
+namespace Flex {
+
 class AdditiveFilter final : public BitmapFilter
 {
 public:
@@ -10,3 +12,5 @@ public:
 
    void Filter(Bitmap* pBitmap) override;
 };
+
+}

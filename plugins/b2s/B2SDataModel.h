@@ -5,6 +5,8 @@
 #include "common.h"
 #include "tinyxml2/tinyxml2.h"
 
+namespace B2S {
+
 enum class B2SRomIDType
 {
    NotDefined = 0,
@@ -284,3 +286,5 @@ public:
    // Missing Scores
    // Missing Reels
 };
+
+}

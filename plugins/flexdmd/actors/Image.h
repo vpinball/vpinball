@@ -3,6 +3,8 @@
 #include "Actor.h"
 #include "VPXPlugin.h"
 
+namespace Flex {
+
 class AssetManager;
 class AssetSrc;
 class Bitmap;
@@ -23,7 +25,7 @@ public:
    Alignment GetAlignment() const { return m_alignment; }
    void SetAlignment(Alignment alignment) { m_alignment = alignment; }
 
-   void Draw(VP::SurfaceGraphics* pGraphics) override;
+   void Draw(Flex::SurfaceGraphics* pGraphics) override;
    void OnStageStateChanged() override;
 
 private:
@@ -35,3 +37,5 @@ private:
    AssetSrc* m_pSrc;
    Bitmap* m_pBitmap;
 };
+
+}

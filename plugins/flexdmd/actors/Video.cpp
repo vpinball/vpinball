@@ -1,5 +1,7 @@
 #include "Video.h"
 
+namespace Flex {
+
 Video::Video(FlexDMD* pFlexDMD, const string& name) : AnimatedActor(pFlexDMD, name)
 {
 }
@@ -56,7 +58,7 @@ void Video::ReadNextFrame()
    SetFrameTime(GetFrameTime() + GetFrameDuration());
 }
 
-void Video::Draw(VP::SurfaceGraphics* pGraphics)
+void Video::Draw(Flex::SurfaceGraphics* pGraphics)
 {
    if (GetVisible()) {
       float w = 0;
@@ -68,4 +70,6 @@ void Video::Draw(VP::SurfaceGraphics* pGraphics)
       //SDL_Rect rect = { (int)(GetX() + x), (int)(GetY() + y), (int)w, (int)h };
       //pGraphics->DrawImage(m_pFrame, NULL, &rect);
    }
+}
+
 }

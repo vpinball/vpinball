@@ -26,6 +26,8 @@
    #include <tchar.h>
 #endif
 
+namespace Flex {
+
 AssetManager::AssetManager() {
    m_szBasePath = "./";
 }
@@ -377,4 +379,6 @@ Font* AssetManager::GetFont(AssetSrc* pSrc)
    m_cachedFonts[pSrc->GetId()] = pFont;
    LOGI("Font added to cache: %s", pSrc->GetId().c_str());
    return pFont;
+}
+
 }

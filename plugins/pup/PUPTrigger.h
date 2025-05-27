@@ -4,6 +4,8 @@
 
 #include <algorithm>
 
+namespace PUP {
+  
 class PUPPlaylist;
 class PUPScreen;
 
@@ -79,3 +81,5 @@ private:
 
    Uint64 m_lastTriggered = 0;
 };
+
+}

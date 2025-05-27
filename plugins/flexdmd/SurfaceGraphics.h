@@ -3,7 +3,7 @@
 #include "common.h"
 #include <SDL3/SDL_surface.h>
 
-namespace VP {
+namespace Flex {
 
 class SurfaceGraphics final {
 public:

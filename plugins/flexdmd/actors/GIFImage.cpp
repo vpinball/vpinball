@@ -1,5 +1,7 @@
 #include "GIFImage.h"
 
+namespace Flex {
+
 GIFImage::GIFImage(FlexDMD* pFlexDMD, const string& name) : AnimatedActor(pFlexDMD, name)
 {
 }
@@ -77,7 +79,7 @@ void GIFImage::UpdateFrame()
       m_pActiveFrameSurface = m_pBitmap->GetFrameSurface(m_pos);
 }
 
-void GIFImage::Draw(VP::SurfaceGraphics* pGraphics)
+void GIFImage::Draw(Flex::SurfaceGraphics* pGraphics)
 {
    if (!m_pBitmap)
       return;
@@ -92,4 +94,6 @@ void GIFImage::Draw(VP::SurfaceGraphics* pGraphics)
       SDL_Rect rect = { (int)(GetX() + x), (int)(GetY() + y), (int)w, (int)h };
       pGraphics->DrawImage(m_pActiveFrameSurface, nullptr, &rect);
    }
+}
+
 }

@@ -16,6 +16,8 @@ using std::vector;
 
 #include <unordered_dense.h>
 
+namespace ScoreView {
+   
 class vec2i
 {
 public:
@@ -141,3 +143,5 @@ private:
    unsigned int m_onDmdChangedMsgId, m_onSegChangedMsgId;
    static void OnResChanged(const unsigned int msgId, void* userData, void* msgData);
 };
+
+}

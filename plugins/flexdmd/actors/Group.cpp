@@ -7,6 +7,8 @@
 
 #include <algorithm>
 
+namespace Flex {
+
 Group::~Group()
 {
    RemoveAll();
@@ -34,7 +36,7 @@ void Group::Update(float delta)
    }
 }
 
-void Group::Draw(VP::SurfaceGraphics* pGraphics)
+void Group::Draw(Flex::SurfaceGraphics* pGraphics)
 {
    if (GetVisible())
    {
@@ -225,4 +227,6 @@ vector<Actor *> Group::GetChildren() const
    for (auto child : m_children)
       child->AddRef();
    return m_children;
+}
+
 }

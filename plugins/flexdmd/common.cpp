@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <filesystem>
 
+namespace Flex {
+
 static inline char cLower(char c)
 {
    if (c >= 'A' && c <= 'Z')
@@ -134,4 +136,6 @@ string find_case_insensitive_file_path(const string& szPath)
    }
 
    return string();
+}
+
 }

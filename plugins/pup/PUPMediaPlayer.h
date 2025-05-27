@@ -14,6 +14,8 @@ extern "C" {
    #include "libavcodec/avcodec.h"
 }
 
+namespace PUP {
+
 class PUPMediaPlayer final
 {
 public:
@@ -72,3 +74,5 @@ private:
    std::thread m_thread;
    bool m_running = false;
 };
+
+}

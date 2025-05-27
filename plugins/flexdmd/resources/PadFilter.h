@@ -2,6 +2,8 @@
 
 #include "BitmapFilter.h"
 
+namespace Flex {
+
 class PadFilter final : public BitmapFilter
 {
 public:
@@ -25,3 +27,5 @@ private:
    int m_right = 0;
    int m_bottom = 0;
 };
+
+}

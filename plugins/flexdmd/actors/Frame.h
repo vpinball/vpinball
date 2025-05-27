@@ -2,6 +2,8 @@
 
 #include "Actor.h"
 
+namespace Flex {
+
 class Frame final : public Actor
 {
 public:
@@ -20,7 +22,7 @@ public:
    ColorRGBA32 GetFillColor() const { return m_fillColor; }
    void SetFillColor(ColorRGBA32 v) { m_fillColor = v; }
 
-   void Draw(VP::SurfaceGraphics* pGraphics) override;
+   void Draw(Flex::SurfaceGraphics* pGraphics) override;
 
 private:
    int m_thickness = 2;
@@ -28,3 +30,5 @@ private:
    bool m_fill = false;
    ColorRGBA32 m_fillColor = 0x00000000;
 };
+
+}

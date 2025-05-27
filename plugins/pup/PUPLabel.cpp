@@ -16,6 +16,8 @@
 
 #include <filesystem>
 
+namespace PUP {
+
 PUPLabel::PUPLabel(PUPManager* manager, const string& szName, const string& szFont, float size, int color, float angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, float xPos,
    float yPos, int pagenum, bool visible)
    : m_pManager(manager)
@@ -566,4 +568,6 @@ string PUPLabel::ToString() const
             : m_yAlign == PUP_LABEL_YALIGN_CENTER ? "CENTER"
                                                   : "BOTTOM")
       + ", xPos=" + std::to_string(m_xPos) + ", yPos=" + std::to_string(m_yPos) + ", pagenum=" + std::to_string(m_pagenum) + ", szPath=" + m_szPath;
+}
+
 }

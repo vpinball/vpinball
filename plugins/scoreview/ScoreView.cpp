@@ -17,6 +17,8 @@ LPI_USE();
 #define LOGI LPI_LOGI
 #define LOGE LPI_LOGE
 
+namespace ScoreView {
+
 template <typename T> constexpr __forceinline T clamp(const T x, const T mn, const T mx) { return std::max(std::min(x, mx), mn); }
 
 string trim_string(const string& str)
@@ -665,4 +667,6 @@ bool ScoreView::Render(VPXRenderContext2D* ctx)
       }
    }
    return true;
+}
+
 }

@@ -1,6 +1,8 @@
 #include "ScrollingCreditsScene.h"
 #include "actors/Label.h"
 
+namespace Flex {
+
 ScrollingCreditsScene::ScrollingCreditsScene(FlexDMD* pFlexDMD, Actor* pBackground, const vector<string>& text, Font* pFont, AnimationType animateIn, float pauseS, AnimationType animateOut, const string& id) : BackgroundScene(pFlexDMD, pBackground, animateIn, pauseS, animateOut, id)
 {
    m_pContainer = new Group(pFlexDMD, string());
@@ -49,4 +51,6 @@ void ScrollingCreditsScene::Update(float delta)
          line->Release();
       }
    }
+}
+
 }

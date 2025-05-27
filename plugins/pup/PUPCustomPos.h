@@ -2,6 +2,8 @@
 
 #include "PUPManager.h"
 
+namespace PUP {
+
 class PUPCustomPos final {
 public:
    ~PUPCustomPos() {}
@@ -17,3 +19,5 @@ private:
    int m_sourceScreen;
    SDL_FRect m_frect;
 };
+
+}

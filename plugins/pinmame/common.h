@@ -14,13 +14,17 @@ using std::vector;
 
 // Shared logging
 #include "LoggingPlugin.h"
-LPI_USE();
-#define LOGD LPI_LOGD
-#define LOGI LPI_LOGI
-#define LOGE LPI_LOGE
 
 // Scriptable API
 #include "ScriptablePlugin.h"
+
+namespace PinMAME {
+
+LPI_USE();
+#define LOGD PinMAME::LPI_LOGD
+#define LOGI PinMAME::LPI_LOGI
+#define LOGE PinMAME::LPI_LOGE
+
 PSC_USE_ERROR();
 
 #ifdef _MSC_VER
@@ -30,3 +34,5 @@ PSC_USE_ERROR();
 #endif
 
 string find_case_insensitive_directory_path(const string& szPath);
+
+}

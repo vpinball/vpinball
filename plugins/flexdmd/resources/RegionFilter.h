@@ -2,6 +2,8 @@
 
 #include "BitmapFilter.h"
 
+namespace Flex {
+
 class RegionFilter final : public BitmapFilter
 {
 public:
@@ -25,3 +27,5 @@ private:
    int m_width = 0;
    int m_height = 0;
 };
+
+}

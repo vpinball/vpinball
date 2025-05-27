@@ -4,6 +4,8 @@
 #include <sstream>
 #include <cmath>
 
+namespace Flex {
+
 Label::Label(FlexDMD* pFlexDMD, Font* pFont, const string& text, const string& name) : Actor(pFlexDMD, name)
 {
    m_alignment = Alignment_Center;
@@ -66,7 +68,7 @@ void Label::UpdateBounds()
       Pack();
 }
 
-void Label::Draw(VP::SurfaceGraphics* pGraphics)
+void Label::Draw(Flex::SurfaceGraphics* pGraphics)
 {
    Actor::Draw(pGraphics);
    if (GetVisible() && m_pFont) {
@@ -96,4 +98,6 @@ void Label::Draw(VP::SurfaceGraphics* pGraphics)
             m_pFont->DrawText_(pGraphics, floor(GetX() + x), floor(GetY() + y), m_szText);
       }
    }
+}
+
 }

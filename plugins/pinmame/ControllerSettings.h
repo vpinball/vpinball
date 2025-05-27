@@ -3,6 +3,8 @@
 #include "common.h"
 #include "ScriptablePlugin.h"
 
+namespace PinMAME {
+
 class ControllerSettings final
 {
 public:
@@ -17,3 +19,5 @@ public:
    //STDMETHOD(Clear)();
    //STDMETHOD(ShowSettingsDlg)(LONG_PTR hParentWnd);
 };
+
+}

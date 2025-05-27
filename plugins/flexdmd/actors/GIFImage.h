@@ -3,6 +3,8 @@
 #include "AnimatedActor.h"
 #include "resources/AssetManager.h"
 
+namespace Flex {
+
 class GIFImage final : public AnimatedActor 
 {
 public:
@@ -13,7 +15,7 @@ public:
    void Rewind() override;
    void ReadNextFrame() override;
    void UpdateFrame();
-   void Draw(VP::SurfaceGraphics* pGraphics) override;
+   void Draw(Flex::SurfaceGraphics* pGraphics) override;
    void OnStageStateChanged() override;
 
 private:
@@ -25,3 +27,5 @@ private:
    Bitmap* m_pBitmap;
    SDL_Surface* m_pActiveFrameSurface;
 };
+
+}

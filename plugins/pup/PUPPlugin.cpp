@@ -10,8 +10,6 @@
 #include "PUPScreen.h"
 #include "PUPPinDisplay.h"
 
-LPI_IMPLEMENT // Implement shared login support
-
 ///////////////////////////////////////////////////////////////////////////////
 // PinUp Player plugin
 //
@@ -44,6 +42,8 @@ LPI_IMPLEMENT // Implement shared login support
 // 10. GameHelp       => Not rendered
 //
 
+namespace PUP {
+  
 static MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
 static ScriptablePluginAPI* scriptApi = nullptr;
@@ -54,6 +54,8 @@ static std::thread::id apiThread;
 // The pup manager holds the overall state. It may be automatically created due to a PinMAME start event, or explicitely created
 // through script interface. The script interface gives access to this context even when it has been created due to PinMAME.
 static std::unique_ptr<PUPManager> pupManager;
+
+LPI_IMPLEMENT // Implement shared login support
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -179,12 +181,15 @@ void OnGameEnd(const unsigned int eventId, void* userData, void* eventData)
    pupManager->Unload();
 }
 
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Plugin lifecycle
 //
 
-MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
+using namespace PUP;
+
+MSGPI_EXPORT void MSGPIAPI PUPPluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
 {
    msgApi = api;
    endpointId = sessionId;
@@ -228,7 +233,7 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
    pupManager = std::make_unique<PUPManager>(msgApi, endpointId, rootPath);
 }
 
-MSGPI_EXPORT void MSGPIAPI PluginUnload()
+MSGPI_EXPORT void MSGPIAPI PUPPluginUnload()
 {
    pupManager = nullptr;
    

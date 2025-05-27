@@ -2,6 +2,8 @@
 
 #include "AnimatedActor.h"
 
+namespace Flex {
+
 class Video final : public AnimatedActor 
 {
 public:
@@ -18,7 +20,7 @@ public:
    void Advance(float delta) override;
    void Rewind() override;
    void ReadNextFrame() override;
-   void Draw(VP::SurfaceGraphics* pGraphics) override;
+   void Draw(Flex::SurfaceGraphics* pGraphics) override;
    void OnStageStateChanged() override;
 
    void SetVisible(bool visible) override { AnimatedActor::SetVisible(visible); OnStageStateChanged(); }
@@ -30,3 +32,5 @@ private:
    float m_playSpeed = 1.f;
    bool m_paused = false;
 };
+
+}

@@ -13,14 +13,19 @@ using std::vector;
 
 // Shared logging
 #include "LoggingPlugin.h"
-LPI_USE();
-#define LOGD LPI_LOGD
-#define LOGI LPI_LOGI
-#define LOGE LPI_LOGE
 
 // Scriptable API
 #include "ScriptablePlugin.h"
+
+namespace Flex
+{
+
 PSC_USE_ERROR();
+
+LPI_USE();
+#define LOGD Flex::LPI_LOGD
+#define LOGI Flex::LPI_LOGI
+#define LOGE Flex::LPI_LOGE
 
 typedef uint32_t ColorRGBA32;
 #define RGB(r, g, b) static_cast<ColorRGBA32>(static_cast<uint8_t>(r) | (static_cast<uint8_t>(g) << 8) | (static_cast<uint8_t>(b) << 16))
@@ -51,3 +56,5 @@ bool try_parse_color(const string& str, ColorRGBA32& value);
 string normalize_path_separators(const string& szPath);
 string extension_from_path(const string& path);
 string find_case_insensitive_file_path(const string& szPath);
+
+}

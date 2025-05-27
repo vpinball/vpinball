@@ -3,6 +3,8 @@
 #include "Actor.h"
 #include "resources/Font.h"
 
+namespace Flex {
+
 class Label final : public Actor
 {
 public:
@@ -21,7 +23,7 @@ public:
    void SetAutoPack(bool autopack) { m_autopack = autopack; }
    float GetPrefWidth() const override { return m_textWidth; }
    float GetPrefHeight() const override { return m_textHeight; }
-   void Draw(VP::SurfaceGraphics* pGraphics) override;
+   void Draw(Flex::SurfaceGraphics* pGraphics) override;
 
 private:
    void UpdateBounds();
@@ -34,3 +36,5 @@ private:
    Alignment m_alignment;
    vector<string> m_lines;
 };
+
+}

@@ -1,5 +1,7 @@
 #pragma once
 
+namespace Flex {
+
 enum Alignment
 {
    Alignment_TopLeft = 0,
@@ -154,3 +156,5 @@ public:
       }
    }
 };
+
+}

@@ -2,6 +2,8 @@
 
 #include "PUPMediaPlayer.h"
 
+namespace PUP {
+
 class PUPScreen;
 
 struct PUPMediaManagerPlayer
@@ -36,3 +38,5 @@ public:
    void Stop(PUPPlaylist* pPlaylist, const string& szPlayFile);
    void Render(VPXRenderContext2D* const ctx, const SDL_Rect& destRect);
 };
+
+}

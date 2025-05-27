@@ -1,5 +1,7 @@
 #pragma once
 
+namespace Flex {
+
 class Kerning final {
 public:
    Kerning() = default;
@@ -19,3 +21,5 @@ private:
    char m_secondCharacter;
    int m_amount;
 };
+
+}

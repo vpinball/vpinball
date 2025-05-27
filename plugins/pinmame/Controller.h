@@ -3,6 +3,8 @@
 #include "common.h"
 #include "ControllerPlugin.h"
 
+namespace PinMAME {
+
 class Game;
 
 class Controller final
@@ -166,3 +168,5 @@ private:
    void (*m_onGameStartHandler)(Controller*) = nullptr;
    void (*m_onGameEndHandler)(Controller*) = nullptr;
 };
+
+}

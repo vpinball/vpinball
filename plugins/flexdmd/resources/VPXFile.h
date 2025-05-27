@@ -5,6 +5,8 @@
 #include "common.h"
 #include "pole/pole.h"
 
+namespace Flex {
+
 class VPXFile final
 {
 public:
@@ -28,3 +30,5 @@ private:
    const string m_path;
    POLE::Storage* m_pStorage;
 };
+
+}

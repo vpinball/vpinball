@@ -8,6 +8,8 @@
 
 #include <SDL3_image/SDL_image.h>
 
+namespace PUP {
+  
 const char* PUP_SCREEN_MODE_STRINGS[] = {
    "PUP_SCREEN_MODE_OFF",
    "PUP_SCREEN_MODE_SHOW",
@@ -702,4 +704,6 @@ string PUPScreen::ToString(bool full) const
    return "screenNum=" + std::to_string(m_screenNum) +
       ", screenDes=" + m_screenDes +
       ", mode=" + string(PUP_SCREEN_MODE_TO_STRING(m_mode));
+}
+
 }

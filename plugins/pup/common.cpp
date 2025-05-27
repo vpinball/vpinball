@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <filesystem>
 
+namespace PUP {
+
 string trim_string(const string& str)
 {
    string s;
@@ -231,3 +233,5 @@ void SetThreadName(const string& name)
 #else
 void SetThreadName(const string& name) { }
 #endif
+
+}

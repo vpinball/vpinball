@@ -5,6 +5,8 @@
 
 #include "tinyxml2/tinyxml2.h"
 
+namespace B2S {
+
 static const tinyxml2::XMLElement* GetNode(const tinyxml2::XMLNode& doc, const std::string& nodePath)
 {
    const tinyxml2::XMLNode* node = &doc;
@@ -335,4 +337,6 @@ B2STable::B2STable(const tinyxml2::XMLNode& root)
    , m_dmdIlluminations(GetFilteredList<B2SBulb>(root, "Illumination"s, "Bulb"s, true))
    , m_dmdAnimations(GetFilteredList<B2SAnimation>(root, "Animations"s, "Animation"s, true))
 {
+}
+
 }

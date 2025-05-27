@@ -12,10 +12,20 @@
 
 using namespace std::string_literals;
 
+#include "Rom.h"
+#include "Roms.h"
+#include "Settings.h"
+#include "GameSettings.h"
+#include "Game.h"
+#include "Games.h"
+#include "ControllerSettings.h"
+#include "Controller.h"
+
+namespace PinMAME {
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Scriptable object definitions
 
-#include "Rom.h"
 #define PSC_VAR_SET_Rom(variant, value) PSC_VAR_SET_object(Rom, variant, value)
 PSC_CLASS_START(Rom)
    PSC_PROP_R(Rom, string, Name)
@@ -30,23 +40,19 @@ PSC_CLASS_START(Rom)
    PSC_FUNCTION1(Rom, void, Audit, bool)
 PSC_CLASS_END(Rom)
 
-#include "Roms.h"
 PSC_CLASS_START(Roms)
 PSC_CLASS_END(Roms)
 
-#include "Settings.h"
 #define PSC_VAR_SET_Settings(variant, value) PSC_VAR_SET_object(Settings, variant, value)
 PSC_CLASS_START(Settings)
    PSC_PROP_RW_ARRAY1(Settings, int, Value, string)
 PSC_CLASS_END(Settings)
 
-#include "GameSettings.h"
 #define PSC_VAR_SET_GameSettings(variant, value) PSC_VAR_SET_object(GameSettings, variant, value)
 PSC_CLASS_START(GameSettings)
    PSC_PROP_RW_ARRAY1(GameSettings, int, Value, string)
 PSC_CLASS_END(GameSettings)
 
-#include "Game.h"
 #define PSC_VAR_SET_Game(variant, value) PSC_VAR_SET_object(Game, variant, value)
 PSC_CLASS_START(Game)
    PSC_PROP_R(Game, string, Name)
@@ -57,11 +63,9 @@ PSC_CLASS_START(Game)
    PSC_PROP_R(Game, GameSettings, Settings)
 PSC_CLASS_END(Game)
 
-#include "Games.h"
 PSC_CLASS_START(Games)
 PSC_CLASS_END(Games)
 
-#include "ControllerSettings.h"
 PSC_CLASS_START(ControllerSettings)
 PSC_CLASS_END(ControllerSettings)
 
@@ -129,7 +133,6 @@ PSC_ARRAY2(StructArray, int32, 0, 0)
          PSC_VAR_SET_StructArray3(type, fieldName1, fieldName2, fieldName3, *pRet, static_cast<className*>(me)->Get##name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]) )); } } );
 
 
-#include "Controller.h"
 PSC_CLASS_START(Controller)
    // Overall setup
    PSC_PROP_R(Controller, string, Version)
@@ -306,11 +309,15 @@ static void OnControllerDestroyed(Controller*)
    controller = nullptr;
 }
 
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Plugin lifecycle
 
-MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
+using namespace PinMAME;
+
+MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
 {
    controller = nullptr;
    endpointId = sessionId;
@@ -412,7 +419,7 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
    PinmameSetMsgAPI(msgApi, endpointId);
 }
 
-MSGPI_EXPORT void MSGPIAPI PluginUnload()
+MSGPI_EXPORT void MSGPIAPI PinMAMEPluginUnload()
 {
    PinmameSetMsgAPI(nullptr, 0);
 

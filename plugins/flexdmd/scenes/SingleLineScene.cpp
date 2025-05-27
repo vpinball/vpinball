@@ -1,5 +1,7 @@
 #include "SingleLineScene.h"
 
+namespace Flex {
+
 SingleLineScene::SingleLineScene(FlexDMD* pFlexDMD, Actor* pBackground, const string& text, Font* pFont, AnimationType animateIn, float pauseS, AnimationType animateOut, bool scroll, const string& id) : BackgroundScene(pFlexDMD, pBackground, animateIn, pauseS, animateOut, id)
 {
    m_pText = new Label(pFlexDMD, pFont, text, string());
@@ -36,4 +38,6 @@ void SingleLineScene::Update(float delta)
 {
    BackgroundScene::Update(delta);
    m_pText->SetPosition((GetWidth() - m_pText->GetWidth()) / 2.0f + m_scrollX, (GetHeight() - m_pText->GetHeight()) / 2.0f);
+}
+
 }

@@ -2,6 +2,8 @@
 
 #include "common.h"
 
+namespace Flex {
+   
 class Page final {
 public:
    Page() = default;
@@ -16,3 +18,5 @@ private:
    int m_id;
    string m_szFilename;
 };
+
+}

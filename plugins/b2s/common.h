@@ -19,18 +19,22 @@ using std::vector;
 
 // Shared logging
 #include "LoggingPlugin.h"
+
+// Scriptable API
+#include "ScriptablePlugin.h"
+
+// VPX main API
+#include "VPXPlugin.h"
+
+namespace B2S
+{
+
 LPI_USE();
 #define LOGD LPI_LOGD
 #define LOGI LPI_LOGI
 #define LOGE LPI_LOGE
 
-// Scriptable API
-#include "ScriptablePlugin.h"
 PSC_USE_ERROR();
-
-// VPX main API
-#include "VPXPlugin.h"
-
 
 #ifdef _MSC_VER
 #define PATH_SEPARATOR_CHAR '\\'
@@ -65,3 +69,5 @@ extern void DeleteTexture(VPXTexture texture);
 string find_case_insensitive_file_path(const string &szPath);
 string TitleAndPathFromFilename(const char *const szfilename);
 vector<unsigned char> base64_decode(const string &encoded_string);
+
+}

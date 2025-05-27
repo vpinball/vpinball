@@ -13,6 +13,8 @@
 #include "RSJparser/RSJparser.tcc"
 #pragma warning(pop)
 
+namespace PUP {
+
 static const string emptystring;
 
 PUPPinDisplay::PUPPinDisplay(PUPManager& manager)
@@ -640,4 +642,6 @@ void PUPPinDisplay::SetPosVideo(int screenNum, int StartPos, int EndPos, int Mod
 void PUPPinDisplay::PuPClose()
 {
    LOGE("Not implemented");
+}
+
 }

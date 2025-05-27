@@ -21,6 +21,10 @@
 #define UINT16 uint16_t
 #include "usbalphanumeric.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#include <locale>
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -37,6 +41,8 @@
 //
 // All rendering is done by an anciliary thread, causing a one frame delay, but
 // avoiding CPU load on the main thread.
+
+namespace AlphaDMD {
 
 static MsgPluginAPI* msgApi = nullptr;
 static uint32_t endpointId;
@@ -254,8 +260,6 @@ static void DrawDisplay(int x, int y, float*& lum, int srcIndex, bool large)
 }
 
 #ifdef _WIN32
-#include <windows.h>
-#include <locale>
 void SetThreadName(const std::string& name)
 {
    int size_needed = MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, NULL, 0);
@@ -562,7 +566,11 @@ static void OnSegSrcChanged(const unsigned int eventId, void* userData, void* ms
    }
 }
 
-MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
+}
+
+using namespace AlphaDMD;
+
+MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
 {
    msgApi = api;
    endpointId = sessionId;
@@ -598,7 +606,7 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
    OnSegSrcChanged(onSegSrcChangedId, nullptr, nullptr);
 }
 
-MSGPI_EXPORT void MSGPIAPI PluginUnload()
+MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginUnload()
 {
    isRunning = false;
    updateCondVar.notify_all();

@@ -3,6 +3,8 @@
 #include "BackgroundScene.h"
 #include "actors/Label.h"
 
+namespace Flex {
+
 class TwoLineScene final : public BackgroundScene
 {
 public:
@@ -16,3 +18,5 @@ private:
    Label* m_pTopText;
    Label* m_pBottomText;
 };
+
+}

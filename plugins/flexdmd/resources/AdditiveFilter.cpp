@@ -1,5 +1,7 @@
 #include "AdditiveFilter.h"
 
+namespace Flex {
+
 void AdditiveFilter::Filter(Bitmap* pBitmap)
 {
    SDL_Surface* const src = pBitmap->GetSurface();
@@ -24,4 +26,6 @@ void AdditiveFilter::Filter(Bitmap* pBitmap)
    }
 
    pBitmap->SetData(dst);
+}
+
 }

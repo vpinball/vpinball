@@ -1,5 +1,7 @@
 #include "PadFilter.h"
 
+namespace Flex {
+
 void PadFilter::Filter(Bitmap* pBitmap)
 {
    SDL_Surface* src = pBitmap->GetSurface();
@@ -13,4 +15,6 @@ void PadFilter::Filter(Bitmap* pBitmap)
    SDL_BlitSurfaceScaled(src, nullptr, dst, &dstRect, SDL_SCALEMODE_NEAREST);
 
    pBitmap->SetData(dst);
+}
+
 }

@@ -53,6 +53,8 @@
 #define PUP_SETTINGS_FULLDMDHEIGHT    150
 #define PUP_ZORDER_FULLDMD            200
 
+namespace PUP {
+
 typedef struct {
    char type;
    int number;
@@ -136,3 +138,5 @@ private:
    static void OnInputSrcChanged(const unsigned int eventId, void* userData, void* eventData);
    static void OnPollDmd(void* userData);
 };
+
+}

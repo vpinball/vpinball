@@ -1,6 +1,6 @@
 #include "SurfaceGraphics.h"
 
-namespace VP {
+namespace Flex {
 
 SurfaceGraphics::SurfaceGraphics(SDL_Surface* pSurface)
 {

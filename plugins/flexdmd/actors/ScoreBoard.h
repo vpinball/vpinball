@@ -3,6 +3,8 @@
 #include "Group.h"
 #include "Label.h"
 
+namespace Flex {
+
 class ScoreBoard final : public Group
 {
 public:
@@ -17,7 +19,7 @@ public:
    void SetHighlightedPlayer(int player);
    void SetScore(int score1, int score2, int score3, int score4);
    void Update(float delta) override;
-   void Draw(VP::SurfaceGraphics* pGraphics) override;
+   void Draw(Flex::SurfaceGraphics* pGraphics) override;
 
 private:
    Font* m_pScoreFont;
@@ -29,3 +31,5 @@ private:
    Actor* m_pBackground;
    int m_highlightedPlayer;
 };
+
+}

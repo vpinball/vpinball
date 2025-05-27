@@ -1,6 +1,8 @@
 #include "VPXFile.h"
 
 
+namespace Flex {
+
 VPXFile::VPXFile(const string& path)
    : m_path(path)
    , m_pStorage(new POLE::Storage(path.c_str()))
@@ -150,4 +152,6 @@ std::pair<unsigned int, uint8_t*> VPXFile::GetImage(const string& path)
    if (it != m_images.end())
       return ReadImage(it->second.path, false);
    return { 0, nullptr };
+}
+
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+namespace Flex {
+
 typedef enum {
    AnimationType_FadeIn = 0, // Fade from black to scene
    AnimationType_FadeOut = 1, // Fade from scene to black
@@ -17,3 +19,5 @@ typedef enum {
    AnimationType_FillFadeOut = 13, // fade from white to black (the scene won't be seen)
    AnimationType_None = 14
 } AnimationType;
+
+}
