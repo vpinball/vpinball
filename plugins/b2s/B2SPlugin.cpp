@@ -311,16 +311,12 @@ int OnRender(VPXRenderContext2D* ctx, void*)
 
 void OnGetRenderer(const unsigned int msgId, void* context, void* msgData)
 {
+   static AnciliaryRendererDef entry = { "B2S", "B2S Backglass & FullDMD", "Renderer for directb2s backglass files", OnRender };
    GetAnciliaryRendererMsg* msg = static_cast<GetAnciliaryRendererMsg*>(msgData);
    if (msg->window == VPXAnciliaryWindow::VPXWINDOW_Backglass)
    {
       if (msg->count < msg->maxEntryCount)
-      {
-         msg->entries[msg->count].id = "B2S";
-         msg->entries[msg->count].name = "B2S Backglass & FullDMD";
-         msg->entries[msg->count].description = "Renderer for directb2s backglass files";
-         msg->entries[msg->count].Render = OnRender;
-      }
+         msg->entries[msg->count] = entry;
       msg->count++;
    }
 }
