@@ -167,6 +167,12 @@ typedef struct GetAnciliaryRendererMsg
 #define VPUTOINCHES(x) ((x) * (float)(1.0625 / 50.))
 #endif
 
+typedef struct VPXInfo
+{
+   const char* path;              // [R_]
+   const char* prefPath;          // [R_]
+} VPXInfo;
+
 typedef struct VPXTableInfo
 {
    const char* path;              // [R_]
@@ -232,6 +238,7 @@ typedef struct VPXActionEvent
 typedef struct VPXPluginAPI
 {
    // General information API
+   void (MSGPIAPI *GetVpxInfo)(VPXInfo* info);
    void (MSGPIAPI *GetTableInfo)(VPXTableInfo* info);
 
    // User Interface

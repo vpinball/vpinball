@@ -1,20 +1,13 @@
-# plugin CMake file to be included in main project CMakelists
 
-if(PluginPlatform STREQUAL "macos")
-   set(CMAKE_OSX_DEPLOYMENT_TARGET 14.0)
-elseif(PluginPlatform STREQUAL "ios" OR PluginPlatform STREQUAL "ios-simulator")
-   set(CMAKE_SYSTEM_NAME iOS)
-   if (PluginPlatform STREQUAL "ios-simulator")
-      set(CMAKE_OSX_SYSROOT iphonesimulator)
-   endif()
-   set(CMAKE_OSX_DEPLOYMENT_TARGET 17.0)
-elseif(PluginPlatform STREQUAL "tvos")
-   set(CMAKE_SYSTEM_NAME tvOS)
-   set(CMAKE_OSX_DEPLOYMENT_TARGET 17.0)
-elseif(PluginPlatform STREQUAL "android")
-   set(CMAKE_SYSTEM_NAME Android)
-   set(CMAKE_SYSTEM_VERSION 30)
-   set(CMAKE_ANDROID_ARCH_ABI arm64-v8a)
+# plugin CMake file to be included in main project CMakelists
+# environment settings such as CMAKE_SYSTEM_NAME and CMAKE_OSX_SYSROOT should be already configured by root CMakeFile.txt
+
+set(BUILD_SHARED ON)
+set(BUILD_STATIC OFF)
+
+if(PluginPlatform STREQUAL "ios" OR PluginPlatform STREQUAL "ios-simulator" OR PluginPlatform STREQUAL "tvos" OR PluginPlatform STREQUAL "android")
+   set(BUILD_SHARED OFF)
+   set(BUILD_STATIC ON)
 endif()
 
 if(PluginPlatform STREQUAL "macos")
@@ -25,13 +18,13 @@ endif()
 
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_AlphaDMD.txt")
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_B2S.txt")
-include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_PUP.txt")
-include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_ScoreView.txt")
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_DMDUtil.txt")
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_FlexDMD.txt")
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_HelloScript.txt")
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_HelloWorld.txt")
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_PinMame.txt")
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_PinupEvents.txt")
+include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_PUP.txt")
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_RemoteControl.txt")
+include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_ScoreView.txt")
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_Serum.txt")

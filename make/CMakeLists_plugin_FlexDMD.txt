@@ -5,7 +5,7 @@
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
 
-add_library(FlexDMDPlugin MODULE
+set(FLEXDMD_PLUGIN_SOURCES
    plugins/flexdmd/common.cpp
    plugins/flexdmd/FlexDMD.cpp
    plugins/flexdmd/FlexDmdPlugin.cpp
@@ -84,83 +84,119 @@ add_library(FlexDMDPlugin MODULE
    ${CMAKE_SOURCE_DIR}/third-party/include/pole/pole.h
 )
 
-target_include_directories(FlexDMDPlugin PUBLIC
-   plugins/flexdmd
-   ${CMAKE_SOURCE_DIR}/third-party/include
-   src/plugins
-)
+if(BUILD_SHARED)
+   add_library(FlexDMDPlugin MODULE ${FLEXDMD_PLUGIN_SOURCES})
 
-if(PluginPlatform STREQUAL "windows")
-	add_compile_options(
-	   $<$<CONFIG:RELEASE>:/Ob2>
-	   $<$<CONFIG:RELEASE>:/O2>
-	   $<$<CONFIG:RELEASE>:/Oi>
-	   $<$<CONFIG:RELEASE>:/arch:SSE2>
-	   $<$<CONFIG:RELEASE>:/fp:fast>
-	   $<$<CONFIG:RELEASE>:/fp:except->
-	   $<$<CONFIG:RELEASE>:/Ot>
-	   $<$<CONFIG:RELEASE>:/GF>
-	   $<$<CONFIG:RELEASE>:/GS->
-	   $<$<CONFIG:RELEASE>:/Gy>
-	   $<$<CONFIG:RELEASE>:/GR>
-	   $<$<CONFIG:RELEASE>:/Oy>
-	   $<$<CONFIG:RELEASE>:/GT>
-	   $<$<CONFIG:RELEASE>:/GL>
-	)
-   set_target_properties(FlexDMDPlugin PROPERTIES
-      MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
+   target_include_directories(FlexDMDPlugin PUBLIC
+      plugins/flexdmd
+      ${CMAKE_SOURCE_DIR}/third-party/include
+      src/plugins
+      src
    )
-   target_compile_options(FlexDMDPlugin PUBLIC
-      $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
-      $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
-   )
-   target_link_options(FlexDMDPlugin PUBLIC
-      $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
-      $<$<CONFIG:RELEASE>:/OPT:REF>
-      $<$<CONFIG:RELEASE>:/OPT:ICF>
-      $<$<CONFIG:RELEASE>:/LTCG>
-   )
-   if (PluginArch STREQUAL "x64")
-      set_target_properties(FlexDMDPlugin PROPERTIES
-         OUTPUT_NAME "plugin-flexdmd64"
+
+   if(NOT PluginPlatform STREQUAL "windows")
+      target_compile_definitions(FlexDMDPlugin PRIVATE
+         "__forceinline=__attribute__((always_inline)) inline"
       )
-      target_link_directories(FlexDMDPlugin PUBLIC ${CMAKE_SOURCE_DIR}/third-party/build-libs/windows-x64)
-      target_link_libraries(FlexDMDPlugin SDL364.lib SDL3_image64.lib)
+   endif()
+
+   if(PluginPlatform STREQUAL "windows")
+      add_compile_options(
+         $<$<CONFIG:RELEASE>:/Ob2>
+         $<$<CONFIG:RELEASE>:/O2>
+         $<$<CONFIG:RELEASE>:/Oi>
+         $<$<CONFIG:RELEASE>:/arch:SSE2>
+         $<$<CONFIG:RELEASE>:/fp:fast>
+         $<$<CONFIG:RELEASE>:/fp:except->
+         $<$<CONFIG:RELEASE>:/Ot>
+         $<$<CONFIG:RELEASE>:/GF>
+         $<$<CONFIG:RELEASE>:/GS->
+         $<$<CONFIG:RELEASE>:/Gy>
+         $<$<CONFIG:RELEASE>:/GR>
+         $<$<CONFIG:RELEASE>:/Oy>
+         $<$<CONFIG:RELEASE>:/GT>
+         $<$<CONFIG:RELEASE>:/GL>
+      )
+      set_target_properties(FlexDMDPlugin PROPERTIES
+         MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
+      )
+      target_compile_options(FlexDMDPlugin PUBLIC
+         $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+         $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
+      )
+      target_link_options(FlexDMDPlugin PUBLIC
+         $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
+         $<$<CONFIG:RELEASE>:/OPT:REF>
+         $<$<CONFIG:RELEASE>:/OPT:ICF>
+         $<$<CONFIG:RELEASE>:/LTCG>
+      )
+      if (PluginArch STREQUAL "x64")
+         set_target_properties(FlexDMDPlugin PROPERTIES
+            OUTPUT_NAME "plugin-flexdmd64"
+         )
+         target_link_directories(FlexDMDPlugin PUBLIC ${CMAKE_SOURCE_DIR}/third-party/build-libs/windows-x64)
+         target_link_libraries(FlexDMDPlugin SDL364.lib SDL3_image64.lib)
+      else()
+         set_target_properties(FlexDMDPlugin PROPERTIES
+            OUTPUT_NAME "plugin-flexdmd"
+         )
+         target_link_directories(FlexDMDPlugin PUBLIC ${CMAKE_SOURCE_DIR}/third-party/build-libs/windows-x86)
+         target_link_libraries(FlexDMDPlugin SDL3.lib SDL3_image.lib)
+      endif()
    else()
       set_target_properties(FlexDMDPlugin PROPERTIES
+         PREFIX ""
          OUTPUT_NAME "plugin-flexdmd"
       )
-      target_link_directories(FlexDMDPlugin PUBLIC ${CMAKE_SOURCE_DIR}/third-party/build-libs/windows-x86)
-      target_link_libraries(FlexDMDPlugin SDL3.lib SDL3_image.lib)
+      if(PluginPlatform STREQUAL "macos")
+         set_target_properties(FlexDMDPlugin PROPERTIES
+            SUFFIX ".dylib"
+         )
+      endif()
+      target_link_directories(FlexDMDPlugin PUBLIC
+         ${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}
+      )
+      target_link_libraries(FlexDMDPlugin PUBLIC SDL3 SDL3_image)
    endif()
-else()
+
+   add_custom_command(TARGET FlexDMDPlugin POST_BUILD
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/flexdmd/plugin.cfg" "${PLUGINS_DIR}/flexdmd/plugin.cfg"
+      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:FlexDMDPlugin>" "${PLUGINS_DIR}/flexdmd"
+      COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:FlexDMDPlugin>"
+      COMMAND "${CMAKE_COMMAND}" -E copy_directory ${CMAKE_SOURCE_DIR}/plugins/flexdmd/assets "${PLUGINS_DIR}/flexdmd/assets"
+   )
+
+   if(PluginPlatform STREQUAL "windows")
+      if (PluginArch STREQUAL "x64")
+         add_custom_command(TARGET FlexDMDPlugin POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/SDL364.dll" "${PLUGINS_DIR}/flexdmd/SDL364.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/SDL3_image64.dll" "${PLUGINS_DIR}/flexdmd/SDL3_image64.dll"
+         )
+      elseif (PluginArch STREQUAL "x86")
+         add_custom_command(TARGET FlexDMDPlugin POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/SDL3.dll" "${PLUGINS_DIR}/flexdmd/SDL3.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/SDL3_image.dll" "${PLUGINS_DIR}/flexdmd/SDL3_image.dll"
+         )
+      endif()
+   endif()
+endif()
+
+if(BUILD_STATIC)
+   add_library(FlexDMDPlugin STATIC ${FLEXDMD_PLUGIN_SOURCES})
+
+   target_include_directories(FlexDMDPlugin PUBLIC
+      plugins/flexdmd
+      ${CMAKE_SOURCE_DIR}/third-party/include
+      src/plugins
+      src
+   )
+
+   target_compile_definitions(FlexDMDPlugin PRIVATE
+      "__forceinline=__attribute__((always_inline)) inline"
+   )
+
    set_target_properties(FlexDMDPlugin PROPERTIES
       PREFIX ""
       OUTPUT_NAME "plugin-flexdmd"
    )
-   target_link_directories(FlexDMDPlugin PUBLIC
-      ${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}
-   )
-   target_link_libraries(FlexDMDPlugin PUBLIC SDL3 SDL3_image)
-endif()
-
-add_custom_command(TARGET FlexDMDPlugin POST_BUILD
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/flexdmd/plugin.cfg" "${PLUGINS_DIR}/flexdmd/plugin.cfg"
-   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:FlexDMDPlugin>" "${PLUGINS_DIR}/flexdmd"
-   COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:FlexDMDPlugin>"
-   COMMAND "${CMAKE_COMMAND}" -E copy_directory ${CMAKE_SOURCE_DIR}/plugins/flexdmd/assets "${PLUGINS_DIR}/flexdmd/assets"
-)
-
-if(PluginPlatform STREQUAL "windows")
-   if (PluginArch STREQUAL "x64")
-      add_custom_command(TARGET FlexDMDPlugin POST_BUILD
-         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/SDL364.dll" "${PLUGINS_DIR}/flexdmd/SDL364.dll"
-         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/SDL3_image64.dll" "${PLUGINS_DIR}/flexdmd/SDL3_image64.dll"
-      )
-   elseif (PluginArch STREQUAL "x86")
-      add_custom_command(TARGET FlexDMDPlugin POST_BUILD
-         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/SDL3.dll" "${PLUGINS_DIR}/flexdmd/SDL3.dll"
-         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/SDL3_image.dll" "${PLUGINS_DIR}/flexdmd/SDL3_image.dll"
-      )
-   endif()
 endif()
