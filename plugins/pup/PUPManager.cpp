@@ -537,6 +537,8 @@ void PUPManager::Stop()
 int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
 {
    PUPManager* me = static_cast<PUPManager*>(context);
+   if (!me->m_init)
+      return false;
    PUPScreen* screen = nullptr;
    switch (renderCtx->window)
    {
