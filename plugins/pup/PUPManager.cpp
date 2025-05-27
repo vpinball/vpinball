@@ -559,7 +559,7 @@ void PUPManager::OnGetRenderer(const unsigned int eventId, void* context, void* 
 {
    PUPManager* me = static_cast<PUPManager*>(context);
    GetAnciliaryRendererMsg* msg = static_cast<GetAnciliaryRendererMsg*>(msgData);
-   static AnciliaryRendererDef entry = { "PUP", "PinUp Player", "Renderer for PinUp player backglass", Render };
+   static AnciliaryRendererDef entry = { "PUP", "PinUp Player", "Renderer for PinUp player backglass", nullptr, Render };
    if (msg->window == VPXAnciliaryWindow::VPXWINDOW_Backglass || msg->window == VPXAnciliaryWindow::VPXWINDOW_ScoreView || msg->window == VPXAnciliaryWindow::VPXWINDOW_Topper)
    {
       if (msg->count < msg->maxEntryCount) 
