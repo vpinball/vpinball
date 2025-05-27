@@ -311,7 +311,7 @@ int OnRender(VPXRenderContext2D* ctx, void*)
 
 void OnGetRenderer(const unsigned int msgId, void* context, void* msgData)
 {
-   static AnciliaryRendererDef entry = { "B2S", "B2S Backglass & FullDMD", "Renderer for directb2s backglass files", OnRender };
+   static AnciliaryRendererDef entry = { "B2S", "B2S Backglass & FullDMD", "Renderer for directb2s backglass files", nullptr, OnRender };
    GetAnciliaryRendererMsg* msg = static_cast<GetAnciliaryRendererMsg*>(msgData);
    if (msg->window == VPXAnciliaryWindow::VPXWINDOW_Backglass)
    {
