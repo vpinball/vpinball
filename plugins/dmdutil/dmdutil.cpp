@@ -13,6 +13,8 @@
 #include "DMDUtil/DMDUtil.h"
 #pragma warning(pop)
 
+namespace DMDUtil {
+   
 static MsgPluginAPI* msgApi = nullptr;
 static uint32_t endpointId;
 
@@ -154,7 +156,11 @@ static void onGameEnd(const unsigned int msgId, void* userData, void* msgData)
    pDmd = nullptr;
 }
 
-MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
+}
+
+using namespace DMDUtil;
+
+MSGPI_EXPORT void MSGPIAPI DMDUtilPluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
 {
    msgApi = api;
    endpointId = sessionId;
@@ -167,7 +173,7 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
    getDmdSrcMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
 }
 
-MSGPI_EXPORT void MSGPIAPI PluginUnload()
+MSGPI_EXPORT void MSGPIAPI DMDUtilPluginUnload()
 {
    onGameEnd(onGameEndId, nullptr, nullptr);
 

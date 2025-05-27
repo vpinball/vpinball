@@ -3,6 +3,8 @@
 #include "BackgroundScene.h"
 #include "actors/Label.h"
 
+namespace Flex {
+
 class SingleLineScene final : public BackgroundScene
 {
 public:
@@ -18,3 +20,5 @@ private:
    bool m_scroll;
    float m_scrollX;
 };
+
+}

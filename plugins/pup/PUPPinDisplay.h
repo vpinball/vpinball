@@ -2,6 +2,8 @@
 
 #include "common.h"
 
+namespace PUP {
+
 class PUPManager;
 
 class PUPPinDisplay final
@@ -70,3 +72,5 @@ public:
 private:
    PUPManager& m_pupManager;
 };
+
+}

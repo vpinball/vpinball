@@ -7,6 +7,8 @@
 #include <SDL3_ttf/SDL_ttf.h>
 #include <SDL3_image/SDL_image.h>
 
+namespace PUP {
+
 typedef enum
 {
    PUP_LABEL_XALIGN_LEFT,
@@ -135,3 +137,5 @@ private:
    Uint64 m_animationStart = 0;
    std::future<RenderState> m_pendingTextureUpdate;
 };
+
+}

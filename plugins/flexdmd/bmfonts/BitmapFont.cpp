@@ -7,6 +7,8 @@
 
 #include <unordered_dense.h>
 
+namespace Flex {
+
 BitmapFont::BitmapFont()
 {
    m_padding = { 0, 0, 0, 0 };
@@ -279,4 +281,6 @@ ankerl::unordered_dense::map<string, string> BitmapFont::ParseParts(const string
       result[key] = value;
 
    return result;
+}
+
 }

@@ -2,6 +2,8 @@
 
 #include "Scene.h"
 
+namespace Flex {
+
 class BackgroundScene : public Scene
 {
 public:
@@ -15,3 +17,5 @@ public:
 private:
    Actor* m_pBackground;
 };
+
+}

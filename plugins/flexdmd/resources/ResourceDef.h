@@ -6,6 +6,8 @@
 #include <string>
 using std::string;
 
+namespace Flex {
+
 class BaseDef
 {
 public:
@@ -148,3 +150,5 @@ private:
    const Scaling m_scaling;
    const Alignment m_alignment;
 };
+
+}

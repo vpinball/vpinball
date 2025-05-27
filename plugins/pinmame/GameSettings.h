@@ -3,6 +3,8 @@
 #include "common.h"
 #include "ScriptablePlugin.h"
 
+namespace PinMAME {
+
 class GameSettings final
 {
 public:
@@ -20,3 +22,5 @@ public:
    void SetDisplayPosition(float newValX, float newValY, void* hWnd = nullptr) { /* Not yet implemented */ }
    void ShowSettingsDlg(void* hParentWnd = nullptr) { /* Not yet implemented */ }
 };
+
+}

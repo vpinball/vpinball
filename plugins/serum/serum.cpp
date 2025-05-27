@@ -28,6 +28,8 @@ LPI_IMPLEMENT // Implement shared login support
 // - PinMame/OnGameStart: msgData is PinMame game identifier (rom name)
 // - PinMame/OnGameEnd
 
+namespace Serum {
+
 static MsgPluginAPI* msgApi = nullptr;
 static uint32_t endpointId;
 static unsigned int onControllerGameStartId, onControllerGameEndId;
@@ -323,7 +325,11 @@ static void OnControllerGameEnd(const unsigned int eventId, void* userData, void
    StopColorization();
 }
 
-MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
+}
+
+using namespace Serum;
+
+MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
 {
    msgApi = api;
    endpointId = sessionId;
@@ -338,7 +344,7 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
    msgApi->SubscribeMsg(endpointId, getDmdSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG), OnGetRenderDMDSrc, nullptr);
 }
 
-MSGPI_EXPORT void MSGPIAPI PluginUnload()
+MSGPI_EXPORT void MSGPIAPI SerumPluginUnload()
 {
    StopColorization();
    msgApi->UnsubscribeMsg(getDmdSrcId, OnGetRenderDMDSrc);

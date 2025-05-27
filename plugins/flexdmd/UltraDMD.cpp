@@ -13,6 +13,8 @@
 
 #include <sstream>
 
+namespace Flex {
+
 UltraDMD::UltraDMD(FlexDMD* pFlexDMD)
    : m_pFlexDMD(pFlexDMD)
    , m_pScoreFontText(new FontDef("FlexDMD.Resources.udmd-f4by5.fnt"s, RGB(168, 168, 168), RGB(255, 255, 255)))
@@ -71,7 +73,7 @@ UltraDMD::~UltraDMD()
 
 void UltraDMD::Clear()
 {
-   VP::SurfaceGraphics* pGraphics = m_pFlexDMD->GetGraphics();
+   Flex::SurfaceGraphics* pGraphics = m_pFlexDMD->GetGraphics();
    pGraphics->SetColor(RGB(0, 0, 0));
    pGraphics->Clear();
    m_pScoreBoard->SetVisible(false);
@@ -375,4 +377,6 @@ void UltraDMD::ScrollingCredits(const string& background, const string& text, in
    ScrollingCreditsScene* pScene = new ScrollingCreditsScene(m_pFlexDMD, ResolveImage(background, false), lines, pFont, (AnimationType)animateIn, pauseTime / 1000.0f, (AnimationType)animateOut, ""s);
    m_pQueue->SetVisible(true);
    m_pQueue->Enqueue(pScene);
+}
+
 }

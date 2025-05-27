@@ -3,6 +3,8 @@
 #include <filesystem>
 #include <algorithm>
 
+namespace PUP {
+
 /*
    playlists.pup: ScreenNum,Folder,Des,AlphaSort,RestSeconds,Volume,Priority
    PuP Pack Editor: Folder (Playlist),Description,Randomize,RestSeconds,Volume,Priority
@@ -168,4 +170,6 @@ string PUPPlaylist::ToString() const {
       ", volume=" + std::to_string(m_volume) +
       ", priority=" + std::to_string(m_priority) +
       ", function=" + string(PUP_PLAYLIST_FUNCTION_TO_STRING(m_function));
+}
+
 }

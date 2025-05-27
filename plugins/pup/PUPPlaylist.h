@@ -2,6 +2,8 @@
 
 #include "PUPManager.h"
 
+namespace PUP {
+
 typedef enum
 {
    PUP_PLAYLIST_FUNCTION_DEFAULT,
@@ -45,3 +47,5 @@ private:
    ankerl::unordered_dense::map<string, string> m_fileMap;
    string m_szBasePath;
 };
+
+}

@@ -8,10 +8,26 @@
 
 #include "common.h"
 
+#include "resources/ResourceDef.h"
+#include "resources/AssetSrc.h"
+#include "resources/Font.h"
+#include "actors/Actor.h"
+#include "actors/Actions.h"
+#include "actors/Label.h"
+#include "actors/Frame.h"
+#include "resources/Bitmap.h"
+#include "actors/Image.h"
+#include "actors/Video.h"
+#include "actors/Group.h"
+#include "actors/AnimatedActor.h"
+#include "UltraDMD.h"
+#include "FlexDMD.h"
+
+
+namespace Flex {
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Resource & resource Identifiers
-
-#include "resources/ResourceDef.h"
 
 PSC_CLASS_START(FontDef)
 PSC_CLASS_END(FontDef)
@@ -22,11 +38,9 @@ PSC_CLASS_END(VideoDef)
 PSC_CLASS_START(ImageSequenceDef)
 PSC_CLASS_END(ImageSequenceDef)
 
-#include "resources/AssetSrc.h"
 PSC_CLASS_START(AssetSrc)
 PSC_CLASS_END(AssetSrc)
 
-#include "resources/Font.h"
 #define PSC_VAR_Font(variant) PSC_VAR_object(Font, variant)
 #define PSC_VAR_SET_Font(variant, value) PSC_VAR_SET_object(Font, variant, value)
 PSC_CLASS_START(Font)
@@ -35,8 +49,6 @@ PSC_CLASS_END(Font)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // All actors
 
-#include "actors/Actor.h"
-#include "actors/Actions.h"
 #define PSC_VAR_Alignment(variant) PSC_VAR_enum(Alignment, variant)
 #define PSC_VAR_SET_Alignment(variant, value) PSC_VAR_SET_enum(Alignment, variant, value)
 PSC_CLASS_ALIAS(Alignment, int32)
@@ -70,7 +82,6 @@ PSC_CLASS_START(Actor)
    PSC_FUNCTION0(Actor, void, ClearActions)
 PSC_CLASS_END(Actor)
 
-#include "actors/Label.h"
 #define PSC_VAR_Label(variant) PSC_VAR_object(Label, variant)
 #define PSC_VAR_SET_Label(variant, value) PSC_VAR_SET_object(Label, variant, value)
 PSC_CLASS_START(Label)
@@ -81,7 +92,6 @@ PSC_CLASS_START(Label)
    PSC_PROP_RW(Label, string, Text)
 PSC_CLASS_END(Label)
 
-#include "actors/Frame.h"
 #define PSC_VAR_Frame(variant) PSC_VAR_object(Frame, variant)
 #define PSC_VAR_SET_Frame(variant, value) PSC_VAR_SET_object(Frame, variant, value)
 PSC_CLASS_START(Frame)
@@ -92,13 +102,11 @@ PSC_CLASS_START(Frame)
    PSC_PROP_RW(Frame, int, FillColor)
 PSC_CLASS_END(Frame)
 
-#include "resources/Bitmap.h"
 #define PSC_VAR_Bitmap(variant) PSC_VAR_object(Bitmap, variant)
 #define PSC_VAR_SET_Bitmap(variant, value) PSC_VAR_SET_object(Bitmap, variant, value)
 PSC_CLASS_START(Bitmap)
 PSC_CLASS_END(Bitmap)
 
-#include "actors/Image.h"
 #define PSC_VAR_Image(variant) PSC_VAR_object(Image, variant)
 #define PSC_VAR_SET_Image(variant, value) PSC_VAR_SET_object(Image, variant, value)
 PSC_CLASS_START(Image)
@@ -108,7 +116,6 @@ PSC_CLASS_START(Image)
    PSC_PROP_RW(Image, Alignment, Alignment)
 PSC_CLASS_END(Image)
 
-#include "actors/Video.h"
 #define PSC_VAR_Video(variant) PSC_VAR_object(Video, variant)
 #define PSC_VAR_SET_Video(variant, value) PSC_VAR_SET_object(Video, variant, value)
 PSC_CLASS_START(Video)
@@ -122,7 +129,6 @@ PSC_CLASS_START(Video)
    PSC_FUNCTION1(Video, void, Seek, float)
 PSC_CLASS_END(Video)
 
-#include "actors/Group.h"
 #define PSC_VAR_Group(variant) PSC_VAR_object(Group, variant)
 #define PSC_VAR_SET_Group(variant, value) PSC_VAR_SET_object(Group, variant, value)
 PSC_CLASS_START(Group)
@@ -140,7 +146,6 @@ PSC_CLASS_START(Group)
    PSC_FUNCTION1(Group, void, RemoveActor, Actor)
 PSC_CLASS_END(Group)
 
-#include "actors/AnimatedActor.h"
 #define PSC_VAR_SET_AnimatedActor(variant, value) PSC_VAR_SET_object(AnimatedActor, variant, value)
 PSC_CLASS_START(AnimatedActor)
    PSC_INHERIT_CLASS(AnimatedActor, Actor)
@@ -149,8 +154,6 @@ PSC_CLASS_END(AnimatedActor)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // All actions and ActionFactory
-
-#include "actors/Actions.h"
 
 PSC_CLASS_START(Action)
    PSC_FUNCTION1(Action, bool, Update, float)
@@ -238,8 +241,6 @@ PSC_CLASS_END(ActionFactory)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Main classes
 
-#include "UltraDMD.h"
-
 #define PSC_VAR_SET_UltraDMD(variant, value) PSC_VAR_SET_object(UltraDMD, variant, value)
 PSC_CLASS_START(UltraDMD)
    PSC_FUNCTION0(UltraDMD, void, LoadSetup)
@@ -271,8 +272,6 @@ PSC_CLASS_START(UltraDMD)
    PSC_FUNCTION3(UltraDMD, void, DisplayText, string, int, int)
    PSC_FUNCTION6(UltraDMD, void, ScrollingCredits, string, string, int, int, int, int)
 PSC_CLASS_END(UltraDMD)
-
-#include "FlexDMD.h"
 
 #define PSC_VAR_RenderMode(variant) PSC_VAR_enum(RenderMode, variant)
 #define PSC_VAR_SET_RenderMode(variant, value) PSC_VAR_SET_enum(RenderMode, variant, value)
@@ -616,7 +615,11 @@ static void OnFlexDestroyed(FlexDMD* pFlex)
       OnShowChanged(pFlex);
 }
 
-MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
+}
+
+using namespace Flex;
+
+MSGPI_EXPORT void MSGPIAPI FlexDMDPluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
 {
    msgApi = api;
    endpointId = sessionId;
@@ -693,7 +696,7 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
    // FIXME scriptApi->SetCOMObjectOverride("UltraDMD.DMDObject", UltraDMD_SCD);
 }
 
-MSGPI_EXPORT void MSGPIAPI PluginUnload()
+MSGPI_EXPORT void MSGPIAPI FlexDMDPluginUnload()
 {
    // All FlexDMD must be destroyed before unloading the plugin
    assert(!hasDMD);

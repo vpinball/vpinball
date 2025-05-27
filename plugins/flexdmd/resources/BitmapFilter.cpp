@@ -1,5 +1,7 @@
 #include "BitmapFilter.h"
 
+namespace Flex {
+
 BitmapFilter::BitmapFilter()
 {
 }
@@ -24,4 +26,6 @@ ColorRGBA32 BitmapFilter::GetPixel(const SDL_Surface* const surface, int x, int 
       default:
          return 0;
    }
+}
+
 }

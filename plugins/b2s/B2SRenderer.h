@@ -7,6 +7,8 @@
 #include "B2SDataModel.h"
 #include "ControllerPlugin.h"
 
+namespace B2S {
+   
 class B2SRenderer final
 {
 public:
@@ -39,3 +41,5 @@ private:
    float m_b2sHeight = 0.f;
    float m_grillCut = 0.f;
 };
+
+}

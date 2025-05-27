@@ -2,6 +2,16 @@
 
 #include "B2SServer.h"
 
-B2SServer::B2SServer() { }
+namespace B2S {
+   
+B2SServer::B2SServer()
+{
+   
+}
 
-B2SServer::~B2SServer() { }
+B2SServer::~B2SServer()
+{
+   
+}
+
+}

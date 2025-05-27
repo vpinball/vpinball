@@ -12,6 +12,8 @@
 
 #include "libpinmame.h"
 
+namespace B2S {
+   
 LPI_IMPLEMENT // Implement shared login support
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -323,8 +325,11 @@ void OnGetRenderer(const unsigned int msgId, void* context, void* msgData)
    }
 }
 
+}
 
-MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
+using namespace B2S;
+
+MSGPI_EXPORT void MSGPIAPI B2SPluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
 {
    msgApi = api;
    endpointId = sessionId;
@@ -342,7 +347,7 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
    msgApi->BroadcastMsg(endpointId, onAuxRendererChgId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG), nullptr);
 }
 
-MSGPI_EXPORT void MSGPIAPI PluginUnload()
+MSGPI_EXPORT void MSGPIAPI B2SPluginUnload()
 {
    msgApi->UnsubscribeMsg(onGetAuxRendererId, OnGetRenderer);
    msgApi->UnsubscribeMsg(onGameStartId, OnGameStart);

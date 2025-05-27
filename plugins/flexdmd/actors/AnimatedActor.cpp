@@ -2,6 +2,8 @@
 #include "Actions.h"
 
 
+namespace Flex {
+
 void AnimatedActor::Seek(float posInSeconds)
 {
    Rewind();
@@ -38,4 +40,6 @@ void AnimatedActor::Rewind()
    m_time = 0;
    m_frameTime = 0;
    m_endOfAnimation = false;
+}
+
 }

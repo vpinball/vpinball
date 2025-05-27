@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <filesystem>
 
+namespace Serum {
+   
 #ifdef _WIN32
 #include <windows.h>
 #include <locale>
@@ -88,4 +90,6 @@ string find_case_insensitive_directory_path(const string& szPath)
    }
 
    return string();
+}
+
 }

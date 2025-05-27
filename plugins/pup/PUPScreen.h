@@ -11,6 +11,8 @@
 #include <condition_variable>
 #include <thread>
 
+namespace PUP {
+
 class PUPCustomPos;
 class PUPMediaManager;
 class PUPLabel;
@@ -172,3 +174,5 @@ private:
    std::thread m_thread;
    std::mutex m_renderMutex;
 };
+
+}

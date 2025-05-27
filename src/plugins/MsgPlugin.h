@@ -47,8 +47,9 @@
 // A basic setting mechanism is also provided to allow easier integration.
 //
 // Plugins must implement and export the load/unload functions to be valid.
-// MSGPI_EXPORT void PluginLoad(const uint32_t endpointId, MsgPluginAPI* api);
-// MSGPI_EXPORT void PluginUnload();
+// MSGPI_EXPORT void xxxPluginLoad(const uint32_t endpointId, MsgPluginAPI* api);
+// MSGPI_EXPORT void xxxPluginUnload();
+// Where xxx is the plugin id (to avoid name conflict when using static linking)
 //
 // Plugins can be statically linked to host application on platforms requiring it or loaded
 // dynamically. For dynamic loading, plugins are expected to define a 'plugin.cfg' file that

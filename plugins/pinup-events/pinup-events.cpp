@@ -26,6 +26,8 @@
 // stretched to fit 128x32 frame, shaded using 0xFF4500 color (C# Colors.OrangeRed), 
 // with non linear shading for 2 bitplane frames.
 
+namespace PinUpEvents {
+
 MsgPluginAPI* msgApi = nullptr;
 uint32_t endpointId;
 static unsigned int onGameStartId, onGameEndId, onSerumTriggerId, getDmdSrcId;
@@ -218,7 +220,11 @@ void onGameEnd(const unsigned int eventId, void* userData, void* eventData)
    }
 }
 
-MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
+}
+
+using namespace PinUpEvents;
+
+MSGPI_EXPORT void MSGPIAPI PinUpEventsPluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
 {
    msgApi = api;
    endpointId = sessionId; 
@@ -242,7 +248,7 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
    }
 }
 
-MSGPI_EXPORT void MSGPIAPI PluginUnload()
+MSGPI_EXPORT void MSGPIAPI PinUpEventsPluginUnload()
 {
    msgApi->UnsubscribeMsg(onGameStartId, onGameStart);
    msgApi->UnsubscribeMsg(onGameEndId, onGameEnd);

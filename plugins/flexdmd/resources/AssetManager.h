@@ -6,6 +6,8 @@
 #include "Bitmap.h"
 
 
+namespace Flex {
+
 class Font;
 class VPXFile;
 
@@ -34,3 +36,5 @@ private:
    string m_szTableFile;
    VPXFile* m_vpxFile = nullptr;
 };
+
+}

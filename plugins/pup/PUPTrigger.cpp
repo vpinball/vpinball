@@ -2,6 +2,8 @@
 #include "PUPScreen.h"
 #include "PUPPlaylist.h"
 
+namespace PUP {
+
 const char* PUP_TRIGGER_PLAY_ACTION_STRINGS[] = {
    "PUP_TRIGGER_PLAY_ACTION_NORMAL",
    "PUP_TRIGGER_PLAY_ACTION_LOOP",
@@ -250,4 +252,6 @@ string PUPTrigger::ToString() const {
       ", count=" + std::to_string(m_counter) +
       ", restSeconds=" + std::to_string(m_restSeconds) +
       ", playAction=" + string(PUP_TRIGGER_PLAY_ACTION_TO_STRING(m_playAction));
+}
+
 }

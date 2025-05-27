@@ -4,6 +4,8 @@
 #include "common.h"
 #include <SDL3/SDL_surface.h>
 
+namespace Flex {
+
 class BitmapFilter
 {
 public:
@@ -15,3 +17,5 @@ public:
 protected:
    static ColorRGBA32 GetPixel(const SDL_Surface* const surface, int x, int y);
 };
+
+}

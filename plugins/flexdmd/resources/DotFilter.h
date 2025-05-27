@@ -2,6 +2,8 @@
 
 #include "BitmapFilter.h"
 
+namespace Flex {
+
 class DotFilter final : public BitmapFilter
 {
 public:
@@ -19,3 +21,5 @@ private:
    int m_dotSize = 2;
    int m_offset = 0;
 };
+
+}

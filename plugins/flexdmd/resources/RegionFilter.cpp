@@ -1,5 +1,7 @@
 #include "RegionFilter.h"
 
+namespace Flex {
+
 void RegionFilter::Filter(Bitmap* pBitmap)
 {
    SDL_Surface* src = pBitmap->GetSurface();
@@ -13,4 +15,6 @@ void RegionFilter::Filter(Bitmap* pBitmap)
    SDL_BlitSurfaceScaled(src, &srcRect, dst, nullptr, SDL_SCALEMODE_NEAREST);
 
    pBitmap->SetData(dst);
+}
+
 }

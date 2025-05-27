@@ -3,6 +3,8 @@
 #include "MsgPlugin.h"
 #include "VPXPlugin.h"
 
+namespace HelloWorld {
+
 MsgPluginAPI* msgApi = nullptr;
 VPXPluginAPI* vpxApi = nullptr;
 
@@ -29,7 +31,11 @@ void onPrepareFrame(const unsigned int eventId, void* userData, void* eventData)
    // This can be used to tweak any visual parameter before building the frame (for example head tracking,...)
 }
 
-MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
+}
+
+using namespace HelloWorld;
+
+MSGPI_EXPORT void MSGPIAPI HelloWorldPluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
 {
    msgApi = api;
    endpointId = sessionId;
@@ -39,7 +45,7 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
    msgApi->SubscribeMsg(endpointId, onPrepareFrameId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME), onPrepareFrame, nullptr);
 }
 
-MSGPI_EXPORT void MSGPIAPI PluginUnload()
+MSGPI_EXPORT void MSGPIAPI HelloWorldPluginUnload()
 {
    // Cleanup is mandatory when plugin is unloaded. All registered callbacks must be unregistered.
    msgApi->UnsubscribeMsg(onGameStartId, onGameStart);

@@ -3,6 +3,8 @@
 #include "Scene.h"
 #include "BackgroundScene.h"
 
+namespace Flex {
+
 class Font;
 
 class ScrollingCreditsScene final : public BackgroundScene
@@ -18,3 +20,5 @@ private:
    Group* m_pContainer;
    float m_length;
 };
+
+}

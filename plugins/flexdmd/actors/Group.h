@@ -3,6 +3,8 @@
 #include "Actor.h"
 #include "VPXPlugin.h"
 
+namespace Flex {
+
 class FlexDMD;
 class Image;
 class Label;
@@ -36,7 +38,7 @@ public:
 
    void OnStageStateChanged() override;
    void Update(float delta) override;
-   void Draw(VP::SurfaceGraphics* pGraphics) override;
+   void Draw(Flex::SurfaceGraphics* pGraphics) override;
 
 private:
    Actor* Get(const string &name);
@@ -44,3 +46,5 @@ private:
    bool m_clip = false;
    vector<Actor *> m_children;
 };
+
+}

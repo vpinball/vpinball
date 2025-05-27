@@ -1,5 +1,7 @@
 #include "BackgroundScene.h"
 
+namespace Flex {
+
 BackgroundScene::BackgroundScene(FlexDMD* pFlexDMD, Actor* pBackground, AnimationType animateIn, float pauseS, AnimationType animateOut, const string& id) : Scene(pFlexDMD, animateIn, pauseS, animateOut, id)
 {
    m_pBackground = pBackground;
@@ -25,4 +27,6 @@ void BackgroundScene::Update(float delta)
    Scene::Update(delta);
    if (m_pBackground)
       m_pBackground->SetSize(GetWidth(), GetHeight());
+}
+
 }

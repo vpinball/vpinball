@@ -2,6 +2,8 @@
 #include "resources/Bitmap.h"
 #include "resources/AssetManager.h"
 
+namespace Flex {
+
 Image::Image(FlexDMD* pFlexDMD, const string& name) : Actor(pFlexDMD, name)
 {
 }
@@ -55,7 +57,7 @@ void Image::SetBitmap(Bitmap *pBitmap)
       m_pBitmap->AddRef();
 }
 
-void Image::Draw(VP::SurfaceGraphics* pGraphics)
+void Image::Draw(Flex::SurfaceGraphics* pGraphics)
 {
    if (GetVisible() && m_pBitmap && m_pBitmap->GetSurface()) {
       float w = 0;
@@ -74,4 +76,6 @@ void Image::OnStageStateChanged()
    if (m_pBitmap)
       m_pBitmap->Release();
    m_pBitmap = GetOnStage() ? m_pAssetManager->GetBitmap(m_pSrc) : nullptr;
+}
+
 }

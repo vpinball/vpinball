@@ -2,6 +2,7 @@
 
 #include "B2SRenderer.h"
 
+namespace B2S {
 
 B2SRenderer::B2SRenderer(MsgPluginAPI* const msgApi, const unsigned int endpointId, std::shared_ptr<B2STable> b2s)
    : m_b2s(b2s)
@@ -180,4 +181,6 @@ bool B2SRenderer::Render(VPXRenderContext2D* ctx)
    }
 
    return true;
+}
+
 }

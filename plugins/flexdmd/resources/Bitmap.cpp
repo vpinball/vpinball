@@ -1,6 +1,8 @@
 #include "Bitmap.h"
 #include <SDL3_image/SDL_image.h>
 
+namespace Flex {
+
 Bitmap::Bitmap(void* pData, AssetType assetType)
 {
    m_pData = pData;
@@ -95,4 +97,6 @@ int Bitmap::GetFrameCount() const
       return static_cast<IMG_Animation*>(m_pData)->count;
 
    return 0;
+}
+
 }

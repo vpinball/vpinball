@@ -1,5 +1,7 @@
 #include "DotFilter.h"
 
+namespace Flex {
+
 void DotFilter::Filter(Bitmap* pBitmap)
 {
    SDL_Surface* const src = pBitmap->GetSurface();
@@ -39,4 +41,6 @@ void DotFilter::Filter(Bitmap* pBitmap)
    }
 
    pBitmap->SetData(dst);
+}
+
 }

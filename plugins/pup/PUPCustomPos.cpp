@@ -1,5 +1,7 @@
 #include "PUPCustomPos.h"
 
+namespace PUP {
+
 /*
    First number is always the screen. 1,22.5,45.3,55.1,54.7 [pupid # source screen,xpos,ypos,width,height] values in % of pupdisplay. 
 */
@@ -49,4 +51,6 @@ string PUPCustomPos::ToString() const
       std::to_string(m_frect.y) + ", " +
       std::to_string(m_frect.w) + ", " +
       std::to_string(m_frect.h) + '}';
+}
+
 }

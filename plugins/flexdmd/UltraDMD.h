@@ -10,6 +10,8 @@
 
 #include <unordered_dense.h>
 
+namespace Flex {
+
 class UltraDMD final
 {
 public:
@@ -68,3 +70,5 @@ private:
    int m_nextId = 1;
    ankerl::unordered_dense::map<int, BaseDef*> m_preloads;
 };
+
+}

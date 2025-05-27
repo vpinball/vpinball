@@ -2,6 +2,8 @@
 
 #include <SDL3/SDL_surface.h>
 
+namespace Flex {
+
 class Character final {
 public:
    Character() = default;
@@ -27,3 +29,5 @@ private:
    SDL_Rect m_bounds;
    SDL_Point m_offset;
 };
+
+}

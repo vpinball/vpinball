@@ -5,6 +5,8 @@
 #include <filesystem>
 #include <fstream>
 
+namespace PUP {
+
 PUPManager::PUPManager(MsgPluginAPI* msgApi, uint32_t endpointId, const string& rootPath)
    : m_szRootPath(rootPath)
    , m_msgApi(msgApi)
@@ -710,4 +712,6 @@ void PUPManager::OnInputSrcChanged(const unsigned int eventId, void* userData, v
       break;
    }
    delete[] getSrcMsg.entries;
+}
+
 }

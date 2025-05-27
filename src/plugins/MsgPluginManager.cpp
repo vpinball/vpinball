@@ -422,6 +422,8 @@ void MsgPlugin::Load(const MsgPluginAPI* msgAPI)
    {
       if (m_module == nullptr)
       {
+         const std::string load = std::string(m_id) + "PluginLoad";
+         const std::string unload = std::string(m_id) + "PluginUnload";
          #if defined(_WIN32) || defined(_WIN64)
             SetDllDirectory(m_directory.c_str());
          #endif
@@ -432,15 +434,15 @@ void MsgPlugin::Load(const MsgPluginAPI* msgAPI)
                PLOGE << "Plugin " << m_id << " failed to load library " << m_library << ": " << SDL_GetError();
                return;
             }
-            m_loadPlugin = (msgpi_load_plugin)SDL_LoadFunction(static_cast<SDL_SharedObject*>(m_module), "PluginLoad");
-            m_unloadPlugin = (msgpi_unload_plugin)SDL_LoadFunction(static_cast<SDL_SharedObject*>(m_module), "PluginUnload");
+            m_loadPlugin = (msgpi_load_plugin)SDL_LoadFunction(static_cast<SDL_SharedObject*>(m_module), load.c_str());
+            m_unloadPlugin = (msgpi_unload_plugin)SDL_LoadFunction(static_cast<SDL_SharedObject*>(m_module), unload.c_str());
             if (m_loadPlugin == nullptr || m_unloadPlugin == nullptr)
             {
                SDL_UnloadObject(static_cast<SDL_SharedObject*>(m_module));
                m_loadPlugin = nullptr;
                m_unloadPlugin = nullptr;
                m_module = nullptr;
-               PLOGE << "Plugin " << m_id << " invalid library " << m_library << ": required PluginLoad/PluginUnload functions are not correct.";
+               PLOGE << "Plugin " << m_id << " invalid library " << m_library << ": required " << load << "/" << unload << " functions are not correct.";
                return;
             }
          #elif defined(_WIN32) || defined(_WIN64)
@@ -452,15 +454,15 @@ void MsgPlugin::Load(const MsgPluginAPI* msgAPI)
                PLOGE << "Last error was: " << GetLastErrorAsString();
                return;
             }
-            m_loadPlugin = (msgpi_load_plugin)GetProcAddress(static_cast<HMODULE>(m_module), "PluginLoad");
-            m_unloadPlugin = (msgpi_unload_plugin)GetProcAddress(static_cast<HMODULE>(m_module), "PluginUnload");
+            m_loadPlugin = (msgpi_load_plugin)GetProcAddress(static_cast<HMODULE>(m_module), load.c_str());
+            m_unloadPlugin = (msgpi_unload_plugin)GetProcAddress(static_cast<HMODULE>(m_module), unload.c_str());
             if (m_loadPlugin == nullptr || m_unloadPlugin == nullptr)
             {
                FreeLibrary(static_cast<HMODULE>(m_module));
                m_loadPlugin = nullptr;
                m_unloadPlugin = nullptr;
                m_module = nullptr;
-               PLOGE << "Plugin " << m_id << " invalid library " << m_library << ": required load/unload functions are not correct.";
+               PLOGE << "Plugin " << m_id << " invalid library " << m_library << ": required " << load << "/" << unload << " functions are not correct.";
                return;
             }
          #else

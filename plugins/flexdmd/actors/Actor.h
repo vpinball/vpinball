@@ -7,6 +7,8 @@
 
 #include <SDL3/SDL_surface.h>
 
+namespace Flex {
+
 class Group;
 class FlexDMD;
 class Action;
@@ -79,7 +81,7 @@ public:
 
    virtual void Update(float secondsElapsed);
 
-   virtual void Draw(VP::SurfaceGraphics *pGraphics);
+   virtual void Draw(Flex::SurfaceGraphics *pGraphics);
 
 protected:
    ActionFactory* m_pActionFactory;
@@ -100,3 +102,5 @@ private:
    float m_prefHeight = 0.f;
    bool m_visible = true;
 };
+
+}

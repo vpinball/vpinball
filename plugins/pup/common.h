@@ -26,6 +26,18 @@ using std::vector;
 
 #include <SDL3/SDL_surface.h>
 
+// Shared logging
+#include "LoggingPlugin.h"
+
+// Scriptable API
+#include "ScriptablePlugin.h"
+
+// VPX main API
+#include "VPXPlugin.h"
+
+namespace PUP
+{
+
 #define LONG long
 
 #ifndef GetRValue
@@ -34,21 +46,12 @@ using std::vector;
 #define GetBValue(rgba32) static_cast<uint8_t>((rgba32) >> 16)
 #endif
 
-
-// Shared logging
-#include "LoggingPlugin.h"
 LPI_USE();
-#define LOGD LPI_LOGD
-#define LOGI LPI_LOGI
-#define LOGE LPI_LOGE
+#define LOGD PUP::LPI_LOGD
+#define LOGI PUP::LPI_LOGI
+#define LOGE PUP::LPI_LOGE
 
-// Scriptable API
-#include "ScriptablePlugin.h"
 PSC_USE_ERROR();
-
-// VPX main API
-#include "VPXPlugin.h"
-
 
 #ifdef _MSC_VER
 #define PATH_SEPARATOR_CHAR '\\'
@@ -81,3 +84,5 @@ string find_case_insensitive_file_path(const string &szPath);
 bool StrCompareNoCase(const string &strA, const string &strB);
 string lowerCase(string input);
 void SetThreadName(const string &name);
+
+}

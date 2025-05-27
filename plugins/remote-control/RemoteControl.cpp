@@ -21,11 +21,13 @@
 
 // Shared logging
 #include "LoggingPlugin.h"
-LPI_USE();
-#define LOGD LPI_LOGD
-#define LOGI LPI_LOGI
-#define LOGE LPI_LOGE
 
+namespace RemoteControl {
+
+LPI_USE();
+#define LOGD RemoteControl::LPI_LOGD
+#define LOGI RemoteControl::LPI_LOGI
+#define LOGE RemoteControl::LPI_LOGE
 
 ///////////////////////////////////////////////////////////////////////////////
 // Minimal portable sockets
@@ -470,7 +472,11 @@ void onGameEnd(const unsigned int eventId, void* userData, void* eventData)
 
 LPI_IMPLEMENT // Implement shared login support
 
-MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
+}
+
+using namespace RemoteControl;
+
+MSGPI_EXPORT void MSGPIAPI RemoteControlPluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
 {
    msgApi = api;
    endpointId = sessionId;
@@ -484,7 +490,7 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
    onActionEventId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_ACTION_CHANGED);
 }
 
-MSGPI_EXPORT void MSGPIAPI PluginUnload()
+MSGPI_EXPORT void MSGPIAPI RemoteControlPluginUnload()
 {
    stopThread();
    msgApi->UnsubscribeMsg(onGameStartId, onGameStart);

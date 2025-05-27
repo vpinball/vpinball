@@ -1,6 +1,8 @@
 #include "PUPMediaManager.h"
 #include "PUPScreen.h"
 
+namespace PUP {
+
 PUPMediaManager::PUPMediaManager(PUPScreen* pScreen)
 {
    m_pMainPlayer = &m_player1;
@@ -105,4 +107,6 @@ void PUPMediaManager::Render(VPXRenderContext2D* const ctx, const SDL_Rect& dest
 
    if (m_pBackgroundPlayer)
       m_pBackgroundPlayer->player.SetVolume(mainPlayerPlaying ? 0.0f : m_pBackgroundPlayer->volume);
+}
+
 }

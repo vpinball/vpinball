@@ -2,6 +2,8 @@
 #include "actors/FadeOverlay.h"
 #include "common.h"
 
+namespace Flex {
+
 Scene::Scene(FlexDMD* pFlexDMD, AnimationType animateIn, float pauseS, AnimationType animateOut, const string& id) : Group(pFlexDMD, id)
 {
    SetVisible(true);
@@ -209,4 +211,6 @@ bool Scene::IsFinished() const
 void Scene::AddTween(float from, float to, float duration, const std::function<bool (float)>& callback)
 {
    m_tweens.emplace_back(tweeny::from(from).to(to).during(duration * 1000.0f).onStep(callback));
+}
+
 }

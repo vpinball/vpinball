@@ -2,6 +2,8 @@
 
 #include <algorithm>
 
+namespace Flex {
+
 Sequence::Sequence(FlexDMD* pFlexDMD, const string& name)
    : Group(pFlexDMD, name)
    , m_finished(false)
@@ -64,11 +66,13 @@ void Sequence::Update(float delta)
    m_finished = !m_pActiveScene && m_pendingScenes.empty();
 }
 
-void Sequence::Draw(VP::SurfaceGraphics* pGraphics)
+void Sequence::Draw(Flex::SurfaceGraphics* pGraphics)
 {
    if (GetVisible() && m_pActiveScene) {
       pGraphics->SetColor(RGB(0, 0, 0));
       pGraphics->Clear();
       Group::Draw(pGraphics);
    }
+}
+
 }

@@ -8,6 +8,8 @@
 //#include "audio/pinsound.h"
 #include "PUPMediaPlayer.h"
 
+namespace PUP {
+
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -569,3 +571,5 @@ void PUPMediaPlayer::HandleAudioFrame(AVFrame* pFrame)
 #elif defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
+
+}

@@ -5,6 +5,8 @@
 
 #include "tweeny-3.2.0.h"
 
+namespace Flex {
+
 class Scene : public Group
 {
 public:
@@ -36,3 +38,5 @@ private:
 
    vector<tweeny::tween<float>> m_tweens;
 };
+
+}

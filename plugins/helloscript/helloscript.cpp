@@ -5,6 +5,8 @@
 #include "ScriptablePlugin.h"
 #include <cstring>
 
+namespace HelloScript {
+   
 static MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
 static ScriptablePluginAPI* scriptApi = nullptr;
@@ -27,8 +29,12 @@ ScriptClassDef helloScriptClass { { "DummyClass" }, []() { return static_cast<vo
       { { "Property2" }, { "float" }, 0, {}, get_Property2 },
       { { "Property2" }, { "void" }, 1, { { "float" } }, put_Property2 },
    } };
+   
+}
 
-MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
+using namespace HelloScript;
+
+MSGPI_EXPORT void MSGPIAPI HelloScriptPluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
 {
    msgApi = api;
    endpointId = sessionId;
@@ -41,7 +47,7 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
    scriptApi->RegisterScriptClass(&helloScriptClass);
 }
 
-MSGPI_EXPORT void MSGPIAPI PluginUnload()
+MSGPI_EXPORT void MSGPIAPI HelloScriptPluginUnload()
 {
    vpxApi = nullptr;
    msgApi = nullptr;

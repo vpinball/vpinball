@@ -8,6 +8,8 @@
 
 #include <cassert>
 
+namespace PinMAME {
+
 class Game final
 {
 public:
@@ -42,3 +44,5 @@ private:
    Controller* m_pController;
    GameSettings* m_settings;
 };
+
+}

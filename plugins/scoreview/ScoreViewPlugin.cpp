@@ -15,12 +15,6 @@ LPI_IMPLEMENT // Implement shared login support
 
 #include "ScoreView.h"
 
-static MsgPluginAPI* msgApi = nullptr;
-static VPXPluginAPI* vpxApi = nullptr;
-static uint32_t endpointId;
-static unsigned int onGameStartId, onGameEndId, onGetAuxRendererId, onAuxRendererChgId;
-static std::unique_ptr<ScoreView> scoreview;
-
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -34,6 +28,15 @@ static std::unique_ptr<ScoreView> scoreview;
 #include <unistd.h>
 #define PATH_SEPARATOR_CHAR '/'
 #endif
+
+namespace ScoreView
+{
+
+static MsgPluginAPI* msgApi = nullptr;
+static VPXPluginAPI* vpxApi = nullptr;
+static uint32_t endpointId;
+static unsigned int onGameStartId, onGameEndId, onGetAuxRendererId, onAuxRendererChgId;
+static std::unique_ptr<ScoreView> scoreview;
 
 #ifndef _WIN32
 string GetLibraryPath()
@@ -138,7 +141,11 @@ void OnGameEnd(const unsigned int eventId, void* userData, void* eventData)
    scoreview = nullptr;
 }
 
-MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
+}
+
+using namespace ScoreView;
+
+MSGPI_EXPORT void MSGPIAPI ScoreViewPluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
 {
    msgApi = api;
    endpointId = sessionId;
@@ -155,7 +162,7 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
    msgApi->BroadcastMsg(endpointId, onAuxRendererChgId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG), nullptr);
 }
 
-MSGPI_EXPORT void MSGPIAPI PluginUnload()
+MSGPI_EXPORT void MSGPIAPI ScoreViewPluginUnload()
 {
    msgApi->UnsubscribeMsg(onGetAuxRendererId, OnGetRenderer);
    msgApi->UnsubscribeMsg(onGameStartId, OnGameStart);

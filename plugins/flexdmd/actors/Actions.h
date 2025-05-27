@@ -7,6 +7,8 @@
 
 #include "tweeny-3.2.0.h"
 
+namespace Flex {
+
 class Action
 {
 public:
@@ -642,3 +644,5 @@ public:
 private:
    Actor *m_pTarget; // Not reference counted to avoid circular references
 };
+
+}

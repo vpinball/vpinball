@@ -1,5 +1,7 @@
 #include "ScoreBoard.h"
 
+namespace Flex {
+
 ScoreBoard::ScoreBoard(FlexDMD* pFlexDMD, Font* pScoreFont, Font* pHighlightFont, Font* pTextFont) : Group(pFlexDMD, string())
 {
    m_pScoreFont = pScoreFont;
@@ -114,7 +116,7 @@ void ScoreBoard::Update(float delta)
     m_pLowerRight->SetAlignedPosition(GetWidth() - 1, yText, Alignment_TopRight);
 }
 
-void ScoreBoard::Draw(VP::SurfaceGraphics* pGraphics)
+void ScoreBoard::Draw(Flex::SurfaceGraphics* pGraphics)
 {
    if (GetVisible()) {
       pGraphics->SetColor(RGB(0, 0, 0));
@@ -123,4 +125,6 @@ void ScoreBoard::Draw(VP::SurfaceGraphics* pGraphics)
          m_pBackground->SetSize(GetWidth(), GetHeight());
       Group::Draw(pGraphics);
    }
+}
+
 }
