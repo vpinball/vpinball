@@ -36,13 +36,13 @@ void PUPMediaPlayer::Play(const string& filename)
 
    Stop();
 
-   m_filename = szFilename;
+   m_filename = filename;
    m_volume = 0.0f;
    m_loop = false;
    m_startTimestamp = SDL_GetTicks();
 
    // Open file
-   if (avformat_open_input(&m_pFormatContext, szFilename.c_str(), NULL, NULL) != 0) {
+   if (avformat_open_input(&m_pFormatContext, filename.c_str(), NULL, NULL) != 0) {
       LOGE("Unable to open: filename=%s", filename.c_str());
       return;
    }
