@@ -17,6 +17,7 @@ void PUPWindow::OnGetRenderer(const unsigned int eventId, void* context, void* m
    if (msg->window == me->m_anciliaryWindow) {
       if (msg->count < msg->maxEntryCount)
       {
+         msg->entries[msg->count].id = me->m_szTitle.c_str();
          msg->entries[msg->count].name = me->m_szTitle.c_str();
          msg->entries[msg->count].description = me->m_szDescription.c_str();
          msg->entries[msg->count].context = me;

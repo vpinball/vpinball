@@ -334,9 +334,10 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, SDL_Rect& rect, int pagenum
    else if (m_dirty || (m_szPath.empty() && rect.h != m_renderState.m_prerenderedHeight && m_szPath.empty()))
    {
       m_dirty = false;
-      if (m_szPath.empty())
+      if (m_szPath.empty()) {
          if (m_pFont)
             m_pendingTextureUpdate = std::async(std::launch::async, [this, rect]() { return UpdateLabelTexture(rect.h, m_pFont, m_szCaption, m_size, m_color, m_shadowState, m_shadowColor, { m_xoffset, m_yoffset} ); });
+      }
       else
          m_pendingTextureUpdate = std::async(std::launch::async, [this]() { return UpdateImageTexture(m_type, m_szPath); });
    }

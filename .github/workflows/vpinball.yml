@@ -93,7 +93,7 @@ jobs:
           fi
       - if: (matrix.platform == 'macos')
         run: |
-          brew install bison autoconf automake libtool nasm
+          brew install bison autoconf automake libtool nasm create-dmg
           echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
       - if: (matrix.platform == 'linux')
         run: |
@@ -147,31 +147,45 @@ jobs:
             fi
             cmake --build build --config ${{ matrix.config }}
           elif [[ "${{ matrix.platform }}" == "macos" ]]; then
-            if [ "${{ github.repository }}" == "vpinball/vpinball" ]; then
-              KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-              echo "${{ secrets.MACOS_CODESIGN_P12 }}" | base64 --decode > certificate.p12
-              security create-keychain -p "${{ secrets.MACOS_CODESIGN_P12_PASSWORD }}" $KEYCHAIN_PATH
-              security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-              security unlock-keychain -p "${{ secrets.MACOS_CODESIGN_P12_PASSWORD }}" $KEYCHAIN_PATH
-              security import certificate.p12 -P "${{ secrets.MACOS_CODESIGN_P12_PASSWORD }}" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-              security list-keychain -d user -s $KEYCHAIN_PATH
-              cmake \
-                 -DOPT_CODESIGN=ON \
-                 -DCODESIGN_DEVELOPER_ID="${{ secrets.MACOS_CODESIGN_DEVELOPER_ID }}" \
-                 -DCODESIGN_APPLE_ID="${{ secrets.MACOS_CODESIGN_APPLE_ID }}" \
-                 -DCODESIGN_PASSWORD="${{ secrets.MACOS_CODESIGN_PASSWORD }}" \
-                 -DCODESIGN_TEAM_ID="${{ secrets.MACOS_CODESIGN_TEAM_ID }}" \
-                 -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
-            else
-              cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
-            fi
+            cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
             cmake --build build/${{ matrix.config }} -- -j$(sysctl -n hw.ncpu)
-            cd build/${{ matrix.config }}
-            cpack
           else
             cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
             cmake --build build/${{ matrix.config }} -- -j$(nproc)
           fi
+      - if: (matrix.platform == 'macos')
+        name: Code signing, notarization, and packaging
+        run: |
+          cd build/${{ matrix.config }}
+          if [ "${{ secrets.MACOS_CODESIGN }}" == "1" ]; then
+            KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+            echo "${{ secrets.MACOS_CODESIGN_P12 }}" | base64 --decode > certificate.p12
+            security create-keychain -p "${{ secrets.MACOS_CODESIGN_P12_PASSWORD }}" $KEYCHAIN_PATH
+            security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+            security unlock-keychain -p "${{ secrets.MACOS_CODESIGN_P12_PASSWORD }}" $KEYCHAIN_PATH
+            security import certificate.p12 -P "${{ secrets.MACOS_CODESIGN_P12_PASSWORD }}" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+            security list-keychain -d user -s $KEYCHAIN_PATH
+            find VPinballX_${{ matrix.type }}.app/Contents/Resources/plugins -type f -name '*.dylib' -exec \
+               codesign --verbose --timestamp --options runtime --force --sign "${{ secrets.MACOS_CODESIGN_DEVELOPER_ID }}" {} \;
+            codesign --verbose --timestamp --options runtime --deep --force --sign "${{ secrets.MACOS_CODESIGN_DEVELOPER_ID }}" VPinballX_${{ matrix.type }}.app
+            ditto -c -k --rsrc --keepParent VPinballX_${{ matrix.type }}.app VPinballX_${{ matrix.type }}.zip
+            xcrun notarytool submit VPinballX_${{ matrix.type }}.zip  \
+              --wait \
+              --apple-id "${{ secrets.MACOS_CODESIGN_APPLE_ID }}" \
+              --password "${{ secrets.MACOS_CODESIGN_PASSWORD }}" \
+              --team-id "${{ secrets.MACOS_CODESIGN_TEAM_ID }}"
+            xcrun stapler staple VPinballX_${{ matrix.type }}.app
+          fi
+          create-dmg \
+            --volname "VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}" \
+            --volicon ../../standalone/macos/VPinballX.icns \
+            --window-pos 200 120 \
+            --window-size 520 320 \
+            --icon-size 64 \
+            --icon "VPinballX_${{ matrix.type }}.app" 130 120 \
+            --app-drop-link 390 120 \
+            VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}.dmg \
+            VPinballX_${{ matrix.type }}.app
       - name: Stage artifacts
         run: |
           mkdir tmp

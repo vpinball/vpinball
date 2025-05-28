@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
 
-option(OPT_CODESIGN "Option to code sign" OFF)
-
 file(READ src/core/vpversion.h version)
 string(REGEX MATCH "VP_VERSION_MAJOR[ ]+([0-9]+)" _tmp ${version})
 set(VERSION_MAJOR "${CMAKE_MATCH_1}")
@@ -750,43 +748,6 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${CMAKE_PROJECT_VERSION}" $<TARGET_FILE_DIR:vpinball>/../Info.plist
    COMMAND /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${CMAKE_PROJECT_VERSION}" $<TARGET_FILE_DIR:vpinball>/../Info.plist
 )
-
-if(OPT_CODESIGN)
-   set(SCRIPT_PATH "${CMAKE_BINARY_DIR}/codesign.sh")
-
-   file(WRITE ${SCRIPT_PATH} "#!/bin/sh\n")
-   file(APPEND ${SCRIPT_PATH} "find \"$1/Contents/Frameworks\" -name \"*.dylib\" | while read -r file; do\n")
-   file(APPEND ${SCRIPT_PATH} "  if [ ! -L \"$file\" ]; then\n")
-   file(APPEND ${SCRIPT_PATH} "    codesign --force --sign \"$2\" --timestamp --options runtime \"$file\"\n")
-   file(APPEND ${SCRIPT_PATH} "  fi\n")
-   file(APPEND ${SCRIPT_PATH} "done\n")
-   file(APPEND ${SCRIPT_PATH} "find \"$1/Contents/Resources/plugins\" -mindepth 2 -maxdepth 2 -type f -name \"*.dylib\" | while read -r file; do\n")
-   file(APPEND ${SCRIPT_PATH} "  if [ ! -L \"$file\" ]; then\n")
-   file(APPEND ${SCRIPT_PATH} "    codesign --force --sign \"$2\" --timestamp --options runtime \"$file\"\n")
-   file(APPEND ${SCRIPT_PATH} "  fi\n")
-   file(APPEND ${SCRIPT_PATH} "done\n")
-   file(APPEND ${SCRIPT_PATH} "codesign --force --sign \"$2\" --timestamp --options runtime \"$1\"\n")
-   file(CHMOD ${SCRIPT_PATH} PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ)
-
-   set(PATH_APP "${CMAKE_BINARY_DIR}/${APP_NAME}.app")
-   set(PATH_APP_ZIPPED "${PATH_APP}.zip")
-
-   add_custom_command(TARGET vpinball POST_BUILD
-      COMMAND /bin/sh ${SCRIPT_PATH} ${PATH_APP} ${CODESIGN_DEVELOPER_ID}
-      COMMAND ditto -c -k --keepParent ${PATH_APP} ${PATH_APP_ZIPPED}
-      COMMAND xcrun notarytool submit ${PATH_APP_ZIPPED} --wait --apple-id "${CODESIGN_APPLE_ID}" --password "${CODESIGN_PASSWORD}" --team-id "${CODESIGN_TEAM_ID}"
-   )
-endif()
-
-install(TARGETS vpinball
-   BUNDLE DESTINATION .
-)
-
-set(CPACK_GENERATOR DragNDrop)
-set(CPACK_PACKAGE_FILE_NAME VPinballX_GL-${CMAKE_PROJECT_VERSION}-macos-x64)
-set(CPACK_DMG_VOLUME_NAME "VPinballX_GL ${CMAKE_PROJECT_VERSION}")
-set(CPACK_PACKAGE_ICON ${CMAKE_SOURCE_DIR}/standalone/macos/VPinballX.icns)
-include(CPack)
 
 set(PluginPlatform "macos")
 set(PluginArch "x64")
