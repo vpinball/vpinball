@@ -56,7 +56,7 @@ void LightSeq::WriteRegDefaults()
 
    char strTmp[MAXSTRING];
    WideCharToMultiByteNull(CP_ACP, 0, m_d.m_wzCollection.c_str(), -1, strTmp, MAXSTRING, nullptr, nullptr);
-   g_pvp->m_settings.SaveValue(regKey, "UpdateInterval"s, (int)m_d.m_updateinterval);
+   g_pvp->m_settings.SaveValue(regKey, "UpdateInterval"s, m_d.m_updateinterval);
    g_pvp->m_settings.SaveValue(regKey, "Collection"s, string(strTmp));
    g_pvp->m_settings.SaveValue(regKey, "CenterX"s, m_d.m_vCenter.x);
    g_pvp->m_settings.SaveValue(regKey, "CenterY"s, m_d.m_vCenter.y);
@@ -427,7 +427,7 @@ bool LightSeq::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-       case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+       case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
        case FID(VCEN): pbr->GetVector2(m_d.m_v); break;
        case FID(COLC): pbr->GetWideString(m_d.m_wzCollection); break;
        case FID(CTRX): pbr->GetFloat(m_d.m_vCenter.x); break;

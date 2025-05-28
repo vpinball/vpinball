@@ -34,7 +34,7 @@ static constexpr int LAST_ERROR_WIDGET_HEIGHT = 256;
 static UINT g_FindMsgString; // Windows message for the FindText dialog
 #endif
 
-//Scintillia Lexer parses only lower case unless otherwise told
+//Scintilla Lexer parses only lower case unless otherwise told
 static constexpr char vbsReservedWords[] =
 "and as byref byval case call const "
 "continue dim do each else elseif end error exit false for function global "
@@ -261,7 +261,7 @@ static int FindUD(const fi_vector<UserData>& ListIn, const string& strSearchData
 	if (Pos < 0) Pos = 0;
 	//Find the start of other instances of strSearchData by crawling up list
 	//Usually (but not always) UDKeyIndexHelper<true> returns top of the list so its fast
-	const size_t SearchWidth = strSearchData.size();
+	const size_t SearchWidth = strSearchData.length();
 	do
 	{
 		--Pos;
@@ -382,7 +382,7 @@ static size_t GetUDIdxfromUniqueKey(const fi_vector<UserData>& ListIn, const str
 static int FindClosestUD(const fi_vector<UserData>& ListIn, const int CurrentLine, const int CurrentIdx)
 {
 	const string strSearchData = lowerCase(ListIn[CurrentIdx].m_keyName);
-	const size_t SearchWidth = strSearchData.size();
+	const size_t SearchWidth = strSearchData.length();
 	//Find the start of other instances of strIn by crawling up list
 	int iNewPos = CurrentIdx;
 	do
@@ -2881,7 +2881,7 @@ bool CodeViewer::ParseStructureName(fi_vector<UserData>& ListIn, const UserData&
 				RemoveByVal(crWord);
 				RemovePadding(crWord);
 				RemoveNonVBSChars(crWord);
-				if (crWord.size() <= MAX_FIND_LENGTH && !crWord.empty()) 
+				if (crWord.length() <= MAX_FIND_LENGTH && !crWord.empty()) 
 				{
 					ud.m_keyName = crWord;
 					ud.m_uniqueKey = lowerCase(ud.m_keyName) + m_currentParentKey;
@@ -2892,7 +2892,7 @@ bool CodeViewer::ParseStructureName(fi_vector<UserData>& ListIn, const UserData&
 						ListIn[iCurParent].m_children.push_back(ud.m_uniqueKey);//add child to parent
 					}
 				}
-				RemainingLine = RemainingLine.substr(CommPos+1, string::npos);
+				RemainingLine = RemainingLine.substr(CommPos+1);
 				CommPos = RemainingLine.find_first_of(',');
 			}
 			return false;
@@ -2921,7 +2921,7 @@ bool CodeViewer::ParseStructureName(fi_vector<UserData>& ListIn, const UserData&
 				RemoveByVal(crWord);
 				RemovePadding(crWord);
 				RemoveNonVBSChars(crWord);
-				if (crWord.size() <= MAX_FIND_LENGTH && !crWord.empty())
+				if (crWord.length() <= MAX_FIND_LENGTH && !crWord.empty())
 				{
 					ud.m_keyName = crWord;
 					ud.eTyping = eDim;
@@ -2933,7 +2933,7 @@ bool CodeViewer::ParseStructureName(fi_vector<UserData>& ListIn, const UserData&
 						ListIn[iCurParent].m_children.push_back(ud.m_uniqueKey);//add child to parent
 					}
 				}
-				RemainingLine = RemainingLine.substr(CommPos+1, string::npos);
+				RemainingLine = RemainingLine.substr(CommPos+1);
 				CommPos = RemainingLine.find_first_of(',');
 			}
 		}
@@ -3265,13 +3265,13 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 #endif
 }
 
-static string GetTextFileFromDirectory(const string& szfilename, const string& dirname)
+static string GetTextFileFromDirectory(const string& filename, const string& dirname)
 {
    string szPath;
    if (!dirname.empty())
-      szPath = g_pvp->m_szMyPath + dirname;
+      szPath = g_pvp->m_myPath + dirname;
    // else: use current directory
-   return szPath + szfilename;
+   return szPath + filename;
 }
 
 void CodeViewer::ParseVPCore()
@@ -3296,7 +3296,7 @@ void CodeViewer::ParseVPCore()
 	while (!feof(fCore))
 	{
 		char text[MAX_LINE_LENGTH] = {};
-		if (fgets(text, MAX_LINE_LENGTH, fCore) == NULL)
+		if (fgets(text, MAX_LINE_LENGTH, fCore) == nullptr)
 		{
 			//error or EOF
 			break;
@@ -3314,10 +3314,10 @@ void CodeViewer::ParseVPCore()
 	fclose(fCore);
 }
 
-string CodeViewer::ExtractWordOperand(const string &line, const size_t StartPos)
+string CodeViewer::ExtractWordOperand(const string &line, const size_t StartPos) const
 {
 	size_t Substart = StartPos;
-	const size_t lineLength = line.size();
+	const size_t lineLength = line.length();
 	char linechar = line[Substart];
 	while ((m_validChars.find(linechar) == string::npos) && (Substart < lineLength))
 	{
@@ -4047,7 +4047,7 @@ Collection::Collection()
 
 STDMETHODIMP Collection::get_Name(BSTR *pVal)
 {
-   *pVal = SysAllocString((WCHAR *)m_wzName);
+   *pVal = SysAllocString(m_wzName);
 
    return S_OK;
 }

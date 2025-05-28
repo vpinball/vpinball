@@ -922,7 +922,7 @@ bool Plunger::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
    case FID(VCEN): pbr->GetVector2(m_d.m_v); break;
    case FID(WDTH): pbr->GetFloat(m_d.m_width); break;
    case FID(ZADJ): pbr->GetFloat(m_d.m_zAdjust); break;

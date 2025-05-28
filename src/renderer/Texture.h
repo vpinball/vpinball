@@ -118,7 +118,7 @@ private:
 
 public:
    unsigned int m_maxTexDim = 0;
-   
+
    // width and height of texture can be different than width and height
    // of m_pdsBuffer, since the surface can be limited to smaller sizes by the user
    unsigned int m_width = 0, m_height = 0;
@@ -129,8 +129,8 @@ public:
    HBITMAP m_hbmGDIVersion = nullptr; // HBitmap at screen depth and converted/visualized alpha so GDI draws it fast
    PinBinary *m_ppb = nullptr; // if this image should be saved as a binary stream, otherwise just LZW compressed from the live bitmap
 
-   string m_szName;
-   string m_szPath;
+   string m_name;
+   string m_path;
 
 private:
    HBITMAP m_oldHBM = nullptr;        // this is to cache the result of SelectObject()

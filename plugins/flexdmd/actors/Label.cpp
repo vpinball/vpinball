@@ -44,10 +44,10 @@ void Label::SetText(const string& szText)
       }
    }
 
-   if (m_szText != szTmp) {
-      m_szText = szTmp;
+   if (m_text != szTmp) {
+      m_text = szTmp;
       m_lines.clear();
-      std::stringstream ss(m_szText);
+      std::stringstream ss(m_text);
       string line;
       while (std::getline(ss, line, '\n'))
          m_lines.push_back(line);
@@ -60,7 +60,7 @@ void Label::UpdateBounds()
    if (!m_pFont)
       return;
 
-   SDL_Rect size = m_pFont->MeasureFont(m_szText);
+   SDL_Rect size = m_pFont->MeasureFont(m_text);
    m_textWidth = static_cast<float>(size.w);
    m_textHeight = static_cast<float>(size.h);
 
@@ -93,9 +93,9 @@ void Label::Draw(Flex::SurfaceGraphics* pGraphics)
          float y = 0;
          Layout::Align(m_alignment, GetPrefWidth(), GetPrefHeight(), GetWidth(), GetHeight(), x, y);
          if (GetFlexDMD()->GetRuntimeVersion() <= 1008) // FIXME check this against original code. Is it a cast or a rounding ?
-            m_pFont->DrawText_(pGraphics, roundf(GetX() + x), roundf(GetY() + y), m_szText);
+            m_pFont->DrawText_(pGraphics, roundf(GetX() + x), roundf(GetY() + y), m_text);
          else
-            m_pFont->DrawText_(pGraphics, floor(GetX() + x), floor(GetY() + y), m_szText);
+            m_pFont->DrawText_(pGraphics, floor(GetX() + x), floor(GetY() + y), m_text);
       }
    }
 }

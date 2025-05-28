@@ -29,7 +29,7 @@ void HitObject::FireHitEvent(HitBall* const pball)
       }
       pball->m_lastEventSqrDist = 0.f;
       pball->m_lastEventPos = pball->m_d.m_pos; // remember last collision position
-      ((IFireEvents*)m_obj)->FireGroupEvent(DISPID_HitEvents_Hit);
+      m_obj->FireGroupEvent(DISPID_HitEvents_Hit);
    }
 }
 

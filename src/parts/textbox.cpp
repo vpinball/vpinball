@@ -29,7 +29,7 @@ Textbox *Textbox::CopyForPlay(PinTable *live_table) const
    dst->m_fontStrikeThrough = m_fontStrikeThrough;
    dst->m_fontBold = m_fontBold;
    dst->m_fontSize = m_fontSize;
-   dst->m_szFontName = m_szFontName;
+   dst->m_fontName = m_fontName;
 #endif
    return dst;
 }
@@ -69,7 +69,7 @@ void Textbox::SetDefaults(const bool fromMouseClick)
       m_d.m_talign = TextAlignRight;
       m_d.m_transparent = false;
       m_d.m_isDMD = false;
-      m_d.m_sztext.clear();
+      m_d.m_text.clear();
 
 #ifndef __STANDALONE__
       fd.cySize.int64 = (LONGLONG)(14.25f * 10000.0f);
@@ -117,9 +117,9 @@ void Textbox::SetDefaults(const bool fromMouseClick)
       fd.fUnderline = g_pvp->m_settings.LoadValueWithDefault(regKey, "FontUnderline"s, 0);
       fd.fStrikethrough = g_pvp->m_settings.LoadValueWithDefault(regKey, "FontStrikeThrough"s, 0);
 
-      hr = g_pvp->m_settings.LoadValue(regKey, "Text"s, m_d.m_sztext);
+      hr = g_pvp->m_settings.LoadValue(regKey, "Text"s, m_d.m_text);
       if (!hr)
-         m_d.m_sztext.clear();
+         m_d.m_text.clear();
 #endif
    }
 
@@ -169,7 +169,7 @@ void Textbox::WriteRegDefaults()
    g_pvp->m_settings.SaveValue(regKey, "FontUnderline"s, fd.fUnderline);
    g_pvp->m_settings.SaveValue(regKey, "FontStrikeThrough"s, fd.fStrikethrough);
 
-   g_pvp->m_settings.SaveValue(regKey, "Text"s, m_d.m_sztext);
+   g_pvp->m_settings.SaveValue(regKey, "Text"s, m_d.m_text);
 
 #undef regKey
 #endif
@@ -185,7 +185,7 @@ HRESULT Textbox::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveF
    bw.WriteInt(FID(CLRB), m_d.m_backcolor);
    bw.WriteInt(FID(CLRF), m_d.m_fontcolor);
    bw.WriteFloat(FID(INSC), m_d.m_intensity_scale);
-   bw.WriteString(FID(TEXT), m_d.m_sztext);
+   bw.WriteString(FID(TEXT), m_d.m_text);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_TimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteWideString(FID(NAME), m_wzName);
@@ -222,7 +222,7 @@ bool Textbox::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
    case FID(VER1): pbr->GetVector2(m_d.m_v1); break;
    case FID(VER2): pbr->GetVector2(m_d.m_v2); break;
    case FID(CLRB): pbr->GetInt(m_d.m_backcolor); break;
@@ -230,7 +230,7 @@ bool Textbox::LoadToken(const int id, BiffReader * const pbr)
    case FID(INSC): pbr->GetFloat(m_d.m_intensity_scale); break;
    case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
    case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-   case FID(TEXT): pbr->GetString(m_d.m_sztext); break;
+   case FID(TEXT): pbr->GetString(m_d.m_text); break;
    case FID(NAME): pbr->GetWideString(m_wzName,std::size(m_wzName)); break;
    case FID(ALGN): pbr->GetInt(&m_d.m_talign); break;
    case FID(TRNS): pbr->GetBool(m_d.m_transparent); break;
@@ -278,10 +278,10 @@ bool Textbox::LoadToken(const int id, BiffReader * const pbr)
       len = (int)buffer[0];
       if (len > 0) {
          pbr->ReadBytes(buffer, len, &read); // name
-         m_szFontName = string(reinterpret_cast<char*>(buffer), len);
+         m_fontName = string(reinterpret_cast<char*>(buffer), len);
       }
       else
-         m_szFontName.clear();
+         m_fontName.clear();
 #endif
       break;
    }
@@ -467,7 +467,7 @@ void Textbox::Render(const unsigned int renderMask)
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
    TRACE_FUNCTION();
 
-   const bool is_dmd = m_d.m_isDMD || StrStrI(m_d.m_sztext.c_str(), "DMD") != nullptr; //!! second part is VP10.0 legacy
+   const bool is_dmd = m_d.m_isDMD || StrStrI(m_d.m_text.c_str(), "DMD") != nullptr; //!! second part is VP10.0 legacy
    if (isStaticOnly
       || !m_d.m_visible
       || (!is_dmd && m_texture == nullptr))
@@ -602,7 +602,7 @@ void Textbox::Render(const unsigned int renderMask)
          case TextAlignRight: alignment = DT_RIGHT; break;
          }
 
-         DrawText(hdc, m_d.m_sztext.c_str(), (int)m_d.m_sztext.length(), &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
+         DrawText(hdc, m_d.m_text.c_str(), (int)m_d.m_text.length(), &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
 
          GdiFlush(); // make sure everything is drawn
 
@@ -646,7 +646,7 @@ void Textbox::Render(const unsigned int renderMask)
                };
 
                int maxWidth = rcOut.right - rcOut.left;
-               SDL_Surface* pTextSurface = TTF_RenderText_Blended_Wrapped(pFont, m_d.m_sztext.c_str(), m_d.m_sztext.length(), textColor, maxWidth);
+               SDL_Surface* pTextSurface = TTF_RenderText_Blended_Wrapped(pFont, m_d.m_text.c_str(), m_d.m_text.length(), textColor, maxWidth);
                if (pTextSurface) {
                   SDL_Rect textRect;
                   textRect.y = rcOut.top;
@@ -723,7 +723,7 @@ STDMETHODIMP Textbox::put_FontColor(OLE_COLOR newVal)
 STDMETHODIMP Textbox::get_Text(BSTR *pVal)
 {
    WCHAR wz[MAXSTRING];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_sztext.c_str(), -1, wz, MAXSTRING);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_text.c_str(), -1, wz, MAXSTRING);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -733,7 +733,7 @@ STDMETHODIMP Textbox::put_Text(BSTR newVal)
 {
    char buf[MAXSTRING];
    WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXSTRING, nullptr, nullptr);
-   m_d.m_sztext = buf;
+   m_d.m_text = buf;
    m_textureDirty = true;
 
    return S_OK;
@@ -884,7 +884,7 @@ TTF_Font* Textbox::LoadFont()
 {
    TTF_Font* pFont = nullptr;
 
-   string szFontName = string_replace_all(m_szFontName, " "s, string());
+   string fontName = string_replace_all(m_fontName, " "s, string());
 
    vector<string> styles;
    if (m_fontBold && m_fontItalic)
@@ -895,29 +895,29 @@ TTF_Font* Textbox::LoadFont()
       styles.push_back("-Italic"s);
    styles.push_back("-Regular"s);
 
-   string szPath;
+   string path;
    for (const auto& szStyle : styles) {
-      szPath = find_case_insensitive_file_path(g_pvp->m_currentTablePath + szFontName + szStyle + ".ttf");
-      if (!szPath.empty()) {
-         pFont = TTF_OpenFont(szPath.c_str(), m_fontSize);
+      path = find_case_insensitive_file_path(g_pvp->m_currentTablePath + fontName + szStyle + ".ttf");
+      if (!path.empty()) {
+         pFont = TTF_OpenFont(path.c_str(), m_fontSize);
          if (pFont) {
-            PLOGI.printf("Font loaded: szPath=%s", szPath.c_str());
+            PLOGI.printf("Font loaded: path=%s", path.c_str());
             break;
          }
       }
    }
 
    if (!pFont) {
-      szPath = g_pvp->m_currentTablePath + szFontName + styles[0] + ".ttf";
-      PLOGW.printf("Unable to locate font: szPath=%s", szPath.c_str());
+      path = g_pvp->m_currentTablePath + fontName + styles[0] + ".ttf";
+      PLOGW.printf("Unable to locate font: path=%s", path.c_str());
 
-      szPath = g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "LiberationSans-Regular.ttf";
+      path = g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "LiberationSans-Regular.ttf";
       pFont = TTF_OpenFont(szPath.c_str(), m_fontSize);
       if (pFont) {
-         PLOGW.printf("Default font loaded: szPath=%s", szPath.c_str());
+         PLOGW.printf("Default font loaded: path=%s", path.c_str());
       }
       else {
-         PLOGW.printf("Unable to load font: szPath=%s", szPath.c_str());
+         PLOGW.printf("Unable to load font: path=%s", path.c_str());
          return nullptr;
       }
    }

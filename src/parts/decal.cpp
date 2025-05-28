@@ -54,9 +54,9 @@ void Decal::SetDefaults(const bool fromMouseClick)
       m_d.m_szSurface.clear();
 
    m_d.m_decaltype = fromMouseClick ? (enum DecalType)g_pvp->m_settings.LoadValueWithDefault(regKey, "DecalType"s, (int)DecalImage) : DecalImage;
-   hr = g_pvp->m_settings.LoadValue(regKey, "Text"s, m_d.m_sztext);
+   hr = g_pvp->m_settings.LoadValue(regKey, "Text"s, m_d.m_text);
    if (!hr || !fromMouseClick)
-      m_d.m_sztext.clear();
+      m_d.m_text.clear();
 
    m_d.m_sizingtype = fromMouseClick ? (enum SizingType)g_pvp->m_settings.LoadValueWithDefault(regKey, "Sizing"s, (int)ManualSize) : ManualSize;
    m_d.m_color = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Color"s, (int)RGB(0,0,0)) : RGB(0,0,0);
@@ -122,7 +122,7 @@ void Decal::WriteRegDefaults()
    g_pvp->m_settings.SaveValue(regKey, "Rotation"s, m_d.m_rotation);
    g_pvp->m_settings.SaveValue(regKey, "Image"s, m_d.m_szImage);
    g_pvp->m_settings.SaveValue(regKey, "DecalType"s, m_d.m_decaltype);
-   g_pvp->m_settings.SaveValue(regKey, "Text"s, m_d.m_sztext);
+   g_pvp->m_settings.SaveValue(regKey, "Text"s, m_d.m_text);
    g_pvp->m_settings.SaveValue(regKey, "Sizing"s, m_d.m_sizingtype);
    g_pvp->m_settings.SaveValue(regKey, "Color"s, (int)m_d.m_color);
    g_pvp->m_settings.SaveValue(regKey, "VerticalText"s, m_d.m_verticalText);
@@ -231,7 +231,7 @@ void Decal::UIRenderPass2(Sur * const psur)
 void Decal::GetTextSize(int * const px, int * const py)
 {
 #ifndef __STANDALONE__
-   const int len = (int)m_d.m_sztext.length();
+   const int len = (int)m_d.m_text.length();
    const HFONT hFont = GetFont();
    constexpr int alignment = DT_LEFT;
 
@@ -252,7 +252,7 @@ void Decal::GetTextSize(int * const px, int * const py)
          rcOut.top = 0;		//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
          rcOut.right = 0x1;
          rcOut.bottom = 0x1;
-         clientDC.DrawText(m_d.m_sztext.c_str()+i, 1, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
+         clientDC.DrawText(m_d.m_text.c_str()+i, 1, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
 
          *px = max(*px, (int)rcOut.right);
       }
@@ -266,7 +266,7 @@ void Decal::GetTextSize(int * const px, int * const py)
       rcOut.top = 0;			//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
       rcOut.right = 0x1;
       rcOut.bottom = 0x1;
-      clientDC.DrawText(m_d.m_sztext.c_str(), len, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
+      clientDC.DrawText(m_d.m_text.c_str(), len, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
 
       *px = rcOut.right;
    }
@@ -317,7 +317,7 @@ HRESULT Decal::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveFor
    bw.WriteString(FID(IMAG), m_d.m_szImage);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
    bw.WriteWideString(FID(NAME), m_wzName);
-   bw.WriteString(FID(TEXT), m_d.m_sztext);
+   bw.WriteString(FID(TEXT), m_d.m_text);
    bw.WriteInt(FID(TYPE), m_d.m_decaltype);
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteInt(FID(COLR), m_d.m_color);
@@ -358,7 +358,7 @@ bool Decal::LoadToken(const int id, BiffReader * const pbr)
 {
    switch (id)
    {
-   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
    case FID(VCEN): pbr->GetVector2(m_d.m_vCenter); break;
    case FID(WDTH): pbr->GetFloat(m_d.m_width); break;
    case FID(HIGH): pbr->GetFloat(m_d.m_height); break;
@@ -366,7 +366,7 @@ bool Decal::LoadToken(const int id, BiffReader * const pbr)
    case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
    case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
    case FID(NAME): pbr->GetWideString(m_wzName, std::size(m_wzName)); break;
-   case FID(TEXT): pbr->GetString(m_d.m_sztext); break;
+   case FID(TEXT): pbr->GetString(m_d.m_text); break;
    case FID(TYPE): pbr->GetInt(&m_d.m_decaltype); break;
    case FID(COLR): pbr->GetInt(m_d.m_color); break;
    case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
@@ -425,7 +425,7 @@ HRESULT Decal::InitPostLoad()
 void Decal::EnsureSize()
 {
    if ((((m_d.m_sizingtype != AutoSize) || (m_d.m_decaltype == DecalImage)) && (m_d.m_sizingtype != AutoWidth)) ||
-       ((m_d.m_decaltype == DecalText) && m_d.m_sztext.empty()))
+       ((m_d.m_decaltype == DecalText) && m_d.m_text.empty()))
    {
       m_realwidth = m_d.m_width;
       m_realheight = m_d.m_height;
@@ -444,7 +444,7 @@ void Decal::EnsureSize()
       double rh = (double)cy.Lo * (1.0 / 2545.0);
 
       if (m_d.m_verticalText)
-         rh *= (double)m_d.m_sztext.length();
+         rh *= (double)m_d.m_text.length();
 
       m_realheight = (float)rh;
       m_realwidth = (float)(rh * sizex / sizey);
@@ -474,7 +474,7 @@ void Decal::EnsureSize()
 
          if (m_d.m_verticalText)
          {
-            rh *= (double)m_d.m_sztext.length();
+            rh *= (double)m_d.m_text.length();
             m_realheight = (float)rh;
             m_realwidth = m_d.m_width;
          }
@@ -546,7 +546,7 @@ void Decal::RenderSetup(RenderDevice *device)
    {
 #ifndef __STANDALONE__
       RECT rcOut = { };
-      const int len = (int)m_d.m_sztext.length();
+      const int len = (int)m_d.m_text.length();
       const HFONT hFont = GetFont();
       int alignment = DT_LEFT;
 
@@ -568,7 +568,7 @@ void Decal::RenderSetup(RenderDevice *device)
             rcOut.top = 0;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
             rcOut.right = 1;
             rcOut.bottom = 1;
-            clientDC.DrawText(m_d.m_sztext.c_str()+i, 1, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
+            clientDC.DrawText(m_d.m_text.c_str()+i, 1, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
             maxwidth = max(maxwidth, (int)rcOut.right);
          }
 
@@ -583,7 +583,7 @@ void Decal::RenderSetup(RenderDevice *device)
          rcOut.top = 0;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
          rcOut.right = 1;
          rcOut.bottom = 1;
-         clientDC.DrawText(m_d.m_sztext.c_str(), len, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
+         clientDC.DrawText(m_d.m_text.c_str(), len, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK | DT_CALCRECT);
 
          charheight = m_realheight;
       }
@@ -636,11 +636,11 @@ void Decal::RenderSetup(RenderDevice *device)
          {
             rcOut.top = AUTOLEADING * i;//-tm.tmInternalLeading + 2; // Leave a pixel for anti-aliasing;
             rcOut.bottom = rcOut.top + 100;
-            dc.DrawText(m_d.m_sztext.c_str()+i, 1, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
+            dc.DrawText(m_d.m_text.c_str()+i, 1, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
          }
       }
       else
-         dc.DrawText(m_d.m_sztext.c_str(), len, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
+         dc.DrawText(m_d.m_text.c_str(), len, rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
 
       // Copy and set to opaque
       const D3DCOLOR* __restrict bitsd = (D3DCOLOR*)bits;
@@ -976,7 +976,7 @@ STDMETHODIMP Decal::put_Type(DecalType newVal)
 STDMETHODIMP Decal::get_Text(BSTR *pVal)
 {
    WCHAR wz[MAXSTRING];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_sztext.c_str(), -1, wz, MAXSTRING);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_text.c_str(), -1, wz, MAXSTRING);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -986,7 +986,7 @@ STDMETHODIMP Decal::put_Text(BSTR newVal)
 {
    char buf[MAXSTRING];
    WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXSTRING, nullptr, nullptr);
-   m_d.m_sztext = buf;
+   m_d.m_text = buf;
    EnsureSize();
 
    return S_OK;

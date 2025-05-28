@@ -729,7 +729,7 @@ void Surface::ExportMesh(ObjLoader& loader)
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
       if (tex)
       {
-         loader.WriteMaterial(m_d.m_szImage, tex->m_szPath, mat);
+         loader.WriteMaterial(m_d.m_szImage, tex->m_path, mat);
          loader.UseTexture(m_d.m_szImage);
       }
       else
@@ -1264,7 +1264,7 @@ bool Surface::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
    case FID(HTEV): pbr->GetBool(m_d.m_hitEvent); break;
    case FID(DROP): pbr->GetBool(m_d.m_droppable); break;
    case FID(FLIP): pbr->GetBool(m_d.m_flipbook); break;

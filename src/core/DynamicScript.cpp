@@ -407,7 +407,7 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
    VariantInit(cv);
    switch (typeDef.category)
    {
-   case TypeDef::TD_ALIAS: ScriptToCOMVariant(const_cast<ScriptTypeNameDef&>(typeDef.aliasDef.typeDef), sv, cv); break;
+   case TypeDef::TD_ALIAS: ScriptToCOMVariant(typeDef.aliasDef.typeDef, sv, cv); break;
 
    case TypeDef::TD_NATIVE:
       switch (typeDef.nativeType.id)
@@ -592,7 +592,7 @@ void DynamicTypeLibrary::ReleaseScriptVariant(const ScriptTypeNameDef& type, Scr
    const TypeDef& typeDef = m_types[type.id];
    switch (typeDef.category)
    {
-   case TypeDef::TD_ALIAS: ReleaseScriptVariant(const_cast<ScriptTypeNameDef&>(typeDef.aliasDef.typeDef), sv); break;
+   case TypeDef::TD_ALIAS: ReleaseScriptVariant(typeDef.aliasDef.typeDef, sv); break;
 
    case TypeDef::TD_NATIVE:
       if (typeDef.nativeType.id == TypeID::TYPEID_STRING)
@@ -616,7 +616,7 @@ string DynamicTypeLibrary::ScriptVariantToString(const ScriptTypeNameDef& type, 
    const TypeDef& typeDef = m_types[type.id];
    switch (typeDef.category)
    {
-   case TypeDef::TD_ALIAS: return ScriptVariantToString(const_cast<ScriptTypeNameDef&>(typeDef.aliasDef.typeDef), sv);
+   case TypeDef::TD_ALIAS: return ScriptVariantToString(typeDef.aliasDef.typeDef, sv);
 
    case TypeDef::TD_NATIVE:
       switch (typeDef.nativeType.id)

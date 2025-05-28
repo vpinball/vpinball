@@ -149,9 +149,9 @@ void PrimitiveVisualsProperty::UpdateRenderProbeComboBox(const vector<RenderProb
         bool texelFound = false;
         for (const auto texel : contentList)
         {
-            if (strncmp(texel->GetName().c_str(), selectName.c_str(), MAXTOKEN) == 0) //!! lstrcmpi?
-                texelFound = true;
-            need_reset |= combo.FindStringExact(1, texel->GetName().c_str()) == CB_ERR; // Combo does not contain an image from the image list
+           if (texel->GetName() == selectName) //!! lstrcmpi?!
+              texelFound = true;
+           need_reset |= combo.FindStringExact(1, texel->GetName().c_str()) == CB_ERR; // Combo does not contain an image from the image list
         }
         need_reset |= !texelFound; // Selection is not part of image list
     }
@@ -160,7 +160,7 @@ void PrimitiveVisualsProperty::UpdateRenderProbeComboBox(const vector<RenderProb
         combo.ResetContent();
         combo.AddString(_T("<None>"));
         for (size_t i = 0; i < contentList.size(); i++)
-            combo.AddString(contentList[i]->GetName().c_str());
+           combo.AddString(contentList[i]->GetName().c_str());
     }
     combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
 }

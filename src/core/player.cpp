@@ -611,10 +611,10 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    m_progressDialog.SetProgress("Loading Textures..."s, 50);
 
-   if ((m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0) && FileExists(m_ptable->m_szFileName))
+   if ((m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0) && FileExists(m_ptable->m_filename))
    {
       try {
-         string dir = g_pvp->m_szMyPrefPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_szTitle + PATH_SEPARATOR_CHAR;
+         string dir = g_pvp->m_myPrefPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_title + PATH_SEPARATOR_CHAR;
          std::filesystem::create_directories(std::filesystem::path(dir));
          string path = dir + "used_textures.xml";
          if (FileExists(path))
@@ -866,9 +866,9 @@ Player::~Player()
    msgApi->ReleaseMsgID(m_onAuxRendererChgId);
 
    // Save list of used textures to avoid stuttering in next play
-   if ((m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0) && FileExists(m_ptable->m_szFileName))
+   if ((m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0) && FileExists(m_ptable->m_filename))
    {
-      string dir = g_pvp->m_szMyPrefPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_szTitle + PATH_SEPARATOR_CHAR;
+      string dir = g_pvp->m_myPrefPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_title + PATH_SEPARATOR_CHAR;
       std::filesystem::create_directories(std::filesystem::path(dir));
 
       tinyxml2::XMLDocument xmlDoc;
@@ -934,14 +934,14 @@ Player::~Player()
       vector<BaseTexture *> textures = m_renderer->m_renderDevice->m_texMan.GetLoadedTextures();
       for (BaseTexture *memtex : textures)
       {
-         auto tex = std::ranges::find_if(m_ptable->m_vimage.begin(), m_ptable->m_vimage.end(), [&memtex](Texture *&x) { return (!x->m_szName.empty()) && (x->m_pdsBuffer == memtex); });
+         auto tex = std::ranges::find_if(m_ptable->m_vimage.begin(), m_ptable->m_vimage.end(), [&memtex](Texture *&x) { return (!x->m_name.empty()) && (x->m_pdsBuffer == memtex); });
          if (tex != m_ptable->m_vimage.end())
          {
-            tinyxml2::XMLElement *node = textureAge[(*tex)->m_szName];
+            tinyxml2::XMLElement *node = textureAge[(*tex)->m_name];
             if (node == nullptr)
             {
                node = xmlDoc.NewElement("texture");
-               node->SetText((*tex)->m_szName.c_str());
+               node->SetText((*tex)->m_name.c_str());
                root->InsertEndChild(node);
             }
             node->DeleteAttribute("clampu");

@@ -4,7 +4,7 @@
 #include <filesystem>
 
 namespace B2S {
-   
+
 static inline char cLower(char c)
 {
    if (c >= 'A' && c <= 'Z')
@@ -41,7 +41,13 @@ string normalize_path_separators(const string& szPath)
 string extension_from_path(const string& path)
 {
    const size_t pos = path.find_last_of('.');
-   return pos != string::npos ? string_to_lower(path).substr(pos + 1) : string();
+   return pos != string::npos ? string_to_lower(path.substr(pos + 1)) : string();
+}
+
+string TitleAndPathFromFilename(const string& filename)
+{
+   const size_t pos = filename.find_last_of('.');
+   return pos != string::npos ? filename.substr(0, pos) : filename;
 }
 
 string find_case_insensitive_file_path(const string& szPath)
@@ -80,9 +86,9 @@ string find_case_insensitive_file_path(const string& szPath)
    return string();
 }
 
-string TitleAndPathFromFilename(const char* const szfilename)
+/*string TitleAndPathFromFilename(const string& szfilename)
 {
-   const int len = (int)strlen(szfilename);
+   const int len = (int)szfilename.length();
    // find the last '.' in the filename
    int end;
    for (end = len; end >= 0; end--)
@@ -95,7 +101,7 @@ string TitleAndPathFromFilename(const char* const szfilename)
       end = len;
 
    // copy from the start of the string to the end (or last '\')
-   const char *szT = szfilename;
+   const char *szT = szfilename.c_str();
    int count = end;
 
    string szpath;
@@ -104,7 +110,7 @@ string TitleAndPathFromFilename(const char* const szfilename)
       szpath.push_back(*szT++);
    }
    return szpath;
-}
+}*/
 
 vector<unsigned char> base64_decode(const string &encoded_string)
 {

@@ -45,17 +45,17 @@ BOOL TableInfoDialog::OnInitDialog()
    AttachItem(IDC_SCREENSHOT, m_screenshotCombo);
 
    m_blurbEdit.LimitText(100);
-   m_tableNameEdit.SetWindowText(pt->m_szTableName.c_str());
-   m_authorEdit.SetWindowText(pt->m_szAuthor.c_str());
-   m_versionEdit.SetWindowText(pt->m_szVersion.c_str());
-   m_releaseEdit.SetWindowText(pt->m_szReleaseDate.c_str());
-   m_emailEdit.SetWindowText(pt->m_szAuthorEMail.c_str());
-   m_websiteEdit.SetWindowText(pt->m_szWebSite.c_str());
-   m_blurbEdit.SetWindowText(pt->m_szBlurb.c_str());
-   m_descriptionEdit.SetWindowText(pt->m_szDescription.c_str());
-   m_rulesEdits.SetWindowText(pt->m_szRules.c_str());
+   m_tableNameEdit.SetWindowText(pt->m_tableName.c_str());
+   m_authorEdit.SetWindowText(pt->m_author.c_str());
+   m_versionEdit.SetWindowText(pt->m_version.c_str());
+   m_releaseEdit.SetWindowText(pt->m_releaseDate.c_str());
+   m_emailEdit.SetWindowText(pt->m_authorEMail.c_str());
+   m_websiteEdit.SetWindowText(pt->m_webSite.c_str());
+   m_blurbEdit.SetWindowText(pt->m_blurb.c_str());
+   m_descriptionEdit.SetWindowText(pt->m_description.c_str());
+   m_rulesEdits.SetWindowText(pt->m_rules.c_str());
 
-   const string tmp = (!pt->m_szDateSaved.empty() ? pt->m_szDateSaved : "N.A."s) + " Revision " + std::to_string(pt->m_numTimesSaved);
+   const string tmp = (!pt->m_dateSaved.empty() ? pt->m_dateSaved : "N.A."s) + " Revision " + std::to_string(pt->m_numTimesSaved);
    m_dateSavedEdit.SetWindowText(tmp.c_str());
 
    // Init list of images
@@ -66,10 +66,10 @@ BOOL TableInfoDialog::OnInitDialog()
    {
       const Texture * const pin = pt->m_vimage[i];
       if (pin->m_ppb)
-         m_screenshotCombo.AddString(pin->m_szName.c_str());
+         m_screenshotCombo.AddString(pin->m_name.c_str());
    }
 
-   m_screenshotCombo.SelectString(0, pt->m_szScreenShot.c_str());
+   m_screenshotCombo.SelectString(0, pt->m_screenShot.c_str());
 
    m_customListView.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
@@ -223,23 +223,23 @@ void TableInfoDialog::OnOK()
 {
    CCO(PinTable) * const pt = g_pvp->GetActiveTable();
 
-   pt->m_szTableName = m_tableNameEdit.GetWindowText().GetString();
-   pt->m_szAuthor = m_authorEdit.GetWindowText().GetString();
-   pt->m_szVersion = m_versionEdit.GetWindowText().GetString();
-   pt->m_szReleaseDate = m_releaseEdit.GetWindowText().GetString();
-   pt->m_szAuthorEMail = m_emailEdit.GetWindowText().GetString();
-   pt->m_szWebSite = m_websiteEdit.GetWindowText().GetString();
-   pt->m_szBlurb = m_blurbEdit.GetWindowText().GetString();
-   pt->m_szDescription = m_descriptionEdit.GetWindowText().GetString();
-   pt->m_szRules = m_rulesEdits.GetWindowTextA().GetString();
+   pt->m_tableName = m_tableNameEdit.GetWindowText().GetString();
+   pt->m_author = m_authorEdit.GetWindowText().GetString();
+   pt->m_version = m_versionEdit.GetWindowText().GetString();
+   pt->m_releaseDate = m_releaseEdit.GetWindowText().GetString();
+   pt->m_authorEMail = m_emailEdit.GetWindowText().GetString();
+   pt->m_webSite = m_websiteEdit.GetWindowText().GetString();
+   pt->m_blurb = m_blurbEdit.GetWindowText().GetString();
+   pt->m_description = m_descriptionEdit.GetWindowText().GetString();
+   pt->m_rules = m_rulesEdits.GetWindowTextA().GetString();
 
    const CString sshot = GetDlgItem(IDC_SCREENSHOT).GetWindowText();
 
    const LocalString ls(IDS_NONE);
    if (sshot.GetString() == ls.m_szbuffer)
-      pt->m_szScreenShot.clear();
+      pt->m_screenShot.clear();
    else
-      pt->m_szScreenShot = sshot.GetString();
+      pt->m_screenShot = sshot.GetString();
 
    // Clear old custom values, read back new ones
    pt->m_vCustomInfoTag.clear();

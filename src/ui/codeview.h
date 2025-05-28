@@ -369,7 +369,7 @@ private:
    size_t SureFind(const string &LineIn, const string &ToFind);
    void RemoveByVal(string &line); 
    void RemoveNonVBSChars(string &line);
-   string ExtractWordOperand(const string &line, const size_t StartPos);
+   string ExtractWordOperand(const string &line, const size_t StartPos) const;
 
    void ColorLine(const int line);
    void ColorError(const int line, const int nchar);
@@ -587,7 +587,7 @@ inline string ParseRemoveVBSLineComments(string &line)
    const size_t commentIdx = line.find('\'');
    if (commentIdx == string::npos)
       return string();
-   string RetVal = line.substr(commentIdx + 1, string::npos);
+   string RetVal = line.substr(commentIdx + 1);
    RemovePadding(RetVal);
    if (commentIdx > 0)
       line = line.substr(0, commentIdx);

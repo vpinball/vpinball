@@ -39,11 +39,11 @@ public:
    int IDC_Font_code;
 
 private:
-   string m_szRegName;
+   string m_regName;
    bool m_highlight;
 
 public:
-   CVPreference(const COLORREF crTextColor, const bool bDisplay, const string& szRegistryName,
+   CVPreference(const COLORREF crTextColor, const bool bDisplay, const string& registryName,
                 const int szScintillaKeyword, const int IDC_ChkBox, const int IDC_ColorBut, const int IDC_Font);
    ~CVPreference() {}
 

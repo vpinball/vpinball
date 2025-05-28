@@ -16,9 +16,9 @@ public:
          PLOGE << "SDL_InitSubSystem(SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC | SDL_INIT_JOYSTICK) failed: " << SDL_GetError();
          exit(1);
       }
-      const string path = g_pvp->m_szMyPrefPath + "gamecontrollerdb.txt";
+      const string path = g_pvp->m_myPrefPath + "gamecontrollerdb.txt";
       if (!std::filesystem::exists(path))
-         std::filesystem::copy(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "Default_gamecontrollerdb.txt", path);
+         std::filesystem::copy(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "Default_gamecontrollerdb.txt", path);
       const int count = SDL_AddGamepadMappingsFromFile(path.c_str());
       if (count > 0)
       {

@@ -449,9 +449,9 @@ void PropertyDialog::UpdateTextureComboBox(const vector<Texture *>& contentList,
         bool texelFound = false;
         for (const auto texel : contentList)
         {
-            if (texel->m_szName == selectName) //!! lstrcmpi?
+            if (texel->m_name == selectName) //!! lstrcmpi?
                 texelFound = true;
-            need_reset |= combo.FindStringExact(1, texel->m_szName.c_str()) == CB_ERR; // Combo does not contain an image from the image list
+            need_reset |= combo.FindStringExact(1, texel->m_name.c_str()) == CB_ERR; // Combo does not contain an image from the image list
         }
         need_reset |= !texelFound; // Selection is not part of image list
     }
@@ -460,7 +460,7 @@ void PropertyDialog::UpdateTextureComboBox(const vector<Texture *>& contentList,
         combo.ResetContent();
         combo.AddString(_T("<None>"));
         for (size_t i = 0; i < contentList.size(); i++)
-            combo.AddString(contentList[i]->m_szName.c_str());
+            combo.AddString(contentList[i]->m_name.c_str());
     }
     combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
 }
@@ -474,7 +474,7 @@ void PropertyDialog::UpdateMaterialComboBox(const vector<Material *>& contentLis
        bool matFound = false;
        for (const auto mat : contentList)
        {
-           if (mat->m_szName==selectName)
+           if (mat->m_name==selectName)
            {
                matFound = true;
                break;
@@ -487,7 +487,7 @@ void PropertyDialog::UpdateMaterialComboBox(const vector<Material *>& contentLis
         combo.ResetContent();
         combo.AddString(_T("<None>"));
         for (size_t i = 0; i < contentList.size(); i++)
-            combo.AddString(contentList[i]->m_szName.c_str());
+            combo.AddString(contentList[i]->m_name.c_str());
     }
     combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
 }
@@ -520,7 +520,7 @@ void PropertyDialog::UpdateSoundComboBox(const PinTable *const ptable, const CCo
         combo.ResetContent();
         combo.AddString(_T("<None>"));
         for (size_t i = 0; i < ptable->m_vsound.size(); i++)
-            combo.AddString(ptable->m_vsound[i]->m_szName.c_str());
+            combo.AddString(ptable->m_vsound[i]->m_name.c_str());
     }
     combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
 }

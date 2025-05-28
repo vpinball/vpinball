@@ -45,7 +45,7 @@ public:
    };
 
    inline Material() :
-         m_szName("dummyMaterial"s)
+         m_name("dummyMaterial"s)
        , m_type(MaterialType::BASIC)
        , m_fWrapLighting(0.0f)
        , m_fRoughness(0.0f)
@@ -69,7 +69,7 @@ public:
    inline Material(MaterialType type, float wrapLighting, float roughness, float glossyImageLerp, float thickness, float edge, float edgeAlpha, float opacity,
        COLORREF base, COLORREF glossy, COLORREF clearcoat, bool opacityActive,
        float elasticity, float elasticityFalloff, float friction, float scatterAngle, COLORREF refractionTint) :
-         m_szName("dummyMaterial"s)
+         m_name("dummyMaterial"s)
        , m_type(type)
        , m_fWrapLighting(wrapLighting)
        , m_fRoughness(roughness)
@@ -91,7 +91,7 @@ public:
    }
 
    inline Material(const Material * const pmat) :
-         m_szName(pmat->m_szName)
+         m_name(pmat->m_name)
        , m_type(pmat->m_type)
        , m_fWrapLighting(pmat->m_fWrapLighting)
        , m_fRoughness(pmat->m_fRoughness)
@@ -148,8 +148,8 @@ public:
       return (unsigned long long)h;*/
    }
 
-   string m_szName;
-   
+   string m_name;
+
    // shading properties
    MaterialType m_type;
    float m_fWrapLighting;
@@ -175,7 +175,7 @@ public:
    {
       size_t size = 0;
       size += 2 * sizeof(int) + sizeof(int); // TYPE
-      size += 2 * sizeof(int) + sizeof(int) + m_szName.length(); // NAME
+      size += 2 * sizeof(int) + sizeof(int) + m_name.length(); // NAME
       size += 2 * sizeof(int) + sizeof(float); // WLIG
       size += 2 * sizeof(int) + sizeof(float); // ROUG
       size += 2 * sizeof(int) + sizeof(float); // GIML
@@ -200,7 +200,7 @@ public:
    {
       BiffWriter bw(pstm, hcrypthash);
       bw.WriteInt(FID(TYPE), m_type);
-      bw.WriteString(FID(NAME), m_szName);
+      bw.WriteString(FID(NAME), m_name);
       bw.WriteFloat(FID(WLIG), m_fWrapLighting);
       bw.WriteFloat(FID(ROUG), m_fRoughness);
       bw.WriteFloat(FID(GIML), m_fGlossyImageLerp);
@@ -233,7 +233,7 @@ public:
       switch (id)
       {
       case FID(TYPE): pbr->GetInt(&m_type); break;
-      case FID(NAME): pbr->GetString(m_szName); break;
+      case FID(NAME): pbr->GetString(m_name); break;
       case FID(WLIG): pbr->GetFloat(m_fWrapLighting); break;
       case FID(ROUG): pbr->GetFloat(m_fRoughness); break;
       case FID(GIML): pbr->GetFloat(m_fGlossyImageLerp); break;

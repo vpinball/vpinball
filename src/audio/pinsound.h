@@ -77,8 +77,8 @@ public:
    int m_cdata = 0;         // wav data length set by caller directly
 
    // Sound filename and path
-   string m_szName; // only filename, no ext
-   string m_szPath; // full filename, incl. path
+   string m_name; // only filename, no ext
+   string m_path; // full filename, incl. path
 
    // What type of sound? table or BG?  Used to route sound to the right device or channel. set by pintable
    SoundOutTypes m_outputTarget = SoundOutTypes::SNDOUT_BACKGLASS; //Is it table sound device or BG sound device. 
@@ -104,7 +104,7 @@ public:
    void Stop(); // stop sound
 
    // Music Playing from AudioPlayer (used by WMPCore, PlayMusic)
-   bool SetMusicFile(const string& szFileName);
+   bool SetMusicFile(const string& filename);
    void MusicPlay();
    void MusicStop();
    void MusicPause();
@@ -137,7 +137,7 @@ public:
    void SetFrontRearFade(const int front_rear_fade) { m_frontRearFade = front_rear_fade; }
 
    // Windows Editor?
-   PinSound *LoadFile(const string& strFileName);
+   PinSound *LoadFile(const string& filename);
 
    // Static class methods
 

@@ -505,7 +505,7 @@ bool DispReel::LoadToken(const int id, BiffReader * const pbr)
 {
    switch (id)
    {
-   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
    case FID(VER1): pbr->GetVector2(m_d.m_v1); break;
    case FID(VER2): pbr->GetVector2(m_d.m_v2); break;
    case FID(WDTH): pbr->GetFloat(m_d.m_width); break;

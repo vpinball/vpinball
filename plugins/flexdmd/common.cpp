@@ -103,7 +103,7 @@ string normalize_path_separators(const string& szPath)
 string extension_from_path(const string& path)
 {
    const size_t pos = path.find_last_of('.');
-   return pos != string::npos ? string_to_lower(path).substr(pos + 1) : string();
+   return pos != string::npos ? string_to_lower(path.substr(pos + 1)) : string();
 }
 
 string find_case_insensitive_file_path(const string& szPath)

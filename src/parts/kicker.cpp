@@ -250,7 +250,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        break;
        case KickerCup:
        {
-          m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerCup.webp");
+          m_texture.LoadFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "KickerCup.webp");
           m_texture.m_alphaTestValue = (float)(-1.0 / 255.0);
           m_numIndices = kickerCupNumIndices;
           m_numVertices = kickerCupNumVertices;
@@ -259,7 +259,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        break;
        case KickerWilliams:
        {
-          m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerWilliams.webp");
+          m_texture.LoadFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "KickerWilliams.webp");
           m_texture.m_alphaTestValue = (float)(-1.0 / 255.0);
           m_numIndices = kickerWilliamsNumIndices;
           m_numVertices = kickerWilliamsNumVertices;
@@ -268,7 +268,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        break;
        case KickerGottlieb:
        {
-          m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerGottlieb.webp");
+          m_texture.LoadFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "KickerGottlieb.webp");
           m_texture.m_alphaTestValue = (float)(-1.0 / 255.0);
           m_numIndices = kickerGottliebNumIndices;
           m_numVertices = kickerGottliebNumVertices;
@@ -277,7 +277,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        break;
        case KickerCup2:
        {
-          m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerT1.webp");
+          m_texture.LoadFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "KickerT1.webp");
           m_texture.m_alphaTestValue = (float)(-1.0 / 255.0);
           m_numIndices = kickerT1NumIndices;
           m_numVertices = kickerT1NumVertices;
@@ -286,7 +286,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        break;
        case KickerHole:
        {
-          m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerHoleWood.webp");
+          m_texture.LoadFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "KickerHoleWood.webp");
           m_texture.m_alphaTestValue = (float)(-1.0 / 255.0);
           m_numIndices = kickerHoleNumIndices;
           m_numVertices = kickerHoleNumVertices;
@@ -296,7 +296,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        default:
        case KickerHoleSimple:
        {
-          m_texture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "KickerHoleWood.webp");
+          m_texture.LoadFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "KickerHoleWood.webp");
           m_texture.m_alphaTestValue = (float)(-1.0 / 255.0);
           m_numIndices = kickerSimpleHoleNumIndices;
           m_numVertices = kickerSimpleHoleNumVertices;
@@ -580,7 +580,7 @@ bool Kicker::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
    case FID(VCEN): pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D)); break;
    case FID(RADI): pbr->GetFloat(m_d.m_radius); break;
    case FID(KSCT): pbr->GetFloat(m_d.m_scatter); break;

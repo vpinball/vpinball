@@ -797,7 +797,7 @@ public:
    string m_shaderPath;
 
    bool UseGeometryShader() const;
-   bool parseFile(const string& fileNameRoot, const string& fileName, int level, ankerl::unordered_dense::map<string, string>& values, const string& parentMode);
+   bool parseFile(const string& fileNameRoot, const string& filename, int level, ankerl::unordered_dense::map<string, string>& values, const string& parentMode);
    string analyzeFunction(const string& shaderCodeName, const string& technique, const string& functionName, const ankerl::unordered_dense::map<string, string>& values);
    ShaderTechnique* compileGLShader(const ShaderTechniques technique, const string& fileNameRoot, const string& shaderCodeName, const string& vertex, const string& geometry, const string& fragment);
    string PreprocessGLShader(const string& shaderCode);

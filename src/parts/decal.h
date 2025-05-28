@@ -14,7 +14,7 @@ public:
    float m_rotation;
    string m_szSurface;
    DecalType m_decaltype;
-   string m_sztext;
+   string m_text;
    SizingType m_sizingtype;
    COLORREF m_color;
    bool m_verticalText;

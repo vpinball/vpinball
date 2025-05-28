@@ -371,7 +371,7 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
       // Load failed: initialize from the default setting file
       try
       {
-         std::filesystem::copy(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "Default_VPinballX.ini", path);
+         std::filesystem::copy(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "Default_VPinballX.ini", path);
       }
       catch (const std::exception&)
       {

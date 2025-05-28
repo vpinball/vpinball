@@ -31,7 +31,7 @@ void Bitmap::SetData(void* pData)
       if (m_assetType == AssetType_Image)
          SDL_DestroySurface(static_cast<SDL_Surface*>(m_pData));
       else if (m_assetType == AssetType_GIF)
-        IMG_FreeAnimation(static_cast<IMG_Animation*>(m_pData));
+         IMG_FreeAnimation(static_cast<IMG_Animation*>(m_pData));
    }
 
    m_pData = pData;
@@ -71,7 +71,7 @@ int Bitmap::GetHeight() const
    return 0;
 }
 
-float Bitmap::GetLength() const
+int Bitmap::GetLength() const
 {
    int length = 0;
    if (m_pData && m_assetType == AssetType_GIF)
@@ -80,15 +80,15 @@ float Bitmap::GetLength() const
       for (int index = 0; index < pAnimation->count; index++)
          length += pAnimation->delays[index];
    }
-   return (float)length;
+   return length;
 }
 
-float Bitmap::GetFrameDelay(int pos) const
+int Bitmap::GetFrameDelay(int pos) const
 {
    if (m_pData && m_assetType == AssetType_GIF)
-      return static_cast<float>(static_cast<IMG_Animation*>(m_pData)->delays[pos]);
+      return static_cast<IMG_Animation*>(m_pData)->delays[pos];
 
-   return 0.0f;
+   return 0;
 }
 
 int Bitmap::GetFrameCount() const

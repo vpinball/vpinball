@@ -3,11 +3,11 @@
 
 bool DirExists(const string& dirPath);
 bool FileExists(const string& filePath);
-string TitleFromFilename(const string& szfilename);
-string ExtensionFromFilename(const string& szfilename);
-string PathFromFilename(const string& szfilename);
-string TitleAndPathFromFilename(const char * const szfilename);
-bool ReplaceExtensionFromFilename(string& szfilename, const string& newextension);
+string TitleFromFilename(const string& filename);
+string ExtensionFromFilename(const string& filename);
+string PathFromFilename(const string& filename);
+string TitleAndPathFromFilename(const string& filename);
+bool ReplaceExtensionFromFilename(string& filename, const string& newextension);
 
 class BiffReader;
 

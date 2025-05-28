@@ -284,7 +284,7 @@ Window::Window(const string &title, const Settings& settings, const Settings::Se
       SDL_GetWindowSizeInPixels(m_nwnd, &m_pixelWidth, &m_pixelHeight);
 
       #ifdef __STANDALONE__
-         const string iconPath = g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "vpinball.png";
+         const string iconPath = g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "vpinball.png";
          SDL_Surface* pIcon = IMG_Load(iconPath.c_str());
          if (pIcon) {
             SDL_SetWindowIcon(m_nwnd, pIcon);

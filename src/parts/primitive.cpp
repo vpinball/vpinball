@@ -1680,7 +1680,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
    case FID(VPOS): pbr->GetVector3Padded(m_d.m_vPosition); break;
    case FID(VSIZ): pbr->GetVector3Padded(m_d.m_vSize); break;
    case FID(RTV0): pbr->GetFloat(m_d.m_aRotAndTra[0]); break;
@@ -1949,7 +1949,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                      if (pActiveTable)
                          pActiveTable->AddMaterial(mat);
 
-                     prim->m_d.m_szMaterial = mat->m_szName;
+                     prim->m_d.m_szMaterial = mat->m_name;
                   }
                }
                else

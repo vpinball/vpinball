@@ -67,7 +67,7 @@ extern void DeleteTexture(VPXTexture texture);
 
 // The following function are duplicates from the main VPX codebase
 string find_case_insensitive_file_path(const string &szPath);
-string TitleAndPathFromFilename(const char *const szfilename);
+string TitleAndPathFromFilename(const string &filename);
 vector<unsigned char> base64_decode(const string &encoded_string);
 
 }

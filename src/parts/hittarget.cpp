@@ -571,7 +571,7 @@ void HitTarget::RenderSetup(RenderDevice *device)
 
    GenerateMesh(m_transformedVertices);
    delete m_meshBuffer;
-   VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, (unsigned int)m_numVertices, (float *)m_transformedVertices.data(), true);
+   VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, m_numVertices, (float *)m_transformedVertices.data(), true);
    IndexBuffer *indexBuffer = new IndexBuffer(m_rd, m_numIndices, m_indices);
    m_meshBuffer = new MeshBuffer(m_wzName, vertexBuffer, indexBuffer, true);
 
@@ -868,7 +868,7 @@ bool HitTarget::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
    case FID(VPOS): pbr->GetVector3Padded(m_d.m_vPosition); break;
    case FID(VSIZ): pbr->GetVector3Padded(m_d.m_vSize); break;
    case FID(ROTZ): pbr->GetFloat(m_d.m_rotZ); break;

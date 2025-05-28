@@ -100,7 +100,7 @@ public:
    uint8_t* m_colorFrame32 = nullptr;
    unsigned int m_width64 = 0;
    uint8_t* m_colorFrame64 = nullptr;
-   
+
    // Common state information
    const unsigned int m_width, m_height; // Size of identify frame (which can differ from the size of the colorized frame)
    const unsigned int m_colorizedFrameFormat;
@@ -114,14 +114,14 @@ static ColorizationState* state = nullptr;
 
 static void ColorizeThread()
 {
-   SetThreadName("Serum.ColorizeThread");
+   SetThreadName("Serum.ColorizeThread"s);
    unsigned int lastFrameId = 0;
    while (isRunning)
    {
       // Original PinMAME code would evaluate DMD frames at a fixed 60 FPS and color rotation are also based on a 60FPS rate. So update at this pace.
       std::this_thread::sleep_for(std::chrono::nanoseconds(16666));
-      
-      std::lock_guard<std::mutex> lock(sourceMutex);
+
+      std::lock_guard<std::mutex> lock1(sourceMutex);
       if (dmdId.id.id == 0)
          continue;
 
@@ -134,7 +134,7 @@ static void ColorizeThread()
          if (firstrot != IDENTIFY_NO_FRAME)
          {
             // New frame, eventually starting a new animation
-            std::lock_guard<std::mutex> lock(stateMutex);
+            std::lock_guard<std::mutex> lock2(stateMutex);
             bool newState = false;
             if (state == nullptr)
             {

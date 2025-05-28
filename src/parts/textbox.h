@@ -17,7 +17,7 @@ public:
    COLORREF m_backcolor;
    COLORREF m_fontcolor;
    float m_intensity_scale;
-   string m_sztext;
+   string m_text;
    TimerDataRoot m_tdr;
    TextAlignment m_talign;
    bool m_transparent;
@@ -91,7 +91,7 @@ public:
    bool m_fontStrikeThrough;
    bool m_fontBold;
    float m_fontSize;
-   string m_szFontName;
+   string m_fontName;
 #endif
 
    TextboxData m_d;

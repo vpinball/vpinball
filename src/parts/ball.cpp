@@ -146,7 +146,7 @@ bool Ball::LoadToken(const int id, BiffReader *const pbr)
 {
    switch(id)
    {
-   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
    case FID(VCEN): pbr->GetVector3(m_hitBall.m_d.m_pos); break;
    case FID(RADI): pbr->GetFloat(m_hitBall.m_d.m_radius); break;
    case FID(MASS): pbr->GetFloat(m_hitBall.m_d.m_mass); break;

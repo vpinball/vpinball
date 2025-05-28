@@ -40,10 +40,10 @@ BitmapFont::~BitmapFont()
    m_pages.clear();
 }
 
-BitmapFont* BitmapFont::Create(const string& fileName)
+BitmapFont* BitmapFont::Create(const string& filename)
 {
    BitmapFont* obj = new BitmapFont();
-   obj->Load(fileName);
+   obj->Load(filename);
 
    return obj;
 }
@@ -61,13 +61,13 @@ int BitmapFont::GetKerning(char previous, char current)
     return 0;
 }
 
-void BitmapFont::Load(const string& fileName)
+void BitmapFont::Load(const string& filename)
 {
    std::ifstream fontFile;
-   fontFile.open(fileName, std::ifstream::in);
+   fontFile.open(filename, std::ifstream::in);
 
    if (!fontFile.is_open()) {
-      // PLOGE.printf("Failed to open bitmap font file: %s", fileName.c_str());
+      // PLOGE.printf("Failed to open bitmap font file: %s", filename.c_str());
       return;
    }
 

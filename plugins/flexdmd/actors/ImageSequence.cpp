@@ -28,7 +28,7 @@ ImageSequence* ImageSequence::Create(FlexDMD* pFlexDMD, AssetManager* pAssetMana
    pImageSequence->SetLoop(loop);
    pImageSequence->m_frames = frames;
    pImageSequence->m_frame = 0;
-   pImageSequence->SetFrameDuration(1.0f / fps);
+   pImageSequence->SetFrameDuration((float)(1.0 / fps));
    pImageSequence->Pack();
 
    return pImageSequence;

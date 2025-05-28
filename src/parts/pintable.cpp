@@ -331,13 +331,13 @@ STDMETHODIMP ScriptGlobalTable::get_JoyCustomKey(LONG index, LONG *pVal)
    return S_OK;
 }
 
-bool ScriptGlobalTable::GetTextFileFromDirectory(const string& szfilename, const string& dirname, BSTR *pContents)
+bool ScriptGlobalTable::GetTextFileFromDirectory(const string& filename, const string& dirname, BSTR *pContents)
 {
    string szPath;
    if (!dirname.empty())
-      szPath = m_vpinball->m_szMyPath + dirname;
+      szPath = m_vpinball->m_myPath + dirname;
    // else: use current directory
-   szPath += szfilename;
+   szPath += filename;
    #ifdef __STANDALONE__
    szPath = find_case_insensitive_file_path(szPath);
    #endif
@@ -348,7 +348,7 @@ bool ScriptGlobalTable::GetTextFileFromDirectory(const string& szfilename, const
          std::stringstream buffer;
          buffer << scriptFile.rdbuf();
          string content = buffer.str();
-         if (szfilename.ends_with(".vbs"))
+         if (filename.ends_with(".vbs"))
             content = VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(content);
          const WCHAR * const wz = MakeWide(content);
          *pContents = SysAllocString(wz);
@@ -410,7 +410,7 @@ STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
 
 STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
 {
-   string szPath = m_vpinball->m_szMyPath + "user" + PATH_SEPARATOR_CHAR;
+   string szPath = m_vpinball->m_myPath + "user" + PATH_SEPARATOR_CHAR;
    if (!DirExists(szPath))
    {
       szPath = m_vpinball->m_currentTablePath + "user" + PATH_SEPARATOR_CHAR;
@@ -430,7 +430,7 @@ STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
 
 STDMETHODIMP ScriptGlobalTable::get_TablesDirectory(BSTR *pVal)
 {
-   string szPath = m_vpinball->m_szMyPath + "tables" + PATH_SEPARATOR_CHAR;
+   string szPath = m_vpinball->m_myPath + "tables" + PATH_SEPARATOR_CHAR;
    if (!DirExists(szPath))
    {
       szPath = m_vpinball->m_currentTablePath + "tables" + PATH_SEPARATOR_CHAR;
@@ -455,7 +455,7 @@ STDMETHODIMP ScriptGlobalTable::get_MusicDirectory(VARIANT pSubDir, BSTR *pVal)
       return E_FAIL;
 
    const string endPath = V_VT(&pSubDir) == VT_BSTR ? (MakeString(V_BSTR(&pSubDir)) + PATH_SEPARATOR_CHAR) : string();
-   string szPath = m_vpinball->m_szMyPath + "music" + PATH_SEPARATOR_CHAR + endPath;
+   string szPath = m_vpinball->m_myPath + "music" + PATH_SEPARATOR_CHAR + endPath;
    if (!DirExists(szPath))
    {
       szPath = m_vpinball->m_currentTablePath + "music" + PATH_SEPARATOR_CHAR + endPath;
@@ -475,7 +475,7 @@ STDMETHODIMP ScriptGlobalTable::get_MusicDirectory(VARIANT pSubDir, BSTR *pVal)
 
 STDMETHODIMP ScriptGlobalTable::get_ScriptsDirectory(BSTR *pVal)
 {
-   string szPath = m_vpinball->m_szMyPath + "scripts" + PATH_SEPARATOR_CHAR;
+   string szPath = m_vpinball->m_myPath + "scripts" + PATH_SEPARATOR_CHAR;
    if (!DirExists(szPath))
    {
       szPath = m_vpinball->m_currentTablePath + "scripts" + PATH_SEPARATOR_CHAR;
@@ -633,7 +633,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
          szIniPath += PATH_SEPARATOR_CHAR;
    }
    else
-      szIniPath = m_vpinball->m_szMyPrefPath;
+      szIniPath = m_vpinball->m_myPrefPath;
 
    mINI::INIStructure ini;
    mINI::INIFile file(szIniPath + "VPReg.ini");
@@ -723,7 +723,7 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
          szIniPath += PATH_SEPARATOR_CHAR;
    }
    else
-      szIniPath = m_vpinball->m_szMyPrefPath;
+      szIniPath = m_vpinball->m_myPrefPath;
 
    mINI::INIStructure ini;
    mINI::INIFile file(szIniPath + "VPReg.ini");
@@ -1052,16 +1052,16 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as
       for (int ofs = 0; ofs < size; ++ofs)
          rgba[ofs] = V_UI4(&p[ofs]); 
       upscale(rgba, g_pplayer->m_dmdSize, true);
-      UINT8 *const data = reinterpret_cast<UINT8 *>(g_pplayer->m_dmdFrame->data());
+      BYTE *const data = g_pplayer->m_dmdFrame->data();
       for (int ofs = 0; ofs < size; ++ofs)
-         data[ofs] = static_cast<UINT8>(InvsRGB((float)(rgba[ofs] & 0xFF) * (float)(1.0/100.)) * 255.f);
+         data[ofs] = static_cast<BYTE>(InvsRGB((float)(rgba[ofs] & 0xFF) * (float)(1.0 / 100.)) * 255.f);
       delete[] rgba;
    }
    else
    {
-      UINT8 *const data = reinterpret_cast<UINT8 *>(g_pplayer->m_dmdFrame->data());
+      BYTE *const data = g_pplayer->m_dmdFrame->data();
       for (int ofs = 0; ofs < size; ++ofs)
-         data[ofs] = static_cast<UINT8>(InvsRGB((float)V_UI4(&p[ofs]) * (float)(1.0/100.)) * 255.f);
+         data[ofs] = static_cast<BYTE>(InvsRGB((float)V_UI4(&p[ofs]) * (float)(1.0 / 100.)) * 255.f);
    }
    SafeArrayUnaccessData(psa);
    g_pplayer->m_dmdFrameId++;
@@ -1526,12 +1526,12 @@ void PinTable::InitBuiltinTable(const size_t tableId)
    m_glassTopHeight = m_glassBottomHeight = 210;
    for (int i = 0; i < 16; i++)
       m_rgcolorcustom[i] = RGB(0, 0, 0);
-   LoadGameFromFilename(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + path);
+   LoadGameFromFilename(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + path);
    const LocalString ls(IDS_TABLE);
-   m_szTitle = ls.m_szbuffer/*"Table"*/ + std::to_string(m_vpinball->m_NextTableID);
+   m_title = ls.m_szbuffer/*"Table"*/ + std::to_string(m_vpinball->m_NextTableID);
    m_vpinball->m_NextTableID++;
    m_settings.SetIniPath(string());
-   m_szFileName.clear();
+   m_filename.clear();
 #endif
 }
 
@@ -1647,10 +1647,10 @@ void PinTable::RemoveInvalidReferences()
    // set up the texture & material hashtables for faster access
    m_textureMap.clear();
    for (size_t i = 0; i < m_vimage.size(); i++)
-       m_textureMap[m_vimage[i]->m_szName] = m_vimage[i];
+       m_textureMap[m_vimage[i]->m_name] = m_vimage[i];
    m_materialMap.clear();
    for (size_t i = 0; i < m_materials.size(); i++)
-       m_materialMap[m_materials[i]->m_szName] = m_materials[i];
+       m_materialMap[m_materials[i]->m_name] = m_materials[i];
 
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
@@ -2113,9 +2113,9 @@ PinTable* PinTable::CopyForPlay()
 
    dst->m_settings = src->m_settings;
 
-   dst->m_szTitle = src->m_szTitle;
-   dst->m_szFileName = src->m_szFileName;
-   dst->m_szTableName = src->m_szTableName;
+   dst->m_title = src->m_title;
+   dst->m_filename = src->m_filename;
+   dst->m_tableName = src->m_tableName;
    dst->m_left = src->m_left;
    dst->m_top = src->m_top;
    dst->m_right = src->m_right;
@@ -2149,7 +2149,7 @@ PinTable* PinTable::CopyForPlay()
    dst->m_ballImageDecal = src->m_ballImageDecal;
    dst->m_envImage = src->m_envImage;
    dst->m_notesText = src->m_notesText;
-   dst->m_szScreenShot = src->m_szScreenShot;
+   dst->m_screenShot = src->m_screenShot;
    dst->m_backdrop = src->m_backdrop;
    dst->m_glassBottomHeight = src->m_glassBottomHeight;
    dst->m_glassTopHeight = src->m_glassTopHeight;
@@ -2345,7 +2345,7 @@ PinTable* PinTable::CopyForPlay()
    }
 
    // get the load path from the table filename
-   const string szLoadDir = PathFromFilename(m_szFileName);
+   const string szLoadDir = PathFromFilename(m_filename);
    // make sure the load directory is the active directory
    SetCurrentDirectory(szLoadDir.c_str());
 
@@ -2362,10 +2362,10 @@ PinTable* PinTable::CopyForPlay()
    // set up the texture & material hashtables for faster access
    live_table->m_textureMap.clear();
    for (size_t i = 0; i < live_table->m_vimage.size(); i++)
-      live_table->m_textureMap[live_table->m_vimage[i]->m_szName] = live_table->m_vimage[i];
+      live_table->m_textureMap[live_table->m_vimage[i]->m_name] = live_table->m_vimage[i];
    live_table->m_materialMap.clear();
    for (size_t i = 0; i < live_table->m_materials.size(); i++)
-      live_table->m_materialMap[live_table->m_materials[i]->m_szName] = live_table->m_materials[i];
+      live_table->m_materialMap[live_table->m_materials[i]->m_name] = live_table->m_materials[i];
    live_table->m_lightMap.clear();
    for (size_t i = 0; i < live_table->m_vedit.size(); i++)
    {
@@ -2393,7 +2393,7 @@ PinTable* PinTable::CopyForPlay()
 
 HRESULT PinTable::TableSave()
 {
-   return Save(m_szFileName.empty());
+   return Save(m_filename.empty());
 }
 
 HRESULT PinTable::SaveAs()
@@ -2403,7 +2403,7 @@ HRESULT PinTable::SaveAs()
 
 HRESULT PinTable::ApcProject_Save()
 {
-   return Save(m_szFileName.empty());
+   return Save(m_filename.empty());
 }
 
 void PinTable::BeginAutoSaveCounter()
@@ -2482,7 +2482,7 @@ HRESULT PinTable::Save(const bool saveAs)
       ofn.lpstrFilter = "Visual Pinball Tables (*.vpx)\0*.vpx\0";
 
       char fileName[MAXSTRING];
-      strncpy_s(fileName, m_szFileName.c_str(), sizeof(fileName)-1);
+      strncpy_s(fileName, m_filename.c_str(), sizeof(fileName)-1);
       char* const ptr = StrStrI(fileName, ".vpt");
       if (ptr != nullptr)
           strcpy_s(ptr, 5, ".vpx");
@@ -2494,14 +2494,14 @@ HRESULT PinTable::Save(const bool saveAs)
       {
       string szInitialDir;
       // First, use dir of current table
-      const size_t index = m_szFileName.find_last_of(PATH_SEPARATOR_CHAR);
+      const size_t index = m_filename.find_last_of(PATH_SEPARATOR_CHAR);
       if (index != string::npos)
-         szInitialDir = m_szFileName.substr(0, index);
+         szInitialDir = m_filename.substr(0, index);
       // Or try with the standard last-used dir
       else
       {
          if (!m_settings.LoadValue(Settings::RecentDir, "LoadDir"s, szInitialDir))
-            szInitialDir = m_vpinball->m_szMyPath + "tables" + PATH_SEPARATOR_CHAR;
+            szInitialDir = m_vpinball->m_myPath + "tables" + PATH_SEPARATOR_CHAR;
       }
       ofn.lpstrInitialDir = szInitialDir.c_str();
 
@@ -2511,15 +2511,15 @@ HRESULT PinTable::Save(const bool saveAs)
          return S_FALSE;
       }
 
-      m_szFileName = fileName;
+      m_filename = fileName;
 
       char szInitialDir[MAXSTRING];
-      strncpy_s(szInitialDir, m_szFileName.c_str(), sizeof(szInitialDir)-1);
+      strncpy_s(szInitialDir, m_filename.c_str(), sizeof(szInitialDir)-1);
       szInitialDir[ofn.nFileOffset] = '\0'; // truncate after folder
       g_pvp->m_settings.SaveValue(Settings::RecentDir, "LoadDir"s, string(szInitialDir));
 
       {
-         MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName.c_str(), m_szFileName.length());
+         MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_filename.c_str(), m_filename.length());
 
          STGOPTIONS stg;
          stg.usVersion = 1;
@@ -2528,7 +2528,7 @@ HRESULT PinTable::Save(const bool saveAs)
 
          HRESULT hr;
          if (FAILED(hr = StgCreateStorageEx(wszCodeFile, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
-            STGFMT_DOCFILE, 0, &stg, 0, IID_IStorage, (void**)&pstgRoot)))
+            STGFMT_DOCFILE, 0, &stg, nullptr, IID_IStorage, (void**)&pstgRoot)))
          {
             const LocalString ls(IDS_SAVEERROR);
             m_mdiTable->MessageBox(ls.m_szbuffer, "Visual Pinball", MB_ICONERROR);
@@ -2536,15 +2536,15 @@ HRESULT PinTable::Save(const bool saveAs)
          }
       }
 
-      m_szTitle = TitleFromFilename(m_szFileName);
-      SetCaption(m_szTitle);
+      m_title = TitleFromFilename(m_filename);
+      SetCaption(m_title);
    }
    else
    {
-      char * const ptr = StrStrI(m_szFileName.c_str(), ".vpt");
+      char * const ptr = StrStrI(m_filename.c_str(), ".vpt");
       if (ptr != nullptr)
          strcpy_s(ptr, 5, ".vpx");
-      MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName.c_str(), m_szFileName.length());
+      MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_filename.c_str(), m_filename.length());
 
       STGOPTIONS stg;
       stg.usVersion = 1;
@@ -2586,12 +2586,12 @@ HRESULT PinTable::Save(const bool saveAs)
 #endif
 
    // Save user custom settings file (if any) along the table file
-   const string szINIFilename = GetSettingsFileName();
-   if (!szINIFilename.empty())
+   const string INIFilename = GetSettingsFileName();
+   if (!INIFilename.empty())
    {
       // Force saving as we may have upgraded the table version (from pre 10.8 to 10.8) or changed the file path
       m_settings.SetModified(true);
-      m_settings.SaveToFile(szINIFilename);
+      m_settings.SaveToFile(INIFilename);
    }
 
    return S_OK;
@@ -2838,21 +2838,21 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
 HRESULT PinTable::SaveSoundToStream(const PinSound * const pps, IStream *pstm)
 {
    ULONG writ = 0;
-   int len = (int)pps->m_szName.length();
+   int len = (int)pps->m_name.length();
 
    HRESULT hr;
    if (FAILED(hr = pstm->Write(&len, sizeof(int), &writ)))
       return hr;
 
-   if (FAILED(hr = pstm->Write(pps->m_szName.c_str(), len, &writ)))
+   if (FAILED(hr = pstm->Write(pps->m_name.c_str(), len, &writ)))
       return hr;
 
-   len = (int)pps->m_szPath.length();
+   len = (int)pps->m_path.length();
 
    if (FAILED(hr = pstm->Write(&len, sizeof(int), &writ)))
       return hr;
 
-   if (FAILED(hr = pstm->Write(pps->m_szPath.c_str(), len, &writ)))
+   if (FAILED(hr = pstm->Write(pps->m_path.c_str(), len, &writ)))
       return hr;
 
    // removed: previously did write the same name again, but just in lower case
@@ -2865,7 +2865,7 @@ HRESULT PinTable::SaveSoundToStream(const PinSound * const pps, IStream *pstm)
       return hr;
    //
 
-   const bool wav = isWav(pps->m_szPath);
+   const bool wav = isWav(pps->m_path);
 
    if (wav && FAILED(hr = pstm->Write(&pps->m_wfx, sizeof(pps->m_wfx), &writ))) // only write for WAVs
       return hr;
@@ -2918,7 +2918,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
        return hr;
    }
    tmp[len] = '\0';
-   pps->m_szName = tmp;
+   pps->m_name = tmp;
    delete[] tmp;
 
    // get length of filename including path (// full filename, incl. path)
@@ -2936,7 +2936,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
        return hr;
    }
    tmp[len] = '\0';
-   pps->m_szPath = tmp;
+   pps->m_path = tmp;
    delete[] tmp;
 
    // was the lower case name, but not used anymore since 10.7+, 10.8+ also only stores 1,'\0'
@@ -2955,7 +2955,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
    }
    delete[] tmp;
 
-   const bool wav = isWav(pps->m_szPath);
+   const bool wav = isWav(pps->m_path);
 
    if (wav && FAILED(hr = pstm->Read(&pps->m_wfx, sizeof(pps->m_wfx), &read)))
    {
@@ -3078,8 +3078,8 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 		   return hr;
       }
 
-      pps->SetOutputTarget((StrStrI(pps->m_szName.c_str(), "bgout_") != nullptr)
-                        || StrCompareNoCase(pps->m_szPath, "* Backglass Output *"s) // legacy behavior, where the BG selection was encoded into the strings directly
+      pps->SetOutputTarget((StrStrI(pps->m_name.c_str(), "bgout_") != nullptr)
+                        || StrCompareNoCase(pps->m_path, "* Backglass Output *"s) // legacy behavior, where the BG selection was encoded into the strings directly
                         || toBackglassOutput ? SNDOUT_BACKGLASS : SNDOUT_TABLE);
    }
 
@@ -3092,7 +3092,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 
    // search for duplicate names, do not load dupes
    for(size_t i = 0; i < m_vsound.size(); ++i)
-      if (m_vsound[i]->m_szName == pps->m_szName && m_vsound[i]->m_szPath == pps->m_szPath)
+      if (m_vsound[i]->m_name == pps->m_name && m_vsound[i]->m_path == pps->m_path)
       {
          delete pps;
          return S_FAIL;
@@ -3141,15 +3141,15 @@ HRESULT PinTable::WriteInfoValue(IStorage* pstg, const WCHAR * const wzName, con
 HRESULT PinTable::SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash)
 {
 #ifndef __STANDALONE__
-   WriteInfoValue(pstg, L"TableName", m_szTableName, hcrypthash);
-   WriteInfoValue(pstg, L"AuthorName", m_szAuthor, hcrypthash);
-   WriteInfoValue(pstg, L"TableVersion", m_szVersion, hcrypthash);
-   WriteInfoValue(pstg, L"ReleaseDate", m_szReleaseDate, hcrypthash);
-   WriteInfoValue(pstg, L"AuthorEmail", m_szAuthorEMail, hcrypthash);
-   WriteInfoValue(pstg, L"AuthorWebSite", m_szWebSite, hcrypthash);
-   WriteInfoValue(pstg, L"TableBlurb", m_szBlurb, hcrypthash);
-   WriteInfoValue(pstg, L"TableDescription", m_szDescription, hcrypthash);
-   WriteInfoValue(pstg, L"TableRules", m_szRules, hcrypthash);
+   WriteInfoValue(pstg, L"TableName", m_tableName, hcrypthash);
+   WriteInfoValue(pstg, L"AuthorName", m_author, hcrypthash);
+   WriteInfoValue(pstg, L"TableVersion", m_version, hcrypthash);
+   WriteInfoValue(pstg, L"ReleaseDate", m_releaseDate, hcrypthash);
+   WriteInfoValue(pstg, L"AuthorEmail", m_authorEMail, hcrypthash);
+   WriteInfoValue(pstg, L"AuthorWebSite", m_webSite, hcrypthash);
+   WriteInfoValue(pstg, L"TableBlurb", m_blurb, hcrypthash);
+   WriteInfoValue(pstg, L"TableDescription", m_description, hcrypthash);
+   WriteInfoValue(pstg, L"TableRules", m_rules, hcrypthash);
    time_t hour_machine;
    time(&hour_machine);
    tm local_hour;
@@ -3161,7 +3161,7 @@ HRESULT PinTable::SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash)
    _itoa_s(++m_numTimesSaved, buffer, 10);
    WriteInfoValue(pstg, L"TableSaveRev", buffer, NULL);
 
-   Texture * const pin = GetImage(m_szScreenShot);
+   Texture * const pin = GetImage(m_screenShot);
    if (pin != nullptr && pin->m_ppb != nullptr)
    {
       IStream *pstm;
@@ -3262,23 +3262,23 @@ HRESULT PinTable::ReadInfoValue(IStorage* pstg, const WCHAR * const wzName, stri
 
 HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
 {
-   ReadInfoValue(pstg, L"TableName", m_szTableName, hcrypthash);
-   ReadInfoValue(pstg, L"AuthorName", m_szAuthor, hcrypthash);
-   ReadInfoValue(pstg, L"TableVersion", m_szVersion, hcrypthash);
-   ReadInfoValue(pstg, L"ReleaseDate", m_szReleaseDate, hcrypthash);
-   ReadInfoValue(pstg, L"AuthorEmail", m_szAuthorEMail, hcrypthash);
-   ReadInfoValue(pstg, L"AuthorWebSite", m_szWebSite, hcrypthash);
-   ReadInfoValue(pstg, L"TableBlurb", m_szBlurb, hcrypthash);
-   ReadInfoValue(pstg, L"TableDescription", m_szDescription, hcrypthash);
-   ReadInfoValue(pstg, L"TableRules", m_szRules, hcrypthash);
-   ReadInfoValue(pstg, L"TableSaveDate", m_szDateSaved, NULL);
+   ReadInfoValue(pstg, L"TableName", m_tableName, hcrypthash);
+   ReadInfoValue(pstg, L"AuthorName", m_author, hcrypthash);
+   ReadInfoValue(pstg, L"TableVersion", m_version, hcrypthash);
+   ReadInfoValue(pstg, L"ReleaseDate", m_releaseDate, hcrypthash);
+   ReadInfoValue(pstg, L"AuthorEmail", m_authorEMail, hcrypthash);
+   ReadInfoValue(pstg, L"AuthorWebSite", m_webSite, hcrypthash);
+   ReadInfoValue(pstg, L"TableBlurb", m_blurb, hcrypthash);
+   ReadInfoValue(pstg, L"TableDescription", m_description, hcrypthash);
+   ReadInfoValue(pstg, L"TableRules", m_rules, hcrypthash);
+   ReadInfoValue(pstg, L"TableSaveDate", m_dateSaved, NULL);
 
    string numTimesSaved;
    ReadInfoValue(pstg, L"TableSaveRev", numTimesSaved, NULL);
    m_numTimesSaved = !numTimesSaved.empty() ? atoi(numTimesSaved.c_str()) : 0;
 
    // Write the version to the registry.  This will be read later by the front end.
-   g_pvp->m_settings.SaveValue(Settings::Version, m_szTableName, m_szVersion);
+   g_pvp->m_settings.SaveValue(Settings::Version, m_tableName, m_version);
 
    HRESULT hr;
    IStream *pstm;
@@ -3402,7 +3402,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    bw.WriteString(FID(EIMG), m_envImage);
    bw.WriteString(FID(NOTX), m_notesText);
 
-   bw.WriteString(FID(SSHT), m_szScreenShot);
+   bw.WriteString(FID(SSHT), m_screenShot);
 
    bw.WriteBool(FID(FBCK), m_backdrop);
 
@@ -3459,7 +3459,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
          mats[i].bIsMetal = m->m_type == Material::MaterialType::METAL;
          mats[i].bOpacityActive_fEdgeAlpha = m->m_bOpacityActive ? 1 : 0;
          mats[i].bOpacityActive_fEdgeAlpha |= quantizeUnsigned<7>(clamp(m->m_fEdgeAlpha, 0.f, 1.f)) << 1;
-         strncpy_s(mats[i].szName, m->m_szName.c_str(), sizeof(mats[i].szName)-1);
+         strncpy_s(mats[i].szName, m->m_name.c_str(), sizeof(mats[i].szName)-1);
          for (size_t c = strnlen_s(mats[i].szName, sizeof(mats[i].szName)); c < sizeof(mats[i].szName); ++c) // to avoid garbage after 0
              mats[i].szName[c] = 0;
       }
@@ -3469,7 +3469,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
       for (size_t i = 0; i < m_materials.size(); i++)
       {
           const Material* const m = m_materials[i];
-          strncpy_s(phymats[i].szName, m->m_szName.c_str(), sizeof(phymats[i].szName)-1);
+          strncpy_s(phymats[i].szName, m->m_name.c_str(), sizeof(phymats[i].szName)-1);
           for (size_t c = strnlen_s(phymats[i].szName, sizeof(phymats[i].szName)); c < sizeof(phymats[i].szName); ++c) // to avoid garbage after 0
               phymats[i].szName[c] = 0;
           phymats[i].fElasticity = m->m_fElasticity;
@@ -3533,7 +3533,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    return S_OK;
 }
 
-HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
+HRESULT PinTable::LoadGameFromFilename(const string& filename)
 {
 #ifndef __STANDALONE__
    VPXLoadFileProgressBar feedback(m_vpinball->theInstance, m_vpinball->m_hwndStatusBar);
@@ -3541,33 +3541,33 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
    VPXFileFeedback feedback;
 #endif
 
-   return LoadGameFromFilename(szFileName, feedback);
+   return LoadGameFromFilename(filename, feedback);
 }
 
-HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback& feedback)
+HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& feedback)
 {
-   if (szFileName.empty())
+   if (filename.empty())
    {
       ShowError("Empty File Name String!");
       return S_FALSE;
    }
 
-   PLOGI << "LoadGameFromFilename " + szFileName; // For profiling
+   PLOGI << "LoadGameFromFilename " + filename; // For profiling
 
-   m_szFileName = szFileName;
+   m_filename = filename;
 
    // Load user custom settings before actually loading the table for settings applying during load
-   const string szINIFilename = GetSettingsFileName();
-   if (!szINIFilename.empty())
-      m_settings.LoadFromFile(szINIFilename, false);
+   const string INIFilename = GetSettingsFileName();
+   if (!INIFilename.empty())
+      m_settings.LoadFromFile(INIFilename, false);
 
-   MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName.c_str(), m_szFileName.length());
+   MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_filename.c_str(), m_filename.length());
    HRESULT hr;
    IStorage* pstgRoot;
    if (FAILED(hr = StgOpenStorage(wszCodeFile, nullptr, STGM_TRANSACTED | STGM_READ, nullptr, 0, &pstgRoot)))
    {
       char msg[MAXSTRING+32];
-      sprintf_s(msg, sizeof(msg), "Error 0x%X loading \"%s\"", hr, m_szFileName.c_str());
+      sprintf_s(msg, sizeof(msg), "Error 0x%X loading \"%s\"", hr, m_filename.c_str());
       m_vpinball->MessageBox(msg, "Load Error", 0);
       return hr;
    }
@@ -3784,7 +3784,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
                   failed_load_img += "\n- " + szStmName;
                else if (!ppi || ppi->m_pdsBuffer == nullptr)
                {
-                  failed_load_img += "\n- " + ppi->m_szName + " (from: " + ppi->m_szPath + ')';
+                  failed_load_img += "\n- " + ppi->m_name + " (from: " + ppi->m_path + ')';
                   delete ppi;
                }
                else
@@ -3792,7 +3792,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
                   m_vimage[i] = ppi;
                   if ((m_vimage[i]->m_realWidth > m_vimage[i]->m_width) || (m_vimage[i]->m_realHeight > m_vimage[i]->m_height))
                   { //!! do not warn on resize, as original image file/binary blob is always loaded into mem! (otherwise table load failure is triggered) {
-                     PLOGW << "Image '" << m_vimage[i]->m_szName << "' was downsized from " << m_vimage[i]->m_realWidth << 'x' << m_vimage[i]->m_realHeight << " to "
+                     PLOGW << "Image '" << m_vimage[i]->m_name << "' was downsized from " << m_vimage[i]->m_realWidth << 'x' << m_vimage[i]->m_realHeight << " to "
                            << m_vimage[i]->m_width << 'x' << m_vimage[i]->m_height << " due to low memory ";
                   }
                }
@@ -3821,7 +3821,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
             if (!m_vimage.empty())
                for (size_t i = 0; i < m_vimage.size() - 1; ++i)
                   for (size_t i2 = i+1; i2 < m_vimage.size(); ++i2)
-                     if (m_vimage[i]->m_szName == m_vimage[i2]->m_szName && m_vimage[i]->m_szPath == m_vimage[i2]->m_szPath)
+                     if (m_vimage[i]->m_name == m_vimage[i2]->m_name && m_vimage[i]->m_path == m_vimage[i2]->m_path)
                      {
                         m_vimage.erase(m_vimage.begin()+i2);
                         --i2;
@@ -4069,7 +4069,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
             if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemTextbox)
             {
                Textbox *const textbox = (Textbox *)m_vedit[i];
-               if (textbox->m_d.m_isDMD || StrStrI(textbox->m_d.m_sztext.c_str(), "DMD") != nullptr)
+               if (textbox->m_d.m_isDMD || StrStrI(textbox->m_d.m_text.c_str(), "DMD") != nullptr)
                {
                   if (textbox->GetScriptable())
                      m_pcv->RemoveItem(textbox->GetScriptable());
@@ -4142,7 +4142,7 @@ void PinTable::SetLoadDefaults()
    m_ImageBackdropNightDay = false;
    m_envImage.clear();
 
-   m_szScreenShot.clear();
+   m_screenShot.clear();
 
    m_colorbackdrop = RGB(0x62, 0x6E, 0x8E);
 
@@ -4202,11 +4202,11 @@ HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctext
 
 bool PinTable::LoadToken(const int id, BiffReader * const pbr)
 {
-   const string szINIFilename = GetSettingsFileName();
-   const bool hasIni = !szINIFilename.empty() && FileExists(szINIFilename);
+   const string INIFilename = GetSettingsFileName();
+   const bool hasIni = !INIFilename.empty() && FileExists(INIFilename);
    switch(id)
    {
-   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
    case FID(LEFT): pbr->GetFloat(m_left); break;
    case FID(TOPX): pbr->GetFloat(m_top); break;
    case FID(RGHT): pbr->GetFloat(m_right); break;
@@ -4305,7 +4305,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(BLIM): pbr->GetString(m_ballImage); break;
    case FID(BLSM): pbr->GetBool(m_ballSphericalMapping); break;
    case FID(BLIF): pbr->GetString(m_ballImageDecal); break;
-   case FID(SSHT): pbr->GetString(m_szScreenShot); break;
+   case FID(SSHT): pbr->GetString(m_screenShot); break;
    case FID(FBCK): pbr->GetBool(m_backdrop); break;
    case FID(SEDT): pbr->GetInt(&((int *)pbr->m_pdata)[1]); break;
    case FID(SSND): pbr->GetInt(&((int *)pbr->m_pdata)[2]); break;
@@ -4507,7 +4507,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
             pmat->m_type = mats[i].bIsMetal ? Material::MaterialType::METAL : Material::MaterialType::BASIC;
             pmat->m_bOpacityActive = !!(mats[i].bOpacityActive_fEdgeAlpha & 1);
             pmat->m_fEdgeAlpha = dequantizeUnsigned<7>(mats[i].bOpacityActive_fEdgeAlpha >> 1);
-            pmat->m_szName = mats[i].szName;
+            pmat->m_name = mats[i].szName;
             m_materials.push_back(pmat);
          }
       }
@@ -4528,7 +4528,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
               {
                   assert(!"SaveMaterial not found");
                   pmat = new Material();
-                  pmat->m_szName = mats[i].szName;
+                  pmat->m_name = mats[i].szName;
                   found = false;
               }
               pmat->m_fElasticity = mats[i].fElasticity;
@@ -4610,7 +4610,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
 
 bool PinTable::ExportSound(PinSound * const pps, const char * const szfilename)
 {
-   if(extension_from_path(pps->m_szPath) == extension_from_path(szfilename))
+   if(extension_from_path(pps->m_path) == extension_from_path(szfilename))
    {
       FILE* f;
       if ((fopen_s(&f, szfilename, "wb") == 0) && f)
@@ -4646,7 +4646,7 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, cons
    const int frontRearFade = pps->GetFrontRearFade();
    const int volume = pps->GetVolume();
    const SoundOutTypes outputTarget = pps->GetOutputTarget();
-   const string szName = pps->m_szName;
+   const string name = pps->m_name;
 
    //!! meh to all of this: kill old raw sound data and DSound/BASS stuff, then copy new one over
 
@@ -4665,15 +4665,15 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, cons
    pps->SetFrontRearFade(frontRearFade);
    pps->SetVolume(volume);
    pps->SetOutputTarget(outputTarget);
-   pps->m_szName = szName;
+   pps->m_name = name;
 #endif
 }
 
 
-void PinTable::ImportSound(const HWND hwndListView, const string& szfilename)
+void PinTable::ImportSound(const HWND hwndListView, const string& filename)
 {
 #ifndef __STANDALONE__
-   PinSound * const pps = m_vpinball->m_ps.LoadFile(szfilename);
+   PinSound * const pps = m_vpinball->m_ps.LoadFile(filename);
 
    if (pps == nullptr)
       return;
@@ -4703,12 +4703,12 @@ int PinTable::AddListSound(HWND hwndListView, PinSound * const pps)
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
    lvitem.iItem = 0;
    lvitem.iSubItem = 0;
-   lvitem.pszText = (LPSTR)pps->m_szName.c_str();
+   lvitem.pszText = (LPSTR)pps->m_name.c_str();
    lvitem.lParam = (size_t)pps;
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
-   ListView_SetItemText(hwndListView, index, 1, (LPSTR)pps->m_szPath.c_str());
+   ListView_SetItemText(hwndListView, index, 1, (LPSTR)pps->m_path.c_str());
 
    switch (pps->GetOutputTarget())
    {
@@ -4781,12 +4781,12 @@ int PinTable::AddListBinary(HWND hwndListView, PinBinary *ppb)
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
    lvitem.iItem = 0;
    lvitem.iSubItem = 0;
-   lvitem.pszText = (LPSTR)ppb->m_szName.c_str();
+   lvitem.pszText = (LPSTR)ppb->m_name.c_str();
    lvitem.lParam = (size_t)ppb;
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
-   ListView_SetItemText(hwndListView, index, 1, (LPSTR)ppb->m_szPath.c_str());
+   ListView_SetItemText(hwndListView, index, 1, (LPSTR)ppb->m_path.c_str());
 
    return index;
 #else
@@ -5864,8 +5864,8 @@ void PinTable::ExportBlueprint()
       ofn.hwndOwner = m_vpinball->GetHwnd();
       ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif;\0WEBP (.webp)\0*.webp;\0";
       char szBlueprintFileName[MAXSTRING];
-      strncpy_s(szBlueprintFileName, m_szFileName.c_str(), sizeof(szBlueprintFileName)-1);
-      const size_t idx = m_szFileName.find_last_of('.');
+      strncpy_s(szBlueprintFileName, m_filename.c_str(), sizeof(szBlueprintFileName)-1);
+      const size_t idx = m_filename.find_last_of('.');
       if (idx != string::npos && idx < MAXSTRING)
           szBlueprintFileName[idx] = '\0';
       ofn.lpstrFile = szBlueprintFileName;
@@ -6044,8 +6044,8 @@ void PinTable::ExportTableMesh()
 {
 #ifndef __STANDALONE__
    char szObjFileName[MAXSTRING];
-   strncpy_s(szObjFileName, m_szFileName.c_str(), sizeof(szObjFileName)-1);
-   const size_t idx = m_szFileName.find_last_of('.');
+   strncpy_s(szObjFileName, m_filename.c_str(), sizeof(szObjFileName)-1);
+   const size_t idx = m_filename.find_last_of('.');
    if (idx != string::npos && idx < MAXSTRING)
        szObjFileName[idx] = '\0';
    OPENFILENAME ofn = {};
@@ -6389,8 +6389,8 @@ void PinTable::ExportBackdropPOV()
 	// TEXT
 	ofn.lpstrFilter = "INI file(*.ini)\0*.ini\0";
 	char szFileName[MAXSTRING];
-	strncpy_s(szFileName, m_szFileName.c_str(), sizeof(szFileName)-1);
-	const size_t idx = m_szFileName.find_last_of('.');
+	strncpy_s(szFileName, m_filename.c_str(), sizeof(szFileName)-1);
+	const size_t idx = m_filename.find_last_of('.');
 	if(idx != string::npos && idx < MAXSTRING)
 		szFileName[idx] = '\0';
 	ofn.lpstrFile = szFileName;
@@ -6461,9 +6461,9 @@ void PinTable::CheckDirty()
    if (sdsNewDirtyState != m_sdsCurrentDirtyState)
    {
       if (sdsNewDirtyState > eSaveClean)
-         SetCaption(m_szTitle + '*');
+         SetCaption(m_title + '*');
       else
-         SetCaption(m_szTitle);
+         SetCaption(m_title);
    }
 
    m_sdsCurrentDirtyState = sdsNewDirtyState;
@@ -7071,7 +7071,7 @@ HRESULT PinTable::GetTypeName(BSTR *pVal) const
 
 STDMETHODIMP PinTable::get_FileName(BSTR *pVal)
 {
-   const WCHAR * const wz = MakeWide(m_szTitle);
+   const WCHAR * const wz = MakeWide(m_title);
    *pVal = SysAllocString(wz);
    delete[] wz;
 
@@ -7080,7 +7080,7 @@ STDMETHODIMP PinTable::get_FileName(BSTR *pVal)
 
 STDMETHODIMP PinTable::get_Name(BSTR *pVal)
 {
-   *pVal = SysAllocString((WCHAR *)m_wzName);
+   *pVal = SysAllocString(m_wzName);
 
    return S_OK;
 }
@@ -7098,7 +7098,7 @@ STDMETHODIMP PinTable::put_Name(BSTR newVal)
    STARTUNDO
    if(m_pcv->ReplaceName((IScriptable *)this, newVal) == S_OK)
    {
-      WideStrNCopy(newVal, (WCHAR *)m_wzName, MAXNAMEBUFFER);
+      WideStrNCopy(newVal, m_wzName, MAXNAMEBUFFER);
       //lstrcpyW((WCHAR *)m_wzName, newVal);
    }
    STOPUNDO
@@ -7167,7 +7167,7 @@ HRESULT PinTable::StopSound(BSTR Sound)
 
    size_t i;
    for (i = 0; i < m_vsound.size(); i++)
-      if (StrCompareNoCase(m_vsound[i]->m_szName, name))
+      if (StrCompareNoCase(m_vsound[i]->m_name, name))
          break;
 
    if (i == m_vsound.size()) // did not find it
@@ -7204,7 +7204,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
 
    size_t i;
    for (i = 0; i < m_vsound.size(); i++)
-      if (StrCompareNoCase(m_vsound[i]->m_szName, name))
+      if (StrCompareNoCase(m_vsound[i]->m_name, name))
          break;
 
    if (i == m_vsound.size()) // did not find it
@@ -7287,7 +7287,7 @@ Texture* PinTable::GetImage(const string &szName) const
    }
 
    for (size_t i = 0; i < m_vimage.size(); i++)
-      if (StrCompareNoCase(m_vimage[i]->m_szName, szName))
+      if (StrCompareNoCase(m_vimage[i]->m_name, szName))
          return m_vimage[i];
 
    return nullptr;
@@ -7437,7 +7437,7 @@ Texture *PinTable::ImportImage(const string &filename, const string &imagename)
    }
    if (!isUpdate)
    {
-      m_textureMap[imagename.empty() ? ppi->m_szName : imagename] = ppi;
+      m_textureMap[imagename.empty() ? ppi->m_name : imagename] = ppi;
       m_vimage.push_back(ppi);
       if (m_isLiveInstance)
          m_vliveimage.push_back(ppi);
@@ -7461,23 +7461,23 @@ void PinTable::ListMaterials(HWND hwndListView)
 bool PinTable::IsMaterialNameUnique(const string &name) const
 {
    for (size_t i = 0; i < m_materials.size(); i++)
-      if(m_materials[i]->m_szName==name)
+      if(m_materials[i]->m_name == name)
          return false;
 
    return true;
 }
 
 
-Material* PinTable::GetMaterial(const string &szName) const
+Material* PinTable::GetMaterial(const string &name) const
 {
-   if (szName.empty())
+   if (name.empty())
       return &m_vpinball->m_dummyMaterial;
 
    // during playback, we use the hashtable for lookup
    if (!m_materialMap.empty())
    {
       const ankerl::unordered_dense::map<string, Material*, StringHashFunctor, StringComparator>::const_iterator
-         it = m_materialMap.find(szName);
+         it = m_materialMap.find(name);
       if (it != m_materialMap.end())
          return it->second;
       else
@@ -7485,7 +7485,7 @@ Material* PinTable::GetMaterial(const string &szName) const
    }
 
    for (size_t i = 0; i < m_materials.size(); i++)
-      if(m_materials[i]->m_szName==szName)
+      if(m_materials[i]->m_name == name)
          return m_materials[i];
 
    return &m_vpinball->m_dummyMaterial;
@@ -7493,19 +7493,19 @@ Material* PinTable::GetMaterial(const string &szName) const
 
 void PinTable::AddMaterial(Material * const pmat)
 {
-   if (pmat->m_szName.empty() || pmat->m_szName == "dummyMaterial")
-      pmat->m_szName = "Material"s;
+   if (pmat->m_name.empty() || pmat->m_name == "dummyMaterial")
+      pmat->m_name = "Material"s;
 
-   if (!IsMaterialNameUnique(pmat->m_szName) || pmat->m_szName == "Material")
+   if (!IsMaterialNameUnique(pmat->m_name) || pmat->m_name == "Material")
    {
       int suffix = 1;
       string textBuf;
       do
       {
-         textBuf = pmat->m_szName + std::to_string(suffix);
+         textBuf = pmat->m_name + std::to_string(suffix);
          suffix++;
       } while (!IsMaterialNameUnique(textBuf));
-      pmat->m_szName = textBuf;
+      pmat->m_name = textBuf;
    }
 
    m_materials.push_back(pmat);
@@ -7521,12 +7521,12 @@ int PinTable::AddListMaterial(HWND hwndListView, Material * const pmat)
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
    lvitem.iItem = 0;
    lvitem.iSubItem = 0;
-   lvitem.pszText = (LPSTR)pmat->m_szName.c_str();
+   lvitem.pszText = (LPSTR)pmat->m_name.c_str();
    lvitem.lParam = (size_t)pmat;
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
    ListView_SetItemText(hwndListView, index, 1, (LPSTR)usedStringNo);
-   if(pmat->m_szName == m_playfieldMaterial)
+   if(pmat->m_name == m_playfieldMaterial)
    {
       ListView_SetItemText(hwndListView, index, 1, (LPSTR)usedStringYes);
    }
@@ -7544,85 +7544,85 @@ int PinTable::AddListMaterial(HWND hwndListView, Material * const pmat)
          case eItemPrimitive:
          {
             const Primitive * const pPrim = (Primitive*)pEdit;
-            if (StrCompareNoCase(pPrim->m_d.m_szMaterial, pmat->m_szName) || StrCompareNoCase(pPrim->m_d.m_szPhysicsMaterial, pmat->m_szName))
+            if (StrCompareNoCase(pPrim->m_d.m_szMaterial, pmat->m_name) || StrCompareNoCase(pPrim->m_d.m_szPhysicsMaterial, pmat->m_name))
                inUse = true;
             break;
          }
          case eItemRamp:
          {
             const Ramp * const pRamp = (Ramp*)pEdit;
-            if (StrCompareNoCase(pRamp->m_d.m_szMaterial, pmat->m_szName) || StrCompareNoCase(pRamp->m_d.m_szPhysicsMaterial, pmat->m_szName))
+            if (StrCompareNoCase(pRamp->m_d.m_szMaterial, pmat->m_name) || StrCompareNoCase(pRamp->m_d.m_szPhysicsMaterial, pmat->m_name))
                inUse = true;
             break;
          }
          case eItemSurface:
          {
             const Surface * const pSurf = (Surface*)pEdit;
-            if (StrCompareNoCase(pSurf->m_d.m_szPhysicsMaterial, pmat->m_szName) || StrCompareNoCase(pSurf->m_d.m_szSideMaterial, pmat->m_szName) || StrCompareNoCase(pSurf->m_d.m_szTopMaterial, pmat->m_szName) || StrCompareNoCase(pSurf->m_d.m_szSlingShotMaterial, pmat->m_szName))
+            if (StrCompareNoCase(pSurf->m_d.m_szPhysicsMaterial, pmat->m_name) || StrCompareNoCase(pSurf->m_d.m_szSideMaterial, pmat->m_name) || StrCompareNoCase(pSurf->m_d.m_szTopMaterial, pmat->m_name) || StrCompareNoCase(pSurf->m_d.m_szSlingShotMaterial, pmat->m_name))
                inUse = true;
             break;
          }
          case eItemDecal:
          {
             const Decal * const pDecal = (Decal*)pEdit;
-            if (StrCompareNoCase(pDecal->m_d.m_szMaterial, pmat->m_szName))
+            if (StrCompareNoCase(pDecal->m_d.m_szMaterial, pmat->m_name))
                inUse = true;
             break;
          }
          case eItemFlipper:
          {
             const Flipper * const pFlip = (Flipper*)pEdit;
-            if (StrCompareNoCase(pFlip->m_d.m_szRubberMaterial, pmat->m_szName) || StrCompareNoCase(pFlip->m_d.m_szMaterial, pmat->m_szName))
+            if (StrCompareNoCase(pFlip->m_d.m_szRubberMaterial, pmat->m_name) || StrCompareNoCase(pFlip->m_d.m_szMaterial, pmat->m_name))
                inUse = true;
             break;
          }
          case eItemHitTarget:
          {
             const HitTarget * const pHit = (HitTarget*)pEdit;
-            if (StrCompareNoCase(pHit->m_d.m_szMaterial, pmat->m_szName) || StrCompareNoCase(pHit->m_d.m_szPhysicsMaterial, pmat->m_szName))
+            if (StrCompareNoCase(pHit->m_d.m_szMaterial, pmat->m_name) || StrCompareNoCase(pHit->m_d.m_szPhysicsMaterial, pmat->m_name))
                inUse = true;
             break;
          }
          case eItemPlunger:
          {
             const Plunger * const pPlung = (Plunger*)pEdit;
-            if (StrCompareNoCase(pPlung->m_d.m_szMaterial, pmat->m_szName))
+            if (StrCompareNoCase(pPlung->m_d.m_szMaterial, pmat->m_name))
                inUse = true;
             break;
          }
          case eItemSpinner:
          {
             const Spinner * const pSpin = (Spinner*)pEdit;
-            if (StrCompareNoCase(pSpin->m_d.m_szMaterial, pmat->m_szName))
+            if (StrCompareNoCase(pSpin->m_d.m_szMaterial, pmat->m_name))
                inUse = true;
             break;
          }
          case eItemRubber:
          {
             const Rubber * const pRub = (Rubber*)pEdit;
-            if (StrCompareNoCase(pRub->m_d.m_szMaterial, pmat->m_szName) || StrCompareNoCase(pRub->m_d.m_szPhysicsMaterial, pmat->m_szName))
+            if (StrCompareNoCase(pRub->m_d.m_szMaterial, pmat->m_name) || StrCompareNoCase(pRub->m_d.m_szPhysicsMaterial, pmat->m_name))
                inUse = true;
             break;
          }
          case eItemBumper:
          {
             const Bumper * const pBump = (Bumper*)pEdit;
-            if (StrCompareNoCase(pBump->m_d.m_szCapMaterial, pmat->m_szName) || StrCompareNoCase(pBump->m_d.m_szBaseMaterial, pmat->m_szName) ||
-                StrCompareNoCase(pBump->m_d.m_szSkirtMaterial, pmat->m_szName) || StrCompareNoCase(pBump->m_d.m_szRingMaterial, pmat->m_szName))
+            if (StrCompareNoCase(pBump->m_d.m_szCapMaterial, pmat->m_name) || StrCompareNoCase(pBump->m_d.m_szBaseMaterial, pmat->m_name) ||
+                StrCompareNoCase(pBump->m_d.m_szSkirtMaterial, pmat->m_name) || StrCompareNoCase(pBump->m_d.m_szRingMaterial, pmat->m_name))
                inUse = true;
             break;
          }
          case eItemKicker:
          {
             const Kicker * const pKick = (Kicker*)pEdit;
-            if (StrCompareNoCase(pKick->m_d.m_szMaterial, pmat->m_szName))
+            if (StrCompareNoCase(pKick->m_d.m_szMaterial, pmat->m_name))
                inUse = true;
             break;
          }
          case eItemTrigger:
          {
             const Trigger * const pTrig = (Trigger*)pEdit;
-            if (StrCompareNoCase(pTrig->m_d.m_szMaterial, pmat->m_szName))
+            if (StrCompareNoCase(pTrig->m_d.m_szMaterial, pmat->m_name))
                inUse = true;
             break;
          }
@@ -7652,7 +7652,7 @@ void PinTable::RemoveMaterial(Material * const pmat)
 
 bool PinTable::GetImageLink(const Texture * const ppi) const
 {
-   return StrCompareNoCase(ppi->m_szName, m_szScreenShot);
+   return StrCompareNoCase(ppi->m_name, m_screenShot);
 }
 
 PinBinary *PinTable::GetImageLinkBinary(const int id)
@@ -7794,7 +7794,7 @@ string PinTable::AuditTable(bool log) const
       if (type == eItemPrimitive && prim->m_d.m_staticRendering && FindIndexOf(identifiers, string(prim->GetName())) != -1)
          ss << ". Warning: Primitive '" << prim->GetName() << "' seems to be referenced from the script while it is marked as static (most properties of a static object may not be modified at runtime).\r\n";
 
-      if (type == eItemTextbox && (textbox->m_d.m_isDMD || StrStrI(textbox->m_d.m_sztext.c_str(), "DMD") != nullptr))
+      if (type == eItemTextbox && (textbox->m_d.m_isDMD || StrStrI(textbox->m_d.m_text.c_str(), "DMD") != nullptr))
          ss << ". Warning: legacy Textbox '" << textbox->GetName() << "' is used for DMD rendering. It should be replaced by a flasher to get better rendering.\r\n";
 
       if (type == eItemTimer) {
@@ -7861,7 +7861,7 @@ string PinTable::AuditTable(bool log) const
    for (const auto image : m_vimage)
    {
       if (image->m_ppb == nullptr)
-         ss << ". Warning: Image '" << image->m_szName << "' uses legacy encoding causing waste of memory / file size. It should be converted to WEBP file format.\r\n";
+         ss << ". Warning: Image '" << image->m_name << "' uses legacy encoding causing waste of memory / file size. It should be converted to WEBP file format.\r\n";
    }
 
    if (ss.str().empty())
@@ -7871,7 +7871,7 @@ string PinTable::AuditTable(bool log) const
    unsigned long long totalSize = 0, totalGpuSize = 0;
    for (const auto sound : m_vsound)
    {
-      //ss << "  . Sound: '" << sound->m_szName << "', size: " << (sound->m_cdata / 1024) << "KiB\r\n";
+      //ss << "  . Sound: '" << sound->m_name << "', size: " << (sound->m_cdata / 1024) << "KiB\r\n";
       totalSize += sound->m_cdata;
    }
    ss << ". Total sound size: " << (totalSize / (1024 * 1024)) << "MiB\r\n";
@@ -7881,7 +7881,7 @@ string PinTable::AuditTable(bool log) const
    {
       unsigned int imageSize = image->m_ppb != nullptr ? image->m_ppb->m_cdata : image->m_pdsBuffer->height() * image->m_pdsBuffer->pitch();
       unsigned int gpuSize = image->m_pdsBuffer->height() * image->m_pdsBuffer->pitch();
-      //ss << "  . Image: '" << image->m_szName << "', size: " << (imageSize / 1024) << "KiB, GPU mem size: " << (gpuSize / 1024) << "KiB\r\n";
+      //ss << "  . Image: '" << image->m_name << "', size: " << (imageSize / 1024) << "KiB, GPU mem size: " << (gpuSize / 1024) << "KiB\r\n";
       totalSize += imageSize;
       totalGpuSize += gpuSize;
    }
@@ -8002,12 +8002,12 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
       for (size_t ivar = 0; ivar < cvar; ivar++)
       {
-         const DWORD cwch = (DWORD)m_vimage[ivar]->m_szName.length() + 1;
+         const DWORD cwch = (DWORD)m_vimage[ivar]->m_name.length() + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
          if (wzDst == nullptr)
             ShowError("DISPID_Image alloc failed");
 
-         MultiByteToWideCharNull(CP_ACP, 0, m_vimage[ivar]->m_szName.c_str(), -1, wzDst, cwch);
+         MultiByteToWideCharNull(CP_ACP, 0, m_vimage[ivar]->m_name.c_str(), -1, wzDst, cwch);
 
          //MsoWzCopy(szSrc,szDst);
          rgstr[ivar + 1] = wzDst;
@@ -8034,12 +8034,12 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
       for (size_t ivar = 0; ivar < cvar; ivar++)
       {
-         const DWORD cwch = (DWORD)m_materials[ivar]->m_szName.length() + 1;
+         const DWORD cwch = (DWORD)m_materials[ivar]->m_name.length() + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
          if (wzDst == nullptr)
             ShowError("IDC_MATERIAL_COMBO alloc failed");
 
-         MultiByteToWideCharNull(CP_ACP, 0, m_materials[ivar]->m_szName.c_str(), -1, wzDst, cwch);
+         MultiByteToWideCharNull(CP_ACP, 0, m_materials[ivar]->m_name.c_str(), -1, wzDst, cwch);
 
          //MsoWzCopy(szSrc,szDst);
          rgstr[ivar + 1] = wzDst;
@@ -8063,12 +8063,12 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
       for (size_t ivar = 0; ivar < cvar; ivar++)
       {
-         const DWORD cwch = (DWORD)m_vsound[ivar]->m_szName.length() + 1;
+         const DWORD cwch = (DWORD)m_vsound[ivar]->m_name.length() + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
          if (wzDst == nullptr)
             ShowError("DISPID_Sound alloc failed");
 
-         MultiByteToWideCharNull(CP_ACP, 0, m_vsound[ivar]->m_szName.c_str(), -1, wzDst, cwch);
+         MultiByteToWideCharNull(CP_ACP, 0, m_vsound[ivar]->m_name.c_str(), -1, wzDst, cwch);
 
          //MsoWzCopy(szSrc,szDst);
          rgstr[ivar + 1] = wzDst;
@@ -8230,10 +8230,10 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       }
       else
       {
-         const DWORD cwch = (DWORD)m_vimage[dwCookie]->m_szName.length() + 1;
+         const DWORD cwch = (DWORD)m_vimage[dwCookie]->m_name.length() + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
 
-         MultiByteToWideCharNull(CP_ACP, 0, m_vimage[dwCookie]->m_szName.c_str(), -1, wzDst, cwch);
+         MultiByteToWideCharNull(CP_ACP, 0, m_vimage[dwCookie]->m_name.c_str(), -1, wzDst, cwch);
       }
    }
    break;
@@ -8249,10 +8249,10 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       }
       else
       {
-         const DWORD cwch = (DWORD)m_materials[dwCookie]->m_szName.length() + 1;
+         const DWORD cwch = (DWORD)m_materials[dwCookie]->m_name.length() + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
 
-         MultiByteToWideCharNull(CP_ACP, 0, m_materials[dwCookie]->m_szName.c_str(), -1, wzDst, cwch);
+         MultiByteToWideCharNull(CP_ACP, 0, m_materials[dwCookie]->m_name.c_str(), -1, wzDst, cwch);
       }
       break;
    }
@@ -8267,11 +8267,11 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       }
       else
       {
-         const DWORD cwch = (DWORD)m_vsound[dwCookie]->m_szName.length() + 1;
+         const DWORD cwch = (DWORD)m_vsound[dwCookie]->m_name.length() + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
          if (wzDst == nullptr)
              ShowError("DISPID_Sound alloc failed");
-         MultiByteToWideCharNull(CP_ACP, 0, m_vsound[dwCookie]->m_szName.c_str(), -1, wzDst, cwch);
+         MultiByteToWideCharNull(CP_ACP, 0, m_vsound[dwCookie]->m_name.c_str(), -1, wzDst, cwch);
       }
    }
    break;
@@ -9711,15 +9711,15 @@ STDMETHODIMP PinTable::ImportPhysics()
    if (!m_settings.LoadValue(Settings::RecentDir, "PhysicsDir"s, szInitialDir))
       szInitialDir = PATH_TABLES;
 
-   vector<string> szFileName;
-   if (!m_vpinball->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
+   vector<string> filename;
+   if (!m_vpinball->OpenFileDialog(szInitialDir, filename, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
       return S_OK;
 
-   const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
+   const size_t index = filename[0].find_last_of(PATH_SEPARATOR_CHAR);
    if (index != string::npos)
-      g_pvp->m_settings.SaveValue(Settings::RecentDir, "PhysicsDir"s, szFileName[0].substr(0, index));
+      g_pvp->m_settings.SaveValue(Settings::RecentDir, "PhysicsDir"s, filename[0].substr(0, index));
 
-   ImportVPP(szFileName[0]);
+   ImportVPP(filename[0]);
 
    return S_OK;
 }
@@ -9981,8 +9981,8 @@ STDMETHODIMP PinTable::ExportPhysics()
    Flipper * const flipper = (Flipper *)m_vedit[i];
 
    char szFileName[MAXSTRING];
-   strncpy_s(szFileName, m_szFileName.c_str(), sizeof(szFileName)-1);
-   const size_t idx = m_szFileName.find_last_of('.');
+   strncpy_s(szFileName, m_filename.c_str(), sizeof(szFileName)-1);
+   const size_t idx = m_filename.find_last_of('.');
    if (idx != string::npos && idx < MAXSTRING)
       szFileName[idx] = '\0';
 
@@ -10007,11 +10007,11 @@ STDMETHODIMP PinTable::ExportPhysics()
    if (ret == 0)
       return S_OK;
 
-   const string szFilename(ofn.lpstrFile);
-   const size_t index = szFilename.find_last_of(PATH_SEPARATOR_CHAR);
+   const string filename(ofn.lpstrFile);
+   const size_t index = filename.find_last_of(PATH_SEPARATOR_CHAR);
    if (index != string::npos)
    {
-       const string newInitDir(szFilename.substr(0, index));
+       const string newInitDir(filename.substr(0, index));
        g_pvp->m_settings.SaveValue(Settings::RecentDir, "PhysicsDir"s, newInitDir);
    }
 
@@ -10114,7 +10114,7 @@ STDMETHODIMP PinTable::ExportPhysics()
    physTab->InsertEndChild(node);
 
    auto settingName = xmlDoc.NewElement("name");
-   settingName->SetText(m_szTitle.c_str());
+   settingName->SetText(m_title.c_str());
    root->InsertEndChild(settingName);
    root->InsertEndChild(physTab);
    root->InsertEndChild(physFlip);
@@ -10509,8 +10509,8 @@ void PinTable::OnInitialUpdate()
 
 #ifndef __STANDALONE__
     BeginAutoSaveCounter();
-    SetWindowText(m_szFileName.c_str());
-    SetCaption(m_szTitle);
+    SetWindowText(m_filename.c_str());
+    SetCaption(m_title);
     m_vpinball->SetEnableMenuItems();
 #endif
 }
@@ -10678,7 +10678,7 @@ bool PinTableMDI::CanClose() const
     {
         const LocalString ls1(IDS_SAVE_CHANGES1);
         const LocalString ls2(IDS_SAVE_CHANGES2);
-        const string szText = ls1.m_szbuffer/*"Do you want to save the changes you made to '"*/ + m_table->m_szTitle + ls2.m_szbuffer;
+        const string szText = ls1.m_szbuffer/*"Do you want to save the changes you made to '"*/ + m_table->m_title + ls2.m_szbuffer;
 #ifndef __STANDALONE__
         const int result = MessageBox(szText.c_str(), "Visual Pinball", MB_YESNOCANCEL | MB_DEFBUTTON3 | MB_ICONWARNING);
 
@@ -10707,13 +10707,13 @@ void PinTableMDI::PreCreate(CREATESTRUCT &cs)
     cs.style = WS_MAXIMIZE;
     cs.hwndParent = m_vpinball->GetHwnd();
     cs.lpszClass = _T("PinTable");
-    cs.lpszName = _T(m_table->m_szFileName.c_str());
+    cs.lpszName = _T(m_table->m_filename.c_str());
 }
 
 int PinTableMDI::OnCreate(CREATESTRUCT &cs)
 {
 #ifndef __STANDALONE__
-    SetWindowText(m_table->m_szTitle.c_str());
+    SetWindowText(m_table->m_title.c_str());
     SetIconLarge(IDI_TABLE);
     SetIconSmall(IDI_TABLE);
     return CMDIChild::OnCreate(cs);
@@ -10745,11 +10745,11 @@ LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
    //lparam holds HWND of the MDI frame that is about to be activated
    if (GetHwnd() == (HWND)wparam)
    {
-      if (!m_table->m_szFileName.empty())
+      if (!m_table->m_filename.empty())
       {
-         const string szINIFilename = m_table->GetSettingsFileName();
-         if (!szINIFilename.empty())
-            m_table->m_settings.SaveToFile(szINIFilename);
+         const string INIFilename = m_table->GetSettingsFileName();
+         if (!INIFilename.empty())
+            m_table->m_settings.SaveToFile(INIFilename);
       }
       if (g_pvp->m_ptableActive == m_table)
          g_pvp->m_ptableActive = nullptr;
@@ -10762,7 +10762,7 @@ LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
          g_pvp->GetLayersListDialog()->SetActiveTable(m_table);
          g_pvp->SetPropSel(m_table->m_vmultisel);
       }
-      m_vpinball->m_currentTablePath = PathFromFilename(m_table->m_szFileName);
+      m_vpinball->m_currentTablePath = PathFromFilename(m_table->m_filename);
    }
    return CMDIChild::OnMDIActivate(msg, wparam, lparam);
 #else 
@@ -10802,7 +10802,7 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed, Texture *co
       {
          continue;
       }
-      const LPCSTR searchObjectName = ppi->m_szName.c_str(); //searchObjectName will be an image or material that we want to find table objects that are using it.
+      const LPCSTR searchObjectName = ppi->m_name.c_str(); //searchObjectName will be an image or material that we want to find table objects that are using it.
 
       switch (pEdit->GetItemType())
       {
@@ -10924,7 +10924,7 @@ void PinTable::ShowWhereMaterialUsed(vector<WhereUsedInfo> &vWhereUsed, Material
       {
          continue;
       }
-      const LPCSTR searchObjectName = ppi->m_szName.c_str(); //searchObjectName will be an image or material that we want to find table objects that are using it.
+      const LPCSTR searchObjectName = ppi->m_name.c_str(); //searchObjectName will be an image or material that we want to find table objects that are using it.
 
       switch (pEdit->GetItemType())
       {

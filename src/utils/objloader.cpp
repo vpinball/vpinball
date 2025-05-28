@@ -475,7 +475,7 @@ bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
       {
          char buf[MAXSTRING];
          fscanf_s(f, "%s\n", buf, MAXSTRING);
-         mat->m_szName = buf;
+         mat->m_name = buf;
       }
       else if (strcmp(lineHeader, "Ns") == 0)
       {

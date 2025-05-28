@@ -19,7 +19,7 @@ void IEditable::SetDirtyDraw()
 
 void IEditable::Delete()
 {
-   RemoveFromVectorSingle(GetPTable()->m_vedit, (IEditable *)this);
+   RemoveFromVectorSingle(GetPTable()->m_vedit, this);
    MarkForDelete();
 
    if (GetScriptable())
@@ -34,7 +34,7 @@ void IEditable::Delete()
 
 void IEditable::Uncreate()
 {
-   RemoveFromVectorSingle(GetPTable()->m_vedit, (IEditable *)this);
+   RemoveFromVectorSingle(GetPTable()->m_vedit, this);
    if (GetScriptable())
       GetPTable()->m_pcv->RemoveItem(GetScriptable());
 }

@@ -52,7 +52,7 @@ void TextboxVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == IDC_TEXT_INTENSITY || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_textIntensityEdit, text->m_d.m_intensity_scale);
         if (dispid == IDC_TEXTBOX_TEXT_EDIT || dispid == -1)
-            m_textEdit.SetWindowText(text->m_d.m_sztext.c_str());
+            m_textEdit.SetWindowText(text->m_d.m_text.c_str());
 
         if (dispid == IDC_FONT_DIALOG_BUTTON || dispid == -1)
         {
@@ -94,7 +94,7 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
             {
                 PropertyDialog::StartUndo(text);
                 const CString pattern = m_textEdit.GetWindowText();
-                text->m_d.m_sztext = pattern.GetString();
+                text->m_d.m_text = pattern.GetString();
                 PropertyDialog::EndUndo(text);
                 break;
             }

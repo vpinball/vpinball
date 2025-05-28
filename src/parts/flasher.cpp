@@ -459,7 +459,7 @@ bool Flasher::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
    case FID(FHEI): pbr->GetFloat(m_d.m_height); break;
    case FID(FLAX): pbr->GetFloat(m_d.m_vCenter.x); break;
    case FID(FLAY): pbr->GetFloat(m_d.m_vCenter.y); break;
@@ -882,16 +882,16 @@ STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!
       for (int ofs = 0; ofs < size; ++ofs)
          rgba[ofs] = V_UI4(&p[ofs]); 
       upscale(rgba, m_dmdSize, true);
-      UINT8 *const data = reinterpret_cast<UINT8 *>(m_dmdFrame->data());
+      BYTE *const data = m_dmdFrame->data();
       for (int ofs = 0; ofs < size; ++ofs)
-         data[ofs] = static_cast<UINT8>(InvsRGB((float)(rgba[ofs] & 0xFF) * (float)(1.0/100.)) * 255.f);
+         data[ofs] = static_cast<BYTE>(InvsRGB((float)(rgba[ofs] & 0xFF) * (float)(1.0 / 100.)) * 255.f);
       delete[] rgba;
    }
    else
    {
-      UINT8 *const data = reinterpret_cast<UINT8 *>(m_dmdFrame->data());
+      BYTE *const data = m_dmdFrame->data();
       for (int ofs = 0; ofs < size; ++ofs)
-         data[ofs] = static_cast<UINT8>(InvsRGB((float)V_UI4(&p[ofs]) * (float)(1.0/100.)) * 255.f);
+         data[ofs] = static_cast<BYTE>(InvsRGB((float)V_UI4(&p[ofs]) * (float)(1.0 / 100.)) * 255.f);
    }
    SafeArrayUnaccessData(psa);
    //m_dmdFrameId++;
@@ -1284,7 +1284,7 @@ void Flasher::Render(const unsigned int renderMask)
    m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
 
    Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height);
-   const vec4 color = convertColor(m_d.m_color, static_cast<float>(alpha) * m_d.m_intensity_scale / 100.0f);
+   const vec4 color = convertColor(m_d.m_color, alpha * m_d.m_intensity_scale / 100.0f);
    const float clampedModulateVsAdd = min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes
    switch (m_d.m_renderMode)
    {

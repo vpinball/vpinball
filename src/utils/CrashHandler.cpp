@@ -191,9 +191,9 @@ namespace
       fprintf(f, "\n");
    }
 
-   bool WriteMiniDump(EXCEPTION_POINTERS* exceptionPtrs, const char* fileName)
+   bool WriteMiniDump(EXCEPTION_POINTERS* exceptionPtrs, const char* filename)
    {
-      const HANDLE hDump = ::CreateFile(fileName, GENERIC_WRITE, FILE_SHARE_READ, 0,
+      const HANDLE hDump = ::CreateFile(filename, GENERIC_WRITE, FILE_SHARE_READ, 0,
          CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
       if (hDump != INVALID_HANDLE_VALUE)
       {

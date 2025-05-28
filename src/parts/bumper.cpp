@@ -230,7 +230,7 @@ void Bumper::RenderSetup(RenderDevice *device)
    m_fullMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_orientation));
    if (m_d.m_baseVisible)
    {
-      m_baseTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperBase.webp");
+      m_baseTexture.LoadFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "BumperBase.webp");
       m_baseTexture.m_alphaTestValue = (float)(-1.0 / 255.0);
       IndexBuffer* baseIndexBuffer = new IndexBuffer(m_rd, bumperBaseNumIndices, bumperBaseIndices);
       VertexBuffer* baseVertexBuffer = new VertexBuffer(m_rd, bumperBaseNumVertices);
@@ -244,7 +244,7 @@ void Bumper::RenderSetup(RenderDevice *device)
 
    if (m_d.m_skirtVisible)
    {
-      m_skirtTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperSkirt.webp");
+      m_skirtTexture.LoadFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "BumperSkirt.webp");
       m_skirtTexture.m_alphaTestValue = (float)(-1.0 / 255.0);
       IndexBuffer* socketIndexBuffer = new IndexBuffer(m_rd, bumperSocketNumIndices, bumperSocketIndices);
       VertexBuffer* socketVertexBuffer = new VertexBuffer(m_rd, bumperSocketNumVertices, nullptr, true);
@@ -258,7 +258,7 @@ void Bumper::RenderSetup(RenderDevice *device)
 
    if (m_d.m_ringVisible)
    {
-      m_ringTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperRing.webp");
+      m_ringTexture.LoadFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "BumperRing.webp");
       m_ringTexture.m_alphaTestValue = (float)(-1.0 / 255.0);
       IndexBuffer* ringIndexBuffer = new IndexBuffer(m_rd, bumperRingNumIndices, bumperRingIndices);
       VertexBuffer *ringVertexBuffer = new VertexBuffer(m_rd, bumperRingNumVertices, nullptr, true);
@@ -274,7 +274,7 @@ void Bumper::RenderSetup(RenderDevice *device)
 
    if (m_d.m_capVisible)
    {
-      m_capTexture.LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "BumperCap.webp");
+      m_capTexture.LoadFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "BumperCap.webp");
       m_capTexture.m_alphaTestValue = (float)(-1.0 / 255.0);
       IndexBuffer* capIndexBuffer = new IndexBuffer(m_rd, bumperCapNumIndices, bumperCapIndices);
       VertexBuffer* capVertexBuffer = new VertexBuffer(m_rd, bumperCapNumVertices);
@@ -763,7 +763,7 @@ bool Bumper::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
    case FID(VCEN): pbr->GetVector2(m_d.m_vCenter); break;
    case FID(RADI): pbr->GetFloat(m_d.m_radius); break;
    case FID(MATR): pbr->GetString(m_d.m_szCapMaterial); break;

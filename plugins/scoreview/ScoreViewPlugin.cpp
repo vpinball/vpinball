@@ -107,7 +107,7 @@ int OnRender(VPXRenderContext2D* ctx, void*)
          #ifdef _UNICODE
          int size_needed = WideCharToMultiByte(CP_UTF8, 0, path, -1, NULL, 0, NULL, NULL);
          fullpath.resize(size_needed, 0);
-         WideCharToMultiByte(CP_UTF8, 0, path, -1, &fullpath[0], size_needed, NULL, NULL);
+         WideCharToMultiByte(CP_UTF8, 0, path, -1, fullpath.data(), size_needed, NULL, NULL);
          #else
          fullpath = string(path);
          #endif

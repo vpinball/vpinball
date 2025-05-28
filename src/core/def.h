@@ -30,6 +30,10 @@
 #define CONSTEXPR constexpr
 #endif
 
+#ifdef ENABLE_OPENGL
+#include <glad/gl.h>
+#endif
+
 template <typename T>
 constexpr __forceinline T min(const T x, const T y)
 {
@@ -740,8 +744,6 @@ CONSTEXPR inline string upperCase(string input)
 bool IsOnWine();
 bool IsWindowsVistaOr7();
 bool IsWindows10_1803orAbove();
-
-#include "renderer/typedefs3D.h"
 
 void copy_folder(const string& srcPath, const string& dstPath);
 string normalize_path_separators(const string& szPath);

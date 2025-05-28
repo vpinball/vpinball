@@ -49,7 +49,7 @@ void DecalVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         }
         if (dispid == IDC_DECAL_TEXT_EDIT || dispid == -1)
         {
-            m_textEdit.SetWindowText(decal->m_d.m_sztext.c_str());
+            m_textEdit.SetWindowText(decal->m_d.m_text.c_str());
             decal->EnsureSize();
         }
         if (dispid == IDC_DECAL_VERTICAL_TEXT_CHECK || dispid == -1)
@@ -105,11 +105,11 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case IDC_DECAL_TEXT_EDIT:
             {
-                const string szName(m_textEdit.GetWindowText());
-                if (decal->m_d.m_sztext != szName)
+                const string name(m_textEdit.GetWindowText());
+                if (decal->m_d.m_text != name)
                 {
                     PropertyDialog::StartUndo(decal);
-                    decal->m_d.m_sztext = szName;
+                    decal->m_d.m_text = name;
                     PropertyDialog::EndUndo(decal);
                 }
                 break;

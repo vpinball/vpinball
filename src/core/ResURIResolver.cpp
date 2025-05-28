@@ -7,7 +7,6 @@
 #include <sstream>
 using std::string;
 using namespace std::string_literals;
-using std::vector;
 
 #include "simple-uri-parser/uri_parser.h"
 
@@ -35,14 +34,14 @@ static bool try_parse_int(const string &str, int &value)
 ResURIResolver::ResURIResolver(const MsgPluginAPI& msgAPI, unsigned int endpointId, bool trackDisplays, bool trackSegDisplays, bool trackInputs, bool trackDevices)
    : m_msgAPI(msgAPI)
    , m_endpointId(endpointId)
-   , m_getDisplaySrcMsgId(trackDisplays ? m_msgAPI.GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG) : 0)
-   , m_onDisplayChangedMsgId(trackDisplays ? m_msgAPI.GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG) : 0)
-   , m_getSegSrcMsgId(trackSegDisplays ? m_msgAPI.GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_GET_SRC_MSG) : 0)
-   , m_onSegChangedMsgId(trackSegDisplays ? m_msgAPI.GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_ON_SRC_CHG_MSG) : 0)
-   , m_getInputSrcMsgId(trackInputs ? m_msgAPI.GetMsgID(CTLPI_NAMESPACE, CTLPI_INPUT_GET_SRC_MSG) : 0)
-   , m_onInputChangedMsgId(trackInputs ? m_msgAPI.GetMsgID(CTLPI_NAMESPACE, CTLPI_INPUT_ON_SRC_CHG_MSG) : 0)
    , m_getDevSrcMsgId(trackDevices ? m_msgAPI.GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_GET_SRC_MSG) : 0)
    , m_onDevChangedMsgId(trackDevices ? m_msgAPI.GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_ON_SRC_CHG_MSG) : 0)
+   , m_getInputSrcMsgId(trackInputs ? m_msgAPI.GetMsgID(CTLPI_NAMESPACE, CTLPI_INPUT_GET_SRC_MSG) : 0)
+   , m_onInputChangedMsgId(trackInputs ? m_msgAPI.GetMsgID(CTLPI_NAMESPACE, CTLPI_INPUT_ON_SRC_CHG_MSG) : 0)
+   , m_getSegSrcMsgId(trackSegDisplays ? m_msgAPI.GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_GET_SRC_MSG) : 0)
+   , m_onSegChangedMsgId(trackSegDisplays ? m_msgAPI.GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_ON_SRC_CHG_MSG) : 0)
+   , m_getDisplaySrcMsgId(trackDisplays ? m_msgAPI.GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG) : 0)
+   , m_onDisplayChangedMsgId(trackDisplays ? m_msgAPI.GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG) : 0)
 {
    if (trackDisplays)
    {
@@ -243,7 +242,7 @@ ResURIResolver::SegDisplayState ResURIResolver::GetSegDisplayState(const string 
          {
             CtlResId group = m_segSources[0].groupId;
             int index = 0;
-            auto indexPart = uri.query.find("id"s); // id is used as index inside selected display group (which expects plugins to report displays in a stable order, should we wort by resId first ?)
+            auto indexPart = uri.query.find("id"s); // id is used as index inside selected display group (which expects plugins to report displays in a stable order, should we sort by resId first ?)
             if (indexPart != uri.query.end())
                try_parse_int(indexPart->second, index);
             for (SegSrcId& source : m_segSources)

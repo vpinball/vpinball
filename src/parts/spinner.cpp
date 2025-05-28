@@ -516,7 +516,7 @@ bool Spinner::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
    case FID(VCEN): pbr->GetVector2(m_d.m_vCenter); break;
    case FID(ROTA): pbr->GetFloat(m_d.m_rotation); break;
    case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;

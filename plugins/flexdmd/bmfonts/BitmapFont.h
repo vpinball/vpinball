@@ -18,9 +18,9 @@ public:
 
    static constexpr int NoMaxWidth = -1;
 
-   static BitmapFont* Create(const string& fileName);
+   static BitmapFont* Create(const string& filename);
 
-   void Load(const string& fileName);
+   void Load(const string& filename);
    int GetKerning(char previous, char current);
    int GetLineHeight() const { return m_lineHeight; }
    int GetBaseHeight() const { return m_baseHeight; }

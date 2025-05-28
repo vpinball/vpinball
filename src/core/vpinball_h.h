@@ -84,7 +84,7 @@ private:
    void InitRegValues();
    bool CanClose();
    void GetMyPath();
-   void UpdateRecentFileList(const string& szfilename);
+   void UpdateRecentFileList(const string& filename);
 
    bool ApcHost_OnTranslateMessage(MSG* pmsg);
    bool processKeyInputForDialogs(MSG *pmsg);
@@ -240,9 +240,9 @@ public:
 
    int m_securitylevel;
 
-   string m_szMyPath;
+   string m_myPath;
    wstring m_wzMyPath;
-   string m_szMyPrefPath;
+   string m_myPrefPath;
    string m_currentTablePath;
 
    int m_autosaveTime;

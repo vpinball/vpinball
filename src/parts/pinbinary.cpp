@@ -13,16 +13,16 @@ PinBinary::~PinBinary()
    delete[] m_pdata;
 }
 
-bool PinBinary::ReadFromFile(const string& szFileName)
+bool PinBinary::ReadFromFile(const string& filename)
 {
 #ifndef __STANDALONE__
-   const HANDLE hFile = CreateFile(szFileName.c_str(),
+   const HANDLE hFile = CreateFile(filename.c_str(),
       GENERIC_READ, FILE_SHARE_READ,
       nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
    if (hFile == INVALID_HANDLE_VALUE)
    {
-      const string text = "The file \"" + szFileName + "\" could not be opened.";
+      const string text = "The file \"" + filename + "\" could not be opened.";
       ShowError(text);
       return false;
    }
@@ -38,23 +38,23 @@ bool PinBinary::ReadFromFile(const string& szFileName)
 
    /*foo =*/ CloseHandle(hFile);
 
-   m_szPath = szFileName;
-   m_szName = TitleFromFilename(szFileName);
+   m_path = filename;
+   m_name = TitleFromFilename(filename);
 #endif
 
    return true;
 }
 
-bool PinBinary::WriteToFile(const string& szfilename)
+bool PinBinary::WriteToFile(const string& filename)
 {
 #ifndef __STANDALONE__
-   const HANDLE hFile = CreateFile(szfilename.c_str(),
+   const HANDLE hFile = CreateFile(filename.c_str(),
       GENERIC_WRITE, FILE_SHARE_READ,
       nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
 
    if (hFile == INVALID_HANDLE_VALUE)
    {
-      const string bla = "The temporary file \"" + szfilename + "\" could not be written.";
+      const string bla = "The temporary file \"" + filename + "\" could not be written.";
       ShowError(bla);
       return false;
    }
@@ -74,8 +74,8 @@ HRESULT PinBinary::SaveToStream(IStream *pstream)
 {
    BiffWriter bw(pstream, 0);
 
-   bw.WriteString(FID(NAME), m_szName);
-   bw.WriteString(FID(PATH), m_szPath);
+   bw.WriteString(FID(NAME), m_name);
+   bw.WriteString(FID(PATH), m_path);
    bw.WriteInt(FID(SIZE), m_cdata);
    bw.WriteStruct(FID(DATA), m_pdata, m_cdata);
    bw.WriteTag(FID(ENDB));
@@ -96,8 +96,8 @@ bool PinBinary::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(NAME): pbr->GetString(m_szName); break;
-   case FID(PATH): pbr->GetString(m_szPath); break;
+   case FID(NAME): pbr->GetString(m_name); break;
+   case FID(PATH): pbr->GetString(m_path); break;
    case FID(SIZE):
    {
       pbr->GetInt(m_cdata);

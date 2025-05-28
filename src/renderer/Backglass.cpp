@@ -83,7 +83,7 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
    m_loaded_image = nullptr;
 #if defined(ENABLE_VR) || defined(ENABLE_XR)
    // Check for a directb2s and try to use its backglass data
-   const string b2sFileName = g_pplayer->m_ptable->m_szFileName.substr(0, g_pplayer->m_ptable->m_szFileName.find_last_of('.')) + ".directb2s";
+   const string b2sFileName = g_pplayer->m_ptable->m_filename.substr(0, g_pplayer->m_ptable->m_filename.find_last_of('.')) + ".directb2s";
    m_backglass_dmd = int2(0,0);
    m_backglass_dmd_width = 0;
    m_backglass_dmd_height = 0;
@@ -310,9 +310,9 @@ void BackGlass::GetDMDPos(float& DMDposx, float& DMDposy, float& DMDwidth, float
             m_dmd.y = tableWidth * (float)m_backglass_grill_height * (0.5f - scale / 2.0f) / (float)m_backglass_width;
          }
       }
-      DMDposx = (float)m_dmd.x;
-      DMDposy = (float)m_dmd.y;
-      DMDwidth = (float)m_dmd_width;
-      DMDheight = (float)m_dmd_height;
+      DMDposx = m_dmd.x;
+      DMDposy = m_dmd.y;
+      DMDwidth = m_dmd_width;
+      DMDheight = m_dmd_height;
    }
 }

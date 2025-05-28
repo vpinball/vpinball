@@ -10,8 +10,8 @@ void VPXPluginAPIImpl::GetVpxInfo(VPXInfo* info)
 {
    if (g_pplayer != nullptr)
    {
-      info->path = g_pvp->m_szMyPath.c_str();
-      info->prefPath = g_pvp->m_szMyPrefPath.c_str();
+      info->path = g_pvp->m_myPath.c_str();
+      info->prefPath = g_pvp->m_myPrefPath.c_str();
    }
    else
    {
@@ -24,7 +24,7 @@ void VPXPluginAPIImpl::GetTableInfo(VPXTableInfo* info)
    // Only valid in game
    if (g_pplayer != nullptr)
    {
-      info->path = g_pplayer->m_ptable->m_szFileName.c_str();
+      info->path = g_pplayer->m_ptable->m_filename.c_str();
       info->tableWidth = g_pplayer->m_ptable->m_right;
       info->tableHeight = g_pplayer->m_ptable->m_bottom;
    }

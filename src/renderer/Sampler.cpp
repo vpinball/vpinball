@@ -609,7 +609,7 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(const BaseTexture* const surf, c
    else if ((basetexformat == BaseTexture::BW) && texformat == colorFormat::RGBA8)
    {
       BYTE* const __restrict pdest = (BYTE*)locked.pBits;
-      const BYTE* const __restrict psrc = (const BYTE*)(surf->datac());
+      const BYTE* const __restrict psrc = surf->datac();
       for (size_t i = 0; i < (size_t)texwidth * texheight; ++i)
       {
          pdest[i * 4 + 0] =

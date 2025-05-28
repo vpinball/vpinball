@@ -99,7 +99,7 @@ BOOL EditorOptionsDialog::OnInitDialog()
     const bool logScript = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "LogScriptOutput"s, false);
     SendDlgItemMessage(IDC_ENABLE_SCRIPT_LOGGING, BM_SETCHECK, logScript ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const bool storeIniLocation = (g_pvp->m_szMyPrefPath == g_pvp->m_szMyPath);
+    const bool storeIniLocation = (g_pvp->m_myPrefPath == g_pvp->m_myPath);
     SendDlgItemMessage(IDC_STORE_INI_LOCATION, BM_SETCHECK, storeIniLocation ? BST_CHECKED : BST_UNCHECKED, 0);
 
     const int units = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "Units"s, 0);
@@ -325,18 +325,18 @@ void EditorOptionsDialog::OnOK()
     g_pvp->m_settings.SaveValue(Settings::Editor, "LogScriptOutput"s, checked);
 
     checked = (IsDlgButtonChecked(IDC_STORE_INI_LOCATION) == BST_CHECKED);
-    const bool storeIniLocation_checked = (g_pvp->m_szMyPrefPath == g_pvp->m_szMyPath);
+    const bool storeIniLocation_checked = (g_pvp->m_myPrefPath == g_pvp->m_myPath);
     if (checked != storeIniLocation_checked)
     {
        // if checkbox changed, copy ini from one default location to the other
-       const string old = g_pvp->m_szMyPrefPath;
+       const string old = g_pvp->m_myPrefPath;
        if (storeIniLocation_checked)
            g_pvp->GetMyPrefPath();
        else
-           g_pvp->m_szMyPrefPath = g_pvp->m_szMyPath;
-       std::filesystem::rename(old + "VPinballX.ini", g_pvp->m_szMyPrefPath + "VPinballX.ini");
-       std::filesystem::rename(old + "BAMViewSettings.xml", g_pvp->m_szMyPrefPath + "BAMViewSettings.xml");
-       g_pvp->m_settings.SetIniPath(g_pvp->m_szMyPrefPath + "VPinballX.ini");
+           g_pvp->m_myPrefPath = g_pvp->m_myPath;
+       std::filesystem::rename(old + "VPinballX.ini", g_pvp->m_myPrefPath + "VPinballX.ini");
+       std::filesystem::rename(old + "BAMViewSettings.xml", g_pvp->m_myPrefPath + "BAMViewSettings.xml");
+       g_pvp->m_settings.SetIniPath(g_pvp->m_myPrefPath + "VPinballX.ini");
     }
 
     // Go through and reset the autosave time on all the tables

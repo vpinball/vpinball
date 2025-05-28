@@ -173,7 +173,7 @@ INT_PTR SoundDialog::DialogProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
                     lvitem.iSubItem = 0;
                     ListView_GetItem( hSoundList, &lvitem );
                     PinSound * const pps = (PinSound *)lvitem.lParam;
-                    pps->m_szName = pinfo->item.pszText;
+                    pps->m_name = pinfo->item.pszText;
                     if (pt)
                         pt->SetNonUndoableDirty( eSaveDirty );
                     return TRUE;
@@ -319,18 +319,18 @@ void SoundDialog::ReImport()
                 ListView_GetItem( hSoundList, &lvitem );
                 PinSound * const pps = (PinSound *)lvitem.lParam;
 
-                const HANDLE hFile = CreateFile( pps->m_szPath.c_str(), GENERIC_READ, FILE_SHARE_READ,
+                const HANDLE hFile = CreateFile( pps->m_path.c_str(), GENERIC_READ, FILE_SHARE_READ,
                                                  nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr );
 
                 if (hFile != INVALID_HANDLE_VALUE)
                 {
                     CloseHandle( hFile );
 
-                    pt->ReImportSound( hSoundList, pps, pps->m_szPath );
+                    pt->ReImportSound( hSoundList, pps, pps->m_path );
                     pt->SetNonUndoableDirty( eSaveDirty );
                 }
                 else
-                    MessageBox( pps->m_szPath.c_str(), "FILE NOT FOUND!", MB_OK );
+                    MessageBox( pps->m_path.c_str(), "FILE NOT FOUND!", MB_OK );
 
                 sel = ListView_GetNextItem( hSoundList, sel, LVNI_SELECTED );
             }
@@ -404,23 +404,23 @@ void SoundDialog::Export()
 
             if (!renameOnExport)
             {
-               const int len0 = (int)pps->m_szPath.length();
+               const int len0 = (int)pps->m_path.length();
                int begin; //select only file name from pathfilename
                for (begin = len0; begin >= 0; begin--)
                {
-                  if (pps->m_szPath[begin] == PATH_SEPARATOR_CHAR)
+                  if (pps->m_path[begin] == PATH_SEPARATOR_CHAR)
                   {
                      begin++;
                      break;
                   }
                }
-               memcpy(filename, pps->m_szPath.c_str() + begin, len0 - begin);
+               memcpy(filename, pps->m_path.c_str() + begin, len0 - begin);
             }
             else
             {
-               strncat_s(filename, pps->m_szName.c_str(), sizeof(filename)-strnlen_s(filename, sizeof(filename))-1);
-               const size_t idx = pps->m_szPath.find_last_of('.');
-               strncat_s(filename, pps->m_szPath.c_str() + idx, sizeof(filename)-strnlen_s(filename, sizeof(filename))-1);
+               strncat_s(filename, pps->m_name.c_str(), sizeof(filename)-strnlen_s(filename, sizeof(filename))-1);
+               const size_t idx = pps->m_path.find_last_of('.');
+               strncat_s(filename, pps->m_path.c_str() + idx, sizeof(filename)-strnlen_s(filename, sizeof(filename))-1);
             }
             ofn.lpstrFile = filename;
             ofn.nMaxFile = sizeof(filename);
@@ -459,21 +459,21 @@ void SoundDialog::Export()
                        strncpy_s(filename, pathName, sizeof(filename)-1);
                        if (!renameOnExport)
                        {
-                          for (begin = (int)pps->m_szPath.length(); begin >= 0; begin--)
+                          for (begin = (int)pps->m_path.length(); begin >= 0; begin--)
                           {
-                             if (pps->m_szPath[begin] == PATH_SEPARATOR_CHAR)
+                             if (pps->m_path[begin] == PATH_SEPARATOR_CHAR)
                              {
                                 begin++;
                                 break;
                              }
                           }
-                          strncat_s(filename, pps->m_szPath.c_str()+begin, sizeof(filename)-strnlen_s(filename, sizeof(filename))-1);
+                          strncat_s(filename, pps->m_path.c_str()+begin, sizeof(filename)-strnlen_s(filename, sizeof(filename))-1);
                        }
                        else
                        {
-                          strncat_s(filename, pps->m_szName.c_str(), sizeof(filename)-strnlen_s(filename, sizeof(filename))-1);
-                          const size_t idx = pps->m_szPath.find_last_of('.');
-                          strncat_s(filename, pps->m_szPath.c_str() + idx, sizeof(filename)-strnlen_s(filename, sizeof(filename))-1);
+                          strncat_s(filename, pps->m_name.c_str(), sizeof(filename)-strnlen_s(filename, sizeof(filename))-1);
+                          const size_t idx = pps->m_path.find_last_of('.');
+                          strncat_s(filename, pps->m_path.c_str() + idx, sizeof(filename)-strnlen_s(filename, sizeof(filename))-1);
                        }
                     }
 

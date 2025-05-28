@@ -5,11 +5,10 @@
 #include "plugins/ControllerPlugin.h"
 #include "plugins/LoggingPlugin.h"
 
-#include <math.h>
+#include <cmath>
 #include <cassert>
 #include <fstream>
 #include <sstream>
-#include <iostream>
 #include <algorithm>
 
 LPI_USE();
@@ -50,10 +49,10 @@ static bool try_parse_int(const string& str, int& value)
 inline float InvsRGB(const float x) { return (x <= 0.04045f) ? (x * (float)(1.0 / 12.92)) : (powf(x * (float)(1.0 / 1.055) + (float)(0.055 / 1.055), 2.4f)); }
 
 ScoreView::ScoreView(MsgPluginAPI* api, unsigned int endpointId, VPXPluginAPI* vpxApi)
-   : m_msgApi(api)
-   , m_endpointId(endpointId)
+   : m_resURIResolver(*api, endpointId, true, true, false, false)
    , m_vpxApi(vpxApi)
-   , m_resURIResolver(*api, endpointId, true, true, false, false)
+   , m_msgApi(api)
+   , m_endpointId(endpointId)
 {
    m_onDmdChangedMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
    m_msgApi->SubscribeMsg(m_endpointId, m_onDmdChangedMsgId, OnResChanged, this);
@@ -107,7 +106,7 @@ void ScoreView::Load(const string& path)
 static string TrimLeading(const string& str, const std::string& whitespace)
 {
    if (str.empty())
-      return str;
+      return string();
    const auto strBegin = str.find_first_not_of(whitespace);
    if (strBegin == std::string::npos)
       return string();
@@ -117,7 +116,7 @@ static string TrimLeading(const string& str, const std::string& whitespace)
 static string TrimTrailing(const string& str, const std::string& whitespace)
 {
    if (str.empty())
-      return str;
+      return string();
    const auto strBegin = str.cbegin();
    const auto pos = str.find_last_not_of(whitespace);
    if (pos == string::npos)
@@ -509,7 +508,7 @@ void ScoreView::Select(const float scoreW, const float scoreH)
    ResURIResolver::DisplayState display;
    for (auto& layout : m_layouts)
    {
-      const float layoutAR = static_cast<float>(layout.width) / static_cast<float>(layout.height);
+      const float layoutAR = layout.width / layout.height;
       layout.unfittedPixels = (rtAR > layoutAR) ? (layoutAR / rtAR) : (rtAR / layoutAR);
       layout.matchedVisuals = 0;
       layout.unmatchedVisuals = 0;
@@ -522,7 +521,7 @@ void ScoreView::Select(const float scoreW, const float scoreH)
             if ((display.source == nullptr) || (display.source->width * visual.dmdSize.y != visual.dmdSize.x * display.source->height))
                layout.unmatchedVisuals++;
             else
-               layout.matchedVisuals += 10; // To favor DMD over alphanumerioc seg displays
+               layout.matchedVisuals += 10; // To favor DMD over alphanumeric seg displays
             break;
          case VisualType::SegDisplay:
             segDisplay = m_resURIResolver.GetSegDisplayState(visual.srcUri);
@@ -547,7 +546,7 @@ void ScoreView::Select(const float scoreW, const float scoreH)
       {
          if (a.unmatchedVisuals != b.unmatchedVisuals) // The least unmatched visuals
             return a.unmatchedVisuals > b.unmatchedVisuals;
-         if (a.matchedVisuals != b.matchedVisuals) // The maximum mactched visual
+         if (a.matchedVisuals != b.matchedVisuals) // The maximum matched visual
             return a.matchedVisuals < b.matchedVisuals;
          if (a.unfittedPixels != b.unfittedPixels) // The one fitting the output better
             return a.unfittedPixels < b.unfittedPixels;

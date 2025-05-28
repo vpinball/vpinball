@@ -1366,7 +1366,7 @@ bool Ramp::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
    case FID(HTBT): pbr->GetFloat(m_d.m_heightbottom); break;
    case FID(HTTP): pbr->GetFloat(m_d.m_heighttop); break;
    case FID(WDBT): pbr->GetFloat(m_d.m_widthbottom); break;

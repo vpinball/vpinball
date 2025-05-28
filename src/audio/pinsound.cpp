@@ -191,7 +191,7 @@ HRESULT PinSound::ReInitialize()
 {
    UnInitialize();
 
-   SDL_IOStream* const psdlIOStream = SDL_IOFromMem(m_pdata, static_cast<int>(m_cdata)); 
+   SDL_IOStream* const psdlIOStream = SDL_IOFromMem(m_pdata, m_cdata); 
 
    if (!psdlIOStream) {
       PLOGE << "SDL_IOFromMem error: " << SDL_GetError();
@@ -209,8 +209,8 @@ HRESULT PinSound::ReInitialize()
       return E_FAIL;
    }
 
-   /* PLOGI << "Loaded Sound File: " << m_szName << " Sound Type: " << extension_from_path(m_szPath) << 
-      " # of Audio Channels: " << ( (extension_from_path(m_szPath) == "wav") ? std::to_string(getChannelCountWav() ) : "Unknown" ) <<
+   /* PLOGI << "Loaded Sound File: " << m_name << " Sound Type: " << extension_from_path(m_path) << 
+      " # of Audio Channels: " << ( (extension_from_path(m_path) == "wav") ? std::to_string(getChannelCountWav() ) : "Unknown" ) <<
       " Assigned Channel: " << m_assignedChannel << " SoundOut (0=table, 1=bg): " << (int)m_outputTarget; */
 
    return S_OK;
@@ -367,7 +367,7 @@ void PinSound::Play(float volume, const float randompitch, const int pitch,
  */
 void PinSound::PlayBGSound(float volume, const int loopcount, const bool usesame, const bool restart)
 {
-   //PLOGI << "PlayBGSound File: " << m_szName << " BGSOUND nVolume: " << nVolume << " Table Music Volume: " << g_pplayer->m_MusicVolume;
+   //PLOGI << "PlayBGSound File: " << m_name << " BGSOUND nVolume: " << nVolume << " Table Music Volume: " << g_pplayer->m_MusicVolume;
 
    if (m_assignedChannel == -1)
       return;
@@ -475,7 +475,7 @@ void PinSound::Play_SNDCFG_SND3DALLREAR(float nVolume, const float randompitch, 
    if (m_assignedChannel == -1)
       return;
 
-   /* PLOGI << std::fixed << std::setprecision(7) << "Playing Sound: " << m_szName << " SoundOut (0=table, 1=bg): " << 
+   /* PLOGI << std::fixed << std::setprecision(7) << "Playing Sound: " << m_name << " SoundOut (0=table, 1=bg): " << 
         (int) m_outputTarget << " nVol: " << nVolume << " pan: " << pan <<
         " Pitch: "<< pitch << " Random pitch: " << randompitch  << " front_rear_fade: " << front_rear_fade <<   " loopcount: " << loopcount << " usesame: " << 
         usesame <<  " Restart? " << restart; */
@@ -523,10 +523,10 @@ void PinSound::Play_SNDCFG_SND3D2CH(float nVolume, const float randompitch, cons
    if (m_assignedChannel == -1)
       return;
 
-   /* PLOGI << std::fixed << std::setprecision(7) << "Playing Sound: " << m_szName << " SoundOut (0=table, 1=bg): " << 
-      (int) m_outputTarget << " nVol: " << nVolume << " pan: " << pan <<
-      " Pitch: "<< pitch << " Random pitch: " << randompitch  << " front_rear_fade: " << front_rear_fade <<   " loopcount: " << loopcount << " usesame: " << 
-      usesame <<  " Restart? " << restart; */
+   /* PLOGI << std::fixed << std::setprecision(7) << "Playing Sound: " << m_name << " SoundOut (0=table, 1=bg): " << 
+        (int) m_outputTarget << " nVol: " << nVolume << " pan: " << pan <<
+        " Pitch: "<< pitch << " Random pitch: " << randompitch  << " front_rear_fade: " << front_rear_fade <<   " loopcount: " << loopcount << " usesame: " << 
+        usesame <<  " Restart? " << restart; */
 
    if (Mix_Playing(m_assignedChannel)) {
       if (restart || !usesame) { // stop and reload
@@ -570,10 +570,10 @@ void PinSound::Play_SNDCFG_SND3D2CH(float nVolume, const float randompitch, cons
 void PinSound::Play_SNDCFG_SND3DSSF(float nVolume, const float randompitch, const int pitch, 
                const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart)
 {
-   /* PLOGI << std::fixed << std::setprecision(7) << "SSF Playing Sound: " << m_szName << " SoundOut (0=table, 1=bg): " << 
-         (int) m_outputTarget << " nVol: " << nVolume << " pan: " << pan <<
-         " Pitch: "<< pitch << " Random pitch: " << randompitch << " front_rear_fade: " << front_rear_fade << " loopcount: " << loopcount << " usesame: " << 
-         usesame <<  " Restart? " << restart; */
+   /* PLOGI << std::fixed << std::setprecision(7) << "SSF Playing Sound: " << m_name << " SoundOut (0=table, 1=bg): " << 
+        (int) m_outputTarget << " nVol: " << nVolume << " pan: " << pan <<
+        " Pitch: "<< pitch << " Random pitch: " << randompitch << " front_rear_fade: " << front_rear_fade << " loopcount: " << loopcount << " usesame: " << 
+        usesame <<  " Restart? " << restart; */
 
    if (m_assignedChannel == -1)
       return;
@@ -671,7 +671,7 @@ bool PinSound::MusicInit(const string& szFileName, const float volume)
       switch (i)
       {
       case 0: break;
-      case 1: path = g_pvp->m_szMyPath + "music" + PATH_SEPARATOR_CHAR; break;
+      case 1: path = g_pvp->m_myPath + "music" + PATH_SEPARATOR_CHAR; break;
       case 2: path = g_pvp->m_currentTablePath; break;
       case 3: path = g_pvp->m_currentTablePath + "music" + PATH_SEPARATOR_CHAR; break;
       case 4: path = PATH_MUSIC; break;
@@ -828,14 +828,14 @@ void PinSound::StreamVolume(const float volume)
 /**
  * @brief Loads a sound file and initializes a PinSound object with its data.
  * 
- * This function attempts to load a sound file specified by the given file path (`strFileName`), 
+ * This function attempts to load a sound file specified by the given file path (`filename`), 
  * reads its content into memory, and creates a `PinSound` object with the loaded data. The sound 
  * file's name is extracted from the file path and stored, and the file's data is read into dynamically 
  * allocated memory. The function also reinitializes the sound object, and if the initialization succeeds, 
  * it returns a pointer to the new `PinSound` object. If any part of the loading or initialization process fails, 
  * it returns `nullptr`.
  * 
- * @param strFileName The file path to the sound file to load.
+ * @param filename The file path to the sound file to load.
  * 
  * @return PinSound* A pointer to the newly loaded and initialized `PinSound` object, or `nullptr` if 
  *         loading or initialization fails.
@@ -845,15 +845,15 @@ void PinSound::StreamVolume(const float volume)
  * @note The function uses raw file handling (`fopen_s`, `fseek`, `fread_s`, and `fclose`), and expects
  *       the sound file to be in a valid format that can be processed by `ReInitialize()`.
  */
-PinSound *PinSound::LoadFile(const string& strFileName)
+PinSound *PinSound::LoadFile(const string& filename)
 {
    PinSound * const pps = new PinSound();
 
-   pps->m_szPath = strFileName;
-   pps->m_szName = TitleFromFilename(strFileName);
+   pps->m_path = filename;
+   pps->m_name = TitleFromFilename(filename);
 
    FILE *f;
-   if (fopen_s(&f, strFileName.c_str(), "rb") != 0 || !f) {
+   if (fopen_s(&f, filename.c_str(), "rb") != 0 || !f) {
       ShowError("Could not open sound file.");
       return nullptr;
    }

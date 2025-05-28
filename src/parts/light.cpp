@@ -964,7 +964,7 @@ bool Light::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
    case FID(VCEN): pbr->GetVector2(m_d.m_vCenter); break;
    case FID(HGHT): pbr->GetFloat(m_d.m_height); break;
    case FID(RADI): pbr->GetFloat(m_d.m_falloff); break;

@@ -42,14 +42,14 @@ bool FileExists(const string& filePath)
 #endif
 }
 
-string ExtensionFromFilename(const string& szfilename)
+string ExtensionFromFilename(const string& filename)
 {
-   const int len = (int)szfilename.length();
+   const int len = (int)filename.length();
 
    int begin;
    for (begin = len; begin >= 0; begin--)
    {
-      if (szfilename[begin] == '.')
+      if (filename[begin] == '.')
       {
          begin++;
          break;
@@ -59,17 +59,17 @@ string ExtensionFromFilename(const string& szfilename)
    if (begin <= 0)
       return string();
    else
-      return szfilename.c_str()+begin;
+      return filename.c_str()+begin;
 }
 
-string TitleFromFilename(const string& szfilename)
+string TitleFromFilename(const string& filename)
 {
-   const int len = (int)szfilename.length();
+   const int len = (int)filename.length();
 
    int begin;
    for (begin = len; begin >= 0; begin--)
    {
-      if (szfilename[begin] == PATH_SEPARATOR_CHAR)
+      if (filename[begin] == PATH_SEPARATOR_CHAR)
       {
          begin++;
          break;
@@ -79,14 +79,14 @@ string TitleFromFilename(const string& szfilename)
    int end;
    for (end = len; end >= 0; end--)
    {
-      if (szfilename[end] == '.')
+      if (filename[end] == '.')
          break;
    }
 
    if (end == 0)
       end = len - 1;
 
-   const char *szT = szfilename.c_str()+begin;
+   const char *szT = filename.c_str()+begin;
    int count = end - begin;
 
    string sztitle;
@@ -94,14 +94,14 @@ string TitleFromFilename(const string& szfilename)
    return sztitle;
 }
 
-string PathFromFilename(const string &szfilename)
+string PathFromFilename(const string &filename)
 {
-   const int len = (int)szfilename.length();
+   const int len = (int)filename.length();
    // find the last '\' in the filename
    int end;
    for (end = len; end >= 0; end--)
    {
-      if (szfilename[end] == PATH_SEPARATOR_CHAR)
+      if (filename[end] == PATH_SEPARATOR_CHAR)
          break;
    }
 
@@ -109,7 +109,7 @@ string PathFromFilename(const string &szfilename)
       end = len - 1;
 
    // copy from the start of the string to the end (or last '\')
-   const char *szT = szfilename.c_str();
+   const char *szT = filename.c_str();
    int count = end + 1;
 
    string szpath;
@@ -117,14 +117,14 @@ string PathFromFilename(const string &szfilename)
    return szpath;
 }
 
-string TitleAndPathFromFilename(const char * const szfilename)
+string TitleAndPathFromFilename(const string &filename)
 {
-   const int len = lstrlen(szfilename);
+   const int len = (int)filename.length();
    // find the last '.' in the filename
    int end;
    for (end = len; end >= 0; end--)
    {
-      if (szfilename[end] == '.')
+      if (filename[end] == '.')
          break;
    }
 
@@ -132,7 +132,7 @@ string TitleAndPathFromFilename(const char * const szfilename)
       end = len;
 
    // copy from the start of the string to the end (or last '\')
-   const char *szT = szfilename;
+   const char *szT = filename.c_str();
    int count = end;
 
    string szpath;
@@ -140,17 +140,17 @@ string TitleAndPathFromFilename(const char * const szfilename)
    return szpath;
 }
 
-bool ReplaceExtensionFromFilename(string& szfilename, const string& newextension)
+bool ReplaceExtensionFromFilename(string& filename, const string& newextension)
 {
-   const size_t i = szfilename.find_last_of('.');
+   const size_t i = filename.find_last_of('.');
 
    if (i != string::npos)
    {
-       szfilename.replace(i + 1, newextension.length(), newextension);
-       return true;
+      filename.replace(i + 1, newextension.length(), newextension);
+      return true;
    }
-   else
-       return false;
+
+   return false;
 }
 
 BiffWriter::BiffWriter(IStream *pistream, const HCRYPTHASH hcrypthash)
@@ -651,7 +651,7 @@ HRESULT __stdcall FastIStorage::CreateStream(const WCHAR *wzName, ULONG, ULONG, 
    pfs->AddRef(); // AddRef once for us, and once for the caller
    pfs->AddRef();
    pfs->m_wzName = new WCHAR[wzNameLen];
-   WideStrNCopy((WCHAR *)wzName, pfs->m_wzName, wzNameLen);
+   WideStrNCopy(wzName, pfs->m_wzName, wzNameLen);
 
    *ppstm = pfs;
 
@@ -672,7 +672,7 @@ HRESULT __stdcall FastIStorage::CreateStorage(const WCHAR *wzName, ULONG, ULONG,
    pfs->AddRef(); // AddRef once for us, and once for the caller
    pfs->AddRef();
    pfs->m_wzName = new WCHAR[wzNameLen];
-   WideStrNCopy((WCHAR *)wzName, pfs->m_wzName, wzNameLen);
+   WideStrNCopy(wzName, pfs->m_wzName, wzNameLen);
 
    *ppstg = pfs;
 

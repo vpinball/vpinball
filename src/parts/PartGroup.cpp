@@ -174,7 +174,7 @@ bool PartGroup::LoadToken(const int id, BiffReader * const pbr)
    switch(id)
    {
    // Default properties
-   case FID(PIID): pbr->GetInt(static_cast<int*>(pbr->m_pdata)); break;
+   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
    case FID(VCEN): pbr->GetVector2(m_d.m_v); break;
    case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
    case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;

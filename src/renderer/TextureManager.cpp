@@ -30,8 +30,8 @@ Sampler* TextureManager::LoadTexture(BaseTexture* const memtex, const SamplerFil
          {
             if (image->m_pdsBuffer == memtex)
             {
-               entry.name = image->m_szName;
-               entry.sampler->SetName(image->m_szName);
+               entry.name = image->m_name;
+               entry.sampler->SetName(image->m_name);
                break;
             }
          }

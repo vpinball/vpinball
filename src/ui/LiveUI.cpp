@@ -1281,7 +1281,7 @@ void LiveUI::UpdatePerfOverlay()
          if (m_plotFPS.m_rolling)
             ImPlot::SetupAxisLimits(ImAxis_X1, 0, m_plotFPS.m_timeSpan, ImGuiCond_Always);
          else
-            ImPlot::SetupAxisLimits(ImAxis_X1, static_cast<double>(t - m_plotFPS.m_timeSpan), static_cast<double>(t), ImGuiCond_Always);
+            ImPlot::SetupAxisLimits(ImAxis_X1, static_cast<double>(t) - m_plotFPS.m_timeSpan, static_cast<double>(t), ImGuiCond_Always);
          ImPlot::PlotLine("ms Frame", &m_plotFPSSmoothed.m_data[0].x, &m_plotFPSSmoothed.m_data[0].y, m_plotFPSSmoothed.m_data.size(), 0, m_plotFPSSmoothed.m_offset, 2 * sizeof(float));
          ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
          ImPlot::PlotLine("Smoothed ms Frame", &m_plotFPS.m_data[0].x, &m_plotFPS.m_data[0].y, m_plotFPS.m_data.size(), 0, m_plotFPS.m_offset, 2 * sizeof(float));
@@ -1301,7 +1301,7 @@ void LiveUI::UpdatePerfOverlay()
          if (m_plotPhysx.m_rolling)
             ImPlot::SetupAxisLimits(ImAxis_X1, 0, m_plotPhysx.m_timeSpan, ImGuiCond_Always);
          else
-            ImPlot::SetupAxisLimits(ImAxis_X1, static_cast<double>(t - m_plotPhysx.m_timeSpan), static_cast<double>(t), ImGuiCond_Always);
+            ImPlot::SetupAxisLimits(ImAxis_X1, static_cast<double>(t) - m_plotPhysx.m_timeSpan, static_cast<double>(t), ImGuiCond_Always);
          ImPlot::PlotLine("ms Physics", &m_plotPhysxSmoothed.m_data[0].x, &m_plotPhysxSmoothed.m_data[0].y, m_plotPhysxSmoothed.m_data.size(), 0, m_plotPhysxSmoothed.m_offset, 2 * sizeof(float));
          ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
          ImPlot::PlotLine("Smoothed ms Physics", &m_plotPhysx.m_data[0].x, &m_plotPhysx.m_data[0].y, m_plotPhysx.m_data.size(), 0, m_plotPhysx.m_offset, 2 * sizeof(float));
@@ -1321,7 +1321,7 @@ void LiveUI::UpdatePerfOverlay()
          if (m_plotScript.m_rolling)
             ImPlot::SetupAxisLimits(ImAxis_X1, 0, m_plotScript.m_timeSpan, ImGuiCond_Always);
          else
-            ImPlot::SetupAxisLimits(ImAxis_X1, static_cast<double>(t - m_plotScript.m_timeSpan), static_cast<double>(t), ImGuiCond_Always);
+            ImPlot::SetupAxisLimits(ImAxis_X1, static_cast<double>(t) - m_plotScript.m_timeSpan, static_cast<double>(t), ImGuiCond_Always);
          ImPlot::PlotLine("ms Script", &m_plotScriptSmoothed.m_data[0].x, &m_plotScriptSmoothed.m_data[0].y, m_plotScriptSmoothed.m_data.size(), 0, m_plotScriptSmoothed.m_offset, 2 * sizeof(float));
          ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
          ImPlot::PlotLine("Smoothed ms Script", &m_plotScript.m_data[0].x, &m_plotScript.m_data[0].y, m_plotScript.m_data.size(), 0, m_plotScript.m_offset, 2 * sizeof(float));
@@ -1602,7 +1602,7 @@ void LiveUI::OpenTweakMode()
    }
    m_tweakMode = true;
    m_tweakPages.clear();
-   if (!m_table->m_szRules.empty())
+   if (!m_table->m_rules.empty())
       m_tweakPages.push_back(TP_Rules);
    if (m_renderer->m_stereo3D != STEREO_VR)
       m_tweakPages.push_back(TP_PointOfView);
@@ -1622,7 +1622,7 @@ void LiveUI::OpenTweakMode()
       if (nOptions > 0)
          m_tweakPages.push_back((TweakPage)(TP_Plugin00 + j));
    }
-   if (!m_table->m_szDescription.empty())
+   if (!m_table->m_description.empty())
       m_tweakPages.push_back(TP_Info);
    m_activeTweakPageIndex = 0;
    m_activeTweakIndex = 0;
@@ -2082,7 +2082,7 @@ void LiveUI::HandleTweakInput()
                   }
                }
             }
-            if (m_table->m_szFileName.empty() || !FileExists(m_table->m_szFileName))
+            if (m_table->m_filename.empty() || !FileExists(m_table->m_filename))
             {
                PushNotification("You need to save your table before exporting user settings"s, 5000);
             }
@@ -2255,7 +2255,7 @@ void LiveUI::HandleTweakInput()
                   const PinTable *const __restrict src = m_player->m_pEditorTable;
                   PinTable *const __restrict dst = m_live_table;
                   dst->mViewSetups[id] = src->mViewSetups[id];
-                  dst->mViewSetups[id].ApplyTableOverrideSettings(m_live_table->m_settings, (ViewSetupID)id);
+                  dst->mViewSetups[id].ApplyTableOverrideSettings(m_live_table->m_settings, id);
                   m_renderer->m_cam = Vertex3Ds(0.f, 0.f, 0.f);
                }
                if (m_tweakPages[m_activeTweakPageIndex] == TP_TableOption)
@@ -2489,7 +2489,7 @@ void LiveUI::UpdateTweakModeUI()
       if (ImGui::BeginChild("Rules", ImVec2(0.f, 0.f), 0, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar /* | ImGuiWindowFlags_AlwaysVerticalScrollbar */))
       {
          markdown_start_id = ImGui::GetItemID();
-         ImGui::Markdown(m_table->m_szRules.c_str(), m_table->m_szRules.length(), markdown_config);
+         ImGui::Markdown(m_table->m_rules.c_str(), m_table->m_rules.length(), markdown_config);
          lastHeight = ImGui::GetCursorPos().y - ImGui::GetCursorStartPos().y; // Height of content
          maxScroll = ImGui::GetScrollMaxY();
       }
@@ -2505,7 +2505,7 @@ void LiveUI::UpdateTweakModeUI()
       if (ImGui::BeginChild("Info", ImVec2(0.f, 0.f), 0, ImGuiWindowFlags_NoBackground))
       {
          markdown_start_id = ImGui::GetItemID();
-         ImGui::Markdown(m_table->m_szDescription.c_str(), m_table->m_szDescription.length(), markdown_config);
+         ImGui::Markdown(m_table->m_description.c_str(), m_table->m_description.length(), markdown_config);
          lastHeight = ImGui::GetCursorPos().y - ImGui::GetCursorStartPos().y; // Height of content
          maxScroll = ImGui::GetScrollMaxY();
       }
@@ -2898,8 +2898,8 @@ void LiveUI::UpdateMainUI()
          // Compute mouse position in clip space
          const float rClipWidth = (float)m_player->m_playfieldWnd->GetWidth() * 0.5f;
          const float rClipHeight = (float)m_player->m_playfieldWnd->GetHeight() * 0.5f;
-         const float xcoord = ((float)ImGui::GetMousePos().x - rClipWidth) / rClipWidth;
-         const float ycoord = (rClipHeight - (float)ImGui::GetMousePos().y) / rClipHeight;
+         const float xcoord = (ImGui::GetMousePos().x - rClipWidth) / rClipWidth;
+         const float ycoord = (rClipHeight - ImGui::GetMousePos().y) / rClipHeight;
 
          // Use the inverse of our 3D transform to determine where in 3D space the
          // screen pixel the user clicked on is at.  Get the point at the near
@@ -3409,22 +3409,22 @@ void LiveUI::UpdateOutlinerUI()
             }
             if (ImGui::TreeNode("Materials"))
             {
-               const std::function<string(Material *)> map = [](Material *image) -> string { return image->m_szName; };
+               const std::function<string(Material *)> map = [](Material *image) -> string { return image->m_name; };
                for (Material *&material : SortedCaseInsensitive(table->m_materials, map))
                {
                   Selection sel(is_live, material);
-                  if (IsOutlinerFiltered(material->m_szName) && ImGui::Selectable(material->m_szName.c_str(), m_selection == sel))
+                  if (IsOutlinerFiltered(material->m_name) && ImGui::Selectable(material->m_name.c_str(), m_selection == sel))
                      m_selection = sel;
                }
                ImGui::TreePop();
             }
             if (ImGui::TreeNode("Images"))
             {
-               const std::function<string(Texture *)> map = [](Texture *image) -> string { return image->m_szName; };
+               const std::function<string(Texture *)> map = [](Texture *image) -> string { return image->m_name; };
                for (Texture *&image : SortedCaseInsensitive(table->m_vimage, map))
                {
                   Selection sel(is_live, image);
-                  if (IsOutlinerFiltered(image->m_szName) && ImGui::Selectable(image->m_szName.c_str(), m_selection == sel))
+                  if (IsOutlinerFiltered(image->m_name) && ImGui::Selectable(image->m_name.c_str(), m_selection == sel))
                      m_selection = sel;
                }
                ImGui::TreePop();
@@ -3692,7 +3692,7 @@ void LiveUI::UpdateVideoOptionsModal()
                {
                   float stereo3DEyeSep = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DMaxSeparation"s, 0.03f);
                   if (ImGui::InputFloat("Max Separation", &stereo3DEyeSep, 0.001f, 0.01f, "%.3f"))
-                     g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DMaxSeparation"s, (float)stereo3DEyeSep);
+                     g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DMaxSeparation"s, stereo3DEyeSep);
                   bool stereo3DY = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DYAxis"s, false);
                   if (ImGui::Checkbox("Use Y axis", &stereo3DY))
                      g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DYAxis"s, stereo3DY);
@@ -3793,7 +3793,7 @@ void LiveUI::UpdateVideoOptionsModal()
                   mode = (StereoMode)(STEREO_TB + tv_mode);
                if (stereo_mode == 2)
                   mode = (StereoMode)(STEREO_ANAGLYPH_1 + glassesIndex);
-               g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3D"s, (int) mode);
+               g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3D"s, (int)mode);
                if (m_renderer->m_stereo3D != STEREO_OFF && mode != STEREO_OFF) // TODO allow live switching stereo on/off
                   m_renderer->m_stereo3D = mode;
             }
@@ -4219,23 +4219,23 @@ void LiveUI::UpdateMainSplashModal()
       if (m_ShowUI) // Move below menu & toolbar
          info << "\n\n\n\n";
 
-      if (!m_table->m_szTableName.empty())
-         info << "# " << m_table->m_szTableName << '\n';
+      if (!m_table->m_tableName.empty())
+         info << "# " << m_table->m_tableName << '\n';
       else
          info << "# Table\n";
 
       const size_t line_length = info.str().size();
-      if (!m_table->m_szBlurb.empty())
-         info << m_table->m_szBlurb << std::string(line_length, '=') << '\n';
-      if (!m_table->m_szDescription.empty())
-         info << m_table->m_szDescription;
+      if (!m_table->m_blurb.empty())
+         info << m_table->m_blurb << std::string(line_length, '=') << '\n';
+      if (!m_table->m_description.empty())
+         info << m_table->m_description;
 
       info << "\n\n  ";
-      if (!m_table->m_szAuthor.empty())
-         info << "By " << m_table->m_szAuthor << ", ";
-      if (!m_table->m_szVersion.empty())
-         info << "Version: " << m_table->m_szVersion;
-      info << " (" << (!m_table->m_szDateSaved.empty() ? m_table->m_szDateSaved : "N.A."s) << " Revision " << m_table->m_numTimesSaved << ")\n";
+      if (!m_table->m_author.empty())
+         info << "By " << m_table->m_author << ", ";
+      if (!m_table->m_version.empty())
+         info << "Version: " << m_table->m_version;
+      info << " (" << (!m_table->m_dateSaved.empty() ? m_table->m_dateSaved : "N.A."s) << " Revision " << m_table->m_numTimesSaved << ")\n";
 
       constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
       ImGui::SetNextWindowBgAlpha(0.5f);
@@ -4519,7 +4519,7 @@ void LiveUI::CameraProperties(bool is_live)
 void LiveUI::ImageProperties()
 {
    HelpTextCentered("Image"s);
-   string name = m_selection.image->m_szName;
+   string name = m_selection.image->m_name;
    ImGui::BeginDisabled(true); // Editing the name of a live item can break the script
    if (ImGui::InputText("Name", &name))
    {
@@ -4551,7 +4551,7 @@ void LiveUI::RenderProbeProperties(bool is_live)
    RenderProbe * const live_probe = (RenderProbe *)(m_selection.is_live ? m_selection.renderprobe : m_live_table->m_startupToLive[m_selection.renderprobe]);
    RenderProbe * const startup_probe = (RenderProbe *)(m_selection.is_live ? m_live_table->m_liveToStartup[m_selection.renderprobe] : m_selection.renderprobe);
    HelpTextCentered("Render Probe"s);
-   string name = ((RenderProbe *)m_selection.renderprobe)->GetName();
+   string name = m_selection.renderprobe->GetName();
    ImGui::BeginDisabled(is_live); // Editing the name of a live item can break the script
    if (ImGui::InputText("Name", &name))
    {
@@ -4630,13 +4630,13 @@ void LiveUI::MaterialProperties(bool is_live)
    Material * const startup_material = (Material *)(m_selection.is_live ? m_live_table->m_liveToStartup[m_selection.editable] : m_selection.editable);
    Material * const material = (is_live ? live_material : startup_material);
    HelpTextCentered("Material"s);
-   string name = ((Material *)m_selection.editable)->m_szName;
+   string name = ((Material *)m_selection.editable)->m_name;
    ImGui::BeginDisabled(is_live); // Editing the name of a live item can break the script
    if (ImGui::InputText("Name", &name))
    {
       // FIXME add undo
       if (startup_material)
-         startup_material->m_szName = name;
+         startup_material->m_name = name;
    }
    ImGui::EndDisabled();
    ImGui::Separator();
@@ -5200,7 +5200,7 @@ void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, floa
    vec3 v = is_live ? vec3(*live_x, *live_y, *live_z) : vec3(*startup_x, *startup_y, *startup_z);
    ImGui::PushID(label);
    vec3 prev_v = v;
-   if (ImGui::InputFloat3(label, (float*) &v.x, format, flags))
+   if (ImGui::InputFloat3(label, &v.x, format, flags))
    {
       *(is_live ? live_x : startup_x) = v.x;
       *(is_live ? live_y : startup_y) = v.y;
@@ -5304,12 +5304,12 @@ void LiveUI::PropImageCombo(const char *label, IEditable *undo_obj, bool is_live
    const char *const preview_value = v->c_str();
    if (ImGui::BeginCombo(label, preview_value))
    {
-      const std::function<string(Texture *)> map = [](Texture *image) -> string { return image->m_szName; };
+      const std::function<string(Texture *)> map = [](Texture *image) -> string { return image->m_name; };
       for (Texture *texture : SortedCaseInsensitive(table->m_vimage, map))
       {
-         if (ImGui::Selectable(texture->m_szName.c_str()))
+         if (ImGui::Selectable(texture->m_name.c_str()))
          {
-            *v = texture->m_szName;
+            *v = texture->m_name;
             if (chg_callback)
                chg_callback(is_live, prev_v, *v);
             if (!is_live)
@@ -5330,12 +5330,12 @@ void LiveUI::PropMaterialCombo(const char *label, IEditable *undo_obj, bool is_l
    const char *const preview_value = v->c_str();
    if (ImGui::BeginCombo(label, preview_value))
    {
-      const std::function<string(Material *)> map = [](Material *material) -> string { return material->m_szName; };
+      const std::function<string(Material *)> map = [](Material *material) -> string { return material->m_name; };
       for (Material *material : SortedCaseInsensitive(table->m_materials, map))
       {
-         if (ImGui::Selectable(material->m_szName.c_str()))
+         if (ImGui::Selectable(material->m_name.c_str()))
          {
-            *v = material->m_szName;
+            *v = material->m_name;
             if (chg_callback)
                chg_callback(is_live, prev_v, *v);
             if (!is_live)

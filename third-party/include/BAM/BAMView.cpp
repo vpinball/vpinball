@@ -207,15 +207,15 @@ static void _createProjectionAndViewMatrix(float* const __restrict P, float* con
 
 std::wstring GetFileNameForSettingsXML()
 {
-   const string path = g_pvp->m_szMyPrefPath + "BAMViewSettings.xml";
+   const string path = g_pvp->m_myPrefPath + "BAMViewSettings.xml";
    return MakeWString(path);
 }
 
 std::string GetTableName()
 {
    const PinTable* const t = g_pplayer->m_ptable;
-   auto backslash = strrchr(t->m_szFileName.c_str(), '\\');
-   auto slash = strrchr(t->m_szFileName.c_str(), '/');
+   auto backslash = strrchr(t->m_filename.c_str(), '\\');
+   auto slash = strrchr(t->m_filename.c_str(), '/');
    auto dst = std::max(backslash, slash);
    return dst ? dst + 1 : "Unknown"s;
 }

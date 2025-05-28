@@ -118,17 +118,17 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
          return nullptr;
       }
 
-      if ((pictureHeight > (unsigned int)maxTexDim) || (pictureWidth > (unsigned int)maxTexDim))
+      if ((pictureHeight > maxTexDim) || (pictureWidth > maxTexDim))
       {
-         unsigned int newWidth  = max(min(pictureWidth,  (unsigned int)maxTexDim), MIN_TEXTURE_SIZE);
-         unsigned int newHeight = max(min(pictureHeight, (unsigned int)maxTexDim), MIN_TEXTURE_SIZE);
+         unsigned int newWidth  = max(min(pictureWidth,  maxTexDim), MIN_TEXTURE_SIZE);
+         unsigned int newHeight = max(min(pictureHeight, maxTexDim), MIN_TEXTURE_SIZE);
          /*
           * The following code tries to maintain the aspect ratio while resizing.
           */
          if (pictureWidth - newWidth > pictureHeight - newHeight)
-             newHeight = min(pictureHeight * newWidth / pictureWidth,  (unsigned int)maxTexDim);
+             newHeight = min(pictureHeight * newWidth / pictureWidth,  maxTexDim);
          else
-             newWidth  = min(pictureWidth * newHeight / pictureHeight, (unsigned int)maxTexDim);
+             newWidth  = min(pictureWidth * newHeight / pictureHeight, maxTexDim);
          dibResized = FreeImage_Rescale(dib, newWidth, newHeight, FILTER_BILINEAR); //!! use a better filter in case scale ratio is pretty high?
       }
       else if (pictureWidth < MIN_TEXTURE_SIZE || pictureHeight < MIN_TEXTURE_SIZE)
@@ -149,7 +149,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
          }
 
          maxTexDim /= 2;
-         while (((unsigned int)maxTexDim > pictureHeight) && ((unsigned int)maxTexDim > pictureWidth))
+         while ((maxTexDim > pictureHeight) && (maxTexDim > pictureWidth))
             maxTexDim /= 2;
 
          continue;
@@ -179,7 +179,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
             }
 
             maxTexDim /= 2;
-            while (((unsigned int)maxTexDim > pictureHeight) && ((unsigned int)maxTexDim > pictureWidth))
+            while ((maxTexDim > pictureHeight) && (maxTexDim > pictureWidth))
                maxTexDim /= 2;
 
             continue;
@@ -240,7 +240,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
          }
 
          maxTexDim /= 2;
-         while (((unsigned int)maxTexDim > pictureHeight) && ((unsigned int)maxTexDim > pictureWidth))
+         while ((maxTexDim > pictureHeight) && (maxTexDim > pictureWidth))
             maxTexDim /= 2;
       }
    }
@@ -723,8 +723,8 @@ Texture::~Texture()
 HRESULT Texture::SaveToStream(IStream *pstream, const PinTable *pt)
 {
    BiffWriter bw(pstream, 0);
-   bw.WriteString(FID(NAME), m_szName);
-   bw.WriteString(FID(PATH), m_szPath);
+   bw.WriteString(FID(NAME), m_name);
+   bw.WriteString(FID(PATH), m_path);
    bw.WriteInt(FID(WDTH), m_width);
    bw.WriteInt(FID(HGHT), m_height);
    if (!m_ppb)
@@ -799,7 +799,7 @@ bool Texture::LoadFromFile(const string& filename, const bool setName)
    SetSizeFrom(tex);
    m_pdsBuffer = tex;
 
-   m_szPath = filename;
+   m_path = filename;
 
    if (setName)
    {
@@ -818,7 +818,7 @@ bool Texture::LoadFromFile(const string& filename, const bool setName)
             break;
       if (end == 0)
          end = len - 1;
-      m_szName = filename.substr(begin, end - begin);
+      m_name = filename.substr(begin, end - begin);
    }
 
    return true;
@@ -853,7 +853,7 @@ bool Texture::LoadFromMemory(BYTE * const data, const DWORD size)
             goto freeimage_fallback;
          }
 
-         BYTE* const __restrict pdst = (BYTE*)tex->data();
+         BYTE* const __restrict pdst = tex->data();
          const BYTE* const __restrict psrc = (BYTE*)stbi_data;
          memcpy(pdst, psrc, x * y * channels_in_file);
          stbi_image_free(stbi_data);
@@ -898,8 +898,8 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(NAME): pbr->GetString(m_szName); break;
-   case FID(PATH): pbr->GetString(m_szPath); break;
+   case FID(NAME): pbr->GetString(m_name); break;
+   case FID(PATH): pbr->GetString(m_path); break;
    case FID(WDTH): pbr->GetInt(m_width); break;
    case FID(HGHT): pbr->GetInt(m_height); break;
    case FID(ALTV): pbr->GetFloat(m_alphaTestValue); m_alphaTestValue *= (float)(1.0 / 255.0); break;
@@ -975,7 +975,7 @@ bool Texture::LoadToken(const int id, BiffReader * const pbr)
          assert(!"Invalid binary image file");
          return false;
       }
-      // m_ppb->m_szPath has the original filename
+      // m_ppb->m_path has the original filename
       // m_ppb->m_pdata() is the buffer
       // m_ppb->m_cdata() is the filesize
       return LoadFromMemory((BYTE*)m_ppb->m_pdata, m_ppb->m_cdata);

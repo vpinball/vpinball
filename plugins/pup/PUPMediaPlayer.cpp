@@ -30,20 +30,20 @@ PUPMediaPlayer::~PUPMediaPlayer()
    //delete m_pPinSound;
 }
 
-void PUPMediaPlayer::Play(const string& szFilename)
+void PUPMediaPlayer::Play(const string& filename)
 {
-   LOGD("filename=%s", szFilename.c_str());
+   LOGD("filename=%s", filename.c_str());
 
    Stop();
 
-   m_szFilename = szFilename;
+   m_filename = szFilename;
    m_volume = 0.0f;
    m_loop = false;
    m_startTimestamp = SDL_GetTicks();
 
    // Open file
    if (avformat_open_input(&m_pFormatContext, szFilename.c_str(), NULL, NULL) != 0) {
-      LOGE("Unable to open: filename=%s", szFilename.c_str());
+      LOGE("Unable to open: filename=%s", filename.c_str());
       return;
    }
 
@@ -66,7 +66,7 @@ void PUPMediaPlayer::Play(const string& szFilename)
          LOGD("Video stream: %s %dx%d", avcodec_get_name(m_pVideoContext->codec_id), pCodecParameters->width, pCodecParameters->height);
       }
       else {
-         LOGE("Unable to open video stream: filename=%s", szFilename.c_str());
+         LOGE("Unable to open video stream: filename=%s", filename.c_str());
       }
    }
    else {
@@ -77,7 +77,7 @@ void PUPMediaPlayer::Play(const string& szFilename)
    if (m_videoStream >= 0) {
       m_audioStream = av_find_best_stream(m_pFormatContext, AVMEDIA_TYPE_AUDIO, -1, m_videoStream, NULL, 0);
       if (m_audioStream == AVERROR_DECODER_NOT_FOUND) {
-         LOGE("No audio stream found: filename=%s", szFilename.c_str());
+         LOGE("No audio stream found: filename=%s", filename.c_str());
       }
    }
    else {
@@ -98,17 +98,17 @@ void PUPMediaPlayer::Play(const string& szFilename)
          LOGD("Audio stream: %s %d channels, %d Hz\n", avcodec_get_name(m_pAudioContext->codec_id), pCodecParameters->ch_layout.nb_channels, pCodecParameters->sample_rate);
       }
       else {
-         LOGE("Unable to open audio stream: filename=%s", szFilename.c_str());
+         LOGE("Unable to open audio stream: filename=%s", filename.c_str());
       }
    }
 
    if (!m_pVideoContext && !m_pAudioContext) {
-      LOGE("No video or audio stream found: filename=%s", szFilename.c_str());
+      LOGE("No video or audio stream found: filename=%s", filename.c_str());
       Stop();
       return;
    }
 
-   LOGD("Playing: filename=%s", m_szFilename.c_str());
+   LOGD("Playing: filename=%s", m_filename.c_str());
    //m_pPinSound->StreamVolume(0);
 
    m_running = true;
@@ -138,7 +138,7 @@ void PUPMediaPlayer::Stop()
 {
    if (IsPlaying())
    {
-      LOGD("Stop: %s", m_szFilename.c_str());
+      LOGD("Stop: %s", m_filename.c_str());
    }
 
    // Stop decoder thread and flush queue
@@ -227,7 +227,7 @@ void PUPMediaPlayer::SetLength(int length)
 
 void PUPMediaPlayer::Run()
 {
-   SetThreadName("PUPMediaPlayer.Run("s.append(m_szFilename).append(")"));
+   SetThreadName("PUPMediaPlayer.Run("s.append(m_filename).append(')'));
 
    AVPacket* pPacket = av_packet_alloc();
    if (!pPacket) {
@@ -450,7 +450,7 @@ void PUPMediaPlayer::Render(VPXRenderContext2D* const ctx, const SDL_Rect& destR
          AVFrame* rgbFrame = m_rgbFrames[m_renderFrameId % m_nRgbFrames];
          UpdateTexture(&m_videoTexture, rgbFrame->width, rgbFrame->height, VPXTextureFormat::VPXTEXFMT_sRGBA8, rgbFrame->data[0]);
          //const double framePts = (static_cast<double>(rgbFrame->pts) * m_pVideoContext->pkt_timebase.num) / m_pVideoContext->pkt_timebase.den;
-         //LOGD("Video tex update: play time: %8.3fs / frame pts: %8.3fs / delta: %8.3fs  [%s]", playPts, framePts, framePts - playPts, m_szFilename.c_str());
+         //LOGD("Video tex update: play time: %8.3fs / frame pts: %8.3fs / delta: %8.3fs  [%s]", playPts, framePts, framePts - playPts, m_filename.c_str());
       }
    }
 

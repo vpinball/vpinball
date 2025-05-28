@@ -805,7 +805,7 @@ bool Rubber::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(PIID): pbr->GetInt((int *)pbr->m_pdata); break;
+   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
    case FID(HTTP): pbr->GetFloat(m_d.m_height); break;
    case FID(HTHI): pbr->GetFloat(m_d.m_hitHeight); break;
    case FID(WDTP): pbr->GetInt(m_d.m_thickness); break;

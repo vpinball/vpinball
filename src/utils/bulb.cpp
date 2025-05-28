@@ -7,20 +7,20 @@
 
 // 2024.08.01 - Changes:
 // * replace bulb characteristics by values based on real bulb resistance measures using the algorithm given at the end of this file
-// * replace filament resistance model with a simpler one R = R0.(1 + 0.0045 (T-T0)) instead of R = R0 * (T/T0)^1.215 since it matches the model used to evaluate bulb characteristicvs and gives better results
+// * replace filament resistance model with a simpler one R = R0.(1 + 0.0045 (T-T0)) instead of R = R0 * (T/T0)^1.215 since it matches the model used to evaluate bulb characteristics and gives better results
 // * add #906 bulb
 //
 // Testing guidelines:
 // * Guns n' Roses (Data East)'s bottom right white mars flasher should be pulsing (fading, not blinking) at the beginning of each ball
 // * Twilight Zone's red flasher above slot machine should be blinking when a ball is ejected (not fading)
-// * The Lord of the Rings should be fast blinking during attract, but slowly pulsing Sauron eye (fellowhip inserts as well when fellowship multiball ready)
+// * The Lord of the Rings should be fast blinking during attract, but slowly pulsing Sauron eye (fellowship inserts as well when fellowship multiball ready)
 // * Godzilla's helicopter inserts should be fading and blinking at the same time when the helicopter shot is made (side lane then opposite green target)
 
 // Set to 1 to compute bulb characteristics (if enabled, this file can be copy/pasted and ran in any C interpreter)
 #define ENABLE_COMPUTE_CHARACTERISTICS 0
 
 #ifndef M_PI
-#define M_PI 3.14159265358979323846
+#define M_PI 3.1415926535897932384626433832795
 #endif
 
 #if ENABLE_COMPUTE_CHARACTERISTICS
@@ -331,14 +331,14 @@ double bulb_heat_up(const int bulb, double T, float duration, const float U, con
 //
 // The method used to evaluate the characteristics is the following:
 //   . collect U and I ratings, compute R at stability temperature (T): R = U/I
-//   . select a stability temperature (T), and compute corresponding R0 using the the 2 following equations:
+//   . select a stability temperature (T), and compute corresponding R0 using the 2 following equations:
 //      R = p(T).L/A with p = resisitivity, L = filament length, A = wire section surface (Pi.r²)
 //        we suppose L/A constant (limited dilatation), so R/R0 = p/p0 and therefore p = p0.R/R0.
 //        knowing that p0 of tungsten is 5.65x10-8 Ohm.m at T0 = 293K
 //      (p - p0) = a.p0.(T - T0) with a = temperature to resistivity of tungsten, approximated to 0.0045
 //   . find (dichotomy search) a filament radius that leads to the chosen stability temperature (we compute the corresponding filament length since we know L/A = R0/p0 = L/(PI.r²) so L = PI.r².R0/p0)
 //   . validate that the calculated values (corresponding to the selected stability temperature):
-//      . (roughly) gives a R0 matching measures made wirh a multimeter on a set of real bulbs
+//      . (roughly) gives a R0 matching measures made with a multimeter on a set of real bulbs
 //      . (roughly) matches the expected light intensity
 
 #include <cstdio>
@@ -440,7 +440,7 @@ int main()
       }
        
       // Evaluate the impact of room temperature and multimeter current on the measured resistance (it applies of small voltage/current to measure which in turns very slightly heat and raise the resistance)
-      // At their lowest resistance range, it looks like most multimetter inject around 1mA so we search for the corresponding resistor offset (Keysight U1232A, Fluke 87V, Brymen BM235, Extech EX330, Fluke 115, UNI-T UT61E)
+      // At their lowest resistance range, it looks like most multimeter inject around 1mA so we search for the corresponding resistor offset (Keysight U1232A, Fluke 87V, Brymen BM235, Extech EX330, Fluke 115, UNI-T UT61E)
       printf("Expected measure of unlit resistance (1mA multimeter):\n");
       const double prevT = bulbs[bulb].rating_T;
       for (int ratedT = 2200; ratedT <= 2800; ratedT += 50)

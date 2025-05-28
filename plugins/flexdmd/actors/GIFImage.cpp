@@ -11,8 +11,8 @@ GIFImage* GIFImage::Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const
    AssetSrc* pSrc = pAssetManager->ResolveSrc(path, nullptr);
    Bitmap* pBitmap = pAssetManager->GetBitmap(pSrc);
    if (!pBitmap) {
-       pSrc->Release();
-       return nullptr;
+      pSrc->Release();
+      return nullptr;
    }
 
    GIFImage* pImage = new GIFImage(pFlexDMD, name);
@@ -22,7 +22,7 @@ GIFImage* GIFImage::Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const
    pImage->m_pBitmap = pBitmap;
    pImage->SetPrefWidth(static_cast<float>(pBitmap->GetWidth()));
    pImage->SetPrefHeight(static_cast<float>(pBitmap->GetHeight()));
-   pImage->SetLength(pBitmap->GetLength() / 1000.0f);
+   pImage->SetLength((float)(pBitmap->GetLength() / 1000.0));
    pImage->Rewind();
    pImage->Pack();
    pImage->m_pBitmap = nullptr;
@@ -52,7 +52,7 @@ void GIFImage::Rewind()
    m_pos = 0;
 
    if (m_pBitmap)
-      SetFrameDuration(m_pBitmap->GetFrameDelay(0) / 1000.0f);
+      SetFrameDuration((float)(m_pBitmap->GetFrameDelay(0) / 1000.0));
 }
 
 void GIFImage::ReadNextFrame()
@@ -66,9 +66,9 @@ void GIFImage::ReadNextFrame()
       m_pos++;
       SetFrameTime(0);
       for (int i = 0; i < m_pos; i++)
-         SetFrameTime(GetFrameTime() + (m_pBitmap->GetFrameDelay(i) / 1000.0f));
-        
-      SetFrameDuration(m_pBitmap->GetFrameDelay(m_pos) / 1000.0f);
+         SetFrameTime((float)(GetFrameTime() + (m_pBitmap->GetFrameDelay(i) / 1000.0)));
+
+      SetFrameDuration((float)(m_pBitmap->GetFrameDelay(m_pos) / 1000.0));
       UpdateFrame();
    }
 }
