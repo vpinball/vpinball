@@ -227,7 +227,7 @@ void PUPMediaPlayer::SetLength(int length)
 
 void PUPMediaPlayer::Run()
 {
-   SetThreadName("PUPMediaPlayer.Run("s.append(m_filename).append(')'));
+   SetThreadName("PUPMediaPlayer.Run("s.append(m_filename).append(1,')'));
 
    AVPacket* pPacket = av_packet_alloc();
    if (!pPacket) {

@@ -912,7 +912,7 @@ TTF_Font* Textbox::LoadFont()
       PLOGW.printf("Unable to locate font: path=%s", path.c_str());
 
       path = g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "LiberationSans-Regular.ttf";
-      pFont = TTF_OpenFont(szPath.c_str(), m_fontSize);
+      pFont = TTF_OpenFont(path.c_str(), m_fontSize);
       if (pFont) {
          PLOGW.printf("Default font loaded: path=%s", path.c_str());
       }
