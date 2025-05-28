@@ -21,7 +21,7 @@ public:
    void Play(const string& szFilename);
    bool IsPlaying();
    void Pause(bool pause);
-   const string& GetFilename() const { return m_szFilename; }
+   const string& GetFilename() const { return m_filename; }
    int GetPriority() const { return m_priority; }
    void Stop();
    void SetVolume(float volume);
@@ -36,7 +36,7 @@ private:
    void HandleAudioFrame(AVFrame* pFrame);
    void HandleVideoFrame(AVFrame* pFrame);
 
-   string m_szFilename;
+   string m_filename;
    Uint64 m_startTimestamp = 0; // timestamp in ms when the play command was called
    bool m_loop = false;
    int m_playIndex = 0;

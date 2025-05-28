@@ -175,7 +175,7 @@ STDMETHODIMP Server::get_B2SBuildVersion(double *pRetVal)
 
 STDMETHODIMP Server::get_B2SServerDirectory(BSTR *pRetVal)
 {
-   const WCHAR *const wzPath = MakeWide(g_pvp->m_szMyPath);
+   const WCHAR *const wzPath = MakeWide(g_pvp->m_myPath);
    *pRetVal = SysAllocString(wzPath);
    delete [] wzPath;
 
@@ -2494,7 +2494,7 @@ void Server::MyB2SStopSound(const string& soundname)
 
 void Server::Startup()
 {
-   m_pB2SData->SetTableFileName(g_pvp->GetActiveTable()->m_szFileName);
+   m_pB2SData->SetTableFileName(g_pvp->GetActiveTable()->m_filename);
 }
 
 void Server::ShowBackglassForm()

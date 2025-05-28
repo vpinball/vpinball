@@ -7,10 +7,10 @@ public:
 
    int GetId() const { return m_id; }
    void SetId(int id) { m_id = id; }
-   const string& GetFilename() { return m_szFilename; }
-   void SetFilename(const string& filename) { m_szFilename = filename; }
+   const string& GetFilename() { return m_filename; }
+   void SetFilename(const string& filename) { m_filename = filename; }
 
 private:
    int m_id;
-   string m_szFilename;
+   string m_filename;
 };

@@ -40,7 +40,7 @@ void WebServer::EventHandler(struct mg_connection *c, int ev, void *ev_data)
          string uri(hm->uri.buf, hm->uri.len);
          if (!uri.empty() && uri.front() == '/') uri.erase(0, 1);
 
-         std::filesystem::path base = std::filesystem::path(g_pvp->m_szMyPath) / "assets";
+         std::filesystem::path base = std::filesystem::path(g_pvp->m_myPath) / "assets";
          std::filesystem::path asset = uri.empty() ? base / "vpx.html" : base / uri;
 
          if (!uri.empty() && std::filesystem::exists(asset))
@@ -111,7 +111,7 @@ void WebServer::Status(struct mg_connection *c, struct mg_http_message* hm)
 {
    bool running = g_pplayer != nullptr;
    string currentTable = (running && !g_pvp->m_currentTablePath.empty())
-      ? (std::filesystem::path(g_pvp->m_currentTablePath) / g_pvp->GetActiveTable()->m_szFileName).string()
+      ? (std::filesystem::path(g_pvp->m_currentTablePath) / g_pvp->GetActiveTable()->m_filename).string()
       : "";
    char* currentTableJson = (running && !currentTable.empty())
       ? mg_mprintf("\"%s\"", currentTable.c_str())
@@ -139,7 +139,7 @@ void WebServer::Files(struct mg_connection *c, struct mg_http_message* hm)
 
    PLOGI.printf("Retrieving file list: q=%s", q);
 
-   string path = g_pvp->m_szMyPrefPath + q;
+   string path = g_pvp->m_myPrefPath + q;
 
    if (*q != '\0')
       path += PATH_SEPARATOR_CHAR;
@@ -209,7 +209,7 @@ void WebServer::Download(struct mg_connection *c, struct mg_http_message* hm)
 
    PLOGI.printf("Downloading file: q=%s", q);
 
-   string path = g_pvp->m_szMyPrefPath + q;
+   string path = g_pvp->m_myPrefPath + q;
 
    struct mg_http_serve_opts opts = {};
    mg_http_serve_file(c, hm, path.c_str(), &opts);
@@ -238,7 +238,7 @@ void WebServer::Upload(struct mg_connection *c, struct mg_http_message* hm)
       PLOGI.printf("Uploading file: file=%s", file);
    }
 
-   string path = g_pvp->m_szMyPrefPath + q;
+   string path = g_pvp->m_myPrefPath + q;
 
    if (!mg_http_upload(c, hm, &mg_fs_posix, path.c_str(), 1024 * 1024 * 500)) {
       if (!strncmp(q, "VPinballX.ini", sizeof(q)))
@@ -256,7 +256,7 @@ void WebServer::Delete(struct mg_connection *c, struct mg_http_message* hm)
       return;
    }
 
-   string path = g_pvp->m_szMyPrefPath + q;
+   string path = g_pvp->m_myPrefPath + q;
 
    if (std::filesystem::is_regular_file(path)) {
       if (std::filesystem::remove(path.c_str()))
@@ -284,7 +284,7 @@ void WebServer::Folder(struct mg_connection *c, struct mg_http_message* hm)
       return;
    }
 
-   string path = g_pvp->m_szMyPrefPath + q;
+   string path = g_pvp->m_myPrefPath + q;
 
    if (std::filesystem::create_directory(path))
       mg_http_reply(c, 200, "", "OK");
@@ -302,7 +302,7 @@ void WebServer::Extract(struct mg_connection *c, struct mg_http_message* hm)
       return;
    }
 
-   string path = g_pvp->m_szMyPrefPath + q;
+   string path = g_pvp->m_myPrefPath + q;
 
    if (std::filesystem::is_regular_file(path)) {
       if (extension_from_path(path) == "zip") {

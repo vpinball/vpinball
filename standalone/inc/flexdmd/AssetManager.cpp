@@ -229,7 +229,7 @@ void* AssetManager::Open(AssetSrc* pSrc)
       break;
       case AssetSrcType_FlexResource:
       {
-         string path = find_case_insensitive_file_path(g_pvp->m_szMyPath + "flexdmd" + PATH_SEPARATOR_CHAR + pSrc->GetPath());
+         string path = find_case_insensitive_file_path(g_pvp->m_myPath + "flexdmd" + PATH_SEPARATOR_CHAR + pSrc->GetPath());
          if (!path.empty()) {
             if (pSrc->GetAssetType() == AssetType_BMFont)
                pAsset = BitmapFont::Create(path);

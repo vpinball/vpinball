@@ -60,15 +60,15 @@ void VPinball::Init(std::function<void*(Event, void*)> callback)
 
    g_pvp = new ::VPinball();
    g_pvp->SetLogicalNumberOfProcessors(SDL_GetNumLogicalCPUCores());
-   g_pvp->m_settings.LoadFromFile(g_pvp->m_szMyPrefPath + "VPinballX.ini", true);
+   g_pvp->m_settings.LoadFromFile(g_pvp->m_myPrefPath + "VPinballX.ini", true);
 
    Logger::GetInstance()->Init();
    Logger::GetInstance()->SetupLogger(true);
 
    PLOGI << "VPX - " << VP_VERSION_STRING_FULL_LITERAL;
    PLOGI << "m_logicalNumberOfProcessors=" << g_pvp->GetLogicalNumberOfProcessors();
-   PLOGI << "m_szMyPath=" << g_pvp->m_szMyPath;
-   PLOGI << "m_szMyPrefPath=" << g_pvp->m_szMyPrefPath;
+   PLOGI << "m_myPath=" << g_pvp->m_myPath;
+   PLOGI << "m_myPrefPath=" << g_pvp->m_myPrefPath;
 
    if (!DirExists(PATH_USER)) {
       PLOGI << "Creating user path: path=" << PATH_USER;
@@ -137,8 +137,8 @@ void VPinball::ResetLog()
 
    PLOGI << "VPX - " << VP_VERSION_STRING_FULL_LITERAL;
    PLOGI << "m_logicalNumberOfProcessors=" << g_pvp->GetLogicalNumberOfProcessors();
-   PLOGI << "m_szMyPath=" << g_pvp->m_szMyPath;
-   PLOGI << "m_szMyPrefPath=" << g_pvp->m_szMyPrefPath;
+   PLOGI << "m_myPath=" << g_pvp->m_myPath;
+   PLOGI << "m_myPrefPath=" << g_pvp->m_myPrefPath;
 }
 
 int VPinball::LoadValueInt(SettingsSection section, const string& key, int defaultValue)
@@ -282,7 +282,7 @@ void VPinball::UpdateWebServer()
 
 VPinballStatus VPinball::ResetIni()
 {
-   string iniFilePath = g_pvp->m_szMyPrefPath + "VPinballX.ini";
+   string iniFilePath = g_pvp->m_myPrefPath + "VPinballX.ini";
    if (std::remove(iniFilePath.c_str()) != 0)
       return VPinballStatus::Failure;
 
@@ -849,7 +849,7 @@ void VPinball::Cleanup()
 
    delete g_pvp;
    g_pvp = new ::VPinball();
-   g_pvp->m_settings.LoadFromFile(g_pvp->m_szMyPrefPath + "VPinballX.ini", true);
+   g_pvp->m_settings.LoadFromFile(g_pvp->m_myPrefPath + "VPinballX.ini", true);
    g_pvp->SetLogicalNumberOfProcessors(SDL_GetNumLogicalCPUCores());
    
    {

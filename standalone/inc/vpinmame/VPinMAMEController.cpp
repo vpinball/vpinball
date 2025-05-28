@@ -173,7 +173,7 @@ VPinMAMEController::VPinMAMEController()
       }
       else {
 #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
-         m_szPath = find_case_insensitive_directory_path(g_pvp->m_szMyPath + "pinmame");
+         m_szPath = find_case_insensitive_directory_path(g_pvp->m_myPath + "pinmame");
 #else
          m_szPath = string(getenv("HOME")) + PATH_SEPARATOR_CHAR + ".pinmame" + PATH_SEPARATOR_CHAR;
 #endif
@@ -314,7 +314,7 @@ STDMETHODIMP VPinMAMEController::Run(/*[in]*/ LONG_PTR hParentWnd, /*[in,default
          Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
 
          if (pSettings->LoadValueWithDefault(Settings::Standalone, "AltSound"s, true)) {
-             AltsoundSetLogger(g_pvp->m_szMyPrefPath, ALTSOUND_LOG_LEVEL_INFO, false);
+             AltsoundSetLogger(g_pvp->m_myPrefPath, ALTSOUND_LOG_LEVEL_INFO, false);
 
              if (AltsoundInit(m_szPath, string(m_pPinmameGame->name))) {
                 AltsoundSetHardwareGen((ALTSOUND_HARDWARE_GEN)PinmameGetHardwareGen());
