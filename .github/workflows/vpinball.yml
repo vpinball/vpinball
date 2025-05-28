@@ -157,7 +157,7 @@ jobs:
         name: Code signing, notarization, and packaging
         run: |
           cd build/${{ matrix.config }}
-          if [ "${{ secrets.MACOS_CODESIGN }}" == "1" ]; then
+          if [[ "${{ vars.MACOS_CODESIGN }}" == "1" ]]; then
             KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
             echo "${{ secrets.MACOS_CODESIGN_P12 }}" | base64 --decode > certificate.p12
             security create-keychain -p "${{ secrets.MACOS_CODESIGN_P12_PASSWORD }}" $KEYCHAIN_PATH

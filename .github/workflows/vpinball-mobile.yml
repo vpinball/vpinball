@@ -191,7 +191,7 @@ jobs:
           CONFIG_LC=$(echo "${{ matrix.config }}" | tr '[:upper:]' '[:lower:]')
           mkdir tmp
           cp standalone/android/app/build/outputs/apk/${CONFIG_LC}/*.apk tmp
-          if [ "${{ github.repository }}" == "vpinball/vpinball" ]; then
+          if [[ "${{ github.repository }}" == "vpinball/vpinball" ]]; then
              cp standalone/android/app/build/outputs/bundle/${CONFIG_LC}/*.aab tmp
           fi
       - name: Upload artifacts
