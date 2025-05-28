@@ -31,7 +31,11 @@
 #endif
 
 #ifdef ENABLE_OPENGL
-#include <glad/gl.h>
+#ifndef __OPENGLES__
+ #include <glad/gl.h>
+#else
+ #include <glad/gles2.h>
+#endif
 #endif
 
 template <typename T>
