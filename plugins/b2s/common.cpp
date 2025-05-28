@@ -44,10 +44,10 @@ string extension_from_path(const string& path)
    return pos != string::npos ? string_to_lower(path.substr(pos + 1)) : string();
 }
 
+// same as removing the file extension
 string TitleAndPathFromFilename(const string& filename)
 {
-   const size_t pos = filename.find_last_of('.');
-   return pos != string::npos ? filename.substr(0, pos) : filename;
+   return filename.substr(0, filename.find_last_of('.')); // in case no '.' is found, will then copy full filename
 }
 
 string find_case_insensitive_file_path(const string& szPath)
@@ -85,32 +85,6 @@ string find_case_insensitive_file_path(const string& szPath)
 
    return string();
 }
-
-/*string TitleAndPathFromFilename(const string& szfilename)
-{
-   const int len = (int)szfilename.length();
-   // find the last '.' in the filename
-   int end;
-   for (end = len; end >= 0; end--)
-   {
-      if (szfilename[end] == '.')
-         break;
-   }
-
-   if (end == 0)
-      end = len;
-
-   // copy from the start of the string to the end (or last '\')
-   const char *szT = szfilename.c_str();
-   int count = end;
-
-   string szpath;
-   while (count-- > 0)
-   {
-      szpath.push_back(*szT++);
-   }
-   return szpath;
-}*/
 
 vector<unsigned char> base64_decode(const string &encoded_string)
 {

@@ -117,27 +117,10 @@ string PathFromFilename(const string &filename)
    return szpath;
 }
 
+// same as removing the file extension
 string TitleAndPathFromFilename(const string &filename)
 {
-   const int len = (int)filename.length();
-   // find the last '.' in the filename
-   int end;
-   for (end = len; end >= 0; end--)
-   {
-      if (filename[end] == '.')
-         break;
-   }
-
-   if (end == 0)
-      end = len;
-
-   // copy from the start of the string to the end (or last '\')
-   const char *szT = filename.c_str();
-   int count = end;
-
-   string szpath;
-   while (count-- > 0) { szpath.push_back(*szT++); }
-   return szpath;
+   return filename.substr(0, filename.find_last_of('.')); // in case no '.' is found, will then copy full filename
 }
 
 bool ReplaceExtensionFromFilename(string& filename, const string& newextension)
