@@ -2,7 +2,7 @@
 #include "core/vpversion.h"
 #include "WebServer.h"
 
-#include "miniz/miniz.h"
+#include <zip.h>
 
 #include <ifaddrs.h>
 #include <filesystem>
@@ -69,41 +69,48 @@ WebServer::~WebServer()
 
 bool WebServer::Unzip(const char* pSource)
 {
-   mz_zip_archive zip_archive;
-   memset(&zip_archive, 0, sizeof(zip_archive));
-
-   mz_bool status = mz_zip_reader_init_file(&zip_archive, pSource, 0);
-   if (!status) {
+   int error = 0;
+   zip_t* zip_archive = zip_open(pSource, ZIP_RDONLY, &error);
+   if (!zip_archive) {
       PLOGE.printf("Unable to unzip file: source=%s", pSource);
       return false;
    }
 
    bool success = true;
+   zip_int64_t file_count = zip_get_num_entries(zip_archive, 0);
 
-   int file_count = (int)mz_zip_reader_get_num_files(&zip_archive);
-
-   for (int i = 0; i < file_count; i++) {
-      mz_zip_archive_file_stat file_stat;
-      if (!mz_zip_reader_file_stat(&zip_archive, i, &file_stat))
+   for (zip_uint64_t i = 0; i < (zip_uint64_t)file_count; ++i) {
+      zip_stat_t file_stat;
+      if (zip_stat_index(zip_archive, i, ZIP_STAT_NAME, &file_stat) != 0) {
          success = false;
+         continue;
+      }
 
-      string filename = file_stat.m_filename;
-      if (filename.starts_with("__MACOSX"))
+      string filename = file_stat.name;
+      if (filename.rfind("__MACOSX", 0) == 0)
          continue;
 
-      string path = std::filesystem::path(string(pSource)).parent_path().append(filename);
-      if (mz_zip_reader_is_file_a_directory(&zip_archive, i))
+      std::filesystem::path path = std::filesystem::path(pSource).parent_path() / filename;
+      if (filename.back() == '/')
          std::filesystem::create_directories(path);
       else {
-         if (!mz_zip_reader_extract_to_file(&zip_archive, i, path.c_str(), 0)) {
-            PLOGE.printf("Unable to extract file: %s", path.c_str());
-            success = false;
+         std::filesystem::create_directories(path.parent_path());
+         zip_file_t* zip_file = zip_fopen_index(zip_archive, i, 0);
+         if (!zip_file) {
+             PLOGE.printf("Unable to extract file: %s", path.string().c_str());
+             success = false;
+             continue;
          }
+         std::ofstream ofs(path, std::ios::binary);
+         char buf[4096];
+         zip_int64_t len;
+         while ((len = zip_fread(zip_file, buf, sizeof(buf))) > 0)
+             ofs.write(buf, len);
+         zip_fclose(zip_file);
       }
    }
 
-   mz_zip_reader_end(&zip_archive);
-
+   zip_close(zip_archive);
    return success;
 }
 

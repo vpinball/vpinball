@@ -701,6 +701,7 @@ target_link_libraries(vpinball PUBLIC
    avutil
    swresample
    swscale
+   zip
 )
 
 set_target_properties(vpinball PROPERTIES
