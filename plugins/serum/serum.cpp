@@ -12,13 +12,16 @@
 #include "common.h"
 #include "serum-decode.h"
 
+#include "plugins/LoggingPlugin.h"
+LPI_IMPLEMENT // Implement shared login support
+
 using namespace std::string_literals;
 
 #ifndef _MSC_VER
  #define strcpy_s(A, B, C) strncpy(A, C, B)
 #endif
 
-LPI_IMPLEMENT // Implement shared login support
+namespace Serum {
 
 ///////////////////////////////////////////////////////////////////////////////
 // Serum Colorization plugin
@@ -27,8 +30,6 @@ LPI_IMPLEMENT // Implement shared login support
 // plugin API and the following messages:
 // - PinMame/OnGameStart: msgData is PinMame game identifier (rom name)
 // - PinMame/OnGameEnd
-
-namespace Serum {
 
 static MsgPluginAPI* msgApi = nullptr;
 static uint32_t endpointId;

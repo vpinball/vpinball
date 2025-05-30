@@ -2,18 +2,11 @@
 
 #pragma once
 
-#include "plugins/VPXPlugin.h"
+#include "common.h"
+
 #include "core/ResURIResolver.h"
 
 #include <filesystem>
-
-#include <string>
-using std::string;
-using namespace std::string_literals;
-
-#include <vector>
-using std::vector;
-
 #include <unordered_dense.h>
 
 namespace ScoreView {

@@ -3,48 +3,13 @@
 #include "ScoreView.h"
 
 #include "plugins/ControllerPlugin.h"
-#include "plugins/LoggingPlugin.h"
 
 #include <cmath>
-#include <cassert>
 #include <fstream>
 #include <sstream>
 #include <algorithm>
 
-LPI_USE();
-#define LOGD LPI_LOGD
-#define LOGI LPI_LOGI
-#define LOGE LPI_LOGE
-
 namespace ScoreView {
-
-template <typename T> constexpr __forceinline T clamp(const T x, const T mn, const T mx) { return std::max(std::min(x, mx), mn); }
-
-static string trim_string(const string& str)
-{
-   string s;
-   try
-   {
-      s = str.substr(str.find_first_not_of(" \t\r\n"), str.find_last_not_of(" \t\r\n") - str.find_first_not_of(" \t\r\n") + 1);
-   }
-   catch (...)
-   {
-      //s.clear();
-   }
-   return s;
-}
-
-static bool try_parse_float(const string& str, float& value)
-{
-   std::stringstream sstr(trim_string(str));
-   return ((sstr >> value) && sstr.eof());
-}
-
-static bool try_parse_int(const string& str, int& value)
-{
-   std::stringstream sstr(trim_string(str));
-   return ((sstr >> value) && sstr.eof());
-}
 
 inline float InvsRGB(const float x) { return (x <= 0.04045f) ? (x * (float)(1.0 / 12.92)) : (powf(x * (float)(1.0 / 1.055) + (float)(0.055 / 1.055), 2.4f)); }
 
@@ -101,28 +66,6 @@ void ScoreView::Load(const string& path)
       std::ifstream ifs(path);
       Parse(p, ifs);
    }
-}
-
-static string TrimLeading(const string& str, const std::string& whitespace)
-{
-   if (str.empty())
-      return string();
-   const auto strBegin = str.find_first_not_of(whitespace);
-   if (strBegin == std::string::npos)
-      return string();
-   return string(str.cbegin() + strBegin, str.cend());
-}
-
-static string TrimTrailing(const string& str, const std::string& whitespace)
-{
-   if (str.empty())
-      return string();
-   const auto strBegin = str.cbegin();
-   const auto pos = str.find_last_not_of(whitespace);
-   if (pos == string::npos)
-      return string();
-   const auto strEnd = strBegin + pos + 1;
-   return string(strBegin, strEnd);
 }
 
 void ScoreView::Parse(const std::filesystem::path& path, std::istream& content)

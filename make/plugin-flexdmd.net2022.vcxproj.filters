@@ -28,7 +28,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="../../plugins/flexdmd/FlexDmdPlugin.cpp">
+    <ClCompile Include="../../plugins/flexdmd/FlexDMDPlugin.cpp">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="../../plugins/flexdmd/FlexDMD.cpp">

@@ -656,6 +656,8 @@ if(PLATFORM STREQUAL "android")
    )
 endif()
 
+add_compile_options(-fPIC)
+
 add_library(vpinball SHARED ${VPINBALL_SOURCES})
 
 target_include_directories(vpinball PUBLIC
