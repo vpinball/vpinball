@@ -7,6 +7,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="../../plugins/scoreview/common.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
     <ClCompile Include="../../plugins/scoreview/ScoreViewPlugin.cpp">
       <Filter>source</Filter>
     </ClCompile>
@@ -18,6 +21,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="../../plugins/scoreview/common.h">
+      <Filter>source</Filter>
+    </ClInclude>
     <ClInclude Include="../../plugins/scoreview/ScoreView.h">
       <Filter>source</Filter>
     </ClInclude>

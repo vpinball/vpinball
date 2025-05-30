@@ -168,7 +168,7 @@
       </Command>
     </PostBuildEvent>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)../../plugins/scoreview;$(SolutionDir)../../third-party/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../../src/plugins;$(SolutionDir)../../plugins/scoreview;$(SolutionDir)../../third-party/include/</AdditionalIncludeDirectories>
       <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Speed</FavorSizeOrSpeed>
       <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AnySuitable</InlineFunctionExpansion>
@@ -183,11 +183,13 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="../../plugins/scoreview/common.cpp" />
     <ClCompile Include="../../plugins/scoreview/ScoreViewPlugin.cpp" />
     <ClCompile Include="../../plugins/scoreview/ScoreView.cpp" />
     <ClCompile Include="../../src/core/ResURIResolver.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="../../plugins/scoreview/common.h" />
     <ClInclude Include="../../plugins/scoreview/ScoreView.h" />
     <ClInclude Include="../../src/core/ResURIResolver.h" />
   </ItemGroup>

@@ -12,7 +12,7 @@
 #include "common.h"
 #include "serum-decode.h"
 
-#include "plugins/LoggingPlugin.h"
+#include "LoggingPlugin.h"
 LPI_IMPLEMENT // Implement shared login support
 
 using namespace std::string_literals;
