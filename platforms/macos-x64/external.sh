@@ -17,6 +17,7 @@ echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
 echo "  LIBALTSOUND_SHA: ${LIBALTSOUND_SHA}"
 echo "  LIBDOF_SHA: ${LIBDOF_SHA}"
 echo "  FFMPEG_SHA: ${FFMPEG_SHA}"
+echo "  LIBZIP_SHA: ${LIBZIP_SHA}"
 echo ""
 
 NUM_PROCS=$(sysctl -n hw.ncpu)
@@ -357,6 +358,46 @@ if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
 fi
 
 #
+# build libzip
+#
+
+LIBZIP_EXPECTED_SHA="${LIBZIP_SHA}"
+LIBZIP_FOUND_SHA="$([ -f libzip/cache.txt ] && cat libzip/cache.txt || echo "")"
+
+if [ "${LIBZIP_EXPECTED_SHA}" != "${LIBZIP_FOUND_SHA}" ]; then
+   echo "Building libzip. Expected: ${LIBZIP_EXPECTED_SHA}, Found: ${LIBZIP_FOUND_SHA}"
+
+   rm -rf libzip
+   mkdir libzip
+   cd libzip
+
+   curl -sL https://github.com/nih-at/libzip/archive/${LIBZIP_SHA}.tar.gz -o libzip-${LIBZIP_SHA}.tar.gz
+   tar xzf libzip-${LIBZIP_SHA}.tar.gz
+   mv libzip-${LIBZIP_SHA} libzip
+   cd libzip
+   cmake \
+      -DBUILD_SHARED_LIBS=ON \
+      -DENABLE_ZSTD=OFF \
+      -DENABLE_BZIP2=OFF \
+      -DENABLE_LZMA=OFF \
+      -DBUILD_TOOLS=OFF \
+      -DBUILD_REGRESS=OFF \
+      -DBUILD_OSSFUZZ=OFF \
+      -DBUILD_EXAMPLES=OFF \
+      -DBUILD_DOC=OFF \
+      -DCMAKE_OSX_ARCHITECTURES=x86_64 \
+      -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+      -B build
+   cmake --build build -- -j${NUM_PROCS}
+   cd ..
+
+   echo "$LIBZIP_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
+
+#
 # copy libraries
 #
 
@@ -409,3 +450,7 @@ for LIB in libavcodec libavdevice libavfilter libavformat libavutil libswresampl
    mkdir -p ../../../third-party/include/${LIB}
    cp ffmpeg/ffmpeg/${LIB}/*.h ../../../third-party/include/${LIB}
 done
+
+cp -a libzip/libzip/build/lib/libzip.{dylib,*.dylib} ../../../third-party/runtime-libs/macos-x64
+cp libzip/libzip/build/zipconf.h ../../../third-party/include
+cp libzip/libzip/lib/zip.h ../../../third-party/include

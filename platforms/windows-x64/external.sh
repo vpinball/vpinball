@@ -23,6 +23,7 @@ echo "  PINMAME_SHA: ${PINMAME_SHA}"
 echo "  OPENXR_SHA: ${OPENXR_SHA}"
 echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
 echo "  FFMPEG_SHA: ${FFMPEG_SHA}"
+echo "  LIBZIP_SHA: ${LIBZIP_SHA}"
 echo ""
 
 mkdir -p "external/windows-x64/${BUILD_TYPE}"
@@ -333,6 +334,46 @@ if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
 fi
 
 #
+# build libzip
+#
+
+LIBZIP_EXPECTED_SHA="${LIBZIP_SHA}"
+LIBZIP_FOUND_SHA="$([ -f libzip/cache.txt ] && cat libzip/cache.txt || echo "")"
+
+if [ "${LIBZIP_EXPECTED_SHA}" != "${LIBZIP_FOUND_SHA}" ]; then
+   echo "Building libzip. Expected: ${LIBZIP_EXPECTED_SHA}, Found: ${LIBZIP_FOUND_SHA}"
+
+   rm -rf libzip
+   mkdir libzip
+   cd libzip
+
+   curl -sL https://github.com/nih-at/libzip/archive/${LIBZIP_SHA}.tar.gz -o libzip-${LIBZIP_SHA}.tar.gz
+   tar xzf libzip-${LIBZIP_SHA}.tar.gz
+   mv libzip-${LIBZIP_SHA} libzip
+   cd libzip
+   sed -i.bak 's/\(set_target_properties(zip PROPERTIES\)/\1 OUTPUT_NAME "zip64"/' lib/CMakeLists.txt
+   CURRENT_DIR="$(pwd)"
+   "${MSYS2_PATH}/usr/bin/bash.exe" -l -c "
+      cd \"${CURRENT_DIR}\" &&
+      cmake \
+         -DBUILD_SHARED_LIBS=ON \
+         -DBUILD_TOOLS=OFF \
+         -DBUILD_REGRESS=OFF \
+         -DBUILD_OSSFUZZ=OFF \
+         -DBUILD_EXAMPLES=OFF \
+         -DBUILD_DOC=OFF \
+         -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+         -B build &&
+      cmake --build build -- -j$(nproc)
+   "
+   cd ..
+
+   echo "$LIBZIP_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
+
+#
 # copy libraries
 #
 
@@ -404,3 +445,7 @@ done
 cp "${MSYS2_PATH}/mingw64/bin/zlib1.dll" ../../../third-party/runtime-libs/windows-x64
 cp "${MSYS2_PATH}/mingw64/bin/libiconv-2.dll" ../../../third-party/runtime-libs/windows-x64
 cp "${MSYS2_PATH}/mingw64/bin/libwinpthread-1.dll" ../../../third-party/runtime-libs/windows-x64
+
+cp libzip/libzip/build/lib/libzip64.dll ../../../third-party/runtime-libs/windows-x64
+cp libzip/libzip/build/zipconf.h ../../../third-party/include
+cp libzip/libzip/lib/zip.h ../../../third-party/include
