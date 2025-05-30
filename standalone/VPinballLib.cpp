@@ -14,11 +14,24 @@
 
 #include <filesystem>
 
-MSGPI_EXPORT void MSGPIAPI ScoreViewPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
-MSGPI_EXPORT void MSGPIAPI ScoreViewPluginUnload();
-
+MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginUnload();
+MSGPI_EXPORT void MSGPIAPI B2SPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI B2SPluginUnload();
+MSGPI_EXPORT void MSGPIAPI DMDUtilPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI DMDUtilPluginUnload();
+MSGPI_EXPORT void MSGPIAPI FlexDMDPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI FlexDMDPluginUnload();
 MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
 MSGPI_EXPORT void MSGPIAPI PinMAMEPluginUnload();
+MSGPI_EXPORT void MSGPIAPI PUPPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI PUPPluginUnload();
+MSGPI_EXPORT void MSGPIAPI RemoteControlPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI RemoteControlPluginUnload();
+MSGPI_EXPORT void MSGPIAPI ScoreViewPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI ScoreViewPluginUnload();
+MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI SerumPluginUnload();
 
 namespace VPinballLib {
 
@@ -78,17 +91,52 @@ void VPinball::Init(std::function<void*(Event, void*)> callback)
    m_pWebServer = new WebServer();
    m_eventCallback = callback;
 
-   VPXPluginAPIImpl::GetInstance();
+   LoadPlugins();
+}
 
-   auto scoreviewPlugin = MsgPluginManager::GetInstance().RegisterPlugin(
-       "ScoreView", "ScoreView", "ScoreView", "", "", "", 
-       &ScoreViewPluginLoad, &ScoreViewPluginUnload);
-   scoreviewPlugin->Load(&MsgPluginManager::GetInstance().GetMsgAPI());
+void VPinball::LoadPlugins()
+{
+   static constexpr struct {
+      const char* id;
+      void (*load)(uint32_t, const MsgPluginAPI*);
+      void (*unload)();
+   } plugins[] = {
+      { "AlphaDMD",      &AlphaDMDPluginLoad,      &AlphaDMDPluginUnload      },
+      { "B2S",           &B2SPluginLoad,           &B2SPluginUnload           },
+      { "DMDUtil",       &DMDUtilPluginLoad,       &DMDUtilPluginUnload       },
+      { "FlexDMD",       &FlexDMDPluginLoad,       &FlexDMDPluginUnload       },
+      { "PinMame",       &PinMAMEPluginLoad,       &PinMAMEPluginUnload       },
+      { "PUP",           &PUPPluginLoad,           &PUPPluginUnload           },
+      { "RemoteControl", &RemoteControlPluginLoad, &RemoteControlPluginUnload },
+      { "ScoreView",     &ScoreViewPluginLoad,     &ScoreViewPluginUnload     },
+      { "Serum",         &SerumPluginLoad,         &SerumPluginUnload         }
+   };
 
-   auto pinMamePlugin = MsgPluginManager::GetInstance().RegisterPlugin(
-       "PinMame", "PinMame", "PinMame", "", "", "", 
-       &PinMAMEPluginLoad, &PinMAMEPluginUnload);
-   //pinMamePlugin->Load(&MsgPluginManager::GetInstance().GetMsgAPI());
+   for (auto& p : plugins) {
+      if (!VPXPluginAPIImpl::GetInstance().getAPI().GetOption(
+             p.id, "Enable",
+             VPX_OPT_SHOW_UI, "Enable plugin",
+             0.f, 1.f, 1.f, 0.f,
+             VPXPluginAPI::NONE,
+             nullptr
+         ))
+         continue;
+
+      auto plugin = MsgPluginManager::GetInstance().RegisterPlugin(
+         p.id, p.id, p.id,
+         "", "", "",
+         p.load, p.unload
+      );
+      plugin->Load(&MsgPluginManager::GetInstance().GetMsgAPI());
+      m_plugins.push_back(plugin);
+   }
+}
+
+void VPinball::UnloadPlugins()
+{
+   for (auto& plugin : m_plugins)
+      plugin->Unload();
+   m_plugins.clear();
 }
 
 string VPinball::GetVersionStringFull()

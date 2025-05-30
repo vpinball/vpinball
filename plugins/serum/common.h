@@ -9,6 +9,10 @@ using std::string;
 
 // Shared logging
 #include "LoggingPlugin.h"
+
+// VPX main API
+#include "VPXPlugin.h"
+
 LPI_USE();
 #define LOGD LPI_LOGD
 #define LOGI LPI_LOGI

@@ -99,6 +99,8 @@ if(BUILD_SHARED)
 endif()
 
 if(BUILD_STATIC)
+   add_compile_options(-fPIC)
+
    add_library(SerumPlugin STATIC ${SERUM_PLUGIN_SOURCES})
 
    target_include_directories(SerumPlugin PUBLIC

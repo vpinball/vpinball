@@ -137,6 +137,8 @@ struct ViewSetup {
 
 class VPinball {
 public:
+   void LoadPlugins();
+   void UnloadPlugins();
    static VPinball& GetInstance() { return s_instance; }
    void SetGameLoop(std::function<void()> gameLoop) { m_gameLoop = gameLoop; }
    static void* SendEvent(Event event, void* data);
@@ -192,6 +194,7 @@ private:
    void ProcessResetViewSetup();
    void Cleanup();
 
+   vector<std::shared_ptr<MsgPlugin>> m_plugins;
    std::queue<std::function<void()>> m_liveUIQueue;
    std::mutex m_liveUIMutex;
    std::function<void*(Event, void*)> m_eventCallback;

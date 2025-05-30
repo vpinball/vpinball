@@ -78,6 +78,8 @@ if(BUILD_SHARED)
 endif()
 
 if(BUILD_STATIC)
+   add_compile_options(-fPIC)
+
    add_library(AlphaDMDPlugin STATIC ${ALPHADMD_PLUGIN_SOURCES})
 
    target_include_directories(AlphaDMDPlugin PUBLIC

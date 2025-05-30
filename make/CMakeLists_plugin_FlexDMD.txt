@@ -8,7 +8,7 @@ set(CMAKE_C_STANDARD 99)
 set(FLEXDMD_PLUGIN_SOURCES
    plugins/flexdmd/common.cpp
    plugins/flexdmd/FlexDMD.cpp
-   plugins/flexdmd/FlexDmdPlugin.cpp
+   plugins/flexdmd/FlexDMDPlugin.cpp
    plugins/flexdmd/SurfaceGraphics.cpp
    plugins/flexdmd/UltraDMD.cpp
    plugins/flexdmd/actors/Actor.cpp
@@ -182,6 +182,8 @@ if(BUILD_SHARED)
 endif()
 
 if(BUILD_STATIC)
+   add_compile_options(-fPIC)
+
    add_library(FlexDMDPlugin STATIC ${FLEXDMD_PLUGIN_SOURCES})
 
    target_include_directories(FlexDMDPlugin PUBLIC

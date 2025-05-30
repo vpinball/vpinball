@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
 
 set(SCOREVIEW_PLUGIN_SOURCES
+   plugins/scoreview/common.cpp
+   plugins/scoreview/common.h
    plugins/scoreview/ScoreViewPlugin.cpp
    plugins/scoreview/ScoreView.h
    plugins/scoreview/ScoreView.cpp
@@ -89,6 +91,8 @@ if(BUILD_SHARED)
 endif()
 
 if(BUILD_STATIC)
+   add_compile_options(-fPIC)
+
    add_library(ScoreViewPlugin STATIC ${SCOREVIEW_PLUGIN_SOURCES})
 
    target_include_directories(ScoreViewPlugin PUBLIC

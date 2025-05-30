@@ -206,7 +206,7 @@
     <ClCompile Include="../../plugins/flexdmd/resources/PadFilter.cpp" />
     <ClCompile Include="../../plugins/flexdmd/resources/RegionFilter.cpp" />
     <ClCompile Include="../../plugins/flexdmd/FlexDMD.cpp" />
-    <ClCompile Include="../../plugins/flexdmd/FlexDmdPlugin.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/FlexDMDPlugin.cpp" />
     <ClCompile Include="../../plugins/flexdmd/actors/Image.cpp" />
     <ClCompile Include="../../plugins/flexdmd/actors/ImageSequence.cpp" />
     <ClCompile Include="../../plugins/flexdmd/actors/ScoreBoard.cpp" />

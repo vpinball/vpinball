@@ -148,8 +148,8 @@ brew install cmake bison curl
 export PATH="$(brew --prefix bison)/bin:$PATH"
 export JAVA_HOME=$(/usr/libexec/java_home -v 17.0.11)
 export ANDROID_HOME=/Users/jmillard/Library/Android/sdk
-export ANDROID_NDK=/Users/jmillard/Library/Android/sdk/ndk/27.0.12077973
-export ANDROID_NDK_HOME=/Users/jmillard/Library/Android/sdk/ndk/27.0.12077973
+export ANDROID_NDK=/Users/jmillard/Library/Android/sdk/ndk/27.2.12479018
+export ANDROID_NDK_HOME=/Users/jmillard/Library/Android/sdk/ndk/27.2.12479018
 platforms/android-arm64-v8a/external.sh
 cp make/CMakeLists_bgfx_lib.txt CMakeLists.txt
 cmake -DPLATFORM=android -DARCH=arm64-v8a -DCMAKE_BUILD_TYPE=Release -B build/android-arm64-v8a

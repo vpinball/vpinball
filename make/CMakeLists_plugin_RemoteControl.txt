@@ -78,6 +78,8 @@ if(BUILD_SHARED)
 endif()
 
 if(BUILD_STATIC)
+   add_compile_options(-fPIC)
+
    add_library(RemoteControlPlugin STATIC ${REMOTE_CONTROL_PLUGIN_SOURCES})
 
    target_include_directories(RemoteControlPlugin PUBLIC

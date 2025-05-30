@@ -88,6 +88,8 @@ if(BUILD_SHARED)
 endif()
 
 if(BUILD_STATIC)
+   add_compile_options(-fPIC)
+
    add_library(B2SPlugin STATIC ${B2S_PLUGIN_SOURCES})
 
    target_include_directories(B2SPlugin PUBLIC

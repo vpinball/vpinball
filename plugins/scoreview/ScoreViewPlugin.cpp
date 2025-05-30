@@ -1,17 +1,16 @@
 // license:GPLv3+
 
+#include "MsgPlugin.h"
+#include "ControllerPlugin.h"
+
+#include "common.h"
+
+#include <functional>
 #include <cstring>
-#include <cstdarg>
-#include <cstdio>
 #include <cstdlib>
 #include <memory>
 
-#include "plugins/MsgPlugin.h"
-#include "plugins/VPXPlugin.h"
 #include "core/ResURIResolver.h"
-
-#include "plugins/LoggingPlugin.h"
-LPI_IMPLEMENT // Implement shared login support
 
 #include "ScoreView.h"
 
@@ -21,12 +20,6 @@ LPI_IMPLEMENT // Implement shared login support
 #include <tchar.h>
 #include <locale>
 #include <codecvt>
-#define PATH_SEPARATOR_CHAR '\\'
-#else
-#include <dlfcn.h>
-#include <limits.h>
-#include <unistd.h>
-#define PATH_SEPARATOR_CHAR '/'
 #endif
 
 #ifdef __APPLE__
@@ -36,50 +29,13 @@ LPI_IMPLEMENT // Implement shared login support
 namespace ScoreView
 {
 
+LPI_IMPLEMENT // Implement shared login support
+
 static MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
 static uint32_t endpointId;
 static unsigned int onGameStartId, onGameEndId, onGetAuxRendererId, onAuxRendererChgId;
 static std::unique_ptr<ScoreView> scoreview;
-
-#ifndef _WIN32
-string GetLibraryPath()
-{
-   Dl_info info{};
-   if (dladdr((void*)&GetLibraryPath, &info) == 0 || !info.dli_fname)
-      return "";
-   char buf[PATH_MAX];
-   if (!realpath(info.dli_fname, buf))
-      return "";
-   return string(buf);
-}
-#endif
-
-static string PathFromFilename(const string& szfilename)
-{
-   const int len = (int)szfilename.length();
-   // find the last '\' in the filename
-   int end;
-   for (end = len; end >= 0; end--)
-   {
-      if (szfilename[end] == PATH_SEPARATOR_CHAR)
-         break;
-   }
-
-   if (end == 0)
-      end = len - 1;
-
-   // copy from the start of the string to the end (or last '\')
-   const char* szT = szfilename.c_str();
-   int count = end + 1;
-
-   string szpath;
-   while (count--)
-   {
-      szpath.push_back(*szT++);
-   }
-   return szpath;
-}
 
 int OnRender(VPXRenderContext2D* ctx, void*)
 {

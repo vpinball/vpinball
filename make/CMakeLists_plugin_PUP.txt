@@ -177,6 +177,8 @@ if(BUILD_SHARED)
 endif()
 
 if(BUILD_STATIC)
+   add_compile_options(-fPIC)
+
    add_library(PUPPlugin STATIC ${PUP_PLUGIN_SOURCES})
 
    target_include_directories(PUPPlugin PUBLIC
