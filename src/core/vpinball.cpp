@@ -228,8 +228,15 @@ void VPinball::GetMyPrefPath()
 #else
    m_myPrefPath = string(getenv("HOME")) + PATH_SEPARATOR_CHAR + ".vpinball" + PATH_SEPARATOR_CHAR;
 #endif
-   if (!DirExists(m_myPrefPath))
-      std::filesystem::create_directory(m_myPrefPath);
+   if (!DirExists(m_myPrefPath)) {
+      std::error_code ec;
+      if (std::filesystem::create_directory(m_myPrefPath, ec)) {
+         PLOGI.printf("Pref path created: %s", m_myPrefPath.c_str());
+      }
+      else {
+         PLOGE.printf("Unable to create pref path: %s", m_myPrefPath.c_str());
+      }
+   }
 }
 
 //Post Work to the worker Thread

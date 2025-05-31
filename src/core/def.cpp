@@ -404,7 +404,8 @@ void copy_folder(const string& srcPath, const string& dstPath)
    }
 
    if (!std::filesystem::exists(dst)) {
-      if (!std::filesystem::create_directory(dst)) {
+      std::error_code ec;
+      if (!std::filesystem::create_directory(dst, ec)) {
          PLOGE.printf("failed to create destination path: %s", dstPath.c_str());
          return;
       }
