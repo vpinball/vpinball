@@ -1049,15 +1049,15 @@ void PinInput::ProcessEvent(const InputEvent& event)
                newValue = (newValue - static_cast<float>(m_deadz)) * static_cast<float>(JOYRANGEMX) / static_cast<float>(JOYRANGEMX - m_deadz);
             else
                newValue = 0.f;
-            m_accelerometerDirty = (newValue != it->value);
+            m_accelerometerDirty |= (newValue != it->value);
             break;
 
          case AnalogAction::AM_PlungerSpeed:
-            m_plungerSpeedDirty = (newValue != it->value);
+            m_plungerSpeedDirty |= (newValue != it->value);
             break;
 
          case AnalogAction::AM_PlungerPos:
-            m_plungerPosDirty = (newValue != it->value);
+            m_plungerPosDirty |= (newValue != it->value);
             break;
          }
          it->value = newValue;
