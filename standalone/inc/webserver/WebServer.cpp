@@ -293,7 +293,8 @@ void WebServer::Folder(struct mg_connection *c, struct mg_http_message* hm)
 
    string path = g_pvp->m_myPrefPath + q;
 
-   if (std::filesystem::create_directory(path))
+   std::error_code ec;
+   if (std::filesystem::create_directory(path, ec))
       mg_http_reply(c, 200, "", "OK");
    else
       mg_http_reply(c, 500, "", "Server error");

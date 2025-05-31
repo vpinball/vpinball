@@ -83,8 +83,13 @@ void VPinball::Init(std::function<void*(Event, void*)> callback)
    PLOGI << "m_myPrefPath=" << g_pvp->m_myPrefPath;
 
    if (!DirExists(PATH_USER)) {
-      PLOGI << "Creating user path: path=" << PATH_USER;
-      std::filesystem::create_directory(PATH_USER);
+      std::error_code ec;
+      if (std::filesystem::create_directory(PATH_USER, ec)) {
+         PLOGI.printf("User path created: %s", PATH_USER.c_str());
+      }
+      else {
+         PLOGE.printf("Unable to create user path: %s", PATH_USER.c_str());
+      }
    }
 
    m_pWebServer = new WebServer();

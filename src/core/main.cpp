@@ -911,10 +911,8 @@ public:
          m_prefPath += PATH_SEPARATOR_CHAR;
 
       if (!DirExists(m_prefPath)) {
-         try {
-            std::filesystem::create_directory(m_prefPath);
-         }
-         catch(...) {
+         std::error_code ec;
+         if (!std::filesystem::create_directory(m_prefPath, ec)) {
             std::cout
                << "Visual Pinball Error"
                << "\n\n"
@@ -975,8 +973,15 @@ public:
       PLOGI << "m_myPath=" << m_vpinball.m_myPath;
       PLOGI << "m_myPrefPath=" << m_vpinball.m_myPrefPath;
 
-      if (!DirExists(PATH_USER))
-         std::filesystem::create_directory(PATH_USER);
+      if (!DirExists(PATH_USER)) {
+         std::error_code ec;
+         if (std::filesystem::create_directory(PATH_USER, ec)) {
+            PLOGI.printf("User path created: %s", PATH_USER.c_str());
+         }
+         else {
+            PLOGE.printf("Unable to create user path: %s", PATH_USER.c_str());
+         }
+      }
 
       if (m_listRes) {
          PLOGI << "Available fullscreen resolutions:";

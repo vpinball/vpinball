@@ -187,10 +187,17 @@ VPinMAMEController::VPinMAMEController()
    m_szIniPath = find_case_insensitive_directory_path(m_szPath + "ini");
    if (m_szIniPath.empty()) {
       m_szIniPath = m_szPath + "ini" + PATH_SEPARATOR_CHAR;
-      std::filesystem::create_directories(m_szIniPath);
+      std::error_code ec;
+      if (std::filesystem::create_directory(m_szIniPath.c_str(), ec)) {
+         PLOGI.printf("PinMAME ini path created: %s", m_szIniPath.c_str());
+      }
+      else {
+         PLOGE.printf("Unable to create PinMAME ini path: %s", m_szIniPath.c_str());
+      }
    }
-
-   PLOGI.printf("PinMAME ini path set to: %s", m_szIniPath.c_str());
+   else {
+      PLOGI.printf("PinMAME ini path set to: %s", m_szIniPath.c_str());
+   }
 
    PinmameSetConfig(&config);
    PinmameSetUserData((void*)this);
