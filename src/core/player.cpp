@@ -2220,6 +2220,8 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
          const float texX, const float texY, const float texW, const float texH,
          const float srcX, const float srcY, const float srcW, const float srcH)
          {
+            if (alpha <= 0.f) // Alpha blended, so alpha = 0 means not visible
+               return;
             BaseTexture *const tex = static_cast<BaseTexture *>(texture);
             RenderDevice * const rd = g_pplayer->m_renderer->m_renderDevice;
             rd->ResetRenderState();

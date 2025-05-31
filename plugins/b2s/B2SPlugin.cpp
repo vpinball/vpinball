@@ -229,7 +229,7 @@ void OnGetRenderer(const unsigned int msgId, void* context, void* msgData)
 {
    static AnciliaryRendererDef entry = { "B2S", "B2S Backglass & FullDMD", "Renderer for directb2s backglass files", nullptr, OnRender };
    GetAnciliaryRendererMsg* msg = static_cast<GetAnciliaryRendererMsg*>(msgData);
-   if (msg->window == VPXAnciliaryWindow::VPXWINDOW_Backglass)
+   if ((msg->window == VPXAnciliaryWindow::VPXWINDOW_Backglass) || (msg->window == VPXAnciliaryWindow::VPXWINDOW_ScoreView))
    {
       if (msg->count < msg->maxEntryCount)
          msg->entries[msg->count] = entry;

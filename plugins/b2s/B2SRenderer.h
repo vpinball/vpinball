@@ -20,7 +20,9 @@ public:
    bool Render(VPXRenderContext2D* context);
 
 private:
-   float GetBrightness(const float localState, const B2SRomIDType romIdType, const int romId, const bool romInverted = false) const;
+   std::function<void()> ResolveBrightnessUpdater(float* brightness, const B2SRomIDType romIdType, const int romId, const bool romInverted = false) const;
+   bool RenderBackglass(VPXRenderContext2D* context);
+   bool RenderScoreview(VPXRenderContext2D* context);
 
    std::shared_ptr<B2STable> m_b2s;
 
@@ -35,10 +37,13 @@ private:
    int m_LampIndex = -1;
    unsigned int m_nLamps = 0;
 
-   std::chrono::time_point<std::chrono::high_resolution_clock> m_lastRenderTick;
+   std::chrono::time_point<std::chrono::high_resolution_clock> m_lastBackglassRenderTick;
+   std::chrono::time_point<std::chrono::high_resolution_clock> m_lastDmdRenderTick;
 
    float m_b2sWidth = 0.f;
    float m_b2sHeight = 0.f;
+   float m_dmdWidth = 0.f;
+   float m_dmdHeight = 0.f;
    float m_grillCut = 0.f;
 };
 
