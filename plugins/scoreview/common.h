@@ -4,6 +4,17 @@
 #include <cstdarg>
 #include <cstdio>
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <Windows.h>
+#include <tchar.h>
+#include <locale>
+#include <codecvt>
+#endif
+
 #ifndef _WIN32
 #include <dlfcn.h>
 #include <limits.h>
@@ -45,7 +56,6 @@ bool try_parse_float(const string& str, float& value);
 bool try_parse_int(const string& str, int& value);
 string find_case_insensitive_file_path(const string& szPath);
 string PathFromFilename(const string& szfilename);
-#ifndef _WIN32
-string GetLibraryPath();
-#endif
+string GetPluginPath();
+
 }

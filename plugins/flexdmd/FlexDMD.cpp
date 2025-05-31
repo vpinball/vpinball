@@ -16,11 +16,12 @@
 
 namespace Flex {
 
-FlexDMD::FlexDMD()
+FlexDMD::FlexDMD(VPXPluginAPI* vpxApi) :
+   m_vpxApi(vpxApi)
 {
    m_pStage = new Group(this, "Stage"s);
    m_pStage->SetSize(static_cast<float>(m_width), static_cast<float>(m_height));
-   m_pAssetManager = new AssetManager();
+   m_pAssetManager = new AssetManager(m_vpxApi);
 }
 
 FlexDMD::~FlexDMD()

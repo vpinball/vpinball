@@ -14,7 +14,7 @@ class VPXFile;
 class AssetManager final
 {
 public:
-   AssetManager();
+   AssetManager(VPXPluginAPI* vpxApi);
    ~AssetManager();
 
    const string& GetBasePath() { return m_szBasePath; }
@@ -29,6 +29,8 @@ public:
    void ClearAll();
 
 private:
+   VPXPluginAPI* m_vpxApi = nullptr;
+
    ankerl::unordered_dense::map<string, Bitmap*> m_cachedBitmaps;
    ankerl::unordered_dense::map<string, Font*> m_cachedFonts;
 

@@ -14,13 +14,6 @@
 
 #include "ScoreView.h"
 
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-#include <tchar.h>
-#include <locale>
-#include <codecvt>
-#endif
 
 #ifdef __APPLE__
 #include <TargetConditionals.h>
@@ -51,33 +44,16 @@ int OnRender(VPXRenderContext2D* ctx, void*)
       if (!scoreview->HasLayouts())
       {
          // Load default layouts provided with plugin
-         // TODO this is implemented in a platform dependent manner as platforms like Android or iOS may need special handling (as plugins are statically linked, and we may embbed layouts in ressources or define a custom path scheme)
-         string fullpath;
-         #ifdef _WIN32
-         HMODULE hm = nullptr;
-         if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, _T("PluginLoad"), &hm) == 0)
-            return false;
-         TCHAR path[MAX_PATH];
-         if (GetModuleFileName(hm, path, MAX_PATH) == 0)
-            return false;
-         #ifdef _UNICODE
-         int size_needed = WideCharToMultiByte(CP_UTF8, 0, path, -1, NULL, 0, NULL, NULL);
-         fullpath.resize(size_needed, 0);
-         WideCharToMultiByte(CP_UTF8, 0, path, -1, fullpath.data(), size_needed, NULL, NULL);
-         #else
-         fullpath = string(path);
-         #endif
-         fullpath = PathFromFilename(fullpath) + PATH_SEPARATOR_CHAR;
-         #else
+         string path;
          #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
          VPXInfo vpxInfo;
-         vpxApi->GetVpxInfo(&vpxInfo);
-         fullpath = string(vpxInfo.path) + PATH_SEPARATOR_CHAR + "plugins"s + PATH_SEPARATOR_CHAR + "scoreview"s + PATH_SEPARATOR_CHAR;
+         m_vpxApi->GetVpxInfo(&vpxInfo);
+         path = string(vpxInfo.path) + PATH_SEPARATOR_CHAR + "plugins"s + PATH_SEPARATOR_CHAR + "flexdmd"s + PATH_SEPARATOR_CHAR;
          #else
-         fullpath = PathFromFilename(GetLibraryPath());
+         path = GetPluginPath();
          #endif
-         #endif
-         scoreview->Load(fullpath + "layouts" + PATH_SEPARATOR_CHAR);
+         path = path + "layouts"s + PATH_SEPARATOR_CHAR;
+         scoreview->Load(path);
       }
    }
    return scoreview->Render(ctx) ? 1 : 0;
