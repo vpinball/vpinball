@@ -16,19 +16,21 @@
 
 #include <sstream>
 
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#endif
+
 #if SDL_PLATFORM_WINDOWS
-   #define WIN32_LEAN_AND_MEAN
    #undef RGB
    #undef GetRValue
    #undef GetGValue
    #undef GetBValue
-   #include <Windows.h>
-   #include <tchar.h>
 #endif
 
 namespace Flex {
 
-AssetManager::AssetManager() {
+AssetManager::AssetManager(VPXPluginAPI* vpxApi) :
+   m_vpxApi(vpxApi) {
    m_szBasePath = "./";
 }
 
@@ -249,30 +251,16 @@ void* AssetManager::Open(AssetSrc* pSrc)
       break;
       case AssetSrcType_FlexResource:
       {
-         string path = SDL_GetBasePath() + "plugins/flexdmd/assets"s + PATH_SEPARATOR_CHAR + pSrc->GetPath();
-         #if SDL_PLATFORM_WINDOWS
-            HMODULE hModule = nullptr;
-            if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, _T("Open"), &hModule))
-            {
-               TCHAR dllPath[MAX_PATH];
-               if (GetModuleFileName(hModule, dllPath, MAX_PATH))
-               {
-                  #ifdef _UNICODE
-                  std::wstring fullpath(dllPath);
-                  #else
-                  std::string fullpath(dllPath);
-                  #endif
-                  fullpath = fullpath.substr(0, fullpath.find_last_of(_T("\\/"))) + _T('\\');
-                  #ifdef _UNICODE
-                  path = POLE::UTF16toUTF8(fullpath);
-                  #else
-                  path = fullpath;
-                  #endif
-                  path += "assets"s + PATH_SEPARATOR_CHAR + pSrc->GetPath();
-               }
-            }
+         // Load assets provided with plugin
+         string path;
+         #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
+         VPXInfo vpxInfo;
+         m_vpxApi->GetVpxInfo(&vpxInfo);
+         path = string(vpxInfo.path) + PATH_SEPARATOR_CHAR + "plugins"s + PATH_SEPARATOR_CHAR + "flexdmd"s + PATH_SEPARATOR_CHAR;
+         #else
+         path = GetPluginPath();
          #endif
-         path = find_case_insensitive_file_path(path);
+         path = find_case_insensitive_file_path(path + "assets"s + PATH_SEPARATOR_CHAR + pSrc->GetPath());
          if (!path.empty()) {
             if (pSrc->GetAssetType() == AssetType_BMFont)
                pAsset = BitmapFont::Create(path);

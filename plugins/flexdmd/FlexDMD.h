@@ -38,7 +38,7 @@ typedef enum
 class FlexDMD final
 {
 public:
-   FlexDMD();
+   FlexDMD(VPXPluginAPI* vpxApi);
    ~FlexDMD();
 
    PSC_IMPLEMENT_REFCOUNT()
@@ -127,6 +127,8 @@ private:
       m_rgbaFrame.clear();
       m_lumFrame.clear();
    }
+
+   VPXPluginAPI* m_vpxApi = nullptr;
 
    uint8_t* m_rgbFrame = nullptr;
    bool m_rgbFrameDirty = true;

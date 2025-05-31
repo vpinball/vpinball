@@ -321,6 +321,7 @@ PSC_CLASS_END(FlexDMD)
 // Plugin interface
 
 static MsgPluginAPI* msgApi = nullptr;
+static VPXPluginAPI* vpxApi = nullptr;
 static ScriptablePluginAPI* scriptApi = nullptr;
 
 static uint32_t endpointId, nextDmdId;
@@ -633,6 +634,10 @@ MSGPI_EXPORT void MSGPIAPI FlexDMDPluginLoad(const uint32_t sessionId, MsgPlugin
    onSegSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_ON_SRC_CHG_MSG);
    getSegSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_GET_SRC_MSG);
 
+   unsigned int getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
+   msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
+   msgApi->ReleaseMsgID(getVpxApiId);
+
    // Contribute our API to the script engine
    const unsigned int getScriptApiId = msgApi->GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getScriptApiId, &scriptApi);
@@ -683,7 +688,7 @@ MSGPI_EXPORT void MSGPIAPI FlexDMDPluginLoad(const uint32_t sessionId, MsgPlugin
 
    nextDmdId = 0;
    FlexDMD_SCD->CreateObject = []() {
-      FlexDMD* pFlex = new FlexDMD();
+      FlexDMD* pFlex = new FlexDMD(vpxApi);
       pFlex->SetId(nextDmdId);
       pFlex->SetOnDMDChangedHandler(OnShowChanged);
       pFlex->SetOnDestroyHandler(OnFlexDestroyed);
@@ -712,4 +717,5 @@ MSGPI_EXPORT void MSGPIAPI FlexDMDPluginUnload()
    scriptApi->SetCOMObjectOverride("FlexDMD.FlexDMD", nullptr);
    scriptApi = nullptr;
    msgApi = nullptr;
+   vpxApi = nullptr;
 }

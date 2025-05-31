@@ -138,4 +138,48 @@ string find_case_insensitive_file_path(const string& szPath)
    return string();
 }
 
+string GetPluginPath()
+{
+    string pathBuf;
+#ifdef _WIN32
+    HMODULE hm = nullptr;
+    if (GetModuleHandleEx(
+            GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+            GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+            _T("FlexDMDPluginLoad"), &hm) == 0)
+        return string();
+
+    TCHAR buf[MAX_PATH];
+    if (GetModuleFileName(hm, buf, MAX_PATH) == 0)
+        return string();
+
+#ifdef _UNICODE
+    int size_needed = WideCharToMultiByte(CP_UTF8, 0, buf, -1, NULL, 0, NULL, NULL);
+    pathBuf.resize(size_needed, 0);
+    WideCharToMultiByte(CP_UTF8, 0, buf, -1, pathBuf.data(), size_needed, NULL, NULL);
+#else
+    pathBuf = string(buf);
+#endif
+#else
+    Dl_info info{};
+    if (dladdr((void*)&GetPluginPath, &info) == 0 || !info.dli_fname)
+        return string();
+
+    char realBuf[PATH_MAX];
+    if (!realpath(info.dli_fname, realBuf))
+        return string();
+
+    pathBuf = string(realBuf);
+#endif
+
+    if (pathBuf.empty())
+        return string();
+
+    size_t lastSep = pathBuf.find_last_of(PATH_SEPARATOR_CHAR);
+    if (lastSep == string::npos)
+        return string();
+
+    return pathBuf.substr(0, lastSep + 1);
+}
+
 }

@@ -4,6 +4,20 @@
 #include <cstdarg>
 #include <cstdio>
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <tchar.h>
+#include <locale>
+#include <codecvt>
+#endif
+
+#ifndef _WIN32
+#include <dlfcn.h>
+#include <limits.h>
+#include <unistd.h>
+#endif
+
 #include <string>
 using namespace std::string_literals;
 using std::string;
@@ -56,5 +70,6 @@ bool try_parse_color(const string& str, ColorRGBA32& value);
 string normalize_path_separators(const string& szPath);
 string extension_from_path(const string& path);
 string find_case_insensitive_file_path(const string& szPath);
+string GetPluginPath();
 
 }
