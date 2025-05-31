@@ -216,8 +216,11 @@ Window::Window(const string &title, const Settings& settings, const Settings::Se
       if (m_fullscreen)
          wnd_flags |= SDL_WINDOW_FULLSCREEN;
 
+      #if !defined(_MSC_VER) // Win32 (we use _MSC_VER since standalone also defines WIN32 for non Win32 builds)
+      // On Windows, always on top is not always respected and if using SDL_WINDOW_UTILITY windows may end up being hidden with no way to select and move them
       if (m_settingsSection != Settings::Player)
          wnd_flags |= SDL_WINDOW_UTILITY | SDL_WINDOW_ALWAYS_ON_TOP;
+      #endif
 
       // Prevent full screen window from minimizing when re-arranging external windows
       SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
