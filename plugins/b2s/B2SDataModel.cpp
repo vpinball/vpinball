@@ -188,7 +188,7 @@ B2SBulb::B2SBulb(const tinyxml2::XMLNode& root)
    , m_fontSize(GetIntAttribute(root, ""s, "FontSize"s, 0))
    , m_fontStyle(GetIntAttribute(root, ""s, "FontStyle"s, 0))
 {
-   m_isLit = m_initialState;
+   m_brightness = m_initialState;
 }
 B2SBulb::B2SBulb(B2SBulb&& other) noexcept
    : m_id(other.m_id)
@@ -224,7 +224,7 @@ B2SBulb::B2SBulb(B2SBulb&& other) noexcept
    , m_fontName(other.m_fontName)
    , m_fontSize(other.m_fontSize)
    , m_fontStyle(other.m_fontStyle)
-   , m_isLit(other.m_isLit)
+   , m_brightness(other.m_brightness)
 {
    other.m_image = nullptr; // Ressource is transfered, avoid destruction
    other.m_offImage = nullptr; // Ressource is transfered, avoid destruction
@@ -234,6 +234,23 @@ B2SBulb::~B2SBulb()
 {
    DeleteTexture(m_image);
    DeleteTexture(m_offImage);
+}
+
+void B2SBulb::Render(VPXRenderContext2D* ctx) const
+{
+   m_updateBrightness();
+   int bulbW, bulbH;
+   if (m_offImage && m_brightness < 1.f)
+   {
+      GetTextureInfo(m_offImage, &bulbW, &bulbH);
+      ctx->DrawImage(ctx, m_offImage, m_lightColor.x, m_lightColor.y, m_lightColor.z, 1.f,
+         0.f, 0.f, static_cast<float>(bulbW), static_cast<float>(bulbH),
+         static_cast<float>(m_locationX), static_cast<float>(m_locationY), static_cast<float>(m_width), static_cast<float>(m_height));
+   }
+   GetTextureInfo(m_image, &bulbW, &bulbH);
+   ctx->DrawImage(ctx, m_image, m_lightColor.x, m_lightColor.y, m_lightColor.z, m_brightness,
+      0.f, 0.f, static_cast<float>(bulbW), static_cast<float>(bulbH),
+      static_cast<float>(m_locationX), static_cast<float>(m_locationY), static_cast<float>(m_width), static_cast<float>(m_height));
 }
 
 

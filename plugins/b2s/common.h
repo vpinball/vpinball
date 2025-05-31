@@ -16,6 +16,7 @@ using std::vector;
 #include <cstdarg>
 #include <cstdlib>
 #include <memory> // needed for std::shared_ptr on Linux
+#include <functional>
 
 // Shared logging
 #include "LoggingPlugin.h"

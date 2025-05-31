@@ -32,6 +32,7 @@ public:
       , m_filename(other.m_filename)
       , m_romId(other.m_romId)
       , m_romIdType(other.m_romIdType)
+      , m_updateBrightness(other.m_updateBrightness)
    {
       other.m_image = nullptr; // Ressource is transfered, avoid destruction
    }
@@ -45,6 +46,9 @@ public:
    const string m_filename;
    const int m_romId;
    const B2SRomIDType m_romIdType;
+
+   float m_brightness = 0.f;
+   std::function<void()> m_updateBrightness = []() { };
 };
 
 
@@ -118,7 +122,7 @@ public:
    const bool m_romInverted;
    const bool m_initialState;
    const B2SDualMode m_dualMode;
-   const int m_intensity;
+   const int m_intensity; // Unused property in original B2S
    const int m_zOrder;
    const vec4 m_lightColor;
    const vec4 m_dodgeColor;
@@ -128,7 +132,7 @@ public:
    const int m_locationY;
    const int m_width;
    const int m_height;
-   const bool m_isImageSnippit;
+   const bool m_isImageSnippit; // Image snippit have their initial state applied before others on startup, didn't find any other difference
    const B2SSnippitType m_snippitType;
    const int m_snippitRotatingSteps;
    const int m_snippitRotatingAngle;
@@ -143,7 +147,11 @@ public:
    const int m_fontSize;
    const int m_fontStyle;
 
-   bool m_isLit = false;
+public:
+   void Render(VPXRenderContext2D* ctx) const;
+
+   float m_brightness = 0.f;
+   std::function<void()> m_updateBrightness = []() { };
 };
 
 
@@ -275,11 +283,11 @@ public:
    const string m_gameName;
    const B2SImage m_thumbnailImage;
    const B2SImage m_backglassImage;
-   const B2SImage m_backglassOnImage;
+   B2SImage m_backglassOnImage;
    const B2SImage m_backglassOffImage;
    const B2SImage m_dmdImage;
    const vector<B2SSound> m_sounds;
-   const vector<B2SBulb> m_backglassIlluminations;
+   vector<B2SBulb> m_backglassIlluminations;
    const vector<B2SAnimation> m_backglassAnimations;
    const vector<B2SBulb> m_dmdIlluminations;
    const vector<B2SAnimation> m_dmdAnimations;
