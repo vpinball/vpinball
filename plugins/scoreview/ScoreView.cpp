@@ -495,6 +495,9 @@ void ScoreView::Select(const float scoreW, const float scoreH)
             return a.unfittedPixels < b.unfittedPixels;
          return false;
       });
+
+   if (m_bestLayout->unmatchedVisuals > 0)
+      m_bestLayout = nullptr;
 }
 
 bool ScoreView::Render(VPXRenderContext2D* ctx)
