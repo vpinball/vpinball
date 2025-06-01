@@ -227,10 +227,10 @@ private:
 
    Texture* m_tonemapLUT = nullptr;
 
-   #if defined(ENABLE_OPENGL) && !defined(__OPENGLES__)
-   RenderTarget* m_envRadianceTexture = nullptr;
-   #else
+   #if defined(ENABLE_DX9) || defined(__OPENGLES__)
    BaseTexture* m_envRadianceTexture = nullptr;
+   #else
+   RenderTarget* m_envRadianceTexture = nullptr;
    #endif
 
    // Segment display rendering
