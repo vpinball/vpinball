@@ -163,10 +163,10 @@ private:
 
    Matrix3D m_fullMatrix;
    Vertex3D_NoTex2 *m_ringVertices = nullptr;
-   Texture m_ringTexture;
-   Texture m_skirtTexture;
-   Texture m_baseTexture;
-   Texture m_capTexture;
+   std::unique_ptr<Texture> m_ringTexture;
+   std::unique_ptr<Texture> m_skirtTexture;
+   std::unique_ptr<Texture> m_baseTexture;
+   std::unique_ptr<Texture> m_capTexture;
 
    float   m_baseHeight;
    float   m_skirtCounter = 0.0f;

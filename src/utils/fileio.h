@@ -97,7 +97,7 @@ public:
 
    HRESULT ReadBytes(void * const pv, const ULONG count, ULONG *  const foo);
 
-   HRESULT Load();
+   HRESULT Load(std::function<bool(const int id, BiffReader *const pbr)> processToken = nullptr);
 
    IStream *m_pistream;
    void *m_pdata;

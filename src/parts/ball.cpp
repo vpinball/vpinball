@@ -240,14 +240,14 @@ void Ball::RenderSetup(RenderDevice *device)
       m_d.m_pinballEnvSphericalMapping = true;
    }
    else
-      m_pinballEnv = m_ptable->GetImage(m_d.m_szImage);
+      m_pinballEnv = m_ptable->GetImage(m_d.m_szImage)->m_pdsBuffer;
 
    if (m_d.m_useTableRenderSettings && g_pplayer->m_renderer->m_overwriteBallImages && g_pplayer->m_renderer->m_decalImage)
       m_pinballDecal = g_pplayer->m_renderer->m_decalImage;
    else if (m_d.m_imageDecal.empty())
       m_pinballDecal = nullptr;
    else
-      m_pinballDecal = m_ptable->GetImage(m_d.m_imageDecal);
+      m_pinballDecal = m_ptable->GetImage(m_d.m_imageDecal)->m_pdsBuffer;
 }
 
 void Ball::RenderRelease()
@@ -431,7 +431,7 @@ void Ball::Render(const unsigned int renderMask)
    if (!m_pinballEnv)
    {
       sphericalMapping = false; // Environment texture is an equirectangular map
-      m_rd->m_ballShader->SetTexture(SHADER_tex_ball_color, &g_pplayer->m_renderer->m_pinballEnvTexture);
+      m_rd->m_ballShader->SetTexture(SHADER_tex_ball_color, g_pplayer->m_renderer->m_pinballEnvTexture.get());
    }
    else
    {
@@ -735,8 +735,11 @@ STDMETHODIMP Ball::put_Image(BSTR newVal)
    char buf[MAXTOKEN];
    WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, nullptr, nullptr);
    m_d.m_szImage = buf;
-   if (g_pplayer)
-      m_pinballEnv = g_pplayer->m_ptable->GetImage(m_d.m_szImage);
+   Texture *const tex = m_ptable->GetImage(m_d.m_szImage);
+   if (tex)
+      m_pinballEnv = tex->m_pdsBuffer;
+   else
+      m_pinballEnv = nullptr;
    return S_OK;
 }
 
@@ -753,16 +756,18 @@ STDMETHODIMP Ball::put_FrontDecal(BSTR newVal)
    char szImage[MAXTOKEN];
    WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
    m_d.m_imageDecal = szImage;
-   if (g_pplayer)
+   Texture * const tex = m_ptable->GetImage(szImage);
+   if (tex)
    {
-      Texture * const tex = g_pplayer->m_ptable->GetImage(szImage);
-      if (tex && tex->IsHDR())
+      if (tex->IsHDR())
       {
-          ShowError("Cannot use a HDR image (.exr/.hdr) here");
-          return E_FAIL;
+         ShowError("Cannot use a HDR image (.exr/.hdr) here");
+         return E_FAIL;
       }
-      m_pinballDecal = tex;
+      m_pinballDecal = tex->m_pdsBuffer;
    }
+   else
+      m_pinballDecal = nullptr;
    return S_OK;
 }
 

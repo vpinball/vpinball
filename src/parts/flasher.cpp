@@ -156,9 +156,8 @@ void Flasher::UIRenderPass1(Sur * const psur)
    vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
    Texture *ppi;
-   if (m_ptable->RenderSolid() && m_d.m_displayTexture && (ppi = m_ptable->GetImage(m_d.m_szImageA)))
+   if (m_ptable->RenderSolid() && m_d.m_displayTexture && (ppi = m_ptable->GetImage(m_d.m_szImageA)) && ppi->GetGDIBitmap())
    {
-      ppi->CreateGDIVersion();
       if (m_d.m_imagealignment == ImageModeWrap)
       {
          float _minx = FLT_MAX;
@@ -173,17 +172,11 @@ void Flasher::UIRenderPass1(Sur * const psur)
             if (vvertex[i].y > _maxy) _maxy = vvertex[i].y;
          }
 
-         if (ppi->m_hbmGDIVersion)
-            psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion, _minx, _miny, _minx + (_maxx - _minx), _miny + (_maxy - _miny), ppi->m_width, ppi->m_height);
+         psur->PolygonImage(vvertex, ppi->GetGDIBitmap(), _minx, _miny, _minx + (_maxx - _minx), _miny + (_maxy - _miny), ppi->m_width, ppi->m_height);
       }
       else
       {
-         if (ppi->m_hbmGDIVersion)
-            psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion, m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
-         else
-         {
-            // Do nothing for now to indicate to user that there is a problem
-         }
+         psur->PolygonImage(vvertex, ppi->GetGDIBitmap(), m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
       }
    }
    else

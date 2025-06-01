@@ -659,33 +659,29 @@ void Primitive::UIRenderPass2(Sur * const psur)
    if (m_d.m_displayTexture)
    {
       Texture * const ppi = m_ptable->GetImage(m_d.m_szImage);
-      if (ppi)
+      if (ppi && ppi->GetGDIBitmap())
       {
-         ppi->CreateGDIVersion();
-         if (ppi->m_hbmGDIVersion)
+         vector<RenderVertex> vvertex;
+         vvertex.reserve(m_mesh.NumIndices());
+         for (size_t i = 0; i < m_mesh.NumIndices(); i += 3)
          {
-            vector<RenderVertex> vvertex;
-            vvertex.reserve(m_mesh.NumIndices());
-            for (size_t i = 0; i < m_mesh.NumIndices(); i += 3)
-            {
-               const Vertex3Ds * const A = &m_vertices[m_mesh.m_indices[i]];
-               const Vertex3Ds * const B = &m_vertices[m_mesh.m_indices[i + 1]];
-               const Vertex3Ds * const C = &m_vertices[m_mesh.m_indices[i + 2]];
-               RenderVertex rvA;
-               RenderVertex rvB;
-               RenderVertex rvC;
-               rvA.x = A->x;
-               rvA.y = A->y;
-               rvB.x = B->x;
-               rvB.y = B->y;
-               rvC.x = C->x;
-               rvC.y = C->y;
-               vvertex.push_back(rvC);
-               vvertex.push_back(rvB);
-               vvertex.push_back(rvA);
-            }
-            psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion, m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
+            const Vertex3Ds * const A = &m_vertices[m_mesh.m_indices[i]];
+            const Vertex3Ds * const B = &m_vertices[m_mesh.m_indices[i + 1]];
+            const Vertex3Ds * const C = &m_vertices[m_mesh.m_indices[i + 2]];
+            RenderVertex rvA;
+            RenderVertex rvB;
+            RenderVertex rvC;
+            rvA.x = A->x;
+            rvA.y = A->y;
+            rvB.x = B->x;
+            rvB.y = B->y;
+            rvC.x = C->x;
+            rvC.y = C->y;
+            vvertex.push_back(rvC);
+            vvertex.push_back(rvB);
+            vvertex.push_back(rvA);
          }
+         psur->PolygonImage(vvertex, ppi->GetGDIBitmap(), m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
       }
    }
 }

@@ -297,11 +297,15 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                const int x = (xsize - width) / 2;
                const int y = (ysize - height) / 2;
 
-               HDC hdcDD;
-               ppi->GetTextureDC(&hdcDD);
-               SetStretchBltMode(pdis->hDC, HALFTONE); // somehow enables filtering
-               StretchBlt(pdis->hDC, x, y, width, height, hdcDD, 0, 0, ppi->m_width, ppi->m_height, SRCCOPY);
-               ppi->ReleaseTextureDC(hdcDD);
+               if (ppi->GetGDIBitmap())
+               {
+                  HDC hdcDD = CreateCompatibleDC(nullptr);
+                  HBITMAP oldHBM = (HBITMAP)SelectObject(hdcDD, ppi->GetGDIBitmap());
+                  SetStretchBltMode(pdis->hDC, HALFTONE); // somehow enables filtering
+                  StretchBlt(pdis->hDC, x, y, width, height, hdcDD, 0, 0, ppi->m_width, ppi->m_height, SRCCOPY);
+                  SelectObject(hdcDD, oldHBM);
+                  DeleteDC(hdcDD);
+               }
             }
          }
          else
@@ -841,12 +845,7 @@ int ImageDialog::AddListImage(HWND hwndListView, Texture *const ppi)
    lvitem.pszText = (LPSTR)ppi->m_name.c_str();
    lvitem.lParam = (LPARAM)ppi;
 
-   if (ppi->m_realWidth == ppi->m_width && ppi->m_realHeight == ppi->m_height)
-      _snprintf_s(sizeString, MAXTOKEN - 1, "%ix%i", ppi->m_realWidth, ppi->m_realHeight);
-   else if (ppi->m_realWidth > ppi->m_width || ppi->m_realHeight > ppi->m_height)
-      _snprintf_s(sizeString, MAXTOKEN - 1, "%ix%i downsized to %ix%i", ppi->m_realWidth, ppi->m_realHeight, ppi->m_width, ppi->m_height);
-   else
-      _snprintf_s(sizeString, MAXTOKEN - 1, "%ix%i upscaled to %ix%i", ppi->m_realWidth, ppi->m_realHeight, ppi->m_width, ppi->m_height);
+   _snprintf_s(sizeString, MAXTOKEN - 1, "%ix%i", ppi->m_width, ppi->m_height);
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
    ListView_SetItemText(hwndListView, index, 1, (LPSTR)ppi->m_path.c_str());

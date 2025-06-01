@@ -96,8 +96,8 @@ public:
    bool m_trailForBalls = false;
    float m_ballTrailStrength = 0.5f;
    bool m_overwriteBallImages = false;
-   Texture* m_ballImage = nullptr;
-   Texture* m_decalImage = nullptr;
+   BaseTexture* m_ballImage = nullptr;
+   BaseTexture* m_decalImage = nullptr;
 
    // Post processing
    void SetScreenOffset(const float x, const float y); // set render offset in screen coordinates, e.g., for the nudge shake
@@ -129,7 +129,7 @@ public:
    RenderDevice* m_renderDevice = nullptr;
 
    Texture* m_envTexture = nullptr;
-   Texture m_pinballEnvTexture; // loaded from assets folder
+   std::unique_ptr<Texture> m_pinballEnvTexture; // loaded from assets folder
 
    // free-camera-mode-fly-around parameters
    Vertex3Ds m_cam = Vertex3Ds(0.f, 0.f, 0.f);
@@ -209,11 +209,11 @@ private:
 
    vector<Renderable*> m_renderableToInit;
 
-   Texture m_builtinEnvTexture; // loaded from assets folder
+   std::unique_ptr<Texture> m_builtinEnvTexture; // loaded from assets folder
 
    bool m_dynamicAO;
    bool m_disableAO;
-   Texture m_aoDitherTexture; // loaded from assets folder
+   std::unique_ptr<Texture> m_aoDitherTexture; // loaded from assets folder
 
    bool m_ss_refl;
 
@@ -234,7 +234,7 @@ private:
    #endif
 
    // Segment display rendering
-   Texture m_segDisplaySDF[4][9];
+   std::unique_ptr<Texture> m_segDisplaySDF[4][9];
    vec4 m_segColor[8]; // Base seg color and brightness
    vec4 m_segUnlitColor[8]; // unlit color and back glow
 
