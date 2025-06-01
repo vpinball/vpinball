@@ -215,8 +215,8 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   if (ppi != nullptr)
                   {
                      SetDlgItemText(IDC_ALPHA_MASK_EDIT, f2sz(255.f * ppi->m_alphaTestValue).c_str());
-                     GetDlgItem(IDC_ALPHA_MASK_EDIT).ShowWindow(ppi->GetRawBitmap() && ppi->GetRawBitmap()->has_alpha());
-                     GetDlgItem(IDC_STATIC_ALPHA).ShowWindow(ppi->GetRawBitmap() && ppi->GetRawBitmap()->has_alpha());
+                     GetDlgItem(IDC_ALPHA_MASK_EDIT).ShowWindow(ppi->GetRawBitmap() && ppi->GetRawBitmap()->HasAlpha());
+                     GetDlgItem(IDC_STATIC_ALPHA).ShowWindow(ppi->GetRawBitmap() && ppi->GetRawBitmap()->HasAlpha());
                   }
                }
                ::InvalidateRect(GetDlgItem(IDC_PICTUREPREVIEW).GetHwnd(), nullptr, fTrue);

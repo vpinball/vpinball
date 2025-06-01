@@ -861,7 +861,9 @@ BaseTexture* Renderer::EnvmapPrecalc(const Texture* envTex, const unsigned int r
 
 #ifdef __OPENGLES__
    if (radTex->m_format == BaseTexture::SRGB || radTex->m_format == BaseTexture::RGB_FP16) {
-      radTex->AddAlpha();
+      BaseTexture* tex = radTex->NewWithAlpha();
+      delete radTex;
+      radTex = tex;
    }
 #endif
 
