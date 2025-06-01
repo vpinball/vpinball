@@ -4,9 +4,11 @@
 
 #define MIN_TEXTURE_SIZE 8u
 
-struct FIBITMAP;
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
 // Image data block stored in main memory, meant to be uploaded for GPU sampling
+//
 class BaseTexture final
 {
 public:
@@ -27,10 +29,10 @@ public:
    BaseTexture(const unsigned int w, const unsigned int h, const Format format);
    ~BaseTexture();
 
-   static BaseTexture *CreateFromHBitmap(const HBITMAP hbm, unsigned int maxTexDim, bool with_alpha = true);
-   static BaseTexture *CreateFromFile(const string &filename, unsigned int maxTexDim);
-   static BaseTexture *CreateFromData(const void *data, const size_t size, unsigned int maxTexDim);
-   static BaseTexture *CreateFromFreeImage(FIBITMAP *dib, bool resizeOnLowMem, unsigned int maxTexDim); // also free's/delete's the dib inside!
+   static BaseTexture *Create(const unsigned int w, const unsigned int h, const Format format) noexcept;
+   static BaseTexture *CreateFromFile(const string &filename, unsigned int maxTexDimension = 0, bool resizeOnLowMem = false) noexcept;
+   static BaseTexture *CreateFromData(const void *data, const size_t size, unsigned int maxTexDimension = 0, bool resizeOnLowMem = false) noexcept;
+   static BaseTexture *CreateFromHBitmap(const HBITMAP hbm, unsigned int maxTexDimension, bool with_alpha = true) noexcept;
    static void Update(BaseTexture **texture, const unsigned int w, const unsigned int h, const Format format, const uint8_t *image); // Update eventually recreating the texture
 
    unsigned long long GetLiveHash() const { return m_liveHash; }
@@ -40,35 +42,33 @@ public:
    unsigned int pitch() const; // pitch in bytes
    BYTE* data()                { return m_data; }
    const BYTE* datac() const   { return m_data; }
-   bool has_alpha() const      { return m_format == RGBA || m_format == SRGBA || m_format == RGBA_FP16 || m_format == RGBA_FP32; }
+   bool HasAlpha() const       { return m_format == RGBA || m_format == SRGBA || m_format == RGBA_FP16 || m_format == RGBA_FP32; }
 
-   BaseTexture *ToBGRA(); // swap R and B channels, also tonemaps floating point buffers during conversion and adds an opaque alpha channel (if format with missing alpha)
-   void AddAlpha();
-   void RemoveAlpha();
+   BaseTexture *ToBGRA() const; // swap R and B channels, also tonemaps floating point buffers during conversion and adds an opaque alpha channel (if format with missing alpha)
+   BaseTexture *NewWithAlpha() const;
 
    unsigned int m_realWidth, m_realHeight;
    Format m_format;
 
-   uint8_t* GetMD5Hash() { UpdateMD5(); return m_md5Hash; }
-   bool IsOpaque() const { UpdateOpaque(); return m_isOpaque; }
-   bool IsSigned() const { return m_isSigned; }
-
    bool IsMD5HashComputed() const { return !m_isMD5Dirty; }
+   uint8_t* GetMD5Hash() const { UpdateMD5(); return m_md5Hash; }
+   void SetMD5Hash(uint8_t* md5) const { memcpy(m_md5Hash, md5, sizeof(m_md5Hash)); m_isMD5Dirty = false; }
+
    bool IsOpaqueComputed() const { return !m_isOpaqueDirty; }
-   void SetMD5Hash(uint8_t* md5) { memcpy(m_md5Hash, md5, sizeof(m_md5Hash)); m_isMD5Dirty = false; }
-   void SetIsOpaque(const bool v) { m_isOpaque = v; m_isOpaqueDirty = false; }
-   void SetIsSigned(const bool v) { m_isSigned = v; }
+   bool IsOpaque() const { UpdateOpaque(); return m_isOpaque; }
+   void SetIsOpaque(const bool v) const { m_isOpaque = v; m_isOpaqueDirty = false; }
 
 private:
+   static BaseTexture *CreateFromFreeImage(struct FIBITMAP *dib, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept; // also free's/delete's the dib inside!
+
    void UpdateMD5() const;
    void UpdateOpaque() const;
 
    const unsigned long long m_liveHash;
    const unsigned int m_width, m_height;
-   BYTE* m_data;
+   BYTE* const m_data;
 
    // These field are (lazily) computed from the data, therefore they do not impact the constness of the object
-   mutable bool m_isSigned = false;
    mutable bool m_isMD5Dirty = true;
    mutable uint8_t m_md5Hash[16] = { 0 };
    mutable bool m_isOpaqueDirty = true;
@@ -76,8 +76,10 @@ private:
 };
 
 
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
 // Image definition, based on a source file data blob
+//
 class Texture final
 {
 public:
@@ -89,7 +91,7 @@ public:
 
    HBITMAP GetGDIBitmap() const; // Lazily created view of the image, suitable for GDI rendering
    BaseTexture* GetRawBitmap() const { return m_imageBuffer; } // Lazily created view of the image, suitable for GPU sampling
-
+   
    int GetFileSize() const { return m_ppb->m_cdata; }
    const uint8_t *const GetFileRaw() const { return m_ppb->m_pdata; }
    const string& GetFilePath() const { return m_ppb->m_path; }
@@ -97,33 +99,28 @@ public:
 
    uint8_t* GetMD5Hash() { UpdateMD5(); return m_md5Hash; }
    bool IsOpaque() const { UpdateOpaque(); return m_isOpaque; }
-   bool IsSigned() const { UpdateSigned(); return m_isSigned; }
    bool IsHDR() const { return GetRawBitmap() != nullptr && (m_imageBuffer->m_format == BaseTexture::RGB_FP16 || m_imageBuffer->m_format == BaseTexture::RGBA_FP16 || m_imageBuffer->m_format == BaseTexture::RGB_FP32 || m_imageBuffer->m_format == BaseTexture::RGBA_FP32); }
 
 public:
    string m_name; // Image name (used as a unique identifier)
    float m_alphaTestValue = static_cast<float>(-1.0 / 255.0); // Alpha test value (defaults to negative, that is to say disabled)
-   unsigned int m_width = 0;
-   unsigned int m_height = 0;
+   const unsigned int m_width = 0;
+   const unsigned int m_height = 0;
 
 private:
-   Texture(const string& name, PinBinary* ppb); // Private to forbid uninitialized objects
+   Texture(const string& name, PinBinary* ppb, unsigned int width, unsigned int height); // Private to forbid uninitialized objects
 
-   void LoadImageBuffer(bool resizeOnLowMem, unsigned int maxTexDimension); // Loads the source PinBinary into a BaseTexture
    void UpdateMD5() const;
-   void UpdateOpaque() const;
-   void UpdateSigned() const;
    void SetMD5Hash(uint8_t* md5) { memcpy(m_md5Hash, md5, sizeof(m_md5Hash)); m_isMD5Dirty = false; if (m_imageBuffer) m_imageBuffer->SetMD5Hash(md5); }
-   void SetIsOpaque(const bool v) { m_isOpaque = v; m_isOpaqueDirty = false; if (m_imageBuffer) m_imageBuffer->SetIsOpaque(v); }
-   void SetIsSigned(const bool v) { m_isSigned = v; m_isSignedDirty = false; if (m_imageBuffer) m_imageBuffer->SetIsSigned(v); }
 
-   PinBinary * const m_ppb; // Original data blob of the image, always defined unless image failed to load and is empty
+   void UpdateOpaque() const;
+   void SetIsOpaque(const bool v) { m_isOpaque = v; m_isOpaqueDirty = false; if (m_imageBuffer) m_imageBuffer->SetIsOpaque(v); }
+
+   PinBinary * const m_ppb; // Original data blob of the image, always defined
 
    // These field are (lazily) computed from the data, therefore they do not impact the constness of the object
    mutable BaseTexture* m_imageBuffer = nullptr; // Decoded version of the texture in a format suitable for GPU sampling. Note that width and height of the decoded block can be different than width and height of the image since the surface can be limited to smaller sizes by the user or memory
    mutable HBITMAP m_hbmGDIVersion = nullptr;
-   mutable bool m_isSignedDirty = true;
-   mutable bool m_isSigned = false;
    mutable bool m_isMD5Dirty = true;
    mutable uint8_t m_md5Hash[16] = { 0 };
    mutable bool m_isOpaqueDirty = true;
@@ -131,7 +128,10 @@ private:
 };
 
 
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Helper functions
+//
 template<bool opaque>
 inline void copy_bgra_rgba(unsigned int* const __restrict dst, const unsigned int* const __restrict src, const size_t size)
 {

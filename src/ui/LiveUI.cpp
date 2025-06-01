@@ -4526,7 +4526,7 @@ void LiveUI::ImageProperties()
    }
    ImGui::EndDisabled();
    ImGui::Separator();
-   ImGui::BeginDisabled(m_selection.image->GetRawBitmap() == nullptr || !m_selection.image->GetRawBitmap()->has_alpha());
+   ImGui::BeginDisabled(m_selection.image->GetRawBitmap() == nullptr || !m_selection.image->GetRawBitmap()->HasAlpha());
    if (ImGui::InputFloat("Alpha Mask", &m_selection.image->m_alphaTestValue))
       m_table->SetNonUndoableDirty(eSaveDirty);
    ImGui::EndDisabled();
