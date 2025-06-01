@@ -828,7 +828,7 @@ ImGui::MarkdownImageData LiveUI::MarkdownImageCallback(ImGui::MarkdownLinkCallba
    Texture *const ppi = ui->m_live_table->GetImage(std::string(data.link, data.linkLength));
    if (ppi == nullptr)
       return ImGui::MarkdownImageData {};
-   Sampler *const sampler = ui->m_renderer->m_renderDevice->m_texMan.LoadTexture(ppi->m_pdsBuffer, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
+   Sampler *const sampler = ui->m_renderer->m_renderDevice->m_texMan.LoadTexture(ppi->GetRawBitmap(), SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
    if (sampler == nullptr)
       return ImGui::MarkdownImageData {};
    #if defined(ENABLE_BGFX)
@@ -4526,12 +4526,12 @@ void LiveUI::ImageProperties()
    }
    ImGui::EndDisabled();
    ImGui::Separator();
-   ImGui::BeginDisabled(m_selection.image->m_pdsBuffer == nullptr || !m_selection.image->m_pdsBuffer->has_alpha());
+   ImGui::BeginDisabled(m_selection.image->GetRawBitmap() == nullptr || !m_selection.image->GetRawBitmap()->has_alpha());
    if (ImGui::InputFloat("Alpha Mask", &m_selection.image->m_alphaTestValue))
       m_table->SetNonUndoableDirty(eSaveDirty);
    ImGui::EndDisabled();
    ImGui::Separator();
-   Sampler *sampler = m_renderer->m_renderDevice->m_texMan.LoadTexture(m_selection.image->m_pdsBuffer, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
+   Sampler *sampler = m_renderer->m_renderDevice->m_texMan.LoadTexture(m_selection.image->GetRawBitmap(), SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
 #if defined(ENABLE_BGFX)
    ImTextureID image = (ImTextureID)sampler;
 #elif defined(ENABLE_OPENGL)

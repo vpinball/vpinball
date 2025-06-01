@@ -1282,7 +1282,7 @@ void Primitive::Render(const unsigned int renderMask)
       Texture * const img = m_ptable->GetImage(m_d.m_szImage);
       if (img != nullptr)
       {
-         pin = img->m_pdsBuffer;
+         pin = img->GetRawBitmap();
          pinAlphaTest = img->m_alphaTestValue;
          m_rd->m_basicShader->SetAlphaTestValue(img->m_alphaTestValue);
       }

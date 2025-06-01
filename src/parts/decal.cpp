@@ -781,7 +781,7 @@ void Decal::Render(const unsigned int renderMask)
       if (pin)
       {
          if (!m_backglass)
-            m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, pin->m_alphaTestValue >= 0.f && !pin->m_pdsBuffer->IsOpaque());
+            m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, pin->m_alphaTestValue >= 0.f && !pin->GetRawBitmap()->IsOpaque());
          else
             m_rd->m_basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
          // Set texture to mirror, so the alpha state of the texture blends correctly to the outside

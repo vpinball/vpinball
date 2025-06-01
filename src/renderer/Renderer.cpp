@@ -256,15 +256,15 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_envTexture = m_table->GetImage(m_table->m_envImage);
    PLOGI << "Computing environment map radiance"; // For profiling
 
+   const Texture* const envTex = m_envTexture ? m_envTexture : m_builtinEnvTexture.get();
+   const unsigned int envTexHeight = min(envTex->GetRawBitmap()->height(), 256u) / 8;
+   const unsigned int envTexWidth = envTexHeight * 2;
    #if defined(ENABLE_OPENGL) && !defined(__OPENGLES__) // Compute radiance on the GPU
    // TODO implement for BGFX
-   Texture* const envTex = m_envTexture ? m_envTexture : &m_builtinEnvTexture;
-   const int envTexHeight = min(envTex->m_pdsBuffer->height(), 256u) / 8;
-   const int envTexWidth = envTexHeight * 2;
-   const colorFormat rad_format = envTex->m_pdsBuffer->m_format == BaseTexture::RGB_FP32 ? colorFormat::RGBA32F : colorFormat::RGBA16F;
+   const colorFormat rad_format = envTex->GetRawBitmap()->m_format == BaseTexture::RGB_FP32 ? colorFormat::RGBA32F : colorFormat::RGBA16F;
    m_envRadianceTexture = new RenderTarget(m_renderDevice, SurfaceType::RT_DEFAULT, "Irradiance"s, envTexWidth, envTexHeight, rad_format, false, 1, "Failed to create irradiance render target");
    m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_irradiance);
-   m_renderDevice->m_FBShader->SetTexture(SHADER_tex_env, envTex);
+   m_renderDevice->m_FBShader->SetTexture(SHADER_tex_env, envTex->GetRawBitmap());
    m_renderDevice->SetRenderTarget("Env Irradiance PreCalc"s, m_envRadianceTexture);
    m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
    m_renderDevice->SubmitRenderFrame(); // Force submission as result users do not explicitly declare the dependency on this pass
@@ -272,9 +272,6 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_renderDevice->m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
 
    #else // DirectX 9 does not support bitwise operation in shader, so radical_inverse is not implemented and therefore we use the slow CPU path instead of GPU
-   const Texture* const envTex = m_envTexture ? m_envTexture : m_builtinEnvTexture.get();
-   const unsigned int envTexHeight = min(envTex->m_pdsBuffer->height(), 256u) / 8;
-   const unsigned int envTexWidth = envTexHeight * 2;
    m_envRadianceTexture = EnvmapPrecalc(envTex, envTexWidth, envTexHeight);
    m_renderDevice->m_texMan.SetDirty(m_envRadianceTexture);
    m_renderDevice->m_basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
@@ -503,10 +500,10 @@ void Renderer::SwapAORenderTargets()
 
 BaseTexture* Renderer::EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres)
 {
-   const void* __restrict envmap = envTex->m_pdsBuffer->data();
-   const unsigned int env_xres = envTex->m_pdsBuffer->width();
-   const unsigned int env_yres = envTex->m_pdsBuffer->height();
-   BaseTexture::Format env_format = envTex->m_pdsBuffer->m_format;
+   const void* __restrict envmap = envTex->GetRawBitmap()->data();
+   const unsigned int env_xres = envTex->GetRawBitmap()->width();
+   const unsigned int env_yres = envTex->GetRawBitmap()->height();
+   BaseTexture::Format env_format = envTex->GetRawBitmap()->m_format;
    const BaseTexture::Format rad_format = (env_format == BaseTexture::RGB_FP16 || env_format == BaseTexture::RGB_FP32) ? env_format : BaseTexture::SRGB;
    BaseTexture* radTex = new BaseTexture(rad_env_xres, rad_env_yres, rad_format);
    BYTE* const __restrict rad_envmap = radTex->data();
@@ -876,7 +873,7 @@ void Renderer::DrawBackground()
       m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
       m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
       m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-      g_pplayer->m_renderer->DrawSprite(0.f, 0.f, 1.f, 1.f, 0xFFFFFFFF, m_renderDevice->m_texMan.LoadTexture(pin->m_pdsBuffer, SF_TRILINEAR, SA_CLAMP, SA_CLAMP, false), ptable->m_ImageBackdropNightDay ? sqrtf(m_globalEmissionScale) : 1.0f, true);
+      g_pplayer->m_renderer->DrawSprite(0.f, 0.f, 1.f, 1.f, 0xFFFFFFFF, m_renderDevice->m_texMan.LoadTexture(pin->GetRawBitmap(), SF_TRILINEAR, SA_CLAMP, SA_CLAMP, false), ptable->m_ImageBackdropNightDay ? sqrtf(m_globalEmissionScale) : 1.0f, true);
    }
    else
    {
@@ -1240,7 +1237,7 @@ static Texture* LoadSegSDF(std::unique_ptr<Texture>& tex, const string& path)
    {
       tex.reset(Texture::CreateFromFile(path));
       if (tex)
-         tex->m_pdsBuffer->m_format = BaseTexture::RGBA; // needed as the image is loaded as sRGBA while it contains linear SDF data
+         tex->GetRawBitmap()->m_format = BaseTexture::RGBA; // needed as the image is loaded as sRGBA while it contains linear SDF data
    }
    return tex.get();
 }

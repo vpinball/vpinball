@@ -31,7 +31,7 @@ bool PinBinary::ReadFromFile(const string& filename)
 
    m_cdata = GetFileSize(hFile, nullptr);
 
-   m_pdata = new char[m_cdata];
+   m_pdata = new uint8_t[m_cdata];
 
    DWORD read;
    /*BOOL foo =*/ ReadFile(hFile, m_pdata, m_cdata, &read, nullptr);
@@ -101,7 +101,7 @@ bool PinBinary::LoadToken(const int id, BiffReader * const pbr)
    case FID(SIZE):
    {
       pbr->GetInt(m_cdata);
-      m_pdata = new char[m_cdata];
+      m_pdata = new uint8_t[m_cdata];
       break;
    }
    // Size must come before data, otherwise our structure won't be allocated

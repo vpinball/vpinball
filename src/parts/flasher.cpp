@@ -1382,7 +1382,7 @@ void Flasher::Render(const unsigned int renderMask)
          g_pplayer->m_renderer->SetupDMDRender(dmdProfile, false, dotTint, color.w, frame, m_d.m_modulate_vs_add, m_backglass ? Renderer::Reinhard : Renderer::Linear, m_transformedVertices,
             vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom),
             vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness, 
-            glass ? glass->m_pdsBuffer : nullptr, vec4(0.f, 0.f, 1.f, 1.f), vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
+            glass ? glass->GetRawBitmap() : nullptr, vec4(0.f, 0.f, 1.f, 1.f), vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
          // DMD flasher are rendered transparent. They used to be drawn as a separate pass after opaque parts and before other transparents.
          // There we shift the depthbias to reproduce this behavior for backward compatibility.
          m_rd->DrawMesh(m_rd->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
@@ -1467,7 +1467,7 @@ void Flasher::Render(const unsigned int renderMask)
          g_pplayer->m_renderer->SetupSegmentRenderer(renderStyle, false, vec3(color.x, color.y, color.z), color.w,
             segFamily, segs.source->elementType[0], segs.state.frame, m_backglass ? Renderer::Reinhard : Renderer::Linear, m_transformedVertices,
             vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom),
-            vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness, glass ? glass->m_pdsBuffer : nullptr, vec4(0.f, 0.f , 1.f, 1.f), 
+            vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness, glass ? glass->GetRawBitmap() : nullptr, vec4(0.f, 0.f , 1.f, 1.f), 
             vec3(GetRValue(m_d.m_glassAmbient)/255.f, GetGValue(m_d.m_glassAmbient)/255.f, GetBValue(m_d.m_glassAmbient)/255.f));
          // We also apply the depth bias shift, not for backward compatibility (as alphaseg display did not exist before 10.8.1) but for consistency between DMD and Display mode
          m_rd->DrawMesh(m_rd->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);

@@ -511,7 +511,7 @@ public:
    void SetTextureNull(const ShaderUniforms uniformName);
    void SetTexture(const ShaderUniforms uniformName, Texture* const texel, const SamplerFilter filter = SF_UNDEFINED, const SamplerAddressMode clampU = SA_UNDEFINED, const SamplerAddressMode clampV = SA_UNDEFINED, const bool force_linear_rgb = false)
    {
-      SetTexture(uniformName, texel->m_pdsBuffer, filter, clampU, clampV, force_linear_rgb);
+      SetTexture(uniformName, texel->GetRawBitmap(), filter, clampU, clampV, force_linear_rgb);
    }
    void SetTexture(const ShaderUniforms uniformName, BaseTexture* const texel, const SamplerFilter filter = SF_UNDEFINED, const SamplerAddressMode clampU = SA_UNDEFINED, const SamplerAddressMode clampV = SA_UNDEFINED, const bool force_linear_rgb = false);
 

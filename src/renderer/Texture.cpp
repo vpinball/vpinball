@@ -93,7 +93,7 @@ void BaseTexture::Update(BaseTexture** texture, const unsigned int width, const 
    *texture = baseTex;
 }
 
-BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_mem, unsigned int maxTexDim)
+BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resizeOnLowMem, unsigned int maxTexDim)
 {
    // check if Textures exceed the maximum texture dimension
    if (maxTexDim <= 0)
@@ -142,7 +142,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
       // failed to get mem?
       if (dibResized == nullptr)
       {
-         if (!resize_on_low_mem)
+         if (!resizeOnLowMem)
          {
             FreeImage_Unload(dib);
             return nullptr;
@@ -172,7 +172,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
          // failed to get mem?
          if (dibConv == nullptr)
          {
-            if (!resize_on_low_mem)
+            if (!resizeOnLowMem)
             {
                FreeImage_Unload(dib);
                return nullptr;
@@ -233,7 +233,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, bool resize_on_low_
          else if (dibResized != dib) // did we allocate a rescaled copy?
             FreeImage_Unload(dibResized);
 
-         if (!resize_on_low_mem)
+         if (!resizeOnLowMem)
          {
             FreeImage_Unload(dib);
             return nullptr;
@@ -713,252 +713,244 @@ void BaseTexture::UpdateMD5() const
 ////////////////////////////////////////////////////////////////////////////////
 
 
-Texture::Texture()
+Texture::Texture(const string& name, PinBinary* ppb)
+   : m_name(name)
+   , m_ppb(ppb)
 {
+   assert(m_ppb != nullptr);
 }
 
-Texture* Texture::CreateFromFile(const string& filename)
+Texture* Texture::CreateFromStream(IStream *pstream, int version, PinTable *pt, bool resizeOnLowMem, unsigned int maxTexDimension)
 {
-   Texture* tex = new Texture();
-   tex->LoadFromFile(filename, true);
-   if (tex->m_pdsBuffer)
-      return tex;
-   delete tex;
-   return nullptr;
-}
-
-Texture* Texture::CreateFromStream(IStream *pstream, int version, PinTable *pt, bool resize_on_low_mem, unsigned int maxTexDimension)
-{
-   Texture* tex = new Texture();
-   tex->m_resize_on_low_mem = resize_on_low_mem;
+   string name;
+   string path;
+   unsigned int width = 0;
+   unsigned int height = 0;
+   float alphaTestValue = static_cast<float>(-1.0 / 255.0);
+   PinBinary* ppb = nullptr;
+   bool isSignedDirty = true;
+   bool isSigned = false;
+   bool isMD5Dirty = true;
+   uint8_t md5Hash[16] = { 0 };
+   bool isOpaqueDirty = true;
+   bool isOpaque = true;
    BiffReader br(pstream, nullptr, pt, version, 0, 0);
-   br.Load([tex](const int id, BiffReader* const pbr)
+   br.Load([&](const int id, BiffReader* const pbr)
    {
       switch(id)
       {
-      case FID(NAME): pbr->GetString(tex->m_name); break;
-      case FID(PATH): pbr->GetString(tex->m_path); break;
-      case FID(WDTH): pbr->GetInt(tex->m_width); break;
-      case FID(HGHT): pbr->GetInt(tex->m_height); break;
-      case FID(ALTV): pbr->GetFloat(tex->m_alphaTestValue); tex->m_alphaTestValue *= (float)(1.0 / 255.0); break;
-      case FID(MD5H): if (tex->m_pdsBuffer) { uint8_t md5[16]; pbr->GetStruct(md5, 16); tex->m_pdsBuffer->SetMD5Hash(md5); } break;
-      case FID(OPAQ): if (tex->m_pdsBuffer) { bool v; pbr->GetBool(v); tex->m_pdsBuffer->SetIsOpaque(v); } break;
-      case FID(SIGN): if (tex->m_pdsBuffer) { bool v; pbr->GetBool(v); tex->m_pdsBuffer->SetIsSigned(v); } break;
+      case FID(NAME): pbr->GetString(name); break;
+      case FID(PATH): pbr->GetString(path); break;
+      case FID(WDTH): pbr->GetInt(width); break;
+      case FID(HGHT): pbr->GetInt(height); break;
+      case FID(ALTV): pbr->GetFloat(alphaTestValue); alphaTestValue *= (float)(1.0 / 255.0); break;
+      case FID(MD5H): pbr->GetStruct(md5Hash, 16); isMD5Dirty = false; break;
+      case FID(OPAQ): pbr->GetBool(isOpaque); isSignedDirty = false; break;
+      case FID(SIGN): pbr->GetBool(isSigned); isOpaqueDirty = false; break;
       case FID(BITS):
       {
-         if (tex->m_pdsBuffer)
-            tex->FreeStuff();
+         // Old files, used to store some bitmaps as a 32-bit SBGRA picture, we now (10.8.1+) always use a compressed file format, so convert here to simplify the code
+         const size_t size = height * width;
+         assert(ppb == nullptr && size != 0);
 
-         // BMP stored as a 32-bit SBGRA picture
-         BYTE* const __restrict tmp = new BYTE[(size_t)tex->m_width * tex->m_height * 4];
-         LZWReader lzwreader(pbr->m_pistream, (int*)tmp, tex->m_width * 4, tex->m_height, tex->m_width * 4);
+         BYTE* const __restrict tmp = new BYTE[size * 4];
+         LZWReader lzwreader(pbr->m_pistream, reinterpret_cast<int*>(tmp), width * 4, height, width * 4);
          lzwreader.Decoder();
 
          // Find out if all alpha values are 0x00 or 0xFF
-         bool has_alpha = false;
-         for (size_t o = 3; o < (size_t)tex->m_width * tex->m_height * 4; o += 4)
-            if (tmp[o] != 0 && tmp[o] != 255)
-            {
-               has_alpha = true;
-               break;
-            }
-
-         try
-         {
-            tex->m_pdsBuffer = new BaseTexture(tex->m_width, tex->m_height, has_alpha ? BaseTexture::SRGBA : BaseTexture::SRGB);
-         }
-         // failed to get mem?
-         catch (...)
-         {
-            delete tex->m_pdsBuffer;
-            tex->m_pdsBuffer = nullptr;
-            delete[] tmp;
-
-            break;
-         }
-
-         tex->m_pdsBuffer->SetIsOpaque(!has_alpha);
-
-         if (has_alpha)
-            copy_bgra_rgba<false>((unsigned int*)tex->m_pdsBuffer->data(), (unsigned int*)tmp, (size_t)tex->m_width * tex->m_height);
-         else
-         {
-            // copy, converting from SBGRA to SRGB, dropping the alpha channel
-            BYTE* const __restrict pdst = tex->m_pdsBuffer->data();
-            size_t o2 = 0;
-            for (size_t o1 = 0; o1 < (size_t)tex->m_width * tex->m_height * 4; o1 += 4, o2 += 3)
-            {
-               pdst[o2    ] = tmp[o1 + 2];
-               pdst[o2 + 1] = tmp[o1 + 1];
-               pdst[o2 + 2] = tmp[o1    ];
-            }
-         }
-
-         delete[] tmp;
-
          #ifdef __OPENGLES__
-            if (m_pdsBuffer->m_format == BaseTexture::SRGB || m_pdsBuffer->m_format == BaseTexture::RGB_FP16)
-               m_pdsBuffer->AddAlpha();
+            bool has_alpha = true;
+         #else
+            bool has_alpha = false;
+            for (size_t o = 3; o < size * 4; o += 4)
+               if (tmp[o] != 0 && tmp[o] != 255)
+               {
+                  has_alpha = true;
+                  break;
+               }
          #endif
 
-         tex->m_width = tex->m_pdsBuffer->m_realWidth;
-         tex->m_height = tex->m_pdsBuffer->m_realHeight;
+         // Create a FreeImage from LZW data, converting from BGR to RGB, eventually dropping the alpha channel
+         FIBITMAP* dib = FreeImage_Allocate(width, height, has_alpha ? 32 : 24);
+         BYTE* const pdst = FreeImage_GetBits(dib);
+         const unsigned int ch = has_alpha ? 4 : 3;
+         const unsigned int pitch = width * 4;
+         const unsigned int pitch_dst = FreeImage_GetPitch(dib);
+         const BYTE* spch = tmp + (height * pitch);
+         for (unsigned int i = 0; i < height; i++)
+         {
+            const BYTE* __restrict src = (spch -= pitch); // start on previous previous line
+            BYTE* __restrict dst = pdst + i * pitch_dst;
+            for (unsigned int x = 0; x < width; x++, src += 4, dst += ch) // copy and swap red & blue
+            {
+               dst[0] = src[2];
+               dst[1] = src[1];
+               dst[2] = src[0];
+               if (has_alpha)
+                  dst[3] = src[3];
+            }
+         }
 
+         // Convert to a lossless webp
+         auto memStream = FreeImage_OpenMemory();
+         FreeImage_SaveToMemory(FREE_IMAGE_FORMAT::FIF_WEBP, dib, memStream, WEBP_LOSSLESS);
+         ppb = new PinBinary();
+         ppb->m_cdata = FreeImage_TellMemory(memStream);
+         ppb->m_pdata = new uint8_t[ppb->m_cdata];
+         ppb->m_name = name;
+         string ext = extension_from_path(path);
+         if (!ext.empty())
+         {
+            path.erase(path.length() - ext.length());
+            path = path + "webp";
+         }
+         ppb->m_path = path;
+         FreeImage_SeekMemory(memStream, 0, SEEK_SET);
+         FreeImage_ReadMemory(ppb->m_pdata, 1, ppb->m_cdata, memStream);
+         FreeImage_CloseMemory(memStream);
+         FreeImage_Unload(dib);
          break;
       }
       case FID(JPEG): // JPEG may be misleading as this chunk contains original binary image data (in whatever format JPEG, PNG, EXR,...)
       {
-         tex->m_ppb = new PinBinary();
-         if (tex->m_ppb->LoadFromStream(pbr->m_pistream, pbr->m_version) != S_OK)
+         assert(ppb == nullptr);
+         ppb = new PinBinary();
+         if (ppb->LoadFromStream(pbr->m_pistream, pbr->m_version) != S_OK)
          {
             assert(!"Invalid binary image file");
             return false;
          }
-         // m_ppb->m_path has the original filename
-         // m_ppb->m_pdata() is the buffer
-         // m_ppb->m_cdata() is the filesize
-         return tex->LoadFromMemory((BYTE*)tex->m_ppb->m_pdata, tex->m_ppb->m_cdata);
+         break;
       }
       case FID(LINK):
       {
          int linkid;
          pbr->GetInt(linkid);
          PinTable * const pt = (PinTable *)pbr->m_pdata;
-         tex->m_ppb = pt->GetImageLinkBinary(linkid);
-         if (!tex->m_ppb)
+         ppb = pt->GetImageLinkBinary(linkid);
+         if (!ppb)
          {
             assert(!"Invalid PinBinary");
             return false;
          }
-         return tex->LoadFromMemory((BYTE*)tex->m_ppb->m_pdata, tex->m_ppb->m_cdata);
+         break;
       }
       }
       return true;
    });
 
-   if (tex->m_pdsBuffer)
+   Texture* tex = new Texture(name, ppb);
+   if (!isOpaqueDirty)
+      tex->SetIsOpaque(isOpaque);
+   if (!isSignedDirty)
+      tex->SetIsSigned(isSigned);
+   if (!isMD5Dirty)
+      tex->SetMD5Hash(md5Hash);
+
+   // For the time being, we always perform decoding after loading
+   tex->LoadImageBuffer(resizeOnLowMem, maxTexDimension);
+
+   if (tex->m_ppb || tex->m_imageBuffer)
       return tex;
+   
    delete tex;
    return nullptr;
 }
 
-void Texture::FreeStuff()
+Texture* Texture::CreateFromFile(const string& filename)
 {
-   delete m_pdsBuffer;
-   m_pdsBuffer = nullptr;
-#ifndef __STANDALONE__
-   if (m_hbmGDIVersion)
+   int begin, end;
+   const int len = (int)filename.length();
+   for (begin = len; begin >= 0; begin--)
    {
-      if(m_hbmGDIVersion != g_pvp->m_hbmInPlayMode)
-          DeleteObject(m_hbmGDIVersion);
-      m_hbmGDIVersion = nullptr;
+      if (filename[begin] == PATH_SEPARATOR_CHAR)
+      {
+         begin++;
+         break;
+      }
    }
-#endif
-   if (m_ppb)
-   {
-      delete m_ppb;
-      m_ppb = nullptr;
-   }
+   for (end = len; end >= 0; end--)
+      if (filename[end] == '.')
+         break;
+   if (end == 0)
+      end = len - 1;
+   string name = filename.substr(begin, end - begin);
+
+   PinBinary* ppb = new PinBinary();
+   ppb->ReadFromFile(filename);
+
+   Texture* tex = new Texture(name, ppb);
+
+   // For the time being, we always perform decoding after loading
+   tex->LoadImageBuffer(false, 0);
+
+   if (tex->m_imageBuffer)
+      return tex;
+
+   delete tex;
+   return nullptr;
 }
 
 Texture::~Texture()
 {
-   FreeStuff();
+   delete m_ppb;
+   delete m_imageBuffer;
+   #ifndef __STANDALONE__
+      if (m_hbmGDIVersion)
+      {
+         if(m_hbmGDIVersion != g_pvp->m_hbmInPlayMode)
+             DeleteObject(m_hbmGDIVersion);
+      }
+   #endif
 }
 
 HRESULT Texture::SaveToStream(IStream *pstream, const PinTable *pt)
 {
+   assert(m_ppb != nullptr); // Don't save empty images
    BiffWriter bw(pstream, 0);
    bw.WriteString(FID(NAME), m_name);
-   bw.WriteString(FID(PATH), m_path);
+   bw.WriteString(FID(PATH), m_ppb->m_path);
    bw.WriteInt(FID(WDTH), m_width);
    bw.WriteInt(FID(HGHT), m_height);
-   if (!m_ppb)
+   if (!pt->GetImageLink(this))
    {
-      bw.WriteTag(FID(BITS));
-      // 32-bit picture BGRA
-      BaseTexture* bgra = m_pdsBuffer->ToBGRA();
-      LZWWriter lzwwriter(pstream, (int*)bgra->data(), m_width * 4, m_height, bgra->pitch());
-      lzwwriter.CompressBits(8 + 1);
-      delete bgra;
+      bw.WriteTag(FID(JPEG));
+      m_ppb->SaveToStream(pstream);
    }
-   else // JPEG (or other binary format)
-   {
-      if (!pt->GetImageLink(this))
-      {
-         bw.WriteTag(FID(JPEG));
-         m_ppb->SaveToStream(pstream);
-      }
-      else
-         bw.WriteInt(FID(LINK), 1);
-   }
+   else
+      bw.WriteInt(FID(LINK), 1);
    bw.WriteFloat(FID(ALTV), m_alphaTestValue * 255.0f);
-   // Write after the texture data to ease the loading since these fields are part of texture data object
-   if (m_pdsBuffer && m_pdsBuffer->IsMD5HashComputed())
-      bw.WriteStruct(FID(MD5H), m_pdsBuffer->GetMD5Hash(), 16);
-   if (m_pdsBuffer && m_pdsBuffer->IsOpaqueComputed())
-      bw.WriteBool(FID(OPAQ), m_pdsBuffer->IsOpaque());
-   if (m_pdsBuffer)
-      bw.WriteBool(FID(SIGN), m_pdsBuffer->IsSigned());
+   // Write optional fields
+   if (!m_isMD5Dirty)
+      bw.WriteStruct(FID(MD5H), m_md5Hash, 16);
+   else if (m_imageBuffer && m_imageBuffer->IsMD5HashComputed())
+      bw.WriteStruct(FID(OPAQ), m_imageBuffer->GetMD5Hash(), 16);
+   if (!m_isOpaqueDirty)
+      bw.WriteBool(FID(OPAQ), m_isOpaque);
+   else if (m_imageBuffer && m_imageBuffer->IsOpaqueComputed())
+      bw.WriteBool(FID(OPAQ), m_imageBuffer->IsOpaque());
+   if (!m_isSignedDirty)
+      bw.WriteBool(FID(SIGN), m_isSigned);
+   else if (m_imageBuffer /* && m_imageBuffer->IsSignedComputed() */)
+      bw.WriteBool(FID(SIGN), m_imageBuffer->IsSigned());
    bw.WriteTag(FID(ENDB));
    return S_OK;
 }
 
-bool Texture::LoadFromFile(const string& filename, const bool setName)
+void Texture::LoadImageBuffer(bool resizeOnLowMem, unsigned int maxTexDimension)
 {
-   FreeStuff();
+   if (m_imageBuffer || (m_ppb == nullptr))
+      return;
 
-   BaseTexture *const tex = BaseTexture::CreateFromFile(filename, m_maxTexDim);
-   if (tex == nullptr)
-      return false;
-
-   m_path = filename;
-   m_pdsBuffer = tex;
-   m_width = tex->m_realWidth;
-   m_height = tex->m_realHeight;
-
-   if (!StrCompareNoCase(ExtensionFromFilename(filename), "bmp"s))
-   {
-      m_ppb = new PinBinary();
-      m_ppb->ReadFromFile(filename);
-   }
-
-   if (setName)
-   {
-      int begin, end;
-      const int len = (int)filename.length();
-      for (begin = len; begin >= 0; begin--)
-      {
-         if (filename[begin] == PATH_SEPARATOR_CHAR)
-         {
-            begin++;
-            break;
-         }
-      }
-      for (end = len; end >= 0; end--)
-         if (filename[end] == '.')
-            break;
-      if (end == 0)
-         end = len - 1;
-      m_name = filename.substr(begin, end - begin);
-   }
-
-   return true;
-}
-
-bool Texture::LoadFromMemory(BYTE * const data, const DWORD size)
-{
-   if (m_pdsBuffer)
-      FreeStuff();
-
-   if(m_maxTexDim <= 0) // only use fast JPG path via stbi if no texture resize must be triggered
+   // Try to load using fast JPG path via stbi if no texture resize must be triggered
+   if (maxTexDimension <= 0 && !resizeOnLowMem)
    {
       int x, y, channels_in_file = 0;
-      const int ok = stbi_info_from_memory(data, size, &x, &y, &channels_in_file); // Request stbi to convert image to BW, SRGB or SRGBA
+      const int ok = stbi_info_from_memory(m_ppb->m_pdata, m_ppb->m_cdata, &x, &y, &channels_in_file); // Request stbi to convert image to BW, SRGB or SRGBA
       assert(channels_in_file != 2);
       assert(channels_in_file <= 4); // 2 or >4 should never happen for JPEGs (4 also not, but we handle it anyway)
       unsigned char * const __restrict stbi_data = (ok && channels_in_file != 2 && channels_in_file <= 4) ?
-          stbi_load_from_memory(data, size, &x, &y, &channels_in_file, channels_in_file) :
+          stbi_load_from_memory(m_ppb->m_pdata, m_ppb->m_cdata, &x, &y, &channels_in_file, channels_in_file) :
           nullptr;
       if (stbi_data) // will only enter this path for JPG files
       {
@@ -966,54 +958,57 @@ bool Texture::LoadFromMemory(BYTE * const data, const DWORD size)
          try
          {
             tex = new BaseTexture(x, y, channels_in_file == 4 ? BaseTexture::SRGBA : ((channels_in_file == 1) ? BaseTexture::BW : BaseTexture::SRGB));
+            BYTE* const __restrict pdst = tex->data();
+            const BYTE* const __restrict psrc = (BYTE*)stbi_data;
+            memcpy(pdst, psrc, x * y * channels_in_file);
+            stbi_image_free(stbi_data);
+            m_imageBuffer = tex;
+            m_imageBuffer->m_realWidth = x;
+            m_imageBuffer->m_realHeight = y;
          }
          // failed to get mem?
          catch(...)
          {
             delete tex;
-
-            goto freeimage_fallback;
+            stbi_image_free(stbi_data);
          }
-
-         BYTE* const __restrict pdst = tex->data();
-         const BYTE* const __restrict psrc = (BYTE*)stbi_data;
-         memcpy(pdst, psrc, x * y * channels_in_file);
-         stbi_image_free(stbi_data);
-
-         tex->m_realWidth = x;
-         tex->m_realHeight = y;
-
-         m_pdsBuffer = tex;
-         m_width = x;
-         m_height = y;
-
-         #ifdef __OPENGLES__
-            if (m_pdsBuffer->m_format == BaseTexture::SRGB || m_pdsBuffer->m_format == BaseTexture::RGB_FP16)
-               m_pdsBuffer->AddAlpha();
-         #endif
-         return true;
       }
    }
 
-freeimage_fallback:
+   // Try to load through FreeImage, applying downscaling if requested
+   if (m_imageBuffer == nullptr)
+   {
+      FIMEMORY* const hmem = FreeImage_OpenMemory(m_ppb->m_pdata, m_ppb->m_cdata);
+      if (!hmem)
+         return;
+      const FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(hmem, 0);
+      FIBITMAP* const dib = FreeImage_LoadFromMemory(fif, hmem, 0);
+      FreeImage_CloseMemory(hmem);
+      if (!dib)
+         return;
+      m_width = FreeImage_GetWidth(dib);
+      m_height = FreeImage_GetHeight(dib);
+      m_imageBuffer = BaseTexture::CreateFromFreeImage(dib, resizeOnLowMem, maxTexDimension);
+   }
 
-   FIMEMORY * const hmem = FreeImage_OpenMemory(data, size);
-   if (!hmem)
-      return false;
-   const FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(hmem, 0);
-   FIBITMAP * const dib = FreeImage_LoadFromMemory(fif, hmem, 0);
-   FreeImage_CloseMemory(hmem);
-   if (!dib)
-      return false;
+   if (!m_imageBuffer)
+      return;
 
-   m_width = FreeImage_GetWidth(dib);
-   m_height = FreeImage_GetHeight(dib);
+   #ifdef __OPENGLES__
+      if (m_imageBuffer->m_format == BaseTexture::SRGB || m_imageBuffer->m_format == BaseTexture::RGB_FP16)
+         m_imageBuffer->AddAlpha();
+   #endif
 
-   m_pdsBuffer = BaseTexture::CreateFromFreeImage(dib, m_resize_on_low_mem, m_maxTexDim);
-   if (!m_pdsBuffer)
-      return false;
+   m_width = m_imageBuffer->m_realWidth;
+   m_height = m_imageBuffer->m_realHeight;
+   if (!m_isMD5Dirty)
+      m_imageBuffer->SetMD5Hash(m_md5Hash);
+   if (!m_isOpaqueDirty)
+      m_imageBuffer->SetIsOpaque(m_isOpaque);
+   if (!m_isSignedDirty)
+      m_imageBuffer->SetIsSigned(m_isSigned);
 
-   return true;
+   return;
 }
 
 HBITMAP Texture::GetGDIBitmap() const
@@ -1025,6 +1020,12 @@ HBITMAP Texture::GetGDIBitmap() const
    if (g_pvp->m_table_played_via_command_line || g_pvp->m_table_played_via_SelectTableOnStart) // only do anything in here (and waste memory/time on it) if UI needed (i.e. if not just -Play via command line is triggered or selected on VPX start with the file popup!)
    {
       m_hbmGDIVersion = g_pvp->m_hbmInPlayMode;
+      return m_hbmGDIVersion;
+   }
+
+   if (GetRawBitmap() == nullptr)
+   {
+      m_hbmGDIVersion = g_pvp->m_hbmInPlayMode; // We should return an error bitmap
       return m_hbmGDIVersion;
    }
 
@@ -1042,7 +1043,7 @@ HBITMAP Texture::GetGDIBitmap() const
    bmi.bmiHeader.biCompression = BI_RGB;
    bmi.bmiHeader.biSizeImage = 0;
 
-   BaseTexture* bgr32bits = m_pdsBuffer->ToBGRA();
+   BaseTexture* bgr32bits = m_imageBuffer->ToBGRA();
    SetStretchBltMode(hdcNew, COLORONCOLOR);
    StretchDIBits(hdcNew,
       0, 0, m_width, m_height,
@@ -1059,9 +1060,32 @@ HBITMAP Texture::GetGDIBitmap() const
 #endif
 }
 
-BaseTexture* Texture::GetRawBitmap()
+void Texture::UpdateMD5() const
 {
-   if (m_pdsBuffer == nullptr && m_ppb != nullptr)
-      LoadFromMemory(reinterpret_cast<BYTE*>(m_ppb->m_pdata), m_ppb->m_cdata);
-   return m_pdsBuffer;
+   if (!m_isMD5Dirty)
+      return;
+   m_isMD5Dirty = false;
+   generateMD5(reinterpret_cast<uint8_t*>(m_ppb->m_pdata), m_ppb->m_cdata, m_md5Hash);
+   if (m_imageBuffer)
+      m_imageBuffer->SetMD5Hash(m_md5Hash);
+}
+
+void Texture::UpdateOpaque() const
+{
+   if (!m_isOpaqueDirty)
+      return;
+   m_isOpaqueDirty = false;
+   BaseTexture* raw = GetRawBitmap();
+   if (raw)
+      raw->IsOpaque();
+}
+
+void Texture::UpdateSigned() const
+{
+   if (!m_isSignedDirty)
+      return;
+   m_isSignedDirty = false;
+   BaseTexture* raw = GetRawBitmap();
+   if (raw)
+      raw->IsSigned();
 }

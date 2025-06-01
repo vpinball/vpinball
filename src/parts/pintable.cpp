@@ -982,7 +982,7 @@ STDMETHODIMP ScriptGlobalTable::LoadTexture(BSTR imageName, BSTR fileName)
       return E_FAIL;
 
    Texture *image = m_pt->ImportImage(szFileName, szImageName);
-   return image->m_pdsBuffer == nullptr ? E_FAIL : S_OK;
+   return image->GetRawBitmap() == nullptr ? E_FAIL : S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_WindowWidth(int *pVal)
@@ -3158,7 +3158,7 @@ HRESULT PinTable::SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash)
    WriteInfoValue(pstg, L"TableSaveRev", buffer, NULL);
 
    Texture * const pin = GetImage(m_screenShot);
-   if (pin != nullptr && pin->m_ppb != nullptr)
+   if (pin)
    {
       IStream *pstm;
       HRESULT hr;
@@ -3167,7 +3167,7 @@ HRESULT PinTable::SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash)
       {
          BiffWriter bw(pstm, hcrypthash);
          ULONG writ;
-         bw.WriteBytes(pin->m_ppb->m_pdata, pin->m_ppb->m_cdata, &writ);
+         bw.WriteBytes(pin->GetFileRaw(), pin->GetFileSize(), &writ);
          pstm->Release();
          pstm = nullptr;
       }
@@ -3286,7 +3286,7 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
       m_pbTempScreenshot = new PinBinary();
 
       m_pbTempScreenshot->m_cdata = ss.cbSize.LowPart;
-      m_pbTempScreenshot->m_pdata = new char[m_pbTempScreenshot->m_cdata];
+      m_pbTempScreenshot->m_pdata = new uint8_t[m_pbTempScreenshot->m_cdata];
 
       //m_pbTempScreenshot->LoadFromStream(pstm, version);
 
@@ -3756,7 +3756,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
             string failed_load_img;
             for (size_t i = 0; i < m_vimage.size(); ++i)
             {
-               if (m_vimage[i] && m_vimage[i]->m_pdsBuffer != nullptr)
+               if (m_vimage[i] && m_vimage[i]->GetRawBitmap() != nullptr)
                   continue;
 
                const string szStmName = "Image" + std::to_string(i);
@@ -3771,17 +3771,17 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                Texture *const ppi = Texture::CreateFromStream(pstmItem, loadfileversion, this, false, m_settings.LoadValueInt(Settings::Player, "MaxTexDimension"s));
                if (!ppi)
                   failed_load_img += "\n- " + szStmName;
-               else if (!ppi || ppi->m_pdsBuffer == nullptr)
+               else if (!ppi || ppi->GetRawBitmap() == nullptr)
                {
-                  failed_load_img += "\n- " + ppi->m_name + " (from: " + ppi->m_path + ')';
+                  failed_load_img += "\n- " + ppi->m_name + " (from: " + ppi->GetFilePath() + ')';
                   delete ppi;
                }
                else
                {
                   m_vimage[i] = ppi;
-                  if ((m_vimage[i]->m_pdsBuffer->m_realWidth > m_vimage[i]->m_pdsBuffer->width()) || (m_vimage[i]->m_pdsBuffer->m_realHeight > m_vimage[i]->m_pdsBuffer->height()))
+                  if ((m_vimage[i]->GetRawBitmap()->m_realWidth > m_vimage[i]->GetRawBitmap()->width()) || (m_vimage[i]->GetRawBitmap()->m_realHeight > m_vimage[i]->GetRawBitmap()->height()))
                   { //!! do not warn on resize, as original image file/binary blob is always loaded into mem! (otherwise table load failure is triggered) {
-                     PLOGW << "Image '" << m_vimage[i]->m_name << "' was downsized from " << m_vimage[i]->m_pdsBuffer->m_realWidth << 'x' << m_vimage[i]->m_pdsBuffer->m_realHeight << " to "
+                     PLOGW << "Image '" << m_vimage[i]->m_name << "' was downsized from " << m_vimage[i]->GetRawBitmap()->m_realWidth << 'x' << m_vimage[i]->GetRawBitmap()->m_realHeight << " to "
                            << m_vimage[i]->m_width << 'x' << m_vimage[i]->m_height << " due to low memory ";
                   }
                }
@@ -3800,7 +3800,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
 
             // check if some images could not be loaded and erase them
             for (size_t i = 0; i < m_vimage.size(); ++i)
-                if (!m_vimage[i] || m_vimage[i]->m_pdsBuffer == nullptr)
+                if (!m_vimage[i] || m_vimage[i]->GetRawBitmap() == nullptr)
                 {
                     m_vimage.erase(m_vimage.begin()+i);
                     --i;
@@ -3810,7 +3810,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
             if (!m_vimage.empty())
                for (size_t i = 0; i < m_vimage.size() - 1; ++i)
                   for (size_t i2 = i+1; i2 < m_vimage.size(); ++i2)
-                     if (m_vimage[i]->m_name == m_vimage[i2]->m_name && m_vimage[i]->m_path == m_vimage[i2]->m_path)
+                     if (m_vimage[i]->m_name == m_vimage[i2]->m_name && m_vimage[i]->GetFilePath() == m_vimage[i2]->GetFilePath())
                      {
                         m_vimage.erase(m_vimage.begin()+i2);
                         --i2;
@@ -7284,154 +7284,41 @@ Texture* PinTable::GetImage(const string &szName) const
 
 bool PinTable::ExportImage(const Texture * const ppi, const char * const szfilename)
 {
-#ifndef __STANDALONE__
-   if (ppi->m_ppb != nullptr)
-      return ppi->m_ppb->WriteToFile(szfilename);
-   else if (ppi->m_pdsBuffer != nullptr)
-   {
-#if 0
-      HANDLE hFile = CreateFile(szfilename, GENERIC_WRITE, FILE_SHARE_READ,
-         nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
-
-      if (hFile == INVALID_HANDLE_VALUE)
-         return false;
-
-      const unsigned int surfwidth  = ppi->m_width;            // texture width
-      const unsigned int surfheight = ppi->m_height;           // and height
-
-      const unsigned int bmplnsize = (surfwidth * 4 + 3) & -4; // line size ... 4 bytes per pixel + pad to 4 byte boundary		
-
-      //<<<< began bmp file header and info <<<<<<<<<<<<<<<
-
-      BITMAPFILEHEADER bmpf;		// file header
-      bmpf.bfType = 'MB';
-      bmpf.bfSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + surfheight*bmplnsize;
-      bmpf.bfReserved1 = 0;
-      bmpf.bfReserved2 = 0;
-      bmpf.bfOffBits = (DWORD)sizeof(BITMAPFILEHEADER) + (DWORD)sizeof(BITMAPINFOHEADER);
-
-      DWORD write;
-      // write BMP file header	
-      WriteFile(hFile, &bmpf, sizeof(BITMAPFILEHEADER), &write, nullptr);
-
-      BITMAPINFOHEADER bmpi;		// info header		
-      bmpi.biSize = sizeof(BITMAPINFOHEADER);	//only a few fields are used 
-      bmpi.biWidth = surfwidth;
-      bmpi.biHeight = surfheight;
-      bmpi.biPlanes = 1;
-      bmpi.biBitCount = 32;
-      bmpi.biCompression = 0;
-      bmpi.biSizeImage = surfheight*bmplnsize;
-      bmpi.biXPelsPerMeter = 0;
-      bmpi.biYPelsPerMeter = 0;
-      bmpi.biClrUsed = 0;
-      bmpi.biClrImportant = 0;
-
-      //write BMP Info Header
-      WriteFile(hFile, &bmpi, sizeof(BITMAPINFOHEADER), &write, nullptr);
-
-      unsigned char* const sinfo = new unsigned char[bmplnsize + 4]; //linebuffer and safety pad
-      if (!sinfo)
-      {
-         CloseHandle(hFile);
-         return false;
-      }
-
-      unsigned char* info;
-      for (info = sinfo + surfwidth * 3; info < sinfo + bmplnsize; *info++ = 0); //fill padding with 0			
-
-      const unsigned int pitch = ppi->m_pdsBuffer->pitch();
-      const BYTE *spch = ppi->m_pdsBuffer->data() + (surfheight * pitch); // just past the end of the Texture part of DD surface
-
-      for (unsigned int i = 0; i < surfheight; i++)
-      {
-         const BYTE * const pch = (spch -= pitch); // start on previous previous line
-         memcpy(sinfo, pch, surfwidth*4);
-
-         WriteFile(hFile, sinfo, bmplnsize, &write, nullptr);
-         GetLastError();
-      }
-
-      delete[] sinfo;
-      CloseHandle(hFile);
-#else
-      if (ppi->m_pdsBuffer->m_format == BaseTexture::RGB_FP16 || ppi->m_pdsBuffer->m_format == BaseTexture::RGBA_FP16 || ppi->m_pdsBuffer->m_format == BaseTexture::RGB_FP32 || ppi->m_pdsBuffer->m_format == BaseTexture::RGBA_FP32)
-      {
-          assert(!"float format export");
-          return false; // Unsupported but this should not happen since all HDR images are imported and have a m_ppb field
-      }
-
-      FIBITMAP *dib = FreeImage_Allocate(ppi->m_width, ppi->m_height, ppi->m_pdsBuffer->has_alpha() ? 32 : 24);
-      BYTE *const pdst = FreeImage_GetBits(dib);
-
-      const unsigned int pitch = ppi->m_pdsBuffer->pitch();
-      const unsigned int pitch_dst = FreeImage_GetPitch(dib);
-      const BYTE *spch = ppi->m_pdsBuffer->data() + (ppi->m_height * pitch); // just past the end of the Texture part of DD surface
-      const unsigned int ch = ppi->m_pdsBuffer->has_alpha() ? 4 : 3;
-
-      for (unsigned int i = 0; i < ppi->m_height; i++)
-      {
-         const BYTE *__restrict src = (spch -= pitch); // start on previous previous line
-         BYTE * __restrict dst = pdst + i * pitch_dst;
-         for (unsigned int x = 0; x < ppi->m_width; x++,src+=ch,dst+=ch) // copy and swap red & blue
-         {
-            dst[0] = src[2];
-            dst[1] = src[1];
-            dst[2] = src[0];
-            if (ppi->m_pdsBuffer->has_alpha())
-               dst[3] = src[3];
-         }
-      }
-
-      const FREE_IMAGE_FORMAT fiff = FreeImage_GetFIFFromFilename(szfilename);
-      int flags;
-      switch (fiff)
-      {
-      case FIF_BMP: flags = BMP_SAVE_RLE; break;
-      case FIF_JPEG: flags = JPEG_QUALITYGOOD | JPEG_OPTIMIZE; break;
-      case FIF_PNG: flags = PNG_Z_BEST_COMPRESSION; break;
-      case FIF_TARGA: flags = TARGA_SAVE_RLE; break;
-      case FIF_WEBP: flags = WEBP_DEFAULT; break; // WEBP_LOSSLESS
-      default: flags = 0; break;
-      }
-      if (!FreeImage_Save(fiff, dib, szfilename, flags))
-          m_vpinball->MessageBox("Export failed!", "BMP Export", MB_OK | MB_ICONEXCLAMATION);
-      //else
-      //   m_vpinball->MessageBox("Export finished!", "BMP Export", MB_OK);
-      FreeImage_Unload(dib);
-#endif
-      return true;
-   }
-#endif
-   return false;
+   return ppi->SaveFile(szfilename);
 }
 
 Texture *PinTable::ImportImage(const string &filename, const string &imagename)
 {
-   bool isUpdate = true;
-   Texture *ppi = nullptr;
+   Texture *existing = nullptr;
    if (!imagename.empty())
-      ppi = GetImage(imagename);
-   if (ppi == nullptr)
+      existing = GetImage(imagename);
+
+   Texture *image = Texture::CreateFromFile(filename);
+   if (image->GetRawBitmap() == nullptr)
    {
-      ppi = new Texture();
-      isUpdate = false;
-   }
-   ppi->LoadFromFile(filename, imagename.empty());
-   if (ppi->m_pdsBuffer == nullptr)
-   {
-      if (!isUpdate)
-         delete ppi;
+      delete image;
       return nullptr;
    }
-   if (!isUpdate)
+
+   if (!imagename.empty())
+      image->m_name = imagename;
+
+   if (existing)
    {
-      m_textureMap[imagename.empty() ? ppi->m_name : imagename] = ppi;
-      m_vimage.push_back(ppi);
+      RemoveFromVectorSingle(m_vimage, existing);
       if (m_isLiveInstance)
-         m_vliveimage.push_back(ppi);
+         RemoveFromVectorSingle(m_vliveimage, existing);
+      image->m_alphaTestValue = existing->m_alphaTestValue;
+      delete existing;
    }
-   return ppi;
+
+   m_vimage.push_back(image);
+   if (m_isLiveInstance)
+   {
+      m_textureMap[image->m_name] = image;
+      m_vliveimage.push_back(image);
+   }
+   return image;
 }
 
 void PinTable::RemoveImage(Texture * const ppi)
@@ -7820,7 +7707,7 @@ string PinTable::AuditTable(bool log) const
       if (type == eItemPrimitive && prim->m_d.m_visible
          && prim->m_d.m_disableLightingBelow != 1.f && !prim->m_d.m_staticRendering
          && (!GetMaterial(prim->m_d.m_szMaterial)->m_bOpacityActive || GetMaterial(prim->m_d.m_szMaterial)->m_fOpacity == 1.f)
-         && (GetImage(prim->m_d.m_szImage) == nullptr || GetImage(prim->m_d.m_szImage)->m_pdsBuffer->IsOpaque()))
+         && (GetImage(prim->m_d.m_szImage) == nullptr || GetImage(prim->m_d.m_szImage)->GetRawBitmap()->IsOpaque()))
          ss << ". Warning: Primitive '" << prim->GetName() << "' uses translucency (lighting from below) while it is fully opaque. Translucency will be discarded.\r\n";
 
       if (type == eItemLight && light->m_d.m_intensity < 0.f)
@@ -7847,12 +7734,6 @@ string PinTable::AuditTable(bool log) const
    if (!hasPulseTimer && (FindIndexOf(identifiers, "vpmTimer"s) != -1))
       ss << ". Warning: script uses 'vpmTimer' but table is missing a Timer object named 'PulseTimer'. vpmTimer will not work as expected.\r\n";
 
-   for (const auto image : m_vimage)
-   {
-      if (image->m_ppb == nullptr)
-         ss << ". Warning: Image '" << image->m_name << "' uses legacy encoding causing waste of memory / file size. It should be converted to WEBP file format.\r\n";
-   }
-
    if (ss.str().empty())
       ss << "No issue identified.\r\n";
 
@@ -7868,8 +7749,8 @@ string PinTable::AuditTable(bool log) const
    totalSize = 0;
    for (const auto image : m_vimage)
    {
-      unsigned int imageSize = image->m_ppb != nullptr ? image->m_ppb->m_cdata : image->m_pdsBuffer->height() * image->m_pdsBuffer->pitch();
-      unsigned int gpuSize = image->m_pdsBuffer->height() * image->m_pdsBuffer->pitch();
+      unsigned int imageSize = image->GetFileSize();
+      unsigned int gpuSize = image->GetRawBitmap()->height() * image->GetRawBitmap()->pitch();
       //ss << "  . Image: '" << image->m_name << "', size: " << (imageSize / 1024) << "KiB, GPU mem size: " << (gpuSize / 1024) << "KiB\r\n";
       totalSize += imageSize;
       totalGpuSize += gpuSize;

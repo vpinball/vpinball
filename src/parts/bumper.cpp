@@ -297,16 +297,16 @@ void Bumper::RenderRelease()
    delete[] m_ringVertices;
    m_ringVertices = nullptr;
    if (m_baseTexture)
-      m_rd->m_texMan.UnloadTexture(m_baseTexture->m_pdsBuffer);
+      m_rd->m_texMan.UnloadTexture(m_baseTexture->GetRawBitmap());
    m_baseTexture = nullptr;
    if (m_ringTexture)
-      m_rd->m_texMan.UnloadTexture(m_ringTexture->m_pdsBuffer);
+      m_rd->m_texMan.UnloadTexture(m_ringTexture->GetRawBitmap());
    m_ringTexture = nullptr;
    if (m_capTexture)
-      m_rd->m_texMan.UnloadTexture(m_capTexture->m_pdsBuffer);
+      m_rd->m_texMan.UnloadTexture(m_capTexture->GetRawBitmap());
    m_capTexture = nullptr;
    if (m_skirtTexture)
-      m_rd->m_texMan.UnloadTexture(m_skirtTexture->m_pdsBuffer);
+      m_rd->m_texMan.UnloadTexture(m_skirtTexture->GetRawBitmap());
    m_skirtTexture = nullptr;
 
    m_rd = nullptr;

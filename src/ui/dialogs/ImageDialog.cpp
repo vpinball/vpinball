@@ -215,8 +215,8 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   if (ppi != nullptr)
                   {
                      SetDlgItemText(IDC_ALPHA_MASK_EDIT, f2sz(255.f * ppi->m_alphaTestValue).c_str());
-                     GetDlgItem(IDC_ALPHA_MASK_EDIT).ShowWindow(ppi->m_pdsBuffer && ppi->m_pdsBuffer->has_alpha());
-                     GetDlgItem(IDC_STATIC_ALPHA).ShowWindow(ppi->m_pdsBuffer && ppi->m_pdsBuffer->has_alpha());
+                     GetDlgItem(IDC_ALPHA_MASK_EDIT).ShowWindow(ppi->GetRawBitmap() && ppi->GetRawBitmap()->has_alpha());
+                     GetDlgItem(IDC_STATIC_ALPHA).ShowWindow(ppi->GetRawBitmap() && ppi->GetRawBitmap()->has_alpha());
                   }
                }
                ::InvalidateRect(GetDlgItem(IDC_PICTUREPREVIEW).GetHwnd(), nullptr, fTrue);
@@ -492,11 +492,11 @@ void ImageDialog::Export()
 
             if (!renameOnExport)
             {
-               const int len0 = (int)ppi->m_path.length();
+               const int len0 = (int)ppi->GetFilePath().length();
                int begin; //select only file name from pathfilename
                for (begin = len0; begin >= 0; begin--)
                {
-                  if (ppi->m_path[begin] == '\\' || ppi->m_path[begin] == '/')
+                  if (ppi->GetFilePath()[begin] == '\\' || ppi->GetFilePath()[begin] == '/')
                   {
                      begin++;
                      break;
@@ -504,15 +504,15 @@ void ImageDialog::Export()
                }
                if (begin > 0)
                {
-                  memcpy(g_filename, ppi->m_path.c_str()+begin, len0 - begin);
+                  memcpy(g_filename, ppi->GetFilePath().c_str() + begin, len0 - begin);
                   g_filename[len0 - begin] = 0;
                }
             }
             else
             {
                strncat_s(g_filename, ppi->m_name.c_str(), sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
-               const size_t idx = ppi->m_path.find_last_of('.');
-               strncat_s(g_filename, ppi->m_path.c_str() + idx, sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
+               const size_t idx = ppi->GetFilePath().find_last_of('.');
+               strncat_s(g_filename, ppi->GetFilePath().c_str() + idx, sizeof(g_filename) - strnlen_s(g_filename, sizeof(g_filename)) - 1);
             }
             ofn.lpstrFile = g_filename;
             ofn.nMaxFile = sizeof(g_filename);
@@ -585,21 +585,21 @@ void ImageDialog::Export()
                      strncpy_s(g_filename, pathName, sizeof(g_filename)-1);
                      if (!renameOnExport)
                      {
-                        for (begin = (int)ppi->m_path.length(); begin >= 0; begin--)
+                        for (begin = (int)ppi->GetFilePath().length(); begin >= 0; begin--)
                         {
-                           if (ppi->m_path[begin] == PATH_SEPARATOR_CHAR)
+                           if (ppi->GetFilePath()[begin] == PATH_SEPARATOR_CHAR)
                            {
                               begin++;
                               break;
                            }
                         }
-                        strncat_s(g_filename, ppi->m_path.c_str()+begin, sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
+                        strncat_s(g_filename, ppi->GetFilePath().c_str() + begin, sizeof(g_filename) - strnlen_s(g_filename, sizeof(g_filename)) - 1);
                      }
                      else
                      {
                         strncat_s(g_filename, ppi->m_name.c_str(), sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
-                        const size_t idx = ppi->m_path.find_last_of('.');
-                        strncat_s(g_filename, ppi->m_path.c_str() + idx, sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
+                        const size_t idx = ppi->GetFilePath().find_last_of('.');
+                        strncat_s(g_filename, ppi->GetFilePath().c_str() + idx, sizeof(g_filename) - strnlen_s(g_filename, sizeof(g_filename)) - 1);
                      }
                   }
 
@@ -687,18 +687,25 @@ void ImageDialog::Reimport()
             Texture * const ppi = (Texture*)lvitem.lParam;
             if (ppi != nullptr)
             {
-               const HANDLE hFile = CreateFile(ppi->m_path.c_str(), GENERIC_READ, FILE_SHARE_READ,
+               const HANDLE hFile = CreateFile(ppi->GetFilePath().c_str(), GENERIC_READ, FILE_SHARE_READ,
                                                nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
                if (hFile != INVALID_HANDLE_VALUE)
                {
                   CloseHandle(hFile);
                   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
-                  ppi->LoadFromFile(ppi->m_path, false);
+                  Texture *newImage = pt->ImportImage(ppi->GetFilePath(), ppi->m_name);
+                  if (newImage != ppi)
+                  {
+                     ListView_DeleteItem(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), sel);
+                     const int index = AddListImage(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), newImage);
+                     ListView_SetItemState(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), index, LVIS_SELECTED, LVIS_SELECTED);
+                  }
                   pt->SetNonUndoableDirty(eSaveDirty);
+                  pt->UpdatePropertyImageList();
                }
                else
-                  MessageBox(ppi->m_path.c_str(), "FILE NOT FOUND!", MB_OK);
+                  MessageBox(ppi->GetFilePath().c_str(), "FILE NOT FOUND!", MB_OK);
 
                sel = ListView_GetNextItem(hSoundList, sel, LVNI_SELECTED);
             }
@@ -726,13 +733,20 @@ void ImageDialog::UpdateAll()
       Texture * const ppi = (Texture*)lvitem.lParam;
       if (ppi != nullptr)
       {
-         const HANDLE hFile = CreateFile(ppi->m_path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+         const HANDLE hFile = CreateFile(ppi->GetFilePath().c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
          if (hFile != INVALID_HANDLE_VALUE)
          {
             CloseHandle(hFile);
             CCO(PinTable) * const pt = g_pvp->GetActiveTable();
-            ppi->LoadFromFile(ppi->m_path, false);
+            Texture *newImage = pt->ImportImage(ppi->GetFilePath(), ppi->m_name);
+            if (newImage != ppi)
+            {
+               ListView_DeleteItem(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), sel);
+               const int index = AddListImage(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), newImage);
+               ListView_SetItemState(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), index, LVIS_SELECTED, LVIS_SELECTED);
+            }
             pt->SetNonUndoableDirty(eSaveDirty);
+            pt->UpdatePropertyImageList();
          }
          else
             errorOccurred = true;
@@ -786,8 +800,13 @@ void ImageDialog::ReimportFrom()
                   g_pvp->m_settings.SaveValue(Settings::RecentDir, "ImageDir"s, szFileName[0].substr(0, index));
 
                CCO(PinTable) * const pt = g_pvp->GetActiveTable();
-               ppi->LoadFromFile(szFileName[0], false);
-               ListView_SetItemText(hSoundList, sel, 1, (LPSTR)ppi->m_path.c_str());
+               Texture* newImage = pt->ImportImage(szFileName[0], ppi->m_name);
+               if (newImage != ppi)
+               {
+                  ListView_DeleteItem(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), sel);
+                  const int index = AddListImage(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), newImage);
+                  ListView_SetItemState(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), index, LVIS_SELECTED, LVIS_SELECTED);
+               }
                pt->SetNonUndoableDirty(eSaveDirty);
                pt->UpdatePropertyImageList();
                // Display new image
@@ -848,51 +867,29 @@ int ImageDialog::AddListImage(HWND hwndListView, Texture *const ppi)
    _snprintf_s(sizeString, MAXTOKEN - 1, "%ix%i", ppi->m_width, ppi->m_height);
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
-   ListView_SetItemText(hwndListView, index, 1, (LPSTR)ppi->m_path.c_str());
+   ListView_SetItemText(hwndListView, index, 1, (LPSTR)ppi->GetFilePath().c_str());
    ListView_SetItemText(hwndListView, index, 2, sizeString);
    ListView_SetItemText(hwndListView, index, 3, (LPSTR)usedStringNo);
 
-   char *const sizeConv = StrFormatByteSize64((size_t)ppi->m_pdsBuffer->height() * ppi->m_pdsBuffer->pitch(), sizeString, MAXTOKEN);
+   char *const sizeConv = StrFormatByteSize64((size_t)ppi->GetRawBitmap()->height() * ppi->GetRawBitmap()->pitch(), sizeString, MAXTOKEN);
    ListView_SetItemText(hwndListView, index, 4, sizeConv);
 
-   if (ppi->m_pdsBuffer == nullptr)
+   if (ppi->GetRawBitmap() == nullptr)
    {
       ListView_SetItemText(hwndListView, index, 5, (LPSTR) "-");
    }
-   else if (ppi->m_pdsBuffer->m_format == BaseTexture::SRGB)
+   else switch (ppi->GetRawBitmap()->m_format)
    {
-      ListView_SetItemText(hwndListView, index, 5, (LPSTR) "sRGB");
+   case BaseTexture::SRGB: ListView_SetItemText(hwndListView, index, 5, (LPSTR) "sRGB"); break;
+   case BaseTexture::SRGBA: ListView_SetItemText(hwndListView, index, 5, (LPSTR) "sRGBA"); break;
+   case BaseTexture::RGB: ListView_SetItemText(hwndListView, index, 5, (LPSTR) "RGB"); break;
+   case BaseTexture::RGBA: ListView_SetItemText(hwndListView, index, 5, (LPSTR) "RGBA"); break;
+   case BaseTexture::RGB_FP16: ListView_SetItemText(hwndListView, index, 5, (LPSTR) "RGB 16F"); break;
+   case BaseTexture::RGBA_FP16: ListView_SetItemText(hwndListView, index, 5, (LPSTR) "RGBA 16F"); break;
+   case BaseTexture::RGB_FP32: ListView_SetItemText(hwndListView, index, 5, (LPSTR) "RGB 32F"); break;
+   case BaseTexture::RGBA_FP32: ListView_SetItemText(hwndListView, index, 5, (LPSTR) "RGBA 32F"); break;
+   default: assert(!"unknown format");
    }
-   else if (ppi->m_pdsBuffer->m_format == BaseTexture::SRGBA)
-   {
-      ListView_SetItemText(hwndListView, index, 5, (LPSTR) "sRGBA");
-   }
-   else if (ppi->m_pdsBuffer->m_format == BaseTexture::RGB)
-   {
-      ListView_SetItemText(hwndListView, index, 5, (LPSTR) "RGB");
-   }
-   else if (ppi->m_pdsBuffer->m_format == BaseTexture::RGBA)
-   {
-      ListView_SetItemText(hwndListView, index, 5, (LPSTR) "RGBA");
-   }
-   else if (ppi->m_pdsBuffer->m_format == BaseTexture::RGB_FP16)
-   {
-      ListView_SetItemText(hwndListView, index, 5, (LPSTR) "RGB 16F");
-   }
-   else if (ppi->m_pdsBuffer->m_format == BaseTexture::RGBA_FP16)
-   {
-      ListView_SetItemText(hwndListView, index, 5, (LPSTR) "RGBA 16F");
-   }
-   else if (ppi->m_pdsBuffer->m_format == BaseTexture::RGB_FP32)
-   {
-      ListView_SetItemText(hwndListView, index, 5, (LPSTR) "RGB 32F");
-   }
-   else if (ppi->m_pdsBuffer->m_format == BaseTexture::RGBA_FP32)
-   {
-      ListView_SetItemText(hwndListView, index, 5, (LPSTR) "RGBA 32F");
-   }
-   else
-      assert(!"unknown format");
 
    CCO(PinTable) *const pt = g_pvp->GetActiveTable();
    if (pt)
