@@ -62,12 +62,8 @@ BOOL TableInfoDialog::OnInitDialog()
    const LocalString ls(IDS_NONE);
    m_screenshotCombo.AddString(ls.m_szbuffer);
 
-   for (size_t i = 0; i < pt->m_vimage.size(); ++i)
-   {
-      const Texture * const pin = pt->m_vimage[i];
-      if (pin->m_ppb)
-         m_screenshotCombo.AddString(pin->m_name.c_str());
-   }
+   for (const Texture *const pin : pt->m_vimage)
+      m_screenshotCombo.AddString(pin->m_name.c_str());
 
    m_screenshotCombo.SelectString(0, pt->m_screenShot.c_str());
 

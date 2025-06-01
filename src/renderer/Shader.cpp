@@ -934,10 +934,10 @@ void Shader::SetBasic(const Material * const mat, Texture * const pin)
 {
    if (pin)
    {
-      SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, pin->m_alphaTestValue >= 0.f && !pin->m_pdsBuffer->IsOpaque());
+      SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, pin->m_alphaTestValue >= 0.f && !pin->GetRawBitmap()->IsOpaque());
       SetTexture(SHADER_tex_base_color, pin); //, SF_TRILINEAR, SA_REPEAT, SA_REPEAT);
       SetAlphaTestValue(pin->m_alphaTestValue);
-      SetMaterial(mat, !pin->m_pdsBuffer->IsOpaque());
+      SetMaterial(mat, !pin->GetRawBitmap()->IsOpaque());
    }
    else
    {

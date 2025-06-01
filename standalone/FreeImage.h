@@ -87,6 +87,13 @@ FI_STRUCT (FIMEMORY) { void *data; };
 
 #define EXR_ALLOW_FOR_FP16	0x80000
 #define PNG_Z_BEST_COMPRESSION		0x0009	//! save using ZLib level 9 compression flag (default value is 6)
+#define WEBP_LOSSLESS		0x100	//! save in lossless mode
+
+#ifndef SEEK_SET
+#define SEEK_SET  0
+#define SEEK_CUR  1
+#define SEEK_END  2
+#endif
 
 extern "C" {
 
@@ -109,6 +116,11 @@ BOOL FreeImage_IsTransparent(FIBITMAP *dib);
 FIBITMAP* FreeImage_Load(FREE_IMAGE_FORMAT fif, const char *filename, int flags FI_DEFAULT(0));
 FIBITMAP* FreeImage_LoadFromMemory(FREE_IMAGE_FORMAT fif, FIMEMORY *stream, int flags FI_DEFAULT(0));
 FIMEMORY* FreeImage_OpenMemory(BYTE *data FI_DEFAULT(0), DWORD size_in_bytes FI_DEFAULT(0));
+long FreeImage_TellMemory(FIMEMORY *stream);
+BOOL FreeImage_SeekMemory(FIMEMORY *stream, long offset, int origin);
+BOOL FreeImage_SaveToMemory(FREE_IMAGE_FORMAT fif, FIBITMAP *dib, FIMEMORY *stream, int flags FI_DEFAULT(0));
+unsigned FreeImage_ReadMemory(void *buffer, unsigned size, unsigned count, FIMEMORY *stream);
+void FreeImage_CloseMemory(FIMEMORY *stream);
 FIBITMAP* FreeImage_Rescale(FIBITMAP *dib, int dst_width, int dst_height, FREE_IMAGE_FILTER filter FI_DEFAULT(FILTER_CATMULLROM));
 BOOL FreeImage_Save(FREE_IMAGE_FORMAT fif, FIBITMAP *dib, const char *filename, int flags FI_DEFAULT(0));
 void FreeImage_Unload(FIBITMAP *dib);

@@ -902,9 +902,9 @@ void Ramp::Render(const unsigned int renderMask)
       else
       {
          m_rd->m_basicShader->SetTexture(SHADER_tex_base_color, pin, SF_TRILINEAR, sam, sam);
-         m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, pin->m_alphaTestValue >= 0.f && !pin->m_pdsBuffer->IsOpaque());
+         m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, pin->m_alphaTestValue >= 0.f && !pin->GetRawBitmap()->IsOpaque());
          m_rd->m_basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
-         m_rd->m_basicShader->SetMaterial(mat, !pin->m_pdsBuffer->IsOpaque());
+         m_rd->m_basicShader->SetMaterial(mat, !pin->GetRawBitmap()->IsOpaque());
       }
       m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
    }
@@ -922,10 +922,10 @@ void Ramp::Render(const unsigned int renderMask)
           * with transparent textures. Probably the option should simply be renamed to ImageModeClamp,
           * since the texture coordinates always stay within [0,1] anyway. */
          SamplerAddressMode sam = m_d.m_imagealignment == ImageModeWrap ? SA_CLAMP : SA_REPEAT;
-         m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, pin->m_alphaTestValue >= 0.f && !pin->m_pdsBuffer->IsOpaque());
+         m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, pin->m_alphaTestValue >= 0.f && !pin->GetRawBitmap()->IsOpaque());
          m_rd->m_basicShader->SetTexture(SHADER_tex_base_color, pin, SF_TRILINEAR, sam, sam);
          m_rd->m_basicShader->SetAlphaTestValue(pin->m_alphaTestValue);
-         m_rd->m_basicShader->SetMaterial(mat, !pin->m_pdsBuffer->IsOpaque());
+         m_rd->m_basicShader->SetMaterial(mat, !pin->GetRawBitmap()->IsOpaque());
       }
       else
       {

@@ -30,7 +30,7 @@ public:
    static BaseTexture *CreateFromHBitmap(const HBITMAP hbm, unsigned int maxTexDim, bool with_alpha = true);
    static BaseTexture *CreateFromFile(const string &filename, unsigned int maxTexDim);
    static BaseTexture *CreateFromData(const void *data, const size_t size, unsigned int maxTexDim);
-   static BaseTexture *CreateFromFreeImage(FIBITMAP *dib, bool resize_on_low_mem, unsigned int maxTexDim); // also free's/delete's the dib inside!
+   static BaseTexture *CreateFromFreeImage(FIBITMAP *dib, bool resizeOnLowMem, unsigned int maxTexDim); // also free's/delete's the dib inside!
    static void Update(BaseTexture **texture, const unsigned int w, const unsigned int h, const Format format, const uint8_t *image); // Update eventually recreating the texture
 
    unsigned long long GetLiveHash() const { return m_liveHash; }
@@ -75,47 +75,59 @@ private:
    mutable bool m_isOpaque = true;
 };
 
+
+
+// Image definition, based on a source file data blob
 class Texture final
 {
 public:
-   Texture();
+   static Texture *CreateFromFile(const string &filename);
+   static Texture *CreateFromStream(IStream *pstream, int version, PinTable *pt, bool resizeOnLowMem, unsigned int maxTexDimension);
    ~Texture();
-
-   static Texture* CreateFromFile(const string &filename);
-   static Texture* CreateFromStream(IStream *pstream, int version, PinTable *pt, bool resize_on_low_mem, unsigned int maxTexDimension);
-
-   bool LoadFromFile(const string &filename, const bool setName = false);
 
    HRESULT SaveToStream(IStream *pstream, const PinTable *pt);
 
-   bool IsHDR() const
-   {
-      return m_pdsBuffer != nullptr && (m_pdsBuffer->m_format == BaseTexture::RGB_FP16 || m_pdsBuffer->m_format == BaseTexture::RGBA_FP16 || m_pdsBuffer->m_format == BaseTexture::RGB_FP32 || m_pdsBuffer->m_format == BaseTexture::RGBA_FP32);
-   }
-
    HBITMAP GetGDIBitmap() const; // Lazily created view of the image, suitable for GDI rendering
-   BaseTexture* GetRawBitmap(); // TODO should be const, Lazily created view of the image, suitable for GPU sampling
+   BaseTexture* GetRawBitmap() const { return m_imageBuffer; } // Lazily created view of the image, suitable for GPU sampling
+
+   int GetFileSize() const { return m_ppb->m_cdata; }
+   const uint8_t *const GetFileRaw() const { return m_ppb->m_pdata; }
+   const string& GetFilePath() const { return m_ppb->m_path; }
+   bool SaveFile(const string &filename) const { return m_ppb->WriteToFile(filename.c_str()); }
+
+   uint8_t* GetMD5Hash() { UpdateMD5(); return m_md5Hash; }
+   bool IsOpaque() const { UpdateOpaque(); return m_isOpaque; }
+   bool IsSigned() const { UpdateSigned(); return m_isSigned; }
+   bool IsHDR() const { return GetRawBitmap() != nullptr && (m_imageBuffer->m_format == BaseTexture::RGB_FP16 || m_imageBuffer->m_format == BaseTexture::RGBA_FP16 || m_imageBuffer->m_format == BaseTexture::RGB_FP32 || m_imageBuffer->m_format == BaseTexture::RGBA_FP32); }
 
 public:
-   string m_name; // Image name (used as unique identifier)
-   string m_path; // Image import path (duplicate from m_ppb path property)
-   PinBinary *m_ppb = nullptr; // if this image should be saved as a binary stream, otherwise just LZW compressed from the live bitmap
+   string m_name; // Image name (used as a unique identifier)
    float m_alphaTestValue = static_cast<float>(-1.0 / 255.0); // Alpha test value (defaults to negative, that is to say disabled)
-   unsigned int m_width = 0, m_height = 0;
-
-   // Decoded version of the texture in a format suitable for GPU sampling.
-   // Note that width and height of the decoded block can be different than width and height
-   // of the image since the surface can be limited to smaller sizes by the user or memory
-   mutable BaseTexture *m_pdsBuffer = nullptr;
+   unsigned int m_width = 0;
+   unsigned int m_height = 0;
 
 private:
-   void FreeStuff();
-   bool LoadFromMemory(BYTE *const data, const DWORD size);
+   Texture(const string& name, PinBinary* ppb); // Private to forbid uninitialized objects
 
-   bool m_resize_on_low_mem = true;
-   unsigned int m_maxTexDim = 0;
+   void LoadImageBuffer(bool resizeOnLowMem, unsigned int maxTexDimension); // Loads the source PinBinary into a BaseTexture
+   void UpdateMD5() const;
+   void UpdateOpaque() const;
+   void UpdateSigned() const;
+   void SetMD5Hash(uint8_t* md5) { memcpy(m_md5Hash, md5, sizeof(m_md5Hash)); m_isMD5Dirty = false; if (m_imageBuffer) m_imageBuffer->SetMD5Hash(md5); }
+   void SetIsOpaque(const bool v) { m_isOpaque = v; m_isOpaqueDirty = false; if (m_imageBuffer) m_imageBuffer->SetIsOpaque(v); }
+   void SetIsSigned(const bool v) { m_isSigned = v; m_isSignedDirty = false; if (m_imageBuffer) m_imageBuffer->SetIsSigned(v); }
 
+   PinBinary * const m_ppb; // Original data blob of the image, always defined unless image failed to load and is empty
+
+   // These field are (lazily) computed from the data, therefore they do not impact the constness of the object
+   mutable BaseTexture* m_imageBuffer = nullptr; // Decoded version of the texture in a format suitable for GPU sampling. Note that width and height of the decoded block can be different than width and height of the image since the surface can be limited to smaller sizes by the user or memory
    mutable HBITMAP m_hbmGDIVersion = nullptr;
+   mutable bool m_isSignedDirty = true;
+   mutable bool m_isSigned = false;
+   mutable bool m_isMD5Dirty = true;
+   mutable uint8_t m_md5Hash[16] = { 0 };
+   mutable bool m_isOpaqueDirty = true;
+   mutable bool m_isOpaque = true;
 };
 
 

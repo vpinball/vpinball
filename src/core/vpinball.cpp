@@ -2407,8 +2407,8 @@ int CALLBACK MyCompProcMemValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM 
    const SORTDATA * const lpsd = (SORTDATA *)lSortOption;
    const Texture * const t1 = (Texture *)lSortParam1;
    const Texture * const t2 = (Texture *)lSortParam2;
-   const unsigned int t1_size = t1->m_pdsBuffer == nullptr ? 0 : t1->m_pdsBuffer->height() * t1->m_pdsBuffer->pitch();
-   const unsigned int t2_size = t2->m_pdsBuffer == nullptr ? 0 : t2->m_pdsBuffer->height() * t2->m_pdsBuffer->pitch();
+   const unsigned int t1_size = t1->GetRawBitmap() == nullptr ? 0 : t1->GetRawBitmap()->height() * t1->GetRawBitmap()->pitch();
+   const unsigned int t2_size = t2->GetRawBitmap() == nullptr ? 0 : t2->GetRawBitmap()->height() * t2->GetRawBitmap()->pitch();
    if (lpsd->sortUpDown == 1)
       return (int)(t1_size - t2_size);
    else
@@ -2587,73 +2587,6 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
             }
          }
          break;
-
-         /*case IDC_REIMPORT:
-         {
-         const int ans = MessageBox(hwndDlg, "Are you sure you want to replace this image with a new one?", "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2);
-         if (ans == IDYES)
-         {
-         const int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
-         if (sel != -1)
-         {
-         LVITEM lvitem;
-         lvitem.mask = LVIF_PARAM;
-         lvitem.iItem = sel;
-         lvitem.iSubItem = 0;
-         ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-         PinImage * const ppi = (PinImage *)lvitem.lParam;
-
-         ppi->LoadFromFile(ppi->m_path, false);
-
-         // Display new image
-         InvalidateRect(GetDlgItem(hwndDlg, IDC_PICTUREPREVIEW), nullptr, fTrue);
-         }
-         }
-         }
-         break;
-
-         case IDC_REIMPORTFROM:
-         {
-         const int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
-         if (sel != -1)
-         {
-         char szFileName[MAXSTRING];
-
-         const int ans = MessageBox(hwndDlg, "Are you sure you want to replace this image with a new one?", "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2);
-         if (ans == IDYES)
-         {
-         szFileName[0] = '\0';
-
-         OPENFILENAME ofn = {};
-         ofn.lStructSize = sizeof(OPENFILENAME);
-         ofn.hInstance = g_pvp->theInstance;
-         ofn.hwndOwner = g_pvp->m_hwnd;
-         ofn.lpstrFilter = "Font Files (*.ttf)\0*.ttf\0";
-         ofn.lpstrFile = szFileName;
-         ofn.nMaxFile = sizeof(szFileName);
-         ofn.lpstrDefExt = "ttf";
-         ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
-
-         const int ret = GetOpenFileName(&ofn);
-
-         if (ret)
-         {
-         LVITEM lvitem;
-         lvitem.mask = LVIF_PARAM;
-         lvitem.iItem = sel;
-         lvitem.iSubItem = 0;
-         ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-         PinImage * const ppi = (PinImage *)lvitem.lParam;
-
-         ppi->LoadFromFile(ofn.lpstrFile, false);
-
-         // Display new image
-         InvalidateRect(GetDlgItem(hwndDlg, IDC_PICTUREPREVIEW), nullptr, fTrue);
-         }
-         }
-         }
-         }
-         break;*/
          }
          break;
       }

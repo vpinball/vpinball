@@ -240,14 +240,14 @@ void Ball::RenderSetup(RenderDevice *device)
       m_d.m_pinballEnvSphericalMapping = true;
    }
    else
-      m_pinballEnv = m_ptable->GetImage(m_d.m_szImage)->m_pdsBuffer;
+      m_pinballEnv = m_ptable->GetImage(m_d.m_szImage) ? m_ptable->GetImage(m_d.m_szImage)->GetRawBitmap() : nullptr;
 
    if (m_d.m_useTableRenderSettings && g_pplayer->m_renderer->m_overwriteBallImages && g_pplayer->m_renderer->m_decalImage)
       m_pinballDecal = g_pplayer->m_renderer->m_decalImage;
    else if (m_d.m_imageDecal.empty())
       m_pinballDecal = nullptr;
    else
-      m_pinballDecal = m_ptable->GetImage(m_d.m_imageDecal)->m_pdsBuffer;
+      m_pinballDecal = m_ptable->GetImage(m_d.m_imageDecal) ? m_ptable->GetImage(m_d.m_imageDecal)->GetRawBitmap() : nullptr;
 }
 
 void Ball::RenderRelease()
@@ -737,7 +737,7 @@ STDMETHODIMP Ball::put_Image(BSTR newVal)
    m_d.m_szImage = buf;
    Texture *const tex = m_ptable->GetImage(m_d.m_szImage);
    if (tex)
-      m_pinballEnv = tex->m_pdsBuffer;
+      m_pinballEnv = tex->GetRawBitmap();
    else
       m_pinballEnv = nullptr;
    return S_OK;
@@ -764,7 +764,7 @@ STDMETHODIMP Ball::put_FrontDecal(BSTR newVal)
          ShowError("Cannot use a HDR image (.exr/.hdr) here");
          return E_FAIL;
       }
-      m_pinballDecal = tex->m_pdsBuffer;
+      m_pinballDecal = tex->GetRawBitmap();
    }
    else
       m_pinballDecal = nullptr;
