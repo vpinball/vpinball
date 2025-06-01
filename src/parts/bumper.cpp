@@ -230,8 +230,7 @@ void Bumper::RenderSetup(RenderDevice *device)
    m_fullMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_orientation));
    if (m_d.m_baseVisible)
    {
-      m_baseTexture.LoadFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "BumperBase.webp");
-      m_baseTexture.m_alphaTestValue = (float)(-1.0 / 255.0);
+      m_baseTexture.reset(Texture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "BumperBase.webp"));
       IndexBuffer* baseIndexBuffer = new IndexBuffer(m_rd, bumperBaseNumIndices, bumperBaseIndices);
       VertexBuffer* baseVertexBuffer = new VertexBuffer(m_rd, bumperBaseNumVertices);
       Vertex3D_NoTex2 *buf;
@@ -244,8 +243,7 @@ void Bumper::RenderSetup(RenderDevice *device)
 
    if (m_d.m_skirtVisible)
    {
-      m_skirtTexture.LoadFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "BumperSkirt.webp");
-      m_skirtTexture.m_alphaTestValue = (float)(-1.0 / 255.0);
+      m_skirtTexture.reset(Texture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "BumperSkirt.webp"));
       IndexBuffer* socketIndexBuffer = new IndexBuffer(m_rd, bumperSocketNumIndices, bumperSocketIndices);
       VertexBuffer* socketVertexBuffer = new VertexBuffer(m_rd, bumperSocketNumVertices, nullptr, true);
       Vertex3D_NoTex2 *buf;
@@ -258,8 +256,7 @@ void Bumper::RenderSetup(RenderDevice *device)
 
    if (m_d.m_ringVisible)
    {
-      m_ringTexture.LoadFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "BumperRing.webp");
-      m_ringTexture.m_alphaTestValue = (float)(-1.0 / 255.0);
+      m_ringTexture.reset(Texture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "BumperRing.webp"));
       IndexBuffer* ringIndexBuffer = new IndexBuffer(m_rd, bumperRingNumIndices, bumperRingIndices);
       VertexBuffer *ringVertexBuffer = new VertexBuffer(m_rd, bumperRingNumVertices, nullptr, true);
       m_ringVertices = new Vertex3D_NoTex2[bumperRingNumVertices];
@@ -274,8 +271,7 @@ void Bumper::RenderSetup(RenderDevice *device)
 
    if (m_d.m_capVisible)
    {
-      m_capTexture.LoadFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "BumperCap.webp");
-      m_capTexture.m_alphaTestValue = (float)(-1.0 / 255.0);
+      m_capTexture.reset(Texture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "BumperCap.webp"));
       IndexBuffer* capIndexBuffer = new IndexBuffer(m_rd, bumperCapNumIndices, bumperCapIndices);
       VertexBuffer* capVertexBuffer = new VertexBuffer(m_rd, bumperCapNumVertices);
       Vertex3D_NoTex2 *buf;
@@ -298,21 +294,20 @@ void Bumper::RenderRelease()
    m_ringMeshBuffer = nullptr;
    m_capMeshBuffer = nullptr;
    m_socketMeshBuffer = nullptr;
-   if (m_baseTexture.m_pdsBuffer)
-      m_rd->m_texMan.UnloadTexture(m_baseTexture.m_pdsBuffer);
-   m_baseTexture.FreeStuff();
-   if (m_ringTexture.m_pdsBuffer)
-      m_rd->m_texMan.UnloadTexture(m_ringTexture.m_pdsBuffer);
-   m_ringTexture.FreeStuff();
-
    delete[] m_ringVertices;
    m_ringVertices = nullptr;
-   if (m_capTexture.m_pdsBuffer)
-      m_rd->m_texMan.UnloadTexture(m_capTexture.m_pdsBuffer);
-   m_capTexture.FreeStuff();
-   if (m_skirtTexture.m_pdsBuffer)
-      m_rd->m_texMan.UnloadTexture(m_skirtTexture.m_pdsBuffer);
-   m_skirtTexture.FreeStuff();
+   if (m_baseTexture)
+      m_rd->m_texMan.UnloadTexture(m_baseTexture->m_pdsBuffer);
+   m_baseTexture = nullptr;
+   if (m_ringTexture)
+      m_rd->m_texMan.UnloadTexture(m_ringTexture->m_pdsBuffer);
+   m_ringTexture = nullptr;
+   if (m_capTexture)
+      m_rd->m_texMan.UnloadTexture(m_capTexture->m_pdsBuffer);
+   m_capTexture = nullptr;
+   if (m_skirtTexture)
+      m_rd->m_texMan.UnloadTexture(m_skirtTexture->m_pdsBuffer);
+   m_skirtTexture = nullptr;
 
    m_rd = nullptr;
 }
@@ -337,7 +332,7 @@ void Bumper::Render(const unsigned int renderMask)
          m_rd->ResetRenderState();
          if (mat->m_bOpacityActive)
             m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-         m_rd->m_basicShader->SetBasic(mat, &m_baseTexture);
+         m_rd->m_basicShader->SetBasic(mat, m_baseTexture.get());
          Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
          m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_baseMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperBaseNumIndices);
       }
@@ -351,7 +346,7 @@ void Bumper::Render(const unsigned int renderMask)
          m_rd->ResetRenderState();
          if (mat->m_bOpacityActive)
             m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-         m_rd->m_basicShader->SetBasic(mat, &m_capTexture);
+         m_rd->m_basicShader->SetBasic(mat, m_capTexture.get());
          Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
          m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_capMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperCapNumIndices);
       }
@@ -371,7 +366,7 @@ void Bumper::Render(const unsigned int renderMask)
          ringMaterial.m_type = Material::MaterialType::METAL;
       }
       m_rd->ResetRenderState();
-      m_rd->m_basicShader->SetBasic(&ringMaterial, &m_ringTexture);
+      m_rd->m_basicShader->SetBasic(&ringMaterial, m_ringTexture.get());
       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight + m_pbumperhitcircle->m_bumperanim_ringAnimOffset);
       m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_ringMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperRingNumIndices);
    }
@@ -382,7 +377,7 @@ void Bumper::Render(const unsigned int renderMask)
       m_rd->ResetRenderState();
       if (mat->m_bOpacityActive)
          m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-      m_rd->m_basicShader->SetBasic(mat, &m_skirtTexture);
+      m_rd->m_basicShader->SetBasic(mat, m_skirtTexture.get());
       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight + 5.0f);
       m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_socketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperSocketNumIndices);
    }

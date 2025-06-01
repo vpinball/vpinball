@@ -6,7 +6,7 @@
 
 struct FIBITMAP;
 
-// texture stored in main memory in 24/32bit RGB/RGBA uchar format or 48/96bit RGB float
+// Image data block stored in main memory, meant to be uploaded for GPU sampling
 class BaseTexture final
 {
 public:
@@ -75,66 +75,50 @@ private:
    mutable bool m_isOpaque = true;
 };
 
-class Texture final : public ILoadable
+class Texture final
 {
 public:
    Texture();
-   Texture(BaseTexture * const base);
    ~Texture();
 
-   // ILoadable callback
-   bool LoadToken(const int id, BiffReader * const pbr) override;
+   static Texture* CreateFromFile(const string &filename);
+   static Texture* CreateFromStream(IStream *pstream, int version, PinTable *pt, bool resize_on_low_mem, unsigned int maxTexDimension);
 
-   HRESULT SaveToStream(IStream *pstream, const PinTable *pt);
-   HRESULT LoadFromStream(IStream *pstream, int version, PinTable *pt, bool resize_on_low_mem);
-   bool LoadFromMemory(BYTE *const data, const DWORD size);
    bool LoadFromFile(const string &filename, const bool setName = false);
 
-   void FreeStuff();
-
-   void CreateGDIVersion();
-
-   BaseTexture *CreateFromHBitmap(const HBITMAP hbm, bool with_alpha = true);
+   HRESULT SaveToStream(IStream *pstream, const PinTable *pt);
 
    bool IsHDR() const
    {
       return m_pdsBuffer != nullptr && (m_pdsBuffer->m_format == BaseTexture::RGB_FP16 || m_pdsBuffer->m_format == BaseTexture::RGBA_FP16 || m_pdsBuffer->m_format == BaseTexture::RGB_FP32 || m_pdsBuffer->m_format == BaseTexture::RGBA_FP32);
    }
 
-   void SetSizeFrom(const BaseTexture* const tex)
-   {
-      m_width = tex->width();
-      m_height = tex->height();
-      m_realWidth = tex->m_realWidth;
-      m_realHeight = tex->m_realHeight;
-   }
-
-   // create/release a DC which contains a (read-only) copy of the texture; for editor use
-   void GetTextureDC(HDC *pdc);
-   void ReleaseTextureDC(HDC dc);
-
-private:
-   bool m_resize_on_low_mem = true;
+   HBITMAP GetGDIBitmap() const; // Lazily created view of the image, suitable for GDI rendering
+   BaseTexture* GetRawBitmap(); // TODO should be const, Lazily created view of the image, suitable for GPU sampling
 
 public:
-   unsigned int m_maxTexDim = 0;
-
-   // width and height of texture can be different than width and height
-   // of m_pdsBuffer, since the surface can be limited to smaller sizes by the user
-   unsigned int m_width = 0, m_height = 0;
-   unsigned int m_realWidth = 0, m_realHeight = 0;
-   float m_alphaTestValue = (float)(-1.0 / 255.0);
-   BaseTexture *m_pdsBuffer = nullptr;
-
-   HBITMAP m_hbmGDIVersion = nullptr; // HBitmap at screen depth and converted/visualized alpha so GDI draws it fast
+   string m_name; // Image name (used as unique identifier)
+   string m_path; // Image import path (duplicate from m_ppb path property)
    PinBinary *m_ppb = nullptr; // if this image should be saved as a binary stream, otherwise just LZW compressed from the live bitmap
+   float m_alphaTestValue = static_cast<float>(-1.0 / 255.0); // Alpha test value (defaults to negative, that is to say disabled)
+   unsigned int m_width = 0, m_height = 0;
 
-   string m_name;
-   string m_path;
+   // Decoded version of the texture in a format suitable for GPU sampling.
+   // Note that width and height of the decoded block can be different than width and height
+   // of the image since the surface can be limited to smaller sizes by the user or memory
+   mutable BaseTexture *m_pdsBuffer = nullptr;
 
 private:
-   HBITMAP m_oldHBM = nullptr;        // this is to cache the result of SelectObject()
+   void FreeStuff();
+   bool LoadFromMemory(BYTE *const data, const DWORD size);
+
+   bool m_resize_on_low_mem = true;
+   unsigned int m_maxTexDim = 0;
+
+   mutable HBITMAP m_hbmGDIVersion = nullptr;
 };
+
+
 
 template<bool opaque>
 inline void copy_bgra_rgba(unsigned int* const __restrict dst, const unsigned int* const __restrict src, const size_t size)

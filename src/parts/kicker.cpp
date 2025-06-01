@@ -250,8 +250,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        break;
        case KickerCup:
        {
-          m_texture.LoadFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "KickerCup.webp");
-          m_texture.m_alphaTestValue = (float)(-1.0 / 255.0);
+          m_texture.reset(Texture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "KickerCup.webp"));
           m_numIndices = kickerCupNumIndices;
           m_numVertices = kickerCupNumVertices;
           indices = kickerCupIndices;
@@ -259,8 +258,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        break;
        case KickerWilliams:
        {
-          m_texture.LoadFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "KickerWilliams.webp");
-          m_texture.m_alphaTestValue = (float)(-1.0 / 255.0);
+          m_texture.reset(Texture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "KickerWilliams.webp"));
           m_numIndices = kickerWilliamsNumIndices;
           m_numVertices = kickerWilliamsNumVertices;
           indices = kickerWilliamsIndices;
@@ -268,8 +266,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        break;
        case KickerGottlieb:
        {
-          m_texture.LoadFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "KickerGottlieb.webp");
-          m_texture.m_alphaTestValue = (float)(-1.0 / 255.0);
+          m_texture.reset(Texture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "KickerGottlieb.webp"));
           m_numIndices = kickerGottliebNumIndices;
           m_numVertices = kickerGottliebNumVertices;
           indices = kickerGottliebIndices;
@@ -277,8 +274,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        break;
        case KickerCup2:
        {
-          m_texture.LoadFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "KickerT1.webp");
-          m_texture.m_alphaTestValue = (float)(-1.0 / 255.0);
+          m_texture.reset(Texture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "KickerT1.webp"));
           m_numIndices = kickerT1NumIndices;
           m_numVertices = kickerT1NumVertices;
           indices = kickerT1Indices;
@@ -286,8 +282,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        break;
        case KickerHole:
        {
-          m_texture.LoadFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "KickerHoleWood.webp");
-          m_texture.m_alphaTestValue = (float)(-1.0 / 255.0);
+          m_texture.reset(Texture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "KickerHoleWood.webp"));
           m_numIndices = kickerHoleNumIndices;
           m_numVertices = kickerHoleNumVertices;
           indices = kickerHoleIndices;
@@ -296,8 +291,7 @@ void Kicker::RenderSetup(RenderDevice *device)
        default:
        case KickerHoleSimple:
        {
-          m_texture.LoadFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "KickerHoleWood.webp");
-          m_texture.m_alphaTestValue = (float)(-1.0 / 255.0);
+          m_texture.reset(Texture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "KickerHoleWood.webp"));
           m_numIndices = kickerSimpleHoleNumIndices;
           m_numVertices = kickerSimpleHoleNumVertices;
           indices = kickerSimpleHoleIndices;
@@ -323,7 +317,7 @@ void Kicker::RenderRelease()
    delete m_plateMeshBuffer;
    m_meshBuffer = nullptr;
    m_plateMeshBuffer = nullptr;
-   m_texture.FreeStuff();
+   m_texture = nullptr;
    m_rd = nullptr;
 }
 
@@ -358,7 +352,7 @@ void Kicker::Render(const unsigned int renderMask)
    m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_plateMeshBuffer, RenderDevice::TRIANGLELIST, 0, kickerPlateNumIndices);
 
    m_rd->SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
-   m_rd->m_basicShader->SetBasic(mat, m_d.m_kickertype == KickerHoleSimple ? nullptr : &m_texture);
+   m_rd->m_basicShader->SetBasic(mat, m_d.m_kickertype == KickerHoleSimple ? nullptr : m_texture.get());
    m_rd->EnableAlphaBlend(false);
    m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
 }

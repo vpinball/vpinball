@@ -100,7 +100,7 @@ private:
    MeshBuffer *m_meshBuffer = nullptr;
    unsigned int m_numVertices = 0;
    unsigned int m_numIndices = 0;
-   Texture m_texture;
+   std::unique_ptr<Texture> m_texture;
 
    float m_baseHeight = 0.f;
 

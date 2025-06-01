@@ -551,7 +551,7 @@ HRESULT BiffReader::GetVector3Padded(Vertex3Ds& vec)
    return hr;
 }
 
-HRESULT BiffReader::Load()
+HRESULT BiffReader::Load(std::function<bool(const int id, BiffReader *const pbr)> processToken)
 {
    int tag = 0;
    while (tag != FID(ENDB))
@@ -565,7 +565,7 @@ HRESULT BiffReader::Load()
 
       bool cont = false;
       if (hr == S_OK)
-         cont = m_piloadable->LoadToken(tag, this);
+         cont = processToken ? processToken(tag, this) : m_piloadable->LoadToken(tag, this);
 
       if (!cont)
          return E_FAIL;

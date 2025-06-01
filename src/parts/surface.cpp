@@ -244,15 +244,9 @@ void Surface::UIRenderPass1(Sur * const psur)
    GetRgVertex(vvertex);
 
    Texture *ppi;
-   if (m_ptable->RenderSolid() && m_d.m_displayTexture && (ppi = m_ptable->GetImage(m_d.m_szImage)))
+   if (m_ptable->RenderSolid() && m_d.m_displayTexture && (ppi = m_ptable->GetImage(m_d.m_szImage)) && ppi->GetGDIBitmap())
    {
-      ppi->CreateGDIVersion();
-      if (ppi->m_hbmGDIVersion)
-         psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion, m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
-      else
-      {
-         // Do nothing for now to indicate to user that there is a problem
-      }
+      psur->PolygonImage(vvertex, ppi->GetGDIBitmap(), m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
    }
    else
       psur->Polygon(vvertex);

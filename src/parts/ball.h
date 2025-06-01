@@ -222,7 +222,7 @@ private:
    const unsigned int m_id; // unique ID for each ball
    PinTable *m_ptable = nullptr;
    RenderDevice *m_rd = nullptr;
-   Texture *m_pinballEnv = nullptr;
-   Texture *m_pinballDecal = nullptr;
+   BaseTexture *m_pinballEnv = nullptr;
+   BaseTexture *m_pinballDecal = nullptr;
    bool m_antiStretch = false;
 };

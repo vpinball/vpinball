@@ -1866,19 +1866,15 @@ void PinTable::UIRenderPass2(Sur * const psur)
    {
       Texture * const ppi = GetImage((!m_vpinball->m_backglassView) ? m_image : m_BG_image[m_BG_current_set]);
 
-      if (ppi)
+      if (ppi && ppi->GetGDIBitmap())
       {
-         ppi->CreateGDIVersion();
-         if (ppi->m_hbmGDIVersion)
-         {
-            CDC dc;
-            dc.CreateCompatibleDC(nullptr);
-            const CBitmap hbmOld = dc.SelectObject(ppi->m_hbmGDIVersion);
+         CDC dc;
+         dc.CreateCompatibleDC(nullptr);
+         const CBitmap hbmOld = dc.SelectObject(ppi->GetGDIBitmap());
 
-            psur->Image(frect.left, frect.top, frect.right, frect.bottom, dc.GetHDC(), ppi->m_width, ppi->m_height);
+         psur->Image(frect.left, frect.top, frect.right, frect.bottom, dc.GetHDC(), ppi->m_width, ppi->m_height);
 
-            dc.SelectObject(hbmOld);
-         }
+         dc.SelectObject(hbmOld);
       }
    }
 
@@ -3746,12 +3742,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                      if (FAILED(hr = pstgData->OpenStream(wszStmName, nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
                         return hr;
 
-                     Texture *const ppi = new Texture();
-                     ppi->m_maxTexDim = m_settings.LoadValueInt(Settings::Player, "MaxTexDimension"s);
-                     if ((hr = ppi->LoadFromStream(pstmItem, loadfileversion, this, false)) == S_OK)
-                        m_vimage[i] = ppi;
-                     else
-                        delete ppi;
+                     m_vimage[i] = Texture::CreateFromStream(pstmItem, loadfileversion, this, false, m_settings.LoadValueInt(Settings::Player, "MaxTexDimension"s));
                      feedback.ImageHasBeenProcessed(++count, ctextures);
                      pstmItem->Release();
                      pstmItem = nullptr;
@@ -3777,9 +3768,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                   continue;
                }
 
-               Texture *const ppi = new Texture();
-               ppi->m_maxTexDim = m_settings.LoadValueInt(Settings::Player, "MaxTexDimension"s);
-               ppi->LoadFromStream(pstmItem, loadfileversion, this, false);
+               Texture *const ppi = Texture::CreateFromStream(pstmItem, loadfileversion, this, false, m_settings.LoadValueInt(Settings::Player, "MaxTexDimension"s));
                if (!ppi)
                   failed_load_img += "\n- " + szStmName;
                else if (!ppi || ppi->m_pdsBuffer == nullptr)
@@ -3790,9 +3779,9 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                else
                {
                   m_vimage[i] = ppi;
-                  if ((m_vimage[i]->m_realWidth > m_vimage[i]->m_width) || (m_vimage[i]->m_realHeight > m_vimage[i]->m_height))
+                  if ((m_vimage[i]->m_pdsBuffer->m_realWidth > m_vimage[i]->m_pdsBuffer->width()) || (m_vimage[i]->m_pdsBuffer->m_realHeight > m_vimage[i]->m_pdsBuffer->height()))
                   { //!! do not warn on resize, as original image file/binary blob is always loaded into mem! (otherwise table load failure is triggered) {
-                     PLOGW << "Image '" << m_vimage[i]->m_name << "' was downsized from " << m_vimage[i]->m_realWidth << 'x' << m_vimage[i]->m_realHeight << " to "
+                     PLOGW << "Image '" << m_vimage[i]->m_name << "' was downsized from " << m_vimage[i]->m_pdsBuffer->m_realWidth << 'x' << m_vimage[i]->m_pdsBuffer->m_realHeight << " to "
                            << m_vimage[i]->m_width << 'x' << m_vimage[i]->m_height << " due to low memory ";
                   }
                }
