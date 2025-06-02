@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <filesystem>
+#include <charconv>
 
 namespace PUP {
 
@@ -22,14 +23,17 @@ string trim_string(const string& str)
 
 bool try_parse_int(const string& str, int& value)
 {
-   std::stringstream sstr(trim_string(str));
-   return ((sstr >> value) && sstr.eof());
+   const string tmp = trim_string(str);
+   return (std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), value).ec == std::errc{});
 }
 
 bool try_parse_float(const string& str, float& value)
 {
-   std::stringstream sstr(trim_string(str));
-   return ((sstr >> value) && sstr.eof());
+   const string sz = trim_string(str);
+   const char* const szp = sz.c_str();
+   char* sze;
+   value = std::strtof(szp, &sze);
+   return (szp != sze);
 }
 
 int string_to_int(const string& str, int default_value)

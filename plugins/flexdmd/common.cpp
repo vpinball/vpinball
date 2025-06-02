@@ -3,6 +3,7 @@
 #include <sstream>
 #include <algorithm>
 #include <filesystem>
+#include <charconv>
 
 namespace Flex {
 
@@ -31,7 +32,8 @@ string trim_string(const string& str)
    string s;
    try
    {
-      s = str.substr(str.find_first_not_of(" \t\r\n"), str.find_last_not_of(" \t\r\n") - str.find_first_not_of(" \t\r\n") + 1);
+      const size_t pos = str.find_first_not_of(" \t\r\n");
+      s = str.substr(pos, str.find_last_not_of(" \t\r\n") - pos + 1);
    }
    catch (...)
    {
@@ -42,8 +44,8 @@ string trim_string(const string& str)
 
 bool try_parse_int(const string& str, int& value)
 {
-   std::stringstream sstr(trim_string(str));
-   return ((sstr >> value) && sstr.eof());
+   const string tmp = trim_string(str);
+   return (std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), value).ec == std::errc{});
 }
 
 bool try_parse_color(const string& str, ColorRGBA32& value)

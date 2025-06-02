@@ -3,6 +3,7 @@
 #include <sstream>
 #include <algorithm>
 #include <filesystem>
+#include <charconv>
 
 namespace ScoreView {
 
@@ -75,14 +76,17 @@ string TrimTrailing(const string& str, const string& whitespace)
 
 bool try_parse_float(const string& str, float& value)
 {
-   std::stringstream sstr(trim_string(str));
-   return ((sstr >> value) && sstr.eof());
+   const string sz = trim_string(str);
+   const char* const szp = sz.c_str();
+   char* sze;
+   value = std::strtof(szp, &sze);
+   return (szp != sze);
 }
 
 bool try_parse_int(const string& str, int& value)
 {
-   std::stringstream sstr(trim_string(str));
-   return ((sstr >> value) && sstr.eof());
+   const string tmp = trim_string(str);
+   return (std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), value).ec == std::errc{});
 }
 
 string find_case_insensitive_file_path(const string& szPath)
