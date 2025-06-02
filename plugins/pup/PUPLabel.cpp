@@ -18,6 +18,12 @@
 
 namespace PUP {
 
+#ifndef GetRValue
+#define GetRValue(rgba32) static_cast<uint8_t>(rgba32)
+#define GetGValue(rgba32) static_cast<uint8_t>((rgba32) >> 8)
+#define GetBValue(rgba32) static_cast<uint8_t>((rgba32) >> 16)
+#endif
+
 PUPLabel::PUPLabel(PUPManager* manager, const string& szName, const string& szFont, float size, int color, float angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, float xPos,
    float yPos, int pagenum, bool visible)
    : m_pManager(manager)
@@ -332,7 +338,7 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, SDL_Rect& rect, int pagenum
          m_animationStart = SDL_GetTicks();
       }
    }
-   else if (m_dirty || (m_szPath.empty() && rect.h != m_renderState.m_prerenderedHeight && m_szPath.empty()))
+   else if (m_dirty || (m_szPath.empty() && rect.h != m_renderState.m_prerenderedHeight))
    {
       m_dirty = false;
       if (m_szPath.empty())

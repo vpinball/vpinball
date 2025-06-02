@@ -285,7 +285,11 @@ void PUPPinDisplay::SetSN(int Value)
 
 void PUPPinDisplay::B2SData(const string& tIndex, int Value)
 {
-   m_pupManager.QueueTriggerData({ tIndex[0], std::stoi(tIndex.substr(1)), Value });
+   const string tmp = tIndex.substr(1);
+   int result;
+   std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), result);
+
+   m_pupManager.QueueTriggerData({ tIndex[0], result, Value });
 }
 
 const string& PUPPinDisplay::GetB2SFilter() const
@@ -446,7 +450,7 @@ void PUPPinDisplay::LabelNew(int screenNum, const string& LabelName, const strin
 */
 void PUPPinDisplay::LabelSet(int screenNum, const string& LabelName, const string& Caption, bool Visible, const string& Special)
 {
-   static ankerl::unordered_dense::map<LONG, ankerl::unordered_dense::set<string>> warnedLabels;
+   static ankerl::unordered_dense::map<int, ankerl::unordered_dense::set<string>> warnedLabels;
 
    PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
    if (!pScreen) {

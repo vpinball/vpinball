@@ -38,14 +38,6 @@ using std::vector;
 namespace PUP
 {
 
-#define LONG long
-
-#ifndef GetRValue
-#define GetRValue(rgba32) static_cast<uint8_t>(rgba32)
-#define GetGValue(rgba32) static_cast<uint8_t>((rgba32) >> 8)
-#define GetBValue(rgba32) static_cast<uint8_t>((rgba32) >> 16)
-#endif
-
 LPI_USE();
 #define LOGD PUP::LPI_LOGD
 #define LOGI PUP::LPI_LOGI

@@ -10,7 +10,8 @@ string trim_string(const string& str)
    string s;
    try
    {
-      s = str.substr(str.find_first_not_of(" \t\r\n"), str.find_last_not_of(" \t\r\n") - str.find_first_not_of(" \t\r\n") + 1);
+      const size_t pos = str.find_first_not_of(" \t\r\n");
+      s = str.substr(pos, str.find_last_not_of(" \t\r\n") - pos + 1);
    }
    catch (...)
    {
@@ -218,6 +219,8 @@ string find_case_insensitive_file_path(const string& szPath)
 }
 
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include <windows.h>
 #include <locale>
 void SetThreadName(const string& name)
