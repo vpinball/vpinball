@@ -21,6 +21,7 @@ if(BUILD_SHARED)
    target_include_directories(ScoreViewPlugin PUBLIC
       plugins/scoreview
       ${CMAKE_SOURCE_DIR}/third-party/include
+      standalone/inc/wine/include
       src/plugins
       src
    )
@@ -98,6 +99,7 @@ if(BUILD_STATIC)
    target_include_directories(ScoreViewPlugin PUBLIC
       plugins/scoreview
       ${CMAKE_SOURCE_DIR}/third-party/include
+      standalone/inc/wine/include
       src/plugins
       src
    )
