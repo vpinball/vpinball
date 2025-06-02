@@ -18,14 +18,6 @@ set(SCOREVIEW_PLUGIN_SOURCES
 if(BUILD_SHARED)
    add_library(ScoreViewPlugin MODULE ${SCOREVIEW_PLUGIN_SOURCES})
 
-   target_include_directories(ScoreViewPlugin PUBLIC
-      plugins/scoreview
-      ${CMAKE_SOURCE_DIR}/third-party/include
-      standalone/inc/wine/include
-      src/plugins
-      src
-   )
-
    if(NOT PluginPlatform STREQUAL "windows")
       target_compile_definitions(ScoreViewPlugin PRIVATE
          "__forceinline=__attribute__((always_inline)) inline"
@@ -33,6 +25,12 @@ if(BUILD_SHARED)
    endif()
 
    if(PluginPlatform STREQUAL "windows")
+      target_include_directories(ScoreViewPlugin PUBLIC
+         plugins/scoreview
+         ${CMAKE_SOURCE_DIR}/third-party/include
+         src/plugins
+         src
+      )
       add_compile_options(
          $<$<CONFIG:RELEASE>:/Ob2>
          $<$<CONFIG:RELEASE>:/O2>
@@ -72,6 +70,13 @@ if(BUILD_SHARED)
          )
       endif()
    else()
+      target_include_directories(ScoreViewPlugin PUBLIC
+         plugins/scoreview
+         ${CMAKE_SOURCE_DIR}/third-party/include
+         standalone/inc/wine/include
+         src/plugins
+         src
+      )
       set_target_properties(ScoreViewPlugin PROPERTIES
          PREFIX ""
          OUTPUT_NAME "plugin-scoreview"
@@ -96,13 +101,22 @@ if(BUILD_STATIC)
 
    add_library(ScoreViewPlugin STATIC ${SCOREVIEW_PLUGIN_SOURCES})
 
-   target_include_directories(ScoreViewPlugin PUBLIC
-      plugins/scoreview
-      ${CMAKE_SOURCE_DIR}/third-party/include
-      standalone/inc/wine/include
-      src/plugins
-      src
-   )
+   if(PluginPlatform STREQUAL "windows")
+      target_include_directories(ScoreViewPlugin PUBLIC
+         plugins/scoreview
+         ${CMAKE_SOURCE_DIR}/third-party/include
+         src/plugins
+         src
+      )
+   else()
+      target_include_directories(ScoreViewPlugin PUBLIC
+         plugins/scoreview
+         ${CMAKE_SOURCE_DIR}/third-party/include
+         standalone/inc/wine/include
+         src/plugins
+         src
+      )
+   endif()
 
    target_compile_definitions(ScoreViewPlugin PRIVATE
       "__forceinline=__attribute__((always_inline)) inline"
