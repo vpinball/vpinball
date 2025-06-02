@@ -5,8 +5,11 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
+#ifdef _WIN32
 #include <ocidl.h>
-
+#else
+typedef DWORD OLE_COLOR;
+#endif
 #include <cstdint>
 #include <algorithm>
 #include <charconv>
