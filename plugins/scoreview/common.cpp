@@ -25,7 +25,8 @@ inline string trim_string(const string& str)
    string s;
    try
    {
-      s = str.substr(str.find_first_not_of(" \t\r\n"), str.find_last_not_of(" \t\r\n") - str.find_first_not_of(" \t\r\n") + 1);
+      const size_t pos = str.find_first_not_of(" \t\r\n");
+      s = str.substr(pos, str.find_last_not_of(" \t\r\n") - pos + 1);
    }
    catch (...)
    {
@@ -50,7 +51,6 @@ inline string normalize_path_separators(const string& szPath)
    return szResult;
 }
 
-
 string TrimLeading(const string& str, const string& whitespace)
 {
    if (str.empty())
@@ -65,10 +65,10 @@ string TrimTrailing(const string& str, const string& whitespace)
 {
    if (str.empty())
       return string();
-   const auto strBegin = str.cbegin();
    const auto pos = str.find_last_not_of(whitespace);
    if (pos == string::npos)
       return string();
+   const auto strBegin = str.cbegin();
    const auto strEnd = strBegin + pos + 1;
    return string(strBegin, strEnd);
 }
@@ -163,7 +163,7 @@ string GetPluginPath()
     pathBuf.resize(size_needed, 0);
     WideCharToMultiByte(CP_UTF8, 0, buf, -1, pathBuf.data(), size_needed, NULL, NULL);
 #else
-    pathBuf = string(buf);
+    pathBuf = buf;
 #endif
 #else
     Dl_info info{};
@@ -174,7 +174,7 @@ string GetPluginPath()
     if (!realpath(info.dli_fname, realBuf))
         return string();
 
-    pathBuf = string(realBuf);
+    pathBuf = realBuf;
 #endif
 
     if (pathBuf.empty())
@@ -188,6 +188,3 @@ string GetPluginPath()
 }
 
 }
-
-
-

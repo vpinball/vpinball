@@ -2,6 +2,22 @@
 
 #pragma once
 
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <windows.h>
+#include <OleCtl.h>
+
+#include <algorithm>
+#include <charconv>
+
+#include <vector>
+using std::vector;
+
+#include <string>
+using namespace std::string_literals;
+using std::string;
+using std::wstring;
+
 #ifdef _MSC_VER
 #include <intrin.h>
 #ifdef _M_ARM64
@@ -593,10 +609,8 @@ float sz2f(string sz, const bool force_convert_decimal_point = false);
 string f2sz(const float f, const bool can_convert_decimal_point = true);
 
 void WideStrNCopy(const WCHAR* wzin, WCHAR* wzout, const size_t wzoutMaxLen);
-int WideStrCmp(const WCHAR* wz1, const WCHAR* wz2);
 void WideStrCat(const WCHAR* wzin, WCHAR* wzout, const size_t wzoutMaxLen);
-int WzSzStrCmp(const WCHAR* wz1, const char* sz2);
-int WzSzStrNCmp(const WCHAR* wz1, const char* sz2, const size_t maxComparisonLen);
+bool WzSzEqual(const WCHAR* wz1, const char* sz2);
 
 HRESULT OpenURL(const string& szURL);
 
@@ -755,13 +769,28 @@ string find_case_insensitive_file_path(const string& szPath);
 string find_case_insensitive_directory_path(const string& szPath);
 string extension_from_path(const string& path);
 bool path_has_extension(const string& path, const string& extension);
-bool try_parse_int(const string& str, int& value);
+inline string trim_string(const string& str)
+{
+   string s;
+   try {
+      const size_t pos = str.find_first_not_of(" \t\r\n");
+      s = str.substr(pos, str.find_last_not_of(" \t\r\n") - pos + 1);
+   }
+   catch (...) {
+      //s.clear();
+   }
+   return s;
+}
+inline bool try_parse_int(const string& str, int& value)
+{
+   const string tmp = trim_string(str);
+   return (std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), value).ec == std::errc{});
+}
 bool try_parse_float(const string& str, float& value);
 bool try_parse_color(const string& str, OLE_COLOR& value);
 bool is_string_numeric(const string& str);
 int string_to_int(const string& str, int default_value = 0);
 float string_to_float(const string& str, float default_value = 0.0f);
-string trim_string(const string& str);
 vector<string> parse_csv_line(const string& line);
 string color_to_hex(OLE_COLOR color);
 bool string_contains_case_insensitive(const string& str1, const string& str2);

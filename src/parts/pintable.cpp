@@ -1179,7 +1179,6 @@ STDMETHODIMP ScriptGlobalTable::GetElementByName(BSTR name, IDispatch* *pVal)
    for (size_t i = 0; i < m_pt->m_vedit.size(); ++i)
    {
       IEditable * const pie = m_pt->m_vedit[i];
-
       if (wcscmp(name, pie->GetScriptable()->m_wzName) == 0)
       {
          IDispatch * const id = pie->GetISelect()->GetDispatch();
@@ -1596,9 +1595,7 @@ for (size_t ie = 0; ie < m_vedit.size(); ie++) \
     IEditable* const item = m_vedit[ie]; \
     if (item->GetItemType() == eItemSurface || item->GetItemType() == eItemRamp) \
     { \
-        CComBSTR bstr; \
-        item->GetScriptable()->get_Name(&bstr); \
-        if (!WzSzStrCmp(bstr, pEditSurface.c_str())) \
+        if (WzSzEqual(item->GetScriptable()->m_wzName, pEditSurface.c_str())) \
         { \
             found = true; \
             break; \
@@ -2173,7 +2170,7 @@ PinTable* PinTable::CopyForPlay()
    dst->m_toneMapper = src->m_toneMapper;
    dst->m_exposure = src->m_exposure;
    dst->m_bloom_strength = src->m_bloom_strength;
-   memcpy(dst->m_wzName, src->m_wzName, MAXNAMEBUFFER * sizeof(src->m_wzName[0]));
+   memcpy(dst->m_wzName, src->m_wzName, sizeof(src->m_wzName));
 
    dst->m_Light[0].emission = src->m_Light[0].emission;
 
@@ -2262,7 +2259,7 @@ PinTable* PinTable::CopyForPlay()
       CComObject<Collection> *pcol;
       CComObject<Collection>::CreateInstance(&pcol);
       pcol->AddRef();
-      memcpy(pcol->m_wzName, m_vcollection[i].m_wzName, MAXNAMEBUFFER * sizeof(pcol->m_wzName[0]));
+      memcpy(pcol->m_wzName, m_vcollection[i].m_wzName, sizeof(pcol->m_wzName));
       pcol->m_fireEvents = m_vcollection[i].m_fireEvents;
       pcol->m_stopSingleEvents = m_vcollection[i].m_stopSingleEvents;
       pcol->m_groupElements = m_vcollection[i].m_groupElements;
@@ -4092,7 +4089,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                   m_vedit[i] = dmd;
                   m_pcv->AddItem(dmd->GetScriptable(), false);
                   char *szT = MakeChar(dmd->m_wzName);
-                  PLOGI << "Textbox used as DMD replaced by a flasher (name=" << szT << ")";
+                  PLOGI << "Textbox used as DMD replaced by a flasher (name=" << szT << ')';
                   delete[] szT;
                   break;
                }
@@ -4790,10 +4787,7 @@ void PinTable::NewCollection(const HWND hwndListView, const bool fromSelection)
    pcol->AddRef();
 
    const LocalStringW prefix(IDS_COLLECTION);
-   WCHAR wzT[128];
-   GetUniqueName(prefix.m_szbuffer, wzT, 128);
-
-   WideStrNCopy(wzT, pcol->m_wzName, MAXNAMEBUFFER);
+   GetUniqueName(prefix.m_szbuffer, pcol->m_wzName, std::size(pcol->m_wzName));
 
    if (fromSelection && !MultiSelIsEmpty())
    {
@@ -4978,7 +4972,7 @@ void PinTable::SetCollectionName(Collection *pcol, const char *szName, HWND hwnd
    {
       if (hwndList)
          ListView_SetItemText(hwndList, index, 0, (char*)szName);
-      WideStrNCopy(wzT, pcol->m_wzName, MAXNAMEBUFFER);
+      WideStrNCopy(wzT, pcol->m_wzName, std::size(pcol->m_wzName));
    }
 #endif
 }
@@ -7087,7 +7081,7 @@ STDMETHODIMP PinTable::put_Name(BSTR newVal)
    STARTUNDO
    if(m_pcv->ReplaceName((IScriptable *)this, newVal) == S_OK)
    {
-      WideStrNCopy(newVal, m_wzName, MAXNAMEBUFFER);
+      WideStrNCopy(newVal, m_wzName, std::size(m_wzName));
       //lstrcpyW((WCHAR *)m_wzName, newVal);
    }
    STOPUNDO
@@ -8015,17 +8009,16 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
             // but no checks are being performed at moment:
             (flashers && m_vedit[ivar]->GetItemType() == eItemFlasher))
          {
-            CComBSTR bstr;
-            m_vedit[ivar]->GetScriptable()->get_Name(&bstr);
+            const WCHAR* const sname = m_vedit[ivar]->GetScriptable()->m_wzName;
 
-            const DWORD cwch = lstrlenW(bstr) + 1;
+            const DWORD cwch = lstrlenW(sname) + 1;
             //wzDst = ::SysAllocString(bstr);
 
             wzDst = (WCHAR *)CoTaskMemAlloc(cwch * sizeof(WCHAR));
             if (wzDst == nullptr)
                ShowError("DISPID_Surface alloc failed (1)");
 
-            WideStrNCopy(bstr, wzDst, cwch);
+            WideStrNCopy(sname, wzDst, cwch);
             rgstr[cvar] = wzDst;
             rgdw[cvar] = (DWORD)ivar;
             cvar++;
@@ -8182,19 +8175,16 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       }
       else
       {
-         CComBSTR bstr;
-         m_vedit[dwCookie]->GetScriptable()->get_Name(&bstr);
+         const WCHAR * const sname = m_vedit[dwCookie]->GetScriptable()->m_wzName;
 
-         const DWORD cwch = lstrlenW(bstr) + 1;
-         //wzDst = ::SysAllocString(bstr);
+         const DWORD cwch = lstrlenW(sname) + 1;
+         //wzDst = ::SysAllocString(sname);
 
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
          if (wzDst == nullptr)
-         {
             ShowError("DISPID_Surface alloc failed (2)");
-         }
          else
-            WideStrNCopy(bstr, wzDst, cwch*(DWORD)sizeof(WCHAR));
+            WideStrNCopy(sname, wzDst, cwch*(DWORD)sizeof(WCHAR));
       }
    }
    break;
@@ -8215,9 +8205,7 @@ float PinTable::GetSurfaceHeight(const string& name, float x, float y) const
       IEditable * const item = m_vedit[i];
       if (item->GetItemType() == eItemSurface || item->GetItemType() == eItemRamp)
       {
-         CComBSTR bstr;
-         item->GetScriptable()->get_Name(&bstr);
-         if (!WzSzStrCmp(bstr, name.c_str()))
+         if (WzSzEqual(item->GetScriptable()->m_wzName, name.c_str()))
          {
             if (item->GetItemType() == eItemSurface)
                return ((Surface *)item)->m_d.m_heighttop;
@@ -8238,9 +8226,7 @@ Material* PinTable::GetSurfaceMaterial(const string& name) const
       IEditable * const item = m_vedit[i];
       if (item->GetItemType() == eItemSurface || item->GetItemType() == eItemRamp)
       {
-         CComBSTR bstr;
-         item->GetScriptable()->get_Name(&bstr);
-         if (!WzSzStrCmp(bstr, name.c_str()))
+         if (WzSzEqual(item->GetScriptable()->m_wzName, name.c_str()))
          {
             if (item->GetItemType() == eItemSurface)
                return GetMaterial(((Surface *)item)->m_d.m_szTopMaterial);
@@ -8261,9 +8247,7 @@ Texture* PinTable::GetSurfaceImage(const string& name) const
       IEditable * const item = m_vedit[i];
       if (item->GetItemType() == eItemSurface || item->GetItemType() == eItemRamp)
       {
-         CComBSTR bstr;
-         item->GetScriptable()->get_Name(&bstr);
-         if (!WzSzStrCmp(bstr, name.c_str()))
+         if (WzSzEqual(item->GetScriptable()->m_wzName, name.c_str()))
          {
             if (item->GetItemType() == eItemSurface)
                return GetImage(((Surface *)item)->m_d.m_szImage);

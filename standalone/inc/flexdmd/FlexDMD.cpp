@@ -270,7 +270,7 @@ STDMETHODIMP FlexDMD::get_DmdColoredPixels(VARIANT* pRetVal)
       return S_FALSE;
    }
 
-   const UINT8* pRGB24Data = m_pRGB24DMD->GetData();
+   const UINT8* const __restrict pRGB24Data = m_pRGB24DMD->GetData();
 
    if (!pRGB24Data)
       return S_FALSE;
@@ -310,7 +310,7 @@ STDMETHODIMP FlexDMD::get_DmdPixels(VARIANT* pRetVal)
       return S_FALSE;
    }
 
-   const UINT8* pRGB24Data = m_pRGB24DMD->GetData();
+   const UINT8* const __restrict pRGB24Data = m_pRGB24DMD->GetData();
 
    if (!pRGB24Data)
       return S_FALSE;

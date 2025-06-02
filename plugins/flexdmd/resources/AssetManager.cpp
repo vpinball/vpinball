@@ -256,11 +256,11 @@ void* AssetManager::Open(AssetSrc* pSrc)
          #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
          VPXInfo vpxInfo;
          m_vpxApi->GetVpxInfo(&vpxInfo);
-         path = string(vpxInfo.path) + PATH_SEPARATOR_CHAR + "plugins"s + PATH_SEPARATOR_CHAR + "flexdmd"s + PATH_SEPARATOR_CHAR;
+         path = string(vpxInfo.path) + PATH_SEPARATOR_CHAR + "plugins" + PATH_SEPARATOR_CHAR + "flexdmd" + PATH_SEPARATOR_CHAR;
          #else
          path = GetPluginPath();
          #endif
-         path = find_case_insensitive_file_path(path + "assets"s + PATH_SEPARATOR_CHAR + pSrc->GetPath());
+         path = find_case_insensitive_file_path(path + "assets" + PATH_SEPARATOR_CHAR + pSrc->GetPath());
          if (!path.empty()) {
             if (pSrc->GetAssetType() == AssetType_BMFont)
                pAsset = BitmapFont::Create(path);

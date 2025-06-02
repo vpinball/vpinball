@@ -3,17 +3,16 @@
 #include "MsgPlugin.h"
 #include "ControllerPlugin.h"
 
-#include "common.h"
-
 #include <functional>
 #include <cstring>
 #include <cstdlib>
 #include <memory>
 
+#include "common.h"
+
 #include "core/ResURIResolver.h"
 
 #include "ScoreView.h"
-
 
 #ifdef __APPLE__
 #include <TargetConditionals.h>
@@ -48,11 +47,11 @@ int OnRender(VPXRenderContext2D* ctx, void*)
          #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
          VPXInfo vpxInfo;
          vpxApi->GetVpxInfo(&vpxInfo);
-         path = string(vpxInfo.path) + PATH_SEPARATOR_CHAR + "plugins"s + PATH_SEPARATOR_CHAR + "flexdmd"s + PATH_SEPARATOR_CHAR;
+         path = string(vpxInfo.path) + PATH_SEPARATOR_CHAR + "plugins" + PATH_SEPARATOR_CHAR + "flexdmd" + PATH_SEPARATOR_CHAR;
          #else
          path = GetPluginPath();
          #endif
-         path = path + "layouts"s + PATH_SEPARATOR_CHAR;
+         path += "layouts"s + PATH_SEPARATOR_CHAR;
          scoreview->Load(path);
       }
    }

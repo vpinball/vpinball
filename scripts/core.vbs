@@ -160,7 +160,7 @@ Class cvpmDictionary
 	Public Sub		RemoveAll	 : mDict.RemoveAll			   : End Sub
 	Public Function Exists(aKey) : Exists = mDict.Exists(aKey) : End Function
 	Public Function Items		 : Items  = mDict.Items		   : End Function
-	Public Function Keys		 : Keys	  = mDict.Keys		   : End Function
+	Public Function Keys		 : Keys   = mDict.Keys		   : End Function
 End Class
 
 '--------------------
@@ -978,9 +978,9 @@ Class cvpmBallStack
 	Private Sub KickOut(aAltSol)
 		Dim ii,jj, kForce, kDir, kBaseDir
 		If mBalls Then
-		    CorePlaySoundAt mExitSndBall, mSoundKicker
+			CorePlaySoundAt mExitSndBall, mSoundKicker
 		Else
-		    CorePlaySoundAt mExitSnd, mSoundKicker
+			CorePlaySoundAt mExitSnd, mSoundKicker
 			Exit Sub
 		End If
 		If aAltSol Then kForce = mExitForce2 : kBaseDir = mExitDir2 Else kForce = mExitForce : kBaseDir = mExitDir

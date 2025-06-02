@@ -22,6 +22,8 @@
 #include "usbalphanumeric.h"
 
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include <windows.h>
 #include <locale>
 #endif
@@ -288,7 +290,7 @@ static void RenderThread()
 
       if (!isRunning)
          break;
-      
+
       if (selectedSources.empty() || (dmdLayout == DmdLayouts::Undefined))
          continue;
 
@@ -296,7 +298,7 @@ static void RenderThread()
       float* lum = groupLum;
       bool changed = false;
       lastFrameId.resize(selectedSources.size());
-      for (int i = 0, pos = 0; i < selectedSources.size(); i++)
+      for (size_t i = 0, pos = 0; i < selectedSources.size(); i++)
       {
          const SegDisplayFrame seg = selectedSources[i].GetState(selectedSources[i].id);
          if (seg.frameId != lastFrameId[i])
@@ -535,7 +537,7 @@ static void OnSegSrcChanged(const unsigned int eventId, void* userData, void* ms
       if (layouts[i][1] == selectedSources.size())
       {
          dmdLayout = static_cast<DmdLayouts>(layouts[i][0]);
-         for (int j = 0; j < selectedSources.size(); j++)
+         for (size_t j = 0; j < selectedSources.size(); j++)
          {
             if (layouts[i][j + 2] != selectedSources[j].nElements)
             {
@@ -549,7 +551,7 @@ static void OnSegSrcChanged(const unsigned int eventId, void* userData, void* ms
    {
       std::stringstream ss;
       ss << "Unsupported segment layout (" << selectedSources.size() << " displays: ";
-      for (int i = 0; i < selectedSources.size(); i++)
+      for (size_t i = 0; i < selectedSources.size(); i++)
          ss << (i == 0 ? "" : ", ") << selectedSources[i].nElements;
       ss << ')';
       LPI_LOGI("%s", ss.str().c_str());

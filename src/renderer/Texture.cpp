@@ -802,7 +802,7 @@ Texture* Texture::CreateFromStream(IStream *pstream, int version, PinTable *pt, 
          if (!ext.empty())
          {
             path.erase(path.length() - ext.length());
-            path = path + "webp";
+            path += "webp";
          }
          ppb->m_path = path;
          FreeImage_SeekMemory(memStream, 0, SEEK_SET);

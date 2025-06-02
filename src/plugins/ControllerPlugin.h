@@ -194,16 +194,16 @@ typedef struct DisplaySrcId
    unsigned int height;                                                     // 
    union {
       struct {
-         uint16_t hardwareFamily;                             
+         uint16_t hardwareFamily;
          uint16_t hardwareModel;
       };
       uint32_t hardware;                                                    // Hardware hint. See CTLPI_DISPLAY_HARDWARE_xxx
    };
-   
+
    // Render frames, suitable for presenting to the user, but not meant to be backward compatible
    unsigned int frameFormat;                                                // See CTLPI_DISPLAY_FORMAT_xxx
    DisplayFrame (MSGPIAPI* GetRenderFrame)(const CtlResId id);              // Get the display frame. Returned value is not null, owned by the source, in the format defined by frameFormat
-   
+
    // Identify frames, do not implement the full display emulation but suitable for stable and backward compatible frame identification
    // They are optional and all sources do not implement this feature. If implemented, all fields must be defined, otherwise they must all be 0/null
    unsigned int identifyFormat;                                             // See CTLPI_DISPLAY_ID_FORMAT_xxx 
@@ -216,7 +216,7 @@ typedef struct GetDisplaySrcMsg
    unsigned int maxEntryCount; // see below
    // Response
    unsigned int count;         // Number of entries, also position to put next entry, should be increased even if exceeding maxEntryCount to get the total count
-   DisplaySrcId* entries;          // Pointer to an array of maxEntryCount entries to be filled
+   DisplaySrcId* entries;      // Pointer to an array of maxEntryCount entries to be filled
 } GetDisplaySrcMsg;
 
 
@@ -272,7 +272,7 @@ typedef struct SegSrcId
    CtlResId groupId;                                        // Unique Id of the display group
    union {
       struct {
-         uint16_t hardwareFamily;                             
+         uint16_t hardwareFamily;
          uint16_t hardwareModel;
       };
       uint32_t hardware;                                    // Hardware hint. See CTLPI_SEG_HARDWARE_xxx

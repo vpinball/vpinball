@@ -5,6 +5,8 @@
 #ifdef ENABLE_SDL_VIDEO // SDL Windowing
 #include <SDL3/SDL.h>
 #else // Win32 Windowing
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include <windows.h>
 #endif
 

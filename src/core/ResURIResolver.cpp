@@ -2,6 +2,7 @@
 
 //#include "core/stdafx.h"
 
+#include "def.h"
 #include "ResURIResolver.h"
 
 #include <sstream>
@@ -9,27 +10,6 @@ using std::string;
 using namespace std::string_literals;
 
 #include "simple-uri-parser/uri_parser.h"
-
-static string trim_string(const string &str)
-{
-   string s;
-   try
-   {
-      s = str.substr(str.find_first_not_of(" \t\r\n"), str.find_last_not_of(" \t\r\n") - str.find_first_not_of(" \t\r\n") + 1);
-   }
-   catch (...)
-   {
-      //s.clear();
-   }
-   return s;
-}
-
-static bool try_parse_int(const string &str, int &value)
-{
-   std::stringstream sstr(trim_string(str));
-   return ((sstr >> value) && sstr.eof());
-}
-
 
 ResURIResolver::ResURIResolver(const MsgPluginAPI& msgAPI, unsigned int endpointId, bool trackDisplays, bool trackSegDisplays, bool trackInputs, bool trackDevices)
    : m_msgAPI(msgAPI)
@@ -326,7 +306,7 @@ ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
       {
          for (auto& source : m_displaySources)
          {
-            if (displaySource == nullptr                                                                            // Priority 1: find at least a display
+            if (displaySource == nullptr                                                                            // Priority 1: Find at least a display
                || (displaySource->width < source.width)                                                             // Priority 2: Favor highest resolution display
                || (displaySource->width == source.width && displaySource->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8) // Priority 3: Favor color over monochrome
                || (displaySource->width == source.width && source.frameFormat == CTLPI_DISPLAY_FORMAT_SRGB888))     // Priority 4: Favor RGB8 over other formats

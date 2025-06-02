@@ -4111,7 +4111,7 @@ bool Collection::LoadToken(const int id, BiffReader * const pbr)
          IScriptable * const piscript = ppt->m_vedit[i]->GetScriptable();
          if (piscript) // skip decals
          {
-            if (!WideStrCmp(piscript->m_wzName, wzT))
+            if (wcscmp(piscript->m_wzName, wzT) == 0)
             {
                piscript->GetISelect()->GetIEditable()->m_vCollection.push_back(this);
                piscript->GetISelect()->GetIEditable()->m_viCollection.push_back(m_visel.size());

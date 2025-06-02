@@ -188,18 +188,12 @@ void LightSeq::RenderSetup(RenderDevice *device)
    m_queue.Head = 0;
    m_queue.Tail = 0;
 
-   // get a BSTR version of the collection we are to use
-   const CComBSTR bstrCollection = m_d.m_wzCollection.c_str();
-
    // get the number of collections available
    int size = m_ptable->m_vcollection.size();
    for (int i = 0; i < size; ++i)
    {
-      // get the name of this collection
-      CComBSTR bstr;
-      m_ptable->m_vcollection[i].get_Name(&bstr);
-      // is it the one we are to use?
-      if (WideStrCmp(bstr, bstrCollection) == 0)
+      // is the name of this collection the one we are to use?
+      if (wcscmp(m_ptable->m_vcollection[i].m_wzName, m_d.m_wzCollection.c_str()) == 0)
       {
          // yep, set a pointer to this sub-collection
          m_pcollection = m_ptable->m_vcollection.ElementAt(i);

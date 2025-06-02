@@ -17,7 +17,7 @@
 
 #ifndef _WIN32
 #include <dlfcn.h>
-#include <limits.h>
+#include <climits>
 #include <unistd.h>
 #endif
 

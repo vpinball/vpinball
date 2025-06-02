@@ -18,7 +18,7 @@ static const char point = std::use_facet<std::numpunct<char>>(std::locale("")).d
 unsigned long long mwc64x_state = 4077358422479273989ull;
 
 
-// used by dialogues, etc, locale specific, otherwise use e.g. std::stof() directly
+// used by dialogues, etc, locale specific, otherwise use e.g. std::stof() (with exception handling) or std::strtof() directly
 float sz2f(string sz, const bool force_convert_decimal_point)
 {
 #if 1
@@ -95,61 +95,25 @@ string f2sz(const float f, const bool can_convert_decimal_point)
 
 void WideStrNCopy(const WCHAR* wzin, WCHAR* wzout, const size_t wzoutMaxLen)
 {
-   DWORD i = 0;
+   size_t i = 0;
    while (*wzin && (++i < wzoutMaxLen)) { *wzout++ = *wzin++; }
-   *wzout = 0;
+   *wzout = L'\0';
 }
 
 void WideStrCat(const WCHAR* wzin, WCHAR* wzout, const size_t wzoutMaxLen)
 {
-   DWORD i = lstrlenW(wzout);
+   size_t i = lstrlenW(wzout);
    wzout += i;
    while (*wzin && (++i < wzoutMaxLen)) { *wzout++ = *wzin++; }
-   *wzout = 0;
+   *wzout = L'\0';
 }
 
-int WideStrCmp(const WCHAR *wz1, const WCHAR *wz2)
-{
-   while (*wz1 != L'\0')
-   {
-      if (*wz1 != *wz2)
-      {
-         if (*wz1 > *wz2)
-            return 1; // If *wz2 == 0, then wz1 will return as higher, which is correct
-         else if (*wz1 < *wz2)
-            return -1;
-      }
-      wz1++;
-      wz2++;
-   }
-   if (*wz2 != L'\0')
-      return -1; // wz2 is longer - and therefore higher
-   return 0;
-}
-
-int WzSzStrCmp(const WCHAR *wz1, const char *sz2)
+bool WzSzEqual(const WCHAR *wz1, const char *sz2)
 {
    while (*wz1 != L'\0')
       if (*wz1++ != *sz2++)
-         return 1;
-   if (*sz2 != L'\0')
-      return 1;
-   return 0;
-}
-
-int WzSzStrNCmp(const WCHAR* wz1, const char* sz2, const size_t maxComparisonLen)
-{
-   DWORD i = 0;
-
-   while (*wz1 != L'\0' && i < maxComparisonLen)
-   {
-      if (*wz1++ != *sz2++)
-         return 1;
-      i++;
-   }
-   if (*sz2 != L'\0')
-      return 1;
-   return 0;
+         return false;
+   return (*sz2 == '\0');
 }
 
 LocalString::LocalString(const int resid)
@@ -532,16 +496,13 @@ bool path_has_extension(const string& path, const string& ext)
    return extension_from_path(path) == lowerCase(ext);
 }
 
-bool try_parse_int(const string& str, int& value)
-{
-   std::stringstream sstr(trim_string(str));
-   return ((sstr >> value) && sstr.eof());
-}
-
 bool try_parse_float(const string& str, float& value)
 {
-    std::stringstream sstr(trim_string(str));
-    return ((sstr >> value) && sstr.eof());
+   const string sz = trim_string(str);
+   const char* const szp = sz.c_str();
+   char* sze;
+   value = std::strtof(szp, &sze);
+   return (szp != sze);
 }
 
 bool try_parse_color(const string& str, OLE_COLOR& value)
@@ -564,9 +525,9 @@ bool try_parse_color(const string& str, OLE_COLOR& value)
    if (!(ss >> rgba))
       return false;
 
-   UINT8 r = (rgba >> 24) & 0xFF;
-   UINT8 g = (rgba >> 16) & 0xFF;
-   UINT8 b = (rgba >> 8) & 0xFF;
+   const UINT8 r = (rgba >> 24) & 0xFF;
+   const UINT8 g = (rgba >> 16) & 0xFF;
+   const UINT8 b = (rgba >> 8) & 0xFF;
 
    value = RGB(r, g, b);
 
@@ -594,18 +555,6 @@ float string_to_float(const string& str, float default_value)
       return value;
 
    return default_value;
-}
-
-string trim_string(const string& str)
-{
-   string s;
-   try {
-      s = str.substr(str.find_first_not_of(" \t\r\n"), str.find_last_not_of(" \t\r\n") - str.find_first_not_of(" \t\r\n") + 1);
-   }
-   catch (...) {
-      //s.clear();
-   }
-   return s;
 }
 
 vector<string> parse_csv_line(const string& line)

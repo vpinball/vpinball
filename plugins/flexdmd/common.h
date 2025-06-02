@@ -14,7 +14,7 @@
 
 #ifndef _WIN32
 #include <dlfcn.h>
-#include <limits.h>
+#include <climits>
 #include <unistd.h>
 #endif
 
@@ -42,10 +42,14 @@ LPI_USE();
 #define LOGE Flex::LPI_LOGE
 
 typedef uint32_t ColorRGBA32;
-#define RGB(r, g, b) static_cast<ColorRGBA32>(static_cast<uint8_t>(r) | (static_cast<uint8_t>(g) << 8) | (static_cast<uint8_t>(b) << 16))
+#ifndef RGB
+#define RGB(r, g, b) (static_cast<ColorRGBA32>(r) | (static_cast<ColorRGBA32>(g) << 8) | (static_cast<ColorRGBA32>(b) << 16))
+#endif
+#ifndef GetRValue
 #define GetRValue(rgba32) static_cast<uint8_t>(rgba32)
 #define GetGValue(rgba32) static_cast<uint8_t>((rgba32) >> 8)
 #define GetBValue(rgba32) static_cast<uint8_t>((rgba32) >> 16)
+#endif
 
 #ifdef _MSC_VER
 #define PATH_SEPARATOR_CHAR '\\'

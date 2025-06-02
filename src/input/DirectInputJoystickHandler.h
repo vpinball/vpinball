@@ -187,15 +187,15 @@ private:
       hr = joystick->GetProperty(DIPROP_PRODUCTNAME, &dstr.diph);
       if (hr == S_OK)
       {
-         if (!WzSzStrCmp(dstr.wsz, "PinballWizard"))
+         if (wcscmp(dstr.wsz, L"PinballWizard") == 0)
             joystickType = PinInput::InputLayout::PBWizard;
-         else if (!WzSzStrCmp(dstr.wsz, "UltraCade Pinball"))
+         else if (wcscmp(dstr.wsz, L"UltraCade Pinball") == 0)
             joystickType = PinInput::InputLayout::UltraCade;
-         else if (!WzSzStrCmp(dstr.wsz, "Microsoft SideWinder Freestyle Pro (USB)"))
+         else if (wcscmp(dstr.wsz, L"Microsoft SideWinder Freestyle Pro (USB)") == 0)
             joystickType = PinInput::InputLayout::Sidewinder;
-         else if (!WzSzStrCmp(dstr.wsz, "VirtuaPin Controller"))
+         else if (wcscmp(dstr.wsz, L"VirtuaPin Controller") == 0)
             joystickType = PinInput::InputLayout::VirtuaPin;
-         else if (!WzSzStrCmp(dstr.wsz, "Pinscape Controller") || !WzSzStrCmp(dstr.wsz, "PinscapePico"))
+         else if (wcscmp(dstr.wsz, L"Pinscape Controller") == 0 || wcscmp(dstr.wsz, L"PinscapePico") == 0)
          {
             joystickType = PinInput::InputLayout::Generic;
             me->m_pininput.m_linearPlunger = true;

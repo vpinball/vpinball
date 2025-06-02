@@ -40,9 +40,9 @@ public:
 #define INITVBA(ItemType) \
    virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR * const wzName) \
    { \
-      WCHAR wzUniqueName[128]; \
       if (fNew && !wzName) /* setup a default unique name */ \
       { \
+         WCHAR wzUniqueName[128]; \
          GetPTable()->GetUniqueName(ItemType, wzUniqueName, 128); \
          WideStrNCopy(wzUniqueName, (WCHAR *)m_wzName, std::size(m_wzName));/*lstrcpyW((WCHAR *)m_wzName, wzUniqueName);*/ \
       } \
