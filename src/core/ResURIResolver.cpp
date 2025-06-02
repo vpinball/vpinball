@@ -2,7 +2,9 @@
 
 //#include "core/stdafx.h"
 
+#define MINIMAL_DEF_H
 #include "def.h"
+
 #include "ResURIResolver.h"
 
 #include <sstream>

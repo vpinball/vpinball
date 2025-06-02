@@ -5,11 +5,6 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
-#ifdef _WIN32
-#include <ocidl.h>
-#else
-typedef DWORD OLE_COLOR;
-#endif
 #include <cstdint>
 #include <algorithm>
 #include <charconv>
@@ -791,12 +786,10 @@ inline bool try_parse_int(const string& str, int& value)
    return (std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), value).ec == std::errc{});
 }
 bool try_parse_float(const string& str, float& value);
-bool try_parse_color(const string& str, OLE_COLOR& value);
 bool is_string_numeric(const string& str);
 int string_to_int(const string& str, int default_value = 0);
 float string_to_float(const string& str, float default_value = 0.0f);
 vector<string> parse_csv_line(const string& line);
-string color_to_hex(OLE_COLOR color);
 bool string_contains_case_insensitive(const string& str1, const string& str2);
 bool string_starts_with_case_insensitive(const string& str, const string& prefix);
 string string_replace_all(const string& szStr, const string& szFrom, const string& szTo, const size_t offs = 0);
@@ -807,10 +800,15 @@ const char* gl_to_string(GLuint value);
 #endif
 vector<string> add_line_numbers(const char* src);
 
+#ifndef MINIMAL_DEF_H
+bool try_parse_color(const string& str, OLE_COLOR& value);
+string color_to_hex(OLE_COLOR color);
+
 #ifdef __STANDALONE__
 extern "C" HRESULT external_open_storage(const OLECHAR* pwcsName, IStorage* pstgPriority, DWORD grfMode, SNB snbExclude, DWORD reserved, IStorage** ppstgOpen);
 extern "C" HRESULT external_create_object(const WCHAR *progid, IClassFactory* cf, IUnknown* obj);
 extern "C" void external_log_info(const char* format, ...);
 extern "C" void external_log_debug(const char* format, ...);
 extern "C" void external_log_error(const char* format, ...);
+#endif
 #endif
