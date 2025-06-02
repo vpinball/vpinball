@@ -7,6 +7,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <charconv>
+#include <cassert>
 
 #pragma warning(push)
 #pragma warning(disable : 4267)
@@ -287,7 +289,8 @@ void PUPPinDisplay::B2SData(const string& tIndex, int Value)
 {
    const string tmp = tIndex.substr(1);
    int result;
-   std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), result);
+   auto ec = std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), result).ec;
+   assert(ec == std::errc{});
 
    m_pupManager.QueueTriggerData({ tIndex[0], result, Value });
 }
