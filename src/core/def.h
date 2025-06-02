@@ -5,8 +5,9 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
-#include <olectl.h>
+#include <ocidl.h>
 
+#include <cstdint>
 #include <algorithm>
 #include <charconv>
 
