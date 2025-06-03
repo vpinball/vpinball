@@ -13,6 +13,12 @@
 #include "DMDUtil/DMDUtil.h"
 #pragma warning(pop)
 
+#define DMDUTIL_TINT_R 255
+#define DMDUTIL_TINT_G 140
+#define DMDUTIL_TINT_B 0
+
+using namespace std;
+
 namespace DMDUtil {
    
 static MsgPluginAPI* msgApi = nullptr;
@@ -29,9 +35,9 @@ static bool isRunning = false;
 
 static DMDUtil::DMD* pDmd = nullptr;
 
-static uint8_t tintR = 255;
-static uint8_t tintG = 140;
-static uint8_t tintB = 0;
+static uint8_t tintR;
+static uint8_t tintG;
+static uint8_t tintB;
 
 LPI_USE();
 #define LOGD LPI_LOGD
@@ -39,6 +45,25 @@ LPI_USE();
 #define LOGE LPI_LOGE
 
 LPI_IMPLEMENT
+
+static string GetSettingString(MsgPluginAPI* pMsgApi, const char* section, const char* key, const string& def = "")
+{
+   char buf[256];
+   pMsgApi->GetSetting(section, key, buf, sizeof(buf));
+   return buf[0] ? string(buf) : def;
+}
+
+static int GetSettingInt(MsgPluginAPI* pMsgApi, const char* section, const char* key, int def = 0)
+{
+    auto s = GetSettingString(pMsgApi, section, key, "");
+    return s.empty() ? def : static_cast<int>(std::strtol(s.c_str(), nullptr, 10));
+}
+
+static bool GetSettingBool(MsgPluginAPI* pMsgApi, const char* section, const char* key, bool def = false)
+{
+    auto s = GetSettingString(pMsgApi, section, key, "");
+    return s.empty() ? def : (std::strtol(s.c_str(), nullptr, 10) != 0);
+}
 
 static void UpdateThread()
 {
@@ -123,23 +148,21 @@ static void onDmdSrcChanged(const unsigned int msgId, void* userData, void* msgD
 
    if (foundDMD) {
       LOGI("DMD Source Changed: format=%d, width=%d, height=%d", newDmdId.frameFormat, newDmdId.width, newDmdId.height);
-      if (!pDmd)
-      {
+      if (!pDmd) {
          pDmd = new DMDUtil::DMD();
-         pDmd->FindDisplays();
 
-         char value[256];
-         msgApi->GetSetting("DMDUtil", "LumTintR", value, sizeof(value));
-         if (value[0] != '\0')
-            tintR = (uint8_t)(strtol(value, NULL, 10) & 0xFF);
+         if (GetSettingBool(msgApi, "DMDUtil", "FindDisplays", true))
+             pDmd->FindDisplays();
 
-         msgApi->GetSetting("DMDUtil", "LumTintG", value, sizeof(value));
-         if (value[0] != '\0')
-            tintG = (uint8_t)(strtol(value, NULL, 10) & 0xFF);
+         if (GetSettingBool(msgApi, "DMDUtil", "DumpDMDTxt", false))
+             pDmd->DumpDMDTxt();
 
-         msgApi->GetSetting("DMDUtil", "LumTintB", value, sizeof(value));
-         if (value[0] != '\0')
-            tintB = (uint8_t)(strtol(value, NULL, 10) & 0xFF);
+         if (GetSettingBool(msgApi, "DMDUtil", "DumpDMDRaw", false))
+             pDmd->DumpDMDRaw();
+
+         tintR = static_cast<uint8_t>(GetSettingInt(msgApi, "DMDUtil", "LumTintR", DMDUTIL_TINT_R));
+         tintG = static_cast<uint8_t>(GetSettingInt(msgApi, "DMDUtil", "LumTintG", DMDUTIL_TINT_G));
+         tintB = static_cast<uint8_t>(GetSettingInt(msgApi, "DMDUtil", "LumTintB", DMDUTIL_TINT_B));
       }
       isRunning = true;
       if (!updateThread.joinable())
@@ -171,6 +194,19 @@ MSGPI_EXPORT void MSGPIAPI DMDUtilPluginLoad(const uint32_t sessionId, MsgPlugin
    msgApi->SubscribeMsg(endpointId, onDmdSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG), onDmdSrcChanged, nullptr);
 
    getDmdSrcMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
+
+   DMDUtil::Config* pConfig = DMDUtil::Config::GetInstance();
+   pConfig->SetZeDMD(GetSettingBool(msgApi, "DMDUtil", "ZeDMD", true));
+   pConfig->SetZeDMDDevice(GetSettingString(msgApi, "DMDUtil", "ZeDMDDevice", string()).c_str());
+   pConfig->SetZeDMDDebug(GetSettingBool(msgApi, "DMDUtil", "ZeDMDDebug", false));
+   pConfig->SetZeDMDBrightness(GetSettingInt(msgApi, "DMDUtil", "ZeDMDBrightness", -1));
+   pConfig->SetZeDMDWiFiEnabled(GetSettingBool(msgApi, "DMDUtil", "ZeDMDWiFi", false));
+   pConfig->SetZeDMDWiFiAddr(GetSettingString(msgApi, "DMDUtil", "ZeDMDWiFiAddr", "zedmd-wifi.local").c_str());
+   pConfig->SetPixelcade(GetSettingBool(msgApi, "DMDUtil", "Pixelcade", true));
+   pConfig->SetPixelcadeDevice(GetSettingString(msgApi, "DMDUtil", "PixelcadeDevice", string()).c_str());
+   pConfig->SetDMDServer(GetSettingBool(msgApi, "DMDUtil", "DMDServer", false));
+   pConfig->SetDMDServerAddr(GetSettingString(msgApi, "DMDUtil", "DMDServerAddr", "localhost").c_str());
+   pConfig->SetDMDServerPort(GetSettingInt(msgApi, "DMDUtil", "DMDServerPort", 6789));
 }
 
 MSGPI_EXPORT void MSGPIAPI DMDUtilPluginUnload()

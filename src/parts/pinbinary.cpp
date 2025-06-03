@@ -37,10 +37,27 @@ bool PinBinary::ReadFromFile(const string& filename)
    /*BOOL foo =*/ ReadFile(hFile, m_pdata, m_cdata, &read, nullptr);
 
    /*foo =*/ CloseHandle(hFile);
+#else
+   std::ifstream file(filename, std::ios::binary | std::ios::ate);
+   if (!file)
+   {
+      const string text = "The file \"" + filename + "\" could not be opened.";
+      ShowError(text);
+      return false;
+   }
+
+   delete[] m_pdata;
+
+   m_cdata = static_cast<size_t>(file.tellg());
+   file.seekg(0, std::ios::beg);
+
+   m_pdata = new uint8_t[m_cdata];
+   file.read(reinterpret_cast<char*>(m_pdata), m_cdata);
+   file.close();
+#endif
 
    m_path = filename;
    m_name = TitleFromFilename(filename);
-#endif
 
    return true;
 }
