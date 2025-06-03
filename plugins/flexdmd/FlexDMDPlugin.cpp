@@ -116,18 +116,17 @@ PSC_CLASS_START(Image)
    PSC_PROP_RW(Image, Alignment, Alignment)
 PSC_CLASS_END(Image)
 
-#define PSC_VAR_Video(variant) PSC_VAR_object(Video, variant)
-#define PSC_VAR_SET_Video(variant, value) PSC_VAR_SET_object(Video, variant, value)
-PSC_CLASS_START(Video)
-   PSC_INHERIT_CLASS(Video, Actor)
-   PSC_PROP_RW(Video, Scaling, Scaling)
-   PSC_PROP_RW(Video, Alignment, Alignment)
-   PSC_PROP_R(Video, float, Length)
-   PSC_PROP_RW(Video, bool, Loop)
-   PSC_PROP_RW(Video, bool, Paused)
-   PSC_PROP_RW(Video, float, PlaySpeed)
-   PSC_FUNCTION1(Video, void, Seek, float)
-PSC_CLASS_END(Video)
+#define PSC_VAR_SET_AnimatedActor(variant, value) PSC_VAR_SET_object(AnimatedActor, variant, value)
+PSC_CLASS_START(AnimatedActor)
+   PSC_INHERIT_CLASS(AnimatedActor, Actor)
+   PSC_PROP_R(AnimatedActor, float, Length)
+   PSC_PROP_RW(AnimatedActor, bool, Loop)
+   PSC_PROP_RW(AnimatedActor, bool, Paused)
+   PSC_PROP_RW(AnimatedActor, float, PlaySpeed)
+   PSC_PROP_RW(AnimatedActor, Scaling, Scaling)
+   PSC_PROP_RW(AnimatedActor, Alignment, Alignment)
+   PSC_FUNCTION1(AnimatedActor, void, Seek, float)
+PSC_CLASS_END(AnimatedActor)
 
 #define PSC_VAR_Group(variant) PSC_VAR_object(Group, variant)
 #define PSC_VAR_SET_Group(variant, value) PSC_VAR_SET_object(Group, variant, value)
@@ -139,17 +138,12 @@ PSC_CLASS_START(Group)
    PSC_FUNCTION1(Group, Group, GetGroup, string)
    PSC_FUNCTION1(Group, Frame, GetFrame, string)
    PSC_FUNCTION1(Group, Label, GetLabel, string)
-   PSC_FUNCTION1(Group, Video, GetVideo, string)
+   PSC_FUNCTION1(Group, AnimatedActor, GetVideo, string)
    PSC_FUNCTION1(Group, Image, GetImage, string)
    PSC_FUNCTION0(Group, void, RemoveAll)
    PSC_FUNCTION1(Group, void, AddActor, Actor)
    PSC_FUNCTION1(Group, void, RemoveActor, Actor)
 PSC_CLASS_END(Group)
-
-#define PSC_VAR_SET_AnimatedActor(variant, value) PSC_VAR_SET_object(AnimatedActor, variant, value)
-PSC_CLASS_START(AnimatedActor)
-   PSC_INHERIT_CLASS(AnimatedActor, Actor)
-PSC_CLASS_END(AnimatedActor)
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -655,7 +649,6 @@ MSGPI_EXPORT void MSGPIAPI FlexDMDPluginLoad(const uint32_t sessionId, MsgPlugin
    RegisterLabelSCD(regLambda);
    RegisterFrameSCD(regLambda);
    RegisterImageSCD(regLambda);
-   RegisterVideoSCD(regLambda);
    RegisterGroupSCD(regLambda);
 
    RegisterBitmapSCD(regLambda);

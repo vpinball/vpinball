@@ -17,16 +17,6 @@
 #define STBI_NO_FAILURE_STRINGS
 #include "stb_image.h"
 
-#if defined(ENABLE_BGFX)
-#include <bimg/bimg.h>
-#include <bimg/decode.h>
-#include <bimg/encode.h>
-#include <bx/file.h>
-#include <bx/bx.h>
-#include <bx/allocator.h>
-#include <bx/math.h>
-#endif
-
 #ifdef __STANDALONE__
 #include <fstream>
 #include <iostream>
