@@ -2,7 +2,6 @@
 
 #include "VPinballLib.h"
 
-
 void VPXProgress::ItemHasBeenProcessed(int itemsCount, int totalItems)
 {
    VPinballLib::ProgressData progressData = { 100 * (itemsCount - 1) / totalItems };

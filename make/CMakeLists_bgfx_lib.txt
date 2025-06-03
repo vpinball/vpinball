@@ -752,7 +752,7 @@ target_link_libraries(vpinball PUBLIC
    FlexDMDPlugin
    HelloScriptPlugin
    HelloWorldPlugin
-   PinMamePlugin
+   PinMAMEPlugin
    PUPPlugin
    RemoteControlPlugin
    ScoreViewPlugin
