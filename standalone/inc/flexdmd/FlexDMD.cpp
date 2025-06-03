@@ -31,10 +31,6 @@ FlexDMD::FlexDMD()
    m_dmdColor = RGB(255, 88, 32);
    m_pAssetManager = new AssetManager();
 
-   m_pDMDWindow = nullptr;
-
-   Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
-
    m_pDMDWindow = new VP::DMDWindow("FlexDMD"s);
 
    m_show = true;
@@ -496,8 +492,11 @@ void FlexDMD::RenderLoop()
    if (m_pDMDWindow)
       m_pDMDWindow->AttachDMD(m_pDMD, m_width, m_height);
 
-   if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "FindDisplays"s, true))
-      m_pDMD->FindDisplays();
+   Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
+   if (!pSettings->LoadValueWithDefault(pSettings->GetSection("Plugin.DMDUtil"), "Enable"s, false)) {
+      if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "FindDisplays"s, true))
+         m_pDMD->FindDisplays();
+   }
 
    PLOGI.printf("Starting render thread");
 

@@ -48,13 +48,15 @@ void PINMAMECALLBACK VPinMAMEController::OnDisplayAvailable(int index, int displ
       pDisplay->pDMD = new DMDUtil::DMD();
       pDisplay->pDMD->SetRomName(pController->m_pPinmameGame->name);
 
-      if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "AltColor"s, true)) {
+      Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
+
+      if (pSettings->LoadValueWithDefault(Settings::Standalone, "AltColor"s, true)) {
          string szAltColorPath = find_case_insensitive_directory_path(pController->m_szPath + "AltColor");
          if (!szAltColorPath.empty())
             pDisplay->pDMD->SetAltColorPath(szAltColorPath.c_str());
       }
 
-      if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "PUPCapture"s, false)) {
+      if (pSettings->LoadValueWithDefault(Settings::Standalone, "PUPCapture"s, false)) {
          string szPupVideosPath = find_case_insensitive_directory_path(g_pvp->m_currentTablePath + "pupvideos");
          if (!szPupVideosPath.empty())
             pDisplay->pDMD->SetPUPVideosPath(szPupVideosPath.c_str());
@@ -65,14 +67,16 @@ void PINMAMECALLBACK VPinMAMEController::OnDisplayAvailable(int index, int displ
          if (pController->m_pDMDWindow)
             pController->m_pDMDWindow->AttachDMD(pDisplay->pDMD, pDisplay->layout.width, pDisplay->layout.height);
 
-         if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "FindDisplays"s, true))
-            pDisplay->pDMD->FindDisplays();
+         if (!pSettings->LoadValueWithDefault(pSettings->GetSection("Plugin.DMDUtil"), "Enable"s, false)) {
+            if (pSettings->LoadValueWithDefault(Settings::Standalone, "FindDisplays"s, true))
+               pDisplay->pDMD->FindDisplays();
 
-         if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "DumpDMDTxt"s, false))
-            pDisplay->pDMD->DumpDMDTxt();
+            if (pSettings->LoadValueWithDefault(Settings::Standalone, "DumpDMDTxt"s, false))
+               pDisplay->pDMD->DumpDMDTxt();
 
-         if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "DumpDMDRaw"s, false))
-            pDisplay->pDMD->DumpDMDRaw();
+            if (pSettings->LoadValueWithDefault(Settings::Standalone, "DumpDMDRaw"s, false))
+               pDisplay->pDMD->DumpDMDRaw();
+         }
       }
    }
 
