@@ -10,7 +10,7 @@
     <ClCompile Include="../../plugins/pinmame/common.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="../../plugins/pinmame/PinMamePlugin.cpp">
+    <ClCompile Include="../../plugins/pinmame/PinMAMEPlugin.cpp">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="../../plugins/pinmame/Rom.cpp">

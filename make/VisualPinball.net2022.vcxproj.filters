@@ -989,7 +989,7 @@
     <ClInclude Include="../../src/plugins/ControllerPlugin.h">
       <Filter>plugin</Filter>
     </ClInclude>
-    <ClInclude Include="../../src/plugins/PinMamePlugin.h">
+    <ClInclude Include="../../src/plugins/PinMAMEPlugin.h">
       <Filter>plugin</Filter>
     </ClInclude>
     <ClInclude Include="../../src/renderer/Anaglyph.h">

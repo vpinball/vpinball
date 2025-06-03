@@ -94,8 +94,6 @@ void VPinball::Init(std::function<void*(Event, void*)> callback)
 
    m_pWebServer = new WebServer();
    m_eventCallback = callback;
-
-   LoadPlugins();
 }
 
 void VPinball::LoadPlugins()
@@ -109,7 +107,7 @@ void VPinball::LoadPlugins()
       { "B2S",           &B2SPluginLoad,           &B2SPluginUnload           },
       { "DMDUtil",       &DMDUtilPluginLoad,       &DMDUtilPluginUnload       },
       { "FlexDMD",       &FlexDMDPluginLoad,       &FlexDMDPluginUnload       },
-      { "PinMame",       &PinMAMEPluginLoad,       &PinMAMEPluginUnload       },
+      { "PinMAME",       &PinMAMEPluginLoad,       &PinMAMEPluginUnload       },
       { "PUP",           &PUPPluginLoad,           &PUPPluginUnload           },
       { "RemoteControl", &RemoteControlPluginLoad, &RemoteControlPluginUnload },
       { "ScoreView",     &ScoreViewPluginLoad,     &ScoreViewPluginUnload     },

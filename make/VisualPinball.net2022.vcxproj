@@ -1773,7 +1773,7 @@
     <ClInclude Include="../../src/physics/quadtree.h" />
     <ClInclude Include="../../src/plugins/MsgPlugin.h" />
     <ClInclude Include="../../src/plugins/ControllerPlugin.h" />
-    <ClInclude Include="../../src/plugins/PinMamePlugin.h" />
+    <ClInclude Include="../../src/plugins/PinMAMEPlugin.h" />
     <ClInclude Include="../../src/plugins/MsgPluginManager.h" />
     <ClInclude Include="../../src/plugins/VPXPlugin.h" />
     <ClInclude Include="../../src/renderer/captureExt.h" />

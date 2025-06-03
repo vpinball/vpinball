@@ -11,6 +11,10 @@
 
 #include <csignal>
 
+#ifdef __LIBVPINBALL__
+#include "VPinballLib.h"
+#endif
+
 void OnDMDUtilLog(DMDUtil_LogLevel logLevel, const char* format, va_list args)
 {
    va_list args_copy;
@@ -65,6 +69,10 @@ void Standalone::PreStartup()
 {
    PLOGI.printf("Performing pre-startup standalone actions");
 
+#ifdef __LIBVPINBALL__
+  VPinballLib::VPinball::GetInstance().LoadPlugins();
+#endif
+
    m_pPUPManager = new PUPManager();
 
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
@@ -111,4 +119,8 @@ void Standalone::Shutdown()
 
    delete m_pPUPManager;
    m_pPUPManager = nullptr;
+
+#ifdef __LIBVPINBALL__
+   VPinballLib::VPinball::GetInstance().UnloadPlugins();
+#endif
 }

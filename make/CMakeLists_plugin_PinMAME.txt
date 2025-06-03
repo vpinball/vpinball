@@ -7,7 +7,7 @@ set(CMAKE_C_STANDARD 99)
 
 set(PINMAME_PLUGIN_SOURCES
    plugins/pinmame/common.cpp
-   plugins/pinmame/PinMamePlugin.cpp
+   plugins/pinmame/PinMAMEPlugin.cpp
    plugins/pinmame/Controller.cpp
    plugins/pinmame/ControllerSettings.cpp
    plugins/pinmame/Game.cpp
@@ -29,9 +29,9 @@ set(PINMAME_PLUGIN_SOURCES
 )
 
 if(BUILD_SHARED)
-   add_library(PinMamePlugin MODULE ${PINMAME_PLUGIN_SOURCES})
+   add_library(PinMAMEPlugin MODULE ${PINMAME_PLUGIN_SOURCES})
 
-   target_include_directories(PinMamePlugin PUBLIC
+   target_include_directories(PinMAMEPlugin PUBLIC
       plugins/pinmame
       ${CMAKE_SOURCE_DIR}/third-party/include
       src/plugins
@@ -55,61 +55,61 @@ if(BUILD_SHARED)
          $<$<CONFIG:RELEASE>:/GT>
          $<$<CONFIG:RELEASE>:/GL>
       )
-      set_target_properties(PinMamePlugin PROPERTIES
+      set_target_properties(PinMAMEPlugin PROPERTIES
          MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
       )
-      target_compile_options(PinMamePlugin PUBLIC
+      target_compile_options(PinMAMEPlugin PUBLIC
          $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
          $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
       )
-      target_link_options(PinMamePlugin PUBLIC
+      target_link_options(PinMAMEPlugin PUBLIC
          $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
          $<$<CONFIG:RELEASE>:/OPT:REF>
          $<$<CONFIG:RELEASE>:/OPT:ICF>
          $<$<CONFIG:RELEASE>:/LTCG>
       )
       if (PluginArch STREQUAL "x64")
-         set_target_properties(PinMamePlugin PROPERTIES
+         set_target_properties(PinMAMEPlugin PROPERTIES
             OUTPUT_NAME "plugin-pinmame64"
          )
-         target_link_directories(PinMamePlugin PUBLIC ${CMAKE_SOURCE_DIR}/third-party/build-libs/windows-x64)
-         target_link_libraries(PinMamePlugin pinmame64.lib)
+         target_link_directories(PinMAMEPlugin PUBLIC ${CMAKE_SOURCE_DIR}/third-party/build-libs/windows-x64)
+         target_link_libraries(PinMAMEPlugin pinmame64.lib)
       else()
-         set_target_properties(PinMamePlugin PROPERTIES
+         set_target_properties(PinMAMEPlugin PROPERTIES
             OUTPUT_NAME "plugin-pinmame"
          )
-         target_link_directories(PinMamePlugin PUBLIC ${CMAKE_SOURCE_DIR}/third-party/build-libs/windows-x86)
-         target_link_libraries(PinMamePlugin pinmame.lib)
+         target_link_directories(PinMAMEPlugin PUBLIC ${CMAKE_SOURCE_DIR}/third-party/build-libs/windows-x86)
+         target_link_libraries(PinMAMEPlugin pinmame.lib)
       endif()
    else()
-      set_target_properties(PinMamePlugin PROPERTIES
+      set_target_properties(PinMAMEPlugin PROPERTIES
          PREFIX ""
          OUTPUT_NAME "plugin-pinmame"
       )
       if(PluginPlatform STREQUAL "macos")
-         set_target_properties(PinMamePlugin PROPERTIES
+         set_target_properties(PinMAMEPlugin PROPERTIES
             SUFFIX ".dylib"
          )
       endif()
-      target_link_directories(PinMamePlugin PUBLIC
+      target_link_directories(PinMAMEPlugin PUBLIC
          ${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}
       )
-      target_link_libraries(PinMamePlugin PUBLIC pinmame)
+      target_link_libraries(PinMAMEPlugin PUBLIC pinmame)
    endif()
 
-   add_custom_command(TARGET PinMamePlugin POST_BUILD
+   add_custom_command(TARGET PinMAMEPlugin POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/pinmame/plugin.cfg" "${PLUGINS_DIR}/pinmame/plugin.cfg"
-      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:PinMamePlugin>" "${PLUGINS_DIR}/pinmame"
-      COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:PinMamePlugin>"
+      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:PinMAMEPlugin>" "${PLUGINS_DIR}/pinmame"
+      COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:PinMAMEPlugin>"
    )
 
    if(PluginPlatform STREQUAL "windows")
       if (PluginArch STREQUAL "x64")
-         add_custom_command(TARGET PinMamePlugin POST_BUILD
+         add_custom_command(TARGET PinMAMEPlugin POST_BUILD
             COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/pinmame64.dll" "${PLUGINS_DIR}/pinmame/pinmame64.dll"
          )
       elseif (PluginArch STREQUAL "x86")
-         add_custom_command(TARGET PinMamePlugin POST_BUILD
+         add_custom_command(TARGET PinMAMEPlugin POST_BUILD
             COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/pinmame.dll" "${PLUGINS_DIR}/pinmame/pinmame.dll"
          )
       endif()
@@ -119,16 +119,16 @@ endif()
 if(BUILD_STATIC)
    add_compile_options(-fPIC)
 
-   add_library(PinMamePlugin STATIC ${PINMAME_PLUGIN_SOURCES})
+   add_library(PinMAMEPlugin STATIC ${PINMAME_PLUGIN_SOURCES})
 
-   target_include_directories(PinMamePlugin PUBLIC
+   target_include_directories(PinMAMEPlugin PUBLIC
       plugins/pinmame
       ${CMAKE_SOURCE_DIR}/third-party/include
       src/plugins
       src
    )
 
-   set_target_properties(PinMamePlugin PROPERTIES
+   set_target_properties(PinMAMEPlugin PROPERTIES
       PREFIX ""
       OUTPUT_NAME "plugin-pinmame"
    )
