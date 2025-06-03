@@ -31,10 +31,13 @@ public:
    void SetScaling(Scaling scaling) { m_scaling = scaling; }
    Alignment GetAlignment() const { return m_alignment; }
    void SetAlignment(Alignment alignment) { m_alignment = alignment; }
-   virtual float GetLength() const { return m_length; }
-   void SetLength(float length) { m_length = length; }
+   virtual float GetLength() const = 0;
    bool GetLoop() const { return m_loop; }
    void SetLoop(bool loop) { m_loop = loop; }
+   bool GetPaused() const { return m_paused; }
+   void SetPaused(bool paused) { m_paused = paused; }
+   float GetPlaySpeed() const { return m_playSpeed; }
+   void SetPlaySpeed(float playSpeed) { m_playSpeed = playSpeed; }
 
 private:
    float m_frameTime = 0.f;
@@ -46,7 +49,6 @@ private:
    Alignment m_alignment = Alignment_Center;
    bool m_paused = false;
    bool m_loop = true;
-   float m_length = 0.f;
    float m_playSpeed = 1.0f;
 };
 

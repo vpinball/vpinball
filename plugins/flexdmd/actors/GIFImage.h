@@ -17,6 +17,7 @@ public:
    void UpdateFrame();
    void Draw(Flex::SurfaceGraphics* pGraphics) override;
    void OnStageStateChanged() override;
+   float GetLength() const override { return m_pBitmap ? static_cast<float>(m_pBitmap->GetLength() / 1000.0) : 0.f; }
 
 private:
    GIFImage(FlexDMD* pFlexDMD, const string& name);

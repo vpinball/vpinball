@@ -22,7 +22,6 @@ GIFImage* GIFImage::Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const
    pImage->m_pBitmap = pBitmap;
    pImage->SetPrefWidth(static_cast<float>(pBitmap->GetWidth()));
    pImage->SetPrefHeight(static_cast<float>(pBitmap->GetHeight()));
-   pImage->SetLength((float)(pBitmap->GetLength() / 1000.0));
    pImage->Rewind();
    pImage->Pack();
    pImage->m_pBitmap = nullptr;
