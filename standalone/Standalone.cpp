@@ -71,17 +71,21 @@ void Standalone::PreStartup()
 
    DMDUtil::Config* pConfig = DMDUtil::Config::GetInstance();
    pConfig->SetLogCallback(OnDMDUtilLog);
-   pConfig->SetZeDMD(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMD"s, true));
-   pConfig->SetZeDMDDevice(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDDevice"s, string()).c_str());
-   pConfig->SetZeDMDDebug(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDDebug"s, false));
-   pConfig->SetZeDMDBrightness(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDBrightness"s, -1));
-   pConfig->SetZeDMDWiFiEnabled(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDWiFi"s, false));
-   pConfig->SetZeDMDWiFiAddr(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDWiFiAddr"s, "zedmd-wifi.local"s).c_str());
-   pConfig->SetPixelcade(pSettings->LoadValueWithDefault(Settings::Standalone, "Pixelcade"s, true));
-   pConfig->SetPixelcadeDevice(pSettings->LoadValueWithDefault(Settings::Standalone, "PixelcadeDevice"s, string()).c_str());
-   pConfig->SetDMDServer(pSettings->LoadValueWithDefault(Settings::Standalone, "DMDServer"s, false));
-   pConfig->SetDMDServerAddr(pSettings->LoadValueWithDefault(Settings::Standalone, "DMDServerAddr"s, "localhost"s).c_str());
-   pConfig->SetDMDServerPort(pSettings->LoadValueWithDefault(Settings::Standalone, "DMDServerPort"s, 6789));
+
+   if (!pSettings->LoadValueWithDefault(pSettings->GetSection("Plugin.DMDUtil"), "Enable"s, false)) {
+      pConfig->SetZeDMD(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMD"s, true));
+      pConfig->SetZeDMDDevice(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDDevice"s, string()).c_str());
+      pConfig->SetZeDMDDebug(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDDebug"s, false));
+      pConfig->SetZeDMDBrightness(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDBrightness"s, -1));
+      pConfig->SetZeDMDWiFiEnabled(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDWiFi"s, false));
+      pConfig->SetZeDMDWiFiAddr(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDWiFiAddr"s, "zedmd-wifi.local"s).c_str());
+      pConfig->SetPixelcade(pSettings->LoadValueWithDefault(Settings::Standalone, "Pixelcade"s, true));
+      pConfig->SetPixelcadeDevice(pSettings->LoadValueWithDefault(Settings::Standalone, "PixelcadeDevice"s, string()).c_str());
+      pConfig->SetDMDServer(pSettings->LoadValueWithDefault(Settings::Standalone, "DMDServer"s, false));
+      pConfig->SetDMDServerAddr(pSettings->LoadValueWithDefault(Settings::Standalone, "DMDServerAddr"s, "localhost"s).c_str());
+      pConfig->SetDMDServerPort(pSettings->LoadValueWithDefault(Settings::Standalone, "DMDServerPort"s, 6789));
+   }
+
    pConfig->SetPUPCapture(pSettings->LoadValueWithDefault(Settings::Standalone, "PUPCapture"s, false));
 
    if (pSettings->LoadValueWithDefault(Settings::Standalone, "B2SPlugins"s, false)) {

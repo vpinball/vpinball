@@ -213,11 +213,12 @@ jobs:
             if [[ "${{ matrix.type }}" == "GL" ]]; then
               cp -r build/${{ matrix.config }}/shaders-${{ needs.version.outputs.version_short }} stage
             fi
-            cp -r build/${{ matrix.config }}/flexdmd stage
             cp -r build/${{ matrix.config }}/assets stage
+            cp -r build/${{ matrix.config }}/plugins stage
             cp -r build/${{ matrix.config }}/scripts stage
             cp -r build/${{ matrix.config }}/tables stage
             cp -r build/${{ matrix.config }}/docs stage
+            cp -r build/${{ matrix.config }}/flexdmd stage
             tar czf tmp/VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}.tar.gz -C stage .
           fi
       - name: Upload artifacts

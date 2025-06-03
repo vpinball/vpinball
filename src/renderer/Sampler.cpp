@@ -326,9 +326,7 @@ void Sampler::UpdateTexture(const BaseTexture* const surf, const bool force_line
    case BaseTexture::RGB_FP16:
       assert(m_bgfx_format == bgfx::TextureFormat::Enum::RGBA16F);
       { // Add alpha
-         BaseTexture* tmp = new BaseTexture(surf->width(), surf->height(), surf->m_format);
-         memcpy(tmp->data(), surf->datac(), (size_t)surf->pitch() * surf->height());
-         tmp->AddAlpha();
+         BaseTexture* tmp = surf->NewWithAlpha();
          auto releaseFn = [](void* _ptr, void* _userData) { delete static_cast<BaseTexture*>(_userData); };
          m_textureUpdate = bgfx::makeRef(tmp->datac(), m_height * tmp->pitch(), releaseFn, (void*)tmp);
       }
@@ -337,9 +335,7 @@ void Sampler::UpdateTexture(const BaseTexture* const surf, const bool force_line
    case BaseTexture::RGB_FP32:
       assert(m_bgfx_format == bgfx::TextureFormat::Enum::RGBA32F);
       { // Add alpha
-         BaseTexture* tmp = new BaseTexture(surf->width(), surf->height(), surf->m_format);
-         memcpy(tmp->data(), surf->datac(), (size_t)surf->pitch() * surf->height());
-         tmp->AddAlpha();
+         BaseTexture* tmp = surf->NewWithAlpha();
          auto releaseFn = [](void* _ptr, void* _userData) { delete static_cast<BaseTexture*>(_userData); };
          m_textureUpdate = bgfx::makeRef(tmp->datac(), m_height * tmp->pitch(), releaseFn, (void*)tmp);
       }
@@ -489,7 +485,7 @@ GLuint Sampler::CreateTexture(const BaseTexture* const surf, unsigned int Levels
       {
 #ifndef __OPENGLES__
          if (GLAD_GL_ARB_texture_compression_bptc)
-            comp_format = surf->IsSigned() ? colorFormat::BC6S : colorFormat::BC6U;
+            comp_format = colorFormat::BC6S;
 #endif
       }
 #ifndef __OPENGLES__
