@@ -42,10 +42,10 @@ public:
    void B2SData(const string& tIndex, int value);
    const string& GetB2SFilter() const;
    void SetB2SFilter(const string& Value);
-   void Show(int screeNum);
-   void Hide(int screeNum);
+   void Show(int screenNum);
+   void Hide(int screenNum);
    void B2SInit(const string& tName, const string& romName);
-   void SendMSG(const string& cMsg);
+   void SendMSG(const string& msg);
    void LabelNew(int screenNum, const string& labelName, const string& fontName, int size, int color, int angle, int xAlign, int yAlign, int xMargin, int yMargin, int pageNum, bool visible);
    void LabelSet(int screenNum, const string& labelName, const string& caption, bool visible, const string& special);
    void LabelSetEx();

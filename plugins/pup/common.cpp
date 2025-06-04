@@ -6,7 +6,7 @@
 
 namespace PUP {
 
-string trim_string(const string& str)
+static string trim_string(const string& str)
 {
    string s;
    try
@@ -21,37 +21,28 @@ string trim_string(const string& str)
    return s;
 }
 
-bool try_parse_int(const string& str, int& value)
+static bool try_parse_int(const string& str, int& value)
 {
    const string tmp = trim_string(str);
    return (std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), value).ec == std::errc{});
 }
 
-bool try_parse_float(const string& str, float& value)
+static bool try_parse_float(const string& str, float& value)
 {
-   const string sz = trim_string(str);
-   const char* const szp = sz.c_str();
-   char* sze;
-   value = std::strtof(szp, &sze);
-   return (szp != sze);
+   const string tmp = trim_string(str);
+   return (std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), value).ec == std::errc{});
 }
 
 int string_to_int(const string& str, int default_value)
 {
    int value;
-   if (try_parse_int(str, value))
-      return value;
-
-   return default_value;
+   return try_parse_int(str, value) ? value : default_value;
 }
 
 float string_to_float(const string& str, float default_value)
 {
    float value;
-   if (try_parse_float(str, value))
-      return value;
-
-   return default_value;
+   return try_parse_float(str, value) ? value : default_value;
 }
 
 vector<string> parse_csv_line(const string& line)

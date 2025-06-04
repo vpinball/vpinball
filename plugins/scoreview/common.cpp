@@ -7,21 +7,21 @@
 
 namespace ScoreView {
 
-inline char cLower(char c)
+static inline char cLower(char c)
 {
    if (c >= 'A' && c <= 'Z')
       c ^= 32; //ASCII convention
    return c;
 }
 
-inline bool StrCompareNoCase(const string& strA, const string& strB)
+static inline bool StrCompareNoCase(const string& strA, const string& strB)
 {
    return strA.length() == strB.length()
       && std::equal(strA.begin(), strA.end(), strB.begin(),
          [](char a, char b) { return cLower(a) == cLower(b); });
 }
 
-inline string trim_string(const string& str)
+static inline string trim_string(const string& str)
 {
    string s;
    try
@@ -36,7 +36,7 @@ inline string trim_string(const string& str)
    return s;
 }
 
-inline string normalize_path_separators(const string& szPath)
+static inline string normalize_path_separators(const string& szPath)
 {
    string szResult = szPath;
 
@@ -76,11 +76,8 @@ string TrimTrailing(const string& str, const string& whitespace)
 
 bool try_parse_float(const string& str, float& value)
 {
-   const string sz = trim_string(str);
-   const char* const szp = sz.c_str();
-   char* sze;
-   value = std::strtof(szp, &sze);
-   return (szp != sze);
+   const string tmp = trim_string(str);
+   return (std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), value).ec == std::errc{});
 }
 
 bool try_parse_int(const string& str, int& value)
@@ -121,14 +118,14 @@ string find_case_insensitive_file_path(const string& szPath)
    return string();
 }
 
-string PathFromFilename(const string& szfilename)
+string PathFromFilename(const string& filename)
 {
-   const int len = (int)szfilename.length();
+   const int len = (int)filename.length();
    // find the last '\' in the filename
    int end;
    for (end = len; end >= 0; end--)
    {
-      if (szfilename[end] == PATH_SEPARATOR_CHAR)
+      if (filename[end] == PATH_SEPARATOR_CHAR)
          break;
    }
 
@@ -136,15 +133,15 @@ string PathFromFilename(const string& szfilename)
       end = len - 1;
 
    // copy from the start of the string to the end (or last '\')
-   const char* szT = szfilename.c_str();
+   const char* szT = filename.c_str();
    int count = end + 1;
 
-   string szpath;
+   string path;
    while (count--)
    {
-      szpath.push_back(*szT++);
+      path.push_back(*szT++);
    }
-   return szpath;
+   return path;
 }
 
 string GetPluginPath()

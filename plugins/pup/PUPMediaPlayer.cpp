@@ -469,7 +469,7 @@ AVCodecContext* PUPMediaPlayer::OpenStream(AVFormatContext* pInputFormatContext,
 {
    AVCodecContext* pContext = avcodec_alloc_context3(NULL);
    if (!pContext)
-      return NULL;
+      return nullptr;
 
    // Request to decode frames on different threads, limiting to the platform core minus 3 (magic number corresponding of the average core used by VPX)
    // TODO Disabled as this delay the frame queue by one frame, breaking single frame videos (and still images used as video)
@@ -479,7 +479,7 @@ AVCodecContext* PUPMediaPlayer::OpenStream(AVFormatContext* pInputFormatContext,
    if (avcodec_parameters_to_context(pContext, pInputFormatContext->streams[stream]->codecpar) < 0)
    {
       avcodec_free_context(&pContext);
-      return NULL;
+      return nullptr;
    }
 
    pContext->pkt_timebase = pInputFormatContext->streams[stream]->time_base;
@@ -488,14 +488,14 @@ AVCodecContext* PUPMediaPlayer::OpenStream(AVFormatContext* pInputFormatContext,
    if (!pCodec) {
       LOGE("Couldn't find codec %s", avcodec_get_name(pContext->codec_id));
       avcodec_free_context(&pContext);
-      return NULL;
+      return nullptr;
    }
 
    pContext->codec_id = pCodec->id;
    if (avcodec_open2(pContext, pCodec, NULL) != 0) {
       LOGE("Couldn't open codec %s", avcodec_get_name(pContext->codec_id));
       avcodec_free_context(&pContext);
-      return NULL;
+      return nullptr;
    }
 
    return pContext;
@@ -516,7 +516,7 @@ void PUPMediaPlayer::HandleAudioFrame(AVFrame* pFrame)
       if (!m_pAudioConversionContext || swr_init(m_pAudioConversionContext) < 0) {
          LOGE("Failed to initialize the resampling context");
          swr_free(&m_pAudioConversionContext);
-         m_pAudioConversionContext = NULL;
+         m_pAudioConversionContext = nullptr;
          return;
       }
 

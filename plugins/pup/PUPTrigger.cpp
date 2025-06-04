@@ -231,7 +231,7 @@ bool PUPTrigger::IsResting() const
    if (m_lastTriggered == 0)
       return false;
 
-   return (SDL_GetTicks() - m_lastTriggered) < (m_restSeconds * 1000);
+   return (SDL_GetTicks() - m_lastTriggered) < ((Uint64)m_restSeconds * 1000);
 }
 
 void PUPTrigger::SetTriggered()

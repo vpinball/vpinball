@@ -11,7 +11,7 @@
 
 namespace ScoreView {
 
-inline float InvsRGB(const float x) { return (x <= 0.04045f) ? (x * (float)(1.0 / 12.92)) : (powf(x * (float)(1.0 / 1.055) + (float)(0.055 / 1.055), 2.4f)); }
+static inline float InvsRGB(const float x) { return (x <= 0.04045f) ? (x * (float)(1.0 / 12.92)) : (powf(x * (float)(1.0 / 1.055) + (float)(0.055 / 1.055), 2.4f)); }
 
 ScoreView::ScoreView(MsgPluginAPI* api, unsigned int endpointId, VPXPluginAPI* vpxApi)
    : m_resURIResolver(*api, endpointId, true, true, false, false)

@@ -44,7 +44,7 @@ struct PUPScreenRequest
    virtual ~PUPScreenRequest() = default;
 };
 
-struct PUPPinDisplayRequest : PUPScreenRequest
+struct PUPPinDisplayRequest final : PUPScreenRequest
 {
    PUP_PINDISPLAY_REQUEST_TYPE type = PUP_PINDISPLAY_REQUEST_TYPE_NORMAL;
    PUPPlaylist* pPlaylist = nullptr;
@@ -58,7 +58,7 @@ struct PUPPinDisplayRequest : PUPScreenRequest
    }
 };
 
-struct PUPTriggerRequest : PUPScreenRequest
+struct PUPTriggerRequest final : PUPScreenRequest
 {
    PUPTrigger* pTrigger;
    int value;

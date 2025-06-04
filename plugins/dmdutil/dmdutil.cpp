@@ -46,7 +46,7 @@ LPI_USE();
 
 LPI_IMPLEMENT
 
-static string GetSettingString(MsgPluginAPI* pMsgApi, const char* section, const char* key, const string& def = "")
+static string GetSettingString(MsgPluginAPI* pMsgApi, const char* section, const char* key, const string& def = string())
 {
    char buf[256];
    pMsgApi->GetSetting(section, key, buf, sizeof(buf));
@@ -55,14 +55,16 @@ static string GetSettingString(MsgPluginAPI* pMsgApi, const char* section, const
 
 static int GetSettingInt(MsgPluginAPI* pMsgApi, const char* section, const char* key, int def = 0)
 {
-    auto s = GetSettingString(pMsgApi, section, key, "");
-    return s.empty() ? def : static_cast<int>(std::strtol(s.c_str(), nullptr, 10));
+   const auto s = GetSettingString(pMsgApi, section, key, string());
+   int result;
+   return (s.empty() || (std::from_chars(s.c_str(), s.c_str() + s.length(), result).ec != std::errc{})) ? def : result;
 }
 
 static bool GetSettingBool(MsgPluginAPI* pMsgApi, const char* section, const char* key, bool def = false)
 {
-    auto s = GetSettingString(pMsgApi, section, key, "");
-    return s.empty() ? def : (std::strtol(s.c_str(), nullptr, 10) != 0);
+   const auto s = GetSettingString(pMsgApi, section, key, string());
+   int result;
+   return (s.empty() || (std::from_chars(s.c_str(), s.c_str() + s.length(), result).ec != std::errc{})) ? def : (result != 0);
 }
 
 static void UpdateThread()

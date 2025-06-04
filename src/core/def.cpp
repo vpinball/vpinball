@@ -10,6 +10,7 @@
 #include "standalone/PoleStorage.h"
 #endif
 
+#include <charconv>
 #include <iomanip>
 #include <filesystem>
 
@@ -18,7 +19,7 @@ static const char point = std::use_facet<std::numpunct<char>>(std::locale("")).d
 unsigned long long mwc64x_state = 4077358422479273989ull;
 
 
-// used by dialogues, etc, locale specific, otherwise use e.g. std::stof() (with exception handling) or std::strtof() directly
+// used by dialogues, etc, locale specific, otherwise use std::from_chars (or e.g. std::stof() (with exception handling) or std::strtof()) directly
 float sz2f(string sz, const bool force_convert_decimal_point)
 {
 #if 1
@@ -29,14 +30,8 @@ float sz2f(string sz, const bool force_convert_decimal_point)
          sz[pos] = '.';
    }
 
-   const char* const szp = sz.c_str();
-   char* sze;
-   const float result = std::strtof(szp, &sze);
-
-   if (szp == sze)
-      return 0.0f; //!! use inf or NaN instead?
-
-   return result;
+   float result;
+   return (std::from_chars(sz.c_str(), sz.c_str() + sz.length(), result).ec == std::errc{}) ? result : 0.0f; //!! use inf or NaN instead?
 #else
    const int len = (int)sz.length()+1;
    WCHAR * const wzT = new WCHAR[len];
@@ -228,7 +223,19 @@ wstring MakeWString(const string &sz)
    return result;
 }
 
-char *MakeChar(const WCHAR *const wz)
+wstring MakeWString(const char * const sz)
+{
+   // Somewhat overkill since we copy the string twice, once in the temp buffer for conversion, then in the string constructor
+   const int len = (int)lstrlen(sz);
+   WCHAR *const wzT = new WCHAR[len + 1];
+   MultiByteToWideCharNull(CP_ACP, 0, sz, -1, wzT, len + 1);
+   /*const*/ wstring result(wzT); // const removed for auto-move
+   delete [] wzT;
+
+   return result;
+}
+
+char *MakeChar(const WCHAR* const wz)
 {
    const int len = lstrlenW(wz);
    char * const szT = new char[len + 1];
@@ -237,7 +244,7 @@ char *MakeChar(const WCHAR *const wz)
    return szT;
 }
 
-string MakeString(const WCHAR * const wz)
+string MakeString(const WCHAR* const wz)
 {
    char* szT = MakeChar(wz);
    string sz = szT;
@@ -498,11 +505,8 @@ bool path_has_extension(const string& path, const string& ext)
 
 bool try_parse_float(const string& str, float& value)
 {
-   const string sz = trim_string(str);
-   const char* const szp = sz.c_str();
-   char* sze;
-   value = std::strtof(szp, &sze);
-   return (szp != sze);
+   const string tmp = trim_string(str);
+   return (std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), value).ec == std::errc{});
 }
 
 bool try_parse_color(const string& str, OLE_COLOR& value)
@@ -542,19 +546,13 @@ bool is_string_numeric(const string& str)
 int string_to_int(const string& str, int default_value)
 {
    int value;
-   if (try_parse_int(str, value))
-      return value;
-
-   return default_value;
+   return try_parse_int(str, value) ? value : default_value;
 }
 
 float string_to_float(const string& str, float default_value)
 {
    float value;
-   if (try_parse_float(str, value))
-      return value;
-
-   return default_value;
+   return try_parse_float(str, value) ? value : default_value;
 }
 
 vector<string> parse_csv_line(const string& line)

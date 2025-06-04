@@ -597,14 +597,11 @@ bool Settings::LoadValue(const Section section, const string &key, unsigned int 
    const string value = m_ini.get(m_settingKeys[section]).get(key);
    if (!value.empty())
    {
-      const char *const szp = value.c_str();
-      char *sze;
-      const unsigned int tmp = (unsigned int)std::strtoll(szp, &sze, 10);
-
-      if (szp == sze)
+      unsigned int result;
+      if (std::from_chars(value.c_str(), value.c_str()+value.length(), result).ec != std::errc{})
          return false;
 
-      val = tmp;
+      val = result;
       return true;
    }
 

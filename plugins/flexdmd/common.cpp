@@ -80,10 +80,7 @@ bool try_parse_color(const string& str, ColorRGBA32& value)
 int string_to_int(const string& str, int defaultValue)
 {
    int value;
-   if (try_parse_int(str, value))
-      return value;
-
-   return defaultValue;
+   return try_parse_int(str, value) ? value : defaultValue;
 }
 
 string normalize_path_separators(const string& szPath)

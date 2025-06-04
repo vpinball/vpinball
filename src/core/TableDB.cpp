@@ -53,38 +53,19 @@ void TableDB::Load()
       {
          Entry dim;
          dim.name = fields[0];
-         try
-         {
-            dim.width = std::stof(fields[1]);
-         }
-         catch (const std::exception&)
-         {
-            dim.width = 20.25f;
-         }
-         try
-         {
-            dim.height = std::stof(fields[2]);
-         }
-         catch (const std::exception&)
-         {
-            dim.height = 46.f;
-         }
-         try
-         {
-            dim.glassBottom = std::stof(fields[3]);
-         }
-         catch (const std::exception&)
-         {
-            dim.glassBottom = 3.f;
-         }
-         try
-         {
-            dim.glassTop = std::stof(fields[4]);
-         }
-         catch (const std::exception&)
-         {
-            dim.glassTop = 8.5f;
-         }
+         float result;
+         dim.width = (std::from_chars(fields[1].c_str(), fields[1].c_str() + fields[1].length(), result).ec == std::errc{})
+            ? result
+            : 20.25f; // Default width if parsing fails
+         dim.height = (std::from_chars(fields[2].c_str(), fields[2].c_str() + fields[2].length(), result).ec == std::errc{})
+            ? result
+            : 46.f; // Default height if parsing fails
+         dim.glassBottom = (std::from_chars(fields[3].c_str(), fields[3].c_str() + fields[3].length(), result).ec == std::errc{})
+            ? result
+            : 3.f; // Default glassBottom if parsing fails
+         dim.glassTop = (std::from_chars(fields[4].c_str(), fields[4].c_str() + fields[4].length(), result).ec == std::errc{})
+            ? result
+            : 8.5f; // Default glassTop if parsing fails
          dim.comment = fields[5];
          m_data.push_back(dim);
       }
