@@ -131,19 +131,19 @@ void PUPLabel::SetSpecial(const string& szSpecial)
 
          if (json["size"s].exists())
          {
-            m_size = std::stof(json["size"s].as_str());
+            m_size = static_cast<float>(json["size"s].as<double>());
             m_dirty = true;
          }
 
          if (json["xpos"s].exists())
          {
-            m_xPos = std::stof(json["xpos"s].as_str());
+            m_xPos = static_cast<float>(json["xpos"s].as<double>());
             m_dirty = true;
          }
 
          if (json["ypos"s].exists())
          {
-            m_yPos = std::stof(json["ypos"s].as_str());
+            m_yPos = static_cast<float>(json["ypos"s].as<double>());
             m_dirty = true;
          }
 
@@ -158,7 +158,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
 
          if (json["fonth"s].exists())
          {
-            m_size = std::stof(json["fonth"s].as_str());
+            m_size = static_cast<float>(json["fonth"s].as<double>());
             m_dirty = true;
          }
 
@@ -196,7 +196,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          if (json["rotate"s].exists())
          {
             // in tenths.  so 900 is 90 degrees. rotate support for images too.  note images must be aligned center to rotate properly(default)
-            m_angle = std::stof(json["rotate"s].as_str());
+            m_angle = static_cast<float>(json["rotate"s].as<double>());
             m_dirty = true;
          }
 
@@ -250,13 +250,13 @@ void PUPLabel::SetSpecial(const string& szSpecial)
 
          if (json["xoffset"s].exists())
          {
-            m_xoffset = std::stof(json["xoffset"s].as_str());
+            m_xoffset = static_cast<float>(json["xoffset"s].as<double>());
             m_dirty = true;
          }
 
          if (json["yoffset"s].exists())
          {
-            m_yoffset = std::stof(json["yoffset"s].as_str());
+            m_yoffset = static_cast<float>(json["yoffset"s].as<double>());
             m_dirty = true;
          }
 
@@ -268,13 +268,13 @@ void PUPLabel::SetSpecial(const string& szSpecial)
 
          if (json["width"s].exists())
          {
-            m_imageWidth = std::stof(json["width"s].as_str());
+            m_imageWidth = static_cast<float>(json["width"s].as<double>());
             m_dirty = true;
          }
 
          if (json["height"s].exists())
          {
-            m_imageHeight = std::stof(json["height"s].as_str());
+            m_imageHeight = static_cast<float>(json["height"s].as<double>());
             m_dirty = true;
          }
 

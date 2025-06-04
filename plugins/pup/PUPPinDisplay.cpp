@@ -365,12 +365,12 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
                      case 11:
                         // set all volume { "mt":301, "SN": XX, "FN":11, "VL":9}  VL=volume level
                         LOGD("Set all volume requested: screen={%s}, fn=%d, szMsg=%s", pScreen->ToString(false).c_str(), fn, szMsg.c_str());
-                        pScreen->SetVolume(std::stof(json["VL"].as_str()));
+                        pScreen->SetVolume(static_cast<float>(json["VL"s].as<double>()));
                         break;
                      case 15:
                         // set screen custompos { 'mt':301, 'SN':15,'FN':15,'CP':'parent_screen,x,y,w,h'} CP = CustomPos String, coordinates relative in %
                         LOGD("Set screen custompos requested: screen={%s}, fn=%d, szMsg=%s",pScreen->ToString(false).c_str(), fn, szMsg.c_str());
-                        pScreen->SetCustomPos(json["CP"].as_str());
+                        pScreen->SetCustomPos(json["CP"s].as_str());
                         break;
                      case 22:
                         // set screen transparency { "mt":301, "SN": 16, "FN":22, "AM":1, "AV":255 } AV: Alpha Value (0-255), AM: Alpha mode enabled 0/1?
