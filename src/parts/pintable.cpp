@@ -37,6 +37,23 @@ static serial Serial;
 constexpr unsigned char TABLE_KEY[] = "Visual Pinball";
 //constexpr unsigned char PARAPHRASE_KEY[] = { 0xB4, 0x0B, 0xBE, 0x37, 0xC3, 0x0C, 0x8E, 0xA1, 0x5A, 0x05, 0xDF, 0x1B, 0x2D, 0x02, 0xEF, 0x8D };
 
+#if defined(__clang__)
+static inline std::from_chars_result my_from_chars(const char* first, const char* last, float &value)
+{
+   char* e;
+   const float c = std::strtof(first, &e);
+   if(first != e)
+      value = c;
+
+   std::from_chars_result result;
+   result.ptr = nullptr; //!!
+   result.ec = (first == e) ? std::errc::invalid_argument : std::errc{}; //!!
+   return result;
+}
+#else
+#define my_from_chars std::from_chars
+#endif
+
 #pragma region ScriptGlobalTable
 
 ScriptGlobalTable::~ScriptGlobalTable()
@@ -6126,7 +6143,7 @@ void PinTable::ImportBackdropPOV(const string &filename)
                if (t) \
                { \
                type value; \
-               if(std::from_chars(t,t+lstrlen(t),value).ec == std::errc{}) \
+               if(my_from_chars(t,t+lstrlen(t),value).ec == std::errc{}) \
                { \
                if (toUserSettings) \
                   m_settings.SaveValue(Settings::TableOverride, keyPrefix + (settingField), value); \
@@ -6176,7 +6193,7 @@ void PinTable::ImportBackdropPOV(const string &filename)
                      if (t) \
                      { \
                      type value; \
-                     if(std::from_chars(t,t+lstrlen(t),value).ec == std::errc{}) \
+                     if(my_from_chars(t,t+lstrlen(t),value).ec == std::errc{}) \
                      { \
                      savecondition; \
                      } \
@@ -9531,7 +9548,7 @@ void PinTable::ImportVPP(const string& filename)
          if (t)
          {
             float val;
-            std::from_chars(t, t + lstrlen(t), val);
+            my_from_chars(t, t + lstrlen(t), val);
             put_Gravity(val);
          }
       }
@@ -9546,7 +9563,7 @@ void PinTable::ImportVPP(const string& filename)
          if (t)
          {
             float val;
-            std::from_chars(t, t + lstrlen(t), val);
+            my_from_chars(t, t + lstrlen(t), val);
             put_Friction(val);
          }
       }
@@ -9560,7 +9577,7 @@ void PinTable::ImportVPP(const string& filename)
          if (t)
          {
             float val;
-            std::from_chars(t, t + lstrlen(t), val);
+            my_from_chars(t, t + lstrlen(t), val);
             put_Elasticity(val);
          }
       }
@@ -9574,7 +9591,7 @@ void PinTable::ImportVPP(const string& filename)
          if (t)
          {
             float val;
-            std::from_chars(t, t + lstrlen(t), val);
+            my_from_chars(t, t + lstrlen(t), val);
             put_ElasticityFalloff(val);
          }
       }
@@ -9588,7 +9605,7 @@ void PinTable::ImportVPP(const string& filename)
          if (t)
          {
             float val;
-            std::from_chars(t, t + lstrlen(t), val);
+            my_from_chars(t, t + lstrlen(t), val);
             put_Scatter(val);
          }
       }
@@ -9602,7 +9619,7 @@ void PinTable::ImportVPP(const string& filename)
          if (t)
          {
             float val;
-            std::from_chars(t, t + lstrlen(t), val);
+            my_from_chars(t, t + lstrlen(t), val);
             put_DefaultScatter(val);
          }
       }
@@ -9616,7 +9633,7 @@ void PinTable::ImportVPP(const string& filename)
          if (t)
          {
             float val;
-            std::from_chars(t, t + lstrlen(t), val);
+            my_from_chars(t, t + lstrlen(t), val);
             put_SlopeMin(val);
          }
       }
@@ -9631,7 +9648,7 @@ void PinTable::ImportVPP(const string& filename)
          if (t)
          {
             float val;
-            std::from_chars(t, t + lstrlen(t), val);
+            my_from_chars(t, t + lstrlen(t), val);
             put_SlopeMax(val);
          }
       }
@@ -9644,7 +9661,7 @@ void PinTable::ImportVPP(const string& filename)
       {
          const char *const t = el->GetText();
          if (t)
-            std::from_chars(t, t + lstrlen(t), FlipperPhysicsMass);
+            my_from_chars(t, t + lstrlen(t), FlipperPhysicsMass);
       }
       else
       {
@@ -9657,7 +9674,7 @@ void PinTable::ImportVPP(const string& filename)
       {
          const char *const t = el->GetText();
          if (t)
-            std::from_chars(t, t + lstrlen(t), FlipperPhysicsStrength);
+            my_from_chars(t, t + lstrlen(t), FlipperPhysicsStrength);
       }
       else
       {
@@ -9670,7 +9687,7 @@ void PinTable::ImportVPP(const string& filename)
       {
          const char *const t = el->GetText();
          if (t)
-            std::from_chars(t, t + lstrlen(t), FlipperPhysicsElasticity);
+            my_from_chars(t, t + lstrlen(t), FlipperPhysicsElasticity);
       }
       else
       {
@@ -9683,7 +9700,7 @@ void PinTable::ImportVPP(const string& filename)
       {
          const char *const t = el->GetText();
          if (t)
-            std::from_chars(t, t + lstrlen(t), FlipperPhysicsScatter);
+            my_from_chars(t, t + lstrlen(t), FlipperPhysicsScatter);
       }
       else
       {
@@ -9696,7 +9713,7 @@ void PinTable::ImportVPP(const string& filename)
       {
          const char *const t = el->GetText();
          if (t)
-            std::from_chars(t, t + lstrlen(t), FlipperPhysicsTorqueDamping);
+            my_from_chars(t, t + lstrlen(t), FlipperPhysicsTorqueDamping);
       }
       else
       {
@@ -9709,7 +9726,7 @@ void PinTable::ImportVPP(const string& filename)
       {
          const char *const t = el->GetText();
          if (t)
-            std::from_chars(t, t + lstrlen(t), FlipperPhysicsTorqueDampingAngle);
+            my_from_chars(t, t + lstrlen(t), FlipperPhysicsTorqueDampingAngle);
       }
       else
       {
@@ -9722,7 +9739,7 @@ void PinTable::ImportVPP(const string& filename)
       {
          const char *const t = el->GetText();
          if (t)
-            std::from_chars(t, t + lstrlen(t), FlipperPhysicsReturnStrength);
+            my_from_chars(t, t + lstrlen(t), FlipperPhysicsReturnStrength);
       }
       else
       {
@@ -9735,7 +9752,7 @@ void PinTable::ImportVPP(const string& filename)
       {
          const char *const t = el->GetText();
          if (t)
-            std::from_chars(t, t + lstrlen(t), FlipperPhysicsElasticityFalloff);
+            my_from_chars(t, t + lstrlen(t), FlipperPhysicsElasticityFalloff);
       }
       else
       {
@@ -9748,7 +9765,7 @@ void PinTable::ImportVPP(const string& filename)
       {
          const char *const t = el->GetText();
          if (t)
-            std::from_chars(t, t + lstrlen(t), FlipperPhysicsFriction);
+            my_from_chars(t, t + lstrlen(t), FlipperPhysicsFriction);
       }
       else
       {
@@ -9761,7 +9778,7 @@ void PinTable::ImportVPP(const string& filename)
       {
          const char *const t = el->GetText();
          if (t)
-            std::from_chars(t, t + lstrlen(t), FlipperPhysicsCoilRampUp);
+            my_from_chars(t, t + lstrlen(t), FlipperPhysicsCoilRampUp);
       }
       else
       {
