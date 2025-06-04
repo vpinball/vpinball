@@ -1,5 +1,7 @@
 // license:GPLv3+
 
+#include <charconv>
+
 #include "common.h"
 #include "B2SDataModel.h"
 
@@ -62,7 +64,11 @@ static vec4 GetColorAttribute(const tinyxml2::XMLNode& doc, const std::string& n
          string token;
          vector<int> colorValues;
          while (std::getline(ss, token, '.'))
-            colorValues.push_back(std::stoi(token));
+         {
+            int result;
+            std::from_chars(token.c_str(), token.c_str() + token.length(), result);
+            colorValues.push_back(result);
+         }
          if (colorValues.size() == 3)
             return vec4(static_cast<float>(colorValues[0]) / 255.f, static_cast<float>(colorValues[1]) / 255.f, static_cast<float>(colorValues[2]) / 255.f, 1.f);
       }
