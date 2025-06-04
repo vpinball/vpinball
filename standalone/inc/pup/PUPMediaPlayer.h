@@ -18,7 +18,7 @@ public:
    PUPMediaPlayer();
    ~PUPMediaPlayer();
 
-   void Play(const string& szFilename);
+   void Play(const string& filename);
    bool IsPlaying();
    void Pause(bool pause);
    const string& GetFilename() const { return m_filename; }
@@ -28,7 +28,7 @@ public:
    void SetLoop(bool loop);
    void SetLength(int length);
    void SetVpxApi(VPXPluginAPI* pVpxApi) { m_pVpxApi = pVpxApi; }
-   void Render(VPXRenderContext2D* ctx, const SDL_Rect& destRect);
+   void Render(VPXRenderContext2D* const ctx, const SDL_Rect& destRect);
 
 private:
    void Run();
@@ -46,9 +46,9 @@ private:
 
    bool m_paused = false;
    double m_pauseTimestamp = 0.0;
-   
+
    AVFormatContext* m_pFormatContext = nullptr;
-   
+
    int m_videoStream = -1;
    AVCodecContext* m_pVideoContext = nullptr;
 

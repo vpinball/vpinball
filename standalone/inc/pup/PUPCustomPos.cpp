@@ -36,10 +36,10 @@ PUPCustomPos* PUPCustomPos::CreateFromCSV(const string& line)
 SDL_Rect PUPCustomPos::ScaledRect(int w, int h) const
 {
    return {
-      (int)((m_frect.x / 100.f) * w),
-      (int)((m_frect.y / 100.f) * h),
-      (int)((m_frect.w / 100.f) * w),
-      (int)((m_frect.h / 100.f) * h)
+      (int)((m_frect.x / 100.f) * (float)w),
+      (int)((m_frect.y / 100.f) * (float)h),
+      (int)((m_frect.w / 100.f) * (float)w),
+      (int)((m_frect.h / 100.f) * (float)h)
    };
 }
 

@@ -37,7 +37,7 @@ public:
    void Unload();
    const string& GetPath() const { return m_szPath; }
    bool AddScreen(PUPScreen* pScreen);
-   bool AddScreen(LONG lScreenNum);
+   bool AddScreen(int screenNum);
    bool HasScreen(int screenNum);
    PUPScreen* GetScreen(int screenNum) const;
    bool AddFont(TTF_Font* pFont, const string& szFilename);

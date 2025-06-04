@@ -43,7 +43,7 @@ struct PUPScreenRequest
    virtual ~PUPScreenRequest() = default;
 };
 
-struct PUPPinDisplayRequest : PUPScreenRequest
+struct PUPPinDisplayRequest final : PUPScreenRequest
 {
    PUP_PINDISPLAY_REQUEST_TYPE type;
    PUPPlaylist* pPlaylist;
@@ -62,7 +62,7 @@ struct PUPPinDisplayRequest : PUPScreenRequest
    }
 };
 
-struct PUPTriggerRequest : PUPScreenRequest
+struct PUPTriggerRequest final : PUPScreenRequest
 {
    PUPTrigger* pTrigger;
 };
@@ -109,10 +109,10 @@ public:
    void SendLabelToFront(PUPLabel* pLabel);
    void SendLabelToBack(PUPLabel* pLabel);
    void SetPage(int pagenum, int seconds);
-   void Render(VPXRenderContext2D* ctx);
+   void Render(VPXRenderContext2D* const ctx);
    const SDL_Rect& GetRect() const { return m_rect; }
    void SetBackground(PUPPlaylist* pPlaylist, const string& szPlayFile);
-   void SetCustomPos(const string& string);
+   void SetCustomPos(const string& szCustomPos);
    void SetOverlay(PUPPlaylist* pPlaylist, const string& szPlayFile);
    void SetMedia(PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, bool skipSamePriority, int length);
    void StopMedia();
@@ -135,7 +135,7 @@ private:
    void ProcessPinDisplayRequest(PUPPinDisplayRequest* pRequest);
    void ProcessTriggerRequest(PUPTriggerRequest* pRequest);
    void LoadRenderable(PUPScreenRenderable* pRenderable, const string& szFile);
-   void Render(VPXRenderContext2D* ctx, PUPScreenRenderable* pRenderable);
+   void Render(VPXRenderContext2D* const ctx, PUPScreenRenderable* pRenderable);
    void FreeRenderable(PUPScreenRenderable* pRenderable);
    void PageTimerElapsed(VP::Timer* pTimer);
 

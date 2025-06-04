@@ -178,9 +178,9 @@ bool PUPManager::AddScreen(PUPScreen* pScreen)
    return true;
 }
 
-bool PUPManager::AddScreen(LONG lScreenNum)
+bool PUPManager::AddScreen(int screenNum)
 {
-   PUPScreen* pScreen = PUPScreen::CreateDefault(this, lScreenNum, m_playlists);
+   PUPScreen* pScreen = PUPScreen::CreateDefault(this, screenNum, m_playlists);
    if (!pScreen)
       return false;
 

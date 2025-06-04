@@ -23,27 +23,27 @@ PUPPinDisplay::~PUPPinDisplay()
    m_pManager->Stop();
 }
 
-STDMETHODIMP PUPPinDisplay::Init(LONG ScreenNum, BSTR RootDir)
+STDMETHODIMP PUPPinDisplay::Init(LONG screenNum, BSTR RootDir)
 {
-   if (m_pManager->HasScreen(ScreenNum)) {
-      PLOGW.printf("Screen already exists: screenNum=%d", ScreenNum);
+   if (m_pManager->HasScreen(screenNum)) {
+      PLOGW.printf("Screen already exists: screenNum=%d", screenNum);
       return S_OK;
    }
-   m_pManager->AddScreen(ScreenNum);
+   m_pManager->AddScreen(screenNum);
 
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::playlistadd(LONG ScreenNum, BSTR folder, LONG sort, LONG restSeconds)
+STDMETHODIMP PUPPinDisplay::playlistadd(LONG screenNum, BSTR folder, LONG sort, LONG restSeconds)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
       PLOGW.printf("Screen not found: screenNum=%d");
       return S_OK;
    }
 
    if (pScreen->GetPlaylist(MakeString(folder))) {
-      PLOGW.printf("Playlist already exists: screenNum=%d, folder=%s", ScreenNum, MakeString(folder).c_str());
+      PLOGW.printf("Playlist already exists: screenNum=%d, folder=%s", screenNum, MakeString(folder).c_str());
       return S_OK;
    }
 
@@ -52,24 +52,24 @@ STDMETHODIMP PUPPinDisplay::playlistadd(LONG ScreenNum, BSTR folder, LONG sort, 
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::playlistplay(LONG ScreenNum, BSTR playlist)
+STDMETHODIMP PUPPinDisplay::playlistplay(LONG screenNum, BSTR playlist)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
       PLOGW.printf("Screen not found: screenNum=%d");
       return S_OK;
    }
 
-   PLOGW.printf("Not implemented: screenNum=%d, playlist=%s", ScreenNum, MakeString(playlist).c_str());
+   PLOGW.printf("Not implemented: screenNum=%d, playlist=%s", screenNum, MakeString(playlist).c_str());
 
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::playlistplayex(LONG ScreenNum, BSTR playlist, BSTR playfilename, LONG volume, LONG forceplay)
+STDMETHODIMP PUPPinDisplay::playlistplayex(LONG screenNum, BSTR playlist, BSTR playfilename, LONG volume, LONG forceplay)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
-      PLOGW.printf("Screen not found: screenNum=%d", ScreenNum);
+      PLOGW.printf("Screen not found: screenNum=%d", screenNum);
       return S_OK;
    }
 
@@ -78,128 +78,128 @@ STDMETHODIMP PUPPinDisplay::playlistplayex(LONG ScreenNum, BSTR playlist, BSTR p
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::play(LONG ScreenNum, BSTR playlist, BSTR playfilename)
+STDMETHODIMP PUPPinDisplay::play(LONG screenNum, BSTR playlist, BSTR playfilename)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
       PLOGW.printf("Screen not found: screenNum=%d");
       return S_OK;
    }
 
-   PLOGW.printf("Not implemented: screenNum=%d, playlist=%s, playfilename=%s", ScreenNum, MakeString(playlist).c_str(), MakeString(playfilename).c_str());
+   PLOGW.printf("Not implemented: screenNum=%d, playlist=%s, playfilename=%s", screenNum, MakeString(playlist).c_str(), MakeString(playfilename).c_str());
 
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::setWidth(LONG ScreenNum, LONG width)
+STDMETHODIMP PUPPinDisplay::setWidth(LONG screenNum, LONG width)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
       PLOGW.printf("Screen not found: screenNum=%d");
       return S_OK;
    }
 
-   PLOGW.printf("Not implemented: screenNum=%d, width=%d", ScreenNum, width);
+   PLOGW.printf("Not implemented: screenNum=%d, width=%d", screenNum, width);
 
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::setHeight(LONG ScreenNum, LONG Height)
+STDMETHODIMP PUPPinDisplay::setHeight(LONG screenNum, LONG Height)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
       PLOGW.printf("Screen not found: screenNum=%d");
       return S_OK;
    }
 
-   PLOGW.printf("Not implemented: screenNum=%d, height=%d", ScreenNum, Height);
+   PLOGW.printf("Not implemented: screenNum=%d, height=%d", screenNum, Height);
 
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::setPosX(LONG ScreenNum, LONG Posx)
+STDMETHODIMP PUPPinDisplay::setPosX(LONG screenNum, LONG Posx)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
       PLOGW.printf("Screen not found: screenNum=%d");
       return S_OK;
    }
 
-   PLOGW.printf("Not implemented: screenNum=%d, Posx=%d", ScreenNum, Posx);
+   PLOGW.printf("Not implemented: screenNum=%d, Posx=%d", screenNum, Posx);
 
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::setPosY(LONG ScreenNum, LONG PosY)
+STDMETHODIMP PUPPinDisplay::setPosY(LONG screenNum, LONG PosY)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
       PLOGW.printf("Screen not found: screenNum=%d");
       return S_OK;
    }
 
-   PLOGW.printf("Not implemented: screenNum=%d, PosY=%d", ScreenNum, PosY);
+   PLOGW.printf("Not implemented: screenNum=%d, PosY=%d", screenNum, PosY);
 
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::setAspect(LONG ScreenNum, LONG aspectWide, LONG aspectHigh)
+STDMETHODIMP PUPPinDisplay::setAspect(LONG screenNum, LONG aspectWide, LONG aspectHigh)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
       PLOGW.printf("Screen not found: screenNum=%d");
       return S_OK;
    }
 
-   PLOGW.printf("Not implemented: screenNum=%d, aspectWide=%d, aspectHigh=%d", ScreenNum, aspectWide, aspectHigh);
+   PLOGW.printf("Not implemented: screenNum=%d, aspectWide=%d, aspectHigh=%d", screenNum, aspectWide, aspectHigh);
 
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::setVolume(LONG ScreenNum, LONG vol)
+STDMETHODIMP PUPPinDisplay::setVolume(LONG screenNum, LONG vol)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
       PLOGW.printf("Screen not found: screenNum=%d");
       return S_OK;
    }
 
-   PLOGW.printf("Not implemented: screenNum=%d, vol=%d", ScreenNum, vol);
+   PLOGW.printf("Not implemented: screenNum=%d, vol=%d", screenNum, vol);
 
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::playpause(LONG ScreenNum)
+STDMETHODIMP PUPPinDisplay::playpause(LONG screenNum)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
       PLOGW.printf("Screen not found: screenNum=%d");
       return S_OK;
    }
 
-   PLOGW.printf("Not implemented: screenNum=%d", ScreenNum);
+   PLOGW.printf("Not implemented: screenNum=%d", screenNum);
 
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::playresume(LONG ScreenNum)
+STDMETHODIMP PUPPinDisplay::playresume(LONG screenNum)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
       PLOGW.printf("Screen not found: screenNum=%d");
       return S_OK;
    }
 
-   PLOGW.printf("Not implemented: screenNum=%d", ScreenNum);
+   PLOGW.printf("Not implemented: screenNum=%d", screenNum);
 
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::playstop(LONG ScreenNum)
+STDMETHODIMP PUPPinDisplay::playstop(LONG screenNum)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
-      PLOGW.printf("Screen not found: screenNum=%d", ScreenNum);
+      PLOGW.printf("Screen not found: screenNum=%d", screenNum);
       return S_OK;
    }
 
@@ -215,50 +215,50 @@ STDMETHODIMP PUPPinDisplay::CloseApp()
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::get_isPlaying(LONG ScreenNum, LONG *Value)
+STDMETHODIMP PUPPinDisplay::get_isPlaying(LONG screenNum, LONG *Value)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
-      PLOGW.printf("Screen not found: screenNum=%d", ScreenNum);
+      PLOGW.printf("Screen not found: screenNum=%d", screenNum);
       return S_OK;
    }
 
-   PLOGW.printf("Not implemented: screenNum=%d", ScreenNum);
+   PLOGW.printf("Not implemented: screenNum=%d", screenNum);
 
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::put_isPlaying(LONG ScreenNum, LONG Value)
+STDMETHODIMP PUPPinDisplay::put_isPlaying(LONG screenNum, LONG Value)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
-      PLOGW.printf("Screen not found: screenNum=%d", ScreenNum);
+      PLOGW.printf("Screen not found: screenNum=%d", screenNum);
       return S_OK;
    }
 
-   PLOGW.printf("Not implemented: screenNum=%d, value=%d", ScreenNum, Value);
+   PLOGW.printf("Not implemented: screenNum=%d, value=%d", screenNum, Value);
 
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::SetLength(LONG ScreenNum, LONG StopSecs)
+STDMETHODIMP PUPPinDisplay::SetLength(LONG screenNum, LONG StopSecs)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
-      PLOGW.printf("Screen not found: screenNum=%d", ScreenNum);
+      PLOGW.printf("Screen not found: screenNum=%d", screenNum);
       return S_OK;
    }
 
-   PLOGW.printf("Not implemented: screenNum=%d, stopSecs=%d", ScreenNum, StopSecs);
+   PLOGW.printf("Not implemented: screenNum=%d, stopSecs=%d", screenNum, StopSecs);
 
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::SetLoop(LONG ScreenNum, LONG LoopState)
+STDMETHODIMP PUPPinDisplay::SetLoop(LONG screenNum, LONG LoopState)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
-      PLOGW.printf("Screen not found: screenNum=%d", ScreenNum);
+      PLOGW.printf("Screen not found: screenNum=%d", screenNum);
       return S_OK;
    }
 
@@ -267,11 +267,11 @@ STDMETHODIMP PUPPinDisplay::SetLoop(LONG ScreenNum, LONG LoopState)
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::SetBackGround(LONG ScreenNum, LONG Mode)
+STDMETHODIMP PUPPinDisplay::SetBackGround(LONG screenNum, LONG Mode)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
-      PLOGW.printf("Screen not found: screenNum=%d", ScreenNum);
+      PLOGW.printf("Screen not found: screenNum=%d", screenNum);
       return S_OK;
    }
 
@@ -280,37 +280,37 @@ STDMETHODIMP PUPPinDisplay::SetBackGround(LONG ScreenNum, LONG Mode)
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::BlockPlay(LONG ScreenNum, LONG Mode)
+STDMETHODIMP PUPPinDisplay::BlockPlay(LONG screenNum, LONG Mode)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
-      PLOGW.printf("Screen not found: screenNum=%d", ScreenNum);
+      PLOGW.printf("Screen not found: screenNum=%d", screenNum);
       return S_OK;
    }
 
-   PLOGW.printf("Not implemented: screenNum=%d, mode=%d", ScreenNum, Mode);
+   PLOGW.printf("Not implemented: screenNum=%d, mode=%d", screenNum, Mode);
 
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::SetScreen(LONG ScreenNum)
+STDMETHODIMP PUPPinDisplay::SetScreen(LONG screenNum)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
-      PLOGW.printf("Screen not found: screenNum=%d", ScreenNum);
+      PLOGW.printf("Screen not found: screenNum=%d", screenNum);
       return S_OK;
    }
 
-   PLOGW.printf("Not implemented: screenNum=%d", ScreenNum);
+   PLOGW.printf("Not implemented: screenNum=%d", screenNum);
 
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::SetScreenEx(LONG ScreenNum, LONG xpos, LONG ypos, LONG swidth, LONG sheight, LONG popup) 
+STDMETHODIMP PUPPinDisplay::SetScreenEx(LONG screenNum, LONG xpos, LONG ypos, LONG swidth, LONG sheight, LONG popup) 
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
-      PLOGW.printf("Screen not found: screenNum=%d", ScreenNum);
+      PLOGW.printf("Screen not found: screenNum=%d", screenNum);
       return S_OK;
    }
    switch (popup) {
@@ -324,7 +324,7 @@ STDMETHODIMP PUPPinDisplay::SetScreenEx(LONG ScreenNum, LONG xpos, LONG ypos, LO
          pScreen->SetMode(PUP_SCREEN_MODE_MUSIC_ONLY);
          break;
    }
-   PLOGW.printf("Not fully implemented: screenNum=%d, xpos=%d, ypos=%d, swidth=%d, sheight=%d, popup=%d", ScreenNum, xpos, ypos, swidth, sheight, popup);
+   PLOGW.printf("Not fully implemented: screenNum=%d, xpos=%d, ypos=%d, swidth=%d, sheight=%d, popup=%d", screenNum, xpos, ypos, swidth, sheight, popup);
 
    return S_OK;
 }
@@ -365,24 +365,24 @@ STDMETHODIMP PUPPinDisplay::put_B2SFilter(BSTR Value)
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::Show(LONG ScreenNum)
+STDMETHODIMP PUPPinDisplay::Show(LONG screenNum)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
-      PLOGW.printf("Screen not found: screenNum=%d", ScreenNum);
+      PLOGW.printf("Screen not found: screenNum=%d", screenNum);
       return S_OK;
    }
 
-   PLOGW.printf("Not implemented: screenNum=%d", ScreenNum);
+   PLOGW.printf("Not implemented: screenNum=%d", screenNum);
 
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::Hide(LONG ScreenNum)
+STDMETHODIMP PUPPinDisplay::Hide(LONG screenNum)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
-      PLOGW.printf("Screen not found: screenNum=%d", ScreenNum);
+      PLOGW.printf("Screen not found: screenNum=%d", screenNum);
       return S_OK;
    }
 
@@ -438,12 +438,12 @@ STDMETHODIMP PUPPinDisplay::SendMSG(BSTR cMSG)
                      case 11:
                         // set all volume { "mt":301, "SN": XX, "FN":11, "VL":9}  VL=volume level
                         PLOGD.printf("Set all volume requested: screen={%s}, fn=%d, szMsg=%s", pScreen->ToString(false).c_str(), fn, szMsg.c_str());
-                        pScreen->SetVolume(std::stof(json["VL"].as_str()));
+                        pScreen->SetVolume(static_cast<float>(json["VL"s].as<double>()));
                         break;
                      case 15:
                         // set screen custompos { 'mt':301, 'SN':15,'FN':15,'CP':'parent_screen,x,y,w,h'} CP = CustomPos String, coordinates relative in %
                         PLOGD.printf("Set screen custompos requested: screen={%s}, fn=%d, szMsg=%s",pScreen->ToString(false).c_str(), fn, szMsg.c_str());
-                        pScreen->SetCustomPos(json["CP"].as_str());
+                        pScreen->SetCustomPos(json["CP"s].as_str());
                         break;
                      case 22:
                         // set screen transparency { "mt":301, "SN": 16, "FN":22, "AM":1, "AV":255 } AV: Alpha Value (0-255), AM: Alpha mode enabled 0/1?
@@ -474,7 +474,7 @@ STDMETHODIMP PUPPinDisplay::SendMSG(BSTR cMSG)
 }
 
 /*
-   ScreenNum - in standard we'd set this to pDMD ( or 1)
+   screenNum - in standard we'd set this to pDMD ( or 1)
    LabelName - your name of the label. keep it short no spaces (like 8 chars) although you can call it
                anything really. When setting the label you will use this labelname to access the label
    FontName  - Windows font name, this must be exact match of OS front name. if you are using custom
@@ -491,16 +491,16 @@ STDMETHODIMP PUPPinDisplay::SendMSG(BSTR cMSG)
    Visible   - initial state of label. visible = 1 show, 0 = off
 */
 
-STDMETHODIMP PUPPinDisplay::LabelNew(LONG ScreenNum, BSTR LabelName, BSTR FontName, LONG Size, LONG Color, LONG Angle, LONG xAlign, LONG yAlign, LONG xMargin, LONG yMargin, LONG PageNum, LONG Visible)
+STDMETHODIMP PUPPinDisplay::LabelNew(LONG screenNum, BSTR LabelName, BSTR FontName, LONG Size, LONG Color, LONG Angle, LONG xAlign, LONG yAlign, LONG xMargin, LONG yMargin, LONG PageNum, LONG Visible)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
-      PLOGW.printf("Screen not found: screenNum=%d", ScreenNum);
+      PLOGW.printf("Screen not found: screenNum=%d", screenNum);
       return S_OK;
    }
 
    if (!pScreen->IsLabelInit()) {
-      PLOGW.printf("LabelInit has not been called: screenNum=%d", ScreenNum);
+      PLOGW.printf("LabelInit has not been called: screenNum=%d", screenNum);
       return S_OK;
    }
 
@@ -511,7 +511,7 @@ STDMETHODIMP PUPPinDisplay::LabelNew(LONG ScreenNum, BSTR LabelName, BSTR FontNa
 }
 
 /*
-   ScreenNum - same as when adding new label.
+   screenNum - same as when adding new label.
    LabelName - same as labelname when you added new label.
    Caption -  value to assign label. Note you can add a ~ to insert a line break....see notes on that.
    Visible -  set visible state of label.
@@ -525,23 +525,23 @@ STDMETHODIMP PUPPinDisplay::LabelNew(LONG ScreenNum, BSTR LabelName, BSTR FontNa
               performance issue.
 */
 
-STDMETHODIMP PUPPinDisplay::LabelSet(LONG ScreenNum, BSTR LabelName, BSTR Caption, LONG Visible, BSTR Special)
+STDMETHODIMP PUPPinDisplay::LabelSet(LONG screenNum, BSTR LabelName, BSTR Caption, LONG Visible, BSTR Special)
 {
    static ankerl::unordered_dense::map<LONG, ankerl::unordered_dense::set<string>> warnedLabels;
 
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
-      PLOGW.printf("Screen not found: screenNum=%d", ScreenNum);
+      PLOGW.printf("Screen not found: screenNum=%d", screenNum);
       return S_OK;
    }
 
    string szLabelName = MakeString(LabelName);
    PUPLabel* pLabel = pScreen->GetLabel(szLabelName);
    if (!pLabel) {
-      if (warnedLabels[ScreenNum].find(szLabelName) == warnedLabels[ScreenNum].end())
+      if (warnedLabels[screenNum].find(szLabelName) == warnedLabels[screenNum].end())
       {
          PLOGW.printf("Invalid label: screen={%s}, labelName=%s", pScreen->ToString(false).c_str(), szLabelName.c_str());
-         warnedLabels[ScreenNum].insert(szLabelName);
+         warnedLabels[screenNum].insert(szLabelName);
       }
       return S_OK;
    }
@@ -561,7 +561,7 @@ STDMETHODIMP PUPPinDisplay::LabelSetEx()
 }
 
 /*
-   ScreenNum
+   screenNum
    PageNum - page to view
    Seconds - seconds to show page...this is useful for 'splash' pages. If your page is a splash page then
              you would set this to 3 for 3 second splash. It will auto-return to the default page. The
@@ -570,11 +570,11 @@ STDMETHODIMP PUPPinDisplay::LabelSetEx()
    Special - future.
 */
 
-STDMETHODIMP PUPPinDisplay::LabelShowPage(LONG ScreenNum, LONG PageNum, LONG Seconds, BSTR Special)
+STDMETHODIMP PUPPinDisplay::LabelShowPage(LONG screenNum, LONG PageNum, LONG Seconds, BSTR Special)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
-      PLOGW.printf("Screen not found: screenNum=%d", ScreenNum);
+      PLOGW.printf("Screen not found: screenNum=%d", screenNum);
       return S_OK;
    }
    pScreen->SetPage(PageNum, Seconds);
@@ -582,11 +582,11 @@ STDMETHODIMP PUPPinDisplay::LabelShowPage(LONG ScreenNum, LONG PageNum, LONG Sec
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::LabelInit(LONG ScreenNum)
+STDMETHODIMP PUPPinDisplay::LabelInit(LONG screenNum)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
-      PLOGW.printf("Screen not found: screenNum=%d", ScreenNum);
+      PLOGW.printf("Screen not found: screenNum=%d", screenNum);
       return S_OK;
    }
    pScreen->SetLabelInit();
@@ -658,15 +658,15 @@ STDMETHODIMP PUPPinDisplay::get_B2SDisplays(BSTR *Value)
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::setVolumeCurrent(LONG ScreenNum, LONG vol)
+STDMETHODIMP PUPPinDisplay::setVolumeCurrent(LONG screenNum, LONG vol)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
-      PLOGW.printf("Screen not found: screenNum=%d", ScreenNum);
+      PLOGW.printf("Screen not found: screenNum=%d", screenNum);
       return S_OK;
    }
 
-   PLOGW.printf("Not implemented: screenNum=%d, vol=%d", ScreenNum, vol);
+   PLOGW.printf("Not implemented: screenNum=%d, vol=%d", screenNum, vol);
 
    return S_OK;
 }
@@ -710,11 +710,11 @@ STDMETHODIMP PUPPinDisplay::GrabDC2(LONG pWidth, LONG pHeight, BSTR wintitle, SA
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::playevent(LONG ScreenNum, BSTR playlist, BSTR playfilename, LONG volume, LONG priority, LONG playtype, LONG Seconds, BSTR Special)
+STDMETHODIMP PUPPinDisplay::playevent(LONG screenNum, BSTR playlist, BSTR playfilename, LONG volume, LONG priority, LONG playtype, LONG Seconds, BSTR Special)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
-      PLOGW.printf("Screen not found: screenNum=%d", ScreenNum);
+      PLOGW.printf("Screen not found: screenNum=%d", screenNum);
       return S_OK;
    }
    // TODO handle seconds and Special
@@ -751,15 +751,15 @@ STDMETHODIMP PUPPinDisplay::playevent(LONG ScreenNum, BSTR playlist, BSTR playfi
    return S_OK;
 }
 
-STDMETHODIMP PUPPinDisplay::SetPosVideo(LONG ScreenNum, LONG StartPos, LONG EndPos, LONG Mode, BSTR Special)
+STDMETHODIMP PUPPinDisplay::SetPosVideo(LONG screenNum, LONG StartPos, LONG EndPos, LONG Mode, BSTR Special)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(screenNum);
    if (!pScreen) {
-      PLOGW.printf("Screen not found: screenNum=%d", ScreenNum);
+      PLOGW.printf("Screen not found: screenNum=%d", screenNum);
       return S_OK;
    }
 
-   PLOGW.printf("Not implemented: screenNum=%d, startPos=%d, endPos=%d, mode=%d, special=%s", ScreenNum, StartPos, EndPos, Mode, MakeString(Special).c_str());
+   PLOGW.printf("Not implemented: screenNum=%d, startPos=%d, endPos=%d, mode=%d, special=%s", screenNum, StartPos, EndPos, Mode, MakeString(Special).c_str());
 
    return S_OK;
 }

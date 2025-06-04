@@ -28,20 +28,20 @@ PUPMediaPlayer::~PUPMediaPlayer()
    delete m_pPinSound;
 }
 
-void PUPMediaPlayer::Play(const string& szFilename)
+void PUPMediaPlayer::Play(const string& filename)
 {
-   PLOGD.printf("filename=%s", szFilename.c_str());
+   PLOGD.printf("filename=%s", filename.c_str());
 
    Stop();
 
-   m_filename = szFilename;
+   m_filename = filename;
    m_volume = 0.0f;
    m_loop = false;
    m_startTimestamp = SDL_GetTicks();
 
    // Open file
-   if (avformat_open_input(&m_pFormatContext, szFilename.c_str(), NULL, NULL) != 0) {
-      PLOGE.printf("Unable to open: filename=%s", szFilename.c_str());
+   if (avformat_open_input(&m_pFormatContext, filename.c_str(), NULL, NULL) != 0) {
+      PLOGE.printf("Unable to open: filename=%s", filename.c_str());
       return;
    }
 
@@ -64,7 +64,7 @@ void PUPMediaPlayer::Play(const string& szFilename)
          PLOGD.printf("Video stream: %s %dx%d", avcodec_get_name(m_pVideoContext->codec_id), pCodecParameters->width, pCodecParameters->height);
       }
       else {
-         PLOGE.printf("Unable to open video stream: filename=%s", szFilename.c_str());
+         PLOGE.printf("Unable to open video stream: filename=%s", filename.c_str());
       }
    }
    else {
@@ -75,7 +75,7 @@ void PUPMediaPlayer::Play(const string& szFilename)
    if (m_videoStream >= 0) {
       m_audioStream = av_find_best_stream(m_pFormatContext, AVMEDIA_TYPE_AUDIO, -1, m_videoStream, NULL, 0);
       if (m_audioStream == AVERROR_DECODER_NOT_FOUND) {
-         PLOGE.printf("No audio stream found: filename=%s", szFilename.c_str());
+         PLOGE.printf("No audio stream found: filename=%s", filename.c_str());
       }
    }
    else {
@@ -96,12 +96,12 @@ void PUPMediaPlayer::Play(const string& szFilename)
          PLOGD.printf("Audio stream: %s %d channels, %d Hz\n", avcodec_get_name(m_pAudioContext->codec_id), pCodecParameters->ch_layout.nb_channels, pCodecParameters->sample_rate);
       }
       else {
-         PLOGE.printf("Unable to open audio stream: filename=%s", szFilename.c_str());
+         PLOGE.printf("Unable to open audio stream: filename=%s", filename.c_str());
       }
    }
 
    if (!m_pVideoContext && !m_pAudioContext) {
-      PLOGE.printf("No video or audio stream found: filename=%s", szFilename.c_str());
+      PLOGE.printf("No video or audio stream found: filename=%s", filename.c_str());
       Stop();
       return;
    }
@@ -423,7 +423,7 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
    }
 }
 
-void PUPMediaPlayer::Render(VPXRenderContext2D* ctx, const SDL_Rect& destRect)
+void PUPMediaPlayer::Render(VPXRenderContext2D* const ctx, const SDL_Rect& destRect)
 {
    if (m_length != 0)
    {
@@ -476,7 +476,7 @@ AVCodecContext* PUPMediaPlayer::OpenStream(AVFormatContext* pInputFormatContext,
 {
    AVCodecContext* pContext = avcodec_alloc_context3(NULL);
    if (!pContext)
-      return NULL;
+      return nullptr;
 
    // Request to decode frames on different threads, limiting to the platform core minus 3 (magic number corresponding of the average core used by VPX)
    // TODO Disabled as this delay the frame queue by one frame, breaking single frame videos (and still images used as video)
@@ -486,7 +486,7 @@ AVCodecContext* PUPMediaPlayer::OpenStream(AVFormatContext* pInputFormatContext,
    if (avcodec_parameters_to_context(pContext, pInputFormatContext->streams[stream]->codecpar) < 0)
    {
       avcodec_free_context(&pContext);
-      return NULL;
+      return nullptr;
    }
 
    pContext->pkt_timebase = pInputFormatContext->streams[stream]->time_base;
@@ -495,14 +495,14 @@ AVCodecContext* PUPMediaPlayer::OpenStream(AVFormatContext* pInputFormatContext,
    if (!pCodec) {
       PLOGE.printf("Couldn't find codec %s", avcodec_get_name(pContext->codec_id));
       avcodec_free_context(&pContext);
-      return NULL;
+      return nullptr;
    }
 
    pContext->codec_id = pCodec->id;
    if (avcodec_open2(pContext, pCodec, NULL) != 0) {
       PLOGE.printf("Couldn't open codec %s", avcodec_get_name(pContext->codec_id));
       avcodec_free_context(&pContext);
-      return NULL;
+      return nullptr;
    }
 
    return pContext;
@@ -523,7 +523,7 @@ void PUPMediaPlayer::HandleAudioFrame(AVFrame* pFrame)
       if (!m_pAudioConversionContext || swr_init(m_pAudioConversionContext) < 0) {
          PLOGE.printf("Failed to initialize the resampling context");
          swr_free(&m_pAudioConversionContext);
-         m_pAudioConversionContext = NULL;
+         m_pAudioConversionContext = nullptr;
          return;
       }
 

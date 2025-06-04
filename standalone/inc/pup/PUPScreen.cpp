@@ -608,7 +608,7 @@ void PUPScreen::ProcessTriggerRequest(PUPTriggerRequest* pRequest)
    }
 }
 
-void PUPScreen::Render(VPXRenderContext2D* ctx)
+void PUPScreen::Render(VPXRenderContext2D* const ctx)
 {
    std::lock_guard<std::mutex> lock(m_renderMutex);
 
@@ -654,7 +654,7 @@ void PUPScreen::LoadRenderable(PUPScreenRenderable* pRenderable, const string& s
    pRenderable->dirty = true;
 }
 
-void PUPScreen::Render(VPXRenderContext2D* ctx, PUPScreenRenderable* pRenderable)
+void PUPScreen::Render(VPXRenderContext2D* const ctx, PUPScreenRenderable* pRenderable)
 {
    if (pRenderable->dirty) {
       if (pRenderable->vpxTexture) {

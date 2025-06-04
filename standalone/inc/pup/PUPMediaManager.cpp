@@ -97,7 +97,7 @@ void PUPMediaManager::Stop(PUPPlaylist* pPlaylist, const string& szPlayFile)
    }
 }
 
-void PUPMediaManager::Render(VPXRenderContext2D* ctx, const SDL_Rect& destRect)
+void PUPMediaManager::Render(VPXRenderContext2D* const ctx, const SDL_Rect& destRect)
 {
    bool mainPlayerPlaying = m_pMainPlayer->player.IsPlaying();
    bool backgroundPlaying = false;

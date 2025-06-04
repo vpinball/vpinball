@@ -36,5 +36,5 @@ public:
    void Stop();
    void Stop(int priority);
    void Stop(PUPPlaylist* pPlaylist, const string& szPlayFile);
-   void Render(VPXRenderContext2D* ctx, const SDL_Rect& destRect);
+   void Render(VPXRenderContext2D* const ctx, const SDL_Rect& destRect);
 };
