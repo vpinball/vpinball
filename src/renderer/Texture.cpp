@@ -460,7 +460,7 @@ void BaseTexture::Update(BaseTexture** texture, const unsigned int width, const 
    }
    BaseTexture* baseTex = BaseTexture::Create(width, height, texFormat);
    if (baseTex)
-      memcpy(baseTex->data(), image, width * height * pixelSize);
+      memcpy(baseTex->data(), image, (size_t)width * height * pixelSize);
    *texture = baseTex;
 }
 
@@ -487,16 +487,15 @@ BaseTexture* BaseTexture::NewWithAlpha() const
          if (tex == nullptr)
             return nullptr;
          unsigned short* const __restrict dest_data16 = (unsigned short*)tex->data();
-         const unsigned short* const __restrict src_data16 = (unsigned short*)datac();
-         size_t o = 0;
-         for (unsigned int j = 0; j < height(); ++j)
-            for (unsigned int i = 0; i < width(); ++i, ++o)
-            {
-               dest_data16[o * 4 + 0] = src_data16[o * 3 + 0];
-               dest_data16[o * 4 + 1] = src_data16[o * 3 + 1];
-               dest_data16[o * 4 + 2] = src_data16[o * 3 + 2];
-               dest_data16[o * 4 + 3] = 0x3C00; //=1.f
-            }
+         const unsigned short* const __restrict src_data16 = (const unsigned short*)datac();
+         const size_t e = (size_t)width() * height();
+         for (size_t o = 0; o < e; ++o)
+         {
+            dest_data16[o * 4 + 0] = src_data16[o * 3 + 0];
+            dest_data16[o * 4 + 1] = src_data16[o * 3 + 1];
+            dest_data16[o * 4 + 2] = src_data16[o * 3 + 2];
+            dest_data16[o * 4 + 3] = 0x3C00; //=1.f
+         }
       }
       break;
    case RGB_FP32:
@@ -505,16 +504,15 @@ BaseTexture* BaseTexture::NewWithAlpha() const
          if (tex == nullptr)
             return nullptr;
          UINT32* const __restrict dest_data32 = (UINT32*)tex->data();
-         const UINT32* const __restrict src_data32 = (UINT32*)datac();
-         size_t o = 0;
-         for (unsigned int j = 0; j < height(); ++j)
-            for (unsigned int i = 0; i < width(); ++i, ++o)
-            {
-               dest_data32[o * 4 + 0] = src_data32[o * 3 + 0];
-               dest_data32[o * 4 + 1] = src_data32[o * 3 + 1];
-               dest_data32[o * 4 + 2] = src_data32[o * 3 + 2];
-               dest_data32[o * 4 + 3] = 0x3f800000; //=1.f
-            }
+         const UINT32* const __restrict src_data32 = (const UINT32*)datac();
+         const size_t e = (size_t)width() * height();
+         for (size_t o = 0; o < e; ++o)
+         {
+            dest_data32[o * 4 + 0] = src_data32[o * 3 + 0];
+            dest_data32[o * 4 + 1] = src_data32[o * 3 + 1];
+            dest_data32[o * 4 + 2] = src_data32[o * 3 + 2];
+            dest_data32[o * 4 + 3] = 0x3f800000; //=1.f
+         }
       }
       break;
    }
@@ -538,38 +536,36 @@ BaseTexture* BaseTexture::ToBGRA() const
    if (m_format == BaseTexture::RGB_FP32) // Tonemap for 8bpc-Display
    {
       const float* const __restrict src = (const float*)datac();
-      size_t o = 0;
-      for (unsigned int j = 0; j < height(); ++j)
-         for (unsigned int i = 0; i < width(); ++i, ++o)
-         {
-            const float r = src[o * 3 + 0];
-            const float g = src[o * 3 + 1];
-            const float b = src[o * 3 + 2];
-            const float l = r * 0.176204f + g * 0.812985f + b * 0.0108109f;
-            const float n = (l * (float)(255. * 0.25) + 255.0f) / (l + 1.0f); // simple tonemap and scale by 255, overflow is handled by clamp below
-            tmp[o * 4 + 0] = (int)clamp(b * n, 0.f, 255.f);
-            tmp[o * 4 + 1] = (int)clamp(g * n, 0.f, 255.f);
-            tmp[o * 4 + 2] = (int)clamp(r * n, 0.f, 255.f);
-            tmp[o * 4 + 3] = 255;
-         }
+      const size_t e = (size_t)width() * height();
+      for (size_t o = 0; o < e; ++o)
+      {
+         const float r = src[o * 3 + 0];
+         const float g = src[o * 3 + 1];
+         const float b = src[o * 3 + 2];
+         const float l = r * 0.176204f + g * 0.812985f + b * 0.0108109f;
+         const float n = (l * (float)(255. * 0.25) + 255.0f) / (l + 1.0f); // simple tonemap and scale by 255, overflow is handled by clamp below
+         tmp[o * 4 + 0] = (int)clamp(b * n, 0.f, 255.f);
+         tmp[o * 4 + 1] = (int)clamp(g * n, 0.f, 255.f);
+         tmp[o * 4 + 2] = (int)clamp(r * n, 0.f, 255.f);
+         tmp[o * 4 + 3] = 255;
+      }
    }
    else if (m_format == BaseTexture::RGB_FP16) // Tonemap for 8bpc-Display
    {
       const unsigned short* const __restrict src = (const unsigned short*)datac();
-      size_t o = 0;
-      for (unsigned int j = 0; j < height(); ++j)
-         for (unsigned int i = 0; i < width(); ++i, ++o)
-         {
-            const float r = half2float(src[o * 3 + 0]);
-            const float g = half2float(src[o * 3 + 1]);
-            const float b = half2float(src[o * 3 + 2]);
-            const float l = r * 0.176204f + g * 0.812985f + b * 0.0108109f;
-            const float n = (l * (float)(255. * 0.25) + 255.0f) / (l + 1.0f); // simple tonemap and scale by 255, overflow is handled by clamp below
-            tmp[o * 4 + 0] = (int)clamp(b * n, 0.f, 255.f);
-            tmp[o * 4 + 1] = (int)clamp(g * n, 0.f, 255.f);
-            tmp[o * 4 + 2] = (int)clamp(r * n, 0.f, 255.f);
-            tmp[o * 4 + 3] = 255;
-         }
+      const size_t e = (size_t)width() * height();
+      for (size_t o = 0; o < e; ++o)
+      {
+         const float r = half2float(src[o * 3 + 0]);
+         const float g = half2float(src[o * 3 + 1]);
+         const float b = half2float(src[o * 3 + 2]);
+         const float l = r * 0.176204f + g * 0.812985f + b * 0.0108109f;
+         const float n = (l * (float)(255. * 0.25) + 255.0f) / (l + 1.0f); // simple tonemap and scale by 255, overflow is handled by clamp below
+         tmp[o * 4 + 0] = (int)clamp(b * n, 0.f, 255.f);
+         tmp[o * 4 + 1] = (int)clamp(g * n, 0.f, 255.f);
+         tmp[o * 4 + 2] = (int)clamp(r * n, 0.f, 255.f);
+         tmp[o * 4 + 3] = 255;
+      }
    }
    else if (m_format == BaseTexture::RGBA_FP16) // Tonemap for 8bpc-Display
    {
@@ -607,15 +603,14 @@ BaseTexture* BaseTexture::ToBGRA() const
    else if (m_format == BaseTexture::BW)
    {
       const BYTE* const __restrict src = datac();
-      size_t o = 0;
-      for (unsigned int j = 0; j < height(); ++j)
-         for (unsigned int i = 0; i < width(); ++i, ++o)
-         {
-            tmp[o * 4 + 0] =
-            tmp[o * 4 + 1] =
-            tmp[o * 4 + 2] = src[o];
-            tmp[o * 4 + 3] = 255; // A
-         }
+      const size_t e = (size_t)width() * height();
+      for (size_t o = 0; o < e; ++o)
+      {
+         tmp[o * 4 + 0] =
+         tmp[o * 4 + 1] =
+         tmp[o * 4 + 2] = src[o];
+         tmp[o * 4 + 3] = 255; // A
+      }
    }
    else if (m_format == BaseTexture::RGB || m_format == BaseTexture::SRGB)
    {
@@ -808,8 +803,7 @@ Texture* Texture::CreateFromStream(IStream *pstream, int version, PinTable *pt, 
       {
          int linkid;
          pbr->GetInt(linkid);
-         PinTable * const pt = (PinTable *)pbr->m_pdata;
-         ppb = pt->GetImageLinkBinary(linkid);
+         ppb = ((PinTable*)pbr->m_pdata)->GetImageLinkBinary(linkid);
          if (!ppb)
          {
             assert(!"Invalid PinBinary");
@@ -824,7 +818,7 @@ Texture* Texture::CreateFromStream(IStream *pstream, int version, PinTable *pt, 
    if (ppb == nullptr)
       return nullptr;
 
-   Texture* tex = new Texture(name, ppb, width, height);
+   Texture* const tex = new Texture(name, ppb, width, height);
    tex->m_alphaTestValue = alphaTestValue;
    if (!isOpaqueDirty)
       tex->SetIsOpaque(isOpaque);
@@ -965,7 +959,7 @@ void Texture::UpdateMD5() const
    if (!m_isMD5Dirty)
       return;
    m_isMD5Dirty = false;
-   generateMD5(reinterpret_cast<uint8_t*>(m_ppb->m_pdata), m_ppb->m_cdata, m_md5Hash);
+   generateMD5(m_ppb->m_pdata, m_ppb->m_cdata, m_md5Hash);
    if (m_imageBuffer)
       m_imageBuffer->SetMD5Hash(m_md5Hash);
 }
