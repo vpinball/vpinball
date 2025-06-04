@@ -30,7 +30,14 @@ static bool try_parse_int(const string& str, int& value)
 static bool try_parse_float(const string& str, float& value)
 {
    const string tmp = trim_string(str);
+#if defined(__clang__)
+   const char* const p = tmp.c_str();
+   char* e;
+   value = std::strtof(p, &e);
+   return (p != e);
+#else
    return (std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), value).ec == std::errc{});
+#endif
 }
 
 int string_to_int(const string& str, int default_value)

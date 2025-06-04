@@ -54,6 +54,40 @@ void TableDB::Load()
       {
          Entry dim;
          dim.name = fields[0];
+#if defined(__clang__)
+         try
+         {
+            dim.width = std::stof(fields[1]);
+         }
+         catch (const std::exception&)
+         {
+            dim.width = 20.25f;
+         }
+         try
+         {
+            dim.height = std::stof(fields[2]);
+         }
+         catch (const std::exception&)
+         {
+            dim.height = 46.f;
+         }
+         try
+         {
+            dim.glassBottom = std::stof(fields[3]);
+         }
+         catch (const std::exception&)
+         {
+            dim.glassBottom = 3.f;
+         }
+         try
+         {
+            dim.glassTop = std::stof(fields[4]);
+         }
+         catch (const std::exception&)
+         {
+            dim.glassTop = 8.5f;
+         }
+#else
          float result;
          dim.width = (std::from_chars(fields[1].c_str(), fields[1].c_str() + fields[1].length(), result).ec == std::errc{})
             ? result
@@ -67,6 +101,7 @@ void TableDB::Load()
          dim.glassTop = (std::from_chars(fields[4].c_str(), fields[4].c_str() + fields[4].length(), result).ec == std::errc{})
             ? result
             : 8.5f; // Default glassTop if parsing fails
+#endif
          dim.comment = fields[5];
          m_data.push_back(dim);
       }
