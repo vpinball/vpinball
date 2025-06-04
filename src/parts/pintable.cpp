@@ -50,6 +50,10 @@ static inline std::from_chars_result my_from_chars(const char* first, const char
    result.ec = (first == e) ? std::errc::invalid_argument : std::errc{}; //!!
    return result;
 }
+static inline std::from_chars_result my_from_chars(const char* first, const char* last, int &value)
+{
+   return std::from_chars(first,last,value);
+}
 #else
 #define my_from_chars std::from_chars
 #endif
