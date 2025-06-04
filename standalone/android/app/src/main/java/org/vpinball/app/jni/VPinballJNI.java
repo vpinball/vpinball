@@ -5,12 +5,12 @@ public class VPinballJNI {
     public native void VPinballInit(VPinballEventCallback callback);
     public native void VPinballLog(int level, String message);
     public native void VPinballResetLog();
-    public native int VPinballLoadValueInt(int section, String key, int defaultValue);
-    public native float VPinballLoadValueFloat(int section, String key, float defaultValue);
-    public native String VPinballLoadValueString(int section, String key, String defaultValue);
-    public native void VPinballSaveValueInt(int section, String key, int value);
-    public native void VPinballSaveValueFloat(int section, String key, float value);
-    public native void VPinballSaveValueString(int section, String key, String value);
+    public native int VPinballLoadValueInt(String sectionName, String key, int defaultValue);
+    public native float VPinballLoadValueFloat(String sectionName, String key, float defaultValue);
+    public native String VPinballLoadValueString(String sectionName, String key, String defaultValue);
+    public native void VPinballSaveValueInt(String sectionName, String key, int value);
+    public native void VPinballSaveValueFloat(String sectionName, String key, float value);
+    public native void VPinballSaveValueString(String sectionName, String key, String value);
     public native int VPinballUncompress(String source);
     public native int VPinballCompress(String source, String destination);
     public native void VPinballUpdateWebServer();

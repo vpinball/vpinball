@@ -187,7 +187,6 @@ object VPinballManager {
 
         CoroutineScope(Dispatchers.Main).launch {
             delay(500)
-            setIniDefaults()
             updateWebServer()
         }
     }
@@ -216,16 +215,6 @@ object VPinballManager {
                 }
             vibrator.vibrate(VibrationEffect.createOneShot(15, amplitude))
         }
-    }
-
-    private fun setIniDefaults() {
-        saveValue(PLAYER, "GfxBackend", loadValue(PLAYER, "GfxBackend", VPinballGfxBackend.OPENGLES.value))
-        saveValue(STANDALONE, "RenderingModeOverride", loadValue(STANDALONE, "RenderingModeOverride", 2))
-        saveValue(PLAYER, "MaxTexDimension", loadValue(PLAYER, "MaxTexDimension", 1024))
-        saveValue(PLAYER, "BallTrail", loadValue(PLAYER, "BallTrail", false))
-        saveValue(DMD, "DMDOutput", loadValue(DMD, "DMDOutput", 0))
-        saveValue(PLAYER, "ScreenWidth", loadValue(PLAYER, "ScreenWidth", 15.4f))
-        saveValue(PLAYER, "ScreenHeight", loadValue(PLAYER, "ScreenHeight", 7.1f))
     }
 
     fun updateWebServer() {
@@ -264,8 +253,6 @@ object VPinballManager {
 
     fun resetIni() {
         vpinballJNI.VPinballResetIni()
-
-        setIniDefaults()
     }
 
     fun toggleFPS() {

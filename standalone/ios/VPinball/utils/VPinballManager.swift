@@ -196,7 +196,6 @@ class VPinballManager {
             }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.setIniDefaults()
             self.updateWebServer()
 
             if self.loadValue(.standalone, "LowMemoryNotice", -1) == 1 {
@@ -578,17 +577,6 @@ class VPinballManager {
 
     func resetIni() {
         _ = VPinballResetIni()
-
-        setIniDefaults()
-    }
-
-    func setIniDefaults() {
-        saveValue(.standalone, "RenderingModeOverride", loadValue(.standalone, "RenderingModeOverride", 2))
-        saveValue(.player, "MaxTexDimension", loadValue(.player, "MaxTexDimension", 1024))
-        saveValue(.player, "BallTrail", loadValue(.player, "BallTrail", false))
-        saveValue(.dmd, "DMDOutput", loadValue(.dmd, "DMDOutput", 0))
-        saveValue(.player, "ScreenWidth", loadValue(.player, "ScreenWidth", 15.4))
-        saveValue(.player, "ScreenHeight", loadValue(.player, "ScreenHeight", 7.1))
     }
 
     func updateWebServer() {

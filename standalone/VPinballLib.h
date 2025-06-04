@@ -19,18 +19,6 @@ enum class VPinballStatus {
    Failure
 };
 
-enum class SettingsSection {
-   Standalone = 2,
-   Player = 3,
-   DMD = 4,
-   Alpha = 5,
-   Backglass = 6,
-   ScoreView = 7,
-   Topper = 8,
-   TableOverride = 13,
-   TableOption = 14
-};
-
 enum class ScriptErrorType {
    Compile,
    Runtime
@@ -104,7 +92,7 @@ struct TableOptions {
 };
 
 struct CustomTableOption {
-   SettingsSection section;
+   const char* sectionName;
    const char* id;
    const char* name;
    int showMask;
@@ -146,12 +134,12 @@ public:
    string GetVersionStringFull();
    void Log(LogLevel level, const string& message);
    void ResetLog();
-   int LoadValueInt(SettingsSection section, const string& key, int defaultValue);
-   float LoadValueFloat(SettingsSection section, const string& key, float defaultValue);
-   string LoadValueString(SettingsSection section, const string& key, const string& defaultValue);
-   void SaveValueInt(SettingsSection section, const string& key, int value);
-   void SaveValueFloat(SettingsSection section, const string& key, float value);
-   void SaveValueString(SettingsSection section, const string& key, const string& value);
+   int LoadValueInt(const string& sectionName, const string& key, int defaultValue);
+   float LoadValueFloat(const string& sectionName, const string& key, float defaultValue);
+   string LoadValueString(const string& sectionName, const string& key, const string& defaultValue);
+   void SaveValueInt(const string& sectionName, const string& key, int value);
+   void SaveValueFloat(const string& sectionName, const string& key, float value);
+   void SaveValueString(const string& sectionName, const string& key, const string& value);
    VPinballStatus Uncompress(const string& source);
    VPinballStatus Compress(const string& source, const string& destination);
    void UpdateWebServer();

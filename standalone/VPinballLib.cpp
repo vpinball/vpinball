@@ -73,6 +73,7 @@ void VPinball::Init(std::function<void*(Event, void*)> callback)
    g_pvp = new ::VPinball();
    g_pvp->SetLogicalNumberOfProcessors(SDL_GetNumLogicalCPUCores());
    g_pvp->m_settings.LoadFromFile(g_pvp->m_myPrefPath + "VPinballX.ini", true);
+   g_pvp->m_settings.Save();
 
    Logger::GetInstance()->Init();
    Logger::GetInstance()->SetupLogger(true);
@@ -191,36 +192,36 @@ void VPinball::ResetLog()
    PLOGI << "m_myPrefPath=" << g_pvp->m_myPrefPath;
 }
 
-int VPinball::LoadValueInt(SettingsSection section, const string& key, int defaultValue)
+int VPinball::LoadValueInt(const string& sectionName, const string& key, int defaultValue)
 {
-   return g_pvp->m_settings.LoadValueWithDefault(static_cast<Settings::Section>(section), key, defaultValue);
+   return g_pvp->m_settings.LoadValueWithDefault(Settings::GetSection(sectionName), key, defaultValue);
 }
 
-float VPinball::LoadValueFloat(SettingsSection section, const string& key, float defaultValue)
+float VPinball::LoadValueFloat(const string& sectionName, const string& key, float defaultValue)
 {
-   return g_pvp->m_settings.LoadValueWithDefault(static_cast<Settings::Section>(section), key, defaultValue);
+   return g_pvp->m_settings.LoadValueWithDefault(Settings::GetSection(sectionName), key, defaultValue);
 }
 
-string VPinball::LoadValueString(SettingsSection section, const string& key, const string& defaultValue)
+string VPinball::LoadValueString(const string& sectionName, const string& key, const string& defaultValue)
 {
-   return g_pvp->m_settings.LoadValueWithDefault(static_cast<Settings::Section>(section), key, defaultValue);
+   return g_pvp->m_settings.LoadValueWithDefault(Settings::GetSection(sectionName), key, defaultValue);
 }
 
-void VPinball::SaveValueInt(SettingsSection section, const string& key, int value)
+void VPinball::SaveValueInt(const string& sectionName, const string& key, int value)
 {
-   g_pvp->m_settings.SaveValue(static_cast<Settings::Section>(section), key, value);
+   g_pvp->m_settings.SaveValue(Settings::GetSection(sectionName), key, value);
    g_pvp->m_settings.Save();
 }
 
-void VPinball::SaveValueFloat(SettingsSection section, const string& key, float value)
+void VPinball::SaveValueFloat(const string& sectionName, const string& key, float value)
 {
-   g_pvp->m_settings.SaveValue(static_cast<Settings::Section>(section), key, value);
+   g_pvp->m_settings.SaveValue(Settings::GetSection(sectionName), key, value);
    g_pvp->m_settings.Save();
 }
 
-void VPinball::SaveValueString(SettingsSection section, const string& key, const string& value)
+void VPinball::SaveValueString(const string& sectionName, const string& key, const string& value)
 {
-   g_pvp->m_settings.SaveValue(static_cast<Settings::Section>(section), key, value);
+   g_pvp->m_settings.SaveValue(Settings::GetSection(sectionName), key, value);
    g_pvp->m_settings.Save();
 }
 
@@ -329,6 +330,7 @@ VPinballStatus VPinball::ResetIni()
       return VPinballStatus::Failure;
 
    g_pvp->m_settings.LoadFromFile(iniFilePath, true);
+   g_pvp->m_settings.Save();
    return VPinballStatus::Success;
 }
 
@@ -459,6 +461,7 @@ void VPinball::SaveTableOptions()
    pTable->m_settings.SaveValue(Settings::TableOverride, "Difficulty"s, pLiveTable->m_globalDifficulty);
    pTable->m_settings.SaveValue(Settings::Player, "MusicVolume"s, g_pplayer->m_MusicVolume);
    pTable->m_settings.SaveValue(Settings::Player, "SoundVolume"s, g_pplayer->m_SoundVolume);
+   pTable->m_settings.Save();
 }
 
 int VPinball::GetCustomTableOptionsCount()
@@ -478,7 +481,7 @@ void VPinball::GetCustomTableOption(int index, CustomTableOption& customTableOpt
 
    PinTable* pLiveTable = g_pplayer->m_ptable;
    const Settings::OptionDef& optionDef = pLiveTable->m_settings.GetTableSettings()[index];
-   customTableOption.section = (SettingsSection)optionDef.section;
+   customTableOption.sectionName = Settings::GetSectionName(optionDef.section).c_str();
    customTableOption.id = optionDef.id.c_str();
    customTableOption.name = optionDef.name.c_str();
    customTableOption.showMask = optionDef.showMask;
@@ -530,6 +533,7 @@ void VPinball::SaveCustomTableOptions()
       const Settings::OptionDef& optionDef = pLiveTable->m_settings.GetTableSettings()[index];
       pTable->m_settings.SaveValue(optionDef.section, optionDef.id, pLiveTable->m_settings.LoadValueWithDefault(optionDef.section, optionDef.name, optionDef.defaultValue));
    }
+   pTable->m_settings.Save();
 }
 
 void VPinball::GetViewSetup(ViewSetup& viewSetup)
@@ -606,6 +610,7 @@ void VPinball::SaveViewSetup()
       pTable->m_settings.SaveValue(Settings::Player, "ScreenPlayerY", pLiveTable->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerY"s, 0.0f), true);
       pTable->m_settings.SaveValue(Settings::Player, "ScreenPlayerZ", pLiveTable->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerZ"s, 70.0f), true);
    }
+    pTable->m_settings.Save();
 }
 
 void VPinball::CaptureScreenshot(const string& filename)
@@ -699,8 +704,9 @@ void VPinball::ProcessSetCustomTableOption(const CustomTableOption& customTableO
       return;
 
    PinTable* pLiveTable = g_pplayer->m_ptable;
-   pLiveTable->m_settings.SaveValue((Settings::Section)customTableOption.section, customTableOption.id, customTableOption.value);
-   if (customTableOption.section == SettingsSection::TableOption)
+   Settings::Section section = Settings::GetSection(customTableOption.sectionName);
+   pLiveTable->m_settings.SaveValue(section, customTableOption.id, customTableOption.value);
+   if (section == Settings::Section::TableOption)
       pLiveTable->FireOptionEvent(1);
 }
 
@@ -892,6 +898,7 @@ void VPinball::Cleanup()
    delete g_pvp;
    g_pvp = new ::VPinball();
    g_pvp->m_settings.LoadFromFile(g_pvp->m_myPrefPath + "VPinballX.ini", true);
+   g_pvp->m_settings.Save();
    g_pvp->SetLogicalNumberOfProcessors(SDL_GetNumLogicalCPUCores());
    
    {

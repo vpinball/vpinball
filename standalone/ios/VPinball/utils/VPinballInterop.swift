@@ -14,16 +14,24 @@ enum VPinballStatus: CInt {
     case failure
 }
 
-enum VPinballSettingsSection: CInt {
-    case standalone = 2
-    case player = 3
-    case dmd = 4
-    case alpha = 5
-    case backglass = 6
-    case scoreView = 7
-    case topper = 8
-    case tableOverride = 13
-    case tableOption = 14
+enum VPinballSettingsSection: String {
+    case standalone = "Standalone"
+    case player = "Player"
+    case alpha = "Alpha"
+    case backglass = "Backglass"
+    case scoreView = "ScoreView"
+    case topper = "Topper"
+    case tableOverride = "TableOverride"
+    case tableOption = "TableOption"
+    case pluginAlphaDMD = "Plugin.AlphaDMD"
+    case pluginB2S = "Plugin.B2S"
+    case pluginFlexDMD = "Plugin.FlexDMD"
+    case pluginPinMAME = "Plugin.PinMAME"
+    case pluginPUP = "Plugin.PUP"
+    case pluginRemoteControl = "Plugin.RemoteControl"
+    case pluginSerum = "Plugin.Serum"
+    case pluginScoreView = "Plugin.ScoreView"
+    case pluginDMDUtil = "Plugin.DMDUtil"
 }
 
 enum VPinballViewMode: CInt {
@@ -337,7 +345,7 @@ enum VPinballEvent: CInt {
     var name: String? {
         switch self {
         case .archiveUncompressing:
-            return "Ucompressing"
+            return "Uncompressing"
         case .archiveCompressing:
             return "Compressing"
         case .loadingItems:
@@ -508,7 +516,7 @@ struct VPinballTableOptions {
 }
 
 struct VPinballCustomTableOption {
-    var section: CInt = 0
+    var sectionName: UnsafePointer<CChar>?
     var id: UnsafePointer<CChar>?
     var name: UnsafePointer<CChar>?
     var showMask: CInt = 0
@@ -555,22 +563,22 @@ func VPinballLog(_ level: CInt, _ pMessage: UnsafePointer<CChar>)
 func VPinballResetLog()
 
 @_silgen_name("VPinballLoadValueInt")
-func VPinballLoadValueInt(_ section: CInt, _ pKey: UnsafePointer<CChar>, _ defaultValue: CInt) -> CInt
+func VPinballLoadValueInt(_ section: UnsafePointer<CChar>, _ pKey: UnsafePointer<CChar>, _ defaultValue: CInt) -> CInt
 
 @_silgen_name("VPinballLoadValueFloat")
-func VPinballLoadValueFloat(_ section: CInt, _ pKey: UnsafePointer<CChar>, _ defaultValue: Float) -> Float
+func VPinballLoadValueFloat(_ section: UnsafePointer<CChar>, _ pKey: UnsafePointer<CChar>, _ defaultValue: Float) -> Float
 
 @_silgen_name("VPinballLoadValueString")
-func VPinballLoadValueString(_ section: CInt, _ pKey: UnsafePointer<CChar>, _ defaultValue: UnsafePointer<CChar>) -> UnsafePointer<CChar>
+func VPinballLoadValueString(_ section: UnsafePointer<CChar>, _ pKey: UnsafePointer<CChar>, _ defaultValue: UnsafePointer<CChar>) -> UnsafePointer<CChar>
 
 @_silgen_name("VPinballSaveValueInt")
-func VPinballSaveValueInt(_ section: CInt, _ pKey: UnsafePointer<CChar>, _ value: CInt)
+func VPinballSaveValueInt(_ section: UnsafePointer<CChar>, _ pKey: UnsafePointer<CChar>, _ value: CInt)
 
 @_silgen_name("VPinballSaveValueFloat")
-func VPinballSaveValueFloat(_ section: CInt, _ pKey: UnsafePointer<CChar>, _ value: Float)
+func VPinballSaveValueFloat(_ section: UnsafePointer<CChar>, _ pKey: UnsafePointer<CChar>, _ value: Float)
 
 @_silgen_name("VPinballSaveValueString")
-func VPinballSaveValueString(_ section: CInt, _ pKey: UnsafePointer<CChar>, _ value: UnsafePointer<CChar>)
+func VPinballSaveValueString(_ section: UnsafePointer<CChar>, _ pKey: UnsafePointer<CChar>, _ value: UnsafePointer<CChar>)
 
 @_silgen_name("VPinballGetVersionStringFull")
 func VPinballGetVersionStringFull() -> UnsafePointer<CChar>

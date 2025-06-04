@@ -220,13 +220,44 @@ void Settings::Validate(const bool addDefaults)
    SettingInt(Settings::Player, "JoyTweakKey"s, 0, 0x00, 0xFFFF, ""s);
 #endif
 
+   //////////////////////////////////////////////////////////////////////////
+   // GfxBackend section
+
+#ifdef __ANDROID__
+   SettingString(Section::Player, "GfxBackend"s, "OpenGLES"s, ""s);
+#endif
+
+   //////////////////////////////////////////////////////////////////////////
+   // Ball Rendering section
+
+#ifdef __STANDALONE__
+   SettingBool(Section::Player, "BallTrail"s, false, ""s);
+#endif
 
    //////////////////////////////////////////////////////////////////////////
    // Rendering section
 
    SettingFloat(Section::Player, "EmissionScale"s, 0.5f, 0.f, 1.f, ""s);
-   SettingInt(Section::Player, "MaxTexDimension"s, 0, 0, 16384, "Maximum texture dimension. Images sized above this limit will be automatically scaled down on load."s);
 
+#ifndef __LIBVPINBALL__
+   SettingInt(Section::Player, "MaxTexDimension"s, 0, 0, 16384, "Maximum texture dimension. Images sized above this limit will be automatically scaled down on load."s);
+#else
+   SettingInt(Section::Player, "MaxTexDimension"s, 1536, 0, 16384, "Maximum texture dimension. Images sized above this limit will be automatically scaled down on load."s);
+#endif
+
+   //////////////////////////////////////////////////////////////////////////
+   // Plugin.ScoreView
+
+#ifdef __LIBVPINBALL__
+   SettingBool(GetSection("Plugin.ScoreView"), "Enable"s, true, ""s);
+#endif
+
+   //////////////////////////////////////////////////////////////////////////
+   // Standalone section
+
+#ifdef __LIBVPINBALL__
+   SettingInt(Section::Standalone, "RenderingModeOverride"s, 2, 0, 2, ""s);
+#endif
 
    //////////////////////////////////////////////////////////////////////////
    // VR Player section
@@ -234,7 +265,6 @@ void Settings::Validate(const bool addDefaults)
    SettingFloat(Settings::PlayerVR, "TableX"s, 0.f, -300.f, 300.f, "VR scene horizontal X offset (cm)."s);
    SettingFloat(Settings::PlayerVR, "TableY"s, 0.f, -300.f, 300.f, "VR scene horizontal Y offset (cm)."s);
    SettingFloat(Settings::PlayerVR, "TableZ"s, 0.f, -300.f, 300.f, "VR scene vertical offset (cm)s"s);
-
 
    //////////////////////////////////////////////////////////////////////////
    // Cabinet section
@@ -248,17 +278,33 @@ void Settings::Validate(const bool addDefaults)
    SettingFloat(Section::Player, "LockbarWidth"s, 70.f, 10.f, 150.f, "Lockbar width in centimeters (measured on the cabinet)."s);
    SettingFloat(Section::Player, "LockbarHeight"s, 85.f, 0.f, 250.f, "Lockbar height in centimeters (measured on the cabinet, from ground to top of lockbar)."s);
 
+   //////////////////////////////////////////////////////////////////////////
+   // Backglass section
+
+#ifdef __LIBVPINBALL__
+   SettingInt(Section::Backglass, "BackglassOutput"s, 1, 1, 1, ""s);
+   SettingInt(Section::Backglass, "BackglassWndX"s, 0, 0, 3000, ""s);
+   SettingInt(Section::Backglass, "BackglassWndY"s, 160, 0, 3000, ""s);
+   SettingInt(Section::Backglass, "BackglassWidth"s, 640, 0, 3000, ""s);
+   SettingInt(Section::Backglass, "BackglassHeight"s, 480, 0, 3000, ""s);
+#endif
 
    //////////////////////////////////////////////////////////////////////////
    // ScoreView section
 
+#ifdef __LIBVPINBALL__
+   SettingInt(Section::ScoreView, "ScoreViewOutput"s, 1, 1, 1, ""s);
+   SettingInt(Section::ScoreView, "ScoreViewWndX"s, 0, 0, 3000, ""s);
+   SettingInt(Section::ScoreView, "ScoreViewWndY"s, 0, 0, 3000, ""s);
+   SettingInt(Section::ScoreView, "ScoreViewWidth"s, 640, 0, 3000, ""s);
+   SettingInt(Section::ScoreView, "ScoreViewHeight"s, 160, 0, 3000, ""s);
+#endif
 
    //////////////////////////////////////////////////////////////////////////
    // Playfield view section
 
    SettingFloat(Section::Player, "MaxFramerate"s, -1.f, -1.f, 1000.f, "Maximum FPS of playfield view (minimum: 24FPS), 0 is unlimited, < 0 is limited to the display refresh rate."s);
    SettingInt(Section::Player, "SyncMode"s, VSM_NONE, VSM_NONE, VSM_FRAME_PACING, "Hardware video sync mode to use: None / Vertical Sync / Adaptative Sync / Frame Pacing."s);
-
 
    //////////////////////////////////////////////////////////////////////////
    // DMD section
