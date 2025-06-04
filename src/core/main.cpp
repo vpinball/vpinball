@@ -1043,15 +1043,15 @@ public:
       if (GetModuleFileName(m_vpinball.theInstance, szFileName, MAXSTRING))
       {
          ITypeLib *ptl = nullptr;
-         MAKE_WIDEPTR_FROMANSI(wszFileName, szFileName, lstrlen(szFileName));
-         if (SUCCEEDED(LoadTypeLib(wszFileName, &ptl)))
+         const wstring wFileName = MakeWString(szFileName);
+         if (SUCCEEDED(LoadTypeLib(wFileName.c_str(), &ptl)))
          {
             // first try to register system-wide (if running as admin)
-            HRESULT hr = RegisterTypeLib(ptl, wszFileName, nullptr);
+            HRESULT hr = RegisterTypeLib(ptl, wFileName.c_str(), nullptr);
             if (!SUCCEEDED(hr))
             {
                // if failed, register only for current user
-               hr = RegisterTypeLibForUser(ptl, wszFileName, nullptr);
+               hr = RegisterTypeLibForUser(ptl, (OLECHAR*)wFileName.c_str(), nullptr);
                if (!SUCCEEDED(hr))
                   m_vpinball.MessageBox("Could not register type library. Try running Visual Pinball as administrator.", "Error", MB_ICONERROR);
             }

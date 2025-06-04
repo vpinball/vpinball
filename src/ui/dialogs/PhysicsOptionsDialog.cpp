@@ -81,7 +81,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     const float TablePhysicsMaxSlope = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsMaxSlope" + std::to_string(physicsselection), DEFAULT_TABLE_MAX_SLOPE);
     SetItemText(1104, TablePhysicsMaxSlope);
 
-    SetDlgItemText(1110, (char*)physicsoptions[physicsselection].c_str());
+    SetDlgItemText(1110, physicsoptions[physicsselection].c_str());
 
     return TRUE;
 }

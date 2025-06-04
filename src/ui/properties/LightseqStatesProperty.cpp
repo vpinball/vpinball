@@ -60,11 +60,7 @@ void LightseqStatesProperty::UpdateProperties(const int dispid)
             case DISPID_Collection:
             {
                 PropertyDialog::StartUndo(lightseq);
-                char szText[MAXSTRING];
-                PropertyDialog::GetComboBoxText(m_collectionCombo, szText, sizeof(szText));
-                WCHAR wzText[MAXSTRING];
-                MultiByteToWideCharNull(CP_ACP, 0, szText, -1, wzText, MAXSTRING);
-                lightseq->m_d.m_wzCollection = wzText;
+                lightseq->m_d.m_wzCollection = MakeWString(PropertyDialog::GetComboBoxText(m_collectionCombo));
                 PropertyDialog::EndUndo(lightseq);
                 break;
             }

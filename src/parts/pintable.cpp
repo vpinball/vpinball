@@ -2512,15 +2512,13 @@ HRESULT PinTable::Save(const bool saveAs)
       g_pvp->m_settings.SaveValue(Settings::RecentDir, "LoadDir"s, string(szInitialDir));
 
       {
-         MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_filename.c_str(), m_filename.length());
-
          STGOPTIONS stg;
          stg.usVersion = 1;
          stg.reserved = 0;
          stg.ulSectorSize = 4096;
 
          HRESULT hr;
-         if (FAILED(hr = StgCreateStorageEx(wszCodeFile, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
+         if (FAILED(hr = StgCreateStorageEx(MakeWString(m_filename).c_str(), STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
             STGFMT_DOCFILE, 0, &stg, nullptr, IID_IStorage, (void**)&pstgRoot)))
          {
             const LocalString ls(IDS_SAVEERROR);
@@ -2537,7 +2535,6 @@ HRESULT PinTable::Save(const bool saveAs)
       char * const ptr = StrStrI(m_filename.c_str(), ".vpt");
       if (ptr != nullptr)
          strcpy_s(ptr, 5, ".vpx");
-      MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_filename.c_str(), m_filename.length());
 
       STGOPTIONS stg;
       stg.usVersion = 1;
@@ -2545,8 +2542,8 @@ HRESULT PinTable::Save(const bool saveAs)
       stg.ulSectorSize = 4096;
 
       HRESULT hr;
-      if (FAILED(hr = StgCreateStorageEx(wszCodeFile, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
-         STGFMT_DOCFILE, 0, &stg, 0, IID_IStorage, (void**)&pstgRoot)))
+      if (FAILED(hr = StgCreateStorageEx(MakeWString(m_filename).c_str(), STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE,
+         STGFMT_DOCFILE, 0, &stg, nullptr, IID_IStorage, (void**)&pstgRoot)))
       {
          const LocalString ls(IDS_SAVEERROR);
          m_mdiTable->MessageBox(ls.m_szbuffer, "Visual Pinball", MB_ICONERROR);
@@ -2685,10 +2682,9 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
          {
             for (size_t i = 0; i < m_vedit.size(); i++)
             {
-               const string szStmName = "GameItem" + std::to_string(i);
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str(), szStmName.length());
+               const wstring wStmName = L"GameItem" + std::to_wstring(i);
 
-               if (SUCCEEDED(hr = pstgData->CreateStream(wszStmName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
+               if (SUCCEEDED(hr = pstgData->CreateStream(wStmName.c_str(), STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
                   ULONG writ;
                   IEditable *const piedit = m_vedit[i];
@@ -2706,10 +2702,9 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
 
             for (size_t i = 0; i < m_vsound.size(); i++)
             {
-               const string szStmName = "Sound" + std::to_string(i);
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str(), szStmName.length());
+               const wstring wStmName = L"Sound" + std::to_wstring(i);
 
-               if (SUCCEEDED(hr = pstgData->CreateStream(wszStmName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
+               if (SUCCEEDED(hr = pstgData->CreateStream(wStmName.c_str(), STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
                   SaveSoundToStream(m_vsound[i], pstmItem);
                   pstmItem->Release();
@@ -2722,10 +2717,9 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
 
             for (size_t i = 0; i < m_vimage.size(); i++)
             {
-               const string szStmName = "Image" + std::to_string(i);
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str(), szStmName.length());
+               const wstring wStmName = L"Image" + std::to_wstring(i);
 
-               if (SUCCEEDED(hr = pstgData->CreateStream(wszStmName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
+               if (SUCCEEDED(hr = pstgData->CreateStream(wStmName.c_str(), STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
                   m_vimage[i]->SaveToStream(pstmItem, this);
                   pstmItem->Release();
@@ -2738,10 +2732,9 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
 
             for (size_t i = 0; i < m_vfont.size(); i++)
             {
-               const string szStmName = "Font" + std::to_string(i);
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str(), szStmName.length());
+               const wstring wStmName = L"Font" + std::to_wstring(i);
 
-               if (SUCCEEDED(hr = pstgData->CreateStream(wszStmName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
+               if (SUCCEEDED(hr = pstgData->CreateStream(wStmName.c_str(), STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
                   m_vfont[i]->SaveToStream(pstmItem);
                   pstmItem->Release();
@@ -2754,10 +2747,9 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
 
             for (int i = 0; i < m_vcollection.size(); i++)
             {
-               const string szStmName = "Collection" + std::to_string(i);
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str(), szStmName.length());
+               const wstring wStmName = L"Collection" + std::to_wstring(i);
 
-               if (SUCCEEDED(hr = pstgData->CreateStream(wszStmName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
+               if (SUCCEEDED(hr = pstgData->CreateStream(wStmName.c_str(), STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
                   m_vcollection[i].SaveData(pstmItem, hch, false);
                   pstmItem->Release();
@@ -3554,10 +3546,9 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
    if (!INIFilename.empty())
       m_settings.LoadFromFile(INIFilename, false);
 
-   MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_filename.c_str(), m_filename.length());
    HRESULT hr;
    IStorage* pstgRoot;
-   if (FAILED(hr = StgOpenStorage(wszCodeFile, nullptr, STGM_TRANSACTED | STGM_READ, nullptr, 0, &pstgRoot)))
+   if (FAILED(hr = StgOpenStorage(MakeWString(m_filename).c_str(), nullptr, STGM_TRANSACTED | STGM_READ, nullptr, 0, &pstgRoot)))
    {
       char msg[MAXSTRING+32];
       sprintf_s(msg, sizeof(msg), "Error 0x%X loading \"%s\"", hr, m_filename.c_str());
@@ -3677,11 +3668,10 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
 
             for (int i = 0; i < csubobj; i++)
             {
-               const string szStmName = "GameItem" + std::to_string(i);
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str(), szStmName.length());
+               const wstring wStmName = L"GameItem" + std::to_wstring(i);
 
                IStream* pstmItem;
-               if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
+               if (SUCCEEDED(hr = pstgData->OpenStream(wStmName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
                {
                   ULONG read;
                   ItemTypeEnum type;
@@ -3707,11 +3697,10 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
 
             for (int i = 0; i < csounds; i++)
             {
-               const string szStmName = "Sound" + std::to_string(i);
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str(), szStmName.length());
+               const wstring wStmName = L"Sound" + std::to_wstring(i);
 
                IStream* pstmItem;
-               if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
+               if (SUCCEEDED(hr = pstgData->OpenStream(wStmName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
                {
                   LoadSoundFromStream(pstmItem, loadfileversion);
                   pstmItem->Release();
@@ -3731,12 +3720,11 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                for (int i = 0; i < ctextures; i++)
                {
                   pool.enqueue([i, &feedback, loadfileversion, pstgData, this, &count, ctextures] {
-                     const string szStmName = "Image" + std::to_string(i);
-                     MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str(), szStmName.length());
+                     const wstring wStmName = L"Image" + std::to_wstring(i);
 
                      IStream* pstmItem;
                      HRESULT hr;
-                     if (FAILED(hr = pstgData->OpenStream(wszStmName, nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
+                     if (FAILED(hr = pstgData->OpenStream(wStmName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
                         return hr;
 
                      m_vimage[i] = Texture::CreateFromStream(pstmItem, loadfileversion, this, false, m_settings.LoadValueInt(Settings::Player, "MaxTexDimension"s));
@@ -3756,18 +3744,17 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                if (m_vimage[i] && m_vimage[i]->GetRawBitmap() != nullptr)
                   continue;
 
-               const string szStmName = "Image" + std::to_string(i);
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str(), szStmName.length());
+               const wstring wStmName = L"Image" + std::to_wstring(i);
                IStream *pstmItem;
-               if (FAILED(hr = pstgData->OpenStream(wszStmName, nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
+               if (FAILED(hr = pstgData->OpenStream(wStmName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
                {
-                  failed_load_img += "\n- " + szStmName;
+                  failed_load_img += "\n- " + "Image"s + std::to_string(i);
                   continue;
                }
 
                Texture *const ppi = Texture::CreateFromStream(pstmItem, loadfileversion, this, false, m_settings.LoadValueInt(Settings::Player, "MaxTexDimension"s));
                if (!ppi)
-                  failed_load_img += "\n- " + szStmName;
+                  failed_load_img += "\n- " + "Image"s + std::to_string(i);
                else if (!ppi || ppi->GetRawBitmap() == nullptr)
                {
                   failed_load_img += "\n- " + ppi->m_name + " (from: " + ppi->GetFilePath() + ')';
@@ -3817,11 +3804,10 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
 
             for (int i = 0; i < cfonts; i++)
             {
-               const string szStmName = "Font" + std::to_string(i);
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str(), szStmName.length());
+               const wstring wStmName = L"Font" + std::to_wstring(i);
 
                IStream* pstmItem;
-               if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
+               if (SUCCEEDED(hr = pstgData->OpenStream(wStmName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
                {
                   PinFont * const ppf = new PinFont();
                   ppf->LoadFromStream(pstmItem, loadfileversion);
@@ -3837,11 +3823,10 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
 
             for (int i = 0; i < ccollection; i++)
             {
-               const string szStmName = "Collection" + std::to_string(i);
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str(), szStmName.length());
+               const wstring wStmName = L"Collection" + std::to_wstring(i);
 
                IStream* pstmItem;
-               if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
+               if (SUCCEEDED(hr = pstgData->OpenStream(wStmName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
                {
                   CComObject<Collection> *pcol;
                   CComObject<Collection>::CreateInstance(&pcol);
@@ -6076,7 +6061,7 @@ void PinTable::ImportBackdropPOV(const string &filename)
       if (IsLocked())
          return;
 #ifndef __STANDALONE__
-      string initialDir = m_settings.LoadValueWithDefault(Settings::RecentDir, "POVDir"s, PATH_TABLES);
+      const string initialDir = m_settings.LoadValueWithDefault(Settings::RecentDir, "POVDir"s, PATH_TABLES);
       vector<string> fileNames;
       if (!m_vpinball->OpenFileDialog(initialDir, fileNames, 
          "User settings file (*.ini)\0*.ini\0Old POV file (*.pov)\0*.pov\0Legacy POV file(*.xml)\0*.xml\0",
@@ -6132,102 +6117,80 @@ void PinTable::ImportBackdropPOV(const string &filename)
             xmlDoc.Clear();
             return;
          }
-         #define POV_FIELD(name, settingField, field) \
+         #define POV_FIELD(name, type, settingField, fieldtype, field) \
          { \
-            auto node = section->FirstChildElement(name); \
+            const auto node = section->FirstChildElement(name); \
             if (node != nullptr) \
             { \
-               float value; sscanf_s(node->GetText(), "%f", &value); \
+               const char * const t = node->GetText(); \
+               if (t) \
+               { \
+               type value; \
+               if(std::from_chars(t,t+lstrlen(t),value).ec == std::errc{}) \
+               { \
                if (toUserSettings) \
-                  m_settings.SaveValue(Settings::TableOverride, keyPrefix + settingField, value); \
+                  m_settings.SaveValue(Settings::TableOverride, keyPrefix + (settingField), value); \
                else \
-                  field = value; \
+                  field = (fieldtype)value; \
+               } \
+               } \
             } \
          }
          static const string sections[] = { "desktop"s, "fullscreen"s, "fullsinglescreen"s };
          for (int i = 0; i < 3; i++)
          {
-            auto section = root->FirstChildElement(sections[i].c_str());
+            const auto section = root->FirstChildElement(sections[i].c_str());
             if (section)
             {
                const string &keyPrefix = vsPrefix[i];
-               POV_FIELD("inclination", "LookAt", mViewSetups[i].mLookAt);
-               POV_FIELD("fov", "FOV", mViewSetups[i].mFOV);
-               POV_FIELD("layback", "Layback", mViewSetups[i].mLayback);
-               POV_FIELD("lookat", "LookAt", mViewSetups[i].mLookAt);
-               POV_FIELD("rotation", "Rotation", mViewSetups[i].mViewportRotation);
-               POV_FIELD("xscale", "ScaleX", mViewSetups[i].mSceneScaleX);
-               POV_FIELD("yscale", "ScaleY", mViewSetups[i].mSceneScaleY);
-               POV_FIELD("zscale", "ScaleZ", mViewSetups[i].mSceneScaleZ);
-               POV_FIELD("xoffset", "PlayerX", mViewSetups[i].mViewX);
-               POV_FIELD("yoffset", "PlayerY", mViewSetups[i].mViewY);
-               POV_FIELD("zoffset", "PlayerZ", mViewSetups[i].mViewZ);
-               POV_FIELD("ViewHOfs", "HOfs", mViewSetups[i].mViewHOfs);
-               POV_FIELD("ViewVOfs", "VOfs", mViewSetups[i].mViewVOfs);
-               POV_FIELD("WindowTopZOfs", "WindowTop", mViewSetups[i].mWindowTopZOfs);
-               POV_FIELD("WindowBottomZOfs", "WindowBot", mViewSetups[i].mWindowBottomZOfs);
-               {
-                  auto node = section->FirstChildElement("LayoutMode");
-                  if (node != nullptr)
-                  {
-                     int value;
-                     sscanf_s(node->GetText(), "%i", &value);
-                     if (toUserSettings)
-                        m_settings.SaveValue(Settings::TableOverride, keyPrefix + "Mode", value);
-                     else
-                        mViewSetups[i].mMode = (ViewLayoutMode) value;
-                  }
-               }
+               POV_FIELD("inclination", float, "LookAt", float, mViewSetups[i].mLookAt);
+               POV_FIELD("fov", float, "FOV", float, mViewSetups[i].mFOV);
+               POV_FIELD("layback", float, "Layback", float, mViewSetups[i].mLayback);
+               POV_FIELD("lookat", float, "LookAt", float, mViewSetups[i].mLookAt);
+               POV_FIELD("rotation", float, "Rotation", float, mViewSetups[i].mViewportRotation);
+               POV_FIELD("xscale", float, "ScaleX", float, mViewSetups[i].mSceneScaleX);
+               POV_FIELD("yscale", float, "ScaleY", float, mViewSetups[i].mSceneScaleY);
+               POV_FIELD("zscale", float, "ScaleZ", float, mViewSetups[i].mSceneScaleZ);
+               POV_FIELD("xoffset", float, "PlayerX", float, mViewSetups[i].mViewX);
+               POV_FIELD("yoffset", float, "PlayerY", float, mViewSetups[i].mViewY);
+               POV_FIELD("zoffset", float, "PlayerZ", float, mViewSetups[i].mViewZ);
+               POV_FIELD("ViewHOfs", float, "HOfs", float, mViewSetups[i].mViewHOfs);
+               POV_FIELD("ViewVOfs", float, "VOfs", float, mViewSetups[i].mViewVOfs);
+               POV_FIELD("WindowTopZOfs", float, "WindowTop", float, mViewSetups[i].mWindowTopZOfs);
+               POV_FIELD("WindowBottomZOfs", float, "WindowBot", float, mViewSetups[i].mWindowBottomZOfs);
+               POV_FIELD("LayoutMode", int, "Mode", ViewLayoutMode, mViewSetups[i].mMode);
             }
          }
          #undef POV_FIELD
          if (toUserSettings)
          {
-            auto section = root->FirstChildElement("customsettings");
+            const auto section = root->FirstChildElement("customsettings");
             if (section)
             {
-               // POV_FIELD("SSAA", "%i", m_useAA);
-               {
-                  auto node = section->FirstChildElement("postprocAA");
-                  if (node != nullptr)
-                  {
-                     int useAA;
-                     sscanf_s(node->GetText(), "%i", &useAA);
-                     if (useAA > -1)
-                        m_settings.SaveValue(Settings::Player, "AAFactor"s, useAA == 0 ? 1.f : 2.f);
-                  }
+               #define POV_FIELD(name, type, savecondition) \
+               { \
+                  const auto node = section->FirstChildElement(name); \
+                  if (node != nullptr) \
+                  { \
+                     const char * const t = node->GetText(); \
+                     if (t) \
+                     { \
+                     type value; \
+                     if(std::from_chars(t,t+lstrlen(t),value).ec == std::errc{}) \
+                     { \
+                     savecondition; \
+                     } \
+                     } \
+                  } \
                }
-               // POV_FIELD("postprocAA", "%i", m_useFXAA);
+
+               POV_FIELD("postprocAA", int, if(value > -1) m_settings.SaveValue(Settings::Player, "AAFactor"s, value == 0 ? 1.f : 2.f)); // remap to new AA
+               POV_FIELD("postprocAA", int, if(value > -1) m_settings.SaveValue(Settings::Player, "FXAA"s, value == 1 ? Standard_FXAA : Disabled));
+               POV_FIELD("ingameAO", int, if(value != -1) m_settings.SaveValue(Settings::Player, "DisableAO"s, value == 0));
+               POV_FIELD("ScSpReflect", int, if(value != -1) m_settings.SaveValue(Settings::Player, "SSRefl"s, value != 0));
+               //POV_FIELD("FPSLimiter", int, tableAdaptiveVSync, );
                {
-                  auto node = section->FirstChildElement("postprocAA");
-                  if (node != nullptr)
-                  {
-                     int useFXAA;
-                     sscanf_s(node->GetText(), "%i", &useFXAA);
-                     if (useFXAA > -1)
-                        m_settings.SaveValue(Settings::Player, "FXAA"s, useFXAA == 1 ? Standard_FXAA : Disabled);
-                  }
-               }
-               //POV_FIELD("ingameAO", "%i", m_useAO);
-               auto node = section->FirstChildElement("ingameAO");
-               if (node)
-               {
-                  int ingameAO;
-                  sscanf_s(node->GetText(), "%i", &ingameAO);
-                  if (ingameAO != -1)
-                     m_settings.SaveValue(Settings::Player, "DisableAO"s, ingameAO == 0);
-               }
-               //POV_FIELD("ScSpReflect", "%i", m_useSSR);
-               node = section->FirstChildElement("ScSpReflect");
-               if (node)
-               {
-                  int useSSR;
-                  sscanf_s(node->GetText(), "%i", &useSSR);
-                  if (useSSR != -1)
-                     m_settings.SaveValue(Settings::Player, "SSRefl"s, useSSR != 0);
-               }
-               //POV_FIELD("FPSLimiter", "%i", m_TableAdaptiveVSync);
-               node = section->FirstChildElement("FPSLimiter");
+               const auto node = section->FirstChildElement("FPSLimiter");
                if (node)
                {
                   int tableAdaptiveVSync;
@@ -6255,77 +6218,38 @@ void PinTable::ImportBackdropPOV(const string &filename)
                      }
                   }
                }
-               //POV_FIELD("BallTrail", "%i", m_useTrailForBalls);
-               node = section->FirstChildElement("BallTrail");
-               if (node)
-               {
-                  int useTrailForBalls;
-                  sscanf_s(node->GetText(), "%i", &useTrailForBalls);
-                  if (useTrailForBalls != -1)
-                     m_settings.SaveValue(Settings::Player, "BallTrail"s, useTrailForBalls == 1);
                }
-               //POV_FIELD("BallTrailStrength", "%f", m_ballTrailStrength);
-               node = section->FirstChildElement("BallTrailStrength");
-               if (node)
-               {
-                  float strength;
-                  sscanf_s(node->GetText(), "%f", &strength);
-                  m_settings.SaveValue(Settings::Player, "BallTrailStrength"s, strength);
-               }
+               POV_FIELD("BallTrail", int, if(value != -1) m_settings.SaveValue(Settings::Player, "BallTrail"s, value == 1));
+               POV_FIELD("BallTrailStrength", float, m_settings.SaveValue(Settings::Player, "BallTrailStrength"s, value));
                //int overwriteGlobalDetailLevel = (int)m_overwriteGlobalDetailLevel;
                //POV_FIELD("OverwriteDetailsLevel", "%i", overwriteGlobalDetailLevel);
-               node = section->FirstChildElement("OverwriteDetailsLevel");
+               {
+               const auto node = section->FirstChildElement("OverwriteDetailsLevel");
                if (node)
                {
-                  int value;
-                  sscanf_s(node->GetText(), "%i", &value);
-                  if (value == 1)
-                  {
-                     //POV_FIELD("DetailsLevel", "%i", m_userDetailLevel);
-                     node = section->FirstChildElement("DetailsLevel");
-                     sscanf_s(node->GetText(), "%i", &value);
-                     m_settings.SaveValue(Settings::Player, "AlphaRampAccuracy"s, value);
-                  }
+                  int val;
+                  sscanf_s(node->GetText(), "%i", &val);
+                  if (val == 1)
+                     POV_FIELD("DetailsLevel", int, m_settings.SaveValue(Settings::Player, "AlphaRampAccuracy"s, value));
                }
-               node = section->FirstChildElement("OverwriteNightDay");
+               }
+               {
+               const auto node = section->FirstChildElement("OverwriteNightDay");
                if (node)
                {
-                  int value;
-                  sscanf_s(node->GetText(), "%i", &value);
-                  //m_overwriteGlobalDayNight = (value == 1);
-                  if (value == 1)
+                  int val;
+                  sscanf_s(node->GetText(), "%i", &val);
+                  //m_overwriteGlobalDayNight = (val == 1);
+                  if (val == 1)
                   {
                      m_settings.SaveValue(Settings::Player, "OverrideTableEmissionScale"s, true);
-                     node = section->FirstChildElement("NightDayLevel");
-                     if (node)
-                     {
-                        float valuef;
-                        sscanf_s(node->GetText(), "%f", &valuef);
-                        m_settings.SaveValue(Settings::Player, "EmissionScale"s, valuef / 100.f);
-                     }
+                     POV_FIELD("NightDayLevel", float, m_settings.SaveValue(Settings::Player, "EmissionScale"s, value / 100.f));
                   }
                }
-               node = section->FirstChildElement("GameplayDifficulty");
-               if (node)
-               {
-                  float value;
-                  sscanf_s(node->GetText(), "%f", &value);
-                  m_settings.SaveValue(Settings::TableOverride, "Difficulty"s, value / 100.f);
                }
-               node = section->FirstChildElement("SoundVolume");
-               if (node)
-               {
-                  int value;
-                  sscanf_s(node->GetText(), "%i", &value);
-                  m_settings.SaveValue(Settings::Player, "SoundVolume"s, value);
-               }
-               node = section->FirstChildElement("MusicVolume");
-               if (node)
-               {
-                  int value;
-                  sscanf_s(node->GetText(), "%i", &value);
-                  m_settings.SaveValue(Settings::Player, "MusicVolume"s, value);
-               }
+               POV_FIELD("GameplayDifficulty", float, m_settings.SaveValue(Settings::TableOverride, "Difficulty"s, value / 100.f));
+               POV_FIELD("SoundVolume", int, m_settings.SaveValue(Settings::Player, "SoundVolume"s, value));
+               POV_FIELD("MusicVolume", int, m_settings.SaveValue(Settings::Player, "MusicVolume"s, value));
                // FIXME these are the last 3 settings which were not ported to the setting API
                // - for physics set, since they can be applied at the part level, for each flipper
                // - for ball reflection, since I don't think that matters and there is no obvious way
@@ -6340,6 +6264,7 @@ void PinTable::ImportBackdropPOV(const string &filename)
                   sscanf_s(node->GetText(), "%i", &value);
                   m_overridePhysicsFlipper = (value == 1);
                } */
+               #undef POV_FIELD
             }
          }
       }
@@ -6361,7 +6286,7 @@ void PinTable::ImportBackdropPOV(const string &filename)
 }
 
 // Select file and export the point of view definition
-void PinTable::ExportBackdropPOV()
+void PinTable::ExportBackdropPOV() const
 {
    string iniFileName;
 #ifndef __STANDALONE__
@@ -7530,7 +7455,7 @@ PinBinary *PinTable::GetImageLinkBinary(const int id)
    switch (id)
    {
    case 1: //Screenshot
-      // Transfer ownership of the screenshot pinbary blob to the image
+      // Transfer ownership of the screenshot pinbinary blob to the image
       PinBinary * const pbT = m_pbTempScreenshot;
       m_pbTempScreenshot = nullptr;
       return pbT;
@@ -9595,92 +9520,131 @@ void PinTable::ImportVPP(const string& filename)
          ShowError("Error parsing VPP XML file");
          return;
       }
-      auto root = xmlDoc.FirstChildElement("physics");
-      auto physTab = root->FirstChildElement("table");
-      auto physFlip = root->FirstChildElement("flipper");
+      const auto root = xmlDoc.FirstChildElement("physics");
+      const auto physTab = root->FirstChildElement("table");
+      const auto physFlip = root->FirstChildElement("flipper");
 
-      char str[16];
-      float val;
-
-      if(physTab->FirstChildElement("gravityConstant") != nullptr)
+      const tinyxml2::XMLElement* el = physTab->FirstChildElement("gravityConstant");
+      if(el != nullptr)
       {
-          strncpy_s(str, physTab->FirstChildElement("gravityConstant")->GetText(), sizeof(str)-1);
-          sscanf_s(str, "%f", &val);
-          put_Gravity(val);
+         const char * const t = el->GetText();
+         if (t)
+         {
+            float val;
+            std::from_chars(t, t + lstrlen(t), val);
+            put_Gravity(val);
+         }
       }
       else
           ShowError("gravityConstant is missing");
 
 
-      if (physTab->FirstChildElement("contactFriction") != nullptr)
+      el = physTab->FirstChildElement("contactFriction");
+      if (el != nullptr)
       {
-          strncpy_s(str, physTab->FirstChildElement("contactFriction")->GetText(), sizeof(str)-1);
-          sscanf_s(str, "%f", &val);
-          put_Friction(val);
+         const char *const t = el->GetText();
+         if (t)
+         {
+            float val;
+            std::from_chars(t, t + lstrlen(t), val);
+            put_Friction(val);
+         }
       }
       else
           ShowError("contactFriction is missing");
 
-      if (physTab->FirstChildElement("elasticity") != nullptr)
+      el = physTab->FirstChildElement("elasticity");
+      if (el != nullptr)
       {
-          strncpy_s(str, physTab->FirstChildElement("elasticity")->GetText(), sizeof(str)-1);
-          sscanf_s(str, "%f", &val);
-          put_Elasticity(val);
+         const char *const t = el->GetText();
+         if (t)
+         {
+            float val;
+            std::from_chars(t, t + lstrlen(t), val);
+            put_Elasticity(val);
+         }
       }
       else
           ShowError("elasticity is missing");
 
-      if (physTab->FirstChildElement("elasticityFalloff") != nullptr)
+      el = physTab->FirstChildElement("elasticityFalloff"); 
+      if (el != nullptr)
       {
-          strncpy_s(str, physTab->FirstChildElement("elasticityFalloff")->GetText(), sizeof(str)-1);
-          sscanf_s(str, "%f", &val);
-          put_ElasticityFalloff(val);
+         const char *const t = el->GetText();
+         if (t)
+         {
+            float val;
+            std::from_chars(t, t + lstrlen(t), val);
+            put_ElasticityFalloff(val);
+         }
       }
       else
           ShowError("elasticityFalloff is missing");
 
-      if (physTab->FirstChildElement("playfieldScatter") != nullptr)
+      el = physTab->FirstChildElement("playfieldScatter");
+      if (el != nullptr)
       {
-          strncpy_s(str, physTab->FirstChildElement("playfieldScatter")->GetText(), sizeof(str)-1);
-          sscanf_s(str, "%f", &val);
-          put_Scatter(val);
+         const char *const t = el->GetText();
+         if (t)
+         {
+            float val;
+            std::from_chars(t, t + lstrlen(t), val);
+            put_Scatter(val);
+         }
       }
       else
           ShowError("playfieldScatter is missing");
 
-      if (physTab->FirstChildElement("defaultElementScatter") != nullptr)
+      el = physTab->FirstChildElement("defaultElementScatter");
+      if (el != nullptr)
       {
-          strncpy_s(str, physTab->FirstChildElement("defaultElementScatter")->GetText(), sizeof(str)-1);
-          sscanf_s(str, "%f", &val);
-          put_DefaultScatter(val);
+         const char *const t = el->GetText();
+         if (t)
+         {
+            float val;
+            std::from_chars(t, t + lstrlen(t), val);
+            put_DefaultScatter(val);
+         }
       }
       else
           ShowError("defaultElementScatter is missing");
 
-      if (physTab->FirstChildElement("playfieldminslope") != nullptr)
+      el = physTab->FirstChildElement("playfieldminslope"); 
+      if (el != nullptr)
       {
-          strncpy_s(str, physTab->FirstChildElement("playfieldminslope")->GetText(), sizeof(str)-1);
-          sscanf_s(str, "%f", &val);
-          put_SlopeMin(val);
+         const char *const t = el->GetText();
+         if (t)
+         {
+            float val;
+            std::from_chars(t, t + lstrlen(t), val);
+            put_SlopeMin(val);
+         }
       }
       else
       //    ShowError("playfieldminslope is missing"); //was added lateron, so don't error
           put_SlopeMin(DEFAULT_TABLE_MIN_SLOPE);
 
-      if (physTab->FirstChildElement("playfieldmaxslope") != nullptr)
+      el = physTab->FirstChildElement("playfieldmaxslope");
+      if (el != nullptr)
       {
-          strncpy_s(str, physTab->FirstChildElement("playfieldmaxslope")->GetText(), sizeof(str)-1);
-          sscanf_s(str, "%f", &val);
-          put_SlopeMax(val);
+         const char *const t = el->GetText();
+         if (t)
+         {
+            float val;
+            std::from_chars(t, t + lstrlen(t), val);
+            put_SlopeMax(val);
+         }
       }
       else
       //    ShowError("playfieldmaxslope is missing"); //was added lateron, so don't error
           put_SlopeMax(DEFAULT_TABLE_MAX_SLOPE);
 
-      if(physFlip->FirstChildElement("speed") != nullptr)
+      el = physFlip->FirstChildElement("speed");
+      if (el != nullptr)
       {
-          strncpy_s(str, physFlip->FirstChildElement("speed")->GetText(), sizeof(str)-1);
-          sscanf_s(str, "%f", &FlipperPhysicsMass);
+         const char *const t = el->GetText();
+         if (t)
+            std::from_chars(t, t + lstrlen(t), FlipperPhysicsMass);
       }
       else
       {
@@ -9688,10 +9652,12 @@ void PinTable::ImportVPP(const string& filename)
           FlipperPhysicsMass = 0.0f;
       }
 
-      if(physFlip->FirstChildElement("strength") != nullptr)
+      el = physFlip->FirstChildElement("strength");
+      if(el != nullptr)
       {
-          strncpy_s(str, physFlip->FirstChildElement("strength")->GetText(), sizeof(str)-1);
-          sscanf_s(str, "%f", &FlipperPhysicsStrength);
+         const char *const t = el->GetText();
+         if (t)
+            std::from_chars(t, t + lstrlen(t), FlipperPhysicsStrength);
       }
       else
       {
@@ -9699,10 +9665,12 @@ void PinTable::ImportVPP(const string& filename)
           FlipperPhysicsStrength = 0.0f;
       }
 
-      if(physFlip->FirstChildElement("elasticity") != nullptr)
+      el = physFlip->FirstChildElement("elasticity");
+      if(el != nullptr)
       {
-          strncpy_s(str, physFlip->FirstChildElement("elasticity")->GetText(), sizeof(str)-1);
-          sscanf_s(str, "%f", &FlipperPhysicsElasticity);
+         const char *const t = el->GetText();
+         if (t)
+            std::from_chars(t, t + lstrlen(t), FlipperPhysicsElasticity);
       }
       else
       {
@@ -9710,10 +9678,12 @@ void PinTable::ImportVPP(const string& filename)
           FlipperPhysicsElasticity = 0.0f;
       }
 
-      if(physFlip->FirstChildElement("scatter") != nullptr)
+      el = physFlip->FirstChildElement("scatter"); 
+      if(el != nullptr)
       {
-          strncpy_s(str, physFlip->FirstChildElement("scatter")->GetText(), sizeof(str)-1);
-          sscanf_s(str, "%f", &FlipperPhysicsScatter);
+         const char *const t = el->GetText();
+         if (t)
+            std::from_chars(t, t + lstrlen(t), FlipperPhysicsScatter);
       }
       else
       {
@@ -9721,10 +9691,12 @@ void PinTable::ImportVPP(const string& filename)
           FlipperPhysicsScatter = 0.0f;
       }
 
-      if(physFlip->FirstChildElement("eosTorque") != nullptr)
+      el = physFlip->FirstChildElement("eosTorque");
+      if(el != nullptr)
       {
-          strncpy_s(str, physFlip->FirstChildElement("eosTorque")->GetText(), sizeof(str)-1);
-          sscanf_s(str, "%f", &FlipperPhysicsTorqueDamping);
+         const char *const t = el->GetText();
+         if (t)
+            std::from_chars(t, t + lstrlen(t), FlipperPhysicsTorqueDamping);
       }
       else
       {
@@ -9732,10 +9704,12 @@ void PinTable::ImportVPP(const string& filename)
           FlipperPhysicsTorqueDamping = 0.0f;
       }
 
-      if(physFlip->FirstChildElement("eosTorqueAngle") != nullptr)
+      el = physFlip->FirstChildElement("eosTorqueAngle");
+      if(el != nullptr)
       {
-          strncpy_s(str, physFlip->FirstChildElement("eosTorqueAngle")->GetText(), sizeof(str)-1);
-          sscanf_s(str, "%f", &FlipperPhysicsTorqueDampingAngle);
+         const char *const t = el->GetText();
+         if (t)
+            std::from_chars(t, t + lstrlen(t), FlipperPhysicsTorqueDampingAngle);
       }
       else
       {
@@ -9743,11 +9717,12 @@ void PinTable::ImportVPP(const string& filename)
           FlipperPhysicsTorqueDampingAngle = 0.0f;
       }
 
-
-      if(physFlip->FirstChildElement("returnStrength") != nullptr)
+      el = physFlip->FirstChildElement("returnStrength");
+      if(el != nullptr)
       {
-          strncpy_s(str, physFlip->FirstChildElement("returnStrength")->GetText(), sizeof(str)-1);
-          sscanf_s(str, "%f", &FlipperPhysicsReturnStrength);
+         const char *const t = el->GetText();
+         if (t)
+            std::from_chars(t, t + lstrlen(t), FlipperPhysicsReturnStrength);
       }
       else
       {
@@ -9755,11 +9730,12 @@ void PinTable::ImportVPP(const string& filename)
           FlipperPhysicsReturnStrength = 0.0f;
       }
 
-
-      if(physFlip->FirstChildElement("elasticityFalloff") != nullptr)
+      el = physFlip->FirstChildElement("elasticityFalloff");
+      if(el != nullptr)
       {
-          strncpy_s(str, physFlip->FirstChildElement("elasticityFalloff")->GetText(), sizeof(str)-1);
-          sscanf_s(str, "%f", &FlipperPhysicsElasticityFalloff);
+         const char *const t = el->GetText();
+         if (t)
+            std::from_chars(t, t + lstrlen(t), FlipperPhysicsElasticityFalloff);
       }
       else
       {
@@ -9767,10 +9743,12 @@ void PinTable::ImportVPP(const string& filename)
           FlipperPhysicsElasticityFalloff = 0.0f;
       }
 
-      if(physFlip->FirstChildElement("friction") != nullptr)
+      el = physFlip->FirstChildElement("friction");
+      if(el != nullptr)
       {
-          strncpy_s(str, physFlip->FirstChildElement("friction")->GetText(), sizeof(str)-1);
-          sscanf_s(str, "%f", &FlipperPhysicsFriction);
+         const char *const t = el->GetText();
+         if (t)
+            std::from_chars(t, t + lstrlen(t), FlipperPhysicsFriction);
       }
       else
       {
@@ -9778,10 +9756,12 @@ void PinTable::ImportVPP(const string& filename)
           FlipperPhysicsFriction = 0.0f;
       }
 
-      if(physFlip->FirstChildElement("coilRampUp") != nullptr)
+      el = physFlip->FirstChildElement("coilRampUp");
+      if(el != nullptr)
       {
-          strncpy_s(str, physFlip->FirstChildElement("coilRampUp")->GetText(), sizeof(str)-1);
-          sscanf_s(str, "%f", &FlipperPhysicsCoilRampUp);
+         const char *const t = el->GetText();
+         if (t)
+            std::from_chars(t, t + lstrlen(t), FlipperPhysicsCoilRampUp);
       }
       else
       {

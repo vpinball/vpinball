@@ -287,9 +287,9 @@ public:
 
     static int GetIntTextbox(const CEdit &textbox)
     {
-        int value = 0;
-        sscanf_s(textbox.GetWindowText().c_str(), "%i", &value);
-        return value;
+        int value;
+        const CString t = textbox.GetWindowText();
+        return (std::from_chars(t.c_str(), t.c_str() + t.GetLength(), value).ec == std::errc{}) ? value : 0;
     }
 
     static void SetFloatTextbox(const CEdit &textbox, const float value)
@@ -302,11 +302,11 @@ public:
         textbox.SetWindowText(std::to_string(value).c_str());
     }
 
-    static void GetComboBoxText(const CComboBox &combo, char * const strbuf, const size_t maxlength)
+    static string GetComboBoxText(const CComboBox &combo)
     {
-        char buf[MAXSTRING];
-        combo.GetLBText(combo.GetCurSel(), buf);
-        strncpy_s(strbuf, maxlength, buf, maxlength-1);
+        vector<char> buf(combo.GetLBTextLen(combo.GetCurSel()) + 1);
+        combo.GetLBText(combo.GetCurSel(), buf.data());
+        return buf.data();
     }
 
     static int GetComboBoxIndex(const CComboBox &combo, const vector<string>& contentList)
@@ -359,24 +359,11 @@ private:
 }
 #define CHECK_UPDATE_COMBO_TEXT_STRING(classValue, uiCombo, element)\
 {\
-    char szName[MAXSTRING]={0}; \
-    PropertyDialog::GetComboBoxText(uiCombo, szName, sizeof(szName)); \
-    if(szName!=classValue) \
+    const string name = PropertyDialog::GetComboBoxText(uiCombo); \
+    if(name!=classValue) \
     { \
         PropertyDialog::StartUndo(element); \
-        classValue = szName; \
-        PropertyDialog::EndUndo(element); \
-    }\
-}
-
-#define CHECK_UPDATE_COMBO_TEXT(classValue, uiCombo, element)\
-{\
-    char szName[sizeof(classValue)]={0}; \
-    PropertyDialog::GetComboBoxText(uiCombo, szName, sizeof(classValue)); \
-    if (strcmp(szName, classValue) != 0) \
-    { \
-        PropertyDialog::StartUndo(element); \
-        strncpy_s(classValue, szName, sizeof(classValue)-1); \
+        classValue = name; \
         PropertyDialog::EndUndo(element); \
     }\
 }

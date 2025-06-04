@@ -614,9 +614,11 @@ bool WzSzEqual(const WCHAR* wz1, const char* sz2);
 HRESULT OpenURL(const string& szURL);
 
 WCHAR *MakeWide(const string& sz);
-char *MakeChar(const WCHAR *const wz);
-string MakeString(const wstring &wz);
-wstring MakeWString(const string &sz);
+char *MakeChar(const WCHAR* const wz);
+string MakeString(const wstring& wz);
+string MakeString(const WCHAR* const wz);
+wstring MakeWString(const string& sz);
+wstring MakeWString(const char* const sz);
 
 // in case the incoming string length is >= the maximum char length of the outgoing one, WideCharToMultiByte will not produce a zero terminated string
 // this variant always makes sure that the outgoing string is zero terminated
@@ -653,44 +655,7 @@ inline int MultiByteToWideCharNull(
     return res;
 }
 
-
-//---------------------------------------------------------------------------
-// Allocates a temporary buffer that will disappear when it goes out of scope
-// NOTE: Be careful of that-- make sure you use the string in the same or
-// nested scope in which you created this buffer.  People should not use this
-// class directly; use the macro(s) below.
-//---------------------------------------------------------------------------
-class TempBuffer final
-{
-public:
-   TempBuffer(const size_t cb)
-   {
-      m_alloc = (cb > 256);
-      if (m_alloc)
-         m_pbBuf = new char[cb];
-      else
-         m_pbBuf = m_szBufT;
-   }
-   ~TempBuffer()
-   {
-      if (m_alloc) delete[] m_pbBuf;
-   }
-   char *GetBuffer() const
-   {
-      return m_pbBuf;
-   }
-
-private:
-   char *m_pbBuf;
-   char  m_szBufT[256];  // We'll use this temp buffer for small cases.
-   bool  m_alloc;
-};
-// NOTE: Be careful about scoping when using this macro!
-#define MAKE_WIDEPTR_FROMANSI(ptrname, pszAnsi, pszAnsiLength) \
-    TempBuffer __TempBuffer##ptrname(((pszAnsiLength) + 1) * (int)sizeof(WCHAR)); \
-    MultiByteToWideCharNull(CP_ACP, 0, pszAnsi, -1, (LPWSTR)__TempBuffer##ptrname.GetBuffer(), (int)(pszAnsiLength) + 1); \
-    const LPWSTR ptrname = (LPWSTR)__TempBuffer##ptrname.GetBuffer()
-
+//
 
 constexpr inline char cLower(char c)
 {

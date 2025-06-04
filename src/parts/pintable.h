@@ -368,7 +368,7 @@ public:
    void ExportBlueprint();
    void ExportTableMesh();
    void ImportBackdropPOV(const string &filename);
-   void ExportBackdropPOV();
+   void ExportBackdropPOV() const;
    void ImportVPP(const string &filename);
 
    void FireOptionEvent(int event);

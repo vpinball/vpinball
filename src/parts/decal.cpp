@@ -3,6 +3,9 @@
 // implementation of the Decal class.
 
 #include "core/stdafx.h" 
+
+#include "vpinball.h"
+
 #include "renderer/Shader.h"
 
 #define AUTOLEADING (tm.tmAscent - tm.tmInternalLeading/4)
@@ -53,12 +56,12 @@ void Decal::SetDefaults(const bool fromMouseClick)
    if (!hr || !fromMouseClick)
       m_d.m_szSurface.clear();
 
-   m_d.m_decaltype = fromMouseClick ? (enum DecalType)g_pvp->m_settings.LoadValueWithDefault(regKey, "DecalType"s, (int)DecalImage) : DecalImage;
+   m_d.m_decaltype = fromMouseClick ? (DecalType)g_pvp->m_settings.LoadValueWithDefault(regKey, "DecalType"s, (int)DecalImage) : DecalImage;
    hr = g_pvp->m_settings.LoadValue(regKey, "Text"s, m_d.m_text);
    if (!hr || !fromMouseClick)
       m_d.m_text.clear();
 
-   m_d.m_sizingtype = fromMouseClick ? (enum SizingType)g_pvp->m_settings.LoadValueWithDefault(regKey, "Sizing"s, (int)ManualSize) : ManualSize;
+   m_d.m_sizingtype = fromMouseClick ? (SizingType)g_pvp->m_settings.LoadValueWithDefault(regKey, "Sizing"s, (int)ManualSize) : ManualSize;
    m_d.m_color = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Color"s, (int)RGB(0,0,0)) : RGB(0,0,0);
    m_d.m_verticalText = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "VerticalText"s, false) : false;
 

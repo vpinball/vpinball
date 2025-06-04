@@ -2359,8 +2359,8 @@ int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOpti
    const int nItem2 = ListView_FindItem(lpsd->hwndList, -1, &lvf);
 
    ListView_GetItemText(lpsd->hwndList, nItem1, lpsd->subItemIndex, buf1, sizeof(buf1));
-
    ListView_GetItemText(lpsd->hwndList, nItem2, lpsd->subItemIndex, buf2, sizeof(buf2));
+
    if (nItem2 == -1 || nItem1 == -1)
       return 0;
    if (lpsd->sortUpDown == 1)
@@ -2390,8 +2390,8 @@ int CALLBACK MyCompProcIntValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM 
    ListView_GetItemText(lpsd->hwndList, nItem2, lpsd->subItemIndex, buf2, sizeof(buf2));
 
    int value1, value2;
-   sscanf_s(buf1, "%i", &value1);
-   sscanf_s(buf2, "%i", &value2);
+   std::from_chars(buf1, buf1 + lstrlen(buf1), value1);
+   std::from_chars(buf2, buf2 + lstrlen(buf2), value2);
 
    if (lpsd->sortUpDown == 1)
       return (value1 - value2);

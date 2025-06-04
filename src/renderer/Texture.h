@@ -93,11 +93,11 @@ public:
    BaseTexture* GetRawBitmap() const { return m_imageBuffer; } // Lazily created view of the image, suitable for GPU sampling
    
    int GetFileSize() const { return m_ppb->m_cdata; }
-   const uint8_t *const GetFileRaw() const { return m_ppb->m_pdata; }
+   const uint8_t* GetFileRaw() const { return m_ppb->m_pdata; }
    const string& GetFilePath() const { return m_ppb->m_path; }
-   bool SaveFile(const string &filename) const { return m_ppb->WriteToFile(filename.c_str()); }
+   bool SaveFile(const string &filename) const { return m_ppb->WriteToFile(filename); }
 
-   uint8_t* GetMD5Hash() { UpdateMD5(); return m_md5Hash; }
+   const uint8_t* GetMD5Hash() const { UpdateMD5(); return m_md5Hash; }
    bool IsOpaque() const { UpdateOpaque(); return m_isOpaque; }
    bool IsHDR() const { return GetRawBitmap() != nullptr && (m_imageBuffer->m_format == BaseTexture::RGB_FP16 || m_imageBuffer->m_format == BaseTexture::RGBA_FP16 || m_imageBuffer->m_format == BaseTexture::RGB_FP32 || m_imageBuffer->m_format == BaseTexture::RGBA_FP32); }
 

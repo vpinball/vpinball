@@ -85,9 +85,9 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
          case FlasherData::ALPHASEG:
             m_modeCombo.SetCurSel(3);
             m_styleCombo.ResetContent();
-            for (int i = 0; i < 5; i++)
+            for (int i2 = 0; i2 < 5; i2++)
             {
-               const string family = i == 0 ? "Generic: "s : i == 1 ? "Gottlieb: "s : i == 2 ? "Williams: "s : i == 3 ? "Bally: "s : "Atari: "s;
+               const string family = i2 == 0 ? "Generic: "s : i2 == 1 ? "Gottlieb: "s : i2 == 2 ? "Williams: "s : i2 == 3 ? "Bally: "s : "Atari: "s;
                m_styleCombo.AddString((family + "Neon Plasma").c_str());
                m_styleCombo.AddString((family + "Blue VFD").c_str());
                m_styleCombo.AddString((family + "Green VFD").c_str());

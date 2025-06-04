@@ -81,8 +81,6 @@ void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
 
    const wstring wzT = g_pvp->m_wzMyPath + L"AutoSave" + std::to_wstring(pasp->tableindex) + L".vpx";
 
-   //MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_filename);
-
    STGOPTIONS stg;
    stg.usVersion = 1;
    stg.reserved = 0;
