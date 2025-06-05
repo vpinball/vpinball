@@ -54,7 +54,7 @@ string normalize_path_separators(const string& szPath)
    return szResult;
 }
 
-string find_case_insensitive_directory_path(const string& szPath)
+string find_case_insensitive_directory_path_internal(const string& szPath)
 {
    string path = normalize_path_separators(szPath);
    std::filesystem::path p = std::filesystem::path(path).lexically_normal();
@@ -72,7 +72,7 @@ string find_case_insensitive_directory_path(const string& szPath)
    if (parent.empty() || parent == p)
       base = '.';
    else {
-      base = find_case_insensitive_directory_path(parent.string());
+      base = find_case_insensitive_directory_path_internal(parent.string());
       if (base.empty())
          return string();
    }
@@ -91,6 +91,19 @@ string find_case_insensitive_directory_path(const string& szPath)
       }
    }
 
+   return string();
+}
+
+string find_case_insensitive_directory_path(const string& szPath)
+{
+   string path = find_case_insensitive_directory_path_internal(szPath);
+   if (!path.empty()) {
+      std::filesystem::path p = std::filesystem::absolute(path);
+      string exact = p.string();
+      if (!exact.empty() && exact.back() != PATH_SEPARATOR_CHAR)
+         exact.push_back(PATH_SEPARATOR_CHAR);
+      return exact;
+   }
    return string();
 }
 

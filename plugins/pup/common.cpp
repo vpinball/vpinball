@@ -137,7 +137,49 @@ string normalize_path_separators(const string& szPath)
    return szResult;
 }
 
-string find_case_insensitive_directory_path(const string& szPath)
+string find_case_insensitive_file_path_internal(const string& szPath)
+{
+   string path = normalize_path_separators(szPath);
+   std::filesystem::path p = std::filesystem::path(path).lexically_normal();
+   std::error_code ec;
+
+   if (std::filesystem::exists(p, ec))
+      return p.string();
+
+   auto parent = p.parent_path();
+   string base;
+   if (parent.empty() || parent == p)
+      base = '.';
+   else {
+      base = find_case_insensitive_file_path_internal(parent.string());
+      if (base.empty())
+         return string();
+   }
+
+   for (auto& ent : std::filesystem::directory_iterator(base, ec)) {
+      if (!ec && StrCompareNoCase(ent.path().filename().string(), p.filename().string())) {
+         auto found = ent.path().string();
+         if (found != path) {
+            LOGI("case insensitive file match: requested \"%s\", actual \"%s\"", path.c_str(), found.c_str());
+         }
+         return found;
+      }
+   }
+
+   return string();
+}
+
+string find_case_insensitive_file_path(const string& szPath)
+{
+   string path = find_case_insensitive_file_path_internal(szPath);
+   if (!path.empty()) {
+      std::filesystem::path p = std::filesystem::absolute(path);
+      return p.string();
+   }
+   return string();
+}
+
+string find_case_insensitive_directory_path_internal(const string& szPath)
 {
    string path = normalize_path_separators(szPath);
    std::filesystem::path p = std::filesystem::path(path).lexically_normal();
@@ -155,7 +197,7 @@ string find_case_insensitive_directory_path(const string& szPath)
    if (parent.empty() || parent == p)
       base = '.';
    else {
-      base = find_case_insensitive_directory_path(parent.string());
+      base = find_case_insensitive_directory_path_internal(parent.string());
       if (base.empty())
          return string();
    }
@@ -177,47 +219,24 @@ string find_case_insensitive_directory_path(const string& szPath)
    return string();
 }
 
+string find_case_insensitive_directory_path(const string& szPath)
+{
+   string path = find_case_insensitive_directory_path_internal(szPath);
+   if (!path.empty()) {
+      std::filesystem::path p = std::filesystem::absolute(path);
+      string exact = p.string();
+      if (!exact.empty() && exact.back() != PATH_SEPARATOR_CHAR)
+         exact.push_back(PATH_SEPARATOR_CHAR);
+      return exact;
+   }
+   return string();
+}
+
 bool StrCompareNoCase(const string& strA, const string& strB)
 {
    return strA.length() == strB.length()
       && std::equal(strA.begin(), strA.end(), strB.begin(),
          [](char a, char b) { return cLower(a) == cLower(b); });
-}
-
-string find_case_insensitive_file_path(const string& szPath)
-{
-   string path = normalize_path_separators(szPath);
-   std::filesystem::path p = std::filesystem::path(path).lexically_normal();
-   std::error_code ec;
-
-   if (std::filesystem::exists(p, ec))
-      return path;
-
-   auto parent = p.parent_path();
-   string base;
-   if (parent.empty() || parent == p)
-      base = '.';
-   else
-   {
-      base = find_case_insensitive_file_path(parent.string());
-      if (base.empty())
-         return string();
-   }
-
-   for (auto& ent : std::filesystem::directory_iterator(base, ec))
-   {
-      if (!ec && StrCompareNoCase(ent.path().filename().string(), p.filename().string()))
-      {
-         auto found = ent.path().string();
-         if (found != path)
-         {
-            LOGI("case insensitive file match: requested \"%s\", actual \"%s\"", path.c_str(), found.c_str());
-         }
-         return found;
-      }
-   }
-
-   return string();
 }
 
 #ifdef _WIN32
