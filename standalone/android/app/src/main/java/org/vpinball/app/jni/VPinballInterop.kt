@@ -18,22 +18,31 @@ enum class VPinballStatus(val value: Int) {
     FAILURE(1),
 }
 
-enum class VPinballSettingsSection(val value: Int) {
-    STANDALONE(2),
-    PLAYER(3),
-    DMD(4),
-    ALPHA(5),
-    BACKGLASS(6),
-    SCORE_VIEW(7),
-    TOPPER(8),
-    TABLE_OVERRIDE(13),
-    TABLE_OPTION(14);
+enum class VPinballSettingsSection(val value: String) {
+    STANDALONE("Standalone"),
+    PLAYER("Player"),
+    DMD("DMD"),
+    ALPHA("Alpha"),
+    BACKGLASS("Backglass"),
+    SCORE_VIEW("ScoreView"),
+    TOPPER("Topper"),
+    TABLE_OVERRIDE("TableOverride"),
+    TABLE_OPTION("TableOption"),
+    PLUGIN_ALPHA_DMD("Plugin.AlphaDMD"),
+    PLUGIN_B2S("Plugin.B2S"),
+    PLUGIN_FLEX_DMD("Plugin.FlexDMD"),
+    PLUGIN_PINMAME("Plugin.PinMAME"),
+    PLUGIN_PUP("Plugin.PUP"),
+    PLUGIN_REMOTE_CONTROL("Plugin.RemoteControl"),
+    PLUGIN_SERUM("Plugin.Serum"),
+    PLUGIN_SCORE_VIEW("Plugin.ScoreView"),
+    PLUGIN_DMD_UTIL("Plugin.DMDUtil");
 
     companion object {
         @JvmStatic
-        fun fromInt(value: Int): VPinballSettingsSection {
-            return VPinballSettingsSection.entries.firstOrNull { it.value == value } ?: throw IllegalArgumentException("Unknown value: $value")
-        }
+        fun fromValue(value: String): VPinballSettingsSection =
+            entries.firstOrNull { it.value == value }
+                ?: throw IllegalArgumentException("Unknown value: $value")
     }
 }
 
@@ -311,7 +320,7 @@ data class VPinballWebServerData(val url: String)
 data class VPinballCaptureScreenshotData(val success: Boolean)
 
 data class VPinballCustomTableOption(
-    var section: VPinballSettingsSection,
+    var sectionName: String,
     var id: String,
     var name: String,
     var showMask: Int,

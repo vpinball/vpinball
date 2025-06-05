@@ -1300,7 +1300,7 @@
       }
 
       var chunk = data.subarray(offset, offset + chunkSize) || "";
-      fetch(`/upload?offset=${offset}&q=${encodeURIComponent(directory)}&file=${encodeURIComponent(filename)}`, { method: "POST", body: chunk })
+      fetch(`/upload?offset=${offset}&q=${encodeURIComponent(directory)}&file=${encodeURIComponent(filename)}&length=${data.length}`, { method: "POST", body: chunk })
         .then((res) => {
           if (res.ok && chunk.length > 0) {
             sendChunk(filePath, data, offset + chunk.length, chunkSize, statusId, callback);

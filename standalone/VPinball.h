@@ -23,18 +23,6 @@ typedef enum {
 } VPINBALL_STATUS;
 
 typedef enum {
-   VPINBALL_SETTINGS_SECTION_STANDALONE = 2,
-   VPINBALL_SETTINGS_SECTION_PLAYER = 3,
-   VPINBALL_SETTINGS_SECTION_DMD = 4,
-   VPINBALL_SETTINGS_SECTION_ALPHA = 5,
-   VPINBALL_SETTINGS_SECTION_BACKGLASS = 6,
-   VPINBALL_SETTINGS_SECTION_SCORE_VIEW = 7,
-   VPINBALL_SETTINGS_SECTION_TOPPER = 8,
-   VPINBALL_SETTINGS_SECTION_TABLE_OVERRIDE = 13,
-   VPINBALL_SETTINGS_SECTION_TABLE_OPTION = 14
-} VPINBALL_SETTINGS_SECTION;
-
-typedef enum {
    VPINBALL_SCRIPT_ERROR_TYPE_COMPILE,
    VPINBALL_SCRIPT_ERROR_TYPE_RUNTIME
 } VPINBALL_SCRIPT_ERROR_TYPE;
@@ -107,7 +95,7 @@ typedef struct {
 } VPinballTableOptions;
 
 typedef struct {
-   VPINBALL_SETTINGS_SECTION section;
+   const char* sectionName;
    const char* id;
    const char* name;
    int showMask;
@@ -148,12 +136,12 @@ VPINBALLAPI const char* VPinballGetVersionStringFull();
 VPINBALLAPI void VPinballInit(VPinballEventCallback callback);
 VPINBALLAPI void VPinballLog(VPINBALL_LOG_LEVEL level, const char* pMessage);
 VPINBALLAPI void VPinballResetLog();
-VPINBALLAPI int VPinballLoadValueInt(VPINBALL_SETTINGS_SECTION section, const char* pKey, int defaultValue);
-VPINBALLAPI float VPinballLoadValueFloat(VPINBALL_SETTINGS_SECTION section, const char* pKey, float defaultValue);
-VPINBALLAPI const char* VPinballLoadValueString(VPINBALL_SETTINGS_SECTION section, const char* pKey, const char* pDefaultValue);
-VPINBALLAPI void VPinballSaveValueInt(VPINBALL_SETTINGS_SECTION section, const char* pKey, int value);
-VPINBALLAPI void VPinballSaveValueFloat(VPINBALL_SETTINGS_SECTION section, const char* pKey, float value);
-VPINBALLAPI void VPinballSaveValueString(VPINBALL_SETTINGS_SECTION section, const char* pKey, const char* pValue);
+VPINBALLAPI int VPinballLoadValueInt(const char* pSectionName, const char* pKey, int defaultValue);
+VPINBALLAPI float VPinballLoadValueFloat(const char* pSectionName, const char* pKey, float defaultValue);
+VPINBALLAPI const char* VPinballLoadValueString(const char* pSectionName, const char* pKey, const char* pDefaultValue);
+VPINBALLAPI void VPinballSaveValueInt(const char* pSectionName, const char* pKey, int value);
+VPINBALLAPI void VPinballSaveValueFloat(const char* pSectionName, const char* pKey, float value);
+VPINBALLAPI void VPinballSaveValueString(const char* pSectionName, const char* pKey, const char* pValue);
 VPINBALLAPI VPINBALL_STATUS VPinballUncompress(const char* pSource);
 VPINBALLAPI VPINBALL_STATUS VPinballCompress(const char* pSource, const char* pDestination);
 VPINBALLAPI void VPinballUpdateWebServer();

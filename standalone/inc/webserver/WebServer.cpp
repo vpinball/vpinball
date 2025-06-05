@@ -245,11 +245,17 @@ void WebServer::Upload(struct mg_connection *c, struct mg_http_message* hm)
       PLOGI.printf("Uploading file: file=%s", file);
    }
 
+   char lengthStr[32];
+   mg_http_get_var(&hm->query, "length", lengthStr, sizeof(lengthStr));
+   long length = lengthStr[0] ? strtol(lengthStr, nullptr, 10) : 0;
+
    string path = g_pvp->m_myPrefPath + q;
 
-   if (!mg_http_upload(c, hm, &mg_fs_posix, path.c_str(), 1024 * 1024 * 500)) {
-      if (!strncmp(q, "VPinballX.ini", sizeof(q)))
-         g_pvp->m_settings.LoadFromFile(path, false);
+   if (mg_http_upload(c, hm, &mg_fs_posix, path.c_str(), 1024 * 1024 * 500) == length) {
+      if (*q == '\0' && !strcmp(file, "VPinballX.ini")) {
+         g_pvp->m_settings.LoadFromFile(path, true);
+         g_pvp->m_settings.Save();
+      }
    }
 }
 

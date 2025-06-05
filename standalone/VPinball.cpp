@@ -31,36 +31,36 @@ VPINBALLAPI void VPinballResetLog()
    s_vpinstance.ResetLog();
 }
 
-VPINBALLAPI int VPinballLoadValueInt(VPINBALL_SETTINGS_SECTION section, const char* pKey, int defaultValue)
+VPINBALLAPI int VPinballLoadValueInt(const char* pSectionName, const char* pKey, int defaultValue)
 {
-   return s_vpinstance.LoadValueInt((VPinballLib::SettingsSection)section, pKey, defaultValue);
+   return s_vpinstance.LoadValueInt(pSectionName, pKey, defaultValue);
 }
 
-VPINBALLAPI float VPinballLoadValueFloat(VPINBALL_SETTINGS_SECTION section, const char* pKey, float defaultValue)
+VPINBALLAPI float VPinballLoadValueFloat(const char* pSectionName, const char* pKey, float defaultValue)
 {
-   return s_vpinstance.LoadValueFloat((VPinballLib::SettingsSection)section, pKey, defaultValue);
+   return s_vpinstance.LoadValueFloat(pSectionName, pKey, defaultValue);
 }
 
-VPINBALLAPI const char* VPinballLoadValueString(VPINBALL_SETTINGS_SECTION section, const char* pKey, const char* pDefaultValue)
+VPINBALLAPI const char* VPinballLoadValueString(const char* pSectionName, const char* pKey, const char* pDefaultValue)
 {
    thread_local string value;
-   value = s_vpinstance.LoadValueString((VPinballLib::SettingsSection)section, pKey, pDefaultValue);
+   value = s_vpinstance.LoadValueString(pSectionName, pKey, pDefaultValue);
    return value.c_str();
 }
 
-VPINBALLAPI void VPinballSaveValueInt(VPINBALL_SETTINGS_SECTION section, const char* pKey, int value)
+VPINBALLAPI void VPinballSaveValueInt(const char* pSectionName, const char* pKey, int value)
 {
-   s_vpinstance.SaveValueInt((VPinballLib::SettingsSection)section, pKey, value);
+   s_vpinstance.SaveValueInt(pSectionName, pKey, value);
 }
 
-VPINBALLAPI void VPinballSaveValueFloat(VPINBALL_SETTINGS_SECTION section, const char* pKey, float value)
+VPINBALLAPI void VPinballSaveValueFloat(const char* pSectionName, const char* pKey, float value)
 {
-   s_vpinstance.SaveValueFloat((VPinballLib::SettingsSection)section, pKey, value);
+   s_vpinstance.SaveValueFloat(pSectionName, pKey, value);
 }
 
-VPINBALLAPI void VPinballSaveValueString(VPINBALL_SETTINGS_SECTION section, const char* pKey, const char* pValue)
+VPINBALLAPI void VPinballSaveValueString(const char* pSectionName, const char* pKey, const char* pValue)
 {
-   s_vpinstance.SaveValueString((VPinballLib::SettingsSection)section, pKey, pValue);
+   s_vpinstance.SaveValueString(pSectionName, pKey, pValue);
 }
 
 VPINBALLAPI VPINBALL_STATUS VPinballUncompress(const char* pSource)
@@ -170,7 +170,7 @@ VPINBALLAPI void VPinballGetCustomTableOption(int index, VPinballCustomTableOpti
 
    VPinballLib::CustomTableOption customTableOption;
    s_vpinstance.GetCustomTableOption(index, customTableOption);
-   pCustomTableOption->section = (VPINBALL_SETTINGS_SECTION)customTableOption.section;
+   pCustomTableOption->sectionName = customTableOption.sectionName;
    pCustomTableOption->id = customTableOption.id;
    pCustomTableOption->name = customTableOption.name;
    pCustomTableOption->showMask = customTableOption.showMask;
@@ -195,7 +195,7 @@ VPINBALLAPI void VPinballSetCustomTableOption(VPinballCustomTableOption* pCustom
 
       if (strcmp(existingOption.id, pCustomTableOption->id) == 0) {
          VPinballLib::CustomTableOption customTableOption;
-         customTableOption.section = (VPinballLib::SettingsSection)existingOption.section;
+         customTableOption.sectionName = existingOption.sectionName;
          customTableOption.id = existingOption.id;
          customTableOption.value = pCustomTableOption->value;
          s_vpinstance.SetCustomTableOption(customTableOption);
