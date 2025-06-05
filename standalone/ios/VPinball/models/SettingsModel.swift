@@ -54,6 +54,18 @@ class SettingsModel: ObservableObject {
     @Published var webServer: Bool = false
     @Published var webServerPort: Int = 0
 
+    // Plugins
+
+    @Published var pluginAlphaDMD: Bool = false
+    @Published var pluginB2S: Bool = false
+    @Published var pluginDMDUtil: Bool = false
+    @Published var pluginFlexDMD: Bool = false
+    @Published var pluginPinMAME: Bool = false
+    @Published var pluginPUP: Bool = false
+    @Published var pluginRemoteControl: Bool = false
+    @Published var pluginScoreView: Bool = true
+    @Published var pluginSerum: Bool = false
+
     let vpinballManager = VPinballManager.shared
 
     init() {
@@ -147,6 +159,18 @@ class SettingsModel: ObservableObject {
 
         webServer = vpinballManager.loadValue(.standalone, "WebServer", false)
         webServerPort = vpinballManager.loadValue(.standalone, "WebServerPort", 2112)
+
+        // Plugins
+
+        pluginAlphaDMD = vpinballManager.loadValue(.pluginAlphaDMD, "Enable", false)
+        pluginB2S = vpinballManager.loadValue(.pluginB2S, "Enable", false)
+        pluginDMDUtil = vpinballManager.loadValue(.pluginDMDUtil, "Enable", false)
+        pluginFlexDMD = vpinballManager.loadValue(.pluginFlexDMD, "Enable", false)
+        pluginPinMAME = vpinballManager.loadValue(.pluginPinMAME, "Enable", false)
+        pluginPUP = vpinballManager.loadValue(.pluginPUP, "Enable", false)
+        pluginRemoteControl = vpinballManager.loadValue(.pluginRemoteControl, "Enable", false)
+        pluginScoreView = vpinballManager.loadValue(.pluginScoreView, "Enable", true)
+        pluginSerum = vpinballManager.loadValue(.pluginSerum, "Enable", false)
     }
 
     func reset() {

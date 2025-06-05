@@ -8,9 +8,12 @@
 #include <thread>
 
 #include "MsgPlugin.h"
+#include "VPXPlugin.h"
 #include "ControllerPlugin.h"
 #include "common.h"
 #include "serum-decode.h"
+
+#include <filesystem>
 
 #include "LoggingPlugin.h"
 LPI_IMPLEMENT // Implement shared login support
@@ -32,6 +35,8 @@ namespace Serum {
 // - PinMame/OnGameEnd
 
 static MsgPluginAPI* msgApi = nullptr;
+static VPXPluginAPI* vpxApi = nullptr;
+
 static uint32_t endpointId;
 static unsigned int onControllerGameStartId, onControllerGameEndId;
 static unsigned int onDmdSrcChangedId, getDmdSrcId, onDmdTrigger;
@@ -310,8 +315,16 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
    // Setup Serum on the selected DMD
    const CtlOnGameStartMsg* msg = static_cast<const CtlOnGameStartMsg*>(msgData);
    assert(msg != nullptr && msg->gameId != nullptr);
-   char crzFolder[512];
+   char crzFolder[1024];
    msgApi->GetSetting("Serum", "CRZFolder", crzFolder, sizeof(crzFolder));
+   if (crzFolder[0] == '\0') {
+      VPXTableInfo tableInfo;
+      vpxApi->GetTableInfo(&tableInfo);
+      std::filesystem::path tablePath = tableInfo.path;
+      string path = find_case_insensitive_directory_path(tablePath.parent_path().string() + PATH_SEPARATOR_CHAR + "pinmame"s + PATH_SEPARATOR_CHAR + "altcolor"s);
+      if (!path.empty())
+         strcpy_s(crzFolder, sizeof(crzFolder), path.c_str());
+   }
    pSerum = Serum_Load(crzFolder, msg->gameId, FLAG_REQUEST_32P_FRAMES | FLAG_REQUEST_64P_FRAMES);
    OnDmdSrcChanged(onDmdSrcChangedId, nullptr, nullptr);
    if (pSerum)
@@ -337,6 +350,10 @@ MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, MsgPluginAP
 
    // Request and setup shared login API
    LPISetup(endpointId, msgApi);
+
+   unsigned int getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
+   msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
+   msgApi->ReleaseMsgID(getVpxApiId);
 
    onDmdTrigger = msgApi->GetMsgID("Serum", "OnDmdTrigger");
    msgApi->SubscribeMsg(endpointId, onControllerGameStartId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_START), OnControllerGameStart, nullptr);

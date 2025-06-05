@@ -136,6 +136,8 @@ struct SettingsView: View {
 
                     SettingsWebServerView(showInput: handleShowInput)
 
+                    SettingsPluginsView()
+
                     Section("Advanced") {
                         Toggle(isOn: $settingsModel.resetLogOnPlay) {
                             Text("Reset Log on Play")
