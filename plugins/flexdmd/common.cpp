@@ -107,33 +107,42 @@ string extension_from_path(const string& path)
 
 string find_case_insensitive_file_path(const string& szPath)
 {
-   string path = normalize_path_separators(szPath);
-   std::filesystem::path p = std::filesystem::path(path).lexically_normal();
-   std::error_code ec;
+   auto fn = [&](auto& self, const string& s) -> string {
+      string path = normalize_path_separators(s);
+      std::filesystem::path p = std::filesystem::path(path).lexically_normal();
+      std::error_code ec;
 
-   if (std::filesystem::exists(p, ec))
-      return path;
+      if (std::filesystem::exists(p, ec))
+         return p.string();
 
-   auto parent = p.parent_path();
-   string base;
-   if (parent.empty() || parent == p)
-      base = '.';
-   else {
-      base = find_case_insensitive_file_path(parent.string());
-      if (base.empty())
-         return string();
-   }
-
-   for (auto& ent : std::filesystem::directory_iterator(base, ec)) {
-      if (!ec && StrCompareNoCase(ent.path().filename().string(), p.filename().string())) {
-         auto found = ent.path().string();
-         if (found != path) {
-            LOGI("case insensitive file match: requested \"%s\", actual \"%s\"", path.c_str(), found.c_str());
-         }
-         return found;
+      auto parent = p.parent_path();
+      string base;
+      if (parent.empty() || parent == p) {
+         base = ".";
+      } else {
+         base = self(self, parent.string());
+         if (base.empty())
+            return string();
       }
-   }
 
+      for (auto& ent : std::filesystem::directory_iterator(base, ec)) {
+         if (!ec && StrCompareNoCase(ent.path().filename().string(), p.filename().string())) {
+            auto found = ent.path().string();
+            if (found != path) {
+               LOGI("case insensitive file match: requested \"%s\", actual \"%s\"", path.c_str(), found.c_str());
+            }
+            return found;
+         }
+      }
+
+      return string();
+   };
+
+   string result = fn(fn, szPath);
+   if (!result.empty()) {
+      std::filesystem::path p = std::filesystem::absolute(result);
+      return p.string();
+   }
    return string();
 }
 
