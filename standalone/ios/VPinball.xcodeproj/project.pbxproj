@@ -19,7 +19,7 @@
 		C1320CC02C85E5E3003EE322 /* LiveUIPointOfView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1320CBF2C85E5E3003EE322 /* LiveUIPointOfView.swift */; };
 		C1320F5E2C8DED0100035C0F /* ArtworkSnapshotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1320F5D2C8DED0100035C0F /* ArtworkSnapshotView.swift */; };
 		C1320F602C8E56BD00035C0F /* HUDOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1320F5F2C8E56BD00035C0F /* HUDOverlayView.swift */; };
-		C145FE1D2C5B4ADB0049D313 /* SettingsWebServerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C145FE192C5B4ADB0049D313 /* SettingsWebServerView.swift */; };
+		C145FE1D2C5B4ADB0049D313 /* SettingsPluginsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C145FE192C5B4ADB0049D313 /* SettingsPluginsView.swift */; };
 		C145FE1E2C5B4ADB0049D313 /* SettingsExternalDMDView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C145FE1A2C5B4ADB0049D313 /* SettingsExternalDMDView.swift */; };
 		C145FE1F2C5B4ADB0049D313 /* SettingsAntiAliasingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C145FE1B2C5B4ADB0049D313 /* SettingsAntiAliasingView.swift */; };
 		C145FE202C5B4ADB0049D313 /* SettingsPerformanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C145FE1C2C5B4ADB0049D313 /* SettingsPerformanceView.swift */; };
@@ -52,6 +52,7 @@
 		C1A292E92C4751C20056A3C0 /* CodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A292E82C4751C20056A3C0 /* CodeView.swift */; };
 		C1A656722C85EA2500B6BE3C /* OverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A656712C85EA2500B6BE3C /* OverlayView.swift */; };
 		C1A656742C85ED8500B6BE3C /* LiveUITableOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A656732C85ED8500B6BE3C /* LiveUITableOptions.swift */; };
+		C1B20FC92DF1F0110012E33F /* SettingsWebServerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1B20FC82DF1F0110012E33F /* SettingsWebServerView.swift */; };
 		C1D90AE52C9A6007006CB735 /* SettingsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1D90AE42C9A6007006CB735 /* SettingsModel.swift */; };
 /* End PBXBuildFile section */
 
@@ -97,7 +98,7 @@
 		C1320CBF2C85E5E3003EE322 /* LiveUIPointOfView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LiveUIPointOfView.swift; sourceTree = "<group>"; };
 		C1320F5D2C8DED0100035C0F /* ArtworkSnapshotView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArtworkSnapshotView.swift; sourceTree = "<group>"; };
 		C1320F5F2C8E56BD00035C0F /* HUDOverlayView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HUDOverlayView.swift; sourceTree = "<group>"; };
-		C145FE192C5B4ADB0049D313 /* SettingsWebServerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsWebServerView.swift; sourceTree = "<group>"; };
+		C145FE192C5B4ADB0049D313 /* SettingsPluginsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsPluginsView.swift; sourceTree = "<group>"; };
 		C145FE1A2C5B4ADB0049D313 /* SettingsExternalDMDView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsExternalDMDView.swift; sourceTree = "<group>"; };
 		C145FE1B2C5B4ADB0049D313 /* SettingsAntiAliasingView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsAntiAliasingView.swift; sourceTree = "<group>"; };
 		C145FE1C2C5B4ADB0049D313 /* SettingsPerformanceView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsPerformanceView.swift; sourceTree = "<group>"; wrapsLines = 0; };
@@ -128,6 +129,7 @@
 		C1A292E82C4751C20056A3C0 /* CodeView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CodeView.swift; sourceTree = "<group>"; };
 		C1A656712C85EA2500B6BE3C /* OverlayView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OverlayView.swift; sourceTree = "<group>"; };
 		C1A656732C85ED8500B6BE3C /* LiveUITableOptions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LiveUITableOptions.swift; sourceTree = "<group>"; };
+		C1B20FC82DF1F0110012E33F /* SettingsWebServerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWebServerView.swift; sourceTree = "<group>"; };
 		C1D90AE42C9A6007006CB735 /* SettingsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -215,8 +217,9 @@
 				C1A1153D2C8C69210068BF3E /* SettingsEnvironmentLightingView.swift */,
 				C145FE1A2C5B4ADB0049D313 /* SettingsExternalDMDView.swift */,
 				C145FE1C2C5B4ADB0049D313 /* SettingsPerformanceView.swift */,
-				C145FE192C5B4ADB0049D313 /* SettingsWebServerView.swift */,
+				C145FE192C5B4ADB0049D313 /* SettingsPluginsView.swift */,
 				C162663A2C29955E0002FD15 /* SettingsView.swift */,
+				C1B20FC82DF1F0110012E33F /* SettingsWebServerView.swift */,
 				C162663B2C29955E0002FD15 /* SplashView.swift */,
 				C1920AF52C67BCE000483104 /* TableImageView.swift */,
 				C1920AF92C68E22E00483104 /* TableListButton.swift */,
@@ -395,7 +398,7 @@
 				C11419052C277D9800582B6F /* VPinballApp.swift in Sources */,
 				C15DE5762C7257F1001F1D13 /* VPinballViewModel.swift in Sources */,
 				C1A115402C8C6FF70068BF3E /* SettingsBallRenderingView.swift in Sources */,
-				C145FE1D2C5B4ADB0049D313 /* SettingsWebServerView.swift in Sources */,
+				C145FE1D2C5B4ADB0049D313 /* SettingsPluginsView.swift in Sources */,
 				C145FE202C5B4ADB0049D313 /* SettingsPerformanceView.swift in Sources */,
 				C1A1153E2C8C69210068BF3E /* SettingsEnvironmentLightingView.swift in Sources */,
 				C16266452C29955E0002FD15 /* SplashView.swift in Sources */,
@@ -415,6 +418,7 @@
 				C1A292E92C4751C20056A3C0 /* CodeView.swift in Sources */,
 				C1A1153A2C8A7D100068BF3E /* TouchOverlayView.swift in Sources */,
 				C1320CC02C85E5E3003EE322 /* LiveUIPointOfView.swift in Sources */,
+				C1B20FC92DF1F0110012E33F /* SettingsWebServerView.swift in Sources */,
 				C1920AF82C67CBC700483104 /* TableListView.swift in Sources */,
 				C1610F202C4D31350049ED87 /* Enums.swift in Sources */,
 				C194FC822C372668009027E4 /* ActivityViewControllerView.swift in Sources */,

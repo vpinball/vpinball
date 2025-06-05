@@ -463,6 +463,82 @@ fun SettingsScreen(
                 }
 
                 item {
+                    SectionHeader(title = "Plugins (Experimental)")
+
+                    RoundedCard {
+                        SwitchRow(
+                            label = "AlphaDMD",
+                            isChecked = viewModel.pluginAlphaDMD,
+                            onCheckedChange = { viewModel.handlePluginAlphaDMD(value = it) },
+                        )
+
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+                        SwitchRow(
+                            label = "B2S",
+                            isChecked = viewModel.pluginB2S,
+                            onCheckedChange = { viewModel.handlePluginB2S(value = it) },
+                        )
+
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+                        SwitchRow(
+                            label = "DMDUtil",
+                            isChecked = viewModel.pluginDMDUtil,
+                            onCheckedChange = { viewModel.handlePluginDMDUtil(value = it) },
+                        )
+
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+                        SwitchRow(
+                            label = "FlexDMD",
+                            isChecked = viewModel.pluginFlexDMD,
+                            onCheckedChange = { viewModel.handlePluginFlexDMD(value = it) },
+                        )
+
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+                        SwitchRow(
+                            label = "PinMAME",
+                            isChecked = viewModel.pluginPinMAME,
+                            onCheckedChange = { viewModel.handlePluginPinMAME(value = it) },
+                        )
+
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+                        SwitchRow(
+                            label = "PUP",
+                            isChecked = viewModel.pluginPUP,
+                            onCheckedChange = { viewModel.handlePluginPUP(value = it) },
+                        )
+
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+                        SwitchRow(
+                            label = "RemoteControl",
+                            isChecked = viewModel.pluginRemoteControl,
+                            onCheckedChange = { viewModel.handlePluginRemoteControl(value = it) },
+                        )
+
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+                        SwitchRow(
+                            label = "ScoreView",
+                            isChecked = viewModel.pluginScoreView,
+                            onCheckedChange = { viewModel.handlePluginScoreView(value = it) },
+                        )
+
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+                        SwitchRow(
+                            label = "Serum",
+                            isChecked = viewModel.pluginSerum,
+                            onCheckedChange = { viewModel.handlePluginSerum(value = it) },
+                        )
+                    }
+                }
+
+                item {
                     SectionHeader(title = "Advanced")
 
                     RoundedCard {

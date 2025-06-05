@@ -209,7 +209,7 @@ class VPinballManager {
     }
 
     func loadValue(_ section: VPinballSettingsSection, _ key: String, _ defaultValue: CInt) -> CInt {
-        return VPinballLoadValueInt(section.rawValue, key.cstring, defaultValue)
+        return VPinballLoadValueInt(section.rawValue.cstring, key.cstring, defaultValue)
     }
 
     func loadValue(_ section: VPinballSettingsSection, _ key: String, _ defaultValue: Int) -> Int {
@@ -217,7 +217,7 @@ class VPinballManager {
     }
 
     func loadValue(_ section: VPinballSettingsSection, _ key: String, _ defaultValue: Float) -> Float {
-        return VPinballLoadValueFloat(section.rawValue, key.cstring, defaultValue)
+        return VPinballLoadValueFloat(section.rawValue.cstring, key.cstring, defaultValue)
     }
 
     func loadValue(_ section: VPinballSettingsSection, _ key: String, _ defaultValue: Bool) -> Bool {
@@ -225,11 +225,11 @@ class VPinballManager {
     }
 
     func loadValue(_ section: VPinballSettingsSection, _ key: String, _ defaultValue: String) -> String {
-        return String(cString: VPinballLoadValueString(section.rawValue, key.cstring, defaultValue.cstring))
+        return String(cString: VPinballLoadValueString(section.rawValue.cstring, key.cstring, defaultValue.cstring))
     }
 
     func saveValue(_ section: VPinballSettingsSection, _ key: String, _ value: CInt) {
-        VPinballSaveValueInt(section.rawValue, key.cstring, value)
+        VPinballSaveValueInt(section.rawValue.cstring, key.cstring, value)
     }
 
     func saveValue(_ section: VPinballSettingsSection, _ key: String, _ value: Int) {
@@ -237,7 +237,7 @@ class VPinballManager {
     }
 
     func saveValue(_ section: VPinballSettingsSection, _ key: String, _ value: Float) {
-        VPinballSaveValueFloat(section.rawValue, key.cstring, value)
+        VPinballSaveValueFloat(section.rawValue.cstring, key.cstring, value)
     }
 
     func saveValue(_ section: VPinballSettingsSection, _ key: String, _ value: Bool) {
@@ -245,7 +245,7 @@ class VPinballManager {
     }
 
     func saveValue(_ section: VPinballSettingsSection, _ key: String, _ value: String) {
-        VPinballSaveValueString(section.rawValue, key.cstring, value.cstring)
+        VPinballSaveValueString(section.rawValue.cstring, key.cstring, value.cstring)
     }
 
     func `import`(url: URL) async -> PinTable? {

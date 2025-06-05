@@ -16,6 +16,15 @@ import org.vpinball.app.jni.VPinballMSAASamples
 import org.vpinball.app.jni.VPinballMaxTexDimension
 import org.vpinball.app.jni.VPinballReflectionMode
 import org.vpinball.app.jni.VPinballSettingsSection.PLAYER
+import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_ALPHA_DMD
+import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_B2S
+import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_DMD_UTIL
+import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_FLEX_DMD
+import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_PINMAME
+import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_PUP
+import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_REMOTE_CONTROL
+import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_SCORE_VIEW
+import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_SERUM
 import org.vpinball.app.jni.VPinballSettingsSection.STANDALONE
 import org.vpinball.app.jni.VPinballSettingsSection.TABLE_OVERRIDE
 import org.vpinball.app.jni.VPinballSharpen
@@ -141,6 +150,35 @@ class SettingsViewModel : ViewModel() {
     var resetLogOnPlay by mutableStateOf(false)
         private set
 
+    // Plugins
+
+    var pluginAlphaDMD by mutableStateOf(false)
+        private set
+
+    var pluginB2S by mutableStateOf(false)
+        private set
+
+    var pluginDMDUtil by mutableStateOf(false)
+        private set
+
+    var pluginFlexDMD by mutableStateOf(false)
+        private set
+
+    var pluginPinMAME by mutableStateOf(false)
+        private set
+
+    var pluginPUP by mutableStateOf(false)
+        private set
+
+    var pluginRemoteControl by mutableStateOf(false)
+        private set
+
+    var pluginScoreView by mutableStateOf(false)
+        private set
+
+    var pluginSerum by mutableStateOf(false)
+        private set
+
     fun loadSettings() {
         // General
 
@@ -222,6 +260,18 @@ class SettingsViewModel : ViewModel() {
         // Advanced
 
         resetLogOnPlay = VPinballManager.loadValue(STANDALONE, "ResetLogOnPlay", true)
+
+        // Plugins
+
+        pluginAlphaDMD = VPinballManager.loadValue(PLUGIN_ALPHA_DMD, "Enable", false)
+        pluginB2S = VPinballManager.loadValue(PLUGIN_B2S, "Enable", false)
+        pluginDMDUtil = VPinballManager.loadValue(PLUGIN_DMD_UTIL, "Enable", false)
+        pluginFlexDMD = VPinballManager.loadValue(PLUGIN_FLEX_DMD, "Enable", false)
+        pluginPinMAME = VPinballManager.loadValue(PLUGIN_PINMAME, "Enable", false)
+        pluginPUP = VPinballManager.loadValue(PLUGIN_PUP, "Enable", false)
+        pluginRemoteControl = VPinballManager.loadValue(PLUGIN_REMOTE_CONTROL, "Enable", false)
+        pluginScoreView = VPinballManager.loadValue(PLUGIN_SCORE_VIEW, "Enable", true)
+        pluginSerum = VPinballManager.loadValue(PLUGIN_SERUM, "Enable", false)
     }
 
     // General
@@ -412,6 +462,53 @@ class SettingsViewModel : ViewModel() {
     fun handleResetLogOnPlay(value: Boolean) {
         resetLogOnPlay = value
         VPinballManager.saveValue(STANDALONE, "ResetLogOnPlay", resetLogOnPlay)
+    }
+
+    // Plugins
+
+    fun handlePluginAlphaDMD(value: Boolean) {
+        pluginAlphaDMD = value
+        VPinballManager.saveValue(PLUGIN_ALPHA_DMD, "Enable", pluginAlphaDMD)
+    }
+
+    fun handlePluginB2S(value: Boolean) {
+        pluginB2S = value
+        VPinballManager.saveValue(PLUGIN_B2S, "Enable", pluginB2S)
+    }
+
+    fun handlePluginDMDUtil(value: Boolean) {
+        pluginDMDUtil = value
+        VPinballManager.saveValue(PLUGIN_DMD_UTIL, "Enable", pluginDMDUtil)
+    }
+
+    fun handlePluginFlexDMD(value: Boolean) {
+        pluginFlexDMD = value
+        VPinballManager.saveValue(PLUGIN_FLEX_DMD, "Enable", pluginFlexDMD)
+    }
+
+    fun handlePluginPinMAME(value: Boolean) {
+        pluginPinMAME = value
+        VPinballManager.saveValue(PLUGIN_PINMAME, "Enable", pluginPinMAME)
+    }
+
+    fun handlePluginPUP(value: Boolean) {
+        pluginPUP = value
+        VPinballManager.saveValue(PLUGIN_PUP, "Enable", pluginPUP)
+    }
+
+    fun handlePluginRemoteControl(value: Boolean) {
+        pluginRemoteControl = value
+        VPinballManager.saveValue(PLUGIN_REMOTE_CONTROL, "Enable", pluginRemoteControl)
+    }
+
+    fun handlePluginScoreView(value: Boolean) {
+        pluginScoreView = value
+        VPinballManager.saveValue(PLUGIN_SCORE_VIEW, "Enable", pluginScoreView)
+    }
+
+    fun handlePluginSerum(value: Boolean) {
+        pluginSerum = value
+        VPinballManager.saveValue(PLUGIN_SERUM, "Enable", pluginSerum)
     }
 
     // Reset
