@@ -18,11 +18,7 @@ Sampler* TextureManager::LoadTexture(BaseTexture* const memtex, const SamplerFil
       MapEntry entry;
       entry.sampler = new Sampler(&m_rd, memtex, force_linear_rgb, clampU, clampV, filter2);
       #ifdef DEBUG
-      if (g_pplayer->m_renderer && g_pplayer->m_renderer->m_envTexture != nullptr && g_pplayer->m_renderer->m_envTexture->GetRawBitmap() == memtex)
-         entry.sampler->SetName("Env"s);
-      else if (g_pplayer->m_renderer && g_pplayer->m_renderer->m_pinballEnvTexture->GetRawBitmap() == memtex)
-         entry.sampler->SetName("Default Ball Env"s);
-      else if (g_pplayer->m_dmdFrame == memtex)
+      if (g_pplayer->m_dmdFrame == memtex)
          entry.sampler->SetName("Script DMD"s);
       else
       {

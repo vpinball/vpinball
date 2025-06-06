@@ -82,6 +82,8 @@ public:
       return IsUsingStaticPrepass() ? 1 : 0; // If AO is static prepass only and we are running without it, disable AO
    }
 
+   Sampler* GetBallEnvironment() const { return m_ballEnvSampler; }
+
    BackGlass* m_backGlass = nullptr;
 
    float m_globalEmissionScale;
@@ -127,9 +129,6 @@ public:
    CGpuProfiler m_gpu_profiler;
 
    RenderDevice* m_renderDevice = nullptr;
-
-   Texture* m_envTexture = nullptr;
-   std::unique_ptr<Texture> m_pinballEnvTexture; // loaded from assets folder
 
    // free-camera-mode-fly-around parameters
    Vertex3Ds m_cam = Vertex3Ds(0.f, 0.f, 0.f);
@@ -209,11 +208,12 @@ private:
 
    vector<Renderable*> m_renderableToInit;
 
-   std::unique_ptr<Texture> m_builtinEnvTexture; // loaded from assets folder
-
    bool m_dynamicAO;
    bool m_disableAO;
-   std::unique_ptr<Texture> m_aoDitherTexture; // loaded from assets folder
+   Sampler* m_aoDitherSampler = nullptr;
+
+   Sampler* m_envSampler = nullptr;
+   Sampler* m_ballEnvSampler = nullptr;
 
    bool m_ss_refl;
 
