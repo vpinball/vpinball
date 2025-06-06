@@ -266,7 +266,7 @@ ResURIResolver::SegDisplayState ResURIResolver::GetSegDisplayState(const string 
 
          if (subId < 0)
          {
-            lambda = [segSource, subIdPart](const string &) -> SegDisplayState { return { &*segSource, segSource->GetState(segSource->id) }; };
+            lambda = [segSource, subIdPart](const string &) -> SegDisplayState { return { segSource, segSource->GetState(segSource->id) }; };
          }
          else if (subId < static_cast<int>(segSource->nElements))
          {
