@@ -207,16 +207,10 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool genMipmaps)
    if (m_textureUpdate)
    {
       const std::lock_guard<std::mutex> lock(m_textureUpdateMutex);
-      const uint64_t flags = m_isLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB;
-      if (!bgfx::isValid(m_mipsTexture))
-      {
-         m_mipsTexture = bgfx::createTexture2D(m_width, m_height, true, 1, m_bgfx_format, flags | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST);
-         bgfx::setName(m_mipsTexture, m_name.c_str());
-      }
       if (!bgfx::isValid(m_nomipsTexture))
       {
-         m_nomipsTexture = bgfx::createTexture2D(m_width, m_height, false, 1, m_bgfx_format, flags);
-         bgfx::setName(m_mipsTexture, (m_name + ".MipMap").c_str());
+         m_nomipsTexture = bgfx::createTexture2D(m_width, m_height, false, 1, m_bgfx_format, m_isLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB);
+         bgfx::setName(m_nomipsTexture, (m_name + ".NoMipMap").c_str());
       }
       bgfx::updateTexture2D(m_nomipsTexture, 0, 0, 0, 0, m_width, m_height, m_textureUpdate);
       m_textureUpdate = nullptr;
@@ -236,6 +230,11 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool genMipmaps)
       // Create a frame buffer and blit texture to it
       if (m_rd->m_activeViewId < 0)
          m_rd->NextView();
+      if (!bgfx::isValid(m_mipsTexture))
+      {
+         m_mipsTexture = bgfx::createTexture2D(m_width, m_height, true, 1, m_bgfx_format, (m_isLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB) | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST);
+         bgfx::setName(m_mipsTexture, m_name.c_str());
+      }
       bgfx::FrameBufferHandle mipsFramebuffer = bgfx::createFrameBuffer(1, &m_mipsTexture);
       bgfx::blit(m_rd->m_activeViewId, m_mipsTexture, 0, 0, m_nomipsTexture);
       // Force frame buffer resolution, in turns causing mipmap generation
@@ -248,7 +247,7 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool genMipmaps)
         activeRT->Activate();
       // Mipmaps have been generated, we can release the framebuffer and base version of the texture (on a view processed after the one actually generating the mipmaps, to ensure correct command execution order)
       bgfx::destroy(mipsFramebuffer);
-      // TODO if a texture with and without mipmaps, then the noMips variant may be in used in this frame (this does not happen in practice)
+      // TODO if a texture is used with and without mipmaps, then the noMips variant may be in used in this frame (this does not happen in practice)
       bgfx::destroy(m_nomipsTexture);
       m_nomipsTexture = BGFX_INVALID_HANDLE;
    }
