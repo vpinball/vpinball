@@ -249,14 +249,25 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       false, 1, "Fatal Error: unable to create bloom buffer!");
    m_pBloomTmpBufferTexture = m_pBloomBufferTexture->Duplicate("BloomBuffer2"s);
 
-   // This used to be a spheremap BMP, upgraded in 10.8 for an equirectangular HDR env map
-   m_pinballEnvTexture.reset(Texture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "BallEnv.exr"));
-   m_aoDitherTexture.reset(Texture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "AODither.webp"));
-   m_builtinEnvTexture.reset(Texture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "EnvMap.webp"));
-   m_envTexture = m_table->GetImage(m_table->m_envImage);
+   BaseTexture* const ballTex = BaseTexture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "BallEnv.exr");
+   m_ballEnvSampler = new Sampler(m_renderDevice, ballTex, false, SA_REPEAT, SA_REPEAT, SF_TRILINEAR);
+   m_ballEnvSampler->SetName("Ball Env");
+   delete ballTex;
+
+   BaseTexture* const aoTex = BaseTexture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "AODither.webp");
+   m_aoDitherSampler = new Sampler(m_renderDevice, aoTex, true, SA_REPEAT, SA_REPEAT, SF_NONE);
+   m_aoDitherSampler->SetName("AO Dither");
+   delete aoTex;
+
+   Texture* tableEnv = m_table->GetImage(m_table->m_envImage);
+   BaseTexture* const envTex = tableEnv ? tableEnv->GetRawBitmap() : BaseTexture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "EnvMap.webp");
+   m_envSampler = new Sampler(m_renderDevice, envTex, false, SA_REPEAT, SA_CLAMP, SF_TRILINEAR);
+   m_envSampler->SetName("Table Env");
+   if (tableEnv == nullptr)
+      delete envTex;
+
    PLOGI << "Computing environment map radiance"; // For profiling
 
-   const BaseTexture* const envTex = (m_envTexture ? m_envTexture : m_builtinEnvTexture.get())->GetRawBitmap();
    const unsigned int envTexHeight = min(envTex->height(), 256u) / 8;
    const unsigned int envTexWidth = envTexHeight * 2;
    #if defined(ENABLE_DX9) || defined(__OPENGLES__) // DirectX 9 does not support bitwise operation in shader, so radical_inverse is not implemented and therefore we use the slow CPU path instead of GPU
@@ -274,7 +285,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
       m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
       m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_irradiance);
-      m_renderDevice->m_FBShader->SetTexture(SHADER_tex_env, envTex->GetRawBitmap());
+      m_renderDevice->m_FBShader->SetTexture(SHADER_tex_env, envTex);
       m_renderDevice->SetRenderTarget("Env Irradiance PreCalc"s, m_envRadianceTexture);
       m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
       m_renderDevice->SubmitRenderFrame(); // Force submission as result users do not explicitly declare the dependency on this pass
@@ -390,9 +401,9 @@ Renderer::~Renderer()
 {
    delete m_mvp;
    m_gpu_profiler.Shutdown();
-   m_pinballEnvTexture = nullptr;
-   m_builtinEnvTexture = nullptr;
-   m_aoDitherTexture = nullptr;
+   delete m_aoDitherSampler;
+   delete m_envSampler;
+   delete m_ballEnvSampler;
    delete m_ballImage;
    delete m_decalImage;
    delete m_envRadianceTexture;
@@ -949,15 +960,13 @@ void Renderer::SetupShaders()
    m_shaderDirty = false;
 
    const vec4 envEmissionScale_TexWidth(m_table->m_envEmissionScale * m_globalEmissionScale,
-      (float) (m_envTexture ? m_envTexture : m_builtinEnvTexture.get())->m_height /*+m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f); //!! dto.
+      static_cast<float>(m_envSampler->GetHeight()) /*+m_envSampler.m_width)*0.5f*/, 0.f, 0.f); //!! dto.
 
    UpdateBasicShaderMatrix();
-   m_renderDevice->m_basicShader->SetTexture(SHADER_tex_env, m_envTexture ? m_envTexture : m_builtinEnvTexture.get());
+   m_renderDevice->m_basicShader->SetTexture(SHADER_tex_env, m_envSampler);
    m_renderDevice->m_basicShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &envEmissionScale_TexWidth);
 
    UpdateBallShaderMatrix();
-   const vec4 st(m_table->m_envEmissionScale * m_globalEmissionScale, m_envTexture ? (float)m_envTexture->m_height/*+m_envTexture->m_width)*0.5f*/ : (float)m_builtinEnvTexture->m_height/*+m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
-   m_renderDevice->m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
    m_renderDevice->m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &envEmissionScale_TexWidth);
 
    constexpr float Roughness = 0.8f;
@@ -1701,7 +1710,7 @@ void Renderer::RenderStaticPrepass()
       m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
 
       m_renderDevice->m_FBShader->SetTexture(SHADER_tex_depth, renderRT->GetDepthSampler());
-      m_renderDevice->m_FBShader->SetTexture(SHADER_tex_ao_dither, m_aoDitherTexture.get(), SF_NONE, SA_REPEAT, SA_REPEAT, true); // FIXME the force linear RGB is not honored in VR
+      m_renderDevice->m_FBShader->SetTexture(SHADER_tex_ao_dither, m_aoDitherSampler);
       m_renderDevice->m_FBShader->SetVector(SHADER_AO_scale_timeblur, m_table->m_AOScale, 0.1f, 0.f, 0.f);
       m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_AO);
 
@@ -1861,7 +1870,7 @@ void Renderer::SSRefl()
 
    m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, GetBackBufferTexture()->GetColorSampler());
    m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, GetBackBufferTexture()->GetColorSampler());
-   m_renderDevice->m_FBShader->SetTexture(SHADER_tex_ao_dither, m_aoDitherTexture.get(), SF_NONE, SA_REPEAT, SA_REPEAT, true); // FIXME the force linear RGB is not honored in VR
+   m_renderDevice->m_FBShader->SetTexture(SHADER_tex_ao_dither, m_aoDitherSampler);
 
    // FIXME check if size should not be taken from renderdevice to account for VR (double width) or supersampling
    m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height,
@@ -2134,7 +2143,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
       m_renderDevice->AddRenderTargetDependency(GetBackBufferTexture());
       m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, GetAORenderTarget(1)->GetColorSampler());
       //m_renderDevice->m_FBShader->SetTexture(SHADER_Texture1, m_pd3dDevice->GetPostProcessRenderTarget1()); // temporary normals
-      m_renderDevice->m_FBShader->SetTexture(SHADER_tex_ao_dither, m_aoDitherTexture.get(), SF_NONE, SA_REPEAT, SA_REPEAT, true); // FIXME the force linear RGB is not honored
+      m_renderDevice->m_FBShader->SetTexture(SHADER_tex_ao_dither, m_aoDitherSampler);
       m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, 
          (float)(1.0 / GetAORenderTarget(1)->GetWidth()),
          (float)(1.0 / GetAORenderTarget(1)->GetHeight()), 

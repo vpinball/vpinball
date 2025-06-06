@@ -431,7 +431,7 @@ void Ball::Render(const unsigned int renderMask)
    if (!m_pinballEnv)
    {
       sphericalMapping = false; // Environment texture is an equirectangular map
-      m_rd->m_ballShader->SetTexture(SHADER_tex_ball_color, g_pplayer->m_renderer->m_pinballEnvTexture.get());
+      m_rd->m_ballShader->SetTexture(SHADER_tex_ball_color, g_pplayer->m_renderer->GetBallEnvironment());
    }
    else
    {
