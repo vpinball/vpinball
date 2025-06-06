@@ -3735,8 +3735,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
             assert(m_vimage.empty());
             m_vimage.resize(ctextures); // due to multithreaded loading do pre-allocation
             {
-               ThreadPool pool(g_pvp->GetLogicalNumberOfProcessors()); //!! Note that this dramatically increases the amount of temporary memory needed, especially if Max Texture Dimension is set (as then all the additional conversion/rescale mem is also needed 'in parallel')
-
+               ThreadPool pool(g_pvp->GetLogicalNumberOfProcessors());
                int count = 0;
                for (int i = 0; i < ctextures; i++)
                {
@@ -3748,7 +3747,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                      if (FAILED(hr = pstgData->OpenStream(wStmName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
                         return hr;
 
-                     m_vimage[i] = Texture::CreateFromStream(pstmItem, loadfileversion, this, false, m_settings.LoadValueInt(Settings::Player, "MaxTexDimension"s));
+                     m_vimage[i] = Texture::CreateFromStream(pstmItem, loadfileversion, this);
                      feedback.ImageHasBeenProcessed(++count, ctextures);
                      pstmItem->Release();
                      pstmItem = nullptr;
@@ -3758,58 +3757,6 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                pool.wait_until_empty();
                pool.wait_until_nothing_in_flight();
             }
-            // due to multithreaded loading and pre-allocation, check if some images could not be loaded, and perform a retry since more memory is available now
-            string failed_load_img;
-            for (size_t i = 0; i < m_vimage.size(); ++i)
-            {
-               if (m_vimage[i] && m_vimage[i]->GetRawBitmap() != nullptr)
-                  continue;
-
-               const wstring wStmName = L"Image" + std::to_wstring(i);
-               IStream *pstmItem;
-               if (FAILED(hr = pstgData->OpenStream(wStmName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
-               {
-                  failed_load_img += "\n- " + "Image"s + std::to_string(i);
-                  continue;
-               }
-
-               Texture *const ppi = Texture::CreateFromStream(pstmItem, loadfileversion, this, false, m_settings.LoadValueInt(Settings::Player, "MaxTexDimension"s));
-               if (!ppi)
-                  failed_load_img += "\n- " + "Image"s + std::to_string(i);
-               else if (!ppi || ppi->GetRawBitmap() == nullptr)
-               {
-                  failed_load_img += "\n- " + ppi->m_name + " (from: " + ppi->GetFilePath() + ')';
-                  delete ppi;
-               }
-               else
-               {
-                  m_vimage[i] = ppi;
-                  if ((m_vimage[i]->GetRawBitmap()->m_realWidth > m_vimage[i]->GetRawBitmap()->width()) || (m_vimage[i]->GetRawBitmap()->m_realHeight > m_vimage[i]->GetRawBitmap()->height()))
-                  { //!! do not warn on resize, as original image file/binary blob is always loaded into mem! (otherwise table load failure is triggered) {
-                     PLOGW << "Image '" << m_vimage[i]->m_name << "' was downsized from " << m_vimage[i]->GetRawBitmap()->m_realWidth << 'x' << m_vimage[i]->GetRawBitmap()->m_realHeight << " to "
-                           << m_vimage[i]->m_width << 'x' << m_vimage[i]->m_height << " due to low memory ";
-                  }
-               }
-               pstmItem->Release();
-               pstmItem = nullptr;
-            }
-
-            if (!failed_load_img.empty())
-            {
-#ifdef _WIN64
-               m_vpinball->MessageBox(("WARNING ! WARNING ! WARNING ! WARNING !\n\nNot all images were loaded for an unknown reason.\n\nDO NOT SAVE THIS FILE OR YOU MAY LOOSE DATA!\n\nAffected Files/Images:\n" + failed_load_img).c_str(), "Load Error", 0);
-#else
-               m_vpinball->MessageBox(("WARNING ! WARNING ! WARNING ! WARNING !\n\nNot all images were loaded, likely due to low memory.\nPlease use the 64-bit version of the application.\n\nDO NOT SAVE THIS FILE OR YOU MAY LOOSE DATA!\n\nAffected Files/Images:\n" + failed_load_img).c_str(), "Load Error", 0);
-#endif
-            }
-
-            // check if some images could not be loaded and erase them
-            for (size_t i = 0; i < m_vimage.size(); ++i)
-                if (!m_vimage[i] || m_vimage[i]->GetRawBitmap() == nullptr)
-                {
-                    m_vimage.erase(m_vimage.begin()+i);
-                    --i;
-                }
 
             // search for duplicate names, delete dupes
             if (!m_vimage.empty())
@@ -7690,7 +7637,7 @@ string PinTable::AuditTable(bool log) const
    for (const auto image : m_vimage)
    {
       unsigned int imageSize = image->GetFileSize();
-      unsigned int gpuSize = image->GetRawBitmap()->height() * image->GetRawBitmap()->pitch();
+      unsigned int gpuSize = image->GetEstimatedGPUSize();
       //ss << "  . Image: '" << image->m_name << "', size: " << (imageSize / 1024) << "KiB, GPU mem size: " << (gpuSize / 1024) << "KiB\r\n";
       totalSize += imageSize;
       totalGpuSize += gpuSize;

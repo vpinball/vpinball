@@ -152,7 +152,7 @@ private:
    bool IsBloomEnabled() const;
    void Bloom();
    void SSRefl();
-   BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres);
+   BaseTexture* EnvmapPrecalc(const BaseTexture* envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres);
 
    bool m_shaderDirty = true;
    void SetupShaders();

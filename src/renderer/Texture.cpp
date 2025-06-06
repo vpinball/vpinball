@@ -700,7 +700,7 @@ Texture::Texture(const string& name, PinBinary* ppb, unsigned int width, unsigne
    assert(m_height > 0);
 }
 
-Texture* Texture::CreateFromStream(IStream *pstream, int version, PinTable *pt, bool resizeOnLowMem, unsigned int maxTexDimension)
+Texture* Texture::CreateFromStream(IStream *pstream, int version, PinTable *pt)
 {
    string name;
    string path;
@@ -825,14 +825,7 @@ Texture* Texture::CreateFromStream(IStream *pstream, int version, PinTable *pt, 
    if (!isMD5Dirty)
       tex->SetMD5Hash(md5Hash);
 
-   // For the time being, we always perform decoding after loading
-   tex->m_imageBuffer = BaseTexture::CreateFromData(ppb->m_pdata, ppb->m_cdata, maxTexDimension, resizeOnLowMem);
-
-   if (tex->m_imageBuffer)
-      return tex;
-   
-   delete tex;
-   return nullptr;
+   return tex;
 }
 
 Texture* Texture::CreateFromFile(const string& filename)
@@ -903,6 +896,14 @@ HRESULT Texture::SaveToStream(IStream *pstream, const PinTable *pt)
    bw.WriteBool(FID(OPAQ), IsOpaque());
    bw.WriteTag(FID(ENDB));
    return S_OK;
+}
+
+BaseTexture* Texture::GetRawBitmap(bool resizeOnLowMem, unsigned int maxTexDimension) const
+{
+   if (m_imageBuffer == nullptr)
+      m_imageBuffer = BaseTexture::CreateFromData(m_ppb->m_pdata, m_ppb->m_cdata, maxTexDimension, resizeOnLowMem);
+
+   return m_imageBuffer;
 }
 
 HBITMAP Texture::GetGDIBitmap() const

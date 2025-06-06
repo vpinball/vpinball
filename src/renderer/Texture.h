@@ -84,14 +84,16 @@ class Texture final
 {
 public:
    static Texture *CreateFromFile(const string &filename);
-   static Texture *CreateFromStream(IStream *pstream, int version, PinTable *pt, bool resizeOnLowMem, unsigned int maxTexDimension);
+   static Texture *CreateFromStream(IStream *pstream, int version, PinTable *pt);
    ~Texture();
 
    HRESULT SaveToStream(IStream *pstream, const PinTable *pt);
 
    HBITMAP GetGDIBitmap() const; // Lazily created view of the image, suitable for GDI rendering
-   BaseTexture* GetRawBitmap() const { return m_imageBuffer; } // Lazily created view of the image, suitable for GPU sampling
-   
+   BaseTexture *GetRawBitmap(bool resizeOnLowMem = false, unsigned int maxTexDimension = 0) const; // Lazily created view of the image, suitable for GPU sampling
+
+   int GetEstimatedGPUSize() const { return m_imageBuffer ? (m_imageBuffer->height() * m_imageBuffer->pitch() * 3) : (m_width * m_height * 4 * 3); }
+
    int GetFileSize() const { return m_ppb->m_cdata; }
    const uint8_t* GetFileRaw() const { return m_ppb->m_pdata; }
    const string& GetFilePath() const { return m_ppb->m_path; }
