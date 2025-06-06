@@ -3298,8 +3298,6 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
       m_pbTempScreenshot->m_cdata = ss.cbSize.LowPart;
       m_pbTempScreenshot->m_pdata = new uint8_t[m_pbTempScreenshot->m_cdata];
 
-      //m_pbTempScreenshot->LoadFromStream(pstm, version);
-
       ULONG read;
       BiffReader br(pstm, NULL, NULL, 0, hcrypthash, NULL);
       br.ReadBytes(m_pbTempScreenshot->m_pdata, m_pbTempScreenshot->m_cdata, &read);
@@ -3584,34 +3582,29 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
    HCRYPTHASH hchkey = NULL;
    HCRYPTKEY  hkey = NULL;
 
-#ifndef __STANDALONE__
-   ///////// Begin MAC
-   int foo;
+   #ifndef __STANDALONE__
+   bool hashValidation = !g_pvp->m_settings.LoadValueBool(Settings::Editor, "DisableHash");
+   if (hashValidation)
+   {
+      int foo;
+      foo = CryptAcquireContext(&hcp, nullptr, nullptr, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_NEWKEYSET /* | CRYPT_SILENT*/);
+      foo = GetLastError();
+      foo = CryptCreateHash(hcp, CALG_MD2 /*CALG_MAC*/ /*CALG_HMAC*/, NULL /*hkey*/, 0, &hch);
+      foo = GetLastError();
+      foo = CryptHashData(hch, (BYTE *)TABLE_KEY, 14, 0);
+      foo = GetLastError();
 
-   foo = CryptAcquireContext(&hcp, nullptr, nullptr, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_NEWKEYSET/* | CRYPT_SILENT*/);
-
-   foo = GetLastError();
-
-   foo = CryptCreateHash(hcp, CALG_MD2/*CALG_MAC*//*CALG_HMAC*/, NULL/*hkey*/, 0, &hch);
-
-   foo = GetLastError();
-
-   foo = CryptHashData(hch, (BYTE *)TABLE_KEY, 14, 0);
-
-   foo = GetLastError();
-
-   // create a key hash (we have to use a second hash as deriving a key from the
-   // integrity hash actually modifies it, and thus it calculates the wrong hash)
-   foo = CryptCreateHash(hcp, CALG_MD5, NULL, 0, &hchkey);
-   foo = GetLastError();
-   // hash the password
-   foo = CryptHashData(hchkey, (BYTE *)TABLE_KEY, 14, 0);
-   foo = GetLastError();
-   // Create a block cipher session key based on the hash of the password.
-   // We need to figure out the file verison before we can create the key
-
-   ////////////// End MAC
-#endif
+      // create a key hash (we have to use a second hash as deriving a key from the
+      // integrity hash actually modifies it, and thus it calculates the wrong hash)
+      foo = CryptCreateHash(hcp, CALG_MD5, NULL, 0, &hchkey);
+      foo = GetLastError();
+      // hash the password
+      foo = CryptHashData(hchkey, (BYTE *)TABLE_KEY, 14, 0);
+      foo = GetLastError();
+      // Create a block cipher session key based on the hash of the password.
+      // We need to figure out the file verison before we can create the key
+   }
+   #endif
 
    int loadfileversion = CURRENT_FILE_FORMAT_VERSION;
 
@@ -3627,9 +3620,10 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
          {
             ULONG read;
             hr = pstmVersion->Read(&loadfileversion, sizeof(int), &read);
-#ifndef __STANDALONE__
-            CryptHashData(hch, (BYTE *)&loadfileversion, sizeof(int), 0);
-#endif
+            #ifndef __STANDALONE__
+               if (hch)
+                  CryptHashData(hch, (BYTE *)&loadfileversion, sizeof(int), 0);
+            #endif
             pstmVersion->Release();
             if (loadfileversion < 100) // Tech Beta 3 and below
             {
@@ -3654,10 +3648,11 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                */
             }
 
-#ifndef __STANDALONE__
-            // Create a block cipher session key based on the hash of the password.
-            CryptDeriveKey(hcp, CALG_RC2, hchkey, (loadfileversion == 600) ? CRYPT_EXPORTABLE : (CRYPT_EXPORTABLE | 0x00280000), &hkey);
-#endif
+            #ifndef __STANDALONE__
+               // Create a block cipher session key based on the hash of the password.
+               if (hchkey)
+                  CryptDeriveKey(hcp, CALG_RC2, hchkey, (loadfileversion == 600) ? CRYPT_EXPORTABLE : (CRYPT_EXPORTABLE | 0x00280000), &hkey);
+            #endif
          }
 
          IStorage* pstgInfo;
@@ -3823,7 +3818,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
 
          // Authentication block
 
-         if (loadfileversion > 40)
+         if (hch && loadfileversion > 40)
          {
             if (SUCCEEDED(hr = pstgData->OpenStream(L"MAC", nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmVersion)))
             {
@@ -3834,30 +3829,25 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
 
                BYTE hashval[256];
                DWORD hashlen = 256;
-#ifndef __STANDALONE__
-               foo = CryptGetHashParam(hch, HP_HASHSIZE, hashval, &hashlen, 0);
-
-               hashlen = 256;
-               foo = CryptGetHashParam(hch, HP_HASHVAL, hashval, &hashlen, 0);
-
-               foo = CryptDestroyHash(hch);
-
-               foo = CryptDestroyHash(hchkey);
-
-               foo = CryptDestroyKey(hkey);
-
-               foo = CryptReleaseContext(hcp, 0);
-#endif
+               #ifndef __STANDALONE__
+                  int foo = CryptGetHashParam(hch, HP_HASHSIZE, hashval, &hashlen, 0);
+                  hashlen = 256;
+                  foo = CryptGetHashParam(hch, HP_HASHVAL, hashval, &hashlen, 0);
+                  foo = CryptDestroyHash(hch);
+                  foo = CryptDestroyHash(hchkey);
+                  foo = CryptDestroyKey(hkey);
+                  foo = CryptReleaseContext(hcp, 0);
+               #endif
                pstmVersion->Release();
 
-#ifndef __STANDALONE__
-               for (int i = 0; i < HASHLENGTH; i++)
-                  if (hashval[i] != hashvalOld[i])
-                  {
-                     hr = APPX_E_BLOCK_HASH_INVALID;
-                     break;
-                  }
-#endif
+               #ifndef __STANDALONE__
+                  for (int i = 0; i < HASHLENGTH; i++)
+                     if (hashval[i] != hashvalOld[i])
+                     {
+                        hr = APPX_E_BLOCK_HASH_INVALID;
+                        break;
+                     }
+               #endif
             }
             else
             {
@@ -7657,7 +7647,7 @@ string PinTable::AuditTable(bool log) const
    const string msg = "Table audit:\r\n" + ss.str();
    if (log)
    {
-      PLOGI << msg;
+      PLOGI << trim_string(string_replace_all(msg, "\r"s, ""s));
    }
    return msg;
 }

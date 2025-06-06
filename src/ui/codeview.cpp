@@ -1906,7 +1906,8 @@ void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, 
    pistream->Read(szText, cchar*(int)sizeof(char), &read);
 
 #ifndef __STANDALONE__
-   CryptHashData(hcrypthash, (BYTE *)szText, cchar, 0);
+   if (hcrypthash)
+      CryptHashData(hcrypthash, (BYTE *)szText, cchar, 0);
 
    // if there is a valid key, then decrypt the script text (now in szText)
    //(must be done after the hash is updated)
