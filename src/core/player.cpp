@@ -44,6 +44,7 @@
 #pragma comment(lib, "Psapi")
 #endif
 #include "tinyxml2/tinyxml2.h"
+#include "ThreadPool.h"
 
 #include "plugins/MsgPlugin.h"
 #include "plugins/VPXPlugin.h"
@@ -609,7 +610,39 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    //----------------------------------------------------------------------------------
 
+   // We need to initialize the perf counter before creating the UI which uses it
+   wintimer_init();
+   m_liveUI = new LiveUI(m_renderer->m_renderDevice);
+
    m_progressDialog.SetProgress("Loading Textures..."s, 50);
+
+   {
+      unsigned int maxTexDim = static_cast<unsigned int>(m_ptable->m_settings.LoadValueInt(Settings::Player, "MaxTexDimension"s));
+      //!! Note that this dramatically increases the amount of temporary memory needed, especially if Max Texture Dimension is set (as then all the additional conversion/rescale mem is also needed 'in parallel')
+      ThreadPool pool(g_pvp->GetLogicalNumberOfProcessors());
+      for (auto image : m_ptable->m_vimage)
+         pool.enqueue([image, maxTexDim] { image->GetRawBitmap(false, maxTexDim); });
+      pool.wait_until_empty();
+      pool.wait_until_nothing_in_flight();
+      // due to multithreaded loading and pre-allocation, check if some images could not be loaded, and perform a retry since more memory is available now
+      for (auto image : m_ptable->m_vimage)
+      {
+         BaseTexture* buffer = image->GetRawBitmap(true, maxTexDim);
+         if (buffer == nullptr) // FIXME never return nullptr but a placeholder texture instead
+         {
+            PLOGE << "Image '" << image->m_name << "' could not be loaded, skipping it";
+            m_liveUI->PushNotification("Image '"s + image->m_name + "' could not be loaded"s, 5000.f);
+         }
+         else if ((image->m_width > buffer->width()) || (image->m_height > buffer->height()))
+         {
+            const bool isError = (buffer->width() < maxTexDim) || (buffer->height() < maxTexDim);
+            PLOG(isError ? plog::Severity::error : plog::Severity::warning) << "Image '" << image->m_name << "' was downsized from "
+                 << image->m_width<< 'x'<< image->m_height << " to " << buffer->width() << 'x' << buffer->height() << (isError ? " due to low memory " : " due to user settings");
+            if (isError)
+               m_liveUI->PushNotification("Image '"s + image->m_name + "' was downsized due to low memory"s, 5000.f);
+         }
+      }
+   }
 
    if ((m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0) && FileExists(m_ptable->m_filename))
    {
@@ -720,10 +753,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    if (m_playback)
       m_fplaylog = fopen("c:\\badlog.txt", "r");
 #endif
-
-   // We need to initialize the perf counter before creating the UI which uses it
-   wintimer_init();
-   m_liveUI = new LiveUI(m_renderer->m_renderDevice);
 
    const MsgPluginAPI *msgApi = &MsgPluginManager::GetInstance().GetMsgAPI();
 

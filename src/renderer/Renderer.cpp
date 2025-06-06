@@ -256,8 +256,8 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_envTexture = m_table->GetImage(m_table->m_envImage);
    PLOGI << "Computing environment map radiance"; // For profiling
 
-   const Texture* const envTex = m_envTexture ? m_envTexture : m_builtinEnvTexture.get();
-   const unsigned int envTexHeight = min(envTex->GetRawBitmap()->height(), 256u) / 8;
+   const BaseTexture* const envTex = (m_envTexture ? m_envTexture : m_builtinEnvTexture.get())->GetRawBitmap();
+   const unsigned int envTexHeight = min(envTex->height(), 256u) / 8;
    const unsigned int envTexWidth = envTexHeight * 2;
    #if defined(ENABLE_DX9) || defined(__OPENGLES__) // DirectX 9 does not support bitwise operation in shader, so radical_inverse is not implemented and therefore we use the slow CPU path instead of GPU
       m_envRadianceTexture = EnvmapPrecalc(envTex, envTexWidth, envTexHeight);
@@ -268,7 +268,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       #if defined(ENABLE_BGFX)
       m_renderDevice->m_frameMutex.lock();
       #endif
-      const colorFormat rad_format = envTex->GetRawBitmap()->m_format == BaseTexture::RGB_FP32 ? colorFormat::RGBA32F : colorFormat::RGBA16F;
+      const colorFormat rad_format = envTex->m_format == BaseTexture::RGB_FP32 ? colorFormat::RGBA32F : colorFormat::RGBA16F;
       m_envRadianceTexture = new RenderTarget(m_renderDevice, SurfaceType::RT_DEFAULT, "Irradiance"s, envTexWidth, envTexHeight, rad_format, false, 1, "Failed to create irradiance render target");
       m_renderDevice->ResetRenderState();
       m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
@@ -505,12 +505,12 @@ void Renderer::SwapAORenderTargets()
    m_pAORenderTarget2 = tmpAO;
 }
 
-BaseTexture* Renderer::EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres)
+BaseTexture* Renderer::EnvmapPrecalc(const BaseTexture* envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres)
 {
-   const void* __restrict envmap = envTex->GetRawBitmap()->data();
-   const unsigned int env_xres = envTex->GetRawBitmap()->width();
-   const unsigned int env_yres = envTex->GetRawBitmap()->height();
-   BaseTexture::Format env_format = envTex->GetRawBitmap()->m_format;
+   const void* __restrict envmap = envTex->datac();
+   const unsigned int env_xres = envTex->width();
+   const unsigned int env_yres = envTex->height();
+   BaseTexture::Format env_format = envTex->m_format;
    const BaseTexture::Format rad_format = (env_format == BaseTexture::RGB_FP16 || env_format == BaseTexture::RGB_FP32) ? env_format : BaseTexture::SRGB;
    BaseTexture* radTex = new BaseTexture(rad_env_xres, rad_env_yres, rad_format);
    BYTE* const __restrict rad_envmap = radTex->data();
