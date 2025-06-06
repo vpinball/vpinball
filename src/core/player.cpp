@@ -628,10 +628,11 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       for (auto image : m_ptable->m_vimage)
       {
          BaseTexture* buffer = image->GetRawBitmap(true, maxTexDim);
-         if (buffer == nullptr) // FIXME never return nullptr but a placeholder texture instead
+         if (buffer == nullptr)
          {
             PLOGE << "Image '" << image->m_name << "' could not be loaded, skipping it";
             m_liveUI->PushNotification("Image '"s + image->m_name + "' could not be loaded"s, 5000.f);
+            image->UseRawBitmapPlaceHolder();
          }
          else if ((image->m_width > buffer->width()) || (image->m_height > buffer->height()))
          {

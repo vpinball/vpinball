@@ -34,6 +34,7 @@ public:
    static BaseTexture *CreateFromData(const void *data, const size_t size, unsigned int maxTexDimension = 0, bool resizeOnLowMem = false) noexcept;
    static BaseTexture *CreateFromHBitmap(const HBITMAP hbm, unsigned int maxTexDimension, bool with_alpha = true) noexcept;
    static void Update(BaseTexture **texture, const unsigned int w, const unsigned int h, const Format format, const uint8_t *image); // Update eventually recreating the texture
+   static BaseTexture *GetPlaceHolder();
 
    unsigned long long GetLiveHash() const { return m_liveHash; }
 
@@ -91,6 +92,7 @@ public:
 
    HBITMAP GetGDIBitmap() const; // Lazily created view of the image, suitable for GDI rendering
    BaseTexture *GetRawBitmap(bool resizeOnLowMem = false, unsigned int maxTexDimension = 0) const; // Lazily created view of the image, suitable for GPU sampling
+   void UseRawBitmapPlaceHolder() const { delete m_imageBuffer; m_imageBuffer = BaseTexture::GetPlaceHolder(); }
 
    int GetEstimatedGPUSize() const { return m_imageBuffer ? (m_imageBuffer->height() * m_imageBuffer->pitch() * 3) : (m_width * m_height * 4 * 3); }
 

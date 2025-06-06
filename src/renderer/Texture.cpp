@@ -431,6 +431,12 @@ BaseTexture* BaseTexture::CreateFromHBitmap(const HBITMAP hbmp, unsigned int max
    #endif
 }
 
+BaseTexture* BaseTexture::GetPlaceHolder()
+{
+   static BaseTexture placeHolder(1, 1, BaseTexture::SRGBA);
+   return &placeHolder;
+}
+
 void BaseTexture::Update(BaseTexture** texture, const unsigned int width, const unsigned int height, const Format texFormat, const uint8_t* image)
 {
    const int pixelSize = GetPixelSize(texFormat);
