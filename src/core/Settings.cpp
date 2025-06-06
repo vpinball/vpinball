@@ -378,6 +378,7 @@ void Settings::Validate(const bool addDefaults)
    //////////////////////////////////////////////////////////////////////////
    // Editor section
 
+   SettingBool(Settings::Editor, "DisableHash"s, false, "Disable file integrity validation."s);
    SettingBool(Settings::Editor, "EnableLog"s, true, "Enable general logging to the vinball.log file."s);
 
    #undef SettingString
