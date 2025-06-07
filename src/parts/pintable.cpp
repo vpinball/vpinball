@@ -3177,7 +3177,7 @@ HRESULT PinTable::SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash)
       {
          BiffWriter bw(pstm, hcrypthash);
          ULONG writ;
-         bw.WriteBytes(pin->GetFileRaw(), pin->GetFileSize(), &writ);
+         bw.WriteBytes(pin->GetFileRaw(), static_cast<ULONG>(pin->GetFileSize()), &writ);
          pstm->Release();
          pstm = nullptr;
       }
@@ -3295,12 +3295,11 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
       pstm->Stat(&ss, STATFLAG_NONAME);
       m_pbTempScreenshot = new PinBinary();
 
-      m_pbTempScreenshot->m_cdata = ss.cbSize.LowPart;
-      m_pbTempScreenshot->m_pdata = new uint8_t[m_pbTempScreenshot->m_cdata];
+      m_pbTempScreenshot->m_buffer.resize(ss.cbSize.LowPart);
 
       ULONG read;
       BiffReader br(pstm, NULL, NULL, 0, hcrypthash, NULL);
-      br.ReadBytes(m_pbTempScreenshot->m_pdata, m_pbTempScreenshot->m_cdata, &read);
+      br.ReadBytes(m_pbTempScreenshot->m_buffer.data(), static_cast<ULONG>(m_pbTempScreenshot->m_buffer.size()), &read);
 
       pstm->Release();
    }
@@ -4676,14 +4675,11 @@ void PinTable::ImportFont(HWND hwndListView, const string& filename)
 
    ppb->ReadFromFile(filename);
 
-   if (ppb->m_pdata != nullptr)
+   if (!ppb->m_buffer.empty())
    {
       m_vfont.push_back(ppb);
-
       const int index = AddListBinary(hwndListView, ppb);
-
       ListView_SetItemState(hwndListView, index, LVIS_SELECTED, LVIS_SELECTED);
-
       ppb->Register();
    }
 #endif
@@ -7615,7 +7611,7 @@ string PinTable::AuditTable(bool log) const
       ss << "No issue identified.\r\n";
 
    // Also output a log of the table file content to allow easier size optimization
-   unsigned long long totalSize = 0, totalGpuSize = 0;
+   size_t totalSize = 0, totalGpuSize = 0;
    for (const auto sound : m_vsound)
    {
       //ss << "  . Sound: '" << sound->m_name << "', size: " << (sound->m_cdata / 1024) << "KiB\r\n";
@@ -7626,8 +7622,8 @@ string PinTable::AuditTable(bool log) const
    totalSize = 0;
    for (const auto image : m_vimage)
    {
-      unsigned int imageSize = image->GetFileSize();
-      unsigned int gpuSize = image->GetEstimatedGPUSize();
+      size_t imageSize = image->GetFileSize();
+      size_t gpuSize = image->GetEstimatedGPUSize();
       //ss << "  . Image: '" << image->m_name << "', size: " << (imageSize / 1024) << "KiB, GPU mem size: " << (gpuSize / 1024) << "KiB\r\n";
       totalSize += imageSize;
       totalGpuSize += gpuSize;

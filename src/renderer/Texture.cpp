@@ -83,7 +83,7 @@ BaseTexture* BaseTexture::CreateFromFile(const string& filename, unsigned int ma
       return nullptr;
    PinBinary ppb;
    ppb.ReadFromFile(filename);
-   return CreateFromData(ppb.m_pdata, ppb.m_cdata, maxTexDimension, resizeOnLowMem);
+   return CreateFromData(ppb.m_buffer.data(), ppb.m_buffer.size(), maxTexDimension, resizeOnLowMem);
 }
 
 BaseTexture* BaseTexture::CreateFromData(const void* data, const size_t size, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept
@@ -778,8 +778,7 @@ Texture* Texture::CreateFromStream(IStream *pstream, int version, PinTable *pt)
          auto memStream = FreeImage_OpenMemory();
          FreeImage_SaveToMemory(FREE_IMAGE_FORMAT::FIF_WEBP, dib, memStream, WEBP_LOSSLESS);
          ppb = new PinBinary();
-         ppb->m_cdata = FreeImage_TellMemory(memStream);
-         ppb->m_pdata = new uint8_t[ppb->m_cdata];
+         ppb->m_buffer.resize(FreeImage_TellMemory(memStream));
          ppb->m_name = name;
          string ext = extension_from_path(path);
          if (!ext.empty())
@@ -789,7 +788,7 @@ Texture* Texture::CreateFromStream(IStream *pstream, int version, PinTable *pt)
          }
          ppb->m_path = path;
          FreeImage_SeekMemory(memStream, 0, SEEK_SET);
-         FreeImage_ReadMemory(ppb->m_pdata, 1, ppb->m_cdata, memStream);
+         FreeImage_ReadMemory(ppb->m_buffer.data(), 1, ppb->m_buffer.size(), memStream);
          FreeImage_CloseMemory(memStream);
          FreeImage_Unload(dib);
          break;
@@ -839,31 +838,14 @@ Texture* Texture::CreateFromFile(const string& filename)
    PinBinary* const ppb = new PinBinary();
    ppb->ReadFromFile(filename);
 
-   BaseTexture* const imageBuffer = BaseTexture::CreateFromData(ppb->m_pdata, ppb->m_cdata, 0, false);
+   BaseTexture* const imageBuffer = BaseTexture::CreateFromData(ppb->m_buffer.data(), ppb->m_buffer.size(), 0, false);
    if (imageBuffer == nullptr)
    {
       delete ppb;
       return nullptr;
    }
    
-   int begin, end;
-   const int len = (int)filename.length();
-   for (begin = len; begin >= 0; begin--)
-   {
-      if (filename[begin] == PATH_SEPARATOR_CHAR)
-      {
-         begin++;
-         break;
-      }
-   }
-   for (end = len; end >= 0; end--)
-      if (filename[end] == '.')
-         break;
-   if (end == 0)
-      end = len - 1;
-   const string name = filename.substr(begin, end - begin);
-
-   Texture* tex = new Texture(name, ppb, imageBuffer->m_realWidth, imageBuffer->m_realHeight);
+   Texture* tex = new Texture(TitleFromFilename(filename), ppb, imageBuffer->m_realWidth, imageBuffer->m_realHeight);
    tex->m_imageBuffer = imageBuffer;
    tex->UpdateMD5();
    tex->UpdateOpaque();
@@ -907,7 +889,7 @@ HRESULT Texture::SaveToStream(IStream *pstream, const PinTable *pt)
 BaseTexture* Texture::GetRawBitmap(bool resizeOnLowMem, unsigned int maxTexDimension) const
 {
    if (m_imageBuffer == nullptr)
-      m_imageBuffer = BaseTexture::CreateFromData(m_ppb->m_pdata, m_ppb->m_cdata, maxTexDimension, resizeOnLowMem);
+      m_imageBuffer = BaseTexture::CreateFromData(m_ppb->m_buffer.data(), m_ppb->m_buffer.size(), maxTexDimension, resizeOnLowMem);
 
    return m_imageBuffer;
 }
@@ -966,7 +948,7 @@ void Texture::UpdateMD5() const
    if (!m_isMD5Dirty)
       return;
    m_isMD5Dirty = false;
-   generateMD5(m_ppb->m_pdata, m_ppb->m_cdata, m_md5Hash);
+   generateMD5(m_ppb->m_buffer.data(), m_ppb->m_buffer.size(), m_md5Hash);
    if (m_imageBuffer)
       m_imageBuffer->SetMD5Hash(m_md5Hash);
 }
