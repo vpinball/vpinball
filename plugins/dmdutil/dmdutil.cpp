@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <chrono>
 #include <cstring>
+#include <charconv>
 
 #include "VPXPlugin.h"
 #include "ControllerPlugin.h"
