@@ -96,8 +96,8 @@ public:
 
    int GetEstimatedGPUSize() const { return m_imageBuffer ? (m_imageBuffer->height() * m_imageBuffer->pitch() * 3) : (m_width * m_height * 4 * 3); }
 
-   int GetFileSize() const { return m_ppb->m_cdata; }
-   const uint8_t* GetFileRaw() const { return m_ppb->m_pdata; }
+   size_t GetFileSize() const { return m_ppb->m_buffer.size(); }
+   const uint8_t *GetFileRaw() const { return m_ppb->m_buffer.data(); }
    const string& GetFilePath() const { return m_ppb->m_path; }
    bool SaveFile(const string &filename) const { return m_ppb->WriteToFile(filename); }
 

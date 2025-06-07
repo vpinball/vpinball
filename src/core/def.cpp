@@ -374,6 +374,35 @@ bool IsWindowsVistaOr7()
 #endif
 }
 
+vector<uint8_t> read_file(const string& filename, const bool binary)
+{
+   vector<uint8_t> data;
+   std::ifstream file(filename, binary ? (std::ios::binary | std::ios::ate) : std::ios::ate);
+   if (!file)
+   {
+      const string text = "The file \"" + filename + "\" could not be opened.";
+      ShowError(text);
+      return data;
+   }
+   data.resize(file.tellg());
+   file.seekg(0, std::ios::beg);
+   file.read(reinterpret_cast<char*>(data.data()), data.size());
+   file.close();
+   return data;
+}
+
+void write_file(const string& filename, const vector<uint8_t>& data, const bool binary)
+{
+   std::ofstream file(filename, binary ? (std::ios::binary | std::ios::trunc) : std::ios::trunc);
+   if (!file)
+   {
+      const string text = "The file \"" + filename + "\" could not be opened for writing.";
+      ShowError(text);
+      return;
+   }
+   file.write(reinterpret_cast<const char*>(data.data()), data.size());
+   file.close();
+}
 
 void copy_folder(const string& srcPath, const string& dstPath)
 {

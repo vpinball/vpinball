@@ -631,7 +631,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
          if (buffer == nullptr)
          {
             PLOGE << "Image '" << image->m_name << "' could not be loaded, skipping it";
-            m_liveUI->PushNotification("Image '"s + image->m_name + "' could not be loaded"s, 5000.f);
+            m_liveUI->PushNotification("Image '"s + image->m_name + "' could not be loaded"s, 5000);
             image->UseRawBitmapPlaceHolder();
          }
          else if ((image->m_width > buffer->width()) || (image->m_height > buffer->height()))
@@ -640,7 +640,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
             PLOG(isError ? plog::Severity::error : plog::Severity::warning) << "Image '" << image->m_name << "' was downsized from "
                  << image->m_width<< 'x'<< image->m_height << " to " << buffer->width() << 'x' << buffer->height() << (isError ? " due to low memory " : " due to user settings");
             if (isError)
-               m_liveUI->PushNotification("Image '"s + image->m_name + "' was downsized due to low memory"s, 5000.f);
+               m_liveUI->PushNotification("Image '"s + image->m_name + "' was downsized due to low memory"s, 5000);
          }
       }
    }

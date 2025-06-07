@@ -20,9 +20,7 @@ public:
 
    string m_name;
    string m_path;
-
-   uint8_t *m_pdata; // Copy of the buffer data so we can save it out
-   int m_cdata;
+   vector<uint8_t> m_buffer;
 };
 
 class PinFont final : public PinBinary
