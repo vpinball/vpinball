@@ -263,8 +263,6 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    BaseTexture* const envTex = tableEnv ? tableEnv->GetRawBitmap() : BaseTexture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "EnvMap.webp");
    m_envSampler = new Sampler(m_renderDevice, envTex, false, SA_REPEAT, SA_CLAMP, SF_TRILINEAR);
    m_envSampler->SetName("Table Env");
-   if (tableEnv == nullptr)
-      delete envTex;
 
    PLOGI << "Computing environment map radiance"; // For profiling
 
@@ -284,9 +282,9 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       m_renderDevice->ResetRenderState();
       m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
       m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-      m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_irradiance);
-      m_renderDevice->m_FBShader->SetTexture(SHADER_tex_env, envTex);
       m_renderDevice->SetRenderTarget("Env Irradiance PreCalc"s, m_envRadianceTexture);
+      m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_irradiance);
+      m_renderDevice->m_FBShader->SetTexture(SHADER_tex_env, m_envSampler);
       m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
       m_renderDevice->SubmitRenderFrame(); // Force submission as result users do not explicitly declare the dependency on this pass
       m_renderDevice->m_basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
@@ -295,6 +293,8 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       m_renderDevice->m_frameMutex.unlock();
       #endif
    #endif
+   if (tableEnv == nullptr)
+      delete envTex;
    PLOGI << "Environment map radiance computed"; // For profiling
 
    const bool lowDetailBall = (m_table->GetDetailLevel() < 10);

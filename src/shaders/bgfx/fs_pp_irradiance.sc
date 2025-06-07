@@ -8,7 +8,7 @@ $input v_texcoord0
 
 #include "common.sh"
 
-SAMPLER2D(tex_env,  0); // envmap
+SAMPLER2D(tex_env,  1); // envmap
 
 // Compute Van der Corput radical inverse
 // See: http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html
