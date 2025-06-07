@@ -995,10 +995,7 @@ Player::~Player()
       m_vrDevice->SaveVRSettings(g_pvp->m_settings);
 
    for (auto &sound : m_ptable->m_vsound)
-   {
       sound->Stop();
-      sound->UnInitialize();
-   }
 
    // Stop all played musics, including ones streamed from plugins
    if (m_audio)
