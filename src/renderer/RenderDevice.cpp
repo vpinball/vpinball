@@ -1149,11 +1149,11 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
 #endif
 
    // Create default texture
-   BaseTexture* surf = new BaseTexture(1, 1, BaseTexture::Format::RGBA);
+   std::shared_ptr<BaseTexture> surf = std::make_shared<BaseTexture>(1, 1, BaseTexture::Format::RGBA);
    memset(surf->data(), 0, 4);
    m_nullTexture = new Sampler(this, surf, false);
    m_nullTexture->SetName("Null"s);
-   delete surf;
+   surf.reset();
 
    // alloc float buffer for rendering
    #if defined(ENABLE_OPENGL)

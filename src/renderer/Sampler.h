@@ -50,7 +50,7 @@ struct SamplerBinding
 class Sampler final
 {
 public:
-   Sampler(RenderDevice* rd, const BaseTexture* const surf, const bool force_linear_rgb, const SamplerAddressMode clampu = SA_UNDEFINED, const SamplerAddressMode clampv = SA_UNDEFINED, const SamplerFilter filter = SF_UNDEFINED);
+   Sampler(RenderDevice* rd, std::shared_ptr<const BaseTexture> surf, const bool force_linear_rgb, const SamplerAddressMode clampu = SA_UNDEFINED, const SamplerAddressMode clampv = SA_UNDEFINED, const SamplerFilter filter = SF_UNDEFINED);
 #if defined(ENABLE_BGFX)
    Sampler(RenderDevice* rd, SurfaceType type, bgfx::TextureHandle bgfxTexture, unsigned int width, unsigned int height, bool ownTexture, bool linear_rgb, const SamplerAddressMode clampu = SA_UNDEFINED, const SamplerAddressMode clampv = SA_UNDEFINED, const SamplerFilter filter = SF_UNDEFINED);
    bgfx::TextureHandle GetCoreTexture(bool genMipmaps);
@@ -67,7 +67,7 @@ public:
    ~Sampler();
 
    void Unbind();
-   void UpdateTexture(const BaseTexture* const surf, const bool force_linear_rgb);
+   void UpdateTexture(std::shared_ptr<const BaseTexture> surf, const bool force_linear_rgb);
    void SetClamp(const SamplerAddressMode clampu, const SamplerAddressMode clampv);
    void SetFilter(const SamplerFilter filter);
    void SetName(const string& name);
@@ -104,9 +104,9 @@ private:
 #elif defined(ENABLE_OPENGL)
    GLenum m_texTarget = 0;
    GLuint m_texture = 0;
-   GLuint CreateTexture(const BaseTexture* const surf, unsigned int Levels, colorFormat Format, int stereo);
+   GLuint CreateTexture(std::shared_ptr<const BaseTexture> surf, unsigned int Levels, colorFormat Format, int stereo);
 #elif defined(ENABLE_DX9)
    IDirect3DTexture9* m_texture = nullptr;
-   IDirect3DTexture9* CreateSystemTexture(const BaseTexture* const surf, const bool force_linear_rgb, colorFormat& texformat);
+   IDirect3DTexture9* CreateSystemTexture(std::shared_ptr<const BaseTexture> surf, const bool force_linear_rgb, colorFormat& texformat);
 #endif
 };

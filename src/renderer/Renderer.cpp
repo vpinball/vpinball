@@ -249,18 +249,18 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       false, 1, "Fatal Error: unable to create bloom buffer!");
    m_pBloomTmpBufferTexture = m_pBloomBufferTexture->Duplicate("BloomBuffer2"s);
 
-   BaseTexture* const ballTex = BaseTexture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "BallEnv.exr");
+   std::shared_ptr<BaseTexture> ballTex = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "BallEnv.exr"));
    m_ballEnvSampler = new Sampler(m_renderDevice, ballTex, false, SA_REPEAT, SA_REPEAT, SF_TRILINEAR);
    m_ballEnvSampler->SetName("Ball Env");
-   delete ballTex;
+   ballTex.reset();
 
-   BaseTexture* const aoTex = BaseTexture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "AODither.webp");
+   std::shared_ptr<BaseTexture> aoTex = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "AODither.webp"));
    m_aoDitherSampler = new Sampler(m_renderDevice, aoTex, true, SA_REPEAT, SA_REPEAT, SF_NONE);
    m_aoDitherSampler->SetName("AO Dither");
-   delete aoTex;
+   aoTex.reset();
 
    Texture* tableEnv = m_table->GetImage(m_table->m_envImage);
-   BaseTexture* const envTex = tableEnv ? tableEnv->GetRawBitmap() : BaseTexture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "EnvMap.webp");
+   std::shared_ptr<BaseTexture> envTex = tableEnv ? tableEnv->GetRawBitmap() : std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "EnvMap.webp"));
    m_envSampler = new Sampler(m_renderDevice, envTex, false, SA_REPEAT, SA_CLAMP, SF_TRILINEAR);
    m_envSampler->SetName("Table Env");
 
@@ -290,8 +290,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       m_renderDevice->m_basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
       m_renderDevice->m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
    #endif
-   if (tableEnv == nullptr)
-      delete envTex;
+   envTex.reset();
    PLOGI << "Environment map radiance computed"; // For profiling
 
    const bool lowDetailBall = (m_table->GetDetailLevel() < 10);
@@ -513,7 +512,7 @@ void Renderer::SwapAORenderTargets()
    m_pAORenderTarget2 = tmpAO;
 }
 
-BaseTexture* Renderer::EnvmapPrecalc(const BaseTexture* envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres)
+BaseTexture* Renderer::EnvmapPrecalc(std::shared_ptr<BaseTexture> envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres)
 {
    const void* __restrict envmap = envTex->datac();
    const unsigned int env_xres = envTex->width();
@@ -2411,7 +2410,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
    // This needs a modification of the shader to use the filtered texture (tex_fb_filtered) instead of unfiltered
    if (false)
    {
-      BaseTexture *tex = new BaseTexture(renderedRT->GetWidth(), renderedRT->GetHeight(), BaseTexture::RGB);
+      std::shared_ptr<BaseTexture> tex = std::make_shared<BaseTexture>(renderedRT->GetWidth(), renderedRT->GetHeight(), BaseTexture::RGB);
       BYTE *const __restrict pdest = tex->data();
       for (size_t i = 0; i < (size_t)renderedRT->GetWidth() * renderedRT->GetHeight(); ++i)
       {
@@ -2430,7 +2429,6 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
       m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
       renderedRT = outputRT;
       delete checker;
-      delete tex;
    }
 
    // Stereo and AA are performed on LDR render buffer after tonemapping (RGB8 or RGB10, but nof RGBF).

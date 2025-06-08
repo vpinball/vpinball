@@ -9,7 +9,7 @@ class ITexManCacheable
 public:
    virtual unsigned long long GetLiveHash() const = 0;
    virtual bool IsOpaque() const = 0;
-   virtual class BaseTexture *GetRawBitmap(bool resizeOnLowMem = false, unsigned int maxTexDimension = 0) = 0;
+   virtual std::shared_ptr<class BaseTexture> GetRawBitmap(bool resizeOnLowMem = false, unsigned int maxTexDimension = 0) = 0;
    virtual string GetName() const = 0;
 };
 
@@ -46,7 +46,7 @@ public:
    static BaseTexture *GetPlaceHolder();
 
    virtual unsigned long long GetLiveHash() const override { return m_liveHash; }
-   virtual BaseTexture *GetRawBitmap(bool resizeOnLowMem = false, unsigned int maxTexDimension = 0) override { return this; }
+   virtual std::shared_ptr<BaseTexture> GetRawBitmap(bool resizeOnLowMem = false, unsigned int maxTexDimension = 0) override { return m_selfPointer; }
    virtual string GetName() const { return ""; }
 
    unsigned int width() const  { return m_width; }
@@ -80,6 +80,8 @@ private:
    const unsigned int m_width, m_height;
    BYTE* const m_data;
 
+   std::shared_ptr<BaseTexture> m_selfPointer;
+
    // These field are (lazily) computed from the data, therefore they do not impact the constness of the object
    mutable bool m_isMD5Dirty = true;
    mutable uint8_t m_md5Hash[16] = { 0 };
@@ -105,13 +107,10 @@ public:
    virtual string GetName() const { return m_name; }
 
    HBITMAP GetGDIBitmap() const; // Lazily created view of the image, suitable for GDI rendering
-   BaseTexture *GetRawBitmap(bool resizeOnLowMem = false, unsigned int maxTexDimension = 0) const; // Lazily created view of the image, suitable for GPU sampling
-   virtual BaseTexture *GetRawBitmap(bool resizeOnLowMem = false, unsigned int maxTexDimension = 0) override { return static_cast<const Texture*>(this)->GetRawBitmap(resizeOnLowMem, maxTexDimension); }
-   void UseRawBitmapPlaceHolder() const
-   {
-      delete m_imageBuffer;
-      m_imageBuffer = BaseTexture::GetPlaceHolder();
-   }
+   std::shared_ptr<BaseTexture> GetRawBitmap(bool resizeOnLowMem = false, unsigned int maxTexDimension = 0) const; // Lazily created view of the image, suitable for GPU sampling
+   virtual std::shared_ptr<BaseTexture> GetRawBitmap(bool resizeOnLowMem = false, unsigned int maxTexDimension = 0) override { return static_cast<const Texture*>(this)->GetRawBitmap(resizeOnLowMem, maxTexDimension); }
+   void ReleaseRawBitmap() const { m_imageBuffer.reset(); }
+   void UseRawBitmapPlaceHolder() const { m_imageBuffer.reset(BaseTexture::GetPlaceHolder()); }
 
    size_t GetEstimatedGPUSize() const;
 
@@ -143,7 +142,7 @@ private:
    PinBinary *const m_ppb; // Original data blob of the image, always defined
 
    // These field are (lazily) computed from the data, therefore they do not impact the constness of the object
-   mutable BaseTexture* m_imageBuffer = nullptr; // Decoded version of the texture in a format suitable for GPU sampling. Note that width and height of the decoded block can be different than width and height of the image since the surface can be limited to smaller sizes by the user or memory
+   mutable std::shared_ptr<BaseTexture> m_imageBuffer; // Decoded version of the texture in a format suitable for GPU sampling. Note that width and height of the decoded block can be different than width and height of the image since the surface can be limited to smaller sizes by the user or memory
    mutable HBITMAP m_hbmGDIVersion = nullptr;
    mutable bool m_isMD5Dirty = true;
    mutable uint8_t m_md5Hash[16] = { 0 };
