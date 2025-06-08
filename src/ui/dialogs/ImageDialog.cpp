@@ -871,7 +871,7 @@ int ImageDialog::AddListImage(HWND hwndListView, Texture *const ppi)
    ListView_SetItemText(hwndListView, index, 2, sizeString);
    ListView_SetItemText(hwndListView, index, 3, (LPSTR)usedStringNo);
 
-   char *const sizeConv = StrFormatByteSize64((size_t)ppi->GetRawBitmap()->height() * ppi->GetRawBitmap()->pitch(), sizeString, MAXTOKEN);
+   char *const sizeConv = StrFormatByteSize64((size_t)ppi->GetEstimatedGPUSize(), sizeString, MAXTOKEN);
    ListView_SetItemText(hwndListView, index, 4, sizeConv);
 
    if (ppi->GetRawBitmap() == nullptr)

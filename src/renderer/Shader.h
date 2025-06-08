@@ -509,12 +509,8 @@ public:
    void SetFloat4v(const ShaderUniforms uniformName, const vec4* const pData, const unsigned int count) { m_state->SetVector(uniformName, pData, count); }
    void SetTexture(const ShaderUniforms uniformName, const Sampler* const sampler) { m_state->SetTexture(uniformName, sampler); }
    void SetTextureNull(const ShaderUniforms uniformName);
-   void SetTexture(const ShaderUniforms uniformName, Texture* const texel, const SamplerFilter filter = SF_UNDEFINED, const SamplerAddressMode clampU = SA_UNDEFINED, const SamplerAddressMode clampV = SA_UNDEFINED, const bool force_linear_rgb = false)
-   {
-      SetTexture(uniformName, texel->GetRawBitmap(), filter, clampU, clampV, force_linear_rgb);
-   }
-   void SetTexture(const ShaderUniforms uniformName, BaseTexture* const texel, const SamplerFilter filter = SF_UNDEFINED, const SamplerAddressMode clampU = SA_UNDEFINED, const SamplerAddressMode clampV = SA_UNDEFINED, const bool force_linear_rgb = false);
-
+   void SetTexture(const ShaderUniforms uniformName, ITexManCacheable* const texel, const SamplerFilter filter = SF_UNDEFINED, const SamplerAddressMode clampU = SA_UNDEFINED, const SamplerAddressMode clampV = SA_UNDEFINED, const bool force_linear_rgb = false);
+   
    class ShaderState
    {
    public:

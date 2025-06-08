@@ -7,7 +7,7 @@
 #include "Texture.h"
 #include "typedefs3D.h"
 
-Sampler* TextureManager::LoadTexture(BaseTexture* const memtex, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV, const bool force_linear_rgb)
+Sampler* TextureManager::LoadTexture(ITexManCacheable* const memtex, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV, const bool force_linear_rgb)
 {
    const Iter it = m_map.find(memtex->GetLiveHash());
    // During static part prerendering, trilinear/anisotropic filtering is disabled to get sharper results
@@ -16,23 +16,8 @@ Sampler* TextureManager::LoadTexture(BaseTexture* const memtex, const SamplerFil
    if (it == m_map.end())
    {
       MapEntry entry;
-      entry.sampler = new Sampler(&m_rd, memtex, force_linear_rgb, clampU, clampV, filter2);
-      #ifdef DEBUG
-      if (g_pplayer->m_dmdFrame == memtex)
-         entry.sampler->SetName("Script DMD"s);
-      else
-      {
-         for (Texture* image : g_pplayer->m_ptable->m_vimage)
-         {
-            if (image->GetRawBitmap() == memtex)
-            {
-               entry.name = image->m_name;
-               entry.sampler->SetName(image->m_name);
-               break;
-            }
-         }
-      }
-      #endif
+      entry.sampler = new Sampler(&m_rd, memtex->GetRawBitmap(), force_linear_rgb, clampU, clampV, filter2);
+      entry.sampler->SetName(memtex->GetName());
       entry.sampler->m_dirty = false;
       entry.forceLinearRGB = force_linear_rgb;
       entry.tex = memtex;
@@ -44,7 +29,7 @@ Sampler* TextureManager::LoadTexture(BaseTexture* const memtex, const SamplerFil
       MapEntry& entry = it->second;
       if (entry.sampler->m_dirty)
       {
-         entry.sampler->UpdateTexture(memtex, force_linear_rgb);
+         entry.sampler->UpdateTexture(memtex->GetRawBitmap(), force_linear_rgb);
          entry.sampler->m_dirty = false;
       }
       entry.sampler->SetClamp(clampU, clampV);
@@ -54,28 +39,28 @@ Sampler* TextureManager::LoadTexture(BaseTexture* const memtex, const SamplerFil
    }
 }
 
-vector<BaseTexture*> TextureManager::GetLoadedTextures() const
+vector<ITexManCacheable*> TextureManager::GetLoadedTextures() const
 {
-   std::vector<BaseTexture*> keys;
+   std::vector<ITexManCacheable*> keys;
    for (auto it = m_map.begin(); it != m_map.end(); ++it)
       keys.push_back(it->second.tex);
    return keys;
 }
 
-bool TextureManager::IsLinearRGB(BaseTexture* memtex) const
+bool TextureManager::IsLinearRGB(ITexManCacheable* memtex) const
 {
    const auto it = m_map.find(memtex->GetLiveHash());
    return it == m_map.end() ? false : it->second.forceLinearRGB;
 }
 
-void TextureManager::SetDirty(BaseTexture* memtex)
+void TextureManager::SetDirty(ITexManCacheable* memtex)
 {
    const Iter it = m_map.find(memtex->GetLiveHash());
    if (it != m_map.end())
       it->second.sampler->m_dirty = true;
 }
 
-void TextureManager::UnloadTexture(BaseTexture* memtex)
+void TextureManager::UnloadTexture(ITexManCacheable* memtex)
 {
    const Iter it = m_map.find(memtex->GetLiveHash());
    if (it != m_map.end())

@@ -896,7 +896,7 @@ void Renderer::DrawBackground()
       m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
       m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
       m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-      g_pplayer->m_renderer->DrawSprite(0.f, 0.f, 1.f, 1.f, 0xFFFFFFFF, m_renderDevice->m_texMan.LoadTexture(pin->GetRawBitmap(), SF_TRILINEAR, SA_CLAMP, SA_CLAMP, false), ptable->m_ImageBackdropNightDay ? sqrtf(m_globalEmissionScale) : 1.0f, true);
+      g_pplayer->m_renderer->DrawSprite(0.f, 0.f, 1.f, 1.f, 0xFFFFFFFF, m_renderDevice->m_texMan.LoadTexture(pin, SF_TRILINEAR, SA_CLAMP, SA_CLAMP, false), ptable->m_ImageBackdropNightDay ? sqrtf(m_globalEmissionScale) : 1.0f, true);
    }
    else
    {
@@ -1264,7 +1264,7 @@ static Texture* LoadSegSDF(std::unique_ptr<Texture>& tex, const string& path)
 }
 
 void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const vec3& color, const float brightness, const SegmentFamily family, const SegElementType type, const float* segs, const ColorSpace colorSpace, Vertex3D_NoTex2* vertices,
-   const vec4& emitterPad, const vec3& glassTint, const float glassRougness, BaseTexture* const glassTex, const vec4& glassArea, const vec3& glassAmbient)
+   const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex, const vec4& glassArea, const vec3& glassAmbient)
 {
    Texture* segSDF = nullptr;
    switch (type)
@@ -1344,7 +1344,7 @@ void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const ve
 }
 
 void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, BaseTexture* dmd, const float alpha, const ColorSpace colorSpace, Vertex3D_NoTex2* vertices,
-   const vec4& emitterPad, const vec3& glassTint, const float glassRougness, BaseTexture* const glassTex, const vec4& glassArea, const vec3& glassAmbient)
+   const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex, const vec4& glassArea, const vec3& glassAmbient)
 {
    // Legacy DMD renderer
    #ifdef ENABLE_BGFX
