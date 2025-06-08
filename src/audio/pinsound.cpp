@@ -887,9 +887,11 @@ Mix_Chunk* PinSound::copyMixChunk(const Mix_Chunk* const original)
    copy->volume = original->volume;
 
    // Allocate memory for audio buffer
-   copy->allocated = 1;
-   copy->abuf = (Uint8*)SDL_malloc(original->alen*sizeof(Uint8)); // need to use SDL_malloc as SDL_free will be used when freeing the chunk
-   std::memcpy(copy->abuf, original->abuf, original->alen);
+   //copy->allocated = 1;
+   //copy->abuf = (Uint8*)SDL_malloc(original->alen*sizeof(Uint8)); // need to use SDL_malloc as SDL_free will be used when freeing the chunk
+   //std::memcpy(copy->abuf, original->abuf, original->alen);
+   copy->allocated = 0;
+   copy->abuf = original->abuf;
    return copy;
 }
 
