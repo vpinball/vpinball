@@ -3959,11 +3959,12 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                const size_t scriptLength = ::SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
                char *const scriptChars = new char[scriptLength + 1];
                ::SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXT, scriptLength + 1, (LPARAM)scriptChars);
-               const string script(scriptChars);
+               string script(scriptChars);
                delete[] scriptChars;
             #else
-               const string& script = m_pcv->m_script_text;
+               string script = m_pcv->m_script_text;
             #endif
+               StrToLower(script);
                std::ranges::for_each(m_vedit,
                   [&](IEditable *editable)
                   {
@@ -3973,16 +3974,17 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                      if (!name.starts_with("Layer_"))
                         return;
                      string shortName = name.substr(6);
-                     auto v = std::ranges::find_if(m_vedit, [shortName](const IEditable * const e) { return e->GetName() == shortName; });
+                     string shortNameLCase = lowerCase(shortName);
+                     auto v = std::ranges::find_if(m_vedit, [shortNameLCase](const IEditable *const e) { return lowerCase(e->GetName()) == shortNameLCase; });
                      if (v != m_vedit.end())
                         return; // Conflict with another part name
-                     if ((shortName.find_first_not_of("0123456789") != std::string::npos) && script.find(shortName) != std::string::npos)
+                     if ((shortName.find_first_not_of("0123456789") != std::string::npos) && script.find(shortNameLCase) != std::string::npos)
                         return; // (Potential) conflict with a script variable
                      for (int i = 0; i < m_vcollection.size(); i++)
                      {
                         char elementName[256];
                         WideCharToMultiByteNull(CP_ACP, 0, m_vcollection.ElementAt(i)->m_wzName, -1, elementName, sizeof(elementName), nullptr, nullptr);
-                        if (elementName == shortName)
+                        if (lowerCase(elementName) == shortNameLCase)
                            return; // Conflict with a collection name
                      }
                      const int len = (int)shortName.length() + 1;
