@@ -1252,14 +1252,10 @@ void Renderer::RenderFrame()
    }
 }
 
-static Texture* LoadSegSDF(std::unique_ptr<Texture>& tex, const string& path)
+static Texture* GetSegSDF(std::unique_ptr<Texture>& tex, const string& path)
 {
    if (tex == nullptr)
-   {
-      tex.reset(Texture::CreateFromFile(path));
-      if (tex)
-         tex->GetRawBitmap()->m_format = BaseTexture::RGBA; // needed as the image is loaded as sRGBA while it contains linear SDF data
-   }
+      tex.reset(Texture::CreateFromFile(path, false));
    return tex.get();
 }
 
@@ -1269,25 +1265,25 @@ void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const ve
    Texture* segSDF = nullptr;
    switch (type)
    {
-   case CTLPI_SEG_LAYOUT_7: segSDF = LoadSegSDF(m_segDisplaySDF[family][0], 
+   case CTLPI_SEG_LAYOUT_7: segSDF = GetSegSDF(m_segDisplaySDF[family][0], 
         (family == SegmentFamily::Gottlieb) ? g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-gts.png"
       : (family == SegmentFamily::Bally)    ? g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-bally.png"
       : (family == SegmentFamily::Atari)    ? g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-atari.png"
                                             : g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-williams.png"); break;
-   case CTLPI_SEG_LAYOUT_7C: segSDF = LoadSegSDF(m_segDisplaySDF[family][1],
+   case CTLPI_SEG_LAYOUT_7C: segSDF = GetSegSDF(m_segDisplaySDF[family][1],
         (family == SegmentFamily::Bally)    ? g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-c-bally.png"
       : (family == SegmentFamily::Atari)    ? g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-c-atari.png"
                                             : g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-c-williams.png"); break;
    // TODO I did not found any reference for a dot only 7 segments display, so we use the comma one which is likely wrong
-   case CTLPI_SEG_LAYOUT_7D: segSDF = LoadSegSDF(m_segDisplaySDF[family][2], g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-c-williams.png"); break;
-   case CTLPI_SEG_LAYOUT_9: segSDF = LoadSegSDF(m_segDisplaySDF[family][3], g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "9seg-gts.png"); break;
-   case CTLPI_SEG_LAYOUT_9C: segSDF = LoadSegSDF(m_segDisplaySDF[family][4], g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "9seg-c-gts.png"); break;
-   case CTLPI_SEG_LAYOUT_14: segSDF = LoadSegSDF(m_segDisplaySDF[family][5], g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "14seg-williams.png"); break;
-   case CTLPI_SEG_LAYOUT_14D: segSDF = LoadSegSDF(m_segDisplaySDF[family][6], g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "14seg-d-williams.png"); break;
-   case CTLPI_SEG_LAYOUT_14DC: segSDF = LoadSegSDF(m_segDisplaySDF[family][7],
+   case CTLPI_SEG_LAYOUT_7D: segSDF = GetSegSDF(m_segDisplaySDF[family][2], g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-c-williams.png"); break;
+   case CTLPI_SEG_LAYOUT_9: segSDF = GetSegSDF(m_segDisplaySDF[family][3], g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "9seg-gts.png"); break;
+   case CTLPI_SEG_LAYOUT_9C: segSDF = GetSegSDF(m_segDisplaySDF[family][4], g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "9seg-c-gts.png"); break;
+   case CTLPI_SEG_LAYOUT_14: segSDF = GetSegSDF(m_segDisplaySDF[family][5], g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "14seg-williams.png"); break;
+   case CTLPI_SEG_LAYOUT_14D: segSDF = GetSegSDF(m_segDisplaySDF[family][6], g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "14seg-d-williams.png"); break;
+   case CTLPI_SEG_LAYOUT_14DC: segSDF = GetSegSDF(m_segDisplaySDF[family][7],
         (family == SegmentFamily::Gottlieb) ? g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "14seg-dc-gts.png"
                                             : g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "14seg-dc-williams.png"); break;
-   case CTLPI_SEG_LAYOUT_16: segSDF = LoadSegSDF(m_segDisplaySDF[family][8], g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "16seg.png"); break;
+   case CTLPI_SEG_LAYOUT_16: segSDF = GetSegSDF(m_segDisplaySDF[family][8], g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "16seg.png"); break;
    }
    if (segSDF == nullptr)
       return;

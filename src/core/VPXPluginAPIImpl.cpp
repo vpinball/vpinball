@@ -169,7 +169,7 @@ VPXTexture VPXPluginAPIImpl::CreateTexture(uint8_t* rawData, int size)
 {
    // BGFX allows to create texture from any thread
    // assert(std::this_thread::get_id() == VPXPluginAPIImpl::GetInstance().m_apiThread);
-   return BaseTexture::CreateFromData(rawData, size, 65536);
+   return BaseTexture::CreateFromData(rawData, size);
 }
 
 void VPXPluginAPIImpl::GetTextureInfo(VPXTexture texture, int* width, int* height)
