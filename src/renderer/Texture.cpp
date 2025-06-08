@@ -788,7 +788,7 @@ Texture* Texture::CreateFromStream(IStream *pstream, int version, PinTable *pt)
          }
          ppb->m_path = path;
          FreeImage_SeekMemory(memStream, 0, SEEK_SET);
-         FreeImage_ReadMemory(ppb->m_buffer.data(), 1, ppb->m_buffer.size(), memStream);
+         FreeImage_ReadMemory(ppb->m_buffer.data(), 1, static_cast<unsigned int>(ppb->m_buffer.size()), memStream);
          FreeImage_CloseMemory(memStream);
          FreeImage_Unload(dib);
          break;
@@ -884,6 +884,25 @@ HRESULT Texture::SaveToStream(IStream *pstream, const PinTable *pt)
    bw.WriteBool(FID(OPAQ), IsOpaque());
    bw.WriteTag(FID(ENDB));
    return S_OK;
+}
+
+bool Texture::IsHDR() const
+{
+   if (m_imageBuffer)
+      return m_imageBuffer->m_format == BaseTexture::RGB_FP16 || m_imageBuffer->m_format == BaseTexture::RGBA_FP16 || m_imageBuffer->m_format == BaseTexture::RGB_FP32 || m_imageBuffer->m_format == BaseTexture::RGBA_FP32;
+   string ext = extension_from_path(m_ppb->m_path);
+   return (ext == "exr") || (ext == "hdr");
+}
+
+size_t Texture::GetEstimatedGPUSize() const
+{
+   size_t estimatedSize;
+   if (m_imageBuffer)
+      estimatedSize = static_cast<size_t>(m_imageBuffer->height()) * static_cast<size_t>(m_imageBuffer->pitch());
+   else
+      estimatedSize = static_cast<size_t>(m_width) * static_cast<size_t>(m_height) * (IsHDR() ? 6 : 4); // 6 bytes per pixel for HDR (RGB_FP16) and 4 bytes per pixel for non-HDR (RGBA)
+   // Add mipmaps (+1/3).
+   return (4 * estimatedSize) / 3;
 }
 
 BaseTexture* Texture::GetRawBitmap(bool resizeOnLowMem, unsigned int maxTexDimension) const
