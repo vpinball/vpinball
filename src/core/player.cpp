@@ -711,7 +711,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
                   if (tex != nullptr && node->QueryBoolAttribute("linear", &linearRGB) == tinyxml2::XML_SUCCESS)
                   {
                      PLOGI << "Texture preloading: '" << name << '\'';
-                     m_renderer->m_renderDevice->UploadTexture(tex->GetRawBitmap(), linearRGB);
+                     m_renderer->m_renderDevice->UploadTexture(tex, linearRGB);
                   }
                }
             }
@@ -999,10 +999,10 @@ Player::~Player()
          xmlDoc.InsertEndChild(root);
       }
 
-      vector<BaseTexture *> textures = m_renderer->m_renderDevice->m_texMan.GetLoadedTextures();
-      for (BaseTexture *memtex : textures)
+      vector<ITexManCacheable *> textures = m_renderer->m_renderDevice->m_texMan.GetLoadedTextures();
+      for (ITexManCacheable *memtex : textures)
       {
-         auto tex = std::ranges::find_if(m_ptable->m_vimage.begin(), m_ptable->m_vimage.end(), [&memtex](Texture *&x) { return (!x->m_name.empty()) && (x->GetRawBitmap() == memtex); });
+         auto tex = std::ranges::find_if(m_ptable->m_vimage.begin(), m_ptable->m_vimage.end(), [&memtex](Texture *&x) { return (!x->m_name.empty()) && (x == memtex || x->GetRawBitmap() == memtex); });
          if (tex != m_ptable->m_vimage.end())
          {
             tinyxml2::XMLElement *node = textureAge[(*tex)->m_name];

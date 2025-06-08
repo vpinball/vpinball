@@ -179,7 +179,7 @@ public:
 
    static void SetMainTextureDefaultFiltering(const SamplerFilter filter);
 
-   void UploadTexture(BaseTexture* texture, const bool linearRGB);
+   void UploadTexture(ITexManCacheable* texture, const bool linearRGB);
    void SetSamplerState(int unit, SamplerFilter filter, SamplerAddressMode clamp_u, SamplerAddressMode clamp_v);
    void UnbindSampler(Sampler* sampler);
    Sampler* m_nullTexture = nullptr;

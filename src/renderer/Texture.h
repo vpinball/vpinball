@@ -4,12 +4,21 @@
 
 #define MIN_TEXTURE_SIZE 8u
 
+class ITexManCacheable
+{
+public:
+   virtual unsigned long long GetLiveHash() const = 0;
+   virtual bool IsOpaque() const = 0;
+   virtual class BaseTexture *GetRawBitmap(bool resizeOnLowMem = false, unsigned int maxTexDimension = 0) = 0;
+   virtual string GetName() const = 0;
+};
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // Image data block stored in main memory, meant to be uploaded for GPU sampling
 //
-class BaseTexture final
+class BaseTexture final : public ITexManCacheable
 {
 public:
    enum Format
@@ -36,7 +45,9 @@ public:
    static void Update(BaseTexture **texture, const unsigned int w, const unsigned int h, const Format format, const uint8_t *image); // Update eventually recreating the texture
    static BaseTexture *GetPlaceHolder();
 
-   unsigned long long GetLiveHash() const { return m_liveHash; }
+   virtual unsigned long long GetLiveHash() const override { return m_liveHash; }
+   virtual BaseTexture *GetRawBitmap(bool resizeOnLowMem = false, unsigned int maxTexDimension = 0) override { return this; }
+   virtual string GetName() const { return ""; }
 
    unsigned int width() const  { return m_width; }
    unsigned int height() const { return m_height; }
@@ -56,7 +67,7 @@ public:
    void SetMD5Hash(uint8_t* md5) const { memcpy(m_md5Hash, md5, sizeof(m_md5Hash)); m_isMD5Dirty = false; }
 
    bool IsOpaqueComputed() const { return !m_isOpaqueDirty; }
-   bool IsOpaque() const { UpdateOpaque(); return m_isOpaque; }
+   virtual bool IsOpaque() const override { UpdateOpaque(); return m_isOpaque; }
    void SetIsOpaque(const bool v) const { m_isOpaque = v; m_isOpaqueDirty = false; }
 
 private:
@@ -81,7 +92,7 @@ private:
 //
 // Image definition, based on a source file data blob
 //
-class Texture final
+class Texture final : public ITexManCacheable
 {
 public:
    static Texture *CreateFromFile(const string &filename);
@@ -90,9 +101,17 @@ public:
 
    HRESULT SaveToStream(IStream *pstream, const PinTable *pt);
 
+   virtual unsigned long long GetLiveHash() const override { return m_liveHash; }
+   virtual string GetName() const { return m_name; }
+
    HBITMAP GetGDIBitmap() const; // Lazily created view of the image, suitable for GDI rendering
    BaseTexture *GetRawBitmap(bool resizeOnLowMem = false, unsigned int maxTexDimension = 0) const; // Lazily created view of the image, suitable for GPU sampling
-   void UseRawBitmapPlaceHolder() const { delete m_imageBuffer; m_imageBuffer = BaseTexture::GetPlaceHolder(); }
+   virtual BaseTexture *GetRawBitmap(bool resizeOnLowMem = false, unsigned int maxTexDimension = 0) override { return static_cast<const Texture*>(this)->GetRawBitmap(resizeOnLowMem, maxTexDimension); }
+   void UseRawBitmapPlaceHolder() const
+   {
+      delete m_imageBuffer;
+      m_imageBuffer = BaseTexture::GetPlaceHolder();
+   }
 
    size_t GetEstimatedGPUSize() const;
 
@@ -102,7 +121,7 @@ public:
    bool SaveFile(const string &filename) const { return m_ppb->WriteToFile(filename); }
 
    const uint8_t* GetMD5Hash() const { UpdateMD5(); return m_md5Hash; }
-   bool IsOpaque() const { UpdateOpaque(); return m_isOpaque; }
+   virtual bool IsOpaque() const override { UpdateOpaque(); return m_isOpaque; }
    bool IsHDR() const;
 
 public:
@@ -120,7 +139,8 @@ private:
    void UpdateOpaque() const;
    void SetIsOpaque(const bool v) { m_isOpaque = v; m_isOpaqueDirty = false; if (m_imageBuffer) m_imageBuffer->SetIsOpaque(v); }
 
-   PinBinary * const m_ppb; // Original data blob of the image, always defined
+   const unsigned long long m_liveHash;
+   PinBinary *const m_ppb; // Original data blob of the image, always defined
 
    // These field are (lazily) computed from the data, therefore they do not impact the constness of the object
    mutable BaseTexture* m_imageBuffer = nullptr; // Decoded version of the texture in a format suitable for GPU sampling. Note that width and height of the decoded block can be different than width and height of the image since the surface can be limited to smaller sizes by the user or memory

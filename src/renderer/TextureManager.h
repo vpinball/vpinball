@@ -21,21 +21,20 @@ public:
       UnloadAll();
    }
 
-   Sampler* LoadTexture(BaseTexture* const memtex, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV, const bool force_linear_rgb);
-   void SetDirty(BaseTexture* memtex);
-   void UnloadTexture(BaseTexture* memtex);
+   Sampler* LoadTexture(ITexManCacheable* const memtex, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV, const bool force_linear_rgb);
+   void SetDirty(ITexManCacheable* memtex);
+   void UnloadTexture(ITexManCacheable* memtex);
    void UnloadAll();
 
-   vector<BaseTexture*> GetLoadedTextures() const;
-   bool IsLinearRGB(BaseTexture* memtex) const;
+   vector<ITexManCacheable*> GetLoadedTextures() const;
+   bool IsLinearRGB(ITexManCacheable* memtex) const;
 
 private:
    struct MapEntry
    {
-      string name;
       Sampler* sampler;
       bool forceLinearRGB;
-      BaseTexture* tex;
+      ITexManCacheable* tex;
    };
    RenderDevice& m_rd;
    ankerl::unordered_dense::map<unsigned long long, MapEntry> m_map;

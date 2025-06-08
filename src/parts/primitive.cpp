@@ -1270,27 +1270,20 @@ void Primitive::Render(const unsigned int renderMask)
 
    // Select textures, replacing backglass image by capture if it is available
    Texture * const nMap = m_ptable->GetImage(m_d.m_szNormalMap);
-   BaseTexture *pin = nullptr;
-   float pinAlphaTest = -1.f;
+   ITexManCacheable *pin = nullptr;
+   float pinAlphaTest;
    if (g_pplayer->m_texPUP && m_isBackGlassImage)
    {
       pin = g_pplayer->m_texPUP;
-      m_rd->m_basicShader->SetAlphaTestValue(0.f);
+      pinAlphaTest = 0.f;
    }
    else
    {
       Texture * const img = m_ptable->GetImage(m_d.m_szImage);
-      if (img != nullptr)
-      {
-         pin = img->GetRawBitmap();
-         pinAlphaTest = img->m_alphaTestValue;
-         m_rd->m_basicShader->SetAlphaTestValue(img->m_alphaTestValue);
-      }
-      else
-      {
-         pin = nullptr;
-      }
+      pin = img;
+      pinAlphaTest = img != nullptr ? img->m_alphaTestValue : -1.f;
    }
+   m_rd->m_basicShader->SetAlphaTestValue(pinAlphaTest);
 
    // accommodate models with UV coords outside of [0,1] by using Repeat address mode
    if (pin && nMap)

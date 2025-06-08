@@ -700,6 +700,7 @@ Texture::Texture(const string& name, PinBinary* ppb, unsigned int width, unsigne
    , m_ppb(ppb)
    , m_width(width)
    , m_height(height)
+   , m_liveHash(((unsigned long long)this) ^ ((unsigned long long)ppb) ^ usec() ^ ((unsigned long long)width << 16) ^ ((unsigned long long)height << 32))
 {
    assert(m_ppb != nullptr);
    assert(m_width > 0);

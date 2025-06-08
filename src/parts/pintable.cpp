@@ -7580,7 +7580,7 @@ string PinTable::AuditTable(bool log) const
       if (type == eItemPrimitive && prim->m_d.m_visible
          && prim->m_d.m_disableLightingBelow != 1.f && !prim->m_d.m_staticRendering
          && (!GetMaterial(prim->m_d.m_szMaterial)->m_bOpacityActive || GetMaterial(prim->m_d.m_szMaterial)->m_fOpacity == 1.f)
-         && (GetImage(prim->m_d.m_szImage) == nullptr || GetImage(prim->m_d.m_szImage)->GetRawBitmap()->IsOpaque()))
+         && (GetImage(prim->m_d.m_szImage) == nullptr || GetImage(prim->m_d.m_szImage)->IsOpaque()))
          ss << ". Warning: Primitive '" << prim->GetName() << "' uses translucency (lighting from below) while it is fully opaque. Translucency will be discarded.\r\n";
 
       if (type == eItemLight && light->m_d.m_intensity < 0.f)

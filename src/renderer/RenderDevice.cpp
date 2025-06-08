@@ -1693,7 +1693,7 @@ void RenderDevice::UploadAndSetSMAATextures()
    m_FBShader->SetTexture(SHADER_searchTex, m_SMAAsearchTexture);
 }
 
-void RenderDevice::UploadTexture(BaseTexture* texture, const bool linearRGB)
+void RenderDevice::UploadTexture(ITexManCacheable* texture, const bool linearRGB)
 {
    Sampler* sampler = m_texMan.LoadTexture(texture, SamplerFilter::SF_UNDEFINED, SamplerAddressMode::SA_UNDEFINED, SamplerAddressMode::SA_UNDEFINED, linearRGB);
    #if defined(ENABLE_BGFX)

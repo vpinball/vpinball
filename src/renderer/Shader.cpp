@@ -720,7 +720,7 @@ void Shader::SetTextureNull(const ShaderUniforms uniformName)
    SetTexture(uniformName, m_renderDevice->m_nullTexture);
 }
 
-void Shader::SetTexture(const ShaderUniforms uniformName, BaseTexture* const texel, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV, const bool force_linear_rgb)
+void Shader::SetTexture(const ShaderUniforms uniformName, ITexManCacheable* const texel, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV, const bool force_linear_rgb)
 {
    SetTexture(uniformName, texel ? m_renderDevice->m_texMan.LoadTexture(texel, filter, clampU, clampV, force_linear_rgb) : m_renderDevice->m_nullTexture);
 }
@@ -936,10 +936,10 @@ void Shader::SetBasic(const Material * const mat, Texture * const pin)
 {
    if (pin)
    {
-      SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, pin->m_alphaTestValue >= 0.f && !pin->GetRawBitmap()->IsOpaque());
+      SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, pin->m_alphaTestValue >= 0.f && !pin->IsOpaque());
       SetTexture(SHADER_tex_base_color, pin); //, SF_TRILINEAR, SA_REPEAT, SA_REPEAT);
       SetAlphaTestValue(pin->m_alphaTestValue);
-      SetMaterial(mat, !pin->GetRawBitmap()->IsOpaque());
+      SetMaterial(mat, !pin->IsOpaque());
    }
    else
    {
