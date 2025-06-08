@@ -94,7 +94,7 @@ public:
    BaseTexture *GetRawBitmap(bool resizeOnLowMem = false, unsigned int maxTexDimension = 0) const; // Lazily created view of the image, suitable for GPU sampling
    void UseRawBitmapPlaceHolder() const { delete m_imageBuffer; m_imageBuffer = BaseTexture::GetPlaceHolder(); }
 
-   int GetEstimatedGPUSize() const { return m_imageBuffer ? (m_imageBuffer->height() * m_imageBuffer->pitch() * 3) : (m_width * m_height * 4 * 3); }
+   size_t GetEstimatedGPUSize() const { return (4 * (m_imageBuffer ? (static_cast<size_t>(m_imageBuffer->height()) * static_cast<size_t>(m_imageBuffer->pitch())) : (static_cast<size_t>(m_width) * static_cast<size_t>(m_height) * 4))) / 3; }
 
    size_t GetFileSize() const { return m_ppb->m_buffer.size(); }
    const uint8_t *GetFileRaw() const { return m_ppb->m_buffer.data(); }

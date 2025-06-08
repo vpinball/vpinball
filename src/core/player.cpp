@@ -620,8 +620,46 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       unsigned int maxTexDim = static_cast<unsigned int>(m_ptable->m_settings.LoadValueInt(Settings::Player, "MaxTexDimension"s));
       //!! Note that this dramatically increases the amount of temporary memory needed, especially if Max Texture Dimension is set (as then all the additional conversion/rescale mem is also needed 'in parallel')
       ThreadPool pool(g_pvp->GetLogicalNumberOfProcessors());
+      std::mutex mutex;
+      int nLoadInProgress = 0;
       for (auto image : m_ptable->m_vimage)
-         pool.enqueue([image, maxTexDim] { image->GetRawBitmap(false, maxTexDim); });
+         pool.enqueue([image, maxTexDim, &mutex, &nLoadInProgress] { 
+            bool readyToLoad = false;
+            while (!readyToLoad)
+            {
+               {
+                  const std::lock_guard<std::mutex> lock(mutex);
+                  if (nLoadInProgress == 0)
+                     readyToLoad = true;
+                  else
+                  {
+                     size_t neededMem = image->GetEstimatedGPUSize() * 3; // 3x the estimated size is one for the image loader, one for the BaseTexture instance and one for the rendering API copy
+                     #ifdef _MSC_VER
+                        MEMORYSTATUSEX statex;
+                        statex.dwLength = sizeof(statex);
+                        GlobalMemoryStatusEx(&statex);
+                        readyToLoad = statex.ullAvailPhys > neededMem;
+                     #else
+                        // TODO implement for other platforms
+                        // struct sysinfo memInfo;
+                        // sysinfo(&memInfo);
+                        // readyToLoad = memInfo.freeram > neededMem;
+                        readyToLoad = true;
+                     #endif
+                  }
+                  if (readyToLoad)
+                     nLoadInProgress++;
+               }
+               if (readyToLoad)
+                  image->GetRawBitmap(false, maxTexDim);
+               else
+                  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
+            {
+               const std::lock_guard<std::mutex> lock(mutex);
+               nLoadInProgress--;
+            }
+         });
       pool.wait_until_empty();
       pool.wait_until_nothing_in_flight();
       // due to multithreaded loading and pre-allocation, check if some images could not be loaded, and perform a retry since more memory is available now
