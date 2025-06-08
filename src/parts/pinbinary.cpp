@@ -30,8 +30,8 @@ HRESULT PinBinary::SaveToStream(IStream *pstream)
 
    bw.WriteString(FID(NAME), m_name);
    bw.WriteString(FID(PATH), m_path);
-   bw.WriteInt(FID(SIZE), m_buffer.size());
-   bw.WriteStruct(FID(DATA), m_buffer.data(), m_buffer.size());
+   bw.WriteInt(FID(SIZE), static_cast<int>(m_buffer.size()));
+   bw.WriteStruct(FID(DATA), m_buffer.data(), static_cast<int>(m_buffer.size()));
    bw.WriteTag(FID(ENDB));
 
    return S_OK;
@@ -60,7 +60,7 @@ bool PinBinary::LoadToken(const int id, BiffReader * const pbr)
       break;
    }
    // Size must come before data, otherwise our structure won't be allocated
-   case FID(DATA): pbr->GetStruct(m_buffer.data(), m_buffer.size()); break;
+   case FID(DATA): pbr->GetStruct(m_buffer.data(), static_cast<int>(m_buffer.size())); break;
    }
    return true;
 }
