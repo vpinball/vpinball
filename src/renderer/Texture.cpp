@@ -83,10 +83,10 @@ BaseTexture* BaseTexture::CreateFromFile(const string& filename, unsigned int ma
       return nullptr;
    PinBinary ppb;
    ppb.ReadFromFile(filename);
-   return CreateFromData(ppb.m_buffer.data(), ppb.m_buffer.size(), maxTexDimension, resizeOnLowMem);
+   return CreateFromData(ppb.m_buffer.data(), ppb.m_buffer.size(), true, maxTexDimension, resizeOnLowMem);
 }
 
-BaseTexture* BaseTexture::CreateFromData(const void* data, const size_t size, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept
+BaseTexture* BaseTexture::CreateFromData(const void* data, const size_t size, const bool isImageData, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept
 {
    BaseTexture* tex = nullptr;
    
@@ -102,7 +102,17 @@ BaseTexture* BaseTexture::CreateFromData(const void* data, const size_t size, un
           nullptr;
       if (stbi_data) // will only enter this path for JPG files
       {
-         tex = BaseTexture::Create(x, y, channels_in_file == 4 ? BaseTexture::SRGBA : ((channels_in_file == 1) ? BaseTexture::BW : BaseTexture::SRGB));
+         Format format = channels_in_file == 4 ? BaseTexture::SRGBA : ((channels_in_file == 1) ? BaseTexture::BW : BaseTexture::SRGB);
+         if (!isImageData)
+         {
+            switch (format)
+            {
+            case BaseTexture::SRGB: format = BaseTexture::RGB; break;
+            case BaseTexture::SRGBA: format = BaseTexture::RGBA; break;
+            default: break;
+            }
+         }
+         tex = BaseTexture::Create(x, y, format);
          if (tex)
          {
             BYTE* const __restrict pdst = tex->data();
@@ -130,7 +140,7 @@ BaseTexture* BaseTexture::CreateFromData(const void* data, const size_t size, un
       // Load
       FIBITMAP * const dib = FreeImage_LoadFromMemory(fif, dataHandle, 0);
       FreeImage_CloseMemory(dataHandle);
-      tex = dib ? BaseTexture::CreateFromFreeImage(dib, maxTexDimension, resizeOnLowMem) : nullptr;
+      tex = dib ? BaseTexture::CreateFromFreeImage(dib, isImageData, maxTexDimension, resizeOnLowMem) : nullptr;
    }
    
    #ifdef __OPENGLES__
@@ -145,7 +155,7 @@ BaseTexture* BaseTexture::CreateFromData(const void* data, const size_t size, un
    return tex;
 }
 
-BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, unsigned int maxTexDim, bool resizeOnLowMem) noexcept
+BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, const bool isImageData, unsigned int maxTexDim, bool resizeOnLowMem) noexcept
 {
    // check if Textures exceed the maximum texture dimension
    if (maxTexDim <= 0)
@@ -265,7 +275,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, unsigned int maxTex
       }
       else
       {
-         format = has_alpha ? SRGBA : SRGB;
+         format = isImageData ? (has_alpha ? SRGBA : SRGB) : (has_alpha ? RGBA : RGB);
       }
 
       try
@@ -427,7 +437,7 @@ BaseTexture* BaseTexture::CreateFromHBitmap(const HBITMAP hbmp, unsigned int max
          if (!dib)
             return nullptr;
       }
-      return BaseTexture::CreateFromFreeImage(dib, true, maxTexDim);
+      return BaseTexture::CreateFromFreeImage(dib, true, maxTexDim, true);
    #endif
 }
 
@@ -834,12 +844,12 @@ Texture* Texture::CreateFromStream(IStream *pstream, int version, PinTable *pt)
    return tex;
 }
 
-Texture* Texture::CreateFromFile(const string& filename)
+Texture* Texture::CreateFromFile(const string& filename, const bool isImageData)
 {
    PinBinary* const ppb = new PinBinary();
    ppb->ReadFromFile(filename);
 
-   BaseTexture* const imageBuffer = BaseTexture::CreateFromData(ppb->m_buffer.data(), ppb->m_buffer.size(), 0, false);
+   BaseTexture* const imageBuffer = BaseTexture::CreateFromData(ppb->m_buffer.data(), ppb->m_buffer.size(), isImageData);
    if (imageBuffer == nullptr)
    {
       delete ppb;
@@ -909,7 +919,7 @@ size_t Texture::GetEstimatedGPUSize() const
 BaseTexture* Texture::GetRawBitmap(bool resizeOnLowMem, unsigned int maxTexDimension) const
 {
    if (m_imageBuffer == nullptr)
-      m_imageBuffer = BaseTexture::CreateFromData(m_ppb->m_buffer.data(), m_ppb->m_buffer.size(), maxTexDimension, resizeOnLowMem);
+      m_imageBuffer = BaseTexture::CreateFromData(m_ppb->m_buffer.data(), m_ppb->m_buffer.size(), true, maxTexDimension, resizeOnLowMem);
 
    return m_imageBuffer;
 }

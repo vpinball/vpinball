@@ -40,7 +40,7 @@ public:
 
    static BaseTexture *Create(const unsigned int w, const unsigned int h, const Format format) noexcept;
    static BaseTexture *CreateFromFile(const string &filename, unsigned int maxTexDimension = 0, bool resizeOnLowMem = false) noexcept;
-   static BaseTexture *CreateFromData(const void *data, const size_t size, unsigned int maxTexDimension = 0, bool resizeOnLowMem = false) noexcept;
+   static BaseTexture *CreateFromData(const void *data, const size_t size, const bool isImageData = true, unsigned int maxTexDimension = 0, bool resizeOnLowMem = false) noexcept;
    static BaseTexture *CreateFromHBitmap(const HBITMAP hbm, unsigned int maxTexDimension, bool with_alpha = true) noexcept;
    static void Update(BaseTexture **texture, const unsigned int w, const unsigned int h, const Format format, const uint8_t *image); // Update eventually recreating the texture
    static BaseTexture *GetPlaceHolder();
@@ -60,7 +60,7 @@ public:
    BaseTexture *NewWithAlpha() const;
 
    unsigned int m_realWidth, m_realHeight;
-   Format m_format;
+   const Format m_format;
 
    bool IsMD5HashComputed() const { return !m_isMD5Dirty; }
    uint8_t* GetMD5Hash() const { UpdateMD5(); return m_md5Hash; }
@@ -71,7 +71,7 @@ public:
    void SetIsOpaque(const bool v) const { m_isOpaque = v; m_isOpaqueDirty = false; }
 
 private:
-   static BaseTexture *CreateFromFreeImage(struct FIBITMAP *dib, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept; // also free's/delete's the dib inside!
+   static BaseTexture *CreateFromFreeImage(struct FIBITMAP *dib, const bool isImageData, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept; // also free's/delete's the dib inside!
 
    void UpdateMD5() const;
    void UpdateOpaque() const;
@@ -95,7 +95,7 @@ private:
 class Texture final : public ITexManCacheable
 {
 public:
-   static Texture *CreateFromFile(const string &filename);
+   static Texture *CreateFromFile(const string &filename, const bool isImageData = true);
    static Texture *CreateFromStream(IStream *pstream, int version, PinTable *pt);
    ~Texture();
 

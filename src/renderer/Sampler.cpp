@@ -344,6 +344,10 @@ void Sampler::UpdateTexture(const BaseTexture* const surf, const bool force_line
    }
    m_textureUpdate = bgfx::copy(surf->datac(), static_cast<uint32_t>(surf->height() * surf->pitch()));
 
+   assert(bgfx::isTextureValid(1, false, 1, m_bgfx_format, m_isLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB));
+   assert(bgfx::isTextureValid(1, false, 1, m_bgfx_format, (m_isLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB) | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST));
+
+
 #elif defined(ENABLE_OPENGL)
    colorFormat format;
    if (surf->m_format == BaseTexture::RGB)
