@@ -817,13 +817,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    // Pre-render all non-changing elements such as static walls, rails, backdrops, etc. and also static playfield reflections
    // This is done after starting the script and firing the Init event to allow script to adjust static parts on startup
    PLOGI << "Prerendering static parts"; // For profiling
-   #if defined(ENABLE_BGFX)
-   m_renderer->m_renderDevice->m_frameMutex.lock();
-   #endif
    m_renderer->RenderFrame();
-   #if defined(ENABLE_BGFX)
-   m_renderer->m_renderDevice->m_frameMutex.unlock();
-   #endif
 
    // Reset the perf counter to start time when physics starts
    wintimer_init();
@@ -1705,6 +1699,7 @@ void Player::GameLoop(std::function<void()> ProcessOSMessages)
 void Player::MultithreadedGameLoop(const std::function<void()>& sync)
 {
 #ifdef ENABLE_BGFX
+   m_renderer->m_renderDevice->m_frameMutex.unlock();
    m_logicProfiler.SetThreadLock();
    while (GetCloseState() == CS_PLAYING || GetCloseState() == CS_USER_INPUT)
    {

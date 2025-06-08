@@ -277,9 +277,6 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       m_renderDevice->m_basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
       m_renderDevice->m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
    #else // Compute radiance on the GPU
-      #if defined(ENABLE_BGFX)
-      m_renderDevice->m_frameMutex.lock();
-      #endif
       const colorFormat rad_format = envTex->m_format == BaseTexture::RGB_FP32 ? colorFormat::RGBA32F : colorFormat::RGBA16F;
       m_envRadianceTexture = new RenderTarget(m_renderDevice, SurfaceType::RT_DEFAULT, "Irradiance"s, envTexWidth, envTexHeight, rad_format, false, 1, "Failed to create irradiance render target");
       m_renderDevice->ResetRenderState();
@@ -292,9 +289,6 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       m_renderDevice->SubmitRenderFrame(); // Force submission as result users do not explicitly declare the dependency on this pass
       m_renderDevice->m_basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
       m_renderDevice->m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
-      #if defined(ENABLE_BGFX)
-      m_renderDevice->m_frameMutex.unlock();
-      #endif
    #endif
    if (tableEnv == nullptr)
       delete envTex;
