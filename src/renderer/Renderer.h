@@ -227,7 +227,7 @@ private:
 
    Texture* m_tonemapLUT = nullptr;
 
-   #if defined(ENABLE_DX9) || defined(__OPENGLES__)
+   #if defined(ENABLE_DX9) || defined(__OPENGLES__) || defined(__APPLE__)
    BaseTexture* m_envRadianceTexture = nullptr;
    #else
    RenderTarget* m_envRadianceTexture = nullptr;
