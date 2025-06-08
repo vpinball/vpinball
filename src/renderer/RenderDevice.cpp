@@ -665,11 +665,16 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
     DwmIsCompositionEnabled(&dwm);
     m_dwm_enabled = m_dwm_was_enabled = !!dwm;
 
+    #ifdef ENABLE_BGFX
+    m_dwm_enabled = false; // Prefer using BGFX for VSync synchronization
+    #else
     if (m_dwm_was_enabled && disableDWM && IsWindowsVistaOr7()) // windows 8 and above will not allow do disable it, but will still return S_OK
     {
         DwmEnableComposition(DWM_EC_DISABLECOMPOSITION);
         m_dwm_enabled = false;
     }
+    #endif
+    
 #else
     m_dwm_was_enabled = false;
     m_dwm_enabled = false;
