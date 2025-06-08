@@ -268,7 +268,10 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
 
    const unsigned int envTexHeight = min(envTex->height(), 256u) / 8;
    const unsigned int envTexWidth = envTexHeight * 2;
-   #if defined(ENABLE_DX9) || defined(__OPENGLES__) // DirectX 9 does not support bitwise operation in shader, so radical_inverse is not implemented and therefore we use the slow CPU path instead of GPU
+   // DirectX 9 does not support bitwise operation in shader, so radical_inverse is not implemented and therefore we use the slow CPU path instead of GPU
+   // OpenGL ES does not support features used in the irradiance shader, so we use the CPU path for it as well
+   // There is a bug when using the Metal shader, so we use the CPU path for it as well
+   #if defined(ENABLE_DX9) || defined(__OPENGLES__) || defined(__APPLE__)
       m_envRadianceTexture = EnvmapPrecalc(envTex, envTexWidth, envTexHeight);
       m_renderDevice->m_texMan.SetDirty(m_envRadianceTexture);
       m_renderDevice->m_basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
