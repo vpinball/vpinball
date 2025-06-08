@@ -789,6 +789,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    m_renderDeviceAlive = true;
    m_renderThread = std::thread(&RenderThread, this, init);
    m_frameReadySem.wait();
+   m_frameMutex.lock();
    PLOGI << "BGFX initialized using " << bgfxRendererNames[bgfx::getRendererType()] << " backend";
 
 #elif defined(ENABLE_OPENGL)
