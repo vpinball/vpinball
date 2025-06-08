@@ -189,7 +189,7 @@ void VPXPluginAPIImpl::DeleteTexture(VPXTexture texture)
    {
       // Delay texture deletion since it may be used by the render frame which is processed asynchronously. If so, deleting would cause a deadlock & invalid access
       BaseTexture* tex = static_cast<BaseTexture*>(texture);
-      if (tex && g_pplayer)
+      if (tex && g_pplayer && g_pplayer->GetCloseState() != Player::CS_CLOSED)
          g_pplayer->m_renderer->m_renderDevice->AddEndOfFrameCmd(
             [tex]
             {
