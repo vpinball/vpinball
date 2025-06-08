@@ -617,110 +617,131 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_progressDialog.SetProgress("Loading Textures..."s, 50);
 
    {
-      unsigned int maxTexDim = static_cast<unsigned int>(m_ptable->m_settings.LoadValueInt(Settings::Player, "MaxTexDimension"s));
-      //!! Note that this dramatically increases the amount of temporary memory needed, especially if Max Texture Dimension is set (as then all the additional conversion/rescale mem is also needed 'in parallel')
-      ThreadPool pool(g_pvp->GetLogicalNumberOfProcessors());
+      tinyxml2::XMLDocument xmlDoc;
+      tinyxml2::XMLElement *preloadCache = nullptr;
+      if ((m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0) && FileExists(m_ptable->m_filename))
+      {
+         try
+         {
+            string dir = g_pvp->m_myPrefPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_title + PATH_SEPARATOR_CHAR;
+            std::filesystem::create_directories(std::filesystem::path(dir));
+            string path = dir + "used_textures.xml";
+            if (FileExists(path))
+            {
+               PLOGI.printf("Texture cache found at %s", path.c_str());
+               std::stringstream buffer;
+               std::ifstream myFile(path);
+               buffer << myFile.rdbuf();
+               myFile.close();
+               const string xml = buffer.str();
+               if (xmlDoc.Parse(xml.c_str()) == tinyxml2::XML_SUCCESS)
+                  preloadCache = xmlDoc.FirstChildElement("textures");
+            }
+         }
+         catch (...) // something failed while trying to preload images
+         {
+            PLOGE << "Failed to load texture preload cache";
+         }
+      }
+
       std::mutex mutex;
       int nLoadInProgress = 0;
-      for (auto image : m_ptable->m_vimage)
-         pool.enqueue([image, maxTexDim, &mutex, &nLoadInProgress] { 
-            bool readyToLoad = false;
-            while (!readyToLoad)
-            {
-               {
-                  const std::lock_guard<std::mutex> lock(mutex);
-                  if (nLoadInProgress == 0)
-                     readyToLoad = true;
-                  else
-                  {
-                     size_t neededMem = image->GetEstimatedGPUSize() * 3; // 3x the estimated size is one for the image loader, one for the BaseTexture instance and one for the rendering API copy
-                     #ifdef _MSC_VER
-                        MEMORYSTATUSEX statex;
-                        statex.dwLength = sizeof(statex);
-                        GlobalMemoryStatusEx(&statex);
-                        readyToLoad = statex.ullAvailPhys > neededMem;
-                     #else
-                        // TODO implement for other platforms
-                        // struct sysinfo memInfo;
-                        // sysinfo(&memInfo);
-                        // readyToLoad = memInfo.freeram > neededMem;
-                        readyToLoad = true;
-                     #endif
-                  }
-                  if (readyToLoad)
-                     nLoadInProgress++;
-               }
-               if (readyToLoad)
-                  image->GetRawBitmap(false, maxTexDim);
-               else
-                  std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            }
+      vector<Texture *> failedPreloads;
+      unsigned int maxTexDim = static_cast<unsigned int>(m_ptable->m_settings.LoadValueInt(Settings::Player, "MaxTexDimension"s));
+      auto loadImage = [maxTexDim, &mutex, &nLoadInProgress, preloadCache, this, &failedPreloads](Texture *image, bool resizeOnLowMem)
+      {
+         bool readyToLoad = false;
+         while (!readyToLoad)
+         {
             {
                const std::lock_guard<std::mutex> lock(mutex);
-               nLoadInProgress--;
-            }
-         });
-      pool.wait_until_empty();
-      pool.wait_until_nothing_in_flight();
-      // due to multithreaded loading and pre-allocation, check if some images could not be loaded, and perform a retry since more memory is available now
-      for (auto image : m_ptable->m_vimage)
-      {
-         BaseTexture* buffer = image->GetRawBitmap(true, maxTexDim);
-         if (buffer == nullptr)
-         {
-            PLOGE << "Image '" << image->m_name << "' could not be loaded, skipping it";
-            m_liveUI->PushNotification("Image '"s + image->m_name + "' could not be loaded"s, 5000);
-            image->UseRawBitmapPlaceHolder();
-         }
-         else if ((image->m_width > buffer->width()) || (image->m_height > buffer->height()))
-         {
-            const bool isError = (buffer->width() < maxTexDim) || (buffer->height() < maxTexDim);
-            PLOG(isError ? plog::Severity::error : plog::Severity::warning) << "Image '" << image->m_name << "' was downsized from "
-                 << image->m_width<< 'x'<< image->m_height << " to " << buffer->width() << 'x' << buffer->height() << (isError ? " due to low memory " : " due to user settings");
-            if (isError)
-               m_liveUI->PushNotification("Image '"s + image->m_name + "' was downsized due to low memory"s, 5000);
-         }
-      }
-   }
-
-   if ((m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0) && FileExists(m_ptable->m_filename))
-   {
-      try {
-         string dir = g_pvp->m_myPrefPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_title + PATH_SEPARATOR_CHAR;
-         std::filesystem::create_directories(std::filesystem::path(dir));
-         string path = dir + "used_textures.xml";
-         if (FileExists(path))
-         {
-            PLOGI.printf("Texture cache found at %s", path.c_str());
-            std::stringstream buffer;
-            std::ifstream myFile(path);
-            buffer << myFile.rdbuf();
-            myFile.close();
-            const string xml = buffer.str();
-            tinyxml2::XMLDocument xmlDoc;
-            if (xmlDoc.Parse(xml.c_str()) == tinyxml2::XML_SUCCESS)
-            {
-               auto root = xmlDoc.FirstChildElement("textures");
-               for (auto node = root->FirstChildElement("texture"); node != nullptr; node = node->NextSiblingElement())
+               if (nLoadInProgress == 0)
+                  readyToLoad = true;
+               else
                {
-                  bool linearRGB = false;
-                  const char *name = node->GetText();
-                  if (name == nullptr)
-                     continue;
-                  Texture *tex = m_ptable->GetImage(name);
-                  if (tex != nullptr && node->QueryBoolAttribute("linear", &linearRGB) == tinyxml2::XML_SUCCESS)
+                  size_t neededMem= image->GetEstimatedGPUSize() * 3; // 3x the estimated size is one for the image loader, one for the BaseTexture instance and one for the rendering API copy
+                  #ifdef _MSC_VER
+                     MEMORYSTATUSEX statex;
+                     statex.dwLength = sizeof(statex);
+                     GlobalMemoryStatusEx(&statex);
+                     readyToLoad = statex.ullAvailPhys > neededMem;
+                  #else
+                     // TODO implement for other platforms
+                     // struct sysinfo memInfo;
+                     // sysinfo(&memInfo);
+                     // readyToLoad = memInfo.freeram > neededMem;
+                     readyToLoad = true;
+                  #endif
+               }
+               if (readyToLoad)
+                  nLoadInProgress++;
+            }
+            if (!readyToLoad)
+               std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            else
+            {
+               auto buffer = image->GetRawBitmap(resizeOnLowMem, maxTexDim);
+               const std::lock_guard<std::mutex> lock(mutex);
+               if (buffer)
+               {
+                  image->IsOpaque();
+                  bool uploaded = false;
+                  if (preloadCache)
+                     for (auto node = preloadCache->FirstChildElement("texture"); node != nullptr; node = node->NextSiblingElement())
+                     {
+                        bool linearRGB = false;
+                        const char *name = node->GetText();
+                        if (name != nullptr && image->m_name == name && node->QueryBoolAttribute("linear", &linearRGB) == tinyxml2::XML_SUCCESS)
+                        {
+                           m_renderer->m_renderDevice->UploadTexture(image, linearRGB);
+                           image->ReleaseRawBitmap();
+                           uploaded = true;
+                           break;
+                        }
+                     }
+                  //if (!uploaded) // We could upload all images, but this needs support for dynamic change of 'force linear' and would lead to load all VR textures on lower end systems
+                  //{
+                  //   m_renderer->m_renderDevice->UploadTexture(image, false);
+                  //   image->ReleaseRawBitmap();
+                  //}
+                  if ((image->m_width > buffer->width()) || (image->m_height > buffer->height()))
                   {
-                     PLOGI << "Texture preloading: '" << name << '\'';
-                     m_renderer->m_renderDevice->UploadTexture(tex, linearRGB);
+                     const bool isError = (buffer->width() < maxTexDim) || (buffer->height() < maxTexDim);
+                     PLOG(isError ? plog::Severity::error : plog::Severity::warning) << "Image '" << image->m_name << "' was downsized from "
+                           << image->m_width<< 'x'<< image->m_height << " to " << buffer->width() << 'x' << buffer->height() << (isError ? " due to low memory " : " due to user settings");
+                     if (isError)
+                        m_liveUI->PushNotification("Image '"s + image->m_name + "' was downsized due to low memory"s, 5000);
                   }
+                  PLOGI << "Image '" << image->m_name << "' loaded to " << (uploaded ? "GPU" : "RAM");
+               }
+               else if (resizeOnLowMem)
+               {
+                  PLOGE << "Image '" << image->m_name << "' could not be loaded, skipping it";
+                  m_liveUI->PushNotification("Image '"s + image->m_name + "' could not be loaded"s, 5000);
+                  image->UseRawBitmapPlaceHolder();
+               }
+               else
+               {
+                  failedPreloads.push_back(image);
                }
             }
          }
-      }
-      catch (...) // something failed while trying to preload images
-      {
-         PLOGE << "Texture preloading failed";
-      }
+         {
+            const std::lock_guard<std::mutex> lock(mutex);
+            nLoadInProgress--;
+         }
+      };
+
+      // Try to load all image concurrently. Note that this dramatically increases the amount of temporary memory needed, especially if Max Texture Dimension is set (as then all the additional conversion/rescale mem is also needed 'in parallel')
+      ThreadPool pool(g_pvp->GetLogicalNumberOfProcessors());
+      for (auto image : m_ptable->m_vimage)
+         pool.enqueue(loadImage, image, false);
+      pool.wait_until_empty();
+      pool.wait_until_nothing_in_flight();
+
+      // Due to multithreaded loading and pre-allocation, check if some images could not be loaded, and perform a retry since more memory is available now
+      for (auto image : failedPreloads)
+         loadImage(image, true);
    }
 
    //----------------------------------------------------------------------------------
@@ -996,7 +1017,7 @@ Player::~Player()
       vector<ITexManCacheable *> textures = m_renderer->m_renderDevice->m_texMan.GetLoadedTextures();
       for (ITexManCacheable *memtex : textures)
       {
-         auto tex = std::ranges::find_if(m_ptable->m_vimage.begin(), m_ptable->m_vimage.end(), [&memtex](Texture *&x) { return (!x->m_name.empty()) && (x == memtex || x->GetRawBitmap() == memtex); });
+         auto tex = std::ranges::find_if(m_ptable->m_vimage.begin(), m_ptable->m_vimage.end(), [&memtex](Texture *&x) { return (!x->m_name.empty()) && x == memtex; });
          if (tex != m_ptable->m_vimage.end())
          {
             tinyxml2::XMLElement *node = textureAge[(*tex)->m_name];

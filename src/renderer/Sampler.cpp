@@ -13,7 +13,7 @@
 #include <bgfx/platform.h>
 #endif
 
-Sampler::Sampler(RenderDevice* rd, const BaseTexture* const surf, const bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
+Sampler::Sampler(RenderDevice* rd, std::shared_ptr<const BaseTexture> surf, const bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
    : m_dirty(false)
    , m_type(SurfaceType::RT_DEFAULT)
    , m_ownTexture(true)
@@ -279,7 +279,7 @@ void Sampler::Unbind()
 #endif
 }
 
-void Sampler::UpdateTexture(const BaseTexture* const surf, const bool force_linear_rgb)
+void Sampler::UpdateTexture(std::shared_ptr<const BaseTexture> surf, const bool force_linear_rgb)
 {
    m_rd->m_curTextureUpdates++;
 
@@ -432,7 +432,7 @@ void Sampler::SetName(const string& name)
 #if defined(ENABLE_BGFX)
 
 #elif defined(ENABLE_OPENGL)
-GLuint Sampler::CreateTexture(const BaseTexture* const surf, unsigned int Levels, colorFormat Format, int stereo)
+GLuint Sampler::CreateTexture(std::shared_ptr<const BaseTexture> surf, unsigned int Levels, colorFormat Format, int stereo)
 {
    const unsigned int Width = surf->width();
    const unsigned int Height = surf->height();
@@ -537,7 +537,7 @@ GLuint Sampler::CreateTexture(const BaseTexture* const surf, unsigned int Levels
 
 #elif defined(ENABLE_DX9)
 
-IDirect3DTexture9* Sampler::CreateSystemTexture(const BaseTexture* const surf, const bool force_linear_rgb, colorFormat& texformat)
+IDirect3DTexture9* Sampler::CreateSystemTexture(std::shared_ptr<const BaseTexture> surf, const bool force_linear_rgb, colorFormat& texformat)
 {
    const unsigned int texwidth = surf->width();
    const unsigned int texheight = surf->height();

@@ -49,6 +49,7 @@ BaseTexture::BaseTexture(const unsigned int w, const unsigned int h, const Forma
    , m_liveHash(((unsigned long long)this) ^ usec() ^ ((unsigned long long)w << 16) ^ ((unsigned long long)h << 32) ^ format)
    , m_data(new BYTE[w * h * GetPixelSize(format)])
 {
+   m_selfPointer = std::shared_ptr<BaseTexture>(this, [](BaseTexture*) { });
 }
 
 BaseTexture::~BaseTexture()
@@ -857,7 +858,7 @@ Texture* Texture::CreateFromFile(const string& filename, const bool isImageData)
    }
    
    Texture* tex = new Texture(TitleFromFilename(filename), ppb, imageBuffer->m_realWidth, imageBuffer->m_realHeight);
-   tex->m_imageBuffer = imageBuffer;
+   tex->m_imageBuffer = std::shared_ptr<BaseTexture>(imageBuffer);
    tex->UpdateMD5();
    tex->UpdateOpaque();
    return tex;
@@ -866,7 +867,6 @@ Texture* Texture::CreateFromFile(const string& filename, const bool isImageData)
 Texture::~Texture()
 {
    delete m_ppb;
-   delete m_imageBuffer;
    #ifndef __STANDALONE__
       if (m_hbmGDIVersion)
       {
@@ -916,10 +916,13 @@ size_t Texture::GetEstimatedGPUSize() const
    return (4 * estimatedSize) / 3;
 }
 
-BaseTexture* Texture::GetRawBitmap(bool resizeOnLowMem, unsigned int maxTexDimension) const
+std::shared_ptr<BaseTexture> Texture::GetRawBitmap(bool resizeOnLowMem, unsigned int maxTexDimension) const
 {
    if (m_imageBuffer == nullptr)
-      m_imageBuffer = BaseTexture::CreateFromData(m_ppb->m_buffer.data(), m_ppb->m_buffer.size(), true, maxTexDimension, resizeOnLowMem);
+   {
+      // PLOGD << "Decoding image " << m_name;
+      m_imageBuffer = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromData(m_ppb->m_buffer.data(), m_ppb->m_buffer.size(), true, maxTexDimension, resizeOnLowMem));
+   }
 
    return m_imageBuffer;
 }
