@@ -1704,7 +1704,11 @@ void RenderDevice::UploadTexture(ITexManCacheable* texture, const bool linearRGB
    Sampler* sampler = m_texMan.LoadTexture(texture, SamplerFilter::SF_UNDEFINED, SamplerAddressMode::SA_UNDEFINED, SamplerAddressMode::SA_UNDEFINED, linearRGB);
    #if defined(ENABLE_BGFX)
    // BGFX dispatch operations to the render thread, so the texture manager does not actually loads data to the GPU nor perform mipmap generation
+   m_frameMutex.lock();
    m_pendingTextureUploads.push_back(sampler);
+   SubmitRenderFrame(); // Submit texture upload to render thread
+   SubmitRenderFrame(); // Block until render thread has processed the pending texture uploads and mipmap generations
+   m_frameMutex.unlock();
    #endif
 }
 

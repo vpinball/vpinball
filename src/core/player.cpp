@@ -694,16 +694,16 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
                         if (name != nullptr && image->m_name == name && node->QueryBoolAttribute("linear", &linearRGB) == tinyxml2::XML_SUCCESS)
                         {
                            m_renderer->m_renderDevice->UploadTexture(image, linearRGB);
-                           image->ReleaseRawBitmap();
                            uploaded = true;
                            break;
                         }
                      }
-                  //if (!uploaded) // We could upload all images, but this needs support for dynamic change of 'force linear' and would lead to load all VR textures on lower end systems
-                  //{
-                  //   m_renderer->m_renderDevice->UploadTexture(image, false);
-                  //   image->ReleaseRawBitmap();
-                  //}
+                  if (!uploaded)
+                  {
+                     // We could upload all images, but this would need support for dynamic change of 'force linear' and would lead to load all VR textures on lower end systems
+                     // Instead we register it to the texture manager that will hold a strong reference and upload when needed
+                     m_renderer->m_renderDevice->m_texMan.AddPendingUpload(image);
+                  }
                   if ((image->m_width > buffer->width()) || (image->m_height > buffer->height()))
                   {
                      const bool isError = (buffer->width() < maxTexDim) || (buffer->height() < maxTexDim);
@@ -718,7 +718,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
                {
                   PLOGE << "Image '" << image->m_name << "' could not be loaded, skipping it";
                   m_liveUI->PushNotification("Image '"s + image->m_name + "' could not be loaded"s, 5000);
-                  image->UseRawBitmapPlaceHolder();
+                  m_renderer->m_renderDevice->m_texMan.AddPlaceHolder(image);
                }
                else
                {
@@ -733,11 +733,17 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       };
 
       // Try to load all image concurrently. Note that this dramatically increases the amount of temporary memory needed, especially if Max Texture Dimension is set (as then all the additional conversion/rescale mem is also needed 'in parallel')
+      #ifdef ENABLE_BGFX
+      m_renderer->m_renderDevice->m_frameMutex.unlock();
+      #endif
       ThreadPool pool(g_pvp->GetLogicalNumberOfProcessors());
       for (auto image : m_ptable->m_vimage)
          pool.enqueue(loadImage, image, false);
       pool.wait_until_empty();
       pool.wait_until_nothing_in_flight();
+      #ifdef ENABLE_BGFX
+      m_renderer->m_renderDevice->m_frameMutex.lock();
+      #endif
 
       // Due to multithreaded loading and pre-allocation, check if some images could not be loaded, and perform a retry since more memory is available now
       for (auto image : failedPreloads)

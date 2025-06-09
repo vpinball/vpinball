@@ -4296,7 +4296,8 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_IMAGE_RAW_SIZE      "Raw Size"
+    IDS_IMAGE_GPU_SIZE      "GPU Size"
+    IDS_IMAGE_FILE_SIZE     "File Size"
     IDS_SIZE                "Size"
     IDS_ASSIGN_TO_CURRENT_LAYER "&Assign to selected layer"
     IDS_ASSIGN_TO_LAYER2    "&Assign to layer"
