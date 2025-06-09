@@ -918,7 +918,7 @@ std::shared_ptr<BaseTexture> Texture::GetRawBitmap(bool resizeOnLowMem, unsigned
    auto buffer = m_imageBuffer.lock();
    if (buffer)
       return buffer;
-   PLOGD << "Decoding image " << m_name;
+   //PLOGD << "Decoding image " << m_name;
    buffer = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromData(m_ppb->m_buffer.data(), m_ppb->m_buffer.size(), true, maxTexDimension, resizeOnLowMem));
    m_imageBuffer = buffer;
    UpdateOpaque();
