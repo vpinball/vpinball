@@ -21,6 +21,8 @@ public:
       UnloadAll();
    }
 
+   void AddPlaceHolder(ITexManCacheable* memtex);
+   void AddPendingUpload(ITexManCacheable* memtex);
    Sampler* LoadTexture(ITexManCacheable* const memtex, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV, const bool force_linear_rgb);
    void SetDirty(ITexManCacheable* memtex);
    void UnloadTexture(ITexManCacheable* memtex);
@@ -32,9 +34,11 @@ public:
 private:
    struct MapEntry
    {
-      Sampler* sampler;
-      bool forceLinearRGB;
-      ITexManCacheable* tex;
+      Sampler* sampler = nullptr;
+      bool forceLinearRGB = false;
+      ITexManCacheable* tex = nullptr;
+      bool isPlaceHolder = false;
+      std::shared_ptr<class BaseTexture> pendingUpload;
    };
    RenderDevice& m_rd;
    ankerl::unordered_dense::map<unsigned long long, MapEntry> m_map;

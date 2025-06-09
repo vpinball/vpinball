@@ -1003,7 +1003,7 @@ STDMETHODIMP ScriptGlobalTable::LoadTexture(BSTR imageName, BSTR fileName)
       return E_FAIL;
 
    Texture *image = m_pt->ImportImage(szFileName, szImageName);
-   return image->GetRawBitmap() == nullptr ? E_FAIL : S_OK;
+   return image == nullptr ? E_FAIL : S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_WindowWidth(int *pVal)
@@ -7169,7 +7169,7 @@ Texture *PinTable::ImportImage(const string &filename, const string &imagename)
       existing = GetImage(imagename);
 
    Texture *image = Texture::CreateFromFile(filename);
-   if (image->GetRawBitmap() == nullptr)
+   if (image == nullptr)
    {
       delete image;
       return nullptr;

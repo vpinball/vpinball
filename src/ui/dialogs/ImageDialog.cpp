@@ -122,17 +122,23 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          lvcol.fmt = LVCFMT_CENTER;
          ListView_InsertColumn(hListView, 3, &lvcol);
 
-         const LocalString ls5(IDS_IMAGE_RAW_SIZE);
-         lvcol.pszText = (LPSTR)ls5.m_szbuffer; // = "Raw Size";
-         lvcol.cx = 60;
+         const LocalString ls5(IDS_IMAGE_FILE_SIZE);
+         lvcol.pszText = (LPSTR)ls5.m_szbuffer; // = "File Size";
+         lvcol.cx = 100;
          lvcol.fmt = LVCFMT_RIGHT;
          ListView_InsertColumn(hListView, 4, &lvcol);
 
-         const LocalString ls6(IDS_FORMAT);
-         lvcol.pszText = (LPSTR)ls6.m_szbuffer; // = "Format";
-         lvcol.cx = 70;
-         lvcol.fmt = LVCFMT_CENTER;
+         const LocalString ls6(IDS_IMAGE_GPU_SIZE);
+         lvcol.pszText = (LPSTR)ls6.m_szbuffer; // = "GPU Size";
+         lvcol.cx = 100;
+         lvcol.fmt = LVCFMT_RIGHT;
          ListView_InsertColumn(hListView, 5, &lvcol);
+
+         const LocalString ls7(IDS_FORMAT);
+         lvcol.pszText = (LPSTR)ls7.m_szbuffer; // = "Format";
+         lvcol.cx = 100;
+         lvcol.fmt = LVCFMT_CENTER;
+         ListView_InsertColumn(hListView, 6, &lvcol);
 
          ListImages(hListView);
 
@@ -214,9 +220,10 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   Texture * const ppi = (Texture *)lvitem.lParam;
                   if (ppi != nullptr)
                   {
+                     ppi->GetGDIBitmap();
                      SetDlgItemText(IDC_ALPHA_MASK_EDIT, f2sz(255.f * ppi->m_alphaTestValue).c_str());
-                     GetDlgItem(IDC_ALPHA_MASK_EDIT).ShowWindow(ppi->GetRawBitmap() && ppi->GetRawBitmap()->HasAlpha());
-                     GetDlgItem(IDC_STATIC_ALPHA).ShowWindow(ppi->GetRawBitmap() && ppi->GetRawBitmap()->HasAlpha());
+                     GetDlgItem(IDC_ALPHA_MASK_EDIT).ShowWindow(!ppi->IsOpaque());
+                     GetDlgItem(IDC_STATIC_ALPHA).ShowWindow(!ppi->IsOpaque());
                   }
                }
                ::InvalidateRect(GetDlgItem(IDC_PICTUREPREVIEW).GetHwnd(), nullptr, fTrue);
@@ -874,22 +881,11 @@ int ImageDialog::AddListImage(HWND hwndListView, Texture *const ppi)
    char *const sizeConv = StrFormatByteSize64((size_t)ppi->GetEstimatedGPUSize(), sizeString, MAXTOKEN);
    ListView_SetItemText(hwndListView, index, 4, sizeConv);
 
-   if (ppi->GetRawBitmap() == nullptr)
-   {
-      ListView_SetItemText(hwndListView, index, 5, (LPSTR) "-");
-   }
-   else switch (ppi->GetRawBitmap()->m_format)
-   {
-   case BaseTexture::SRGB: ListView_SetItemText(hwndListView, index, 5, (LPSTR) "sRGB"); break;
-   case BaseTexture::SRGBA: ListView_SetItemText(hwndListView, index, 5, (LPSTR) "sRGBA"); break;
-   case BaseTexture::RGB: ListView_SetItemText(hwndListView, index, 5, (LPSTR) "RGB"); break;
-   case BaseTexture::RGBA: ListView_SetItemText(hwndListView, index, 5, (LPSTR) "RGBA"); break;
-   case BaseTexture::RGB_FP16: ListView_SetItemText(hwndListView, index, 5, (LPSTR) "RGB 16F"); break;
-   case BaseTexture::RGBA_FP16: ListView_SetItemText(hwndListView, index, 5, (LPSTR) "RGBA 16F"); break;
-   case BaseTexture::RGB_FP32: ListView_SetItemText(hwndListView, index, 5, (LPSTR) "RGB 32F"); break;
-   case BaseTexture::RGBA_FP32: ListView_SetItemText(hwndListView, index, 5, (LPSTR) "RGBA 32F"); break;
-   default: assert(!"unknown format");
-   }
+   char *const sizeConv2 = StrFormatByteSize64((size_t)ppi->GetFileSize(), sizeString, MAXTOKEN);
+   ListView_SetItemText(hwndListView, index, 5, sizeConv2);
+
+   const char *format = ppi->IsHDR() ? (ppi->IsOpaque() ? "RGB_ HDR" : "RGBA HDR") : (ppi->IsOpaque() ? "RGB_" : "RGBA");
+   ListView_SetItemText(hwndListView, index, 6, (LPSTR)format);
 
    CCO(PinTable) *const pt = g_pvp->GetActiveTable();
    if (pt)

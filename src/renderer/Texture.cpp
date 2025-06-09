@@ -442,12 +442,6 @@ BaseTexture* BaseTexture::CreateFromHBitmap(const HBITMAP hbmp, unsigned int max
    #endif
 }
 
-BaseTexture* BaseTexture::GetPlaceHolder()
-{
-   static BaseTexture placeHolder(1, 1, BaseTexture::SRGBA);
-   return &placeHolder;
-}
-
 void BaseTexture::Update(BaseTexture** texture, const unsigned int width, const unsigned int height, const Format texFormat, const uint8_t* image)
 {
    const int pixelSize = GetPixelSize(texFormat);
@@ -899,8 +893,10 @@ HRESULT Texture::SaveToStream(IStream *pstream, const PinTable *pt)
 
 bool Texture::IsHDR() const
 {
-   if (m_imageBuffer)
-      return m_imageBuffer->m_format == BaseTexture::RGB_FP16 || m_imageBuffer->m_format == BaseTexture::RGBA_FP16 || m_imageBuffer->m_format == BaseTexture::RGB_FP32 || m_imageBuffer->m_format == BaseTexture::RGBA_FP32;
+   auto buffer = m_imageBuffer.lock();
+   if (buffer)
+      return buffer->m_format == BaseTexture::RGB_FP16 || buffer->m_format == BaseTexture::RGBA_FP16
+          || buffer->m_format == BaseTexture::RGB_FP32 || buffer->m_format == BaseTexture::RGBA_FP32;
    string ext = extension_from_path(m_ppb->m_path);
    return (ext == "exr") || (ext == "hdr");
 }
@@ -908,8 +904,9 @@ bool Texture::IsHDR() const
 size_t Texture::GetEstimatedGPUSize() const
 {
    size_t estimatedSize;
-   if (m_imageBuffer)
-      estimatedSize = static_cast<size_t>(m_imageBuffer->height()) * static_cast<size_t>(m_imageBuffer->pitch());
+   auto buffer = m_imageBuffer.lock();
+   if (buffer)
+      estimatedSize = static_cast<size_t>(buffer->height()) * static_cast<size_t>(buffer->pitch());
    else
       estimatedSize = static_cast<size_t>(m_width) * static_cast<size_t>(m_height) * (IsHDR() ? 6 : 4); // 6 bytes per pixel for HDR (RGB_FP16) and 4 bytes per pixel for non-HDR (RGBA)
    // Add mipmaps (+1/3).
@@ -918,13 +915,14 @@ size_t Texture::GetEstimatedGPUSize() const
 
 std::shared_ptr<BaseTexture> Texture::GetRawBitmap(bool resizeOnLowMem, unsigned int maxTexDimension) const
 {
-   if (m_imageBuffer == nullptr)
-   {
-      // PLOGD << "Decoding image " << m_name;
-      m_imageBuffer = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromData(m_ppb->m_buffer.data(), m_ppb->m_buffer.size(), true, maxTexDimension, resizeOnLowMem));
-   }
-
-   return m_imageBuffer;
+   auto buffer = m_imageBuffer.lock();
+   if (buffer)
+      return buffer;
+   PLOGD << "Decoding image " << m_name;
+   buffer = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromData(m_ppb->m_buffer.data(), m_ppb->m_buffer.size(), true, maxTexDimension, resizeOnLowMem));
+   m_imageBuffer = buffer;
+   UpdateOpaque();
+   return buffer;
 }
 
 HBITMAP Texture::GetGDIBitmap() const
@@ -939,7 +937,8 @@ HBITMAP Texture::GetGDIBitmap() const
       return m_hbmGDIVersion;
    }
 
-   if (GetRawBitmap() == nullptr)
+   auto buffer = GetRawBitmap();
+   if (buffer == nullptr)
    {
       m_hbmGDIVersion = g_pvp->m_hbmInPlayMode; // We should return an error bitmap
       return m_hbmGDIVersion;
@@ -959,7 +958,7 @@ HBITMAP Texture::GetGDIBitmap() const
    bmi.bmiHeader.biCompression = BI_RGB;
    bmi.bmiHeader.biSizeImage = 0;
 
-   BaseTexture* bgr32bits = m_imageBuffer->ToBGRA();
+   BaseTexture* bgr32bits = buffer->ToBGRA();
    SetStretchBltMode(hdcNew, COLORONCOLOR);
    StretchDIBits(hdcNew,
       0, 0, m_width, m_height,
@@ -982,8 +981,16 @@ void Texture::UpdateMD5() const
       return;
    m_isMD5Dirty = false;
    generateMD5(m_ppb->m_buffer.data(), m_ppb->m_buffer.size(), m_md5Hash);
-   if (m_imageBuffer)
-      m_imageBuffer->SetMD5Hash(m_md5Hash);
+   SetMD5Hash(m_md5Hash);
+}
+
+void Texture::SetMD5Hash(uint8_t* md5) const
+{
+   memcpy(m_md5Hash, md5, sizeof(m_md5Hash));
+   m_isMD5Dirty = false;
+   auto buffer = m_imageBuffer.lock();
+   if (buffer)
+      buffer->SetMD5Hash(md5);
 }
 
 void Texture::UpdateOpaque() const
@@ -992,4 +999,13 @@ void Texture::UpdateOpaque() const
       return;
    m_isOpaqueDirty = false;
    m_isOpaque = GetRawBitmap()->IsOpaque();
+}
+
+void Texture::SetIsOpaque(const bool v) const
+{
+   m_isOpaque = v;
+   m_isOpaqueDirty = false;
+   auto buffer = m_imageBuffer.lock();
+   if (buffer)
+      buffer->SetIsOpaque(v);
 }

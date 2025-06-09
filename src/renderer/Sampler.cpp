@@ -220,6 +220,7 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool genMipmaps)
    {
       // Defer mipmap generation if we are approaching BGFX limits (using magic margins) or it is not needed
       if (!genMipmaps
+       || m_rd->m_activeViewId < 0
        || m_rd->m_activeViewId >= (int)bgfx::getCaps()->limits.maxFrameBuffers - 16 // We approximate the number of framebuffer used by the view index
        || m_rd->m_activeViewId >= (int)bgfx::getCaps()->limits.maxViews - 32)
          return m_nomipsTexture;
@@ -228,8 +229,6 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool genMipmaps)
       //   https://github.com/castano/nvidia-texture-tools/blob/aeddd65f81d36d8cb7b169b469ef25156666077e/src/nvimage/Filter.cpp#L257
       //   https://github.com/castano/nvidia-texture-tools/blob/aeddd65f81d36d8cb7b169b469ef25156666077e/src/nvimage/Filter.cpp#L64
       // Create a frame buffer and blit texture to it
-      if (m_rd->m_activeViewId < 0)
-         m_rd->NextView();
       if (!bgfx::isValid(m_mipsTexture))
       {
          m_mipsTexture = bgfx::createTexture2D(m_width, m_height, true, 1, m_bgfx_format, (m_isLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB) | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST);
