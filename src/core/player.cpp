@@ -2208,6 +2208,7 @@ void Player::OnAuxRendererChanged(const unsigned int msgId, void* userData, void
             int pb = me->m_ptable->m_settings.LoadValueWithDefault(section, "Priority."s.append(b.id), 0);
             return pa > pb; // Sort in descending order (first is the most wanted)
          });
+      std::erase_if(me->m_anciliaryWndRenderers[window], [section, me](const AnciliaryRendererDef &a) { return me->m_ptable->m_settings.LoadValueWithDefault(section, "Priority."s.append(a.id), 0) < 0; });
    }
 }
 
