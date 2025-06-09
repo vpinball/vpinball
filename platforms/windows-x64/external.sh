@@ -445,6 +445,8 @@ done
 cp "${MSYS2_PATH}/mingw64/bin/zlib1.dll" ../../../third-party/runtime-libs/windows-x64
 cp "${MSYS2_PATH}/mingw64/bin/libiconv-2.dll" ../../../third-party/runtime-libs/windows-x64
 cp "${MSYS2_PATH}/mingw64/bin/libwinpthread-1.dll" ../../../third-party/runtime-libs/windows-x64
+cp "${MSYS2_PATH}/mingw64/bin/liblzma-5.dll" ../../../third-party/runtime-libs/windows-x64
+cp "${MSYS2_PATH}/mingw64/bin/libbz2-1.dll" ../../../third-party/runtime-libs/windows-x64
 
 cp libzip/libzip/build/lib/libzip64.dll ../../../third-party/runtime-libs/windows-x64
 cp libzip/libzip/build/zipconf.h ../../../third-party/include

@@ -443,6 +443,8 @@ done
 cp "${MSYS2_PATH}/mingw32/bin/zlib1.dll" ../../../third-party/runtime-libs/windows-x86
 cp "${MSYS2_PATH}/mingw32/bin/libiconv-2.dll" ../../../third-party/runtime-libs/windows-x86
 cp "${MSYS2_PATH}/mingw32/bin/libwinpthread-1.dll" ../../../third-party/runtime-libs/windows-x86
+cp "${MSYS2_PATH}/mingw32/bin/liblzma-5.dll" ../../../third-party/runtime-libs/windows-x86
+cp "${MSYS2_PATH}/mingw32/bin/libbz2-1.dll" ../../../third-party/runtime-libs/windows-x86
 
 cp libzip/libzip/build/lib/libzip.dll ../../../third-party/runtime-libs/windows-x86
 cp libzip/libzip/build/zipconf.h ../../../third-party/include
