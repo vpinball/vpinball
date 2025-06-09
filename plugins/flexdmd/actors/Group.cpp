@@ -22,18 +22,17 @@ void Group::OnStageStateChanged()
 
 void Group::Update(float delta)
 {
+   AddRef();
    Actor::Update(delta);
    if (!GetOnStage())
-      return;
-   size_t i = 0;
-   const size_t c = m_children.size();
-   while (i < c)
    {
-      Actor* child = m_children[i];
-      child->Update(delta);
-      if (child == m_children[i])
-         i++;
+      Release();
+      return;
    }
+   vector<Actor*> children(m_children);
+   for (auto child : children)
+      child->Update(delta);
+   Release();
 }
 
 void Group::Draw(Flex::SurfaceGraphics* pGraphics)

@@ -50,6 +50,7 @@ void Actor::Update(float secondsElapsed)
 {
    if (!m_onStage)
       assert("Update was called on an actor which is not on stage.");
+   AddRef();
    for (auto it = m_actions.begin(); it != m_actions.end();)
    {
       if ((*it)->Update(secondsElapsed))
@@ -62,6 +63,7 @@ void Actor::Update(float secondsElapsed)
    }
    if (m_fillParent && m_parent != nullptr)
       SetBounds(0, 0, m_parent->m_width, m_parent->m_height);
+   Release();
 }
 
 void Actor::Draw(Flex::SurfaceGraphics* pGraphics)
