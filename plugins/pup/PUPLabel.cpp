@@ -115,7 +115,11 @@ void PUPLabel::SetSpecial(const string& szSpecial)
 {
    LOGD("PUPLabel::SetSpecial: name=%s, caption=%s, json=%s", m_szName.c_str(), m_szCaption.c_str(), szSpecial.c_str());
 
-   RSJresource json(szSpecial);
+   string str = trim_string(szSpecial);
+   if (str.empty())
+      return;
+
+   RSJresource json(str);
    switch (json["mt"s].as<int>(0))
    {
    case 2:

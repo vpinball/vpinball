@@ -64,6 +64,8 @@ extern void GetTextureInfo(VPXTexture texture, int *width, int *height);
 extern void UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, uint8_t *image);
 extern void DeleteTexture(VPXTexture texture);
 
+string trim_string(const string &str);
+
 // The following function are duplicates from the main VPX codebase
 int string_to_int(const string &str, int default_value = 0);
 float string_to_float(const string &str, float default_value = 0.0f);
