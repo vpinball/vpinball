@@ -97,11 +97,11 @@ void PUPManager::LoadConfig(const string& szRomName)
          switch (i)
          {
          case 0: AddScreen(PUPScreen::CreateFromCSV(this, "0,\"Topper\",\"\",,0,ForcePopBack,0,"s, m_playlists)); break;
-         case 1: AddScreen(PUPScreen::CreateFromCSV(this, "0,\"DMD\",\"\",,0,ForcePopBack,0,"s, m_playlists)); break;
-         case 2: AddScreen(PUPScreen::CreateFromCSV(this, "0,\"Backglass\",\"\",,0,ForcePopBack,0,"s, m_playlists)); break;
+         case 1: AddScreen(PUPScreen::CreateFromCSV(this, "1,\"DMD\",\"\",,0,ForcePopBack,0,"s, m_playlists)); break;
+         case 2: AddScreen(PUPScreen::CreateFromCSV(this, "2,\"Backglass\",\"\",,0,ForcePopBack,0,"s, m_playlists)); break;
          case 3: break; // Playfield
          case 4: break; // Music
-         case 5: AddScreen(PUPScreen::CreateFromCSV(this, "0,\"FullDMD\",\"\",,0,ForcePopBack,0,"s, m_playlists)); break;
+         case 5: AddScreen(PUPScreen::CreateFromCSV(this, "5,\"FullDMD\",\"\",,0,ForcePopBack,0,"s, m_playlists)); break;
          }
    for (auto& [key, pScreen] : m_screenMap) {
       PUPCustomPos* pCustomPos = pScreen->GetCustomPos();
