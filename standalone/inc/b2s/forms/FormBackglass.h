@@ -78,6 +78,7 @@ private:
    OLE_COLOR String2Color(const string& color);
    SDL_Surface* ResizeSurface(SDL_Surface* original, int newWidth, int newHeight);
    SDL_Surface* RotateSurface(SDL_Surface* source, int angle);
+   SDL_Surface* CreatePlaceholder() const;
 
    static constexpr int minSize4Image = 300000;
 
