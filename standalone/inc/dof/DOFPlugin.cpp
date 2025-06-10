@@ -25,6 +25,7 @@ DOFPlugin::DOFPlugin() : Plugin()
 {
    DOF::Config* pConfig = DOF::Config::GetInstance();
    pConfig->SetLogCallback(OnDOFLog);
+   pConfig->SetBasePath(g_pvp->m_myPrefPath.c_str());
 
    m_pDOF = new DOF::DOF();
 }
@@ -42,10 +43,12 @@ const std::string& DOFPlugin::GetName() const
 
 void DOFPlugin::PluginInit(const string& szTableFilename, const string& szRomName)
 {
+   m_pDOF->Init(szTableFilename.c_str(), szRomName.c_str());
 }
 
 void DOFPlugin::PluginFinish()
 {
+   m_pDOF->Finish();
 }
 
 void DOFPlugin::DataReceive(char type, int number, int value)
