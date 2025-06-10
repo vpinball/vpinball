@@ -269,8 +269,8 @@
     <Link>
       <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">$(SolutionDir)../../third-party/build-libs/windows-x64/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalLibraryDirectories Condition="'$(Platform)'=='Win32'">$(SolutionDir)../../third-party/build-libs/windows-x86/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies Condition="'$(Platform)'=='x64'">pupdmd64.lib;SDL364.lib;SDL3_image64.lib;SDL3_ttf64.lib;avcodec64.lib;avdevice64.lib;avfilter64.lib;avformat64.lib;avutil64.lib;swresample64.lib;swscale64.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies Condition="'$(Platform)'=='Win32'">pupdmd.lib;SDL3.lib;SDL3_image.lib;SDL3_ttf.lib;avcodec.lib;avdevice.lib;avfilter.lib;avformat.lib;avutil.lib;swresample.lib;swscale.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Platform)'=='x64'">pupdmd64.lib;SDL364.lib;SDL3_image64.lib;SDL3_ttf64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Platform)'=='Win32'">pupdmd.lib;SDL3.lib;SDL3_image.lib;SDL3_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -288,6 +288,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../plugins/pup/common.h" />
+    <ClInclude Include="../../plugins/pup/LibAv.h" />
     <ClInclude Include="../../plugins/pup/PUPCustomPos.h" />
     <ClInclude Include="../../plugins/pup/PUPLabel.h" />
     <ClInclude Include="../../plugins/pup/PUPManager.h" />

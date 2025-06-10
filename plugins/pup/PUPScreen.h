@@ -158,7 +158,7 @@ private:
    ankerl::unordered_dense::map<string, vector<PUPTrigger*>> m_triggerMap;
    PUPScreenRenderable m_background;
    PUPScreenRenderable m_overlay;
-   PUPMediaManager* m_pMediaPlayerManager;
+   std::unique_ptr<PUPMediaManager> m_pMediaPlayerManager;
    bool m_labelInit;
    int m_pagenum;
    int m_defaultPagenum;

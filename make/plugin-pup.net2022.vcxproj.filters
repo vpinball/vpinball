@@ -45,6 +45,9 @@
     <ClInclude Include="../../plugins/pup/common.h">
       <Filter>source</Filter>
     </ClInclude>
+    <ClInclude Include="../../plugins/pup/LibAv.h">
+      <Filter>source</Filter>
+    </ClInclude>
     <ClInclude Include="../../plugins/pup/PUPCustomPos.h">
       <Filter>source</Filter>
     </ClInclude>

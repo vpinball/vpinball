@@ -8,6 +8,7 @@ set(CMAKE_C_STANDARD 99)
 set(PUP_PLUGIN_SOURCES
    plugins/pup/common.h
    plugins/pup/common.cpp
+   plugins/pup/LibAv.h
    plugins/pup/PUPPlugin.cpp
    plugins/pup/PUPCustomPos.h
    plugins/pup/PUPCustomPos.cpp
@@ -79,13 +80,6 @@ if(BUILD_SHARED)
             SDL364.lib
             SDL3_image64.lib
             SDL3_ttf64.lib
-            avcodec64.lib
-            avdevice64.lib
-            avfilter64.lib
-            avformat64.lib
-            avutil64.lib
-            swresample64.lib
-            swscale64.lib
             pupdmd64.lib
          )
       else()
@@ -97,13 +91,6 @@ if(BUILD_SHARED)
             SDL3.lib
             SDL3_image.lib
             SDL3_ttf.lib
-            avcodec.lib
-            avdevice.lib
-            avfilter.lib
-            avformat.lib
-            avutil.lib
-            swresample.lib
-            swscale.lib
             pupdmd.lib
          )
       endif()
