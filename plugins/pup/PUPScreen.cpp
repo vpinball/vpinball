@@ -70,7 +70,7 @@ PUPScreen::PUPScreen(PUPManager* manager, PUP_SCREEN_MODE mode, int screenNum, c
    m_pCustomPos = pCustomPos;
    memset(&m_background, 0, sizeof(m_background));
    memset(&m_overlay, 0, sizeof(m_overlay));
-   m_pMediaPlayerManager = new PUPMediaManager(this);
+   m_pMediaPlayerManager = std::make_unique<PUPMediaManager>(this);
    m_labelInit = false;
    m_pagenum = 0;
    m_defaultPagenum = 0;
@@ -104,7 +104,6 @@ PUPScreen::~PUPScreen()
    delete m_pCustomPos;
    FreeRenderable(&m_background);
    FreeRenderable(&m_overlay);
-   delete m_pMediaPlayerManager;
    if (m_pageTimer)
       SDL_RemoveTimer(m_pageTimer);
 

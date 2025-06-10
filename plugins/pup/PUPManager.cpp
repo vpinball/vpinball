@@ -1,6 +1,7 @@
 #include "PUPManager.h"
 #include "PUPScreen.h"
 #include "PUPCustomPos.h"
+#include "LibAv.h"
 
 #include <filesystem>
 #include <fstream>
@@ -565,6 +566,9 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
    case VPXAnciliaryWindow::VPXWINDOW_ScoreView: screen = me->GetScreen(5); break; // TODO select 1 or 5 (user settings ?)
    }
    if (screen == nullptr || screen->GetCustomPos() != nullptr)
+      return false;
+
+   if (!LibAV::GetInstance().isLoaded)
       return false;
 
    renderCtx->srcWidth = renderCtx->outWidth;

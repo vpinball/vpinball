@@ -1,18 +1,10 @@
 #pragma once
 
 #include "PUPManager.h"
+#include "LibAv.h"
 /*
 #include "audio/pinsound.h"
 #include "../common/Window.h"*/
-
-extern "C" {
-   #include "libavutil/imgutils.h"
-   #include "libavformat/avformat.h"
-   #include "libavdevice/avdevice.h"
-   #include "libswscale/swscale.h"
-   #include "libswresample/swresample.h"
-   #include "libavcodec/avcodec.h"
-}
 
 namespace PUP {
 
@@ -73,6 +65,8 @@ private:
    std::mutex m_mutex;
    std::thread m_thread;
    bool m_running = false;
+
+   const LibAV& m_libAv;
 };
 
 }
