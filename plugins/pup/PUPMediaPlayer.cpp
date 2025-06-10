@@ -358,18 +358,19 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
       const AVPixelFormat targetFormat = AV_PIX_FMT_RGBA;
       const int targetWidth = m_pVideoContext->width; // TODO we could also apply downscaling to the expected render size
       const int targetHeight = m_pVideoContext->height;
-      m_nRgbFrames = 3; // TODO shouldn't the queue size be adapted to the video characteristics ?
-      m_rgbFrames = new AVFrame*[m_nRgbFrames];
-      memset(m_rgbFrames, 0, sizeof(AVFrame*) * m_nRgbFrames);
-      m_rgbFrameBuffers = new uint8_t*[m_nRgbFrames];
-      memset(m_rgbFrameBuffers, 0, sizeof(uint8_t*) * m_nRgbFrames);
-      int rgbFrameSize = av_image_get_buffer_size(targetFormat, targetWidth, targetHeight, 1);
-      for (int i = 0; i < m_nRgbFrames; i++)
+      int nRgbFrames = 3; // TODO shouldn't the queue size be adapted to the video characteristics ?
+      m_rgbFrames = new AVFrame*[nRgbFrames];
+      memset(m_rgbFrames, 0, sizeof(AVFrame*) * nRgbFrames);
+      m_rgbFrameBuffers = new uint8_t*[nRgbFrames];
+      memset(m_rgbFrameBuffers, 0, sizeof(uint8_t*) * nRgbFrames);
+      int rgbFrameSize = m_libAv._av_image_get_buffer_size(targetFormat, targetWidth, targetHeight, 1);
+      for (int i = 0; i < nRgbFrames; i++)
       {
          m_rgbFrames[i] = m_libAv._av_frame_alloc();
          if (m_rgbFrames[i] == nullptr)
          {
             LOGE("Failed to create RGB buffer frame");
+            std::lock_guard<std::mutex> lock(m_mutex);
             m_running = false;
             return;
          }
@@ -377,6 +378,7 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
          if (m_rgbFrameBuffers[i] == nullptr)
          {
             LOGE("Failed to allocate RGB buffer");
+            std::lock_guard<std::mutex> lock(m_mutex);
             m_running = false;
             return;
          }
@@ -385,6 +387,8 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
          m_rgbFrames[i]->format = targetFormat;
          m_libAv._av_image_fill_arrays(m_rgbFrames[i]->data, m_rgbFrames[i]->linesize, m_rgbFrameBuffers[i], targetFormat, targetWidth, targetHeight, 1);
       }
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_nRgbFrames = nRgbFrames;
    }
 
    // m_activeRgbFrame points to the last frame (the one with the highest presentation timestamp)

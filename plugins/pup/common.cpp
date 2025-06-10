@@ -6,7 +6,7 @@
 
 namespace PUP {
 
-std::string trim_string(const std::string& str)
+string trim_string(const string& str)
 {
    size_t start = 0;
    size_t end = str.length();
