@@ -908,7 +908,7 @@ size_t Texture::GetEstimatedGPUSize() const
    if (buffer)
       estimatedSize = static_cast<size_t>(buffer->height()) * static_cast<size_t>(buffer->pitch());
    else
-      estimatedSize = static_cast<size_t>(m_width) * static_cast<size_t>(m_height) * (IsHDR() ? 6 : 4); // 6 bytes per pixel for HDR (RGB_FP16) and 4 bytes per pixel for non-HDR (RGBA)
+      estimatedSize = static_cast<size_t>(m_width) * static_cast<size_t>(m_height) * (IsHDR() ? 8 : 4); // 8 bytes per pixel for HDR (RGBA_FP16) and 4 bytes per pixel for non-HDR (RGBA)
    // Add mipmaps (+1/3).
    return (4 * estimatedSize) / 3;
 }
