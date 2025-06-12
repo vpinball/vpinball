@@ -1085,6 +1085,16 @@ Player::~Player()
    delete m_physics;
    m_physics = nullptr;
 
+   #ifdef ENABLE_DX9
+      m_renderer->m_renderDevice->m_basicShader->UnbindSamplers();
+      m_renderer->m_renderDevice->m_DMDShader->UnbindSamplers();
+      m_renderer->m_renderDevice->m_FBShader->UnbindSamplers();
+      m_renderer->m_renderDevice->m_flasherShader->UnbindSamplers();
+      m_renderer->m_renderDevice->m_lightShader->UnbindSamplers();
+      m_renderer->m_renderDevice->m_stereoShader->UnbindSamplers();
+      m_renderer->m_renderDevice->m_ballShader->UnbindSamplers();
+   #endif
+
    for (auto probe : m_ptable->m_vrenderprobe)
       probe->RenderRelease();
    for (auto renderable : m_vhitables)

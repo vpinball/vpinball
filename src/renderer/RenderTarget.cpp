@@ -86,9 +86,9 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, bgfx:
    , m_depth_tex(depthTex)
 {
    if (bgfx::isValid(colorTex))
-      m_color_sampler = new Sampler(rd, type, colorTex, width, height, false, true, SA_UNDEFINED, SA_UNDEFINED, SF_UNDEFINED);
+      m_color_sampler = std::make_shared<Sampler>(rd, name + ".Color", type, colorTex, width, height, false, true, SA_UNDEFINED, SA_UNDEFINED, SF_UNDEFINED);
    if (bgfx::isValid(depthTex))
-      m_depth_sampler = new Sampler(rd, type, depthTex, width, height, false, true, SA_UNDEFINED, SA_UNDEFINED, SF_UNDEFINED);
+      m_depth_sampler = std::make_shared<Sampler>(rd, name + ".Depth", type, depthTex, width, height, false, true, SA_UNDEFINED, SA_UNDEFINED, SF_UNDEFINED);
 }
 #endif
 
@@ -144,8 +144,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
    default: assert(false); // Unsupported texture format 
    }
    m_color_tex = bgfx::createTexture2D(m_width, m_height, false, m_nLayers, fmt, colorFlags);
-   m_color_sampler = new Sampler(m_rd, m_type, m_color_tex, m_width, m_height, false, true);
-   m_color_sampler->SetName(name + ".Color");
+   m_color_sampler = std::make_shared<Sampler>(m_rd, name + ".Color", m_type, m_color_tex, m_width, m_height, false, true);
 
    if (m_shared_depth)
    {
@@ -162,8 +161,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
          depthFormat = g_pplayer->m_vrDevice->GetDepthFormat();
       #endif
       m_depth_tex = bgfx::createTexture2D(m_width, m_height, false, m_nLayers, depthFormat, depthFlags);
-      m_depth_sampler = new Sampler(m_rd, m_type, m_depth_tex, m_width, m_height, false, true);
-      m_depth_sampler->SetName(name + ".Depth");
+      m_depth_sampler = std::make_shared<Sampler>(m_rd, name + ".Depth", m_type, m_depth_tex, m_width, m_height, false, true);
    }
 
    if (with_depth)
@@ -397,17 +395,13 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
 
    if (nMSAASamples == 1)
    {
-      m_color_sampler = new Sampler(m_rd, m_type, m_color_tex, false, true);
-      m_color_sampler->SetName(name + ".Color");
+      m_color_sampler = std::make_shared<Sampler>(m_rd, name + ".Color", m_type, m_color_tex, false, true);
       if (with_depth)
       {
          if (m_shared_depth)
             m_depth_sampler = sharedDepth->GetDepthSampler();
          else
-         {
-            m_depth_sampler = new Sampler(m_rd, m_type, m_depth_tex, false, true);
-            m_depth_sampler->SetName(name + ".Depth");
-         }
+            m_depth_sampler = std::make_shared<Sampler>(m_rd, name + ".Depth", m_type, m_depth_tex, false, true);
       }
    }
 #ifndef __OPENGLES__
@@ -458,7 +452,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
       if (FAILED(hr))
          ReportError(failureMessage, hr, __FILE__, __LINE__);
       m_color_tex->GetSurfaceLevel(0, &m_color_surface);
-      m_color_sampler = new Sampler(m_rd, m_color_tex, false, true);
+      m_color_sampler = std::make_shared<Sampler>(m_rd, name + ".Color", m_color_tex, false, true);
       if (with_depth && !m_shared_depth)
       {
          CHECKD3D(m_rd->GetCoreDevice()->CreateTexture(width, height, 1, D3DUSAGE_DEPTHSTENCIL, (D3DFORMAT)MAKEFOURCC('I', 'N', 'T', 'Z'), (D3DPOOL)memoryPool::DEFAULT, &m_depth_tex, nullptr)); // D3DUSAGE_AUTOGENMIPMAP?
@@ -478,7 +472,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
          {
             CHECKD3D(m_depth_tex->GetSurfaceLevel(0, &m_depth_surface));
          }
-         m_depth_sampler = new Sampler(m_rd, m_depth_tex, false, true);
+         m_depth_sampler = std::make_shared<Sampler>(m_rd, name + ".Depth", m_depth_tex, false, true);
       }
    }
 #endif
@@ -486,10 +480,6 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
 
 RenderTarget::~RenderTarget()
 {
-   delete m_color_sampler;
-   if (!m_shared_depth)
-      delete m_depth_sampler;
-
 #if defined(ENABLE_BGFX)
    if (bgfx::isValid(m_framebuffer))
       bgfx::destroy(m_framebuffer);

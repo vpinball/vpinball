@@ -23,7 +23,7 @@ public:
 
    void AddPlaceHolder(ITexManCacheable* memtex);
    void AddPendingUpload(ITexManCacheable* memtex);
-   Sampler* LoadTexture(ITexManCacheable* const memtex, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV, const bool force_linear_rgb);
+   std::shared_ptr<Sampler> LoadTexture(ITexManCacheable* const memtex, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV, const bool force_linear_rgb);
    void SetDirty(ITexManCacheable* memtex);
    void UnloadTexture(ITexManCacheable* memtex);
    void UnloadAll();
@@ -34,7 +34,7 @@ public:
 private:
    struct MapEntry
    {
-      Sampler* sampler = nullptr;
+      std::shared_ptr<Sampler> sampler = nullptr;
       bool forceLinearRGB = false;
       ITexManCacheable* tex = nullptr;
       bool isPlaceHolder = false;

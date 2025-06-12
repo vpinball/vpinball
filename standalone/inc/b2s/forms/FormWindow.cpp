@@ -99,7 +99,7 @@ int FormWindow::Render(VPXRenderContext2D* const renderCtx)
 
    if (update) {
       SDL_LockSurface(m_pSurface);
-      m_pVpxApi->UpdateTexture(&m_vpxTexture, m_pSurface->w, m_pSurface->h, VPXTextureFormat::VPXTEXFMT_sRGBA8, static_cast<uint8_t*>(m_pSurface->pixels));
+      m_pVpxApi->UpdateTexture(&m_vpxTexture, m_pSurface->w, m_pSurface->h, VPXTextureFormat::VPXTEXFMT_sRGBA8, static_cast<const uint8_t*>(m_pSurface->pixels));
       SDL_UnlockSurface(m_pSurface);
    }
 

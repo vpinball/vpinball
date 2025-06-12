@@ -13,8 +13,9 @@
 #include <bgfx/platform.h>
 #endif
 
-Sampler::Sampler(RenderDevice* rd, std::shared_ptr<const BaseTexture> surf, const bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
+Sampler::Sampler(RenderDevice* rd, string name, std::shared_ptr<const BaseTexture> surf, const bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
    : m_dirty(false)
+   , m_name(std::move(name))
    , m_type(SurfaceType::RT_DEFAULT)
    , m_ownTexture(true)
    , m_rd(rd)
@@ -101,8 +102,9 @@ Sampler::Sampler(RenderDevice* rd, std::shared_ptr<const BaseTexture> surf, cons
 }
 
 #if defined(ENABLE_BGFX)
-Sampler::Sampler(RenderDevice* rd, SurfaceType type, bgfx::TextureHandle bgfxTexture, unsigned int width, unsigned int height, bool ownTexture, bool linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
+Sampler::Sampler(RenderDevice* rd, string name, SurfaceType type, bgfx::TextureHandle bgfxTexture, unsigned int width, unsigned int height, bool ownTexture, bool linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
    : m_type(type)
+   , m_name(std::move(name))
    , m_rd(rd)
    , m_dirty(false)
    , m_ownTexture(ownTexture)
@@ -114,11 +116,14 @@ Sampler::Sampler(RenderDevice* rd, SurfaceType type, bgfx::TextureHandle bgfxTex
    , m_height(height)
    , m_isLinear(linear_rgb)
 {
+   assert(bgfx::isValid(bgfxTexture));
+   bgfx::setName(bgfxTexture, m_name.c_str());
 }
 
 #elif defined(ENABLE_OPENGL)
-Sampler::Sampler(RenderDevice* rd, SurfaceType type, GLuint glTexture, bool ownTexture, bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
+Sampler::Sampler(RenderDevice* rd, string name, SurfaceType type, GLuint glTexture, bool ownTexture, bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
    : m_type(type)
+   , m_name(std::move(name))
    , m_rd(rd)
    , m_dirty(false)
    , m_ownTexture(ownTexture)
@@ -148,11 +153,16 @@ Sampler::Sampler(RenderDevice* rd, SurfaceType type, GLuint glTexture, bool ownT
 #endif
    m_isLinear = !((internal_format == SRGB) || (internal_format == SRGBA) || (internal_format == SDXT5) || (internal_format == SBC7)) || force_linear_rgb;
    m_texture = glTexture;
+#ifndef __OPENGLES__
+   if (GLAD_GL_VERSION_4_3)
+      glObjectLabel(GL_TEXTURE, m_texture, (GLsizei)m_name.length(), m_name.c_str());
+#endif
 }
 
 #elif defined(ENABLE_DX9)
-Sampler::Sampler(RenderDevice* rd, IDirect3DTexture9* dx9Texture, bool ownTexture, bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
+Sampler::Sampler(RenderDevice* rd, string name, IDirect3DTexture9* dx9Texture, bool ownTexture, bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
    : m_dirty(false)
+   , m_name(std::move(name))
    , m_type(SurfaceType::RT_DEFAULT)
    , m_ownTexture(ownTexture)
    , m_rd(rd)
@@ -177,9 +187,6 @@ namespace bgfx { extern void release(const bgfx::Memory* _mem); }
 
 Sampler::~Sampler()
 {
-   if (m_rd)
-      m_rd->UnbindSampler(this);
-
    #if defined(ENABLE_BGFX)
    if (m_textureUpdate)
       bgfx::release(m_textureUpdate);
@@ -189,7 +196,6 @@ Sampler::~Sampler()
       bgfx::destroy(m_mipsTexture);
 
    #elif defined(ENABLE_OPENGL)
-   Unbind();
    if (m_ownTexture)
       glDeleteTextures(1, &m_texture);
 
@@ -221,8 +227,8 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool genMipmaps)
       // Defer mipmap generation if we are approaching BGFX limits (using magic margins) or it is not needed
       if (!genMipmaps
        || m_rd->m_activeViewId < 0
-       || m_rd->m_activeViewId >= (int)bgfx::getCaps()->limits.maxFrameBuffers - 16 // We approximate the number of framebuffer used by the view index
-       || m_rd->m_activeViewId >= (int)bgfx::getCaps()->limits.maxViews - 32)
+       || m_rd->m_activeViewId >= static_cast<int>(bgfx::getCaps()->limits.maxFrameBuffers) - 16 // We approximate the number of framebuffer used by the view index
+       || m_rd->m_activeViewId >= static_cast<int>(bgfx::getCaps()->limits.maxViews) - 32)
          return m_nomipsTexture;
       // TODO BGFX a clean GPU mipmap generation with Kaiser filter would be better than doing a blit to trigger default's driver render target mipmap generation
       // For a simple and readable reference, see (parameters: alpha=4, stretch=1, m_width=filter half width):
@@ -337,15 +343,14 @@ void Sampler::UpdateTexture(std::shared_ptr<const BaseTexture> surf, const bool 
          auto releaseFn = [](void* _ptr, void* _userData) { delete static_cast<BaseTexture*>(_userData); };
          m_textureUpdate = bgfx::makeRef(tmp->datac(), m_height * tmp->pitch(), releaseFn, (void*)tmp);
       }
-      break;
+      return;
    case BaseTexture::RGBA_FP32: assert(m_bgfx_format == bgfx::TextureFormat::Enum::RGBA32F); break;
    default: assert(false); break;
    }
-   m_textureUpdate = bgfx::copy(surf->datac(), static_cast<uint32_t>(surf->height() * surf->pitch()));
 
    assert(bgfx::isTextureValid(1, false, 1, m_bgfx_format, m_isLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB));
    assert(bgfx::isTextureValid(1, false, 1, m_bgfx_format, (m_isLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB) | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST));
-
+   m_textureUpdate = bgfx::copy(surf->datac(), static_cast<uint32_t>(surf->height() * surf->pitch()));
 
 #elif defined(ENABLE_OPENGL)
    colorFormat format;
@@ -412,20 +417,6 @@ void Sampler::SetClamp(const SamplerAddressMode clampu, const SamplerAddressMode
 void Sampler::SetFilter(const SamplerFilter filter)
 {
    m_filter = filter;
-}
-
-void Sampler::SetName(const string& name)
-{
-   #if defined(ENABLE_BGFX)
-   m_name = name;
-   if (bgfx::isValid(m_mipsTexture))
-      bgfx::setName(m_mipsTexture, name.c_str());
-   if (bgfx::isValid(m_nomipsTexture))
-      bgfx::setName(m_nomipsTexture, name.c_str());
-   #elif defined(ENABLE_OPENGL) && !defined(__OPENGLES__)
-   if (GLAD_GL_VERSION_4_3)
-      glObjectLabel(GL_TEXTURE, m_texture, (GLsizei)name.length(), name.c_str());
-   #endif
 }
 
 #if defined(ENABLE_BGFX)
@@ -521,6 +512,11 @@ GLuint Sampler::CreateTexture(std::shared_ptr<const BaseTexture> surf, unsigned 
           gl_to_string(comp_format), comp_format,
           gl_to_string(col_format), col_format,
           gl_to_string(col_type), col_type);
+#endif
+
+#ifndef __OPENGLES__
+   if (GLAD_GL_VERSION_4_3)
+      glObjectLabel(GL_TEXTURE, m_texture, (GLsizei)m_name.length(), m_name.c_str());
 #endif
 
    if (surf->datac())

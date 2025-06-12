@@ -66,7 +66,7 @@
       // Windows x64 standard calling convention (implicit)
       #define MSGPIAPI
    #else
-      // Other platforms, uses C calling convetion as we need variadic
+      // Other platforms, uses C calling convention as we need variadic
       #define MSGPIAPI __cdecl
    #endif
    #define MSGPI_EXPORT extern "C" __declspec(dllexport)
@@ -76,7 +76,7 @@
       // Windows x64 standard calling convention (implicit)
       #define MSGPIAPI
    #else
-      // Other platforms, uses C calling convetion as we need variadic
+      // Other platforms, uses C calling convention as we need variadic
       // TODO: #define MSGPIAPI __attribute__((__cdecl))
       #define MSGPIAPI
    #endif
@@ -87,7 +87,7 @@
       // Windows x64 standard calling convention (implicit)
       #define MSGPIAPI
    #else
-      // Other platforms, uses C calling convetion as we need variadic
+      // Other platforms, uses C calling convention as we need variadic
       #define MSGPIAPI __cdecl
    #endif
    // Hope that all symbols are exported

@@ -664,7 +664,7 @@ void PUPScreen::Render(VPXRenderContext2D* const ctx, PUPScreenRenderable* pRend
       if (pRenderable->pSurface) {
          SDL_LockSurface(pRenderable->pSurface);
          m_pVpxApi->UpdateTexture(&pRenderable->vpxTexture, pRenderable->pSurface->w, pRenderable->pSurface->h,
-            VPXTextureFormat::VPXTEXFMT_sRGBA8, static_cast<uint8_t*>(pRenderable->pSurface->pixels));
+            VPXTextureFormat::VPXTEXFMT_sRGBA8, static_cast<const uint8_t*>(pRenderable->pSurface->pixels));
          SDL_UnlockSurface(pRenderable->pSurface);
          SDL_DestroySurface(pRenderable->pSurface);
          pRenderable->pSurface = NULL;

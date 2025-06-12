@@ -648,7 +648,6 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    , m_compressTextures(compressTextures)
    , m_nEyes(nEyes)
    , m_isVR(isVR)
-   , m_renderFrame(this)
 {
    m_outputWnd[0] = wnd;
 
@@ -1149,11 +1148,11 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
 #endif
 
    // Create default texture
-   std::shared_ptr<BaseTexture> surf = std::make_shared<BaseTexture>(1, 1, BaseTexture::Format::RGBA);
-   memset(surf->data(), 0, 4);
-   m_nullTexture = new Sampler(this, surf, false);
-   m_nullTexture->SetName("Null"s);
-   surf.reset();
+   {
+      std::shared_ptr<BaseTexture> surf = std::make_shared<BaseTexture>(1, 1, BaseTexture::Format::RGBA);
+      memset(surf->data(), 0, 4);
+      m_nullTexture = std::make_shared<Sampler>(this, "Null"s, surf, false);
+   }
 
    // alloc float buffer for rendering
    #if defined(ENABLE_OPENGL)
@@ -1279,6 +1278,8 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
       // Always load the (small) SMAA textures since SMAA can be toggled at runtime through the live UI
       UploadAndSetSMAATextures();
    #endif
+
+   m_renderFrame = std::make_unique<RenderFrame>(this);
 }
 
 RenderDevice::~RenderDevice()
@@ -1291,8 +1292,6 @@ RenderDevice::~RenderDevice()
 
    delete m_quadMeshBuffer;
    m_quadMeshBuffer = nullptr;
-   delete m_nullTexture;
-   m_nullTexture = nullptr;
 
    #if defined(ENABLE_DX9)
       m_pD3DDevice->SetStreamSource(0, nullptr, 0, 0);
@@ -1305,7 +1304,6 @@ RenderDevice::~RenderDevice()
       SAFE_RELEASE(m_pVertexNormalTexelDeclaration);
    #endif
 
-   UnbindSampler(nullptr);
    delete m_basicShader;
    m_basicShader = nullptr;
    delete m_DMDShader;
@@ -1321,16 +1319,18 @@ RenderDevice::~RenderDevice()
    delete m_ballShader;
    m_ballShader = nullptr;
 
+   m_nullTexture = nullptr;
+   m_SMAAareaTexture = nullptr;
+   m_SMAAsearchTexture = nullptr;
    m_texMan.UnloadAll();
+
+   m_renderFrame = nullptr;
 
    for (unsigned int i = 0; i < m_nOutputWnd; i++)
    {
       delete m_outputWnd[i]->GetBackBuffer();
       m_outputWnd[i]->SetBackBuffer(nullptr);
    }
-
-   delete m_SMAAareaTexture;
-   delete m_SMAAsearchTexture;
 
 #if defined(ENABLE_BGFX)
    delete m_pVertexTexelDeclaration;
@@ -1343,7 +1343,12 @@ RenderDevice::~RenderDevice()
 
 #elif defined(ENABLE_OPENGL)
    for (auto binding : m_samplerBindings)
+   {
+      std::shared_ptr<const Sampler> sampler = binding->sampler;
+      if (sampler)
+         const_cast<Sampler*>(sampler.get())->Unbind();
       delete binding;
+   }
    m_samplerBindings.clear();
 
    for (size_t i = 0; i < std::size(m_samplerStateCache); i++)
@@ -1476,24 +1481,6 @@ bool RenderDevice::DepthBufferReadBackAvailable()
 #endif
 }
 
-void RenderDevice::UnbindSampler(Sampler* sampler)
-{
-   if (m_basicShader)
-      m_basicShader->UnbindSampler(sampler);
-   if (m_DMDShader)
-      m_DMDShader->UnbindSampler(sampler);
-   if (m_FBShader)
-      m_FBShader->UnbindSampler(sampler);
-   if (m_flasherShader)
-      m_flasherShader->UnbindSampler(sampler);
-   if (m_lightShader)
-      m_lightShader->UnbindSampler(sampler);
-   if (m_stereoShader)
-      m_stereoShader->UnbindSampler(sampler);
-   if (m_ballShader)
-      m_ballShader->UnbindSampler(sampler);
-}
-
 float RenderDevice::GetPredictedDisplayDelayInS() const
 {
    // OpenXR perform frame pacing with display time prediction
@@ -1602,18 +1589,16 @@ void RenderDevice::UploadAndSetSMAATextures()
    // TODO use standard BaseTexture / Sampler code instead
    /* BaseTexture* searchBaseTex = new BaseTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, BaseTexture::BW);
    memcpy(searchBaseTex->data(), searchTexBytes, SEARCHTEX_SIZE);
-   m_SMAAsearchTexture = new Sampler(this, searchBaseTex, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_NONE);
+   m_SMAAsearchTexture = std::make_shared<Sampler>(this, "SMAA Search"s, searchBaseTex, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_NONE);
    m_SMAAsearchTexture->SetName("SMAA Search"s);
    delete searchBaseTex;*/
 
 #if defined(ENABLE_BGFX)
    bgfx::TextureHandle smaaAreaTex = bgfx::createTexture2D(AREATEX_WIDTH, AREATEX_HEIGHT, false, 1, bgfx::TextureFormat::RG8, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP, bgfx::makeRef(areaTexBytes, AREATEX_SIZE));
-   m_SMAAareaTexture = new Sampler(this, SurfaceType::RT_DEFAULT, smaaAreaTex, AREATEX_WIDTH, AREATEX_HEIGHT, true, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR);
-   m_SMAAareaTexture->SetName("SMAA Area"s);
+   m_SMAAareaTexture = std::make_shared<Sampler>(this, "SMAA Area"s, SurfaceType::RT_DEFAULT, smaaAreaTex, AREATEX_WIDTH, AREATEX_HEIGHT, true, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR);
 
    bgfx::TextureHandle smaaSearchTex = bgfx::createTexture2D(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, false, 1, bgfx::TextureFormat::R8, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP, bgfx::makeRef(searchTexBytes, SEARCHTEX_SIZE));
-   m_SMAAsearchTexture = new Sampler(this, SurfaceType::RT_DEFAULT, smaaSearchTex, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, true, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_NONE);
-   m_SMAAsearchTexture->SetName("SMAA Search"s);
+   m_SMAAsearchTexture = std::make_shared<Sampler>(this, "SMAA Search"s, SurfaceType::RT_DEFAULT, smaaSearchTex, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, true, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_NONE);
 
 #elif defined(ENABLE_OPENGL)
    auto tex_unit = m_samplerBindings.back();
@@ -1632,8 +1617,7 @@ void RenderDevice::UploadAndSetSMAATextures()
    glTexStorage2D(GL_TEXTURE_2D, 1, GL_R8, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT);
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, (void*)searchTexBytes);
-   m_SMAAsearchTexture = new Sampler(this, SurfaceType::RT_DEFAULT, glTexture[0], true, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_NONE);
-   m_SMAAsearchTexture->SetName("SMAA Search"s);
+   m_SMAAsearchTexture = std::make_shared<Sampler>(this, "SMAA Search"s, SurfaceType::RT_DEFAULT, glTexture[0], true, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_NONE);
 
    glBindTexture(GL_TEXTURE_2D, glTexture[1]);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -1643,8 +1627,7 @@ void RenderDevice::UploadAndSetSMAATextures()
    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RG8, AREATEX_WIDTH, AREATEX_HEIGHT);
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, AREATEX_WIDTH, AREATEX_HEIGHT, GL_RG, GL_UNSIGNED_BYTE, (void*)areaTexBytes);
-   m_SMAAareaTexture = new Sampler(this, SurfaceType::RT_DEFAULT, glTexture[1], true, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR);
-   m_SMAAareaTexture->SetName("SMAA Area"s);
+   m_SMAAareaTexture = std::make_shared<Sampler>(this, "SMAA Area"s, SurfaceType::RT_DEFAULT, glTexture[1], true, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR);
 
 #elif defined(ENABLE_DX9)
    {
@@ -1667,8 +1650,7 @@ void RenderDevice::UploadAndSetSMAATextures()
       CHECKD3D(m_pD3DDevice->UpdateTexture(sysTex, tex));
       SAFE_RELEASE(sysTex);
 
-      m_SMAAsearchTexture = new Sampler(this, tex, true, true);
-      m_SMAAsearchTexture->SetName("SMAA Search"s);
+      m_SMAAsearchTexture = std::make_shared<Sampler>(this, "SMAA Search"s, tex, true, true);
    }
    {
       IDirect3DTexture9 *sysTex, *tex;
@@ -1690,8 +1672,7 @@ void RenderDevice::UploadAndSetSMAATextures()
       CHECKD3D(m_pD3DDevice->UpdateTexture(sysTex, tex));
       SAFE_RELEASE(sysTex);
 
-      m_SMAAareaTexture = new Sampler(this, tex, true, true);
-      m_SMAAareaTexture->SetName("SMAA Area"s);
+      m_SMAAareaTexture = std::make_shared<Sampler>(this, "SMAA Area"s, tex, true, true);
    }
 #endif
 
@@ -1701,7 +1682,7 @@ void RenderDevice::UploadAndSetSMAATextures()
 
 void RenderDevice::UploadTexture(ITexManCacheable* texture, const bool linearRGB)
 {
-   Sampler* sampler = m_texMan.LoadTexture(texture, SamplerFilter::SF_UNDEFINED, SamplerAddressMode::SA_UNDEFINED, SamplerAddressMode::SA_UNDEFINED, linearRGB);
+   std::shared_ptr<Sampler> sampler = m_texMan.LoadTexture(texture, SamplerFilter::SF_UNDEFINED, SamplerAddressMode::SA_UNDEFINED, SamplerAddressMode::SA_UNDEFINED, linearRGB);
    #if defined(ENABLE_BGFX)
    // BGFX dispatch operations to the render thread, so the texture manager does not actually loads data to the GPU nor perform mipmap generation
    m_frameMutex.lock();
@@ -1934,7 +1915,7 @@ void RenderDevice::SubmitRenderFrame()
    #endif
 
    m_currentPass = nullptr;
-   bool rendered = m_renderFrame.Execute(m_logNextFrame);
+   bool rendered = m_renderFrame->Execute(m_logNextFrame);
    if (rendered)
       m_logNextFrame = false;
    m_lastPresentFrameTick = usec();
@@ -1943,7 +1924,7 @@ void RenderDevice::SubmitRenderFrame()
 void RenderDevice::DiscardRenderFrame()
 {
    m_currentPass = nullptr;
-   m_renderFrame.Discard();
+   m_renderFrame->Discard();
    #ifdef ENABLE_BGFX
       RenderTarget::OnFrameFlushed();
       m_activeViewId = -1;
@@ -1958,7 +1939,7 @@ void RenderDevice::SetRenderTarget(const string& name, RenderTarget* rt, const b
    }
    else if (m_currentPass == nullptr || !useRTContent || rt != m_currentPass->m_rt || forceNewPass)
    {
-      m_currentPass = m_renderFrame.AddPass(name, rt);
+      m_currentPass = m_renderFrame->AddPass(name, rt);
       m_currentPass->m_mergeable = !forceNewPass;
       if (useRTContent && rt->m_lastRenderPass != nullptr)
       {
@@ -1988,7 +1969,7 @@ void RenderDevice::AddRenderTargetDependencyOnNextRenderCommand(RenderTarget* rt
 void RenderDevice::Clear(const DWORD flags, const DWORD color)
 {
    ApplyRenderStates();
-   RenderCommand* cmd = m_renderFrame.NewCommand();
+   RenderCommand* cmd = m_renderFrame->NewCommand();
    cmd->SetClear(flags, color);
    cmd->m_dependency = m_nextRenderCommandDependency;
    m_nextRenderCommandDependency = nullptr;
@@ -2000,7 +1981,7 @@ void RenderDevice::BlitRenderTarget(RenderTarget* source, RenderTarget* destinat
 {
    assert(m_currentPass->m_rt == destination); // We must be on a render pass targeted at the destination for correct render pass sorting
    AddRenderTargetDependency(source);
-   RenderCommand* cmd = m_renderFrame.NewCommand();
+   RenderCommand* cmd = m_renderFrame->NewCommand();
    cmd->SetCopy(source, destination, copyColor, copyDepth, x1, y1, w1, h1, x2, y2, w2, h2, srcLayer, dstLayer);
    cmd->m_dependency = m_nextRenderCommandDependency;
    m_nextRenderCommandDependency = nullptr;
@@ -2010,7 +1991,7 @@ void RenderDevice::BlitRenderTarget(RenderTarget* source, RenderTarget* destinat
 void RenderDevice::SubmitVR(RenderTarget* source)
 {
    AddRenderTargetDependency(source);
-   RenderCommand* cmd = m_renderFrame.NewCommand();
+   RenderCommand* cmd = m_renderFrame->NewCommand();
    cmd->SetSubmitVR(source);
    cmd->m_dependency = m_nextRenderCommandDependency;
    m_nextRenderCommandDependency = nullptr;
@@ -2019,7 +2000,7 @@ void RenderDevice::SubmitVR(RenderTarget* source)
 
 void RenderDevice::RenderLiveUI()
 {
-   RenderCommand* cmd = m_renderFrame.NewCommand();
+   RenderCommand* cmd = m_renderFrame->NewCommand();
    cmd->SetRenderLiveUI();
    cmd->m_dependency = m_nextRenderCommandDependency;
    m_nextRenderCommandDependency = nullptr;
@@ -2030,7 +2011,7 @@ void RenderDevice::DrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* ve
 {
    assert(shader == m_FBShader || shader == m_stereoShader); // FrameBuffer/Stereo shaders are the only ones using Position/Texture vertex format
    ApplyRenderStates();
-   RenderCommand* cmd = m_renderFrame.NewCommand();
+   RenderCommand* cmd = m_renderFrame->NewCommand();
    cmd->SetDrawTexturedQuad(shader, vertices, isTransparent, depth);
    cmd->m_dependency = m_nextRenderCommandDependency;
    m_nextRenderCommandDependency = nullptr;
@@ -2041,7 +2022,7 @@ void RenderDevice::DrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* verti
 {
    assert(shader != m_FBShader && shader != m_stereoShader); // FrameBuffer/Stereo shaders are the only ones using Position/Texture vertex format
    ApplyRenderStates();
-   RenderCommand* cmd = m_renderFrame.NewCommand();
+   RenderCommand* cmd = m_renderFrame->NewCommand();
    cmd->SetDrawTexturedQuad(shader, vertices, isTransparent, depth);
    cmd->m_dependency = m_nextRenderCommandDependency;
    m_nextRenderCommandDependency = nullptr;
@@ -2057,7 +2038,7 @@ void RenderDevice::DrawFullscreenTexturedQuad(Shader* shader)
 
 void RenderDevice::DrawMesh(Shader* shader, const bool isTranparentPass, const Vertex3Ds& center, const float depthBias, MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndex, const DWORD indexCount)
 {
-   RenderCommand* cmd = m_renderFrame.NewCommand();
+   RenderCommand* cmd = m_renderFrame->NewCommand();
    // Legacy sorting order (only along negative z axis, which is reversed for reflections).
    // This is completely wrong, but needed to preserve backward compatibility. We should sort along the view axis (especially for reflection probes)
    const float depth = g_pplayer->m_renderer && g_pplayer->m_renderer->IsRenderPass(Renderer::REFLECTION_PASS) ? depthBias + center.z : depthBias - center.z;

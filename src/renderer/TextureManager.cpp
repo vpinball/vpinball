@@ -6,17 +6,20 @@
 #include "RenderDevice.h"
 #include "Texture.h"
 
-Sampler* TextureManager::LoadTexture(ITexManCacheable* const memtex, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV, const bool force_linear_rgb)
+std::shared_ptr<Sampler> TextureManager::LoadTexture(ITexManCacheable* const memtex, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV, const bool force_linear_rgb)
 {
    const Iter it = m_map.find(memtex->GetLiveHash());
    // During static part prerendering, trilinear/anisotropic filtering is disabled to get sharper results
    const bool isPreRender = g_pplayer->m_renderer && g_pplayer->m_renderer->IsRenderPass(Renderer::STATIC_ONLY);
    const SamplerFilter filter2 = (isPreRender && (filter == SamplerFilter::SF_ANISOTROPIC || filter == SamplerFilter::SF_TRILINEAR)) ? SamplerFilter::SF_BILINEAR : filter;
+   if (memtex->GetName() == "Playfield Maple")
+   {
+      int zz = 1;
+   }
    if (it == m_map.end())
    {
       MapEntry entry;
-      entry.sampler = new Sampler(&m_rd, memtex->GetRawBitmap(false, 0), force_linear_rgb, clampU, clampV, filter2);
-      entry.sampler->SetName(memtex->GetName());
+      entry.sampler = std::make_shared<Sampler>(&m_rd, memtex->GetName(), memtex->GetRawBitmap(false, 0), force_linear_rgb, clampU, clampV, filter2);
       entry.sampler->m_dirty = false;
       entry.forceLinearRGB = force_linear_rgb;
       entry.tex = memtex;
@@ -28,8 +31,7 @@ Sampler* TextureManager::LoadTexture(ITexManCacheable* const memtex, const Sampl
       MapEntry& entry = it->second;
       if (entry.pendingUpload)
       {
-         entry.sampler = new Sampler(&m_rd, entry.pendingUpload, force_linear_rgb, clampU, clampV, filter2);
-         entry.sampler->SetName(memtex->GetName());
+         entry.sampler = std::make_shared<Sampler>(&m_rd, memtex->GetName(), entry.pendingUpload, force_linear_rgb, clampU, clampV, filter2);
          entry.sampler->m_dirty = false;
          entry.pendingUpload = nullptr;
       }
@@ -67,8 +69,7 @@ void TextureManager::AddPlaceHolder(ITexManCacheable* memtex)
       std::shared_ptr<BaseTexture> placeHolder = std::make_shared<BaseTexture>(1, 1, BaseTexture::SRGBA);
       *reinterpret_cast<uint32_t*>(placeHolder->data()) = 0xFFFF00FFu;
       MapEntry entry;
-      entry.sampler = new Sampler(&m_rd, placeHolder, false, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_POINT);
-      entry.sampler->SetName(memtex->GetName());
+      entry.sampler = std::make_shared<Sampler>(&m_rd, memtex->GetName(), placeHolder, false, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_POINT);
       entry.sampler->m_dirty = true;
       entry.forceLinearRGB = false;
       entry.isPlaceHolder = true;
@@ -103,15 +104,10 @@ void TextureManager::UnloadTexture(ITexManCacheable* memtex)
 {
    const CIter it = m_map.find(memtex->GetLiveHash());
    if (it != m_map.end())
-   {
-      delete it->second.sampler;
       m_map.erase(it);
-   }
 }
 
 void TextureManager::UnloadAll()
 {
-   for (const auto& it : m_map)
-      delete it.second.sampler;
    m_map.clear();
 }

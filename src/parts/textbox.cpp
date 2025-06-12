@@ -433,6 +433,7 @@ void Textbox::RenderSetup(RenderDevice *device)
    if (width > 0 && height > 0)
    {
       m_texture = new BaseTexture(width, height, BaseTexture::SRGBA);
+      m_texture->SetName("Textbox."s + GetName());
       m_textureDirty = true;
    }
 }

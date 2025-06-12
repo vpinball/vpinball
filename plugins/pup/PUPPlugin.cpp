@@ -121,7 +121,7 @@ PSC_CLASS_END(PUPPinDisplay)
 // Renderer
 //
 
-void UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, uint8_t* image)
+void UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const uint8_t* image)
 {
    if (vpxApi)
       vpxApi->UpdateTexture(texture, width, height, format, image);

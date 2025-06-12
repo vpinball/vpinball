@@ -828,17 +828,17 @@ ImGui::MarkdownImageData LiveUI::MarkdownImageCallback(ImGui::MarkdownLinkCallba
    Texture *const ppi = ui->m_live_table->GetImage(std::string(data.link, data.linkLength));
    if (ppi == nullptr)
       return ImGui::MarkdownImageData {};
-   Sampler *const sampler = ui->m_renderer->m_renderDevice->m_texMan.LoadTexture(ppi, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
+   std::shared_ptr<Sampler> sampler = ui->m_renderer->m_renderDevice->m_texMan.LoadTexture(ppi, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
    if (sampler == nullptr)
       return ImGui::MarkdownImageData {};
    #if defined(ENABLE_BGFX)
-   ImTextureID image = (ImTextureID)sampler;
+      ImTextureID image = sampler;
    #elif defined(ENABLE_OPENGL)
-   ImTextureID image = (ImTextureID)sampler->GetCoreTexture();
+      ImTextureID image = (ImTextureID)sampler->GetCoreTexture();
    #elif defined(ENABLE_DX9)
-   ImTextureID image = (ImTextureID)sampler->GetCoreTexture();
+      ImTextureID image = (ImTextureID)sampler->GetCoreTexture();
    #endif
-   ImGui::MarkdownImageData imageData { true, false, image, ImVec2((float)sampler->GetWidth(), (float)sampler->GetHeight()) };
+   ImGui::MarkdownImageData imageData { true, false, image, ImVec2(static_cast<float>(sampler->GetWidth()), static_cast<float>(sampler->GetHeight())) };
    ImVec2 const contentSize = ImGui::GetContentRegionAvail();
    if (imageData.size.x > contentSize.x)
    {
@@ -4531,18 +4531,18 @@ void LiveUI::ImageProperties()
       m_table->SetNonUndoableDirty(eSaveDirty);
    ImGui::EndDisabled();
    ImGui::Separator();
-   Sampler *sampler = m_renderer->m_renderDevice->m_texMan.LoadTexture(m_selection.image, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
-#if defined(ENABLE_BGFX)
-   ImTextureID image = (ImTextureID)sampler;
-#elif defined(ENABLE_OPENGL)
-   ImTextureID image = sampler ? (ImTextureID)sampler->GetCoreTexture() : 0;
-#elif defined(ENABLE_DX9)
-   ImTextureID image = sampler ? (ImTextureID)sampler->GetCoreTexture() : 0;
-#endif
+   std::shared_ptr<Sampler> sampler = m_renderer->m_renderDevice->m_texMan.LoadTexture(m_selection.image, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
+   #if defined(ENABLE_BGFX)
+      ImTextureID image = sampler;
+   #elif defined(ENABLE_OPENGL)
+      ImTextureID image = sampler ? (ImTextureID)sampler->GetCoreTexture() : 0;
+   #elif defined(ENABLE_DX9)
+      ImTextureID image = sampler ? (ImTextureID)sampler->GetCoreTexture() : 0;
+   #endif
    if (image)
    {
       const float w = ImGui::GetWindowWidth();
-      ImGui::Image(image, ImVec2(w, (float)sampler->GetHeight() * w / (float) sampler->GetWidth()));
+      ImGui::Image(image, ImVec2(w, static_cast<float>(sampler->GetHeight()) * w / static_cast<float>(sampler->GetWidth())));
    }
 }
 

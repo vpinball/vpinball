@@ -139,3 +139,8 @@ namespace ImGui
     void MyFunction(const char* name, MyMatrix44* mtx);
 }
 */
+
+#ifdef ENABLE_BGFX
+#include <memory>
+#define ImTextureID std::shared_ptr<class Sampler>
+#endif

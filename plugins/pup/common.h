@@ -61,7 +61,7 @@ PSC_USE_ERROR();
 extern VPXTexture CreateTexture(SDL_Surface* surf);
 extern VPXTexture CreateTexture(uint8_t *rawData, int size);
 extern void GetTextureInfo(VPXTexture texture, int *width, int *height);
-extern void UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, uint8_t *image);
+extern void UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const uint8_t *image);
 extern void DeleteTexture(VPXTexture texture);
 
 string trim_string(const string &str);

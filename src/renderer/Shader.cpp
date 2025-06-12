@@ -561,7 +561,7 @@ Shader::Shader(RenderDevice* renderDevice, const ShaderId id, const bool isStere
             case SUT_Float4x3: m_stateSizes[uniform] = shaderUniformNames[uniform].count * 16 * sizeof(float); break;
             case SUT_Float4x4: m_stateSizes[uniform] = shaderUniformNames[uniform].count * 16 * sizeof(float); break;
             case SUT_DataBlock: m_stateSizes[uniform] = shaderUniformNames[uniform].count; break;
-            case SUT_Sampler: m_stateSizes[uniform] = shaderUniformNames[uniform].count * sizeof(Sampler*); break;
+            case SUT_Sampler: m_stateSizes[uniform] = shaderUniformNames[uniform].count * sizeof(int); break;
             default: break;
             }
             m_stateSize += m_stateSizes[uniform];
@@ -647,21 +647,6 @@ Shader::~Shader()
       delete m_boundState;
       SAFE_RELEASE(m_shader);
 
-   #endif
-}
-
-void Shader::UnbindSampler(Sampler* sampler)
-{
-   #if defined(ENABLE_DX9)
-   for (const auto& uniform : m_uniforms[0])
-   {
-      const auto& desc = m_uniform_desc[uniform];
-      if (desc.uniform.type == SUT_Sampler && (sampler == nullptr || m_boundTexture[desc.sampler] == sampler))
-      {
-         CHECKD3D(m_shader->SetTexture(desc.tex_handle, nullptr));
-         m_boundTexture[desc.sampler] = nullptr;
-      }
-   }
    #endif
 }
 
@@ -972,7 +957,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
 
    void* const src = m_state->m_state + m_stateOffsets[uniformName];
    void* const dst = boundState->m_state + m_stateOffsets[uniformName];
-   if (memcmp(dst, src, m_stateSizes[uniformName]) == 0)
+   if ((shaderUniformNames[uniformName].type != SUT_Sampler) && memcmp(dst, src, m_stateSizes[uniformName]) == 0)
    {
       #if defined(ENABLE_BGFX)
       // FIXME BGFX implement uniform caching
@@ -983,8 +968,6 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          glBindBufferRange(GL_UNIFORM_BUFFER, 0, desc.blockBuffer, 0, m_stateSizes[uniformName]);
          return;
       }
-      else if (shaderUniformNames[uniformName].type != SUT_Sampler)
-         return;
       #elif defined(ENABLE_DX9)
       return;
       #endif
@@ -1115,13 +1098,11 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
 
    case SUT_Sampler:
       {
+         int pos = *(int*)src;
+         std::shared_ptr<const Sampler> texel = pos > 0 ? m_state->m_samplers[pos - 1] : m_renderDevice->m_nullTexture;
+         assert(texel != nullptr);
+         
          #if defined(ENABLE_BGFX)
-         Sampler* texel = *(Sampler**)src;
-         if (texel == nullptr)
-         {
-            bgfx::setTexture(shaderUniformNames[uniformName].tex_unit, desc, m_renderDevice->m_nullTexture->GetCoreTexture(false));
-            return;
-         }
          SamplerFilter filter = texel->GetFilter();
          SamplerAddressMode clampu = texel->GetClampU();
          SamplerAddressMode clampv = texel->GetClampV();
@@ -1181,7 +1162,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          case SA_REPEAT: /* Default mode, no flag to set */ break;
          default: break;
          }
-         const bgfx::TextureHandle texHandle = texel->GetCoreTexture(filter != SF_NONE);
+         const bgfx::TextureHandle texHandle = const_cast<Sampler*>(texel.get())->GetCoreTexture(filter != SF_NONE);
          if (!bgfx::isValid(texHandle))
          {
             bgfx::setTexture(shaderUniformNames[uniformName].tex_unit, desc, m_renderDevice->m_nullTexture->GetCoreTexture(false));
@@ -1192,9 +1173,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          #elif defined(ENABLE_OPENGL)
          // DX9 implementation uses preaffected texture units, not samplers, so these can not be used for OpenGL. This would cause some collisions.
          m_renderDevice->m_curParameterChanges--;
-         Sampler* const texel = *(Sampler**)src;
          SamplerBinding* tex_unit = nullptr;
-         assert(texel != nullptr);
          SamplerFilter filter = texel->GetFilter();
          SamplerAddressMode clampu = texel->GetClampU();
          SamplerAddressMode clampv = texel->GetClampV();
@@ -1273,24 +1252,22 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          assert(0 <= unit && unit < TEXTURESET_STATE_CACHE_SIZE);
 
          // Bind the texture to the shader
-         Sampler* const tex = *(Sampler**)src;
-         assert(tex != nullptr);
          IDirect3DTexture9* const bounded = m_boundTexture[unit] ? m_boundTexture[unit]->GetCoreTexture() : nullptr;
-         IDirect3DTexture9* const tobound = tex ? tex->GetCoreTexture() : nullptr;
+         IDirect3DTexture9* const tobound = texel ? texel->GetCoreTexture() : nullptr;
          if (bounded != tobound)
          {
             CHECKD3D(m_shader->SetTexture(desc.tex_handle, tobound));
-            m_boundTexture[unit] = tex;
+            m_boundTexture[unit] = texel;
             m_renderDevice->m_curTextureChanges++;
          }
 
          // Apply the texture sampling states
-         if (tex != m_renderDevice->m_nullTexture)
+         if (texel != m_renderDevice->m_nullTexture)
          {
             //CHECKD3D(m_renderDevice->GetCoreDevice()->SetSamplerState(unit, D3DSAMP_SRGBTEXTURE, !tex->IsLinear()));
-            SamplerFilter filter = tex->GetFilter();
-            SamplerAddressMode clampu = tex->GetClampU();
-            SamplerAddressMode clampv = tex->GetClampV();
+            SamplerFilter filter = texel->GetFilter();
+            SamplerAddressMode clampu = texel->GetClampU();
+            SamplerAddressMode clampv = texel->GetClampV();
             if (filter == SF_UNDEFINED)
             {
                filter = shaderUniformNames[uniformName].default_filter;
@@ -2392,6 +2369,19 @@ void Shader::Load()
             // TODO we do not filter on technique for DX9. Not a big problem, but not that clean either (all uniforms are applied for all techniques)
             for (int j = 0; j < SHADER_TECHNIQUE_COUNT; j++)
                m_uniforms[j].push_back(uniformIndex);
+      }
+   }
+}
+
+void Shader::UnbindSamplers()
+{
+   for (const auto& uniform : m_uniforms[0])
+   {
+      const auto& desc = m_uniform_desc[uniform];
+      if (desc.uniform.type == SUT_Sampler && m_boundTexture[desc.sampler])
+      {
+         CHECKD3D(m_shader->SetTexture(desc.tex_handle, nullptr));
+         m_boundTexture[desc.sampler] = nullptr;
       }
    }
 }

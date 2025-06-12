@@ -445,9 +445,11 @@ BaseTexture* BaseTexture::CreateFromHBitmap(const HBITMAP hbmp, unsigned int max
 void BaseTexture::Update(BaseTexture** texture, const unsigned int width, const unsigned int height, const Format texFormat, const uint8_t* image)
 {
    const int pixelSize = GetPixelSize(texFormat);
+   string name;
    if (*texture != nullptr)
    {
       BaseTexture* tex = *texture;
+      name = tex->GetName();
       if ((tex->m_width == width) && (tex->m_height == height) && (tex->m_format == texFormat))
       {
          assert(tex->pitch() * tex->height() == width * height * pixelSize);
@@ -471,7 +473,10 @@ void BaseTexture::Update(BaseTexture** texture, const unsigned int width, const 
    }
    BaseTexture* baseTex = BaseTexture::Create(width, height, texFormat);
    if (baseTex)
+   {
+      baseTex->SetName(name);
       memcpy(baseTex->data(), image, (size_t)width * height * pixelSize);
+   }
    *texture = baseTex;
 }
 
