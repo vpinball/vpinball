@@ -38,7 +38,7 @@ private:
       bool forceLinearRGB = false;
       ITexManCacheable* tex = nullptr;
       bool isPlaceHolder = false;
-      std::shared_ptr<class BaseTexture> pendingUpload;
+      std::shared_ptr<const class BaseTexture> pendingUpload;
    };
    RenderDevice& m_rd;
    ankerl::unordered_dense::map<unsigned long long, MapEntry> m_map;

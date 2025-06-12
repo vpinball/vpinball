@@ -7,9 +7,10 @@
 class ITexManCacheable
 {
 public:
+   virtual ~ITexManCacheable() = default;
    virtual unsigned long long GetLiveHash() const = 0;
    virtual bool IsOpaque() const = 0;
-   virtual std::shared_ptr<class BaseTexture> GetRawBitmap(bool resizeOnLowMem = false, unsigned int maxTexDimension = 0) const = 0;
+   virtual std::shared_ptr<const class BaseTexture> GetRawBitmap(bool resizeOnLowMem, unsigned int maxTexDimension) const = 0;
    virtual const string& GetName() const = 0;
 };
 
@@ -36,7 +37,7 @@ public:
    };
 
    BaseTexture(const unsigned int w, const unsigned int h, const Format format);
-   ~BaseTexture();
+   ~BaseTexture() override;
 
    static BaseTexture *Create(const unsigned int w, const unsigned int h, const Format format) noexcept;
    static BaseTexture *CreateFromFile(const string &filename, unsigned int maxTexDimension = 0, bool resizeOnLowMem = false) noexcept;
@@ -45,7 +46,7 @@ public:
    static void Update(BaseTexture **texture, const unsigned int w, const unsigned int h, const Format format, const uint8_t *image); // Update eventually recreating the texture
 
    unsigned long long GetLiveHash() const override { return m_liveHash; }
-   std::shared_ptr<BaseTexture> GetRawBitmap(bool resizeOnLowMem = false, unsigned int maxTexDimension = 0) const override { return m_selfPointer; }
+   std::shared_ptr<const BaseTexture> GetRawBitmap(bool resizeOnLowMem, unsigned int maxTexDimension) const override { return m_selfPointer; }
    const string& GetName() const override { static const string emptystring; return emptystring; }
 
    unsigned int width() const  { return m_width; }
@@ -98,7 +99,7 @@ class Texture final : public ITexManCacheable
 public:
    static Texture *CreateFromFile(const string &filename, const bool isImageData = true);
    static Texture *CreateFromStream(IStream *pstream, int version, PinTable *pt);
-   ~Texture();
+   ~Texture() override;
 
    HRESULT SaveToStream(IStream *pstream, const PinTable *pt);
 
@@ -106,7 +107,7 @@ public:
    const string& GetName() const override { return m_name; }
 
    HBITMAP GetGDIBitmap() const; // Lazily created view of the image, suitable for GDI rendering
-   std::shared_ptr<BaseTexture> GetRawBitmap(bool resizeOnLowMem = false, unsigned int maxTexDimension = 0) const override; // Lazily created view of the image, suitable for GPU sampling
+   std::shared_ptr<const BaseTexture> GetRawBitmap(bool resizeOnLowMem, unsigned int maxTexDimension) const override; // Lazily created view of the image, suitable for GPU sampling
 
    size_t GetEstimatedGPUSize() const;
 
@@ -126,7 +127,7 @@ public:
    const unsigned int m_height = 0;
 
 private:
-   Texture(const string& name, PinBinary* ppb, unsigned int width, unsigned int height); // Private to forbid uninitialized objects
+   Texture(string name, PinBinary* ppb, unsigned int width, unsigned int height); // Private to forbid uninitialized objects
 
    void UpdateMD5() const;
    void SetMD5Hash(uint8_t *md5) const;
