@@ -700,12 +700,12 @@ void BaseTexture::UpdateOpaque() const
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Texture::Texture(const string& name, PinBinary* ppb, unsigned int width, unsigned int height)
-   : m_name(name)
-   , m_ppb(ppb)
+Texture::Texture(string name, PinBinary* ppb, unsigned int width, unsigned int height)
+   : m_name(std::move(name))
    , m_width(width)
    , m_height(height)
    , m_liveHash(((unsigned long long)this) ^ ((unsigned long long)ppb) ^ usec() ^ ((unsigned long long)width << 16) ^ ((unsigned long long)height << 32))
+   , m_ppb(ppb)
 {
    assert(m_ppb != nullptr);
    assert(m_width > 0);
@@ -913,7 +913,7 @@ size_t Texture::GetEstimatedGPUSize() const
    return (4 * estimatedSize) / 3;
 }
 
-std::shared_ptr<BaseTexture> Texture::GetRawBitmap(bool resizeOnLowMem, unsigned int maxTexDimension) const
+std::shared_ptr<const BaseTexture> Texture::GetRawBitmap(bool resizeOnLowMem, unsigned int maxTexDimension) const
 {
    auto buffer = m_imageBuffer.lock();
    if (buffer)
@@ -937,7 +937,7 @@ HBITMAP Texture::GetGDIBitmap() const
       return m_hbmGDIVersion;
    }
 
-   const auto buffer = GetRawBitmap();
+   const auto buffer = GetRawBitmap(false, 0);
    if (buffer == nullptr)
    {
       m_hbmGDIVersion = g_pvp->m_hbmInPlayMode; // We should return an error bitmap
@@ -998,7 +998,7 @@ void Texture::UpdateOpaque() const
    if (!m_isOpaqueDirty)
       return;
    m_isOpaqueDirty = false;
-   m_isOpaque = GetRawBitmap()->IsOpaque();
+   m_isOpaque = GetRawBitmap(false, 0)->IsOpaque();
 }
 
 void Texture::SetIsOpaque(const bool v) const

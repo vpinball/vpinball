@@ -15,7 +15,7 @@ Sampler* TextureManager::LoadTexture(ITexManCacheable* const memtex, const Sampl
    if (it == m_map.end())
    {
       MapEntry entry;
-      entry.sampler = new Sampler(&m_rd, memtex->GetRawBitmap(), force_linear_rgb, clampU, clampV, filter2);
+      entry.sampler = new Sampler(&m_rd, memtex->GetRawBitmap(false, 0), force_linear_rgb, clampU, clampV, filter2);
       entry.sampler->SetName(memtex->GetName());
       entry.sampler->m_dirty = false;
       entry.forceLinearRGB = force_linear_rgb;
@@ -35,7 +35,7 @@ Sampler* TextureManager::LoadTexture(ITexManCacheable* const memtex, const Sampl
       }
       else if (entry.sampler->m_dirty)
       {
-         entry.sampler->UpdateTexture(memtex->GetRawBitmap(), force_linear_rgb);
+         entry.sampler->UpdateTexture(memtex->GetRawBitmap(false, 0), force_linear_rgb);
          entry.sampler->m_dirty = false;
       }
       entry.sampler->SetClamp(clampU, clampV);
@@ -51,7 +51,7 @@ void TextureManager::AddPendingUpload(ITexManCacheable* memtex)
    if (it == m_map.end())
    {
       MapEntry entry;
-      entry.pendingUpload = memtex->GetRawBitmap();
+      entry.pendingUpload = memtex->GetRawBitmap(false, 0);
       entry.forceLinearRGB = false;
       entry.isPlaceHolder = false;
       entry.tex = memtex;

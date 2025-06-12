@@ -260,7 +260,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    aoTex.reset();
 
    Texture* tableEnv = m_table->GetImage(m_table->m_envImage);
-   std::shared_ptr<BaseTexture> envTex = tableEnv ? tableEnv->GetRawBitmap() : std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "EnvMap.webp"));
+   std::shared_ptr<const BaseTexture> envTex = tableEnv ? tableEnv->GetRawBitmap(false, 0) : std::shared_ptr<const BaseTexture>(BaseTexture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "EnvMap.webp"));
    m_envSampler = new Sampler(m_renderDevice, envTex, false, SA_REPEAT, SA_CLAMP, SF_TRILINEAR);
    m_envSampler->SetName("Table Env"s);
 
@@ -512,7 +512,7 @@ void Renderer::SwapAORenderTargets()
    m_pAORenderTarget2 = tmpAO;
 }
 
-BaseTexture* Renderer::EnvmapPrecalc(std::shared_ptr<BaseTexture> envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres)
+BaseTexture* Renderer::EnvmapPrecalc(std::shared_ptr<const BaseTexture> envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres)
 {
    const void* __restrict envmap = envTex->datac();
    const unsigned int env_xres = envTex->width();
