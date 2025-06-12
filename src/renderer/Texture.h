@@ -47,7 +47,8 @@ public:
 
    unsigned long long GetLiveHash() const override { return m_liveHash; }
    std::shared_ptr<const BaseTexture> GetRawBitmap(bool resizeOnLowMem, unsigned int maxTexDimension) const override { return m_selfPointer; }
-   const string& GetName() const override { static const string emptystring; return emptystring; }
+   void SetName(const string& name) { m_name = name; }
+   const string& GetName() const override { return m_name; }
 
    unsigned int width() const  { return m_width; }
    unsigned int height() const { return m_height; }
@@ -79,6 +80,8 @@ private:
    const unsigned int m_width, m_height;
    const unsigned long long m_liveHash;
    BYTE* const m_data;
+
+   string m_name;
 
    std::shared_ptr<BaseTexture> m_selfPointer;
 

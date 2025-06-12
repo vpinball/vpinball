@@ -257,9 +257,23 @@ typedef struct VPXPluginAPI
    void(MSGPIAPI* SetInputState)(const uint64_t keyState, const float nudgeX, const float nudgeY, const float plunger);
 
    // Rendering
-   VPXTexture(MSGPIAPI* CreateTexture)(uint8_t* rawData, int size); // Thread safe
-   void(MSGPIAPI* UpdateTexture)(VPXTexture* texture, int width, int height, VPXTextureFormat format, const uint8_t* image); // NOT Thread safe
-   void(MSGPIAPI* GetTextureInfo)(VPXTexture texture, int* width, int* height); // NOT Thread safe
-   void(MSGPIAPI* DeleteTexture)(VPXTexture texture); // Thread safe
+   
+   // Create a texture from encoded data (Webp, Exr, ...).
+   // Texture must be destroyed by the caller using DeleteTexture.
+   // Thread safe
+   VPXTexture(MSGPIAPI* CreateTexture)(uint8_t* rawData, int size);
+   // Create or update a texture from 'flat' data in the specified format
+   // - if texture object already exists, it is either updated or destroyed/recreated. texture pointer is 
+   //   updated with the new/updated texture object, this object should be provided for later updates
+   //   to allow reuse of texture objects.
+   // Texture must be destroyed by the caller using DeleteTexture.
+   // NOT Thread safe
+   void(MSGPIAPI* UpdateTexture)(VPXTexture* texture, int width, int height, VPXTextureFormat format, const uint8_t* image);
+   // Give access to texture informations.
+   // NOT Thread safe
+   void(MSGPIAPI* GetTextureInfo)(VPXTexture texture, int* width, int* height);
+   // Destroy a texture created through this API.
+   // Thread safe
+   void(MSGPIAPI* DeleteTexture)(VPXTexture texture);
 
 } VPXPluginAPI;

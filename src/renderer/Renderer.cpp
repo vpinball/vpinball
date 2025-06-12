@@ -250,19 +250,16 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_pBloomTmpBufferTexture = m_pBloomBufferTexture->Duplicate("BloomBuffer2"s);
 
    std::shared_ptr<BaseTexture> ballTex = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "BallEnv.exr"));
-   m_ballEnvSampler = new Sampler(m_renderDevice, ballTex, false, SA_REPEAT, SA_REPEAT, SF_TRILINEAR);
-   m_ballEnvSampler->SetName("Ball Env"s);
-   ballTex.reset();
+   m_ballEnvSampler = std::make_shared<Sampler>(m_renderDevice, "Ball Env"s, ballTex, false, SA_REPEAT, SA_REPEAT, SF_TRILINEAR);
+   ballTex = nullptr;
 
    std::shared_ptr<BaseTexture> aoTex = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "AODither.webp"));
-   m_aoDitherSampler = new Sampler(m_renderDevice, aoTex, true, SA_REPEAT, SA_REPEAT, SF_NONE);
-   m_aoDitherSampler->SetName("AO Dither"s);
-   aoTex.reset();
+   m_aoDitherSampler = std::make_shared<Sampler>(m_renderDevice, "AO Dither"s, aoTex, true, SA_REPEAT, SA_REPEAT, SF_NONE);
+   aoTex = nullptr;
 
    Texture* tableEnv = m_table->GetImage(m_table->m_envImage);
-   std::shared_ptr<const BaseTexture> envTex = tableEnv ? tableEnv->GetRawBitmap(false, 0) : std::shared_ptr<const BaseTexture>(BaseTexture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "EnvMap.webp"));
-   m_envSampler = new Sampler(m_renderDevice, envTex, false, SA_REPEAT, SA_CLAMP, SF_TRILINEAR);
-   m_envSampler->SetName("Table Env"s);
+   std::shared_ptr<const BaseTexture> envTex = tableEnv ? tableEnv->GetRawBitmap(false, 0) : std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "EnvMap.webp"));
+   m_envSampler = std::make_shared<Sampler>(m_renderDevice, "Table Env"s, envTex, false, SA_REPEAT, SA_CLAMP, SF_TRILINEAR);
 
    PLOGI << "Computing environment map radiance"; // For profiling
 
@@ -397,9 +394,6 @@ Renderer::~Renderer()
 {
    delete m_mvp;
    m_gpu_profiler.Shutdown();
-   delete m_aoDitherSampler;
-   delete m_envSampler;
-   delete m_ballEnvSampler;
    delete m_ballImage;
    delete m_decalImage;
    delete m_envRadianceTexture;
@@ -422,6 +416,9 @@ Renderer::~Renderer()
    delete m_pOffscreenVRLeft;
    delete m_pOffscreenVRRight;
    ReleaseAORenderTargets();
+   m_ballEnvSampler = nullptr;
+   m_envSampler = nullptr;
+   m_aoDitherSampler = nullptr;
    delete m_renderDevice;
 }
 
@@ -1501,7 +1498,7 @@ void Renderer::DrawDynamics(bool onlyBalls)
    m_render_mask = mask;
 }
 
-void Renderer::DrawSprite(const float posx, const float posy, const float width, const float height, const COLORREF color, Sampler* const tex, const float intensity, const bool backdrop)
+void Renderer::DrawSprite(const float posx, const float posy, const float width, const float height, const COLORREF color, std::shared_ptr<const Sampler> tex, const float intensity, const bool backdrop)
 {
    Vertex3D_NoTex2 vertices[4] =
    {
@@ -2422,13 +2419,12 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
          pdest[i * 3 + 1] = ((i >> 2) & 1) == 0 ? 0x00 : ((i & 1) == 0 && (y & 1) == 0) ? 0x00 : 0xFF;
          pdest[i * 3 + 2] = ((y >> 2) & 1) == 0 ? 0x00 : ((i & 1) == 0 && (y & 1) == 0) ? 0x00 : 0xFF;
       }
-      Sampler *checker = new Sampler(m_renderDevice, tex, true, SA_CLAMP, SA_CLAMP, SF_NONE);
+      std::shared_ptr<Sampler> checker = std::make_shared<Sampler>(m_renderDevice, "Checker", tex, true, SA_CLAMP, SA_CLAMP, SF_NONE);
       m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), 1.f, 1.f);
       m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, checker);
       m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
       m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
       renderedRT = outputRT;
-      delete checker;
    }
 
    // Stereo and AA are performed on LDR render buffer after tonemapping (RGB8 or RGB10, but nof RGBF).

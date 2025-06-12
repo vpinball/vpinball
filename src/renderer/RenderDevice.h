@@ -133,8 +133,8 @@ public:
    void DrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices, const bool isTransparent = false, const float depth = 0.f);
    void DrawFullscreenTexturedQuad(Shader* shader);
    void DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, RenderTarget* dest, float kernel_size, int singleLayer = -1);
-   void AddBeginOfFrameCmd(const std::function<void()>& cmd) { m_renderFrame.AddBeginOfFrameCmd(cmd); }
-   void AddEndOfFrameCmd(const std::function<void()>& cmd) { m_renderFrame.AddEndOfFrameCmd(cmd); }
+   void AddBeginOfFrameCmd(const std::function<void()>& cmd) { m_renderFrame->AddBeginOfFrameCmd(cmd); }
+   void AddEndOfFrameCmd(const std::function<void()>& cmd) { m_renderFrame->AddEndOfFrameCmd(cmd); }
    void LogNextFrame() { m_logNextFrame = true; }
    bool IsLogNextFrame() const { return m_logNextFrame; }
    void SubmitRenderFrame();
@@ -181,8 +181,7 @@ public:
 
    void UploadTexture(ITexManCacheable* texture, const bool linearRGB);
    void SetSamplerState(int unit, SamplerFilter filter, SamplerAddressMode clamp_u, SamplerAddressMode clamp_v);
-   void UnbindSampler(Sampler* sampler);
-   Sampler* m_nullTexture = nullptr;
+   std::shared_ptr<Sampler> m_nullTexture = nullptr;
    TextureManager m_texMan;
    const bool m_compressTextures;
 
@@ -231,7 +230,7 @@ private:
 
    bool m_useLowPrecision = false; // OpenGL ES use low precision float and needs some clamping to avoid artifacts, but the clamping causes artefacts if applied with VR scene scaling on other backends.
 
-   RenderFrame m_renderFrame;
+   std::unique_ptr<RenderFrame> m_renderFrame = nullptr;
    RenderPass* m_currentPass = nullptr;
    RenderPass* m_nextRenderCommandDependency = nullptr;
 
@@ -244,8 +243,8 @@ private:
    MeshBuffer* m_quadMeshBuffer = nullptr; // internal mesh buffer for rendering quads
 
    void UploadAndSetSMAATextures();
-   Sampler* m_SMAAsearchTexture = nullptr;
-   Sampler* m_SMAAareaTexture = nullptr;
+   std::shared_ptr<Sampler> m_SMAAsearchTexture = nullptr;
+   std::shared_ptr<Sampler> m_SMAAareaTexture = nullptr;
 
    int m_visualLatencyCorrection = -1;
 
@@ -291,7 +290,7 @@ private:
    bool m_renderDeviceAlive;
    std::thread m_renderThread;
    static void RenderThread(RenderDevice* rd, const bgfx::Init& init);
-   vector<Sampler*> m_pendingTextureUploads;
+   vector<std::shared_ptr<Sampler>> m_pendingTextureUploads;
 
    static volatile bool s_screenshot;
 
@@ -299,7 +298,7 @@ private:
 public:
    int getGLVersion() const { return m_GLversion; }
    vector<MeshBuffer::SharedVAO*> m_sharedVAOs;
-   std::vector<SamplerBinding*> m_samplerBindings;
+   vector<SamplerBinding*> m_samplerBindings;
    GLuint m_curVAO = 0;
    SDL_GLContext m_sdl_context = nullptr;
    #ifndef __STANDALONE__

@@ -11,12 +11,12 @@
 
 RenderFrame::RenderFrame(RenderDevice* renderDevice)
    : m_rd(renderDevice)
+   , m_rdState(std::make_unique<RenderDeviceState>(renderDevice))
 {
 }
 
 RenderFrame::~RenderFrame()
 {
-   delete m_rdState;
    for (auto item : m_commandPool)
       delete item;
    for (auto item : m_passPool)
@@ -147,8 +147,6 @@ bool RenderFrame::Execute(const bool log)
    if (!m_passes.empty())
    {
       // Save render/shader states
-      if (m_rdState == nullptr)
-         m_rdState = new RenderDeviceState(m_rd);
       m_rd->CopyRenderStates(true, *m_rdState);
 
       // Clear last render pass to avoid cross frame references

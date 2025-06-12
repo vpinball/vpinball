@@ -62,7 +62,7 @@ public:
    static bool IsVRinstalled();
    static bool IsVRturnedOn();
    bool IsVRReady() const;
-   void SubmitFrame(Sampler* leftEye, Sampler* rightEye);
+   void SubmitFrame(std::shared_ptr<Sampler> leftEye, std::shared_ptr<Sampler> rightEye);
    void TableUp();
    void TableDown();
 

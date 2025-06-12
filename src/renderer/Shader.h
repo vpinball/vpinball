@@ -482,7 +482,6 @@ public:
    void SetBasic(const Material * const mat, Texture * const pin);
    ShaderTechniques GetCurrentTechnique() const { return m_technique; }
    static void SetDefaultSamplerFilter(const ShaderUniforms sampler, const SamplerFilter sf);
-   void UnbindSampler(Sampler* sampler);
 
    void SetMaterial(const Material * const mat, const bool has_alpha = true);
    void SetAlphaTestValue(const float value);
@@ -507,7 +506,7 @@ public:
    void SetVector(const ShaderUniforms uniformName, const vec4* const pVector) { m_state->SetVector(uniformName, pVector); }
    void SetVector(const ShaderUniforms uniformName, const float x, const float y, const float z, const float w) { const vec4 v(x, y, z, w); m_state->SetVector(uniformName, &v); }
    void SetFloat4v(const ShaderUniforms uniformName, const vec4* const pData, const unsigned int count) { m_state->SetVector(uniformName, pData, count); }
-   void SetTexture(const ShaderUniforms uniformName, const Sampler* const sampler) { m_state->SetTexture(uniformName, sampler); }
+   void SetTexture(const ShaderUniforms uniformName, const std::shared_ptr<const Sampler> sampler) { m_state->SetTexture(uniformName, sampler); }
    void SetTextureNull(const ShaderUniforms uniformName);
    void SetTexture(const ShaderUniforms uniformName, ITexManCacheable* const texel, const SamplerFilter filter = SF_UNDEFINED, const SamplerAddressMode clampU = SA_UNDEFINED, const SamplerAddressMode clampV = SA_UNDEFINED, const bool force_linear_rgb = false);
    
@@ -521,25 +520,29 @@ public:
          , m_useLowPrecision(isLowPrecision)
       {
       }
-      ~ShaderState() { delete[] m_state; }
-      void Reset(Shader* shader) { assert(shader->m_stateSize <= m_stateSize); m_shader = shader; }
+      ~ShaderState()
+      {
+         delete[] m_state;
+      }
+      void Reset(Shader* shader)
+      {
+         assert(shader->m_stateSize <= m_stateSize);
+         m_shader = shader;
+         m_samplers.clear();
+      }
       void CopyTo(const bool copyTo, ShaderState* const other, const ShaderTechniques technique = SHADER_TECHNIQUE_INVALID)
       {
          assert(other->m_shader == m_shader);
          if (copyTo)
+         {
             memcpy(other->m_state, m_state, m_shader->m_stateSize);
+            other->m_samplers = m_samplers;
+         }
          else
+         {
             memcpy(m_state, other->m_state, m_shader->m_stateSize);
-      }
-      void CopyTo(const bool copyTo, ShaderState* const other, const ShaderUniforms uniformName)
-      {
-         assert(other->m_shader == m_shader);
-         assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
-         assert(m_shader->m_stateOffsets[uniformName] != -1);
-         if (copyTo)
-            memcpy(other->m_state + m_shader->m_stateOffsets[uniformName], m_state + m_shader->m_stateOffsets[uniformName], m_shader->m_stateSizes[uniformName]);
-         else
-            memcpy(m_state + m_shader->m_stateOffsets[uniformName], other->m_state + m_shader->m_stateOffsets[uniformName], m_shader->m_stateSizes[uniformName]);
+            m_samplers = other->m_samplers;
+         }
       }
       void SetBool(const ShaderUniforms uniformName, const bool b)
       {
@@ -684,35 +687,46 @@ public:
             memcpy(m_state + m_shader->m_stateOffsets[uniformName], pMatrix, m_shader->m_stateSizes[uniformName]);
          }
       }
-      void SetTexture(const ShaderUniforms uniformName, const Sampler* const sampler)
+      void SetTexture(const ShaderUniforms uniformName, std::shared_ptr<const Sampler> sampler)
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
          assert(shaderUniformNames[uniformName].type == SUT_Sampler);
          assert(sampler != nullptr);
          #if defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
-         assert(m_shader->m_stateOffsets[uniformName] != -1);
-         *(const Sampler**)(m_state + m_shader->m_stateOffsets[uniformName]) = sampler;
+         const ShaderUniforms alias = uniformName;
          #elif defined(ENABLE_DX9)
          ShaderUniforms alias = m_shader->m_uniform_desc[uniformName].tex_alias;
-         assert(m_shader->m_stateOffsets[alias] != -1);
-         *(const Sampler**)(m_state + m_shader->m_stateOffsets[alias]) = sampler;
          #endif
+         assert(m_shader->m_stateOffsets[alias] != -1);
+         int pos = *reinterpret_cast<int*>(m_state + m_shader->m_stateOffsets[alias]);
+         if (pos == 0)
+         {
+            m_samplers.push_back(sampler);
+            *reinterpret_cast<int*>(m_state + m_shader->m_stateOffsets[alias]) = static_cast<int>(m_samplers.size());
+         }
+         else
+         {
+            assert(0 < pos && pos <= static_cast<int>(m_samplers.size()));
+            m_samplers[pos - 1] = sampler;
+         }
       }
-      const Sampler* GetTexture(const ShaderUniforms uniformName) const
+      const std::shared_ptr<const Sampler> GetTexture(const ShaderUniforms uniformName) const
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Sampler);
          assert(shaderUniformNames[uniformName].count == 1);
-         return *reinterpret_cast<const Sampler**>(m_state + m_shader->m_stateOffsets[uniformName]);
+         int pos = *reinterpret_cast<int*>(m_state + m_shader->m_stateOffsets[uniformName]);
+         return pos > 0 ? m_samplers[pos - 1] : nullptr;
       }
 
       Shader* m_shader;
       BYTE* const m_state;
       const unsigned int m_stateSize;
       const bool m_useLowPrecision;
+      vector<std::shared_ptr<const Sampler>> m_samplers;
    };
 
    unsigned int GetStateSize() const { return m_stateSize; }
@@ -813,9 +827,10 @@ public:
    ShaderTechniques m_boundTechnique = ShaderTechniques::SHADER_TECHNIQUE_INVALID; // The bound technique (per shader for DirectX)
    ID3DXEffect* m_shader = nullptr;
    static constexpr unsigned int TEXTURESET_STATE_CACHE_SIZE = 32;
-   Sampler* m_boundTexture[TEXTURESET_STATE_CACHE_SIZE];
+   std::shared_ptr<const Sampler> m_boundTexture[TEXTURESET_STATE_CACHE_SIZE];
 
 public:
+   void UnbindSamplers();
    ID3DXEffect* Core() const { return m_shader; }
 #endif
 };

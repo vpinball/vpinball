@@ -1540,7 +1540,7 @@ bool VRDevice::IsVRReady() const
    return m_pHMD != nullptr;
 }
 
-void VRDevice::SubmitFrame(Sampler* leftEye, Sampler* rightEye)
+void VRDevice::SubmitFrame(std::shared_ptr<Sampler> leftEye, std::shared_ptr<Sampler> rightEye)
 {
       #if defined(ENABLE_OPENGL)
          vr::Texture_t leftEyeTexture = { (void*)(__int64)leftEye->GetCoreTexture(), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };

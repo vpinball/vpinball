@@ -21,9 +21,9 @@ public:
    static int GetCurrentRenderLayer();
 
    bool IsBackBuffer() const { return m_is_back_buffer; }
-   Sampler* GetColorSampler() const { return m_color_sampler; }
+   std::shared_ptr<Sampler> GetColorSampler() const { return m_color_sampler; }
    void UpdateDepthSampler(bool insideBeginEnd);
-   Sampler* GetDepthSampler() const { return m_depth_sampler; }
+   std::shared_ptr<Sampler> GetDepthSampler() const { return m_depth_sampler; }
 
    RenderTarget* Duplicate(const string& name, const bool shareDepthSurface = false);
    void CopyTo(RenderTarget* dest, const bool copyColor = true, const bool copyDepth = true, 
@@ -63,8 +63,8 @@ private:
    const int m_nMSAASamples;
    const bool m_has_depth;
    const bool m_shared_depth;
-   Sampler* m_color_sampler;
-   Sampler* m_depth_sampler;
+   std::shared_ptr<Sampler> m_color_sampler;
+   std::shared_ptr<Sampler> m_depth_sampler;
 
    static RenderTarget* current_render_target;
    static int current_render_layer;
