@@ -205,12 +205,12 @@ void IEditable::SetName(const string& name)
     {
        WCHAR uniqueName[sizeof(oldName)];
        pt->GetUniqueName(newName, uniqueName, sizeof(oldName));
-       lstrcpynW(newName, uniqueName, sizeof(oldName));
+       wcscpy_s(newName, uniqueName);
     }
     STARTUNDO
     // first update name in the codeview before updating it in the element itself
     pt->m_pcv->ReplaceName(GetScriptable(), newName);
-    lstrcpynW(GetScriptable()->m_wzName, newName, sizeof(oldName));
+    wcscpy_s(GetScriptable()->m_wzName, newName);
 #ifndef __STANDALONE__
     g_pvp->SetPropSel(GetPTable()->m_vmultisel);
     g_pvp->GetLayersListDialog()->Update();

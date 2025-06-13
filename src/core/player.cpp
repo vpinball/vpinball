@@ -680,7 +680,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
                std::this_thread::sleep_for(std::chrono::milliseconds(100));
             else
             {
-               auto buffer = image->GetRawBitmap(resizeOnLowMem, maxTexDim);
+               const auto buffer = image->GetRawBitmap(resizeOnLowMem, maxTexDim);
                const std::lock_guard<std::mutex> lock(mutex);
                if (buffer)
                {
@@ -708,16 +708,16 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
                   {
                      const bool isError = (buffer->width() < maxTexDim) || (buffer->height() < maxTexDim);
                      PLOG(isError ? plog::Severity::error : plog::Severity::warning) << "Image '" << image->m_name << "' was downsized from "
-                           << image->m_width<< 'x'<< image->m_height << " to " << buffer->width() << 'x' << buffer->height() << (isError ? " due to low memory " : " due to user settings");
+                           << image->m_width << 'x' << image->m_height << " to " << buffer->width() << 'x' << buffer->height() << (isError ? " due to low memory " : " due to user settings");
                      if (isError)
-                        m_liveUI->PushNotification("Image '"s + image->m_name + "' was downsized due to low memory"s, 5000);
+                        m_liveUI->PushNotification("Image '" + image->m_name + "' was downsized due to low memory", 5000);
                   }
                   PLOGI << "Image '" << image->m_name << "' loaded to " << (uploaded ? "GPU" : "RAM");
                }
                else if (resizeOnLowMem)
                {
                   PLOGE << "Image '" << image->m_name << "' could not be loaded, skipping it";
-                  m_liveUI->PushNotification("Image '"s + image->m_name + "' could not be loaded"s, 5000);
+                  m_liveUI->PushNotification("Image '" + image->m_name + "' could not be loaded", 5000);
                   m_renderer->m_renderDevice->m_texMan.AddPlaceHolder(image);
                }
                else

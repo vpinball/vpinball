@@ -161,7 +161,7 @@ INT_PTR TableInfoDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void TableInfoDialog::VPGetDialogItemText(const CEdit &edit, string &psztext)
 {
-   psztext = edit.GetWindowText();
+   psztext = edit.GetWindowText().GetString();
 }
 
 

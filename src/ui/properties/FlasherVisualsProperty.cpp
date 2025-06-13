@@ -288,7 +288,7 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
          break;
       case IDC_IMAGE_LINK_EDIT:
          PropertyDialog::StartUndo(flash);
-         flash->m_d.m_imageSrcLink = m_linkEdit.GetWindowText();
+         flash->m_d.m_imageSrcLink = m_linkEdit.GetWindowText().GetString();
          PropertyDialog::EndUndo(flash);
          break;
       case IDC_GLASS_IMAGE: if (isDmd) CHECK_UPDATE_COMBO_TEXT_STRING(flash->m_d.m_szImageA, m_glassImageCombo, flash); break;

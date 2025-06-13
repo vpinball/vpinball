@@ -4101,8 +4101,8 @@ void LiveUI::UpdatePlumbWindow()
             const ImVec2 &pos = ImGui::GetWindowPos();
             ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(0.f, halfSize.y), pos + ImVec2(fullSize.x, halfSize.y), IM_COL32_WHITE);
             ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(halfSize.x, 0.f), pos + ImVec2(halfSize.y, fullSize.y), IM_COL32_WHITE);
-            const Vertex3Ds &nudge = (float)PHYS_FACTOR * m_player->m_physics->GetNudgeAcceleration(); // Range: -1..1
-            ImVec2 nudgePos = pos + halfSize + ImVec2(nudge.x, nudge.y) * halfSize * 2.f + ImVec2(0.5f, 0.5f);
+            const Vertex3Ds nudge = (float)PHYS_FACTOR * m_player->m_physics->GetNudgeAcceleration(); // Range: -1..1
+            const ImVec2 nudgePos = pos + halfSize + ImVec2(nudge.x, nudge.y) * halfSize * 2.f + ImVec2(0.5f, 0.5f);
             ImGui::GetWindowDrawList()->AddCircleFilled(nudgePos, 5.f * m_dpi, IM_COL32(255, 0, 0, 255));
             ImGui::EndChild();
          }

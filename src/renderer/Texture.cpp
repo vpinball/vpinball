@@ -850,7 +850,7 @@ Texture* Texture::CreateFromFile(const string& filename, const bool isImageData)
       delete ppb;
       return nullptr;
    }
-   
+
    Texture* tex = new Texture(TitleFromFilename(filename), ppb, imageBuffer->m_realWidth, imageBuffer->m_realHeight);
    tex->m_imageBuffer = std::shared_ptr<BaseTexture>(imageBuffer);
    tex->UpdateMD5();
@@ -937,7 +937,7 @@ HBITMAP Texture::GetGDIBitmap() const
       return m_hbmGDIVersion;
    }
 
-   auto buffer = GetRawBitmap();
+   const auto buffer = GetRawBitmap();
    if (buffer == nullptr)
    {
       m_hbmGDIVersion = g_pvp->m_hbmInPlayMode; // We should return an error bitmap

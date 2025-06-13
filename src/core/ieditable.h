@@ -44,7 +44,7 @@ public:
       { \
          WCHAR wzUniqueName[128]; \
          GetPTable()->GetUniqueName(ItemType, wzUniqueName, 128); \
-         WideStrNCopy(wzUniqueName, (WCHAR *)m_wzName, std::size(m_wzName));/*lstrcpyW((WCHAR *)m_wzName, wzUniqueName);*/ \
+         wcscpy_s(m_wzName, wzUniqueName); \
       } \
       if (GetScriptable() != nullptr) \
       { \
@@ -81,19 +81,19 @@ public:
 	virtual EventProxyBase *GetEventProxyBase() {return (EventProxyBase *)this;} \
 	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal) \
 		{ \
-		*pVal = SysAllocString((WCHAR *)m_wzName); \
+		*pVal = SysAllocString(m_wzName); \
 		return S_OK; \
 		} \
 	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal) \
 		{ \
-		const int len = lstrlenW(newVal); \
+		const size_t len = wcslen(newVal); \
 		if (len > MAXNAMEBUFFER || len < 1) \
 			{ \
 			return E_FAIL; \
 			} \
 		if (GetPTable()->m_pcv->ReplaceName(this, newVal) == S_OK) \
 			{ \
-			WideStrNCopy(newVal, (WCHAR *)m_wzName, std::size(m_wzName));/*lstrcpyW((WCHAR *)m_wzName, newVal);*/ \
+			wcscpy_s(m_wzName, newVal); \
 			return S_OK; \
 			} \
 		return E_FAIL; \

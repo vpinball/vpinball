@@ -280,7 +280,7 @@ static void SetPartGroup(ISelect* const me, const string& layerName)
          WCHAR newName[len];
          MultiByteToWideCharNull(CP_ACP, 0, layerName.c_str(), -1, newName, len);
          me->GetPTable()->m_pcv->ReplaceName(newGroup->GetIEditable()->GetScriptable(), newName);
-         lstrcpynW(newGroup->GetScriptable()->m_wzName, newName, len);
+         wcscpy_s(newGroup->GetScriptable()->m_wzName, newName);
          me->GetPTable()->m_vedit.push_back(newGroup);
          me->GetIEditable()->SetPartGroup(newGroup);
       }

@@ -105,7 +105,7 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case IDC_DECAL_TEXT_EDIT:
             {
-                const string name(m_textEdit.GetWindowText());
+                const string name(m_textEdit.GetWindowText().GetString());
                 if (decal->m_d.m_text != name)
                 {
                     PropertyDialog::StartUndo(decal);
@@ -152,10 +152,9 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
                     fd.cbSizeofstruct = sizeof(FONTDESC);
 
                     const LOGFONT font = m_font->GetLogFont();
-                    const int len = lstrlen(font.lfFaceName) + 1;
+                    const size_t len = strlen(font.lfFaceName) + 1;
                     fd.lpstrName = (LPOLESTR)malloc(len * sizeof(WCHAR));
-                    memset(fd.lpstrName, 0, len * sizeof(WCHAR));
-                    MultiByteToWideCharNull(CP_ACP, 0, font.lfFaceName, -1, fd.lpstrName, len);
+                    MultiByteToWideCharNull(CP_ACP, 0, font.lfFaceName, -1, fd.lpstrName, (int)len);
 
                     fd.sWeight = (SHORT)font.lfWidth;
                     fd.sCharset = font.lfCharSet;

@@ -251,24 +251,24 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
 
    std::shared_ptr<BaseTexture> ballTex = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "BallEnv.exr"));
    m_ballEnvSampler = new Sampler(m_renderDevice, ballTex, false, SA_REPEAT, SA_REPEAT, SF_TRILINEAR);
-   m_ballEnvSampler->SetName("Ball Env");
+   m_ballEnvSampler->SetName("Ball Env"s);
    ballTex.reset();
 
    std::shared_ptr<BaseTexture> aoTex = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "AODither.webp"));
    m_aoDitherSampler = new Sampler(m_renderDevice, aoTex, true, SA_REPEAT, SA_REPEAT, SF_NONE);
-   m_aoDitherSampler->SetName("AO Dither");
+   m_aoDitherSampler->SetName("AO Dither"s);
    aoTex.reset();
 
    Texture* tableEnv = m_table->GetImage(m_table->m_envImage);
    std::shared_ptr<BaseTexture> envTex = tableEnv ? tableEnv->GetRawBitmap() : std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "EnvMap.webp"));
    m_envSampler = new Sampler(m_renderDevice, envTex, false, SA_REPEAT, SA_CLAMP, SF_TRILINEAR);
-   m_envSampler->SetName("Table Env");
+   m_envSampler->SetName("Table Env"s);
 
    PLOGI << "Computing environment map radiance"; // For profiling
 
    const unsigned int envTexHeight = min(envTex->height(), 256u) / 8;
    const unsigned int envTexWidth = envTexHeight * 2;
-   // DirectX 9 does not support bitwise operation in shader, so radical_inverse is not implemented and therefore we use the slow CPU path instead of GPU
+   // DirectX 9 does not support bitwise operation in shader, so radical_inverse is not implemented, and therefore we use the slow CPU path instead of GPU
    // OpenGL ES does not support features used in the irradiance shader, so we use the CPU path for it as well
    // There is a bug when using the Metal shader, so we use the CPU path for it as well
    #if defined(ENABLE_DX9) || defined(__OPENGLES__) || defined(__APPLE__)
@@ -1597,7 +1597,7 @@ void Renderer::RenderStaticPrepass()
       RenderDevice::SetMainTextureDefaultFiltering(SF_BILINEAR);
    }
 
-   //#define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the (commented out) lattice-based QMC oversampling, 'magic factor', depending on the the number of iterations!
+   //#define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the (commented out) lattice-based QMC oversampling, 'magic factor', depending on the number of iterations!
    // loop for X times and accumulate/average these renderings
    // NOTE: iter == 0 MUST ALWAYS PRODUCE an offset of 0,0!
    int n_iter = IsUsingStaticPrepass() ? (STATIC_PRERENDER_ITERATIONS - 1) : 0;
@@ -2206,7 +2206,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
          const float maxDisplayLuminance = m_renderDevice->m_outputWnd[0]->GetHDRHeadRoom() * (m_renderDevice->m_outputWnd[0]->GetSDRWhitePoint() * 80.f); // Maximum luminance of display in nits, note that GetSDRWhitePoint()*80 should usually be in the 200 nits range
          m_renderDevice->m_FBShader->SetVector(SHADER_exposure_wcg,
             m_exposure,
-            (m_renderDevice->m_outputWnd[0]->GetSDRWhitePoint() * 80.f) / maxDisplayLuminance, // Apply SDR whitepoint (1.0 -> white point in nits), then scale down by maximum luminance (in nits) of display to get a relative value before before tonemapping, equal to 1/GetHDRHeadRoom()
+            (m_renderDevice->m_outputWnd[0]->GetSDRWhitePoint() * 80.f) / maxDisplayLuminance, // Apply SDR whitepoint (1.0 -> white point in nits), then scale down by maximum luminance (in nits) of display to get a relative value before tonemapping, equal to 1/GetHDRHeadRoom()
             maxDisplayLuminance / 10000.f, // Apply back maximum luminance in nits of display after tonemapping, scaled down to PQ limits (1.0 is 10000 nits)
             1.f);
 
@@ -2601,13 +2601,13 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
          int fw = w, fh = h;
          if ((m_vrPreviewShrink && ar < previewAr) || (!m_vrPreviewShrink && ar > previewAr))
          { // Fit on Y
-            const int scaledW = (int)(h * previewAr);
+            const int scaledW = (int)((float)h * previewAr);
             x = (w - scaledW) / 2;
             fw = scaledW;
          }
          else
          { // Fit on X
-            const int scaledH = (int)(w / previewAr);
+            const int scaledH = (int)((float)w / previewAr);
             y = (h - scaledH) / 2;
             fh = scaledH;
          }

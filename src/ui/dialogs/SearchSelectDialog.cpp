@@ -86,7 +86,7 @@ void SearchSelectDialog::Update()
    {
       CComObject<Collection> *const pcol = m_curTable->m_vcollection.ElementAt(i);
       char szT[sizeof(pcol->m_wzName)/sizeof(pcol->m_wzName[0])];
-      WideCharToMultiByteNull(CP_ACP, 0, pcol->m_wzName, -1, szT, sizeof(szT), nullptr, nullptr);
+      WideCharToMultiByteNull(CP_ACP, 0, pcol->m_wzName, -1, szT, std::size(szT), nullptr, nullptr);
       LVITEM lv;
       lv.mask = LVIF_TEXT | LVIF_PARAM;
       lv.iItem = idx;

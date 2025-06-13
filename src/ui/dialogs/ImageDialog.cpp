@@ -330,7 +330,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             //ExtTextOut(pdis->hDC, 0, 20, 0, nullptr, "Image\nPreview", 13, nullptr);
             const LocalString ls(IDS_IMAGE_PREVIEW);
-            const int len = lstrlen(ls.m_szbuffer);
+            const int len = (int)strlen(ls.m_szbuffer);
             DrawText(pdis->hDC, ls.m_szbuffer/*"Image\n\nPreview"*/, len, &rcText, DT_CALCRECT);
 
             const int halfheight = (rcClient.bottom - rcClient.top) / 2;
@@ -568,7 +568,7 @@ void ImageDialog::Export()
             if (GetSaveFileName(&ofn))	//Get filename from user
             {
                int begin; //select only file name from pathfilename
-               for (begin = lstrlen(ofn.lpstrFile); begin >= 0; begin--)
+               for (begin = (int)strlen(ofn.lpstrFile); begin >= 0; begin--)
                {
                   if (ofn.lpstrFile[begin] == PATH_SEPARATOR_CHAR)
                   {

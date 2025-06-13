@@ -34,9 +34,9 @@ public:
       #ifdef _WIN32
       // Convert from wchar* to char* on Win32
       auto msg = record.getMessage();
-      const int len = (int)lstrlenW(msg);
-      char *const szT = new char[len + 1];
-      WideCharToMultiByteNull(CP_ACP, 0, msg, -1, szT, len + 1, nullptr, nullptr);
+      const int len = (int)wcslen(msg) + 1; // include null termination
+      char *const szT = new char[len];
+      WideCharToMultiByteNull(CP_ACP, 0, msg, -1, szT, len, nullptr, nullptr);
       table->m_pcv->AddToDebugOutput(szT);
       delete [] szT;
       #else

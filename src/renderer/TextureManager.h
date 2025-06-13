@@ -43,4 +43,5 @@ private:
    RenderDevice& m_rd;
    ankerl::unordered_dense::map<unsigned long long, MapEntry> m_map;
    typedef ankerl::unordered_dense::map<unsigned long long, MapEntry>::iterator Iter;
+   typedef ankerl::unordered_dense::map<unsigned long long, MapEntry>::const_iterator CIter;
 };

@@ -435,7 +435,7 @@ void SoundDialog::Export()
             if (GetSaveFileName( &ofn ))	//Get filename from user
             {
                 int begin;
-                for (begin = lstrlen(ofn.lpstrFile); begin >= 0; begin--)
+                for (begin = (int)strlen(ofn.lpstrFile); begin >= 0; begin--)
                 {
                     if (ofn.lpstrFile[begin] == PATH_SEPARATOR_CHAR)
                     {
