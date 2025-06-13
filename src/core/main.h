@@ -55,6 +55,10 @@ extern "C" {
 #undef strncpy
 #define __STDC_WANT_LIB_EXT1__ 1
 #include <wchar.h>
+#if !defined(_MSC_VER) && !defined(__STDC_LIB_EXT1__)
+#define wcscpy_s(d,size,s) wcscpy(d,s)
+#define wcscpy_s(d,s) wcscpy(d,s)
+#endif
 #endif
 
 #ifdef _MSC_VER
