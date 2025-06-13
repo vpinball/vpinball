@@ -61,13 +61,13 @@ public:
    ~RenderDeviceState();
 
    const RenderDevice* m_rd;
-   Shader::ShaderState* const m_basicShaderState;
-   Shader::ShaderState* const m_DMDShaderState;
-   Shader::ShaderState* const m_FBShaderState;
-   Shader::ShaderState* const m_flasherShaderState;
-   Shader::ShaderState* const m_lightShaderState;
-   Shader::ShaderState* const m_ballShaderState;
-   Shader::ShaderState* const m_stereoShaderState;
+   ShaderState* const m_basicShaderState;
+   ShaderState* const m_DMDShaderState;
+   ShaderState* const m_FBShaderState;
+   ShaderState* const m_flasherShaderState;
+   ShaderState* const m_lightShaderState;
+   ShaderState* const m_ballShaderState;
+   ShaderState* const m_stereoShaderState;
    RenderState m_renderState;
 };
 

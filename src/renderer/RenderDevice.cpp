@@ -293,13 +293,13 @@ void ReportError(const char *errorText, const HRESULT hr, const char *file, cons
 
 RenderDeviceState::RenderDeviceState(RenderDevice* rd)
    : m_rd(rd)
-   , m_basicShaderState(new Shader::ShaderState(m_rd->m_basicShader, m_rd->UseLowPrecision()))
-   , m_DMDShaderState(new Shader::ShaderState(m_rd->m_DMDShader, m_rd->UseLowPrecision()))
-   , m_FBShaderState(new Shader::ShaderState(m_rd->m_FBShader, m_rd->UseLowPrecision()))
-   , m_flasherShaderState(new Shader::ShaderState(m_rd->m_flasherShader, m_rd->UseLowPrecision()))
-   , m_lightShaderState(new Shader::ShaderState(m_rd->m_lightShader, m_rd->UseLowPrecision()))
-   , m_ballShaderState(new Shader::ShaderState(m_rd->m_ballShader, m_rd->UseLowPrecision()))
-   , m_stereoShaderState(new Shader::ShaderState(m_rd->m_stereoShader, m_rd->UseLowPrecision()))
+   , m_basicShaderState(new ShaderState(m_rd->m_basicShader, m_rd->UseLowPrecision()))
+   , m_DMDShaderState(new ShaderState(m_rd->m_DMDShader, m_rd->UseLowPrecision()))
+   , m_FBShaderState(new ShaderState(m_rd->m_FBShader, m_rd->UseLowPrecision()))
+   , m_flasherShaderState(new ShaderState(m_rd->m_flasherShader, m_rd->UseLowPrecision()))
+   , m_lightShaderState(new ShaderState(m_rd->m_lightShader, m_rd->UseLowPrecision()))
+   , m_ballShaderState(new ShaderState(m_rd->m_ballShader, m_rd->UseLowPrecision()))
+   , m_stereoShaderState(new ShaderState(m_rd->m_stereoShader, m_rd->UseLowPrecision()))
 {
 }
 

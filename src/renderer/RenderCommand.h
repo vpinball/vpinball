@@ -21,7 +21,7 @@ public:
    bool IsDrawMeshCommand() const { return m_command == RC_DRAW_MESH; }
    bool IsDrawLiveUICommand() const { return m_command == RC_DRAW_LIVEUI; }
    RenderState GetRenderState() const { return m_renderState; }
-   Shader::ShaderState* GetShaderState() const { return m_shaderState; }
+   ShaderState* GetShaderState() const { return m_shaderState; }
    ShaderTechniques GetShaderTechnique() const { return m_shaderTechnique; }
    MeshBuffer* GetMeshBuffer() const { return m_mb; }
    float GetDepth() const { return m_depth; }
@@ -60,7 +60,7 @@ private:
    Command m_command;
    Shader* m_shader = nullptr;
    ShaderTechniques m_shaderTechnique = ShaderTechniques::SHADER_TECHNIQUE_INVALID;
-   Shader::ShaderState* m_shaderState = nullptr;
+   ShaderState* m_shaderState = nullptr;
    RenderState m_renderState;
    bool m_isTransparent;
 

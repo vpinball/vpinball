@@ -426,13 +426,10 @@ void RenderCommand::SetDrawMesh(
    m_shader = shader;
    m_shaderTechnique = m_shader->GetCurrentTechnique();
    assert(m_shaderTechnique < SHADER_TECHNIQUE_INVALID);
-   if (m_shaderState == nullptr || m_shader->GetStateSize() > m_shaderState->m_stateSize)
-   {
-      delete m_shaderState;
-      m_shaderState = new Shader::ShaderState(m_shader, m_rd->UseLowPrecision());
-   }
+   if (m_shaderState)
+      m_shaderState->SetShader(m_shader);
    else
-      m_shaderState->Reset(m_shader);
+      m_shaderState = new ShaderState(m_shader, m_rd->UseLowPrecision());
    m_shader->m_state->CopyTo(true, m_shaderState, m_shaderTechnique);
 }
 
@@ -445,13 +442,10 @@ void RenderCommand::SetDrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly
    m_isTransparent = isTransparent;
    m_shader = shader;
    m_shaderTechnique = m_shader->GetCurrentTechnique();
-   if (m_shaderState == nullptr || m_shader->GetStateSize() > m_shaderState->m_stateSize)
-   {
-      delete m_shaderState;
-      m_shaderState = new Shader::ShaderState(m_shader, m_rd->UseLowPrecision());
-   }
+   if (m_shaderState)
+      m_shaderState->SetShader(m_shader);
    else
-      m_shaderState->Reset(m_shader);
+      m_shaderState = new ShaderState(m_shader, m_rd->UseLowPrecision());
    m_shader->m_state->CopyTo(true, m_shaderState, m_shaderTechnique);
 }
 
@@ -464,12 +458,9 @@ void RenderCommand::SetDrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* v
    m_isTransparent = isTransparent;
    m_shader = shader;
    m_shaderTechnique = m_shader->GetCurrentTechnique();
-   if (m_shaderState == nullptr || m_shader->GetStateSize() > m_shaderState->m_stateSize)
-   {
-      delete m_shaderState;
-      m_shaderState = new Shader::ShaderState(m_shader, m_rd->UseLowPrecision());
-   }
+   if (m_shaderState)
+      m_shaderState->SetShader(m_shader);
    else
-      m_shaderState->Reset(m_shader);
+      m_shaderState = new ShaderState(m_shader, m_rd->UseLowPrecision());
    m_shader->m_state->CopyTo(true, m_shaderState, m_shaderTechnique);
 }
