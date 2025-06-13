@@ -53,6 +53,7 @@ extern "C" {
    #include <atlbase.h>
 }
 #undef strncpy
+#define __STDC_WANT_LIB_EXT1__ 1
 #include <wchar.h>
 #endif
 
