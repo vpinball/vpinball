@@ -9415,258 +9415,73 @@ void PinTable::ImportVPP(const string& filename)
       const auto physTab = root->FirstChildElement("table");
       const auto physFlip = root->FirstChildElement("flipper");
 
-      const tinyxml2::XMLElement* el = physTab->FirstChildElement("gravityConstant");
-      if(el != nullptr)
+      static const string elementNames[18] = {"gravityConstant"s, "contactFriction"s, "elasticity"s, "elasticityFalloff"s, "playfieldScatter"s, "defaultElementScatter"s, "playfieldminslope"s, "playfieldmaxslope"s,
+                             /*flippers:*/    "speed"s, "strength"s, "elasticity"s, "scatter"s, "eosTorque"s, "eosTorqueAngle"s, "returnStrength"s, "elasticityFalloff"s, "friction"s, "coilRampUp"s};
+
+      for(size_t i = 0; i < std::size(elementNames); ++i)
       {
-         const char * const t = el->GetText();
-         if (t)
+         const tinyxml2::XMLElement* el = physTab->FirstChildElement(elementNames[i]);
+         if(el != nullptr)
          {
-            float val;
-            my_from_chars(t, t + strlen(t), val);
-            put_Gravity(val);
+            const char * const t = el->GetText();
+            if (t)
+            {
+               float val;
+               my_from_chars(t, t + strlen(t), val);
+               switch(i)
+               {
+               case 0:  put_Gravity(val); break;
+               case 1:  put_Friction(val); break;
+               case 2:  put_Elasticity(val); break;
+               case 3:  put_ElasticityFalloff(val); break;
+               case 4:  put_Scatter(val); break;
+               case 5:  put_DefaultScatter(val); break;
+               case 6:  put_SlopeMin(val); break;
+               case 7:  put_SlopeMax(val); break;
+               case 8:  FlipperPhysicsMass = val; break;
+               case 9:  FlipperPhysicsStrength = val; break;
+               case 10: FlipperPhysicsElasticity = val; break;
+               case 11: FlipperPhysicsScatter = val; break;
+               case 12: FlipperPhysicsTorqueDamping = val; break;
+               case 13: FlipperPhysicsTorqueDampingAngle = val; break;
+               case 14: FlipperPhysicsReturnStrength = val; break;
+               case 15: FlipperPhysicsElasticityFalloff = val; break;
+               case 16: FlipperPhysicsFriction = val; break;
+               case 17: FlipperPhysicsCoilRampUp = val; break;
+               }
+            }
+         }
+         else
+         {
+            if(i <= 5) //until "defaultElementScatter"
+               ShowError(elementNames[i] + " is missing");
+            else if(i == 6) //"playfieldminslope"
+               put_SlopeMin(DEFAULT_TABLE_MIN_SLOPE); //was added lateron, so don't error
+            else if(i == 7) //"playfieldmaxslope"
+               put_SlopeMax(DEFAULT_TABLE_MAX_SLOPE); //was added lateron, so don't error
+            else //flipper fields
+               ShowError("flipper " + elementNames[i] + " is missing");
+
+            //flipper fields need defaults
+            switch(i)
+            {
+            case 8:  FlipperPhysicsMass = 0.0f; break;
+            case 9:  FlipperPhysicsStrength = 0.0f; break;
+            case 10: FlipperPhysicsElasticity = 0.0f; break;
+            case 11: FlipperPhysicsScatter = 0.0f; break;
+            case 12: FlipperPhysicsTorqueDamping = 0.0f; break;
+            case 13: FlipperPhysicsTorqueDampingAngle = 0.0f; break;
+            case 14: FlipperPhysicsReturnStrength = 0.0f; break;
+            case 15: FlipperPhysicsElasticityFalloff = 0.0f; break;
+            case 16: FlipperPhysicsFriction = 0.0f; break;
+            case 17: FlipperPhysicsCoilRampUp = 0.0f; break;
+            default: break;
+            }
          }
       }
-      else
-          ShowError("gravityConstant is missing");
 
-
-      el = physTab->FirstChildElement("contactFriction");
-      if (el != nullptr)
-      {
-         const char *const t = el->GetText();
-         if (t)
-         {
-            float val;
-            my_from_chars(t, t + strlen(t), val);
-            put_Friction(val);
-         }
-      }
-      else
-          ShowError("contactFriction is missing");
-
-      el = physTab->FirstChildElement("elasticity");
-      if (el != nullptr)
-      {
-         const char *const t = el->GetText();
-         if (t)
-         {
-            float val;
-            my_from_chars(t, t + strlen(t), val);
-            put_Elasticity(val);
-         }
-      }
-      else
-          ShowError("elasticity is missing");
-
-      el = physTab->FirstChildElement("elasticityFalloff"); 
-      if (el != nullptr)
-      {
-         const char *const t = el->GetText();
-         if (t)
-         {
-            float val;
-            my_from_chars(t, t + strlen(t), val);
-            put_ElasticityFalloff(val);
-         }
-      }
-      else
-          ShowError("elasticityFalloff is missing");
-
-      el = physTab->FirstChildElement("playfieldScatter");
-      if (el != nullptr)
-      {
-         const char *const t = el->GetText();
-         if (t)
-         {
-            float val;
-            my_from_chars(t, t + strlen(t), val);
-            put_Scatter(val);
-         }
-      }
-      else
-          ShowError("playfieldScatter is missing");
-
-      el = physTab->FirstChildElement("defaultElementScatter");
-      if (el != nullptr)
-      {
-         const char *const t = el->GetText();
-         if (t)
-         {
-            float val;
-            my_from_chars(t, t + strlen(t), val);
-            put_DefaultScatter(val);
-         }
-      }
-      else
-          ShowError("defaultElementScatter is missing");
-
-      el = physTab->FirstChildElement("playfieldminslope"); 
-      if (el != nullptr)
-      {
-         const char *const t = el->GetText();
-         if (t)
-         {
-            float val;
-            my_from_chars(t, t + strlen(t), val);
-            put_SlopeMin(val);
-         }
-      }
-      else
-      //    ShowError("playfieldminslope is missing"); //was added lateron, so don't error
-          put_SlopeMin(DEFAULT_TABLE_MIN_SLOPE);
-
-      el = physTab->FirstChildElement("playfieldmaxslope");
-      if (el != nullptr)
-      {
-         const char *const t = el->GetText();
-         if (t)
-         {
-            float val;
-            my_from_chars(t, t + strlen(t), val);
-            put_SlopeMax(val);
-         }
-      }
-      else
-      //    ShowError("playfieldmaxslope is missing"); //was added lateron, so don't error
-          put_SlopeMax(DEFAULT_TABLE_MAX_SLOPE);
-
-      el = physFlip->FirstChildElement("speed");
-      if (el != nullptr)
-      {
-         const char *const t = el->GetText();
-         if (t)
-            my_from_chars(t, t + strlen(t), FlipperPhysicsMass);
-      }
-      else
-      {
-          ShowError("flipper speed is missing");
-          FlipperPhysicsMass = 0.0f;
-      }
-
-      el = physFlip->FirstChildElement("strength");
-      if(el != nullptr)
-      {
-         const char *const t = el->GetText();
-         if (t)
-            my_from_chars(t, t + strlen(t), FlipperPhysicsStrength);
-      }
-      else
-      {
-          ShowError("flipper strength is missing");
-          FlipperPhysicsStrength = 0.0f;
-      }
-
-      el = physFlip->FirstChildElement("elasticity");
-      if(el != nullptr)
-      {
-         const char *const t = el->GetText();
-         if (t)
-            my_from_chars(t, t + strlen(t), FlipperPhysicsElasticity);
-      }
-      else
-      {
-          ShowError("flipper elasticity is missing");
-          FlipperPhysicsElasticity = 0.0f;
-      }
-
-      el = physFlip->FirstChildElement("scatter"); 
-      if(el != nullptr)
-      {
-         const char *const t = el->GetText();
-         if (t)
-            my_from_chars(t, t + strlen(t), FlipperPhysicsScatter);
-      }
-      else
-      {
-          ShowError("flipper scatter is missing");
-          FlipperPhysicsScatter = 0.0f;
-      }
-
-      el = physFlip->FirstChildElement("eosTorque");
-      if(el != nullptr)
-      {
-         const char *const t = el->GetText();
-         if (t)
-            my_from_chars(t, t + strlen(t), FlipperPhysicsTorqueDamping);
-      }
-      else
-      {
-          ShowError("flipper eosTorque is missing");
-          FlipperPhysicsTorqueDamping = 0.0f;
-      }
-
-      el = physFlip->FirstChildElement("eosTorqueAngle");
-      if(el != nullptr)
-      {
-         const char *const t = el->GetText();
-         if (t)
-            my_from_chars(t, t + strlen(t), FlipperPhysicsTorqueDampingAngle);
-      }
-      else
-      {
-          ShowError("flipper eosTorqueAngle is missing");
-          FlipperPhysicsTorqueDampingAngle = 0.0f;
-      }
-
-      el = physFlip->FirstChildElement("returnStrength");
-      if(el != nullptr)
-      {
-         const char *const t = el->GetText();
-         if (t)
-            my_from_chars(t, t + strlen(t), FlipperPhysicsReturnStrength);
-      }
-      else
-      {
-          ShowError("flipper returnStrength is missing");
-          FlipperPhysicsReturnStrength = 0.0f;
-      }
-
-      el = physFlip->FirstChildElement("elasticityFalloff");
-      if(el != nullptr)
-      {
-         const char *const t = el->GetText();
-         if (t)
-            my_from_chars(t, t + strlen(t), FlipperPhysicsElasticityFalloff);
-      }
-      else
-      {
-          ShowError("flipper elasticityFalloff is missing");
-          FlipperPhysicsElasticityFalloff = 0.0f;
-      }
-
-      el = physFlip->FirstChildElement("friction");
-      if(el != nullptr)
-      {
-         const char *const t = el->GetText();
-         if (t)
-            my_from_chars(t, t + strlen(t), FlipperPhysicsFriction);
-      }
-      else
-      {
-          ShowError("flipper friction is missing");
-          FlipperPhysicsFriction = 0.0f;
-      }
-
-      el = physFlip->FirstChildElement("coilRampUp");
-      if(el != nullptr)
-      {
-         const char *const t = el->GetText();
-         if (t)
-            my_from_chars(t, t + strlen(t), FlipperPhysicsCoilRampUp);
-      }
-      else
-      {
-          ShowError("flipper coilRampUp is missing");
-          FlipperPhysicsCoilRampUp = 0.0f;
-      }
-   }
-   catch (...)
-   {
-      ShowError("Error parsing physics settings file");
-   }
-   xmlDoc.Clear();
-
-   for (size_t i = 0; i < m_vedit.size(); i++)
+      //assign flipper fields to all flipper elements
+      for (size_t i = 0; i < m_vedit.size(); i++)
       if (m_vedit[i]->GetItemType() == eItemFlipper)
       {
          Flipper * const flipper = (Flipper *)m_vedit[i];
@@ -9681,6 +9496,12 @@ void PinTable::ImportVPP(const string& filename)
          flipper->put_EOSTorque(FlipperPhysicsTorqueDamping);
          flipper->put_EOSTorqueAngle(FlipperPhysicsTorqueDampingAngle);
       }
+   }
+   catch (...)
+   {
+      ShowError("Error parsing physics settings file");
+   }
+   xmlDoc.Clear();
 }
 
 STDMETHODIMP PinTable::ExportPhysics()
