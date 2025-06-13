@@ -650,10 +650,7 @@ STDMETHODIMP Flasher::get_ImageA(BSTR *pVal)
 
 STDMETHODIMP Flasher::put_ImageA(BSTR newVal)
 {
-   char szImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
-   m_d.m_szImageA = szImage;
-
+   m_d.m_szImageA = MakeString(newVal);
    return S_OK;
 }
 
@@ -668,46 +665,23 @@ STDMETHODIMP Flasher::get_ImageB(BSTR *pVal)
 
 STDMETHODIMP Flasher::put_ImageB(BSTR newVal)
 {
-   char szImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
-   m_d.m_szImageB = szImage;
-
+   m_d.m_szImageB = MakeString(newVal);
    return S_OK;
 }
 
 STDMETHODIMP Flasher::get_Filter(BSTR *pVal)
 {
-   WCHAR wz[MAXNAMEBUFFER];
+   const WCHAR *wz;
 
    switch (m_d.m_filter)
    {
-   case Filter_Additive:
-   {
-      MultiByteToWideCharNull(CP_ACP, 0, "Additive", -1, wz, MAXNAMEBUFFER);
-      break;
-   }
-   case Filter_Multiply:
-   {
-      MultiByteToWideCharNull(CP_ACP, 0, "Multiply", -1, wz, MAXNAMEBUFFER);
-      break;
-   }
-   case Filter_Overlay:
-   {
-      MultiByteToWideCharNull(CP_ACP, 0, "Overlay", -1, wz, MAXNAMEBUFFER);
-      break;
-   }
-   case Filter_Screen:
-   {
-      MultiByteToWideCharNull(CP_ACP, 0, "Screen", -1, wz, MAXNAMEBUFFER);
-      break;
-   }
+   case Filter_Additive: wz = L"Additive"; break;
+   case Filter_Multiply: wz = L"Multiply"; break;
+   case Filter_Overlay:  wz = L"Overlay"; break;
+   case Filter_Screen:   wz = L"Screen"; break;
    default:
       assert(!"Invalid Flasher Filter");
-   case Filter_None:
-   {
-      MultiByteToWideCharNull(CP_ACP, 0, "None", -1, wz, MAXNAMEBUFFER);
-      break;
-   }
+   case Filter_None:     wz = L"None"; break;
    }
    *pVal = SysAllocString(wz);
 
@@ -716,18 +690,17 @@ STDMETHODIMP Flasher::get_Filter(BSTR *pVal)
 
 STDMETHODIMP Flasher::put_Filter(BSTR newVal)
 {
-   char m_szFilter[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_szFilter, MAXNAMEBUFFER, nullptr, nullptr);
+   const string szFilter = lowerCase(MakeString(newVal));
 
-   if (strcmp(m_szFilter, "Additive") == 0 && m_d.m_filter != Filter_Additive)
+   if (szFilter == "additive" && m_d.m_filter != Filter_Additive)
       m_d.m_filter = Filter_Additive;
-   else if (strcmp(m_szFilter, "Multiply") == 0 && m_d.m_filter != Filter_Multiply)
+   else if (szFilter == "multiply" && m_d.m_filter != Filter_Multiply)
       m_d.m_filter = Filter_Multiply;
-   else if (strcmp(m_szFilter, "Overlay") == 0 && m_d.m_filter != Filter_Overlay)
+   else if (szFilter == "overlay" && m_d.m_filter != Filter_Overlay)
       m_d.m_filter = Filter_Overlay;
-   else if (strcmp(m_szFilter, "Screen") == 0 && m_d.m_filter != Filter_Screen)
+   else if (szFilter == "screen" && m_d.m_filter != Filter_Screen)
       m_d.m_filter = Filter_Screen;
-   else if (strcmp(m_szFilter, "None") == 0 && m_d.m_filter != Filter_None)
+   else if (szFilter == "none" && m_d.m_filter != Filter_None)
       m_d.m_filter = Filter_None;
 
    return S_OK;
@@ -961,7 +934,7 @@ STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
     if (m_videoCapWidth == 0 || m_videoCapHeight == 0) return S_FALSE; //safety.  VideoCapWidth/Height needs to be set prior to this call
 
     char szWinTitle[MAXNAMEBUFFER];
-    WideCharToMultiByteNull(CP_ACP, 0, cWinTitle, -1, szWinTitle, MAXNAMEBUFFER, nullptr, nullptr);
+    WideCharToMultiByteNull(CP_ACP, 0, cWinTitle, -1, szWinTitle, std::size(szWinTitle), nullptr, nullptr);
 
     //if PASS blank title then we treat as STOP capture and free resources.  Should be called on table1_exit
     if (szWinTitle[0] == '\0')
@@ -971,7 +944,7 @@ STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
     }
 
     if (m_isVideoCap == false) {  // VideoCap has not started because no sourcewin found
-        m_videoCapHwnd = ::FindWindow(0, szWinTitle);
+        m_videoCapHwnd = ::FindWindow(nullptr, szWinTitle);
         if (m_videoCapHwnd == nullptr)
             return S_FALSE;
 

@@ -690,8 +690,7 @@ STDMETHODIMP DispReel::get_Image(BSTR *pVal)
 
 STDMETHODIMP DispReel::put_Image(BSTR newVal)
 {
-   char szImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
+   const string szImage = MakeString(newVal);
    const Texture * const tex = m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {
@@ -726,10 +725,7 @@ STDMETHODIMP DispReel::get_Sound(BSTR *pVal)
 
 STDMETHODIMP DispReel::put_Sound(BSTR newVal)
 {
-   char buf[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, nullptr, nullptr);
-   m_d.m_szSound = buf;
-
+   m_d.m_szSound = MakeString(newVal);
    return S_OK;
 }
 

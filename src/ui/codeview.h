@@ -382,7 +382,7 @@ private:
 
    void InitPreferences();
 
-   void GetParamsFromEvent(const UINT iEvent, char * const szParams);
+   void GetParamsFromEvent(const UINT iEvent, char * const szParams, const size_t maxlength);
 
    /**
     * Resizes the Scintilla widget (the text editor) and the last error widget (if it's visible)

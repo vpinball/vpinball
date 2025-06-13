@@ -538,10 +538,11 @@ HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool global)
 {
    CodeViewDispatch * const pcvd = new CodeViewDispatch();
 
-   CComBSTR bstr;
+   BSTR bstr;
    piscript->get_Name(&bstr);
 
    pcvd->m_wName = bstr;
+   SysFreeString(bstr);
    pcvd->m_pdisp = piscript->GetDispatch();
    pcvd->m_pdisp->QueryInterface(IID_IUnknown, (void **)&pcvd->m_punk);
    pcvd->m_punk->Release();
@@ -558,7 +559,7 @@ HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool global)
 
    // Add item to dropdown
    char szT[MAXNAMEBUFFER * 2]; // Names can only be 32 characters (plus terminator)
-   WideCharToMultiByteNull(CP_ACP, 0, pcvd->m_wName.c_str(), -1, szT, sizeof(szT), nullptr, nullptr);
+   WideCharToMultiByteNull(CP_ACP, 0, pcvd->m_wName.c_str(), -1, szT, std::size(szT), nullptr, nullptr);
 
 #ifdef __STANDALONE__
    ITypeInfo* ti;
@@ -582,13 +583,16 @@ HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool global)
 
 void CodeViewer::RemoveItem(IScriptable * const piscript)
 {
-   CComBSTR bstr;
+   BSTR bstr;
    piscript->get_Name(&bstr);
 
    const int idx = m_vcvd.GetSortedIndex(bstr);
 
    if (idx == -1)
+   {
+      SysFreeString(bstr);
       return;
+   }
 
    const CodeViewDispatch * const pcvd = m_vcvd[idx];
 
@@ -598,7 +602,8 @@ void CodeViewer::RemoveItem(IScriptable * const piscript)
 
    // Remove item from dropdown
    char szT[MAXNAMEBUFFER*2]; // Names can only be 32 characters (plus terminator)
-   WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, szT, MAXNAMEBUFFER*2, nullptr, nullptr);
+   WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, szT, std::size(szT), nullptr, nullptr);
+   SysFreeString(bstr);
 #ifndef __STANDALONE__
    const size_t index = ::SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
    ::SendMessage(m_hwndItemList, CB_DELETESTRING, index, 0);
@@ -609,11 +614,12 @@ void CodeViewer::RemoveItem(IScriptable * const piscript)
 
 void CodeViewer::SelectItem(IScriptable * const piscript)
 {
-   CComBSTR bstr;
+   BSTR bstr;
    piscript->get_Name(&bstr);
 
    char szT[MAXNAMEBUFFER*2]; // Names can only be 32 characters (plus terminator)
-   WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, szT, MAXNAMEBUFFER*2, nullptr, nullptr);
+   WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, szT, std::size(szT), nullptr, nullptr);
+   SysFreeString(bstr);
 
 #ifndef __STANDALONE__
    const LRESULT index = ::SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
@@ -631,12 +637,15 @@ HRESULT CodeViewer::ReplaceName(IScriptable * const piscript, const WCHAR * cons
    if (m_vcvd.GetSortedIndex(wzNew) != -1)
       return E_FAIL;
 
-   CComBSTR bstr;
+   BSTR bstr;
    piscript->get_Name(&bstr);
 
    const int idx = m_vcvd.GetSortedIndex(bstr);
    if (idx == -1)
+   {
+      SysFreeString(bstr);
       return E_FAIL;
+   }
 
    CodeViewDispatch * const pcvd = m_vcvd[idx];
 
@@ -650,13 +659,14 @@ HRESULT CodeViewer::ReplaceName(IScriptable * const piscript, const WCHAR * cons
 
    // Remove old name from dropdown and replace it with the new
    char szT[MAXNAMEBUFFER*2]; // Names can only be 32 characters (plus terminator)
-   WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, szT, MAXNAMEBUFFER*2, nullptr, nullptr);
+   WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, szT, std::size(szT), nullptr, nullptr);
+   SysFreeString(bstr);
 #ifndef __STANDALONE__
    size_t index = ::SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
    ::SendMessage(m_hwndItemList, CB_DELETESTRING, index, 0);
 #endif
 
-   WideCharToMultiByteNull(CP_ACP, 0, wzNew, -1, szT, MAXNAMEBUFFER*2, nullptr, nullptr);
+   WideCharToMultiByteNull(CP_ACP, 0, wzNew, -1, szT, std::size(szT), nullptr, nullptr);
 #ifndef __STANDALONE__
    index = ::SendMessage(m_hwndItemList, CB_ADDSTRING, 0, (size_t)szT);
    ::SendMessage(m_hwndItemList, CB_SETITEMDATA, index, (size_t)piscript);
@@ -1154,9 +1164,9 @@ STDMETHODIMP CodeViewer::GetItemInfo(LPCOLESTR pstrName, DWORD dwReturnMask,
    IUnknown **ppiunkItem, ITypeInfo **ppti)
 {
    if (dwReturnMask & SCRIPTINFO_IUNKNOWN)
-      *ppiunkItem = 0;
+      *ppiunkItem = nullptr;
    if (dwReturnMask & SCRIPTINFO_ITYPEINFO)
-      *ppti = 0;
+      *ppti = nullptr;
 
    CodeViewDispatch *pcvd = m_vcvd.GetSortedElement((void *)pstrName);
 
@@ -1201,7 +1211,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	ULONG nLine;
 	LONG nChar;
 	pscripterror->GetSourcePosition(&dwCookie, &nLine, &nChar);
-	BSTR bstr = 0;
+	BSTR bstr = nullptr;
 	pscripterror->GetSourceLineText(&bstr);
 	EXCEPINFO exception = {};
 	pscripterror->GetExceptionInfo(&exception);
@@ -1395,7 +1405,7 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	ULONG nLine;
 	LONG nChar;
 	pscripterror->GetSourcePosition(&dwCookie, &nLine, &nChar);
-	BSTR bstr = 0;
+	BSTR bstr = nullptr;
 	pscripterror->GetSourceLineText(&bstr);
 	EXCEPINFO exception = {};
 	pscripterror->GetExceptionInfo(&exception);
@@ -1611,9 +1621,9 @@ void CodeViewer::Start()
 
 void CodeViewer::EvaluateScriptStatement(const char * const szScript)
 {
-   const int scriptlen = lstrlen(szScript);
-   WCHAR * const wzScript = new WCHAR[scriptlen + 1];
-   MultiByteToWideCharNull(CP_ACP, 0, szScript, -1, wzScript, scriptlen + 1);
+   const size_t scriptlen = strlen(szScript) + 1; // incl. zero terminator
+   WCHAR * const wzScript = new WCHAR[scriptlen];
+   MultiByteToWideCharNull(CP_ACP, 0, szScript, -1, wzScript, (int)scriptlen);
 
    EXCEPINFO exception = {};
    m_pScriptParse->ParseScriptText(wzScript, L"Debug", 0, 0, CONTEXTCOOKIE_DEBUG, 0, 0, nullptr, &exception);
@@ -1624,7 +1634,7 @@ void CodeViewer::EvaluateScriptStatement(const char * const szScript)
 void CodeViewer::AddToDebugOutput(const char * const szText)
 {
 #ifndef __STANDALONE__
-   ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_ADDTEXT, lstrlen(szText), (LPARAM)szText);
+   ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_ADDTEXT, strlen(szText), (LPARAM)szText);
    ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_ADDTEXT, 1, (LPARAM)"\n");
 
    const size_t pos = ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_GETCURRENTPOS, 0, 0);
@@ -1715,7 +1725,7 @@ void CodeViewer::Find(const FINDREPLACE * const pfr)
    ::SendMessage(m_hwndScintilla, SCI_SETTARGETSTART, startChar, 0);
    ::SendMessage(m_hwndScintilla, SCI_SETTARGETEND, stopChar, 0);
    ::SendMessage(m_hwndScintilla, SCI_SETSEARCHFLAGS, scinfindflags, 0);
-   LRESULT posFind = ::SendMessage(m_hwndScintilla, SCI_SEARCHINTARGET, lstrlen(pfr->lpstrFindWhat), (LPARAM)pfr->lpstrFindWhat);
+   LRESULT posFind = ::SendMessage(m_hwndScintilla, SCI_SEARCHINTARGET, strlen(pfr->lpstrFindWhat), (LPARAM)pfr->lpstrFindWhat);
 
    bool wrapped = false;
 
@@ -1738,7 +1748,7 @@ void CodeViewer::Find(const FINDREPLACE * const pfr)
       ::SendMessage(m_hwndScintilla, SCI_SETTARGETSTART, startChar, 0);
       ::SendMessage(m_hwndScintilla, SCI_SETTARGETEND, stopChar, 0);
 
-      posFind = ::SendMessage(m_hwndScintilla, SCI_SEARCHINTARGET, lstrlen(pfr->lpstrFindWhat), (LPARAM)pfr->lpstrFindWhat);
+      posFind = ::SendMessage(m_hwndScintilla, SCI_SEARCHINTARGET, strlen(pfr->lpstrFindWhat), (LPARAM)pfr->lpstrFindWhat);
    }
 
    if (posFind != -1)
@@ -1818,7 +1828,7 @@ void CodeViewer::Replace(const FINDREPLACE * const pfr)
          if (((pfr->Flags & FR_REPLACE) && cszReplaced == 0) || (pfr->Flags & FR_REPLACEALL))
          {
             ::SendMessage(m_hwndScintilla, SCI_REPLACESEL, true, (LPARAM)pfr->lpstrReplaceWith);
-            ft.chrg.cpMin = (LONG)(cpMatch + lstrlen(pfr->lpstrReplaceWith));
+            ft.chrg.cpMin = (LONG)(cpMatch + strlen(pfr->lpstrReplaceWith));
             ft.chrg.cpMax = (LONG)len;	// search through end of the text
             cszReplaced++;
             replace = true;
@@ -2056,7 +2066,7 @@ void CodeViewer::TellHostToSelectItem()
 #endif
 }
 
-void CodeViewer::GetParamsFromEvent(const UINT iEvent, char * const szParams)
+void CodeViewer::GetParamsFromEvent(const UINT iEvent, char * const szParams, const size_t maxlength)
 {
 #ifndef __STANDALONE__
    szParams[0] = '\0';
@@ -2103,12 +2113,12 @@ void CodeViewer::GetParamsFromEvent(const UINT iEvent, char * const szParams)
                for (unsigned int l = 1; l < cnames; ++l)
                {
                   char szT[512];
-                  WideCharToMultiByteNull(CP_ACP, 0, rgstr[l], -1, szT, 512, nullptr, nullptr);
+                  WideCharToMultiByteNull(CP_ACP, 0, rgstr[l], -1, szT, std::size(szT), nullptr, nullptr);
                   if (l > 1)
                   {
-                     lstrcat(szParams, ", ");
+                     strcat_s(szParams, maxlength, ", ");
                   }
-                  lstrcat(szParams, szT);
+                  strcat_s(szParams, maxlength, szT);
                }
 
                for (unsigned int l = 0; l < cnames; l++)
@@ -2181,7 +2191,7 @@ void CodeViewer::ListEventsFromItem()
 
                      // Add enum string to combo control
                      char szT[512];
-                     WideCharToMultiByteNull(CP_ACP, 0, rgstr[0], -1, szT, 512, nullptr, nullptr);
+                     WideCharToMultiByteNull(CP_ACP, 0, rgstr[0], -1, szT, std::size(szT), nullptr, nullptr);
                      const size_t listindex = ::SendMessage(m_hwndEventList, CB_ADDSTRING, 0, (size_t)szT);
                      ::SendMessage(m_hwndEventList, CB_SETITEMDATA, listindex, l);
                      for (unsigned int i2 = 0; i2 < cnames; i2++)
@@ -2214,14 +2224,14 @@ void CodeViewer::FindCodeFromEvent()
    index = ::SendMessage(m_hwndEventList, CB_GETCURSEL, 0, 0);
    ::SendMessage(m_hwndEventList, CB_GETLBTEXT, index, (size_t)szEventName);
    const size_t iEventIndex = ::SendMessage(m_hwndEventList, CB_GETITEMDATA, index, 0);
-   lstrcat(szItemName, "_"); // VB Specific event names
-   lstrcat(szItemName, szEventName);
+   strcat_s(szItemName, "_"); // VB Specific event names
+   strcat_s(szItemName, szEventName);
    size_t codelen = ::SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
    const size_t stopChar = codelen;
    ::SendMessage(m_hwndScintilla, SCI_TARGETWHOLEDOCUMENT, 0, 0);
    ::SendMessage(m_hwndScintilla, SCI_SETSEARCHFLAGS, SCFIND_WHOLEWORD, 0);
    LRESULT posFind;
-   while ((posFind = ::SendMessage(m_hwndScintilla, SCI_SEARCHINTARGET, lstrlen(szItemName), (LPARAM)szItemName)) != -1)
+   while ((posFind = ::SendMessage(m_hwndScintilla, SCI_SEARCHINTARGET, strlen(szItemName), (LPARAM)szItemName)) != -1)
    {
       const size_t line = ::SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, posFind, 0);
       // Check for 'sub' and make sure we're not in a comment
@@ -2315,16 +2325,16 @@ void CodeViewer::FindCodeFromEvent()
 
       char szParams[MAX_LINE_LENGTH];
 
-      GetParamsFromEvent((UINT)iEventIndex, szParams);
+      GetParamsFromEvent((UINT)iEventIndex, szParams, MAX_LINE_LENGTH);
 
       char szNewCode[MAX_LINE_LENGTH];
-      lstrcpy(szNewCode, "Sub ");
-      lstrcat(szNewCode, szItemName);
-      lstrcat(szNewCode, "(");
-      lstrcat(szNewCode, szParams);
-      lstrcat(szNewCode, ")\n\t");
-      const size_t subtitlelen = lstrlen(szNewCode);
-      lstrcat(szNewCode, "\nEnd Sub");
+      strcpy_s(szNewCode, "Sub ");
+      strcat_s(szNewCode, szItemName);
+      strcat_s(szNewCode, "(");
+      strcat_s(szNewCode, szParams);
+      strcat_s(szNewCode, ")\n\t");
+      const size_t subtitlelen = strlen(szNewCode);
+      strcat_s(szNewCode, "\nEnd Sub");
 
       ::SendMessage(m_hwndScintilla, SCI_REPLACESEL, TRUE, (size_t)szNewCode);
 
@@ -2470,14 +2480,10 @@ bool CodeViewer::FUserManuallyOkaysControl(const CONFIRMSAFETY *pcs)
    if (FAILED(OleRegGetUserType(pcs->clsid, USERCLASSTYPE_FULL, &wzT)))
       return false;
 
-   const int len = lstrlenW(wzT) + 1; // include null termination
-   char * const szName = new char[len];
-   WideCharToMultiByteNull(CP_ACP, 0, wzT, -1, szName, len, nullptr, nullptr);
-
+   const string szName = MakeString(wzT);
    const LocalString ls1(IDS_UNSECURECONTROL1);
    const LocalString ls2(IDS_UNSECURECONTROL2);
-   const string szT = string(ls1.m_szbuffer) + szName + ls2.m_szbuffer;
-   delete[] szName;
+   const string szT = ls1.m_szbuffer + szName + ls2.m_szbuffer;
 
    const int ans = MessageBox(szT.c_str(), "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
 
@@ -4263,10 +4269,10 @@ STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
    }
 
    const WCHAR * const wzT = V_BSTR(&varT);
-   const int len = lstrlenW(wzT);
+   const int len = (int)wcslen(wzT) + 1; // include null termination
 
-   char * const szT = new char[len + 1];
-   WideCharToMultiByteNull(CP_ACP, 0, wzT, -1, szT, len + 1, nullptr, nullptr);
+   char * const szT = new char[len];
+   WideCharToMultiByteNull(CP_ACP, 0, wzT, -1, szT, len, nullptr, nullptr);
    if (g_pplayer->m_hwndDebugOutput)
       m_pcv->AddToDebugOutput(szT);
    PLOGI_IF_(PLOG_NO_DBG_OUT_INSTANCE_ID, logScript) << "Script.Print '" << szT << '\'';

@@ -465,8 +465,7 @@ void HitTarget::TransformVertices()
 
 void HitTarget::ExportMesh(ObjLoader& loader)
 {
-   char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
+   const string name = MakeString(m_wzName);
 
    SetMeshType(m_d.m_targetType);
 
@@ -923,8 +922,7 @@ STDMETHODIMP HitTarget::get_Image(BSTR *pVal)
 
 STDMETHODIMP HitTarget::put_Image(BSTR newVal)
 {
-   char szImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
+   const string szImage = MakeString(newVal);
    const Texture * const tex = m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {
@@ -953,10 +951,7 @@ STDMETHODIMP HitTarget::get_Material(BSTR *pVal)
 
 STDMETHODIMP HitTarget::put_Material(BSTR newVal)
 {
-   char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
-   m_d.m_szMaterial = buf;
-
+   m_d.m_szMaterial = MakeString(newVal);
    return S_OK;
 }
 
@@ -1310,10 +1305,7 @@ STDMETHODIMP HitTarget::get_PhysicsMaterial(BSTR *pVal)
 
 STDMETHODIMP HitTarget::put_PhysicsMaterial(BSTR newVal)
 {
-   char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
-   m_d.m_szPhysicsMaterial = buf;
-
+   m_d.m_szPhysicsMaterial = MakeString(newVal);
    return S_OK;
 }
 

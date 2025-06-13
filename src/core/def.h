@@ -607,8 +607,6 @@ constexpr __forceinline float millimetersToVPUnits(const float value)
 float sz2f(string sz, const bool force_convert_decimal_point = false);
 string f2sz(const float f, const bool can_convert_decimal_point = true);
 
-void WideStrNCopy(const WCHAR* wzin, WCHAR* wzout, const size_t wzoutMaxLen);
-void WideStrCat(const WCHAR* wzin, WCHAR* wzout, const size_t wzoutMaxLen);
 bool WzSzEqual(const WCHAR* wz1, const char* sz2);
 
 HRESULT OpenURL(const string& szURL);
@@ -737,15 +735,13 @@ string extension_from_path(const string& path);
 bool path_has_extension(const string& path, const string& extension);
 inline string trim_string(const string& str)
 {
-   string s;
-   try {
-      const size_t pos = str.find_first_not_of(" \t\r\n");
-      s = str.substr(pos, str.find_last_not_of(" \t\r\n") - pos + 1);
-   }
-   catch (...) {
-      //s.clear();
-   }
-   return s;
+   size_t start = 0;
+   size_t end = str.length();
+   while (start < end && (str[start] == ' ' || str[start] == '\t' || str[start] == '\r' || str[start] == '\n'))
+      ++start;
+   while (end > start && (str[end - 1] == ' ' || str[end - 1] == '\t' || str[end - 1] == '\r' || str[end - 1] == '\n'))
+      --end;
+   return str.substr(start, end - start);
 }
 inline bool try_parse_int(const string& str, int& value)
 {

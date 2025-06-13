@@ -84,7 +84,7 @@ void PinFont::Register()
 
    LOGFONT lf;
    lf.lfCharSet = DEFAULT_CHARSET;
-   lstrcpy(lf.lfFaceName, "");
+   strcpy_s(lf.lfFaceName, "");
    lf.lfPitchAndFamily = 0;
 
    EnumFontFamiliesEx(hdcScreen, &lf, (FONTENUMPROC)EnumFontFamExProc, (size_t)this, 0);
@@ -94,7 +94,7 @@ void PinFont::Register()
    char szPath[MAXSTRING];
    GetModuleFileName(nullptr, szPath, MAXSTRING);
 
-   char *szEnd = szPath + lstrlen(szPath);
+   char *szEnd = szPath + strlen(szPath);
 
    while (szEnd > szPath)
    {

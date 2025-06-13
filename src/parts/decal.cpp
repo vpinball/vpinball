@@ -85,7 +85,6 @@ void Decal::SetDefaults(const bool fromMouseClick)
       {
          const int len = (int)tmp.length() + 1;
          fd.lpstrName = (LPOLESTR)malloc(len*sizeof(WCHAR));
-         memset(fd.lpstrName, 0, len*sizeof(WCHAR));
          MultiByteToWideCharNull(CP_ACP, 0, tmp.c_str(), -1, fd.lpstrName, len);
       }
 
@@ -108,11 +107,12 @@ char* Decal::GetFontName()
 {
     if(m_pIFont)
     {
-        CComBSTR bstr;
+        BSTR bstr;
         /*HRESULT hr =*/ m_pIFont->get_Name(&bstr);
 
         static char fontName[LF_FACESIZE];
-        WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, fontName, LF_FACESIZE, nullptr, nullptr);
+        WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, fontName, std::size(fontName), nullptr, nullptr);
+        SysFreeString(bstr);
         return fontName;
     }
     return nullptr;
@@ -146,18 +146,10 @@ void Decal::WriteRegDefaults()
       m_pIFont->get_Underline(&fd.fUnderline);
       m_pIFont->get_Strikethrough(&fd.fStrikethrough);
 
-      const float fTmp = (float)(fd.cySize.int64 / 10000.0);
-      g_pvp->m_settings.SaveValue(regKey, "FontSize"s, fTmp);
-
-      const size_t charCnt = wcslen(fd.lpstrName) + 1;
-      char * const strTmp = new char[2 * charCnt];
-      WideCharToMultiByteNull(CP_ACP, 0, fd.lpstrName, -1, strTmp, (int)(2 * charCnt), nullptr, nullptr);
-      g_pvp->m_settings.SaveValue(regKey, "FontName"s, string(strTmp));
-      delete[] strTmp;
-      const int weight = fd.sWeight;
-      const int charset = fd.sCharset;
-      g_pvp->m_settings.SaveValue(regKey, "FontWeight"s, weight);
-      g_pvp->m_settings.SaveValue(regKey, "FontCharSet"s, charset);
+      g_pvp->m_settings.SaveValue(regKey, "FontSize"s, (float)(fd.cySize.int64 / 10000.0));
+      g_pvp->m_settings.SaveValue(regKey, "FontName"s, MakeString(fd.lpstrName));
+      g_pvp->m_settings.SaveValue(regKey, "FontWeight"s, (int)fd.sWeight);
+      g_pvp->m_settings.SaveValue(regKey, "FontCharSet"s, (int)fd.sCharset);
       g_pvp->m_settings.SaveValue(regKey, "FontItalic"s, fd.fItalic);
       g_pvp->m_settings.SaveValue(regKey, "FontUnderline"s, fd.fUnderline);
       g_pvp->m_settings.SaveValue(regKey, "FontStrikeThrough"s, fd.fStrikethrough);
@@ -500,10 +492,11 @@ HFONT Decal::GetFont()
    lf.lfCharSet = DEFAULT_CHARSET;
    lf.lfQuality = NONANTIALIASED_QUALITY;
 
-   CComBSTR bstr;
+   BSTR bstr;
    (void)m_pIFont->get_Name(&bstr);
 
-   WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, lf.lfFaceName, LF_FACESIZE, nullptr, nullptr);
+   WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, lf.lfFaceName, std::size(lf.lfFaceName), nullptr, nullptr);
+   SysFreeString(bstr);
 
    BOOL bl;
    (void)m_pIFont->get_Bold(&bl);
@@ -879,15 +872,14 @@ STDMETHODIMP Decal::get_Image(BSTR *pVal)
 
 STDMETHODIMP Decal::put_Image(BSTR newVal)
 {
-   char szImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
-   const Texture * const tex = m_ptable->GetImage(szImage);
+   const string image = MakeString(newVal);
+   const Texture * const tex = m_ptable->GetImage(image);
    if (tex && tex->IsHDR())
    {
       ShowError("Cannot use a HDR image (.exr/.hdr) here");
       return E_FAIL;
    }
-   m_d.m_szImage = szImage;
+   m_d.m_szImage = image;
 
    return S_OK;
 }
@@ -957,10 +949,7 @@ STDMETHODIMP Decal::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Decal::put_Surface(BSTR newVal)
 {
-   char buf[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, nullptr, nullptr);
-   m_d.m_szSurface = buf;
-
+   m_d.m_szSurface = MakeString(newVal);
    return S_OK;
 }
 
@@ -989,9 +978,7 @@ STDMETHODIMP Decal::get_Text(BSTR *pVal)
 
 STDMETHODIMP Decal::put_Text(BSTR newVal)
 {
-   char buf[MAXSTRING];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXSTRING, nullptr, nullptr);
-   m_d.m_text = buf;
+   m_d.m_text = MakeString(newVal);
    EnsureSize();
 
    return S_OK;
@@ -1034,10 +1021,7 @@ STDMETHODIMP Decal::get_Material(BSTR *pVal)
 
 STDMETHODIMP Decal::put_Material(BSTR newVal)
 {
-   char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
-   m_d.m_szMaterial = buf;
-
+   m_d.m_szMaterial = MakeString(newVal);
    return S_OK;
 }
 

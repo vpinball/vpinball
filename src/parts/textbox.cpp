@@ -105,7 +105,6 @@ void Textbox::SetDefaults(const bool fromMouseClick)
       {
          const int len = (int)tmp.length() + 1;
          fd.lpstrName = (LPOLESTR)malloc(len*sizeof(WCHAR));
-         memset(fd.lpstrName, 0, len*sizeof(WCHAR));
          MultiByteToWideCharNull(CP_ACP, 0, tmp.c_str(), -1, fd.lpstrName, len);
 
          free_lpstrName = true;
@@ -154,17 +153,10 @@ void Textbox::WriteRegDefaults()
    m_pIFont->get_Underline(&fd.fUnderline);
    m_pIFont->get_Strikethrough(&fd.fStrikethrough);
 
-   const float fTmp = (float)(fd.cySize.int64 / 10000.0);
-   g_pvp->m_settings.SaveValue(regKey, "FontSize"s, fTmp);
-   const size_t charCnt = wcslen(fd.lpstrName) + 1;
-   char * const strTmp = new char[2 * charCnt];
-   WideCharToMultiByteNull(CP_ACP, 0, fd.lpstrName, -1, strTmp, (int)(2 * charCnt), nullptr, nullptr);
-   g_pvp->m_settings.SaveValue(regKey, "FontName"s, string(strTmp));
-   delete[] strTmp;
-   const int weight = fd.sWeight;
-   const int charset = fd.sCharset;
-   g_pvp->m_settings.SaveValue(regKey, "FontWeight"s, weight);
-   g_pvp->m_settings.SaveValue(regKey, "FontCharSet"s, charset);
+   g_pvp->m_settings.SaveValue(regKey, "FontSize"s, (float)(fd.cySize.int64 / 10000.0));
+   g_pvp->m_settings.SaveValue(regKey, "FontName"s, MakeString(fd.lpstrName));
+   g_pvp->m_settings.SaveValue(regKey, "FontWeight"s, (int)fd.sWeight);
+   g_pvp->m_settings.SaveValue(regKey, "FontCharSet"s, (int)fd.sCharset);
    g_pvp->m_settings.SaveValue(regKey, "FontItalic"s, fd.fItalic);
    g_pvp->m_settings.SaveValue(regKey, "FontUnderline"s, fd.fUnderline);
    g_pvp->m_settings.SaveValue(regKey, "FontStrikeThrough"s, fd.fStrikethrough);
@@ -300,11 +292,12 @@ char * Textbox::GetFontName()
 {
     if (m_pIFont)
     {
-        CComBSTR bstr;
+        BSTR bstr;
         /*HRESULT hr =*/ m_pIFont->get_Name(&bstr);
 
         static char fontName[LF_FACESIZE];
-        WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, fontName, LF_FACESIZE, nullptr, nullptr);
+        WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, fontName, std::size(fontName), nullptr, nullptr);
+        SysFreeString(bstr);
         return fontName;
     }
     return nullptr;
@@ -323,10 +316,10 @@ HFONT Textbox::GetFont()
     lf.lfCharSet = DEFAULT_CHARSET;
     lf.lfQuality = NONANTIALIASED_QUALITY;
 
-    CComBSTR bstr;
+    BSTR bstr;
     HRESULT hr = m_pIFont->get_Name(&bstr);
-
-    WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, lf.lfFaceName, LF_FACESIZE, nullptr, nullptr);
+    WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, lf.lfFaceName, std::size(lf.lfFaceName), nullptr, nullptr);
+    SysFreeString(bstr);
 
     BOOL bl;
     hr = m_pIFont->get_Bold(&bl);
@@ -731,9 +724,7 @@ STDMETHODIMP Textbox::get_Text(BSTR *pVal)
 
 STDMETHODIMP Textbox::put_Text(BSTR newVal)
 {
-   char buf[MAXSTRING];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXSTRING, nullptr, nullptr);
-   m_d.m_text = buf;
+   m_d.m_text = MakeString(newVal);
    m_textureDirty = true;
 
    return S_OK;

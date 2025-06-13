@@ -36,11 +36,7 @@ void LightSeq::SetDefaults(const bool fromMouseClick)
    if (!hr || !fromMouseClick)
       m_d.m_wzCollection.clear();
    else
-   {
-      WCHAR wtmp[MAXSTRING];
-      MultiByteToWideCharNull(CP_ACP, 0, tmp.c_str(), -1, wtmp, MAXSTRING);
-      m_d.m_wzCollection = wtmp;
-   }
+      m_d.m_wzCollection = MakeWString(tmp);
 
    m_d.m_vCenter.x = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "CenterX"s, (float)(EDITOR_BG_WIDTH / 2)) : (EDITOR_BG_WIDTH / 2);
    m_d.m_vCenter.y = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "CenterY"s, (float)((2 * EDITOR_BG_WIDTH) / 2)) : ((2 * EDITOR_BG_WIDTH) / 2);
@@ -54,10 +50,8 @@ void LightSeq::WriteRegDefaults()
 {
 #define regKey Settings::DefaultPropsLightSequence
 
-   char strTmp[MAXSTRING];
-   WideCharToMultiByteNull(CP_ACP, 0, m_d.m_wzCollection.c_str(), -1, strTmp, MAXSTRING, nullptr, nullptr);
    g_pvp->m_settings.SaveValue(regKey, "UpdateInterval"s, m_d.m_updateinterval);
-   g_pvp->m_settings.SaveValue(regKey, "Collection"s, string(strTmp));
+   g_pvp->m_settings.SaveValue(regKey, "Collection"s, MakeString(m_d.m_wzCollection));
    g_pvp->m_settings.SaveValue(regKey, "CenterX"s, m_d.m_vCenter.x);
    g_pvp->m_settings.SaveValue(regKey, "CenterY"s, m_d.m_vCenter.y);
    g_pvp->m_settings.SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);

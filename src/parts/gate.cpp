@@ -451,13 +451,12 @@ void Gate::Render(const unsigned int renderMask)
 
 void Gate::ExportMesh(ObjLoader& loader)
 {
-   char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
+   const string name = MakeString(m_wzName);
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
    if (m_d.m_showBracket)
    {
-      const string subName = name + "Bracket"s;
+      const string subName = name + "Bracket";
       loader.WriteObjectName(subName);
       Vertex3D_NoTex2* const buf = new Vertex3D_NoTex2[gateBracketNumVertices];
       GenerateBracketMesh(buf);
@@ -472,7 +471,7 @@ void Gate::ExportMesh(ObjLoader& loader)
 
    SetGateType(m_d.m_type);
 
-   const string subName = name + "Wire"s;
+   const string subName = name + "Wire";
    loader.WriteObjectName(subName);
    Vertex3D_NoTex2* const buf = new Vertex3D_NoTex2[m_numVertices];
    GenerateWireMesh(buf);
@@ -693,10 +692,7 @@ STDMETHODIMP Gate::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Gate::put_Surface(BSTR newVal)
 {
-   char buf[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, nullptr, nullptr);
-   m_d.m_szSurface = buf;
-
+   m_d.m_szSurface = MakeString(newVal);
    return S_OK;
 }
 
@@ -711,10 +707,7 @@ STDMETHODIMP Gate::get_Material(BSTR *pVal)
 
 STDMETHODIMP Gate::put_Material(BSTR newVal)
 {
-   char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
-   m_d.m_szMaterial = buf;
-
+   m_d.m_szMaterial = MakeString(newVal);
    return S_OK;
 }
 

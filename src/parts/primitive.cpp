@@ -1013,8 +1013,7 @@ void Primitive::ExportMesh(ObjLoader& loader)
 {
    if (m_d.m_visible)
    {
-      char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-      WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
+      const string name = MakeString(m_wzName);
       Vertex3D_NoTex2 *const buf = new Vertex3D_NoTex2[m_mesh.NumVertices()];
       RecalculateMatrices();
       for (size_t i = 0; i < m_mesh.NumVertices(); i++)
@@ -2129,10 +2128,7 @@ STDMETHODIMP Primitive::get_Image(BSTR *pVal)
 
 STDMETHODIMP Primitive::put_Image(BSTR newVal)
 {
-   char szImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
-   m_d.m_szImage = szImage;
-
+   m_d.m_szImage = MakeString(newVal);
    return S_OK;
 }
 
@@ -2147,15 +2143,13 @@ STDMETHODIMP Primitive::get_NormalMap(BSTR *pVal)
 
 STDMETHODIMP Primitive::put_NormalMap(BSTR newVal)
 {
-   char szImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
+   const string szImage = MakeString(newVal);
    const Texture * const tex = m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {
       ShowError("Cannot use a HDR image (.exr/.hdr) here");
       return E_FAIL;
    }
-
    m_d.m_szNormalMap = szImage;
 
    return S_OK;
@@ -2172,10 +2166,7 @@ STDMETHODIMP Primitive::get_MeshFileName(BSTR *pVal)
 
 STDMETHODIMP Primitive::put_MeshFileName(BSTR newVal)
 {
-   char buf[MAXSTRING];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXSTRING, nullptr, nullptr);
-   m_d.m_meshFileName = buf;
-
+   m_d.m_meshFileName = MakeString(newVal);
    return S_OK;
 }
 
@@ -2204,9 +2195,7 @@ void Primitive::ExportMeshDialog()
          g_pvp->m_settings.SaveValue(Settings::RecentDir, "ImportDir"s, newInitDir);
       }
 
-      char name[sizeof(m_wzName) / sizeof(m_wzName[0])];
-      WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
-      m_mesh.SaveWavefrontObj(szFileName[0], m_d.m_use3DMesh ? string(name) : "Primitive"s);
+      m_mesh.SaveWavefrontObj(szFileName[0], m_d.m_use3DMesh ? MakeString(m_wzName) : "Primitive"s);
    }
 #endif
 }
@@ -2248,10 +2237,7 @@ STDMETHODIMP Primitive::get_Material(BSTR *pVal)
 
 STDMETHODIMP Primitive::put_Material(BSTR newVal)
 {
-   char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
-   m_d.m_szMaterial = buf;
-
+   m_d.m_szMaterial = MakeString(newVal);
    return S_OK;
 }
 
@@ -2834,10 +2820,7 @@ STDMETHODIMP Primitive::get_PhysicsMaterial(BSTR *pVal)
 
 STDMETHODIMP Primitive::put_PhysicsMaterial(BSTR newVal)
 {
-   char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
-   m_d.m_szPhysicsMaterial = buf;
-
+   m_d.m_szPhysicsMaterial = MakeString(newVal);
    return S_OK;
 }
 
@@ -2989,10 +2972,7 @@ STDMETHODIMP Primitive::get_ReflectionProbe(BSTR *pVal)
 
 STDMETHODIMP Primitive::put_ReflectionProbe(BSTR newVal)
 {
-   char szProbe[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szProbe, MAXTOKEN, nullptr, nullptr);
-   m_d.m_szReflectionProbe = szProbe;
-
+   m_d.m_szReflectionProbe = MakeString(newVal);
    return S_OK;
 }
 
@@ -3007,9 +2987,6 @@ STDMETHODIMP Primitive::get_RefractionProbe(BSTR *pVal)
 
 STDMETHODIMP Primitive::put_RefractionProbe(BSTR newVal)
 {
-   char szProbe[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szProbe, MAXTOKEN, nullptr, nullptr);
-   m_d.m_szRefractionProbe = szProbe;
-
+   m_d.m_szRefractionProbe = MakeString(newVal);
    return S_OK;
 }

@@ -478,9 +478,7 @@ void Light::RenderSetup(RenderDevice *device)
 
    if (vtri.empty())
    {
-      char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-      WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
-      ShowError(name + " has an invalid shape! It can not be rendered!"s);
+      ShowError(MakeString(m_wzName) + " has an invalid shape! It can not be rendered!");
       return;
    }
 
@@ -1295,9 +1293,7 @@ STDMETHODIMP Light::get_BlinkPattern(BSTR *pVal)
 
 STDMETHODIMP Light::put_BlinkPattern(BSTR newVal)
 {
-   char sz[NUM_RGB_BLINK_PATTERN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, sz, NUM_RGB_BLINK_PATTERN, nullptr, nullptr);
-   m_d.m_rgblinkpattern = sz;
+   m_d.m_rgblinkpattern = MakeString(newVal);
 
    if (m_d.m_rgblinkpattern.empty())
       m_d.m_rgblinkpattern = "0"; // "10" ?
@@ -1394,10 +1390,7 @@ STDMETHODIMP Light::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Light::put_Surface(BSTR newVal)
 {
-   char buf[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, nullptr, nullptr);
-   m_d.m_szSurface = buf;
-
+   m_d.m_szSurface = MakeString(newVal);
    return S_OK;
 }
 
@@ -1414,9 +1407,7 @@ STDMETHODIMP Light::get_Image(BSTR *pVal)
 STDMETHODIMP Light::put_Image(BSTR newVal)
 {
    Texture *const pinBefore = m_ptable->GetImage(m_d.m_szImage);
-   char szImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
-   m_d.m_szImage = szImage;
+   m_d.m_szImage = MakeString(newVal);
    // Detect if we changed the use of images since it changes the rendering texture coordinates and therefore needs the mesh buffer to be updated
    Texture *const pinAfter = m_ptable->GetImage(m_d.m_szImage);
    m_lightmapMeshBufferDirty |= (pinBefore == nullptr && pinAfter != nullptr) || (pinBefore != nullptr && pinAfter == nullptr);

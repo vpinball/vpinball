@@ -732,9 +732,7 @@ STDMETHODIMP Ball::get_Image(BSTR *pVal)
 
 STDMETHODIMP Ball::put_Image(BSTR newVal)
 {
-   char buf[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, nullptr, nullptr);
-   m_d.m_szImage = buf;
+   m_d.m_szImage = MakeString(newVal);
    Texture *const tex = m_ptable->GetImage(m_d.m_szImage);
    if (tex)
       m_pinballEnv = tex;
@@ -753,10 +751,8 @@ STDMETHODIMP Ball::get_FrontDecal(BSTR *pVal)
 
 STDMETHODIMP Ball::put_FrontDecal(BSTR newVal)
 {
-   char szImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
-   m_d.m_imageDecal = szImage;
-   Texture * const tex = m_ptable->GetImage(szImage);
+   m_d.m_imageDecal = MakeString(newVal);
+   Texture *const tex = m_ptable->GetImage(m_d.m_imageDecal);
    if (tex)
    {
       if (tex->IsHDR())

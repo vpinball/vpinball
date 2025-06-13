@@ -980,10 +980,7 @@ STDMETHODIMP Rubber::get_Material(BSTR *pVal)
 
 STDMETHODIMP Rubber::put_Material(BSTR newVal)
 {
-   char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
-   m_d.m_szMaterial = buf;
-
+   m_d.m_szMaterial = MakeString(newVal);
    return S_OK;
 }
 
@@ -998,8 +995,7 @@ STDMETHODIMP Rubber::get_Image(BSTR *pVal)
 
 STDMETHODIMP Rubber::put_Image(BSTR newVal)
 {
-   char szImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
+   const string szImage = MakeString(newVal);
    const Texture * const tex = m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {
@@ -1007,7 +1003,7 @@ STDMETHODIMP Rubber::put_Image(BSTR newVal)
        return E_FAIL;
    }
 
-   if (lstrcmpi(szImage, m_d.m_szImage.c_str()) != 0)
+   if (!StrCompareNoCase(szImage, m_d.m_szImage))
    {
       m_d.m_szImage = szImage;
       m_dynamicVertexBufferRegenerate = true;
@@ -1215,10 +1211,7 @@ STDMETHODIMP Rubber::get_PhysicsMaterial(BSTR *pVal)
 
 STDMETHODIMP Rubber::put_PhysicsMaterial(BSTR newVal)
 {
-   char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
-   m_d.m_szPhysicsMaterial = buf;
-
+   m_d.m_szPhysicsMaterial = MakeString(newVal);
    return S_OK;
 }
 
@@ -1238,12 +1231,10 @@ void Rubber::ExportMesh(ObjLoader& loader)
 {
    if (m_d.m_visible)
    {
-      char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-      WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
       GenerateMesh();
       UpdateRubber(false, m_d.m_height);
 
-      loader.WriteObjectName(name);
+      loader.WriteObjectName(MakeString(m_wzName));
       loader.WriteVertexInfo(m_vertices.data(), m_numVertices);
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       loader.WriteMaterial(m_d.m_szMaterial, string(), mat);

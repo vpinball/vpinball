@@ -534,7 +534,7 @@ void PropertyDialog::UpdateCollectionComboBox(const PinTable *const ptable, cons
         for (int i = 0; i < ptable->m_vcollection.size(); i++)
         {
             char szT[sizeof(ptable->m_vcollection[i].m_wzName)/sizeof(ptable->m_vcollection[i].m_wzName[0])];
-            WideCharToMultiByteNull(CP_ACP, 0, ptable->m_vcollection[i].m_wzName, -1, szT, sizeof(szT), nullptr, nullptr);
+            WideCharToMultiByteNull(CP_ACP, 0, ptable->m_vcollection[i].m_wzName, -1, szT, std::size(szT), nullptr, nullptr);
             combo.AddString(szT);
         }
     }
@@ -626,23 +626,24 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
 
     if (pvsel.size() > 1)
     {
-        char header[64];
         char collection[64] = {0};
-        char name[64];
         const WCHAR * const wzName = psel->GetPTable()->GetCollectionNameByElement(psel);
         if (wzName != nullptr)
         {
-            WideCharToMultiByteNull(CP_ACP, 0, wzName, -1, collection, 64, nullptr, nullptr);
+            WideCharToMultiByteNull(CP_ACP, 0, wzName, -1, collection, std::size(collection), nullptr, nullptr);
         }
 
-        CComBSTR bstr;
+        BSTR bstr;
         psel->GetTypeName(&bstr);
-        WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, name, 64, nullptr, nullptr);
+        char name[64];
+        WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, name, std::size(name), nullptr, nullptr);
+        SysFreeString(bstr);
 
+        char header[64];
         if (collection[0] != '\0')
-            sprintf_s(header, sizeof(header), "%s [%s](%d)", collection, name, pvsel.size());
+            sprintf_s(header, std::size(header), "%s [%s](%d)", collection, name, pvsel.size());
         else
-            sprintf_s(header, sizeof(header), "%s(%d)", name, pvsel.size());
+            sprintf_s(header, std::size(header), "%s(%d)", name, pvsel.size());
 
         m_nameEdit.SetWindowText(header);
         m_nameEdit.SetReadOnly();
@@ -775,7 +776,7 @@ BOOL PropertyDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         {
             if (m_tabs[0] && m_tabs[0]->m_pvsel->ElementAt(0) != nullptr)
             {
-                m_tabs[0]->m_pvsel->ElementAt(0)->GetIEditable()->SetName(m_nameEdit.GetWindowText().c_str());
+                m_tabs[0]->m_pvsel->ElementAt(0)->GetIEditable()->SetName(m_nameEdit.GetWindowText().GetString());
                 m_nameEdit.SetWindowText(m_tabs[0]->m_pvsel->ElementAt(0)->GetIEditable()->GetName()); // set it again in case it was truncated
             }
             return TRUE;

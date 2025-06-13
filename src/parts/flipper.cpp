@@ -556,8 +556,7 @@ STDMETHODIMP Flipper::RotateToStart() // return to park, key/button up/released
 
 void Flipper::ExportMesh(ObjLoader& loader)
 {
-   char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
+   const string name = MakeString(m_wzName);
 
    Matrix3D matTrafo = Matrix3D::MatrixIdentity();
    matTrafo._41 = m_d.m_Center.x;
@@ -584,7 +583,7 @@ void Flipper::ExportMesh(ObjLoader& loader)
    }
    }
 
-   string subObjName = name + "Base"s;
+   string subObjName = name + "Base";
    loader.WriteObjectName(subObjName);
    loader.WriteVertexInfo(flipper, flipperBaseVertices);
    const Material * mat = m_ptable->GetMaterial(m_d.m_szMaterial);
@@ -609,7 +608,7 @@ void Flipper::ExportMesh(ObjLoader& loader)
          buf[i].nz = vert.z;
       }
 
-      subObjName = name + "Rubber"s;
+      subObjName = name + "Rubber";
       loader.WriteObjectName(subObjName);
       loader.WriteVertexInfo(&flipper[flipperBaseVertices], flipperBaseVertices);
       mat = m_ptable->GetMaterial(m_d.m_szRubberMaterial);
@@ -1103,10 +1102,7 @@ STDMETHODIMP Flipper::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Flipper::put_Surface(BSTR newVal)
 {
-   char buf[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, nullptr, nullptr);
-   m_d.m_szSurface = buf;
-
+   m_d.m_szSurface = MakeString(newVal);
    return S_OK;
 }
 
@@ -1121,10 +1117,7 @@ STDMETHODIMP Flipper::get_Material(BSTR *pVal)
 
 STDMETHODIMP Flipper::put_Material(BSTR newVal)
 {
-   char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
-   m_d.m_szMaterial = buf;
-
+   m_d.m_szMaterial = MakeString(newVal);
    return S_OK;
 }
 
@@ -1181,10 +1174,7 @@ STDMETHODIMP Flipper::get_RubberMaterial(BSTR *pVal)
 
 STDMETHODIMP Flipper::put_RubberMaterial(BSTR newVal)
 {
-   char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
-   m_d.m_szRubberMaterial = buf;
-
+   m_d.m_szRubberMaterial = MakeString(newVal);
    return S_OK;
 }
 
@@ -1402,8 +1392,7 @@ STDMETHODIMP Flipper::get_Image(BSTR *pVal)
 
 STDMETHODIMP Flipper::put_Image(BSTR newVal)
 {
-   char szImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
+   const string szImage = MakeString(newVal);
    const Texture * const tex = m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {

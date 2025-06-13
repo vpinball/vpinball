@@ -364,8 +364,7 @@ void Kicker::ExportMesh(ObjLoader& loader)
    if (m_d.m_kickertype == KickerInvisible)
       return;
 
-   char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
+   const string name = MakeString(m_wzName);
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
    int num_vertices;
@@ -813,10 +812,8 @@ STDMETHODIMP Kicker::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Kicker::put_Surface(BSTR newVal)
 {
-   char buf[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, nullptr, nullptr);
    STARTUNDO
-   m_d.m_szSurface = buf;
+   m_d.m_szSurface = MakeString(newVal);
    STOPUNDO
 
    return S_OK;
@@ -974,11 +971,8 @@ STDMETHODIMP Kicker::get_Material(BSTR *pVal)
 
 STDMETHODIMP Kicker::put_Material(BSTR newVal)
 {
-   char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
-
    STARTUNDO
-   m_d.m_szMaterial = buf;
+   m_d.m_szMaterial = MakeString(newVal);
    STOPUNDO
 
    return S_OK;

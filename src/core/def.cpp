@@ -89,29 +89,13 @@ string f2sz(const float f, const bool can_convert_decimal_point)
    if (SUCCEEDED(VariantChangeType(&var, &var, 0, VT_BSTR)))
    {
       const WCHAR * const wzT = V_BSTR(&var);
-      char tmp[256];
-      WideCharToMultiByteNull(CP_ACP, 0, wzT, -1, tmp, 256, nullptr, nullptr);
+      const string tmp = MakeString(wzT);
       VariantClear(&var);
       return tmp;
    }
    else
       return "0.0"s; //!! should be localized! i.e. . vs ,
 #endif
-}
-
-void WideStrNCopy(const WCHAR* wzin, WCHAR* wzout, const size_t wzoutMaxLen)
-{
-   size_t i = 0;
-   while (*wzin && (++i < wzoutMaxLen)) { *wzout++ = *wzin++; }
-   *wzout = L'\0';
-}
-
-void WideStrCat(const WCHAR* wzin, WCHAR* wzout, const size_t wzoutMaxLen)
-{
-   size_t i = lstrlenW(wzout);
-   wzout += i;
-   while (*wzin && (++i < wzoutMaxLen)) { *wzout++ = *wzin++; }
-   *wzout = L'\0';
 }
 
 bool WzSzEqual(const WCHAR *wz1, const char *sz2)
@@ -195,7 +179,7 @@ LocalStringW::LocalStringW(const int resid)
    if (it != ids_map.end())
    {
       const char* sz = it->second;
-      const int len = strlen(sz)+1;
+      const int len = strlen(sz) + 1; // include null termination
       MultiByteToWideCharNull(CP_ACP, 0, sz, -1, m_szbuffer, len);
    }
 #endif
@@ -203,7 +187,7 @@ LocalStringW::LocalStringW(const int resid)
 
 WCHAR *MakeWide(const string& sz)
 {
-   const int len = (int)sz.length()+1;
+   const int len = (int)sz.length() + 1; // include null termination
    WCHAR * const wzT = new WCHAR[len];
    MultiByteToWideCharNull(CP_ACP, 0, sz.c_str(), -1, wzT, len);
 
@@ -213,9 +197,9 @@ WCHAR *MakeWide(const string& sz)
 string MakeString(const wstring &wz)
 {
    // Somewhat overkill since we copy the string twice, once in the temp buffer for conversion, then in the string constructor
-   const int len = (int)wz.length();
-   char *const szT = new char[len + 1];
-   WideCharToMultiByteNull(CP_ACP, 0, wz.c_str(), -1, szT, len + 1, nullptr, nullptr);
+   const int len = (int)wz.length() + 1; // include null termination
+   char *const szT = new char[len];
+   WideCharToMultiByteNull(CP_ACP, 0, wz.c_str(), -1, szT, len, nullptr, nullptr);
    /*const*/ string result(szT); // const removed for auto-move
    delete [] szT;
 
@@ -225,9 +209,9 @@ string MakeString(const wstring &wz)
 wstring MakeWString(const string &sz)
 {
    // Somewhat overkill since we copy the string twice, once in the temp buffer for conversion, then in the string constructor
-   const int len = (int)sz.length();
-   WCHAR *const wzT = new WCHAR[len + 1];
-   MultiByteToWideCharNull(CP_ACP, 0, sz.c_str(), -1, wzT, len + 1);
+   const int len = (int)sz.length() + 1; // include null termination
+   WCHAR *const wzT = new WCHAR[len];
+   MultiByteToWideCharNull(CP_ACP, 0, sz.c_str(), -1, wzT, len);
    /*const*/ wstring result(wzT); // const removed for auto-move
    delete [] wzT;
 
@@ -237,9 +221,9 @@ wstring MakeWString(const string &sz)
 wstring MakeWString(const char * const sz)
 {
    // Somewhat overkill since we copy the string twice, once in the temp buffer for conversion, then in the string constructor
-   const int len = (int)lstrlen(sz);
-   WCHAR *const wzT = new WCHAR[len + 1];
-   MultiByteToWideCharNull(CP_ACP, 0, sz, -1, wzT, len + 1);
+   const int len = (int)strlen(sz) + 1; // include null termination
+   WCHAR *const wzT = new WCHAR[len];
+   MultiByteToWideCharNull(CP_ACP, 0, sz, -1, wzT, len);
    /*const*/ wstring result(wzT); // const removed for auto-move
    delete [] wzT;
 
@@ -248,9 +232,9 @@ wstring MakeWString(const char * const sz)
 
 char *MakeChar(const WCHAR* const wz)
 {
-   const int len = lstrlenW(wz);
-   char * const szT = new char[len + 1];
-   WideCharToMultiByteNull(CP_ACP, 0, wz, -1, szT, len + 1, nullptr, nullptr);
+   const int len = (int)wcslen(wz) + 1; // include null termination
+   char * const szT = new char[len];
+   WideCharToMultiByteNull(CP_ACP, 0, wz, -1, szT, len, nullptr, nullptr);
 
    return szT;
 }
@@ -810,7 +794,7 @@ vector<string> add_line_numbers(const char* src)
 HRESULT external_open_storage(const OLECHAR* pwcsName, IStorage* pstgPriority, DWORD grfMode, SNB snbExclude, DWORD reserved, IStorage** ppstgOpen)
 {
    char szName[1024];
-   WideCharToMultiByte(CP_ACP, 0, pwcsName, -1, szName, sizeof(szName), NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, pwcsName, -1, szName, std::size(szName), NULL, NULL);
 
    return PoleStorage::Create(szName, "/", (IStorage**)ppstgOpen);
 }

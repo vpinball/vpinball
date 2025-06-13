@@ -713,8 +713,7 @@ void Surface::ExportMesh(ObjLoader& loader)
    m_d.m_heightbottom = oldBottomHeight;
    m_d.m_heighttop = oldTopHeight;
 
-   char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
+   const string name = MakeString(m_wzName);
    if (!topBuf.empty() && m_d.m_topBottomVisible && !m_d.m_sideVisible)
    {
       loader.WriteObjectName(name);
@@ -1349,8 +1348,7 @@ STDMETHODIMP Surface::get_Image(BSTR *pVal)
 
 STDMETHODIMP Surface::put_Image(BSTR newVal)
 {
-   char szImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
+   const string szImage = MakeString(newVal);
    const Texture * const tex = m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {
@@ -1373,10 +1371,7 @@ STDMETHODIMP Surface::get_SideMaterial(BSTR *pVal)
 
 STDMETHODIMP Surface::put_SideMaterial(BSTR newVal)
 {
-   char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
-   m_d.m_szSideMaterial = buf;
-
+   m_d.m_szSideMaterial = MakeString(newVal);
    return S_OK;
 }
 
@@ -1391,10 +1386,7 @@ STDMETHODIMP Surface::get_SlingshotMaterial(BSTR *pVal)
 
 STDMETHODIMP Surface::put_SlingshotMaterial(BSTR newVal)
 {
-   char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
-   m_d.m_szSlingShotMaterial = buf;
-
+   m_d.m_szSlingShotMaterial = MakeString(newVal);
    return S_OK;
 }
 
@@ -1446,10 +1438,7 @@ STDMETHODIMP Surface::get_TopMaterial(BSTR *pVal)
 
 STDMETHODIMP Surface::put_TopMaterial(BSTR newVal)
 {
-   char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
-   m_d.m_szTopMaterial = buf;
-
+   m_d.m_szTopMaterial = MakeString(newVal);
    return S_OK;
 }
 
@@ -1464,10 +1453,7 @@ STDMETHODIMP Surface::get_PhysicsMaterial(BSTR *pVal)
 
 STDMETHODIMP Surface::put_PhysicsMaterial(BSTR newVal)
 {
-   char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
-   m_d.m_szPhysicsMaterial = buf;
-
+   m_d.m_szPhysicsMaterial = MakeString(newVal);
    return S_OK;
 }
 
@@ -1644,8 +1630,7 @@ STDMETHODIMP Surface::get_SideImage(BSTR *pVal)
 
 STDMETHODIMP Surface::put_SideImage(BSTR newVal)
 {
-   char szSideImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szSideImage, MAXTOKEN, nullptr, nullptr);
+   const string szSideImage = MakeString(newVal);
    const Texture * const tex = m_ptable->GetImage(szSideImage);
    if (tex && tex->IsHDR())
    {

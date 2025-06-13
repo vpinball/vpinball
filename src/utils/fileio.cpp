@@ -179,7 +179,7 @@ HRESULT BiffWriter::WriteString(const int id, const char * const szvalue)
 {
    ULONG writ = 0;
    HRESULT hr;
-   const int len = lstrlen(szvalue);
+   const int len = (int)strlen(szvalue);
 
    if (FAILED(hr = WriteRecordSize((int)sizeof(int) * 2 + len)))
       return hr;
@@ -219,7 +219,7 @@ HRESULT BiffWriter::WriteWideString(const int id, const WCHAR * const wzvalue)
 {
    ULONG writ = 0;
    HRESULT hr;
-   const int len = lstrlenW(wzvalue) * (int)sizeof(WCHAR);
+   const int len = (int)wcslen(wzvalue) * (int)sizeof(WCHAR);
 
    if (FAILED(hr = WriteRecordSize((int)sizeof(int) * 2 + len)))
       return hr;
@@ -463,7 +463,7 @@ HRESULT BiffReader::GetWideString(WCHAR *wzvalue, const size_t wzvalue_maxlength
       ptr += sizeof(WCHAR);
    }
 #endif
-   WideStrNCopy(tmp, wzvalue, wzvalue_maxlength);
+   wcscpy_s(wzvalue, wzvalue_maxlength, tmp);
    delete[] tmp;
    return hr;
 }
@@ -630,11 +630,11 @@ ULONG __stdcall FastIStorage::Release()
 HRESULT __stdcall FastIStorage::CreateStream(const WCHAR *wzName, ULONG, ULONG, ULONG, struct IStream **ppstm)
 {
    FastIStream * const pfs = new FastIStream();
-   const int wzNameLen = lstrlenW(wzName) + 1;
+   const size_t wzNameLen = wcslen(wzName) + 1; // incl. zero terminator
    pfs->AddRef(); // AddRef once for us, and once for the caller
    pfs->AddRef();
    pfs->m_wzName = new WCHAR[wzNameLen];
-   WideStrNCopy(wzName, pfs->m_wzName, wzNameLen);
+   wcscpy_s(pfs->m_wzName, wzNameLen, wzName);
 
    *ppstm = pfs;
 
@@ -651,11 +651,11 @@ HRESULT __stdcall FastIStorage::OpenStream(const WCHAR *, void *, ULONG, ULONG, 
 HRESULT __stdcall FastIStorage::CreateStorage(const WCHAR *wzName, ULONG, ULONG, ULONG, struct IStorage **ppstg)
 {
    FastIStorage * const pfs = new FastIStorage();
-   const int wzNameLen = lstrlenW(wzName) + 1;
+   const size_t wzNameLen = wcslen(wzName) + 1; // incl. zero terminator
    pfs->AddRef(); // AddRef once for us, and once for the caller
    pfs->AddRef();
    pfs->m_wzName = new WCHAR[wzNameLen];
-   WideStrNCopy(wzName, pfs->m_wzName, wzNameLen);
+   wcscpy_s(pfs->m_wzName, wzNameLen, wzName);
 
    *ppstg = pfs;
 

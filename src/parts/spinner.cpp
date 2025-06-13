@@ -238,8 +238,7 @@ void Spinner::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 
 void Spinner::ExportMesh(ObjLoader& loader)
 {
-   char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
-   WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
+   const string name = MakeString(m_wzName);
    vector<Vertex3D_NoTex2> transformedVertices;
    vector<HitObject*> dummyHitObj;
 
@@ -251,7 +250,7 @@ void Spinner::ExportMesh(ObjLoader& loader)
 
    if (m_d.m_showBracket)
    {
-      const string subObjName = name + "Bracket"s;
+      const string subObjName = name + "Bracket";
       loader.WriteObjectName(subObjName);
 
       m_fullMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation));
@@ -289,7 +288,7 @@ void Spinner::ExportMesh(ObjLoader& loader)
    m_vertexBuffer_spinneranimangle = -FLT_MAX;
    UpdatePlate(transformedVertices.data());
 
-   const string subObjName = name + "Plate"s;
+   const string subObjName = name + "Plate";
    loader.WriteObjectName(subObjName);
    loader.WriteVertexInfo(transformedVertices.data(), spinnerPlateNumVertices);
    loader.WriteFaceInfoList(spinnerPlateIndices, spinnerPlateNumFaces);
@@ -622,10 +621,7 @@ STDMETHODIMP Spinner::get_Material(BSTR *pVal)
 
 STDMETHODIMP Spinner::put_Material(BSTR newVal)
 {
-   char buf[MAXNAMEBUFFER];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
-   m_d.m_szMaterial = buf;
-
+   m_d.m_szMaterial = MakeString(newVal);
    return S_OK;
 }
 
@@ -640,8 +636,7 @@ STDMETHODIMP Spinner::get_Image(BSTR *pVal)
 
 STDMETHODIMP Spinner::put_Image(BSTR newVal)
 {
-   char szImage[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, szImage, MAXTOKEN, nullptr, nullptr);
+   const string szImage = MakeString(newVal);
    const Texture * const tex = m_ptable->GetImage(szImage);
    if (tex && tex->IsHDR())
    {
@@ -688,10 +683,7 @@ STDMETHODIMP Spinner::get_Surface(BSTR *pVal)
 
 STDMETHODIMP Spinner::put_Surface(BSTR newVal)
 {
-   char buf[MAXTOKEN];
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXTOKEN, nullptr, nullptr);
-   m_d.m_szSurface = buf;
-
+   m_d.m_szSurface = MakeString(newVal);
    return S_OK;
 }
 
