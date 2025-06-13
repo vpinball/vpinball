@@ -29,17 +29,13 @@ string string_to_lower(string str)
 
 string trim_string(const string& str)
 {
-   string s;
-   try
-   {
-      const size_t pos = str.find_first_not_of(" \t\r\n");
-      s = str.substr(pos, str.find_last_not_of(" \t\r\n") - pos + 1);
-   }
-   catch (...)
-   {
-      //s.clear();
-   }
-   return s;
+   size_t start = 0;
+   size_t end = str.length();
+   while (start < end && (str[start] == ' ' || str[start] == '\t' || str[start] == '\r' || str[start] == '\n'))
+      ++start;
+   while (end > start && (str[end - 1] == ' ' || str[end - 1] == '\t' || str[end - 1] == '\r' || str[end - 1] == '\n'))
+      --end;
+   return str.substr(start, end - start);
 }
 
 bool try_parse_int(const string& str, int& value)
