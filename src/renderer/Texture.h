@@ -9,8 +9,8 @@ class ITexManCacheable
 public:
    virtual unsigned long long GetLiveHash() const = 0;
    virtual bool IsOpaque() const = 0;
-   virtual std::shared_ptr<class BaseTexture> GetRawBitmap(bool resizeOnLowMem = false, unsigned int maxTexDimension = 0) = 0;
-   virtual string GetName() const = 0;
+   virtual std::shared_ptr<class BaseTexture> GetRawBitmap(bool resizeOnLowMem = false, unsigned int maxTexDimension = 0) const = 0;
+   virtual const string& GetName() const = 0;
 };
 
 
@@ -44,9 +44,9 @@ public:
    static BaseTexture *CreateFromHBitmap(const HBITMAP hbm, unsigned int maxTexDimension, bool with_alpha = true) noexcept;
    static void Update(BaseTexture **texture, const unsigned int w, const unsigned int h, const Format format, const uint8_t *image); // Update eventually recreating the texture
 
-   virtual unsigned long long GetLiveHash() const override { return m_liveHash; }
-   virtual std::shared_ptr<BaseTexture> GetRawBitmap(bool resizeOnLowMem = false, unsigned int maxTexDimension = 0) override { return m_selfPointer; }
-   virtual string GetName() const { return ""; }
+   unsigned long long GetLiveHash() const override { return m_liveHash; }
+   std::shared_ptr<BaseTexture> GetRawBitmap(bool resizeOnLowMem = false, unsigned int maxTexDimension = 0) const override { return m_selfPointer; }
+   const string& GetName() const override { return string(); }
 
    unsigned int width() const  { return m_width; }
    unsigned int height() const { return m_height; }
@@ -66,7 +66,7 @@ public:
    void SetMD5Hash(uint8_t* md5) const { memcpy(m_md5Hash, md5, sizeof(m_md5Hash)); m_isMD5Dirty = false; }
 
    bool IsOpaqueComputed() const { return !m_isOpaqueDirty; }
-   virtual bool IsOpaque() const override { UpdateOpaque(); return m_isOpaque; }
+   bool IsOpaque() const override { UpdateOpaque(); return m_isOpaque; }
    void SetIsOpaque(const bool v) const { m_isOpaque = v; m_isOpaqueDirty = false; }
 
 private:
@@ -75,8 +75,8 @@ private:
    void UpdateMD5() const;
    void UpdateOpaque() const;
 
-   const unsigned long long m_liveHash;
    const unsigned int m_width, m_height;
+   const unsigned long long m_liveHash;
    BYTE* const m_data;
 
    std::shared_ptr<BaseTexture> m_selfPointer;
@@ -102,12 +102,11 @@ public:
 
    HRESULT SaveToStream(IStream *pstream, const PinTable *pt);
 
-   virtual unsigned long long GetLiveHash() const override { return m_liveHash; }
-   virtual string GetName() const { return m_name; }
+   unsigned long long GetLiveHash() const override { return m_liveHash; }
+   const string& GetName() const override { return m_name; }
 
    HBITMAP GetGDIBitmap() const; // Lazily created view of the image, suitable for GDI rendering
-   std::shared_ptr<BaseTexture> GetRawBitmap(bool resizeOnLowMem = false, unsigned int maxTexDimension = 0) const; // Lazily created view of the image, suitable for GPU sampling
-   virtual std::shared_ptr<BaseTexture> GetRawBitmap(bool resizeOnLowMem = false, unsigned int maxTexDimension = 0) override { return static_cast<const Texture*>(this)->GetRawBitmap(resizeOnLowMem, maxTexDimension); }
+   std::shared_ptr<BaseTexture> GetRawBitmap(bool resizeOnLowMem = false, unsigned int maxTexDimension = 0) const override; // Lazily created view of the image, suitable for GPU sampling
 
    size_t GetEstimatedGPUSize() const;
 
@@ -117,7 +116,7 @@ public:
    bool SaveFile(const string &filename) const { return m_ppb->WriteToFile(filename); }
 
    const uint8_t* GetMD5Hash() const { UpdateMD5(); return m_md5Hash; }
-   virtual bool IsOpaque() const override { UpdateOpaque(); return m_isOpaque; }
+   bool IsOpaque() const override { UpdateOpaque(); return m_isOpaque; }
    bool IsHDR() const;
 
 public:
@@ -135,10 +134,10 @@ private:
    void UpdateOpaque() const;
    void SetIsOpaque(const bool v) const;
 
-   const unsigned long long m_liveHash;
    PinBinary *const m_ppb; // Original data blob of the image, always defined
+   const unsigned long long m_liveHash;
 
-   // These field are (lazily) computed from the data, therefore they do not impact the constness of the object
+   // These fields are (lazily) computed from the data, therefore they do not impact the constness of the object
    mutable std::weak_ptr<BaseTexture> m_imageBuffer; // Decoded version of the texture in a format suitable for GPU sampling. Note that width and height of the decoded block can be different than width and height of the image since the surface can be limited to smaller sizes by the user or memory
    mutable HBITMAP m_hbmGDIVersion = nullptr;
    mutable bool m_isMD5Dirty = true;
