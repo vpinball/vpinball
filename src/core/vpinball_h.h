@@ -241,7 +241,7 @@ public:
    int m_securitylevel;
 
    string m_myPath;
-   wstring m_wzMyPath;
+   wstring m_wMyPath;
    string m_myPrefPath;
    string m_currentTablePath;
 
@@ -267,7 +267,7 @@ public:
    volatile bool m_table_played_via_SelectTableOnStart;
    bool m_bgles = false; // override global emission scale by m_fgles below?
    float m_fgles = 0.f;
-   WCHAR *m_customParameters[MAX_CUSTOM_PARAM_INDEX];
+   wstring m_customParameters[MAX_CUSTOM_PARAM_INDEX];
 
    HBITMAP m_hbmInPlayMode;
 

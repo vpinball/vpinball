@@ -105,8 +105,6 @@ VPinball::VPinball()
    m_table_played_via_command_line = false;
    m_table_played_via_SelectTableOnStart = false;
    m_logicalNumberOfProcessors = -1;
-   for (unsigned int i = 0; i < MAX_CUSTOM_PARAM_INDEX; ++i)
-      m_customParameters[i] = nullptr;
 
    m_mouseCursorPosition.x = 0.0f;
    m_mouseCursorPosition.y = 0.0f;
@@ -122,7 +120,7 @@ VPinball::VPinball()
 
    m_hbmInPlayMode = nullptr;
 
-   GetMyPath();				//Store path of vpinball.exe in m_myPath and m_wzMyPath
+   GetMyPath();				//Store path of vpinball.exe in m_myPath and m_wMyPath
    GetMyPrefPath();			//Store preference path of vpinball.exe in m_myPrefPath
 
 #ifndef __STANDALONE__
@@ -165,14 +163,14 @@ VPinball::~VPinball()
 
 //Store path of exe (without the exe's filename) in Class Variable
 //Stores path as string in m_myPath (8 bit Ansi)
-//Stores path as wstring in m_wzMyPath (16 bit Unicode)
+//Stores path as wstring in m_wMyPath (16 bit Unicode)
 void VPinball::GetMyPath()
 {
 #ifndef __STANDALONE__
    char szPath[MAXSTRING];
 
    GetModuleFileName(nullptr, szPath, MAXSTRING);
-   char *szEnd = szPath + lstrlen(szPath);
+   char *szEnd = szPath + strlen(szPath);
 
    // search for first backslash
    while (szEnd > szPath)
@@ -204,7 +202,7 @@ void VPinball::GetMyPath()
 #endif
 
    // store 2x
-   m_wzMyPath = MakeWString(m_myPath);
+   m_wMyPath = MakeWString(m_myPath);
 }
 
 void VPinball::GetMyPrefPath()
@@ -2390,8 +2388,8 @@ int CALLBACK MyCompProcIntValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM 
    ListView_GetItemText(lpsd->hwndList, nItem2, lpsd->subItemIndex, buf2, sizeof(buf2));
 
    int value1, value2;
-   std::from_chars(buf1, buf1 + lstrlen(buf1), value1);
-   std::from_chars(buf2, buf2 + lstrlen(buf2), value2);
+   std::from_chars(buf1, buf1 + strlen(buf1), value1);
+   std::from_chars(buf2, buf2 + strlen(buf2), value2);
 
    if (lpsd->sortUpDown == 1)
       return (value1 - value2);

@@ -149,7 +149,7 @@ static PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
    bool in_TEXT;
    bool in_SPACE;
 
-   const int len = lstrlen(CmdLine);
+   const size_t len = strlen(CmdLine);
    i = ((len + 2) / 2) * sizeof(PVOID) + sizeof(PVOID);
 
    argv = (PCHAR*)malloc(i + (len + 2) * sizeof(CHAR));
@@ -727,11 +727,7 @@ public:
 
          if (useCustomParams && (i+1<nArgs))
          {
-            const size_t len = strlen(szArglist[i + 1]);
-            m_vpinball.m_customParameters[customIdx - 1] = new WCHAR[len + 1];
-
-            MultiByteToWideCharNull(CP_ACP, 0, szArglist[i + 1], -1, m_vpinball.m_customParameters[customIdx - 1], (int)len + 1);
-
+            m_vpinball.m_customParameters[customIdx - 1] = MakeWString(szArglist[i + 1]);
             ++i; // two params processed
 
             continue;

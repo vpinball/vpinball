@@ -385,7 +385,7 @@ STDMETHODIMP ScriptGlobalTable::GetCustomParam(LONG index, BSTR *param)
    if (index <= 0 || index > MAX_CUSTOM_PARAM_INDEX)
       return E_FAIL;
 
-   *param = SysAllocString(m_vpinball->m_customParameters[index-1]);
+   *param = SysAllocString(m_vpinball->m_customParameters[index-1].c_str());
    return S_OK;
 }
 
@@ -584,7 +584,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
    HRESULT hr;
 
 #ifndef __STANDALONE__
-   const wstring wzPath = m_vpinball->m_wzMyPath + L"user" + PATH_SEPARATOR_WCHAR + L"VPReg.stg";
+   const wstring wzPath = m_vpinball->m_wMyPath + L"user" + PATH_SEPARATOR_WCHAR + L"VPReg.stg";
 
    IStorage *pstgRoot;
    if (FAILED(hr = StgOpenStorage(wzPath.c_str(), nullptr, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgRoot)))
@@ -592,7 +592,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
       // Registry file does not exist - create it
       if (FAILED(hr = StgCreateDocfile(wzPath.c_str(), STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, &pstgRoot)))
       {
-         const wstring wzMkPath = m_vpinball->m_wzMyPath + L"user";
+         const wstring wzMkPath = m_vpinball->m_wMyPath + L"user";
          if (_wmkdir(wzMkPath.c_str()) != 0)
             return hr;
 
@@ -676,7 +676,7 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
    HRESULT hr;
 
 #ifndef __STANDALONE__
-   const wstring wzPath = m_vpinball->m_wzMyPath + L"user" + PATH_SEPARATOR_WCHAR + L"VPReg.stg";
+   const wstring wzPath = m_vpinball->m_wMyPath + L"user" + PATH_SEPARATOR_WCHAR + L"VPReg.stg";
 
    IStorage *pstgRoot;
    if (FAILED(hr = StgOpenStorage(wzPath.c_str(), nullptr, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, nullptr, 0, &pstgRoot)))

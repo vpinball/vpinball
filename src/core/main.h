@@ -171,9 +171,6 @@ static const string defaultPathSearch[] = { string(), "user"s +PATH_SEPARATOR_CH
 #define _aligned_malloc(size, align) aligned_alloc(align, size)
 #define _aligned_free free
 
-#undef lstrlen
-#define lstrlen lstrlenA
-
 #undef lstrcmpi
 #define lstrcmpi lstrcmpiA
 
