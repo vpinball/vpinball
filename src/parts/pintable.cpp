@@ -9420,7 +9420,7 @@ void PinTable::ImportVPP(const string& filename)
 
       for(size_t i = 0; i < std::size(elementNames); ++i)
       {
-         const tinyxml2::XMLElement* el = physTab->FirstChildElement(elementNames[i]);
+         const tinyxml2::XMLElement* el = physTab->FirstChildElement(elementNames[i].c_str());
          if(el != nullptr)
          {
             const char * const t = el->GetText();
