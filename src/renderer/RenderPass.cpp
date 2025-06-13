@@ -49,6 +49,13 @@ void RenderPass::AddPrecursor(RenderPass* dependency)
       m_dependencies.push_back(dependency);
 }
 
+void RenderPass::ClearCommands()
+{
+   for (RenderCommand* cmd : m_commands)
+      delete cmd;
+   m_commands.clear();
+}
+
 void RenderPass::SortCommands()
 {
    /*

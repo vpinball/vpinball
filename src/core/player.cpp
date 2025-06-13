@@ -2447,7 +2447,7 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
 
    if (!rendered)
    {
-      rd->SetRenderTarget("PostProcess"s, m_renderer->GetBackBufferTexture(), true);
+      rd->GetCurrentPass()->ClearCommands();
       return nullptr;
    }
 
