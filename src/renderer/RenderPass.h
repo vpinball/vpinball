@@ -12,9 +12,9 @@ public:
    ~RenderPass();
 
    void Reset(const string& name, RenderTarget* const rt);
-
    void AddPrecursor(RenderPass* dependency);
 
+   void ClearCommands();
    void SortCommands();
 
    void Submit(RenderCommand* command);
