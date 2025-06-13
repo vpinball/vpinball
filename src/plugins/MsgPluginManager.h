@@ -123,6 +123,8 @@ private:
       std::vector<CallbackEntry> callbacks;
    };
    std::vector<MsgEntry> m_msgs;
+   int m_broadcastInProgress = 0;
+   std::vector<std::function<void(void)>> m_deferredAfterBroadCastRunnables;
 
    struct TimerEntry
    {
