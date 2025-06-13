@@ -624,11 +624,34 @@ public:
 class ShaderState
 {
 public:
+   // Constructor for a state holding state of a specific shader
    ShaderState(Shader* shader, bool isLowPrecision)
-      : m_state(shader->m_stateSize)
+      : m_shader(shader)
+      , m_ownStateOffset(false) 
       , m_useLowPrecision(isLowPrecision)
+      , m_state(shader->m_stateSize)
       , m_stateOffsets(shader->m_stateOffsets)
    {
+   }
+
+   // Constructor for a state holding all shader uniform state
+   ShaderState(bool isLowPrecision)
+      : m_shader(nullptr)
+      , m_ownStateOffset(true)
+      , m_useLowPrecision(isLowPrecision)
+   {
+      m_stateOffsets = new int[SHADER_UNIFORM_COUNT];
+      m_stateOffsets[0] = 0;
+      for (int i = 0; i < SHADER_UNIFORM_COUNT - 1; ++i)
+         m_stateOffsets[i + 1] = m_stateOffsets[i] + ShaderUniform::coreUniforms[i].stateSize;
+      int size = m_stateOffsets[SHADER_UNIFORM_COUNT - 1] + ShaderUniform::coreUniforms[SHADER_UNIFORM_COUNT - 1].stateSize;
+      m_state.resize(size);
+   }
+
+   ~ShaderState()
+   {
+      if (m_ownStateOffset)
+         delete[] m_stateOffsets;
    }
 
    void SetShader(Shader* shader)
@@ -642,6 +665,13 @@ public:
    {
       memset(m_state.data(), 0, m_state.size());
       m_samplers.clear();
+   }
+
+   uint8_t* GetUniformStatePtr(const ShaderUniforms uniformName)
+   {
+      assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
+      assert(m_stateOffsets[uniformName] != -1);
+      return m_state.data() + m_stateOffsets[uniformName];
    }
 
    void CopyTo(const bool copyTo, ShaderState* const other, const ShaderTechniques technique = SHADER_TECHNIQUE_INVALID)
@@ -759,7 +789,6 @@ public:
 
    vec4 GetVector(const ShaderUniforms uniformName) const
    {
-      assert(Shader::GetCurrentShader() == nullptr);
       assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
       assert(m_stateOffsets[uniformName] != -1);
       assert(ShaderUniform::coreUniforms[uniformName].type == SUT_Float2 || ShaderUniform::coreUniforms[uniformName].type == SUT_Float3
@@ -854,7 +883,6 @@ public:
 
    const std::shared_ptr<const Sampler> GetTexture(const ShaderUniforms uniformName) const
    {
-      assert(Shader::GetCurrentShader() == nullptr);
       assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
       assert(m_stateOffsets[uniformName] != -1);
       assert(ShaderUniform::coreUniforms[uniformName].type == SUT_Sampler);
@@ -867,6 +895,8 @@ public:
    vector<std::shared_ptr<const Sampler>> m_samplers;
 
 private:
+   Shader* m_shader;
+   const bool m_ownStateOffset;
    int* m_stateOffsets; // Position of each uniform inside the state data block
    const bool m_useLowPrecision;
 };

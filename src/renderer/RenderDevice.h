@@ -281,6 +281,8 @@ public:
    bx::Semaphore m_frameReadySem; // Semaphore to signal when a frame is ready to be submitted
    std::mutex m_frameMutex; // Mutex to lock acces to retained render frame between logic thread and render thread
 
+   ShaderState& GetUniformState() { return *m_uniformState; }
+
    void CaptureScreenshot(const string& filename, std::function<void(bool)> callback);
 
    static string s_screenshotFilename;
@@ -291,6 +293,7 @@ private:
    std::thread m_renderThread;
    static void RenderThread(RenderDevice* rd, const bgfx::Init& init);
    vector<std::shared_ptr<Sampler>> m_pendingTextureUploads;
+   std::unique_ptr<ShaderState> m_uniformState = nullptr;
 
    static volatile bool s_screenshot;
 
