@@ -58,6 +58,8 @@ extern "C" {
 #if !defined(_MSC_VER) && !defined(__STDC_LIB_EXT1__)
 inline /*errno_t*/int wcscpy_s(wchar_t* __restrict dest, const size_t destsz, const wchar_t* __restrict src) { wcscpy(dest,src); return 0; }
 inline /*errno_t*/int wcscpy_s(wchar_t* __restrict dest, const wchar_t* __restrict src) { wcscpy(dest,src); return 0; }
+inline /*errno_t*/int wcscat_s(wchar_t *restrict dest, const size_t destsz, const wchar_t *restrict src) { wcscat(dest,src); return 0; }
+inline /*errno_t*/int wcscat_s(wchar_t *restrict dest, const wchar_t *restrict src) { wcscat(dest,src); return 0; }
 #endif
 #endif
 
