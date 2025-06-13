@@ -144,7 +144,10 @@ void MsgPluginManager::SubscribeMsg(const uint32_t endpointId, const unsigned in
       for (const CallbackEntry entry : pm.m_msgs[msgId].callbacks)
          assert(entry.callback != callback);
    #endif
-   pm.m_msgs[msgId].callbacks.push_back(CallbackEntry { endpointId, callback, userData });
+   if (pm.m_broadcastInProgress)
+      pm.m_deferredAfterBroadCastRunnables.push_back([endpointId, msgId, callback, userData]() { SubscribeMsg(endpointId, msgId, callback, userData); });
+   else
+      pm.m_msgs[msgId].callbacks.push_back(CallbackEntry { endpointId, callback, userData });
 }
 
 void MsgPluginManager::UnsubscribeMsg(const unsigned int msgId, const msgpi_msg_callback callback)
@@ -156,6 +159,11 @@ void MsgPluginManager::UnsubscribeMsg(const unsigned int msgId, const msgpi_msg_
    assert(callback != nullptr);
    assert(msgId < pm.m_msgs.size());
    assert(pm.m_msgs[msgId].refCount > 0);
+   if (pm.m_broadcastInProgress)
+   {
+      pm.m_deferredAfterBroadCastRunnables.push_back([msgId, callback]() { UnsubscribeMsg(msgId, callback); });
+      return;
+   }
    for (std::vector<CallbackEntry>::iterator it = pm.m_msgs[msgId].callbacks.begin(); it != pm.m_msgs[msgId].callbacks.end(); ++it)
    {
       if (it->callback == callback)
@@ -177,9 +185,17 @@ void MsgPluginManager::BroadcastMsg(const uint32_t endpointId, const unsigned in
    assert(msgId < pm.m_msgs.size());
    assert(pm.m_msgs[msgId].refCount > 0);
    assert(1 <= endpointId && endpointId < pm.m_nextEndpointId);
+   pm.m_broadcastInProgress++;
    for (const CallbackEntry entry : pm.m_msgs[msgId].callbacks)
       if (entry.endpointId != endpointId) // Don't broadcast to sender's endpoint
          entry.callback(msgId, entry.context, data);
+   pm.m_broadcastInProgress--;
+   if (pm.m_broadcastInProgress == 0 && !pm.m_deferredAfterBroadCastRunnables.empty())
+   {
+      for (auto fn : pm.m_deferredAfterBroadCastRunnables)
+         fn();
+      pm.m_deferredAfterBroadCastRunnables.clear();
+   }
 }
 
 void MsgPluginManager::SendMsg(const uint32_t endpointId, const unsigned int msgId, const uint32_t targetEndpointId, void* data)
