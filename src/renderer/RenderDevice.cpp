@@ -1267,6 +1267,10 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
       throw(-1);
    }
 
+   #if defined ENABLE_BGFX
+   m_uniformState = std::make_unique<ShaderState>(UseLowPrecision());
+   #endif
+
    // Initialize uniform to default value
    m_basicShader->SetVector(SHADER_staticColor_Alpha, 1.0f, 1.0f, 1.0f, 1.0f); // No tinting
    // FIXME XR

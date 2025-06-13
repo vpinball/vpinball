@@ -966,11 +966,11 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
    assert(m_stateOffsets[uniformName] != -1);
 
    #if defined(ENABLE_BGFX)
-   ShaderState* boundState = m_boundState[m_technique];
    bgfx::UniformHandle desc = m_uniformHandles[uniformName];
+   uint8_t* const __restrict dst = m_renderDevice->GetUniformState().GetUniformStatePtr(uniformName);
 
    #elif defined(ENABLE_OPENGL)
-   ShaderState* const __restrict boundState = m_boundState[m_technique];
+   uint8_t* const __restrict dst = m_boundState[m_technique]->m_state.data() + m_stateOffsets[uniformName];
    // For OpenGL uniform binding state is per technique (i.e. program)
    const UniformDesc& desc = m_techniques[m_technique]->uniform_desc[uniformName];
    assert(desc.location >= 0); // Do not apply to an unused uniform
@@ -978,16 +978,15 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
       return;
 
    #elif defined(ENABLE_DX9)
-   ShaderState* const __restrict boundState = m_boundState;
+   uint8_t* const __restrict dst = m_boundState->m_state.data() + m_stateOffsets[uniformName];
    const UniformDesc& desc = m_uniform_desc[uniformName];
    #endif
 
    const uint8_t* const src = m_state->m_state.data() + m_stateOffsets[uniformName];
-   uint8_t* const dst = boundState->m_state.data() + m_stateOffsets[uniformName];
    if ((ShaderUniform::coreUniforms[uniformName].type != SUT_Sampler) && memcmp(dst, src, ShaderUniform::coreUniforms[uniformName].stateSize) == 0)
    {
       #if defined(ENABLE_BGFX)
-      // FIXME BGFX implement uniform caching
+      return;
 
       #elif defined(ENABLE_OPENGL)
       if (ShaderUniform::coreUniforms[uniformName].type == SUT_DataBlock)
@@ -1131,6 +1130,9 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          assert(texel != nullptr);
          
          #if defined(ENABLE_BGFX)
+         if (m_renderDevice->GetUniformState().GetTexture(uniformName) == texel)
+            return;
+
          SamplerFilter filter = texel->GetFilter();
          SamplerAddressMode clampu = texel->GetClampU();
          SamplerAddressMode clampv = texel->GetClampV();
