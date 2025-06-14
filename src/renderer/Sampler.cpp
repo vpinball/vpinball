@@ -13,7 +13,7 @@
 #include <bgfx/platform.h>
 #endif
 
-Sampler::Sampler(RenderDevice* rd, string name, std::shared_ptr<const BaseTexture> surf, const bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
+Sampler::Sampler(RenderDevice* rd, string name, std::shared_ptr<const BaseTexture> surf, const bool force_linear_rgb)
    : m_dirty(false)
    , m_name(std::move(name))
    , m_type(SurfaceType::RT_DEFAULT)
@@ -21,9 +21,6 @@ Sampler::Sampler(RenderDevice* rd, string name, std::shared_ptr<const BaseTextur
    , m_rd(rd)
    , m_width(surf->width())
    , m_height(surf->height())
-   , m_clampu(clampu)
-   , m_clampv(clampv)
-   , m_filter(filter)
 {
 #if defined(ENABLE_BGFX)
    m_isLinear = true;
@@ -102,15 +99,12 @@ Sampler::Sampler(RenderDevice* rd, string name, std::shared_ptr<const BaseTextur
 }
 
 #if defined(ENABLE_BGFX)
-Sampler::Sampler(RenderDevice* rd, string name, SurfaceType type, bgfx::TextureHandle bgfxTexture, unsigned int width, unsigned int height, bool ownTexture, bool linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
+Sampler::Sampler(RenderDevice* rd, string name, SurfaceType type, bgfx::TextureHandle bgfxTexture, unsigned int width, unsigned int height, bool ownTexture, bool linear_rgb)
    : m_type(type)
    , m_name(std::move(name))
    , m_rd(rd)
    , m_dirty(false)
    , m_ownTexture(ownTexture)
-   , m_clampu(clampu)
-   , m_clampv(clampv)
-   , m_filter(filter)
    , m_mipsTexture(bgfxTexture)
    , m_width(width)
    , m_height(height)
@@ -121,15 +115,12 @@ Sampler::Sampler(RenderDevice* rd, string name, SurfaceType type, bgfx::TextureH
 }
 
 #elif defined(ENABLE_OPENGL)
-Sampler::Sampler(RenderDevice* rd, string name, SurfaceType type, GLuint glTexture, bool ownTexture, bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
+Sampler::Sampler(RenderDevice* rd, string name, SurfaceType type, GLuint glTexture, bool ownTexture, bool force_linear_rgb)
    : m_type(type)
    , m_name(std::move(name))
    , m_rd(rd)
    , m_dirty(false)
    , m_ownTexture(ownTexture)
-   , m_clampu(clampu)
-   , m_clampv(clampv)
-   , m_filter(filter)
 {
    switch (m_type)
    {
@@ -160,15 +151,12 @@ Sampler::Sampler(RenderDevice* rd, string name, SurfaceType type, GLuint glTextu
 }
 
 #elif defined(ENABLE_DX9)
-Sampler::Sampler(RenderDevice* rd, string name, IDirect3DTexture9* dx9Texture, bool ownTexture, bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
+Sampler::Sampler(RenderDevice* rd, string name, IDirect3DTexture9* dx9Texture, bool ownTexture, bool force_linear_rgb)
    : m_dirty(false)
    , m_name(std::move(name))
    , m_type(SurfaceType::RT_DEFAULT)
    , m_ownTexture(ownTexture)
    , m_rd(rd)
-   , m_clampu(clampu)
-   , m_clampv(clampv)
-   , m_filter(filter)
 {
    D3DSURFACE_DESC desc;
    dx9Texture->GetLevelDesc(0, &desc);
@@ -406,17 +394,6 @@ void Sampler::UpdateTexture(std::shared_ptr<const BaseTexture> surf, const bool 
    SAFE_RELEASE(sysTex);
 
 #endif
-}
-
-void Sampler::SetClamp(const SamplerAddressMode clampu, const SamplerAddressMode clampv)
-{
-   m_clampu = clampu;
-   m_clampv = clampv;
-}
-
-void Sampler::SetFilter(const SamplerFilter filter)
-{
-   m_filter = filter;
 }
 
 #if defined(ENABLE_BGFX)
