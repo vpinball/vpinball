@@ -480,60 +480,124 @@ void BaseTexture::Update(BaseTexture** texture, const unsigned int width, const 
    *texture = baseTex;
 }
 
-BaseTexture* BaseTexture::NewWithAlpha() const
+BaseTexture* BaseTexture::Convert(Format format) const
 {
    BaseTexture* tex = nullptr;
+
    switch (m_format)
    {
    case RGB:
-      tex = BaseTexture::Create(m_width, m_height, RGBA);
-      if (tex == nullptr)
-         return nullptr;
-      copy_rgb_rgba<false>((unsigned int*)tex->data(), datac(), (size_t)width() * height());
-      break;
-   case SRGB:
-      tex = BaseTexture::Create(m_width, m_height, SRGBA);
-      if (tex == nullptr)
-         return nullptr;
-      copy_rgb_rgba<false>((unsigned int*)tex->data(), datac(), (size_t)width() * height());
-      break;
-   case RGB_FP16:
+      switch (format)
       {
-         tex = BaseTexture::Create(m_width, m_height, RGBA_FP16);
+      case RGBA:
+         tex = BaseTexture::Create(m_width, m_height, RGBA);
          if (tex == nullptr)
             return nullptr;
-         unsigned short* const __restrict dest_data16 = (unsigned short*)tex->data();
-         const unsigned short* const __restrict src_data16 = (const unsigned short*)datac();
-         const size_t e = (size_t)width() * height();
-         for (size_t o = 0; o < e; ++o)
-         {
-            dest_data16[o * 4 + 0] = src_data16[o * 3 + 0];
-            dest_data16[o * 4 + 1] = src_data16[o * 3 + 1];
-            dest_data16[o * 4 + 2] = src_data16[o * 3 + 2];
-            dest_data16[o * 4 + 3] = 0x3C00; //=1.f
-         }
+         copy_rgb_rgba<false>((unsigned int*)tex->data(), datac(), (size_t)width() * height());
+         break;
       }
       break;
-   case RGB_FP32:
+
+   case SRGB:
+      switch (format)
       {
-         tex = BaseTexture::Create(m_width, m_height, RGBA_FP32);
+      case SRGBA:
+         tex = BaseTexture::Create(m_width, m_height, SRGBA);
          if (tex == nullptr)
             return nullptr;
-         UINT32* const __restrict dest_data32 = (UINT32*)tex->data();
-         const UINT32* const __restrict src_data32 = (const UINT32*)datac();
-         const size_t e = (size_t)width() * height();
-         for (size_t o = 0; o < e; ++o)
+         copy_rgb_rgba<false>((unsigned int*)tex->data(), datac(), (size_t)width() * height());
+         break;
+      }
+      break;
+
+   case SRGB565:
+      switch (format)
+      {
+      case SRGBA:
          {
-            dest_data32[o * 4 + 0] = src_data32[o * 3 + 0];
-            dest_data32[o * 4 + 1] = src_data32[o * 3 + 1];
-            dest_data32[o * 4 + 2] = src_data32[o * 3 + 2];
-            dest_data32[o * 4 + 3] = 0x3f800000; //=1.f
+            tex = BaseTexture::Create(m_width, m_height, SRGBA);
+            if (tex == nullptr)
+               return nullptr;
+            static constexpr UINT8 lum32[] = { 0, 8, 16, 25, 33, 41, 49, 58, 66, 74, 82, 90, 99, 107, 115, 123, 132, 140, 148, 156, 165, 173, 181, 189, 197, 206, 214, 222, 230, 239, 247, 255 };
+            static constexpr UINT8 lum64[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 45, 49, 53, 57, 61, 65, 69, 73, 77, 81, 85, 89, 93, 97, 101, 105, 109, 113, 117, 121, 125, 130, 134, 138,
+               142, 146, 150, 154, 158, 162, 166, 170, 174, 178, 182, 186, 190, 194, 198, 202, 206, 210, 215, 219, 223, 227, 231, 235, 239, 243, 247, 251, 255 };
+            uint32_t* const data = reinterpret_cast<uint32_t*>(tex->data());
+            const uint16_t* const frame = reinterpret_cast<const uint16_t*>(datac());
+            const unsigned int size = height() * width();
+            for (unsigned int ofs = 0; ofs < size; ofs++)
+            {
+               const uint16_t rgb565 = frame[ofs];
+               data[ofs] = 0xFF000000 | (lum32[rgb565 & 0x1F] << 16) | (lum64[(rgb565 >> 5) & 0x3F] << 8) | lum32[(rgb565 >> 11) & 0x1F];
+            }
+            tex->SetIsOpaque(true);
          }
+         break;
+      }
+      break;
+
+   case RGB_FP16:
+      switch (format)
+      {
+         case RGBA_FP16:
+         {
+            tex = BaseTexture::Create(m_width, m_height, RGBA_FP16);
+            if (tex == nullptr)
+               return nullptr;
+            unsigned short* const __restrict dest_data16 = (unsigned short*)tex->data();
+            const unsigned short* const __restrict src_data16 = (const unsigned short*)datac();
+            const size_t e = (size_t)width() * height();
+            for (size_t o = 0; o < e; ++o)
+            {
+               dest_data16[o * 4 + 0] = src_data16[o * 3 + 0];
+               dest_data16[o * 4 + 1] = src_data16[o * 3 + 1];
+               dest_data16[o * 4 + 2] = src_data16[o * 3 + 2];
+               dest_data16[o * 4 + 3] = 0x3C00; //=1.f
+            }
+         }
+         break;
+      }
+      break;
+   
+   case RGB_FP32:
+      switch (format)
+      {
+         case RGBA_FP32:
+            {
+            tex = BaseTexture::Create(m_width, m_height, RGBA_FP32);
+            if (tex == nullptr)
+               return nullptr;
+            UINT32* const __restrict dest_data32 = (UINT32*)tex->data();
+            const UINT32* const __restrict src_data32 = (const UINT32*)datac();
+            const size_t e = (size_t)width() * height();
+            for (size_t o = 0; o < e; ++o)
+            {
+               dest_data32[o * 4 + 0] = src_data32[o * 3 + 0];
+               dest_data32[o * 4 + 1] = src_data32[o * 3 + 1];
+               dest_data32[o * 4 + 2] = src_data32[o * 3 + 2];
+               dest_data32[o * 4 + 3] = 0x3f800000; //=1.f
+            }
+         }
+         break;
       }
       break;
    }
+
+   // Copy without conversion
+   if (m_format == format)
+   {
+      assert(tex == nullptr);
+      tex = BaseTexture::Create(m_width, m_height, m_format);
+      memcpy(tex->data(), datac(), (size_t)m_width * m_height * GetPixelSize(m_format));
+   }
+
    if (tex)
-      tex->SetIsOpaque(true);
+   {
+      if (!m_isOpaqueDirty)
+         tex->SetIsOpaque(IsOpaque());
+      if (!m_isMD5Dirty)
+         tex->SetMD5Hash(GetMD5Hash());
+   }
+
    return tex;
 }
 
