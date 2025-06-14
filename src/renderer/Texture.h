@@ -44,7 +44,24 @@ public:
    static BaseTexture *CreateFromHBitmap(const HBITMAP hbm, unsigned int maxTexDimension, bool with_alpha = true) noexcept;
    static void Update(BaseTexture **texture, const unsigned int w, const unsigned int h, const Format format, const uint8_t *image); // Update eventually recreating the texture
 
-   static bool IsLinearFormat(const Format format) noexcept { return (format != SRGB && format != SRGBA && format != SRGB565); }
+   static bool IsLinearFormat(const Format format) { return (format != SRGB && format != SRGBA && format != SRGB565); }
+   static Format GetFormatWithAlpha(const Format format)
+   {
+      switch (format)
+      {
+         case BW:        assert(false); return BW; // return RGBA ?
+         case RGB:       return RGBA;
+         case RGBA:      return RGBA;
+         case SRGB:      return SRGBA;
+         case SRGBA:     return SRGBA;
+         case SRGB565:   return SRGBA;
+         case RGB_FP16:  return RGBA_FP16;
+         case RGBA_FP16: return RGBA_FP16;
+         case RGB_FP32:  return RGBA_FP32;
+         case RGBA_FP32: return RGBA_FP32;
+         default:        assert(false); return format;
+      }
+   }
 
    unsigned long long GetLiveHash() const override { return m_liveHash; }
    std::shared_ptr<const BaseTexture> GetRawBitmap(bool resizeOnLowMem, unsigned int maxTexDimension) const override { return m_selfPointer; }
@@ -58,8 +75,9 @@ public:
    const BYTE* datac() const   { return m_data; }
    bool HasAlpha() const       { return m_format == RGBA || m_format == SRGBA || m_format == RGBA_FP16 || m_format == RGBA_FP32; }
 
+   BaseTexture *Convert(Format format) const; // Always create a new instance, even if target format is source format are matching
    BaseTexture *ToBGRA() const; // swap R and B channels, also tonemaps floating point buffers during conversion and adds an opaque alpha channel (if format with missing alpha)
-   BaseTexture *NewWithAlpha() const;
+   BaseTexture *NewWithAlpha() const { return Convert(GetFormatWithAlpha(m_format)); }
 
    unsigned int m_realWidth, m_realHeight;
    const Format m_format;
