@@ -51,25 +51,28 @@ class Sampler final
 {
 public:
    Sampler(RenderDevice* rd, string name, std::shared_ptr<const BaseTexture> surf, const bool force_linear_rgb);
+   ~Sampler();
+
 #if defined(ENABLE_BGFX)
-   Sampler(RenderDevice* rd, string name, SurfaceType type, bgfx::TextureHandle bgfxTexture, unsigned int width, unsigned int height, bool ownTexture, bool linear_rgb);
+   Sampler(RenderDevice* rd, string name, SurfaceType type, bgfx::TextureHandle bgfxTexture, unsigned int width, unsigned int height, bool ownTexture);
    bgfx::TextureHandle GetCoreTexture(bool genMipmaps);
    bool IsMipMapGenerated() const { return (m_textureUpdate == nullptr) && !bgfx::isValid(m_nomipsTexture); }
    uintptr_t GetNativeTexture();
+
 #elif defined(ENABLE_OPENGL)
-   Sampler(RenderDevice* rd, string name, SurfaceType type, GLuint glTexture, bool ownTexture, bool force_linear_rgb);
+   Sampler(RenderDevice* rd, string name, SurfaceType type, GLuint glTexture, bool ownTexture);
    GLuint GetCoreTexture() const { return m_texture; }
    GLenum GetCoreTarget() const { return m_texTarget; }
+
 #elif defined(ENABLE_DX9)
-   Sampler(RenderDevice* rd, string name, IDirect3DTexture9* dx9Texture, bool ownTexture, bool force_linear_rgb);
+   Sampler(RenderDevice* rd, string name, IDirect3DTexture9* dx9Texture, bool ownTexture);
    IDirect3DTexture9* GetCoreTexture() const { return m_texture; }
+
 #endif
-   ~Sampler();
 
    void Unbind();
    void UpdateTexture(std::shared_ptr<const BaseTexture> surf, const bool force_linear_rgb);
 
-   bool IsLinear() const { return m_isLinear; }
    int GetWidth() const { return m_width; }
    int GetHeight() const { return m_height; }
 
@@ -77,8 +80,7 @@ public:
    const string m_name;
 
 private:
-   bool m_ownTexture;
-   bool m_isLinear;
+   const bool m_ownTexture;
    RenderDevice* const m_rd;
    unsigned int m_width;
    unsigned int m_height;
@@ -88,6 +90,7 @@ private:
    bgfx::TextureHandle m_nomipsTexture = BGFX_INVALID_HANDLE; // The texture without any mipmaps
    bgfx::TextureHandle m_mipsTexture = BGFX_INVALID_HANDLE;
    std::mutex m_textureUpdateMutex;
+   bool m_isTextureUpdateLinear;
    const bgfx::Memory* m_textureUpdate = nullptr;
    uintptr_t m_texture_override = 0;
 #elif defined(ENABLE_OPENGL)
