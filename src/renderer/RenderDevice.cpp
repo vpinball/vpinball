@@ -1149,7 +1149,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
 
    // Create default texture
    {
-      std::shared_ptr<BaseTexture> surf = std::make_shared<BaseTexture>(1, 1, BaseTexture::Format::RGBA);
+      std::shared_ptr<BaseTexture> surf = std::shared_ptr<BaseTexture>(BaseTexture::Create(1, 1, BaseTexture::Format::RGBA));
       memset(surf->data(), 0, 4);
       m_nullTexture = std::make_shared<Sampler>(this, "Null"s, surf, false);
    }
@@ -1591,7 +1591,7 @@ void RenderDevice::Flip()
 void RenderDevice::UploadAndSetSMAATextures()
 {
    // TODO use standard BaseTexture / Sampler code instead
-   /* BaseTexture* searchBaseTex = new BaseTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, BaseTexture::BW);
+   /* BaseTexture* searchBaseTex = BaseTexture::Create(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, BaseTexture::BW);
    memcpy(searchBaseTex->data(), searchTexBytes, SEARCHTEX_SIZE);
    m_SMAAsearchTexture = std::make_shared<Sampler>(this, "SMAA Search"s, searchBaseTex, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_NONE);
    m_SMAAsearchTexture->SetName("SMAA Search"s);

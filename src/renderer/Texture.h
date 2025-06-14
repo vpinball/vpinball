@@ -36,7 +36,6 @@ public:
       RGBA_FP32, // Linear RGB with alpha channel, 1 float per channel
    };
 
-   BaseTexture(const unsigned int w, const unsigned int h, const Format format);
    ~BaseTexture() override;
 
    static BaseTexture *Create(const unsigned int w, const unsigned int h, const Format format) noexcept;
@@ -72,6 +71,7 @@ public:
    void SetIsOpaque(const bool v) const { m_isOpaque = v; m_isOpaqueDirty = false; }
 
 private:
+   BaseTexture(const unsigned int w, const unsigned int h, const Format format);
    static BaseTexture *CreateFromFreeImage(struct FIBITMAP *dib, const bool isImageData, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept; // also free's/delete's the dib inside!
 
    void UpdateMD5() const;

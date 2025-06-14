@@ -281,7 +281,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, const bool isImageD
 
       try
       {
-         tex = new BaseTexture(tex_w, tex_h, format);
+         tex = BaseTexture::Create(tex_w, tex_h, format);
          success = true;
       }
       // failed to get mem?
