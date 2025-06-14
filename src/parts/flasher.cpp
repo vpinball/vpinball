@@ -836,7 +836,7 @@ STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!
        || m_dmdFrame->m_format != BaseTexture::BW)
    {
       delete m_dmdFrame;
-      m_dmdFrame = new BaseTexture(m_dmdSize.x * scale, m_dmdSize.y * scale, BaseTexture::BW);
+      m_dmdFrame = BaseTexture::Create(m_dmdSize.x * scale, m_dmdSize.y * scale, BaseTexture::BW);
    }
    const int size = m_dmdSize.x * m_dmdSize.y;
    // Convert from gamma compressed [0..100] luminance to linear [0..255] luminance, eventually applying ScaleFX upscaling
@@ -883,7 +883,7 @@ STDMETHODIMP Flasher::put_DMDColoredPixels(VARIANT pVal) //!! assumes VT_UI4 as 
        || m_dmdFrame->m_format != BaseTexture::SRGBA)
    {
       delete m_dmdFrame;
-      m_dmdFrame = new BaseTexture(m_dmdSize.x * scale, m_dmdSize.y * scale, BaseTexture::SRGBA);
+      m_dmdFrame = BaseTexture::Create(m_dmdSize.x * scale, m_dmdSize.y * scale, BaseTexture::SRGBA);
    }
    const int size = m_dmdSize.x * m_dmdSize.y;
    DWORD *const data = reinterpret_cast<DWORD *>(m_dmdFrame->data());
@@ -953,7 +953,7 @@ STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
         ResetVideoCap();
         try
         {
-           m_videoCapTex = new BaseTexture(m_videoCapWidth, m_videoCapHeight, BaseTexture::SRGBA);
+           m_videoCapTex = BaseTexture::Create(m_videoCapWidth, m_videoCapHeight, BaseTexture::SRGBA);
         }
         catch (...)
         {

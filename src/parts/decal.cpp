@@ -593,7 +593,7 @@ void Decal::RenderSetup(RenderDevice *device)
       m_leading = (float)tm.tmInternalLeading * invascent /*m_d.m_height*/;
       m_descent = (float)tm.tmDescent * invascent;
 
-      m_textImg = new BaseTexture(rcOut.right, rcOut.bottom, BaseTexture::SRGBA);
+      m_textImg = BaseTexture::Create(rcOut.right, rcOut.bottom, BaseTexture::SRGBA);
 
       if (m_d.m_color == RGB(255, 255, 255))
          m_d.m_color = RGB(254, 255, 255); //m_pinimage.SetTransparentColor(RGB(0,0,0));

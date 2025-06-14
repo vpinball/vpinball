@@ -66,7 +66,7 @@ void TextureManager::AddPlaceHolder(ITexManCacheable* memtex)
    const CIter it = m_map.find(memtex->GetLiveHash());
    if (it == m_map.end())
    {
-      std::shared_ptr<BaseTexture> placeHolder = std::make_shared<BaseTexture>(1, 1, BaseTexture::SRGBA);
+      std::shared_ptr<BaseTexture> placeHolder = std::shared_ptr<BaseTexture> (BaseTexture::Create(1, 1, BaseTexture::SRGBA));
       *reinterpret_cast<uint32_t*>(placeHolder->data()) = 0xFFFF00FFu;
       MapEntry entry;
       entry.sampler = std::make_shared<Sampler>(&m_rd, memtex->GetName(), placeHolder, false, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_POINT);

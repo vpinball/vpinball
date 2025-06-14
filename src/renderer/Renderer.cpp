@@ -516,7 +516,7 @@ BaseTexture* Renderer::EnvmapPrecalc(std::shared_ptr<const BaseTexture> envTex, 
    const unsigned int env_yres = envTex->height();
    BaseTexture::Format env_format = envTex->m_format;
    const BaseTexture::Format rad_format = (env_format == BaseTexture::RGB_FP16 || env_format == BaseTexture::RGB_FP32) ? env_format : BaseTexture::SRGB;
-   BaseTexture* radTex = new BaseTexture(rad_env_xres, rad_env_yres, rad_format);
+   BaseTexture* radTex = BaseTexture::Create(rad_env_xres, rad_env_yres, rad_format);
    BYTE* const __restrict rad_envmap = radTex->data();
    bool free_envmap = false;
 
@@ -2407,7 +2407,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
    // This needs a modification of the shader to use the filtered texture (tex_fb_filtered) instead of unfiltered
    if (false)
    {
-      std::shared_ptr<BaseTexture> tex = std::make_shared<BaseTexture>(renderedRT->GetWidth(), renderedRT->GetHeight(), BaseTexture::RGB);
+      std::shared_ptr<BaseTexture> tex = std::shared_ptr<BaseTexture>(BaseTexture::Create(renderedRT->GetWidth(), renderedRT->GetHeight(), BaseTexture::RGB));
       BYTE *const __restrict pdest = tex->data();
       for (size_t i = 0; i < (size_t)renderedRT->GetWidth() * renderedRT->GetHeight(); ++i)
       {

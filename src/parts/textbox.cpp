@@ -432,7 +432,7 @@ void Textbox::RenderSetup(RenderDevice *device)
    const int height = (int)max(m_d.m_v1.y, m_d.m_v2.y) - (int)min(m_d.m_v1.y, m_d.m_v2.y);
    if (width > 0 && height > 0)
    {
-      m_texture = new BaseTexture(width, height, BaseTexture::SRGBA);
+      m_texture = BaseTexture::Create(width, height, BaseTexture::SRGBA);
       m_texture->SetName("Textbox."s + GetName());
       m_textureDirty = true;
    }

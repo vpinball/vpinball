@@ -1041,7 +1041,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as
          g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture(g_pplayer->m_dmdFrame);
          delete g_pplayer->m_dmdFrame;
       }
-      g_pplayer->m_dmdFrame = new BaseTexture(g_pplayer->m_dmdSize.x * scale, g_pplayer->m_dmdSize.y * scale, BaseTexture::BW);
+      g_pplayer->m_dmdFrame = BaseTexture::Create(g_pplayer->m_dmdSize.x * scale, g_pplayer->m_dmdSize.y * scale, BaseTexture::BW);
    }
    const int size = g_pplayer->m_dmdSize.x * g_pplayer->m_dmdSize.y;
    // Convert from gamma compressed [0..100] luminance to linear [0..255] luminance, eventually applying ScaleFX upscaling
@@ -1097,7 +1097,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! assumes 
          g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture(g_pplayer->m_dmdFrame);
          delete g_pplayer->m_dmdFrame;
       }
-      g_pplayer->m_dmdFrame = new BaseTexture(g_pplayer->m_dmdSize.x * scale, g_pplayer->m_dmdSize.y * scale, BaseTexture::SRGBA);
+      g_pplayer->m_dmdFrame = BaseTexture::Create(g_pplayer->m_dmdSize.x * scale, g_pplayer->m_dmdSize.y * scale, BaseTexture::SRGBA);
    }
    const int size = g_pplayer->m_dmdSize.x * g_pplayer->m_dmdSize.y;
    DWORD *const data = reinterpret_cast<DWORD *>(g_pplayer->m_dmdFrame->data());
