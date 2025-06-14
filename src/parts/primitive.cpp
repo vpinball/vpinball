@@ -1287,14 +1287,14 @@ void Primitive::Render(const unsigned int renderMask)
    // accommodate models with UV coords outside of [0,1] by using Repeat address mode
    if (pin && nMap)
    {
-      m_rd->m_basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
-      m_rd->m_basicShader->SetTexture(SHADER_tex_base_normalmap, nMap, SF_UNDEFINED, SA_REPEAT, SA_REPEAT, true);
+      m_rd->m_basicShader->SetTexture(SHADER_tex_base_color, pin, false, pinf, SA_REPEAT, SA_REPEAT);
+      m_rd->m_basicShader->SetTexture(SHADER_tex_base_normalmap, nMap, true);
       m_rd->m_basicShader->SetBool(SHADER_objectSpaceNormalMap, m_d.m_objectSpaceNormalMap);
       m_rd->m_basicShader->SetMaterial(mat, !pin->IsOpaque() || alpha != 100.f);
    }
    else if (pin)
    {
-      m_rd->m_basicShader->SetTexture(SHADER_tex_base_color, pin, pinf, SA_REPEAT, SA_REPEAT);
+      m_rd->m_basicShader->SetTexture(SHADER_tex_base_color, pin, false, pinf, SA_REPEAT, SA_REPEAT);
       m_rd->m_basicShader->SetMaterial(mat, !pin->IsOpaque() || alpha != 100.f);
    }
    else

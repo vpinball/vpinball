@@ -1384,8 +1384,7 @@ void Flasher::Render(const unsigned int renderMask)
          switch (displayProfile)
          {
          case 0: // Pixelated
-            // FIXME BGFX: if the same texture is used multiple times in the same frame with different clamp/filter then only one is applied (may happen here if a DMD window is also enabled with the same texture source)
-            m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, m_dmdFrame, SF_POINT);
+            m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, m_dmdFrame, false, SF_POINT);
             m_rd->m_flasherShader->SetVector(SHADER_staticColor_Alpha, color.x * color.w, color.y * color.w, color.z * color.w, 1.f);
             m_rd->m_flasherShader->SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, -1.f, -1.f, 0.f, m_d.m_addBlend ? 1.f : 0.f);
             m_rd->m_flasherShader->SetVector(SHADER_amount_blend_modulate_vs_add_flasherMode, 0.f, clampedModulateVsAdd, 0.f, 0.f);
@@ -1397,7 +1396,7 @@ void Flasher::Render(const unsigned int renderMask)
             m_rd->m_flasherShader->SetTechnique(SHADER_TECHNIQUE_basic_noLight);
             break;
          case 1: // Smoothed
-            m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, m_dmdFrame, SF_TRILINEAR);
+            m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, m_dmdFrame, false, SF_TRILINEAR);
             m_rd->m_flasherShader->SetVector(SHADER_staticColor_Alpha, color.x * color.w, color.y * color.w, color.z * color.w, 1.f);
             m_rd->m_flasherShader->SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, -1.f, -1.f, 0.f, m_d.m_addBlend ? 1.f : 0.f);
             m_rd->m_flasherShader->SetVector(SHADER_amount_blend_modulate_vs_add_flasherMode, 0.f, clampedModulateVsAdd, 0.f, 0.f);

@@ -2345,9 +2345,7 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
                rd->m_basicShader->SetVector(SHADER_cBase_Alpha, tintR, tintG, tintB, alpha);
                // We force to linear (no sRGB decoding) when rendering in sRGB colorspace, this suppose that the texture is in sRGB colorspace to get correct gamma (other situations would need dedicated shaders to handle them efficiently)
                assert(tex->m_format == BaseTexture::SRGB || tex->m_format == BaseTexture::SRGBA || tex->m_format == BaseTexture::SRGB565);
-               rd->m_basicShader->SetTexture(SHADER_tex_base_color, tex, 
-                  SamplerFilter::SF_UNDEFINED, SamplerAddressMode::SA_UNDEFINED, SamplerAddressMode::SA_UNDEFINED,
-                  !context->isLinearOutput);
+               rd->m_basicShader->SetTexture(SHADER_tex_base_color, tex, !context->isLinearOutput);
                const float vx1 = srcX / ctx->srcWidth;
                const float vy1 = srcY / ctx->srcHeight;
                const float vx2 = vx1 + srcW / ctx->srcWidth;

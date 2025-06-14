@@ -35,7 +35,7 @@ private:
    struct MapEntry
    {
       std::shared_ptr<Sampler> sampler = nullptr;
-      bool forceLinearRGB = false;
+      std::shared_ptr<Sampler> linearSampler = nullptr;
       ITexManCacheable* tex = nullptr;
       bool isPlaceHolder = false;
       std::shared_ptr<const class BaseTexture> pendingUpload;

@@ -1325,7 +1325,7 @@ void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const ve
    m_renderDevice->m_DMDShader->SetVector(SHADER_glassArea, &glassArea);
    m_renderDevice->m_DMDShader->SetVector(SHADER_glassPad, emitterPad.x - parallaxU, emitterPad.z + parallaxU, emitterPad.y - parallaxV, emitterPad.w + parallaxV);
    m_renderDevice->m_DMDShader->SetFloat4v(SHADER_alphaSegState, reinterpret_cast<const vec4*>(segs), 4);
-   m_renderDevice->m_DMDShader->SetTexture(SHADER_displayTex, segSDF, SF_TRILINEAR, SA_CLAMP, SA_CLAMP, true);
+   m_renderDevice->m_DMDShader->SetTexture(SHADER_displayTex, segSDF, true, SF_TRILINEAR, SA_CLAMP, SA_CLAMP);
    m_renderDevice->m_DMDShader->SetTechnique(isBackdrop ? SHADER_TECHNIQUE_display_Seg : SHADER_TECHNIQUE_display_Seg_world);
 }
 
@@ -2234,7 +2234,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
       Texture *const pin = m_table->GetImage(m_table->m_imageColorGrade);
       if (pin)
          // FIXME ensure that we always honor the linear RGB. Here it can be defeated if texture is used for something else (which is very unlikely)
-         m_renderDevice->m_FBShader->SetTexture(SHADER_tex_color_lut, pin, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true);
+         m_renderDevice->m_FBShader->SetTexture(SHADER_tex_color_lut, pin, true, SF_BILINEAR, SA_CLAMP, SA_CLAMP);
       m_renderDevice->m_FBShader->SetVector(SHADER_bloom_dither_colorgrade,
          IsBloomEnabled() ? 1.f : 0.f, // Bloom
          (!isHdr2020 && (outputBackBuffer->GetColorFormat() != colorFormat::RGBA10)) ? 1.f : 0.f, // Dither

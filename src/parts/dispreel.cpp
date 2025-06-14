@@ -390,7 +390,7 @@ void DispReel::Render(const unsigned int renderMask)
 
    m_rd->m_DMDShader->SetVector(SHADER_glassArea, 0.f, 0.f, 1.f, 1.f);
 
-   m_rd->m_DMDShader->SetTexture(SHADER_tex_sprite, pin, SF_TRILINEAR, SA_REPEAT, SA_REPEAT);
+   m_rd->m_DMDShader->SetTexture(SHADER_tex_sprite, pin, false, SF_TRILINEAR, SA_REPEAT, SA_REPEAT);
 
    // set up all the reel positions within the object frame
    const float renderspacingx = max(0.0f, m_d.m_reelspacing / (float)EDITOR_BG_WIDTH);
