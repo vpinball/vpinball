@@ -44,6 +44,8 @@ public:
    static BaseTexture *CreateFromHBitmap(const HBITMAP hbm, unsigned int maxTexDimension, bool with_alpha = true) noexcept;
    static void Update(BaseTexture **texture, const unsigned int w, const unsigned int h, const Format format, const uint8_t *image); // Update eventually recreating the texture
 
+   static bool IsLinearFormat(const Format format) noexcept { return (format != SRGB && format != SRGBA && format != SRGB565); }
+
    unsigned long long GetLiveHash() const override { return m_liveHash; }
    std::shared_ptr<const BaseTexture> GetRawBitmap(bool resizeOnLowMem, unsigned int maxTexDimension) const override { return m_selfPointer; }
    void SetName(const string& name) { m_name = name; }
