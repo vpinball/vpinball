@@ -8,37 +8,36 @@
 
 std::shared_ptr<Sampler> TextureManager::LoadTexture(ITexManCacheable* const memtex, const bool force_linear_rgb)
 {
-   const Iter it = m_map.find(memtex->GetLiveHash());
-   if (memtex->GetName() == "Playfield Maple")
-   {
-      int zz = 1;
-   }
+   const unsigned long long hash = memtex->GetLiveHash();
+   const Iter it = m_map.find(hash);
    if (it == m_map.end())
    {
       MapEntry entry;
-      entry.sampler = std::make_shared<Sampler>(&m_rd, memtex->GetName(), memtex->GetRawBitmap(false, 0), force_linear_rgb);
-      entry.sampler->m_dirty = false;
-      entry.forceLinearRGB = force_linear_rgb;
       entry.tex = memtex;
-      m_map[memtex->GetLiveHash()] = entry;
-      return entry.sampler;
+      std::shared_ptr<Sampler>& sampler = force_linear_rgb ? entry.linearSampler : entry.sampler;
+      sampler = std::make_shared<Sampler>(&m_rd, memtex->GetName(), memtex->GetRawBitmap(false, 0), force_linear_rgb);
+      m_map[hash] = entry;
+      return sampler;
    }
    else
    {
       MapEntry& entry = it->second;
+      std::shared_ptr<Sampler>& sampler = force_linear_rgb ? entry.linearSampler : entry.sampler;
       if (entry.pendingUpload)
       {
-         entry.sampler = std::make_shared<Sampler>(&m_rd, memtex->GetName(), entry.pendingUpload, force_linear_rgb);
-         entry.sampler->m_dirty = false;
+         sampler = std::make_shared<Sampler>(&m_rd, memtex->GetName(), entry.pendingUpload, force_linear_rgb);
          entry.pendingUpload = nullptr;
       }
-      else if (entry.sampler->m_dirty)
+      else if (sampler == nullptr)
       {
-         entry.sampler->UpdateTexture(memtex->GetRawBitmap(false, 0), force_linear_rgb);
-         entry.sampler->m_dirty = false;
+         sampler = std::make_shared<Sampler>(&m_rd, memtex->GetName(), memtex->GetRawBitmap(false, 0), force_linear_rgb);
       }
-      entry.forceLinearRGB = force_linear_rgb;
-      return entry.sampler;
+      else if (sampler->m_dirty)
+      {
+         sampler->UpdateTexture(memtex->GetRawBitmap(false, 0), force_linear_rgb);
+         sampler->m_dirty = false;
+      }
+      return sampler;
    }
 }
 
@@ -49,8 +48,6 @@ void TextureManager::AddPendingUpload(ITexManCacheable* memtex)
    {
       MapEntry entry;
       entry.pendingUpload = memtex->GetRawBitmap(false, 0);
-      entry.forceLinearRGB = false;
-      entry.isPlaceHolder = false;
       entry.tex = memtex;
       m_map[memtex->GetLiveHash()] = entry;
    }
@@ -65,8 +62,7 @@ void TextureManager::AddPlaceHolder(ITexManCacheable* memtex)
       *reinterpret_cast<uint32_t*>(placeHolder->data()) = 0xFFFF00FFu;
       MapEntry entry;
       entry.sampler = std::make_shared<Sampler>(&m_rd, memtex->GetName(), placeHolder, false);
-      entry.sampler->m_dirty = true;
-      entry.forceLinearRGB = false;
+      entry.linearSampler = entry.sampler;
       entry.isPlaceHolder = true;
       entry.tex = memtex;
       m_map[memtex->GetLiveHash()] = entry;
@@ -85,7 +81,7 @@ vector<ITexManCacheable*> TextureManager::GetLoadedTextures() const
 bool TextureManager::IsLinearRGB(ITexManCacheable* memtex) const
 {
    const CIter it = m_map.find(memtex->GetLiveHash());
-   return it == m_map.end() ? false : it->second.forceLinearRGB;
+   return it == m_map.end() ? false : (it->second.linearSampler != nullptr);
 }
 
 void TextureManager::SetDirty(ITexManCacheable* memtex)

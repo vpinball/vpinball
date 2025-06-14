@@ -265,7 +265,7 @@ void BackGlass::Render()
    if (m_backgroundTexture)
       m_pd3dDevice->m_DMDShader->SetTexture(SHADER_tex_sprite, m_backgroundTexture, SF_TRILINEAR, SA_CLAMP, SA_CLAMP);
    else if (m_backgroundFallback)
-      m_pd3dDevice->m_DMDShader->SetTexture(SHADER_tex_sprite, m_backgroundFallback, SF_TRILINEAR, SA_CLAMP, SA_CLAMP);
+      m_pd3dDevice->m_DMDShader->SetTexture(SHADER_tex_sprite, m_backgroundFallback, false, SF_TRILINEAR, SA_CLAMP, SA_CLAMP);
    else return;
 
    m_pd3dDevice->ResetRenderState();
