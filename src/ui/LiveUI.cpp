@@ -635,6 +635,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
    m_pininput = &(m_player->m_pininput);
    m_renderer = m_player->m_renderer;
    m_disable_esc = m_live_table->m_settings.LoadValueBool(Settings::Player, "DisableESC"s);
+   m_show_fps = m_app->m_settings.LoadValueInt(Settings::Player, "ShowFPS"s);
 
    m_selection.type = Selection::SelectionType::S_NONE;
    m_useEditorCam = false;
@@ -729,6 +730,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
 
 LiveUI::~LiveUI()
 {
+   m_app->m_settings.SaveValue(Settings::Player, "ShowFPS"s, m_show_fps);
    HideUI();
    if (ImGui::GetCurrentContext())
    {
