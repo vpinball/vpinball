@@ -254,6 +254,10 @@ private:
             return;
          if (std::isinf(y))
             return;
+         if (y > m_movingMax)
+            m_movingMax = y;
+         else
+            m_movingMax = lerp(m_movingMax, y, 0.01f);
          if (m_rolling)
          {
             const float xmod = fmodf(x, m_timeSpan);
@@ -284,12 +288,14 @@ private:
          else
             return m_data[m_offset - 1];
       }
+      float GetMovingMax() const { return m_movingMax; }
 
    public:
       int m_offset = 0;
       float m_timeSpan = 2.5f;
       ImVector<ImVec2> m_data;
       bool m_rolling = true;
+      float m_movingMax = 0.f;
 
    private:
       const int m_maxSize;

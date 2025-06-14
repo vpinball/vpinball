@@ -1277,7 +1277,7 @@ void LiveUI::UpdatePerfOverlay()
       {
          ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
          ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_LockMin);
-         ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 2000.f / min(m_player->GetTargetRefreshRate(), 200.f), ImGuiCond_Always);
+         ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 2000.f / min(m_player->GetTargetRefreshRate(), 200.f), ImGuiCond_Always); // range is twice the target frame rate
          if (m_plotFPS.m_rolling)
             ImPlot::SetupAxisLimits(ImAxis_X1, 0, m_plotFPS.m_timeSpan, ImGuiCond_Always);
          else
@@ -1297,7 +1297,7 @@ void LiveUI::UpdatePerfOverlay()
       {
          ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
          ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_LockMin);
-         ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 2.f, ImGuiCond_Always);
+         ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 2.f * max(1.f, m_plotPhysx.GetMovingMax()), ImGuiCond_Always);
          if (m_plotPhysx.m_rolling)
             ImPlot::SetupAxisLimits(ImAxis_X1, 0, m_plotPhysx.m_timeSpan, ImGuiCond_Always);
          else
@@ -1317,7 +1317,7 @@ void LiveUI::UpdatePerfOverlay()
       {
          ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
          ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_LockMin);
-         ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 2.f, ImGuiCond_Always);
+         ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 2.f * max(1.f, m_plotScript.GetMovingMax()), ImGuiCond_Always);
          if (m_plotScript.m_rolling)
             ImPlot::SetupAxisLimits(ImAxis_X1, 0, m_plotScript.m_timeSpan, ImGuiCond_Always);
          else
