@@ -125,6 +125,11 @@ void Settings::Validate(const bool addDefaults)
    #define SettingInt(section, name, defVal, minVal, maxVal, comment) RegisterIntSetting(section, name, defVal, minVal, maxVal, addDefaults, comment);
    
    //////////////////////////////////////////////////////////////////////////
+   // LiveUI section
+
+   SettingInt(Section::Player, "ShowFPS"s, 0, 0, 2, "Performance overlay display mode (0=disable, 1=FPS, 2=Full)"s);
+
+   //////////////////////////////////////////////////////////////////////////
    // Input section
 
    SettingInt(Section::Player, "Exitconfirm"s, 120, 0, 30*60, "Length of a long ESC press that directly closes the app, (sadly) expressed in seconds * 60."s);
