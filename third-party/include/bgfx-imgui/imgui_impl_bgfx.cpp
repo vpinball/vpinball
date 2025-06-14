@@ -129,7 +129,7 @@ void ImGui_Implbgfx_RenderDrawLists(int view, int instanceCount, ImDrawData* dra
 
             std::shared_ptr<Sampler> sampler = cmd->TextureId;
             if (sampler)
-               bgfx::setTexture(0, g_AttribLocationTex, sampler->GetCoreTexture(true));
+               bgfx::setTexture(0, g_AttribLocationTex, sampler->GetCoreTexture(true), BGFX_SAMPLER_UVW_CLAMP | BGFX_SAMPLER_MIN_ANISOTROPIC | BGFX_SAMPLER_MAG_ANISOTROPIC);
             bgfx::setState(state);
             bgfx::setUniform(g_AttribLocationCol, g_SDRColor);
             bgfx::setUniform(g_AttribLocationOfs, g_stereoOfs);

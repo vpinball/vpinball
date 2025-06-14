@@ -250,16 +250,16 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_pBloomTmpBufferTexture = m_pBloomBufferTexture->Duplicate("BloomBuffer2"s);
 
    std::shared_ptr<BaseTexture> ballTex = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "BallEnv.exr"));
-   m_ballEnvSampler = std::make_shared<Sampler>(m_renderDevice, "Ball Env"s, ballTex, false, SA_REPEAT, SA_REPEAT, SF_TRILINEAR);
+   m_ballEnvSampler = std::make_shared<Sampler>(m_renderDevice, "Ball Env"s, ballTex, false);
    ballTex = nullptr;
 
    std::shared_ptr<BaseTexture> aoTex = std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "AODither.webp"));
-   m_aoDitherSampler = std::make_shared<Sampler>(m_renderDevice, "AO Dither"s, aoTex, true, SA_REPEAT, SA_REPEAT, SF_NONE);
+   m_aoDitherSampler = std::make_shared<Sampler>(m_renderDevice, "AO Dither"s, aoTex, true);
    aoTex = nullptr;
 
    Texture* tableEnv = m_table->GetImage(m_table->m_envImage);
    std::shared_ptr<const BaseTexture> envTex = tableEnv ? tableEnv->GetRawBitmap(false, 0) : std::shared_ptr<BaseTexture>(BaseTexture::CreateFromFile(g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "EnvMap.webp"));
-   m_envSampler = std::make_shared<Sampler>(m_renderDevice, "Table Env"s, envTex, false, SA_REPEAT, SA_CLAMP, SF_TRILINEAR);
+   m_envSampler = std::make_shared<Sampler>(m_renderDevice, "Table Env"s, envTex, false);
 
    PLOGI << "Computing environment map radiance"; // For profiling
 
@@ -886,7 +886,7 @@ void Renderer::DrawBackground()
       m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
       m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
       m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-      g_pplayer->m_renderer->DrawSprite(0.f, 0.f, 1.f, 1.f, 0xFFFFFFFF, m_renderDevice->m_texMan.LoadTexture(pin, SF_TRILINEAR, SA_CLAMP, SA_CLAMP, false), ptable->m_ImageBackdropNightDay ? sqrtf(m_globalEmissionScale) : 1.0f, true);
+      g_pplayer->m_renderer->DrawSprite(0.f, 0.f, 1.f, 1.f, 0xFFFFFFFF, m_renderDevice->m_texMan.LoadTexture(pin, false), ptable->m_ImageBackdropNightDay ? sqrtf(m_globalEmissionScale) : 1.0f, true);
    }
    else
    {
@@ -1518,7 +1518,7 @@ void Renderer::DrawSprite(const float posx, const float posy, const float width,
    m_renderDevice->m_DMDShader->SetVector(SHADER_vColor_Intensity, &c);
    m_renderDevice->m_DMDShader->SetTechnique(tex ? SHADER_TECHNIQUE_basic_noDMD : SHADER_TECHNIQUE_basic_noDMD_notex);
    if (tex)
-      m_renderDevice->m_DMDShader->SetTexture(SHADER_tex_sprite, tex);
+      m_renderDevice->m_DMDShader->SetTexture(SHADER_tex_sprite, tex, SF_TRILINEAR, SA_CLAMP, SA_CLAMP);
    m_renderDevice->m_DMDShader->SetVector(SHADER_glassArea, 0.f, 0.f, 1.f, 1.f);
    m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
    m_renderDevice->DrawTexturedQuad(m_renderDevice->m_DMDShader, vertices);
@@ -1593,6 +1593,7 @@ void Renderer::RenderStaticPrepass()
       PLOGI << "Performing prerendering of static parts."; // For profiling
       RenderDevice::SetMainTextureDefaultFiltering(SF_BILINEAR);
    }
+   ShaderState::m_disableMipmaps = IsUsingStaticPrepass();
 
    //#define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the (commented out) lattice-based QMC oversampling, 'magic factor', depending on the number of iterations!
    // loop for X times and accumulate/average these renderings
@@ -1681,6 +1682,7 @@ void Renderer::RenderStaticPrepass()
    // if rendering static/with heavy oversampling, re-enable the aniso/trilinear filter now for the normal rendering
    const bool forceAniso = m_table->m_settings.LoadValueWithDefault(Settings::Player, "ForceAnisotropicFiltering"s, true);
    RenderDevice::SetMainTextureDefaultFiltering(forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
+   ShaderState::m_disableMipmaps = false;
 
    // Now finalize static buffer with static AO
    if (GetAOMode() == 1)
@@ -2419,7 +2421,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
          pdest[i * 3 + 1] = ((i >> 2) & 1) == 0 ? 0x00 : ((i & 1) == 0 && (y & 1) == 0) ? 0x00 : 0xFF;
          pdest[i * 3 + 2] = ((y >> 2) & 1) == 0 ? 0x00 : ((i & 1) == 0 && (y & 1) == 0) ? 0x00 : 0xFF;
       }
-      std::shared_ptr<Sampler> checker = std::make_shared<Sampler>(m_renderDevice, "Checker", tex, true, SA_CLAMP, SA_CLAMP, SF_NONE);
+      std::shared_ptr<Sampler> checker = std::make_shared<Sampler>(m_renderDevice, "Checker", tex, true);
       m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), 1.f, 1.f);
       m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, checker);
       m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);

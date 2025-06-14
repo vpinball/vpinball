@@ -497,6 +497,8 @@ ShaderAttributes Shader::getAttributeByName(const string& name) const
    return SHADER_ATTRIBUTE_INVALID;
 }
 
+bool ShaderState::m_disableMipmaps = false;
+
 Shader* Shader::current_shader = nullptr;
 Shader* Shader::GetCurrentShader() { return current_shader;  }
 
@@ -726,7 +728,10 @@ void Shader::SetVector(const ShaderUniforms uniformName, const float x, const fl
    m_state->SetVector(uniformName, &v);
 }
 void Shader::SetFloat4v(const ShaderUniforms uniformName, const vec4* const pData, const unsigned int count) { m_state->SetVector(uniformName, pData, count); }
-void Shader::SetTexture(const ShaderUniforms uniformName, const std::shared_ptr<const Sampler> sampler) { m_state->SetTexture(uniformName, sampler); }
+void Shader::SetTexture(const ShaderUniforms uniformName, const std::shared_ptr<const Sampler> sampler, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV)
+{
+   m_state->SetTexture(uniformName, sampler, filter, clampU, clampV);
+}
 
 void Shader::SetTextureNull(const ShaderUniforms uniformName) {
    SetTexture(uniformName, m_renderDevice->m_nullTexture);
@@ -734,7 +739,7 @@ void Shader::SetTextureNull(const ShaderUniforms uniformName) {
 
 void Shader::SetTexture(const ShaderUniforms uniformName, ITexManCacheable* const texel, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV, const bool force_linear_rgb)
 {
-   SetTexture(uniformName, texel ? m_renderDevice->m_texMan.LoadTexture(texel, filter, clampU, clampV, force_linear_rgb) : m_renderDevice->m_nullTexture);
+   SetTexture(uniformName, texel ? m_renderDevice->m_texMan.LoadTexture(texel, force_linear_rgb) : m_renderDevice->m_nullTexture, filter, clampU, clampV);
 }
 
 void Shader::SetMaterial(const Material* const mat, const bool has_alpha)
@@ -1125,35 +1130,17 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
 
    case SUT_Sampler:
       {
-         int pos = *(int*)src;
+         const int v = *(int*)src;
+         const int pos = v & 0x0FF;
          std::shared_ptr<const Sampler> texel = pos > 0 ? m_state->m_samplers[pos - 1] : m_renderDevice->m_nullTexture;
          assert(texel != nullptr);
+         SamplerAddressMode clampu = (SamplerAddressMode)((v >> 8) & 0x0F);
+         SamplerAddressMode clampv = (SamplerAddressMode)((v >> 12) & 0x0F);
+         SamplerFilter filter = texel == m_renderDevice->m_nullTexture ? SamplerFilter::SF_NONE: (SamplerFilter)((v >> 20) & 0x0F);
          
          #if defined(ENABLE_BGFX)
          if (m_renderDevice->GetUniformState().GetTexture(uniformName) == texel)
             return;
-
-         SamplerFilter filter = texel->GetFilter();
-         SamplerAddressMode clampu = texel->GetClampU();
-         SamplerAddressMode clampv = texel->GetClampV();
-         if (filter == SF_UNDEFINED)
-         {
-            filter = ShaderUniform::coreUniforms[uniformName].default_filter;
-            if (filter == SF_UNDEFINED)
-               filter = SF_NONE;
-         }
-         if (clampu == SA_UNDEFINED)
-         {
-            clampu = ShaderUniform::coreUniforms[uniformName].default_clampu;
-            if (clampu == SA_UNDEFINED)
-               clampu = SA_CLAMP;
-         }
-         if (clampv == SA_UNDEFINED)
-         {
-            clampv = ShaderUniform::coreUniforms[uniformName].default_clampv;
-            if (clampv == SA_UNDEFINED)
-               clampv = SA_CLAMP;
-         }
          uint32_t flags = BGFX_SAMPLER_W_CLAMP;
          switch (filter)
          {
@@ -1204,27 +1191,6 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          // DX9 implementation uses preaffected texture units, not samplers, so these can not be used for OpenGL. This would cause some collisions.
          m_renderDevice->m_curParameterChanges--;
          SamplerBinding* tex_unit = nullptr;
-         SamplerFilter filter = texel->GetFilter();
-         SamplerAddressMode clampu = texel->GetClampU();
-         SamplerAddressMode clampv = texel->GetClampV();
-         if (filter == SF_UNDEFINED)
-         {
-            filter = ShaderUniform::coreUniforms[uniformName].default_filter;
-            if (filter == SF_UNDEFINED)
-               filter = SF_NONE;
-         }
-         if (clampu == SA_UNDEFINED)
-         {
-            clampu = ShaderUniform::coreUniforms[uniformName].default_clampu;
-            if (clampu == SA_UNDEFINED)
-               clampu = SA_CLAMP;
-         }
-         if (clampv == SA_UNDEFINED)
-         {
-            clampv = ShaderUniform::coreUniforms[uniformName].default_clampv;
-            if (clampv == SA_UNDEFINED)
-               clampv = SA_CLAMP;
-         }
          for (auto binding : texel->m_bindings)
          {
             if (binding->filter == filter && binding->clamp_u == clampu && binding->clamp_v == clampv)
@@ -1292,29 +1258,8 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          }
 
          // Apply the texture sampling states
-         if (texel != m_renderDevice->m_nullTexture)
-         {
-            //CHECKD3D(m_renderDevice->GetCoreDevice()->SetSamplerState(unit, D3DSAMP_SRGBTEXTURE, !tex->IsLinear()));
-            SamplerFilter filter = texel->GetFilter();
-            SamplerAddressMode clampu = texel->GetClampU();
-            SamplerAddressMode clampv = texel->GetClampV();
-            if (filter == SF_UNDEFINED)
-            {
-               filter = ShaderUniform::coreUniforms[uniformName].default_filter;
-               if (filter == SF_UNDEFINED) filter = SF_NONE;
-            }
-            if (clampu == SA_UNDEFINED)
-            {
-               clampu = ShaderUniform::coreUniforms[uniformName].default_clampu;
-               if (clampu == SA_UNDEFINED) clampu = SA_CLAMP;
-            }
-            if (clampv == SA_UNDEFINED)
-            {
-               clampv = ShaderUniform::coreUniforms[uniformName].default_clampv;
-               if (clampv == SA_UNDEFINED) clampv = SA_CLAMP;
-            }
-            m_renderDevice->SetSamplerState(unit, filter, clampu, clampv);
-         }
+         //CHECKD3D(m_renderDevice->GetCoreDevice()->SetSamplerState(unit, D3DSAMP_SRGBTEXTURE, !tex->IsLinear()));
+         m_renderDevice->SetSamplerState(unit, filter, clampu, clampv);
          #endif
       }
       break;

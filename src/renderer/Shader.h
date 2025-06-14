@@ -521,7 +521,7 @@ public:
    void SetVector(const ShaderUniforms uniformName, const vec4* const pVector);
    void SetVector(const ShaderUniforms uniformName, const float x, const float y, const float z, const float w);
    void SetFloat4v(const ShaderUniforms uniformName, const vec4* const pData, const unsigned int count);
-   void SetTexture(const ShaderUniforms uniformName, const std::shared_ptr<const Sampler> sampler);
+   void SetTexture(const ShaderUniforms uniformName, const std::shared_ptr<const Sampler> sampler, const SamplerFilter filter = SF_UNDEFINED, const SamplerAddressMode clampU = SA_UNDEFINED, const SamplerAddressMode clampV = SA_UNDEFINED);
    void SetTextureNull(const ShaderUniforms uniformName);
    void SetTexture(const ShaderUniforms uniformName, ITexManCacheable* const texel, const SamplerFilter filter = SF_UNDEFINED, const SamplerAddressMode clampU = SA_UNDEFINED, const SamplerAddressMode clampV = SA_UNDEFINED, const bool force_linear_rgb = false);
    
@@ -856,7 +856,7 @@ public:
       }
    }
 
-   void SetTexture(const ShaderUniforms uniformName, std::shared_ptr<const Sampler> sampler)
+   void SetTexture(const ShaderUniforms uniformName, std::shared_ptr<const Sampler> sampler, SamplerFilter filter = SF_UNDEFINED, SamplerAddressMode clampU = SA_UNDEFINED, SamplerAddressMode clampV = SA_UNDEFINED)
    {
       assert(Shader::GetCurrentShader() == nullptr);
       assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
@@ -868,17 +868,43 @@ public:
          ShaderUniforms alias = m_shader->m_uniform_desc[uniformName].tex_alias;
       #endif
       assert(m_stateOffsets[alias] != -1);
-      int pos = *reinterpret_cast<int*>(m_state.data() + m_stateOffsets[alias]);
+      int* dst = reinterpret_cast<int*>(m_state.data() + m_stateOffsets[alias]);
+
+      int pos = (*dst) & 0xFF;
       if (pos == 0)
       {
          m_samplers.push_back(sampler);
-         *reinterpret_cast<int*>(m_state.data() + m_stateOffsets[alias]) = static_cast<int>(m_samplers.size());
+         *dst = static_cast<int>(m_samplers.size());
       }
       else
       {
          assert(0 < pos && pos <= static_cast<int>(m_samplers.size()));
          m_samplers[pos - 1] = sampler;
       }
+
+      if (filter == SF_UNDEFINED)
+      {
+         filter = ShaderUniform::coreUniforms[uniformName].default_filter;
+         if (filter == SF_UNDEFINED)
+            filter = SF_NONE;
+      }
+      // During static part prerendering, trilinear/anisotropic filtering is disabled to get sharper results
+      if (m_disableMipmaps && (filter == SamplerFilter::SF_ANISOTROPIC || filter == SamplerFilter::SF_TRILINEAR))
+         filter = SamplerFilter::SF_BILINEAR;
+      if (clampU == SA_UNDEFINED)
+      {
+         clampU = ShaderUniform::coreUniforms[uniformName].default_clampu;
+         if (clampU == SA_UNDEFINED)
+            clampU = SA_CLAMP;
+      }
+      if (clampV == SA_UNDEFINED)
+      {
+         clampV = ShaderUniform::coreUniforms[uniformName].default_clampv;
+         if (clampV == SA_UNDEFINED)
+            clampV = SA_CLAMP;
+      }
+
+      *dst = (*dst & 0x00FF) | (clampU << 8) | (clampV << 12) | (filter << 20);
    }
 
    const std::shared_ptr<const Sampler> GetTexture(const ShaderUniforms uniformName) const
@@ -887,12 +913,13 @@ public:
       assert(m_stateOffsets[uniformName] != -1);
       assert(ShaderUniform::coreUniforms[uniformName].type == SUT_Sampler);
       assert(ShaderUniform::coreUniforms[uniformName].count == 1);
-      int pos = *(int*)(m_state.data() + m_stateOffsets[uniformName]);
+      int pos = (*(int*)(m_state.data() + m_stateOffsets[uniformName])) & 0xFF;
       return pos > 0 ? m_samplers[pos - 1] : nullptr;
    }
 
    vector<uint8_t> m_state;
    vector<std::shared_ptr<const Sampler>> m_samplers;
+   static bool m_disableMipmaps;
 
 private:
    Shader* m_shader;

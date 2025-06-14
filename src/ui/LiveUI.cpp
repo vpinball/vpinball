@@ -828,7 +828,7 @@ ImGui::MarkdownImageData LiveUI::MarkdownImageCallback(ImGui::MarkdownLinkCallba
    Texture *const ppi = ui->m_live_table->GetImage(std::string(data.link, data.linkLength));
    if (ppi == nullptr)
       return ImGui::MarkdownImageData {};
-   std::shared_ptr<Sampler> sampler = ui->m_renderer->m_renderDevice->m_texMan.LoadTexture(ppi, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
+   std::shared_ptr<Sampler> sampler = ui->m_renderer->m_renderDevice->m_texMan.LoadTexture(ppi, false);
    if (sampler == nullptr)
       return ImGui::MarkdownImageData {};
    #if defined(ENABLE_BGFX)
@@ -4531,7 +4531,7 @@ void LiveUI::ImageProperties()
       m_table->SetNonUndoableDirty(eSaveDirty);
    ImGui::EndDisabled();
    ImGui::Separator();
-   std::shared_ptr<Sampler> sampler = m_renderer->m_renderDevice->m_texMan.LoadTexture(m_selection.image, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
+   std::shared_ptr<Sampler> sampler = m_renderer->m_renderDevice->m_texMan.LoadTexture(m_selection.image, false);
    #if defined(ENABLE_BGFX)
       ImTextureID image = sampler;
    #elif defined(ENABLE_OPENGL)

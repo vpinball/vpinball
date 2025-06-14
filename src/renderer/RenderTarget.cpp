@@ -86,9 +86,9 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, bgfx:
    , m_depth_tex(depthTex)
 {
    if (bgfx::isValid(colorTex))
-      m_color_sampler = std::make_shared<Sampler>(rd, name + ".Color", type, colorTex, width, height, false, true, SA_UNDEFINED, SA_UNDEFINED, SF_UNDEFINED);
+      m_color_sampler = std::make_shared<Sampler>(rd, name + ".Color", type, colorTex, width, height, false, true);
    if (bgfx::isValid(depthTex))
-      m_depth_sampler = std::make_shared<Sampler>(rd, name + ".Depth", type, depthTex, width, height, false, true, SA_UNDEFINED, SA_UNDEFINED, SF_UNDEFINED);
+      m_depth_sampler = std::make_shared<Sampler>(rd, name + ".Depth", type, depthTex, width, height, false, true);
 }
 #endif
 
