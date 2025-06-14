@@ -14,8 +14,7 @@
 #endif
 
 Sampler::Sampler(RenderDevice* rd, string name, std::shared_ptr<const BaseTexture> surf, const bool force_linear_rgb)
-   : m_dirty(false)
-   , m_name(std::move(name))
+   : m_name(std::move(name))
    , m_type(SurfaceType::RT_DEFAULT)
    , m_ownTexture(true)
    , m_rd(rd)
@@ -103,7 +102,6 @@ Sampler::Sampler(RenderDevice* rd, string name, SurfaceType type, bgfx::TextureH
    : m_type(type)
    , m_name(std::move(name))
    , m_rd(rd)
-   , m_dirty(false)
    , m_ownTexture(ownTexture)
    , m_mipsTexture(bgfxTexture)
    , m_width(width)
@@ -119,7 +117,6 @@ Sampler::Sampler(RenderDevice* rd, string name, SurfaceType type, GLuint glTextu
    : m_type(type)
    , m_name(std::move(name))
    , m_rd(rd)
-   , m_dirty(false)
    , m_ownTexture(ownTexture)
 {
    switch (m_type)
@@ -152,7 +149,6 @@ Sampler::Sampler(RenderDevice* rd, string name, SurfaceType type, GLuint glTextu
 
 #elif defined(ENABLE_DX9)
 Sampler::Sampler(RenderDevice* rd, string name, IDirect3DTexture9* dx9Texture, bool ownTexture, bool force_linear_rgb)
-   : m_dirty(false)
    , m_name(std::move(name))
    , m_type(SurfaceType::RT_DEFAULT)
    , m_ownTexture(ownTexture)

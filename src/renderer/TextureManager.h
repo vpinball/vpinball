@@ -38,6 +38,7 @@ private:
       std::shared_ptr<Sampler> linearSampler = nullptr;
       ITexManCacheable* tex = nullptr;
       bool isPlaceHolder = false;
+      bool dirty = false;
       std::shared_ptr<const class BaseTexture> pendingUpload;
    };
    RenderDevice& m_rd;
