@@ -73,7 +73,6 @@ public:
    int GetWidth() const { return m_width; }
    int GetHeight() const { return m_height; }
 
-   bool m_dirty;
    const SurfaceType m_type;
    const string m_name;
 

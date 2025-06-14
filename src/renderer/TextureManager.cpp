@@ -32,10 +32,10 @@ std::shared_ptr<Sampler> TextureManager::LoadTexture(ITexManCacheable* const mem
       {
          sampler = std::make_shared<Sampler>(&m_rd, memtex->GetName(), memtex->GetRawBitmap(false, 0), force_linear_rgb);
       }
-      else if (sampler->m_dirty)
+      else if (entry.dirty)
       {
+         entry.dirty = false;
          sampler->UpdateTexture(memtex->GetRawBitmap(false, 0), force_linear_rgb);
-         sampler->m_dirty = false;
       }
       return sampler;
    }
@@ -86,9 +86,9 @@ bool TextureManager::IsLinearRGB(ITexManCacheable* memtex) const
 
 void TextureManager::SetDirty(ITexManCacheable* memtex)
 {
-   const CIter it = m_map.find(memtex->GetLiveHash());
+   const Iter it = m_map.find(memtex->GetLiveHash());
    if (it != m_map.end())
-      it->second.sampler->m_dirty = true;
+      it->second.dirty = true;
 }
 
 void TextureManager::UnloadTexture(ITexManCacheable* memtex)
