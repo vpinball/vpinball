@@ -1149,7 +1149,10 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="../../src/audio/pinsound.cpp" />
+    <ClCompile Include="../../src/audio/AudioPlayer.cpp" />
+    <ClCompile Include="../../src/audio/AudioStreamPlayer.cpp" />
+    <ClCompile Include="../../src/audio/MusicPlayer.cpp" />
+    <ClCompile Include="../../src/audio/SoundPlayer.cpp" />
     <ClCompile Include="../../src/core/stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
@@ -1186,6 +1189,7 @@
     <ClCompile Include="../../src/parts/light.cpp" />
     <ClCompile Include="../../src/parts/lightseq.cpp" />
     <ClCompile Include="../../src/parts/rubber.cpp" />
+    <ClCompile Include="../../src/parts/Sound.cpp" />
     <ClCompile Include="../../src/parts/pinbinary.cpp" />
     <ClCompile Include="../../src/parts/pintable.cpp" />
     <ClCompile Include="../../src/parts/plunger.cpp" />
@@ -1690,7 +1694,10 @@
     <ClInclude Include="../../src\plugins\ScriptablePlugin.h" />
     <ClInclude Include="../../src\ui\properties\PartGroupVisualsProperty.h" />
     <ClInclude Include="../gen/vpinball.h" />
-    <ClInclude Include="../../src/audio/pinsound.h" />
+    <ClInclude Include="../../src/audio/AudioPlayer.h" />
+    <ClInclude Include="../../src/audio/AudioStreamPlayer.h" />
+    <ClInclude Include="../../src/audio/MusicPlayer.h" />
+    <ClInclude Include="../../src/audio/SoundPlayer.h" />
     <ClInclude Include="../../src/core/def.h" />
     <ClInclude Include="../../src/core/dispid.h" />
     <ClInclude Include="../../src/core/DynamicScript.h" />
@@ -1761,6 +1768,7 @@
     <ClInclude Include="../../src/parts/plunger.h" />
     <ClInclude Include="../../src/parts/primitive.h" />
     <ClInclude Include="../../src/parts/rubber.h" />
+    <ClInclude Include="../../src/parts/Sound.h" />
     <ClInclude Include="../../src/parts/spinner.h" />
     <ClInclude Include="../../src/parts/surface.h" />
     <ClInclude Include="../../src/parts/textbox.h" />

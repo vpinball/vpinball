@@ -16,7 +16,7 @@ STDMETHODIMP WMPControls::play()
 {
     PLOGI.printf("player=%p, play", m_pCore);
 
-    m_pCore->m_pPinSound->MusicPlay();
+    m_pCore->m_pAudioPlayer->UnpauseMusic();
 
     return S_OK;
 }
@@ -25,7 +25,7 @@ STDMETHODIMP WMPControls::stop()
 {
     PLOGI.printf("player=%p, stop", m_pCore);
 
-    m_pCore->m_pPinSound->MusicStop();
+    m_pCore->m_pAudioPlayer->PauseMusic();
 
     return S_OK;
 }
@@ -34,7 +34,7 @@ STDMETHODIMP WMPControls::pause()
 {
     PLOGI.printf("player=%p, pause", m_pCore);
 
-    m_pCore->m_pPinSound->MusicPause();
+    m_pCore->m_pAudioPlayer->PauseMusic();
 
     return S_OK;
 }
@@ -44,7 +44,7 @@ STDMETHODIMP WMPControls::fastReverse() { return E_NOTIMPL; }
 
 STDMETHODIMP WMPControls::get_currentPosition(double *pdCurrentPosition)
 {
-    *pdCurrentPosition = m_pCore->m_pPinSound->GetMusicPosition();
+    *pdCurrentPosition = m_pCore->m_pAudioPlayer->GetMusicPosition();
 
     return S_OK;
 }
@@ -53,7 +53,7 @@ STDMETHODIMP WMPControls::put_currentPosition(double pdCurrentPosition)
 {
     PLOGI.printf("player=%p, position=%f", this, pdCurrentPosition);
 
-    m_pCore->m_pPinSound->SetMusicPosition(pdCurrentPosition);
+    m_pCore->m_pAudioPlayer->SetMusicPosition(pdCurrentPosition);
 
     return S_OK;
 }

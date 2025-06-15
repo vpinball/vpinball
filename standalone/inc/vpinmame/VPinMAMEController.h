@@ -7,7 +7,7 @@
 #include "vpinmame_i.h"
 #include "../common/DMDWindow.h"
 
-#include "audio/pinsound.h"
+#include "audio/AudioPlayer.h"
 
 #include <map>
 
@@ -199,7 +199,8 @@ private:
    vector<VPinMAMEDisplay*> m_displays;
    OLE_COLOR m_dmdColor;
    int m_enableSound;
-   PinSound* m_pPinSound;
+   VPX::AudioPlayer* m_pAudioPlayer = nullptr;
+   VPX::AudioPlayer::AudioStreamID m_pAudioStream = nullptr;
    int m_audioChannels;
    VPinMAMEDisplay* m_pActiveDisplay;
    VP::DMDWindow* m_pDMDWindow;

@@ -371,7 +371,7 @@ void Settings::Validate(const bool addDefaults)
    //////////////////////////////////////////////////////////////////////////
    // Sound section
 
-   SettingInt(Settings::Player, "Sound3D"s, SoundConfigTypes::SNDCFG_SND3D2CH, SoundConfigTypes::SNDCFG_SND3D2CH, SoundConfigTypes::SNDCFG_SND3DSSF, ""s);
+   SettingInt(Settings::Player, "Sound3D"s, VPX::SoundConfigTypes::SNDCFG_SND3D2CH, VPX::SoundConfigTypes::SNDCFG_SND3D2CH, VPX::SoundConfigTypes::SNDCFG_SND3DSSF, ""s);
 
 
    //////////////////////////////////////////////////////////////////////////

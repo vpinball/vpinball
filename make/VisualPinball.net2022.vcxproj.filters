@@ -135,7 +135,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="../../src/audio/pinsound.cpp">
+    <ClCompile Include="../../src/audio/AudioPlayer.cpp">
+      <Filter>audio</Filter>
+    </ClCompile>
+    <ClCompile Include="../../src/audio/AudioStreamPlayer.cpp">
+      <Filter>audio</Filter>
+    </ClCompile>
+    <ClCompile Include="../../src/audio/MusicPlayer.cpp">
+      <Filter>audio</Filter>
+    </ClCompile>
+    <ClCompile Include="../../src/audio/SoundPlayer.cpp">
       <Filter>audio</Filter>
     </ClCompile>
     <ClCompile Include="../../src/core/editablereg.cpp">
@@ -235,6 +244,9 @@
       <Filter>parts</Filter>
     </ClCompile>
     <ClCompile Include="../../src/parts/rubber.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="../../src/parts/Sound.cpp">
       <Filter>parts</Filter>
     </ClCompile>
     <ClCompile Include="../../src/parts/spinner.cpp">
@@ -710,7 +722,16 @@
     <ClInclude Include="../gen/vpinball.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="../../src/audio/pinsound.h">
+    <ClInclude Include="../../src/audio/AudioPlayer.h">
+      <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="../../src/audio/AudioStreamPlayer.h">
+      <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="../../src/audio/MusicPlayer.h">
+      <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="../../src/audio/SoundPlayer.h">
       <Filter>audio</Filter>
     </ClInclude>
     <ClInclude Include="../../src/core/def.h">
@@ -921,6 +942,9 @@
       <Filter>parts</Filter>
     </ClInclude>
     <ClInclude Include="../../src/parts/primitive.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="../../src/parts/Sound.h">
       <Filter>parts</Filter>
     </ClInclude>
     <ClInclude Include="../../src/parts/spinner.h">

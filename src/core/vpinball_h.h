@@ -7,7 +7,7 @@
 #include "core/Settings.h"
 #include "renderer/RenderDevice.h"
 
-#include "audio/pinsound.h"
+#include "parts/Sound.h"
 #ifndef __STANDALONE__
    #include <wxx_dockframe.h>
    #include "ui/dialogs/ImageDialog.h"
@@ -97,8 +97,6 @@ public:
    void ToggleScriptEditor();
    void ToggleBackglassView();
    bool ParseCommand(const size_t code, const bool notify);
-
-   void ReInitAllSounds();
 
    CComObject<PinTable> *GetActiveTable();
    bool LoadFile(const bool updateEditor, VPXFileFeedback* feedback = nullptr);
@@ -222,8 +220,6 @@ public:
    int m_palettescroll;
 
    vector<IStream*> m_vstmclipboard;
-
-   PinSound m_ps;
 
    int m_ToolCur; // palette button currently pressed
 

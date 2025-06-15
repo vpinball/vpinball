@@ -160,6 +160,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    , m_backglassOutput("Visual Pinball - Backglass"s, live_table->m_settings, Settings::Backglass, "Backglass"s)
    , m_topperOutput("Visual Pinball - Topper"s, live_table->m_settings, Settings::Topper, "Topper"s)
    , m_resURIResolver(MsgPluginManager::GetInstance().GetMsgAPI(), VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), true, true, true, true)
+   , m_audioPlayer(std::make_unique<VPX::AudioPlayer>(live_table->m_settings))
 {
    // For the time being, lots of access are made through the global singleton, so ensure we are unique, and define it as soon as needed
    assert(g_pplayer == nullptr);
@@ -497,17 +498,20 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 #ifndef __STANDALONE__
    const unsigned int lflip = get_vk(m_rgKeys[eLeftFlipperKey]);
    const unsigned int rflip = get_vk(m_rgKeys[eRightFlipperKey]);
-
    if (((GetAsyncKeyState(VK_LSHIFT) & 0x8000) && (GetAsyncKeyState(VK_RSHIFT) & 0x8000))
       || ((lflip != ~0u) && (rflip != ~0u) && (GetAsyncKeyState(lflip) & 0x8000) && (GetAsyncKeyState(rflip) & 0x8000)))
    {
       m_ptable->m_tblMirrorEnabled = true;
-      int rotation = (int)(m_ptable->mViewSetups[m_ptable->m_BG_current_set].GetRotation(m_playfieldWnd->GetWidth(), m_playfieldWnd->GetHeight())) / 90;
-      m_renderer->GetMVP().SetFlip(rotation == 0 || rotation == 2 ? ModelViewProj::FLIPX : ModelViewProj::FLIPY);
    }
    else
 #endif
       m_ptable->m_tblMirrorEnabled = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "mirror"s, false);
+   if (m_ptable->m_tblMirrorEnabled)
+   {
+      m_audioPlayer->SetMirrored(true);
+      int rotation = (int)(m_ptable->mViewSetups[m_ptable->m_BG_current_set].GetRotation(m_playfieldWnd->GetWidth(), m_playfieldWnd->GetHeight())) / 90;
+      m_renderer->GetMVP().SetFlip(rotation == 0 || rotation == 2 ? ModelViewProj::FLIPX : ModelViewProj::FLIPY);
+   }
 
 #ifndef __STANDALONE__
    // if left flipper or shift hold during load, then swap DT/FS view (for quick testing)
@@ -1052,24 +1056,6 @@ Player::~Player()
    // Save adjusted VR settings
    if (m_renderer->m_stereo3D == STEREO_VR)
       m_vrDevice->SaveVRSettings(g_pvp->m_settings);
-
-   for (auto &sound : m_ptable->m_vsound)
-   {
-      sound->Stop();
-      sound->ReInitialize();
-   }
-
-   // Stop all played musics, including ones streamed from plugins
-   if (m_audio)
-      m_audio->MusicPause();
-   delete m_audio;
-   m_audio = nullptr;
-   for (const auto& entry : m_externalAudioPlayers)
-   {
-      entry.second->MusicPause();
-      delete entry.second;
-   }
-   m_externalAudioPlayers.clear();
 
    // FIXME remove or at least move legacy ushock to a plugin
    ushock_output_shutdown();
@@ -2100,12 +2086,12 @@ void Player::FinishFrame()
    #endif
 
    // Detect & fire end of music events
-   if (IsPlaying() && m_audio && !m_audio->MusicActive())
+   if (IsPlaying())
    {
-      delete m_audio;
-      m_audio = nullptr;
-      if (!IsEditorMode())
+      bool musicPlaying = m_audioPlayer->IsMusicPlaying();
+      if (m_musicPlaying && !musicPlaying)
          m_ptable->FireVoidEvent(DISPID_GameEvents_MusicDone);
+      m_musicPlaying = musicPlaying;
    }
 
    // Pause after performing a simulation step
@@ -2526,35 +2512,33 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
 
 void Player::UpdateVolume()
 {
-   if (m_audio)
-      m_audio->UpdateVolume();
-   for (auto sound : m_ptable->m_vsound)
-      sound->UpdateVolume();
-   for (const auto& players : m_externalAudioPlayers)
-      players.second->UpdateVolume();
+   m_audioPlayer->SetMainVolume(dequantizeSignedPercent(m_MusicVolume), dequantizeSignedPercent(m_SoundVolume));
 }
 
 void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgData)
 {
    Player *me = static_cast<Player *>(userData);
    AudioUpdateMsg &msg = *static_cast<AudioUpdateMsg *>(msgData);
-   const auto &entry = me->m_externalAudioPlayers.find(msg.id.id);
-   if (entry == me->m_externalAudioPlayers.end())
+   const auto &entry = me->m_audioStreams.find(msg.id.id);
+   if (entry == me->m_audioStreams.end())
    {
       if (msg.buffer != nullptr)
       {
          const int nChannels = (msg.type == CTLPI_AUDIO_SRC_BACKGLASS_MONO) ? 1 : 2;
-         PinSound* const pPinSound = new PinSound(me->m_ptable->m_settings); //!!??
-         pPinSound->StreamInit(static_cast<uint32_t>(msg.sampleRate), nChannels, 1.f);
-         pPinSound->StreamUpdate(msg.buffer, msg.bufferSize);
-         me->m_externalAudioPlayers[msg.id.id] = pPinSound;
+         VPX::AudioPlayer::AudioStreamID const stream = me->m_audioPlayer->OpenAudioStream(static_cast<int>(msg.sampleRate), nChannels);
+         if (stream)
+         {
+            me->m_audioStreams[msg.id.id] = stream;
+            me->m_audioPlayer->EnqueueStream(stream, msg.buffer, msg.bufferSize);
+         }
       }
    }
    else
    {
+      VPX::AudioPlayer::AudioStreamID const stream = entry->second; 
       if (msg.buffer != nullptr)
       {
-         int pending = SDL_GetAudioStreamQueued(entry->second->m_pstream);
+         int pending = me->m_audioPlayer->GetStreamQueueSize(stream);
          if (pending >= 0 && static_cast<unsigned int>(pending) >= msg.bufferSize)
          {
             double delay = 1000.0 * msg.bufferSize / (msg.sampleRate * ((msg.type == CTLPI_AUDIO_SRC_BACKGLASS_MONO) ? 1 : 2));
@@ -2563,15 +2547,13 @@ void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgD
          }
          else
          {
-            // PLOGD << "Pending: " << pending << " queuing: " << msg.bufferSize;
-            entry->second->StreamUpdate(msg.buffer, msg.bufferSize);
+            me->m_audioPlayer->EnqueueStream(stream, msg.buffer, msg.bufferSize);
          }
       }
       else
       {
-         entry->second->MusicPause();
-         delete entry->second;
-         me->m_externalAudioPlayers.erase(entry);
+         me->m_audioPlayer->CloseAudioStream(stream);
+         me->m_audioStreams.erase(entry);
       }
    }
 }
@@ -2579,10 +2561,7 @@ void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgD
 void Player::PauseMusic()
 {
    if (m_pauseMusicRefCount == 0)
-   {
-      if (m_audio)
-         m_audio->MusicPause();
-   }
+      m_audioPlayer->PauseMusic();
    m_pauseMusicRefCount++;
 }
 
@@ -2590,10 +2569,7 @@ void Player::UnpauseMusic()
 {
    m_pauseMusicRefCount--;
    if (m_pauseMusicRefCount == 0)
-   {
-      if (m_audio)
-         m_audio->MusicUnpause();
-   }
+      m_audioPlayer->UnpauseMusic();
    else if (m_pauseMusicRefCount < 0)
       m_pauseMusicRefCount = 0;
 }

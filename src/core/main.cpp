@@ -998,11 +998,11 @@ public:
       }
 
       if (m_listSnd) {
-         vector<AudioDevice> allAudioDevices;
-         PinSound::EnumerateAudioDevices(allAudioDevices);
+         vector<VPX::AudioPlayer::AudioDevice> allAudioDevices;
+         VPX::AudioPlayer::EnumerateAudioDevices(allAudioDevices);
          PLOGI << "Available sound devices:";
-         for (size_t i = 0; i < allAudioDevices.size(); ++i) {
-            AudioDevice audioDevice = allAudioDevices.at(i);
+         for (VPX::AudioPlayer::AudioDevice audioDevice : allAudioDevices)
+         {
             PLOGI << "  id " << audioDevice.id << ": name=" << audioDevice.name << ", channels=" << audioDevice.channels;
          }
       }

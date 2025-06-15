@@ -18,14 +18,15 @@
 
 PUPMediaPlayer::PUPMediaPlayer()
 {
-   m_pPinSound = new PinSound(nullptr);
-   m_pPinSound->StreamInit(44100, 2, 0.0f);
+   m_pAudioPlayer = new VPX::AudioPlayer(g_pvp->m_settings);
+   m_pAudioStream = m_pAudioPlayer->OpenAudioStream(44100, 2);
+   m_pAudioPlayer->SetStreamVolume(m_pAudioStream, 0.f);
 }
 
 PUPMediaPlayer::~PUPMediaPlayer()
 {
    Stop();
-   delete m_pPinSound;
+   delete m_pAudioPlayer;
 }
 
 void PUPMediaPlayer::Play(const string& filename)
@@ -107,7 +108,7 @@ void PUPMediaPlayer::Play(const string& filename)
    }
 
    PLOGD.printf("Playing: filename=%s", m_filename.c_str());
-   m_pPinSound->StreamVolume(0);
+   m_pAudioPlayer->SetStreamVolume(m_pAudioStream, 0.f);
 
    m_running = true;
    m_thread = std::thread(&PUPMediaPlayer::Run, this);
@@ -255,7 +256,7 @@ void PUPMediaPlayer::Run()
          if (m_length != 0 && (static_cast<double>(SDL_GetTicks() - m_startTimestamp) / 1000.0) >= m_length)
             break;
          loop = m_loop;
-         m_pPinSound->StreamVolume(m_volume / 100.0f);
+		 m_pAudioPlayer->SetStreamVolume(m_pAudioStream, m_volume / 100.0f);
       }
 
       // Throttle when playing audio-only streams
@@ -568,7 +569,7 @@ void PUPMediaPlayer::HandleAudioFrame(AVFrame* pFrame)
       }
    }
    int resampledDataSize = len2 * destChLayout.nb_channels * av_get_bytes_per_sample(destFmt);
-   m_pPinSound->StreamUpdate(pBuffer, resampledDataSize);
+   m_pAudioPlayer->EnqueueStream(m_pAudioStream, pBuffer, resampledDataSize);
    av_free(pBuffer);
 
    if (pFrame->pts != AV_NOPTS_VALUE)

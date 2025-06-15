@@ -5,7 +5,7 @@
 
 #include "mINI/ini.h"
 
-#include "audio/pinsound.h"
+#include "parts/Sound.h"
 
 #include <filesystem>
 
@@ -105,8 +105,8 @@ int PINMAMECALLBACK VPinMAMEController::OnAudioAvailable(PinmameAudioInfo* p_aud
 
    VPinMAMEController* pController = (VPinMAMEController*)pUserData;
 
-   pController->m_pPinSound = new PinSound(NULL);
-   pController->m_pPinSound->StreamInit(p_audioInfo->sampleRate, p_audioInfo->channels, 1.);
+   pController->m_pAudioPlayer = new VPX::AudioPlayer(g_pvp->m_settings);
+   pController->m_pAudioStream = pController->m_pAudioPlayer->OpenAudioStream(p_audioInfo->sampleRate, p_audioInfo->channels);
    pController->m_audioChannels = p_audioInfo->channels;
 
    return p_audioInfo->samplesPerFrame;
@@ -117,7 +117,7 @@ int PINMAMECALLBACK VPinMAMEController::OnAudioUpdated(void* p_buffer, int sampl
    VPinMAMEController* pController = (VPinMAMEController*)pUserData;
 
    if (pController->m_enableSound)
-      pController->m_pPinSound->StreamUpdate(p_buffer, samples * pController->m_audioChannels * sizeof(int16_t));
+      pController->m_pAudioPlayer->EnqueueStream(pController->m_pAudioStream, p_buffer, samples * pController->m_audioChannels * sizeof(int16_t));
 
    return samples;
 }
@@ -228,7 +228,8 @@ VPinMAMEController::VPinMAMEController()
 
    m_pDMDWindow = new VP::DMDWindow("VPinMAMEController"s);
 
-   m_pPinSound = nullptr;
+   m_pAudioStream = nullptr;
+   m_pAudioPlayer = nullptr;
 
    m_hidden = true;
 
@@ -273,7 +274,7 @@ VPinMAMEController::~VPinMAMEController()
    delete m_pNVRAMBuffer;
    delete m_pPinmameGame;
    delete m_pPinmameMechConfig;
-   delete m_pPinSound;
+   delete m_pAudioPlayer;
 
    m_pGames->Release();
 }
@@ -382,8 +383,9 @@ STDMETHODIMP VPinMAMEController::Stop()
    m_pLevelDMD = nullptr;
    m_pRGB24DMD = nullptr;
 
-   delete m_pPinSound;
-   m_pPinSound = nullptr;
+   delete m_pAudioPlayer;
+   m_pAudioStream = nullptr;
+   m_pAudioPlayer = nullptr;
 
    m_displays.clear();
 
