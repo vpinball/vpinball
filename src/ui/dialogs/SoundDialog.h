@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "audio/AudioPlayer.h"
+
 class SoundDialog final : public CDialog
 {
 public:
@@ -33,15 +35,17 @@ private:
 
     HWND hSoundList;
     static int m_columnSortOrder;
+
+    std::unique_ptr<VPX::AudioPlayer> m_audioPlayer;
 };
 
 class SoundPositionDialog final : public CDialog
 {
 public:
    int m_volume, m_fade, m_balance; // from the CSliders
-   SoundOutTypes m_cOutputTarget;
+   VPX::SoundOutTypes m_cOutputTarget;
 
-   SoundPositionDialog(PinSound * const pps);
+   SoundPositionDialog(VPX::AudioPlayer *const AudioPlayer, VPX::Sound *const pps);
    ~SoundPositionDialog() override;
 
 protected:
@@ -59,7 +63,7 @@ protected:
    void SetTextValue(int ctl, int val);
 
 private:
-   PinSound *m_pPinSound;
+   VPX::Sound *m_pSound;
 
    CSlider m_Volume;
    CSlider m_Fader;
@@ -71,4 +75,6 @@ private:
 
    //int SliderToValue(const int Slider);
    //int ValueToSlider(const int Value);
+
+   VPX::AudioPlayer *const m_audioPlayer;
 };

@@ -1031,20 +1031,6 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
    return false;
 }
 
-void VPinball::ReInitAllSounds()
-{
-   // FIXME Is this still needed nowadays??
-
-   // Used to be needed to adapt to changed sound/output settings
-
-   for (size_t i = 0; i < m_vtable.size(); i++)
-   {
-      const PinTable * const ptT = m_vtable[i];
-      for (size_t j = 0; j < ptT->m_vsound.size(); j++)
-         ptT->m_vsound[j]->ReInitialize();
-   }
-}
-
 void VPinball::ToggleToolbar()
 {
 #ifndef __STANDALONE__

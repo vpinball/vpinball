@@ -12,7 +12,7 @@
 #include "plugins/ControllerPlugin.h"
 #include "plugins/VPXPlugin.h"
 #include "ResURIResolver.h"
-#include "audio/pinsound.h"
+#include "audio/AudioPlayer.h"
 
 class VRDevice;
 
@@ -301,9 +301,6 @@ private:
 
 
 #pragma region Audio
-private:
-   int m_pauseMusicRefCount = 0;
-
 public:
    void PauseMusic();
    void UnpauseMusic();
@@ -313,9 +310,20 @@ public:
    bool m_PlaySound;
    int m_MusicVolume; // -100..100
    int m_SoundVolume; // -100..100
-   PinSound *m_audio = nullptr;
+   bool m_musicPlaying = false;
+
+   std::unique_ptr<VPX::AudioPlayer> m_audioPlayer;
+
+private:
+   int m_pauseMusicRefCount = 0;
+
+   // External audio sources
+   static void OnAudioUpdated(const unsigned int msgId, void *userData, void *msgData);
+   unsigned int m_onAudioUpdatedMsgId;
+   ankerl::unordered_dense::map<uint64_t, VPX::AudioPlayer::AudioStreamID> m_audioStreams;
 #pragma endregion
 
+public:
    vector<CLSID*> m_controlclsidsafe; // ActiveX control types which have already been okayed as being safe
 
    enum CloseState
@@ -363,13 +371,6 @@ public:
    int m_dmdFrameId = 0;
 
    ResURIResolver m_resURIResolver;
-
-
-   // External audio sources
-private:
-   static void OnAudioUpdated(const unsigned int msgId, void *userData, void *msgData);
-   unsigned int m_onAudioUpdatedMsgId;
-   ankerl::unordered_dense::map<uint64_t, PinSound*> m_externalAudioPlayers;
 
 
 public:

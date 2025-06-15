@@ -39,8 +39,16 @@ add_executable(vpinball
    src/parts/pinbinary.cpp
    src/core/vpversion.h
 
-   src/audio/pinsound.cpp
-   src/audio/pinsound.h
+   src/parts/Sound.cpp
+   src/parts/Sound.h
+   src/audio/AudioPlayer.cpp
+   src/audio/AudioPlayer.h
+   src/audio/AudioStreamPlayer.cpp
+   src/audio/AudioStreamPlayer.h
+   src/audio/MusicPlayer.cpp
+   src/audio/MusicPlayer.h
+   src/audio/SoundPlayer.cpp
+   src/audio/SoundPlayer.h
 
    src/core/dispid.h
    src/core/DynamicScript.cpp

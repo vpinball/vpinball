@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PUPManager.h"
-#include "audio/pinsound.h"
+#include "audio/AudioPlayer.h"
 
 extern "C" {
    #include "libavutil/imgutils.h"
@@ -66,7 +66,8 @@ private:
    struct SwrContext* m_pAudioConversionContext = nullptr;
    AVSampleFormat m_audioFormat = AV_SAMPLE_FMT_NONE;
    double m_audioPts = 0.0;
-   PinSound* m_pPinSound = nullptr;
+   VPX::AudioPlayer* m_pAudioPlayer = nullptr;
+   VPX::AudioPlayer::AudioStreamID m_pAudioStream = nullptr;
 
    std::mutex m_mutex;
    std::thread m_thread;

@@ -15,10 +15,11 @@ extern SORTDATA SortData;
 extern int CALLBACK MyCompProc( LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption );
 int SoundDialog::m_columnSortOrder;
 
-SoundDialog::SoundDialog() : CDialog( IDD_SOUNDDIALOG )
+SoundDialog::SoundDialog()
+   : CDialog(IDD_SOUNDDIALOG)
 {
-    hSoundList = nullptr;
-    m_columnSortOrder = 1;
+   hSoundList = nullptr;
+   m_columnSortOrder = 1;
 }
 
 SoundDialog::~SoundDialog()
@@ -32,10 +33,8 @@ void SoundDialog::OnDestroy()
 
 void SoundDialog::OnClose()
 {
+   m_audioPlayer = nullptr;
     SavePosition();
-    CCO(PinTable) * const pt = g_pvp->GetActiveTable();
-    if (pt)
-        pt->StopAllSounds(); 
     CDialog::OnClose();
 }
 
@@ -59,6 +58,7 @@ static int DPIValue(int value)
 
 BOOL SoundDialog::OnInitDialog()
 {
+   m_audioPlayer = std::make_unique<VPX::AudioPlayer>(g_pvp->m_settings);
     CCO( PinTable ) * const pt = g_pvp->GetActiveTable();
     const HWND toolTipHwnd = CreateWindowEx(
       0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr, g_pvp->theInstance, nullptr);
@@ -172,13 +172,25 @@ INT_PTR SoundDialog::DialogProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
                     lvitem.iItem = pinfo->item.iItem;
                     lvitem.iSubItem = 0;
                     ListView_GetItem( hSoundList, &lvitem );
-                    PinSound * const pps = (PinSound *)lvitem.lParam;
+                    VPX::Sound *const pps = (VPX::Sound *)lvitem.lParam;
                     pps->m_name = pinfo->item.pszText;
                     if (pt)
                         pt->SetNonUndoableDirty( eSaveDirty );
                     return TRUE;
                 }
                 break;
+
+                case LVN_ITEMCHANGING:
+                {
+                   NMLVDISPINFO *const pinfo = (NMLVDISPINFO *)lParam;
+                   LVITEM lvitem;
+                   lvitem.mask = LVIF_PARAM;
+                   lvitem.iItem = pinfo->item.iItem;
+                   lvitem.iSubItem = 0;
+                   ListView_GetItem(hSoundList, &lvitem);
+                   m_audioPlayer->StopSound((VPX::Sound *)lvitem.lParam);
+                   return TRUE;
+                }
 
                 case LVN_ITEMCHANGED:
                 {
@@ -188,8 +200,6 @@ INT_PTR SoundDialog::DialogProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
                     GetDlgItem(IDC_RENAME).EnableWindow( enable );
                     GetDlgItem(IDC_PLAY).EnableWindow( enable );
                     GetDlgItem(IDC_STOP).EnableWindow( fFalse );
-                    if (pt)
-                        pt->StopAllSounds(); 
                 }
                 break;
             }
@@ -223,8 +233,7 @@ BOOL SoundDialog::OnCommand( WPARAM wParam, LPARAM lParam )
                 lvitem.iItem = sel;
                 lvitem.iSubItem = 0;
                 ListView_GetItem( hSoundList, &lvitem );
-                PinSound * const pps = (PinSound *)lvitem.lParam;
-                pps->Stop();
+                m_audioPlayer->StopSound((VPX::Sound *)lvitem.lParam);
                 GetDlgItem(IDC_STOP).EnableWindow(fFalse);
             }
             break;
@@ -239,10 +248,7 @@ BOOL SoundDialog::OnCommand( WPARAM wParam, LPARAM lParam )
                 lvitem.iItem = sel;
                 lvitem.iSubItem = 0;
                 ListView_GetItem( hSoundList, &lvitem );
-
-                PinSound * const pps = (PinSound *)lvitem.lParam;
-                pps->Play(1.0f, 0.0f, 0, 0.f, 0.f, 0, false, false);
-
+                m_audioPlayer->PlaySound((VPX::Sound *)lvitem.lParam, 1.0f, 0.0f, 0, 0.f, 0.f, 0, false, false);
                 GetDlgItem(IDC_STOP).EnableWindow(TRUE);
             }
             break;
@@ -317,7 +323,7 @@ void SoundDialog::ReImport()
                 lvitem.iItem = sel;
                 lvitem.iSubItem = 0;
                 ListView_GetItem( hSoundList, &lvitem );
-                PinSound * const pps = (PinSound *)lvitem.lParam;
+                VPX::Sound *const pps = (VPX::Sound *)lvitem.lParam;
 
                 const HANDLE hFile = CreateFile( pps->m_path.c_str(), GENERIC_READ, FILE_SHARE_READ,
                                                  nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr );
@@ -360,7 +366,7 @@ void SoundDialog::ReImportFrom()
                 lvitem.iItem = sel;
                 lvitem.iSubItem = 0;
                 ListView_GetItem( hSoundList, &lvitem );
-                PinSound * const pps = (PinSound *)lvitem.lParam;
+                VPX::Sound *const pps = (VPX::Sound *)lvitem.lParam;
 
                 pt->ReImportSound( hSoundList, pps, szFileName[0] );
                 ListView_SetItemText( hSoundList, sel, 1, (LPSTR)szFileName[0].c_str() );
@@ -392,7 +398,7 @@ void SoundDialog::Export()
             lvitem.iItem = sel;
             lvitem.iSubItem = 0;
             ListView_GetItem( hSoundList, &lvitem );
-            PinSound *pps = (PinSound *)lvitem.lParam;
+            VPX::Sound *pps = (VPX::Sound *)lvitem.lParam;
 
             OPENFILENAME ofn = {};
             ofn.lStructSize = sizeof( OPENFILENAME );
@@ -482,7 +488,7 @@ void SoundDialog::Export()
                     lvitem.iItem = sel;
                     lvitem.iSubItem = 0;
                     ListView_GetItem( hSoundList, &lvitem );
-                    pps = (PinSound *)lvitem.lParam;
+                    pps = (VPX::Sound *)lvitem.lParam;
                 }
 
                 g_pvp->m_settings.SaveValue(Settings::RecentDir, "SoundDir"s, string(pathName));
@@ -506,14 +512,14 @@ void SoundDialog::SoundToBG()
             lvitem.iItem = sel;
             lvitem.iSubItem = 0;
             ListView_GetItem( hSoundList, &lvitem );
-            PinSound * const pps = (PinSound *)lvitem.lParam;
-            pps->SetOutputTarget((pps->GetOutputTarget() != SNDOUT_BACKGLASS) ? SNDOUT_BACKGLASS : SNDOUT_TABLE);
+            VPX::Sound *const pps = (VPX::Sound *)lvitem.lParam;
+            pps->SetOutputTarget((pps->GetOutputTarget() != VPX::SNDOUT_BACKGLASS) ? VPX::SNDOUT_BACKGLASS : VPX::SNDOUT_TABLE);
             switch (pps->GetOutputTarget())
             {
-               case SNDOUT_BACKGLASS:
+               case VPX::SNDOUT_BACKGLASS:
                   ListView_SetItemText(hSoundList, sel, 2, (LPSTR)"Backglass");
                   break;
-               case SNDOUT_TABLE:
+               case VPX::SNDOUT_TABLE:
                default:
                   ListView_SetItemText(hSoundList, sel, 2, (LPSTR)"Table");
                   break;
@@ -538,8 +544,8 @@ void SoundDialog::SoundPosition()
 		lvitem.iItem = sel;
 		lvitem.iSubItem = 0;
 		ListView_GetItem(hSoundList, &lvitem);
-		PinSound *pps = (PinSound *)lvitem.lParam;
-		SoundPositionDialog spd(pps);
+      VPX::Sound *pps = (VPX::Sound *)lvitem.lParam;
+		SoundPositionDialog spd(m_audioPlayer.get(), pps);
 
 		if (spd.DoModal() == IDOK)
 		{
@@ -549,7 +555,7 @@ void SoundDialog::SoundPosition()
 				lvitem.iItem = sel;
 				lvitem.iSubItem = 0;
 				ListView_GetItem(hSoundList, &lvitem);
-				pps = (PinSound *)lvitem.lParam;
+				pps = (VPX::Sound *)lvitem.lParam;
 				pps->SetOutputTarget(spd.m_cOutputTarget);
 				pps->SetPan(spd.m_balance);
 				pps->SetFrontRearFade(spd.m_fade);
@@ -585,7 +591,7 @@ void SoundDialog::DeleteSound()
                 lvitem.iItem = sel;
                 lvitem.iSubItem = 0;
                 ListView_GetItem( hSoundList, &lvitem );
-                PinSound * const pps = (PinSound *)lvitem.lParam;
+                VPX::Sound *const pps = (VPX::Sound *)lvitem.lParam;
                 ListView_DeleteItem( hSoundList, sel );
                 pt->RemoveSound(pps);
 
@@ -631,19 +637,20 @@ void SoundDialog::AddToolTip(const char *const text, HWND parentHwnd, HWND toolT
    ::SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
 }
 
-SoundPositionDialog::SoundPositionDialog(PinSound * const pps)
+SoundPositionDialog::SoundPositionDialog(VPX::AudioPlayer *const AudioPlayer, VPX::Sound *const pps)
    : CDialog(IDD_SOUND_POSITION_DIALOG)
+   , m_audioPlayer(AudioPlayer)
    , m_volume(pps->GetVolume())
    , m_fade(pps->GetFrontRearFade())
    , m_balance(pps->GetPan())
    , m_cOutputTarget(pps->GetOutputTarget())
-   , m_pPinSound(pps)
+   , m_pSound(pps)
 {
 }
 
 SoundPositionDialog::~SoundPositionDialog()
 {
-	m_pPinSound->Stop();
+   m_audioPlayer->StopSound(m_pSound);
 }
 
 void SoundPositionDialog::OnDestroy()
@@ -675,12 +682,12 @@ BOOL SoundPositionDialog::OnInitDialog()
 
 	switch (m_cOutputTarget)
 	{
-	case SNDOUT_BACKGLASS:
+   case VPX::SNDOUT_BACKGLASS:
 		SendDlgItemMessage(IDC_SPT_BACKGLASS, BM_SETCHECK, BST_CHECKED, 0);
 		break;
 	default:
 		assert(false);
-	case SNDOUT_TABLE:
+   case VPX::SNDOUT_TABLE:
 		SendDlgItemMessage(IDC_SPT_TABLE, BM_SETCHECK, BST_CHECKED, 0);
 		break;
 	}
@@ -752,7 +759,7 @@ void SoundPositionDialog::SetTextValue(int ctl, int val)
 
 void SoundPositionDialog::GetDialogValues()
 {
-	m_cOutputTarget = IsDlgButtonChecked(IDC_SPT_BACKGLASS) ? SNDOUT_BACKGLASS : SNDOUT_TABLE;
+	m_cOutputTarget = IsDlgButtonChecked(IDC_SPT_BACKGLASS) ? VPX::SNDOUT_BACKGLASS : VPX::SNDOUT_TABLE;
 }
 
 void SoundPositionDialog::ReadValuesFromSliders()
@@ -785,24 +792,24 @@ BOOL SoundPositionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 void SoundPositionDialog::TestSound()
 {
 	// Hold the actual settings temporarily and reinitialize, as it could be reset if dialog is canceled.
-	const SoundOutTypes iOutputTargetTmp = m_pPinSound->GetOutputTarget();
-	const int iVolume = m_pPinSound->GetVolume();
-	const int iPan = m_pPinSound->GetPan();
-	const int iFrontRearFade = m_pPinSound->GetFrontRearFade();
+   const VPX::SoundOutTypes iOutputTargetTmp = m_pSound->GetOutputTarget();
+	const int iVolume = m_pSound->GetVolume();
+	const int iPan = m_pSound->GetPan();
+	const int iFrontRearFade = m_pSound->GetFrontRearFade();
 
 	GetDialogValues();
 
-	m_pPinSound->SetOutputTarget(m_cOutputTarget);
-	m_pPinSound->SetVolume(m_volume);
-	m_pPinSound->SetPan(m_balance);
-	m_pPinSound->SetFrontRearFade(m_fade);
+	m_pSound->SetOutputTarget(m_cOutputTarget);
+	m_pSound->SetVolume(m_volume);
+	m_pSound->SetPan(m_balance);
+	m_pSound->SetFrontRearFade(m_fade);
 
-	m_pPinSound->Play(1.0f, 0.0f, 0, 0.f, 0.f, 0, false, false);
+   m_audioPlayer->PlaySound(m_pSound, 1.0f, 0.0f, 0, 0.f, 0.f, 0, false, false);
 
-	m_pPinSound->SetOutputTarget(iOutputTargetTmp);
-	m_pPinSound->SetVolume(iVolume);
-	m_pPinSound->SetPan(iPan);
-	m_pPinSound->SetFrontRearFade(iFrontRearFade);
+	m_pSound->SetOutputTarget(iOutputTargetTmp);
+	m_pSound->SetVolume(iVolume);
+	m_pSound->SetPan(iPan);
+	m_pSound->SetFrontRearFade(iFrontRearFade);
 }
 
 void SoundPositionDialog::OnOK()

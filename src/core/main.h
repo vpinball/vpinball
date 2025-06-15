@@ -302,7 +302,7 @@ class SCNotification final { };
 #include "utils/lzwreader.h"
 #include "utils/lzwwriter.h"
 
-#include "audio/pinsound.h"
+#include "parts/Sound.h"
 #include "parts/pinbinary.h"
 
 #include "plugins/MsgPluginManager.h"

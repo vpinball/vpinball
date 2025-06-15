@@ -3,9 +3,10 @@
 #include "core/stdafx.h"
 #include "ui/resource.h"
 #include "AudioOptionsDialog.h"
-#include "audio/pinsound.h"
+#include "parts/Sound.h"
 
-AudioOptionsDialog::AudioOptionsDialog() : CDialog(IDD_AUDIO_OPTIONS)
+AudioOptionsDialog::AudioOptionsDialog()
+   : CDialog(IDD_AUDIO_OPTIONS)
 {
 }
 
@@ -40,15 +41,15 @@ BOOL AudioOptionsDialog::OnInitDialog()
    SendDlgItemMessage(IDC_SoundList, LB_RESETCONTENT, 0, 0);
    SendDlgItemMessage(IDC_SoundListBG, LB_RESETCONTENT, 0, 0);
 
-   vector<AudioDevice> allAudioDevices;
-   PinSound::EnumerateAudioDevices(allAudioDevices);
-         for (size_t i = 0; i < allAudioDevices.size(); ++i) {
-            AudioDevice audioDevice = allAudioDevices.at(i);
-            const size_t index = SendDlgItemMessage(IDC_SoundList, LB_ADDSTRING, 0, (size_t) audioDevice.name);
-            SendDlgItemMessage(IDC_SoundList, LB_SETITEMDATA, index, (LPARAM)audioDevice.id);
-            const size_t indexbg = SendDlgItemMessage(IDC_SoundListBG, LB_ADDSTRING, 0, (size_t)audioDevice.name);
-            SendDlgItemMessage(IDC_SoundListBG, LB_SETITEMDATA, indexbg, (LPARAM)audioDevice.id);
-         }
+   vector<VPX::AudioPlayer::AudioDevice> allAudioDevices;
+   VPX::AudioPlayer::EnumerateAudioDevices(allAudioDevices);
+   for (VPX::AudioPlayer::AudioDevice audioDevice : allAudioDevices)
+   {
+      const size_t index = SendDlgItemMessage(IDC_SoundList, LB_ADDSTRING, 0, (size_t) audioDevice.name.c_str());
+      SendDlgItemMessage(IDC_SoundList, LB_SETITEMDATA, index, (LPARAM)audioDevice.id);
+      const size_t indexbg = SendDlgItemMessage(IDC_SoundListBG, LB_ADDSTRING, 0, (size_t)audioDevice.name.c_str());
+      SendDlgItemMessage(IDC_SoundListBG, LB_SETITEMDATA, indexbg, (LPARAM)audioDevice.id);
+   }
   
    SendDlgItemMessage(IDC_SoundList, WM_SETREDRAW, TRUE, 0);
    SendDlgItemMessage(IDC_SoundListBG, WM_SETREDRAW, TRUE, 0);
@@ -166,11 +167,11 @@ void AudioOptionsDialog::LoadSettings()
    int fmusic = settings.LoadValueUInt(Settings::Player, "Sound3D"s);
    switch (fmusic)
    {
-   case SNDCFG_SND3DALLREAR: SendDlgItemMessage(IDC_RADIO_SND3DALLREAR, BM_SETCHECK, BST_CHECKED, 0); break;
-   case SNDCFG_SND3DFRONTISFRONT: SendDlgItemMessage(IDC_RADIO_SND3DFRONTISFRONT, BM_SETCHECK, BST_CHECKED, 0); break;
-   case SNDCFG_SND3DFRONTISREAR: SendDlgItemMessage(IDC_RADIO_SND3DFRONTISREAR, BM_SETCHECK, BST_CHECKED, 0); break;
-   case SNDCFG_SND3D6CH: SendDlgItemMessage(IDC_RADIO_SND3D6CH, BM_SETCHECK, BST_CHECKED, 0); break;
-   case SNDCFG_SND3DSSF: SendDlgItemMessage(IDC_RADIO_SND3DSSF, BM_SETCHECK, BST_CHECKED, 0); break;
+   case VPX::SNDCFG_SND3DALLREAR: SendDlgItemMessage(IDC_RADIO_SND3DALLREAR, BM_SETCHECK, BST_CHECKED, 0); break;
+   case VPX::SNDCFG_SND3DFRONTISFRONT: SendDlgItemMessage(IDC_RADIO_SND3DFRONTISFRONT, BM_SETCHECK, BST_CHECKED, 0); break;
+   case VPX::SNDCFG_SND3DFRONTISREAR: SendDlgItemMessage(IDC_RADIO_SND3DFRONTISREAR, BM_SETCHECK, BST_CHECKED, 0); break;
+   case VPX::SNDCFG_SND3D6CH: SendDlgItemMessage(IDC_RADIO_SND3D6CH, BM_SETCHECK, BST_CHECKED, 0); break;
+   case VPX::SNDCFG_SND3DSSF: SendDlgItemMessage(IDC_RADIO_SND3DSSF, BM_SETCHECK, BST_CHECKED, 0); break;
    default: SendDlgItemMessage(IDC_RADIO_SND3D2CH, BM_SETCHECK, BST_CHECKED, 0); break;
    }
 
@@ -195,17 +196,17 @@ void AudioOptionsDialog::SaveSettings(const bool saveAll)
 
    if (m_editedSettings == &m_appSettings)
    {
-      int fmusic = SNDCFG_SND3D2CH;
+      int fmusic = VPX::SNDCFG_SND3D2CH;
       if (IsDlgButtonChecked(IDC_RADIO_SND3DALLREAR) == BST_CHECKED)
-         fmusic = SNDCFG_SND3DALLREAR;
+         fmusic = VPX::SNDCFG_SND3DALLREAR;
       if (IsDlgButtonChecked(IDC_RADIO_SND3DFRONTISFRONT) == BST_CHECKED)
-         fmusic = SNDCFG_SND3DFRONTISFRONT;
+         fmusic = VPX::SNDCFG_SND3DFRONTISFRONT;
       if (IsDlgButtonChecked(IDC_RADIO_SND3DFRONTISREAR) == BST_CHECKED)
-         fmusic = SNDCFG_SND3DFRONTISREAR;
+         fmusic = VPX::SNDCFG_SND3DFRONTISREAR;
       if (IsDlgButtonChecked(IDC_RADIO_SND3D6CH) == BST_CHECKED)
-         fmusic = SNDCFG_SND3D6CH;
+         fmusic = VPX::SNDCFG_SND3D6CH;
       if (IsDlgButtonChecked(IDC_RADIO_SND3DSSF) == BST_CHECKED)
-         fmusic = SNDCFG_SND3DSSF;
+         fmusic = VPX::SNDCFG_SND3DSSF;
       settings.SaveValue(Settings::Player, "Sound3D"s, fmusic, !saveAll);
    }
 
@@ -225,6 +226,4 @@ void AudioOptionsDialog::SaveSettings(const bool saveAll)
       sd = SendDlgItemMessage(IDC_SoundListBG, LB_GETITEMDATA, soundindex, 0);
       settings.SaveValue(Settings::Player, "SoundDeviceBG"s, (int)sd, !saveAll);
    }
-
-   g_pvp->ReInitAllSounds();
 }
