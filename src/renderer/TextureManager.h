@@ -42,7 +42,7 @@ private:
       std::shared_ptr<const class BaseTexture> pendingUpload;
    };
    RenderDevice& m_rd;
-   ankerl::unordered_dense::map<unsigned long long, MapEntry> m_map;
-   typedef ankerl::unordered_dense::map<unsigned long long, MapEntry>::iterator Iter;
-   typedef ankerl::unordered_dense::map<unsigned long long, MapEntry>::const_iterator CIter;
+   ankerl::unordered_dense::map<uint64_t, MapEntry> m_map;
+   typedef ankerl::unordered_dense::map<uint64_t, MapEntry>::iterator Iter;
+   typedef ankerl::unordered_dense::map<uint64_t, MapEntry>::const_iterator CIter;
 };

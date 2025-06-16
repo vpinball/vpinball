@@ -815,7 +815,7 @@ STDMETHODIMP Flasher::put_DMDHeight(int pVal)
 }
 
 // Implementation included in pintable.cpp
-void upscale(DWORD *const data, const int2 &res, const bool is_brightness_data);
+void upscale(uint32_t *const data, const int2 &res, const bool is_brightness_data);
 
 STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!! use 64bit instead of 8bit to reduce overhead??
 {
@@ -844,20 +844,20 @@ STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!
    SafeArrayAccessData(psa, (void **)&p);
    if (g_pplayer->m_scaleFX_DMD)
    {
-      DWORD *rgba = new DWORD[size * scale * scale];
+      uint32_t * const __restrict rgba = new uint32_t[size * scale * scale];
       for (int ofs = 0; ofs < size; ++ofs)
          rgba[ofs] = V_UI4(&p[ofs]); 
       upscale(rgba, m_dmdSize, true);
-      BYTE *const data = m_dmdFrame->data();
+      uint8_t * const __restrict data = m_dmdFrame->data();
       for (int ofs = 0; ofs < size; ++ofs)
-         data[ofs] = static_cast<BYTE>(InvsRGB((float)(rgba[ofs] & 0xFF) * (float)(1.0 / 100.)) * 255.f);
+         data[ofs] = static_cast<uint8_t>(InvsRGB((float)(rgba[ofs] & 0xFF) * (float)(1.0 / 100.)) * 255.f);
       delete[] rgba;
    }
    else
    {
-      BYTE *const data = m_dmdFrame->data();
+      uint8_t *const data = m_dmdFrame->data();
       for (int ofs = 0; ofs < size; ++ofs)
-         data[ofs] = static_cast<BYTE>(InvsRGB((float)V_UI4(&p[ofs]) * (float)(1.0 / 100.)) * 255.f);
+         data[ofs] = static_cast<uint8_t>(InvsRGB((float)V_UI4(&p[ofs]) * (float)(1.0 / 100.)) * 255.f);
    }
    SafeArrayUnaccessData(psa);
    //m_dmdFrameId++;
@@ -886,7 +886,7 @@ STDMETHODIMP Flasher::put_DMDColoredPixels(VARIANT pVal) //!! assumes VT_UI4 as 
       m_dmdFrame = BaseTexture::Create(m_dmdSize.x * scale, m_dmdSize.y * scale, BaseTexture::SRGBA);
    }
    const int size = m_dmdSize.x * m_dmdSize.y;
-   DWORD *const data = reinterpret_cast<DWORD *>(m_dmdFrame->data());
+   uint32_t *const __restrict data = reinterpret_cast<uint32_t *>(m_dmdFrame->data());
    VARIANT *p;
    SafeArrayAccessData(psa, (void **)&p);
    for (int ofs = 0; ofs < size; ++ofs)
@@ -1000,7 +1000,7 @@ STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
         bi.biClrUsed = 0;
         bi.biClrImportant = 0;
 
-        const DWORD dwBmpSize = ((bmpScreen.bmWidth * bi.biBitCount + 31) / 32) * 4 * bmpScreen.bmHeight;
+        const size_t dwBmpSize = ((bmpScreen.bmWidth * bi.biBitCount + 31) / 32) * 4 * bmpScreen.bmHeight;
 
         const HANDLE hDIB = GlobalAlloc(GHND, dwBmpSize);
         char* lpbitmap = (char*)GlobalLock(hDIB);

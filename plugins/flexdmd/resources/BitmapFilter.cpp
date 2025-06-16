@@ -15,7 +15,7 @@ ColorRGBA32 BitmapFilter::GetPixel(const SDL_Surface* const surface, int x, int 
       case 1:
          return *pixel;
       case 2:
-         return *(Uint16*)pixel;
+         return *(uint16_t*)pixel;
       case 3:
          if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
             return pixel[0] | (pixel[1] << 8) | (pixel[2] << 16);

@@ -1,4 +1,4 @@
-static inline float eq_col1(const DWORD AD, const DWORD BD)
+static inline float eq_col1(const uint32_t AD, const uint32_t BD)
 {
     const float A[3] = { (float)(AD & 255) * (float)(1.0/255.),(float)(AD & 65280) * (float)(1.0 / 65280.0),(float)(AD & 16711680) * (float)(1.0 / 16711680.0) };
     const float B[3] = { (float)(BD & 255) * (float)(1.0/255.),(float)(BD & 65280) * (float)(1.0 / 65280.0),(float)(BD & 16711680) * (float)(1.0 / 16711680.0) };
@@ -10,7 +10,7 @@ static inline float eq_col1(const DWORD AD, const DWORD BD)
 }
 
 #if 0
-static inline float eq_col2(const DWORD e1, const DWORD e2) //!! test vs above, should be the same?
+static inline float eq_col2(const uint32_t e1, const uint32_t e2) //!! test vs above, should be the same?
 {
     const int rmean = ((int)(e1 & 255) + (int)(e2 & 255)) / 2;
     const int r = (int)(e1 & 255) - (int)(e2 & 255);
@@ -20,7 +20,7 @@ static inline float eq_col2(const DWORD e1, const DWORD e2) //!! test vs above, 
 }
 #endif
 
-static inline float eq_brightness(const DWORD AD, const DWORD BD)
+static inline float eq_brightness(const uint32_t AD, const uint32_t BD)
 {
     return 1.f - (float)abs((int)AD - (int)BD) * (float)(1.0 / 100.);
 }
@@ -61,7 +61,7 @@ static inline bool4 ambi_dom(const Vertex4D &jDx)
         jDx.w != 0.f && jDx.w + jDx.y > jDx.x + jDx.z);
 }
 
-void upscale(DWORD * const data, const int2 &res, const bool is_brightness_data)
+void upscale(uint32_t * const data, const int2 &res, const bool is_brightness_data)
 {
     const unsigned int xres = res.x;
     const unsigned int yres = res.y;
@@ -77,12 +77,12 @@ void upscale(DWORD * const data, const int2 &res, const bool is_brightness_data)
             for (unsigned int i = 0; i < xres; ++i, ++o)
             {
                 const unsigned int ip1 = i + 1;
-                const DWORD E = data[j*xres + i];
-                const DWORD E2 = (E & 0xFEFEFE) >> 1; // borders = half black/half border pixel
-                const DWORD A = (j == 0) || (i == 0) ? E2 : data[jm1 + i - 1];
-                const DWORD B = (j == 0) ? E2 : data[jm1 + i];
-                const DWORD C = (j == 0) || (i == xres - 1) ? E2 : data[jm1 + ip1];
-                const DWORD F = (i == xres - 1) ? E2 : data[j*xres + ip1];
+                const uint32_t E = data[j*xres + i];
+                const uint32_t E2 = (E & 0xFEFEFE) >> 1; // borders = half black/half border pixel
+                const uint32_t A = (j == 0) || (i == 0) ? E2 : data[jm1 + i - 1];
+                const uint32_t B = (j == 0) ? E2 : data[jm1 + i];
+                const uint32_t C = (j == 0) || (i == xres - 1) ? E2 : data[jm1 + ip1];
+                const uint32_t F = (i == xres - 1) ? E2 : data[j*xres + ip1];
 
                 metric[o] = Vertex4D(eq_brightness(E, A), eq_brightness(E, B), eq_brightness(E, C), eq_brightness(E, F));
             }
@@ -97,12 +97,12 @@ void upscale(DWORD * const data, const int2 &res, const bool is_brightness_data)
             for (unsigned int i = 0; i < xres; ++i, ++o)
             {
                 const unsigned int ip1 = i + 1;
-                const DWORD E = data[j*xres + i];
-                const DWORD E2 = (E & 0xFEFEFEFE) >> 1; // borders = half black/half border pixel
-                const DWORD A = (j == 0) || (i == 0) ? E2 : data[jm1 + i - 1];
-                const DWORD B = (j == 0) ? E2 : data[jm1 + i];
-                const DWORD C = (j == 0) || (i == xres - 1) ? E2 : data[jm1 + ip1];
-                const DWORD F = (i == xres - 1) ? E2 : data[j*xres + ip1];
+                const uint32_t E = data[j*xres + i];
+                const uint32_t E2 = (E & 0xFEFEFEFE) >> 1; // borders = half black/half border pixel
+                const uint32_t A = (j == 0) || (i == 0) ? E2 : data[jm1 + i - 1];
+                const uint32_t B = (j == 0) ? E2 : data[jm1 + i];
+                const uint32_t C = (j == 0) || (i == xres - 1) ? E2 : data[jm1 + ip1];
+                const uint32_t F = (i == xres - 1) ? E2 : data[j*xres + ip1];
 
                 metric[o] = Vertex4D(eq_col1(E, A), eq_col1(E, B), eq_col1(E, C), eq_col1(E, F));
             }
@@ -286,7 +286,7 @@ void upscale(DWORD * const data, const int2 &res, const bool is_brightness_data)
         }
     }
 
-    memcpy(g_or.data(), data, xres*yres * sizeof(DWORD));
+    memcpy(g_or.data(), data, xres*yres * sizeof(uint32_t));
 
     o = 0;
     for (unsigned int j = 0; j < yres; ++j)

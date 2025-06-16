@@ -592,10 +592,10 @@ void PhysicsEngine::UpdatePhysics()
       return;
 
    g_pplayer->m_logicProfiler.EnterProfileSection(FrameProfiler::PROFILE_PHYSICS);
-   U64 initial_time_usec = usec();
+   uint64_t initial_time_usec = usec();
 
    // DJRobX's crazy latency-reduction code
-   U64 delta_frame = 0;
+   uint64_t delta_frame = 0;
    if (g_pplayer->m_minphyslooptime > 0 && m_lastFlipTime > 0)
    {
       // We want the physics loops to sync up to the frames, not
@@ -608,8 +608,8 @@ void PhysicsEngine::UpdatePhysics()
    // TODO not sure why we would need noTimeCorrect, as pause should already have shifted the timings
    if (!g_pplayer->IsPlaying() || g_pplayer->m_noTimeCorrect)
    {
-      const U64 curPhysicsFrameTime = m_startTime_usec + (U64) (g_pplayer->m_time_sec * 1000000.0);
-      const U64 timeShift = initial_time_usec - curPhysicsFrameTime;
+      const uint64_t curPhysicsFrameTime = m_startTime_usec + (uint64_t)(g_pplayer->m_time_sec * 1000000.0);
+      const uint64_t timeShift = initial_time_usec - curPhysicsFrameTime;
       m_startTime_usec += timeShift;
       m_nextPhysicsFrameTime += timeShift;
       m_curPhysicsFrameTime += timeShift;
@@ -647,7 +647,7 @@ void PhysicsEngine::UpdatePhysics()
    while (m_nextPhysicsFrameTime < initial_time_usec) // loop here until physics (=simulated) time catches up to current real time, still staying behind real time by up to one physics emulation step
    {
       g_pplayer->m_time_sec = max(g_pplayer->m_time_sec, (double)(m_curPhysicsFrameTime - m_startTime_usec) / 1000000.0); // First iteration is done before precise time
-      g_pplayer->m_time_msec = (U32)((m_curPhysicsFrameTime - m_startTime_usec) / 1000); // Get time in milliseconds for timers
+      g_pplayer->m_time_msec = (uint32_t)((m_curPhysicsFrameTime - m_startTime_usec) / 1000); // Get time in milliseconds for timers
 
       m_phys_iterations++;
 
@@ -673,8 +673,8 @@ void PhysicsEngine::UpdatePhysics()
       #if !defined(ENABLE_BGFX)
       if (g_pplayer->m_minphyslooptime > 0)
       {
-         const U64 basetime = usec();
-         const U64 targettime = ((U64)g_pplayer->m_minphyslooptime * m_phys_iterations) + m_lastFlipTime;
+         const uint64_t basetime = usec();
+         const uint64_t targettime = ((uint64_t)g_pplayer->m_minphyslooptime * m_phys_iterations) + m_lastFlipTime;
          // If we're 3/4 of the way through the loop, fire a "controller sync" timer (timers with an interval set to -2) event so VPM can react to input.
          if (m_phys_iterations == 750 / ((int)g_pplayer->m_fps + 1))
             g_pplayer->FireSyncController();
@@ -688,7 +688,7 @@ void PhysicsEngine::UpdatePhysics()
       #endif
       // end DJRobX's crazy code
 
-      const U64 cur_time_usec = usec()-delta_frame; //!! one could also do this directly in the while loop condition instead (so that the while loop will really match with the current time), but that leads to some stuttering on some heavy frames
+      const uint64_t cur_time_usec = usec()-delta_frame; //!! one could also do this directly in the while loop condition instead (so that the while loop will really match with the current time), but that leads to some stuttering on some heavy frames
 
       // hung in the physics loop over 200 milliseconds or the number of physics iterations to catch up on is high (i.e. very low/unplayable FPS)
       if ((cur_time_usec - initial_time_usec > 200000) || (m_physicsMaxLoops != 0 && m_phys_iterations > m_physicsMaxLoops))
@@ -699,8 +699,8 @@ void PhysicsEngine::UpdatePhysics()
       }
 
       //update keys, hid, plumb, nudge, timers, etc
-      //const U32 sim_msec = (U32)(m_curPhysicsFrameTime / 1000);
-      const U32 cur_time_msec = (U32)(cur_time_usec / 1000);
+      //const uint32_t sim_msec = (uint32_t)(m_curPhysicsFrameTime / 1000);
+      const uint32_t cur_time_msec = (uint32_t)(cur_time_usec / 1000);
 
       #if !defined(ENABLE_BGFX)
       // FIXME remove ? To be done correctly, we should process OS messages and sync back controller
@@ -740,7 +740,7 @@ void PhysicsEngine::UpdatePhysics()
             pball->m_ringcounter_oldpos = 0;
       }
 
-      //PLOGD << "PT: " << physics_diff_time << ' ' << physics_to_graphic_diff_time << ' ' << (U32)(m_curPhysicsFrameTime/1000) << ' ' << (U32)(initial_time_usec/1000) << ' ' << cur_time_msec;
+      //PLOGD << "PT: " << physics_diff_time << ' ' << physics_to_graphic_diff_time << ' ' << (uint32_t)(m_curPhysicsFrameTime/1000) << ' ' << (uint32_t)(initial_time_usec/1000) << ' ' << cur_time_msec;
 
       m_curPhysicsFrameTime = m_nextPhysicsFrameTime; // new cycle, on physics frame boundary
       m_nextPhysicsFrameTime += PHYSICS_STEPTIME;     // advance physics position
@@ -754,7 +754,7 @@ void PhysicsEngine::UpdatePhysics()
    // The physics is emulated by PHYSICS_STEPTIME, but the overall emulation time is more precise
    g_pplayer->m_time_sec = (double)(initial_time_usec - m_startTime_usec) / 1000000.0;
    //g_pplayer->m_time_sec = (double)(max(initial_time_usec, m_curPhysicsFrameTime) - m_startTime_usec) / 1000000.0;
-   // g_pplayer->m_time_msec = (U32)((max(initial_time_usec, m_curPhysicsFrameTime) - m_startTime_usec) / 1000); // Not needed since PHYSICS_STEPTIME happens to be 1ms
+   // g_pplayer->m_time_msec = (uint32_t)((max(initial_time_usec, m_curPhysicsFrameTime) - m_startTime_usec) / 1000); // Not needed since PHYSICS_STEPTIME happens to be 1ms
 
    g_pplayer->m_logicProfiler.ExitProfileSection();
 }
@@ -933,7 +933,7 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
       }
 
       #ifdef DEBUGPHYSICS
-         c_contactcnt = (U32)m_contacts.size();
+         c_contactcnt = (uint32_t)m_contacts.size();
       #endif
 
       // Now handle contacts.
@@ -1019,7 +1019,7 @@ string PhysicsEngine::GetPerfInfo(bool resetMax)
    std::ostringstream info;
    info << std::fixed << std::setprecision(1);
 
-   info << "Physics: " << m_phys_iterations << " iterations per frame (" << ((U32)(m_phys_total_iterations / m_count)) << " avg " << m_phys_max_iterations
+   info << "Physics: " << m_phys_iterations << " iterations per frame (" << ((uint32_t)(m_phys_total_iterations / m_count)) << " avg " << m_phys_max_iterations
         << " max)\n";
 #ifdef DEBUGPHYSICS
    info << std::setprecision(5);

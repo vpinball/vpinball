@@ -128,7 +128,7 @@ public:
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
 private:
-   U32            m_timeNextUpdate;
+   uint32_t       m_timeNextUpdate;
    float          m_GridXCenter;
    float          m_GridYCenter;
    int            m_lightSeqGridHeight;

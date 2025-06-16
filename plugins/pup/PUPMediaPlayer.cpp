@@ -133,7 +133,7 @@ void PUPMediaPlayer::Pause(bool pause)
       if (m_paused)
          m_pauseTimestamp = static_cast<double>(SDL_GetTicks() - m_startTimestamp) / 1000.0; // Freeze at the current playing time
       else
-         m_startTimestamp = SDL_GetTicks() - static_cast<Uint64>(1000.0 * m_pauseTimestamp); // Adjust start time to restart from freeze point
+         m_startTimestamp = SDL_GetTicks() - static_cast<uint64_t>(1000.0 * m_pauseTimestamp); // Adjust start time to restart from freeze point
    }
 }
 

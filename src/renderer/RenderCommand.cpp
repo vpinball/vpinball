@@ -294,9 +294,9 @@ void RenderCommand::Execute(const int nInstances, const bool log)
             const GLenum indexType = m_mb->m_ib->m_indexFormat == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT;
             #if defined(DEBUG) && 0
             // Track invalid vertex memory reference. Very slow, only for debugging memory access exception in OpenGL
-            BYTE* tmp = new BYTE[m_indicesCount * m_mb->m_ib->m_sizePerIndex];
-            U16* tmp16 = (U16*)tmp;
-            U32* tmp32 = (U32*)tmp;
+            uint8_t* tmp = new uint8_t[m_indicesCount * m_mb->m_ib->m_sizePerIndex];
+            uint16_t* tmp16 = (uint16_t*)tmp;
+            uint32_t* tmp32 = (uint32_t*)tmp;
             glGetNamedBufferSubData(m_mb->m_ib->GetBuffer(), indexOffset, m_indicesCount * m_mb->m_ib->m_sizePerIndex, tmp);
             //assert(m_mb->m_vb->GetVertexOffset() + m_mb->m_vb->m_count <= m_mb->m_vb->GetSharedBuffer()->GetCount());
             for (unsigned int i = 0; i < m_indicesCount; i++)
@@ -371,7 +371,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
 //
 //  Setup a render command from the live state. The aim would be to not use
 //  this in the end (instead, prepare render command and lazily update them),
-//  but this will help transitionning from the current implementation.
+//  but this will help transitioning from the current implementation.
 
 void RenderCommand::SetClear(DWORD clearFlags, DWORD clearARGB)
 {
@@ -412,7 +412,7 @@ void RenderCommand::SetRenderLiveUI()
 
 void RenderCommand::SetDrawMesh(
    Shader* shader, MeshBuffer* mb, const RenderDevice::PrimitiveTypes type, 
-   const DWORD startIndex, const DWORD indexCount, const bool isTransparent, const float depth)
+   const uint32_t startIndex, const uint32_t indexCount, const bool isTransparent, const float depth)
 {
    assert(mb != nullptr);
    m_command = Command::RC_DRAW_MESH;

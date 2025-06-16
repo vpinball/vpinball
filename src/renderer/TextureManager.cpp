@@ -8,7 +8,7 @@
 
 std::shared_ptr<Sampler> TextureManager::LoadTexture(ITexManCacheable* const memtex, const bool force_linear_rgb)
 {
-   const unsigned long long hash = memtex->GetLiveHash();
+   const uint64_t hash = memtex->GetLiveHash();
    const Iter it = m_map.find(hash);
    if (it == m_map.end())
    {

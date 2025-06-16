@@ -16,7 +16,7 @@
 
 static const char point = std::use_facet<std::numpunct<char>>(std::locale("")).decimal_point(); // gets the OS locale decimal point (e.g. ',' or '.')
 
-unsigned long long mwc64x_state = 4077358422479273989ull;
+uint64_t mwc64x_state = 4077358422479273989ull;
 
 
 // used by dialogues, etc, locale specific, otherwise use std::from_chars (or e.g. std::stof() (with exception handling) or std::strtof()) directly
@@ -575,15 +575,15 @@ bool try_parse_color(const string& str, OLE_COLOR& value)
    if (hexStr.size() != 8)
       return false;
 
-   UINT32 rgba;
+   uint32_t rgba;
    std::stringstream ss;
    ss << std::hex << hexStr;
    if (!(ss >> rgba))
       return false;
 
-   const UINT8 r = (rgba >> 24) & 0xFF;
-   const UINT8 g = (rgba >> 16) & 0xFF;
-   const UINT8 b = (rgba >> 8) & 0xFF;
+   const uint8_t r = (rgba >> 24) & 0xFF;
+   const uint8_t g = (rgba >> 16) & 0xFF;
+   const uint8_t b = (rgba >> 8) & 0xFF;
 
    value = RGB(r, g, b);
 
@@ -643,7 +643,7 @@ vector<string> parse_csv_line(const string& line)
 
 string color_to_hex(OLE_COLOR color)
 {
-   const UINT32 rgba = (GetRValue(color) << 24) | (GetGValue(color) << 16) | (GetBValue(color) << 8) | 0xFF;
+   const uint32_t rgba = (GetRValue(color) << 24) | (GetGValue(color) << 16) | (GetBValue(color) << 8) | 0xFF;
    std::stringstream stream;
    stream << std::setfill('0') << std::setw(8) << std::hex << rgba;
    return stream.str();
@@ -671,7 +671,7 @@ string string_replace_all(const string& szStr, const string& szFrom, const strin
    return string_replace_all(szNewStr, szFrom, szTo, startPos+szTo.length());
 }
 
-string create_hex_dump(const UINT8* buffer, size_t size)
+string create_hex_dump(const uint8_t* buffer, size_t size)
 {
    constexpr int bytesPerLine = 32;
    std::stringstream ss;

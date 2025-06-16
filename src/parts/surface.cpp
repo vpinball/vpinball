@@ -980,7 +980,7 @@ void Surface::RenderSlingshots()
    m_rd->ResetRenderState();
    m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
    m_rd->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szSlingShotMaterial), nullptr);
-   m_rd->DrawMesh(m_rd->m_basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_slingshotMeshBuffer, RenderDevice::TRIANGLELIST, 0, static_cast<DWORD>(m_vlinesling.size() * 24));
+   m_rd->DrawMesh(m_rd->m_basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_slingshotMeshBuffer, RenderDevice::TRIANGLELIST, 0, static_cast<uint32_t>(m_vlinesling.size() * 24));
 }
 
 void Surface::RenderWallsAtHeight(const bool drop, const bool isReflectionPass)

@@ -97,7 +97,7 @@ NudgeFilter::NudgeFilter(const char * axis) IF_DEBUG_NUDGE(: m_axis(axis))
 // Process a sample.  Adds the sample to the running total, and checks
 // to see if a correction should be applied.  Replaces 'a' with the
 // corrected value if a correction is needed.
-void NudgeFilter::sample(float &a, const U64 frameTime)
+void NudgeFilter::sample(float &a, const uint64_t frameTime)
 {
    IF_DEBUG_NUDGE(char notes[128] = ""; float aIn = a;)
 

@@ -46,8 +46,8 @@ BaseTexture::BaseTexture(const unsigned int w, const unsigned int h, const Forma
    , m_format(format)
    , m_width(w)
    , m_height(h)
-   , m_liveHash(((unsigned long long)this) ^ usec() ^ ((unsigned long long)w << 16) ^ ((unsigned long long)h << 32) ^ format)
-   , m_data(new BYTE[w * h * GetPixelSize(format)])
+   , m_liveHash(((uint64_t)this) ^ usec() ^ ((uint64_t)w << 16) ^ ((uint64_t)h << 32) ^ format)
+   , m_data(new uint8_t[w * h * GetPixelSize(format)])
 {
    m_selfPointer = std::shared_ptr<BaseTexture>(this, [](BaseTexture*) { });
 }
@@ -116,8 +116,8 @@ BaseTexture* BaseTexture::CreateFromData(const void* data, const size_t size, co
          tex = BaseTexture::Create(x, y, format);
          if (tex)
          {
-            BYTE* const __restrict pdst = tex->data();
-            const BYTE* const __restrict psrc = (BYTE*)stbi_data;
+            uint8_t* const __restrict pdst = tex->data();
+            const uint8_t* const __restrict psrc = (uint8_t*)stbi_data;
             memcpy(pdst, psrc, x * y * channels_in_file);
             stbi_image_free(stbi_data);
             return tex;
@@ -261,7 +261,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, const bool isImageD
       {
          float minval = FLT_MAX;
          float maxval = -FLT_MAX;
-         const BYTE* __restrict bits = FreeImage_GetBits(dibConv);
+         const uint8_t* __restrict bits = (uint8_t*)FreeImage_GetBits(dibConv);
          const unsigned int pitch = FreeImage_GetPitch(dibConv);
          for (unsigned int y = 0; y < tex_h; ++y)
          {
@@ -315,15 +315,15 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, const bool isImageD
    if (tex->m_format == RGB_FP16 || tex->m_format == RGBA_FP16)
    {
       const FREE_IMAGE_TYPE img_type = FreeImage_GetImageType(dibConv);
-      const BYTE* __restrict bits = FreeImage_GetBits(dibConv);
+      const uint8_t* __restrict bits = (uint8_t*)FreeImage_GetBits(dibConv);
       const unsigned pitch = FreeImage_GetPitch(dibConv);
       const unsigned components = tex->m_format == RGB_FP16 ? 3 : 4;
-      unsigned short* const __restrict pdst = (unsigned short*)tex->data();
+      uint16_t* const __restrict pdst = (uint16_t*)tex->data();
       for (unsigned int y = 0; y < tex->m_height; ++y)
       {
          const size_t offs = (size_t)(tex->m_height - y - 1) * (tex->m_width*components);
          if (img_type == FIT_RGB16F || img_type == FIT_RGBA16F)
-            memcpy(pdst+offs, bits, tex->m_width*components*sizeof(unsigned short));
+            memcpy(pdst+offs, bits, tex->m_width*components*sizeof(uint16_t));
          // we already did a range check above, so use faster float2half code variants
          else if (needsSignedHalf2Float)
             float2half_noF16MaxInfNaN(pdst+offs, (const float*)bits, tex->m_width*components);
@@ -335,7 +335,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, const bool isImageD
    }
    else if (tex->m_format == RGB_FP32)
    {
-      const BYTE* __restrict bits = FreeImage_GetBits(dibConv);
+      const uint8_t* __restrict bits = (uint8_t*)FreeImage_GetBits(dibConv);
       const unsigned pitch = FreeImage_GetPitch(dibConv);
       float* const __restrict pdst = (float*)tex->data();
       for (unsigned int y = 0; y < tex->m_height; ++y)
@@ -348,9 +348,9 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, const bool isImageD
    }
    else if (tex->m_format == BW)
    {
-      const BYTE* __restrict bits = FreeImage_GetBits(dibConv);
+      const uint8_t* __restrict bits = (uint8_t*)FreeImage_GetBits(dibConv);
       const unsigned pitch = FreeImage_GetPitch(dibConv);
-      BYTE* const __restrict pdst = tex->data();
+      uint8_t* const __restrict pdst = tex->data();
       for (unsigned int y = 0; y < tex->m_height; ++y)
       {
          const size_t offs = (size_t)(tex->m_height - y - 1) * tex->m_width;
@@ -361,9 +361,9 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, const bool isImageD
    }
    else
    {
-      const BYTE* __restrict bits = FreeImage_GetBits(dibConv);
+      const uint8_t* __restrict bits = (uint8_t*)FreeImage_GetBits(dibConv);
       const unsigned pitch = FreeImage_GetPitch(dibConv);
-      BYTE* const __restrict pdst = tex->data();
+      uint8_t* const __restrict pdst = tex->data();
       const bool has_alpha = tex->HasAlpha();
       const unsigned int stride = has_alpha ? 4 : 3;
       #if (!((FI_RGBA_RED == 2) && (FI_RGBA_GREEN == 1) && (FI_RGBA_BLUE == 0) && (FI_RGBA_ALPHA == 3)))
@@ -371,7 +371,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, const bool isImageD
       #endif
       for (unsigned int y = 0; y < tex->m_height; ++y)
       {
-         const BYTE* __restrict pixel = (BYTE*)bits;
+         const uint8_t* __restrict pixel = bits;
          const size_t offs = (size_t)(tex->m_height - y - 1) * (tex->width()*stride);
          #if (FI_RGBA_RED == 2) && (FI_RGBA_GREEN == 1) && (FI_RGBA_BLUE == 0) && (FI_RGBA_ALPHA == 3)
             if (has_alpha)
@@ -611,7 +611,7 @@ BaseTexture* BaseTexture::ToBGRA() const
    tex->m_realHeight = m_realHeight;
    if (IsOpaqueComputed())
       tex->SetIsOpaque(IsOpaque());
-   BYTE* const __restrict tmp = tex->data();
+   uint8_t* const __restrict tmp = tex->data();
 
    if (m_format == BaseTexture::RGB_FP32) // Tonemap for 8bpc-Display
    {
@@ -632,7 +632,7 @@ BaseTexture* BaseTexture::ToBGRA() const
    }
    else if (m_format == BaseTexture::RGB_FP16) // Tonemap for 8bpc-Display
    {
-      const unsigned short* const __restrict src = (const unsigned short*)datac();
+      const uint16_t* const __restrict src = (const uint16_t*)datac();
       const size_t e = (size_t)width() * height();
       for (size_t o = 0; o < e; ++o)
       {
@@ -649,7 +649,7 @@ BaseTexture* BaseTexture::ToBGRA() const
    }
    else if (m_format == BaseTexture::RGBA_FP16) // Tonemap for 8bpc-Display
    {
-      const unsigned short* const __restrict src = (const unsigned short*)datac();
+      const uint16_t* const __restrict src = (const uint16_t*)datac();
       size_t o = 0;
       for (unsigned int j = 0; j < height(); ++j)
          for (unsigned int i = 0; i < width(); ++i, ++o)
@@ -682,7 +682,7 @@ BaseTexture* BaseTexture::ToBGRA() const
    }
    else if (m_format == BaseTexture::BW)
    {
-      const BYTE* const __restrict src = datac();
+      const uint8_t* const __restrict src = datac();
       const size_t e = (size_t)width() * height();
       for (size_t o = 0; o < e; ++o)
       {
@@ -698,7 +698,7 @@ BaseTexture* BaseTexture::ToBGRA() const
    }
    else if (m_format == BaseTexture::RGBA || m_format == BaseTexture::SRGBA)
    {
-      const BYTE* const __restrict psrc = datac();
+      const uint8_t* const __restrict psrc = datac();
       size_t o = 0;
       for (unsigned int j = 0; j < height(); ++j)
       {
@@ -749,7 +749,7 @@ void BaseTexture::UpdateOpaque() const
    if (m_format == RGBA || m_format == SRGBA)
    {
       // RGBA_FP16/RGBA_FP32 could be transparent but for the time being, the alpha channel is always opaque, only added for driver's texture format support
-      BYTE* const __restrict pdst = m_data;
+      uint8_t* const __restrict pdst = m_data;
       constexpr unsigned int stride = 4;
       for (unsigned int y = 0; y < m_height && m_isOpaque; ++y)
       {
@@ -773,7 +773,7 @@ Texture::Texture(string name, PinBinary* ppb, unsigned int width, unsigned int h
    : m_name(std::move(name))
    , m_width(width)
    , m_height(height)
-   , m_liveHash(((unsigned long long)this) ^ ((unsigned long long)ppb) ^ usec() ^ ((unsigned long long)width << 16) ^ ((unsigned long long)height << 32))
+   , m_liveHash(((uint64_t)this) ^ ((uint64_t)ppb) ^ usec() ^ ((uint64_t)width << 16) ^ ((uint64_t)height << 32))
    , m_ppb(ppb)
 {
    assert(m_ppb != nullptr);
@@ -811,7 +811,7 @@ Texture* Texture::CreateFromStream(IStream *pstream, int version, PinTable *pt)
          const size_t size = height * width;
          assert(ppb == nullptr && size != 0);
 
-         BYTE* const __restrict tmp = new BYTE[size * 4];
+         uint8_t* const __restrict tmp = new uint8_t[size * 4];
          LZWReader lzwreader(pbr->m_pistream, reinterpret_cast<int*>(tmp), width * 4, height, width * 4);
          lzwreader.Decoder();
 
@@ -830,15 +830,15 @@ Texture* Texture::CreateFromStream(IStream *pstream, int version, PinTable *pt)
 
          // Create a FreeImage from LZW data, converting from BGR to RGB, eventually dropping the alpha channel
          FIBITMAP* dib = FreeImage_Allocate(width, height, has_alpha ? 32 : 24);
-         BYTE* const pdst = FreeImage_GetBits(dib);
+         uint8_t* const pdst = (uint8_t*)FreeImage_GetBits(dib);
          const unsigned int ch = has_alpha ? 4 : 3;
          const unsigned int pitch = width * 4;
          const unsigned int pitch_dst = FreeImage_GetPitch(dib);
-         const BYTE* spch = tmp + (height * pitch);
+         const uint8_t* spch = tmp + (height * pitch);
          for (unsigned int i = 0; i < height; i++)
          {
-            const BYTE* __restrict src = (spch -= pitch); // start on previous previous line
-            BYTE* __restrict dst = pdst + i * pitch_dst;
+            const uint8_t* __restrict src = (spch -= pitch); // start on previous previous line
+            uint8_t* __restrict dst = pdst + i * pitch_dst;
             for (unsigned int x = 0; x < width; x++, src += 4, dst += ch) // copy and swap red & blue
             {
                dst[0] = src[2];

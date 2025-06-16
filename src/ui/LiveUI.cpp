@@ -1105,15 +1105,15 @@ void LiveUI::UpdatePerfOverlay()
       if (ImGui::ItemAdd(total_bb, 0, &frame_bb))
       {
          ImGui::RenderFrame(frame_bb.Min, frame_bb.Max, ImGui::GetColorU32(ImGuiCol_FrameBg), true, style.FrameRounding);
-         U64 minTS = UINT64_MAX;
-         //U64 maxTS = 0;
+         uint64_t minTS = UINT64_MAX;
+         //uint64_t maxTS = 0;
          for (int i = 0; i < 5; i++)
          {
             FrameProfiler *profiler = i == 0 ? &m_player->m_logicProfiler : m_player->m_renderProfiler;
             if (profiler->GetPrevStart(sections[i]) == 0)
                continue;
-            minTS = std::min(minTS, static_cast<U64>(profiler->GetPrevStart(sections[i])));
-            //maxTS = max(maxTS, static_cast<U64>(profiler->GetPrevEnd(sections[i])));
+            minTS = std::min(minTS, static_cast<uint64_t>(profiler->GetPrevStart(sections[i])));
+            //maxTS = max(maxTS, static_cast<uint64_t>(profiler->GetPrevEnd(sections[i])));
          }
          const float elapse = static_cast<float>(m_player->m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME)) * 1.5f;
          const float width = inner_bb.Max.x - inner_bb.Min.x;
@@ -1129,8 +1129,8 @@ void LiveUI::UpdatePerfOverlay()
             if (i == 5)
             {
                // For BGFX submit is done in 2 parts: VPX->BGFX, then BGFX->GPU after flip
-               U64 submit1 = profiler->GetPrevEnd(FrameProfiler::PROFILE_RENDER_SUBMIT) - profiler->GetPrevStart(FrameProfiler::PROFILE_RENDER_SUBMIT);
-               U64 submit2 = profiler->GetPrev(FrameProfiler::PROFILE_RENDER_SUBMIT) - submit1;
+               const uint64_t submit1 = profiler->GetPrevEnd(FrameProfiler::PROFILE_RENDER_SUBMIT) - profiler->GetPrevStart(FrameProfiler::PROFILE_RENDER_SUBMIT);
+               const uint64_t submit2 = profiler->GetPrev(FrameProfiler::PROFILE_RENDER_SUBMIT) - submit1;
                start = static_cast<float>(profiler->GetPrevEnd(FrameProfiler::PROFILE_RENDER_FLIP) - minTS) / elapse;
                end = static_cast<float>(profiler->GetPrevEnd(FrameProfiler::PROFILE_RENDER_FLIP) - minTS + submit2) / elapse;
             }
@@ -1149,7 +1149,7 @@ void LiveUI::UpdatePerfOverlay()
    // Main frame timing table
    if ((m_show_fps == 2) && ImGui::BeginTable("Timings", 3, ImGuiTableFlags_Borders))
    {
-      const U32 period = m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME);
+      const uint32_t period = m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME);
       ImGui::TableSetupColumn("##Cat", ImGuiTableColumnFlags_WidthFixed);
       ImGui::TableSetupColumn(m_showAvgFPS ? "Avg Time" : "Time", ImGuiTableColumnFlags_WidthFixed);
       ImGui::TableSetupColumn(m_showAvgFPS ? "Avg Ratio" : "Ratio", ImGuiTableColumnFlags_WidthFixed);
@@ -1388,7 +1388,7 @@ void LiveUI::Update(const int width, const int height)
    ImGui::PushFont(m_baseFont);
 
    // Display notification (except when script has an unaligned rotation)
-   const U32 tick = msec();
+   const uint32_t tick = msec();
    float notifY = io.DisplaySize.y * 0.25f;
    const bool showNotifications = isVR || ((float)m_rotate * 90.0f == m_player->m_ptable->mViewSetups[m_player->m_ptable->m_BG_current_set].GetRotation(m_player->m_playfieldWnd->GetWidth(), m_player->m_playfieldWnd->GetHeight()));
    ImGui::PushFont(m_overlayFont);
@@ -1730,9 +1730,9 @@ void LiveUI::UpdateTweakPage()
 
 void LiveUI::HandleTweakInput()
 {
-   const U32 now = msec();
-   static U32 lastHandle = now;
-   const U32 sinceLastInputHandleMs = now - lastHandle;
+   const uint32_t now = msec();
+   static uint32_t lastHandle = now;
+   const uint32_t sinceLastInputHandleMs = now - lastHandle;
    lastHandle = now;
 
    BackdropSetting activeTweakSetting = m_tweakPageOptions[m_activeTweakIndex];
@@ -1793,7 +1793,7 @@ void LiveUI::HandleTweakInput()
 
       if (keycode == eLeftFlipperKey || keycode == eRightFlipperKey)
       {
-         static U32 startOfPress = 0;
+         static uint32_t startOfPress = 0;
          static float floatFraction = 1.0f;
          if (keyEvent != 0)
          {
@@ -2538,7 +2538,7 @@ void LiveUI::UpdateTweakModeUI()
       }
    }
    infos.push_back(activeTweakSetting == BS_Page ? "Flipper keys:   Previous/Next page"s : "Flipper keys:   Adjust highlighted value"s);
-   const U32 info = ((msec() - m_StartTime_msec) / 2000u) % (U32)infos.size();
+   const uint32_t info = ((msec() - m_StartTime_msec) / 2000u) % (uint32_t)infos.size();
    ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
    HelpTextCentered(infos[info]);
    ImGui::PopStyleColor();
@@ -4178,7 +4178,7 @@ void LiveUI::UpdateRendererInspectionModal()
       // Latency timing table
       if (ImGui::BeginTable("Latencies", 4, ImGuiTableFlags_Borders))
       {
-         const U32 period = m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME);
+         const uint32_t period = m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME);
          ImGui::TableSetupColumn("##Cat", ImGuiTableColumnFlags_WidthFixed);
          ImGui::TableSetupColumn("Min", ImGuiTableColumnFlags_WidthFixed);
          ImGui::TableSetupColumn("Max", ImGuiTableColumnFlags_WidthFixed);

@@ -758,7 +758,7 @@ void PinSound::MusicVolume(const float volume)
  * 
  * @note Used by VPinMAMEController and PUP. volume range 0-1 from both VPinMAME and PUP
  */
-bool PinSound::StreamInit(DWORD frequency, int channels, const float volume) 
+bool PinSound::StreamInit(uint32_t frequency, int channels, const float volume)
 {
    SDL_AudioSpec audioSpec;
    audioSpec.freq = frequency;
@@ -795,7 +795,7 @@ bool PinSound::StreamInit(DWORD frequency, int channels, const float volume)
  * 
  * @note called by VPinMAMEController and PUP
  */
-void PinSound::StreamUpdate(void* buffer, DWORD length)
+void PinSound::StreamUpdate(void* buffer, uint32_t length)
 {
    SDL_PutAudioStreamData(m_pstream, buffer, length);
 }
@@ -888,7 +888,7 @@ Mix_Chunk* PinSound::copyMixChunk(const Mix_Chunk* const original)
 
    // Allocate memory for audio buffer
    //copy->allocated = 1;
-   //copy->abuf = (Uint8*)SDL_malloc(original->alen*sizeof(Uint8)); // need to use SDL_malloc as SDL_free will be used when freeing the chunk
+   //copy->abuf = (uint8_t*)SDL_malloc(original->alen*sizeof(uint8_t)); // need to use SDL_malloc as SDL_free will be used when freeing the chunk
    //std::memcpy(copy->abuf, original->abuf, original->alen);
    copy->allocated = 0;
    copy->abuf = original->abuf;

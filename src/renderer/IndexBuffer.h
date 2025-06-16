@@ -45,10 +45,10 @@ public:
       else
       {
          m_lock.mem = nullptr;
-         m_lock.data = new BYTE[m_lock.size];
+         m_lock.data = new uint8_t[m_lock.size];
       }
       #else
-      m_lock.data = new BYTE[m_lock.size];
+      m_lock.data = new uint8_t[m_lock.size];
       #endif
       data = m_lock.data;
    }
@@ -73,7 +73,7 @@ public:
       Buf* buffer;
       unsigned int offset;
       unsigned int size;
-      BYTE* data;
+      uint8_t* data;
       #if defined(ENABLE_BGFX)
       const bgfx::Memory* mem;
       #endif

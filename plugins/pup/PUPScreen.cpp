@@ -306,7 +306,7 @@ void PUPScreen::SetPage(int pagenum, int seconds)
       m_pageTimer = SDL_AddTimer(seconds * 1000, PageTimerElapsed, this);
 }
 
-Uint32 PUPScreen::PageTimerElapsed(void* param, SDL_TimerID timerID, Uint32 interval)
+uint32_t PUPScreen::PageTimerElapsed(void* param, SDL_TimerID timerID, uint32_t interval)
 {
    PUPScreen* me = static_cast<PUPScreen*>(param);
    std::lock_guard<std::mutex> lock(me->m_renderMutex);

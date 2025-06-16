@@ -77,7 +77,7 @@ public:
       bool stopRumble = false;
       if (m_rumbleRunning)
       {
-         const DWORD now = msec();
+         const uint32_t now = msec();
          if (m_rumbleOffTime <= now || m_rumbleOffTime - now > 65535)
          {
             m_rumbleRunning = false;

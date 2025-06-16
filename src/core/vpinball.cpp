@@ -1088,7 +1088,7 @@ void VPinball::DoPlay(const int playMode)
       #ifdef ENABLE_SDL_VIDEO
       auto processWindowMessages = [&initError]()
       {
-         unsigned long long startTick = usec();
+         const uint64_t startTick = usec();
          SDL_Event e;
          bool isPFWnd = true;
          static Vertex2D dragStart;
@@ -1192,7 +1192,7 @@ void VPinball::DoPlay(const int playMode)
       #elif !defined(__STANDALONE__)
       auto processWindowMessages = [&initError]()
       {
-         unsigned long long startTick = usec();
+         const uint64_t startTick = usec();
          MSG msg;
          while (PeekMessageA(&msg, nullptr, 0, 0, PM_REMOVE))
          {
@@ -2948,7 +2948,7 @@ static inline uint8_t reverse(const uint8_t n)
    return (lookupRev[n & 0x0f] << 4) | lookupRev[n >> 4];
 }
 
-static unsigned int GenerateTournamentFileInternal(BYTE *const dmd_data, const unsigned int dmd_size, const string& tablefile, unsigned int& tablefileChecksum, unsigned int& vpxChecksum, unsigned int& scriptsChecksum)
+static unsigned int GenerateTournamentFileInternal(uint8_t *const dmd_data, const unsigned int dmd_size, const string& tablefile, unsigned int& tablefileChecksum, unsigned int& vpxChecksum, unsigned int& scriptsChecksum)
 {
    tablefileChecksum = vpxChecksum = scriptsChecksum = 0;
    unsigned int dmd_data_c = 0;
@@ -2956,7 +2956,7 @@ static unsigned int GenerateTournamentFileInternal(BYTE *const dmd_data, const u
    FILE *f;
    if (fopen_s(&f, tablefile.c_str(), "rb") == 0 && f)
    {
-      BYTE tmp[4096];
+      uint8_t tmp[4096];
       size_t r;
       while ((r = fread(tmp, 1, sizeof(tmp), f))) //!! also include MD5 at end?
       {
@@ -3023,7 +3023,7 @@ static unsigned int GenerateTournamentFileInternal(BYTE *const dmd_data, const u
       for(size_t i2 = 0; i2 < std::size(defaultFileNameSearch); ++i2)
          if(fopen_s(&f, GetTextFileFromDirectory(defaultFileNameSearch[i2] + i3, defaultPathSearch[i2]).c_str(), "rb") == 0 && f)
          {
-            BYTE tmp[4096];
+            uint8_t tmp[4096];
             size_t r;
             while ((r = fread(tmp, 1, sizeof(tmp), f))) //!! also include MD5 at end?
             {
@@ -3059,7 +3059,7 @@ static unsigned int GenerateTournamentFileInternal(BYTE *const dmd_data, const u
 #endif
    if(fopen_s(&f, path, "rb") == 0 && f)
    {
-      BYTE tmp[4096];
+      uint8_t tmp[4096];
       size_t r;
       while ((r = fread(tmp, 1, sizeof(tmp), f))) //!! also include MD5 at end?
       {
@@ -3095,10 +3095,10 @@ static unsigned int GenerateTournamentFileInternal(BYTE *const dmd_data, const u
    return dmd_data_c;
 }
 
-static void GenerateTournamentFileInternal2(BYTE *const dmd_data, const unsigned int dmd_size, unsigned int dmd_data_c)
+static void GenerateTournamentFileInternal2(uint8_t *const dmd_data, const unsigned int dmd_size, unsigned int dmd_data_c)
 {
-   BYTE *fs = (BYTE*)&GenerateTournamentFileInternal;
-   BYTE *fe = fs;
+   uint8_t *fs = (uint8_t*)&GenerateTournamentFileInternal;
+   uint8_t *fe = fs;
    while (true)
    {
 #if defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__)
@@ -3128,12 +3128,12 @@ void VPinball::GenerateTournamentFile()
       return;
    }
 
-   BYTE *const dmd_data = new BYTE[dmd_size + 16];
+   uint8_t *const dmd_data = new uint8_t[dmd_size + 16];
    if (g_pplayer->m_dmdFrame->m_format == BaseTexture::BW)
       memcpy(dmd_data, g_pplayer->m_dmdFrame->data(), dmd_size);
    else if (g_pplayer->m_dmdFrame->m_format == BaseTexture::RGBA)
    {
-      const DWORD *const data = (DWORD *)g_pplayer->m_dmdFrame->data();
+      const uint32_t *const __restrict data = (uint32_t *)g_pplayer->m_dmdFrame->data();
       for (unsigned int i = 0; i < dmd_size; ++i)
          dmd_data[i] = ((data[i] & 0xFF) + ((data[i] >> 8) & 0xFF) + ((data[i] >> 16) & 0xFF))/3;
    }
@@ -3177,7 +3177,7 @@ void VPinball::GenerateImageFromTournamentFile(const string &tablefile, const st
 {
    unsigned int x = 0, y = 0, dmd_size = 0, cpu = 0, bits = 0, os = 0, renderer = 0, major = 0, minor = 0, rev = 0, git_rev = 0;
    unsigned int tablefileChecksum_in = 0, vpxChecksum_in = 0, scriptsChecksum_in = 0;
-   BYTE *dmd_data;
+   uint8_t *dmd_data;
    FILE *f;
    if (fopen_s(&f, txtfile.c_str(), "r") == 0 && f)
    {
@@ -3196,7 +3196,7 @@ void VPinball::GenerateImageFromTournamentFile(const string &tablefile, const st
       error |= fscanf_s(f, "%08X", &vpxChecksum_in) != 1;
       error |= fscanf_s(f, "%08X", &scriptsChecksum_in) != 1;
       dmd_size = x * y + 16;
-      dmd_data = new BYTE[dmd_size];
+      dmd_data = new uint8_t[dmd_size];
       for (unsigned int i = 0; i < dmd_size; ++i)
       {
          unsigned int v;

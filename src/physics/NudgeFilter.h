@@ -14,7 +14,7 @@ public:
    NudgeFilter(const char * axis);
 
    // adjust an acceleration sample
-   void sample(float &a, const U64 frameTime);
+   void sample(float &a, const uint64_t frameTime);
 
 private:
    // debug output
@@ -30,11 +30,11 @@ private:
    float m_prv = 0.f;
 
    // timestamp of last zero crossing in the raw acceleration data
-   U64 m_tzc = 0;
+   uint64_t m_tzc = 0;
 
    // timestamp of last correction inserted into the data
-   U64 m_tCorr = 0;
+   uint64_t m_tCorr = 0;
 
    // timestamp of last motion == start of rest
-   U64 m_tMotion = 0;
+   uint64_t m_tMotion = 0;
 };

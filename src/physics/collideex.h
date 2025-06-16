@@ -37,7 +37,7 @@ public:
 
    void Animate();
 
-   U32 m_TimeReset; // Time at which to pull in slingshot, Zero means the slingshot is currently reset
+   uint32_t m_TimeReset; // Time at which to pull in slingshot, Zero means the slingshot is currently reset
    bool m_animations;
    bool m_iframe;
 };

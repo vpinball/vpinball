@@ -392,7 +392,7 @@ HRESULT BiffReader::GetInt(int &value)
    return ReadBytes(&value, sizeof(int), &read);
 }
 
-HRESULT BiffReader::GetString(char *const szvalue, const DWORD szvalue_maxlength)
+HRESULT BiffReader::GetString(char *const szvalue, const size_t szvalue_maxlength)
 {
    ULONG read = 0;
    HRESULT hr;

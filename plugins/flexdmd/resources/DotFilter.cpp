@@ -11,7 +11,7 @@ void DotFilter::Filter(Bitmap* pBitmap)
 
    SDL_Surface* const dst = SDL_CreateSurface(src->w / m_dotSize, src->h / m_dotSize, SDL_PIXELFORMAT_RGBA32);
 
-   ColorRGBA32* const pixels = (Uint32*)dst->pixels;
+   ColorRGBA32* const pixels = (uint32_t*)dst->pixels;
 
    for (int y = 0; y < dst->h; y++) {
       for (int x = 0; x < dst->w; x++) {

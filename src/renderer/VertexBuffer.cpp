@@ -77,17 +77,17 @@ void SharedVertexBuffer::Upload()
       // Create data block
       #if defined(ENABLE_BGFX)
       const bgfx::Memory* mem = bgfx::alloc(size);
-      UINT8* data = mem->data;
+      uint8_t* data = mem->data;
 
       #elif defined(ENABLE_OPENGL)
-      UINT8* data = (UINT8*)malloc(size);
+      uint8_t* data = (uint8_t*)malloc(size);
 
       #elif defined(ENABLE_DX9)
       // We always specify WRITEONLY since MSDN states,
       // "Buffers created with D3DPOOL_DEFAULT that do not specify D3DUSAGE_WRITEONLY may suffer a severe performance penalty."
       // This means we cannot read from vertex buffers, but I don't think we need to.
       CHECKD3D(m_buffers[0]->m_rd->GetCoreDevice()->CreateVertexBuffer(size, D3DUSAGE_WRITEONLY | (m_isStatic ? 0 : D3DUSAGE_DYNAMIC), 0 /* sharedBuffer->format */, D3DPOOL_DEFAULT, &m_vb, nullptr));
-      UINT8* data;
+      uint8_t* data;
       CHECKD3D(m_vb->Lock(0, size, (void**)&data, 0));
 
       #endif
@@ -158,7 +158,7 @@ void SharedVertexBuffer::Upload()
 
          #elif defined(ENABLE_DX9)
          // It would be better to perform a single lock but in fact, I don't think there are situations where more than one update is pending
-         UINT8* data;
+         uint8_t* data;
          CHECKD3D(m_vb->Lock(upload.offset, upload.size, (void**)&data, 0));
          memcpy(data, upload.data, upload.size);
          CHECKD3D(m_vb->Unlock());

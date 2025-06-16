@@ -238,24 +238,6 @@ enum textureUsage {
    DYNAMIC = 1
 };
 
-struct ViewPort  {
-   union {
-      struct {
-         SDL_Rect sdl_rect;
-         float front;
-         float rear;
-      };
-      struct {
-         DWORD X;
-         DWORD Y;
-         DWORD Width;
-         DWORD Height;
-         float MinZ;
-         float MaxZ;
-      };
-   };
-};
-
 enum memoryPool {
    SYSTEM = 0,
    DEFAULT = 1

@@ -117,8 +117,8 @@ public:
    bool MusicInit(const string& szFileName, const float volume); // player.cpp
 
    // Plays sounds from VPinMAME and PUP.  These are streams
-   bool StreamInit(DWORD frequency, int channels, const float volume);
-   void StreamUpdate(void* buffer, DWORD length);
+   bool StreamInit(uint32_t frequency, int channels, const float volume);
+   void StreamUpdate(void* buffer, uint32_t length);
    void StreamVolume(const float volume);
 
    SoundOutTypes GetOutputTarget() const { return m_outputTarget; }

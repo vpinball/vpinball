@@ -537,9 +537,9 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(std::shared_ptr<const BaseTextur
    }
    else if (basetexformat == BaseTexture::RGB_FP16 && texformat == colorFormat::RGBA16F)
    {
-      unsigned short* const __restrict pdest = (unsigned short*)locked.pBits;
-      const unsigned short* const __restrict psrc = (const unsigned short*)(surf->datac());
-      const unsigned short one16 = float2half_noLUT(1.f);
+      uint16_t* const __restrict pdest = (uint16_t*)locked.pBits;
+      const uint16_t* const __restrict psrc = (const uint16_t*)(surf->datac());
+      const uint16_t one16 = float2half_noLUT(1.f);
       for (size_t i = 0; i < (size_t)texwidth * texheight; ++i)
       {
          pdest[i * 4 + 0] = psrc[i * 3 + 0];
@@ -550,14 +550,14 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(std::shared_ptr<const BaseTextur
    }
    else if (basetexformat == BaseTexture::RGBA_FP16 && texformat == colorFormat::RGBA16F)
    {
-      unsigned short* const __restrict pdest = (unsigned short*)locked.pBits;
-      const unsigned short* const __restrict psrc = (const unsigned short*)(surf->datac());
-      memcpy(pdest, psrc, (size_t)texwidth * texheight*4*sizeof(unsigned short));
+      uint16_t* const __restrict pdest = (uint16_t*)locked.pBits;
+      const uint16_t* const __restrict psrc = (const uint16_t*)(surf->datac());
+      memcpy(pdest, psrc, (size_t)texwidth * texheight*4*sizeof(uint16_t));
    }
    else if ((basetexformat == BaseTexture::BW) && texformat == colorFormat::RGBA8)
    {
-      BYTE* const __restrict pdest = (BYTE*)locked.pBits;
-      const BYTE* const __restrict psrc = surf->datac();
+      uint8_t* const __restrict pdest = (uint8_t*)locked.pBits;
+      const uint8_t* const __restrict psrc = surf->datac();
       for (size_t i = 0; i < (size_t)texwidth * texheight; ++i)
       {
          pdest[i * 4 + 0] =
@@ -586,8 +586,8 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(std::shared_ptr<const BaseTextur
    }
    else if (basetexformat == BaseTexture::SRGB565 && texformat == colorFormat::RGB5)
    {
-      unsigned short* const __restrict pdest = (unsigned short*)locked.pBits;
-      const unsigned short* const __restrict psrc = (const unsigned short*)(surf->datac());
+      uint16_t* const __restrict pdest = (uint16_t*)locked.pBits;
+      const uint16_t* const __restrict psrc = (const uint16_t*)(surf->datac());
       memcpy(pdest, psrc, (size_t)texwidth * texheight * 2);
    }
    else

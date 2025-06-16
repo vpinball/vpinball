@@ -1247,7 +1247,7 @@ bool Player::ShowStats() const
    return mode == IF_FPS || mode == IF_PROFILING;
 }
 
-void Player::SetPlayState(const bool isPlaying, const U32 delayBeforePauseMs)
+void Player::SetPlayState(const bool isPlaying, const uint32_t delayBeforePauseMs)
 {
    bool wasPlaying = IsPlaying();
    if (isPlaying || delayBeforePauseMs == 0)
@@ -1481,31 +1481,31 @@ void Player::ApplyDeferredTimerChanges()
 #ifdef UNUSED_TILT
 int Player::NudgeGetTilt()
 {
-   static U32 last_tilt_time;
-   static U32 last_jolt_time;
+   static uint32_t last_tilt_time;
+   static uint32_t last_jolt_time;
 
    if(!m_ptable->m_accelerometerEnabled || m_NudgeManual >= 0 ||               //disabled or in joystick test mode
        m_ptable->m_tilt_amount == 0 || m_ptable->m_jolt_amount == 0) return 0; //disabled
 
-   const U32 ms = msec();
+   const uint32_t ms = msec();
 
-   U32 tilt_2 = 0;
+   uint32_t tilt_2 = 0;
    for (int j = 0; j < m_pininput.m_num_joy; ++j) //find largest value
    {
-      tilt_2 = max(tilt_2, (U32)(m_curAccel[j].x * m_curAccel[j].x + m_curAccel[j].y * m_curAccel[j].y)); //always postive numbers
+      tilt_2 = max(tilt_2, (uint32_t)(m_curAccel[j].x * m_curAccel[j].x + m_curAccel[j].y * m_curAccel[j].y)); //always positive numbers
    }
 
    if( ( ms - last_jolt_time > m_ptable->m_jolt_trigger_time ) &&
-      ( ms - last_tilt_time > (U32)m_ptable->m_tilt_trigger_time ) &&
-      tilt_2 > ( (U32)m_ptable->m_tilt_amount * (U32)m_ptable->m_tilt_amount ) )
+      ( ms - last_tilt_time > (uint32_t)m_ptable->m_tilt_trigger_time ) &&
+      tilt_2 > ( (uint32_t)m_ptable->m_tilt_amount * (uint32_t)m_ptable->m_tilt_amount ) )
    {
       last_tilt_time = ms;
 
       return 1;
    }
 
-   if( ms - last_jolt_time > (U32)m_ptable->m_jolt_trigger_time && 
-      tilt_2 > ( (U32)m_ptable->m_jolt_amount * (U32)m_ptable->m_jolt_amount ) )
+   if( ms - last_jolt_time > (uint32_t)m_ptable->m_jolt_trigger_time && 
+      tilt_2 > ((uint32_t)m_ptable->m_jolt_amount * (uint32_t)m_ptable->m_jolt_amount ) )
    {
       last_jolt_time = ms;
    }
@@ -1591,8 +1591,8 @@ string Player::GetPerfInfo()
 {
    // Make it more or less readable by updating only once per second
    static string txt;
-   static U32 lastUpdate = 0;
-   U32 now = msec();
+   static uint32_t lastUpdate = 0;
+   uint32_t now = msec();
    if (lastUpdate != 0 && now - lastUpdate < 1000)
       return txt;
 
@@ -1625,9 +1625,9 @@ string Player::GetPerfInfo()
         << (m_pactiveball ? (m_pactiveball->m_angularmomentum / m_pactiveball->Inertia()).Length() : -1.f) << '\n';
 
    info << "Flipper keypress to rotate: "
-      << ((INT64)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) / 1000.) << " ms ("
+      << ((int64_t)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) / 1000.) << " ms ("
       << ((int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame)) << " f) to eos: "
-      << ((INT64)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) / 1000.) << " ms ("
+      << ((int64_t)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) / 1000.) << " ms ("
       << ((int)(m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame)) << " f)\n";
 
    // Draw performance readout - at end of CPU frame, so hopefully the previous frame
@@ -1897,7 +1897,7 @@ void Player::FramePacingGameLoop(const std::function<void()>& sync)
       // If the user asked to sync on a lower frame rate than the refresh rate, then wait for it
       if (m_maxFramerate != m_playfieldWnd->GetRefreshRate())
       {
-         const U64 now = usec();
+         const uint64_t now = usec();
          const unsigned int refreshLength = static_cast<unsigned int>(1000000. / (double)m_playfieldWnd->GetRefreshRate());
          const unsigned int minimumFrameLength = static_cast<unsigned int>(1000000. / (double)m_maxFramerate);
          const unsigned int maximumFrameLength = 5 * refreshLength;
@@ -2545,7 +2545,7 @@ void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgD
       {
          const int nChannels = (msg.type == CTLPI_AUDIO_SRC_BACKGLASS_MONO) ? 1 : 2;
          PinSound* const pPinSound = new PinSound(me->m_ptable->m_settings); //!!??
-         pPinSound->StreamInit(static_cast<DWORD>(msg.sampleRate), nChannels, 1.f);
+         pPinSound->StreamInit(static_cast<uint32_t>(msg.sampleRate), nChannels, 1.f);
          pPinSound->StreamUpdate(msg.buffer, msg.bufferSize);
          me->m_externalAudioPlayers[msg.id.id] = pPinSound;
       }

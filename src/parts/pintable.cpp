@@ -623,7 +623,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
    BSTR bstr = BstrFromVariant(&Value, 0x409);
 
    DWORD writ;
-   pstmValue->Write((WCHAR *)bstr, (int)wcslen((WCHAR *)bstr) * (int)sizeof(WCHAR), &writ);
+   pstmValue->Write((WCHAR *)bstr, (uint32_t)wcslen((WCHAR *)bstr) * (uint32_t)sizeof(WCHAR), &writ);
 
    SysFreeString(bstr);
 
@@ -1049,20 +1049,20 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as
    SafeArrayAccessData(psa, (void **)&p);
    if (g_pplayer->m_scaleFX_DMD)
    {
-      DWORD *rgba = new DWORD[size * scale * scale];
+      uint32_t *const __restrict rgba = new uint32_t[size * scale * scale];
       for (int ofs = 0; ofs < size; ++ofs)
          rgba[ofs] = V_UI4(&p[ofs]); 
       upscale(rgba, g_pplayer->m_dmdSize, true);
-      BYTE *const data = g_pplayer->m_dmdFrame->data();
+      uint8_t *const __restrict data = g_pplayer->m_dmdFrame->data();
       for (int ofs = 0; ofs < size; ++ofs)
-         data[ofs] = static_cast<BYTE>(InvsRGB((float)(rgba[ofs] & 0xFF) * (float)(1.0 / 100.)) * 255.f);
+         data[ofs] = static_cast<uint8_t>(InvsRGB((float)(rgba[ofs] & 0xFF) * (float)(1.0 / 100.)) * 255.f);
       delete[] rgba;
    }
    else
    {
-      BYTE *const data = g_pplayer->m_dmdFrame->data();
+      uint8_t *const __restrict data = g_pplayer->m_dmdFrame->data();
       for (int ofs = 0; ofs < size; ++ofs)
-         data[ofs] = static_cast<BYTE>(InvsRGB((float)V_UI4(&p[ofs]) * (float)(1.0 / 100.)) * 255.f);
+         data[ofs] = static_cast<uint8_t>(InvsRGB((float)V_UI4(&p[ofs]) * (float)(1.0 / 100.)) * 255.f);
    }
    SafeArrayUnaccessData(psa);
    g_pplayer->m_dmdFrameId++;
@@ -1100,7 +1100,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! assumes 
       g_pplayer->m_dmdFrame = BaseTexture::Create(g_pplayer->m_dmdSize.x * scale, g_pplayer->m_dmdSize.y * scale, BaseTexture::SRGBA);
    }
    const int size = g_pplayer->m_dmdSize.x * g_pplayer->m_dmdSize.y;
-   DWORD *const data = reinterpret_cast<DWORD *>(g_pplayer->m_dmdFrame->data());
+   uint32_t *const __restrict data = reinterpret_cast<uint32_t *>(g_pplayer->m_dmdFrame->data());
    VARIANT *p;
    SafeArrayAccessData(psa, (void **)&p);
    for (int ofs = 0; ofs < size; ++ofs)
@@ -6644,7 +6644,7 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
         {
             const Primitive *const prim = (Primitive *)piSelect;
             if (!prim->m_mesh.m_animationFrames.empty())
-                info += " (animated " + std::to_string((unsigned long long)prim->m_mesh.m_animationFrames.size() - 1) + " frames)";
+                info += " (animated " + std::to_string((uint64_t)prim->m_mesh.m_animationFrames.size() - 1) + " frames)";
         }
 #ifndef __STANDALONE__
         m_vpinball->SetStatusBarElementInfo(info);
@@ -7682,7 +7682,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
    size_t cvar;
    WCHAR **rgstr;
-   DWORD *rgdw;
+   uint32_t *rgdw;
 
    switch (dispID)
    {
@@ -7698,7 +7698,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       cvar = m_vimage.size();
 
       rgstr = (WCHAR **)CoTaskMemAlloc((cvar + 1) * sizeof(WCHAR *));
-      rgdw = (DWORD *)CoTaskMemAlloc((cvar + 1) * sizeof(DWORD));
+      rgdw = (uint32_t *)CoTaskMemAlloc((cvar + 1) * sizeof(uint32_t));
 
       WCHAR *wzDst = (WCHAR *)CoTaskMemAlloc(7 * sizeof(WCHAR));
       // TEXT
@@ -7709,7 +7709,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
       for (size_t ivar = 0; ivar < cvar; ivar++)
       {
-         const DWORD cwch = (DWORD)m_vimage[ivar]->m_name.length() + 1;
+         const int cwch = (int)m_vimage[ivar]->m_name.length() + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
          if (wzDst == nullptr)
             ShowError("DISPID_Image alloc failed");
@@ -7717,7 +7717,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
          //MsoWzCopy(szSrc,szDst);
          rgstr[ivar + 1] = wzDst;
-         rgdw[ivar + 1] = (DWORD)ivar;
+         rgdw[ivar + 1] = (uint32_t)ivar;
       }
       cvar++;
    }
@@ -7729,7 +7729,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
    {
       cvar = m_materials.size();
       rgstr = (WCHAR **)CoTaskMemAlloc((cvar + 1) * sizeof(WCHAR *));
-      rgdw = (DWORD *)CoTaskMemAlloc((cvar + 1) * sizeof(DWORD));
+      rgdw = (uint32_t *)CoTaskMemAlloc((cvar + 1) * sizeof(uint32_t));
 
       WCHAR *wzDst = (WCHAR *)CoTaskMemAlloc(7 * sizeof(WCHAR));
       // TEXT
@@ -7740,7 +7740,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
       for (size_t ivar = 0; ivar < cvar; ivar++)
       {
-         const DWORD cwch = (DWORD)m_materials[ivar]->m_name.length() + 1;
+         const int cwch = (int)m_materials[ivar]->m_name.length() + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
          if (wzDst == nullptr)
             ShowError("IDC_MATERIAL_COMBO alloc failed");
@@ -7748,7 +7748,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
          //MsoWzCopy(szSrc,szDst);
          rgstr[ivar + 1] = wzDst;
-         rgdw[ivar + 1] = (DWORD)ivar;
+         rgdw[ivar + 1] = (uint32_t)ivar;
       }
       cvar++;
       break;
@@ -7758,7 +7758,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       cvar = m_vsound.size();
 
       rgstr = (WCHAR **)CoTaskMemAlloc((cvar + 1) * sizeof(WCHAR *));
-      rgdw = (DWORD *)CoTaskMemAlloc((cvar + 1) * sizeof(DWORD));
+      rgdw = (uint32_t *)CoTaskMemAlloc((cvar + 1) * sizeof(uint32_t));
 
       rgstr[0] = (WCHAR *)CoTaskMemAlloc(7 * sizeof(WCHAR));
       wcscpy_s(rgstr[0], 7, L"<None>");
@@ -7766,14 +7766,14 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
       for (size_t ivar = 0; ivar < cvar; ivar++)
       {
-         const DWORD cwch = (DWORD)m_vsound[ivar]->m_name.length() + 1;
+         const int cwch = (int)m_vsound[ivar]->m_name.length() + 1;
          rgstr[ivar + 1] = (WCHAR *)CoTaskMemAlloc(cwch * sizeof(WCHAR));
          if (rgstr[ivar + 1] == nullptr)
             ShowError("DISPID_Sound alloc failed");
          MultiByteToWideCharNull(CP_ACP, 0, m_vsound[ivar]->m_name.c_str(), -1, rgstr[ivar + 1], cwch);
 
          //MsoWzCopy(szSrc,szDst);
-         rgdw[ivar + 1] = (DWORD)ivar;
+         rgdw[ivar + 1] = (uint32_t)ivar;
       }
       cvar++;
    }
@@ -7784,7 +7784,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       cvar = m_vcollection.size();
 
       rgstr = (WCHAR **)CoTaskMemAlloc((cvar + 1) * sizeof(WCHAR *));
-      rgdw = (DWORD *)CoTaskMemAlloc((cvar + 1) * sizeof(DWORD));
+      rgdw = (uint32_t *)CoTaskMemAlloc((cvar + 1) * sizeof(uint32_t));
 
       rgstr[0] = (WCHAR *)CoTaskMemAlloc(7 * sizeof(WCHAR));
       wcscpy_s(rgstr[0], 7, L"<None>");
@@ -7798,7 +7798,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
             ShowError("DISPID_Collection alloc failed (1)");
          else
             memcpy(rgstr[ivar + 1], m_vcollection[(int)ivar].m_wzName, cwch);
-         rgdw[ivar + 1] = (DWORD)ivar;
+         rgdw[ivar + 1] = (uint32_t)ivar;
       }
       cvar++;
    }
@@ -7821,7 +7821,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
             cvar++;
 
       rgstr = (WCHAR **)CoTaskMemAlloc((cvar + 1) * sizeof(WCHAR *));
-      rgdw = (DWORD *)CoTaskMemAlloc((cvar + 1) * sizeof(DWORD));
+      rgdw = (uint32_t *)CoTaskMemAlloc((cvar + 1) * sizeof(uint32_t));
 
       cvar = 0;
 
@@ -7854,7 +7854,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
             wcscpy_s(wzDst, cwch, sname);
             rgstr[cvar] = wzDst;
-            rgdw[cvar] = (DWORD)ivar;
+            rgdw[cvar] = (uint32_t)ivar;
             cvar++;
          }
       }
@@ -7865,7 +7865,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       cvar = 5;
 
       rgstr = (WCHAR **)CoTaskMemAlloc((cvar)* sizeof(WCHAR *));
-      rgdw = (DWORD *)CoTaskMemAlloc((cvar)* sizeof(DWORD));
+      rgdw = (uint32_t *)CoTaskMemAlloc((cvar) * sizeof(uint32_t));
 
       rgstr[0] = (WCHAR *)CoTaskMemAlloc(5 * sizeof(WCHAR));
       wcscpy_s(rgstr[0], 5, L"None");
@@ -7893,7 +7893,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
    pcaStringsOut->pElems = rgstr;
 
    pcaCookiesOut->cElems = (int)cvar;
-   pcaCookiesOut->pElems = rgdw;
+   pcaCookiesOut->pElems = (DWORD*)rgdw;
 
    return S_OK;
 }
@@ -7922,7 +7922,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       }
       else
       {
-         const DWORD cwch = (DWORD)m_vimage[dwCookie]->m_name.length() + 1;
+         const int cwch = (int)m_vimage[dwCookie]->m_name.length() + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
 
          MultiByteToWideCharNull(CP_ACP, 0, m_vimage[dwCookie]->m_name.c_str(), -1, wzDst, cwch);
@@ -7941,7 +7941,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       }
       else
       {
-         const DWORD cwch = (DWORD)m_materials[dwCookie]->m_name.length() + 1;
+         const int cwch = (int)m_materials[dwCookie]->m_name.length() + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
 
          MultiByteToWideCharNull(CP_ACP, 0, m_materials[dwCookie]->m_name.c_str(), -1, wzDst, cwch);
@@ -7959,7 +7959,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       }
       else
       {
-         const DWORD cwch = (DWORD)m_vsound[dwCookie]->m_name.length() + 1;
+         const int cwch = (int)m_vsound[dwCookie]->m_name.length() + 1;
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
          if (wzDst == nullptr)
              ShowError("DISPID_Sound alloc failed");

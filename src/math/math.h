@@ -124,12 +124,12 @@ __forceinline unsigned int quantizeUnsignedPercent(const float x)
 }
 
 // 16bit half-precision to IEEE 32bit single-precision
-inline float half2float(const unsigned short value)
+inline float half2float(const uint16_t value)
 {
 #if (defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) && !(defined(__RPI__) || defined(__RK3588__))
    return (float)ushort_as_half(value);
 #else
-   static constexpr unsigned int mantissa_table[2048] = {
+   static constexpr uint32_t mantissa_table[2048] = {
 		0x00000000, 0x33800000, 0x34000000, 0x34400000, 0x34800000, 0x34A00000, 0x34C00000, 0x34E00000, 0x35000000, 0x35100000, 0x35200000, 0x35300000, 0x35400000, 0x35500000, 0x35600000, 0x35700000,
 		0x35800000, 0x35880000, 0x35900000, 0x35980000, 0x35A00000, 0x35A80000, 0x35B00000, 0x35B80000, 0x35C00000, 0x35C80000, 0x35D00000, 0x35D80000, 0x35E00000, 0x35E80000, 0x35F00000, 0x35F80000,
 		0x36000000, 0x36040000, 0x36080000, 0x360C0000, 0x36100000, 0x36140000, 0x36180000, 0x361C0000, 0x36200000, 0x36240000, 0x36280000, 0x362C0000, 0x36300000, 0x36340000, 0x36380000, 0x363C0000,
@@ -258,12 +258,12 @@ inline float half2float(const unsigned short value)
 		0x387A0000, 0x387A2000, 0x387A4000, 0x387A6000, 0x387A8000, 0x387AA000, 0x387AC000, 0x387AE000, 0x387B0000, 0x387B2000, 0x387B4000, 0x387B6000, 0x387B8000, 0x387BA000, 0x387BC000, 0x387BE000,
 		0x387C0000, 0x387C2000, 0x387C4000, 0x387C6000, 0x387C8000, 0x387CA000, 0x387CC000, 0x387CE000, 0x387D0000, 0x387D2000, 0x387D4000, 0x387D6000, 0x387D8000, 0x387DA000, 0x387DC000, 0x387DE000,
 		0x387E0000, 0x387E2000, 0x387E4000, 0x387E6000, 0x387E8000, 0x387EA000, 0x387EC000, 0x387EE000, 0x387F0000, 0x387F2000, 0x387F4000, 0x387F6000, 0x387F8000, 0x387FA000, 0x387FC000, 0x387FE000 };
-   static constexpr unsigned int exponent_table[64] = {
+   static constexpr uint32_t exponent_table[64] = {
 		0x00000000, 0x00800000, 0x01000000, 0x01800000, 0x02000000, 0x02800000, 0x03000000, 0x03800000, 0x04000000, 0x04800000, 0x05000000, 0x05800000, 0x06000000, 0x06800000, 0x07000000, 0x07800000,
 		0x08000000, 0x08800000, 0x09000000, 0x09800000, 0x0A000000, 0x0A800000, 0x0B000000, 0x0B800000, 0x0C000000, 0x0C800000, 0x0D000000, 0x0D800000, 0x0E000000, 0x0E800000, 0x0F000000, 0x47800000,
 		0x80000000, 0x80800000, 0x81000000, 0x81800000, 0x82000000, 0x82800000, 0x83000000, 0x83800000, 0x84000000, 0x84800000, 0x85000000, 0x85800000, 0x86000000, 0x86800000, 0x87000000, 0x87800000,
 		0x88000000, 0x88800000, 0x89000000, 0x89800000, 0x8A000000, 0x8A800000, 0x8B000000, 0x8B800000, 0x8C000000, 0x8C800000, 0x8D000000, 0x8D800000, 0x8E000000, 0x8E800000, 0x8F000000, 0xC7800000 };
-   static constexpr unsigned short offset_table[64] = {
+   static constexpr uint16_t offset_table[64] = {
 		0, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024,
 		0, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024 };
    const unsigned int bits = mantissa_table[offset_table[value >> 10] + (value & 0x3FF)] + exponent_table[value >> 10];
@@ -272,12 +272,12 @@ inline float half2float(const unsigned short value)
 }
 
 // IEEE 32bit single-precision to 16bit half-precision
-inline unsigned short float2half(const float value) // could use _mm_cvtps_ph on F16C compatible CPUs
+inline uint16_t float2half(const float value) // could use _mm_cvtps_ph on F16C compatible CPUs
 {
 #if (defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) && !(defined(__RPI__) || defined(__RK3588__))
    return half_as_ushort((_Float16)value);
 #else
-   static constexpr unsigned short base_table[512] = {
+   static constexpr uint16_t base_table[512] = {
 		0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
 		0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
 		0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
@@ -310,7 +310,7 @@ inline unsigned short float2half(const float value) // could use _mm_cvtps_ph on
 		0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00,
 		0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00,
 		0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00 };
-   static constexpr unsigned char shift_table[512] = {
+   static constexpr uint8_t shift_table[512] = {
 		24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
 		24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
 		24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
@@ -328,13 +328,13 @@ inline unsigned short float2half(const float value) // could use _mm_cvtps_ph on
 		24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
 		24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 13 };
    const unsigned int bits = float_as_uint(value);
-   unsigned short hbits = base_table[bits >> 23] + (unsigned short)((bits & 0x7FFFFF) >> shift_table[bits >> 23]);
+   uint16_t hbits = base_table[bits >> 23] + (uint16_t)((bits & 0x7FFFFF) >> shift_table[bits >> 23]);
    hbits += (((bits & 0x7FFFFF) >> (shift_table[bits >> 23] - 1)) | (((bits >> 23) & 0xFF) == 102)) & ((hbits & 0x7C00) != 0x7C00);
    return hbits;
 #endif
 }
 
-inline float half2float_noLUT(const unsigned short x) { // IEEE-754 16-bit floating-point format (without infinity/NaN!): 1-5-10, exp-15, +-131008.0, +-6.1035156E-5, +-5.9604645E-8, 3.311 digits
+inline float half2float_noLUT(const uint16_t x) { // IEEE-754 16-bit floating-point format (without infinity/NaN!): 1-5-10, exp-15, +-131008.0, +-6.1035156E-5, +-5.9604645E-8, 3.311 digits
 #if (defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) && !(defined(__RPI__) || defined(__RK3588__))
    return (float)ushort_as_half(x);
 #else
@@ -346,7 +346,7 @@ inline float half2float_noLUT(const unsigned short x) { // IEEE-754 16-bit float
 }
 
 // matches float2half() exactly
-inline unsigned short float2half_noLUT(const float value)
+inline uint16_t float2half_noLUT(const float value)
 {
 #if (defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) && !(defined(__RPI__) || defined(__RK3588__))
    return half_as_ushort((_Float16)value);
@@ -372,7 +372,7 @@ inline unsigned short float2half_noLUT(const float value)
       fu = float_as_uint(uint_as_float(fu) * magic_f);
    }
 
-   return (unsigned short)((fu >> 13) | (sign >> 16));
+   return (uint16_t)((fu >> 13) | (sign >> 16));
 #endif
 }
 

@@ -10,7 +10,7 @@
 
 LZWReader::LZWReader(IStream *pstm, int *bits, int width, int height, int pitch)
    : m_pstm(pstm)
-   , m_pbBitsOutCur((BYTE *)bits) // - m_cbStride;//+m_cbStride*(height-1);
+   , m_pbBitsOutCur((uint8_t *)bits) // - m_cbStride;//+m_cbStride*(height-1);
    , m_cbStride(pitch)
 #ifdef _DEBUG
    , bad_code_count(0)
@@ -124,7 +124,7 @@ int LZWReader::get_next_code()
                int x;
                if ((x = get_byte()) < 0)
                   return (x);
-               byte_buff[i] = (BYTE)x;
+               byte_buff[i] = (uint8_t)x;
             }
          }
       }
@@ -151,7 +151,7 @@ int LZWReader::get_next_code()
                int x;
                if ((x = get_byte()) < 0)
                   return (x);
-               byte_buff[i] = (BYTE)x;
+               byte_buff[i] = (uint8_t)x;
             }
          }
       }
@@ -195,9 +195,9 @@ int LZWReader::get_next_code()
 
 short LZWReader::Decoder()
 {
-   BYTE *sp, *bufptr;
-   BYTE *buf;
-   DWORD bufcnt;
+   uint8_t *sp, *bufptr;
+   uint8_t *buf;
+   int bufcnt;
    int c, oc, fc, code, size;
 
    /* Initialize for decoding a new image...
@@ -279,7 +279,7 @@ short LZWReader::Decoder()
           * routine...
           */
          if (bufptr)
-            *bufptr++ = (BYTE)c;
+            *bufptr++ = (uint8_t)c;
 
          if (--bufcnt == 0)
          {
@@ -310,7 +310,7 @@ short LZWReader::Decoder()
                ++bad_code_count;
 #endif
             code = oc;
-            *sp++ = (BYTE)fc;
+            *sp++ = (uint8_t)fc;
          }
 
          /* Here we scan back along the linked list of prefixes, pushing
@@ -329,11 +329,11 @@ short LZWReader::Decoder()
           * suffix and prefix...  I'm not certain if this is correct...
           * it might be more proper to overwrite the last code...
           */
-         *sp++ = (BYTE)code;
+         *sp++ = (uint8_t)code;
          if (slot < top_slot)
          {
             fc = code;
-            suffix[slot] = (BYTE)fc;	// = code;
+            suffix[slot] = (uint8_t)fc;	// = code;
             prefix[slot++] = (WCHAR)oc;
             oc = c;
          }
@@ -390,9 +390,9 @@ int LZWReader::get_byte()
 }
 
 
-BYTE *LZWReader::NextLine()
+uint8_t *LZWReader::NextLine()
 {
-   BYTE *pbRet;
+   uint8_t *pbRet;
 
    pbRet = m_pbBitsOutCur;
    m_pbBitsOutCur += m_cbStride;	// fucking upside down dibs!

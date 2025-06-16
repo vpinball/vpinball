@@ -45,7 +45,7 @@ public:
          hr = m_pMouse->GetDeviceState(sizeof(DIMOUSESTATE2), &mouseState);
          if (hr == S_OK || hr == DI_BUFFEROVERFLOW)
          {
-            for (DWORD i = 0; i < 3; i++)
+            for (int i = 0; i < 3; i++)
             {
                if (m_oldMouseButtonState[i] != mouseState.rgbButtons[i])
                {

@@ -69,10 +69,10 @@ private:
    bool m_recordContacts = false; // flag for DoHitTest()
    vector<CollisionEvent> m_contacts;
 
-   U64 m_startTime_usec; // Time when the simulation started (creation of this object)
-   U64 m_curPhysicsFrameTime; // Time where the last machine simulation (physics, timers, scripts,...) stopped
-   U64 m_nextPhysicsFrameTime; // Time at which the next physics update should be
-   U64 m_lastFlipTime = 0;
+   uint64_t m_startTime_usec; // Time when the simulation started (creation of this object)
+   uint64_t m_curPhysicsFrameTime; // Time where the last machine simulation (physics, timers, scripts,...) stopped
+   uint64_t m_nextPhysicsFrameTime; // Time at which the next physics update should be
+   uint64_t m_lastFlipTime = 0;
 
    unsigned int m_onUpdatePhysicsMsgId;
 
@@ -138,25 +138,25 @@ private:
 #pragma endregion
 
    // Physics stats
-   U32 m_phys_iterations;
-   U32 m_phys_max_iterations;
-   U32 m_phys_max;
-   U64 m_phys_total_iterations;
-   U64 m_count; // Number of frames included in the total variant of the counters
+   uint32_t m_phys_iterations;
+   uint32_t m_phys_max_iterations;
+   uint32_t m_phys_max;
+   uint64_t m_phys_total_iterations;
+   uint64_t m_count; // Number of frames included in the total variant of the counters
 
 #ifdef DEBUGPHYSICS
 public:
-   U32 c_hitcnts;
-   U32 c_collisioncnt;
-   U32 c_contactcnt;
+   uint32_t c_hitcnts;
+   uint32_t c_collisioncnt;
+   uint32_t c_contactcnt;
    #ifdef C_DYNAMIC
-   U32 c_staticcnt;
+   uint32_t c_staticcnt;
    #endif
-   U32 c_embedcnts;
-   U32 c_timesearch;
+   uint32_t c_embedcnts;
+   uint32_t c_timesearch;
 
-   U32 c_traversed;
-   U32 c_tested;
-   U32 c_deepTested;
+   uint32_t c_traversed;
+   uint32_t c_tested;
+   uint32_t c_deepTested;
 #endif
 };

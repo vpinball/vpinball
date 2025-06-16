@@ -290,23 +290,23 @@ private:
    int m_duration;
    float m_finalLightState; // 0..1=Off..On, 2=Blinking
 
-   U32 m_timenextblink;
-   U32 m_timerDurationEndTime;
-   U32 m_iblinkframe;
+   uint32_t m_timenextblink;
+   uint32_t m_timerDurationEndTime;
+   uint32_t m_iblinkframe;
 
-   void UpdateBlinker(const U32 time_msec)
+   void UpdateBlinker(const uint32_t time_msec)
    {
       if (m_timenextblink <= time_msec)
       {
          m_iblinkframe++;
-         if (m_iblinkframe >= (U32)m_d.m_rgblinkpattern.length() || m_d.m_rgblinkpattern[m_iblinkframe] == '\0')
+         if (m_iblinkframe >= (uint32_t)m_d.m_rgblinkpattern.length() || m_d.m_rgblinkpattern[m_iblinkframe] == '\0')
             m_iblinkframe = 0;
 
          m_timenextblink += m_d.m_blinkinterval;
       }
    }
 
-   void RestartBlinker(const U32 cur_time_msec)
+   void RestartBlinker(const uint32_t cur_time_msec)
    {
       m_iblinkframe = 0;
       m_timenextblink = cur_time_msec + m_d.m_blinkinterval;

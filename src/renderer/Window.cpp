@@ -199,7 +199,7 @@ Window::Window(const string &title, const Settings& settings, const Settings::Se
    }
 
    #ifdef ENABLE_SDL_VIDEO // SDL Windowing
-      Uint32 wnd_flags = 0;
+      uint32_t wnd_flags = 0;
       #if defined(ENABLE_OPENGL)
          wnd_flags |= SDL_WINDOW_OPENGL; // Leads to read OpenGL context hint (swapchain backbuffer format, ...)
          // SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, true); // Leads SDL_CreateWindowFrom to add SDL_WINDOW_OPENGL flag
@@ -252,7 +252,7 @@ Window::Window(const string &title, const Settings& settings, const Settings::Se
          m_screenheight = m_height;
          if (fsRefreshRate > 0 && validatedFSRefreshRate != m_refreshrate) // Adjust refresh rate if needed
          {
-            Uint32 format = mode ? mode->format : 0;
+            uint32_t format = mode ? mode->format : 0;
             bool found = false;
             int num_modes = 0;
             SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(m_adapter, &num_modes);

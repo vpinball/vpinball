@@ -193,7 +193,7 @@ private:
       DXGIRegistry::Device* m_device = nullptr;
       IDXGIOutputDuplication* m_duplication = nullptr;
       ID3D11Texture2D* m_stagingTex = nullptr;
-      BYTE* m_metaDataBuffer = nullptr;
+      uint8_t* m_metaDataBuffer = nullptr;
       unsigned int m_metaDataBufferSize = 0;
    };
    struct Capture
@@ -209,8 +209,8 @@ private:
       int m_delay = 0;
       bool m_dirty = false; // Data needs to be updated from monitor capture
       bool m_updated = false; // Target texture needs to be reuploaded to GPU
-      UINT m_dispTop = 0, m_dispLeft = 0;
-      UINT m_width = 0, m_height = 0;
+      uint32_t m_dispTop = 0, m_dispLeft = 0;
+      uint32_t m_width = 0, m_height = 0;
    };
 
    void UpdateThread();

@@ -281,11 +281,11 @@ private:
 
    void ProcessEvent(const InputEvent& event);
 
-   U32 m_exitPressTimestamp = 0;
-   U32 m_exitAppPressLengthMs = 0;
+   uint32_t m_exitPressTimestamp = 0;
+   uint32_t m_exitAppPressLengthMs = 0;
 
-   void Autostart(const U32 initialDelayMs, const U32 retryDelayMs);
-   U32 m_autoStartTimestamp = 0;
+   void Autostart(const uint32_t initialDelayMs, const uint32_t retryDelayMs);
+   uint32_t m_autoStartTimestamp = 0;
    bool m_gameStartedOnce = false;
    bool m_autoStartPressed = false;
    bool m_autoStartDoneOnce = false;
@@ -366,7 +366,7 @@ private:
    bool m_override_default_buttons = false;
    bool m_disable_esc = false;
 
-   U32 m_nextKeyPressedTime = 0;
+   uint32_t m_nextKeyPressedTime = 0;
 
    int m_rumbleMode = 0; // 0=Off, 1=Table only, 2=Generic only, 3=Table with generic as fallback
 

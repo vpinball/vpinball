@@ -460,8 +460,8 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
             if (res != ERROR_SUCCESS || dwSize == 0 || szName[0] == '\0')
                continue;
 
-            dwSize = MAXSTRING;
             BYTE pvalue[MAXSTRING];
+            dwSize = std::size(pvalue);
             DWORD type = REG_NONE;
             res = RegQueryValueEx(hk, szName, nullptr, &type, pvalue, &dwSize);
             if (res != ERROR_SUCCESS)
@@ -486,7 +486,7 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
             }
             else if (type == REG_DWORD)
             {
-               const string tmp = std::to_string(*(DWORD *)pvalue);
+               const string tmp = std::to_string(*(uint32_t *)pvalue);
                const size_t len = tmp.length() + 1;
                copy = new char[len];
                strcpy_s(copy, len, tmp.c_str());

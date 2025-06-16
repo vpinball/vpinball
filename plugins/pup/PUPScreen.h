@@ -139,7 +139,7 @@ private:
    void LoadRenderable(PUPScreenRenderable* pRenderable, const string& szFile);
    void Render(VPXRenderContext2D* const ctx, PUPScreenRenderable* pRenderable);
    void FreeRenderable(PUPScreenRenderable* pRenderable);
-   static Uint32 PageTimerElapsed(void* param, SDL_TimerID timerID, Uint32 interval);
+   static uint32_t PageTimerElapsed(void* param, SDL_TimerID timerID, uint32_t interval);
 
    PUPManager* const m_pManager = nullptr;
    bool m_active = false;

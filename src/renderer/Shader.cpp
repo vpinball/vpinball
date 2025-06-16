@@ -2216,7 +2216,7 @@ void Shader::Load(const std::string& name)
 
 void Shader::Load()
 {
-   const BYTE* code;
+   const uint8_t* code;
    unsigned int codeSize;
    switch (m_shaderId)
    {

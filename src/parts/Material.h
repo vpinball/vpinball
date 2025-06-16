@@ -112,13 +112,13 @@ public:
    {
    }
 
-   inline unsigned long long hash() const
+   inline uint64_t hash() const
    {
       union {
          struct {
-            unsigned char uc[8];
+            uint8_t uc[8];
          };
-         unsigned long long ull;
+         uint64_t ull;
       } h;
       h.uc[0] = ((unsigned int)m_type << 6) | ((unsigned int)m_bOpacityActive << 8) | (const unsigned int)(((size_t)this / sizeof(Material)) & 63); //!! meh
       h.uc[1] = (unsigned char)(clamp(m_fWrapLighting, 0.f, 1.f)*255.0f);
@@ -130,14 +130,14 @@ public:
       h.uc[7] = m_bOpacityActive ? (unsigned char)(clamp(m_fOpacity, 0.f, 1.f)*255.0f) : 0;
       return h.ull;
 
-      /*return ((unsigned long long)(h.uc[0]&  1)<< 0) | ((unsigned long long)(h.uc[1]&  1)<< 1) | ((unsigned long long)(h.uc[2]&  1)<< 2) | ((unsigned long long)(h.uc[3]&  1)<< 3) | ((unsigned long long)(h.uc[4]&  1)<< 4) | ((unsigned long long)(h.uc[5]&  1)<< 5) | ((unsigned long long)(h.uc[6]&  1)<< 6) | ((unsigned long long)(h.uc[7]&  1)<< 7) |
-        ((unsigned long long)(h.uc[0]&  2)<< 8) | ((unsigned long long)(h.uc[1]&  2)<< 9) | ((unsigned long long)(h.uc[2]&  2)<<10) | ((unsigned long long)(h.uc[3]&  2)<<11) | ((unsigned long long)(h.uc[4]&  2)<<12) | ((unsigned long long)(h.uc[5]&  2)<<13) | ((unsigned long long)(h.uc[6]&  2)<<14) | ((unsigned long long)(h.uc[7]&  2)<<15) |
-        ((unsigned long long)(h.uc[0]&  4)<<16) | ((unsigned long long)(h.uc[1]&  4)<<17) | ((unsigned long long)(h.uc[2]&  4)<<18) | ((unsigned long long)(h.uc[3]&  4)<<19) | ((unsigned long long)(h.uc[4]&  4)<<20) | ((unsigned long long)(h.uc[5]&  4)<<21) | ((unsigned long long)(h.uc[6]&  4)<<22) | ((unsigned long long)(h.uc[7]&  4)<<23) |
-        ((unsigned long long)(h.uc[0]&  8)<<24) | ((unsigned long long)(h.uc[1]&  8)<<25) | ((unsigned long long)(h.uc[2]&  8)<<26) | ((unsigned long long)(h.uc[3]&  8)<<27) | ((unsigned long long)(h.uc[4]&  8)<<28) | ((unsigned long long)(h.uc[5]&  8)<<29) | ((unsigned long long)(h.uc[6]&  8)<<30) | ((unsigned long long)(h.uc[7]&  8)<<31) |
-        ((unsigned long long)(h.uc[0]& 16)<<32) | ((unsigned long long)(h.uc[1]& 16)<<33) | ((unsigned long long)(h.uc[2]& 16)<<34) | ((unsigned long long)(h.uc[3]& 16)<<35) | ((unsigned long long)(h.uc[4]& 16)<<36) | ((unsigned long long)(h.uc[5]& 16)<<37) | ((unsigned long long)(h.uc[6]& 16)<<38) | ((unsigned long long)(h.uc[7]& 16)<<39) |
-        ((unsigned long long)(h.uc[0]& 32)<<40) | ((unsigned long long)(h.uc[1]& 32)<<41) | ((unsigned long long)(h.uc[2]& 32)<<42) | ((unsigned long long)(h.uc[3]& 32)<<43) | ((unsigned long long)(h.uc[4]& 32)<<44) | ((unsigned long long)(h.uc[5]& 32)<<45) | ((unsigned long long)(h.uc[6]& 32)<<46) | ((unsigned long long)(h.uc[7]& 32)<<47) |
-        ((unsigned long long)(h.uc[0]& 64)<<48) | ((unsigned long long)(h.uc[1]& 64)<<49) | ((unsigned long long)(h.uc[2]& 64)<<50) | ((unsigned long long)(h.uc[3]& 64)<<51) | ((unsigned long long)(h.uc[4]& 64)<<52) | ((unsigned long long)(h.uc[5]& 64)<<53) | ((unsigned long long)(h.uc[6]& 64)<<54) | ((unsigned long long)(h.uc[7]& 64)<<55) |
-        ((unsigned long long)(h.uc[0]&128)<<56) | ((unsigned long long)(h.uc[1]&128)<<57) | ((unsigned long long)(h.uc[2]&128)<<58) | ((unsigned long long)(h.uc[3]&128)<<59) | ((unsigned long long)(h.uc[4]&128)<<60) | ((unsigned long long)(h.uc[5]&128)<<61) | ((unsigned long long)(h.uc[6]&128)<<62) | ((unsigned long long)(h.uc[7]&128)<<63);*/
+      /*return ((uint64_t)(h.uc[0]&  1)<< 0) | ((uint64_t)(h.uc[1]&  1)<< 1) | ((uint64_t)(h.uc[2]&  1)<< 2) | ((uint64_t)(h.uc[3]&  1)<< 3) | ((uint64_t)(h.uc[4]&  1)<< 4) | ((uint64_t)(h.uc[5]&  1)<< 5) | ((uint64_t)(h.uc[6]&  1)<< 6) | ((uint64_t)(h.uc[7]&  1)<< 7) |
+        ((uint64_t)(h.uc[0]&  2)<< 8) | ((uint64_t)(h.uc[1]&  2)<< 9) | ((uint64_t)(h.uc[2]&  2)<<10) | ((uint64_t)(h.uc[3]&  2)<<11) | ((uint64_t)(h.uc[4]&  2)<<12) | ((uint64_t)(h.uc[5]&  2)<<13) | ((uint64_t)(h.uc[6]&  2)<<14) | ((uint64_t)(h.uc[7]&  2)<<15) |
+        ((uint64_t)(h.uc[0]&  4)<<16) | ((uint64_t)(h.uc[1]&  4)<<17) | ((uint64_t)(h.uc[2]&  4)<<18) | ((uint64_t)(h.uc[3]&  4)<<19) | ((uint64_t)(h.uc[4]&  4)<<20) | ((uint64_t)(h.uc[5]&  4)<<21) | ((uint64_t)(h.uc[6]&  4)<<22) | ((uint64_t)(h.uc[7]&  4)<<23) |
+        ((uint64_t)(h.uc[0]&  8)<<24) | ((uint64_t)(h.uc[1]&  8)<<25) | ((uint64_t)(h.uc[2]&  8)<<26) | ((uint64_t)(h.uc[3]&  8)<<27) | ((uint64_t)(h.uc[4]&  8)<<28) | ((uint64_t)(h.uc[5]&  8)<<29) | ((uint64_t)(h.uc[6]&  8)<<30) | ((uint64_t)(h.uc[7]&  8)<<31) |
+        ((uint64_t)(h.uc[0]& 16)<<32) | ((uint64_t)(h.uc[1]& 16)<<33) | ((uint64_t)(h.uc[2]& 16)<<34) | ((uint64_t)(h.uc[3]& 16)<<35) | ((uint64_t)(h.uc[4]& 16)<<36) | ((uint64_t)(h.uc[5]& 16)<<37) | ((uint64_t)(h.uc[6]& 16)<<38) | ((uint64_t)(h.uc[7]& 16)<<39) |
+        ((uint64_t)(h.uc[0]& 32)<<40) | ((uint64_t)(h.uc[1]& 32)<<41) | ((uint64_t)(h.uc[2]& 32)<<42) | ((uint64_t)(h.uc[3]& 32)<<43) | ((uint64_t)(h.uc[4]& 32)<<44) | ((uint64_t)(h.uc[5]& 32)<<45) | ((uint64_t)(h.uc[6]& 32)<<46) | ((uint64_t)(h.uc[7]& 32)<<47) |
+        ((uint64_t)(h.uc[0]& 64)<<48) | ((uint64_t)(h.uc[1]& 64)<<49) | ((uint64_t)(h.uc[2]& 64)<<50) | ((uint64_t)(h.uc[3]& 64)<<51) | ((uint64_t)(h.uc[4]& 64)<<52) | ((uint64_t)(h.uc[5]& 64)<<53) | ((uint64_t)(h.uc[6]& 64)<<54) | ((uint64_t)(h.uc[7]& 64)<<55) |
+        ((uint64_t)(h.uc[0]&128)<<56) | ((uint64_t)(h.uc[1]&128)<<57) | ((uint64_t)(h.uc[2]&128)<<58) | ((uint64_t)(h.uc[3]&128)<<59) | ((uint64_t)(h.uc[4]&128)<<60) | ((uint64_t)(h.uc[5]&128)<<61) | ((uint64_t)(h.uc[6]&128)<<62) | ((uint64_t)(h.uc[7]&128)<<63);*/
 
       /*const unsigned char* const p = reinterpret_cast<const unsigned char*>( &(this->m_fWrapLighting) );
       unsigned int h = 2166136261;
@@ -145,7 +145,7 @@ public:
       for (unsigned int i = 0; i <= (unsigned int)(&(this->m_bOpacityActive))-(unsigned int)(&(this->m_fWrapLighting)); ++i)
       h = (h * 16777619) ^ p[i];
 
-      return (unsigned long long)h;*/
+      return (uint64_t)h;*/
    }
 
    string m_name;

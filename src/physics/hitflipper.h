@@ -70,7 +70,7 @@ public:
    bool m_lastHitFace;
 
 #ifdef DEBUG_FLIPPERS
-   U32 m_startTime;
+   uint32_t m_startTime;
 #endif
 };
 
@@ -100,5 +100,5 @@ public:
    FlipperMoverObject m_flipperMover;
 
 private:
-   U32 m_last_hittime;
+   uint32_t m_last_hittime;
 };

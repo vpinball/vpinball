@@ -228,9 +228,9 @@ void CGpuProfiler::WaitForDataAndUpdate ()
 	const int iFrame = m_iFrameCollect;
 	m_iFrameCollect = (m_iFrameCollect+1)&1;
 
-	UINT64 frequency;
+	uint64_t frequency;
 	c = 0;
-	while (m_frequencyQuery->GetData(&frequency, sizeof(UINT64), FLUSH_DATA) == S_FALSE && c < GET_DATA_RETRIES)
+	while (m_frequencyQuery->GetData(&frequency, sizeof(uint64_t), FLUSH_DATA) == S_FALSE && c < GET_DATA_RETRIES)
 	{
 		c++;
 		Sleep(1); //!!
@@ -243,9 +243,9 @@ void CGpuProfiler::WaitForDataAndUpdate ()
 		return;
 	}
 
-	UINT64 timestampPrev;
+	uint64_t timestampPrev;
 	c = 0;
-	while (m_apQueryTs[GTS_BeginFrame][iFrame]->GetData(&timestampPrev, sizeof(UINT64), FLUSH_DATA) == S_FALSE && c < GET_DATA_RETRIES)
+	while (m_apQueryTs[GTS_BeginFrame][iFrame]->GetData(&timestampPrev, sizeof(uint64_t), FLUSH_DATA) == S_FALSE && c < GET_DATA_RETRIES)
 	{
 		c++;
 		Sleep(1); //!!
@@ -261,11 +261,11 @@ void CGpuProfiler::WaitForDataAndUpdate ()
 
 	for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_Max; gts = GTS(gts + 1))
 	{
-		UINT64 timestamp = timestampPrev;
+		uint64_t timestamp = timestampPrev;
 		if (m_apQueryTs_triggered[gts][iFrame])
 		{
 			c = 0;
-			while (m_apQueryTs[gts][iFrame]->GetData(&timestamp, sizeof(UINT64), FLUSH_DATA) == S_FALSE && c < GET_DATA_RETRIES)
+			while (m_apQueryTs[gts][iFrame]->GetData(&timestamp, sizeof(uint64_t), FLUSH_DATA) == S_FALSE && c < GET_DATA_RETRIES)
 			{
 				c++;
 				Sleep(1); //!!

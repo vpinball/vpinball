@@ -8,7 +8,7 @@ class ITexManCacheable
 {
 public:
    virtual ~ITexManCacheable() = default;
-   virtual unsigned long long GetLiveHash() const = 0;
+   virtual uint64_t GetLiveHash() const = 0;
    virtual bool IsOpaque() const = 0;
    virtual std::shared_ptr<const class BaseTexture> GetRawBitmap(bool resizeOnLowMem, unsigned int maxTexDimension) const = 0;
    virtual const string& GetName() const = 0;
@@ -63,7 +63,7 @@ public:
       }
    }
 
-   unsigned long long GetLiveHash() const override { return m_liveHash; }
+   uint64_t GetLiveHash() const override { return m_liveHash; }
    std::shared_ptr<const BaseTexture> GetRawBitmap(bool resizeOnLowMem, unsigned int maxTexDimension) const override { return m_selfPointer; }
    void SetName(const string& name) { m_name = name; }
    const string& GetName() const override { return m_name; }
@@ -71,8 +71,8 @@ public:
    unsigned int width() const  { return m_width; }
    unsigned int height() const { return m_height; }
    unsigned int pitch() const; // pitch in bytes
-   BYTE* data()                { return m_data; }
-   const BYTE* datac() const   { return m_data; }
+   uint8_t* data()             { return m_data; }
+   const uint8_t* datac() const{ return m_data; }
    bool HasAlpha() const       { return m_format == RGBA || m_format == SRGBA || m_format == RGBA_FP16 || m_format == RGBA_FP32; }
 
    BaseTexture *Convert(Format format) const; // Always create a new instance, even if target format is source format are matching
@@ -98,8 +98,8 @@ private:
    void UpdateOpaque() const;
 
    const unsigned int m_width, m_height;
-   const unsigned long long m_liveHash;
-   BYTE* const m_data;
+   const uint64_t m_liveHash;
+   uint8_t* const m_data;
 
    string m_name;
 
@@ -126,7 +126,7 @@ public:
 
    HRESULT SaveToStream(IStream *pstream, const PinTable *pt);
 
-   unsigned long long GetLiveHash() const override { return m_liveHash; }
+   uint64_t GetLiveHash() const override { return m_liveHash; }
    const string& GetName() const override { return m_name; }
 
    HBITMAP GetGDIBitmap() const; // Lazily created view of the image, suitable for GDI rendering
@@ -159,7 +159,7 @@ private:
    void SetIsOpaque(const bool v) const;
 
    PinBinary *const m_ppb; // Original data blob of the image, always defined
-   const unsigned long long m_liveHash;
+   const uint64_t m_liveHash;
 
    // These fields are (lazily) computed from the data, therefore they do not impact the constness of the object
    mutable std::weak_ptr<BaseTexture> m_imageBuffer; // Decoded version of the texture in a format suitable for GPU sampling. Note that width and height of the decoded block can be different than width and height of the image since the surface can be limited to smaller sizes by the user or memory
@@ -357,7 +357,7 @@ inline void copy_bgr_rgb(unsigned char* const __restrict dst, const unsigned cha
     }
 }
 
-inline void float2half(unsigned short* const __restrict dst, const float* const __restrict src, const size_t size)
+inline void float2half(uint16_t* const __restrict dst, const float* const __restrict src, const size_t size)
 {
     size_t o = 0;
 
@@ -410,7 +410,7 @@ inline void float2half(unsigned short* const __restrict dst, const float* const 
        dst[o] = float2half_noLUT(src[o]);
 }
 
-inline void float2half_noF16MaxInfNaN(unsigned short* const __restrict dst, const float* const __restrict src, const size_t size)
+inline void float2half_noF16MaxInfNaN(uint16_t* const __restrict dst, const float* const __restrict src, const size_t size)
 {
     size_t o = 0;
 
@@ -450,7 +450,7 @@ inline void float2half_noF16MaxInfNaN(unsigned short* const __restrict dst, cons
        dst[o] = float2half_noLUT(src[o]);
 }
 
-inline void float2half_pos_noF16MaxInfNaN(unsigned short* const __restrict dst, const float* const __restrict src, const size_t size)
+inline void float2half_pos_noF16MaxInfNaN(uint16_t* const __restrict dst, const float* const __restrict src, const size_t size)
 {
     size_t o = 0;
 

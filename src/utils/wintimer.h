@@ -18,12 +18,12 @@ void restore_win_timer_resolution();
 // call before 1st use of msec,usec or uSleep
 void wintimer_init();
 
-U32 msec();
-unsigned long long usec();
+uint32_t msec();
+uint64_t usec();
 
 // needs timeBeginPeriod(1) before calling 1st time to make the Sleep(1) in here behave more or less accurately (and timeEndPeriod(1) after not needing that precision anymore)
-void uSleep(const unsigned long long u);
-void uOverSleep(const unsigned long long u);
+void uSleep(const uint64_t u);
+void uOverSleep(const uint64_t u);
 
 double TheoreticRadiation(const unsigned int day, const unsigned int month, const unsigned int year, const double rlat);
 double MaxTheoreticRadiation(const unsigned int year, const double rlat);
@@ -132,7 +132,7 @@ public:
       }
    }
 
-   void NewFrame(U32 gametime)
+   void NewFrame(uint32_t gametime)
    {
       // assert(m_threadLock == std::this_thread::get_id()); // Not asserted as NewFrame happens in a critical section (guarded by frameMutex)
       assert(m_profileSectionStackPos == 0);
@@ -199,7 +199,7 @@ public:
    {
       assert(m_threadLock == std::this_thread::get_id());
       assert(0 <= section && section < PROFILE_COUNT);
-      const unsigned long long ts = usec();
+      const uint64_t ts = usec();
       m_profileDataEnd[m_profileIndex][m_profileSection] = ts;
       m_profileData[m_profileIndex][m_profileSection] += (unsigned int)(ts - m_profileTimeStamp);
       m_profileTimeStamp = ts;
@@ -208,7 +208,7 @@ public:
          m_profileDataStart[m_profileIndex][m_profileSection] = ts;
    }
 
-   void AdjustBGFXSubmit(U32 us)
+   void AdjustBGFXSubmit(uint32_t us)
    {
       assert(m_threadLock == std::this_thread::get_id());
       //m_profileDataEnd[m_profileIndex][PROFILE_RENDER_SUBMIT] += us;
@@ -266,7 +266,7 @@ public:
    void ExitScriptSection(const char* timer_name = nullptr)
    {
       assert(m_threadLock == std::this_thread::get_id());
-      unsigned long long profileTimeStamp = m_profileTimeStamp;
+      const uint64_t profileTimeStamp = m_profileTimeStamp;
       ExitProfileSection();
       EventTick& et = m_scriptEventData[m_scriptEventDispID];
       et.totalLength += (unsigned int)(m_profileTimeStamp - profileTimeStamp);
@@ -274,7 +274,7 @@ public:
          et.callCount++;
       if (timer_name && (m_profileTimersPos + 4 < MAX_TIMER_LOG))
       {
-         *((U32*)(&m_profileTimers[m_profileTimersPos])) = (U32)(m_profileTimeStamp - m_profileTimerTimeStamp);
+         *((uint32_t*)(&m_profileTimers[m_profileTimersPos])) = (uint32_t)(m_profileTimeStamp - m_profileTimerTimeStamp);
          m_profileTimersPos += 4;
       }
    }
@@ -419,13 +419,13 @@ public:
          return sum <= 0 ? 0. : static_cast<double>(latency) / static_cast<double>(sum);
    }
 
-   unsigned long long GetPrevStart(ProfileSection section) const
+   uint64_t GetPrevStart(ProfileSection section) const
    {
       assert(0 <= section && section <= PROFILE_FRAME); // Unimplemented and not really meaningful for other sections
       return m_profileDataStart[(m_profileIndex + N_SAMPLES - 1) % N_SAMPLES][section];
    }
 
-   unsigned long long GetPrevEnd(ProfileSection section) const
+   uint64_t GetPrevEnd(ProfileSection section) const
    {
       assert(0 <= section && section <= PROFILE_FRAME); // Unimplemented and not really meaningful for other sections
       return m_profileDataEnd[(m_profileIndex + N_SAMPLES - 1) % N_SAMPLES][section];
@@ -438,7 +438,7 @@ public:
 
    void OnProcessInput()
    {
-      unsigned long long ts = usec();
+      const uint64_t ts = usec();
       if (m_processInputTimeStamp != 0)
       {
          unsigned int elapsed = (unsigned int)(ts - m_processInputTimeStamp);
@@ -452,7 +452,7 @@ public:
       m_processInputTimeStamp = ts;
    }
 
-   void OnPresented(U64 when) // May be called from any thread
+   void OnPresented(uint64_t when) // May be called from any thread
    {
       m_lastPresentedTimeStamp = when;
    }
@@ -474,7 +474,7 @@ private:
 
    // Frame profiling (sequence of section)
    unsigned int m_profileIndex = 0;
-   unsigned long long m_profileTimeStamp;
+   uint64_t m_profileTimeStamp;
    int m_profileSectionStackPos = 0;
    ProfileSection m_profileSectionStack[STACK_SIZE];
    ProfileSection m_profileSection = PROFILE_MISC;
@@ -488,29 +488,29 @@ private:
 
    // Overall frame
    unsigned int m_frameIndex = -1;
-   unsigned long long m_frameTimeStamp;
+   uint64_t m_frameTimeStamp;
 
    // Input lag (polling frequency)
    unsigned int m_processInputIndex = 0;
    unsigned int m_processInputCount = 0;
-   unsigned long long m_processInputTimeStamp;
+   uint64_t m_processInputTimeStamp;
 
    // Present lag
    unsigned int m_presentedIndex = 0;
    unsigned int m_presentedCount = 0;
-   unsigned long long m_processInputTimeStampOnPrepare = 0;
-   unsigned long long m_lastPresentedTimeStamp = 0;
+   uint64_t m_processInputTimeStampOnPrepare = 0;
+   uint64_t m_lastPresentedTimeStamp = 0;
 
    // Raw data
    unsigned int m_profileData[N_SAMPLES][PROFILE_COUNT];
-   unsigned long long m_profileDataStart[N_SAMPLES][PROFILE_COUNT];
-   unsigned long long m_profileDataEnd[N_SAMPLES][PROFILE_COUNT];
+   uint64_t m_profileDataStart[N_SAMPLES][PROFILE_COUNT];
+   uint64_t m_profileDataEnd[N_SAMPLES][PROFILE_COUNT];
    unsigned int m_profileMaxData[PROFILE_COUNT];
    unsigned int m_profileMinData[PROFILE_COUNT];
    unsigned int m_profileTotalData[PROFILE_COUNT];
    char m_profileTimers[MAX_TIMER_LOG];
    size_t m_profileTimersPos = 0;
-   unsigned long long m_profileTimerTimeStamp;
+   uint64_t m_profileTimerTimeStamp;
 
    // Worst frames data
    unsigned int m_leastWorstFrameLength;
@@ -556,7 +556,7 @@ private:
             struct info
             {
                int calls;
-               U32 lengths;
+               uint32_t lengths;
             };
             ankerl::unordered_dense::map<string, info> infos;
             size_t pos = 0;
@@ -564,7 +564,7 @@ private:
             {
                string nameip(&profileTimers[pos]);
                pos += nameip.length() + 1;
-               U32 length = *((U32*)&profileTimers[pos]);
+               uint32_t length = *((uint32_t*)&profileTimers[pos]);
                pos += 4;
                auto it = infos.find(nameip);
                if (it == infos.end())

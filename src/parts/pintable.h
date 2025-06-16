@@ -684,8 +684,8 @@ public:
    Vertex2D m_tblNudgePlumb;
 
    bool m_tblAutoStartEnabled;
-   U32 m_tblAutoStart; // msecs before trying an autostart if doing once-only method .. 0 is automethod
-   U32 m_tblAutoStartRetry; // msecs before retrying to autostart.
+   uint32_t m_tblAutoStart; // msecs before trying an autostart if doing once-only method .. 0 is automethod
+   uint32_t m_tblAutoStartRetry; // msecs before retrying to autostart.
 
    bool m_tblMirrorEnabled = false; // Mirror tables left to right.  This is activated by a cheat during table selection.
 
@@ -1046,7 +1046,7 @@ namespace PinMame
    {
       double updateTimestamp;
       unsigned int nOutputs;
-      UINT32 outputBitset[]; // Bitset array of nOutputs bits with their current binary state
+      uint32_t outputBitset[]; // Bitset array of nOutputs bits with their current binary state
    } core_tBinaryState;
    #define CORE_DEVICE_STATE_TYPE_CUSTOM          1 // Custom state defined by each driver (value maybe either binary of 0/1 or 0/255, or modulated between 0..255)
    #define CORE_DEVICE_STATE_TYPE_BULB            2 // Bulb state defined by its relative luminance and average filament temperature
@@ -1058,7 +1058,7 @@ namespace PinMame
       union
       {
          // CORE_DEVICE_STATE_TYPE_DS
-         UINT8 customState;            // Custom value, depending on each driver definition
+         uint8_t customState;          // Custom value, depending on each driver definition
          // CORE_DEVICE_STATE_TYPE_BULB
          struct
          {
@@ -1097,7 +1097,7 @@ namespace PinMame
       unsigned int height;
       unsigned int dataFormat;
       unsigned int frameId;
-      UINT8 frameData[]; // The display frame data which size depends on width, height and data format
+      uint8_t frameData[]; // The display frame data which size depends on width, height and data format
    } core_tFrameState;
    typedef struct
    {

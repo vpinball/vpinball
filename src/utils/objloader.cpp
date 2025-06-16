@@ -502,18 +502,18 @@ bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
       {
          Vertex3Ds tmp;
          fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z);
-         const DWORD r = (DWORD)(tmp.x * 255.f);
-         const DWORD g = (DWORD)(tmp.y * 255.f);
-         const DWORD b = (DWORD)(tmp.z * 255.f);
+         const uint32_t r = (uint32_t)(tmp.x * 255.f);
+         const uint32_t g = (uint32_t)(tmp.y * 255.f);
+         const uint32_t b = (uint32_t)(tmp.z * 255.f);
          mat->m_cBase = RGB(r, g, b);
       }
       else if (strcmp(lineHeader, "Ks") == 0)
       {
          Vertex3Ds tmp;
          fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z);
-         const DWORD r = (DWORD)(tmp.x * 255.f);
-         const DWORD g = (DWORD)(tmp.y * 255.f);
-         const DWORD b = (DWORD)(tmp.z * 255.f);
+         const uint32_t r = (uint32_t)(tmp.x * 255.f);
+         const uint32_t g = (uint32_t)(tmp.y * 255.f);
+         const uint32_t b = (uint32_t)(tmp.z * 255.f);
          mat->m_cGlossy = RGB(r, g, b);
       }
       else if (strcmp(lineHeader, "Ni") == 0)
@@ -525,8 +525,7 @@ bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
       {
          float tmp;
          fscanf_s(f, "%f\n", &tmp);
-         if (tmp > 1.0f) tmp = 1.0f;
-         mat->m_fOpacity = tmp;
+         mat->m_fOpacity = min(tmp,1.0f);
          break;
       }
    }

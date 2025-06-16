@@ -16,12 +16,12 @@ private:
    short init_exp(int size);
    int get_next_code();
    int get_byte();
-   BYTE *NextLine();
+   uint8_t *NextLine();
 
    IStream *m_pstm;
 
    /* output */
-   BYTE *m_pbBitsOutCur;
+   uint8_t *m_pbBitsOutCur;
    int m_cbStride;
 #ifdef _DEBUG
    int bad_code_count;
@@ -35,25 +35,24 @@ private:
    int top_slot;                  /* Highest code for current size */
    int slot;                      /* Last read code */
 
-   /* The following static variables are used
-    * for seperating out codes
-    */
-   int navail_bytes;              /* # bytes left in block */
-   int nbits_left;                /* # bits left in current byte */
-   BYTE b1;                       /* Current byte */
-   BYTE byte_buff[257];           /* Current block */
-   BYTE *pbytes;                  /* Pointer to next byte in block */
+   // The following static variables are used
+   // for separating out codes
+   int navail_bytes;              // # bytes left in block
+   int nbits_left;                // # bits left in current byte
+   uint8_t b1;                    // Current byte
+   uint8_t byte_buff[257];        // Current block
+   uint8_t *pbytes;               // Pointer to next byte in block
 
-   BYTE stack[MAX_CODES + 1];     /* Stack for storing pixels */
-   BYTE suffix[MAX_CODES + 1];    /* Suffix table */
-   WCHAR prefix[MAX_CODES + 1];   /* Prefix linked list */
+   uint8_t stack[MAX_CODES + 1];  // Stack for storing pixels
+   uint8_t suffix[MAX_CODES + 1]; // Suffix table
+   WCHAR prefix[MAX_CODES + 1];   // Prefix linked list
 
    int m_cfilebuffer;
-   BYTE m_pfilebufferbytes[FILE_BUF_SIZE];
+   uint8_t m_pfilebufferbytes[FILE_BUF_SIZE];
 
    int m_width;
    int m_height;
    int m_linesleft;
 
-   unsigned int m_readahead; // How many bytes we read into our buffer
+   unsigned int m_readahead;      // How many bytes we read into our buffer
 };

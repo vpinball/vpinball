@@ -749,7 +749,7 @@ STDMETHODIMP CodeViewer::CleanUpScriptEngine()
       {
          PLOGI << "Sending Close to script interpreter #" << m_pScript;
          m_pScript->Close();
-         U32 startWaitTick = msec();
+         const uint32_t startWaitTick = msec();
          while ((msec() - startWaitTick < 5000) && (state != SCRIPTSTATE_CLOSED))
          {
             Sleep(16);
@@ -2379,7 +2379,7 @@ HRESULT STDMETHODCALLTYPE CodeViewer::QueryCustomPolicy(
    DWORD dwReserved)
 {
 #ifndef __STANDALONE__
-   DWORD * const ppolicy = (DWORD *)CoTaskMemAlloc(sizeof(DWORD));
+   uint32_t *const ppolicy = (uint32_t *)CoTaskMemAlloc(sizeof(uint32_t));
    *ppolicy = URLPOLICY_DISALLOW;
 
    *ppPolicy = (BYTE *)ppolicy;
@@ -3627,7 +3627,7 @@ BOOL CodeViewer::OnCommand(WPARAM wparam, LPARAM lparam)
       case CBN_SELCHANGE: // Or accelerator
       {
          const SCNotification *const pscn = (SCNotification *)lparam;
-         return ParseSelChangeEvent(id, pscn) ? TRUE : FALSE;
+         return ParseSelChangeEvent(id, pscn);
       }
       case BN_CLICKED:
       {

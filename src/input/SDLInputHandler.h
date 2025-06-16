@@ -43,7 +43,7 @@ public:
       {
          const SDL_PropertiesID props = SDL_GetGamepadProperties(gamepad);
          if (gamepad && SDL_GetBooleanProperty(props, SDL_PROP_GAMEPAD_CAP_RUMBLE_BOOLEAN, false))
-            SDL_RumbleGamepad(gamepad, (Uint16)(saturate(lowFrequencySpeed) * 65535.f), (Uint16)(saturate(highFrequencySpeed) * 65535.f), ms_duration);
+            SDL_RumbleGamepad(gamepad, (uint16_t)(saturate(lowFrequencySpeed) * 65535.f), (uint16_t)(saturate(highFrequencySpeed) * 65535.f), ms_duration);
       }
       for (auto& haptic : m_haptics)
          SDL_PlayHapticRumble(haptic, saturate(max(lowFrequencySpeed, highFrequencySpeed)), ms_duration); //!! meh

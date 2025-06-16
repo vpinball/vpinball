@@ -517,7 +517,7 @@ BaseTexture* Renderer::EnvmapPrecalc(std::shared_ptr<const BaseTexture> envTex, 
    BaseTexture::Format env_format = envTex->m_format;
    const BaseTexture::Format rad_format = (env_format == BaseTexture::RGB_FP16 || env_format == BaseTexture::RGB_FP32) ? env_format : BaseTexture::SRGB;
    BaseTexture* radTex = BaseTexture::Create(rad_env_xres, rad_env_yres, rad_format);
-   BYTE* const __restrict rad_envmap = radTex->data();
+   uint8_t* const __restrict rad_envmap = radTex->data();
    bool free_envmap = false;
 
 #define PREFILTER_ENVMAP_DIFFUSE
@@ -554,9 +554,9 @@ BaseTexture* Renderer::EnvmapPrecalc(std::shared_ptr<const BaseTexture> envTex, 
                const unsigned int offs = xt * 3 + yoffs;
                if (env_format == BaseTexture::RGB_FP16)
                {
-                  sum_r += half2float(((const unsigned short*)envmap)[offs    ]) * w;
-                  sum_g += half2float(((const unsigned short*)envmap)[offs + 1]) * w;
-                  sum_b += half2float(((const unsigned short*)envmap)[offs + 2]) * w;
+                  sum_r += half2float(((const uint16_t*)envmap)[offs    ]) * w;
+                  sum_g += half2float(((const uint16_t*)envmap)[offs + 1]) * w;
+                  sum_b += half2float(((const uint16_t*)envmap)[offs + 2]) * w;
                }
                else
                {
@@ -624,7 +624,6 @@ BaseTexture* Renderer::EnvmapPrecalc(std::shared_ptr<const BaseTexture> envTex, 
                const Vertex3Ds n(sinf(theta) * cosf(phi), sinf(theta) * sinf(phi), cosf(theta));
 
                // draw x samples over hemisphere and collect cosine weighted environment map samples
-
                float sum_r = 0.f, sum_g = 0.f, sum_b = 0.f;
 
                constexpr unsigned int num_samples = 4096;
@@ -654,58 +653,70 @@ BaseTexture* Renderer::EnvmapPrecalc(std::shared_ptr<const BaseTexture> envTex, 
                   unsigned int offs = (int)(u*(float)env_xres) + (int)(v*(float)env_yres)*env_xres;
                   if (offs >= env_yres * env_xres)
                      offs = 0;
-                  if (env_format == BaseTexture::RGB_FP16)
+                  switch (env_format)
                   {
-                     r = half2float(((const unsigned short*)envmap)[offs*3  ]);
-                     g = half2float(((const unsigned short*)envmap)[offs*3+1]);
-                     b = half2float(((const unsigned short*)envmap)[offs*3+2]);
-                  }
-                  else if (env_format == BaseTexture::RGBA_FP16)
+                  case BaseTexture::RGB_FP16:
                   {
-                     r = half2float(((const unsigned short*)envmap)[offs*4  ]);
-                     g = half2float(((const unsigned short*)envmap)[offs*4+1]);
-                     b = half2float(((const unsigned short*)envmap)[offs*4+2]);
+                     r = half2float(((const uint16_t*)envmap)[offs*3  ]);
+                     g = half2float(((const uint16_t*)envmap)[offs*3+1]);
+                     b = half2float(((const uint16_t*)envmap)[offs*3+2]);
+                     break;
                   }
-                  else if (env_format == BaseTexture::RGB_FP32)
+                  case BaseTexture::RGBA_FP16:
+                  {
+                     r = half2float(((const uint16_t*)envmap)[offs*4  ]);
+                     g = half2float(((const uint16_t*)envmap)[offs*4+1]);
+                     b = half2float(((const uint16_t*)envmap)[offs*4+2]);
+                     break;
+                  }
+                  case BaseTexture::RGB_FP32:
                   {
                      r = ((const float*)envmap)[offs*3  ];
                      g = ((const float*)envmap)[offs*3+1];
                      b = ((const float*)envmap)[offs*3+2];
+                     break;
                   }
-                  else if (env_format == BaseTexture::RGBA_FP32)
+                  case BaseTexture::RGBA_FP32:
                   {
                      r = ((const float*)envmap)[offs*4];
                      g = ((const float*)envmap)[offs*4+1];
                      b = ((const float*)envmap)[offs*4+2];
+                     break;
                   }
-                  else if (env_format == BaseTexture::RGB)
+                  case BaseTexture::RGB:
                   {
-                     r = (float)((const BYTE*)envmap)[offs*3  ] * (float)(1.0 / 255.0);
-                     g = (float)((const BYTE*)envmap)[offs*3+1] * (float)(1.0 / 255.0);
-                     b = (float)((const BYTE*)envmap)[offs*3+2] * (float)(1.0 / 255.0);
+                     r = (float)((const uint8_t*)envmap)[offs*3  ] * (float)(1.0 / 255.0);
+                     g = (float)((const uint8_t*)envmap)[offs*3+1] * (float)(1.0 / 255.0);
+                     b = (float)((const uint8_t*)envmap)[offs*3+2] * (float)(1.0 / 255.0);
+                     break;
                   }
-                  else if (env_format == BaseTexture::RGBA)
+                  case BaseTexture::RGBA:
                   {
-                     const DWORD rgb = ((const DWORD*)envmap)[offs];
+                     const uint32_t rgb = ((const uint32_t*)envmap)[offs];
                      r = (float)(rgb & 0x00FF0000) * (float)(1.0 / 16711680.0);
                      g = (float)(rgb & 0x0000FF00) * (float)(1.0 /    65280.0);
                      b = (float)(rgb & 0x000000FF) * (float)(1.0 /      255.0);
+                     break;
                   }
-                  else if (env_format == BaseTexture::SRGB)
+                  case BaseTexture::SRGB:
                   {
-                     r = invGammaApprox((float)((const BYTE*)envmap)[offs*3  ] * (float)(1.0 / 255.0));
-                     g = invGammaApprox((float)((const BYTE*)envmap)[offs*3+1] * (float)(1.0 / 255.0));
-                     b = invGammaApprox((float)((const BYTE*)envmap)[offs*3+2] * (float)(1.0 / 255.0));
+                     r = invGammaApprox((float)((const uint8_t*)envmap)[offs*3  ] * (float)(1.0 / 255.0));
+                     g = invGammaApprox((float)((const uint8_t*)envmap)[offs*3+1] * (float)(1.0 / 255.0));
+                     b = invGammaApprox((float)((const uint8_t*)envmap)[offs*3+2] * (float)(1.0 / 255.0));
+                     break;
                   }
-                  else if (env_format == BaseTexture::SRGBA)
+                  case BaseTexture::SRGBA:
                   {
-                     const DWORD rgb = ((const DWORD*)envmap)[offs];
+                     const uint32_t rgb = ((const uint32_t*)envmap)[offs];
                      r = invGammaApprox((float)(rgb & 0x00FF0000) * (float)(1.0 / 16711680.0));
                      g = invGammaApprox((float)(rgb & 0x0000FF00) * (float)(1.0 /    65280.0));
                      b = invGammaApprox((float)(rgb & 0x000000FF) * (float)(1.0 /      255.0));
+                     break;
                   }
-                  else
-                     assert(!"unknown format");
+                  default:
+                     assert(!"unknown env_format");
+                     break;
+                  }
 #ifndef USE_ENVMAP_PRECALC_COSINE
                   sum_r += r * NdotL;
                   sum_g += g * NdotL;
@@ -729,23 +740,32 @@ BaseTexture* Renderer::EnvmapPrecalc(std::shared_ptr<const BaseTexture> envTex, 
                sum_b *= (float)(1.0 / num_samples);
 #endif
                const unsigned int offs = (y*rad_env_xres + x) * 3;
-               if (rad_format == BaseTexture::RGB_FP16)
+               switch (rad_format)
                {
-                  ((unsigned short*)rad_envmap)[offs  ] = float2half_noLUT(sum_r);
-                  ((unsigned short*)rad_envmap)[offs+1] = float2half_noLUT(sum_g);
-                  ((unsigned short*)rad_envmap)[offs+2] = float2half_noLUT(sum_b);
+               case BaseTexture::RGB_FP16:
+               {
+                  ((uint16_t*)rad_envmap)[offs  ] = float2half_noLUT(sum_r);
+                  ((uint16_t*)rad_envmap)[offs+1] = float2half_noLUT(sum_g);
+                  ((uint16_t*)rad_envmap)[offs+2] = float2half_noLUT(sum_b);
+                  break;
                }
-               else if (rad_format == BaseTexture::RGB_FP32)
+               case BaseTexture::RGB_FP32:
                {
                   ((float*)rad_envmap)[offs  ] = sum_r;
                   ((float*)rad_envmap)[offs+1] = sum_g;
                   ((float*)rad_envmap)[offs+2] = sum_b;
+                  break;
                }
-               else if (rad_format == BaseTexture::SRGB)
+               case BaseTexture::SRGB:
                {
-                  rad_envmap[offs  ] = (BYTE)clamp(gammaApprox(sum_r) * 255.f, 0.f, 255.f);
-                  rad_envmap[offs+1] = (BYTE)clamp(gammaApprox(sum_g) * 255.f, 0.f, 255.f);
-                  rad_envmap[offs+2] = (BYTE)clamp(gammaApprox(sum_b) * 255.f, 0.f, 255.f);
+                  rad_envmap[offs  ] = (uint8_t)clamp(gammaApprox(sum_r) * 255.f, 0.f, 255.f);
+                  rad_envmap[offs+1] = (uint8_t)clamp(gammaApprox(sum_g) * 255.f, 0.f, 255.f);
+                  rad_envmap[offs+2] = (uint8_t)clamp(gammaApprox(sum_b) * 255.f, 0.f, 255.f);
+                  break;
+               }
+               default:
+                     assert(!"unknown rad_format");
+                     break;
                }
             }
          });
@@ -807,7 +827,7 @@ BaseTexture* Renderer::EnvmapPrecalc(std::shared_ptr<const BaseTexture> envTex, 
                unsigned int offs = (int)(u*(float)env_xres) + (int)(v*(float)env_yres)*env_xres;
                if (offs >= env_yres * env_xres)
                   offs = 0;
-               const DWORD rgb = ((DWORD*)envmap)[offs];
+               const uint32_t rgb = ((uint32_t*)envmap)[offs];
                r = invGammaApprox((float)(rgb & 255) * (float)(1.0 / 255.0));
                g = invGammaApprox((float)(rgb & 65280) * (float)(1.0 / 65280.0));
                b = invGammaApprox((float)(rgb & 16711680) * (float)(1.0 / 16711680.0));
@@ -851,7 +871,7 @@ BaseTexture* Renderer::EnvmapPrecalc(std::shared_ptr<const BaseTexture> envTex, 
             sum[1] = gammaApprox(sum[1]);
             sum[2] = gammaApprox(sum[2]);
             if (
-                ((DWORD*)rad_envmap)[y*rad_env_xres + x] != ((int)(sum[0] * 255.0f)) | (((int)(sum[1] * 255.0f)) << 8) | (((int)(sum[2] * 255.0f)) << 16))
+                ((uint32_t*)rad_envmap)[y*rad_env_xres + x] != ((int)(sum[0] * 255.0f)) | (((int)(sum[1] * 255.0f)) << 8) | (((int)(sum[2] * 255.0f)) << 16))
                 g_pvp->MessageBox("Not OK", "Not OK", MB_OK);
          }
       }
@@ -2095,7 +2115,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
    const bool useAO = GetAOMode() == 2;
    const bool useUpscaler = (m_renderWidth < GetBackBufferTexture()->GetWidth()) && !PostProcStereo && (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen);
    const InfoMode infoMode = g_pplayer->GetInfoMode();
-   //const unsigned int jittertime = (unsigned int)((U64)msec()*90/1000);
+   //const unsigned int jittertime = (unsigned int)((uint64_t)msec()*90/1000);
    const float jitter = (float)((msec() & 2047) / 1000.0);
 
    RenderTarget* renderedRT = GetBackBufferTexture();
@@ -2410,7 +2430,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
    if (false)
    {
       std::shared_ptr<BaseTexture> tex = std::shared_ptr<BaseTexture>(BaseTexture::Create(renderedRT->GetWidth(), renderedRT->GetHeight(), BaseTexture::RGB));
-      BYTE *const __restrict pdest = tex->data();
+      uint8_t *const __restrict pdest = tex->data();
       for (size_t i = 0; i < (size_t)renderedRT->GetWidth() * renderedRT->GetHeight(); ++i)
       {
          size_t y = i / renderedRT->GetWidth();

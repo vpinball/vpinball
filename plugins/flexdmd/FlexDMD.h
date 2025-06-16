@@ -145,7 +145,7 @@ private:
    bool m_lumFrameDirty = true;
 
    string m_szGameName;
-   Uint64 m_lastRenderTick = 0;
+   uint64_t m_lastRenderTick = 0;
    unsigned int m_frameId = 0;
    int32_t m_runtimeVersion = 1008;
    bool m_clear = false;

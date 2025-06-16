@@ -122,7 +122,7 @@ void wintimer_init()
    TwoMSTimerTicks = (2000 * TimerFreq.QuadPart) / 1000000ull;
 }
 
-unsigned long long usec()
+uint64_t usec()
 {
    if (sTimerInit == 0) return 0;
 
@@ -132,12 +132,12 @@ unsigned long long usec()
 #else
    TimerNow.QuadPart = SDL_GetPerformanceCounter();
 #endif
-   const unsigned long long cur_tick = (unsigned long long)(TimerNow.QuadPart - sTimerStart.QuadPart);
-   return ((unsigned long long)TimerFreq.QuadPart < 100000000ull) ? (cur_tick * 1000000ull / (unsigned long long)TimerFreq.QuadPart)
-      : (cur_tick * 1000ull / ((unsigned long long)TimerFreq.QuadPart / 1000ull));
+   const uint64_t cur_tick = (uint64_t)(TimerNow.QuadPart - sTimerStart.QuadPart);
+   return ((uint64_t)TimerFreq.QuadPart < 100000000ull) ? (cur_tick * 1000000ull / (uint64_t)TimerFreq.QuadPart)
+      : (cur_tick * 1000ull / ((uint64_t)TimerFreq.QuadPart / 1000ull));
 }
 
-U32 msec()
+uint32_t msec()
 {
    if (sTimerInit == 0) return 0;
 
@@ -148,13 +148,13 @@ U32 msec()
    TimerNow.QuadPart = SDL_GetPerformanceCounter();
 #endif
    const LONGLONG cur_tick = TimerNow.QuadPart - sTimerStart.QuadPart;
-   return (U32)((unsigned long long)cur_tick * 1000ull / (unsigned long long)TimerFreq.QuadPart);
+   return (uint32_t)((uint64_t)cur_tick * 1000ull / (uint64_t)TimerFreq.QuadPart);
 }
 
 // tries(!) to be as exact as possible at the cost of potentially causing trouble with other threads/cores due to OS madness
 // needs timeBeginPeriod(1) before calling 1st time to make the Sleep(1) in here behave more or less accurately (and timeEndPeriod(1) after not needing that precision anymore)
 // but VP code does this already
-void uSleep(const unsigned long long u)
+void uSleep(const uint64_t u)
 {
 //#ifdef _MSC_VER
    if (sTimerInit == 0) return;
@@ -200,7 +200,7 @@ void uSleep(const unsigned long long u)
 // can sleep too long by 500-1000 (=0.5 to 1ms) or 1000-2000 (=1 to 2ms) on older windows versions
 // needs timeBeginPeriod(1) before calling 1st time to make the Sleep(1) in here behave more or less accurately (and timeEndPeriod(1) after not needing that precision anymore)
 // but VP code does this already
-void uOverSleep(const unsigned long long u)
+void uOverSleep(const uint64_t u)
 {
 #ifdef ENABLE_SDL_VIDEO
    SDL_DelayNS(u); // Experiments on Windows 11 show a minimum delay around 300-500us (half a ms), uses roughly same API calls as below

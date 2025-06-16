@@ -59,8 +59,8 @@ void FlexDMD::SetRun(bool run)
 void FlexDMD::Render()
 {
    // TODO we could do it on a separate thread and afford a latency of 1 frame to remove all overhead
-   Uint64 tick = SDL_GetTicks();
-   Uint64 elapsedMs = tick - m_lastRenderTick;
+   uint64_t tick = SDL_GetTicks();
+   uint64_t elapsedMs = tick - m_lastRenderTick;
    if ((m_renderLockCount == 0) && elapsedMs > 2)
    {
       m_frameId++;

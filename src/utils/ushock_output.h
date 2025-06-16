@@ -8,8 +8,8 @@
 
 void ushock_output_init();
 void ushock_output_shutdown();
-void ushock_output_set(const U08 output_mask, const bool on);
+void ushock_output_set(const uint8_t output_mask, const bool on);
 
-void ushock_output_update(const U32 cur_time_msec);
+void ushock_output_update(const uint32_t cur_time_msec);
 
 void ushock_output_knock(const int count = 1); // Do a single knock

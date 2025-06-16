@@ -48,7 +48,7 @@ static HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
 #ifndef __STANDALONE__
    GUID hidGUID;
    SP_DEVICE_INTERFACE_DATA deviceInterfaceData;
-   ULONG requiredSize;
+   DWORD requiredSize;
 
    //Get the HID GUID value - used as mask to get list of devices
    HidD_GetHidGuid(&hidGUID);
@@ -120,7 +120,7 @@ static HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
 #endif
 }
 
-static HANDLE hid_connect(U32 vendorID, U32 productID, U32 * const versionNumber = nullptr)
+static HANDLE hid_connect(uint32_t vendorID, uint32_t productID, uint32_t * const versionNumber = nullptr)
 {
 #ifndef __STANDALONE__
    DWORD index = 0;
@@ -204,7 +204,6 @@ void ushock_output_init()
       printf("%lu bytes written\n", written);
 
       DWORD bytes_read;
-
       ReadFile(hnd,
          inbuffer,
          Capabilities.InputReportByteLength,
@@ -213,7 +212,7 @@ void ushock_output_init()
 
       printf("%lu bytes read: ", bytes_read);
 
-      for (U32 i = 0; i < bytes_read; i++)
+      for (DWORD i = 0; i < bytes_read; i++)
       {
          printf("%02x ", inbuffer[i]);
       }
@@ -227,13 +226,13 @@ void ushock_output_init()
 }
 
 
-static U32 sMask = 0;
+static uint32_t sMask = 0;
 
 
 // This is the main interface to turn output on and off.
 // Once set, the value will remain set until another set call is made.
 // The output_mask parameter uses any combination of HID_OUTPUT enum.
-void ushock_output_set(const U08 output_mask, const bool on)
+void ushock_output_set(const uint8_t output_mask, const bool on)
 {
    // Check if the outputs are being turned on.
    if (on)
@@ -252,7 +251,7 @@ void ushock_output_set(const U08 output_mask, const bool on)
 
 static int sKnock;
 static int sKnockState;
-static U32 sKnockStamp;
+static uint32_t sKnockStamp;
 
 
 void ushock_output_knock(const int count)
@@ -266,16 +265,16 @@ void ushock_output_knock(const int count)
 }
 
 
-void ushock_output_update(const U32 cur_time_msec)
+void ushock_output_update(const uint32_t cur_time_msec)
 {
 #ifndef __STANDALONE__
-   U08 mask = (U08)(sMask & 0xff);
+   uint8_t mask = (uint8_t)(sMask & 0xff);
 
    if (sKnockStamp)
    {
-      if (cur_time_msec - sKnockStamp < (U32)(sKnockState ? KNOCK_PERIOD_ON : KNOCK_PERIOD_OFF))
+      if (cur_time_msec - sKnockStamp < (uint32_t)(sKnockState ? KNOCK_PERIOD_ON : KNOCK_PERIOD_OFF))
       {
-         mask |= sKnockState ? (U08)HID_OUTPUT_KNOCKER : (U08)0x00;
+         mask |= sKnockState ? (uint8_t)HID_OUTPUT_KNOCKER : (uint8_t)0x00;
       }
       else
       {
@@ -301,7 +300,7 @@ void ushock_output_update(const U32 cur_time_msec)
    {
       //printf( "outputting 0x%x\n", mask );
 
-      static U32 last_written;
+      static uint32_t last_written;
 
       // This really needs serious optimization by putting in a separate thread or something - AMH
       if (mask != last_written)

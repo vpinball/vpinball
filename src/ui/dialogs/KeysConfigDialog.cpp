@@ -293,7 +293,7 @@ KeysConfigDialog::KeysConfigDialog() : CDialog(IDD_KEYS)
       UINT vk = MapVirtualKeyEx(scancode, 1, layout);
       if (rgszKeyName[scancode][1] == 0 && ToAsciiEx(vk, scancode, State, (LPWORD)result, 0, layout) == 1)
       {
-         rgszKeyName[scancode][0] = (char) result[0];
+         rgszKeyName[scancode][0] = (char)result[0];
          rgszKeyName[scancode][1] = 0;
       }
    }

@@ -103,11 +103,11 @@ void HitSur::Ellipse(const float centerx, const float centery, const float radiu
 
    const int ix = SCALEXf(centerx);
    const int iy = SCALEYf(centery);
-   const long long ir = SCALEDf(radius);
+   const int64_t ir = SCALEDf(radius);
 
-   const long long dx = m_hitx - ix;
-   const long long dy = m_hity - iy;
-   const long long dist = dx*dx + dy*dy;
+   const int64_t dx = m_hitx - ix;
+   const int64_t dy = m_hity - iy;
+   const int64_t dist = dx*dx + dy*dy;
 
    if (dist <= ir*ir)
    {

@@ -134,7 +134,7 @@ private:
    bool m_dirty = true;
    RenderState m_renderState;
    int m_animationFrame = 0;
-   Uint64 m_animationStart = 0;
+   uint64_t m_animationStart = 0;
    std::future<RenderState> m_pendingTextureUpdate;
 };
 

@@ -137,32 +137,23 @@ BEGIN_OBJECT_MAP(ObjectMap)
 END_OBJECT_MAP()
 
 
-static PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
+static char** CommandLineToArgvA(const char* const CmdLine, int* const _argc)
 {
-   PCHAR*  argv;
-   PCHAR   _argv;
-   int     argc;
-   CHAR    a;
-   size_t  i, j;
-
-   bool in_QM;
-   bool in_TEXT;
-   bool in_SPACE;
-
    const size_t len = strlen(CmdLine);
-   i = ((len + 2) / 2) * sizeof(PVOID) + sizeof(PVOID);
+   size_t i = ((len + 2) / 2) * sizeof(void*) + sizeof(void*);
 
-   argv = (PCHAR*)malloc(i + (len + 2) * sizeof(CHAR));
-   _argv = (PCHAR)(((PUCHAR)argv) + i);
+   char** argv = (char**)malloc(i + (len + 2) * sizeof(char));
+   char* _argv = (char*)(((unsigned char*)argv) + i);
 
-   argc = 0;
+   int argc = 0;
    argv[argc] = _argv;
-   in_QM = false;
-   in_TEXT = false;
-   in_SPACE = true;
+   bool in_QM = false;
+   bool in_TEXT = false;
+   bool in_SPACE = true;
    i = 0;
-   j = 0;
+   size_t j = 0;
 
+   char a;
    while ((a = CmdLine[i])) {
       if (in_QM) {
          if (a == '\"') {
@@ -565,7 +556,7 @@ public:
 
 #ifndef __STANDALONE__
       int nArgs;
-      LPSTR *szArglist = CommandLineToArgvA(GetCommandLine(), &nArgs);
+      char** szArglist = CommandLineToArgvA(GetCommandLine(), &nArgs);
 #else
       int nArgs = g_argc;
       char**  szArglist = g_argv;

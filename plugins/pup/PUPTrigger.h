@@ -79,7 +79,7 @@ private:
    const int m_restSeconds;
    const PUP_TRIGGER_PLAY_ACTION m_playAction;
 
-   Uint64 m_lastTriggered = 0;
+   uint64_t m_lastTriggered = 0;
 };
 
 }

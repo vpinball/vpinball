@@ -128,7 +128,7 @@ public:
                          const int srcLayer = -1, const int dstLayer = -1);
    void SubmitVR(RenderTarget* source);
    void RenderLiveUI();
-   void DrawMesh(Shader* shader, const bool isTranparentPass, const Vertex3Ds& center, const float depthBias, MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndex, const DWORD indexCount);
+   void DrawMesh(Shader* shader, const bool isTranparentPass, const Vertex3Ds& center, const float depthBias, MeshBuffer* mb, const PrimitiveTypes type, const uint32_t startIndex, const uint32_t indexCount);
    void DrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices, const bool isTransparent = false, const float depth = 0.f);
    void DrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices, const bool isTransparent = false, const float depth = 0.f);
    void DrawFullscreenTexturedQuad(Shader* shader);
@@ -220,7 +220,7 @@ public:
    unsigned int m_curLockCalls = 0, m_frameLockCalls = 0;
    unsigned int m_curDrawnTriangles = 0, m_frameDrawnTriangles = 0;
 
-   U64 m_lastPresentFrameTick = 0;
+   uint64_t m_lastPresentFrameTick = 0;
 
    unsigned int m_nOutputWnd = 1; // Swap chain always has at least one output window (OpenGL & DX9 only supports one, DX10+/Metal/Vulkan support multiple)
    VPX::Window* m_outputWnd[8];
@@ -339,7 +339,7 @@ private:
 
    DWORD m_maxaniso;
    bool m_mag_aniso;
-   static constexpr DWORD TEXTURESET_STATE_CACHE_SIZE = 32;
+   static constexpr uint32_t TEXTURESET_STATE_CACHE_SIZE = 32;
    SamplerFilter m_bound_filter[TEXTURESET_STATE_CACHE_SIZE];
    SamplerAddressMode m_bound_clampu[TEXTURESET_STATE_CACHE_SIZE];
    SamplerAddressMode m_bound_clampv[TEXTURESET_STATE_CACHE_SIZE];

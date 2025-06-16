@@ -170,7 +170,7 @@ private:
 
    float       m_reeldigitwidth;  // size of the individual reel digits (in bitmap form)
    float       m_reeldigitheight;
-   U32         m_timeNextUpdate;
+   uint32_t    m_timeNextUpdate;
 
    struct TexCoordRect
    {

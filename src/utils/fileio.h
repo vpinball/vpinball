@@ -54,7 +54,7 @@ public:
    HRESULT GetIntNoHash(int &value);
    HRESULT GetInt(void * const value);
    HRESULT GetInt(int &value);
-   HRESULT GetInt(DWORD &value)
+   HRESULT GetInt(uint32_t &value)
    {
       int val;
       const HRESULT hr = GetInt(val);
@@ -62,7 +62,7 @@ public:
       return hr;
    }
 #ifndef __STANDALONE__
-   HRESULT GetInt(unsigned int &value)
+   HRESULT GetInt(COLORREF &value)
    {
       int val;
       const HRESULT hr = GetInt(val);
@@ -77,7 +77,7 @@ public:
       value = val;
       return hr;
    }
-   HRESULT GetString(char * const szvalue, const DWORD szvalue_maxlength);
+   HRESULT GetString(char * const szvalue, const size_t szvalue_maxlength);
    HRESULT GetString(string& szvalue);
    HRESULT GetWideString(WCHAR* wzvalue, const size_t wzvalue_maxlength);
    HRESULT GetWideString(std::basic_string<WCHAR>& wzvalue);

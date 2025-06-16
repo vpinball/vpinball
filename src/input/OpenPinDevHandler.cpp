@@ -85,7 +85,7 @@ struct OpenPinballDeviceReport
 class OpenPinDev final
 {
 public:
-   OpenPinDev(hid_device *hDevice, BYTE reportID, size_t reportSize, const wchar_t *deviceStructVersionString) :
+   OpenPinDev(hid_device *hDevice, uint8_t reportID, size_t reportSize, const wchar_t *deviceStructVersionString) :
        hDevice(hDevice), 
        reportID(reportID),
        reportSize(reportSize)
@@ -191,7 +191,7 @@ protected:
 
    // read buffer - space for an incoming report
    size_t reportSize;
-   std::vector<BYTE> buf;
+   std::vector<uint8_t> buf;
 
    // last report read
    OpenPinballDeviceReport r;
@@ -400,7 +400,7 @@ void OpenPinDevHandler::Update()
       return;
 
    // Axis scaling factor.  All Open Pinball Device analog axes are
-   // INT16's (-32768..+32767).  The VP functional axes are designed
+   // int16_t's (-32768..+32767).  The VP functional axes are designed
    // for joystick input, so we must rescale to VP's joystick scale.
    constexpr int scaleFactor = (2 * JOYRANGEMX) / 65536;
 

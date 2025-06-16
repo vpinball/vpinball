@@ -64,14 +64,14 @@ void SharedIndexBuffer::Upload()
       // Create data block
       #if defined(ENABLE_BGFX)
       const bgfx::Memory* mem = bgfx::alloc(size);
-      UINT8* data = mem->data;
+      uint8_t* data = mem->data;
 
       #elif defined(ENABLE_OPENGL)
-      UINT8* data = (UINT8*)malloc(size);
+      uint8_t* data = (uint8_t*)malloc(size);
 
       #elif defined(ENABLE_DX9)
       CHECKD3D(m_buffers[0]->m_rd->GetCoreDevice()->CreateIndexBuffer(size, D3DUSAGE_WRITEONLY | (m_isStatic ? 0 : D3DUSAGE_DYNAMIC), m_format == IndexBuffer::FMT_INDEX16 ? D3DFMT_INDEX16 : D3DFMT_INDEX32, D3DPOOL_DEFAULT, &m_ib, nullptr));
-      UINT8* data;
+      uint8_t* data;
       CHECKD3D(m_ib->Lock(0, size, (void**)&data, 0));
 
       #endif
@@ -141,7 +141,7 @@ void SharedIndexBuffer::Upload()
 
          #elif defined(ENABLE_DX9)
          // It would be better to perform a single lock but in fact, I don't think there are situations where more than one update is pending
-         UINT8* data;
+         uint8_t* data;
          CHECKD3D(m_ib->Lock(upload.offset, upload.size, (void**)&data, 0));
          memcpy(data, upload.data, upload.size);
          CHECKD3D(m_ib->Unlock());
@@ -264,14 +264,14 @@ void IndexBuffer::ApplyOffset(VertexBuffer* vb)
          const unsigned int count = upload.size / m_sizePerIndex;
          if (m_indexFormat == FMT_INDEX16)
          {
-            U16* const __restrict indices = (U16*) upload.data;
+            uint16_t* const __restrict indices = (uint16_t*)upload.data;
             for (unsigned int i = 0; i < count; i++)
                indices[i] += offset;
          }
          else // FMT_INDEX32
          {
             assert(m_indexFormat == FMT_INDEX32);
-            U32* const __restrict indices = (U32*) upload.data;
+            uint32_t* const __restrict indices = (uint32_t*)upload.data;
             for (unsigned int i = 0; i < count; i++)
                indices[i] += offset;
          }

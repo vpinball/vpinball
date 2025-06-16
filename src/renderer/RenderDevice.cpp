@@ -509,7 +509,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
             rd->Flip();
             const bgfx::Stats* stats = bgfx::getStats();
-            const U32 bgfxSubmit = static_cast<U32>((stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000000ull / stats->cpuTimerFreq);
+            const uint32_t bgfxSubmit = static_cast<uint32_t>((stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000000ull / stats->cpuTimerFreq);
             g_pplayer->m_logicProfiler.OnPresented(usec() - bgfxSubmit);
             g_pplayer->m_renderProfiler->ExitProfileSection();
             g_pplayer->m_renderProfiler->AdjustBGFXSubmit(bgfxSubmit);
@@ -527,7 +527,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    else
    #endif
    {
-      U64 lastFlipTick = 0;
+      uint64_t lastFlipTick = 0;
       bool gpuVSync = false;
 
       // Desktop renderloop, synchronized on main display (playfield window), with game logic preparing frames as soon as possible
@@ -578,7 +578,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             #ifdef MSVC_CONCURRENCY_VIEWER
             span* tagSpan = new span(series, 1, _T("WaitSync"));
             #endif
-            U64 now = usec();
+            uint64_t now = usec();
             const unsigned int targetFrameLength = useVSync ? (static_cast<unsigned int>(1000000. / (double)g_pplayer->GetTargetRefreshRate()) - 2000) // Keep some margin since, in the end, the sync will be done on hardware VSync (somewhat hacky, disallow VSync with low FPS ?)
                                                             :  static_cast<unsigned int>(1000000. / (double)g_pplayer->GetTargetRefreshRate());
             if (now - lastFlipTick < targetFrameLength)
@@ -614,7 +614,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             delete tagSpan;
             #endif
             const bgfx::Stats* stats = bgfx::getStats();
-            const U32 bgfxSubmit = static_cast<U32>((stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000000ull / stats->cpuTimerFreq);
+            const uint32_t bgfxSubmit = static_cast<uint32_t>((stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000000ull / stats->cpuTimerFreq);
             g_pplayer->m_logicProfiler.OnPresented(usec() - bgfxSubmit);
             g_pplayer->m_renderProfiler->ExitProfileSection();
             g_pplayer->m_renderProfiler->AdjustBGFXSubmit(bgfxSubmit);
@@ -1519,8 +1519,8 @@ void RenderDevice::WaitForVSync(const bool asynchronous)
       #endif
 #endif
       m_vsyncCount++;
-      //const U64 now = usec();
-      //static U64 lastUs = 0;
+      //const uint64_t now = usec();
+      //static uint64_t lastUs = 0;
       //PLOGD_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "VSYNC " << ((double)(now - lastUs) / 1000.0) << "ms";
       //lastUs = now;
    };
@@ -2040,7 +2040,7 @@ void RenderDevice::DrawFullscreenTexturedQuad(Shader* shader)
    DrawMesh(shader, false, pos, 0.f, m_quadMeshBuffer, TRIANGLESTRIP, 0, 4);
 }
 
-void RenderDevice::DrawMesh(Shader* shader, const bool isTranparentPass, const Vertex3Ds& center, const float depthBias, MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndex, const DWORD indexCount)
+void RenderDevice::DrawMesh(Shader* shader, const bool isTranparentPass, const Vertex3Ds& center, const float depthBias, MeshBuffer* mb, const PrimitiveTypes type, const uint32_t startIndex, const uint32_t indexCount)
 {
    RenderCommand* cmd = m_renderFrame->NewCommand();
    // Legacy sorting order (only along negative z axis, which is reversed for reflections).

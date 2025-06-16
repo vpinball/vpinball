@@ -63,7 +63,7 @@ private:
       // Table tweaks & Custom table defined options (must be the last of this enum)
       BS_Volume, BS_BackglassVolume, BS_PlayfieldVolume, BS_DayNight, BS_Difficulty, BS_Tonemapper, BS_Exposure, BS_Custom
    };
-   U32 m_lastTweakKeyDown = 0;
+   uint32_t m_lastTweakKeyDown = 0;
    int m_activeTweakIndex = 0;
    int m_activeTweakPageIndex = 0;
    vector<TweakPage> m_tweakPages;
@@ -195,7 +195,7 @@ private:
    {
       unsigned int id;
       string message;
-      U32 disappearTick;
+      uint32_t disappearTick;
    };
    vector<Notification> m_notifications;
    unsigned int m_nextNotificationIs = 1;
@@ -224,8 +224,8 @@ private:
    bool m_RendererInspection = false;
    bool m_disable_esc = false; // Option for keyboard shortcuts
    int m_esc_mode = 0; // What to do if Esc is pressed while on splash screen (depends on why the splash was opened)
-   U32 m_OpenUITime = 0; // Used to delay keyboard shortcut
-   U32 m_StartTime_msec = 0; // Used for timed splash overlays
+   uint32_t m_OpenUITime = 0; // Used to delay keyboard shortcut
+   uint32_t m_StartTime_msec = 0; // Used for timed splash overlays
 
    // Profiler display data
    int m_show_fps = 0; // 0=disabled / 1=FPS / 2=FPS+dynamic plot

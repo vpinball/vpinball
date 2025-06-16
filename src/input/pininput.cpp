@@ -452,9 +452,9 @@ void PinInput::PlayRumble(const float lowFrequencySpeed, const float highFrequen
 
    #ifdef __LIBVPINBALL__
       VPinballLib::RumbleData rumbleData = {
-         (Uint16)(saturate(lowFrequencySpeed) * 65535.f),
-         (Uint16)(saturate(highFrequencySpeed) * 65535.f),
-         (Uint32)ms_duration
+         (uint16_t)(saturate(lowFrequencySpeed) * 65535.f),
+         (uint16_t)(saturate(highFrequencySpeed) * 65535.f),
+         (uint32_t)ms_duration
       };
       VPinballLib::VPinball::SendEvent(VPinballLib::Event::Rumble, &rumbleData);
    #endif
@@ -685,7 +685,7 @@ void PinInput::FireActionEvent(EnumAssignKeys action, bool isPressed)
       g_pplayer->m_ptable->FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[action]);
 }
 
-void PinInput::Autostart(const U32 initialDelayMs, const U32 retryDelayMs)
+void PinInput::Autostart(const uint32_t initialDelayMs, const uint32_t retryDelayMs)
 {
    // Don't perform autostart if a game has been started once.
    // Note that this is hacky/buggy as it rely on the table to create ball only on game start
@@ -698,14 +698,14 @@ void PinInput::Autostart(const U32 initialDelayMs, const U32 retryDelayMs)
       return;
    }
 
-   const U32 now = msec();
+   const uint32_t now = msec();
    if (m_autoStartTimestamp == 0)
    {
       m_autoStartTimestamp = now;
       return;
    }
 
-   const U32 elapsed = now - m_autoStartTimestamp;
+   const uint32_t elapsed = now - m_autoStartTimestamp;
    if (m_autoStartPressed // Start button is down.
       && (elapsed > 100)) // Start button has been down for at least 0.10 seconds.
    {
@@ -930,7 +930,7 @@ void PinInput::ProcessInput()
    if (!g_pplayer || !g_pplayer->m_ptable) return; // only if player is running
    g_pplayer->m_logicProfiler.OnProcessInput();
 
-   const U32 now = msec();
+   const uint32_t now = msec();
 
    // Gather input from all handlers
    for (const auto& handler : m_inputHandlers)

@@ -227,7 +227,7 @@ void ExtCaptureManager::UpdateThread()
 
          bool desktopIsMapped = false;
          bool stagingTexIsMapped = false;
-         BYTE* srcData = nullptr;
+         uint8_t* srcData = nullptr;
          int pitch = 0;
          IDXGIResource* desktop_resource = nullptr;
          DXGI_OUTDUPL_FRAME_INFO frame_info;
@@ -251,7 +251,7 @@ void ExtCaptureManager::UpdateThread()
             if (hr == S_OK)
             {
                desktopIsMapped = true;
-               srcData = (BYTE*)mapped_rect.pBits;
+               srcData = (uint8_t*)mapped_rect.pBits;
                pitch = mapped_rect.Pitch;
             }
             else if (hr == DXGI_ERROR_UNSUPPORTED) // Can not perform a direct desktop resource mapping: we need to copy it from the GPU to a system memory texture
@@ -267,15 +267,15 @@ void ExtCaptureManager::UpdateThread()
                srcBox.front = srcBox.right = srcBox.bottom = 0;
                srcBox.back = 1;
                srcBox.left = srcBox.top = UINT32_MAX;
-               UINT outWidth = duplication->m_output->m_OutputDesc.DesktopCoordinates.right - duplication->m_output->m_OutputDesc.DesktopCoordinates.left;
-               UINT outHeight = duplication->m_output->m_OutputDesc.DesktopCoordinates.bottom - duplication->m_output->m_OutputDesc.DesktopCoordinates.top;
+               uint32_t outWidth = duplication->m_output->m_OutputDesc.DesktopCoordinates.right - duplication->m_output->m_OutputDesc.DesktopCoordinates.left;
+               uint32_t outHeight = duplication->m_output->m_OutputDesc.DesktopCoordinates.bottom - duplication->m_output->m_OutputDesc.DesktopCoordinates.top;
                for (Capture* capture : m_captures)
                {
                   if (capture->m_duplication == duplication)
                   {
                      RECT inputRect;
                      GetWindowRect(capture->m_window, &inputRect);
-                     UINT oldWidth = capture->m_width, oldHeight = capture->m_height;
+                     uint32_t oldWidth = capture->m_width, oldHeight = capture->m_height;
                      capture->m_width = inputRect.right - inputRect.left;
                      capture->m_height = inputRect.bottom - inputRect.top;
                      capture->m_dispLeft = clamp(inputRect.left - duplication->m_output->m_OutputDesc.DesktopCoordinates.left, 0l, outWidth - capture->m_width);
@@ -295,7 +295,7 @@ void ExtCaptureManager::UpdateThread()
                if (SUCCEEDED(hr))
                {
                   stagingTexIsMapped = true;
-                  srcData = (BYTE*)map.pData;
+                  srcData = (uint8_t*)map.pData;
                   pitch = map.RowPitch;
                }
                else
@@ -315,11 +315,11 @@ void ExtCaptureManager::UpdateThread()
          if (srcData != nullptr)
          {
             // Get move & dirty rectangles and mark corresponding captures as dirty
-            UINT BufSize = frame_info.TotalMetadataBufferSize;
+            uint32_t BufSize = frame_info.TotalMetadataBufferSize;
             if (duplication->m_metaDataBufferSize < BufSize)
             {
                delete[] duplication->m_metaDataBuffer;
-               duplication->m_metaDataBuffer = new BYTE[BufSize];
+               duplication->m_metaDataBuffer = new uint8_t[BufSize];
                duplication->m_metaDataBufferSize = BufSize;
             }
             hr = duplication->m_duplication->GetFrameMoveRects(BufSize, reinterpret_cast<DXGI_OUTDUPL_MOVE_RECT*>(duplication->m_metaDataBuffer), &BufSize);

@@ -319,7 +319,7 @@ void FlipperMoverObject::UpdateDisplacements(const float dtime)
 #ifdef DEBUG_FLIPPERS
          if (m_startTime)
          {
-            const U32 dur = g_pplayer->m_time_msec - m_startTime;
+            const uint32_t dur = g_pplayer->m_time_msec - m_startTime;
             m_startTime = 0;
             PLOGD << "Stroke duration: " << dur << " ms";
             PLOGD << "Ang. velocity: " << m_angleSpeed;
