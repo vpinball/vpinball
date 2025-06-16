@@ -518,13 +518,13 @@ BaseTexture* BaseTexture::Convert(Format format) const
             tex = BaseTexture::Create(m_width, m_height, SRGBA);
             if (tex == nullptr)
                return nullptr;
-            static constexpr UINT8 lum32[] = { 0, 8, 16, 25, 33, 41, 49, 58, 66, 74, 82, 90, 99, 107, 115, 123, 132, 140, 148, 156, 165, 173, 181, 189, 197, 206, 214, 222, 230, 239, 247, 255 };
-            static constexpr UINT8 lum64[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 45, 49, 53, 57, 61, 65, 69, 73, 77, 81, 85, 89, 93, 97, 101, 105, 109, 113, 117, 121, 125, 130, 134, 138,
+            static constexpr uint8_t lum32[] = { 0, 8, 16, 25, 33, 41, 49, 58, 66, 74, 82, 90, 99, 107, 115, 123, 132, 140, 148, 156, 165, 173, 181, 189, 197, 206, 214, 222, 230, 239, 247, 255 };
+            static constexpr uint8_t lum64[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 45, 49, 53, 57, 61, 65, 69, 73, 77, 81, 85, 89, 93, 97, 101, 105, 109, 113, 117, 121, 125, 130, 134, 138,
                142, 146, 150, 154, 158, 162, 166, 170, 174, 178, 182, 186, 190, 194, 198, 202, 206, 210, 215, 219, 223, 227, 231, 235, 239, 243, 247, 251, 255 };
-            uint32_t* const data = reinterpret_cast<uint32_t*>(tex->data());
-            const uint16_t* const frame = reinterpret_cast<const uint16_t*>(datac());
-            const unsigned int size = height() * width();
-            for (unsigned int ofs = 0; ofs < size; ofs++)
+            uint32_t* const __restrict data = reinterpret_cast<uint32_t*>(tex->data());
+            const uint16_t* const __restrict frame = reinterpret_cast<const uint16_t*>(datac());
+            const size_t size = (size_t)width() * height();
+            for (size_t ofs = 0; ofs < size; ++ofs)
             {
                const uint16_t rgb565 = frame[ofs];
                data[ofs] = 0xFF000000 | (lum32[rgb565 & 0x1F] << 16) | (lum64[(rgb565 >> 5) & 0x3F] << 8) | lum32[(rgb565 >> 11) & 0x1F];
@@ -543,10 +543,10 @@ BaseTexture* BaseTexture::Convert(Format format) const
             tex = BaseTexture::Create(m_width, m_height, RGBA_FP16);
             if (tex == nullptr)
                return nullptr;
-            unsigned short* const __restrict dest_data16 = (unsigned short*)tex->data();
-            const unsigned short* const __restrict src_data16 = (const unsigned short*)datac();
-            const size_t e = (size_t)width() * height();
-            for (size_t o = 0; o < e; ++o)
+            uint16_t* const __restrict dest_data16 = reinterpret_cast<uint16_t*>(tex->data());
+            const uint16_t* const __restrict src_data16 = reinterpret_cast<const uint16_t*>(datac());
+            const size_t size = (size_t)width() * height();
+            for (size_t o = 0; o < size; ++o)
             {
                dest_data16[o * 4 + 0] = src_data16[o * 3 + 0];
                dest_data16[o * 4 + 1] = src_data16[o * 3 + 1];
@@ -566,10 +566,10 @@ BaseTexture* BaseTexture::Convert(Format format) const
             tex = BaseTexture::Create(m_width, m_height, RGBA_FP32);
             if (tex == nullptr)
                return nullptr;
-            UINT32* const __restrict dest_data32 = (UINT32*)tex->data();
-            const UINT32* const __restrict src_data32 = (const UINT32*)datac();
-            const size_t e = (size_t)width() * height();
-            for (size_t o = 0; o < e; ++o)
+            uint32_t* const __restrict dest_data32 = reinterpret_cast<uint32_t*>(tex->data());
+            const uint32_t* const __restrict src_data32 = reinterpret_cast<const uint32_t*>(datac());
+            const size_t size = (size_t)width() * height();
+            for (size_t o = 0; o < size; ++o)
             {
                dest_data32[o * 4 + 0] = src_data32[o * 3 + 0];
                dest_data32[o * 4 + 1] = src_data32[o * 3 + 1];
