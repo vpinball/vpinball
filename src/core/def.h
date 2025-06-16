@@ -623,7 +623,7 @@ wstring MakeWString(const char* const sz);
 inline int WideCharToMultiByteNull(
     const uint32_t CodePage,
     const uint32_t dwFlags,
-    const wchar_t* lpWideCharStr,
+    LPCWSTR        lpWideCharStr,
     const int      cchWideChar,
     char*          lpMultiByteStr,
     const int      cbMultiByte,
@@ -644,7 +644,7 @@ inline int MultiByteToWideCharNull(
     const uint32_t dwFlags,
     const char*    lpMultiByteStr,
     const int      cbMultiByte,
-    wchar_t*       lpWideCharStr,
+    LPWSTR         lpWideCharStr,
     const int      cchWideChar)
 {
     const int res = MultiByteToWideChar(CodePage,dwFlags,lpMultiByteStr,cbMultiByte,lpWideCharStr,cchWideChar);
