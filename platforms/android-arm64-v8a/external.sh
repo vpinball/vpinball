@@ -506,7 +506,6 @@ cp libaltsound/libaltsound/third-party/runtime-libs/android/arm64-v8a/libbass.so
 
 cp libdof/libdof/build/libdof.so ../../../third-party/runtime-libs/android-arm64-v8a
 cp -r libdof/libdof/include/DOF ../../../third-party/include/
-cp libdof/libdof/third-party/runtime-libs/android/arm64-v8a/libcargs.so ../../../third-party/runtime-libs/android-arm64-v8a
 
 for LIB in libavcodec libavdevice libavfilter libavformat libavutil libswresample libswscale; do
    cp ffmpeg/ffmpeg/${LIB}/${LIB}.so ../../../third-party/runtime-libs/android-arm64-v8a

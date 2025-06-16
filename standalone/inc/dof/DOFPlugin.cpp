@@ -11,11 +11,18 @@ void OnDOFLog(DOF_LogLevel logLevel, const char* format, va_list args)
    if (size > 0) {
       char* const buffer = static_cast<char*>(malloc(size + 1));
       vsnprintf(buffer, size + 1, format, args);
-      if (logLevel == DOF_LogLevel_INFO) {
-         PLOGI << buffer;
-      }
-      else if (logLevel == DOF_LogLevel_ERROR) {
-         PLOGE << buffer;
+      switch(logLevel) {
+         case DOF_LogLevel_INFO:
+            PLOGI << buffer;
+            break;
+         case DOF_LogLevel_WARN:
+            PLOGW << buffer;
+            break;
+         case DOF_LogLevel_ERROR:
+            PLOGE << buffer;
+            break;
+         default:
+            break;
       }
       free(buffer);
    }
