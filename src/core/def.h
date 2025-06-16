@@ -150,19 +150,6 @@ inline int FindIndexOf(const vector<T>& v, const T& val)
 #define BOOL int
 #endif
 
-typedef uint32_t        U32;
-typedef int32_t         S32;
-typedef uint16_t        U16;
-typedef int16_t         S16;
-typedef uint8_t         U08;
-typedef int8_t          S08;
-typedef uint8_t         U8;
-typedef int8_t          S8;
-typedef float           F32;
-typedef double          F64;
-typedef uint64_t        U64;
-typedef int64_t         S64;
-
 #define MAXNAMEBUFFER 32
 #define MAXSTRING 1024 // usually used for paths,filenames,etc
 #define MAXTOKEN (32*4)
