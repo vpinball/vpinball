@@ -18,6 +18,22 @@ static const char point = std::use_facet<std::numpunct<char>>(std::locale("")).d
 
 uint64_t mwc64x_state = 4077358422479273989ull;
 
+// (optionally) convert decimal point to locale specific one (i.e. ',' or force to always use '.')
+// and trim all trailing zeros for better readability
+string convert_decimal_point_and_trim(string sz, const bool use_locale) // use_locale: true if the decimal point should be converted to the OS locale setting, otherwise false (i.e. always use '.' as decimal point)
+{
+   const size_t pos = sz.find_first_of(",."); // search for the 2 variants
+   if (pos != string::npos)
+   {
+      sz[pos] = use_locale ? point : '.'; // replace it with the locale specific one (or always use '.' as decimal point)
+
+      size_t pos0 = sz.find_last_not_of('0');
+      if (pos0 == pos)
+         pos0++;
+      sz.erase(pos0 + 1, string::npos); // remove trailing zeros, but leave .0 for integers (line above), as then its clearer that a decimal point can be used for a certain setting!
+   }
+   return sz;
+}
 
 // used by dialogues, etc, locale specific, otherwise use std::from_chars (or e.g. std::stof() (with exception handling) or std::strtof()) directly
 float sz2f(string sz, const bool force_convert_decimal_point)
@@ -65,7 +81,8 @@ float sz2f(string sz, const bool force_convert_decimal_point)
 #endif
 }
 
-// used by dialogues, etc, locale specific, otherwise use e.g. std::to_string() directly
+// used by dialogues, etc, (optionally) locale specific, otherwise use e.g. std::to_string() directly
+// will also trim all trailing zeros for better readability in the UI
 string f2sz(const float f, const bool can_convert_decimal_point)
 {
 #if 1

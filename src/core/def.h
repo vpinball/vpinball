@@ -591,6 +591,8 @@ constexpr __forceinline float millimetersToVPUnits(const float value)
    // return value * (float)(1.0 / 0.540425);
 }
 
+string convert_decimal_point_and_trim(string sz, const bool use_locale);
+
 float sz2f(string sz, const bool force_convert_decimal_point = false);
 string f2sz(const float f, const bool can_convert_decimal_point = true);
 

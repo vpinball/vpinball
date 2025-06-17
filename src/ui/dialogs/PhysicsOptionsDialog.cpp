@@ -93,31 +93,30 @@ INT_PTR PhysicsOptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam
 
 struct PhysValues
 {
-    char gravityConstant[16];
-    char contactFriction[16];
-    char tableElasticity[16];
-    char tableElasticityFalloff[16];
-    char playfieldScatter[16];
-    char defaultElementScatter[16];
-    // Flipper:
-    char speed[16];
-    char strength[16];
-    char elasticity[16];
-    char scatter[16];
-    char eosTorque[16];
-    char eosTorqueAngle[16];
-    char returnStrength[16];
-    char elasticityFalloff[16];
-    char friction[16];
-    char coilRampup[16];
+   string gravityConstant;
+   string contactFriction;
+   string tableElasticity;
+   string tableElasticityFalloff;
+   string playfieldScatter;
+   string defaultElementScatter;
+   // Flipper:
+   string speed;
+   string strength;
+   string elasticity;
+   string scatter;
+   string eosTorque;
+   string eosTorqueAngle;
+   string returnStrength;
+   string elasticityFalloff;
+   string friction;
+   string coilRampup;
 
-    char minSlope[16];
-    char maxSlope[16];
-    char name[MAXNAMEBUFFER];
+   string minSlope;
+   string maxSlope;
+   string name;
 };
 
 static PhysValues loadValues;
-
 
 BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
@@ -155,27 +154,27 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             if (LoadSetting() == false)
                 break;
 
-            SetDlgItemText(1100, CString(loadValues.gravityConstant));
-            SetDlgItemText(1101, CString(loadValues.contactFriction));
-            SetDlgItemText(1708, CString(loadValues.tableElasticity));
-            SetDlgItemText(1709, CString(loadValues.tableElasticityFalloff));
-            SetDlgItemText(1710, CString(loadValues.playfieldScatter));
-            SetDlgItemText(1102, CString(loadValues.defaultElementScatter));
-            SetDlgItemText(1103, CString(loadValues.minSlope));
-            SetDlgItemText(1104, CString(loadValues.maxSlope));
+            SetDlgItemText(1100, convert_decimal_point_and_trim(loadValues.gravityConstant, true).c_str());
+            SetDlgItemText(1101, convert_decimal_point_and_trim(loadValues.contactFriction, true).c_str());
+            SetDlgItemText(1708, convert_decimal_point_and_trim(loadValues.tableElasticity, true).c_str());
+            SetDlgItemText(1709, convert_decimal_point_and_trim(loadValues.tableElasticityFalloff, true).c_str());
+            SetDlgItemText(1710, convert_decimal_point_and_trim(loadValues.playfieldScatter, true).c_str());
+            SetDlgItemText(1102, convert_decimal_point_and_trim(loadValues.defaultElementScatter, true).c_str());
+            SetDlgItemText(1103, convert_decimal_point_and_trim(loadValues.minSlope, true).c_str());
+            SetDlgItemText(1104, convert_decimal_point_and_trim(loadValues.maxSlope, true).c_str());
 
-            SetDlgItemText(DISPID_Flipper_Speed, CString(loadValues.speed));
-            SetDlgItemText(19, CString(loadValues.strength));
-            SetDlgItemText(21, CString(loadValues.elasticity));
-            SetDlgItemText(112, CString(loadValues.scatter));
-            SetDlgItemText(113, CString(loadValues.eosTorque));
-            SetDlgItemText(189, CString(loadValues.eosTorqueAngle));
-            SetDlgItemText(23, CString(loadValues.returnStrength));
-            SetDlgItemText(22, CString(loadValues.elasticityFalloff));
-            SetDlgItemText(109, CString(loadValues.friction));
-            SetDlgItemText(110, CString(loadValues.coilRampup));
+            SetDlgItemText(DISPID_Flipper_Speed, convert_decimal_point_and_trim(loadValues.speed, true).c_str());
+            SetDlgItemText(19, convert_decimal_point_and_trim(loadValues.strength, true).c_str());
+            SetDlgItemText(21, convert_decimal_point_and_trim(loadValues.elasticity, true).c_str());
+            SetDlgItemText(112, convert_decimal_point_and_trim(loadValues.scatter, true).c_str());
+            SetDlgItemText(113, convert_decimal_point_and_trim(loadValues.eosTorque, true).c_str());
+            SetDlgItemText(189, convert_decimal_point_and_trim(loadValues.eosTorqueAngle, true).c_str());
+            SetDlgItemText(23, convert_decimal_point_and_trim(loadValues.returnStrength, true).c_str());
+            SetDlgItemText(22, convert_decimal_point_and_trim(loadValues.elasticityFalloff, true).c_str());
+            SetDlgItemText(109, convert_decimal_point_and_trim(loadValues.friction, true).c_str());
+            SetDlgItemText(110, convert_decimal_point_and_trim(loadValues.coilRampup, true).c_str());
 
-            SetDlgItemText(1110, CString(loadValues.name));
+            SetDlgItemText(1110, loadValues.name.c_str());
             SetFocus();
             break;
         }
@@ -226,77 +225,78 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             auto physFlip = xmlDoc.NewElement("flipper");
             auto physTab = xmlDoc.NewElement("table");
 
-            auto node = xmlDoc.NewElement("speed");
-            node->SetText(GetItemText(DISPID_Flipper_Speed));
-            physFlip->InsertEndChild(node);
-
-            node = xmlDoc.NewElement("strength");
-            node->SetText(GetItemText(19));
-            physFlip->InsertEndChild(node);
-
-            node = xmlDoc.NewElement("elasticity");
-            node->SetText(GetItemText(21));
-            physFlip->InsertEndChild(node);
-
-            node = xmlDoc.NewElement("scatter");
-            node->SetText(GetItemText(112));
-            physFlip->InsertEndChild(node);
-
-            node = xmlDoc.NewElement("eosTorque");
-            node->SetText(GetItemText(113));
-            physFlip->InsertEndChild(node);
-
-            node = xmlDoc.NewElement("eosTorqueAngle");
-            node->SetText(GetItemText(189));
-            physFlip->InsertEndChild(node);
-
-            node = xmlDoc.NewElement("returnStrength");
-            node->SetText(GetItemText(23));
-            physFlip->InsertEndChild(node);
-
-            node = xmlDoc.NewElement("elasticityFalloff");
-            node->SetText(GetItemText(22));
-            physFlip->InsertEndChild(node);
-
-            node = xmlDoc.NewElement("friction");
-            node->SetText(GetItemText(109));
-            physFlip->InsertEndChild(node);
-
-            node = xmlDoc.NewElement("coilRampUp");
-            node->SetText(GetItemText(110));
-            physFlip->InsertEndChild(node);
-
-            node = xmlDoc.NewElement("gravityConstant");
-            node->SetText(GetItemText(1100));
+            auto node = xmlDoc.NewElement(PinTable::VPPelementNames[0].c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(1100).GetString(), false).c_str());
             physTab->InsertEndChild(node);
 
-            node = xmlDoc.NewElement("contactFriction");
-            node->SetText(GetItemText(1101));
+            node = xmlDoc.NewElement(PinTable::VPPelementNames[1].c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(1101).GetString(), false).c_str());
             physTab->InsertEndChild(node);
 
-            node = xmlDoc.NewElement("elasticity");
-            node->SetText(GetItemText(1708));
+            node = xmlDoc.NewElement(PinTable::VPPelementNames[2].c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(1708).GetString(), false).c_str());
             physTab->InsertEndChild(node);
 
-            node = xmlDoc.NewElement("elasticityFalloff");
-            node->SetText(GetItemText(1709));
+            node = xmlDoc.NewElement(PinTable::VPPelementNames[3].c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(1709).GetString(), false).c_str());
             physTab->InsertEndChild(node);
 
-            node = xmlDoc.NewElement("defaultElementScatter");
-            node->SetText(GetItemText(1102));
+            node = xmlDoc.NewElement(PinTable::VPPelementNames[4].c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(1710).GetString(), false).c_str());
             physTab->InsertEndChild(node);
 
-            node = xmlDoc.NewElement("playfieldScatter");
-            node->SetText(GetItemText(1710));
+            node = xmlDoc.NewElement(PinTable::VPPelementNames[5].c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(1102).GetString(), false).c_str());
             physTab->InsertEndChild(node);
 
-            node = xmlDoc.NewElement("playfieldminslope");
-            node->SetText(GetItemText(1103));
+            node = xmlDoc.NewElement(PinTable::VPPelementNames[6].c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(1103).GetString(), false).c_str());
             physTab->InsertEndChild(node);
 
-            node = xmlDoc.NewElement("playfieldmaxslope");
-            node->SetText(GetItemText(1104));
+            node = xmlDoc.NewElement(PinTable::VPPelementNames[7].c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(1104).GetString(), false).c_str());
             physTab->InsertEndChild(node);
+
+            // flippers
+            node = xmlDoc.NewElement(PinTable::VPPelementNames[8].c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(DISPID_Flipper_Speed).GetString(), false).c_str());
+            physFlip->InsertEndChild(node);
+
+            node = xmlDoc.NewElement(PinTable::VPPelementNames[9].c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(19).GetString(), false).c_str());
+            physFlip->InsertEndChild(node);
+
+            node = xmlDoc.NewElement(PinTable::VPPelementNames[10].c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(21).GetString(), false).c_str());
+            physFlip->InsertEndChild(node);
+
+            node = xmlDoc.NewElement(PinTable::VPPelementNames[11].c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(112).GetString(), false).c_str());
+            physFlip->InsertEndChild(node);
+
+            node = xmlDoc.NewElement(PinTable::VPPelementNames[12].c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(113).GetString(), false).c_str());
+            physFlip->InsertEndChild(node);
+
+            node = xmlDoc.NewElement(PinTable::VPPelementNames[13].c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(189).GetString(), false).c_str());
+            physFlip->InsertEndChild(node);
+
+            node = xmlDoc.NewElement(PinTable::VPPelementNames[14].c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(23).GetString(), false).c_str());
+            physFlip->InsertEndChild(node);
+
+            node = xmlDoc.NewElement(PinTable::VPPelementNames[15].c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(22).GetString(), false).c_str());
+            physFlip->InsertEndChild(node);
+
+            node = xmlDoc.NewElement(PinTable::VPPelementNames[16].c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(109).GetString(), false).c_str());
+            physFlip->InsertEndChild(node);
+
+            node = xmlDoc.NewElement(PinTable::VPPelementNames[17].c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(110).GetString(), false).c_str());
+            physFlip->InsertEndChild(node);
 
             auto settingName = xmlDoc.NewElement("name");
             settingName->SetText(GetItemText(1110));
@@ -371,34 +371,35 @@ bool PhysicsOptionsDialog::LoadSetting()
         auto table = root->FirstChildElement("table");
         auto flipper = root->FirstChildElement("flipper");
 
-        strncpy_s(loadValues.gravityConstant, table->FirstChildElement("gravityConstant")->GetText(), sizeof(loadValues.gravityConstant) - 1);
-        strncpy_s(loadValues.contactFriction, table->FirstChildElement("contactFriction")->GetText(), sizeof(loadValues.contactFriction) - 1);
-        strncpy_s(loadValues.tableElasticity, table->FirstChildElement("elasticity")->GetText(), sizeof(loadValues.tableElasticity) - 1);
-        strncpy_s(loadValues.tableElasticityFalloff, table->FirstChildElement("elasticityFalloff")->GetText(), sizeof(loadValues.tableElasticityFalloff) - 1);
-        strncpy_s(loadValues.playfieldScatter, table->FirstChildElement("playfieldScatter")->GetText(), sizeof(loadValues.playfieldScatter) - 1);
-        strncpy_s(loadValues.defaultElementScatter, table->FirstChildElement("defaultElementScatter")->GetText(), sizeof(loadValues.defaultElementScatter) - 1);
-        auto tmp = table->FirstChildElement("playfieldminslope");
+        loadValues.gravityConstant = table->FirstChildElement(PinTable::VPPelementNames[0].c_str())->GetText();
+        loadValues.contactFriction = table->FirstChildElement(PinTable::VPPelementNames[1].c_str())->GetText();
+        loadValues.tableElasticity = table->FirstChildElement(PinTable::VPPelementNames[2].c_str())->GetText();
+        loadValues.tableElasticityFalloff = table->FirstChildElement(PinTable::VPPelementNames[3].c_str())->GetText();
+        loadValues.playfieldScatter = table->FirstChildElement(PinTable::VPPelementNames[4].c_str())->GetText();
+        loadValues.defaultElementScatter = table->FirstChildElement(PinTable::VPPelementNames[5].c_str())->GetText();
+        auto tmp = table->FirstChildElement(PinTable::VPPelementNames[6].c_str());
         if(tmp)
-           strncpy_s(loadValues.minSlope, sizeof(loadValues.minSlope), tmp->GetText(), sizeof(loadValues.minSlope) - 1);
+           loadValues.minSlope = tmp->GetText();
         else
-           sprintf_s(loadValues.minSlope, sizeof(loadValues.minSlope), "%f", DEFAULT_TABLE_MIN_SLOPE);
-        tmp = table->FirstChildElement("playfieldmaxslope");
+           loadValues.minSlope = f2sz(DEFAULT_TABLE_MIN_SLOPE);
+        tmp = table->FirstChildElement(PinTable::VPPelementNames[7].c_str());
         if(tmp)
-           strncpy_s(loadValues.maxSlope, sizeof(loadValues.maxSlope), tmp->GetText(), sizeof(loadValues.maxSlope) - 1);
+           loadValues.maxSlope = tmp->GetText();
         else
-           sprintf_s(loadValues.maxSlope, sizeof(loadValues.maxSlope), "%f", DEFAULT_TABLE_MAX_SLOPE);
-        strncpy_s(loadValues.speed, flipper->FirstChildElement("speed")->GetText(), sizeof(loadValues.speed) - 1);
-        strncpy_s(loadValues.strength, flipper->FirstChildElement("strength")->GetText(), sizeof(loadValues.strength) - 1);
-        strncpy_s(loadValues.elasticity, flipper->FirstChildElement("elasticity")->GetText(), sizeof(loadValues.elasticity) - 1);
-        strncpy_s(loadValues.scatter, flipper->FirstChildElement("scatter")->GetText(), sizeof(loadValues.scatter) - 1);
-        strncpy_s(loadValues.eosTorque, flipper->FirstChildElement("eosTorque")->GetText(), sizeof(loadValues.eosTorque) - 1);
-        strncpy_s(loadValues.eosTorqueAngle, flipper->FirstChildElement("eosTorqueAngle")->GetText(), sizeof(loadValues.eosTorqueAngle) - 1);
-        strncpy_s(loadValues.returnStrength, flipper->FirstChildElement("returnStrength")->GetText(), sizeof(loadValues.returnStrength) - 1);
-        strncpy_s(loadValues.elasticityFalloff, flipper->FirstChildElement("elasticityFalloff")->GetText(), sizeof(loadValues.elasticityFalloff) - 1);
-        strncpy_s(loadValues.friction, flipper->FirstChildElement("friction")->GetText(), sizeof(loadValues.friction) - 1);
-        strncpy_s(loadValues.coilRampup, flipper->FirstChildElement("coilRampUp")->GetText(), sizeof(loadValues.coilRampup) - 1);
+           loadValues.maxSlope = f2sz(DEFAULT_TABLE_MAX_SLOPE);
+        // flippers
+        loadValues.speed = flipper->FirstChildElement(PinTable::VPPelementNames[8].c_str())->GetText();
+        loadValues.strength = flipper->FirstChildElement(PinTable::VPPelementNames[9].c_str())->GetText();
+        loadValues.elasticity = flipper->FirstChildElement(PinTable::VPPelementNames[10].c_str())->GetText();
+        loadValues.scatter = flipper->FirstChildElement(PinTable::VPPelementNames[11].c_str())->GetText();
+        loadValues.eosTorque = flipper->FirstChildElement(PinTable::VPPelementNames[12].c_str())->GetText();
+        loadValues.eosTorqueAngle = flipper->FirstChildElement(PinTable::VPPelementNames[13].c_str())->GetText();
+        loadValues.returnStrength = flipper->FirstChildElement(PinTable::VPPelementNames[14].c_str())->GetText();
+        loadValues.elasticityFalloff = flipper->FirstChildElement(PinTable::VPPelementNames[15].c_str())->GetText();
+        loadValues.friction = flipper->FirstChildElement(PinTable::VPPelementNames[16].c_str())->GetText();
+        loadValues.coilRampup = flipper->FirstChildElement(PinTable::VPPelementNames[17].c_str())->GetText();
 
-        strncpy_s(loadValues.name, root->FirstChildElement("name")->GetText(), sizeof(loadValues.name) - 1);
+        loadValues.name = root->FirstChildElement("name")->GetText();
     }
     catch(...)
     {

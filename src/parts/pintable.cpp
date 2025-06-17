@@ -9375,6 +9375,8 @@ STDMETHODIMP PinTable::put_OverridePhysicsFlippers(VARIANT_BOOL newVal)
    return S_OK;
 }
 
+//
+
 STDMETHODIMP PinTable::ImportPhysics()
 {
    string szInitialDir;
@@ -9394,10 +9396,12 @@ STDMETHODIMP PinTable::ImportPhysics()
    return S_OK;
 }
 
+std::array<string,18> PinTable::VPPelementNames{"gravityConstant"s, "contactFriction"s, "elasticity"s, "elasticityFalloff"s, "playfieldScatter"s, "defaultElementScatter"s, "playfieldminslope"s, "playfieldmaxslope"s,
+                               /*flippers:*/    "speed"s, "strength"s, "elasticity"s, "scatter"s, "eosTorque"s, "eosTorqueAngle"s, "returnStrength"s, "elasticityFalloff"s, "friction"s, "coilRampUp"s};
+
 void PinTable::ImportVPP(const string& filename)
 {
    tinyxml2::XMLDocument xmlDoc;
-   float FlipperPhysicsMass, FlipperPhysicsStrength, FlipperPhysicsElasticity, FlipperPhysicsScatter, FlipperPhysicsTorqueDamping, FlipperPhysicsTorqueDampingAngle, FlipperPhysicsReturnStrength, FlipperPhysicsElasticityFalloff, FlipperPhysicsFriction, FlipperPhysicsCoilRampUp;
    try
    {
       std::stringstream buffer;
@@ -9415,19 +9419,16 @@ void PinTable::ImportVPP(const string& filename)
       const auto physTab = root->FirstChildElement("table");
       const auto physFlip = root->FirstChildElement("flipper");
 
-      static const string elementNames[18] = {"gravityConstant"s, "contactFriction"s, "elasticity"s, "elasticityFalloff"s, "playfieldScatter"s, "defaultElementScatter"s, "playfieldminslope"s, "playfieldmaxslope"s,
-                             /*flippers:*/    "speed"s, "strength"s, "elasticity"s, "scatter"s, "eosTorque"s, "eosTorqueAngle"s, "returnStrength"s, "elasticityFalloff"s, "friction"s, "coilRampUp"s};
-
-      for(size_t i = 0; i < std::size(elementNames); ++i)
+      float FlipperPhysicsMass, FlipperPhysicsStrength, FlipperPhysicsElasticity, FlipperPhysicsScatter, FlipperPhysicsTorqueDamping, FlipperPhysicsTorqueDampingAngle, FlipperPhysicsReturnStrength, FlipperPhysicsElasticityFalloff, FlipperPhysicsFriction, FlipperPhysicsCoilRampUp;
+      for(size_t i = 0; i < std::size(VPPelementNames); ++i)
       {
-         const tinyxml2::XMLElement* el = physTab->FirstChildElement(elementNames[i].c_str());
+         const tinyxml2::XMLElement* el = ((i <= 7) ? physTab : physFlip)->FirstChildElement(VPPelementNames[i].c_str());
          if(el != nullptr)
          {
             const char * const t = el->GetText();
             if (t)
             {
-               float val;
-               my_from_chars(t, t + strlen(t), val);
+               const float val = sz2f(t);
                switch(i)
                {
                case 0:  put_Gravity(val); break;
@@ -9454,13 +9455,13 @@ void PinTable::ImportVPP(const string& filename)
          else
          {
             if(i <= 5) //until "defaultElementScatter"
-               ShowError(elementNames[i] + " is missing");
+               ShowError(VPPelementNames[i] + " is missing");
             else if(i == 6) //"playfieldminslope"
                put_SlopeMin(DEFAULT_TABLE_MIN_SLOPE); //was added lateron, so don't error
             else if(i == 7) //"playfieldmaxslope"
                put_SlopeMax(DEFAULT_TABLE_MAX_SLOPE); //was added lateron, so don't error
             else //flipper fields
-               ShowError("flipper " + elementNames[i] + " is missing");
+               ShowError("flipper " + VPPelementNames[i] + " is missing");
 
             //flipper fields need defaults
             switch(i)
@@ -9502,6 +9503,15 @@ void PinTable::ImportVPP(const string& filename)
       ShowError("Error parsing physics settings file");
    }
    xmlDoc.Clear();
+}
+
+#define EXPORT_VPP_ELEMENT(getter, idx, tab) \
+   { \
+   float value; \
+   getter(&value); \
+   const auto node = xmlDoc.NewElement(VPPelementNames[idx].c_str()); \
+   node->SetText(f2sz(value, false).c_str()); \
+   tab->InsertEndChild(node); \
 }
 
 STDMETHODIMP PinTable::ExportPhysics()
@@ -9567,99 +9577,28 @@ STDMETHODIMP PinTable::ExportPhysics()
    auto physFlip = xmlDoc.NewElement("flipper");
    auto physTab = xmlDoc.NewElement("table");
 
-   float val;
+   EXPORT_VPP_ELEMENT(get_Gravity, 0, physTab);
+   EXPORT_VPP_ELEMENT(get_Friction, 1, physTab);
+   EXPORT_VPP_ELEMENT(get_Elasticity, 2, physTab);
+   EXPORT_VPP_ELEMENT(get_ElasticityFalloff, 3, physTab);
+   EXPORT_VPP_ELEMENT(get_Scatter, 4, physTab);
+   EXPORT_VPP_ELEMENT(get_DefaultScatter, 5, physTab);
+   EXPORT_VPP_ELEMENT(get_SlopeMin, 6, physTab);
+   EXPORT_VPP_ELEMENT(get_SlopeMax, 7, physTab);
 
-   flipper->get_Mass(&val); // was speed
-   auto node = xmlDoc.NewElement("speed");
-   node->SetText(val);
-   physFlip->InsertEndChild(node);
+   // flippers
+   EXPORT_VPP_ELEMENT(flipper->get_Mass, 8, physFlip); // was speed
+   EXPORT_VPP_ELEMENT(flipper->get_Strength, 9, physFlip);
+   EXPORT_VPP_ELEMENT(flipper->get_Elasticity, 10, physFlip);
+   EXPORT_VPP_ELEMENT(flipper->get_Scatter, 11, physFlip);
+   EXPORT_VPP_ELEMENT(flipper->get_EOSTorque, 12, physFlip);
+   EXPORT_VPP_ELEMENT(flipper->get_EOSTorqueAngle, 13, physFlip);
+   EXPORT_VPP_ELEMENT(flipper->get_Return, 14, physFlip);
+   EXPORT_VPP_ELEMENT(flipper->get_ElasticityFalloff, 15, physFlip);
+   EXPORT_VPP_ELEMENT(flipper->get_Friction, 16, physFlip);
+   EXPORT_VPP_ELEMENT(flipper->get_RampUp, 17, physFlip);
 
-   flipper->get_Strength(&val);
-   node = xmlDoc.NewElement("strength");
-   node->SetText(val);
-   physFlip->InsertEndChild(node);
-
-   flipper->get_Elasticity(&val);
-   node = xmlDoc.NewElement("elasticity");
-   node->SetText(val);
-   physFlip->InsertEndChild(node);
-
-   flipper->get_Scatter(&val); // was scatter angle
-   node = xmlDoc.NewElement("scatter");
-   node->SetText(val);
-   physFlip->InsertEndChild(node);
-
-   flipper->get_EOSTorque(&val);
-   node = xmlDoc.NewElement("eosTorque");
-   node->SetText(val);
-   physFlip->InsertEndChild(node);
-
-   flipper->get_EOSTorqueAngle(&val);
-   node = xmlDoc.NewElement("eosTorqueAngle");
-   node->SetText(val);
-   physFlip->InsertEndChild(node);
-
-   flipper->get_Return(&val);
-   node = xmlDoc.NewElement("returnStrength");
-   node->SetText(val);
-   physFlip->InsertEndChild(node);
-
-   flipper->get_ElasticityFalloff(&val);
-   node = xmlDoc.NewElement("elasticityFalloff");
-   node->SetText(val);
-   physFlip->InsertEndChild(node);
-
-   flipper->get_Friction(&val);
-   node = xmlDoc.NewElement("friction");
-   node->SetText(val);
-   physFlip->InsertEndChild(node);
-
-   flipper->get_RampUp(&val);
-   node = xmlDoc.NewElement("coilRampUp");
-   node->SetText(val);
-   physFlip->InsertEndChild(node);
-
-   get_Gravity(&val);
-   node = xmlDoc.NewElement("gravityConstant");
-   node->SetText(val);
-   physTab->InsertEndChild(node);
-
-   get_Friction(&val);
-   node = xmlDoc.NewElement("contactFriction");
-   node->SetText(val);
-   physTab->InsertEndChild(node);
-
-   get_Elasticity(&val);
-   node = xmlDoc.NewElement("elasticity");
-   node->SetText(val);
-   physTab->InsertEndChild(node);
-
-   get_ElasticityFalloff(&val);
-   node = xmlDoc.NewElement("elasticityFalloff");
-   node->SetText(val);
-   physTab->InsertEndChild(node);
-
-   get_DefaultScatter(&val);
-   node = xmlDoc.NewElement("defaultElementScatter");
-   node->SetText(val);
-   physTab->InsertEndChild(node);
-
-   get_Scatter(&val);
-   node = xmlDoc.NewElement("playfieldScatter");
-   node->SetText(val);
-   physTab->InsertEndChild(node);
-
-   get_SlopeMin(&val);
-   node = xmlDoc.NewElement("playfieldminslope");
-   node->SetText(val);
-   physTab->InsertEndChild(node);
-
-   get_SlopeMax(&val);
-   node = xmlDoc.NewElement("playfieldmaxslope");
-   node->SetText(val);
-   physTab->InsertEndChild(node);
-
-   auto settingName = xmlDoc.NewElement("name");
+   const auto settingName = xmlDoc.NewElement("name");
    settingName->SetText(m_title.c_str());
    root->InsertEndChild(settingName);
    root->InsertEndChild(physTab);
@@ -9677,6 +9616,8 @@ STDMETHODIMP PinTable::ExportPhysics()
 
    return S_OK;
 }
+
+//
 
 STDMETHODIMP PinTable::get_EnableDecals(VARIANT_BOOL *pVal)
 {

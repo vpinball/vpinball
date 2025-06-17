@@ -359,7 +359,7 @@ public:
 
    void Render3DProjection(Sur *const psur);
 
-   bool GetDecalsEnabled() const { return m_renderDecals; } // Enable backdrop image, decals and lights on backdrop
+   bool GetDecalsEnabled()  const { return m_renderDecals; }  // Enable backdrop image, decals and lights on backdrop
    bool GetEMReelsEnabled() const { return m_renderEMReels; } // Enable dispreel on backdrop
 
    void Copy(int x, int y);
@@ -369,6 +369,8 @@ public:
    void ExportTableMesh();
    void ImportBackdropPOV(const string &filename);
    void ExportBackdropPOV() const;
+
+   static std::array<string, 18> VPPelementNames; // names of the fields in a .vpp file
    void ImportVPP(const string &filename);
 
    void FireOptionEvent(int event);
@@ -1091,7 +1093,7 @@ namespace PinMame
    typedef struct
    {
       unsigned int structSize; // Struct size including header and frame data in bytes (for safe DMD/Display array iteration)
-      unsigned int displayId; // Unique Id, shared between render frame and raw frame used for frame identification
+      unsigned int displayId;  // Unique Id, shared between render frame and raw frame used for frame identification
       double updateTimestamp;
       unsigned int width;
       unsigned int height;
