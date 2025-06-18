@@ -6,9 +6,9 @@
 namespace VPX
 {
 
-SoundPlayer* SoundPlayer::Create(AudioPlayer* AudioPlayer, Sound* sound)
+SoundPlayer* SoundPlayer::Create(AudioPlayer* audioPlayer, Sound* sound)
 {
-   SDL_IOStream* const stream = SDL_IOFromMem((void*)sound->GetFileRaw(), sound->GetFileSize());
+   /*SDL_IOStream* const stream = SDL_IOFromMem((void*)sound->GetFileRaw(), sound->GetFileSize());
    if (stream == nullptr)
    {
       PLOGE << "SDL_IOFromMem error: " << SDL_GetError();
@@ -22,15 +22,40 @@ SoundPlayer* SoundPlayer::Create(AudioPlayer* AudioPlayer, Sound* sound)
       return nullptr;
    }
 
-   return new SoundPlayer(AudioPlayer, decodedData, sound->GetOutputTarget());
+   return new SoundPlayer(audioPlayer, decodedData, sound->GetOutputTarget());*/
+   
+   // Decode and resample the sound on the anciliary thread as this is fairly heavy
+   return new SoundPlayer(audioPlayer, sound);
 }
 
-SoundPlayer::SoundPlayer(AudioPlayer* AudioPlayer, Mix_Chunk* mixChunk, SoundOutTypes outputTarget)
-   : m_audioPlayer(AudioPlayer)
+SoundPlayer::SoundPlayer(AudioPlayer* audioPlayer, Mix_Chunk* mixChunk, SoundOutTypes outputTarget)
+   : m_audioPlayer(audioPlayer)
    , m_pMixChunkOrg(mixChunk)
    , m_outputTarget(outputTarget)
    , m_commandQueue(1)
 {
+}
+
+SoundPlayer::SoundPlayer(AudioPlayer* audioPlayer, Sound* sound)
+   : m_audioPlayer(audioPlayer)
+   , m_outputTarget(sound->GetOutputTarget())
+   , m_commandQueue(1)
+{
+   m_commandQueue.enqueue([this, sound]() {
+      SDL_IOStream* const stream = SDL_IOFromMem((void*)sound->GetFileRaw(), sound->GetFileSize());
+      if (stream == nullptr)
+      {
+         PLOGE << "SDL_IOFromMem error: " << SDL_GetError();
+         return;
+      }
+
+      m_pMixChunkOrg = Mix_LoadWAV_IO(stream, true);
+      if (m_pMixChunkOrg == nullptr)
+      {
+         PLOGE << "Failed to load sound via Mix_LoadWAV_IO: " << SDL_GetError();
+         return;
+      }
+   });
 }
 
 SoundPlayer::~SoundPlayer()
@@ -53,93 +78,64 @@ void SoundPlayer::SetMainVolume(float backglassVolume, float playfieldVolume)
 
 void SoundPlayer::ApplyVolume()
 {
-   if (m_assignedChannel == -1)
+   if (m_pMixChunk == nullptr)
       return;
-
-   // Some table sounds like rolling are extremely low. Set a minimum or you cant hear it.
-   float volume = clamp(0.08f + m_soundVolume * m_mainVolume, 0.0f, 1.0f);
-   Mix_Volume(m_assignedChannel, static_cast<int>(volume * static_cast<float>(MIX_MAX_VOLUME)));
+   float volume = clamp(m_soundVolume * m_mainVolume, 0.0f, 1.0f);
+   Mix_VolumeChunk(m_pMixChunk, static_cast<int>(volume * static_cast<float>(MIX_MAX_VOLUME)));
 }
 
-/**
- * @brief Plays a sound with specified properties such as volume, pitch, pan, and loop count.
- * 
- * Backglass sounds are played according to the channel assignment from the source file, without pitch & pan
- * Playfield sounds are played according to the sound mode channel mapping (SSF, ...), also applying pitch & pan
- * 
- * @param volume The desired volume level for the sound (from 0.0 to 1.0). The volume is clamped to a minimum threshold.
- * @param randompitch The random variation in pitch to apply to the sound. The value should be between 0.0 and 1.0 (playfield sounds only)
- * @param pitch The base pitch of the sound in Hertz (playfield sounds only)
- * @param pan The pan of the sound, ranging from -1.0 (left) to 1.0 (right), where 0.0 is the center.
- * @param front_rear_fade A fade value determining the balance between front and rear sound channels, from -1.0 (front) to 1.0 (rear).
- * @param loopcount The number of times the sound should loop. A value of 0 means no looping.
- * 
- * If the sound device does not support the required number of channels for the selected mode, an error message is logged.
- */
 void SoundPlayer::Play(float volume, const float randompitch, const int pitch, float pan, float frontRearFade, const int loopcount)
 {
    m_commandQueue.enqueue([this, volume, randompitch, pitch, pan, frontRearFade, loopcount]()
    {
-      if (m_outputTarget == SNDOUT_BACKGLASS)
+      if (m_pMixChunkOrg == nullptr)
+         return;
+
+      const bool playing = IsPlaying();
+      
+      float leftPanRatio, rightPanRatio;
+      m_mixFL = m_mixFR = 0.f;
+      m_mixSL = m_mixSR = 0.f;
+      m_mixBL = m_mixBR = 0.f;
+      switch (m_outputTarget == SNDOUT_BACKGLASS ? SNDCFG_SND3D2CH : m_audioPlayer->GetSoundMode3D())
       {
-         // Backglass sounds are handled differently than playfield sounds: we just play them, respecting the channel assignment from the source file
-         m_assignedChannel = Mix_PlayChannel(m_assignedChannel, m_pMixChunkOrg, loopcount > 0 ? loopcount - 1 : loopcount);
-         Mix_RegisterEffect(m_assignedChannel, NullEffect, OnPlayFinished, this);
+      case SNDCFG_SND3D2CH:
+         CalcPan(m_mixFL, m_mixFR, 1.f, pan * 3.0f);
+         break;
+
+      case SNDCFG_SND3DALLREAR:
+         CalcPan(m_mixBL, m_mixBR, 1.f, PanTo3D(pan));
+         break;
+
+      case SNDCFG_SND3D6CH: // we just fall through to SSF. This mode is same but it used two different pan and fade algos. No need to have two different ones now.
+      case SNDCFG_SND3DSSF:
+         CalcPan(leftPanRatio, rightPanRatio, 1.f, PanSSF(pan));
+         CalcFade(leftPanRatio, rightPanRatio, FadeSSF(frontRearFade), m_mixBL, m_mixBR, m_mixSL, m_mixSR);
+         break;
+
+      default: assert(false); return;
+      }
+
+      if (playing)
+      {
+         // FIXME apply pitch changes
+         // This is not easy as SDL_mixer does not offer anyway to change sample length during play, and sadly this is really needed to get good ball rolling sounds
+         // One option would be to move away from SDL_mixer and use another library like SoLoud (using SDL as the audio backend)
+
+         m_soundVolume = volume;
+         ApplyVolume();
       }
       else
       {
-         float leftPanRatio, rightPanRatio;
-         m_mixFL = m_mixFR = 0.f;
-         m_mixSL = m_mixSR = 0.f;
-         m_mixBL = m_mixBR = 0.f;
-         switch (m_audioPlayer->GetSoundMode3D())
-         {
-         case SNDCFG_SND3D2CH:
-            calcPan(m_mixFL, m_mixFR, 1.f, pan * 3.0f);
-            break;
-
-         case SNDCFG_SND3DALLREAR:
-            if (m_audioPlayer->GetAudioSpecOutput().channels < 4)
-            {
-               PLOGE << "Your sound device does not have the required number of channels (4+) to support this mode. <SND3DALLREAR>";
-               return;
-            }
-            calcPan(m_mixBL, m_mixBR, 1.f, PanTo3D(pan));
-            break;
-
-         case SNDCFG_SND3D6CH: // we just fall through to the SSF.  This mode is same but it used two different pan and fade algos.  No need to have two different ones now.
-         case SNDCFG_SND3DSSF:
-            if (m_audioPlayer->GetAudioSpecOutput().channels != 8)
-            {
-               PLOGE << "Your sound device does not have the required number of channels (8) to support this mode. <SNDCFG_SND3DSSF>";
-               return;
-            }
-            calcPan(leftPanRatio, rightPanRatio, 1.f, PanSSF(pan));
-            calcFade(leftPanRatio, rightPanRatio, FadeSSF(frontRearFade), m_mixBL, m_mixBR, m_mixSL, m_mixSR);
-            break;
-
-         case SNDCFG_SND3DFRONTISREAR: PLOGI << "Sound Mode SNDCFG_SND3DFRONTISREAR not implemented yet."; return;
-         case SNDCFG_SND3DFRONTISFRONT: PLOGI << "Sound Mode SNDCFG_SND3DFRONTISFRONT not implemented yet."; return;
-         default: PLOGE << "Invalid setting for 'Sound3D' in VPinball.ini..."; return;
-         }
-
          // Resample sound to the expected pitch (lengthy operation)
-         setPitch(pitch, randompitch);
+         AdjustPitch(pitch, randompitch);
 
-         // Cap all volumes not to be over 1 to avoid distortion
-         m_mixFL = clamp(m_mixFL, 0.f, 1.f);
-         m_mixFR = clamp(m_mixFR, 0.f, 1.f);
-         m_mixSL = clamp(m_mixSL, 0.f, 1.f);
-         m_mixSR = clamp(m_mixSR, 0.f, 1.f);
-         m_mixBL = clamp(m_mixBL, 0.f, 1.f);
-         m_mixBR = clamp(m_mixBR, 0.f, 1.f);
+         m_soundVolume = volume;
+         ApplyVolume();
 
          m_assignedChannel = Mix_PlayChannel(m_assignedChannel, m_pMixChunk, loopcount > 0 ? loopcount - 1 : loopcount);
          Mix_RegisterEffect(m_assignedChannel, MixStereoToChannelsEffect, OnPlayFinished, this);
       }
-
-      m_soundVolume = volume;
-      ApplyVolume();
    });
 }
 
@@ -148,7 +144,7 @@ void SoundPlayer::Stop()
    m_commandQueue.enqueue([&]()
    {
       if (m_assignedChannel != -1)
-         Mix_FadeOutChannel(m_assignedChannel, 300); // fade out in 300ms. Also halts channel when done
+         Mix_HaltChannel(m_assignedChannel);
    });
 }
 
@@ -175,54 +171,43 @@ void SoundPlayer::OnPlayFinished(int channel, void* udata)
  * @param pitch The target pitch to apply to the sound. A positive or negative integer alters the frequency.
  * @param randompitch The random variation to apply to the pitch, influencing the final frequency. A value greater than 0 introduces a random factor, while 0 means no random variation.
  */
-void SoundPlayer::setPitch(int pitch, float randompitch)
+void SoundPlayer::AdjustPitch(int pitch, float randompitch)
 {
-   if (m_pMixChunk != nullptr) { // free the last converted sample
+   if (m_pMixChunk != nullptr) {
       Mix_FreeChunk(m_pMixChunk);
       m_pMixChunk = nullptr;
    }
 
-   // check for pitch and resample or pass the original mixchunk if pitch didn't change
-   if (pitch == 0 && randompitch == 0) // If the pitch isn't changed pass the original
+   // FIXME the pitch/randompitch are supposed to be applied relatively from the original sample frequency
+   // since we do not have this information we guess it was a 'standard' 44100Hz
+   // Use Mix_LoadSndFile_IO (not part of the public API) ?
+   const float sampleFreq = 44100;
+   float newFreq = sampleFreq + pitch;
+   if (randompitch > 0) {
+      const float rndh = rand_mt_01();
+      const float rndl = rand_mt_01();
+      newFreq *= 1.f + (randompitch * rndh * rndh) - (randompitch * rndl * rndl * 0.5f);
+   }
+
+   m_pMixChunk = static_cast<Mix_Chunk*>(SDL_malloc(sizeof(Mix_Chunk))); // need to use SDL_malloc as SDL_free will be used when freeing the chunk
+   m_pMixChunk->volume = MIX_MAX_VOLUME;
+
+   if (abs(newFreq - sampleFreq) > 100.f)
    {
-      m_pMixChunk = (Mix_Chunk*)SDL_malloc(sizeof(Mix_Chunk)); // need to use SDL_malloc as SDL_free will be used when freeing the chunk
+      m_pMixChunk->allocated = 1; // allocated, Mix_FreeChunk will free the buffer allocated by SDL_ConvertAudioSamples
+      const float outFreq = static_cast<float>(m_audioPlayer->GetAudioSpecOutput().freq); // Frequency of the output and of the samples as all loaded samples are automatically resampled to the output spec
+      SDL_AudioSpec audioSpecConvert;
+      audioSpecConvert.format = m_audioPlayer->GetAudioSpecOutput().format;
+      audioSpecConvert.channels = m_audioPlayer->GetAudioSpecOutput().channels;
+      audioSpecConvert.freq = static_cast<int>(outFreq * sampleFreq / newFreq);
+      SDL_ConvertAudioSamples(&m_audioPlayer->GetAudioSpecOutput(), m_pMixChunkOrg->abuf, (int)m_pMixChunkOrg->alen,
+                              &audioSpecConvert, &m_pMixChunk->abuf, (int*)&m_pMixChunk->alen);
+   }
+   else
+   {
       m_pMixChunk->allocated = 0; // not allocated, just a reference to the original data
       m_pMixChunk->abuf = m_pMixChunkOrg->abuf;
       m_pMixChunk->alen = m_pMixChunkOrg->alen;
-      m_pMixChunk->volume = m_pMixChunkOrg->volume;
-   }
-   else {
-      Mix_Chunk* const mixChunkConvert = (Mix_Chunk*)SDL_malloc(sizeof(Mix_Chunk)); // need to use SDL_malloc as SDL_free will be used when freeing the chunk
-      mixChunkConvert->allocated = 1; // you need this set or it won't get freed with Mix_FreeChunk
-      mixChunkConvert->volume = MIX_MAX_VOLUME;
-
-      int newFreq = 0;
-      if (randompitch > 0) {
-         const float rndh = rand_mt_01();
-         const float rndl = rand_mt_01();
-         float outFreq = static_cast<float>(m_audioPlayer->GetAudioSpecOutput().freq);
-         int freq = static_cast<int>(outFreq + (outFreq * randompitch * rndh * rndh) - (outFreq * randompitch * rndl * rndl * 0.5f));
-         newFreq = freq + pitch; // add the normal pitch in if its set
-         //PLOGI << " random: new freq = " << newFreq;
-      }
-      else // just pitch is set
-         newFreq = m_audioPlayer->GetAudioSpecOutput().freq + pitch;
-
-      //PLOGI << "Channel: " << m_assignedChannel << " Current freq: " << m_mixEffectsData.outputFrequency << " Pitch: " << pitch << " Random pitch: " << randompitch << " Ending new freq = " << newFreq;
-
-      SDL_AudioSpec audioSpecConvert = m_audioPlayer->GetAudioSpecOutput();
-      audioSpecConvert.freq = newFreq;
-
-      // convert original sample to the new freq
-      SDL_ConvertAudioSamples(&m_audioPlayer->GetAudioSpecOutput(), m_pMixChunkOrg->abuf, (int)m_pMixChunkOrg->alen, &audioSpecConvert, &mixChunkConvert->abuf, (int*)&mixChunkConvert->alen);
-
-      // now convert it back to the original output AudioSpec
-      m_pMixChunk = (Mix_Chunk*)SDL_malloc(sizeof(Mix_Chunk)); // need to use SDL_malloc as SDL_free will be used when freeing the chunk
-      m_pMixChunk->volume = MIX_MAX_VOLUME;
-      m_pMixChunk->allocated = 1; // you need this set, or it won't get freed with Mix_FreeChunk
-      SDL_ConvertAudioSamples(&audioSpecConvert, mixChunkConvert->abuf, (int)mixChunkConvert->alen, &m_audioPlayer->GetAudioSpecOutput(), &m_pMixChunk->abuf, (int*)&m_pMixChunk->alen);
-
-      Mix_FreeChunk(mixChunkConvert);
    }
 }
 
@@ -242,7 +227,7 @@ void SoundPlayer::setPitch(int pitch, float randompitch)
  * 
  * @note The function ensures that the output volume ratios are clamped between 0 and 1 to prevent overflow.
  */
-void SoundPlayer::calcPan(float& leftPanRatio, float& rightPanRatio, float adjustedVolRatio, float pan)
+void SoundPlayer::CalcPan(float& leftPanRatio, float& rightPanRatio, float adjustedVolRatio, float pan)
 {
     // Normalize pan from range [-3, 3] to [-1, 1]
     pan = pan / 3.0f;
@@ -284,7 +269,7 @@ void SoundPlayer::calcPan(float& leftPanRatio, float& rightPanRatio, float adjus
  * @param rearLeft      Output parameter for the rear-left channel gain.
  * @param rearRight     Output parameter for the rear-right channel gain.
  */
-void SoundPlayer::calcFade(float leftPanRatio, float rightPanRatio, float fadeRatio, float& frontLeft, float& frontRight, float& rearLeft, float& rearRight)
+void SoundPlayer::CalcFade(float leftPanRatio, float rightPanRatio, float fadeRatio, float& frontLeft, float& frontRight, float& rearLeft, float& rearRight)
 {
    // Clamp fadeRatio to the range [0.0, 2.5]
    fadeRatio = clamp(fadeRatio, 0.0f, 2.5f);

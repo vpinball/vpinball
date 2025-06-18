@@ -20,8 +20,6 @@ AudioPlayer::AudioPlayer(const Settings& settings)
       return;
    }
 
-   m_SoundMode3D = static_cast<SoundConfigTypes>(settings.LoadValueUInt(Settings::Player, "Sound3D"s));
-
    string soundDeviceName;
    string soundDeviceBGName;
    const bool good = settings.LoadValue(Settings::Player, "SoundDevice"s, soundDeviceName);
@@ -69,6 +67,28 @@ AudioPlayer::AudioPlayer(const Settings& settings)
    {
       PLOGE << "Failed to initialize SDL Mixer: " << SDL_GetError();
       return;
+   }
+
+   m_soundMode3D = static_cast<SoundConfigTypes>(settings.LoadValueUInt(Settings::Player, "Sound3D"s));
+   if ((m_soundMode3D == SNDCFG_SND3DALLREAR) && (m_audioSpecOutput.channels < 4))
+   {
+      PLOGE << "Your sound device does not have the required number of channels (4+) to support this mode. <SND3DALLREAR>";
+      m_soundMode3D = SNDCFG_SND3D2CH;
+   }
+   else if (((m_soundMode3D == SNDCFG_SND3D6CH) || (m_soundMode3D == SNDCFG_SND3DSSF)) && (m_audioSpecOutput.channels != 8))
+   {
+      PLOGE << "Your sound device does not have the required number of channels (8) to support this mode. <SNDCFG_SND3D6CH/SNDCFG_SND3DSSF>";
+      m_soundMode3D = SNDCFG_SND3D2CH;
+   }
+   else if (m_soundMode3D == SNDCFG_SND3DFRONTISREAR)
+   {
+      PLOGI << "Sound Mode SNDCFG_SND3DFRONTISREAR not implemented yet."; return;
+      m_soundMode3D = SNDCFG_SND3D2CH;
+   }
+   else if (m_soundMode3D == SNDCFG_SND3DFRONTISFRONT)
+   {
+      PLOGI << "Sound Mode SNDCFG_SND3DFRONTISFRONT not implemented yet.";
+      m_soundMode3D = SNDCFG_SND3D2CH;
    }
 
    Mix_QuerySpec(&m_audioSpecOutput.freq, &m_audioSpecOutput.format, &m_audioSpecOutput.channels);
@@ -189,9 +209,15 @@ void AudioPlayer::PlaySound(Sound* sound, float volumeOffset, const float random
 {
    SoundPlayer* player = nullptr;
    vector<std::unique_ptr<SoundPlayer>>& players = m_soundPlayers[sound];
+
+   // Until 10.8, implementation would:
+   // - for some reason, 'usesame' would only be processed for wav file:
+   //   - if 'usesame' is true, search for the first player for the given sound and reuse it if any (even is it is playing), create a new one otherwise
+   //   - if 'usesame' is false, always create a new player for the given sound
+   // - if restart is false and selected sound player was already playing, settings would be applied without restarting the sound
    for (auto& soundPlayer : players)
    {
-      if (useSame || restart || !soundPlayer->IsPlaying())
+      if (useSame || !soundPlayer->IsPlaying())
       {
          player = soundPlayer.get();
          break;
@@ -200,10 +226,6 @@ void AudioPlayer::PlaySound(Sound* sound, float volumeOffset, const float random
 
    if (player == nullptr)
    {
-      // We were asked to reuse but did not find a player
-      if (useSame && !players.empty())
-         return;
-
       player = SoundPlayer::Create(this, sound);
       if (player == nullptr)
          return;
@@ -213,6 +235,8 @@ void AudioPlayer::PlaySound(Sound* sound, float volumeOffset, const float random
 
    float pan = dequantizeSignedPercent(sound->GetPan()) + panOffset;
 
+   if (restart)
+      player->Stop();
    player->Play(
       dequantizeSignedPercent(sound->GetVolume()) + volumeOffset,
       randomPitch,

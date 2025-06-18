@@ -43,7 +43,7 @@ public:
    void StopSound(Sound* sound);
 
    const SDL_AudioSpec& GetAudioSpecOutput() const { return m_audioSpecOutput; }
-   const SoundConfigTypes GetSoundMode3D() const { return m_SoundMode3D; }
+   const SoundConfigTypes GetSoundMode3D() const { return m_soundMode3D; }
 
    struct AudioDevice
    {
@@ -67,7 +67,7 @@ private:
 
    int m_tableAudioDevice = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
    int m_backglassAudioDevice = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
-   SoundConfigTypes m_SoundMode3D = SNDCFG_SND3D2CH; // What 3Dsound Mode are we in from VPinball.ini "Sound3D" key.
+   SoundConfigTypes m_soundMode3D = SNDCFG_SND3D2CH; // What 3Dsound Mode are we in from VPinball.ini "Sound3D" key.
    SDL_AudioSpec m_audioSpecOutput { SDL_AUDIO_UNKNOWN, 0, 0 }; // The output devices audio spec
 };
 
