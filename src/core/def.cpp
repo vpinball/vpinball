@@ -855,7 +855,7 @@ HRESULT external_create_object(const WCHAR* progid, IClassFactory* cf, IUnknown*
    const char* const szT = MakeChar(progid);
    PLOGI.printf("progid=%s, hres=0x%08x", szT, hres);
    if (hres == E_NOTIMPL) {
-      PLOGW << "Creating an object of type \"" << szT "\" is not supported";
+      PLOGW << "Creating an object of type \"" << szT << "\" is not supported";
    }
    delete[] szT;
 
