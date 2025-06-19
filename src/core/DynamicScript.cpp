@@ -262,7 +262,7 @@ bool DynamicTypeLibrary::COMToScriptVariant(const VARIANT* cv, const ScriptTypeN
       case TypeID::TYPEID_UNRESOLVED:
       case TypeID::TYPEID_VOID:
          // TODO raise an error and prevent further processing
-         PLOGE << "Class '" << type.name << "' is referenced while it is not registered in the type library. Did you forgot to call 'Register" << type.name << "SCD(...)' ?";
+         PLOGE << "Class '" << type.name << "' is referenced while it is not registered in the type library. Did you forget to call 'Register" << type.name << "SCD(...)' ?";
          assert(false);
          return false;
          break;
