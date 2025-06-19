@@ -158,7 +158,6 @@ string PathFromFilename(const string& filename)
 
 string GetPluginPath()
 {
-    string pathBuf;
 #ifdef _WIN32
     HMODULE hm = nullptr;
     if (GetModuleHandleEx(
@@ -172,11 +171,11 @@ string GetPluginPath()
         return string();
 
 #ifdef _UNICODE
-    int size_needed = WideCharToMultiByte(CP_UTF8, 0, buf, -1, NULL, 0, NULL, NULL);
-    pathBuf.resize(size_needed, 0);
+    const int size_needed = WideCharToMultiByte(CP_UTF8, 0, buf, -1, NULL, 0, NULL, NULL);
+    string pathBuf(size_needed - 1, '\0');
     WideCharToMultiByte(CP_UTF8, 0, buf, -1, pathBuf.data(), size_needed, NULL, NULL);
 #else
-    pathBuf = buf;
+    const string pathBuf(buf);
 #endif
 #else
     Dl_info info{};
@@ -187,13 +186,13 @@ string GetPluginPath()
     if (!realpath(info.dli_fname, realBuf))
         return string();
 
-    pathBuf = realBuf;
+    const string pathBuf(realBuf);
 #endif
 
     if (pathBuf.empty())
         return string();
 
-    size_t lastSep = pathBuf.find_last_of(PATH_SEPARATOR_CHAR);
+    const size_t lastSep = pathBuf.find_last_of(PATH_SEPARATOR_CHAR);
     if (lastSep == string::npos)
         return string();
 
