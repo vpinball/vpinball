@@ -871,7 +871,7 @@ int ImageDialog::AddListImage(HWND hwndListView, Texture *const ppi)
    lvitem.pszText = (LPSTR)ppi->m_name.c_str();
    lvitem.lParam = (LPARAM)ppi;
 
-   _snprintf_s(sizeString, MAXTOKEN - 1, "%ix%i", ppi->m_width, ppi->m_height);
+   sprintf_s(sizeString, std::size(sizeString), "%ix%i", ppi->m_width, ppi->m_height);
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
    ListView_SetItemText(hwndListView, index, 1, (LPSTR)ppi->GetFilePath().c_str());

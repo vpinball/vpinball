@@ -13,7 +13,7 @@ Video* Video::Create(FlexDMD* pFlexDMD, const string& path, const string& name, 
    pVideo->m_seek = -1;
    pVideo->SetLoop(loop);
 
-   //PLOGW.printf("Video not supported %s", path.c_str());
+   //PLOGW << "Video not supported " << path;
 
    return pVideo;
 }

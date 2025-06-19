@@ -7,7 +7,7 @@
 namespace VPX
 {
 
-// Stream provided raw buffer audio to the given SDL audio audio device.
+// Stream provided raw buffer audio to the given SDL audio device.
 class AudioStreamPlayer
 {
 public:

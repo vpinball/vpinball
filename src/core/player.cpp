@@ -632,7 +632,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
             string path = dir + "used_textures.xml";
             if (FileExists(path))
             {
-               PLOGI.printf("Texture cache found at %s", path.c_str());
+               PLOGI << "Texture cache found at " << path;
                std::stringstream buffer;
                std::ifstream myFile(path);
                buffer << myFile.rdbuf();

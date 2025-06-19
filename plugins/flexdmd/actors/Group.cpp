@@ -124,7 +124,7 @@ Actor* Group::Get(const string& name)
       }
    }
    
-   // PLOGW.printf("Actor %s not found in children of %s", name.c_str(), GetName().c_str());
+   // PLOGW << "Actor " << name << " not found in children of " << GetName();
 
    return NULL;
 }
@@ -211,7 +211,7 @@ void Group::RemoveActor(Actor* actor)
 
 void Group::RemoveAll()
 {
-   //PLOGD.printf("Remove all children %s", GetName().c_str());
+   //PLOGD << "Remove all children " << GetName();
    for (Actor* child : m_children)
    {
       child->SetParent(nullptr);

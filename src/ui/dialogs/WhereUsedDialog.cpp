@@ -127,10 +127,6 @@ INT_PTR WhereUsedDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             //Create Listview Item
             LPSTR srcImage = LPSTR(where.searchObjectName.c_str());
 
-            // Convert the string into an ANSI string
-            CW2A szUsedByObject(where.whereUsedObjectname);
-            // Now Convert it to a LPSTR
-            LPSTR usedByObject = LPSTR(szUsedByObject);
             LPSTR usedByPropertyName = LPSTR(where.whereUsedPropertyName.c_str());
 
             LVITEM lvitem;
@@ -141,7 +137,7 @@ INT_PTR WhereUsedDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             lvitem.lParam = (LPARAM)i; //Need this LPARM in order to sort the listview by column.  Using the counter i for this as each loop will provide a unique number.
             const int index = ListView_InsertItem(hListView, &lvitem);
             //Create Listview SubItem for 'Where Used By Object Name' like 'Wall001' or 'Light047' etc
-            ListView_SetItemText(hListView, index, 1, usedByObject);
+            ListView_SetItemText(hListView, index, 1, (LPSTR)MakeString(where.whereUsedObjectname).c_str());
             //Create Listview SubItem for 'Where Used By Object Property Name'...like 'Image' or 'Side Image'
             ListView_SetItemText(hListView, index, 2, usedByPropertyName);
             i++;
@@ -331,10 +327,6 @@ void WhereUsedDialog::RefreshList()
          //Create Listview Item
          LPSTR srcImage = LPSTR(where.searchObjectName.c_str());
 
-         // Convert the string into an ANSI string
-         CW2A szUsedByObject(where.whereUsedObjectname);
-         // Now Convert it to a LPSTR
-         LPSTR usedByObject = LPSTR(szUsedByObject);
          LPSTR usedByPropertyName = LPSTR(where.whereUsedPropertyName.c_str());
 
          LVITEM lvitem;
@@ -345,7 +337,7 @@ void WhereUsedDialog::RefreshList()
          lvitem.lParam = (LPARAM)i; //Need this LPARM in order to sort the listview by column.  Using counter i as it will be a unique number for each loop.
          const int index = ListView_InsertItem(hListView, &lvitem);
          //Create Listview SubItem for 'Where Used By Object Name' like 'Wall001' or 'Light047' etc
-         ListView_SetItemText(hListView, index, 1, usedByObject);
+         ListView_SetItemText(hListView, index, 1, (LPSTR)MakeString(where.whereUsedObjectname).c_str());
          //Create Listview SubItem for 'Where Used By Object Property Name'...like 'Image' or 'Side Image'
          ListView_SetItemText(hListView, index, 2, usedByPropertyName);
          i++;

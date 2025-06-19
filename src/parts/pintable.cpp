@@ -424,7 +424,7 @@ STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
       if(GetTextFileFromDirectory(defaultFileNameSearch[i] + szFileName, defaultPathSearch[i], pContents))
          return S_OK;
 
-   PLOGE.printf("Unable to load file: %s", szFileName.c_str());
+   PLOGE << "Unable to load file: " << szFileName;
 
    return E_FAIL;
 }
@@ -632,7 +632,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
    BSTR bstr = BstrFromVariant(&Value, 0x409);
 
    DWORD writ;
-   pstmValue->Write((WCHAR *)bstr, (uint32_t)wcslen((WCHAR *)bstr) * (uint32_t)sizeof(WCHAR), &writ);
+   pstmValue->Write((WCHAR *)bstr, (uint32_t)/*wcslen*/ SysStringLen(bstr) * (uint32_t)sizeof(WCHAR), &writ);
 
    SysFreeString(bstr);
 
@@ -675,7 +675,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
 
    file.write(ini);
 
-   PLOGD.printf("TableName=%s, ValueName=%s, Value=%s", szTableName.c_str(), szValueName.c_str(), szValue.c_str());
+   PLOGD << "TableName=" << szTableName << ", ValueName=" << szValueName << ", Value=" << szValue;
 #endif
    return S_OK;
 }
@@ -763,9 +763,8 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
 
    string szValue = MakeString(V_BSTR(Value));
 
-   PLOGD.printf("TableName=%s, ValueName=%s, Value=%s", szTableName.c_str(), szValueName.c_str(), szValue.c_str());
+   PLOGD << "TableName=" << szTableName << ", ValueName=" << szValueName << ", Value=" << szValue;
 #endif
-
    return S_OK;
 }
 
@@ -1592,13 +1591,14 @@ if (it == m_textureMap.end()) \
 #define CLEAN_SURFACE(pEditSurface) \
 {if (!pEditSurface.empty()) \
 { \
+const wstring es = MakeWString(pEditSurface); \
 bool found = false; \
 for (size_t ie = 0; ie < m_vedit.size(); ie++) \
 { \
-    IEditable* const item = m_vedit[ie]; \
+    const IEditable* const item = m_vedit[ie]; \
     if (item->GetItemType() == eItemSurface || item->GetItemType() == eItemRamp) \
     { \
-        if (WzSzEqual(item->GetScriptable()->m_wzName, pEditSurface.c_str())) \
+        if (es == item->GetScriptable()->m_wzName) \
         { \
             found = true; \
             break; \
@@ -7711,7 +7711,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       }
       else
       {
-         const WCHAR * const sname = m_vedit[dwCookie]->GetScriptable()->m_wzName;
+         const WCHAR* const sname = m_vedit[dwCookie]->GetScriptable()->m_wzName;
 
          const size_t cwch = wcslen(sname) + 1;
          //wzDst = ::SysAllocString(sname);
@@ -7736,12 +7736,14 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
 float PinTable::GetSurfaceHeight(const string& name, float x, float y) const
 {
    if (!name.empty())
+   {
+   const wstring wname = MakeWString(name);
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
-      IEditable * const item = m_vedit[i];
+      const IEditable * const item = m_vedit[i];
       if (item->GetItemType() == eItemSurface || item->GetItemType() == eItemRamp)
       {
-         if (WzSzEqual(item->GetScriptable()->m_wzName, name.c_str()))
+         if (wname == item->GetScriptable()->m_wzName)
          {
             if (item->GetItemType() == eItemSurface)
                return ((Surface *)item)->m_d.m_heighttop;
@@ -7750,6 +7752,7 @@ float PinTable::GetSurfaceHeight(const string& name, float x, float y) const
          }
       }
    }
+   }
 
    return 0.f;
 }
@@ -7757,12 +7760,14 @@ float PinTable::GetSurfaceHeight(const string& name, float x, float y) const
 Material* PinTable::GetSurfaceMaterial(const string& name) const
 {
    if (!name.empty())
+   {
+   const wstring wname = MakeWString(name);
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
-      IEditable * const item = m_vedit[i];
+      const IEditable * const item = m_vedit[i];
       if (item->GetItemType() == eItemSurface || item->GetItemType() == eItemRamp)
       {
-         if (WzSzEqual(item->GetScriptable()->m_wzName, name.c_str()))
+         if (wname == item->GetScriptable()->m_wzName)
          {
             if (item->GetItemType() == eItemSurface)
                return GetMaterial(((Surface *)item)->m_d.m_szTopMaterial);
@@ -7771,6 +7776,7 @@ Material* PinTable::GetSurfaceMaterial(const string& name) const
          }
       }
    }
+   }
 
    return GetMaterial(m_playfieldMaterial);
 }
@@ -7778,12 +7784,14 @@ Material* PinTable::GetSurfaceMaterial(const string& name) const
 Texture* PinTable::GetSurfaceImage(const string& name) const
 {
    if (!name.empty())
+   {
+   const wstring wname = MakeWString(name);
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
-      IEditable * const item = m_vedit[i];
+      const IEditable * const item = m_vedit[i];
       if (item->GetItemType() == eItemSurface || item->GetItemType() == eItemRamp)
       {
-         if (WzSzEqual(item->GetScriptable()->m_wzName, name.c_str()))
+         if (wname == item->GetScriptable()->m_wzName)
          {
             if (item->GetItemType() == eItemSurface)
                return GetImage(((Surface *)item)->m_d.m_szImage);
@@ -7791,6 +7799,7 @@ Texture* PinTable::GetSurfaceImage(const string& name) const
                return GetImage(((Ramp *)item)->m_d.m_szImage);
          }
       }
+   }
    }
 
    return GetImage(m_image);
@@ -9971,8 +9980,10 @@ void PinTable::ShowWhereImagesUsed(vector<WhereUsedInfo> &vWhereUsed)
 #define INSERT_WHERE_USED(x) \
 { \
    whereUsed.searchObjectName = searchObjectName; \
+   BSTR bstrFoundObject; \
    m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject); \
    whereUsed.whereUsedObjectname = bstrFoundObject; \
+   SysFreeString(bstrFoundObject); \
    whereUsed.whereUsedPropertyName = (x); \
    vWhereUsed.push_back(whereUsed); \
 }
@@ -9981,7 +9992,6 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed, Texture *co
 {
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
-      CComBSTR bstrFoundObject;
       WhereUsedInfo whereUsed;
       const IEditable *const pEdit = m_vedit[i];
       if (pEdit == nullptr)
@@ -10029,7 +10039,7 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed, Texture *co
          {
             whereUsed.searchObjectName = searchObjectName;
             //Had to hardcode 'decal' below because it doesn't have a unique 'Name' field.
-            whereUsed.whereUsedObjectname = "decal"; //!!
+            whereUsed.whereUsedObjectname = L"decal"s;
             whereUsed.whereUsedPropertyName = "Image"s;
             vWhereUsed.push_back(whereUsed);
          }
@@ -10103,7 +10113,6 @@ void PinTable::ShowWhereMaterialUsed(vector<WhereUsedInfo> &vWhereUsed, Material
 {
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
-      CComBSTR bstrFoundObject;
       WhereUsedInfo whereUsed;
       const IEditable *const pEdit = m_vedit[i];
       if (pEdit == nullptr)
@@ -10157,7 +10166,7 @@ void PinTable::ShowWhereMaterialUsed(vector<WhereUsedInfo> &vWhereUsed, Material
          {
             whereUsed.searchObjectName = searchObjectName;
             //Had to hardcode 'decal' below because it doesn't have a unique 'Name' field.
-            whereUsed.whereUsedObjectname = "decal"; //!!
+            whereUsed.whereUsedObjectname = L"decal"s;
             whereUsed.whereUsedPropertyName = "Material"s;
             vWhereUsed.push_back(whereUsed);
          }

@@ -43,7 +43,7 @@ public:
    void StopSound(Sound* sound);
 
    const SDL_AudioSpec& GetAudioSpecOutput() const { return m_audioSpecOutput; }
-   const SoundConfigTypes GetSoundMode3D() const { return m_soundMode3D; }
+   SoundConfigTypes GetSoundMode3D() const { return m_soundMode3D; }
 
    struct AudioDevice
    {

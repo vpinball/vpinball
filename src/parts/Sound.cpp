@@ -142,12 +142,9 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
       // Static wave DATA tag
       static constexpr BYTE WaveData[] = { 'd', 'a', 't', 'a' };
 
-      DWORD waveFileSize;
-      uint8_t* waveFilePointer;
-
-      waveFileSize = sizeof(WAVEHEADER) + sizeof(WAVEFORMATEX) + pps->m_wfx.cbSize + sizeof(WaveData) + sizeof(DWORD) + static_cast<DWORD>(pps->m_cdata_org);
+      DWORD waveFileSize = sizeof(WAVEHEADER) + sizeof(WAVEFORMATEX) + pps->m_wfx.cbSize + sizeof(WaveData) + sizeof(DWORD) + static_cast<DWORD>(pps->m_cdata_org);
       pps->m_pdata = new uint8_t[waveFileSize];
-      waveFilePointer = pps->m_pdata;
+      uint8_t* waveFilePointer = pps->m_pdata;
       WAVEHEADER* const waveHeader = reinterpret_cast<WAVEHEADER*>(pps->m_pdata);
 
       // Wave header

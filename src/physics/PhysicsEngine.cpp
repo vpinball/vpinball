@@ -73,11 +73,8 @@ PhysicsEngine::PhysicsEngine(PinTable *const table)
          #ifdef DEBUGPHYSICS
             if(pe->GetScriptable())
             {
-               BSTR bstr;
-               pe->GetScriptable()->get_Name(&bstr);
-               const string bstr2 = MakeString(bstr);
-               SysFreeString(bstr);
-               g_pplayer->m_progressDialog.SetProgress("Initializing Object-Physics " + bstr2 + "...");
+               const string s = MakeString(pe->GetScriptable()->m_wzName);
+               g_pplayer->m_progressDialog.SetProgress("Initializing Object-Physics " + s + "...");
             }
          #endif
          ph->PhysicSetup(this, false);

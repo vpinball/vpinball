@@ -7,7 +7,7 @@
 namespace VPX
 {
 
-// Simple class wrapper around SDL mixer music feature (stream from a file to SDL mixer)
+// Simple class wrapper around the SDL mixer music feature (stream from a file to SDL mixer)
 // This class expects SDL_audio & SDL_mixer library to be fully initialized before use
 class MusicPlayer
 {
@@ -45,7 +45,7 @@ public:
       return Mix_GetMusicPosition(m_music);
    }
 
-   void SetPosition(double seconds)
+   void SetPosition(const double seconds)
    {
       Mix_SetMusicPosition(seconds);
    }

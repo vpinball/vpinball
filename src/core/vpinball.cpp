@@ -229,10 +229,10 @@ void VPinball::GetMyPrefPath()
    if (!DirExists(m_myPrefPath)) {
       std::error_code ec;
       if (std::filesystem::create_directory(m_myPrefPath, ec)) {
-         PLOGI.printf("Pref path created: %s", m_myPrefPath.c_str());
+         PLOGI << "Pref path created: " << m_myPrefPath;
       }
       else {
-         PLOGE.printf("Unable to create pref path: %s", m_myPrefPath.c_str());
+         PLOGE << "Unable to create pref path: " << m_myPrefPath;
       }
    }
 }

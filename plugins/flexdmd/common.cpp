@@ -157,9 +157,9 @@ string GetPluginPath()
         return string();
 
 #ifdef _UNICODE
-    const int size_needed = WideCharToMultiByte(CP_UTF8, 0, buf, -1, NULL, 0, NULL, NULL);
+    const int size_needed = WideCharToMultiByte(CP_UTF8, 0, buf, -1, nullptr, 0, nullptr, nullptr);
     string pathBuf(size_needed - 1, '\0');
-    WideCharToMultiByte(CP_UTF8, 0, buf, -1, pathBuf.data(), size_needed, NULL, NULL);
+    WideCharToMultiByte(CP_UTF8, 0, buf, -1, pathBuf.data(), size_needed, nullptr, nullptr);
 #else
     const string pathBuf(buf);
 #endif

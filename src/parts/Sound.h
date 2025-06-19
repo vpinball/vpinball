@@ -102,7 +102,7 @@ private:
 
    SoundOutTypes m_outputTarget = SoundOutTypes::SNDOUT_BACKGLASS; //Is it table sound device or BG sound device.
 
-   static bool isWav(const string& path) { return path_has_extension(path, "wav"); }
+   static bool isWav(const string& path) { return path_has_extension(path, "wav"s); }
 };
 
 }

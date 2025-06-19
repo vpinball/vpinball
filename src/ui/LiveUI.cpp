@@ -2426,7 +2426,7 @@ void LiveUI::UpdateTweakModeUI()
          case BS_DayNight: CM_ROW(setting, "Day Night: ", "%.1f", 100.f * m_renderer->m_globalEmissionScale, "%"); break;
          case BS_Difficulty:
             char label[64];
-            snprintf(label, 64, "Difficulty (%.2f° slope and trajectories scattering):", m_live_table->GetPlayfieldSlope());
+            snprintf(label, std::size(label), "Difficulty (%.2f° slope and trajectories scattering):", m_live_table->GetPlayfieldSlope());
             CM_ROW(setting, label, "%.1f", 100.f * m_live_table->m_globalDifficulty, "%");
             break;
          case BS_Exposure: CM_ROW(setting, "Exposure: ", "%.1f", 100.f * m_renderer->m_exposure, "%"); break;

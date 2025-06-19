@@ -50,7 +50,7 @@ struct ProtectionData
 struct WhereUsedInfo
 {
    string searchObjectName; //Source object to search for (images, materials etc)
-   CComBSTR whereUsedObjectname; //Table object (Bumpers, Lights, Ramps, Walls etc) found to be using the source object
+   wstring whereUsedObjectname; //Table object (Bumpers, Lights, Ramps, Walls etc) found to be using the source object
    string whereUsedPropertyName; //Property name where used (If searching for images this could be 'Image', 'Side Image' etc.  If search for materials this could be 'Material', 'Cap Material, 'Base Material' etc.
 };
 
@@ -441,6 +441,7 @@ public:
    const ISelect *GetISelect() const final { return (const ISelect *)this; }
    void SetDefaults(const bool fromMouseClick) final;
    IScriptable *GetScriptable() final { return (IScriptable *)this; }
+   const IScriptable *GetScriptable() const final { return (const IScriptable *)this; }
    void SetDefaultPhysics(const bool fromMouseClick) final;
 
    PinTable *GetPTable() final { return this; }

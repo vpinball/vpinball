@@ -17,7 +17,7 @@ public:
    static SoundPlayer* Create(AudioPlayer* AudioPlayer, Sound* sound);
    ~SoundPlayer();
 
-   void Play(float volume, const float randompitch, const int pitch, float pan, float front_rear_fade, const int loopcount);
+   void Play(float volume, const float randompitch, const int pitch, float pan, float frontRearFade, const int loopcount);
    void Stop();
 
    bool IsPlaying() const { return m_assignedChannel != -1 && Mix_Playing(m_assignedChannel); }

@@ -26,7 +26,7 @@ public:
       }
       else
       {
-         PLOGI.printf("No game controller mappings added: path=%s", path.c_str());
+         PLOGI << "No game controller mappings added: path=" << path;
       }
       RefreshSDLDevice();
    }

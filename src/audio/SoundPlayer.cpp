@@ -181,9 +181,9 @@ void SoundPlayer::AdjustPitch(int pitch, float randompitch)
    // FIXME the pitch/randompitch are supposed to be applied relatively from the original sample frequency
    // since we do not have this information we guess it was a 'standard' 44100Hz
    // Use Mix_LoadSndFile_IO (not part of the public API) ?
-   const float sampleFreq = 44100;
+   const float sampleFreq = 44100.f;
    float newFreq = sampleFreq + pitch;
-   if (randompitch > 0) {
+   if (randompitch > 0.f) {
       const float rndh = rand_mt_01();
       const float rndl = rand_mt_01();
       newFreq *= 1.f + (randompitch * rndh * rndh) - (randompitch * rndl * rndl * 0.5f);
@@ -229,24 +229,24 @@ void SoundPlayer::AdjustPitch(int pitch, float randompitch)
  */
 void SoundPlayer::CalcPan(float& leftPanRatio, float& rightPanRatio, float adjustedVolRatio, float pan)
 {
-    // Normalize pan from range [-3, 3] to [-1, 1]
-    pan = pan / 3.0f;
+   // Normalize pan from range [-3, 3] to [-1, 1]
+   pan = pan / 3.0f;
 
-    // Ensure pan is within -1 to 1 (in case of floating-point errors)
-    pan = clamp(pan, -1.0f, 1.0f);
+   // Ensure pan is within -1 to 1 (in case of floating-point errors)
+   pan = clamp(pan, -1.0f, 1.0f);
 
-    // Use a more standard panning formula that keeps values within range
-    float leftFactor  = 0.5f * (1.0f - pan); // Left decreases as pan increases
-    float rightFactor = 0.5f * (1.0f + pan); // Right increases as pan increases
+   // Use a more standard panning formula that keeps values within range
+   float leftFactor  = 0.5f * (1.0f - pan); // Left decreases as pan increases
+   float rightFactor = 0.5f * (1.0f + pan); // Right increases as pan increases
 
-    leftPanRatio = adjustedVolRatio * leftFactor;
-    rightPanRatio = adjustedVolRatio * rightFactor;
+   leftPanRatio = adjustedVolRatio * leftFactor;
+   rightPanRatio = adjustedVolRatio * rightFactor;
 
-    // Ensure the values are properly clamped
-    leftPanRatio  = clamp(leftPanRatio,  0.0f, 1.0f);
-    rightPanRatio = clamp(rightPanRatio, 0.0f, 1.0f);
+   // Ensure the values are properly clamped
+   leftPanRatio  = clamp(leftPanRatio,  0.0f, 1.0f);
+   rightPanRatio = clamp(rightPanRatio, 0.0f, 1.0f);
 
-    //PLOGI << "Pan: " << pan << " AdjustedVolRatio: " << adjustedVolRatio << " Left: " << leftPanRatio << " Right: " << rightPanRatio;
+   //PLOGI << "Pan: " << pan << " AdjustedVolRatio: " << adjustedVolRatio << " Left: " << leftPanRatio << " Right: " << rightPanRatio;
 }
 
 /**

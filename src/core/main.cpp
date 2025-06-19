@@ -963,10 +963,10 @@ public:
       if (!DirExists(PATH_USER)) {
          std::error_code ec;
          if (std::filesystem::create_directory(PATH_USER, ec)) {
-            PLOGI.printf("User path created: %s", PATH_USER.c_str());
+            PLOGI << "User path created: " << PATH_USER;
          }
          else {
-            PLOGE.printf("Unable to create user path: %s", PATH_USER.c_str());
+            PLOGE << "Unable to create user path: " << PATH_USER;
          }
       }
 
@@ -1327,7 +1327,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
          }
          else
          {
-            PLOGI << "Plugin " << plugin.m_id << " was found but is disabled (" << plugin.m_library << ")";
+            PLOGI << "Plugin " << plugin.m_id << " was found but is disabled (" << plugin.m_library << ')';
          }
       });
 

@@ -67,13 +67,14 @@ public:
 	_STANDARD_DISPATCH_INDEPENDANT_EDITABLE_DECLARES(T, ItemType) \
 	_STANDARD_DISPATCH_EDITABLE_DECLARES(ItemType)
 
-// declare and implement some methods for an IEditable which does not support scripting (only used for leagacy, deprecated Decal editable)
+// declare and implement some methods for an IEditable which does not support scripting (only used for legacy, deprecated Decal editable)
 #define STANDARD_NOSCRIPT_EDITABLE_DECLARES(T, ItemType, ResName, AllowedViews) \
 	_STANDARD_EDITABLE_CONSTANTS(ItemType, ResName, AllowedViews) \
 	_STANDARD_DISPATCH_INDEPENDANT_EDITABLE_DECLARES(T, ItemType) \
 	virtual EventProxyBase *GetEventProxyBase() {return nullptr;} \
 	inline IFireEvents *GetIFireEvents() {return nullptr;} \
-	virtual IScriptable *GetScriptable() {return nullptr;}
+	virtual IScriptable *GetScriptable() {return nullptr;} \
+	virtual const IScriptable *GetScriptable() const {return nullptr;}
 
 // used above, do not invoke directly
 #define _STANDARD_DISPATCH_EDITABLE_DECLARES(itemType) \
@@ -86,7 +87,7 @@ public:
 		} \
 	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal) \
 		{ \
-		const size_t len = wcslen(newVal); \
+		const size_t len = /*wcslen*/ SysStringLen(newVal); \
 		if (len > MAXNAMEBUFFER || len < 1) \
 			{ \
 			return E_FAIL; \
@@ -105,6 +106,7 @@ public:
 	STDMETHOD(get_UserValue)(VARIANT *pVal) {return IEditable::get_UserValue(pVal);} \
 	STDMETHOD(put_UserValue)(VARIANT *newVal) {return IEditable::put_UserValue(newVal);} \
 	virtual IScriptable *GetScriptable() {return (IScriptable *)this;} \
+	virtual const IScriptable *GetScriptable() const {return (const IScriptable *)this;} \
 	virtual void FireGroupEvent(const int dispid) {FireVoidGroupEvent(dispid);}
 
 // used above, do not invoke directly
@@ -264,6 +266,7 @@ public:
    virtual const ISelect *GetISelect() const = 0;
    virtual void SetDefaults(const bool fromMouseClick) = 0;
    virtual IScriptable *GetScriptable() = 0;
+   virtual const IScriptable *GetScriptable() const = 0;
    virtual IFireEvents *GetIFireEvents() = 0;
    virtual ItemTypeEnum GetItemType() const = 0;
 

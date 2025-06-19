@@ -632,7 +632,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
 void RenderDevice::CaptureScreenshot(const string& filename, std::function<void(bool)> callback)
 {
    if (s_screenshot) {
-      PLOGE.printf("Screenshot capture already in progress.");
+      PLOGE << "Screenshot capture already in progress.";
       callback(false);
       return;
    }
@@ -890,7 +890,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    glad_glGetIntegerv(GL_NUM_EXTENSIONS, (int*) &num_exts_i);
    PLOGD.printf("%d extensions available", num_exts_i);
    for(int index = 0; index < num_exts_i; index++) {
-      PLOGD.printf("%s", glad_glGetStringi(GL_EXTENSIONS, index));
+      PLOGD << glad_glGetStringi(GL_EXTENSIONS, index);
    }
    #ifdef __OPENGLES__
    int range[2];
