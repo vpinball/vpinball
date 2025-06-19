@@ -156,8 +156,8 @@ inline int FindIndexOf(const vector<T>& v, const T& val)
 
 #define CCO(x) CComObject<x>
 
-#define SAFE_VECTOR_DELETE(p)   { if(p) { delete [] (p);  (p)=nullptr; } }
-#define SAFE_DELETE(p)          { if(p) { delete (p);     (p)=nullptr; } }
+#define SAFE_VECTOR_DELETE(p)   { delete [] (p);  (p)=nullptr; }
+#define SAFE_DELETE(p)          { delete (p);     (p)=nullptr; }
 
 inline void ref_count_trigger(const ULONG r, const char *file, const int line) // helper for debugging
 {
@@ -541,19 +541,6 @@ constexpr __forceinline float sobol(unsigned int i, unsigned int scramble = 0)
    return (float)(scramble >> 8) * 0.000000059604644775390625f;
 }
 
-inline void RemoveSpaces(char* const source)
-{
-   char* i = source;
-   char* j = source;
-   while (*j != '\0')
-   {
-      *i = *j++;
-      if (!isspace(*i))
-         i++;
-   }
-   *i = '\0';
-}
-
 //
 
 // Conversions to/from VP units (50 VPU = 1.0625 inches which is 1"1/16, the default size of a ball, 1 inch is 2.54cm)
@@ -589,19 +576,35 @@ constexpr __forceinline float millimetersToVPUnits(const float value)
    // return value * (float)(1.0 / 0.540425);
 }
 
+// removes all whitespaces existing in a string
+inline void RemoveSpaces(char* const source)
+{
+   char* i = source;
+   char* j = source;
+   while (*j != '\0')
+   {
+      *i = *j++;
+      if (!isspace(*i))
+         i++;
+   }
+   *i = '\0';
+}
+
 string convert_decimal_point_and_trim(string sz, const bool use_locale);
 
 float sz2f(string sz, const bool force_convert_decimal_point = false);
 string f2sz(const float f, const bool can_convert_decimal_point = true);
 
-bool WzSzEqual(const WCHAR* wz1, const char* sz2);
-
 HRESULT OpenURL(const string& szURL);
 
-WCHAR *MakeWide(const string& sz);
+WCHAR* MakeWide(const char* const sz);
+WCHAR* MakeWide(const string& sz);
 char *MakeChar(const WCHAR* const wz);
 string MakeString(const wstring& wz);
 string MakeString(const WCHAR* const wz);
+#ifndef MINIMAL_DEF_H
+string MakeString(const BSTR wz);
+#endif
 wstring MakeWString(const string& sz);
 wstring MakeWString(const char* const sz);
 

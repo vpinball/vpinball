@@ -567,7 +567,7 @@ HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool global)
       BSTR bstrTypeName;
       if (SUCCEEDED(ti->GetDocumentation(MEMBERID_NIL, &bstrTypeName, NULL, NULL, NULL))) {
          const char* szType = MakeChar(bstrTypeName);
-         PLOGD.printf("type=%s, name=%s", szType, szT);
+         PLOGD << "type=" << szType << ", name=" << szT;
          delete[] szType;
          SysFreeString(bstrTypeName);
       }
@@ -1217,14 +1217,15 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	pscripterror->GetExceptionInfo(&exception);
 	nLine++;
 
-	const char* const szT = MakeChar((exception.bstrDescription) ? exception.bstrDescription : L"Description unavailable");
+	const char *const szT = exception.bstrDescription ? MakeChar(exception.bstrDescription) : "Description unavailable";
 
 	PLOGE_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Script Error at line " << nLine << " : " << szT;
 
 	if (dwCookie == CONTEXTCOOKIE_DEBUG)
 	{
 		AddToDebugOutput(szT);
-		delete[] szT;
+		if (exception.bstrDescription)
+			delete[] szT;
 		SysFreeString(bstr);
 		return S_OK;
 	}
@@ -1254,7 +1255,8 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	VPinballLib::VPinball::SendEvent(VPinballLib::Event::ScriptError, &scriptErrorStruct);
 #endif
 
-	delete[] szT;
+	if (exception.bstrDescription)
+		delete[] szT;
 
 	// Error log content
 	std::wstringstream errorStream;
@@ -1411,17 +1413,20 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	pscripterror->GetExceptionInfo(&exception);
 	nLine++;
 
-	PLOGE_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Script Error at line " << nLine << " : " << exception.bstrDescription;
+	const char *szT = exception.bstrDescription ? MakeChar(exception.bstrDescription) : "Description unavailable";
+	PLOGE_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Script Error at line " << nLine << " : " << szT;
 
 	if (dwCookie == CONTEXTCOOKIE_DEBUG)
 	{
-		char* szT = MakeChar(exception.bstrDescription);
 		AddToDebugOutput(szT);
-		delete[] szT;
+		if (exception.bstrDescription)
+			delete[] szT;
 		SysFreeString(bstr);
 		return S_OK;
 	}
 
+	if (exception.bstrDescription)
+		delete[] szT;
 	m_scriptError = true;
 
 	if (g_pplayer)
@@ -1881,7 +1886,7 @@ void CodeViewer::SaveToStream(IStream *pistream, const HCRYPTHASH hcrypthash)
 void CodeViewer::SaveToFile(const string& filename)
 {
 #ifdef __STANDALONE__
-   PLOGI.printf("filename=%s", filename.c_str());
+   PLOGI << "filename=" << filename;
 #endif
    FILE * fScript;
    if ((fopen_s(&fScript, filename.c_str(), "wb") == 0) && fScript)
@@ -1975,7 +1980,7 @@ void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, 
 void CodeViewer::LoadFromFile(const string& filename)
 {
 #ifdef __STANDALONE__
-	PLOGI.printf("filename=%s", filename.c_str());
+	PLOGI << "filename=" << filename;
 #endif
 	FILE * fScript;
 	if ((fopen_s(&fScript, filename.c_str(), "rb") == 0) && fScript)
@@ -4039,7 +4044,7 @@ void CodeViewer::AppendLastErrorTextW(const wstring& text)
 	delete[] buf;
 #else
 	char* szT = MakeChar(text.c_str());
-	PLOGE.printf("%s", szT);
+	PLOGE << szT;
 	delete[] szT;
 #endif
 }

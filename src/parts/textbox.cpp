@@ -146,7 +146,7 @@ void Textbox::WriteRegDefaults()
    FONTDESC fd;
    fd.cbSizeofstruct = sizeof(FONTDESC);
    m_pIFont->get_Size(&fd.cySize);
-   m_pIFont->get_Name(&fd.lpstrName); //!! BSTR
+   m_pIFont->get_Name((BSTR*)&fd.lpstrName); // actually returns a BSTR, so we need to treat it like that
    m_pIFont->get_Weight(&fd.sWeight);
    m_pIFont->get_Charset(&fd.sCharset);
    m_pIFont->get_Italic(&fd.fItalic);
@@ -154,7 +154,8 @@ void Textbox::WriteRegDefaults()
    m_pIFont->get_Strikethrough(&fd.fStrikethrough);
 
    g_pvp->m_settings.SaveValue(regKey, "FontSize"s, (float)(fd.cySize.int64 / 10000.0));
-   g_pvp->m_settings.SaveValue(regKey, "FontName"s, MakeString(fd.lpstrName));
+   g_pvp->m_settings.SaveValue(regKey, "FontName"s, MakeString((BSTR)fd.lpstrName));
+   SysFreeString((BSTR)fd.lpstrName); // see above
    g_pvp->m_settings.SaveValue(regKey, "FontWeight"s, (int)fd.sWeight);
    g_pvp->m_settings.SaveValue(regKey, "FontCharSet"s, (int)fd.sCharset);
    g_pvp->m_settings.SaveValue(regKey, "FontItalic"s, fd.fItalic);
@@ -294,7 +295,6 @@ char * Textbox::GetFontName()
     {
         BSTR bstr;
         /*HRESULT hr =*/ m_pIFont->get_Name(&bstr);
-
         static char fontName[LF_FACESIZE];
         WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, fontName, std::size(fontName), nullptr, nullptr);
         SysFreeString(bstr);
@@ -893,7 +893,7 @@ TTF_Font* Textbox::LoadFont()
       if (!path.empty()) {
          pFont = TTF_OpenFont(path.c_str(), m_fontSize);
          if (pFont) {
-            PLOGI.printf("Font loaded: path=%s", path.c_str());
+            PLOGI << "Font loaded: path=" << path;
             break;
          }
       }
@@ -901,15 +901,15 @@ TTF_Font* Textbox::LoadFont()
 
    if (!pFont) {
       path = g_pvp->m_currentTablePath + fontName + styles[0] + ".ttf";
-      PLOGW.printf("Unable to locate font: path=%s", path.c_str());
+      PLOGW << "Unable to locate font: path=" << path;
 
       path = g_pvp->m_myPath + "assets" + PATH_SEPARATOR_CHAR + "LiberationSans-Regular.ttf";
       pFont = TTF_OpenFont(path.c_str(), m_fontSize);
       if (pFont) {
-         PLOGW.printf("Default font loaded: path=%s", path.c_str());
+         PLOGW << "Default font loaded: path=" << path;
       }
       else {
-         PLOGW.printf("Unable to load font: path=%s", path.c_str());
+         PLOGW << "Unable to load font: path=" << path;
          return nullptr;
       }
    }

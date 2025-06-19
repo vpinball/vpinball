@@ -109,7 +109,6 @@ char* Decal::GetFontName()
     {
         BSTR bstr;
         /*HRESULT hr =*/ m_pIFont->get_Name(&bstr);
-
         static char fontName[LF_FACESIZE];
         WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, fontName, std::size(fontName), nullptr, nullptr);
         SysFreeString(bstr);
@@ -139,7 +138,7 @@ void Decal::WriteRegDefaults()
       FONTDESC fd;
       fd.cbSizeofstruct = sizeof(FONTDESC);
       m_pIFont->get_Size(&fd.cySize);
-      m_pIFont->get_Name(&fd.lpstrName); //!! BSTR
+      m_pIFont->get_Name((BSTR*)&fd.lpstrName); // returns a BSTR, thus we must free this specifically
       m_pIFont->get_Weight(&fd.sWeight);
       m_pIFont->get_Charset(&fd.sCharset);
       m_pIFont->get_Italic(&fd.fItalic);
@@ -147,7 +146,8 @@ void Decal::WriteRegDefaults()
       m_pIFont->get_Strikethrough(&fd.fStrikethrough);
 
       g_pvp->m_settings.SaveValue(regKey, "FontSize"s, (float)(fd.cySize.int64 / 10000.0));
-      g_pvp->m_settings.SaveValue(regKey, "FontName"s, MakeString(fd.lpstrName));
+      g_pvp->m_settings.SaveValue(regKey, "FontName"s, MakeString((BSTR)fd.lpstrName));
+      SysFreeString((BSTR)fd.lpstrName); // see above
       g_pvp->m_settings.SaveValue(regKey, "FontWeight"s, (int)fd.sWeight);
       g_pvp->m_settings.SaveValue(regKey, "FontCharSet"s, (int)fd.sCharset);
       g_pvp->m_settings.SaveValue(regKey, "FontItalic"s, fd.fItalic);
@@ -493,8 +493,7 @@ HFONT Decal::GetFont()
    lf.lfQuality = NONANTIALIASED_QUALITY;
 
    BSTR bstr;
-   (void)m_pIFont->get_Name(&bstr);
-
+   /*HRESULT hr =*/m_pIFont->get_Name(&bstr);
    WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, lf.lfFaceName, std::size(lf.lfFaceName), nullptr, nullptr);
    SysFreeString(bstr);
 
