@@ -5,6 +5,9 @@
 #include "core/Settings.h"
 #include <SDL3/SDL_audio.h>
 
+struct ma_engine;
+struct ma_context;
+
 namespace VPX
 {
 
@@ -33,9 +36,9 @@ public:
    bool PlayMusic(const string& filename);
    void PauseMusic();
    void UnpauseMusic();
-   double GetMusicPosition() const;
-   void SetMusicPosition(double seconds);
-   void SetMusicVolume(const float volume);
+   float GetMusicPosition() const;
+   void SetMusicPosition(float seconds);
+   void SetMusicVolume(float volume);
    bool IsMusicPlaying() const;
 
    // Sound, played from memory buffer to backglass or playfield device, applying 3D mode setup
@@ -53,6 +56,12 @@ public:
    };
    static void EnumerateAudioDevices(vector<AudioDevice>& devices);
 
+   ma_engine* GetEngine() { return m_maEngine.get(); }
+   vector<uint8_t> m_streamBuffer;
+   SDL_AudioStream* m_outStream = nullptr;
+   int m_tableAudioDevice = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
+   int m_backglassAudioDevice = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
+
 private:
    float m_playfieldVolume = 1.f;
    float m_backglassVolume = 1.f;
@@ -63,12 +72,13 @@ private:
 
    vector<std::unique_ptr<class AudioStreamPlayer>> m_audioStreams;
 
-   std::unique_ptr<class MusicPlayer> m_music;
+   std::unique_ptr<class SoundPlayer> m_music;
 
-   int m_tableAudioDevice = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
-   int m_backglassAudioDevice = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
    SoundConfigTypes m_soundMode3D = SNDCFG_SND3D2CH; // What 3Dsound Mode are we in from VPinball.ini "Sound3D" key.
    SDL_AudioSpec m_audioSpecOutput { SDL_AUDIO_UNKNOWN, 0, 0 }; // The output devices audio spec
+
+   std::unique_ptr<ma_engine> m_maEngine;
+   std::unique_ptr<ma_context> m_maContext;
 };
 
 }

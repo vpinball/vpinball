@@ -791,25 +791,13 @@ BOOL SoundPositionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
 void SoundPositionDialog::TestSound()
 {
-	// Hold the actual settings temporarily and reinitialize, as it could be reset if dialog is canceled.
-   const VPX::SoundOutTypes iOutputTargetTmp = m_pSound->GetOutputTarget();
-	const int iVolume = m_pSound->GetVolume();
-	const int iPan = m_pSound->GetPan();
-	const int iFrontRearFade = m_pSound->GetFrontRearFade();
-
 	GetDialogValues();
 
-	m_pSound->SetOutputTarget(m_cOutputTarget);
-	m_pSound->SetVolume(m_volume);
-	m_pSound->SetPan(m_balance);
-	m_pSound->SetFrontRearFade(m_fade);
-
-   m_audioPlayer->PlaySound(m_pSound, 1.0f, 0.0f, 0, 0.f, 0.f, 0, false, false);
-
+	// Hold the actual settings temporarily and reinitialize, as it could be reset if dialog is canceled.
+   const VPX::SoundOutTypes iOutputTargetTmp = m_pSound->GetOutputTarget();
+   m_pSound->SetOutputTarget(m_cOutputTarget);
+   m_audioPlayer->PlaySound(m_pSound, dequantizeSignedPercent(m_volume), 0.0f, 0, dequantizeSignedPercent(m_balance), dequantizeSignedPercent(m_fade), 0, false, true);
 	m_pSound->SetOutputTarget(iOutputTargetTmp);
-	m_pSound->SetVolume(iVolume);
-	m_pSound->SetPan(iPan);
-	m_pSound->SetFrontRearFade(iFrontRearFade);
 }
 
 void SoundPositionDialog::OnOK()
