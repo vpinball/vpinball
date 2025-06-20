@@ -57,8 +57,6 @@ set(VPINBALL_SOURCES
    src/audio/AudioPlayer.h
    src/audio/AudioStreamPlayer.cpp
    src/audio/AudioStreamPlayer.h
-   src/audio/MusicPlayer.cpp
-   src/audio/MusicPlayer.h
    src/audio/SoundPlayer.cpp
    src/audio/SoundPlayer.h
 
@@ -736,7 +734,6 @@ target_link_libraries(vpinball PUBLIC
    SDL3
    SDL3_image
    SDL3_ttf
-   SDL3_mixer
    freeimage
    pinmame
    altsound
