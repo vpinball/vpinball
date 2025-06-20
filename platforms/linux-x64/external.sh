@@ -425,7 +425,9 @@ cp libaltsound/libaltsound/third-party/runtime-libs/linux/x64/libbass.so ../../.
 
 cp -a libdof/libdof/build/libdof.{so,so.*} ../../../third-party/runtime-libs/linux-x64
 cp -r libdof/libdof/include/DOF ../../../third-party/include/
+cp -a libdof/libdof/third-party/runtime-libs/linux/x64/libusb*.{so,so.*} ../../../third-party/runtime-libs/linux-x64
 cp -a libdof/libdof/third-party/runtime-libs/linux/x64/libhidapi-hidraw.{so,so.*} ../../../third-party/runtime-libs/linux-x64
+cp -a libdof/libdof/third-party/runtime-libs/linux/x64/libftdi1*.{so,so.*} ../../../third-party/runtime-libs/linux-x64
 
 for LIB in libavcodec libavdevice libavfilter libavformat libavutil libswresample libswscale; do
    cp -a ffmpeg/ffmpeg/${LIB}/${LIB}.{so,so.*} ../../../third-party/runtime-libs/linux-x64
