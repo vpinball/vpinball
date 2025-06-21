@@ -4,6 +4,8 @@
 #include "AudioPlayer.h"
 #include "AudioStreamPlayer.h"
 #include "SoundPlayer.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_audio.h>
 
 #define MA_ENABLE_ONLY_SPECIFIC_BACKENDS 1
 #define MA_ENABLE_CUSTOM 1
@@ -437,6 +439,20 @@ void AudioPlayer::StopSound(Sound* sound)
    vector<std::unique_ptr<SoundPlayer>>& players = m_soundPlayers[sound];
    for (auto& player : players)
       player->Stop();
+}
+
+SoundSpec AudioPlayer::GetSoundInformations(Sound* sound) const
+{
+   vector<std::unique_ptr<SoundPlayer>>& players = m_soundPlayers[sound];
+   if (players.empty())
+   {
+      SoundPlayer* player = SoundPlayer::Create(this, sound);
+      if (player == nullptr)
+         return { 0 };
+      player->SetMainVolume(m_backglassVolume, m_playfieldVolume);
+      players.push_back(std::unique_ptr<SoundPlayer>(player));
+   }
+   return players.back()->GetInformations();
 }
 
 /**

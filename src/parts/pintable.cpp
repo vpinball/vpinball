@@ -4270,7 +4270,7 @@ bool PinTable::ExportSound(VPX::Sound *const pps, const char *const szfilename)
    return false;
 }
 
-void PinTable::ReImportSound(const HWND hwndListView, VPX::Sound *const pps, const string &filename)
+void PinTable::ReImportSound(VPX::Sound *const pps, const string &filename)
 {
 #ifndef __STANDALONE__
    FILE *f;
@@ -4291,66 +4291,14 @@ void PinTable::ReImportSound(const HWND hwndListView, VPX::Sound *const pps, con
 }
 
 
-void PinTable::ImportSound(const HWND hwndListView, const string& filename)
+VPX::Sound *PinTable::ImportSound(const string &filename)
 {
 #ifndef __STANDALONE__
    VPX::Sound *const pps = VPX::Sound::CreateFromFile(filename);
-
    if (pps == nullptr)
-      return;
-
+      return nullptr;
    m_vsound.push_back(pps);
-
-   const int index = AddListSound(hwndListView, pps);
-
-   ListView_SetItemState(hwndListView, index, LVIS_SELECTED, LVIS_SELECTED);
-#endif
-}
-
-void PinTable::ListSounds(HWND hwndListView)
-{
-#ifndef __STANDALONE__
-	ListView_DeleteAllItems(hwndListView);
-	for (size_t i = 0; i < m_vsound.size(); i++)
-		AddListSound(hwndListView, m_vsound[i]);
-#endif
-}
-
-
-int PinTable::AddListSound(HWND hwndListView, VPX::Sound *const pps)
-{
-#ifndef __STANDALONE__
-   LVITEM lvitem;
-   lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
-   lvitem.iItem = 0;
-   lvitem.iSubItem = 0;
-   lvitem.pszText = (LPSTR)pps->m_name.c_str();
-   lvitem.lParam = (size_t)pps;
-
-   const int index = ListView_InsertItem(hwndListView, &lvitem);
-
-   ListView_SetItemText(hwndListView, index, 1, (LPSTR)pps->m_path.c_str());
-
-   switch (pps->GetOutputTarget())
-   {
-   case VPX::SNDOUT_BACKGLASS:
-	   ListView_SetItemText(hwndListView, index, 2, (LPSTR)"Backglass");
-	   break;
-   case VPX::SNDOUT_TABLE:
-	   ListView_SetItemText(hwndListView, index, 2, (LPSTR)"Table");
-	   break;
-   default:
-      assert(false);
-      ListView_SetItemText(hwndListView, index, 2, (LPSTR)"Table");
-      break;
-   }
-   ListView_SetItemText(hwndListView, index, 3, (LPSTR)f2sz(dequantizeSignedPercent(pps->GetPan())).c_str());
-   ListView_SetItemText(hwndListView, index, 4, (LPSTR)f2sz(dequantizeSignedPercent(pps->GetFrontRearFade())).c_str());
-   ListView_SetItemText(hwndListView, index, 5, (LPSTR)f2sz(dequantizeSignedPercent(pps->GetVolume())).c_str());
-
-   return index;
-#else
-   return 0L;
+   return pps;
 #endif
 }
 
@@ -7279,6 +7227,15 @@ string PinTable::AuditTable(bool log) const
 
    if (!hasPulseTimer && (FindIndexOf(identifiers, "vpmTimer"s) != -1))
       ss << ". Warning: script uses 'vpmTimer' but table is missing a Timer object named 'PulseTimer'. vpmTimer will not work as expected.\r\n";
+
+   std::unique_ptr<VPX::AudioPlayer> audioPlayer = std::make_unique<VPX::AudioPlayer>(g_pvp->m_settings);
+   for (auto sound : m_vsound)
+   {
+      auto specs = audioPlayer->GetSoundInformations(sound);
+      if (specs.nChannels > 1 && sound->GetOutputTarget() == VPX::SNDOUT_TABLE)
+         ss << ". Error: sound '" << sound->m_name << "' is used for playfield physical sound but has multiple channels (not mono).\r\n ";
+   }
+   audioPlayer = nullptr;
 
    if (ss.str().empty())
       ss << "No issue identified.\r\n";

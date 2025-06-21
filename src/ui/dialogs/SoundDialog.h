@@ -20,6 +20,9 @@ protected:
     void OnCancel() override;
 
 private:
+    void ListSounds();
+    int AddListSound(VPX::Sound *const pps);
+
     CResizer m_resizer;
     void Import();
     void ReImport();

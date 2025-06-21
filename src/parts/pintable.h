@@ -377,11 +377,9 @@ public:
    void FireOptionEvent(int event);
    void FireGenericKeyEvent(int dispid, int keycode);
 
-   void ImportSound(const HWND hwndListView, const string &filename);
-   void ReImportSound(const HWND hwndListView, VPX::Sound *const pps, const string &filename);
+   VPX::Sound *ImportSound(const string &filename);
+   void ReImportSound(VPX::Sound *const pps, const string &filename);
    bool ExportSound(VPX::Sound *const pps, const char *const filename);
-   void ListSounds(HWND hwndListView);
-   int AddListSound(HWND hwndListView, VPX::Sound *const pps);
    void RemoveSound(VPX::Sound *const pps);
    bool ExportImage(const Texture *const ppi, const char *const filename);
    Texture* ImportImage(const string &filename, const string &imageName);

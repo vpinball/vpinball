@@ -11,6 +11,13 @@ struct ma_context;
 namespace VPX
 {
 
+struct SoundSpec
+{
+   float lengthInSeconds;
+   unsigned int sampleFrequency;
+   unsigned int nChannels;
+};
+
 // Audio playback system, supporting:
 // - Multiple streamed backglass audio (for PinMAME, PUP, AltSound, etc.)
 // - A (single) backglass music
@@ -44,6 +51,7 @@ public:
    // Sound, played from memory buffer to backglass or playfield device, applying 3D mode setup
    void PlaySound(Sound* sound, float volume, const float randompitch, const int pitch, float pan, float front_rear_fade, const int loopcount, const bool usesame, const bool restart);
    void StopSound(Sound* sound);
+   SoundSpec GetSoundInformations(Sound* sound) const;
 
    const SDL_AudioSpec& GetAudioSpecOutput() const { return m_audioSpecOutput; }
    SoundConfigTypes GetSoundMode3D() const { return m_soundMode3D; }
@@ -56,7 +64,7 @@ public:
    };
    static void EnumerateAudioDevices(vector<AudioDevice>& devices);
 
-   ma_engine* GetEngine() { return m_maEngine.get(); }
+   ma_engine* GetEngine() const { return m_maEngine.get(); }
    vector<uint8_t> m_streamBuffer;
    SDL_AudioStream* m_outStream = nullptr;
    int m_tableAudioDevice = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
@@ -68,7 +76,7 @@ private:
    float m_musicVolume = 1.f;
    bool m_mirrored = false;
 
-   ankerl::unordered_dense::map<Sound*, vector<std::unique_ptr<class SoundPlayer>>> m_soundPlayers;
+   mutable ankerl::unordered_dense::map<Sound*, vector<std::unique_ptr<class SoundPlayer>>> m_soundPlayers;
 
    vector<std::unique_ptr<class AudioStreamPlayer>> m_audioStreams;
 
