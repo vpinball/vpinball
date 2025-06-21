@@ -23,6 +23,11 @@ struct SettingsPluginsView: View {
             }
             .tint(Color.vpxRed)
 
+            Toggle(isOn: $settingsModel.pluginDOF) {
+                Text("DOF")
+            }
+            .tint(Color.vpxRed)
+
             Toggle(isOn: $settingsModel.pluginFlexDMD) {
                 Text("FlexDMD")
             }
@@ -65,6 +70,9 @@ struct SettingsPluginsView: View {
         .onChange(of: settingsModel.pluginDMDUtil) {
             handlePluginDMDUtil()
         }
+        .onChange(of: settingsModel.pluginDOF) {
+            handlePluginDOF()
+        }
         .onChange(of: settingsModel.pluginFlexDMD) {
             handlePluginFlexDMD()
         }
@@ -95,6 +103,10 @@ struct SettingsPluginsView: View {
 
     func handlePluginDMDUtil() {
         vpinballManager.saveValue(.pluginDMDUtil, "Enable", settingsModel.pluginDMDUtil)
+    }
+
+    func handlePluginDOF() {
+        vpinballManager.saveValue(.pluginDOF, "Enable", settingsModel.pluginDOF)
     }
 
     func handlePluginFlexDMD() {
