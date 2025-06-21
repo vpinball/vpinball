@@ -439,6 +439,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_PlaySound = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PlaySound"s, true);
    m_MusicVolume = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MusicVolume"s, 100);
    m_SoundVolume = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "SoundVolume"s, 100);
+   UpdateVolume();
 
    //
 
