@@ -3,7 +3,6 @@
 #include "core/stdafx.h"
 #include "AudioPlayer.h"
 #include "AudioStreamPlayer.h"
-#include "MusicPlayer.h"
 #include "SoundPlayer.h"
 
 #define MA_ENABLE_ONLY_SPECIFIC_BACKENDS 1
