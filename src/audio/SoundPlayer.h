@@ -15,8 +15,8 @@ namespace VPX
 class SoundPlayer
 {
 public:
-   static SoundPlayer* Create(AudioPlayer* audioPlayer, Sound* sound);
-   static SoundPlayer* Create(AudioPlayer* audioPlayer, string filename);
+   static SoundPlayer* Create(const AudioPlayer* audioPlayer, Sound* sound);
+   static SoundPlayer* Create(const AudioPlayer* audioPlayer, string filename);
    ~SoundPlayer();
 
    void Play(float volume, const float randompitch, const int pitch, float pan, float frontRearFade, const int loopcount);
@@ -32,11 +32,13 @@ public:
    void SetMainVolume(float backglassVolume, float playfieldVolume);
    void SetVolume(float volume);
 
-private:
-   SoundPlayer(AudioPlayer* audioPlayer, Sound* sound);
-   SoundPlayer(AudioPlayer* audioPlayer, string filename);
+   SoundSpec GetInformations() const;
 
-   class AudioPlayer* const m_audioPlayer;
+private:
+   SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound);
+   SoundPlayer(const AudioPlayer* audioPlayer, string filename);
+
+   const class AudioPlayer* const m_audioPlayer;
    const SoundOutTypes m_outputTarget;
 
    float m_soundVolume = 1.f;
@@ -48,7 +50,7 @@ private:
    std::unique_ptr<ma_decoder> m_decoder;
    std::unique_ptr<ma_sound> m_sound;
 
-   ThreadPool m_commandQueue; // Worker thread on which all commands are dispatched
+   mutable ThreadPool m_commandQueue; // Worker thread on which all commands are dispatched
 
    static void OnSoundEnd(void* pUserData, ma_sound* pSound);
 

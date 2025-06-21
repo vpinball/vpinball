@@ -11,19 +11,19 @@
 namespace VPX
 {
 
-SoundPlayer* SoundPlayer::Create(AudioPlayer* audioPlayer, Sound* sound)
+SoundPlayer* SoundPlayer::Create(const AudioPlayer* audioPlayer, Sound* sound)
 {
    // Decode and resample the sound on the anciliary thread as this is fairly heavy
    return new SoundPlayer(audioPlayer, sound);
 }
 
-SoundPlayer* SoundPlayer::Create(AudioPlayer* audioPlayer, string filename)
+SoundPlayer* SoundPlayer::Create(const AudioPlayer* audioPlayer, string filename)
 {
    // Decode and resample the sound on the anciliary thread as this is fairly heavy
    return new SoundPlayer(audioPlayer, filename);
 }
 
-SoundPlayer::SoundPlayer(AudioPlayer* audioPlayer, string filename)
+SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, string filename)
    : m_audioPlayer(audioPlayer)
    , m_outputTarget(SoundOutTypes::SNDOUT_BACKGLASS)
    , m_commandQueue(1)
@@ -42,7 +42,7 @@ SoundPlayer::SoundPlayer(AudioPlayer* audioPlayer, string filename)
    });
 }
 
-SoundPlayer::SoundPlayer(AudioPlayer* audioPlayer, Sound* sound)
+SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound)
    : m_audioPlayer(audioPlayer)
    , m_outputTarget(sound->GetOutputTarget())
    , m_commandQueue(1)
@@ -194,6 +194,25 @@ void SoundPlayer::SetPosition(float pos)
 bool SoundPlayer::IsPlaying() const
 {
    return m_sound && ma_sound_is_playing(m_sound.get());
+}
+
+SoundSpec SoundPlayer::GetInformations() const
+{
+   SoundSpec specs { 0 };
+   m_commandQueue.wait_until_empty();
+   m_commandQueue.wait_until_nothing_in_flight();
+   if (m_sound == nullptr)
+      return specs;
+   ma_format format;
+   ma_uint32 channels;
+   ma_uint32 sampleRate;
+   float length;
+   ma_sound_get_length_in_seconds(m_sound.get(), &length);
+   ma_sound_get_data_format(m_sound.get(), &format, &channels, &sampleRate, nullptr, 0);
+   specs.lengthInSeconds = length;
+   specs.nChannels = channels;
+   specs.sampleFrequency = sampleRate;
+   return specs;
 }
 
 void SoundPlayer::OnSoundEnd(void* pUserData, ma_sound* pSound)

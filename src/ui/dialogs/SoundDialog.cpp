@@ -113,19 +113,30 @@ BOOL SoundDialog::OnInitDialog()
     ListView_InsertColumn(hSoundList, 2, &lvcol);
 
     lvcol.pszText = (LPSTR)"Pan"; //!! use LocalString
-    lvcol.cx = DPIValue(50);
+    lvcol.cx = DPIValue(40);
     ListView_InsertColumn(hSoundList, 3, &lvcol);
 
     lvcol.pszText = (LPSTR)"Fade"; //!! use LocalString
-    lvcol.cx = DPIValue(50);
+    lvcol.cx = DPIValue(40);
     ListView_InsertColumn(hSoundList, 4, &lvcol);
 
     lvcol.pszText = (LPSTR)"Vol"; //!! use LocalString
-    lvcol.cx = DPIValue(50);
+    lvcol.cx = DPIValue(40);
     ListView_InsertColumn(hSoundList, 5, &lvcol);
 
-    if (pt)
-        pt->ListSounds(hSoundList);
+    lvcol.pszText = (LPSTR) "Freq"; //!! use LocalString
+    lvcol.cx = DPIValue(50);
+    ListView_InsertColumn(hSoundList, 6, &lvcol);
+
+    lvcol.pszText = (LPSTR) "Chan."; //!! use LocalString
+    lvcol.cx = DPIValue(30);
+    ListView_InsertColumn(hSoundList, 7, &lvcol);
+
+    lvcol.pszText = (LPSTR) "Length"; //!! use LocalString
+    lvcol.cx = DPIValue(70);
+    ListView_InsertColumn(hSoundList, 8, &lvcol);
+
+    ListSounds();
 
     ListView_SetItemState(hSoundList, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
     GotoDlgCtrl(hSoundList);
@@ -133,7 +144,62 @@ BOOL SoundDialog::OnInitDialog()
     return FALSE;
 }
 
-INT_PTR SoundDialog::DialogProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
+void SoundDialog::ListSounds()
+{
+   ListView_DeleteAllItems(hSoundList);
+   CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+   if (pt)
+      for (auto& sound : pt->m_vsound)
+         AddListSound(sound);
+}
+
+
+int SoundDialog::AddListSound(VPX::Sound *const pps)
+{
+   LVITEM lvitem;
+   lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
+   lvitem.iItem = 0;
+   lvitem.iSubItem = 0;
+   lvitem.pszText = (LPSTR)pps->m_name.c_str();
+   lvitem.lParam = (size_t)pps;
+
+   const int index = ListView_InsertItem(hSoundList, &lvitem);
+
+   ListView_SetItemText(hSoundList, index, 1, (LPSTR)pps->m_path.c_str());
+
+   const string pan = f2sz(dequantizeSignedPercent(pps->GetPan()));
+   ListView_SetItemText(hSoundList, index, 3, (LPSTR)pan.c_str());
+   const string frontRear = f2sz(dequantizeSignedPercent(pps->GetFrontRearFade()));
+   ListView_SetItemText(hSoundList, index, 4, (LPSTR)frontRear.c_str());
+   const string volume = f2sz(dequantizeSignedPercent(pps->GetVolume()));
+   ListView_SetItemText(hSoundList, index, 5, (LPSTR)volume.c_str());
+
+   auto infos = m_audioPlayer->GetSoundInformations(pps);
+   string tmp = std::to_string(infos.sampleFrequency);
+   ListView_SetItemText(hSoundList, index, 6, (LPSTR)tmp.c_str());
+   tmp = std::to_string(infos.nChannels);
+   ListView_SetItemText(hSoundList, index, 7, (LPSTR)tmp.c_str());
+   tmp = f2sz(infos.lengthInSeconds);
+   ListView_SetItemText(hSoundList, index, 8, (LPSTR)tmp.c_str());
+
+   switch (pps->GetOutputTarget())
+   {
+   case VPX::SNDOUT_BACKGLASS:
+      ListView_SetItemText(hSoundList, index, 2, (LPSTR) "Backglass");
+      break;
+   case VPX::SNDOUT_TABLE:
+      ListView_SetItemText(hSoundList, index, 2, (LPSTR)(infos.nChannels != 1 ? "** Table **" : "Table"));
+      break;
+   default:
+      assert(false);
+      ListView_SetItemText(hSoundList, index, 2, (LPSTR) "Table");
+      break;
+   }
+
+   return index;
+}
+
+INT_PTR SoundDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     m_resizer.HandleMessage(uMsg, wParam, lParam);
     CCO( PinTable ) * const pt = g_pvp->GetActiveTable();
@@ -297,7 +363,11 @@ void SoundDialog::Import()
          g_pvp->m_settings.SaveValue(Settings::RecentDir, "SoundDir"s, szFileName[0].substr(0, index));
 
       for (const string &file : szFileName)
-         pt->ImportSound(hSoundList, file);
+      {
+         VPX::Sound* sound = pt->ImportSound(file);
+         const int index = AddListSound(sound);
+         ListView_SetItemState(hSoundList, index, LVIS_SELECTED, LVIS_SELECTED);
+      }
 
       pt->SetNonUndoableDirty(eSaveDirty);
    }
@@ -332,7 +402,7 @@ void SoundDialog::ReImport()
                 {
                     CloseHandle( hFile );
 
-                    pt->ReImportSound( hSoundList, pps, pps->m_path );
+                    pt->ReImportSound(pps, pps->m_path );
                     pt->SetNonUndoableDirty( eSaveDirty );
                 }
                 else
@@ -368,7 +438,7 @@ void SoundDialog::ReImportFrom()
                 ListView_GetItem( hSoundList, &lvitem );
                 VPX::Sound *const pps = (VPX::Sound *)lvitem.lParam;
 
-                pt->ReImportSound( hSoundList, pps, szFileName[0] );
+                pt->ReImportSound(pps, szFileName[0] );
                 ListView_SetItemText( hSoundList, sel, 1, (LPSTR)szFileName[0].c_str() );
 
                 const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
@@ -565,7 +635,7 @@ void SoundDialog::SoundPosition()
 
 				sel = ListView_GetNextItem(hSoundList, sel, LVNI_SELECTED); //next selected item
 			}
-			pt->ListSounds(hSoundList);
+			ListSounds();
 			SetFocus();
 		}
 	}
