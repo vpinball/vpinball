@@ -147,7 +147,8 @@ static ma_result ma_device_init__sdl(ma_device* pDevice, const ma_device_config*
 static ma_result ma_device_uninit__sdl(ma_device* pDevice)
 {
    AudioPlayer* player = static_cast<AudioPlayer*>(pDevice->pContext->pUserData);
-   SDL_CloseAudioDevice(pDevice->playback.id.custom.i);
+   SDL_DestroyAudioStream(player->m_outStream);
+   player->m_outStream = nullptr;
    return MA_SUCCESS;
 }
 
@@ -167,10 +168,7 @@ static ma_result ma_device_stop__sdl(ma_device* pDevice)
 
 static ma_result ma_context_uninit__sdl(ma_context* pContext)
 {
-   AudioPlayer* player = static_cast<AudioPlayer*>(pContext->pUserData);
-   SDL_DestroyAudioStream(player->m_outStream);
    SDL_QuitSubSystem(SDL_INIT_AUDIO);
-   player->m_outStream = nullptr;
    return MA_SUCCESS;
 }
 
