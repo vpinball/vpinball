@@ -1625,11 +1625,24 @@ SDL_Surface* FormBackglass::CropImageToTransparency(SDL_Surface* pImage, SDL_Sur
 
 SDL_Surface* FormBackglass::Base64ToImage(const string& image)
 {
+   if (image.empty()) {
+      PLOGW.printf("Found empty image.");
+      return CreatePlaceholder();
+   }
+
    vector<unsigned char> imageData = base64_decode(image);
+
+   if (imageData.empty()) {
+      PLOGE.printf("Base 64 image decode failed or resulted in empty data.");
+      return CreatePlaceholder();
+   }
+
    SDL_IOStream* rwops = SDL_IOFromConstMem(imageData.data(), imageData.size());
 
-   if (!rwops)
-      return NULL;
+   if (!rwops) {
+      PLOGE.printf("Failed to construct SDL buffer from %d bytes of image data: %s", imageData.size(), SDL_GetError());
+      return CreatePlaceholder();
+   }
 
    SDL_Surface* pImage = IMG_Load_IO(rwops, 0);
    if (!pImage) {
@@ -1660,4 +1673,10 @@ OLE_COLOR FormBackglass::String2Color(const string& color)
       return RGB(colorValues[0], colorValues[1], colorValues[2]);
 
    return RGB(0, 0, 0);
+}
+
+
+SDL_Surface* FormBackglass::CreatePlaceholder() const
+{
+   return SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_RGBA32);
 }
