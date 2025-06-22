@@ -88,13 +88,6 @@ private:
    uint8_t* m_pdata = nullptr;
    size_t m_cdata = 0;
 
-   // This is because when VP imports WAVs into the Windows versions it stores them in WAVEFORMATEX
-   // format.  We need WAV.  So this keeps the original format for exporting/import, etc for windows.
-   // old wav code only, but also used to convert raw wavs for SDL
-   WAVEFORMATEX m_wfx { 0 };
-   size_t m_cdata_org = 0;
-   uint8_t* m_pdata_org = nullptr; // for saving WAVs in the original raw format, points into m_pdata, so do not delete it!
-
    // at the moment, can only be set in the Sound Resource Manager, stored with the table
    int m_volume = 0;
    int m_pan = 0;

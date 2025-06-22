@@ -9,7 +9,20 @@
 namespace VPX
 {
 
-Sound::~Sound() { delete[] m_pdata; }
+struct WAVEHEADER
+{
+   DWORD dwRiff;    // "RIFF"
+   DWORD dwSize;    // Size
+   DWORD dwWave;    // "WAVE"
+   DWORD dwFmt;     // "fmt "
+   DWORD dwFmtSize; // Wave Format Size
+};
+
+
+Sound::~Sound()
+{
+   delete[] m_pdata;
+}
 
 /**
  * @brief Loads a sound file and initializes a Sound object with its data.
@@ -56,16 +69,14 @@ Sound* Sound::CreateFromFile(const string& filename)
 
 Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
 {
-   int len;
+   int32_t len;
    ULONG read;
 
    Sound* const pps = new Sound();
 
-   // get length of filename
-   if (FAILED(pstm->Read(&len, sizeof(len), &read)))
+   // Name (length, then string)
+   if (FAILED(pstm->Read(&len, sizeof(int32_t), &read)))
       return nullptr;
-
-   // read in filename (only filename, no ext)
    char* tmp = new char[len + 1];
    if (FAILED(pstm->Read(tmp, len, &read)))
    {
@@ -76,14 +87,12 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
    pps->m_name = tmp;
    delete[] tmp;
 
-   // get length of filename including path (// full filename, incl. path)
+   // Filename (length, then string) including path (// full filename, incl. path)
    if (FAILED(pstm->Read(&len, sizeof(len), &read)))
    {
       delete pps;
       return nullptr;
    }
-
-   //read in filename including path (// full filename, incl. path)
    tmp = new char[len + 1];
    if (FAILED(pstm->Read(tmp, len, &read)))
    {
@@ -94,7 +103,7 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
    pps->m_path = tmp;
    delete[] tmp;
 
-   // was the lower case name, but not used anymore since 10.7+, 10.8+ also only stores 1,'\0'
+   // Was the lower case name, but not used anymore since 10.7+, 10.8+ also only stores 1,'\0'
    if (FAILED(pstm->Read(&len, sizeof(len), &read)))
    {
       delete pps;
@@ -109,72 +118,70 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
    }
    delete[] tmp;
 
+   // Since vpinball was originally only for windows, the microsoft library import was used, which stores/converts WAVs
+   // to the waveformatex. This header is stored for WAV files, identified by their filename extension, instead of the regular WAV file format
    const bool wav = isWav(pps->m_path);
-
-   if (wav && FAILED(pstm->Read(&pps->m_wfx, sizeof(pps->m_wfx), &read)))
+   WAVEFORMATEX wfx;
+   if (wav && FAILED(pstm->Read(&wfx, sizeof(wfx), &read)))
    {
       delete pps;
       return nullptr;
    }
 
-   if (FAILED(pstm->Read(&pps->m_cdata_org, sizeof(int), &read)))
+   // 
+   if (FAILED(pstm->Read(&pps->m_cdata, sizeof(int), &read)))
    {
       delete pps;
       return nullptr;
    }
-   pps->m_cdata = pps->m_cdata_org;
 
    // Since vpinball was originally only for windows, the microsoft library import was used, which stores/converts WAVs
    // to the waveformatex.  OGG files will still have their original header.  For WAVs
    // we put the regular WAV header back on for SDL to process the file
    if (wav)
    {
-      struct WAVEHEADER
-      {
-         DWORD dwRiff; // "RIFF"
-         DWORD dwSize; // Size
-         DWORD dwWave; // "WAVE"
-         DWORD dwFmt; // "fmt "
-         DWORD dwFmtSize; // Wave Format Size
-      };
-      // Static RIFF header
-      static constexpr BYTE WaveHeader[] = { 'R', 'I', 'F', 'F', 0x00, 0x00, 0x00, 0x00, 'W', 'A', 'V', 'E', 'f', 'm', 't', ' ', 0x00, 0x00, 0x00, 0x00 };
-      // Static wave DATA tag
-      static constexpr BYTE WaveData[] = { 'd', 'a', 't', 'a' };
-
-      DWORD waveFileSize = sizeof(WAVEHEADER) + sizeof(WAVEFORMATEX) + pps->m_wfx.cbSize + sizeof(WaveData) + sizeof(DWORD) + static_cast<DWORD>(pps->m_cdata_org);
+      DWORD waveFileSize = sizeof(WAVEHEADER) + sizeof(WAVEFORMATEX) + wfx.cbSize + sizeof(DWORD) + sizeof(DWORD) + static_cast<DWORD>(pps->m_cdata);
       pps->m_pdata = new uint8_t[waveFileSize];
       uint8_t* waveFilePointer = pps->m_pdata;
-      WAVEHEADER* const waveHeader = reinterpret_cast<WAVEHEADER*>(pps->m_pdata);
 
-      // Wave header
+      // Wave header (Static RIFF header)
+      WAVEHEADER* const waveHeader = reinterpret_cast<WAVEHEADER*>(pps->m_pdata);
+      static constexpr BYTE WaveHeader[] = { 'R', 'I', 'F', 'F', 0x00, 0x00, 0x00, 0x00, 'W', 'A', 'V', 'E', 'f', 'm', 't', ' ', 0x00, 0x00, 0x00, 0x00 };
       memcpy(waveFilePointer, WaveHeader, sizeof(WaveHeader));
       waveFilePointer += sizeof(WaveHeader);
 
       // Update sizes in wave header
       waveHeader->dwSize = waveFileSize - sizeof(DWORD) * 2;
-      waveHeader->dwFmtSize = sizeof(WAVEFORMATEX) + pps->m_wfx.cbSize;
+      waveHeader->dwFmtSize = sizeof(WAVEFORMATEX) + wfx.cbSize;
 
       // WAVEFORMATEX
-      memcpy(waveFilePointer, &pps->m_wfx, sizeof(WAVEFORMATEX) + pps->m_wfx.cbSize);
-      waveFilePointer += sizeof(WAVEFORMATEX) + pps->m_wfx.cbSize;
+      memcpy(waveFilePointer, &wfx, sizeof(WAVEFORMATEX) + wfx.cbSize);
+      waveFilePointer += sizeof(WAVEFORMATEX) + wfx.cbSize;
 
-      // Data header
+      // Data header (Static wave DATA tag followed by data size)
+      static constexpr BYTE WaveData[] = { 'd', 'a', 't', 'a' };
       memcpy(waveFilePointer, WaveData, sizeof(WaveData));
       waveFilePointer += sizeof(WaveData);
-      *(reinterpret_cast<DWORD*>(waveFilePointer)) = static_cast<DWORD>(pps->m_cdata_org);
+      *(reinterpret_cast<DWORD*>(waveFilePointer)) = static_cast<DWORD>(pps->m_cdata);
       waveFilePointer += sizeof(DWORD);
 
-      pps->m_pdata_org = waveFilePointer;
+      // Sample data
+      if (FAILED(pstm->Read(waveFilePointer, static_cast<ULONG>(pps->m_cdata), &read)))
+      {
+         delete pps;
+         return nullptr;
+      }
+
       pps->m_cdata = waveFileSize;
    }
    else
-      pps->m_pdata = pps->m_pdata_org = new uint8_t[pps->m_cdata];
-
-   if (FAILED(pstm->Read(pps->m_pdata_org, static_cast<ULONG>(pps->m_cdata_org), &read)))
    {
-      delete pps;
-      return nullptr;
+      pps->m_pdata = new uint8_t[pps->m_cdata];
+      if (FAILED(pstm->Read(pps->m_pdata, static_cast<ULONG>(pps->m_cdata), &read)))
+      {
+         delete pps;
+         return nullptr;
+      }
    }
 
    // this reads in the settings that are used by the Windows UI in the Sound Manager and when PlaySound() is used.
@@ -258,31 +265,44 @@ bool Sound::SaveToFile(const string& filename) const
 void Sound::SaveToStream(IStream* pstm) const
 {
    ULONG writ = 0;
-   int nameLen = (int)m_name.length();
-   int pathLen = (int)m_path.length();
-   int dummyLen = 1;
+   int32_t nameLen = (int32_t)m_name.length();
+   int32_t pathLen = (int32_t)m_path.length();
+   int32_t dummyLen = 1;
    constexpr char dummyPath = '\0';
-   pstm->Write(&nameLen, sizeof(int), &writ);
+   pstm->Write(&nameLen, sizeof(int32_t), &writ);
    pstm->Write(m_name.c_str(), nameLen, &writ);
-   pstm->Write(&pathLen, sizeof(int), &writ);
+   pstm->Write(&pathLen, sizeof(int32_t), &writ);
    pstm->Write(m_path.c_str(), pathLen, &writ);
-   pstm->Write(&dummyLen, sizeof(int), &writ); // Used to have the same name again in lower case, now just save an empty string for backward compatibility
+   pstm->Write(&dummyLen, sizeof(int32_t), &writ); // Used to have the same name again in lower case, now just save an empty string for backward compatibility
    pstm->Write(&dummyPath, dummyLen, &writ);
+   int32_t dataLength = m_cdata;
    if (isWav(m_path))
-      pstm->Write(&m_wfx, sizeof(m_wfx), &writ);
-   pstm->Write(&m_cdata_org, sizeof(int), &writ);
-   pstm->Write(m_pdata_org, static_cast<ULONG>(m_cdata_org), &writ);
-   const SoundOutTypes outputTarget = GetOutputTarget();
-   pstm->Write(&outputTarget, sizeof(bool), &writ);
+   {
+      uint8_t* pData = m_pdata;
+      pData += sizeof(WAVEHEADER); // skip wave header
+      WAVEFORMATEX* wfx = (WAVEFORMATEX*)pData;
+      pstm->Write(wfx, sizeof(WAVEFORMATEX) + wfx->cbSize, &writ); // Save WAVEFORMATEX with its optional data block
+      pData += 2 * sizeof(DWORD); // skip wave data and length
+      dataLength -= (pData - m_pdata); // Data block does not include the WAV header
+      pstm->Write(&dataLength, sizeof(int32_t), &writ);
+      pstm->Write(m_pdata, static_cast<ULONG>(dataLength), &writ);
+   }
+   else
+   {
+      pstm->Write(&dataLength, sizeof(int32_t), &writ);
+      pstm->Write(m_pdata, static_cast<ULONG>(dataLength), &writ);
+   }
+   const char outputTarget = (char)GetOutputTarget();
+   pstm->Write(&outputTarget, sizeof(char), &writ);
 
    // Begin NEW_SOUND_FORMAT_VERSION data
-   const int volume = GetVolume();
-   pstm->Write(&volume, sizeof(int), &writ);
-   const int pan = GetPan();
-   pstm->Write(&pan, sizeof(int), &writ);
-   const int frontRearFade = GetFrontRearFade();
-   pstm->Write(&frontRearFade, sizeof(int), &writ);
-   pstm->Write(&volume, sizeof(int), &writ);
+   const int32_t volume = GetVolume();
+   pstm->Write(&volume, sizeof(int32_t), &writ);
+   const int32_t pan = GetPan();
+   pstm->Write(&pan, sizeof(int32_t), &writ);
+   const int32_t frontRearFade = GetFrontRearFade();
+   pstm->Write(&frontRearFade, sizeof(int32_t), &writ);
+   pstm->Write(&volume, sizeof(int32_t), &writ);
 }
 
 }
