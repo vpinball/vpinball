@@ -7,6 +7,7 @@
 
 struct ma_decoder;
 struct ma_sound;
+struct ssf_node;
 
 namespace VPX
 {
@@ -49,14 +50,11 @@ private:
 
    std::unique_ptr<ma_decoder> m_decoder;
    std::unique_ptr<ma_sound> m_sound;
+   std::unique_ptr<ssf_node> m_ssfEffect;
 
    mutable ThreadPool m_commandQueue; // Worker thread on which all commands are dispatched
 
    static void OnSoundEnd(void* pUserData, ma_sound* pSound);
-
-   static float PanSSF(float pan);
-   static float PanTo3D(float input);
-   static float FadeSSF(float front_rear_fade);
 };
 
 }

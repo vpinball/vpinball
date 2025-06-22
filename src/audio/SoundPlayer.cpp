@@ -3,9 +3,170 @@
 #include "core/stdafx.h"
 #include "SoundPlayer.h"
 
-#define MA_ENABLE_ONLY_SPECIFIC_BACKENDS 1
-#define MA_ENABLE_CUSTOM 1
+#define MA_ENABLE_ONLY_SPECIFIC_BACKENDS
+#define MA_ENABLE_CUSTOM
 #include "miniaudio/miniaudio.h"
+
+
+
+
+// Simple SSF processing: output according to table author supplied left/right & rear/front setup against user speaker layout setting
+
+typedef struct
+{
+   ma_node_config nodeConfig;
+   ma_uint32 channels;
+} ssf_node_config;
+
+typedef struct ssf_node ssf_node;
+struct ssf_node
+{
+   ma_node_base baseNode;
+   float volume;
+   float pan;
+   float rearFrontFade;
+};
+
+static void ssf_node_process_pcm_frames(ma_node* pNode, const float** ppFramesIn, ma_uint32* pFrameCountIn, float** ppFramesOut, ma_uint32* pFrameCountOut)
+{
+   const float* pFramesIn = ppFramesIn[0]; // Input bus @ index 0.
+   float* pFramesOut = ppFramesOut[0]; // Output bus @ index 0.
+   ssf_node* const pSSFNode = (ssf_node*)pNode;
+   const ma_uint32 nInChannels = ma_node_get_input_channels(pNode, 0);
+   const ma_uint32 nOutChannels = ma_node_get_output_channels(pNode, 0);
+   assert(nInChannels == 1);
+
+   // Supposed channel layout (taken from SDL docs):
+   // 1 channel (mono) layout: FRONT
+   // 2 channels (stereo) layout: FL, FR
+   // 3 channels (2.1) layout: FL, FR, LFE
+   // 4 channels (quad) layout: FL, FR, BL, BR
+   // 5 channels (4.1) layout: FL, FR, LFE, BL, BR
+   // 6 channels (5.1) layout: FL, FR, FC, LFE, BL, BR (last two can also be SL, SR)
+   // 7 channels (6.1) layout: FL, FR, FC, LFE, BC, SL, SR
+   // 8 channels (7.1) layout: FL, FR, FC, LFE, BL, BR, SL, SR
+   //
+   // Where:
+   // FRONT = single mono speaker
+   // FL = front left speaker
+   // FR = front right speaker
+   // FC = front center speaker
+   // BL = back left speaker
+   // BR = back right speaker
+   // SR = surround right speaker
+   // SL = surround left speaker
+   // BC = back center speaker
+   // LFE = low-frequency speaker
+   //
+   // FL/FR are always backglass only (except for 2 channel layouts obviously)
+
+   const float left = pSSFNode->volume * 0.5f * (1.f - pSSFNode->pan);
+   const float right = pSSFNode->volume * 0.5f * (1.f + pSSFNode->pan);
+   const float front = 0.5f * (1.f + pSSFNode->rearFrontFade);
+   const float rear = 1.f - front;
+   const float fl = front * left;
+   const float fr = front * right;
+   const float rl = rear * left;
+   const float rr = rear * right;
+
+   const unsigned int count = *pFrameCountOut;
+
+   for (unsigned int i = 0; i < count; i++, pFramesIn += nInChannels, pFramesOut += nOutChannels)
+   {
+      const float sample = *pFramesIn;
+      switch (nOutChannels)
+      {
+      case 2: // Stereo output: just mono to left/right pan
+         pFramesOut[0] = left  * sample; // FL
+         pFramesOut[1] = right * sample; // FR
+         break;
+      case 3:
+         pFramesOut[0] = left  * sample; // FL
+         pFramesOut[1] = right * sample; // FR
+         pFramesOut[2] = 0.f;            // LFE
+         break;
+      case 4:
+         pFramesOut[0] = 0.f;            // FL
+         pFramesOut[1] = 0.f;            // FR
+         pFramesOut[2] = left  * sample; // BL
+         pFramesOut[3] = right * sample; // BR
+         break;
+      case 5:
+         pFramesOut[0] = 0.f;            // FL
+         pFramesOut[1] = 0.f;            // FR
+         pFramesOut[2] = 0.f;            // LFE
+         pFramesOut[3] = left  * sample; // BL
+         pFramesOut[4] = right * sample; // BR
+         break;
+      case 6:
+         pFramesOut[0] = 0.f;            // FL
+         pFramesOut[1] = 0.f;            // FR
+         pFramesOut[2] = 0.f;            // FC
+         pFramesOut[3] = 0.f;            // LFE
+         pFramesOut[4] = left  * sample; // BL or SL
+         pFramesOut[5] = right * sample; // BR or SR
+         break;
+      case 7:
+         pFramesOut[0] = 0.f;            // FL
+         pFramesOut[1] = 0.f;            // FR
+         pFramesOut[2] = 0.f;            // FC
+         pFramesOut[3] = 0.f;            // LFE
+         pFramesOut[5] = 0.f;            // BC
+         pFramesOut[6] = left  * sample; // SL
+         pFramesOut[7] = right * sample; // SR
+         break;
+      case 8:
+         pFramesOut[0] = 0.f;            // FL
+         pFramesOut[1] = 0.f;            // FR
+         pFramesOut[2] = 0.f;            // FC
+         pFramesOut[3] = 0.f;            // LFE
+         pFramesOut[4] = fl * sample;    // BL
+         pFramesOut[5] = fr * sample;    // BR
+         pFramesOut[6] = rl * sample;    // SL
+         pFramesOut[7] = rr * sample;    // SR
+         break;
+      default: assert(false);
+      }
+   }
+}
+
+static ma_node_vtable ssf_node_vtable = { ssf_node_process_pcm_frames, NULL, 1, 1, 0 };
+
+MA_API ma_result ssf_node_init(ma_node_graph* pNodeGraph, const ssf_node_config* pConfig, const ma_allocation_callbacks* pAllocationCallbacks, ssf_node* pNode)
+{
+   ma_result result;
+   ma_node_config baseConfig;
+   if (pNode == NULL)
+   {
+      return MA_INVALID_ARGS;
+   }
+   memset(pNode, 0, sizeof(ssf_node));
+   baseConfig = pConfig->nodeConfig;
+   baseConfig.vtable = &ssf_node_vtable;
+   static ma_uint32 nInputChannel[] = { 1 };
+   baseConfig.pInputChannels = nInputChannel;
+   baseConfig.pOutputChannels = &pConfig->channels;
+   result = ma_node_init(pNodeGraph, &baseConfig, pAllocationCallbacks, &pNode->baseNode);
+   if (result != MA_SUCCESS)
+   {
+      return result;
+   }
+   return result;
+}
+
+MA_API void ssf_node_uninit(ma_delay_node* pNode, const ma_allocation_callbacks* pAllocationCallbacks)
+{
+   if (pNode == NULL)
+   {
+      return;
+   }
+   ma_node_uninit(pNode, pAllocationCallbacks);
+}
+
+
+
+
+
 
 
 namespace VPX
@@ -49,21 +210,57 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound)
 {
    m_commandQueue.enqueue([this, sound]()
    {
+      ma_engine* engine = m_audioPlayer->GetEngine();
+      ma_result result;
+
+      // Playfield sound goes through a custom effect to dispatch the sound across the playfield speaker channels (otherwise, just expand to stereo and play on front speakers)
+      if (m_outputTarget != SNDOUT_BACKGLASS)
+      {
+         m_ssfEffect = std::make_unique<ssf_node>();
+         ssf_node_config customNodeConfig;
+         customNodeConfig.nodeConfig = ma_node_config_init();
+         customNodeConfig.channels = ma_engine_get_channels(engine);
+         result = ssf_node_init(ma_engine_get_node_graph(engine), &customNodeConfig, nullptr, m_ssfEffect.get());
+         if (result != MA_SUCCESS)
+         {
+            PLOGE << "Failed to initialize SSF effect.";
+            m_ssfEffect = nullptr;
+         }
+         else
+         {
+            ma_node_attach_output_bus(m_ssfEffect.get(), 0, ma_engine_get_endpoint(engine), 0);
+         }
+      }
+
+      // Setup to:
+      // . decode and convert playfield sounds to a mono channel
+      // . decode and convert backglass sound to their native encoding with zeroed out additional channels
+      // TODO we should convert mono backglass stream to stereo streams with zeroed out additional channels
+
       m_decoder = std::make_unique<ma_decoder>();
-      if (ma_decoder_init_memory(sound->GetFileRaw(), sound->GetFileSize(), nullptr, m_decoder.get()) != MA_SUCCESS)
+      ma_decoder_config decoderConfig = ma_decoder_config_init(ma_format_unknown,  m_ssfEffect ? 1 : 0, 0);
+      decoderConfig.channelMixMode = ma_channel_mix_mode_simple;
+      if (ma_decoder_init_memory(sound->GetFileRaw(), sound->GetFileSize(), &decoderConfig, m_decoder.get()) != MA_SUCCESS)
       {
          m_decoder = nullptr;
          return;
       }
       m_sound = std::make_unique<ma_sound>();
-      if (ma_sound_init_from_data_source(m_audioPlayer->GetEngine(), m_decoder.get(), 0, nullptr, m_sound.get()))
+      ma_sound_config config = ma_sound_config_init_2(engine);
+      config.channelsOut = m_ssfEffect ? 1 : 0;
+      config.pDataSource = m_decoder.get();
+      config.monoExpansionMode = ma_mono_expansion_mode_stereo_only;
+      config.endCallback = OnSoundEnd;
+      config.pEndCallbackUserData = this;
+      config.flags = MA_SOUND_FLAG_NO_SPATIALIZATION;
+      config.pInitialAttachment = m_ssfEffect.get();
+
+      if (ma_sound_init_ex(engine, &config, m_sound.get()))
       {
          m_decoder = nullptr;
          m_sound = nullptr;
          return;
       }
-      ma_sound_set_spatialization_enabled(m_sound.get(), (m_outputTarget != SNDOUT_BACKGLASS && m_audioPlayer->GetSoundMode3D() != SNDCFG_SND3D2CH) ? MA_TRUE : MA_FALSE);
-      ma_sound_set_end_callback(m_sound.get(), OnSoundEnd, this);
    });
 }
 
@@ -72,9 +269,14 @@ SoundPlayer::~SoundPlayer()
    m_commandQueue.wait_until_empty();
    m_commandQueue.wait_until_nothing_in_flight();
    if (m_sound)
+   {
+      ma_sound_stop(m_sound.get());
       ma_sound_uninit(m_sound.get());
+   }
    if (m_decoder)
       ma_decoder_uninit(m_decoder.get());
+   if (m_ssfEffect)
+      ma_node_uninit(m_ssfEffect.get(), nullptr);
 }
 
 void SoundPlayer::SetMainVolume(float backglassVolume, float playfieldVolume)
@@ -100,8 +302,11 @@ void SoundPlayer::ApplyVolume()
       // const float decibelvolume = 10.f * log10f(totalvolume) - 20.f;
       // const float linearvolume = powf(10.f, 10.f * log10f(totalvolume) / 20.f - 1.f); // since linear = powf(10.f, decibel gain / 20.f)
       // const float linearvolume = powf(10.f, log10f(sqrt(totalvolume)) - 1.f);
-      // const float linearvolume = sqrt(totalvolume) / 10.f; // we don't keep the 1/10 factor as this is (and should) be part of the main volume setup
-      ma_sound_set_volume(m_sound.get(), sqrtf(totalvolume));
+      // const float linearvolume = sqrt(totalvolume) / 10.f; // we don't keep the 1/10 factor as this is better placed as part of the main volume mixer setup (this create a setup regression when updating from 10.8 to later version)
+      if (m_ssfEffect)
+         m_ssfEffect->volume = sqrtf(totalvolume);
+      else
+         ma_sound_set_volume(m_sound.get(), sqrtf(totalvolume));
    }
 }
 
@@ -112,15 +317,42 @@ void SoundPlayer::Play(float volume, const float randompitch, const int pitch, f
       if (m_sound == nullptr)
          return;
 
-      switch (m_outputTarget == SNDOUT_BACKGLASS ? SNDCFG_SND3D2CH : m_audioPlayer->GetSoundMode3D())
+      if (m_outputTarget == SNDOUT_BACKGLASS)
       {
-      case SNDCFG_SND3D2CH: ma_sound_set_pan(m_sound.get(), pan); break;
-      case SNDCFG_SND3DALLREAR: ma_sound_set_position(m_sound.get(), PanTo3D(pan), 0.0f, -PanTo3D(1.0f)); break;
-      case SNDCFG_SND3DFRONTISFRONT: ma_sound_set_position(m_sound.get(), PanTo3D(pan), 0.0f, PanTo3D(frontRearFade)); break;
-      case SNDCFG_SND3DFRONTISREAR: ma_sound_set_position(m_sound.get(), PanTo3D(pan), 0.0f, -PanTo3D(frontRearFade)); break;
-      case SNDCFG_SND3D6CH: ma_sound_set_position(m_sound.get(), PanTo3D(pan), 0.0f, -(PanTo3D(frontRearFade) + 3.f) / 2.f); break;
-      case SNDCFG_SND3DSSF: ma_sound_set_position(m_sound.get(), PanSSF(pan), 0.0f, -FadeSSF(frontRearFade)); break;
-      default: assert(false); return;
+         // Simply output to the 2 first channels (front left/right) for backglass or no spatial sound mode
+         ma_sound_set_pan(m_sound.get(), pan);
+      }
+      else if (m_ssfEffect)
+      {
+         // Diffuse the (mono) playfield sound to 2 or 4 speakers spread on the playfield
+         // This is designed to support existing tables which appends to apply x^10 to pan and front/rear fade, so we have to undo it
+         m_ssfEffect->pan = clamp(pan, -1.f, 1.f);
+         m_ssfEffect->pan = (m_ssfEffect->pan < 0.0f) ? -powf(-m_ssfEffect->pan, 0.1f) : powf(m_ssfEffect->pan, 0.1f);
+
+         switch (m_audioPlayer->GetSoundMode3D())
+         {
+         case SNDCFG_SND3D2CH: break;
+         case SNDCFG_SND3DALLREAR: m_ssfEffect->rearFrontFade = 1.f; break;
+         case SNDCFG_SND3DFRONTISFRONT: // Needs more explanation on what it is supposed to do, so fallback to SSF
+         case SNDCFG_SND3DFRONTISREAR: // Needs more explanation on what it is supposed to do, so fallback to SSF
+         case SNDCFG_SND3D6CH: // Not clear what would be the correct way of porting this (use a less effective pan & rearfade ?), so fallback to SSF
+         case SNDCFG_SND3DSSF:
+            m_ssfEffect->rearFrontFade = clamp(frontRearFade, -1.f, 1.f);
+            m_ssfEffect->rearFrontFade = (m_ssfEffect->rearFrontFade < 0.0f) ? -powf(-m_ssfEffect->rearFrontFade, 0.1f) : powf(m_ssfEffect->rearFrontFade, 0.1f);
+            break;
+         default: assert(false); return;
+         }
+         //case SNDCFG_SND3D2CH: ma_sound_set_pan(m_sound.get(), pan); break;
+         //case SNDCFG_SND3DALLREAR: ma_sound_set_position(m_sound.get(), PanTo3D(pan), 0.0f, -PanTo3D(1.0f)); break;
+         //case SNDCFG_SND3DFRONTISFRONT: ma_sound_set_position(m_sound.get(), PanTo3D(pan), 0.0f, PanTo3D(frontRearFade)); break;
+         //case SNDCFG_SND3DFRONTISREAR: ma_sound_set_position(m_sound.get(), PanTo3D(pan), 0.0f, -PanTo3D(frontRearFade)); break;
+         //case SNDCFG_SND3D6CH: ma_sound_set_position(m_sound.get(), PanTo3D(pan), 0.0f, -(PanTo3D(frontRearFade) + 3.f) / 2.f); break;
+         //case SNDCFG_SND3DSSF: ma_sound_set_position(m_sound.get(), PanSSF(pan), 0.0f, -FadeSSF(frontRearFade)); break;
+      }
+      else
+      {
+         // TODO implement spatialization (especially with binauralization for stereo / headset / VR play), using something like https://github.com/videolabs/libspatialaudio
+         assert(false);
       }
 
       m_loopCount = loopcount;
@@ -224,179 +456,6 @@ void SoundPlayer::OnSoundEnd(void* pUserData, ma_sound* pSound)
       me->m_loopCount--;
    // Dispatch through the command queue since we can not restart the sound from the callback as the sound is still playing and command would be discarded
    me->m_commandQueue.enqueue([pSound]() { ma_sound_start(pSound); });
-}
-
-// The existing pan value in PlaySound function takes a -1 to 1 value, however it's extremely non-linear.
-// -0.1 is very obviously to the left.  Table scripts like the ball rolling script seem to use x^10 to map
-// linear positions, so we'll use that and reverse it.   Also multiplying by 3 since that seems to be the
-// the total distance necessary to fully pan away from one side at the center of the room.
-
-float SoundPlayer::PanTo3D(float input)
-{
-	// DirectSound's position command does weird things at exactly 0. 
-	if (fabsf(input) < 0.0001f)
-		input = (input < 0.0f) ? -0.0001f : 0.0001f;
-	if (input < 0.0f)
-	{
-		return -powf(-max(input, -1.0f), (float)(1.0 / 10.0)) * 3.0f;
-	}
-	else
-	{
-		return powf(min(input, 1.0f), (float)(1.0 / 10.0)) * 3.0f;
-	}
-}
-
-// This is a replacement function for PanTo3D() for sound effect panning (audio x-axis).
-// It performs the same calculations but maps the resulting values to an area of the 3D 
-// sound stage that has the expected panning effect for this application. It is written 
-// in a long form to facilitate tweaking the formulas.  *njk*
-
-float SoundPlayer::PanSSF(float pan)
-{
-	// This math could probably be simplified but it is kept in long form
-	// to aide in fine tuning and clarity of function.
-
-	// Clip the pan input range to -1.0 to 1.0
-	float x = clamp(pan, -1.f, 1.f);
-
-	// Rescale pan range from an exponential [-1,0] and [0,1] to a linear [-1.0, 1.0]
-	// Do not avoid values close to zero like PanTo3D() does as that
-	// prevents the middle range of the exponential curves converting back to 
-	// a linear scale (which would leave a gap in the center of the range).
-	// This basically undoes the Pan() fading function in the table scripts.
-
-	x = (x < 0.0f) ? -powf(-x, 0.1f) : powf(x, 0.1f);
-
-	// Increase the pan range from [-1.0, 1.0] to [-3.0, 3.0] to improve the surround sound fade effect
-
-	x *= 3.0f;
-
-	// BASS pan effect is much better than VPX 10.6/DirectSound3d but it
-	// could still stand a little enhancement to exaggerate the effect.
-	// The effect goal is to place slingshot effects almost entirely left/right
-	// and flipper effects in the cross fade region (louder on their corresponding
-	// sides but still audible on the opposite side..)
-
-	// Rescale [-3.0,0.0) to [-3.00,-2.00] and [0,3.0] to [2.00,3.00]
-
-	// Reminder: Linear Conversion Formula [o1,o2] to [n1,n2]
-	// x' = ( (x - o1) / (o2 - o1) ) * (n2 - n1) + n1
-	//
-	// We retain the full formulas below to make it easier to tweak the values.
-	// The compiler will optimize away the excess math.
-
-	if (x >= 0.0f)
-		x = ((x -  0.0f) / (3.0f -  0.0f)) * ( 3.0f -  2.0f) +  2.0f;
-	else
-		x = ((x - -3.0f) / (0.0f - -3.0f)) * (-2.0f - -3.0f) + -2.0f;
-
-	// Clip the pan output range to 3.0 to -3.0
-	//
-	// This probably can never happen but is here in case the formulas above
-	// change or there is a rounding issue.
-
-	if (x > 3.0f)
-		x = 3.0f;
-	else if (x < -3.0f)
-		x = -3.0f;
-
-	// If the final value is sufficiently close to zero it causes sound to come from
-	// all speakers and lose it's positional effect. We scale well away from zero
-	// above but will keep this check to document the effect or catch the condition
-	// if the formula above is later changed to one that can result in x = 0.0.
-
-	// NOTE: This no longer seems to be the case with VPX 10.7/BASS
-
-	// HOWEVER: Weird things still happen NEAR 0.0 or if both x and z are at 0.0.
-	//          So we keep the fix here with wider margins to prevent that case.
-	//          The current formula won't produce values in this weird range.
-
-	if (fabsf(x) < 0.1f)
-		x = (x < 0.0f) ? -0.1f : 0.1f;
-
-	return x;
-}
-
-// This is a replacement function for PanTo3D() for sound effect fading (audio z-axis).
-// It performs the same calculations but maps the resulting values to 
-// an area of the 3D sound stage that has the expected fading
-// effect for this application. It is written in a long form to facilitate tweaking the 
-// values (which turned out to be more straightforward than originally coded). *njk*
-
-float SoundPlayer::FadeSSF(float front_rear_fade)
-{
-	float z = 0.0f;
-
-	// Clip the fade input range to -1.0 to 1.0
-
-	if (front_rear_fade < -1.0f)
-		z = -1.0f;
-	else if (front_rear_fade > 1.0f)
-		z = 1.0f;
-	else
-		z = front_rear_fade;
-
-	// Rescale fade range from an exponential [0,-1] and [0,1] to a linear [-1.0, 1.0]
-	// Do not avoid values close to zero like PanTo3D() does at this point as that
-	// prevents the middle range of the exponential curves converting back to 
-	// a linear scale (which would leave a gap in the center of the range).
-	// This basically undoes the AudioFade() fading function in the table scripts.	
-
-	z = (z < 0.0f) ? -powf(-z, 0.1f) : powf(z, 0.1f);
-
-	// Increase the fade range from [-1.0, 1.0] to [-3.0, 3.0] to improve the surround sound fade effect
-
-	z *= 3.0f;
-
-	// Rescale fade range from [-3.0,3.0] to [0.0,-2.5] in an attempt to remove all sound from
-	// the surround sound front (backbox) speakers and place them close to the surround sound
-	// side (cabinet rear) speakers.
-	//
-	// Reminder: Linear Conversion Formula [o1,o2] to [n1,n2]
-	// z' = ( (z - o1) / (o2 - o1) ) * (n2 - n1) + n1
-	//
-	// We retain the full formulas below to make it easier to tweak the values.
-	// The compiler will optimize away the excess math.
-
-	// Rescale to -2.5 instead of -3.0 to further push sound away from rear channels
-	z = ((z - -3.0f) / (3.0f - -3.0f)) * (-2.5f - 0.0f) + 0.0f;
-
-	// With BASS the above scaling is sufficient to keep the playfield sounds out of 
-	// the backbox. However playfield sounds are heavily weighted to the rear channels. 
-	// For BASS we do a simple scale of the top third [0,-1.0] BY 0.10 to favor
-	// the side channels. This is better than we could do in VPX 10.6 where z just
-	// had to be set to 0.0 as there was no fade range that didn't leak to the backbox
-	// as well.
-	
-	if (z > -1.0f)
-		z = z / 10.0f;
-
-	// Clip the fade output range to 0.0 to -3.0
-	//
-	// This probably can never happen but is here in case the formulas above
-	// change or there is a rounding issue. A result even slightly greater
-	// than zero can bleed to the backbox speakers.
-
-	if (z > 0.0f)
-		z = 0.0f;
-	else if (z < -3.0f)
-		z = -3.0f;
-
-	// If the final value is sufficiently close to zero it causes sound to come from
-	// all speakers on some systems and lose it's positional effect. We do use 0.0 
-	// above and could set the safe value there. Instead will keep this check to document 
-	// the effect or catch the condition if the formula/conditions above are later changed
-
-	// NOTE: This no longer seems to be the case with VPX 10.7/BASS
-
-	// HOWEVER: Weird things still happen near 0.0 or if both x and z are at 0.0.
-	//          So we keep the fix here to prevent that case. This does push a tiny bit 
-	//          of audio to the rear channels but that is perfectly ok.
-
-	if (fabsf(z) < 0.0001f)
-		z = -0.0001f;
-	
-	return z;
 }
 
 }

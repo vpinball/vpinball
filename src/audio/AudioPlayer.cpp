@@ -7,8 +7,8 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_audio.h>
 
-#define MA_ENABLE_ONLY_SPECIFIC_BACKENDS 1
-#define MA_ENABLE_CUSTOM 1
+#define MA_ENABLE_ONLY_SPECIFIC_BACKENDS
+#define MA_ENABLE_CUSTOM
 #include "miniaudio/extras/stb_vorbis.c"
 #include "miniaudio/miniaudio.h"
 #include "miniaudio/miniaudio.c"
@@ -96,7 +96,7 @@ void ma_audio_callback_playback__sdl(void* pUserData, SDL_AudioStream* stream, i
       player->m_streamBuffer.resize(total_amount);
    const int sizePerFrame = ma_get_bytes_per_frame(pDevice->playback.internalFormat, pDevice->playback.internalChannels);
    const int nFrames = total_amount / sizePerFrame;
-   ma_device_handle_backend_data_callback(pDevice, player->m_streamBuffer.data(), nullptr, nFrames);
+   ma_device__read_frames_from_client(pDevice, nFrames, player->m_streamBuffer.data());
    SDL_PutAudioStreamData(stream, player->m_streamBuffer.data(), nFrames * sizePerFrame);
 }
 
@@ -120,6 +120,9 @@ static ma_result ma_device_init__sdl(ma_device* pDevice, const ma_device_config*
       desiredSpec.format = ma_format_to_sdl(pDescriptorPlayback->format);
    if (pDescriptorPlayback->channels)
       desiredSpec.channels = pDescriptorPlayback->channels;
+
+   if ((desiredSpec.format != SDL_AUDIO_S16LE) && (desiredSpec.format != SDL_AUDIO_F32LE) && (desiredSpec.format != SDL_AUDIO_S32LE))
+      desiredSpec.format = SDL_AUDIO_F32LE; // If we don't support device's native format, request one we support
 
    player->m_outStream = SDL_OpenAudioDeviceStream(player->m_tableAudioDevice, &desiredSpec, ma_audio_callback_playback__sdl, pDevice);
    if (player->m_outStream == nullptr)
@@ -234,10 +237,12 @@ AudioPlayer::AudioPlayer(const Settings& settings)
    }
 
    // Initialize the SDL mixer library on the playfield audio device
-   SDL_AudioSpec spec;
-   SDL_GetAudioDeviceFormat(m_tableAudioDevice, &spec, nullptr);
-   SDL_AudioSpec* reqSpec = ((spec.format != SDL_AUDIO_S16LE) && (spec.format != SDL_AUDIO_F32LE) && (spec.format != SDL_AUDIO_S32LE)) ? &spec : nullptr;
-   spec.format = SDL_AUDIO_F32LE; // If we don't support device's native format, request one we support
+   SDL_AudioDeviceID tempDeviceID = SDL_OpenAudioDevice(m_tableAudioDevice, nullptr);
+   SDL_GetAudioDeviceFormat(tempDeviceID, &m_audioSpecOutput, nullptr);
+   SDL_CloseAudioDevice(tempDeviceID);
+
+   const char* pdriverName = SDL_GetCurrentAudioDriver();
+   PLOGI << "Output Device Settings: " << "Freq: " << m_audioSpecOutput.freq << " Format (SDL_AudioFormat): " << m_audioSpecOutput.format << " channels: " << m_audioSpecOutput.channels << ", driver: " << (pdriverName ? pdriverName : "NULL");
 
    m_soundMode3D = static_cast<SoundConfigTypes>(settings.LoadValueUInt(Settings::Player, "Sound3D"s));
    if ((m_soundMode3D == SNDCFG_SND3DALLREAR) && (m_audioSpecOutput.channels < 4))
@@ -260,10 +265,6 @@ AudioPlayer::AudioPlayer(const Settings& settings)
       PLOGI << "Sound Mode SNDCFG_SND3DFRONTISFRONT not implemented yet.";
       m_soundMode3D = SNDCFG_SND3D2CH;
    }
-
-   const char* pdriverName = SDL_GetCurrentAudioDriver();
-   PLOGI << "Output Device Settings: " << "Freq: " << m_audioSpecOutput.freq << " Format (SDL_AudioFormat): " << m_audioSpecOutput.format
-         << " channels: " << m_audioSpecOutput.channels << ", driver: " << (pdriverName ? pdriverName : "NULL") ;
 
    ma_context_config contextConfig;
    contextConfig = ma_context_config_init();
