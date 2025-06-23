@@ -2828,7 +2828,7 @@ HRESULT PinTable::WriteInfoValue(IStorage* pstg, const WCHAR * const wzName, con
       BiffWriter bw(pstm, hcrypthash);
 
       WCHAR * const wzT = MakeWide(szValue);
-      bw.WriteBytes(wzT, len*(int)sizeof(WCHAR), &writ);
+      bw.WriteBytes(wzT, wcslen(wzT)*(int)sizeof(WCHAR), &writ);
       delete[] wzT;
       pstm->Release();
       pstm = nullptr;

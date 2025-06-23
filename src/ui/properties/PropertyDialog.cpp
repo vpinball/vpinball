@@ -626,10 +626,8 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
 
     if (pvsel.size() > 1)
     {
-        char * const collection = nullptr;
         const WCHAR * const wzName = psel->GetPTable()->GetCollectionNameByElement(psel);
-        if (wzName != nullptr)
-            collection = MakeChar(wzName);
+        char * const collection = (wzName != nullptr) ? MakeChar(wzName) : nullptr;
 
         BSTR bstr;
         psel->GetTypeName(&bstr);
