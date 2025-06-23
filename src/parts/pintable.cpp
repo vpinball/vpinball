@@ -8430,7 +8430,7 @@ STDMETHODIMP PinTable::put_BackdropImage_FSS(BSTR newVal) //!! HDR??
 
 STDMETHODIMP PinTable::get_ColorGradeImage(BSTR *pVal)
 {
-   WCHAR * cont wz = MakeWide(m_imageColorGrade);
+   WCHAR * const wz = MakeWide(m_imageColorGrade);
    *pVal = SysAllocString(wz);
    delete [] wz;
    return S_OK;
