@@ -25,7 +25,7 @@ public:
    void Unpause();
    void Stop();
 
-   float GetPosition();
+   float GetPosition() const;
    void SetPosition(float pos);
 
    bool IsPlaying() const;

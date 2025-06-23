@@ -2,9 +2,6 @@
 
 // Shared shader file used for stereo rendering (OpenGL and DX9)
 
-UNIFORM float4 Stereo_Saturation;
-#define STEREO_SATURATION (Stereo_Saturation.x)
-
 UNIFORM float4 Stereo_MS_ZPD_YAxis;
 #define STEREO_MAX_SEPARATION (Stereo_MS_ZPD_YAxis.x)
 #define STEREO_ZERO_POINT_DEPTH (Stereo_MS_ZPD_YAxis.y)

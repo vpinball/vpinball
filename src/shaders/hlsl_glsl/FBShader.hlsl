@@ -10,8 +10,6 @@
 // . for parallax stereo, w_h_height.z keeps source texture height, w_h_height.w keeps the 3D offset
 const float4 w_h_height;
 
-const float4 ms_zpd_ya_td;
-
 const float2 AO_scale_timeblur;
 
 const float4 bloom_dither_colorgrade;

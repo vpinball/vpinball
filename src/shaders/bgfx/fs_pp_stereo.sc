@@ -8,9 +8,6 @@ $input v_texcoord0
 
 #include "common.sh"
 
-uniform vec4 Stereo_Saturation;
-#define STEREO_SATURATION (Stereo_Saturation.x)
-
 uniform vec4 Stereo_MS_ZPD_YAxis;
 #define STEREO_MAX_SEPARATION (Stereo_MS_ZPD_YAxis.x)
 #define STEREO_ZERO_POINT_DEPTH (Stereo_MS_ZPD_YAxis.y)

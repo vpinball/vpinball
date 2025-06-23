@@ -29,8 +29,8 @@ struct ssf_node
 
 static void ssf_node_process_pcm_frames(ma_node* pNode, const float** ppFramesIn, ma_uint32* pFrameCountIn, float** ppFramesOut, ma_uint32* pFrameCountOut)
 {
-   const float* pFramesIn = ppFramesIn[0]; // Input bus @ index 0.
-   float* pFramesOut = ppFramesOut[0]; // Output bus @ index 0.
+   const float* __restrict pFramesIn = ppFramesIn[0]; // Input bus @ index 0.
+   float* __restrict pFramesOut = ppFramesOut[0]; // Output bus @ index 0.
    ssf_node* const pSSFNode = (ssf_node*)pNode;
    const ma_uint32 nInChannels = ma_node_get_input_channels(pNode, 0);
    const ma_uint32 nOutChannels = ma_node_get_output_channels(pNode, 0);
@@ -406,7 +406,7 @@ void SoundPlayer::Stop()
    });
 }
 
-float SoundPlayer::GetPosition()
+float SoundPlayer::GetPosition() const
 {
    float pos = 0.f;
    if (ma_sound_get_cursor_in_seconds(m_sound.get(), &pos) == MA_SUCCESS)
