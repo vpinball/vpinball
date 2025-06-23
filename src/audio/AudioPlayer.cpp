@@ -442,16 +442,26 @@ void AudioPlayer::StopSound(Sound* sound)
 
 SoundSpec AudioPlayer::GetSoundInformations(Sound* sound) const
 {
-   vector<std::unique_ptr<SoundPlayer>>& players = m_soundPlayers[sound];
-   if (players.empty())
-   {
-      SoundPlayer* player = SoundPlayer::Create(this, sound);
-      if (player == nullptr)
-         return { 0 };
-      player->SetMainVolume(m_backglassVolume, m_playfieldVolume);
-      players.push_back(std::unique_ptr<SoundPlayer>(player));
-   }
-   return players.back()->GetInformations();
+   SoundSpec specs { 0 };
+   ma_decoder decoder;
+   ma_decoder_config decoderConfig = ma_decoder_config_init(ma_format_unknown, 0, 0);
+   if (ma_decoder_init_memory(sound->GetFileRaw(), sound->GetFileSize(), &decoderConfig, &decoder) != MA_SUCCESS)
+      return specs;
+   specs.nChannels = decoder.outputChannels;
+   specs.sampleFrequency = decoder.outputSampleRate;
+
+   ma_sound maSound;
+   ma_sound_config config = ma_sound_config_init_2(m_maEngine.get());
+   config.pDataSource = &decoder;
+   if (ma_sound_init_ex(m_maEngine.get(), &config, &maSound))
+      return specs;
+   float length;
+   ma_sound_get_length_in_seconds(&maSound, &length);
+   specs.lengthInSeconds = length;
+   ma_sound_uninit(&maSound);
+
+   ma_decoder_uninit(&decoder);
+   return specs;
 }
 
 /**

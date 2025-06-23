@@ -33,8 +33,6 @@ public:
    void SetMainVolume(float backglassVolume, float playfieldVolume);
    void SetVolume(float volume);
 
-   SoundSpec GetInformations() const;
-
 private:
    SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound);
    SoundPlayer(const AudioPlayer* audioPlayer, string filename);
@@ -42,6 +40,7 @@ private:
    const class AudioPlayer* const m_audioPlayer;
    const SoundOutTypes m_outputTarget;
 
+   float m_monoCompensation = 1.f;
    float m_soundVolume = 1.f;
    float m_mainVolume = 1.f;
    int m_loopCount = 0;

@@ -245,6 +245,7 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound)
          m_decoder = nullptr;
          return;
       }
+      m_monoCompensation = static_cast<float>(m_decoder->outputChannels); // When converting to mono, we average additional channel instead of summing them as this used to be done before, so multiply back
       m_sound = std::make_unique<ma_sound>();
       ma_sound_config config = ma_sound_config_init_2(engine);
       config.channelsOut = m_ssfEffect ? 1 : 0;
@@ -290,7 +291,6 @@ void SoundPlayer::SetVolume(float volume) {
    m_commandQueue.enqueue([this]() { ApplyVolume(); });
 }
 
-
 void SoundPlayer::ApplyVolume()
 {
    if (m_sound)
@@ -304,7 +304,7 @@ void SoundPlayer::ApplyVolume()
       // const float linearvolume = powf(10.f, log10f(sqrt(totalvolume)) - 1.f);
       // const float linearvolume = sqrt(totalvolume) / 10.f; // we don't keep the 1/10 factor as this is better placed as part of the main volume mixer setup (this create a setup regression when updating from 10.8 to later version)
       if (m_ssfEffect)
-         m_ssfEffect->volume = sqrtf(totalvolume);
+         m_ssfEffect->volume = m_monoCompensation * sqrtf(totalvolume);
       else
          ma_sound_set_volume(m_sound.get(), sqrtf(totalvolume));
    }
@@ -426,25 +426,6 @@ void SoundPlayer::SetPosition(float pos)
 bool SoundPlayer::IsPlaying() const
 {
    return m_sound && ma_sound_is_playing(m_sound.get());
-}
-
-SoundSpec SoundPlayer::GetInformations() const
-{
-   SoundSpec specs { 0 };
-   m_commandQueue.wait_until_empty();
-   m_commandQueue.wait_until_nothing_in_flight();
-   if (m_sound == nullptr)
-      return specs;
-   ma_format format;
-   ma_uint32 channels;
-   ma_uint32 sampleRate;
-   float length;
-   ma_sound_get_length_in_seconds(m_sound.get(), &length);
-   ma_sound_get_data_format(m_sound.get(), &format, &channels, &sampleRate, nullptr, 0);
-   specs.lengthInSeconds = length;
-   specs.nChannels = channels;
-   specs.sampleFrequency = sampleRate;
-   return specs;
 }
 
 void SoundPlayer::OnSoundEnd(void* pUserData, ma_sound* pSound)
