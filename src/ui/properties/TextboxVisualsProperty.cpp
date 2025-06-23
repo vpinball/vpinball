@@ -185,9 +185,7 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
                     fd.cbSizeofstruct = sizeof(FONTDESC);
 
                     const LOGFONT font = m_font->GetLogFont();
-                    const size_t len = strlen(font.lfFaceName) + 1;
-                    fd.lpstrName = (LPOLESTR)malloc(len * sizeof(WCHAR));
-                    MultiByteToWideCharNull(CP_ACP, 0, font.lfFaceName, -1, fd.lpstrName, (int)len);
+                    fd.lpstrName = (LPOLESTR)MakeWide(font.lfFaceName);
 
                     fd.sWeight = (SHORT)font.lfWidth;
                     fd.sCharset = font.lfCharSet;
@@ -203,7 +201,7 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
                     CY size;
                     size.int64 = (LONGLONG)(fontsize * 10000.0f);
                     text->m_pIFont->put_Size(size);
-                    free(fd.lpstrName);
+                    delete [] fd.lpstrName;
                     text->m_d.m_fontcolor = m_fontDialog.GetColor();
                     delete m_font;
                     m_font = new CFont(text->GetFont());

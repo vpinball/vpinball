@@ -545,11 +545,11 @@ string find_case_insensitive_directory_path(const string& szPath)
    return string();
 }
 
+// returns file extension in lower case (e.g. "png" or "hdr")
 string extension_from_path(const string& path)
 {
-   const string lowerPath = lowerCase(path);
    const size_t pos = path.find_last_of('.');
-   return pos != string::npos ? lowerPath.substr(pos + 1) : string();
+   return pos != string::npos ? lowerCase(path.substr(pos + 1)) : string();
 }
 
 bool path_has_extension(const string& path, const string& ext)

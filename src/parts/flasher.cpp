@@ -641,10 +641,9 @@ STDMETHODIMP Flasher::put_Color(OLE_COLOR newVal)
 
 STDMETHODIMP Flasher::get_ImageA(BSTR *pVal)
 {
-   WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szImageA.c_str(), -1, wz, MAXTOKEN);
+   WCHAR * const wz = MakeWide(m_d.m_szImageA);
    *pVal = SysAllocString(wz);
-
+   delete [] wz;
    return S_OK;
 }
 
@@ -656,10 +655,9 @@ STDMETHODIMP Flasher::put_ImageA(BSTR newVal)
 
 STDMETHODIMP Flasher::get_ImageB(BSTR *pVal)
 {
-   WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szImageB.c_str(), -1, wz, MAXTOKEN);
+   WCHAR * const wz = MakeWide(m_d.m_szImageB);
    *pVal = SysAllocString(wz);
-
+   delete [] wz;
    return S_OK;
 }
 
@@ -927,28 +925,27 @@ void Flasher::ResetVideoCap()
    }
 }
 
-//if PASSED a blank title then we treat this as STOP capture and free resources.
+// if PASSED a blank title then we treat this as STOP capture and free resources.
 STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
 {
 #ifndef __STANDALONE__
     if (m_videoCapWidth == 0 || m_videoCapHeight == 0) return S_FALSE; //safety.  VideoCapWidth/Height needs to be set prior to this call
 
-    char szWinTitle[MAXNAMEBUFFER];
-    WideCharToMultiByteNull(CP_ACP, 0, cWinTitle, -1, szWinTitle, std::size(szWinTitle), nullptr, nullptr);
-
-    //if PASS blank title then we treat as STOP capture and free resources.  Should be called on table1_exit
-    if (szWinTitle[0] == '\0')
+    // if PASS blank title then we treat as STOP capture and free resources.  Should be called on table1_exit
+    if (SysStringLen(cWinTitle) == 0 || cWinTitle[0] == L'\0')
     {
         ResetVideoCap();
         return S_OK;
     }
 
     if (m_isVideoCap == false) {  // VideoCap has not started because no sourcewin found
+        char * const szWinTitle = MakeChar(cWinTitle);
         m_videoCapHwnd = ::FindWindow(nullptr, szWinTitle);
+        delete [] szWinTitle;
         if (m_videoCapHwnd == nullptr)
             return S_FALSE;
 
-        //source videocap found.  lets start!
+        // source videocap found.  lets start!
         GetClientRect(m_videoCapHwnd, &m_videoSourceRect);
         ResetVideoCap();
         try

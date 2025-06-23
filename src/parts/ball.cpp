@@ -724,9 +724,9 @@ STDMETHODIMP Ball::put_Color(OLE_COLOR newVal)
 
 STDMETHODIMP Ball::get_Image(BSTR *pVal)
 {
-   WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szImage.c_str(), -1, wz, MAXTOKEN);
+   WCHAR * const wz = MakeWide(m_d.m_szImage);
    *pVal = SysAllocString(wz);
+   delete [] wz;
    return S_OK;
 }
 
@@ -743,9 +743,9 @@ STDMETHODIMP Ball::put_Image(BSTR newVal)
 
 STDMETHODIMP Ball::get_FrontDecal(BSTR *pVal)
 {
-   WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_imageDecal.c_str(), -1, wz, MAXTOKEN);
+   WCHAR * const wz = MakeWide(m_d.m_imageDecal);
    *pVal = SysAllocString(wz);
+   delete [] wz;
    return S_OK;
 }
 

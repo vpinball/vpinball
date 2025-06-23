@@ -195,16 +195,15 @@ void IEditable::SetName(const string& name)
     if (pt == nullptr)
         return;
 
-    char oldName[sizeof(GetScriptable()->m_wzName)/sizeof(GetScriptable()->m_wzName[0])];
-    WideCharToMultiByteNull(CP_ACP, 0, GetScriptable()->m_wzName, -1, oldName, sizeof(oldName), nullptr, nullptr);
+    char * const oldName = MakeChar(GetScriptable()->m_wzName);
 
-    WCHAR newName[sizeof(oldName)];
-    MultiByteToWideCharNull(CP_ACP, 0, name.c_str(), -1, newName, sizeof(oldName));
+    WCHAR newName[sizeof(GetScriptable()->m_wzName)/sizeof(GetScriptable()->m_wzName[0])];
+    MultiByteToWideCharNull(CP_ACP, 0, name.c_str(), -1, newName, std::size(newName));
     const bool isEqual = (wcscmp(newName, GetScriptable()->m_wzName) == 0);
     if(!isEqual && !pt->IsNameUnique(newName))
     {
-       WCHAR uniqueName[sizeof(oldName)];
-       pt->GetUniqueName(newName, uniqueName, sizeof(oldName));
+       WCHAR uniqueName[std::size(newName)];
+       pt->GetUniqueName(newName, uniqueName, std::size(newName));
        wcscpy_s(newName, uniqueName);
     }
     STARTUNDO
@@ -240,4 +239,6 @@ void IEditable::SetName(const string& name)
     }
 #endif
     STOPUNDO
+
+    delete [] oldName;
 }

@@ -103,10 +103,7 @@ void Textbox::SetDefaults(const bool fromMouseClick)
          fd.lpstrName = (LPOLESTR)(L"Arial");
       else
       {
-         const int len = (int)tmp.length() + 1;
-         fd.lpstrName = (LPOLESTR)malloc(len*sizeof(WCHAR));
-         MultiByteToWideCharNull(CP_ACP, 0, tmp.c_str(), -1, fd.lpstrName, len);
-
+         fd.lpstrName = (LPOLESTR)MakeWide(tmp);
          free_lpstrName = true;
       }
 
@@ -126,7 +123,7 @@ void Textbox::SetDefaults(const bool fromMouseClick)
    SAFE_RELEASE(m_pIFont);
    OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
    if (free_lpstrName)
-      free(fd.lpstrName);
+      delete [] fd.lpstrName;
 #endif
 #undef regKey
 }

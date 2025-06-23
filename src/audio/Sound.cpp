@@ -190,7 +190,7 @@ PinSound* PinSound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
       SoundOutTypes outputTarget = SoundOutTypes::SNDOUT_TABLE;
       if (FAILED(pstm->Read(&outputTarget, sizeof(char), &read)))
       {
-		   delete pps;
+         delete pps;
          return nullptr;
       }
       if (outputTarget < 0 || outputTarget > SoundOutTypes::SNDOUT_BACKGLASS)
@@ -199,27 +199,27 @@ PinSound* PinSound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
       int volume;
       if (FAILED(pstm->Read(&volume, sizeof(int), &read)))
       {
-		   delete pps;
+         delete pps;
          return nullptr;
       }
       pps->SetVolume(volume);
       int pan;
       if (FAILED(pstm->Read(&pan, sizeof(int), &read)))
       {
-		   delete pps;
+         delete pps;
          return nullptr;
       }
       pps->SetPan(pan);
       int frontRearFade;
       if (FAILED(pstm->Read(&frontRearFade, sizeof(int), &read)))
       {
-		   delete pps;
+         delete pps;
          return nullptr;
       }
       pps->SetFrontRearFade(frontRearFade);
       if (FAILED(pstm->Read(&volume, sizeof(int), &read)))
       {
-		   delete pps;
+         delete pps;
          return nullptr;
       }
       pps->SetVolume(volume);
@@ -229,7 +229,7 @@ PinSound* PinSound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
       bool toBackglassOutput = false; // false: for pre-VPX tables
       if (FAILED(pstm->Read(&toBackglassOutput, sizeof(bool), &read)))
       {
-		   delete pps;
+         delete pps;
          return nullptr;
       }
 

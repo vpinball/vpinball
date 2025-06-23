@@ -82,11 +82,7 @@ void Decal::SetDefaults(const bool fromMouseClick)
       if (!hr || !fromMouseClick)
          fd.lpstrName = (LPOLESTR)(L"Arial Black");
       else
-      {
-         const int len = (int)tmp.length() + 1;
-         fd.lpstrName = (LPOLESTR)malloc(len*sizeof(WCHAR));
-         MultiByteToWideCharNull(CP_ACP, 0, tmp.c_str(), -1, fd.lpstrName, len);
-      }
+         fd.lpstrName = (LPOLESTR)MakeWide(tmp);
 
       fd.sWeight = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "FontWeight"s, FW_NORMAL) : FW_NORMAL;
       fd.sCharset = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "FontCharSet"s, 0) : 0;
@@ -96,7 +92,7 @@ void Decal::SetDefaults(const bool fromMouseClick)
 
       OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
       if (hr && fromMouseClick)
-         free(fd.lpstrName);
+         delete [] fd.lpstrName;
 #endif
    }
 
@@ -862,10 +858,9 @@ STDMETHODIMP Decal::put_Rotation(float newVal)
 
 STDMETHODIMP Decal::get_Image(BSTR *pVal)
 {
-   WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szImage.c_str(), -1, wz, MAXTOKEN);
+   WCHAR * const wz = MakeWide(m_d.m_szImage);
    *pVal = SysAllocString(wz);
-
+   delete [] wz;
    return S_OK;
 }
 
@@ -939,10 +934,9 @@ STDMETHODIMP Decal::put_Y(float newVal)
 
 STDMETHODIMP Decal::get_Surface(BSTR *pVal)
 {
-   WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSurface.c_str(), -1, wz, MAXTOKEN);
+   WCHAR * const wz = MakeWide(m_d.m_szSurface);
    *pVal = SysAllocString(wz);
-
+   delete [] wz;
    return S_OK;
 }
 
@@ -968,10 +962,9 @@ STDMETHODIMP Decal::put_Type(DecalType newVal)
 
 STDMETHODIMP Decal::get_Text(BSTR *pVal)
 {
-   WCHAR wz[MAXSTRING];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_text.c_str(), -1, wz, MAXSTRING);
+   WCHAR * const wz = MakeWide(m_d.m_text);
    *pVal = SysAllocString(wz);
-
+   delete [] wz;
    return S_OK;
 }
 
@@ -1011,10 +1004,9 @@ STDMETHODIMP Decal::put_FontColor(OLE_COLOR newVal)
 
 STDMETHODIMP Decal::get_Material(BSTR *pVal)
 {
-   WCHAR wz[MAXNAMEBUFFER];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
+   WCHAR * const wz = MakeWide(m_d.m_szMaterial);
    *pVal = SysAllocString(wz);
-
+   delete [] wz;
    return S_OK;
 }
 

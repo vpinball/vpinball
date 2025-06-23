@@ -533,9 +533,9 @@ void PropertyDialog::UpdateCollectionComboBox(const PinTable *const ptable, cons
         combo.AddString(_T("<None>"));
         for (int i = 0; i < ptable->m_vcollection.size(); i++)
         {
-            char szT[sizeof(ptable->m_vcollection[i].m_wzName)/sizeof(ptable->m_vcollection[i].m_wzName[0])];
-            WideCharToMultiByteNull(CP_ACP, 0, ptable->m_vcollection[i].m_wzName, -1, szT, std::size(szT), nullptr, nullptr);
+            char * const szT = MakeChar(ptable->m_vcollection[i].m_wzName);
             combo.AddString(szT);
+            delete [] szT;
         }
     }
     combo.SetCurSel(combo.FindStringExact(1, selectName));
@@ -626,24 +626,23 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
 
     if (pvsel.size() > 1)
     {
-        char collection[64] = {0};
+        char * const collection = nullptr;
         const WCHAR * const wzName = psel->GetPTable()->GetCollectionNameByElement(psel);
         if (wzName != nullptr)
-        {
-            WideCharToMultiByteNull(CP_ACP, 0, wzName, -1, collection, std::size(collection), nullptr, nullptr);
-        }
+            collection = MakeChar(wzName);
 
         BSTR bstr;
         psel->GetTypeName(&bstr);
-        char name[64];
-        WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, name, std::size(name), nullptr, nullptr);
+        char * const name = MakeChar(bstr);
         SysFreeString(bstr);
 
         char header[64];
-        if (collection[0] != '\0')
+        if (collection != nullptr && collection[0] != '\0')
             sprintf_s(header, std::size(header), "%s [%s](%d)", collection, name, pvsel.size());
         else
             sprintf_s(header, std::size(header), "%s(%d)", name, pvsel.size());
+        delete [] collection;
+        delete [] name;
 
         m_nameEdit.SetWindowText(header);
         m_nameEdit.SetReadOnly();

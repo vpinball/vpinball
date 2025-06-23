@@ -85,8 +85,7 @@ void SearchSelectDialog::Update()
    for (int i = 0; i < m_curTable->m_vcollection.size(); i++)
    {
       CComObject<Collection> *const pcol = m_curTable->m_vcollection.ElementAt(i);
-      char szT[sizeof(pcol->m_wzName)/sizeof(pcol->m_wzName[0])];
-      WideCharToMultiByteNull(CP_ACP, 0, pcol->m_wzName, -1, szT, std::size(szT), nullptr, nullptr);
+      char * const szT = MakeChar(pcol->m_wzName);
       LVITEM lv;
       lv.mask = LVIF_TEXT | LVIF_PARAM;
       lv.iItem = idx;
@@ -94,6 +93,7 @@ void SearchSelectDialog::Update()
       lv.lParam = (LPARAM)pcol;
       lv.pszText = szT;
       ListView_InsertItem(m_hElementList, &lv);
+      delete [] szT;
       ListView_SetItemText(m_hElementList, idx, 1, (LPSTR)"Collection");
       idx++;
    }

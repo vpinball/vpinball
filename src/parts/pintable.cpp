@@ -406,9 +406,7 @@ STDMETHODIMP ScriptGlobalTable::get_Setting(BSTR Section, BSTR SettingName, BSTR
    string value;
    if (g_pvp->m_settings.LoadValue(sectionId, settingSz, value))
    {
-      const int len = (int)value.length() + 1;
-      WCHAR *const wzT = new WCHAR[len];
-      MultiByteToWideCharNull(CP_ACP, 0, value.c_str(), -1, wzT, len);
+      WCHAR * const wzT = MakeWide(value);
       *param = SysAllocString(wzT);
       delete [] wzT;
       return S_OK;
@@ -2829,10 +2827,7 @@ HRESULT PinTable::WriteInfoValue(IStorage* pstg, const WCHAR * const wzName, con
       ULONG writ;
       BiffWriter bw(pstm, hcrypthash);
 
-      const int len = (int)szValue.length();
-      WCHAR * const wzT = new WCHAR[len + 1];
-      MultiByteToWideCharNull(CP_ACP, 0, szValue.c_str(), -1, wzT, len + 1);
-
+      WCHAR * const wzT = MakeWide(szValue);
       bw.WriteBytes(wzT, len*(int)sizeof(WCHAR), &writ);
       delete[] wzT;
       pstm->Release();
@@ -2904,12 +2899,8 @@ HRESULT PinTable::SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
 
    for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
    {
-      const int len = (int)m_vCustomInfoTag[i].length() + 1; // incl. zero terminator
-      WCHAR * const wzName = new WCHAR[len];
-      MultiByteToWideCharNull(CP_ACP, 0, m_vCustomInfoTag[i].c_str(), -1, wzName, len);
-
+      WCHAR * const wzName = MakeWide(m_vCustomInfoTag[i]);
       WriteInfoValue(pstg, wzName, m_vCustomInfoContent[i], hcrypthash);
-
       delete[] wzName;
    }
 
@@ -2937,7 +2928,6 @@ HRESULT PinTable::ReadInfoValue(IStorage* pstg, const WCHAR * const wzName, stri
 #endif
       WCHAR * const wzT = new WCHAR[len + 1];
       memset(wzT, 0, sizeof(WCHAR) * (len + 1));
-      char* pszValue = new char[len + 1];
 
       ULONG read;
       BiffReader br(pstm, NULL, NULL, 0, hcrypthash, NULL);
@@ -2951,16 +2941,9 @@ HRESULT PinTable::ReadInfoValue(IStorage* pstg, const WCHAR * const wzName, stri
       }
 #endif
       wzT[len] = L'\0';
-
-      WideCharToMultiByteNull(CP_ACP, 0, wzT, -1, pszValue, len + 1, nullptr, nullptr);
-
-      //delete br;
-      //pstm->Read(pszValue, ss.cbSize.LowPart, &read);
-
-      output = pszValue;
-      delete[] pszValue;
-
+      output = MakeString(wzT);
       delete[] wzT;
+
       pstm->Release();
    }
 
@@ -3016,9 +2999,7 @@ HRESULT PinTable::LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
 
    for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
    {
-      const int len = (int)m_vCustomInfoTag[i].length() + 1; // incl. zero terminator
-      WCHAR * const wzName = new WCHAR[len];
-      MultiByteToWideCharNull(CP_ACP, 0, m_vCustomInfoTag[i].c_str(), -1, wzName, len);
+      WCHAR * const wzName = MakeWide(m_vCustomInfoTag[i]);
 
       string customInfo;
       ReadInfoValue(pstg, wzName, customInfo, hcrypthash);
@@ -3701,8 +3682,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                         if (lowerCase(MakeString(m_vcollection.ElementAt(i)->m_wzName)) == shortNameLCase)
                            return; // Conflict with a collection name
                      }
-                     const int len = (int)shortName.length() + 1;
-                     MultiByteToWideCharNull(CP_ACP, 0, shortName.c_str(), -1, editable->GetScriptable()->m_wzName, min(len, (int)std::size(editable->GetScriptable()->m_wzName)));
+                     MultiByteToWideCharNull(CP_ACP, 0, shortName.c_str(), -1, editable->GetScriptable()->m_wzName, (int)std::size(editable->GetScriptable()->m_wzName));
                   });
          }
          
@@ -4403,8 +4383,7 @@ void PinTable::NewCollection(const HWND hwndListView, const bool fromSelection)
 int PinTable::AddListCollection(HWND hwndListView, CComObject<Collection> *pcol)
 {
 #ifndef __STANDALONE__
-   char szT[sizeof(pcol->m_wzName)/sizeof(pcol->m_wzName[0])];
-   WideCharToMultiByteNull(CP_ACP, 0, pcol->m_wzName, -1, szT, sizeof(szT), nullptr, nullptr);
+   char * const szT = MakeChar(pcol->m_wzName);
 
    LVITEM lvitem;
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
@@ -4414,11 +4393,12 @@ int PinTable::AddListCollection(HWND hwndListView, CComObject<Collection> *pcol)
    lvitem.lParam = (size_t)pcol;
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
+   delete [] szT;
 
    ListView_SetItemText(hwndListView, index, 1, (char*)std::to_string(pcol->m_visel.size()).c_str());
    return index;
 #else
-   return 0L;
+   return 0;
 #endif
 }
 
@@ -4546,14 +4526,14 @@ void PinTable::MoveCollectionDown(CComObject<Collection> *pcol)
 void PinTable::SetCollectionName(Collection *pcol, const char *szName, HWND hwndList, int index)
 {
 #ifndef __STANDALONE__
-   WCHAR wzT[MAXSTRING];
-   MultiByteToWideCharNull(CP_ACP, 0, szName, -1, wzT, MAXSTRING);
+   WCHAR * const wzT = MakeWide(szName);
    if (m_pcv->ReplaceName((IScriptable *)pcol, wzT) == S_OK)
    {
       if (hwndList)
          ListView_SetItemText(hwndList, index, 0, (char*)szName);
       wcscpy_s(pcol->m_wzName, wzT);
    }
+   delete [] wzT;
 #endif
 }
 
@@ -4757,14 +4737,14 @@ void PinTable::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, ISe
     {
         BSTR bstr;
         m_vcollection[i].get_Name(&bstr);
-        char szT[MAXNAMEBUFFER*2]; // Names can only be 32 characters (plus terminator)
-        WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, szT, MAXNAMEBUFFER*2, nullptr, nullptr);
+        char * const szT = MakeChar(bstr);
         SysFreeString(bstr);
 
         UINT flags = MF_POPUP | MF_UNCHECKED;
         if ((maxItems-i) % 32 == 0) // add new column each 32 entries
            flags |= MF_MENUBREAK;
         colSubMenu.AppendMenu(flags, 0x40000 + i, szT);
+        delete [] szT;
     }
     if (m_vmultisel.size() == 1)
     {
@@ -7306,10 +7286,9 @@ int PinTable::AddListItem(HWND hwndListView, const string& szName, const string&
 
 STDMETHODIMP PinTable::get_Image(BSTR *pVal)
 {
-   WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_image.c_str(), -1, wz, MAXTOKEN);
+   WCHAR * const wz = MakeWide(m_image);
    *pVal = SysAllocString(wz);
-
+   delete [] wz;
    return S_OK;
 }
 
@@ -7899,10 +7878,9 @@ STDMETHODIMP PinTable::put_Height(float newVal)
 
 STDMETHODIMP PinTable::get_PlayfieldMaterial(BSTR *pVal)
 {
-   WCHAR wz[MAXNAMEBUFFER];
-   MultiByteToWideCharNull(CP_ACP, 0, m_playfieldMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
+   WCHAR * const wz = MakeWide(m_playfieldMaterial);
    *pVal = SysAllocString(wz);
-
+   delete [] wz;
    return S_OK;
 }
 
@@ -8401,10 +8379,9 @@ STDMETHODIMP PinTable::get_ShowFSS(VARIANT_BOOL *pVal)
 
 STDMETHODIMP PinTable::get_BackdropImage_DT(BSTR *pVal)
 {
-   WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_BG_image[0].c_str(), -1, wz, MAXTOKEN);
+   WCHAR * const wz = MakeWide(m_BG_image[0]);
    *pVal = SysAllocString(wz);
-
+   delete [] wz;
    return S_OK;
 }
 
@@ -8419,10 +8396,9 @@ STDMETHODIMP PinTable::put_BackdropImage_DT(BSTR newVal) //!! HDR??
 
 STDMETHODIMP PinTable::get_BackdropImage_FS(BSTR *pVal)
 {
-   WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_BG_image[1].c_str(), -1, wz, MAXTOKEN);
+   WCHAR * const wz = MakeWide(m_BG_image[1]);
    *pVal = SysAllocString(wz);
-
+   delete [] wz;
    return S_OK;
 }
 
@@ -8437,10 +8413,9 @@ STDMETHODIMP PinTable::put_BackdropImage_FS(BSTR newVal) //!! HDR??
 
 STDMETHODIMP PinTable::get_BackdropImage_FSS(BSTR *pVal)
 {
-   WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_BG_image[2].c_str(), -1, wz, MAXTOKEN);
+   WCHAR * const wz = MakeWide(m_BG_image[2]);
    *pVal = SysAllocString(wz);
-
+   delete [] wz;
    return S_OK;
 }
 
@@ -8455,10 +8430,9 @@ STDMETHODIMP PinTable::put_BackdropImage_FSS(BSTR newVal) //!! HDR??
 
 STDMETHODIMP PinTable::get_ColorGradeImage(BSTR *pVal)
 {
-   WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_imageColorGrade.c_str(), -1, wz, MAXTOKEN);
+   WCHAR * cont wz = MakeWide(m_imageColorGrade);
    *pVal = SysAllocString(wz);
-
+   delete [] wz;
    return S_OK;
 }
 
@@ -8874,10 +8848,9 @@ STDMETHODIMP PinTable::put_SlopeMin(float newVal)
 
 STDMETHODIMP PinTable::get_BallImage(BSTR *pVal)
 {
-   WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_ballImage.c_str(), -1, wz, MAXTOKEN);
+   WCHAR * const wz = MakeWide(m_ballImage);
    *pVal = SysAllocString(wz);
-
+   delete [] wz;
    return S_OK;
 }
 
@@ -8892,10 +8865,9 @@ STDMETHODIMP PinTable::put_BallImage(BSTR newVal)
 
 STDMETHODIMP PinTable::get_EnvironmentImage(BSTR *pVal)
 {
-   WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_envImage.c_str(), -1, wz, MAXTOKEN);
+   WCHAR * const wz = MakeWide(m_envImage);
    *pVal = SysAllocString(wz);
-
+   delete [] wz;
    return S_OK;
 }
 
@@ -9493,10 +9465,9 @@ STDMETHODIMP PinTable::put_TiltTriggerTime(int newVal)
 
 STDMETHODIMP PinTable::get_BallFrontDecal(BSTR *pVal)
 {
-   WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_ballImageDecal.c_str(), -1, wz, MAXTOKEN);
+   WCHAR * const wz = MakeWide(m_ballImageDecal);
    *pVal = SysAllocString(wz);
-
+   delete [] wz;
    return S_OK;
 }
 

@@ -76,11 +76,10 @@ void CollectionManagerDialog::EditCollection()
         if (colDlg->DoModal() >= 0)
             pt->SetNonUndoableDirty(eSaveDirty);
 
-        char szT[sizeof(pcol->m_wzName)/sizeof(pcol->m_wzName[0])];
-        WideCharToMultiByteNull(CP_ACP, 0, pcol->m_wzName, -1, szT, std::size(szT), nullptr, nullptr);
+        char * const szT = MakeChar(pcol->m_wzName);
         ListView_SetItemText(hListHwnd, sel, 0, szT);
-        const string tmp = std::to_string(pcol->m_visel.size());
-        ListView_SetItemText(hListHwnd, sel, 1, (LPSTR)tmp.c_str());
+        delete [] szT;
+        ListView_SetItemText(hListHwnd, sel, 1, (LPSTR)std::to_string(pcol->m_visel.size()).c_str());
     }
 }
 
@@ -207,9 +206,9 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 lvitem1.mask = LVIF_PARAM;
                 lvitem1.iItem = idx - 1;
                 ListView_InsertItem(hListHwnd, &lvitem1);
-                char szT[sizeof(pcol->m_wzName)/sizeof(pcol->m_wzName[0])];
-                WideCharToMultiByteNull(CP_ACP, 0, pcol->m_wzName, -1, szT, std::size(szT), nullptr, nullptr);
+                char * const szT = MakeChar(pcol->m_wzName);
                 ListView_SetItemText(hListHwnd, idx - 1, 0, szT);
+                delete [] szT;
                 const string tmp = std::to_string(pcol->m_visel.size());
                 ListView_SetItemText(hListHwnd, idx - 1, 1, (LPSTR)tmp.c_str());
 
@@ -236,9 +235,9 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 lvitem1.mask = LVIF_PARAM;
                 lvitem1.iItem = idx + 1;
                 ListView_InsertItem(hListHwnd, &lvitem1);
-                char szT[sizeof(pcol->m_wzName)/sizeof(pcol->m_wzName[0])];
-                WideCharToMultiByteNull(CP_ACP, 0, pcol->m_wzName, -1, szT, std::size(szT), nullptr, nullptr);
+                char * const szT = MakeChar(pcol->m_wzName);
                 ListView_SetItemText(hListHwnd, idx + 1, 0, szT);
+                delete [] szT;
                 const string tmp = std::to_string(pcol->m_visel.size());
                 ListView_SetItemText(hListHwnd, idx + 1, 1, (LPSTR)tmp.c_str());
 
@@ -335,9 +334,9 @@ BOOL CollectionDialog::OnInitDialog()
         IScriptable * const piscript = piedit->GetScriptable();
         if (piscript)
         {
-            char szT[sizeof(piscript->m_wzName) / sizeof(piscript->m_wzName[0])];
-            WideCharToMultiByteNull(CP_ACP, 0, piscript->m_wzName, -1, szT, std::size(szT), nullptr, nullptr);
+            char * const szT = MakeChar(piscript->m_wzName);
             const size_t index = ::SendMessage(hwndIn, LB_ADDSTRING, 0, (size_t)szT);
+            delete [] szT;
             ::SendMessage(hwndIn, LB_SETITEMDATA, index, (size_t)piscript);
         }
     }
@@ -361,9 +360,9 @@ BOOL CollectionDialog::OnInitDialog()
         if ((l == pcol->m_visel.size()) && piscript)
         //if (!piedit->m_pcollection)
         {
-            char szT[sizeof(piscript->m_wzName) / sizeof(piscript->m_wzName[0])];
-            WideCharToMultiByteNull(CP_ACP, 0, piscript->m_wzName, -1, szT, std::size(szT), nullptr, nullptr);
+            char * const szT = MakeChar(piscript->m_wzName);
             const size_t index = ::SendMessage(hwndOut, LB_ADDSTRING, 0, (size_t)szT);
+            delete [] szT;
             ::SendMessage(hwndOut, LB_SETITEMDATA, index, (size_t)piscript);
         }
     }

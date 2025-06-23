@@ -614,7 +614,7 @@ void SoundDialog::SoundPosition()
 		lvitem.iItem = sel;
 		lvitem.iSubItem = 0;
 		ListView_GetItem(hSoundList, &lvitem);
-      VPX::Sound *pps = (VPX::Sound *)lvitem.lParam;
+		VPX::Sound *pps = (VPX::Sound *)lvitem.lParam;
 		SoundPositionDialog spd(m_audioPlayer.get(), pps);
 
 		if (spd.DoModal() == IDOK)
@@ -752,12 +752,12 @@ BOOL SoundPositionDialog::OnInitDialog()
 
 	switch (m_cOutputTarget)
 	{
-   case VPX::SNDOUT_BACKGLASS:
+	case VPX::SNDOUT_BACKGLASS:
 		SendDlgItemMessage(IDC_SPT_BACKGLASS, BM_SETCHECK, BST_CHECKED, 0);
 		break;
 	default:
 		assert(false);
-   case VPX::SNDOUT_TABLE:
+	case VPX::SNDOUT_TABLE:
 		SendDlgItemMessage(IDC_SPT_TABLE, BM_SETCHECK, BST_CHECKED, 0);
 		break;
 	}
@@ -864,9 +864,9 @@ void SoundPositionDialog::TestSound()
 	GetDialogValues();
 
 	// Hold the actual settings temporarily and reinitialize, as it could be reset if dialog is canceled.
-   const VPX::SoundOutTypes iOutputTargetTmp = m_pSound->GetOutputTarget();
-   m_pSound->SetOutputTarget(m_cOutputTarget);
-   m_audioPlayer->PlaySound(m_pSound, dequantizeSignedPercent(m_volume), 0.0f, 0, dequantizeSignedPercent(m_balance), dequantizeSignedPercent(m_fade), 0, false, true);
+	const VPX::SoundOutTypes iOutputTargetTmp = m_pSound->GetOutputTarget();
+	m_pSound->SetOutputTarget(m_cOutputTarget);
+	m_audioPlayer->PlaySound(m_pSound, dequantizeSignedPercent(m_volume), 0.0f, 0, dequantizeSignedPercent(m_balance), dequantizeSignedPercent(m_fade), 0, false, true);
 	m_pSound->SetOutputTarget(iOutputTargetTmp);
 }
 

@@ -186,18 +186,18 @@ public:
             dc.DrawFocusRect(rect);
         }
 
-        unsigned char r = GetRValue(m_color);
-        unsigned char g = GetGValue(m_color);
-        unsigned char b = GetBValue(m_color);
+        uint8_t r = GetRValue(m_color);
+        uint8_t g = GetGValue(m_color);
+        uint8_t b = GetBValue(m_color);
         vertex[0].x = rect.TopLeft().x;
         vertex[0].y = rect.TopLeft().y;
         vertex[0].Red   = ((unsigned int)r << 8) + r;
         vertex[0].Green = ((unsigned int)g << 8) + g;
         vertex[0].Blue  = ((unsigned int)b << 8) + b;
         // do some shading
-        r = (unsigned char)((float)r * .9f);
-        g = (unsigned char)((float)g * .9f);
-        b = (unsigned char)((float)b * .9f);
+        r = (uint8_t)((float)r * .9f);
+        g = (uint8_t)((float)g * .9f);
+        b = (uint8_t)((float)b * .9f);
         vertex[1].x = rect.BottomRight().x;
         vertex[1].y = rect.BottomRight().y;
         vertex[1].Red   = ((unsigned int)r << 8) + r;
@@ -350,17 +350,17 @@ private:
 #define CHECK_UPDATE_ITEM(classValue, uiValue, element)\
 {\
     auto value = uiValue; \
-    if(classValue!=value) \
+    if(classValue != value) \
     { \
         PropertyDialog::StartUndo(element); \
-        classValue=value; \
+        classValue = value; \
         PropertyDialog::EndUndo(element); \
     }\
 }
 #define CHECK_UPDATE_COMBO_TEXT_STRING(classValue, uiCombo, element)\
 {\
     const string name = PropertyDialog::GetComboBoxText(uiCombo); \
-    if(name!=classValue) \
+    if(name != classValue) \
     { \
         PropertyDialog::StartUndo(element); \
         classValue = name; \
@@ -381,7 +381,7 @@ private:
 
 #define CHECK_UPDATE_COMBO_VALUE_SETTER(classSetter, classGetter, uiComboValue, element) \
 {\
-   auto value =  uiComboValue; \
+   auto value = uiComboValue; \
    if(classGetter() != value) \
    { \
       PropertyDialog::StartUndo(element); \

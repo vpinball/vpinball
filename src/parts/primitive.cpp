@@ -2120,9 +2120,9 @@ bool Primitive::BrowseFor3DMeshFile()
 
 STDMETHODIMP Primitive::get_Image(BSTR *pVal)
 {
-   WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szImage.c_str(), -1, wz, MAXTOKEN);
+   WCHAR * const wz = MakeWide(m_d.m_szImage);
    *pVal = SysAllocString(wz);
+   delete [] wz;
    return S_OK;
 }
 
@@ -2134,10 +2134,9 @@ STDMETHODIMP Primitive::put_Image(BSTR newVal)
 
 STDMETHODIMP Primitive::get_NormalMap(BSTR *pVal)
 {
-   WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szNormalMap.c_str(), -1, wz, MAXTOKEN);
+   WCHAR * const wz = MakeWide(m_d.m_szNormalMap);
    *pVal = SysAllocString(wz);
-
+   delete [] wz;
    return S_OK;
 }
 
@@ -2157,10 +2156,9 @@ STDMETHODIMP Primitive::put_NormalMap(BSTR newVal)
 
 STDMETHODIMP Primitive::get_MeshFileName(BSTR *pVal)
 {
-   WCHAR wz[MAXSTRING];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_meshFileName.c_str(), -1, wz, MAXSTRING);
+   WCHAR * const wz = MakeWide(m_d.m_meshFileName);
    *pVal = SysAllocString(wz);
-
+   delete [] wz;
    return S_OK;
 }
 
@@ -2228,10 +2226,9 @@ STDMETHODIMP Primitive::put_Sides(int newVal)
 
 STDMETHODIMP Primitive::get_Material(BSTR *pVal)
 {
-   WCHAR wz[MAXNAMEBUFFER];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
+   WCHAR * const wz = MakeWide(m_d.m_szMaterial);
    *pVal = SysAllocString(wz);
-
+   delete [] wz;
    return S_OK;
 }
 
@@ -2811,10 +2808,9 @@ STDMETHODIMP Primitive::put_ReflectionEnabled(VARIANT_BOOL newVal)
 
 STDMETHODIMP Primitive::get_PhysicsMaterial(BSTR *pVal)
 {
-   WCHAR wz[MAXNAMEBUFFER];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szPhysicsMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
+   WCHAR * const wz = MakeWide(m_d.m_szPhysicsMaterial);
    *pVal = SysAllocString(wz);
-
+   delete [] wz;
    return S_OK;
 }
 
@@ -2963,10 +2959,9 @@ void Primitive::setInPlayState(const bool newVal)
 
 STDMETHODIMP Primitive::get_ReflectionProbe(BSTR *pVal)
 {
-   WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szReflectionProbe.c_str(), -1, wz, MAXTOKEN);
+   WCHAR * const wz = MakeWide(m_d.m_szReflectionProbe);
    *pVal = SysAllocString(wz);
-
+   delete [] wz;
    return S_OK;
 }
 
@@ -2978,10 +2973,9 @@ STDMETHODIMP Primitive::put_ReflectionProbe(BSTR newVal)
 
 STDMETHODIMP Primitive::get_RefractionProbe(BSTR *pVal)
 {
-   WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szRefractionProbe.c_str(), -1, wz, MAXTOKEN);
+   WCHAR * const wz = MakeWide(m_d.m_szRefractionProbe);
    *pVal = SysAllocString(wz);
-
+   delete [] wz;
    return S_OK;
 }
 

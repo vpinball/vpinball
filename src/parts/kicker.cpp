@@ -803,10 +803,9 @@ STDMETHODIMP Kicker::put_Y(float newVal)
 
 STDMETHODIMP Kicker::get_Surface(BSTR *pVal)
 {
-   WCHAR wz[MAXTOKEN];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szSurface.c_str(), -1, wz, MAXTOKEN);
+   WCHAR * const wz = MakeWide(m_d.m_szSurface);
    *pVal = SysAllocString(wz);
-
+   delete [] wz;
    return S_OK;
 }
 
@@ -962,10 +961,9 @@ STDMETHODIMP Kicker::put_DrawStyle(KickerType newVal)
 
 STDMETHODIMP Kicker::get_Material(BSTR *pVal)
 {
-   WCHAR wz[MAXNAMEBUFFER];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
+   WCHAR * const wz = MakeWide(m_d.m_szMaterial);
    *pVal = SysAllocString(wz);
-
+   delete [] wz;
    return S_OK;
 }
 

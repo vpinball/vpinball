@@ -152,9 +152,7 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
                     fd.cbSizeofstruct = sizeof(FONTDESC);
 
                     const LOGFONT font = m_font->GetLogFont();
-                    const size_t len = strlen(font.lfFaceName) + 1;
-                    fd.lpstrName = (LPOLESTR)malloc(len * sizeof(WCHAR));
-                    MultiByteToWideCharNull(CP_ACP, 0, font.lfFaceName, -1, fd.lpstrName, (int)len);
+                    fd.lpstrName = (LPOLESTR)MakeWide(font.lfFaceName);
 
                     fd.sWeight = (SHORT)font.lfWidth;
                     fd.sCharset = font.lfCharSet;
@@ -166,7 +164,7 @@ void DecalVisualsProperty::UpdateProperties(const int dispid)
                     decal->m_pIFont->Release();
                     // create the new one
                     OleCreateFontIndirect(&fd, IID_IFont, (void **)&decal->m_pIFont);
-                    free(fd.lpstrName);
+                    delete [] fd.lpstrName;
                     decal->m_d.m_color = m_fontDialog.GetColor();
                 }
                 break;
