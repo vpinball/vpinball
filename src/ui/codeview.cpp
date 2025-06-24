@@ -1577,7 +1577,7 @@ void CodeViewer::Compile(const bool message)
       char * const szText = new char[cchar + 1];
       ::SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
 #else
-      char * const szText = m_script_text.c_str();
+      char * const szText = (char*)m_script_text.c_str();
 #endif
 
       const int len = MultiByteToWideChar(CP_UTF8, 0, szText, -1, nullptr, 0);
