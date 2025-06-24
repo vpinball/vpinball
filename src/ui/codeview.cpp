@@ -1574,20 +1574,14 @@ void CodeViewer::Compile(const bool message)
    {
 #ifndef __STANDALONE__
       const size_t cchar = ::SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
-#else 
-      const size_t cchar = m_script_text.length();
-#endif
-
       char * const szText = new char[cchar + 1];
-      const int len = MultiByteToWideChar(CP_UTF8, 0, szText, -1, nullptr, 0);
-      WCHAR * const wzText = new WCHAR[len];
-
-#ifndef __STANDALONE__
       ::SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
 #else
-      strcpy(szText, m_script_text.c_str());
+      char * const szText = m_script_text.c_str();
 #endif
 
+      const int len = MultiByteToWideChar(CP_UTF8, 0, szText, -1, nullptr, 0);
+      WCHAR * const wzText = new WCHAR[len];
       MultiByteToWideChar(CP_UTF8, 0, szText, -1, wzText, len);
 
       EXCEPINFO exception = {};
@@ -1611,7 +1605,9 @@ void CodeViewer::Compile(const bool message)
       m_pScript->SetScriptState(SCRIPTSTATE_INITIALIZED);
 
       delete[] wzText;
+#ifndef __STANDALONE__
       delete[] szText;
+#endif
    }
 }
 
