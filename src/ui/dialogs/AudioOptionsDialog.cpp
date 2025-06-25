@@ -45,10 +45,8 @@ BOOL AudioOptionsDialog::OnInitDialog()
    VPX::AudioPlayer::EnumerateAudioDevices(allAudioDevices);
    for (VPX::AudioPlayer::AudioDevice audioDevice : allAudioDevices)
    {
-      const size_t index = SendDlgItemMessage(IDC_SoundList, LB_ADDSTRING, 0, (size_t) audioDevice.name.c_str());
-      SendDlgItemMessage(IDC_SoundList, LB_SETITEMDATA, index, (LPARAM)audioDevice.id);
-      const size_t indexbg = SendDlgItemMessage(IDC_SoundListBG, LB_ADDSTRING, 0, (size_t)audioDevice.name.c_str());
-      SendDlgItemMessage(IDC_SoundListBG, LB_SETITEMDATA, indexbg, (LPARAM)audioDevice.id);
+      SendDlgItemMessage(IDC_SoundList, LB_ADDSTRING, 0, (size_t) audioDevice.name.c_str());
+      SendDlgItemMessage(IDC_SoundListBG, LB_ADDSTRING, 0, (size_t)audioDevice.name.c_str());
    }
   
    SendDlgItemMessage(IDC_SoundList, WM_SETREDRAW, TRUE, 0);
@@ -178,8 +176,37 @@ void AudioOptionsDialog::LoadSettings()
    SendDlgItemMessage(IDC_MUSIC_SLIDER, TBM_SETPOS, TRUE, settings.LoadValueWithDefault(Settings::Player, "MusicVolume"s, 100));
    SendDlgItemMessage(IDC_SOUND_SLIDER, TBM_SETPOS, TRUE, settings.LoadValueWithDefault(Settings::Player, "SoundVolume"s, 100));
 
-   SendDlgItemMessage(IDC_SoundList, LB_SETCURSEL, settings.LoadValueWithDefault(Settings::Player, "SoundDevice"s, 0), 0);
-   SendDlgItemMessage(IDC_SoundListBG, LB_SETCURSEL, settings.LoadValueWithDefault(Settings::Player, "SoundDeviceBG"s, 0), 0);
+   string soundDeviceName;
+   if (settings.LoadValue(Settings::Player, "SoundDevice"s, soundDeviceName))
+   {
+      int n = SendDlgItemMessage(IDC_SoundList, LB_GETCOUNT, 0, 0);
+      for (int i = 0; i < n; i++)
+      {
+         int len = SendDlgItemMessage(IDC_SoundList, LB_GETTEXTLEN, (WPARAM)i, (LPARAM)0);
+         TCHAR* szBuffer = new TCHAR[len + 1];
+         SendDlgItemMessage(IDC_SoundList, LB_GETTEXT, (WPARAM)i, (LPARAM)szBuffer);
+         string deviceName(szBuffer);
+         if (soundDeviceName == deviceName)
+            SendDlgItemMessage(IDC_SoundList, LB_SETCURSEL, i, 0);
+         delete[] szBuffer;
+      }
+   }
+
+   string soundDeviceBGName;
+   if (settings.LoadValue(Settings::Player, "SoundDeviceBG"s, soundDeviceBGName))
+   {
+      int n = SendDlgItemMessage(IDC_SoundList, LB_GETCOUNT, 0, 0);
+      for (int i = 0; i < n; i++)
+      {
+         int len = SendDlgItemMessage(IDC_SoundListBG, LB_GETTEXTLEN, (WPARAM)i, (LPARAM)0);
+         TCHAR* szBuffer = new TCHAR[len + 1];
+         SendDlgItemMessage(IDC_SoundListBG, LB_GETTEXT, (WPARAM)i, (LPARAM)szBuffer);
+         string deviceName(szBuffer);
+         if (soundDeviceName == deviceName)
+            SendDlgItemMessage(IDC_SoundListBG, LB_SETCURSEL, i, 0);
+         delete[] szBuffer;
+      }
+   }
 }
 
 void AudioOptionsDialog::SaveSettings(const bool saveAll)
@@ -219,11 +246,17 @@ void AudioOptionsDialog::SaveSettings(const bool saveAll)
    if (m_editedSettings == &m_appSettings)
    {
       size_t soundindex = SendDlgItemMessage(IDC_SoundList, LB_GETCURSEL, 0, 0);
-      size_t sd = SendDlgItemMessage(IDC_SoundList, LB_GETITEMDATA, soundindex, 0);
-      settings.SaveValue(Settings::Player, "SoundDevice"s, (int)sd, !saveAll);
+      int len = SendDlgItemMessage(IDC_SoundList, LB_GETTEXTLEN, (WPARAM)soundindex, (LPARAM)0);
+      TCHAR* szBuffer = new TCHAR[len + 1];
+      SendDlgItemMessage(IDC_SoundList, LB_GETTEXT, (WPARAM)soundindex, (LPARAM)szBuffer);
+      settings.SaveValue(Settings::Player, "SoundDevice"s, string(szBuffer), !saveAll);
+      delete[] szBuffer;
 
       soundindex = SendDlgItemMessage(IDC_SoundListBG, LB_GETCURSEL, 0, 0);
-      sd = SendDlgItemMessage(IDC_SoundListBG, LB_GETITEMDATA, soundindex, 0);
-      settings.SaveValue(Settings::Player, "SoundDeviceBG"s, (int)sd, !saveAll);
+      len = SendDlgItemMessage(IDC_SoundListBG, LB_GETTEXTLEN, (WPARAM)soundindex, (LPARAM)0);
+      szBuffer = new TCHAR[len + 1];
+      SendDlgItemMessage(IDC_SoundListBG, LB_GETTEXT, (WPARAM)soundindex, (LPARAM)szBuffer);
+      settings.SaveValue(Settings::Player, "SoundDeviceBG"s, string(szBuffer), !saveAll);
+      delete[] szBuffer;
    }
 }
