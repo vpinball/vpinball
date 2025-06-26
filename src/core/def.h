@@ -254,11 +254,6 @@ public:
 #define VBTOb(x) (!!(x))
 #define FTOVB(x) ((x) ? (VARIANT_BOOL)-1 : (VARIANT_BOOL)0)
 
-static const string platform_cpu[2] = { "x86"s, "arm"s };
-static const string platform_bits[2] = { "32"s, "64"s };
-static const string platform_os[6] = { "windows"s, "android"s, "linux"s, "ios"s, "tvos"s, "macos"s };
-static const string platform_renderer[2] = { "dx"s, "gl"s }; // gles necessary, too?
-
 #if defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__)
  #define GET_PLATFORM_CPU_ENUM 0
  #define GET_PLATFORM_CPU "x86"
@@ -266,6 +261,7 @@ static const string platform_renderer[2] = { "dx"s, "gl"s }; // gles necessary, 
  #define GET_PLATFORM_CPU_ENUM 1
  #define GET_PLATFORM_CPU "arm"
 #endif
+static const string platform_cpu[2] = { "x86"s, "arm"s };
 
 #if (INTPTR_MAX == INT32_MAX)
  #define GET_PLATFORM_BITS_ENUM 0
@@ -274,6 +270,7 @@ static const string platform_renderer[2] = { "dx"s, "gl"s }; // gles necessary, 
  #define GET_PLATFORM_BITS_ENUM 1
  #define GET_PLATFORM_BITS "64"
 #endif
+static const string platform_bits[2] = { "32"s, "64"s };
 
 #ifdef _MSC_VER
  #define GET_PLATFORM_OS_ENUM 0
@@ -296,14 +293,19 @@ static const string platform_renderer[2] = { "dx"s, "gl"s }; // gles necessary, 
  #define GET_PLATFORM_OS "macos"
 #endif
 #endif
+static const string platform_os[6] = { "windows"s, "android"s, "linux"s, "ios"s, "tvos"s, "macos"s };
 
 #if defined(ENABLE_BGFX)
  #define GET_PLATFORM_RENDERER_ENUM 2
+ #define GET_PLATFORM_RENDERER "bgfx"
 #elif defined(ENABLE_OPENGL)
  #define GET_PLATFORM_RENDERER_ENUM 1
+ #define GET_PLATFORM_RENDERER "gl"
 #else
  #define GET_PLATFORM_RENDERER_ENUM 0
+ #define GET_PLATFORM_RENDERER "dx"
 #endif
+static const string platform_renderer[3] = { "dx"s, "gl"s, "bgfx"s };
 
 #if !defined(EXT_CAPTURE) && !defined(__STANDALONE__) && defined(ENABLE_OPENGL)
 // External captures for VR is a hack, only available for the full windows build using OpenGL
