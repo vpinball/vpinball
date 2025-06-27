@@ -44,9 +44,6 @@ Sound::~Sound()
  */
 Sound* Sound::CreateFromFile(const string& filename)
 {
-   Sound* const pps = new Sound();
-   pps->m_path = filename;
-   pps->m_name = TitleFromFilename(filename);
    FILE* f;
    if (fopen_s(&f, filename.c_str(), "rb") != 0 || !f)
    {
@@ -54,12 +51,16 @@ Sound* Sound::CreateFromFile(const string& filename)
       return nullptr;
    }
    fseek(f, 0, SEEK_END);
+   Sound* const pps = new Sound();
+   pps->m_path = filename;
+   pps->m_name = TitleFromFilename(filename);
    pps->m_cdata = (int)ftell(f);
    fseek(f, 0, SEEK_SET);
    pps->m_pdata = new uint8_t[pps->m_cdata];
    if (fread_s(pps->m_pdata, pps->m_cdata, 1, pps->m_cdata, f) < 1)
    {
       fclose(f);
+      delete pps;
       ShowError("Could not read from sound file.");
       return nullptr;
    }
@@ -81,6 +82,7 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
    if (FAILED(pstm->Read(tmp, len, &read)))
    {
       delete pps;
+      delete[] tmp;
       return nullptr;
    }
    tmp[len] = '\0';
@@ -97,6 +99,7 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
    if (FAILED(pstm->Read(tmp, len, &read)))
    {
       delete pps;
+      delete[] tmp;
       return nullptr;
    }
    tmp[len] = '\0';
@@ -112,8 +115,8 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
    tmp = new char[len];
    if (FAILED(pstm->Read(tmp, len, &read)))
    {
-      delete[] tmp;
       delete pps;
+      delete[] tmp;
       return nullptr;
    }
    delete[] tmp;
