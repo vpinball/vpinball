@@ -20,14 +20,6 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
 {
     const HWND hwndList = GetDlgItem(IDC_PhysicsList).GetHwnd();
 
-    const size_t size = ::SendMessage(hwndList, LB_GETCOUNT, 0, 0);
-    for (size_t i = 0; i < size; i++)
-    {
-        physicsoptions[i].clear();
-        const int* sd = (int *)::SendMessage(hwndList, LB_GETITEMDATA, i, 0);
-        delete sd;
-    }
-
     ::SendMessage(hwndList, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
     ::SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
     for (unsigned int i = 0; i < num_physicsoptions; i++)
@@ -37,9 +29,6 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
             physicsoptions[i] = "Set " + std::to_string(i + 1);
         tmp = std::to_string(i + 1) + ": " + physicsoptions[i];
         const size_t index = ::SendMessage(hwndList, LB_ADDSTRING, 0, (size_t)tmp.c_str());
-        int * const sd = new int;
-        *sd = i;
-        ::SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)sd);
     }
     ::SendMessage(hwndList, LB_SETCURSEL, physicsselection, 0);
     ::SendMessage(hwndList, WM_SETREDRAW, TRUE, 0);
@@ -327,19 +316,6 @@ void PhysicsOptionsDialog::OnOK()
 {
     SaveCurrentPhysicsSetting();
     CDialog::OnOK();
-}
-
-void PhysicsOptionsDialog::OnDestroy()
-{
-    const HWND hwndList = GetDlgItem(IDC_PhysicsList).GetHwnd();
-    const size_t size = ::SendMessage(hwndList, LB_GETCOUNT, 0, 0);
-    for (size_t i = 0; i < size; i++)
-    {
-        physicsoptions[i].clear();
-        const int* sd = (int *)::SendMessage(hwndList, LB_GETITEMDATA, i, 0);
-        delete sd;
-    }
-    ::SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
 }
 
 bool PhysicsOptionsDialog::LoadSetting()
