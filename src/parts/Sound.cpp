@@ -73,11 +73,10 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
    int32_t len;
    ULONG read;
 
-   Sound* const pps = new Sound();
-
    // Name (length, then string)
    if (FAILED(pstm->Read(&len, sizeof(int32_t), &read)))
       return nullptr;
+   Sound* const pps = new Sound();
    char* tmp = new char[len + 1];
    if (FAILED(pstm->Read(tmp, len, &read)))
    {
