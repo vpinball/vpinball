@@ -12,7 +12,6 @@ protected:
     INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
     BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
     void OnOK() override;
-    void OnDestroy() override;
 
 private:
     bool LoadSetting();
