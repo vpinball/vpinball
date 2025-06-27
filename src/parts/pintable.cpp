@@ -7441,7 +7441,10 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
          if (rgstr[ivar + 1] == nullptr)
             ShowError("DISPID_Collection alloc failed (1)");
          else
-            memcpy(rgstr[ivar + 1], m_vcollection[(int)ivar].m_wzName, cwch);
+         {
+            memset(rgstr[ivar + 1], 0, cwch);
+            memcpy(rgstr[ivar + 1], m_vcollection[(int)ivar].m_wzName, sizeof(m_vcollection[(int)ivar].m_wzName));
+         }
          rgdw[ivar + 1] = (uint32_t)ivar;
       }
       cvar++;
