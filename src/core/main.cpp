@@ -506,12 +506,19 @@ public:
 #ifdef _MSC_VER
       // disable auto-rotate on tablets
 #if (_WIN32_WINNT <= 0x0601)
-      SetDisplayAutoRotationPreferences = (pSDARP)GetProcAddress(GetModuleHandle(TEXT("user32.dll")),
-         "SetDisplayAutoRotationPreferences");
+      pSDARP SetDisplayAutoRotationPreferences = (pSDARP)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetDisplayAutoRotationPreferences");
       if (SetDisplayAutoRotationPreferences)
-         SetDisplayAutoRotationPreferences(ORIENTATION_PREFERENCE_LANDSCAPE);
+      {
+         // Allow both normal and flipped landscape to honor system defaults
+         SetDisplayAutoRotationPreferences(static_cast<ORIENTATION_PREFERENCE>(ORIENTATION_PREFERENCE_LANDSCAPE | ORIENTATION_PREFERENCE_LANDSCAPE_FLIPPED));
+      }
 #else
-      SetDisplayAutoRotationPreferences(ORIENTATION_PREFERENCE_LANDSCAPE);
+      // Use the same API for newer Windows versions
+      pSDARP SetDisplayAutoRotationPreferences = (pSDARP)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetDisplayAutoRotationPreferences");
+      if (SetDisplayAutoRotationPreferences)
+      {
+         SetDisplayAutoRotationPreferences(static_cast<ORIENTATION_PREFERENCE>(ORIENTATION_PREFERENCE_LANDSCAPE | ORIENTATION_PREFERENCE_LANDSCAPE_FLIPPED));
+      }
 #endif
 
       //!! max(2u, std::thread::hardware_concurrency()) ??
