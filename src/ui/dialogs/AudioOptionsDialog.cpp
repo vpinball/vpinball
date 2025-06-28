@@ -179,10 +179,10 @@ void AudioOptionsDialog::LoadSettings()
    string soundDeviceName;
    if (settings.LoadValue(Settings::Player, "SoundDevice"s, soundDeviceName))
    {
-      int n = SendDlgItemMessage(IDC_SoundList, LB_GETCOUNT, 0, 0);
+      int n = static_cast<int>(SendDlgItemMessage(IDC_SoundList, LB_GETCOUNT, 0, 0));
       for (int i = 0; i < n; i++)
       {
-         int len = SendDlgItemMessage(IDC_SoundList, LB_GETTEXTLEN, (WPARAM)i, (LPARAM)0);
+         int len = static_cast<int>(SendDlgItemMessage(IDC_SoundList, LB_GETTEXTLEN, (WPARAM)i, (LPARAM)0));
          TCHAR* szBuffer = new TCHAR[len + 1];
          SendDlgItemMessage(IDC_SoundList, LB_GETTEXT, (WPARAM)i, (LPARAM)szBuffer);
          string deviceName(szBuffer);
@@ -195,10 +195,10 @@ void AudioOptionsDialog::LoadSettings()
    string soundDeviceBGName;
    if (settings.LoadValue(Settings::Player, "SoundDeviceBG"s, soundDeviceBGName))
    {
-      int n = SendDlgItemMessage(IDC_SoundList, LB_GETCOUNT, 0, 0);
+      int n = static_cast<int>(SendDlgItemMessage(IDC_SoundList, LB_GETCOUNT, 0, 0));
       for (int i = 0; i < n; i++)
       {
-         int len = SendDlgItemMessage(IDC_SoundListBG, LB_GETTEXTLEN, (WPARAM)i, (LPARAM)0);
+         int len = static_cast<int>(SendDlgItemMessage(IDC_SoundListBG, LB_GETTEXTLEN, (WPARAM)i, (LPARAM)0));
          TCHAR* szBuffer = new TCHAR[len + 1];
          SendDlgItemMessage(IDC_SoundListBG, LB_GETTEXT, (WPARAM)i, (LPARAM)szBuffer);
          string deviceName(szBuffer);
@@ -246,14 +246,14 @@ void AudioOptionsDialog::SaveSettings(const bool saveAll)
    if (m_editedSettings == &m_appSettings)
    {
       size_t soundindex = SendDlgItemMessage(IDC_SoundList, LB_GETCURSEL, 0, 0);
-      int len = SendDlgItemMessage(IDC_SoundList, LB_GETTEXTLEN, (WPARAM)soundindex, (LPARAM)0);
+      int len = static_cast<int>(SendDlgItemMessage(IDC_SoundList, LB_GETTEXTLEN, (WPARAM)soundindex, (LPARAM)0));
       TCHAR* szBuffer = new TCHAR[len + 1];
       SendDlgItemMessage(IDC_SoundList, LB_GETTEXT, (WPARAM)soundindex, (LPARAM)szBuffer);
       settings.SaveValue(Settings::Player, "SoundDevice"s, string(szBuffer), !saveAll);
       delete[] szBuffer;
 
       soundindex = SendDlgItemMessage(IDC_SoundListBG, LB_GETCURSEL, 0, 0);
-      len = SendDlgItemMessage(IDC_SoundListBG, LB_GETTEXTLEN, (WPARAM)soundindex, (LPARAM)0);
+      len = static_cast<int>(SendDlgItemMessage(IDC_SoundListBG, LB_GETTEXTLEN, (WPARAM)soundindex, (LPARAM)0));
       szBuffer = new TCHAR[len + 1];
       SendDlgItemMessage(IDC_SoundListBG, LB_GETTEXT, (WPARAM)soundindex, (LPARAM)szBuffer);
       settings.SaveValue(Settings::Player, "SoundDeviceBG"s, string(szBuffer), !saveAll);
