@@ -277,7 +277,7 @@ void Sound::SaveToStream(IStream* pstm) const
    pstm->Write(m_path.c_str(), pathLen, &writ);
    pstm->Write(&dummyLen, sizeof(int32_t), &writ); // Used to have the same name again in lower case, now just save an empty string for backward compatibility
    pstm->Write(&dummyPath, dummyLen, &writ);
-   int32_t dataLength = m_cdata;
+   int32_t dataLength = static_cast<int32_t>(m_cdata);
    if (isWav(m_path))
    {
       uint8_t* pData = m_pdata;
@@ -285,7 +285,7 @@ void Sound::SaveToStream(IStream* pstm) const
       WAVEFORMATEX* wfx = (WAVEFORMATEX*)pData;
       pstm->Write(wfx, sizeof(WAVEFORMATEX) + wfx->cbSize, &writ); // Save WAVEFORMATEX with its optional data block
       pData += 2 * sizeof(DWORD); // skip wave data and length
-      dataLength -= (pData - m_pdata); // Data block does not include the WAV header
+      dataLength -= static_cast<int32_t>(pData - m_pdata); // Data block does not include the WAV header
       pstm->Write(&dataLength, sizeof(int32_t), &writ);
       pstm->Write(m_pdata, static_cast<ULONG>(dataLength), &writ);
    }

@@ -664,17 +664,17 @@ public:
       Matrix3D matrixT;
 #ifdef ENABLE_SSE_OPTIMIZATIONS
       // could replace the loadu/storeu's if alignment would be stricter
-      for (int i = 0; i < 16; i += 4) {
+      for (int i = 0; i < 4; i ++) {
          // unroll first step of the loop
-         __m128 a = _mm_loadu_ps(&mult._11);
-         __m128 b = _mm_set1_ps((&_11)[i]);
+         __m128 a = _mm_loadu_ps(mult.m[0]);
+         __m128 b = _mm_set1_ps(m[i][0]);
          __m128 r = _mm_mul_ps(a, b);
          for (int j = 1; j < 4; j++) {
-            a = _mm_loadu_ps((&mult._11)+j * 4);
-            b = _mm_set1_ps((&_11)[i + j]);
+            a = _mm_loadu_ps(mult.m[j]);
+            b = _mm_set1_ps(m[i][j]);
             r = _mm_add_ps(_mm_mul_ps(a, b), r);
          }
-         _mm_storeu_ps((&matrixT._11)+i, r);
+         _mm_storeu_ps(matrixT.m[i], r);
       }
 #else
 #pragma message ("Warning: No SSE matrix mul")
