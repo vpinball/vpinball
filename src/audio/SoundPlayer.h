@@ -7,7 +7,7 @@
 
 struct ma_decoder;
 struct ma_sound;
-struct ssf_node;
+struct vpx_node;
 
 namespace VPX
 {
@@ -49,7 +49,7 @@ private:
 
    std::unique_ptr<ma_decoder> m_decoder;
    std::unique_ptr<ma_sound> m_sound;
-   std::unique_ptr<ssf_node> m_ssfEffect;
+   std::unique_ptr<vpx_node> m_vpxMixNode;
 
    mutable ThreadPool m_commandQueue; // Worker thread on which all commands are dispatched
 

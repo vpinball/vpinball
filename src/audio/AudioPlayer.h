@@ -7,6 +7,7 @@
 
 struct ma_engine;
 struct ma_context;
+struct ma_device_ex;
 
 namespace VPX
 {
@@ -53,28 +54,26 @@ public:
    void StopSound(Sound* sound);
    SoundSpec GetSoundInformations(Sound* sound) const;
 
-   const SDL_AudioSpec& GetAudioSpecOutput() const { return m_audioSpecOutput; }
    SoundConfigTypes GetSoundMode3D() const { return m_soundMode3D; }
 
    struct AudioDevice
    {
-      int id;
       string name;
-      unsigned int channels; //number of speakers in this case
+      unsigned int channels;
    };
-   static void EnumerateAudioDevices(vector<AudioDevice>& devices);
+   // initializes the SDL audio subsystem and retrieves a list of available audio playback devices.
+   static vector<AudioDevice> EnumerateAudioDevices();
 
-   ma_engine* GetEngine() const { return m_maEngine.get(); }
-   vector<uint8_t> m_streamBuffer;
-   SDL_AudioStream* m_outStream = nullptr;
-   int m_tableAudioDevice = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
-   int m_backglassAudioDevice = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
+   ma_engine* GetEngine(SoundOutTypes out) const { return out == SoundOutTypes::SNDOUT_TABLE ? m_playfieldEngine.get() : m_backglassEngine.get(); }
 
 private:
    float m_playfieldVolume = 1.f;
    float m_backglassVolume = 1.f;
    float m_musicVolume = 1.f;
    bool m_mirrored = false;
+
+   int m_playfieldAudioDevice = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
+   int m_backglassAudioDevice = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
 
    mutable ankerl::unordered_dense::map<Sound*, vector<std::unique_ptr<class SoundPlayer>>> m_soundPlayers;
 
@@ -83,10 +82,12 @@ private:
    std::unique_ptr<class SoundPlayer> m_music;
 
    SoundConfigTypes m_soundMode3D = SNDCFG_SND3D2CH; // What 3Dsound Mode are we in from VPinball.ini "Sound3D" key.
-   SDL_AudioSpec m_audioSpecOutput { SDL_AUDIO_UNKNOWN, 0, 0 }; // The output devices audio spec
 
-   std::unique_ptr<ma_engine> m_maEngine;
    std::unique_ptr<ma_context> m_maContext;
+   std::unique_ptr<ma_device_ex> m_backglassDevice;
+   std::unique_ptr<ma_engine> m_backglassEngine;
+   std::unique_ptr<ma_device_ex> m_playfieldDevice;
+   std::unique_ptr<ma_engine> m_playfieldEngine;
 };
 
 }
