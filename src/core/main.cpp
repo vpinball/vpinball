@@ -997,12 +997,10 @@ public:
       }
 
       if (m_listSnd) {
-         vector<VPX::AudioPlayer::AudioDevice> allAudioDevices;
-         VPX::AudioPlayer::EnumerateAudioDevices(allAudioDevices);
          PLOGI << "Available sound devices:";
-         for (VPX::AudioPlayer::AudioDevice audioDevice : allAudioDevices)
+         for (VPX::AudioPlayer::AudioDevice audioDevice : VPX::AudioPlayer::EnumerateAudioDevices())
          {
-            PLOGI << "  id " << audioDevice.id << ": name=" << audioDevice.name << ", channels=" << audioDevice.channels;
+            PLOGI << ". " << audioDevice.name << ", channels=" << audioDevice.channels;
          }
       }
 

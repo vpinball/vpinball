@@ -41,12 +41,10 @@ BOOL AudioOptionsDialog::OnInitDialog()
    SendDlgItemMessage(IDC_SoundList, LB_RESETCONTENT, 0, 0);
    SendDlgItemMessage(IDC_SoundListBG, LB_RESETCONTENT, 0, 0);
 
-   vector<VPX::AudioPlayer::AudioDevice> allAudioDevices;
-   VPX::AudioPlayer::EnumerateAudioDevices(allAudioDevices);
-   for (VPX::AudioPlayer::AudioDevice audioDevice : allAudioDevices)
+   for (VPX::AudioPlayer::AudioDevice audioDevice : VPX::AudioPlayer::EnumerateAudioDevices())
    {
       SendDlgItemMessage(IDC_SoundList, LB_ADDSTRING, 0, (size_t) audioDevice.name.c_str());
-      SendDlgItemMessage(IDC_SoundListBG, LB_ADDSTRING, 0, (size_t)audioDevice.name.c_str());
+      SendDlgItemMessage(IDC_SoundListBG, LB_ADDSTRING, 0, (size_t) audioDevice.name.c_str());
    }
   
    SendDlgItemMessage(IDC_SoundList, WM_SETREDRAW, TRUE, 0);
@@ -195,14 +193,14 @@ void AudioOptionsDialog::LoadSettings()
    string soundDeviceBGName;
    if (settings.LoadValue(Settings::Player, "SoundDeviceBG"s, soundDeviceBGName))
    {
-      int n = static_cast<int>(SendDlgItemMessage(IDC_SoundList, LB_GETCOUNT, 0, 0));
+      int n = static_cast<int>(SendDlgItemMessage(IDC_SoundListBG, LB_GETCOUNT, 0, 0));
       for (int i = 0; i < n; i++)
       {
          int len = static_cast<int>(SendDlgItemMessage(IDC_SoundListBG, LB_GETTEXTLEN, (WPARAM)i, (LPARAM)0));
          TCHAR* szBuffer = new TCHAR[len + 1];
          SendDlgItemMessage(IDC_SoundListBG, LB_GETTEXT, (WPARAM)i, (LPARAM)szBuffer);
          string deviceName(szBuffer);
-         if (soundDeviceName == deviceName)
+         if (soundDeviceBGName == deviceName)
             SendDlgItemMessage(IDC_SoundListBG, LB_SETCURSEL, i, 0);
          delete[] szBuffer;
       }
