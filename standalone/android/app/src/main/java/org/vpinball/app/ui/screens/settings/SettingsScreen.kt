@@ -491,6 +491,14 @@ fun SettingsScreen(
                         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
                         SwitchRow(
+                            label = "DOF",
+                            isChecked = viewModel.pluginDOF,
+                            onCheckedChange = { viewModel.handlePluginDOF(value = it) },
+                        )
+
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+                        SwitchRow(
                             label = "FlexDMD",
                             isChecked = viewModel.pluginFlexDMD,
                             onCheckedChange = { viewModel.handlePluginFlexDMD(value = it) },

@@ -20,7 +20,7 @@
 
 using namespace std;
 
-namespace DMDUtil {
+namespace DMDUtilPlugin {
    
 static MsgPluginAPI* msgApi = nullptr;
 static uint32_t endpointId;
@@ -46,6 +46,32 @@ LPI_USE();
 #define LOGE LPI_LOGE
 
 LPI_IMPLEMENT
+
+void DMDUTILCALLBACK OnDMDUtilLog(DMDUtil_LogLevel logLevel, const char* format, va_list args)
+{
+   va_list args_copy;
+   va_copy(args_copy, args);
+   int size = vsnprintf(nullptr, 0, format, args_copy);
+   va_end(args_copy);
+   if (size > 0) {
+      char* const buffer = static_cast<char*>(malloc(size + 1));
+      vsnprintf(buffer, size + 1, format, args);
+      switch(logLevel) {
+         case DMDUtil_LogLevel_INFO:
+            LOGI("%s", buffer);
+            break;
+         case DMDUtil_LogLevel_DEBUG:
+            LOGD("%s", buffer);
+            break;
+         case DMDUtil_LogLevel_ERROR:
+            LOGE("%s", buffer);
+            break;
+         default:
+            break;
+      }
+      free(buffer);
+   }
+}
 
 static string GetSettingString(MsgPluginAPI* pMsgApi, const char* section, const char* key, const string& def = string())
 {
@@ -184,7 +210,7 @@ static void onGameEnd(const unsigned int msgId, void* userData, void* msgData)
 
 }
 
-using namespace DMDUtil;
+using namespace DMDUtilPlugin;
 
 MSGPI_EXPORT void MSGPIAPI DMDUtilPluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
 {
@@ -199,6 +225,7 @@ MSGPI_EXPORT void MSGPIAPI DMDUtilPluginLoad(const uint32_t sessionId, MsgPlugin
    getDmdSrcMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
 
    DMDUtil::Config* pConfig = DMDUtil::Config::GetInstance();
+   pConfig->SetLogCallback(OnDMDUtilLog);
    pConfig->SetZeDMD(GetSettingBool(msgApi, "DMDUtil", "ZeDMD", true));
    pConfig->SetZeDMDDevice(GetSettingString(msgApi, "DMDUtil", "ZeDMDDevice", string()).c_str());
    pConfig->SetZeDMDDebug(GetSettingBool(msgApi, "DMDUtil", "ZeDMDDebug", false));

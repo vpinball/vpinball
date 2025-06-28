@@ -30,13 +30,14 @@ enum class VPinballSettingsSection(val value: String) {
     TABLE_OPTION("TableOption"),
     PLUGIN_ALPHA_DMD("Plugin.AlphaDMD"),
     PLUGIN_B2S("Plugin.B2S"),
+    PLUGIN_DOF("Plugin.DOF"),
+    PLUGIN_DMD_UTIL("Plugin.DMDUtil"),
     PLUGIN_FLEX_DMD("Plugin.FlexDMD"),
     PLUGIN_PINMAME("Plugin.PinMAME"),
     PLUGIN_PUP("Plugin.PUP"),
     PLUGIN_REMOTE_CONTROL("Plugin.RemoteControl"),
     PLUGIN_SERUM("Plugin.Serum"),
-    PLUGIN_SCORE_VIEW("Plugin.ScoreView"),
-    PLUGIN_DMD_UTIL("Plugin.DMDUtil");
+    PLUGIN_SCORE_VIEW("Plugin.ScoreView");
 
     companion object {
         @JvmStatic

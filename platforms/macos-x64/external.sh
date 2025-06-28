@@ -443,7 +443,9 @@ cp libaltsound/libaltsound/third-party/runtime-libs/macos/x64/libbass.dylib ../.
 
 cp -a libdof/libdof/build/libdof.{dylib,*.dylib} ../../../third-party/runtime-libs/macos-x64
 cp -r libdof/libdof/include/DOF ../../../third-party/include/
+cp -a libdof/libdof/third-party/runtime-libs/macos/x64/libusb-1*.dylib ../../../third-party/runtime-libs/macos-x64
 cp -a libdof/libdof/third-party/runtime-libs/macos/x64/libhidapi.{dylib,*.dylib} ../../../third-party/runtime-libs/macos-x64
+cp -a libdof/libdof/third-party/runtime-libs/macos/x64/libftdi1*.dylib ../../../third-party/runtime-libs/macos-x64
 
 for LIB in libavcodec libavdevice libavfilter libavformat libavutil libswresample libswscale; do
    cp -a ffmpeg/ffmpeg/${LIB}/${LIB}.{dylib,*.dylib} ../../../third-party/runtime-libs/macos-x64

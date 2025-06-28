@@ -22,6 +22,7 @@ echo "  BGFX_PATCH_SHA: ${BGFX_PATCH_SHA}"
 echo "  PINMAME_SHA: ${PINMAME_SHA}"
 echo "  OPENXR_SHA: ${OPENXR_SHA}"
 echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
+echo "  LIBDOF_SHA: ${LIBDOF_SHA}"
 echo "  FFMPEG_SHA: ${FFMPEG_SHA}"
 echo "  LIBZIP_SHA: ${LIBZIP_SHA}"
 echo ""
@@ -297,6 +298,40 @@ if [ "${LIBDMDUTIL_EXPECTED_SHA}" != "${LIBDMDUTIL_FOUND_SHA}" ]; then
 fi
 
 #
+# build libdof
+#
+
+LIBDOF_EXPECTED_SHA="${LIBDOF_SHA}"
+LIBDOF_FOUND_SHA="$([ -f libdof/cache.txt ] && cat libdof/cache.txt || echo "")"
+
+if [ "${LIBDOF_EXPECTED_SHA}" != "${LIBDOF_FOUND_SHA}" ]; then
+   echo "Building libdof. Expected: ${LIBDOF_EXPECTED_SHA}, Found: ${LIBDOF_FOUND_SHA}"
+
+   rm -rf libdof
+   mkdir libdof
+   cd libdof
+
+   curl -sL https://github.com/jsm174/libdof/archive/${LIBDOF_SHA}.tar.gz -o libdof-${LIBDOF_SHA}.tar.gz
+   tar xzf libdof-${LIBDOF_SHA}.tar.gz
+   mv libdof-${LIBDOF_SHA} libdof
+   cd libdof
+   ./platforms/win/x64/external.sh
+   cmake \
+      -G "Visual Studio 17 2022" \
+      -DPLATFORM=win \
+      -DARCH=x64 \
+      -DBUILD_SHARED=ON \
+      -DBUILD_STATIC=OFF \
+      -B build
+   cmake --build build --config ${BUILD_TYPE}
+   cd ..
+
+   echo "$LIBDOF_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
+
+#
 # build ffmpeg
 #
 
@@ -433,6 +468,16 @@ cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/sockpp64.lib ../../../th
 cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/sockpp64.dll ../../../third-party/runtime-libs/windows-x64
 cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/cargs64.lib ../../../third-party/build-libs/windows-x64
 cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/cargs64.dll ../../../third-party/runtime-libs/windows-x64
+
+cp libdof/libdof/build/${BUILD_TYPE}/dof64.lib ../../../third-party/build-libs/windows-x64
+cp libdof/libdof/build/${BUILD_TYPE}/dof64.dll ../../../third-party/runtime-libs/windows-x64
+cp -r libdof/libdof/include/DOF ../../../third-party/include/
+cp libdof/libdof/third-party/build-libs/win/x64/libusb64-1.0.lib ../../../third-party/build-libs/windows-x64
+cp libdof/libdof/third-party/runtime-libs/win/x64/libusb64-1.0.dll ../../../third-party/runtime-libs/windows-x64
+cp libdof/libdof/third-party/build-libs/win/x64/hidapi64.lib ../../../third-party/build-libs/windows-x64
+cp libdof/libdof/third-party/runtime-libs/win/x64/hidapi64.dll ../../../third-party/runtime-libs/windows-x64
+cp libdof/libdof/third-party/build-libs/win/x64/libftdi164.lib ../../../third-party/build-libs/windows-x64
+cp libdof/libdof/third-party/runtime-libs/win/x64/libftdi164.dll ../../../third-party/runtime-libs/windows-x64
 
 for LIB in avcodec avdevice avfilter avformat avutil swresample swscale; do
    DIR="lib${LIB}"

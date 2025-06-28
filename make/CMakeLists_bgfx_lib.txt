@@ -754,6 +754,7 @@ target_link_libraries(vpinball PUBLIC
    AlphaDMDPlugin
    B2SPlugin
    DMDUtilPlugin
+   DOFPlugin
    FlexDMDPlugin
    HelloScriptPlugin
    HelloWorldPlugin
