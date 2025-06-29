@@ -43,6 +43,7 @@ uniform vec4 u_basic_shade_mode;
 #define doMetal             (u_basic_shade_mode.x != 0.0)
 #define doNormalMapping     (u_basic_shade_mode.y != 0.0)
 #define doRefractions       (u_basic_shade_mode.z != 0.0)
+#define noMipMaps           (u_basic_shade_mode.w != 0.0)
 
 uniform vec4 refractionTint_thickness;
 #define refractionTint (refractionTint_thickness.rgb)
@@ -90,7 +91,12 @@ mat3 TBN_trafo(const vec3 N, const vec3 V, const vec2 uv)
 
 vec3 normal_map(const vec3 N, const vec3 V, const vec2 uv)
 {
-   const vec3 tn = texture2D(tex_base_normalmap, uv).xyz * (255./127.) - (128./127.);
+   vec3 tn;
+   if (noMipMaps)
+      tn = texture2DLod(tex_base_normalmap, uv, 0.0).xyz * (255./127.) - (128./127.);
+   else
+      tn = texture2D(tex_base_normalmap, uv).xyz * (255./127.) - (128./127.);
+
    BRANCH if (objectSpaceNormalMap.x != 0.0)
    { // Object space: this matches the object space, +X +Y +Z, export/baking in Blender with our trafo setup
       return normalize(mul(matWorldViewInverseTranspose, vec4(tn.x, tn.y, -tn.z, 0.0)).xyz);
@@ -192,7 +198,11 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
       vec4 color;
       // Full basic material shading
       #ifdef TEX
-         vec4 pixel = texture2D(tex_base_color, v_texcoord0);
+         vec4 pixel;
+		 if (noMipMaps)
+		    pixel = texture2DLod(tex_base_color, v_texcoord0, 0.0);
+		 else
+		    pixel = texture2D(tex_base_color, v_texcoord0);
          #ifdef AT
             if (pixel.a <= alphaTestValue.x)
                discard; //stop the pixel shader if alpha test should reject pixel

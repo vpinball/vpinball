@@ -172,8 +172,6 @@ public:
    void ApplyRenderStates();
    RenderState& GetActiveRenderState() { return m_current_renderstate; }
 
-   static void SetMainTextureDefaultFiltering(const SamplerFilter filter);
-
    void UploadTexture(ITexManCacheable* texture, const bool linearRGB);
    void SetSamplerState(int unit, SamplerFilter filter, SamplerAddressMode clamp_u, SamplerAddressMode clamp_v);
    std::shared_ptr<Sampler> m_nullTexture = nullptr;

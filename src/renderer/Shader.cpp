@@ -846,7 +846,7 @@ void Shader::SetTechniqueMaterial(ShaderTechniques technique, const Material& ma
 
    #if defined(ENABLE_BGFX)
    // For BGFX doReflections is computed from the reflection factor
-   SetVector(SHADER_u_basic_shade_mode, isMetal, doNormalMapping, doRefractions, 0.0f);
+   SetVector(SHADER_u_basic_shade_mode, isMetal, doNormalMapping, doRefractions, ShaderState::m_disableMipmaps ? 1.f : 0.f);
    if (tech == SHADER_TECHNIQUE_basic_with_texture && doAlphaTest)
       tech = SHADER_TECHNIQUE_basic_with_texture_at;
 
@@ -1147,16 +1147,17 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          case SF_NONE:
             flags |= BGFX_SAMPLER_MIN_POINT;
             flags |= BGFX_SAMPLER_MAG_POINT;
-            break;
-         case SF_POINT:
-            flags |= BGFX_SAMPLER_MIN_POINT;
-            flags |= BGFX_SAMPLER_MAG_POINT;
+            flags |= BGFX_SAMPLER_MIP_POINT; // should be no mipmapping => implemented in shader as BGFX does not have support to disable mipmapping
             break;
          case SF_BILINEAR:
-            /* Default is linear. No flag to set. */
+            //flags |= BGFX_SAMPLER_MIN_LINEAR; // Default
+            //flags |= BGFX_SAMPLER_MAG_LINEAR; // Default
+            flags |= BGFX_SAMPLER_MIP_POINT; // should be no mipmapping => implemented in shader as BGFX does not have support to disable mipmapping
             break;
          case SF_TRILINEAR:
-            /* Default is linear. No flag to set. */
+            //flags |= BGFX_SAMPLER_MIN_LINEAR; // Default
+            //flags |= BGFX_SAMPLER_MAG_LINEAR; // Default
+            //flags |= BGFX_SAMPLER_MIP_LINEAR; // Default
             break;
          case SF_ANISOTROPIC:
             flags |= BGFX_SAMPLER_MIN_ANISOTROPIC;
@@ -1179,7 +1180,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          case SA_REPEAT: /* Default mode, no flag to set */ break;
          default: break;
          }
-         const bgfx::TextureHandle texHandle = const_cast<Sampler*>(texel.get())->GetCoreTexture(filter != SF_NONE);
+         const bgfx::TextureHandle texHandle = const_cast<Sampler*>(texel.get())->GetCoreTexture(filter != SF_NONE && filter != SF_BILINEAR);
          if (!bgfx::isValid(texHandle))
          {
             bgfx::setTexture(ShaderUniform::coreUniforms[uniformName].tex_unit, desc, m_renderDevice->m_nullTexture->GetCoreTexture(false));

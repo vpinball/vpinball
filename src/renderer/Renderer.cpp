@@ -1607,13 +1607,13 @@ void Renderer::RenderStaticPrepass()
 
    RenderTarget* renderRT = GetAOMode() == 1 ? GetBackBufferTexture() : m_staticPrepassRT;
 
-   // if rendering static/with heavy oversampling, disable the aniso/trilinear filter to get a sharper/more precise result overall!
    if (IsUsingStaticPrepass())
    {
       PLOGI << "Performing prerendering of static parts."; // For profiling
-      RenderDevice::SetMainTextureDefaultFiltering(SF_BILINEAR);
+      // if rendering static/with heavy oversampling, disable mipmaps & aniso/trilinear filter to get a sharper/more precise result overall!
+      ShaderState::m_disableMipmaps = true;
+      m_renderDevice->m_DMDShader->SetVector(SHADER_u_basic_shade_mode, 0.f, 0.f, 0.f, 1.f);
    }
-   ShaderState::m_disableMipmaps = IsUsingStaticPrepass();
 
    //#define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the (commented out) lattice-based QMC oversampling, 'magic factor', depending on the number of iterations!
    // loop for X times and accumulate/average these renderings
@@ -1699,10 +1699,8 @@ void Renderer::RenderStaticPrepass()
       m_renderDevice->AddEndOfFrameCmd([accumulationSurface]() { delete accumulationSurface; });
    }
 
-   // if rendering static/with heavy oversampling, re-enable the aniso/trilinear filter now for the normal rendering
-   const bool forceAniso = m_table->m_settings.LoadValueWithDefault(Settings::Player, "ForceAnisotropicFiltering"s, true);
-   RenderDevice::SetMainTextureDefaultFiltering(forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
    ShaderState::m_disableMipmaps = false;
+   m_renderDevice->m_DMDShader->SetVector(SHADER_u_basic_shade_mode, 0.f, 0.f, 0.f, 0.f);
 
    // Now finalize static buffer with static AO
    if (GetAOMode() == 1)

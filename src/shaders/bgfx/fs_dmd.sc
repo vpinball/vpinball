@@ -11,6 +11,9 @@ uniform vec4 vColor_Intensity;
 uniform vec4 vRes_Alpha_time;
 uniform vec4 alphaTestValue; // Actually float but extended to vec4 for BGFX (and we should use the builtin)
 
+uniform vec4 u_basic_shade_mode;
+#define noMipMaps           (u_basic_shade_mode.w != 0.0)
+
 
 #ifdef DMD
 SAMPLER2D(tex_dmd, 0); // DMD
@@ -143,7 +146,11 @@ void main()
 
 	#else // No DMD (sprite rendering)
 		#ifdef TEX
-			const vec4 l = texture2D(tex_sprite, v_texcoord0);
+			vec4 l;
+			if (noMipMaps)
+				l = texture2DLod(tex_sprite, v_texcoord0, 0.0);
+			else
+				l = texture2D(tex_sprite, v_texcoord0);
 			if (l.a < alphaTestValue.x)
 				discard; //stop the pixel shader if alpha test should reject pixel to avoid writing to the depth buffer
 			gl_FragColor = vec4(/*InvGamma*/(l.rgb * vColor_Intensity.rgb * vColor_Intensity.a), l.a);
