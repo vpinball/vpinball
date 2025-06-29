@@ -29,6 +29,51 @@ if "%vsv%" == "2019" (
 
 
 REM ***************************************************************************************************
+copy /V /Y "plugin-alphadmd.net2022.vcxproj" "../.build/vsproject/plugin-alphadmd.vcxproj"
+copy /V /Y "plugin-alphadmd.net2022.vcxproj.filters" "../.build/vsproject/plugin-alphadmd.vcxproj.filters"
+
+if "%vsv%" == "2019" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-alphadmd.vcxproj" /out:"../.build/vsproject/plugin-alphadmd.vcxproj"
+)
+
+
+REM ***************************************************************************************************
+copy /V /Y "plugin-b2s.net2022.vcxproj" "../.build/vsproject/plugin-b2s.vcxproj"
+copy /V /Y "plugin-b2s.net2022.vcxproj.filters" "../.build/vsproject/plugin-b2s.vcxproj.filters"
+
+if "%vsv%" == "2019" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-b2s.vcxproj" /out:"../.build/vsproject/plugin-b2s.vcxproj"
+)
+
+
+REM ***************************************************************************************************
+copy /V /Y "plugin-dmdutil.net2022.vcxproj" "../.build/vsproject/plugin-dmdutil.vcxproj"
+copy /V /Y "plugin-dmdutil.net2022.vcxproj.filters" "../.build/vsproject/plugin-dmdutil.vcxproj.filters"
+
+if "%vsv%" == "2019" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-dmdutil.vcxproj" /out:"../.build/vsproject/plugin-dmdutil.vcxproj"
+)
+
+
+REM ***************************************************************************************************
+copy /V /Y "plugin-dof.net2022.vcxproj" "../.build/vsproject/plugin-dof.vcxproj"
+copy /V /Y "plugin-dof.net2022.vcxproj.filters" "../.build/vsproject/plugin-dof.vcxproj.filters"
+
+if "%vsv%" == "2019" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-dof.vcxproj" /out:"../.build/vsproject/plugin-dof.vcxproj"
+)
+
+
+REM ***************************************************************************************************
+copy /V /Y "plugin-flexdmd.net2022.vcxproj" "../.build/vsproject/plugin-flexdmd.vcxproj"
+copy /V /Y "plugin-flexdmd.net2022.vcxproj.filters" "../.build/vsproject/plugin-flexdmd.vcxproj.filters"
+
+if "%vsv%" == "2019" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-flexdmd.vcxproj" /out:"../.build/vsproject/plugin-flexdmd.vcxproj"
+)
+
+
+REM ***************************************************************************************************
 copy /V /Y "plugin-helloworld.net2022.vcxproj" "../.build/vsproject/plugin-helloworld.vcxproj"
 copy /V /Y "plugin-helloworld.net2022.vcxproj.filters" "../.build/vsproject/plugin-helloworld.vcxproj.filters"
 
@@ -47,74 +92,11 @@ if "%vsv%" == "2019" (
 
 
 REM ***************************************************************************************************
-copy /V /Y "plugin-flexdmd.net2022.vcxproj" "../.build/vsproject/plugin-flexdmd.vcxproj"
-copy /V /Y "plugin-flexdmd.net2022.vcxproj.filters" "../.build/vsproject/plugin-flexdmd.vcxproj.filters"
-
-if "%vsv%" == "2019" (
-	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-flexdmd.vcxproj" /out:"../.build/vsproject/plugin-flexdmd.vcxproj"
-)
-
-
-REM ***************************************************************************************************
-copy /V /Y "plugin-alphadmd.net2022.vcxproj" "../.build/vsproject/plugin-alphadmd.vcxproj"
-copy /V /Y "plugin-alphadmd.net2022.vcxproj.filters" "../.build/vsproject/plugin-alphadmd.vcxproj.filters"
-
-if "%vsv%" == "2019" (
-	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-alphadmd.vcxproj" /out:"../.build/vsproject/plugin-alphadmd.vcxproj"
-)
-
-
-REM ***************************************************************************************************
-copy /V /Y "plugin-scoreview.net2022.vcxproj" "../.build/vsproject/plugin-scoreview.vcxproj"
-copy /V /Y "plugin-scoreview.net2022.vcxproj.filters" "../.build/vsproject/plugin-scoreview.vcxproj.filters"
-
-if "%vsv%" == "2019" (
-	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-scoreview.vcxproj" /out:"../.build/vsproject/plugin-b2s.vcxproj"
-)
-
-
-REM ***************************************************************************************************
-copy /V /Y "plugin-b2s.net2022.vcxproj" "../.build/vsproject/plugin-b2s.vcxproj"
-copy /V /Y "plugin-b2s.net2022.vcxproj.filters" "../.build/vsproject/plugin-b2s.vcxproj.filters"
-
-if "%vsv%" == "2019" (
-	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-b2s.vcxproj" /out:"../.build/vsproject/plugin-b2s.vcxproj"
-)
-
-
-REM ***************************************************************************************************
-copy /V /Y "plugin-pup.net2022.vcxproj" "../.build/vsproject/plugin-pup.vcxproj"
-copy /V /Y "plugin-pup.net2022.vcxproj.filters" "../.build/vsproject/plugin-pup.vcxproj.filters"
-
-if "%vsv%" == "2019" (
-	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-pup.vcxproj" /out:"../.build/vsproject/plugin-pup.vcxproj"
-)
-
-
-REM ***************************************************************************************************
 copy /V /Y "plugin-pinmame.net2022.vcxproj" "../.build/vsproject/plugin-pinmame.vcxproj"
 copy /V /Y "plugin-pinmame.net2022.vcxproj.filters" "../.build/vsproject/plugin-pinmame.vcxproj.filters"
 
 if "%vsv%" == "2019" (
 	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-pinmame.vcxproj" /out:"../.build/vsproject/plugin-pinmame.vcxproj"
-)
-
-
-REM ***************************************************************************************************
-copy /V /Y "plugin-remote-control.net2022.vcxproj" "../.build/vsproject/plugin-remote-control.vcxproj"
-copy /V /Y "plugin-remote-control.net2022.vcxproj.filters" "../.build/vsproject/plugin-remote-control.vcxproj.filters"
-
-if "%vsv%" == "2019" (
-	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-remote-control.vcxproj" /out:"../.build/vsproject/plugin-remote-control.vcxproj"
-)
-
-
-REM ***************************************************************************************************
-copy /V /Y "plugin-serum.net2022.vcxproj" "../.build/vsproject/plugin-serum.vcxproj"
-copy /V /Y "plugin-serum.net2022.vcxproj.filters" "../.build/vsproject/plugin-serum.vcxproj.filters"
-
-if "%vsv%" == "2019" (
-	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-serum.vcxproj" /out:"../.build/vsproject/plugin-serum.vcxproj"
 )
 
 
@@ -128,11 +110,38 @@ if "%vsv%" == "2019" (
 
 
 REM ***************************************************************************************************
-copy /V /Y "plugin-dmdutil.net2022.vcxproj" "../.build/vsproject/plugin-dmdutil.vcxproj"
-copy /V /Y "plugin-dmdutil.net2022.vcxproj.filters" "../.build/vsproject/plugin-dmdutil.vcxproj.filters"
+copy /V /Y "plugin-pup.net2022.vcxproj" "../.build/vsproject/plugin-pup.vcxproj"
+copy /V /Y "plugin-pup.net2022.vcxproj.filters" "../.build/vsproject/plugin-pup.vcxproj.filters"
 
 if "%vsv%" == "2019" (
-	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-dmdutil.vcxproj" /out:"../.build/vsproject/plugin-dmdutil.vcxproj"
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-pup.vcxproj" /out:"../.build/vsproject/plugin-pup.vcxproj"
+)
+
+
+REM ***************************************************************************************************
+copy /V /Y "plugin-remote-control.net2022.vcxproj" "../.build/vsproject/plugin-remote-control.vcxproj"
+copy /V /Y "plugin-remote-control.net2022.vcxproj.filters" "../.build/vsproject/plugin-remote-control.vcxproj.filters"
+
+if "%vsv%" == "2019" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-remote-control.vcxproj" /out:"../.build/vsproject/plugin-remote-control.vcxproj"
+)
+
+
+REM ***************************************************************************************************
+copy /V /Y "plugin-scoreview.net2022.vcxproj" "../.build/vsproject/plugin-scoreview.vcxproj"
+copy /V /Y "plugin-scoreview.net2022.vcxproj.filters" "../.build/vsproject/plugin-scoreview.vcxproj.filters"
+
+if "%vsv%" == "2019" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-scoreview.vcxproj" /out:"../.build/vsproject/plugin-b2s.vcxproj"
+)
+
+
+REM ***************************************************************************************************
+copy /V /Y "plugin-serum.net2022.vcxproj" "../.build/vsproject/plugin-serum.vcxproj"
+copy /V /Y "plugin-serum.net2022.vcxproj.filters" "../.build/vsproject/plugin-serum.vcxproj.filters"
+
+if "%vsv%" == "2019" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-serum.vcxproj" /out:"../.build/vsproject/plugin-serum.vcxproj"
 )
 
 
