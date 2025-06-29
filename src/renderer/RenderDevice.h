@@ -38,17 +38,12 @@
 void ReportFatalError(const HRESULT hr, const char *file, const int line);
 void ReportError(const char *errorText, const HRESULT hr, const char *file, const int line);
 
-#if 1//defined(_DEBUG)
 #if defined(ENABLE_BGFX)
 #define CHECKD3D(s) { s; } 
 #elif defined(ENABLE_OPENGL)
-//void checkGLErrors(const char *file, const int line);
-#define CHECKD3D(s) { s; } //checkGLErrors(__FILE__, __LINE__); } // by now the callback is used instead
+#define CHECKD3D(s) { s; }
 #elif defined(ENABLE_DX9)
 #define CHECKD3D(s) { const HRESULT hrTmp = (s); if (FAILED(hrTmp)) ReportFatalError(hrTmp, __FILE__, __LINE__); }
-#endif
-#else //_DEBUG
-#define CHECKD3D(s) { s; }
 #endif
 
 class Shader;

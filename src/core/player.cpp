@@ -698,6 +698,10 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
                         const char *name = node->GetText();
                         if (name != nullptr && image->m_name == name && node->QueryBoolAttribute("linear", &linearRGB) == tinyxml2::XML_SUCCESS)
                         {
+                           #ifdef ENABLE_OPENGL
+                           // Uploading texture in OpenGL uses the state machine which will be wrong if done concurrently
+                           const std::lock_guard<std::mutex> lock(mutex);
+                           #endif
                            m_renderer->m_renderDevice->UploadTexture(image, linearRGB);
                            uploaded = true;
                            break;
