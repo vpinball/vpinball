@@ -118,19 +118,30 @@ static ma_result ma_device_init__sdl(ma_device* pDevice, const ma_device_config*
    int periodSizeInFrames;
    SDL_AudioSpec specs;
    SDL_GetAudioDeviceFormat(pDeviceEx->deviceID, &specs, &periodSizeInFrames);
-   if (specs.format != SDL_AUDIO_F32)
+   
+   // Convert SDL format to miniaudio format
+   ma_format deviceFormat = ma_format_f32; // default fallback
+   switch (specs.format)
    {
-      specs.format = SDL_AUDIO_F32;
-      if (!SDL_SetAudioStreamFormat(pDeviceEx->stream, nullptr, &specs))
-      {
-         PLOGE << "Failed to obtain the expected audio sample format";
-         SDL_DestroyAudioStream(pDeviceEx->stream);
-         return MA_FAILED_TO_OPEN_BACKEND_DEVICE;
-      }
+      case SDL_AUDIO_U8: deviceFormat = ma_format_u8; break;
+      case SDL_AUDIO_S16: deviceFormat = ma_format_s16; break;
+      case SDL_AUDIO_S32: deviceFormat = ma_format_s32; break;
+      case SDL_AUDIO_F32: deviceFormat = ma_format_f32; break;
+      default:
+         PLOGI << "Unsupported SDL audio format " << SDL_GetAudioFormatName(specs.format) << " (0x" << std::hex << specs.format << std::dec << "), forcing to F32";
+         specs.format = SDL_AUDIO_F32;
+         if (!SDL_SetAudioStreamFormat(pDeviceEx->stream, nullptr, &specs))
+         {
+            PLOGE << "Failed to set audio stream format to F32";
+            SDL_DestroyAudioStream(pDeviceEx->stream);
+            return MA_FAILED_TO_OPEN_BACKEND_DEVICE;
+         }
+         deviceFormat = ma_format_f32;
+         break;
    }
 
-   // Update miniaudio descriptor with our actual settings
-   pDescriptorPlayback->format = ma_format_f32;
+   // Update miniaudio descriptor with actual device settings
+   pDescriptorPlayback->format = deviceFormat;
    pDescriptorPlayback->channels = specs.channels;
    pDescriptorPlayback->sampleRate = static_cast<ma_uint32>(specs.freq);
    pDescriptorPlayback->periodSizeInFrames = periodSizeInFrames;
@@ -288,7 +299,7 @@ AudioPlayer::AudioPlayer(const Settings& settings)
    }
 
    {
-      SDLDeviceInfo deviceInfo { m_backglassAudioDevice, { 0 } };
+      SDLDeviceInfo deviceInfo { m_playfieldAudioDevice, { 0 } };
       ma_context_get_device_info(m_maContext.get(), ma_device_type_playback, nullptr, &deviceInfo.dev);
       ma_context_enumerate_devices(m_maContext.get(), selectDevice, &deviceInfo);
 
