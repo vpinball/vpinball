@@ -361,7 +361,7 @@ void Sampler::UpdateTexture(std::shared_ptr<const BaseTexture> surf, const bool 
    glBindTexture(m_texTarget, m_texture);
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
    glTexSubImage2D(m_texTarget, 0, 0, 0, surf->width(), surf->height(), col_format, col_type, surf->datac());
-   glGenerateMipmap(m_texTarget); // Generate mip-maps
+   glGenerateMipmap(m_texTarget);
    glBindTexture(m_texTarget, 0);
 
 #elif defined(ENABLE_DX9)
@@ -470,7 +470,7 @@ GLuint Sampler::CreateTexture(std::shared_ptr<const BaseTexture> surf, unsigned 
 
 #ifndef __OPENGLES__
    if (GLAD_GL_VERSION_4_3)
-      glObjectLabel(GL_TEXTURE, m_texture, (GLsizei)m_name.length(), m_name.c_str());
+      glObjectLabel(GL_TEXTURE, texture, (GLsizei)m_name.length(), m_name.c_str());
 #endif
 
    if (surf->datac())

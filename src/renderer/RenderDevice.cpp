@@ -159,19 +159,6 @@ static const char* glErrorToString(const int error)
    default: return "unknown";
    }
 }
-#if 0 // not used anymore
-void checkGLErrors(const char *file, const int line) {
-   GLenum err;
-   unsigned int count = 0;
-   while ((err = glGetError()) != GL_NO_ERROR) {
-      count++;
-      ReportFatalError(err, file, line);
-   }
-   /*if (count>0) {
-      exit(-1);
-   }*/
-}
-#endif
 
 // Callback function for printing debug statements
 #if defined(_DEBUG) && !defined(__OPENGLES__)
@@ -211,14 +198,10 @@ void APIENTRY GLDebugMessageCallback(GLenum source, GLenum type, GLuint id, GLen
    case GL_DEBUG_SEVERITY_NOTIFICATION: _severity = (LPSTR) "NOTIFICATION"; break;
    default: _severity = (LPSTR) "UNHANDLED"; break;
    }
-   if (severity != GL_DEBUG_SEVERITY_NOTIFICATION)
+   //if (severity != GL_DEBUG_SEVERITY_NOTIFICATION)
+   if (type != GL_DEBUG_TYPE_MARKER && type != GL_DEBUG_TYPE_PUSH_GROUP && type != GL_DEBUG_TYPE_POP_GROUP)
    {
-      // FIXME this will crash if the drivers performs the call on the wrong thread (nvogl does...)
-      /* assert(false);
-      PLOGE << "OpenGL Error #" << id << ": " << _type << " of " << _severity << "severity, raised from " << _source << ": " << msg;
-      fprintf(stderr, "%d: %s of %s severity, raised from %s: %s\n", id, _type, _severity, _source, msg);
-      if (type == GL_DEBUG_TYPE_ERROR || type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR || severity == GL_DEBUG_SEVERITY_HIGH)
-         ShowError(msg);*/
+      PLOGE << "OpenGL Msg #" << id << " [" << _severity << "/" << _type << " from " << _source  << "]: " << msg;
    }
 }
 #endif
