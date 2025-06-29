@@ -779,8 +779,12 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    }
 
    // Setup anisotropic filtering
-   const bool forceAniso = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ForceAnisotropicFiltering"s, true);
-   RenderDevice::SetMainTextureDefaultFiltering(forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
+   const bool forceAniso = m_ptable->m_settings.LoadValueBool(Settings::Player, "ForceAnisotropicFiltering"s);
+   Shader::SetDefaultSamplerFilter(SHADER_tex_sprite, forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
+   Shader::SetDefaultSamplerFilter(SHADER_tex_base_color, forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
+   Shader::SetDefaultSamplerFilter(SHADER_tex_base_normalmap, forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
+   Shader::SetDefaultSamplerFilter(SHADER_tex_flasher_A, forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
+   Shader::SetDefaultSamplerFilter(SHADER_tex_flasher_B, forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
 
    #if defined(EXT_CAPTURE)
    if (m_renderer->m_stereo3D == STEREO_VR)

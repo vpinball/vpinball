@@ -314,9 +314,6 @@ void RenderProbe::PreRenderStaticReflectionProbe()
 
    RenderTarget* accumulationSurface = m_prerenderRT->Duplicate("Accumulation"s);
 
-   // if rendering static/with heavy oversampling, disable the aniso/trilinear filter to get a sharper/more precise result overall!
-   RenderDevice::SetMainTextureDefaultFiltering(SF_BILINEAR);
-
    //#define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the (commented out) lattice-based QMC oversampling, 'magic factor', depending on the the number of iterations!
    // loop for X times and accumulate/average these renderings
    // NOTE: iter == 0 MUST ALWAYS PRODUCE an offset of 0,0!
@@ -380,10 +377,6 @@ void RenderProbe::PreRenderStaticReflectionProbe()
    }
    else
       m_rd->SetRenderTarget(string(), nullptr);
-
-   // if rendering static/with heavy oversampling, re-enable the aniso/trilinear filter now for the normal rendering
-   const bool forceAniso = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ForceAnisotropicFiltering"s, true);
-   RenderDevice::SetMainTextureDefaultFiltering(forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
 }
 
 void RenderProbe::RenderReflectionProbe(const unsigned int renderMask)

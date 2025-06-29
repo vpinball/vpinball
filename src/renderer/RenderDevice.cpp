@@ -1705,11 +1705,6 @@ void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddres
          glSamplerParameteri(sampler_state, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
          glSamplerParameterf(sampler_state, GL_TEXTURE_MAX_ANISOTROPY, 1.0f);
          break;
-      case SF_POINT: // Point sampled (aka nearest mipmap) texture filtering.
-         glSamplerParameteri(sampler_state, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-         glSamplerParameteri(sampler_state, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-         glSamplerParameterf(sampler_state, GL_TEXTURE_MAX_ANISOTROPY, 1.0f);
-         break;
       case SF_BILINEAR: // Bilinear texture filtering.
          glSamplerParameteri(sampler_state, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
          glSamplerParameteri(sampler_state, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -1741,14 +1736,6 @@ void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddres
          CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MINFILTER, D3DTEXF_POINT));
          CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MIPFILTER, D3DTEXF_NONE));
          m_curStateChanges+=3;
-         break;
-
-      case SF_POINT:
-         // Point sampled (aka nearest mipmap) texture filtering.
-         CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MAGFILTER, D3DTEXF_POINT));
-         CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MINFILTER, D3DTEXF_POINT));
-         CHECKD3D(m_pD3DDevice->SetSamplerState(unit, D3DSAMP_MIPFILTER, D3DTEXF_POINT));
-         m_curStateChanges += 3;
          break;
 
       case SF_BILINEAR:
@@ -2116,13 +2103,4 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
    CopyRenderStates(false, initial_state);
    SetRenderTarget(initial_rt->m_name, initial_rt->m_rt, true);
    initial_rt->m_name += '-';
-}
-
-void RenderDevice::SetMainTextureDefaultFiltering(const SamplerFilter filter)
-{
-   Shader::SetDefaultSamplerFilter(SHADER_tex_sprite, filter);
-   Shader::SetDefaultSamplerFilter(SHADER_tex_flasher_A, filter);
-   Shader::SetDefaultSamplerFilter(SHADER_tex_flasher_B, filter);
-   Shader::SetDefaultSamplerFilter(SHADER_tex_base_color, filter);
-   Shader::SetDefaultSamplerFilter(SHADER_tex_base_normalmap, filter);
 }
