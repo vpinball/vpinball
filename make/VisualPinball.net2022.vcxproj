@@ -2243,6 +2243,9 @@
     <ProjectReference Include="plugin-dmdutil.vcxproj">
       <Project>{DAFBE049-4233-430B-9A04-63223C3972E3}</Project>
     </ProjectReference>
+    <ProjectReference Include="plugin-dof.vcxproj">
+      <Project>{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}</Project>
+    </ProjectReference>
     <ProjectReference Include="plugin-helloscript.vcxproj">
       <Project>{bd05ba74-3676-42d7-ad6a-79c2de31100e}</Project>
     </ProjectReference>

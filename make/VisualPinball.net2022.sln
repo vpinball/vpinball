@@ -2,29 +2,31 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VPinball", "VisualPinball.vcxproj", "{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plugin-alphadmd", "plugin-alphadmd.vcxproj", "{2BF90D88-9139-4E66-A778-4327311AF7A7}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plugin-b2s", "plugin-b2s.vcxproj", "{7D58C20E-53F4-4AD6-9004-CA6148082491}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plugin-dmdutil", "plugin-dmdutil.vcxproj", "{DAFBE049-4233-430B-9A04-63223C3972E3}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plugin-dof", "plugin-dof.vcxproj", "{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plugin-flexdmd", "plugin-flexdmd.vcxproj", "{2BF90D88-9139-4E66-A778-4327311AF77B}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plugin-helloworld", "plugin-helloworld.vcxproj", "{2BF90D88-9139-4E66-A778-4327311AF777}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plugin-helloscript", "plugin-helloscript.vcxproj", "{BD05BA74-3676-42D7-AD6A-79C2DE31100E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plugin-flexdmd", "plugin-flexdmd.vcxproj", "{2BF90D88-9139-4E66-A778-4327311AF77B}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plugin-alphadmd", "plugin-alphadmd.vcxproj", "{2BF90D88-9139-4E66-A778-4327311AF7A7}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plugin-scoreview", "plugin-scoreview.vcxproj", "{91425C91-FDB2-4170-A5C9-A068357E59E3}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plugin-b2s", "plugin-b2s.vcxproj", "{7D58C20E-53F4-4AD6-9004-CA6148082491}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plugin-pinmame", "plugin-pinmame.vcxproj", "{2BF90D88-9139-4E66-A778-4327311AF77C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plugin-pinup-events", "plugin-pinup-events.vcxproj", "{2BF90D88-9139-4E66-A778-4327311AF779}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plugin-pup", "plugin-pup.vcxproj", "{5DFB5344-B339-49BC-B93C-B3B8D307199B}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plugin-pinmame", "plugin-pinmame.vcxproj", "{2BF90D88-9139-4E66-A778-4327311AF77C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plugin-remote-control", "plugin-remote-control.vcxproj", "{57516B53-6E7E-4618-93B3-4F5222F28807}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plugin-serum", "plugin-serum.vcxproj", "{2BF90D88-9139-4E66-A778-4327311AF778}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plugin-pinup-events", "plugin-pinup-events.vcxproj", "{2BF90D88-9139-4E66-A778-4327311AF779}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plugin-dmdutil", "plugin-dmdutil.vcxproj", "{DAFBE049-4233-430B-9A04-63223C3972E3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -216,6 +218,7 @@ Global
 		{2BF90D88-9139-4E66-A778-4327311AF77B}.Release|x64.Build.0 = Release|x64
 		{2BF90D88-9139-4E66-A778-4327311AF77B}.Release|x86.ActiveCfg = Release|Win32
 		{2BF90D88-9139-4E66-A778-4327311AF77B}.Release|x86.Build.0 = Release|Win32
+
 		{DAFBE049-4233-430B-9A04-63223C3972E3}.Debug_BGFX|x64.ActiveCfg = Debug|x64
 		{DAFBE049-4233-430B-9A04-63223C3972E3}.Debug_BGFX|x64.Build.0 = Debug|x64
 		{DAFBE049-4233-430B-9A04-63223C3972E3}.Debug_BGFX|x86.ActiveCfg = Debug|Win32
@@ -240,6 +243,32 @@ Global
 		{DAFBE049-4233-430B-9A04-63223C3972E3}.Release|x64.Build.0 = Release|x64
 		{DAFBE049-4233-430B-9A04-63223C3972E3}.Release|x86.ActiveCfg = Release|Win32
 		{DAFBE049-4233-430B-9A04-63223C3972E3}.Release|x86.Build.0 = Release|Win32
+
+		{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}.Debug_BGFX|x64.ActiveCfg = Debug|x64
+		{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}.Debug_BGFX|x64.Build.0 = Debug|x64
+		{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}.Debug_BGFX|x86.ActiveCfg = Debug|Win32
+		{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}.Debug_BGFX|x86.Build.0 = Debug|Win32
+		{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}.Debug_GL|x64.ActiveCfg = Debug|x64
+		{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}.Debug_GL|x64.Build.0 = Debug|x64
+		{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}.Debug_GL|x86.ActiveCfg = Debug|Win32
+		{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}.Debug_GL|x86.Build.0 = Debug|Win32
+		{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}.Debug|x64.ActiveCfg = Debug|x64
+		{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}.Debug|x64.Build.0 = Debug|x64
+		{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}.Debug|x86.ActiveCfg = Debug|Win32
+		{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}.Debug|x86.Build.0 = Debug|Win32
+		{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}.Release_BGFX|x64.ActiveCfg = Release|x64
+		{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}.Release_BGFX|x64.Build.0 = Release|x64
+		{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}.Release_BGFX|x86.ActiveCfg = Release|Win32
+		{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}.Release_BGFX|x86.Build.0 = Release|Win32
+		{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}.Release_GL|x64.ActiveCfg = Release|x64
+		{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}.Release_GL|x64.Build.0 = Release|x64
+		{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}.Release_GL|x86.ActiveCfg = Release|Win32
+		{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}.Release_GL|x86.Build.0 = Release|Win32
+		{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}.Release|x64.ActiveCfg = Release|x64
+		{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}.Release|x64.Build.0 = Release|x64
+		{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}.Release|x86.ActiveCfg = Release|Win32
+		{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}.Release|x86.Build.0 = Release|Win32
+
 		{2BF90D88-9139-4E66-A778-4327311AF77C}.Debug_BGFX|x64.ActiveCfg = Debug|x64
 		{2BF90D88-9139-4E66-A778-4327311AF77C}.Debug_BGFX|x64.Build.0 = Debug|x64
 		{2BF90D88-9139-4E66-A778-4327311AF77C}.Debug_BGFX|x86.ActiveCfg = Debug|Win32
