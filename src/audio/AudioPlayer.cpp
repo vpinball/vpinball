@@ -27,6 +27,8 @@ static ma_result ma_context_enumerate_devices__sdl(ma_context* pContext, ma_enum
 {
    int count;
    SDL_AudioDeviceID* pAudioList = SDL_GetAudioPlaybackDevices(&count);
+   if (pAudioList == nullptr)
+      return MA_ERROR;
    for (int i = 0; i < count; ++i)
    {
       ma_device_info deviceInfo;
@@ -239,27 +241,27 @@ AudioPlayer::AudioPlayer(const Settings& settings)
    struct SDLDeviceInfo
    {
       int id;
-      const ma_device_info* dev;
+      ma_device_info dev;
    };
    auto selectDevice = [](ma_context* pContext, ma_device_type deviceType, const ma_device_info* pInfo, void* pUserData) {
       SDLDeviceInfo* info = (SDLDeviceInfo*)pUserData;
       if (pInfo->id.custom.i == info->id)
       {
-         info->dev = pInfo;
+         info->dev = *pInfo;
          return (ma_bool32)MA_FALSE;
       }
       return (ma_bool32)MA_TRUE;
    };
 
    {
-      SDLDeviceInfo deviceInfo { m_backglassAudioDevice, nullptr };
+      SDLDeviceInfo deviceInfo { m_backglassAudioDevice, { 0 } };
+      ma_context_get_device_info(m_maContext.get(), ma_device_type_playback, nullptr, &deviceInfo.dev);
       ma_context_enumerate_devices(m_maContext.get(), selectDevice, &deviceInfo);
-      ma_device_id deviceId = deviceInfo.dev->id;
 
       m_backglassDevice = std::make_unique<ma_device_ex>();
       ma_device_config deviceConfig;
       deviceConfig = ma_device_config_init(ma_device_type_playback);
-      deviceConfig.playback.pDeviceID = &deviceId;
+      deviceConfig.playback.pDeviceID = &deviceInfo.dev.id;
       deviceConfig.playback.format = ma_format_f32;
       deviceConfig.noPreSilencedOutputBuffer = MA_TRUE; // We'll always be outputting to every frame in the callback so there's no need for a pre-silenced buffer.
       deviceConfig.noClip = MA_TRUE; // The engine will do clipping itself.
@@ -286,14 +288,14 @@ AudioPlayer::AudioPlayer(const Settings& settings)
    }
 
    {
-      SDLDeviceInfo deviceInfo { m_playfieldAudioDevice, nullptr };
+      SDLDeviceInfo deviceInfo { m_backglassAudioDevice, { 0 } };
+      ma_context_get_device_info(m_maContext.get(), ma_device_type_playback, nullptr, &deviceInfo.dev);
       ma_context_enumerate_devices(m_maContext.get(), selectDevice, &deviceInfo);
-      ma_device_id deviceId = deviceInfo.dev->id;
 
       m_playfieldDevice = std::make_unique<ma_device_ex>();
       ma_device_config deviceConfig;
       deviceConfig = ma_device_config_init(ma_device_type_playback);
-      deviceConfig.playback.pDeviceID = &deviceId;
+      deviceConfig.playback.pDeviceID = &deviceInfo.dev.id;
       deviceConfig.playback.format = ma_format_f32;
       deviceConfig.noPreSilencedOutputBuffer = MA_TRUE; // We'll always be outputting to every frame in the callback so there's no need for a pre-silenced buffer.
       deviceConfig.noClip = MA_TRUE; // The engine will do clipping itself.
