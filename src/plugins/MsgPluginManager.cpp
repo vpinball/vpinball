@@ -246,11 +246,14 @@ void MsgPluginManager::RunOnMainThread(const double delayInS, const msgpi_timer_
       callback(userData);
       return;
    }
-   const std::lock_guard<std::mutex> lock(pm.m_timerListMutex);
+   std::unique_lock<std::mutex> lock(pm.m_timerListMutex);
    if (delayInS < 0.)
    {
       pm.m_timers.insert(pm.m_timers.begin(), TimerEntry { callback, userData, std::chrono::high_resolution_clock::now() });
-      // FIXME block until processed
+      // FIXME block cleanly until processed
+      lock.unlock();
+      while (!pm.m_timers.empty())
+         std::this_thread::sleep_for(std::chrono::nanoseconds(100));
    }
    else
    {
