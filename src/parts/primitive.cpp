@@ -1273,7 +1273,7 @@ void Primitive::Render(const unsigned int renderMask)
    float pinAlphaTest;
    if (g_pplayer->m_texPUP && m_isBackGlassImage)
    {
-      pin = g_pplayer->m_texPUP;
+      pin = g_pplayer->m_texPUP.get();
       pinAlphaTest = 0.f;
    }
    else

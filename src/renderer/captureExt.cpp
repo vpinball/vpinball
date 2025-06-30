@@ -34,7 +34,7 @@ ExtCaptureManager::CaptureState ExtCaptureManager::GetState(const string& name) 
    return CS_Undeclared;
 }
 
-void ExtCaptureManager::StartCapture(const string& name, BaseTexture** targetTexture, const vector<string>& windowlist)
+void ExtCaptureManager::StartCapture(const string& name, std::shared_ptr<BaseTexture>* targetTexture, const vector<string>& windowlist)
 {
    m_captureMutex.lock();
    Capture* const capture = new Capture();
@@ -84,8 +84,7 @@ void ExtCaptureManager::Update()
          const std::lock_guard<std::mutex> guard(m_captureMutex);
          if (*capture->m_targetTexture != nullptr)
          {
-            g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture(*capture->m_targetTexture);
-            delete *capture->m_targetTexture;
+            g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture(capture->m_targetTexture->get());
             *capture->m_targetTexture = nullptr;
          }
          // Sleaze alert! - ec creates a HBitmap, but we hijack ec's data pointer to dump its data directly into VP's texture
@@ -109,7 +108,7 @@ void ExtCaptureManager::Update()
       {
          // We do not lock wait on the update thread when pushing the update information to the texture manager to limit the performance impact
          capture->m_updated = false;
-         g_pplayer->m_renderer->m_renderDevice->m_texMan.SetDirty(*capture->m_targetTexture);
+         g_pplayer->m_renderer->m_renderDevice->m_texMan.SetDirty(capture->m_targetTexture->get());
       }
    }
 

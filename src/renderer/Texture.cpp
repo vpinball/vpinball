@@ -49,7 +49,6 @@ BaseTexture::BaseTexture(const unsigned int w, const unsigned int h, const Forma
    , m_liveHash(((uint64_t)this) ^ usec() ^ ((uint64_t)w << 16) ^ ((uint64_t)h << 32) ^ format)
    , m_data(new uint8_t[w * h * GetPixelSize(format)])
 {
-   m_selfPointer = std::shared_ptr<BaseTexture>(this, [](BaseTexture*) { });
 }
 
 BaseTexture::~BaseTexture()
@@ -62,7 +61,7 @@ unsigned int BaseTexture::pitch() const
    return m_width * GetPixelSize(m_format);
 }
 
-BaseTexture* BaseTexture::Create(const unsigned int w, const unsigned int h, const Format format) noexcept
+std::shared_ptr<BaseTexture> BaseTexture::Create(const unsigned int w, const unsigned int h, const Format format) noexcept
 {
    BaseTexture* tex = nullptr;
    try
@@ -75,10 +74,12 @@ BaseTexture* BaseTexture::Create(const unsigned int w, const unsigned int h, con
       delete tex;
       return nullptr;
    }
-   return tex;
+   auto result = std::shared_ptr<BaseTexture>(tex);
+   tex->m_selfPointer = result;
+   return result;
 }
 
-BaseTexture* BaseTexture::CreateFromFile(const string& filename, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept
+std::shared_ptr<BaseTexture> BaseTexture::CreateFromFile(const string& filename, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept
 {
    if (filename.empty())
       return nullptr;
@@ -87,9 +88,9 @@ BaseTexture* BaseTexture::CreateFromFile(const string& filename, unsigned int ma
    return CreateFromData(ppb.m_buffer.data(), ppb.m_buffer.size(), true, maxTexDimension, resizeOnLowMem);
 }
 
-BaseTexture* BaseTexture::CreateFromData(const void* data, const size_t size, const bool isImageData, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept
+std::shared_ptr<BaseTexture> BaseTexture::CreateFromData(const void* data, const size_t size, const bool isImageData, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept
 {
-   BaseTexture* tex = nullptr;
+   std::shared_ptr<BaseTexture> tex;
    
    // Try to load using fast JPG path via stbi if no texture resize must be triggered
    if (maxTexDimension == 0 && !resizeOnLowMem)
@@ -146,17 +147,13 @@ BaseTexture* BaseTexture::CreateFromData(const void* data, const size_t size, co
    
    #ifdef __OPENGLES__
    if (tex && (tex->m_format == SRGB || tex->m_format == RGB_FP16 || tex->m_format == RGB_FP32))
-   {
-      BaseTexture* newTex = tex->NewWithAlpha();
-      delete tex;
-      tex = newTex;
-   }
+      tex = tex->NewWithAlpha();
    #endif
    
    return tex;
 }
 
-BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, const bool isImageData, unsigned int maxTexDim, bool resizeOnLowMem) noexcept
+std::shared_ptr<BaseTexture> BaseTexture::CreateFromFreeImage(FIBITMAP* dib, const bool isImageData, unsigned int maxTexDim, bool resizeOnLowMem) noexcept
 {
    // check if Textures exceed the maximum texture dimension
    if (maxTexDim <= 0)
@@ -167,7 +164,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, const bool isImageD
 
    FIBITMAP* dibResized = dib;
    FIBITMAP* dibConv = dib;
-   BaseTexture* tex = nullptr;
+   std::shared_ptr<BaseTexture> tex;
 
    // do loading in a loop, in case memory runs out and we need to scale the texture down due to this
    bool success = false;
@@ -279,17 +276,10 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, const bool isImageD
          format = isImageData ? (has_alpha ? SRGBA : SRGB) : (has_alpha ? RGBA : RGB);
       }
 
-      try
-      {
-         tex = BaseTexture::Create(tex_w, tex_h, format);
-         success = true;
-      }
-      // failed to get mem?
-      catch(...)
-      {
-         delete tex;
-         tex = nullptr;
-
+      tex = BaseTexture::Create(tex_w, tex_h, format);
+      success = tex != nullptr;
+      if (!success)
+      { // failed to get mem?
          if (dibConv != dibResized) // did we allocate a copy from conversion?
             FreeImage_Unload(dibConv);
          else if (dibResized != dib) // did we allocate a rescaled copy?
@@ -406,7 +396,7 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib, const bool isImageD
    return tex;
 }
 
-BaseTexture* BaseTexture::CreateFromHBitmap(const HBITMAP hbmp, unsigned int maxTexDim, bool with_alpha) noexcept
+std::shared_ptr<BaseTexture> BaseTexture::CreateFromHBitmap(const HBITMAP hbmp, unsigned int maxTexDim, bool with_alpha) noexcept
 {
    #ifdef __STANDALONE__
       return nullptr;
@@ -442,47 +432,35 @@ BaseTexture* BaseTexture::CreateFromHBitmap(const HBITMAP hbmp, unsigned int max
    #endif
 }
 
-void BaseTexture::Update(BaseTexture** texture, const unsigned int width, const unsigned int height, const Format texFormat, const uint8_t* image)
+void BaseTexture::Update(std::shared_ptr<BaseTexture>& tex, const unsigned int width, const unsigned int height, const Format texFormat, const uint8_t* image)
 {
    const int pixelSize = GetPixelSize(texFormat);
    string name;
-   if (*texture != nullptr)
+   if (tex != nullptr)
    {
-      BaseTexture* tex = *texture;
       name = tex->GetName();
       if ((tex->m_width == width) && (tex->m_height == height) && (tex->m_format == texFormat))
       {
          assert(tex->pitch() * tex->height() == width * height * pixelSize);
          memcpy(tex->data(), image, width * height * pixelSize);
          if (g_pplayer)
-            g_pplayer->m_renderer->m_renderDevice->m_texMan.SetDirty(tex);
+            g_pplayer->m_renderer->m_renderDevice->m_texMan.SetDirty(tex.get());
          return;
       }
-      else if (g_pplayer)
-      {
-         // Delay texture deletion since it may be used by the render frame which is processed asynchronously. If so, deleting would cause a deadlock & invalid access
-         g_pplayer->m_renderer->m_renderDevice->AddEndOfFrameCmd([tex] {
-               g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture(tex);
-               delete tex;
-            });
-      }
-      else
-      {
-         delete tex;
-      }
+      if (g_pplayer)
+         g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture(tex.get());
    }
-   BaseTexture* baseTex = BaseTexture::Create(width, height, texFormat);
-   if (baseTex)
+   tex = BaseTexture::Create(width, height, texFormat);
+   if (tex)
    {
-      baseTex->SetName(name);
-      memcpy(baseTex->data(), image, (size_t)width * height * pixelSize);
+      tex->SetName(name);
+      memcpy(tex->data(), image, (size_t)width * height * pixelSize);
    }
-   *texture = baseTex;
 }
 
-BaseTexture* BaseTexture::Convert(Format format) const
+std::shared_ptr<BaseTexture> BaseTexture::Convert(Format format) const
 {
-   BaseTexture* tex = nullptr;
+   std::shared_ptr<BaseTexture> tex = nullptr;
 
    switch (m_format)
    {
@@ -601,9 +579,9 @@ BaseTexture* BaseTexture::Convert(Format format) const
    return tex;
 }
 
-BaseTexture* BaseTexture::ToBGRA() const
+std::shared_ptr<BaseTexture> BaseTexture::ToBGRA() const
 {
-   BaseTexture* tex = BaseTexture::Create(m_width, m_height, RGBA);
+   std::shared_ptr<BaseTexture> tex = BaseTexture::Create(m_width, m_height, RGBA);
    if (tex == nullptr)
       return nullptr;
 
@@ -913,7 +891,7 @@ Texture* Texture::CreateFromFile(const string& filename, const bool isImageData)
    PinBinary* const ppb = new PinBinary();
    ppb->ReadFromFile(filename);
 
-   BaseTexture* const imageBuffer = BaseTexture::CreateFromData(ppb->m_buffer.data(), ppb->m_buffer.size(), isImageData);
+   std::shared_ptr<BaseTexture> const imageBuffer = BaseTexture::CreateFromData(ppb->m_buffer.data(), ppb->m_buffer.size(), isImageData);
    if (imageBuffer == nullptr)
    {
       delete ppb;
@@ -921,7 +899,7 @@ Texture* Texture::CreateFromFile(const string& filename, const bool isImageData)
    }
 
    Texture* tex = new Texture(TitleFromFilename(filename), ppb, imageBuffer->m_realWidth, imageBuffer->m_realHeight);
-   tex->m_imageBuffer = std::shared_ptr<BaseTexture>(imageBuffer);
+   tex->m_imageBuffer = imageBuffer;
    tex->UpdateMD5();
    tex->UpdateOpaque();
    return tex;
@@ -1027,13 +1005,13 @@ HBITMAP Texture::GetGDIBitmap() const
    bmi.bmiHeader.biCompression = BI_RGB;
    bmi.bmiHeader.biSizeImage = 0;
 
-   BaseTexture* bgr32bits = buffer->ToBGRA();
+   std::shared_ptr<BaseTexture> bgr32bits = buffer->ToBGRA();
    SetStretchBltMode(hdcNew, COLORONCOLOR);
    StretchDIBits(hdcNew,
       0, 0, m_width, m_height,
       0, 0, m_width, m_height,
       bgr32bits->data(), &bmi, DIB_RGB_COLORS, SRCCOPY);
-   delete bgr32bits;
+   bgr32bits = nullptr;
 
    SelectObject(hdcNew, hbmOld);
    DeleteDC(hdcNew);

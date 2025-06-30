@@ -933,7 +933,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    int n_tex_units = min(max_frag_unit, max_combined_unit);
    for (int i = 0; i < n_tex_units; i++)
    {
-      SamplerBinding* binding = new SamplerBinding();
+      Sampler::SamplerBinding* binding = new Sampler::SamplerBinding();
       binding->unit = i;
       binding->use_rank = i;
       binding->sampler = nullptr;
@@ -1574,11 +1574,10 @@ void RenderDevice::Flip()
 void RenderDevice::UploadAndSetSMAATextures()
 {
    // TODO use standard BaseTexture / Sampler code instead
-   /* BaseTexture* searchBaseTex = BaseTexture::Create(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, BaseTexture::BW);
+   /* std::shared_ptr<BaseTexture> searchBaseTex = BaseTexture::Create(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, BaseTexture::BW);
    memcpy(searchBaseTex->data(), searchTexBytes, SEARCHTEX_SIZE);
    m_SMAAsearchTexture = std::make_shared<Sampler>(this, "SMAA Search"s, searchBaseTex, true);
-   m_SMAAsearchTexture->SetName("SMAA Search"s);
-   delete searchBaseTex;*/
+   m_SMAAsearchTexture->SetName("SMAA Search"s); */
 
 #if defined(ENABLE_BGFX)
    bgfx::TextureHandle smaaAreaTex = bgfx::createTexture2D(AREATEX_WIDTH, AREATEX_HEIGHT, false, 1, bgfx::TextureFormat::RG8, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP, bgfx::makeRef(areaTexBytes, AREATEX_SIZE));

@@ -294,7 +294,7 @@ private:
 public:
    int getGLVersion() const { return m_GLversion; }
    vector<MeshBuffer::SharedVAO*> m_sharedVAOs;
-   vector<SamplerBinding*> m_samplerBindings;
+   vector<Sampler::SamplerBinding*> m_samplerBindings;
    GLuint m_curVAO = 0;
    SDL_GLContext m_sdl_context = nullptr;
    #ifndef __STANDALONE__

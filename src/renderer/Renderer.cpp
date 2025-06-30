@@ -270,9 +270,9 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    // There is a bug when using the Metal shader, so we use the CPU path for it as well
    #if defined(ENABLE_DX9) || defined(__OPENGLES__) || defined(__APPLE__)
       m_envRadianceTexture = EnvmapPrecalc(envTex, envTexWidth, envTexHeight);
-      m_renderDevice->m_texMan.SetDirty(m_envRadianceTexture);
-      m_renderDevice->m_basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
-      m_renderDevice->m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture);
+      m_renderDevice->m_texMan.SetDirty(m_envRadianceTexture.get());
+      m_renderDevice->m_basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture.get());
+      m_renderDevice->m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture.get());
    #else // Compute radiance on the GPU
       const colorFormat rad_format = envTex->m_format == BaseTexture::RGB_FP32 ? colorFormat::RGBA32F : colorFormat::RGBA16F;
       m_envRadianceTexture = new RenderTarget(m_renderDevice, SurfaceType::RT_DEFAULT, "Irradiance"s, envTexWidth, envTexHeight, rad_format, false, 1, "Failed to create irradiance render target");
@@ -394,9 +394,6 @@ Renderer::~Renderer()
 {
    delete m_mvp;
    m_gpu_profiler.Shutdown();
-   delete m_ballImage;
-   delete m_decalImage;
-   delete m_envRadianceTexture;
    delete m_backGlass;
    delete m_ballMeshBuffer;
    #ifdef DEBUG_BALL_SPIN
@@ -509,14 +506,14 @@ void Renderer::SwapAORenderTargets()
    m_pAORenderTarget2 = tmpAO;
 }
 
-BaseTexture* Renderer::EnvmapPrecalc(std::shared_ptr<const BaseTexture> envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres)
+std::shared_ptr<BaseTexture> Renderer::EnvmapPrecalc(std::shared_ptr<const BaseTexture> envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres)
 {
    const void* __restrict envmap = envTex->datac();
    const unsigned int env_xres = envTex->width();
    const unsigned int env_yres = envTex->height();
    BaseTexture::Format env_format = envTex->m_format;
    const BaseTexture::Format rad_format = (env_format == BaseTexture::RGB_FP16 || env_format == BaseTexture::RGB_FP32) ? env_format : BaseTexture::SRGB;
-   BaseTexture* radTex = BaseTexture::Create(rad_env_xres, rad_env_yres, rad_format);
+   std::shared_ptr<BaseTexture> radTex = BaseTexture::Create(rad_env_xres, rad_env_yres, rad_format);
    uint8_t* const __restrict rad_envmap = radTex->data();
    bool free_envmap = false;
 
@@ -884,11 +881,8 @@ BaseTexture* Renderer::EnvmapPrecalc(std::shared_ptr<const BaseTexture> envTex, 
 #endif
 
 #ifdef __OPENGLES__
-   if (radTex->m_format == BaseTexture::SRGB || radTex->m_format == BaseTexture::RGB_FP16) {
-      BaseTexture* tex = radTex->NewWithAlpha();
-      delete radTex;
-      radTex = tex;
-   }
+   if (radTex->m_format == BaseTexture::SRGB || radTex->m_format == BaseTexture::RGB_FP16)
+      radTex = radTex->NewWithAlpha();
 #endif
 
    return radTex;
@@ -1349,7 +1343,7 @@ void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const ve
    m_renderDevice->m_DMDShader->SetTechnique(isBackdrop ? SHADER_TECHNIQUE_display_Seg : SHADER_TECHNIQUE_display_Seg_world);
 }
 
-void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, BaseTexture* dmd, const float alpha, const ColorSpace colorSpace, Vertex3D_NoTex2* vertices,
+void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, std::shared_ptr<BaseTexture> dmd, const float alpha, const ColorSpace colorSpace, Vertex3D_NoTex2* vertices,
    const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex, const vec4& glassArea, const vec3& glassAmbient)
 {
    // Legacy DMD renderer
@@ -1367,7 +1361,7 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& co
       #endif
       m_renderDevice->m_DMDShader->SetVector(SHADER_glassArea, 0.f, 0.f, 1.f, 1.f);
       m_renderDevice->m_DMDShader->SetTechnique(isBackdrop ? SHADER_TECHNIQUE_basic_DMD : SHADER_TECHNIQUE_basic_DMD_world);
-      m_renderDevice->m_DMDShader->SetTexture(SHADER_tex_dmd, dmd);
+      m_renderDevice->m_DMDShader->SetTexture(SHADER_tex_dmd, dmd.get());
    }
    // New DMD renderer
    else
@@ -1427,7 +1421,7 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& co
       }
       m_renderDevice->m_DMDShader->SetVector(SHADER_glassArea, &glassArea);
       m_renderDevice->m_DMDShader->SetVector(SHADER_glassPad, emitterPad.x - parallaxU, emitterPad.z + parallaxU, emitterPad.y - parallaxV, emitterPad.w + parallaxV);
-      m_renderDevice->m_DMDShader->SetTexture(SHADER_displayTex, dmd);
+      m_renderDevice->m_DMDShader->SetTexture(SHADER_displayTex, dmd.get());
       m_renderDevice->m_DMDShader->SetTechnique(isBackdrop ? SHADER_TECHNIQUE_display_DMD : SHADER_TECHNIQUE_display_DMD_world);
    }
 }

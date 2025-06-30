@@ -1191,7 +1191,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          #elif defined(ENABLE_OPENGL)
          // DX9 implementation uses preaffected texture units, not samplers, so these can not be used for OpenGL. This would cause some collisions.
          m_renderDevice->m_curParameterChanges--;
-         SamplerBinding* tex_unit = nullptr;
+         Sampler::SamplerBinding* tex_unit = nullptr;
          for (auto binding : texel->m_bindings)
          {
             if (binding->filter == filter && binding->clamp_u == clampu && binding->clamp_v == clampv)

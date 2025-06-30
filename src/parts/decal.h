@@ -75,7 +75,7 @@ private:
 
    RenderDevice *m_rd = nullptr;
    MeshBuffer *m_meshBuffer = nullptr;
-   BaseTexture *m_textImg = nullptr;
+   std::shared_ptr<BaseTexture> m_textImg = nullptr;
    float m_leading = 0.0f, m_descent = 0.0f;
    float m_realwidth = 0.0f, m_realheight = 0.0f;
 

@@ -262,7 +262,24 @@ void Sampler::UpdateTexture(std::shared_ptr<const BaseTexture> surf, const bool 
    const std::lock_guard<std::mutex> lock(m_textureUpdateMutex);
    if (m_textureUpdate)
       bgfx::release(m_textureUpdate);
-   m_textureUpdate = nullptr;
+   assert(m_textureUpdate == nullptr);
+
+   // Instead of copying the data, we hold a strong reference on them until they are uploaded to the GPU (that's the reason we want a shared_ptr)
+   struct SurfRef
+   {
+      Sampler* me;
+      std::shared_ptr<const BaseTexture> surf;
+   };
+   auto ref = new SurfRef();
+   ref->me = this;
+   ref->surf = surf;
+   auto releaseFn = [](void* _ptr, void* _userData)
+   {
+      SurfRef* ref = static_cast<SurfRef*>(_userData);
+      const std::lock_guard<std::mutex> lock(ref->me->m_textureUpdateMutex);
+      delete ref;
+   };
+
    m_isTextureUpdateLinear = BaseTexture::IsLinearFormat(surf->m_format) || force_linear_rgb;
    switch (surf->m_format)
    {
@@ -271,41 +288,25 @@ void Sampler::UpdateTexture(std::shared_ptr<const BaseTexture> surf, const bool 
    case BaseTexture::RGBA: assert(m_bgfx_format == bgfx::TextureFormat::Enum::RGBA8); break;
    case BaseTexture::SRGB:
       if (m_bgfx_format == bgfx::TextureFormat::Enum::RGBA8)
-      {
-         BaseTexture* tmp = surf->Convert(BaseTexture::SRGBA);
-         auto releaseFn = [](void* _ptr, void* _userData) { delete static_cast<BaseTexture*>(_userData); };
-         m_textureUpdate = bgfx::makeRef(tmp->datac(), m_height * tmp->pitch(), releaseFn, (void*)tmp);
-      }
+         ref->surf = surf->Convert(BaseTexture::SRGBA);
       else
          assert(m_bgfx_format == bgfx::TextureFormat::Enum::RGB8);
       break;
    case BaseTexture::SRGBA: assert(m_bgfx_format == bgfx::TextureFormat::Enum::RGBA8); break;
    case BaseTexture::SRGB565:
       if (m_bgfx_format == bgfx::TextureFormat::Enum::RGBA8)
-      {
-         BaseTexture* tmp = surf->Convert(BaseTexture::SRGBA);
-         auto releaseFn = [](void* _ptr, void* _userData) { delete static_cast<BaseTexture*>(_userData); };
-         m_textureUpdate = bgfx::makeRef(tmp->datac(), m_height * tmp->pitch(), releaseFn, (void*)tmp);
-      }
+         ref->surf = surf->Convert(BaseTexture::SRGBA);
       else
          assert(m_bgfx_format == bgfx::TextureFormat::Enum::R5G6B5);
       break;
    case BaseTexture::RGB_FP16:
       assert(m_bgfx_format == bgfx::TextureFormat::Enum::RGBA16F);
-      {
-         BaseTexture* tmp = surf->Convert(BaseTexture::RGBA_FP16);
-         auto releaseFn = [](void* _ptr, void* _userData) { delete static_cast<BaseTexture*>(_userData); };
-         m_textureUpdate = bgfx::makeRef(tmp->datac(), m_height * tmp->pitch(), releaseFn, (void*)tmp);
-      }
+      ref->surf = surf->Convert(BaseTexture::RGBA_FP16);
       break;
    case BaseTexture::RGBA_FP16: assert(m_bgfx_format == bgfx::TextureFormat::Enum::RGBA16F); break;
    case BaseTexture::RGB_FP32:
       assert(m_bgfx_format == bgfx::TextureFormat::Enum::RGBA32F);
-      {
-         BaseTexture* tmp = surf->Convert(BaseTexture::RGBA_FP32);
-         auto releaseFn = [](void* _ptr, void* _userData) { delete static_cast<BaseTexture*>(_userData); };
-         m_textureUpdate = bgfx::makeRef(tmp->datac(), m_height * tmp->pitch(), releaseFn, (void*)tmp);
-      }
+      ref->surf = surf->Convert(BaseTexture::RGBA_FP32);
       break;
    case BaseTexture::RGBA_FP32: assert(m_bgfx_format == bgfx::TextureFormat::Enum::RGBA32F); break;
    default: assert(false); break;
@@ -314,8 +315,7 @@ void Sampler::UpdateTexture(std::shared_ptr<const BaseTexture> surf, const bool 
    assert(bgfx::isTextureValid(1, false, 1, m_bgfx_format, m_isTextureUpdateLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB));
    assert(bgfx::isTextureValid(1, false, 1, m_bgfx_format, (m_isTextureUpdateLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB) | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST));
 
-   if (m_textureUpdate == nullptr)
-      m_textureUpdate = bgfx::copy(surf->datac(), static_cast<uint32_t>(surf->height() * surf->pitch()));
+   m_textureUpdate = bgfx::makeRef(ref->surf->datac(), static_cast<uint32_t>(ref->surf->height() * ref->surf->pitch()), releaseFn, (void*)ref);
 
 #elif defined(ENABLE_OPENGL)
    colorFormat format;

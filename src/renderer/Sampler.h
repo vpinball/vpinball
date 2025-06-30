@@ -35,17 +35,6 @@ enum SurfaceType
    RT_CUBEMAP // Cubemap texture (6 layers)
 };
 
-class Sampler;
-struct SamplerBinding
-{
-   int unit;
-   int use_rank;
-   std::shared_ptr<const Sampler> sampler;
-   SamplerFilter filter;
-   SamplerAddressMode clamp_u;
-   SamplerAddressMode clamp_v;
-};
-
 class Sampler final
 {
 public:
@@ -97,6 +86,15 @@ private:
    GLuint m_texture = 0;
    GLuint CreateTexture(std::shared_ptr<const BaseTexture> surf, unsigned int Levels, colorFormat Format, int stereo);
 public:
+   struct SamplerBinding
+   {
+      int unit;
+      int use_rank;
+      std::shared_ptr<const Sampler> sampler;
+      SamplerFilter filter;
+      SamplerAddressMode clamp_u;
+      SamplerAddressMode clamp_v;
+   };
    mutable ankerl::unordered_dense::set<SamplerBinding*> m_bindings;
 #elif defined(ENABLE_DX9)
    IDirect3DTexture9* m_texture = nullptr;

@@ -438,7 +438,6 @@ void Textbox::RenderSetup(RenderDevice *device)
 void Textbox::RenderRelease()
 {
    assert(m_rd != nullptr);
-   delete m_texture;
    m_texture = nullptr;
    SAFE_RELEASE(m_pIFontPlay);
    m_rd = nullptr;
@@ -517,7 +516,7 @@ void Textbox::Render(const unsigned int renderMask)
       ResURIResolver::DisplayState dmd = g_pplayer->m_resURIResolver.GetDisplayState("ctrl://default/display");
       if (dmd.state.frame == nullptr)
          return;
-      BaseTexture::Update(&m_texture, dmd.source->width, dmd.source->height, 
+      BaseTexture::Update(m_texture, dmd.source->width, dmd.source->height, 
               dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8    ? BaseTexture::BW
             : dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565
                                                                       : BaseTexture::SRGB,
@@ -672,12 +671,12 @@ void Textbox::Render(const unsigned int renderMask)
             SDL_DestroySurface(pSurface);
          }
 #endif
-         m_rd->m_texMan.SetDirty(m_texture);
+         m_rd->m_texMan.SetDirty(m_texture.get());
       }
 
       m_rd->ResetRenderState();
       m_rd->m_DMDShader->SetFloat(SHADER_alphaTestValue, (float)(128.0 / 255.0));
-      g_pplayer->m_renderer->DrawSprite(x, y, w, h, 0xFFFFFFFF, m_rd->m_texMan.LoadTexture(m_texture, false), m_d.m_intensity_scale);
+      g_pplayer->m_renderer->DrawSprite(x, y, w, h, 0xFFFFFFFF, m_rd->m_texMan.LoadTexture(m_texture.get(), false), m_d.m_intensity_scale);
       m_rd->m_DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f);
    }
 }

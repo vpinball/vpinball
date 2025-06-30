@@ -367,7 +367,7 @@ public:
    // External DMD and displays, defined from script or captured
    bool m_capExtDMD = false; // frame capturing (hack for VR)
    int2 m_dmdSize = int2(0, 0); // DMD defined through VPX API DMDWidth/DMDHeight/DMDPixels/DMDColoredPixels
-   BaseTexture* m_dmdFrame = nullptr;
+   std::shared_ptr<BaseTexture> m_dmdFrame = nullptr;
    int m_dmdFrameId = 0;
 
    ResURIResolver m_resURIResolver;
@@ -375,7 +375,7 @@ public:
 
 public:
    bool m_capPUP = false;
-   BaseTexture *m_texPUP = nullptr;
+   std::shared_ptr<BaseTexture> m_texPUP = nullptr;
 
    unsigned int m_overall_frames = 0; // amount of rendered frames since start
 

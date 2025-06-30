@@ -57,7 +57,7 @@ public:
    };
    void SetupSegmentRenderer(int profile, const bool isBackdrop, const vec3& color, const float brightness, const SegmentFamily family, const SegElementType type, const float* segs, const ColorSpace colorSpace, Vertex3D_NoTex2* vertices,
       const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex, const vec4& glassArea, const vec3& glassAmbient);
-   void SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, BaseTexture* dmd, const float alpha, const ColorSpace colorSpace, Vertex3D_NoTex2 *vertices,
+   void SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, std::shared_ptr<BaseTexture> dmd, const float alpha, const ColorSpace colorSpace, Vertex3D_NoTex2 *vertices,
       const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex, const vec4& glassArea, const vec3& glassAmbient);
    void DrawStatics();
    void DrawDynamics(bool onlyBalls);
@@ -98,8 +98,8 @@ public:
    bool m_trailForBalls = false;
    float m_ballTrailStrength = 0.5f;
    bool m_overwriteBallImages = false;
-   BaseTexture* m_ballImage = nullptr;
-   BaseTexture* m_decalImage = nullptr;
+   std::shared_ptr<BaseTexture> m_ballImage = nullptr;
+   std::shared_ptr<BaseTexture> m_decalImage = nullptr;
 
    // Post processing
    void SetScreenOffset(const float x, const float y); // set render offset in screen coordinates, e.g., for the nudge shake
@@ -151,7 +151,7 @@ private:
    bool IsBloomEnabled() const;
    void Bloom();
    void SSRefl();
-   BaseTexture* EnvmapPrecalc(std::shared_ptr<const BaseTexture> envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres);
+   std::shared_ptr<BaseTexture> EnvmapPrecalc(std::shared_ptr<const BaseTexture> envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres);
 
    bool m_shaderDirty = true;
    void SetupShaders();
@@ -228,7 +228,7 @@ private:
    Texture* m_tonemapLUT = nullptr;
 
    #if defined(ENABLE_DX9) || defined(__OPENGLES__) || defined(__APPLE__)
-   BaseTexture* m_envRadianceTexture = nullptr;
+   std::shared_ptr<BaseTexture> m_envRadianceTexture = nullptr;
    #else
    RenderTarget* m_envRadianceTexture = nullptr;
    #endif

@@ -16,7 +16,7 @@ public:
 
 private:
    RenderDevice* m_pd3dDevice;
-   BaseTexture* m_loaded_image; 
+   std::shared_ptr<BaseTexture> m_loaded_image; 
    Texture* m_backgroundFallback;
    std::shared_ptr<Sampler> m_backgroundTexture;
    int2 m_backglass_dmd;

@@ -32,6 +32,8 @@ public:
    string ApplyScriptCOMObjectOverrides(string& script) const;
    IDispatch* CreateCOMPluginObject(const string& classId);
 
+   std::shared_ptr<BaseTexture> GetTexture(VPXTexture texture) const;
+
 private:
    VPXPluginAPIImpl();
 
