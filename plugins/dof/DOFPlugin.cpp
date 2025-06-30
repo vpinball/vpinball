@@ -17,7 +17,20 @@
 #include "DOF/DOF.h"
 #pragma warning(pop)
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <windows.h>
+#include <locale>
+#endif
+
 using namespace std;
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Direct Output Framework plugin
+//
+// TODO the polling system needs to be extended to also listen for B2S controller
 
 namespace DOFPlugin {
    
@@ -42,6 +55,8 @@ static int pmGiIndex = -1;
 static unsigned int nPmGIs = 0;
 static int pmLampIndex = -1;
 static unsigned int nPmLamps = 0;
+
+static std::thread pollThread;
 
 static DOF::DOF* pDOF = nullptr;
 
@@ -101,20 +116,98 @@ static bool GetSettingBool(MsgPluginAPI* pMsgApi, const char* section, const cha
    return (s.empty() || (std::from_chars(s.c_str(), s.c_str() + s.length(), result).ec != std::errc{})) ? def : (result != 0);
 }
 
+#ifdef _WIN32
+void SetThreadName(const std::string& name)
+{
+   int size_needed = MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, NULL, 0);
+   if (size_needed == 0)
+      return;
+   std::wstring wstr(size_needed, 0);
+   if (MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, wstr.data(), size_needed) == 0)
+      return;
+   HRESULT hr = SetThreadDescription(GetCurrentThread(), wstr.c_str());
+}
+#else
+void SetThreadName(const std::string& name) { }
+#endif   
+
+static void PollThread(string tablePath, string gameId)
+{
+   assert(pDOF != nullptr);
+   SetThreadName("DOF.PollThread");
+   pDOF->Init(tablePath.c_str(), gameId.c_str());
+   bool isInitialState = true;
+   vector<bool> wireStates, solStates, lampStates, giStates;
+   while (isRunning)
+   {
+      {
+         std::lock_guard<std::mutex> lock(sourceMutex);
+
+         isInitialState |= wireStates.size() != pinmameInputSrc.nInputs;
+         isInitialState |= solStates.size() != nPmSolenoids;
+         isInitialState |= lampStates.size() != nPmLamps;
+         isInitialState |= giStates.size() != nPmGIs;
+
+         wireStates.resize(pinmameInputSrc.nInputs);
+         for (unsigned int i = 0; i < pinmameInputSrc.nInputs; i++)
+         {
+            bool state = pinmameInputSrc.GetInputState(i);
+            if (isInitialState || (wireStates[i] != state))
+               pDOF->DataReceive('W', i + 1, state ? 1 : 0);
+         }
+
+         solStates.resize(nPmSolenoids);
+         for (unsigned int i = 0; i < nPmSolenoids; i++)
+         {
+            float state = pinmameDevSrc.GetFloatState(i);
+            if (isInitialState || (solStates[i] && state < 0.25f) || (!solStates[i] && state > 0.75f))
+               pDOF->DataReceive('S', i + 1, state > 0.5f ? 1 : 0);
+         }
+
+         lampStates.resize(nPmLamps);
+         for (unsigned int i = 0; i < nPmLamps; i++)
+         {
+            float state = pinmameDevSrc.GetFloatState(pmLampIndex + i);
+            if (isInitialState || (lampStates[i] && state < 0.25f) || (!lampStates[i] && state > 0.75f))
+               pDOF->DataReceive('L', i + 1, state > 0.5f ? 1 : 0);
+         }
+
+         giStates.resize(nPmGIs);
+         for (unsigned int i = 0; i < nPmGIs; i++)
+         {
+            float state = pinmameDevSrc.GetFloatState(pmGiIndex + i);
+            if (isInitialState || (giStates[i] && state < 0.25f) || (!giStates[i] && state > 0.75f))
+               pDOF->DataReceive('G', i + 1, state > 0.5f ? 1 : 0);
+         }
+         
+         isInitialState = false;
+      }
+      
+      // Fixed update at 60 FPS
+      std::this_thread::sleep_for(std::chrono::nanoseconds(16666));
+   }
+   pDOF->Finish();
+}
+
+
 static void OnControllerGameStart(const unsigned int eventId, void* userData, void* msgData)
 {
    const CtlOnGameStartMsg* msg = static_cast<const CtlOnGameStartMsg*>(msgData);
    assert(msg != nullptr && msg->gameId != nullptr);
 
+   if (pollThread.joinable())
+   {
+      LOGE("DOFPlugin: Invalid state, game start happened while already running");
+      isRunning = false;
+      pollThread.join();
+   }
+
    if (pDOF) {
       LOGI("DOFPlugin: OnControllerGameStart: gameId=%s", msg->gameId);
-
+      isRunning = true;
       VPXTableInfo tableInfo;
       vpxApi->GetTableInfo(&tableInfo);
-      pDOF->Init(tableInfo.path, msg->gameId);
-
-      isRunning = true;
-      OnPollStates(nullptr);
+      pollThread = std::thread(PollThread, tableInfo.path, msg->gameId);
    }
 }
 
@@ -122,16 +215,14 @@ static void OnControllerGameEnd(const unsigned int eventId, void* userData, void
 {
    if (pDOF) {
       LOGI("DOFPlugin: OnControllerGameEnd");
-
       isRunning = false;
-
-      pDOF->Finish();
+      if (pollThread.joinable())
+         pollThread.join();
    }
 }
 
-static void OnDevSrcChanged(const unsigned int eventId, void* userData, void* msgData)
+static void ClearDevices()
 {
-   std::unique_lock<std::mutex> lock(sourceMutex);
    delete[] pinmameDevSrc.deviceDefs;
    nPmSolenoids = 0;
    pmGiIndex = -1;
@@ -139,10 +230,23 @@ static void OnDevSrcChanged(const unsigned int eventId, void* userData, void* ms
    pmLampIndex = -1;
    nPmLamps = 0;
    memset(&pinmameDevSrc, 0, sizeof(pinmameDevSrc));
+}
 
-   GetDevSrcMsg getSrcMsg = { 1024, 0, new DevSrcId[1024] };
+static void OnDevSrcChanged(const unsigned int eventId, void* userData, void* msgData)
+{
+   std::lock_guard<std::mutex> lock(sourceMutex);
+   ClearDevices();
+
+   GetDevSrcMsg getSrcMsg = { 0, 0, nullptr };
    msgApi->BroadcastMsg(endpointId, getDevSrcId, &getSrcMsg);
-
+   if (getSrcMsg.count == 0)
+   {
+      LOGI("DOFPlugin: OnDevSrcChanged - No source");
+      return;
+   }
+   
+   getSrcMsg = { getSrcMsg.count, 0, new DevSrcId[getSrcMsg.count] };
+   msgApi->BroadcastMsg(endpointId, getDevSrcId, &getSrcMsg);
    MsgEndpointInfo info;
    for (unsigned int i = 0; i < getSrcMsg.count; i++)
    {
@@ -178,14 +282,14 @@ static void OnDevSrcChanged(const unsigned int eventId, void* userData, void* ms
       else if ((pmGiIndex == -1) && (pmLampIndex == -1))
          nPmSolenoids++;
    }
-
+   
    LOGI("DOFPlugin: OnDevSrcChanged - Found %d PinMAME devices (Sol:%d, Lamps:%d, GI:%d)", 
         pinmameDevSrc.nDevices, nPmSolenoids, nPmLamps, nPmGIs);
 }
 
 static void OnInputSrcChanged(const unsigned int eventId, void* userData, void* msgData)
 {
-   std::unique_lock<std::mutex> lock(sourceMutex);
+   std::lock_guard<std::mutex> lock(sourceMutex);
    delete[] pinmameInputSrc.inputDefs;
    memset(&pinmameInputSrc, 0, sizeof(pinmameInputSrc));
 
@@ -213,56 +317,6 @@ static void OnInputSrcChanged(const unsigned int eventId, void* userData, void* 
    LOGI("DOFPlugin: OnInputSrcChanged - Found %d PinMAME inputs", pinmameInputSrc.nInputs);
 }
 
-static void OnPollStates(void* userData)
-{
-   if (!isRunning || !pDOF)
-      return;
-
-   std::lock_guard<std::mutex> lock(sourceMutex);
-
-   if (!isRunning || !pDOF)
-      return;
-
-   if (pinmameInputSrc.nInputs > 0 && pinmameInputSrc.GetInputState && pinmameInputSrc.id.id != 0)
-   {
-      for (unsigned int i = 0; i < pinmameInputSrc.nInputs; i++)
-      {
-         bool state = pinmameInputSrc.GetInputState(i);
-         pDOF->DataReceive('W', i + 1, state ? 1 : 0);
-      }
-   }
-
-   if (nPmSolenoids > 0 && pinmameDevSrc.GetFloatState && pinmameDevSrc.id.id != 0)
-   {
-      for (unsigned int i = 0; i < nPmSolenoids; i++)
-      {
-         float state = pinmameDevSrc.GetFloatState(i);
-         pDOF->DataReceive('S', i + 1, state > 0.5f ? 1 : 0);
-      }
-   }
-
-   if (nPmLamps > 0 && pmLampIndex != -1 && pinmameDevSrc.GetFloatState && pinmameDevSrc.id.id != 0)
-   {
-      for (unsigned int i = 0; i < nPmLamps; i++)
-      {
-         float state = pinmameDevSrc.GetFloatState(pmLampIndex + i);
-         pDOF->DataReceive('L', i + 1, state > 0.5f ? 1 : 0);
-      }
-   }
-
-   if (nPmGIs > 0 && pmGiIndex != -1 && pinmameDevSrc.GetFloatState && pinmameDevSrc.id.id != 0)
-   {
-      for (unsigned int i = 0; i < nPmGIs; i++)
-      {
-         float state = pinmameDevSrc.GetFloatState(pmGiIndex + i);
-         pDOF->DataReceive('G', i + 1, state > 0.5f ? 1 : 0);
-      }
-   }
-
-   if (isRunning && pDOF)
-      msgApi->RunOnMainThread(1.0 / 60.0, OnPollStates, nullptr);
-}
-
 }
 
 using namespace DOFPlugin;
@@ -274,6 +328,9 @@ MSGPI_EXPORT void MSGPIAPI DOFPluginLoad(const uint32_t sessionId, MsgPluginAPI*
 
    LPISetup(endpointId, msgApi);
 
+   memset(&pinmameDevSrc, 0, sizeof(pinmameDevSrc));
+   ClearDevices();
+   
    unsigned int getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
    msgApi->ReleaseMsgID(getVpxApiId);
@@ -305,16 +362,12 @@ MSGPI_EXPORT void MSGPIAPI DOFPluginLoad(const uint32_t sessionId, MsgPluginAPI*
 MSGPI_EXPORT void MSGPIAPI DOFPluginUnload()
 {
    isRunning = false;
-
-   delete[] pinmameDevSrc.deviceDefs;
-   memset(&pinmameDevSrc, 0, sizeof(pinmameDevSrc));
+   if (pollThread.joinable())
+      pollThread.join();
+   
+   ClearDevices();
    delete[] pinmameInputSrc.inputDefs;
    memset(&pinmameInputSrc, 0, sizeof(pinmameInputSrc));
-   nPmSolenoids = 0;
-   pmGiIndex = -1;
-   nPmGIs = 0;
-   pmLampIndex = -1;
-   nPmLamps = 0;
 
    delete pDOF;
    pDOF = nullptr;
