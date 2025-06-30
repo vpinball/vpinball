@@ -155,8 +155,6 @@ public:
       m_d.m_filterAmount = max(value,0);
    }
 
-   //BaseTexture* GetVideoCap(const string& szName);
-
    void setInPlayState(const bool newVal);
 
    FlasherData m_d;
@@ -164,7 +162,7 @@ public:
    bool m_lockedByLS = false;
    bool m_inPlayState = false;
 
-   BaseTexture *m_dmdFrame = nullptr;
+   std::shared_ptr<BaseTexture> m_dmdFrame = nullptr;
 
 private:
    void InitShape();
@@ -191,7 +189,7 @@ private:
    int m_videoCapHeight = 0;
    RECT m_videoSourceRect { 0 };
    HWND m_videoCapHwnd = nullptr;
-   BaseTexture* m_videoCapTex = nullptr;
+   std::shared_ptr<BaseTexture> m_videoCapTex = nullptr;
 
    int2 m_dmdSize = int2(0,0);
 

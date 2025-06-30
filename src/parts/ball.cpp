@@ -231,7 +231,7 @@ void Ball::RenderSetup(RenderDevice *device)
 
    if (m_d.m_useTableRenderSettings && g_pplayer->m_renderer->m_overwriteBallImages && g_pplayer->m_renderer->m_ballImage)
    {
-      m_pinballEnv = g_pplayer->m_renderer->m_ballImage;
+      m_pinballEnv = g_pplayer->m_renderer->m_ballImage.get();
       m_d.m_pinballEnvSphericalMapping = true;
    }
    else if (m_d.m_szImage.empty())
@@ -243,7 +243,7 @@ void Ball::RenderSetup(RenderDevice *device)
       m_pinballEnv = m_ptable->GetImage(m_d.m_szImage) ? m_ptable->GetImage(m_d.m_szImage) : nullptr;
 
    if (m_d.m_useTableRenderSettings && g_pplayer->m_renderer->m_overwriteBallImages && g_pplayer->m_renderer->m_decalImage)
-      m_pinballDecal = g_pplayer->m_renderer->m_decalImage;
+      m_pinballDecal = g_pplayer->m_renderer->m_decalImage.get();
    else if (m_d.m_imageDecal.empty())
       m_pinballDecal = nullptr;
    else

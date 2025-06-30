@@ -38,11 +38,11 @@ public:
 
    ~BaseTexture() override;
 
-   static BaseTexture *Create(const unsigned int w, const unsigned int h, const Format format) noexcept;
-   static BaseTexture *CreateFromFile(const string &filename, unsigned int maxTexDimension = 0, bool resizeOnLowMem = false) noexcept;
-   static BaseTexture *CreateFromData(const void *data, const size_t size, const bool isImageData = true, unsigned int maxTexDimension = 0, bool resizeOnLowMem = false) noexcept;
-   static BaseTexture *CreateFromHBitmap(const HBITMAP hbm, unsigned int maxTexDimension, bool with_alpha = true) noexcept;
-   static void Update(BaseTexture **texture, const unsigned int w, const unsigned int h, const Format format, const uint8_t *image); // Update eventually recreating the texture
+   static std::shared_ptr<BaseTexture> Create(const unsigned int w, const unsigned int h, const Format format) noexcept;
+   static std::shared_ptr<BaseTexture> CreateFromFile(const string &filename, unsigned int maxTexDimension = 0, bool resizeOnLowMem = false) noexcept;
+   static std::shared_ptr<BaseTexture> CreateFromData(const void *data, const size_t size, const bool isImageData = true, unsigned int maxTexDimension = 0, bool resizeOnLowMem = false) noexcept;
+   static std::shared_ptr<BaseTexture> CreateFromHBitmap(const HBITMAP hbm, unsigned int maxTexDimension, bool with_alpha = true) noexcept;
+   static void Update(std::shared_ptr<BaseTexture>& texture, const unsigned int w, const unsigned int h, const Format format, const uint8_t *image); // Update eventually recreating the texture
 
    static bool IsLinearFormat(const Format format) { return (format != SRGB && format != SRGBA && format != SRGB565); }
    static Format GetFormatWithAlpha(const Format format)
@@ -64,7 +64,7 @@ public:
    }
 
    uint64_t GetLiveHash() const override { return m_liveHash; }
-   std::shared_ptr<const BaseTexture> GetRawBitmap(bool resizeOnLowMem, unsigned int maxTexDimension) const override { return m_selfPointer; }
+   std::shared_ptr<const BaseTexture> GetRawBitmap(bool resizeOnLowMem, unsigned int maxTexDimension) const override { std::shared_ptr<const BaseTexture> ptr = m_selfPointer.lock(); assert(ptr); return ptr; }
    void SetName(const string& name) { m_name = name; }
    const string& GetName() const override { return m_name; }
 
@@ -75,9 +75,9 @@ public:
    const uint8_t* datac() const{ return m_data; }
    bool HasAlpha() const       { return m_format == RGBA || m_format == SRGBA || m_format == RGBA_FP16 || m_format == RGBA_FP32; }
 
-   BaseTexture *Convert(Format format) const; // Always create a new instance, even if target format is source format are matching
-   BaseTexture *ToBGRA() const; // swap R and B channels, also tonemaps floating point buffers during conversion and adds an opaque alpha channel (if format with missing alpha)
-   BaseTexture *NewWithAlpha() const { return Convert(GetFormatWithAlpha(m_format)); }
+   std::shared_ptr<BaseTexture> Convert(Format format) const; // Always create a new instance, even if target format is source format are matching
+   std::shared_ptr<BaseTexture> ToBGRA() const; // swap R and B channels, also tonemaps floating point buffers during conversion and adds an opaque alpha channel (if format with missing alpha)
+   std::shared_ptr<BaseTexture> NewWithAlpha() const { return Convert(GetFormatWithAlpha(m_format)); }
 
    unsigned int m_realWidth, m_realHeight;
    const Format m_format;
@@ -92,7 +92,7 @@ public:
 
 private:
    BaseTexture(const unsigned int w, const unsigned int h, const Format format);
-   static BaseTexture *CreateFromFreeImage(struct FIBITMAP *dib, const bool isImageData, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept; // also free's/delete's the dib inside!
+   static std::shared_ptr<BaseTexture> CreateFromFreeImage(struct FIBITMAP *dib, const bool isImageData, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept; // also free's/delete's the dib inside!
 
    void UpdateMD5() const;
    void UpdateOpaque() const;
@@ -103,7 +103,8 @@ private:
 
    string m_name;
 
-   std::shared_ptr<BaseTexture> m_selfPointer;
+   // Keep a weak pointer on ourself to be able to derive a shared_ptr to implement ITexManCacheable without maintaining a strong reference
+   std::weak_ptr<BaseTexture> m_selfPointer;
 
    // These field are (lazily) computed from the data, therefore they do not impact the constness of the object
    mutable bool m_isMD5Dirty = true;

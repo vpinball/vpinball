@@ -1044,10 +1044,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as
        || g_pplayer->m_dmdFrame->m_format != BaseTexture::BW)
    {
       if (g_pplayer->m_dmdFrame)
-      {
-         g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture(g_pplayer->m_dmdFrame);
-         delete g_pplayer->m_dmdFrame;
-      }
+         g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture(g_pplayer->m_dmdFrame.get());
       g_pplayer->m_dmdFrame = BaseTexture::Create(g_pplayer->m_dmdSize.x * scale, g_pplayer->m_dmdSize.y * scale, BaseTexture::BW);
    }
    const int size = g_pplayer->m_dmdSize.x * g_pplayer->m_dmdSize.y;
@@ -1073,7 +1070,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as
    }
    SafeArrayUnaccessData(psa);
    g_pplayer->m_dmdFrameId++;
-   g_pplayer->m_renderer->m_renderDevice->m_texMan.SetDirty(g_pplayer->m_dmdFrame);
+   g_pplayer->m_renderer->m_renderDevice->m_texMan.SetDirty(g_pplayer->m_dmdFrame.get());
    return S_OK;
 }
 
@@ -1100,10 +1097,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! assumes 
        || g_pplayer->m_dmdFrame->m_format != BaseTexture::SRGBA)
    {
       if (g_pplayer->m_dmdFrame)
-      {
-         g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture(g_pplayer->m_dmdFrame);
-         delete g_pplayer->m_dmdFrame;
-      }
+         g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture(g_pplayer->m_dmdFrame.get());
       g_pplayer->m_dmdFrame = BaseTexture::Create(g_pplayer->m_dmdSize.x * scale, g_pplayer->m_dmdSize.y * scale, BaseTexture::SRGBA);
    }
    const int size = g_pplayer->m_dmdSize.x * g_pplayer->m_dmdSize.y;
@@ -1116,7 +1110,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! assumes 
    if (g_pplayer->m_scaleFX_DMD)
       upscale(data, g_pplayer->m_dmdSize, false);
    g_pplayer->m_dmdFrameId++;
-   g_pplayer->m_renderer->m_renderDevice->m_texMan.SetDirty(g_pplayer->m_dmdFrame);
+   g_pplayer->m_renderer->m_renderDevice->m_texMan.SetDirty(g_pplayer->m_dmdFrame.get());
    return S_OK;
 }
 

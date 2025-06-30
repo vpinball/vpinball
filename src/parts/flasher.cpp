@@ -833,7 +833,6 @@ STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!
        || m_dmdFrame->height() != m_dmdSize.y * scale
        || m_dmdFrame->m_format != BaseTexture::BW)
    {
-      delete m_dmdFrame;
       m_dmdFrame = BaseTexture::Create(m_dmdSize.x * scale, m_dmdSize.y * scale, BaseTexture::BW);
    }
    const int size = m_dmdSize.x * m_dmdSize.y;
@@ -859,7 +858,7 @@ STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!
    }
    SafeArrayUnaccessData(psa);
    //m_dmdFrameId++;
-   g_pplayer->m_renderer->m_renderDevice->m_texMan.SetDirty(g_pplayer->m_dmdFrame);
+   g_pplayer->m_renderer->m_renderDevice->m_texMan.SetDirty(g_pplayer->m_dmdFrame.get());
    return S_OK;
 }
 
@@ -880,7 +879,6 @@ STDMETHODIMP Flasher::put_DMDColoredPixels(VARIANT pVal) //!! assumes VT_UI4 as 
        || m_dmdFrame->height() != m_dmdSize.y * scale
        || m_dmdFrame->m_format != BaseTexture::SRGBA)
    {
-      delete m_dmdFrame;
       m_dmdFrame = BaseTexture::Create(m_dmdSize.x * scale, m_dmdSize.y * scale, BaseTexture::SRGBA);
    }
    const int size = m_dmdSize.x * m_dmdSize.y;
@@ -893,7 +891,7 @@ STDMETHODIMP Flasher::put_DMDColoredPixels(VARIANT pVal) //!! assumes VT_UI4 as 
    if (g_pplayer->m_scaleFX_DMD)
       upscale(data, m_dmdSize, false);
    //m_dmdFrameId++;
-   g_pplayer->m_renderer->m_renderDevice->m_texMan.SetDirty(m_dmdFrame);
+   g_pplayer->m_renderer->m_renderDevice->m_texMan.SetDirty(m_dmdFrame.get());
    return S_OK;
 }
 
@@ -919,8 +917,7 @@ void Flasher::ResetVideoCap()
    if (m_videoCapTex)
    {
       //  m_rd->m_flasherShader->SetTextureNull(SHADER_tex_flasher_A); //!! ??
-      m_rd->m_texMan.UnloadTexture(m_videoCapTex);
-      delete m_videoCapTex;
+      m_rd->m_texMan.UnloadTexture(m_videoCapTex.get());
       m_videoCapTex = nullptr;
    }
 }
@@ -954,7 +951,6 @@ STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
         }
         catch (...)
         {
-           delete m_videoCapTex;
            m_videoCapTex = nullptr;
            return S_FAIL;
         }
@@ -1012,7 +1008,7 @@ STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
         GlobalUnlock(hDIB);
         GlobalFree(hDIB);
 
-        m_rd->m_texMan.SetDirty(m_videoCapTex);
+        m_rd->m_texMan.SetDirty(m_videoCapTex.get());
     }
 
     ReleaseDC(m_videoCapHwnd, hdcWindow);
@@ -1155,7 +1151,6 @@ void Flasher::RenderRelease()
    delete m_meshBuffer;
    delete[] m_vertices;
    delete[] m_transformedVertices;
-   delete m_dmdFrame;
    m_meshBuffer = nullptr;
    m_vertices = nullptr;
    m_transformedVertices = nullptr;
@@ -1266,7 +1261,7 @@ void Flasher::Render(const unsigned int renderMask)
          {
             flasherMode = 0.f;
             if (m_isVideoCap)
-               m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, m_videoCapTex);
+               m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, m_videoCapTex.get());
             else
                m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, pinA);
 
@@ -1285,7 +1280,7 @@ void Flasher::Render(const unsigned int renderMask)
          {
             flasherMode = 1.f;
             if (m_isVideoCap)
-               m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, m_videoCapTex);
+               m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, m_videoCapTex.get());
             else
                m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, pinA);
             m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_B, pinB);
@@ -1327,14 +1322,14 @@ void Flasher::Render(const unsigned int renderMask)
             ResURIResolver::DisplayState dmd = g_pplayer->m_resURIResolver.GetDisplayState(m_d.m_imageSrcLink);
             if (dmd.state.frame != nullptr)
             {
-               BaseTexture::Update(&m_dmdFrame, dmd.source->width, dmd.source->height,
+               BaseTexture::Update(m_dmdFrame, dmd.source->width, dmd.source->height,
                           dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8 ? BaseTexture::BW
                      : dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565
                                                                                : BaseTexture::SRGB,
                   dmd.state.frame);
             }
          }
-         BaseTexture *frame = m_dmdFrame;
+         std::shared_ptr<BaseTexture> frame = m_dmdFrame;
          if (frame == nullptr)
          {
             if (m_backglass)
@@ -1368,7 +1363,7 @@ void Flasher::Render(const unsigned int renderMask)
                g_pplayer->m_renderer->UpdateBasicShaderMatrix();
             return;
          }
-         BaseTexture::Update(&m_dmdFrame, display.source->width, display.source->height, 
+         BaseTexture::Update(m_dmdFrame, display.source->width, display.source->height, 
                           display.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8 ? BaseTexture::BW
                      : display.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565
                                                                                    : BaseTexture::SRGB,
@@ -1381,7 +1376,7 @@ void Flasher::Render(const unsigned int renderMask)
          switch (displayProfile)
          {
          case 0: // Pixelated
-            m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, m_dmdFrame, false, SF_NONE);
+            m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, m_dmdFrame.get(), false, SF_NONE);
             m_rd->m_flasherShader->SetVector(SHADER_staticColor_Alpha, color.x * color.w, color.y * color.w, color.z * color.w, 1.f);
             m_rd->m_flasherShader->SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, -1.f, -1.f, 0.f, m_d.m_addBlend ? 1.f : 0.f);
             m_rd->m_flasherShader->SetVector(SHADER_amount_blend_modulate_vs_add_flasherMode, 0.f, clampedModulateVsAdd, 0.f, 0.f);
@@ -1393,7 +1388,7 @@ void Flasher::Render(const unsigned int renderMask)
             m_rd->m_flasherShader->SetTechnique(SHADER_TECHNIQUE_basic_noLight);
             break;
          case 1: // Smoothed
-            m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, m_dmdFrame, false, SF_TRILINEAR);
+            m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, m_dmdFrame.get(), false, SF_TRILINEAR);
             m_rd->m_flasherShader->SetVector(SHADER_staticColor_Alpha, color.x * color.w, color.y * color.w, color.z * color.w, 1.f);
             m_rd->m_flasherShader->SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, -1.f, -1.f, 0.f, m_d.m_addBlend ? 1.f : 0.f);
             m_rd->m_flasherShader->SetVector(SHADER_amount_blend_modulate_vs_add_flasherMode, 0.f, clampedModulateVsAdd, 0.f, 0.f);

@@ -728,7 +728,6 @@ void Decal::RenderSetup(RenderDevice *device)
 void Decal::RenderRelease()
 {
    assert(m_rd != nullptr);
-   delete m_textImg;
    delete m_meshBuffer;
    m_textImg = nullptr;
    m_meshBuffer = nullptr;
@@ -766,7 +765,7 @@ void Decal::Render(const unsigned int renderMask)
          m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_with_texture, *mat, false);
       else
          m_rd->m_basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
-      m_rd->m_basicShader->SetTexture(SHADER_tex_base_color, m_textImg);
+      m_rd->m_basicShader->SetTexture(SHADER_tex_base_color, m_textImg.get());
    }
    else
    {

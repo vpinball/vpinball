@@ -101,7 +101,7 @@ private:
    
    RenderDevice *m_rd = nullptr;
    bool m_textureDirty = true;
-   BaseTexture *m_texture = nullptr;
+   std::shared_ptr<BaseTexture> m_texture = nullptr;
    IFont *m_pIFontPlay = nullptr; // Our font, scaled to match play window resolution
 
 #ifdef __STANDALONE__

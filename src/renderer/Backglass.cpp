@@ -185,7 +185,7 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
                   size_t size = decode_base64(val, data, val_size, data_len);
                   if ((size > 0) && (strcmp(imagesNode->Name(), "BackglassImage") == 0)) {
                      m_loaded_image = BaseTexture::CreateFromData(data, size, true, g_pplayer->m_ptable->m_settings.LoadValueInt(Settings::Player, "MaxTexDimension"s));
-                     m_backgroundTexture = m_pd3dDevice->m_texMan.LoadTexture(m_loaded_image, false);
+                     m_backgroundTexture = m_pd3dDevice->m_texMan.LoadTexture(m_loaded_image.get(), false);
                      m_backglass_width = m_backgroundTexture->GetWidth();
                      m_backglass_height = m_backgroundTexture->GetHeight();
                   }
@@ -229,14 +229,13 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
 
 BackGlass::~BackGlass()
 {
-   delete m_loaded_image;
 }
 
 void BackGlass::Render()
 {
    if (g_pplayer->m_texPUP)
    {
-      m_backgroundTexture = m_pd3dDevice->m_texMan.LoadTexture(g_pplayer->m_texPUP, false);
+      m_backgroundTexture = m_pd3dDevice->m_texMan.LoadTexture(g_pplayer->m_texPUP.get(), false);
       m_backglass_width = g_pplayer->m_texPUP->width();
       m_backglass_height = g_pplayer->m_texPUP->height();
       float tableWidth, glassHeight;

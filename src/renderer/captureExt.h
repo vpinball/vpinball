@@ -178,7 +178,7 @@ public:
       CS_Failure // Failed (no going back)
    };
    CaptureState GetState(const string& name) const;
-   void StartCapture(const string& name, BaseTexture** targetTexture, const vector<string>& windowlist);
+   void StartCapture(const string& name, std::shared_ptr<BaseTexture>* targetTexture, const vector<string>& windowlist);
    void Update();
    void Stop();
 
@@ -202,7 +202,7 @@ private:
       CaptureState m_state = CS_Uninitialized;
       vector<string> m_searchWindows;
       Duplication* m_duplication;
-      BaseTexture** m_targetTexture;
+      std::shared_ptr<BaseTexture>* m_targetTexture;
       HWND m_window;
       HBITMAP m_hBitmap;
       void* m_data = nullptr;

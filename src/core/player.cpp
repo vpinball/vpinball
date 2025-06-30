@@ -1112,8 +1112,7 @@ Player::~Player()
    m_renderer->m_renderDevice->m_DMDShader->SetTextureNull(SHADER_tex_dmd);
    if (m_dmdFrame)
    {
-      m_renderer->m_renderDevice->m_texMan.UnloadTexture(m_dmdFrame);
-      delete m_dmdFrame;
+      m_renderer->m_renderDevice->m_texMan.UnloadTexture(m_dmdFrame.get());
       m_dmdFrame = nullptr;
    }
 
@@ -2327,7 +2326,7 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
                if (alpha <= 0.f) // Alpha blended, so alpha = 0 means not visible
                   return;
                PlayerRenderContext2D *context = reinterpret_cast<PlayerRenderContext2D *>(ctx);
-               BaseTexture *const tex = static_cast<BaseTexture *>(texture);
+               std::shared_ptr<BaseTexture> const tex = VPXPluginAPIImpl::GetInstance().GetTexture(texture);
                RenderDevice * const rd = g_pplayer->m_renderer->m_renderDevice;
                rd->ResetRenderState();
                rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
@@ -2340,7 +2339,7 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
                rd->m_basicShader->SetVector(SHADER_cBase_Alpha, tintR, tintG, tintB, alpha);
                // We force to linear (no sRGB decoding) when rendering in sRGB colorspace, this suppose that the texture is in sRGB colorspace to get correct gamma (other situations would need dedicated shaders to handle them efficiently)
                assert(tex->m_format == BaseTexture::SRGB || tex->m_format == BaseTexture::SRGBA || tex->m_format == BaseTexture::SRGB565);
-               rd->m_basicShader->SetTexture(SHADER_tex_base_color, tex, !context->isLinearOutput);
+               rd->m_basicShader->SetTexture(SHADER_tex_base_color, tex.get(), !context->isLinearOutput);
                const float vx1 = srcX / ctx->srcWidth;
                const float vy1 = srcY / ctx->srcHeight;
                const float vx2 = vx1 + srcW / ctx->srcWidth;
@@ -2366,8 +2365,9 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
             const float srcX, const float srcY, const float srcW, const float srcH)
             {
                PlayerRenderContext2D *context = reinterpret_cast<PlayerRenderContext2D *>(ctx);
-               BaseTexture *const gTex = static_cast<BaseTexture *>(glassTex);
-               BaseTexture *const dTex = static_cast<BaseTexture *>(dispTex);
+               VPXPluginAPIImpl &vxpApi = VPXPluginAPIImpl::GetInstance();
+               std::shared_ptr<BaseTexture> const gTex = vxpApi.GetTexture(glassTex);
+               std::shared_ptr<BaseTexture> const dTex = vxpApi.GetTexture(dispTex);
                RenderDevice *const rd = g_pplayer->m_renderer->m_renderDevice;
                rd->ResetRenderState();
                rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
@@ -2379,7 +2379,7 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
                   context->isLinearOutput ? Renderer::ColorSpace::Reinhard_sRGB : Renderer::ColorSpace::Reinhard_sRGB,
                   nullptr, // No parallax
                   vec4(dispPadL, dispPadT, dispPadR, dispPadB),
-                  vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex,
+                  vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex.get(),
                   vec4(glassAreaX, glassAreaY, glassAreaW, glassAreaH),
                   vec3(glassAmbientR, glassAmbientG, glassAmbientB));
                const float vx1 = srcX / ctx->srcWidth;
@@ -2403,7 +2403,8 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
             const float srcX, const float srcY, const float srcW, const float srcH)
             {
                PlayerRenderContext2D *context = reinterpret_cast<PlayerRenderContext2D *>(ctx);
-               BaseTexture *const gTex = static_cast<BaseTexture *>(glassTex);
+               VPXPluginAPIImpl &vxpApi = VPXPluginAPIImpl::GetInstance();
+               std::shared_ptr<BaseTexture> const gTex = vxpApi.GetTexture(glassTex);
                RenderDevice *const rd = g_pplayer->m_renderer->m_renderDevice;
                // Use max blending as segment may overlap in the glass diffuse: we retain the most lighted one which is wrong but looks ok (otherwise we would have to deal with colorspace conversions and layering between glass and emitter)
                rd->ResetRenderState();
@@ -2420,7 +2421,7 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
                   context->isLinearOutput ? Renderer::ColorSpace::Reinhard_sRGB : Renderer::ColorSpace::Reinhard_sRGB, 
                   nullptr, // No parallax
                   vec4(dispPadL, dispPadT, dispPadR, dispPadB),
-                  vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex,
+                  vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex.get(),
                   vec4(glassAreaX, glassAreaY, glassAreaW, glassAreaH),
                   vec3(glassAmbientR, glassAmbientG, glassAmbientB));
                const float vx1 = srcX / ctx->srcWidth;
