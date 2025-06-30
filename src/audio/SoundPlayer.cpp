@@ -199,7 +199,7 @@ SoundPlayer* SoundPlayer::Create(const AudioPlayer* audioPlayer, Sound* sound)
    return new SoundPlayer(audioPlayer, sound);
 }
 
-SoundPlayer* SoundPlayer::Create(const AudioPlayer* audioPlayer, string filename)
+SoundPlayer* SoundPlayer::Create(const AudioPlayer* audioPlayer, const string& filename)
 {
    // Decode and resample the sound on the anciliary thread as this is fairly heavy
    return new SoundPlayer(audioPlayer, filename);

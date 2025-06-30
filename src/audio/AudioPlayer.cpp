@@ -246,7 +246,7 @@ AudioPlayer::AudioPlayer(const Settings& settings)
 
    m_maContext = std::make_unique<ma_context>();
    ma_backend backends[] = { ma_backend_custom };
-   ma_context_init(backends, sizeof(backends) / sizeof(backends[0]), &contextConfig, m_maContext.get());
+   ma_context_init(backends, std::size(backends), &contextConfig, m_maContext.get());
    m_maContext->pUserData = this;
 
    struct SDLDeviceInfo

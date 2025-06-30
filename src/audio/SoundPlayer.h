@@ -17,7 +17,7 @@ class SoundPlayer
 {
 public:
    static SoundPlayer* Create(const AudioPlayer* audioPlayer, Sound* sound);
-   static SoundPlayer* Create(const AudioPlayer* audioPlayer, string filename);
+   static SoundPlayer* Create(const AudioPlayer* audioPlayer, const string& filename);
    ~SoundPlayer();
 
    void Play(float volume, const float randompitch, const int pitch, float pan, float frontRearFade, const int loopcount);
