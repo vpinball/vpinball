@@ -44,77 +44,31 @@ bool FileExists(const string& filePath)
 
 string ExtensionFromFilename(const string& filename)
 {
-   const int len = (int)filename.length();
-
-   int begin;
-   for (begin = len; begin >= 0; begin--)
-   {
-      if (filename[begin] == '.')
-      {
-         begin++;
-         break;
-      }
-   }
-
-   if (begin <= 0)
-      return string();
-   else
-      return filename.c_str()+begin;
+   const size_t pos = filename.find_last_of('.');
+   return (pos == string::npos) ? string() : filename.substr(pos + 1);
 }
 
 string TitleFromFilename(const string& filename)
 {
-   const int len = (int)filename.length();
+   // Find the last path separator
+   size_t begin = filename.find_last_of(PATH_SEPARATOR_CHAR);
+   if (begin == string::npos)
+      begin = 0;
+   else
+      begin++;
 
-   int begin;
-   for (begin = len; begin >= 0; begin--)
-   {
-      if (filename[begin] == PATH_SEPARATOR_CHAR)
-      {
-         begin++;
-         break;
-      }
-   }
+   // Find the last dot after the last path separator
+   size_t end = filename.find_last_of('.');
+   if (end == string::npos || end < begin)
+      end = filename.length();
 
-   int end;
-   for (end = len; end >= 0; end--)
-   {
-      if (filename[end] == '.')
-         break;
-   }
-
-   if (end == 0)
-      end = len - 1;
-
-   const char *szT = filename.c_str()+begin;
-   int count = end - begin;
-
-   string sztitle;
-   while (count--) { sztitle.push_back(*szT++); }
-   return sztitle;
+   return filename.substr(begin, end - begin);
 }
 
 string PathFromFilename(const string &filename)
 {
-   const int len = (int)filename.length();
-   // find the last '\' in the filename
-   int end;
-   for (end = len; end >= 0; end--)
-   {
-      if (filename[end] == PATH_SEPARATOR_CHAR)
-         break;
-   }
-
-   if (end == 0)
-      end = len - 1;
-
-   // copy from the start of the string to the end (or last '\')
-   const char *szT = filename.c_str();
-   int count = end + 1;
-
-   string szpath;
-   while (count--) { szpath.push_back(*szT++); }
-   return szpath;
+   const size_t pos = filename.find_last_of(PATH_SEPARATOR_CHAR);
+   return (pos == string::npos) ? string() : filename.substr(0, pos + 1); // previously returned filename if no separator found, but i guess that just worked because filename was then also constantly ""
 }
 
 // same as removing the file extension
