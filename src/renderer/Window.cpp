@@ -25,8 +25,8 @@ Window::Window(const int width, const int height)
 {
    m_width = width;
    m_height = height;
-   m_pixelWidth = 0; // ?
-   m_pixelHeight = 0; // ?
+   m_pixelWidth = width;
+   m_pixelHeight = height;
    m_display = -1;
    m_adapter = -1;
    m_screenwidth = width;
