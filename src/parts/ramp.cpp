@@ -2316,7 +2316,8 @@ void Ramp::GenerateVertexBuffer()
    Vertex3D_NoTex2 *tmpBuffer = nullptr;
    GenerateRampMesh(&tmpBuffer);
 
-   delete m_meshBuffer;
+   const MeshBuffer *meshBuffer = m_meshBuffer;
+   m_rd->AddEndOfFrameCmd([meshBuffer]() { delete meshBuffer; });
    VertexBuffer* dynamicVertexBuffer = new VertexBuffer(m_rd, m_numVertices * 3, (float*) tmpBuffer); //!! use USAGE_DYNAMIC if it would actually be "really" dynamic
    IndexBuffer* dynamicIndexBuffer = new IndexBuffer(m_rd, m_meshIndices);
    m_meshBuffer = new MeshBuffer(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);
