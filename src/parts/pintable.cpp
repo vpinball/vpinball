@@ -216,7 +216,8 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
             case 4: path = PATH_MUSIC; break;
             }
             path = find_case_insensitive_file_path(path + musicNameStr);
-            success = g_pplayer->m_audioPlayer->PlayMusic(path);
+            if (!path.empty())
+               success = g_pplayer->m_audioPlayer->PlayMusic(path);
          }
          if (success)
          {
