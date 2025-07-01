@@ -1612,7 +1612,9 @@ void Renderer::RenderStaticPrepass()
       PLOGI << "Performing prerendering of static parts."; // For profiling
       // if rendering static/with heavy oversampling, disable mipmaps & aniso/trilinear filter to get a sharper/more precise result overall!
       ShaderState::m_disableMipmaps = true;
-      m_renderDevice->m_DMDShader->SetVector(SHADER_u_basic_shade_mode, 0.f, 0.f, 0.f, 1.f);
+      #ifdef ENABLE_BGFX
+         m_renderDevice->m_DMDShader->SetVector(SHADER_u_basic_shade_mode, 0.f, 0.f, 0.f, 1.f);
+      #endif
    }
 
    //#define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the (commented out) lattice-based QMC oversampling, 'magic factor', depending on the number of iterations!
@@ -1700,7 +1702,9 @@ void Renderer::RenderStaticPrepass()
    }
 
    ShaderState::m_disableMipmaps = false;
-   m_renderDevice->m_DMDShader->SetVector(SHADER_u_basic_shade_mode, 0.f, 0.f, 0.f, 0.f);
+   #ifdef ENABLE_BGFX
+      m_renderDevice->m_DMDShader->SetVector(SHADER_u_basic_shade_mode, 0.f, 0.f, 0.f, 0.f);
+   #endif
 
    // Now finalize static buffer with static AO
    if (GetAOMode() == 1)
