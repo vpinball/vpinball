@@ -1365,6 +1365,8 @@ void LiveUI::Update(const int width, const int height)
    ImGuiIO &io = ImGui::GetIO();
    const bool isInteractiveUI = m_ShowUI || m_ShowSplashModal || m_ShowBAMModal;
    const bool isVR = m_renderer->m_stereo3D == STEREO_VR;
+   io.DisplaySize.x = static_cast<float>(width);
+   io.DisplaySize.y = static_cast<float>(height);
    // If we are only showing overlays (no mouse interaction), apply main camera rotation
    m_rotate = (isInteractiveUI || isVR) ? 0 : ((int)(m_player->m_ptable->mViewSetups[m_player->m_ptable->m_BG_current_set].GetRotation((int)io.DisplaySize.x, (int)io.DisplaySize.y) / 90.0f));
    if (m_rotate == 1 || m_rotate == 3)
