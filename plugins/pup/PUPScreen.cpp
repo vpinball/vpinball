@@ -671,10 +671,9 @@ void PUPScreen::Render(VPXRenderContext2D* const ctx, PUPScreenRenderable* pRend
    // Render image
    if (pRenderable->pTexture)
    {
-      int texWidth, texHeight;
-      GetTextureInfo(pRenderable->pTexture, &texWidth, &texHeight);
+      VPXTextureInfo* texInfo = GetTextureInfo(pRenderable->pTexture);
       ctx->DrawImage(ctx, pRenderable->pTexture, 1.f, 1.f, 1.f, 1.f,
-         0.f, 0.f, static_cast<float>(texWidth), static_cast<float>(texHeight),
+         0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height),
          static_cast<float>(m_rect.x), static_cast<float>(m_rect.y), static_cast<float>(m_rect.w), static_cast<float>(m_rect.h));
    }
 }

@@ -548,12 +548,11 @@ bool ScoreView::Render(VPXRenderContext2D* ctx)
             glassArea = vec4(0.f, 0.f, 1.f, 1.f);
          else
          {
-            int gWidth, gHeight;
-            m_vpxApi->GetTextureInfo(visual.glass, &gWidth, &gHeight);
-            glassArea.x = visual.glassArea.x / static_cast<float>(gWidth);
-            glassArea.y = visual.glassArea.y / static_cast<float>(gHeight);
-            glassArea.z = visual.glassArea.z / static_cast<float>(gWidth);
-            glassArea.w = visual.glassArea.w / static_cast<float>(gHeight);
+            VPXTextureInfo* texInfo = m_vpxApi->GetTextureInfo(visual.glass);
+            glassArea.x = visual.glassArea.x / static_cast<float>(texInfo->width);
+            glassArea.y = visual.glassArea.y / static_cast<float>(texInfo->height);
+            glassArea.z = visual.glassArea.z / static_cast<float>(texInfo->width);
+            glassArea.w = visual.glassArea.w / static_cast<float>(texInfo->height);
          }
          ctx->DrawDisplay(ctx, static_cast<VPXDisplayRenderStyle>(visual.liveStyle),
             // First layer: glass
@@ -579,12 +578,11 @@ bool ScoreView::Render(VPXRenderContext2D* ctx)
             glassArea = vec4(0.f, 0.f, 1.f, 1.f);
          else
          {
-            int gWidth, gHeight;
-            m_vpxApi->GetTextureInfo(visual.glass, &gWidth, &gHeight);
-            glassArea.x = visual.glassArea.x / static_cast<float>(gWidth);
-            glassArea.y = visual.glassArea.y / static_cast<float>(gHeight);
-            glassArea.z = visual.glassArea.z / static_cast<float>(gWidth);
-            glassArea.w = visual.glassArea.w / static_cast<float>(gHeight);
+            VPXTextureInfo* texInfo = m_vpxApi->GetTextureInfo(visual.glass);
+            glassArea.x = visual.glassArea.x / static_cast<float>(texInfo->width);
+            glassArea.y = visual.glassArea.y / static_cast<float>(texInfo->height);
+            glassArea.z = visual.glassArea.z / static_cast<float>(texInfo->width);
+            glassArea.w = visual.glassArea.w / static_cast<float>(texInfo->height);
          }
          const float elementW = visual.h * (24.f / 32.f); // TODO allow to adjust. For the time being, each segment element SDF is 24x32, fitted on visual height
          const float hGlassScale = glassArea.z / visual.w;

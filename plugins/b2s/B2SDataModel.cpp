@@ -245,18 +245,19 @@ B2SBulb::~B2SBulb()
 void B2SBulb::Render(VPXRenderContext2D* ctx) const
 {
    m_updateBrightness();
-   int bulbW, bulbH;
    if (m_offImage && m_brightness < 1.f)
    {
-      GetTextureInfo(m_offImage, &bulbW, &bulbH);
+      VPXTextureInfo* bulb = GetTextureInfo(m_offImage);
       ctx->DrawImage(ctx, m_offImage, m_lightColor.x, m_lightColor.y, m_lightColor.z, 1.f,
-         0.f, 0.f, static_cast<float>(bulbW), static_cast<float>(bulbH),
+         0.f, 0.f, static_cast<float>(bulb->width), static_cast<float>(bulb->height),
          static_cast<float>(m_locationX), static_cast<float>(m_locationY), static_cast<float>(m_width), static_cast<float>(m_height));
    }
-   GetTextureInfo(m_image, &bulbW, &bulbH);
-   ctx->DrawImage(ctx, m_image, m_lightColor.x, m_lightColor.y, m_lightColor.z, m_brightness,
-      0.f, 0.f, static_cast<float>(bulbW), static_cast<float>(bulbH),
-      static_cast<float>(m_locationX), static_cast<float>(m_locationY), static_cast<float>(m_width), static_cast<float>(m_height));
+   {
+      VPXTextureInfo* bulb = GetTextureInfo(m_image);
+      ctx->DrawImage(ctx, m_image, m_lightColor.x, m_lightColor.y, m_lightColor.z, m_brightness,
+         0.f, 0.f, static_cast<float>(bulb->width), static_cast<float>(bulb->height),
+         static_cast<float>(m_locationX), static_cast<float>(m_locationY), static_cast<float>(m_width), static_cast<float>(m_height));
+   }
 }
 
 

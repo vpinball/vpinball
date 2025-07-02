@@ -63,7 +63,7 @@ public:
 
 // Rendering provided through plugin messages
 extern VPXTexture CreateTexture(uint8_t *rawData, int size);
-extern void GetTextureInfo(VPXTexture texture, int *width, int *height);
+extern VPXTextureInfo* GetTextureInfo(VPXTexture texture);
 extern void DeleteTexture(VPXTexture texture);
 
 // The following function are duplicates from the main VPX codebase

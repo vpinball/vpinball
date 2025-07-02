@@ -12,19 +12,19 @@ B2SRenderer::B2SRenderer(MsgPluginAPI* const msgApi, const unsigned int endpoint
    bool m_showGrill = false;
    m_grillCut = m_showGrill ? 0.f : static_cast<float>(m_b2s->m_grillHeight);
 
-   int bgWidth = 1024, bgHeight = 768;
+   VPXTextureInfo* bgTexInfo = nullptr;
    if (m_b2s->m_backglassImage.m_image)
-      GetTextureInfo(m_b2s->m_backglassImage.m_image, &bgWidth, &bgHeight);
+      bgTexInfo = GetTextureInfo(m_b2s->m_backglassImage.m_image);
    else if (m_b2s->m_backglassOffImage.m_image)
-      GetTextureInfo(m_b2s->m_backglassOffImage.m_image, &bgWidth, &bgHeight);
-   m_b2sWidth = static_cast<float>(bgWidth);
-   m_b2sHeight = static_cast<float>(bgHeight) - m_grillCut;
+      bgTexInfo = GetTextureInfo(m_b2s->m_backglassOffImage.m_image);
+   m_b2sWidth = bgTexInfo ? static_cast<float>(bgTexInfo->width) : 1024.f;
+   m_b2sHeight = (bgTexInfo ? static_cast<float>(bgTexInfo->height) : 768.f) - m_grillCut;
 
-   int dmdWidth = 1024, dmdHeight = 768;
+   VPXTextureInfo* dmdTexInfo = nullptr;
    if (m_b2s->m_dmdImage.m_image)
-      GetTextureInfo(m_b2s->m_dmdImage.m_image, &dmdWidth, &dmdHeight);
-   m_dmdWidth = static_cast<float>(dmdWidth);
-   m_dmdHeight = static_cast<float>(dmdHeight);
+      dmdTexInfo = GetTextureInfo(m_b2s->m_dmdImage.m_image);
+   m_dmdWidth = dmdTexInfo ? static_cast<float>(dmdTexInfo->width) : 1024.f;
+   m_dmdHeight = dmdTexInfo ? static_cast<float>(dmdTexInfo->height) : 768.f;
 
    if (IsPinMAMEDriven())
    {
@@ -183,28 +183,25 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx)
    {
       if (m_b2s->m_backglassImage.m_image)
       {
-         int bgW, bgH;
-         GetTextureInfo(m_b2s->m_backglassImage.m_image, &bgW, &bgH);
+         VPXTextureInfo* texInfo = GetTextureInfo(m_b2s->m_backglassImage.m_image);
          ctx->DrawImage(ctx, m_b2s->m_backglassImage.m_image, 1.f, 1.f, 1.f, 1.f,
-            0.f, m_grillCut, static_cast<float>(bgW), static_cast<float>(bgH) - m_grillCut, 
-            0.f, 0.f, static_cast<float>(bgW), static_cast<float>(bgH) - m_grillCut);
+            0.f, m_grillCut, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height) - m_grillCut, 
+            0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height) - m_grillCut);
       }
       else if (m_b2s->m_backglassOffImage.m_image)
       {
-         int bgW, bgH;
-         GetTextureInfo(m_b2s->m_backglassOffImage.m_image, &bgW, &bgH);
+         VPXTextureInfo* texInfo = GetTextureInfo(m_b2s->m_backglassOffImage.m_image);
          ctx->DrawImage(ctx, m_b2s->m_backglassOffImage.m_image, 1.f, 1.f, 1.f, 1.f,
-            0.f, m_grillCut, static_cast<float>(bgW), static_cast<float>(bgH) - m_grillCut,
-            0.f, 0.f, static_cast<float>(bgW), static_cast<float>(bgH) - m_grillCut);
+            0.f, m_grillCut, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height) - m_grillCut,
+            0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height) - m_grillCut);
       }
    }
    if (m_b2s->m_backglassOnImage.m_image)
    {
-      int bgW, bgH;
-      GetTextureInfo(m_b2s->m_backglassOnImage.m_image, &bgW, &bgH);
+      VPXTextureInfo* texInfo = GetTextureInfo(m_b2s->m_backglassOnImage.m_image);
       ctx->DrawImage(ctx, m_b2s->m_backglassOnImage.m_image, 1.f, 1.f, 1.f, m_b2s->m_backglassOnImage.m_brightness,
-         0.f, m_grillCut, static_cast<float>(bgW), static_cast<float>(bgH) - m_grillCut,
-         0.f, 0.f, static_cast<float>(bgW), static_cast<float>(bgH) - m_grillCut);
+         0.f, m_grillCut, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height) - m_grillCut,
+         0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height) - m_grillCut);
    }
 
    // Draw illuminations

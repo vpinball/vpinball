@@ -51,7 +51,7 @@ private:
    int m_nRgbFrames = 0; // Circular buffer of m_nRgbFrames frames, ready to be rendered if framePTS >= playPTS
    int m_activeRgbFrame = 0;
    AVFrame** m_rgbFrames = nullptr;
-   uint8_t** m_rgbFrameBuffers = nullptr;
+   VPXTexture* m_videoTextures = nullptr;
 
    VPXTexture m_videoTexture = nullptr;
    unsigned int m_videoTextureId = 0xFFFFFF;

@@ -59,7 +59,7 @@ PSC_USE_ERROR();
 
 // Rendering provided through plugin messages
 extern VPXTexture CreateTexture(SDL_Surface* surf);
-extern void GetTextureInfo(VPXTexture texture, int *width, int *height);
+extern VPXTextureInfo* GetTextureInfo(VPXTexture texture);
 extern void UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const uint8_t *image);
 extern void DeleteTexture(VPXTexture texture);
 

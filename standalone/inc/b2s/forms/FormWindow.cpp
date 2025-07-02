@@ -103,12 +103,11 @@ int FormWindow::Render(VPXRenderContext2D* const renderCtx)
       SDL_UnlockSurface(m_pSurface);
    }
 
-   int texWidth, texHeight;
-   m_pVpxApi->GetTextureInfo(m_vpxTexture, &texWidth, &texHeight);
+   VPXTextureInfo* texInfo = m_pVpxApi->GetTextureInfo(m_vpxTexture);
 
    SDL_Rect rect = m_pForm->GetRect();
    renderCtx->DrawImage(renderCtx, m_vpxTexture, 1.f, 1.f, 1.f, 1.f, 0.f, 0.f,
-      static_cast<float>(texWidth), static_cast<float>(texHeight), rect.x, rect.y, rect.w, rect.h);
+      static_cast<float>(texInfo->width), static_cast<float>(texInfo->height), rect.x, rect.y, rect.w, rect.h);
 
    return true;
 }

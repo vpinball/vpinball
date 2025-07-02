@@ -157,7 +157,23 @@ void VPXPluginAPIImpl::SetInputState(const uint64_t keyState, const float nudgeX
 struct VPXTextureBlock
 {
    std::shared_ptr<BaseTexture> tex;
+   VPXTextureInfo info;
 };
+
+static void UpdateVPXTextureInfo(VPXTextureBlock* tex)
+{
+   tex->info.width = tex->tex->width();
+   tex->info.height = tex->tex->height();
+   switch (tex->tex->m_format)
+   {
+   case BaseTexture::BW: tex->info.format = VPXTextureFormat::VPXTEXFMT_BW; break;
+   case BaseTexture::SRGB: tex->info.format = VPXTextureFormat::VPXTEXFMT_sRGB8; break;
+   case BaseTexture::SRGBA: tex->info.format = VPXTextureFormat::VPXTEXFMT_sRGBA8; break;
+   case BaseTexture::SRGB565: tex->info.format = VPXTextureFormat::VPXTEXFMT_sRGB565; break;
+   default: break; // FIXME what should we do ? reject texture ? have an unknown data format ?
+   }
+   tex->info.data = tex->tex->data();
+}
 
 std::shared_ptr<BaseTexture> VPXPluginAPIImpl::GetTexture(VPXTexture texture) const
 {
@@ -178,31 +194,30 @@ void VPXPluginAPIImpl::UpdateTexture(VPXTexture* texture, int width, int height,
    case VPXTextureFormat::VPXTEXFMT_sRGB565: BaseTexture::Update((*tex)->tex, width, height, BaseTexture::SRGB565, image); break;
    default: assert(false);
    }
+   UpdateVPXTextureInfo(*tex);
 }
 
 VPXTexture VPXPluginAPIImpl::CreateTexture(uint8_t* rawData, int size)
 {
-   // BGFX allows to create texture from any thread
+   // BGFX allows to create texture from any thread and other rendering backends are single threaded
    // assert(std::this_thread::get_id() == VPXPluginAPIImpl::GetInstance().m_apiThread);
    VPXTextureBlock* tex = new VPXTextureBlock();
    tex->tex = BaseTexture::CreateFromData(rawData, size);
+   UpdateVPXTextureInfo(tex);
    return reinterpret_cast<VPXTexture>(tex);
 }
 
-void VPXPluginAPIImpl::GetTextureInfo(VPXTexture texture, int* width, int* height)
+VPXTextureInfo* VPXPluginAPIImpl::GetTextureInfo(VPXTexture texture)
 {
-   assert(std::this_thread::get_id() == VPXPluginAPIImpl::GetInstance().m_apiThread);
+   //assert(std::this_thread::get_id() == VPXPluginAPIImpl::GetInstance().m_apiThread);
    VPXTextureBlock* tex = reinterpret_cast<VPXTextureBlock*>(texture);
-   if (tex)
-   {
-      *width = tex->tex->width();
-      *height = tex->tex->height();
-   }
+   return tex ? &tex->info : nullptr;
 }
 
 void VPXPluginAPIImpl::DeleteTexture(VPXTexture texture)
 {
-   MsgPluginManager::GetInstance().GetMsgAPI().RunOnMainThread(0, [](void* context) {
+   MsgPluginManager::GetInstance().GetMsgAPI().RunOnMainThread(0, 
+      [](void* context) {
       VPXTextureBlock* tex = reinterpret_cast<VPXTextureBlock*>(context);
       if (tex)
       {
