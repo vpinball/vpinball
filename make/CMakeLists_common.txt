@@ -214,13 +214,16 @@ set(VPX_SOURCES
    src/ui/codeview.h
    src/ui/codeviewedit.cpp
    src/ui/codeviewedit.h
-   src/ui/LiveUI.cpp
-   src/ui/LiveUI.h
    src/ui/hitrectsur.cpp
    src/ui/hitrectsur.h
    src/ui/hitsur.cpp
    src/ui/hitsur.h
    src/ui/VPXFileFeedback.h
+
+   src/ui/LiveUI.cpp
+   src/ui/LiveUI.h
+   src/ui/PerfUI.cpp
+   src/ui/PerfUI.h
 
    src/utils/bulb.cpp
    src/utils/bulb.h

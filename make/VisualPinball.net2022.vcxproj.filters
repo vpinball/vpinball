@@ -372,6 +372,9 @@
     <ClCompile Include="../../src/ui/LiveUI.cpp">
       <Filter>ui</Filter>
     </ClCompile>
+    <ClCompile Include="../../src/ui/PerfUI.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
     <ClCompile Include="../../src/ui/codeview.cpp">
       <Filter>ui</Filter>
     </ClCompile>
@@ -1092,6 +1095,9 @@
       <Filter>ui</Filter>
     </ClInclude>
     <ClInclude Include="../../src/ui/LiveUI.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="../../src/ui/PerfUI.h">
       <Filter>ui</Filter>
     </ClInclude>
     <ClInclude Include="../../src/ui/Debugger.h">

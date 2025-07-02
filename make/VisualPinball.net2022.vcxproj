@@ -1235,6 +1235,7 @@
     <ClCompile Include="../../src/ui/codeviewedit.cpp" />
     <ClCompile Include="../../src/ui/Debugger.cpp" />
     <ClCompile Include="../../src/ui/LiveUI.cpp" />
+    <ClCompile Include="../../src/ui/PerfUI.cpp" />
     <ClCompile Include="../../src/ui/codeview.cpp" />
     <ClCompile Include="../../src/ui/hitrectsur.cpp" />
     <ClCompile Include="../../src/ui/hitsur.cpp" />
@@ -1821,6 +1822,7 @@
     <ClInclude Include="../../src/ui/resource.h" />
     <ClInclude Include="../../src/ui/worker.h" />
     <ClInclude Include="../../src/ui/LiveUI.h" />
+    <ClInclude Include="../../src/ui/PerfUI.h" />
     <ClInclude Include="../../src/ui/codeview.h" />
     <ClInclude Include="../../src/ui/codeviewedit.h" />
     <ClInclude Include="../../src/ui/Debugger.h" />
