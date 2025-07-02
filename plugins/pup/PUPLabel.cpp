@@ -419,9 +419,8 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, SDL_Rect& rect, int pagenum
 
    //SDL_FPoint center = { height / 2.0f, 0 };
 
-   int texWidth, texHeight;
-   GetTextureInfo(m_renderState.m_pTexture, &texWidth, &texHeight);
-   ctx->DrawImage(ctx, m_renderState.m_pTexture, 1.f, 1.f, 1.f, 1.f, 0.f, 0.f, static_cast<float>(texWidth), static_cast<float>(texHeight), dest.x, dest.y, dest.w, dest.h);
+   VPXTextureInfo* texInfo = GetTextureInfo(m_renderState.m_pTexture);
+   ctx->DrawImage(ctx, m_renderState.m_pTexture, 1.f, 1.f, 1.f, 1.f, 0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height), dest.x, dest.y, dest.w, dest.h);
    // FIXME port SDL_RenderTextureRotated(m_pTexture, NULL, &dest, -m_angle / 10.0, &center, SDL_FLIP_NONE);
 }
 

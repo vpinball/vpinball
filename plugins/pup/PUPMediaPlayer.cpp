@@ -169,13 +169,13 @@ void PUPMediaPlayer::Stop()
       delete[] m_rgbFrames;
       m_rgbFrames = nullptr;
    }
-   if (m_rgbFrameBuffers)
+   if (m_videoTextures)
    {
       for (int i = 0; i < m_nRgbFrames; i++)
-         if (m_rgbFrameBuffers[i])
-            m_libAv._av_free(m_rgbFrameBuffers[i]);
-      delete[] m_rgbFrameBuffers;
-      m_rgbFrameBuffers = nullptr;
+         if (m_videoTextures[i])
+            DeleteTexture(m_videoTextures[i]);
+      delete[] m_videoTextures;
+      m_videoTextures = nullptr;
    }
    m_nRgbFrames = 0;
    m_activeRgbFrame = 0;
@@ -184,8 +184,6 @@ void PUPMediaPlayer::Stop()
       m_libAv._sws_freeContext(m_swsContext);
    m_swsContext = nullptr;
 
-   if (m_videoTexture)
-      DeleteTexture(m_videoTexture);
    m_videoTexture = nullptr;
    m_videoTextureId = 0xFFFFFF;
 
@@ -361,8 +359,8 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
       int nRgbFrames = 3; // TODO shouldn't the queue size be adapted to the video characteristics ?
       m_rgbFrames = new AVFrame*[nRgbFrames];
       memset(m_rgbFrames, 0, sizeof(AVFrame*) * nRgbFrames);
-      m_rgbFrameBuffers = new uint8_t*[nRgbFrames];
-      memset(m_rgbFrameBuffers, 0, sizeof(uint8_t*) * nRgbFrames);
+      m_videoTextures = new VPXTexture[nRgbFrames];
+      memset(m_videoTextures, 0, sizeof(VPXTexture) * nRgbFrames);
       int rgbFrameSize = m_libAv._av_image_get_buffer_size(targetFormat, targetWidth, targetHeight, 1);
       for (int i = 0; i < nRgbFrames; i++)
       {
@@ -374,8 +372,10 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
             m_running = false;
             return;
          }
-         m_rgbFrameBuffers[i] = static_cast<uint8_t*>(m_libAv._av_malloc(rgbFrameSize * sizeof(uint8_t)));
-         if (m_rgbFrameBuffers[i] == nullptr)
+         // Precreate the texture and uses there backing buffer to avoid copying on each update
+         UpdateTexture(&m_videoTextures[i], targetWidth, targetHeight, VPXTextureFormat::VPXTEXFMT_sRGBA8, nullptr);
+         uint8_t* frameBuffer = GetTextureInfo(m_videoTextures[i])->data;
+         if (frameBuffer == nullptr)
          {
             LOGE("Failed to allocate RGB buffer");
             std::lock_guard<std::mutex> lock(m_mutex);
@@ -385,7 +385,7 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
          m_rgbFrames[i]->width = targetWidth;
          m_rgbFrames[i]->height = targetHeight;
          m_rgbFrames[i]->format = targetFormat;
-         m_libAv._av_image_fill_arrays(m_rgbFrames[i]->data, m_rgbFrames[i]->linesize, m_rgbFrameBuffers[i], targetFormat, targetWidth, targetHeight, 1);
+         m_libAv._av_image_fill_arrays(m_rgbFrames[i]->data, m_rgbFrames[i]->linesize, frameBuffer, targetFormat, targetWidth, targetHeight, 1);
       }
       std::lock_guard<std::mutex> lock(m_mutex);
       m_nRgbFrames = nRgbFrames;
@@ -454,8 +454,12 @@ void PUPMediaPlayer::Render(VPXRenderContext2D* const ctx, const SDL_Rect& destR
       if (m_videoTextureId != m_renderFrameId)
       {
          m_videoTextureId = m_renderFrameId;
-         AVFrame* rgbFrame = m_rgbFrames[m_renderFrameId % m_nRgbFrames];
-         UpdateTexture(&m_videoTexture, rgbFrame->width, rgbFrame->height, VPXTextureFormat::VPXTEXFMT_sRGBA8, rgbFrame->data[0]);
+         const int index = m_renderFrameId % m_nRgbFrames;
+         VPXTextureInfo* texInfo = GetTextureInfo(m_videoTextures[index]);
+         UpdateTexture(&m_videoTextures[index], texInfo->width, texInfo->height, texInfo->format, texInfo->data);
+         // TODO to optimize a bit more we should update & upload a texture on a frame, then use it on the following render, this would remove the barrier between
+         // the GPU upload/mipmap generation and the GPU render use, allowing more parallellism. Note that for the time being upload is only done on use
+         m_videoTexture = m_videoTextures[index];
          //const double framePts = (static_cast<double>(rgbFrame->pts) * m_pVideoContext->pkt_timebase.num) / m_pVideoContext->pkt_timebase.den;
          //LOGD("Video tex update: play time: %8.3fs / frame pts: %8.3fs / delta: %8.3fs  [%s]", playPts, framePts, framePts - playPts, m_filename.c_str());
       }
@@ -464,10 +468,9 @@ void PUPMediaPlayer::Render(VPXRenderContext2D* const ctx, const SDL_Rect& destR
    // Render image
    if (m_videoTexture)
    {
-      int texWidth, texHeight;
-      GetTextureInfo(m_videoTexture, &texWidth, &texHeight);
+      VPXTextureInfo* texInfo = GetTextureInfo(m_videoTexture);
       ctx->DrawImage(ctx, m_videoTexture, 1.f, 1.f, 1.f, 1.f,
-         0.f, 0.f, static_cast<float>(texWidth), static_cast<float>(texHeight),
+         0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height),
          static_cast<float>(destRect.x), static_cast<float>(destRect.y), static_cast<float>(destRect.w), static_cast<float>(destRect.h));
    }
 }

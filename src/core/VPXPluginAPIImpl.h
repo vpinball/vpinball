@@ -59,7 +59,7 @@ private:
 
    static VPXTexture CreateTexture(uint8_t* rawData, int size);
    static void UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const uint8_t* image);
-   static void GetTextureInfo(VPXTexture texture, int* width, int* height);
+   static VPXTextureInfo* GetTextureInfo(VPXTexture texture);
    static void DeleteTexture(VPXTexture texture);
 
    // Plugin logging API

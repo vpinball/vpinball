@@ -147,10 +147,12 @@ VPXTexture CreateTexture(uint8_t* rawData, int size)
    return nullptr;
 }
 
-void GetTextureInfo(VPXTexture texture, int* width, int* height)
+VPXTextureInfo* GetTextureInfo(VPXTexture texture)
 {
    if (vpxApi)
-      vpxApi->GetTextureInfo(texture, width, height);
+      return vpxApi->GetTextureInfo(texture);
+   else
+      return nullptr;
 }
 
 void DeleteTexture(VPXTexture texture)

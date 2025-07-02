@@ -54,6 +54,14 @@ typedef enum
    VPXTEXFMT_sRGB565,
 } VPXTextureFormat;
 
+typedef struct VPXTextureInfo
+{
+   unsigned int width;
+   unsigned int height;
+   VPXTextureFormat format;
+   uint8_t* data;
+} VPXTextureInfo;
+
 typedef enum
 {
    VPXWINDOW_Backglass,
@@ -271,7 +279,7 @@ typedef struct VPXPluginAPI
    void(MSGPIAPI* UpdateTexture)(VPXTexture* texture, int width, int height, VPXTextureFormat format, const uint8_t* image);
    // Give access to texture informations.
    // NOT Thread safe
-   void(MSGPIAPI* GetTextureInfo)(VPXTexture texture, int* width, int* height);
+   VPXTextureInfo*(MSGPIAPI* GetTextureInfo)(VPXTexture texture);
    // Destroy a texture created through this API.
    // Thread safe
    void(MSGPIAPI* DeleteTexture)(VPXTexture texture);
