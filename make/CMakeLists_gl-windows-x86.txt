@@ -10,6 +10,8 @@ set(VERSION_REV "${CMAKE_MATCH_1}")
 
 project(vpinball VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}")
 
+include("${CMAKE_SOURCE_DIR}/make/CMakeLists_common.txt")
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
 
@@ -55,6 +57,8 @@ set_source_files_properties(
 )
 
 add_executable(vpinball WIN32
+   ${VPX_SOURCES}
+
    src/core/stdafx.cpp
    src/core/stdafx.h
    src/renderer/captureExt.cpp
@@ -63,236 +67,23 @@ add_executable(vpinball WIN32
    src/ui/worker.h
    src/ui/resource.h
 
-   src/core/def.h
-   src/parts/dragpoint.cpp
-   src/utils/eventproxy.h
-   src/renderer/Backglass.cpp
-   src/parts/pinbinary.cpp
-   src/core/vpversion.h
-
-   src/parts/Sound.cpp
-   src/parts/Sound.h
-   src/audio/AudioPlayer.cpp
-   src/audio/AudioPlayer.h
-   src/audio/AudioStreamPlayer.cpp
-   src/audio/AudioStreamPlayer.h
-   src/audio/SoundPlayer.cpp
-   src/audio/SoundPlayer.h
-
-   src/core/dispid.h
-   src/core/DynamicScript.cpp
-   src/core/DynamicScript.h
-   src/core/editablereg.cpp
-   src/core/editablereg.h
-   src/core/extern.cpp
-   src/core/extern.h
-   src/core/ieditable.cpp
-   src/core/ieditable.h
-   src/core/iselect.cpp
-   src/core/iselect.h
-   src/core/pinundo.cpp
-   src/core/pinundo.h
-   src/core/main.cpp
-   src/core/main.h
-   src/core/vpinball.cpp
-   src/core/vpinball_h.h
-   src/core/player.cpp
-   src/core/player.h
-   src/core/ResURIResolver.h
-   src/core/ResURIResolver.cpp
-   src/core/Settings.cpp
-   src/core/Settings.h
-   src/core/TableDB.cpp
-   src/core/TableDB.h
-   src/core/VPXPluginAPIImpl.h
-   src/core/VPXPluginAPIImpl.cpp
-
-   src/input/pininput.h
-   src/input/pininput.cpp
    src/input/DirectInputJoystickHandler.h
    src/input/DirectInputKeyboardHandler.h
    src/input/DirectInputMouseHandler.h
    src/input/OpenPinDevHandler.h
    src/input/OpenPinDevHandler.cpp
-   src/input/SDLInputHandler.h
    src/input/Win32InputKeyboardHandler.h
    src/input/XInputJoystickHandler.h
 
-   src/math/bbox.h
-   src/math/math.cpp
-   src/math/math.h
-   src/math/matrix.cpp
-   src/math/matrix.h
-   src/math/vector.h
-   src/math/mesh.h
-   src/math/ModelViewProj.h
+   src/utils/memutil.cpp
+   src/utils/memutil.h
+   src/utils/StackTrace.cpp
+   src/utils/StackTrace.h
+   src/utils/MemoryStatus.cpp
+   src/utils/MemoryStatus.h
 
-   src/meshes/ballMesh.h
-   src/meshes/bulbLightMesh.h
-   src/meshes/bulbSocketMesh.h
-   src/meshes/bumperBaseMesh.h
-   src/meshes/bumperCapMesh.h
-   src/meshes/bumperRingMesh.h
-   src/meshes/bumperSocketMesh.h
-   src/meshes/dropTargetT2Mesh.h
-   src/meshes/dropTargetT3Mesh.h
-   src/meshes/dropTargetT4Mesh.h
-   src/meshes/flipperBase.h
-   src/meshes/gateBracketMesh.h
-   src/meshes/gateLongPlateMesh.h
-   src/meshes/gatePlateMesh.h
-   src/meshes/gateWireMesh.h
-   src/meshes/gateWireRectangleMesh.h
-   src/meshes/hitTargetFatRectangleMesh.h
-   src/meshes/hitTargetFatSquareMesh.h
-   src/meshes/hitTargetRectangleMesh.h
-   src/meshes/hitTargetRoundMesh.h
-   src/meshes/hitTargetT1SlimMesh.h
-   src/meshes/hitTargetT2SlimMesh.h
-   src/meshes/kickerCupMesh.h
-   src/meshes/kickerHitMesh.h
-   src/meshes/kickerHoleMesh.h
-   src/meshes/kickerSimpleHoleMesh.h
-   src/meshes/spinnerBracketMesh.h
-   src/meshes/spinnerPlateMesh.h
-   src/meshes/triggerSimpleMesh.h
-   src/meshes/triggerStarMesh.h
-
-   src/renderer/Backglass.h
-   src/parts/dragpoint.h
-   src/parts/Material.h
-   src/parts/pinbinary.h
-   src/parts/ball.cpp
-   src/parts/ball.h
-   src/parts/bumper.cpp
-   src/parts/bumper.h
-   src/parts/decal.cpp
-   src/parts/decal.h
-   src/parts/dispreel.cpp
-   src/parts/dispreel.h
-   src/parts/flasher.cpp
-   src/parts/flasher.h
-   src/parts/flipper.cpp
-   src/parts/flipper.h
-   src/parts/gate.cpp
-   src/parts/gate.h
-   src/parts/hittarget.cpp
-   src/parts/hittarget.h
-   src/parts/kicker.cpp
-   src/parts/kicker.h
-   src/parts/light.cpp
-   src/parts/light.h
-   src/parts/lightseq.cpp
-   src/parts/lightseq.h
-   src/parts/PartGroup.cpp
-   src/parts/PartGroup.h
-   src/parts/pintable.cpp
-   src/parts/pintable.h
-   src/parts/plunger.cpp
-   src/parts/plunger.h
-   src/parts/primitive.cpp
-   src/parts/primitive.h
-   src/parts/ramp.cpp
-   src/parts/ramp.h
-   src/parts/rubber.h
-   src/parts/rubber.cpp
-   src/parts/spinner.cpp
-   src/parts/spinner.h
-   src/parts/surface.cpp
-   src/parts/surface.h
-   src/parts/textbox.cpp
-   src/parts/textbox.h
-   src/parts/timer.cpp
-   src/parts/timer.h
-   src/parts/trigger.cpp
-   src/parts/trigger.h
-   src/ui/VPXFileFeedback.h
-
-   src/physics/physconst.h
-   src/physics/AsyncDynamicQuadTree.h
-   src/physics/AsyncDynamicQuadTree.cpp
-   src/physics/collide.cpp
-   src/physics/collide.h
-   src/physics/collideex.cpp
-   src/physics/collideex.h
-   src/physics/hitable.h
-   src/physics/hitball.cpp
-   src/physics/hitball.h
-   src/physics/hitflipper.cpp
-   src/physics/hitflipper.h
-   src/physics/hitplunger.cpp
-   src/physics/hitplunger.h
-   src/physics/hittimer.h
-   src/physics/kdtree.cpp
-   src/physics/kdtree.h
-   src/physics/NudgeFilter.cpp
-   src/physics/NudgeFilter.h
-   src/physics/PhysicsEngine.cpp
-   src/physics/PhysicsEngine.h
-   src/physics/quadtree.cpp
-   src/physics/quadtree.h
-
-   src/plugins/MsgPlugin.h
-   src/plugins/MsgPluginManager.h
-   src/plugins/MsgPluginManager.cpp
-   src/plugins/VPXPlugin.h
-   src/plugins/ControllerPlugin.h
-   src/plugins/ScriptablePlugin.h
-
-   src/renderer/trace.h
-   src/renderer/Anaglyph.cpp
-   src/renderer/Anaglyph.h
-   src/renderer/IndexBuffer.cpp
-   src/renderer/IndexBuffer.h
-   src/renderer/MeshBuffer.cpp
-   src/renderer/MeshBuffer.h
-   src/renderer/Renderable.h
-   src/renderer/Renderer.cpp
-   src/renderer/Renderer.h
-   src/renderer/RenderDevice.cpp
-   src/renderer/RenderDevice.h
-   src/renderer/RenderCommand.cpp
-   src/renderer/RenderCommand.h
-   src/renderer/RenderFrame.cpp
-   src/renderer/RenderFrame.h
-   src/renderer/RenderPass.cpp
-   src/renderer/RenderPass.h
-   src/renderer/RenderProbe.cpp
-   src/renderer/RenderProbe.h
-   src/renderer/RenderState.cpp
-   src/renderer/RenderState.h
-   src/renderer/RenderTarget.cpp
-   src/renderer/RenderTarget.h
-   src/renderer/Sampler.cpp
-   src/renderer/Sampler.h
-   src/renderer/Shader.cpp
-   src/renderer/Shader.h
-   src/renderer/Texture.cpp
-   src/renderer/Texture.h
-   src/renderer/TextureManager.cpp
-   src/renderer/TextureManager.h
-   src/renderer/VertexBuffer.cpp
-   src/renderer/VertexBuffer.h
-   src/renderer/ViewSetup.cpp
-   src/renderer/ViewSetup.h
-   src/renderer/VRDevice.cpp
-   src/renderer/VRDevice.h
-   src/renderer/Window.cpp
-   src/renderer/Window.h
-
-   src/ui/codeview.cpp
-   src/ui/codeview.h
-   src/ui/codeviewedit.cpp
-   src/ui/codeviewedit.h
-   src/ui/LiveUI.cpp
-   src/ui/LiveUI.h
-   src/ui/hitrectsur.cpp
-   src/ui/hitrectsur.h
-   src/ui/hitsur.cpp
-   src/ui/hitsur.h
    src/ui/paintsur.cpp
    src/ui/paintsur.h
-
    src/ui/Debugger.cpp
    src/ui/Debugger.h
    src/ui/dialogs/AboutDialog.cpp
@@ -433,35 +224,6 @@ add_executable(vpinball WIN32
    src/ui/properties/WallVisualsProperty.cpp
    src/ui/properties/WallVisualsProperty.h
 
-   src/utils/bulb.cpp
-   src/utils/bulb.h
-   src/core/def.cpp
-   src/utils/wintimer.cpp
-   src/utils/wintimer.h
-   src/utils/memutil.cpp
-   src/utils/memutil.h
-   src/utils/StackTrace.cpp
-   src/utils/StackTrace.h
-   src/utils/ushock_output.cpp
-   src/utils/ushock_output.h
-   src/utils/variant.cpp
-   src/utils/variant.h
-   src/utils/vector.h
-   src/utils/vectorsort.h
-   src/utils/fileio.cpp
-   src/utils/fileio.h
-   src/utils/lzwreader.cpp
-   src/utils/lzwreader.h
-   src/utils/lzwwriter.cpp
-   src/utils/lzwwriter.h
-   src/utils/MemoryStatus.cpp
-   src/utils/MemoryStatus.h
-   src/utils/hash.cpp
-   src/utils/hash.h
-   src/utils/objloader.cpp
-   src/utils/objloader.h
-   src/utils/Logger.cpp
-   src/utils/Logger.h
    src/utils/BlackBox.cpp
    src/utils/BlackBox.h
    src/utils/CrashHandler.cpp
@@ -499,34 +261,14 @@ add_executable(vpinball WIN32
    third-party/include/BAM/BAM_ViewPortSetup.h
    third-party/include/gpuprofiler.cpp
    third-party/include/gpuprofiler.h
+   third-party/include/freeimage.h
    third-party/include/serial.cpp
    third-party/include/serial.h
-   third-party/include/forsyth.h
-   third-party/include/freeimage.h
-   third-party/include/hidapi/hidapi.h
    third-party/include/hidapi/windows/hid.cpp
-   third-party/include/hid-report-parser/hid_report_parser.cpp
-   third-party/include/hid-report-parser/hid_report_parser.h
-   third-party/include/imgui/imconfig.h
-   third-party/include/imgui/imgui.cpp
-   third-party/include/imgui/imgui.h
-   third-party/include/imgui/imgui_draw.cpp
    third-party/include/imgui/imgui_impl_opengl3.cpp
    third-party/include/imgui/imgui_impl_opengl3.h
    third-party/include/imgui/imgui_impl_sdl3.cpp
    third-party/include/imgui/imgui_impl_sdl3.h
-   third-party/include/imgui/imgui_stdlib.cpp
-   third-party/include/imgui/imgui_stdlib.h
-   third-party/include/imgui/imgui_tables.cpp
-   third-party/include/imgui/imgui_widgets.cpp
-   third-party/include/imgui/imgui_internal.h
-   third-party/include/imgui_markdown/imgui_markdown.h
-   third-party/include/imguizmo/ImGuizmo.cpp
-   third-party/include/imguizmo/ImGuizmo.h
-   third-party/include/implot/implot.cpp
-   third-party/include/implot/implot.h
-   third-party/include/implot/implot_items.cpp
-   third-party/include/implot/implot_internal.h
    third-party/include/nvapi/nvapi.h
    third-party/include/nvapi/nvapi_lite_common.h
    third-party/include/nvapi/nvapi_lite_d3dext.h
@@ -535,18 +277,9 @@ add_executable(vpinball WIN32
    third-party/include/nvapi/nvapi_lite_sli.h
    third-party/include/nvapi/nvapi_lite_stereo.h
    third-party/include/nvapi/nvapi_lite_surround.h
-   third-party/include/progmesh.cpp
-   third-party/include/progmesh.h
-   third-party/include/progmesh_vecmatquat_minimal.h
    third-party/include/scilexer.h
    third-party/include/scintilla.h
    third-party/include/Sci_Position.h
-   third-party/include/stb_image.h
-   third-party/include/ThreadPool.h
-   third-party/include/tinyxml2/tinyxml2.cpp
-   third-party/include/tinyxml2/tinyxml2.h
-   third-party/include/miniz/miniz.c
-   third-party/include/miniz/miniz.h
    third-party/include/win32xx/include/wxx_appcore.h
    third-party/include/win32xx/include/wxx_appcore0.h
    third-party/include/win32xx/include/wxx_archive.h
