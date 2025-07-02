@@ -240,6 +240,7 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, string filename)
       config.endCallback = OnSoundEnd;
       config.pEndCallbackUserData = this;
       config.flags = MA_SOUND_FLAG_NO_SPATIALIZATION | MA_SOUND_FLAG_STREAM;
+      config.pInitialAttachment = m_vpxMixNode.get();
       if (ma_sound_init_ex(engine, &config, m_sound.get()))
       {
          m_decoder = nullptr;
