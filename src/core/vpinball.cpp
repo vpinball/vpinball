@@ -1383,7 +1383,7 @@ void VPinball::LoadFileName(const string& filename, const bool updateEditor, VPX
          if (audit.find(". Error:"s) != std::string::npos)
          {
             InfoDialog info("This table contains error(s) that need to be fixed to ensure correct play.\r\n\r\n" + audit);
-            info.DoModal();
+            info.DoModal(this->GetHwnd());
          }
 #endif
       }
