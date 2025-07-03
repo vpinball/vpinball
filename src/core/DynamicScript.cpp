@@ -473,7 +473,7 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
       {
          V_VT(cv) = VT_BSTR;
          const int len = MultiByteToWideChar(CP_ACP, 0, sv.vString.string, -1, nullptr, 0);
-         V_BSTR(cv) = SysAllocStringLen(nullptr, len);
+         V_BSTR(cv) = SysAllocStringLen(nullptr, len - 1);
          MultiByteToWideChar(CP_ACP, 0, sv.vString.string, -1, V_BSTR(cv), len);
          break;
       }
