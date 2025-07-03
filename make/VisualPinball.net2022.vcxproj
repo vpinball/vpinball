@@ -305,9 +305,9 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>
-	  <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
-	  <TypeLibraryName>$(SolutionDir)../gen/vpinball.tlb</TypeLibraryName>
-	  <HeaderFileName>$(SolutionDir)../gen/vpinball.h</HeaderFileName>
+      <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
+      <TypeLibraryName>$(SolutionDir)../gen/vpinball.tlb</TypeLibraryName>
+      <HeaderFileName>$(SolutionDir)../gen/vpinball.h</HeaderFileName>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -368,9 +368,9 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">
     <Midl>
-	  <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
-	  <TypeLibraryName>$(SolutionDir)../gen/vpinball.tlb</TypeLibraryName>
-	  <HeaderFileName>$(SolutionDir)../gen/vpinball.h</HeaderFileName>
+      <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
+      <TypeLibraryName>$(SolutionDir)../gen/vpinball.tlb</TypeLibraryName>
+      <HeaderFileName>$(SolutionDir)../gen/vpinball.h</HeaderFileName>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -440,9 +440,9 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_BGFX|Win32'">
     <Midl>
-	  <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
-	  <TypeLibraryName>$(SolutionDir)../gen/vpinball.tlb</TypeLibraryName>
-	  <HeaderFileName>$(SolutionDir)../gen/vpinball.h</HeaderFileName>
+      <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
+      <TypeLibraryName>$(SolutionDir)../gen/vpinball.tlb</TypeLibraryName>
+      <HeaderFileName>$(SolutionDir)../gen/vpinball.h</HeaderFileName>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -512,9 +512,9 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Midl>
-	  <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
-	  <TypeLibraryName>$(SolutionDir)../gen/vpinball.tlb</TypeLibraryName>
-	  <HeaderFileName>$(SolutionDir)../gen/vpinball.h</HeaderFileName>
+      <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
+      <TypeLibraryName>$(SolutionDir)../gen/vpinball.tlb</TypeLibraryName>
+      <HeaderFileName>$(SolutionDir)../gen/vpinball.h</HeaderFileName>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -577,9 +577,9 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">
     <Midl>
-	  <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
-	  <TypeLibraryName>$(SolutionDir)../gen/vpinball.tlb</TypeLibraryName>
-	  <HeaderFileName>$(SolutionDir)../gen/vpinball.h</HeaderFileName>
+      <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
+      <TypeLibraryName>$(SolutionDir)../gen/vpinball.tlb</TypeLibraryName>
+      <HeaderFileName>$(SolutionDir)../gen/vpinball.h</HeaderFileName>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -642,9 +642,9 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_BGFX|x64'">
     <Midl>
-	  <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
-	  <TypeLibraryName>$(SolutionDir)../gen/vpinball.tlb</TypeLibraryName>
-	  <HeaderFileName>$(SolutionDir)../gen/vpinball.h</HeaderFileName>
+      <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
+      <TypeLibraryName>$(SolutionDir)../gen/vpinball.tlb</TypeLibraryName>
+      <HeaderFileName>$(SolutionDir)../gen/vpinball.h</HeaderFileName>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -707,9 +707,9 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Midl>
-	  <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
-	  <TypeLibraryName>$(SolutionDir)../gen/vpinball.tlb</TypeLibraryName>
-	  <HeaderFileName>$(SolutionDir)../gen/vpinball.h</HeaderFileName>
+      <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
+      <TypeLibraryName>$(SolutionDir)../gen/vpinball.tlb</TypeLibraryName>
+      <HeaderFileName>$(SolutionDir)../gen/vpinball.h</HeaderFileName>
     </Midl>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
@@ -773,9 +773,9 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">
     <Midl>
-	  <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
-	  <TypeLibraryName>$(SolutionDir)../gen/vpinball.tlb</TypeLibraryName>
-	  <HeaderFileName>$(SolutionDir)../gen/vpinball.h</HeaderFileName>
+      <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
+      <TypeLibraryName>$(SolutionDir)../gen/vpinball.tlb</TypeLibraryName>
+      <HeaderFileName>$(SolutionDir)../gen/vpinball.h</HeaderFileName>
     </Midl>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
@@ -849,9 +849,9 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_BGFX|Win32'">
     <Midl>
-	  <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
-	  <TypeLibraryName>$(SolutionDir)../gen/vpinball.tlb</TypeLibraryName>
-	  <HeaderFileName>$(SolutionDir)../gen/vpinball.h</HeaderFileName>
+      <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
+      <TypeLibraryName>$(SolutionDir)../gen/vpinball.tlb</TypeLibraryName>
+      <HeaderFileName>$(SolutionDir)../gen/vpinball.h</HeaderFileName>
     </Midl>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
@@ -925,9 +925,9 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Midl>
-	  <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
-	  <TypeLibraryName>$(SolutionDir)../gen/vpinball.tlb</TypeLibraryName>
-	  <HeaderFileName>$(SolutionDir)../gen/vpinball.h</HeaderFileName>
+      <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
+      <TypeLibraryName>$(SolutionDir)../gen/vpinball.tlb</TypeLibraryName>
+      <HeaderFileName>$(SolutionDir)../gen/vpinball.h</HeaderFileName>
     </Midl>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
@@ -1000,9 +1000,9 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">
     <Midl>
-	  <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
-	  <TypeLibraryName>$(SolutionDir)../gen/vpinball.tlb</TypeLibraryName>
-	  <HeaderFileName>$(SolutionDir)../gen/vpinball.h</HeaderFileName>
+      <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
+      <TypeLibraryName>$(SolutionDir)../gen/vpinball.tlb</TypeLibraryName>
+      <HeaderFileName>$(SolutionDir)../gen/vpinball.h</HeaderFileName>
     </Midl>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
@@ -1075,9 +1075,9 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_BGFX|x64'">
     <Midl>
-	  <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
-	  <TypeLibraryName>$(SolutionDir)../gen/vpinball.tlb</TypeLibraryName>
-	  <HeaderFileName>$(SolutionDir)../gen/vpinball.h</HeaderFileName>
+      <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
+      <TypeLibraryName>$(SolutionDir)../gen/vpinball.tlb</TypeLibraryName>
+      <HeaderFileName>$(SolutionDir)../gen/vpinball.h</HeaderFileName>
     </Midl>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
@@ -1394,6 +1394,34 @@
     <ClCompile Include="../../third-party/include/serial.cpp" />
     <ClCompile Include="../../third-party/include/tinyxml2/tinyxml2.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\third-party\include\miniaudio\extras\stb_vorbis.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_BGFX|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_BGFX|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_BGFX|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_BGFX|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\third-party\include\miniaudio\miniaudio.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_BGFX|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_BGFX|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_BGFX|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_BGFX|x64'">true</ExcludedFromBuild>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2104,6 +2132,9 @@
     <ClInclude Include="../../third-party/include/openxr/openxr_reflection.h" />
     <ClInclude Include="../../third-party/include/openxr/openxr_reflection_parent_structs.h" />
     <ClInclude Include="../../third-party/include/openxr/openxr_reflection_structs.h" />
+    <ClInclude Include="..\..\third-party\include\miniaudio\extras\miniaudio_libopus.h" />
+    <ClInclude Include="..\..\third-party\include\miniaudio\extras\miniaudio_libvorbis.h" />
+    <ClInclude Include="..\..\third-party\include\miniaudio\miniaudio.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="../../src/shaders/hlsl_glsl/BallShader.hlsl">
