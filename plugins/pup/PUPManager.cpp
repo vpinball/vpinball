@@ -300,7 +300,7 @@ void PUPManager::QueueTriggerData(PUPTriggerData data)
 
 void PUPManager::ProcessQueue()
 {
-   SetThreadName("PUPManager.ProcessQueue");
+   SetThreadName("PUPManager.ProcessQueue"s);
    while (m_isRunning)
    {
       std::unique_lock<std::mutex> lock(m_queueMutex);

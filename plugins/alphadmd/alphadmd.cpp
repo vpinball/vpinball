@@ -9,6 +9,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <string>
+using namespace std::string_literals;
 #include <cstring>
 #include <cstdint>
 #include <sstream>
@@ -264,10 +265,10 @@ static void DrawDisplay(int x, int y, float*& lum, int srcIndex, bool large)
 #ifdef _WIN32
 void SetThreadName(const std::string& name)
 {
-   int size_needed = MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, NULL, 0);
-   if (size_needed == 0)
+   const int size_needed = MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, nullptr, 0);
+   if (size_needed <= 1)
       return;
-   std::wstring wstr(size_needed, 0);
+   std::wstring wstr(size_needed - 1, L'\0');
    if (MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, wstr.data(), size_needed) == 0)
       return;
    HRESULT hr = SetThreadDescription(GetCurrentThread(), wstr.c_str());
@@ -278,7 +279,7 @@ void SetThreadName(const std::string& name) { }
 
 static void RenderThread()
 {
-   SetThreadName("AlphaDMD.RenderThread");
+   SetThreadName("AlphaDMD.RenderThread"s);
    uint16_t seg_data[128] = { 0 };
    uint16_t seg_data2[128] = { 0 };
    float groupLum[128 * 16] = { 0 };

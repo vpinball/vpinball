@@ -33,7 +33,7 @@ void Label::SetText(const string& szText)
 {
    string szTmp = szText;
 
-   static const string patterns[] = { "\r\n"s };
+   static const std::array<string,1> patterns{ "\r\n"s };
    static const string replaceWith = "\n"s;
 
    for (const auto& pattern : patterns) {

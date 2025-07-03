@@ -33,7 +33,7 @@ using namespace std;
 // TODO the polling system needs to be extended to also listen for B2S controller
 
 namespace DOFPlugin {
-   
+
 static MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
 static uint32_t endpointId;
@@ -119,22 +119,22 @@ static bool GetSettingBool(MsgPluginAPI* pMsgApi, const char* section, const cha
 #ifdef _WIN32
 void SetThreadName(const std::string& name)
 {
-   int size_needed = MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, NULL, 0);
-   if (size_needed == 0)
+   const int size_needed = MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, nullptr, 0);
+   if (size_needed <= 1)
       return;
-   std::wstring wstr(size_needed, 0);
+   std::wstring wstr(size_needed - 1, L'\0');
    if (MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, wstr.data(), size_needed) == 0)
       return;
    HRESULT hr = SetThreadDescription(GetCurrentThread(), wstr.c_str());
 }
 #else
 void SetThreadName(const std::string& name) { }
-#endif   
+#endif
 
-static void PollThread(string tablePath, string gameId)
+static void PollThread(const string& tablePath, const string& gameId)
 {
    assert(pDOF != nullptr);
-   SetThreadName("DOF.PollThread");
+   SetThreadName("DOF.PollThread"s);
    pDOF->Init(tablePath.c_str(), gameId.c_str());
    bool isInitialState = true;
    vector<bool> wireStates, solStates, lampStates, giStates;
@@ -179,7 +179,7 @@ static void PollThread(string tablePath, string gameId)
             if (isInitialState || (giStates[i] && state < 0.25f) || (!giStates[i] && state > 0.75f))
                pDOF->DataReceive('G', i + 1, state > 0.5f ? 1 : 0);
          }
-         
+
          isInitialState = false;
       }
       
@@ -244,7 +244,7 @@ static void OnDevSrcChanged(const unsigned int eventId, void* userData, void* ms
       LOGI("DOFPlugin: OnDevSrcChanged - No source");
       return;
    }
-   
+
    getSrcMsg = { getSrcMsg.count, 0, new DevSrcId[getSrcMsg.count] };
    msgApi->BroadcastMsg(endpointId, getDevSrcId, &getSrcMsg);
    MsgEndpointInfo info;
@@ -282,7 +282,7 @@ static void OnDevSrcChanged(const unsigned int eventId, void* userData, void* ms
       else if ((pmGiIndex == -1) && (pmLampIndex == -1))
          nPmSolenoids++;
    }
-   
+
    LOGI("DOFPlugin: OnDevSrcChanged - Found %d PinMAME devices (Sol:%d, Lamps:%d, GI:%d)", 
         pinmameDevSrc.nDevices, nPmSolenoids, nPmLamps, nPmGIs);
 }
@@ -330,7 +330,7 @@ MSGPI_EXPORT void MSGPIAPI DOFPluginLoad(const uint32_t sessionId, MsgPluginAPI*
 
    memset(&pinmameDevSrc, 0, sizeof(pinmameDevSrc));
    ClearDevices();
-   
+
    unsigned int getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
    msgApi->ReleaseMsgID(getVpxApiId);
@@ -364,7 +364,7 @@ MSGPI_EXPORT void MSGPIAPI DOFPluginUnload()
    isRunning = false;
    if (pollThread.joinable())
       pollThread.join();
-   
+
    ClearDevices();
    delete[] pinmameInputSrc.inputDefs;
    memset(&pinmameInputSrc, 0, sizeof(pinmameInputSrc));
@@ -386,4 +386,3 @@ MSGPI_EXPORT void MSGPIAPI DOFPluginUnload()
 
    msgApi = nullptr;
 }
-

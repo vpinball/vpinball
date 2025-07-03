@@ -231,11 +231,11 @@ MSGPI_EXPORT void MSGPIAPI DMDUtilPluginLoad(const uint32_t sessionId, MsgPlugin
    pConfig->SetZeDMDDebug(GetSettingBool(msgApi, "DMDUtil", "ZeDMDDebug", false));
    pConfig->SetZeDMDBrightness(GetSettingInt(msgApi, "DMDUtil", "ZeDMDBrightness", -1));
    pConfig->SetZeDMDWiFiEnabled(GetSettingBool(msgApi, "DMDUtil", "ZeDMDWiFi", false));
-   pConfig->SetZeDMDWiFiAddr(GetSettingString(msgApi, "DMDUtil", "ZeDMDWiFiAddr", "zedmd-wifi.local").c_str());
+   pConfig->SetZeDMDWiFiAddr(GetSettingString(msgApi, "DMDUtil", "ZeDMDWiFiAddr", "zedmd-wifi.local"s).c_str());
    pConfig->SetPixelcade(GetSettingBool(msgApi, "DMDUtil", "Pixelcade", true));
    pConfig->SetPixelcadeDevice(GetSettingString(msgApi, "DMDUtil", "PixelcadeDevice", string()).c_str());
    pConfig->SetDMDServer(GetSettingBool(msgApi, "DMDUtil", "DMDServer", false));
-   pConfig->SetDMDServerAddr(GetSettingString(msgApi, "DMDUtil", "DMDServerAddr", "localhost").c_str());
+   pConfig->SetDMDServerAddr(GetSettingString(msgApi, "DMDUtil", "DMDServerAddr", "localhost"s).c_str());
    pConfig->SetDMDServerPort(GetSettingInt(msgApi, "DMDUtil", "DMDServerPort", 6789));
 }
 

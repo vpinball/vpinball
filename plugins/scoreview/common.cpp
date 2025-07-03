@@ -132,28 +132,8 @@ string find_case_insensitive_file_path(const string& szPath)
 
 string PathFromFilename(const string& filename)
 {
-   const int len = (int)filename.length();
-   // find the last '\' in the filename
-   int end;
-   for (end = len; end >= 0; end--)
-   {
-      if (filename[end] == PATH_SEPARATOR_CHAR)
-         break;
-   }
-
-   if (end == 0)
-      end = len - 1;
-
-   // copy from the start of the string to the end (or last '\')
-   const char* szT = filename.c_str();
-   int count = end + 1;
-
-   string path;
-   while (count--)
-   {
-      path.push_back(*szT++);
-   }
-   return path;
+   const size_t pos = filename.find_last_of(PATH_SEPARATOR_CHAR);
+   return (pos == string::npos) ? string() : filename.substr(0, pos + 1); // previously returned filename if no separator found, but i guess that just worked because filename was then also constantly ""
 }
 
 string GetPluginPath()

@@ -16,13 +16,13 @@ public:
    PSC_IMPLEMENT_REFCOUNT()
 
    void Dispose() { }
-   string GetB2SServerVersion() const { return ""; }
+   string GetB2SServerVersion() const { return ""s; }
    double GetB2SBuildVersion() const { return 0.0; }
-   string GetB2SServerDirectory() const { return ""; }
-   string GetVPMBuildVersion() const { return ""; }
-   string GetB2SName() const { return ""; }
+   string GetB2SServerDirectory() const { return ""s; }
+   string GetVPMBuildVersion() const { return ""s; }
+   string GetB2SName() const { return ""s; }
    void SetB2SName(const std::string& b2sName) { }
-   string GetTableName() const { return ""; }
+   string GetTableName() const { return ""s; }
    void SetTableName(const std::string& tableName) { }
    void SetWorkingDir(const std::string& workingDir) { }
    void SetPath(const std::string& path) { }
