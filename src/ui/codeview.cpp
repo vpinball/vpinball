@@ -761,11 +761,9 @@ STDMETHODIMP CodeViewer::CleanUpScriptEngine()
             PLOGE << "Script did not terminate within 5s after request. Forcing close of interpreter #" << m_pScript;
             EXCEPINFO eiInterrupt = {};
             const LocalString ls(IDS_HANG);
-            const WCHAR *const wzError = MakeWide(ls.m_szbuffer);
-            eiInterrupt.bstrDescription = SysAllocString(wzError);
+            eiInterrupt.bstrDescription = MakeWideBSTR(ls.m_szbuffer);
             //eiInterrupt.scode = E_NOTIMPL;
             eiInterrupt.wCode = 2345;
-            delete[] wzError;
             m_pScript->InterruptScriptThread(SCRIPTTHREADID_BASE /*SCRIPTTHREADID_ALL*/, &eiInterrupt, /*SCRIPTINTERRUPT_DEBUG*/ SCRIPTINTERRUPT_RAISEEXCEPTION);
          }
          else
@@ -2186,7 +2184,7 @@ void CodeViewer::ListEventsFromItem()
 
                   // Get Name
                   {
-                     BSTR *rgstr = (BSTR *)CoTaskMemAlloc(6 * sizeof(BSTR *));
+                     BSTR * const rgstr = (BSTR *)CoTaskMemAlloc(6 * sizeof(BSTR *));
                      unsigned int cnames;
                      /*const HRESULT hr =*/ptiChild->GetNames(pfd->memid, rgstr, 6, &cnames);
 
@@ -4056,7 +4054,6 @@ Collection::Collection()
 STDMETHODIMP Collection::get_Name(BSTR *pVal)
 {
    *pVal = SysAllocString(m_wzName);
-
    return S_OK;
 }
 
@@ -4282,6 +4279,5 @@ STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
 STDMETHODIMP DebuggerModule::get_Name(BSTR *pVal)
 {
    *pVal = SysAllocString(L"Debug");
-
    return S_OK;
 }

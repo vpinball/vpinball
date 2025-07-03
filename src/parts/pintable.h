@@ -853,12 +853,12 @@ public:
    WCHAR *GetCollectionNameByElement(const ISelect *const element);
    void RefreshProperties();
 
-   void SetNotesText(const CString &text)
+   void SetNotesText(const string &text)
    {
       m_notesText = text;
       SetDirtyDraw();
    }
-   CString GetNotesText() const { return m_notesText; }
+   const string& GetNotesText() const { return m_notesText; }
 
    ToneMapper GetToneMapper() const { return m_toneMapper; }
    void SetToneMapper(const ToneMapper& tm) { m_toneMapper = tm; }
@@ -869,7 +869,7 @@ private:
    unsigned int m_tablelocked = 0;
 
    PinTableMDI *m_mdiTable = nullptr;
-   CString m_notesText;
+   string m_notesText;
    ankerl::unordered_dense::map<string, Texture *, StringHashFunctor, StringComparator> m_textureMap; // hash table to speed up texture lookup by name
    ankerl::unordered_dense::map<string, Material *, StringHashFunctor, StringComparator> m_materialMap; // hash table to speed up material lookup by name
    ankerl::unordered_dense::map<string, Light *, StringHashFunctor, StringComparator> m_lightMap; // hash table to speed up light lookup by name

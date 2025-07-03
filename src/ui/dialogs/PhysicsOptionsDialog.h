@@ -5,17 +5,17 @@
 class PhysicsOptionsDialog final : public CDialog
 {
 public:
-    PhysicsOptionsDialog();
+   PhysicsOptionsDialog();
 
 protected:
-    BOOL OnInitDialog() override;
-    INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
-    BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
-    void OnOK() override;
+   BOOL OnInitDialog() override;
+   INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+   BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
+   void OnOK() override;
 
 private:
-    bool LoadSetting();
-    CString GetItemText(int id);
-    void SetItemText(int id, float value);
-    void SaveCurrentPhysicsSetting();
+   bool LoadSetting();
+   string GetItemText(int id) const;
+   void SetItemText(int id, float value);
+   void SaveCurrentPhysicsSetting();
 };

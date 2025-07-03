@@ -712,10 +712,7 @@ STDMETHODIMP Textbox::put_FontColor(OLE_COLOR newVal)
 
 STDMETHODIMP Textbox::get_Text(BSTR *pVal)
 {
-   WCHAR wz[MAXSTRING];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_text.c_str(), -1, wz, MAXSTRING);
-   *pVal = SysAllocString(wz);
-
+   *pVal = MakeWideBSTR(m_d.m_text);
    return S_OK;
 }
 

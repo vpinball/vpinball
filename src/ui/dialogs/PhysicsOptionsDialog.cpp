@@ -215,80 +215,80 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             auto physTab = xmlDoc.NewElement("table");
 
             auto node = xmlDoc.NewElement(PinTable::VPPelementNames[0].c_str());
-            node->SetText(convert_decimal_point_and_trim(GetItemText(1100).GetString(), false).c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(1100), false).c_str());
             physTab->InsertEndChild(node);
 
             node = xmlDoc.NewElement(PinTable::VPPelementNames[1].c_str());
-            node->SetText(convert_decimal_point_and_trim(GetItemText(1101).GetString(), false).c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(1101), false).c_str());
             physTab->InsertEndChild(node);
 
             node = xmlDoc.NewElement(PinTable::VPPelementNames[2].c_str());
-            node->SetText(convert_decimal_point_and_trim(GetItemText(1708).GetString(), false).c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(1708), false).c_str());
             physTab->InsertEndChild(node);
 
             node = xmlDoc.NewElement(PinTable::VPPelementNames[3].c_str());
-            node->SetText(convert_decimal_point_and_trim(GetItemText(1709).GetString(), false).c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(1709), false).c_str());
             physTab->InsertEndChild(node);
 
             node = xmlDoc.NewElement(PinTable::VPPelementNames[4].c_str());
-            node->SetText(convert_decimal_point_and_trim(GetItemText(1710).GetString(), false).c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(1710), false).c_str());
             physTab->InsertEndChild(node);
 
             node = xmlDoc.NewElement(PinTable::VPPelementNames[5].c_str());
-            node->SetText(convert_decimal_point_and_trim(GetItemText(1102).GetString(), false).c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(1102), false).c_str());
             physTab->InsertEndChild(node);
 
             node = xmlDoc.NewElement(PinTable::VPPelementNames[6].c_str());
-            node->SetText(convert_decimal_point_and_trim(GetItemText(1103).GetString(), false).c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(1103), false).c_str());
             physTab->InsertEndChild(node);
 
             node = xmlDoc.NewElement(PinTable::VPPelementNames[7].c_str());
-            node->SetText(convert_decimal_point_and_trim(GetItemText(1104).GetString(), false).c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(1104), false).c_str());
             physTab->InsertEndChild(node);
 
             // flippers
             node = xmlDoc.NewElement(PinTable::VPPelementNames[8].c_str());
-            node->SetText(convert_decimal_point_and_trim(GetItemText(DISPID_Flipper_Speed).GetString(), false).c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(DISPID_Flipper_Speed), false).c_str());
             physFlip->InsertEndChild(node);
 
             node = xmlDoc.NewElement(PinTable::VPPelementNames[9].c_str());
-            node->SetText(convert_decimal_point_and_trim(GetItemText(19).GetString(), false).c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(19), false).c_str());
             physFlip->InsertEndChild(node);
 
             node = xmlDoc.NewElement(PinTable::VPPelementNames[10].c_str());
-            node->SetText(convert_decimal_point_and_trim(GetItemText(21).GetString(), false).c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(21), false).c_str());
             physFlip->InsertEndChild(node);
 
             node = xmlDoc.NewElement(PinTable::VPPelementNames[11].c_str());
-            node->SetText(convert_decimal_point_and_trim(GetItemText(112).GetString(), false).c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(112), false).c_str());
             physFlip->InsertEndChild(node);
 
             node = xmlDoc.NewElement(PinTable::VPPelementNames[12].c_str());
-            node->SetText(convert_decimal_point_and_trim(GetItemText(113).GetString(), false).c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(113), false).c_str());
             physFlip->InsertEndChild(node);
 
             node = xmlDoc.NewElement(PinTable::VPPelementNames[13].c_str());
-            node->SetText(convert_decimal_point_and_trim(GetItemText(189).GetString(), false).c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(189), false).c_str());
             physFlip->InsertEndChild(node);
 
             node = xmlDoc.NewElement(PinTable::VPPelementNames[14].c_str());
-            node->SetText(convert_decimal_point_and_trim(GetItemText(23).GetString(), false).c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(23), false).c_str());
             physFlip->InsertEndChild(node);
 
             node = xmlDoc.NewElement(PinTable::VPPelementNames[15].c_str());
-            node->SetText(convert_decimal_point_and_trim(GetItemText(22).GetString(), false).c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(22), false).c_str());
             physFlip->InsertEndChild(node);
 
             node = xmlDoc.NewElement(PinTable::VPPelementNames[16].c_str());
-            node->SetText(convert_decimal_point_and_trim(GetItemText(109).GetString(), false).c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(109), false).c_str());
             physFlip->InsertEndChild(node);
 
             node = xmlDoc.NewElement(PinTable::VPPelementNames[17].c_str());
-            node->SetText(convert_decimal_point_and_trim(GetItemText(110).GetString(), false).c_str());
+            node->SetText(convert_decimal_point_and_trim(GetItemText(110), false).c_str());
             physFlip->InsertEndChild(node);
 
             auto settingName = xmlDoc.NewElement("name");
-            settingName->SetText(GetItemText(1110));
+            settingName->SetText(GetItemText(1110).c_str());
             root->InsertEndChild(settingName);
             root->InsertEndChild(physTab);
             root->InsertEndChild(physFlip);
@@ -388,9 +388,9 @@ bool PhysicsOptionsDialog::LoadSetting()
     return true;
 }
 
-CString PhysicsOptionsDialog::GetItemText(int id)
+string PhysicsOptionsDialog::GetItemText(int id) const
 {
-    return GetDlgItemText(id);
+    return GetDlgItemText(id).GetString();
 }
 
 void PhysicsOptionsDialog::SetItemText(int id, float value)
@@ -401,23 +401,23 @@ void PhysicsOptionsDialog::SetItemText(int id, float value)
 
 void PhysicsOptionsDialog::SaveCurrentPhysicsSetting()
 {
-    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsMass" + std::to_string(physicsselection), sz2f(GetItemText(DISPID_Flipper_Speed).GetString()));
-    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsStrength" + std::to_string(physicsselection), sz2f(GetItemText(19).GetString()));
-    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsElasticity" + std::to_string(physicsselection), sz2f(GetItemText(21).GetString()));
-    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsScatter" + std::to_string(physicsselection), sz2f(GetItemText(112).GetString()));
-    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsEOSTorque" + std::to_string(physicsselection), sz2f(GetItemText(113).GetString()));
-    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsEOSTorqueAngle" + std::to_string(physicsselection), sz2f(GetItemText(189).GetString()));
-    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsReturnStrength" + std::to_string(physicsselection), sz2f(GetItemText(23).GetString()));
-    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsElasticityFalloff" + std::to_string(physicsselection), sz2f(GetItemText(22).GetString()));
-    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsFriction" + std::to_string(physicsselection), sz2f(GetItemText(109).GetString()));
-    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsCoilRampUp" + std::to_string(physicsselection), sz2f(GetItemText(110).GetString()));
-    g_pvp->m_settings.SaveValue(Settings::Player, "TablePhysicsGravityConstant" + std::to_string(physicsselection), sz2f(GetItemText(1100).GetString()));
-    g_pvp->m_settings.SaveValue(Settings::Player, "TablePhysicsContactFriction" + std::to_string(physicsselection), sz2f(GetItemText(1101).GetString()));
-    g_pvp->m_settings.SaveValue(Settings::Player, "TablePhysicsElasticity" + std::to_string(physicsselection), sz2f(GetItemText(1708).GetString()));
-    g_pvp->m_settings.SaveValue(Settings::Player, "TablePhysicsElasticityFalloff" + std::to_string(physicsselection), sz2f(GetItemText(1709).GetString()));
-    g_pvp->m_settings.SaveValue(Settings::Player, "TablePhysicsScatterAngle" + std::to_string(physicsselection), sz2f(GetItemText(1710).GetString()));
-    g_pvp->m_settings.SaveValue(Settings::Player, "TablePhysicsContactScatterAngle" + std::to_string(physicsselection), sz2f(GetItemText(1102).GetString()));
-    g_pvp->m_settings.SaveValue(Settings::Player, "TablePhysicsMinSlope" + std::to_string(physicsselection), sz2f(GetItemText(1103).GetString()));
-    g_pvp->m_settings.SaveValue(Settings::Player, "TablePhysicsMaxSlope" + std::to_string(physicsselection), sz2f(GetItemText(1104).GetString()));
-    g_pvp->m_settings.SaveValue(Settings::Player, "PhysicsSetName" + std::to_string(physicsselection), GetItemText(1110).GetString());
+    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsMass" + std::to_string(physicsselection), sz2f(GetItemText(DISPID_Flipper_Speed)));
+    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsStrength" + std::to_string(physicsselection), sz2f(GetItemText(19)));
+    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsElasticity" + std::to_string(physicsselection), sz2f(GetItemText(21)));
+    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsScatter" + std::to_string(physicsselection), sz2f(GetItemText(112)));
+    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsEOSTorque" + std::to_string(physicsselection), sz2f(GetItemText(113)));
+    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsEOSTorqueAngle" + std::to_string(physicsselection), sz2f(GetItemText(189)));
+    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsReturnStrength" + std::to_string(physicsselection), sz2f(GetItemText(23)));
+    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsElasticityFalloff" + std::to_string(physicsselection), sz2f(GetItemText(22)));
+    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsFriction" + std::to_string(physicsselection), sz2f(GetItemText(109)));
+    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsCoilRampUp" + std::to_string(physicsselection), sz2f(GetItemText(110)));
+    g_pvp->m_settings.SaveValue(Settings::Player, "TablePhysicsGravityConstant" + std::to_string(physicsselection), sz2f(GetItemText(1100)));
+    g_pvp->m_settings.SaveValue(Settings::Player, "TablePhysicsContactFriction" + std::to_string(physicsselection), sz2f(GetItemText(1101)));
+    g_pvp->m_settings.SaveValue(Settings::Player, "TablePhysicsElasticity" + std::to_string(physicsselection), sz2f(GetItemText(1708)));
+    g_pvp->m_settings.SaveValue(Settings::Player, "TablePhysicsElasticityFalloff" + std::to_string(physicsselection), sz2f(GetItemText(1709)));
+    g_pvp->m_settings.SaveValue(Settings::Player, "TablePhysicsScatterAngle" + std::to_string(physicsselection), sz2f(GetItemText(1710)));
+    g_pvp->m_settings.SaveValue(Settings::Player, "TablePhysicsContactScatterAngle" + std::to_string(physicsselection), sz2f(GetItemText(1102)));
+    g_pvp->m_settings.SaveValue(Settings::Player, "TablePhysicsMinSlope" + std::to_string(physicsselection), sz2f(GetItemText(1103)));
+    g_pvp->m_settings.SaveValue(Settings::Player, "TablePhysicsMaxSlope" + std::to_string(physicsselection), sz2f(GetItemText(1104)));
+    g_pvp->m_settings.SaveValue(Settings::Player, "PhysicsSetName" + std::to_string(physicsselection), GetItemText(1110));
 }

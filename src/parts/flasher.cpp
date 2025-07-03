@@ -641,9 +641,7 @@ STDMETHODIMP Flasher::put_Color(OLE_COLOR newVal)
 
 STDMETHODIMP Flasher::get_ImageA(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szImageA);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szImageA);
    return S_OK;
 }
 
@@ -655,9 +653,7 @@ STDMETHODIMP Flasher::put_ImageA(BSTR newVal)
 
 STDMETHODIMP Flasher::get_ImageB(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szImageB);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szImageB);
    return S_OK;
 }
 

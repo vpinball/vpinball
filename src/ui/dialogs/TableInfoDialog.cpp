@@ -143,11 +143,11 @@ INT_PTR TableInfoDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   {
                      const int sel = plistview->iItem;
 
-                     const CString name = m_customListView.GetItemText(sel, 0, MAXSTRING);
-                     m_customNameEdit.SetWindowText(name.c_str());
+                     const char* name = m_customListView.GetItemText(sel, 0, MAXSTRING).c_str();
+                     m_customNameEdit.SetWindowText(name);
 
-                     const CString value = m_customListView.GetItemText(sel, 1, MAXSTRING);
-                     m_customValueEdit.SetWindowText(value.c_str());
+                     const char* value = m_customListView.GetItemText(sel, 1, MAXSTRING).c_str();
+                     m_customValueEdit.SetWindowText(value);
                   }
                }
                break;
@@ -227,15 +227,15 @@ void TableInfoDialog::OnOK()
    pt->m_webSite = m_websiteEdit.GetWindowText().GetString();
    pt->m_blurb = m_blurbEdit.GetWindowText().GetString();
    pt->m_description = m_descriptionEdit.GetWindowText().GetString();
-   pt->m_rules = m_rulesEdits.GetWindowTextA().GetString();
+   pt->m_rules = m_rulesEdits.GetWindowText().GetString();
 
-   const CString sshot = GetDlgItem(IDC_SCREENSHOT).GetWindowText();
+   const string sshot = GetDlgItem(IDC_SCREENSHOT).GetWindowText().GetString();
 
    const LocalString ls(IDS_NONE);
-   if (sshot.GetString() == ls.m_szbuffer)
+   if (sshot == ls.m_szbuffer)
       pt->m_screenShot.clear();
    else
-      pt->m_screenShot = sshot.GetString();
+      pt->m_screenShot = sshot;
 
    // Clear old custom values, read back new ones
    pt->m_vCustomInfoTag.clear();
@@ -244,11 +244,8 @@ void TableInfoDialog::OnOK()
    const int customcount = m_customListView.GetItemCount();
    for (int i = 0; i < customcount; i++)
    {
-      const CString name = m_customListView.GetItemText(i, 0, MAXSTRING);
-      pt->m_vCustomInfoTag.push_back(name.GetString());
-
-      const CString value = m_customListView.GetItemText(i, 1, MAXSTRING);
-      pt->m_vCustomInfoContent.push_back(value.GetString());
+      pt->m_vCustomInfoTag.push_back(m_customListView.GetItemText(i, 0, MAXSTRING).GetString()); // name
+      pt->m_vCustomInfoContent.push_back(m_customListView.GetItemText(i, 1, MAXSTRING).GetString()); // value
    }
 
    pt->SetNonUndoableDirty(eSaveDirty);

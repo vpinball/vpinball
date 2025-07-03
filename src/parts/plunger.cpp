@@ -1076,9 +1076,7 @@ STDMETHODIMP Plunger::put_Type(PlungerType newVal)
 
 STDMETHODIMP Plunger::get_Material(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szMaterial);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szMaterial);
    return S_OK;
 }
 
@@ -1090,9 +1088,7 @@ STDMETHODIMP Plunger::put_Material(BSTR newVal)
 
 STDMETHODIMP Plunger::get_Image(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szImage);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szImage);
    return S_OK;
 }
 
@@ -1124,9 +1120,7 @@ STDMETHODIMP Plunger::put_AnimFrames(int newVal)
 
 STDMETHODIMP Plunger::get_TipShape(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szTipShape);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szTipShape);
    return S_OK;
 }
 
@@ -1302,9 +1296,7 @@ STDMETHODIMP Plunger::put_ZAdjust(float newVal)
 
 STDMETHODIMP Plunger::get_Surface(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szSurface);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szSurface);
    return S_OK;
 }
 

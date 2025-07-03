@@ -612,9 +612,7 @@ STDMETHODIMP Spinner::put_Damping(float newVal)
 
 STDMETHODIMP Spinner::get_Material(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szMaterial);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szMaterial);
    return S_OK;
 }
 
@@ -626,9 +624,7 @@ STDMETHODIMP Spinner::put_Material(BSTR newVal)
 
 STDMETHODIMP Spinner::get_Image(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szImage);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szImage);
    return S_OK;
 }
 
@@ -672,9 +668,7 @@ STDMETHODIMP Spinner::put_Y(float newVal)
 
 STDMETHODIMP Spinner::get_Surface(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szSurface);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szSurface);
    return S_OK;
 }
 

@@ -223,18 +223,18 @@ private:
 class PropertyTab final : public CTab
 {
 public:
-   PropertyTab() : m_activePage(0), m_activeTabText("")
+   PropertyTab() : m_activePage(0)
    {}
 
    LRESULT OnTCNSelChange(LPNMHDR pNMHDR) override
    {
       m_activePage = GetCurSel();
-      m_activeTabText = GetTabText(m_activePage);
+      m_activeTabText = GetTabText(m_activePage).GetString();
       return CTab::OnTCNSelChange(pNMHDR);
    }
 
    int m_activePage;
-   CString m_activeTabText;
+   string m_activeTabText;
 };
 
 #define PROPERTY_TABS 5
@@ -288,8 +288,8 @@ public:
     static int GetIntTextbox(const CEdit &textbox)
     {
         int value;
-        const CString t = textbox.GetWindowText();
-        return (std::from_chars(t.c_str(), t.c_str() + t.GetLength(), value).ec == std::errc{}) ? value : 0;
+        const string t = textbox.GetWindowText().GetString();
+        return (std::from_chars(t.c_str(), t.c_str() + t.length(), value).ec == std::errc{}) ? value : 0;
     }
 
     static void SetFloatTextbox(const CEdit &textbox, const float value)
@@ -425,4 +425,5 @@ public:
 private:
     CContainProperties m_propContainer;
 };
+
 #pragma endregion

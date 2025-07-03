@@ -1284,9 +1284,7 @@ void Light::InitShape()
 
 STDMETHODIMP Light::get_BlinkPattern(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_rgblinkpattern);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_rgblinkpattern);
    return S_OK;
 }
 
@@ -1380,9 +1378,7 @@ STDMETHODIMP Light::put_IntensityScale(float newVal)
 
 STDMETHODIMP Light::get_Surface(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szSurface);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szSurface);
    return S_OK;
 }
 
@@ -1395,9 +1391,7 @@ STDMETHODIMP Light::put_Surface(BSTR newVal)
 
 STDMETHODIMP Light::get_Image(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szImage);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szImage);
    return S_OK;
 }
 

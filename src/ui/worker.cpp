@@ -13,11 +13,9 @@ VOID CALLBACK HangSnoopProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime
       // Nothing happened since the last time - we are probably hung
       EXCEPINFO eiInterrupt = {};
       const LocalString ls(IDS_HANG);
-      const WCHAR *const wzError = MakeWide(ls.m_szbuffer);
-      eiInterrupt.bstrDescription = SysAllocString(wzError);
+      eiInterrupt.bstrDescription = MakeWideBSTR(ls.m_szbuffer);
       //eiInterrupt.scode = E_NOTIMPL;
       eiInterrupt.wCode = 2345;
-      delete[] wzError;
       /*const HRESULT hr =*/ g_pplayer->m_ptable->m_pcv->m_pScript->InterruptScriptThread(SCRIPTTHREADID_BASE/*SCRIPTTHREADID_ALL*/,
          &eiInterrupt, /*SCRIPTINTERRUPT_DEBUG*/ SCRIPTINTERRUPT_RAISEEXCEPTION);
    }

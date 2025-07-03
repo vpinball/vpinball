@@ -2120,9 +2120,7 @@ bool Primitive::BrowseFor3DMeshFile()
 
 STDMETHODIMP Primitive::get_Image(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szImage);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szImage);
    return S_OK;
 }
 
@@ -2134,9 +2132,7 @@ STDMETHODIMP Primitive::put_Image(BSTR newVal)
 
 STDMETHODIMP Primitive::get_NormalMap(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szNormalMap);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szNormalMap);
    return S_OK;
 }
 
@@ -2156,9 +2152,7 @@ STDMETHODIMP Primitive::put_NormalMap(BSTR newVal)
 
 STDMETHODIMP Primitive::get_MeshFileName(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_meshFileName);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_meshFileName);
    return S_OK;
 }
 
@@ -2226,9 +2220,7 @@ STDMETHODIMP Primitive::put_Sides(int newVal)
 
 STDMETHODIMP Primitive::get_Material(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szMaterial);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szMaterial);
    return S_OK;
 }
 
@@ -2808,9 +2800,7 @@ STDMETHODIMP Primitive::put_ReflectionEnabled(VARIANT_BOOL newVal)
 
 STDMETHODIMP Primitive::get_PhysicsMaterial(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szPhysicsMaterial);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szPhysicsMaterial);
    return S_OK;
 }
 
@@ -2959,9 +2949,7 @@ void Primitive::setInPlayState(const bool newVal)
 
 STDMETHODIMP Primitive::get_ReflectionProbe(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szReflectionProbe);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szReflectionProbe);
    return S_OK;
 }
 
@@ -2973,9 +2961,7 @@ STDMETHODIMP Primitive::put_ReflectionProbe(BSTR newVal)
 
 STDMETHODIMP Primitive::get_RefractionProbe(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szRefractionProbe);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szRefractionProbe);
    return S_OK;
 }
 

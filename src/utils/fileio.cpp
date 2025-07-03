@@ -541,9 +541,9 @@ HRESULT BiffReader::Load(std::function<bool(const int id, BiffReader *const pbr)
 }
 
 FastIStorage::FastIStorage()
+   : m_cref(0)
+   , m_wzName(nullptr)
 {
-   m_wzName = nullptr;
-   m_cref = 0;
 }
 
 FastIStorage::~FastIStorage()
@@ -705,15 +705,13 @@ HRESULT __stdcall FastIStorage::Stat(struct tagSTATSTG *, ULONG)
 }
 
 FastIStream::FastIStream()
+   : m_rg(nullptr)
+   , m_wzName(nullptr)
+   , m_cSize(0)
+   , m_cref(0)
+   , m_cMax(0)
+   , m_cSeek(0)
 {
-   m_cref = 0;
-
-   m_cMax = 0;
-   m_cSeek = 0;
-   m_cSize = 0;
-   m_rg = nullptr;
-
-   m_wzName = nullptr;
 }
 
 FastIStream::~FastIStream()

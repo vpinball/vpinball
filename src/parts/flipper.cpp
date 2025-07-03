@@ -1093,9 +1093,7 @@ STDMETHODIMP Flipper::put_Y(float newVal)
 
 STDMETHODIMP Flipper::get_Surface(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szSurface);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szSurface);
    return S_OK;
 }
 
@@ -1107,9 +1105,7 @@ STDMETHODIMP Flipper::put_Surface(BSTR newVal)
 
 STDMETHODIMP Flipper::get_Material(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szMaterial);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szMaterial);
    return S_OK;
 }
 
@@ -1163,9 +1159,7 @@ STDMETHODIMP Flipper::put_OverridePhysics(PhysicsSet newVal)
 
 STDMETHODIMP Flipper::get_RubberMaterial(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szRubberMaterial);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szRubberMaterial);
    return S_OK;
 }
 
@@ -1380,9 +1374,7 @@ STDMETHODIMP Flipper::put_FlipperRadiusMin(float newVal)
 
 STDMETHODIMP Flipper::get_Image(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szImage);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szImage);
    return S_OK;
 }
 

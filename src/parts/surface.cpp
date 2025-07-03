@@ -1339,9 +1339,7 @@ STDMETHODIMP Surface::put_Threshold(float newVal)
 
 STDMETHODIMP Surface::get_Image(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szImage);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szImage);
    return S_OK;
 }
 
@@ -1361,9 +1359,7 @@ STDMETHODIMP Surface::put_Image(BSTR newVal)
 
 STDMETHODIMP Surface::get_SideMaterial(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szSideMaterial);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szSideMaterial);
    return S_OK;
 }
 
@@ -1375,9 +1371,7 @@ STDMETHODIMP Surface::put_SideMaterial(BSTR newVal)
 
 STDMETHODIMP Surface::get_SlingshotMaterial(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szSlingShotMaterial);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szSlingShotMaterial);
    return S_OK;
 }
 
@@ -1426,9 +1420,7 @@ STDMETHODIMP Surface::put_HeightTop(float newVal)
 
 STDMETHODIMP Surface::get_TopMaterial(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szTopMaterial);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szTopMaterial);
    return S_OK;
 }
 
@@ -1440,9 +1432,7 @@ STDMETHODIMP Surface::put_TopMaterial(BSTR newVal)
 
 STDMETHODIMP Surface::get_PhysicsMaterial(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szPhysicsMaterial);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szPhysicsMaterial);
    return S_OK;
 }
 
@@ -1616,9 +1606,7 @@ STDMETHODIMP Surface::put_Visible(VARIANT_BOOL newVal)
 
 STDMETHODIMP Surface::get_SideImage(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szSideImage);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szSideImage);
    return S_OK;
 }
 

@@ -114,9 +114,9 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
             m_elementTypeName.SetWindowText("Backglass");
             m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new BackglassVisualsProperty(&pvsel), _T("Visuals")));
             m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new BackglassCameraProperty(&pvsel), _T("Camera")));
-            if (m_tab.m_activeTabText == CString("Visuals"))
+            if (m_tab.m_activeTabText == "Visuals")
                 activePage = 0;
-            else if (m_tab.m_activeTabText == CString("Camera"))
+            else if (m_tab.m_activeTabText == "Camera")
                 activePage = 1;
         }
         else
@@ -126,13 +126,13 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
             m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TableLightsProperty(&pvsel), _T("Lights")));
             m_tabs[2] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TablePhysicsProperty(&pvsel), _T("Physics")));
             m_tabs[3] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TableAudioProperty(&pvsel), _T("Sound")));
-            if (m_tab.m_activeTabText == CString("Visuals"))
+            if (m_tab.m_activeTabText == "Visuals")
                 activePage = 0;
-            else if (m_tab.m_activeTabText == CString("Lights"))
+            else if (m_tab.m_activeTabText == "Lights")
                 activePage = 1;
-            else if (m_tab.m_activeTabText == CString("Physics"))
+            else if (m_tab.m_activeTabText == "Physics")
                 activePage = 2;
-            else if (m_tab.m_activeTabText == CString("Sound"))
+            else if (m_tab.m_activeTabText == "Sound")
                 activePage = 3;
         }
         break;
@@ -143,11 +143,11 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new WallVisualsProperty(&pvsel), _T("Visuals")));
         m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new WallPhysicsProperty(&pvsel), _T("Physics")));
         m_tabs[2] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
-        if (m_tab.m_activeTabText == CString("Visuals"))
+        if (m_tab.m_activeTabText == "Visuals")
             activePage = 0;
-        else if (m_tab.m_activeTabText == CString("Physics"))
+        else if (m_tab.m_activeTabText == "Physics")
             activePage = 1;
-        else if (m_tab.m_activeTabText == CString("Timer"))
+        else if (m_tab.m_activeTabText == "Timer")
             activePage = 2;
         break;
     }
@@ -157,11 +157,11 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new GateVisualsProperty(&pvsel), _T("Visuals")));
         m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new GatePhysicsProperty(&pvsel), _T("Physics")));
         m_tabs[2] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
-        if (m_tab.m_activeTabText == CString("Visuals"))
+        if (m_tab.m_activeTabText == "Visuals")
             activePage = 0;
-        else if (m_tab.m_activeTabText == CString("Physics"))
+        else if (m_tab.m_activeTabText == "Physics")
             activePage = 1;
-        else if (m_tab.m_activeTabText == CString("Timer"))
+        else if (m_tab.m_activeTabText == "Timer")
             activePage = 2;
         break;
     }
@@ -171,11 +171,11 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new RampVisualsProperty(&pvsel), _T("Visuals")));
         m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new RampPhysicsProperty(&pvsel), _T("Physics")));
         m_tabs[2] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
-        if (m_tab.m_activeTabText == CString("Visuals"))
+        if (m_tab.m_activeTabText == "Visuals")
             activePage = 0;
-        else if (m_tab.m_activeTabText == CString("Physics"))
+        else if (m_tab.m_activeTabText == "Physics")
             activePage = 1;
-        else if (m_tab.m_activeTabText == CString("Timer"))
+        else if (m_tab.m_activeTabText == "Timer")
             activePage = 2;
         break;
     }
@@ -185,11 +185,11 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new FlipperVisualsProperty(&pvsel), _T("Visuals")));
         m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new FlipperPhysicsProperty(&pvsel), _T("Physics")));
         m_tabs[2] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
-        if (m_tab.m_activeTabText == CString("Visuals"))
+        if (m_tab.m_activeTabText == "Visuals")
             activePage = 0;
-        else if (m_tab.m_activeTabText == CString("Physics"))
+        else if (m_tab.m_activeTabText == "Physics")
             activePage = 1;
-        else if (m_tab.m_activeTabText == CString("Timer"))
+        else if (m_tab.m_activeTabText == "Timer")
             activePage = 2;
         break;
     }
@@ -199,11 +199,11 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new PlungerVisualsProperty(&pvsel), _T("Visuals")));
         m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new PlungerPhysicsProperty(&pvsel), _T("Physics")));
         m_tabs[2] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
-        if (m_tab.m_activeTabText == CString("Visuals"))
+        if (m_tab.m_activeTabText == "Visuals")
             activePage = 0;
-        else if (m_tab.m_activeTabText == CString("Physics"))
+        else if (m_tab.m_activeTabText == "Physics")
             activePage = 1;
-        else if (m_tab.m_activeTabText == CString("Timer"))
+        else if (m_tab.m_activeTabText == "Timer")
             activePage = 2;
         break;
     }
@@ -213,11 +213,11 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new BallVisualsProperty(&pvsel), _T("Visuals")));
         m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new BallPhysicsProperty(&pvsel), _T("Physics")));
         m_tabs[2] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
-        if (m_tab.m_activeTabText == CString("Visuals"))
+        if (m_tab.m_activeTabText == "Visuals")
             activePage = 0;
-        else if (m_tab.m_activeTabText == CString("Physics"))
+        else if (m_tab.m_activeTabText == "Physics")
             activePage = 1;
-        else if (m_tab.m_activeTabText == CString("Timer"))
+        else if (m_tab.m_activeTabText == "Timer")
             activePage = 2;
         break;
     }
@@ -227,11 +227,11 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new BumperVisualsProperty(&pvsel), _T("Visuals")));
         m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new BumperPhysicsProperty(&pvsel), _T("Physics")));
         m_tabs[2] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
-        if (m_tab.m_activeTabText == CString("Visuals"))
+        if (m_tab.m_activeTabText == "Visuals")
             activePage = 0;
-        else if (m_tab.m_activeTabText == CString("Physics"))
+        else if (m_tab.m_activeTabText == "Physics")
             activePage = 1;
-        else if (m_tab.m_activeTabText == CString("Timer"))
+        else if (m_tab.m_activeTabText == "Timer")
             activePage = 2;
         break;
     }
@@ -241,11 +241,11 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new SpinnerVisualsProperty(&pvsel), _T("Visuals")));
         m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new SpinnerPhysicsProperty(&pvsel), _T("Physics")));
         m_tabs[2] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
-        if (m_tab.m_activeTabText == CString("Visuals"))
+        if (m_tab.m_activeTabText == "Visuals")
             activePage = 0;
-        else if (m_tab.m_activeTabText == CString("Physics"))
+        else if (m_tab.m_activeTabText == "Physics")
             activePage = 1;
-        else if (m_tab.m_activeTabText == CString("Timer"))
+        else if (m_tab.m_activeTabText == "Timer")
             activePage = 2;
         break;
     }
@@ -262,11 +262,11 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TriggerVisualsProperty(&pvsel), _T("Visuals")));
         m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TriggerPhysicsProperty(&pvsel), _T("Physics")));
         m_tabs[2] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
-        if (m_tab.m_activeTabText == CString("Visuals"))
+        if (m_tab.m_activeTabText == "Visuals")
             activePage = 0;
-        else if (m_tab.m_activeTabText == CString("Physics"))
+        else if (m_tab.m_activeTabText == "Physics")
             activePage = 1;
-        else if (m_tab.m_activeTabText == CString("Timer"))
+        else if (m_tab.m_activeTabText == "Timer")
             activePage = 2;
         break;
     }
@@ -276,11 +276,11 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new LightVisualsProperty(&pvsel), _T("Visuals")));
         m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new LightStatesProperty(&pvsel), _T("States")));
         m_tabs[2] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
-        if (m_tab.m_activeTabText == CString("Visuals"))
+        if (m_tab.m_activeTabText == "Visuals")
             activePage = 0;
-        else if (m_tab.m_activeTabText == CString("States"))
+        else if (m_tab.m_activeTabText == "States")
             activePage = 1;
-        else if (m_tab.m_activeTabText == CString("Timer"))
+        else if (m_tab.m_activeTabText == "Timer")
             activePage = 2;
         break;
     }
@@ -290,11 +290,11 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new KickerVisualsProperty(&pvsel), _T("Visuals")));
         m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new KickerPhysicsProperty(&pvsel), _T("Physics")));
         m_tabs[2] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
-        if (m_tab.m_activeTabText == CString("Visuals"))
+        if (m_tab.m_activeTabText == "Visuals")
             activePage = 0;
-        else if (m_tab.m_activeTabText == CString("Physics"))
+        else if (m_tab.m_activeTabText == "Physics")
             activePage = 1;
-        else if (m_tab.m_activeTabText == CString("Timer"))
+        else if (m_tab.m_activeTabText == "Timer")
             activePage = 2;
         break;
     }
@@ -304,11 +304,11 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new HitTargetVisualsProperty(&pvsel), _T("Visuals")));
         m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new HitTargetPhysicsProperty(&pvsel), _T("Physics")));
         m_tabs[2] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
-        if (m_tab.m_activeTabText == CString("Visuals"))
+        if (m_tab.m_activeTabText == "Visuals")
             activePage = 0;
-        else if (m_tab.m_activeTabText == CString("Physics"))
+        else if (m_tab.m_activeTabText == "Physics")
             activePage = 1;
-        else if (m_tab.m_activeTabText == CString("Timer"))
+        else if (m_tab.m_activeTabText == "Timer")
             activePage = 2;
         break;
     }
@@ -324,9 +324,9 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
         m_elementTypeName.SetWindowText("Textbox");
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TextboxVisualsProperty(&pvsel), _T("Visuals")));
         m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
-        if (m_tab.m_activeTabText == CString("Visuals"))
+        if (m_tab.m_activeTabText == "Visuals")
             activePage = 0;
-        else if (m_tab.m_activeTabText == CString("Timer"))
+        else if (m_tab.m_activeTabText == "Timer")
             activePage = 1;
         break;
     }
@@ -336,11 +336,11 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new DispreelVisualsProperty(&pvsel), _T("Visuals")));
         m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new DispreelStateProperty(&pvsel), _T("States")));
         m_tabs[2] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
-        if (m_tab.m_activeTabText == CString("Visuals"))
+        if (m_tab.m_activeTabText == "Visuals")
             activePage = 0;
-        else if (m_tab.m_activeTabText == CString("States"))
+        else if (m_tab.m_activeTabText == "States")
             activePage = 1;
-        else if (m_tab.m_activeTabText == CString("Timer"))
+        else if (m_tab.m_activeTabText == "Timer")
             activePage = 2;
         break;
     }
@@ -349,9 +349,9 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
         m_elementTypeName.SetWindowText("Light Sequence");
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new LightseqStatesProperty(&pvsel), _T("States")));
         m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
-        if (m_tab.m_activeTabText == CString("States"))
+        if (m_tab.m_activeTabText == "States")
             activePage = 0;
-        else if (m_tab.m_activeTabText == CString("Timer"))
+        else if (m_tab.m_activeTabText == "Timer")
             activePage = 1;
         break;
     }
@@ -362,11 +362,11 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new PrimitiveVisualsProperty(&pvsel), _T("Visuals")));
         m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new PrimitivePositionProperty(&pvsel), _T("Position")));
         m_tabs[2] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new PrimitivePhysicsProperty(&pvsel), _T("Physics")));
-        if (m_tab.m_activeTabText == CString("Visuals"))
+        if (m_tab.m_activeTabText == "Visuals")
             activePage = 0;
-        else if (m_tab.m_activeTabText == CString("Position"))
+        else if (m_tab.m_activeTabText == "Position")
             activePage = 1;
-        else if (m_tab.m_activeTabText == CString("Physics"))
+        else if (m_tab.m_activeTabText == "Physics")
             activePage = 2;
         break;
     }
@@ -375,9 +375,9 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
         m_elementTypeName.SetWindowText("Flasher");
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new FlasherVisualsProperty(&pvsel), _T("Visuals")));
         m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
-        if (m_tab.m_activeTabText == CString("Visuals"))
+        if (m_tab.m_activeTabText == "Visuals")
             activePage = 0;
-        else if (m_tab.m_activeTabText == CString("Timer"))
+        else if (m_tab.m_activeTabText == "Timer")
             activePage = 1;
         break;
     }
@@ -387,11 +387,11 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new RubberVisualsProperty(&pvsel), _T("Visuals")));
         m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new RubberPhysicsProperty(&pvsel), _T("Physics")));
         m_tabs[2] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
-        if (m_tab.m_activeTabText == CString("Visuals"))
+        if (m_tab.m_activeTabText == "Visuals")
             activePage = 0;
-        else if (m_tab.m_activeTabText == CString("Physics"))
+        else if (m_tab.m_activeTabText == "Physics")
             activePage = 1;
-        else if (m_tab.m_activeTabText == CString("Timer"))
+        else if (m_tab.m_activeTabText == "Timer")
             activePage = 2;
         break;
     }
@@ -414,9 +414,9 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
         m_elementTypeName.SetWindowText("Group");
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new PartGroupVisualsProperty(&pvsel), _T("Visuals")));
         m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
-        if (m_tab.m_activeTabText == CString("Visuals"))
+        if (m_tab.m_activeTabText == "Visuals")
             activePage = 0;
-        else if (m_tab.m_activeTabText == CString("Timer"))
+        else if (m_tab.m_activeTabText == "Timer")
             activePage = 1;
         break;
     }
@@ -723,7 +723,7 @@ BOOL PropertyDialog::IsSubDialogMessage(MSG &msg) const
                 return TRUE;                    //disable enter key for any input otherwise the app would crash!?
             if (msg.message == WM_KEYDOWN && msg.wParam == VK_DELETE)
             {
-                const CString className = GetFocus().GetClassName();
+                const string className = GetFocus().GetClassName().GetString();
                 if (className != "Edit")
                 {
                     g_pvp->ParseCommand(ID_DELETE, false);
@@ -732,7 +732,7 @@ BOOL PropertyDialog::IsSubDialogMessage(MSG &msg) const
             }
             if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE)
             {
-               const CString className = GetFocus().GetClassName();
+               const string className = GetFocus().GetClassName().GetString();
                // filter ESC-key otherwise VPX will enter an endless event loop!?
                if (className == "Edit" || className == "msctls_trackbar32" || className=="Button")
                   return TRUE;

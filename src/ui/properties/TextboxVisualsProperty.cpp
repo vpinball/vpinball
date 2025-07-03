@@ -93,8 +93,7 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
             case IDC_TEXTBOX_TEXT_EDIT:
             {
                 PropertyDialog::StartUndo(text);
-                const CString pattern = m_textEdit.GetWindowText();
-                text->m_d.m_text = pattern.GetString();
+                text->m_d.m_text = m_textEdit.GetWindowText().GetString(); // pattern
                 PropertyDialog::EndUndo(text);
                 break;
             }

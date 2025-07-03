@@ -683,9 +683,7 @@ STDMETHODIMP Gate::put_Y(float newVal)
 
 STDMETHODIMP Gate::get_Surface(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szSurface);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szSurface);
    return S_OK;
 }
 
@@ -697,9 +695,7 @@ STDMETHODIMP Gate::put_Surface(BSTR newVal)
 
 STDMETHODIMP Gate::get_Material(BSTR *pVal)
 {
-   WCHAR * const wz = MakeWide(m_d.m_szMaterial);
-   *pVal = SysAllocString(wz);
-   delete [] wz;
+   *pVal = MakeWideBSTR(m_d.m_szMaterial);
    return S_OK;
 }
 
