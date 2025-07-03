@@ -729,8 +729,9 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
    string szTableName = MakeString(TableName);
    string szValueName = MakeString(ValueName);
 
-   if (ini.has(szTableName) && ini[szTableName].has(szValueName))
+   if (ini.has(szTableName) && ini[szTableName].has(szValueName)) {
       SetVarBstr(Value, MakeWideBSTR(ini[szTableName][szValueName]));
+   }
    else
       SetVarBstr(Value, SysAllocString(L""));
 
@@ -4248,6 +4249,8 @@ VPX::Sound *PinTable::ImportSound(const string &filename)
       return nullptr;
    m_vsound.push_back(pps);
    return pps;
+#else
+   return nullptr;
 #endif
 }
 

@@ -197,7 +197,7 @@ WCHAR *MakeWide(const char* const sz)
 {
    const int len = MultiByteToWideChar(CP_ACP, 0, sz, -1, nullptr, 0); //(int)strlen(sz) + 1; // include null termination
    if (len <= 1)
-      return L"";
+      return nullptr;
    WCHAR * const wzT = new WCHAR[len];
    MultiByteToWideChar(CP_ACP, 0, sz, -1, wzT, len);
    return wzT;
@@ -217,7 +217,7 @@ WCHAR *MakeWide(const string& sz)
 {
    const int len = MultiByteToWideChar(CP_ACP, 0, sz.c_str(), -1, nullptr, 0); //(int)sz.length() + 1; // include null termination
    if (len <= 1)
-      return L"";
+      return nullptr;
    WCHAR * const wzT = new WCHAR[len];
    MultiByteToWideChar(CP_ACP, 0, sz.c_str(), -1, wzT, len);
    return wzT;
@@ -277,7 +277,7 @@ char *MakeChar(const WCHAR* const wz)
 {
    const int len = WideCharToMultiByte(CP_ACP, 0, wz, -1, nullptr, 0, nullptr, nullptr); //(int)wcslen(wz) + 1; // include null termination
    if (len <= 1)
-      return "";
+      return nullptr;
    char * const szT = new char[len];
    WideCharToMultiByte(CP_ACP, 0, wz, -1, szT, len, nullptr, nullptr);
    return szT;
