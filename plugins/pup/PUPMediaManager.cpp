@@ -4,6 +4,8 @@
 namespace PUP {
 
 PUPMediaManager::PUPMediaManager(PUPScreen* pScreen)
+   : m_player1("PUP.Screen #"s.append(std::to_string(pScreen->GetScreenNum())).append(" Player #1"))
+   , m_player2("PUP.Screen #"s.append(std::to_string(pScreen->GetScreenNum())).append(" Player #2"))
 {
    m_pMainPlayer = &m_player1;
    m_pBackgroundPlayer = nullptr;

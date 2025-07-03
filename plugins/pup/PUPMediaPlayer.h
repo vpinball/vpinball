@@ -2,16 +2,15 @@
 
 #include "PUPManager.h"
 #include "LibAv.h"
-/*
-#include "parts/Sound.h"
-#include "../common/Window.h"*/
+#include "ThreadPool.h"
+// #include "parts/Sound.h"
 
 namespace PUP {
 
 class PUPMediaPlayer final
 {
 public:
-   PUPMediaPlayer();
+   PUPMediaPlayer(const string& name);
    ~PUPMediaPlayer();
 
    void Play(const string& filename);
@@ -26,10 +25,13 @@ public:
    void Render(VPXRenderContext2D* const ctx, const SDL_Rect& destRect);
 
 private:
+   void StopBlocking();
    void Run();
    AVCodecContext* OpenStream(AVFormatContext* pInputFormatContext, int stream);
    void HandleAudioFrame(AVFrame* pFrame);
    void HandleVideoFrame(AVFrame* pFrame);
+
+   const string m_name;
 
    string m_filename;
    uint64_t m_startTimestamp = 0; // timestamp in ms when the play command was called
@@ -67,6 +69,8 @@ private:
    bool m_running = false;
 
    const LibAV& m_libAv;
+
+   ThreadPool m_commandQueue;
 };
 
 }
