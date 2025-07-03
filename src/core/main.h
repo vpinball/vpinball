@@ -183,7 +183,6 @@ static const string defaultPathSearch[] = { string(), "user"s +PATH_SEPARATOR_CH
 #define _snprintf_s snprintf
 #define swprintf_s swprintf
 #define StrStrI strcasestr
-#define CString string
 
 #define STRNCPY_S3(a, b, c) strncpy(a, b, c)
 #define STRNCPY_S4(a, b, c, d) strncpy(a, c, d)
