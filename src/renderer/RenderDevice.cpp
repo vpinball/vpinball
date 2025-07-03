@@ -315,6 +315,7 @@ string RenderDevice::s_screenshotFilename = string();
 
 void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
 {
+   SetThreadName("RenderThread");
    bgfx::Init init = initReq;
 
    // If using OpenGl on a WCG display, then create the OpenGL WCG context through SDL since BGFX does not support HDR10 under OpenGl

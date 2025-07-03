@@ -316,6 +316,21 @@ HRESULT OpenURL(const string& szURL)
 #endif
 }
 
+#ifdef _WIN32
+void SetThreadName(const std::string& name)
+{
+   int size_needed = MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, NULL, 0);
+   if (size_needed == 0)
+      return;
+   std::wstring wstr(size_needed, 0);
+   if (MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, wstr.data(), size_needed) == 0)
+      return;
+   HRESULT hr = SetThreadDescription(GetCurrentThread(), wstr.c_str());
+}
+#else
+void SetThreadName(const std::string& name) { }
+#endif
+
 // Helper function for IsOnWine
 //
 // This exists such that we only check if we're on wine once, and assign the result of this function to a static const var

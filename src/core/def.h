@@ -713,6 +713,8 @@ CONSTEXPR inline string upperCase(string input)
    return input;
 }
 
+void SetThreadName(const std::string& name);
+
 /**
  * @brief Detect whether the program is running on the Wine compatibility layer
  */

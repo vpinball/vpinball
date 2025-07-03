@@ -212,6 +212,8 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, string filename)
 {
    m_commandQueue.enqueue([this, filename]()
    {
+      SetThreadName("VPX.SoundPlayer ["s.append(filename).append(1, ']'));
+
       ma_engine* engine = m_audioPlayer->GetEngine(m_outputTarget);
 
       // Add custom node for channel mixing
@@ -257,6 +259,8 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound)
 {
    m_commandQueue.enqueue([this, sound]()
    {
+      SetThreadName("VPX.SoundPlayer ["s.append(sound->m_name).append(1, ']'));
+
       ma_engine* engine = m_audioPlayer->GetEngine(m_outputTarget);
 
       // Add custom node for channel mixing
