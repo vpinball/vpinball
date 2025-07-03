@@ -237,6 +237,8 @@ void AsyncDynamicQuadTree::UpdateAsync()
 
 void AsyncDynamicQuadTree::UpdateQuadtreeThread()
 {
+   SetThreadName("VPX.QuadTree.UpdateThread");
+
    while (true)
    {
       m_quadtreeUpdateWaiting.acquire();
