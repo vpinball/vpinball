@@ -600,6 +600,9 @@ string f2sz(const float f, const bool can_convert_decimal_point = true);
 HRESULT OpenURL(const string& szURL);
 
 WCHAR* MakeWide(const char* const sz);
+#ifndef MINIMAL_DEF_H
+BSTR MakeWideBSTR(const string& sz);
+#endif
 WCHAR* MakeWide(const string& sz);
 char *MakeChar(const WCHAR* const wz);
 string MakeString(const wstring& wz);

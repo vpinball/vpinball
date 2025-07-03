@@ -196,14 +196,28 @@ LocalStringW::LocalStringW(const int resid)
 WCHAR *MakeWide(const char* const sz)
 {
    const int len = MultiByteToWideChar(CP_ACP, 0, sz, -1, nullptr, 0); //(int)strlen(sz) + 1; // include null termination
+   if (len <= 1)
+      return L"";
    WCHAR * const wzT = new WCHAR[len];
    MultiByteToWideChar(CP_ACP, 0, sz, -1, wzT, len);
+   return wzT;
+}
+
+BSTR MakeWideBSTR(const string& sz)
+{
+   const int len = MultiByteToWideChar(CP_ACP, 0, sz.c_str(), -1, nullptr, 0); //(int)sz.length() + 1; // include null termination
+   if (len <= 1)
+      return nullptr;
+   BSTR wzT = SysAllocStringLen(nullptr, len - 1);
+   MultiByteToWideChar(CP_ACP, 0, sz.c_str(), -1, wzT, len);
    return wzT;
 }
 
 WCHAR *MakeWide(const string& sz)
 {
    const int len = MultiByteToWideChar(CP_ACP, 0, sz.c_str(), -1, nullptr, 0); //(int)sz.length() + 1; // include null termination
+   if (len <= 1)
+      return L"";
    WCHAR * const wzT = new WCHAR[len];
    MultiByteToWideChar(CP_ACP, 0, sz.c_str(), -1, wzT, len);
    return wzT;
@@ -212,6 +226,8 @@ WCHAR *MakeWide(const string& sz)
 string MakeString(const wstring &wz)
 {
    const int len = WideCharToMultiByte(CP_ACP, 0, wz.c_str(), -1, nullptr, 0, nullptr, nullptr); //(int)wz.length() + 1; // include null termination
+   if (len <= 1)
+      return string();
    string result(len - 1, '\0');
    WideCharToMultiByte(CP_ACP, 0, wz.c_str(), -1, result.data(), len, nullptr, nullptr);
    return result;
@@ -220,6 +236,8 @@ string MakeString(const wstring &wz)
 string MakeString(const WCHAR* const wz)
 {
    const int len = WideCharToMultiByte(CP_ACP, 0, wz, -1, nullptr, 0, nullptr, nullptr); //(int)wcslen(wz) + 1; // include null termination
+   if (len <= 1)
+      return string();
    string result(len - 1, '\0');
    WideCharToMultiByte(CP_ACP, 0, wz, -1, result.data(), len, nullptr, nullptr);
    return result;
@@ -228,6 +246,8 @@ string MakeString(const WCHAR* const wz)
 string MakeString(const BSTR wz)
 {
    const int len = WideCharToMultiByte(CP_ACP, 0, wz, -1, nullptr, 0, nullptr, nullptr); //(int)SysStringLen(wz) + 1; // include null termination
+   if (len <= 1)
+      return string();
    string result(len - 1, '\0');
    WideCharToMultiByte(CP_ACP, 0, wz, -1, result.data(), len, nullptr, nullptr);
    return result;
@@ -236,6 +256,8 @@ string MakeString(const BSTR wz)
 wstring MakeWString(const string &sz)
 {
    const int len = MultiByteToWideChar(CP_ACP, 0, sz.c_str(), -1, nullptr, 0); //(int)sz.length() + 1; // include null termination
+   if (len <= 1)
+      return wstring();
    wstring result(len - 1, L'\0');
    MultiByteToWideChar(CP_ACP, 0, sz.c_str(), -1, result.data(), len);
    return result;
@@ -244,6 +266,8 @@ wstring MakeWString(const string &sz)
 wstring MakeWString(const char * const sz)
 {
    const int len = MultiByteToWideChar(CP_ACP, 0, sz, -1, nullptr, 0); //(int)strlen(sz) + 1; // include null termination
+   if (len <= 1)
+      return wstring();
    wstring result(len - 1, L'\0');
    MultiByteToWideChar(CP_ACP, 0, sz, -1, result.data(), len);
    return result;
@@ -252,6 +276,8 @@ wstring MakeWString(const char * const sz)
 char *MakeChar(const WCHAR* const wz)
 {
    const int len = WideCharToMultiByte(CP_ACP, 0, wz, -1, nullptr, 0, nullptr, nullptr); //(int)wcslen(wz) + 1; // include null termination
+   if (len <= 1)
+      return "";
    char * const szT = new char[len];
    WideCharToMultiByte(CP_ACP, 0, wz, -1, szT, len, nullptr, nullptr);
    return szT;
