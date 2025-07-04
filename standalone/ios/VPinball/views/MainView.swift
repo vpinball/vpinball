@@ -382,6 +382,8 @@ struct MainView: View {
                 if let table = await vpinballManager.import(url: url) {
                     PinTable.create(table: table)
                     tableListScrollToTableId = table.tableId
+
+                    VPinballSetWebServerUpdated()
                 } else {
                     handleShowError(message: "Unable to import table.")
                 }

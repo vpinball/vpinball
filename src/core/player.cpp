@@ -867,13 +867,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    if (!IsEditorMode())
       m_ptable->FireVoidEvent(DISPID_GameEvents_UnPaused);
 
-#ifdef __STANDALONE__
-#ifndef __LIBVPINBALL__
-   if (g_pvp->m_settings.LoadValueWithDefault(Settings::Standalone, "WebServer"s, false))
-      g_pvp->m_webServer.Start();
-#endif
-#endif
-
    PLOGI << "Startup done"; // For profiling
 
 #ifdef __LIBVPINBALL__

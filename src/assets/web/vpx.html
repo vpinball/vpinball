@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visual Pinball File Manager</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body ondragover="event.preventDefault()">
+  <div class="app-container">
+    <header class="app-header">
+      <div class="logo-container">
+        <div class="logo-title">
+          <img src="/assets/vpinball.png" alt="Visual Pinball Logo">
+          <h1>Visual Pinball File Manager</h1>
+        </div>
+        <div id="version-info" class="version-info"></div>
+      </div>
+      <div class="status-container">
+        <div class="current-table-container">
+          <div class="current-table-label">Current Table:</div>
+          <div id="current-table" class="current-table"></div>
+        </div>
+        <div id="header-actions" class="header-actions">
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="main-container">
+      <div class="path-actions-container">
+        <div id="breadcrumb" class="breadcrumb"></div>
+        <div class="path-actions">
+          <div class="search-container">
+            <span class="search-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </span>
+            <input type="text" id="search-input" placeholder="Search files..." onkeyup="filterFiles()">
+          </div>
+          <div class="actions-dropdown">
+            <span class="menu-icon" id="main-actions-button" onclick="toggleMainActionsDropdown()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="1"></circle>
+                <circle cx="12" cy="5" r="1"></circle>
+                <circle cx="12" cy="19" r="1"></circle>
+              </svg>
+            </span>
+            <div class="actions-dropdown-content" id="main-actions-dropdown">
+              <a href="#" onclick="event.preventDefault(); newFolder(); hideMainActionsDropdown(); return false;">
+                <span class="dropdown-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    <line x1="12" y1="11" x2="12" y2="17"></line>
+                    <line x1="9" y1="14" x2="15" y2="14"></line>
+                  </svg>
+                </span>
+                New Folder
+              </a>
+              <a href="#" onclick="event.preventDefault(); uploadFile(); hideMainActionsDropdown(); return false;">
+                <span class="dropdown-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
+                </span>
+                Upload File
+              </a>
+              <a href="#" onclick="event.preventDefault(); importTable(); hideMainActionsDropdown(); return false;">
+                <span class="dropdown-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <polyline points="16 13 12 17 8 13"></polyline>
+                    <line x1="12" y1="17" x2="12" y2="9"></line>
+                  </svg>
+                </span>
+                Import
+              </a>
+              <a href="#" id="log-stream-menu-item" onclick="event.preventDefault(); toggleLogViewer(); hideMainActionsDropdown(); return false;">
+                <span class="dropdown-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                  </svg>
+                </span>
+                Log Stream
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions-bar">
+        <div class="left-actions">
+          <span id="main-status" class="status-message"></span>
+        </div>
+      </div>
+
+      <div class="file-list-container">
+        <div class="file-list-header">
+          <div class="file-name">
+            <a href="#" onclick="toggleSort('name')">Name <span id="name-sort-indicator" class="sort-indicator">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </span></a>
+          </div>
+          <div class="file-date">
+            <a href="#" onclick="toggleSort('date')">Modified <span id="date-sort-indicator" class="sort-indicator"></span></a>
+          </div>
+          <div class="file-size">
+            <a href="#" onclick="toggleSort('size')">Size <span id="size-sort-indicator" class="sort-indicator"></span></a>
+          </div>
+          <div class="file-actions">
+          </div>
+        </div>
+        <ul id="file-list" class="file-list"></ul>
+      </div>
+    </main>
+
+    <div id="editor" class="editor-container">
+      <div class="path-container">
+        <div id="editor-breadcrumb" class="breadcrumb"></div>
+        <div class="path-actions">
+          <div class="actions-dropdown">
+            <span class="menu-icon" id="editor-actions-button" onclick="toggleEditorActionsDropdown()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="1"></circle>
+                <circle cx="12" cy="5" r="1"></circle>
+                <circle cx="12" cy="19" r="1"></circle>
+              </svg>
+            </span>
+            <div class="actions-dropdown-content" id="editor-actions-dropdown">
+              <a href="#" id="editor-download-action" onclick="event.preventDefault(); downloadCurrentFile(); hideEditorActionsDropdown(); return false;">
+                <span class="dropdown-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                </span>
+                Download
+              </a>
+              <a href="#" id="editor-revert-action" onclick="event.preventDefault(); revertChanges(); hideEditorActionsDropdown(); return false;" class="disabled" style="opacity: 0.5; pointer-events: none;">
+                <span class="dropdown-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="1 4 1 10 7 10"></polyline>
+                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                  </svg>
+                </span>
+                Revert
+              </a>
+              <a href="#" id="editor-save-action" onclick="event.preventDefault(); saveCurrentFile(); hideEditorActionsDropdown(); return false;" class="disabled" style="opacity: 0.5; pointer-events: none;">
+                <span class="dropdown-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                    <polyline points="7 3 7 8 15 8"></polyline>
+                  </svg>
+                </span>
+                Save
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="editor-header">
+        <span id="editor-status" class="status-message"></span>
+      </div>
+      <div id="editor-content"></div>
+    </div>
+
+    <div id="image-viewer" class="image-viewer-container">
+      <div class="path-container">
+        <div id="image-breadcrumb" class="breadcrumb"></div>
+        <div class="path-actions">
+          <div class="actions-dropdown">
+            <span class="menu-icon" id="image-actions-button" onclick="toggleImageActionsDropdown()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="1"></circle>
+                <circle cx="12" cy="5" r="1"></circle>
+                <circle cx="12" cy="19" r="1"></circle>
+              </svg>
+            </span>
+            <div class="actions-dropdown-content" id="image-actions-dropdown">
+              <a href="#" id="image-download-action" onclick="event.preventDefault(); downloadCurrentImage(); hideImageActionsDropdown(); return false;">
+                <span class="dropdown-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                </span>
+                Download
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="image-viewer-content">
+        <img id="image-display" src="" alt="Image" />
+      </div>
+    </div>
+
+    <div id="drop-overlay" class="drop-overlay">
+      <div class="drop-message">
+        <div class="drop-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+        </div>
+        <h3>Drop files here to upload</h3>
+      </div>
+    </div>
+
+    <div id="log-viewer" class="log-viewer">
+      <div class="log-viewer-content">
+        <div class="log-viewer-header">
+          <div class="log-viewer-title">Log Stream</div>
+          <div class="log-viewer-controls">
+            <input type="text" id="log-filter" class="log-filter" placeholder="Filter logs...">
+            <label>
+              <input type="checkbox" id="auto-scroll" checked> Auto-scroll
+            </label>
+            <div class="actions-dropdown">
+              <span class="menu-icon" id="log-actions-button" onclick="toggleLogActionsDropdown()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="1"></circle>
+                  <circle cx="12" cy="5" r="1"></circle>
+                  <circle cx="12" cy="19" r="1"></circle>
+                </svg>
+              </span>
+              <div class="actions-dropdown-content" id="log-actions-dropdown">
+                <a href="#" onclick="event.preventDefault(); clearLogs(); hideLogActionsDropdown(); return false;">
+                  <span class="dropdown-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                  </span>
+                  Clear
+                </a>
+                <a href="#" onclick="event.preventDefault(); downloadLogs(); hideLogActionsDropdown(); return false;">
+                  <span class="dropdown-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                  </span>
+                  Download
+                </a>
+              </div>
+            </div>
+            <button class="btn btn-secondary" onclick="closeLogViewer()">
+              Close
+            </button>
+          </div>
+        </div>
+        <div id="log-content" class="log-content"></div>
+        <div class="log-viewer-footer">
+          <div id="log-status">Connecting...</div>
+          <div id="log-count">0 entries</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="monaco-editor.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -80,11 +80,11 @@ enum class TableListSortOrder(val value: Int) {
     }
 }
 
-enum class CodeLanguage(val extension: String, val prismType: String) {
-    INI("ini", prismType = "ini"),
-    LOG("log", prismType = "log"),
-    VBSCRIPT("vbs", prismType = "visual-basic"),
-    TXT("txt", prismType = "text");
+enum class CodeLanguage(val extension: String, val monacoType: String) {
+    INI("ini", monacoType = "ini"),
+    LOG("log", monacoType = "plaintext"),
+    VBSCRIPT("vbs", monacoType = "vb"),
+    TXT("txt", monacoType = "plaintext");
 
     companion object {
         fun fromExtension(extension: String): CodeLanguage {

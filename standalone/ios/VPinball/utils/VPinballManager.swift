@@ -172,6 +172,22 @@ class VPinballManager {
                         }
                     }
                 }
+            case .tableList:
+                if let data = data {
+                    return vpinballManager.handleTableList(data: data)
+                }
+            case .tableImport:
+                if let data = data {
+                    vpinballManager.handleTableImport(data: data)
+                }
+            case .tableRename:
+                if let data = data {
+                    vpinballManager.handleTableRename(data: data)
+                }
+            case .tableDelete:
+                if let data = data {
+                    vpinballManager.handleTableDelete(data: data)
+                }
             default:
                 break
             }
@@ -581,5 +597,203 @@ class VPinballManager {
 
     func updateWebServer() {
         VPinballUpdateWebServer()
+    }
+
+    func handleTableList(data: UnsafeRawPointer) -> UnsafeRawPointer? {
+        let tableListDataPtr = UnsafeMutableRawPointer(mutating: data).assumingMemoryBound(to: VPinballTablesData.self)
+
+        if modelContext == nil {
+            tableListDataPtr.pointee.success = false
+            return nil
+        }
+
+        DispatchQueue.main.sync {
+            do {
+                let descriptor = FetchDescriptor<PinTable>()
+                let tables = try modelContext!.fetch(descriptor)
+
+                if tables.isEmpty {
+                    tableListDataPtr.pointee.tables = nil
+                    tableListDataPtr.pointee.tableCount = 0
+                    tableListDataPtr.pointee.success = true
+                    return
+                }
+
+                let tablesArray = UnsafeMutablePointer<VPinballTableInfo>.allocate(capacity: tables.count)
+                var allocatedCount = 0
+
+                for (index, table) in tables.enumerated() {
+                    let tableIdString = table.tableId.uuidString
+                    let tableIdCString = tableIdString.cString(using: .utf8)!
+                    let tableIdPtr = UnsafeMutablePointer<CChar>.allocate(capacity: tableIdCString.count)
+                    tableIdPtr.initialize(from: tableIdCString, count: tableIdCString.count)
+
+                    let tableNameCString = table.name.cString(using: .utf8)!
+                    let tableNamePtr = UnsafeMutablePointer<CChar>.allocate(capacity: tableNameCString.count)
+                    tableNamePtr.initialize(from: tableNameCString, count: tableNameCString.count)
+
+                    tablesArray[index] = VPinballTableInfo(
+                        tableId: tableIdPtr,
+                        name: tableNamePtr
+                    )
+                    allocatedCount += 1
+                }
+
+                tableListDataPtr.pointee.tables = tablesArray
+                tableListDataPtr.pointee.tableCount = CInt(tables.count)
+                tableListDataPtr.pointee.success = true
+
+            } catch {
+                tableListDataPtr.pointee.tables = nil
+                tableListDataPtr.pointee.tableCount = 0
+                tableListDataPtr.pointee.success = false
+            }
+        }
+
+        return nil
+    }
+
+    func handleTableImport(data: UnsafeRawPointer) {
+        let eventDataPtr = UnsafeMutableRawPointer(mutating: data).assumingMemoryBound(to: VPinballTableEventData.self)
+        let eventData = eventDataPtr.pointee
+
+        if eventData.path == nil {
+            log(.error, "Failed to import table: invalid file path")
+            eventDataPtr.pointee.success = false
+            return
+        }
+        let pathPtr = eventData.path!
+
+        let filePath = String(cString: pathPtr)
+
+        DispatchQueue.main.async { [weak self] in
+            if self == nil {
+                eventDataPtr.pointee.success = false
+                return
+            }
+
+            Task {
+                let fileUrl = URL(fileURLWithPath: filePath)
+
+                if let table = await self!.import(url: fileUrl) {
+                    PinTable.create(table: table)
+                    eventDataPtr.pointee.success = true
+
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        VPinballSetWebServerUpdated()
+                    }
+                } else {
+                    self!.log(.error, "Failed to import table from web server")
+                    eventDataPtr.pointee.success = false
+                }
+            }
+        }
+    }
+
+    func handleTableRename(data: UnsafeRawPointer) {
+        let eventDataPtr = UnsafeMutableRawPointer(mutating: data).assumingMemoryBound(to: VPinballTableEventData.self)
+
+        if modelContext == nil {
+            eventDataPtr.pointee.success = false
+            return
+        }
+
+        if eventDataPtr.pointee.tableId == nil || eventDataPtr.pointee.newName == nil {
+            log(.error, "Failed to rename table: invalid parameters")
+            eventDataPtr.pointee.success = false
+            return
+        }
+        let tableIdPtr = eventDataPtr.pointee.tableId!
+        let newNamePtr = eventDataPtr.pointee.newName!
+
+        let tableIdString = String(cString: tableIdPtr)
+        let newName = String(cString: newNamePtr)
+
+        if UUID(uuidString: tableIdString) == nil {
+            log(.error, "Failed to rename table: invalid table ID format")
+            eventDataPtr.pointee.success = false
+            return
+        }
+        let tableId = UUID(uuidString: tableIdString)!
+
+        DispatchQueue.main.sync {
+            do {
+                let descriptor = FetchDescriptor<PinTable>(predicate: #Predicate<PinTable> { table in
+                    table.tableId == tableId
+                })
+                let tables = try modelContext!.fetch(descriptor)
+
+                if tables.first == nil {
+                    log(.error, "Failed to rename table: table not found")
+                    eventDataPtr.pointee.success = false
+                    return
+                }
+                let table = tables.first!
+
+                PinTable.updateName(table: table, name: newName)
+                eventDataPtr.pointee.success = true
+
+            } catch {
+                log(.error, "Failed to rename table: \(error.localizedDescription)")
+                eventDataPtr.pointee.success = false
+            }
+        }
+    }
+
+    func handleTableDelete(data: UnsafeRawPointer) {
+        let eventDataPtr = UnsafeMutableRawPointer(mutating: data).assumingMemoryBound(to: VPinballTableEventData.self)
+
+        if modelContext == nil {
+            eventDataPtr.pointee.success = false
+            return
+        }
+
+        if eventDataPtr.pointee.tableId == nil {
+            log(.error, "Failed to delete table: invalid table ID")
+            eventDataPtr.pointee.success = false
+            return
+        }
+        let tableIdPtr = eventDataPtr.pointee.tableId!
+
+        let tableIdString = String(cString: tableIdPtr)
+
+        if UUID(uuidString: tableIdString) == nil {
+            log(.error, "Failed to delete table: invalid table ID format")
+            eventDataPtr.pointee.success = false
+            return
+        }
+        let tableId = UUID(uuidString: tableIdString)!
+
+        DispatchQueue.main.sync {
+            do {
+                let descriptor = FetchDescriptor<PinTable>(predicate: #Predicate<PinTable> { table in
+                    table.tableId == tableId
+                })
+                let tables = try modelContext!.fetch(descriptor)
+
+                if tables.first == nil {
+                    log(.error, "Failed to delete table: table not found")
+                    eventDataPtr.pointee.success = false
+                    return
+                }
+                let table = tables.first!
+
+                try? FileManager.default.removeItem(at: table.baseURL)
+
+                modelContext!.delete(table)
+                do {
+                    try modelContext!.save()
+                    eventDataPtr.pointee.success = true
+                    VPinballSetWebServerUpdated()
+                } catch {
+                    log(.error, "Failed to delete table: \(error.localizedDescription)")
+                    eventDataPtr.pointee.success = false
+                }
+
+            } catch {
+                log(.error, "Failed to delete table: \(error.localizedDescription)")
+                eventDataPtr.pointee.success = false
+            }
+        }
     }
 }

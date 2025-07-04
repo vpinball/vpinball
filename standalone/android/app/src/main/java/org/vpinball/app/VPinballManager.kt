@@ -16,34 +16,40 @@ import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.toLocalDateTime
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.vpinball.app.data.entity.PinTable
+import org.vpinball.app.data.repository.PinTableRepository
 import org.vpinball.app.jni.VPinballCaptureScreenshotData
 import org.vpinball.app.jni.VPinballCustomTableOption
 import org.vpinball.app.jni.VPinballEvent
-import org.vpinball.app.jni.VPinballGfxBackend
 import org.vpinball.app.jni.VPinballJNI
 import org.vpinball.app.jni.VPinballLogLevel
 import org.vpinball.app.jni.VPinballProgressData
 import org.vpinball.app.jni.VPinballRumbleData
 import org.vpinball.app.jni.VPinballScriptErrorData
 import org.vpinball.app.jni.VPinballSettingsSection
-import org.vpinball.app.jni.VPinballSettingsSection.DMD
-import org.vpinball.app.jni.VPinballSettingsSection.PLAYER
 import org.vpinball.app.jni.VPinballSettingsSection.STANDALONE
 import org.vpinball.app.jni.VPinballStatus
+import org.vpinball.app.jni.VPinballTableEventData
+import org.vpinball.app.jni.VPinballTableInfo
 import org.vpinball.app.jni.VPinballTableOptions
+import org.vpinball.app.jni.VPinballTablesData
 import org.vpinball.app.jni.VPinballViewSetup
 import org.vpinball.app.jni.VPinballWebServerData
 import org.vpinball.app.util.FileUtils
 import org.vpinball.app.util.basePath
+import org.vpinball.app.util.deleteFiles
 import org.vpinball.app.util.hasImage
 import org.vpinball.app.util.imageFile
 import org.vpinball.app.util.loadImage
 import org.vpinball.app.util.tableFile
 
-object VPinballManager {
+object VPinballManager : KoinComponent {
     enum class ScreenshotMode(val value: Int) {
         INSTRUCTIONS(0),
         ARTWORK(1),
@@ -53,6 +59,7 @@ object VPinballManager {
     private const val TAG = "VPinballManager"
 
     private var vpinballJNI: VPinballJNI = VPinballJNI()
+    private val pinTableRepository: PinTableRepository by inject()
 
     private lateinit var activity: VPinballActivity
     private lateinit var filesDir: File
@@ -119,6 +126,7 @@ object VPinballManager {
                             viewModel.touchOverlay(true)
                         }
                     }
+                    vpinballJNI.VPinballSetWebServerUpdated()
                 }
                 VPinballEvent.RUMBLE -> {
                     if (haptics) {
@@ -158,6 +166,7 @@ object VPinballManager {
                             showError(error)
                         }
                     }
+                    vpinballJNI.VPinballSetWebServerUpdated()
                 }
                 VPinballEvent.WEB_SERVER -> {
                     val webServerData = data as? VPinballWebServerData
@@ -178,11 +187,22 @@ object VPinballManager {
                         else -> {}
                     }
                 }
+                VPinballEvent.TABLE_LIST -> {
+                    return@VPinballInit handleTableList()
+                }
+                VPinballEvent.TABLE_IMPORT -> {
+                    handleTableImport(data)
+                }
+                VPinballEvent.TABLE_RENAME -> {
+                    handleTableRename(data)
+                }
+                VPinballEvent.TABLE_DELETE -> {
+                    handleTableDelete(data)
+                }
                 else -> {
                     log(VPinballLogLevel.WARN, "event=${event}")
                 }
             }
-            null
         }
 
         CoroutineScope(Dispatchers.Main).launch {
@@ -523,5 +543,122 @@ object VPinballManager {
             showError(message)
             activeTable = null
         }
+    }
+
+    private fun handleTableList(): VPinballTablesData {
+        return try {
+            val tables = kotlinx.coroutines.runBlocking { pinTableRepository.getAllSorted(true).first() }
+            log(VPinballLogLevel.DEBUG, "handleTableList: Found ${tables.size} tables")
+
+            val tableInfoList = tables.map { table -> VPinballTableInfo(tableId = table.uuid, name = table.name) }
+
+            VPinballTablesData(tables = tableInfoList, success = true)
+        } catch (e: Exception) {
+            log(VPinballLogLevel.ERROR, "handleTableList: Exception: ${e.message}")
+            VPinballTablesData(tables = emptyList(), success = false)
+        }
+    }
+
+    private fun handleTableImport(data: Any?) {
+        val eventData = data as? VPinballTableEventData ?: return
+        val filePath = eventData.path ?: ""
+
+        kotlinx.coroutines.runBlocking(Dispatchers.Main) {
+            try {
+                val fileUri = Uri.fromFile(File(filePath))
+                var importSuccess = false
+                var importError = false
+
+                importUri(
+                    context = activity,
+                    uri = fileUri,
+                    onUpdate = { _, _ -> },
+                    onComplete = { uuid, path ->
+                        CoroutineScope(Dispatchers.IO).launch {
+                            try {
+                                val name = path.substringBeforeLast('.').replace(Regex("[_]"), " ")
+                                val now = kotlinx.datetime.Clock.System.now().toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault())
+
+                                val table = PinTable(uuid = uuid, name = name, path = path, createdAt = now, modifiedAt = now)
+                                pinTableRepository.insert(table)
+
+                                withContext(Dispatchers.Main) {
+                                    importSuccess = true
+                                    vpinballJNI.VPinballSetWebServerUpdated()
+                                }
+                            } catch (e: Exception) {
+                                log(VPinballLogLevel.ERROR, "Failed to add imported table to database: ${e.message}")
+                                importError = true
+                            }
+                        }
+                    },
+                    onError = {
+                        log(VPinballLogLevel.ERROR, "Failed to import table from web server")
+                        importError = true
+                    },
+                )
+
+                var attempts = 0
+                while (!importSuccess && !importError && attempts < 300) {
+                    delay(100)
+                    attempts++
+                }
+
+                eventData.success = importSuccess
+            } catch (e: Exception) {
+                log(VPinballLogLevel.ERROR, "Failed to import table: ${e.message}")
+                eventData.success = false
+            }
+        }
+    }
+
+    private fun handleTableRename(data: Any?) {
+        val eventData = data as? VPinballTableEventData ?: return
+        val tableId = eventData.tableId ?: ""
+        val newName = eventData.newName ?: ""
+
+        kotlinx.coroutines.runBlocking(Dispatchers.Main) {
+            try {
+                val table = pinTableRepository.getById(tableId).first()
+                val updatedTable =
+                    table.copy(
+                        name = newName,
+                        modifiedAt = kotlinx.datetime.Clock.System.now().toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault()),
+                    )
+
+                pinTableRepository.update(updatedTable)
+
+                eventData.success = true
+                vpinballJNI.VPinballSetWebServerUpdated()
+            } catch (e: Exception) {
+                log(VPinballLogLevel.ERROR, "Failed to rename table: ${e.message}")
+                eventData.success = false
+            }
+        }
+    }
+
+    private fun handleTableDelete(data: Any?) {
+        val eventData = data as? VPinballTableEventData ?: return
+        val tableId = eventData.tableId ?: ""
+
+        kotlinx.coroutines.runBlocking(Dispatchers.Main) {
+            try {
+                val table = pinTableRepository.getById(tableId).first()
+
+                table.deleteFiles()
+
+                pinTableRepository.delete(table)
+
+                eventData.success = true
+                vpinballJNI.VPinballSetWebServerUpdated()
+            } catch (e: Exception) {
+                log(VPinballLogLevel.ERROR, "Failed to delete table: ${e.message}")
+                eventData.success = false
+            }
+        }
+    }
+
+    fun setWebLastUpdate() {
+        vpinballJNI.VPinballSetWebServerUpdated()
     }
 }

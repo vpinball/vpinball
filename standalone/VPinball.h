@@ -52,7 +52,11 @@ typedef enum {
    VPINBALL_EVENT_PLAYER_CLOSED,
    VPINBALL_EVENT_STOPPED,
    VPINBALL_EVENT_WEB_SERVER,
-   VPINBALL_EVENT_CAPTURE_SCREENSHOT
+   VPINBALL_EVENT_CAPTURE_SCREENSHOT,
+   VPINBALL_EVENT_TABLE_LIST,
+   VPINBALL_EVENT_TABLE_IMPORT,
+   VPINBALL_EVENT_TABLE_RENAME,
+   VPINBALL_EVENT_TABLE_DELETE
 } VPINBALL_EVENT;
 
 typedef struct {
@@ -84,6 +88,13 @@ typedef struct {
 typedef struct {
    int success;
 } VPinballCaptureScreenshotData;
+
+typedef struct {
+   const char* tableId;
+   const char* newName;
+   const char* path;
+   bool success;
+} VPinballTableEventData;
 
 typedef struct {
    float globalEmissionScale;
@@ -145,6 +156,7 @@ VPINBALLAPI void VPinballSaveValueString(const char* pSectionName, const char* p
 VPINBALLAPI VPINBALL_STATUS VPinballUncompress(const char* pSource);
 VPINBALLAPI VPINBALL_STATUS VPinballCompress(const char* pSource, const char* pDestination);
 VPINBALLAPI void VPinballUpdateWebServer();
+VPINBALLAPI void VPinballSetWebServerUpdated();
 VPINBALLAPI VPINBALL_STATUS VPinballResetIni();
 VPINBALLAPI VPINBALL_STATUS VPinballLoad(const char* pSource);
 VPINBALLAPI VPINBALL_STATUS VPinballExtractScript(const char* pSource);

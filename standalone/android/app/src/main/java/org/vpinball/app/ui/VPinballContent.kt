@@ -66,12 +66,25 @@ fun VPinballContent(viewModel: VPinballViewModel = koinActivityViewModel()) {
                     webServerURL = viewModel.webServerURL,
                     progress = viewModel.progress,
                     status = viewModel.status,
-                    onTableImported = { uuid, path -> scope.launch { viewModel.saveImportTable(uuid, path).last() } },
-                    onRenameTable = { table, name -> scope.launch { viewModel.renameTable(table, name).last() } },
+                    onTableImported = { uuid, path ->
+                        scope.launch {
+                            viewModel.saveImportTable(uuid, path).last()
+                            VPinballManager.setWebLastUpdate()
+                        }
+                    },
+                    onRenameTable = { table, name ->
+                        scope.launch {
+                            viewModel.renameTable(table, name).last()
+                            VPinballManager.setWebLastUpdate()
+                        }
+                    },
                     onChangeTableArtwork = { table -> scope.launch { viewModel.markTableAsModified(table).last() } },
                     onDeleteTable = { table ->
                         table.deleteFiles()
-                        scope.launch { viewModel.deleteTable(table).last() }
+                        scope.launch {
+                            viewModel.deleteTable(table).last()
+                            VPinballManager.setWebLastUpdate()
+                        }
                     },
                     onViewFile = { file -> codeFile = file },
                 )

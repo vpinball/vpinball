@@ -5,12 +5,12 @@
 
 #include "VPinballLib.h"
 #include "VPXProgress.h"
+
 #include "standalone/inc/webserver/WebServer.h"
 
 #include <SDL3/SDL_main.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include <zip.h>
-
 #include <filesystem>
 
 MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
@@ -177,6 +177,7 @@ void* VPinball::SendEvent(Event event, void* data)
 #ifdef __APPLE__
       SDL_SetiOSAnimationCallback(g_pplayer->m_playfieldWnd->GetCore(), 1, &VPinball::GameLoop, nullptr);
 #endif
+      s_instance.SetWebServerUpdated();
    }
    else if (event == Event::Stopped) {
       s_instance.Cleanup();
@@ -425,7 +426,7 @@ void VPinball::GetTableOptions(TableOptions& tableOptions)
 void VPinball::SetTableOptions(const TableOptions& tableOptions)
 {
    std::lock_guard<std::mutex> lock(m_liveUIMutex);
-   
+
    m_liveUIQueue.push([this, tableOptions]() {
       ProcessSetTableOptions(tableOptions);
    });
@@ -434,7 +435,7 @@ void VPinball::SetTableOptions(const TableOptions& tableOptions)
 void VPinball::SetDefaultTableOptions()
 {
    std::lock_guard<std::mutex> lock(m_liveUIMutex);
-   
+
    m_liveUIQueue.push([this]() {
       ProcessSetDefaultTableOptions();
    });
@@ -443,7 +444,7 @@ void VPinball::SetDefaultTableOptions()
 void VPinball::ResetTableOptions()
 {
    std::lock_guard<std::mutex> lock(m_liveUIMutex);
-   
+
    m_liveUIQueue.push([this]() {
       ProcessResetTableOptions();
    });
@@ -573,7 +574,7 @@ void VPinball::GetViewSetup(ViewSetup& viewSetup)
 void VPinball::SetViewSetup(const ViewSetup& viewSetup)
 {
    std::lock_guard<std::mutex> lock(m_liveUIMutex);
-   
+
    m_liveUIQueue.push([this, viewSetup]() {  
       ProcessSetViewSetup(viewSetup);
    });
@@ -582,7 +583,7 @@ void VPinball::SetViewSetup(const ViewSetup& viewSetup)
 void VPinball::SetDefaultViewSetup()
 {
    std::lock_guard<std::mutex> lock(m_liveUIMutex);
-   
+
    m_liveUIQueue.push([this]() {
       ProcessSetDefaultViewSetup();
    });
@@ -591,7 +592,7 @@ void VPinball::SetDefaultViewSetup()
 void VPinball::ResetViewSetup()
 {
    std::lock_guard<std::mutex> lock(m_liveUIMutex);
-   
+
    m_liveUIQueue.push([this]() {
       ProcessResetViewSetup();
    });
@@ -628,6 +629,12 @@ void VPinball::CaptureScreenshot(const string& filename)
       });
 }
 
+void VPinball::SetWebServerUpdated()
+{
+   if (m_pWebServer)
+      m_pWebServer->SetLastUpdate();
+}
+
 void VPinball::GameLoop(void* pUserData)
 {
    if (!s_instance.m_gameLoop) {
@@ -648,6 +655,8 @@ void VPinball::GameLoop(void* pUserData)
    g_pplayer = nullptr;
 
    SendEvent(Event::Stopped, nullptr);
+
+   s_instance.SetWebServerUpdated();
 }
 
 void VPinball::ProcessSetTableOptions(const TableOptions& options)
@@ -903,7 +912,7 @@ void VPinball::Cleanup()
    g_pvp->m_settings.LoadFromFile(g_pvp->m_myPrefPath + "VPinballX.ini", true);
    g_pvp->m_settings.Save();
    g_pvp->SetLogicalNumberOfProcessors(SDL_GetNumLogicalCPUCores());
-   
+
    {
       std::lock_guard<std::mutex> lock(m_liveUIMutex);
       while (!m_liveUIQueue.empty())
