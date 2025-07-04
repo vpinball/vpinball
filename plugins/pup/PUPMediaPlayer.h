@@ -24,6 +24,8 @@ public:
    void SetLength(int length);
    void Render(VPXRenderContext2D* const ctx, const SDL_Rect& destRect);
 
+   void SetBounds(const SDL_Rect& rect);
+
 private:
    void StopBlocking();
    void Run();
@@ -32,6 +34,7 @@ private:
    void HandleVideoFrame(AVFrame* pFrame);
 
    const string m_name;
+   SDL_Rect m_bounds;
 
    string m_filename;
    uint64_t m_startTimestamp = 0; // timestamp in ms when the play command was called
@@ -49,11 +52,11 @@ private:
    int m_videoStream = -1;
    AVCodecContext* m_pVideoContext = nullptr;
 
-   SwsContext* m_swsContext = nullptr;
-   int m_nRgbFrames = 0; // Circular buffer of m_nRgbFrames frames, ready to be rendered if framePTS >= playPTS
+   // Circular buffer of m_nRgbFrames frames, ready to be rendered if framePTS >= playPTS
    int m_activeRgbFrame = 0;
-   AVFrame** m_rgbFrames = nullptr;
-   VPXTexture* m_videoTextures = nullptr;
+   vector<AVFrame*> m_rgbFrames;
+   vector<VPXTexture> m_videoTextures;
+   SwsContext* m_swsContext = nullptr;
 
    VPXTexture m_videoTexture = nullptr;
    unsigned int m_videoTextureId = 0xFFFFFF;

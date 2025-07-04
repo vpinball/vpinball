@@ -261,8 +261,10 @@ void Sampler::UpdateTexture(std::shared_ptr<const BaseTexture> surf, const bool 
 #if defined(ENABLE_BGFX)
    const std::lock_guard<std::mutex> lock(m_textureUpdateMutex);
    if (m_textureUpdate)
+   {
       bgfx::release(m_textureUpdate);
-   assert(m_textureUpdate == nullptr);
+      m_textureUpdate = nullptr;
+   }
 
    // Instead of copying the data, we hold a strong reference on them until they are uploaded to the GPU (that's the reason we want a shared_ptr)
    struct SurfRef
@@ -276,7 +278,6 @@ void Sampler::UpdateTexture(std::shared_ptr<const BaseTexture> surf, const bool 
    auto releaseFn = [](void* _ptr, void* _userData)
    {
       SurfRef* ref = static_cast<SurfRef*>(_userData);
-      const std::lock_guard<std::mutex> lock(ref->me->m_textureUpdateMutex);
       delete ref;
    };
 
