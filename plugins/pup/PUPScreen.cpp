@@ -323,6 +323,8 @@ void PUPScreen::SetSize(int w, int h)
    else
       m_rect = { 0, 0, w, h };
 
+   m_pMediaPlayerManager->SetBounds(m_rect);
+
    for (auto pChildren : { &m_defaultChildren, &m_backChildren, &m_topChildren }) {
       for (PUPScreen* pScreen : *pChildren)
           pScreen->SetSize(w, h);
@@ -615,7 +617,7 @@ void PUPScreen::Render(VPXRenderContext2D* const ctx)
 
    Render(ctx, &m_background);
 
-   m_pMediaPlayerManager->Render(ctx, m_rect);
+   m_pMediaPlayerManager->Render(ctx);
 
    for (auto pChildren : { &m_defaultChildren, &m_backChildren, &m_topChildren }) {
       for (PUPScreen* pScreen : *pChildren)

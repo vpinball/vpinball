@@ -106,8 +106,9 @@ typedef struct VPXRenderContext2D
    VPXAnciliaryWindow window; // Target window
    float srcWidth;            // Source surface width, used in DrawImage call, default to target surface width
    float srcHeight;           // Source surface height, used in DrawImage call, default to target surface height
-   float outWidth;            // Target surface width, mostly to be used for apsect ratio computation, LOD and layout
-   float outHeight;           // Target surface height, mostly to be used for apsect ratio computation, LOD and layout
+   int is2D;                  // If true, the rendering is done in 2D mode, otherwise in 3D mode
+   float outWidth;            // Target surface width for 2D render, otherwise hint to be used for aspect ratio computation, LOD and layout
+   float outHeight;           // Target surface height for 2D render, otherwise hint to be used for apsect ratio computation, LOD and layout
    void(MSGPIAPI* DrawImage)(VPXRenderContext2D* ctx, VPXTexture texture,
       const float tintR, const float tintG, const float tintB, const float alpha, // tint color and alpha (0..1)
       const float texX, const float texY, const float texW, const float texH,  // coordinates in texture surface (0..tex.width, 0..tex.height)
