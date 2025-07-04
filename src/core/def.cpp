@@ -197,7 +197,11 @@ WCHAR *MakeWide(const char* const sz)
 {
    const int len = MultiByteToWideChar(CP_ACP, 0, sz, -1, nullptr, 0); //(int)strlen(sz) + 1; // include null termination
    if (len <= 1)
-      return nullptr;
+   {
+      WCHAR * const wzT = new WCHAR[1];
+      wzT[0] = L'\0';
+      return wzT;
+   }
    WCHAR * const wzT = new WCHAR[len];
    MultiByteToWideChar(CP_ACP, 0, sz, -1, wzT, len);
    return wzT;
@@ -207,7 +211,7 @@ BSTR MakeWideBSTR(const string& sz)
 {
    const int len = MultiByteToWideChar(CP_ACP, 0, sz.c_str(), -1, nullptr, 0); //(int)sz.length() + 1; // include null termination
    if (len <= 1)
-      return nullptr;
+      return SysAllocString(L"");
    BSTR wzT = SysAllocStringLen(nullptr, len - 1);
    MultiByteToWideChar(CP_ACP, 0, sz.c_str(), -1, wzT, len);
    return wzT;
@@ -217,7 +221,11 @@ WCHAR *MakeWide(const string& sz)
 {
    const int len = MultiByteToWideChar(CP_ACP, 0, sz.c_str(), -1, nullptr, 0); //(int)sz.length() + 1; // include null termination
    if (len <= 1)
-      return nullptr;
+   {
+      WCHAR * const wzT = new WCHAR[1];
+      wzT[0] = L'\0';
+      return wzT;
+   }
    WCHAR * const wzT = new WCHAR[len];
    MultiByteToWideChar(CP_ACP, 0, sz.c_str(), -1, wzT, len);
    return wzT;
@@ -319,10 +327,10 @@ HRESULT OpenURL(const string& szURL)
 #ifdef _WIN32
 void SetThreadName(const std::string& name)
 {
-   int size_needed = MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, NULL, 0);
-   if (size_needed == 0)
+   const int size_needed = MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, nullptr, 0);
+   if (size_needed <= 1)
       return;
-   std::wstring wstr(size_needed, 0);
+   std::wstring wstr(size_needed - 1, L'\0');
    if (MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, wstr.data(), size_needed) == 0)
       return;
    HRESULT hr = SetThreadDescription(GetCurrentThread(), wstr.c_str());
