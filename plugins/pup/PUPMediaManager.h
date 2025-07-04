@@ -6,8 +6,11 @@ namespace PUP {
 
 class PUPScreen;
 
-struct PUPMediaManagerPlayer
+class PUPMediaManagerPlayer final
 {
+   PUPMediaManagerPlayer(const string& name) : player(name) {}
+   ~PUPMediaManagerPlayer() {}
+
    PUPMediaPlayer player;
    string szPath;
    float volume;
@@ -28,7 +31,7 @@ private:
 
 public:
    PUPMediaManager(PUPScreen* pScreen);
-   ~PUPMediaManager() {};
+   ~PUPMediaManager() {}
 
    void Play(PUPPlaylist* pPlaylist, const std::string& szPlayFile, float volume, int priority, bool skipSamePriority, int length);
    void SetBG(bool isBackground);
