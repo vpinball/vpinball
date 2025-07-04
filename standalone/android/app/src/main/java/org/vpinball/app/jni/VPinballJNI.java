@@ -36,4 +36,7 @@ public class VPinballJNI {
     public native void VPinballResetViewSetup();
     public native void VPinballSaveViewSetup();
     public native int VPinballCaptureScreenshot(String filename);
+    public native VPinballTableEventData VPinballGetTableEventData();
+    public native void VPinballSetTableEventDataSuccess(boolean success);
+    public native void VPinballSetWebServerUpdated();
 }

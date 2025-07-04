@@ -43,11 +43,6 @@ add_executable(vpinball
    standalone/vpinball_standalone_i.h
    standalone/vpinball_standalone_i_proxy.cpp
 
-   standalone/inc/webserver/mongoose.c
-   standalone/inc/webserver/mongoose.h
-   standalone/inc/webserver/WebServer.cpp
-   standalone/inc/webserver/WebServer.h
-
    third-party/include/pole/pole.cpp
 
    standalone/PoleStream.cpp

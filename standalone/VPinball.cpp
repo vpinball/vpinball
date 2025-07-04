@@ -78,6 +78,11 @@ VPINBALLAPI void VPinballUpdateWebServer()
    s_vpinstance.UpdateWebServer();
 }
 
+VPINBALLAPI void VPinballSetWebServerUpdated()
+{
+   s_vpinstance.SetWebServerUpdated();
+}
+
 VPINBALLAPI VPINBALL_STATUS VPinballResetIni()
 {
    return (VPINBALL_STATUS)s_vpinstance.ResetIni();

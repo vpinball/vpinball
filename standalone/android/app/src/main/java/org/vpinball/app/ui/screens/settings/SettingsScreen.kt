@@ -474,11 +474,7 @@ fun SettingsScreen(
 
                         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
-                        SwitchRow(
-                            label = "B2S",
-                            isChecked = viewModel.pluginB2S,
-                            onCheckedChange = { viewModel.handlePluginB2S(value = it) },
-                        )
+                        SwitchRow(label = "B2S", isChecked = viewModel.pluginB2S, onCheckedChange = { viewModel.handlePluginB2S(value = it) })
 
                         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
@@ -490,11 +486,7 @@ fun SettingsScreen(
 
                         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
-                        SwitchRow(
-                            label = "DOF",
-                            isChecked = viewModel.pluginDOF,
-                            onCheckedChange = { viewModel.handlePluginDOF(value = it) },
-                        )
+                        SwitchRow(label = "DOF", isChecked = viewModel.pluginDOF, onCheckedChange = { viewModel.handlePluginDOF(value = it) })
 
                         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
@@ -514,11 +506,7 @@ fun SettingsScreen(
 
                         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
-                        SwitchRow(
-                            label = "PUP",
-                            isChecked = viewModel.pluginPUP,
-                            onCheckedChange = { viewModel.handlePluginPUP(value = it) },
-                        )
+                        SwitchRow(label = "PUP", isChecked = viewModel.pluginPUP, onCheckedChange = { viewModel.handlePluginPUP(value = it) })
 
                         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
@@ -538,11 +526,7 @@ fun SettingsScreen(
 
                         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
-                        SwitchRow(
-                            label = "Serum",
-                            isChecked = viewModel.pluginSerum,
-                            onCheckedChange = { viewModel.handlePluginSerum(value = it) },
-                        )
+                        SwitchRow(label = "Serum", isChecked = viewModel.pluginSerum, onCheckedChange = { viewModel.handlePluginSerum(value = it) })
                     }
                 }
 

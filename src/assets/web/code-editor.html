@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="assets/web/monaco/style.css">
+    <style>
+        @font-face {
+            font-family: 'codicon';
+            src: url('assets/web/monaco/codicon.ttf') format('truetype');
+        }
+
+        .codicon {
+            font-family: 'codicon' !important;
+            font-style: normal;
+            font-weight: normal;
+            font-variant: normal;
+            text-decoration: none;
+            text-transform: none;
+            line-height: 1;
+            speak: never;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Consolas', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+        #container {
+            width: 100vw;
+            height: 100vh;
+        }
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div class="loading">Loading...</div>
+    </div>
+
+    <script src="assets/web/monaco/monaco.js"></script>
+    <script src="assets/web/monaco-editor.js"></script>
+    <script>
+        async function initializeEditor() {
+            try {
+                const content = "{{CONTENT}}";
+                const container = document.getElementById('container');
+
+                if (content.trim() === '') {
+                    container.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100vh; color: #666; font-size: 16px;">No lines</div>';
+                    return;
+                }
+
+                let attempts = 0;
+                while (typeof window.monaco === 'undefined' && attempts < 50) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                }
+
+                if (typeof window.monaco === 'undefined') {
+                    throw new Error('Monaco failed to load after 5 seconds');
+                }
+
+                window.loadMonacoBundle = function() {
+                    return Promise.resolve();
+                };
+
+                const editorInstance = await createMonacoEditor(container, content, {
+                    fileName: 'script.{{LANGUAGE}}',
+                    theme: '{{THEME}}',
+                    readOnly: true
+                });
+
+                if (editorInstance && editorInstance.editor) {
+                    editorInstance.editor.updateOptions({
+                        scrollSensitivity: 2,
+                        fastScrollSensitivity: 10,
+                        scrollbar: {
+                            vertical: 'auto',
+                            horizontal: 'auto',
+                            verticalScrollbarSize: 12,
+                            horizontalScrollbarSize: 12
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to initialize Monaco editor:', error);
+                document.getElementById('container').innerHTML = 
+                    '<div style="display: flex; align-items: center; justify-content: center; height: 100vh; color: red; font-size: 16px; text-align: center; padding: 20px;">Failed to load editor: ' + error.message + '</div>';
+            }
+        }
+
+        initializeEditor();
+    </script>
+</body>
+</html>

@@ -5,6 +5,8 @@
 #include <queue>
 #include <mutex>
 
+class WebServer;
+
 namespace VPinballLib {
 
 enum class LogLevel {
@@ -49,7 +51,11 @@ enum class Event {
    PlayerClosed, 
    Stopped,
    WebServer,
-   CaptureScreenshot
+   CaptureScreenshot,
+   TableList,
+   TableImport,
+   TableRename,
+   TableDelete
 };
 
 struct ProgressData {
@@ -79,6 +85,24 @@ struct WebServerData {
 };
 
 struct CaptureScreenshotData {
+   bool success;
+};
+
+struct TableInfo {
+   char* tableId;
+   char* name;
+};
+
+struct TablesData {
+   TableInfo* tables;
+   int tableCount;
+   bool success;
+};
+
+struct TableEventData {
+   const char* tableId;
+   const char* newName;
+   const char* path;
    bool success;
 };
 
@@ -167,6 +191,7 @@ public:
    void ResetViewSetup();
    void SaveViewSetup();
    void CaptureScreenshot(const string& filename);
+   void SetWebServerUpdated();
 
 private:
    VPinball();

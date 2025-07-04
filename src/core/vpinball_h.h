@@ -34,8 +34,6 @@
 
    #define OVERRIDE override
 #else
-   #include "standalone/inc/webserver/WebServer.h"
-
    #define OVERRIDE
 #endif
 
@@ -266,12 +264,6 @@ public:
    wstring m_customParameters[MAX_CUSTOM_PARAM_INDEX];
 
    HBITMAP m_hbmInPlayMode;
-
-#ifdef __STANDALONE__
-#ifndef __LIBVPINBALL__
-   WebServer m_webServer;
-#endif
-#endif
 
 protected:
    void PreCreate(CREATESTRUCT& cs) override;

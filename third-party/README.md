@@ -146,6 +146,12 @@ Liberation Sans
 - Version: ?
 - License: MIT
 
+### monaco-editor
+
+- Upstream: https://github.com/microsoft/monaco-editor
+- Version: 0.52.2
+- License: MIT
+
 ### NVAPI
 
 - Upstream: https://github.com/NVIDIA/nvapi
@@ -162,12 +168,6 @@ Liberation Sans
 
 - Upstream: https://github.com/SergiusTheBest/plog
 - Version: ?
-- License: MIT
-
-### PrismJS
-
-- Upstream: https://github.com/PrismJS/prism
-- Version: 1.29.0
 - License: MIT
 
 ### Progmesh

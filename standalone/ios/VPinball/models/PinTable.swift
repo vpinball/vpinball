@@ -115,6 +115,8 @@ extension PinTable {
             modelContext.delete(table)
             try? modelContext.save()
         }
+
+        VPinballSetWebServerUpdated()
     }
 
     static func updateName(table: PinTable, name: String) {
@@ -137,6 +139,8 @@ extension PinTable {
             table.lastUpdate = Date()
             try? modelContext.save()
         }
+
+        VPinballSetWebServerUpdated()
     }
 
     static func predicate(

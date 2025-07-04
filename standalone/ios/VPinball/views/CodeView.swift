@@ -15,6 +15,17 @@ enum CodeLanguage {
             return "visual-basic"
         }
     }
+
+    var monacoType: String {
+        switch self {
+        case .ini:
+            return "ini"
+        case .log:
+            return "plaintext"
+        case .vbscript:
+            return "vb"
+        }
+    }
 }
 
 struct CodeView: View {
@@ -32,56 +43,47 @@ struct CodeView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if !content.isEmpty {
-                    CodeWebView(language: language,
-                                code: content)
-
-                } else {
-                    Text("No lines")
-                }
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Text(url.lastPathComponent)
-                }
-
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: {
-                        handleDone()
-                    }) {
-                        Text("Done")
-                            .bold()
+            CodeWebView(language: language,
+                        code: content)
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Text(url.lastPathComponent)
                     }
-                    .tint(Color.vpxRed)
-                }
-                ToolbarItem(placement: .bottomBar) {
-                    HStack {
+
+                    ToolbarItem(placement: .topBarTrailing) {
                         Button(action: {
-                            handleShare()
+                            handleDone()
                         }) {
-                            Image(systemName: "square.and.arrow.up")
+                            Text("Done")
+                                .bold()
                         }
                         .tint(Color.vpxRed)
-                        .disabled(content.isEmpty)
-
-                        Spacer()
-
-                        if allowsClear {
+                    }
+                    ToolbarItem(placement: .bottomBar) {
+                        HStack {
                             Button(action: {
-                                handleClear()
+                                handleShare()
                             }) {
-                                Text("Clear")
+                                Image(systemName: "square.and.arrow.up")
                             }
                             .tint(Color.vpxRed)
-                            .disabled(content.isEmpty)
+
+                            Spacer()
+
+                            if allowsClear {
+                                Button(action: {
+                                    handleClear()
+                                }) {
+                                    Text("Clear")
+                                }
+                                .tint(Color.vpxRed)
+                            }
                         }
                     }
                 }
-            }
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbarBackground(.visible, for: .bottomBar)
+                .toolbarBackground(.visible, for: .navigationBar)
+                .toolbarBackground(.visible, for: .bottomBar)
         }
         .onAppear {
             handleAppear()
