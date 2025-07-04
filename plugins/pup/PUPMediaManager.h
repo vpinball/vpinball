@@ -8,6 +8,7 @@ class PUPScreen;
 
 class PUPMediaManagerPlayer final
 {
+public:
    PUPMediaManagerPlayer(const string& name) : player(name) {}
    ~PUPMediaManagerPlayer() {}
 
