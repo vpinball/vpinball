@@ -177,9 +177,9 @@ Shader::TechniqueDef Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT] {
    SHADER_TECHNIQUE(display_CRT, SHADER_glassPad, SHADER_glassArea, SHADER_glassTint_Roughness, SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_displayTex),
    SHADER_TECHNIQUE(display_CRT_world, SHADER_matWorldViewProj, SHADER_glassPad, SHADER_glassArea, SHADER_glassTint_Roughness, SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_displayTex),
 
-   SHADER_TECHNIQUE(basic_noDMD, SHADER_glassArea, SHADER_alphaTestValue, SHADER_vColor_Intensity, SHADER_tex_sprite),
+   SHADER_TECHNIQUE(basic_noDMD, SHADER_glassArea, SHADER_alphaTestValue, SHADER_vColor_Intensity, SHADER_tex_sprite, SHADER_u_basic_shade_mode),
    SHADER_TECHNIQUE(basic_noDMD_notex, SHADER_vColor_Intensity),
-   SHADER_TECHNIQUE(basic_noDMD_world, SHADER_glassArea, SHADER_alphaTestValue, SHADER_matWorldViewProj, SHADER_vColor_Intensity, SHADER_tex_sprite),
+   SHADER_TECHNIQUE(basic_noDMD_world, SHADER_glassArea, SHADER_alphaTestValue, SHADER_matWorldViewProj, SHADER_vColor_Intensity, SHADER_tex_sprite, SHADER_u_basic_shade_mode),
 
    SHADER_TECHNIQUE(basic_noLight, SHADER_matWorldViewProj, SHADER_lightCenter_doShadow, SHADER_balls, SHADER_staticColor_Alpha, SHADER_alphaTestValueAB_filterMode_addBlend,
       SHADER_amount_blend_modulate_vs_add_flasherMode, SHADER_tex_flasher_A, SHADER_tex_flasher_B, SHADER_clip_plane),

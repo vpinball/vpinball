@@ -1324,6 +1324,11 @@ RenderDevice::~RenderDevice()
    delete m_pVertexTexelDeclaration;
    delete m_pVertexNormalTexelDeclaration;
 
+   if (bgfx::isValid(m_mipmapProgram))
+      bgfx::destroy(m_mipmapProgram);
+   if (bgfx::isValid(m_mipmapOpts))
+      bgfx::destroy(m_mipmapOpts);
+
    // Shutdown BGFX once all native resources have been cleaned up
    m_frameReadySem.post();
    if (m_renderThread.joinable())
@@ -1453,7 +1458,8 @@ void RenderDevice::AddWindow(VPX::Window* wnd)
    bgfx::FrameBufferHandle fbh = bgfx::createFrameBuffer(nwh, uint16_t(wnd->GetPixelWidth()), uint16_t(wnd->GetPixelHeight()));
    m_outputWnd[m_nOutputWnd] = wnd;
    m_nOutputWnd++;
-   wnd->SetBackBuffer(new RenderTarget(this, SurfaceType::RT_DEFAULT, fbh, BGFX_INVALID_HANDLE, BGFX_INVALID_HANDLE, "BackBuffer #" + std::to_string(m_nOutputWnd), wnd->GetPixelWidth(), wnd->GetPixelHeight(), fmt));
+   wnd->SetBackBuffer(new RenderTarget(this, SurfaceType::RT_DEFAULT, fbh, BGFX_INVALID_HANDLE, bgfx::TextureFormat::Count, BGFX_INVALID_HANDLE, bgfx::TextureFormat::Count,
+      "BackBuffer #" + std::to_string(m_nOutputWnd), wnd->GetPixelWidth(), wnd->GetPixelHeight(), fmt));
 #endif
 }
 
@@ -1582,10 +1588,10 @@ void RenderDevice::UploadAndSetSMAATextures()
 
 #if defined(ENABLE_BGFX)
    bgfx::TextureHandle smaaAreaTex = bgfx::createTexture2D(AREATEX_WIDTH, AREATEX_HEIGHT, false, 1, bgfx::TextureFormat::RG8, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP, bgfx::makeRef(areaTexBytes, AREATEX_SIZE));
-   m_SMAAareaTexture = std::make_shared<Sampler>(this, "SMAA Area"s, SurfaceType::RT_DEFAULT, smaaAreaTex, AREATEX_WIDTH, AREATEX_HEIGHT, true);
+   m_SMAAareaTexture = std::make_shared<Sampler>(this, "SMAA Area"s, SurfaceType::RT_DEFAULT, smaaAreaTex, bgfx::TextureFormat::RG8, AREATEX_WIDTH, AREATEX_HEIGHT, true);
 
    bgfx::TextureHandle smaaSearchTex = bgfx::createTexture2D(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, false, 1, bgfx::TextureFormat::R8, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP, bgfx::makeRef(searchTexBytes, SEARCHTEX_SIZE));
-   m_SMAAsearchTexture = std::make_shared<Sampler>(this, "SMAA Search"s, SurfaceType::RT_DEFAULT, smaaSearchTex, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, true);
+   m_SMAAsearchTexture = std::make_shared<Sampler>(this, "SMAA Search"s, SurfaceType::RT_DEFAULT, smaaSearchTex, bgfx::TextureFormat::R8, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, true);
 
 #elif defined(ENABLE_OPENGL)
    auto tex_unit = m_samplerBindings.back();
