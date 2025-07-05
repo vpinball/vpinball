@@ -66,7 +66,9 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
 }
 
 #if defined(ENABLE_BGFX)
-RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, bgfx::FrameBufferHandle fbh, bgfx::TextureHandle colorTex, bgfx::TextureHandle depthTex, 
+RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, bgfx::FrameBufferHandle fbh, 
+   bgfx::TextureHandle colorTex, bgfx::TextureFormat::Enum colFormat,
+   bgfx::TextureHandle depthTex, bgfx::TextureFormat::Enum depthFormat,
    const string& name, const int width, const int height, const colorFormat format)
    : m_name(name)
    , m_type(type)
@@ -86,9 +88,9 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, bgfx:
    , m_depth_tex(depthTex)
 {
    if (bgfx::isValid(colorTex))
-      m_color_sampler = std::make_shared<Sampler>(rd, name + ".Color", type, colorTex, width, height, false);
+      m_color_sampler = std::make_shared<Sampler>(rd, name + ".Color", type, colorTex, colFormat, width, height, false);
    if (bgfx::isValid(depthTex))
-      m_depth_sampler = std::make_shared<Sampler>(rd, name + ".Depth", type, depthTex, width, height, false);
+      m_depth_sampler = std::make_shared<Sampler>(rd, name + ".Depth", type, depthTex, depthFormat, width, height, false);
 }
 #endif
 
@@ -144,7 +146,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
    default: assert(false); // Unsupported texture format 
    }
    m_color_tex = bgfx::createTexture2D(m_width, m_height, false, m_nLayers, fmt, colorFlags);
-   m_color_sampler = std::make_shared<Sampler>(m_rd, name + ".Color", m_type, m_color_tex, m_width, m_height, false);
+   m_color_sampler = std::make_shared<Sampler>(m_rd, name + ".Color", m_type, m_color_tex, fmt, m_width, m_height, false);
 
    if (m_shared_depth)
    {
@@ -161,7 +163,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
          depthFormat = g_pplayer->m_vrDevice->GetDepthFormat();
       #endif
       m_depth_tex = bgfx::createTexture2D(m_width, m_height, false, m_nLayers, depthFormat, depthFlags);
-      m_depth_sampler = std::make_shared<Sampler>(m_rd, name + ".Depth", m_type, m_depth_tex, m_width, m_height, false);
+      m_depth_sampler = std::make_shared<Sampler>(m_rd, name + ".Depth", m_type, m_depth_tex, depthFormat, m_width, m_height, false);
    }
 
    if (with_depth)

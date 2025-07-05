@@ -87,7 +87,7 @@ Sampler::Sampler(RenderDevice* rd, string name, std::shared_ptr<const BaseTextur
 }
 
 #if defined(ENABLE_BGFX)
-Sampler::Sampler(RenderDevice* rd, string name, SurfaceType type, bgfx::TextureHandle bgfxTexture, unsigned int width, unsigned int height, bool ownTexture)
+Sampler::Sampler(RenderDevice* rd, string name, SurfaceType type, bgfx::TextureHandle bgfxTexture, bgfx::TextureFormat::Enum bgfxFormat, unsigned int width, unsigned int height, bool ownTexture)
    : m_type(type)
    , m_name(std::move(name))
    , m_rd(rd)
@@ -95,6 +95,7 @@ Sampler::Sampler(RenderDevice* rd, string name, SurfaceType type, bgfx::TextureH
    , m_mipsTexture(bgfxTexture)
    , m_width(width)
    , m_height(height)
+   , m_bgfx_format(bgfxFormat)
 {
    assert(bgfx::isValid(bgfxTexture));
    bgfx::setName(bgfxTexture, m_name.c_str());
@@ -176,56 +177,158 @@ Sampler::~Sampler()
 }
 
 #if defined(ENABLE_BGFX)
+
+#include "shaders/bgfx_mipmap.h"
+
 bgfx::TextureHandle Sampler::GetCoreTexture(bool genMipmaps)
 {
-   assert(m_textureUpdate || bgfx::isValid(m_nomipsTexture) || bgfx::isValid(m_mipsTexture));
    // Handle texture initial creation loading and updates on BGFX API thread
-   if (m_textureUpdate)
+   assert(m_textureUpdate || bgfx::isValid(m_nomipsTexture) || bgfx::isValid(m_mipsTexture));
+   if (m_textureUpdate == nullptr)
    {
-      const std::lock_guard<std::mutex> lock(m_textureUpdateMutex);
-      if (!bgfx::isValid(m_nomipsTexture))
-      {
-         m_nomipsTexture = bgfx::createTexture2D(m_width, m_height, false, 1, m_bgfx_format, m_isTextureUpdateLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB);
-         bgfx::setName(m_nomipsTexture, (m_name + ".NoMipMap").c_str());
-      }
-      bgfx::updateTexture2D(m_nomipsTexture, 0, 0, 0, 0, m_width, m_height, m_textureUpdate);
-      m_textureUpdate = nullptr;
-   }
-   // Handle mipmap generation on BGFX API thread
-   if (bgfx::isValid(m_nomipsTexture))
-   {
-      // Defer mipmap generation if we are approaching BGFX limits (using magic margins) or it is not needed
-      if (!genMipmaps
-       || m_rd->m_activeViewId < 0
-       || m_rd->m_activeViewId >= static_cast<int>(bgfx::getCaps()->limits.maxFrameBuffers) - 16 // We approximate the number of framebuffer used by the view index
-       || m_rd->m_activeViewId >= static_cast<int>(bgfx::getCaps()->limits.maxViews) - 32)
+      if (bgfx::isValid(m_mipsTexture))
+         return m_mipsTexture;
+      if (!genMipmaps && bgfx::isValid(m_nomipsTexture))
          return m_nomipsTexture;
-      // TODO BGFX a clean GPU mipmap generation with Kaiser filter would be better than doing a blit to trigger default's driver render target mipmap generation
-      // For a simple and readable reference, see (parameters: alpha=4, stretch=1, m_width=filter half width):
-      //   https://github.com/castano/nvidia-texture-tools/blob/aeddd65f81d36d8cb7b169b469ef25156666077e/src/nvimage/Filter.cpp#L257
-      //   https://github.com/castano/nvidia-texture-tools/blob/aeddd65f81d36d8cb7b169b469ef25156666077e/src/nvimage/Filter.cpp#L64
-      // Create a frame buffer and blit texture to it
-      if (!bgfx::isValid(m_mipsTexture))
-      {
-         m_mipsTexture = bgfx::createTexture2D(m_width, m_height, true, 1, m_bgfx_format, (m_isTextureUpdateLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB) | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST);
-         bgfx::setName(m_mipsTexture, m_name.c_str());
-      }
-      bgfx::FrameBufferHandle mipsFramebuffer = bgfx::createFrameBuffer(1, &m_mipsTexture);
-      bgfx::blit(m_rd->m_activeViewId, m_mipsTexture, 0, 0, m_nomipsTexture);
-      // Force frame buffer resolution, in turns causing mipmap generation
-      m_rd->NextView();
-      bgfx::setViewFrameBuffer(m_rd->m_activeViewId, mipsFramebuffer);
-      // Get back to the rendering view
-      RenderTarget* activeRT = RenderTarget::GetCurrentRenderTarget();
-      RenderTarget::OnFrameFlushed();
-      if (activeRT)
-        activeRT->Activate();
-      // Mipmaps have been generated, we can release the framebuffer and base version of the texture (on a view processed after the one actually generating the mipmaps, to ensure correct command execution order)
-      bgfx::destroy(mipsFramebuffer);
-      // TODO if a texture is used with and without mipmaps, then the noMips variant may be in used in this frame (this does not happen in practice)
-      bgfx::destroy(m_nomipsTexture);
-      m_nomipsTexture = BGFX_INVALID_HANDLE;
    }
+
+   // Implementation based on a compute shader for mipmap generation:
+   // - directly upload to the base mip level of the target texture (without the need for an intermediate texture & blitting)
+   // - generate mipmaps using a compute shader with a nice linear/sRGB aware Kaiser filter
+   if ((bgfx::getCaps()->supported & BGFX_CAPS_COMPUTE) != 0
+      && (bgfx::getRendererType() != bgfx::RendererType::Enum::Direct3D11) // For some reason to be fixed, this fails under DX11 (Fail to create UAV)
+      && (bgfx::getRendererType() != bgfx::RendererType::Enum::OpenGL) // BGFX's OpenGL driver will not apply uniform, breaking this implementation for OpenGL
+      && (bgfx::getRendererType() != bgfx::RendererType::Enum::OpenGLES)) // OpenGL ES does not support compute shaders
+   {
+      assert(bgfx::getCaps()->formats[m_bgfx_format] & BGFX_CAPS_FORMAT_TEXTURE_IMAGE_READ);
+      assert(bgfx::getCaps()->formats[m_bgfx_format] & BGFX_CAPS_FORMAT_TEXTURE_IMAGE_WRITE);
+
+      if (m_textureUpdate)
+      {
+         assert(m_isTextureUpdateLinear || (bgfx::getCaps()->formats[m_bgfx_format] & BGFX_CAPS_FORMAT_TEXTURE_2D_SRGB));
+         const std::lock_guard<std::mutex> lock(m_textureUpdateMutex);
+         if (!bgfx::isValid(m_mipsTexture))
+         {
+            m_mipsTexture = bgfx::createTexture2D(m_width, m_height, true, 1, m_bgfx_format, (m_isTextureUpdateLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB) | BGFX_TEXTURE_COMPUTE_WRITE);
+            bgfx::setName(m_mipsTexture, m_name.c_str());
+         }
+         bgfx::updateTexture2D(m_mipsTexture, 0, 0, 0, 0, m_width, m_height, m_textureUpdate);
+         m_textureUpdate = nullptr;
+         m_pendingMipMapGen = true;
+      }
+
+      if (!genMipmaps)
+         return m_mipsTexture;
+
+      if (m_pendingMipMapGen)
+      {
+         // Generate mipmaps using a simple compute shader
+         if (!bgfx::isValid(m_rd->m_mipmapProgram))
+         {
+            bgfx::RendererType::Enum type = bgfx::getRendererType();
+            static const bgfx::EmbeddedShader embeddedShaders[] = BGFX_EMBEDDED_SHADER(cs_mipmap);
+            bgfx::ShaderHandle csh = bgfx::createEmbeddedShader(embeddedShaders, type, "cs_mipmap");
+            m_rd->m_mipmapProgram = bgfx::createProgram(csh, true);
+            m_rd->m_mipmapSource = bgfx::createUniform("u_Source", bgfx::UniformType::Sampler);
+            m_rd->m_mipmapOpts = bgfx::createUniform("u_MipMapOptions", bgfx::UniformType::Vec4);
+         }
+         const int numMipLevels = static_cast<int>(floor(log2(max(m_width, m_height)))) + 1;
+         for (uint8_t mip = 1; mip < numMipLevels; ++mip)
+         {
+            const vec4 mipmapOpts(
+               m_isTextureUpdateLinear ? 0.f : 1.f, 
+               1.f, // 0=2x2 Box, 1=4x4 Kaiser, 2=6x6 Kaiser, 3=6x6 smoother Kaiser => My preference goes to 1 or 2 (0 is too sharp, 3 is too blurry)
+               static_cast<float>(mip - 1), // Source mip level
+               0.f); // Unused
+            bgfx::setUniform(m_rd->m_mipmapOpts, &mipmapOpts);
+            bgfx::setTexture(0, m_rd->m_mipmapSource, m_mipsTexture, BGFX_SAMPLER_POINT | BGFX_SAMPLER_UVW_CLAMP);
+            bgfx::setImage(1, m_mipsTexture, mip, bgfx::Access::Write, m_bgfx_format);
+            bgfx::dispatch(0, m_rd->m_mipmapProgram, (std::max(1u, m_width >> mip) + 7) / 8, (std::max(1u, m_height >> mip) + 7) / 8);
+         }
+         m_pendingMipMapGen = false;
+      }
+   }
+   // Implementation based on driver mipmap generation (as OpenGL ES does not support compute shaders)
+   else if (bgfx::getCaps()->formats[m_bgfx_format] & BGFX_CAPS_FORMAT_TEXTURE_MIP_AUTOGEN)
+   {
+      if (m_textureUpdate)
+      {
+         const std::lock_guard<std::mutex> lock(m_textureUpdateMutex);
+         if (!bgfx::isValid(m_nomipsTexture))
+         {
+            m_nomipsTexture = bgfx::createTexture2D(m_width, m_height, false, 1, m_bgfx_format, m_isTextureUpdateLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB);
+            bgfx::setName(m_nomipsTexture, (m_name + ".NoMipMap").c_str());
+         }
+         bgfx::updateTexture2D(m_nomipsTexture, 0, 0, 0, 0, m_width, m_height, m_textureUpdate);
+         m_textureUpdate = nullptr;
+         m_pendingMipMapGen = true;
+      }
+
+      if (!genMipmaps && bgfx::isValid(m_nomipsTexture))
+         // TODO we should mark the texture to avoid destruction if it is used with mipmap after this call in the same frame
+         return m_nomipsTexture;
+
+      // Mipmap generation
+      if (m_pendingMipMapGen)
+      {
+         // Defer mipmap generation if we are approaching BGFX limits (using magic margins)
+         if (m_rd->m_activeViewId < 0
+            || m_rd->m_activeViewId >= static_cast<int>(bgfx::getCaps()->limits.maxFrameBuffers) - 16 // We approximate the number of framebuffer used by the view index
+            || m_rd->m_activeViewId >= static_cast<int>(bgfx::getCaps()->limits.maxViews) - 32)
+            return m_nomipsTexture;
+
+         // Create a frame buffer and blit texture to it
+         assert(bgfx::getCaps()->formats[m_bgfx_format] & BGFX_CAPS_FORMAT_TEXTURE_MIP_AUTOGEN);
+         if (!bgfx::isValid(m_mipsTexture))
+         {
+            m_mipsTexture = bgfx::createTexture2D(
+               m_width, m_height, true, 1, m_bgfx_format, (m_isTextureUpdateLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB) | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST);
+            bgfx::setName(m_mipsTexture, m_name.c_str());
+         }
+         bgfx::FrameBufferHandle mipsFramebuffer = bgfx::createFrameBuffer(1, &m_mipsTexture);
+         bgfx::blit(m_rd->m_activeViewId, m_mipsTexture, 0, 0, m_nomipsTexture);
+
+         // Force frame buffer resolution, in turns causing mipmap generation
+         m_rd->NextView();
+         bgfx::setViewFrameBuffer(m_rd->m_activeViewId, mipsFramebuffer);
+
+         // Get back to the rendering view
+         RenderTarget* activeRT = RenderTarget::GetCurrentRenderTarget();
+         RenderTarget::OnFrameFlushed();
+         if (activeRT)
+            activeRT->Activate();
+
+         // Mipmaps have been generated, we can release the framebuffer and base version of the texture (on a view processed after the one actually generating the mipmaps, to ensure correct command execution order)
+         bgfx::destroy(mipsFramebuffer);
+
+         // TODO if a texture is used with and without mipmaps, then the noMips variant may be in used in this frame (this does not happen in practice)
+         bgfx::destroy(m_nomipsTexture);
+         m_nomipsTexture = BGFX_INVALID_HANDLE;
+         m_pendingMipMapGen = false;
+      }
+   }
+   else
+   {
+      if (m_textureUpdate)
+      {
+         const std::lock_guard<std::mutex> lock(m_textureUpdateMutex);
+         if (!bgfx::isValid(m_mipsTexture))
+         {
+            m_mipsTexture = bgfx::createTexture2D(m_width, m_height, false, 1, m_bgfx_format, m_isTextureUpdateLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB);
+            bgfx::setName(m_mipsTexture, (m_name + ".NoMipMap").c_str());
+         }
+         bgfx::updateTexture2D(m_mipsTexture, 0, 0, 0, 0, m_width, m_height, m_textureUpdate);
+         m_textureUpdate = nullptr;
+         m_pendingMipMapGen = true;
+
+         if (genMipmaps)
+         {
+            // Mipmaps generation is not supported neither through compute shaders, nor by default driver render target mipmap generation
+            assert(false);
+         }
+      }
+   }
+
    return m_mipsTexture;
 }
 

@@ -1167,6 +1167,12 @@ void Flasher::Render(const unsigned int renderMask)
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
    TRACE_FUNCTION();
 
+   // FIXME BGFX DX12 will crash on this
+   #ifdef ENABLE_BGFX
+   if (bgfx::getRendererType() == bgfx::RendererType::Direct3D12)
+      return;
+   #endif
+
    // Flashers are always dynamic parts
    if (isStaticOnly)
       return;

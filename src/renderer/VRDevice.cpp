@@ -1456,7 +1456,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
             const bgfx::Attachment attachments[] = { colorAttachment, depthAttachment };
             bgfx::FrameBufferHandle fbh = bgfx::createFrameBuffer(2, attachments);
             vrRenderTarget = new RenderTarget(rd, SurfaceType::RT_STEREO, 
-               fbh, colorAttachment.handle, depthAttachment.handle,
+               fbh, colorAttachment.handle, m_colorSwapchainInfo.format, depthAttachment.handle, m_depthSwapchainInfo.format,
                "VRSwapchain [" + std::to_string(colorImageIndex) + '/' + std::to_string(depthImageIndex) + ']',
                m_colorSwapchainInfo.width, m_colorSwapchainInfo.height, colorFormat::RGBA);
             m_swapchainRenderTargets[colorImageIndex + depthImageIndex * m_colorSwapchainInfo.imageViews.size()] = vrRenderTarget;

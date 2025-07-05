@@ -42,7 +42,7 @@ public:
    ~Sampler();
 
 #if defined(ENABLE_BGFX)
-   Sampler(RenderDevice* rd, string name, SurfaceType type, bgfx::TextureHandle bgfxTexture, unsigned int width, unsigned int height, bool ownTexture);
+   Sampler(RenderDevice* rd, string name, SurfaceType type, bgfx::TextureHandle bgfxTexture, bgfx::TextureFormat::Enum bgfxFormat, unsigned int width, unsigned int height, bool ownTexture);
    bgfx::TextureHandle GetCoreTexture(bool genMipmaps);
    bool IsMipMapGenerated() const { return (m_textureUpdate == nullptr) && !bgfx::isValid(m_nomipsTexture); }
    uintptr_t GetNativeTexture();
@@ -77,6 +77,7 @@ private:
    bgfx::TextureFormat::Enum m_bgfx_format = bgfx::TextureFormat::Enum::Count;
    bgfx::TextureHandle m_nomipsTexture = BGFX_INVALID_HANDLE; // The texture without any mipmaps
    bgfx::TextureHandle m_mipsTexture = BGFX_INVALID_HANDLE;
+   bool m_pendingMipMapGen = false;
    std::mutex m_textureUpdateMutex;
    bool m_isTextureUpdateLinear;
    const bgfx::Memory* m_textureUpdate = nullptr;
