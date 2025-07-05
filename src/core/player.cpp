@@ -2315,6 +2315,7 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
          [](VPXRenderContext2D *ctx, VPXTexture texture,
             const float tintR, const float tintG, const float tintB, const float alpha,
             const float texX, const float texY, const float texW, const float texH,
+            const float pivotX, const float pivotY, const float rotation,
             const float srcX, const float srcY, const float srcW, const float srcH)
             {
                if (alpha <= 0.f) // Alpha blended, so alpha = 0 means not visible
@@ -2344,11 +2345,21 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
                const float ty1 = 1.f - texY / tex->height();
                const float tx2 = (texX + texW) / tex->width();
                const float ty2 = 1.f - (texY + texH) / tex->height();
-               const Vertex3D_NoTex2 vertices[4] = {
+               Vertex3D_NoTex2 vertices[4] = {
                   { vx2, vy1, 0.f, 0.f, 0.f, 1.f, tx2, ty2 },
                   { vx1, vy1, 0.f, 0.f, 0.f, 1.f, tx1, ty2 },
                   { vx2, vy2, 0.f, 0.f, 0.f, 1.f, tx2, ty1 },
                   { vx1, vy2, 0.f, 0.f, 0.f, 1.f, tx1, ty1 } };
+               if (rotation)
+               {
+                  const float px = lerp(vx1, vx2, (pivotX - texX) / tex->width());
+                  const float py = lerp(vy1, vy2, (pivotY - texY) / tex->height());
+                  Matrix3D matRot = 
+                       Matrix3D::MatrixTranslate(-px, -py, 0.f)
+                     * Matrix3D::MatrixRotateZ(rotation * (float)(M_PI / 180.0)) 
+                     * Matrix3D::MatrixTranslate(px, py, 0.f);
+                  matRot.TransformPositions(vertices, vertices, 4);
+               }
                rd->DrawTexturedQuad(rd->m_basicShader, vertices, true, 0.f);
             },
          // Draw a display (DMD, CRT, ...)

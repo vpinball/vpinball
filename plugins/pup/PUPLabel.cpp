@@ -417,11 +417,11 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, SDL_Rect& rect, int pagenum
          dest.y += (static_cast<float>(rect.h) - height);
    }
 
-   //SDL_FPoint center = { height / 2.0f, 0 };
-
    VPXTextureInfo* texInfo = GetTextureInfo(m_renderState.m_pTexture);
-   ctx->DrawImage(ctx, m_renderState.m_pTexture, 1.f, 1.f, 1.f, 1.f, 0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height), dest.x, dest.y, dest.w, dest.h);
-   // FIXME port SDL_RenderTextureRotated(m_pTexture, NULL, &dest, -m_angle / 10.0, &center, SDL_FLIP_NONE);
+   ctx->DrawImage(ctx, m_renderState.m_pTexture, 1.f, 1.f, 1.f, 1.f,
+      0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height), 
+      0.f, 0.f, -m_angle / 10.0f, // FIXME compute center (used to be SDL_FPoint center = { height / 2.0f, 0 };)
+      dest.x, dest.y, dest.w, dest.h);
 }
 
 PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const string& szPath)

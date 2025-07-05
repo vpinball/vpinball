@@ -20,7 +20,7 @@ public:
    bool Render(VPXRenderContext2D* context);
 
 private:
-   std::function<void()> ResolveBrightnessUpdater(float* brightness, const B2SRomIDType romIdType, const int romId, const bool romInverted = false) const;
+   std::function<void()> ResolveRomPropUpdater(float* value, const B2SRomIDType romIdType, const int romId, const bool romInverted = false) const;
    bool RenderBackglass(VPXRenderContext2D* context);
    bool RenderScoreview(VPXRenderContext2D* context);
 
@@ -34,8 +34,10 @@ private:
    unsigned int m_nSolenoids = 0;
    int m_GIIndex = -1;
    unsigned int m_nGIs = 0;
-   int m_LampIndex = -1;
+   int m_lampIndex = -1;
    unsigned int m_nLamps = 0;
+   int m_mechIndex = -1;
+   unsigned int m_nMechs = 0;
 
    std::chrono::time_point<std::chrono::high_resolution_clock> m_lastBackglassRenderTick;
    std::chrono::time_point<std::chrono::high_resolution_clock> m_lastDmdRenderTick;

@@ -322,8 +322,8 @@ void PUPMediaPlayer::Render(VPXRenderContext2D* const ctx, const SDL_Rect& destR
    if (m_videoTexture)
    {
       VPXTextureInfo* texInfo = GetTextureInfo(m_videoTexture);
-      ctx->DrawImage(ctx, m_videoTexture, 1.f, 1.f, 1.f, 1.f, 0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height), static_cast<float>(destRect.x),
-         static_cast<float>(destRect.y), static_cast<float>(destRect.w), static_cast<float>(destRect.h));
+      ctx->DrawImage(ctx, m_videoTexture, 1.f, 1.f, 1.f, 1.f, 0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height), 0.f, 0.f, 0.f,
+         static_cast<float>(destRect.x), static_cast<float>(destRect.y), static_cast<float>(destRect.w), static_cast<float>(destRect.h));
    }
 }
 
