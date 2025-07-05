@@ -112,6 +112,7 @@ typedef struct VPXRenderContext2D
    void(MSGPIAPI* DrawImage)(VPXRenderContext2D* ctx, VPXTexture texture,
       const float tintR, const float tintG, const float tintB, const float alpha, // tint color and alpha (0..1)
       const float texX, const float texY, const float texW, const float texH,  // coordinates in texture surface (0..tex.width, 0..tex.height)
+      const float pivotX, const float pivotY, const float rotation, // pivot point in texture surface & rotation in degrees
       const float srcX, const float srcY, const float srcW, const float srcH); // coordinates in source surface (0..srcWidth, 0..srcHeight)
    void(MSGPIAPI* DrawDisplay)(VPXRenderContext2D* ctx, VPXDisplayRenderStyle style,
       // First layer is an optional tinted glass

@@ -407,8 +407,10 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, SDL_Rect& rect, int pagenum
    }
 
    VPXTextureInfo* texInfo = m_pVpxApi->GetTextureInfo(m_renderState.m_pTexture);
-   ctx->DrawImage(ctx, m_renderState.m_pTexture, 1.f, 1.f, 1.f, 1.f, 0.f, 0.f,
-      static_cast<float>(texInfo->width), static_cast<float>(texInfo->height), dest.x, dest.y, dest.w, dest.h);
+   ctx->DrawImage(ctx, m_renderState.m_pTexture, 1.f, 1.f, 1.f, 1.f, 
+      0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height),
+	  0.f, 0.f, 0.f,
+	  dest.x, dest.y, dest.w, dest.h);
 }
 
 PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const string& szPath)

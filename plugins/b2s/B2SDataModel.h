@@ -32,7 +32,7 @@ public:
       , m_filename(other.m_filename)
       , m_romId(other.m_romId)
       , m_romIdType(other.m_romIdType)
-      , m_updateBrightness(other.m_updateBrightness)
+      , m_romUpdater(other.m_romUpdater)
    {
       other.m_image = nullptr; // Ressource is transfered, avoid destruction
    }
@@ -48,7 +48,7 @@ public:
    const B2SRomIDType m_romIdType;
 
    float m_brightness = 0.f;
-   std::function<void()> m_updateBrightness = []() { };
+   std::function<void()> m_romUpdater = []() { };
 };
 
 
@@ -135,7 +135,6 @@ public:
    const bool m_isImageSnippit; // Image snippit have their initial state applied before others on startup, didn't find any other difference
    const B2SSnippitType m_snippitType;
    const int m_snippitRotatingSteps;
-   const int m_snippitRotatingAngle;
    const int m_snippitRotatingInterval;
    const B2SSnippitRotationDirection m_snippitRotatingDirection;
    const B2SSnippitRotationStopBehaviour m_snippitRotatingStopBehaviour;
@@ -150,8 +149,9 @@ public:
 public:
    void Render(VPXRenderContext2D* ctx) const;
 
+   std::function<void()> m_romUpdater = []() { };
    float m_brightness = 0.f;
-   std::function<void()> m_updateBrightness = []() { };
+   float m_mechRot = 0.f;
 };
 
 

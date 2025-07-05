@@ -181,8 +181,7 @@ B2SBulb::B2SBulb(const tinyxml2::XMLNode& root)
    , m_height(GetIntAttribute(root, ""s, "Height"s, 0))
    , m_isImageSnippit(GetBoolAttribute(root, ""s, "IsImageSnippit"s, false))
    , m_snippitType(static_cast<B2SSnippitType>(GetIntAttribute(root, ""s, "SnippitType"s, 0)))
-   , m_snippitRotatingSteps(GetIntAttribute(root, ""s, "SnippitRotatingSteps"s, 0))
-   , m_snippitRotatingAngle(GetIntAttribute(root, ""s, "SnippitRotatingAngle"s, 0))
+   , m_snippitRotatingSteps(GetIntAttribute(root, ""s, "SnippitRotatingAngle"s, 0) != 0 ? (360 / GetIntAttribute(root, ""s, "SnippitRotatingAngle"s, 0)) : GetIntAttribute(root, ""s, "SnippitRotatingSteps"s, 0))
    , m_snippitRotatingInterval(GetIntAttribute(root, ""s, "SnippitRotatingInterval"s, 0))
    , m_snippitRotatingDirection(static_cast<B2SSnippitRotationDirection>(GetIntAttribute(root, ""s, "eSnippitRotationDirection"s, 0)))
    , m_snippitRotatingStopBehaviour(static_cast<B2SSnippitRotationStopBehaviour>(GetIntAttribute(root, ""s, "SnippitRotatingStopBehaviour"s, 0)))
@@ -194,7 +193,10 @@ B2SBulb::B2SBulb(const tinyxml2::XMLNode& root)
    , m_fontSize(GetIntAttribute(root, ""s, "FontSize"s, 0))
    , m_fontStyle(GetIntAttribute(root, ""s, "FontStyle"s, 0))
 {
-   m_brightness = m_initialState;
+   if (m_snippitType == B2SSnippitType::MechRotatingImage)
+      m_brightness = 1.f;
+   else
+      m_brightness = m_initialState ? 1.f : 0.f;
 }
 B2SBulb::B2SBulb(B2SBulb&& other) noexcept
    : m_id(other.m_id)
@@ -219,7 +221,6 @@ B2SBulb::B2SBulb(B2SBulb&& other) noexcept
    , m_isImageSnippit(other.m_isImageSnippit)
    , m_snippitType(other.m_snippitType)
    , m_snippitRotatingSteps(other.m_snippitRotatingSteps)
-   , m_snippitRotatingAngle(other.m_snippitRotatingAngle)
    , m_snippitRotatingInterval(other.m_snippitRotatingInterval)
    , m_snippitRotatingDirection(other.m_snippitRotatingDirection)
    , m_snippitRotatingStopBehaviour(other.m_snippitRotatingStopBehaviour)
@@ -244,18 +245,23 @@ B2SBulb::~B2SBulb()
 
 void B2SBulb::Render(VPXRenderContext2D* ctx) const
 {
-   m_updateBrightness();
+   m_romUpdater();
+   float rotation = 0.f;
+   if (m_snippitType == B2SSnippitType::MechRotatingImage)
+      rotation = 360.f * (m_mechRot / static_cast<float>(m_snippitRotatingSteps));
    if (m_offImage && m_brightness < 1.f)
    {
       VPXTextureInfo* bulb = GetTextureInfo(m_offImage);
       ctx->DrawImage(ctx, m_offImage, m_lightColor.x, m_lightColor.y, m_lightColor.z, 1.f,
          0.f, 0.f, static_cast<float>(bulb->width), static_cast<float>(bulb->height),
+         static_cast<float>(bulb->width) * 0.5f, static_cast<float>(bulb->height) * 0.5f, rotation,
          static_cast<float>(m_locationX), static_cast<float>(m_locationY), static_cast<float>(m_width), static_cast<float>(m_height));
    }
    {
       VPXTextureInfo* bulb = GetTextureInfo(m_image);
       ctx->DrawImage(ctx, m_image, m_lightColor.x, m_lightColor.y, m_lightColor.z, m_brightness,
          0.f, 0.f, static_cast<float>(bulb->width), static_cast<float>(bulb->height),
+         static_cast<float>(bulb->width) * 0.5f, static_cast<float>(bulb->height) * 0.5f, rotation,
          static_cast<float>(m_locationX), static_cast<float>(m_locationY), static_cast<float>(m_width), static_cast<float>(m_height));
    }
 }
