@@ -28,6 +28,8 @@ All releases are available on the [releases page](https://github.com/vpinball/vp
 
 Documentation is currently sparse. Check the [docs](docs) directory for various guides and references.
 
+An [unofficial wiki](https://github.com/dekay/vpinball-wiki) is currently being developed. Community contributions, suggestions, and help are welcome to improve the resource for all users.
+
 ## How to build
 
 Build instructions are available in the [make directory README](make/README.md).
