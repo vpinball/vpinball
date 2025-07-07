@@ -200,9 +200,6 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool genMipmaps)
       && (bgfx::getRendererType() != bgfx::RendererType::Enum::OpenGL) // BGFX's OpenGL driver will not apply uniform, breaking this implementation for OpenGL
       && (bgfx::getRendererType() != bgfx::RendererType::Enum::OpenGLES)) // OpenGL ES does not support compute shaders
    {
-      assert(bgfx::getCaps()->formats[m_bgfx_format] & BGFX_CAPS_FORMAT_TEXTURE_IMAGE_READ);
-      assert(bgfx::getCaps()->formats[m_bgfx_format] & BGFX_CAPS_FORMAT_TEXTURE_IMAGE_WRITE);
-
       if (m_textureUpdate)
       {
          assert(m_isTextureUpdateLinear || (bgfx::getCaps()->formats[m_bgfx_format] & BGFX_CAPS_FORMAT_TEXTURE_2D_SRGB));
@@ -223,6 +220,8 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool genMipmaps)
       if (m_pendingMipMapGen)
       {
          // Generate mipmaps using a simple compute shader
+         assert(bgfx::getCaps()->formats[m_bgfx_format] & BGFX_CAPS_FORMAT_TEXTURE_IMAGE_WRITE);
+
          if (!bgfx::isValid(m_rd->m_mipmapProgram))
          {
             bgfx::RendererType::Enum type = bgfx::getRendererType();

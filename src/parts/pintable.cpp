@@ -1013,15 +1013,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as
       constexpr int scale = 1;
    #endif
 
-   if (g_pplayer->m_dmdFrame == nullptr
-       || g_pplayer->m_dmdFrame->width() != g_pplayer->m_dmdSize.x * scale
-       || g_pplayer->m_dmdFrame->height() != g_pplayer->m_dmdSize.y * scale
-       || g_pplayer->m_dmdFrame->m_format != BaseTexture::BW)
-   {
-      if (g_pplayer->m_dmdFrame)
-         g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture(g_pplayer->m_dmdFrame.get());
-      g_pplayer->m_dmdFrame = BaseTexture::Create(g_pplayer->m_dmdSize.x * scale, g_pplayer->m_dmdSize.y * scale, BaseTexture::BW);
-   }
+   BaseTexture::Update(g_pplayer->m_dmdFrame, g_pplayer->m_dmdSize.x * scale, g_pplayer->m_dmdSize.y * scale, BaseTexture::BW, nullptr);
    const int size = g_pplayer->m_dmdSize.x * g_pplayer->m_dmdSize.y;
    // Convert from gamma compressed [0..100] luminance to linear [0..255] luminance, eventually applying ScaleFX upscaling
    VARIANT *p;
@@ -1045,7 +1037,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as
    }
    SafeArrayUnaccessData(psa);
    g_pplayer->m_dmdFrameId++;
-   g_pplayer->m_renderer->m_renderDevice->m_texMan.SetDirty(g_pplayer->m_dmdFrame.get());
+   VPXPluginAPIImpl::GetInstance().UpdateDMDSource(nullptr, true);
    return S_OK;
 }
 
@@ -1066,15 +1058,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! assumes 
       constexpr int scale = 1;
    #endif
 
-   if (g_pplayer->m_dmdFrame == nullptr
-       || g_pplayer->m_dmdFrame->width() != g_pplayer->m_dmdSize.x * scale
-       || g_pplayer->m_dmdFrame->height() != g_pplayer->m_dmdSize.y * scale
-       || g_pplayer->m_dmdFrame->m_format != BaseTexture::SRGBA)
-   {
-      if (g_pplayer->m_dmdFrame)
-         g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture(g_pplayer->m_dmdFrame.get());
-      g_pplayer->m_dmdFrame = BaseTexture::Create(g_pplayer->m_dmdSize.x * scale, g_pplayer->m_dmdSize.y * scale, BaseTexture::SRGBA);
-   }
+   BaseTexture::Update(g_pplayer->m_dmdFrame, g_pplayer->m_dmdSize.x * scale, g_pplayer->m_dmdSize.y * scale, BaseTexture::SRGBA, nullptr);
    const int size = g_pplayer->m_dmdSize.x * g_pplayer->m_dmdSize.y;
    uint32_t *const __restrict data = reinterpret_cast<uint32_t *>(g_pplayer->m_dmdFrame->data());
    VARIANT *p;
@@ -1085,7 +1069,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! assumes 
    if (g_pplayer->m_scaleFX_DMD)
       upscale(data, g_pplayer->m_dmdSize, false);
    g_pplayer->m_dmdFrameId++;
-   g_pplayer->m_renderer->m_renderDevice->m_texMan.SetDirty(g_pplayer->m_dmdFrame.get());
+   VPXPluginAPIImpl::GetInstance().UpdateDMDSource(nullptr, true);
    return S_OK;
 }
 

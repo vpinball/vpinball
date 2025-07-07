@@ -364,34 +364,133 @@ IDispatch* VPXPluginAPIImpl::CreateCOMPluginObject(const string& classId)
 
 #include "plugins/ControllerPlugin.h"
 
+void VPXPluginAPIImpl::OnGameStart()
+{
+   assert(m_dmdSources.empty());
+   const auto& msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
+
+   unsigned int onDisplayGetSrcMsgId = msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
+   msgApi.SubscribeMsg(GetVPXEndPointId(), onDisplayGetSrcMsgId, &ControllerOnGetDMDSrc, this);
+   msgApi.ReleaseMsgID(onDisplayGetSrcMsgId);
+
+   unsigned int onGameStartMsgId = msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START);
+   msgApi.BroadcastMsg(GetVPXEndPointId(), onGameStartMsgId, nullptr);
+   msgApi.ReleaseMsgID(onGameStartMsgId);
+
+   m_onDisplaySrcChg = msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
+   msgApi.BroadcastMsg(GetVPXEndPointId(), m_onDisplaySrcChg, nullptr);
+}
+
+void VPXPluginAPIImpl::OnGameEnd()
+{
+   const auto& msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
+
+   unsigned int onDisplayGetSrcMsgId = msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
+   msgApi.UnsubscribeMsg(onDisplayGetSrcMsgId, &ControllerOnGetDMDSrc);
+   msgApi.ReleaseMsgID(onDisplayGetSrcMsgId);
+
+   m_dmdSources.clear();
+
+   msgApi.BroadcastMsg(GetVPXEndPointId(), m_onDisplaySrcChg, nullptr);
+   msgApi.ReleaseMsgID(m_onDisplaySrcChg);
+
+   unsigned int onGameEndMsgId = MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END);
+   msgApi.BroadcastMsg(GetVPXEndPointId(), onGameEndMsgId, nullptr);
+   MsgPluginManager::GetInstance().GetMsgAPI().ReleaseMsgID(onGameEndMsgId);
+}
+
+void VPXPluginAPIImpl::UpdateDMDSource(Flasher* flasher, bool isAdd)
+{
+   if (flasher)
+   {
+      if (isAdd)
+      {
+         if (std::ranges::find(m_dmdSources, flasher) != m_dmdSources.end())
+            return;
+         m_dmdSources.push_back(flasher);
+      }
+      else
+      {
+         if (std::ranges::find(m_dmdSources, flasher) == m_dmdSources.end())
+            return;
+         RemoveFromVectorSingle(m_dmdSources, flasher);
+      }
+   }
+
+   const auto& msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
+   msgApi.BroadcastMsg(GetVPXEndPointId(), m_onDisplaySrcChg, nullptr);
+}
+
 DisplayFrame VPXPluginAPIImpl::ControllerOnGetRenderDMD(const CtlResId id)
 {
    VPXPluginAPIImpl& me = VPXPluginAPIImpl::GetInstance();
-   if (g_pplayer == nullptr
-      || g_pplayer->m_dmdFrame->m_format != BaseTexture::BW // RGB is not yet supported
-      || id.endpointId != me.m_vpxPlugin->m_endpointId
-      || id.resId != 0)
+
+   if ((g_pplayer == nullptr) || (id.endpointId != me.m_vpxPlugin->m_endpointId))
       return { 0, nullptr };
-   return { static_cast<unsigned int>(g_pplayer->m_dmdFrameId), g_pplayer->m_dmdFrame->data() };
+
+   DisplayFrame result = { 0, nullptr };
+   std::shared_ptr<BaseTexture> dmdFrame;
+   if (id.resId == 0)
+   {
+      result.frameId = g_pplayer->m_dmdFrameId;
+      dmdFrame = g_pplayer->m_dmdFrame;
+   }
+   else if (id.resId <= me.m_dmdSources.size())
+   {
+      const auto& dmdSrc = me.m_dmdSources[id.resId - 1];
+      result.frameId = dmdSrc->m_dmdFrameId;
+      dmdFrame = dmdSrc->m_dmdFrame;
+   }
+   if (dmdFrame == nullptr)
+      return { 0, nullptr };
+
+   switch (dmdFrame->m_format)
+   {
+   case BaseTexture::BW: result.frame = dmdFrame->data(); break;
+   case BaseTexture::SRGB: result.frame = dmdFrame->data(); break;
+   case BaseTexture::SRGBA: result.frame = dmdFrame->data(); break; // FIXME convert to SRGB
+   default: assert(false); return { 0, nullptr };  // Not yet supported
+   }
+
+   return result;
 }
 
 void VPXPluginAPIImpl::ControllerOnGetDMDSrc(const unsigned int msgId, void* userData, void* msgData)
 {
-   if (g_pplayer == nullptr)
-      return;
-
-   // Report main script DMD (we do not report ancialliary DMD directly set on flashers, but only the main table one)
-   // TODO supported RGB frame format are either sRGB888 or sRGB565, not sRGBA8888, therefore RGB frame can not be broadcasted on the plugin bus for the time being
    GetDisplaySrcMsg& msg = *static_cast<GetDisplaySrcMsg*>(msgData);
    VPXPluginAPIImpl& me = *static_cast<VPXPluginAPIImpl*>(userData);
-   if (g_pplayer->m_dmdFrame && msg.count < msg.maxEntryCount && g_pplayer->m_dmdFrame->m_format == BaseTexture::BW)
+
+   // Main DMD defined from script
+   if (g_pplayer && g_pplayer->m_dmdFrame)
    {
-      msg.entries[msg.count] = { 0 };
-      msg.entries[msg.count].id = { me.m_vpxPlugin->m_endpointId, 0 };
-      msg.entries[msg.count].width = g_pplayer->m_dmdFrame->width();
-      msg.entries[msg.count].height = g_pplayer->m_dmdFrame->height();
-      msg.entries[msg.count].frameFormat = g_pplayer->m_dmdFrame->m_format == BaseTexture::BW ? CTLPI_DISPLAY_FORMAT_LUM8 : CTLPI_DISPLAY_FORMAT_SRGB888;
-      msg.entries[msg.count].GetRenderFrame = ControllerOnGetRenderDMD;
+      assert(g_pplayer->m_dmdFrame->m_format == BaseTexture::BW || g_pplayer->m_dmdFrame->m_format == BaseTexture::SRGB);
+      if (msg.count < msg.maxEntryCount)
+      {
+         msg.entries[msg.count] = { 0 };
+         msg.entries[msg.count].id = { me.m_vpxPlugin->m_endpointId, 0 };
+         msg.entries[msg.count].width = g_pplayer->m_dmdFrame->width();
+         msg.entries[msg.count].height = g_pplayer->m_dmdFrame->height();
+         msg.entries[msg.count].frameFormat = g_pplayer->m_dmdFrame->m_format == BaseTexture::BW ? CTLPI_DISPLAY_FORMAT_LUM8 : CTLPI_DISPLAY_FORMAT_SRGB888;
+         msg.entries[msg.count].GetRenderFrame = ControllerOnGetRenderDMD;
+      }
+      msg.count++;
+   }
+
+   // Ancilliary DMDs defined on flasher objects from script
+   for (int i = 0; i < me.m_dmdSources.size(); i++)
+   {
+      const auto& dmdSrc = me.m_dmdSources[i];
+      assert(dmdSrc->m_dmdFrame);
+      assert(dmdSrc->m_dmdFrame->m_format == BaseTexture::BW || dmdSrc->m_dmdFrame->m_format == BaseTexture::SRGB);
+      if (msg.count < msg.maxEntryCount)
+      {
+         msg.entries[msg.count] = { 0 };
+         msg.entries[msg.count].id = { me.m_vpxPlugin->m_endpointId, static_cast<uint32_t>(i + 1) };
+         msg.entries[msg.count].width = dmdSrc->m_dmdFrame->width();
+         msg.entries[msg.count].height = dmdSrc->m_dmdFrame->height();
+         msg.entries[msg.count].frameFormat = dmdSrc->m_dmdFrame->m_format == BaseTexture::BW ? CTLPI_DISPLAY_FORMAT_LUM8 : CTLPI_DISPLAY_FORMAT_SRGB888;
+         msg.entries[msg.count].GetRenderFrame = ControllerOnGetRenderDMD;
+      }
       msg.count++;
    }
 }
@@ -466,9 +565,6 @@ VPXPluginAPIImpl::VPXPluginAPIImpl() : m_apiThread(std::this_thread::get_id())
    m_scriptableApi.OnError = OnScriptError;
    m_scriptableApi.GetClassDef = GetClassDef;
    msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, msgApi.GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API), &OnGetScriptablePluginAPI, nullptr);
-
-   // Generic controller API
-   msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG), &ControllerOnGetDMDSrc, this);
 }
 
 void VPXPluginAPIImpl::OnGetVPXPluginAPI(const unsigned int msgId, void* userData, void* msgData)

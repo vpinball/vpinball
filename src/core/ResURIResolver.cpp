@@ -306,13 +306,22 @@ ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
       DisplaySrcId* displaySource = nullptr;
       if (uri.authority.host == "default")
       {
+         int dsSize = 0; 
          for (auto& source : m_displaySources)
          {
-            if (displaySource == nullptr                                                                            // Priority 1: Find at least a display
-               || (displaySource->width < source.width)                                                             // Priority 2: Favor highest resolution display
-               || (displaySource->width == source.width && displaySource->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8) // Priority 3: Favor color over monochrome
-               || (displaySource->width == source.width && source.frameFormat == CTLPI_DISPLAY_FORMAT_SRGB888))     // Priority 4: Favor RGB8 over other formats
+            const int sSize = source.width * source.height;
+            if (
+               // Priority 1: Find at least one display if any (size > 0)
+               // Priority 2: Favor highest resolution display
+               (dsSize < sSize)
+               // Priority 3: Favor color over monochrome
+               || (dsSize == sSize && displaySource->frameFormat != source.frameFormat && displaySource->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8)
+               // Priority 4: Favor RGB8 over other formats
+               || (dsSize == sSize && displaySource->frameFormat != source.frameFormat && source.frameFormat == CTLPI_DISPLAY_FORMAT_SRGB888)
+               // Priority 5: Favor the first source provided by an endpoint
+               || (dsSize == sSize && displaySource->frameFormat == source.frameFormat && displaySource->id.resId > source.id.resId))
                displaySource = &source;
+            dsSize = sSize;
          }
       }
       else

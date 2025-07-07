@@ -450,7 +450,7 @@ void BaseTexture::Update(std::shared_ptr<BaseTexture>& tex, const unsigned int w
       if ((tex->m_width == width) && (tex->m_height == height) && (tex->m_format == texFormat))
       {
          assert(tex->pitch() * tex->height() == width * height * pixelSize);
-         if (tex->data() != image)
+         if (tex->data() != image && image)
             memcpy(tex->data(), image, width * height * pixelSize);
          if (g_pplayer)
             g_pplayer->m_renderer->m_renderDevice->m_texMan.SetDirty(tex.get());

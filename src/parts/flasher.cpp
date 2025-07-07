@@ -824,13 +824,7 @@ STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!
       constexpr int scale = 1;
    #endif
 
-   if (m_dmdFrame == nullptr
-       || m_dmdFrame->width() != m_dmdSize.x * scale
-       || m_dmdFrame->height() != m_dmdSize.y * scale
-       || m_dmdFrame->m_format != BaseTexture::BW)
-   {
-      m_dmdFrame = BaseTexture::Create(m_dmdSize.x * scale, m_dmdSize.y * scale, BaseTexture::BW);
-   }
+   BaseTexture::Update(m_dmdFrame, m_dmdSize.x * scale, m_dmdSize.y * scale, BaseTexture::BW, nullptr);
    const int size = m_dmdSize.x * m_dmdSize.y;
    // Convert from gamma compressed [0..100] luminance to linear [0..255] luminance, eventually applying ScaleFX upscaling
    VARIANT *p;
@@ -853,8 +847,8 @@ STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!
          data[ofs] = static_cast<uint8_t>(InvsRGB((float)V_UI4(&p[ofs]) * (float)(1.0 / 100.)) * 255.f);
    }
    SafeArrayUnaccessData(psa);
-   //m_dmdFrameId++;
-   g_pplayer->m_renderer->m_renderDevice->m_texMan.SetDirty(g_pplayer->m_dmdFrame.get());
+   m_dmdFrameId++;
+   VPXPluginAPIImpl::GetInstance().UpdateDMDSource(this, true);
    return S_OK;
 }
 
@@ -870,13 +864,7 @@ STDMETHODIMP Flasher::put_DMDColoredPixels(VARIANT pVal) //!! assumes VT_UI4 as 
       constexpr int scale = 1;
    #endif
 
-   if (m_dmdFrame == nullptr
-       || m_dmdFrame->width() != m_dmdSize.x * scale
-       || m_dmdFrame->height() != m_dmdSize.y * scale
-       || m_dmdFrame->m_format != BaseTexture::SRGBA)
-   {
-      m_dmdFrame = BaseTexture::Create(m_dmdSize.x * scale, m_dmdSize.y * scale, BaseTexture::SRGBA);
-   }
+   BaseTexture::Update(m_dmdFrame, m_dmdSize.x * scale, m_dmdSize.y * scale, BaseTexture::SRGBA, nullptr);
    const int size = m_dmdSize.x * m_dmdSize.y;
    uint32_t *const __restrict data = reinterpret_cast<uint32_t *>(m_dmdFrame->data());
    VARIANT *p;
@@ -886,8 +874,7 @@ STDMETHODIMP Flasher::put_DMDColoredPixels(VARIANT pVal) //!! assumes VT_UI4 as 
    SafeArrayUnaccessData(psa);
    if (g_pplayer->m_scaleFX_DMD)
       upscale(data, m_dmdSize, false);
-   //m_dmdFrameId++;
-   g_pplayer->m_renderer->m_renderDevice->m_texMan.SetDirty(m_dmdFrame.get());
+   m_dmdFrameId++;
    return S_OK;
 }
 
@@ -1150,6 +1137,7 @@ void Flasher::RenderRelease()
    m_meshBuffer = nullptr;
    m_vertices = nullptr;
    m_transformedVertices = nullptr;
+   m_renderFrame = nullptr;
    m_dmdFrame = nullptr;
    m_dmdSize = int2(0, 0);
    m_lightmap = nullptr;
@@ -1317,22 +1305,22 @@ void Flasher::Render(const unsigned int renderMask)
 
       case FlasherData::DMD:
       {
-         // We uses the last update of the DMD defined by script / the update coming from the source link.
-         // This supposes that old tables have there src link defined on load to the default dmd (or to the script DMD as this used to be the behavior)
-         if (!m_d.m_imageSrcLink.empty())
+         if (m_dmdFrame)
+            m_renderFrame = m_dmdFrame;
+         else
          {
-            ResURIResolver::DisplayState dmd = g_pplayer->m_resURIResolver.GetDisplayState(m_d.m_imageSrcLink);
+            ResURIResolver::DisplayState dmd { nullptr };
+            if (!m_d.m_imageSrcLink.empty())
+               dmd = g_pplayer->m_resURIResolver.GetDisplayState(m_d.m_imageSrcLink);
+            if (dmd.state.frame == nullptr)
+               dmd = g_pplayer->m_resURIResolver.GetDisplayState("ctrl://default/display");
             if (dmd.state.frame != nullptr)
-            {
-               BaseTexture::Update(m_dmdFrame, dmd.source->width, dmd.source->height,
-                          dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8 ? BaseTexture::BW
-                     : dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565
-                                                                               : BaseTexture::SRGB,
-                  dmd.state.frame);
-            }
+               BaseTexture::Update(m_renderFrame, dmd.source->width, dmd.source->height,
+                              dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8    ? BaseTexture::BW
+                            : dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565
+                                                                                      : BaseTexture::SRGB, dmd.state.frame);
          }
-         std::shared_ptr<BaseTexture> frame = m_dmdFrame;
-         if (frame == nullptr)
+         if (m_renderFrame == nullptr)
          {
             if (m_backglass)
                g_pplayer->m_renderer->UpdateBasicShaderMatrix();
@@ -1344,9 +1332,9 @@ void Flasher::Render(const unsigned int renderMask)
          else
             m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
          m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-         const vec3 dotTint = frame->m_format == BaseTexture::BW ? vec3(color.x, color.y, color.z) : vec3(1.f, 1.f, 1.f);
+         const vec3 dotTint = m_renderFrame->m_format == BaseTexture::BW ? vec3(color.x, color.y, color.z) : vec3(1.f, 1.f, 1.f);
          const int dmdProfile = clamp(m_d.m_renderStyle, 0, 7);
-         g_pplayer->m_renderer->SetupDMDRender(dmdProfile, false, dotTint, color.w, frame, m_d.m_modulate_vs_add, m_backglass ? Renderer::Reinhard : Renderer::Linear, m_transformedVertices,
+         g_pplayer->m_renderer->SetupDMDRender(dmdProfile, false, dotTint, color.w, m_renderFrame, m_d.m_modulate_vs_add, m_backglass ? Renderer::Reinhard : Renderer::Linear, m_transformedVertices,
             vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom),
             vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness, 
             glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f), vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
@@ -1365,7 +1353,7 @@ void Flasher::Render(const unsigned int renderMask)
                g_pplayer->m_renderer->UpdateBasicShaderMatrix();
             return;
          }
-         BaseTexture::Update(m_dmdFrame, display.source->width, display.source->height, 
+         BaseTexture::Update(m_renderFrame, display.source->width, display.source->height, 
                           display.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8 ? BaseTexture::BW
                      : display.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565
                                                                                    : BaseTexture::SRGB,
@@ -1378,7 +1366,7 @@ void Flasher::Render(const unsigned int renderMask)
          switch (displayProfile)
          {
          case 0: // Pixelated
-            m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, m_dmdFrame.get(), false, SF_NONE);
+            m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, m_renderFrame.get(), false, SF_NONE);
             m_rd->m_flasherShader->SetVector(SHADER_staticColor_Alpha, color.x * color.w, color.y * color.w, color.z * color.w, 1.f);
             m_rd->m_flasherShader->SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, -1.f, -1.f, 0.f, m_d.m_addBlend ? 1.f : 0.f);
             m_rd->m_flasherShader->SetVector(SHADER_amount_blend_modulate_vs_add_flasherMode, 0.f, clampedModulateVsAdd, 0.f, 0.f);
@@ -1390,7 +1378,7 @@ void Flasher::Render(const unsigned int renderMask)
             m_rd->m_flasherShader->SetTechnique(SHADER_TECHNIQUE_basic_noLight);
             break;
          case 1: // Smoothed
-            m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, m_dmdFrame.get(), false, SF_TRILINEAR);
+            m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, m_renderFrame.get(), false, SF_TRILINEAR);
             m_rd->m_flasherShader->SetVector(SHADER_staticColor_Alpha, color.x * color.w, color.y * color.w, color.z * color.w, 1.f);
             m_rd->m_flasherShader->SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, -1.f, -1.f, 0.f, m_d.m_addBlend ? 1.f : 0.f);
             m_rd->m_flasherShader->SetVector(SHADER_amount_blend_modulate_vs_add_flasherMode, 0.f, clampedModulateVsAdd, 0.f, 0.f);

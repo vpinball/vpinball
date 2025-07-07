@@ -53,6 +53,7 @@ MsgPluginManager& MsgPluginManager::GetInstance()
 
 MsgPluginManager::MsgPluginManager()
 {
+   m_api.GetPluginEndpoint = GetPluginEndpoint;
    m_api.GetEndpointInfo = GetEndpointInfo;
    m_api.GetMsgID = GetMsgID;
    m_api.SubscribeMsg = SubscribeMsg;
@@ -187,8 +188,7 @@ void MsgPluginManager::BroadcastMsg(const uint32_t endpointId, const unsigned in
    assert(1 <= endpointId && endpointId < pm.m_nextEndpointId);
    pm.m_broadcastInProgress++;
    for (const CallbackEntry entry : pm.m_msgs[msgId].callbacks)
-      if (entry.endpointId != endpointId) // Don't broadcast to sender's endpoint
-         entry.callback(msgId, entry.context, data);
+      entry.callback(msgId, entry.context, data);
    pm.m_broadcastInProgress--;
    if (pm.m_broadcastInProgress == 0 && !pm.m_deferredAfterBroadCastRunnables.empty())
    {
