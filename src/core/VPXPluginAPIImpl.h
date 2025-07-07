@@ -34,6 +34,10 @@ public:
 
    std::shared_ptr<BaseTexture> GetTexture(VPXTexture texture) const;
 
+   void OnGameStart();
+   void UpdateDMDSource(Flasher* flasher, bool isAdd);
+   void OnGameEnd();
+
 private:
    VPXPluginAPIImpl();
 
@@ -82,7 +86,9 @@ private:
    DynamicTypeLibrary m_dynamicTypeLibrary;
    ScriptablePluginAPI m_scriptableApi;
 
-   // Contribute VPX API through plugin API
+   // Contribute VPX script controlled DMD through controller plugin API
+   unsigned int m_onDisplaySrcChg = 0;
+   vector<Flasher*> m_dmdSources;
    static void ControllerOnGetDMDSrc(const unsigned int msgId, void* userData, void* msgData);
    static DisplayFrame ControllerOnGetRenderDMD(const CtlResId id);
 };

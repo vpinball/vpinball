@@ -162,7 +162,8 @@ public:
    bool m_lockedByLS = false;
    bool m_inPlayState = false;
 
-   std::shared_ptr<BaseTexture> m_dmdFrame = nullptr;
+   std::shared_ptr<BaseTexture> m_dmdFrame = nullptr; // DMD defined through script API
+   unsigned int m_dmdFrameId = 0;
 
 private:
    void InitShape();
@@ -192,6 +193,8 @@ private:
    std::shared_ptr<BaseTexture> m_videoCapTex = nullptr;
 
    int2 m_dmdSize = int2(0,0);
+
+   std::shared_ptr<BaseTexture> m_renderFrame = nullptr;
 
    Light *m_lightmap = nullptr;
 

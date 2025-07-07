@@ -181,7 +181,6 @@ public:
 private:
    float m_maxFramerate = 0.f; // targeted refresh rate in Hz, if larger refresh rate it will limit FPS by uSleep() //!! currently does not work adaptively as it would require IDirect3DDevice9Ex which is not supported on WinXP
    uint64_t m_startFrameTick;  // System time in us when render frame was started (beginning of frame animation then collect,...)
-   unsigned int m_onGameStartMsgId;
    unsigned int m_onPrepareFrameMsgId;
 
    void MultithreadedGameLoop(const std::function<void()>& sync);
@@ -368,7 +367,7 @@ public:
    bool m_capExtDMD = false; // frame capturing (hack for VR)
    int2 m_dmdSize = int2(0, 0); // DMD defined through VPX API DMDWidth/DMDHeight/DMDPixels/DMDColoredPixels
    std::shared_ptr<BaseTexture> m_dmdFrame = nullptr;
-   int m_dmdFrameId = 0;
+   unsigned int m_dmdFrameId = 0;
 
    ResURIResolver m_resURIResolver;
 

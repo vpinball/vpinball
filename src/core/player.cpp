@@ -835,7 +835,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    const MsgPluginAPI *msgApi = &MsgPluginManager::GetInstance().GetMsgAPI();
 
-   m_onGameStartMsgId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START);
    m_onPrepareFrameMsgId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
    m_onAudioUpdatedMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_UPDATE_MSG);
    msgApi->SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onAudioUpdatedMsgId, OnAudioUpdated, this);
@@ -846,7 +845,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    OnAuxRendererChanged(m_onAuxRendererChgId, this, nullptr);
 
    // Signal plugins before performing static prerendering. The only thing not fully initialized is the physics (is this ok ?)
-   VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_onGameStartMsgId, nullptr);
+   VPXPluginAPIImpl::GetInstance().OnGameStart();
 
    // Open UI if requested (this also disables static prerendering, so must be done before performing it)
    if (playMode == 1)
@@ -935,8 +934,7 @@ Player::~Player()
 #endif
 
    // Signal plugins early since most fields will become invalid
-   const unsigned int onGameEndMsgId = VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END);
-   VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(onGameEndMsgId, nullptr);
+   VPXPluginAPIImpl::GetInstance().OnGameEnd();
 
    // signal the script that the game is now exited to allow any cleanup
    if (!IsEditorMode())
@@ -953,8 +951,6 @@ Player::~Player()
    const MsgPluginAPI *msgApi = &MsgPluginManager::GetInstance().GetMsgAPI();
    msgApi->UnsubscribeMsg(m_onAudioUpdatedMsgId, OnAudioUpdated);
    msgApi->ReleaseMsgID(m_onAudioUpdatedMsgId);
-   msgApi->ReleaseMsgID(m_onGameStartMsgId);
-   msgApi->ReleaseMsgID(onGameEndMsgId);
    msgApi->ReleaseMsgID(m_onPrepareFrameMsgId);
    msgApi->UnsubscribeMsg(m_onAuxRendererChgId, OnAuxRendererChanged);
    msgApi->ReleaseMsgID(m_getAuxRendererId);
