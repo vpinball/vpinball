@@ -20,11 +20,17 @@ exit 1
 
 md "../.build/vsproject"
 copy /V /Y "VisualPinball.sln" "../.build/vsproject/VisualPinball.sln"
-copy /V /Y "VisualPinball.vcxproj" "../.build/vsproject/VisualPinball.vcxproj"
-copy /V /Y "VisualPinball.vcxproj.filters" "../.build/vsproject/VisualPinball.vcxproj.filters"
+copy /V /Y "vpx.vcxproj" "../.build/vsproject/vpx.vcxproj"
+copy /V /Y "vpx.vcxproj.filters" "../.build/vsproject/vpx.vcxproj.filters"
+copy /V /Y "vpx-core.vcxitems" "../.build/vsproject/vpx-core.vcxitems"
+copy /V /Y "vpx-core.vcxitems.filters" "../.build/vsproject/vpx-core.vcxitems.filters"
+copy /V /Y "vpx-test.vcxproj" "../.build/vsproject/vpx-test.vcxproj"
+copy /V /Y "vpx-test.vcxproj.filters" "../.build/vsproject/vpx-test.vcxproj.filters"
 
 if "%vsv%" == "2019" (
-	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/VisualPinball.vcxproj" /out:"../.build/vsproject/VisualPinball.vcxproj"
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/vpx.vcxproj" /out:"../.build/vsproject/vpx.vcxproj"
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/vpx-core.vcxproj" /out:"../.build/vsproject/vpx-core.vcxproj"
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/vpx-test.vcxproj" /out:"../.build/vsproject/vpx-test.vcxproj"
 )
 
 

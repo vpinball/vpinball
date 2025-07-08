@@ -6,6 +6,8 @@
 #ifndef __STANDALONE__
 #include "FreeImage.h"
 #else
+#include <SDL3_image/SDL_image.h>
+#include <SDL3/SDL_surface.h>
 #include "standalone/FreeImage.h"
 #endif
 
@@ -466,6 +468,61 @@ void BaseTexture::Update(std::shared_ptr<BaseTexture>& tex, const unsigned int w
       if (image)
          memcpy(tex->data(), image, (size_t)width * height * pixelSize);
    }
+}
+
+void BaseTexture::FlipY()
+{
+   const int pitch = this->pitch();
+   vector<uint8_t> buf(pitch);
+   uint8_t* __restrict bits = buf.data();
+   for (unsigned int i = 0; i < m_height / 2; i++)
+   {
+      memcpy(bits, m_data + i * pitch, pitch);
+      memcpy(m_data + i * pitch, m_data + (m_height - 1 - i) * pitch, pitch);
+      memcpy(m_data + (m_height - 1 - i) * pitch, bits, pitch);
+   }
+}
+
+bool BaseTexture::Save(const string& filepath) const
+{
+   if ((m_format != SRGBA) && (m_format != SRGB))
+      return false;
+
+   const string ext = extension_from_path(filepath);
+   bool success = false;
+
+#ifdef __STANDALONE__
+   SDL_Surface* pSurface = SDL_CreateSurfaceFrom(m_width, m_height, m_format == SRGB ? SDL_PIXELFORMAT_RGB24 : SDL_PIXELFORMAT_ARGB8888, const_cast<uint8_t*>(datac()), pitch());
+   if (pSurface)
+   {
+      if (ext == "png")
+         success = IMG_SavePNG(pSurface, filepath.c_str());
+      else if (ext == "jpg" || ext == "jpeg")
+         success = IMG_SaveJPG(pSurface, filepath.c_str(), 75);
+      SDL_DestroySurface(pSurface);
+   }
+
+#else
+   FIBITMAP* bitmap = FreeImage_Allocate(m_width, m_height, m_format == SRGB ? 24 : 32);
+   if (bitmap)
+   {
+      uint8_t* __restrict bits = (uint8_t*)FreeImage_GetBits(bitmap);
+      memcpy(bits, m_data, pitch() * m_height);
+      FreeImage_FlipVertical(bitmap);
+      bool success = false;
+      if (ext == "png")
+         success = FreeImage_Save(FIF_PNG, bitmap, filepath.c_str(), 0);
+      else if (ext == "jpg" || ext == "jpeg")
+         success = FreeImage_Save(FIF_JPEG, bitmap, filepath.c_str(), 0);
+      else if (ext == "webp")
+         //success = FreeImage_Save(FIF_WEBP, bitmap, _filePath, WEBP_LOSSLESS); // Very slow and very large files (but would better for our regression tests)
+         success = FreeImage_Save(FIF_WEBP, bitmap, filepath.c_str(), WBMP_DEFAULT);
+      FreeImage_Unload(bitmap);
+   }
+
+#endif
+
+   return success;
 }
 
 std::shared_ptr<BaseTexture> BaseTexture::Convert(Format format) const

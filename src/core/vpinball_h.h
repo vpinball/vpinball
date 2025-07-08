@@ -124,6 +124,7 @@ public:
    STDMETHOD(FireKnocker)(int Count);
    STDMETHOD(QuitPlayer)(int CloseType);
 
+   bool StepMsgLoop();
    int MainMsgLoop();
 
    void CloseTable(const PinTable * const ppt);

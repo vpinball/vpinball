@@ -152,17 +152,17 @@
   <ItemDefinitionGroup>
     <PostBuildEvent>
       <Command>
-        if not exist "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\helloscript\" md "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\helloscript\"
-        copy "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\helloscript\"
-        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\helloscript\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\helloscript\" md "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\helloscript\"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\helloscript\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\helloscript\"
 
-        if not exist "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\helloscript\" md "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\helloscript\"
-        copy "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\helloscript\"
-        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\helloscript\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\helloscript\" md "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\helloscript\"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\helloscript\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\helloscript\"
 
-        if not exist "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\helloscript\" md "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\helloscript\"
-        copy "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\helloscript\"
-        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\helloscript\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\helloscript\" md "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\helloscript\"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\helloscript\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\helloscript\"
       </Command>
     </PostBuildEvent>
     <ClCompile>

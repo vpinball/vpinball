@@ -1750,42 +1750,8 @@ int VPinball::MainMsgLoop()
 #ifndef __STANDALONE__
    for (;;)
    {
-      MSG msg;
-      MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
-      if (PeekMessageA(&msg, nullptr, 0, 0, PM_REMOVE))
-      {
-         if (msg.message == WM_QUIT)
-            break;
-         const bool consumed = ApcHost_OnTranslateMessage(&msg);
-         if (!consumed)
-         {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-         }
-      }
-      else if (m_table_played_via_SelectTableOnStart)
-      {
-         // If player has been closed in the meantime, check if we should display the file open dialog again to select/play the next table
-         // first close the current table
-         CComObject<PinTable> *const pt = GetActiveTable();
-         if (pt)
-            CloseTable(pt);
-         // then select the new one, and if one was selected, play it
-         m_table_played_via_SelectTableOnStart = LoadFile(false);
-         if (m_table_played_via_SelectTableOnStart)
-            DoPlay(false);
-      }
-      else if (m_open_minimized)
-      {
-         // If started to play and for whatever reason (end of play, frontend closing the player window, failed loading,...)
-         // we do not have a player, just close back to system.
-         PostMessage(WM_CLOSE, 0, 0);
-      }
-      else
-      {
-         // Otherwise wait for input
-         WaitMessage(); 
-      }
+      if (StepMsgLoop())
+         break;
    }
 #else
    CComObject<PinTable> *const pt = GetActiveTable();
@@ -1797,6 +1763,49 @@ int VPinball::MainMsgLoop()
    }
 #endif
    return retval;
+}
+
+bool VPinball::StepMsgLoop()
+{
+#ifndef __STANDALONE__
+   MSG msg;
+   if (PeekMessageA(&msg, nullptr, 0, 0, PM_REMOVE))
+   {
+      if (msg.message == WM_QUIT)
+         return true;
+      const bool consumed = ApcHost_OnTranslateMessage(&msg);
+      if (!consumed)
+      {
+         TranslateMessage(&msg);
+         DispatchMessage(&msg);
+      }
+   }
+   else if (m_table_played_via_SelectTableOnStart)
+   {
+      // If player has been closed in the meantime, check if we should display the file open dialog again to select/play the next table
+      // first close the current table
+      CComObject<PinTable> *const pt = GetActiveTable();
+      if (pt)
+         CloseTable(pt);
+      // then select the new one, and if one was selected, play it
+      m_table_played_via_SelectTableOnStart = LoadFile(false);
+      if (m_table_played_via_SelectTableOnStart)
+         DoPlay(false);
+   }
+   else if (m_open_minimized)
+   {
+      // If started to play and for whatever reason (end of play, frontend closing the player window, failed loading,...)
+      // we do not have a player, just close back to system.
+      PostMessage(WM_CLOSE, 0, 0);
+   }
+   else
+   {
+      // Otherwise wait for input
+      WaitMessage(); 
+   }
+   MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
+#endif
+   return false;
 }
 
 STDMETHODIMP VPinball::QueryInterface(REFIID iid, void **ppvObjOut)
@@ -1825,7 +1834,7 @@ STDMETHODIMP_(ULONG) VPinball::AddRef()
 STDMETHODIMP_(ULONG) VPinball::Release()
 {
    assert(m_cref);
-   m_cref--;
+   m_cref--; // FIXME we are doing refcounting without memory management
 
    return m_cref;
 }

@@ -68,6 +68,9 @@ public:
    void SetName(const string& name) { m_name = name; }
    const string& GetName() const override { return m_name; }
 
+   void FlipY();
+   bool Save(const string& filepath) const;
+
    unsigned int width() const  { return m_width; }
    unsigned int height() const { return m_height; }
    unsigned int pitch() const; // pitch in bytes

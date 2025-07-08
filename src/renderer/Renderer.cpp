@@ -2112,7 +2112,8 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
    const bool useUpscaler = (m_renderWidth < GetBackBufferTexture()->GetWidth()) && !PostProcStereo && (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen);
    const InfoMode infoMode = g_pplayer->GetInfoMode();
    //const unsigned int jittertime = (unsigned int)((uint64_t)msec()*90/1000);
-   const float jitter = (float)((msec() & 2047) / 1000.0);
+   //const float jitter = (float)((msec() & 2047) / 1000.0);
+   const float jitter = (float)(radical_inverse(g_pplayer->m_overall_frames % 2048) / 1000.0); // Determinist jitter to ensure stable render for regression tests
 
    RenderTarget* renderedRT = GetBackBufferTexture();
    RenderTarget *outputRT = nullptr;

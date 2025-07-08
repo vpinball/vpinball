@@ -218,6 +218,8 @@ public:
    unsigned int m_nOutputWnd = 1; // Swap chain always has at least one output window (OpenGL & DX9 only supports one, DX10+/Metal/Vulkan support multiple)
    VPX::Window* m_outputWnd[8];
 
+   void CaptureScreenshot(const string& filename, std::function<void(bool)> callback);
+
 private:
    const bool m_isVR;
 
@@ -240,6 +242,10 @@ private:
    std::shared_ptr<Sampler> m_SMAAareaTexture = nullptr;
 
    int m_visualLatencyCorrection = -1;
+
+   bool m_screenshot = false;
+   string m_screenshotFilename = string();
+   std::function<void(bool)> m_screenshotCallback = [](bool) { };
 
 #if defined(ENABLE_BGFX)
 public:
@@ -280,11 +286,6 @@ public:
    bgfx::UniformHandle m_mipmapOpts = BGFX_INVALID_HANDLE;
    bgfx::UniformHandle m_mipmapSource = BGFX_INVALID_HANDLE;
 
-   void CaptureScreenshot(const string& filename, std::function<void(bool)> callback);
-
-   static string s_screenshotFilename;
-   static std::function<void(bool)> s_screenshotCallback;
-
 private:
    bool m_renderDeviceAlive;
    std::thread m_renderThread;
@@ -292,7 +293,27 @@ private:
    vector<std::shared_ptr<Sampler>> m_pendingTextureUploads;
    std::unique_ptr<ShaderState> m_uniformState = nullptr;
 
-   static volatile bool s_screenshot;
+   class tBGFXCallback : public bgfx::CallbackI
+   {
+   public:
+      tBGFXCallback(RenderDevice& rd) : bgfx::CallbackI(), m_rd(rd) { }
+      ~tBGFXCallback() override { }
+      void fatal(const char* _filePath, uint16_t _line, bgfx::Fatal::Enum _code, const char* _str) override;
+      void traceVargs(const char* _filePath, uint16_t _line, const char* _format, va_list _argList) override;
+      void profilerBegin(const char* /*_name*/, uint32_t /*_abgr*/, const char* /*_filePath*/, uint16_t /*_line*/) override { }
+      void profilerBeginLiteral(const char* /*_name*/, uint32_t /*_abgr*/, const char* /*_filePath*/, uint16_t /*_line*/) override { }
+      void profilerEnd() override { }
+      uint32_t cacheReadSize(uint64_t /*_id*/) override { return 0; }
+      bool cacheRead(uint64_t /*_id*/, void* /*_data*/, uint32_t /*_size*/) override { return false; }
+      void cacheWrite(uint64_t /*_id*/, const void* /*_data*/, uint32_t /*_size*/) override { }
+      void screenShot(const char* _filePath, uint32_t _width, uint32_t _height, uint32_t _pitch, const void* _data, uint32_t _size, bool _yflip) override;
+      void captureBegin(uint32_t /*_width*/, uint32_t /*_height*/, uint32_t /*_pitch*/, bgfx::TextureFormat::Enum /*_format*/, bool /*_yflip*/) override { }
+      void captureEnd() override { }
+      void captureFrame(const void* /*_data*/, uint32_t /*_size*/) override { }
+
+   private:
+      RenderDevice& m_rd;
+   } m_bgfxCallback;
 
 #elif defined(ENABLE_OPENGL)
 public:
@@ -311,6 +332,8 @@ private:
    GLfloat m_maxaniso;
    int m_GLversion;
    static GLuint m_samplerStateCache[3 * 3 * 5];
+
+   void CaptureGLScreenshot();
 
 #elif defined(ENABLE_DX9)
 public:
@@ -333,6 +356,8 @@ private:
    IDirect3DDevice9Ex* m_pD3DDeviceEx;
    IDirect3D9* m_pD3D;
    IDirect3DDevice9* m_pD3DDevice;
+
+   void CaptureDX9Screenshot();
 
    DWORD m_maxaniso;
    bool m_mag_aniso;
