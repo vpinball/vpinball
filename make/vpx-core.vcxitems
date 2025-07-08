@@ -1,0 +1,2127 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{7d37bd17-02a7-4535-b660-24dc68828c1c}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug_BGFX|Win32">
+      <Configuration>Debug_BGFX</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug_BGFX|x64">
+      <Configuration>Debug_BGFX</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug_GL|Win32">
+      <Configuration>Debug_GL</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug_GL|x64">
+      <Configuration>Debug_GL</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release_BGFX|Win32">
+      <Configuration>Release_BGFX</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release_BGFX|x64">
+      <Configuration>Release_BGFX</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release_GL|Win32">
+      <Configuration>Release_GL</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release_GL|x64">
+      <Configuration>Release_GL</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup>
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <UseOfAtl>Static</UseOfAtl>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration.SubString(0,5))' == 'Relea'" Label="Configuration">
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Condition="'$(Platform)'=='Win32'">
+    <ExecutablePath>$(DXSDK_DIR)Utilities\Bin\x86;$(ExecutablePath)</ExecutablePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='x64'">
+    <ExecutablePath>$(DXSDK_DIR)Utilities\Bin\x64;$(ExecutablePath)</ExecutablePath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)..\bin\$(ProjectName)\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)..\obj\$(ProjectName)\$(Configuration)-$(Platform)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Midl>
+      <OutputDirectory>$(SolutionDir)../gen/</OutputDirectory>
+      <TypeLibraryName>$(SolutionDir)../gen/vpinball.tlb</TypeLibraryName>
+      <HeaderFileName>$(SolutionDir)../gen/vpinball.h</HeaderFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ENABLE_DX9;WIN32;_DEBUG;DEBUG_REFCOUNT_TRIGGER;_WINDOWS;MYDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>core/stdafx.h</PrecompiledHeaderFile>
+      <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
+      <XMLDocumentationFileName>$(IntDir)</XMLDocumentationFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <StringPooling>true</StringPooling>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <AdditionalOptions>/Zc:__cplusplus /Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(SolutionDir)../gen;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include/win32xx/include</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxerr.lib;comctl32.lib;dxguid.lib;freeimage.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;SDL3.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;$(SolutionDir)../../third-party/build-libs/windows-x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>
+      </IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+      <LargeAddressAware>true</LargeAddressAware>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+    </Link>
+    <Xdcmake>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+    </Xdcmake>
+    <PostBuildEvent>
+      <Message>
+      </Message>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+    </Manifest>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ENABLE_SDL_INPUT;ENABLE_SDL_VIDEO;ENABLE_OPENGL;WIN32;_DEBUG;DEBUG_REFCOUNT_TRIGGER;_WINDOWS;MYDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>core/stdafx.h</PrecompiledHeaderFile>
+      <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
+      <XMLDocumentationFileName>$(IntDir)</XMLDocumentationFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <StringPooling>true</StringPooling>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>ENABLE_SDL_VIDEO;ENABLE_OPENGL;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(SolutionDir)../gen;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include/win32xx/include</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>SDL3.lib;opengl32.lib;openvr_api.lib;comctl32.lib;dxguid.lib;freeimage.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;$(SolutionDir)../../third-party/build-libs/windows-x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>
+      </IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+      <LargeAddressAware>true</LargeAddressAware>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+    </Link>
+    <Xdcmake>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+    </Xdcmake>
+    <PostBuildEvent>
+      <Command>%40echo off
+        copy /y  "$(SolutionDir)../../third-party/runtime-libs/windows-x86/*.*" "$(TargetDir)"
+      </Command>
+    </PostBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+    </Manifest>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_BGFX|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ENABLE_SDL_INPUT;BX_CONFIG_DEBUG=1;ENABLE_BGFX;ENABLE_SDL_VIDEO;WIN32;_DEBUG;DEBUG_REFCOUNT_TRIGGER;_WINDOWS;MYDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>core/stdafx.h</PrecompiledHeaderFile>
+      <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
+      <XMLDocumentationFileName>$(IntDir)</XMLDocumentationFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <StringPooling>true</StringPooling>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <AdditionalOptions>/Zc:__cplusplus /Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>ENABLE_SDL_VIDEO;ENABLE_OPENGL;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(SolutionDir)../gen;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include/win32xx/include</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>SDL3.lib;openxr_loader.lib;comctl32.lib;dxguid.lib;freeimage.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;imm32.lib;setupapi.lib;hid.lib;bgfx.lib;bimg_decode.lib;bimg.lib;bx.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;$(SolutionDir)../../third-party/build-libs/windows-x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>
+      </IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+      <LargeAddressAware>true</LargeAddressAware>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+    </Link>
+    <Xdcmake>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+    </Xdcmake>
+    <PostBuildEvent>
+      <Command>%40echo off
+        copy /y  "$(SolutionDir)../../third-party/runtime-libs/windows-x86/*.*" "$(TargetDir)"
+      </Command>
+    </PostBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+    </Manifest>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ENABLE_DX9;WIN32;_DEBUG;DEBUG_REFCOUNT_TRIGGER;_WINDOWS;MYDEBUG;DEBUGPHYSICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>core/stdafx.h</PrecompiledHeaderFile>
+      <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
+      <XMLDocumentationFileName>$(IntDir)</XMLDocumentationFileName>
+      <BrowseInformation>false</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(SolutionDir)../gen;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include/win32xx/include</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxerr.lib;comctl32.lib;dxguid.lib;freeimage64.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;SDL364.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64;$(SolutionDir)../../third-party/build-libs/windows-x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBC;LIBCMT;LIBCD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <StackReserveSize>0</StackReserveSize>
+      <StackCommitSize>0</StackCommitSize>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <LargeAddressAware>true</LargeAddressAware>
+    </Link>
+    <Xdcmake>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+    </Xdcmake>
+    <PostBuildEvent>
+      <Command>%40echo off
+        copy /y  "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\*.*" "$(TargetDir)"
+      </Command>
+    </PostBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+    </Manifest>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ENABLE_SDL_INPUT;ENABLE_SDL_VIDEO;ENABLE_OPENGL;WIN32;_DEBUG;DEBUG_REFCOUNT_TRIGGER;_WINDOWS;MYDEBUG;DEBUGPHYSICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>core/stdafx.h</PrecompiledHeaderFile>
+      <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
+      <XMLDocumentationFileName>$(IntDir)</XMLDocumentationFileName>
+      <BrowseInformation>false</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>ENABLE_SDL_VIDEO;ENABLE_OPENGL;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(SolutionDir)../gen;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include/win32xx/include</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>SDL364.lib;opengl32.lib;openvr_api.lib;comctl32.lib;dxguid.lib;freeimage64.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64;$(SolutionDir)../../third-party/build-libs/windows-x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBC;LIBCMT;LIBCD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <StackReserveSize>0</StackReserveSize>
+      <StackCommitSize>0</StackCommitSize>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <LargeAddressAware>true</LargeAddressAware>
+    </Link>
+    <Xdcmake>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+    </Xdcmake>
+    <PostBuildEvent>
+      <Command>%40echo off
+        copy /y  "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\*.*" "$(TargetDir)"
+      </Command>
+    </PostBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+    </Manifest>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_BGFX|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ENABLE_SDL_INPUT;BX_CONFIG_DEBUG=1;ENABLE_BGFX;ENABLE_SDL_VIDEO;WIN32;_DEBUG;DEBUG_REFCOUNT_TRIGGER;_WINDOWS;MYDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>core/stdafx.h</PrecompiledHeaderFile>
+      <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
+      <XMLDocumentationFileName>$(IntDir)</XMLDocumentationFileName>
+      <BrowseInformation>false</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <AdditionalOptions>/Zc:__cplusplus /Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>ENABLE_SDL_VIDEO;ENABLE_OPENGL;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(SolutionDir)../gen;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include/win32xx/include</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>SDL364.lib;openxr_loader64.lib;comctl32.lib;dxguid.lib;freeimage64.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;imm32.lib;setupapi.lib;hid.lib;bgfx64.lib;bimg_decode64.lib;bimg64.lib;bx64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64;$(SolutionDir)../../third-party/build-libs/windows-x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBC;LIBCMT;LIBCD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <StackReserveSize>0</StackReserveSize>
+      <StackCommitSize>0</StackCommitSize>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <LargeAddressAware>true</LargeAddressAware>
+    </Link>
+    <Xdcmake>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+    </Xdcmake>
+    <Manifest>
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+    </Manifest>
+    <PostBuildEvent>
+      <Command>%40echo off
+        copy /y  "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\*.*" "$(TargetDir)"
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ENABLE_DX9;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>core/stdafx.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <OpenMPSupport>false</OpenMPSupport>
+      <OmitFramePointers>true</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <ControlFlowGuard>false</ControlFlowGuard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(SolutionDir)../gen;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include/win32xx/include</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxerr.lib;comctl32.lib;dxguid.lib;freeimage.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;SDL364.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;$(SolutionDir)../../third-party/build-libs/windows-x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalOptions>/SAFESEH:NO
+ %(AdditionalOptions)</AdditionalOptions>
+      <LargeAddressAware>true</LargeAddressAware>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+    </Manifest>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ENABLE_SDL_INPUT;ENABLE_SDL_VIDEO;ENABLE_OPENGL;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>core/stdafx.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <OpenMPSupport>false</OpenMPSupport>
+      <OmitFramePointers>true</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <ControlFlowGuard>false</ControlFlowGuard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>ENABLE_SDL_VIDEO;ENABLE_OPENGL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(SolutionDir)../gen;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include/win32xx/include</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>SDL3.lib;opengl32.lib;openvr_api.lib;comctl32.lib;dxguid.lib;freeimage.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;$(SolutionDir)../../third-party/build-libs/windows-x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalOptions>/SAFESEH:NO
+ %(AdditionalOptions)</AdditionalOptions>
+      <LargeAddressAware>true</LargeAddressAware>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+    </Link>
+    <PostBuildEvent>
+      <Command>%40echo off
+        copy /y  "$(SolutionDir)../../third-party/runtime-libs/windows-x86/*.*" "$(TargetDir)"
+      </Command>
+    </PostBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+    </Manifest>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_BGFX|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BX_CONFIG_DEBUG=0;ENABLE_BGFX;ENABLE_SDL_VIDEO;ENABLE_SDL_INPUT;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>core/stdafx.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <OpenMPSupport>false</OpenMPSupport>
+      <OmitFramePointers>true</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <ControlFlowGuard>false</ControlFlowGuard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalOptions>/Zc:__cplusplus /Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>ENABLE_SDL_VIDEO;ENABLE_OPENGL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(SolutionDir)../gen;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include/win32xx/include</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>SDL3.lib;openxr_loader.lib;comctl32.lib;dxguid.lib;freeimage.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;imm32.lib;setupapi.lib;hid.lib;bgfx64.lib;bimg_decode.lib;bimg.lib;bx.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;$(SolutionDir)../../third-party/build-libs/windows-x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalOptions>/SAFESEH:NO
+ %(AdditionalOptions)</AdditionalOptions>
+      <LargeAddressAware>true</LargeAddressAware>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+    </Link>
+    <PostBuildEvent>
+      <Command>%40echo off
+        copy /y  "$(SolutionDir)../../third-party/runtime-libs/windows-x86/*.*" "$(TargetDir)"
+      </Command>
+    </PostBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+    </Manifest>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ENABLE_DX9;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>core/stdafx.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <OpenMPSupport>false</OpenMPSupport>
+      <OmitFramePointers>true</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <ControlFlowGuard>false</ControlFlowGuard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(SolutionDir)../gen;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include/win32xx/include</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxerr.lib;comctl32.lib;dxguid.lib;freeimage64.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;SDL364.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64;$(SolutionDir)../../third-party/build-libs/windows-x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <AdditionalOptions>/SAFESEH:NO
+ %(AdditionalOptions)</AdditionalOptions>
+      <LargeAddressAware>true</LargeAddressAware>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+    </Link>
+    <PostBuildEvent>
+      <Command>%40echo off
+        copy /y  "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\*.*" "$(TargetDir)"
+      </Command>
+    </PostBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+    </Manifest>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ENABLE_SDL_INPUT;ENABLE_SDL_VIDEO;ENABLE_OPENGL;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>core/stdafx.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <OpenMPSupport>false</OpenMPSupport>
+      <OmitFramePointers>true</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <ControlFlowGuard>false</ControlFlowGuard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>ENABLE_SDL_VIDEO;ENABLE_OPENGL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(SolutionDir)../gen;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include/win32xx/include</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>SDL364.lib;opengl32.lib;openvr_api.lib;comctl32.lib;dxguid.lib;freeimage64.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64;$(SolutionDir)../../third-party/build-libs/windows-x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <AdditionalOptions>/SAFESEH:NO
+ %(AdditionalOptions)</AdditionalOptions>
+      <LargeAddressAware>true</LargeAddressAware>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+    </Link>
+    <PostBuildEvent>
+      <Command>%40echo off
+        copy /y  "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\*.*" "$(TargetDir)"
+      </Command>
+    </PostBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+    </Manifest>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_BGFX|x64'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BX_CONFIG_DEBUG=0;ENABLE_BGFX;ENABLE_SDL_VIDEO;ENABLE_SDL_INPUT;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>core/stdafx.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <OpenMPSupport>false</OpenMPSupport>
+      <OmitFramePointers>true</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <ControlFlowGuard>false</ControlFlowGuard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalOptions>/Zc:__cplusplus /Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>ENABLE_SDL_VIDEO;ENABLE_OPENGL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(SolutionDir)../gen;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include/win32xx/include</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>SDL364.lib;openxr_loader64.lib;comctl32.lib;dxguid.lib;freeimage64.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;imm32.lib;setupapi.lib;hid.lib;bgfx64.lib;bimg_decode64.lib;bimg64.lib;bx64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64;$(SolutionDir)../../third-party/build-libs/windows-x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <AdditionalOptions>/SAFESEH:NO
+ %(AdditionalOptions)</AdditionalOptions>
+      <LargeAddressAware>true</LargeAddressAware>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+    </Link>
+    <PostBuildEvent>
+      <Command>%40echo off
+        copy /y  "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\*.*" "$(TargetDir)"
+      </Command>
+    </PostBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+    </Manifest>
+  </ItemDefinitionGroup>
+
+
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(SolutionDir)/../../src/audio/AudioPlayer.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/audio/AudioStreamPlayer.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/audio/SoundPlayer.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/core/stdafx.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/core/DynamicScript.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/core/extern.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/core/ieditable.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/core/editablereg.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/core/iselect.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/input/pininput.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/input/OpenPinDevHandler.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/core/pinundo.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/core/vpinball.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/core/VPApp.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/core/player.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/core/Settings.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/core/TableDB.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/core/VPXPluginAPIImpl.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/core/ResURIResolver.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/math/math.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/math/matrix.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/Backglass.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/ball.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/bumper.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/decal.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/dispreel.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/dragpoint.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/flasher.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/flipper.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/gate.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/hittarget.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/kicker.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/light.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/lightseq.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/rubber.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/Sound.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/pinbinary.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/pintable.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/plunger.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/primitive.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/ramp.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/spinner.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/surface.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/textbox.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/timer.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/trigger.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/physics/collide.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/physics/collideex.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/physics/kdtree.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/physics/hitball.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/physics/hitflipper.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/physics/hitplunger.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/physics/NudgeFilter.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/physics/PhysicsEngine.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/physics/quadtree.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/plugins/MsgPluginManager.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/Anaglyph.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/captureExt.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/IndexBuffer.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/MeshBuffer.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/RenderCommand.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/RenderDevice.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/RenderFrame.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/RenderPass.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/RenderProbe.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/RenderState.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/RenderTarget.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/Renderer.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/Sampler.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/Shader.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/Texture.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/TextureManager.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/VertexBuffer.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/ViewSetup.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/VRDevice.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/Window.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/worker.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/codeviewedit.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/Debugger.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/LiveUI.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/PerfUI.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/codeview.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/hitrectsur.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/hitsur.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/paintsur.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/VPXLoadFileProgressBar.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/VPXSaveFileProgressBar.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/AboutDialog.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/AudioOptionsDialog.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/CollectionManagerDialog.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/DimensionDialog.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/DrawingOrderDialog.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/EditorOptionsDialog.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/ImageDialog.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/InputDeviceDialog.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/KeysConfigDialog.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/LayersListDialog.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/MaterialDialog.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/NotesDialog.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/PhysicsOptionsDialog.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/RenderProbeDialog.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/ScriptErrorDialog.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/SearchSelectDialog.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/SoundDialog.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/TableInfoDialog.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/ToolbarDialog.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/VideoOptionsDialog.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/VROptionsDialog.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/WhereUsedDialog.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/BackglassCameraProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/BackglassVisualsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/BallPhysicsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/BallVisualsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/BumperPhysicsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/BumperVisualsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/DecalVisualsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/DispreelStateProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/DispreelVisualsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/DragpointVisualsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/FlasherVisualsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/FlipperPhysicsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/FlipperVisualsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/GatePhysicsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/GateVisualsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/HitTargetPhysicsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/HitTargetVisualsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/KickerPhysicsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/KickerVisualsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/LightseqStatesProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/LightStatesProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/LightVisualsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/PlungerPhysicsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/PlungerVisualsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/PrimitivePhysicsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/PrimitivePositionProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/PrimitiveVisualsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/PropertyDialog.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/RampPhysicsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/RampVisualsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/RubberPhysicsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/RubberVisualsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/SpinnerPhysicsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/SpinnerVisualsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/TableAudioProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/TableLightsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/TablePhysicsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/TableVisualsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/TextboxVisualsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/TriggerPhysicsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/TriggerVisualsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/WallPhysicsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/WallVisualsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/utils/BlackBox.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/utils/bulb.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/utils/CrashHandler.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/core/def.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/utils/fileio.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/utils/hash.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/utils/Logger.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/utils/lzwreader.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/utils/lzwwriter.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/utils/MemoryStatus.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/utils/memutil.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/utils/objloader.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/utils/StackTrace.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/utils/ushock_output.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/utils/variant.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/utils/wintimer.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src\parts\PartGroup.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src\physics\AsyncDynamicQuadTree.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src\ui\properties\PartGroupVisualsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/hidapi/windows/hid.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/hid-report-parser/hid_report_parser.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui_draw.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui_tables.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui_widgets.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui_stdlib.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/imguizmo/ImGuizmo.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/implot/implot.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/implot/implot_items.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_win32.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_sdl3.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_opengl3.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/bgfx-imgui/imgui_impl_bgfx.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_GL'">true</ExcludedFromBuild>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_dx9.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/BAM/BAMView.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/glad/src/gl.c">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+      <FileType>CppCode</FileType>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/gpuprofiler.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/miniz/miniz.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+      <FileType>CppCode</FileType>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/progmesh.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/serial.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/tinyxml2/tinyxml2.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(SolutionDir)/../../src/core/vpinball.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="$(SolutionDir)/../../src/ui/vpinball.rc">
+      <AdditionalIncludeDirectories>$(OUTDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <ResourceCompile Include="$(SolutionDir)/../../src/ui/vpinball_eng.rc">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ResourceCompile>
+    <ResourceCompile Include="$(SolutionDir)/../../src/ui/vpinball_fre.rc">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ResourceCompile>
+    <ResourceCompile Include="$(SolutionDir)/../../src/ui/vpinball_ger.rc">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ResourceCompile>
+    <ResourceCompile Include="$(SolutionDir)/../../src/ui/vpinball_spa.rc">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(SolutionDir)/../../scripts\6803.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\ALI.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\alving.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\antar.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\Atari.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\Atari1.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\Atari1b.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\Atari2.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\B2B.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\B2Bcollision.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\b2s.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\Bally.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\BallyG.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\capcom.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\Class1812.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\controller.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\core.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\de.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\de2.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\FPVPX.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\GamePlan.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\gts1.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\gts3.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\Hankin.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\idsa.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\inder.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\inder_atleta.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\inder_centaur.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\inder_skateboard.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\ironballs.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\joctronic.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\juegos.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\juegos2.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\jvh.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\lancelot.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\LTD.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\LTD3.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\LTD4a.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\LTDPecmen.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\mac.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\mrgame.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\NudgePlugIn_blur2NoAccel.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\NudgePlugIn_blurNoAccel.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\NudgePlugIn_mjrAccelAndTilt.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\NudgePlugIn_robBlurNoAccel.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\NudgePlugIn_robNoAccel.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\nuova.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\PDB.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\peyper.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\Play1.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\Play2.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\Play4.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\s11.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\s4.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\s6.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\s7.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\s8_StillCrazy.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\sam.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\sega.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\sega2.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\sleic.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\solarwars.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\spinball.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\stern.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\sys80.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\taito.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\UltraDMD_Options.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\vbsdoc_outdated.html" />
+    <None Include="$(SolutionDir)/../../scripts\VPMKeys.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\WPC.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\wpc_ph.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\zac.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\zac1.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\zac2.vbs" />
+    <None Include="$(SolutionDir)/../../scripts\zacproto.vbs" />
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/ball_shadows.sh">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/bgfx_shader.sh">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/common.sh">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_ball.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_ball_debug.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_ball_trail.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_basic.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_classic_light.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_decal.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_dmd.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_display.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_flasher.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_imgui.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_light.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_ao.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_ao_display.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_bilateral_cas.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_bloom.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_blur.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_cas.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_copy.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_dlaa.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_dlaa_edge.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_fxaa.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_irradiance.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_mirror.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_motionblur.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_nfaa.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_smaa_BlendingWeightCalculation.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_smaa_EdgeDetection.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_smaa_NeighborhoodBlending.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_ssao.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_ssr.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_stereo.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_tonemap.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_unshaded.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/material.sh">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/SMAA.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/SMAA.sh">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/varying.def.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_ball.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_ball_trail.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_basic.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_dmd.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_flasher.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_imgui.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_light.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_postprocess.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_pp_smaa_BlendingWeightCalculation.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_pp_smaa_EdgeDetection.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_pp_smaa_NeighborhoodBlending.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_vr_mask.sc">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FBShader.fxh">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/SMAA.fxh">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/BallShader.glfx">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/BallShadows.fxh">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/BasicShader.glfx">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/ClassicLightShader.glfx">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/DMDShader.glfx">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/DMDShaderVR.glfx">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FBShader.glfx">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FlasherShader.glfx">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FXAAStereoAO_GL.fxh">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/LightShader.glfx">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/Material_GL.fxh">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/SMAA.glfx">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/SSR_GL.fxh">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/Stereo.fxh">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/StereoShader.glfx">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FXAAStereoAO.fxh">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/Helpers.fxh">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/Material.fxh">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/SSR.fxh">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/assets/Default_VPinballX.ini">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/assets/TableSizes.csv">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/assets/exampleTable.vpx">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/assets/blankTable.vpx">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/assets/lightSeqTable.vpx">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/assets/strippedTable.vpx">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/ball.rgs" />
+    <None Include="$(SolutionDir)/../../src/ui/res/bumper.rgs" />
+    <None Include="$(SolutionDir)/../../src/ui/res/gate.cur" />
+    <None Include="$(SolutionDir)/../../src/ui/res/flasher.cur" />
+    <None Include="$(SolutionDir)/../../src/ui/res/hittarget.rgs" />
+    <None Include="$(SolutionDir)/../../src/ui/res/rubber.cur" />
+    <None Include="$(SolutionDir)/../../src/ui/res/kicker.cur" />
+    <None Include="$(SolutionDir)/../../src/ui/res/spinner.cur" />
+    <None Include="$(SolutionDir)/../../src/ui/res/dispreel.cur" />
+    <None Include="$(SolutionDir)/../../src/ui/res/SplitH.cur" />
+    <None Include="$(SolutionDir)/../../src/ui/res/SplitV.cur" />
+    <None Include="$(SolutionDir)/../../src/ui/res/trigger.cur" />
+    <None Include="$(SolutionDir)/../../src/ui/res/timer.cur" />
+    <None Include="$(SolutionDir)/../../src/ui/res/target.cur" />
+    <None Include="$(SolutionDir)/../../src/ui/res/flipper.cur" />
+    <None Include="$(SolutionDir)/../../src/ui/res/lightseq.cur" />
+    <None Include="$(SolutionDir)/../../src/ui/res/textbox.cur" />
+    <None Include="$(SolutionDir)/../../src/ui/res/primitive.cur" />
+    <None Include="$(SolutionDir)/../../src/ui/res/ramp.cur" />
+    <None Include="$(SolutionDir)/../../src/ui/res/decal.cur" />
+    <None Include="$(SolutionDir)/../../src/ui/res/bumper.cur" />
+    <None Include="$(SolutionDir)/../../src/ui/res/plunger.cur" />
+    <None Include="$(SolutionDir)/../../src/ui/res/wall.cur" />
+    <None Include="$(SolutionDir)/../../src/ui/res/magnify.cur" />
+    <None Include="$(SolutionDir)/../../src/ui/res/dispreel.rgs" />
+    <None Include="$(SolutionDir)/../../src/ui/res/dragpoint.rgs" />
+    <None Include="$(SolutionDir)/../../src/ui/res/flasher.rgs" />
+    <None Include="$(SolutionDir)/../../src/ui/res/rubber.rgs" />
+    <None Include="$(SolutionDir)/../../src/ui/res/flipper.rgs" />
+    <None Include="$(SolutionDir)/../../src/ui/res/gate.rgs" />
+    <None Include="$(SolutionDir)/../../src/ui/res/kicker.rgs" />
+    <None Include="$(SolutionDir)/../../src/ui/res/light.rgs" />
+    <None Include="$(SolutionDir)/../../src/ui/res/lightseq.rgs" />
+    <None Include="$(SolutionDir)/../../src/ui/res/pieventhandler.rgs" />
+    <None Include="$(SolutionDir)/../../src/ui/res/plunger.rgs" />
+    <None Include="$(SolutionDir)/../../src/ui/res/primitive.rgs" />
+    <None Include="$(SolutionDir)/../../src/ui/res/ramp.rgs" />
+    <None Include="$(SolutionDir)/../../src/ui/res/spinner.rgs" />
+    <None Include="$(SolutionDir)/../../src/ui/res/surface.rgs" />
+    <None Include="$(SolutionDir)/../../src/ui/res/textbox.rgs" />
+    <None Include="$(SolutionDir)/../../src/ui/res/timer.rgs" />
+    <None Include="$(SolutionDir)/../../src/ui/res/trigger.rgs" />
+    <None Include="$(SolutionDir)/../../src/ui/res/vpinball.rgs" />
+    <None Include="$(SolutionDir)/../../src/ui/res/light.cur" />
+    <None Include="$(SolutionDir)/../../src\ui\res\ball.cur" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="$(SolutionDir)/../../src/assets/AOdither.webp">
+      <FileType>Document</FileType>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/BallEnv.exr">
+      <FileType>Document</FileType>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/bumperbase.webp">
+      <FileType>Document</FileType>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/bumperCap.webp">
+      <FileType>Document</FileType>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/bumperring.webp">
+      <FileType>Document</FileType>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/bumperskirt.webp">
+      <FileType>Document</FileType>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/envmap.webp">
+      <FileType>Document</FileType>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/kickerCup.webp">
+      <FileType>Document</FileType>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/kickerGottlieb.webp">
+      <FileType>Document</FileType>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/kickerHoleWood.webp">
+      <FileType>Document</FileType>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/kickerT1.webp">
+      <FileType>Document</FileType>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/kickerWilliams.webp">
+      <FileType>Document</FileType>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/add.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/assign.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/backglass.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/bumper.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/camera.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/chevron.bmp" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/decal.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/expandcolapse.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/flasher.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/flipper.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/gate.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/kicker.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/layerIcons16.bmp" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/layerIcons32.bmp" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/layers.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/light.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/lightseq.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/magnify.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/options.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/PlayWarning.bmp" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/plunger.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/primitive.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/ramp.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/reel.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/remove.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/rubber.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/script.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/SDbottom.bmp" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/SDcenter.bmp" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/SDleft.bmp" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/SDmiddle.bmp" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/SDright.bmp" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/SDtop.bmp" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/select.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/spinner.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/target.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/textbox.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/timer.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/toolbar.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/trigger.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/vpinball.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/logo.bmp" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/step.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/pause.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/play.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/table.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/toolbar.bmp" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/wall.ico" />
+    <Image Include="$(SolutionDir)/../../src\ui\res\ball.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(SolutionDir)/../../src\core\ResURIResolver.h" />
+    <ClInclude Include="$(SolutionDir)/../../src\core\VPApp.h" />
+    <ClInclude Include="$(SolutionDir)/../../src\input\DirectInputJoystickHandler.h" />
+    <ClInclude Include="$(SolutionDir)/../../src\input\DirectInputKeyboardHandler.h" />
+    <ClInclude Include="$(SolutionDir)/../../src\input\DirectInputMouseHandler.h" />
+    <ClInclude Include="$(SolutionDir)/../../src\input\OpenPinDevHandler.h" />
+    <ClInclude Include="$(SolutionDir)/../../src\input\SDLInputHandler.h" />
+    <ClInclude Include="$(SolutionDir)/../../src\input\Win32InputKeyboardHandler.h" />
+    <ClInclude Include="$(SolutionDir)/../../src\input\XInputJoystickHandler.h" />
+    <ClInclude Include="$(SolutionDir)/../../src\parts\PartGroup.h" />
+    <ClInclude Include="$(SolutionDir)/../../src\physics\AsyncDynamicQuadTree.h" />
+    <ClInclude Include="$(SolutionDir)/../../src\plugins\ScriptablePlugin.h" />
+    <ClInclude Include="$(SolutionDir)/../../src\ui\properties\PartGroupVisualsProperty.h" />
+    <ClInclude Include="../gen/vpinball.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/audio/AudioPlayer.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/audio/AudioStreamPlayer.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/audio/SoundPlayer.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/def.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/dispid.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/DynamicScript.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/editablereg.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/extern.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/ieditable.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/iselect.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/main.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/input/pininput.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/pinundo.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/stdafx.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/vpinball_h.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/vpversion.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/player.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/Settings.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/TableDB.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/VPXPluginAPIImpl.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/math/bbox.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/math/math.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/math/matrix.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/math/mesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/math/vector.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/math/ModelViewProj.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/ballMesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/bulbLightMesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/bulbSocketMesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/bumperBaseMesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/bumperCapMesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/bumperRingMesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/bumperSocketMesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/dropTargetT2Mesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/dropTargetT3Mesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/dropTargetT4Mesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/flipperBase.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/gateBracketMesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/gateLongPlateMesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/gatePlateMesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/gateWireMesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/gateWireRectangleMesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/hitTargetFatRectangleMesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/hitTargetFatSquareMesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/hitTargetRectangleMesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/hitTargetRoundMesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/hitTargetT1SlimMesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/hitTargetT2SlimMesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/kickerCupMesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/kickerHitMesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/kickerHoleMesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/kickerSimpleHoleMesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/spinnerBracketMesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/spinnerPlateMesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/triggerSimpleMesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/triggerStarMesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/Backglass.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/parts/dragpoint.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/parts/Material.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/parts/pinbinary.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/parts/ball.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/parts/bumper.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/parts/decal.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/parts/dispreel.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/parts/flasher.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/parts/flipper.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/parts/gate.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/parts/hittarget.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/parts/pintable.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/parts/ramp.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/parts/plunger.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/parts/primitive.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/parts/rubber.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/parts/Sound.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/parts/spinner.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/parts/surface.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/parts/textbox.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/parts/timer.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/parts/trigger.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/parts/kicker.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/parts/light.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/parts/lightseq.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/VPXFileFeedback.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/physics/physconst.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/physics/kdtree.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/physics/hitball.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/physics/collide.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/physics/collideex.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/physics/hitable.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/physics/hitflipper.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/physics/hitplunger.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/physics/hittimer.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/physics/NudgeFilter.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/physics/PhysicsEngine.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/physics/quadtree.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/plugins/MsgPlugin.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/plugins/ControllerPlugin.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/plugins/PinMAMEPlugin.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/plugins/MsgPluginManager.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/plugins/VPXPlugin.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/captureExt.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/AreaTex.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/Anaglyph.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/IndexBuffer.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/MeshBuffer.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/Renderable.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/RenderCommand.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/RenderDevice.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/RenderFrame.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/RenderPass.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/RenderProbe.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/RenderState.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/RenderTarget.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/Renderer.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/Sampler.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/SearchTex.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/Shader.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/Texture.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/TextureManager.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/VertexBuffer.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/ViewSetup.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/VRDevice.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/Window.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/trace.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/typedefs3D.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/resource.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/worker.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/LiveUI.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/PerfUI.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/codeview.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/codeviewedit.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/Debugger.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/hitrectsur.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/hitsur.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/paintsur.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/sur.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/VPXLoadFileProgressBar.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/VPXSaveFileProgressBar.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/AboutDialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/AudioOptionsDialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/CollectionManagerDialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/DimensionDialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/DrawingOrderDialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/EditorOptionsDialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/ImageDialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/InputDeviceDialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/KeysConfigDialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/LayersListDialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/MaterialDialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/NotesDialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/RenderProbeDialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/ScriptErrorDialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/PhysicsOptionsDialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/SearchSelectDialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/SoundDialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/TableInfoDialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/ToolbarDialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/VideoOptionsDialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/VROptionsDialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/WhereUsedDialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/BackglassCameraProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/BackglassVisualsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/BallPhysicsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/BallVisualsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/BumperPhysicsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/BumperVisualsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/DecalVisualsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/DispreelStateProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/DispreelVisualsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/DragpointVisualsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/FlasherVisualsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/FlipperPhysicsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/FlipperVisualsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/GatePhysicsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/GateVisualsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/HitTargetPhysicsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/HitTargetVisualsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/KickerPhysicsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/KickerVisualsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/LightseqStatesProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/LightStatesProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/LightVisualsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/PlungerPhysicsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/PlungerVisualsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/PrimitivePhysicsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/PrimitivePositionProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/PrimitiveVisualsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/PropertyDialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/RampPhysicsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/RampVisualsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/RubberPhysicsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/RubberVisualsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/SpinnerPhysicsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/SpinnerVisualsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/TableAudioProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/TableLightsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/TablePhysicsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/TableVisualsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/TextboxVisualsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/TriggerPhysicsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/TriggerVisualsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/WallPhysicsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/WallVisualsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/utils/BlackBox.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/utils/CrashHandler.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/utils/bulb.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/utils/eventproxy.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/utils/fileio.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/utils/hash.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/utils/Logger.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/utils/lzwreader.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/utils/lzwwriter.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/utils/MemoryStatus.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/utils/memutil.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/utils/objloader.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/utils/StackTrace.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/utils/ushock_output.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/utils/variant.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/utils/vector.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/utils/vectorsort.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/utils/wintimer.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bgfx\bgfx.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bgfx\defines.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bgfx\embedded_shader.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bgfx\platform.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bimg\bimg.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bimg\decode.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\allocator.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\bounds.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\bx.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\commandline.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\config.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\constants.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\cpu.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\debug.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\easing.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\endian.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\error.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\file.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\filepath.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\float4x4_t.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\handlealloc.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\hash.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\macros.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\maputil.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\math.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\mpscqueue.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\mutex.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\os.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\pixelformat.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\platform.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\process.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\readerwriter.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\ringbuffer.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\rng.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\semaphore.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\settings.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\simd_t.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\sort.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\spscqueue.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\string.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\thread.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\timer.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\typetraits.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\uint32_t.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\url.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\compat\msvc\alloca.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\compat\msvc\dirent.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\compat\msvc\inttypes.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\compat\msvc\stdbool.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/hidapi/hidapi.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/hid-report-parser/hid_report_parser.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imconfig.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/imguizmo/ImGuizmo.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_opengl3_loader.h">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_opengl3.h">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_dx9.h">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/bgfx-imgui/imgui_impl_bgfx.h">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_GL'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/bgfx-imgui/vs_ocornut_imgui.bin.h">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_GL'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/bgfx-imgui/fs_ocornut_imgui.bin.h">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_GL'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_win32.h">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_sdl3.h">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_internal.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_stdlib.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/implot/implot.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/implot/implot_internal.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/BAM/BAMView.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/BAM/BAM_Tracker.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/BAM/BAM_ViewPortSetup.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/forsyth.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/freeimage.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/glad/include/glad/gl.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/gpuprofiler.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/nvapi/nvapi.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/nvapi/nvapi_lite_common.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/nvapi/nvapi_lite_d3dext.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/nvapi/nvapi_lite_salend.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/nvapi/nvapi_lite_salstart.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/nvapi/nvapi_lite_sli.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/nvapi/nvapi_lite_stereo.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/nvapi/nvapi_lite_surround.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/progmesh.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/progmesh_vecmatquat_minimal.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/scilexer.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/scintilla.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/Sci_Position.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/serial.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/stb_image.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/ThreadPool.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/tinyxml2/tinyxml2.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/simple-uri-parser/uri_parser.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/default_resource.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_appcore.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_appcore0.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_archive.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_commondlg.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_controls.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_cstring.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_ddx.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_dialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_dockframe.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_docking.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_exception.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_file.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_filefind.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_folderdialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_frame.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_gdi.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_imagelist.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_listview.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_mdi.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_menu.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_menubar.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_metafile.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_mutex.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_preview.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_printdialogex.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_printdialogs.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_propertysheet.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_rebar.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_rect.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_regkey.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_ribbon.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_richedit.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_scrollview.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_shared_ptr.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_socket.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_statusbar.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_stdcontrols.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_tab.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_taskdialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_textconv.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_themes.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_time.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_toolbar.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_treeview.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_wceframe.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_wcestddef.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_webbrowser.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_wincore.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_wincore0.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/winsdk/hidpi.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/winsdk/hidsdi.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/winsdk/hidusage.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/openxr/openxr.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/openxr/openxr_loader_negotiation.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/openxr/openxr_platform.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/openxr/openxr_platform_defines.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/openxr/openxr_reflection.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/openxr/openxr_reflection_parent_structs.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/openxr/openxr_reflection_structs.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/BallShader.hlsl">
+      <EntryPointName>ballShaderCode</EntryPointName>
+      <HeaderFileOutput>$(SolutionDir)../gen/shaders/hlsl_ball.h</HeaderFileOutput>
+      <ShaderType>Effect</ShaderType>
+      <ShaderModel>2.0</ShaderModel>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
+      <FileType>Document</FileType>
+    </FxCompile>
+    <FxCompile Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/BasicShader.hlsl">
+      <EntryPointName>basicShaderCode</EntryPointName>
+      <HeaderFileOutput>$(SolutionDir)../gen/shaders/hlsl_basic.h</HeaderFileOutput>
+      <ShaderType>Effect</ShaderType>
+      <ShaderModel>2.0</ShaderModel>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
+      <FileType>Document</FileType>
+    </FxCompile>
+    <FxCompile Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/DMDShader.hlsl">
+      <EntryPointName>dmdShaderCode</EntryPointName>
+      <HeaderFileOutput>$(SolutionDir)../gen/shaders/hlsl_dmd.h</HeaderFileOutput>
+      <ShaderType>Effect</ShaderType>
+      <ShaderModel>2.0</ShaderModel>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
+      <FileType>Document</FileType>
+    </FxCompile>
+    <FxCompile Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FBShader.hlsl">
+      <EntryPointName>FBShaderCode</EntryPointName>
+      <HeaderFileOutput>$(SolutionDir)../gen/shaders/hlsl_postprocess.h</HeaderFileOutput>
+      <ShaderType>Effect</ShaderType>
+      <ShaderModel>2.0</ShaderModel>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
+      <FileType>Document</FileType>
+    </FxCompile>
+    <FxCompile Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FlasherShader.hlsl">
+      <EntryPointName>flasherShaderCode</EntryPointName>
+      <HeaderFileOutput>$(SolutionDir)../gen/shaders/hlsl_flasher.h</HeaderFileOutput>
+      <ShaderType>Effect</ShaderType>
+      <ShaderModel>2.0</ShaderModel>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
+      <FileType>Document</FileType>
+    </FxCompile>
+    <FxCompile Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/LightShader.hlsl">
+      <EntryPointName>lightShaderCode</EntryPointName>
+      <HeaderFileOutput>$(SolutionDir)../gen/shaders/hlsl_light.h</HeaderFileOutput>
+      <ShaderType>Effect</ShaderType>
+      <ShaderModel>2.0</ShaderModel>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
+      <FileType>Document</FileType>
+    </FxCompile>
+    <FxCompile Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/StereoShader.hlsl">
+      <EntryPointName>stereoShaderCode</EntryPointName>
+      <HeaderFileOutput>$(SolutionDir)../gen/shaders/hlsl_stereo.h</HeaderFileOutput>
+      <ShaderType>Effect</ShaderType>
+      <ShaderModel>2.0</ShaderModel>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
+      <FileType>Document</FileType>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../src/assets/**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>assets\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+  <ItemGroup>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../scripts\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>scripts\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+  <ItemGroup>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../third-party\runtime-libs\windows-x86\freeimage.dll" Condition="'$(Platform)'=='Win32'">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../third-party\runtime-libs\windows-x86\openvr_api.dll" Condition="'$(Platform)'=='Win32'">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../third-party\runtime-libs\windows-x86\openxr_loader.dll" Condition="'$(Platform)'=='Win32'">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../third-party\runtime-libs\windows-x86\SciLexerVP.dll" Condition="'$(Platform)'=='Win32'">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../third-party\runtime-libs\windows-x86\SDL3.dll" Condition="'$(Platform)'=='Win32'">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+  <ItemGroup>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../third-party\runtime-libs\windows-x64\freeimage64.dll" Condition="'$(Platform)'=='x64'">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../third-party\runtime-libs\windows-x64\openvr_api64.dll" Condition="'$(Platform)'=='x64'">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../third-party\runtime-libs\windows-x64\openxr_loader64.dll" Condition="'$(Platform)'=='x64'">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../third-party\runtime-libs\windows-x64\SciLexerVP64.dll" Condition="'$(Platform)'=='x64'">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../third-party\runtime-libs\windows-x64\SDL364.dll" Condition="'$(Platform)'=='x64'">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+  <ItemGroup>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/*.glfx" Condition="('$(Configuration)'=='Debug_GL')or('$(Configuration)'=='Release_GL')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>shaders-10.8.1\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/*.fxh" Condition="('$(Configuration)'=='Debug_GL')or('$(Configuration)'=='Release_GL')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>shaders-10.8.1\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(SolutionDir)/../../make/vpinball.natvis">
+      <FileType>Document</FileType>
+    </Natvis>
+    <Natvis Include="$(SolutionDir)/../../make/bgfx.natvis" Condition="('$(Configuration)'=='Debug_BGFX')or('$(Configuration)'=='Release_BGFX')">
+      <FileType>Document</FileType>
+    </Natvis>
+  </ItemGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties DevPartner_IsInstrumented="1" RESOURCE_FILE="src/ui/vpinball.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

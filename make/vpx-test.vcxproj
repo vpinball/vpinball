@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <ProjectGuid>{414e597a-df8a-4080-ae42-472e0ec126f6}</ProjectGuid>
+    <ProjectName>vpx-test</ProjectName>
+    <RootNamespace>vpx-test</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <ImportGroup Label="Shared">
+    <Import Project="vpx-core.vcxitems" Label="Shared" />
+  </ImportGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>VPXTest_DX964</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">
+    <TargetName>VPXTest_GL64</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_BGFX|x64'">
+    <TargetName>VPXTest_BGFX64</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <TargetName>VPXTest_DX9</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">
+    <TargetName>VPXTest_GL</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_BGFX|Win32'">
+    <TargetName>VPXTest_BGFX</TargetName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="../gen/vpinball_i.c">
+        <PrecompiledHeader>NotUsing</PrecompiledHeader>
+        <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+    </ClCompile>
+    <ClCompile Include="../../tests/vpx-test.cpp" />
+    <ClCompile Include="../../tests/test-base-render.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="../../tests/vpx-test.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../tests/assets/*.vpx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>test-assets/%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="$(SolutionDir)/../../tests/assets/*.webp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>test-assets/%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

@@ -1,0 +1,118 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <ProjectGuid>{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}</ProjectGuid>
+    <ProjectName>vpx</ProjectName>
+    <RootNamespace>vpx</RootNamespace>
+    <Keyword>AtlProj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <ImportGroup Label="Shared">
+    <Import Project="vpx-core.vcxitems" Label="Shared" />
+  </ImportGroup>
+  <PropertyGroup>
+    <TargetExt>.exe</TargetExt>
+    <PreBuildEventUseInBuild>false</PreBuildEventUseInBuild>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration.SubString(0,5))' == 'Relea'" Label="Configuration">
+    <GenerateManifest>true</GenerateManifest>
+    <EmbedManifest>true</EmbedManifest>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <TargetName>VPinballX</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_GL|Win32'">
+    <TargetName>VPinballX_GL</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_BGFX|Win32'">
+    <TargetName>VPinballX_BGFX</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>VPinballX64</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_GL|x64'">
+    <TargetName>VPinballX_GL64</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_BGFX|x64'">
+    <TargetName>VPinballX_BGFX64</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <TargetName>VPinballX</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_GL|Win32'">
+    <TargetName>VPinballX_GL</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_BGFX|Win32'">
+    <TargetName>VPinballX_BGFX</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>VPinballX64</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_GL|x64'">
+    <TargetName>VPinballX_GL64</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_BGFX|x64'">
+    <TargetName>VPinballX_BGFX64</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <PostBuildEvent>
+      <Command>%40echo off
+        if ".%25VPIN_DIR%25" == "." (
+          echo Define VPIN_DIR env. variable if you want to deploy on build
+        ) else (
+          echo Copies EXE and DLLs to production directory.
+          echo VPIN_DIR="%25VPIN_DIR%25"
+          if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
+          copy "$(TargetPath)" "%25VPIN_DIR%25"
+        )
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectReference Include="plugin-alphadmd.vcxproj">
+      <Project>{2bf90d88-9139-4e66-a778-4327311af7a7}</Project>
+    </ProjectReference>
+    <ProjectReference Include="plugin-scoreview.vcxproj">
+      <Project>{91425C91-FDB2-4170-A5C9-A068357E59E3}</Project>
+    </ProjectReference>
+    <ProjectReference Include="plugin-b2s.vcxproj">
+      <Project>{7D58C20E-53F4-4AD6-9004-CA6148082491}</Project>
+    </ProjectReference>
+    <ProjectReference Include="plugin-pup.vcxproj">
+      <Project>{5DFB5344-B339-49BC-B93C-B3B8D307199B}</Project>
+    </ProjectReference>
+    <ProjectReference Include="plugin-dmdutil.vcxproj">
+      <Project>{DAFBE049-4233-430B-9A04-63223C3972E3}</Project>
+    </ProjectReference>
+    <ProjectReference Include="plugin-dof.vcxproj">
+      <Project>{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}</Project>
+    </ProjectReference>
+    <ProjectReference Include="plugin-helloscript.vcxproj">
+      <Project>{bd05ba74-3676-42d7-ad6a-79c2de31100e}</Project>
+    </ProjectReference>
+    <ProjectReference Include="plugin-helloworld.vcxproj">
+      <Project>{2bf90d88-9139-4e66-a778-4327311af777}</Project>
+    </ProjectReference>
+    <ProjectReference Include="plugin-flexdmd.vcxproj">
+      <Project>{2bf90d88-9139-4e66-a778-4327311af77B}</Project>
+    </ProjectReference>
+    <ProjectReference Include="plugin-pinmame.vcxproj">
+      <Project>{2bf90d88-9139-4e66-a778-4327311af77c}</Project>
+    </ProjectReference>
+    <ProjectReference Include="plugin-pinup-events.vcxproj">
+      <Project>{2bf90d88-9139-4e66-a778-4327311af779}</Project>
+    </ProjectReference>
+    <ProjectReference Include="plugin-remote-control.vcxproj">
+      <Project>{57516b53-6e7e-4618-93b3-4f5222f28807}</Project>
+    </ProjectReference>
+    <ProjectReference Include="plugin-serum.vcxproj">
+      <Project>{2bf90d88-9139-4e66-a778-4327311af778}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(SolutionDir)/../../src/core/main.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

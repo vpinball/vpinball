@@ -1,0 +1,2714 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="assets">
+      <UniqueIdentifier>{67a3c1e1-f7b5-45a4-ba1a-453f61d1e6da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="assets\meshes">
+      <UniqueIdentifier>{23b51dec-131c-4ac3-8f28-4e8fd6a3b646}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="audio">
+      <UniqueIdentifier>{fc16eece-2096-4e44-bad4-380f77d82bef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core">
+      <UniqueIdentifier>{fc16eece-2096-4e44-bad4-378fa9352bef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="input">
+      <UniqueIdentifier>{250fa71e-34b0-4d55-9f0a-483bf091847f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="math">
+      <UniqueIdentifier>{f3961dac-131c-4ac3-3988-412398766646}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="parts">
+      <UniqueIdentifier>{fc16eece-2039-4e44-bad4-378f354cdfef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="plugin">
+      <UniqueIdentifier>{fc16eece-98ac-c96e-b32c-5f69e32ab479}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="physics">
+      <UniqueIdentifier>{fc16eece-1a36-4e44-bad4-3646af352bef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="renderer">
+      <UniqueIdentifier>{3d81e6c0-9785-4460-bd19-c8c25e24ae1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{67a3c1e1-f7b5-45a4-ba1a-453f61d1e6d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders\hlsl_glsl">
+      <UniqueIdentifier>{67a3c1e2-f7b5-45a4-ba1a-453f61d1e6d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders\bgfx">
+      <UniqueIdentifier>{67a3c1e3-f7b5-45a4-ba1a-453f61d1e6d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="scripts">
+      <UniqueIdentifier>{e528ec17-3a14-4355-aff0-2359664399c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ui">
+      <UniqueIdentifier>{28f6598a-1408-3fc7-a6ce-93c682c026da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ui\dialogs">
+      <UniqueIdentifier>{2890089b-1408-4cfb-a6ce-93c682c026da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ui\properties">
+      <UniqueIdentifier>{448abbef-cfdb-46d4-8f5d-12a4e59cb1dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ui\res">
+      <UniqueIdentifier>{2553b092-dac2-4b2a-9c0c-35d589c67b37}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils">
+      <UniqueIdentifier>{28f6598a-1408-3fc7-a6ce-93abd98026da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party">
+      <UniqueIdentifier>{ba1f1ac4-658a-4269-9aa3-1a5f1b5a4784}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\tinyxml2">
+      <UniqueIdentifier>{e926a8a0-9840-4ba3-881d-b65d8fa8a873}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\BAM">
+      <UniqueIdentifier>{c38add25-cdb8-4aea-810a-d2cd4dbd1010}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\hid">
+      <UniqueIdentifier>{cf396ea5-cdf8-413a-898a-64af235ed010}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\imgui">
+      <UniqueIdentifier>{2f3e24c9-ef99-4120-9fb6-1a4880e349d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\nvapi">
+      <UniqueIdentifier>{4a732b2b-cffd-4023-a3ff-69e331d25eb2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\Win32xx">
+      <UniqueIdentifier>{79f0d9fe-5f96-4893-a95c-5c2f5ef53016}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\glad">
+      <UniqueIdentifier>{eb774f26-7da3-495d-80cc-8eb48d6f1593}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\progmesh">
+      <UniqueIdentifier>{f1b84f0b-89cf-4e24-b82c-a6aa26a235e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\scintilla">
+      <UniqueIdentifier>{b8b61905-2d58-4daf-92fd-b57d299e5dd1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\gpuprofiler">
+      <UniqueIdentifier>{8aacfaf1-764f-4635-b401-c610ca901d7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\serial">
+      <UniqueIdentifier>{de0cf113-92b0-4b46-a761-2db6a8318f96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\imgui\bgfx">
+      <UniqueIdentifier>{e966d012-e5d4-48a9-9771-e71ba51d1128}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\imgui\dx9">
+      <UniqueIdentifier>{f2163d36-4d3c-49c3-b6ce-4a93b6ea61ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\imgui\opengl">
+      <UniqueIdentifier>{5db81c88-4948-4fb4-8a67-a75c9d10bd25}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\imgui\win32">
+      <UniqueIdentifier>{c5435e02-7115-480d-9dfd-2a73d70adc19}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\imgui\implot">
+      <UniqueIdentifier>{2162f4c7-dd01-42ad-8bb7-0ee3ffba7b8d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\imgui\ImGuizmo">
+      <UniqueIdentifier>{cfa580c8-9f5b-459d-bd2a-8117a56df968}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\bimg">
+      <UniqueIdentifier>{1eb7da9e-d408-45d0-a562-cc2bb3edbbd4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\bx">
+      <UniqueIdentifier>{7b831416-6648-4f68-812c-ec139bd0ca41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\bgfx">
+      <UniqueIdentifier>{acdc1b9e-8fcf-42b6-8a74-9a548cb799d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\compat">
+      <UniqueIdentifier>{c2eb4c3c-96b3-47e6-8e90-928d612397fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\imgui\sdl3">
+      <UniqueIdentifier>{777c0a63-2218-4595-a266-4036fb727996}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\openxr">
+      <UniqueIdentifier>{49343BB8-F179-4DA3-8FDF-5119D31F3386}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\simple-uri-parser">
+      <UniqueIdentifier>{d2ad50dc-81bf-4ece-9513-85e36260bc19}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(SolutionDir)/../../src/audio/AudioPlayer.cpp">
+      <Filter>audio</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/audio/AudioStreamPlayer.cpp">
+      <Filter>audio</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/audio/SoundPlayer.cpp">
+      <Filter>audio</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/core/editablereg.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/core/extern.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/core/ieditable.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/core/iselect.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/core/pinundo.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/core/player.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/core/Settings.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/core/stdafx.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/core/TableDB.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/core/vpinball.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/core/VPApp.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/core/VPXPluginAPIImpl.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/math/math.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/math/matrix.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/ball.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/Backglass.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/bumper.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/decal.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/dispreel.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/flasher.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/flipper.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/dragpoint.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/pinbinary.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/gate.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/hittarget.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/kicker.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/light.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/lightseq.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/pintable.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/plunger.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/primitive.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/ramp.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/rubber.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/Sound.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/spinner.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/surface.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/textbox.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/timer.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/parts/trigger.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/physics/kdtree.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/physics/hitball.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/physics/collide.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/physics/collideex.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/physics/hitflipper.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/physics/hitplunger.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/physics/NudgeFilter.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/physics/PhysicsEngine.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/physics/quadtree.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/plugins/MsgPluginManager.cpp">
+      <Filter>plugin</Filter>
+    </ClCompile>
+    <ClInclude Include="$(SolutionDir)/../../src/plugins/MsgPluginManager.h">
+      <Filter>plugin</Filter>
+    </ClInclude>
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/Anaglyph.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/captureExt.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/IndexBuffer.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/MeshBuffer.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/Renderer.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/RenderCommand.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/RenderDevice.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/RenderFrame.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/RenderPass.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/RenderProbe.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/RenderState.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/RenderTarget.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/Sampler.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/Shader.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/Texture.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/TextureManager.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/VertexBuffer.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/ViewSetup.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/VRDevice.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/renderer/Window.cpp">
+      <Filter>renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/hitrectsur.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/hitsur.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/paintsur.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/codeviewedit.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/Debugger.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/LiveUI.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/PerfUI.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/codeview.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/worker.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/AboutDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/DimensionDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/DrawingOrderDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/ImageDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/InputDeviceDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/MaterialDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/SearchSelectDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/SoundDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/TableInfoDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/EditorOptionsDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/AudioOptionsDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/VideoOptionsDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/CollectionManagerDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/NotesDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/PhysicsOptionsDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/KeysConfigDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/ScriptErrorDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/ToolbarDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/VPXLoadFileProgressBar.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/VPXSaveFileProgressBar.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/PropertyDialog.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/WallVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/GateVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/GatePhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/WallPhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/RampPhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/RampVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/FlipperPhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/FlipperVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/DragpointVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/PlungerPhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/PlungerVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/BallPhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/BallVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/BumperPhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/BumperVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/SpinnerPhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/SpinnerVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/TriggerVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/TriggerPhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/LightStatesProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/LightVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/HitTargetPhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/HitTargetVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/KickerPhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/KickerVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/DecalVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/TextboxVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/DispreelVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/DispreelStateProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/LightseqStatesProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/PrimitiveVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/PrimitivePhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/PrimitivePositionProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/FlasherVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/RubberVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/RubberPhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/BackglassVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/BackglassCameraProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/TableAudioProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/TableVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/TablePhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/TableLightsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/LayersListDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/VROptionsDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/WhereUsedDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/RenderProbeDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/core/def.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/utils/ushock_output.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/utils/wintimer.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/utils/bulb.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/utils/fileio.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/utils/Logger.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/utils/lzwreader.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/utils/lzwwriter.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/utils/memutil.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/utils/variant.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/utils/BlackBox.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/utils/CrashHandler.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/utils/MemoryStatus.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/utils/StackTrace.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/utils/hash.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/utils/objloader.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/miniz/miniz.c">
+      <Filter>third-party</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/hidapi/windows/hid.cpp">
+      <Filter>third-party</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/hid-report-parser/hid_report_parser.cpp">
+      <Filter>third-party</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/BAM/BAMView.cpp">
+      <Filter>third-party\BAM</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui_widgets.cpp">
+      <Filter>third-party\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui.cpp">
+      <Filter>third-party\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui_draw.cpp">
+      <Filter>third-party\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui_tables.cpp">
+      <Filter>third-party\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui_stdlib.cpp">
+      <Filter>third-party\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/tinyxml2/tinyxml2.cpp">
+      <Filter>third-party\tinyxml2</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/gpuprofiler.cpp">
+      <Filter>third-party\gpuprofiler</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/glad/src/gl.c">
+      <Filter>third-party\glad</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/progmesh.cpp">
+      <Filter>third-party\progmesh</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/serial.cpp">
+      <Filter>third-party\serial</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/bgfx-imgui/imgui_impl_bgfx.cpp">
+      <Filter>third-party\imgui\bgfx</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_win32.cpp">
+      <Filter>third-party\imgui\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_dx9.cpp">
+      <Filter>third-party\imgui\dx9</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_opengl3.cpp">
+      <Filter>third-party\imgui\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/implot/implot_items.cpp">
+      <Filter>third-party\imgui\implot</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/implot/implot.cpp">
+      <Filter>third-party\imgui\implot</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/imguizmo/ImGuizmo.cpp">
+      <Filter>third-party\imgui\ImGuizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_sdl3.cpp">
+      <Filter>third-party\imgui\sdl3</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/core/DynamicScript.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/core/ResURIResolver.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src\physics\AsyncDynamicQuadTree.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/input/pininput.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/input/OpenPinDevHandler.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src\parts\PartGroup.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src\ui\properties\PartGroupVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="../gen/vpinball.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/audio/AudioPlayer.h">
+      <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/audio/AudioStreamPlayer.h">
+      <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/audio/SoundPlayer.h">
+      <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/core/def.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/core/vpversion.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/core/extern.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/core/dispid.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/core/editablereg.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/core/ieditable.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/core/iselect.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/core/main.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/core/stdafx.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/core/pinundo.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/core/vpinball_h.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/core/player.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/core/Settings.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/core/TableDB.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/core/VPXPluginAPIImpl.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/math/bbox.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/math/math.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/math/matrix.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/math/mesh.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/math/vector.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/math/ModelViewProj.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/ballMesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/bulbLightMesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/bulbSocketMesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/bumperBaseMesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/bumperCapMesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/bumperRingMesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/bumperSocketMesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/dropTargetT2Mesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/dropTargetT3Mesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/flipperBase.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/gateBracketMesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/gateWireMesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/hitTargetRectangleMesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/hitTargetRoundMesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/kickerCupMesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/kickerHitMesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/kickerHoleMesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/spinnerBracketMesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/spinnerPlateMesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/triggerSimpleMesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/triggerStarMesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/dropTargetT4Mesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/hitTargetFatRectangleMesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/hitTargetFatSquareMesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/gateLongPlateMesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/gatePlateMesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/gateWireRectangleMesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/hitTargetT1SlimMesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/hitTargetT2SlimMesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/meshes/kickerSimpleHoleMesh.h">
+      <Filter>assets\meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/Backglass.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/parts/ball.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/parts/bumper.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/parts/decal.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/parts/Material.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/parts/pinbinary.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/parts/dragpoint.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/parts/dispreel.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/parts/flasher.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/parts/flipper.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/parts/gate.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/parts/hittarget.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/parts/kicker.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/parts/light.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/parts/lightseq.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/parts/pintable.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/VPXFileFeedback.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/parts/plunger.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/parts/primitive.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/parts/Sound.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/parts/spinner.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/parts/ramp.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/parts/surface.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/parts/textbox.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/parts/timer.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/parts/trigger.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/parts/rubber.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/physics/collide.h">
+      <Filter>physics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/physics/collideex.h">
+      <Filter>physics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/physics/hitball.h">
+      <Filter>physics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/physics/hitflipper.h">
+      <Filter>physics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/physics/hitplunger.h">
+      <Filter>physics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/physics/hitable.h">
+      <Filter>physics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/physics/hittimer.h">
+      <Filter>physics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/physics/physconst.h">
+      <Filter>physics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/physics/kdtree.h">
+      <Filter>physics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/physics/NudgeFilter.h">
+      <Filter>physics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/physics/PhysicsEngine.h">
+      <Filter>physics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/physics/quadtree.h">
+      <Filter>physics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/plugins/VPXPlugin.h">
+      <Filter>plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/plugins/MsgPlugin.h">
+      <Filter>plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/plugins/ControllerPlugin.h">
+      <Filter>plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/plugins/PinMAMEPlugin.h">
+      <Filter>plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/Anaglyph.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/AreaTex.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/captureExt.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/IndexBuffer.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/MeshBuffer.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/RenderProbe.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/RenderCommand.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/RenderFrame.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/RenderPass.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/Renderable.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/RenderTarget.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/RenderDevice.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/RenderState.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/Renderer.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/Sampler.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/SearchTex.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/Shader.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/Texture.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/TextureManager.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/trace.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/typedefs3D.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/VertexBuffer.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/ViewSetup.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/VRDevice.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/renderer/Window.h">
+      <Filter>renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/resource.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/worker.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/LiveUI.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/PerfUI.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/Debugger.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/codeview.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/codeviewedit.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/paintsur.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/sur.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/hitrectsur.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/hitsur.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/AboutDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/DimensionDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/DrawingOrderDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/ImageDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/InputDeviceDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/SearchSelectDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/SoundDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/TableInfoDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/EditorOptionsDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/AudioOptionsDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/VideoOptionsDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/CollectionManagerDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/PhysicsOptionsDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/MaterialDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/KeysConfigDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/VROptionsDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/WhereUsedDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/ToolbarDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/LayersListDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/NotesDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/RenderProbeDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/ScriptErrorDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/VPXLoadFileProgressBar.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/VPXSaveFileProgressBar.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/PropertyDialog.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/WallVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/GateVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/GatePhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/WallPhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/RampPhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/RampVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/FlipperPhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/FlipperVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/DragpointVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/PlungerPhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/PlungerVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/BallPhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/BallVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/BumperPhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/BumperVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/SpinnerPhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/SpinnerVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/TriggerVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/TriggerPhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/LightStatesProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/LightVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/HitTargetPhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/HitTargetVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/KickerPhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/KickerVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/DecalVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/TextboxVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/DispreelVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/DispreelStateProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/LightseqStatesProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/PrimitiveVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/PrimitivePhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/PrimitivePositionProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/FlasherVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/RubberVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/RubberPhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/BackglassVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/BackglassCameraProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/TableAudioProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/TableVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/TablePhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/TableLightsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/utils/BlackBox.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/utils/bulb.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/utils/CrashHandler.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/utils/eventproxy.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/utils/fileio.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/utils/hash.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/utils/ushock_output.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/utils/Logger.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/utils/lzwwriter.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/utils/lzwreader.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/utils/MemoryStatus.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/utils/memutil.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/utils/objloader.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/utils/StackTrace.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/utils/variant.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/utils/vector.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/utils/vectorsort.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/utils/wintimer.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/freeimage.h">
+      <Filter>third-party</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/ThreadPool.h">
+      <Filter>third-party</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/forsyth.h">
+      <Filter>third-party</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/stb_image.h">
+      <Filter>third-party</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/BAM/BAM_Tracker.h">
+      <Filter>third-party\BAM</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/BAM/BAM_ViewPortSetup.h">
+      <Filter>third-party\BAM</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/BAM/BAMView.h">
+      <Filter>third-party\BAM</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/hidapi/hidapi.h">
+      <Filter>third-party\hid</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/hid-report-parser/hid_report_parser.h">
+      <Filter>third-party\hid</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_internal.h">
+      <Filter>third-party\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imconfig.h">
+      <Filter>third-party\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui.h">
+      <Filter>third-party\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_stdlib.h">
+      <Filter>third-party\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/nvapi/nvapi.h">
+      <Filter>third-party\nvapi</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/nvapi/nvapi_lite_common.h">
+      <Filter>third-party\nvapi</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/nvapi/nvapi_lite_d3dext.h">
+      <Filter>third-party\nvapi</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/nvapi/nvapi_lite_salend.h">
+      <Filter>third-party\nvapi</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/nvapi/nvapi_lite_salstart.h">
+      <Filter>third-party\nvapi</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/nvapi/nvapi_lite_sli.h">
+      <Filter>third-party\nvapi</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/nvapi/nvapi_lite_stereo.h">
+      <Filter>third-party\nvapi</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/nvapi/nvapi_lite_surround.h">
+      <Filter>third-party\nvapi</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/tinyxml2/tinyxml2.h">
+      <Filter>third-party\tinyxml2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/default_resource.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_preview.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_printdialogex.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_appcore.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_appcore0.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_archive.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_commondlg.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_controls.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_cstring.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_ddx.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_dialog.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_dockframe.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_docking.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_exception.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_file.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_filefind.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_folderdialog.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_frame.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_gdi.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_imagelist.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_listview.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_mdi.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_menu.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_menubar.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_metafile.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_mutex.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_printdialogs.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_propertysheet.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_rebar.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_rect.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_regkey.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_ribbon.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_richedit.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_scrollview.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_shared_ptr.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_socket.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_statusbar.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_stdcontrols.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_tab.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_taskdialog.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_textconv.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_themes.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_time.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_toolbar.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_treeview.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_wceframe.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_wcestddef.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_webbrowser.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_wincore.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/win32xx/include/wxx_wincore0.h">
+      <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/winsdk/hidpi.h">
+      <Filter>third-party\hid</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/winsdk/hidsdi.h">
+      <Filter>third-party\hid</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/winsdk/hidusage.h">
+      <Filter>third-party\hid</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/gpuprofiler.h">
+      <Filter>third-party\gpuprofiler</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/glad/include/glad/gl.h">
+      <Filter>third-party\glad</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/progmesh.h">
+      <Filter>third-party\progmesh</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/progmesh_vecmatquat_minimal.h">
+      <Filter>third-party\progmesh</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/Sci_Position.h">
+      <Filter>third-party\scintilla</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/scilexer.h">
+      <Filter>third-party\scintilla</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/scintilla.h">
+      <Filter>third-party\scintilla</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/serial.h">
+      <Filter>third-party\serial</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/bgfx-imgui/fs_ocornut_imgui.bin.h">
+      <Filter>third-party\imgui\bgfx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/bgfx-imgui/vs_ocornut_imgui.bin.h">
+      <Filter>third-party\imgui\bgfx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/bgfx-imgui/imgui_impl_bgfx.h">
+      <Filter>third-party\imgui\bgfx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_win32.h">
+      <Filter>third-party\imgui\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_dx9.h">
+      <Filter>third-party\imgui\dx9</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_opengl3.h">
+      <Filter>third-party\imgui\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_opengl3_loader.h">
+      <Filter>third-party\imgui\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/implot/implot.h">
+      <Filter>third-party\imgui\implot</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/implot/implot_internal.h">
+      <Filter>third-party\imgui\implot</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/imguizmo/ImGuizmo.h">
+      <Filter>third-party\imgui\ImGuizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bimg\bimg.h">
+      <Filter>third-party\bimg</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bimg\decode.h">
+      <Filter>third-party\bimg</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bgfx\bgfx.h">
+      <Filter>third-party\bgfx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bgfx\defines.h">
+      <Filter>third-party\bgfx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bgfx\embedded_shader.h">
+      <Filter>third-party\bgfx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bgfx\platform.h">
+      <Filter>third-party\bgfx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\allocator.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\bounds.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\bx.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\commandline.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\config.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\constants.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\cpu.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\debug.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\easing.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\endian.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\error.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\file.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\filepath.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\float4x4_t.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\handlealloc.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\hash.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\macros.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\maputil.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\math.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\mpscqueue.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\mutex.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\os.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\pixelformat.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\platform.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\process.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\readerwriter.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\ringbuffer.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\rng.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\semaphore.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\settings.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\simd_t.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\sort.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\spscqueue.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\string.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\thread.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\timer.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\typetraits.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\uint32_t.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\bx\url.h">
+      <Filter>third-party\bx</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\compat\msvc\alloca.h">
+      <Filter>third-party\compat</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\compat\msvc\dirent.h">
+      <Filter>third-party\compat</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\compat\msvc\inttypes.h">
+      <Filter>third-party\compat</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party\include\compat\msvc\stdbool.h">
+      <Filter>third-party\compat</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_sdl3.h">
+      <Filter>third-party\imgui\sdl3</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/openxr/openxr.h">
+      <Filter>third-party\openxr</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/openxr/openxr_loader_negotiation.h">
+      <Filter>third-party\openxr</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/openxr/openxr_platform.h">
+      <Filter>third-party\openxr</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/openxr/openxr_platform_defines.h">
+      <Filter>third-party\openxr</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/openxr/openxr_reflection.h">
+      <Filter>third-party\openxr</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/openxr/openxr_reflection_parent_structs.h">
+      <Filter>third-party\openxr</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/openxr/openxr_reflection_structs.h">
+      <Filter>third-party\openxr</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/simple-uri-parser/uri_parser.h">
+      <Filter>third-party\simple-uri-parser</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src\plugins\ScriptablePlugin.h">
+      <Filter>plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/core/DynamicScript.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src\core\ResURIResolver.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src\physics\AsyncDynamicQuadTree.h">
+      <Filter>physics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src\input\DirectInputJoystickHandler.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src\input\DirectInputKeyboardHandler.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src\input\DirectInputMouseHandler.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src\input\SDLInputHandler.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src\input\Win32InputKeyboardHandler.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src\input\XInputJoystickHandler.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/input/pininput.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src\input\OpenPinDevHandler.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src\parts\PartGroup.h">
+      <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src\ui\properties\PartGroupVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src\core\VPApp.h">
+      <Filter>core</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="$(SolutionDir)/../../src/ui/vpinball.rc">
+      <Filter>ui\res</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="$(SolutionDir)/../../src/ui/vpinball_eng.rc">
+      <Filter>ui\res</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="$(SolutionDir)/../../src/ui/vpinball_fre.rc">
+      <Filter>ui\res</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="$(SolutionDir)/../../src/ui/vpinball_ger.rc">
+      <Filter>ui\res</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="$(SolutionDir)/../../src/ui/vpinball_spa.rc">
+      <Filter>ui\res</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(SolutionDir)/../../src/assets/Default_VPinballX.ini">
+      <Filter>assets</Filter>
+    </None>
+    <Image Include="$(SolutionDir)/../../src/assets/AOdither.webp">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/BallEnv.exr">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/bumperbase.webp">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/bumperCap.webp">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/bumperring.webp">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/bumperskirt.webp">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/envmap.webp">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/kickerCup.webp">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/kickerHoleWood.webp">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/kickerWilliams.webp">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/kickerGottlieb.webp">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/assets/kickerT1.webp">
+      <Filter>assets</Filter>
+    </Image>
+    <None Include="$(SolutionDir)/../../src/assets/blankTable.vpx">
+      <Filter>assets</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/assets/exampleTable.vpx">
+      <Filter>assets</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/assets/strippedTable.vpx">
+      <Filter>assets</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/assets/lightSeqTable.vpx">
+      <Filter>assets</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/assets/TableSizes.csv">
+      <Filter>assets</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\6803.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\ALI.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\alving.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\antar.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\Atari.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\Atari1.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\Atari1b.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\Atari2.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\B2B.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\B2Bcollision.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\b2s.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\Bally.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\BallyG.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\capcom.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\Class1812.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\controller.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\core.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\de.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\de2.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\FPVPX.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\GamePlan.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\gts1.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\gts3.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\Hankin.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\idsa.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\inder.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\inder_atleta.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\inder_centaur.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\inder_skateboard.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\ironballs.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\joctronic.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\juegos.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\juegos2.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\jvh.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\lancelot.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\LTD.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\LTD3.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\LTD4a.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\LTDPecmen.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\mac.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\mrgame.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\NudgePlugIn_blur2NoAccel.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\NudgePlugIn_blurNoAccel.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\NudgePlugIn_mjrAccelAndTilt.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\NudgePlugIn_robBlurNoAccel.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\NudgePlugIn_robNoAccel.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\nuova.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\PDB.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\peyper.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\Play1.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\Play2.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\Play4.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\s4.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\s6.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\s7.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\s8_StillCrazy.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\s11.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\sam.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\sega.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\sega2.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\sleic.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\solarwars.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\spinball.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\stern.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\sys80.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\taito.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\UltraDMD_Options.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\vbsdoc_outdated.html">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\VPMKeys.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\WPC.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\wpc_ph.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\zac.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\zac1.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\zac2.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../scripts\zacproto.vbs">
+      <Filter>scripts</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="$(SolutionDir)/../../src/ui/res/chevron.bmp">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/logo.bmp">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/pause.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/play.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/script.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/step.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/table.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/toolbar.bmp">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/vpinball.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/backglass.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/bumper.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/decal.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/flasher.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/flipper.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/gate.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/kicker.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/light.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/lightseq.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/magnify.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/options.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/plunger.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/primitive.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/ramp.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/reel.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/rubber.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/select.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/spinner.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/target.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/textbox.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/timer.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/trigger.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/wall.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/SDbottom.bmp">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/SDcenter.bmp">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/SDleft.bmp">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/SDmiddle.bmp">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/SDright.bmp">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/SDtop.bmp">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/add.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/assign.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src\ui\res\ball.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/expandcolapse.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/layerIcons16.bmp">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/layerIcons32.bmp">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/remove.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/layers.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/toolbar.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/camera.ico">
+      <Filter>ui\res</Filter>
+    </Image>
+    <Image Include="$(SolutionDir)/../../src/ui/res/PlayWarning.bmp">
+      <Filter>ui\res</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(SolutionDir)/../../src/ui/res/vpinball.rgs">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/hittarget.rgs">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src\ui\res\ball.cur">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/ball.rgs">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/bumper.cur">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/bumper.rgs">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/decal.cur">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/dispreel.cur">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/dispreel.rgs">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/dragpoint.rgs">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/flasher.cur">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/flasher.rgs">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/flipper.cur">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/flipper.rgs">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/gate.cur">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/gate.rgs">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/kicker.cur">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/kicker.rgs">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/light.cur">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/light.rgs">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/lightseq.cur">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/lightseq.rgs">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/magnify.cur">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/pieventhandler.rgs">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/plunger.cur">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/plunger.rgs">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/primitive.cur">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/primitive.rgs">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/ramp.cur">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/ramp.rgs">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/rubber.cur">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/rubber.rgs">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/spinner.cur">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/spinner.rgs">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/surface.rgs">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/target.cur">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/textbox.cur">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/textbox.rgs">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/timer.cur">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/timer.rgs">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/trigger.cur">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/trigger.rgs">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/wall.cur">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/SplitH.cur">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/ui/res/SplitV.cur">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/ball_shadows.sh">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/bgfx_shader.sh">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/common.sh">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_ball.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_ball_debug.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_ball_trail.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_basic.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_classic_light.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_decal.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_dmd.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_display.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_flasher.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_imgui.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_light.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_ao.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_ao_display.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_bilateral_cas.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_bloom.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_blur.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_cas.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_copy.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_dlaa.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_dlaa_edge.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_fxaa.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_irradiance.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_mirror.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_motionblur.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_nfaa.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_smaa_BlendingWeightCalculation.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_smaa_EdgeDetection.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_smaa_NeighborhoodBlending.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_ssao.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_ssr.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_stereo.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_tonemap.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_unshaded.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/material.sh">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/SMAA.hlsl">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/SMAA.sh">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/varying.def.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_ball.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_ball_trail.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_basic.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_dmd.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_flasher.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_imgui.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_light.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_postprocess.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_pp_smaa_BlendingWeightCalculation.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_pp_smaa_EdgeDetection.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_pp_smaa_NeighborhoodBlending.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/vs_vr_mask.sc">
+      <Filter>shaders\bgfx</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/BasicShader.glfx">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/BallShader.glfx">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/BallShadows.fxh">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/ClassicLightShader.glfx">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/DMDShader.glfx">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/DMDShaderVR.glfx">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FBShader.glfx">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FBShader.fxh">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FXAAStereoAO.fxh">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FlasherShader.glfx">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FXAAStereoAO_GL.fxh">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/Helpers.fxh">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/Material.fxh">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/Material_GL.fxh">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/LightShader.glfx">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/SMAA.glfx">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/SMAA.fxh">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/SSR.fxh">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/SSR_GL.fxh">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/Stereo.fxh">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/StereoShader.glfx">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/BallShader.hlsl">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </FxCompile>
+    <FxCompile Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/BasicShader.hlsl">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </FxCompile>
+    <FxCompile Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/DMDShader.hlsl">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </FxCompile>
+    <FxCompile Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FBShader.hlsl">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </FxCompile>
+    <FxCompile Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FlasherShader.hlsl">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </FxCompile>
+    <FxCompile Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/LightShader.hlsl">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </FxCompile>
+    <FxCompile Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/StereoShader.hlsl">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(SolutionDir)/../../src/core/vpinball.idl">
+      <Filter>core</Filter>
+    </Midl>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(SolutionDir)/../../make/vpinball.natvis">
+      <Filter>utils</Filter>
+    </Natvis>
+  </ItemGroup>
+</Project>

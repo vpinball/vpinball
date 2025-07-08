@@ -152,17 +152,17 @@
   <ItemDefinitionGroup>
     <PostBuildEvent>
       <Command>
-        if not exist "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\b2s\" md "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\b2s\"
-        copy "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\b2s\"
-        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\b2s\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\b2s\" md "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\b2s\"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\b2s\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\b2s\"
 
-        if not exist "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\b2s\" md "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\b2s\"
-        copy "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\b2s\"
-        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\b2s\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\b2s\" md "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\b2s\"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\b2s\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\b2s\"
 
-        if not exist "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\b2s\" md "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\b2s\"
-        copy "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\b2s\"
-        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\b2s\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\b2s\" md "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\b2s\"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\b2s\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\b2s\"
       </Command>
     </PostBuildEvent>
     <ClCompile>

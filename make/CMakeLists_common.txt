@@ -36,6 +36,8 @@ set(VPX_SOURCES
    src/core/Settings.h
    src/core/TableDB.cpp
    src/core/TableDB.h
+   src/core/VPApp.h
+   src/core/VPApp.cpp
    src/core/vpversion.h
    src/core/VPXPluginAPIImpl.h
    src/core/VPXPluginAPIImpl.cpp

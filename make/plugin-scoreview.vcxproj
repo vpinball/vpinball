@@ -152,23 +152,23 @@
   <ItemDefinitionGroup>
     <PostBuildEvent>
       <Command>
-        if not exist "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\scoreview\" md "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\scoreview\"
-        if not exist "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\scoreview\layouts" md "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\scoreview\layouts"
-        copy "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\scoreview\"
-        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\scoreview\"
-        copy /y  "$(SolutionDir)..\..\plugins\scoreview\layouts\*.*" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\scoreview\layouts\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\scoreview\" md "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\scoreview\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\scoreview\layouts" md "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\scoreview\layouts"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\scoreview\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\scoreview\"
+        copy /y  "$(SolutionDir)..\..\plugins\scoreview\layouts\*.*" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\scoreview\layouts\"
 
-        if not exist "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\scoreview\" md "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\scoreview\"
-        if not exist "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\scoreview\layouts" md "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\scoreview\layouts"
-        copy "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\scoreview\"
-        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\scoreview\"
-        copy /y  "$(SolutionDir)..\..\plugins\scoreview\layouts\*.*" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\scoreview\layouts\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\scoreview\" md "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\scoreview\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\scoreview\layouts" md "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\scoreview\layouts"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\scoreview\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\scoreview\"
+        copy /y  "$(SolutionDir)..\..\plugins\scoreview\layouts\*.*" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\scoreview\layouts\"
 
-        if not exist "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\scoreview\" md "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\scoreview\"
-        if not exist "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\scoreview\layouts" md "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\scoreview\layouts"
-        copy "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\scoreview\"
-        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\scoreview\"
-        copy /y  "$(SolutionDir)..\..\plugins\scoreview\layouts\*.*" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\scoreview\layouts\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\scoreview\" md "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\scoreview\"
+        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\scoreview\layouts" md "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\scoreview\layouts"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\scoreview\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\scoreview\"
+        copy /y  "$(SolutionDir)..\..\plugins\scoreview\layouts\*.*" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\scoreview\layouts\"
       </Command>
     </PostBuildEvent>
     <ClCompile>

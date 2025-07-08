@@ -452,7 +452,6 @@
 #define IDC_STATIC_SCALEY               291
 #define IDD_PROPLIGHT_STATE             291
 #define IDD_PROPBUMPER_PHYSICS          292
-#define ID_QUIT                         293
 #define ID_RESUME                       294
 #define ID_DEBUGWINDOW                  295
 #define IDD_PHYSICS_OPTIONS             297
