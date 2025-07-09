@@ -39,8 +39,15 @@ CONST(float g_kaiserKernel6s[6][6]) = {
     { 0.00579380, 0.01302491, 0.01923979, 0.01923979, 0.01302491, 0.00579380 }
 };
 
+float srgbToLinear(float f) {
+    if (f <= 0.04045) // 0.03928 ?
+        return f * (1.0/12.92);
+    else
+        return pow(f * (1.0/1.055) + (0.055/1.055), 2.4);
+}
+
 vec3 srgbToLinear(vec3 c) {
-    return pow(c, vec3_splat(2.2));
+    return vec3(srgbToLinear(c.r), srgbToLinear(c.g), srgbToLinear(c.b));
 }
 
 float linearToSrgb(float f) {
