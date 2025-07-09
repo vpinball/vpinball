@@ -68,7 +68,7 @@ void ISelect::DoCommand(int icmd, int x, int y)
 {
 #ifndef __STANDALONE__
    // Commands that are handled by the table element
-   if (  ((icmd & 0x000FFFFF) >= 0x40000) && ((icmd & 0x000FFFFF) < 0x40020) // Assign to collection
+   if ( (((icmd & 0x000FFFFF) >= 0x40000) && ((icmd & 0x000FFFFF) < 0x40020)) // Assign to collection
       || ((icmd >= ID_ASSIGN_TO_LAYER1) && (icmd <= ID_ASSIGN_TO_LAYER1+NUM_ASSIGN_LAYERS-1)) // Assign to layer
       || (icmd == ID_EDIT_DRAWINGORDER_HIT)
       || (icmd == ID_EDIT_DRAWINGORDER_SELECT)
