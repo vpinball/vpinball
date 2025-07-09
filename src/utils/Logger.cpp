@@ -78,11 +78,12 @@ public:
       std::string message;
       #ifdef _WIN32
       auto msg = record.getMessage();
-      const int len = (int)wcslen(msg) + 1;
-      char *const szT = new char[len];
-      WideCharToMultiByteNull(CP_UTF8, 0, msg, -1, szT, len, nullptr, nullptr);
-      message = std::string(szT);
-      delete [] szT;
+      const int len = WideCharToMultiByte(CP_UTF8, 0, msg, -1, nullptr, 0, nullptr, nullptr); //(int)wcslen(msg) + 1;
+      if (len > 1)
+      {
+         message.resize(len - 1, '\0');
+         WideCharToMultiByte(CP_UTF8, 0, msg, -1, message.data(), len, nullptr, nullptr);
+      }
       #else
       message = std::string(record.getMessage());
       #endif
@@ -94,9 +95,9 @@ public:
                static_cast<int>(record.getTime().millitm));
 
       std::stringstream ss;
-      ss << timeBuffer << " " << std::left << std::setw(5) << level << " ";
-      ss << "[" << record.getTid() << "] ";
-      ss << "[" << record.getFunc() << "@" << record.getLine() << "] ";
+      ss << timeBuffer << ' ' << std::left << std::setw(5) << level << ' ';
+      ss << '[' << record.getTid() << "] ";
+      ss << '[' << record.getFunc() << '@' << record.getLine() << "] ";
       ss << message;
 
       WebServer::LogAppender(ss.str());
