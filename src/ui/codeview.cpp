@@ -517,7 +517,7 @@ HRESULT CodeViewer::AddTemporaryItem(const BSTR bstr, IDispatch * const pdisp)
    pcvd->m_piscript = nullptr;
    pcvd->m_global = false;
 
-   if (m_vcvd.GetSortedIndex(pcvd) != -1 || m_vcvdTemp.GetSortedIndex(pcvd) != -1)
+   if (m_vcvd.GetSortedIndex(pcvd->m_wName.c_str()) != -1 || m_vcvdTemp.GetSortedIndex(pcvd->m_wName.c_str()) != -1)
    {
       delete pcvd;
       return E_FAIL; //already exists
@@ -549,7 +549,7 @@ HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool global)
    pcvd->m_piscript = piscript;
    pcvd->m_global = global;
 
-   if (m_vcvd.GetSortedIndex(pcvd) != -1)
+   if (m_vcvd.GetSortedIndex(pcvd->m_wName.c_str()) != -1)
    {
       delete pcvd;
       return E_FAIL;
@@ -1167,11 +1167,11 @@ STDMETHODIMP CodeViewer::GetItemInfo(LPCOLESTR pstrName, DWORD dwReturnMask,
    if (dwReturnMask & SCRIPTINFO_ITYPEINFO)
       *ppti = nullptr;
 
-   CodeViewDispatch *pcvd = m_vcvd.GetSortedElement((void *)pstrName);
+   CodeViewDispatch *pcvd = m_vcvd.GetSortedElement((WCHAR *)pstrName);
 
    if (pcvd == nullptr)
    {
-      pcvd = m_vcvdTemp.GetSortedElement((void *)pstrName);
+      pcvd = m_vcvdTemp.GetSortedElement((WCHAR *)pstrName);
       if (pcvd == nullptr)
          return E_FAIL;
    }
