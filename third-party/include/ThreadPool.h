@@ -93,7 +93,7 @@ private:
         {
             const std::size_t prev
                 = std::atomic_fetch_sub_explicit(&tp.in_flight,
-                    std::size_t(1),
+                    std::size_t{1},
                     std::memory_order_acq_rel);
             if (prev == 1)
             {
@@ -196,7 +196,7 @@ inline void ThreadPool::set_queue_size_limit(std::size_t limit)
         return;
 
     std::size_t const old_limit = max_queue_size;
-    max_queue_size = (std::max)(limit, std::size_t(1));
+    max_queue_size = (std::max)(limit, std::size_t{1});
     if (old_limit < max_queue_size)
         condition_producers.notify_all();
 }

@@ -878,10 +878,10 @@ int ImageDialog::AddListImage(HWND hwndListView, Texture *const ppi)
    ListView_SetItemText(hwndListView, index, 2, sizeString);
    ListView_SetItemText(hwndListView, index, 3, (LPSTR)usedStringNo);
 
-   char *const sizeConv2 = StrFormatByteSize64((size_t)ppi->GetFileSize(), sizeString, MAXTOKEN);
+   char *const sizeConv2 = StrFormatByteSize64(ppi->GetFileSize(), sizeString, MAXTOKEN);
    ListView_SetItemText(hwndListView, index, 4, sizeConv2);
 
-   char *const sizeConv = StrFormatByteSize64((size_t)ppi->GetEstimatedGPUSize(), sizeString, MAXTOKEN);
+   char *const sizeConv = StrFormatByteSize64(ppi->GetEstimatedGPUSize(), sizeString, MAXTOKEN);
    ListView_SetItemText(hwndListView, index, 5, sizeConv);
 
    const char *format = ppi->IsHDR() ? (ppi->IsOpaque() ? "RGB_ HDR" : "RGBA HDR") : (ppi->IsOpaque() ? "RGB_" : "RGBA");

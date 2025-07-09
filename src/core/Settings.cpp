@@ -328,7 +328,7 @@ void Settings::Validate(const bool addDefaults)
       case 5: dotColor = 0x0023FFFF; break; // Yellow Led
       case 6: dotColor = 0x00FFFFFF; break; // Generic Plasma
       case 7: dotColor = 0x00FFFFFF; break; // Generic Led
-      default: assert(false);
+      default: dotColor = 0; assert(false);
       }
       SettingBool(Section::DMD, prefix + "Legacy",       i == 1, ""s);
       SettingBool(Section::DMD, prefix + "ScaleFX",      false, ""s);
@@ -360,7 +360,7 @@ void Settings::Validate(const bool addDefaults)
       case 6: color = 0x0023FFFF; break; // Yellow Led
       case 7: color = 0x00FFFFFF; break; // Generic Plasma
       case 8: color = 0x00FFFFFF; break; // Generic Led
-      default: assert(false);
+      default: color = 0; assert(false);
       }
       SettingInt(Section::Alpha, prefix + "Color", color, 0x00000000, 0x00FFFFFF, ""s);
       SettingInt(Section::Alpha, prefix + "Unlit", 0x00404040, 0x00000000, 0x00FFFFFF, ""s);

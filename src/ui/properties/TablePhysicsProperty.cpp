@@ -75,7 +75,7 @@ void TablePhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
     if (dispid == IDC_GAME_DIFFICULTY_EDIT || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_gameplayDifficultyEdit, table->m_difficulty * 100.f);
     if (dispid == IDC_OVERWRITE_PHYSICS_COMBO || dispid == -1)
-        PropertyDialog::UpdateComboBox(m_physicSetList, m_overwritePhysicsSetCombo, m_physicSetList[(int)table->m_overridePhysics]);
+        PropertyDialog::UpdateComboBox(m_physicSetList, m_overwritePhysicsSetCombo, m_physicSetList[table->m_overridePhysics]);
     if (dispid == IDC_OVERRIDEPHYSICS_FLIPPERS || dispid == -1)
         PropertyDialog::SetCheckboxState(m_hOverwriteFlipperCheck, table->m_overridePhysicsFlipper);
 }

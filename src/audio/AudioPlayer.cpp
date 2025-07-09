@@ -26,7 +26,7 @@ struct ma_device_ex
 static ma_result ma_context_enumerate_devices__sdl(ma_context* pContext, ma_enum_devices_callback_proc callback, void* pUserData)
 {
    int count;
-   SDL_AudioDeviceID* pAudioList = SDL_GetAudioPlaybackDevices(&count);
+   SDL_AudioDeviceID* const pAudioList = SDL_GetAudioPlaybackDevices(&count);
    if (pAudioList == nullptr)
       return MA_ERROR;
    for (int i = 0; i < count; ++i)
@@ -47,7 +47,7 @@ static ma_result ma_context_get_device_info__sdl(ma_context* pContext, ma_device
    if (deviceType != ma_device_type_playback)
       return MA_DEVICE_TYPE_NOT_SUPPORTED;
 
-   if (pDeviceID == NULL)
+   if (pDeviceID == nullptr)
    {
       pDeviceInfo->id.custom.i = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
       ma_strncpy_s(pDeviceInfo->name, sizeof(pDeviceInfo->name), MA_DEFAULT_PLAYBACK_DEVICE_NAME, (size_t)-1);
@@ -86,7 +86,7 @@ static ma_result ma_context_get_device_info__sdl(ma_context* pContext, ma_device
    return MA_SUCCESS;
 }
 
-void ma_audio_callback_playback__sdl(void* pUserData, SDL_AudioStream* stream, int additional_amount, int total_amount)
+void ma_audio_callback_playback__sdl(void* pUserData, SDL_AudioStream* stream, int additional_amount, const int total_amount)
 {
    ma_device_ex* pDevice = static_cast<ma_device_ex*>(pUserData);
    if (pDevice->buffer.size() < total_amount)
@@ -120,7 +120,7 @@ static ma_result ma_device_init__sdl(ma_device* pDevice, const ma_device_config*
    SDL_GetAudioDeviceFormat(pDeviceEx->deviceID, &specs, &periodSizeInFrames);
    
    // Convert SDL format to miniaudio format
-   ma_format deviceFormat = ma_format_f32; // default fallback
+   ma_format deviceFormat;
    switch (specs.format)
    {
       case SDL_AUDIO_U8: deviceFormat = ma_format_u8; break;
@@ -148,7 +148,7 @@ static ma_result ma_device_init__sdl(ma_device* pDevice, const ma_device_config*
    pDescriptorPlayback->periodCount = 1; // SDL doesn't use the notion of period counts, so just set to 1.
 
    // TODO check that the default channel map matches SDL channel map
-   ma_channel_map_init_standard(ma_standard_channel_map_default, pDescriptorPlayback->channelMap, ma_countof(pDescriptorPlayback->channelMap), pDescriptorPlayback->channels);
+   ma_channel_map_init_standard(ma_standard_channel_map_default, pDescriptorPlayback->channelMap, std::size(pDescriptorPlayback->channelMap), pDescriptorPlayback->channels);
    
    PLOGI << "Audio device initialized. Device: '" << SDL_GetAudioDeviceName(pDeviceEx->deviceID) << "', Freq : " << specs.freq << ", Format: " << SDL_GetAudioFormatName(specs.format) << ", Channels: " << specs.channels << ", Driver: " << SDL_GetCurrentAudioDriver();
    return MA_SUCCESS;
@@ -216,7 +216,7 @@ AudioPlayer::AudioPlayer(const Settings& settings)
    const bool hasBackglassSOundDevice = settings.LoadValue(Settings::Player, "SoundDeviceBG"s, soundDeviceBGName);
    {
       int count;
-      SDL_AudioDeviceID* pAudioList = SDL_GetAudioPlaybackDevices(&count);
+      SDL_AudioDeviceID* const pAudioList = SDL_GetAudioPlaybackDevices(&count);
       for (int i = 0; i < count; ++i)
       { // We identify by name as this is the only stable property (see https://github.com/libsdl-org/SDL/issues/12278)
          string name = SDL_GetAudioDeviceName(pAudioList[i]);
@@ -245,7 +245,7 @@ AudioPlayer::AudioPlayer(const Settings& settings)
    contextConfig.custom.onContextInit = ma_context_init__sdl;
 
    m_maContext = std::make_unique<ma_context>();
-   ma_backend backends[] = { ma_backend_custom };
+   const ma_backend backends[] = { ma_backend_custom };
    ma_context_init(backends, std::size(backends), &contextConfig, m_maContext.get());
    m_maContext->pUserData = this;
 
@@ -493,7 +493,7 @@ void AudioPlayer::StopSound(Sound* sound)
       player->Stop();
 }
 
-SoundSpec AudioPlayer::GetSoundInformations(Sound* sound) const
+SoundSpec AudioPlayer::GetSoundInformations(const Sound* const sound) const
 {
    SoundSpec specs { 0 };
    ma_decoder decoder;

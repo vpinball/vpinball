@@ -173,7 +173,7 @@ public:
 
    STDMETHOD(OnEnterScript)();
 
-   STDMETHODIMP OnLeaveScript();
+   STDMETHODIMP OnLeaveScript() override;
 
    STDMETHODIMP GetWindow(HWND *phwnd) override
    {
@@ -214,37 +214,37 @@ public:
 
    // Internet Security interface
 
-   virtual HRESULT STDMETHODCALLTYPE GetSecurityId(
+   HRESULT STDMETHODCALLTYPE GetSecurityId(
       /* [size_is][out] */ BYTE *pbSecurityId,
       /* [out][in] */ DWORD *pcbSecurityId,
-      /* [in] */ DWORD_PTR dwReserved);
+      /* [in] */ DWORD_PTR dwReserved) override;
 
-   virtual HRESULT STDMETHODCALLTYPE ProcessUrlAction(
+   HRESULT STDMETHODCALLTYPE ProcessUrlAction(
       /* [in] */ DWORD dwAction,
       /* [size_is][out] */ BYTE __RPC_FAR *pPolicy,
       /* [in] */ DWORD cbPolicy,
       /* [in] */ BYTE __RPC_FAR *pContext,
       /* [in] */ DWORD cbContext,
       /* [in] */ DWORD dwFlags,
-      /* [in] */ DWORD dwReserved);
+      /* [in] */ DWORD dwReserved) override;
 
-   virtual HRESULT STDMETHODCALLTYPE QueryCustomPolicy(
+   HRESULT STDMETHODCALLTYPE QueryCustomPolicy(
       /* [in] */ REFGUID guidKey,
       /* [size_is][size_is][out] */ BYTE __RPC_FAR *__RPC_FAR *ppPolicy,
       /* [out] */ DWORD __RPC_FAR *pcbPolicy,
       /* [in] */ BYTE __RPC_FAR *pContext,
       /* [in] */ DWORD cbContext,
-      /* [in] */ DWORD dwReserved);
+      /* [in] */ DWORD dwReserved) override;
 
    bool FControlAlreadyOkayed(const CONFIRMSAFETY *pcs);
    void AddControlToOkayedList(const CONFIRMSAFETY *pcs);
    bool FControlMarkedSafe(const CONFIRMSAFETY *pcs);
    bool FUserManuallyOkaysControl(const CONFIRMSAFETY *pcs);
 
-   virtual HRESULT STDMETHODCALLTYPE QueryService(
+   HRESULT STDMETHODCALLTYPE QueryService(
       REFGUID guidService,
       REFIID riid,
-      void **ppv);
+      void **ppv) override;
 
    // Use CComObject to implement AddRef/Release/QI
    BEGIN_COM_MAP(CodeViewer)

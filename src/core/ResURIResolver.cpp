@@ -306,10 +306,10 @@ ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
       DisplaySrcId* displaySource = nullptr;
       if (uri.authority.host == "default")
       {
-         int dsSize = 0; 
+         unsigned int dsSize = 0; 
          for (auto& source : m_displaySources)
          {
-            const int sSize = source.width * source.height;
+            const unsigned int sSize = source.width * source.height;
             if (
                // Priority 1: Find at least one display if any (size > 0)
                // Priority 2: Favor highest resolution display

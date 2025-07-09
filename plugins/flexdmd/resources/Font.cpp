@@ -8,7 +8,7 @@ Font::Font(AssetManager* pAssetManager, AssetSrc* pAssetSrc)
    m_pBitmapFont = (BitmapFont*)pAssetManager->Open(pAssetSrc);
  
    m_textures = new SDL_Surface*[m_pBitmapFont->GetPageCount()];
-   memset((char*)m_textures, 0, sizeof(SDL_Surface*) * m_pBitmapFont->GetPageCount());
+   memset((void*)m_textures, 0, sizeof(SDL_Surface*) * m_pBitmapFont->GetPageCount());
 
    for (int i = 0; i < m_pBitmapFont->GetPageCount(); i++) {
       AssetSrc* pTextureAssetSrc = pAssetManager->ResolveSrc(m_pBitmapFont->GetPage(i)->GetFilename(), pAssetSrc);

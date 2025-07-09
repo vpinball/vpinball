@@ -159,8 +159,8 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    , m_scoreviewOutput("Visual Pinball - Score"s, live_table->m_settings, Settings::ScoreView, "ScoreView"s)
    , m_backglassOutput("Visual Pinball - Backglass"s, live_table->m_settings, Settings::Backglass, "Backglass"s)
    , m_topperOutput("Visual Pinball - Topper"s, live_table->m_settings, Settings::Topper, "Topper"s)
-   , m_resURIResolver(MsgPluginManager::GetInstance().GetMsgAPI(), VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), true, true, true, true)
    , m_audioPlayer(std::make_unique<VPX::AudioPlayer>(live_table->m_settings))
+   , m_resURIResolver(MsgPluginManager::GetInstance().GetMsgAPI(), VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), true, true, true, true)
 {
    // For the time being, lots of access are made through the global singleton, so ensure we are unique, and define it as soon as needed
    assert(g_pplayer == nullptr);

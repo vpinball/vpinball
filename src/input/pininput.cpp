@@ -393,7 +393,7 @@ float PinInput::GetPlungerPos() const
 
 void PinInput::SetPlungerPos(float pos)
 {
-   constexpr uint64_t extPlungerId = static_cast<uint64_t>(0xF00000000);
+   constexpr uint64_t extPlungerId = 0xF00000000ull;
    m_plungerPosDirty = true;
    for (auto& aam : m_analogActionMappings)
       if (aam.output == AnalogAction::AM_PlungerPos && aam.joystickId == extPlungerId)
@@ -430,7 +430,7 @@ float PinInput::GetPlungerSpeed() const
 
 void PinInput::SetPlungerSpeed(float speed)
 {
-   constexpr uint64_t extPlungerId = static_cast<uint64_t>(0xF00000000);
+   constexpr uint64_t extPlungerId = 0xF00000000ull;
    m_plungerPosDirty = true;
    for (auto& aam : m_analogActionMappings)
       if (aam.output == AnalogAction::AM_PlungerSpeed && aam.joystickId == extPlungerId)

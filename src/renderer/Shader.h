@@ -626,11 +626,11 @@ class ShaderState
 public:
    // Constructor for a state holding state of a specific shader
    ShaderState(Shader* shader, bool isLowPrecision)
-      : m_shader(shader)
-      , m_ownStateOffset(false) 
-      , m_useLowPrecision(isLowPrecision)
-      , m_state(shader->m_stateSize)
+      : m_state(shader->m_stateSize)
+      , m_shader(shader)
+      , m_ownStateOffset(false)
       , m_stateOffsets(shader->m_stateOffsets)
+      , m_useLowPrecision(isLowPrecision)
    {
    }
 
@@ -913,7 +913,7 @@ public:
       assert(m_stateOffsets[uniformName] != -1);
       assert(ShaderUniform::coreUniforms[uniformName].type == SUT_Sampler);
       assert(ShaderUniform::coreUniforms[uniformName].count == 1);
-      int pos = (*(int*)(m_state.data() + m_stateOffsets[uniformName])) & 0xFF;
+      const int pos = (*(int*)(m_state.data() + m_stateOffsets[uniformName])) & 0xFF;
       return pos > 0 ? m_samplers[pos - 1] : nullptr;
    }
 

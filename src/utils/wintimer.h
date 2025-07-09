@@ -179,7 +179,7 @@ public:
          }
          for (int i = 0; i < PROFILE_COUNT; i++)
          {
-            unsigned int data = m_profileData[m_profileIndex][i];
+            const unsigned int data = m_profileData[m_profileIndex][i];
             m_profileMinData[i] = min(m_profileMinData[i], data);
             m_profileMaxData[i] = max(m_profileMaxData[i], data);
             m_profileTotalData[i] += data;
@@ -249,7 +249,7 @@ public:
       if (timer_name)
       {
          m_profileTimerTimeStamp = m_profileTimeStamp;
-         size_t len = strlen(timer_name) + 1;
+         const size_t len = strlen(timer_name) + 1;
          if (m_profileTimersPos + len < MAX_TIMER_LOG - 8)
          {
             strcpy_s(&m_profileTimers[m_profileTimersPos], len, timer_name);
@@ -399,10 +399,8 @@ public:
       unsigned int pos = (m_processInputIndex + N_SAMPLES - 1) % N_SAMPLES; // Start from last frame
       unsigned int latency = 0u;
       unsigned int sum = 0u;
-      unsigned int count = 0u;
       for (unsigned int i = 0u; i < N_SAMPLES; i++)
       {
-         count++;
          pos = (pos + N_SAMPLES - 1) % N_SAMPLES;
          const unsigned int period = m_profileData[pos][PROFILE_INPUT_POLL_PERIOD];
          sum += period;

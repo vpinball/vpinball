@@ -66,7 +66,11 @@ public:
             #ifndef __STANDALONE__
                CComVariant rgvar[1] = { CComVariant((long)pT->m_viEventCollection[i]) };
                DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
+               #ifndef __clang__
                pcollection->FireDispID(dispid, &dispparams);
+               #else
+               ((EventProxyBase*)pcollection)->FireDispID(dispid, &dispparams);
+               #endif
             #else
                CComVariant rgvar[1] = { CComVariant(pT->m_viEventCollection[i]) };
                DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };

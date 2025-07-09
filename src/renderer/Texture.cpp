@@ -761,8 +761,8 @@ Texture::Texture(string name, PinBinary* ppb, unsigned int width, unsigned int h
    : m_name(std::move(name))
    , m_width(width)
    , m_height(height)
-   , m_liveHash(((uint64_t)this) ^ ((uint64_t)ppb) ^ usec() ^ ((uint64_t)width << 16) ^ ((uint64_t)height << 32))
    , m_ppb(ppb)
+   , m_liveHash(((uint64_t)this) ^ ((uint64_t)ppb) ^ usec() ^ ((uint64_t)width << 16) ^ ((uint64_t)height << 32))
 {
    assert(m_ppb != nullptr);
    assert(m_width > 0);

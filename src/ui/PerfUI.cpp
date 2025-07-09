@@ -216,8 +216,8 @@ void PerfUI::Update()
             FrameProfiler *profiler = i == 0 ? &m_player->m_logicProfiler : m_player->m_renderProfiler;
             if (profiler->GetPrevStart(sections[i]) == 0)
                continue;
-            minTS = std::min(minTS, static_cast<uint64_t>(profiler->GetPrevStart(sections[i])));
-            //maxTS = max(maxTS, static_cast<uint64_t>(profiler->GetPrevEnd(sections[i])));
+            minTS = std::min(minTS, profiler->GetPrevStart(sections[i]));
+            //maxTS = max(maxTS, profiler->GetPrevEnd(sections[i]));
          }
          const float elapse = static_cast<float>(m_player->m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME)) * 1.5f;
          const float width = inner_bb.Max.x - inner_bb.Min.x;

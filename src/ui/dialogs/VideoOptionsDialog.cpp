@@ -511,7 +511,7 @@ void VideoOptionPropPage::UpdateFullscreenModesList()
       }
    }
    
-   VPX::Window::GetDisplayModes((int)display, m_allVideoModes);
+   VPX::Window::GetDisplayModes(display, m_allVideoModes);
 
    const int depthcur = GetEditedSettings().LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "ColorDepth", 32);
    const float refreshrate = GetEditedSettings().LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "RefreshRate", 0.f);
@@ -1277,7 +1277,7 @@ void RenderOptPage::SaveSettings(Settings& settings, bool saveAll)
       int anaglyphFilter = m_stereoFilter.GetCurSel();
       if (anaglyphFilter < 0)
          anaglyphFilter = 4;
-      settings.SaveValue(Settings::Player, "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("Filter"s), (int)anaglyphFilter, !saveAll);
+      settings.SaveValue(Settings::Player, "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("Filter"s), anaglyphFilter, !saveAll);
    }
 
    settings.SaveValue(Settings::Player, "BallTrail"s, m_ballTrails.GetCheck() == BST_CHECKED, !saveAll);

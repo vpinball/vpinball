@@ -14,8 +14,8 @@
 #endif
 
 Sampler::Sampler(RenderDevice* rd, string name, std::shared_ptr<const BaseTexture> surf, const bool force_linear_rgb)
-   : m_name(std::move(name))
-   , m_type(SurfaceType::RT_DEFAULT)
+   : m_type(SurfaceType::RT_DEFAULT)
+   , m_name(std::move(name))
    , m_ownTexture(true)
    , m_rd(rd)
    , m_width(surf->width())

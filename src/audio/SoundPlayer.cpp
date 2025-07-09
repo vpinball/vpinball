@@ -162,12 +162,12 @@ static void vpx_node_process_pcm_frames(ma_node* pNode, const float** ppFramesIn
    }
 }
 
-static ma_node_vtable vpx_node_vtable = { vpx_node_process_pcm_frames, NULL, 1, 1, 0 };
+static ma_node_vtable vpx_node_vtable = { vpx_node_process_pcm_frames, nullptr, 1, 1, 0 };
 
 MA_API ma_result vpx_node_init(ma_node_graph* pNodeGraph, const vpx_node_config* pConfig, const ma_allocation_callbacks* pAllocationCallbacks, vpx_node* pNode)
 {
    ma_node_config baseConfig;
-   if (pNode == NULL)
+   if (pNode == nullptr)
       return MA_INVALID_ARGS;
    memset(pNode, 0, sizeof(vpx_node));
    baseConfig = pConfig->nodeConfig;
@@ -222,7 +222,7 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, string filename)
       customNodeConfig.nodeConfig = ma_node_config_init();
       customNodeConfig.inChannels = 2;
       customNodeConfig.outChannels = ma_engine_get_channels(engine);
-      ma_result result = vpx_node_init(ma_engine_get_node_graph(engine), &customNodeConfig, nullptr, m_vpxMixNode.get());
+      const ma_result result = vpx_node_init(ma_engine_get_node_graph(engine), &customNodeConfig, nullptr, m_vpxMixNode.get());
       if (result != MA_SUCCESS)
       {
          PLOGE << "Failed to initialize custom mixer.";
@@ -269,7 +269,7 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound)
       customNodeConfig.nodeConfig = ma_node_config_init();
       customNodeConfig.inChannels = m_outputTarget == SNDOUT_BACKGLASS ? 2 : 1;
       customNodeConfig.outChannels = ma_engine_get_channels(engine);
-      ma_result result = vpx_node_init(ma_engine_get_node_graph(engine), &customNodeConfig, nullptr, m_vpxMixNode.get());
+      const ma_result result = vpx_node_init(ma_engine_get_node_graph(engine), &customNodeConfig, nullptr, m_vpxMixNode.get());
       if (result != MA_SUCCESS)
       {
          PLOGE << "Failed to initialize custom mixer.";
