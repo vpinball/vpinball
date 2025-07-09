@@ -21,7 +21,7 @@ static constexpr int LAST_ERROR_WIDGET_HEIGHT = 256;
 
 static UINT g_FindMsgString; // Windows message for the FindText dialog
 
-//Scintillia Lexer parses only lower case unless otherwise told
+//Scintilla Lexer parses only lower case unless otherwise told
 static constexpr char vbsReservedWords[] =
 "and as byref byval case call const "
 "continue dim do each else elseif end error exit false for function global "
@@ -198,7 +198,7 @@ static int UDKeyIndexHelper(const fi_vector<UserData>& ListIn, const string& str
 	while (!(curPosOut & ListSize) && (curPosOut > 1))
 		curPosOut >>= 1;
 	int iJumpDelta = curPosOut >> 1;
-	--curPosOut; //Zero Base
+	--curPosOut; // Zero Base
 	while (true)
 	{
 		const int result = (curPosOut >= ListSize) ? -1 : strSearchData.compare(uniqueKey ? ListIn[curPosOut].m_uniqueKey : lowerCase(ListIn[curPosOut].m_keyName));
@@ -245,11 +245,11 @@ static int FindUD(const fi_vector<UserData>& ListIn, const string& strSearchData
 	if (Pos < 0) Pos = 0;
 	//Find the start of other instances of strSearchData by crawling up list
 	//Usually (but not always) UDKeyIndexHelper<true> returns top of the list so its fast
-	const size_t SearchWidth = strSearchData.size();
+	const size_t SearchWidth = strSearchData.length();
 	do
 	{
 		--Pos;
-	} while (Pos >= 0 && strSearchData.compare(ListIn[Pos].m_uniqueKey.substr(0, SearchWidth)) == 0);
+	} while (Pos >= 0 && strSearchData == ListIn[Pos].m_uniqueKey.substr(0, SearchWidth));
 	++Pos;
 	// now walk down list of Keynames looking for what we want.
 	if (Pos >= (int)ListIn.size())
@@ -364,13 +364,13 @@ static size_t GetUDIdxfromUniqueKey(const fi_vector<UserData>& ListIn, const str
 static int FindClosestUD(const fi_vector<UserData>& ListIn, const int CurrentLine, const int CurrentIdx)
 {
 	const string strSearchData = lowerCase(ListIn[CurrentIdx].m_keyName);
-	const size_t SearchWidth = strSearchData.size();
+	const size_t SearchWidth = strSearchData.length();
 	//Find the start of other instances of strIn by crawling up list
 	int iNewPos = CurrentIdx;
 	do
 	{
 		--iNewPos;
-	} while (iNewPos >= 0 && strSearchData.compare(ListIn[iNewPos].m_uniqueKey.substr(0, SearchWidth)) == 0);
+	} while (iNewPos >= 0 && strSearchData == ListIn[iNewPos].m_uniqueKey.substr(0, SearchWidth));
 	++iNewPos;
 	//Now at top of list
 	//find nearest definition above current line
@@ -381,14 +381,14 @@ static int FindClosestUD(const fi_vector<UserData>& ListIn, const int CurrentLin
 	{
 		const int NewLineNum = ListIn[iNewPos].m_lineNum;
 		const int NewDelta = NewLineNum - CurrentLine;
-		if (NewDelta >= Delta && NewLineNum <= CurrentLine && lowerCase(ListIn[iNewPos].m_keyName).compare(strSearchData) == 0)
+		if (NewDelta >= Delta && NewLineNum <= CurrentLine && lowerCase(ListIn[iNewPos].m_keyName) == strSearchData)
 		{
 			Delta = NewDelta;
 			//ClosestLineNum = NewLineNum;
 			ClosestPos = iNewPos;
 		}
 		++iNewPos;
-	} while (iNewPos != (int)ListIn.size() && strSearchData.compare(lowerCase(ListIn[iNewPos].m_keyName).substr(0, SearchWidth)) == 0);
+	} while (iNewPos != (int)ListIn.size() && strSearchData == lowerCase(ListIn[iNewPos].m_keyName).substr(0, SearchWidth));
 	//--iNewPos;
 	return ClosestPos;
 }
@@ -493,7 +493,7 @@ HRESULT CodeViewer::AddTemporaryItem(const BSTR bstr, IDispatch * const pdisp)
    pcvd->m_piscript = nullptr;
    pcvd->m_global = false;
 
-   if (m_vcvd.GetSortedIndex(pcvd) != -1 || m_vcvdTemp.GetSortedIndex(pcvd) != -1)
+   if (m_vcvd.GetSortedIndex(pcvd->m_wName.c_str()) != -1 || m_vcvdTemp.GetSortedIndex(pcvd->m_wName.c_str()) != -1)
    {
       delete pcvd;
       return E_FAIL; //already exists
@@ -514,17 +514,18 @@ HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool global)
 {
    CodeViewDispatch * const pcvd = new CodeViewDispatch();
 
-   CComBSTR bstr;
+   BSTR bstr;
    piscript->get_Name(&bstr);
 
    pcvd->m_wName = bstr;
+   SysFreeString(bstr);
    pcvd->m_pdisp = piscript->GetDispatch();
    pcvd->m_pdisp->QueryInterface(IID_IUnknown, (void **)&pcvd->m_punk);
    pcvd->m_punk->Release();
    pcvd->m_piscript = piscript;
    pcvd->m_global = global;
 
-   if (m_vcvd.GetSortedIndex(pcvd) != -1)
+   if (m_vcvd.GetSortedIndex(pcvd->m_wName.c_str()) != -1)
    {
       delete pcvd;
       return E_FAIL;
@@ -543,13 +544,16 @@ HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool global)
 
 void CodeViewer::RemoveItem(IScriptable * const piscript)
 {
-   CComBSTR bstr;
+   BSTR bstr;
    piscript->get_Name(&bstr);
 
    const int idx = m_vcvd.GetSortedIndex(bstr);
 
    if (idx == -1)
+   {
+      SysFreeString(bstr);
       return;
+   }
 
    const CodeViewDispatch * const pcvd = m_vcvd[idx];
 
@@ -560,6 +564,7 @@ void CodeViewer::RemoveItem(IScriptable * const piscript)
    // Remove item from dropdown
    char szT[MAXNAMEBUFFER*2]; // Names can only be 32 characters (plus terminator)
    WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, szT, MAXNAMEBUFFER*2, nullptr, nullptr);
+   SysFreeString(bstr);
    const size_t index = ::SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
    ::SendMessage(m_hwndItemList, CB_DELETESTRING, index, 0);
 
@@ -568,18 +573,19 @@ void CodeViewer::RemoveItem(IScriptable * const piscript)
 
 void CodeViewer::SelectItem(IScriptable * const piscript)
 {
-   CComBSTR bstr;
+   BSTR bstr;
    piscript->get_Name(&bstr);
 
    char szT[MAXNAMEBUFFER*2]; // Names can only be 32 characters (plus terminator)
    WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, szT, MAXNAMEBUFFER*2, nullptr, nullptr);
+   SysFreeString(bstr);
 
    const LRESULT index = ::SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
    if (index != CB_ERR)
    {
-       ::SendMessage(m_hwndItemList, CB_SETCURSEL, index, 0);
+      ::SendMessage(m_hwndItemList, CB_SETCURSEL, index, 0);
 
-       ListEventsFromItem();
+      ListEventsFromItem();
    }
 }
 
@@ -588,12 +594,15 @@ HRESULT CodeViewer::ReplaceName(IScriptable * const piscript, const WCHAR * cons
    if (m_vcvd.GetSortedIndex(wzNew) != -1)
       return E_FAIL;
 
-   CComBSTR bstr;
+   BSTR bstr;
    piscript->get_Name(&bstr);
 
    const int idx = m_vcvd.GetSortedIndex(bstr);
    if (idx == -1)
+   {
+      SysFreeString(bstr);
       return E_FAIL;
+   }
 
    CodeViewDispatch * const pcvd = m_vcvd[idx];
 
@@ -608,6 +617,7 @@ HRESULT CodeViewer::ReplaceName(IScriptable * const piscript, const WCHAR * cons
    // Remove old name from dropdown and replace it with the new
    char szT[MAXNAMEBUFFER*2]; // Names can only be 32 characters (plus terminator)
    WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, szT, MAXNAMEBUFFER*2, nullptr, nullptr);
+   SysFreeString(bstr);
    size_t index = ::SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
    ::SendMessage(m_hwndItemList, CB_DELETESTRING, index, 0);
 
@@ -688,7 +698,7 @@ STDMETHODIMP CodeViewer::CleanUpScriptEngine()
       {
          PLOGI << "Sending Close to script interpreter #" << m_pScript;
          m_pScript->Close();
-         U32 startWaitTick = msec();
+         const uint32_t startWaitTick = msec();
          while ((msec() - startWaitTick < 5000) && (state != SCRIPTSTATE_CLOSED))
          {
             Sleep(16);
@@ -907,7 +917,7 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
       0, 0, 0, 0, m_hwndMain, nullptr, g_pvp->theInstance, 0);
    SendMessage(m_hwndLastErrorTextArea, EM_SETREADONLY, TRUE, 0);
    ::SendMessage(m_hwndLastErrorTextArea, WM_SETFONT, (size_t)GetStockObject(ANSI_FIXED_FONT), 0);
-   
+
    //////////////////////// Scintilla text editor
 
    m_hwndScintilla = CreateWindowEx(0, "Scintilla", "",
@@ -1089,11 +1099,11 @@ STDMETHODIMP CodeViewer::GetItemInfo(LPCOLESTR pstrName, DWORD dwReturnMask,
    if (dwReturnMask & SCRIPTINFO_ITYPEINFO)
       *ppti = 0;
 
-   CodeViewDispatch *pcvd = m_vcvd.GetSortedElement((void *)pstrName);
+   CodeViewDispatch *pcvd = m_vcvd.GetSortedElement((WCHAR *)pstrName);
 
    if (pcvd == nullptr)
    {
-      pcvd = m_vcvdTemp.GetSortedElement((void *)pstrName);
+      pcvd = m_vcvdTemp.GetSortedElement((WCHAR *)pstrName);
       if (pcvd == nullptr)
          return E_FAIL;
    }
@@ -1119,7 +1129,7 @@ STDMETHODIMP CodeViewer::GetItemInfo(LPCOLESTR pstrName, DWORD dwReturnMask,
    return S_OK;
 }
 
-/**
+/*
  * Called on compilation errors. Also called on runtime errors in we couldn't create a "process debug manager" (such
  * as when running on wine), or if no debug application is available (where a "debug application" is something like
  * VS 2010 Isolated Shell).
@@ -1132,7 +1142,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	ULONG nLine;
 	LONG nChar;
 	pscripterror->GetSourcePosition(&dwCookie, &nLine, &nChar);
-	BSTR bstr = 0;
+	BSTR bstr = nullptr;
 	pscripterror->GetSourceLineText(&bstr);
 	EXCEPINFO exception = {};
 	pscripterror->GetExceptionInfo(&exception);
@@ -1328,7 +1338,7 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 		pt->m_pcv->ShowWindow(SW_RESTORE);
 		pt->m_pcv->ColorError(nLine, nChar);
 	}
-	
+
 	// Error log content
 	std::wstringstream errorStream;
 	errorStream << L"Runtime error\r\n";
@@ -2137,7 +2147,6 @@ HRESULT STDMETHODCALLTYPE CodeViewer::ProcessUrlAction(
    DWORD dwFlags,
    DWORD dwReserved)
 {
-
    *pPolicy = (dwAction == URLACTION_ACTIVEX_RUN && (g_pvp->m_securitylevel < eSecurityNoControls)) ?
    URLPOLICY_ALLOW : URLPOLICY_DISALLOW;
 
@@ -2648,7 +2657,7 @@ bool CodeViewer::ParseStructureName(fi_vector<UserData>& ListIn, const UserData&
 				RemoveByVal(crWord);
 				RemovePadding(crWord);
 				RemoveNonVBSChars(crWord);
-				if (crWord.size() <= MAX_FIND_LENGTH && !crWord.empty()) 
+				if (crWord.length() <= MAX_FIND_LENGTH && !crWord.empty()) 
 				{
 					ud.m_keyName = crWord;
 					ud.m_uniqueKey = lowerCase(ud.m_keyName) + m_currentParentKey;
@@ -2688,7 +2697,7 @@ bool CodeViewer::ParseStructureName(fi_vector<UserData>& ListIn, const UserData&
 				RemoveByVal(crWord);
 				RemovePadding(crWord);
 				RemoveNonVBSChars(crWord);
-				if (crWord.size() <= MAX_FIND_LENGTH && !crWord.empty())
+				if (crWord.length() <= MAX_FIND_LENGTH && !crWord.empty())
 				{
 					ud.m_keyName = crWord;
 					ud.eTyping = eDim;
@@ -2704,7 +2713,7 @@ bool CodeViewer::ParseStructureName(fi_vector<UserData>& ListIn, const UserData&
 				CommPos = RemainingLine.find_first_of(',');
 			}
 		}
-		else 
+		else
 		{
 			ud.m_uniqueKey = lowerCase(ud.m_keyName) + m_currentParentKey;
 			ud.m_uniqueParent = m_currentParentKey;
@@ -2745,7 +2754,7 @@ bool CodeViewer::ParseStructureName(fi_vector<UserData>& ListIn, const UserData&
 				return true;
 			}
 			else
-			{ 
+			{
 				if (m_parentLevel > 0)
 				{//finished with child ===== END =====
 					const int iCurParent = UDKeyIndex<true>(ListIn, m_currentParentKey);
@@ -2779,7 +2788,7 @@ bool CodeViewer::ParseStructureName(fi_vector<UserData>& ListIn, const UserData&
 string CodeViewer::ParseDelimtByColon(string &wholeline)
 {
 	string result;
-	const size_t idx = wholeline.find(':'); 
+	const size_t idx = wholeline.find(':');
 	if (idx == string::npos || idx == 0)
 	{
 		result = wholeline;
@@ -3061,7 +3070,12 @@ void CodeViewer::ParseVPCore()
 	while (!feof(fCore))
 	{
 		char text[MAX_LINE_LENGTH] = {};
-		fgets(text, MAX_LINE_LENGTH, fCore);
+		if (fgets(text, MAX_LINE_LENGTH, fCore) == nullptr)
+		{
+			//error or EOF
+			break;
+		}
+
 		if (text[0] != '\0')
 		{
 			string wholeline(text);
@@ -3077,7 +3091,7 @@ void CodeViewer::ParseVPCore()
 string CodeViewer::ExtractWordOperand(const string &line, const size_t StartPos)
 {
 	size_t Substart = StartPos;
-	const size_t lineLength = line.size();
+	const size_t lineLength = line.length();
 	char linechar = line[Substart];
 	while ((m_validChars.find(linechar) == string::npos) && (Substart < lineLength))
 	{
@@ -4004,6 +4018,5 @@ STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
 STDMETHODIMP DebuggerModule::get_Name(BSTR *pVal)
 {
    *pVal = SysAllocString(L"Debug");
-
    return S_OK;
 }
