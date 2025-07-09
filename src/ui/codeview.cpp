@@ -2103,10 +2103,9 @@ void CodeViewer::GetParamsFromEvent(const UINT iEvent, char * const szParams, co
             if (pfd->cParams != 0) // no parameters makes it easy
             {
                // Get parameter names
-               BSTR * const rgstr = (BSTR *)CoTaskMemAlloc(6 * sizeof(BSTR));
-
+               BSTR rgstr[6];
                unsigned int cnames;
-               /*const HRESULT hr =*/ ptiChild->GetNames(pfd->memid, rgstr, 6, &cnames);
+               /*const HRESULT hr =*/ ptiChild->GetNames(pfd->memid, rgstr, std::size(rgstr), &cnames);
 
                // Add enum string to combo control
                for (unsigned int l = 1; l < cnames; ++l)
@@ -2122,8 +2121,6 @@ void CodeViewer::GetParamsFromEvent(const UINT iEvent, char * const szParams, co
 
                for (unsigned int l = 0; l < cnames; l++)
                   SysFreeString(rgstr[l]);
-
-               CoTaskMemFree(rgstr);
             }
 
             ptiChild->ReleaseFuncDesc(pfd);
@@ -2184,9 +2181,9 @@ void CodeViewer::ListEventsFromItem()
 
                   // Get Name
                   {
-                     BSTR * const rgstr = (BSTR *)CoTaskMemAlloc(6 * sizeof(BSTR *));
+                     BSTR rgstr[6];
                      unsigned int cnames;
-                     /*const HRESULT hr =*/ptiChild->GetNames(pfd->memid, rgstr, 6, &cnames);
+                     /*const HRESULT hr =*/ptiChild->GetNames(pfd->memid, rgstr, std::size(rgstr), &cnames);
 
                      // Add enum string to combo control
                      char * const szT = MakeChar(rgstr[0]);
@@ -2195,7 +2192,6 @@ void CodeViewer::ListEventsFromItem()
                      ::SendMessage(m_hwndEventList, CB_SETITEMDATA, listindex, l);
                      for (unsigned int i2 = 0; i2 < cnames; i2++)
                         SysFreeString(rgstr[i2]);
-                     CoTaskMemFree(rgstr);
                   }
                   ptiChild->ReleaseFuncDesc(pfd);
                }
@@ -2378,7 +2374,7 @@ HRESULT STDMETHODCALLTYPE CodeViewer::QueryCustomPolicy(
    DWORD dwReserved)
 {
 #ifndef __STANDALONE__
-   uint32_t *const ppolicy = (uint32_t *)CoTaskMemAlloc(sizeof(uint32_t));
+   uint32_t *const ppolicy = (uint32_t *)CoTaskMemAlloc(sizeof(uint32_t)); // needs to use CoTaskMemAlloc because of COM model
    *ppolicy = URLPOLICY_DISALLOW;
 
    *ppPolicy = (BYTE *)ppolicy;

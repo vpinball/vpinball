@@ -4147,6 +4147,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
       if (rpb->LoadData(spStream, this, pbr->m_version, NULL, NULL) != S_OK)
       {
          assert(!"Invalid binary image file");
+         delete rpb;
          return false;
       }
       m_materials.push_back(rpb);
@@ -6249,7 +6250,7 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
         {
             const Primitive *const prim = (Primitive *)piSelect;
             if (!prim->m_mesh.m_animationFrames.empty())
-                info += " (animated " + std::to_string((uint64_t)prim->m_mesh.m_animationFrames.size() - 1) + " frames)";
+                info += " (animated " + std::to_string((uint32_t)prim->m_mesh.m_animationFrames.size() - 1) + " frames)";
         }
 #ifndef __STANDALONE__
         m_vpinball->SetStatusBarElementInfo(info);
@@ -7515,13 +7516,13 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
    {
       if (dwCookie == -1)
       {
-         wzDst = (WCHAR *)CoTaskMemAlloc(1 * sizeof(WCHAR));
+         wzDst = (WCHAR *)malloc(1 * sizeof(WCHAR));
          wzDst[0] = L'\0';
       }
       else
       {
          const int cwch = MultiByteToWideChar(CP_ACP, 0, m_vimage[dwCookie]->m_name.c_str(), -1, nullptr, 0); //(int)m_vimage[dwCookie]->m_name.length() + 1;
-         wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
+         wzDst = (WCHAR *)malloc(cwch*sizeof(WCHAR));
          MultiByteToWideChar(CP_ACP, 0, m_vimage[dwCookie]->m_name.c_str(), -1, wzDst, cwch);
       }
    }
@@ -7533,13 +7534,13 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
    {
       if (dwCookie == -1)
       {
-         wzDst = (WCHAR *)CoTaskMemAlloc(1 * sizeof(WCHAR));
+         wzDst = (WCHAR *)malloc(1 * sizeof(WCHAR));
          wzDst[0] = L'\0';
       }
       else
       {
          const int cwch = MultiByteToWideChar(CP_ACP, 0, m_materials[dwCookie]->m_name.c_str(), -1, nullptr, 0); //(int)m_materials[dwCookie]->m_name.length() + 1;
-         wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
+         wzDst = (WCHAR *)malloc(cwch*sizeof(WCHAR));
          MultiByteToWideChar(CP_ACP, 0, m_materials[dwCookie]->m_name.c_str(), -1, wzDst, cwch);
       }
       break;
@@ -7548,7 +7549,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
    {
       if (dwCookie == -1)
       {
-         wzDst = (WCHAR *)CoTaskMemAlloc(1 * sizeof(WCHAR));
+         wzDst = (WCHAR *)malloc(1 * sizeof(WCHAR));
          if (wzDst == nullptr)
              ShowError("DISPID_Sound alloc failed");
          wzDst[0] = L'\0';
@@ -7556,7 +7557,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       else
       {
          const int cwch = MultiByteToWideChar(CP_ACP, 0, m_vsound[dwCookie]->m_name.c_str(), -1, nullptr, 0); //(int)m_vsound[dwCookie]->m_name.length() + 1;
-         wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
+         wzDst = (WCHAR *)malloc(cwch*sizeof(WCHAR));
          if (wzDst == nullptr)
              ShowError("DISPID_Sound alloc failed");
          MultiByteToWideChar(CP_ACP, 0, m_vsound[dwCookie]->m_name.c_str(), -1, wzDst, cwch);
@@ -7567,13 +7568,13 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
    {
       if (dwCookie == -1)
       {
-         wzDst = (WCHAR *)CoTaskMemAlloc(1 * sizeof(WCHAR));
+         wzDst = (WCHAR *)malloc(1 * sizeof(WCHAR));
          wzDst[0] = L'\0';
       }
       else
       {
          constexpr size_t cwch = sizeof(m_vcollection[dwCookie].m_wzName) + sizeof(DWORD); //!! +DWORD?
-         wzDst = (WCHAR *)CoTaskMemAlloc(cwch);
+         wzDst = (WCHAR *)malloc(cwch);
          if (wzDst == nullptr)
             ShowError("DISPID_Collection alloc failed (2)");
          else
@@ -7586,7 +7587,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       const int idx = (dwCookie == -1) ? 0 : dwCookie;
       static const WCHAR * const filterNames[5] = { L"None", L"Additive", L"Multiply", L"Overlay", L"Screen" };
       const size_t cwch = wcslen(filterNames[idx]) + 1;
-      wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
+      wzDst = (WCHAR *)malloc(cwch*sizeof(WCHAR));
       wcscpy_s(wzDst, cwch, filterNames[idx]);
       break;
    }
@@ -7594,7 +7595,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
    {
       if (dwCookie == -1)
       {
-         wzDst = (WCHAR *)CoTaskMemAlloc(1 * sizeof(WCHAR));
+         wzDst = (WCHAR *)malloc(1 * sizeof(WCHAR));
          wzDst[0] = L'\0';
       }
       else
@@ -7604,7 +7605,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
          const size_t cwch = wcslen(sname) + 1;
          //wzDst = ::SysAllocString(sname);
 
-         wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
+         wzDst = (WCHAR *)malloc(cwch*sizeof(WCHAR));
          if (wzDst == nullptr)
             ShowError("DISPID_Surface alloc failed (2)");
          else
@@ -7616,7 +7617,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
 
    CComVariant var(wzDst);
 
-   CoTaskMemFree(wzDst);
+   free(wzDst);
 
    return var.Detach(pVarOut);
 }
