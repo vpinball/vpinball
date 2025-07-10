@@ -13,6 +13,9 @@
 #include <charconv>
 #include <iomanip>
 #include <filesystem>
+#if defined(__APPLE__) || defined(__linux__) || defined(__ANDROID__)
+#include <pthread.h>
+#endif
 
 static const char point = std::use_facet<std::numpunct<char>>(std::locale("")).decimal_point(); // gets the OS locale decimal point (e.g. ',' or '.')
 
@@ -336,7 +339,14 @@ void SetThreadName(const std::string& name)
    HRESULT hr = SetThreadDescription(GetCurrentThread(), wstr.c_str());
 }
 #else
-void SetThreadName(const std::string& name) { }
+void SetThreadName(const std::string& name)
+{
+#ifdef __APPLE__
+   pthread_setname_np(name.c_str());
+#elif defined(__linux__) || defined(__ANDROID__)
+   pthread_setname_np(pthread_self(), name.c_str());
+#endif
+}
 #endif
 
 // Helper function for IsOnWine

@@ -7,6 +7,9 @@
 #include <charconv>
 #include <thread>
 #include <mutex>
+#if defined(__APPLE__) || defined(__linux__) || defined(__ANDROID__)
+#include <pthread.h>
+#endif
 
 #include "VPXPlugin.h"
 #include "ControllerPlugin.h"
@@ -128,7 +131,14 @@ void SetThreadName(const std::string& name)
    HRESULT hr = SetThreadDescription(GetCurrentThread(), wstr.c_str());
 }
 #else
-void SetThreadName(const std::string& name) { }
+void SetThreadName(const std::string& name)
+{
+#ifdef __APPLE__
+   pthread_setname_np(name.c_str());
+#elif defined(__linux__) || defined(__ANDROID__)
+   pthread_setname_np(pthread_self(), name.c_str());
+#endif
+}
 #endif
 
 static void PollThread(const string& tablePath, const string& gameId)

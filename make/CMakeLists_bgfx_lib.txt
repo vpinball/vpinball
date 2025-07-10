@@ -28,7 +28,7 @@ set(VERSION_REV "${CMAKE_MATCH_1}")
 
 project(vpinball VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}")
 
-include("${CMAKE_SOURCE_DIR}/make/CMakeLists_common.txt")
+include("${CMAKE_SOURCE_DIR}/make/CMakeLists_common_standalone.txt")
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
@@ -36,350 +36,15 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 
-if((PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator") AND BUILD_FRAMEWORKS)
-   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g")
-   set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -g")
-endif()
-
 find_package(BISON 3.8.2 REQUIRED)
 bison_target(vbsparser ${CMAKE_SOURCE_DIR}/standalone/inc/wine/dlls/vbscript/parser.y ${CMAKE_SOURCE_DIR}/standalone/inc/wine/dlls/vbscript/parser.tab.c 
 	     DEFINES_FILE ${CMAKE_SOURCE_DIR}/standalone/inc/wine/dlls/vbscript/parser.tab.h)
 
 set(VPINBALL_SOURCES
-   ${VPX_SOURCES}
+   ${VPX_STANDALONE_SOURCES}
 
-   third-party/include/imgui/imgui_impl_sdl3.cpp
-   third-party/include/imgui/imgui_impl_sdl3.h
-   third-party/include/bgfx-imgui/imgui_impl_bgfx.cpp
-   third-party/include/bgfx-imgui/imgui_impl_bgfx.h
-   third-party/include/bgfx-imgui/fs_ocornut_imgui.bin.h
-   third-party/include/bgfx-imgui/vs_ocornut_imgui.bin.h   
-   third-party/include/gpuprofiler.cpp
-   third-party/include/gpuprofiler.h
-   third-party/include/RSJparser/RSJparser.tcc
-
-   standalone/vpinball_standalone_i.c
-   standalone/vpinball_standalone_i.h
-   standalone/vpinball_standalone_i_proxy.cpp
-
-   standalone/inc/webserver/mongoose.c
-   standalone/inc/webserver/mongoose.h
    standalone/inc/webserver/WebServer.cpp
    standalone/inc/webserver/WebServer.h
-
-   third-party/include/pole/pole.cpp
-
-   standalone/PoleStream.cpp
-   standalone/PoleStorage.cpp
-
-   standalone/inc/vpinmame/VPinMAMEController.cpp
-   standalone/inc/vpinmame/VPinMAMEController.h
-   standalone/inc/vpinmame/VPinMAMEControllerSettings.cpp
-   standalone/inc/vpinmame/VPinMAMEControllerSettings.h
-   standalone/inc/vpinmame/VPinMAMEGame.cpp
-   standalone/inc/vpinmame/VPinMAMEGame.h
-   standalone/inc/vpinmame/VPinMAMEGames.cpp
-   standalone/inc/vpinmame/VPinMAMEGames.h
-   standalone/inc/vpinmame/VPinMAMEGameSettings.cpp
-   standalone/inc/vpinmame/VPinMAMEGameSettings.h
-   standalone/inc/vpinmame/VPinMAMERom.cpp
-   standalone/inc/vpinmame/VPinMAMERom.h
-   standalone/inc/vpinmame/VPinMAMERoms.cpp
-   standalone/inc/vpinmame/VPinMAMERoms.h
-   standalone/inc/vpinmame/vpinmame_i_proxy.cpp
-   standalone/inc/vpinmame/vpinmame_i.c
-   standalone/inc/vpinmame/vpinmame_i.h
-
-   standalone/inc/wmp/WMPCore.cpp
-   standalone/inc/wmp/WMPCore.h
-   standalone/inc/wmp/WMPControls.cpp
-   standalone/inc/wmp/WMPControls.h
-   standalone/inc/wmp/WMPSettings.cpp
-   standalone/inc/wmp/WMPSettings.h
-   standalone/inc/wmp/wmp_i_proxy.cpp
-   standalone/inc/wmp/wmp_i.c
-   standalone/inc/wmp/wmp_i.h
-
-   standalone/inc/ultradmd/UltraDMDDMDObject.cpp
-   standalone/inc/ultradmd/UltraDMDDMDObject.h
-   standalone/inc/ultradmd/ultradmd_i_proxy.cpp
-   standalone/inc/ultradmd/ultradmd_i.c
-   standalone/inc/ultradmd/ultradmd_i.h
-
-   standalone/inc/flexdmd/actions/ActionFactory.cpp
-   standalone/inc/flexdmd/actions/ActionFactory.h
-   standalone/inc/flexdmd/actions/Action.cpp
-   standalone/inc/flexdmd/actions/Action.h
-   standalone/inc/flexdmd/actions/RepeatAction.cpp
-   standalone/inc/flexdmd/actions/RepeatAction.h
-   standalone/inc/flexdmd/actions/SequenceAction.cpp
-   standalone/inc/flexdmd/actions/SequenceAction.h
-   standalone/inc/flexdmd/actions/ParallelAction.cpp
-   standalone/inc/flexdmd/actions/ParallelAction.h
-   standalone/inc/flexdmd/actions/ShowAction.cpp
-   standalone/inc/flexdmd/actions/ShowAction.h
-   standalone/inc/flexdmd/actions/BlinkAction.cpp
-   standalone/inc/flexdmd/actions/BlinkAction.h
-   standalone/inc/flexdmd/actions/AddToAction.cpp
-   standalone/inc/flexdmd/actions/AddToAction.h
-   standalone/inc/flexdmd/actions/RemoveFromParentAction.cpp
-   standalone/inc/flexdmd/actions/RemoveFromParentAction.h
-   standalone/inc/flexdmd/actions/AddChildAction.cpp
-   standalone/inc/flexdmd/actions/AddChildAction.h
-   standalone/inc/flexdmd/actions/SeekAction.cpp
-   standalone/inc/flexdmd/actions/SeekAction.h
-   standalone/inc/flexdmd/actions/WaitAction.cpp
-   standalone/inc/flexdmd/actions/WaitAction.h
-   standalone/inc/flexdmd/actions/DelayedAction.cpp
-   standalone/inc/flexdmd/actions/DelayedAction.h
-   standalone/inc/flexdmd/actions/TweenAction.cpp
-   standalone/inc/flexdmd/actions/TweenAction.h
-   standalone/inc/flexdmd/actions/MoveToAction.cpp
-   standalone/inc/flexdmd/actions/MoveToAction.h
-   standalone/inc/flexdmd/actors/Actor.cpp
-   standalone/inc/flexdmd/actors/Actor.h
-   standalone/inc/flexdmd/actors/AnimatedActor.cpp
-   standalone/inc/flexdmd/actors/AnimatedActor.h
-   standalone/inc/flexdmd/actors/ImageSequence.cpp
-   standalone/inc/flexdmd/actors/ImageSequence.h
-   standalone/inc/flexdmd/actors/GIFImage.cpp
-   standalone/inc/flexdmd/actors/GIFImage.h
-   standalone/inc/flexdmd/actors/Font.cpp
-   standalone/inc/flexdmd/actors/Font.h
-   standalone/inc/flexdmd/actors/Frame.cpp
-   standalone/inc/flexdmd/actors/Frame.h
-   standalone/inc/flexdmd/actors/FadeOverlay.cpp
-   standalone/inc/flexdmd/actors/FadeOverlay.h
-   standalone/inc/flexdmd/actors/Group.cpp
-   standalone/inc/flexdmd/actors/Group.h
-   standalone/inc/flexdmd/actors/Image.cpp
-   standalone/inc/flexdmd/actors/Image.h
-   standalone/inc/flexdmd/actors/Label.cpp
-   standalone/inc/flexdmd/actors/Label.h
-   standalone/inc/flexdmd/actors/Video.cpp
-   standalone/inc/flexdmd/actors/Video.h
-   standalone/inc/flexdmd/filters/BitmapFilter.cpp
-   standalone/inc/flexdmd/filters/BitmapFilter.h
-   standalone/inc/flexdmd/filters/RegionFilter.cpp
-   standalone/inc/flexdmd/filters/RegionFilter.h
-   standalone/inc/flexdmd/filters/PadFilter.cpp
-   standalone/inc/flexdmd/filters/PadFilter.h
-   standalone/inc/flexdmd/filters/DotFilter.cpp
-   standalone/inc/flexdmd/filters/DotFilter.h
-   standalone/inc/flexdmd/filters/AdditiveFilter.cpp
-   standalone/inc/flexdmd/filters/AdditiveFilter.h
-   standalone/inc/flexdmd/FlexDMD.cpp
-   standalone/inc/flexdmd/FlexDMD.h
-   standalone/inc/flexdmd/AssetSrc.cpp
-   standalone/inc/flexdmd/AssetSrc.h
-   standalone/inc/flexdmd/AssetManager.cpp
-   standalone/inc/flexdmd/AssetManager.h
-   standalone/inc/flexdmd/Bitmap.cpp
-   standalone/inc/flexdmd/Bitmap.h
-   standalone/inc/flexdmd/Layout.cpp
-   standalone/inc/flexdmd/Layout.h
-   standalone/inc/flexdmd/UltraDMD.cpp
-   standalone/inc/flexdmd/UltraDMD.h
-   standalone/inc/flexdmd/FontDef.cpp
-   standalone/inc/flexdmd/FontDef.h
-   standalone/inc/flexdmd/ImageSequenceDef.cpp
-   standalone/inc/flexdmd/ImageSequenceDef.h
-   standalone/inc/flexdmd/VideoDef.cpp
-   standalone/inc/flexdmd/VideoDef.h
-   standalone/inc/flexdmd/actors/ScoreBoard.cpp
-   standalone/inc/flexdmd/actors/ScoreBoard.h
-   standalone/inc/flexdmd/scenes/AnimationType.h
-   standalone/inc/flexdmd/scenes/Scene.cpp
-   standalone/inc/flexdmd/scenes/Scene.h
-   standalone/inc/flexdmd/scenes/Sequence.cpp
-   standalone/inc/flexdmd/scenes/Sequence.h
-   standalone/inc/flexdmd/scenes/SingleLineScene.cpp
-   standalone/inc/flexdmd/scenes/SingleLineScene.h
-   standalone/inc/flexdmd/scenes/TwoLineScene.cpp
-   standalone/inc/flexdmd/scenes/TwoLineScene.h
-   standalone/inc/flexdmd/scenes/BackgroundScene.cpp
-   standalone/inc/flexdmd/scenes/BackgroundScene.h
-   standalone/inc/flexdmd/scenes/ScrollingCreditsScene.cpp
-   standalone/inc/flexdmd/scenes/ScrollingCreditsScene.h
-   standalone/inc/flexdmd/flexudmd_i_proxy.cpp
-   standalone/inc/flexdmd/flexudmd_i.c
-   standalone/inc/flexdmd/flexudmd_i.h
-   standalone/inc/flexdmd/flexdmd_i_proxy.cpp
-   standalone/inc/flexdmd/flexdmd_i.c
-   standalone/inc/flexdmd/flexdmd_i.h
-   standalone/inc/flexdmd/bmfonts/BitmapFont.cpp
-   standalone/inc/flexdmd/bmfonts/BitmapFont.h
-   standalone/inc/flexdmd/bmfonts/Character.cpp
-   standalone/inc/flexdmd/bmfonts/Character.h
-   standalone/inc/flexdmd/bmfonts/Kerning.cpp
-   standalone/inc/flexdmd/bmfonts/Kerning.h
-   standalone/inc/flexdmd/bmfonts/Page.cpp
-   standalone/inc/flexdmd/bmfonts/Page.h
-
-   standalone/inc/b2s/classes/AnimationInfo.cpp
-   standalone/inc/b2s/classes/AnimationInfo.h
-   standalone/inc/b2s/classes/B2SAnimation.cpp
-   standalone/inc/b2s/classes/B2SAnimation.h
-   standalone/inc/b2s/classes/B2SAnimationBase.cpp
-   standalone/inc/b2s/classes/B2SAnimationBase.h
-   standalone/inc/b2s/classes/B2SCollectData.cpp
-   standalone/inc/b2s/classes/B2SCollectData.h
-   standalone/inc/b2s/classes/B2SData.cpp
-   standalone/inc/b2s/classes/B2SData.h
-   standalone/inc/b2s/classes/B2SPlayer.cpp
-   standalone/inc/b2s/classes/B2SPlayer.h
-   standalone/inc/b2s/classes/B2SScreen.cpp
-   standalone/inc/b2s/classes/B2SScreen.h
-   standalone/inc/b2s/classes/B2SSettings.cpp
-   standalone/inc/b2s/classes/B2SSettings.h
-   standalone/inc/b2s/classes/B2SReelDisplay.cpp
-   standalone/inc/b2s/classes/B2SReelDisplay.h
-   standalone/inc/b2s/classes/CollectData.cpp
-   standalone/inc/b2s/classes/CollectData.h
-   standalone/inc/b2s/classes/ControlInfo.cpp
-   standalone/inc/b2s/classes/ControlInfo.h
-   standalone/inc/b2s/classes/EntryAction.cpp
-   standalone/inc/b2s/classes/EntryAction.h
-   standalone/inc/b2s/classes/LEDAreaInfo.cpp
-   standalone/inc/b2s/classes/LEDAreaInfo.h
-   standalone/inc/b2s/classes/LEDDisplayDigitLocation.cpp
-   standalone/inc/b2s/classes/LEDDisplayDigitLocation.h
-   standalone/inc/b2s/classes/PictureBoxAnimation.cpp
-   standalone/inc/b2s/classes/PictureBoxAnimation.h
-   standalone/inc/b2s/classes/PictureBoxAnimationEntry.cpp
-   standalone/inc/b2s/classes/PictureBoxAnimationEntry.h
-   standalone/inc/b2s/classes/Sound.cpp
-   standalone/inc/b2s/classes/Sound.h
-   standalone/inc/b2s/collections/AnimationCollection.cpp
-   standalone/inc/b2s/collections/AnimationCollection.h
-   standalone/inc/b2s/collections/ControlCollection.cpp
-   standalone/inc/b2s/collections/ControlCollection.h
-   standalone/inc/b2s/collections/GenericDictionaryIgnoreCase.cpp
-   standalone/inc/b2s/collections/GenericDictionaryIgnoreCase.h
-   standalone/inc/b2s/collections/IlluminationGroupCollection.cpp
-   standalone/inc/b2s/collections/IlluminationGroupCollection.h
-   standalone/inc/b2s/collections/PictureBoxCollection.cpp
-   standalone/inc/b2s/collections/PictureBoxCollection.h
-   standalone/inc/b2s/collections/ReelDisplayReelBoxCollection.cpp
-   standalone/inc/b2s/collections/ReelDisplayReelBoxCollection.h
-   standalone/inc/b2s/collections/ReelBoxCollection.cpp
-   standalone/inc/b2s/collections/ReelBoxCollection.h
-   standalone/inc/b2s/collections/RunningAnimationsCollection.cpp
-   standalone/inc/b2s/collections/RunningAnimationsCollection.h
-   standalone/inc/b2s/collections/ZOrderCollection.cpp
-   standalone/inc/b2s/collections/ZOrderCollection.h
-   standalone/inc/b2s/controls/B2SBaseBox.cpp
-   standalone/inc/b2s/controls/B2SBaseBox.h
-   standalone/inc/b2s/controls/B2SLEDBox.cpp
-   standalone/inc/b2s/controls/B2SLEDBox.h
-   standalone/inc/b2s/controls/B2SPictureBox.cpp
-   standalone/inc/b2s/controls/B2SPictureBox.h
-   standalone/inc/b2s/controls/B2SReelBox.cpp
-   standalone/inc/b2s/controls/B2SReelBox.h
-   standalone/inc/b2s/controls/Control.cpp
-   standalone/inc/b2s/controls/Control.h
-   standalone/inc/b2s/dream7/Dream7Display.cpp
-   standalone/inc/b2s/dream7/Dream7Display.h
-   standalone/inc/b2s/dream7/Segment.cpp
-   standalone/inc/b2s/dream7/Segment.h
-   standalone/inc/b2s/dream7/SegmentList.cpp
-   standalone/inc/b2s/dream7/SegmentList.h
-   standalone/inc/b2s/dream7/SegmentNumber.cpp
-   standalone/inc/b2s/dream7/SegmentNumber.h
-   standalone/inc/b2s/dream7/SegmentStyle.cpp
-   standalone/inc/b2s/dream7/SegmentStyle.h
-   standalone/inc/b2s/forms/FormWindow.cpp
-   standalone/inc/b2s/forms/FormWindow.h
-   standalone/inc/b2s/forms/Form.cpp
-   standalone/inc/b2s/forms/Form.h
-   standalone/inc/b2s/forms/FormBackglass.cpp
-   standalone/inc/b2s/forms/FormBackglass.h
-   standalone/inc/b2s/forms/FormDMD.cpp
-   standalone/inc/b2s/forms/FormDMD.h
-   standalone/inc/b2s/plugin/Plugin.cpp
-   standalone/inc/b2s/plugin/Plugin.h
-   standalone/inc/b2s/plugin/PluginHost.cpp
-   standalone/inc/b2s/plugin/PluginHost.h
-   standalone/inc/b2s/Server.cpp
-   standalone/inc/b2s/Server.h
-   standalone/inc/b2s/b2s_i_proxy.cpp
-   standalone/inc/b2s/b2s_i.c
-   standalone/inc/b2s/b2s_i.h
-
-   standalone/inc/dof/DOFPlugin.cpp
-   standalone/inc/dof/DOFPlugin.h
-
-   standalone/Standalone.cpp
-   standalone/Standalone.h
-
-   standalone/inc/pup/PUPManager.cpp
-   standalone/inc/pup/PUPManager.h
-   standalone/inc/pup/PUPPinDisplay.cpp
-   standalone/inc/pup/PUPPinDisplay.h
-   standalone/inc/pup/PUPPlaylist.cpp
-   standalone/inc/pup/PUPPlaylist.h
-   standalone/inc/pup/PUPTrigger.cpp
-   standalone/inc/pup/PUPTrigger.h
-   standalone/inc/pup/PUPTriggerCondition.cpp
-   standalone/inc/pup/PUPTriggerCondition.h
-   standalone/inc/pup/PUPScreen.cpp
-   standalone/inc/pup/PUPScreen.h
-   standalone/inc/pup/PUPLabel.cpp
-   standalone/inc/pup/PUPLabel.h
-   standalone/inc/pup/PUPCustomPos.cpp
-   standalone/inc/pup/PUPCustomPos.h
-   standalone/inc/pup/PUPPlugin.cpp
-   standalone/inc/pup/PUPPlugin.h
-   standalone/inc/pup/PUPWindow.cpp
-   standalone/inc/pup/PUPWindow.h
-   standalone/inc/pup/PUPMediaPlayer.cpp
-   standalone/inc/pup/PUPMediaPlayer.h
-   standalone/inc/pup/PUPMediaManager.cpp
-   standalone/inc/pup/PUPMediaManager.h
-   standalone/inc/pup/pup_i_proxy.cpp
-   standalone/inc/pup/pup_i.c
-   standalone/inc/pup/pup_i.h
-
-   standalone/inc/common/DMDWindow.cpp
-   standalone/inc/common/DMDWindow.h
-   standalone/inc/common/RendererGraphics.cpp
-   standalone/inc/common/RendererGraphics.h
-   standalone/inc/common/SurfaceGraphics.cpp
-   standalone/inc/common/SurfaceGraphics.h
-   standalone/inc/common/GraphicsPath.cpp
-   standalone/inc/common/GraphicsPath.h
-   standalone/inc/common/Matrix.cpp
-   standalone/inc/common/Matrix.h
-   standalone/inc/common/Timer.cpp
-   standalone/inc/common/Timer.h
-
-   standalone/inc/wine/dlls/atl/atl.c
-
-   standalone/inc/wine/dlls/oleaut32/oleaut.c
-   standalone/inc/wine/dlls/oleaut32/variant.c
-   standalone/inc/wine/dlls/oleaut32/varformat.c
-   standalone/inc/wine/dlls/oleaut32/vartype.c
-   standalone/inc/wine/dlls/oleaut32/safearray.c
-
-   standalone/inc/wine/dlls/vbscript/compile.c
-   standalone/inc/wine/dlls/vbscript/global.c
-   standalone/inc/wine/dlls/vbscript/interp.c
-   standalone/inc/wine/dlls/vbscript/lex.c
-   standalone/inc/wine/dlls/vbscript/regexp.c
-   standalone/inc/wine/dlls/vbscript/utils.c
-   standalone/inc/wine/dlls/vbscript/vbdisp.c
-   standalone/inc/wine/dlls/vbscript/vbregexp.c
-   standalone/inc/wine/dlls/vbscript/vbscript.c
-   standalone/inc/wine/dlls/vbscript/vbscript_main.c
-   standalone/inc/wine/dlls/vbscript/parser.tab.c
-
-   standalone/inc/wine/dlls/scrrun/dictionary.c
-   standalone/inc/wine/dlls/scrrun/filesystem.c
-   standalone/inc/wine/dlls/scrrun/scrrun.c
-
-   standalone/inc/wine/dlls/kernelbase/locale.c
-
-   standalone/inc/wine/wine.c
 
    standalone/VPinballLib.h
    standalone/VPinballLib.cpp
@@ -387,6 +52,15 @@ set(VPINBALL_SOURCES
    standalone/VPinball.cpp
    standalone/VPXProgress.h
    standalone/VPXProgress.cpp
+
+   third-party/include/mongoose/mongoose.c
+   third-party/include/mongoose/mongoose.h
+   third-party/include/imgui/imgui_impl_sdl3.cpp
+   third-party/include/imgui/imgui_impl_sdl3.h
+   third-party/include/bgfx-imgui/imgui_impl_bgfx.cpp
+   third-party/include/bgfx-imgui/imgui_impl_bgfx.h
+   third-party/include/bgfx-imgui/fs_ocornut_imgui.bin.h
+   third-party/include/bgfx-imgui/vs_ocornut_imgui.bin.h   
 )
 
 if(PLATFORM STREQUAL "android")

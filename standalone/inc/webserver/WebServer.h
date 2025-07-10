@@ -7,7 +7,7 @@
 #include <queue>
 #include <deque>
 #include <filesystem>
-#include "mongoose.h"
+#include <mongoose/mongoose.h>
 
 class WebServer {
 public:
