@@ -55,16 +55,6 @@ IScriptable::IScriptable()
    m_wzName[0] = '\0';
 }
 
-int CodeViewDispatch::SortAgainstValue(const wstring& pv) const
-{
-   const char* szName1 = MakeChar(pv.c_str());
-   const char* szName2 = MakeChar(m_wName.c_str());
-   int ret = lstrcmp(szName1, szName2);
-   delete[] szName1;
-   delete[] szName2;
-   return ret;
-}
-
 void CodeViewer::Init(IScriptableHost *psh)
 {
    CComObject<DebuggerModule>::CreateInstance(&m_pdm);
@@ -321,7 +311,7 @@ static size_t FindOrInsertUD(fi_vector<UserData>& ListIn, const UserData& udIn)
 #ifndef __STANDALONE__
 				const Sci_Position dwellpos = SendMessage(g_pvp->m_pcv->m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
 				SendMessage(g_pvp->m_pcv->m_hwndScintilla, SCI_CALLTIPSHOW, dwellpos,
-				           (LPARAM)("Duplicate Definition found: " + iterFound->m_description + " (Line: " + std::to_string(iterFound->m_lineNum) + ")\n                            " + udIn.m_description + " (Line: " + std::to_string(udIn.m_lineNum) + ')').c_str());
+				           (LPARAM)("Duplicate Definition found: " + iterFound->m_description + " (Line: " + std::to_string(iterFound->m_lineNum+1) + ")\n                            " + udIn.m_description + " (Line: " + std::to_string(udIn.m_lineNum+1) + ')').c_str());
 #endif
 				warn_on_dupes = false;
 			}
