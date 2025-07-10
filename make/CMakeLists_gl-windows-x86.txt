@@ -259,8 +259,6 @@ add_executable(vpinball WIN32
    third-party/include/BAM/BAMView.h
    third-party/include/BAM/BAM_Tracker.h
    third-party/include/BAM/BAM_ViewPortSetup.h
-   third-party/include/gpuprofiler.cpp
-   third-party/include/gpuprofiler.h
    third-party/include/freeimage.h
    third-party/include/serial.cpp
    third-party/include/serial.h
