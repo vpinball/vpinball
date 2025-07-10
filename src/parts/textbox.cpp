@@ -476,6 +476,11 @@ void Textbox::Render(const unsigned int renderMask)
    float w = (rect_right - rect_left)*mult;
    float h = (rect_bottom - rect_top)*ymult;
 
+   #ifdef ENABLE_DX9
+      x -= 0.5f / m_rd->GetOutputBackBuffer()->GetWidth();
+      y -= 1.0f / m_rd->GetOutputBackBuffer()->GetWidth();
+   #endif
+
    if (is_dmd)
    {
 #ifndef __STANDALONE__

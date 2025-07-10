@@ -237,7 +237,17 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, cons
    mvp.SetModel(matWorld);
 
    Matrix3D scale, coords, lookat, layback, matView;
-   const Matrix3D projTrans = Matrix3D::MatrixTranslate(xpixoff, ypixoff, 0.f); // in-pixel offset for manual oversampling
+   #ifdef ENABLE_DX9
+      // Shift by half a pixel
+      const float backBufferWidth = g_pplayer->m_renderer->m_renderDevice->GetOutputBackBuffer()->GetWidth();
+      const float backBufferHeight = g_pplayer->m_renderer->m_renderDevice->GetOutputBackBuffer()->GetHeight();
+      const Matrix3D projTrans = Matrix3D::MatrixTranslate(
+         xpixoff - 1.0f / backBufferWidth,
+         ypixoff + 1.0f / backBufferHeight,
+         0.f); // in-pixel offset for manual oversampling
+   #else
+      const Matrix3D projTrans = Matrix3D::MatrixTranslate(xpixoff, ypixoff, 0.f); // in-pixel offset for manual oversampling
+   #endif
    const Matrix3D rotz = Matrix3D::MatrixRotateZ(rotation); // Viewport rotation
 
    vector<Vertex3Ds> bounds, legacy_bounds;
