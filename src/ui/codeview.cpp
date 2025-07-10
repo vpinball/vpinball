@@ -55,6 +55,16 @@ IScriptable::IScriptable()
    m_wzName[0] = '\0';
 }
 
+int CodeViewDispatch::SortAgainstValue(const wstring& pv) const
+{
+   const char* szName1 = MakeChar(pv.c_str());
+   const char* szName2 = MakeChar(m_wName.c_str());
+   int ret = lstrcmp(szName1, szName2);
+   delete[] szName1;
+   delete[] szName2;
+   return ret;
+}
+
 void CodeViewer::Init(IScriptableHost *psh)
 {
    CComObject<DebuggerModule>::CreateInstance(&m_pdm);
