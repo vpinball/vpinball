@@ -448,7 +448,7 @@ DisplayFrame VPXPluginAPIImpl::ControllerOnGetRenderDMD(const CtlResId id)
    {
    case BaseTexture::BW: result.frame = dmdFrame->data(); break;
    case BaseTexture::SRGB: result.frame = dmdFrame->data(); break;
-   case BaseTexture::SRGBA: result.frame = dmdFrame->data(); break; // FIXME convert to SRGB
+   case BaseTexture::SRGBA: result.frame = dmdFrame->GetAlias(BaseTexture::SRGB)->data(); break;
    default: assert(false); return { 0, nullptr };  // Not yet supported
    }
 
@@ -463,7 +463,6 @@ void VPXPluginAPIImpl::ControllerOnGetDMDSrc(const unsigned int msgId, void* use
    // Main DMD defined from script
    if (g_pplayer && g_pplayer->m_dmdFrame)
    {
-      assert(g_pplayer->m_dmdFrame->m_format == BaseTexture::BW || g_pplayer->m_dmdFrame->m_format == BaseTexture::SRGB);
       if (msg.count < msg.maxEntryCount)
       {
          msg.entries[msg.count] = { 0 };
