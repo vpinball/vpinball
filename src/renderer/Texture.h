@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "unordered_dense.h"
+
 #define MIN_TEXTURE_SIZE 8u
 
 class ITexManCacheable
@@ -78,6 +80,8 @@ public:
    const uint8_t* datac() const{ return m_data; }
    bool HasAlpha() const       { return m_format == RGBA || m_format == SRGBA || m_format == RGBA_FP16 || m_format == RGBA_FP32; }
 
+   std::shared_ptr<BaseTexture> GetAlias(Format format) const; // Get an alias of this texture in a different format. Alias share the texture life and update cycle
+
    std::shared_ptr<BaseTexture> Convert(Format format) const; // Always create a new instance, even if target format is source format are matching
    std::shared_ptr<BaseTexture> ToBGRA() const; // swap R and B channels, also tonemaps floating point buffers during conversion and adds an opaque alpha channel (if format with missing alpha)
    std::shared_ptr<BaseTexture> NewWithAlpha() const { return Convert(GetFormatWithAlpha(m_format)); }
@@ -114,6 +118,7 @@ private:
    mutable uint8_t m_md5Hash[16] = { 0 };
    mutable bool m_isOpaqueDirty = true;
    mutable bool m_isOpaque = true;
+   mutable ankerl::unordered_dense::map<Format, std::shared_ptr<BaseTexture>> m_aliases;
 };
 
 

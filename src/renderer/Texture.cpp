@@ -454,6 +454,7 @@ void BaseTexture::Update(std::shared_ptr<BaseTexture>& tex, const unsigned int w
          assert(tex->pitch() * tex->height() == width * height * pixelSize);
          if (tex->data() != image && image)
             memcpy(tex->data(), image, width * height * pixelSize);
+         tex->m_aliases.clear();
          if (g_pplayer)
             g_pplayer->m_renderer->m_renderDevice->m_texMan.SetDirty(tex.get());
          return;
@@ -481,6 +482,7 @@ void BaseTexture::FlipY()
       memcpy(m_data + i * pitch, m_data + (m_height - 1 - i) * pitch, pitch);
       memcpy(m_data + (m_height - 1 - i) * pitch, bits, pitch);
    }
+   m_aliases.clear();
 }
 
 bool BaseTexture::Save(const string& filepath) const
@@ -525,6 +527,25 @@ bool BaseTexture::Save(const string& filepath) const
    return success;
 }
 
+std::shared_ptr<BaseTexture> BaseTexture::GetAlias(Format format) const
+{
+   auto it = m_aliases.find(format);
+   if (it == m_aliases.end())
+   {
+      std::shared_ptr<BaseTexture> alias = Convert(format);
+      if (!m_isOpaqueDirty)
+         alias->SetIsOpaque(IsOpaque());
+      if (!m_isMD5Dirty)
+         alias->SetMD5Hash(GetMD5Hash());
+      m_aliases[format] = alias;
+      return alias;
+   }
+   else
+   {
+      return it->second;
+   }
+}
+
 std::shared_ptr<BaseTexture> BaseTexture::Convert(Format format) const
 {
    std::shared_ptr<BaseTexture> tex = nullptr;
@@ -551,6 +572,28 @@ std::shared_ptr<BaseTexture> BaseTexture::Convert(Format format) const
          if (tex == nullptr)
             return nullptr;
          copy_rgb_rgba<false>((unsigned int*)tex->data(), datac(), (size_t)width() * height());
+         break;
+      }
+      break;
+
+   case SRGBA:
+      switch (format)
+      {
+      case SRGB:
+         tex = BaseTexture::Create(m_width, m_height, SRGB);
+         if (tex == nullptr)
+            return nullptr;
+         {
+            const uint32_t* const __restrict src_data = reinterpret_cast<const uint32_t*>(datac());
+            uint8_t* const __restrict dest_data = tex->data();
+            for (size_t o = 0; o < (size_t)width() * height(); ++o)
+            {
+               const uint32_t rgba = src_data[o];
+               dest_data[o * 3 + 0] =  rgba        & 0xFF;
+               dest_data[o * 3 + 1] = (rgba >>  8) & 0xFF;
+               dest_data[o * 3 + 2] = (rgba >> 16) & 0xFF;
+            }
+         }
          break;
       }
       break;
