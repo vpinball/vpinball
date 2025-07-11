@@ -168,6 +168,16 @@
         copy /y "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\serum\"
         copy /y "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\serum\"
       </Command>
+      <Command Condition="'$(Platform)'=='x64'">
+        copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\serum64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\serum\"
+        copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\serum64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\serum\"
+        copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\serum64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\serum\"
+      </Command>
+      <Command Condition="'$(Platform)'=='Win32'">
+        copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\serum.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\serum\"
+        copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\serum.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\serum\"
+        copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\serum.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\serum\"
+      </Command>
     </PostBuildEvent>
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)../../src/plugins;$(SolutionDir)../../plugins/serum;$(SolutionDir)../../third-party/include/</AdditionalIncludeDirectories>
