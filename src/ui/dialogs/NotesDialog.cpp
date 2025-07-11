@@ -54,14 +54,6 @@ INT_PTR NotesDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    return DialogProcDefault(uMsg, wParam, lParam);
 }
 
-BOOL NotesDialog::PreTranslateMessage(MSG& msg)
-{
-   if (!IsWindow())
-      return FALSE;
-
-   return IsDialogMessage(msg);
-}
-
 void NotesDialog::SetText()
 {
    CCO(PinTable)* const pt = g_pvp->GetActiveTable();

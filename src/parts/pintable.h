@@ -475,7 +475,6 @@ public:
 
    HRESULT TableSave();
    HRESULT SaveAs();
-   virtual HRESULT ApcProject_Save();
    HRESULT Save(const bool saveAs);
    HRESULT SaveToStorage(IStorage *pstg);
    HRESULT SaveToStorage(IStorage *pstg, VPXFileFeedback& feedback);

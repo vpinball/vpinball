@@ -22,8 +22,7 @@ HRESULT Timer::Init(PinTable *const ptable, const float x, const float y, const 
    SetDefaults(fromMouseClick);
    m_d.m_v.x = x;
    m_d.m_v.y = y;
-   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr); //ApcProjectItem.Define(ptable->ApcProject, GetDispatch(),
-   //axTypeHostProjectItem/*axTypeHostClass*/, L"Timer", nullptr);
+   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
 }
 
 void Timer::SetDefaults(const bool fromMouseClick)
