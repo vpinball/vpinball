@@ -84,9 +84,6 @@ private:
    void GetMyPath();
    void UpdateRecentFileList(const string& filename);
 
-   bool ApcHost_OnTranslateMessage(MSG* pmsg);
-   bool processKeyInputForDialogs(MSG *pmsg);
-
 public:
    void GetMyPrefPath();
    void AddMDITable(PinTableMDI* mdiTable);
@@ -123,9 +120,6 @@ public:
 
    STDMETHOD(FireKnocker)(int Count);
    STDMETHOD(QuitPlayer)(int CloseType);
-
-   bool StepMsgLoop();
-   int MainMsgLoop();
 
    void CloseTable(const PinTable * const ppt);
 
@@ -226,7 +220,7 @@ public:
 
    CodeViewer *m_pcv; // currently active code window
 
-   bool m_backglassView; // whether viewing the playfield or screen layout
+   bool m_backglassView = false; // whether viewing the playfield or screen layout
 
    bool m_alwaysDrawDragPoints;
    bool m_alwaysDrawLightCenters;
@@ -284,8 +278,6 @@ protected:
 
 private:
 
-   CDockProperty *GetDefaultPropertiesDocker();
-   CDockToolbar *GetDefaultToolbarDocker();
    CDockNotes *GetDefaultNotesDocker();
 
    volatile bool m_unloadingTable;

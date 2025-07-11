@@ -2344,11 +2344,6 @@ HRESULT PinTable::SaveAs()
    return Save(true);
 }
 
-HRESULT PinTable::ApcProject_Save()
-{
-   return Save(m_filename.empty());
-}
-
 void PinTable::BeginAutoSaveCounter()
 {
 #ifndef __STANDALONE__
@@ -6524,8 +6519,6 @@ STDMETHODIMP PinTable::get_Name(BSTR *pVal)
 
 STDMETHODIMP PinTable::put_Name(BSTR newVal)
 {
-   //GetIApcProjectItem()->put_Name(newVal);
-
    const size_t l = wcslen(newVal);
    if ((l > MAXNAMEBUFFER) || (l < 1))
    {

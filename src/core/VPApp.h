@@ -14,6 +14,12 @@ public:
    
    int Run() override;
 
+   bool StepMsgLoop();
+   int MainMsgLoop();
+
+protected:
+   BOOL OnIdle(LONG count) OVERRIDE;
+
 private:
    string GetPathFromArg(const string& arg, bool setCurrentPath);
    string GetCommandLineHelp() const;
@@ -36,4 +42,5 @@ private:
    string m_tournamentFileName;
 
    VPinball m_vpinball;
+   LONG m_idleIndex = 0;
 };

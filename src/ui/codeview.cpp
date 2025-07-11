@@ -1147,14 +1147,13 @@ BOOL CodeViewer::PreTranslateMessage(MSG &msg)
 #ifndef __STANDALONE__
    if (!IsWindow())
       return FALSE;
-
-   // only pre-translate mouse and keyboard input events
-   if ( ((msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST) || (msg.message >= WM_MOUSEFIRST && msg.message <= WM_MOUSELAST))
-       && TranslateAccelerator(m_hwndMain, m_haccel, &msg) )
+   
+   if (m_hwndFind && ::IsDialogMessage(m_hwndFind, &msg))
       return TRUE;
 
    if (IsDialogMessage(msg))
       return TRUE;
+
 #endif
    return FALSE;
 }
@@ -3544,6 +3543,7 @@ LRESULT CodeViewer::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             pcv->m_stopErrorDisplay = true; ///stop Error reporting WIP
             warn_on_dupes = true;
             pcv->ParseForFunction();
+            GetApp()->SetAccelerators(pcv->m_haccel, pcv->m_hwndMain);
          }
          break;
       }

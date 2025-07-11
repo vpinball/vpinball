@@ -124,11 +124,11 @@ void CaptureRender(const string& tablePath, const string& screenshotPath)
    AddOnPrepareFrameHandler(onPrepareFrame, &state);
    g_pvp->DoPlay(0);
    while (!state.done)
-      g_pvp->StepMsgLoop();
+      g_app->StepMsgLoop();
    RemoveOnPrepareFrameHandler(onPrepareFrame);
    PostMessage(g_pvp->GetHwnd(), WM_COMMAND, IDM_CLOSE, 0); // Close the table
    while (!g_pvp->m_vtable.empty())
-      g_pvp->StepMsgLoop();
+      g_app->StepMsgLoop();
 }
 
 void ResetVPX()
@@ -143,7 +143,7 @@ void ResetVPX()
    {
       PostMessage(g_pvp->GetHwnd(), WM_COMMAND, IDM_CLOSE, 0);
       while (g_pvp->m_vtable.size() == nOpenedTables)
-         g_pvp->StepMsgLoop();
+         g_app->StepMsgLoop();
       nOpenedTables = g_pvp->m_vtable.size();
    }
 
@@ -182,7 +182,7 @@ extern "C" int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrev
    // Clean up
    msgApi.ReleaseMsgID(onPrepareFrameMsgId);
    PostMessage(g_pvp->GetHwnd(), WM_CLOSE, 0, 0);
-   g_pvp->MainMsgLoop();
+   g_app->MainMsgLoop();
 
    if (context.shouldExit())
       return res;

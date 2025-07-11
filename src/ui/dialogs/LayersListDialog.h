@@ -6,7 +6,7 @@ class LayerTreeView final : public CTreeView
 {
 public:
    LayerTreeView();
-   ~LayerTreeView() override = default;
+   ~LayerTreeView();
 
    void SetActiveTable(PinTable* ptable);
    void SetFilter(const string& filter, bool isCaseSensitive);
@@ -16,10 +16,9 @@ public:
    void Select(IEditable* editable);
    IEditable* GetSelection() const;
 
-   BOOL PreTranslateMessage(MSG& msg) override;
-
 protected:
    void OnAttach() override;
+   BOOL OnCommand(WPARAM wparam, LPARAM lparam) override;
    void PreCreate(CREATESTRUCT& cs) override;
    LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
    LRESULT OnNotifyReflect(WPARAM wparam, LPARAM lparam) override;
@@ -66,7 +65,6 @@ public:
    bool IsSyncedOnSelection() const { return m_syncButton.GetCheck() == BST_CHECKED; }
 
    LRESULT OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam);
-   BOOL PreTranslateMessage(MSG& msg) override;
 
 protected:
    BOOL OnInitDialog() override;
@@ -88,7 +86,6 @@ private:
    CEdit         m_layerFilterEditBox;
    CButton       m_layerFilterCaseButton;
    PinTable*     m_activeTable = nullptr;
-   HACCEL        m_accel;
 };
 
 class CContainLayers final : public CDockContainer

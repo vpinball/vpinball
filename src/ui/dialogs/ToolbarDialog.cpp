@@ -291,23 +291,6 @@ void ToolbarDialog::EnableButtons()
     }
 }
 
-BOOL ToolbarDialog::PreTranslateMessage(MSG& msg)
-{
-   if (!IsWindow())
-      return FALSE;
-
-   // only pre-translate mouse and keyboard input events
-   if ((msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST) || (msg.message >= WM_MOUSEFIRST && msg.message <= WM_MOUSELAST))
-   {
-      const int keyPressed = LOWORD(msg.wParam);
-      // only pass F1-F12 to the main VPinball class to open subdialogs from everywhere
-      if (keyPressed >= VK_F1 && keyPressed <= VK_F12 && TranslateAccelerator(g_pvp->GetHwnd(), g_haccel, &msg))
-         return TRUE;
-   }
-
-   return IsDialogMessage(msg);
-}
-
 BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
     UNREFERENCED_PARAMETER(lParam);

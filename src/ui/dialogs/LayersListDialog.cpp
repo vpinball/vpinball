@@ -7,7 +7,6 @@
 
 LayersListDialog::LayersListDialog()
    : CDialog(IDD_LAYERS)
-   , m_accel(LoadAccelerators(g_pvp->theInstance, MAKEINTRESOURCE(IDR_VPSIMPELACCEL)))
 {
 }
 
@@ -204,27 +203,6 @@ void LayersListDialog::AssignToSelectedGroup()
    m_activeTable->AssignSelectionToPartGroup(group);
 }
 
-BOOL LayersListDialog::PreTranslateMessage(MSG& msg)
-{
-   if (!IsWindow())
-      return FALSE;
-
-   // only pre-translate mouse and keyboard input events
-   if ((msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST) || (msg.message >= WM_MOUSEFIRST && msg.message <= WM_MOUSELAST))
-   {
-      const int keyPressed = LOWORD(msg.wParam);
-      // only pass F1-F12 to the main VPinball class to open subdialogs from everywhere
-      if (((keyPressed >= VK_F3 && keyPressed <= VK_F12) || (keyPressed == VK_ESCAPE))
-         && TranslateAccelerator(g_pvp->GetHwnd(), m_accel, &msg)) //!! VK_ESCAPE is a workaround, otherwise there is a hickup when changing a layername and pressing this
-         return TRUE;
-   }
-
-   if (m_layerTreeView.PreTranslateMessage(msg))
-      return TRUE;
-
-   return IsDialogMessage(msg);
-}
-
 void LayersListDialog::SetActiveTable(PinTable* ptable)
 {
    if (m_activeTable != ptable)
@@ -292,8 +270,13 @@ void CDockLayers::OnClose()
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 LayerTreeView::LayerTreeView()
-   : m_accel(LoadAccelerators(g_pvp->theInstance, MAKEINTRESOURCE(IDR_VPSIMPELACCEL)))
+   : m_accel(LoadAccelerators(g_pvp->theInstance, MAKEINTRESOURCE(IDR_LAYERLISTACCEL)))
 {
+}
+
+LayerTreeView::~LayerTreeView()
+{
+   DestroyAcceleratorTable(m_accel);
 }
 
 void LayerTreeView::SetActiveTable(PinTable* ptable)
@@ -505,26 +488,6 @@ void LayerTreeView::ResetView()
    SetRedraw(TRUE);
 }
 
-BOOL LayerTreeView::PreTranslateMessage(MSG& msg)
-{
-   if (!IsWindow())
-      return FALSE;
-
-   if (msg.hwnd != GetHwnd())
-      return FALSE;
-
-   const int keyPressed = LOWORD(msg.wParam);
-   if (keyPressed != VK_F2)
-   {
-      // only pre-translate mouse and keyboard input events
-      if (((msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST) || (msg.message >= WM_MOUSEFIRST && msg.message <= WM_MOUSELAST))
-         && TranslateAccelerator(GetHwnd(), m_accel, &msg))
-         return TRUE;
-   }
-
-   return IsDialogMessage(msg);
-}
-
 void LayerTreeView::OnAttach()
 {
    m_normalImages.Create(16, 16, ILC_COLOR32 | ILC_MASK, 1, 0);
@@ -552,18 +515,25 @@ void LayerTreeView::PreCreate(CREATESTRUCT& cs)
 #define MAKEPOINTS(l) (*((POINTS FAR*)&(l)))
 #endif
 
+BOOL LayerTreeView::OnCommand(WPARAM wparam, LPARAM lparam)
+{
+   UNREFERENCED_PARAMETER(lparam);
+
+   switch (LOWORD(wparam))
+   {
+   case IDC_RENAME: EditLabel(CTreeView::GetSelection()); return FALSE;
+   }
+   return TRUE;
+}
+
+
 LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
 {
    switch (msg)
    {
-   case WM_KEYUP:
-      if (wparam == VK_F2)
-         EditLabel(CTreeView::GetSelection());
-      break;
-      
-   case WM_MOUSEACTIVATE:
-      SetFocus();
-      break;
+   case WM_SETFOCUS: GetApp()->SetAccelerators(m_accel, *this); break;
+   case WM_KILLFOCUS: GetApp()->SetAccelerators(g_pvp->GetFrameAccel(), *g_pvp); break;
+   case WM_MOUSEACTIVATE: SetFocus(); break;
       
    case WM_MOUSEMOVE:
       if (m_dragging)

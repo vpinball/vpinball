@@ -341,7 +341,6 @@ private:
     CResizer m_resizer;
     CStatic  m_multipleElementsStatic;
     CStatic  m_elementTypeName;
-    HACCEL   m_accel;
 };
 #pragma endregion
 

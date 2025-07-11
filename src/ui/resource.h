@@ -381,8 +381,7 @@
 #define IDR_CODEVIEWACCEL               271
 #define IDD_COLLECTDIALOG               271
 #define IDD_COLLECTION                  272
-#define IDR_VPACCEL1                    272
-#define IDR_VPSIMPELACCEL               272
+#define IDR_LAYERLISTACCEL              272
 #define IDC_LEFTFLIPPER                 273
 #define IDD_PROPDISPREEL                273
 #define IDC_RIGHTFLIPPER                274

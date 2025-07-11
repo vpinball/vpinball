@@ -428,6 +428,7 @@ static bool compare_option(const char *const arg, const option_names option)
 
 VPApp::VPApp(HINSTANCE hInstance)
 {
+   g_app = this;
    m_vpinball.AddRef();
 
    #ifndef __STANDALONE__
@@ -528,10 +529,6 @@ VPApp::VPApp(HINSTANCE hInstance)
    EditableRegistry::RegisterEditable<HitTarget>();
    EditableRegistry::RegisterEditable<PartGroup>();
 
-   #ifndef __STANDALONE__
-      g_haccel = LoadAccelerators(m_vpinball.theInstance, MAKEINTRESOURCE(IDR_VPACCEL));
-   #endif
-
    VPXPluginAPIImpl::GetInstance();
 }
 
@@ -540,13 +537,12 @@ VPApp::~VPApp()
    m_vpinball.Release();
 
    #ifndef __STANDALONE__
-      DestroyAcceleratorTable(g_haccel);
-
       _Module.RevokeClassObjects();
       _Module.Term();
       CoUninitialize();
    #endif
    g_pvp = nullptr;
+   g_app = nullptr;
 
    #ifdef _CRTDBG_MAP_ALLOC
       #ifdef DEBUG_XXX  //disable this in preference to DevPartner
@@ -1090,12 +1086,83 @@ int VPApp::Run()
    {
       if (m_play && loadFileResult)
          m_vpinball.DoPlay(m_vpinball.m_povEdit);
-
-      // VBA APC handles message loop (bastards)
-      retval = m_vpinball.MainMsgLoop();
+      retval = MainMsgLoop();
    }
 
    m_vpinball.m_settings.Save();
 
+   return retval;
+}
+
+BOOL VPApp::OnIdle(LONG count)
+{
+#ifndef __STANDALONE__
+   MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
+   if (m_vpinball.m_table_played_via_SelectTableOnStart)
+   {
+      // If player has been closed in the meantime, check if we should display the file open dialog again to select/play the next table
+      // first close the current table
+      CComObject<PinTable>* const pt = m_vpinball.GetActiveTable();
+      if (pt)
+         m_vpinball.CloseTable(pt);
+      // then select the new one, and if one was selected, play it
+      m_vpinball.m_table_played_via_SelectTableOnStart = m_vpinball.LoadFile(false);
+      if (m_vpinball.m_table_played_via_SelectTableOnStart)
+         m_vpinball.DoPlay(false);
+   }
+   else if (m_vpinball.m_open_minimized)
+   {
+      // If started to play and for whatever reason (end of play, frontend closing the player window, failed loading,...)
+      // we do not have a player, just close back to system.
+      m_vpinball.PostMessage(WM_CLOSE, 0, 0);
+   }
+   else
+   {
+      // Otherwise wait for next event
+      return FALSE;
+   }
+#endif
+   return TRUE;
+}
+
+bool VPApp::StepMsgLoop()
+{
+#ifndef __STANDALONE__
+   MSG msg;
+   if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+   {
+      m_idleIndex = 0;
+      if (msg.message == WM_QUIT)
+         return true;
+      if (!PreTranslateMessage(msg))
+      {
+         TranslateMessage(&msg);
+         DispatchMessage(&msg);
+      }
+   }
+   else if (OnIdle(m_idleIndex++) == FALSE)
+   {
+      WaitMessage();
+   }
+#endif
+   return false;
+}
+
+int VPApp::MainMsgLoop()
+{
+   int retval = 0;
+#ifndef __STANDALONE__
+   while (!StepMsgLoop())
+   {
+   }
+#else
+   CComObject<PinTable>* const pt = m_vpinball.GetActiveTable();
+   if (pt)
+   {
+      if (pt->m_pcv->m_scriptError)
+         retval = 1;
+      m_vpinball.CloseTable(pt);
+   }
+#endif
    return retval;
 }
