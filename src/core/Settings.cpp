@@ -477,24 +477,14 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
             if (strcmp((char *)pvalue, "Dock Settings") == 0) // should not happen, as a folder, not value.. BUT also should save these somehow and restore for Win32++, or not ?
                continue;
 
-            char *copy;
+            string copy;
             if (type == REG_SZ)
-            {
-               const size_t size = strlen((char *)pvalue);
-               copy = new char[size + 1];
-               memcpy(copy, pvalue, size);
-               copy[size] = '\0';
-            }
+               copy = reinterpret_cast<char*>(pvalue);
             else if (type == REG_DWORD)
-            {
-               const string tmp = std::to_string(*(uint32_t *)pvalue);
-               const size_t len = tmp.length() + 1;
-               copy = new char[len];
-               strcpy_s(copy, len, tmp.c_str());
-            }
+               copy = std::to_string(*reinterpret_cast<uint32_t *>(pvalue));
             else
             {
-               copy = nullptr;
+               continue;
                assert(!"Bad Registry Key");
             }
 

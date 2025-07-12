@@ -477,30 +477,23 @@ void SoundDialog::Export()
             ofn.lpstrFilter = "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0";
 
             char filename[MAXSTRING] = {};
-
             if (!renameOnExport)
             {
-               const int len0 = (int)pps->m_path.length();
-               int begin; //select only file name from pathfilename
-               for (begin = len0; begin >= 0; begin--)
-               {
-                  if (pps->m_path[begin] == PATH_SEPARATOR_CHAR)
-                  {
-                     begin++;
-                     break;
-                  }
-               }
-               memcpy(filename, pps->m_path.c_str() + begin, len0 - begin);
+               string filename2 = pps->m_path;
+               const size_t pos = filename2.find_last_of(PATH_SEPARATOR_CHAR);
+               filename2 = pos != string::npos ? filename2.substr(pos + 1) : filename2;
+               strncpy_s(filename, filename2.c_str(), sizeof(filename) - 1);
             }
             else
             {
-               strncat_s(filename, pps->m_name.c_str(), sizeof(filename)-strnlen_s(filename, sizeof(filename))-1);
-               const size_t idx = pps->m_path.find_last_of('.');
-               strncat_s(filename, pps->m_path.c_str() + idx, sizeof(filename)-strnlen_s(filename, sizeof(filename))-1);
+               string filename2 = pps->m_name;
+               const size_t pos = pps->m_path.find_last_of('.');
+               filename2 += pos != string::npos ? pps->m_path.substr(pos) : ".ogg";
+               strncpy_s(filename, filename2.c_str(), sizeof(filename) - 1);
             }
             ofn.lpstrFile = filename;
             ofn.nMaxFile = sizeof(filename);
-            ofn.lpstrDefExt = "mp3";
+            ofn.lpstrDefExt = "ogg";
 
             string initDir = g_pvp->m_settings.LoadValueWithDefault(Settings::RecentDir, "SoundDir"s, PATH_TABLES);
 
@@ -510,31 +503,17 @@ void SoundDialog::Export()
 
             if (GetSaveFileName( &ofn ))	//Get filename from user
             {
-                int begin;
-                for (begin = (int)strlen(ofn.lpstrFile); begin >= 0; begin--)
-                {
-                    if (ofn.lpstrFile[begin] == PATH_SEPARATOR_CHAR)
-                    {
-                        begin++;
-                        break;
-                    }
-                }
-
-                if (begin >= MAXSTRING)
-                    begin = MAXSTRING-1;
-
-                char pathName[MAXSTRING];
-                if(begin > 0)
-                    memcpy( pathName, ofn.lpstrFile, begin );
-                pathName[begin] = '\0';
-
+               string pathName = ofn.lpstrFile;
+               const size_t pos = pathName.find_last_of(PATH_SEPARATOR_CHAR);
+               pathName = pos != string::npos ? pathName.substr(0, pos + 1) : pathName;
                 while(sel != -1)
                 {
                     if (selectedItemsCount > 1)
                     {
-                       strncpy_s(filename, pathName, sizeof(filename)-1);
+                       strncpy_s(filename, pathName.c_str(), sizeof(filename)-1);
                        if (!renameOnExport)
                        {
+                          int begin;
                           for (begin = (int)pps->m_path.length(); begin >= 0; begin--)
                           {
                              if (pps->m_path[begin] == PATH_SEPARATOR_CHAR)

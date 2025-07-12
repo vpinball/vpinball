@@ -426,6 +426,29 @@ bool IsWindowsVistaOr7()
 #endif
 }
 
+#ifndef __STANDALONE__
+string GetExecutablePath()
+{
+   std::string path;
+   DWORD size = MAX_PATH;
+   while (true)
+   {
+      path.resize(size);
+      DWORD length = ::GetModuleFileNameA(nullptr, &path[0], size);
+      if (length == 0)
+      {
+         return {};
+      }
+      else if (length < size)
+      {
+         path.resize(length); // Trim excess
+         return path;
+      }
+      size *= 2;
+   }
+}
+#endif
+
 vector<uint8_t> read_file(const string& filename, const bool binary)
 {
    vector<uint8_t> data;

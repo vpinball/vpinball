@@ -164,23 +164,9 @@ VPinball::~VPinball()
 void VPinball::GetMyPath()
 {
 #ifndef __STANDALONE__
-   char szPath[MAXSTRING];
-
-   GetModuleFileName(nullptr, szPath, MAXSTRING);
-   char *szEnd = szPath + strlen(szPath);
-
-   // search for first backslash
-   while (szEnd > szPath)
-   {
-      if (*szEnd == PATH_SEPARATOR_CHAR)
-         break;
-      szEnd--;
-   }
-
-   // truncate the filename
-   *(szEnd + 1) = '\0'; // Get rid of exe name
-
-   m_myPath = szPath;
+   string path = GetExecutablePath();
+   const size_t pos = path.find_last_of(PATH_SEPARATOR_CHAR);
+   m_myPath = pos != string::npos ? path.substr(0,pos + 1) : path;
 #else
 #ifdef __ANDROID__
    m_myPath = string(SDL_GetAndroidInternalStoragePath()) + PATH_SEPARATOR_CHAR;
@@ -2182,17 +2168,16 @@ int CALLBACK MyCompProcIntValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM 
    lvf.flags = LVFI_PARAM;
    lvf.lParam = lSortParam1;
    const int nItem1 = ListView_FindItem(lpsd->hwndList, -1, &lvf);
-
    lvf.lParam = lSortParam2;
    const int nItem2 = ListView_FindItem(lpsd->hwndList, -1, &lvf);
 
-   char buf1[20], buf2[20];
-   ListView_GetItemText(lpsd->hwndList, nItem1, lpsd->subItemIndex, buf1, sizeof(buf1));
-   ListView_GetItemText(lpsd->hwndList, nItem2, lpsd->subItemIndex, buf2, sizeof(buf2));
-
-   int value1, value2;
-   std::from_chars(buf1, buf1 + strlen(buf1), value1);
-   std::from_chars(buf2, buf2 + strlen(buf2), value2);
+   std::string buf1(256, '\0');
+   std::string buf2(256, '\0');
+   ListView_GetItemText(lpsd->hwndList, nItem1, lpsd->subItemIndex, &buf1[0], buf1.size());
+   ListView_GetItemText(lpsd->hwndList, nItem2, lpsd->subItemIndex, &buf2[0], buf2.size());
+   int value1 = 0, value2 = 0;
+   try_parse_int(buf1, value1);
+   try_parse_int(buf2, value2);
 
    if (lpsd->sortUpDown == 1)
       return (value1 - value2);

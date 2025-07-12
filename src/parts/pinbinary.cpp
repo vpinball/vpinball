@@ -91,25 +91,14 @@ void PinFont::Register()
 
    ReleaseDC(nullptr, hdcScreen);
 
-   char szPath[MAXSTRING];
-   GetModuleFileName(nullptr, szPath, MAXSTRING);
-
-   char *szEnd = szPath + strlen(szPath);
-
-   while (szEnd > szPath)
-   {
-      if (*szEnd == PATH_SEPARATOR_CHAR)
-         break;
-
-      szEnd--;
-   }
-
-   *(szEnd + 1) = '\0'; // Get rid of exe name
+   string path = GetExecutablePath();
+   const size_t pos = path.find_last_of(PATH_SEPARATOR_CHAR);
+   path = pos != string::npos ? path.substr(0, pos + 1) : path;
 
    static int tempFontNumber = -1;
    tempFontNumber++;
 
-   m_szTempFile = szPath + "VPTemp"s + std::to_string(tempFontNumber) + ".ttf";
+   m_szTempFile = path + "VPTemp"s + std::to_string(tempFontNumber) + ".ttf";
    WriteToFile(m_szTempFile);
 
    /*const int fonts =*/ AddFontResource(m_szTempFile.c_str());
