@@ -52,7 +52,9 @@ STDMETHODIMP WMPCore::put_URL(BSTR pbstrURL)
 
    PLOGI.printf("player=%p, URL=%s", this, m_szURL.c_str());
 
-   if (m_pAudioPlayer->PlayMusic(m_szURL))
+   m_szURL = find_case_insensitive_file_path(m_szURL);
+
+   if (!m_szURL.empty() && m_pAudioPlayer->PlayMusic(m_szURL))
    {
       m_pAudioPlayer->PauseMusic();
       m_playState = wmppsReady;
