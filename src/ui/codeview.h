@@ -288,7 +288,7 @@ public:
 #endif
 
    void EvaluateScriptStatement(const char * const szScript);
-   void AddToDebugOutput(const char * const szText);
+   void AddToDebugOutput(const string& szText);
 
    BOOL PreTranslateMessage(MSG& msg) OVERRIDE;
 
