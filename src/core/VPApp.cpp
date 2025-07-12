@@ -238,15 +238,26 @@ static const string options[] = { // keep in sync with option_names & option_des
    "TournamentFile"s,
    "v"s,
    "exit"s, // (ab)used by frontend, not handled by us
-   "Audit"s
+   "Audit"s,
 #ifdef __STANDALONE__
-   ,
-   "PrefPath"s,
    "listres"s,
-   "listsnd"s,
-   "displayid"s
 #endif
-}; // + c1..c9
+   "listsnd"s,
+   "c1",
+   "c2",
+   "c3",
+   "c4",
+   "c5",
+   "c6",
+   "c7",
+   "c8",
+   "c9",
+#ifdef __STANDALONE__
+   "displayid"s,
+   "PrefPath"s,
+#endif
+   ""
+};
 static const string option_descs[] =
 {
    string(),
@@ -276,15 +287,15 @@ static const string option_descs[] =
       "List available fullscreen resolutions"s,
    #endif
    "List available sound devices"s,
-   "c1",
-   "c2",
-   "c3",
-   "c4",
-   "c5",
-   "c6",
-   "c7",
-   "c8",
-   "c9",
+   "Custom value 1",
+   "Custom value 2",
+   "Custom value 3",
+   "Custom value 4",
+   "Custom value 5",
+   "Custom value 6",
+   "Custom value 7",
+   "Custom value 8",
+   "Custom value 9",
    #ifdef __STANDALONE__
       "Visually display your screen ID(s)"s
       "[path]  Use a custom preferences path instead of $HOME/.vpinball"s,
