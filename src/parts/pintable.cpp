@@ -1743,7 +1743,7 @@ void PinTable::RemoveInvalidReferences()
    m_materialMap.clear();
 }
 
-bool PinTable::IsNameUnique(const WCHAR * const wzName) const
+bool PinTable::IsNameUnique(const wstring& wzName) const
 {
    return m_pcv->m_vcvd.GetSortedIndex(wzName) == -1;
 }
@@ -1755,30 +1755,19 @@ void PinTable::GetUniqueName(const ItemTypeEnum type, WCHAR *const wzUniqueName,
    GetUniqueName(wzRoot, wzUniqueName, wzUniqueName_maxlength);
 }
 
-void PinTable::GetUniqueName(const WCHAR *const wzRoot, WCHAR *const wzUniqueName, const size_t wzUniqueName_maxlength) const
+void PinTable::GetUniqueName(const wstring& wzRoot, WCHAR *const wzUniqueName, const size_t wzUniqueName_maxlength) const
 {
    int suffix = 1;
-   bool found = false;
-   WCHAR * const wzName = new WCHAR[wzUniqueName_maxlength];
-
-   while (!found)
+   wstring wzName;
+   do
    {
-      wcscpy_s(wzName, wzUniqueName_maxlength - 3, wzRoot);
-      const wstring wzSuffix = std::to_wstring(suffix);
-      if(suffix < 10)
-         wcscat_s(wzName, wzUniqueName_maxlength, L"0");
-      if(suffix < 100)
-         wcscat_s(wzName, wzUniqueName_maxlength, L"0");
-      wcscat_s(wzName, wzUniqueName_maxlength, wzSuffix.c_str());
-
-      if (IsNameUnique(wzName) || suffix == 999)
-         found = true;
-      else
-         suffix++;
-   }
-
-   wcscpy_s(wzUniqueName, wzUniqueName_maxlength, wzName);
-   delete[] wzName;
+      const wstring wzName = (wzRoot.length() > wzUniqueName_maxlength - 3 ? wzRoot.substr(0, wzUniqueName_maxlength - 3) : wzRoot)
+         + ((suffix <  10) ? (L"00" + std::to_wstring(suffix))
+         :  (suffix < 100) ? (L"0"  + std::to_wstring(suffix))
+         :                            std::to_wstring(suffix));
+      suffix++;
+   } while (!IsNameUnique(wzName) && suffix < 1000);
+   wcscpy_s(wzUniqueName, wzUniqueName_maxlength, wzName.c_str());
 }
 
 void PinTable::GetUniqueNamePasting(const int type, WCHAR * const wzUniqueName, const size_t wzUniqueName_maxlength) const
@@ -2764,13 +2753,13 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
 #endif
 }
 
-HRESULT PinTable::WriteInfoValue(IStorage* pstg, const WCHAR * const wzName, const string& szValue, HCRYPTHASH hcrypthash)
+HRESULT PinTable::WriteInfoValue(IStorage* pstg, const wstring& wzName, const string& szValue, HCRYPTHASH hcrypthash)
 {
 #ifndef __STANDALONE__
    HRESULT hr = S_OK;
    IStream *pstm;
 
-   if (!szValue.empty() && SUCCEEDED(hr = pstg->CreateStream(wzName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstm)))
+   if (!szValue.empty() && SUCCEEDED(hr = pstg->CreateStream(wzName.c_str(), STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstm)))
    {
       ULONG writ;
       BiffWriter bw(pstm, hcrypthash);
@@ -2857,12 +2846,12 @@ HRESULT PinTable::SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
 }
 
 
-HRESULT PinTable::ReadInfoValue(IStorage* pstg, const WCHAR * const wzName, string &output, HCRYPTHASH hcrypthash)
+HRESULT PinTable::ReadInfoValue(IStorage* pstg, const wstring& wzName, string &output, HCRYPTHASH hcrypthash)
 {
    HRESULT hr;
    IStream *pstm;
 
-   if (SUCCEEDED(hr = pstg->OpenStream(wzName, nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstm)))
+   if (SUCCEEDED(hr = pstg->OpenStream(wzName.c_str(), nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstm)))
    {
       STATSTG ss;
       pstm->Stat(&ss, STATFLAG_NONAME);

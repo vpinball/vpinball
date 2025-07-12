@@ -1629,10 +1629,10 @@ void CodeViewer::EvaluateScriptStatement(const char * const szScript)
    delete[] wzScript;
 }
 
-void CodeViewer::AddToDebugOutput(const char * const szText)
+void CodeViewer::AddToDebugOutput(const string &szText)
 {
 #ifndef __STANDALONE__
-   ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_ADDTEXT, strlen(szText), (LPARAM)szText);
+   ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_ADDTEXT, szText.length(), (LPARAM)szText.c_str());
    ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_ADDTEXT, 1, (LPARAM)"\n");
 
    const size_t pos = ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_GETCURRENTPOS, 0, 0);
@@ -4262,12 +4262,10 @@ STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
       return S_OK;
    }
 
-   const WCHAR * const wzT = V_BSTR(&varT);
-   char * const szT = MakeChar(wzT);
+   const string szT = MakeString(V_BSTR(&varT));
    if (g_pplayer->m_hwndDebugOutput)
       m_pcv->AddToDebugOutput(szT);
    PLOGI_IF_(PLOG_NO_DBG_OUT_INSTANCE_ID, logScript) << "Script.Print '" << szT << '\'';
-   delete[] szT;
 
    return S_OK;
 }

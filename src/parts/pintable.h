@@ -480,8 +480,8 @@ public:
    HRESULT SaveToStorage(IStorage *pstg, VPXFileFeedback& feedback);
    HRESULT SaveInfo(IStorage *pstg, HCRYPTHASH hcrypthash);
    HRESULT SaveCustomInfo(IStorage *pstg, IStream *pstmTags, HCRYPTHASH hcrypthash);
-   static HRESULT WriteInfoValue(IStorage *pstg, const WCHAR *const wzName, const string &szValue, HCRYPTHASH hcrypthash);
-   static HRESULT ReadInfoValue(IStorage *pstg, const WCHAR *const wzName, string &output, HCRYPTHASH hcrypthash);
+   static HRESULT WriteInfoValue(IStorage *pstg, const wstring& wzName, const string &szValue, HCRYPTHASH hcrypthash);
+   static HRESULT ReadInfoValue(IStorage *pstg, const wstring& wzName, string &output, HCRYPTHASH hcrypthash);
    HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo) final;
    HRESULT LoadGameFromFilename(const string &filename);
    HRESULT LoadGameFromFilename(const string &filename, VPXFileFeedback& feedback);
@@ -525,9 +525,9 @@ public:
    void SetDefaultView();
    void GetViewRect(FRect *pfrect) const;
 
-   bool IsNameUnique(const WCHAR *const wzName) const;
+   bool IsNameUnique(const wstring& wzName) const;
    void GetUniqueName(const ItemTypeEnum type, WCHAR *const wzUniqueName, const size_t wzUniqueName_maxlength) const;
-   void GetUniqueName(const WCHAR *const wzRoot, WCHAR *const wzUniqueName, const size_t wzUniqueName_maxlength) const;
+   void GetUniqueName(const wstring& wzRoot, WCHAR *const wzUniqueName, const size_t wzUniqueName_maxlength) const;
    void GetUniqueNamePasting(const int type, WCHAR *const wzUniqueName, const size_t wzUniqueName_maxlength) const;
 
    float GetSurfaceHeight(const string &name, float x, float y) const;
