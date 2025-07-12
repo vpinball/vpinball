@@ -3569,23 +3569,23 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
             }
          }
 
+         // Since 10.8.1, layers have been replaced by groups with properties, remove temporary groups created during loading
+         auto removeLegacyLayers = std::partition(m_vedit.begin(), m_vedit.end(),
+            [&](IEditable *editable)
+            {
+               if (editable->GetItemType() != eItemPartGroup)
+                  return true;
+               string name(editable->GetName());
+               if (!name.starts_with("Layer_"))
+                  return true;
+               auto v = std::ranges::find_if(m_vedit, [editable](const IEditable *e) { return e->GetPartGroup() == editable; });
+               return v != m_vedit.end();
+            });
+         std::for_each(removeLegacyLayers, m_vedit.end(), [](IEditable *e) { e->Release(); });
+         m_vedit.erase(removeLegacyLayers, m_vedit.end());
+
          if (loadfileversion < 1081)
          {
-            // Since 10.8.1, layers have been replaced by groups with properties, remove temporary groups created during loading
-            auto removeLegacyLayers = std::partition(m_vedit.begin(), m_vedit.end(),
-               [&](IEditable *editable)
-               {
-                  if (editable->GetItemType() != eItemPartGroup)
-                     return true;
-                  string name(editable->GetName());
-                  if (!name.starts_with("Layer_"))
-                     return true;
-                  auto v = std::ranges::find_if(m_vedit, [editable](const IEditable *e) { return e->GetPartGroup() == editable; });
-                  return v != m_vedit.end();
-               });
-            std::for_each(removeLegacyLayers, m_vedit.end(), [](IEditable *e) { e->Release(); });
-            m_vedit.erase(removeLegacyLayers, m_vedit.end());
-
             // Rename layers that have been automatically converted to group if there aren't any name conflict (checking for collection objects, as well as script variable names)
             #ifndef __STANDALONE__
                const size_t scriptLength = ::SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
