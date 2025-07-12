@@ -1789,7 +1789,7 @@ void PinTable::GetUniqueNamePasting(const int type, WCHAR * const wzUniqueName, 
    {
       //first remove the existing suffix
       wstring input = wzUniqueName;
-      size_t lastNonDigit = input.size();
+      size_t lastNonDigit = input.length();
       while (lastNonDigit > 0 && iswdigit(input[lastNonDigit - 1]))
          --lastNonDigit;
       GetUniqueName(input.substr(0, lastNonDigit).c_str(), wzUniqueName, wzUniqueName_maxlength);
@@ -2774,10 +2774,8 @@ HRESULT PinTable::WriteInfoValue(IStorage* pstg, const WCHAR * const wzName, con
    {
       ULONG writ;
       BiffWriter bw(pstm, hcrypthash);
-
-      WCHAR * const wzT = MakeWide(szValue);
-      bw.WriteBytes(wzT, (ULONG)(wcslen(wzT)*(int)sizeof(WCHAR)), &writ);
-      delete[] wzT;
+      const wstring wzT = MakeWString(szValue);
+      bw.WriteBytes(wzT.c_str(), static_cast<ULONG>(wzT.size() * sizeof(WCHAR)), &writ);
       pstm->Release();
       pstm = nullptr;
    }
@@ -4478,14 +4476,13 @@ void PinTable::MoveCollectionDown(CComObject<Collection> *pcol)
 void PinTable::SetCollectionName(Collection *pcol, const char *szName, HWND hwndList, int index)
 {
 #ifndef __STANDALONE__
-   WCHAR * const wzT = MakeWide(szName);
+   const wstring wzT = MakeWide(szName);
    if (m_pcv->ReplaceName((IScriptable *)pcol, wzT) == S_OK)
    {
       if (hwndList)
          ListView_SetItemText(hwndList, index, 0, (char*)szName);
-      wcscpy_s(pcol->m_wzName, wzT);
+      wcscpy_s(pcol->m_wzName, wzT.c_str());
    }
-   delete [] wzT;
 #endif
 }
 
@@ -6519,14 +6516,15 @@ STDMETHODIMP PinTable::get_Name(BSTR *pVal)
 
 STDMETHODIMP PinTable::put_Name(BSTR newVal)
 {
-   const size_t l = wcslen(newVal);
+   wstring newName = newVal;
+   const size_t l = newName.length();
    if ((l > MAXNAMEBUFFER) || (l < 1))
    {
       return E_FAIL;
    }
 
    STARTUNDO
-   if(m_pcv->ReplaceName((IScriptable *)this, newVal) == S_OK)
+   if (m_pcv->ReplaceName((IScriptable *)this, newName) == S_OK)
       wcscpy_s(m_wzName, newVal);
    STOPUNDO
 
@@ -7435,16 +7433,16 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
             // but no checks are being performed at moment:
             (flashers && m_vedit[ivar]->GetItemType() == eItemFlasher))
          {
-            const WCHAR* const sname = m_vedit[ivar]->GetScriptable()->m_wzName;
+            const wstring sname = m_vedit[ivar]->GetScriptable()->m_wzName;
 
-            const size_t cwch = wcslen(sname) + 1;
+            const size_t cwch = sname.length() + 1;
             //wzDst = ::SysAllocString(bstr);
 
             wzDst = (WCHAR *)CoTaskMemAlloc(cwch*sizeof(WCHAR));
             if (wzDst == nullptr)
                ShowError("DISPID_Surface alloc failed (1)");
 
-            wcscpy_s(wzDst, cwch, sname);
+            wcscpy_s(wzDst, cwch, sname.c_str());
             rgstr[cvar] = wzDst;
             rgdw[cvar] = (uint32_t)ivar;
             cvar++;
@@ -7578,10 +7576,10 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
    case IDC_EFFECT_COMBO:
    {
       const int idx = (dwCookie == -1) ? 0 : dwCookie;
-      static const WCHAR * const filterNames[5] = { L"None", L"Additive", L"Multiply", L"Overlay", L"Screen" };
-      const size_t cwch = wcslen(filterNames[idx]) + 1;
+      static const wstring filterNames[5] = { L"None", L"Additive", L"Multiply", L"Overlay", L"Screen" };
+      const size_t cwch = filterNames[idx].length() + 1;
       wzDst = (WCHAR *)malloc(cwch*sizeof(WCHAR));
-      wcscpy_s(wzDst, cwch, filterNames[idx]);
+      wcscpy_s(wzDst, cwch, filterNames[idx].c_str());
       break;
    }
    case DISPID_Surface:
@@ -7593,16 +7591,16 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       }
       else
       {
-         const WCHAR* const sname = m_vedit[dwCookie]->GetScriptable()->m_wzName;
+         const wstring sname = m_vedit[dwCookie]->GetScriptable()->m_wzName;
 
-         const size_t cwch = wcslen(sname) + 1;
+         const size_t cwch = sname.length() + 1;
          //wzDst = ::SysAllocString(sname);
 
          wzDst = (WCHAR *)malloc(cwch*sizeof(WCHAR));
          if (wzDst == nullptr)
             ShowError("DISPID_Surface alloc failed (2)");
          else
-            wcscpy_s(wzDst, cwch, sname);
+            wcscpy_s(wzDst, cwch, sname.c_str());
       }
    }
    break;

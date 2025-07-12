@@ -81,24 +81,20 @@ public:
 	inline IFireEvents *GetIFireEvents() {return (IFireEvents *)this;} \
 	virtual EventProxyBase *GetEventProxyBase() {return (EventProxyBase *)this;} \
 	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal) \
-		{ \
+	{ \
 		*pVal = SysAllocString(m_wzName); \
 		return S_OK; \
-		} \
+	} \
 	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal) \
-		{ \
-		const size_t len = /*wcslen*/ SysStringLen(newVal); \
-		if (len > MAXNAMEBUFFER || len < 1) \
-			{ \
+	{ \
+		wstring newName = newVal; \
+		if (newName.length() > MAXNAMEBUFFER || newName.length() < 1) \
 			return E_FAIL; \
-			} \
-		if (GetPTable()->m_pcv->ReplaceName(this, newVal) == S_OK) \
-			{ \
-			wcscpy_s(m_wzName, newVal); \
-			return S_OK; \
-			} \
-		return E_FAIL; \
-		} \
+		if (GetPTable()->m_pcv->ReplaceName(this, newName) != S_OK) \
+		   return E_FAIL; \
+		wcscpy_s(m_wzName, newName.c_str()); \
+		return S_OK; \
+	} \
 	STDMETHOD(get_TimerInterval)(/*[out, retval]*/ LONG *pVal) {*pVal = m_d.m_tdr.m_TimerInterval; return S_OK;} \
 	STDMETHOD(put_TimerInterval)(/*[in]*/ LONG newVal) {return IEditable::put_TimerInterval(newVal, &m_d.m_tdr.m_TimerInterval);} \
 	STDMETHOD(get_TimerEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal) {*pVal = FTOVB(m_d.m_tdr.m_TimerEnabled); return S_OK;} \
