@@ -1788,12 +1788,11 @@ void PinTable::GetUniqueNamePasting(const int type, WCHAR * const wzUniqueName, 
    if (!IsNameUnique(wzUniqueName))
    {
       //first remove the existing suffix
-      while (iswdigit(wzUniqueName[wcslen(wzUniqueName) - 1]))
-      {
-         wzUniqueName[wcslen(wzUniqueName) - 1] = L'\0';
-      }
-
-      GetUniqueName(wzUniqueName, wzUniqueName, wzUniqueName_maxlength);
+      wstring input = wzUniqueName;
+      size_t lastNonDigit = input.size();
+      while (lastNonDigit > 0 && iswdigit(input[lastNonDigit - 1]))
+         --lastNonDigit;
+      GetUniqueName(input.substr(0, lastNonDigit).c_str(), wzUniqueName, wzUniqueName_maxlength);
    }
 }
 
@@ -4347,7 +4346,8 @@ int PinTable::AddListCollection(HWND hwndListView, CComObject<Collection> *pcol)
    const int index = ListView_InsertItem(hwndListView, &lvitem);
    delete [] szT;
 
-   ListView_SetItemText(hwndListView, index, 1, (char*)std::to_string(pcol->m_visel.size()).c_str());
+   string count = std::to_string(pcol->m_visel.size());
+   ListView_SetItemText(hwndListView, index, 1, const_cast<char*>(count.c_str()));
    return index;
 #else
    return 0;

@@ -722,6 +722,10 @@ bool IsOnWine();
 bool IsWindowsVistaOr7();
 bool IsWindows10_1803orAbove();
 
+#ifndef __STANDALONE__
+string GetExecutablePath();
+#endif
+
 vector<uint8_t> read_file(const string& filename, const bool binary = true);
 void write_file(const string& filename, const vector<uint8_t>& data, const bool binary = true);
 void copy_folder(const string& srcPath, const string& dstPath);

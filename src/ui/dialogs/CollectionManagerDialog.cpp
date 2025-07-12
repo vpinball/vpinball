@@ -45,7 +45,7 @@ BOOL CollectionManagerDialog::OnInitDialog()
     lvcol.fmt = LVCFMT_CENTER;
     const LocalString ls2(IDS_SIZE);
     lvcol.pszText = (LPSTR)ls2.m_szbuffer; // = "Size";
-    lvcol.cx = 50;
+    lvcol.cx = 100;
     ListView_InsertColumn(hListHwnd, 1, &lvcol);
 
     pt->ListCollections(hListHwnd);
@@ -79,7 +79,8 @@ void CollectionManagerDialog::EditCollection()
         char * const szT = MakeChar(pcol->m_wzName);
         ListView_SetItemText(hListHwnd, sel, 0, szT);
         delete [] szT;
-        ListView_SetItemText(hListHwnd, sel, 1, (LPSTR)std::to_string(pcol->m_visel.size()).c_str());
+        string count = std::to_string(pcol->m_visel.size());
+        ListView_SetItemText(hListHwnd, sel, 1, const_cast<char*>(count.c_str()));
     }
 }
 
