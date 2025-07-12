@@ -97,10 +97,10 @@ public:
    ~CodeViewDispatch() {}
 
    wstring m_wName;
-   IUnknown *m_punk;
-   IDispatch *m_pdisp;
-   IScriptable *m_piscript;
-   bool m_global;
+   IUnknown *m_punk = nullptr;
+   IDispatch *m_pdisp = nullptr;
+   IScriptable *m_piscript = nullptr;
+   bool m_global = false;
 
    // for VectorSortString
    int SortAgainst(const CodeViewDispatch * const pcvd/*void *pvoid*/) const { return SortAgainstValue(pcvd->m_wName); }
@@ -136,7 +136,7 @@ public:
 
    HRESULT AddItem(IScriptable * const piscript, const bool global);
    void RemoveItem(IScriptable * const piscript);
-   HRESULT ReplaceName(IScriptable * const piscript, const WCHAR * const wzNew);
+   HRESULT ReplaceName(IScriptable * const piscript, const wstring& wzNew);
    void SelectItem(IScriptable * const piscript);
 
    void Compile(const bool message);

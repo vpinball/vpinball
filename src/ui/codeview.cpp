@@ -632,9 +632,9 @@ void CodeViewer::SelectItem(IScriptable * const piscript)
    delete [] szT;
 }
 
-HRESULT CodeViewer::ReplaceName(IScriptable * const piscript, const WCHAR * const wzNew)
+HRESULT CodeViewer::ReplaceName(IScriptable *const piscript, const wstring &wzNew)
 {
-   if (m_vcvd.GetSortedIndex(wzNew) != -1)
+   if (m_vcvd.GetSortedIndex(wzNew.c_str()) != -1)
       return E_FAIL;
 
    BSTR bstr;
@@ -666,7 +666,7 @@ HRESULT CodeViewer::ReplaceName(IScriptable * const piscript, const WCHAR * cons
 #endif
    delete [] szT;
 
-   szT = MakeChar(wzNew);
+   szT = MakeChar(wzNew.c_str());
 #ifndef __STANDALONE__
    index = ::SendMessage(m_hwndItemList, CB_ADDSTRING, 0, (size_t)szT);
    ::SendMessage(m_hwndItemList, CB_SETITEMDATA, index, (size_t)piscript);

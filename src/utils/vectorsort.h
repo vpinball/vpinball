@@ -64,7 +64,7 @@ public:
       RecomputeSearchStart();
    }
 
-   inline int GetSortedIndex(const WCHAR * const pvoid) const
+   inline int GetSortedIndex(const wstring& pvoid) const
    {
       int currentnode = m_searchstart - 1;  // Zero based
       int jumpnode = m_searchstart >> 1;
@@ -105,7 +105,7 @@ public:
       return -1;
    }
 
-   inline T GetSortedElement(const WCHAR * const pvoid) const
+   inline T GetSortedElement(const wstring& pvoid) const
    {
       const int i = GetSortedIndex(pvoid);
       if (i != -1)
