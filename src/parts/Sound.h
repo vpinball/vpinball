@@ -89,11 +89,17 @@ public:
    void SetFrontRearFade(const int front_rear_fade) { m_frontRearFade = front_rear_fade; }
 
    // Sound filename and path
-   string m_name; // only filename, no ext
-   string m_path; // full filename, incl. path
+   string m_name;
+   string m_path;
 
 private:
-   Sound() { }
+   Sound(string name, string path, uint8_t* data, int dataSize)
+      : m_name(std::move(name))
+      , m_path(std::move(path))
+      , m_pdata(data)
+      , m_cdata(dataSize)
+   {
+   }
 
    // Undecoded data from original file
    uint8_t* m_pdata = nullptr;
