@@ -2613,6 +2613,8 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
 
          if (SUCCEEDED(hr = SaveData(pstmGame, hch, false)))
          {
+            // Move PartGroup ahead of objects they contain, so that they are saved first
+            std::stable_partition(m_vedit.begin(), m_vedit.end(), [](IEditable *p) { return p->GetItemType() == ItemTypeEnum::eItemPartGroup; });
             for (size_t i = 0; i < m_vedit.size(); i++)
             {
                const wstring wStmName = L"GameItem" + std::to_wstring(i);
@@ -3569,7 +3571,8 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
             }
          }
 
-         // Since 10.8.1, layers have been replaced by groups with properties, remove temporary groups created during loading
+         // Since 10.8.1, layers have been replaced by groups with properties, remove temporary groups created during loading, and keep partgroups at the beggining of the list.
+         std::stable_partition(m_vedit.begin(), m_vedit.end(), [](IEditable *p) { return p->GetItemType() == ItemTypeEnum::eItemPartGroup; });
          auto removeLegacyLayers = std::partition(m_vedit.begin(), m_vedit.end(),
             [&](IEditable *editable)
             {
@@ -3596,29 +3599,29 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
             #else
                string script = m_pcv->m_script_text;
             #endif
-               StrToLower(script);
-               std::ranges::for_each(m_vedit,
-                  [&](IEditable *editable)
+            StrToLower(script);
+            std::ranges::for_each(m_vedit,
+               [&](IEditable *editable)
+               {
+                  if (editable->GetItemType() != eItemPartGroup)
+                     return;
+                  const string name(editable->GetName());
+                  if (!name.starts_with("Layer_"))
+                     return;
+                  const string shortName = name.substr(6);
+                  const string shortNameLCase = lowerCase(shortName);
+                  auto v = std::ranges::find_if(m_vedit, [shortNameLCase](const IEditable *const e) { return lowerCase(e->GetName()) == shortNameLCase; });
+                  if (v != m_vedit.end())
+                     return; // Conflict with another part name
+                  if ((shortName.find_first_not_of("0123456789") != std::string::npos) && script.find(shortNameLCase) != std::string::npos)
+                     return; // (Potential) conflict with a script variable
+                  for (int i = 0; i < m_vcollection.size(); i++)
                   {
-                     if (editable->GetItemType() != eItemPartGroup)
-                        return;
-                     const string name(editable->GetName());
-                     if (!name.starts_with("Layer_"))
-                        return;
-                     const string shortName = name.substr(6);
-                     const string shortNameLCase = lowerCase(shortName);
-                     auto v = std::ranges::find_if(m_vedit, [shortNameLCase](const IEditable *const e) { return lowerCase(e->GetName()) == shortNameLCase; });
-                     if (v != m_vedit.end())
-                        return; // Conflict with another part name
-                     if ((shortName.find_first_not_of("0123456789") != std::string::npos) && script.find(shortNameLCase) != std::string::npos)
-                        return; // (Potential) conflict with a script variable
-                     for (int i = 0; i < m_vcollection.size(); i++)
-                     {
-                        if (lowerCase(MakeString(m_vcollection.ElementAt(i)->m_wzName)) == shortNameLCase)
-                           return; // Conflict with a collection name
-                     }
-                     MultiByteToWideCharNull(CP_ACP, 0, shortName.c_str(), -1, editable->GetScriptable()->m_wzName, (int)std::size(editable->GetScriptable()->m_wzName));
-                  });
+                     if (lowerCase(MakeString(m_vcollection.ElementAt(i)->m_wzName)) == shortNameLCase)
+                        return; // Conflict with a collection name
+                  }
+                  MultiByteToWideCharNull(CP_ACP, 0, shortName.c_str(), -1, editable->GetScriptable()->m_wzName, (int)std::size(editable->GetScriptable()->m_wzName));
+               });
          }
          
          // Since 10.8.1, Flashers are allowed on a 2D backdrop, with advanced rendering capabilities.

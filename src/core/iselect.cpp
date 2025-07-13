@@ -268,11 +268,9 @@ static void SetPartGroup(ISelect* const me, const string& layerName)
             legacyPartGroup->Release();
          }
       }*/
-      auto partGroupF = std::ranges::find_if(me->GetPTable()->m_vedit,
-         [layerName](IEditable *editable)
-         {
-            return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup) && editable->GetName() == layerName;
-         });
+      auto partGroupF = std::ranges::find_if(me->GetPTable()->m_vedit, [layerName](IEditable *editable) {
+         return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup) && editable->GetName() == layerName;
+      });
       if (partGroupF == me->GetPTable()->m_vedit.end())
       {
          PartGroup *const newGroup = static_cast<PartGroup *>(EditableRegistry::CreateAndInit(eItemPartGroup, me->GetPTable(), 0, 0));
