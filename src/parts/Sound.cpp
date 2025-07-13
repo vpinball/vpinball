@@ -9,16 +9,6 @@
 namespace VPX
 {
 
-struct WAVEHEADER
-{
-   DWORD dwRiff;    // "RIFF"
-   DWORD dwSize;    // Size
-   DWORD dwWave;    // "WAVE"
-   DWORD dwFmt;     // "fmt "
-   DWORD dwFmtSize; // Wave Format Size
-};
-
-
 Sound::~Sound()
 {
    delete[] m_pdata;
@@ -51,22 +41,42 @@ Sound* Sound::CreateFromFile(const string& filename)
       return nullptr;
    }
    fseek(f, 0, SEEK_END);
-   Sound* const pps = new Sound();
-   pps->m_path = filename;
-   pps->m_name = TitleFromFilename(filename);
-   pps->m_cdata = (int)ftell(f);
    fseek(f, 0, SEEK_SET);
-   pps->m_pdata = new uint8_t[pps->m_cdata];
-   if (fread_s(pps->m_pdata, pps->m_cdata, 1, pps->m_cdata, f) < 1)
+   int cdata = (int)ftell(f);
+   uint8_t* pdata = new uint8_t[cdata];
+   if (fread_s(pdata, cdata, 1, cdata, f) < 1)
    {
       fclose(f);
-      delete pps;
       ShowError("Could not read from sound file.");
       return nullptr;
    }
    fclose(f);
-   return pps;
+   return new Sound(TitleFromFilename(filename), filename, pdata, cdata);
 }
+
+struct WaveHeader
+{
+   // [Master RIFF chunk]
+   DWORD dwRiff; // "RIFF"
+   DWORD dwSize; // Size
+   DWORD dwWave; // "WAVE"
+   // [Chunk describing the data format]
+   DWORD dwFmt; // "fmt "
+   DWORD dwFmtSize; // Wave Format Size
+   WORD wFormatTag; // format type
+   WORD wNChannels; // number of channels (i.e. mono, stereo...)
+   DWORD dwNSamplesPerSec; // sample rate
+   DWORD dwNAvgBytesPerSec; // for buffer estimation
+   WORD wNBlockAlign; // block size of data
+   WORD wBitsPerSample; // number of bits per sample of mono data
+   // [Chunk containing the sampled data]
+   DWORD dwData; // "data"
+   DWORD dwDataSize; // Sampled data size
+};
+
+#ifndef MAKEFOURCC
+#define MAKEFOURCC(ch0, ch1, ch2, ch3) ((DWORD)(BYTE)(ch0) | ((DWORD)(BYTE)(ch1) << 8) | ((DWORD)(BYTE)(ch2) << 16) | ((DWORD)(BYTE)(ch3) << 24))
+#endif
 
 Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
 {
@@ -76,171 +86,104 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
    // Name (length, then string)
    if (FAILED(pstm->Read(&len, sizeof(int32_t), &read)))
       return nullptr;
-   Sound* const pps = new Sound();
-   char* tmp = new char[len + 1];
-   if (FAILED(pstm->Read(tmp, len, &read)))
-   {
-      delete pps;
-      delete[] tmp;
+   string name(len, '\0');
+   if (FAILED(pstm->Read(&name[0], len, &read)))
       return nullptr;
-   }
-   tmp[len] = '\0';
-   pps->m_name = tmp;
-   delete[] tmp;
 
    // Filename (length, then string) including path (// full filename, incl. path)
    if (FAILED(pstm->Read(&len, sizeof(len), &read)))
-   {
-      delete pps;
       return nullptr;
-   }
-   tmp = new char[len + 1];
-   if (FAILED(pstm->Read(tmp, len, &read)))
-   {
-      delete pps;
-      delete[] tmp;
+   string path(len, '\0');
+   if (FAILED(pstm->Read(&path[0], len, &read)))
       return nullptr;
-   }
-   tmp[len] = '\0';
-   pps->m_path = tmp;
-   delete[] tmp;
 
    // Was the lower case name, but not used anymore since 10.7+, 10.8+ also only stores 1,'\0'
    if (FAILED(pstm->Read(&len, sizeof(len), &read)))
-   {
-      delete pps;
       return nullptr;
-   }
-   tmp = new char[len];
-   if (FAILED(pstm->Read(tmp, len, &read)))
-   {
-      delete pps;
-      delete[] tmp;
+   string dummy(len, '\0');
+   if (FAILED(pstm->Read(&dummy[0], len, &read)))
       return nullptr;
-   }
-   delete[] tmp;
 
-   // Since vpinball was originally only for windows, the microsoft library import was used, which stores/converts WAVs
-   // to the waveformatex. This header is stored for WAV files, identified by their filename extension, instead of the regular WAV file format
-   const bool wav = isWav(pps->m_path);
+   // Since vpinball was originally only for windows, the microsoft library import was used, which stores/converts WAVs to the waveformatex.
+   // This header is stored for WAV files, identified by their filename extension, instead of the regular WAV file format.
+   const bool wav = isWav(path);
    WAVEFORMATEX wfx;
    if (wav && FAILED(pstm->Read(&wfx, sizeof(wfx), &read)))
-   {
-      delete pps;
       return nullptr;
-   }
 
-   // 
-   if (FAILED(pstm->Read(&pps->m_cdata, sizeof(int), &read)))
-   {
-      delete pps;
+   int32_t cdata = 0;
+   if (FAILED(pstm->Read(&cdata, sizeof(int32_t), &read)))
       return nullptr;
-   }
 
-   // Since vpinball was originally only for windows, the microsoft library import was used, which stores/converts WAVs
-   // to the waveformatex.  OGG files will still have their original header.  For WAVs
-   // we put the regular WAV header back on for SDL to process the file
+   // WAV files are stored with a special format, while others are just the raw imported file.
+   // We detect and (re)create the appropriate header for WAV files so that they can be treated as other sounds.
+   uint8_t* pdata = nullptr;
    if (wav)
    {
-      DWORD waveFileSize = sizeof(WAVEHEADER) + sizeof(WAVEFORMATEX) + wfx.cbSize + sizeof(DWORD) + sizeof(DWORD) + static_cast<DWORD>(pps->m_cdata);
-      pps->m_pdata = new uint8_t[waveFileSize];
-      uint8_t* waveFilePointer = pps->m_pdata;
-
-      // Wave header (Static RIFF header)
-      WAVEHEADER* const waveHeader = reinterpret_cast<WAVEHEADER*>(pps->m_pdata);
-      static constexpr BYTE WaveHeader[] = { 'R', 'I', 'F', 'F', 0x00, 0x00, 0x00, 0x00, 'W', 'A', 'V', 'E', 'f', 'm', 't', ' ', 0x00, 0x00, 0x00, 0x00 };
-      memcpy(waveFilePointer, WaveHeader, sizeof(WaveHeader));
-      waveFilePointer += sizeof(WaveHeader);
-
-      // Update sizes in wave header
-      waveHeader->dwSize = waveFileSize - sizeof(DWORD) * 2;
-      waveHeader->dwFmtSize = sizeof(WAVEFORMATEX) + wfx.cbSize;
-
-      // WAVEFORMATEX
-      memcpy(waveFilePointer, &wfx, sizeof(WAVEFORMATEX) + wfx.cbSize);
-      waveFilePointer += sizeof(WAVEFORMATEX) + wfx.cbSize;
-
-      // Data header (Static wave DATA tag followed by data size)
-      static constexpr BYTE WaveData[] = { 'd', 'a', 't', 'a' };
-      memcpy(waveFilePointer, WaveData, sizeof(WaveData));
-      waveFilePointer += sizeof(WaveData);
-      *(reinterpret_cast<DWORD*>(waveFilePointer)) = static_cast<DWORD>(pps->m_cdata);
-      waveFilePointer += sizeof(DWORD);
-
-      // Sample data
-      if (FAILED(pstm->Read(waveFilePointer, static_cast<ULONG>(pps->m_cdata), &read)))
-      {
-         delete pps;
+      const size_t waveFileSize = sizeof(WaveHeader) + cdata;
+      pdata = new uint8_t[waveFileSize];
+      // [Master RIFF chunk]
+      WaveHeader* const waveHeader = reinterpret_cast<WaveHeader*>(pdata);
+      waveHeader->dwRiff = MAKEFOURCC('R', 'I', 'F', 'F');
+      waveHeader->dwSize = waveFileSize - 8; // File size - 8
+      waveHeader->dwWave = MAKEFOURCC('W', 'A', 'V', 'E');
+      // [Chunk describing the data format]
+      waveHeader->dwFmt = MAKEFOURCC('f', 'm', 't', ' ');
+      waveHeader->dwFmtSize = 24 - 8; // Chunk size - 8
+      waveHeader->wFormatTag = wfx.wFormatTag; // Format type
+      waveHeader->wNChannels = wfx.nChannels; // Number of channels (i.e. mono, stereo...)
+      waveHeader->dwNSamplesPerSec = wfx.nSamplesPerSec; // Sample rate
+      waveHeader->dwNAvgBytesPerSec = wfx.nAvgBytesPerSec; // For buffer estimation
+      waveHeader->wNBlockAlign = wfx.nBlockAlign; // Block size of data
+      waveHeader->wBitsPerSample = wfx.wBitsPerSample; // Number of bits per sample of mono data
+      // [Chunk containing the sampled data]
+      waveHeader->dwData = MAKEFOURCC('d', 'a', 't', 'a');
+      waveHeader->dwDataSize = static_cast<DWORD>(cdata); // Sampled data size
+      if (FAILED(pstm->Read(pdata + sizeof(WaveHeader), static_cast<ULONG>(cdata), &read)))
          return nullptr;
-      }
-
-      pps->m_cdata = waveFileSize;
+      cdata = waveFileSize;
    }
    else
    {
-      pps->m_pdata = new uint8_t[pps->m_cdata];
-      if (FAILED(pstm->Read(pps->m_pdata, static_cast<ULONG>(pps->m_cdata), &read)))
-      {
-         delete pps;
+      pdata = new uint8_t[cdata];
+      if (FAILED(pstm->Read(pdata, static_cast<ULONG>(cdata), &read)))
          return nullptr;
-      }
    }
 
    // this reads in the settings that are used by the Windows UI in the Sound Manager and when PlaySound() is used.
+   uint8_t outputTarget = static_cast<uint8_t>(SoundOutTypes::SNDOUT_TABLE);
+   if (FAILED(pstm->Read(&outputTarget, sizeof(char), &read)))
+      return nullptr;
+   if (outputTarget < 0 || outputTarget > SoundOutTypes::SNDOUT_BACKGLASS)
+      outputTarget = static_cast<uint8_t>(SoundOutTypes::SNDOUT_TABLE);
+   int32_t volume = 100;
+   int32_t pan = 100;
+   int32_t frontRearFade = 100;
    if (LoadFileVersion >= NEW_SOUND_FORMAT_VERSION)
    {
-      SoundOutTypes outputTarget = SoundOutTypes::SNDOUT_TABLE;
-      if (FAILED(pstm->Read(&outputTarget, sizeof(char), &read)))
-      {
-         delete pps;
+      if (FAILED(pstm->Read(&volume, sizeof(int32_t), &read)))
          return nullptr;
-      }
-      if (outputTarget < 0 || outputTarget > SoundOutTypes::SNDOUT_BACKGLASS)
-         outputTarget = SoundOutTypes::SNDOUT_TABLE;
-      pps->SetOutputTarget(outputTarget);
-      int volume;
-      if (FAILED(pstm->Read(&volume, sizeof(int), &read)))
-      {
-         delete pps;
+      if (FAILED(pstm->Read(&pan, sizeof(int32_t), &read)))
          return nullptr;
-      }
-      pps->SetVolume(volume);
-      int pan;
-      if (FAILED(pstm->Read(&pan, sizeof(int), &read)))
-      {
-         delete pps;
+      if (FAILED(pstm->Read(&frontRearFade, sizeof(int32_t), &read)))
          return nullptr;
-      }
-      pps->SetPan(pan);
-      int frontRearFade;
-      if (FAILED(pstm->Read(&frontRearFade, sizeof(int), &read)))
-      {
-         delete pps;
+      if (FAILED(pstm->Read(&volume, sizeof(int32_t), &read)))
          return nullptr;
-      }
-      pps->SetFrontRearFade(frontRearFade);
-      if (FAILED(pstm->Read(&volume, sizeof(int), &read)))
-      {
-         delete pps;
-         return nullptr;
-      }
-      pps->SetVolume(volume);
    }
    else
    {
-      bool toBackglassOutput = false; // false: for pre-VPX tables
-      if (FAILED(pstm->Read(&toBackglassOutput, sizeof(bool), &read)))
-      {
-         delete pps;
-         return nullptr;
-      }
-
-      pps->SetOutputTarget((StrStrI(pps->m_name.c_str(), "bgout_") != nullptr)
-               || StrCompareNoCase(pps->m_path, "* Backglass Output *"s) // legacy behavior, where the BG selection was encoded into the strings directly
-               || toBackglassOutput
+      outputTarget = (StrStrI(name.c_str(), "bgout_") != nullptr)
+               || StrCompareNoCase(path, "* Backglass Output *"s) // legacy behavior, where the BG selection was encoded into the strings directly
+               || (outputTarget != outputTarget)
             ? SNDOUT_BACKGLASS
-            : SNDOUT_TABLE);
+            : SNDOUT_TABLE;
    }
+
+   Sound* const pps = new Sound(name, path, pdata, cdata);
+   pps->SetOutputTarget(static_cast<SoundOutTypes>(outputTarget));
+   pps->SetVolume(volume);
+   pps->SetPan(pan);
+   pps->SetFrontRearFade(frontRearFade);
    return pps;
 }
 
@@ -267,8 +210,8 @@ bool Sound::SaveToFile(const string& filename) const
 void Sound::SaveToStream(IStream* pstm) const
 {
    ULONG writ = 0;
-   int32_t nameLen = (int32_t)m_name.length();
-   int32_t pathLen = (int32_t)m_path.length();
+   int32_t nameLen = static_cast<int32_t>(m_name.length());
+   int32_t pathLen = static_cast<int32_t>(m_path.length());
    int32_t dummyLen = 1;
    constexpr char dummyPath = '\0';
    pstm->Write(&nameLen, sizeof(int32_t), &writ);
@@ -277,27 +220,32 @@ void Sound::SaveToStream(IStream* pstm) const
    pstm->Write(m_path.c_str(), pathLen, &writ);
    pstm->Write(&dummyLen, sizeof(int32_t), &writ); // Used to have the same name again in lower case, now just save an empty string for backward compatibility
    pstm->Write(&dummyPath, dummyLen, &writ);
-   int32_t dataLength = static_cast<int32_t>(m_cdata);
    if (isWav(m_path))
    {
-      uint8_t* pData = m_pdata;
-      pData += sizeof(WAVEHEADER); // skip wave header
-      WAVEFORMATEX* wfx = (WAVEFORMATEX*)pData;
-      pstm->Write(wfx, sizeof(WAVEFORMATEX) + wfx->cbSize, &writ); // Save WAVEFORMATEX with its optional data block
-      pData += 2 * sizeof(DWORD); // skip wave data and length
-      dataLength -= static_cast<int32_t>(pData - m_pdata); // Data block does not include the WAV header
-      pstm->Write(&dataLength, sizeof(int32_t), &writ);
-      pstm->Write(m_pdata, static_cast<ULONG>(dataLength), &writ);
+      WaveHeader* const waveHeader = reinterpret_cast<WaveHeader*>(m_pdata);
+      WAVEFORMATEX wfx;
+      wfx.wFormatTag = waveHeader->wFormatTag;
+      wfx.nChannels = waveHeader->wNChannels;
+      wfx.nSamplesPerSec = waveHeader->dwNSamplesPerSec;
+      wfx.nAvgBytesPerSec = waveHeader->dwNAvgBytesPerSec;
+      wfx.nBlockAlign = waveHeader->wNBlockAlign;
+      wfx.wBitsPerSample = waveHeader->wBitsPerSample;
+      wfx.cbSize = 0;
+      pstm->Write(&wfx, sizeof(WAVEFORMATEX), &writ);
+      const int32_t sampleDataLength = m_cdata - sizeof(WaveHeader);
+      pstm->Write(&sampleDataLength, sizeof(int32_t), &writ);
+      pstm->Write(m_pdata + sizeof(WaveHeader), static_cast<ULONG>(sampleDataLength), &writ);
    }
    else
    {
+      const int32_t dataLength = static_cast<int32_t>(m_cdata);
       pstm->Write(&dataLength, sizeof(int32_t), &writ);
       pstm->Write(m_pdata, static_cast<ULONG>(dataLength), &writ);
    }
-   const char outputTarget = (char)GetOutputTarget();
-   pstm->Write(&outputTarget, sizeof(char), &writ);
-
+   
    // Begin NEW_SOUND_FORMAT_VERSION data
+   const uint8_t outputTarget = static_cast<uint8_t>(GetOutputTarget());
+   pstm->Write(&outputTarget, sizeof(uint8_t), &writ);
    const int32_t volume = GetVolume();
    pstm->Write(&volume, sizeof(int32_t), &writ);
    const int32_t pan = GetPan();
