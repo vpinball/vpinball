@@ -412,6 +412,7 @@ Renderer::~Renderer()
    delete m_pMotionBlurBufferTexture;
    delete m_pOffscreenVRLeft;
    delete m_pOffscreenVRRight;
+   delete m_envRadianceTexture;
    ReleaseAORenderTargets();
    m_ballEnvSampler = nullptr;
    m_envSampler = nullptr;
