@@ -287,8 +287,12 @@ wstring MakeWString(const char * const sz)
 char *MakeChar(const WCHAR* const wz)
 {
    const int len = WideCharToMultiByte(CP_ACP, 0, wz, -1, nullptr, 0, nullptr, nullptr); //(int)wcslen(wz) + 1; // include null termination
-   if (len == 0)
-      return nullptr;
+   if (len <= 1)
+   {
+      char * const szT = new char[1];
+      szT[0] = '\0';
+      return szT;
+   }
    char * const szT = new char[len];
    WideCharToMultiByte(CP_ACP, 0, wz, -1, szT, len, nullptr, nullptr);
    return szT;
