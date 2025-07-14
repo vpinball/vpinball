@@ -471,7 +471,7 @@ static void HelpSplash(const string &text, int rotation)
 
    constexpr float padding = 60.f;
    const float maxWidth = win_size.x - padding;
-   ImFont *const font = ImGui::GetFont();
+   ImFontBaked *const font = ImGui::GetFontBaked();
 
    string line;
    std::istringstream iss(text);
@@ -484,14 +484,14 @@ static void HelpSplash(const string &text, int rotation)
        while (*textEnd)
        {
           const char *nextLineTextEnd = ImGui::FindRenderedTextEnd(textEnd, nullptr);
-          ImVec2 lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, textEnd, nextLineTextEnd);
+          ImVec2 lineSize = font->CalcTextSizeA(font->Size, FLT_MAX, 0.0f, textEnd, nextLineTextEnd);
           if (lineSize.x > maxWidth)
           {
              const char *wrapPoint = font->CalcWordWrapPositionA(font->Scale, textEnd, nextLineTextEnd, maxWidth);
              if (wrapPoint == textEnd)
                 wrapPoint++;
              nextLineTextEnd = wrapPoint;
-             lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, textEnd, wrapPoint);
+             lineSize = font->CalcTextSizeA(font->Size, FLT_MAX, 0.0f, textEnd, wrapPoint);
           }
 
           string newLine(textEnd, nextLineTextEnd);
@@ -519,7 +519,7 @@ static void HelpSplash(const string &text, int rotation)
    ImGui::SetCursorPosY(padding / 4.f);
    for (const string& curline : lines)
    {
-      const ImVec2 lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, curline.c_str());
+      const ImVec2 lineSize = font->CalcTextSizeA(font->Size, FLT_MAX, 0.0f, curline.c_str());
       ImGui::SetCursorPosX((text_size.x - lineSize.x) / 2.f);
       ImGui::Text("%s", curline.c_str());
    }
@@ -765,7 +765,7 @@ void LiveUI::MarkdownFormatCallback(const ImGui::MarkdownFormatInfo &markdownFor
       else
       { // strong emphasis
          if (start)
-            ImGui::PushFont(ui->m_overlayBoldFont);
+            ImGui::PushFont(ui->m_overlayBoldFont, ui->m_overlayBoldFont->LegacySize);
          else
             ImGui::PopFont();
       }
@@ -780,7 +780,7 @@ void LiveUI::MarkdownFormatCallback(const ImGui::MarkdownFormatInfo &markdownFor
       if (start)
       {
          if (fmt.font)
-            ImGui::PushFont(fmt.font);
+            ImGui::PushFont(fmt.font, fmt.font->LegacySize);
          if (ImGui::GetItemID() != ui->markdown_start_id)
             ImGui::NewLine();
       }
@@ -1049,13 +1049,13 @@ void LiveUI::Update(const int width, const int height)
    ImGuizmo::SetOrthographic(m_orthoCam);
    ImGuizmo::BeginFrame();
    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
-   ImGui::PushFont(m_baseFont);
+   ImGui::PushFont(m_baseFont, m_baseFont->LegacySize);
 
    // Display notification (except when script has an unaligned rotation)
    const uint32_t tick = msec();
    float notifY = io.DisplaySize.y * 0.25f;
    const bool showNotifications = isVR || ((float)m_rotate * 90.0f == m_player->m_ptable->mViewSetups[m_player->m_ptable->m_BG_current_set].GetRotation(m_player->m_playfieldWnd->GetWidth(), m_player->m_playfieldWnd->GetHeight()));
-   ImGui::PushFont(m_overlayFont);
+   ImGui::PushFont(m_overlayFont, m_overlayFont->LegacySize);
    for (int i = (int)m_notifications.size() - 1; i >= 0; i--)
    {
       if (tick > m_notifications[i].disappearTick)
@@ -1064,7 +1064,7 @@ void LiveUI::Update(const int width, const int height)
       }
       else if (showNotifications)
       {
-          ImFont *const font = ImGui::GetFont();
+          ImFontBaked *const font = ImGui::GetFontBaked();
 
           constexpr float padding = 50.f;
           const float maxWidth = io.DisplaySize.x - padding;
@@ -1082,14 +1082,14 @@ void LiveUI::Update(const int width, const int height)
               const char *textEnd = line.c_str();
               while (*textEnd) {
                  const char *nextLineTextEnd = ImGui::FindRenderedTextEnd(textEnd, nullptr);
-                 ImVec2 lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, textEnd, nextLineTextEnd);
+                 ImVec2 lineSize = font->CalcTextSizeA(font->Size, FLT_MAX, 0.0f, textEnd, nextLineTextEnd);
                  if (lineSize.x > maxWidth)
                  {
                     const char *wrapPoint = font->CalcWordWrapPositionA(font->Scale, textEnd, nextLineTextEnd, maxWidth);
                     if (wrapPoint == textEnd)
                        wrapPoint++;
                     nextLineTextEnd = wrapPoint;
-                    lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, textEnd, wrapPoint);
+                    lineSize = font->CalcTextSizeA(font->Size, FLT_MAX, 0.0f, textEnd, wrapPoint);
                  }
 
                  string newLine(textEnd, nextLineTextEnd);
@@ -1113,7 +1113,7 @@ void LiveUI::Update(const int width, const int height)
           ImGui::SetNextWindowSize(text_size);
           ImGui::Begin(("Notification" + std::to_string(i)).c_str(), nullptr, window_flags);
           for (const string& lline : lines) {
-             ImVec2 lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, lline.c_str());
+             ImVec2 lineSize = font->CalcTextSizeA(font->Size, FLT_MAX, 0.0f, lline.c_str());
              ImGui::SetCursorPosX(((text_size.x - lineSize.x) / 2));
              ImGui::Text("%s", lline.c_str());
           }
@@ -1448,7 +1448,7 @@ void LiveUI::HandleTweakInput()
       if ((m_tweakPages[m_activeTweakPageIndex] == TP_Rules || m_tweakPages[m_activeTweakPageIndex] == TP_Info)
          && (keycode == eRightMagnaSave || keycode == eLeftMagnaSave) && (keyEvent != 2))
       {
-         const float speed = m_overlayFont->FontSize * 0.5f;
+         const float speed = ImGui::GetFontBaked()->Size * 0.5f;
          if (keycode == eLeftMagnaSave)
             m_tweakScroll -= speed;
          else if (keycode == eRightMagnaSave)
@@ -1963,14 +1963,15 @@ void LiveUI::UpdateTweakModeUI()
 {
    HandleTweakInput();
 
-   ImGui::PushFont(m_overlayFont);
+   ImGui::PushFont(m_overlayFont, m_overlayFont->LegacySize);
    PinTable *const table = m_live_table;
    constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-   ImVec2 minSize(min(m_overlayFont->FontSize * (m_tweakPages[m_activeTweakPageIndex] == TP_Rules ? 35.0f
-                                               : m_tweakPages[m_activeTweakPageIndex] == TP_Info  ? 45.0f
-                                                                                                  : 30.0f),
+   const float FontSize = ImGui::GetFontBaked()->Size;
+   ImVec2 minSize(min(FontSize * (m_tweakPages[m_activeTweakPageIndex] == TP_Rules ? 35.0f
+                                : m_tweakPages[m_activeTweakPageIndex] == TP_Info  ? 45.0f
+                                                                                   : 30.0f),
                   min(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y)),0.f);
-   ImVec2 maxSize(ImGui::GetIO().DisplaySize.x - 2.f * m_overlayFont->FontSize, 0.8f * ImGui::GetIO().DisplaySize.y - 1.f * m_overlayFont->FontSize);
+   ImVec2 maxSize(ImGui::GetIO().DisplaySize.x - 2.f * FontSize, 0.8f * ImGui::GetIO().DisplaySize.y - 1.f * FontSize);
    ImGui::SetNextWindowBgAlpha(0.5f);
    if (m_player->m_vrDevice)
       ImGui::SetNextWindowPos(ImVec2(0.5f * ImGui::GetIO().DisplaySize.x, 0.5f * ImGui::GetIO().DisplaySize.y), 0, ImVec2(0.5f, 0.5f));
@@ -3538,7 +3539,7 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
          g_pvp->m_settings.SaveValue(Settings::Player, prefKey + fields[calibrationStep], calibrationBrightness);
       }
 
-      ImGui::PushFont(m_overlayFont);
+      ImGui::PushFont(m_overlayFont, m_overlayFont->LegacySize);
       const ImVec2 win_size = ImGui::GetWindowSize();
       ImDrawList *draw_list = ImGui::GetWindowDrawList();
       const float s = min(win_size.x, win_size.y) / 5.f, t = 1.f * s;
@@ -4943,7 +4944,7 @@ void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, Vert
 void LiveUI::PropCombo(const char *label, IEditable *undo_obj, bool is_live, int *startup_v, int *live_v, size_t n_values, const string labels[], const OnIntPropChange &chg_callback)
 {
    PROP_HELPER_BEGIN(int)
-   const char * const preview_value = labels[clamp(*v, 0, static_cast<int>(n_values) - 1)].c_str();
+   const char *const preview_value = labels[clamp(*v, 0, static_cast<int>(n_values) - 1)].c_str();
    if (ImGui::BeginCombo(label, preview_value))
    {
       for (int i = 0; i < (int)n_values; i++)
