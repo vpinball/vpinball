@@ -125,7 +125,7 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
       // [Master RIFF chunk]
       WaveHeader* const waveHeader = reinterpret_cast<WaveHeader*>(pdata);
       waveHeader->dwRiff = MAKEFOURCC('R', 'I', 'F', 'F');
-      waveHeader->dwSize = waveFileSize - 8; // File size - 8
+      waveHeader->dwSize = static_cast<DWORD>(waveFileSize - 8); // File size - 8
       waveHeader->dwWave = MAKEFOURCC('W', 'A', 'V', 'E');
       // [Chunk describing the data format]
       waveHeader->dwFmt = MAKEFOURCC('f', 'm', 't', ' ');
@@ -141,7 +141,7 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
       waveHeader->dwDataSize = static_cast<DWORD>(cdata); // Sampled data size
       if (FAILED(pstm->Read(pdata + sizeof(WaveHeader), static_cast<ULONG>(cdata), &read)))
          return nullptr;
-      cdata = waveFileSize;
+      cdata = static_cast<int32_t>(waveFileSize);
    }
    else
    {
@@ -232,7 +232,7 @@ void Sound::SaveToStream(IStream* pstm) const
       wfx.wBitsPerSample = waveHeader->wBitsPerSample;
       wfx.cbSize = 0;
       pstm->Write(&wfx, sizeof(WAVEFORMATEX), &writ);
-      const int32_t sampleDataLength = m_cdata - sizeof(WaveHeader);
+      const int32_t sampleDataLength = static_cast<int32_t>(m_cdata - sizeof(WaveHeader));
       pstm->Write(&sampleDataLength, sizeof(int32_t), &writ);
       pstm->Write(m_pdata + sizeof(WaveHeader), static_cast<ULONG>(sampleDataLength), &writ);
    }
