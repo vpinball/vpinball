@@ -43,7 +43,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_FXAA = m_table->m_settings.LoadValueWithDefault(Settings::Player, "FXAA"s, (int)Disabled);
    m_sharpen = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Sharpen"s, 0);
    m_ss_refl = m_table->m_settings.LoadValueWithDefault(Settings::Player, "SSRefl"s, false);
-   m_bloomOff = m_table->m_settings.LoadValueWithDefault(Settings::Player, "ForceBloomOff"s, false);
+   m_bloomOff = m_table->m_settings.LoadValueBool(Settings::Player, "ForceBloomOff"s);
    m_motionBlurOff = m_table->m_settings.LoadValueWithDefault(Settings::Player, "ForceMotionBlurOff"s, false);
    const int maxReflection = m_table->m_settings.LoadValueWithDefault(Settings::Player, "PFReflection"s, -1);
    if (maxReflection != -1)
