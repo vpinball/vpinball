@@ -1761,7 +1761,7 @@ void PinTable::GetUniqueName(const wstring& wzRoot, WCHAR *const wzUniqueName, c
    wstring wzName;
    do
    {
-      const wstring wzName = (wzRoot.length() > wzUniqueName_maxlength - 3 ? wzRoot.substr(0, wzUniqueName_maxlength - 3) : wzRoot)
+      wzName = (wzRoot.length() > wzUniqueName_maxlength - 3 ? wzRoot.substr(0, wzUniqueName_maxlength - 3) : wzRoot)
          + ((suffix <  10) ? (L"00" + std::to_wstring(suffix))
          :  (suffix < 100) ? (L"0"  + std::to_wstring(suffix))
          :                            std::to_wstring(suffix));
