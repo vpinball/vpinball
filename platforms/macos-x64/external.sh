@@ -8,7 +8,6 @@ echo "Building external libraries..."
 echo "  SDL_SHA: ${SDL_SHA}"
 echo "  SDL_IMAGE_SHA: ${SDL_IMAGE_SHA}"
 echo "  SDL_TTF_SHA: ${SDL_TTF_SHA}"
-echo "  SDL_MIXER_SHA: ${SDL_MIXER_SHA}"
 echo "  FREEIMAGE_SHA: ${FREEIMAGE_SHA}"
 echo "  BGFX_CMAKE_VERSION: ${BGFX_CMAKE_VERSION}"
 echo "  BGFX_PATCH_SHA: ${BGFX_PATCH_SHA}"
@@ -26,10 +25,9 @@ mkdir -p "external/macos-x64/${BUILD_TYPE}"
 cd "external/macos-x64/${BUILD_TYPE}"
 
 #
-# build SDL3, SDL3_image, SDL3_ttf, SDL3_mixer
-#
+# build SDL3, SDL3_image, SDL3_ttf#
 
-SDL3_EXPECTED_SHA="${SDL_SHA}-${SDL_IMAGE_SHA}-${SDL_TTF_SHA}-${SDL_MIXER_SHA}"
+SDL3_EXPECTED_SHA="${SDL_SHA}-${SDL_IMAGE_SHA}-${SDL_TTF_SHA}"
 SDL3_FOUND_SHA="$([ -f SDL3/cache.txt ] && cat SDL3/cache.txt || echo "")"
 
 if [ "${SDL3_EXPECTED_SHA}" != "${SDL3_FOUND_SHA}" ]; then
@@ -85,23 +83,6 @@ if [ "${SDL3_EXPECTED_SHA}" != "${SDL3_FOUND_SHA}" ]; then
       -DSDLTTF_SAMPLES=OFF \
       -DSDLTTF_VENDORED=ON \
       -DSDLTTF_HARFBUZZ=ON \
-      -DSDL3_DIR=../SDL/build \
-      -DCMAKE_OSX_ARCHITECTURES=x86_64 \
-      -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
-      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
-      -B build
-   cmake --build build -- -j${NUM_PROCS}
-   cd ..
-
-   curl -sL https://github.com/libsdl-org/SDL_mixer/archive/${SDL_MIXER_SHA}.tar.gz -o SDL_mixer-${SDL_MIXER_SHA}.tar.gz
-   tar xzf SDL_mixer-${SDL_MIXER_SHA}.tar.gz
-   mv SDL_mixer-${SDL_MIXER_SHA} SDL_mixer
-   cd SDL_mixer
-   ./external/download.sh
-   cmake \
-      -DBUILD_SHARED_LIBS=ON \
-      -DSDLMIXER_SAMPLES=OFF \
-      -DSDLMIXER_VENDORED=ON \
       -DSDL3_DIR=../SDL/build \
       -DCMAKE_OSX_ARCHITECTURES=x86_64 \
       -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
@@ -409,9 +390,6 @@ cp -r SDL3/SDL_image/include/SDL3_image ../../../third-party/include/
 
 cp -a SDL3/SDL_ttf/build/libSDL3_ttf.{dylib,*.dylib} ../../../third-party/runtime-libs/macos-x64
 cp -r SDL3/SDL_ttf/include/SDL3_ttf ../../../third-party/include/
-
-cp -a SDL3/SDL_mixer/build/libSDL3_mixer.{dylib,*.dylib} ../../../third-party/runtime-libs/macos-x64
-cp -r SDL3/SDL_mixer/include/SDL3_mixer ../../../third-party/include/
 
 cp -a freeimage/freeimage/build/libfreeimage.{dylib,*.dylib} ../../../third-party/runtime-libs/macos-x64
 cp freeimage/freeimage/Source/FreeImage.h ../../../third-party/include
