@@ -239,8 +239,8 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, cons
    Matrix3D scale, coords, lookat, layback, matView;
    #ifdef ENABLE_DX9
       // Shift by half a pixel
-      const float backBufferWidth = g_pplayer->m_renderer->m_renderDevice->GetOutputBackBuffer()->GetWidth();
-      const float backBufferHeight = g_pplayer->m_renderer->m_renderDevice->GetOutputBackBuffer()->GetHeight();
+      const float backBufferWidth = static_cast<float>(g_pplayer->m_renderer->m_renderDevice->GetOutputBackBuffer()->GetWidth());
+      const float backBufferHeight = static_cast<float>(g_pplayer->m_renderer->m_renderDevice->GetOutputBackBuffer()->GetHeight());
       const Matrix3D projTrans = Matrix3D::MatrixTranslate(
          xpixoff - 1.0f / backBufferWidth,
          ypixoff + 1.0f / backBufferHeight,
