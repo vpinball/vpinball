@@ -31,7 +31,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    #endif
    , m_table(table)
 {
-   m_stereo3Denabled = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
+   m_stereo3Denabled = m_table->m_settings.LoadValueBool(Settings::Player, "Stereo3DEnabled"s);
    m_toneMapper = (ToneMapper)m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "ToneMapper"s, m_table->GetToneMapper());
    m_toneMapper = clamp(m_toneMapper, TM_REINHARD, TM_AGX_PUNCHY);
    m_HDRforceDisableToneMapper = m_table->m_settings.LoadValueWithDefault(Settings::Player, "HDRDisableToneMapper"s, true);

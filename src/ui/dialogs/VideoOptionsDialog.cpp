@@ -1153,7 +1153,7 @@ void RenderOptPage::LoadSettings(Settings& settings)
       #endif
          m_stereoFake.SetCheck(fakeStereo ? BST_CHECKED : BST_UNCHECKED);
 
-      const int stereo3D = settings.LoadValueWithDefault(Settings::Player, "Stereo3D"s, 0);
+      const int stereo3D = settings.LoadValueInt(Settings::Player, "Stereo3D"s);
       SetupCombo(m_stereoMode, 5, "Disabled", "Top / Bottom", "Interlaced (e.g. LG TVs)", "Flipped Interlaced (e.g. LG TVs)", "Side by Side");
       static const string defaultNames[] = { "Red/Cyan"s, "Green/Magenta"s, "Blue/Amber"s, "Cyan/Red"s, "Magenta/Green"s, "Amber/Blue"s, "Custom 1"s, "Custom 2"s, "Custom 3"s, "Custom 4"s };
       string name[std::size(defaultNames)];

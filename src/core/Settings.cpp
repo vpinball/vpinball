@@ -251,6 +251,13 @@ void Settings::Validate(const bool addDefaults)
    SettingInt(Section::Player, "MaxTexDimension"s, 1536, 0, 16384, "Maximum texture dimension. Images sized above this limit will be automatically scaled down on load."s);
 #endif
 
+
+   //////////////////////////////////////////////////////////////////////////
+   // Stereo 3D section
+
+   SettingBool(Section::Player, "Stereo3DEnabled"s, true, "Allow to temporarily disable stereo rendering"s);
+   SettingInt(Section::Player, "Stereo3D"s, STEREO_OFF, STEREO_OFF, STEREO_ANAGLYPH_10, "Stereo rendering mode"s);
+
    //////////////////////////////////////////////////////////////////////////
    // Plugin.ScoreView
 
