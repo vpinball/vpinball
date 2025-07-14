@@ -52,7 +52,6 @@
 #if defined(ENABLE_BGFX)
 void RenderDevice::tBGFXCallback::fatal(const char* _filePath, uint16_t _line, bgfx::Fatal::Enum _code, const char* _str)
 {
-   //bgfx::trace(_filePath, _line, "BGFX FATAL 0x%08x: %s\n", _code, _str);
    PLOGE << _filePath << ':' << _line << "BGFX FATAL " << _code << ": " << _str;
    if (bgfx::Fatal::DebugCheck == _code)
       bx::debugBreak();
@@ -1359,6 +1358,8 @@ RenderDevice::~RenderDevice()
       bgfx::destroy(m_mipmapProgram);
    if (bgfx::isValid(m_mipmapOpts))
       bgfx::destroy(m_mipmapOpts);
+   if (bgfx::isValid(m_mipmapSource))
+      bgfx::destroy(m_mipmapSource);
 
    // Shutdown BGFX once all native resources have been cleaned up
    m_frameReadySem.post();
