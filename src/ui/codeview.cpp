@@ -514,10 +514,9 @@ HRESULT CodeViewer::AddTemporaryItem(const BSTR bstr, IDispatch * const pdisp)
    pcvd->m_pdisp = pdisp;
    pcvd->m_pdisp->QueryInterface(IID_IUnknown, (void **)&pcvd->m_punk);
    pcvd->m_punk->Release();
-   pcvd->m_piscript = nullptr;
    pcvd->m_global = false;
 
-   if (m_vcvd.GetSortedIndex(pcvd->m_wName.c_str()) != -1 || m_vcvdTemp.GetSortedIndex(pcvd->m_wName.c_str()) != -1)
+   if (m_vcvd.GetSortedIndex(pcvd->m_wName) != -1 || m_vcvdTemp.GetSortedIndex(pcvd->m_wName) != -1)
    {
       delete pcvd;
       return E_FAIL; //already exists
@@ -546,10 +545,9 @@ HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool global)
    pcvd->m_pdisp = piscript->GetDispatch();
    pcvd->m_pdisp->QueryInterface(IID_IUnknown, (void **)&pcvd->m_punk);
    pcvd->m_punk->Release();
-   pcvd->m_piscript = piscript;
    pcvd->m_global = global;
 
-   if (m_vcvd.GetSortedIndex(pcvd->m_wName.c_str()) != -1)
+   if (m_vcvd.GetSortedIndex(pcvd->m_wName) != -1)
    {
       delete pcvd;
       return E_FAIL;
@@ -634,7 +632,7 @@ void CodeViewer::SelectItem(IScriptable * const piscript)
 
 HRESULT CodeViewer::ReplaceName(IScriptable *const piscript, const wstring &wzNew)
 {
-   if (m_vcvd.GetSortedIndex(wzNew.c_str()) != -1)
+   if (m_vcvd.GetSortedIndex(wzNew) != -1)
       return E_FAIL;
 
    BSTR bstr;
@@ -647,15 +645,15 @@ HRESULT CodeViewer::ReplaceName(IScriptable *const piscript, const wstring &wzNe
       return E_FAIL;
    }
 
-   CodeViewDispatch * const pcvd = m_vcvd[idx];
+   CodeViewDispatch * const pcvd = m_vcvd[idx]; // keep pointer to old element
 
    _ASSERTE(pcvd);
 
-   m_vcvd.RemoveElementAt(idx);
+   m_vcvd.RemoveElementAt(idx); // erase in vector
 
    pcvd->m_wName = wzNew;
 
-   m_vcvd.AddSortedString(pcvd);
+   m_vcvd.AddSortedString(pcvd); // and re-add
 
    // Remove old name from dropdown and replace it with the new
    char * szT = MakeChar(bstr);
@@ -1166,14 +1164,17 @@ STDMETHODIMP CodeViewer::GetItemInfo(LPCOLESTR pstrName, DWORD dwReturnMask,
    if (dwReturnMask & SCRIPTINFO_ITYPEINFO)
       *ppti = nullptr;
 
-   CodeViewDispatch *pcvd = m_vcvd.GetSortedElement((WCHAR *)pstrName);
-
-   if (pcvd == nullptr)
+   const int idx = m_vcvd.GetSortedIndex((const WCHAR *)pstrName);
+   CodeViewDispatch *pcvd;
+   if (idx == -1)
    {
-      pcvd = m_vcvdTemp.GetSortedElement((WCHAR *)pstrName);
-      if (pcvd == nullptr)
+      const int idxt = m_vcvdTemp.GetSortedIndex((const WCHAR *)pstrName);
+      if (idxt == -1)
          return E_FAIL;
+      pcvd = m_vcvdTemp[idxt];
    }
+   else
+      pcvd = m_vcvd[idx];
 
    if (dwReturnMask & SCRIPTINFO_IUNKNOWN)
    {
@@ -4092,7 +4093,7 @@ bool Collection::LoadToken(const int id, BiffReader * const pbr)
       WCHAR tmp[MAXNAMEBUFFER+1];
       pbr->GetWideString(tmp, MAXNAMEBUFFER+1);
       memcpy(m_wzName, tmp, (MAXNAMEBUFFER-1)*sizeof(WCHAR));
-      m_wzName[MAXNAMEBUFFER-1] = 0;
+      m_wzName[MAXNAMEBUFFER-1] = L'\0';
       break;
    }
    case FID(EVNT): pbr->GetBool(m_fireEvents); break;

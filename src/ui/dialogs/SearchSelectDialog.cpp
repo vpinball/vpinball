@@ -160,7 +160,7 @@ void SearchSelectDialog::SelectElement()
         if (ListView_GetItem(m_hElementList, &lv) == TRUE)
         {
            char szType[MAXNAMEBUFFER*2];
-           ListView_GetItemText(m_hElementList, iItem, 1, szType, MAXNAMEBUFFER);
+           ListView_GetItemText(m_hElementList, iItem, 1, szType, std::size(szType));
            if (strcmp(szType, "Collection") == 0)
            {
               CComObject<Collection> *const pcol = (CComObject<Collection>*)lv.lParam;

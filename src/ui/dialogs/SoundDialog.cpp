@@ -488,7 +488,7 @@ void SoundDialog::Export()
             {
                string filename2 = pps->m_name;
                const size_t pos = pps->m_path.find_last_of('.');
-               filename2 += pos != string::npos ? pps->m_path.substr(pos) : ".ogg";
+               filename2 += pos != string::npos ? pps->m_path.substr(pos) : ".ogg"s;
                strncpy_s(filename, filename2.c_str(), sizeof(filename) - 1);
             }
             ofn.lpstrFile = filename;

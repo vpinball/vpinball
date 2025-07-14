@@ -2,7 +2,7 @@
 
 #pragma once
 
-template<class T> class VectorProtected  // keeps only -pointers- of elements and does -not- free them afterwards! AND with a critical section for some operations (see end of file)
+template<class T> class VectorProtected final // keeps only -pointers- of elements and does -not- free them afterwards! AND with a critical section for some operations (see end of file)
 {
 private:
    vector<void*> m_rg; // Data buffer

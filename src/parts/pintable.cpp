@@ -1781,7 +1781,7 @@ void PinTable::GetUniqueNamePasting(const int type, WCHAR * const wzUniqueName, 
       size_t lastNonDigit = input.length();
       while (lastNonDigit > 0 && iswdigit(input[lastNonDigit - 1]))
          --lastNonDigit;
-      GetUniqueName(input.substr(0, lastNonDigit).c_str(), wzUniqueName, wzUniqueName_maxlength);
+      GetUniqueName(input.substr(0, lastNonDigit), wzUniqueName, wzUniqueName_maxlength);
    }
 }
 
@@ -2766,7 +2766,7 @@ HRESULT PinTable::WriteInfoValue(IStorage* pstg, const wstring& wzName, const st
       ULONG writ;
       BiffWriter bw(pstm, hcrypthash);
       const wstring wzT = MakeWString(szValue);
-      bw.WriteBytes(wzT.c_str(), static_cast<ULONG>(wzT.size() * sizeof(WCHAR)), &writ);
+      bw.WriteBytes(wzT.c_str(), static_cast<ULONG>(wzT.length() * sizeof(WCHAR)), &writ);
       pstm->Release();
       pstm = nullptr;
    }
@@ -2866,14 +2866,13 @@ HRESULT PinTable::ReadInfoValue(IStorage* pstg, const wstring& wzName, string &o
       WCHAR * const wzT = new WCHAR[len + 1];
       memset(wzT, 0, sizeof(WCHAR) * (len + 1));
 
-      ULONG read;
       BiffReader br(pstm, NULL, NULL, 0, hcrypthash, NULL);
 #ifndef __STANDALONE__
-      br.ReadBytes(wzT, ss.cbSize.LowPart, &read);
+      br.ReadBytes(wzT, ss.cbSize.LowPart);
 #else
       char* ptr = (char*)wzT;
       for (int index = 0; index < len; index++) {
-         br.ReadBytes(ptr, 2, &read);
+         br.ReadBytes(ptr, 2);
          ptr += sizeof(WCHAR);
       }
 #endif
@@ -2919,9 +2918,8 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
 
       m_pbTempScreenshot->m_buffer.resize(ss.cbSize.LowPart);
 
-      ULONG read;
       BiffReader br(pstm, NULL, NULL, 0, hcrypthash, NULL);
-      br.ReadBytes(m_pbTempScreenshot->m_buffer.data(), static_cast<ULONG>(m_pbTempScreenshot->m_buffer.size()), &read);
+      br.ReadBytes(m_pbTempScreenshot->m_buffer.data(), static_cast<uint32_t>(m_pbTempScreenshot->m_buffer.size()));
 
       pstm->Release();
    }
@@ -6502,18 +6500,14 @@ STDMETHODIMP PinTable::get_FileName(BSTR *pVal)
 STDMETHODIMP PinTable::get_Name(BSTR *pVal)
 {
    *pVal = SysAllocString(m_wzName);
-
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_Name(BSTR newVal)
 {
-   wstring newName = newVal;
-   const size_t l = newName.length();
-   if ((l > MAXNAMEBUFFER) || (l < 1))
-   {
+   const wstring newName = newVal;
+   if (newName.empty() || newName.length() >= MAXNAMEBUFFER)
       return E_FAIL;
-   }
 
    STARTUNDO
    if (m_pcv->ReplaceName((IScriptable *)this, newName) == S_OK)
@@ -6526,7 +6520,6 @@ STDMETHODIMP PinTable::put_Name(BSTR newVal)
 STDMETHODIMP PinTable::get_MaxSeparation(float *pVal)
 {
    *pVal = GetMaxSeparation();
-
    return S_OK;
 }
 

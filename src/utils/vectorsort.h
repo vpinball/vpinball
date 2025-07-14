@@ -3,19 +3,19 @@
 #pragma once
 
 template<class T>
-class VectorSortString : public vector<T>
+class VectorSortString final : public vector<T>
 {
 protected:
-   int m_searchstart; // The node to start the binary search at
+   unsigned int m_searchstart; // The node to start the binary search at
 
 public:
 
-   inline VectorSortString()
+   VectorSortString()
    {
       m_searchstart = 1;
    }
 
-   inline void RecomputeSearchStart()
+   void RecomputeSearchStart()
    {
       // Find log base 2 of size of vector
       // Set the search start element to the middle one
@@ -23,13 +23,11 @@ public:
       const unsigned int s = (unsigned int)vector<T>::size();
       unsigned int i = 1u << 31;
       while (!(i & s) && (i > 1))
-      {
          i >>= 1;
-      }
       m_searchstart = i;
    }
 
-   inline void AddSortedString(T const pT)
+   void AddSortedString(T const pT)
    {
       int currentnode = m_searchstart - 1;  // Zero based
       int jumpnode = m_searchstart >> 1;
@@ -43,20 +41,14 @@ public:
          if (jumpnode == 0)
          {
             if (strcmp < 0)
-            {
                ++currentnode; // insert new node after this one
-            }
             break;
          }
 
          if (strcmp > 0)
-         {
             currentnode -= jumpnode;
-         }
          else
-         {
             currentnode += jumpnode;
-         }
          jumpnode >>= 1;
       }
 
@@ -64,7 +56,7 @@ public:
       RecomputeSearchStart();
    }
 
-   inline int GetSortedIndex(const wstring& pvoid) const
+   int GetSortedIndex(const wstring& pvoid) const
    {
       int currentnode = m_searchstart - 1;  // Zero based
       int jumpnode = m_searchstart >> 1;
@@ -72,51 +64,32 @@ public:
       while (true)
       {
          //assert(currentnode >= 0);
+
          int strcmp;
          if (currentnode >= (int)vector<T>::size())
-         {
             strcmp = -1;
-         }
          else
          {
             strcmp = vector<T>::data()[currentnode]->SortAgainstValue(pvoid);
 
             if (strcmp == 0)
-            {
                return currentnode;
-            }
          }
 
          if (jumpnode == 0)
             break;
 
          if (strcmp > 0)
-         {
             currentnode += jumpnode;
-         }
          else
-         {
             currentnode -= jumpnode;
-         }
-
          jumpnode >>= 1;
       }
 
       return -1;
    }
 
-   inline T GetSortedElement(const wstring& pvoid) const
-   {
-      const int i = GetSortedIndex(pvoid);
-      if (i != -1)
-      {
-         return vector<T>::data()[i];
-      }
-
-      return nullptr;
-   }
-
-   inline void RemoveElementAt(const int iItem)
+   void RemoveElementAt(const int iItem)
    {
       vector<T>::erase(vector<T>::begin()+iItem);
       RecomputeSearchStart();

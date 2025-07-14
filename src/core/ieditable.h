@@ -88,10 +88,10 @@ public:
 	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal) \
 	{ \
 		wstring newName = newVal; \
-		if (newName.length() > MAXNAMEBUFFER || newName.length() < 1) \
+		if (newName.empty() || newName.length() >= MAXNAMEBUFFER) \
 			return E_FAIL; \
 		if (GetPTable()->m_pcv->ReplaceName(this, newName) != S_OK) \
-		   return E_FAIL; \
+			return E_FAIL; \
 		wcscpy_s(m_wzName, newName.c_str()); \
 		return S_OK; \
 	} \

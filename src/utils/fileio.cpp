@@ -299,12 +299,15 @@ BiffReader::BiffReader(IStream *pistream, ILoadable *piloadable, void *ppassdata
    m_hcryptkey = hcryptkey;
 }
 
-HRESULT BiffReader::ReadBytes(void * const pv, const ULONG count, ULONG * const foo)
+HRESULT BiffReader::ReadBytes(void * const pv, const uint32_t count)
 {
    const bool iow = IsOnWine();
    if (iow)
       mtx.lock();
-   const HRESULT hr = m_pistream->Read(pv, count, foo);
+   ULONG foo;
+   HRESULT hr = m_pistream->Read(pv, count, &foo);
+   if (foo != count)
+      hr = E_FAIL; // if we didn't read the expected number of bytes, return an error
    if (iow)
       mtx.unlock();
 
@@ -333,26 +336,21 @@ HRESULT BiffReader::GetIntNoHash(int &value)
 HRESULT BiffReader::GetInt(void * const value)
 {
    m_bytesinrecordremaining -= sizeof(int);
-
-   ULONG read = 0;
-   return ReadBytes(value, sizeof(int), &read);
+   return ReadBytes(value, sizeof(int));
 }
 
 HRESULT BiffReader::GetInt(int &value)
 {
    m_bytesinrecordremaining -= sizeof(int);
-
-   ULONG read = 0;
-   return ReadBytes(&value, sizeof(int), &read);
+   return ReadBytes(&value, sizeof(int));
 }
 
 HRESULT BiffReader::GetString(char *const szvalue, const size_t szvalue_maxlength)
 {
-   ULONG read = 0;
    HRESULT hr;
    int len;
 
-   if (FAILED(hr = ReadBytes(&len, sizeof(int), &read)))
+   if (FAILED(hr = ReadBytes(&len, sizeof(int))))
    {
       szvalue[0] = '\0';
       return hr;
@@ -361,7 +359,7 @@ HRESULT BiffReader::GetString(char *const szvalue, const size_t szvalue_maxlengt
    m_bytesinrecordremaining -= len + (int)sizeof(int);
 
    char *tmp = new char[len+1];
-   hr = ReadBytes(tmp, len, &read);
+   hr = ReadBytes(tmp, len);
    tmp[len] = '\0';
    strncpy_s(szvalue, szvalue_maxlength, tmp, len);
    delete[] tmp;
@@ -370,11 +368,10 @@ HRESULT BiffReader::GetString(char *const szvalue, const size_t szvalue_maxlengt
 
 HRESULT BiffReader::GetString(string &szvalue)
 {
-   ULONG read = 0;
    HRESULT hr;
    int len;
 
-   if (FAILED(hr = ReadBytes(&len, sizeof(int), &read)))
+   if (FAILED(hr = ReadBytes(&len, sizeof(int))))
    {
       szvalue.clear();
       return hr;
@@ -383,7 +380,7 @@ HRESULT BiffReader::GetString(string &szvalue)
    m_bytesinrecordremaining -= len + (int)sizeof(int);
 
    char *tmp = new char[len+1];
-   hr = ReadBytes(tmp, len, &read);
+   hr = ReadBytes(tmp, len);
    tmp[len] = 0;
    szvalue = tmp;
    delete[] tmp;
@@ -392,11 +389,10 @@ HRESULT BiffReader::GetString(string &szvalue)
 
 HRESULT BiffReader::GetWideString(WCHAR *wzvalue, const size_t wzvalue_maxlength)
 {
-   ULONG read = 0;
    HRESULT hr;
    int len;
 
-   if (FAILED(hr = ReadBytes(&len, sizeof(int), &read)))
+   if (FAILED(hr = ReadBytes(&len, sizeof(int))))
    {
       wzvalue[0] = L'\0';
       return hr;
@@ -406,14 +402,14 @@ HRESULT BiffReader::GetWideString(WCHAR *wzvalue, const size_t wzvalue_maxlength
 
 #ifndef __STANDALONE__
    WCHAR * tmp = new WCHAR[len/sizeof(WCHAR)+1];
-   hr = ReadBytes(tmp, len, &read);
+   hr = ReadBytes(tmp, len);
    tmp[len/sizeof(WCHAR)] = L'\0';
 #else
    WCHAR * tmp = new WCHAR[len/2+1];
    memset(tmp, 0, (len/2+1) * sizeof(WCHAR));
    char* ptr = (char*)tmp;
    for (int index = 0; index < len/2; index++) {
-      hr = ReadBytes(ptr, 2, &read);
+      hr = ReadBytes(ptr, 2);
       ptr += sizeof(WCHAR);
    }
 #endif
@@ -424,11 +420,10 @@ HRESULT BiffReader::GetWideString(WCHAR *wzvalue, const size_t wzvalue_maxlength
 
 HRESULT BiffReader::GetWideString(std::basic_string<WCHAR>& wzvalue)
 {
-   ULONG read = 0;
    HRESULT hr;
    int len;
 
-   if (FAILED(hr = ReadBytes(&len, sizeof(int), &read)))
+   if (FAILED(hr = ReadBytes(&len, sizeof(int))))
    {
       wzvalue.clear();
       return hr;
@@ -438,17 +433,16 @@ HRESULT BiffReader::GetWideString(std::basic_string<WCHAR>& wzvalue)
 
 #ifndef __STANDALONE__
    WCHAR * tmp = new WCHAR[len/sizeof(WCHAR)+1];
-   hr = ReadBytes(tmp, len, &read);
-   tmp[len/sizeof(WCHAR)] = 0;
+   hr = ReadBytes(tmp, len);
+   tmp[len/sizeof(WCHAR)] = L'\0';
 #else
    WCHAR * tmp = new WCHAR[len/2+1];
    memset(tmp, 0, (len/2+1) * sizeof(WCHAR));
    char* ptr = (char*)tmp;
    for (int index = 0; index < len/2; index++) {
-      hr = ReadBytes(ptr, 2, &read);
+      hr = ReadBytes(ptr, 2);
       ptr += sizeof(WCHAR);
    }
-   tmp[len/2] = 0;
 #endif
    wzvalue = tmp;
    delete[] tmp;
@@ -458,26 +452,20 @@ HRESULT BiffReader::GetWideString(std::basic_string<WCHAR>& wzvalue)
 HRESULT BiffReader::GetFloat(float &value)
 {
    m_bytesinrecordremaining -= sizeof(float);
-
-   ULONG read = 0;
-   return ReadBytes(&value, sizeof(float), &read);
+   return ReadBytes(&value, sizeof(float));
 }
 
 HRESULT BiffReader::GetBool(BOOL &value)
 {
    m_bytesinrecordremaining -= sizeof(BOOL);
-
-   ULONG read = 0;
-   //return m_pistream->Read(&value, sizeof(BOOL), &read);
-   return ReadBytes(&value, sizeof(BOOL), &read);
+   //return m_pistream->Read(&value, sizeof(BOOL));
+   return ReadBytes(&value, sizeof(BOOL));
 }
 
 HRESULT BiffReader::GetStruct(void *pvalue, const int size)
 {
    m_bytesinrecordremaining -= size;
-
-   ULONG read = 0;
-   return ReadBytes(pvalue, size, &read);
+   return ReadBytes(pvalue, size);
 }
 
 HRESULT BiffReader::GetVector2(Vertex2D& vec)

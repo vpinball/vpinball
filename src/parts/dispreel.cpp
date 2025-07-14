@@ -565,15 +565,14 @@ bool DispReel::LoadToken(const int id, BiffReader * const pbr)
       pIFont->Release();
 #else
       // https://github.com/freezy/VisualPinball.Engine/blob/master/VisualPinball.Engine/VPT/Font.cs#L25
-      char data[255];
 
-      ULONG read;
-      pbr->ReadBytes(data, 3, &read);
-      pbr->ReadBytes(data, 1, &read); // Italic
-      pbr->ReadBytes(data, 2, &read); // Weight
-      pbr->ReadBytes(data, 4, &read); // Size
-      pbr->ReadBytes(data, 1, &read); // nameLen
-      pbr->ReadBytes(data, (int)data[0], &read); // name
+      unsigned char data[255];
+      pbr->ReadBytes(data, 3);
+      pbr->ReadBytes(data, 1); // Italic
+      pbr->ReadBytes(data, 2); // Weight
+      pbr->ReadBytes(data, 4); // Size
+      pbr->ReadBytes(data, 1); // nameLen
+      pbr->ReadBytes(data, data[0]); // name
 #endif
 
       break;

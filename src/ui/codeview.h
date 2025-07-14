@@ -99,7 +99,6 @@ public:
    wstring m_wName;
    IUnknown *m_punk = nullptr;
    IDispatch *m_pdisp = nullptr;
-   IScriptable *m_piscript = nullptr;
    bool m_global = false;
 
    // for VectorSortString

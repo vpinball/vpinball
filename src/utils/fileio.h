@@ -70,13 +70,6 @@ public:
       return hr;
    }
 #endif
-   HRESULT GetInt(long &value)
-   {
-      int val;
-      const HRESULT hr = GetInt(val);
-      value = val;
-      return hr;
-   }
    HRESULT GetString(char * const szvalue, const size_t szvalue_maxlength);
    HRESULT GetString(string& szvalue);
    HRESULT GetWideString(WCHAR* wzvalue, const size_t wzvalue_maxlength);
@@ -95,7 +88,7 @@ public:
    HRESULT GetVector3(Vertex3Ds& vec);
    HRESULT GetVector3Padded(Vertex3Ds& vec);
 
-   HRESULT ReadBytes(void * const pv, const ULONG count, ULONG *  const foo);
+   HRESULT ReadBytes(void * const pv, const uint32_t count);
 
    HRESULT Load(std::function<bool(const int id, BiffReader *const pbr)> processToken = nullptr);
 

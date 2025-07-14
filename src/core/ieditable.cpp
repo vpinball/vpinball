@@ -198,12 +198,12 @@ void IEditable::SetName(const string& name)
     char * const oldName = MakeChar(GetScriptable()->m_wzName);
 
     wstring newName = MakeWString(name);
-    newName = newName.length() > MAXNAMEBUFFER ? newName.substr(0, MAXNAMEBUFFER - 1) : newName;
-    const bool isEqual = newName == wstring(GetScriptable()->m_wzName);
-    if(!isEqual && !pt->IsNameUnique(newName.c_str()))
+    newName = newName.length() >= MAXNAMEBUFFER ? newName.substr(0, MAXNAMEBUFFER - 1) : newName;
+    const bool isEqual = newName == GetScriptable()->m_wzName;
+    if(!isEqual && !pt->IsNameUnique(newName))
     {
        WCHAR uniqueName[MAXNAMEBUFFER];
-       pt->GetUniqueName(newName.c_str(), uniqueName, MAXNAMEBUFFER);
+       pt->GetUniqueName(newName, uniqueName, MAXNAMEBUFFER);
        newName = uniqueName;
     }
     STARTUNDO

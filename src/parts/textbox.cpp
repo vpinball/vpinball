@@ -247,27 +247,26 @@ bool Textbox::LoadToken(const int id, BiffReader * const pbr)
       ips->Load(pbr->m_pistream);
       SAFE_RELEASE_NO_RCC(ips);
 #else
-      ULONG read;
       BYTE buffer[255];
       BYTE attributes;
       short weight;
       int size;
       int len;
 
-      pbr->ReadBytes(buffer, 1, &read); // version
-      pbr->ReadBytes(buffer, sizeof(short), &read); // charset
-      pbr->ReadBytes(&attributes, sizeof(BYTE), &read); // attributes
+      pbr->ReadBytes(buffer, 1); // version
+      pbr->ReadBytes(buffer, 2); // charset
+      pbr->ReadBytes(&attributes, 1); // attributes
       m_fontItalic = (attributes & 0x02) > 0;
       m_fontUnderline = (attributes & 0x04) > 0;
       m_fontStrikeThrough = (attributes & 0x08) > 0;
-      pbr->ReadBytes(&weight, sizeof(short), &read); // weight
+      pbr->ReadBytes(&weight, 2); // weight
       m_fontBold = weight > 550;
-      pbr->ReadBytes(&size, sizeof(int), &read); // size
-      m_fontSize = (float)size / 10000;
-      pbr->ReadBytes(buffer, 1, &read); // name length
+      pbr->ReadBytes(&size, 4); // size
+      m_fontSize = (float)size / 10000.f;
+      pbr->ReadBytes(buffer, 1); // name length
       len = (int)buffer[0];
       if (len > 0) {
-         pbr->ReadBytes(buffer, len, &read); // name
+         pbr->ReadBytes(buffer, len); // name
          m_fontName = string(reinterpret_cast<char*>(buffer), len);
       }
       else

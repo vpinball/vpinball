@@ -478,7 +478,7 @@ bool Flasher::LoadToken(const int id, BiffReader * const pbr)
    case FID(FVIS): pbr->GetBool(m_d.m_isVisible); break;
    case FID(ADDB): pbr->GetBool(m_d.m_addBlend); break;
    case FID(IDMD): { bool m; pbr->GetBool(m); m_d.m_renderMode = m ? FlasherData::DMD : FlasherData::FLASHER; } break; // Backward compatibility for table 10.8 and before
-   case FID(RDMD): { int m; pbr->GetInt(m); m_d.m_renderMode = static_cast<FlasherData::RenderMode>(m); } break;
+   case FID(RDMD): pbr->GetInt(&m_d.m_renderMode); break;
    case FID(RSTL): pbr->GetInt(&m_d.m_renderStyle); break;
    case FID(LINK): pbr->GetString(m_d.m_imageSrcLink); break;
    case FID(GRGH): pbr->GetFloat(m_d.m_glassRoughness); break;

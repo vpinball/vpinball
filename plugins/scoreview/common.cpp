@@ -130,7 +130,7 @@ string find_case_insensitive_file_path(const string& szPath)
    return string();
 }
 
-string PathFromFilename(const string& filename)
+string PathFromFilename(const string &filename)
 {
    const size_t pos = filename.find_last_of(PATH_SEPARATOR_CHAR);
    return (pos == string::npos) ? string() : filename.substr(0, pos + 1); // previously returned filename if no separator found, but i guess that just worked because filename was then also constantly ""
