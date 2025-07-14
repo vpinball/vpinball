@@ -325,4 +325,3 @@ set(VPX_STANDALONE_SOURCES
    third-party/include/RSJparser/RSJparser.tcc
    third-party/include/pole/pole.cpp
 )
-

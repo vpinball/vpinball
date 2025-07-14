@@ -1,6 +1,10 @@
 
 # common CMakeLists file shared by all build targets
 
+target_compile_definitions(vpinball PRIVATE
+   $<$<CONFIG:Release>:IMGUI_DISABLE_DEBUG_TOOLS>
+)
+
 set(VPX_SOURCES
    src/audio/AudioPlayer.cpp
    src/audio/AudioPlayer.h

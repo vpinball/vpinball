@@ -75,13 +75,6 @@ add_executable(vpinball WIN32
    src/input/Win32InputKeyboardHandler.h
    src/input/XInputJoystickHandler.h
 
-   src/utils/memutil.cpp
-   src/utils/memutil.h
-   src/utils/StackTrace.cpp
-   src/utils/StackTrace.h
-   src/utils/MemoryStatus.cpp
-   src/utils/MemoryStatus.h
-
    src/ui/paintsur.cpp
    src/ui/paintsur.h
    src/ui/Debugger.cpp
@@ -224,6 +217,12 @@ add_executable(vpinball WIN32
    src/ui/properties/WallVisualsProperty.cpp
    src/ui/properties/WallVisualsProperty.h
 
+   src/utils/memutil.cpp
+   src/utils/memutil.h
+   src/utils/StackTrace.cpp
+   src/utils/StackTrace.h
+   src/utils/MemoryStatus.cpp
+   src/utils/MemoryStatus.h
    src/utils/BlackBox.cpp
    src/utils/BlackBox.h
    src/utils/CrashHandler.cpp
@@ -360,8 +359,8 @@ set(OPT_COMMON /Ob2 /O2 /Oi /arch:SSE2 /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 target_compile_options(vpinball PUBLIC
-   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
-   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
+   $<$<CONFIG:Release>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+   $<$<CONFIG:Release>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
 )
 
 target_link_directories(vpinball PUBLIC 
@@ -388,12 +387,12 @@ target_link_libraries(vpinball
 
 target_link_options(vpinball PUBLIC
    /SAFESEH:NO
-   $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
-   $<$<CONFIG:RELEASE>:/OPT:REF>
-   $<$<CONFIG:RELEASE>:/OPT:ICF>
+   $<$<CONFIG:Release>:/INCREMENTAL:NO>
+   $<$<CONFIG:Release>:/OPT:REF>
+   $<$<CONFIG:Release>:/OPT:ICF>
    /LARGEADDRESSAWARE
-   $<$<CONFIG:RELEASE>:/LTCG>
-   $<$<CONFIG:RELEASE>:/DYNAMICBASE:NO>
+   $<$<CONFIG:Release>:/LTCG>
+   $<$<CONFIG:Release>:/DYNAMICBASE:NO>
 )
 
 set_target_properties(vpinball PROPERTIES

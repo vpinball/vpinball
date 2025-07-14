@@ -71,8 +71,8 @@ target_compile_definitions(vpinball PRIVATE
    WINE_NO_TRACE_MSGS
    WINE_NO_DEBUG_MSGS
 
-   $<$<CONFIG:DEBUG>:BX_CONFIG_DEBUG=1>
-   $<$<CONFIG:RELEASE>:BX_CONFIG_DEBUG=0>
+   $<$<CONFIG:Debug>:BX_CONFIG_DEBUG=1>
+   $<$<CONFIG:Release>:BX_CONFIG_DEBUG=0>
 
    "__forceinline=__attribute__((always_inline)) inline"
 )

@@ -346,8 +346,8 @@ target_compile_definitions(vpinball PRIVATE
    ENABLE_BGFX
    ENABLE_XR
    USE_DINPUT8
-   $<$<CONFIG:DEBUG>:BX_CONFIG_DEBUG=1>
-   $<$<CONFIG:RELEASE>:BX_CONFIG_DEBUG=0>
+   $<$<CONFIG:Debug>:BX_CONFIG_DEBUG=1>
+   $<$<CONFIG:Release>:BX_CONFIG_DEBUG=0>
 )
 
 set(OPT_COMMON /Ob2 /O2 /Oi /arch:SSE2 /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR /Oy /GT /GL /w44005 /Zc:__cplusplus /std:c++20)
