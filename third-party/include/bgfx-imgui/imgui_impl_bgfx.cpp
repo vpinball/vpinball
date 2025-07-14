@@ -127,7 +127,7 @@ void ImGui_Implbgfx_RenderDrawLists(int view, int instanceCount, ImDrawData* dra
                   (uint16_t)bx::min(cmd->ClipRect.w, 65535.0f) - yy);
             }
 
-            std::shared_ptr<Sampler> sampler = cmd->TextureId;
+            std::shared_ptr<Sampler> sampler = cmd->GetTexID();
             if (sampler)
                bgfx::setTexture(0, g_AttribLocationTex, sampler->GetCoreTexture(true), BGFX_SAMPLER_UVW_CLAMP | BGFX_SAMPLER_MIN_ANISOTROPIC | BGFX_SAMPLER_MAG_ANISOTROPIC);
             bgfx::setState(state);
@@ -198,7 +198,7 @@ void ImGui_Implbgfx_InvalidateDeviceObjects()
 
    delete g_FontTexture;
    g_FontTexture = nullptr;
-   ImGui::GetIO().Fonts->TexID = 0;
+   ImGui::GetIO().Fonts->Clear();
 }
 
 void ImGui_Implbgfx_Init()
