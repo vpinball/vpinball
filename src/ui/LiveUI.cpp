@@ -471,7 +471,8 @@ static void HelpSplash(const string &text, int rotation)
 
    constexpr float padding = 60.f;
    const float maxWidth = win_size.x - padding;
-   ImFontBaked *const font = ImGui::GetFontBaked();
+   ImFont *const font = ImGui::GetFont();
+   ImFontBaked *const fontBaked = ImGui::GetFontBaked();
 
    string line;
    std::istringstream iss(text);
@@ -484,14 +485,14 @@ static void HelpSplash(const string &text, int rotation)
        while (*textEnd)
        {
           const char *nextLineTextEnd = ImGui::FindRenderedTextEnd(textEnd, nullptr);
-          ImVec2 lineSize = font->CalcTextSizeA(font->Size, FLT_MAX, 0.0f, textEnd, nextLineTextEnd);
+          ImVec2 lineSize = font->CalcTextSizeA(fontBaked->Size, FLT_MAX, 0.0f, textEnd, nextLineTextEnd);
           if (lineSize.x > maxWidth)
           {
              const char *wrapPoint = font->CalcWordWrapPositionA(font->Scale, textEnd, nextLineTextEnd, maxWidth);
              if (wrapPoint == textEnd)
                 wrapPoint++;
              nextLineTextEnd = wrapPoint;
-             lineSize = font->CalcTextSizeA(font->Size, FLT_MAX, 0.0f, textEnd, wrapPoint);
+             lineSize = font->CalcTextSizeA(fontBaked->Size, FLT_MAX, 0.0f, textEnd, wrapPoint);
           }
 
           string newLine(textEnd, nextLineTextEnd);
@@ -519,7 +520,7 @@ static void HelpSplash(const string &text, int rotation)
    ImGui::SetCursorPosY(padding / 4.f);
    for (const string& curline : lines)
    {
-      const ImVec2 lineSize = font->CalcTextSizeA(font->Size, FLT_MAX, 0.0f, curline.c_str());
+      const ImVec2 lineSize = font->CalcTextSizeA(fontBaked->Size, FLT_MAX, 0.0f, curline.c_str());
       ImGui::SetCursorPosX((text_size.x - lineSize.x) / 2.f);
       ImGui::Text("%s", curline.c_str());
    }
@@ -1064,7 +1065,8 @@ void LiveUI::Update(const int width, const int height)
       }
       else if (showNotifications)
       {
-          ImFontBaked *const font = ImGui::GetFontBaked();
+          ImFont *const font = ImGui::GetFont();
+          ImFontBaked *const fontBaked = ImGui::GetFontBaked();
 
           constexpr float padding = 50.f;
           const float maxWidth = io.DisplaySize.x - padding;
@@ -1082,14 +1084,14 @@ void LiveUI::Update(const int width, const int height)
               const char *textEnd = line.c_str();
               while (*textEnd) {
                  const char *nextLineTextEnd = ImGui::FindRenderedTextEnd(textEnd, nullptr);
-                 ImVec2 lineSize = font->CalcTextSizeA(font->Size, FLT_MAX, 0.0f, textEnd, nextLineTextEnd);
+                 ImVec2 lineSize = font->CalcTextSizeA(fontBaked->Size, FLT_MAX, 0.0f, textEnd, nextLineTextEnd);
                  if (lineSize.x > maxWidth)
                  {
                     const char *wrapPoint = font->CalcWordWrapPositionA(font->Scale, textEnd, nextLineTextEnd, maxWidth);
                     if (wrapPoint == textEnd)
                        wrapPoint++;
                     nextLineTextEnd = wrapPoint;
-                    lineSize = font->CalcTextSizeA(font->Size, FLT_MAX, 0.0f, textEnd, wrapPoint);
+                    lineSize = font->CalcTextSizeA(fontBaked->Size, FLT_MAX, 0.0f, textEnd, wrapPoint);
                  }
 
                  string newLine(textEnd, nextLineTextEnd);
@@ -1113,7 +1115,7 @@ void LiveUI::Update(const int width, const int height)
           ImGui::SetNextWindowSize(text_size);
           ImGui::Begin(("Notification" + std::to_string(i)).c_str(), nullptr, window_flags);
           for (const string& lline : lines) {
-             ImVec2 lineSize = font->CalcTextSizeA(font->Size, FLT_MAX, 0.0f, lline.c_str());
+             ImVec2 lineSize = font->CalcTextSizeA(fontBaked->Size, FLT_MAX, 0.0f, lline.c_str());
              ImGui::SetCursorPosX(((text_size.x - lineSize.x) / 2));
              ImGui::Text("%s", lline.c_str());
           }
