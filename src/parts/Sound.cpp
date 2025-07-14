@@ -152,15 +152,15 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
 
    // this reads in the settings that are used by the Windows UI in the Sound Manager and when PlaySound() is used.
    uint8_t outputTarget = static_cast<uint8_t>(SoundOutTypes::SNDOUT_TABLE);
-   if (FAILED(pstm->Read(&outputTarget, sizeof(char), &read)))
-      return nullptr;
-   if (outputTarget < 0 || outputTarget > SoundOutTypes::SNDOUT_BACKGLASS)
-      outputTarget = static_cast<uint8_t>(SoundOutTypes::SNDOUT_TABLE);
    int32_t volume = 100;
    int32_t pan = 100;
    int32_t frontRearFade = 100;
    if (LoadFileVersion >= NEW_SOUND_FORMAT_VERSION)
    {
+      if (FAILED(pstm->Read(&outputTarget, sizeof(char), &read)))
+         return nullptr;
+      if (outputTarget < 0 || outputTarget > SoundOutTypes::SNDOUT_BACKGLASS)
+         outputTarget = static_cast<uint8_t>(SoundOutTypes::SNDOUT_TABLE);
       if (FAILED(pstm->Read(&volume, sizeof(int32_t), &read)))
          return nullptr;
       if (FAILED(pstm->Read(&pan, sizeof(int32_t), &read)))
@@ -172,9 +172,12 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
    }
    else
    {
-      outputTarget = (StrStrI(name.c_str(), "bgout_") != nullptr)
-               || StrCompareNoCase(path, "* Backglass Output *"s) // legacy behavior, where the BG selection was encoded into the strings directly
-               || (outputTarget != outputTarget)
+      bool toBackglassOutput = false; // false: for pre-VPX tables
+      if (FAILED(pstm->Read(&toBackglassOutput, sizeof(bool), &read)))
+         return nullptr;
+      outputTarget = (StrStrI(name.c_str(), "bgout_") != nullptr) // legacy behavior, where the BG selection was encoded into the strings directly
+               || StrCompareNoCase(path, "* Backglass Output *"s) 
+               || toBackglassOutput
             ? SNDOUT_BACKGLASS
             : SNDOUT_TABLE;
    }
