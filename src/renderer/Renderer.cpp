@@ -412,7 +412,11 @@ Renderer::~Renderer()
    delete m_pMotionBlurBufferTexture;
    delete m_pOffscreenVRLeft;
    delete m_pOffscreenVRRight;
+   #if defined(ENABLE_DX9) || defined(__OPENGLES__) || defined(__APPLE__)
+   m_envRadianceTexture.reset();
+   #else
    delete m_envRadianceTexture;
+   #endif
    ReleaseAORenderTargets();
    m_ballEnvSampler = nullptr;
    m_envSampler = nullptr;
