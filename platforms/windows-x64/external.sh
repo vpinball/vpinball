@@ -15,7 +15,6 @@ echo "Building external libraries..."
 echo "  SDL_SHA: ${SDL_SHA}"
 echo "  SDL_IMAGE_SHA: ${SDL_IMAGE_SHA}"
 echo "  SDL_TTF_SHA: ${SDL_TTF_SHA}"
-echo "  SDL_MIXER_SHA: ${SDL_MIXER_SHA}"
 echo "  FREEIMAGE_SHA: ${FREEIMAGE_SHA}"
 echo "  BGFX_CMAKE_VERSION: ${BGFX_CMAKE_VERSION}"
 echo "  BGFX_PATCH_SHA: ${BGFX_PATCH_SHA}"
@@ -31,10 +30,9 @@ mkdir -p "external/windows-x64/${BUILD_TYPE}"
 cd "external/windows-x64/${BUILD_TYPE}"
 
 #
-# build SDL3, SDL3_image, SDL3_ttf, SDL3_mixer
-#
+# build SDL3, SDL3_image, SDL3_ttf#
 
-SDL3_EXPECTED_SHA="${SDL_SHA}-${SDL_IMAGE_SHA}-${SDL_TTF_SHA}-${SDL_MIXER_SHA}"
+SDL3_EXPECTED_SHA="${SDL_SHA}-${SDL_IMAGE_SHA}-${SDL_TTF_SHA}"
 SDL3_FOUND_SHA="$([ -f SDL3/cache.txt ] && cat SDL3/cache.txt || echo "")"
 
 if [ "${SDL3_EXPECTED_SHA}" != "${SDL3_FOUND_SHA}" ]; then
@@ -89,22 +87,6 @@ if [ "${SDL3_EXPECTED_SHA}" != "${SDL3_FOUND_SHA}" ]; then
       -DSDLTTF_SAMPLES=OFF \
       -DSDLTTF_VENDORED=ON \
       -DSDLTTF_HARFBUZZ=ON \
-      -DSDL3_DIR=../SDL/build \
-      -B build
-   cmake --build build --config ${BUILD_TYPE}
-   cd ..
-
-   curl -sL https://github.com/libsdl-org/SDL_mixer/archive/${SDL_MIXER_SHA}.tar.gz -o SDL_mixer-${SDL_MIXER_SHA}.tar.gz
-   tar xzf SDL_mixer-${SDL_MIXER_SHA}.tar.gz --exclude='*/Xcode/*'
-   mv SDL_mixer-${SDL_MIXER_SHA} SDL_mixer
-   cd SDL_mixer
-   sed -i.bak 's/OUTPUT_NAME "SDL3_mixer"/OUTPUT_NAME "SDL3_mixer64"/g' CMakeLists.txt
-   ./external/download.sh
-   cmake \
-      -G "Visual Studio 17 2022" \
-      -DBUILD_SHARED_LIBS=ON \
-      -DSDLMIXER_SAMPLES=OFF \
-      -DSDLMIXER_VENDORED=ON \
       -DSDL3_DIR=../SDL/build \
       -B build
    cmake --build build --config ${BUILD_TYPE}
@@ -423,10 +405,6 @@ cp -r SDL3/SDL_image/include/SDL3_image ../../../third-party/include/
 cp SDL3/SDL_ttf/build/${BUILD_TYPE}/SDL3_ttf64.lib ../../../third-party/build-libs/windows-x64
 cp SDL3/SDL_ttf/build/${BUILD_TYPE}/SDL3_ttf64.dll ../../../third-party/runtime-libs/windows-x64
 cp -r SDL3/SDL_ttf/include/SDL3_ttf ../../../third-party/include/
-
-cp SDL3/SDL_mixer/build/${BUILD_TYPE}/SDL3_mixer64.lib ../../../third-party/build-libs/windows-x64
-cp SDL3/SDL_mixer/build/${BUILD_TYPE}/SDL3_mixer64.dll ../../../third-party/runtime-libs/windows-x64
-cp -r SDL3/SDL_mixer/include/SDL3_mixer ../../../third-party/include/
 
 cp freeimage/freeimage/build/${BUILD_TYPE}/freeimage64.lib ../../../third-party/build-libs/windows-x64
 cp freeimage/freeimage/build/${BUILD_TYPE}/freeimage64.dll ../../../third-party/runtime-libs/windows-x64
