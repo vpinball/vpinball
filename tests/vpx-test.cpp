@@ -47,10 +47,10 @@ string GetAssetPath()
 
 bool CheckMatchingBitmaps(const string& filePath1, const string& filePath2)
 {
-   auto bmp1 = BaseTexture::CreateFromFile(GetAssetPath() + filePath1);
-   auto bmp2 = BaseTexture::CreateFromFile(GetAssetPath() + filePath2);
+   auto bmp1 = FileExists(GetAssetPath() + filePath1) ? BaseTexture::CreateFromFile(GetAssetPath() + filePath1) : nullptr;
+   auto bmp2 = FileExists(GetAssetPath() + filePath2) ? BaseTexture::CreateFromFile(GetAssetPath() + filePath2) : nullptr;
    bool failed = (!bmp1 || !bmp2 || bmp1->width() != bmp2->width() || bmp1->height() != bmp2->height() || bmp1->m_format != bmp2->m_format);
-   if ((bmp1->m_format != BaseTexture::SRGB) || (bmp2->m_format != BaseTexture::SRGB))
+   if (!failed && ((bmp1->m_format != BaseTexture::SRGB) || (bmp2->m_format != BaseTexture::SRGB)))
    {
       MESSAGE("Invalid bitmap format");
       failed = true;

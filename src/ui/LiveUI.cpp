@@ -3467,7 +3467,7 @@ void LiveUI::UpdateVideoOptionsModal()
       }
       ImGui::EndPopup();
    }
-   if (popup_anaglyph_calibration && IsAnaglyphStereoMode(g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3D"s, 0)))
+   if (popup_anaglyph_calibration && IsAnaglyphStereoMode(g_pvp->m_settings.LoadValueInt(Settings::Player, "Stereo3D"s)))
       ImGui::OpenPopup(ID_ANAGLYPH_CALIBRATION);
 }
 

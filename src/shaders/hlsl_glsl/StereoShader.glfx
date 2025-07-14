@@ -36,7 +36,7 @@ void main()
 ////ps_main_tb
 void main()
 {
-   color = float4(gatherEyeColor(float2(tex0.x, tex0.y * 2.0), tex0.y < 0.5), 1.0);
+   color = float4(gatherEyeColor(float2(tex0.x, tex0.y * 2.0), tex0.y >= 0.5), 1.0);
 }
 
 
@@ -50,14 +50,14 @@ void main()
 ////ps_main_int
 void main()
 {
-   color = float4(gatherEyeColor(tex0, frac(gl_FragCoord.y*0.5) < 0.5), 1.0);
+   color = float4(gatherEyeColor(tex0, frac(gl_FragCoord.y*0.5) >= 0.5), 1.0);
 }
 
 
 ////ps_main_flipped_int
 void main()
 {
-   color = float4(gatherEyeColor(tex0, frac(gl_FragCoord.y*0.5) >= 0.5), 1.0);
+   color = float4(gatherEyeColor(tex0, frac(gl_FragCoord.y*0.5) < 0.5), 1.0);
 }
 
 

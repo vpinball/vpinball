@@ -249,7 +249,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
          m_vrDevice = useVR ? new VRDevice() : nullptr;
       #endif
    #endif
-   const StereoMode stereo3D = useVR ? STEREO_VR : (StereoMode)m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3D"s, (int)STEREO_OFF);
+   const StereoMode stereo3D = useVR ? STEREO_VR : (StereoMode)m_ptable->m_settings.LoadValueInt(Settings::Player, "Stereo3D"s);
    assert(useVR == (stereo3D == STEREO_VR));
 
    m_capExtDMD = (stereo3D == STEREO_VR) && m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CaptureExternalDMD"s, false);
