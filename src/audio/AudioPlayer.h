@@ -34,8 +34,9 @@ public:
 
    // Audio stream, directly forwarded to audio device, respecting channel assignment, applying backglass global volume
    typedef void* AudioStreamID; // opaque pointer as objects are always owned by AudioPlayer without any public API
-   AudioStreamID OpenAudioStream(int frequency, int channels);
+   AudioStreamID OpenAudioStream(int frequency, int channels, bool isFloat);
    void EnqueueStream(AudioStreamID stream, void* buffer, int length);
+   void ClearStream(AudioStreamID stream);
    int GetStreamQueueSize(AudioStreamID stream) const;
    void SetStreamVolume(AudioStreamID stream, const float volume);
    void CloseAudioStream(AudioStreamID stream);

@@ -2538,10 +2538,11 @@ void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgD
       if (msg.buffer != nullptr)
       {
          const int nChannels = (msg.type == CTLPI_AUDIO_SRC_BACKGLASS_MONO) ? 1 : 2;
-         VPX::AudioPlayer::AudioStreamID const stream = me->m_audioPlayer->OpenAudioStream(static_cast<int>(msg.sampleRate), nChannels);
+         VPX::AudioPlayer::AudioStreamID const stream = me->m_audioPlayer->OpenAudioStream(static_cast<int>(msg.sampleRate), nChannels, msg.format == CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT);
          if (stream)
          {
             me->m_audioStreams[msg.id.id] = stream;
+            me->m_audioPlayer->SetStreamVolume(stream, msg.volume);
             me->m_audioPlayer->EnqueueStream(stream, msg.buffer, msg.bufferSize);
          }
       }
@@ -2551,17 +2552,17 @@ void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgD
       VPX::AudioPlayer::AudioStreamID const stream = entry->second; 
       if (msg.buffer != nullptr)
       {
-         int pending = me->m_audioPlayer->GetStreamQueueSize(stream);
-         if (pending >= 0 && static_cast<unsigned int>(pending) >= msg.bufferSize)
+         const int pending = me->m_audioPlayer->GetStreamQueueSize(stream);
+         const int nBytePerSample = (msg.format == CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT) ? 4 : 2;
+         // Basic throttling: if we have more than 300ms already enqueued, then drop them to sync back on stream
+         if (1000 * pending > 300 * (msg.sampleRate * nBytePerSample * ((msg.type == CTLPI_AUDIO_SRC_BACKGLASS_MONO) ? 1 : 2)))
          {
-            double delay = 1000.0 * msg.bufferSize / (msg.sampleRate * ((msg.type == CTLPI_AUDIO_SRC_BACKGLASS_MONO) ? 1 : 2));
-            PLOGI << "Dropping 1 sound frame (" << delay << "ms) as lag is exceeding 1 frame (" << msg.bufferSize << "bytes of " << ((msg.type == CTLPI_AUDIO_SRC_BACKGLASS_MONO)
-               ? "mono" : "stereo") << " data at " << msg.sampleRate << "Hz)";
+            const double delay = 1000.0 * pending / (msg.sampleRate * nBytePerSample * ((msg.type == CTLPI_AUDIO_SRC_BACKGLASS_MONO) ? 1 : 2));
+            PLOGI << "Dropping enqueued sound stream as lag (" << delay << "ms) is exceeding limit";
+            me->m_audioPlayer->ClearStream(stream);
          }
-         else
-         {
-            me->m_audioPlayer->EnqueueStream(stream, msg.buffer, msg.bufferSize);
-         }
+         me->m_audioPlayer->SetStreamVolume(stream, msg.volume);
+         me->m_audioPlayer->EnqueueStream(stream, msg.buffer, msg.bufferSize);
       }
       else
       {

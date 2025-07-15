@@ -10,6 +10,8 @@
 #include "PUPScreen.h"
 #include "PUPPinDisplay.h"
 
+#include "LibAv.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 // PinUp Player plugin
 //
@@ -152,6 +154,64 @@ void DeleteTexture(VPXTexture texture)
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// Audio streaming
+//
+
+static unsigned int onAudioUpdateId;
+static vector<uint32_t> freeAudioStreamId;
+uint32_t nextAudioStreamId = 1;
+
+void UpdateAudioStream(ExtAudioUpdateMsg* msg)
+{
+   if (msg->msg.volume == 0.0f)
+   {
+      StopAudioStream(msg->msg.id);
+      msg->msg.id.id = 0;
+      return;
+   }
+   if (msg->msg.id.id == 0)
+   {
+      msg->msg.id.endpointId = endpointId;
+      if (freeAudioStreamId.empty())
+      {
+         msg->msg.id.resId = nextAudioStreamId;
+         nextAudioStreamId++;
+      }
+      else
+      {
+         msg->msg.id.resId = freeAudioStreamId.back();
+         freeAudioStreamId.pop_back();
+      }
+   }
+   msgApi->RunOnMainThread(0, [](void* userData) {
+      ExtAudioUpdateMsg* msg = static_cast<ExtAudioUpdateMsg*>(userData);
+      msgApi->BroadcastMsg(endpointId, onAudioUpdateId, &msg->msg);
+      if (msg->freeSampleBuffer)
+         LibAV::GetInstance()._av_free(msg->msg.buffer);
+      delete msg;
+   }, msg);
+}
+
+void StopAudioStream(const CtlResId& id)
+{
+   if (id.id != 0)
+   {
+      // Recycle stream id
+      freeAudioStreamId.push_back(id.resId);
+      // Send an end of stream message
+      AudioUpdateMsg* pendingAudioUpdate = new AudioUpdateMsg();
+      memset(pendingAudioUpdate, 0, sizeof(AudioUpdateMsg));
+      pendingAudioUpdate->id.id = id.id;
+      msgApi->RunOnMainThread(0,[](void* userData) {
+         AudioUpdateMsg* msg = static_cast<AudioUpdateMsg*>(userData);
+         msgApi->BroadcastMsg(endpointId, onAudioUpdateId, msg);
+         delete msg;
+      }, pendingAudioUpdate);
+   }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 // Game lifecycle
 //
 
@@ -193,6 +253,8 @@ MSGPI_EXPORT void MSGPIAPI PUPPluginLoad(const uint32_t sessionId, MsgPluginAPI*
    msgApi->SubscribeMsg(endpointId, onPinMAMEGameStartId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_START), OnPinMAMEGameStart, nullptr);
    msgApi->SubscribeMsg(endpointId, onGameEndId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END), OnGameEnd, nullptr);
 
+   onAudioUpdateId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_UPDATE_MSG);
+
    const unsigned int getScriptApiId = msgApi->GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getScriptApiId, &scriptApi);
    msgApi->ReleaseMsgID(getScriptApiId);
@@ -223,6 +285,8 @@ MSGPI_EXPORT void MSGPIAPI PUPPluginUnload()
 {
    pupManager = nullptr;
    
+   msgApi->ReleaseMsgID(onAudioUpdateId);
+
    msgApi->UnsubscribeMsg(onPinMAMEGameStartId, OnPinMAMEGameStart);
    msgApi->UnsubscribeMsg(onGameEndId, OnGameEnd);
    msgApi->ReleaseMsgID(onPinMAMEGameStartId);

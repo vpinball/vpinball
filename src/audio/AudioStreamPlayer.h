@@ -11,11 +11,11 @@ namespace VPX
 class AudioStreamPlayer
 {
 public:
-   static AudioStreamPlayer* Create(int sdlDevice, int frequency, int channels)
+   static AudioStreamPlayer* Create(int sdlDevice, int frequency, int channels, bool isFloat)
    {
       SDL_AudioSpec audioSpec;
       audioSpec.freq = frequency;
-      audioSpec.format = SDL_AUDIO_S16LE;
+      audioSpec.format = isFloat ? SDL_AUDIO_F32 : SDL_AUDIO_S16;
       audioSpec.channels = channels;
 
       SDL_AudioStream* stream = SDL_OpenAudioDeviceStream(sdlDevice, &audioSpec, nullptr, nullptr);
@@ -45,6 +45,11 @@ public:
    void Enqueue(void* buffer, int length)
    {
       SDL_PutAudioStreamData(m_stream, buffer, length);
+   }
+
+   void Clear()
+   {
+      SDL_ClearAudioStream(m_stream);
    }
 
    int GetQueued() const
