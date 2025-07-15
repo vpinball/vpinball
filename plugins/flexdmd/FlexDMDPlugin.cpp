@@ -689,9 +689,16 @@ MSGPI_EXPORT void MSGPIAPI FlexDMDPluginLoad(const uint32_t sessionId, MsgPlugin
       flexDmds.push_back(pFlex);
       return static_cast<void*>(pFlex);
    };
+   UltraDMD_SCD->CreateObject = []()
+   {
+      FlexDMD* pFlex = (FlexDMD*)FlexDMD_SCD->CreateObject();
+      UltraDMD* pUDMD = new UltraDMD(pFlex);
+      pFlex->Release();
+      return static_cast<void*>(pUDMD);
+   };
 
    scriptApi->SetCOMObjectOverride("FlexDMD.FlexDMD", FlexDMD_SCD);
-   // FIXME scriptApi->SetCOMObjectOverride("UltraDMD.DMDObject", UltraDMD_SCD);
+   scriptApi->SetCOMObjectOverride("UltraDMD.DMDObject", UltraDMD_SCD);
 }
 
 MSGPI_EXPORT void MSGPIAPI FlexDMDPluginUnload()
@@ -706,7 +713,7 @@ MSGPI_EXPORT void MSGPIAPI FlexDMDPluginUnload()
    msgApi->ReleaseMsgID(getDmdSrcId);
 
    // TODO we should unregister the script API contribution
-   // scriptApi->SetCOMObjectOverride("UltraDMD.DMDObject", nullptr);
+   scriptApi->SetCOMObjectOverride("UltraDMD.DMDObject", nullptr);
    scriptApi->SetCOMObjectOverride("FlexDMD.FlexDMD", nullptr);
    scriptApi = nullptr;
    msgApi = nullptr;
