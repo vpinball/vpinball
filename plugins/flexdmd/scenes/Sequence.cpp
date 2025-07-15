@@ -6,7 +6,7 @@ namespace Flex {
 
 Sequence::Sequence(FlexDMD* pFlexDMD, const string& name)
    : Group(pFlexDMD, name)
-   , m_finished(false)
+   , m_finished(true)
    , m_pActiveScene(nullptr)
 {
 }

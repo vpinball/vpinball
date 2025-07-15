@@ -155,20 +155,35 @@
         if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\" md "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
         xcopy /y /d /q "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
         xcopy /y /d /q "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
-		xcopy /y /d /q "$(SolutionDir)../../third-party/runtime-libs/windows-$(Platform)/*.*" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
 		xcopy /y /d /q "$(SolutionDir)../../plugins/flexdmd/assets" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\assets\"
 
         if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\" md "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
         xcopy /y /d /q "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
         xcopy /y /d /q "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
-		xcopy /y /d /q "$(SolutionDir)../../third-party/runtime-libs/windows-$(Platform)/*.*" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
 		xcopy /y /d /q "$(SolutionDir)../../plugins/flexdmd/assets" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\assets\"
 		
         if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\" md "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\"
         xcopy /y /d /q "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\"
         xcopy /y /d /q "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\"
-		xcopy /y /d /q "$(SolutionDir)../../third-party/runtime-libs/windows-$(Platform)/*.*" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\"
 		xcopy /y /d /q "$(SolutionDir)../../plugins/flexdmd/assets" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\assets\"
+
+		if $(Platform) EQU x64 (
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL364.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL364.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL364.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL3_image64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL3_image64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL3_image64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\"
+		) ELSE (
+			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3_image.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3_image.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3_image.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\"
+		)
       </Command>
     </PostBuildEvent>
     <ClCompile>
