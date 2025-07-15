@@ -281,7 +281,7 @@ Window::Window(const string &title, const Settings& settings, const Settings::Se
          m_refreshrate = mode ? mode->refresh_rate : 0;
       }
       if (mode) {
-         PLOGI << "SDL display mode for window '" << m_settingsPrefix << "': " << mode->w << 'x' << mode->h << ' ' << mode->refresh_rate << "Hz " << SDL_GetPixelFormatName(mode->format);
+         PLOGI << "SDL display mode for " << m_width << 'x' << m_height << " window '" << m_settingsPrefix << "' : " << mode->w << 'x' << mode->h << ' ' << mode->refresh_rate << " Hz " << SDL_GetPixelFormatName(mode->format);
       }
 
       SDL_GetWindowSizeInPixels(m_nwnd, &m_pixelWidth, &m_pixelHeight);

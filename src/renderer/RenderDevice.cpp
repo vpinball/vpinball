@@ -710,8 +710,7 @@ RenderDevice::RenderDevice(
    // Limit to VSYNC on/off
    syncMode = syncMode != VideoSyncMode::VSM_NONE ? VideoSyncMode::VSM_VSYNC : VideoSyncMode::VSM_NONE;
    
-   static const string bgfxRendererNames[bgfx::RendererType::Count + 1]
-      = { "Noop"s, "Agc"s, "Direct3D11"s, "Direct3D12"s, "Gnm"s, "Metal"s, "Nvn"s, "OpenGLES"s, "OpenGL"s, "Vulkan"s, "Default"s };
+   static const string bgfxRendererNames[bgfx::RendererType::Count + 1] = { "Noop"s, "Agc"s, "Direct3D11"s, "Direct3D12"s, "Gnm"s, "Metal"s, "Nvn"s, "OpenGLES"s, "OpenGL"s, "Vulkan"s, "Default"s };
 #ifdef __ANDROID__
    string gfxBackend = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "GfxBackend"s, bgfxRendererNames[bgfx::RendererType::OpenGLES]);
 #elif defined(__APPLE__)
@@ -729,12 +728,6 @@ RenderDevice::RenderDevice(
          init.type = supportedRenderers[i];
    }
    PLOGI << "Using graphics backend: " << bgfxRendererNames[init.type] << " (available: " << supportedRendererLog << ')';
-   //init.type = bgfx::RendererType::Metal;
-   //init.type = bgfx::RendererType::OpenGL;
-   //init.type = bgfx::RendererType::OpenGLES;
-   //init.type = bgfx::RendererType::Vulkan;
-   //init.type = bgfx::RendererType::Direct3D11; // Present with VSYNC & outputs on multiple displays will sequentially sync on each display causing massive framerate drop
-   //init.type = bgfx::RendererType::Direct3D12; // Flasher & Ball rendering fails on a call to CreateGraphicsPipelineState, rendering artefacts
 
    #ifndef __LIBVPINBALL__
    m_useLowPrecision = init.type == bgfx::RendererType::OpenGLES;
