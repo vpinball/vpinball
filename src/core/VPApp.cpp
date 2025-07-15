@@ -568,7 +568,7 @@ string VPApp::GetPathFromArg(const string& arg, bool setCurrentPath)
    #ifndef __STANDALONE__
       string path = arg;
       if ((arg[0] == '-') || (arg[0] == '/')) // Remove leading - or /
-         path = path.substr(1, path.size() - 1);
+         path = arg.substr(1, arg.size() - 1);
    #else
       string path = trim_string(arg);
    #endif
@@ -604,7 +604,7 @@ string VPApp::GetPathFromArg(const string& arg, bool setCurrentPath)
    return path;
 }
 
-string VPApp::GetCommandLineHelp() const
+string VPApp::GetCommandLineHelp()
 {
    return
    #ifndef __STANDALONE__
@@ -640,7 +640,7 @@ string VPApp::GetCommandLineHelp() const
       "\n\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)";
 }
 
-void VPApp::OnCommandLineError(const string& title, const string& message) const
+void VPApp::OnCommandLineError(const string& title, const string& message)
 {
    #ifndef __STANDALONE__
       ::MessageBox(NULL, message.c_str(), title.c_str(), MB_ICONERROR);
@@ -713,7 +713,7 @@ void VPApp::ProcessCommandLine(int nArgs, char* szArglist[])
          if ((szArglist[i][0] != '-') && (szArglist[i][0] != '/'))
             break;
          // Really an invalid parameter, show help and exit
-         OnCommandLineError("Visual Pinball Usage", "Invalid Parameter "s + szArglist[i] + "\n\nValid Parameters are:\n\n" + GetCommandLineHelp());
+         OnCommandLineError("Visual Pinball Usage"s, "Invalid Parameter "s + szArglist[i] + "\n\nValid Parameters are:\n\n" + GetCommandLineHelp());
          exit(1);
          break;
 
@@ -768,12 +768,12 @@ void VPApp::ProcessCommandLine(int nArgs, char* szArglist[])
                lpszStr = szArglist[i + 1] + 1;
             else
                lpszStr = szArglist[i + 1];
-            m_vpinball.m_fgles = clamp((float)atof(lpszStr), 0.115f, 0.925f);
+            m_vpinball.m_fgles = clamp(sz2f(lpszStr), 0.115f, 0.925f);
             m_vpinball.m_bgles = true;
          }
          else
          {
-            OnCommandLineError("Command Line Error", "Missing global emission scale adjustment");
+            OnCommandLineError("Command Line Error"s, "Missing global emission scale adjustment"s);
          }
          break;
 
@@ -794,7 +794,7 @@ void VPApp::ProcessCommandLine(int nArgs, char* szArglist[])
          }
          else
          {
-            OnCommandLineError("Command Line Error", "Missing custom option value after /c...");
+            OnCommandLineError("Command Line Error"s, "Missing custom option value after /c..."s);
          }
          break;
       }
@@ -818,7 +818,7 @@ void VPApp::ProcessCommandLine(int nArgs, char* szArglist[])
       case OPTION_EXTRACTVBS:
          if (i + 1 >= nArgs)
          {
-            OnCommandLineError("Command Line Error", "Option '"s + szArglist[i] + "' must be followed by a valid table file path");
+            OnCommandLineError("Command Line Error"s, "Option '"s + szArglist[i] + "' must be followed by a valid table file path");
             exit(1);
          }
          m_run = !(opt == OPTION_AUDIT || opt == OPTION_POV || opt == OPTION_EXTRACTVBS); // Don't run the UI
@@ -833,7 +833,7 @@ void VPApp::ProcessCommandLine(int nArgs, char* szArglist[])
       case OPTION_INI:
          if (i + 1 >= nArgs)
          {
-            OnCommandLineError("Command Line Error", "Option '"s + szArglist[i] + "' must be followed by a valid setting file path");
+            OnCommandLineError("Command Line Error"s, "Option '"s + szArglist[i] + "' must be followed by a valid setting file path");
             exit(1);
          }
          m_iniFileName = GetPathFromArg(szArglist[i + 1], false);
@@ -843,7 +843,7 @@ void VPApp::ProcessCommandLine(int nArgs, char* szArglist[])
       case OPTION_TABLE_INI:
          if (i + 1 >= nArgs)
          {
-            OnCommandLineError("Command Line Error", "Option '"s + szArglist[i] + "' must be followed by a valid setting file path");
+            OnCommandLineError("Command Line Error"s, "Option '"s + szArglist[i] + "' must be followed by a valid setting file path");
             exit(1);
          }
          m_tableIniFileName = GetPathFromArg(szArglist[i + 1], false);
@@ -853,7 +853,7 @@ void VPApp::ProcessCommandLine(int nArgs, char* szArglist[])
       case OPTION_TOURNAMENT:
          if (i + 2 >= nArgs)
          {
-            OnCommandLineError("Command Line Error", "Option '"s + szArglist[i] + "' must be followed by a valid table file path and a valid tournament file path");
+            OnCommandLineError("Command Line Error"s, "Option '"s + szArglist[i] + "' must be followed by a valid table file path and a valid tournament file path");
             exit(1);
          }
          m_run = false;
@@ -864,14 +864,14 @@ void VPApp::ProcessCommandLine(int nArgs, char* szArglist[])
          i++;
          if (!FileExists(m_tournamentFileName))
          {
-            OnCommandLineError("Command Line Error", "Tournament file '" + m_tournamentFileName + "' was not found");
+            OnCommandLineError("Command Line Error"s, "Tournament file '" + m_tournamentFileName + "' was not found");
             exit(1);
          }
          break;
 
       case OPTION_LISTSND:
          PLOGI << "Available sound devices:";
-         for (VPX::AudioPlayer::AudioDevice audioDevice : VPX::AudioPlayer::EnumerateAudioDevices())
+         for (const VPX::AudioPlayer::AudioDevice& audioDevice : VPX::AudioPlayer::EnumerateAudioDevices())
          {
             PLOGI << ". " << audioDevice.name << ", channels=" << audioDevice.channels;
          }
@@ -943,7 +943,7 @@ void VPApp::ProcessCommandLine(int nArgs, char* szArglist[])
       case OPTION_PREFPATH:
          if (i + 1 >= nArgs)
          {
-            OnCommandLineError("Command Line Error", "Option '"s + szArglist[i] + "' must be followed by a valid folder path");
+            OnCommandLineError("Command Line Error"s, "Option '"s + szArglist[i] + "' must be followed by a valid folder path");
             exit(1);
          }
          m_prefPath = GetPathFromArg(szArglist[i + 1], false);
@@ -974,7 +974,7 @@ void VPApp::ProcessCommandLine(int nArgs, char* szArglist[])
 
       if (!m_tableFileName.empty() && !FileExists(m_tableFileName))
       {
-         OnCommandLineError("Command Line Error", "Table file '" + m_tableFileName + "' was not found");
+         OnCommandLineError("Command Line Error"s, "Table file '" + m_tableFileName + "' was not found");
          exit(1);
       }
    }
@@ -986,7 +986,7 @@ BOOL VPApp::InitInstance()
 
    #ifdef __STANDALONE__
       #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV)))
-         copy_folder("assets", m_vpinball.m_myPrefPath);
+         copy_folder("assets"s, m_vpinball.m_myPrefPath);
       #endif
    #endif
 

@@ -11,7 +11,7 @@ public:
 
    void ProcessCommandLine();
    void ProcessCommandLine(int argc, char* argv[]);
-   
+
    int Run() override;
 
    bool StepMsgLoop();
@@ -22,8 +22,8 @@ protected:
 
 private:
    string GetPathFromArg(const string& arg, bool setCurrentPath);
-   string GetCommandLineHelp() const;
-   void OnCommandLineError(const string& title, const string& message) const;
+   static string GetCommandLineHelp();
+   static void OnCommandLineError(const string& title, const string& message);
 
    bool m_run = true; // Should we run the interactive mode (UI/Player)
    bool m_play = false; // Should we start the player directly (with the provided file or after asking the user)
@@ -42,5 +42,5 @@ private:
    string m_tournamentFileName;
 
    VPinball m_vpinball;
-   LONG m_idleIndex = 0;
+   int m_idleIndex = 0;
 };
