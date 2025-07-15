@@ -41,13 +41,9 @@ PUPManager::~PUPManager()
    m_msgApi->ReleaseMsgID(m_onAuxRendererChgId);
 }
 
-void PUPManager::LoadConfig(const string& szRomName)
+void PUPManager::SetGameDir(const string& szRomName)
 {
-   if (m_init)
-   {
-      LOGE("PUP already loaded");
-      return;
-   }
+   std::lock_guard<std::mutex> lock(m_queueMutex);
 
    if (m_szRootPath.empty())
    {
@@ -60,6 +56,13 @@ void PUPManager::LoadConfig(const string& szRomName)
       return;
 
    LOGI("PUP path: %s", m_szPath.c_str());
+}
+
+void PUPManager::LoadConfig(const string& szRomName)
+{
+   Unload();
+
+   SetGameDir(szRomName);
 
    // Load playlists
 
@@ -104,6 +107,8 @@ void PUPManager::LoadConfig(const string& szRomName)
          case 4: break; // Music
          case 5: AddScreen(PUPScreen::CreateFromCSV(this, "5,\"FullDMD\",\"\",,0,ForcePopBack,0,"s, m_playlists)); break;
          }
+
+   std::unique_lock<std::mutex> lock(m_queueMutex);
    for (auto& [key, pScreen] : m_screenMap) {
       PUPCustomPos* pCustomPos = pScreen->GetCustomPos();
       if (pCustomPos) {
@@ -147,15 +152,15 @@ void PUPManager::LoadConfig(const string& szRomName)
       vsnprintf(buffer, sizeof(buffer), format, args);
       LOGD(buffer);
       }, this);
-   m_init = true;
+
+   lock.unlock();
 
    QueueTriggerData({ 'D', 0, 1 });
 }
 
 void PUPManager::Unload()
 {
-   if (!m_init)
-      return;
+   Stop();
 
    for (auto& [key, pScreen] : m_screenMap)
       delete pScreen;
@@ -174,7 +179,6 @@ void PUPManager::Unload()
    m_dmd = nullptr;
 
    m_szPath.clear();
-   m_init = false;
 }
 
 void PUPManager::LoadPlaylists()
@@ -207,6 +211,8 @@ void PUPManager::LoadPlaylists()
 
 bool PUPManager::AddScreen(PUPScreen* pScreen)
 {
+   std::unique_lock<std::mutex> lock(m_queueMutex);
+
    if (HasScreen(pScreen->GetScreenNum())) {
       LOGE("Duplicate screen: screen={%s}", pScreen->ToString(false).c_str());
       delete pScreen;
@@ -214,6 +220,15 @@ bool PUPManager::AddScreen(PUPScreen* pScreen)
    }
 
    m_screenMap[pScreen->GetScreenNum()] = pScreen;
+   if (m_isRunning)
+   {
+      pScreen->Start();
+   }
+   else
+   {
+      lock.unlock();
+      Start();
+   }
 
    LOGI("Screen added: screen={%s}", pScreen->ToString().c_str());
 
@@ -237,10 +252,6 @@ bool PUPManager::HasScreen(int screenNum)
 
 PUPScreen* PUPManager::GetScreen(int screenNum) const
 {
-   if (!m_init) {
-      LOGE("Getting screen before initialization");
-   }
-
    ankerl::unordered_dense::map<int, PUPScreen*>::const_iterator it = m_screenMap.find(screenNum);
    return it != m_screenMap.end() ? it->second : nullptr;
 }
@@ -387,7 +398,7 @@ void PUPManager::ProcessQueue()
          }
          delete[] frame;
 
-         dmdTrigger = m_dmd->Match(m_rgbFrame, 128, 32, false);
+         dmdTrigger = m_dmd ? m_dmd->Match(m_rgbFrame, 128, 32, false) : -1;
          if (dmdTrigger == 0) // 0 is unmatched for libpupdmd, but D0 is init trigger for PUP
             dmdTrigger = -1;
          else
@@ -477,7 +488,7 @@ void PUPManager::ProcessQueue()
 
 void PUPManager::Start()
 {
-   if (!m_init || m_isRunning)
+   if (m_isRunning)
       return;
 
    LOGI("PUP start");
@@ -556,8 +567,7 @@ void PUPManager::Stop()
 int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
 {
    PUPManager* me = static_cast<PUPManager*>(context);
-   if (!me->m_init)
-      return false;
+
    PUPScreen* screen = nullptr;
    switch (renderCtx->window)
    {

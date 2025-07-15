@@ -164,91 +164,111 @@
         copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
         copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
 
-		xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\libiconv-2.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
-		xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\libiconv-2.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
-		xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\libiconv-2.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
-
-		xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\zlib1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
-		xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\zlib1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
-		xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\zlib1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
-
-		xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
-		xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
-		xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
-
 		if $(Platform) EQU x64 (
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL364.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL364.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL364.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL364.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL364.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL364.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
 
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3_image64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3_image64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3_image64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL3_image64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL3_image64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL3_image64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
 
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3_ttf64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3_ttf64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3_ttf64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL3_ttf64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL3_ttf64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL3_ttf64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
 
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\pupdmd64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\pupdmd64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\pupdmd64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\pupdmd64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\pupdmd64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\pupdmd64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
 
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVCODEC64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\AVCODEC64-61.DLL"
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVCODEC64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\AVCODEC64-61.DLL"
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVCODEC64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\AVCODEC64-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\AVCODEC64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\AVCODEC64-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\AVCODEC64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\AVCODEC64-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\AVCODEC64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\AVCODEC64-61.DLL"
 
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVFORMAT64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\AVFORMAT64-61.DLL"
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVFORMAT64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\AVFORMAT64-61.DLL"
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVFORMAT64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\AVFORMAT64-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\AVFORMAT64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\AVFORMAT64-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\AVFORMAT64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\AVFORMAT64-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\AVFORMAT64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\AVFORMAT64-61.DLL"
 
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVUTIL64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\AVUTIL64-59.DLL"
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVUTIL64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\AVUTIL64-59.DLL"
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVUTIL64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\AVUTIL64-59.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\AVUTIL64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\AVUTIL64-59.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\AVUTIL64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\AVUTIL64-59.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\AVUTIL64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\AVUTIL64-59.DLL"
 
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SWRESAMPLE64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\SWRESAMPLE64-5.DLL"
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SWRESAMPLE64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\SWRESAMPLE64-5.DLL"
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SWRESAMPLE64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\SWRESAMPLE64-5.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SWRESAMPLE64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\SWRESAMPLE64-5.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SWRESAMPLE64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\SWRESAMPLE64-5.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SWRESAMPLE64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\SWRESAMPLE64-5.DLL"
 
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SWSCALE64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\SWSCALE64-8.DLL"
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SWSCALE64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\SWSCALE64-8.DLL"
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SWSCALE64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\SWSCALE64-8.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SWSCALE64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\SWSCALE64-8.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SWSCALE64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\SWSCALE64-8.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SWSCALE64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\SWSCALE64-8.DLL"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libiconv-2.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libiconv-2.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libiconv-2.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\zlib1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\zlib1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\zlib1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libbz2-1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libbz2-1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libbz2-1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\liblzma-5.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\liblzma-5.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\liblzma-5.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
 
 		) ELSE (
-			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
-			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
-			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
+			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
+			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
 
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3_image.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3_image.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3_image.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3_image.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3_image.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3_image.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
 
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3_ttf.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3_ttf.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SDL3_ttf.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3_ttf.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3_ttf.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3_ttf.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
 
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\pupdmd.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\pupdmd.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\pupdmd.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\pupdmd.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\pupdmd.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\pupdmd.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
 
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVCODEC.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\AVCODEC-61.DLL"
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVCODEC.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\AVCODEC-61.DLL"
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVCODEC.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\AVCODEC-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\AVCODEC.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\AVCODEC-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\AVCODEC.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\AVCODEC-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\AVCODEC.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\AVCODEC-61.DLL"
 
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVFORMAT.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\AVFORMAT-61.DLL"
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVFORMAT.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\AVFORMAT-61.DLL"
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVFORMAT.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\AVFORMAT-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\AVFORMAT.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\AVFORMAT-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\AVFORMAT.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\AVFORMAT-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\AVFORMAT.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\AVFORMAT-61.DLL"
 
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVUTIL.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\AVUTIL-59.DLL"
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVUTIL.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\AVUTIL-59.DLL"
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\AVUTIL.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\AVUTIL-59.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\AVUTIL.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\AVUTIL-59.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\AVUTIL.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\AVUTIL-59.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\AVUTIL.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\AVUTIL-59.DLL"
 
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SWRESAMPLE.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\SWRESAMPLE-5.DLL"
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SWRESAMPLE.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\SWRESAMPLE-5.DLL"
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SWRESAMPLE.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\SWRESAMPLE-5.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SWRESAMPLE.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\SWRESAMPLE-5.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SWRESAMPLE.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\SWRESAMPLE-5.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SWRESAMPLE.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\SWRESAMPLE-5.DLL"
 
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SWSCALE.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\SWSCALE-8.DLL"
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SWSCALE.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\SWSCALE-8.DLL"
-			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\SWSCALE.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\SWSCALE-8.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SWSCALE.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\SWSCALE-8.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SWSCALE.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\SWSCALE-8.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SWSCALE.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\SWSCALE-8.DLL"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libiconv-2.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libiconv-2.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libiconv-2.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\zlib1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\zlib1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\zlib1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pup\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pup\"
 		)
       </Command>
     </PostBuildEvent>
