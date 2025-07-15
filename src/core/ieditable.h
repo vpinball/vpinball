@@ -43,7 +43,7 @@ public:
       if (fNew && !wzName) /* setup a default unique name */ \
       { \
          WCHAR wzUniqueName[std::size(m_wzName)]; \
-         GetPTable()->GetUniqueName(ItemType, wzUniqueName, std::size(wzUniqueName)); \
+         GetPTable()->GetUniqueName(ItemType, wzUniqueName, std::size(m_wzName)); \
          wcscpy_s(m_wzName, wzUniqueName); \
       } \
       if (GetScriptable() != nullptr) \
