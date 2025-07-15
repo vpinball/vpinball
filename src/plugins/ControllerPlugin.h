@@ -312,6 +312,7 @@ typedef struct AudioUpdateMsg
    unsigned int type;            // The type of audio source (see CTLPI_AUDIO_SRC_xxx)
    unsigned int format;          // The sample data format (see CTLPI_AUDIO_FORMAT_xxx)
    double sampleRate;            // The sample rate
+   float volume;                 // Dynamic playback volume (0..1)
    unsigned int bufferSize;      // The size of the audio buffer
    uint8_t* buffer;              // The sample data, or null for immediate stream destruction
 } AudioUpdateMsg;

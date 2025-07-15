@@ -43,6 +43,7 @@ public:
 
    bool isLoaded = false;
 
+   typedef int(CDECL* fn_av_get_bytes_per_sample)(enum AVSampleFormat sample_fmt);
    typedef int(CDECL* fn_av_find_best_stream)(AVFormatContext* ic, enum AVMediaType type, int wanted_stream_nb, int related_stream, const struct AVCodec** decoder_ret, int flags);
    typedef int(CDECL* fn_av_read_frame)(AVFormatContext* s, AVPacket* pkt);
    typedef int(CDECL* fn_av_seek_frame)(AVFormatContext* s, int stream_index, int64_t timestamp, int flags);
@@ -82,6 +83,7 @@ public:
    typedef int(CDECL* fn_sws_scale)(struct SwsContext* c, const uint8_t* const srcSlice[], const int srcStride[], int srcSliceY, int srcSliceH, uint8_t* const dst[], const int dstStride[]);
    typedef void(CDECL* fn_sws_freeContext)(struct SwsContext* swsContext);
 
+   fn_av_get_bytes_per_sample _av_get_bytes_per_sample = nullptr;
    fn_av_find_best_stream _av_find_best_stream = nullptr;
    fn_av_read_frame _av_read_frame = nullptr;
    fn_av_seek_frame _av_seek_frame = nullptr;
@@ -186,6 +188,7 @@ private:
       hinstLib = LoadLibraryEx((basepath + (x64 ? _T("avutil64-59.dll") : _T("avutil-59.dll"))).c_str(), NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
       if (hinstLib)
       {
+         _av_get_bytes_per_sample = reinterpret_cast<fn_av_get_bytes_per_sample>(GetProcAddress(hinstLib, "av_get_bytes_per_sample"));
          _av_fast_malloc = reinterpret_cast<fn_av_fast_malloc>(GetProcAddress(hinstLib, "av_fast_malloc"));
          _av_frame_alloc = reinterpret_cast<fn_av_frame_alloc>(GetProcAddress(hinstLib, "av_frame_alloc"));
          _av_frame_copy_props = reinterpret_cast<fn_av_frame_copy_props>(GetProcAddress(hinstLib, "av_frame_copy_props"));
@@ -195,7 +198,7 @@ private:
          _av_image_get_buffer_size = reinterpret_cast<fn_av_image_get_buffer_size>(GetProcAddress(hinstLib, "av_image_get_buffer_size"));
          _av_malloc = reinterpret_cast<fn_av_malloc>(GetProcAddress(hinstLib, "av_malloc"));
          _av_samples_get_buffer_size = reinterpret_cast<fn_av_samples_get_buffer_size>(GetProcAddress(hinstLib, "av_samples_get_buffer_size"));
-         isLoaded &= _av_fast_malloc && _av_frame_alloc && _av_frame_copy_props && _av_frame_free && _av_free && _av_image_fill_arrays && _av_image_get_buffer_size && _av_malloc && _av_samples_get_buffer_size;
+         isLoaded &= _av_get_bytes_per_sample && _av_fast_malloc && _av_frame_alloc && _av_frame_copy_props && _av_frame_free && _av_free && _av_image_fill_arrays && _av_image_get_buffer_size && _av_malloc && _av_samples_get_buffer_size;
       }
 
       hinstLib = LoadLibraryEx((basepath + (x64 ? _T("swresample64-5.dll") : _T("swresample-5.dll"))).c_str(), NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
@@ -231,6 +234,7 @@ private:
       _avcodec_receive_frame = &avcodec_receive_frame;
       _avcodec_send_packet = &avcodec_send_packet;
 
+      _av_get_bytes_per_sample = &av_get_bytes_per_sample;
       _av_find_best_stream = &av_find_best_stream;
       _av_read_frame = &av_read_frame;
       _av_seek_frame = &av_seek_frame;

@@ -249,6 +249,7 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, string filename)
          m_sound = nullptr;
          return;
       }
+      ma_sound_start(m_sound.get());
    });
 }
 
@@ -311,6 +312,7 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound)
          m_sound = nullptr;
          return;
       }
+      ma_sound_start(m_sound.get());
    });
 }
 
@@ -394,7 +396,7 @@ void SoundPlayer::Play(float volume, const float randompitch, const int pitch, f
       
       m_loopCount = loopcount <  0 ? -1 // Negative value is loop indefenitely
                   : loopcount <= 1 ?  0 // 0 is no loop, and 1 is play once (so no loop either)
-                  : loopcount - 1;      // >= 2 is the number of times to play the sound, so loop once less as we are already playing once
+                  : (loopcount - 1);    // >= 2 is the number of times to play the sound, so loop once less as we are already playing once
 
       ma_format format;
       ma_uint32 channels;

@@ -106,7 +106,7 @@ int PINMAMECALLBACK VPinMAMEController::OnAudioAvailable(PinmameAudioInfo* p_aud
    VPinMAMEController* pController = (VPinMAMEController*)pUserData;
 
    pController->m_pAudioPlayer = new VPX::AudioPlayer(g_pvp->m_settings);
-   pController->m_pAudioStream = pController->m_pAudioPlayer->OpenAudioStream(p_audioInfo->sampleRate, p_audioInfo->channels);
+   pController->m_pAudioStream = pController->m_pAudioPlayer->OpenAudioStream(p_audioInfo->sampleRate, p_audioInfo->channels, false);
    pController->m_audioChannels = p_audioInfo->channels;
 
    return p_audioInfo->samplesPerFrame;

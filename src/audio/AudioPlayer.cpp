@@ -364,9 +364,9 @@ void AudioPlayer::SetMainVolume(float backglassVolume, float playfieldVolume)
       player->SetMainVolume(backglassVolume);
 }
 
-AudioPlayer::AudioStreamID AudioPlayer::OpenAudioStream(int frequency, int channels)
+AudioPlayer::AudioStreamID AudioPlayer::OpenAudioStream(int frequency, int channels, bool isFloat)
 {
-   AudioStreamPlayer* audioStream = AudioStreamPlayer::Create(m_backglassAudioDevice, frequency, channels);
+   AudioStreamPlayer* audioStream = AudioStreamPlayer::Create(m_backglassAudioDevice, frequency, channels, isFloat);
    if (audioStream)
    {
       audioStream->SetMainVolume(m_backglassVolume);
@@ -378,6 +378,11 @@ AudioPlayer::AudioStreamID AudioPlayer::OpenAudioStream(int frequency, int chann
 void AudioPlayer::EnqueueStream(AudioStreamID stream, void* buffer, int length)
 {
    static_cast<AudioStreamPlayer*>(stream)->Enqueue(buffer, length);
+}
+
+void AudioPlayer::ClearStream(AudioStreamID stream)
+{
+   static_cast<AudioStreamPlayer*>(stream)->Clear();
 }
 
 int AudioPlayer::GetStreamQueueSize(AudioStreamID stream) const

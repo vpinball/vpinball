@@ -254,6 +254,7 @@ int PINMAMECALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo, void* const 
       && ((p_audioInfo->channels == 1) || (p_audioInfo->channels == 2)))
    {
       audioSrc = new AudioUpdateMsg();
+      audioSrc->volume = 1.0f;
       audioSrc->id = { endpointId, 0 };
       audioSrc->type = (p_audioInfo->channels == 1) ? CTLPI_AUDIO_SRC_BACKGLASS_MONO : CTLPI_AUDIO_SRC_BACKGLASS_STEREO;
       audioSrc->format = (p_audioInfo->format == PINMAME_AUDIO_FORMAT_INT16) ? CTLPI_AUDIO_FORMAT_SAMPLE_INT16 : CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT;

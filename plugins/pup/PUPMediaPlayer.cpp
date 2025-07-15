@@ -5,7 +5,6 @@
  * https://github.com/FFmpeg/FFmpeg/blob/e38092ef9395d7049f871ef4d5411eb410e283e0/fftools/ffplay.c
  */
 
-//#include "parts/Sound.h"
 #include "PUPMediaPlayer.h"
 
 namespace PUP {
@@ -32,8 +31,6 @@ PUPMediaPlayer::PUPMediaPlayer(const string& name)
       string name = m_name;
       SetThreadName(name.append(".CommandQueue"));
    }); 
-   //m_pSound = new Sound(nullptr);
-   //m_pSound->StreamInit(44100, 2, 0.0f);
 }
 
 PUPMediaPlayer::~PUPMediaPlayer()
@@ -41,7 +38,6 @@ PUPMediaPlayer::~PUPMediaPlayer()
    Stop();
    m_commandQueue.wait_until_empty();
    m_commandQueue.wait_until_nothing_in_flight();
-   //delete m_pSound;
 }
 
 void PUPMediaPlayer::SetBounds(const SDL_Rect& rect)
@@ -147,7 +143,6 @@ void PUPMediaPlayer::Play(const string& filename)
       }
 
       LOGD("Playing: filename=%s", m_filename.c_str());
-      //m_pSound->StreamVolume(0);
 
       m_running = true;
       m_thread = std::thread(&PUPMediaPlayer::Run, this);
@@ -234,6 +229,9 @@ void PUPMediaPlayer::StopBlocking()
    if (m_pAudioConversionContext)
       m_libAv._swr_free(&m_pAudioConversionContext);
    m_pAudioConversionContext = nullptr;
+
+   StopAudioStream(m_audioResId);
+   m_audioResId.id = 0;
 }
 
 void PUPMediaPlayer::SetLoop(bool loop)
@@ -362,7 +360,6 @@ void PUPMediaPlayer::Run()
          if (m_length != 0 && (static_cast<double>(SDL_GetTicks() - m_startTimestamp) / 1000.0) >= m_length)
             break;
          loop = m_loop;
-         // m_pSound->StreamVolume(m_volume / 100.0f);
       }
 
       // Read next frame from source
@@ -425,14 +422,17 @@ void PUPMediaPlayer::Run()
       if (m_pAudioContext)
       {
          while (m_libAv._avcodec_receive_frame(m_pAudioContext, pFrame) >= 0)
-            HandleAudioFrame(pFrame);
+         {
+            pFrame->opaque = reinterpret_cast<void*>(static_cast<uintptr_t>(m_playIndex));
+            HandleAudioFrame(pFrame, m_pVideoContext == nullptr);
+         }
       }
       if (m_pVideoContext)
       {
          while (m_libAv._avcodec_receive_frame(m_pVideoContext, pFrame) >= 0)
          {
             pFrame->opaque = reinterpret_cast<void*>(static_cast<uintptr_t>(m_playIndex));
-            HandleVideoFrame(pFrame);
+            HandleVideoFrame(pFrame, true);
          }
       }
    }
@@ -446,7 +446,7 @@ void PUPMediaPlayer::Run()
    }
 }
 
-void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
+void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame, bool sync)
 {
    // Unknown frame format, don't process frame (would crash in getContext)
    if (frame->format < 0)
@@ -514,7 +514,7 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
    lock.unlock();
    {
       // Wait for the buffer slot to be outdated (do not overwrite a frame that is waiting to be displayed), but only in the same play sequence (stored in the opaque field of the frame. if we looped or seek, skip)
-      if (rgbFrame->opaque == frame->opaque)
+      if (sync && rgbFrame->opaque == frame->opaque)
       {
          const double oldPts = (static_cast<double>(rgbFrame->pts) * m_pVideoContext->pkt_timebase.num) / m_pVideoContext->pkt_timebase.den;
          while (m_running && (static_cast<double>(SDL_GetTicks() - m_startTimestamp) / 1000.0) < oldPts)
@@ -523,6 +523,7 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame)
 
       // Convert to a renderable format (we do not lock as the consumer thread is not supposed to be accessing an outdated frame, and this operation can be a bit lengthy)
       m_libAv._sws_scale(m_swsContext, frame->data, frame->linesize, 0, m_pVideoContext->height, rgbFrame->data, rgbFrame->linesize);
+      rgbFrame->opaque = frame->opaque;
    }
    lock.lock();
 
@@ -568,70 +569,89 @@ AVCodecContext* PUPMediaPlayer::OpenStream(AVFormatContext* pInputFormatContext,
    return pContext;
 }
 
-void PUPMediaPlayer::HandleAudioFrame(AVFrame* pFrame)
+void PUPMediaPlayer::HandleAudioFrame(AVFrame* pFrame, bool sync)
 {
-   static AVChannelLayout destChLayout = AV_CHANNEL_LAYOUT_STEREO;
-   static enum AVSampleFormat destFmt = AV_SAMPLE_FMT_S16;
-   static int destFreq = 44100;
-
-   AVSampleFormat format = (AVSampleFormat)pFrame->format;
-   if (!m_pAudioConversionContext || m_audioFormat != format) {
-      m_libAv._swr_free(&m_pAudioConversionContext);
-      m_libAv._swr_alloc_set_opts2(&m_pAudioConversionContext, &destChLayout, destFmt, destFreq, &pFrame->ch_layout,
-         (enum AVSampleFormat)pFrame->format, pFrame->sample_rate, 0, NULL);
-
-      if (!m_pAudioConversionContext || m_libAv._swr_init(m_pAudioConversionContext) < 0) {
-         LOGE("Failed to initialize the resampling context");
-         m_libAv._swr_free(&m_pAudioConversionContext);
-         m_pAudioConversionContext = nullptr;
-         return;
-      }
-
-      m_audioFormat = format;
-   }
-
-   int wantedNbSamples = pFrame->nb_samples;
-   uint8_t* pBuffer = NULL;
-   unsigned int bufSize = 0;
-   uint8_t** ppOut = &pBuffer;
-   const uint8_t** ppIn = (const uint8_t**)pFrame->extended_data;
-   int outCount = (int64_t)wantedNbSamples * destFreq / pFrame->sample_rate + 256;
-   int outSize = m_libAv._av_samples_get_buffer_size(NULL, destChLayout.nb_channels, outCount, destFmt, 0);
-
-   if (outSize < 0) {
-      LOGE("av_samples_get_buffer_size() failed");
+   if (m_volume == 0.0f)
       return;
+
+   // Perform sync if requested and we did not loop
+   if (sync && m_pAudioOpaque == pFrame->opaque)
+   {
+      const double oldPts = (static_cast<double>(pFrame->pts) * m_pAudioContext->pkt_timebase.num) / m_pAudioContext->pkt_timebase.den;
+      while (m_running && (static_cast<double>(SDL_GetTicks() - m_startTimestamp) / 1000.0) < oldPts)
+         SDL_Delay(8);
    }
-   if (wantedNbSamples != pFrame->nb_samples) {
-      if (m_libAv._swr_set_compensation(m_pAudioConversionContext, (wantedNbSamples - pFrame->nb_samples) * destFreq / pFrame->sample_rate,
-         wantedNbSamples * destFreq / pFrame->sample_rate) < 0) {
-         LOGE("swr_set_compensation() failed");
-         return;
-      }
+   m_pAudioOpaque = pFrame->opaque;
+
+   const AVSampleFormat frameFormat = static_cast<AVSampleFormat>(pFrame->format);
+   if ((pFrame->ch_layout.nb_channels <= 2) && ((frameFormat == AV_SAMPLE_FMT_FLT) || (frameFormat == AV_SAMPLE_FMT_S16)))
+   {
+      ExtAudioUpdateMsg* audioUpdate = new ExtAudioUpdateMsg();
+      audioUpdate->msg.id.id = m_audioResId.id;
+      audioUpdate->msg.type = (pFrame->ch_layout.nb_channels == 1) ? CTLPI_AUDIO_SRC_BACKGLASS_MONO : CTLPI_AUDIO_SRC_BACKGLASS_STEREO;
+      audioUpdate->msg.format = (pFrame->format == AV_SAMPLE_FMT_FLT) ? CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT : CTLPI_AUDIO_FORMAT_SAMPLE_INT16;
+      audioUpdate->msg.sampleRate = pFrame->sample_rate;
+      audioUpdate->msg.bufferSize = pFrame->nb_samples * pFrame->ch_layout.nb_channels * m_libAv._av_get_bytes_per_sample(frameFormat);
+      audioUpdate->msg.buffer = pFrame->data[0];
+      audioUpdate->msg.volume = m_volume / 100.0f;
+      audioUpdate->freeSampleBuffer = false;
+      UpdateAudioStream(audioUpdate);
+      m_audioResId.id = audioUpdate->msg.id.id;
    }
-   m_libAv._av_fast_malloc(&pBuffer, &bufSize, outSize);
-   if (!pBuffer)
-      return;
-   int len2 = m_libAv._swr_convert(m_pAudioConversionContext, ppOut, outCount, ppIn, pFrame->nb_samples);
-   if (len2 < 0) {
-      LOGE("swr_convert() failed");
-      m_libAv._av_free(pBuffer);
-      return;
-   }
-   if (len2 == outCount) {
-      LOGE("audio buffer is probably too small");
-      if (m_libAv._swr_init(m_pAudioConversionContext) < 0)
+   else
+   {
+      const AVChannelLayout destChLayout = AV_CHANNEL_LAYOUT_STEREO;
+      const enum AVSampleFormat destFmt = (pFrame->format == AV_SAMPLE_FMT_FLT) ? AV_SAMPLE_FMT_FLT : AV_SAMPLE_FMT_S16;
+      const int destFreq = pFrame->sample_rate;
+
+      if (!m_pAudioConversionContext || (m_audioFormat != frameFormat) || (m_audioFreq != pFrame->sample_rate))
       {
          m_libAv._swr_free(&m_pAudioConversionContext);
-         m_pAudioConversionContext = NULL;
+         m_libAv._swr_alloc_set_opts2(&m_pAudioConversionContext, &destChLayout, destFmt, destFreq, &pFrame->ch_layout, frameFormat, pFrame->sample_rate, 0, NULL);
+         if (!m_pAudioConversionContext || m_libAv._swr_init(m_pAudioConversionContext) < 0)
+         {
+            LOGE("Failed to initialize the resampling context");
+            m_libAv._swr_free(&m_pAudioConversionContext);
+            m_pAudioConversionContext = nullptr;
+            return;
+         }
+         m_audioFormat = frameFormat;
+         m_audioFreq = pFrame->sample_rate;
+      }
+
+      int outSize = m_libAv._av_samples_get_buffer_size(NULL, destChLayout.nb_channels, pFrame->nb_samples, destFmt, 0);
+      if (outSize < 0)
+      {
+         LOGE("av_samples_get_buffer_size() failed");
+         return;
+      }
+
+      uint8_t* pBuffer = NULL;
+      unsigned int bufSize = 0;
+      m_libAv._av_fast_malloc(&pBuffer, &bufSize, outSize);
+      if (!pBuffer)
+         return;
+
+      int nConverted = m_libAv._swr_convert(m_pAudioConversionContext, &pBuffer, pFrame->nb_samples, pFrame->data, pFrame->nb_samples);
+      if (nConverted <= 0)
+      {
+         LOGE("swr_convert() failed");
          m_libAv._av_free(pBuffer);
          return;
       }
-   }
-   //int resampledDataSize = len2 * destChLayout.nb_channels * av_get_bytes_per_sample(destFmt);
-   //m_pSound->StreamUpdate(pBuffer, resampledDataSize);
 
-   m_libAv._av_free(pBuffer);
+      ExtAudioUpdateMsg* audioUpdate = new ExtAudioUpdateMsg();
+      audioUpdate->msg.id.id = m_audioResId.id;
+      audioUpdate->msg.type = CTLPI_AUDIO_SRC_BACKGLASS_STEREO;
+      audioUpdate->msg.format = (destFmt == AV_SAMPLE_FMT_FLT) ? CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT : CTLPI_AUDIO_FORMAT_SAMPLE_INT16;
+      audioUpdate->msg.sampleRate = destFreq;
+      audioUpdate->msg.bufferSize = nConverted * destChLayout.nb_channels * m_libAv._av_get_bytes_per_sample(destFmt);
+      audioUpdate->msg.buffer = pBuffer;
+      audioUpdate->msg.volume = m_volume / 100.0f;
+      audioUpdate->freeSampleBuffer = true;
+      UpdateAudioStream(audioUpdate);
+      m_audioResId.id = audioUpdate->msg.id.id;
+   }
 }
 
 #if defined(__clang__)

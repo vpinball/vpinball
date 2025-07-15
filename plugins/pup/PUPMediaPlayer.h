@@ -30,8 +30,8 @@ private:
    void StopBlocking();
    void Run();
    AVCodecContext* OpenStream(AVFormatContext* pInputFormatContext, int stream);
-   void HandleAudioFrame(AVFrame* pFrame);
-   void HandleVideoFrame(AVFrame* pFrame);
+   void HandleAudioFrame(AVFrame* pFrame, bool sync);
+   void HandleVideoFrame(AVFrame* pFrame, bool sync);
 
    const string m_name;
    SDL_Rect m_bounds;
@@ -65,7 +65,9 @@ private:
    AVCodecContext* m_pAudioContext = nullptr;
    struct SwrContext* m_pAudioConversionContext = nullptr;
    AVSampleFormat m_audioFormat = AV_SAMPLE_FMT_NONE;
-   //Sound* m_pSound = nullptr;
+   void* m_pAudioOpaque = nullptr;
+   int m_audioFreq = 0;
+   CtlResId m_audioResId { 0 };
 
    std::mutex m_mutex;
    std::thread m_thread;

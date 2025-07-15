@@ -32,6 +32,9 @@ using std::vector;
 // Scriptable API
 #include "ScriptablePlugin.h"
 
+// Controller API
+#include "ControllerPlugin.h"
+
 // VPX main API
 #include "VPXPlugin.h"
 
@@ -62,6 +65,14 @@ extern VPXTexture CreateTexture(SDL_Surface* surf);
 extern VPXTextureInfo* GetTextureInfo(VPXTexture texture);
 extern void UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const uint8_t *image);
 extern void DeleteTexture(VPXTexture texture);
+
+struct ExtAudioUpdateMsg
+{
+   AudioUpdateMsg msg;
+   bool freeSampleBuffer;
+};
+extern void UpdateAudioStream(ExtAudioUpdateMsg *msg);
+extern void StopAudioStream(const CtlResId& id);
 
 string trim_string(const string &str);
 
