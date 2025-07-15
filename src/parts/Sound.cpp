@@ -87,21 +87,21 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
    if (FAILED(pstm->Read(&len, sizeof(int32_t), &read)))
       return nullptr;
    string name(len, '\0');
-   if (FAILED(pstm->Read(&name[0], len, &read)))
+   if (FAILED(pstm->Read(name.data(), len, &read)))
       return nullptr;
 
    // Filename (length, then string) including path (// full filename, incl. path)
    if (FAILED(pstm->Read(&len, sizeof(len), &read)))
       return nullptr;
    string path(len, '\0');
-   if (FAILED(pstm->Read(&path[0], len, &read)))
+   if (FAILED(pstm->Read(path.data(), len, &read)))
       return nullptr;
 
    // Was the lower case name, but not used anymore since 10.7+, 10.8+ also only stores 1,'\0'
    if (FAILED(pstm->Read(&len, sizeof(len), &read)))
       return nullptr;
    string dummy(len, '\0');
-   if (FAILED(pstm->Read(&dummy[0], len, &read)))
+   if (FAILED(pstm->Read(dummy.data(), len, &read)))
       return nullptr;
 
    // Since vpinball was originally only for windows, the microsoft library import was used, which stores/converts WAVs to the waveformatex.
@@ -245,7 +245,7 @@ void Sound::SaveToStream(IStream* pstm) const
       pstm->Write(&dataLength, sizeof(int32_t), &writ);
       pstm->Write(m_pdata, static_cast<ULONG>(dataLength), &writ);
    }
-   
+
    // Begin NEW_SOUND_FORMAT_VERSION data
    const uint8_t outputTarget = static_cast<uint8_t>(GetOutputTarget());
    pstm->Write(&outputTarget, sizeof(uint8_t), &writ);

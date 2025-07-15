@@ -113,7 +113,7 @@ void *operator new(const size_t size_req)
 {
    void* const ptr = _aligned_malloc(size_req, 16);
    if (!ptr)
-       throw std::bad_alloc{};
+      throw std::bad_alloc{};
    return ptr;
 }
 void operator delete(void *address)
@@ -124,7 +124,7 @@ void operator delete(void *address)
 {
    void* const ptr = _aligned_malloc(size_req, 16);
    if (!ptr)
-       throw std::bad_alloc{};
+      throw std::bad_alloc{};
    return ptr;
 }
 void operator delete[](void *address)
@@ -243,20 +243,20 @@ static const string options[] = { // keep in sync with option_names & option_des
    "listres"s,
 #endif
    "listsnd"s,
-   "c1",
-   "c2",
-   "c3",
-   "c4",
-   "c5",
-   "c6",
-   "c7",
-   "c8",
-   "c9",
+   "c1"s,
+   "c2"s,
+   "c3"s,
+   "c4"s,
+   "c5"s,
+   "c6"s,
+   "c7"s,
+   "c8"s,
+   "c9"s,
 #ifdef __STANDALONE__
    "displayid"s,
    "PrefPath"s,
 #endif
-   ""
+   ""s
 };
 static const string option_descs[] =
 {
@@ -287,20 +287,20 @@ static const string option_descs[] =
       "List available fullscreen resolutions"s,
    #endif
    "List available sound devices"s,
-   "Custom value 1",
-   "Custom value 2",
-   "Custom value 3",
-   "Custom value 4",
-   "Custom value 5",
-   "Custom value 6",
-   "Custom value 7",
-   "Custom value 8",
-   "Custom value 9",
+   "Custom value 1"s,
+   "Custom value 2"s,
+   "Custom value 3"s,
+   "Custom value 4"s,
+   "Custom value 5"s,
+   "Custom value 6"s,
+   "Custom value 7"s,
+   "Custom value 8"s,
+   "Custom value 9"s,
    #ifdef __STANDALONE__
       "Visually display your screen ID(s)"s
       "[path]  Use a custom preferences path instead of $HOME/.vpinball"s,
    #endif
-   ""
+   ""s
 };
 enum option_names
 {
@@ -399,7 +399,7 @@ void showDisplayIDs()
       SDL_Texture* pTexture = SDL_CreateTextureFromSurface(pRenderers[i], pSurface);
       if (pTexture) {
          SDL_FRect rect = {(displayBounds.w - textWidth) / 2.0f, (displayBounds.h - textHeight) / 2.0f, textWidth, textHeight};
-         
+
          if (displayBounds.h > displayBounds.w) {  // detect if display is rotated and rotate 90 degrees
             SDL_FPoint center = {pSurface->w / 2.0f, pSurface->h / 2.0f};
             SDL_RenderTextureRotated(pRenderers[i], pTexture, NULL, &rect, 90, &center, SDL_FLIP_NONE);
@@ -955,8 +955,8 @@ void VPApp::ProcessCommandLine(int nArgs, char* szArglist[])
             if (!std::filesystem::create_directory(m_prefPath, ec))
             {
                std::cout << "Visual Pinball Error"
-                           << "\n\n"
-                           << "Could not create preferences path: " << m_prefPath << "\n\n";
+                         << "\n\n"
+                         << "Could not create preferences path: " << m_prefPath << "\n\n";
                exit(1);
             }
          }
@@ -1072,19 +1072,19 @@ int VPApp::Run()
          if(ReplaceExtensionFromFilename(scriptFilename, "vbs"s))
             m_vpinball.m_ptableActive->m_pcv->SaveToFile(scriptFilename);
       }
-      
+
       if (m_audit && loadFileResult)
       {
          m_vpinball.m_ptableActive->AuditTable(true);
       }
-      
+
       if (m_extractPov && loadFileResult)
       {
          for (int i = 0; i < 3; i++)
             m_vpinball.m_ptableActive->mViewSetups[i].SaveToTableOverrideSettings(m_vpinball.m_ptableActive->m_settings, (ViewSetupID) i);
          m_vpinball.m_ptableActive->m_settings.Save();
       }
-      
+
       if (m_tournament && loadFileResult)
       {
          m_vpinball.GenerateImageFromTournamentFile(m_tableFileName, m_tournamentFileName);

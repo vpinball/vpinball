@@ -66,13 +66,13 @@ public:
 
       std::string level;
       switch (record.getSeverity()) {
-         case plog::fatal:   level = "FATAL"; break;
-         case plog::error:   level = "ERROR"; break;
-         case plog::warning: level = "WARN"; break;
-         case plog::info:    level = "INFO"; break;
-         case plog::debug:   level = "DEBUG"; break;
-         case plog::verbose: level = "VERBOSE"; break;
-         default:            level = "UNKNOWN"; break;
+         case plog::fatal:   level = "FATAL"s; break;
+         case plog::error:   level = "ERROR"s; break;
+         case plog::warning: level = "WARN"s; break;
+         case plog::info:    level = "INFO"s; break;
+         case plog::debug:   level = "DEBUG"s; break;
+         case plog::verbose: level = "VERBOSE"s; break;
+         default:            level = "UNKNOWN"s; break;
       }
 
       std::string message;

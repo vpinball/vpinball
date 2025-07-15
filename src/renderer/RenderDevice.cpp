@@ -155,7 +155,7 @@ void APIENTRY GLDebugMessageCallback(GLenum source, GLenum type, GLuint id, GLen
    //if (severity != GL_DEBUG_SEVERITY_NOTIFICATION)
    if (type != GL_DEBUG_TYPE_MARKER && type != GL_DEBUG_TYPE_PUSH_GROUP && type != GL_DEBUG_TYPE_POP_GROUP)
    {
-      PLOGE << "OpenGL Msg #" << id << " [" << _severity << "/" << _type << " from " << _source  << "]: " << msg;
+      PLOGE << "OpenGL Msg #" << id << " [" << _severity << '/' << _type << " from " << _source  << "]: " << msg;
    }
 }
 #endif
@@ -237,8 +237,8 @@ void RenderDevice::CaptureDX9Screenshot()
    auto tex = BaseTexture::Create(desc.Width, desc.Height, BaseTexture::SRGBA);
    if (tex)
    {
-      uint8_t* __restrict bits = tex->data();
-      uint8_t* __restrict pixels = static_cast<uint8_t*>(lockedRect.pBits);
+      uint8_t* const __restrict bits = tex->data();
+      const uint8_t* const __restrict pixels = static_cast<uint8_t*>(lockedRect.pBits);
       memcpy(bits, pixels, lockedRect.Pitch * desc.Height);
       for (unsigned int i = 0; i < desc.Height; ++i)
          for (unsigned int j = 0; j < desc.Width; ++j)
@@ -339,7 +339,7 @@ marker_series series;
 #if defined(ENABLE_BGFX)
 void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
 {
-   SetThreadName("RenderThread");
+   SetThreadName("RenderThread"s);
    bgfx::Init init = initReq;
 
    // If using OpenGl on a WCG display, then create the OpenGL WCG context through SDL since BGFX does not support HDR10 under OpenGl

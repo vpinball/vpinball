@@ -7561,7 +7561,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
    case IDC_EFFECT_COMBO:
    {
       const int idx = (dwCookie == -1) ? 0 : dwCookie;
-      static const wstring filterNames[5] = { L"None", L"Additive", L"Multiply", L"Overlay", L"Screen" };
+      static const wstring filterNames[5] = { L"None"s, L"Additive"s, L"Multiply"s, L"Overlay"s, L"Screen"s };
       const size_t cwch = filterNames[idx].length() + 1;
       wzDst = (WCHAR *)malloc(cwch*sizeof(WCHAR));
       wcscpy_s(wzDst, cwch, filterNames[idx].c_str());

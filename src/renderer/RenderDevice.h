@@ -244,7 +244,7 @@ private:
    int m_visualLatencyCorrection = -1;
 
    bool m_screenshot = false;
-   string m_screenshotFilename = string();
+   string m_screenshotFilename;
    std::function<void(bool)> m_screenshotCallback = [](bool) { };
 
 #if defined(ENABLE_BGFX)
