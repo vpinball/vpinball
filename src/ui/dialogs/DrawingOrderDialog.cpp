@@ -58,12 +58,12 @@ BOOL DrawingOrderDialog::OnInitDialog()
       IEditable * const pedit = m_drawingOrderSelect ? selection[i]->GetIEditable() : pt->m_allHitElements[i]->GetIEditable();
       if (pedit)
       {
-         const char * const szTemp = PinTable::GetElementName(pedit);
-         if (szTemp)
+         const string szTemp = PinTable::GetElementName(pedit);
+         if (!szTemp.empty())
          {
             lv.iItem = (int)i;
             lv.iSubItem = 0;
-            lv.pszText = (char*)szTemp;
+            lv.pszText = (char*)szTemp.c_str();
             ListView_InsertItem(hOrderList, &lv);
             if (pedit->GetItemType() == eItemSurface)
             {

@@ -4828,9 +4828,8 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
             IEditable * const pedit = m_allHitElements[i]->GetIEditable();
             if (pedit)
             {
-               const char * const szTemp = GetElementName(pedit);
-
-               if (szTemp)
+               const string szTemp = GetElementName(pedit);
+               if (!szTemp.empty())
                {
                   //!! what a hack!
                   // the element index of the allHitElements vector is encoded inside the ID of the context menu item
@@ -4839,7 +4838,7 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
                   // added for finding the element out of the list
                   // the selection is done in ISelect::DoCommand()
                   const UINT_PTR id = 0x80000000 + ((UINT_PTR)i << 16) + ID_SELECT_ELEMENT;
-                  newMenu.AppendMenu(MF_STRING, id, szTemp);
+                  newMenu.AppendMenu(MF_STRING, id, szTemp.c_str());
                }
             }
          }
@@ -4865,25 +4864,18 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
 #endif
 }
 
-const char *PinTable::GetElementName(IEditable *pedit)
+string PinTable::GetElementName(IEditable *pedit)
 {
-   WCHAR *elemName = nullptr;
    if (pedit)
    {
       if (pedit->GetItemType() == eItemDecal)
-         return "Decal";
+         return "Decal"s;
 
       IScriptable * const pscript = pedit->GetScriptable();
       if (pscript)
-         elemName = pscript->m_wzName;
+         return MakeString(pscript->m_wzName);
    }
-   if (elemName)
-   {
-      static char elementName[256];
-      WideCharToMultiByteNull(CP_ACP, 0, elemName, -1, elementName, 256, nullptr, nullptr);
-      return elementName;
-   }
-   return nullptr;
+   return string();
 }
 
 IEditable *PinTable::GetElementByName(const char * const name) const
@@ -4891,7 +4883,7 @@ IEditable *PinTable::GetElementByName(const char * const name) const
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
       IEditable * const pedit = m_vedit[i];
-      if (strcmp(name, GetElementName(pedit)) == 0)
+      if (name == GetElementName(pedit))
          return pedit;
    }
    return nullptr;

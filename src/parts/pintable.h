@@ -444,7 +444,7 @@ public:
 
    PinTable *GetPTable() final { return this; }
    const PinTable *GetPTable() const final { return this; }
-   static const char *GetElementName(IEditable *pedit);
+   static string GetElementName(IEditable *pedit);
 
    IEditable *GetElementByName(const char *const name) const;
    void OnDelete();

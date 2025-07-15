@@ -505,7 +505,7 @@ void PropertyDialog::UpdateSurfaceComboBox(const PinTable * const ptable, const 
                 // but no checks are being performed at moment:
                 (ptable->m_vedit[i]->GetItemType() == eItemFlasher))
             {
-                combo.AddString(PinTable::GetElementName(ptable->m_vedit[i]));
+                combo.AddString(PinTable::GetElementName(ptable->m_vedit[i]).c_str());
             }
         }
     }
@@ -646,7 +646,7 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
     }
     else
     {
-        m_nameEdit.SetWindowText(PinTable::GetElementName(psel->GetIEditable()));
+        m_nameEdit.SetWindowText(PinTable::GetElementName(psel->GetIEditable()).c_str());
         m_nameEdit.SetReadOnly(0);
     }
 

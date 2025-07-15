@@ -108,7 +108,8 @@ void SearchSelectDialog::Update()
          lv.iItem = idx;
          lv.iSubItem = 0;
          lv.lParam = (LPARAM)piscript;
-         lv.pszText = (char*)PinTable::GetElementName(piedit);
+         const string szTemp = PinTable::GetElementName(piedit);
+         lv.pszText = (char*)szTemp.c_str();
          ListView_InsertItem(m_hElementList, &lv);
          AddSearchItemToList(piedit, idx);
          idx++;
