@@ -26,6 +26,7 @@ PUPPinDisplay::PUPPinDisplay(PUPManager& manager)
 
 PUPPinDisplay::~PUPPinDisplay()
 {
+   m_pupManager.Unload();
 }
 
 void PUPPinDisplay::Init(int screenNum, const string& RootDir)
@@ -35,6 +36,7 @@ void PUPPinDisplay::Init(int screenNum, const string& RootDir)
       LOGE("Screen already exists: screenNum=%d", screenNum);
       return;
    }
+   m_pupManager.SetGameDir(RootDir);
    m_pupManager.AddScreen(screenNum);
 }
 
@@ -332,7 +334,6 @@ void PUPPinDisplay::Hide(int screenNum)
 void PUPPinDisplay::B2SInit(const string& tName, const string& romName)
 {
    m_pupManager.LoadConfig(romName);
-   m_pupManager.Start();
 }
 
 void PUPPinDisplay::SendMSG(const string& szMsg)

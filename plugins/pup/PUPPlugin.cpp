@@ -159,20 +159,11 @@ void OnPinMAMEGameStart(const unsigned int eventId, void* userData, void* eventD
 {
    const CtlOnGameStartMsg* msg = static_cast<const CtlOnGameStartMsg*>(eventData);
    assert(msg != nullptr && msg->gameId != nullptr);
-   if (pupManager->IsInit())
-   {
-      LOGI("PinMAME started while Pup has already been directly initialized. Discarding initialization from PinMAME rom '%s'", msg->gameId);
-   }
-   else
-   {
-      pupManager->LoadConfig(msg->gameId);
-   }
-   pupManager->Start();
+   pupManager->LoadConfig(msg->gameId);
 }
 
 void OnGameEnd(const unsigned int eventId, void* userData, void* eventData)
 {
-   pupManager->Stop();
    pupManager->Unload();
 }
 

@@ -73,7 +73,7 @@ public:
 
    const string& GetRootPath() const { return m_szRootPath; }
 
-   bool IsInit() const { return m_init; }
+   void SetGameDir(const string& szRomName);
    void LoadConfig(const string& szRomName);
    void Unload();
    const string& GetPath() const { return m_szPath; }
@@ -83,16 +83,15 @@ public:
    PUPScreen* GetScreen(int screenNum) const;
    bool AddFont(TTF_Font* pFont, const string& szFilename);
    TTF_Font* GetFont(const string& szFont);
+
    void QueueTriggerData(PUPTriggerData data);
+
+private:
+   void ProcessQueue();
+   void LoadPlaylists();
    void Start();
    void Stop();
 
-private:
-
-   void ProcessQueue();
-   void LoadPlaylists();
-
-   bool m_init = false;
    const string m_szRootPath;
    string m_szPath;
    ankerl::unordered_dense::map<int, PUPScreen*> m_screenMap;
