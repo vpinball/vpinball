@@ -612,7 +612,7 @@ string VPApp::GetCommandLineHelp() const
       "\n-"  +options[OPTION_REGSERVER]+            "  "+option_descs[OPTION_REGSERVER]+
       "\n\n"+
    #endif
-      "-"+options[OPTION_DISABLETRUEFULLSCREEN]+    "  "+option_descs[OPTION_DISABLETRUEFULLSCREEN]+
+      "-"    +options[OPTION_DISABLETRUEFULLSCREEN]+"  "+option_descs[OPTION_DISABLETRUEFULLSCREEN]+
       "\n-"  +options[OPTION_ENABLETRUEFULLSCREEN]+ "  "+option_descs[OPTION_ENABLETRUEFULLSCREEN]+
       "\n-"  +options[OPTION_MINIMIZED]+            "  "+option_descs[OPTION_MINIMIZED]+
       "\n-"  +options[OPTION_EXTMINIMIZED]+         "  "+option_descs[OPTION_EXTMINIMIZED]+
@@ -630,9 +630,11 @@ string VPApp::GetCommandLineHelp() const
       "\n\n-"+options[OPTION_TOURNAMENT]+           "  "+option_descs[OPTION_TOURNAMENT]+
       "\n\n-"+options[OPTION_VERSION]+              "  "+option_descs[OPTION_VERSION]+
       "\n-"  +options[OPTION_LISTSND]+              "  "+option_descs[OPTION_LISTSND]+
+   #ifdef ENABLE_SDL_VIDEO
+      "\n-" + options[OPTION_LISTRES]+              "  "+option_descs[OPTION_LISTRES]+
+   #endif
    #ifdef __STANDALONE__
       "\n\n-"+options[OPTION_PREFPATH]+             "  "+option_descs[OPTION_PREFPATH]+
-      "\n-"  +options[OPTION_LISTRES]+              "  "+option_descs[OPTION_LISTRES]+
       "\n-"  +options[OPTION_DISPLAYID]+            "  "+option_descs[OPTION_DISPLAYID]+
    #endif
       "\n\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)";
