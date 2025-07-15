@@ -3576,8 +3576,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
             {
                if (editable->GetItemType() != eItemPartGroup)
                   return true;
-               string name(editable->GetName());
-               if (!name.starts_with("Layer_"))
+               if (!editable->GetName().starts_with("Layer_"))
                   return true;
                auto v = std::ranges::find_if(m_vedit, [editable](const IEditable *e) { return e->GetPartGroup() == editable; });
                return v != m_vedit.end();
@@ -4721,7 +4720,7 @@ void PinTable::FillLayerContextMenu(CMenu &mainMenu, CMenu &layerSubMenu, ISelec
    {
       if (edit->GetItemType() == eItemPartGroup && edit->GetPartGroup() == nullptr)
       {
-         layerSubMenu.AppendMenu(MF_STRING, ID_ASSIGN_TO_LAYER1 + i, edit->GetName());
+         layerSubMenu.AppendMenu(MF_STRING, ID_ASSIGN_TO_LAYER1 + i, edit->GetName().c_str());
          i++;
          if (i == NUM_ASSIGN_LAYERS)
             break;
@@ -6656,7 +6655,7 @@ Light *PinTable::GetLight(const string &szName) const
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
       IEditable *const pe = m_vedit[i];
-      if (pe->GetItemType() == ItemTypeEnum::eItemLight && !lstrcmpi(pe->GetName(), szName.c_str()))
+      if (pe->GetItemType() == ItemTypeEnum::eItemLight && StrCompareNoCase(pe->GetName(), szName))
          return (Light *)pe;
    }
 
@@ -7071,7 +7070,7 @@ string PinTable::AuditTable(bool log) const
       Textbox *const textbox = type == eItemTextbox ? (Textbox *)part : nullptr;
 
       // Referencing a static object from script (ok if it is for reading properties, not for writing)
-      if (type == eItemPrimitive && prim->m_d.m_staticRendering && FindIndexOf(identifiers, string(prim->GetName())) != -1)
+      if (type == eItemPrimitive && prim->m_d.m_staticRendering && FindIndexOf(identifiers, prim->GetName()) != -1)
          ss << ". Warning: Primitive '" << prim->GetName() << "' seems to be referenced from the script while it is marked as static (most properties of a static object may not be modified at runtime).\r\n";
 
       if (type == eItemTextbox && (textbox->m_d.m_isDMD || StrStrI(textbox->m_d.m_text.c_str(), "DMD") != nullptr))

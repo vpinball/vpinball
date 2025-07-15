@@ -17,7 +17,7 @@ BOOL ScriptErrorDialog::OnInitDialog()
 
 	if (shouldHideInstallDebuggerText)
 	{
-		::ShowWindow(GetDlgItem(IDC_STATIC_INSTALL_DEBUGGER), SW_HIDE);
+		GetDlgItem(IDC_STATIC_INSTALL_DEBUGGER).ShowWindow(SW_HIDE);
 	}
 
 	return TRUE;

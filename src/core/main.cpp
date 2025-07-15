@@ -39,10 +39,6 @@
 
 
 
-
-
-
-
 #if defined(ENABLE_OPENGL) && !defined(__STANDALONE__)
 // The OpenGL implementation will fail on NVIDIA drivers when Threaded Optimization is enabled so we disable it for this app
 // Note: There are quite a lot of applications doing this, but I think this may hide an incorrect OpenGL call somewhere
@@ -174,7 +170,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
    static NvThreadOptimization s_OriginalNVidiaThreadOptimization = NV_THREAD_OPTIMIZATION_NO_SUPPORT;
    #endif
 
-   Logger::GetInstance()->Init();
+   Logger::Init();
 
    int retval;
    try

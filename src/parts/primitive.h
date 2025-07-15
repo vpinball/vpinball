@@ -285,8 +285,6 @@ public:
    Vertex2D GetCenter() const final;
    void PutCenter(const Vertex2D &pv) final;
 
-   //STDMETHOD(get_Name)(BSTR *pVal) final {return E_FAIL;}
-
    void WriteRegDefaults() final;
 
    bool LoadMeshDialog() final;

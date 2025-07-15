@@ -8,10 +8,6 @@
 
 const string PLAYFIELD_REFLECTION_RENDERPROBE_NAME = "Playfield Reflections"s;
 
-RenderProbe::RenderProbe()
-{
-}
-
 RenderProbe::~RenderProbe()
 {
    assert(m_prerenderRT == nullptr && m_dynamicRT == nullptr); // RenderRelease must be call before destructor
@@ -64,19 +60,9 @@ bool RenderProbe::LoadToken(const int id, BiffReader* const pbr)
    return true;
 }
 
-string& RenderProbe::GetName()
-{
-   return m_name;
-}
-
 void RenderProbe::SetName(const string& name)
 {
    m_name = name;
-}
-
-bool RenderProbe::IsRendering() const
-{
-   return m_rendering;
 }
 
 void RenderProbe::RenderSetup(Renderer* renderer)

@@ -50,11 +50,11 @@ INT_PTR AboutDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          }
 
 #if !(defined(IMSPANISH) | defined(IMGERMAN) | defined(IMFRENCH))
-         ::ShowWindow(GetDlgItem(IDC_TRANSNAME), SW_HIDE);
+         GetDlgItem(IDC_TRANSNAME).ShowWindow(SW_HIDE);
 #endif
 
 #if !(defined(IMSPANISH))
-         ::ShowWindow(GetDlgItem(IDC_TRANSLATEWEBSITE), SW_HIDE);
+         GetDlgItem(IDC_TRANSLATEWEBSITE).ShowWindow(SW_HIDE);
 #endif
       }
       return TRUE;

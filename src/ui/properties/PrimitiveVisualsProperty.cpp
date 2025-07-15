@@ -124,9 +124,9 @@ void PrimitiveVisualsProperty::UpdateLightmapComboBox(const PinTable *table, con
         bool texelFound = false;
         for (const auto texel : lights)
         {
-           if (strncmp(texel->GetName(), selectName.c_str(), MAXTOKEN) == 0) //!! lstrcmpi?
+           if (texel->GetName() == selectName) //!! lstrcmpi?
               texelFound = true;
-           need_reset |= combo.FindStringExact(1, texel->GetName()) == CB_ERR; // Combo does not contain an image from the image list
+           need_reset |= combo.FindStringExact(1, texel->GetName().c_str()) == CB_ERR; // Combo does not contain an image from the image list
         }
         need_reset |= !texelFound; // Selection is not part of image list
     }
@@ -135,7 +135,7 @@ void PrimitiveVisualsProperty::UpdateLightmapComboBox(const PinTable *table, con
         combo.ResetContent();
         combo.AddString(_T("<None>"));
         for (size_t i = 0; i < lights.size(); i++)
-           combo.AddString(lights[i]->GetName());
+           combo.AddString(lights[i]->GetName().c_str());
     }
     combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
 }

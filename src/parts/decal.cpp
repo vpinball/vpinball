@@ -99,18 +99,17 @@ void Decal::SetDefaults(const bool fromMouseClick)
 #undef regKey
 }
 
-char* Decal::GetFontName()
+string Decal::GetFontName()
 {
-    if(m_pIFont)
-    {
-        BSTR bstr;
-        /*HRESULT hr =*/ m_pIFont->get_Name(&bstr);
-        static char fontName[LF_FACESIZE];
-        WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, fontName, std::size(fontName), nullptr, nullptr);
-        SysFreeString(bstr);
-        return fontName;
-    }
-    return nullptr;
+   if(m_pIFont)
+   {
+      BSTR bstr;
+      /*HRESULT hr =*/ m_pIFont->get_Name(&bstr);
+      const string fontName = MakeString(bstr);
+      SysFreeString(bstr);
+      return fontName;
+   }
+   return string();
 }
 
 void Decal::WriteRegDefaults()

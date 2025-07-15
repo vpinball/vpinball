@@ -35,7 +35,7 @@ class IScriptable
 public:
    IScriptable();
 
-   STDMETHOD(get_Name)(BSTR *pVal) = 0;
+   STDMETHOD(get_Name)(BSTR *pVal) = 0; // fails for Decals, returns m_wzName or something custom for everything else
    virtual IDispatch *GetDispatch() = 0;
    virtual const IDispatch *GetDispatch() const = 0;
    virtual ISelect *GetISelect() = 0;

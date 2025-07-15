@@ -85,7 +85,7 @@ public:
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
    {
       if (dispid != DISPID_TimerEvents_Timer)
-         g_frameProfiler->EnterScriptSection(dispid);
+         g_frameProfiler->EnterScriptSection(dispid, string());
       T* const pT = static_cast<T*>(this);
       pT->Lock();
       IUnknown** pp = IConnectionPointImpl<T, psrcid, CComDynamicUnkArray>::m_vec.begin();
@@ -100,7 +100,7 @@ public:
       }
       pT->Unlock();
       if (dispid != DISPID_TimerEvents_Timer)
-         g_frameProfiler->ExitScriptSection();
+         g_frameProfiler->ExitScriptSection(string());
 
       return S_OK;
    }

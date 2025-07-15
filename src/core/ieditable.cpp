@@ -170,75 +170,72 @@ void IEditable::Undelete()
    }
 }
 
-const char *IEditable::GetName() const
+string IEditable::GetName() const
 {
-    if (GetItemType() == eItemDecal)
-        return "Decal";
+   if (GetItemType() == eItemDecal)
+      return "Decal"s;
 
-    const IScriptable *const pscript = const_cast<IEditable*>(this)->GetScriptable();
-    if (pscript)
-    {
-        static char elementName[256];
-        WideCharToMultiByteNull(CP_ACP, 0, pscript->m_wzName, -1, elementName, sizeof(elementName), nullptr, nullptr);
-        return elementName;
-    }
-    return nullptr;
+   const IScriptable *const pscript = const_cast<IEditable*>(this)->GetScriptable();
+   if (pscript)
+      return MakeString(pscript->m_wzName);
+
+   return string();
 }
 
 void IEditable::SetName(const string& name)
 {
-    if (name.empty())
-        return;
-    if (GetItemType() == eItemDecal)
-        return;
-    const PinTable* const pt = GetPTable();
-    if (pt == nullptr)
-        return;
+   if (name.empty())
+      return;
+   if (GetItemType() == eItemDecal)
+      return;
+   const PinTable* const pt = GetPTable();
+   if (pt == nullptr)
+      return;
 
-    char * const oldName = MakeChar(GetScriptable()->m_wzName);
+   char * const oldName = MakeChar(GetScriptable()->m_wzName);
 
-    wstring newName = MakeWString(name);
-    newName = newName.length() >= MAXNAMEBUFFER ? newName.substr(0, MAXNAMEBUFFER - 1) : newName;
-    const bool isEqual = newName == GetScriptable()->m_wzName;
-    if(!isEqual && !pt->IsNameUnique(newName))
-    {
-       WCHAR uniqueName[MAXNAMEBUFFER];
-       pt->GetUniqueName(newName, uniqueName, MAXNAMEBUFFER);
-       newName = uniqueName;
-    }
-    STARTUNDO
-    // first update name in the codeview before updating it in the element itself
-    pt->m_pcv->ReplaceName(GetScriptable(), newName);
-    wcscpy_s(GetScriptable()->m_wzName, newName.c_str());
+   wstring newName = MakeWString(name);
+   newName = newName.length() >= MAXNAMEBUFFER ? newName.substr(0, MAXNAMEBUFFER - 1) : newName;
+   const bool isEqual = newName == GetScriptable()->m_wzName;
+   if(!isEqual && !pt->IsNameUnique(newName))
+   {
+      WCHAR uniqueName[MAXNAMEBUFFER];
+      pt->GetUniqueName(newName, uniqueName, MAXNAMEBUFFER);
+      newName = uniqueName;
+   }
+   STARTUNDO
+   // first update name in the codeview before updating it in the element itself
+   pt->m_pcv->ReplaceName(GetScriptable(), newName);
+   wcscpy_s(GetScriptable()->m_wzName, newName.c_str());
 #ifndef __STANDALONE__
-    g_pvp->SetPropSel(GetPTable()->m_vmultisel);
-    g_pvp->GetLayersListDialog()->Update();
+   g_pvp->SetPropSel(GetPTable()->m_vmultisel);
+   g_pvp->GetLayersListDialog()->Update();
 
-    if (GetItemType() == eItemSurface && g_pvp->MessageBox("Replace the name also in all table elements that use this surface?", "Replace", MB_ICONQUESTION | MB_YESNO) == IDYES)
-    for (size_t i = 0; i < pt->m_vedit.size(); i++)
-    {
-       IEditable *const pedit = pt->m_vedit[i];
-       if (pedit->GetItemType() == ItemTypeEnum::eItemBumper && ((Bumper *)pedit)->m_d.m_szSurface == oldName)
-          ((Bumper *)pedit)->m_d.m_szSurface = name;
-       else if (pedit->GetItemType() == ItemTypeEnum::eItemDecal && ((Decal *)pedit)->m_d.m_szSurface == oldName)
-          ((Decal *)pedit)->m_d.m_szSurface = name;
-       else if (pedit->GetItemType() == ItemTypeEnum::eItemFlipper && ((Flipper *)pedit)->m_d.m_szSurface == oldName)
-          ((Flipper *)pedit)->m_d.m_szSurface = name;
-       else if (pedit->GetItemType() == ItemTypeEnum::eItemGate && ((Gate *)pedit)->m_d.m_szSurface == oldName)
-          ((Gate *)pedit)->m_d.m_szSurface = name;
-       else if (pedit->GetItemType() == ItemTypeEnum::eItemKicker && ((Kicker *)pedit)->m_d.m_szSurface == oldName)
-          ((Kicker *)pedit)->m_d.m_szSurface = name;
-       else if (pedit->GetItemType() == ItemTypeEnum::eItemLight && ((Light *)pedit)->m_d.m_szSurface == oldName)
-          ((Light *)pedit)->m_d.m_szSurface = name;
-       else if (pedit->GetItemType() == ItemTypeEnum::eItemPlunger && ((Plunger *)pedit)->m_d.m_szSurface == oldName)
-          ((Plunger *)pedit)->m_d.m_szSurface = name;
-       else if (pedit->GetItemType() == ItemTypeEnum::eItemSpinner && ((Spinner *)pedit)->m_d.m_szSurface == oldName)
-          ((Spinner *)pedit)->m_d.m_szSurface = name;
-       else if (pedit->GetItemType() == ItemTypeEnum::eItemTrigger && ((Trigger *)pedit)->m_d.m_szSurface == oldName)
-          ((Trigger *)pedit)->m_d.m_szSurface = name;
-    }
+   if (GetItemType() == eItemSurface && g_pvp->MessageBox("Replace the name also in all table elements that use this surface?", "Replace", MB_ICONQUESTION | MB_YESNO) == IDYES)
+   for (size_t i = 0; i < pt->m_vedit.size(); i++)
+   {
+      IEditable *const pedit = pt->m_vedit[i];
+      if (pedit->GetItemType() == ItemTypeEnum::eItemBumper && ((Bumper *)pedit)->m_d.m_szSurface == oldName)
+         ((Bumper *)pedit)->m_d.m_szSurface = name;
+      else if (pedit->GetItemType() == ItemTypeEnum::eItemDecal && ((Decal *)pedit)->m_d.m_szSurface == oldName)
+         ((Decal *)pedit)->m_d.m_szSurface = name;
+      else if (pedit->GetItemType() == ItemTypeEnum::eItemFlipper && ((Flipper *)pedit)->m_d.m_szSurface == oldName)
+         ((Flipper *)pedit)->m_d.m_szSurface = name;
+      else if (pedit->GetItemType() == ItemTypeEnum::eItemGate && ((Gate *)pedit)->m_d.m_szSurface == oldName)
+         ((Gate *)pedit)->m_d.m_szSurface = name;
+      else if (pedit->GetItemType() == ItemTypeEnum::eItemKicker && ((Kicker *)pedit)->m_d.m_szSurface == oldName)
+         ((Kicker *)pedit)->m_d.m_szSurface = name;
+      else if (pedit->GetItemType() == ItemTypeEnum::eItemLight && ((Light *)pedit)->m_d.m_szSurface == oldName)
+         ((Light *)pedit)->m_d.m_szSurface = name;
+      else if (pedit->GetItemType() == ItemTypeEnum::eItemPlunger && ((Plunger *)pedit)->m_d.m_szSurface == oldName)
+         ((Plunger *)pedit)->m_d.m_szSurface = name;
+      else if (pedit->GetItemType() == ItemTypeEnum::eItemSpinner && ((Spinner *)pedit)->m_d.m_szSurface == oldName)
+         ((Spinner *)pedit)->m_d.m_szSurface = name;
+      else if (pedit->GetItemType() == ItemTypeEnum::eItemTrigger && ((Trigger *)pedit)->m_d.m_szSurface == oldName)
+         ((Trigger *)pedit)->m_d.m_szSurface = name;
+   }
 #endif
-    STOPUNDO
+   STOPUNDO
 
-    delete [] oldName;
+   delete [] oldName;
 }

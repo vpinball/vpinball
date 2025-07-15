@@ -609,7 +609,7 @@ static void HelpEditableHeader(bool is_live, IEditable *editable, IEditable *liv
    }
    HelpTextCentered(title);
    ImGui::BeginDisabled(is_live); // Do not edit name of live objects, it would likely break the script
-   string name = select_editable ? string(select_editable->GetName()) : string();
+   string name = select_editable ? select_editable->GetName() : string();
    if (ImGui::InputText("Name", &name))
    {
       editable->SetName(name);
@@ -3118,7 +3118,7 @@ void LiveUI::UpdateOutlinerUI()
                      if (edit->GetPartGroup() == nullptr && edit->GetItemType() != eItemPartGroup)
                      {
                         Selection sel(is_live, edit);
-                        if (IsOutlinerFiltered(edit->GetName()) && ImGui::Selectable(edit->GetName(), m_selection == sel))
+                        if (IsOutlinerFiltered(edit->GetName()) && ImGui::Selectable(edit->GetName().c_str(), m_selection == sel))
                            m_selection = sel;
                      }
                   }
@@ -3146,12 +3146,12 @@ void LiveUI::UpdateOutlinerUI()
                   {
                      stack.push_back({
                         static_cast<PartGroup*>(edit), 
-                        (stack.empty() || stack.back().opened) ? ImGui::TreeNodeEx(edit->GetName(), ImGuiTreeNodeFlags_None) : false});
+                        (stack.empty() || stack.back().opened) ? ImGui::TreeNodeEx(edit->GetName().c_str(), ImGuiTreeNodeFlags_None) : false});
                   }
                   else if (stack.back().opened)
                   {
                      Selection sel(is_live, edit);
-                     if (IsOutlinerFiltered(edit->GetName()) && ImGui::Selectable(edit->GetName(), m_selection == sel))
+                     if (IsOutlinerFiltered(edit->GetName()) && ImGui::Selectable(edit->GetName().c_str(), m_selection == sel))
                         m_selection = sel;
                   }
                }
@@ -4283,7 +4283,7 @@ void LiveUI::RenderProbeProperties(bool is_live)
          if (psel != nullptr && psel->GetItemType() == eItemPrimitive 
             && ((probe->GetType() == RenderProbe::PLANE_REFLECTION && ((Primitive *)psel)->m_d.m_szReflectionProbe == probe->GetName())
              || (probe->GetType() == RenderProbe::SCREEN_SPACE_TRANSPARENCY  && ((Primitive *)psel)->m_d.m_szRefractionProbe == probe->GetName()))
-            && ImGui::Selectable(((Primitive *)psel)->GetName()))
+            && ImGui::Selectable(((Primitive *)psel)->GetName().c_str()))
             m_selection = Selection(is_live, table->m_vedit[t]);
       }
    }
@@ -5021,10 +5021,10 @@ void LiveUI::PropLightmapCombo(const char *label, IEditable *undo_obj, bool is_l
    const char *const preview_value = v->c_str();
    if (ImGui::BeginCombo(label, preview_value))
    {
-      const std::function<string(IEditable *)> map = [](IEditable *pe) -> string { return pe->GetItemType() == ItemTypeEnum::eItemLight ? pe->GetName() : ""s; };
+      const std::function<string(IEditable *)> map = [](IEditable *pe) -> string { return pe->GetItemType() == ItemTypeEnum::eItemLight ? pe->GetName() : string(); };
       for (IEditable *pe : SortedCaseInsensitive(table->m_vedit, map))
       {
-         if (pe->GetItemType() == ItemTypeEnum::eItemLight && ImGui::Selectable(pe->GetName()))
+         if (pe->GetItemType() == ItemTypeEnum::eItemLight && ImGui::Selectable(pe->GetName().c_str()))
          {
             *v = pe->GetName();
             if (chg_callback)

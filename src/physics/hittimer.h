@@ -5,22 +5,16 @@
 class HitTimer final
 {
 public:
-   HitTimer(const char* name, int interval, IFireEvents* handler)
-      : m_pfe(handler)
+   HitTimer(const string& name, int interval, IFireEvents* handler)
+      : m_name(name)
+      , m_pfe(handler)
       , m_interval(interval >= 0 ? max(interval, MAX_TIMER_MSEC_INTERVAL) : max(-2, interval))
    {
-      size_t len = strlen(name);
-      char* nameCopy = new char[len + 1];
-      strcpy_s(nameCopy, len + 1, name); 
-      m_name = nameCopy;
       m_nextfire = m_interval;
    }
-   ~HitTimer()
-   {
-      delete[] m_name;
-   }
+   ~HitTimer() { }
 
-   const char* m_name;
+   string m_name;
    IFireEvents * const m_pfe;
 
    int m_interval;

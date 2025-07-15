@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 
 #define DOCTEST_CONFIG_IMPLEMENT
@@ -9,7 +11,7 @@
 
 #include "core/VPApp.h"
 
-unsigned int onPrepareFrameMsgId = 0;
+static unsigned int onPrepareFrameMsgId = 0;
 
 void AddOnPrepareFrameHandler(msgpi_msg_callback onPrepareFrame, void* context)
 {
@@ -36,10 +38,10 @@ string GetAssetPath()
 {
    HMODULE hm = nullptr;
    if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, _T("GetAssetPath"), &hm) == 0)
-      return "";
+      return ""s;
    TCHAR path[MAX_PATH];
    if (GetModuleFileName(hm, path, MAX_PATH) == 0)
-      return "";
+      return ""s;
    std::string fullpath(path);
    fullpath = fullpath.substr(0, fullpath.find_last_of(_T("\\/"))) + _T('\\');
    return fullpath + "test-assets\\";
@@ -59,8 +61,8 @@ bool CheckMatchingBitmaps(const string& filePath1, const string& filePath2)
    {
       // This would be too strict as we are applying some fuzzy effects like dither and we save the screenshots with a lossy format
       // failed |= memcmp(bmp1->datac(), bmp2->datac(), bmp1->pitch() * bmp1->height()) != 0;
-      const uint8_t* const data1 = reinterpret_cast<const uint8_t*>(bmp1->datac());
-      const uint8_t* const data2 = reinterpret_cast<const uint8_t*>(bmp2->datac());
+      const uint8_t* const __restrict data1 = reinterpret_cast<const uint8_t*>(bmp1->datac());
+      const uint8_t* const __restrict data2 = reinterpret_cast<const uint8_t*>(bmp2->datac());
       const size_t dataSize = bmp1->height() * bmp1->pitch();
       uint8_t max = 0;
       size_t avg = 0;
@@ -84,7 +86,7 @@ bool CheckMatchingBitmaps(const string& filePath1, const string& filePath2)
       if (avg > 0)
       {
          std::shared_ptr<BaseTexture> diff = BaseTexture::Create(bmp1->width(), bmp1->height(), BaseTexture::SRGB);
-         uint8_t* const diffData = diff->data();
+         uint8_t* const __restrict diffData = diff->data();
          for (size_t i = 0; i < dataSize; ++i)
          {
             uint8_t dif = data1[i] > data2[i] ? data1[i] - data2[i] : data2[i] - data1[i];
@@ -152,12 +154,12 @@ void ResetVPX()
    Settings& settings = g_pvp->m_settings;
    settings.Validate(true);
    settings.SaveValue(Settings::Section::PlayerVR, "AskToTurnOn"s, 2);
-   settings.SaveValue(Settings::Section::Player, "PlayfieldFullScreen", 0);
-   settings.SaveValue(Settings::Section::Player, "PlayfieldWidth", 1920);
-   settings.SaveValue(Settings::Section::Player, "PlayfieldHeight", 1080);
-   settings.SaveValue(Settings::Section::Player, "EnableMouseInPlayer", false);
+   settings.SaveValue(Settings::Section::Player, "PlayfieldFullScreen"s, 0);
+   settings.SaveValue(Settings::Section::Player, "PlayfieldWidth"s, 1920);
+   settings.SaveValue(Settings::Section::Player, "PlayfieldHeight"s, 1080);
+   settings.SaveValue(Settings::Section::Player, "EnableMouseInPlayer"s, false);
    settings.SaveValue(Settings::Section::Player, "NumberOfTimesToShowTouchMessage"s, 0);
-   settings.SaveValue(Settings::Section::Player, "DisableAO", true);
+   settings.SaveValue(Settings::Section::Player, "DisableAO"s, true);
 }
 
 

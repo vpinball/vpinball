@@ -1,3 +1,4 @@
+// license:GPLv3+
 
 extern string GetAssetPath();
 extern bool CheckMatchingBitmaps(const string& filePath1, const string& filePath2);

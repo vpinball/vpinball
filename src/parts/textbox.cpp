@@ -285,18 +285,17 @@ HRESULT Textbox::InitPostLoad()
    return S_OK;
 }
 
-char * Textbox::GetFontName()
+string Textbox::GetFontName()
 {
-    if (m_pIFont)
-    {
-        BSTR bstr;
-        /*HRESULT hr =*/ m_pIFont->get_Name(&bstr);
-        static char fontName[LF_FACESIZE];
-        WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, fontName, std::size(fontName), nullptr, nullptr);
-        SysFreeString(bstr);
-        return fontName;
-    }
-    return nullptr;
+   if (m_pIFont)
+   {
+      BSTR bstr;
+      /*HRESULT hr =*/ m_pIFont->get_Name(&bstr);
+      const string fontName = MakeString(bstr);
+      SysFreeString(bstr);
+      return fontName;
+   }
+   return string();
 }
 
 HFONT Textbox::GetFont()
@@ -429,7 +428,7 @@ void Textbox::RenderSetup(RenderDevice *device)
    if (width > 0 && height > 0)
    {
       m_texture = BaseTexture::Create(width, height, BaseTexture::SRGBA);
-      m_texture->SetName("Textbox."s + GetName());
+      m_texture->SetName("Textbox." + GetName());
       m_textureDirty = true;
    }
 }

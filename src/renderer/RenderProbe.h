@@ -24,10 +24,10 @@ public:
       REFL_DYNAMIC // All reflections are dynamic allowing for correct occlusion between them at the cost of performance (static are still prerendered)
    };
 
-   RenderProbe();
+   RenderProbe() { }
    ~RenderProbe();
 
-   string& GetName();
+   const string& GetName() const { return m_name; }
    void SetName(const string& name);
    ProbeType GetType() const { return m_type; }
    void SetType(const ProbeType type) { m_type = type; }
@@ -54,7 +54,7 @@ public:
    // Rendering
    void RenderSetup(class Renderer* renderer);
    void MarkDirty(); // Mark this probe as dirty, should be called when starting a new frame
-   bool IsRendering() const;
+   bool IsRendering() const { return m_rendering; }
    void PreRenderStatic(); // Allows to precompute static parts
    RenderTarget* Render(const unsigned int renderMask); // Lazily update render probe and returns it
    void RenderRelease();

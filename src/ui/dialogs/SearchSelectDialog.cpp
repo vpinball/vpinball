@@ -224,16 +224,14 @@ INT_PTR SearchSelectDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          const int windowHeight = rc.bottom - rc.top;
          const int windowWidth = rc.right - rc.left;
 
-         const HWND hOkButton = GetDlgItem(IDOK).GetHwnd();
          const int buttonY = (windowHeight - 85) + 5;
-         RECT buttonRc;
-         ::GetClientRect(hOkButton, &buttonRc);
+         const CRect buttonRc = GetDlgItem(IDOK).GetClientRect();
          const int buttonWidth = buttonRc.right - buttonRc.left;
          const int buttonHeight = buttonRc.bottom - buttonRc.top;
          
          ::SetWindowPos(m_hElementList, nullptr, 6, 5, windowWidth - 28, windowHeight - 90, 0);
-         ::SetWindowPos(hOkButton, nullptr, 6, buttonY, buttonWidth, buttonHeight, 0);
-         ::SetWindowPos(GetDlgItem(IDCANCEL).GetHwnd(), nullptr, 6 + buttonWidth + 50, buttonY, buttonWidth, buttonHeight, 0);
+         GetDlgItem(IDOK).SetWindowPos(nullptr, 6, buttonY, buttonWidth, buttonHeight, 0);
+         GetDlgItem(IDCANCEL).SetWindowPos(nullptr, 6 + buttonWidth + 50, buttonY, buttonWidth, buttonHeight, 0);
          break;
       }
 

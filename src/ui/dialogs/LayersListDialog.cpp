@@ -325,7 +325,7 @@ void LayerTreeView::Update()
    const string filter = m_isCaseSensitiveFilter ? lowerCase(m_filter) : m_filter;
    for (const auto& editable : m_activeTable->m_vedit)
    {
-      string name = editable->GetName();
+      const string name = editable->GetName();
       if (!filter.empty() && editable->GetItemType() != eItemPartGroup)
       {
          if (!m_isCaseSensitiveFilter)
@@ -374,18 +374,18 @@ void LayerTreeView::Update()
          // Insert the new element at the right place
          if (node.editable->GetPartGroup() == nullptr)
          {
-            node.item = AddItem(m_hRootItem, node.editable->GetName(), node.editable, 1);
+            node.item = AddItem(m_hRootItem, node.editable->GetName().c_str(), node.editable, 1);
          }
          else
          {
             const auto& parent = std::ranges::find_if(newContent, [node](const auto& node2) { return node.editable->GetPartGroup() == node2.editable; });
-            node.item = AddItem(parent->item, node.editable->GetName(), node.editable, 2);
+            node.item = AddItem(parent->item, node.editable->GetName().c_str(), node.editable, 2);
          }
          // If new elements was already part of the tree but at another place, persists its state
          auto existing = std::find_if(oldContentIt, m_content.end(), [node](const TreeEntry& te) { return te.editable == node.editable; });
          if (existing != m_content.end())
          {
-            // Persist collapsed/expnded state
+            // Persist collapsed/expanded state
             TVITEM tvi = {};
             tvi.mask = TVIF_STATE;
             tvi.hItem = existing->item;

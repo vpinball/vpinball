@@ -81,7 +81,7 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   char *GetFontName();
+   string GetFontName();
    HFONT GetFont();
 
    IFont *m_pIFont = nullptr;

@@ -162,9 +162,6 @@ public:
    Vertex2D GetCenter() const final;
    void PutCenter(const Vertex2D& pv) final;
 
-   //STDMETHOD(get_Name)(BSTR *pVal) {return E_FAIL;}
-
-   //virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR * const wzName);
    void WriteRegDefaults() final;
 
    float GetDepth(const Vertex3Ds& viewDir) const final;

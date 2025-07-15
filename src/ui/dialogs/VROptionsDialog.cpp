@@ -361,36 +361,36 @@ BOOL VROptionsDialog::OnInitDialog()
    }
 
    #ifdef ENABLE_XR
-      ::ShowWindow(GetDlgItem(IDC_SCALE_TO_CM).GetHwnd(), SW_HIDE); // OpenXR always use fixed scale to real world lockbar width
-      ::ShowWindow(GetDlgItem(IDC_VR_SCALE_LABEL).GetHwnd(), SW_HIDE);
-      ::ShowWindow(GetDlgItem(IDC_VR_SCALE).GetHwnd(), SW_HIDE);
+      GetDlgItem(IDC_SCALE_TO_CM).ShowWindow(SW_HIDE); // OpenXR always use fixed scale to real world lockbar width
+      GetDlgItem(IDC_VR_SCALE_LABEL).ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_VR_SCALE).ShowWindow(SW_HIDE);
 
-      ::ShowWindow(GetDlgItem(IDC_STATIC1).GetHwnd(), SW_HIDE); // No performance/hack option for the time being
-      ::ShowWindow(GetDlgItem(IDC_STATIC2).GetHwnd(), SW_HIDE);
-      ::ShowWindow(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), SW_HIDE);
-      ::ShowWindow(GetDlgItem(IDC_STATIC3).GetHwnd(), SW_HIDE);
-      ::ShowWindow(GetDlgItem(IDC_NEAR_LABEL).GetHwnd(), SW_HIDE); // OpenXR use fixed near plane distance in real world unit
-      ::ShowWindow(GetDlgItem(IDC_NEAR_PLANE).GetHwnd(), SW_HIDE);
+      GetDlgItem(IDC_STATIC1).ShowWindow(SW_HIDE); // No performance/hack option for the time being
+      GetDlgItem(IDC_STATIC2).ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_COMBO_TEXTURE).ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STATIC3).ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_NEAR_LABEL).ShowWindow(SW_HIDE); // OpenXR use fixed near plane distance in real world unit
+      GetDlgItem(IDC_NEAR_PLANE).ShowWindow(SW_HIDE);
 
-      ::ShowWindow(GetDlgItem(IDC_VR_SLOPE_LABEL).GetHwnd(), SW_HIDE); // OpenXR only compensate the playfield slope (no additional user adjustment)
-      ::ShowWindow(GetDlgItem(IDC_VR_SLOPE).GetHwnd(), SW_HIDE);
+      GetDlgItem(IDC_VR_SLOPE_LABEL).ShowWindow(SW_HIDE); // OpenXR only compensate the playfield slope (no additional user adjustment)
+      GetDlgItem(IDC_VR_SLOPE).ShowWindow(SW_HIDE);
 
-      ::ShowWindow(GetDlgItem(IDC_BTTABLERECENTER).GetHwnd(), SW_HIDE); // Position is managed through TweakUI, not custom key shortcuts
-      ::ShowWindow(GetDlgItem(IDC_TABLEREC_TEXT).GetHwnd(), SW_HIDE);
-      ::ShowWindow(GetDlgItem(IDC_JOYTABLERECENTER).GetHwnd(), SW_HIDE);
-      ::ShowWindow(GetDlgItem(IDC_STATIC4).GetHwnd(), SW_HIDE);
-      ::ShowWindow(GetDlgItem(IDC_STATIC5).GetHwnd(), SW_HIDE);
-      ::ShowWindow(GetDlgItem(IDC_STATIC6).GetHwnd(), SW_HIDE);
-      ::ShowWindow(GetDlgItem(IDC_BTTABLEUP).GetHwnd(), SW_HIDE);
-      ::ShowWindow(GetDlgItem(IDC_TABLEUP_TEXT).GetHwnd(), SW_HIDE);
-      ::ShowWindow(GetDlgItem(IDC_JOYTABLEUP).GetHwnd(), SW_HIDE);
-      ::ShowWindow(GetDlgItem(IDC_BTTABLEDOWN).GetHwnd(), SW_HIDE);
-      ::ShowWindow(GetDlgItem(IDC_TABLEDOWN_TEXT).GetHwnd(), SW_HIDE);
-      ::ShowWindow(GetDlgItem(IDC_JOYTABLEDOWN).GetHwnd(), SW_HIDE);
+      GetDlgItem(IDC_BTTABLERECENTER).ShowWindow(SW_HIDE); // Position is managed through TweakUI, not custom key shortcuts
+      GetDlgItem(IDC_TABLEREC_TEXT).ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_JOYTABLERECENTER).ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STATIC4).ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STATIC5).ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STATIC6).ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_BTTABLEUP).ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_TABLEUP_TEXT).ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_JOYTABLEUP).ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_BTTABLEDOWN).ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_TABLEDOWN_TEXT).ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_JOYTABLEDOWN).ShowWindow(SW_HIDE);
 
    #else
-      ::EnableWindow(GetDlgItem(IDC_COLOR_BUTTON1).GetHwnd(), FALSE);
-      ::EnableWindow(GetDlgItem(IDC_ENABLE_PASSTHROUGH_COLOR).GetHwnd(), FALSE);
+      GetDlgItem(IDC_COLOR_BUTTON1).EnableWindow(FALSE);
+      GetDlgItem(IDC_ENABLE_PASSTHROUGH_COLOR).EnableWindow(FALSE);
    #endif
 
    const VRPreviewMode vrPreview = (VRPreviewMode)g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "VRPreview"s, VRPREVIEW_LEFT);
@@ -635,7 +635,7 @@ BOOL VROptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       {
          #ifdef ENABLE_XR
             // Disable the custom scale as we always scale against the real world lockbar width
-            ::ShowWindow(GetDlgItem(IDC_VR_SCALE).GetHwnd(), SW_HIDE);
+            GetDlgItem(IDC_VR_SCALE).ShowWindow(SW_HIDE);
          #else
          const bool isScaleToLockbarWidth = IsDlgButtonChecked(IDC_SCALE_TO_CM) > 0;
          if (oldScaleValue != isScaleToLockbarWidth)

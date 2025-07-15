@@ -773,7 +773,7 @@ BOOL PropertyDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             if (m_tabs[0] && m_tabs[0]->m_pvsel->ElementAt(0) != nullptr)
             {
                 m_tabs[0]->m_pvsel->ElementAt(0)->GetIEditable()->SetName(m_nameEdit.GetWindowText().GetString());
-                m_nameEdit.SetWindowText(m_tabs[0]->m_pvsel->ElementAt(0)->GetIEditable()->GetName()); // set it again in case it was truncated
+                m_nameEdit.SetWindowText(m_tabs[0]->m_pvsel->ElementAt(0)->GetIEditable()->GetName().c_str()); // set it again in case it was truncated
             }
             return TRUE;
         }
