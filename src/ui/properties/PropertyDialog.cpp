@@ -320,7 +320,7 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
     }
     case eItemTextbox:
     {
-        m_elementTypeName.SetWindowText("Textbox");
+        m_elementTypeName.SetWindowText("TextBox");
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TextboxVisualsProperty(&pvsel), _T("Visuals")));
         m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
         if (m_tab.m_activeTabText == "Visuals")

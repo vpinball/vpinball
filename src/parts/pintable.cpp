@@ -246,6 +246,11 @@ STDMETHODIMP ScriptGlobalTable::put_MusicVolume(float volume)
    return S_OK;
 }
 
+const WCHAR *ScriptGlobalTable::get_Name() const
+{
+   return L"Global";
+}
+
 STDMETHODIMP ScriptGlobalTable::get_Name(BSTR *pVal)
 {
    *pVal = SysAllocString(L"Global");
@@ -4669,10 +4674,7 @@ void PinTable::FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, ISe
     // the actual processing is done in ISelect::DoCommand() 
     for (int i = maxItems; i >= 0; i--)
     {
-        BSTR bstr;
-        m_vcollection[i].get_Name(&bstr);
-        char * const szT = MakeChar(bstr);
-        SysFreeString(bstr);
+        char * const szT = MakeChar(m_vcollection[i].get_Name());
 
         UINT flags = MF_POPUP | MF_UNCHECKED;
         if ((maxItems-i) % 32 == 0) // add new column each 32 entries
@@ -4863,14 +4865,7 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
 string PinTable::GetElementName(IEditable *pedit)
 {
    if (pedit)
-   {
-      if (pedit->GetItemType() == eItemDecal)
-         return "Decal"s;
-
-      IScriptable * const pscript = pedit->GetScriptable();
-      if (pscript)
-         return MakeString(pscript->m_wzName);
-   }
+      return pedit->GetName();
    return string();
 }
 
@@ -6482,6 +6477,11 @@ STDMETHODIMP PinTable::get_FileName(BSTR *pVal)
 {
    *pVal = MakeWideBSTR(m_title);
    return S_OK;
+}
+
+const WCHAR *PinTable::get_Name() const
+{
+   return m_wzName;
 }
 
 STDMETHODIMP PinTable::get_Name(BSTR *pVal)
@@ -9808,10 +9808,7 @@ void PinTable::ShowWhereImagesUsed(vector<WhereUsedInfo> &vWhereUsed)
 #define INSERT_WHERE_USED(x) \
 { \
    whereUsed.searchObjectName = searchObjectName; \
-   BSTR bstrFoundObject; \
-   m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject); \
-   whereUsed.whereUsedObjectname = bstrFoundObject; \
-   SysFreeString(bstrFoundObject); \
+   whereUsed.whereUsedObjectname = m_vedit[i]->GetName(); \
    whereUsed.whereUsedPropertyName = (x); \
    vWhereUsed.push_back(whereUsed); \
 }
@@ -9864,13 +9861,7 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed, Texture *co
       {
          const Decal *const pDecal = (const Decal *)pEdit;
          if (lstrcmpi(pDecal->m_d.m_szImage.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            //Had to hardcode 'decal' below because it doesn't have a unique 'Name' field.
-            whereUsed.whereUsedObjectname = L"decal"s;
-            whereUsed.whereUsedPropertyName = "Image"s;
-            vWhereUsed.push_back(whereUsed);
-         }
+            INSERT_WHERE_USED("Image"s);
          break;
       }
       case eItemFlasher:
@@ -9991,13 +9982,7 @@ void PinTable::ShowWhereMaterialUsed(vector<WhereUsedInfo> &vWhereUsed, Material
       {
          const Decal *const pDecal = (const Decal *)pEdit;
          if (lstrcmpi(pDecal->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            //Had to hardcode 'decal' below because it doesn't have a unique 'Name' field.
-            whereUsed.whereUsedObjectname = L"decal"s;
-            whereUsed.whereUsedPropertyName = "Material"s;
-            vWhereUsed.push_back(whereUsed);
-         }
+            INSERT_WHERE_USED("Material"s);
          break;
       }
       case eItemFlipper:

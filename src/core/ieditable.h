@@ -80,6 +80,7 @@ public:
 #define _STANDARD_DISPATCH_EDITABLE_DECLARES(itemType) \
 	inline IFireEvents *GetIFireEvents() {return (IFireEvents *)this;} \
 	virtual EventProxyBase *GetEventProxyBase() {return (EventProxyBase *)this;} \
+	virtual const WCHAR *get_Name() const { return m_wzName; } \
 	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal) \
 	{ \
 		*pVal = SysAllocString(m_wzName); \
@@ -111,9 +112,9 @@ public:
     { \
         CComObject<T> *obj = nullptr; \
         if (FAILED(CComObject<T>::CreateInstance(&obj))) \
-                { \
-            MessageBox(0, "Failed to create COM object.", "Visual Pinball", MB_ICONEXCLAMATION); \
-                } \
+        { \
+            MessageBox(0, "Failed to create COM object.", "Visual Pinball", MB_OK | MB_ICONEXCLAMATION); \
+        } \
         obj->AddRef(); \
         return obj; \
     } \

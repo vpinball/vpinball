@@ -35,7 +35,8 @@ class IScriptable
 public:
    IScriptable();
 
-   STDMETHOD(get_Name)(BSTR *pVal) = 0; // fails for Decals, returns m_wzName or something custom for everything else
+   STDMETHOD(get_Name)(BSTR *pVal) = 0;       // fails for Decals, returns m_wzName or something custom for everything else
+   virtual const WCHAR *get_Name() const = 0; // dto (and returns "Decal" for Decals, so always non-nullptr returned), but without going through BSTR conversion (necessary for COM)
    virtual IDispatch *GetDispatch() = 0;
    virtual const IDispatch *GetDispatch() const = 0;
    virtual ISelect *GetISelect() = 0;
@@ -77,6 +78,7 @@ public:
    ISelect *GetISelect() final { return nullptr; }
    const ISelect *GetISelect() const final { return nullptr; }
 
+   const WCHAR *get_Name() const final;
    STDMETHOD(get_Name)(BSTR *pVal);
 
    CodeViewer *m_pcv;
@@ -344,7 +346,9 @@ public:
    string external_script_name;  // loaded from external .vbs?
    vector<char> original_table_script; // if yes, then this one stores the original table script
 
+#ifdef __STANDALONE__ // otherwise Scintilla owns the text
    string m_script_text;
+#endif
 
 protected:
    void PreCreate(CREATESTRUCT& cs) final;
@@ -491,6 +495,7 @@ public:
    Collection();
 
    // IScriptable
+   const WCHAR *get_Name() const final;
    STDMETHOD(get_Name)(BSTR *pVal);
    IDispatch *GetDispatch() final { return (IDispatch *)this; }
    const IDispatch *GetDispatch() const final { return (const IDispatch *)this; }

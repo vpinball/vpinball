@@ -537,11 +537,7 @@ HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool global)
 {
    CodeViewDispatch * const pcvd = new CodeViewDispatch();
 
-   BSTR bstr;
-   piscript->get_Name(&bstr);
-
-   pcvd->m_wName = bstr;
-   SysFreeString(bstr);
+   pcvd->m_wName = piscript->get_Name();
    pcvd->m_pdisp = piscript->GetDispatch();
    pcvd->m_pdisp->QueryInterface(IID_IUnknown, (void **)&pcvd->m_punk);
    pcvd->m_punk->Release();
@@ -581,16 +577,12 @@ HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool global)
 
 void CodeViewer::RemoveItem(IScriptable * const piscript)
 {
-   BSTR bstr;
-   piscript->get_Name(&bstr);
+   const WCHAR* name = piscript->get_Name();
 
-   const int idx = m_vcvd.GetSortedIndex(bstr);
+   const int idx = m_vcvd.GetSortedIndex(name);
 
    if (idx == -1)
-   {
-      SysFreeString(bstr);
       return;
-   }
 
    const CodeViewDispatch * const pcvd = m_vcvd[idx];
 
@@ -599,8 +591,7 @@ void CodeViewer::RemoveItem(IScriptable * const piscript)
    m_vcvd.RemoveElementAt(idx);
 
    // Remove item from dropdown
-   char * const szT = MakeChar(bstr);
-   SysFreeString(bstr);
+   char * const szT = MakeChar(name);
 #ifndef __STANDALONE__
    const size_t index = ::SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
    ::SendMessage(m_hwndItemList, CB_DELETESTRING, index, 0);
@@ -612,11 +603,7 @@ void CodeViewer::RemoveItem(IScriptable * const piscript)
 
 void CodeViewer::SelectItem(IScriptable * const piscript)
 {
-   BSTR bstr;
-   piscript->get_Name(&bstr);
-
-   char * const szT = MakeChar(bstr);
-   SysFreeString(bstr);
+   char * const szT = MakeChar(piscript->get_Name());
 
 #ifndef __STANDALONE__
    const LRESULT index = ::SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
@@ -635,15 +622,11 @@ HRESULT CodeViewer::ReplaceName(IScriptable *const piscript, const wstring &wzNe
    if (m_vcvd.GetSortedIndex(wzNew) != -1)
       return E_FAIL;
 
-   BSTR bstr;
-   piscript->get_Name(&bstr);
+   const WCHAR* name = piscript->get_Name();
 
-   const int idx = m_vcvd.GetSortedIndex(bstr);
+   const int idx = m_vcvd.GetSortedIndex(name);
    if (idx == -1)
-   {
-      SysFreeString(bstr);
       return E_FAIL;
-   }
 
    CodeViewDispatch * const pcvd = m_vcvd[idx]; // keep pointer to old element
 
@@ -656,8 +639,7 @@ HRESULT CodeViewer::ReplaceName(IScriptable *const piscript, const wstring &wzNe
    m_vcvd.AddSortedString(pcvd); // and re-add
 
    // Remove old name from dropdown and replace it with the new
-   char * szT = MakeChar(bstr);
-   SysFreeString(bstr);
+   char * szT = MakeChar(name);
 #ifndef __STANDALONE__
    size_t index = ::SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
    ::SendMessage(m_hwndItemList, CB_DELETESTRING, index, 0);
@@ -3205,11 +3187,9 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 		const LRESULT s = ::SendMessage(m_hwndItemList, CB_GETLBTEXTLEN, CBCount, 0);
 		if (s > 1)
 		{
-			char * const c_str1 = new char[s + 1];
-			::SendMessage(m_hwndItemList, CB_GETLBTEXT, CBCount, (LPARAM)c_str1);
 			UserData ud;
-			ud.m_keyName = c_str1;
-			delete[] c_str1;
+			ud.m_keyName.resize(s, '\0');
+			::SendMessage(m_hwndItemList, CB_GETLBTEXT, CBCount, (LPARAM)ud.m_keyName.data());
 			ud.m_uniqueKey = lowerCase(ud.m_keyName);
 			FindOrInsertUD(m_componentsDict,ud);
 		}
@@ -4048,6 +4028,11 @@ Collection::Collection()
    m_groupElements = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "GroupElementsInCollection"s, true);
 }
 
+const WCHAR *Collection::get_Name() const
+{
+   return m_wzName;
+}
+
 STDMETHODIMP Collection::get_Name(BSTR *pVal)
 {
    *pVal = SysAllocString(m_wzName);
@@ -4269,6 +4254,11 @@ STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
    PLOGI_IF_(PLOG_NO_DBG_OUT_INSTANCE_ID, logScript) << "Script.Print '" << szT << '\'';
 
    return S_OK;
+}
+
+const WCHAR *DebuggerModule::get_Name() const
+{
+   return L"Debug";
 }
 
 STDMETHODIMP DebuggerModule::get_Name(BSTR *pVal)

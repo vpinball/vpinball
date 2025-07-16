@@ -49,12 +49,12 @@ struct ProtectionData
 
 struct WhereUsedInfo
 {
-   string searchObjectName; //Source object to search for (images, materials etc)
-   wstring whereUsedObjectname; //Table object (Bumpers, Lights, Ramps, Walls etc) found to be using the source object
-   string whereUsedPropertyName; //Property name where used (If searching for images this could be 'Image', 'Side Image' etc.  If search for materials this could be 'Material', 'Cap Material, 'Base Material' etc.
+   string searchObjectName;      // Source object to search for (images, materials etc)
+   string whereUsedObjectname;   // Table object (Bumpers, Lights, Ramps, Walls etc) found to be using the source object
+   string whereUsedPropertyName; // Property name where used (If searching for images this could be 'Image', 'Side Image' etc.  If search for materials this could be 'Material', 'Cap Material, 'Base Material' etc.
 };
 
-enum EnumWhereUsedSource //The 'Where Used' button appears on both the 'Image Manager' and the 'Materials Manager'.  The 'WhereUsed' dialog has a property of this enum type to 'remember' whether it's to display a list of images or materials.
+enum EnumWhereUsedSource // The 'Where Used' button appears on both the 'Image Manager' and the 'Materials Manager'.  The 'WhereUsed' dialog has a property of this enum type to 'remember' whether it's to display a list of images or materials.
 {
    IMAGES,
    MATERIALS
@@ -237,6 +237,7 @@ public:
 
    STDMETHOD(get_FileName)(/*[out, retval]*/ BSTR *pVal);
 
+   const WCHAR *get_Name() const final;
    STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_Name)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_EnableAntialiasing)(/*[out, retval]*/ UserDefaultOnOff *pVal);
@@ -971,6 +972,7 @@ public:
    STDMETHOD(NudgeSensorStatus)(VARIANT *XNudge, VARIANT *YNudge);
    STDMETHOD(NudgeTiltStatus)(VARIANT *XPlumb, VARIANT *YPlumb, VARIANT *Tilt);
 
+   const WCHAR *get_Name() const final;
    STDMETHOD(get_Name)(BSTR *pVal);
    STDMETHOD(get_MechanicalTilt)(/*[out, retval]*/ LONG *pVal);
    STDMETHOD(get_LeftMagnaSave)(/*[out, retval]*/ LONG *pVal);

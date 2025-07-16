@@ -172,13 +172,9 @@ void IEditable::Undelete()
 
 string IEditable::GetName() const
 {
-   if (GetItemType() == eItemDecal)
-      return "Decal"s;
-
    const IScriptable *const pscript = const_cast<IEditable*>(this)->GetScriptable();
    if (pscript)
-      return MakeString(pscript->m_wzName);
-
+      return MakeString(pscript->get_Name());
    return string();
 }
 
@@ -192,7 +188,7 @@ void IEditable::SetName(const string& name)
    if (pt == nullptr)
       return;
 
-   char * const oldName = MakeChar(GetScriptable()->m_wzName);
+   const char * const oldName = MakeChar(GetScriptable()->m_wzName);
 
    wstring newName = MakeWString(name);
    newName = newName.length() >= MAXNAMEBUFFER ? newName.substr(0, MAXNAMEBUFFER - 1) : newName;

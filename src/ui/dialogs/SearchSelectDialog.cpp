@@ -633,7 +633,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
    }
    case eItemTextbox:
    {
-      ListView_SetItemText(m_hElementList, idx, 1, (LPSTR)"Textbox");
+      ListView_SetItemText(m_hElementList, idx, 1, (LPSTR)"TextBox");
       ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)"");
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)"");
 
