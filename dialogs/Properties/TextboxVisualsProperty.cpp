@@ -2,7 +2,7 @@
 #include "Properties/TextboxVisualsProperty.h"
 #include <WindowsX.h>
 
-TextboxVisualsProperty::TextboxVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTEXTBOX_VISUALS, pvsel)
+TextboxVisualsProperty::TextboxVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTEXTBOX_VISUALS, pvsel), m_font(nullptr)
 {
     m_alignList.push_back("Align Left");
     m_alignList.push_back("Align Center");
@@ -19,8 +19,7 @@ TextboxVisualsProperty::TextboxVisualsProperty(const VectorProtected<ISelect> *p
 
 TextboxVisualsProperty::~TextboxVisualsProperty()
 {
-    if (m_font)
-        delete m_font;
+    delete m_font;
 }
 
 void TextboxVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -59,8 +58,7 @@ void TextboxVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             if (text->m_pIFont)
             {
                 m_fontDialogButton.SetWindowText(text->GetFontName());
-                if (!m_font)
-                  delete m_font;
+                delete m_font;
                 m_font = new CFont(text->GetFont());
             }
         }
