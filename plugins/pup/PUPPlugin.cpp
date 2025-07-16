@@ -161,33 +161,32 @@ static unsigned int onAudioUpdateId;
 static vector<uint32_t> freeAudioStreamId;
 uint32_t nextAudioStreamId = 1;
 
-void UpdateAudioStream(ExtAudioUpdateMsg* msg)
+void UpdateAudioStream(AudioUpdateMsg* msg)
 {
-   if (msg->msg.volume == 0.0f)
+   if (msg->volume == 0.0f)
    {
-      StopAudioStream(msg->msg.id);
-      msg->msg.id.id = 0;
+      StopAudioStream(msg->id);
+      msg->id.id = 0;
       return;
    }
-   if (msg->msg.id.id == 0)
+   if (msg->id.id == 0)
    {
-      msg->msg.id.endpointId = endpointId;
+      msg->id.endpointId = endpointId;
       if (freeAudioStreamId.empty())
       {
-         msg->msg.id.resId = nextAudioStreamId;
+         msg->id.resId = nextAudioStreamId;
          nextAudioStreamId++;
       }
       else
       {
-         msg->msg.id.resId = freeAudioStreamId.back();
+         msg->id.resId = freeAudioStreamId.back();
          freeAudioStreamId.pop_back();
       }
    }
    msgApi->RunOnMainThread(0, [](void* userData) {
-      ExtAudioUpdateMsg* msg = static_cast<ExtAudioUpdateMsg*>(userData);
-      msgApi->BroadcastMsg(endpointId, onAudioUpdateId, &msg->msg);
-      if (msg->freeSampleBuffer)
-         LibAV::GetInstance()._av_free(msg->msg.buffer);
+      AudioUpdateMsg* msg = static_cast<AudioUpdateMsg*>(userData);
+      msgApi->BroadcastMsg(endpointId, onAudioUpdateId, msg);
+      LibAV::GetInstance()._av_free(msg->buffer);
       delete msg;
    }, msg);
 }

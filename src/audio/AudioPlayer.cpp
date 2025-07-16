@@ -380,27 +380,20 @@ void AudioPlayer::EnqueueStream(AudioStreamID stream, void* buffer, int length)
    static_cast<AudioStreamPlayer*>(stream)->Enqueue(buffer, length);
 }
 
-void AudioPlayer::ClearStream(AudioStreamID stream)
-{
-   static_cast<AudioStreamPlayer*>(stream)->Clear();
-}
-
-int AudioPlayer::GetStreamQueueSize(AudioStreamID stream) const
-{
-   return static_cast<AudioStreamPlayer*>(stream)->GetQueued();
-}
-
 void AudioPlayer::SetStreamVolume(AudioStreamID stream, const float volume)
 {
    static_cast<AudioStreamPlayer*>(stream)->SetStreamVolume(volume);
 }
 
-void AudioPlayer::CloseAudioStream(AudioStreamID stream)
+void AudioPlayer::CloseAudioStream(AudioStreamID stream, bool afterEndOfStream)
 {
    auto item = std::ranges::find_if(m_audioStreams, [stream](std::unique_ptr<AudioStreamPlayer>& player) { return player.get() == stream; });
    if (item != m_audioStreams.end())
    {
-      m_audioStreams.erase(item);
+      if (afterEndOfStream)
+         (*item)->EndStream([this, stream]() { CloseAudioStream(stream, false); });
+      else
+         m_audioStreams.erase(item);
    }
    else
    {
