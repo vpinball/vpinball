@@ -379,11 +379,8 @@ HRESULT BiffReader::GetString(string &szvalue)
 
    m_bytesinrecordremaining -= len + (int)sizeof(int);
 
-   char *tmp = new char[len+1];
-   hr = ReadBytes(tmp, len);
-   tmp[len] = 0;
-   szvalue = tmp;
-   delete[] tmp;
+   szvalue.resize(len, '\0');
+   hr = ReadBytes(szvalue.data(), len);
    return hr;
 }
 
