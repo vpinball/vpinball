@@ -274,7 +274,7 @@ static void SetPartGroup(ISelect* const me, const string& layerName)
       if (partGroupF == me->GetPTable()->m_vedit.end())
       {
          PartGroup *const newGroup = static_cast<PartGroup *>(EditableRegistry::CreateAndInit(eItemPartGroup, me->GetPTable(), 0, 0));
-         wstring newName = MakeWString(layerName);
+         const wstring newName = MakeWString(layerName);
          me->GetPTable()->m_pcv->ReplaceName(newGroup->GetIEditable()->GetScriptable(), newName);
          wcscpy_s(newGroup->GetScriptable()->m_wzName, newName.c_str());
          me->GetPTable()->m_vedit.push_back(newGroup);

@@ -2030,10 +2030,8 @@ PinTable* PinTable::CopyForPlay()
    CComObject<PinTable> *dst = live_table;
    #ifndef __STANDALONE__
       const size_t cchar = ::SendMessage(src->m_pcv->m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
-      char *const szText = new char[cchar + 1];
-      ::SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
-      std::string script = szText;
-      delete[] szText;
+      string script(cchar, '\0');
+      ::SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)script.data());
       script = VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(script);
       ::SendMessage(dst->m_pcv->m_hwndScintilla, SCI_SETTEXT, 0, (size_t)script.c_str());
    #else
@@ -3589,10 +3587,8 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
             // Rename layers that have been automatically converted to group if there aren't any name conflict (checking for collection objects, as well as script variable names)
             #ifndef __STANDALONE__
                const size_t scriptLength = ::SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
-               char *const scriptChars = new char[scriptLength + 1];
-               ::SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXT, scriptLength + 1, (LPARAM)scriptChars);
-               string script(scriptChars);
-               delete[] scriptChars;
+               string script(scriptLength, '\0');
+               ::SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXT, scriptLength + 1, (LPARAM)script.data());
             #else
                string script = m_pcv->m_script_text;
             #endif
