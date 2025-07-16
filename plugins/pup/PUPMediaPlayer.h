@@ -65,7 +65,7 @@ private:
    AVCodecContext* m_pAudioContext = nullptr;
    struct SwrContext* m_pAudioConversionContext = nullptr;
    AVSampleFormat m_audioFormat = AV_SAMPLE_FMT_NONE;
-   void* m_pAudioOpaque = nullptr;
+   void* m_pAudioLoop = nullptr;
    int m_audioFreq = 0;
    CtlResId m_audioResId { 0 };
 

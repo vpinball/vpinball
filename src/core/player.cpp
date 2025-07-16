@@ -2550,23 +2550,14 @@ void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgD
    else
    {
       VPX::AudioPlayer::AudioStreamID const stream = entry->second; 
-      if (msg.buffer != nullptr)
+      if (msg.buffer != nullptr && msg.bufferSize != 0)
       {
-         const int pending = me->m_audioPlayer->GetStreamQueueSize(stream);
-         const int nBytePerSample = (msg.format == CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT) ? 4 : 2;
-         // Basic throttling: if we have more than 300ms already enqueued, then drop them to sync back on stream
-         if (1000 * pending > 300 * (msg.sampleRate * nBytePerSample * ((msg.type == CTLPI_AUDIO_SRC_BACKGLASS_MONO) ? 1 : 2)))
-         {
-            const double delay = 1000.0 * pending / (msg.sampleRate * nBytePerSample * ((msg.type == CTLPI_AUDIO_SRC_BACKGLASS_MONO) ? 1 : 2));
-            PLOGI << "Dropping enqueued sound stream as lag (" << delay << "ms) is exceeding limit";
-            me->m_audioPlayer->ClearStream(stream);
-         }
          me->m_audioPlayer->SetStreamVolume(stream, msg.volume);
          me->m_audioPlayer->EnqueueStream(stream, msg.buffer, msg.bufferSize);
       }
       else
       {
-         me->m_audioPlayer->CloseAudioStream(stream);
+         me->m_audioPlayer->CloseAudioStream(stream, true);
          me->m_audioStreams.erase(entry);
       }
    }

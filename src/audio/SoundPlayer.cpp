@@ -249,7 +249,9 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, string filename)
          m_sound = nullptr;
          return;
       }
-      ma_sound_start(m_sound.get());
+
+      if (!IsPlaying())
+         ma_sound_start(m_sound.get());
    });
 }
 
@@ -312,7 +314,9 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound)
          m_sound = nullptr;
          return;
       }
-      ma_sound_start(m_sound.get());
+
+      if (!IsPlaying())
+         ma_sound_start(m_sound.get());
    });
 }
 
