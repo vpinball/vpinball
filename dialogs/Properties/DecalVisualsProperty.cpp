@@ -25,8 +25,7 @@ DecalVisualsProperty::DecalVisualsProperty(const VectorProtected<ISelect> *pvsel
 
 DecalVisualsProperty::~DecalVisualsProperty()
 {
-    if (m_font)
-        delete m_font;
+    delete m_font;
 }
 
 void DecalVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -82,6 +81,7 @@ void DecalVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (decal->m_pIFont)
         {
             m_fontDialogButton.SetWindowText(decal->GetFontName());
+            delete m_font;
             m_font = new CFont(decal->GetFont());
         }
 
