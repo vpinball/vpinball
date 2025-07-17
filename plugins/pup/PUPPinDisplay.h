@@ -71,6 +71,7 @@ public:
 
 private:
    PUPManager& m_pupManager;
+   ankerl::unordered_dense::map<int, ankerl::unordered_dense::set<string>> m_warnedLabels;
 };
 
 }

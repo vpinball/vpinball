@@ -297,6 +297,7 @@
     <ClCompile Include="../../plugins/pup/common.cpp" />
     <ClCompile Include="../../plugins/pup/PUPPlugin.cpp" />
     <ClCompile Include="../../plugins/pup/PUPCustomPos.cpp" />
+    <ClCompile Include="../../plugins/pup/PUPImage.cpp" />
     <ClCompile Include="../../plugins/pup/PUPLabel.cpp" />
     <ClCompile Include="../../plugins/pup/PUPManager.cpp" />
     <ClCompile Include="../../plugins/pup/PUPMediaManager.cpp" />
@@ -310,6 +311,7 @@
     <ClInclude Include="../../plugins/pup/common.h" />
     <ClInclude Include="../../plugins/pup/LibAv.h" />
     <ClInclude Include="../../plugins/pup/PUPCustomPos.h" />
+    <ClInclude Include="../../plugins/pup/PUPImage.h" />
     <ClInclude Include="../../plugins/pup/PUPLabel.h" />
     <ClInclude Include="../../plugins/pup/PUPManager.h" />
     <ClInclude Include="../../plugins/pup/PUPMediaManager.h" />

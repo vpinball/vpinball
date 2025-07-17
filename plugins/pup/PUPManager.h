@@ -80,7 +80,7 @@ public:
    bool AddScreen(PUPScreen* pScreen);
    bool AddScreen(int screenNum);
    bool HasScreen(int screenNum);
-   PUPScreen* GetScreen(int screenNum) const;
+   PUPScreen* GetScreen(int screenNum, bool logMissing = false) const;
    bool AddFont(TTF_Font* pFont, const string& szFilename);
    TTF_Font* GetFont(const string& szFont);
 
@@ -88,6 +88,8 @@ public:
 
 private:
    void ProcessQueue();
+   void UnloadFonts();
+   void LoadFonts();
    void LoadPlaylists();
    void Start();
    void Stop();

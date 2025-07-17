@@ -39,6 +39,18 @@ void PUPMediaManager::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, flo
    m_pMainPlayer->priority = priority;
 }
 
+void PUPMediaManager::Pause()
+{
+   m_player1.player.Pause(true);
+   m_player2.player.Pause(true);
+}
+
+void PUPMediaManager::Resume()
+{
+   m_player1.player.Pause(false);
+   m_player2.player.Pause(false);
+}
+
 void PUPMediaManager::SetBG(bool isBackground)
 {
    if (isBackground) {
