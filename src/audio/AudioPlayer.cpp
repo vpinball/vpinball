@@ -26,7 +26,7 @@ struct ma_device_ex
 static ma_result ma_context_enumerate_devices__sdl(ma_context* pContext, ma_enum_devices_callback_proc callback, void* pUserData)
 {
    int count;
-   SDL_AudioDeviceID* const pAudioList = SDL_GetAudioPlaybackDevices(&count);
+   auto pAudioList = SDL_GetAudioPlaybackDevices(&count);
    if (pAudioList == nullptr)
       return MA_ERROR;
    for (int i = 0; i < count; ++i)
@@ -88,7 +88,7 @@ static ma_result ma_context_get_device_info__sdl(ma_context* pContext, ma_device
 
 void ma_audio_callback_playback__sdl(void* pUserData, SDL_AudioStream* stream, int additional_amount, const int total_amount)
 {
-   ma_device_ex* pDevice = static_cast<ma_device_ex*>(pUserData);
+   auto pDevice = static_cast<ma_device_ex*>(pUserData);
    if (pDevice->buffer.size() < total_amount)
       pDevice->buffer.resize(total_amount);
    const int sizePerMAFrame = ma_get_bytes_per_frame(pDevice->device.playback.internalFormat, pDevice->device.playback.internalChannels);
@@ -102,9 +102,9 @@ static ma_result ma_device_init__sdl(ma_device* pDevice, const ma_device_config*
    if (pConfig->deviceType != ma_device_type_playback)
       return MA_DEVICE_TYPE_NOT_SUPPORTED;
 
-   ma_device_ex* pDeviceEx = reinterpret_cast<ma_device_ex*>(pDevice);
+   auto pDeviceEx = reinterpret_cast<ma_device_ex*>(pDevice);
 
-   SDL_AudioDeviceID requestedDeviceId = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
+   auto requestedDeviceId = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
    if (pConfig->playback.pDeviceID)
       requestedDeviceId = pConfig->playback.pDeviceID->custom.i;
 
@@ -156,24 +156,21 @@ static ma_result ma_device_init__sdl(ma_device* pDevice, const ma_device_config*
 
 static ma_result ma_device_uninit__sdl(ma_device* pDevice)
 {
-   ma_device_ex* pDeviceEx = (ma_device_ex*)pDevice;
-   if (pDeviceEx->stream)
+   if (auto pDeviceEx = reinterpret_cast<ma_device_ex*>(pDevice); pDeviceEx->stream)
       SDL_DestroyAudioStream(pDeviceEx->stream);
    return MA_SUCCESS;
 }
 
 static ma_result ma_device_start__sdl(ma_device* pDevice)
 {
-   ma_device_ex* pDeviceEx = (ma_device_ex*)pDevice;
-   if (pDeviceEx->stream)
+   if (auto pDeviceEx = reinterpret_cast<ma_device_ex*>(pDevice); pDeviceEx->stream)
       SDL_ResumeAudioStreamDevice(pDeviceEx->stream);
    return MA_SUCCESS;
 }
 
 static ma_result ma_device_stop__sdl(ma_device* pDevice)
 {
-   ma_device_ex* pDeviceEx = (ma_device_ex*)pDevice;
-   if (pDeviceEx->stream)
+   if (auto pDeviceEx = reinterpret_cast<ma_device_ex*>(pDevice); pDeviceEx->stream)
       SDL_PauseAudioStreamDevice(pDeviceEx->stream);
    return MA_SUCCESS;
 }
@@ -216,7 +213,7 @@ AudioPlayer::AudioPlayer(const Settings& settings)
    const bool hasBackglassSOundDevice = settings.LoadValue(Settings::Player, "SoundDeviceBG"s, soundDeviceBGName);
    {
       int count;
-      SDL_AudioDeviceID* const pAudioList = SDL_GetAudioPlaybackDevices(&count);
+      const SDL_AudioDeviceID* const pAudioList = SDL_GetAudioPlaybackDevices(&count);
       for (int i = 0; i < count; ++i)
       { // We identify by name as this is the only stable property (see https://github.com/libsdl-org/SDL/issues/12278)
          string name = SDL_GetAudioDeviceName(pAudioList[i]);
@@ -255,8 +252,7 @@ AudioPlayer::AudioPlayer(const Settings& settings)
       ma_device_info dev;
    };
    auto selectDevice = [](ma_context* pContext, ma_device_type deviceType, const ma_device_info* pInfo, void* pUserData) {
-      SDLDeviceInfo* info = (SDLDeviceInfo*)pUserData;
-      if (pInfo->id.custom.i == info->id)
+      if (auto info = static_cast<SDLDeviceInfo*>(pUserData); pInfo->id.custom.i == info->id)
       {
          info->dev = *pInfo;
          return (ma_bool32)MA_FALSE;
@@ -283,7 +279,7 @@ AudioPlayer::AudioPlayer(const Settings& settings)
          ma_engine_config engineConfig;
          engineConfig = ma_engine_config_init();
          engineConfig.pContext = m_maContext.get();
-         engineConfig.pDevice = reinterpret_cast<ma_device*>(m_backglassDevice.get());
+         engineConfig.pDevice = &m_backglassDevice->device;
          engineConfig.noAutoStart = MA_TRUE;
          m_backglassEngine = std::make_unique<ma_engine>();
          result = ma_engine_init(&engineConfig, m_backglassEngine.get());
@@ -317,7 +313,7 @@ AudioPlayer::AudioPlayer(const Settings& settings)
          ma_engine_config engineConfig;
          engineConfig = ma_engine_config_init();
          engineConfig.pContext = m_maContext.get();
-         engineConfig.pDevice = reinterpret_cast<ma_device*>(m_playfieldDevice.get());
+         engineConfig.pDevice = &m_playfieldDevice->device;
          engineConfig.noAutoStart = MA_TRUE;
          m_playfieldEngine = std::make_unique<ma_engine>();
          result = ma_engine_init(&engineConfig, m_playfieldEngine.get());
@@ -357,37 +353,35 @@ void AudioPlayer::SetMainVolume(float backglassVolume, float playfieldVolume)
    m_playfieldVolume = playfieldVolume;
    if (m_music)
       m_music->SetMainVolume(backglassVolume, playfieldVolume);
-   for (auto& players : m_soundPlayers)
-      for (auto& player : players.second)
+   for (const auto& [sound, players] : m_soundPlayers)
+      for (auto& player : players)
          player->SetMainVolume(backglassVolume, playfieldVolume);
-   for (auto& player : m_audioStreams)
+   for (const auto& player : m_audioStreams)
       player->SetMainVolume(backglassVolume);
 }
 
 AudioPlayer::AudioStreamID AudioPlayer::OpenAudioStream(int frequency, int channels, bool isFloat)
 {
-   AudioStreamPlayer* audioStream = AudioStreamPlayer::Create(m_backglassAudioDevice, frequency, channels, isFloat);
-   if (audioStream)
-   {
-      audioStream->SetMainVolume(m_backglassVolume);
-      m_audioStreams.push_back(std::unique_ptr<AudioStreamPlayer>(audioStream));
-   }
-   return audioStream;
+   std::unique_ptr<AudioStreamPlayer> audioStream = AudioStreamPlayer::Create(m_backglassAudioDevice, frequency, channels, isFloat);
+   if (audioStream == nullptr)
+      return nullptr;
+   AudioStreamID stream = std::move(audioStream);
+   stream->SetMainVolume(m_backglassVolume);
+   m_audioStreams.push_back(stream);
+   return stream;
 }
 
-void AudioPlayer::EnqueueStream(AudioStreamID stream, void* buffer, int length)
-{
-   static_cast<AudioStreamPlayer*>(stream)->Enqueue(buffer, length);
+void AudioPlayer::EnqueueStream(AudioStreamID stream, uint8_t* buffer, int length) const {
+   stream->Enqueue(buffer, length);
 }
 
-void AudioPlayer::SetStreamVolume(AudioStreamID stream, const float volume)
-{
-   static_cast<AudioStreamPlayer*>(stream)->SetStreamVolume(volume);
+void AudioPlayer::SetStreamVolume(AudioStreamID stream, const float volume) const {
+   stream->SetStreamVolume(volume);
 }
 
 void AudioPlayer::CloseAudioStream(AudioStreamID stream, bool afterEndOfStream)
 {
-   auto item = std::ranges::find_if(m_audioStreams, [stream](std::unique_ptr<AudioStreamPlayer>& player) { return player.get() == stream; });
+   auto item = std::ranges::find_if(m_audioStreams, [stream](std::shared_ptr<AudioStreamPlayer> player) { return player == stream; });
    if (item != m_audioStreams.end())
    {
       if (afterEndOfStream)
@@ -453,7 +447,7 @@ void AudioPlayer::PlaySound(Sound* sound, float volumeOffset, const float random
    //   - if 'usesame' is true, search for the first player for the given sound and reuse it if any (even is it is playing), create a new one otherwise
    //   - if 'usesame' is false, always create a new player for the given sound
    // - if restart is false and selected sound player was already playing, settings would be applied without restarting the sound
-   for (auto& soundPlayer : players)
+   for (const auto& soundPlayer : players)
    {
       if (useSame || !soundPlayer->IsPlaying())
       {
@@ -486,8 +480,8 @@ void AudioPlayer::PlaySound(Sound* sound, float volumeOffset, const float random
 
 void AudioPlayer::StopSound(Sound* sound)
 {
-   vector<std::unique_ptr<SoundPlayer>>& players = m_soundPlayers[sound];
-   for (auto& player : players)
+   const vector<std::unique_ptr<SoundPlayer>>& players = m_soundPlayers[sound];
+   for (const auto& player : players)
       player->Stop();
 }
 
@@ -495,8 +489,8 @@ SoundSpec AudioPlayer::GetSoundInformations(const Sound* const sound) const
 {
    SoundSpec specs { 0 };
    ma_decoder decoder;
-   ma_decoder_config decoderConfig = ma_decoder_config_init(ma_format_unknown, 0, 0);
-   if (ma_decoder_init_memory(sound->GetFileRaw(), sound->GetFileSize(), &decoderConfig, &decoder) != MA_SUCCESS)
+   if (ma_decoder_config decoderConfig = ma_decoder_config_init(ma_format_unknown, 0, 0);
+      ma_decoder_init_memory(sound->GetFileRaw(), sound->GetFileSize(), &decoderConfig, &decoder) != MA_SUCCESS)
       return specs;
    specs.nChannels = decoder.outputChannels;
    specs.sampleFrequency = decoder.outputSampleRate;
@@ -522,7 +516,7 @@ vector<AudioPlayer::AudioDevice> AudioPlayer::EnumerateAudioDevices()
       return vector<AudioDevice>();
    }
    int count;
-   SDL_AudioDeviceID* pAudioList = SDL_GetAudioPlaybackDevices(&count);
+   auto pAudioList = SDL_GetAudioPlaybackDevices(&count);
    vector<AudioDevice> audioDevices;
    for (int i = 0; i < count; ++i)
    {

@@ -12,7 +12,8 @@ namespace VPX
 class AudioStreamPlayer
 {
 public:
-   static AudioStreamPlayer* Create(int sdlDevice, int frequency, int channels, bool isFloat);
+   static std::unique_ptr<AudioStreamPlayer> Create(int sdlDevice, int frequency, int channels, bool isFloat);
+   explicit AudioStreamPlayer(SDL_AudioStream* stream);
    ~AudioStreamPlayer();
 
    void Enqueue(void* buffer, int length);
@@ -21,7 +22,6 @@ public:
    void SetMainVolume(const float volume);
 
 private:
-   AudioStreamPlayer(SDL_AudioStream* stream);
    static void AudioStreamCallback(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount);
    static void FlushCallback(void* userdata);;
 
