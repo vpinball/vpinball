@@ -60,22 +60,17 @@ const char* PUP_PINDISPLAY_REQUEST_TYPE_TO_STRING(PUP_PINDISPLAY_REQUEST_TYPE va
 PUPScreen::PUPScreen(PUPManager* manager, PUP_SCREEN_MODE mode, int screenNum, const string& szScreenDes, const string& szBackgroundPlaylist, const string& szBackgroundFilename, bool transparent, float volume, PUPCustomPos* pCustomPos, const std::vector<PUPPlaylist*>& playlists)
    : m_pManager(manager)
    , m_screenNum(screenNum)
+   , m_mode(mode)
+   , m_screenDes(szScreenDes)
+   , m_backgroundPlaylist(szBackgroundPlaylist)
+   , m_backgroundFilename(szBackgroundFilename)
+   , m_transparent(transparent)
+   , m_volume(volume)
+   , m_pCustomPos(pCustomPos)
 {
-   m_mode = mode;
-   m_screenDes = szScreenDes;
-   m_backgroundPlaylist = szBackgroundPlaylist;
-   m_backgroundFilename = szBackgroundFilename;
-   m_transparent = transparent;
-   m_volume = volume;
-   m_pCustomPos = pCustomPos;
    memset(&m_background, 0, sizeof(m_background));
    memset(&m_overlay, 0, sizeof(m_overlay));
    m_pMediaPlayerManager = std::make_unique<PUPMediaManager>(this);
-   m_labelInit = false;
-   m_pagenum = 0;
-   m_defaultPagenum = 0;
-   m_pParent = nullptr;
-   m_isRunning = false;
 
    for (const PUPPlaylist* pPlaylist : playlists) {
       // make a copy of the playlist
@@ -102,8 +97,6 @@ PUPScreen::~PUPScreen()
       m_thread.join();
 
    delete m_pCustomPos;
-   FreeRenderable(&m_background);
-   FreeRenderable(&m_overlay);
    if (m_pageTimer)
       SDL_RemoveTimer(m_pageTimer);
 
@@ -196,6 +189,17 @@ void PUPScreen::LoadTriggers()
          AddTrigger(PUPTrigger::CreateFromCSV(this, line));
       }
    }
+}
+
+void PUPScreen::SetVolume(float volume)
+{
+   m_volume = volume;
+   m_pMediaPlayerManager->SetVolume(volume);
+}
+
+void PUPScreen::SetVolumeCurrent(float volume)
+{
+   m_pMediaPlayerManager->SetVolume(volume);
 }
 
 void PUPScreen::AddChild(PUPScreen* pScreen)
@@ -334,7 +338,7 @@ void PUPScreen::SetSize(int w, int h)
 void PUPScreen::SetBackground(PUPPlaylist* pPlaylist, const std::string& szPlayFile)
 {
    std::lock_guard<std::mutex> lock(m_renderMutex);
-   LoadRenderable(&m_background, pPlaylist->GetPlayFilePath(szPlayFile));
+   m_background.Load(pPlaylist->GetPlayFilePath(szPlayFile));
 }
 
 void PUPScreen::SetCustomPos(const string& szCustomPos)
@@ -347,7 +351,7 @@ void PUPScreen::SetCustomPos(const string& szCustomPos)
 void PUPScreen::SetOverlay(PUPPlaylist* pPlaylist, const std::string& szPlayFile)
 {
    std::lock_guard<std::mutex> lock(m_renderMutex);
-   LoadRenderable(&m_overlay, pPlaylist->GetPlayFilePath(szPlayFile));
+   m_overlay.Load(pPlaylist->GetPlayFilePath(szPlayFile));
 }
 
 void PUPScreen::SetMedia(PUPPlaylist* pPlaylist, const std::string& szPlayFile, float volume, int priority, bool skipSamePriority, int length)
@@ -397,8 +401,7 @@ void PUPScreen::QueuePlay(const string& szPlaylist, const string& szPlayFile, fl
    LOGD("queueing play, screen={%s}, playlist={%s}, playFile=%s, volume=%.f, priority=%d",
       ToString(false).c_str(), pPlaylist->ToString().c_str(), szPlayFile.c_str(), volume, priority);
 
-   PUPPinDisplayRequest* pRequest = new PUPPinDisplayRequest();
-   pRequest->type = PUP_PINDISPLAY_REQUEST_TYPE_NORMAL;
+   PUPPinDisplayRequest* pRequest = new PUPPinDisplayRequest(PUP_PINDISPLAY_REQUEST_TYPE_NORMAL);
    pRequest->pPlaylist = pPlaylist;
    pRequest->szPlayFile = szPlayFile;
    pRequest->volume = volume;
@@ -411,16 +414,12 @@ void PUPScreen::QueuePlay(const string& szPlaylist, const string& szPlayFile, fl
    m_queueCondVar.notify_one();
 }
 
-void PUPScreen::QueueStop()
+void PUPScreen::QueueRequest(PUPPinDisplayRequest* request)
 {
-   LOGD("queueing stop, screen={%s}", ToString(false).c_str());
-
-   PUPPinDisplayRequest* pRequest = new PUPPinDisplayRequest();
-   pRequest->type = PUP_PINDISPLAY_REQUEST_TYPE_STOP;
-
+   LOGD("Queueing PinDisplay request %d on screen {%s}", request->type, ToString(false).c_str());
    {
       std::lock_guard<std::mutex> lock(m_queueMutex);
-      m_queue.push(pRequest);
+      m_queue.push(request);
    }
    m_queueCondVar.notify_one();
 }
@@ -429,8 +428,7 @@ void PUPScreen::QueueLoop(int state)
 {
    LOGD("queueing loop, screen={%s}, state=%d", ToString(false).c_str(), state);
 
-   PUPPinDisplayRequest* pRequest = new PUPPinDisplayRequest();
-   pRequest->type = PUP_PINDISPLAY_REQUEST_TYPE_LOOP;
+   PUPPinDisplayRequest* pRequest = new PUPPinDisplayRequest(PUP_PINDISPLAY_REQUEST_TYPE_LOOP);
    pRequest->value = state;
 
    {
@@ -444,8 +442,7 @@ void PUPScreen::QueueBG(int mode)
 {
    LOGD("queueing bg, screen={%s}, mode=%d", ToString(false).c_str(), mode);
 
-   PUPPinDisplayRequest* pRequest = new PUPPinDisplayRequest();
-   pRequest->type = PUP_PINDISPLAY_REQUEST_TYPE_SET_BG;
+   PUPPinDisplayRequest* pRequest = new PUPPinDisplayRequest(PUP_PINDISPLAY_REQUEST_TYPE_SET_BG);
    pRequest->value = mode;
 
    {
@@ -470,15 +467,6 @@ void PUPScreen::Start()
 
    m_isRunning = true;
    m_thread = std::thread(&PUPScreen::ProcessQueue, this);
-}
-
-void PUPScreen::Init()
-{
-   LOGD("Initializing: screen={%s}", ToString(false).c_str());
-   for (auto pChildren : { &m_defaultChildren, &m_backChildren, &m_topChildren }) {
-      for (PUPScreen* pScreen : *pChildren)
-         pScreen->Init();
-   }
 }
 
 void PUPScreen::ProcessQueue()
@@ -548,6 +536,18 @@ void PUPScreen::ProcessPinDisplayRequest(PUPPinDisplayRequest* pRequest)
       case PUP_PINDISPLAY_REQUEST_TYPE_SET_BG:
          SetBG(pRequest->value);
          break;
+      case PUP_PINDISPLAY_REQUEST_TYPE_PAUSE:
+         {
+            std::lock_guard<std::mutex> lock(m_renderMutex);
+            m_pMediaPlayerManager->Pause();
+         }
+         break;
+      case PUP_PINDISPLAY_REQUEST_TYPE_RESUME:
+         {
+            std::lock_guard<std::mutex> lock(m_renderMutex);
+            m_pMediaPlayerManager->Resume();
+         }
+         break;
       case PUP_PINDISPLAY_REQUEST_TYPE_STOP:
          StopMedia();
          break;
@@ -615,7 +615,7 @@ void PUPScreen::Render(VPXRenderContext2D* const ctx)
 {
    std::lock_guard<std::mutex> lock(m_renderMutex);
 
-   Render(ctx, &m_background);
+   m_background.Render(ctx, m_rect);
 
    m_pMediaPlayerManager->Render(ctx);
 
@@ -624,7 +624,7 @@ void PUPScreen::Render(VPXRenderContext2D* const ctx)
          pScreen->Render(ctx);
    }
 
-   Render(ctx, &m_overlay);
+   m_overlay.Render(ctx, m_rect);
 
    // FIXME port SDL_SetRenderClipRect(m_pRenderer, &m_rect);
 
@@ -632,62 +632,6 @@ void PUPScreen::Render(VPXRenderContext2D* const ctx)
       pLabel->Render(ctx, m_rect, m_pagenum);
 
    // FIXME port SDL_SetRenderClipRect(m_pRenderer, NULL);
-}
-
-void PUPScreen::LoadRenderable(PUPScreenRenderable* pRenderable, const string& szFile)
-{
-   if (pRenderable->pSurface) {
-      SDL_DestroySurface(pRenderable->pSurface);
-      pRenderable->pSurface = nullptr;
-   }
-
-   SDL_Surface* pSurface = IMG_Load(szFile.c_str());
-   if (pSurface) {
-      if (pSurface->format == SDL_PIXELFORMAT_RGBA32)
-         pRenderable->pSurface = pSurface;
-      else {
-         pRenderable->pSurface = SDL_ConvertSurface(pSurface, SDL_PIXELFORMAT_RGBA32);
-         SDL_DestroySurface(pSurface);
-      }
-   }
-   pRenderable->dirty = true;
-}
-
-void PUPScreen::Render(VPXRenderContext2D* const ctx, PUPScreenRenderable* pRenderable)
-{
-   // Update texture
-   if (pRenderable->dirty)
-   {
-      if (pRenderable->pTexture) {
-         DeleteTexture(pRenderable->pTexture);
-         pRenderable->pTexture = NULL;
-      }
-      if (pRenderable->pSurface) {
-         pRenderable->pTexture = CreateTexture(pRenderable->pSurface);
-         SDL_DestroySurface(pRenderable->pSurface);
-         pRenderable->pSurface = NULL;
-      }
-      pRenderable->dirty = false;
-   }
-
-   // Render image
-   if (pRenderable->pTexture)
-   {
-      VPXTextureInfo* texInfo = GetTextureInfo(pRenderable->pTexture);
-      ctx->DrawImage(ctx, pRenderable->pTexture, 1.f, 1.f, 1.f, 1.f,
-         0.f, 0.f, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height),
-         0.f, 0.f, 0.f, 
-         static_cast<float>(m_rect.x), static_cast<float>(m_rect.y), static_cast<float>(m_rect.w), static_cast<float>(m_rect.h));
-   }
-}
-
-void PUPScreen::FreeRenderable(PUPScreenRenderable* pRenderable)
-{
-   if (pRenderable->pSurface)
-      SDL_DestroySurface(pRenderable->pSurface);
-
-   if (pRenderable->pTexture)
-      DeleteTexture(pRenderable->pTexture);
 }
 
 string PUPScreen::ToString(bool full) const

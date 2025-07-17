@@ -43,19 +43,24 @@ PUPManager::~PUPManager()
 
 void PUPManager::SetGameDir(const string& szRomName)
 {
-   std::lock_guard<std::mutex> lock(m_queueMutex);
-
    if (m_szRootPath.empty())
    {
       LOGI("No pupvideos folder found, not initializing PUP");
       return;
    }
-
-   m_szPath = find_case_insensitive_directory_path(m_szRootPath + szRomName);
-   if (m_szPath.empty())
+   const string path = find_case_insensitive_directory_path(m_szRootPath + szRomName);
+   if (path.empty())
       return;
+   if (path != m_szPath)
+   {
+      std::lock_guard<std::mutex> lock(m_queueMutex);
 
-   LOGI("PUP path: %s", m_szPath.c_str());
+      m_szPath = path;
+      LOGI("PUP path: %s", m_szPath.c_str());
+
+      // Load Fonts
+      LoadFonts();
+   }
 }
 
 void PUPManager::LoadConfig(const string& szRomName)
@@ -123,26 +128,7 @@ void PUPManager::LoadConfig(const string& szRomName)
 
    // Load Fonts
 
-   string szFontsPath = find_case_insensitive_directory_path(m_szPath + "FONTS");
-   if (!szFontsPath.empty()) {
-      for (const auto& entry : std::filesystem::directory_iterator(szFontsPath)) {
-         if (entry.is_regular_file()) {
-            string szFontPath = entry.path().string();
-            if (extension_from_path(szFontPath) == "ttf")
-            {
-               if (TTF_Font* pFont = TTF_OpenFont(szFontPath.c_str(), 8))
-               {
-                  AddFont(pFont, entry.path().filename().string());
-               }else{
-                  LOGE("Failed to load font: %s %s", szFontPath.c_str(), SDL_GetError());
-               }
-            }
-         }
-      }
-   }
-   else {
-      LOGI("No FONTS folder found");
-   }
+   LoadFonts();
 
    // Setup DMD triggers
    m_dmd = std::make_unique<PUPDMD::DMD>();
@@ -166,11 +152,7 @@ void PUPManager::Unload()
       delete pScreen;
    m_screenMap.clear();
 
-   for (auto& pFont : m_fonts)
-      TTF_CloseFont(pFont);
-   m_fonts.clear();
-   m_fontMap.clear();
-   m_fontFilenameMap.clear();
+   UnloadFonts();
 
    for (auto& playlist : m_playlists)
       delete playlist;
@@ -179,6 +161,46 @@ void PUPManager::Unload()
    m_dmd = nullptr;
 
    m_szPath.clear();
+}
+
+void PUPManager::UnloadFonts()
+{
+   for (auto& pFont : m_fonts)
+      TTF_CloseFont(pFont);
+   m_fonts.clear();
+   m_fontMap.clear();
+   m_fontFilenameMap.clear();
+}
+
+void PUPManager::LoadFonts()
+{
+   UnloadFonts();
+   string szFontsPath = find_case_insensitive_directory_path(m_szPath + "FONTS");
+   if (!szFontsPath.empty())
+   {
+      for (const auto& entry : std::filesystem::directory_iterator(szFontsPath))
+      {
+         if (entry.is_regular_file())
+         {
+            string szFontPath = entry.path().string();
+            if (extension_from_path(szFontPath) == "ttf")
+            {
+               if (TTF_Font* pFont = TTF_OpenFont(szFontPath.c_str(), 8))
+               {
+                  AddFont(pFont, entry.path().filename().string());
+               }
+               else
+               {
+                  LOGE("Failed to load font: %s %s", szFontPath.c_str(), SDL_GetError());
+               }
+            }
+         }
+      }
+   }
+   else
+   {
+      LOGI("No FONTS folder found");
+   }
 }
 
 void PUPManager::LoadPlaylists()
@@ -250,10 +272,16 @@ bool PUPManager::HasScreen(int screenNum)
    return it != m_screenMap.end();
 }
 
-PUPScreen* PUPManager::GetScreen(int screenNum) const
+PUPScreen* PUPManager::GetScreen(int screenNum, bool logMissing) const
 {
    ankerl::unordered_dense::map<int, PUPScreen*>::const_iterator it = m_screenMap.find(screenNum);
-   return it != m_screenMap.end() ? it->second : nullptr;
+   if (it != m_screenMap.end())
+      return it->second;
+   if (logMissing)
+   {
+      LOGE("Screen not found: screenNum=%d", screenNum);
+   }
+   return nullptr;
 }
 
 bool PUPManager::AddFont(TTF_Font* pFont, const string& szFilename)

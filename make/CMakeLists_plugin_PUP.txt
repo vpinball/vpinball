@@ -12,6 +12,8 @@ set(PUP_PLUGIN_SOURCES
    plugins/pup/PUPPlugin.cpp
    plugins/pup/PUPCustomPos.h
    plugins/pup/PUPCustomPos.cpp
+   plugins/pup/PUPImage.h
+   plugins/pup/PUPImage.cpp
    plugins/pup/PUPLabel.h
    plugins/pup/PUPLabel.cpp
    plugins/pup/PUPManager.h

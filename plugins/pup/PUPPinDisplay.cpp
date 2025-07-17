@@ -42,11 +42,12 @@ void PUPPinDisplay::Init(int screenNum, const string& RootDir)
 
 void PUPPinDisplay::playlistadd(int screenNum, const string& folder, int sort, int restSeconds)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d");
+   //playlistadd  (<display#>  <folder name>,  <sort/shuffle>, <restSeconds>);
+   // pretty self explaining...  the PinUpPlayer(PUP) will manage playlists and shuffle them.  RestSeconds is what I use to 'limit' the amount of videos being played.  So lets say you want a ramp video to play, but since I set it to 60... you can hit that ramp multiple times but no videos will play until the restSeconds time has passed since last video played.
+   // <Sort 1=shuffle, 0 = alpha>  So if you want to progress game videos you could name the first one 001.mp4, 002.mp4...099.mp4  That way alpha sort will play in your order.
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   if (!pScreen)
       return;
-   }
 
    if (pScreen->GetPlaylist(folder)) {
       LOGE("Playlist already exists: screenNum=%d, folder=%s", screenNum, folder.c_str());
@@ -58,125 +59,97 @@ void PUPPinDisplay::playlistadd(int screenNum, const string& folder, int sort, i
 
 void PUPPinDisplay::playlistplay(int screenNum, const string& playlist)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d");
-      return;
-   }
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
    LOGE("Not implemented: screenNum=%d, playlist=%s", screenNum, playlist.c_str());
 }
 
-void PUPPinDisplay::playlistplayex(int screenNum, const string& playlist, const string& playfilename, int volume, int forceplay)
+void PUPPinDisplay::playlistplayex(int screenNum, const string& playlist, const string& playfilename, int volume, int priority)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d", screenNum);
-      return;
-   }
-   pScreen->QueuePlay(playlist, playfilename, static_cast<float>(volume), forceplay);
+   // priority(0=none, 1..9) will override the restSeconds (see playlistadd)
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   if (pScreen)
+      pScreen->QueuePlay(playlist, playfilename, static_cast<float>(volume), priority);
 }
 
 void PUPPinDisplay::play(int screenNum, const string& playlist, const string& playfilename)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d");
-      return;
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   if (pScreen)
+   {
+      PUPPlaylist* pPlaylist = pScreen->GetPlaylist(playlist);
+      if (!pPlaylist)
+      {
+         LOGE("Playlist not found: screen={%s}, playlist=%s", pScreen->ToString(false).c_str(), playlist.c_str());
+         return;
+      }
+      pScreen->QueuePlay(playlist, playfilename, pPlaylist->GetVolume(), 0);
    }
-   LOGE("Not implemented: screenNum=%d, playlist=%s, playfilename=%s", screenNum, playlist.c_str(), playfilename.c_str());
-   return;
 }
 
 void PUPPinDisplay::setWidth(int screenNum, int width)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d");
-      return;
-   }
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
    LOGE("Not implemented: screenNum=%d, width=%d", screenNum, width);
 }
 
 void PUPPinDisplay::setHeight(int screenNum, int Height)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d");
-      return;
-   }
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
    LOGE("Not implemented: screenNum=%d, height=%d", screenNum, Height);
 }
 
 void PUPPinDisplay::setPosX(int screenNum, int Posx)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d");
-      return;
-   }
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
    LOGE("Not implemented: screenNum=%d, Posx=%d", screenNum, Posx);
 }
 
 void PUPPinDisplay::setPosY(int screenNum, int PosY)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d");
-      return;
-   }
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
    LOGE("Not implemented: screenNum=%d, PosY=%d", screenNum, PosY);
 }
 
 void PUPPinDisplay::setAspect(int screenNum, int aspectWide, int aspectHigh)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d");
-      return;
-   }
+   //**** Set 0,0 to fittoscreen.
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
    LOGE("Not implemented: screenNum=%d, aspectWide=%d, aspectHigh=%d", screenNum, aspectWide, aspectHigh);
 }
 
 void PUPPinDisplay::setVolume(int screenNum, int vol)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d");
-      return;
-   }
-   LOGE("Not implemented: screenNum=%d, vol=%d", screenNum, vol);
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   if (pScreen)
+      pScreen->SetVolume(static_cast<float>(vol));
+}
+
+void PUPPinDisplay::setVolumeCurrent(int screenNum, int vol)
+{
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   if (pScreen)
+      pScreen->SetVolumeCurrent(static_cast<float>(vol));
 }
 
 void PUPPinDisplay::playpause(int screenNum)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d");
-      return;
-   }
-   LOGE("Not implemented: screenNum=%d", screenNum);
-   return;
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   if (pScreen)
+      pScreen->QueuePause();
 }
 
 void PUPPinDisplay::playresume(int screenNum)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d");
-      return;
-   }
-   LOGE("Not implemented: screenNum=%d", screenNum);
-   return;
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   if (pScreen)
+      pScreen->QueueResume();
 }
 
 void PUPPinDisplay::playstop(int screenNum)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d", screenNum);
-      return;
-   }
-   pScreen->QueueStop();
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   if (pScreen)
+      pScreen->QueueStop();
 }
 
 void PUPPinDisplay::CloseApp()
@@ -186,82 +159,57 @@ void PUPPinDisplay::CloseApp()
 
 bool PUPPinDisplay::GetisPlaying(int screenNum) const
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d", screenNum);
-      return false;
-   }
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
    LOGE("Not implemented: screenNum=%d", screenNum);
    return false;
 }
 
 void PUPPinDisplay::SetisPlaying(int screenNum, bool value)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d", screenNum);
-      return;
-   }
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
    LOGE("Not implemented: screenNum=%d, value=%d", screenNum, value);
 }
 
 void PUPPinDisplay::SetLength(int screenNum, int StopSecs)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d", screenNum);
-      return;
-   }
+   //after you play a file call setlength if you want it to stop.  so setlength(5) will stop video at 5 seconds mark.
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
    LOGE("Not implemented: screenNum=%d, stopSecs=%d", screenNum, StopSecs);
 }
 
 void PUPPinDisplay::SetLoop(int screenNum, int LoopState)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d", screenNum);
-      return;
-   }
-   pScreen->SetLoop(LoopState);
+   // if you set LoopState=1,  it will loop the currently playing file.  0=cancel loop
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   if (pScreen)
+      pScreen->SetLoop(LoopState);
 }
 
 void PUPPinDisplay::SetBackGround(int screenNum, int Mode)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d", screenNum);
-      return;
-   }
-   pScreen->SetBG(Mode);
+   // if you set Mode=1, it will set current playing file as background (loop it always).  Mode=0 to cancel background.  Note if user has 'POP-UP' mode this will be disabled automagically (you don't need to worry about it).
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   if (pScreen)
+      pScreen->SetBG(Mode);
 }
 
 void PUPPinDisplay::BlockPlay(int screenNum, int Mode)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d", screenNum);
-      return;
-   }
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
    LOGE("Not implemented: screenNum=%d, mode=%d", screenNum, Mode);
 }
 
 void PUPPinDisplay::SetScreen(int screenNum)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d", screenNum);
-      return;
-   }
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
    LOGE("Not implemented: screenNum=%d", screenNum);
 }
 
 void PUPPinDisplay::SetScreenEx(int screenNum, int xpos, int ypos, int swidth, int sheight, int popup) 
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d", screenNum);
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   if (!pScreen)
       return;
-   }
    switch (popup) {
       case 0:
          pScreen->SetMode(PUP_SCREEN_MODE_SHOW);
@@ -310,21 +258,15 @@ void PUPPinDisplay::SetB2SFilter(const string& value)
 
 void PUPPinDisplay::Show(int screenNum)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d", screenNum);
-      return;
-   }
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
    LOGE("Not implemented: screenNum=%d", screenNum);
 }
 
 void PUPPinDisplay::Hide(int screenNum)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d", screenNum);
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   if (!pScreen)
       return;
-   }
 
    // Is off the same as Hide?
    // Seems to be called for the music screens
@@ -420,11 +362,9 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
 */
 void PUPPinDisplay::LabelNew(int screenNum, const string& LabelName, const string& FontName, int Size, int Color, int Angle, int xAlign, int yAlign, int xMargin, int yMargin, int PageNum, bool Visible)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d", screenNum);
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   if (!pScreen)
       return;
-   }
 
    if (!pScreen->IsLabelInit()) {
       LOGE("LabelInit has not been called: screenNum=%d", screenNum);
@@ -454,20 +394,16 @@ void PUPPinDisplay::LabelNew(int screenNum, const string& LabelName, const strin
 */
 void PUPPinDisplay::LabelSet(int screenNum, const string& LabelName, const string& Caption, bool Visible, const string& Special)
 {
-   static ankerl::unordered_dense::map<int, ankerl::unordered_dense::set<string>> warnedLabels;
-
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d", screenNum);
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   if (!pScreen)
       return;
-   }
 
    PUPLabel* pLabel = pScreen->GetLabel(LabelName);
    if (!pLabel) {
-      if (warnedLabels[screenNum].find(LabelName) == warnedLabels[screenNum].end())
+      if (m_warnedLabels[screenNum].find(LabelName) == m_warnedLabels[screenNum].end())
       {
          LOGE("Invalid label: screen={%s}, labelName=%s", pScreen->ToString(false).c_str(), LabelName.c_str());
-         warnedLabels[screenNum].insert(LabelName);
+         m_warnedLabels[screenNum].insert(LabelName);
       }
       return;
    }
@@ -494,22 +430,16 @@ void PUPPinDisplay::LabelSetEx()
 
 void PUPPinDisplay::LabelShowPage(int screenNum, int PageNum, int Seconds, const string& Special)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d", screenNum);
-      return;
-   }
-   pScreen->SetPage(PageNum, Seconds);
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   if (pScreen)
+      pScreen->SetPage(PageNum, Seconds);
 }
 
 void PUPPinDisplay::LabelInit(int screenNum)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d", screenNum);
-      return;
-   }
-   pScreen->SetLabelInit();
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   if (pScreen)
+      pScreen->SetLabelInit();
 }
 
 const string& PUPPinDisplay::GetGetGame() const
@@ -559,16 +489,6 @@ const string& PUPPinDisplay::GetB2SDisplays() const
    return emptystring;
 }
 
-void PUPPinDisplay::setVolumeCurrent(int screenNum, int vol)
-{
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d", screenNum);
-      return;
-   }
-   LOGE("Not implemented: screenNum=%d, vol=%d", screenNum, vol);
-}
-
 int PUPPinDisplay::GetGameUpdate(const string& GameTitle, int Func, int FuncData, const string& Extra) const
 {
    LOGE("Not implemented: gameTitle=%s, func=%d, funcData=%d, extra=%s", GameTitle.c_str(), Func, FuncData, Extra.c_str());
@@ -600,11 +520,9 @@ string PUPPinDisplay::GetVersion() const
 
 void PUPPinDisplay::playevent(int screenNum, const string& playlist, const string& playfilename, int volume, int priority, int playtype, int Seconds, const string& Special)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d", screenNum);
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   if (!pScreen)
       return;
-   }
    // TODO handle seconds and Special
    pScreen->QueuePlay(playlist, playfilename, static_cast<float>(volume), priority);
 
@@ -639,11 +557,7 @@ void PUPPinDisplay::playevent(int screenNum, const string& playlist, const strin
 
 void PUPPinDisplay::SetPosVideo(int screenNum, int StartPos, int EndPos, int Mode, const string& Special)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum);
-   if (!pScreen) {
-      LOGE("Screen not found: screenNum=%d", screenNum);
-      return;
-   }
+   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
    LOGE("Not implemented: screenNum=%d, startPos=%d, endPos=%d, mode=%d, special=%s", screenNum, StartPos, EndPos, Mode, Special.c_str());
 }
 

@@ -28,25 +28,21 @@ PUPLabel::PUPLabel(PUPManager* manager, const string& szName, const string& szFo
    float yPos, int pagenum, bool visible)
    : m_pManager(manager)
    , m_szName(szName)
+   , m_size(size)
+   , m_color(color)
+   , m_angle(angle)
+   , m_xAlign(xAlign)
+   , m_yAlign(yAlign)
+   , m_xPos(xPos)
+   , m_yPos(yPos)
+   , m_visible(visible)
+   , m_pagenum(pagenum)
+   , m_pFont(szFont.empty() ? nullptr : manager->GetFont(szFont))
 {
-   if (!szFont.empty())
+   if (!szFont.empty() && !m_pFont)
    {
-      m_pFont = manager->GetFont(szFont);
-      if (!m_pFont)
-         LOGE("Font not found: label=%s, font=%s", szName.c_str(), szFont.c_str());
+      LOGE("Font not found: label=%s, font=%s", szName.c_str(), szFont.c_str());
    }
-   else
-      m_pFont = nullptr;
-
-   m_size = size;
-   m_color = color;
-   m_angle = angle;
-   m_xAlign = xAlign;
-   m_yAlign = yAlign;
-   m_xPos = xPos;
-   m_yPos = yPos;
-   m_visible = visible;
-   m_pagenum = pagenum;
 }
 
 PUPLabel::~PUPLabel()
@@ -122,6 +118,28 @@ void PUPLabel::SetSpecial(const string& szSpecial)
    RSJresource json(str);
    switch (json["mt"s].as<int>(0))
    {
+   case 1:
+   {
+      /*
+         Animate
+            at = animate type
+            len = length in ms of animation
+            fc = foreground color of text during animation
+            at = 1: flashing
+               fq = frequency of flashing
+            at = 2: motion
+               yps = y position start ( 0=no y movement, 1= slide from bottom, -1=slide from top)
+               xps =x position start ( 0=no x movement, 1= slide from right, -1=slide from left)
+               ype = y position end (see yps)
+               xpe = x position end (see xps)
+               mlen = length ms of AniTween of movement.
+               tt = tween index....yup supports 0-10 different tweens of movement between start and end.
+               mColor = ?
+         */
+      LOGI("Label animation not implemented");
+   }
+   break;
+   
    case 2:
    {
       if (json["zback"s].exists() && json["zback"s].as<int>() == 1)
@@ -309,20 +327,12 @@ void PUPLabel::SetSpecial(const string& szSpecial)
    }
    break;
 
-   case 1:
+   default:
    {
-      /*
-            Animate
-            at = animate type (1=flashing, 2=motion)
-            fq = when flashing its the frequency of flashing
-            len = length in ms of animation
-            fc = foreground color of text during animation
-            PLOGW << "Label animation not implemented";
-         */
+      LOGE("Unsupported Label.SetSpecial mt mode: %d", json["mt"s].as<int>(0));
    }
    break;
-
-   default: break;
+   
    }
 }
 
@@ -345,13 +355,10 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, SDL_Rect& rect, int pagenum
    else if (m_dirty || (m_szPath.empty() && rect.h != m_renderState.m_prerenderedHeight))
    {
       m_dirty = false;
-      if (m_szPath.empty())
-      {
-         if (m_pFont)
-            m_pendingTextureUpdate = std::async(std::launch::async, [this, rect]() { return UpdateLabelTexture(rect.h, m_pFont, m_szCaption, m_size, m_color, m_shadowState, m_shadowColor, { m_xoffset, m_yoffset} ); });
-      }
-      else
+      if (!m_szPath.empty())
          m_pendingTextureUpdate = std::async(std::launch::async, [this]() { return UpdateImageTexture(m_type, m_szPath); });
+      else if (m_pFont)
+         m_pendingTextureUpdate = std::async(std::launch::async, [this, rect]() { return UpdateLabelTexture(rect.h, m_pFont, m_szCaption, m_size, m_color, m_shadowState, m_shadowColor, { m_xoffset, m_yoffset} ); });
    }
 
    if (!m_renderState.m_pTexture)
