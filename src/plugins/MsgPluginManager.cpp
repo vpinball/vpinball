@@ -388,15 +388,10 @@ void MsgPluginManager::UnloadPlugins()
          plugin->Unload();
 }
 
-std::shared_ptr<MsgPlugin> MsgPluginManager::GetPlugin(const std::string& pluginId) const
+std::shared_ptr<MsgPlugin> MsgPluginManager::GetPlugin(std::string_view pluginId) const
 {
    for (auto plugin : m_plugins)
-      if (plugin->m_id.length() == pluginId.length()
-         && std::equal(plugin->m_id.begin(), plugin->m_id.end(), pluginId.begin(), [](char a, char b) { 
-            if (a >= 'A' && a <= 'Z') a ^= 32; //ASCII convention
-            if (b >= 'A' && b <= 'Z') b ^= 32; //ASCII convention
-            return a == b; 
-            }))
+      if(std::equal(plugin->m_id.begin(), plugin->m_id.end(), pluginId.begin(), pluginId.end(), [](char a, char b) { return std::tolower(a) == std::tolower(b); }))
          return plugin;
    return nullptr;
 }

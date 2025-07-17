@@ -634,13 +634,13 @@ void Light::Render(const unsigned int renderMask)
       && ((m_d.m_reflectionEnabled && ! m_backglass) || !isReflectionPass)
       && (m_lightmapMeshBuffer != nullptr)) // in case of degenerate light
    {
-      Texture *offTexel = nullptr;
+      Texture * const offTexel = m_d.m_BulbLight ? nullptr : m_ptable->GetImage(m_d.m_szImage);
 
       // early out all lights with no contribution
       vec4 lightColor2_falloff_power = convertColor(m_d.m_color2, m_d.m_falloff_power);
       vec4 lightColor_intensity = convertColor(m_d.m_color, 1.f);
       if (m_d.m_BulbLight ||
-         (!m_d.m_BulbLight && (m_surfaceTexture == (offTexel = m_ptable->GetImage(m_d.m_szImage))) && (offTexel != nullptr) && !m_backglass && !m_d.m_imageMode)) // assumes/requires that the light in this kind of state is basically -exactly- the same as the static/(un)lit playfield/surface and accompanying image
+         (!m_d.m_BulbLight && (m_surfaceTexture == offTexel) && (offTexel != nullptr) && !m_backglass && !m_d.m_imageMode)) // assumes/requires that the light in this kind of state is basically -exactly- the same as the static/(un)lit playfield/surface and accompanying image
       {
          if (m_currentIntensity == 0.f)
             return;

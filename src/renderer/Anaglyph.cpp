@@ -18,7 +18,7 @@ void Anaglyph::LoadSetupFromRegistry(const int glassesSet)
    m_rightEyeContrast = table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DRightContrast"s, 1.0f);
 
    // Default (partial) calibration
-   static constexpr vec3 defaultColors[] = {
+   static constexpr std::array<vec3, 20> defaultColors = {
       /* RC */ vec3{0.95f, 0.19f, 0.07f}, vec3{0.06f, 0.92f, 0.28f},
       /* GM */ vec3{0.06f, 0.96f, 0.09f}, vec3{0.61f, 0.16f, 0.66f},
       /* BA */ vec3{0.05f, 0.16f, 0.96f}, vec3{0.61f, 0.66f, 0.09f},
@@ -30,8 +30,9 @@ void Anaglyph::LoadSetupFromRegistry(const int glassesSet)
       /* RC */ vec3{0.95f, 0.19f, 0.07f}, vec3{0.06f, 0.92f, 0.28f},
       /* RC */ vec3{0.95f, 0.19f, 0.07f}, vec3{0.06f, 0.92f, 0.28f}
    };
+   const int set = clamp(glassesSet, 0, defaultColors.size() / 2);
 
-   const string prefKey = "Anaglyph" + std::to_string(glassesSet + 1);
+   const string prefKey = "Anaglyph" + std::to_string(set + 1);
    vec3 leftLum, rightLum;
    m_filter = (Filter)table->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "Filter", 2);
    m_sRGBDisplay = table->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "sRGB", true);
@@ -44,7 +45,7 @@ void Anaglyph::LoadSetupFromRegistry(const int glassesSet)
    rightLum.y = table->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "RightGreen", -1.f);
    rightLum.z = table->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "RightBlue", -1.f);
    if (leftLum.x < 0.f || leftLum.y < 0.f || leftLum.z < 0.f || rightLum.x < 0.f || rightLum.y < 0.f || rightLum.z < 0.f)
-      SetLuminanceCalibration(defaultColors[glassesSet * 2], defaultColors[glassesSet * 2 + 1]);
+      SetLuminanceCalibration(defaultColors[set * 2], defaultColors[set * 2 + 1]);
    else
       SetLuminanceCalibration(leftLum, rightLum);
 
