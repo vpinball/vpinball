@@ -2966,7 +2966,7 @@ void VPinball::GenerateImageFromTournamentFile(const string &tablefile, const st
 {
    unsigned int x = 0, y = 0, dmd_size = 0, cpu = 0, bits = 0, os = 0, renderer = 0, major = 0, minor = 0, rev = 0, git_rev = 0;
    unsigned int tablefileChecksum_in = 0, vpxChecksum_in = 0, scriptsChecksum_in = 0;
-   uint8_t *dmd_data;
+   vector<uint8_t> dmd_data;
    FILE *f;
    if (fopen_s(&f, txtfile.c_str(), "r") == 0 && f)
    {
@@ -2985,12 +2985,12 @@ void VPinball::GenerateImageFromTournamentFile(const string &tablefile, const st
       error |= fscanf_s(f, "%08X", &vpxChecksum_in) != 1;
       error |= fscanf_s(f, "%08X", &scriptsChecksum_in) != 1;
       dmd_size = x * y + 16;
-      dmd_data = new uint8_t[dmd_size];
+      dmd_data.reserve(dmd_size);
       for (unsigned int i = 0; i < dmd_size; ++i)
       {
          unsigned int v;
          error |= fscanf_s(f, "%02X", &v) != 1;
-         dmd_data[i] = v;
+         dmd_data.push_back(v);
       }
       fclose(f);
 
@@ -3009,49 +3009,42 @@ void VPinball::GenerateImageFromTournamentFile(const string &tablefile, const st
    if (cpu != GET_PLATFORM_CPU_ENUM || bits != GET_PLATFORM_BITS_ENUM || os != GET_PLATFORM_OS_ENUM || renderer != GET_PLATFORM_RENDERER_ENUM)
    {
       ShowError("Cannot decode Tournament file\nas the setup differs:\nEncoder: " + platform_cpu[cpu] + ' ' + platform_bits[bits] + "bits " + platform_os[os] + ' ' + platform_renderer[renderer] + "\nDecoder: "+ platform_cpu[GET_PLATFORM_CPU_ENUM] + ' ' + platform_bits[GET_PLATFORM_BITS_ENUM] + "bits " + platform_os[GET_PLATFORM_OS_ENUM] + ' ' + platform_renderer[GET_PLATFORM_RENDERER_ENUM]);
-      delete[] dmd_data;
       return;
    }
 
    if (major != VP_VERSION_MAJOR || minor != VP_VERSION_MINOR || rev != VP_VERSION_REV || git_rev != GIT_REVISION)
    {
       ShowError("Cannot decode Tournament file\nas the VP version differs:\nEncoder: " + std::to_string(major) + '.' + std::to_string(minor) + '.' + std::to_string(rev) + " rev. " + std::to_string(git_rev) + "\nDecoder: "+ std::to_string(VP_VERSION_MAJOR) + '.' + std::to_string(VP_VERSION_MINOR) + '.' + std::to_string(VP_VERSION_REV) + " rev. " + std::to_string(GIT_REVISION));
-      delete[] dmd_data;
       return;
    }
 
    unsigned int tablefileChecksum, vpxChecksum, scriptsChecksum;
-   const unsigned int res = GenerateTournamentFileInternal(dmd_data, dmd_size, tablefile, tablefileChecksum, vpxChecksum, scriptsChecksum);
+   const unsigned int res = GenerateTournamentFileInternal(dmd_data.data(), dmd_size, tablefile, tablefileChecksum, vpxChecksum, scriptsChecksum);
    if (res == ~0u)
    {
-      delete[] dmd_data;
       return;
    }
    if (tablefileChecksum != tablefileChecksum_in)
    {
       ShowError("Cannot decode Tournament file\nas the table version differs"s);
-      delete[] dmd_data;
       return;
    }
    if (vpxChecksum != vpxChecksum_in)
    {
       ShowError("Cannot decode Tournament file\nas VP was modified"s);
-      delete[] dmd_data;
       return;
    }
    if (scriptsChecksum != scriptsChecksum_in)
    {
       ShowError("Cannot decode Tournament file\nas scripts version differs"s);
-      delete[] dmd_data;
       return;
    }
-   GenerateTournamentFileInternal2(dmd_data, dmd_size, res);
+   GenerateTournamentFileInternal2(dmd_data.data(), dmd_size, res);
    uint8_t md5[16];
-   generateMD5(dmd_data, dmd_size-16, md5);
-   if (memcmp(dmd_data+(dmd_size-16),md5,16) != 0)
+   generateMD5(dmd_data.data(), dmd_size - 16, md5);
+   if (memcmp(dmd_data.data() + (dmd_size - 16), md5, 16) != 0)
    {
       ShowError("Corrupt Tournament file or non-matching table-version or modified VP used to encode");
-      delete[] dmd_data;
       return;
    }
 
@@ -3064,6 +3057,4 @@ void VPinball::GenerateImageFromTournamentFile(const string &tablefile, const st
    if (!FreeImage_Save(FIF_PNG, dib, (txtfile + ".png").c_str(), PNG_Z_BEST_COMPRESSION))
       ShowError("Tournament file converted image could not be saved");
    FreeImage_Unload(dib);
-
-   delete[] dmd_data;
 }

@@ -1126,25 +1126,26 @@ STDMETHODIMP Trigger::BallCntOver(int *pVal)
 
 STDMETHODIMP Trigger::DestroyBall(int *pVal)
 {
-   int cnt = 0;
+   if (pVal)
+      *pVal = 0;
+   
+   if (!g_pplayer)
+      return S_OK;
 
-   if (g_pplayer)
+   for (HitBall *ball : g_pplayer->m_vball)
    {
-      for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
+      if (ball->m_d.m_vpVolObjs)
       {
-         HitBall *const pball = g_pplayer->m_vball[i];
-
-         int j;
-         if (pball->m_d.m_vpVolObjs && (j = FindIndexOf(*(pball->m_d.m_vpVolObjs), (IFireEvents*)this)) >= 0) // cast to IFireEvents necessary, as it is stored like this in HitObject.m_obj
+         auto it = std::ranges::find(*(ball->m_d.m_vpVolObjs), (IFireEvents *)this); // cast to IFireEvents necessary, as it is stored like this in HitObject.m_obj
+         if (it != ball->m_d.m_vpVolObjs->end())
          {
-            ++cnt;
-            pball->m_d.m_vpVolObjs->erase(pball->m_d.m_vpVolObjs->begin() + j);
-            g_pplayer->DestroyBall(pball); // inside trigger volume?
+            if (pVal)
+               *pVal++;
+            ball->m_d.m_vpVolObjs->erase(it);
+            g_pplayer->DestroyBall(ball); // inside trigger volume?
          }
       }
    }
-
-   if (pVal) *pVal = cnt;
 
    return S_OK;
 }

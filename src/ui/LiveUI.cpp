@@ -2044,7 +2044,7 @@ void LiveUI::UpdateTweakModeUI()
             if (page >= TP_Plugin00)
             {
                const string& sectionName = Settings::GetSectionName((Settings::Section)(Settings::Plugin00 + page - TP_Plugin00));
-               const std::shared_ptr<MsgPlugin> plugin = sectionName.length() > 7 ? MsgPluginManager::GetInstance().GetPlugin(sectionName.substr(7)) : nullptr;
+               const std::shared_ptr<MsgPlugin> plugin = sectionName.length() > 7 ? MsgPluginManager::GetInstance().GetPlugin(std::string_view(sectionName).substr(7)) : nullptr;
                if (plugin)
                   title = plugin->m_name + " Plugin";
                else

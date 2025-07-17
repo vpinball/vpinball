@@ -2761,20 +2761,21 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
 HRESULT PinTable::WriteInfoValue(IStorage* pstg, const wstring& wzName, const string& szValue, HCRYPTHASH hcrypthash)
 {
 #ifndef __STANDALONE__
-   HRESULT hr = S_OK;
+   if (szValue.empty())
+      return S_OK;
+
    IStream *pstm;
+   HRESULT hr = pstg->CreateStream(wzName.c_str(), STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstm);
+   if (FAILED(hr))
+      return hr;
 
-   if (!szValue.empty() && SUCCEEDED(hr = pstg->CreateStream(wzName.c_str(), STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstm)))
-   {
-      ULONG writ;
-      BiffWriter bw(pstm, hcrypthash);
-      const wstring wzT = MakeWString(szValue);
-      bw.WriteBytes(wzT.c_str(), static_cast<ULONG>(wzT.length() * sizeof(WCHAR)), &writ);
-      pstm->Release();
-      pstm = nullptr;
-   }
-
-   return hr;
+   ULONG writ;
+   BiffWriter bw(pstm, hcrypthash);
+   const wstring wzT = MakeWString(szValue);
+   bw.WriteBytes(wzT.c_str(), static_cast<ULONG>(wzT.length() * sizeof(WCHAR)), &writ);
+   pstm->Release();
+   pstm = nullptr;
+   return S_OK;
 #else
    return 0L;
 #endif
@@ -6666,9 +6667,9 @@ Texture* PinTable::GetImage(const string &szName) const
          return nullptr;
    }
 
-   for (size_t i = 0; i < m_vimage.size(); i++)
-      if (StrCompareNoCase(m_vimage[i]->m_name, szName))
-         return m_vimage[i];
+   for (auto image : m_vimage)
+      if (StrCompareNoCase(image->m_name, szName))
+         return image;
 
    return nullptr;
 }

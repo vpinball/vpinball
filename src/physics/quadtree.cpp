@@ -259,8 +259,11 @@ void HitQuadtreeNode::CreateNextLevel(HitQuadtree* const quadTree, const FRect& 
       quadTree->m_nLevels = level;
 
    if ((m_items <= 4) //!! magic
-      || (level == MAX_LEVEL - 1) // bottom of tree
-      || ((m_children = quadTree->AllocFourNodes()) == nullptr)) // Ran out of nodes
+      || (level == MAX_LEVEL - 1)) // bottom of tree
+      return;
+
+   m_children = quadTree->AllocFourNodes();
+   if (m_children == nullptr) // Ran out of nodes
       return;
 
    m_vcenter.x = (bounds.left + bounds.right) * 0.5f;

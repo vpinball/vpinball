@@ -155,8 +155,9 @@ void Flasher::UIRenderPass1(Sur * const psur)
 
    vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
-   Texture *ppi;
-   if (m_ptable->RenderSolid() && m_d.m_displayTexture && (ppi = m_ptable->GetImage(m_d.m_szImageA)) && ppi->GetGDIBitmap())
+   if (!m_ptable->RenderSolid() || !m_d.m_displayTexture)
+      psur->Polygon(vvertex);
+   else if (const Texture *const ppi = m_ptable->GetImage(m_d.m_szImageA); ppi && ppi->GetGDIBitmap())
    {
       if (m_d.m_imagealignment == ImageModeWrap)
       {

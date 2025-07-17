@@ -345,18 +345,20 @@ bool DynamicTypeLibrary::COMToScriptVariant(const VARIANT* cv, const ScriptTypeN
       #define COPY_ARRAY(natType, svType) { \
             const size_t arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * sizeof(natType); \
             array = static_cast<ScriptArray*>(malloc(arraySize)); \
-            array->Release = [](ScriptArray* me) { free(me); }; \
-            array->lengths[0] = static_cast<unsigned int>(uBound - lBound + 1); \
-            natType* pData = reinterpret_cast<natType*>(&array->lengths[1]); \
-            for (LONG i = lBound; i <= uBound; i++, pData++, p++) \
-            { \
-               if (!COMToScriptVariant(p, arrayTypeDef.nativeType, tmpSV)) \
+            if (array) { \
+               array->Release = [](ScriptArray* me) { free(me); }; \
+               array->lengths[0] = static_cast<unsigned int>(uBound - lBound + 1); \
+               natType* pData = reinterpret_cast<natType*>(&array->lengths[1]); \
+               for (LONG i = lBound; i <= uBound; i++, pData++, p++) \
                { \
-                  array->Release(array); \
-                  array = nullptr; \
-                  break; \
+                  if (!COMToScriptVariant(p, arrayTypeDef.nativeType, tmpSV)) \
+                  { \
+                     array->Release(array); \
+                     array = nullptr; \
+                     break; \
+                  } \
+                  *pData = tmpSV.svType; \
                } \
-               *pData = tmpSV.svType; \
             } \
          }
       switch (arrayTypeDef.nativeType.id)
@@ -365,18 +367,21 @@ bool DynamicTypeLibrary::COMToScriptVariant(const VARIANT* cv, const ScriptTypeN
       {
          const size_t arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * sizeof(int);
          array = static_cast<ScriptArray*>(malloc(arraySize));
-         array->Release = [](ScriptArray* me) { free(me); };
-         array->lengths[0] = static_cast<unsigned int>(uBound - lBound + 1);
-         int* pData = reinterpret_cast<int*>(&array->lengths[1]);
-         for (LONG i = lBound; i <= uBound; i++, pData++, p++)
+         if (array)
          {
-            if (!COMToScriptVariant(p, arrayTypeDef.nativeType, tmpSV))
+            array->Release = [](ScriptArray* me) { free(me); };
+            array->lengths[0] = static_cast<unsigned int>(uBound - lBound + 1);
+            int* pData = reinterpret_cast<int*>(&array->lengths[1]);
+            for (LONG i = lBound; i <= uBound; i++, pData++, p++)
             {
-               array->Release(array);
-               array = nullptr;
-               break;
+               if (!COMToScriptVariant(p, arrayTypeDef.nativeType, tmpSV))
+               {
+                  array->Release(array);
+                  array = nullptr;
+                  break;
+               }
+               *pData = tmpSV.vInt;
             }
-            *pData = tmpSV.vInt;
          }
       };
       break;
@@ -388,10 +393,9 @@ bool DynamicTypeLibrary::COMToScriptVariant(const VARIANT* cv, const ScriptTypeN
       default: assert(false);
       }
       #undef COPY_ARRAY
-      SafeArrayUnaccessData(psa);
       sv.vArray = array;
+      SafeArrayUnaccessData(psa);
       return array != nullptr;
-      break;
    }
 
    default: assert(false);
