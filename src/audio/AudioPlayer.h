@@ -26,17 +26,17 @@ struct SoundSpec
 class AudioPlayer
 {
 public:
-   AudioPlayer(const Settings& settings);
+   explicit AudioPlayer(const Settings& settings);
    ~AudioPlayer();
 
    void SetMainVolume(float backglassVolume, float playfieldVolume); // Overall gain, directly applied to all sounds, including the ones being played
    void SetMirrored(bool mirrored) { m_mirrored = mirrored; } // Whether the table is mirrored, affects sound panning
 
    // Audio stream, directly forwarded to audio device, respecting channel assignment, applying backglass global volume
-   typedef void* AudioStreamID; // opaque pointer as objects are always owned by AudioPlayer without any public API
+   using AudioStreamID = std::shared_ptr<class AudioStreamPlayer>; // opaque pointer as objects are always owned by AudioPlayer without any public API
    AudioStreamID OpenAudioStream(int frequency, int channels, bool isFloat);
-   void EnqueueStream(AudioStreamID stream, void* buffer, int length);
-   void SetStreamVolume(AudioStreamID stream, const float volume);
+   void EnqueueStream(AudioStreamID stream, uint8_t* buffer, int length) const;
+   void SetStreamVolume(AudioStreamID stream, const float volume) const;
    void CloseAudioStream(AudioStreamID stream, bool afterEndOfStream);
 
    // Music streamed from a file to audio device, respecting channel assignment, applying backglass global volume
@@ -76,7 +76,7 @@ private:
 
    mutable ankerl::unordered_dense::map<Sound*, vector<std::unique_ptr<class SoundPlayer>>> m_soundPlayers;
 
-   vector<std::unique_ptr<class AudioStreamPlayer>> m_audioStreams;
+   vector<AudioStreamID> m_audioStreams;
 
    std::unique_ptr<class SoundPlayer> m_music;
 

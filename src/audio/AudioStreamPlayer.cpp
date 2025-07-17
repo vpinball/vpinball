@@ -6,7 +6,7 @@
 namespace VPX
 {
 
-AudioStreamPlayer* AudioStreamPlayer::Create(int sdlDevice, int frequency, int channels, bool isFloat)
+std::unique_ptr<AudioStreamPlayer> AudioStreamPlayer::Create(int sdlDevice, int frequency, int channels, bool isFloat)
 {
    SDL_AudioSpec audioSpec;
    audioSpec.freq = frequency;
@@ -17,7 +17,7 @@ AudioStreamPlayer* AudioStreamPlayer::Create(int sdlDevice, int frequency, int c
    if (stream)
    {
       SDL_ResumeAudioStreamDevice(stream);
-      return new AudioStreamPlayer(stream);
+      return std::make_unique<AudioStreamPlayer>(stream);
    }
    else
    {
@@ -92,7 +92,7 @@ void AudioStreamPlayer::SetMainVolume(const float volume)
 
 void AudioStreamPlayer::AudioStreamCallback(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount)
 {
-   AudioStreamPlayer* const me = static_cast<AudioStreamPlayer*>(userdata);
+   auto const me = static_cast<AudioStreamPlayer*>(userdata);
    const int nQueueSize = max(0, SDL_GetAudioStreamQueued(me->m_stream) - total_amount);
    const uint64_t nBytePerSec = me->m_audioSpec.freq * SDL_AUDIO_FRAMESIZE(me->m_audioSpec);
    const uint64_t sourceTS = (1000 * me->m_streamedTotal) / nBytePerSec; // Total amount of music streamed (ms)
@@ -136,7 +136,7 @@ void AudioStreamPlayer::AudioStreamCallback(void *userdata, SDL_AudioStream *str
 
 void AudioStreamPlayer::FlushCallback(void* userdata)
 {
-   AudioStreamPlayer* const me = static_cast<AudioStreamPlayer*>(userdata);
+   auto const me = static_cast<AudioStreamPlayer*>(userdata);
    if (me->m_flush && me->m_flushCallback)
       me->m_flushCallback();
    me->m_flush = false;

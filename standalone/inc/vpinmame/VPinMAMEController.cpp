@@ -117,7 +117,7 @@ int PINMAMECALLBACK VPinMAMEController::OnAudioUpdated(void* p_buffer, int sampl
    VPinMAMEController* pController = (VPinMAMEController*)pUserData;
 
    if (pController->m_enableSound)
-      pController->m_pAudioPlayer->EnqueueStream(pController->m_pAudioStream, p_buffer, samples * pController->m_audioChannels * sizeof(int16_t));
+      pController->m_pAudioPlayer->EnqueueStream(pController->m_pAudioStream, (uint8_t*)p_buffer, samples * pController->m_audioChannels * sizeof(int16_t));
 
    return samples;
 }
