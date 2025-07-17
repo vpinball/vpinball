@@ -10,7 +10,7 @@ PUPMediaManager::PUPMediaManager(PUPScreen* pScreen)
    m_pMainPlayer = &m_player1;
    m_pBackgroundPlayer = nullptr;
    m_pScreen = pScreen;
-   m_pop = (pScreen->GetMode() == PUP_SCREEN_MODE_FORCE_POP_BACK || pScreen->GetMode() == PUP_SCREEN_MODE_FORCE_POP);
+   m_pop = (pScreen->GetMode() == PUPScreen::Mode::ForcePopBack || pScreen->GetMode() == PUPScreen::Mode::ForcePop);
 }
 
 void PUPMediaManager::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, bool skipSamePriority, int length)
@@ -109,6 +109,12 @@ void PUPMediaManager::SetBounds(const SDL_Rect& rect)
    m_bounds = rect;
    m_player1.player.SetBounds(rect);
    m_player2.player.SetBounds(rect);
+}
+
+void PUPMediaManager::SetMask(std::shared_ptr<SDL_Surface> mask)
+{
+   m_player1.player.SetMask(mask);
+   m_player2.player.SetMask(mask);
 }
 
 void PUPMediaManager::Render(VPXRenderContext2D* const ctx)

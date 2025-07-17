@@ -25,6 +25,7 @@ public:
    void Render(VPXRenderContext2D* const ctx, const SDL_Rect& destRect);
 
    void SetBounds(const SDL_Rect& rect);
+   void SetMask(std::shared_ptr<SDL_Surface> mask);
 
 private:
    void StopBlocking();
@@ -57,6 +58,9 @@ private:
    vector<AVFrame*> m_rgbFrames;
    vector<VPXTexture> m_videoTextures;
    SwsContext* m_swsContext = nullptr;
+
+   std::shared_ptr<SDL_Surface> m_mask = nullptr;
+   std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)> m_scaledMask;
 
    VPXTexture m_videoTexture = nullptr;
    unsigned int m_videoTextureId = 0xFFFFFF;

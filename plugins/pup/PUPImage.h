@@ -7,14 +7,17 @@ namespace PUP {
 class PUPImage
 {
 public:
-   PUPImage() = default;
+   PUPImage();
    ~PUPImage();
+
+   const string& GetFile() const { return m_file; }
 
    void Load(const string& szFile);
    void Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect);
 
 private:
-   SDL_Surface* m_pSurface = nullptr;
+   string m_file;
+   std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)> m_pSurface;
    VPXTexture m_pTexture = nullptr;
 };
 

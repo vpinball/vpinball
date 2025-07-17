@@ -23,6 +23,7 @@ PUPMediaPlayer::PUPMediaPlayer(const string& name)
    , m_commandQueue(1)
    , m_rgbFrames(3)
    , m_videoTextures(3)
+   , m_scaledMask(nullptr, SDL_DestroySurface)
 {
    assert(m_libAv.isLoaded);
    assert(m_rgbFrames.size() == m_videoTextures.size());
@@ -44,6 +45,13 @@ void PUPMediaPlayer::SetBounds(const SDL_Rect& rect)
 {
    std::lock_guard<std::mutex> lock(m_mutex);
    m_bounds = rect;
+}
+
+void PUPMediaPlayer::SetMask(std::shared_ptr<SDL_Surface> mask)
+{
+   std::lock_guard<std::mutex> lock(m_mutex);
+   m_mask = mask;
+   m_scaledMask.reset();
 }
 
 void PUPMediaPlayer::Play(const string& filename)
@@ -526,6 +534,33 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame, bool sync)
       // Convert to a renderable format (we do not lock as the consumer thread is not supposed to be accessing an outdated frame, and this operation can be a bit lengthy)
       m_libAv._sws_scale(m_swsContext, frame->data, frame->linesize, 0, m_pVideoContext->height, rgbFrame->data, rgbFrame->linesize);
       rgbFrame->opaque = frame->opaque;
+
+      // Apply the transparency mask
+      if (m_mask)
+      {
+         SDL_Surface* sdlMask = m_mask.get();
+         if (rgbFrame->width != m_mask->w || rgbFrame->height != m_mask->h)
+         {
+            if (m_scaledMask == nullptr || rgbFrame->width != m_scaledMask->w || rgbFrame->height != m_scaledMask->h)
+               m_scaledMask = std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)>(
+                  SDL_ScaleSurface(m_mask.get(), rgbFrame->width, rgbFrame->height, SDL_ScaleMode::SDL_SCALEMODE_LINEAR), SDL_DestroySurface);
+            sdlMask = m_scaledMask.get();
+         }
+         if (sdlMask)
+         {
+            SDL_LockSurface(sdlMask);
+            uint32_t* __restrict mask = static_cast<uint32_t*>(sdlMask->pixels);
+            uint32_t* __restrict frame = reinterpret_cast<uint32_t*>(rgbFrame->data[0]);
+            for (int i = 0; i < sdlMask->h; i++)
+            {
+               for (int j = 0; j < sdlMask->w; j++, mask++, frame++)
+                  *frame = *mask ? *frame : 0x00000000;
+               mask += sdlMask->pitch - sdlMask->w * sizeof(uint32_t);
+               frame += rgbFrame->linesize[0] - sdlMask->w * sizeof(uint32_t);
+            }
+            SDL_UnlockSurface(sdlMask);
+         }
+      }
    }
    lock.lock();
 

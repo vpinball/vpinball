@@ -6,7 +6,7 @@ namespace PUP {
    First number is always the screen. 1,22.5,45.3,55.1,54.7 [pupid # source screen,xpos,ypos,width,height] values in % of pupdisplay. 
 */
 
-PUPCustomPos* PUPCustomPos::CreateFromCSV(const string& line)
+std::unique_ptr<PUPCustomPos> PUPCustomPos::CreateFromCSV(const string& line)
 {
    if (line.empty())
       return nullptr;
@@ -19,7 +19,7 @@ PUPCustomPos* PUPCustomPos::CreateFromCSV(const string& line)
       LOGE("Ignoring trailing parts for CustomPos. Expected 5 parts, got %d: %s", parts.size(), line.c_str());
    }
 
-   PUPCustomPos* pCustomPos = new PUPCustomPos();
+   std::unique_ptr<PUPCustomPos> pCustomPos = std::make_unique<PUPCustomPos>();
 
    pCustomPos->m_sourceScreen = string_to_int(parts[0], 0);
    pCustomPos->m_frect =

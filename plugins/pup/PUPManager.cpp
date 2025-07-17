@@ -73,7 +73,23 @@ void PUPManager::LoadConfig(const string& szRomName)
 
    LoadPlaylists();
 
-   // Load screens
+   // Load Fonts
+
+   LoadFonts();
+
+   // Setup DMD triggers
+   m_dmd = std::make_unique<PUPDMD::DMD>();
+   m_dmd->Load(m_szRootPath.c_str(), szRomName.c_str());
+   m_dmd->SetLogCallback(
+      [](const char* format, va_list args, const void* userData)
+      {
+         char buffer[1024];
+         vsnprintf(buffer, sizeof(buffer), format, args);
+         LOGD(buffer);
+      },
+      this);
+
+   // Load screens and start them
 
    string szScreensPath = find_case_insensitive_file_path(m_szPath + "screens.pup");
    if (!szScreensPath.empty()) {
@@ -85,9 +101,9 @@ void PUPManager::LoadConfig(const string& szRomName)
          while (std::getline(screensFile, line)) {
             if (++i == 1)
                continue;
-            PUPScreen* pScreen = PUPScreen::CreateFromCSV(this, line, m_playlists);
+            std::unique_ptr<PUPScreen> pScreen = PUPScreen::CreateFromCSV(this, line, m_playlists);
             if (pScreen)
-               AddScreen(pScreen);
+               AddScreen(std::move(pScreen));
          }
       }
       else {
@@ -98,48 +114,7 @@ void PUPManager::LoadConfig(const string& szRomName)
       LOGI("No screens.pup file found");
    }
 
-   // Determine child screens, creating missing top screen if needed
-   
-   for (int i = 0; i < 6; i++)
-      if (!m_screenMap.contains(i)
-         && (std::ranges::find_if(m_screenMap, [i](auto& entry) { return entry.second->GetCustomPos() && entry.second->GetCustomPos()->GetSourceScreen() == i; }) != m_screenMap.end()))
-         switch (i)
-         {
-         case 0: AddScreen(PUPScreen::CreateFromCSV(this, "0,\"Topper\",\"\",,0,ForcePopBack,0,"s, m_playlists)); break;
-         case 1: AddScreen(PUPScreen::CreateFromCSV(this, "1,\"DMD\",\"\",,0,ForcePopBack,0,"s, m_playlists)); break;
-         case 2: AddScreen(PUPScreen::CreateFromCSV(this, "2,\"Backglass\",\"\",,0,ForcePopBack,0,"s, m_playlists)); break;
-         case 3: break; // Playfield
-         case 4: break; // Music
-         case 5: AddScreen(PUPScreen::CreateFromCSV(this, "5,\"FullDMD\",\"\",,0,ForcePopBack,0,"s, m_playlists)); break;
-         }
-
-   std::unique_lock<std::mutex> lock(m_queueMutex);
-   for (auto& [key, pScreen] : m_screenMap) {
-      PUPCustomPos* pCustomPos = pScreen->GetCustomPos();
-      if (pCustomPos) {
-         ankerl::unordered_dense::map<int, PUPScreen*>::const_iterator it = m_screenMap.find(pCustomPos->GetSourceScreen());
-         if (it == m_screenMap.end())
-            continue;
-         PUPScreen* const pParentScreen = it->second;
-         if (pParentScreen && pScreen != pParentScreen)
-            pParentScreen->AddChild(pScreen);
-      }
-   }
-
-   // Load Fonts
-
-   LoadFonts();
-
-   // Setup DMD triggers
-   m_dmd = std::make_unique<PUPDMD::DMD>();
-   m_dmd->Load(m_szRootPath.c_str(), szRomName.c_str());
-   m_dmd->SetLogCallback([](const char* format, va_list args, const void* userData) {
-      char buffer[1024];
-      vsnprintf(buffer, sizeof(buffer), format, args);
-      LOGD(buffer);
-      }, this);
-
-   lock.unlock();
+   // Queue initial event
 
    QueueTriggerData({ 'D', 0, 1 });
 }
@@ -148,8 +123,6 @@ void PUPManager::Unload()
 {
    Stop();
 
-   for (auto& [key, pScreen] : m_screenMap)
-      delete pScreen;
    m_screenMap.clear();
 
    UnloadFonts();
@@ -231,20 +204,47 @@ void PUPManager::LoadPlaylists()
    }
 }
 
-bool PUPManager::AddScreen(PUPScreen* pScreen)
+bool PUPManager::AddScreen(std::shared_ptr<PUPScreen> pScreen)
 {
    std::unique_lock<std::mutex> lock(m_queueMutex);
 
    if (HasScreen(pScreen->GetScreenNum())) {
       LOGE("Duplicate screen: screen={%s}", pScreen->ToString(false).c_str());
-      delete pScreen;
+      // FIXME we should apply new screen setup to existing screen (which was likely built as a default)
       return false;
    }
 
-   m_screenMap[pScreen->GetScreenNum()] = pScreen;
+   const std::unique_ptr<PUPCustomPos>& pCustomPos = pScreen->GetCustomPos();
+   if (pCustomPos)
+   {
+      const auto it = m_screenMap.find(pCustomPos->GetSourceScreen());
+      if (it != m_screenMap.end())
+      {
+         PUPScreen* const pParentScreen = it->second.get();
+         if (pParentScreen && pScreen.get() != pParentScreen)
+            pParentScreen->AddChild(pScreen);
+      }
+      else
+      {
+         lock.unlock();
+         switch (pCustomPos->GetSourceScreen())
+         {
+         case 0: AddScreen(PUPScreen::CreateFromCSV(this, "0,\"Topper\",\"\",,0,ForcePopBack,0,"s, m_playlists)); break;
+         case 1: AddScreen(PUPScreen::CreateFromCSV(this, "1,\"DMD\",\"\",,0,ForcePopBack,0,"s, m_playlists)); break;
+         case 2: AddScreen(PUPScreen::CreateFromCSV(this, "2,\"Backglass\",\"\",,0,ForcePopBack,0,"s, m_playlists)); break;
+         case 3: break; // Playfield
+         case 4: break; // Music
+         case 5: AddScreen(PUPScreen::CreateFromCSV(this, "5,\"FullDMD\",\"\",,0,ForcePopBack,0,"s, m_playlists)); break;
+         }
+         lock.lock();
+      }
+   }
+
+   PUPScreen* ptr = pScreen.get();
+   m_screenMap[pScreen->GetScreenNum()] = std::move(pScreen);
    if (m_isRunning)
    {
-      pScreen->Start();
+      ptr->Start();
    }
    else
    {
@@ -252,29 +252,28 @@ bool PUPManager::AddScreen(PUPScreen* pScreen)
       Start();
    }
 
-   LOGI("Screen added: screen={%s}", pScreen->ToString().c_str());
+   LOGI("Screen added: screen={%s}", ptr->ToString().c_str());
 
    return true;
 }
 
 bool PUPManager::AddScreen(int screenNum)
 {
-   PUPScreen* pScreen = PUPScreen::CreateDefault(this, screenNum, m_playlists);
+   std::unique_ptr<PUPScreen> pScreen = PUPScreen::CreateDefault(this, screenNum, m_playlists);
    if (!pScreen)
       return false;
 
-   return AddScreen(pScreen);
+   return AddScreen(std::move(pScreen));
 }
 
 bool PUPManager::HasScreen(int screenNum)
 {
-   ankerl::unordered_dense::map<int, PUPScreen*>::const_iterator it = m_screenMap.find(screenNum);
-   return it != m_screenMap.end();
+   return m_screenMap.find(screenNum) != m_screenMap.end();
 }
 
-PUPScreen* PUPManager::GetScreen(int screenNum, bool logMissing) const
+std::shared_ptr<PUPScreen> PUPManager::GetScreen(int screenNum, bool logMissing) const
 {
-   ankerl::unordered_dense::map<int, PUPScreen*>::const_iterator it = m_screenMap.find(screenNum);
+   const auto it = m_screenMap.find(screenNum);
    if (it != m_screenMap.end())
       return it->second;
    if (logMissing)
@@ -596,7 +595,7 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
 {
    PUPManager* me = static_cast<PUPManager*>(context);
 
-   PUPScreen* screen = nullptr;
+   std::shared_ptr<PUPScreen> screen = nullptr;
    switch (renderCtx->window)
    {
    case VPXAnciliaryWindow::VPXWINDOW_Topper: screen = me->GetScreen(0); break;
