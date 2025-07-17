@@ -45,7 +45,7 @@ void PUPPinDisplay::playlistadd(int screenNum, const string& folder, int sort, i
    //playlistadd  (<display#>  <folder name>,  <sort/shuffle>, <restSeconds>);
    // pretty self explaining...  the PinUpPlayer(PUP) will manage playlists and shuffle them.  RestSeconds is what I use to 'limit' the amount of videos being played.  So lets say you want a ramp video to play, but since I set it to 60... you can hit that ramp multiple times but no videos will play until the restSeconds time has passed since last video played.
    // <Sort 1=shuffle, 0 = alpha>  So if you want to progress game videos you could name the first one 001.mp4, 002.mp4...099.mp4  That way alpha sort will play in your order.
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (!pScreen)
       return;
 
@@ -59,21 +59,21 @@ void PUPPinDisplay::playlistadd(int screenNum, const string& folder, int sort, i
 
 void PUPPinDisplay::playlistplay(int screenNum, const string& playlist)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    LOGE("Not implemented: screenNum=%d, playlist=%s", screenNum, playlist.c_str());
 }
 
 void PUPPinDisplay::playlistplayex(int screenNum, const string& playlist, const string& playfilename, int volume, int priority)
 {
    // priority(0=none, 1..9) will override the restSeconds (see playlistadd)
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
       pScreen->QueuePlay(playlist, playfilename, static_cast<float>(volume), priority);
 }
 
 void PUPPinDisplay::play(int screenNum, const string& playlist, const string& playfilename)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
    {
       PUPPlaylist* pPlaylist = pScreen->GetPlaylist(playlist);
@@ -88,66 +88,66 @@ void PUPPinDisplay::play(int screenNum, const string& playlist, const string& pl
 
 void PUPPinDisplay::setWidth(int screenNum, int width)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    LOGE("Not implemented: screenNum=%d, width=%d", screenNum, width);
 }
 
 void PUPPinDisplay::setHeight(int screenNum, int Height)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    LOGE("Not implemented: screenNum=%d, height=%d", screenNum, Height);
 }
 
 void PUPPinDisplay::setPosX(int screenNum, int Posx)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    LOGE("Not implemented: screenNum=%d, Posx=%d", screenNum, Posx);
 }
 
 void PUPPinDisplay::setPosY(int screenNum, int PosY)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    LOGE("Not implemented: screenNum=%d, PosY=%d", screenNum, PosY);
 }
 
 void PUPPinDisplay::setAspect(int screenNum, int aspectWide, int aspectHigh)
 {
    //**** Set 0,0 to fittoscreen.
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    LOGE("Not implemented: screenNum=%d, aspectWide=%d, aspectHigh=%d", screenNum, aspectWide, aspectHigh);
 }
 
 void PUPPinDisplay::setVolume(int screenNum, int vol)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
       pScreen->SetVolume(static_cast<float>(vol));
 }
 
 void PUPPinDisplay::setVolumeCurrent(int screenNum, int vol)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
       pScreen->SetVolumeCurrent(static_cast<float>(vol));
 }
 
 void PUPPinDisplay::playpause(int screenNum)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
       pScreen->QueuePause();
 }
 
 void PUPPinDisplay::playresume(int screenNum)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
       pScreen->QueueResume();
 }
 
 void PUPPinDisplay::playstop(int screenNum)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
       pScreen->QueueStop();
 }
@@ -159,28 +159,28 @@ void PUPPinDisplay::CloseApp()
 
 bool PUPPinDisplay::GetisPlaying(int screenNum) const
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    LOGE("Not implemented: screenNum=%d", screenNum);
    return false;
 }
 
 void PUPPinDisplay::SetisPlaying(int screenNum, bool value)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    LOGE("Not implemented: screenNum=%d, value=%d", screenNum, value);
 }
 
 void PUPPinDisplay::SetLength(int screenNum, int StopSecs)
 {
    //after you play a file call setlength if you want it to stop.  so setlength(5) will stop video at 5 seconds mark.
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    LOGE("Not implemented: screenNum=%d, stopSecs=%d", screenNum, StopSecs);
 }
 
 void PUPPinDisplay::SetLoop(int screenNum, int LoopState)
 {
    // if you set LoopState=1,  it will loop the currently playing file.  0=cancel loop
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
       pScreen->SetLoop(LoopState);
 }
@@ -188,38 +188,32 @@ void PUPPinDisplay::SetLoop(int screenNum, int LoopState)
 void PUPPinDisplay::SetBackGround(int screenNum, int Mode)
 {
    // if you set Mode=1, it will set current playing file as background (loop it always).  Mode=0 to cancel background.  Note if user has 'POP-UP' mode this will be disabled automagically (you don't need to worry about it).
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
       pScreen->SetBG(Mode);
 }
 
 void PUPPinDisplay::BlockPlay(int screenNum, int Mode)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    LOGE("Not implemented: screenNum=%d, mode=%d", screenNum, Mode);
 }
 
 void PUPPinDisplay::SetScreen(int screenNum)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    LOGE("Not implemented: screenNum=%d", screenNum);
 }
 
 void PUPPinDisplay::SetScreenEx(int screenNum, int xpos, int ypos, int swidth, int sheight, int popup) 
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (!pScreen)
       return;
    switch (popup) {
-      case 0:
-         pScreen->SetMode(PUP_SCREEN_MODE_SHOW);
-         break;
-      case 1:
-         pScreen->SetMode(PUP_SCREEN_MODE_FORCE_POP);
-         break;
-      default:
-         pScreen->SetMode(PUP_SCREEN_MODE_MUSIC_ONLY);
-         break;
+      case 0: pScreen->SetMode(PUPScreen::Mode::Show); break;
+      case 1: pScreen->SetMode(PUPScreen::Mode::ForcePop); break;
+      default: pScreen->SetMode(PUPScreen::Mode::MusicOnly); break;
    }
    LOGE("Not fully implemented: screenNum=%d, xpos=%d, ypos=%d, swidth=%d, sheight=%d, popup=%d", screenNum, xpos, ypos, swidth, sheight, popup);
 }
@@ -258,19 +252,19 @@ void PUPPinDisplay::SetB2SFilter(const string& value)
 
 void PUPPinDisplay::Show(int screenNum)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    LOGE("Not implemented: screenNum=%d", screenNum);
 }
 
 void PUPPinDisplay::Hide(int screenNum)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (!pScreen)
       return;
 
    // Is off the same as Hide?
    // Seems to be called for the music screens
-   pScreen->SetMode(PUP_SCREEN_MODE_MUSIC_ONLY);
+   pScreen->SetMode(PUPScreen::Mode::MusicOnly);
 }
 
 void PUPPinDisplay::B2SInit(const string& tName, const string& romName)
@@ -287,14 +281,14 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
          case 301:
             if (json["SN"s].exists() && json["FN"s].exists()) {
                int sn = json["SN"s].as<int>();
-               PUPScreen* pScreen = m_pupManager.GetScreen(sn);
+               std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(sn);
                if (pScreen) {
                   int fn = json["FN"s].as<int>();
                   switch (fn) {
                      case 4:
                         // set StayOnTop { "mt":301, "SN": XX, "FN":4, "FS":1/0 }
                         LOGD("Stay on top requested: screen={%s}, fn=%d, szMsg=%s", pScreen->ToString(false).c_str(), fn, szMsg.c_str());
-                        pScreen->SetMode((json["FS"s].exists() && json["FS"s].as<int>() == 1) ? PUP_SCREEN_MODE_FORCE_ON : PUP_SCREEN_MODE_FORCE_BACK);
+                        pScreen->SetMode((json["FS"s].exists() && json["FS"s].as<int>() == 1) ? PUPScreen::Mode::ForceOn : PUPScreen::Mode::ForceBack);
                         break;
                      case 6:
                         // Bring screen to the front
@@ -314,6 +308,18 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
                         // set screen custompos { 'mt':301, 'SN':15,'FN':15,'CP':'parent_screen,x,y,w,h'} CP = CustomPos String, coordinates relative in %
                         LOGD("Set screen custompos requested: screen={%s}, fn=%d, szMsg=%s",pScreen->ToString(false).c_str(), fn, szMsg.c_str());
                         pScreen->SetCustomPos(json["CP"s].as_str());
+                        break;
+                     case 16:
+                        // start executable
+                        //   { ""mt"":301, ""SN"": 2, ""FN"":16, ""EX"": """&PuPMiniGameExe  &""", ""WT"": """&PuPMiniGameTitle&""", ""RS"":1 , ""TO"":15 , ""WZ"":0 , ""SH"": 1 , ""FT"":""Visual Pinball Player"" }
+                        //   { ""mt"":301, ""SN"": 2, ""FN"":16, ""EX"": ""Pupinit.bat"", ""WT"": """", ""RS"":1 , ""TO"":15 , ""WZ"":0 , ""SH"": 1 , ""FT"":""Visual Pinball Player"" }
+                        // EX: Windows executable / WT: Window Title / WZ: Window Z order / RS: ? / TO: ? / SH: ? / FT: ?
+                        LOGD("Executing OS executable is not implemented. szMsg=%s", szMsg.c_str());
+                        break;
+                     case 17:
+                        // set window z order { ""mt"":301, ""SN"": ""2"", ""FN"":17, ""WT"":""Visual Pinball Player"", ""WZ"": 1, ""WP"": 1 }
+                        // WT: Window Title / WZ: HWND_BOTTOM=1 / WP: SWP_NOSIZE=1 
+                        LOGD("Set OS window z ordering is not implemented. szMsg=%s", szMsg.c_str());
                         break;
                      case 22:
                         // set screen transparency { "mt":301, "SN": 16, "FN":22, "AM":1, "AV":255 } AV: Alpha Value (0-255), AM: Alpha mode enabled 0/1?
@@ -362,7 +368,7 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
 */
 void PUPPinDisplay::LabelNew(int screenNum, const string& LabelName, const string& FontName, int Size, int Color, int Angle, int xAlign, int yAlign, int xMargin, int yMargin, int PageNum, bool Visible)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (!pScreen)
       return;
 
@@ -394,7 +400,7 @@ void PUPPinDisplay::LabelNew(int screenNum, const string& LabelName, const strin
 */
 void PUPPinDisplay::LabelSet(int screenNum, const string& LabelName, const string& Caption, bool Visible, const string& Special)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (!pScreen)
       return;
 
@@ -430,14 +436,14 @@ void PUPPinDisplay::LabelSetEx()
 
 void PUPPinDisplay::LabelShowPage(int screenNum, int PageNum, int Seconds, const string& Special)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
       pScreen->SetPage(PageNum, Seconds);
 }
 
 void PUPPinDisplay::LabelInit(int screenNum)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
       pScreen->SetLabelInit();
 }
@@ -520,7 +526,7 @@ string PUPPinDisplay::GetVersion() const
 
 void PUPPinDisplay::playevent(int screenNum, const string& playlist, const string& playfilename, int volume, int priority, int playtype, int Seconds, const string& Special)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (!pScreen)
       return;
    // TODO handle seconds and Special
@@ -557,7 +563,7 @@ void PUPPinDisplay::playevent(int screenNum, const string& playlist, const strin
 
 void PUPPinDisplay::SetPosVideo(int screenNum, int StartPos, int EndPos, int Mode, const string& Special)
 {
-   PUPScreen* pScreen = m_pupManager.GetScreen(screenNum, true);
+   std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    LOGE("Not implemented: screenNum=%d, startPos=%d, endPos=%d, mode=%d, special=%s", screenNum, StartPos, EndPos, Mode, Special.c_str());
 }
 

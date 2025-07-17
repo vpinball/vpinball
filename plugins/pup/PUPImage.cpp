@@ -4,39 +4,36 @@
 
 namespace PUP {
 
+PUPImage::PUPImage()
+   : m_pSurface(nullptr, SDL_DestroySurface)
+{
+}
+
 PUPImage::~PUPImage()
 {
-   if (m_pSurface)
-      SDL_DestroySurface(m_pSurface);
    if (m_pTexture)
       DeleteTexture(m_pTexture);
 }
 
 void PUPImage::Load(const string& szFile)
 {
-   if (m_pSurface) {
-      SDL_DestroySurface(m_pSurface);
-      m_pSurface = nullptr;
-   }
+   m_file = szFile;
+
    if (m_pTexture) {
       DeleteTexture(m_pTexture);
       m_pTexture = nullptr;
    }
    
-   m_pSurface = IMG_Load(szFile.c_str());
-   if (m_pSurface && m_pSurface->format != SDL_PIXELFORMAT_RGBA32) {
-      SDL_Surface* rgbaSurface = SDL_ConvertSurface(m_pSurface, SDL_PIXELFORMAT_RGBA32);
-      SDL_DestroySurface(m_pSurface);
-      m_pSurface = rgbaSurface;
-   }
+   m_pSurface = std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)>(IMG_Load(szFile.c_str()), SDL_DestroySurface);
+   if (m_pSurface && m_pSurface->format != SDL_PIXELFORMAT_RGBA32)
+      m_pSurface = std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)>(SDL_ConvertSurface(m_pSurface.get(), SDL_PIXELFORMAT_RGBA32), SDL_DestroySurface);
 }
 
 void PUPImage::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect)
 {
    // Update texture
    if (m_pTexture == nullptr && m_pSurface) {
-      m_pTexture = CreateTexture(m_pSurface);
-      SDL_DestroySurface(m_pSurface);
+      m_pTexture = CreateTexture(m_pSurface.get());
       m_pSurface = nullptr;
    }
 

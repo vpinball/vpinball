@@ -26,21 +26,6 @@ namespace PUP {
 
 static const string emptyString;
 
-const char* PUP_PLAYLIST_FUNCTION_STRINGS[] = {
-   "PUP_PLAYLIST_FUNCTION_DEFAULT",
-   "PUP_PLAYLIST_FUNCTION_OVERLAYS",
-   "PUP_PLAYLIST_FUNCTION_FRAMES",
-   "PUP_PLAYLIST_FUNCTION_ALPHAS",
-   "PUP_PLAYLIST_FUNCTION_SHAPES"
-};
-
-const char* PUP_PLAYLIST_FUNCTION_TO_STRING(PUP_PLAYLIST_FUNCTION value)
-{
-   if ((int)value < 0 || (size_t)value >= std::size(PUP_PLAYLIST_FUNCTION_STRINGS))
-      return "UNKNOWN";
-   return PUP_PLAYLIST_FUNCTION_STRINGS[value];
-}
-
 PUPPlaylist::PUPPlaylist(PUPManager* manager, const string& szFolder, const string& szDescription, bool randomize, int restSeconds, float volume, int priority)
 {
    m_szFolder = szFolder;
@@ -52,15 +37,15 @@ PUPPlaylist::PUPPlaylist(PUPManager* manager, const string& szFolder, const stri
    m_lastIndex = 0;
 
    if (StrCompareNoCase(szFolder, "PUPOverlays"s))
-      m_function = PUP_PLAYLIST_FUNCTION_OVERLAYS;
+      m_function = PUPPlaylist::Function::Overlays;
    else if (StrCompareNoCase(szFolder, "PUPFrames"s))
-      m_function = PUP_PLAYLIST_FUNCTION_FRAMES;
+      m_function = PUPPlaylist::Function::Frames;
    else if (StrCompareNoCase(szFolder, "PUPAlphas"s))
-      m_function = PUP_PLAYLIST_FUNCTION_ALPHAS;
+      m_function = PUPPlaylist::Function::Alphas;
    else if (StrCompareNoCase(szFolder, "PuPShapes"s))
-      m_function = PUP_PLAYLIST_FUNCTION_SHAPES;
+      m_function = PUPPlaylist::Function::Shapes;
    else
-      m_function = PUP_PLAYLIST_FUNCTION_DEFAULT;
+      m_function = PUPPlaylist::Function::Default;
 
    m_szBasePath = find_case_insensitive_directory_path(manager->GetPath() + szFolder);
    if (m_szBasePath.empty()) {
@@ -169,7 +154,16 @@ string PUPPlaylist::ToString() const {
       ", restSeconds=" + std::to_string(m_restSeconds) +
       ", volume=" + std::to_string(m_volume) +
       ", priority=" + std::to_string(m_priority) +
-      ", function=" + string(PUP_PLAYLIST_FUNCTION_TO_STRING(m_function));
+      ", function=" + ToString(m_function);
+}
+
+string PUPPlaylist::ToString(PUPPlaylist::Function value)
+{
+   static string PUP_PLAYLIST_FUNCTION_STRINGS[] = { "Default", "Overlays", "Frames", "Alphas", "Shapes" };
+   static const string error = "Unknown";
+   if ((int)value < 0 || (size_t)value >= std::size(PUP_PLAYLIST_FUNCTION_STRINGS))
+      return error;
+   return PUP_PLAYLIST_FUNCTION_STRINGS[(size_t)value];
 }
 
 }

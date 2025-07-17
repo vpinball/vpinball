@@ -29,13 +29,17 @@ public:
    void Resume();
    void SetBG(bool isBackground);
    void SetLoop(bool isLoop);
-   void SetVolume(int volume) { m_player1.player.SetVolume(volume); m_player2.player.SetVolume(volume); }
+   void SetVolume(float volume) { m_player1.player.SetVolume(volume); m_player2.player.SetVolume(volume); }
    void Stop();
    void Stop(int priority);
    void Stop(PUPPlaylist* pPlaylist, const string& szPlayFile);
    void Render(VPXRenderContext2D* const ctx);
 
    void SetBounds(const SDL_Rect& rect);
+   void SetMask(std::shared_ptr<SDL_Surface> mask);
+
+   const PUPMediaManagerPlayer* GetBackgroundPlayer() const { return m_pBackgroundPlayer; };
+   const PUPMediaManagerPlayer* GetMainPlayer() const { return m_pMainPlayer; };
 
 private:
    PUPMediaManagerPlayer m_player1;

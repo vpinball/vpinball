@@ -77,10 +77,10 @@ public:
    void LoadConfig(const string& szRomName);
    void Unload();
    const string& GetPath() const { return m_szPath; }
-   bool AddScreen(PUPScreen* pScreen);
+   bool AddScreen(std::shared_ptr<PUPScreen> pScreen);
    bool AddScreen(int screenNum);
    bool HasScreen(int screenNum);
-   PUPScreen* GetScreen(int screenNum, bool logMissing = false) const;
+   std::shared_ptr<PUPScreen> GetScreen(int screenNum, bool logMissing = false) const;
    bool AddFont(TTF_Font* pFont, const string& szFilename);
    TTF_Font* GetFont(const string& szFont);
 
@@ -96,7 +96,7 @@ private:
 
    const string m_szRootPath;
    string m_szPath;
-   ankerl::unordered_dense::map<int, PUPScreen*> m_screenMap;
+   ankerl::unordered_dense::map<int, std::shared_ptr<PUPScreen>> m_screenMap;
    vector<TTF_Font*> m_fonts;
    ankerl::unordered_dense::map<string, TTF_Font*> m_fontMap;
    ankerl::unordered_dense::map<string, TTF_Font*> m_fontFilenameMap;
