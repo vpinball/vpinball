@@ -672,6 +672,8 @@ void VPApp::ProcessCommandLine(int nArgs, char* szArglist[])
    m_extractScript = false;
    m_audit = false;
    m_tournament = false;
+   m_listSnd = false;  // NOUVEAU: initialisation du flag
+   m_listRes = false;  // NOUVEAU: initialisation du flag
 #ifdef __STANDALONE__
    m_prefPath.clear();
    m_displayId = false;
@@ -870,44 +872,15 @@ void VPApp::ProcessCommandLine(int nArgs, char* szArglist[])
          break;
 
       case OPTION_LISTSND:
-         PLOGI << "Available sound devices:";
-         for (const VPX::AudioPlayer::AudioDevice& audioDevice : VPX::AudioPlayer::EnumerateAudioDevices())
-         {
-            PLOGI << ". " << audioDevice.name << ", channels=" << audioDevice.channels;
-         }
+         // MODIFICATION: marquer le flag au lieu de traiter immédiatement
+         m_listSnd = true;
          m_run = false;
          break;
 
       #ifdef ENABLE_SDL_VIDEO
       case OPTION_LISTRES:
-         {
-            PLOGI << "Available fullscreen resolutions:";
-            vector<VPX::Window::DisplayConfig> displays;
-            VPX::Window::GetDisplays(displays);
-            for (int display = 0; display < displays.size(); display++)
-            {
-               vector<VPX::Window::VideoMode> allVideoModes;
-               VPX::Window::GetDisplayModes(display, allVideoModes);
-               for (size_t i = 0; i < allVideoModes.size(); ++i)
-               {
-                  VPX::Window::VideoMode mode = allVideoModes.at(i);
-                  PLOGI << "display " << displays.at(display).adapter << ": " << mode.width << 'x' << mode.height << " (depth=" << mode.depth << ", refreshRate=" << mode.refreshrate << ')';
-               }
-            }
-
-            PLOGI << "Available window fullscreen desktop resolutions:";
-            for (int display = 0; display < displays.size(); display++)
-            {
-               const SDL_DisplayMode* displayMode = SDL_GetDesktopDisplayMode(displays.at(display).adapter);
-               PLOGI << "display " << displays.at(display).adapter << ": " << displayMode->w << 'x' << displayMode->h << " (refreshRate=" << displayMode->refresh_rate
-                     << ", pixelDensity=" << displayMode->pixel_density << ')';
-            }
-
-            PLOGI << "Available external window renderers:";
-            int numRenderers = SDL_GetNumRenderDrivers();
-            for (int renderer = 0; renderer < numRenderers; renderer++)
-               PLOGI << "Renderer " << renderer << ": " << SDL_GetRenderDriver(renderer);
-         }
+         // MODIFICATION: marquer le flag au lieu de traiter immédiatement
+         m_listRes = true;
          m_run = false;
          break;
       #endif
@@ -1046,6 +1019,51 @@ BOOL VPApp::InitInstance()
 
 int VPApp::Run()
 {
+   // NOUVEAU: traiter les options qui nécessitent une initialisation complète
+   if (m_listSnd)
+   {
+      PLOGI << "Available sound devices:";
+      for (const VPX::AudioPlayer::AudioDevice& audioDevice : VPX::AudioPlayer::EnumerateAudioDevices())
+      {
+         PLOGI << ". " << audioDevice.name << ", channels=" << audioDevice.channels;
+      }
+      return 0;
+   }
+
+#ifdef ENABLE_SDL_VIDEO
+   if (m_listRes)
+   {
+      PLOGI << "Available fullscreen resolutions:";
+      vector<VPX::Window::DisplayConfig> displays;
+      VPX::Window::GetDisplays(displays);
+      for (int display = 0; display < displays.size(); display++)
+      {
+         vector<VPX::Window::VideoMode> allVideoModes;
+         VPX::Window::GetDisplayModes(display, allVideoModes);
+         for (size_t i = 0; i < allVideoModes.size(); ++i)
+         {
+            VPX::Window::VideoMode mode = allVideoModes.at(i);
+            PLOGI << "display " << displays.at(display).adapter << ": " << mode.width << 'x' << mode.height << " (depth=" << mode.depth << ", refreshRate=" << mode.refreshrate << ')';
+         }
+      }
+
+      PLOGI << "Available window fullscreen desktop resolutions:";
+      for (int display = 0; display < displays.size(); display++)
+      {
+         const SDL_DisplayMode* displayMode = SDL_GetDesktopDisplayMode(displays.at(display).adapter);
+         PLOGI << "display " << displays.at(display).adapter << ": " << displayMode->w << 'x' << displayMode->h << " (refreshRate=" << displayMode->refresh_rate
+               << ", pixelDensity=" << displayMode->pixel_density << ')';
+      }
+
+      PLOGI << "Available external window renderers:";
+      int numRenderers = SDL_GetNumRenderDrivers();
+      for (int renderer = 0; renderer < numRenderers; renderer++)
+         PLOGI << "Renderer " << renderer << ": " << SDL_GetRenderDriver(renderer);
+      
+      return 0;
+   }
+#endif
+
    // Start VP with file dialog open and then also playing that one?
    bool loadFileResult = true;
    const bool selectOnTableStart = m_vpinball.m_settings.LoadValueWithDefault(Settings::Editor, "SelectTableOnStart"s, true);

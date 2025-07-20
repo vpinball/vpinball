@@ -32,6 +32,8 @@ private:
    bool m_extractScript = false;
    bool m_audit = false;
    bool m_tournament = false;
+   bool m_listSnd = false;    // NOUVEAU: flag pour -listsnd
+   bool m_listRes = false;    // NOUVEAU: flag pour -listres
 #ifdef __STANDALONE__
    bool m_displayId = false;
    string m_prefPath;
