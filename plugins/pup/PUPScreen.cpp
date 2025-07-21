@@ -538,35 +538,35 @@ void PUPScreen::ProcessTriggerRequest(PUPTriggerRequest* pRequest)
    LOGD("processing trigger: trigger={%s}", pTrigger->ToString().c_str());
 
    switch(pTrigger->GetPlayAction()) {
-      case PUP_TRIGGER_PLAY_ACTION_NORMAL:
-         ProcessPlaylistRequest(pTrigger->GetPlaylist(), pTrigger->GetPlayFile(), pTrigger->GetVolume(), pTrigger->GetPriority(), pTrigger->GetLength());
-         break;
+   case PUPTrigger::Action::Normal:
+      ProcessPlaylistRequest(pTrigger->GetPlaylist(), pTrigger->GetPlayFile(), pTrigger->GetVolume(), pTrigger->GetPriority(), pTrigger->GetLength());
+      break;
 
-      case PUP_TRIGGER_PLAY_ACTION_LOOP:
-         SetMedia(pTrigger->GetPlaylist(), pTrigger->GetPlayFile(), pTrigger->GetVolume(), pTrigger->GetPriority(), false, pTrigger->GetLength());
-         SetLoop(1);
-         break;
+   case PUPTrigger::Action::Loop:
+      SetMedia(pTrigger->GetPlaylist(), pTrigger->GetPlayFile(), pTrigger->GetVolume(), pTrigger->GetPriority(), false, pTrigger->GetLength());
+      SetLoop(1);
+      break;
 
-      case PUP_TRIGGER_PLAY_ACTION_SET_BG:
-         SetMedia(pTrigger->GetPlaylist(), pTrigger->GetPlayFile(), pTrigger->GetVolume(), pTrigger->GetPriority(), false, pTrigger->GetLength());
-         SetBG(1);
-         break;
+   case PUPTrigger::Action::SetBG:
+      SetMedia(pTrigger->GetPlaylist(), pTrigger->GetPlayFile(), pTrigger->GetVolume(), pTrigger->GetPriority(), false, pTrigger->GetLength());
+      SetBG(1);
+      break;
 
-      case PUP_TRIGGER_PLAY_ACTION_SKIP_SAME_PRTY:
-         SetMedia(pTrigger->GetPlaylist(), pTrigger->GetPlayFile(), pTrigger->GetVolume(), pTrigger->GetPriority(), true, pTrigger->GetLength());
-         break;
+   case PUPTrigger::Action::SkipSamePriority:
+      SetMedia(pTrigger->GetPlaylist(), pTrigger->GetPlayFile(), pTrigger->GetVolume(), pTrigger->GetPriority(), true, pTrigger->GetLength());
+      break;
 
-      case PUP_TRIGGER_PLAY_ACTION_STOP_PLAYER:
-         StopMedia(pTrigger->GetPriority());
-         break;
+   case PUPTrigger::Action::StopPlayer:
+      StopMedia(pTrigger->GetPriority());
+      break;
 
-      case PUP_TRIGGER_PLAY_ACTION_STOP_FILE:
-         StopMedia(pTrigger->GetPlaylist(), pTrigger->GetPlayFile());
-         break;
+   case PUPTrigger::Action::StopFile:
+      StopMedia(pTrigger->GetPlaylist(), pTrigger->GetPlayFile());
+      break;
 
-      default:
-         LOGE("Play action not implemented: %s", PUP_TRIGGER_PLAY_ACTION_TO_STRING(pTrigger->GetPlayAction()));
-         break;
+   default:
+      LOGE("Play action not implemented: %s", PUPTrigger::ToString(pTrigger->GetPlayAction()).c_str());
+      break;
    }
 }
 

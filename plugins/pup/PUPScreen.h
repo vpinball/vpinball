@@ -70,7 +70,7 @@ public:
    enum class Mode
    {
       Off,
-      Show, // This will use whatever settings are set for this screen’s “default” settings.
+      Show, // This will use whatever settings are set for this screen's "default" settings.
       ForceOn, // Forces the window to be the Top most window, and it stays on. A video is always going to be playing in this mode. When a new video starts or the current video restarts, the ForceON action happens and will force the window to be the Top window again.
       ForcePop, // Similar to ForceOn, except the vlc window opens and closes with each video played
       ForceBack, // Keeps the video window always open, but under the other PuP screens. This can cause any PuP screen with this setting to get pushed behind your game window.
