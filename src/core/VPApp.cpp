@@ -672,8 +672,8 @@ void VPApp::ProcessCommandLine(int nArgs, char* szArglist[])
    m_extractScript = false;
    m_audit = false;
    m_tournament = false;
-   m_listSnd = false;  // NOUVEAU: initialisation du flag
-   m_listRes = false;  // NOUVEAU: initialisation du flag
+   m_listSnd = false;  // Initialize flag for deferred sound device enumeration
+   m_listRes = false;  // Initialize flag for deferred display resolution enumeration
 #ifdef __STANDALONE__
    m_prefPath.clear();
    m_displayId = false;
@@ -872,14 +872,14 @@ void VPApp::ProcessCommandLine(int nArgs, char* szArglist[])
          break;
 
       case OPTION_LISTSND:
-         // MODIFICATION: marquer le flag au lieu de traiter immédiatement
+         // Set flag instead of processing immediately - device enumeration requires SDL initialization
          m_listSnd = true;
          m_run = false;
          break;
 
       #ifdef ENABLE_SDL_VIDEO
       case OPTION_LISTRES:
-         // MODIFICATION: marquer le flag au lieu de traiter immédiatement
+         // Set flag instead of processing immediately - display enumeration requires SDL initialization
          m_listRes = true;
          m_run = false;
          break;
@@ -1019,7 +1019,7 @@ BOOL VPApp::InitInstance()
 
 int VPApp::Run()
 {
-   // NOUVEAU: traiter les options qui nécessitent une initialisation complète
+   // Process options that require complete SDL initialization
    if (m_listSnd)
    {
       PLOGI << "Available sound devices:";
