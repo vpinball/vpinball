@@ -4,26 +4,6 @@
 
 namespace PUP {
 
-const char* PUP_TRIGGER_PLAY_ACTION_STRINGS[] = {
-   "PUP_TRIGGER_PLAY_ACTION_NORMAL",
-   "PUP_TRIGGER_PLAY_ACTION_LOOP",
-   "PUP_TRIGGER_PLAY_ACTION_SPLASH_RESET",
-   "PUP_TRIGGER_PLAY_ACTION_SPLASH_RETURN",
-   "PUP_TRIGGER_PLAY_ACTION_STOP_PLAYER",
-   "PUP_TRIGGER_PLAY_ACTION_STOP_FILE",
-   "PUP_TRIGGER_PLAY_ACTION_SET_BG",
-   "PUP_TRIGGER_PLAY_ACTION_PLAY_SSF",
-   "PUP_TRIGGER_PLAY_ACTION_SKIP_SAME_PRTY",
-   "PUP_TRIGGER_PLAY_ACTION_CUSTOM_FUNC"
-};
-
-const char* PUP_TRIGGER_PLAY_ACTION_TO_STRING(PUP_TRIGGER_PLAY_ACTION value)
-{
-   if ((size_t)value >= std::size(PUP_TRIGGER_PLAY_ACTION_STRINGS))
-      return "UNKNOWN";
-   return PUP_TRIGGER_PLAY_ACTION_STRINGS[value];
-}
-
 /*
    triggers.pup: ID,Active,Descript,Trigger,ScreenNum,PlayList,PlayFile,Volume,Priority,Length,Counter,RestSeconds,Loop,Defaults
    PuP Pack Editor: Descript,Trigger,Screen,Playlist,PlayFile,Volume,RestSeconds,Priority,Counter,Length(s),PlayAction,Active
@@ -90,7 +70,7 @@ static vector<PUPTrigger::PUPTriggerCondition> ParseConditions(const string& tri
    return triggers;
 }
 
-PUPTrigger::PUPTrigger(bool active, const string& szDescript, const string& szTrigger, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, int length, int counter, int restSeconds, PUP_TRIGGER_PLAY_ACTION playAction)
+PUPTrigger::PUPTrigger(bool active, const string& szDescript, const string& szTrigger, PUPScreen* pScreen, PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, int length, int counter, int restSeconds, PUPTrigger::Action playAction)
    : m_szDescript(szDescript)
    , m_szTrigger(szTrigger)
    , m_pScreen(pScreen)
@@ -155,27 +135,27 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, const string& line)
       }
    }
 
-   PUP_TRIGGER_PLAY_ACTION playAction;
+   PUPTrigger::Action playAction;
    if (StrCompareNoCase(triggerPlayAction, "Loop"s))
-      playAction = PUP_TRIGGER_PLAY_ACTION_LOOP;
+      playAction = PUPTrigger::Action::Loop;
    else if (StrCompareNoCase(triggerPlayAction, "SplashReset"s))
-      playAction = PUP_TRIGGER_PLAY_ACTION_SPLASH_RESET;
+      playAction = PUPTrigger::Action::SplashReset;
    else if (StrCompareNoCase(triggerPlayAction, "SplashReturn"s))
-      playAction = PUP_TRIGGER_PLAY_ACTION_SPLASH_RETURN;
+      playAction = PUPTrigger::Action::SplashReturn;
    else if (StrCompareNoCase(triggerPlayAction, "StopPlayer"s))
-      playAction = PUP_TRIGGER_PLAY_ACTION_STOP_PLAYER;
+      playAction = PUPTrigger::Action::StopPlayer;
    else if (StrCompareNoCase(triggerPlayAction, "StopFile"s))
-      playAction = PUP_TRIGGER_PLAY_ACTION_STOP_FILE;
+      playAction = PUPTrigger::Action::StopFile;
    else if (StrCompareNoCase(triggerPlayAction, "SetBG"s))
-      playAction = PUP_TRIGGER_PLAY_ACTION_SET_BG;
+      playAction = PUPTrigger::Action::SetBG;
    else if (StrCompareNoCase(triggerPlayAction, "PlaySSF"s))
-      playAction = PUP_TRIGGER_PLAY_ACTION_PLAY_SSF;
+      playAction = PUPTrigger::Action::PlaySSF;
    else if (StrCompareNoCase(triggerPlayAction, "SkipSamePrty"s))
-      playAction = PUP_TRIGGER_PLAY_ACTION_SKIP_SAME_PRTY;
+      playAction = PUPTrigger::Action::SkipSamePriority;
    else if (StrCompareNoCase(triggerPlayAction, "CustomFunc"s))
-      playAction = PUP_TRIGGER_PLAY_ACTION_CUSTOM_FUNC;
+      playAction = PUPTrigger::Action::CustomFunction;
    else
-      playAction = PUP_TRIGGER_PLAY_ACTION_NORMAL;
+      playAction = PUPTrigger::Action::Normal;
 
    std::istringstream stream(parts[3]);
    string triggerString;
@@ -251,7 +231,18 @@ string PUPTrigger::ToString() const {
       ", length=" + std::to_string(m_length) +
       ", count=" + std::to_string(m_counter) +
       ", restSeconds=" + std::to_string(m_restSeconds) +
-      ", playAction=" + string(PUP_TRIGGER_PLAY_ACTION_TO_STRING(m_playAction));
+      ", playAction=" + ToString(m_playAction);
 }
+
+const string& PUPTrigger::ToString(Action value)
+{
+   static const string actionStrings[] = { "PUPTrigger::Normal", "PUPTrigger::Loop", "PUPTrigger::SplashReset", "PUPTrigger::SplashReturn", "PUPTrigger::StopPlayer",
+      "PUPTrigger::StopFile", "PUPTrigger::SetBG", "PUPTrigger::PlaySSF", "PUPTrigger::SkipSamePriority", "PUPTrigger::CustomFunction" };
+   static const string error = "Unknown";
+   if ((int)value < 0 || (size_t)value >= std::size(actionStrings))
+      return error;
+   return actionStrings[(int)value];
+}
+
 
 }
