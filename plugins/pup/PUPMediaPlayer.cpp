@@ -27,11 +27,7 @@ PUPMediaPlayer::PUPMediaPlayer(const string& name)
 {
    assert(m_libAv.isLoaded);
    assert(m_rgbFrames.size() == m_videoTextures.size());
-   m_commandQueue.enqueue([this]()
-   {
-      string name = m_name;
-      SetThreadName(name.append(".CommandQueue"));
-   }); 
+   SetName(name);
 }
 
 PUPMediaPlayer::~PUPMediaPlayer()
@@ -39,6 +35,16 @@ PUPMediaPlayer::~PUPMediaPlayer()
    Stop();
    m_commandQueue.wait_until_empty();
    m_commandQueue.wait_until_nothing_in_flight();
+}
+
+void PUPMediaPlayer::SetName(const string& name)
+{
+   m_name = name;
+   m_commandQueue.enqueue([this]()
+   {
+      string name = m_name;
+      SetThreadName(name.append(".CommandQueue"));
+   }); 
 }
 
 void PUPMediaPlayer::SetBounds(const SDL_Rect& rect)
@@ -333,9 +339,6 @@ void PUPMediaPlayer::Render(VPXRenderContext2D* const ctx, const SDL_Rect& destR
 
 void PUPMediaPlayer::Run()
 {
-   string name = m_name;
-   SetThreadName(name.append(".Play[").append(m_filename).append(1,']'));
-
    AVPacket* pPacket = m_libAv._av_packet_alloc();
    if (!pPacket) {
       LOGE("Unable to allocate packet");
@@ -350,6 +353,10 @@ void PUPMediaPlayer::Run()
    }
 
    // Main loop which loops over read/decode/convert and handle video seeking/looping
+   #ifdef _DEBUG
+      string name, filename;
+      bool paused;
+   #endif
    while (true)
    {
       // Interact with main thread
@@ -358,6 +365,15 @@ void PUPMediaPlayer::Run()
          std::lock_guard<std::mutex> lock(m_mutex);
          if (!m_running)
             break;
+         #ifdef _DEBUG
+            if ((name != m_name) || (filename != m_filename) || (paused != m_paused))
+            {
+               name = m_name;
+               filename = m_filename;
+               paused = m_paused;
+               SetThreadName(m_name + ".Play[" + m_filename + (paused ? " - Paused" : "") + ']');
+            }
+         #endif
          if (m_paused)
          {
             SDL_Delay(100);
