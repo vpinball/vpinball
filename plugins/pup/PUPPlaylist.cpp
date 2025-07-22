@@ -157,10 +157,10 @@ string PUPPlaylist::ToString() const {
       ", function=" + ToString(m_function);
 }
 
-string PUPPlaylist::ToString(PUPPlaylist::Function value)
+const string& PUPPlaylist::ToString(PUPPlaylist::Function value)
 {
-   static string PUP_PLAYLIST_FUNCTION_STRINGS[] = { "Default", "Overlays", "Frames", "Alphas", "Shapes" };
-   static const string error = "Unknown";
+   static const string PUP_PLAYLIST_FUNCTION_STRINGS[] = { "Default"s, "Overlays"s, "Frames"s, "Alphas"s, "Shapes"s };
+   static const string error = "Unknown"s;
    if ((int)value < 0 || (size_t)value >= std::size(PUP_PLAYLIST_FUNCTION_STRINGS))
       return error;
    return PUP_PLAYLIST_FUNCTION_STRINGS[(size_t)value];

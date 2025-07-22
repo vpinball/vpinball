@@ -23,7 +23,7 @@ void PUPImage::Load(const string& szFile)
       DeleteTexture(m_pTexture);
       m_pTexture = nullptr;
    }
-   
+
    m_pSurface = std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)>(IMG_Load(szFile.c_str()), SDL_DestroySurface);
    if (m_pSurface && m_pSurface->format != SDL_PIXELFORMAT_RGBA32)
       m_pSurface = std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)>(SDL_ConvertSurface(m_pSurface.get(), SDL_PIXELFORMAT_RGBA32), SDL_DestroySurface);

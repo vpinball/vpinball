@@ -108,7 +108,7 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, const string& line)
       return nullptr;
    }
 
-   if (StrCompareNoCase(triggerPlayAction, "CustomFunc")) {
+   if (StrCompareNoCase(triggerPlayAction, "CustomFunc"s)) {
       // TODO parse the custom function and call PUPPinDisplay::SendMSG when triggered
       LOGE("CustomFunc not implemented: %s", line.c_str());
       return nullptr;
@@ -166,7 +166,7 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, const string& line)
          LOGE("Empty token found in trigger string: %s", parts[3].c_str());
          continue;
       }
-      size_t equalPos = triggerString.find('=');
+      const size_t equalPos = triggerString.find('=');
       string name;
       int value = -1; // Default state for the trigger
       if (equalPos != string::npos)
@@ -257,7 +257,7 @@ void PUPTrigger::Trigger() {
 }
 
 string PUPTrigger::ToString() const {
-   return string("active=") + ((m_active == true) ? "true" : "false") +
+   return "active="s + ((m_active == true) ? "true" : "false") +
       ", descript=" + m_szDescript +
       ", trigger=" + m_szTrigger +
       ", screen={" + m_pScreen->ToString() + '}' +
@@ -273,9 +273,9 @@ string PUPTrigger::ToString() const {
 
 const string& PUPTrigger::ToString(Action value)
 {
-   static const string actionStrings[] = { "PUPTrigger::Normal", "PUPTrigger::Loop", "PUPTrigger::SplashReset", "PUPTrigger::SplashReturn", "PUPTrigger::StopPlayer",
-      "PUPTrigger::StopFile", "PUPTrigger::SetBG", "PUPTrigger::PlaySSF", "PUPTrigger::SkipSamePriority", "PUPTrigger::CustomFunction" };
-   static const string error = "Unknown";
+   static const string actionStrings[] = { "PUPTrigger::Normal"s, "PUPTrigger::Loop"s, "PUPTrigger::SplashReset"s, "PUPTrigger::SplashReturn"s, "PUPTrigger::StopPlayer"s,
+      "PUPTrigger::StopFile"s, "PUPTrigger::SetBG"s, "PUPTrigger::PlaySSF"s, "PUPTrigger::SkipSamePriority"s, "PUPTrigger::CustomFunction"s };
+   static const string error = "Unknown"s;
    if ((int)value < 0 || (size_t)value >= std::size(actionStrings))
       return error;
    return actionStrings[(int)value];

@@ -574,12 +574,12 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame, bool sync)
          if (sdlMask)
          {
             SDL_LockSurface(sdlMask);
-            uint32_t* __restrict mask = static_cast<uint32_t*>(sdlMask->pixels);
+            const uint32_t* __restrict mask = static_cast<uint32_t*>(sdlMask->pixels);
             uint32_t* __restrict frame = reinterpret_cast<uint32_t*>(rgbFrame->data[0]);
             for (int i = 0; i < sdlMask->h; i++)
             {
                for (int j = 0; j < sdlMask->w; j++, mask++, frame++)
-                  *frame = *mask ? *frame : 0x00000000;
+                  *frame = *mask ? *frame : 0x00000000u;
                mask += sdlMask->pitch - sdlMask->w * sizeof(uint32_t);
                frame += rgbFrame->linesize[0] - sdlMask->w * sizeof(uint32_t);
             }

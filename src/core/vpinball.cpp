@@ -2985,12 +2985,12 @@ void VPinball::GenerateImageFromTournamentFile(const string &tablefile, const st
       error |= fscanf_s(f, "%08X", &vpxChecksum_in) != 1;
       error |= fscanf_s(f, "%08X", &scriptsChecksum_in) != 1;
       dmd_size = x * y + 16;
-      dmd_data.reserve(dmd_size);
+      dmd_data.resize(dmd_size);
       for (unsigned int i = 0; i < dmd_size; ++i)
       {
          unsigned int v;
          error |= fscanf_s(f, "%02X", &v) != 1;
-         dmd_data.push_back(v);
+         dmd_data[i] = v;
       }
       fclose(f);
 

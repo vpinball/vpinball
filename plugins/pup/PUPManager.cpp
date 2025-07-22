@@ -353,10 +353,10 @@ void PUPManager::ProcessQueue()
       int dmdTrigger = -1;
       while (!m_triggerDmdQueue.empty())
       {
-         uint8_t* frame = m_triggerDmdQueue.front();
+         const uint8_t* const __restrict frame = m_triggerDmdQueue.front();
          m_triggerDmdQueue.pop();
 
-         uint8_t* palette;
+         const uint8_t* __restrict palette;
          if (m_dmdId.identifyFormat == CTLPI_DISPLAY_ID_FORMAT_BITPLANE2)
             palette = m_palette4;
          else if (m_dmdId.identifyFormat == CTLPI_DISPLAY_ID_FORMAT_BITPLANE4)

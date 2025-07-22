@@ -33,7 +33,7 @@ public:
    string GetPlayFilePath(const string& szFilename);
    string ToString() const;
 
-   static string ToString(Function value);
+   static const string& ToString(Function value);
 
 private:
    string m_szFolder;

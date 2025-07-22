@@ -9,7 +9,7 @@
 #include <SDL3_image/SDL_image.h>
 
 namespace PUP {
-  
+
 /*
    screens.pup: ScreenNum,ScreenDes,PlayList,PlayFile,Loopit,Active,Priority,CustomPos
    PuP Pack Editor: Mode,ScreenNum,ScreenDes,Background Playlist,Background Filename,Transparent,CustomPos,Volume %
@@ -109,7 +109,7 @@ std::unique_ptr<PUPScreen> PUPScreen::CreateFromCSV(PUPManager* manager, const s
       parts[4] == "1", // transparent
       string_to_float(parts[6], 100.0f), // volume
       PUPCustomPos::CreateFromCSV(parts[7]), playlists);
-   
+
    // Optional initial background playlist
    if (!parts[2].empty())
    {
@@ -353,10 +353,10 @@ void PUPScreen::SetMask(const string& path)
    {
       SDL_LockSurface(m_mask.get());
       uint32_t* __restrict rgba = static_cast<uint32_t*>(m_mask->pixels);
-      uint32_t maskValue = rgba[0];
+      const uint32_t maskValue = rgba[0];
       for (int i = 0; i < m_mask->h; i++, rgba += (m_mask->pitch - m_mask->w * sizeof(uint32_t)))
          for (int j = 0; j < m_mask->w; j++, rgba++)
-            *rgba = *rgba == maskValue ? 0x00000000 : 0xFFFFFFFF;
+            *rgba = (*rgba == maskValue) ? 0x00000000u : 0xFFFFFFFFu;
       SDL_UnlockSurface(m_mask.get());
       m_pMediaPlayerManager->SetMask(m_mask);
    }
@@ -471,8 +471,8 @@ string PUPScreen::ToString(bool full) const
 
 const string& PUPScreen::ToString(Mode value)
 {
-   static const string modeStrings[] = { "Off", "Show", "ForceOn", "ForcePop", "ForceBack", "ForcePopBack", "MusicOnly" };
-   static const string error = "Unknown";
+   static const string modeStrings[] = { "Off"s, "Show"s, "ForceOn"s, "ForcePop"s, "ForceBack"s, "ForcePopBack"s, "MusicOnly"s };
+   static const string error = "Unknown"s;
    if ((int)value < 0 || (size_t)value >= std::size(modeStrings))
       return error;
    return modeStrings[(int)value];

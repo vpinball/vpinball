@@ -42,7 +42,7 @@ public:
 
    static std::unique_ptr<PUPScreen> CreateFromCSV(PUPManager* manager, const string& line, const std::vector<PUPPlaylist*>& playlists);
    static std::unique_ptr<PUPScreen> CreateDefault(PUPManager* manager, int screenNum, const std::vector<PUPPlaylist*>& playlists);
-   
+
    int GetScreenNum() const { return m_screenNum; }
    const string& GetScreenDes() const { return m_screenDes; }
    string ToString(bool full = true) const;
@@ -66,7 +66,7 @@ public:
    void AddTrigger(PUPTrigger* pTrigger);
    vector<PUPTrigger*>* GetTriggers(const string& szTrigger);
    const ankerl::unordered_dense::map<string, vector<PUPTrigger*>>& GetTriggers() const { return m_triggerMap; }
-   
+
    bool IsLabelInit() const { return m_labelInit; }
    void SetLabelInit() { m_labelInit = true; }
    void AddLabel(PUPLabel* pLabel);

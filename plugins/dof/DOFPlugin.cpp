@@ -362,7 +362,7 @@ MSGPI_EXPORT void MSGPIAPI DOFPluginLoad(const uint32_t sessionId, MsgPluginAPI*
    VPXInfo vpxInfo;
    vpxApi->GetVpxInfo(&vpxInfo);
 
-   DOF::Config* pConfig = DOF::Config::GetInstance();   
+   DOF::Config* pConfig = DOF::Config::GetInstance();
    pConfig->SetLogCallback(OnDOFLog);
    pConfig->SetBasePath(vpxInfo.prefPath);
 
