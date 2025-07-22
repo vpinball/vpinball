@@ -7,7 +7,6 @@ PUPMediaManager::PUPMediaManager(PUPScreen* pScreen)
    : m_pScreen(pScreen)
    , m_pMainPlayer(std::make_unique<PUPMediaManagerPlayer>("PUP.Screen #"s.append(std::to_string(pScreen->GetScreenNum())).append(".Main")))
    , m_pBackgroundPlayer(nullptr)
-   , m_pop(pScreen->GetMode() == PUPScreen::Mode::ForcePopBack || pScreen->GetMode() == PUPScreen::Mode::ForcePop)
    , m_bounds()
 {
 }
@@ -143,7 +142,7 @@ void PUPMediaManager::Render(VPXRenderContext2D* const ctx)
       OnMainPlayerEnd();
       playing = m_pMainPlayer->player.IsPlaying();
    }
-   if (!m_pop || m_pMainPlayer->player.IsPlaying())
+   if (!m_pScreen->IsPop() || m_pMainPlayer->player.IsPlaying())
       m_pMainPlayer->player.Render(ctx, m_bounds);
 }
 

@@ -46,7 +46,6 @@ private:
    std::unique_ptr<PUPMediaManagerPlayer> m_pMainPlayer;
 
    PUPScreen* const m_pScreen;
-   const bool m_pop; // If true, this media is only rendered when playing, invisible otherwise
 
    SDL_Rect m_bounds;
 };

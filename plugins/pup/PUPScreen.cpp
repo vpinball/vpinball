@@ -311,6 +311,18 @@ void PUPScreen::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, float vol
    case PUPPlaylist::Function::Default:
    {
       std::lock_guard<std::mutex> lock(m_renderMutex);
+      // In original PupPlayer, Pop screens are recreated when play is call and therefore placed at the top of there z order stack (normal or topmost)
+      if (m_pParent && IsPop())
+      {
+         vector<std::shared_ptr<PUPScreen>>& childrens = m_mode == PUPScreen::Mode::ForcePop ? m_pParent->m_topChildren : m_pParent->m_backChildren;
+         auto it = std::ranges::find_if(childrens, [this](std::shared_ptr<PUPScreen> s) { return s.get() == this; });
+         if (it != childrens.end())
+         {
+            auto item = std::move(*it);
+            childrens.erase(it);
+            childrens.push_back(item);
+         }
+      }
       m_pMediaPlayerManager->Play(pPlaylist, szPlayFile, m_pParent ? (volume / 100.0f) * m_pParent->GetVolume() : volume, priority, skipSamePriority, length);
    }
    break;
