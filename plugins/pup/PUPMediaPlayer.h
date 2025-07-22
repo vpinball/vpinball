@@ -24,6 +24,7 @@ public:
    void SetLength(int length);
    void Render(VPXRenderContext2D* const ctx, const SDL_Rect& destRect);
 
+   void SetName(const string& name);
    void SetBounds(const SDL_Rect& rect);
    void SetMask(std::shared_ptr<SDL_Surface> mask);
 
@@ -34,7 +35,7 @@ private:
    void HandleAudioFrame(AVFrame* pFrame, bool sync);
    void HandleVideoFrame(AVFrame* pFrame, bool sync);
 
-   const string m_name;
+   string m_name;
    SDL_Rect m_bounds;
 
    string m_filename;
