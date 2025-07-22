@@ -242,11 +242,7 @@ bool PUPManager::AddScreen(std::shared_ptr<PUPScreen> pScreen)
 
    PUPScreen* ptr = pScreen.get();
    m_screenMap[pScreen->GetScreenNum()] = std::move(pScreen);
-   if (m_isRunning)
-   {
-      ptr->Start();
-   }
-   else
+   if (!m_isRunning)
    {
       lock.unlock();
       Start();
@@ -500,9 +496,7 @@ void PUPManager::ProcessQueue()
             {
                for (auto trigger : triggers)
                {
-                  PUPTriggerRequest* pRequest = new PUPTriggerRequest();
-                  pRequest->pTrigger = trigger;
-                  screen->QueueTriggerRequest(pRequest);
+                  trigger->Trigger();
                }
             }
          }
@@ -522,9 +516,6 @@ void PUPManager::Start()
 
    m_isRunning = true;
    m_thread = std::thread(&PUPManager::ProcessQueue, this);
-
-   for (auto& [key, pScreen] : m_screenMap)
-      pScreen->Start();
 
    // Subscribe to message bus events
    m_getDmdSrcId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
@@ -610,7 +601,6 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
 
    renderCtx->srcWidth = renderCtx->outWidth;
    renderCtx->srcHeight = renderCtx->outHeight;
-   screen->SetActive(true);
    screen->SetSize(static_cast<int>(renderCtx->outWidth), static_cast<int>(renderCtx->outHeight));
    screen->Render(renderCtx);
    return true;

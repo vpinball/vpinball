@@ -214,9 +214,46 @@ bool PUPTrigger::IsResting() const
    return (SDL_GetTicks() - m_lastTriggered) < ((uint64_t)m_restSeconds * 1000);
 }
 
-void PUPTrigger::SetTriggered()
-{
+void PUPTrigger::Trigger() {
+   if (IsResting())
+   {
+      LOGE("skipping resting trigger: trigger={%s}", ToString().c_str());
+      return;
+   }
    m_lastTriggered = SDL_GetTicks();
+
+   LOGD("processing trigger: trigger={%s}", ToString().c_str());
+   switch (m_playAction)
+   {
+   case PUPTrigger::Action::Normal:
+      m_pScreen->QueuePlay(m_pPlaylist, m_szPlayFile, m_volume, m_priority, false, m_length);
+      break;
+
+   case PUPTrigger::Action::Loop:
+      m_pScreen->QueuePlay(m_pPlaylist, m_szPlayFile, m_volume, m_priority, false, m_length);
+      m_pScreen->QueueLoop(true);
+      break;
+
+   case PUPTrigger::Action::SetBG:
+      m_pScreen->QueuePlay(m_pPlaylist, m_szPlayFile, m_volume, m_priority, false, m_length);
+      m_pScreen->QueueBG(true);
+      break;
+
+   case PUPTrigger::Action::SkipSamePriority:
+      m_pScreen->QueuePlay(m_pPlaylist, m_szPlayFile, m_volume, m_priority, true, m_length);
+      break;
+
+   case PUPTrigger::Action::StopPlayer:
+      m_pScreen->QueueStop(m_priority);
+      break;
+
+   case PUPTrigger::Action::StopFile:
+      m_pScreen->QueueStop(m_pPlaylist, m_szPlayFile);
+      break;
+
+   default: LOGE("Play action not implemented: %s", PUPTrigger::ToString(m_playAction).c_str());
+      break;
+   }
 }
 
 string PUPTrigger::ToString() const {

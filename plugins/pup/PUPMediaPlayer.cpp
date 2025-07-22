@@ -37,27 +37,41 @@ PUPMediaPlayer::~PUPMediaPlayer()
    m_commandQueue.wait_until_nothing_in_flight();
 }
 
+bool PUPMediaPlayer::IsPlaying()
+{
+   // Not worth the lock (which can face the async opening of a video file)
+   //std::lock_guard<std::mutex> lock(m_mutex);
+   return m_running;
+}
+
 void PUPMediaPlayer::SetName(const string& name)
 {
-   m_name = name;
-   m_commandQueue.enqueue([this]()
+   m_commandQueue.enqueue([this, name]()
    {
-      string name = m_name;
-      SetThreadName(name.append(".CommandQueue"));
+      string threadName(name);
+      SetThreadName(threadName.append(".CommandQueue"));
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_name = name;
    }); 
 }
 
 void PUPMediaPlayer::SetBounds(const SDL_Rect& rect)
 {
-   std::lock_guard<std::mutex> lock(m_mutex);
-   m_bounds = rect;
+   m_commandQueue.enqueue([this, rect]()
+   {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_bounds = rect;
+   });
 }
 
 void PUPMediaPlayer::SetMask(std::shared_ptr<SDL_Surface> mask)
 {
-   std::lock_guard<std::mutex> lock(m_mutex);
-   m_mask = mask;
-   m_scaledMask.reset();
+   m_commandQueue.enqueue([this, mask]()
+   {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_mask = mask;
+      m_scaledMask.reset();
+   });
 }
 
 void PUPMediaPlayer::Play(const string& filename)
@@ -159,12 +173,6 @@ void PUPMediaPlayer::Play(const string& filename)
       m_running = true;
       m_thread = std::thread(&PUPMediaPlayer::Run, this);
    });
-}
-
-bool PUPMediaPlayer::IsPlaying()
-{
-   std::lock_guard<std::mutex> lock(m_mutex);
-   return m_running;
 }
 
 void PUPMediaPlayer::Pause(bool pause)
@@ -362,9 +370,7 @@ void PUPMediaPlayer::Run()
       // Interact with main thread
       bool loop;
       {
-         std::lock_guard<std::mutex> lock(m_mutex);
-         if (!m_running)
-            break;
+         std::unique_lock<std::mutex> lock(m_mutex);
          #ifdef _DEBUG
             if ((name != m_name) || (filename != m_filename) || (paused != m_paused))
             {
@@ -374,8 +380,11 @@ void PUPMediaPlayer::Run()
                SetThreadName(m_name + ".Play[" + m_filename + (paused ? " - Paused" : "") + ']');
             }
          #endif
+         if (!m_running)
+            break;
          if (m_paused)
          {
+            lock.unlock();
             SDL_Delay(100);
             continue;
          }
