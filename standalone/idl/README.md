@@ -33,7 +33,6 @@ Both parsers reverse-engineer the name-to-DISPID mappings and invocation logic n
 - `standalone/inc/pup/pup_i_proxy.cpp`
 - `standalone/inc/b2s/b2s_i_proxy.cpp`
 - `standalone/inc/flexdmd/flexudmd_i_proxy.cpp` (clone of `UltraDMD.idl`, FlexDMD emulates UltraDMD)
-- `standalone/inc/wmp/wmp_i_proxy.cpp`
 - `standalone/inc/wine/dlls/scrrun/dictionary_proxy.c`
 - `standalone/inc/wine/dlls/vbscript/regexp_proxy.c`
 

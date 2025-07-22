@@ -34,9 +34,9 @@ ScriptClassDef helloScriptClass { { "DummyClass" }, []() { return static_cast<vo
 
 using namespace HelloScript;
 
-MSGPI_EXPORT void MSGPIAPI HelloScriptPluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
+MSGPI_EXPORT void MSGPIAPI HelloScriptPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api)
 {
-   msgApi = api;
+   msgApi = const_cast<MsgPluginAPI*>(api);
    endpointId = sessionId;
    const unsigned int getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);

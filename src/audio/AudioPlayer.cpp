@@ -39,6 +39,7 @@ static ma_result ma_context_enumerate_devices__sdl(ma_context* pContext, ma_enum
       if (cbResult == MA_FALSE)
          break;
    }
+   SDL_free(pAudioList);
    return MA_SUCCESS;
 }
 
@@ -232,6 +233,7 @@ AudioPlayer::AudioPlayer(const Settings& settings)
          PLOGE << "Backglass sound device was not found (" << soundDeviceBGName << "), using default.";
          m_backglassAudioDevice = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
       }
+      SDL_free(const_cast<SDL_AudioDeviceID*>(pAudioList));
    }
 
    m_soundMode3D = static_cast<SoundConfigTypes>(settings.LoadValueUInt(Settings::Player, "Sound3D"s));

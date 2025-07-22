@@ -33,6 +33,7 @@ enum VPinballSettingsSection: String {
     case pluginRemoteControl = "Plugin.RemoteControl"
     case pluginSerum = "Plugin.Serum"
     case pluginScoreView = "Plugin.ScoreView"
+    case pluginWMP = "Plugin.WMP"
 }
 
 enum VPinballViewMode: CInt {
@@ -329,7 +330,8 @@ enum VPinballEvent: CInt {
     case loadingImages
     case loadingFonts
     case loadingCollections
-    case playerStarting
+    case play
+    case creatingPlayer
     case windowCreated
     case prerendering
     case playerStarted

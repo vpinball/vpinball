@@ -331,9 +331,9 @@ static void OnInputSrcChanged(const unsigned int eventId, void* userData, void* 
 
 using namespace DOFPlugin;
 
-MSGPI_EXPORT void MSGPIAPI DOFPluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
+MSGPI_EXPORT void MSGPIAPI DOFPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api)
 {
-   msgApi = api;
+   msgApi = const_cast<MsgPluginAPI*>(api);
    endpointId = sessionId;
 
    LPISetup(endpointId, msgApi);

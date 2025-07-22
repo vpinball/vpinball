@@ -54,16 +54,6 @@ set(VPX_STANDALONE_SOURCES
    standalone/inc/vpinmame/vpinmame_i.c
    standalone/inc/vpinmame/vpinmame_i.h
 
-   standalone/inc/wmp/WMPCore.cpp
-   standalone/inc/wmp/WMPCore.h
-   standalone/inc/wmp/WMPControls.cpp
-   standalone/inc/wmp/WMPControls.h
-   standalone/inc/wmp/WMPSettings.cpp
-   standalone/inc/wmp/WMPSettings.h
-   standalone/inc/wmp/wmp_i_proxy.cpp
-   standalone/inc/wmp/wmp_i.c
-   standalone/inc/wmp/wmp_i.h
-
    standalone/inc/ultradmd/UltraDMDDMDObject.cpp
    standalone/inc/ultradmd/UltraDMDDMDObject.h
    standalone/inc/ultradmd/ultradmd_i_proxy.cpp

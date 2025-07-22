@@ -26,6 +26,7 @@ import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_PUP
 import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_REMOTE_CONTROL
 import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_SCORE_VIEW
 import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_SERUM
+import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_WMP
 import org.vpinball.app.jni.VPinballSettingsSection.STANDALONE
 import org.vpinball.app.jni.VPinballSettingsSection.TABLE_OVERRIDE
 import org.vpinball.app.jni.VPinballSharpen
@@ -183,6 +184,9 @@ class SettingsViewModel : ViewModel() {
     var pluginSerum by mutableStateOf(false)
         private set
 
+    var pluginWMP by mutableStateOf(false)
+        private set
+
     fun loadSettings() {
         // General
 
@@ -277,6 +281,7 @@ class SettingsViewModel : ViewModel() {
         pluginRemoteControl = VPinballManager.loadValue(PLUGIN_REMOTE_CONTROL, "Enable", false)
         pluginScoreView = VPinballManager.loadValue(PLUGIN_SCORE_VIEW, "Enable", true)
         pluginSerum = VPinballManager.loadValue(PLUGIN_SERUM, "Enable", false)
+        pluginWMP = VPinballManager.loadValue(PLUGIN_WMP, "Enable", false)
     }
 
     // General
@@ -519,6 +524,11 @@ class SettingsViewModel : ViewModel() {
     fun handlePluginSerum(value: Boolean) {
         pluginSerum = value
         VPinballManager.saveValue(PLUGIN_SERUM, "Enable", pluginSerum)
+    }
+
+    fun handlePluginWMP(value: Boolean) {
+        pluginWMP = value
+        VPinballManager.saveValue(PLUGIN_WMP, "Enable", pluginWMP)
     }
 
     // Reset

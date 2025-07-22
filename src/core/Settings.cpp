@@ -267,6 +267,13 @@ void Settings::Validate(const bool addDefaults)
 #endif
 
    //////////////////////////////////////////////////////////////////////////
+   // Plugin.WMP
+
+#ifdef __LIBVPINBALL__
+   SettingBool(GetSection("Plugin.WMP"), "Enable"s, true, ""s);
+#endif
+
+   //////////////////////////////////////////////////////////////////////////
    // Standalone section
 
 #ifdef __LIBVPINBALL__

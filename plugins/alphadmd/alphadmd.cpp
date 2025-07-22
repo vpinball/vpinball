@@ -583,9 +583,9 @@ static void OnSegSrcChanged(const unsigned int eventId, void* userData, void* ms
 
 using namespace AlphaDMD;
 
-MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
+MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api)
 {
-   msgApi = api;
+   msgApi = const_cast<MsgPluginAPI*>(api);
    endpointId = sessionId;
    dmd128Id = {
       .id = { endpointId, 0 },

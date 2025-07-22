@@ -895,7 +895,6 @@ HRESULT external_open_storage(const OLECHAR* pwcsName, IStorage* pstgPriority, D
 }
 
 #include "standalone/inc/vpinmame/VPinMAMEController.h"
-#include "standalone/inc/wmp/WMPCore.h"
 #include "standalone/inc/flexdmd/FlexDMD.h"
 #include "standalone/inc/ultradmd/UltraDMDDMDObject.h"
 #include "standalone/inc/pup/PUPPinDisplay.h"
@@ -907,12 +906,7 @@ HRESULT external_create_object(const WCHAR* progid, IClassFactory* cf, IUnknown*
 
    Settings* pSettings = &g_pplayer->m_ptable->m_settings;
 
-   if (!wcsicmp(progid, L"WMPlayer.OCX")) {
-      CComObject<WMPCore>* pObj = nullptr;
-      if (SUCCEEDED(CComObject<WMPCore>::CreateInstance(&pObj)))
-         hres = pObj->QueryInterface(IID_IWMPCore, (void**)obj);
-   }
-   else if (!wcsicmp(progid, L"VPinMAME.Controller")) {
+   if (!wcsicmp(progid, L"VPinMAME.Controller")) {
       Settings::Section section = pSettings->GetSection("Plugin.PinMAME");
       if (!pSettings->LoadValueWithDefault(section, "Enable"s, false))
          hres = (new VPinMAMEController())->QueryInterface(IID_IController, (void**)obj);

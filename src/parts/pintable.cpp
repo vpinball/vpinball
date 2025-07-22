@@ -4132,6 +4132,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
       }
       m_materials.push_back(rpb);
       ::GlobalFree(hMem);
+      spStream.Detach();
       break;
    }
    case FID(RPRB):
@@ -4160,6 +4161,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
       }
       m_vrenderprobe.push_back(rpb);
       ::GlobalFree(hMem);
+      spStream.Detach();
       break;
    }
    case FID(TLCK): pbr->GetInt(m_tablelocked); break;

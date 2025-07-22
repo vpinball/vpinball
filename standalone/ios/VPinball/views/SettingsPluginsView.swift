@@ -57,6 +57,11 @@ struct SettingsPluginsView: View {
                 Text("Serum")
             }
             .tint(Color.vpxRed)
+
+            Toggle(isOn: $settingsModel.pluginWMP) {
+                Text("WMP")
+            }
+            .tint(Color.vpxRed)
         }
         header: {
             Text("Plugins (Experimental)")
@@ -90,6 +95,9 @@ struct SettingsPluginsView: View {
         }
         .onChange(of: settingsModel.pluginSerum) {
             handlePluginSerum()
+        }
+        .onChange(of: settingsModel.pluginWMP) {
+            handlePluginWMP()
         }
     }
 
@@ -131,6 +139,10 @@ struct SettingsPluginsView: View {
 
     func handlePluginSerum() {
         vpinballManager.saveValue(.pluginSerum, "Enable", settingsModel.pluginSerum)
+    }
+
+    func handlePluginWMP() {
+        vpinballManager.saveValue(.pluginWMP, "Enable", settingsModel.pluginWMP)
     }
 }
 

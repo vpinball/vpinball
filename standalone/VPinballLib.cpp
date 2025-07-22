@@ -33,6 +33,8 @@ MSGPI_EXPORT void MSGPIAPI ScoreViewPluginLoad(const uint32_t sessionId, const M
 MSGPI_EXPORT void MSGPIAPI ScoreViewPluginUnload();
 MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
 MSGPI_EXPORT void MSGPIAPI SerumPluginUnload();
+MSGPI_EXPORT void MSGPIAPI WMPPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI WMPPluginUnload();
 
 namespace VPinballLib {
 
@@ -115,7 +117,8 @@ void VPinball::LoadPlugins()
       { "PUP",           &PUPPluginLoad,           &PUPPluginUnload           },
       { "RemoteControl", &RemoteControlPluginLoad, &RemoteControlPluginUnload },
       { "ScoreView",     &ScoreViewPluginLoad,     &ScoreViewPluginUnload     },
-      { "Serum",         &SerumPluginLoad,         &SerumPluginUnload         }
+      { "Serum",         &SerumPluginLoad,         &SerumPluginUnload         },
+      { "WMP",           &WMPPluginLoad,           &WMPPluginUnload           }
    };
 
    for (auto& p : plugins) {
@@ -172,6 +175,9 @@ void* VPinball::SendEvent(Event event, void* data)
          }
       }
       return nullptr;
+   }
+   else if (event == Event::Play) {
+      s_instance.LoadPlugins();
    }
    else if (event == Event::PlayerStarted) {
 #ifdef __APPLE__
@@ -906,6 +912,8 @@ void VPinball::Cleanup()
    CComObject<PinTable>* const pActiveTable = g_pvp->GetActiveTable();
    if (pActiveTable)
       g_pvp->CloseTable(pActiveTable);
+
+   UnloadPlugins();
 
    delete g_pvp;
    g_pvp = new ::VPinball();

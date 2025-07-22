@@ -66,6 +66,7 @@ class SettingsModel: ObservableObject {
     @Published var pluginRemoteControl: Bool = false
     @Published var pluginScoreView: Bool = true
     @Published var pluginSerum: Bool = false
+    @Published var pluginWMP: Bool = false
 
     let vpinballManager = VPinballManager.shared
 
@@ -173,6 +174,7 @@ class SettingsModel: ObservableObject {
         pluginRemoteControl = vpinballManager.loadValue(.pluginRemoteControl, "Enable", false)
         pluginScoreView = vpinballManager.loadValue(.pluginScoreView, "Enable", true)
         pluginSerum = vpinballManager.loadValue(.pluginSerum, "Enable", false)
+        pluginWMP = vpinballManager.loadValue(.pluginWMP, "Enable", false)
     }
 
     func reset() {
