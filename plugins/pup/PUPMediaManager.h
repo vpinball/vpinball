@@ -14,8 +14,9 @@ public:
 
    PUPMediaPlayer player;
    string szPath;
-   float volume;
-   int priority;
+   float volume = 1.0f;
+   int priority = 0;
+   bool isBackground = false;
 };
 
 class PUPMediaManager final
@@ -29,7 +30,7 @@ public:
    void Resume();
    void SetBG(bool isBackground);
    void SetLoop(bool isLoop);
-   void SetVolume(float volume) { m_player1.player.SetVolume(volume); m_player2.player.SetVolume(volume); }
+   void SetVolume(float volume);
    void Stop();
    void Stop(int priority);
    void Stop(PUPPlaylist* pPlaylist, const string& szPlayFile);
@@ -38,19 +39,16 @@ public:
    void SetBounds(const SDL_Rect& rect);
    void SetMask(std::shared_ptr<SDL_Surface> mask);
 
-   const PUPMediaManagerPlayer* GetBackgroundPlayer() const { return m_pBackgroundPlayer; };
-   const PUPMediaManagerPlayer* GetMainPlayer() const { return m_pMainPlayer; };
-
 private:
-   PUPMediaManagerPlayer m_player1;
-   PUPMediaManagerPlayer m_player2;
+   void OnMainPlayerEnd();
 
-   PUPMediaManagerPlayer* m_pMainPlayer;
-   PUPMediaManagerPlayer* m_pBackgroundPlayer;
+   std::unique_ptr<PUPMediaManagerPlayer> m_pBackgroundPlayer;
+   std::unique_ptr<PUPMediaManagerPlayer> m_pMainPlayer;
 
-   PUPScreen* m_pScreen;
+   PUPScreen* const m_pScreen;
+   const bool m_pop; // If true, this media is only rendered when playing, invisible otherwise
+
    SDL_Rect m_bounds;
-   bool m_pop;
 };
 
 }

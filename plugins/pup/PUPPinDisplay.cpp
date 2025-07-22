@@ -182,7 +182,7 @@ void PUPPinDisplay::SetLoop(int screenNum, int LoopState)
    // if you set LoopState=1,  it will loop the currently playing file.  0=cancel loop
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
-      pScreen->SetLoop(LoopState);
+      pScreen->QueueLoop(LoopState);
 }
 
 void PUPPinDisplay::SetBackGround(int screenNum, int Mode)
@@ -190,7 +190,7 @@ void PUPPinDisplay::SetBackGround(int screenNum, int Mode)
    // if you set Mode=1, it will set current playing file as background (loop it always).  Mode=0 to cancel background.  Note if user has 'POP-UP' mode this will be disabled automagically (you don't need to worry about it).
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
-      pScreen->SetBG(Mode);
+      pScreen->QueueBG(Mode);
 }
 
 void PUPPinDisplay::BlockPlay(int screenNum, int Mode)
