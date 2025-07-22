@@ -1011,19 +1011,6 @@ public class IDLParserToCpp {
 		true);
 
 		parser.parse(
-			"../../inc/wmp/wmp.idl",
-			"wmp_i_proxy.cpp",
-			Arrays.asList(
-				new IDLInterface("IWMPCore", "WMPCore"),
-				new IDLInterface("IWMPControls", "WMPControls"),
-				new IDLInterface("IWMPSettings", "WMPSettings")),
-			Arrays.asList(
-					"WMPControls.h",
-					"WMPCore.h",
-					"WMPSettings.h"),
-			true);
-
-		parser.parse(
 			"../../../src/core/vpinball.idl",
 			"vpinball_standalone_i_proxy.cpp",
 			Arrays.asList(

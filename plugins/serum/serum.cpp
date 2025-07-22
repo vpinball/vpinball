@@ -343,9 +343,9 @@ static void OnControllerGameEnd(const unsigned int eventId, void* userData, void
 
 using namespace Serum;
 
-MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
+MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api)
 {
-   msgApi = api;
+   msgApi = const_cast<MsgPluginAPI*>(api);
    endpointId = sessionId;
 
    // Request and setup shared login API

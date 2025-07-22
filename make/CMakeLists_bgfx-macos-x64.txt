@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.25)
 
+option(ENABLE_SANITIZERS "Enable AddressSanitizer and UBSan" OFF)
+
+message(STATUS "ENABLE_SANITIZERS: ${ENABLE_SANITIZERS}")
+
 file(READ src/core/vpversion.h version)
 string(REGEX MATCH "VP_VERSION_MAJOR[ ]+([0-9]+)" _tmp ${version})
 set(VERSION_MAJOR "${CMAKE_MATCH_1}")
@@ -21,6 +25,14 @@ set(CMAKE_INSTALL_RPATH "@executable_path/../Frameworks")
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
+
+if(ENABLE_SANITIZERS)
+   add_compile_options(-fsanitize=address)
+   add_link_options(-fsanitize=address)
+
+   add_compile_options(-fsanitize=undefined)
+   add_link_options(-fsanitize=undefined)
+endif()
 
 find_package(BISON 3.8.2 REQUIRED)
 bison_target(vbsparser ${CMAKE_SOURCE_DIR}/standalone/inc/wine/dlls/vbscript/parser.y ${CMAKE_SOURCE_DIR}/standalone/inc/wine/dlls/vbscript/parser.tab.c 

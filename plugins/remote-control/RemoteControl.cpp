@@ -476,9 +476,9 @@ LPI_IMPLEMENT // Implement shared login support
 
 using namespace RemoteControl;
 
-MSGPI_EXPORT void MSGPIAPI RemoteControlPluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
+MSGPI_EXPORT void MSGPIAPI RemoteControlPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api)
 {
-   msgApi = api;
+   msgApi = const_cast<MsgPluginAPI*>(api);
    endpointId = sessionId;
    runMode = RunMode::RunModeNone;
    LPISetup(endpointId, msgApi); // Request and setup shared login API

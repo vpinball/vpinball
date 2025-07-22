@@ -1001,9 +1001,14 @@ void VPinball::DoPlay(const int playMode)
 {
    if (g_pplayer)
       return; // Can't play twice
+
    CComObject<PinTable> *const table = GetActiveTable();
    if (table == nullptr)
       return;
+
+#ifdef __LIBVPINBALL__
+   VPinballLib::VPinball::SendEvent(VPinballLib::Event::Play, nullptr);
+#endif
 
    PLOGI << "Starting Play mode [table: " << table->m_tableName << ", play mode: " << playMode << ']';
    ShowWindow(SW_HIDE);

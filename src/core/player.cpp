@@ -173,6 +173,11 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    m_progressDialog.Create(g_pvp->GetHwnd());
    m_progressDialog.ShowWindow(g_pvp->m_open_minimized ? SW_HIDE : SW_SHOWNORMAL);
+
+#ifdef __LIBVPINBALL__
+   VPinballLib::VPinball::SendEvent(VPinballLib::Event::CreatingPlayer, nullptr);
+#endif
+
    m_progressDialog.SetProgress("Creating Player..."s, 1);
 
 #if !(defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__))

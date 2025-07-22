@@ -170,6 +170,7 @@ target_link_libraries(vpinball PUBLIC
    RemoteControlPlugin
    ScoreViewPlugin
    SerumPlugin
+   WMPPlugin
 )
 
 if(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator")

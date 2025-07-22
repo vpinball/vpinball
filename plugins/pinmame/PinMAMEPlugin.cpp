@@ -318,11 +318,11 @@ static void OnControllerDestroyed(Controller*)
 
 using namespace PinMAME;
 
-MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
+MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api)
 {
    controller = nullptr;
    endpointId = sessionId;
-   msgApi = api;
+   msgApi = const_cast<MsgPluginAPI*>(api);
 
    // Request and setup shared login API
    LPISetup(endpointId, msgApi);

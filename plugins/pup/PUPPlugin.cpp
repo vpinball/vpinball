@@ -235,9 +235,9 @@ void OnGameEnd(const unsigned int eventId, void* userData, void* eventData)
 
 using namespace PUP;
 
-MSGPI_EXPORT void MSGPIAPI PUPPluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
+MSGPI_EXPORT void MSGPIAPI PUPPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api)
 {
-   msgApi = api;
+   msgApi = const_cast<MsgPluginAPI*>(api);
    endpointId = sessionId;
 
    TTF_Init();

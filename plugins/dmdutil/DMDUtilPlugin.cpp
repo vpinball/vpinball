@@ -212,9 +212,9 @@ static void onGameEnd(const unsigned int msgId, void* userData, void* msgData)
 
 using namespace DMDUtilPlugin;
 
-MSGPI_EXPORT void MSGPIAPI DMDUtilPluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
+MSGPI_EXPORT void MSGPIAPI DMDUtilPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api)
 {
-   msgApi = api;
+   msgApi = const_cast<MsgPluginAPI*>(api);
    endpointId = sessionId;
 
    LPISetup(endpointId, msgApi); // Request and setup shared login API

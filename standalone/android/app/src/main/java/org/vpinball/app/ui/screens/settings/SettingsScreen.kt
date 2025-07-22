@@ -527,6 +527,10 @@ fun SettingsScreen(
                         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
                         SwitchRow(label = "Serum", isChecked = viewModel.pluginSerum, onCheckedChange = { viewModel.handlePluginSerum(value = it) })
+
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+                        SwitchRow(label = "WMP", isChecked = viewModel.pluginWMP, onCheckedChange = { viewModel.handlePluginWMP(value = it) })
                     }
                 }
 

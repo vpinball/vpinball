@@ -614,9 +614,9 @@ static void OnFlexDestroyed(FlexDMD* pFlex)
 
 using namespace Flex;
 
-MSGPI_EXPORT void MSGPIAPI FlexDMDPluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
+MSGPI_EXPORT void MSGPIAPI FlexDMDPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api)
 {
-   msgApi = api;
+   msgApi = const_cast<MsgPluginAPI*>(api);
    endpointId = sessionId;
 
    // Setup login

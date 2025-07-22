@@ -265,9 +265,9 @@ void RegisterServerObject(void* userData)
 
 using namespace B2S;
 
-MSGPI_EXPORT void MSGPIAPI B2SPluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
+MSGPI_EXPORT void MSGPIAPI B2SPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api)
 {
-   msgApi = api;
+   msgApi = const_cast<MsgPluginAPI*>(api);
    endpointId = sessionId;
    apiThread = std::this_thread::get_id();
    LPISetup(endpointId, msgApi);
