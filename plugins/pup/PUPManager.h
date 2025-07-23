@@ -79,7 +79,6 @@ public:
    const string& GetPath() const { return m_szPath; }
    bool AddScreen(std::shared_ptr<PUPScreen> pScreen);
    bool AddScreen(int screenNum);
-   bool HasScreen(int screenNum);
    std::shared_ptr<PUPScreen> GetScreen(int screenNum, bool logMissing = false) const;
    bool AddFont(TTF_Font* pFont, const string& szFilename);
    TTF_Font* GetFont(const string& szFont);
@@ -123,6 +122,13 @@ private:
    InputSrcId m_pinmameInputSrc { 0 };
    InputSrcId m_b2sInputSrc { 0 };
 
+   struct PollDmdContext
+   {
+      PollDmdContext(PUPManager* mng) { manager = mng; }
+      bool valid = true;
+      PUPManager* manager;
+   };
+   PollDmdContext* m_pollDmdContext = nullptr;
    unsigned int m_lastFrameId = 0;
    DisplaySrcId m_dmdId { 0 };
    std::unique_ptr<PUPDMD::DMD> m_dmd;
@@ -130,7 +136,7 @@ private:
    uint8_t m_rgbFrame[128 * 32 * 3] { 0 };
    uint8_t m_palette4[4 * 3] { 0 };
    uint8_t m_palette16[16 * 3] { 0 };
-
+   
    static int Render(VPXRenderContext2D* const renderCtx, void* context);
    static void OnGetRenderer(const unsigned int eventId, void* userData, void* eventData);
    static void OnSerumTrigger(const unsigned int eventId, void* userData, void* eventData);

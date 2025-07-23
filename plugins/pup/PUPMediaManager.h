@@ -6,19 +6,6 @@ namespace PUP {
 
 class PUPScreen;
 
-class PUPMediaManagerPlayer final
-{
-public:
-   PUPMediaManagerPlayer(const string& name) : player(name) {}
-   ~PUPMediaManagerPlayer() {}
-
-   PUPMediaPlayer player;
-   string szPath;
-   float volume = 1.0f;
-   int priority = 0;
-   bool isBackground = false;
-};
-
 class PUPMediaManager final
 {
 public:
@@ -28,7 +15,7 @@ public:
    void Play(PUPPlaylist* pPlaylist, const std::string& szPlayFile, float volume, int priority, bool skipSamePriority, int length);
    void Pause();
    void Resume();
-   void SetBG(bool isBackground);
+   void SetAsBackGround(bool isBackground);
    void SetLoop(bool isLoop);
    void SetMaxLength(int length);
    void SetVolume(float volume);
@@ -39,10 +26,28 @@ public:
    bool IsPlaying() const;
 
    void SetBounds(const SDL_Rect& rect);
-   void SetMask(std::shared_ptr<SDL_Surface> mask);
+   void SetMask(const string& path);
 
 private:
    void OnMainPlayerEnd();
+
+   class PUPMediaManagerPlayer final
+   {
+   public:
+      PUPMediaManagerPlayer(const string& name)
+         : player(name)
+      {
+      }
+      ~PUPMediaManagerPlayer() { }
+
+      PUPMediaPlayer player;
+      string szPath;
+      float volume = 1.0f;
+      int priority = 0;
+      bool isBackground = false;
+   };
+
+   std::shared_ptr<SDL_Surface> m_mask = nullptr;
 
    std::unique_ptr<PUPMediaManagerPlayer> m_pBackgroundPlayer;
    std::unique_ptr<PUPMediaManagerPlayer> m_pMainPlayer;

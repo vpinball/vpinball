@@ -33,7 +33,6 @@ PUPManager::PUPManager(MsgPluginAPI* msgApi, uint32_t endpointId, const string& 
 
 PUPManager::~PUPManager()
 {
-   Stop();
    Unload();
    m_msgApi->UnsubscribeMsg(m_getAuxRendererId, OnGetRenderer);
    m_msgApi->BroadcastMsg(m_endpointId, m_onAuxRendererChgId, nullptr);
@@ -264,11 +263,6 @@ bool PUPManager::AddScreen(int screenNum)
    return AddScreen(std::move(pScreen));
 }
 
-bool PUPManager::HasScreen(int screenNum)
-{
-   return m_screenMap.find(screenNum) != m_screenMap.end();
-}
-
 std::shared_ptr<PUPScreen> PUPManager::GetScreen(int screenNum, bool logMissing) const
 {
    const auto it = m_screenMap.find(screenNum);
@@ -334,9 +328,41 @@ void PUPManager::QueueTriggerData(PUPTriggerData data)
    m_queueCondVar.notify_one();
 }
 
+struct TriggerCallback
+{
+   TriggerCallback(vector<TriggerCallback*>& pendingList, std::mutex& pendingListMutex, std::function<void()> callback)
+      : m_pendingList(pendingList)
+      , m_pendingListMutex(pendingListMutex)
+      , m_callback(callback)
+   {
+   }
+
+   bool m_valid = true;
+   vector<TriggerCallback*>& m_pendingList;
+   std::mutex& m_pendingListMutex;
+   std::function<void()> m_callback;
+};
+
+static void ProcessCallback(void* userdata)
+{
+   TriggerCallback* tcb = static_cast<TriggerCallback*>(userdata);
+   if (tcb->m_valid)
+   {
+      std::unique_lock<std::mutex> lock(tcb->m_pendingListMutex);
+      auto it = std::ranges::find(tcb->m_pendingList, tcb);
+      if (it != tcb->m_pendingList.end())
+         tcb->m_pendingList.erase(it);
+      lock.unlock();
+      tcb->m_callback();
+   }
+   delete tcb;
+}
+
 void PUPManager::ProcessQueue()
 {
    SetThreadName("PUPManager.ProcessQueue"s);
+   vector<TriggerCallback*> pendingCallbackList;
+   std::mutex pendingCallbackListMutex;
    while (m_isRunning)
    {
       std::unique_lock<std::mutex> lock(m_queueMutex);
@@ -428,17 +454,19 @@ void PUPManager::ProcessQueue()
             dmdTrigger = -1;
          else
          {
-            // Broadcast event on plugin message bus
+            // Broadcast event on plugin message bus (avoid holding any reference as we don't know when this event will be processed and maybe the manager will be deleted by then)
             struct DmdEvent
             {
-               PUPManager* manager;
+               MsgPluginAPI* msgApi;
+               uint32_t endpointId;
+               unsigned int onDmdTriggerId;
                int dmdTrigger;
             };
             DmdEvent* event = new DmdEvent();
-            *event = { this, dmdTrigger };
+            *event = { m_msgApi, m_endpointId, m_onDmdTriggerId, dmdTrigger };
             m_msgApi->RunOnMainThread(0, [](void* userData) {
                DmdEvent* event = static_cast<DmdEvent*>(userData);
-               event->manager->m_msgApi->BroadcastMsg(event->manager->m_endpointId, event->manager->m_onDmdTriggerId, &event->dmdTrigger);
+               event->msgApi->BroadcastMsg(event->endpointId, event->onDmdTriggerId, &event->dmdTrigger);
                delete event;
             }, event);
          }
@@ -498,7 +526,11 @@ void PUPManager::ProcessQueue()
             {
                for (auto trigger : triggers)
                {
-                  trigger->Trigger();
+                  // Dispatch trigger action to main thread
+                  std::lock_guard<std::mutex> lock(pendingCallbackListMutex);
+                  TriggerCallback* cb = new TriggerCallback(pendingCallbackList, pendingCallbackListMutex, trigger->Trigger());
+                  pendingCallbackList.push_back(cb);
+                  m_msgApi->RunOnMainThread(0, ProcessCallback, cb);
                }
             }
          }
@@ -506,6 +538,11 @@ void PUPManager::ProcessQueue()
 
       // Clear script triggers
       m_triggerDataQueue.clear();
+   }
+   // Invalidate pending triggers as their execution context (screen, ...) will not be valid anymore
+   {
+      std::lock_guard<std::mutex> lock(pendingCallbackListMutex);
+      std::ranges::for_each(pendingCallbackList, [](TriggerCallback* cb) { cb->m_valid = false; });
    }
 }
 
@@ -539,13 +576,20 @@ void PUPManager::Start()
    OnDMDSrcChanged(m_onDmdSrcChangedId, this, nullptr);
    OnDevSrcChanged(m_onDevSrcChangedId, this, nullptr);
    OnInputSrcChanged(m_onInputSrcChangedId, this, nullptr);
-   OnPollDmd(this);
+   
+   assert(m_pollDmdContext == nullptr);
+   m_pollDmdContext = new PollDmdContext(this);
+   OnPollDmd(m_pollDmdContext);
 }
 
 void PUPManager::Stop()
 {
    if (!m_isRunning)
       return;
+
+   assert(m_pollDmdContext);
+   m_pollDmdContext->valid = false;
+   m_pollDmdContext = nullptr;
 
    {
       std::lock_guard<std::mutex> lock(m_queueMutex);
@@ -630,26 +674,29 @@ void PUPManager::OnGetRenderer(const unsigned int eventId, void* context, void* 
 //
 
 // Poll for an identify frame at least every 60 times per seconds
-// FIXME replace by event listening
 void PUPManager::OnPollDmd(void* userData)
 {
-   PUPManager* me = static_cast<PUPManager*>(userData);
-   if (me->m_dmdId.id.id != 0 && me->m_dmdId.GetIdentifyFrame)
+   PollDmdContext* ctx = static_cast<PollDmdContext*>(userData);
+   if (!ctx->valid)
    {
-      DisplayFrame idFrame = me->m_dmdId.GetIdentifyFrame(me->m_dmdId.id);
-      if (idFrame.frameId != me->m_lastFrameId && idFrame.frame)
+      // End of polling (we own the context object, so delete it)
+      delete ctx;
+      return;
+   }
+   std::lock_guard<std::mutex> lock(ctx->manager->m_queueMutex);
+   if (ctx->manager->m_dmdId.id.id != 0 && ctx->manager->m_dmdId.GetIdentifyFrame)
+   {
+      DisplayFrame idFrame = ctx->manager->m_dmdId.GetIdentifyFrame(ctx->manager->m_dmdId.id);
+      if (idFrame.frameId != ctx->manager->m_lastFrameId && idFrame.frame)
       {
-         me->m_lastFrameId = idFrame.frameId;
-         uint8_t* frame = new uint8_t[me->m_dmdId.width * me->m_dmdId.height];
-         memcpy(frame, idFrame.frame, me->m_dmdId.width * me->m_dmdId.height);
-         {
-            std::lock_guard<std::mutex> lock(me->m_queueMutex);
-            me->m_triggerDmdQueue.push(frame);
-         }
-         me->m_queueCondVar.notify_one();
+         ctx->manager->m_lastFrameId = idFrame.frameId;
+         uint8_t* frame = new uint8_t[ctx->manager->m_dmdId.width * ctx->manager->m_dmdId.height];
+         memcpy(frame, idFrame.frame, ctx->manager->m_dmdId.width * ctx->manager->m_dmdId.height);
+         ctx->manager->m_triggerDmdQueue.push(frame);
+         ctx->manager->m_queueCondVar.notify_one();
       }
    }
-   me->m_msgApi->RunOnMainThread(1.0 / 60.0, OnPollDmd, me);
+   ctx->manager->m_msgApi->RunOnMainThread(1.0 / 60.0, OnPollDmd, ctx);
 }
 
 // Broadcasted by Serum plugin when frame triggers are identified
@@ -663,6 +710,7 @@ void PUPManager::OnSerumTrigger(const unsigned int eventId, void* userData, void
 void PUPManager::OnDMDSrcChanged(const unsigned int eventId, void* userData, void* eventData)
 {
    PUPManager* me = static_cast<PUPManager*>(userData);
+   std::lock_guard<std::mutex> lock(me->m_queueMutex);
    me->m_dmdId.id.id = 0;
    unsigned int largest = 128;
    GetDisplaySrcMsg getSrcMsg = { 0, 0, nullptr };
@@ -683,7 +731,7 @@ void PUPManager::OnDMDSrcChanged(const unsigned int eventId, void* userData, voi
 void PUPManager::OnDevSrcChanged(const unsigned int eventId, void* userData, void* eventData)
 {
    PUPManager* me = static_cast<PUPManager*>(userData);
-   std::unique_lock<std::mutex> lock(me->m_queueMutex);
+   std::lock_guard<std::mutex> lock(me->m_queueMutex);
    delete[] me->m_pinmameDevSrc.deviceDefs;
    me->m_nPMSolenoids = 0;
    me->m_PMGIIndex = -1;
@@ -735,7 +783,7 @@ void PUPManager::OnDevSrcChanged(const unsigned int eventId, void* userData, voi
 void PUPManager::OnInputSrcChanged(const unsigned int eventId, void* userData, void* eventData)
 {
    PUPManager* me = static_cast<PUPManager*>(userData);
-   std::unique_lock<std::mutex> lock(me->m_queueMutex);
+   std::lock_guard<std::mutex> lock(me->m_queueMutex);
    delete[] me->m_pinmameInputSrc.inputDefs;
    memset(&me->m_pinmameInputSrc, 0, sizeof(me->m_pinmameInputSrc));
    delete[] me->m_b2sInputSrc.inputDefs;

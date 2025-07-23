@@ -1,6 +1,8 @@
 #include "PUPMediaManager.h"
 #include "PUPScreen.h"
 
+#include <SDL3_image/SDL_image.h>
+
 namespace PUP {
 
 PUPMediaManager::PUPMediaManager(PUPScreen* pScreen)
@@ -28,12 +30,15 @@ void PUPMediaManager::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, flo
 
    if (m_pMainPlayer->isBackground)
    {
-      m_pBackgroundPlayer = std::move(m_pMainPlayer);
-      m_pBackgroundPlayer->player.Pause(true);
+      std::swap(m_pBackgroundPlayer, m_pMainPlayer);
       m_pBackgroundPlayer->player.SetName("PUP.Screen #"s.append(std::to_string(m_pScreen->GetScreenNum())).append(".Back"));
-      m_pMainPlayer = std::make_unique<PUPMediaManagerPlayer>("PUP.Screen #"s.append(std::to_string(m_pScreen->GetScreenNum())).append(".Main"));
+      m_pBackgroundPlayer->player.Pause(true);
+      if (m_pMainPlayer == nullptr)
+         m_pMainPlayer = std::make_unique<PUPMediaManagerPlayer>("PUP.Screen #"s.append(std::to_string(m_pScreen->GetScreenNum())).append(".Main"));
+      else
+         m_pMainPlayer->player.SetName("PUP.Screen #"s.append(std::to_string(m_pScreen->GetScreenNum())).append(".Main"));
    }
-
+   
    m_pMainPlayer->player.Play(szPath);
    m_pMainPlayer->player.SetVolume(volume);
    m_pMainPlayer->player.SetLength(length);
@@ -52,7 +57,7 @@ void PUPMediaManager::Resume()
    m_pMainPlayer->player.Pause(false);
 }
 
-void PUPMediaManager::SetBG(bool isBackground)
+void PUPMediaManager::SetAsBackGround(bool isBackground)
 {
    if (isBackground) {
       if (m_pBackgroundPlayer) {
@@ -123,19 +128,35 @@ void PUPMediaManager::SetBounds(const SDL_Rect& rect)
    m_pMainPlayer->player.SetBounds(rect);
 }
 
-void PUPMediaManager::SetMask(std::shared_ptr<SDL_Surface> mask)
+void PUPMediaManager::SetMask(const string& path)
 {
+   // Defines a transparency mask from the pixel at 0,0 that is applied to the rendering inside this screen
+   m_mask.reset();
+   m_mask = std::shared_ptr<SDL_Surface>(IMG_Load(path.c_str()), SDL_DestroySurface);
+   if (m_mask && m_mask->format != SDL_PIXELFORMAT_RGBA32)
+      m_mask = std::shared_ptr<SDL_Surface>(SDL_ConvertSurface(m_mask.get(), SDL_PIXELFORMAT_RGBA32), SDL_DestroySurface);
+   if (m_mask)
+   {
+      SDL_LockSurface(m_mask.get());
+      uint32_t* __restrict rgba = static_cast<uint32_t*>(m_mask->pixels);
+      const uint32_t maskValue = rgba[0];
+      for (int i = 0; i < m_mask->h; i++, rgba += (m_mask->pitch - m_mask->w * sizeof(uint32_t)))
+         for (int j = 0; j < m_mask->w; j++, rgba++)
+            *rgba = (*rgba == maskValue) ? 0x00000000u : 0xFFFFFFFFu;
+      SDL_UnlockSurface(m_mask.get());
+   }
    if (m_pBackgroundPlayer)
-      m_pBackgroundPlayer->player.SetMask(mask);
-   m_pMainPlayer->player.SetMask(mask);
+      m_pBackgroundPlayer->player.SetMask(m_mask);
+   m_pMainPlayer->player.SetMask(m_mask);
 }
 
 void PUPMediaManager::OnMainPlayerEnd() {
    if (m_pBackgroundPlayer)
    {
-      m_pMainPlayer = std::move(m_pBackgroundPlayer);
-      m_pMainPlayer->player.Pause(false);
+      std::swap(m_pBackgroundPlayer, m_pMainPlayer);
+      m_pBackgroundPlayer->player.SetName("PUP.Screen #"s.append(std::to_string(m_pScreen->GetScreenNum())).append(".Back"));
       m_pMainPlayer->player.SetName("PUP.Screen #"s.append(std::to_string(m_pScreen->GetScreenNum())).append(".Main"));
+      m_pMainPlayer->player.Pause(false);
    }
 }
 
