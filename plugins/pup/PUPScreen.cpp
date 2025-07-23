@@ -439,25 +439,22 @@ bool PUPScreen::IsPlaying() const {
 void PUPScreen::Render(VPXRenderContext2D* const ctx) {
    std::lock_guard<std::mutex> lock(m_renderMutex);
 
+   for (auto pScreen : m_backChildren)
+      pScreen->Render(ctx);
+
+   for (auto pScreen : m_defaultChildren)
+      pScreen->Render(ctx);
+
    m_background.Render(ctx, m_rect);
-
    m_pMediaPlayerManager->Render(ctx);
-
-   for (auto pChildren : { &m_backChildren, &m_defaultChildren, &m_topChildren })
-   {
-      for (auto pScreen : *pChildren) {
-         pScreen->Render(ctx);
-      }
-   }
-
-   m_overlay.Render(ctx, m_rect);
-
    // FIXME port SDL_SetRenderClipRect(m_pRenderer, &m_rect);
-
    for (PUPLabel* pLabel : m_labels)
       pLabel->Render(ctx, m_rect, m_pagenum);
-
    // FIXME port SDL_SetRenderClipRect(m_pRenderer, NULL);
+   m_overlay.Render(ctx, m_rect);
+
+   for (auto pScreen : m_topChildren)
+      pScreen->Render(ctx);
 }
 
 string PUPScreen::ToString(bool full) const
