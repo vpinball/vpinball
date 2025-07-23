@@ -93,6 +93,7 @@ private:
       RenderState(RenderState&& other) noexcept
          : m_pTexture(other.m_pTexture)
          , m_prerenderedHeight(other.m_prerenderedHeight)
+         , m_prerenderedColor(other.m_prerenderedColor)
          , m_width(other.m_width)
          , m_height(other.m_height)
          , m_pAnimation(other.m_pAnimation)
@@ -111,6 +112,7 @@ private:
                IMG_FreeAnimation(m_pAnimation);
 
             m_prerenderedHeight = other.m_prerenderedHeight;
+            m_prerenderedColor = other.m_prerenderedColor;
             m_pTexture = other.m_pTexture;
             m_pAnimation = other.m_pAnimation;
             m_width = other.m_width;
