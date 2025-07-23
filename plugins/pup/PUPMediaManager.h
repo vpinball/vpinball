@@ -30,11 +30,13 @@ public:
    void Resume();
    void SetBG(bool isBackground);
    void SetLoop(bool isLoop);
+   void SetMaxLength(int length);
    void SetVolume(float volume);
    void Stop();
    void Stop(int priority);
    void Stop(PUPPlaylist* pPlaylist, const string& szPlayFile);
    void Render(VPXRenderContext2D* const ctx);
+   bool IsPlaying() const;
 
    void SetBounds(const SDL_Rect& rect);
    void SetMask(std::shared_ptr<SDL_Surface> mask);

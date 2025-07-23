@@ -43,24 +43,22 @@ PUPManager::~PUPManager()
 
 void PUPManager::SetGameDir(const string& szRomName)
 {
-   if (m_szRootPath.empty())
+   const string path = find_case_insensitive_directory_path(m_szRootPath + szRomName);
+   if (path.empty())
    {
       LOGI("No pupvideos folder found, not initializing PUP");
       return;
    }
-   const string path = find_case_insensitive_directory_path(m_szRootPath + szRomName);
-   if (path.empty())
+   if (path == m_szPath)
       return;
-   if (path != m_szPath)
-   {
-      std::lock_guard<std::mutex> lock(m_queueMutex);
 
-      m_szPath = path;
-      LOGI("PUP path: %s", m_szPath.c_str());
+   std::lock_guard<std::mutex> lock(m_queueMutex);
 
-      // Load Fonts
-      LoadFonts();
-   }
+   m_szPath = path;
+   LOGI("PUP path: %s", m_szPath.c_str());
+
+   // Load Fonts
+   LoadFonts();
 }
 
 void PUPManager::LoadConfig(const string& szRomName)
@@ -208,47 +206,51 @@ bool PUPManager::AddScreen(std::shared_ptr<PUPScreen> pScreen)
 {
    std::unique_lock<std::mutex> lock(m_queueMutex);
 
-   if (HasScreen(pScreen->GetScreenNum())) {
-      LOGE("Duplicate screen: screen={%s}", pScreen->ToString(false).c_str());
-      // FIXME we should apply new screen setup to existing screen (which was likely built as a default)
-      return false;
+   std::shared_ptr<PUPScreen> existing = GetScreen(pScreen->GetScreenNum());
+   if (existing)
+   {
+      LOGI("Warning redefinition of existing PUP screen: existing={%s} ne<={%s}", existing->ToString(false).c_str(), pScreen->ToString(false).c_str());
+      existing->SetMode(pScreen->GetMode());
+      existing->SetVolume(pScreen->GetVolume());
+      // existing->SetCustomPos(pScreen->GetCustomPos());
+      // copy triggers ?
+      // copy labels ?
+      // copy playlists ?
+      pScreen = existing;
    }
+   m_screenMap[pScreen->GetScreenNum()] = pScreen;
 
    const std::unique_ptr<PUPCustomPos>& pCustomPos = pScreen->GetCustomPos();
-   if (pCustomPos)
-   {
+   if (pCustomPos) {
       const auto it = m_screenMap.find(pCustomPos->GetSourceScreen());
-      if (it != m_screenMap.end())
-      {
-         PUPScreen* const pParentScreen = it->second.get();
-         if (pParentScreen && pScreen.get() != pParentScreen)
-            pParentScreen->AddChild(pScreen);
+      std::shared_ptr<PUPScreen> parent;
+      if (it != m_screenMap.end()) {
+         parent = it->second;
       }
-      else
-      {
+      else {
          lock.unlock();
-         switch (pCustomPos->GetSourceScreen())
-         {
-         case 0: AddScreen(PUPScreen::CreateFromCSV(this, "0,\"Topper\",\"\",,0,ForcePopBack,0,"s, m_playlists)); break;
-         case 1: AddScreen(PUPScreen::CreateFromCSV(this, "1,\"DMD\",\"\",,0,ForcePopBack,0,"s, m_playlists)); break;
-         case 2: AddScreen(PUPScreen::CreateFromCSV(this, "2,\"Backglass\",\"\",,0,ForcePopBack,0,"s, m_playlists)); break;
-         case 3: break; // Playfield
-         case 4: break; // Music
-         case 5: AddScreen(PUPScreen::CreateFromCSV(this, "5,\"FullDMD\",\"\",,0,ForcePopBack,0,"s, m_playlists)); break;
+         switch (pCustomPos->GetSourceScreen()) {
+         case 0: parent = std::move(PUPScreen::CreateFromCSV(this, "0,\"Topper\",\"\",,0,ForceBack,0,"s, m_playlists)); break;
+         case 1: parent = std::move(PUPScreen::CreateFromCSV(this, "1,\"DMD\",\"\",,0,ForceBack,0,"s, m_playlists)); break;
+         case 2: parent = std::move(PUPScreen::CreateFromCSV(this, "2,\"Backglass\",\"\",,0,ForceBack,0,"s, m_playlists)); break;
+         case 3: parent = std::move(PUPScreen::CreateFromCSV(this, "3,\"Playfield\",\"\",,0,Off,0,"s, m_playlists)); break;
+         case 4: parent = std::move(PUPScreen::CreateFromCSV(this, "4,\"Music\",\"\",,0,MusicOnly,0,"s, m_playlists)); break;
+         case 5: parent = std::move(PUPScreen::CreateFromCSV(this, "5,\"FullDMD\",\"\",,0,ForceBack,0,"s, m_playlists)); break;
          }
+         if (parent)
+            AddScreen(parent);
          lock.lock();
       }
+      if (parent && pScreen != parent)
+         parent->AddChild(pScreen);
    }
 
-   PUPScreen* ptr = pScreen.get();
-   m_screenMap[pScreen->GetScreenNum()] = std::move(pScreen);
-   if (!m_isRunning)
-   {
+   if (!m_isRunning) {
       lock.unlock();
       Start();
    }
 
-   LOGI("Screen added: screen={%s}", ptr->ToString().c_str());
+   LOGI("Screen added: screen={%s}", pScreen->ToString().c_str());
 
    return true;
 }

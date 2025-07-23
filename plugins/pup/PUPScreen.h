@@ -47,8 +47,8 @@ public:
    const string& GetScreenDes() const { return m_screenDes; }
    string ToString(bool full = true) const;
 
-   PUPScreen::Mode GetMode() const { return m_mode; }
-   void SetMode(PUPScreen::Mode mode) { m_mode = mode; }
+   Mode GetMode() const { return m_mode; }
+   void SetMode(Mode mode) { m_mode = mode; }
    bool IsPop() const { return m_mode == PUPScreen::Mode::ForcePopBack || m_mode == PUPScreen::Mode::ForcePop; }
 
    bool IsTransparent() const { return m_transparent; }
@@ -87,7 +87,9 @@ public:
    void QueueResume();
    void QueueStop();
    void QueueLoop(int state);
+   void QueueLength(int length);
    void QueueBG(int mode);
+   bool IsPlaying() const;
 
    const SDL_Rect& GetRect() const { return m_rect; }
    void Render(VPXRenderContext2D* const ctx);
