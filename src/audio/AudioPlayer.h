@@ -77,6 +77,7 @@ private:
    mutable ankerl::unordered_dense::map<Sound*, vector<std::unique_ptr<class SoundPlayer>>> m_soundPlayers;
 
    vector<AudioStreamID> m_audioStreams;
+   vector<AudioStreamID> m_pendingDeleteAudioStreams;
 
    std::unique_ptr<class SoundPlayer> m_music;
 
