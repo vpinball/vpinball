@@ -155,12 +155,14 @@ void PUPScreen::LoadTriggers()
 
 void PUPScreen::SetVolume(float volume)
 {
+   std::lock_guard<std::mutex> lock(m_renderMutex);
    m_volume = volume;
    m_pMediaPlayerManager->SetVolume(volume);
 }
 
 void PUPScreen::SetVolumeCurrent(float volume)
 {
+   std::lock_guard<std::mutex> lock(m_renderMutex);
    m_pMediaPlayerManager->SetVolume(volume);
 }
 
@@ -284,11 +286,9 @@ uint32_t PUPScreen::PageTimerElapsed(void* param, SDL_TimerID timerID, uint32_t 
 
 void PUPScreen::SetSize(int w, int h)
 {
-   if (m_pCustomPos)
-      m_rect = m_pCustomPos->ScaledRect(w, h);
-   else
-      m_rect = { 0, 0, w, h };
+   std::lock_guard<std::mutex> lock(m_renderMutex);
 
+   m_rect = m_pCustomPos ? m_pCustomPos->ScaledRect(w, h) : SDL_Rect { 0, 0, w, h };
    m_pMediaPlayerManager->SetBounds(m_rect);
 
    for (auto pChildren : { &m_defaultChildren, &m_backChildren, &m_topChildren }) {
@@ -388,50 +388,65 @@ void PUPScreen::QueuePlay(PUPPlaylist* playlist, const string& szPlayFile, float
 
 void PUPScreen::QueueStop(int priority)
 {
-   m_commandQueue.enqueue(
-      [this, priority]()
-      {
-         std::lock_guard<std::mutex> lock(m_renderMutex);
-         m_pMediaPlayerManager->Stop(priority);
-      });
+   m_commandQueue.enqueue([this, priority]() {
+      std::lock_guard<std::mutex> lock(m_renderMutex);
+      m_pMediaPlayerManager->Stop(priority);
+   });
 }
 
 void PUPScreen::QueueStop(PUPPlaylist* pPlaylist, const std::string& szPlayFile)
 {
-   m_commandQueue.enqueue(
-      [this, pPlaylist, szPlayFile]()
-      {
-         std::lock_guard<std::mutex> lock(m_renderMutex);
-         m_pMediaPlayerManager->Stop(pPlaylist, szPlayFile);
-      });
+   m_commandQueue.enqueue([this, pPlaylist, szPlayFile]() {
+      std::lock_guard<std::mutex> lock(m_renderMutex);
+      m_pMediaPlayerManager->Stop(pPlaylist, szPlayFile);
+   });
 }
 
 void PUPScreen::QueuePause()
 {
-   m_commandQueue.enqueue([this]() { m_pMediaPlayerManager->Pause(); });
+   m_commandQueue.enqueue([this]() {
+      std::lock_guard<std::mutex> lock(m_renderMutex);
+      m_pMediaPlayerManager->Pause();
+   });
 }
 
 void PUPScreen::QueueResume() {
-   m_commandQueue.enqueue([this]() { m_pMediaPlayerManager->Resume(); });
+   m_commandQueue.enqueue([this]() {
+      std::lock_guard<std::mutex> lock(m_renderMutex);
+      m_pMediaPlayerManager->Resume();
+   });
 }
 
 void PUPScreen::QueueStop() {
-   m_commandQueue.enqueue([this]() { m_pMediaPlayerManager->Stop(); });
+   m_commandQueue.enqueue([this]() {
+      std::lock_guard<std::mutex> lock(m_renderMutex);
+      m_pMediaPlayerManager->Stop();
+   });
 }
 
 void PUPScreen::QueueLoop(int state) {
-   m_commandQueue.enqueue([this, state]() { m_pMediaPlayerManager->SetLoop(state != 0); });
+   m_commandQueue.enqueue([this, state]() {
+      std::lock_guard<std::mutex> lock(m_renderMutex);
+      m_pMediaPlayerManager->SetLoop(state != 0);
+   });
 }
 
 void PUPScreen::QueueLength(int length) {
-   m_commandQueue.enqueue([this, length]() { m_pMediaPlayerManager->SetMaxLength(length); });
+   m_commandQueue.enqueue([this, length]() {
+      std::lock_guard<std::mutex> lock(m_renderMutex);
+      m_pMediaPlayerManager->SetMaxLength(length);
+   });
 }
 
 void PUPScreen::QueueBG(int mode) {
-   m_commandQueue.enqueue([this, mode]() { m_pMediaPlayerManager->SetBG(mode != 0); });
+   m_commandQueue.enqueue([this, mode]() {
+      std::lock_guard<std::mutex> lock(m_renderMutex);
+      m_pMediaPlayerManager->SetBG(mode != 0);
+   });
 }
 
-bool PUPScreen::IsPlaying() const {
+bool PUPScreen::IsPlaying() {
+   std::lock_guard<std::mutex> lock(m_renderMutex);
    return m_pMediaPlayerManager->IsPlaying();
 }
 
