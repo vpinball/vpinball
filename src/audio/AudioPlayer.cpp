@@ -333,6 +333,7 @@ AudioPlayer::~AudioPlayer()
 {
    m_soundPlayers.clear();
    m_audioStreams.clear();
+   m_pendingDeleteAudioStreams.clear();
    m_music = nullptr;
    if (m_backglassEngine)
       ma_engine_uninit(m_backglassEngine.get());
@@ -384,10 +385,13 @@ void AudioPlayer::CloseAudioStream(AudioStreamID stream, bool afterEndOfStream)
    auto item = std::ranges::find_if(m_audioStreams, [stream](std::shared_ptr<AudioStreamPlayer> player) { return player == stream; });
    if (item != m_audioStreams.end())
    {
-      if (afterEndOfStream)
-         (*item)->EndStream([this, stream]() { CloseAudioStream(stream, false); });
-      else
-         m_audioStreams.erase(item);
+      // Keep a reference until enqueued data has been played
+      if (afterEndOfStream && (*item)->GetQueuedSize() != 0)
+      {
+         m_pendingDeleteAudioStreams.push_back(*item);
+         (*item)->FlushStream();
+      }
+      m_audioStreams.erase(item);
    }
    else
    {

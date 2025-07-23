@@ -44,7 +44,7 @@ AudioStreamPlayer::~AudioStreamPlayer()
    SDL_DestroyAudioStream(m_stream);
 }
 
-void AudioStreamPlayer::Enqueue(void* buffer, int length)
+void AudioStreamPlayer::Enqueue(uint8_t* buffer, int length)
 {
    // If we are really late and decided to resync, do it when pushing new data (limit silence time, handle situation where no more data are coming)
    if (m_resync)
@@ -64,12 +64,14 @@ void AudioStreamPlayer::Enqueue(void* buffer, int length)
    m_streamedTotal += length;
 }
 
-void AudioStreamPlayer::EndStream(std::function<void()> flushCallback)
+void AudioStreamPlayer::FlushStream()
 {
-   assert(!m_flush);
-   m_flush = true;
-   m_flushCallback = flushCallback;
    SDL_FlushAudioStream(m_stream);
+}
+
+int AudioStreamPlayer::GetQueuedSize() const
+{
+   return SDL_GetAudioStreamQueued(m_stream);
 }
 
 void AudioStreamPlayer::SetStreamVolume(const float volume)
@@ -129,17 +131,6 @@ void AudioStreamPlayer::AudioStreamCallback(void *userdata, SDL_AudioStream *str
       SDL_SetAudioStreamFrequencyRatio(me->m_stream, throttle);
       PLOGI << "PlayedTS: " << playedTS << "ms / NowTS: " << nowTS << "ms / Delta: " << (nowTS - playedTS) << "ms / Buffer: " << (sourceTS - playedTS) << "ms / Frequency ratio : " << throttle;
    }
-   // Also detect end of stream and run callback if requested
-   if (nQueueSize == 0 && me->m_flush)
-      MsgPluginManager::GetInstance().GetMsgAPI().RunOnMainThread(0, FlushCallback, me);
-}
-
-void AudioStreamPlayer::FlushCallback(void* userdata)
-{
-   auto const me = static_cast<AudioStreamPlayer*>(userdata);
-   if (me->m_flush && me->m_flushCallback)
-      me->m_flushCallback();
-   me->m_flush = false;
 }
 
 }

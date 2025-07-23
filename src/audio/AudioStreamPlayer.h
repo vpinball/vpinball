@@ -16,14 +16,14 @@ public:
    explicit AudioStreamPlayer(SDL_AudioStream* stream);
    ~AudioStreamPlayer();
 
-   void Enqueue(void* buffer, int length);
-   void EndStream(std::function<void()> flushCallback);
+   void Enqueue(uint8_t* buffer, int length);
+   void FlushStream();
+   int GetQueuedSize() const;
    void SetStreamVolume(const float volume);
    void SetMainVolume(const float volume);
 
 private:
    static void AudioStreamCallback(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount);
-   static void FlushCallback(void* userdata);;
 
    SDL_AudioStream* const m_stream = nullptr;
    SDL_AudioSpec m_audioSpec;
@@ -33,8 +33,6 @@ private:
    uint64_t m_streamedTotal = 0;
    uint64_t m_startTimestamp = 0;
    bool m_resync = false;
-   bool m_flush = false;
-   std::function<void()> m_flushCallback;
 };
 
 }
