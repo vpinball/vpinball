@@ -89,7 +89,7 @@ public:
    void QueueLoop(int state);
    void QueueLength(int length);
    void QueueBG(int mode);
-   bool IsPlaying() const;
+   bool IsPlaying();
 
    const SDL_Rect& GetRect() const { return m_rect; }
    void Render(VPXRenderContext2D* const ctx);
