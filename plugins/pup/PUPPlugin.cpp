@@ -51,7 +51,6 @@ static VPXPluginAPI* vpxApi = nullptr;
 static ScriptablePluginAPI* scriptApi = nullptr;
 static uint32_t endpointId;
 static unsigned int onPinMAMEGameStartId, onGameEndId;
-static std::thread::id apiThread;
 
 // The pup manager holds the overall state. It may be automatically created due to a PinMAME start event, or explicitely created
 // through script interface. The script interface gives access to this context even when it has been created due to PinMAME.
@@ -161,6 +160,7 @@ static unsigned int onAudioUpdateId;
 static vector<uint32_t> freeAudioStreamId;
 uint32_t nextAudioStreamId = 1;
 
+CtlResId UpdateAudioStream(AudioUpdateMsg* msg)
 {
    if (msg->volume == 0.0f)
    {
@@ -189,6 +189,7 @@ uint32_t nextAudioStreamId = 1;
       LibAV::GetInstance()._av_free(msg->buffer);
       delete msg;
    }, msg);
+   return id;
 }
 
 void StopAudioStream(const CtlResId& id)
@@ -238,7 +239,6 @@ MSGPI_EXPORT void MSGPIAPI PUPPluginLoad(const uint32_t sessionId, MsgPluginAPI*
 {
    msgApi = api;
    endpointId = sessionId;
-   apiThread = std::this_thread::get_id();
 
    TTF_Init();
 

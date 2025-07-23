@@ -478,7 +478,7 @@ void PUPMediaPlayer::Run()
       m_audioResId.id = 0;
    }
 
-   LOGE("Play done");
+   LOGE("Play done %s", m_filename.c_str());
 }
 
 void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame, bool sync)

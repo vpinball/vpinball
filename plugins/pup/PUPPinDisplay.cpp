@@ -63,7 +63,7 @@ void PUPPinDisplay::playlistplayex(int screenNum, const string& playlist, const 
    // priority(0=none, 1..9) will override the restSeconds (see playlistadd)
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
-      pScreen->QueuePlay(playlist, playfilename, static_cast<float>(volume), priority);
+      pScreen->Play(playlist, playfilename, static_cast<float>(volume), priority);
 }
 
 void PUPPinDisplay::play(int screenNum, const string& playlist, const string& playfilename)
@@ -77,7 +77,7 @@ void PUPPinDisplay::play(int screenNum, const string& playlist, const string& pl
          LOGE("Playlist not found: screen={%s}, playlist=%s", pScreen->ToString(false).c_str(), playlist.c_str());
          return;
       }
-      pScreen->QueuePlay(playlist, playfilename, pPlaylist->GetVolume(), 0);
+      pScreen->Play(playlist, playfilename, pPlaylist->GetVolume(), 0);
    }
 }
 
@@ -130,21 +130,21 @@ void PUPPinDisplay::playpause(int screenNum)
 {
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
-      pScreen->QueuePause();
+      pScreen->Pause();
 }
 
 void PUPPinDisplay::playresume(int screenNum)
 {
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
-      pScreen->QueueResume();
+      pScreen->Resume();
 }
 
 void PUPPinDisplay::playstop(int screenNum)
 {
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
-      pScreen->QueueStop();
+      pScreen->Stop();
 }
 
 void PUPPinDisplay::CloseApp()
@@ -169,7 +169,7 @@ void PUPPinDisplay::SetLength(int screenNum, int StopSecs)
    //after you play a file call setlength if you want it to stop.  so setlength(5) will stop video at 5 seconds mark.
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
-      pScreen->QueueLength(StopSecs);
+      pScreen->SetLength(StopSecs);
 }
 
 void PUPPinDisplay::SetLoop(int screenNum, int LoopState)
@@ -177,7 +177,7 @@ void PUPPinDisplay::SetLoop(int screenNum, int LoopState)
    // if you set LoopState=1,  it will loop the currently playing file.  0=cancel loop
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
-      pScreen->QueueLoop(LoopState);
+      pScreen->SetLoop(LoopState);
 }
 
 void PUPPinDisplay::SetBackGround(int screenNum, int Mode)
@@ -185,7 +185,7 @@ void PUPPinDisplay::SetBackGround(int screenNum, int Mode)
    // if you set Mode=1, it will set current playing file as background (loop it always).  Mode=0 to cancel background.  Note if user has 'POP-UP' mode this will be disabled automagically (you don't need to worry about it).
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
-      pScreen->QueueBG(Mode);
+      pScreen->SetAsBackGround(Mode);
 }
 
 void PUPPinDisplay::BlockPlay(int screenNum, int Mode)
@@ -284,7 +284,7 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
                   int fn = json["FN"s].as<int>();
                   switch (fn) {
                      case 3:
-                        // Show/Hide screen "{ ""mt"":301, ""SN"": 11, ""FN"":3, ""OT"": 0 }"    '  'AOR, enable this line if using screen 5 this will hide overlay if applicable
+                        // hide/show overlay text - { "mt":301, "SN": XX, "FN":3, "OT": 0 } - OT 0/1 overlay text on off bool
                         NOT_IMPLEMENTED("Show/Hide screen not implemented. szMsg=%s", szMsg.c_str());
                         break;
                      case 4:
@@ -332,6 +332,14 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
                         // set screen transparency { "mt":301, "SN": 16, "FN":22, "AM":1, "AV":255 } AV: Alpha Value (0-255), AM: Alpha mode enabled 0/1?
                         NOT_IMPLEMENTED("Set screen transparency not implemented: screen={%s}, fn=%d, szMsg=%s", pScreen->ToString(false).c_str(), fn, szMsg.c_str());
                         break;
+                     case 30:
+                        // {'mt':301, 'SN': XX, 'FN':30, 'PM':1 } set (play ?) jukebox mode: jukebox mode will auto advance to next media in playlist and you can use next/prior sub to manuall advance
+                        NOT_IMPLEMENTED("Jukebox mode not implemented: screen={%s}, fn=%d, szMsg=%s", pScreen->ToString(false).c_str(), fn, szMsg.c_str());
+                        break;
+                     case 31:
+                        // pup jukebox control - {'mt':301, 'SN': XX, 'FN':31, 'PM':1 } - PM 1 = next, PM 2 = previous
+                        NOT_IMPLEMENTED("Jukebox mode not implemented: screen={%s}, fn=%d, szMsg=%s", pScreen->ToString(false).c_str(), fn, szMsg.c_str());
+                        break;
                      case 32:
                         // "{ ""mt"":301, ""SN"": 1, ""FN"":32, ""FQ"":3 }"   'set no antialias on font render if real
                         NOT_IMPLEMENTED("Font quality is not implemented: screen={%s}, fn=%d, szMsg=%s", pScreen->ToString(false).c_str(), fn, szMsg.c_str());
@@ -345,6 +353,10 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
                         // "{ ""mt"":301, ""SN"": "& pDisp &", ""FN"": 34 }"             'hideoverlay text during next videoplay on DMD auto return
                         NOT_IMPLEMENTED("Uknown function not implemented: screen={%s}, fn=%d, szMsg=%s", pScreen->ToString(false).c_str(), fn, szMsg.c_str());
                         break;
+                     case 41:
+                        // 'set safeloop mode on current playing media.  Good for background videos that refresh often?  { "mt":301, "SN": XX, "FN":41 }
+                        NOT_IMPLEMENTED("Safe loop mode not implemented: screen={%s}, fn=%d, szMsg=%s", pScreen->ToString(false).c_str(), fn, szMsg.c_str());
+                        break;
                      case 42:
                         // will temporary volume duck all pups (not masterid) till masterid currently playing video ends.  will auto-return all pups to normal.
                         // VolLevel is number,  0 to mute 99 for 99%
@@ -352,14 +364,31 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
                         // "{ ""mt"":301, ""SN"": "& MasterPuPID& ", ""FN"": 42, ""DV"": "&VolLevel&" , ""ALL"":1 }"                 
                         NOT_IMPLEMENTED("Temporary volume ducking is not implemented: screen={%s}, fn=%d, szMsg=%s", pScreen->ToString(false).c_str(), fn, szMsg.c_str());
                         break;
+                     case 45:
+                        // slow pc mode { "mt":301, "SN":XX, "FN":45, "SP":1 } - SP 0/1 = slow pc mode bool
+                        NOT_IMPLEMENTED("Slow PC mode is not implemented: screen={%s}, fn=%d, szMsg=%s", pScreen->ToString(false).c_str(), fn, szMsg.c_str());
+                        break;
+                     case 46:
+                        // pad all text { "mt":301, "SN": XX, "FN":46, "PA":1 } - PA 0/1 = padd text bool
+                        NOT_IMPLEMENTED("Pas all text is not implemented: screen={%s}, fn=%d, szMsg=%s", pScreen->ToString(false).c_str(), fn, szMsg.c_str());
+                        break;
                      case 50:
                         // pSetAspectRatio(PuPID, arWidth, arHeight) "{ ""mt"":301, ""SN"": "&PuPID& ", ""FN"": 50, ""WIDTH"": "&arWidth&", ""HEIGHT"": "&arHeight&" }"   
                         NOT_IMPLEMENTED("Set aspect ratio is not implemented: screen={%s}, fn=%d, szMsg=%s", pScreen->ToString(false).c_str(), fn, szMsg.c_str());
+                        break;
+                     case 51:
+                        // set media play position in ms { "mt":301, "SN": XX, "FN":51, "SP": 3431} - SP position in ms
+                        NOT_IMPLEMENTED("Set precise media position is not implemented: screen={%s}, fn=%d, szMsg=%s", pScreen->ToString(false).c_str(), fn, szMsg.c_str());
                         break;
                      case 52:
                         // pDMDSetTextQuality(AALevel)  '0 to 4 aa.  4 is sloooooower.  default 1,  perhaps use 2-3 if small desktop view.  only affect text quality.  can set per label too with 'qual' settings.
                         // "{ ""mt"":301, ""SN"": 5, ""FN"":52, ""SC"": "& AALevel &" }"    'slow pc mode
                         NOT_IMPLEMENTED("Font antialiasing level is not implemented: screen={%s}, fn=%d, szMsg=%s", pScreen->ToString(false).c_str(), fn, szMsg.c_str());
+                        break;
+                     case 53:
+                        // Experimental frame rescale, FORCE higher frame size to autosize and rescale nicer,  like AA and auto-fit.
+                        // "{ ""mt"":301, ""SN"": "&PuPID& ", ""FN"": 53, ""XW"": "&fWidth&", ""YH"": "&fHeight&", ""FR"":1 }"
+                        NOT_IMPLEMENTED("Experimental frame rescale is not implemented: screen={%s}, fn=%d, szMsg=%s", pScreen->ToString(false).c_str(), fn, szMsg.c_str());
                         break;
                      default:
                         NOT_IMPLEMENTED("Uknown function not implemented: screen={%s}, fn=%d, szMsg=%s", pScreen->ToString(false).c_str(), fn, szMsg.c_str());
@@ -571,7 +600,7 @@ void PUPPinDisplay::playevent(int screenNum, const string& playlist, const strin
    if (!pScreen)
       return;
    // TODO handle seconds and Special
-   pScreen->QueuePlay(playlist, playfilename, static_cast<float>(volume), priority);
+   pScreen->Play(playlist, playfilename, static_cast<float>(volume), priority);
 
    //  'playtype for triggers
    //  'ptNormal=0;
@@ -592,10 +621,10 @@ void PUPPinDisplay::playevent(int screenNum, const string& playlist, const strin
       // Normal
       break;
    case 1: // Loop
-      pScreen->QueueLoop(1);
+      pScreen->SetLoop(1);
       break;
    case 6: // SetBG
-      pScreen->QueueBG(1);
+      pScreen->SetAsBackGround(1);
       break;
    default:
       NOT_IMPLEMENTED("Not implemented: playevent playtype=%d", playtype);

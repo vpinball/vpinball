@@ -85,6 +85,36 @@ PUPTrigger::PUPTrigger(bool active, const string& szDescript, const string& szTr
    , m_playAction(playAction)
    , m_conditions(ParseConditions(szTrigger))
 {
+   switch (m_playAction) {
+   case PUPTrigger::Action::Normal:
+      m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, false, m_length); };
+      break;
+
+   case PUPTrigger::Action::Loop:
+      m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, false, m_length); m_pScreen->SetLoop(true); };
+      break;
+
+   case PUPTrigger::Action::SetBG:
+      m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, false, m_length); m_pScreen->SetAsBackGround(true); };
+      break;
+
+   case PUPTrigger::Action::SkipSamePriority:
+      m_action = [&]() { m_pScreen->Play(m_pPlaylist, m_szPlayFile, m_volume, m_priority, true, m_length); };
+      break;
+
+   case PUPTrigger::Action::StopPlayer:
+      m_action = [&]() { m_pScreen->Stop(m_priority); };
+      break;
+
+   case PUPTrigger::Action::StopFile:
+      m_action = [&]() { m_pScreen->Stop(m_pPlaylist, m_szPlayFile); };
+      break;
+
+   default:
+      LOGE("Invalid play action: %s", PUPTrigger::ToString(m_playAction).c_str());
+      m_action = [](){};
+      break;
+   }
 }
 
 PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, const string& line)
@@ -214,49 +244,18 @@ bool PUPTrigger::IsResting() const
    return (SDL_GetTicks() - m_lastTriggered) < ((uint64_t)m_restSeconds * 1000);
 }
 
-void PUPTrigger::Trigger() {
+std::function<void()> PUPTrigger::Trigger() {
    if (IsResting()) {
       LOGD("skipping resting trigger: trigger={%s}", ToString().c_str());
-      return;
+      return [](){};
    }
    if (m_pScreen->GetMode() == PUPScreen::Mode::Off) {
       LOGD("skipping trigger on Off screen: trigger={%s}", ToString().c_str());
-      return;
+      return [](){};
    }
-   
    m_lastTriggered = SDL_GetTicks();
-
    LOGD("processing trigger: trigger={%s}", ToString().c_str());
-   switch (m_playAction) {
-   case PUPTrigger::Action::Normal:
-      m_pScreen->QueuePlay(m_pPlaylist, m_szPlayFile, m_volume, m_priority, false, m_length);
-      break;
-
-   case PUPTrigger::Action::Loop:
-      m_pScreen->QueuePlay(m_pPlaylist, m_szPlayFile, m_volume, m_priority, false, m_length);
-      m_pScreen->QueueLoop(true);
-      break;
-
-   case PUPTrigger::Action::SetBG:
-      m_pScreen->QueuePlay(m_pPlaylist, m_szPlayFile, m_volume, m_priority, false, m_length);
-      m_pScreen->QueueBG(true);
-      break;
-
-   case PUPTrigger::Action::SkipSamePriority:
-      m_pScreen->QueuePlay(m_pPlaylist, m_szPlayFile, m_volume, m_priority, true, m_length);
-      break;
-
-   case PUPTrigger::Action::StopPlayer:
-      m_pScreen->QueueStop(m_priority);
-      break;
-
-   case PUPTrigger::Action::StopFile:
-      m_pScreen->QueueStop(m_pPlaylist, m_szPlayFile);
-      break;
-
-   default: LOGE("Invalid play action: %s", PUPTrigger::ToString(m_playAction).c_str());
-      break;
-   }
+   return m_action;
 }
 
 string PUPTrigger::ToString() const {

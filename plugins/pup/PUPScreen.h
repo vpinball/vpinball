@@ -10,13 +10,6 @@
 
 #include "PUPCustomPos.h"
 
-#include <queue>
-#include <mutex>
-#include <condition_variable>
-#include <thread>
-
-#include "ThreadPool.h"
-
 namespace PUP {
 
 class PUPMediaManager;
@@ -79,16 +72,19 @@ public:
    void AddPlaylist(PUPPlaylist* pPlaylist);
    PUPPlaylist* GetPlaylist(const string& szFolder);
 
-   void QueuePlay(const string& szPlaylist, const string& szPlayFile, float volume, int priority);
-   void QueuePlay(PUPPlaylist* playlist, const string& szPlayFile, float volume, int priority, bool skipSamePriority, int length);
-   void QueueStop(int priority);
-   void QueueStop(PUPPlaylist* pPlaylist, const std::string& szPlayFile);
-   void QueuePause();
-   void QueueResume();
-   void QueueStop();
-   void QueueLoop(int state);
-   void QueueLength(int length);
-   void QueueBG(int mode);
+   void SetMask(const string& path);
+
+   void Play(const string& szPlaylist, const string& szPlayFile, float volume, int priority);
+   void Play(PUPPlaylist* playlist, const string& szPlayFile, float volume, int priority, bool skipSamePriority, int length);
+   void Stop();
+   void Stop(int priority);
+   void Stop(PUPPlaylist* pPlaylist, const std::string& szPlayFile);
+   void Pause();
+   void Resume();
+   void SetLoop(int state);
+   void SetLength(int length);
+   void SetAsBackGround(int mode);
+
    bool IsPlaying();
 
    const SDL_Rect& GetRect() const { return m_rect; }
@@ -98,10 +94,6 @@ public:
 
 private:
    void LoadTriggers();
-   void Play(PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, bool skipSamePriority, int length);
-
-   void SetMask(const string& path);
-   void StopMedia();
 
    static uint32_t PageTimerElapsed(void* param, SDL_TimerID timerID, uint32_t interval);
 
@@ -114,7 +106,6 @@ private:
    float m_volume;
    std::unique_ptr<PUPCustomPos> m_pCustomPos;
    SDL_Rect m_rect;
-   std::shared_ptr<SDL_Surface> m_mask = nullptr;
    vector<PUPLabel*> m_labels;
    ankerl::unordered_dense::map<string, PUPLabel*> m_labelMap;
    ankerl::unordered_dense::map<string, PUPPlaylist*> m_playlistMap;
@@ -130,9 +121,7 @@ private:
    vector<std::shared_ptr<PUPScreen>> m_topChildren;
    vector<std::shared_ptr<PUPScreen>> m_backChildren;
    vector<std::shared_ptr<PUPScreen>> m_defaultChildren;
-   std::mutex m_renderMutex;
-
-   ThreadPool m_commandQueue;
+   const std::thread::id m_apiThread;
 };
 
 }
