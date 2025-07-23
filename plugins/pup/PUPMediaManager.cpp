@@ -13,7 +13,7 @@ PUPMediaManager::PUPMediaManager(PUPScreen* pScreen)
 
 void PUPMediaManager::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, bool skipSamePriority, int length)
 {
-   if (skipSamePriority && priority == m_pMainPlayer->priority) {
+   if (skipSamePriority && IsPlaying() && !m_pMainPlayer->isBackground && priority <= m_pMainPlayer->priority) {
       LOGE("Skipping same priority, screen={%s}, playlist={%s}, playFile=%s, priority=%d", m_pScreen->ToString(false).c_str(), pPlaylist->ToString().c_str(), szPlayFile.c_str(), priority);
       return;
    }
@@ -72,6 +72,11 @@ void PUPMediaManager::SetBG(bool isBackground)
 void PUPMediaManager::SetLoop(bool isLoop)
 {
    m_pMainPlayer->player.SetLoop(isLoop);
+}
+
+void PUPMediaManager::SetMaxLength(int length)
+{
+   m_pMainPlayer->player.SetLength(length);
 }
 
 void PUPMediaManager::SetVolume(float volume)
@@ -134,11 +139,14 @@ void PUPMediaManager::OnMainPlayerEnd() {
    }
 }
 
-void PUPMediaManager::Render(VPXRenderContext2D* const ctx)
-{
+bool PUPMediaManager::IsPlaying() const {
+   return m_pMainPlayer->player.IsPlaying();
+}
+
+
+void PUPMediaManager::Render(VPXRenderContext2D* const ctx) {
    bool playing = m_pMainPlayer->player.IsPlaying();
-   if (!playing && m_pBackgroundPlayer)
-   {
+   if (!playing && m_pBackgroundPlayer) {
       OnMainPlayerEnd();
       playing = m_pMainPlayer->player.IsPlaying();
    }

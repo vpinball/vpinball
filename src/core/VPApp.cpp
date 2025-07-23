@@ -683,7 +683,6 @@ void VPApp::ProcessCommandLine(int nArgs, char* szArglist[])
    m_iniFileName.clear();
    m_tournamentFileName.clear();
 
-   bool allowLoadOnStart = true;
    for (int i = 1; i < nArgs; ++i) // skip szArglist[0], contains executable name
    {
       option_names opt = option_names::OPTION_INVALID;

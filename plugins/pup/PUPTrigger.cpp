@@ -110,7 +110,7 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, const string& line)
 
    if (StrCompareNoCase(triggerPlayAction, "CustomFunc"s)) {
       // TODO parse the custom function and call PUPPinDisplay::SendMSG when triggered
-      LOGE("CustomFunc not implemented: %s", line.c_str());
+      NOT_IMPLEMENTED("CustomFunc not implemented: %s", line.c_str());
       return nullptr;
    }
 
@@ -215,16 +215,19 @@ bool PUPTrigger::IsResting() const
 }
 
 void PUPTrigger::Trigger() {
-   if (IsResting())
-   {
-      LOGE("skipping resting trigger: trigger={%s}", ToString().c_str());
+   if (IsResting()) {
+      LOGD("skipping resting trigger: trigger={%s}", ToString().c_str());
       return;
    }
+   if (m_pScreen->GetMode() == PUPScreen::Mode::Off) {
+      LOGD("skipping trigger on Off screen: trigger={%s}", ToString().c_str());
+      return;
+   }
+   
    m_lastTriggered = SDL_GetTicks();
 
    LOGD("processing trigger: trigger={%s}", ToString().c_str());
-   switch (m_playAction)
-   {
+   switch (m_playAction) {
    case PUPTrigger::Action::Normal:
       m_pScreen->QueuePlay(m_pPlaylist, m_szPlayFile, m_volume, m_priority, false, m_length);
       break;
@@ -251,7 +254,7 @@ void PUPTrigger::Trigger() {
       m_pScreen->QueueStop(m_pPlaylist, m_szPlayFile);
       break;
 
-   default: LOGE("Play action not implemented: %s", PUPTrigger::ToString(m_playAction).c_str());
+   default: LOGE("Invalid play action: %s", PUPTrigger::ToString(m_playAction).c_str());
       break;
    }
 }

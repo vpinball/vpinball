@@ -37,7 +37,7 @@ PUPMediaPlayer::~PUPMediaPlayer()
    m_commandQueue.wait_until_nothing_in_flight();
 }
 
-bool PUPMediaPlayer::IsPlaying()
+bool PUPMediaPlayer::IsPlaying() const
 {
    // Not worth the lock (which can face the async opening of a video file)
    //std::lock_guard<std::mutex> lock(m_mutex);

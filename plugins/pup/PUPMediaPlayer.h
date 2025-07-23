@@ -14,7 +14,7 @@ public:
    ~PUPMediaPlayer();
 
    void Play(const string& filename);
-   bool IsPlaying();
+   bool IsPlaying() const;
    void Pause(bool pause);
    const string& GetFilename() const { return m_filename; }
    int GetPriority() const { return m_priority; }

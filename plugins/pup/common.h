@@ -46,6 +46,12 @@ LPI_USE();
 #define LOGI PUP::LPI_LOGI
 #define LOGE PUP::LPI_LOGE
 
+#ifdef _DEBUG
+   #define NOT_IMPLEMENTED(...) { assert(false); LOGE(__VA_ARGS__); }
+#else
+   #define NOT_IMPLEMENTED(...) LOGE(__VA_ARGS__)
+#endif
+
 PSC_USE_ERROR();
 
 #ifdef _MSC_VER
@@ -59,6 +65,10 @@ PSC_USE_ERROR();
 #else
 #define CONSTEXPR constexpr
 #endif
+
+template <typename T> constexpr T clamp(const T x, const T mn, const T mx) { return x < mn ? mn : x > mx ? mx : x; }
+template <typename T> constexpr T lerp(const T x1, const T x2, const float alpha) { return (1.f - alpha) * x1 + alpha * x2; }
+
 
 // Rendering provided through plugin messages
 extern VPXTexture CreateTexture(SDL_Surface* surf);

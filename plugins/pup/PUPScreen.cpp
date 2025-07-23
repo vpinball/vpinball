@@ -305,12 +305,11 @@ void PUPScreen::SetCustomPos(const string& szCustomPos)
 
 void PUPScreen::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, bool skipSamePriority, int length)
 {
+   std::lock_guard<std::mutex> lock(m_renderMutex);
    //StopMedia(); // Does it stop the played media on all request like overlays or alphas ? I don't think so but unsure
    switch (pPlaylist->GetFunction())
    {
    case PUPPlaylist::Function::Default:
-   {
-      std::lock_guard<std::mutex> lock(m_renderMutex);
       // In original PupPlayer, Pop screens are recreated when play is call and therefore placed at the top of there z order stack (normal or topmost)
       if (m_pParent && IsPop())
       {
@@ -324,27 +323,24 @@ void PUPScreen::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, float vol
          }
       }
       m_pMediaPlayerManager->Play(pPlaylist, szPlayFile, m_pParent ? (volume / 100.0f) * m_pParent->GetVolume() : volume, priority, skipSamePriority, length);
-   }
-   break;
+      break;
 
    case PUPPlaylist::Function::Frames:
-   {
-      std::lock_guard<std::mutex> lock(m_renderMutex);
       m_background.Load(pPlaylist->GetPlayFilePath(szPlayFile));
-   }
-   break;
+      break;
 
    case PUPPlaylist::Function::Overlays:
    case PUPPlaylist::Function::Alphas:
-   {
-      std::lock_guard<std::mutex> lock(m_renderMutex);
       m_overlay.Load(pPlaylist->GetPlayFilePath(szPlayFile));
-   }
-   break;
+      break;
 
-   case PUPPlaylist::Function::Shapes: SetMask(pPlaylist->GetPlayFilePath(szPlayFile)); break;
+   case PUPPlaylist::Function::Shapes:
+      SetMask(pPlaylist->GetPlayFilePath(szPlayFile));
+      break;
 
-   default: LOGE("Playlist function not implemented: %s", PUPPlaylist::ToString(pPlaylist->GetFunction()).c_str()); break;
+   default:
+      LOGE("Invalid playlist function: %s", PUPPlaylist::ToString(pPlaylist->GetFunction()).c_str());
+      break;
    }
 }
 
@@ -427,32 +423,31 @@ void PUPScreen::QueueLoop(int state) {
    m_commandQueue.enqueue([this, state]() { m_pMediaPlayerManager->SetLoop(state != 0); });
 }
 
+void PUPScreen::QueueLength(int length) {
+   m_commandQueue.enqueue([this, length]() { m_pMediaPlayerManager->SetMaxLength(length); });
+}
+
 void PUPScreen::QueueBG(int mode) {
    m_commandQueue.enqueue([this, mode]() { m_pMediaPlayerManager->SetBG(mode != 0); });
 }
 
-void PUPScreen::Render(VPXRenderContext2D* const ctx)
-{
-   std::lock_guard<std::mutex> lock(m_renderMutex);
+bool PUPScreen::IsPlaying() const {
+   return m_pMediaPlayerManager->IsPlaying();
+}
 
-   #if 0
-   LOGD("Render #%d %s   Mask:%d", m_screenNum, m_screenDes.c_str(), m_mask != nullptr);
-   LOGD(". Underlay: %s", m_background.GetFile());
-   LOGD(". Back video: %s", m_pMediaPlayerManager->GetBackgroundPlayer() ? m_pMediaPlayerManager->GetBackgroundPlayer()->szPath.c_str() : "");
-   LOGD(". Main video: %s", m_pMediaPlayerManager->GetMainPlayer() ? m_pMediaPlayerManager->GetMainPlayer()->szPath.c_str() : "");
-   for (auto pChildren : { &m_defaultChildren, &m_backChildren, &m_topChildren })
-      for (auto pScreen : *pChildren)
-         LOGD(". Children: #%d %s", pScreen->GetScreenNum(), pScreen->GetScreenDes().c_str());
-   LOGD(". Overlay: %s", m_overlay.GetFile());
-   #endif
+
+void PUPScreen::Render(VPXRenderContext2D* const ctx) {
+   std::lock_guard<std::mutex> lock(m_renderMutex);
 
    m_background.Render(ctx, m_rect);
 
    m_pMediaPlayerManager->Render(ctx);
 
-   for (auto pChildren : { &m_defaultChildren, &m_backChildren, &m_topChildren }) {
-      for (auto pScreen : *pChildren)
+   for (auto pChildren : { &m_backChildren, &m_defaultChildren, &m_topChildren })
+   {
+      for (auto pScreen : *pChildren) {
          pScreen->Render(ctx);
+      }
    }
 
    m_overlay.Render(ctx, m_rect);
