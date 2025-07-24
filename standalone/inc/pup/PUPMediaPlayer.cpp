@@ -19,7 +19,7 @@
 PUPMediaPlayer::PUPMediaPlayer()
 {
    m_pAudioPlayer = new VPX::AudioPlayer(g_pvp->m_settings);
-   m_pAudioStream = m_pAudioPlayer->OpenAudioStream(44100, 2, false);
+   m_pAudioStream = m_pAudioPlayer->OpenAudioStream("PUPMediaPlayer", 44100, 2, false);
    m_pAudioPlayer->SetStreamVolume(m_pAudioStream, 0.f);
 }
 

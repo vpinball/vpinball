@@ -161,27 +161,27 @@ static unsigned int onAudioUpdateId;
 static vector<uint32_t> freeAudioStreamId;
 uint32_t nextAudioStreamId = 1;
 
-void UpdateAudioStream(AudioUpdateMsg* msg)
 {
    if (msg->volume == 0.0f)
    {
       StopAudioStream(msg->id);
-      msg->id.id = 0;
-      return;
+      return { 0 };
    }
-   if (msg->id.id == 0)
+   CtlResId id = msg->id;
+   if (id.id == 0)
    {
-      msg->id.endpointId = endpointId;
+      id.endpointId = endpointId;
       if (freeAudioStreamId.empty())
       {
-         msg->id.resId = nextAudioStreamId;
+         id.resId = nextAudioStreamId;
          nextAudioStreamId++;
       }
       else
       {
-         msg->id.resId = freeAudioStreamId.back();
+         id.resId = freeAudioStreamId.back();
          freeAudioStreamId.pop_back();
       }
+      msg->id = id;
    }
    msgApi->RunOnMainThread(0, [](void* userData) {
       AudioUpdateMsg* msg = static_cast<AudioUpdateMsg*>(userData);

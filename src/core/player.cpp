@@ -2537,8 +2537,10 @@ void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgD
    {
       if (msg.buffer != nullptr)
       {
+         MsgEndpointInfo info;
+         MsgPluginManager::GetInstance().GetMsgAPI().GetEndpointInfo(msg.id.endpointId, &info);
          const int nChannels = (msg.type == CTLPI_AUDIO_SRC_BACKGLASS_MONO) ? 1 : 2;
-         VPX::AudioPlayer::AudioStreamID const stream = me->m_audioPlayer->OpenAudioStream(static_cast<int>(msg.sampleRate), nChannels, msg.format == CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT);
+         VPX::AudioPlayer::AudioStreamID const stream = me->m_audioPlayer->OpenAudioStream("Plugin."s + info.name + '.' + std::to_string(msg.id.resId), static_cast<int>(msg.sampleRate), nChannels, msg.format == CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT);
          if (stream)
          {
             me->m_audioStreams[msg.id.id] = stream;
@@ -2557,7 +2559,7 @@ void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgD
       }
       else
       {
-         me->m_audioPlayer->CloseAudioStream(stream, true);
+         me->m_audioPlayer->CloseAudioStream(stream, false);
          me->m_audioStreams.erase(entry);
       }
    }
