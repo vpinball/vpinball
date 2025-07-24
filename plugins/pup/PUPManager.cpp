@@ -328,40 +328,10 @@ void PUPManager::QueueTriggerData(PUPTriggerData data)
    m_queueCondVar.notify_one();
 }
 
-struct TriggerCallback
-{
-   TriggerCallback(vector<TriggerCallback*>& pendingList, std::mutex& pendingListMutex, std::function<void()> callback)
-      : m_pendingList(pendingList)
-      , m_pendingListMutex(pendingListMutex)
-      , m_callback(callback)
-   {
-   }
-
-   bool m_valid = true;
-   vector<TriggerCallback*>& m_pendingList;
-   std::mutex& m_pendingListMutex;
-   std::function<void()> m_callback;
-};
-
-static void ProcessCallback(void* userdata)
-{
-   TriggerCallback* tcb = static_cast<TriggerCallback*>(userdata);
-   if (tcb->m_valid)
-   {
-      std::unique_lock<std::mutex> lock(tcb->m_pendingListMutex);
-      auto it = std::ranges::find(tcb->m_pendingList, tcb);
-      if (it != tcb->m_pendingList.end())
-         tcb->m_pendingList.erase(it);
-      lock.unlock();
-      tcb->m_callback();
-   }
-   delete tcb;
-}
-
 void PUPManager::ProcessQueue()
 {
    SetThreadName("PUPManager.ProcessQueue"s);
-   vector<TriggerCallback*> pendingCallbackList;
+   vector<AsyncCallback*> pendingCallbackList;
    std::mutex pendingCallbackListMutex;
    while (m_isRunning)
    {
@@ -527,10 +497,7 @@ void PUPManager::ProcessQueue()
                for (auto trigger : triggers)
                {
                   // Dispatch trigger action to main thread
-                  std::lock_guard<std::mutex> lock(pendingCallbackListMutex);
-                  TriggerCallback* cb = new TriggerCallback(pendingCallbackList, pendingCallbackListMutex, trigger->Trigger());
-                  pendingCallbackList.push_back(cb);
-                  m_msgApi->RunOnMainThread(0, ProcessCallback, cb);
+                  AsyncCallback::DispatchOnMainThread(m_msgApi, pendingCallbackList, pendingCallbackListMutex, trigger->Trigger());
                }
             }
          }
@@ -539,11 +506,9 @@ void PUPManager::ProcessQueue()
       // Clear script triggers
       m_triggerDataQueue.clear();
    }
-   // Invalidate pending triggers as their execution context (screen, ...) will not be valid anymore
-   {
-      std::lock_guard<std::mutex> lock(pendingCallbackListMutex);
-      std::ranges::for_each(pendingCallbackList, [](TriggerCallback* cb) { cb->m_valid = false; });
-   }
+
+   // Discard pending callbacks
+   AsyncCallback::InvalidateAllPending(pendingCallbackList, pendingCallbackListMutex);
 }
 
 void PUPManager::Start()

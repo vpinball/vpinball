@@ -49,7 +49,7 @@ void PUPMediaPlayer::SetName(const string& name)
    m_commandQueue.enqueue([this, name]()
    {
       string threadName(name);
-      SetThreadName(threadName.append(".CommandQueue"));
+      SetThreadName(threadName.append(".CmdQueue"));
       std::lock_guard<std::mutex> lock(m_mutex);
       m_name = name;
    }); 
@@ -362,7 +362,7 @@ void PUPMediaPlayer::Run()
 
    // Main loop which loops over read/decode/convert and handle video seeking/looping
    #ifdef _DEBUG
-      string name, filename;
+      string name;
       bool paused;
    #endif
    while (true)
@@ -372,12 +372,11 @@ void PUPMediaPlayer::Run()
       {
          std::unique_lock<std::mutex> lock(m_mutex);
          #ifdef _DEBUG
-            if ((name != m_name) || (filename != m_filename) || (paused != m_paused))
+            if ((name != m_name) || (paused != m_paused))
             {
                name = m_name;
-               filename = m_filename;
                paused = m_paused;
-               SetThreadName(m_name + ".Play[" + m_filename + (paused ? " - Paused" : "") + ']');
+               SetThreadName(m_name + (paused ? ".Paused" : ".Play"));
             }
          #endif
          if (!m_running)
@@ -476,6 +475,7 @@ void PUPMediaPlayer::Run()
       m_running = false;
       StopAudioStream(m_audioResId);
       m_audioResId.id = 0;
+      m_onEndCallback(this);
    }
 
    LOGD("Play done %s", m_filename.c_str());

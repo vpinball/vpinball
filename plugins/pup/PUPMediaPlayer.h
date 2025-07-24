@@ -24,6 +24,7 @@ public:
    void Render(VPXRenderContext2D* const ctx, const SDL_Rect& destRect);
 
    void SetName(const string& name);
+   void SetOnEndCallback(std::function<void(PUPMediaPlayer*)> onEndCallback) { std::lock_guard lock(m_mutex); m_onEndCallback = onEndCallback; }
    void SetBounds(const SDL_Rect& rect);
    void SetMask(std::shared_ptr<SDL_Surface> mask);
 
@@ -36,6 +37,8 @@ private:
 
    string m_name;
    SDL_Rect m_bounds;
+
+   std::function<void(PUPMediaPlayer*)> m_onEndCallback = [](PUPMediaPlayer*) { };
 
    string m_filename;
    uint64_t m_startTimestamp = 0; // timestamp in ms when the play command was called
