@@ -637,7 +637,7 @@ void PUPMediaPlayer::HandleAudioFrame(AVFrame* pFrame, bool sync)
       return;
 
    // If we have decoded enough data and we did not loop, then wait (if requested). Our aim is to enqueue up to our playing position + a reasonnable buffer
-   if (sync && m_pAudioLoop == pFrame->opaque)
+   if (sync && m_pAudioLoop == pFrame->opaque && AV_NOPTS_VALUE != pFrame->pts)
    {
       const uint64_t framePTS = (1000 * pFrame->pts * m_pAudioContext->pkt_timebase.num) / m_pAudioContext->pkt_timebase.den;
       const uint64_t decodeTS = (SDL_GetTicks() - m_startTimestamp) + 500; // Now + 500ms buffer
@@ -682,23 +682,25 @@ void PUPMediaPlayer::HandleAudioFrame(AVFrame* pFrame, bool sync)
       return;
 
    int nConverted = m_libAv._swr_convert(m_pAudioConversionContext, &pBuffer, pFrame->nb_samples, pFrame->data, pFrame->nb_samples);
-   if (nConverted <= 0)
+   if (nConverted < 0)
    {
       LOGE("swr_convert() failed");
       m_libAv._av_free(pBuffer);
       return;
    }
-
-   AudioUpdateMsg* audioUpdate = new AudioUpdateMsg();
-   audioUpdate->id.id = m_audioResId.id;
-   audioUpdate->type = CTLPI_AUDIO_SRC_BACKGLASS_STEREO;
-   audioUpdate->format = (destFmt == AV_SAMPLE_FMT_FLT) ? CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT : CTLPI_AUDIO_FORMAT_SAMPLE_INT16;
-   audioUpdate->sampleRate = destFreq;
-   audioUpdate->bufferSize = nConverted * destChLayout.nb_channels * m_libAv._av_get_bytes_per_sample(destFmt);
-   audioUpdate->buffer = pBuffer;
-   audioUpdate->volume = m_volume / 100.0f;
-   UpdateAudioStream(audioUpdate);
-   m_audioResId.id = audioUpdate->id.id;
+   assert(nConverted == pFrame->nb_samples); // Since we are not resampling we expect the same number of samples or sync will be lost
+   if (nConverted > 0)
+   {
+      AudioUpdateMsg* audioUpdate = new AudioUpdateMsg();
+      audioUpdate->id.id = m_audioResId.id;
+      audioUpdate->type = CTLPI_AUDIO_SRC_BACKGLASS_STEREO;
+      audioUpdate->format = (destFmt == AV_SAMPLE_FMT_FLT) ? CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT : CTLPI_AUDIO_FORMAT_SAMPLE_INT16;
+      audioUpdate->sampleRate = destFreq;
+      audioUpdate->bufferSize = nConverted * destChLayout.nb_channels * m_libAv._av_get_bytes_per_sample(destFmt);
+      audioUpdate->buffer = pBuffer;
+      audioUpdate->volume = m_volume / 100.0f;
+      m_audioResId = UpdateAudioStream(audioUpdate);
+   }
 }
 
 #if defined(__clang__)

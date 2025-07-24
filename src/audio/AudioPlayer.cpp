@@ -345,6 +345,8 @@ AudioPlayer::~AudioPlayer()
       ma_device_uninit(&m_backglassDevice->device);
    if (m_maContext)
       ma_context_uninit(m_maContext.get());
+   if (m_backglassSDLDevice != 0)
+      SDL_CloseAudioDevice(m_backglassSDLDevice);
    SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
 
@@ -361,13 +363,20 @@ void AudioPlayer::SetMainVolume(float backglassVolume, float playfieldVolume)
       player->SetMainVolume(backglassVolume);
 }
 
-AudioPlayer::AudioStreamID AudioPlayer::OpenAudioStream(int frequency, int channels, bool isFloat)
+AudioPlayer::AudioStreamID AudioPlayer::OpenAudioStream(const string& name, int frequency, int channels, bool isFloat)
 {
-   std::unique_ptr<AudioStreamPlayer> audioStream = AudioStreamPlayer::Create(m_backglassAudioDevice, frequency, channels, isFloat);
+   if (m_backglassSDLDevice == 0)
+   {
+      SDL_AudioSpec deviceSpec;
+      const bool hasDeviceSpec = SDL_GetAudioDeviceFormat(m_backglassAudioDevice, &deviceSpec, nullptr);
+      m_backglassSDLDevice = SDL_OpenAudioDevice(m_backglassAudioDevice, hasDeviceSpec ? & deviceSpec : nullptr);
+   }
+   std::unique_ptr<AudioStreamPlayer> audioStream = AudioStreamPlayer::Create(m_backglassSDLDevice, frequency, channels, isFloat);
    if (audioStream == nullptr)
       return nullptr;
    AudioStreamID stream = std::move(audioStream);
    stream->SetMainVolume(m_backglassVolume);
+   stream->SetName(name);
    m_audioStreams.push_back(stream);
    return stream;
 }

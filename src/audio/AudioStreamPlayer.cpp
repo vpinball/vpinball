@@ -6,16 +6,18 @@
 namespace VPX
 {
 
-std::unique_ptr<AudioStreamPlayer> AudioStreamPlayer::Create(int sdlDevice, int frequency, int channels, bool isFloat)
+std::unique_ptr<AudioStreamPlayer> AudioStreamPlayer::Create(SDL_AudioDeviceID sdlDevice, int frequency, int channels, bool isFloat)
 {
-   SDL_AudioSpec audioSpec;
-   audioSpec.freq = frequency;
-   audioSpec.format = isFloat ? SDL_AUDIO_F32 : SDL_AUDIO_S16;
-   audioSpec.channels = channels;
-
-   SDL_AudioStream* stream = SDL_OpenAudioDeviceStream(sdlDevice, &audioSpec, nullptr, nullptr);
+   SDL_AudioSpec streamSpec;
+   streamSpec.freq = frequency;
+   streamSpec.format = isFloat ? SDL_AUDIO_F32 : SDL_AUDIO_S16;
+   streamSpec.channels = channels;
+   SDL_AudioSpec deviceSpec;
+   SDL_GetAudioDeviceFormat(sdlDevice, &deviceSpec, nullptr);
+   SDL_AudioStream* stream = SDL_CreateAudioStream(&streamSpec, &deviceSpec);
    if (stream)
    {
+      SDL_BindAudioStream(sdlDevice, stream);
       SDL_ResumeAudioStreamDevice(stream);
       return std::make_unique<AudioStreamPlayer>(stream);
    }
@@ -44,7 +46,7 @@ AudioStreamPlayer::~AudioStreamPlayer()
    SDL_DestroyAudioStream(m_stream);
 }
 
-void AudioStreamPlayer::Enqueue(uint8_t* buffer, int length)
+void AudioStreamPlayer::Enqueue(const uint8_t* buffer, int length)
 {
    // If we are really late and decided to resync, do it when pushing new data (limit silence time, handle situation where no more data are coming)
    if (m_resync)
@@ -95,7 +97,7 @@ void AudioStreamPlayer::SetMainVolume(const float volume)
 void AudioStreamPlayer::AudioStreamCallback(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount)
 {
    auto const me = static_cast<AudioStreamPlayer*>(userdata);
-   const int nQueueSize = max(0, SDL_GetAudioStreamQueued(me->m_stream) - total_amount);
+   const int nQueueSize = max(0, SDL_GetAudioStreamQueued(stream) - total_amount);
    const uint64_t nBytePerSec = me->m_audioSpec.freq * SDL_AUDIO_FRAMESIZE(me->m_audioSpec);
    const uint64_t sourceTS = (1000 * me->m_streamedTotal) / nBytePerSec; // Total amount of music streamed (ms)
    const uint64_t playedTS = (1000 * (me->m_streamedTotal - nQueueSize)) / nBytePerSec; // Playing position (ms)
@@ -105,6 +107,7 @@ void AudioStreamPlayer::AudioStreamCallback(void *userdata, SDL_AudioStream *str
    const uint64_t nowTS = SDL_GetTicks() - me->m_startTimestamp; // Where we should be in the music (ms)
    #endif
    float throttle = 1.f;
+   //PLOGI << "Get stream data for " << me->m_name.c_str() << " enqueued: " << ((float)SDL_GetAudioStreamQueued(stream) / SDL_AUDIO_FRAMESIZE(me->m_audioSpec)) << " samples enqueued";
    if (playedTS > nowTS)
    {
       // We have played ahead of the source: either the source is paused or it is having issues => just resync silently

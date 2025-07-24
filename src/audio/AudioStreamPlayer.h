@@ -12,13 +12,14 @@ namespace VPX
 class AudioStreamPlayer
 {
 public:
-   static std::unique_ptr<AudioStreamPlayer> Create(int sdlDevice, int frequency, int channels, bool isFloat);
+   static std::unique_ptr<AudioStreamPlayer> Create(SDL_AudioDeviceID sdlDevice, int frequency, int channels, bool isFloat);
    explicit AudioStreamPlayer(SDL_AudioStream* stream);
    ~AudioStreamPlayer();
 
-   void Enqueue(uint8_t* buffer, int length);
+   void Enqueue(const uint8_t* buffer, int length);
    void FlushStream();
    int GetQueuedSize() const;
+   void SetName(string name) { m_name = std::move(name); }
    void SetStreamVolume(const float volume);
    void SetMainVolume(const float volume);
 
@@ -32,6 +33,7 @@ private:
    float m_throttling = 1.f;
    uint64_t m_streamedTotal = 0;
    uint64_t m_startTimestamp = 0;
+   string m_name;
    bool m_resync = false;
 };
 
