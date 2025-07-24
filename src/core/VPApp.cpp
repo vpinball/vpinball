@@ -441,6 +441,7 @@ VPApp::VPApp(HINSTANCE hInstance)
 {
    g_app = this;
    m_vpinball.AddRef();
+   SetThreadName("Main"s);
 
    #ifndef __STANDALONE__
       m_vpinball.theInstance = GetInstanceHandle();
@@ -978,7 +979,7 @@ BOOL VPApp::InitInstance()
    m_vpinball.m_settings.LoadFromFile(m_iniFileName, true);
    m_vpinball.m_settings.SaveValue(Settings::Version, "VPinball"s, string(VP_VERSION_STRING_DIGITS));
 
-   Logger::GetInstance()->SetupLogger(m_vpinball.m_settings.LoadValueBool(Settings::Editor, "EnableLog"s));
+   Logger::SetupLogger(m_vpinball.m_settings.LoadValueBool(Settings::Editor, "EnableLog"s));
 
    PLOGI << "Starting VPX - " << VP_VERSION_STRING_FULL_LITERAL;
    PLOGI << "Settings file was loaded from " << m_iniFileName;

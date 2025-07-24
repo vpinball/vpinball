@@ -30,6 +30,7 @@ void PUPMediaManager::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, flo
 
    if (m_pMainPlayer->isBackground)
    {
+      LOGD(". Background video {%s} paused while playing {%s}", m_pMainPlayer->szPath.c_str(), szPath.c_str());
       std::swap(m_pBackgroundPlayer, m_pMainPlayer);
       m_pBackgroundPlayer->player.SetName("PUP.Screen #"s.append(std::to_string(m_pScreen->GetScreenNum())).append(".Back"));
       m_pBackgroundPlayer->player.Pause(true);
@@ -153,6 +154,7 @@ void PUPMediaManager::SetMask(const string& path)
 void PUPMediaManager::OnMainPlayerEnd() {
    if (m_pBackgroundPlayer)
    {
+      LOGD(". Background video {%s} unpaused ({%s} is finished)", m_pBackgroundPlayer->szPath.c_str(), m_pMainPlayer->szPath.c_str());
       std::swap(m_pBackgroundPlayer, m_pMainPlayer);
       m_pBackgroundPlayer->player.SetName("PUP.Screen #"s.append(std::to_string(m_pScreen->GetScreenNum())).append(".Back"));
       m_pMainPlayer->player.SetName("PUP.Screen #"s.append(std::to_string(m_pScreen->GetScreenNum())).append(".Main"));
@@ -163,7 +165,6 @@ void PUPMediaManager::OnMainPlayerEnd() {
 bool PUPMediaManager::IsPlaying() const {
    return m_pMainPlayer->player.IsPlaying();
 }
-
 
 void PUPMediaManager::Render(VPXRenderContext2D* const ctx) {
    bool playing = m_pMainPlayer->player.IsPlaying();
