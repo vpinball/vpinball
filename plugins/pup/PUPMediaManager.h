@@ -10,7 +10,7 @@ class PUPMediaManager final
 {
 public:
    PUPMediaManager(PUPScreen* pScreen);
-   ~PUPMediaManager() {}
+   ~PUPMediaManager();
 
    void Play(PUPPlaylist* pPlaylist, const std::string& szPlayFile, float volume, int priority, bool skipSamePriority, int length);
    void Pause();
@@ -29,7 +29,7 @@ public:
    void SetMask(const string& path);
 
 private:
-   void OnMainPlayerEnd();
+   void OnPlayerEnd(PUPMediaPlayer* player);
 
    class PUPMediaManagerPlayer final
    {
@@ -51,6 +51,9 @@ private:
 
    std::unique_ptr<PUPMediaManagerPlayer> m_pBackgroundPlayer;
    std::unique_ptr<PUPMediaManagerPlayer> m_pMainPlayer;
+
+   vector<AsyncCallback*> m_pendingEndCallbackList;
+   std::mutex m_pendingEndCallbackListMutex;
 
    PUPScreen* const m_pScreen;
 

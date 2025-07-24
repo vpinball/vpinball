@@ -71,6 +71,7 @@ public:
    PUPManager(MsgPluginAPI* msgApi, uint32_t endpointId, const string& rootPath);
    ~PUPManager();
 
+   MsgPluginAPI* GetMsgAPI() const { return m_msgApi; }
    const string& GetRootPath() const { return m_szRootPath; }
 
    void SetGameDir(const string& szRomName);

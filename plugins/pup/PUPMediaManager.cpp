@@ -5,12 +5,23 @@
 
 namespace PUP {
 
+static string GetPlayerName(PUPScreen* pScreen, bool isMain)
+{
+   return "PUP.#"s.append(std::to_string(pScreen->GetScreenNum())).append(isMain ? ".Main" : ".Back");
+}
+
 PUPMediaManager::PUPMediaManager(PUPScreen* pScreen)
    : m_pScreen(pScreen)
-   , m_pMainPlayer(std::make_unique<PUPMediaManagerPlayer>("PUP.Screen #"s.append(std::to_string(pScreen->GetScreenNum())).append(".Main")))
+   , m_pMainPlayer(std::make_unique<PUPMediaManagerPlayer>(GetPlayerName(pScreen, true)))
    , m_pBackgroundPlayer(nullptr)
    , m_bounds()
 {
+   m_pMainPlayer->player.SetOnEndCallback([this](PUPMediaPlayer* player) { OnPlayerEnd(player); });
+}
+
+PUPMediaManager::~PUPMediaManager()
+{
+   AsyncCallback::InvalidateAllPending(m_pendingEndCallbackList, m_pendingEndCallbackListMutex);
 }
 
 void PUPMediaManager::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, float volume, int priority, bool skipSamePriority, int length)
@@ -32,12 +43,15 @@ void PUPMediaManager::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, flo
    {
       LOGD(". Background video {%s} paused while playing {%s}", m_pMainPlayer->szPath.c_str(), szPath.c_str());
       std::swap(m_pBackgroundPlayer, m_pMainPlayer);
-      m_pBackgroundPlayer->player.SetName("PUP.Screen #"s.append(std::to_string(m_pScreen->GetScreenNum())).append(".Back"));
+      m_pBackgroundPlayer->player.SetName(GetPlayerName(m_pScreen, false));
       m_pBackgroundPlayer->player.Pause(true);
       if (m_pMainPlayer == nullptr)
-         m_pMainPlayer = std::make_unique<PUPMediaManagerPlayer>("PUP.Screen #"s.append(std::to_string(m_pScreen->GetScreenNum())).append(".Main"));
+      {
+         m_pMainPlayer = std::make_unique<PUPMediaManagerPlayer>(GetPlayerName(m_pScreen, true));
+         m_pMainPlayer->player.SetOnEndCallback([this](PUPMediaPlayer* player) { OnPlayerEnd(player); });
+      }
       else
-         m_pMainPlayer->player.SetName("PUP.Screen #"s.append(std::to_string(m_pScreen->GetScreenNum())).append(".Main"));
+         m_pMainPlayer->player.SetName(GetPlayerName(m_pScreen, true));
    }
    
    m_pMainPlayer->player.Play(szPath);
@@ -95,7 +109,6 @@ void PUPMediaManager::SetVolume(float volume)
 void PUPMediaManager::Stop()
 {
    m_pMainPlayer->player.Stop();
-   OnMainPlayerEnd();
 }
 
 void PUPMediaManager::Stop(int priority)
@@ -151,15 +164,21 @@ void PUPMediaManager::SetMask(const string& path)
    m_pMainPlayer->player.SetMask(m_mask);
 }
 
-void PUPMediaManager::OnMainPlayerEnd() {
-   if (m_pBackgroundPlayer)
-   {
-      LOGD(". Background video {%s} unpaused ({%s} is finished)", m_pBackgroundPlayer->szPath.c_str(), m_pMainPlayer->szPath.c_str());
-      std::swap(m_pBackgroundPlayer, m_pMainPlayer);
-      m_pBackgroundPlayer->player.SetName("PUP.Screen #"s.append(std::to_string(m_pScreen->GetScreenNum())).append(".Back"));
-      m_pMainPlayer->player.SetName("PUP.Screen #"s.append(std::to_string(m_pScreen->GetScreenNum())).append(".Main"));
-      m_pMainPlayer->player.Pause(false);
-   }
+void PUPMediaManager::OnPlayerEnd(PUPMediaPlayer* player)
+{
+   AsyncCallback::DispatchOnMainThread(m_pScreen->GetManager()->GetMsgAPI(), m_pendingEndCallbackList, m_pendingEndCallbackListMutex,
+      [this, player]()
+      {
+         if (player == &m_pMainPlayer->player && m_pBackgroundPlayer != nullptr)
+         {
+            LOGD(". Background video {%s} unpaused ({%s} is finished)", m_pBackgroundPlayer->szPath.c_str(), m_pMainPlayer->szPath.c_str());
+            std::swap(m_pBackgroundPlayer, m_pMainPlayer);
+            m_pBackgroundPlayer->player.SetName(GetPlayerName(m_pScreen, false));
+            m_pMainPlayer->player.SetName(GetPlayerName(m_pScreen, true));
+            m_pMainPlayer->player.Pause(false);
+         }
+      }
+   );
 }
 
 bool PUPMediaManager::IsPlaying() const {
@@ -167,11 +186,6 @@ bool PUPMediaManager::IsPlaying() const {
 }
 
 void PUPMediaManager::Render(VPXRenderContext2D* const ctx) {
-   bool playing = m_pMainPlayer->player.IsPlaying();
-   if (!playing && m_pBackgroundPlayer) {
-      OnMainPlayerEnd();
-      playing = m_pMainPlayer->player.IsPlaying();
-   }
    if (!m_pScreen->IsPop() || m_pMainPlayer->player.IsPlaying())
       m_pMainPlayer->player.Render(ctx, m_bounds);
 }
