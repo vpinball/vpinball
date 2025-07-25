@@ -933,7 +933,11 @@ void PinInput::ProcessInput()
    const uint32_t now = msec();
 
    // Gather input from all handlers
+   #ifdef _WIN32
    const HWND foregroundWindow = GetForegroundWindow();
+   #else
+   constexpr HWND foregroundWindow = NULL;
+   #endif
    for (const auto& handler : m_inputHandlers)
       handler->Update(foregroundWindow);
 
