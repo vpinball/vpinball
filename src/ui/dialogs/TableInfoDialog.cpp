@@ -86,7 +86,7 @@ BOOL TableInfoDialog::OnInitDialog()
       pt->ListCustomInfo(m_customListView.GetHwnd());
    }
 
-   m_resizer.Initialize(this->GetHwnd(), CRect(0, 0, 650, 500));
+   m_resizer.Initialize(GetHwnd(), CRect(0, 0, 650, 500));
    m_resizer.AddChild(GetDlgItem(IDC_STATIC2).GetHwnd(), CResizer::center, 0);
    m_resizer.AddChild(GetDlgItem(IDC_STATIC3).GetHwnd(), CResizer::center, 0);
    m_resizer.AddChild(GetDlgItem(IDC_STATIC4).GetHwnd(), CResizer::center, 0);

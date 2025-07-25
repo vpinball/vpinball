@@ -89,18 +89,18 @@ BOOL RubberVisualsProperty::OnInitDialog()
     m_baseImageCombo = &m_imageCombo;
     m_materialCombo.AttachItem(IDC_MATERIAL_COMBO);
     m_baseMaterialCombo = &m_materialCombo;
-    m_hStaticRenderingCheck = ::GetDlgItem(GetHwnd(), IDC_STATIC_RENDERING_CHECK);
-    m_hVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);
-    m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
+    m_hStaticRenderingCheck = GetDlgItem(IDC_STATIC_RENDERING_CHECK);
+    m_hVisibleCheck = GetDlgItem(IDC_VISIBLE_CHECK);
+    m_hReflectionEnabledCheck = GetDlgItem(IDC_REFLECT_ENABLED_CHECK);
     m_heightEdit.AttachItem(IDC_RUBBER_HEIGHT_EDIT);
     m_thicknessEdit.AttachItem(IDC_RUBBER_THICKNESS_EDIT);
     m_rotXEdit.AttachItem(IDC_RUBBER_ROTX_EDIT);
     m_rotYEdit.AttachItem(IDC_RUBBER_ROTY_EDIT);
     m_rotZEdit.AttachItem(IDC_RUBBER_ROTZ_EDIT);
-    m_hShowInEditorCheck = ::GetDlgItem(GetHwnd(), IDC_SHOW_IN_EDITOR_CHECK);
+    m_hShowInEditorCheck = GetDlgItem(IDC_SHOW_IN_EDITOR_CHECK);
     UpdateVisuals();
 
-    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, RD_STRETCH_WIDTH);

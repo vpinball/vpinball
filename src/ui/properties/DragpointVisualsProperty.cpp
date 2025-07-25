@@ -22,7 +22,7 @@ void DragpointVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             continue;
         const DragPoint * const dpoint = (DragPoint *)m_pvsel->ElementAt(i);
 
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 3), dpoint->m_smooth);
+        PropertyDialog::SetCheckboxState(GetDlgItem(3), dpoint->m_smooth);
         if (prev!=nullptr)
         {
             if(prev->m_v.x!=dpoint->m_v.x && (dispid==1 || dispid==-1))
@@ -47,7 +47,7 @@ void DragpointVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (m_id == IDD_PROPPOINT_VISUALSWTEX)
         {
             if (dispid == 4 || dispid == -1)
-                PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 4), dpoint->m_autoTexture);
+                PropertyDialog::SetCheckboxState(GetDlgItem(4), dpoint->m_autoTexture);
             if (dispid == 5 || dispid == -1)
             {
                 if (prev != nullptr && prev->m_texturecoord != dpoint->m_texturecoord)
@@ -80,7 +80,7 @@ void DragpointVisualsProperty::UpdateProperties(const int dispid)
                     CHECK_UPDATE_ITEM(dpoint->m_v.y, PropertyDialog::GetFloatTextbox(m_posYEdit), dpoint);
                 break;
             case 4:
-                CHECK_UPDATE_ITEM(dpoint->m_autoTexture, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), 4)), dpoint);
+                CHECK_UPDATE_ITEM(dpoint->m_autoTexture, PropertyDialog::GetCheckboxState(GetDlgItem(4)), dpoint);
                 break;
             case 5:
                 if (m_textureCoordEdit.IsWindow() && !m_textureCoordEdit.GetWindowText().IsEmpty())
@@ -117,7 +117,7 @@ BOOL DragpointVisualsProperty::OnInitDialog()
     AttachItem(IDC_POINT_PASTE_BUTTON, m_pasteButton);
     UpdateVisuals();
 
-    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
     if (m_id == IDD_PROPPOINT_VISUALSWTEX)
     {
        m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, RD_STRETCH_WIDTH);

@@ -110,21 +110,21 @@ void BackglassVisualsProperty::UpdateProperties(const int dispid)
 
 BOOL BackglassVisualsProperty::OnInitDialog()
 {
-    m_hApplyNightDayCheck = ::GetDlgItem(GetHwnd(), IDC_BG_NIGHT_DAY);
+    m_hApplyNightDayCheck = GetDlgItem(IDC_BG_NIGHT_DAY);
     m_dtImageCombo.AttachItem(DISPID_Image2);
     m_fsImageCombo.AttachItem(DISPID_Image6);
     m_fssImageCombo.AttachItem(DISPID_Image8);
     m_colorGradingCombo.AttachItem(DISPID_Image5);
-    m_hEnableEMReelCheck = ::GetDlgItem(GetHwnd(), IDC_ENABLE_EMREEL_CHECK);
-    m_hEnableDecal = ::GetDlgItem(GetHwnd(), IDC_ENABLE_DECAL_CHECK);
-    m_hOverwriteGlobalStereoSettingsCheck = ::GetDlgItem(GetHwnd(), IDC_GLOBAL_3DSTEREO);
+    m_hEnableEMReelCheck = GetDlgItem(IDC_ENABLE_EMREEL_CHECK);
+    m_hEnableDecal = GetDlgItem(IDC_ENABLE_DECAL_CHECK);
+    m_hOverwriteGlobalStereoSettingsCheck = GetDlgItem(IDC_GLOBAL_3DSTEREO);
     m_3dStereoOffsetEdit.AttachItem(IDC_3D_STEREO_OFFSET_EDIT);
     m_3dStereoSeparationEdit.AttachItem(IDC_3D_STEREO_SEPARATION_EDIT);
     m_3dSteroZPDEdit.AttachItem(IDC_3D_STEREO_ZPD_EDIT);
     AttachItem(IDC_COLOR_BUTTON1, m_colorButton1);
     UpdateVisuals();
 
-    m_resizer.Initialize(this->GetHwnd(), CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1).GetHwnd(), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC2).GetHwnd(), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC3).GetHwnd(), CResizer::topleft, 0);

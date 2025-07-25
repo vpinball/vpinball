@@ -60,7 +60,7 @@ BOOL DispreelStateProperty::OnInitDialog()
     m_soundCombo.AttachItem(DISPID_Sound);
     UpdateVisuals();
 
-    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);

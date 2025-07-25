@@ -397,7 +397,7 @@ std::shared_ptr<MsgPlugin> MsgPluginManager::GetPlugin(std::string_view pluginId
 }
 
 #if !(defined(ENABLE_SDL_VIDEO) || defined(ENABLE_SDL_INPUT)) && defined(_MSC_VER)
-std::string GetLastErrorAsString()
+static std::string GetLastErrorAsString()
 {
    DWORD errorMessageID = ::GetLastError();
    if (errorMessageID == 0)
@@ -468,7 +468,7 @@ void MsgPlugin::Load(const MsgPluginAPI* msgAPI)
                m_loadPlugin = nullptr;
                m_unloadPlugin = nullptr;
                m_module = nullptr;
-               PLOGE << "Plugin " << m_id << " invalid library " << m_library << ": required " << load << "/" << unload << " functions are not correct.";
+               PLOGE << "Plugin " << m_id << " invalid library " << m_library << ": required " << load << '/' << unload << " functions are not correct.";
                return;
             }
          #else

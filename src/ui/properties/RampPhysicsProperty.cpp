@@ -84,12 +84,12 @@ BOOL RampPhysicsProperty::OnInitDialog()
     m_baseFrictionEdit = &m_frictionEdit;
     m_baseElasticityEdit = &m_elasticityEdit;
     m_baseScatterAngleEdit = &m_scatterAngleEdit;
-    m_hCollidableCheck = ::GetDlgItem(GetHwnd(), IDC_COLLIDABLE_CHECK);
-    m_hOverwritePhysicsCheck = ::GetDlgItem(GetHwnd(), IDC_OVERWRITE_MATERIAL_SETTINGS);
-    m_hHitEventCheck = ::GetDlgItem(GetHwnd(), IDC_HAS_HITEVENT_CHECK);
+    m_hCollidableCheck = GetDlgItem(IDC_COLLIDABLE_CHECK);
+    m_hOverwritePhysicsCheck = GetDlgItem(IDC_OVERWRITE_MATERIAL_SETTINGS);
+    m_hHitEventCheck = GetDlgItem(IDC_HAS_HITEVENT_CHECK);
     UpdateVisuals();
 
-    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);

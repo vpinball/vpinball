@@ -336,7 +336,7 @@ BOOL VideoOptionPropPage::OnInitDialog()
    m_appSettingBtn.SetCheck(BST_CHECKED);
    m_tableSettingBtn.EnableWindow(g_pvp->m_ptableActive != nullptr);
    m_editedSettings = &m_appSettings;
-   m_tooltip.Create(*this);
+   m_tooltip.Create(GetHwnd());
    m_tooltip.SetMaxTipWidth(320);
    //m_tooltip.SetWindowTheme(L" ", L" "); // Turn XP themes off
    return TRUE;
@@ -931,7 +931,7 @@ BOOL RenderOptPage::OnInitDialog()
    m_rampDetail.SetTicFreq(1);
    m_rampDetail.SetLineSize(1);
    m_rampDetail.SetPageSize(1);
-   ::SendMessage(m_rampDetail.GetHwnd(), TBM_SETTHUMBLENGTH, 10, 0);
+   m_rampDetail.SendMessage(TBM_SETTHUMBLENGTH, 10, 0);
 
    AttachItem(IDC_GLOBAL_TRAIL_CHECK, m_ballTrails);
    AttachItem(IDC_BALL_TRAIL_STRENGTH, m_ballTrailStrength);
@@ -966,12 +966,12 @@ BOOL RenderOptPage::OnInitDialog()
       GetDlgItem(IDC_MSAA_LABEL).ShowWindow(false);
       m_msaaSamples.ShowWindow(false);
       m_msaaSamples.EnableWindow(false);
-      #define SHIFT_WND(id, amount)                              \
-         {                                                       \
-            CRect rc = GetDlgItem(id).GetClientRect();           \
-            GetDlgItem(id).MapWindowPoints(this->GetHwnd(), rc); \
-            rc.OffsetRect(0, amount);                            \
-            GetDlgItem(id).MoveWindow(rc);                       \
+      #define SHIFT_WND(id, amount)                        \
+         {                                                 \
+            CRect rc = GetDlgItem(id).GetClientRect();     \
+            GetDlgItem(id).MapWindowPoints(GetHwnd(), rc); \
+            rc.OffsetRect(0, amount);                      \
+            GetDlgItem(id).MoveWindow(rc);                 \
          }
       SHIFT_WND(IDC_SUPER_SAMPLING_LABEL, -14)
       SHIFT_WND(IDC_SUPER_SAMPLING_COMBO, -14)

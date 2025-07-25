@@ -352,7 +352,7 @@ bool VPinball::OpenFileDialog(const string& initDir, vector<string>& filename, c
    CFileDialog fileDlg(TRUE, defaultExt, initDir.c_str(), nullptr, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER | flags, fileFilter); // OFN_EXPLORER needed, otherwise GetNextPathName buggy 
    if (!windowTitle.empty())
       fileDlg.SetTitle(windowTitle.c_str());
-   if (fileDlg.DoModal(*this) == IDOK)
+   if (fileDlg.DoModal(GetHwnd()) == IDOK)
    {
       int pos = 0;
       while (pos != -1)
@@ -377,7 +377,7 @@ bool VPinball::SaveFileDialog(const string& initDir, vector<string>& filename, c
    CFileDialog fileDlg(FALSE, defaultExt, initDir.c_str(), nullptr, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_EXPLORER | flags, fileFilter); // OFN_EXPLORER needed, otherwise GetNextPathName buggy 
    if (!windowTitle.empty())
       fileDlg.SetTitle(windowTitle.c_str());
-   if (fileDlg.DoModal(*this) == IDOK)
+   if (fileDlg.DoModal(GetHwnd()) == IDOK)
    {
       int pos = 0;
       while (pos != -1)
@@ -1338,7 +1338,7 @@ void VPinball::LoadFileName(const string& filename, const bool updateEditor, VPX
          if (audit.find(". Error:"s) != std::string::npos)
          {
             InfoDialog info("This table contains error(s) that need to be fixed to ensure correct play.\r\n\r\n" + audit);
-            info.DoModal(this->GetHwnd());
+            info.DoModal(GetHwnd());
          }
 #endif
       }
@@ -1898,7 +1898,7 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    {
    case WM_ACTIVATE:
       if (LOWORD(wParam) != WA_INACTIVE)
-         GetApp()->SetAccelerators(GetFrameAccel(), *this);
+         GetApp()->SetAccelerators(GetFrameAccel(), GetHwnd());
       break;
 
    case WM_KEYUP:

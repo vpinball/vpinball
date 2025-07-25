@@ -117,7 +117,7 @@ BOOL TableLightsProperty::OnInitDialog()
     m_sceneLightScaleEdit.AttachItem(IDC_SCENELIGHTSCALE);
 
     UpdateVisuals();
-    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
 
     m_resizer.AddChild(GetDlgItem(IDC_STATIC12), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_envEmissionImageCombo, CResizer::topleft, RD_STRETCH_WIDTH);

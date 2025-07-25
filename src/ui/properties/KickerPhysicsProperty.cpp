@@ -68,9 +68,9 @@ void KickerPhysicsProperty::UpdateProperties(const int dispid)
 
 BOOL KickerPhysicsProperty::OnInitDialog()
 {
-    m_hEnableCheck = ::GetDlgItem(GetHwnd(), DISPID_Enabled);
-    m_hFallThroughCheck = ::GetDlgItem(GetHwnd(), IDC_FALL_THROUGH_HOLE);
-    m_hLegacyCheck = ::GetDlgItem(GetHwnd(), IDC_LEGACYMODE);
+    m_hEnableCheck = GetDlgItem(DISPID_Enabled);
+    m_hFallThroughCheck = GetDlgItem(IDC_FALL_THROUGH_HOLE);
+    m_hLegacyCheck = GetDlgItem(IDC_LEGACYMODE);
     m_scatterAngleEdit.AttachItem(IDC_SCATTER_ANGLE_EDIT);
     m_baseScatterAngleEdit = &m_scatterAngleEdit;
 
@@ -78,7 +78,7 @@ BOOL KickerPhysicsProperty::OnInitDialog()
     m_hitHeightEdit.AttachItem(IDC_KICKER_HIT_HEIGHT_EDIT);
     UpdateVisuals();
 
-    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);

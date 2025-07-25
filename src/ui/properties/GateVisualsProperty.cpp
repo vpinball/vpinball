@@ -49,7 +49,7 @@ void GateVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == 2144 || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_closeAngleEdit, gate->GetCloseAngle());
         if (dispid == 15 || dispid == -1)
-            PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 15), gate->m_d.m_showBracket);
+            PropertyDialog::SetCheckboxState(GetDlgItem(15), gate->m_d.m_showBracket);
         UpdateBaseVisuals(gate, &gate->m_d, dispid);
         //only show the first element on multi-select
         break;
@@ -78,7 +78,7 @@ void GateVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(gate->m_d.m_vCenter.y, PropertyDialog::GetFloatTextbox(m_yposEdit), gate);
                 break;
             case 15:
-                CHECK_UPDATE_ITEM(gate->m_d.m_showBracket, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), gate);
+                CHECK_UPDATE_ITEM(gate->m_d.m_showBracket, PropertyDialog::GetCheckboxState(GetDlgItem(dispid)), gate);
                 break;
             case DISPID_Gate_Length:
                 CHECK_UPDATE_ITEM(gate->m_d.m_length, PropertyDialog::GetFloatTextbox(m_lengthEdit), gate);
@@ -118,11 +118,11 @@ BOOL GateVisualsProperty::OnInitDialog()
     m_closeAngleEdit.AttachItem(2144);
 
     m_baseMaterialCombo = &m_materialCombo;
-    m_hVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);
-    m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
+    m_hVisibleCheck = GetDlgItem(IDC_VISIBLE_CHECK);
+    m_hReflectionEnabledCheck = GetDlgItem(IDC_REFLECT_ENABLED_CHECK);
 
     UpdateVisuals();
-    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, RD_STRETCH_WIDTH);

@@ -559,9 +559,7 @@ HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool global)
    if (SUCCEEDED(piscript->GetDispatch()->GetTypeInfo(NULL, NULL, &ti))) {
       BSTR bstrTypeName;
       if (SUCCEEDED(ti->GetDocumentation(MEMBERID_NIL, &bstrTypeName, NULL, NULL, NULL))) {
-         const char* szType = MakeChar(bstrTypeName);
-         PLOGD << "type=" << szType << ", name=" << szT;
-         delete[] szType;
+         PLOGD << "type=" << MakeString(bstrTypeName) << ", name=" << szT;
          SysFreeString(bstrTypeName);
       }
       ti->Release();
@@ -1198,15 +1196,13 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	pscripterror->GetExceptionInfo(&exception);
 	nLine++;
 
-	const char *const szT = exception.bstrDescription ? MakeChar(exception.bstrDescription) : "Description unavailable";
+	const string szT = exception.bstrDescription ? MakeString(exception.bstrDescription) : "Description unavailable"s;
 
 	PLOGE_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Script Error at line " << nLine << " : " << szT;
 
 	if (dwCookie == CONTEXTCOOKIE_DEBUG)
 	{
 		AddToDebugOutput(szT);
-		if (exception.bstrDescription)
-			delete[] szT;
 		SysFreeString(bstr);
 		return S_OK;
 	}
@@ -1232,12 +1228,9 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	const bool isRuntimeError = (state == SCRIPTSTATE_CONNECTED);
 
 #ifdef __LIBVPINBALL__
-	VPinballLib::ScriptErrorData scriptErrorStruct = { isRuntimeError ? VPinballLib::ScriptErrorType::Runtime : VPinballLib::ScriptErrorType::Compile, (int)nLine, (int)nChar, szT };
+	VPinballLib::ScriptErrorData scriptErrorStruct = { isRuntimeError ? VPinballLib::ScriptErrorType::Runtime : VPinballLib::ScriptErrorType::Compile, (int)nLine, (int)nChar, szT.c_str() };
 	VPinballLib::VPinball::SendEvent(VPinballLib::Event::ScriptError, &scriptErrorStruct);
 #endif
-
-	if (exception.bstrDescription)
-		delete[] szT;
 
 	// Error log content
 	std::wstringstream errorStream;
@@ -1394,20 +1387,16 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	pscripterror->GetExceptionInfo(&exception);
 	nLine++;
 
-	const char *szT = exception.bstrDescription ? MakeChar(exception.bstrDescription) : "Description unavailable";
+	const string szT = exception.bstrDescription ? MakeString(exception.bstrDescription) : "Description unavailable"s;
 	PLOGE_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Script Error at line " << nLine << " : " << szT;
 
 	if (dwCookie == CONTEXTCOOKIE_DEBUG)
 	{
 		AddToDebugOutput(szT);
-		if (exception.bstrDescription)
-			delete[] szT;
 		SysFreeString(bstr);
 		return S_OK;
 	}
 
-	if (exception.bstrDescription)
-		delete[] szT;
 	m_scriptError = true;
 
 	if (g_pplayer)
@@ -1869,18 +1858,14 @@ void CodeViewer::SaveToFile(const string& filename)
    {
 #ifndef __STANDALONE__
       const size_t cchar = ::SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
-#else
-      const size_t cchar = m_script_text.length();
-#endif
-      char * const szText = new char[cchar + 1];
-#ifndef __STANDALONE__
+      char *const szText = new char[cchar + 1];
       ::SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
-#else
-      strcpy(szText, m_script_text.c_str());
-#endif
       fwrite(szText, 1, cchar, fScript);
-      fclose(fScript);
       delete[] szText;
+#else
+      fwrite(m_script_text.c_str(), 1, m_script_text.length(), fScript);
+#endif
+      fclose(fScript);
    }
 }
 
@@ -2047,11 +2032,9 @@ void CodeViewer::TellHostToSelectItem()
 #endif
 }
 
-void CodeViewer::GetParamsFromEvent(const UINT iEvent, char * const szParams, const size_t maxlength)
+string CodeViewer::GetParamsFromEvent(const UINT iEvent)
 {
 #ifndef __STANDALONE__
-   szParams[0] = '\0';
-
    const size_t index = ::SendMessage(m_hwndItemList, CB_GETCURSEL, 0, 0);
    IScriptable * const pscript = (IScriptable *)::SendMessage(m_hwndItemList, CB_GETITEMDATA, index, 0);
    IDispatch * const pdisp = pscript->GetDispatch();
@@ -2066,6 +2049,7 @@ void CodeViewer::GetParamsFromEvent(const UINT iEvent, char * const szParams, co
       TYPEATTR *pta;
       pti->GetTypeAttr(&pta);
 
+      string szParams;
       for (int i = 0; i < pta->cImplTypes; ++i)
       {
          HREFTYPE href;
@@ -2092,13 +2076,9 @@ void CodeViewer::GetParamsFromEvent(const UINT iEvent, char * const szParams, co
                // Add enum string to combo control
                for (unsigned int l = 1; l < cnames; ++l)
                {
-                  char * const szT = MakeChar(rgstr[l]);
                   if (l > 1)
-                  {
-                     strcat_s(szParams, maxlength, ", ");
-                  }
-                  strcat_s(szParams, maxlength, szT);
-                  delete [] szT;
+                     szParams += ", ";
+                  szParams += MakeString(rgstr[l]);
                }
 
                for (unsigned int l = 0; l < cnames; l++)
@@ -2117,8 +2097,10 @@ void CodeViewer::GetParamsFromEvent(const UINT iEvent, char * const szParams, co
 
       pti->Release();
       pClassInfo->Release();
+      return szParams;
    }
 #endif
+   return string();
 }
 
 void CodeViewer::ListEventsFromItem()
@@ -2300,20 +2282,11 @@ void CodeViewer::FindCodeFromEvent()
       // Add the new function at the end
       ::SendMessage(m_hwndScintilla, SCI_SETSEL, codelen, codelen);
 
-      char szParams[MAX_LINE_LENGTH];
+      string szNewCode = "Sub "s + szItemName + '(' + GetParamsFromEvent((UINT)iEventIndex) + ")\n\t";
+      const size_t subtitlelen = szNewCode.length();
+      szNewCode += "\nEnd Sub";
 
-      GetParamsFromEvent((UINT)iEventIndex, szParams, MAX_LINE_LENGTH);
-
-      char szNewCode[MAX_LINE_LENGTH];
-      strcpy_s(szNewCode, "Sub ");
-      strcat_s(szNewCode, szItemName);
-      strcat_s(szNewCode, "(");
-      strcat_s(szNewCode, szParams);
-      strcat_s(szNewCode, ")\n\t");
-      const size_t subtitlelen = strlen(szNewCode);
-      strcat_s(szNewCode, "\nEnd Sub");
-
-      ::SendMessage(m_hwndScintilla, SCI_REPLACESEL, TRUE, (size_t)szNewCode);
+      ::SendMessage(m_hwndScintilla, SCI_REPLACESEL, TRUE, (size_t)szNewCode.c_str());
 
       ::SendMessage(m_hwndScintilla, SCI_SETSEL, codelen + subtitlelen, codelen + subtitlelen);
    }
@@ -4014,9 +3987,7 @@ void CodeViewer::AppendLastErrorTextW(const wstring& text)
 
 	delete[] buf;
 #else
-	char* szT = MakeChar(text.c_str());
-	PLOGE << szT;
-	delete[] szT;
+	PLOGE << MakeString(text);
 #endif
 }
 

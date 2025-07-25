@@ -545,7 +545,7 @@ BOOL VROptionsDialog::OnInitDialog()
    pksw->pi.SetFocusWindow(GetHwnd());
    pksw->pi.Init();
    pksw->m_timerid = 0;
-   ::SetWindowLongPtr(GetHwnd(), GWLP_USERDATA, (size_t)pksw);
+   SetWindowLongPtr(GWLP_USERDATA, (size_t)pksw);
 
    // Set buttons to ignore keyboard shortcuts when using DirectInput
    HWND hwndButton = GetDlgItem(IDC_BTTABLERECENTER).GetHwnd();
@@ -586,7 +586,7 @@ INT_PTR VROptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    #ifndef ENABLE_XR
    case WM_TIMER:
    {
-      KeyWindowStruct* const pksw = (KeyWindowStruct*)::GetWindowLongPtr(GetHwnd(), GWLP_USERDATA);
+      KeyWindowStruct* const pksw = (KeyWindowStruct*)GetWindowLongPtr(GWLP_USERDATA);
       const int key = GetNextKey();
       if (key != 0)
       {
@@ -608,7 +608,7 @@ INT_PTR VROptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                ::SetWindowText(pksw->hwndKeyControl, rgszKeyName[key]);
                ::SetWindowLongPtr(pksw->hwndKeyControl, GWLP_USERDATA, key);
             }
-            ::KillTimer(GetHwnd(), pksw->m_timerid);
+            KillTimer(pksw->m_timerid);
             pksw->m_timerid = 0;
          }
       }
@@ -755,7 +755,7 @@ void VROptionsDialog::OnOK()
 
     for (unsigned int i = eTableRecenter; i <= eTableDown; ++i) if (regkey_idc[i] != -1)
     {
-        const size_t key = ::GetWindowLongPtr(GetDlgItem(regkey_idc[i]).GetHwnd(), GWLP_USERDATA);
+        const size_t key = GetDlgItem(regkey_idc[i]).GetWindowLongPtr(GWLP_USERDATA);
         g_pvp->m_settings.SaveValue(Settings::Player, regkey_string[i], (int)key);
     }
 
@@ -764,10 +764,10 @@ void VROptionsDialog::OnOK()
 
 void VROptionsDialog::OnDestroy()
 {
-   KeyWindowStruct* const pksw = (KeyWindowStruct*)::GetWindowLongPtr(GetHwnd(), GWLP_USERDATA);
+   KeyWindowStruct* const pksw = (KeyWindowStruct*)GetWindowLongPtr(GWLP_USERDATA);
    if (pksw->m_timerid)
    {
-      ::KillTimer(GetHwnd(), pksw->m_timerid);
+      KillTimer(pksw->m_timerid);
       pksw->m_timerid = 0;
    }
    pksw->pi.UnInit();
@@ -784,7 +784,7 @@ void VROptionsDialog::SetValue(int nID, const Settings::Section& section, const 
 
 void VROptionsDialog::StartTimer(int nID)
 {
-   KeyWindowStruct* const pksw = (KeyWindowStruct*)::GetWindowLongPtr(GetHwnd(), GWLP_USERDATA);
+   KeyWindowStruct* const pksw = (KeyWindowStruct*)GetWindowLongPtr(GWLP_USERDATA);
    const HWND hwndKeyWindow = GetDlgItem(nID).GetHwnd();
    if (pksw->m_timerid == NULL) //add
    { //add
@@ -798,7 +798,7 @@ void VROptionsDialog::StartTimer(int nID)
 
       GetNextKey(); // Clear the current buffer out
 
-      pksw->m_timerid = ::SetTimer(GetHwnd(), 100, 50, nullptr);
+      pksw->m_timerid = SetTimer(100, 50, nullptr);
       pksw->hwndKeyControl = hwndKeyWindow;
       ::SetWindowText(pksw->hwndKeyControl, "????");
       while (GetNextKey() != NULL) //clear entire keyboard buffer contents

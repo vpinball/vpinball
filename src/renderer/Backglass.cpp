@@ -37,7 +37,7 @@ static size_t decode_base64(const char* const inData, char* const outData, const
    // Create decode table from encode table
    if (!outChars) {
       outChars = new char[256];
-      for (size_t i = 0;i < 256;++i) outChars[i] = 0;
+      for (size_t i = 0;i < 256;++i) outChars[i] = '\0';
       for (char i = 0;i < 64;++i) outChars[inChars[i]] = i;
       // Hack for fast skipping
       outChars['&'] = -1;

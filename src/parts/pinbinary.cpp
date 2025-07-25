@@ -84,7 +84,7 @@ void PinFont::Register()
 
    LOGFONT lf;
    lf.lfCharSet = DEFAULT_CHARSET;
-   strcpy_s(lf.lfFaceName, "");
+   lf.lfFaceName[0] = '\0';
    lf.lfPitchAndFamily = 0;
 
    EnumFontFamiliesEx(hdcScreen, &lf, (FONTENUMPROC)EnumFontFamExProc, (size_t)this, 0);

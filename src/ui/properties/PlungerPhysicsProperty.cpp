@@ -96,15 +96,15 @@ BOOL PlungerPhysicsProperty::OnInitDialog()
     m_releaseSpeedEdit.AttachItem(IDC_RELEASE_SPEED_EDIT);
     m_strokeLengthEdit.AttachItem(IDC_STROKE_LENGTH_EDIT);
     m_scatterVelocityEdit.AttachItem(IDC_SCATTER_VELOCITY_EDIT);
-    m_hAutoPlungerCheck = ::GetDlgItem(GetHwnd(), IDC_AUTO_PLUNGER_CHECK);
-    m_hEnableMechPlungerCheck = ::GetDlgItem(GetHwnd(), IDC_ENABLE_MECH_PLUNGER_CHECK);
-    m_hVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);
+    m_hAutoPlungerCheck = GetDlgItem(IDC_AUTO_PLUNGER_CHECK);
+    m_hEnableMechPlungerCheck = GetDlgItem(IDC_ENABLE_MECH_PLUNGER_CHECK);
+    m_hVisibleCheck = GetDlgItem(IDC_VISIBLE_CHECK);
     m_mechStrengthEdit.AttachItem(IDC_MECH_STRENGTH_EDIT);
     m_momentumXferEdit.AttachItem(IDC_MOMENTUM_XFER_EDIT);
     m_parkPositionEdit.AttachItem(IDC_PARK_POSITION_EDIT);
     UpdateVisuals();
 
-    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);

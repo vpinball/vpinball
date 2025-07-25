@@ -64,7 +64,7 @@ void RampVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == IDC_WIRE_DISTY || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_distanceYEdit, ramp->m_d.m_wireDistanceY);
         if (dispid == 9 || dispid == -1)
-            PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 9), ramp->m_d.m_imageWalls);
+            PropertyDialog::SetCheckboxState(GetDlgItem(9), ramp->m_d.m_imageWalls);
 
         UpdateBaseVisuals(ramp, &ramp->m_d, dispid);
         //only show the first element on multi-select
@@ -100,7 +100,7 @@ void RampVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(ramp->m_d.m_imagealignment, (RampImageAlignment)(PropertyDialog::GetComboBoxIndex(m_modeCombo, m_imageModeList)), ramp);
                 break;
             case 9:
-                CHECK_UPDATE_ITEM(ramp->m_d.m_imageWalls, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), ramp);
+                CHECK_UPDATE_ITEM(ramp->m_d.m_imageWalls, PropertyDialog::GetCheckboxState(GetDlgItem(dispid)), ramp);
                 break;
             case 108:
                 CHECK_UPDATE_ITEM(ramp->m_d.m_leftwallheightvisible, PropertyDialog::GetFloatTextbox(m_leftWallEdit), ramp);
@@ -109,10 +109,10 @@ void RampVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(ramp->m_d.m_rightwallheightvisible, PropertyDialog::GetFloatTextbox(m_rightWallEdit), ramp);
                 break;
             case 112:
-                CHECK_UPDATE_ITEM(ramp->m_d.m_visible, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), ramp);
+                CHECK_UPDATE_ITEM(ramp->m_d.m_visible, PropertyDialog::GetCheckboxState(GetDlgItem(dispid)), ramp);
                 break;
             case IDC_REFLECT_ENABLED_CHECK:
-                CHECK_UPDATE_ITEM(ramp->m_d.m_reflectionEnabled, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), ramp);
+                CHECK_UPDATE_ITEM(ramp->m_d.m_reflectionEnabled, PropertyDialog::GetCheckboxState(GetDlgItem(dispid)), ramp);
                 break;
             case IDC_DEPTH_BIAS:
                 CHECK_UPDATE_ITEM(ramp->m_d.m_depthBias, PropertyDialog::GetFloatTextbox(m_depthBiasEdit), ramp);
@@ -154,13 +154,13 @@ BOOL RampVisualsProperty::OnInitDialog()
 
     m_baseImageCombo = &m_imageCombo;
     m_baseMaterialCombo = &m_materialCombo;
-    m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
-    m_hVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);
-    m_hApplyImageToWallCheck = ::GetDlgItem(GetHwnd(), 9);
+    m_hReflectionEnabledCheck = GetDlgItem(IDC_REFLECT_ENABLED_CHECK);
+    m_hVisibleCheck = GetDlgItem(IDC_VISIBLE_CHECK);
+    m_hApplyImageToWallCheck = GetDlgItem(9);
 
     UpdateVisuals();
 
-    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);

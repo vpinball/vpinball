@@ -136,16 +136,11 @@ public:
       #endif
       for (UINT i = 0; i < cNames; ++i)
       {
-         #ifdef __STANDALONE__
-         const string sname = MakeString(wstring(rgszNames[i]));
-         LPCSTR name = sname.c_str();
-         #else
-         LPCSTR name = OLE2CA(rgszNames[i]);
-         #endif
-         rgDispId[i] = m_typeLibrary->ResolveMemberId(m_classDef, name);
+         const string sname = MakeString(rgszNames[i]);
+         rgDispId[i] = m_typeLibrary->ResolveMemberId(m_classDef, sname.c_str());
          if (rgDispId[i] < 0)
          {
-            PLOGE << m_classDef->name.name << '.' << name << " was referenced while it is not declared. Did you forget to register a class member ?";
+            PLOGE << m_classDef->name.name << '.' << sname << " was referenced while it is not declared. Did you forget to register a class member ?";
             return DISP_E_UNKNOWNNAME;
          }
          else

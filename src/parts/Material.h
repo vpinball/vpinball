@@ -139,10 +139,10 @@ public:
         ((uint64_t)(h.uc[0]& 64)<<48) | ((uint64_t)(h.uc[1]& 64)<<49) | ((uint64_t)(h.uc[2]& 64)<<50) | ((uint64_t)(h.uc[3]& 64)<<51) | ((uint64_t)(h.uc[4]& 64)<<52) | ((uint64_t)(h.uc[5]& 64)<<53) | ((uint64_t)(h.uc[6]& 64)<<54) | ((uint64_t)(h.uc[7]& 64)<<55) |
         ((uint64_t)(h.uc[0]&128)<<56) | ((uint64_t)(h.uc[1]&128)<<57) | ((uint64_t)(h.uc[2]&128)<<58) | ((uint64_t)(h.uc[3]&128)<<59) | ((uint64_t)(h.uc[4]&128)<<60) | ((uint64_t)(h.uc[5]&128)<<61) | ((uint64_t)(h.uc[6]&128)<<62) | ((uint64_t)(h.uc[7]&128)<<63);*/
 
-      /*const unsigned char* const p = reinterpret_cast<const unsigned char*>( &(this->m_fWrapLighting) );
+      /*const unsigned char* const p = reinterpret_cast<const unsigned char*>( &(m_fWrapLighting) );
       unsigned int h = 2166136261;
 
-      for (unsigned int i = 0; i <= (unsigned int)(&(this->m_bOpacityActive))-(unsigned int)(&(this->m_fWrapLighting)); ++i)
+      for (unsigned int i = 0; i <= (unsigned int)(&(m_bOpacityActive))-(unsigned int)(&(m_fWrapLighting)); ++i)
       h = (h * 16777619) ^ p[i];
 
       return (uint64_t)h;*/

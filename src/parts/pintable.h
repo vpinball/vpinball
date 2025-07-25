@@ -495,7 +495,7 @@ public:
    void Uncreate() final { }
    bool LoadToken(const int id, BiffReader *const pbr) final;
 
-   virtual IDispatch *GetPrimary() { return this->GetDispatch(); }
+   virtual IDispatch *GetPrimary() { return GetDispatch(); }
    IDispatch *GetDispatch() final { return (IDispatch *)this; }
    const IDispatch *GetDispatch() const final { return (const IDispatch *)this; }
    IFireEvents *GetIFireEvents() final { return (IFireEvents *)this; }
@@ -850,7 +850,7 @@ public:
    void SetMDITable(PinTableMDI *const table) { m_mdiTable = table; }
    PinTableMDI *GetMDITable() const { return m_mdiTable; }
 
-   WCHAR *GetCollectionNameByElement(const ISelect *const element);
+   const WCHAR *GetCollectionNameByElement(const ISelect *const element) const;
    void RefreshProperties();
 
    void SetNotesText(const string &text)

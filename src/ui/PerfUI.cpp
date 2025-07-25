@@ -260,7 +260,7 @@ void PerfUI::Update()
       ImGui::TableHeadersRow();
 
       #define PROF_ROW(name, section) \
-      ImGui::TableNextRow(); ImGui::TableNextColumn(); ImGui::Text("%s",name); \
+      ImGui::TableNextRow(); ImGui::TableNextColumn(); ImGui::TextUnformatted(name); \
       if (m_showAvgFPS) { \
       ImGui::TableNextColumn(); ImGui::Text("%4.1fms", profiler->GetSlidingAvg(section) * 1e-3); \
       ImGui::TableNextColumn(); ImGui::Text("%4.1f%%", profiler->GetSlidingRatio(section) * 100.0); \

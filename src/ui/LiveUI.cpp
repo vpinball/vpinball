@@ -522,7 +522,7 @@ static void HelpSplash(const string &text, int rotation)
    {
       const ImVec2 lineSize = font->CalcTextSizeA(fontBaked->Size, FLT_MAX, 0.0f, curline.c_str());
       ImGui::SetCursorPosX((text_size.x - lineSize.x) / 2.f);
-      ImGui::Text("%s", curline.c_str());
+      ImGui::TextUnformatted(curline.c_str());
    }
    ImGui::End();
 }
@@ -1114,7 +1114,7 @@ void LiveUI::Update(const int width, const int height)
           for (const string& lline : lines) {
              ImVec2 lineSize = font->CalcTextSizeA(fontBaked->Size, FLT_MAX, 0.0f, lline.c_str());
              ImGui::SetCursorPosX(((text_size.x - lineSize.x) / 2));
-             ImGui::Text("%s", lline.c_str());
+             ImGui::TextUnformatted(lline.c_str());
           }
           ImGui::End();
           notifY += text_size.y + 10.f;
@@ -1996,12 +1996,12 @@ void LiveUI::UpdateTweakModeUI()
       #define CM_ROW(id, label, format, value, unit) \
       { \
          char buf[1024]; snprintf(buf, sizeof(buf), format, value); \
-         ImGui::TableNextColumn(); ImGui::Text("%s",label); ImGui::TableNextColumn(); \
+         ImGui::TableNextColumn(); ImGui::TextUnformatted(label); ImGui::TableNextColumn(); \
          float textWidth = ImGui::CalcTextSize(buf).x; vWidth = max(vWidth, textWidth); \
          if (textWidth < vWidth) ImGui::SameLine(vWidth - textWidth); \
-         ImGui::Text("%s", buf); ImGui::TableNextColumn(); \
-         ImGui::Text("%s", unit); ImGui::TableNextColumn(); \
-         ImGui::Text("%s", m_tweakState[id] == 0 ? "  " : m_tweakState[id] == 1 ? " **" : " *"); ImGui::TableNextRow(); \
+         ImGui::TextUnformatted(buf); ImGui::TableNextColumn(); \
+         ImGui::TextUnformatted(unit); ImGui::TableNextColumn(); \
+         ImGui::TextUnformatted(m_tweakState[id] == 0 ? "  " : m_tweakState[id] == 1 ? " **" : " *"); ImGui::TableNextRow(); \
       }
       #define CM_SKIP_LINE {ImGui::TableNextColumn(); ImGui::Dummy(ImVec2(0.f, m_dpi * 3.f)); ImGui::TableNextRow();}
       const float realToVirtual = viewSetup.GetRealToVirtualScale(table);
@@ -2136,8 +2136,8 @@ void LiveUI::UpdateTweakModeUI()
          if (m_live_table->m_settings.LoadValueFloat(Settings::Player, "ScreenWidth"s) <= 1.f)
          {
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
-            ImGui::Text("You are using 'Window' mode but haven't defined your display physical size.");
-            ImGui::Text("This will break the overall scale as well as the stereo rendering.");
+            ImGui::TextUnformatted("You are using 'Window' mode but haven't defined your display physical size.");
+            ImGui::TextUnformatted("This will break the overall scale as well as the stereo rendering.");
             ImGui::NewLine();
             ImGui::PopStyleColor();
          }
@@ -2317,11 +2317,11 @@ void LiveUI::UpdateMainUI()
          ImGui::OpenPopup("Overlay Popup");
       if (ImGui::BeginPopup("Overlay Popup"))
       {
-         ImGui::Text("Overlays:");
+         ImGui::TextUnformatted("Overlays:");
          ImGui::Separator();
          ImGui::Checkbox("Overlay selection", &m_selectionOverlay);
          ImGui::Separator();
-         ImGui::Text("Physic Overlay:");
+         ImGui::TextUnformatted("Physic Overlay:");
          if (ImGui::RadioButton("None", m_physOverlay == PO_NONE))
             m_physOverlay = PO_NONE;
          if (ImGui::RadioButton("Selected", m_physOverlay == PO_SELECTED))
@@ -2339,7 +2339,7 @@ void LiveUI::UpdateMainUI()
          bool prims = m_selectionFilter & SelectionFilter::SF_Primitives;
          bool lights = m_selectionFilter & SelectionFilter::SF_Lights;
          bool flashers = m_selectionFilter & SelectionFilter::SF_Flashers;
-         ImGui::Text("Selection filters:");
+         ImGui::TextUnformatted("Selection filters:");
          ImGui::Separator();
          if (ImGui::Checkbox("Playfield", &pf))
             m_selectionFilter = (m_selectionFilter & ~SelectionFilter::SF_Playfield) | (pf ? SelectionFilter::SF_Playfield : 0x0000);
@@ -2360,10 +2360,10 @@ void LiveUI::UpdateMainUI()
       ImGui::Begin("text overlay", NULL, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav);
       switch (m_gizmoOperation)
       {
-      case ImGuizmo::NONE: ImGui::Text("Select"); break;
-      case ImGuizmo::TRANSLATE: ImGui::Text("Grab"); break;
-      case ImGuizmo::ROTATE: ImGui::Text("Rotate"); break;
-      case ImGuizmo::SCALE: ImGui::Text("Scale"); break;
+      case ImGuizmo::NONE: ImGui::TextUnformatted("Select"); break;
+      case ImGuizmo::TRANSLATE: ImGui::TextUnformatted("Grab"); break;
+      case ImGuizmo::ROTATE: ImGui::TextUnformatted("Rotate"); break;
+      case ImGuizmo::SCALE: ImGui::TextUnformatted("Scale"); break;
       default: break;
       }
       ImGui::End();
@@ -3353,7 +3353,7 @@ void LiveUI::UpdateVideoOptionsModal()
                // ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
                // ImGui::Checkbox("Use Fake Stereo", &m_renderer->m_stereo3DfakeStereo);
                // ImGui::PopItemFlag();
-               ImGui::Text(m_renderer->m_stereo3DfakeStereo ? "Renderer uses 'fake' stereo from single render" : "Renderer performs real stereo rendering");
+               ImGui::TextUnformatted(m_renderer->m_stereo3DfakeStereo ? "Renderer uses 'fake' stereo from single render" : "Renderer performs real stereo rendering");
                if (m_renderer->m_stereo3DfakeStereo)
                {
                   float stereo3DEyeSep = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DMaxSeparation"s, 0.03f);
@@ -3430,8 +3430,8 @@ void LiveUI::UpdateVideoOptionsModal()
                ImGui::SameLine();
                ImGui::ColorButton("RightFilter", ImVec4(eyeR.x, eyeR.y, eyeR.z, 1.f), ImGuiColorEditFlags_NoAlpha);
                ImGui::SameLine();
-               ImGui::Text(anaglyph.IsReversedColorPair() ? colors == Anaglyph::RED_CYAN ? "Cyan/Red" : colors == Anaglyph::GREEN_MAGENTA ? "Magenta/Green" : "Amber/Blue"
-                                                          : colors == Anaglyph::RED_CYAN ? "Red/Cyan" : colors == Anaglyph::GREEN_MAGENTA ? "Green/Magenta" : "Blue/Amber");
+               ImGui::TextUnformatted(anaglyph.IsReversedColorPair() ? colors == Anaglyph::RED_CYAN ? "Cyan/Red" : colors == Anaglyph::GREEN_MAGENTA ? "Magenta/Green" : "Amber/Blue"
+                                                                     : colors == Anaglyph::RED_CYAN ? "Red/Cyan" : colors == Anaglyph::GREEN_MAGENTA ? "Green/Magenta" : "Blue/Amber");
                ImGui::SameLine();
                ImGui::Text("Gamma %3.2f", anaglyph.GetDisplayGamma());
                ImGui::SameLine();
@@ -3594,7 +3594,7 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
       }
 
       float line_height = ImGui::CalcTextSize("A").y * 1.2f;
-      #define CENTERED_TEXT(y, t) ImGui::SetCursorPos(ImVec2((win_size.x - ImGui::CalcTextSize(t).x) * 0.5f, y));ImGui::Text("%s", t);
+      #define CENTERED_TEXT(y, t) ImGui::SetCursorPos(ImVec2((win_size.x - ImGui::CalcTextSize(t).x) * 0.5f, y));ImGui::TextUnformatted(t);
       float y = win_size.y * 0.5f + t + line_height;
       string step_info = "Anaglyph glasses calibration step #"s.append(std::to_string(calibrationStep + 1)).append("/6");
       CENTERED_TEXT(y + 0 * line_height, step_info.c_str());
@@ -3708,7 +3708,7 @@ void LiveUI::UpdatePlumbWindow()
 
       ImGui::Separator();
 
-      ImGui::Text("Nudge & Plumb State");
+      ImGui::TextUnformatted("Nudge & Plumb State");
       constexpr int panelSize = 100;
       if (ImGui::BeginTable("PlumbInfo", 2, ImGuiTableFlags_Borders))
       {
@@ -3716,9 +3716,9 @@ void LiveUI::UpdatePlumbWindow()
          ImGui::TableSetupColumn("Col2", ImGuiTableColumnFlags_WidthFixed, panelSize * m_dpi);
       
          ImGui::TableNextColumn();
-         ImGui::Text("Cab. Sensor");
+         ImGui::TextUnformatted("Cab. Sensor");
          ImGui::TableNextColumn();
-         ImGui::Text("Plumb Position");
+         ImGui::TextUnformatted("Plumb Position");
          ImGui::TableNextRow();
 
          const ImVec2 fullSize = ImVec2(panelSize * m_dpi, panelSize * m_dpi);
@@ -3756,9 +3756,9 @@ void LiveUI::UpdatePlumbWindow()
          ImGui::TableNextRow();
 
          ImGui::TableNextColumn();
-         ImGui::Text("Table Acceleration");
+         ImGui::TextUnformatted("Table Acceleration");
          ImGui::TableNextColumn();
-         ImGui::Text("Plumb Angle");
+         ImGui::TextUnformatted("Plumb Angle");
          ImGui::TableNextRow();
 
          ImGui::TableNextColumn();
@@ -3815,7 +3815,7 @@ void LiveUI::UpdateRendererInspectionModal()
    ImGui::SetNextWindowSize(ImVec2(350.f * m_dpi, 0));
    if (ImGui::Begin(ID_RENDERER_INSPECTION, &m_RendererInspection))
    {
-      ImGui::Text("Display single render pass:");
+      ImGui::TextUnformatted("Display single render pass:");
       static int pass_selection = IF_FPS;
       ImGui::RadioButton("Disabled", &pass_selection, IF_FPS);
       #if defined(ENABLE_DX9) // No GPU profiler for OpenGL or BGFX for the time being
@@ -3849,7 +3849,7 @@ void LiveUI::UpdateRendererInspectionModal()
          ImGui::TableSetupColumn("Avg", ImGuiTableColumnFlags_WidthFixed);
          ImGui::TableHeadersRow();
          #define PROF_ROW(name, section) \
-         ImGui::TableNextColumn(); ImGui::Text("%s", name); \
+         ImGui::TableNextColumn(); ImGui::TextUnformatted(name); \
          ImGui::TableNextColumn(); ImGui::Text("%4.1fms", m_player->m_logicProfiler.GetSlidingMin(section) * 1e-3); \
          ImGui::TableNextColumn(); ImGui::Text("%4.1fms", m_player->m_logicProfiler.GetSlidingMax(section) * 1e-3); \
          ImGui::TableNextColumn(); ImGui::Text("%4.1fms", m_player->m_logicProfiler.GetSlidingAvg(section) * 1e-3);
@@ -3860,12 +3860,12 @@ void LiveUI::UpdateRendererInspectionModal()
          ImGui::NewLine();
       }
 
-      ImGui::Text("Press F11 to reset min/max/average timings");
+      ImGui::TextUnformatted("Press F11 to reset min/max/average timings");
       if (ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eFrameCount]]))
          m_player->InitFPS();
 
       // Other detailed information
-      ImGui::Text("%s", m_player->GetPerfInfo().c_str());
+      ImGui::TextUnformatted(m_player->GetPerfInfo().c_str());
    }
    ImGui::End();
 }
@@ -4134,9 +4134,9 @@ void LiveUI::CameraProperties(bool is_live)
 
    switch (m_selection.camera)
    {
-   case 0: ImGui::Text("Camera: Desktop"); break;
-   case 1: ImGui::Text("Camera: Full Single Screen"); break;
-   case 2: ImGui::Text("Camera: Cabinet"); break;
+   case 0: ImGui::TextUnformatted("Camera: Desktop"); break;
+   case 1: ImGui::TextUnformatted("Camera: Full Single Screen"); break;
+   case 2: ImGui::TextUnformatted("Camera: Cabinet"); break;
    default: return; // unsupported
    }
    ImGui::Separator();
@@ -4785,7 +4785,7 @@ void LiveUI::PropSeparator(const char *label)
    PROP_TABLE_SETUP
    ImGui::TableNextColumn();
    if (label)
-      ImGui::Text("%s", label);
+      ImGui::TextUnformatted(label);
    ImGui::TableNextColumn();
 }
 

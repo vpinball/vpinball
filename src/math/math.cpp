@@ -5,11 +5,11 @@
 // Implementation of supporting function for logging of all math objects
 namespace plog
 {
-Record& operator<<(Record& record, const Vertex2D& pt) { return record << "(" << pt.x << ", " << pt.y << ")"; }
-Record& operator<<(Record& record, const Vertex3Ds& pt) { return record << "(" << pt.x << ", " << pt.y << ", " << pt.z << ")"; }
-Record& operator<<(Record& record, const Vertex4D& pt) { return record << "(" << pt.x << ", " << pt.y << ", " << pt.z << ", " << pt.w << ")"; }
-Record& operator<<(Record& record, const FRect& pt) { return record << "(Xmin: " << pt.left << ", Ymin: " << pt.top << ") - (Xmax: " << pt.right << ", Ymax: " << pt.bottom << ")"; }
-Record& operator<<(Record& record, const FRect3D& pt) { return record << "(Xmin: " << pt.left << ", Ymin: " << pt.top << ", Zmin: " << pt.zlow << ") - (Xmax: " << pt.right << ", Ymax: " << pt.bottom << ", Zmax: " << pt.zhigh << ")"; }
+Record& operator<<(Record& record, const Vertex2D& pt) { return record << '(' << pt.x << ", " << pt.y << ')'; }
+Record& operator<<(Record& record, const Vertex3Ds& pt) { return record << '(' << pt.x << ", " << pt.y << ", " << pt.z << ')'; }
+Record& operator<<(Record& record, const Vertex4D& pt) { return record << '(' << pt.x << ", " << pt.y << ", " << pt.z << ", " << pt.w << ')'; }
+Record& operator<<(Record& record, const FRect& pt) { return record << "(Xmin: " << pt.left << ", Ymin: " << pt.top << ") - (Xmax: " << pt.right << ", Ymax: " << pt.bottom << ')'; }
+Record& operator<<(Record& record, const FRect3D& pt) { return record << "(Xmin: " << pt.left << ", Ymin: " << pt.top << ", Zmin: " << pt.zlow << ") - (Xmax: " << pt.right << ", Ymax: " << pt.bottom << ", Zmax: " << pt.zhigh << ')'; }
 }
 
 bool SolveQuadraticEq(const float a, const float b, const float c, float& sol1, float& sol2)

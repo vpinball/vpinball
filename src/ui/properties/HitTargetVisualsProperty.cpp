@@ -144,8 +144,8 @@ BOOL HitTargetVisualsProperty::OnInitDialog()
     m_baseImageCombo = &m_imageCombo;
     m_materialCombo.AttachItem(IDC_MATERIAL_COMBO);
     m_baseMaterialCombo = &m_materialCombo;
-    m_hVisibleCheck= ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);
-    m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
+    m_hVisibleCheck= GetDlgItem(IDC_VISIBLE_CHECK);
+    m_hReflectionEnabledCheck = GetDlgItem(IDC_REFLECT_ENABLED_CHECK);
     m_typeCombo.AttachItem(IDC_HIT_TARGET_TYPE);
     m_dropSpeedEdit.AttachItem(IDC_TARGET_MOVE_SPEED_EDIT);
     m_raiseDelayEdit.AttachItem(IDC_TARGET_RAISE_DELAY_EDIT);
@@ -161,7 +161,7 @@ BOOL HitTargetVisualsProperty::OnInitDialog()
     m_orientationEdit.AttachItem(DISPID_ROT_Z);
     UpdateVisuals();
 
-    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);

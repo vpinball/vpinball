@@ -142,17 +142,17 @@ BOOL BumperVisualsProperty::OnInitDialog()
     m_orientationEdit.AttachItem(IDC_ORIENTATION_EDIT);
     m_ringSpeedEdit.AttachItem(IDC_RINGSPEED_EDIT);
     m_ringDropOffsetEdit.AttachItem(IDC_RINGDROPOFFSET_EDIT);
-    m_hCapVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_CAP_VISIBLE_CHECK);
-    m_hBaseVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_BASE_VISIBLE_CHECK);
-    m_hRingVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_RING_VISIBLE);
-    m_hSkirtVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_SKIRT_VISIBLE);
-    m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
+    m_hCapVisibleCheck = GetDlgItem(IDC_CAP_VISIBLE_CHECK);
+    m_hBaseVisibleCheck = GetDlgItem(IDC_BASE_VISIBLE_CHECK);
+    m_hRingVisibleCheck = GetDlgItem(IDC_RING_VISIBLE);
+    m_hSkirtVisibleCheck = GetDlgItem(IDC_SKIRT_VISIBLE);
+    m_hReflectionEnabledCheck = GetDlgItem(IDC_REFLECT_ENABLED_CHECK);
     m_posXEdit.AttachItem(902);
     m_posYEdit.AttachItem(903);
     m_surfaceCombo.AttachItem(1502);
     UpdateVisuals();
 
-    m_resizer.Initialize(this->GetHwnd(), CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1).GetHwnd(), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC2).GetHwnd(), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC3).GetHwnd(), CResizer::topleft, 0);

@@ -329,7 +329,7 @@ void LightVisualsProperty::UpdateProperties(const int dispid)
 
 BOOL LightVisualsProperty::OnInitDialog()
 {
-    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
     m_resizer.AddChild(GetDlgItem(IDC_STATIC9), CResizer::topleft, RD_STRETCH_WIDTH); // Light setting group box
     m_resizer.AddChild(GetDlgItem(IDC_STATIC4), CResizer::topleft, 0);
     m_intensityEdit.AttachItem(IDC_INTENSITY);
@@ -361,7 +361,7 @@ BOOL LightVisualsProperty::OnInitDialog()
 
     m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topleft, RD_STRETCH_WIDTH); // Render Mode group box
     m_resizer.AddChild(GetDlgItem(IDC_STATIC23), CResizer::topleft, 0);
-    m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
+    m_hReflectionEnabledCheck = GetDlgItem(IDC_REFLECT_ENABLED_CHECK);
     m_typeCombo.AttachItem(IDC_LIGHT_TYPE_COMBO);
     m_typeCombo.AddString("Hidden");
     m_typeCombo.AddString("Classic");
@@ -381,7 +381,7 @@ BOOL LightVisualsProperty::OnInitDialog()
     m_baseImageCombo = &m_imageCombo;
     m_imageCombo.AttachItem(DISPID_Image);
     m_resizer.AddChild(m_imageCombo, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_hPassThroughCheck = ::GetDlgItem(GetHwnd(), IDC_IMAGE_MODE);
+    m_hPassThroughCheck = GetDlgItem(IDC_IMAGE_MODE);
     m_resizer.AddChild(m_hPassThroughCheck, CResizer::topleft, RD_STRETCH_WIDTH);
 
     m_resizer.AddChild(GetDlgItem(IDC_DEPTHBIAS_LABEL), CResizer::topleft, 0);
@@ -389,15 +389,15 @@ BOOL LightVisualsProperty::OnInitDialog()
     m_resizer.AddChild(m_depthBiasEdit, CResizer::topleft, RD_STRETCH_WIDTH);
 
     m_resizer.AddChild(GetDlgItem(IDC_STATIC21), CResizer::topleft, RD_STRETCH_WIDTH); // Ball & reflections group box
-    m_hRelectOnBalls = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ON_BALLS);
+    m_hRelectOnBalls = GetDlgItem(IDC_REFLECT_ON_BALLS);
     m_resizer.AddChild(m_hRelectOnBalls, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_hRaytracedBallShadows = ::GetDlgItem(GetHwnd(), IDC_SHADOWS);
+    m_hRaytracedBallShadows = GetDlgItem(IDC_SHADOWS);
     m_resizer.AddChild(m_hRaytracedBallShadows, CResizer::topleft, RD_STRETCH_WIDTH);
 
     m_resizer.AddChild(GetDlgItem(IDC_STATIC22), CResizer::topleft, RD_STRETCH_WIDTH); // Bulb group box
-    m_hShowMeshCheck = ::GetDlgItem(GetHwnd(), IDC_SHOW_BULB_MESH);
+    m_hShowMeshCheck = GetDlgItem(IDC_SHOW_BULB_MESH);
     m_resizer.AddChild(m_hShowMeshCheck, CResizer::topleft, 0);
-    m_hStaticMeshCheck = ::GetDlgItem(GetHwnd(), IDC_STATIC_BULB_MESH);
+    m_hStaticMeshCheck = GetDlgItem(IDC_STATIC_BULB_MESH);
     m_resizer.AddChild(m_hStaticMeshCheck, CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC10), CResizer::topleft, 0);
     m_scaleMeshEdit.AttachItem(IDC_SCALE_BULB_MESH);

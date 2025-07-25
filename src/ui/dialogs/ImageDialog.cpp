@@ -76,7 +76,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          AddToolTip("Delete the selected image(s).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_DELETE_IMAGE).GetHwnd());
          AddToolTip("Define an alpha mask for the selected image(s)", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_ALPHA_MASK_EDIT).GetHwnd());
          AddToolTip("Click 'OK' to close this window.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_OK).GetHwnd());
-         m_resizer.Initialize(this->GetHwnd(), CRect(0, 0, 720, 450));
+         m_resizer.Initialize(GetHwnd(), CRect(0, 0, 720, 450));
          m_resizer.AddChild(hListView, CResizer::topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
          m_resizer.AddChild(GetDlgItem(IDC_PICTUREPREVIEW).GetHwnd(), CResizer::topright, 0);
          m_resizer.AddChild(GetDlgItem(IDC_IMPORT).GetHwnd(), CResizer::topright, 0);

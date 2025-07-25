@@ -188,7 +188,7 @@ void IEditable::SetName(const string& name)
    if (pt == nullptr)
       return;
 
-   const char * const oldName = MakeChar(GetScriptable()->m_wzName);
+   const string oldName = MakeString(GetScriptable()->m_wzName);
 
    wstring newName = MakeWString(name);
    newName = newName.length() >= MAXNAMEBUFFER ? newName.substr(0, MAXNAMEBUFFER - 1) : newName;
@@ -232,6 +232,4 @@ void IEditable::SetName(const string& name)
    }
 #endif
    STOPUNDO
-
-   delete [] oldName;
 }

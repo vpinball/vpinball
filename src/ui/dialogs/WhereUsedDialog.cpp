@@ -87,7 +87,7 @@ INT_PTR WhereUsedDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
          //Create a listview for the Where Used dialog
          const HWND hListView = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-         m_resizer.Initialize(*this, CRect(0, 0, 720, 450));
+         m_resizer.Initialize(GetHwnd(), CRect(0, 0, 720, 450));
          m_resizer.AddChild(GetDlgItem(IDC_WHERE_DESCR), CResizer::topleft, RD_STRETCH_WIDTH);
          m_resizer.AddChild(hListView, CResizer::topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
          m_resizer.AddChild(GetDlgItem(IDC_EDIT_OBJECT).GetHwnd(), CResizer::topright, 0);

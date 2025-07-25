@@ -112,14 +112,14 @@ BOOL PrimitivePhysicsProperty::OnInitDialog()
     m_scatterAngleEdit.AttachItem(IDC_SCATTER_ANGLE_EDIT);
     m_baseScatterAngleEdit = &m_scatterAngleEdit;
 
-    m_hToyCheck= ::GetDlgItem(GetHwnd(), IDC_PRIMITIVE_IS_TOY);
-    m_hHitEventCheck = ::GetDlgItem(GetHwnd(), IDC_HAS_HITEVENT_CHECK);
-    m_hCollidableCheck = ::GetDlgItem(GetHwnd(), IDC_COLLIDABLE_CHECK);
-    m_hOverwritePhysicsCheck = ::GetDlgItem(GetHwnd(), IDC_OVERWRITE_MATERIAL_SETTINGS);
+    m_hToyCheck= GetDlgItem(IDC_PRIMITIVE_IS_TOY);
+    m_hHitEventCheck = GetDlgItem(IDC_HAS_HITEVENT_CHECK);
+    m_hCollidableCheck = GetDlgItem(IDC_COLLIDABLE_CHECK);
+    m_hOverwritePhysicsCheck = GetDlgItem(IDC_OVERWRITE_MATERIAL_SETTINGS);
     m_reducePolyEdit.AttachItem(IDC_COLLISION_REDUCTION_FACTOR);
     UpdateVisuals();
 
-    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);

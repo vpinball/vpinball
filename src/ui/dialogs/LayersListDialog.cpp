@@ -77,7 +77,7 @@ BOOL LayersListDialog::OnInitDialog()
    AddToolTip("Sync tree with selection", GetHwnd(), toolTipHwnd, m_syncButton.GetHwnd());
    AddToolTip("Edit group properties", GetHwnd(), toolTipHwnd, m_selectButton.GetHwnd());
 
-   m_resizer.Initialize(this->GetHwnd(), CRect(0, 0, 200, 200));
+   m_resizer.Initialize(GetHwnd(), CRect(0, 0, 200, 200));
    m_resizer.AddChild(m_assignButton.GetHwnd(), CResizer::topleft, 0);
    m_resizer.AddChild(m_expandCollapseButton.GetHwnd(), CResizer::topleft, 0);
    m_resizer.AddChild(m_selectButton.GetHwnd(), CResizer::topleft, 0);
@@ -531,8 +531,8 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
 {
    switch (msg)
    {
-   case WM_SETFOCUS: GetApp()->SetAccelerators(m_accel, *this); break;
-   case WM_KILLFOCUS: GetApp()->SetAccelerators(g_pvp->GetFrameAccel(), *g_pvp); break;
+   case WM_SETFOCUS: GetApp()->SetAccelerators(m_accel, GetHwnd()); break;
+   case WM_KILLFOCUS: GetApp()->SetAccelerators(g_pvp->GetFrameAccel(), g_pvp->GetHwnd()); break;
    case WM_MOUSEACTIVATE: SetFocus(); break;
       
    case WM_MOUSEMOVE:

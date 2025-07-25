@@ -69,11 +69,11 @@ BOOL HitTargetPhysicsProperty::OnInitDialog()
     m_hitThresholdEdit.AttachItem(IDC_HIT_THRESHOLD_EDIT);
     m_baseHitThresholdEdit = &m_hitThresholdEdit;
 
-    m_hHitEventCheck = ::GetDlgItem(GetHwnd(), IDC_HAS_HITEVENT_CHECK);
-    m_hOverwritePhysicsCheck = ::GetDlgItem(GetHwnd(), IDC_OVERWRITE_MATERIAL_SETTINGS);
-    m_hLegacyModeCheck = ::GetDlgItem(GetHwnd(), IDC_TARGET_LEGACY_MODE_CHECK);
-    m_hCollidableCheck = ::GetDlgItem(GetHwnd(), IDC_COLLIDABLE_CHECK);
-    m_hIsDroppedCheck = ::GetDlgItem(GetHwnd(), IDC_TARGET_ISDROPPED_CHECK);
+    m_hHitEventCheck = GetDlgItem(IDC_HAS_HITEVENT_CHECK);
+    m_hOverwritePhysicsCheck = GetDlgItem(IDC_OVERWRITE_MATERIAL_SETTINGS);
+    m_hLegacyModeCheck = GetDlgItem(IDC_TARGET_LEGACY_MODE_CHECK);
+    m_hCollidableCheck = GetDlgItem(IDC_COLLIDABLE_CHECK);
+    m_hIsDroppedCheck = GetDlgItem(IDC_TARGET_ISDROPPED_CHECK);
     m_physicsMaterialCombo.AttachItem(IDC_MATERIAL_COMBO4);
     m_basePhysicsMaterialCombo = &m_physicsMaterialCombo;
     m_elasticityEdit.AttachItem(IDC_ELASTICITY_EDIT);
@@ -87,7 +87,7 @@ BOOL HitTargetPhysicsProperty::OnInitDialog()
     m_elasticityFalloffEdit.AttachItem(112);
     UpdateVisuals();
 
-    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);

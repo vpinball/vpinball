@@ -2785,15 +2785,15 @@ HRESULT PinTable::WriteInfoValue(IStorage* pstg, const wstring& wzName, const st
 HRESULT PinTable::SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash)
 {
 #ifndef __STANDALONE__
-   WriteInfoValue(pstg, L"TableName", m_tableName, hcrypthash);
-   WriteInfoValue(pstg, L"AuthorName", m_author, hcrypthash);
-   WriteInfoValue(pstg, L"TableVersion", m_version, hcrypthash);
-   WriteInfoValue(pstg, L"ReleaseDate", m_releaseDate, hcrypthash);
-   WriteInfoValue(pstg, L"AuthorEmail", m_authorEMail, hcrypthash);
-   WriteInfoValue(pstg, L"AuthorWebSite", m_webSite, hcrypthash);
-   WriteInfoValue(pstg, L"TableBlurb", m_blurb, hcrypthash);
-   WriteInfoValue(pstg, L"TableDescription", m_description, hcrypthash);
-   WriteInfoValue(pstg, L"TableRules", m_rules, hcrypthash);
+   WriteInfoValue(pstg, L"TableName"s, m_tableName, hcrypthash);
+   WriteInfoValue(pstg, L"AuthorName"s, m_author, hcrypthash);
+   WriteInfoValue(pstg, L"TableVersion"s, m_version, hcrypthash);
+   WriteInfoValue(pstg, L"ReleaseDate"s, m_releaseDate, hcrypthash);
+   WriteInfoValue(pstg, L"AuthorEmail"s, m_authorEMail, hcrypthash);
+   WriteInfoValue(pstg, L"AuthorWebSite"s, m_webSite, hcrypthash);
+   WriteInfoValue(pstg, L"TableBlurb"s, m_blurb, hcrypthash);
+   WriteInfoValue(pstg, L"TableDescription"s, m_description, hcrypthash);
+   WriteInfoValue(pstg, L"TableRules"s, m_rules, hcrypthash);
    time_t hour_machine;
    time(&hour_machine);
    tm local_hour;
@@ -2801,9 +2801,9 @@ HRESULT PinTable::SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash)
    char buffer[256];
    asctime_s(buffer, &local_hour);
    buffer[strnlen_s(buffer,sizeof(buffer))-1] = '\0'; // remove line break
-   WriteInfoValue(pstg, L"TableSaveDate", buffer, NULL);
+   WriteInfoValue(pstg, L"TableSaveDate"s, buffer, NULL);
    _itoa_s(++m_numTimesSaved, buffer, 10);
-   WriteInfoValue(pstg, L"TableSaveRev", buffer, NULL);
+   WriteInfoValue(pstg, L"TableSaveRev"s, buffer, NULL);
 
    Texture * const pin = GetImage(m_screenShot);
    if (pin)
@@ -2840,9 +2840,8 @@ HRESULT PinTable::SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
 
    for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
    {
-      WCHAR * const wzName = MakeWide(m_vCustomInfoTag[i]);
+      const wstring wzName = MakeWString(m_vCustomInfoTag[i]);
       WriteInfoValue(pstg, wzName, m_vCustomInfoContent[i], hcrypthash);
-      delete[] wzName;
    }
 
    pstg->Commit(STGC_DEFAULT);
@@ -2893,19 +2892,19 @@ HRESULT PinTable::ReadInfoValue(IStorage* pstg, const wstring& wzName, string &o
 
 HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
 {
-   ReadInfoValue(pstg, L"TableName", m_tableName, hcrypthash);
-   ReadInfoValue(pstg, L"AuthorName", m_author, hcrypthash);
-   ReadInfoValue(pstg, L"TableVersion", m_version, hcrypthash);
-   ReadInfoValue(pstg, L"ReleaseDate", m_releaseDate, hcrypthash);
-   ReadInfoValue(pstg, L"AuthorEmail", m_authorEMail, hcrypthash);
-   ReadInfoValue(pstg, L"AuthorWebSite", m_webSite, hcrypthash);
-   ReadInfoValue(pstg, L"TableBlurb", m_blurb, hcrypthash);
-   ReadInfoValue(pstg, L"TableDescription", m_description, hcrypthash);
-   ReadInfoValue(pstg, L"TableRules", m_rules, hcrypthash);
-   ReadInfoValue(pstg, L"TableSaveDate", m_dateSaved, NULL);
+   ReadInfoValue(pstg, L"TableName"s, m_tableName, hcrypthash);
+   ReadInfoValue(pstg, L"AuthorName"s, m_author, hcrypthash);
+   ReadInfoValue(pstg, L"TableVersion"s, m_version, hcrypthash);
+   ReadInfoValue(pstg, L"ReleaseDate"s, m_releaseDate, hcrypthash);
+   ReadInfoValue(pstg, L"AuthorEmail"s, m_authorEMail, hcrypthash);
+   ReadInfoValue(pstg, L"AuthorWebSite"s, m_webSite, hcrypthash);
+   ReadInfoValue(pstg, L"TableBlurb"s, m_blurb, hcrypthash);
+   ReadInfoValue(pstg, L"TableDescription"s, m_description, hcrypthash);
+   ReadInfoValue(pstg, L"TableRules"s, m_rules, hcrypthash);
+   ReadInfoValue(pstg, L"TableSaveDate"s, m_dateSaved, NULL);
 
    string numTimesSaved;
-   ReadInfoValue(pstg, L"TableSaveRev", numTimesSaved, NULL);
+   ReadInfoValue(pstg, L"TableSaveRev"s, numTimesSaved, NULL);
    m_numTimesSaved = !numTimesSaved.empty() ? atoi(numTimesSaved.c_str()) : 0;
 
    // Write the version to the registry.  This will be read later by the front end.
@@ -2938,13 +2937,11 @@ HRESULT PinTable::LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
 
    for (size_t i = 0; i < m_vCustomInfoTag.size(); i++)
    {
-      WCHAR * const wzName = MakeWide(m_vCustomInfoTag[i]);
+      const wstring wzName = MakeWString(m_vCustomInfoTag[i]);
 
       string customInfo;
       ReadInfoValue(pstg, wzName, customInfo, hcrypthash);
       m_vCustomInfoContent.push_back(customInfo);
-
-      delete[] wzName;
    }
 
    return hr;
@@ -3573,7 +3570,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
             }
          }
 
-         // Since 10.8.1, layers have been replaced by groups with properties, remove temporary groups created during loading, and keep partgroups at the beggining of the list.
+         // Since 10.8.1, layers have been replaced by groups with properties, remove temporary groups created during loading, and keep partgroups at the beginning of the list.
          std::stable_partition(m_vedit.begin(), m_vedit.end(), [](IEditable *p) { return p->GetItemType() == ItemTypeEnum::eItemPartGroup; });
          auto removeLegacyLayers = std::partition(m_vedit.begin(), m_vedit.end(),
             [&](IEditable *editable)
@@ -4467,7 +4464,7 @@ void PinTable::MoveCollectionDown(CComObject<Collection> *pcol)
 void PinTable::SetCollectionName(Collection *pcol, const char *szName, HWND hwndList, int index)
 {
 #ifndef __STANDALONE__
-   const wstring wzT = MakeWide(szName);
+   const wstring wzT = MakeWString(szName);
    if (m_pcv->ReplaceName((IScriptable *)pcol, wzT) == S_OK)
    {
       if (hwndList)
@@ -5005,7 +5002,7 @@ bool PinTable::GetCollectionIndex(const ISelect * const element, int &collection
    return false;
 }
 
-WCHAR *PinTable::GetCollectionNameByElement(const ISelect * const element)
+const WCHAR *PinTable::GetCollectionNameByElement(const ISelect * const element) const
 {
     for (int i = 0; i < m_vcollection.size(); i++)
         for (int t = 0; t < m_vcollection[i].m_visel.size(); t++)
@@ -6376,7 +6373,7 @@ Vertex2D PinTable::TransformPoint(int x, int y) const
 #ifndef __STANDALONE__
    const CRect rc = GetClientRect();
 #else
-   const CRect rc(this->m_left, this->m_top, this->m_right, this->m_bottom);
+   const CRect rc(m_left, m_top, m_right, m_bottom);
 #endif
    const HitSur phs(nullptr, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, nullptr);
 
@@ -7075,7 +7072,7 @@ string PinTable::AuditTable(bool log) const
       TimerDataRoot *tdr = nullptr;
       switch (type)
       {
-      // case eItemPrimitive: tdr = &prim->m_d.m_tdr; break; // Note: primitives have timers but they are not exposed to the UI
+      // case eItemPrimitive: tdr = &prim->m_d.m_tdr; break; // Note: primitives have timers, but they are not exposed to the UI
       case eItemSurface: tdr = &surf->m_d.m_tdr; break;
       case eItemTimer: tdr = &((Timer *)part)->m_d.m_tdr; break;
       case eItemLight: tdr = &((Light *)part)->m_d.m_tdr; break;

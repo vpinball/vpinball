@@ -27,9 +27,9 @@ void WallPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
     if (dispid == 427 || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_slingshotThresholdEdit, wall->m_d.m_slingshot_threshold);
     if (dispid == 11 || dispid == -1)
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 11), wall->m_d.m_droppable);
+        PropertyDialog::SetCheckboxState(GetDlgItem(11), wall->m_d.m_droppable);
     if (dispid == 116 || dispid == -1)
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 116), wall->m_d.m_isBottomSolid);
+        PropertyDialog::SetCheckboxState(GetDlgItem(116), wall->m_d.m_isBottomSolid);
     if (dispid == 120 || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_elasticityFallOffEdit, wall->m_d.m_elasticityFalloff);
 
@@ -37,13 +37,13 @@ void WallPhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
     {
         if (!wall->m_d.m_collidable)
         {
-            ::EnableWindow(::GetDlgItem(GetHwnd(), 116), FALSE);
+            ::EnableWindow(GetDlgItem(116), FALSE);
             m_slingshotForceEdit.EnableWindow(FALSE);
             m_slingshotThresholdEdit.EnableWindow(FALSE);
         }
         else
         {
-            ::EnableWindow(::GetDlgItem(GetHwnd(), 116), TRUE);
+            ::EnableWindow(GetDlgItem(116), TRUE);
             m_slingshotForceEdit.EnableWindow(TRUE);
             m_slingshotThresholdEdit.EnableWindow(TRUE);
         }
@@ -61,7 +61,7 @@ void WallPhysicsProperty::UpdateProperties(const int dispid)
         switch (dispid)
         {
             case 11:
-                CHECK_UPDATE_ITEM(wall->m_d.m_droppable, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), wall);
+                CHECK_UPDATE_ITEM(wall->m_d.m_droppable, PropertyDialog::GetCheckboxState(GetDlgItem(dispid)), wall);
                 break;
             case 14:
                 CHECK_UPDATE_VALUE_SETTER(wall->SetSlingshotStrength, wall->GetSlingshotStrength, PropertyDialog::GetFloatTextbox, m_slingshotForceEdit, wall);
@@ -71,9 +71,9 @@ void WallPhysicsProperty::UpdateProperties(const int dispid)
                 break;
             case 116:
                 PropertyDialog::StartUndo(wall);
-                wall->m_d.m_isBottomSolid = PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid));
+                wall->m_d.m_isBottomSolid = PropertyDialog::GetCheckboxState(GetDlgItem(dispid));
                 PropertyDialog::EndUndo(wall);
-                CHECK_UPDATE_ITEM(wall->m_d.m_isBottomSolid, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), wall);
+                CHECK_UPDATE_ITEM(wall->m_d.m_isBottomSolid, PropertyDialog::GetCheckboxState(GetDlgItem(dispid)), wall);
                 break;
             case 120:
                CHECK_UPDATE_ITEM(wall->m_d.m_elasticityFalloff, PropertyDialog::GetFloatTextbox(m_elasticityFallOffEdit), wall);
@@ -103,14 +103,14 @@ BOOL WallPhysicsProperty::OnInitDialog()
     m_baseFrictionEdit = &m_frictionEdit;
     m_baseScatterAngleEdit = &m_scatterAngleEdit;
     m_basePhysicsMaterialCombo = &m_physicsMaterialCombo;
-    m_hHitEventCheck = ::GetDlgItem(GetHwnd(), IDC_HAS_HITEVENT_CHECK);
-    m_hCollidableCheck= ::GetDlgItem(GetHwnd(), IDC_COLLIDABLE_CHECK);
-    m_hOverwritePhysicsCheck = ::GetDlgItem(GetHwnd(), IDC_OVERWRITE_MATERIAL_SETTINGS);
-    m_hCanDrop = ::GetDlgItem(GetHwnd(), 11);
-    m_hIsBottomCollidable = ::GetDlgItem(GetHwnd(), 116);
+    m_hHitEventCheck = GetDlgItem(IDC_HAS_HITEVENT_CHECK);
+    m_hCollidableCheck= GetDlgItem(IDC_COLLIDABLE_CHECK);
+    m_hOverwritePhysicsCheck = GetDlgItem(IDC_OVERWRITE_MATERIAL_SETTINGS);
+    m_hCanDrop = GetDlgItem(11);
+    m_hIsBottomCollidable = GetDlgItem(116);
 
     UpdateVisuals();
-    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);

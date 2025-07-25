@@ -38,9 +38,8 @@ public:
       #ifdef _WIN32
       // Convert from wchar* to char* on Win32
       auto msg = record.getMessage();
-      char * const szT = MakeChar(msg);
+      const string szT = MakeString(msg);
       table->m_pcv->AddToDebugOutput(szT);
-      delete [] szT;
       #else
       table->m_pcv->AddToDebugOutput(record.getMessage());
       #endif

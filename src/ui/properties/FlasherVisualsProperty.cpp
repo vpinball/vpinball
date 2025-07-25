@@ -384,7 +384,7 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
 
 BOOL FlasherVisualsProperty::OnInitDialog()
 {
-   m_hVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);
+   m_hVisibleCheck = GetDlgItem(IDC_VISIBLE_CHECK);
    m_modeCombo.AttachItem(IDC_STYLE_COMBO);
    m_modeCombo.AddString("Flasher");
    m_modeCombo.AddString("DMD");
@@ -409,12 +409,12 @@ BOOL FlasherVisualsProperty::OnInitDialog()
    m_imageBCombo.AttachItem(DISPID_Image2);
    m_filterCombo.AttachItem(IDC_EFFECT_COMBO);
    m_filterAmountEdit.AttachItem(IDC_FILTERAMOUNT_EDIT);
-   m_hDisplayInEditorCheck = ::GetDlgItem(GetHwnd(), IDC_DISPLAY_IMAGE_CHECK);
+   m_hDisplayInEditorCheck = GetDlgItem(IDC_DISPLAY_IMAGE_CHECK);
 
    m_opacityAmountEdit.AttachItem(IDC_ALPHA_EDIT);
    m_modulateEdit.AttachItem(IDC_MODULATE_VS_ADD);
    m_lightmapCombo.AttachItem(IDC_LIGHTMAP);
-   m_hAdditiveBlendCheck = ::GetDlgItem(GetHwnd(), IDC_ADDBLEND);
+   m_hAdditiveBlendCheck = GetDlgItem(IDC_ADDBLEND);
 
    m_posXEdit.AttachItem(5);
    m_posYEdit.AttachItem(6);
@@ -425,7 +425,7 @@ BOOL FlasherVisualsProperty::OnInitDialog()
 
    UpdateVisuals();
 
-   m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+   m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
 
    m_resizer.AddChild(m_modeCombo, CResizer::topleft, RD_STRETCH_WIDTH);
    m_resizer.AddChild(m_hVisibleCheck, CResizer::topleft, RD_STRETCH_WIDTH);

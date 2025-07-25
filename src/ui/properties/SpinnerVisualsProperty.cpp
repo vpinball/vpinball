@@ -99,9 +99,9 @@ void SpinnerVisualsProperty::UpdateProperties(const int dispid)
 
 BOOL SpinnerVisualsProperty::OnInitDialog()
 {
-    m_hVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);
-    m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
-    m_hShowBracketCheck = ::GetDlgItem(GetHwnd(), IDC_SHOW_BRACKET_CHECK);
+    m_hVisibleCheck = GetDlgItem(IDC_VISIBLE_CHECK);
+    m_hReflectionEnabledCheck = GetDlgItem(IDC_REFLECT_ENABLED_CHECK);
+    m_hShowBracketCheck = GetDlgItem(IDC_SHOW_BRACKET_CHECK);
     m_imageCombo.AttachItem(DISPID_Image);
     m_baseImageCombo = &m_imageCombo;
     m_materialCombo.AttachItem(IDC_MATERIAL_COMBO);
@@ -116,7 +116,7 @@ BOOL SpinnerVisualsProperty::OnInitDialog()
     m_angleMinEdit.AttachItem(14);
     UpdateVisuals();
 
-    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, RD_STRETCH_WIDTH);

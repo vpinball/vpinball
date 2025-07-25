@@ -216,7 +216,7 @@ void TextboxVisualsProperty::UpdateProperties(const int dispid)
 
 BOOL TextboxVisualsProperty::OnInitDialog()
 {
-    m_hTransparentCheck = ::GetDlgItem(GetHwnd(), IDC_TEXTBOX_TRANSP_CHECK);
+    m_hTransparentCheck = GetDlgItem(IDC_TEXTBOX_TRANSP_CHECK);
     AttachItem(IDC_COLOR_BUTTON1, m_backgroundColorButton);
     AttachItem(IDC_COLOR_BUTTON2, m_textColorButton);
     AttachItem(IDC_FONT_DIALOG_BUTTON, m_fontDialogButton);
@@ -226,11 +226,11 @@ BOOL TextboxVisualsProperty::OnInitDialog()
     m_widthEdit.AttachItem(60002);
     m_heightEdit.AttachItem(60003);
     m_textIntensityEdit.AttachItem(IDC_TEXT_INTENSITY);
-    m_hUseScriptDMDCheck = ::GetDlgItem(GetHwnd(), IDC_USE_SCRIPT_DMD_CHECK);
+    m_hUseScriptDMDCheck = GetDlgItem(IDC_USE_SCRIPT_DMD_CHECK);
     m_textEdit.AttachItem(IDC_TEXTBOX_TEXT_EDIT);
     UpdateVisuals();
 
-    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);

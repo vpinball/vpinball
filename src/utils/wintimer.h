@@ -255,7 +255,7 @@ public:
             strcpy_s(&m_profileTimers[m_profileTimersPos], len, timer_name.c_str());
             m_profileTimersPos += len;
          }
-         else if (m_profileTimersPos + 8 < MAX_TIMER_LOG)
+         else if (m_profileTimersPos < MAX_TIMER_LOG - 8)
          {
             strcpy_s(&m_profileTimers[m_profileTimersPos], 4, "...");
             m_profileTimersPos += 4;

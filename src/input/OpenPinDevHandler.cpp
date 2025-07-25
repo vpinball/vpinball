@@ -326,7 +326,7 @@ OpenPinDevHandler::OpenPinDevHandler(PinInput &pininput)
 
 // Terminate the Open Pinball Device subsystem.  Closes all open
 // devices and discards associated memory structures.
-OpenPinDevHandler ::~OpenPinDevHandler()
+OpenPinDevHandler::~OpenPinDevHandler()
 {
    // discard the context object
    delete m_OpenPinDevContext;

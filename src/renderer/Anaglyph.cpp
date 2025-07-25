@@ -30,7 +30,7 @@ void Anaglyph::LoadSetupFromRegistry(const int glassesSet)
       /* RC */ vec3{0.95f, 0.19f, 0.07f}, vec3{0.06f, 0.92f, 0.28f},
       /* RC */ vec3{0.95f, 0.19f, 0.07f}, vec3{0.06f, 0.92f, 0.28f}
    };
-   const int set = clamp(glassesSet, 0, defaultColors.size() / 2);
+   const int set = clamp(glassesSet, 0, (int)defaultColors.size() / 2);
 
    const string prefKey = "Anaglyph" + std::to_string(set + 1);
    vec3 leftLum, rightLum;

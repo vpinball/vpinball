@@ -75,7 +75,7 @@ BOOL SoundDialog::OnInitDialog()
     AddToolTip("Set the volume, left/right (pan) and front/back (fade) sound position for the selected sound(s).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_SNDPOSITION).GetHwnd());
     AddToolTip("The 'Name' value from the list will be used when exporting instead of the file name from the 'Import Path'.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_CHECK_RENAME_ON_EXPORT).GetHwnd());
     AddToolTip("Click 'OK' to close this window.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_OK).GetHwnd());
-    m_resizer.Initialize(this->GetHwnd(), CRect(0, 0, 514, 231));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 514, 231));
     m_resizer.AddChild(hSoundList, CResizer::topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(GetDlgItem(IDC_IMPORT).GetHwnd(), CResizer::topright, 0);
     m_resizer.AddChild(GetDlgItem(IDC_REIMPORT).GetHwnd(), CResizer::topright, 0);

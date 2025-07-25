@@ -49,8 +49,8 @@ void BumperPhysicsProperty::UpdateProperties(const int dispid)
 
 BOOL BumperPhysicsProperty::OnInitDialog()
 {
-    m_hHitEventCheck = ::GetDlgItem(GetHwnd(), IDC_HAS_HITEVENT_CHECK);
-    m_hCollidableCheck = ::GetDlgItem(GetHwnd(), IDC_COLLIDABLE_CHECK);
+    m_hHitEventCheck = GetDlgItem(IDC_HAS_HITEVENT_CHECK);
+    m_hCollidableCheck = GetDlgItem(IDC_COLLIDABLE_CHECK);
     m_hitThresholdEdit.AttachItem(IDC_HIT_THRESHOLD_EDIT);
     m_baseHitThresholdEdit = &m_hitThresholdEdit;
     m_forceEdit.AttachItem(IDC_FORCE_EDIT);
@@ -58,7 +58,7 @@ BOOL BumperPhysicsProperty::OnInitDialog()
     m_baseScatterAngleEdit = &m_scatterAngleEdit;
 
     UpdateVisuals();
-    m_resizer.Initialize(this->GetHwnd(), CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1).GetHwnd(), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC2).GetHwnd(), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC3).GetHwnd(), CResizer::topleft, 0);

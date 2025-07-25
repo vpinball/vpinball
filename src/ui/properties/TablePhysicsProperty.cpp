@@ -153,7 +153,7 @@ void TablePhysicsProperty::UpdateProperties(const int dispid)
 
 BOOL TablePhysicsProperty::OnInitDialog()
 {
-    m_hFilterMechanicalPlungerCheck = ::GetDlgItem(GetHwnd(), IDC_FILTER_MECH_PLUNGER_CHECK);
+    m_hFilterMechanicalPlungerCheck = GetDlgItem(IDC_FILTER_MECH_PLUNGER_CHECK);
     AttachItem(IDC_IMPORT_PHYSICS_BUTTON, m_importSetButton);
     AttachItem(IDC_EXPORT_PHYSICS_BUTTON, m_exportSetButton);
 
@@ -174,11 +174,11 @@ BOOL TablePhysicsProperty::OnInitDialog()
     m_maxSlopeEdit.AttachItem(IDC_MAX_DIFFICULTY_EDIT);
     m_gameplayDifficultyEdit.AttachItem(IDC_GAME_DIFFICULTY_EDIT);
     m_overwritePhysicsSetCombo.AttachItem(IDC_OVERWRITE_PHYSICS_COMBO);
-    m_hOverwriteFlipperCheck = ::GetDlgItem(GetHwnd(), IDC_OVERRIDEPHYSICS_FLIPPERS);
+    m_hOverwriteFlipperCheck = GetDlgItem(IDC_OVERRIDEPHYSICS_FLIPPERS);
 
     UpdateVisuals();
 
-    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);

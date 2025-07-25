@@ -59,7 +59,7 @@ void FlipperVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == 1502 || dispid == -1)
             PropertyDialog::UpdateSurfaceComboBox(flipper->GetPTable(), m_surfaceCombo, flipper->m_d.m_szSurface);
         if (dispid == IDC_FLIPPER_ENABLED || dispid == -1)
-            PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_FLIPPER_ENABLED), flipper->m_d.m_enabled);
+            PropertyDialog::SetCheckboxState(GetDlgItem(IDC_FLIPPER_ENABLED), flipper->m_d.m_enabled);
         UpdateBaseVisuals(flipper, &flipper->m_d,dispid);
         //only show the first element on multi-select
         break;
@@ -115,7 +115,7 @@ void FlipperVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_COMBO_TEXT_STRING(flipper->m_d.m_szSurface, m_surfaceCombo, flipper);
                 break;
             case IDC_FLIPPER_ENABLED:
-                CHECK_UPDATE_ITEM(flipper->m_d.m_enabled, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), flipper);
+                CHECK_UPDATE_ITEM(flipper->m_d.m_enabled, PropertyDialog::GetCheckboxState(GetDlgItem(dispid)), flipper);
                 break;
             case IDC_MATERIAL_COMBO2:
                 CHECK_UPDATE_COMBO_TEXT_STRING(flipper->m_d.m_szRubberMaterial, m_rubberMaterialCombo, flipper);
@@ -151,10 +151,10 @@ BOOL FlipperVisualsProperty::OnInitDialog()
 
     m_baseImageCombo = &m_imageCombo;
     m_baseMaterialCombo = &m_materialCombo;
-    m_hVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);
-    m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
+    m_hVisibleCheck = GetDlgItem(IDC_VISIBLE_CHECK);
+    m_hReflectionEnabledCheck = GetDlgItem(IDC_REFLECT_ENABLED_CHECK);
     UpdateVisuals();
-    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);

@@ -32,15 +32,15 @@ void WallVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
     if (dispid == IDC_MATERIAL_COMBO3 || dispid == -1)
         PropertyDialog::UpdateMaterialComboBox(wall->GetPTable()->GetMaterialList(), m_slingshotMaterialCombo, wall->m_d.m_szSlingShotMaterial);
     if (dispid == 16 || dispid == -1)
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 16), wall->m_d.m_topBottomVisible);
+        PropertyDialog::SetCheckboxState(GetDlgItem(16), wall->m_d.m_topBottomVisible);
     if (dispid == 13 || dispid == -1)
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 13), wall->m_d.m_displayTexture);
+        PropertyDialog::SetCheckboxState(GetDlgItem(13), wall->m_d.m_displayTexture);
     if (dispid == 109 || dispid == -1)
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 109), wall->m_d.m_sideVisible);
+        PropertyDialog::SetCheckboxState(GetDlgItem(109), wall->m_d.m_sideVisible);
     if (dispid == 112 || dispid == -1)
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 112), wall->m_d.m_slingshotAnimation);
+        PropertyDialog::SetCheckboxState(GetDlgItem(112), wall->m_d.m_slingshotAnimation);
     if (dispid == 113 || dispid == -1)
-        PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), 113), wall->m_d.m_flipbook);
+        PropertyDialog::SetCheckboxState(GetDlgItem(113), wall->m_d.m_flipbook);
     if (dispid == IDC_BLEND_DISABLE_LIGHTING || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_disableLightingEdit, wall->m_d.m_disableLightingTop);
     if (dispid == IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW || dispid == -1)
@@ -87,19 +87,19 @@ void WallVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(wall->m_d.m_disableLightingBelow, 1.f - PropertyDialog::GetFloatTextbox(m_disableLightFromBelowEdit), wall);
                 break;
             case 16:
-                CHECK_UPDATE_ITEM(wall->m_d.m_topBottomVisible, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), wall);
+                CHECK_UPDATE_ITEM(wall->m_d.m_topBottomVisible, PropertyDialog::GetCheckboxState(GetDlgItem(dispid)), wall);
                 break;
             case 13:
-                CHECK_UPDATE_ITEM(wall->m_d.m_displayTexture, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), wall);
+                CHECK_UPDATE_ITEM(wall->m_d.m_displayTexture, PropertyDialog::GetCheckboxState(GetDlgItem(dispid)), wall);
                 break;
             case 109:
-                CHECK_UPDATE_ITEM(wall->m_d.m_sideVisible, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), wall);
+                CHECK_UPDATE_ITEM(wall->m_d.m_sideVisible, PropertyDialog::GetCheckboxState(GetDlgItem(dispid)), wall);
                 break;
             case 112:
-                CHECK_UPDATE_ITEM(wall->m_d.m_slingshotAnimation, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), wall);
+                CHECK_UPDATE_ITEM(wall->m_d.m_slingshotAnimation, PropertyDialog::GetCheckboxState(GetDlgItem(dispid)), wall);
                 break;
             case 113:
-                CHECK_UPDATE_ITEM(wall->m_d.m_flipbook, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), dispid)), wall);
+                CHECK_UPDATE_ITEM(wall->m_d.m_flipbook, PropertyDialog::GetCheckboxState(GetDlgItem(dispid)), wall);
                 break;
             default:
                 UpdateBaseProperties(wall, &wall->m_d, dispid);
@@ -121,16 +121,16 @@ BOOL WallVisualsProperty::OnInitDialog()
     m_disableLightFromBelowEdit.AttachItem(IDC_BLEND_DISABLE_LIGHTING_FROM_BELOW);
     m_topHeightEdit.AttachItem(9);
     m_bottomHeightEdit.AttachItem(8);
-    m_hDisplayInEditor = ::GetDlgItem(GetHwnd(), 13);
-    m_hTopImageVisible = ::GetDlgItem(GetHwnd(), 16);
-    m_hSideImageVisible = ::GetDlgItem(GetHwnd(), 109);
-    m_hAnimateSlingshot= ::GetDlgItem(GetHwnd(), 112);
-    m_hFlipbook = ::GetDlgItem(GetHwnd(), 113);
+    m_hDisplayInEditor = GetDlgItem(13);
+    m_hTopImageVisible = GetDlgItem(16);
+    m_hSideImageVisible = GetDlgItem(109);
+    m_hAnimateSlingshot= GetDlgItem(112);
+    m_hFlipbook = GetDlgItem(113);
     m_baseImageCombo = &m_topImageCombo;
-    m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
+    m_hReflectionEnabledCheck = GetDlgItem(IDC_REFLECT_ENABLED_CHECK);
 
     UpdateVisuals();
-    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);

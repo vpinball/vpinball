@@ -109,8 +109,8 @@ BOOL TriggerVisualsProperty::OnInitDialog()
     m_baseMaterialCombo = &m_materialCombo;
     m_surfaceCombo.AttachItem(IDC_SURFACE_COMBO);
     m_shapeCombo.AttachItem(DISPID_Shape);
-    m_hVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);
-    m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
+    m_hVisibleCheck = GetDlgItem(IDC_VISIBLE_CHECK);
+    m_hReflectionEnabledCheck = GetDlgItem(IDC_REFLECT_ENABLED_CHECK);
     m_posXEdit.AttachItem(902);
     m_posYEdit.AttachItem(903);
     m_wireThicknessEdit.AttachItem(IDC_STAR_THICKNESS_EDIT);
@@ -120,7 +120,7 @@ BOOL TriggerVisualsProperty::OnInitDialog()
 
     UpdateVisuals();
 
-    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);

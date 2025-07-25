@@ -50,14 +50,14 @@ BOOL DebuggerDialog::OnInitDialog()
 
     ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_SETTABWIDTH, 4, 0);
 
-    ::SendMessage(GetDlgItem(IDC_BALL_THROWING).GetHwnd(), BM_SETCHECK, g_pplayer->m_throwBalls ? BST_CHECKED : BST_UNCHECKED, 0);
-    ::SendMessage(GetDlgItem(IDC_BALL_CONTROL).GetHwnd(), BM_SETCHECK, g_pplayer->m_ballControl ? BST_CHECKED : BST_UNCHECKED, 0);
+    GetDlgItem(IDC_BALL_THROWING).SendMessage(BM_SETCHECK, g_pplayer->m_throwBalls ? BST_CHECKED : BST_UNCHECKED, 0);
+    GetDlgItem(IDC_BALL_CONTROL).SendMessage(BM_SETCHECK, g_pplayer->m_ballControl ? BST_CHECKED : BST_UNCHECKED, 0);
 
     m_ballSizeEdit.SetWindowText(std::to_string(g_pplayer->m_debugBallSize).c_str());
 
     m_ballMassEdit.SetWindowText(f2sz(g_pplayer->m_debugBallMass).c_str());
 
-    m_resizer.Initialize(this->GetHwnd(), GetWindowRect());
+    m_resizer.Initialize(GetHwnd(), GetWindowRect());
     m_resizer.AddChild(m_notesEdit.GetHwnd(), CResizer::bottomright, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
     m_resizer.AddChild(g_pplayer->m_hwndDebugOutput, CResizer::bottomright, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(GetDlgItem(IDC_GUIDE1).GetHwnd(), CResizer::topleft, 0);
@@ -93,13 +93,13 @@ BOOL DebuggerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         }
         case IDC_BALL_THROWING:
         {
-            const size_t checked = ::SendMessage(GetDlgItem(IDC_BALL_THROWING).GetHwnd(), BM_GETCHECK, 0, 0);
+            const size_t checked = GetDlgItem(IDC_BALL_THROWING).SendMessage(BM_GETCHECK, 0, 0);
             g_pplayer->m_throwBalls = !!checked;
             return TRUE;
         }
         case IDC_BALL_CONTROL:
         {
-            const size_t checked = ::SendMessage(GetDlgItem(IDC_BALL_CONTROL).GetHwnd(), BM_GETCHECK, 0, 0);
+            const size_t checked = GetDlgItem(IDC_BALL_CONTROL).SendMessage(BM_GETCHECK, 0, 0);
             g_pplayer->m_ballControl = !!checked;
             return TRUE;
         }

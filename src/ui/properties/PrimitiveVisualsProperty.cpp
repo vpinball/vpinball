@@ -282,17 +282,17 @@ void PrimitiveVisualsProperty::AddToolTip(const char *const text, HWND parentHwn
 
 BOOL PrimitiveVisualsProperty::OnInitDialog()
 {
-    m_hDisplayImageCheck = ::GetDlgItem(GetHwnd(), IDC_DISPLAY_TEXTURE_CHECKBOX);
-    m_hObjectSpaceCheck = ::GetDlgItem(GetHwnd(), IDC_OBJECT_SPACE_NORMALMAP);
-    m_hVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);
-    m_hReflectionEnabledCheck = ::GetDlgItem(GetHwnd(), IDC_REFLECT_ENABLED_CHECK);
-    m_hRenderBackfacingCheck = ::GetDlgItem(GetHwnd(), IDC_PRIMITIVE_ENABLE_BACKFACES);
-    m_hDepthMaskWriteCheck = ::GetDlgItem(GetHwnd(), IDC_PRIMITIVE_ENABLE_DEPTH_MASK);
-    m_hStaticRenderingCheck = ::GetDlgItem(GetHwnd(), IDC_STATIC_RENDERING_CHECK);
-    m_hDrawTexturesInsideCheck = ::GetDlgItem(GetHwnd(), IDC_DRAW_TEXTURES_SIDES_CHECK);
+    m_hDisplayImageCheck = GetDlgItem(IDC_DISPLAY_TEXTURE_CHECKBOX);
+    m_hObjectSpaceCheck = GetDlgItem(IDC_OBJECT_SPACE_NORMALMAP);
+    m_hVisibleCheck = GetDlgItem(IDC_VISIBLE_CHECK);
+    m_hReflectionEnabledCheck = GetDlgItem(IDC_REFLECT_ENABLED_CHECK);
+    m_hRenderBackfacingCheck = GetDlgItem(IDC_PRIMITIVE_ENABLE_BACKFACES);
+    m_hDepthMaskWriteCheck = GetDlgItem(IDC_PRIMITIVE_ENABLE_DEPTH_MASK);
+    m_hStaticRenderingCheck = GetDlgItem(IDC_STATIC_RENDERING_CHECK);
+    m_hDrawTexturesInsideCheck = GetDlgItem(IDC_DRAW_TEXTURES_SIDES_CHECK);
     AttachItem(IDC_LOAD_MESH_BUTTON, m_importMeshButton);
     AttachItem(IDC_EXPORT_MESH_BUTTON, m_exportMeshButton);
-    m_hAdditiveBlendCheck = ::GetDlgItem(GetHwnd(), IDC_ADDBLEND);
+    m_hAdditiveBlendCheck = GetDlgItem(IDC_ADDBLEND);
     m_imageCombo.AttachItem(DISPID_Image);
     m_baseImageCombo = &m_imageCombo;
     m_normalMapCombo.AttachItem(DISPID_Image2);
@@ -312,7 +312,7 @@ BOOL PrimitiveVisualsProperty::OnInitDialog()
     AttachItem(IDC_COLOR_BUTTON1, m_colorButton);
     UpdateVisuals();
 
-    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hDrawTexturesInsideCheck, CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);

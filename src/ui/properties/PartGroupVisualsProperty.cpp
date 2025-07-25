@@ -23,7 +23,7 @@ BOOL PartGroupVisualsProperty::OnInitDialog()
    AttachItem(IDC_MASK_AUGMENTED_REALITY, m_visibilityVirtualReality);
 
    UpdateVisuals();
-   m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+   m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
    m_resizer.AddChild(GetDlgItem(IDC_STATIC1).GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
    m_resizer.AddChild(m_visibilityPlayfield, CResizer::topleft, RD_STRETCH_WIDTH);
    m_resizer.AddChild(m_visibilityMixedReality, CResizer::topleft, RD_STRETCH_WIDTH);

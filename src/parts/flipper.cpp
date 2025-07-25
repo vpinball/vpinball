@@ -500,9 +500,9 @@ void Flipper::SetDefaultPhysics(const bool fromMouseClick)
    m_d.m_return = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ReturnStrength"s, 0.058f) : 0.058f;
 
    float fTmp;
-   bool hr = g_pvp->m_settings.LoadValue(regKey, "Mass", fTmp);
+   bool hr = g_pvp->m_settings.LoadValue(regKey, "Mass"s, fTmp);
    if (!hr)
-      hr = g_pvp->m_settings.LoadValue(regKey, "Speed", fTmp); // previously Mass was called Speed, deprecated!
+      hr = g_pvp->m_settings.LoadValue(regKey, "Speed"s, fTmp); // previously Mass was called Speed, deprecated!
    m_d.m_mass = hr && fromMouseClick ? fTmp : 1.0f;
 
    m_d.m_elasticity = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Elasticity"s, 0.8f) : 0.8f;

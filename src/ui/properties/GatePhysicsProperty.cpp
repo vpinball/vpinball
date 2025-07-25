@@ -24,7 +24,7 @@ void GatePhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == 17 || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_gravityFactorEdit, gate->m_d.m_gravityfactor);
         if (dispid == IDC_TWO_WAY_CHECK || dispid == -1)
-            PropertyDialog::SetCheckboxState(::GetDlgItem(GetHwnd(), IDC_TWO_WAY_CHECK), gate->m_d.m_twoWay);
+            PropertyDialog::SetCheckboxState(GetDlgItem(IDC_TWO_WAY_CHECK), gate->m_d.m_twoWay);
         UpdateBaseVisuals(gate, &gate->m_d, dispid);
         //only show the first element on multi-select
         break;
@@ -47,7 +47,7 @@ void GatePhysicsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_ITEM(gate->m_d.m_gravityfactor, PropertyDialog::GetFloatTextbox(m_gravityFactorEdit), gate);
                 break;
             case IDC_TWO_WAY_CHECK:
-                CHECK_UPDATE_ITEM(gate->m_d.m_twoWay, PropertyDialog::GetCheckboxState(::GetDlgItem(GetHwnd(), IDC_TWO_WAY_CHECK)), gate);
+                CHECK_UPDATE_ITEM(gate->m_d.m_twoWay, PropertyDialog::GetCheckboxState(GetDlgItem(IDC_TWO_WAY_CHECK)), gate);
                 break;
 
             default:
@@ -64,12 +64,12 @@ BOOL GatePhysicsProperty::OnInitDialog()
     m_gravityFactorEdit.AttachItem(17);
     m_elasticityEdit.AttachItem(IDC_ELASTICITY_EDIT);
     m_frictionEdit.AttachItem(IDC_FRICTION_EDIT);
-    m_hCollidableCheck = ::GetDlgItem(GetHwnd(), IDC_COLLIDABLE_CHECK);
+    m_hCollidableCheck = GetDlgItem(IDC_COLLIDABLE_CHECK);
     m_baseElasticityEdit = &m_elasticityEdit;
     m_baseFrictionEdit = &m_frictionEdit;
     UpdateVisuals();
 
-    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC5), CResizer::topleft, 0);

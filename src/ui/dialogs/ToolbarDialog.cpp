@@ -58,7 +58,7 @@ BOOL ToolbarDialog::OnInitDialog()
     AttachItem(ID_INSERT_FLASHER, m_flasherButton);
     AttachItem(ID_INSERT_RUBBER, m_rubberButton);
 
-    m_tooltip.Create(*this);
+    m_tooltip.Create(GetHwnd());
     m_tooltip.AddTool(m_magnifyButton, _T("Zoom in/out"));
     m_tooltip.AddTool(m_selectButton, _T("Select Element"));
     m_tooltip.AddTool(m_scriptButton, _T("Toggle Script Editor"));
@@ -167,7 +167,7 @@ BOOL ToolbarDialog::OnInitDialog()
     m_rubberButton.SetIcon((HICON)hIcon);
 
 
-    m_resizer.Initialize(this->GetHwnd(), CRect(0, 0, 90, 600));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 90, 600));
     m_resizer.AddChild(m_magnifyButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(m_selectButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(m_scriptButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);

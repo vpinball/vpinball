@@ -120,9 +120,9 @@ void DispreelVisualsProperty::UpdateProperties(const int dispid)
 
 BOOL DispreelVisualsProperty::OnInitDialog()
 {
-    m_hVisibleCheck = ::GetDlgItem(GetHwnd(), IDC_VISIBLE_CHECK);
-    m_hBackgroundTransparentCheck = ::GetDlgItem(GetHwnd(), IDC_BACK_TRANSP_CHECK);
-    m_hUseImageGridCheck = ::GetDlgItem(GetHwnd(), IDC_USE_IMAGE_GRID_CHECK);
+    m_hVisibleCheck = GetDlgItem(IDC_VISIBLE_CHECK);
+    m_hBackgroundTransparentCheck = GetDlgItem(IDC_BACK_TRANSP_CHECK);
+    m_hUseImageGridCheck = GetDlgItem(IDC_USE_IMAGE_GRID_CHECK);
     AttachItem(IDC_COLOR_BUTTON1, m_colorButton);
     m_imageCombo.AttachItem(DISPID_Image);
     m_baseImageCombo = &m_imageCombo;
@@ -136,7 +136,7 @@ BOOL DispreelVisualsProperty::OnInitDialog()
     m_reelSpacingEdit.AttachItem(IDC_REEL_SPACING_EDIT);
     UpdateVisuals();
 
-    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);

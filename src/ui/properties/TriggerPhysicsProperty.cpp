@@ -49,11 +49,11 @@ void TriggerPhysicsProperty::UpdateProperties(const int dispid)
 
 BOOL TriggerPhysicsProperty::OnInitDialog()
 {
-    m_hEnableCheck = ::GetDlgItem(GetHwnd(), DISPID_Enabled);
+    m_hEnableCheck = GetDlgItem(DISPID_Enabled);
     m_hitHeightEdit.AttachItem(IDC_HIT_HEIGHT_EDIT);
     UpdateVisuals();
 
-    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+    m_resizer.Initialize(GetHwnd(), CRect(0, 0, 0, 0));
     m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
     m_resizer.AddChild(m_hEnableCheck, CResizer::topleft, 0);
     m_resizer.AddChild(m_hitHeightEdit, CResizer::topleft, RD_STRETCH_WIDTH);
