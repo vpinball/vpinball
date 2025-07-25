@@ -364,7 +364,7 @@ public:
 
    void Begin() override
    {
-      Actor * const actor = this->GetTarget();
+      Actor * const actor = GetTarget();
       if (GetDuration() == 0.f)
       {
          actor->SetX(m_x);
