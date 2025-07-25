@@ -13,9 +13,9 @@ public:
    }
    ~Win32InputKeyboardHandler() override = default;
 
-   void Update() override
+   void Update(const HWND foregroundWindow) override
    {
-      if (m_focusHWnd != GetForegroundWindow())
+      if (m_focusHWnd != foregroundWindow)
          return;
 
       for (unsigned int i = 0; i < eCKeys; ++i)

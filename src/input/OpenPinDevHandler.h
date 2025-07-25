@@ -7,7 +7,7 @@ class OpenPinDevHandler final : public InputHandler
 public:
    explicit OpenPinDevHandler(PinInput& pininput);
    ~OpenPinDevHandler() override;
-   void Update() override;
+   void Update(const HWND foregroundWindow) override;
 
 private:
    static constexpr uint64_t GetJoyId(const int index) { return static_cast<uint64_t>(0x400000000) | static_cast<uint64_t>(index); }

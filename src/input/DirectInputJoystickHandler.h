@@ -63,7 +63,7 @@ public:
       LPDIRECTINPUTDEVICE GetJoystick(int index) const { return m_joysticks[index]; }
    #endif
 
-   void Update() override
+   void Update(const HWND foregroundWindow) override
    {
       int index = 0;
       for (auto joystick : m_joysticks)
@@ -74,7 +74,7 @@ public:
             DWORD dwElements = 64;
             DIDEVICEOBJECTDATA didod[64];
             hr = joystick->GetDeviceData(sizeof(DIDEVICEOBJECTDATA), didod, &dwElements, 0);
-            if ((hr == S_OK || hr == DI_BUFFEROVERFLOW) && (m_focusHWnd == GetForegroundWindow()))
+            if ((hr == S_OK || hr == DI_BUFFEROVERFLOW) && (m_focusHWnd == foregroundWindow))
             {
                uint64_t joyId = GetJoyId(index);
                for (DWORD i = 0; i < dwElements; i++)

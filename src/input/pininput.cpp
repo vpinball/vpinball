@@ -933,12 +933,13 @@ void PinInput::ProcessInput()
    const uint32_t now = msec();
 
    // Gather input from all handlers
+   const HWND foregroundWindow = GetForegroundWindow();
    for (const auto& handler : m_inputHandlers)
-      handler->Update();
+      handler->Update(foregroundWindow);
 
    // Wipe key state if we're not the foreground window as we miss key-up events
    #ifdef _WIN32
-   if (m_focusHWnd != GetForegroundWindow())
+   if (m_focusHWnd != foregroundWindow)
       memset(&m_inputState, 0, sizeof(m_inputState));
    #endif
 

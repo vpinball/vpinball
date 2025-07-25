@@ -334,7 +334,7 @@ OpenPinDevHandler::~OpenPinDevHandler()
 }
 
 // Read input from the Open Pinball Device inputs
-void OpenPinDevHandler::Update()
+void OpenPinDevHandler::Update(const HWND foregroundWindow)
 {
    // Combined report.  In keeping with Visual Pinball's treatment of
    // multiple gamepads, we merge the input across devices if there are

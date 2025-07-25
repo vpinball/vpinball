@@ -47,9 +47,9 @@ public:
          XInputSetState(joy.id, &vibration);
    }
 
-   void Update() override
+   void Update(const HWND foregroundWindow) override
    {
-      if (m_focusHWnd != GetForegroundWindow())
+      if (m_focusHWnd != foregroundWindow)
          return;
 
       using mappingElement = struct

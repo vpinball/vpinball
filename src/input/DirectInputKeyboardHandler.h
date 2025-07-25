@@ -40,9 +40,9 @@ public:
       SAFE_RELEASE(m_pDI);
    }
 
-   void Update() override
+   void Update(const HWND foregroundWindow) override
    {
-      if (m_pKeyboard == nullptr || m_focusHWnd != GetForegroundWindow())
+      if (m_pKeyboard == nullptr || m_focusHWnd != foregroundWindow)
          return;
 
       HRESULT hr = m_pKeyboard->Acquire();
