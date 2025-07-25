@@ -191,7 +191,7 @@ SDL_Rect BitmapFont::MeasureFont(const string& text, double maxWidth)
       lineHeights.push_back(currentLineHeight);
 
    // reduce any lines other than the last back to the base
-   for (int i = 0; i < (int)lineHeights.size() - 1; i++)
+   for (size_t i = 0; i < lineHeights.size() - 1; i++)
       lineHeights[i] = m_lineHeight;
 
    // calculate the final block height
