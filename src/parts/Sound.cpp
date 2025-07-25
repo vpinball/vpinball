@@ -34,23 +34,18 @@ Sound::~Sound()
  */
 Sound* Sound::CreateFromFile(const string& filename)
 {
-   FILE* f;
-   if (fopen_s(&f, filename.c_str(), "rb") != 0 || !f)
+   std::ifstream file(filename, std::ios::binary | std::ios::ate);
+   if (!file)
    {
-      ShowError("Could not open sound file.");
+      const string text = "The file \"" + filename + "\" could not be opened.";
+      ShowError(text);
       return nullptr;
    }
-   fseek(f, 0, SEEK_END);
-   fseek(f, 0, SEEK_SET);
-   int cdata = (int)ftell(f);
+   int cdata = file.tellg();
    uint8_t* pdata = new uint8_t[cdata];
-   if (fread_s(pdata, cdata, 1, cdata, f) < 1)
-   {
-      fclose(f);
-      ShowError("Could not read from sound file.");
-      return nullptr;
-   }
-   fclose(f);
+   file.seekg(0, std::ios::beg);
+   file.read(reinterpret_cast<char*>(pdata), cdata);
+   file.close();
    return new Sound(TitleFromFilename(filename), filename, pdata, cdata);
 }
 
