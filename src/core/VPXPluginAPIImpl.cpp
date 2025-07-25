@@ -305,7 +305,7 @@ string VPXPluginAPIImpl::ApplyScriptCOMObjectOverrides(string& script) const
 {
    if (m_scriptCOMObjectOverrides.empty())
       return script;
-   std::regex re(R"(CreateObject\(\s*\"(.*)\"\s*\))");
+   std::regex re(R"(CreateObject\(\s*\"(.*)\"\s*\))", std::regex::icase);
    std::smatch res;
    string::const_iterator searchStart(script.cbegin());
    std::stringstream result;
