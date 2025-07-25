@@ -3343,9 +3343,9 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                   {
                      // search for duplicate names, do not load dupes
                      for (size_t i = 0; i < m_vsound.size(); ++i)
-                        if (m_vsound[i]->m_name == pps->m_name)
+                        if (m_vsound[i]->GetName() == pps->GetName())
                         {
-                           PLOGE << "Duplicate sound name found: " << pps->m_name << ", not loading it!";
+                           PLOGE << "Duplicate sound name found: " << pps->GetName() << ", not loading it!";
                            delete pps;
                            pps = nullptr;
                            break;
@@ -4169,7 +4169,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
 
 bool PinTable::ExportSound(VPX::Sound *const pps, const char *const szfilename)
 {
-   if(extension_from_path(pps->m_path) == extension_from_path(szfilename))
+   if (extension_from_path(pps->GetImportPath()) == extension_from_path(szfilename))
    {
       if (pps->SaveToFile(szfilename))
          return true;
@@ -4188,20 +4188,9 @@ bool PinTable::ExportSound(VPX::Sound *const pps, const char *const szfilename)
 void PinTable::ReImportSound(VPX::Sound *const pps, const string &filename)
 {
 #ifndef __STANDALONE__
-   FILE *f;
-   if (fopen_s(&f, filename.c_str(), "rb") != 0 || !f)
-      return;
-   fseek(f, 0, SEEK_END);
-   int cdata = (int)ftell(f);
-   fseek(f, 0, SEEK_SET);
-   uint8_t* pdata = new uint8_t[cdata];
-   if (fread_s(pdata, cdata, 1, cdata, f) < 1)
-   {
-      fclose(f);
-      return;
-   }
-   fclose(f);
-   pps->SetFromFileData(filename, pdata, cdata);
+   vector<uint8_t> data = read_file(filename);
+   if (!data.empty())
+      pps->SetFromFileData(filename, data);
 #endif
 }
 
@@ -6556,7 +6545,7 @@ STDMETHODIMP PinTable::put_Offset(float newVal)
 
 VPX::Sound *PinTable::GetSound(const string &name) const
 {
-   auto sound = std::ranges::find_if(m_vsound, [&](const VPX::Sound *const ps) { return StrCompareNoCase(ps->m_name, name); });
+   auto sound = std::ranges::find_if(m_vsound, [&](const VPX::Sound *const ps) { return StrCompareNoCase(ps->GetName(), name); });
    if (sound != m_vsound.end())
       return *sound;
    return nullptr;
@@ -7128,7 +7117,7 @@ string PinTable::AuditTable(bool log) const
    {
       auto specs = audioPlayer->GetSoundInformations(sound);
       if (specs.nChannels > 1 && sound->GetOutputTarget() == VPX::SNDOUT_TABLE)
-         ss << ". Error: sound '" << sound->m_name << "' is used for playfield physical sound but has multiple channels (not mono).\r\n ";
+         ss << ". Error: sound '" << sound->GetName() << "' is used for playfield physical sound but has multiple channels (not mono).\r\n ";
    }
    audioPlayer = nullptr;
 
@@ -7323,11 +7312,11 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
       for (size_t ivar = 0; ivar < cvar; ivar++)
       {
-         const int cwch = (int)m_vsound[ivar]->m_name.length() + 1;
+         const int cwch = (int)m_vsound[ivar]->GetName().length() + 1;
          rgstr[ivar + 1] = (WCHAR *)CoTaskMemAlloc(cwch * sizeof(WCHAR));
          if (rgstr[ivar + 1] == nullptr)
             ShowError("DISPID_Sound alloc failed");
-         MultiByteToWideCharNull(CP_ACP, 0, m_vsound[ivar]->m_name.c_str(), -1, rgstr[ivar + 1], cwch);
+         MultiByteToWideCharNull(CP_ACP, 0, m_vsound[ivar]->GetName().c_str(), -1, rgstr[ivar + 1], cwch);
 
          //MsoWzCopy(szSrc,szDst);
          rgdw[ivar + 1] = (uint32_t)ivar;
@@ -7517,11 +7506,11 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       }
       else
       {
-         const int cwch = MultiByteToWideChar(CP_ACP, 0, m_vsound[dwCookie]->m_name.c_str(), -1, nullptr, 0); //(int)m_vsound[dwCookie]->m_name.length() + 1;
+         const int cwch = MultiByteToWideChar(CP_ACP, 0, m_vsound[dwCookie]->GetName().c_str(), -1, nullptr, 0); //(int)m_vsound[dwCookie]->m_name.length() + 1;
          wzDst = (WCHAR *)malloc(cwch*sizeof(WCHAR));
          if (wzDst == nullptr)
              ShowError("DISPID_Sound alloc failed");
-         MultiByteToWideChar(CP_ACP, 0, m_vsound[dwCookie]->m_name.c_str(), -1, wzDst, cwch);
+         MultiByteToWideChar(CP_ACP, 0, m_vsound[dwCookie]->GetName().c_str(), -1, wzDst, cwch);
       }
    }
    break;

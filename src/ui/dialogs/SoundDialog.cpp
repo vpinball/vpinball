@@ -160,12 +160,12 @@ int SoundDialog::AddListSound(VPX::Sound *const pps)
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
    lvitem.iItem = 0;
    lvitem.iSubItem = 0;
-   lvitem.pszText = (LPSTR)pps->m_name.c_str();
+   lvitem.pszText = (LPSTR)pps->GetName().c_str();
    lvitem.lParam = (size_t)pps;
 
    const int index = ListView_InsertItem(hSoundList, &lvitem);
 
-   ListView_SetItemText(hSoundList, index, 1, (LPSTR)pps->m_path.c_str());
+   ListView_SetItemText(hSoundList, index, 1, (LPSTR)pps->GetImportPath().c_str());
 
    const string pan = f2sz(dequantizeSignedPercent(pps->GetPan()));
    ListView_SetItemText(hSoundList, index, 3, (LPSTR)pan.c_str());
@@ -239,7 +239,7 @@ INT_PTR SoundDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     lvitem.iSubItem = 0;
                     ListView_GetItem( hSoundList, &lvitem );
                     VPX::Sound *const pps = (VPX::Sound *)lvitem.lParam;
-                    pps->m_name = pinfo->item.pszText;
+                    pps->SetName(pinfo->item.pszText);
                     if (pt)
                         pt->SetNonUndoableDirty( eSaveDirty );
                     return TRUE;
@@ -395,18 +395,18 @@ void SoundDialog::ReImport()
                 ListView_GetItem( hSoundList, &lvitem );
                 VPX::Sound *const pps = (VPX::Sound *)lvitem.lParam;
 
-                const HANDLE hFile = CreateFile( pps->m_path.c_str(), GENERIC_READ, FILE_SHARE_READ,
+                const HANDLE hFile = CreateFile(pps->GetImportPath().c_str(), GENERIC_READ, FILE_SHARE_READ,
                                                  nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr );
 
                 if (hFile != INVALID_HANDLE_VALUE)
                 {
                     CloseHandle( hFile );
 
-                    pt->ReImportSound(pps, pps->m_path );
+                    pt->ReImportSound(pps, pps->GetImportPath());
                     pt->SetNonUndoableDirty( eSaveDirty );
                 }
                 else
-                    MessageBox( pps->m_path.c_str(), "FILE NOT FOUND!", MB_OK );
+                   MessageBox(pps->GetImportPath().c_str(), "FILE NOT FOUND!", MB_OK);
 
                 sel = ListView_GetNextItem( hSoundList, sel, LVNI_SELECTED );
             }
@@ -479,16 +479,16 @@ void SoundDialog::Export()
             char filename[MAXSTRING] = {};
             if (!renameOnExport)
             {
-               string filename2 = pps->m_path;
+               string filename2 = pps->GetImportPath();
                const size_t pos = filename2.find_last_of(PATH_SEPARATOR_CHAR);
                filename2 = pos != string::npos ? filename2.substr(pos + 1) : filename2;
                strncpy_s(filename, filename2.c_str(), sizeof(filename) - 1);
             }
             else
             {
-               string filename2 = pps->m_name;
-               const size_t pos = pps->m_path.find_last_of('.');
-               filename2 += pos != string::npos ? pps->m_path.substr(pos) : ".ogg"s;
+               string filename2 = pps->GetName();
+               const size_t pos = pps->GetImportPath().find_last_of('.');
+               filename2 += pos != string::npos ? pps->GetImportPath().substr(pos) : ".ogg"s;
                strncpy_s(filename, filename2.c_str(), sizeof(filename) - 1);
             }
             ofn.lpstrFile = filename;
@@ -514,21 +514,21 @@ void SoundDialog::Export()
                        if (!renameOnExport)
                        {
                           int begin;
-                          for (begin = (int)pps->m_path.length(); begin >= 0; begin--)
+                          for (begin = (int)pps->GetImportPath().length(); begin >= 0; begin--)
                           {
-                             if (pps->m_path[begin] == PATH_SEPARATOR_CHAR)
+                             if (pps->GetImportPath()[begin] == PATH_SEPARATOR_CHAR)
                              {
                                 begin++;
                                 break;
                              }
                           }
-                          strncat_s(filename, pps->m_path.c_str()+begin, sizeof(filename)-strnlen_s(filename, sizeof(filename))-1);
+                          strncat_s(filename, pps->GetImportPath().c_str() + begin, sizeof(filename) - strnlen_s(filename, sizeof(filename)) - 1);
                        }
                        else
                        {
-                          strncat_s(filename, pps->m_name.c_str(), sizeof(filename)-strnlen_s(filename, sizeof(filename))-1);
-                          const size_t idx = pps->m_path.find_last_of('.');
-                          strncat_s(filename, pps->m_path.c_str() + idx, sizeof(filename)-strnlen_s(filename, sizeof(filename))-1);
+                          strncat_s(filename, pps->GetName().c_str(), sizeof(filename) - strnlen_s(filename, sizeof(filename)) - 1);
+                          const size_t idx = pps->GetImportPath().find_last_of('.');
+                          strncat_s(filename, pps->GetImportPath().c_str() + idx, sizeof(filename) - strnlen_s(filename, sizeof(filename)) - 1);
                        }
                     }
 

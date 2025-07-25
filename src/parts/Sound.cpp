@@ -9,11 +9,6 @@
 namespace VPX
 {
 
-Sound::~Sound()
-{
-   delete[] m_pdata;
-}
-
 /**
  * @brief Loads a sound file and initializes a Sound object with its data.
  * 
@@ -34,19 +29,8 @@ Sound::~Sound()
  */
 Sound* Sound::CreateFromFile(const string& filename)
 {
-   std::ifstream file(filename, std::ios::binary | std::ios::ate);
-   if (!file)
-   {
-      const string text = "The file \"" + filename + "\" could not be opened.";
-      ShowError(text);
-      return nullptr;
-   }
-   int cdata = file.tellg();
-   uint8_t* pdata = new uint8_t[cdata];
-   file.seekg(0, std::ios::beg);
-   file.read(reinterpret_cast<char*>(pdata), cdata);
-   file.close();
-   return new Sound(TitleFromFilename(filename), filename, pdata, cdata);
+   vector<uint8_t> file = read_file(filename);
+   return file.empty() ? nullptr : new Sound(TitleFromFilename(filename), filename, file);
 }
 
 struct WaveHeader
@@ -112,13 +96,13 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
 
    // WAV files are stored with a special format, while others are just the raw imported file.
    // We detect and (re)create the appropriate header for WAV files so that they can be treated as other sounds.
-   uint8_t* pdata = nullptr;
+   vector<uint8_t> data;
    if (wav)
    {
       const size_t waveFileSize = sizeof(WaveHeader) + cdata;
-      pdata = new uint8_t[waveFileSize];
+      data.resize(waveFileSize);
       // [Master RIFF chunk]
-      WaveHeader* const waveHeader = reinterpret_cast<WaveHeader*>(pdata);
+      auto const waveHeader = reinterpret_cast<WaveHeader*>(data.data());
       waveHeader->dwRiff = MAKEFOURCC('R', 'I', 'F', 'F');
       waveHeader->dwSize = static_cast<DWORD>(waveFileSize - 8); // File size - 8
       waveHeader->dwWave = MAKEFOURCC('W', 'A', 'V', 'E');
@@ -134,14 +118,13 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
       // [Chunk containing the sampled data]
       waveHeader->dwData = MAKEFOURCC('d', 'a', 't', 'a');
       waveHeader->dwDataSize = static_cast<DWORD>(cdata); // Sampled data size
-      if (FAILED(pstm->Read(pdata + sizeof(WaveHeader), static_cast<ULONG>(cdata), &read)))
+      if (FAILED(pstm->Read(data.data() + sizeof(WaveHeader), static_cast<ULONG>(cdata), &read)))
          return nullptr;
-      cdata = static_cast<int32_t>(waveFileSize);
    }
    else
    {
-      pdata = new uint8_t[cdata];
-      if (FAILED(pstm->Read(pdata, static_cast<ULONG>(cdata), &read)))
+      data.resize(cdata);
+      if (FAILED(pstm->Read(data.data(), static_cast<ULONG>(data.size()), &read)))
          return nullptr;
    }
 
@@ -177,7 +160,7 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
             : SNDOUT_TABLE;
    }
 
-   Sound* const pps = new Sound(name, path, pdata, cdata);
+   Sound* const pps = new Sound(name, path, data);
    pps->SetOutputTarget(static_cast<SoundOutTypes>(outputTarget));
    pps->SetVolume(volume);
    pps->SetPan(pan);
@@ -185,12 +168,10 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
    return pps;
 }
 
-void Sound::SetFromFileData(const string& filename, uint8_t* data, size_t size)
+void Sound::SetFromFileData(std::string_view filename, vector<uint8_t> filedata)
 {
    m_path = filename;
-   delete[] m_pdata;
-   m_pdata = data;
-   m_cdata = size;
+   m_data = std::move(filedata);
 }
 
 bool Sound::SaveToFile(const string& filename) const
@@ -198,7 +179,7 @@ bool Sound::SaveToFile(const string& filename) const
    FILE* f;
    if ((fopen_s(&f, filename.c_str(), "wb") == 0) && f)
    {
-      fwrite(m_pdata, 1, m_cdata, f);
+      fwrite(m_data.data(), 1, m_data.size(), f);
       fclose(f);
       return true;
    }
@@ -220,7 +201,7 @@ void Sound::SaveToStream(IStream* pstm) const
    pstm->Write(&dummyPath, dummyLen, &writ);
    if (isWav(m_path))
    {
-      WaveHeader* const waveHeader = reinterpret_cast<WaveHeader*>(m_pdata);
+      auto const waveHeader = reinterpret_cast<const WaveHeader*>(m_data.data());
       WAVEFORMATEX wfx;
       wfx.wFormatTag = waveHeader->wFormatTag;
       wfx.nChannels = waveHeader->wNChannels;
@@ -230,15 +211,15 @@ void Sound::SaveToStream(IStream* pstm) const
       wfx.wBitsPerSample = waveHeader->wBitsPerSample;
       wfx.cbSize = 0;
       pstm->Write(&wfx, sizeof(WAVEFORMATEX), &writ);
-      const int32_t sampleDataLength = static_cast<int32_t>(m_cdata - sizeof(WaveHeader));
+      const int32_t sampleDataLength = static_cast<int32_t>(m_data.size() - sizeof(WaveHeader));
       pstm->Write(&sampleDataLength, sizeof(int32_t), &writ);
-      pstm->Write(m_pdata + sizeof(WaveHeader), static_cast<ULONG>(sampleDataLength), &writ);
+      pstm->Write(m_data.data() + sizeof(WaveHeader), static_cast<ULONG>(sampleDataLength), &writ);
    }
    else
    {
-      const int32_t dataLength = static_cast<int32_t>(m_cdata);
+      const int32_t dataLength = static_cast<int32_t>(m_data.size());
       pstm->Write(&dataLength, sizeof(int32_t), &writ);
-      pstm->Write(m_pdata, static_cast<ULONG>(dataLength), &writ);
+      pstm->Write(m_data.data(), static_cast<ULONG>(dataLength), &writ);
    }
 
    // Begin NEW_SOUND_FORMAT_VERSION data

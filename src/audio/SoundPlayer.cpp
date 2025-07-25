@@ -262,7 +262,7 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound)
 {
    m_commandQueue.enqueue([this, sound]()
    {
-      SetThreadName("VPX.SoundPlayer ["s.append(sound->m_name).append(1, ']'));
+         SetThreadName("VPX.SoundPlayer ["s.append(sound->GetName()).append(1, ']'));
 
       ma_engine* engine = m_audioPlayer->GetEngine(m_outputTarget);
 

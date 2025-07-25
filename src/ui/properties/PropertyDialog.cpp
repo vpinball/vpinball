@@ -519,7 +519,7 @@ void PropertyDialog::UpdateSoundComboBox(const PinTable *const ptable, const CCo
         combo.ResetContent();
         combo.AddString(_T("<None>"));
         for (size_t i = 0; i < ptable->m_vsound.size(); i++)
-            combo.AddString(ptable->m_vsound[i]->m_name.c_str());
+           combo.AddString(ptable->m_vsound[i]->GetName().c_str());
     }
     combo.SetCurSel(combo.FindStringExact(1, selectName.c_str()));
 }
