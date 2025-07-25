@@ -1082,7 +1082,7 @@ int VPApp::Run()
       }
       else
       {
-         loadFileResult = m_vpinball.LoadFile(!m_play);
+         loadFileResult = m_vpinball.LoadFile(false);
          m_vpinball.m_table_played_via_SelectTableOnStart = loadFileResult;
       }
 
@@ -1115,7 +1115,7 @@ int VPApp::Run()
    int retval = 0;
    if (m_run)
    {
-      if (m_play && loadFileResult)
+      if ((m_play || m_vpinball.m_table_played_via_SelectTableOnStart) && loadFileResult)
          m_vpinball.DoPlay(m_vpinball.m_povEdit);
       retval = MainMsgLoop();
    }
@@ -1129,7 +1129,7 @@ BOOL VPApp::OnIdle(LONG count)
 {
 #ifndef __STANDALONE__
    MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
-   if (m_vpinball.m_table_played_via_SelectTableOnStart)
+   if (!g_pplayer && m_vpinball.m_table_played_via_SelectTableOnStart)
    {
       // If player has been closed in the meantime, check if we should display the file open dialog again to select/play the next table
       // first close the current table
@@ -1139,9 +1139,9 @@ BOOL VPApp::OnIdle(LONG count)
       // then select the new one, and if one was selected, play it
       m_vpinball.m_table_played_via_SelectTableOnStart = m_vpinball.LoadFile(false);
       if (m_vpinball.m_table_played_via_SelectTableOnStart)
-         m_vpinball.DoPlay(false);
+         m_vpinball.DoPlay(0);
    }
-   else if (m_vpinball.m_open_minimized)
+   else if (!g_pplayer && m_vpinball.m_open_minimized)
    {
       // If started to play and for whatever reason (end of play, frontend closing the player window, failed loading,...)
       // we do not have a player, just close back to system.

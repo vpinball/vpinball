@@ -262,7 +262,7 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound)
 {
    m_commandQueue.enqueue([this, sound]()
    {
-         SetThreadName("VPX.SoundPlayer ["s.append(sound->GetName()).append(1, ']'));
+      SetThreadName("VPX.SoundPlayer ["s.append(sound->GetName()).append(1, ']'));
 
       ma_engine* engine = m_audioPlayer->GetEngine(m_outputTarget);
 
@@ -297,7 +297,7 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound)
          return;
       }
       m_monoCompensation = static_cast<float>(m_decoder->outputChannels); // When converting to mono, we average additional channel instead of summing them as this used to be done before, so multiply back
-      
+
       m_sound = std::make_unique<ma_sound>();
       ma_sound_config config = ma_sound_config_init_2(engine);
       config.channelsOut = m_outputTarget == SNDOUT_BACKGLASS ? 2 : 1;
@@ -397,7 +397,7 @@ void SoundPlayer::Play(float volume, const float randompitch, const int pitch, f
          //case SNDCFG_SND3D6CH: ma_sound_set_position(m_sound.get(), PanTo3D(pan), 0.0f, -(PanTo3D(frontRearFade) + 3.f) / 2.f); break;
          //case SNDCFG_SND3DSSF: ma_sound_set_position(m_sound.get(), PanSSF(pan), 0.0f, -FadeSSF(frontRearFade)); break;
       }
-      
+
       m_loopCount = loopcount <  0 ? -1 // Negative value is loop indefenitely
                   : loopcount <= 1 ?  0 // 0 is no loop, and 1 is play once (so no loop either)
                   : (loopcount - 1);    // >= 2 is the number of times to play the sound, so loop once less as we are already playing once

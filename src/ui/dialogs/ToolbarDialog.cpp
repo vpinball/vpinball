@@ -210,7 +210,7 @@ INT_PTR ToolbarDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
 
     switch (msg)
     {
-        case WM_MOUSEACTIVATE:      return OnMouseActivate(msg, wparam, lparam);
+        case WM_MOUSEACTIVATE: return OnMouseActivate(msg, wparam, lparam);
     }
 
     // Pass unhandled messages on to parent DialogProc
@@ -359,12 +359,12 @@ BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         }
         case ID_TABLE_PLAY:
         {
-            g_pvp->DoPlay(false); 
+            g_pvp->DoPlay(0);
             break;
         }
         case ID_TABLE_PLAY_CAMERA:
         {
-            g_pvp->DoPlay(true);  
+            g_pvp->DoPlay(1);
             break;
         }
     }

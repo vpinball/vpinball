@@ -310,7 +310,7 @@ void VPinball::InitRegValues()
 
 void VPinball::AddMDITable(PinTableMDI* mdiTable) 
 {
-    AddMDIChild(mdiTable); 
+   AddMDIChild(mdiTable); 
 }
 
 void VPinball::SetClipboard(vector<IStream*> * const pvstm)
