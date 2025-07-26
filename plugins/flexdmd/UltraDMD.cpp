@@ -74,8 +74,10 @@ UltraDMD::~UltraDMD()
 void UltraDMD::Clear()
 {
    Flex::SurfaceGraphics* pGraphics = m_pFlexDMD->GetGraphics();
-   pGraphics->SetColor(RGB(0, 0, 0));
-   pGraphics->Clear();
+   if (pGraphics) {
+      pGraphics->SetColor(RGB(0, 0, 0));
+      pGraphics->Clear();
+   }
    m_pScoreBoard->SetVisible(false);
    if (m_pQueue->IsFinished())
       m_pQueue->SetVisible(false);

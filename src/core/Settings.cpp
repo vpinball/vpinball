@@ -260,6 +260,20 @@ void Settings::Validate(const bool addDefaults)
    SettingInt(Section::Player, "Stereo3D"s, STEREO_OFF, STEREO_OFF, STEREO_ANAGLYPH_10, "Stereo rendering mode"s);
 
    //////////////////////////////////////////////////////////////////////////
+   // Plugin.FlexDMD
+
+#ifdef __LIBVPINBALL__
+   SettingBool(GetSection("Plugin.FlexDMD"), "Enable"s, true, ""s);
+#endif
+
+   //////////////////////////////////////////////////////////////////////////
+   // Plugin.PUP
+
+#ifdef __LIBVPINBALL__
+   SettingBool(GetSection("Plugin.PUP"), "Enable"s, true, ""s);
+#endif
+
+   //////////////////////////////////////////////////////////////////////////
    // Plugin.ScoreView
 
 #ifdef __LIBVPINBALL__

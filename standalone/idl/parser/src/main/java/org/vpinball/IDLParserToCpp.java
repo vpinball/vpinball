@@ -938,50 +938,6 @@ public class IDLParserToCpp {
 				true);
 		
 		parser.parse(
-				"../../inc/ultradmd/UltraDMD.idl",
-				"ultradmd_i_proxy.cpp",
-				Arrays.asList(
-						new IDLInterface("IDMDObject", "UltraDMDDMDObject")),
-				Arrays.asList("UltraDMDDMDObject.h"),
-				true);
-
-		parser.parse(
-			"../../inc/flexdmd/FlexDMD.idl",
-			"flexdmd_i_proxy.cpp",
-			Arrays.asList(
-				new IDLInterface("IFlexDMD", "FlexDMD"),
-				new IDLInterface("IGroupActor", "Group", "Object"),
-				new IDLInterface("IFrameActor", "Frame", "Object"),
-				new IDLInterface("ICompositeAction", "SequenceAction", "Object"),
-				new IDLInterface("ICompositeAction", "ParallelAction", "Object"),
-				new IDLInterface("ITweenAction", "TweenAction", "Object"),
-				new IDLInterface("IActionFactory", "ActionFactory", "Object"),
-				new IDLInterface("IImageActor", "Image", "Object"),
-				new IDLInterface("IVideoActor", "AnimatedActor", "Object"),
-				new IDLInterface("ILabelActor", "Label", "Object")),
-			Arrays.asList(
-					"FlexDMD.h",
-					"actions/ActionFactory.h",
-					"actions/SequenceAction.h",
-					"actions/ParallelAction.h",
-					"actions/TweenAction.h",
-					"actors/Frame.h",
-					"actors/Group.h",
-					"actors/Image.h",
-					"actors/Label.h",
-					"actors/AnimatedActor.h"),
-			true);
-		
-		parser.parse(
-			"../../inc/ultradmd/UltraDMD.idl",
-			"flexudmd_i_proxy.cpp",
-			Arrays.asList(
-					new IDLInterface("IDMDObject", "UltraDMD")),
-			Arrays.asList(
-					"UltraDMD.h"),
-			true);
-
-		parser.parse(
 			"../../inc/vpinmame/VPinMAME.idl",
 			"vpinmame_i_proxy.cpp",
 			Arrays.asList(

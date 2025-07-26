@@ -895,8 +895,6 @@ HRESULT external_open_storage(const OLECHAR* pwcsName, IStorage* pstgPriority, D
 }
 
 #include "standalone/inc/vpinmame/VPinMAMEController.h"
-#include "standalone/inc/flexdmd/FlexDMD.h"
-#include "standalone/inc/ultradmd/UltraDMDDMDObject.h"
 #include "standalone/inc/b2s/Server.h"
 
 HRESULT external_create_object(const WCHAR* progid, IClassFactory* cf, IUnknown* obj)
@@ -909,16 +907,6 @@ HRESULT external_create_object(const WCHAR* progid, IClassFactory* cf, IUnknown*
       Settings::Section section = pSettings->GetSection("Plugin.PinMAME");
       if (!pSettings->LoadValueWithDefault(section, "Enable"s, false))
          hres = (new VPinMAMEController())->QueryInterface(IID_IController, (void**)obj);
-   }
-   else if (!wcsicmp(progid, L"FlexDMD.FlexDMD")) {
-      Settings::Section section = pSettings->GetSection("Plugin.FlexDMD");
-      if (!pSettings->LoadValueWithDefault(section, "Enable"s, false))
-         hres = (new FlexDMD())->QueryInterface(IID_IFlexDMD, (void**)obj);
-   }
-   else if (!wcsicmp(progid, L"UltraDMD.DMDObject")) {
-      Settings::Section section = pSettings->GetSection("Plugin.FlexDMD");
-      if (!pSettings->LoadValueWithDefault(section, "Enable"s, false))
-         hres = (new UltraDMDDMDObject())->QueryInterface(IID_IDMDObject, (void**)obj);
    }
    else if (!wcsicmp(progid, L"B2S.Server")) {
       Settings::Section section = pSettings->GetSection("Plugin.PinMAME");

@@ -61,9 +61,6 @@ tasks {
         from("${layout.buildDirectory}/../../../../plugins/flexdmd/assets") {
            into("plugins/flexdmd/assets")
         }
-        from("${layout.buildDirectory}/../../../../standalone/inc/flexdmd/resources") {
-            into("flexdmd")
-        }
         into(destinationDir)
     }
 
