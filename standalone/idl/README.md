@@ -6,10 +6,7 @@ We provide two custom Java-based IDL parsers to generate code for Visual Pinball
   Parses COM IDL files from Visual Pinball and related components, emitting C++ stubs that implement `IDispatch::GetIDsOfNames` and `IDispatch::Invoke`. Generates code for:  
   - `vpinball.idl`  
   - `B2S.idl`  
-  - `UltraDMD.idl`  
-  - `FlexDMD.idl`  
   - `VPinMAME.idl`  
-  - `wmp.idl`
 
 - **IDLParserToC.java**  
   Parses COM IDL files from Wine, emitting C stubs that implement `IDispatch::GetIDsOfNames` and `IDispatch::Invoke`. Generates code for:  
@@ -30,7 +27,6 @@ Both parsers reverse-engineer the name-to-DISPID mappings and invocation logic n
 
 - `standalone/vpinball_standalone_i_proxy.cpp`
 - `standalone/inc/b2s/b2s_i_proxy.cpp`
-- `standalone/inc/flexdmd/flexudmd_i_proxy.cpp` (clone of `UltraDMD.idl`, FlexDMD emulates UltraDMD)
 - `standalone/inc/wine/dlls/scrrun/dictionary_proxy.c`
 - `standalone/inc/wine/dlls/vbscript/regexp_proxy.c`
 
@@ -55,44 +51,7 @@ if (wFlags & DISPATCH_METHOD) {
 else
 ```
 
-### 2. `standalone/inc/flexdmd/flexdmd_i_proxy.cpp`
-
-For the following entries:
-
-```
-// line 554: [id(0x6002001b), propputref]HRESULT Bitmap([in] _Bitmap* pRetVal);
-// line 738: [id(0x6002001f), propputref]HRESULT Font([in] IUnknown* pRetVal);
-// line 829: [id(0x60020019), propputref]HRESULT Segments([in] VARIANT rhs);
-```
-
-Replace:
-
-```
-if (wFlags & DISPATCH_PROPERTYPUTREF)
-```
-
-with:
-
-```
-if ((wFlags & DISPATCH_PROPERTYPUTREF) || (wFlags & DISPATCH_PROPERTYPUT))
-```
-
-### 3. `standalone/inc/ultradmd/ultradmd_i_proxy.cpp`
-
-Copy the following entries from the `FlexDMD` `GetIDsOfNames` and `Invoke` interface functions (`flexdmd_i_proxy.cpp`) into the `UltraDMDDMDObject` interface:
-
-```
-DmdColoredPixels
-DmdPixels
-Height
-LoadSetup
-Width
-```
-
-> [!NOTE]
-> `GetIDsOfNames` has to be in case-insensitive order.
-
-### 4. `standalone/inc/wine/dlls/scrrun/filesystem_proxy.c`
+### 2. `standalone/inc/wine/dlls/scrrun/filesystem_proxy.c`
 
 Copy the following entries from the `IFileSystem3` `GetIDsOfNames` and `Invoke` interface functions into the `IFileSystem` interface:
 
@@ -134,7 +93,7 @@ static HRESULT WINAPI filesys_Invoke(IFileSystem3 *iface, DISPID dispIdMember,
 
 ### Generate IDL for projects without IDL:
 
-FlexDMD, and B2SServer do not supply IDL files as they are either C#, VB, or closed source.
+B2SServer does not supply IDL files.
 
 To generate an IDL file from a DLL or EXE:
 
@@ -166,7 +125,7 @@ brew install llvm lld
 git clone https://gitlab.winehq.org/wine/wine.git
 cd wine
 export PATH="/opt/homebrew/opt/llvm/bin:/opt/homebrew/opt/bison/bin:$PATH"
-./configure --without-freetype
+./configure --without-freetype --enable-win64
 make -j10
 ```
 

@@ -218,7 +218,6 @@ jobs:
             cp -r build/${{ matrix.config }}/scripts stage
             cp -r build/${{ matrix.config }}/tables stage
             cp -r build/${{ matrix.config }}/docs stage
-            cp -r build/${{ matrix.config }}/flexdmd stage
             tar czf tmp/VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}.tar.gz -C stage .
           fi
       - name: Upload artifacts

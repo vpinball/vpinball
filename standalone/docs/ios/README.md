@@ -298,11 +298,11 @@ In settings, select *DMDServer* for *DMD Type* and enter the correct *Address* a
 
 **Q: Does *Visual Pinball* for iOS support B2S and PuP?**
 
-**A:** *Visual Pinball for iOS* is capable of rendering the B2S and PuP windows. However, due to SDL's current limitations on iOS, only one window can be rendered at a time. A solution for this is being explored.
+**A:** *Visual Pinball for iOS* is capable of rendering the B2S and PuP windows.
 
 **Q: Is it possible to get a cabinet view with a DMD overlaid in the corner of the screen?**
 
-**A:** *Visual Pinball for iOS* can render the DMD window (PinMAME or FlexDMD). However, due to SDL's current limitations on iOS, only one window can be rendered at a time. A solution for this is being explored.
+**A:** *Visual Pinball for iOS* can render the DMD window (PinMAME or FlexDMD).
 
 **Q: Can *Visual Pinball for iOS* be customized to do this or that?**
 
