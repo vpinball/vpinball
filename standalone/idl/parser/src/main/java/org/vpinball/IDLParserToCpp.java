@@ -936,27 +936,6 @@ public class IDLParserToCpp {
 						new IDLInterface("_Server", "Server")),
 				Arrays.asList("Server.h"),
 				true);
-		
-		parser.parse(
-			"../../inc/vpinmame/VPinMAME.idl",
-			"vpinmame_i_proxy.cpp",
-			Arrays.asList(
-				new IDLInterface("IController", "VPinMAMEController", "Controller"),
-				new IDLInterface("IControllerSettings", "VPinMAMEControllerSettings", "ControllerSettings"),
-				new IDLInterface("IGame", "VPinMAMEGame", "Game"),
-				new IDLInterface("IGames", "VPinMAMEGames", "Games"),
-				new IDLInterface("IGameSettings", "VPinMAMEGameSettings", "GameSettings"),
-				new IDLInterface("IRom", "VPinMAMERom", "Rom"),
-				new IDLInterface("IRoms", "VPinMAMERoms", "Roms")),
-			Arrays.asList(
-				"VPinMAMEController.h",
-				"VPinMAMEControllerSettings.h",
-				"VPinMAMEGame.h",
-				"VPinMAMEGames.h",
-				"VPinMAMEGameSettings.h",
-				"VPinMAMERom.h",
-				"VPinMAMERoms.h"),
-		true);
 
 		parser.parse(
 			"../../../src/core/vpinball.idl",

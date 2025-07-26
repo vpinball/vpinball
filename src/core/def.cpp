@@ -894,7 +894,6 @@ HRESULT external_open_storage(const OLECHAR* pwcsName, IStorage* pstgPriority, D
    return PoleStorage::Create(szName, "/", (IStorage**)ppstgOpen);
 }
 
-#include "standalone/inc/vpinmame/VPinMAMEController.h"
 #include "standalone/inc/b2s/Server.h"
 
 HRESULT external_create_object(const WCHAR* progid, IClassFactory* cf, IUnknown* obj)
@@ -903,12 +902,7 @@ HRESULT external_create_object(const WCHAR* progid, IClassFactory* cf, IUnknown*
 
    Settings* pSettings = &g_pplayer->m_ptable->m_settings;
 
-   if (!wcsicmp(progid, L"VPinMAME.Controller")) {
-      Settings::Section section = pSettings->GetSection("Plugin.PinMAME");
-      if (!pSettings->LoadValueWithDefault(section, "Enable"s, false))
-         hres = (new VPinMAMEController())->QueryInterface(IID_IController, (void**)obj);
-   }
-   else if (!wcsicmp(progid, L"B2S.Server")) {
+   if (!wcsicmp(progid, L"B2S.Server")) {
       Settings::Section section = pSettings->GetSection("Plugin.PinMAME");
       if (!pSettings->LoadValueWithDefault(section, "Enable"s, false))
          hres = (new Server())->QueryInterface(IID__Server, (void**)obj);

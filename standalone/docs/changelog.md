@@ -8,6 +8,7 @@ The downside of this approach is not accurately keeping track of history:
     * Replaced standalone WMP player with new WMP Plugin (bloodm, ag)
     * Removed standalone PUP player in favor of PUP Plugin
     * Removed standalone FlexDMD/UltraDMD in favor of FlexDMD Plugin
+    * Removed standalone VPinMAMEController in favor of PinMAME Plugin
 
 * 07/24/25
     * Added libdof support for matrix shift effects

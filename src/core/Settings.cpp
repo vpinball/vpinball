@@ -267,6 +267,13 @@ void Settings::Validate(const bool addDefaults)
 #endif
 
    //////////////////////////////////////////////////////////////////////////
+   // Plugin.PinMAME
+
+#ifdef __LIBVPINBALL__
+   SettingBool(GetSection("Plugin.PinMAME"), "Enable"s, true, ""s);
+#endif
+
+   //////////////////////////////////////////////////////////////////////////
    // Plugin.PUP
 
 #ifdef __LIBVPINBALL__

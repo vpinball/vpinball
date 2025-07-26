@@ -2,7 +2,6 @@
 
 #include "b2s_i.h"
 
-#include "../vpinmame/VPinMAMEController.h"
 #include "forms/FormBackglass.h"
 #include "classes/B2SCollectData.h"
 #include "../common/Timer.h"

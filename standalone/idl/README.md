@@ -6,7 +6,6 @@ We provide two custom Java-based IDL parsers to generate code for Visual Pinball
   Parses COM IDL files from Visual Pinball and related components, emitting C++ stubs that implement `IDispatch::GetIDsOfNames` and `IDispatch::Invoke`. Generates code for:  
   - `vpinball.idl`  
   - `B2S.idl`  
-  - `VPinMAME.idl`  
 
 - **IDLParserToC.java**  
   Parses COM IDL files from Wine, emitting C stubs that implement `IDispatch::GetIDsOfNames` and `IDispatch::Invoke`. Generates code for:  
@@ -34,24 +33,7 @@ Both parsers reverse-engineer the name-to-DISPID mappings and invocation logic n
 
 ## Files **With** Manual Edits
 
-### 1. `standalone/inc/vpinmame/vpinmame_i_proxy.cpp`
-
-For the entry:
-
-```
-// line 212: [propget, id(51), helpstring("property Games")] HRESULT Games([out, retval] IGames* *pVal);
-```
-
-Add:
-
-```cpp
-if (wFlags & DISPATCH_METHOD) {
-	hres = m_pGames->Invoke(DISPID_VALUE, IID_IGames, lcid, DISPATCH_PROPERTYGET, pDispParams, &res, pExcepInfo, puArgErr);
-}
-else
-```
-
-### 2. `standalone/inc/wine/dlls/scrrun/filesystem_proxy.c`
+### 1. `standalone/inc/wine/dlls/scrrun/filesystem_proxy.c`
 
 Copy the following entries from the `IFileSystem3` `GetIDsOfNames` and `Invoke` interface functions into the `IFileSystem` interface:
 

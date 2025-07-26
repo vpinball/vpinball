@@ -144,6 +144,8 @@ public:
 
    const string& GetVpmPath() const { return m_vpmPath; }
 
+   void SetCheat(int cheat) { m_cheat = cheat; }
+
 private:
    string m_vpmPath;
    PinmameGame* m_pPinmameGame = nullptr; // Game selected by setting GameName property
@@ -167,6 +169,8 @@ private:
    void (*m_onDestroyHandler)(Controller*) = nullptr;
    void (*m_onGameStartHandler)(Controller*) = nullptr;
    void (*m_onGameEndHandler)(Controller*) = nullptr;
+
+   int m_cheat = 0;
 };
 
 }

@@ -36,24 +36,6 @@ set(VPX_STANDALONE_SOURCES
    ${VPX_SOURCES}
    ${WINE_SOURCES}
 
-   standalone/inc/vpinmame/VPinMAMEController.cpp
-   standalone/inc/vpinmame/VPinMAMEController.h
-   standalone/inc/vpinmame/VPinMAMEControllerSettings.cpp
-   standalone/inc/vpinmame/VPinMAMEControllerSettings.h
-   standalone/inc/vpinmame/VPinMAMEGame.cpp
-   standalone/inc/vpinmame/VPinMAMEGame.h
-   standalone/inc/vpinmame/VPinMAMEGames.cpp
-   standalone/inc/vpinmame/VPinMAMEGames.h
-   standalone/inc/vpinmame/VPinMAMEGameSettings.cpp
-   standalone/inc/vpinmame/VPinMAMEGameSettings.h
-   standalone/inc/vpinmame/VPinMAMERom.cpp
-   standalone/inc/vpinmame/VPinMAMERom.h
-   standalone/inc/vpinmame/VPinMAMERoms.cpp
-   standalone/inc/vpinmame/VPinMAMERoms.h
-   standalone/inc/vpinmame/vpinmame_i_proxy.cpp
-   standalone/inc/vpinmame/vpinmame_i.c
-   standalone/inc/vpinmame/vpinmame_i.h
-
    standalone/inc/b2s/classes/AnimationInfo.cpp
    standalone/inc/b2s/classes/AnimationInfo.h
    standalone/inc/b2s/classes/B2SAnimation.cpp
@@ -147,12 +129,8 @@ set(VPX_STANDALONE_SOURCES
    standalone/inc/dof/DOFPlugin.cpp
    standalone/inc/dof/DOFPlugin.h
 
-   standalone/inc/common/DMDWindow.cpp
-   standalone/inc/common/DMDWindow.h
    standalone/inc/common/RendererGraphics.cpp
    standalone/inc/common/RendererGraphics.h
-   standalone/inc/common/SurfaceGraphics.cpp
-   standalone/inc/common/SurfaceGraphics.h
    standalone/inc/common/GraphicsPath.cpp
    standalone/inc/common/GraphicsPath.h
    standalone/inc/common/Matrix.cpp
