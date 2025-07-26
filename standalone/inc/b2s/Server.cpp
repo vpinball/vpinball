@@ -184,21 +184,23 @@ STDMETHODIMP Server::get_B2SServerDirectory(BSTR *pRetVal)
 
 STDMETHODIMP Server::get_GameName(BSTR *pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->get_GameName(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::put_GameName(BSTR pRetVal)
 {
-   m_pB2SData->GetVPinMAME()->put_GameName(pRetVal);
-   m_pB2SSettings->SetGameName(MakeString(pRetVal));
-   m_pB2SSettings->SetB2SName(string());
+   PLOGW << "Not implemented";
 
    return S_OK;
 }
 
 STDMETHODIMP Server::get_ROMName(BSTR *pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->get_ROMName(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_B2SName(BSTR *pRetVal)
@@ -252,81 +254,58 @@ STDMETHODIMP Server::SetPath(BSTR path)
 
 STDMETHODIMP Server::get_Games(BSTR GameName, VARIANT *pRetVal)
 {
-   IGames* pGames;
-   IGame* pGame;
+   PLOGW << "Not implemented";
 
-   HRESULT hres = m_pB2SData->GetVPinMAME()->get_Games(&pGames);
-
-   if (SUCCEEDED(hres)) {
-      VARIANT var0;
-      V_VT(&var0) = VT_BSTR;
-      V_BSTR(&var0) = SysAllocString(GameName);
-
-      hres = pGames->get_Item(&var0, &pGame);
-
-      VariantClear(&var0);
-
-      if (SUCCEEDED(hres)) {
-         V_VT(pRetVal) = VT_DISPATCH;
-         V_DISPATCH(pRetVal) = pGame;
-      }
-
-      pGames->Release();
-   }
-
-   return hres;
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_Settings(VARIANT *pRetVal)
 {
-   IControllerSettings* pSettings;
+   PLOGW << "Not implemented";
 
-   HRESULT hres = m_pB2SData->GetVPinMAME()->get_Settings(&pSettings);
-
-   if (SUCCEEDED(hres)) {
-      V_VT(pRetVal) = VT_DISPATCH;
-      V_DISPATCH(pRetVal) = pSettings;
-   }
-
-   return hres;
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_Running(VARIANT_BOOL *pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->get_Running(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::put_TimeFence(double timeInS)
 {
-   return m_pB2SData->GetVPinMAME()->put_TimeFence(timeInS);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_Pause(VARIANT_BOOL *pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->get_Pause(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::put_Pause(VARIANT_BOOL pRetVal)
 {
-   HRESULT hres = m_pB2SData->GetVPinMAME()->put_Pause(pRetVal);
+   PLOGW << "Not implemented";
 
-   if (m_pB2SSettings->ArePluginsOn()) {
-      if (pRetVal == VARIANT_TRUE)
-         m_pB2SSettings->GetPluginHost()->PinMamePause();
-      else
-         m_pB2SSettings->GetPluginHost()->PinMameContinue();
-   }
-   return hres;
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_Version(BSTR *pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->get_Version(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_VPMBuildVersion(BSTR *pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->get_Version(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::Run(VARIANT handle)
@@ -344,7 +323,7 @@ STDMETHODIMP Server::Run(VARIANT handle)
       VARIANT var0;
       V_VT(&var0) = VT_EMPTY;
       VariantChangeType(&var0, &handle, 0, VT_I4);
-      m_pB2SData->GetVPinMAME()->Run(V_I4(&var0));
+      //m_pB2SData->GetVPinMAME()->Run(V_I4(&var0));
 
       if (m_pB2SSettings->ArePluginsOn())
          m_pB2SSettings->GetPluginHost()->PinMameRun();
@@ -390,144 +369,142 @@ STDMETHODIMP Server::put_LaunchBackglass(VARIANT_BOOL pRetVal)
 
 STDMETHODIMP Server::get_SplashInfoLine(BSTR *pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->get_SplashInfoLine(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::put_SplashInfoLine(BSTR pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->put_SplashInfoLine(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_ShowFrame(VARIANT_BOOL *pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->get_ShowFrame(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::put_ShowFrame(VARIANT_BOOL pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->put_ShowFrame(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_ShowTitle(VARIANT_BOOL *pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->get_ShowTitle(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::put_ShowTitle(VARIANT_BOOL pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->put_ShowTitle(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_ShowDMDOnly(VARIANT_BOOL *pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->get_ShowDMDOnly(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::put_ShowDMDOnly(VARIANT_BOOL pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->put_ShowDMDOnly(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_ShowPinDMD(VARIANT_BOOL *pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->get_ShowPinDMD(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::put_ShowPinDMD(VARIANT_BOOL pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->put_ShowPinDMD(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_LockDisplay(VARIANT_BOOL *pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->get_LockDisplay(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::put_LockDisplay(VARIANT_BOOL pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->put_LockDisplay(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_DoubleSize(VARIANT_BOOL *pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->get_DoubleSize(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::put_DoubleSize(VARIANT_BOOL pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->put_DoubleSize(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_Hidden(VARIANT_BOOL *pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->get_Hidden(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::put_Hidden(VARIANT_BOOL pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->put_Hidden(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::SetDisplayPosition(VARIANT x, VARIANT y, VARIANT handle)
 {
-   VARIANT var0;
-   V_VT(&var0) = VT_EMPTY;
-   VariantChangeType(&var0, &x, 0, VT_I4);
+   PLOGW << "Not implemented";
 
-   VARIANT var1;
-   V_VT(&var1) = VT_EMPTY;
-   VariantChangeType(&var1, &y, 0, VT_I4);
-
-   VARIANT var2;
-   V_VT(&var2) = VT_EMPTY;
-   VariantChangeType(&var2, &handle, 0, VT_I4);
-
-   HRESULT hres = m_pB2SData->GetVPinMAME()->SetDisplayPosition(V_I4(&var0), V_I4(&var1), V_I4(&var2));
-
-   VariantClear(&var0);
-   VariantClear(&var1);
-   VariantClear(&var2);
-
-   return hres;
+   return S_OK;
 }
 
 STDMETHODIMP Server::ShowOptsDialog(VARIANT handle)
 {
-   VARIANT var0;
-   V_VT(&var0) = VT_EMPTY;
-   VariantChangeType(&var0, &handle, 0, VT_I4);
+   PLOGW << "Not implemented";
 
-   HRESULT hres = m_pB2SData->GetVPinMAME()->ShowOptsDialog(V_I4(&var0));
-
-   VariantClear(&var0);
-
-   return hres;
+   return S_OK;
 }
 
 STDMETHODIMP Server::ShowPathesDialog(VARIANT handle)
 {
-   VARIANT var0;
-   V_VT(&var0) = VT_EMPTY;
-   VariantChangeType(&var0, &handle, 0, VT_I4);
+   PLOGW << "Not implemented";
 
-   HRESULT hres = m_pB2SData->GetVPinMAME()->ShowPathesDialog(V_I4(&var0));
-
-   VariantClear(&var0);
-
-   return hres;
+   return S_OK;
 }
 
 STDMETHODIMP Server::ShowAboutDialog(VARIANT handle)
 {
-   VARIANT var0;
-   V_VT(&var0) = VT_EMPTY;
-   VariantChangeType(&var0, &handle, 0, VT_I4);
+   PLOGW << "Not implemented";
 
-   HRESULT hres = m_pB2SData->GetVPinMAME()->ShowAboutDialog(V_I4(&var0));
-
-   VariantClear(&var0);
-
-   return hres;
+   return S_OK;
 }
 
 STDMETHODIMP Server::CheckROMS(VARIANT showoptions, VARIANT handle)
@@ -556,22 +533,30 @@ STDMETHODIMP Server::put_PuPHide(VARIANT_BOOL pRetVal)
 
 STDMETHODIMP Server::get_HandleKeyboard(VARIANT_BOOL *pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->get_HandleKeyboard(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::put_HandleKeyboard(VARIANT_BOOL pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->put_HandleKeyboard(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_HandleMechanics(short *pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->get_HandleMechanics(reinterpret_cast<int*>(pRetVal));
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::put_HandleMechanics(short pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->put_HandleMechanics(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_ChangedLamps(VARIANT *pRetVal)
@@ -600,78 +585,44 @@ STDMETHODIMP Server::get_ChangedLEDs(VARIANT mask2, VARIANT mask1, VARIANT mask3
 
 STDMETHODIMP Server::get_NewSoundCommands(VARIANT *pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->get_NewSoundCommands(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_Lamp(VARIANT number, VARIANT_BOOL *pRetVal)
 {
-   VARIANT var0;
-   V_VT(&var0) = VT_EMPTY;
-   VariantChangeType(&var0, &number, 0, VT_I4);
+   PLOGW << "Not implemented";
 
-   HRESULT hres = m_pB2SData->GetVPinMAME()->get_Lamp(V_I4(&var0), pRetVal);
-
-   VariantClear(&var0);
-
-   return hres;
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_Solenoid(VARIANT number, VARIANT_BOOL *pRetVal)
 {
-   VARIANT var0;
-   V_VT(&var0) = VT_EMPTY;
-   VariantChangeType(&var0, &number, 0, VT_I4);
+   PLOGW << "Not implemented";
 
-   HRESULT hres = m_pB2SData->GetVPinMAME()->get_Solenoid(V_I4(&var0), pRetVal);
-
-   VariantClear(&var0);
-
-   return hres;
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_GIString(VARIANT number, VARIANT_BOOL *pRetVal)
 {
-   VARIANT var0;
-   V_VT(&var0) = VT_EMPTY;
-   VariantChangeType(&var0, &number, 0, VT_I4);
+   PLOGW << "Not implemented";
 
-   int val;
-   HRESULT hres = m_pB2SData->GetVPinMAME()->get_GIString(V_I4(&var0), &val);
-   if (hres == S_OK)
-      *pRetVal = val ? VARIANT_TRUE : VARIANT_FALSE;
-
-   VariantClear(&var0);
-
-   return hres;
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_Switch(VARIANT number, VARIANT_BOOL *pRetVal)
 {
-   VARIANT var0;
-   V_VT(&var0) = VT_EMPTY;
-   VariantChangeType(&var0, &number, 0, VT_I4);
+   PLOGW << "Not implemented";
 
-   HRESULT hres = m_pB2SData->GetVPinMAME()->get_Switch(V_I4(&var0), pRetVal);
-
-   VariantClear(&var0);
-
-   return hres;
+   return S_OK;
 }
 
 STDMETHODIMP Server::put_Switch(VARIANT number, VARIANT_BOOL pRetVal)
 {
-   VARIANT var0;
-   V_VT(&var0) = VT_EMPTY;
-   VariantChangeType(&var0, &number, 0, VT_I4);
+   PLOGW << "Not implemented";
 
-   HRESULT hres = m_pB2SData->GetVPinMAME()->put_Switch(V_I4(&var0), pRetVal);
-
-   if (m_pB2SSettings->ArePluginsOn())
-      m_pB2SSettings->GetPluginHost()->DataReceive('W', V_I4(&var0), pRetVal == VARIANT_TRUE ? 1 : 0 );
-
-   VariantClear(&var0);
-
-   return hres;
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_Mech(VARIANT number, LONG *pRetVal)
@@ -683,139 +634,100 @@ STDMETHODIMP Server::get_Mech(VARIANT number, LONG *pRetVal)
 
 STDMETHODIMP Server::put_Mech(VARIANT number, LONG pRetVal)
 {
-   VARIANT var0;
-   V_VT(&var0) = VT_EMPTY;
-   VariantChangeType(&var0, &number, 0, VT_I4);
+   PLOGW << "Not implemented";
 
-   HRESULT hres = m_pB2SData->GetVPinMAME()->put_Mech(V_I4(&var0), pRetVal);
-
-   VariantClear(&var0);
-
-   return hres;
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_GetMech(VARIANT number, VARIANT *pRetVal)
 {
-   VARIANT var0;
-   V_VT(&var0) = VT_EMPTY;
-   VariantChangeType(&var0, &number, 0, VT_I4);
+   PLOGW << "Not implemented";
 
-   int val;
-   HRESULT hres = m_pB2SData->GetVPinMAME()->get_GetMech(V_I4(&var0), &val);
-   V_VT(pRetVal) = VT_I4;
-   V_I4(pRetVal) = val;
-
-   if (m_pB2SData->IsBackglassRunning())
-      CheckGetMech(V_I4(&var0), val);
-
-   if (m_pB2SSettings->ArePluginsOn())
-      m_pB2SSettings->GetPluginHost()->DataReceive('N', V_I4(&var0), val);
-
-   VariantClear(&var0);
-
-   return hres;
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_Dip(VARIANT number, LONG *pRetVal)
 {
-   VARIANT var0;
-   V_VT(&var0) = VT_EMPTY;
-   VariantChangeType(&var0, &number, 0, VT_I4);
+   PLOGW << "Not implemented";
 
-   HRESULT hres = m_pB2SData->GetVPinMAME()->get_Dip(V_I4(&var0), pRetVal);
-
-   VariantClear(&var0);
-
-   return hres;
+   return S_OK;
 }
 
 STDMETHODIMP Server::put_Dip(VARIANT number, LONG pRetVal)
 {
-   VARIANT var0;
-   V_VT(&var0) = VT_EMPTY;
-   VariantChangeType(&var0, &number, 0, VT_I4);
+   PLOGW << "Not implemented";
 
-   HRESULT hres = m_pB2SData->GetVPinMAME()->put_Dip(V_I4(&var0), pRetVal);
-
-   VariantClear(&var0);
-
-   return hres;
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_SolMask(VARIANT number, LONG *pRetVal)
 {
-   VARIANT var0;
-   V_VT(&var0) = VT_EMPTY;
-   VariantChangeType(&var0, &number, 0, VT_I4);
+   PLOGW << "Not implemented";
 
-   HRESULT hres = m_pB2SData->GetVPinMAME()->get_SolMask(V_I4(&var0), pRetVal);
-
-   VariantClear(&var0);
-
-   return hres;
+   return S_OK;
 }
 
 STDMETHODIMP Server::put_SolMask(VARIANT number, LONG pRetVal)
 {
-   VARIANT var0;
-   V_VT(&var0) = VT_EMPTY;
-   VariantChangeType(&var0, &number, 0, VT_I4);
+   PLOGW << "Not implemented";
 
-   HRESULT hres = m_pB2SData->GetVPinMAME()->put_SolMask(V_I4(&var0), pRetVal);
-
-   // There is a new setting for VPinMame.SolMask(2) to set the output mode:
-   // 0 = default
-   // 1 = modulated (PWM) solenoid (exist for some years already)
-   // 2 = new PWM mode (all solenoids but also lamps, and value if physic meaning, not smoothed out binary state)
-   // For this new mode, we now hardcode a value 64, if the lamp intensity exceed this value, it is binary 1
-   if (V_I4(&var0) == 2)
-      m_lampThreshold = (pRetVal == 2) ? 64 : 0;
-   if (V_I4(&var0) == 2)
-      m_giStringThreshold = (pRetVal == 2) ? 64 : 4;
-
-   VariantClear(&var0);
-
-   return hres;
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_RawDmdWidth(LONG *pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->get_RawDmdWidth(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_RawDmdHeight(LONG *pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->get_RawDmdHeight(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_RawDmdPixels(VARIANT *pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->get_RawDmdPixels(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_RawDmdColoredPixels(VARIANT *pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->get_RawDmdColoredPixels(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_ChangedNVRAM(VARIANT *pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->get_ChangedNVRAM(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_NVRAM(VARIANT *pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->get_NVRAM(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::get_SoundMode(LONG *pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->get_SoundMode(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;;
 }
 
 STDMETHODIMP Server::put_SoundMode(LONG pRetVal)
 {
-   return m_pB2SData->GetVPinMAME()->put_SoundMode(pRetVal);
+   PLOGW << "Not implemented";
+
+   return S_OK;
 }
 
 STDMETHODIMP Server::B2SSetData(VARIANT idORname, VARIANT value)
@@ -1461,83 +1373,30 @@ STDMETHODIMP Server::B2SMapSound(VARIANT digit, BSTR soundname)
 
 HRESULT Server::GetChangedLamps(VARIANT *pRetVal)
 {
-   HRESULT hres = m_pB2SData->GetVPinMAME()->get_ChangedLamps(pRetVal);
+   PLOGW << "Not implemented";
 
-   SAFEARRAY* psa = pRetVal && V_VT(pRetVal) == (VT_ARRAY | VT_VARIANT) ? V_ARRAY(pRetVal) : NULL;
-
-   if (m_pB2SData->IsLampsData())
-      CheckLamps(psa);
-
-   if (m_pB2SSettings->ArePluginsOn())
-      m_pB2SSettings->GetPluginHost()->DataReceive('L', psa);
-
-   return hres;
+   return S_OK;
 }
 
 HRESULT Server::GetChangedSolenoids(VARIANT *pRetVal)
 {
-   HRESULT hres = m_pB2SData->GetVPinMAME()->get_ChangedSolenoids(pRetVal);
+   PLOGW << "Not implemented";
 
-   SAFEARRAY* psa = pRetVal && V_VT(pRetVal) == (VT_ARRAY | VT_VARIANT) ? V_ARRAY(pRetVal) : NULL;
-
-   if (m_pB2SData->IsSolenoidsData())
-      CheckSolenoids(psa);
-
-   if (m_pB2SSettings->ArePluginsOn())
-      m_pB2SSettings->GetPluginHost()->DataReceive('S', psa);
-
-   return hres;
+   return S_OK;
 }
 
 HRESULT Server::GetChangedGIStrings(VARIANT *pRetVal)
 {
-   HRESULT hres = m_pB2SData->GetVPinMAME()->get_ChangedGIStrings(pRetVal);
+   PLOGW << "Not implemented";
 
-   SAFEARRAY* psa = pRetVal && V_VT(pRetVal) == (VT_ARRAY | VT_VARIANT) ? V_ARRAY(pRetVal) : NULL;
-
-   if (m_pB2SData->IsGIStringsData())
-      CheckGIStrings(psa);
-
-   if (m_pB2SSettings->ArePluginsOn())
-      m_pB2SSettings->GetPluginHost()->DataReceive('G', psa);
-
-   return hres;
+   return S_OK;
 }
 
 HRESULT Server::GetChangedLEDs(VARIANT mask2, VARIANT mask1, VARIANT mask3, VARIANT mask4, VARIANT *pRetVal)
 {
-   VARIANT var0;
-   V_VT(&var0) = VT_EMPTY;
-   VariantChangeType(&var0, &mask2, 0, VT_I4);
+   PLOGW << "Not implemented";
 
-   VARIANT var1;
-   V_VT(&var1) = VT_EMPTY;
-   VariantChangeType(&var1, &mask1, 0, VT_I4);
-
-   VARIANT var2;
-   V_VT(&var2) = VT_EMPTY;
-   VariantChangeType(&var2, &mask3, 0, VT_I4);
-
-   VARIANT var3;
-   V_VT(&var3) = VT_EMPTY;
-   VariantChangeType(&var3, &mask4, 0, VT_I4);
-
-   HRESULT hres = m_pB2SData->GetVPinMAME()->get_ChangedLEDs(V_I4(&var0), V_I4(&var1), V_I4(&var2), V_I4(&var3), pRetVal);
-
-   SAFEARRAY* psa = pRetVal && V_VT(pRetVal) == (VT_ARRAY | VT_VARIANT) ? V_ARRAY(pRetVal) : NULL;
-
-   if (m_pB2SData->IsLEDsData())
-      CheckLEDs(psa);
-
-   if (m_pB2SSettings->ArePluginsOn())
-      m_pB2SSettings->GetPluginHost()->DataReceive('D', psa);
-
-   VariantClear(&var0);
-   VariantClear(&var1);
-   VariantClear(&var2);
-   VariantClear(&var3);
-
-   return hres;
+   return S_OK;
 }
 
 void Server::CheckGetMech(int number, int mech)

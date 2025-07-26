@@ -123,25 +123,18 @@ B2SData::~B2SData()
 
 void B2SData::Stop()
 {
-  if (m_pVPinMAME)
-     m_pVPinMAME->Stop();
+  //if (m_pVPinMAME)
+  //   m_pVPinMAME->Stop();
 }
 
-VPinMAMEController* B2SData::GetVPinMAME()
+void* B2SData::GetVPinMAME()
 {
-   if (!m_pVPinMAME)
-      m_pVPinMAME = new VPinMAMEController();
-
    return m_pVPinMAME;
 }
 
 
 void B2SData::FreeVPinMAME()
 {
-   if (m_pVPinMAME) {
-      delete m_pVPinMAME;
-      m_pVPinMAME = NULL;
-   }
 }
 
 void B2SData::ClearAll(bool donotclearnames)

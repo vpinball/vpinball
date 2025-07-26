@@ -332,7 +332,6 @@ Here are some important paths and files for MacOS and Linux:
 | --- | --- |
 `$HOME/.vpinball/user` | VPinball user directory |
 `$HOME/.vpinball/music` | VPinball music directory |
-`$HOME/.vpinball/pinmame` | VPinball generated PinMAME settings, ex. `sound`, `cheat`, `dmd_red` |
 `$HOME/.vpinball/VPinballX.ini` | VPinball settings (created on first run) |
 `$HOME/.vpinball/VPReg.ini` | <sup>*</sup>VPinball table settings |
 `$HOME/.vpinball/vpinball.log` | VPinball log file |
@@ -340,13 +339,12 @@ Here are some important paths and files for MacOS and Linux:
 `$HOME/.pinmame/roms` | <sup>**</sup>PinMAME ROMs directory |
 `$HOME/.pinmame/nvram` | <sup>**</sup>PinMAME NVRAM directory  |
 `$HOME/.pinmame/altcolor` | <sup>**</sup>Serum colorizations directory `<rom_name>/<rom.cRZ>` |
-`$HOME/.pinmame/ini` | <sup>**</sup>VPinball PinMAME settings directory |
 
 Notes:
 
 - The command-line option `-PrefPath <path>` can be used to override `$HOME/.vpinball`
 - <sup>*</sup>The `VPRegPath` entry in the `[Standalone]` section of `VPinballX.ini` can be used to override the VPinball table settings. If set to `./`, the current table path will be used.
-- <sup>**</sup>The `PinMAMEPath` entry in the `[Standalone]` section of `VPinballX.ini` will only be used if no `pinmame` folder exists in the current table directory. If not set `$HOME/.pinmame` will be used.
+- <sup>**</sup>The `PinMAMEPath` entry in the `[Plugin.PinMAME]` section of `VPinballX.ini` will only be used if no `pinmame` folder exists in the current table directory. If not set `$HOME/.pinmame` will be used.
 
 ## Debugging
 

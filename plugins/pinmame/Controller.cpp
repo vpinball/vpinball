@@ -10,7 +10,7 @@ Controller::Controller(MsgPluginAPI* api, unsigned int endpointId, PinmameConfig
 {
    PinmameSetConfig(&config);
    PinmameSetSoundMode(PINMAME_SOUND_MODE_DEFAULT);
-   // PinmameSetDmdMode(PINMAME_DMD_MODE_RAW); // Unneeded as we use LibPïnMame controller messages
+   // PinmameSetDmdMode(PINMAME_DMD_MODE_RAW); // Unneeded as we use libpinmame controller messages
    PinmameSetHandleKeyboard(0);
    PinmameSetHandleMechanics(0xFF);
 
@@ -96,37 +96,8 @@ void Controller::Run(long hParentWnd, int nMinVersion)
 {
    if (m_pPinmameGame == nullptr)
       return;
-   
-   /*mINI::INIStructure ini;
-   mINI::INIFile file(m_szIniPath + m_pPinmameGame->name + ".ini");
 
-   int cheat = 0;
-   m_enableSound = 1;
-   m_dmdColor = RGB(255, 88, 32);
-
-   if (file.read(ini)) {
-      if (ini.has("settings"s)) {
-         if (ini["settings"s].has("cheat"s))
-            cheat = atoll(ini["settings"s]["cheat"s].c_str());
-
-         if (ini["settings"s].has("sound"s))
-            m_enableSound = atoll(ini["settings"s]["sound"s].c_str());
-
-         if (ini["settings"s].has("dmd_red"s) && ini["settings"s].has("dmd_green"s) && ini["settings"s].has("dmd_blue"s))
-            m_dmdColor = RGB(atoll(ini["settings"s]["dmd_red"s].c_str()), atoll(ini["settings"s]["dmd_green"s].c_str()), atoll(ini["settings"s]["dmd_blue"s].c_str()));
-      }
-   }
-
-   ini["settings"s]["cheat"s] = std::to_string(cheat);
-   ini["settings"s]["sound"s] = std::to_string(m_enableSound);
-
-   ini["settings"s]["dmd_red"s] = std::to_string(GetRValue(m_dmdColor));
-   ini["settings"s]["dmd_green"s] = std::to_string(GetGValue(m_dmdColor));
-   ini["settings"s]["dmd_blue"s] = std::to_string(GetBValue(m_dmdColor));
-
-   file.write(ini);
-
-   PinmameSetCheat(cheat);*/
+   PinmameSetCheat(m_cheat);
 
    // Trigger startup, status will be either 2 (staring), 1 (running), 0  (stopped, likely after failure)
    PINMAME_STATUS status = PinmameRun(m_pPinmameGame->name);

@@ -69,27 +69,15 @@ void B2SAnimationBase::RaiseFinishedEvent()
 
 void B2SAnimationBase::SetSwitch(int switchid)
 {
-   m_pB2SData->GetVPinMAME()->put_Switch(switchid, VARIANT_TRUE);
-
-   if (!m_switches.contains(switchid))
-      m_switches[switchid] = true;
-
-   if (!m_pSwitchTimer) {
-      m_pSwitchTimer = new VP::Timer();
-      m_pSwitchTimer->SetInterval(200);
-      m_pSwitchTimer->SetElapsedListener(std::bind(&B2SAnimationBase::SwitchTimerElapsed, this, std::placeholders::_1));
-   }
-
-   m_pSwitchTimer->Stop();
-   m_pSwitchTimer->Start();
+   PLOGW << "Not implemented";
 }
 
 void B2SAnimationBase::SwitchTimerElapsed(VP::Timer* pTimer)
 {
    m_pSwitchTimer->Stop();
 
-   for (auto& [switchid, value] : m_switches)
-      m_pB2SData->GetVPinMAME()->put_Switch(switchid, VARIANT_FALSE);
+   //for (auto& [switchid, value] : m_switches)
+   //   m_pB2SData->GetVPinMAME()->put_Switch(switchid, VARIANT_FALSE);
 
    m_switches.clear();
 }

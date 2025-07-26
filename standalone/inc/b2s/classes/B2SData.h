@@ -9,7 +9,6 @@
 #include "../collections/ZOrderCollection.h"
 #include "../collections/GenericDictionaryIgnoreCase.h"
 #include "../collections/AnimationCollection.h"
-#include "../../vpinmame/VPinMAMEController.h"
 
 #include "B2SSettings.h"
 #include "LEDAreaInfo.h"
@@ -25,7 +24,7 @@ public:
 
    B2SSettings* GetB2SSettings() const { return m_pB2SSettings; }
    void Stop();
-   VPinMAMEController* GetVPinMAME();
+   void* GetVPinMAME();
    void FreeVPinMAME();
    void ClearAll(bool donotclearnames);
    string GetTableName() const { return m_szTableName; }
@@ -138,7 +137,7 @@ public:
 
 private:
    B2SSettings* m_pB2SSettings;
-   VPinMAMEController* m_pVPinMAME;
+   void* m_pVPinMAME;
    string m_szTableName;
    string m_szTableFileName;
    string m_szBackglassFileName;
