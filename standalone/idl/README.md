@@ -7,7 +7,6 @@ We provide two custom Java-based IDL parsers to generate code for Visual Pinball
   - `vpinball.idl`  
   - `B2S.idl`  
   - `UltraDMD.idl`  
-  - `PUP.idl`  
   - `FlexDMD.idl`  
   - `VPinMAME.idl`  
   - `wmp.idl`
@@ -30,7 +29,6 @@ Both parsers reverse-engineer the name-to-DISPID mappings and invocation logic n
 ## Files Requiring **No** Changes
 
 - `standalone/vpinball_standalone_i_proxy.cpp`
-- `standalone/inc/pup/pup_i_proxy.cpp`
 - `standalone/inc/b2s/b2s_i_proxy.cpp`
 - `standalone/inc/flexdmd/flexudmd_i_proxy.cpp` (clone of `UltraDMD.idl`, FlexDMD emulates UltraDMD)
 - `standalone/inc/wine/dlls/scrrun/dictionary_proxy.c`
@@ -136,7 +134,7 @@ static HRESULT WINAPI filesys_Invoke(IFileSystem3 *iface, DISPID dispIdMember,
 
 ### Generate IDL for projects without IDL:
 
-FlexDMD, B2SServer, and PuP do not supply IDL files as they are either C#, VB, or closed source.
+FlexDMD, and B2SServer do not supply IDL files as they are either C#, VB, or closed source.
 
 To generate an IDL file from a DLL or EXE:
 

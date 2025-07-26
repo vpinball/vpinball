@@ -946,14 +946,6 @@ public class IDLParserToCpp {
 				true);
 
 		parser.parse(
-			"../../inc/pup/PUP.idl",
-			"pup_i_proxy.cpp",
-			Arrays.asList(
-				new IDLInterface("IPinDisplay", "PUPPinDisplay", "PinDisplay")),
-			Arrays.asList("PUPPinDisplay.h"),
-			true);
-
-		parser.parse(
 			"../../inc/flexdmd/FlexDMD.idl",
 			"flexdmd_i_proxy.cpp",
 			Arrays.asList(

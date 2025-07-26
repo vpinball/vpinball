@@ -263,34 +263,6 @@ set(VPX_STANDALONE_SOURCES
    standalone/inc/dof/DOFPlugin.cpp
    standalone/inc/dof/DOFPlugin.h
 
-   standalone/inc/pup/PUPManager.cpp
-   standalone/inc/pup/PUPManager.h
-   standalone/inc/pup/PUPPinDisplay.cpp
-   standalone/inc/pup/PUPPinDisplay.h
-   standalone/inc/pup/PUPPlaylist.cpp
-   standalone/inc/pup/PUPPlaylist.h
-   standalone/inc/pup/PUPTrigger.cpp
-   standalone/inc/pup/PUPTrigger.h
-   standalone/inc/pup/PUPTriggerCondition.cpp
-   standalone/inc/pup/PUPTriggerCondition.h
-   standalone/inc/pup/PUPScreen.cpp
-   standalone/inc/pup/PUPScreen.h
-   standalone/inc/pup/PUPLabel.cpp
-   standalone/inc/pup/PUPLabel.h
-   standalone/inc/pup/PUPCustomPos.cpp
-   standalone/inc/pup/PUPCustomPos.h
-   standalone/inc/pup/PUPPlugin.cpp
-   standalone/inc/pup/PUPPlugin.h
-   standalone/inc/pup/PUPWindow.cpp
-   standalone/inc/pup/PUPWindow.h
-   standalone/inc/pup/PUPMediaPlayer.cpp
-   standalone/inc/pup/PUPMediaPlayer.h
-   standalone/inc/pup/PUPMediaManager.cpp
-   standalone/inc/pup/PUPMediaManager.h
-   standalone/inc/pup/pup_i_proxy.cpp
-   standalone/inc/pup/pup_i.c
-   standalone/inc/pup/pup_i.h
-
    standalone/inc/common/DMDWindow.cpp
    standalone/inc/common/DMDWindow.h
    standalone/inc/common/RendererGraphics.cpp

@@ -94,7 +94,7 @@ private:
    void Start();
    void Stop();
 
-   const string m_szRootPath;
+   string m_szRootPath;
    string m_szPath;
    ankerl::unordered_dense::map<int, std::shared_ptr<PUPScreen>> m_screenMap;
    vector<TTF_Font*> m_fonts;

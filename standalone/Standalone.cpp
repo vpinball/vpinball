@@ -4,9 +4,6 @@
 
 #include "inc/b2s/plugin/PluginHost.h"
 #include "inc/dof/DOFPlugin.h"
-#include "inc/pup/PUPPlugin.h"
-#include "inc/pup/PUPManager.h"
-
 #include "DMDUtil/Config.h"
 
 #include <csignal>
@@ -57,8 +54,6 @@ Standalone::Standalone()
    sigemptyset(&sigIntHandler.sa_mask);
    sigIntHandler.sa_flags = 0;
    sigaction(SIGINT, &sigIntHandler, nullptr);
-
-   m_pPUPManager = nullptr;
 }
 
 Standalone::~Standalone()
@@ -68,8 +63,6 @@ Standalone::~Standalone()
 void Standalone::PreStartup()
 {
    PLOGI.printf("Performing pre-startup standalone actions");
-
-   m_pPUPManager = new PUPManager();
 
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
 
@@ -87,7 +80,6 @@ void Standalone::PreStartup()
       pConfig->SetDMDServer(pSettings->LoadValueWithDefault(Settings::Standalone, "DMDServer"s, false));
       pConfig->SetDMDServerAddr(pSettings->LoadValueWithDefault(Settings::Standalone, "DMDServerAddr"s, "localhost"s).c_str());
       pConfig->SetDMDServerPort(pSettings->LoadValueWithDefault(Settings::Standalone, "DMDServerPort"s, 6789));
-      pConfig->SetPUPCapture(pSettings->LoadValueWithDefault(Settings::Standalone, "PUPCapture"s, false));
    }
 
    if (pSettings->LoadValueWithDefault(Settings::Standalone, "B2SPlugins"s, false)) {
@@ -95,16 +87,12 @@ void Standalone::PreStartup()
          if (pSettings->LoadValueWithDefault(Settings::Standalone, "DOFPlugin"s, true))
             PluginHost::GetInstance()->RegisterPlugin(new DOFPlugin());
       }
-      if (pSettings->LoadValueWithDefault(Settings::Standalone, "PUPPlugin"s, true))
-         PluginHost::GetInstance()->RegisterPlugin(new PUPPlugin());
    }
 }
 
 void Standalone::PostStartup()
 {
    PLOGI.printf("Performing post-startup standalone actions");
-
-   m_pPUPManager->Start();
 }
 
 void Standalone::Shutdown()
@@ -112,7 +100,4 @@ void Standalone::Shutdown()
    PLOGI.printf("Performing shutdown standalone actions");
 
    PluginHost::GetInstance()->UnregisterAllPlugins();
-
-   delete m_pPUPManager;
-   m_pPUPManager = nullptr;
 }
