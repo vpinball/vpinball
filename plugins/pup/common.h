@@ -10,6 +10,7 @@
 #include <thread>
 #include <mutex>
 
+#include <algorithm>
 #include <ranges>
 
 #include <string>
