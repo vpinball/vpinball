@@ -64,6 +64,25 @@ void PUPManager::LoadConfig(const string& szRomName)
 {
    Unload();
 
+   // If root path is not defined, look next to table like we do for pinmame folder
+   if (m_szRootPath.empty()) {
+      VPXPluginAPI* vpxApi = nullptr;
+      unsigned int getVpxApiId = m_msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
+      m_msgApi->BroadcastMsg(m_endpointId, getVpxApiId, &vpxApi);
+      m_msgApi->ReleaseMsgID(getVpxApiId);
+      if (vpxApi != nullptr)
+      {
+         VPXTableInfo tableInfo;
+         vpxApi->GetTableInfo(&tableInfo);
+         std::filesystem::path tablePath = tableInfo.path;
+         m_szRootPath = find_case_insensitive_directory_path(tablePath.parent_path().string() + PATH_SEPARATOR_CHAR + "pupvideos"s);
+
+         if (!m_szRootPath.empty()) {
+            LOGI("PUP folder was found at '%s'", m_szRootPath.c_str());
+         }
+      }
+   }
+
    SetGameDir(szRomName);
 
    // Load playlists
@@ -77,6 +96,7 @@ void PUPManager::LoadConfig(const string& szRomName)
    // Setup DMD triggers
    m_dmd = std::make_unique<PUPDMD::DMD>();
    m_dmd->Load(m_szRootPath.c_str(), szRomName.c_str());
+
    m_dmd->SetLogCallback(
       [](const char* format, va_list args, const void* userData)
       {

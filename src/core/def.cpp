@@ -897,7 +897,6 @@ HRESULT external_open_storage(const OLECHAR* pwcsName, IStorage* pstgPriority, D
 #include "standalone/inc/vpinmame/VPinMAMEController.h"
 #include "standalone/inc/flexdmd/FlexDMD.h"
 #include "standalone/inc/ultradmd/UltraDMDDMDObject.h"
-#include "standalone/inc/pup/PUPPinDisplay.h"
 #include "standalone/inc/b2s/Server.h"
 
 HRESULT external_create_object(const WCHAR* progid, IClassFactory* cf, IUnknown* obj)
@@ -925,11 +924,6 @@ HRESULT external_create_object(const WCHAR* progid, IClassFactory* cf, IUnknown*
       Settings::Section section = pSettings->GetSection("Plugin.PinMAME");
       if (!pSettings->LoadValueWithDefault(section, "Enable"s, false))
          hres = (new Server())->QueryInterface(IID__Server, (void**)obj);
-   }
-   else if (!wcsicmp(progid, L"PinUpPlayer.PinDisplay")) {
-      hres = (new PUPPinDisplay())->QueryInterface(IID_IPinDisplay, (void**)obj);
-   }
-   else if (!wcsicmp(progid, L"PUPDMDControl.DMD")) {
    }
 
    const char* const szT = MakeChar(progid);

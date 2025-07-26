@@ -48,6 +48,7 @@ namespace PUP
 LPI_USE();
 #define LOGD PUP::LPI_LOGD
 #define LOGI PUP::LPI_LOGI
+#define LOGW PUP::LPI_LOGW
 #define LOGE PUP::LPI_LOGE
 
 #ifdef _DEBUG

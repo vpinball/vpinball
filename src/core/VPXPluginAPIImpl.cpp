@@ -240,6 +240,7 @@ void VPXPluginAPIImpl::PluginLog(unsigned int level, const char* message)
    {
    case LPI_LVL_DEBUG: PLOGD << message; break;
    case LPI_LVL_INFO: PLOGI << message; break;
+   case LPI_LVL_WARN: PLOGW << message; break;
    case LPI_LVL_ERROR: PLOGE << message; break;
    default: assert(false); PLOGE << "Invalid plugin log message level";
    }

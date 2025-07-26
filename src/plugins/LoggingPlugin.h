@@ -21,7 +21,8 @@
 
 #define LPI_LVL_DEBUG      0x00
 #define LPI_LVL_INFO       0x10
-#define LPI_LVL_ERROR      0x20
+#define LPI_LVL_WARN       0x20
+#define LPI_LVL_ERROR      0x40
 
 typedef struct LoggingPluginAPI
 {
@@ -44,7 +45,9 @@ typedef struct LoggingPluginAPI
 #define LPI_USE() extern void LPILog(unsigned int level, const char* format, ...)
 #define LPI_LOGD(...) LPILog(LPI_LVL_DEBUG, __VA_ARGS__)
 #define LPI_LOGI(...) LPILog(LPI_LVL_INFO, __VA_ARGS__)
+#define LPI_LOGW(...) LPILog(LPI_LVL_WARN, __VA_ARGS__)
 #define LPI_LOGE(...) LPILog(LPI_LVL_ERROR, __VA_ARGS__)
+
 
 #define LPI_IMPLEMENT \
    LoggingPluginAPI* loggingApi = nullptr; \
