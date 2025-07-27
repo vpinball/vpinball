@@ -87,13 +87,27 @@ if(BUILD_SHARED)
    if(PluginPlatform STREQUAL "windows")
       if (PluginArch STREQUAL "x64")
          add_custom_command(TARGET DMDUtilPlugin POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/dmdutil64.dll" "${PLUGINS_DIR}/dmdutil/dmdutil64.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/dmdutil64.dll" "${PLUGINS_DIR}/dmdutil/dmdutil64.dll"
          )
       elseif (PluginArch STREQUAL "x86")
          add_custom_command(TARGET DMDUtilPlugin POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/dmdutil.dll" "${PLUGINS_DIR}/dmdutil/dmdutil.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/dmdutil.dll" "${PLUGINS_DIR}/dmdutil/dmdutil.dll"
          )
       endif()
+   elseif(PluginPlatform STREQUAL "linux")
+      add_custom_command(TARGET DMDUtilPlugin POST_BUILD
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libdmdutil.so" "${PLUGINS_DIR}/dmdutil/"
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libdmdutil.so.*" "${PLUGINS_DIR}/dmdutil/"
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libcargs.so" "${PLUGINS_DIR}/dmdutil/"
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libserialport.so" "${PLUGINS_DIR}/dmdutil/"
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libserialport.so.*" "${PLUGINS_DIR}/dmdutil/"
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libsockpp.so" "${PLUGINS_DIR}/dmdutil/"
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libsockpp.so.*" "${PLUGINS_DIR}/dmdutil/"
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libzedmd.so" "${PLUGINS_DIR}/dmdutil/"
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libzedmd.so.*" "${PLUGINS_DIR}/dmdutil/"
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libpupdmd.so" "${PLUGINS_DIR}/dmdutil/"
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libpupdmd.so.*" "${PLUGINS_DIR}/dmdutil/"
+      )
    endif()
 endif()
 

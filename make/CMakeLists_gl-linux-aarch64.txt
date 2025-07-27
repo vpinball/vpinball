@@ -118,18 +118,7 @@ target_link_libraries(vpinball PUBLIC
    SDL3_ttf
    freeimage
    hidapi-hidraw
-   pinmame
-   altsound
-   dmdutil
    dof
-   avcodec
-   avdevice
-   avfilter
-   avformat
-   avutil
-   swresample
-   swscale
-   zip
 )
 
 set_target_properties(vpinball PROPERTIES
@@ -165,8 +154,18 @@ add_custom_command(TARGET vpinball POST_BUILD
 
 if(POST_BUILD_COPY_EXT_LIBS)
    add_custom_command(TARGET vpinball POST_BUILD
-      COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-aarch64/*.so" "$<TARGET_FILE_DIR:vpinball>"
-      COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-aarch64/*.so.*" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-aarch64/libSDL3.so" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-aarch64/libSDL3.so.*" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-aarch64/libSDL3_image.so" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-aarch64/libSDL3_image.so.*" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-aarch64/libSDL3_ttf.so" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-aarch64/libSDL3_ttf.so.*" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-aarch64/libfreeimage.so" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-aarch64/libfreeimage.so.*" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-aarch64/libhidapi-hidraw.so" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-aarch64/libhidapi-hidraw.so.*" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-aarch64/libdof.so" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-aarch64/libdof.so.*" "$<TARGET_FILE_DIR:vpinball>"
    )
 endif()
 
