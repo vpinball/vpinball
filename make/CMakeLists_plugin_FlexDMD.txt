@@ -169,15 +169,22 @@ if(BUILD_SHARED)
    if(PluginPlatform STREQUAL "windows")
       if (PluginArch STREQUAL "x64")
          add_custom_command(TARGET FlexDMDPlugin POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/SDL364.dll" "${PLUGINS_DIR}/flexdmd/SDL364.dll"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/SDL3_image64.dll" "${PLUGINS_DIR}/flexdmd/SDL3_image64.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/SDL364.dll" "${PLUGINS_DIR}/flexdmd/SDL364.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/SDL3_image64.dll" "${PLUGINS_DIR}/flexdmd/SDL3_image64.dll"
          )
       elseif (PluginArch STREQUAL "x86")
          add_custom_command(TARGET FlexDMDPlugin POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/SDL3.dll" "${PLUGINS_DIR}/flexdmd/SDL3.dll"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/SDL3_image.dll" "${PLUGINS_DIR}/flexdmd/SDL3_image.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/SDL3.dll" "${PLUGINS_DIR}/flexdmd/SDL3.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/SDL3_image.dll" "${PLUGINS_DIR}/flexdmd/SDL3_image.dll"
          )
       endif()
+   elseif(PluginPlatform STREQUAL "linux")
+      add_custom_command(TARGET FlexDMDPlugin POST_BUILD
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libSDL3.so" "${PLUGINS_DIR}/flexdmd/"
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libSDL3.so.*" "${PLUGINS_DIR}/flexdmd/"
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libSDL3_image.so" "${PLUGINS_DIR}/flexdmd/"
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libSDL3_image.so.*" "${PLUGINS_DIR}/flexdmd/"
+      )
    endif()
 endif()
 
