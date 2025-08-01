@@ -36,108 +36,6 @@ set(VPX_STANDALONE_SOURCES
    ${VPX_SOURCES}
    ${WINE_SOURCES}
 
-   standalone/inc/b2s/classes/AnimationInfo.cpp
-   standalone/inc/b2s/classes/AnimationInfo.h
-   standalone/inc/b2s/classes/B2SAnimation.cpp
-   standalone/inc/b2s/classes/B2SAnimation.h
-   standalone/inc/b2s/classes/B2SAnimationBase.cpp
-   standalone/inc/b2s/classes/B2SAnimationBase.h
-   standalone/inc/b2s/classes/B2SCollectData.cpp
-   standalone/inc/b2s/classes/B2SCollectData.h
-   standalone/inc/b2s/classes/B2SData.cpp
-   standalone/inc/b2s/classes/B2SData.h
-   standalone/inc/b2s/classes/B2SPlayer.cpp
-   standalone/inc/b2s/classes/B2SPlayer.h
-   standalone/inc/b2s/classes/B2SScreen.cpp
-   standalone/inc/b2s/classes/B2SScreen.h
-   standalone/inc/b2s/classes/B2SSettings.cpp
-   standalone/inc/b2s/classes/B2SSettings.h
-   standalone/inc/b2s/classes/B2SReelDisplay.cpp
-   standalone/inc/b2s/classes/B2SReelDisplay.h
-   standalone/inc/b2s/classes/CollectData.cpp
-   standalone/inc/b2s/classes/CollectData.h
-   standalone/inc/b2s/classes/ControlInfo.cpp
-   standalone/inc/b2s/classes/ControlInfo.h
-   standalone/inc/b2s/classes/EntryAction.cpp
-   standalone/inc/b2s/classes/EntryAction.h
-   standalone/inc/b2s/classes/LEDAreaInfo.cpp
-   standalone/inc/b2s/classes/LEDAreaInfo.h
-   standalone/inc/b2s/classes/LEDDisplayDigitLocation.cpp
-   standalone/inc/b2s/classes/LEDDisplayDigitLocation.h
-   standalone/inc/b2s/classes/PictureBoxAnimation.cpp
-   standalone/inc/b2s/classes/PictureBoxAnimation.h
-   standalone/inc/b2s/classes/PictureBoxAnimationEntry.cpp
-   standalone/inc/b2s/classes/PictureBoxAnimationEntry.h
-   standalone/inc/b2s/classes/Sound.cpp
-   standalone/inc/b2s/classes/Sound.h
-   standalone/inc/b2s/collections/AnimationCollection.cpp
-   standalone/inc/b2s/collections/AnimationCollection.h
-   standalone/inc/b2s/collections/ControlCollection.cpp
-   standalone/inc/b2s/collections/ControlCollection.h
-   standalone/inc/b2s/collections/GenericDictionaryIgnoreCase.cpp
-   standalone/inc/b2s/collections/GenericDictionaryIgnoreCase.h
-   standalone/inc/b2s/collections/IlluminationGroupCollection.cpp
-   standalone/inc/b2s/collections/IlluminationGroupCollection.h
-   standalone/inc/b2s/collections/PictureBoxCollection.cpp
-   standalone/inc/b2s/collections/PictureBoxCollection.h
-   standalone/inc/b2s/collections/ReelDisplayReelBoxCollection.cpp
-   standalone/inc/b2s/collections/ReelDisplayReelBoxCollection.h
-   standalone/inc/b2s/collections/ReelBoxCollection.cpp
-   standalone/inc/b2s/collections/ReelBoxCollection.h
-   standalone/inc/b2s/collections/RunningAnimationsCollection.cpp
-   standalone/inc/b2s/collections/RunningAnimationsCollection.h
-   standalone/inc/b2s/collections/ZOrderCollection.cpp
-   standalone/inc/b2s/collections/ZOrderCollection.h
-   standalone/inc/b2s/controls/B2SBaseBox.cpp
-   standalone/inc/b2s/controls/B2SBaseBox.h
-   standalone/inc/b2s/controls/B2SLEDBox.cpp
-   standalone/inc/b2s/controls/B2SLEDBox.h
-   standalone/inc/b2s/controls/B2SPictureBox.cpp
-   standalone/inc/b2s/controls/B2SPictureBox.h
-   standalone/inc/b2s/controls/B2SReelBox.cpp
-   standalone/inc/b2s/controls/B2SReelBox.h
-   standalone/inc/b2s/controls/Control.cpp
-   standalone/inc/b2s/controls/Control.h
-   standalone/inc/b2s/dream7/Dream7Display.cpp
-   standalone/inc/b2s/dream7/Dream7Display.h
-   standalone/inc/b2s/dream7/Segment.cpp
-   standalone/inc/b2s/dream7/Segment.h
-   standalone/inc/b2s/dream7/SegmentList.cpp
-   standalone/inc/b2s/dream7/SegmentList.h
-   standalone/inc/b2s/dream7/SegmentNumber.cpp
-   standalone/inc/b2s/dream7/SegmentNumber.h
-   standalone/inc/b2s/dream7/SegmentStyle.cpp
-   standalone/inc/b2s/dream7/SegmentStyle.h
-   standalone/inc/b2s/forms/FormWindow.cpp
-   standalone/inc/b2s/forms/FormWindow.h
-   standalone/inc/b2s/forms/Form.cpp
-   standalone/inc/b2s/forms/Form.h
-   standalone/inc/b2s/forms/FormBackglass.cpp
-   standalone/inc/b2s/forms/FormBackglass.h
-   standalone/inc/b2s/forms/FormDMD.cpp
-   standalone/inc/b2s/forms/FormDMD.h
-   standalone/inc/b2s/plugin/Plugin.cpp
-   standalone/inc/b2s/plugin/Plugin.h
-   standalone/inc/b2s/plugin/PluginHost.cpp
-   standalone/inc/b2s/plugin/PluginHost.h
-   standalone/inc/b2s/Server.cpp
-   standalone/inc/b2s/Server.h
-   standalone/inc/b2s/b2s_i_proxy.cpp
-   standalone/inc/b2s/b2s_i.c
-   standalone/inc/b2s/b2s_i.h
-
-   standalone/inc/dof/DOFPlugin.cpp
-   standalone/inc/dof/DOFPlugin.h
-
-   standalone/inc/common/RendererGraphics.cpp
-   standalone/inc/common/RendererGraphics.h
-   standalone/inc/common/GraphicsPath.cpp
-   standalone/inc/common/GraphicsPath.h
-   standalone/inc/common/Matrix.cpp
-   standalone/inc/common/Matrix.h
-   standalone/inc/common/Timer.cpp
-   standalone/inc/common/Timer.h
-
    standalone/vpinball_standalone_i.c
    standalone/vpinball_standalone_i.h
    standalone/vpinball_standalone_i_proxy.cpp
@@ -146,6 +44,5 @@ set(VPX_STANDALONE_SOURCES
    standalone/Standalone.cpp
    standalone/Standalone.h
 
-   third-party/include/RSJparser/RSJparser.tcc
    third-party/include/pole/pole.cpp
 )

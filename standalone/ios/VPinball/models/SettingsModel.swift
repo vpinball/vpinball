@@ -58,6 +58,7 @@ class SettingsModel: ObservableObject {
 
     @Published var pluginAlphaDMD: Bool = false
     @Published var pluginB2S: Bool = false
+    @Published var pluginB2SLegacy: Bool = false
     @Published var pluginDMDUtil: Bool = false
     @Published var pluginDOF: Bool = false
     @Published var pluginFlexDMD: Bool = false
@@ -166,6 +167,7 @@ class SettingsModel: ObservableObject {
 
         pluginAlphaDMD = vpinballManager.loadValue(.pluginAlphaDMD, "Enable", false)
         pluginB2S = vpinballManager.loadValue(.pluginB2S, "Enable", false)
+        pluginB2SLegacy = vpinballManager.loadValue(.pluginB2SLegacy, "Enable", false)
         pluginDMDUtil = vpinballManager.loadValue(.pluginDMDUtil, "Enable", false)
         pluginDOF = vpinballManager.loadValue(.pluginDOF, "Enable", false)
         pluginFlexDMD = vpinballManager.loadValue(.pluginFlexDMD, "Enable", false)

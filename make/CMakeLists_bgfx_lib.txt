@@ -160,6 +160,7 @@ target_link_libraries(vpinball PUBLIC
    zip
    AlphaDMDPlugin
    B2SPlugin
+   B2SLegacyPlugin
    DMDUtilPlugin
    DOFPlugin
    FlexDMDPlugin

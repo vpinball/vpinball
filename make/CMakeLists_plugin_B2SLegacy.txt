@@ -1,0 +1,219 @@
+# plugin CMake file to be included in main project CMakelists
+
+# --- B2SLegacy plugin ---
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_C_STANDARD 99)
+
+set(B2SLEGACY_PLUGIN_SOURCES
+   plugins/b2slegacy/common.h
+   plugins/b2slegacy/common.cpp
+   plugins/b2slegacy/B2SLegacyPlugin.cpp
+   plugins/b2slegacy/Server.h
+   plugins/b2slegacy/Server.cpp
+   plugins/b2slegacy/utils/Timer.h
+   plugins/b2slegacy/utils/Timer.cpp
+   plugins/b2slegacy/utils/Matrix.h
+   plugins/b2slegacy/utils/Matrix.cpp
+   plugins/b2slegacy/utils/GraphicsPath.h
+   plugins/b2slegacy/utils/GraphicsPath.cpp
+   plugins/b2slegacy/utils/VPXGraphics.h
+   plugins/b2slegacy/utils/VPXGraphics.cpp
+   plugins/b2slegacy/classes/AnimationInfo.h
+   plugins/b2slegacy/classes/AnimationInfo.cpp
+   plugins/b2slegacy/classes/B2SAnimation.h
+   plugins/b2slegacy/classes/B2SAnimation.cpp
+   plugins/b2slegacy/classes/B2SAnimationBase.h
+   plugins/b2slegacy/classes/B2SAnimationBase.cpp
+   plugins/b2slegacy/classes/B2SCollectData.h
+   plugins/b2slegacy/classes/B2SCollectData.cpp
+   plugins/b2slegacy/classes/B2SData.h
+   plugins/b2slegacy/classes/B2SData.cpp
+   plugins/b2slegacy/classes/B2SPlayer.h
+   plugins/b2slegacy/classes/B2SPlayer.cpp
+   plugins/b2slegacy/classes/B2SReelDisplay.h
+   plugins/b2slegacy/classes/B2SReelDisplay.cpp
+   plugins/b2slegacy/classes/B2SScreen.h
+   plugins/b2slegacy/classes/B2SScreen.cpp
+   plugins/b2slegacy/classes/B2SSettings.h
+   plugins/b2slegacy/classes/B2SSettings.cpp
+   plugins/b2slegacy/classes/B2SVersionInfo.h
+   plugins/b2slegacy/classes/CollectData.h
+   plugins/b2slegacy/classes/CollectData.cpp
+   plugins/b2slegacy/classes/ControlInfo.h
+   plugins/b2slegacy/classes/ControlInfo.cpp
+   plugins/b2slegacy/classes/EntryAction.h
+   plugins/b2slegacy/classes/EntryAction.cpp
+   plugins/b2slegacy/classes/LEDAreaInfo.h
+   plugins/b2slegacy/classes/LEDAreaInfo.cpp
+   plugins/b2slegacy/classes/LEDDisplayDigitLocation.h
+   plugins/b2slegacy/classes/LEDDisplayDigitLocation.cpp
+   plugins/b2slegacy/classes/PictureBoxAnimation.h
+   plugins/b2slegacy/classes/PictureBoxAnimation.cpp
+   plugins/b2slegacy/classes/PictureBoxAnimationEntry.h
+   plugins/b2slegacy/classes/PictureBoxAnimationEntry.cpp
+   plugins/b2slegacy/classes/Sound.h
+   plugins/b2slegacy/classes/Sound.cpp
+   plugins/b2slegacy/collections/AnimationCollection.h
+   plugins/b2slegacy/collections/AnimationCollection.cpp
+   plugins/b2slegacy/collections/ControlCollection.h
+   plugins/b2slegacy/collections/ControlCollection.cpp
+   plugins/b2slegacy/collections/GenericDictionaryIgnoreCase.h
+   plugins/b2slegacy/collections/GenericDictionaryIgnoreCase.cpp
+   plugins/b2slegacy/collections/IlluminationGroupCollection.h
+   plugins/b2slegacy/collections/IlluminationGroupCollection.cpp
+   plugins/b2slegacy/collections/PictureBoxCollection.h
+   plugins/b2slegacy/collections/PictureBoxCollection.cpp
+   plugins/b2slegacy/collections/ReelBoxCollection.h
+   plugins/b2slegacy/collections/ReelBoxCollection.cpp
+   plugins/b2slegacy/collections/ReelDisplayReelBoxCollection.h
+   plugins/b2slegacy/collections/ReelDisplayReelBoxCollection.cpp
+   plugins/b2slegacy/collections/RunningAnimationsCollection.h
+   plugins/b2slegacy/collections/RunningAnimationsCollection.cpp
+   plugins/b2slegacy/collections/ZOrderCollection.h
+   plugins/b2slegacy/collections/ZOrderCollection.cpp
+   plugins/b2slegacy/controls/B2SBaseBox.h
+   plugins/b2slegacy/controls/B2SBaseBox.cpp
+   plugins/b2slegacy/controls/B2SLEDBox.h
+   plugins/b2slegacy/controls/B2SLEDBox.cpp
+   plugins/b2slegacy/controls/B2SPictureBox.h
+   plugins/b2slegacy/controls/B2SPictureBox.cpp
+   plugins/b2slegacy/controls/B2SReelBox.h
+   plugins/b2slegacy/controls/B2SReelBox.cpp
+   plugins/b2slegacy/controls/Control.h
+   plugins/b2slegacy/controls/Control.cpp
+   plugins/b2slegacy/dream7/Dream7Display.h
+   plugins/b2slegacy/dream7/Dream7Display.cpp
+   plugins/b2slegacy/dream7/Segment.h
+   plugins/b2slegacy/dream7/Segment.cpp
+   plugins/b2slegacy/dream7/SegmentList.h
+   plugins/b2slegacy/dream7/SegmentList.cpp
+   plugins/b2slegacy/dream7/SegmentNumber.h
+   plugins/b2slegacy/dream7/SegmentNumber.cpp
+   plugins/b2slegacy/dream7/SegmentStyle.h
+   plugins/b2slegacy/dream7/SegmentStyle.cpp
+   plugins/b2slegacy/forms/Form.h
+   plugins/b2slegacy/forms/Form.cpp
+   plugins/b2slegacy/forms/FormBackglass.h
+   plugins/b2slegacy/forms/FormBackglass.cpp
+   plugins/b2slegacy/forms/FormDMD.h
+   plugins/b2slegacy/forms/FormDMD.cpp
+
+   third-party/include/tinyxml2/tinyxml2.h
+   third-party/include/tinyxml2/tinyxml2.cpp
+)
+
+if(BUILD_SHARED)
+   add_library(B2SLegacyPlugin MODULE ${B2SLEGACY_PLUGIN_SOURCES})
+
+   target_include_directories(B2SLegacyPlugin PUBLIC
+      plugins/b2slegacy
+      ${CMAKE_SOURCE_DIR}/third-party/include
+      src/plugins
+      src
+   )
+
+   if(PluginPlatform STREQUAL "windows")
+      add_compile_options(
+         $<$<CONFIG:RELEASE>:/Ob2>
+         $<$<CONFIG:RELEASE>:/O2>
+         $<$<CONFIG:RELEASE>:/Oi>
+         $<$<CONFIG:RELEASE>:/arch:SSE2>
+         $<$<CONFIG:RELEASE>:/fp:fast>
+         $<$<CONFIG:RELEASE>:/fp:except->
+         $<$<CONFIG:RELEASE>:/Ot>
+         $<$<CONFIG:RELEASE>:/GF>
+         $<$<CONFIG:RELEASE>:/GS->
+         $<$<CONFIG:RELEASE>:/Gy>
+         $<$<CONFIG:RELEASE>:/GR>
+         $<$<CONFIG:RELEASE>:/Oy>
+         $<$<CONFIG:RELEASE>:/GT>
+         $<$<CONFIG:RELEASE>:/GL>
+      )
+      set_target_properties(B2SLegacyPlugin PROPERTIES
+         MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
+      )
+      target_compile_options(B2SLegacyPlugin PUBLIC
+         $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+         $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
+      )
+      target_link_options(B2SLegacyPlugin PUBLIC
+         $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
+         $<$<CONFIG:RELEASE>:/OPT:REF>
+         $<$<CONFIG:RELEASE>:/OPT:ICF>
+         $<$<CONFIG:RELEASE>:/LTCG>
+      )
+      if (PluginArch STREQUAL "x64")
+         set_target_properties(B2SLegacyPlugin PROPERTIES
+            OUTPUT_NAME "plugin-b2slegacy64"
+         )
+         target_link_directories(B2SLegacyPlugin PUBLIC ${CMAKE_SOURCE_DIR}/third-party/build-libs/windows-x64)
+         target_link_libraries(B2SLegacyPlugin
+            SDL364.lib
+         )
+      else()
+         set_target_properties(B2SLegacyPlugin PROPERTIES
+            OUTPUT_NAME "plugin-b2slegacy"
+         )
+         target_link_directories(B2SLegacyPlugin PUBLIC ${CMAKE_SOURCE_DIR}/third-party/build-libs/windows-x86)
+         target_link_libraries(B2SLegacyPlugin
+            SDL3.lib
+         )
+      endif()
+   else()
+      set_target_properties(B2SLegacyPlugin PROPERTIES
+         PREFIX ""
+         OUTPUT_NAME "plugin-b2slegacy"
+      )
+      if(PluginPlatform STREQUAL "macos")
+         set_target_properties(B2SLegacyPlugin PROPERTIES
+            SUFFIX ".dylib"
+         )
+      endif()
+      target_link_directories(B2SLegacyPlugin PUBLIC
+         ${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}
+      )
+      target_link_libraries(B2SLegacyPlugin PUBLIC SDL3)
+   endif()
+
+   add_custom_command(TARGET B2SLegacyPlugin POST_BUILD
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/b2slegacy/plugin.cfg" "${PLUGINS_DIR}/b2slegacy/plugin.cfg"
+      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:B2SLegacyPlugin>" "${PLUGINS_DIR}/b2slegacy"
+      COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:B2SLegacyPlugin>"
+   )
+
+   if(PluginPlatform STREQUAL "windows")
+      if (PluginArch STREQUAL "x64")
+         add_custom_command(TARGET B2SLegacyPlugin POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/SDL364.dll" "${PLUGINS_DIR}/b2slegacy/SDL364.dll"
+         )
+      elseif (PluginArch STREQUAL "x86")
+         add_custom_command(TARGET B2SLegacyPlugin POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/SDL3.dll" "${PLUGINS_DIR}/b2slegacy/SDL3.dll"
+         )
+      endif()
+   elseif(PluginPlatform STREQUAL "linux")
+      add_custom_command(TARGET B2SLegacyPlugin POST_BUILD
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libSDL3.so" "${PLUGINS_DIR}/b2slegacy/"
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libSDL3.so.*" "${PLUGINS_DIR}/b2slegacy/"
+      )
+   endif()
+endif()
+
+if(BUILD_STATIC)
+   add_compile_options(-fPIC)
+
+   add_library(B2SLegacyPlugin STATIC ${B2SLEGACY_PLUGIN_SOURCES})
+
+   target_include_directories(B2SLegacyPlugin PUBLIC
+      plugins/b2slegacy
+      ${CMAKE_SOURCE_DIR}/third-party/include
+      src/plugins
+      src
+   )
+
+   set_target_properties(B2SLegacyPlugin PROPERTIES
+      PREFIX ""
+      OUTPUT_NAME "plugin-b2slegacy"
+   )
+endif()

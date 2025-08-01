@@ -17,6 +17,8 @@ MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginLoad(const uint32_t sessionId, const Ms
 MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginUnload();
 MSGPI_EXPORT void MSGPIAPI B2SPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
 MSGPI_EXPORT void MSGPIAPI B2SPluginUnload();
+MSGPI_EXPORT void MSGPIAPI B2SLegacyPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI B2SLegacyPluginUnload();
 MSGPI_EXPORT void MSGPIAPI DOFPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
 MSGPI_EXPORT void MSGPIAPI DOFPluginUnload();
 MSGPI_EXPORT void MSGPIAPI DMDUtilPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
@@ -110,6 +112,7 @@ void VPinball::LoadPlugins()
    } plugins[] = {
       { "AlphaDMD",      &AlphaDMDPluginLoad,      &AlphaDMDPluginUnload      },
       { "B2S",           &B2SPluginLoad,           &B2SPluginUnload           },
+      { "B2SLegacy", &B2SLegacyPluginLoad, &B2SLegacyPluginUnload },
       { "DOF",           &DOFPluginLoad,           &DOFPluginUnload           },
       { "DMDUtil",       &DMDUtilPluginLoad,       &DMDUtilPluginUnload       },
       { "FlexDMD",       &FlexDMDPluginLoad,       &FlexDMDPluginUnload       },
