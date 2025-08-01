@@ -18,6 +18,11 @@ struct SettingsPluginsView: View {
             }
             .tint(Color.vpxRed)
 
+            Toggle(isOn: $settingsModel.pluginB2SLegacy) {
+                Text("B2SLegacy")
+            }
+            .tint(Color.vpxRed)
+
             Toggle(isOn: $settingsModel.pluginDMDUtil) {
                 Text("DMDUtil")
             }
@@ -72,6 +77,9 @@ struct SettingsPluginsView: View {
         .onChange(of: settingsModel.pluginB2S) {
             handlePluginB2S()
         }
+        .onChange(of: settingsModel.pluginB2SLegacy) {
+            handlePluginB2SLegacy()
+        }
         .onChange(of: settingsModel.pluginDMDUtil) {
             handlePluginDMDUtil()
         }
@@ -107,6 +115,10 @@ struct SettingsPluginsView: View {
 
     func handlePluginB2S() {
         vpinballManager.saveValue(.pluginB2S, "Enable", settingsModel.pluginB2S)
+    }
+
+    func handlePluginB2SLegacy() {
+        vpinballManager.saveValue(.pluginB2SLegacy, "Enable", settingsModel.pluginB2SLegacy)
     }
 
     func handlePluginDMDUtil() {

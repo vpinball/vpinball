@@ -18,6 +18,7 @@ import org.vpinball.app.jni.VPinballReflectionMode
 import org.vpinball.app.jni.VPinballSettingsSection.PLAYER
 import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_ALPHA_DMD
 import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_B2S
+import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_B2S_LEGACY
 import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_DMD_UTIL
 import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_DOF
 import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_FLEX_DMD
@@ -160,6 +161,9 @@ class SettingsViewModel : ViewModel() {
     var pluginB2S by mutableStateOf(false)
         private set
 
+    var pluginB2SLegacy by mutableStateOf(false)
+        private set
+
     var pluginDMDUtil by mutableStateOf(false)
         private set
 
@@ -273,6 +277,7 @@ class SettingsViewModel : ViewModel() {
 
         pluginAlphaDMD = VPinballManager.loadValue(PLUGIN_ALPHA_DMD, "Enable", false)
         pluginB2S = VPinballManager.loadValue(PLUGIN_B2S, "Enable", false)
+        pluginB2SLegacy = VPinballManager.loadValue(PLUGIN_B2S_LEGACY, "Enable", false)
         pluginDMDUtil = VPinballManager.loadValue(PLUGIN_DMD_UTIL, "Enable", false)
         pluginDOF = VPinballManager.loadValue(PLUGIN_DOF, "Enable", false)
         pluginFlexDMD = VPinballManager.loadValue(PLUGIN_FLEX_DMD, "Enable", false)
@@ -484,6 +489,11 @@ class SettingsViewModel : ViewModel() {
     fun handlePluginB2S(value: Boolean) {
         pluginB2S = value
         VPinballManager.saveValue(PLUGIN_B2S, "Enable", pluginB2S)
+    }
+
+    fun handlePluginB2SLegacy(value: Boolean) {
+        pluginB2SLegacy = value
+        VPinballManager.saveValue(PLUGIN_B2S_LEGACY, "Enable", pluginB2SLegacy)
     }
 
     fun handlePluginDMDUtil(value: Boolean) {

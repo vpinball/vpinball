@@ -25,14 +25,15 @@ enum VPinballSettingsSection: String {
     case tableOption = "TableOption"
     case pluginAlphaDMD = "Plugin.AlphaDMD"
     case pluginB2S = "Plugin.B2S"
+    case pluginB2SLegacy = "Plugin.B2SLegacy"
     case pluginDMDUtil = "Plugin.DMDUtil"
     case pluginDOF = "Plugin.DOF"
     case pluginFlexDMD = "Plugin.FlexDMD"
     case pluginPinMAME = "Plugin.PinMAME"
     case pluginPUP = "Plugin.PUP"
     case pluginRemoteControl = "Plugin.RemoteControl"
-    case pluginSerum = "Plugin.Serum"
     case pluginScoreView = "Plugin.ScoreView"
+    case pluginSerum = "Plugin.Serum"
     case pluginWMP = "Plugin.WMP"
 }
 

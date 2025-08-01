@@ -18,6 +18,7 @@ endif()
 
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_AlphaDMD.txt")
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_B2S.txt")
+include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_B2SLegacy.txt")
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_DMDUtil.txt")
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_DOF.txt")
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_FlexDMD.txt")

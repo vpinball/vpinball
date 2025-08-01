@@ -478,6 +478,10 @@ fun SettingsScreen(
 
                         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
+                        SwitchRow(label = "B2SLegacy", isChecked = viewModel.pluginB2SLegacy, onCheckedChange = { viewModel.handlePluginB2SLegacy(value = it) })
+
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
                         SwitchRow(
                             label = "DMDUtil",
                             isChecked = viewModel.pluginDMDUtil,
