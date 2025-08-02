@@ -260,16 +260,23 @@ void Settings::Validate(const bool addDefaults)
    SettingInt(Section::Player, "Stereo3D"s, STEREO_OFF, STEREO_OFF, STEREO_ANAGLYPH_10, "Stereo rendering mode"s);
 
    //////////////////////////////////////////////////////////////////////////
+   // Plugin.B2SLegacy
+
+#ifdef __STANDALONE__
+   SettingBool(GetSection("Plugin.B2SLegacy"), "Enable"s, true, ""s);
+#endif
+
+   //////////////////////////////////////////////////////////////////////////
    // Plugin.FlexDMD
 
-#ifdef __LIBVPINBALL__
+#ifdef __STANDALONE__
    SettingBool(GetSection("Plugin.FlexDMD"), "Enable"s, true, ""s);
 #endif
 
    //////////////////////////////////////////////////////////////////////////
    // Plugin.PinMAME
 
-#ifdef __LIBVPINBALL__
+#ifdef __STANDALONE__
    SettingBool(GetSection("Plugin.PinMAME"), "Enable"s, true, ""s);
 #endif
 
@@ -283,14 +290,14 @@ void Settings::Validate(const bool addDefaults)
    //////////////////////////////////////////////////////////////////////////
    // Plugin.ScoreView
 
-#ifdef __LIBVPINBALL__
+#ifdef __STANDALONE__
    SettingBool(GetSection("Plugin.ScoreView"), "Enable"s, true, ""s);
 #endif
 
    //////////////////////////////////////////////////////////////////////////
    // Plugin.WMP
 
-#ifdef __LIBVPINBALL__
+#ifdef __STANDALONE__
    SettingBool(GetSection("Plugin.WMP"), "Enable"s, true, ""s);
 #endif
 
