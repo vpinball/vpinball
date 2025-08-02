@@ -163,6 +163,49 @@
         if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\dof\" md "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\dof\"
         copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\dof\"
         copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\dof\"
+
+		if $(Platform) EQU x64 (
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\dof64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\dof64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\dof64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\dof\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libusb64-1.0.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libusb64-1.0.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libusb64-1.0.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\dof\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libserialport64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libserialport64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libserialport64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\dof\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\hidapi64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\hidapi64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\hidapi64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\dof\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libftdi164.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libftdi164.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libftdi164.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\dof\"
+
+		) ELSE (
+			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\dof.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\dof\"
+			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\dof.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\dof\"
+			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\dof.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\dof\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libusb-1.0.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libusb-1.0.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libusb-1.0.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\dof\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libserialport.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libserialport.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libserialport.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\dof\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\hidapi.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\hidapi.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\hidapi.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\dof\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libftdi1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libftdi1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\dof\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libftdi1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\dof\"
+		)
       </Command>
     </PostBuildEvent>
     <ClCompile>
