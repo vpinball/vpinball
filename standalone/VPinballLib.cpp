@@ -109,31 +109,39 @@ void VPinball::LoadPlugins()
       const char* id;
       void (*load)(uint32_t, const MsgPluginAPI*);
       void (*unload)();
+      int priority;
    } plugins[] = {
-      { "AlphaDMD",      &AlphaDMDPluginLoad,      &AlphaDMDPluginUnload      },
-      { "B2S",           &B2SPluginLoad,           &B2SPluginUnload           },
-      { "B2SLegacy", &B2SLegacyPluginLoad, &B2SLegacyPluginUnload },
-      { "DOF",           &DOFPluginLoad,           &DOFPluginUnload           },
-      { "DMDUtil",       &DMDUtilPluginLoad,       &DMDUtilPluginUnload       },
-      { "FlexDMD",       &FlexDMDPluginLoad,       &FlexDMDPluginUnload       },
-      { "PinMAME",       &PinMAMEPluginLoad,       &PinMAMEPluginUnload       },
-      { "PUP",           &PUPPluginLoad,           &PUPPluginUnload           },
-      { "RemoteControl", &RemoteControlPluginLoad, &RemoteControlPluginUnload },
-      { "ScoreView",     &ScoreViewPluginLoad,     &ScoreViewPluginUnload     },
-      { "Serum",         &SerumPluginLoad,         &SerumPluginUnload         },
-      { "WMP",           &WMPPluginLoad,           &WMPPluginUnload           }
+      { "AlphaDMD",      &AlphaDMDPluginLoad,      &AlphaDMDPluginUnload,      100 },
+      { "B2S",           &B2SPluginLoad,           &B2SPluginUnload,           200 },
+      { "B2SLegacy",     &B2SLegacyPluginLoad,     &B2SLegacyPluginUnload,     200 },
+      { "DOF",           &DOFPluginLoad,           &DOFPluginUnload,           100 },
+      { "DMDUtil",       &DMDUtilPluginLoad,       &DMDUtilPluginUnload,       100 },
+      { "FlexDMD",       &FlexDMDPluginLoad,       &FlexDMDPluginUnload,       100 },
+      { "PinMAME",       &PinMAMEPluginLoad,       &PinMAMEPluginUnload,       100 },
+      { "PUP",           &PUPPluginLoad,           &PUPPluginUnload,           100 },
+      { "RemoteControl", &RemoteControlPluginLoad, &RemoteControlPluginUnload, 100 },
+      { "ScoreView",     &ScoreViewPluginLoad,     &ScoreViewPluginUnload,     100 },
+      { "Serum",         &SerumPluginLoad,         &SerumPluginUnload,         100 },
+      { "WMP",           &WMPPluginLoad,           &WMPPluginUnload,           100 }
    };
 
-   for (auto& p : plugins) {
-      if (!VPXPluginAPIImpl::GetInstance().getAPI().GetOption(
-             p.id, "Enable",
+   std::vector<std::pair<int, size_t>> load_order;
+   for (size_t i = 0; i < std::size(plugins); ++i) {
+      if (VPXPluginAPIImpl::GetInstance().getAPI().GetOption(
+             plugins[i].id, "Enable",
              VPX_OPT_SHOW_UI, "Enable plugin",
              0.f, 1.f, 1.f, 0.f,
              VPXPluginAPI::NONE,
              nullptr
-         ))
-         continue;
+         )) {
+         load_order.emplace_back(plugins[i].priority, i);
+      }
+   }
 
+   std::sort(load_order.begin(), load_order.end());
+
+   for (auto [priority, idx] : load_order) {
+      auto& p = plugins[idx];
       auto plugin = MsgPluginManager::GetInstance().RegisterPlugin(
          p.id, p.id, p.id,
          "", "", "",
@@ -146,8 +154,8 @@ void VPinball::LoadPlugins()
 
 void VPinball::UnloadPlugins()
 {
-   for (auto& plugin : m_plugins)
-      plugin->Unload();
+   for (auto it = m_plugins.rbegin(); it != m_plugins.rend(); ++it)
+      (*it)->Unload();
    m_plugins.clear();
 }
 
