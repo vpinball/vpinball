@@ -1268,7 +1268,7 @@ RenderDevice::RenderDevice(
    m_stereoShader = new Shader(this, Shader::STEREO_SHADER, m_nEyes == 2);
    m_FBShader = new Shader(this, Shader::POSTPROCESS_SHADER, m_nEyes == 2);
 
-   if (m_basicShader->HasError() || m_DMDShader->HasError() || m_FBShader->HasError() || m_flasherShader->HasError() || m_lightShader->HasError() || m_stereoShader->HasError())
+   if (m_basicShader->HasError() || m_ballShader->HasError() || m_DMDShader->HasError() || m_FBShader->HasError() || m_flasherShader->HasError() || m_lightShader->HasError() || m_stereoShader->HasError())
    {
       ReportError("Fatal Error: shader compilation failed!", -1, __FILE__, __LINE__);
       throw(-1);
