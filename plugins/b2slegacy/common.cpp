@@ -117,11 +117,11 @@ bool string_starts_with_case_insensitive(const string& str, const string& prefix
 
 int string_to_int(const string& str, int defaultValue)
 {
-   try {
-      return std::stoi(str);
-   } catch (const std::exception&) {
+   int value;
+   if (std::from_chars(str.c_str(), str.c_str() + str.length(), value).ec == std::errc{})
+      return value;
+   else
       return defaultValue;
-   }
 }
 
 string title_and_path_from_filename(const string& filename)
