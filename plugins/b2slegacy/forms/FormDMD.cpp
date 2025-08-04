@@ -23,7 +23,7 @@ void FormDMD::OnPaint(VPXRenderContext2D* const ctx)
    if (IsVisible() && GetBackgroundImage()) {
       VPXGraphics::DrawImage(m_vpxApi, ctx, GetBackgroundImage(), NULL, NULL);
 
-      if (m_pB2SData->GetDMDIlluminations()->size() > 0) {
+      if (!m_pB2SData->GetDMDIlluminations()->empty()) {
          if (!m_pB2SData->IsUseZOrder()) {
             for(const auto& [key, pIllu] : *m_pB2SData->GetDMDIlluminations()) {
                if (pIllu->IsVisible()) {
@@ -34,7 +34,7 @@ void FormDMD::OnPaint(VPXRenderContext2D* const ctx)
          }
          else {
             for(const auto& [key, pIllus] : *m_pB2SData->GetZOrderDMDImages()) {
-               for (int i = 0; i < pIllus.size(); i++) {
+               for (int i = 0; i < (int)pIllus.size(); i++) {
                   if (pIllus[i]->IsVisible()) {
                      SDL_Rect rect = { (int)pIllus[i]->GetRectangleF().x, (int)pIllus[i]->GetRectangleF().y, (int)pIllus[i]->GetRectangleF().w, (int)pIllus[i]->GetRectangleF().h };
                      VPXGraphics::DrawImage(m_vpxApi, ctx, pIllus[i]->GetBackgroundImage(), NULL, &rect);

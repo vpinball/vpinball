@@ -17,8 +17,8 @@ public:
    ~Server();
 
    void Dispose();
-   string GetB2SServerVersion() const;
-   double GetB2SBuildVersion() const;
+   static const string& GetB2SServerVersion();
+   static double GetB2SBuildVersion();
    string GetB2SServerDirectory() const;
    string GetB2SName() const;
    void SetB2SName(const string& b2sName);
@@ -112,8 +112,8 @@ private:
    void MyB2SSetLED(int digit, int value);
    void MyB2SSetLED(int digit, const string& value);
    void MyB2SSetLEDDisplay(int display, const string& szText);
-   int GetFirstDigitOfDisplay(int display);
-   void MyB2SSetScore(int digit, int value, bool animateReelChange, bool useLEDs = false, bool useLEDDisplays = false, bool useReels = false, int reeltype = 0, eLEDTypes ledtype = eLEDTypes_Undefined);
+   int GetFirstDigitOfDisplay(int display) const;
+   void MyB2SSetScore(int digit, int value, bool animateReelChange);
    void MyB2SSetScore(int digit, int score);
    void MyB2SSetScorePlayer(int playerno, int score);
    void MyB2SStartAnimation(const string& animationname, bool playreverse);
@@ -131,7 +131,7 @@ private:
    void ShowBackglassForm();
    void HideBackglassForm();
    void KillBackglassForm();
-   int RandomStarter(int top);
+   static int RandomStarter(int top);
 
    B2SSettings* m_pB2SSettings;
    B2SData* m_pB2SData;

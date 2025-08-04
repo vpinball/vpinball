@@ -8,9 +8,9 @@ class LEDAreaInfo
 public:
    LEDAreaInfo(const SDL_Rect& rect, bool isOnDMD);
 
-   SDL_Rect& GetRect() { return m_rect; }
+   const SDL_Rect& GetRect() const { return m_rect; }
    void SetRect(const SDL_Rect& rect) { m_rect = rect; }
-   bool IsOnDMD() { return m_onDMD; }
+   bool IsOnDMD() const { return m_onDMD; }
    void SetOnDMD(bool isOnDMD) { m_onDMD = isOnDMD; }
 
 private:

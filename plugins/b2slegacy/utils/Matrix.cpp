@@ -12,6 +12,10 @@
 
 #include <cmath>
 
+#ifndef M_PI
+#define M_PI 3.1415926535897932384626433832795
+#endif
+
 namespace B2SLegacy {
 
 AffineTransform AffineTransformMakeIdentity()
@@ -82,9 +86,9 @@ void Matrix::Rotate(float angle)
    m_transform = AffineTransformMakeMultiply(affine, m_transform);
 }
 
-void Matrix::Multiply(const Matrix& matrix)
+void Matrix::Multiply(const Matrix& other)
 {
-   AffineTransform mtrans = matrix.m_transform;
+   AffineTransform mtrans = other.m_transform;
    m_transform = AffineTransformMakeMultiply(mtrans, m_transform);
 }
 
@@ -100,14 +104,14 @@ void Matrix::Scale(float scaleX, float scaleY)
    m_transform = AffineTransformMakeMultiply(affine, m_transform);
 }
 
-void Matrix::TransformPoint(float& x, float& y)
+void Matrix::TransformPoint(float& x, float& y) const
 {
    SDL_FPoint point = {x, y};
    x = m_transform.a * point.x + m_transform.c * point.y + m_transform.tx;
    y = m_transform.b * point.x + m_transform.d * point.y + m_transform.ty;
 }
 
-void Matrix::TransformPoints(vector<SDL_FPoint>& points)
+void Matrix::TransformPoints(vector<SDL_FPoint>& points) const
 {
    for (auto& point : points) {
       float x = m_transform.a * point.x + m_transform.c * point.y + m_transform.tx;

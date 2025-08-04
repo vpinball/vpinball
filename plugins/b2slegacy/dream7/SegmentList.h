@@ -8,7 +8,7 @@
 
 namespace B2SLegacy {
 
-class SegmentList : public vector<Segment*>
+class SegmentList final : public vector<Segment*>
 {
 public:
    void Transform(Matrix* pMatrix);

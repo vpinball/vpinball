@@ -37,8 +37,8 @@ public:
     void Translate(float x, float y);
     void Shear(float shearX, float shearY);
     void Scale(float scaleX, float scaleY);
-    void TransformPoint(float& x, float& y);
-    void TransformPoints(vector<SDL_FPoint>& points);
+    void TransformPoint(float& x, float& y) const;
+    void TransformPoints(vector<SDL_FPoint>& points) const;
     void Reset();
     Matrix* Clone() const;
 

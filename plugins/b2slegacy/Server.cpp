@@ -60,8 +60,7 @@ Server::~Server()
    delete[] m_deviceStateSrc.deviceDefs;
 
    delete m_pTimer;
-   if (m_pFormBackglass)
-      delete m_pFormBackglass;
+   delete m_pFormBackglass;
    delete m_pB2SData;
    delete m_pCollectLampsData;
    delete m_pCollectSolenoidsData;
@@ -250,17 +249,18 @@ void Server::Dispose()
 {
 }
 
-string Server::GetB2SServerVersion() const
+const string& Server::GetB2SServerVersion()
 {
-   return string(B2S_VERSION_STRING);
+   static const string v(B2S_VERSION_STRING);
+   return v;
 }
 
-double Server::GetB2SBuildVersion() const
+double Server::GetB2SBuildVersion()
 {
    return B2S_VERSION_MAJOR * 10000.0
       + B2S_VERSION_MINOR * 100.0
       + B2S_VERSION_REVISION
-      + static_cast<double>(B2S_VERSION_BUILD) / 10000.0;
+      + B2S_VERSION_BUILD / 10000.0;
 }
 
 string Server::GetB2SServerDirectory() const
@@ -744,7 +744,7 @@ void Server::MyB2SSetPos(int id, int xpos, int ypos)
    if (!m_pB2SData->IsBackglassRunning())
       return;
 
-   SDL_FRect& rescaleBackglass = m_pFormBackglass->GetScaleFactor();
+   const SDL_FRect& rescaleBackglass = m_pFormBackglass->GetScaleFactor();
 
    if (m_pB2SData->GetUsedRomLampIDs()->contains(id)) {
       for (const auto& pBase : (*m_pB2SData->GetUsedRomLampIDs())[id]) {
@@ -753,7 +753,7 @@ void Server::MyB2SSetPos(int id, int xpos, int ypos)
             if (pPicbox->GetLeft() != xpos || pPicbox->GetTop() != ypos) {
                pPicbox->SetLeft(xpos);
                pPicbox->SetTop(ypos);
-               SDL_FRect& rectF = pPicbox->GetRectangleF();
+               const SDL_FRect& rectF = pPicbox->GetRectangleF();
                pPicbox->SetRectangleF({ static_cast<float>(pPicbox->GetLeft()) / rescaleBackglass.w,
                                         static_cast<float>(pPicbox->GetTop()) / rescaleBackglass.h,
                                         rectF.w, rectF.h });
@@ -778,7 +778,7 @@ void Server::CheckGetMech(int number, int mech)
          mechvalue -= 1;
 
       if (m_pB2SData->GetUsedRomMechIDs()->contains(mechid)) {
-         if ((*m_pB2SData->GetRotatingPictureBox())[mechid] && m_pB2SData->GetRotatingImages()->contains(mechid) && (*m_pB2SData->GetRotatingImages())[mechid].size() > 0 && (*m_pB2SData->GetRotatingImages())[mechid].contains(mechvalue)) {
+         if ((*m_pB2SData->GetRotatingPictureBox())[mechid] && m_pB2SData->GetRotatingImages()->contains(mechid) && !(*m_pB2SData->GetRotatingImages())[mechid].empty() && (*m_pB2SData->GetRotatingImages())[mechid].contains(mechvalue)) {
             (*m_pB2SData->GetRotatingPictureBox())[mechid]->SetBackgroundImage((*m_pB2SData->GetRotatingImages())[mechid][mechvalue]);
             (*m_pB2SData->GetRotatingPictureBox())[mechid]->SetVisible(true);
          }
@@ -825,12 +825,9 @@ void Server::CheckLamps(ScriptArray* psa)
    if (m_pCollectLampsData->ShowData()) {
       m_pCollectLampsData->Lock();
 
-      int lampId;
-      bool lampState;
-
       for (const auto& [key, pCollectData] : *m_pCollectLampsData) {
-         lampId = key;
-         lampState = (pCollectData->GetState() > 0);
+         int lampId = key;
+         bool lampState = (pCollectData->GetState() > 0);
          int datatypes = pCollectData->GetTypes();
 
          // illumination stuff
@@ -910,7 +907,7 @@ void Server::CheckLamps(ScriptArray* psa)
                }
                if (start) {
                   if (!isrunning) {
-                     int random = RandomStarter((*m_pB2SData->GetUsedRandomAnimationLampIDs())[lampId].size());
+                     int random = RandomStarter((int)(*m_pB2SData->GetUsedRandomAnimationLampIDs())[lampId].size());
                      auto& animation = (*m_pB2SData->GetUsedRandomAnimationLampIDs())[lampId][random];
                      m_lastRandomStartedAnimation = animation->GetAnimationName();
                      m_pFormBackglass->StartAnimation(m_lastRandomStartedAnimation);
@@ -968,12 +965,9 @@ void Server::CheckSolenoids(ScriptArray* psa)
    if (m_pCollectSolenoidsData->ShowData()) {
       m_pCollectSolenoidsData->Lock();
 
-      int solenoidId;
-      int solenoidState;
-
       for (const auto& [key, pCollectData] : *m_pCollectSolenoidsData) {
-         solenoidId = key;
-         solenoidState = pCollectData->GetState();
+         int solenoidId = key;
+         int solenoidState = pCollectData->GetState();
          int datatypes = pCollectData->GetTypes();
 
          // illumination stuff
@@ -1053,7 +1047,7 @@ void Server::CheckSolenoids(ScriptArray* psa)
                }
                if (start) {
                   if (!isrunning) {
-                     int random = RandomStarter((*m_pB2SData->GetUsedRandomAnimationSolenoidIDs())[solenoidId].size());
+                     int random = RandomStarter((int)(*m_pB2SData->GetUsedRandomAnimationSolenoidIDs())[solenoidId].size());
                      auto& animation = (*m_pB2SData->GetUsedRandomAnimationSolenoidIDs())[solenoidId][random];
                      m_lastRandomStartedAnimation = animation->GetAnimationName();
                      m_pFormBackglass->StartAnimation(m_lastRandomStartedAnimation);
@@ -1114,12 +1108,9 @@ void Server::CheckGIStrings(ScriptArray* psa)
    if (m_pCollectGIStringsData->ShowData()) {
       m_pCollectGIStringsData->Lock();
 
-      int giStringId;
-      bool giStringBool;
-
       for (const auto& [key, pCollectData] : *m_pCollectGIStringsData) {
-         giStringId = key;
-         giStringBool = (pCollectData->GetState() > 0);
+         int giStringId = key;
+         bool giStringBool = (pCollectData->GetState() > 0);
          int datatypes = pCollectData->GetTypes();
 
          // illumination stuff
@@ -1199,7 +1190,7 @@ void Server::CheckGIStrings(ScriptArray* psa)
                }
                if (start) {
                   if (!isrunning) {
-                     int random = RandomStarter((*m_pB2SData->GetUsedRandomAnimationGIStringIDs())[giStringId].size());
+                     int random = RandomStarter((int)(*m_pB2SData->GetUsedRandomAnimationGIStringIDs())[giStringId].size());
                      auto& animation = (*m_pB2SData->GetUsedRandomAnimationGIStringIDs())[giStringId][random];
                      m_lastRandomStartedAnimation = animation->GetAnimationName();
                      m_pFormBackglass->StartAnimation(m_lastRandomStartedAnimation);
@@ -1336,7 +1327,7 @@ void Server::MyB2SSetLEDDisplay(int display, const string& szText)
    int digit = GetFirstDigitOfDisplay(display);
 
    bool useLEDs = m_pB2SData->GetLEDs()->contains(string("LEDBox" + std::to_string(digit))) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered;
-   bool useLEDDisplays = m_pB2SData->GetLEDDisplayDigits()->contains(digit - 1) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Dream7;
+   //bool useLEDDisplays = m_pB2SData->GetLEDDisplayDigits()->contains(digit - 1) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Dream7;
 
    if (useLEDs) {
       // Set text for each character position in the LED display
@@ -1376,7 +1367,7 @@ void Server::MyB2SSetLEDDisplay(int display, const string& szText)
    }
 }
 
-int Server::GetFirstDigitOfDisplay(int display)
+int Server::GetFirstDigitOfDisplay(int display) const
 {
    int ret = 0;
    for(const auto& [key, pReelbox] : *m_pB2SData->GetReels()) {
@@ -1396,13 +1387,13 @@ int Server::GetFirstDigitOfDisplay(int display)
    return ret;
 }
 
-void Server::MyB2SSetScore(int digit, int value, bool animateReelChange, bool useLEDs, bool useLEDDisplays, bool useReels, int reeltype, eLEDTypes ledtype)
+void Server::MyB2SSetScore(int digit, int value, bool animateReelChange)
 {
    if (m_pB2SData->IsBackglassRunning()) {
       if (digit > 0) {
-         useLEDs = (m_pB2SData->GetLEDs()->contains(string("LEDBox" + std::to_string(digit))) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered);
-         useLEDDisplays = (m_pB2SData->GetLEDDisplayDigits()->contains(digit - 1) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Dream7);
-         useReels = m_pB2SData->GetReels()->contains(string("ReelBox" + std::to_string(digit)));
+         bool useLEDs = (m_pB2SData->GetLEDs()->contains(string("LEDBox" + std::to_string(digit))) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered);
+         bool useLEDDisplays = (m_pB2SData->GetLEDDisplayDigits()->contains(digit - 1) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Dream7);
+         bool useReels = m_pB2SData->GetReels()->contains(string("ReelBox" + std::to_string(digit)));
 
          if (useLEDs) {
             // Rendered LEDs are used

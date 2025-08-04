@@ -7,7 +7,7 @@ namespace B2SLegacy {
 
 class B2SReelBox;
 
-class ReelDisplayReelBoxCollection : public std::map<int, B2SReelBox*>
+class ReelDisplayReelBoxCollection final : public std::map<int, B2SReelBox*>
 {
 public:
    ReelDisplayReelBoxCollection();

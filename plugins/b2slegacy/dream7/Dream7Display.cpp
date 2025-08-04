@@ -80,7 +80,7 @@ void Dream7Display::SetText(const string& szText)
    m_szText = szText;
    int nLen = 0;
    if (!m_szText.empty())
-      nLen = m_szText.length() - 1;
+      nLen = (int)m_szText.length() - 1;
    int nIndex = 0;
    for (int nSegment = 0; nSegment <= nLen; nSegment++) {
       if (nIndex >= m_segmentNumbers.size())
@@ -168,10 +168,10 @@ void Dream7Display::SetGlow(const float glow)
    }
 }
 
-void Dream7Display::SetBulbSize(const SDL_FRect& sizeF)
+void Dream7Display::SetBulbSize(const SDL_FRect& bulbSize)
 {
    for (auto& pSegmentNumber : m_segmentNumbers) {
-      pSegmentNumber->GetStyle()->SetBulbSize(sizeF);
+      pSegmentNumber->GetStyle()->SetBulbSize(bulbSize);
       pSegmentNumber->AssignStyle();
    }
 }
@@ -202,13 +202,14 @@ void Dream7Display::SetValue(int segment, long value)
    m_segmentNumbers[segment]->DisplayBitCode(value);
 }
 
-void Dream7Display::SetExtraSpacing(int segment, long value)
+void Dream7Display::SetExtraSpacing(int segment, float value)
 {
-   if (m_extraSpacings.find(segment) != m_extraSpacings.end())
-      m_extraSpacings.erase(segment);
+   auto itr = m_extraSpacings.find(segment);
+   if (itr != m_extraSpacings.end())
+      m_extraSpacings.erase(itr);
    if (value > 0)
-       m_extraSpacings[segment] = value;
-    InitSegmentsStyle();
+      m_extraSpacings[segment] = value;
+   InitSegmentsStyle();
 }
 
 void Dream7Display::InitMatrix(float shear, float scaleFactor, bool mirrored)
@@ -291,7 +292,7 @@ void Dream7Display::SegmentNumberInvalidated(SegmentNumber* pNumber)
 void Dream7Display::InitSegments(int digits, SegmentNumberType type, float shear)
 {
    if (digits >= 0 && digits <= 80) {
-      for (int nNumber = m_segmentNumbers.size(); nNumber < digits; nNumber++) {
+      for (int nNumber = (int)m_segmentNumbers.size(); nNumber < digits; nNumber++) {
          SegmentNumber* pNumber = new SegmentNumber(this);
          m_segmentNumbers.push_back(pNumber);
       }
@@ -300,7 +301,7 @@ void Dream7Display::InitSegments(int digits, SegmentNumberType type, float shear
          m_segmentNumbers.pop_back();
          delete pNumber;
       }
-      m_digits = m_segmentNumbers.size();
+      m_digits = (int)m_segmentNumbers.size();
       InitSegmentsStyle();
    }
 }
@@ -314,8 +315,9 @@ void Dream7Display::InitSegmentsStyle()
    for (auto& pNumber : m_segmentNumbers) {
       pNumber->Init( { xPos, 0.0f }, m_type, m_pMatrix, m_thickness);
       xPos += distance;
-      if (m_extraSpacings.find(number) != m_extraSpacings.end())
-         xPos += m_extraSpacings[number];
+      auto itr = m_extraSpacings.find(number);
+      if (itr != m_extraSpacings.end())
+         xPos += itr->second;
       number++;
    }
    Invalidate();

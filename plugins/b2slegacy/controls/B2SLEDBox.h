@@ -6,7 +6,7 @@
 
 namespace B2SLegacy {
 
-class B2SLEDBox : public B2SBaseBox
+class B2SLEDBox final : public B2SBaseBox
 {
 public:
    B2SLEDBox(VPXPluginAPI* vpxApi, B2SData* pB2SData);

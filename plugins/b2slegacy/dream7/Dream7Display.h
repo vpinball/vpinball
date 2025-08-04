@@ -12,7 +12,7 @@
 
 namespace B2SLegacy {
 
-class Dream7Display : public Control
+class Dream7Display final : public Control
 {
 public:
    Dream7Display(VPXPluginAPI* vpxApi);
@@ -25,7 +25,7 @@ public:
    void SetHidden(const bool hidden) { m_hidden = hidden; }
    bool IsMirrored() const { return m_mirrored; }
    void SetMirrored(const bool mirrored) { if (m_mirrored != mirrored) { m_mirrored = mirrored; InitSegmentsStyle(); } }
-   string GetText() const { return m_szText; }
+   const string& GetText() const { return m_szText; }
    void SetText(const string& szText);
    int GetDigits() const { return m_digits; }
    void SetDigits(const int digits) { if (m_digits != digits) { m_digits = digits; InitSegments(); } }
@@ -51,7 +51,7 @@ public:
    void SetGlassAlphaCenter(const int glassAlphaCenter);
    float GetGlow() const { return m_glow; }
    void SetGlow(const float glow);
-   SDL_FRect& GetBulbSize() { return m_bulbSize; }
+   const SDL_FRect& GetBulbSize() { return m_bulbSize; }
    void SetBulbSize(const SDL_FRect& bulbSize);
    bool IsWireFrame() const { return m_wireFrame; }
    void SetWireFrame(const bool wireFrame);
@@ -67,7 +67,7 @@ public:
    void SetAngle(const float angle) { if (m_angle != angle) { m_angle = angle; InitSegmentsStyle(); } }
    void SetValue(int segment, const string& value);
    void SetValue(int segment, long value);
-   void SetExtraSpacing(int segment, long value);
+   void SetExtraSpacing(int segment, float value);
    void SegmentNumberInvalidated(SegmentNumber* pNumber);
    void SegmentDisplayHandleCreated();
    void SegmentDisplaySizeChanged();

@@ -5,7 +5,7 @@
 
 namespace B2SLegacy {
 
-class B2SPictureBox : public B2SBaseBox
+class B2SPictureBox final : public B2SBaseBox
 {
 public:
    B2SPictureBox(VPXPluginAPI* vpxApi, B2SData* pB2SData);
@@ -13,7 +13,7 @@ public:
 
    ePictureBoxType GetPictureBoxType() const { return m_pictureBoxType; }
    void SetPictureBoxType(ePictureBoxType pictureBoxType) { m_pictureBoxType = pictureBoxType; }
-   string GetGroupName() const { return m_szGroupName; }
+   const string& GetGroupName() const { return m_szGroupName; }
    void SetGroupName(const string& szGroupName) { m_szGroupName = szGroupName; }
    int GetIntensity() const { return m_intensity; }
    void SetIntensity(int intensity) { m_intensity = intensity; }
@@ -27,7 +27,7 @@ public:
    void SetImageSnippit(bool imageSnippit) { m_imageSnippit = imageSnippit; }
    eSnippitRotationStopBehaviour GetSnippitRotationStopBehaviour() const { return m_snippitRotationStopBehaviour; }
    void SetSnippitRotationStopBehaviour(eSnippitRotationStopBehaviour snippitRotationStopBehaviour) { m_snippitRotationStopBehaviour = snippitRotationStopBehaviour; }
-   void SetVisible(bool visible) override { if (IsVisible() != visible) { m_setThruAnimation = visible; B2SBaseBox::SetVisible(visible); } };
+   void SetVisible(bool visible) override { if (IsVisible() != visible) { m_setThruAnimation = visible; B2SBaseBox::SetVisible(visible); } }
    bool IsSetThruAnimation() const { return m_setThruAnimation; }
    VPXTexture GetOffImage() const { return m_pOffImage; }
    void SetOffImage(VPXTexture pOffImage) { if (m_pOffImage != pOffImage) { if (m_pOffImage) m_vpxApi->DeleteTexture(m_pOffImage); m_pOffImage = pOffImage; } }

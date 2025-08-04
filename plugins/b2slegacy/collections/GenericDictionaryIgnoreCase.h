@@ -13,7 +13,7 @@ struct CaseInsensitiveComparatorGenericDictionaryIgnoreCase {
 };
 
 template<typename T>
-class GenericDictionaryIgnoreCase : public std::map<string, T, CaseInsensitiveComparatorGenericDictionaryIgnoreCase> {
+class GenericDictionaryIgnoreCase final : public std::map<string, T, CaseInsensitiveComparatorGenericDictionaryIgnoreCase> {
 };
 
 }

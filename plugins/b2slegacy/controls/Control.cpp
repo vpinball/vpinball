@@ -43,7 +43,7 @@ void Control::AddControl(Control* control)
    control->OnHandleCreated();
 }
 
-Control* Control::GetControl(const string& szName)
+Control* Control::GetControl(const string& szName) const
 {
    for (Control* child : m_children) {
       if (child->GetName() == szName)
@@ -52,7 +52,7 @@ Control* Control::GetControl(const string& szName)
    return NULL;
 }
 
-bool Control::IsVisible()
+bool Control::IsVisible() const
 {
    return m_visible && (!m_pParent || m_pParent->IsVisible());
 }
@@ -99,7 +99,7 @@ void Control::Invalidate()
    m_invalidated = true;
 }
 
-bool Control::IsInvalidated()
+bool Control::IsInvalidated() const
 {
    if (m_invalidated)
       return true;

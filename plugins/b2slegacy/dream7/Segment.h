@@ -42,7 +42,7 @@ private:
    void InitSegment(const string& szName, float x, float y, float width, float height, float angle, SegmentCap topcap, SegmentCap bottomcap, float capangle);
    void CreateLightData();
    void SetBulbSize();
-   void LeftRightFromCap(SegmentCap nCap, float nWidth, float nCapangle, float& nLeft, float& nRight, float& nDelta);
+   static void LeftRightFromCap(SegmentCap nCap, float nWidth, float nCapangle, float& nLeft, float& nRight, float& nDelta);
    void PaintSegment(VPXGraphics* pRenderer, GraphicsPath* pPath);
    void GetGlassData();
    void GetLightData();

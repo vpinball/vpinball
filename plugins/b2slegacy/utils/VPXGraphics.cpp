@@ -84,11 +84,11 @@ void VPXGraphics::DrawPath(GraphicsPath* pPath)
 
 void VPXGraphics::FillPolygon(const std::vector<SDL_FPoint>& points)
 {
-   int n = points.size();
+   int n = (int)points.size();
    if (n < 3) return;
 
-   double* vx = new double[n];
-   double* vy = new double[n];
+   double* const __restrict vx = new double[n];
+   double* const __restrict vy = new double[n];
 
    // Transform points and store in arrays
    int i = 0;
@@ -122,19 +122,14 @@ void VPXGraphics::FillPolygon(const std::vector<SDL_FPoint>& points)
    maxx = std::floor(maxx);
    prec = std::floor(std::pow(2,19) / prec);
 
-   float* const list = (float*)malloc(MAX_GRAPHICS_POLYSIZE * sizeof(float));
-   if (list == nullptr) {
-      delete[] vx;
-      delete[] vy;
-      return;
-   }
+   float* const __restrict list = new float[MAX_GRAPHICS_POLYSIZE];
 
    yi = 0;
    y0 = std::floor(vy[n - 1] * prec) / prec;
    y1 = std::floor(vy[0] * prec) / prec;
    for (i = 1; i <= n; i++) {
       if (yi > MAX_GRAPHICS_POLYSIZE - 4) {
-         free(list);
+         delete[] list;
          delete[] vx;
          delete[] vy;
          return;
@@ -186,7 +181,7 @@ void VPXGraphics::FillPolygon(const std::vector<SDL_FPoint>& points)
          if ((y -= d) >= y2)
             break;
          if (yi > MAX_GRAPHICS_POLYSIZE - 4) {
-            free(list);
+            delete[] list;
             delete[] vx;
             delete[] vy;
             return;
@@ -206,7 +201,7 @@ void VPXGraphics::FillPolygon(const std::vector<SDL_FPoint>& points)
       while (y <= y2) {
          x = x1 + y0 * (y - y1);
          if (yi > MAX_GRAPHICS_POLYSIZE - 2) {
-            free(list);
+            delete[] list;
             delete[] vx;
             delete[] vy;
             return;
@@ -219,13 +214,7 @@ void VPXGraphics::FillPolygon(const std::vector<SDL_FPoint>& points)
 
    qsort (list, yi / 2, sizeof(float) * 2, GraphicsCompareFloat);
 
-   float* const strip = (float*)malloc(((size_t)(maxx - minx) + 2) * sizeof(float));
-   if (strip == nullptr) {
-      free(list);
-      delete[] vx;
-      delete[] vy;
-      return;
-   }
+   float* const __restrict strip = new float[(size_t)(maxx - minx) + 2];
    memset(strip, 0, ((size_t)(maxx - minx) + 2) * sizeof(float));
    n = yi;
    yi = (int)list[1];
@@ -279,8 +268,8 @@ void VPXGraphics::FillPolygon(const std::vector<SDL_FPoint>& points)
          yi++;
       }
    }
-   free(list);
-   free(strip);
+   delete[] list;
+   delete[] strip;
    delete[] vx;
    delete[] vy;
 }
@@ -308,10 +297,10 @@ void VPXGraphics::DrawPolygonOutline(const std::vector<SDL_FPoint>& points)
          m_pModelMatrix->TransformPoint(x2, y2);
       }
 
-      x1 += m_translateX;
-      y1 += m_translateY;
-      x2 += m_translateX;
-      y2 += m_translateY;
+      x1 += (float)m_translateX;
+      y1 += (float)m_translateY;
+      x2 += (float)m_translateX;
+      y2 += (float)m_translateY;
 
       DrawLine((int)x1, (int)y1, (int)x2, (int)y2, r, g, b, a);
    }
@@ -345,7 +334,7 @@ void VPXGraphics::DrawLine(int x1, int y1, int x2, int y2, uint8_t r, uint8_t g,
 
 void VPXGraphics::SetPixel(int x, int y, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
-   if (x < 0 || x >= m_width || y < 0 || y >= m_height)
+   if (/*x < 0 ||*/ (unsigned int)x >= (unsigned int)m_width /*|| y < 0*/ || (unsigned int)y >= (unsigned int)m_height) // unsigned int test incl. <0
       return;
 
    int offset = (y * m_width + x) * 4;
@@ -357,7 +346,7 @@ void VPXGraphics::SetPixel(int x, int y, uint8_t r, uint8_t g, uint8_t b, uint8_
 
 void VPXGraphics::SetPixelBlended(int x, int y, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
-   if (x < 0 || x >= m_width || y < 0 || y >= m_height)
+   if (/*x < 0 ||*/ (unsigned int)x >= (unsigned int)m_width /*|| y < 0*/ || (unsigned int)y >= (unsigned int)m_height) // unsigned int test incl. <0
       return;
 
    int offset = (y * m_width + x) * 4;
@@ -367,13 +356,13 @@ void VPXGraphics::SetPixelBlended(int x, int y, uint8_t r, uint8_t g, uint8_t b,
    uint8_t existingB = m_pixelBuffer[offset + 2];
    uint8_t existingA = m_pixelBuffer[offset + 3];
 
-   float alpha = a / 255.0f;
+   float alpha = (float)a / 255.0f;
    float invAlpha = 1.0f - alpha;
 
-   m_pixelBuffer[offset + 0] = (uint8_t)(r * alpha + existingR * invAlpha);
-   m_pixelBuffer[offset + 1] = (uint8_t)(g * alpha + existingG * invAlpha);
-   m_pixelBuffer[offset + 2] = (uint8_t)(b * alpha + existingB * invAlpha);
-   m_pixelBuffer[offset + 3] = (uint8_t)(a + existingA * invAlpha);
+   m_pixelBuffer[offset + 0] = (uint8_t)(r * alpha + (float)existingR * invAlpha);
+   m_pixelBuffer[offset + 1] = (uint8_t)(g * alpha + (float)existingG * invAlpha);
+   m_pixelBuffer[offset + 2] = (uint8_t)(b * alpha + (float)existingB * invAlpha);
+   m_pixelBuffer[offset + 3] = (uint8_t)(a         + (float)existingA * invAlpha);
 }
 
 VPXTexture VPXGraphics::GetTexture()
@@ -563,15 +552,15 @@ void VPXGraphics::DrawImage(VPXPluginAPI* vpxApi, VPXRenderContext2D* ctx, VPXTe
    float tintR = 1.0f, tintG = 1.0f, tintB = 1.0f, alpha = 1.0f;
    float pivotX = 0.0f, pivotY = 0.0f, rotation = 0.0f;
 
-   float texX = srcRect ? srcRect->x : 0.0f;
-   float texY = srcRect ? srcRect->y : 0.0f;
-   float texW = srcRect ? srcRect->w : (float)texInfo->width;
-   float texH = srcRect ? srcRect->h : (float)texInfo->height;
+   float texX = srcRect ? (float)srcRect->x : 0.0f;
+   float texY = srcRect ? (float)srcRect->y : 0.0f;
+   float texW = srcRect ? (float)srcRect->w : (float)texInfo->width;
+   float texH = srcRect ? (float)srcRect->h : (float)texInfo->height;
 
-   float srcX = destRect ? destRect->x : 0.0f;
-   float srcY = destRect ? destRect->y : 0.0f;
-   float srcW = destRect ? destRect->w : ctx->outWidth;
-   float srcH = destRect ? destRect->h : ctx->outHeight;
+   float srcX = destRect ? (float)destRect->x : 0.0f;
+   float srcY = destRect ? (float)destRect->y : 0.0f;
+   float srcW = destRect ? (float)destRect->w : ctx->outWidth;
+   float srcH = destRect ? (float)destRect->h : ctx->outHeight;
 
    ctx->DrawImage(ctx, texture, tintR, tintG, tintB, alpha,
                   texX, texY, texW, texH, pivotX, pivotY, rotation,

@@ -5,7 +5,7 @@
 
 namespace B2SLegacy {
 
-class RunningAnimationsCollection : public vector<string>
+class RunningAnimationsCollection final : public vector<string>
 {
 public:
    static RunningAnimationsCollection* GetInstance();

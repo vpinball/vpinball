@@ -8,7 +8,7 @@ namespace B2SLegacy {
 
 class CollectData;
 
-class B2SCollectData : public std::map<int, CollectData*>
+class B2SCollectData final : public std::map<int, CollectData*>
 {
 public:
    B2SCollectData(int skipFrames);

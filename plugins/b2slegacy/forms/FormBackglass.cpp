@@ -136,7 +136,7 @@ void FormBackglass::OnPaint(VPXRenderContext2D* const ctx)
       // draw background image
       VPXGraphics::DrawImage(m_vpxApi, ctx, GetBackgroundImage(), NULL, NULL);
       // draw all visible and necessary images
-      if (m_pB2SData->GetIlluminations()->size() > 0) {
+      if (!m_pB2SData->GetIlluminations()->empty()) {
          if (!m_pB2SData->IsUseZOrder()) {
             // draw all standard images
             for(const auto& [key, pIllu] : *m_pB2SData->GetIlluminations())
@@ -262,7 +262,7 @@ bool FormBackglass::IsAnimationRunning(const string& szName)
 
 void FormBackglass::StartRotation()
 {
-   if (m_pB2SData->GetRotatingPictureBox() && (*m_pB2SData->GetRotatingPictureBox())[0] && m_pB2SData->GetRotatingImages() && (*m_pB2SData->GetRotatingImages())[0].size() > 0) {
+   if (m_pB2SData->GetRotatingPictureBox() && (*m_pB2SData->GetRotatingPictureBox())[0] && m_pB2SData->GetRotatingImages() && !(*m_pB2SData->GetRotatingImages())[0].empty()) {
       if (m_rotateAngle > 0 && m_rotateTimerInterval > 0) {
          if (m_pRotateTimer->IsEnabled())
             m_pRotateTimer->Stop();
@@ -275,7 +275,7 @@ void FormBackglass::StartRotation()
 
 void FormBackglass::StopRotation()
 {
-   if (m_pB2SData->GetRotatingPictureBox() && (*m_pB2SData->GetRotatingPictureBox())[0] && m_pB2SData->GetRotatingImages() && (*m_pB2SData->GetRotatingImages())[0].size() > 0) {
+   if (m_pB2SData->GetRotatingPictureBox() && (*m_pB2SData->GetRotatingPictureBox())[0] && m_pB2SData->GetRotatingImages() && !(*m_pB2SData->GetRotatingImages())[0].empty()) {
       if (m_pRotateTimer->IsEnabled()) {
          if ((*m_pB2SData->GetRotatingPictureBox())[0]->GetSnippitRotationStopBehaviour() == eSnippitRotationStopBehaviour_SpinOff)
             m_rotateSlowDownSteps = 1;
@@ -317,10 +317,10 @@ void FormBackglass::HideScoreDisplays()
    }
 }
 
-eLEDTypes FormBackglass::GetLEDType()
+eLEDTypes FormBackglass::GetLEDType() const
 {
    eLEDTypes ret = eLEDTypes_Undefined;
-   if (m_pB2SData->GetLEDDisplays()->size() > 0) {
+   if (!m_pB2SData->GetLEDDisplays()->empty()) {
       for (const auto& [key, pDisplay] : *m_pB2SData->GetLEDDisplays()) {
          if (pDisplay->IsVisible()) {
             ret = eLEDTypes_Dream7;
@@ -328,7 +328,7 @@ eLEDTypes FormBackglass::GetLEDType()
          }
       }
    }
-   else if (m_pB2SData->GetLEDs()->size() > 0) {
+   else if (!m_pB2SData->GetLEDs()->empty()) {
       for (const auto& [key, pLED] : *m_pB2SData->GetLEDs()) {
          if (pLED->IsVisible()) {
             ret = eLEDTypes_Rendered;
@@ -349,7 +349,7 @@ void FormBackglass::StopSound(const string& szSoundName)
    LOGW("Not implemented");
 }
 
-SDL_FRect& FormBackglass::GetScaleFactor()
+const SDL_FRect& FormBackglass::GetScaleFactor() const
 {
    return m_pB2SScreen->GetRescaleBackglass();
 }
@@ -369,8 +369,6 @@ void FormBackglass::LoadB2SData()
    std::ifstream infile(szFilename);
    if (!infile.good())
       throw std::exception();
-
-   char* data = nullptr;
 
    tinyxml2::XMLDocument b2sTree;
    std::stringstream buffer;
@@ -503,7 +501,7 @@ void FormBackglass::LoadB2SData()
             if (innerNode->FindAttribute("SnippitRotatingStopBehaviour"))
                   picboxrotationstopbehaviour = (eSnippitRotationStopBehaviour)innerNode->IntAttribute("SnippitRotatingStopBehaviour");
          }
-         bool visible = (innerNode->IntAttribute("Visible") == 1);
+         //bool visible = (innerNode->IntAttribute("Visible") == 1);
          SDL_Point loc = { innerNode->IntAttribute("LocX"), innerNode->IntAttribute("LocY") };
          SDL_Rect size = { 0, 0, innerNode->IntAttribute("Width"), innerNode->IntAttribute("Height") };
          VPXTexture pImage = Base64ToImage(innerNode->Attribute("Image"));
@@ -581,11 +579,11 @@ void FormBackglass::LoadB2SData()
 
          // maybe do picture rotating
          if (picboxrotatesteps > 0) {
-            if (picboxtype == ePictureBoxType_SelfRotatingImage && m_pB2SData->GetRotatingImages()->size() == 0) {
+            if (picboxtype == ePictureBoxType_SelfRotatingImage && m_pB2SData->GetRotatingImages()->empty()) {
                m_rotateTimerInterval = picboxrotateinterval;
                RotateImage(pPicbox, picboxrotatesteps, picboxrotationdirection, ePictureBoxType_SelfRotatingImage);
             }
-            else if (picboxtype == ePictureBoxType_MechRotatingImage && m_pB2SData->GetRotatingImages()->size() == 0) {
+            else if (picboxtype == ePictureBoxType_MechRotatingImage && m_pB2SData->GetRotatingImages()->empty()) {
                RotateImage(pPicbox, picboxrotatesteps, picboxrotationdirection, ePictureBoxType_MechRotatingImage, romidtype, romid);
             }
          }
@@ -646,7 +644,7 @@ void FormBackglass::LoadB2SData()
          bool isRenderedLEDs = string_starts_with_case_insensitive(reeltype, "rendered"s);
          bool isReels = !isDream7LEDs && !isRenderedLEDs;
          SDL_FRect glowbulb = { 0.0f, 0.0f, 0.0f, 0.0f };
-         int glow = d7glow;
+         float glow = d7glow;
          string ledtype;
 
          // set led type
@@ -698,9 +696,9 @@ void FormBackglass::LoadB2SData()
             pLed->SetBackColor(RGB(15, 15, 15));
             pLed->SetGlassAlpha(140);
             pLed->SetGlassAlphaCenter(255);
-            pLed->SetThickness(d7thickness * 1.2);
+            pLed->SetThickness(d7thickness * 1.2f);
             pLed->SetShear(d7shear);
-            pLed->SetGlow(glow < 3 ? glow : 3);
+            pLed->SetGlow(glow < 3.f ? glow : 3.f);
             if (!SDL_RectEmptyFloat(&glowbulb))
                pLed->SetBulbSize(glowbulb);
             // 'TAXI' patch to shear the third LED display
@@ -740,7 +738,7 @@ void FormBackglass::LoadB2SData()
                m_pB2SData->SetPlayerAdded(true);
                if (!m_pB2SData->GetPlayers()->contains(b2splayerno))
                   m_pB2SData->GetPlayers()->Add(b2splayerno);
-                  (*m_pB2SData->GetPlayers())[b2splayerno]->Add(new ControlInfo(startdigit, digits, eControlType_Dream7LEDDisplay, pLed));
+               (*m_pB2SData->GetPlayers())[b2splayerno]->Add(new ControlInfo(startdigit, digits, eControlType_Dream7LEDDisplay, pLed));
             }
          }
 
@@ -1049,7 +1047,7 @@ void FormBackglass::LoadB2SData()
       string topkey4Authentic;
       int second4Authentic = 0;
       string secondkey4Authentic;
-      for (auto romsize : roms4Authentic) {
+      for (const auto& romsize : roms4Authentic) {
          if (romsize.second > second4Authentic) {
             second4Authentic = romsize.second;
             secondkey4Authentic = romsize.first;
@@ -1066,7 +1064,7 @@ void FormBackglass::LoadB2SData()
       int second4Fantasy = 0;
       string secondkey4Fantasy;
       if (m_pB2SData->IsDualBackglass()) {
-         for (auto romsize : roms4Fantasy) {
+         for (const auto& romsize : roms4Fantasy) {
             if (romsize.second > second4Fantasy) {
                second4Fantasy = romsize.second;
                secondkey4Fantasy = romsize.first;
@@ -1173,7 +1171,7 @@ void FormBackglass::LoadB2SData()
             animationstopbehaviour = eAnimationStopBehaviour_StopImmediatelly;
          vector<PictureBoxAnimationEntry*> entries;
          for (auto stepnode = innerNode->FirstChildElement("AnimationStep"); stepnode != nullptr; stepnode = stepnode->NextSiblingElement("AnimationStep")) {
-            int step = stepnode->IntAttribute("Step");
+            //int step = stepnode->IntAttribute("Step");
             string on = stepnode->Attribute("On");
             int waitLoopsAfterOn = stepnode->IntAttribute("WaitLoopsAfterOn");
             string off = stepnode->Attribute("Off");
@@ -1184,7 +1182,7 @@ void FormBackglass::LoadB2SData()
             entries.push_back(new PictureBoxAnimationEntry(on, waitLoopsAfterOn, off, waitLoopsAfterOff, pulseswitch));
          }
          // maybe add animation
-         if (interval > 0 && entries.size() > 0) {
+         if (interval > 0 && !entries.empty()) {
             m_pB2SAnimation->AddAnimation(m_pB2SData, name, this, m_pFormDMD, dualmode, interval, loops, startAnimationAtBackglassStartup,
                lightsStateAtAnimationStart, lightsStateAtAnimationEnd, animationstopbehaviour, lockInvolvedLamps, hidescoredisplays,
                bringtofront, randomstart, randomquality, entries);
@@ -1200,7 +1198,7 @@ void FormBackglass::LoadB2SData()
                      int id1 = 0;
                      int id2 = 0;
                      int id3 = 0;
-                     if (idJoin.length() >= 1 && is_string_numeric(idJoin))
+                     if (!idJoin.empty() && is_string_numeric(idJoin))
                         id0 = std::stoi(idJoin);
                      if (idJoin.length() >= 2 && is_string_numeric(idJoin.substr(1)))
                         id1 = std::stoi(idJoin.substr(1));
@@ -1322,7 +1320,7 @@ void FormBackglass::ResizeSomeImages()
          if (pPicbox->GetPictureBoxType() == ePictureBoxType_StandardImage) {
             VPXTexture pImage = pPicbox->GetBackgroundImage();
             if (pImage) {
-               SDL_FRect frect = { 0.0f, 0.0f, m_vpxApi->GetTextureInfo(pImage)->width / xResizeFactor, m_vpxApi->GetTextureInfo(pImage)->height / yResizeFactor };
+               SDL_FRect frect = { 0.0f, 0.0f, (float)m_vpxApi->GetTextureInfo(pImage)->width / xResizeFactor, (float)m_vpxApi->GetTextureInfo(pImage)->height / yResizeFactor };
                SDL_Rect rect = { 0, 0, (int)frect.w, (int)frect.h };
                pPicbox->SetBackgroundImage(ResizeTexture(pImage, rect.w, rect.h));
                if (pPicbox->GetOffImage())
@@ -1497,8 +1495,9 @@ void FormBackglass::CheckBulbs(int romid, eRomIDType romidtype, bool rominverted
          pUsedRomIDs = (dualmode == eDualMode_Fantasy ? m_pB2SData->GetUsedRomSolenoidIDs4Fantasy() : m_pB2SData->GetUsedRomSolenoidIDs4Authentic());
       else if (romidtype == eRomIDType_GIString)
          pUsedRomIDs = (dualmode == eDualMode_Fantasy ? m_pB2SData->GetUsedRomGIStringIDs4Fantasy() : m_pB2SData->GetUsedRomGIStringIDs4Authentic());
-      if (pUsedRomIDs->find(romid) != pUsedRomIDs->end()) {
-         pUsedRomIDs->erase(romid);
+      auto itr = pUsedRomIDs->find(romid);
+      if (itr != pUsedRomIDs->end()) {
+         pUsedRomIDs->erase(itr);
          for(const auto& [key, pPicbox] : *m_pB2SData->GetIlluminations()) {
             if (pPicbox->GetRomID() == romid && pPicbox->GetRomIDType() == romidtype && pPicbox->IsRomInverted() != rominverted && (pPicbox->GetDualMode() == eDualMode_Both || pPicbox->GetDualMode() == dualmode))
                m_pB2SData->GetIlluminations()->Add(pPicbox, dualmode);
@@ -1522,8 +1521,8 @@ VPXTexture FormBackglass::RotateTexture(VPXTexture source, int angle)
    const float sine = sinf(radians);
    const int dw = destination->w;
    const int dh = destination->h;
-   const float center_x = dw / 2.0f;
-   const float center_y = dh / 2.0f;
+   const float center_x = (float)dw / 2.0f;
+   const float center_y = (float)dh / 2.0f;
    const uint32_t* const __restrict src = ((uint32_t*)pSurface->pixels);
    uint32_t* const __restrict dest = ((uint32_t*)destination->pixels);
    for (int y = 0; y < dh; ++y) {

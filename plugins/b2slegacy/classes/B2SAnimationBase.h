@@ -30,7 +30,7 @@ public:
    ~B2SAnimationBase();
 
    B2SAnimation* GetB2SAnimation() const { return m_pB2SAnimation; }
-   string GetName() const { return m_szName; }
+   const string& GetName() const { return m_szName; }
    void SetName(const string& szName) { m_szName = szName; }
    eDualMode GetDualMode() const { return m_dualMode; }
    eType GetType() const { return m_type; }

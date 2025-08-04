@@ -25,7 +25,7 @@ public:
    void SetRomIDValue(const int romidvalue) { m_romidvalue = romidvalue; }
    bool IsRomInverted() const { return m_rominverted; }
    void SetRomInverted(const bool rominverted) { m_rominverted = rominverted; }
-   SDL_FRect& GetRectangleF() { return m_rectangleF; }
+   const SDL_FRect& GetRectangleF() const { return m_rectangleF; }
    void SetRectangleF(const SDL_FRect& rectangleF) { m_rectangleF = rectangleF; }
    int GetStartDigit() const { return m_startDigit; }
    void SetStartDigit(const int startDigit) { m_startDigit = startDigit; }

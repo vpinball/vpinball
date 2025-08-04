@@ -12,7 +12,7 @@ class Form;
 class B2SPictureBox;
 class PictureBoxAnimationEntry;
 
-class PictureBoxAnimation : public B2SAnimationBase
+class PictureBoxAnimation final : public B2SAnimationBase
 {
 public:
    PictureBoxAnimation(
@@ -42,7 +42,7 @@ private:
    void PictureBoxAnimationTick(Timer* pTimer);
    void LightGroup(const string& szGroupName, bool visible);
    void LightBulb(const string& szBulb, bool visible);
-   eLEDTypes GetLEDType();
+   eLEDTypes GetLEDType() const;
 
    Form* m_pForm;
    Form* m_pFormDMD;

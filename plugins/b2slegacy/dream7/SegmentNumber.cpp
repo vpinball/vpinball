@@ -11,7 +11,7 @@ SegmentNumber::SegmentNumber(Dream7Display* pDisplay)
 {
    m_thickness = 16.0f;
    m_pStyle = new SegmentStyle();
-   m_pNumberMatrix = NULL;
+   m_pNumberMatrix = nullptr;
 }
 
 SegmentNumber::~SegmentNumber()
@@ -97,13 +97,13 @@ void SegmentNumber::InitSegments(const SegmentNumberType type, const float thick
    m_thickness = TH;
    switch (type) {
       case SegmentNumberType_SevenSegment:
-         m_segments.push_back(new Segment("a", T4 + 2, TH, TH, 120 - T2, -90, SegmentCap_MoreRight, SegmentCap_MoreRight));
-         m_segments.push_back(new Segment("b", 124 - TH, T4 + 2, TH, 110 - T4, 0, SegmentCap_MoreRight, SegmentCap_Standard));
-         m_segments.push_back(new Segment("c", 124 - TH, 116, TH, 110 - T4, 0, SegmentCap_Standard, SegmentCap_MoreRight));
-         m_segments.push_back(new Segment("d", T4 + 2, 228, TH, 120 - T2, -90, SegmentCap_MoreLeft, SegmentCap_MoreLeft));
-         m_segments.push_back(new Segment("e", 0, 116, TH, 110 - T4, 0, SegmentCap_Standard, SegmentCap_MoreLeft));
-         m_segments.push_back(new Segment("f", 0, T4 + 2, TH, 110 - T4, 0, SegmentCap_MoreLeft, SegmentCap_Standard));
-         m_segments.push_back(new Segment("g", T2 + 2, 114 + T2, TH, 120 - TH, -90));
+         m_segments.push_back(new Segment("a"s, T4 + 2, TH, TH, 120 - T2, -90, SegmentCap_MoreRight, SegmentCap_MoreRight));
+         m_segments.push_back(new Segment("b"s, 124 - TH, T4 + 2, TH, 110 - T4, 0, SegmentCap_MoreRight, SegmentCap_Standard));
+         m_segments.push_back(new Segment("c"s, 124 - TH, 116, TH, 110 - T4, 0, SegmentCap_Standard, SegmentCap_MoreRight));
+         m_segments.push_back(new Segment("d"s, T4 + 2, 228, TH, 120 - T2, -90, SegmentCap_MoreLeft, SegmentCap_MoreLeft));
+         m_segments.push_back(new Segment("e"s, 0, 116, TH, 110 - T4, 0, SegmentCap_Standard, SegmentCap_MoreLeft));
+         m_segments.push_back(new Segment("f"s, 0, T4 + 2, TH, 110 - T4, 0, SegmentCap_MoreLeft, SegmentCap_Standard));
+         m_segments.push_back(new Segment("g"s, T2 + 2, 114 + T2, TH, 120 - TH, -90));
          m_segments.push_back(new Segment(135 - T4 * 5, 228 - T4 * 5, TH));
          break;
       case SegmentNumberType_FourteenSegment:
@@ -116,35 +116,35 @@ void SegmentNumber::InitSegments(const SegmentNumberType type, const float thick
          float diagX = cosA * MT;
          float diagY = sinA * MT;
          float diagHeight = (58.f - TH - MT / 2.f) / sinA + MT / nTanA;
-         m_segments.push_back(new Segment("a", T4 + 2.f, TH, TH, 120.f - T2, -90, SegmentCap_MoreRight, SegmentCap_MoreRight));
-         m_segments.push_back(new Segment("b", 124.f - TH, T4 + 2.f, TH, 110.f - T4, 0, SegmentCap_MoreRight, SegmentCap_Standard));
-         m_segments.push_back(new Segment("c", 124.f - TH, 116, TH, 110.f - T4, 0, SegmentCap_Standard, SegmentCap_MoreRight));
-         m_segments.push_back(new Segment("d", T4 + 2.f, 228, TH, 120.f - T2, -90, SegmentCap_MoreLeft, SegmentCap_MoreLeft));
-         m_segments.push_back(new Segment("e", 0, 116, TH, 110.f - T4, 0, SegmentCap_Standard, SegmentCap_MoreLeft));
-         m_segments.push_back(new Segment("f", 0, T4 + 2.f, TH, 110.f - T4, 0, SegmentCap_MoreLeft, SegmentCap_Standard));
-         m_segments.push_back(new Segment("g1", T2 + 2.f, 114.f + T2, TH, 59.f - T2, -90, SegmentCap_Standard, SegmentCap_Flat));
+         m_segments.push_back(new Segment("a"s, T4 + 2.f, TH, TH, 120.f - T2, -90, SegmentCap_MoreRight, SegmentCap_MoreRight));
+         m_segments.push_back(new Segment("b"s, 124.f - TH, T4 + 2.f, TH, 110.f - T4, 0, SegmentCap_MoreRight, SegmentCap_Standard));
+         m_segments.push_back(new Segment("c"s, 124.f - TH, 116, TH, 110.f - T4, 0, SegmentCap_Standard, SegmentCap_MoreRight));
+         m_segments.push_back(new Segment("d"s, T4 + 2.f, 228, TH, 120.f - T2, -90, SegmentCap_MoreLeft, SegmentCap_MoreLeft));
+         m_segments.push_back(new Segment("e"s, 0, 116, TH, 110.f - T4, 0, SegmentCap_Standard, SegmentCap_MoreLeft));
+         m_segments.push_back(new Segment("f"s, 0, T4 + 2.f, TH, 110.f - T4, 0, SegmentCap_MoreLeft, SegmentCap_Standard));
+         m_segments.push_back(new Segment("g1"s, T2 + 2.f, 114.f + T2, TH, 59.f - T2, -90, SegmentCap_Standard, SegmentCap_Flat));
          m_segments.push_back(new Segment(135.f - T4 * 5.f, 224.f - T4 * 6.f, TH));
-         m_segments.push_back(new Segment("h", TH - diagX + 2.f, TH + 2.f + diagY, MT, diagHeight, -angleDiag, SegmentCap_Right, SegmentCap_Left, 90 - angleDiag));
-         m_segments.push_back(new Segment("i", 62.f - MT / 2.f, TH + 2.f, MT, 110.f - TH - T2, 0, SegmentCap_Flat, SegmentCap_Flat));
-         m_segments.push_back(new Segment("j", 122.f - TH, TH + 2.f, MT, diagHeight, angleDiag, SegmentCap_Left, SegmentCap_Right, 90 - angleDiag));
-         m_segments.push_back(new Segment("g2", 63, 114.f + T2, TH, 59.f - T2, -90, SegmentCap_Flat, SegmentCap_Standard));
-         m_segments.push_back(new Segment("m", MT / 2.0f - diagX + 64.f, 116.f + T2 + diagY, MT, diagHeight, -angleDiag, SegmentCap_Right, SegmentCap_Left, 90 - angleDiag));
-         m_segments.push_back(new Segment("l", 62.f - MT / 2.f, 116.f + T2, MT, 110.f - TH - T2, 0, SegmentCap_Flat, SegmentCap_Flat));
-         m_segments.push_back(new Segment("k", 60.f - MT / 2.f, 116.f + TH / 2.f, MT, diagHeight, angleDiag, SegmentCap_Left, SegmentCap_Right, 90 - angleDiag));
+         m_segments.push_back(new Segment("h"s, TH - diagX + 2.f, TH + 2.f + diagY, MT, diagHeight, -angleDiag, SegmentCap_Right, SegmentCap_Left, 90 - angleDiag));
+         m_segments.push_back(new Segment("i"s, 62.f - MT / 2.f, TH + 2.f, MT, 110.f - TH - T2, 0, SegmentCap_Flat, SegmentCap_Flat));
+         m_segments.push_back(new Segment("j"s, 122.f - TH, TH + 2.f, MT, diagHeight, angleDiag, SegmentCap_Left, SegmentCap_Right, 90 - angleDiag));
+         m_segments.push_back(new Segment("g2"s, 63, 114.f + T2, TH, 59.f - T2, -90, SegmentCap_Flat, SegmentCap_Standard));
+         m_segments.push_back(new Segment("m"s, MT / 2.0f - diagX + 64.f, 116.f + T2 + diagY, MT, diagHeight, -angleDiag, SegmentCap_Right, SegmentCap_Left, 90 - angleDiag));
+         m_segments.push_back(new Segment("l"s, 62.f - MT / 2.f, 116.f + T2, MT, 110.f - TH - T2, 0, SegmentCap_Flat, SegmentCap_Flat));
+         m_segments.push_back(new Segment("k"s, 60.f - MT / 2.f, 116.f + TH / 2.f, MT, diagHeight, angleDiag, SegmentCap_Left, SegmentCap_Right, 90 - angleDiag));
          m_segments.push_back(new Segment(131.f - T4 * 5.f, 230.f - T4 * 4.f, TH));
          break;
       }
       case SegmentNumberType_TenSegment:
-         m_segments.push_back(new Segment("a", T4 + 2.f, TH, TH, 120.f - T2, -90, SegmentCap_MoreRight, SegmentCap_MoreRight));
-         m_segments.push_back(new Segment("b", 124.f - TH, T4 + 2.f, TH, 110.f - T4, 0, SegmentCap_MoreRight, SegmentCap_Standard));
-         m_segments.push_back(new Segment("c", 124.f - TH, 116, TH, 110.f - T4, 0, SegmentCap_Standard, SegmentCap_MoreRight));
-         m_segments.push_back(new Segment("d", T4 + 2.f, 228, TH, 120.f - T2, -90, SegmentCap_MoreLeft, SegmentCap_MoreLeft));
-         m_segments.push_back(new Segment("e", 0, 116, TH, 110.f - T4, 0, SegmentCap_Standard, SegmentCap_MoreLeft));
-         m_segments.push_back(new Segment("f", 0, T4 + 2.f, TH, 110.f - T4, 0, SegmentCap_MoreLeft, SegmentCap_Standard));
-         m_segments.push_back(new Segment("g1", T2 + 2.f, 114.f + T2, TH, 69.f - T2, -90, SegmentCap_Standard, SegmentCap_Standard));
-         m_segments.push_back(new Segment("g2", 73, 114.f + T2, TH, 49.f - T2, -90, SegmentCap_Standard, SegmentCap_Standard));
-         m_segments.push_back(new Segment("i", 72.f - T2, T2 + 2.f, TH, 110.f - T2, 0, SegmentCap_Standard, SegmentCap_Standard));
-         m_segments.push_back(new Segment("l", 72.f - T2, 116, TH, 110.f - T2, 0, SegmentCap_Standard, SegmentCap_Standard));
+         m_segments.push_back(new Segment("a"s, T4 + 2.f, TH, TH, 120.f - T2, -90, SegmentCap_MoreRight, SegmentCap_MoreRight));
+         m_segments.push_back(new Segment("b"s, 124.f - TH, T4 + 2.f, TH, 110.f - T4, 0, SegmentCap_MoreRight, SegmentCap_Standard));
+         m_segments.push_back(new Segment("c"s, 124.f - TH, 116, TH, 110.f - T4, 0, SegmentCap_Standard, SegmentCap_MoreRight));
+         m_segments.push_back(new Segment("d"s, T4 + 2.f, 228, TH, 120.f - T2, -90, SegmentCap_MoreLeft, SegmentCap_MoreLeft));
+         m_segments.push_back(new Segment("e"s, 0, 116, TH, 110.f - T4, 0, SegmentCap_Standard, SegmentCap_MoreLeft));
+         m_segments.push_back(new Segment("f"s, 0, T4 + 2.f, TH, 110.f - T4, 0, SegmentCap_MoreLeft, SegmentCap_Standard));
+         m_segments.push_back(new Segment("g1"s, T2 + 2.f, 114.f + T2, TH, 69.f - T2, -90, SegmentCap_Standard, SegmentCap_Standard));
+         m_segments.push_back(new Segment("g2"s, 73, 114.f + T2, TH, 49.f - T2, -90, SegmentCap_Standard, SegmentCap_Standard));
+         m_segments.push_back(new Segment("i"s, 72.f - T2, T2 + 2.f, TH, 110.f - T2, 0, SegmentCap_Standard, SegmentCap_Standard));
+         m_segments.push_back(new Segment("l"s, 72.f - T2, 116, TH, 110.f - T2, 0, SegmentCap_Standard, SegmentCap_Standard));
          break;
    }
    for (auto& pSegment : m_segments)
@@ -153,8 +153,7 @@ void SegmentNumber::InitSegments(const SegmentNumberType type, const float thick
 
 void SegmentNumber::InitMatrix(const SDL_FPoint& location, Matrix* pMatrix)
 {
-   if (m_pNumberMatrix != NULL)
-      delete m_pNumberMatrix;
+   delete m_pNumberMatrix;
    m_pNumberMatrix = pMatrix->Clone();
    m_pNumberMatrix->Translate(location.x, location.y);
    m_segments.Transform(m_pNumberMatrix);

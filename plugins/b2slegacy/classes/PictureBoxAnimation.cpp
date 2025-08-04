@@ -54,23 +54,23 @@ PictureBoxAnimation::PictureBoxAnimation(
       bool isOff2Valid = (!pEntry->GetOff2()[0].empty() || pEntry->GetWaitAfterOff2() > 0);
       int pulseswitch = pEntry->GetPulseSwitch();
       if (isOn1Valid) {
-         m_entries[m_entries.size() + 1] = new EntryAction(*pEntry->GetOn1(), pEntry->GetWaitAfterOn1(), true, isOff1Valid ? 1 : 0, pulseswitch);
+         m_entries[(int)m_entries.size() + 1] = new EntryAction(*pEntry->GetOn1(), pEntry->GetWaitAfterOn1(), true, isOff1Valid ? 1 : 0, pulseswitch);
          pulseswitch = 0;
       }
       if (isOff1Valid) {
-         m_entries[m_entries.size() + 1] = new EntryAction(*pEntry->GetOff1(), pEntry->GetWaitAfterOff1(), false, isOn1Valid ? -1 : 0, pulseswitch);
+         m_entries[(int)m_entries.size() + 1] = new EntryAction(*pEntry->GetOff1(), pEntry->GetWaitAfterOff1(), false, isOn1Valid ? -1 : 0, pulseswitch);
          pulseswitch = 0;
       }
       if (isOn2Valid) {
-         m_entries[m_entries.size() + 1] = new EntryAction(*pEntry->GetOn2(), pEntry->GetWaitAfterOn2(), true, isOff2Valid ? 1 : 0, pulseswitch);
+         m_entries[(int)m_entries.size() + 1] = new EntryAction(*pEntry->GetOn2(), pEntry->GetWaitAfterOn2(), true, isOff2Valid ? 1 : 0, pulseswitch);
          pulseswitch = 0;
       }
       if (isOff2Valid) {
-         m_entries[m_entries.size() + 1] = new EntryAction(*pEntry->GetOff2(), pEntry->GetWaitAfterOff2(), false, isOn2Valid ? -1 : 0, pulseswitch);
+         m_entries[(int)m_entries.size() + 1] = new EntryAction(*pEntry->GetOff2(), pEntry->GetWaitAfterOff2(), false, isOn2Valid ? -1 : 0, pulseswitch);
          pulseswitch = 0;
       }
       if (pulseswitch > 0) {
-         m_entries[m_entries.size() + 1] =  new EntryAction(std::vector<std::string>{""}, 0, true, 0, pulseswitch);
+         m_entries[(int)m_entries.size() + 1] = new EntryAction(std::vector<std::string>{""}, 0, true, 0, pulseswitch);
          pulseswitch = 0;
       }
    }
@@ -117,7 +117,7 @@ void PictureBoxAnimation::Start()
          for (auto& pControl : *pCurrentForm->GetControls()) {
             B2SPictureBox* pPicbox = dynamic_cast<B2SPictureBox*>(pControl);
             if (pPicbox) {
-               if (GetLightsStateAtAnimationEnd() == eLightsStateAtAnimationEnd_LightsReseted && m_lightsStateAtStartup.find(pPicbox->GetName()) == m_lightsStateAtStartup.end())
+               if (GetLightsStateAtAnimationEnd() == eLightsStateAtAnimationEnd_LightsReseted && !m_lightsStateAtStartup.contains(pPicbox->GetName()))
                   m_lightsStateAtStartup[pPicbox->GetName()] = pPicbox->IsVisible();
                if (GetLightsStateAtAnimationStart() == eLightsStateAtAnimationStart_LightsOff)
                   pPicbox->SetVisible(false);
@@ -215,7 +215,7 @@ void PictureBoxAnimation::Stop()
                m_pB2SData->GetIlluminationLocks()->erase(groupname);
          }
       }
-      m_pB2SData->SetUseIlluminationLocks(m_pB2SData->GetIlluminationLocks()->size() > 0);
+      m_pB2SData->SetUseIlluminationLocks(!m_pB2SData->GetIlluminationLocks()->empty());
    }
 
    // maybe switch all involved lights on/off or set some lights to initial state
@@ -248,9 +248,10 @@ void PictureBoxAnimation::PictureBoxAnimationTick(Timer* pTimer)
    // show animation stuff
    if (!m_entries.empty()) {
       while (true) {
-         int index = !IsPlayReverse() ? m_ticker + 1 : m_entries.size() - m_ticker;
-         if (m_entries.find(index) != m_entries.end()) {
-            EntryAction* pCurrentEntryAction = m_entries[index];
+         int index = !IsPlayReverse() ? m_ticker + 1 : (int)m_entries.size() - m_ticker;
+         auto itr = m_entries.find(index);
+         if (itr != m_entries.end()) {
+            EntryAction* pCurrentEntryAction = itr->second;
             if (pCurrentEntryAction->GetCorrector() != 0 && IsPlayReverse())
                pCurrentEntryAction = m_entries[index + pCurrentEntryAction->GetCorrector()];
             // light or unlight bulbs
@@ -306,7 +307,7 @@ void PictureBoxAnimation::PictureBoxAnimationTick(Timer* pTimer)
 
 void PictureBoxAnimation::LightGroup(const string& szGroupName, bool visible)
 {
-   // only do the lightning stuff if the group has a name
+   // only do the lighting stuff if the group has a name
    if (!szGroupName.empty() && m_pB2SData->GetIlluminationGroups()->contains(szGroupName)) {
       // get all matching picture boxes
       for (auto& pPicbox : (*m_pB2SData->GetIlluminationGroups())[szGroupName]) {
@@ -319,7 +320,7 @@ void PictureBoxAnimation::LightGroup(const string& szGroupName, bool visible)
 
 void PictureBoxAnimation::LightBulb(const string& szBulb, bool visible)
 {
-   // only do the lightning stuff if the bulb has a name
+   // only do the lighting stuff if the bulb has a name
    if (!szBulb.empty()) {
       Form* pCurrentForm = NULL;
       if (m_pForm->GetControl(szBulb))
@@ -334,10 +335,10 @@ void PictureBoxAnimation::LightBulb(const string& szBulb, bool visible)
    }
 }
 
-eLEDTypes PictureBoxAnimation::GetLEDType()
+eLEDTypes PictureBoxAnimation::GetLEDType() const
 {
    eLEDTypes ret = eLEDTypes_Undefined;
-   if (m_pB2SData->GetLEDDisplays()->size() > 0) {
+   if (!m_pB2SData->GetLEDDisplays()->empty()) {
       for (const auto& [key, pDisplay] : *m_pB2SData->GetLEDDisplays()) {
          if (pDisplay->IsVisible()) {
             ret = eLEDTypes_Dream7;
@@ -345,7 +346,7 @@ eLEDTypes PictureBoxAnimation::GetLEDType()
          }
       }
    }
-   else if (m_pB2SData->GetLEDs()->size() > 0) {
+   else if (!m_pB2SData->GetLEDs()->empty()) {
       for (const auto& [key, pLED] : *m_pB2SData->GetLEDs()) {
          if (pLED->IsVisible()) {
             ret = eLEDTypes_Rendered;

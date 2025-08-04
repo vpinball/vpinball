@@ -10,15 +10,13 @@ namespace B2SLegacy {
 class B2SScreen;
 class Server;
 
-class FormDMD : public Form
+class FormDMD final : public Form
 {
 public:
    FormDMD(MsgPluginAPI* msgApi, VPXPluginAPI* vpxApi, B2SData* pB2SData);
    ~FormDMD();
 
    void OnPaint(VPXRenderContext2D* const ctx) override;
-
-private:
 };
 
 }

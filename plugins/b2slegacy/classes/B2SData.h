@@ -45,7 +45,7 @@ public:
    void SetGrillHeight(const int grillHeight) { m_grillHeight = grillHeight; }
    int GetSmallGrillHeight() const { return m_smallGrillHeight; }
    void SetSmallGrillHeight(const int smallGrillHeight) { m_smallGrillHeight = smallGrillHeight; }
-   const SDL_Point& GetDMDDefaultLocation() { return m_dmdDefaultLocation; }
+   const SDL_Point& GetDMDDefaultLocation() const { return m_dmdDefaultLocation; }
    void SetDMDDefaultLocation(const SDL_Point& dmdDefaultLocation) { m_dmdDefaultLocation = dmdDefaultLocation; }
    bool IsDualBackglass() const { return m_dualBackglass; }
    void SetDualBackglass(bool dualBackglass) { m_dualBackglass = dualBackglass; }

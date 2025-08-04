@@ -12,7 +12,7 @@ class B2SAnimation;
 class FormDMD;
 class Server;
 
-class FormBackglass : public Form
+class FormBackglass final : public Form
 {
 public:
    FormBackglass(MsgPluginAPI* msgApi, VPXPluginAPI* vpxApi, B2SData* pB2SData);
@@ -30,7 +30,7 @@ public:
    void HideScoreDisplays();
    void PlaySound(const string& szSoundName);
    void StopSound(const string& szSoundName);
-   SDL_FRect& GetScaleFactor();
+   const SDL_FRect& GetScaleFactor() const;
    VPXTexture GetTopLightImage() const { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_pTopLightImage4Fantasy : m_pTopLightImage4Authentic; }
    VPXTexture GetTopLightImage4Authentic() const { return m_pTopLightImage4Authentic; }
    void SetTopLightImage4Authentic(VPXTexture pTopLightImage4Authentic) { if (m_pTopLightImage4Authentic) m_vpxApi->DeleteTexture(m_pTopLightImage4Authentic); m_pTopLightImage4Authentic = pTopLightImage4Authentic; }
@@ -51,12 +51,12 @@ public:
    void SetDarkImage4Authentic(VPXTexture pDarkImage4Authentic) { if (m_pDarkImage4Authentic) m_vpxApi->DeleteTexture(m_pDarkImage4Authentic); m_pDarkImage4Authentic = pDarkImage4Authentic; }
    VPXTexture GetDarkImage4Fantasy() const { return m_pDarkImage4Fantasy; }
    void SetDarkImage4Fantasy(VPXTexture pDarkImage4Fantasy) { if (m_pDarkImage4Fantasy) m_vpxApi->DeleteTexture(m_pDarkImage4Fantasy); m_pDarkImage4Fantasy = pDarkImage4Fantasy; }
-   int GetTopRomID() { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_topRomID4Fantasy : m_topRomID4Authentic; }
-   int GetTopRomIDType() { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_topRomIDType4Fantasy : m_topRomIDType4Authentic; }
-   bool IsTopRomInverted() { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_topRomInverted4Fantasy : m_topRomInverted4Authentic; }
-   int GetSecondRomID() { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_secondRomID4Fantasy : m_secondRomID4Authentic; }
-   eRomIDType GetSecondRomIDType() { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_secondRomIDType4Fantasy : m_secondRomIDType4Authentic; }
-   bool IsSecondRomInverted() { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_secondRomInverted4Fantasy : m_secondRomInverted4Authentic; }
+   int GetTopRomID() const { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_topRomID4Fantasy : m_topRomID4Authentic; }
+   int GetTopRomIDType() const { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_topRomIDType4Fantasy : m_topRomIDType4Authentic; }
+   bool IsTopRomInverted() const { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_topRomInverted4Fantasy : m_topRomInverted4Authentic; }
+   int GetSecondRomID() const { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_secondRomID4Fantasy : m_secondRomID4Authentic; }
+   eRomIDType GetSecondRomIDType() const { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_secondRomIDType4Fantasy : m_secondRomIDType4Authentic; }
+   bool IsSecondRomInverted() const { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_secondRomInverted4Fantasy : m_secondRomInverted4Authentic; }
    FormDMD* GetFormDMD() const { return m_pFormDMD; }
    B2SScreen* GetB2SScreen() const { return m_pB2SScreen; }
    void ResizeSomeImages();
@@ -66,7 +66,7 @@ private:
    void DrawImage(VPXRenderContext2D* const ctx, B2SPictureBox* pPicbox);
    void StartupTimerTick(Timer* pTimer);
    void RotateTimerTick(Timer* pTimer);
-   eLEDTypes GetLEDType();
+   eLEDTypes GetLEDType() const;
    void LoadB2SData();
    void InitB2SScreen();
 

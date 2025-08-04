@@ -8,10 +8,10 @@ namespace B2SLegacy {
 class ControlInfo;
 class B2SData;
 
-class ControlCollection : public vector<ControlInfo*>
+class ControlCollection final : public vector<ControlInfo*>
 {
 public:
-   void Add(ControlInfo* pItem);
+   void Add(ControlInfo* pControlInfo);
    int GetScore() const { return m_score; }
    void SetScore(B2SData* pB2SData, int score);
 

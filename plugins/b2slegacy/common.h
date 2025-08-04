@@ -214,10 +214,12 @@ PSC_USE_ERROR();
 #define PATH_SEPARATOR_CHAR '/'
 #endif
 
+#ifndef RGB
 #define RGB(r,g,b) ((uint32_t)(((uint8_t)(r)|((uint16_t)((uint8_t)(g))<<8))|(((uint32_t)(uint8_t)(b))<<16)))
 #define GetRValue(rgb) ((uint8_t)(rgb))
 #define GetGValue(rgb) ((uint8_t)(((uint16_t)(rgb)) >> 8))
 #define GetBValue(rgb) ((uint8_t)((rgb)>>16))
+#endif
 
 string find_case_insensitive_file_path(const string &szPath);
 vector<unsigned char> base64_decode(const string &encoded_string);

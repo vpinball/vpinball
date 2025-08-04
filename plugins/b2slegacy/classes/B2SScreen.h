@@ -45,7 +45,7 @@ public:
    SDL_Rect& GetBackglassCutOff() { return m_backglassCutOff; }
    bool IsDMDToBeShown() const { return m_dmdToBeShown; }
    void SetDMDToBeShown(const bool dmdToBeShown) { m_dmdToBeShown = dmdToBeShown; }
-   SDL_FRect& GetRescaleBackglass() { return m_rescaleBackglass; }
+   const SDL_FRect& GetRescaleBackglass() const { return m_rescaleBackglass; }
    void Start(Form* pFormBackglass);
    void Start(Form* pFormBackglass, int backglassGrillHeight, int smallBackglassGrillHeight);
    void Start(Form* pFormBackglass, Form* pFormDMD, SDL_Point defaultDMDLocation);

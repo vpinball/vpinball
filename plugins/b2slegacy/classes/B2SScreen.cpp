@@ -227,8 +227,8 @@ void B2SScreen::Show()
       if (m_dmdAtDefaultLocation) {
          m_dmdSize = m_pFormDMD->GetSize();
          if (m_rescaleBackglass.w != 1.0f || m_rescaleBackglass.h != 1.0f) {
-            m_dmdLocation = { (int)(m_dmdLocation.x * m_rescaleBackglass.w), (int)(m_dmdLocation.y * m_rescaleBackglass.h) };
-            m_dmdSize = { 0, 0, (int)(m_dmdSize.w * m_rescaleBackglass.w), (int)(m_dmdSize.h * m_rescaleBackglass.h) };
+            m_dmdLocation = { (int)((float)m_dmdLocation.x * m_rescaleBackglass.w), (int)((float)m_dmdLocation.y * m_rescaleBackglass.h) };
+            m_dmdSize = { 0, 0, (int)((float)m_dmdSize.w * m_rescaleBackglass.w), (int)((float)m_dmdSize.h * m_rescaleBackglass.h) };
          }
       }
 
@@ -291,22 +291,22 @@ void B2SScreen::ScaleAllControls(float rescaleX, float rescaleY, float rescaleDM
    for (const auto& [key, pLedArea] : *m_pB2SData->GetLEDAreas()) {
       if (pLedArea->IsOnDMD()) {
          if (m_pFormDMD) {
-            float y = pLedArea->GetRect().y / rescaleDMDY;
+            float y = (float)pLedArea->GetRect().y / rescaleDMDY;
             if (m_dmdFlipY && !m_dmdAtDefaultLocation) {
-               y = m_pFormDMD->GetHeight() / rescaleDMDY - y - pLedArea->GetRect().h / rescaleDMDY;
+               y = (float)m_pFormDMD->GetHeight() / rescaleDMDY - y - (float)pLedArea->GetRect().h / rescaleDMDY;
             }
-            pLedArea->SetRect({ (int)(pLedArea->GetRect().x / rescaleDMDX), (int)y, (int)(pLedArea->GetRect().w / rescaleDMDX), (int)(pLedArea->GetRect().h / rescaleDMDY) });
+            pLedArea->SetRect({ (int)((float)pLedArea->GetRect().x / rescaleDMDX), (int)y, (int)((float)pLedArea->GetRect().w / rescaleDMDX), (int)((float)pLedArea->GetRect().h / rescaleDMDY) });
          }
       }
       else {
-          pLedArea->SetRect({ (int)(pLedArea->GetRect().x / rescaleX), (int)(pLedArea->GetRect().y / rescaleY), (int)(pLedArea->GetRect().w / rescaleX), (int)(pLedArea->GetRect().h / rescaleY) });
+          pLedArea->SetRect({ (int)((float)pLedArea->GetRect().x / rescaleX), (int)((float)pLedArea->GetRect().y / rescaleY), (int)((float)pLedArea->GetRect().w / rescaleX), (int)((float)pLedArea->GetRect().h / rescaleY) });
       }
    }
 
    // and now recalc the backglass cut off rectangle
    if (!SDL_RectEmpty(&m_backglassCutOff)) {
-      m_backglassCutOff = { (int)(roundf(m_backglassCutOff.x / rescaleX)), (int)(roundf(m_backglassCutOff.y / rescaleY)),
-       (int)(roundf(m_backglassCutOff.w / rescaleX)), (int)(roundf(m_backglassCutOff.h / rescaleY)) };
+      m_backglassCutOff = { (int)(roundf((float)m_backglassCutOff.x / rescaleX)), (int)(roundf((float)m_backglassCutOff.y / rescaleY)),
+       (int)(roundf((float)m_backglassCutOff.w / rescaleX)), (int)(roundf((float)m_backglassCutOff.h / rescaleY)) };
    }
 }
 
@@ -316,12 +316,12 @@ void B2SScreen::ScaleControl(B2SBaseBox* pControl, float rescaleX, float rescale
       if (SDL_HasRectIntersection(&m_backglassCutOff, &pControl->GetRect()))
          pControl->SetRectangleF({ 0, 0, 0, 0 });
       else if (m_backglassCutOff.y < pControl->GetTop())
-         pControl->SetRectangleF({ pControl->GetLeft() / rescaleX, (pControl->GetTop() - m_backglassSmallGrillHeight) / rescaleY, pControl->GetWidth() / rescaleX, pControl->GetHeight() / rescaleY });
+         pControl->SetRectangleF({ (float)pControl->GetLeft() / rescaleX, (float)(pControl->GetTop() - m_backglassSmallGrillHeight) / rescaleY, (float)pControl->GetWidth() / rescaleX, (float)pControl->GetHeight() / rescaleY });
       else
-         pControl->SetRectangleF({ pControl->GetLeft() / rescaleX, pControl->GetTop() / rescaleY, pControl->GetWidth() / rescaleX, pControl->GetHeight() / rescaleY });
+         pControl->SetRectangleF({ (float)pControl->GetLeft() / rescaleX, (float)pControl->GetTop() / rescaleY, (float)pControl->GetWidth() / rescaleX, (float)pControl->GetHeight() / rescaleY });
    }
    else
-      pControl->SetRectangleF({ pControl->GetLeft() / rescaleX, pControl->GetTop() / rescaleY, pControl->GetWidth() / rescaleX, pControl->GetHeight() / rescaleY });
+      pControl->SetRectangleF({ (float)pControl->GetLeft() / rescaleX, (float)pControl->GetTop() / rescaleY, (float)pControl->GetWidth() / rescaleX, (float)pControl->GetHeight() / rescaleY });
 
    // scale not more than the LED and reel boxes
    if (dynamic_cast<B2SLEDBox*>(pControl) || dynamic_cast<B2SReelBox*>(pControl)) {
@@ -340,7 +340,7 @@ void B2SScreen::ScaleControl(B2SBaseBox* pControl, float rescaleX, float rescale
          B2SPictureBox* pPicbox = dynamic_cast<B2SPictureBox*>(pControl);
          if (pPicbox) {
             // set new top location
-            float newY = m_pFormDMD->GetHeight() / rescaleY - pPicbox->GetRectangleF().y - pPicbox->GetRectangleF().h;
+            float newY = (float)m_pFormDMD->GetHeight() / rescaleY - pPicbox->GetRectangleF().y - pPicbox->GetRectangleF().h;
             pPicbox->SetRectangleF({ pPicbox->GetRectangleF().x, newY, pPicbox->GetRectangleF().w, pPicbox->GetRectangleF().h });
             // flip the images
             if (pPicbox->GetBackgroundImage()) {

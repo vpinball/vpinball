@@ -132,11 +132,11 @@ void B2SReelBox::SetReelType(const string& szReelType)
 {
    string value = szReelType;
 
-   m_szReelIndex = "0";
+   m_szReelIndex = "0"s;
    if (szReelType.substr(value.length() - 1, 1) == "_") {
       m_length = 2;
-       m_szReelIndex = "00"s;
-       value = value.substr(0, value.length() - 1);
+      m_szReelIndex = "00"s;
+      value = value.substr(0, value.length() - 1);
    }
    if (string_starts_with_case_insensitive(szReelType, "led"s) || string_starts_with_case_insensitive(szReelType, "importedled"s)) {
       m_led = true;
@@ -183,7 +183,7 @@ void B2SReelBox::SetText(int text, bool animateReelChange)
    }
 }
 
-string B2SReelBox::ConvertValue(int value)
+string B2SReelBox::ConvertValue(int value) const
 {
    string ret;
    // remove the "," from the 7-segmenter
@@ -192,26 +192,26 @@ string B2SReelBox::ConvertValue(int value)
    // map value
       switch (value) {
          // 7-segment stuff
-         case 63: ret = "0"; break;
-         case 6:  ret = "1"; break;
-         case 91: ret = "2"; break;
-         case 79: ret = "3"; break;
-         case 102:ret = "4"; break;
-         case 109:ret = "5"; break;
-         case 125:ret = "6"; break;
-         case 7:  ret = "7"; break;
-         case 127:ret = "8"; break;
-         case 111:ret = "9"; break;
+         case 63: ret = "0"s; break;
+         case 6:  ret = "1"s; break;
+         case 91: ret = "2"s; break;
+         case 79: ret = "3"s; break;
+         case 102:ret = "4"s; break;
+         case 109:ret = "5"s; break;
+         case 125:ret = "6"s; break;
+         case 7:  ret = "7"s; break;
+         case 127:ret = "8"s; break;
+         case 111:ret = "9"s; break;
          //additional 10-segment stuff
-         case 768:ret = "1"; break;
-         case 124:ret = "6"; break;
-         case 103:ret = "9"; break;
+         case 768:ret = "1"s; break;
+         case 124:ret = "6"s; break;
+         case 103:ret = "9"s; break;
          default: ret = m_initValue; break;
       }
-   return (m_length == 2 ? "0" : string()) + ret;
+   return (m_length == 2 ? "0"s : string()) + ret;
 }
 
-string B2SReelBox::ConvertText(int text)
+string B2SReelBox::ConvertText(int text) const
 {
    const string ret = "00" + std::to_string(text);
    return ret.substr(ret.length() - m_length, m_length);

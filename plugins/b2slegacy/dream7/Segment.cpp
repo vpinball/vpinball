@@ -278,8 +278,7 @@ void Segment::SetTransform(VPXGraphics* pRenderer)
 
 void Segment::Transform(Matrix* pMatrix)
 {
-   if (m_pExternMatrix)
-      delete m_pExternMatrix;
+   delete m_pExternMatrix;
    m_pExternMatrix = pMatrix->Clone();
 }
 

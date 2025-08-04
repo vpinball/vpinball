@@ -26,7 +26,7 @@ public:
    void SetCharacter(const string& szCharacter);
    void InitSegments(const SegmentNumberType type, const float thickness);
    void InitMatrix(const SDL_FPoint& location, Matrix* pMatrix);
-   bool SetSegmentState(Segment* pSegment, const bool isOn);
+   static bool SetSegmentState(Segment* pSegment, const bool isOn);
    void GetSegmentRegions();
    void DisplayCharacter(const string& szCharacter);
    void DisplayBitCode(long value);
