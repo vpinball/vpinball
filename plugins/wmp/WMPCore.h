@@ -66,10 +66,10 @@ public:
    string GetURL() const { return m_url; }
    void SetURL(const string& url);
    WMPOpenState GetOpenState() const { PSC_NOT_IMPLEMENTED("GetOpenState is not implemented"); return wmposUndefined; }
-   WMPPlayState GetPlayState();
+   WMPPlayState GetPlayState() const;
    WMPControls* GetControls();
    WMPSettings* GetSettings();
-   WMPAudioPlayer* GetAudioPlayer() { return m_pAudioPlayer; }
+   WMPAudioPlayer* GetAudioPlayer() const { return m_pAudioPlayer; }
    string GetVersionInfo() const { PSC_NOT_IMPLEMENTED("GetVersionInfo is not implemented"); return string(); }
    bool GetIsOnline() const { PSC_NOT_IMPLEMENTED("GetIsOnline is not implemented"); return false; }
    string GetStatus() const { PSC_NOT_IMPLEMENTED("GetStatus is not implemented"); return string(); }

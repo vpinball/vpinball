@@ -5,7 +5,7 @@
 
 namespace WMP {
 
-constexpr inline char cLower(char c)
+static constexpr inline char cLower(char c)
 {
    if (c >= 'A' && c <= 'Z')
       c ^= 32;

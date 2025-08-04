@@ -51,7 +51,7 @@ void WMPCore::SetURL(const string& url)
    m_playState = (!m_url.empty() && LoadAudio(m_url)) ? wmppsReady : wmppsUndefined;
 }
 
-WMPPlayState WMPCore::GetPlayState()
+WMPPlayState WMPCore::GetPlayState() const
 {
    if (!m_pAudioPlayer->IsLoaded())
       return wmppsUndefined;

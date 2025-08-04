@@ -18,7 +18,7 @@ public:
    void Stop();
    void Pause();
 
-   double GetCurrentPosition();
+   double GetCurrentPosition() const;
    void SetCurrentPosition(double position);
 
    bool GetIsAvailable(const string& item) const { PSC_NOT_IMPLEMENTED("GetIsAvailable is not implemented"); return false; }

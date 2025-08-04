@@ -30,7 +30,7 @@ void WMPControls::Pause()
    m_pCore->GetAudioPlayer()->Pause();
 }
 
-double WMPControls::GetCurrentPosition()
+double WMPControls::GetCurrentPosition() const
 {
    return m_pCore->GetAudioPlayer()->GetPosition();
 }

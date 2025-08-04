@@ -34,7 +34,7 @@ private:
    void StopStreaming();
    void SendAudioChunk(const float* samples, size_t frameCount);
 
-   WMPCore* m_pCore;
+   //WMPCore* m_pCore;
    MsgPluginAPI* const m_msgApi;
    const uint32_t m_endpointId;
    const unsigned int m_onAudioUpdateId;
@@ -54,7 +54,7 @@ private:
    string m_loadedFile;
 
    CtlResId m_audioResId;
-   static const size_t BUFFER_SIZE_FRAMES = 1024;
+   static constexpr size_t BUFFER_SIZE_FRAMES = 1024;
 };
 
 }
