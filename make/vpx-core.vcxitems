@@ -92,7 +92,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../../third-party/include/winsdk;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ENABLE_DX9;WIN32;_DEBUG;DEBUG_REFCOUNT_TRIGGER;_WINDOWS;MYDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -271,7 +271,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../../third-party/include/winsdk;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ENABLE_DX9;WIN32;_DEBUG;DEBUG_REFCOUNT_TRIGGER;_WINDOWS;MYDEBUG;DEBUGPHYSICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -433,7 +433,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../../third-party/include/winsdk;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ENABLE_DX9;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -623,7 +623,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../../third-party/include/winsdk;$(WindowsSDK_IncludePath);$(DXSDK_DIR)\Include;$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ENABLE_DX9;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
