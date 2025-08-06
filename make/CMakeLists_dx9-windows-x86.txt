@@ -385,6 +385,7 @@ target_include_directories(vpinball PUBLIC
    ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)
    ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/src
    third-party/include
+   third-party/include/winsdk
    third-party/include/win32xx/include
    src
    src/plugins
