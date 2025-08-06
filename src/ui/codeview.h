@@ -102,10 +102,6 @@ public:
    IUnknown *m_punk = nullptr;
    IDispatch *m_pdisp = nullptr;
    bool m_global = false;
-
-   // for VectorSortString
-   int SortAgainst(const CodeViewDispatch * const pcvd/*void *pvoid*/) const { return SortAgainstValue(pcvd->m_wName); }
-   int SortAgainstValue(const wstring &pv) const;
 };
 
 class CodeViewer :

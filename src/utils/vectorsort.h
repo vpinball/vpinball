@@ -2,6 +2,7 @@
 
 #pragma once
 
+// T must provide a member variable m_wName of type wstring
 template<class T>
 class VectorSortString final : public vector<T>
 {
@@ -36,7 +37,7 @@ public:
       {
          //assert(currentnode >= 0);
 
-         const int strcmp = (currentnode >= (int)vector<T>::size()) ? 1 : pT->SortAgainst(vector<T>::data()[currentnode]);
+         const int strcmp = (currentnode >= (int)vector<T>::size()) ? 1 : pT->m_wName.compare(vector<T>::data()[currentnode]->m_wName);
 
          if (jumpnode == 0)
          {
@@ -70,7 +71,7 @@ public:
             strcmp = -1;
          else
          {
-            strcmp = vector<T>::data()[currentnode]->SortAgainstValue(pvoid);
+            strcmp = vector<T>::data()[currentnode]->m_wName.compare(pvoid);
 
             if (strcmp == 0)
                return currentnode;
