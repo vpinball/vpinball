@@ -20,7 +20,7 @@
 
 // XML helpers
 
-static inline char nextChar(size_t &inPos, const size_t inSize, const char* const inChars, const char* const outChars, const char* const inData) {
+static inline char nextChar(size_t &inPos, const size_t inSize, const signed char* const outChars, const char* const inData) {
    char c = (inPos >= inSize) ? '=' : inData[inPos];
    while (outChars[c] < 0) {
       inPos++;
@@ -33,12 +33,12 @@ static inline char nextChar(size_t &inPos, const size_t inSize, const char* cons
 // returns actual data size if successful or -1 if something went wrong.
 static size_t decode_base64(const char* const inData, char* const outData, const size_t inSize, const size_t outSize) {
    static constexpr char inChars[65] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-   static char* outChars = nullptr;
+   static signed char* outChars = nullptr;
    // Create decode table from encode table
    if (!outChars) {
-      outChars = new char[256];
-      for (size_t i = 0;i < 256;++i) outChars[i] = '\0';
-      for (char i = 0;i < 64;++i) outChars[inChars[i]] = i;
+      outChars = new signed char[256];
+      memset(outChars, 0, 256);
+      for (size_t i = 0;i < 64;++i) outChars[inChars[i]] = (signed char)i;
       // Hack for fast skipping
       outChars['&'] = -1;
       outChars[10] = -1;
@@ -50,10 +50,10 @@ static size_t decode_base64(const char* const inData, char* const outData, const
    bool done = false;
    unsigned int padding = 0;
    while ((inPos < inSize) && (outPos < outSize) && !done) {
-      char b1 = nextChar(inPos, inSize, inChars, outChars, inData);
-      char b2 = nextChar(inPos, inSize, inChars, outChars, inData);
-      char b3 = nextChar(inPos, inSize, inChars, outChars, inData);
-      char b4 = nextChar(inPos, inSize, inChars, outChars, inData);
+      signed char b1 = nextChar(inPos, inSize, outChars, inData);
+      signed char b2 = nextChar(inPos, inSize, outChars, inData);
+      signed char b3 = nextChar(inPos, inSize, outChars, inData);
+      signed char b4 = nextChar(inPos, inSize, outChars, inData);
 
       done = (b1 == '=' || b2 == '=' || b3 == '=' || b4 == '=');
       if (done) {
