@@ -457,7 +457,6 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/SDL3.dll" "$<TARGET_FILE_DIR:vpinball>"
 )
 
-# Disabled since DX9 builds are based on a legacy MSVC without c++20 support
-#set(PluginPlatform "windows")
-#set(PluginArch "x86")
-#include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugins.txt")
+set(PluginPlatform "windows")
+set(PluginArch "x86")
+include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugins.txt")
