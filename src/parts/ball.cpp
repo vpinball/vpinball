@@ -15,7 +15,7 @@ unsigned int Ball::GetNextBallID() { unsigned int id = Ball::m_nextBallID; Ball:
 
 Ball::Ball() : m_id(GetNextBallID())
 {
-   swprintf_s(m_wzName, std::size(m_wzName), L"LiveBall%d", m_id); // Default name
+   wcscpy_s(m_wzName, (L"LiveBall" + std::to_wstring(m_id)).c_str()); // Default name
    m_hitBall.m_d.m_pos = Vertex3Ds(0.f, 0.f, 25.f);
    m_hitBall.m_d.m_radius = 25.f;
    m_hitBall.m_d.m_mass = 1.f;

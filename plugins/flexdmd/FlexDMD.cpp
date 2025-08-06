@@ -94,13 +94,13 @@ uint8_t* FlexDMD::UpdateLum8Frame()
    m_lum8FrameDirty = false;
    SDL_Surface* surf = m_pSurface->GetSurface();
    SDL_LockSurface(surf);
-   const uint8_t* __restrict pixels = static_cast<uint8_t*>(surf->pixels);
+   const uint8_t* __restrict pixels = static_cast<const uint8_t*>(surf->pixels);
    uint8_t* __restrict dst = m_lum8Frame;
    for (int o = 0; o < m_height*m_width; o++)
       {
-         float r = static_cast<float>(*pixels++);
-         float g = static_cast<float>(*pixels++);
-         float b = static_cast<float>(*pixels++);
+         const float r = static_cast<float>(*pixels++);
+         const float g = static_cast<float>(*pixels++);
+         const float b = static_cast<float>(*pixels++);
          *dst++ = static_cast<uint8_t>(0.2126f * r + 0.7152f * g + 0.0722f * b);
       }
    SDL_UnlockSurface(surf);
@@ -161,13 +161,13 @@ void FlexDMD::UpdateRGBAFrame()
    m_rgbaFrameDirty = false;
    SDL_Surface* surf = m_pSurface->GetSurface();
    SDL_LockSurface(surf);
-   const uint8_t* __restrict pixels = static_cast<uint8_t*>(surf->pixels);
+   const uint8_t* __restrict pixels = static_cast<const uint8_t*>(surf->pixels);
    uint32_t* __restrict dst = m_rgbaFrame.data();
    for (int o = 0; o < m_height*m_width; o++)
       {
-         uint8_t r = *pixels++;
-         uint8_t g = *pixels++;
-         uint8_t b = *pixels++;
+         const uint8_t r = *pixels++;
+         const uint8_t g = *pixels++;
+         const uint8_t b = *pixels++;
          *dst++ = RGB(r, g, b);
       }
    SDL_UnlockSurface(surf);

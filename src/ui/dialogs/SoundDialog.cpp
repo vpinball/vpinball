@@ -365,8 +365,8 @@ void SoundDialog::Import()
       for (const string &file : szFileName)
       {
          VPX::Sound* sound = pt->ImportSound(file);
-         const int index = AddListSound(sound);
-         ListView_SetItemState(hSoundList, index, LVIS_SELECTED, LVIS_SELECTED);
+         const int indexs = AddListSound(sound);
+         ListView_SetItemState(hSoundList, indexs, LVIS_SELECTED, LVIS_SELECTED);
       }
 
       pt->SetNonUndoableDirty(eSaveDirty);
@@ -506,41 +506,42 @@ void SoundDialog::Export()
                string pathName = ofn.lpstrFile;
                const size_t pos = pathName.find_last_of(PATH_SEPARATOR_CHAR);
                pathName = pos != string::npos ? pathName.substr(0, pos + 1) : pathName;
-                while(sel != -1)
-                {
-                    if (selectedItemsCount > 1)
-                    {
-                       strncpy_s(filename, pathName.c_str(), sizeof(filename)-1);
-                       if (!renameOnExport)
-                       {
-                          int begin;
-                          for (begin = (int)pps->GetImportPath().length(); begin >= 0; begin--)
-                          {
-                             if (pps->GetImportPath()[begin] == PATH_SEPARATOR_CHAR)
-                             {
-                                begin++;
-                                break;
-                             }
-                          }
-                          strncat_s(filename, pps->GetImportPath().c_str() + begin, sizeof(filename) - strnlen_s(filename, sizeof(filename)) - 1);
-                       }
-                       else
-                       {
-                          strncat_s(filename, pps->GetName().c_str(), sizeof(filename) - strnlen_s(filename, sizeof(filename)) - 1);
-                          const size_t idx = pps->GetImportPath().find_last_of('.');
-                          strncat_s(filename, pps->GetImportPath().c_str() + idx, sizeof(filename) - strnlen_s(filename, sizeof(filename)) - 1);
-                       }
-                    }
+               while(sel != -1)
+               {
+                  string filen;
+                  if (selectedItemsCount > 1)
+                  {
+                     filen = pathName;
+                     if (!renameOnExport)
+                     {
+                        int begin;
+                        for (begin = (int)pps->GetImportPath().length(); begin >= 0; begin--)
+                        {
+                           if (pps->GetImportPath()[begin] == PATH_SEPARATOR_CHAR)
+                           {
+                              begin++;
+                              break;
+                           }
+                        }
+                        filen += pps->GetImportPath().c_str() + begin;
+                     }
+                     else
+                     {
+                        filen += pps->GetName();
+                        const size_t idx = pps->GetImportPath().find_last_of('.');
+                        filen += pps->GetImportPath().c_str() + idx;
+                     }
+                  }
 
-                    pt->ExportSound(pps, filename);
-                    sel = ListView_GetNextItem( hSoundList, sel, LVNI_SELECTED ); //next selected item
-                    lvitem.iItem = sel;
-                    lvitem.iSubItem = 0;
-                    ListView_GetItem( hSoundList, &lvitem );
-                    pps = (VPX::Sound *)lvitem.lParam;
-                }
+                  pt->ExportSound(pps, (selectedItemsCount > 1) ? filen : filename);
+                  sel = ListView_GetNextItem( hSoundList, sel, LVNI_SELECTED ); //next selected item
+                  lvitem.iItem = sel;
+                  lvitem.iSubItem = 0;
+                  ListView_GetItem( hSoundList, &lvitem );
+                  pps = (VPX::Sound *)lvitem.lParam;
+               }
 
-                g_pvp->m_settings.SaveValue(Settings::RecentDir, "SoundDir"s, string(pathName));
+               g_pvp->m_settings.SaveValue(Settings::RecentDir, "SoundDir"s, pathName);
             }
         }
     }

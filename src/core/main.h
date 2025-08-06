@@ -171,18 +171,10 @@ static const string defaultPathSearch[] = { string(), "user"s +PATH_SEPARATOR_CH
 #define _aligned_malloc(size, align) aligned_alloc(align, size)
 #define _aligned_free free
 
-#undef lstrcmpi
-#define lstrcmpi lstrcmpiA
-
-#undef lstrcmp
-#define lstrcmp lstrcmpA
-
 #define strcpy_s(A, B, C) strncpy(A, C, B)
 #define strnlen_s strnlen
 #define sprintf_s snprintf
 #define _snprintf_s snprintf
-#define swprintf_s swprintf
-#define StrStrI strcasestr
 
 #define STRNCPY_S3(a, b, c) strncpy(a, b, c)
 #define STRNCPY_S4(a, b, c, d) strncpy(a, c, d)
@@ -208,9 +200,6 @@ static const string defaultPathSearch[] = { string(), "user"s +PATH_SEPARATOR_CH
 
 #undef OutputDebugString
 #define OutputDebugString OutputDebugStringA
-
-#undef CharLowerBuff
-#define CharLowerBuff CharLowerBuffA
 
 #define FINDREPLACE FINDREPLACEA
 #define CREATESTRUCT CREATESTRUCTA

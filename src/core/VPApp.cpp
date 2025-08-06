@@ -431,10 +431,10 @@ void showDisplayIDs()
 }
 #endif
 
-static bool compare_option(const char *const arg, const option_names option)
+static bool compare_option(const string& arg, const option_names option)
 {
-   return ((lstrcmpi(arg, ('-'+options[option]).c_str()) == 0) ||
-           (lstrcmpi(arg, ('/'+options[option]).c_str()) == 0));
+   return (StrCompareNoCase(arg, '-' + options[option]) ||
+           StrCompareNoCase(arg, '/' + options[option]));
 }
 
 VPApp::VPApp(HINSTANCE hInstance)

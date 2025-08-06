@@ -28,7 +28,7 @@ public:
    }
 
    const string& GetName() const { return m_name; }
-   void SetName(string name) { m_name = name; }
+   void SetName(const string& name) { m_name = name; }
    const string& GetImportPath() const { return m_path; }
    size_t GetFileSize() const { return m_data.size(); }
    const uint8_t* GetFileRaw() const { return m_data.data(); }

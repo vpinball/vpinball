@@ -50,7 +50,7 @@ public:
       { \
          if (GetScriptable()->m_wzName[0] == '\0') \
             /* Just in case something screws up - not good having a null script name */ \
-            swprintf_s(GetScriptable()->m_wzName, std::size(GetScriptable()->m_wzName), L"%Id", reinterpret_cast<uintptr_t>(this)); \
+            wcscpy_s(GetScriptable()->m_wzName, std::to_wstring(reinterpret_cast<uintptr_t>(this)).c_str()); \
          GetPTable()->m_pcv->AddItem(GetScriptable(), false); \
       } \
       return S_OK; \

@@ -35,7 +35,7 @@ public:
 
 private:
    SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound);
-   SoundPlayer(const AudioPlayer* audioPlayer, string filename);
+   SoundPlayer(const AudioPlayer* audioPlayer, const string& filename);
 
    const class AudioPlayer* const m_audioPlayer;
    const SoundOutTypes m_outputTarget;

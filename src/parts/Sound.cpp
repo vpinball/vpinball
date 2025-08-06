@@ -153,7 +153,7 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
       bool toBackglassOutput = false; // false: for pre-VPX tables
       if (FAILED(pstm->Read(&toBackglassOutput, sizeof(bool), &read)))
          return nullptr;
-      outputTarget = (StrStrI(name.c_str(), "bgout_") != nullptr) // legacy behavior, where the BG selection was encoded into the strings directly
+      outputTarget = (StrFindNoCase(name, "bgout_"s) != string::npos) // legacy behavior, where the BG selection was encoded into the strings directly
                || StrCompareNoCase(path, "* Backglass Output *"s) 
                || toBackglassOutput
             ? SNDOUT_BACKGLASS

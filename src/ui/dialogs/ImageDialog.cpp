@@ -512,46 +512,45 @@ void ImageDialog::Export()
                if (begin > 0)
                {
                   memcpy(g_filename, ppi->GetFilePath().c_str() + begin, len0 - begin);
-                  g_filename[len0 - begin] = 0;
+                  g_filename[len0 - begin] = '\0';
                }
             }
             else
             {
                strncat_s(g_filename, ppi->m_name.c_str(), sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
                const size_t idx = ppi->GetFilePath().find_last_of('.');
-               strncat_s(g_filename, ppi->GetFilePath().c_str() + idx, sizeof(g_filename) - strnlen_s(g_filename, sizeof(g_filename)) - 1);
+               strncat_s(g_filename, ppi->GetFilePath().c_str() + idx, sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
             }
             ofn.lpstrFile = g_filename;
             ofn.nMaxFile = sizeof(g_filename);
 
-            const string ext2(g_filename);
-            const size_t idx2 = ext2.find_last_of('.');
-            ofn.lpstrDefExt = ext2.c_str() + idx2 + 1;
+            const string defExt = extension_from_path(g_filename);
+            ofn.lpstrDefExt = defExt.c_str();
             // check which default file extension should be selected
             ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0JPEG (.jpg/.jpeg)\0*.jpg;*.jpeg;\0IFF (.iff)\0*.IFF;\0PCX (.pcx)\0*.PCX;\0PICT (.pict)\0*.PICT;\0Photoshop (.psd)\0*.psd;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif;\0WEBP (.webp)\0*.webp;\0EXR (.exr)\0*.exr;\0HDR (.hdr)\0*.hdr\0";
-            if(!lstrcmpi(ofn.lpstrDefExt,"png"))
+            if (defExt == "png")
                ofn.nFilterIndex = 1;
-            else if (!lstrcmpi(ofn.lpstrDefExt, "bmp"))
+            else if (defExt == "bmp")
                ofn.nFilterIndex = 2;
-            else if (!lstrcmpi(ofn.lpstrDefExt, "jpg") || !lstrcmpi(ofn.lpstrDefExt, "jpeg"))
+            else if ((defExt == "jpg") || (defExt == "jpeg"))
                ofn.nFilterIndex = 3;
-            else if (!lstrcmpi(ofn.lpstrDefExt, "iff"))
+            else if (defExt == "iff")
                ofn.nFilterIndex = 4;
-            else if (!lstrcmpi(ofn.lpstrDefExt, "pcx"))
+            else if (defExt == "pcx")
                ofn.nFilterIndex = 5;
-            else if (!lstrcmpi(ofn.lpstrDefExt, "pict"))
+            else if (defExt == "pict")
                ofn.nFilterIndex = 6;
-            else if (!lstrcmpi(ofn.lpstrDefExt, "psd"))
+            else if (defExt == "psd")
                ofn.nFilterIndex = 7;
-            else if (!lstrcmpi(ofn.lpstrDefExt, "tga"))
+            else if (defExt == "tga")
                ofn.nFilterIndex = 8;
-            else if (!lstrcmpi(ofn.lpstrDefExt, "tif") || !lstrcmpi(ofn.lpstrDefExt, "tiff"))
+            else if ((defExt == "tif") || (defExt == "tiff"))
                ofn.nFilterIndex = 9;
-            else if (!lstrcmpi(ofn.lpstrDefExt, "webp"))
+            else if (defExt == "webp")
                ofn.nFilterIndex = 10;
-            else if (!lstrcmpi(ofn.lpstrDefExt, "exr"))
+            else if (defExt == "exr")
                ofn.nFilterIndex = 11;
-            else if (!lstrcmpi(ofn.lpstrDefExt, "hdr"))
+            else if (defExt == "hdr")
                ofn.nFilterIndex = 12;
 
             string g_initDir;
@@ -577,19 +576,14 @@ void ImageDialog::Export()
                   }
                }
 
-               if (begin >= MAXSTRING)
-                   begin = MAXSTRING - 1;
-
-               char pathName[MAXSTRING];
-               if (begin > 0)
-                  memcpy(pathName, ofn.lpstrFile, begin);
-               pathName[begin] = '\0';
+               const string pathName(ofn.lpstrFile, begin);
 
                while (sel != -1 && ppi != nullptr)
                {
+                  string filename;
                   if (selectedItemsCount>1)
                   {
-                     strncpy_s(g_filename, pathName, sizeof(g_filename)-1);
+                     filename = pathName;
                      if (!renameOnExport)
                      {
                         for (begin = (int)ppi->GetFilePath().length(); begin >= 0; begin--)
@@ -600,18 +594,18 @@ void ImageDialog::Export()
                               break;
                            }
                         }
-                        strncat_s(g_filename, ppi->GetFilePath().c_str() + begin, sizeof(g_filename) - strnlen_s(g_filename, sizeof(g_filename)) - 1);
+                        filename += ppi->GetFilePath().c_str() + begin;
                      }
                      else
                      {
-                        strncat_s(g_filename, ppi->m_name.c_str(), sizeof(g_filename)-strnlen_s(g_filename, sizeof(g_filename))-1);
+                        filename += ppi->m_name;
                         const size_t idx = ppi->GetFilePath().find_last_of('.');
-                        strncat_s(g_filename, ppi->GetFilePath().c_str() + idx, sizeof(g_filename) - strnlen_s(g_filename, sizeof(g_filename)) - 1);
+                        filename += ppi->GetFilePath().c_str() + idx;
                      }
                   }
 
                   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
-                  if (!pt->ExportImage(ppi, g_filename)) //!! this will always export the image in its original format, no matter what was actually selected by the user
+                  if (!pt->ExportImage(ppi, (selectedItemsCount>1) ? filename : g_filename)) //!! this will always export the image in its original format, no matter what was actually selected by the user
                      ShowError("Could not export Image");
                   sel = ListView_GetNextItem(hSoundList, sel, LVNI_SELECTED);
                   lvitem.iItem = sel;
@@ -620,7 +614,7 @@ void ImageDialog::Export()
                   ppi = (Texture*)lvitem.lParam;
                }
 
-               g_pvp->m_settings.SaveValue(Settings::RecentDir, "ImageDir"s, string(pathName));
+               g_pvp->m_settings.SaveValue(Settings::RecentDir, "ImageDir"s, pathName);
             } // finished all selected items
          }
       }

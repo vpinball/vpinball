@@ -713,7 +713,15 @@ CONSTEXPR inline string upperCase(string input)
    return input;
 }
 
-void SetThreadName(const std::string& name);
+// Find strB within strA, case-insensitive, returns the position of strB in strA or string::npos if not found
+inline string::size_type StrFindNoCase(string strA, string strB)
+{
+   StrToLower(strA);
+   StrToLower(strB);
+   return strA.find(strB);
+}
+
+void SetThreadName(const string& name);
 
 /**
  * @brief Detect whether the program is running on the Wine compatibility layer

@@ -367,7 +367,7 @@ bool ObjLoader::ExportStart(const string& filename)
    if (i < len)
    {
       memcpy(matName, filename.c_str(), i);
-      matName[i] = 0;
+      matName[i] = '\0';
       strncat_s(matName, "mtl", sizeof(matName) - strnlen_s(matName, sizeof(matName)) - 1);
    }
 

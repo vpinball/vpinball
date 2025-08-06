@@ -2410,11 +2410,11 @@ HRESULT PinTable::Save(const bool saveAs)
       // TEXT
       ofn.lpstrFilter = "Visual Pinball Tables (*.vpx)\0*.vpx\0";
 
+      const string::size_type ptr = StrFindNoCase(m_filename, ".vpt"s);
       char fileName[MAXSTRING];
       strncpy_s(fileName, m_filename.c_str(), sizeof(fileName)-1);
-      char* const ptr = StrStrI(fileName, ".vpt");
-      if (ptr != nullptr)
-          strcpy_s(ptr, 5, ".vpx");
+      if (ptr != string::npos)
+         strcpy_s(fileName+ptr, 5, ".vpx");
       ofn.lpstrFile = fileName;
       ofn.nMaxFile = sizeof(fileName);
       ofn.lpstrDefExt = "vpx";
@@ -2440,12 +2440,9 @@ HRESULT PinTable::Save(const bool saveAs)
          return S_FALSE;
       }
 
+      // assign user selected file name as new internal filename, and save as new default
       m_filename = fileName;
-
-      char szInitialDir[MAXSTRING];
-      strncpy_s(szInitialDir, m_filename.c_str(), sizeof(szInitialDir)-1);
-      szInitialDir[ofn.nFileOffset] = '\0'; // truncate after folder
-      g_pvp->m_settings.SaveValue(Settings::RecentDir, "LoadDir"s, string(szInitialDir));
+      g_pvp->m_settings.SaveValue(Settings::RecentDir, "LoadDir"s, m_filename.substr(0, ofn.nFileOffset)); // truncate after folder(s)
 
       {
          STGOPTIONS stg;
@@ -2468,9 +2465,9 @@ HRESULT PinTable::Save(const bool saveAs)
    }
    else
    {
-      char * const ptr = StrStrI(m_filename.c_str(), ".vpt");
-      if (ptr != nullptr)
-         strcpy_s(ptr, 5, ".vpx");
+      const string::size_type ptr = StrFindNoCase(m_filename, ".vpt"s);
+      if (ptr != string::npos)
+         strcpy_s(m_filename.data()+ptr, 5, ".vpx");
 
       STGOPTIONS stg;
       stg.usVersion = 1;
@@ -3627,7 +3624,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
             if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemTextbox)
             {
                Textbox *const textbox = (Textbox *)m_vedit[i];
-               if (textbox->m_d.m_isDMD || StrStrI(textbox->m_d.m_text.c_str(), "DMD") != nullptr)
+               if (textbox->m_d.m_isDMD || StrFindNoCase(textbox->m_d.m_text, "DMD"s) != string::npos)
                {
                   if (textbox->GetScriptable())
                      m_pcv->RemoveItem(textbox->GetScriptable());
@@ -4169,11 +4166,11 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    return true;
 }
 
-bool PinTable::ExportSound(VPX::Sound *const pps, const char *const szfilename)
+bool PinTable::ExportSound(VPX::Sound *const pps, const string &filename)
 {
-   if (extension_from_path(pps->GetImportPath()) == extension_from_path(szfilename))
+   if (extension_from_path(pps->GetImportPath()) == extension_from_path(filename))
    {
-      if (pps->SaveToFile(szfilename))
+      if (pps->SaveToFile(filename))
          return true;
 #ifndef __STANDALONE__
       m_mdiTable->MessageBox("Can not Open/Create Sound file!", "Visual Pinball", MB_ICONERROR);
@@ -6662,9 +6659,9 @@ Texture* PinTable::GetImage(const string &szName) const
    return nullptr;
 }
 
-bool PinTable::ExportImage(const Texture * const ppi, const char * const szfilename)
+bool PinTable::ExportImage(const Texture * const ppi, const string &filename)
 {
-   return ppi->SaveFile(szfilename);
+   return ppi->SaveFile(filename);
 }
 
 Texture *PinTable::ImportImage(const string &filename, const string &imagename)
@@ -7050,7 +7047,7 @@ string PinTable::AuditTable(bool log) const
       if (type == eItemPrimitive && prim->m_d.m_staticRendering && FindIndexOf(identifiers, prim->GetName()) != -1)
          ss << ". Warning: Primitive '" << prim->GetName() << "' seems to be referenced from the script while it is marked as static (most properties of a static object may not be modified at runtime).\r\n";
 
-      if (type == eItemTextbox && (textbox->m_d.m_isDMD || StrStrI(textbox->m_d.m_text.c_str(), "DMD") != nullptr))
+      if (type == eItemTextbox && (textbox->m_d.m_isDMD || StrFindNoCase(textbox->m_d.m_text, "DMD"s) != string::npos))
          ss << ". Warning: legacy Textbox '" << textbox->GetName() << "' is used for DMD rendering. It should be replaced by a flasher to get better rendering.\r\n";
 
       if (type == eItemTimer) {
@@ -9812,94 +9809,94 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed, Texture *co
       {
          continue;
       }
-      const LPCSTR searchObjectName = ppi->m_name.c_str(); //searchObjectName will be an image or material that we want to find table objects that are using it.
+      const string& searchObjectName = ppi->m_name; //searchObjectName will be an image or material that we want to find table objects that are using it.
 
       switch (pEdit->GetItemType())
       {
       case eItemDispReel:
       {
          const DispReel *const pReel = (const DispReel *)pEdit;
-         if (lstrcmpi(pReel->m_d.m_szImage.c_str(), searchObjectName) == 0)
+         if (StrCompareNoCase(pReel->m_d.m_szImage, searchObjectName))
             INSERT_WHERE_USED("Image"s);
          break;
       }
       case eItemPrimitive:
       {
          const Primitive *const pPrim = (const Primitive *)pEdit;
-         const bool image = (lstrcmpi(pPrim->m_d.m_szImage.c_str(), searchObjectName) == 0);
-         if (image || (lstrcmpi(pPrim->m_d.m_szNormalMap.c_str(), searchObjectName) == 0))
+         const bool image = StrCompareNoCase(pPrim->m_d.m_szImage, searchObjectName);
+         if (image || StrCompareNoCase(pPrim->m_d.m_szNormalMap, searchObjectName))
             INSERT_WHERE_USED(image ? "Image"s : "Normal Map"s);
          break;
       }
       case eItemRamp:
       {
          const Ramp *const pRamp = (const Ramp *)pEdit;
-         if (lstrcmpi(pRamp->m_d.m_szImage.c_str(), searchObjectName) == 0)
+         if (StrCompareNoCase(pRamp->m_d.m_szImage, searchObjectName))
             INSERT_WHERE_USED("Image"s);
          break;
       }
       case eItemSurface:
       {
          const Surface *const pSurf = (const Surface *)pEdit;
-         const bool image = (lstrcmpi(pSurf->m_d.m_szImage.c_str(), searchObjectName) == 0);
-         if (image || (lstrcmpi(pSurf->m_d.m_szSideImage.c_str(), searchObjectName) == 0))
+         const bool image = StrCompareNoCase(pSurf->m_d.m_szImage, searchObjectName);
+         if (image || StrCompareNoCase(pSurf->m_d.m_szSideImage, searchObjectName))
             INSERT_WHERE_USED(image ? "Image"s : "Side Image"s);
          break;
       }
       case eItemDecal:
       {
          const Decal *const pDecal = (const Decal *)pEdit;
-         if (lstrcmpi(pDecal->m_d.m_szImage.c_str(), searchObjectName) == 0)
+         if (StrCompareNoCase(pDecal->m_d.m_szImage, searchObjectName))
             INSERT_WHERE_USED("Image"s);
          break;
       }
       case eItemFlasher:
       {
          const Flasher *const pFlash = (const Flasher *)pEdit;
-         const bool imageA = (lstrcmpi(pFlash->m_d.m_szImageA.c_str(), searchObjectName) == 0);
-         if (imageA || (lstrcmpi(pFlash->m_d.m_szImageB.c_str(), searchObjectName) == 0))
+         const bool imageA = StrCompareNoCase(pFlash->m_d.m_szImageA, searchObjectName);
+         if (imageA || StrCompareNoCase(pFlash->m_d.m_szImageB, searchObjectName))
             INSERT_WHERE_USED(imageA ? "ImageA"s : "ImageB"s);
          break;
       }
       case eItemFlipper:
       {
          const Flipper *const pFlip = (const Flipper *)pEdit;
-         if (lstrcmpi(pFlip->m_d.m_szImage.c_str(), searchObjectName) == 0)
+         if (StrCompareNoCase(pFlip->m_d.m_szImage, searchObjectName))
             INSERT_WHERE_USED("Image"s);
          break;
       }
       case eItemHitTarget:
       {
          const HitTarget *const pHit = (const HitTarget *)pEdit;
-         if (lstrcmpi(pHit->m_d.m_szImage.c_str(), searchObjectName) == 0)
+         if (StrCompareNoCase(pHit->m_d.m_szImage, searchObjectName))
             INSERT_WHERE_USED("Image"s);
          break;
       }
       case eItemLight:
       {
          const Light *const pLight = (const Light *)pEdit;
-         if (lstrcmpi(pLight->m_d.m_szImage.c_str(), searchObjectName) == 0)
+         if (StrCompareNoCase(pLight->m_d.m_szImage, searchObjectName))
             INSERT_WHERE_USED("Image"s);
          break;
       }
       case eItemPlunger:
       {
          const Plunger *const pPlung = (const Plunger *)pEdit;
-         if (lstrcmpi(pPlung->m_d.m_szImage.c_str(), searchObjectName) == 0)
+         if (StrCompareNoCase(pPlung->m_d.m_szImage, searchObjectName))
             INSERT_WHERE_USED("Image"s);
          break;
       }
       case eItemRubber:
       {
          const Rubber *const pRub = (const Rubber *)pEdit;
-         if (lstrcmpi(pRub->m_d.m_szImage.c_str(), searchObjectName) == 0)
+         if (StrCompareNoCase(pRub->m_d.m_szImage, searchObjectName))
             INSERT_WHERE_USED("Image"s);
          break;
       }
       case eItemSpinner:
       {
          const Spinner *const pSpin = (const Spinner *)pEdit;
-         if (lstrcmpi(pSpin->m_d.m_szImage.c_str(), searchObjectName) == 0)
+         if (StrCompareNoCase(pSpin->m_d.m_szImage, searchObjectName))
             INSERT_WHERE_USED("Image"s);
          break;
       }
@@ -9927,103 +9924,103 @@ void PinTable::ShowWhereMaterialUsed(vector<WhereUsedInfo> &vWhereUsed, Material
       {
          continue;
       }
-      const LPCSTR searchObjectName = ppi->m_name.c_str(); //searchObjectName will be an image or material that we want to find table objects that are using it.
+      const string& searchObjectName = ppi->m_name; //searchObjectName will be an image or material that we want to find table objects that are using it.
 
       switch (pEdit->GetItemType())
       {
       case eItemBumper:
       {
          const Bumper *const pBumper = (const Bumper *)pEdit;
-         const bool capmat   = (lstrcmpi(pBumper->m_d.m_szCapMaterial.c_str(),   searchObjectName) == 0);
-         const bool basemat  = (lstrcmpi(pBumper->m_d.m_szBaseMaterial.c_str(),  searchObjectName) == 0);
-         const bool skirtmat = (lstrcmpi(pBumper->m_d.m_szSkirtMaterial.c_str(), searchObjectName) == 0);
-         if (capmat || basemat || skirtmat || (lstrcmpi(pBumper->m_d.m_szRingMaterial.c_str(), searchObjectName) == 0))
+         const bool capmat   = StrCompareNoCase(pBumper->m_d.m_szCapMaterial, searchObjectName);
+         const bool basemat  = StrCompareNoCase(pBumper->m_d.m_szBaseMaterial, searchObjectName);
+         const bool skirtmat = StrCompareNoCase(pBumper->m_d.m_szSkirtMaterial, searchObjectName);
+         if (capmat || basemat || skirtmat || StrCompareNoCase(pBumper->m_d.m_szRingMaterial, searchObjectName))
             INSERT_WHERE_USED(capmat ? "Cap Material"s : (basemat ? "Base Material"s : (skirtmat ? "Skirt Material"s : "Ring Material"s)));
          break;
       }
       case eItemPrimitive:
       {
          const Primitive *const pPrim = (const Primitive *)pEdit;
-         const bool mat = (lstrcmpi(pPrim->m_d.m_szMaterial.c_str(), searchObjectName) == 0);
-         if (mat || (lstrcmpi(pPrim->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0))
+         const bool mat = StrCompareNoCase(pPrim->m_d.m_szMaterial, searchObjectName);
+         if (mat || StrCompareNoCase(pPrim->m_d.m_szPhysicsMaterial, searchObjectName))
             INSERT_WHERE_USED(mat ? "Material"s : "Physics Material"s);
          break;
       }
       case eItemRamp:
       {
          const Ramp *const pRamp = (const Ramp *)pEdit;
-         const bool mat = (lstrcmpi(pRamp->m_d.m_szMaterial.c_str(), searchObjectName) == 0);
-         if (mat || (lstrcmpi(pRamp->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0))
+         const bool mat = StrCompareNoCase(pRamp->m_d.m_szMaterial, searchObjectName);
+         if (mat || StrCompareNoCase(pRamp->m_d.m_szPhysicsMaterial, searchObjectName))
             INSERT_WHERE_USED(mat ? "Material"s : "Physics Material"s);
          break;
       }
       case eItemSurface: //'Wall' table objects are surfaces
       {
          const Surface *const pSurf = (const Surface *)pEdit;
-         const bool topmat   = (lstrcmpi(pSurf->m_d.m_szTopMaterial.c_str(),       searchObjectName) == 0);
-         const bool sidemat  = (lstrcmpi(pSurf->m_d.m_szSideMaterial.c_str(),      searchObjectName) == 0);
-         const bool slingmat = (lstrcmpi(pSurf->m_d.m_szSlingShotMaterial.c_str(), searchObjectName) == 0);
-         if (topmat || sidemat || slingmat || (lstrcmpi(pSurf->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0))
+         const bool topmat   = StrCompareNoCase(pSurf->m_d.m_szTopMaterial, searchObjectName);
+         const bool sidemat  = StrCompareNoCase(pSurf->m_d.m_szSideMaterial, searchObjectName);
+         const bool slingmat = StrCompareNoCase(pSurf->m_d.m_szSlingShotMaterial, searchObjectName);
+         if (topmat || sidemat || slingmat || StrCompareNoCase(pSurf->m_d.m_szPhysicsMaterial, searchObjectName))
             INSERT_WHERE_USED(topmat ? "Top Material"s : (sidemat ? "Side Material"s : (slingmat ? "Slingshot Material"s : "Physics Material"s)));
          break;
       }
       case eItemDecal:
       {
          const Decal *const pDecal = (const Decal *)pEdit;
-         if (lstrcmpi(pDecal->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
+         if (StrCompareNoCase(pDecal->m_d.m_szMaterial, searchObjectName))
             INSERT_WHERE_USED("Material"s);
          break;
       }
       case eItemFlipper:
       {
          const Flipper *const pFlip = (const Flipper *)pEdit;
-         const bool mat = (lstrcmpi(pFlip->m_d.m_szMaterial.c_str(), searchObjectName) == 0);
-         if (mat || (lstrcmpi(pFlip->m_d.m_szRubberMaterial.c_str(), searchObjectName) == 0))
+         const bool mat = StrCompareNoCase(pFlip->m_d.m_szMaterial, searchObjectName);
+         if (mat || StrCompareNoCase(pFlip->m_d.m_szRubberMaterial, searchObjectName))
             INSERT_WHERE_USED(mat ? "Material"s : "Rubber Material"s);
          break;
       }
       case eItemHitTarget:
       {
          const HitTarget *const pHit = (const HitTarget *)pEdit;
-         const bool mat = (lstrcmpi(pHit->m_d.m_szMaterial.c_str(), searchObjectName) == 0);
-         if (mat || (lstrcmpi(pHit->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0))
+         const bool mat = StrCompareNoCase(pHit->m_d.m_szMaterial, searchObjectName);
+         if (mat || StrCompareNoCase(pHit->m_d.m_szPhysicsMaterial, searchObjectName))
             INSERT_WHERE_USED(mat ? "Material"s : "Physics Material"s);
          break;
       }
       case eItemPlunger:
       {
          const Plunger *const pPlung = (const Plunger *)pEdit;
-         if (lstrcmpi(pPlung->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
+         if (StrCompareNoCase(pPlung->m_d.m_szMaterial, searchObjectName))
             INSERT_WHERE_USED("Material"s);
          break;
       }
       case eItemRubber:
       {
          const Rubber *const pRub = (const Rubber *)pEdit;
-         const bool mat = (lstrcmpi(pRub->m_d.m_szMaterial.c_str(), searchObjectName) == 0);
-         if (mat || (lstrcmpi(pRub->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0))
+         const bool mat = StrCompareNoCase(pRub->m_d.m_szMaterial, searchObjectName);
+         if (mat || StrCompareNoCase(pRub->m_d.m_szPhysicsMaterial, searchObjectName))
             INSERT_WHERE_USED(mat ? "Material"s : "Physics Material"s);
          break;
       }
       case eItemSpinner:
       {
          const Spinner *const pSpin = (const Spinner *)pEdit;
-         const bool mat = (lstrcmpi(pSpin->m_d.m_szMaterial.c_str(), searchObjectName) == 0);
-         if (mat || (lstrcmpi(pSpin->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0))
+         const bool mat = StrCompareNoCase(pSpin->m_d.m_szMaterial, searchObjectName);
+         if (mat || StrCompareNoCase(pSpin->m_d.m_szPhysicsMaterial, searchObjectName))
             INSERT_WHERE_USED(mat ? "Material"s : "Physics Material"s);
          break;
       }
       case eItemKicker:
       {
          const Kicker *const pKicker = (const Kicker *)pEdit;
-         if (lstrcmpi(pKicker->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
+         if (StrCompareNoCase(pKicker->m_d.m_szMaterial, searchObjectName))
             INSERT_WHERE_USED("Material"s);
          break;
       }
       case eItemTrigger:
       {
          const Trigger *const pTrigger = (const Trigger *)pEdit;
-         if (lstrcmpi(pTrigger->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
+         if (StrCompareNoCase(pTrigger->m_d.m_szMaterial, searchObjectName))
             INSERT_WHERE_USED("Material"s);
          break;
       }

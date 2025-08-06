@@ -2155,9 +2155,9 @@ int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOpti
    if (nItem2 == -1 || nItem1 == -1)
       return 0;
    if (lpsd->sortUpDown == 1)
-      return (lstrcmpi(buf1, buf2));
+      return ( lstrcmpi(buf1, buf2));
    else
-      return (lstrcmpi(buf1, buf2) * -1);
+      return (-lstrcmpi(buf1, buf2));
 #else
    return 0;
 #endif
@@ -2797,7 +2797,7 @@ static unsigned int GenerateTournamentFileInternal(uint8_t *const dmd_data, cons
    vector<string> vbsFiles;
    while(textPos < textEnd)
    {
-      const char* const textFound = StrStrI(textPos,".vbs\"");
+      const char* const textFound = strstr(textPos,".vbs\"");
       if(textFound == nullptr)
          break;
       textPos = textFound+1;

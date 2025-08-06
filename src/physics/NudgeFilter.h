@@ -2,7 +2,7 @@
 
 #pragma once
 
-#ifdef DEBUG_NUDGE
+#ifdef DEBUG_NUDGE // outputs to c:\joystick.csv
 # define IF_DEBUG_NUDGE(code) code
 #else
 # define IF_DEBUG_NUDGE(code)
@@ -19,7 +19,6 @@ public:
 private:
    // debug output
    IF_DEBUG_NUDGE(void dbg(const char *fmt, ...);)
-   IF_DEBUG_NUDGE(virtual const char *axis() const = 0;)
 
    IF_DEBUG_NUDGE(const char *m_axis;)
 

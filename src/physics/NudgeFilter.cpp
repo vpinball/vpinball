@@ -99,7 +99,7 @@ NudgeFilter::NudgeFilter(const char * axis) IF_DEBUG_NUDGE(: m_axis(axis))
 // corrected value if a correction is needed.
 void NudgeFilter::sample(float &a, const uint64_t frameTime)
 {
-   IF_DEBUG_NUDGE(char notes[128] = ""; float aIn = a;)
+   IF_DEBUG_NUDGE(string notes; float aIn = a;)
 
    // if we're not roughly at rest, reset the last motion timer
    if (fabsf(a) >= .02f)
@@ -111,7 +111,7 @@ void NudgeFilter::sample(float &a, const uint64_t frameTime)
    {
       // sign change/zero crossing - note the time
       m_tzc = frameTime;
-      IF_DEBUG_NUDGE(strncat_s(notes, "zc ", sizeof(notes)-strnlen_s(notes, sizeof(notes))-1);)
+      IF_DEBUG_NUDGE(notes += "zc ";)
    }
    else if (fabsf(a) <= .01f)
    {
@@ -145,7 +145,7 @@ void NudgeFilter::sample(float &a, const uint64_t frameTime)
    if (fabsf(m_sum) < .02f)
    {
       // bring the residual acceleration exactly to rest
-      IF_DEBUG_NUDGE(strncat_s(notes, "zero ", sizeof(notes)-strnlen_s(notes, sizeof(notes))-1);)
+      IF_DEBUG_NUDGE(notes += "zero ";)
          a -= m_sum;
       m_sum = 0.f;
 
@@ -157,7 +157,7 @@ void NudgeFilter::sample(float &a, const uint64_t frameTime)
    {
       // bring the running total toward neutral
       const float corr = expf(0.33f*logf(fabsf(m_sum*(float)(1.0 / .02)))) * (m_sum < 0.0f ? -.02f : .02f);
-      IF_DEBUG_NUDGE(strncat_s(notes, "damp ", sizeof(notes)-strnlen_s(notes, sizeof(notes))-1);)
+      IF_DEBUG_NUDGE(notes += "damp ";)
          a -= corr;
       m_sum -= corr;
 
@@ -171,15 +171,17 @@ void NudgeFilter::sample(float &a, const uint64_t frameTime)
    IF_DEBUG_NUDGE(
       if (a != 0.f || aIn != 0.f)
          dbg(*m_axis == 'x' ? "%f,%f, , ,%s\n" : " , ,%f,%f,%s\n",
-         aIn, a, notes);)
+         aIn, a, notes.c_str());)
 }
 
 // debug output
-IF_DEBUG_NUDGE(void NudgeFilter::dbg(const char *fmt, ...) {
+IF_DEBUG_NUDGE(void NudgeFilter::dbg(const char *fmt, ...)
+{
    va_list args;
    va_start(args, fmt);
-   static FILE *fp = 0;
-   if (fp == 0) fp = fopen("c:\\joystick.csv", "w");
-   vfprintf(fp, fmt, args);
+   static FILE *fp = nullptr;
+   if (fp == nullptr)
+      if (fopen_s(&fp, "c:\\joystick.csv", "w") == 0 && fp)
+         vfprintf(fp, fmt, args);
    va_end(args);
 })

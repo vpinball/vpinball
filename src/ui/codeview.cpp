@@ -2197,7 +2197,8 @@ void CodeViewer::FindCodeFromEvent()
       const size_t beginchar = ::SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, line, 0);
       bool goodMatch = true;
 
-      char szLine[MAX_LINE_LENGTH] = {};
+      char szLine[MAX_LINE_LENGTH];
+      szLine[0] = '\0';
       SOURCE_TEXT_ATTR wzFormat[MAX_LINE_LENGTH];
 
       const size_t cchar = ::SendMessage(m_hwndScintilla, SCI_GETLINE, line, (LPARAM)szLine);
@@ -2223,8 +2224,8 @@ void CodeViewer::FindCodeFromEvent()
       }
       else
       {
-         szLine[i + 1] = '\0';
-         if (lstrcmpi(&szLine[i - 2], "sub")) //!! correct like this?
+         // check if not "sub"
+         if ((cLower(szLine[i - 2]) != 's') || (cLower(szLine[i - 1]) != 'u') || (cLower(szLine[i]) != 'b')) //!! correct like this?
             goodMatch = false;
       }
 

@@ -380,9 +380,9 @@ public:
 
    VPX::Sound *ImportSound(const string &filename);
    void ReImportSound(VPX::Sound *const pps, const string &filename);
-   bool ExportSound(VPX::Sound *const pps, const char *const filename);
+   bool ExportSound(VPX::Sound *const pps, const string &filename);
    void RemoveSound(VPX::Sound *const pps);
-   bool ExportImage(const Texture *const ppi, const char *const filename);
+   bool ExportImage(const Texture *const ppi, const string &filename);
    Texture* ImportImage(const string &filename, const string &imageName);
    void RemoveImage(Texture *const ppi);
    Texture *GetImage(const string &szName) const;

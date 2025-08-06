@@ -455,7 +455,7 @@ void Textbox::Render(const unsigned int renderMask)
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
    TRACE_FUNCTION();
 
-   const bool is_dmd = m_d.m_isDMD || StrStrI(m_d.m_text.c_str(), "DMD") != nullptr; //!! second part is VP10.0 legacy
+   const bool is_dmd = m_d.m_isDMD || StrFindNoCase(m_d.m_text, "DMD"s) != string::npos; //!! second part is VP10.0 legacy
    if (isStaticOnly
       || !m_d.m_visible
       || (!is_dmd && m_texture == nullptr))

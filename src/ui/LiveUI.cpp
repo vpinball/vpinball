@@ -1432,7 +1432,6 @@ void LiveUI::HandleTweakInput()
    for (int i = 0; i < eCKeys; i++)
    {
       const EnumAssignKeys keycode = static_cast<EnumAssignKeys>(i);
-      const uint64_t mask = static_cast<uint64_t>(1) << i;
       int keyEvent;
       if (state.IsKeyPressed(keycode, prevState))
          keyEvent = 1;
@@ -1467,7 +1466,7 @@ void LiveUI::HandleTweakInput()
             continue;
          const bool up = keycode == eRightFlipperKey;
          const float step = up ? 1.f : -1.f;
-         const float absIncSpeed = sinceLastInputHandleMs * 0.001f * min(50.f, 0.75f + (float)(now - startOfPress) / 300.0f);
+         const float absIncSpeed = (float)sinceLastInputHandleMs * 0.001f * min(50.f, 0.75f + (float)(now - startOfPress) / 300.0f);
          const float incSpeed = up ? absIncSpeed : -absIncSpeed;
 
          // Since we need less than 1 int per frame for eg volume, we need to keep track of the float value
@@ -1477,7 +1476,7 @@ void LiveUI::HandleTweakInput()
          if (floatFraction >= 1.f)
          {
             absIntStep = static_cast<int>(floatFraction);
-            floatFraction = floatFraction - absIntStep;
+            floatFraction = floatFraction - (float)absIntStep;
          }
          const int intStep = up ? absIntStep : -absIntStep;
 
@@ -1493,7 +1492,7 @@ void LiveUI::HandleTweakInput()
             if (keyEvent != 1) // Only keydown
                continue;
             int stepi = up ? 1 : (int)m_tweakPages.size() - 1;
-            m_activeTweakPageIndex = ((m_activeTweakPageIndex + stepi) % m_tweakPages.size());
+            m_activeTweakPageIndex = ((m_activeTweakPageIndex + stepi) % (int)m_tweakPages.size());
             m_activeTweakIndex = 0;
             m_tweakScroll = 0.f;
             UpdateTweakPage();

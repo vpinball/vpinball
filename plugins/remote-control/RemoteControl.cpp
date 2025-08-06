@@ -85,9 +85,7 @@ protected:
    {
       #ifdef _WIN32
          #ifdef UNICODE
-            WCHAR wsz[64];
-            swprintf_s(wsz, L"%S", host);
-            InetPton(AF_INET, wsz, &(saddr_in.sin_addr.s_addr));
+            InetPtonA(AF_INET, host, &(saddr_in.sin_addr.s_addr));
          #else
             InetPton(AF_INET, host, &(saddr_in.sin_addr.s_addr));
          #endif

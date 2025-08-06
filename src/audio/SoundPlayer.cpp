@@ -179,7 +179,7 @@ MA_API ma_result vpx_node_init(ma_node_graph* pNodeGraph, const vpx_node_config*
 
 MA_API void vpx_node_uninit(ma_delay_node* pNode, const ma_allocation_callbacks* pAllocationCallbacks)
 {
-   if (pNode == NULL)
+   if (pNode == nullptr)
       return;
    ma_node_uninit(pNode, pAllocationCallbacks);
 }
@@ -205,7 +205,7 @@ SoundPlayer* SoundPlayer::Create(const AudioPlayer* audioPlayer, const string& f
    return new SoundPlayer(audioPlayer, filename);
 }
 
-SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, string filename)
+SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, const string& filename)
    : m_audioPlayer(audioPlayer)
    , m_outputTarget(SoundOutTypes::SNDOUT_BACKGLASS)
    , m_commandQueue(1)
@@ -407,7 +407,7 @@ void SoundPlayer::Play(float volume, const float randompitch, const int pitch, f
       ma_uint32 sampleRate;
       ma_sound_get_data_format(m_sound.get(), &format, &channels, &sampleRate, nullptr, 0);
       const float sampleFreq = static_cast<float>(sampleRate);
-      float newFreq = sampleFreq + pitch;
+      float newFreq = sampleFreq + (float)pitch;
       if (randompitch > 0.f)
       {
          const float rndh = rand_mt_01();
