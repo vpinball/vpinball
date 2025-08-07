@@ -524,8 +524,6 @@ void ImageDialog::Export()
             //ofn.lpstrTitle = "SAVE AS";
             ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
-            g_initDir[ofn.nFileOffset] = 0;
-
             if (GetSaveFileName(&ofn))	//Get filename from user
             {
                int begin; //select only file name from pathfilename
