@@ -1,7 +1,9 @@
 dumpbin /EXPORTS bass.dll >bass64.def
-(note that this does not fully work for decorated functions, e.g. if stdcall is used, the @XX suffix will be missing)
+(note that this may not fully work for decorated functions, e.g. if stdcall is used, the @XX suffix may be missing)
 
 add EXPORTS at beginning of file, only leave function names in after that
+(in the above special case, the suffix may need to be extracted otherwise, and each line has to feature a "functionname@XX=functionname")
+(in addition it may also be needed to add the ordinal from the dumpbin like "functionname@XX=functionname @N")
 
 lib /MACHINE:X64 /def:bass64.def /OUT:bass64.lib
 (use /MACHINE:X86 for 32bit)

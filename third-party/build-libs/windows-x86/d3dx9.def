@@ -1,330 +1,330 @@
 EXPORTS
-D3DXAssembleShader@28
-D3DXAssembleShaderFromFileA@24
-D3DXAssembleShaderFromFileW@24
-D3DXAssembleShaderFromResourceA@28
-D3DXAssembleShaderFromResourceW@28
-D3DXBoxBoundProbe@16
-D3DXCheckCubeTextureRequirements@24
-D3DXCheckTextureRequirements@28
-D3DXCheckVersion@8
-D3DXCheckVolumeTextureRequirements@32
-D3DXCleanMesh@24
-D3DXColorAdjustContrast@12
-D3DXColorAdjustSaturation@12
-D3DXCompileShader@40
-D3DXCompileShaderFromFileA@36
-D3DXCompileShaderFromFileW@36
-D3DXCompileShaderFromResourceA@40
-D3DXCompileShaderFromResourceW@40
-D3DXComputeBoundingBox@20
-D3DXComputeBoundingSphere@20
-D3DXComputeIMTFromPerTexelSignal@44
-D3DXComputeIMTFromPerVertexSignal@32
-D3DXComputeIMTFromSignal@40
-D3DXComputeIMTFromTexture@28
-D3DXComputeNormalMap@24
-D3DXComputeNormals@8
-D3DXComputeTangent@24
-D3DXComputeTangentFrame@8
-D3DXComputeTangentFrameEx@64
-D3DXConcatenateMeshes@32
-D3DXConvertMeshSubsetToSingleStrip@20
-D3DXConvertMeshSubsetToStrips@28
-D3DXCreateAnimationController@20
-D3DXCreateBox@24
-D3DXCreateBuffer@8
-D3DXCreateCompressedAnimationSet@32
-D3DXCreateCubeTexture@28
-D3DXCreateCubeTextureFromFileA@12
-D3DXCreateCubeTextureFromFileExA@52
-D3DXCreateCubeTextureFromFileExW@52
-D3DXCreateCubeTextureFromFileInMemory@16
-D3DXCreateCubeTextureFromFileInMemoryEx@56
-D3DXCreateCubeTextureFromFileW@12
-D3DXCreateCubeTextureFromResourceA@16
-D3DXCreateCubeTextureFromResourceExA@56
-D3DXCreateCubeTextureFromResourceExW@56
-D3DXCreateCubeTextureFromResourceW@16
-D3DXCreateCylinder@32
-D3DXCreateEffect@36
-D3DXCreateEffectCompiler@28
-D3DXCreateEffectCompilerFromFileA@24
-D3DXCreateEffectCompilerFromFileW@24
-D3DXCreateEffectCompilerFromResourceA@28
-D3DXCreateEffectCompilerFromResourceW@28
-D3DXCreateEffectEx@40
-D3DXCreateEffectFromFileA@32
-D3DXCreateEffectFromFileExA@36
-D3DXCreateEffectFromFileExW@36
-D3DXCreateEffectFromFileW@32
-D3DXCreateEffectFromResourceA@36
-D3DXCreateEffectFromResourceExA@40
-D3DXCreateEffectFromResourceExW@40
-D3DXCreateEffectFromResourceW@36
-D3DXCreateEffectPool@4
-D3DXCreateFontA@48
-D3DXCreateFontIndirectA@12
-D3DXCreateFontIndirectW@12
-D3DXCreateFontW@48
-D3DXCreateKeyframedAnimationSet@32
-D3DXCreateLine@8
-D3DXCreateMatrixStack@8
-D3DXCreateMesh@24
-D3DXCreateMeshFVF@24
-D3DXCreateNPatchMesh@8
-D3DXCreatePMeshFromStream@28
-D3DXCreatePRTBuffer@16
-D3DXCreatePRTBufferTex@20
-D3DXCreatePRTCompBuffer@28
-D3DXCreatePRTEngine@20
-D3DXCreatePatchMesh@28
-D3DXCreatePolygon@20
-D3DXCreateRenderToEnvMap@28
-D3DXCreateRenderToSurface@28
-D3DXCreateSPMesh@20
-D3DXCreateSkinInfo@16
-D3DXCreateSkinInfoFVF@16
-D3DXCreateSkinInfoFromBlendedMesh@16
-D3DXCreateSphere@24
-D3DXCreateSprite@8
-D3DXCreateTeapot@12
-D3DXCreateTextA@32
-D3DXCreateTextW@32
-D3DXCreateTexture@32
-D3DXCreateTextureFromFileA@12
-D3DXCreateTextureFromFileExA@56
-D3DXCreateTextureFromFileExW@56
-D3DXCreateTextureFromFileInMemory@16
-D3DXCreateTextureFromFileInMemoryEx@60
-D3DXCreateTextureFromFileW@12
-D3DXCreateTextureFromResourceA@16
-D3DXCreateTextureFromResourceExA@60
-D3DXCreateTextureFromResourceExW@60
-D3DXCreateTextureFromResourceW@16
-D3DXCreateTextureGutterHelper@20
-D3DXCreateTextureShader@8
-D3DXCreateTorus@28
-D3DXCreateVolumeTexture@36
-D3DXCreateVolumeTextureFromFileA@12
-D3DXCreateVolumeTextureFromFileExA@60
-D3DXCreateVolumeTextureFromFileExW@60
-D3DXCreateVolumeTextureFromFileInMemory@16
-D3DXCreateVolumeTextureFromFileInMemoryEx@64
-D3DXCreateVolumeTextureFromFileW@12
-D3DXCreateVolumeTextureFromResourceA@16
-D3DXCreateVolumeTextureFromResourceExA@64
-D3DXCreateVolumeTextureFromResourceExW@64
-D3DXCreateVolumeTextureFromResourceW@16
-D3DXDebugMute@4
-D3DXDeclaratorFromFVF@8
-D3DXDisassembleEffect@12
-D3DXDisassembleShader@16
-D3DXFVFFromDeclarator@8
-D3DXFileCreate@4
-D3DXFillCubeTexture@12
-D3DXFillCubeTextureTX@8
-D3DXFillTexture@12
-D3DXFillTextureTX@8
-D3DXFillVolumeTexture@12
-D3DXFillVolumeTextureTX@8
-D3DXFilterTexture@16
-D3DXFindShaderComment@16
-D3DXFloat16To32Array@12
-D3DXFloat32To16Array@12
-D3DXFrameAppendChild@8
-D3DXFrameCalculateBoundingSphere@12
-D3DXFrameDestroy@8
-D3DXFrameFind@8
-D3DXFrameNumNamedMatrices@4
-D3DXFrameRegisterNamedMatrices@8
-D3DXFresnelTerm@8
-D3DXGenerateOutputDecl@8
-D3DXGeneratePMesh@28
-D3DXGetDeclLength@4
-D3DXGetDeclVertexSize@8
-D3DXGetDriverLevel@4
-D3DXGetFVFVertexSize@4
-D3DXGetImageInfoFromFileA@8
-D3DXGetImageInfoFromFileInMemory@12
-D3DXGetImageInfoFromFileW@8
-D3DXGetImageInfoFromResourceA@12
-D3DXGetImageInfoFromResourceW@12
-D3DXGetPixelShaderProfile@4
-D3DXGetShaderConstantTable@8
-D3DXGetShaderConstantTableEx@12
-D3DXGetShaderInputSemantics@12
-D3DXGetShaderOutputSemantics@12
-D3DXGetShaderSamplers@12
-D3DXGetShaderSize@4
-D3DXGetShaderVersion@4
-D3DXGetVertexShaderProfile@4
-D3DXIntersect@40
-D3DXIntersectSubset@44
-D3DXIntersectTri@32
-D3DXLoadMeshFromXA@32
-D3DXLoadMeshFromXInMemory@36
-D3DXLoadMeshFromXResource@40
-D3DXLoadMeshFromXW@32
-D3DXLoadMeshFromXof@32
-D3DXLoadMeshHierarchyFromXA@28
-D3DXLoadMeshHierarchyFromXInMemory@32
-D3DXLoadMeshHierarchyFromXW@28
-D3DXLoadPRTBufferFromFileA@8
-D3DXLoadPRTBufferFromFileW@8
-D3DXLoadPRTCompBufferFromFileA@8
-D3DXLoadPRTCompBufferFromFileW@8
-D3DXLoadPatchMeshFromXof@28
-D3DXLoadSkinMeshFromXof@36
-D3DXLoadSurfaceFromFileA@32
-D3DXLoadSurfaceFromFileInMemory@36
-D3DXLoadSurfaceFromFileW@32
-D3DXLoadSurfaceFromMemory@40
-D3DXLoadSurfaceFromResourceA@36
-D3DXLoadSurfaceFromResourceW@36
-D3DXLoadSurfaceFromSurface@32
-D3DXLoadVolumeFromFileA@32
-D3DXLoadVolumeFromFileInMemory@36
-D3DXLoadVolumeFromFileW@32
-D3DXLoadVolumeFromMemory@44
-D3DXLoadVolumeFromResourceA@36
-D3DXLoadVolumeFromResourceW@36
-D3DXLoadVolumeFromVolume@32
-D3DXMatrixAffineTransformation2D@20
-D3DXMatrixAffineTransformation@20
-D3DXMatrixDecompose@16
-D3DXMatrixDeterminant@4
-D3DXMatrixInverse@12
-D3DXMatrixLookAtLH@16
-D3DXMatrixLookAtRH@16
-D3DXMatrixMultiply@12
-D3DXMatrixMultiplyTranspose@12
-D3DXMatrixOrthoLH@20
-D3DXMatrixOrthoOffCenterLH@28
-D3DXMatrixOrthoOffCenterRH@28
-D3DXMatrixOrthoRH@20
-D3DXMatrixPerspectiveFovLH@20
-D3DXMatrixPerspectiveFovRH@20
-D3DXMatrixPerspectiveLH@20
-D3DXMatrixPerspectiveOffCenterLH@28
-D3DXMatrixPerspectiveOffCenterRH@28
-D3DXMatrixPerspectiveRH@20
-D3DXMatrixReflect@8
-D3DXMatrixRotationAxis@12
-D3DXMatrixRotationQuaternion@8
-D3DXMatrixRotationX@8
-D3DXMatrixRotationY@8
-D3DXMatrixRotationYawPitchRoll@16
-D3DXMatrixRotationZ@8
-D3DXMatrixScaling@16
-D3DXMatrixShadow@12
-D3DXMatrixTransformation2D@28
-D3DXMatrixTransformation@28
-D3DXMatrixTranslation@16
-D3DXMatrixTranspose@8
-D3DXOptimizeFaces@20
-D3DXOptimizeVertices@20
-D3DXPlaneFromPointNormal@12
-D3DXPlaneFromPoints@16
-D3DXPlaneIntersectLine@16
-D3DXPlaneNormalize@8
-D3DXPlaneTransform@12
-D3DXPlaneTransformArray@24
-D3DXPreprocessShader@24
-D3DXPreprocessShaderFromFileA@20
-D3DXPreprocessShaderFromFileW@20
-D3DXPreprocessShaderFromResourceA@24
-D3DXPreprocessShaderFromResourceW@24
-D3DXQuaternionBaryCentric@24
-D3DXQuaternionExp@8
-D3DXQuaternionInverse@8
-D3DXQuaternionLn@8
-D3DXQuaternionMultiply@12
-D3DXQuaternionNormalize@8
-D3DXQuaternionRotationAxis@12
-D3DXQuaternionRotationMatrix@8
-D3DXQuaternionRotationYawPitchRoll@16
-D3DXQuaternionSlerp@16
-D3DXQuaternionSquad@24
-D3DXQuaternionSquadSetup@28
-D3DXQuaternionToAxisAngle@12
-D3DXRectPatchSize@12
-D3DXSHAdd@16
-D3DXSHDot@12
-D3DXSHEvalConeLight@36
-D3DXSHEvalDirection@12
-D3DXSHEvalDirectionalLight@32
-D3DXSHEvalHemisphereLight@52
-D3DXSHEvalSphericalLight@36
-D3DXSHMultiply2@12
-D3DXSHMultiply3@12
-D3DXSHMultiply4@12
-D3DXSHMultiply5@12
-D3DXSHMultiply6@12
-D3DXSHPRTCompSplitMeshSC@64
-D3DXSHPRTCompSuperCluster@24
-D3DXSHProjectCubeMap@20
-D3DXSHRotate@16
-D3DXSHRotateZ@16
-D3DXSHScale@16
-D3DXSaveMeshHierarchyToFileA@20
-D3DXSaveMeshHierarchyToFileW@20
-D3DXSaveMeshToXA@28
-D3DXSaveMeshToXW@28
-D3DXSavePRTBufferToFileA@8
-D3DXSavePRTBufferToFileW@8
-D3DXSavePRTCompBufferToFileA@8
-D3DXSavePRTCompBufferToFileW@8
-D3DXSaveSurfaceToFileA@20
-D3DXSaveSurfaceToFileInMemory@20
-D3DXSaveSurfaceToFileW@20
-D3DXSaveTextureToFileA@16
-D3DXSaveTextureToFileInMemory@16
-D3DXSaveTextureToFileW@16
-D3DXSaveVolumeToFileA@20
-D3DXSaveVolumeToFileInMemory@20
-D3DXSaveVolumeToFileW@20
-D3DXSimplifyMesh@28
-D3DXSphereBoundProbe@16
-D3DXSplitMesh@36
-D3DXTessellateNPatches@24
-D3DXTessellateRectPatch@20
-D3DXTessellateTriPatch@20
-D3DXTriPatchSize@12
-D3DXUVAtlasCreate@76
-D3DXUVAtlasPack@44
-D3DXUVAtlasPartition@68
-D3DXValidMesh@12
-D3DXValidPatchMesh@16
-D3DXVec2BaryCentric@24
-D3DXVec2CatmullRom@24
-D3DXVec2Hermite@24
-D3DXVec2Normalize@8
-D3DXVec2Transform@12
-D3DXVec2TransformArray@24
-D3DXVec2TransformCoord@12
-D3DXVec2TransformCoordArray@24
-D3DXVec2TransformNormal@12
-D3DXVec2TransformNormalArray@24
-D3DXVec3BaryCentric@24
-D3DXVec3CatmullRom@24
-D3DXVec3Hermite@24
-D3DXVec3Normalize@8
-D3DXVec3Project@24
-D3DXVec3ProjectArray@36
-D3DXVec3Transform@12
-D3DXVec3TransformArray@24
-D3DXVec3TransformCoord@12
-D3DXVec3TransformCoordArray@24
-D3DXVec3TransformNormal@12
-D3DXVec3TransformNormalArray@24
-D3DXVec3Unproject@24
-D3DXVec3UnprojectArray@36
-D3DXVec4BaryCentric@24
-D3DXVec4CatmullRom@24
-D3DXVec4Cross@16
-D3DXVec4Hermite@24
-D3DXVec4Normalize@8
-D3DXVec4Transform@12
-D3DXVec4TransformArray@24
-D3DXWeldVertices@28
+D3DXAssembleShader@28=D3DXAssembleShader                                                        @1
+D3DXAssembleShaderFromFileA@24=D3DXAssembleShaderFromFileA                                      @2
+D3DXAssembleShaderFromFileW@24=D3DXAssembleShaderFromFileW                                      @3
+D3DXAssembleShaderFromResourceA@28=D3DXAssembleShaderFromResourceA                              @4
+D3DXAssembleShaderFromResourceW@28=D3DXAssembleShaderFromResourceW                              @5
+D3DXBoxBoundProbe@16=D3DXBoxBoundProbe                                                          @6
+D3DXCheckCubeTextureRequirements@24=D3DXCheckCubeTextureRequirements                            @7
+D3DXCheckTextureRequirements@28=D3DXCheckTextureRequirements                                    @8
+D3DXCheckVersion@8=D3DXCheckVersion                                                             @9
+D3DXCheckVolumeTextureRequirements@32=D3DXCheckVolumeTextureRequirements                       @10
+D3DXCleanMesh@24=D3DXCleanMesh                                                                 @11
+D3DXColorAdjustContrast@12=D3DXColorAdjustContrast                                             @12
+D3DXColorAdjustSaturation@12=D3DXColorAdjustSaturation                                         @13
+D3DXCompileShader@40=D3DXCompileShader                                                         @14
+D3DXCompileShaderFromFileA@36=D3DXCompileShaderFromFileA                                       @15
+D3DXCompileShaderFromFileW@36=D3DXCompileShaderFromFileW                                       @16
+D3DXCompileShaderFromResourceA@40=D3DXCompileShaderFromResourceA                               @17
+D3DXCompileShaderFromResourceW@40=D3DXCompileShaderFromResourceW                               @18
+D3DXComputeBoundingBox@20=D3DXComputeBoundingBox                                               @19
+D3DXComputeBoundingSphere@20=D3DXComputeBoundingSphere                                         @20
+D3DXComputeIMTFromPerTexelSignal@44=D3DXComputeIMTFromPerTexelSignal                           @21
+D3DXComputeIMTFromPerVertexSignal@32=D3DXComputeIMTFromPerVertexSignal                         @22
+D3DXComputeIMTFromSignal@40=D3DXComputeIMTFromSignal                                           @23
+D3DXComputeIMTFromTexture@28=D3DXComputeIMTFromTexture                                         @24
+D3DXComputeNormalMap@24=D3DXComputeNormalMap                                                   @25
+D3DXComputeNormals@8=D3DXComputeNormals                                                        @26
+D3DXComputeTangent@24=D3DXComputeTangent                                                       @27
+D3DXComputeTangentFrame@8=D3DXComputeTangentFrame                                              @28
+D3DXComputeTangentFrameEx@64=D3DXComputeTangentFrameEx                                         @29
+D3DXConcatenateMeshes@32=D3DXConcatenateMeshes                                                 @30
+D3DXConvertMeshSubsetToSingleStrip@20=D3DXConvertMeshSubsetToSingleStrip                       @31
+D3DXConvertMeshSubsetToStrips@28=D3DXConvertMeshSubsetToStrips                                 @32
+D3DXCreateAnimationController@20=D3DXCreateAnimationController                                 @33
+D3DXCreateBox@24=D3DXCreateBox                                                                 @34
+D3DXCreateBuffer@8=D3DXCreateBuffer                                                            @35
+D3DXCreateCompressedAnimationSet@32=D3DXCreateCompressedAnimationSet                           @36
+D3DXCreateCubeTexture@28=D3DXCreateCubeTexture                                                 @37
+D3DXCreateCubeTextureFromFileA@12=D3DXCreateCubeTextureFromFileA                               @38
+D3DXCreateCubeTextureFromFileExA@52=D3DXCreateCubeTextureFromFileExA                           @39
+D3DXCreateCubeTextureFromFileExW@52=D3DXCreateCubeTextureFromFileExW                           @40
+D3DXCreateCubeTextureFromFileInMemory@16=D3DXCreateCubeTextureFromFileInMemory                 @41
+D3DXCreateCubeTextureFromFileInMemoryEx@56=D3DXCreateCubeTextureFromFileInMemoryEx             @42
+D3DXCreateCubeTextureFromFileW@12=D3DXCreateCubeTextureFromFileW                               @43
+D3DXCreateCubeTextureFromResourceA@16=D3DXCreateCubeTextureFromResourceA                       @44
+D3DXCreateCubeTextureFromResourceExA@56=D3DXCreateCubeTextureFromResourceExA                   @45
+D3DXCreateCubeTextureFromResourceExW@56=D3DXCreateCubeTextureFromResourceExW                   @46
+D3DXCreateCubeTextureFromResourceW@16=D3DXCreateCubeTextureFromResourceW                       @47
+D3DXCreateCylinder@32=D3DXCreateCylinder                                                       @48
+D3DXCreateEffect@36=D3DXCreateEffect                                                           @49
+D3DXCreateEffectCompiler@28=D3DXCreateEffectCompiler                                           @50
+D3DXCreateEffectCompilerFromFileA@24=D3DXCreateEffectCompilerFromFileA                         @51
+D3DXCreateEffectCompilerFromFileW@24=D3DXCreateEffectCompilerFromFileW                         @52
+D3DXCreateEffectCompilerFromResourceA@28=D3DXCreateEffectCompilerFromResourceA                 @53
+D3DXCreateEffectCompilerFromResourceW@28=D3DXCreateEffectCompilerFromResourceW                 @54
+D3DXCreateEffectEx@40=D3DXCreateEffectEx                                                       @55
+D3DXCreateEffectFromFileA@32=D3DXCreateEffectFromFileA                                         @56
+D3DXCreateEffectFromFileExA@36=D3DXCreateEffectFromFileExA                                     @57
+D3DXCreateEffectFromFileExW@36=D3DXCreateEffectFromFileExW                                     @58
+D3DXCreateEffectFromFileW@32=D3DXCreateEffectFromFileW                                         @59
+D3DXCreateEffectFromResourceA@36=D3DXCreateEffectFromResourceA                                 @60
+D3DXCreateEffectFromResourceExA@40=D3DXCreateEffectFromResourceExA                             @61
+D3DXCreateEffectFromResourceExW@40=D3DXCreateEffectFromResourceExW                             @62
+D3DXCreateEffectFromResourceW@36=D3DXCreateEffectFromResourceW                                 @63
+D3DXCreateEffectPool@4=D3DXCreateEffectPool                                                    @64
+D3DXCreateFontA@48=D3DXCreateFontA                                                             @65
+D3DXCreateFontIndirectA@12=D3DXCreateFontIndirectA                                             @66
+D3DXCreateFontIndirectW@12=D3DXCreateFontIndirectW                                             @67
+D3DXCreateFontW@48=D3DXCreateFontW                                                             @68
+D3DXCreateKeyframedAnimationSet@32=D3DXCreateKeyframedAnimationSet                             @69
+D3DXCreateLine@8=D3DXCreateLine                                                                @70
+D3DXCreateMatrixStack@8=D3DXCreateMatrixStack                                                  @71
+D3DXCreateMesh@24=D3DXCreateMesh                                                               @72
+D3DXCreateMeshFVF@24=D3DXCreateMeshFVF                                                         @73
+D3DXCreateNPatchMesh@8=D3DXCreateNPatchMesh                                                    @74
+D3DXCreatePMeshFromStream@28=D3DXCreatePMeshFromStream                                         @75
+D3DXCreatePRTBuffer@16=D3DXCreatePRTBuffer                                                     @76
+D3DXCreatePRTBufferTex@20=D3DXCreatePRTBufferTex                                               @77
+D3DXCreatePRTCompBuffer@28=D3DXCreatePRTCompBuffer                                             @78
+D3DXCreatePRTEngine@20=D3DXCreatePRTEngine                                                     @79
+D3DXCreatePatchMesh@28=D3DXCreatePatchMesh                                                     @80
+D3DXCreatePolygon@20=D3DXCreatePolygon                                                         @81
+D3DXCreateRenderToEnvMap@28=D3DXCreateRenderToEnvMap                                           @82
+D3DXCreateRenderToSurface@28=D3DXCreateRenderToSurface                                         @83
+D3DXCreateSPMesh@20=D3DXCreateSPMesh                                                           @84
+D3DXCreateSkinInfo@16=D3DXCreateSkinInfo                                                       @85
+D3DXCreateSkinInfoFVF@16=D3DXCreateSkinInfoFVF                                                 @86
+D3DXCreateSkinInfoFromBlendedMesh@16=D3DXCreateSkinInfoFromBlendedMesh                         @87
+D3DXCreateSphere@24=D3DXCreateSphere                                                           @88
+D3DXCreateSprite@8=D3DXCreateSprite                                                            @89
+D3DXCreateTeapot@12=D3DXCreateTeapot                                                           @90
+D3DXCreateTextA@32=D3DXCreateTextA                                                             @91
+D3DXCreateTextW@32=D3DXCreateTextW                                                             @92
+D3DXCreateTexture@32=D3DXCreateTexture                                                         @93
+D3DXCreateTextureFromFileA@12=D3DXCreateTextureFromFileA                                       @94
+D3DXCreateTextureFromFileExA@56=D3DXCreateTextureFromFileExA                                   @95
+D3DXCreateTextureFromFileExW@56=D3DXCreateTextureFromFileExW                                   @96
+D3DXCreateTextureFromFileInMemory@16=D3DXCreateTextureFromFileInMemory                         @97
+D3DXCreateTextureFromFileInMemoryEx@60=D3DXCreateTextureFromFileInMemoryEx                     @98
+D3DXCreateTextureFromFileW@12=D3DXCreateTextureFromFileW                                       @99
+D3DXCreateTextureFromResourceA@16=D3DXCreateTextureFromResourceA                              @100
+D3DXCreateTextureFromResourceExA@60=D3DXCreateTextureFromResourceExA                          @101
+D3DXCreateTextureFromResourceExW@60=D3DXCreateTextureFromResourceExW                          @102
+D3DXCreateTextureFromResourceW@16=D3DXCreateTextureFromResourceW                              @103
+D3DXCreateTextureGutterHelper@20=D3DXCreateTextureGutterHelper                                @104
+D3DXCreateTextureShader@8=D3DXCreateTextureShader                                             @105
+D3DXCreateTorus@28=D3DXCreateTorus                                                            @106
+D3DXCreateVolumeTexture@36=D3DXCreateVolumeTexture                                            @107
+D3DXCreateVolumeTextureFromFileA@12=D3DXCreateVolumeTextureFromFileA                          @108
+D3DXCreateVolumeTextureFromFileExA@60=D3DXCreateVolumeTextureFromFileExA                      @109
+D3DXCreateVolumeTextureFromFileExW@60=D3DXCreateVolumeTextureFromFileExW                      @110
+D3DXCreateVolumeTextureFromFileInMemory@16=D3DXCreateVolumeTextureFromFileInMemory            @111
+D3DXCreateVolumeTextureFromFileInMemoryEx@64=D3DXCreateVolumeTextureFromFileInMemoryEx        @112
+D3DXCreateVolumeTextureFromFileW@12=D3DXCreateVolumeTextureFromFileW                          @113
+D3DXCreateVolumeTextureFromResourceA@16=D3DXCreateVolumeTextureFromResourceA                  @114
+D3DXCreateVolumeTextureFromResourceExA@64=D3DXCreateVolumeTextureFromResourceExA              @115
+D3DXCreateVolumeTextureFromResourceExW@64=D3DXCreateVolumeTextureFromResourceExW              @116
+D3DXCreateVolumeTextureFromResourceW@16=D3DXCreateVolumeTextureFromResourceW                  @117
+D3DXDebugMute@4=D3DXDebugMute                                                                 @118
+D3DXDeclaratorFromFVF@8=D3DXDeclaratorFromFVF                                                 @119
+D3DXDisassembleEffect@12=D3DXDisassembleEffect                                                @120
+D3DXDisassembleShader@16=D3DXDisassembleShader                                                @121
+D3DXFVFFromDeclarator@8=D3DXFVFFromDeclarator                                                 @122
+D3DXFileCreate@4=D3DXFileCreate                                                               @123
+D3DXFillCubeTexture@12=D3DXFillCubeTexture                                                    @124
+D3DXFillCubeTextureTX@8=D3DXFillCubeTextureTX                                                 @125
+D3DXFillTexture@12=D3DXFillTexture                                                            @126
+D3DXFillTextureTX@8=D3DXFillTextureTX                                                         @127
+D3DXFillVolumeTexture@12=D3DXFillVolumeTexture                                                @128
+D3DXFillVolumeTextureTX@8=D3DXFillVolumeTextureTX                                             @129
+D3DXFilterTexture@16=D3DXFilterTexture                                                        @130
+D3DXFindShaderComment@16=D3DXFindShaderComment                                                @131
+D3DXFloat16To32Array@12=D3DXFloat16To32Array                                                  @132
+D3DXFloat32To16Array@12=D3DXFloat32To16Array                                                  @133
+D3DXFrameAppendChild@8=D3DXFrameAppendChild                                                   @134
+D3DXFrameCalculateBoundingSphere@12=D3DXFrameCalculateBoundingSphere                          @135
+D3DXFrameDestroy@8=D3DXFrameDestroy                                                           @136
+D3DXFrameFind@8=D3DXFrameFind                                                                 @137
+D3DXFrameNumNamedMatrices@4=D3DXFrameNumNamedMatrices                                         @138
+D3DXFrameRegisterNamedMatrices@8=D3DXFrameRegisterNamedMatrices                               @139
+D3DXFresnelTerm@8=D3DXFresnelTerm                                                             @140
+D3DXGenerateOutputDecl@8=D3DXGenerateOutputDecl                                               @141
+D3DXGeneratePMesh@28=D3DXGeneratePMesh                                                        @142
+D3DXGetDeclLength@4=D3DXGetDeclLength                                                         @143
+D3DXGetDeclVertexSize@8=D3DXGetDeclVertexSize                                                 @144
+D3DXGetDriverLevel@4=D3DXGetDriverLevel                                                       @145
+D3DXGetFVFVertexSize@4=D3DXGetFVFVertexSize                                                   @146
+D3DXGetImageInfoFromFileA@8=D3DXGetImageInfoFromFileA                                         @147
+D3DXGetImageInfoFromFileInMemory@12=D3DXGetImageInfoFromFileInMemory                          @148
+D3DXGetImageInfoFromFileW@8=D3DXGetImageInfoFromFileW                                         @149
+D3DXGetImageInfoFromResourceA@12=D3DXGetImageInfoFromResourceA                                @150
+D3DXGetImageInfoFromResourceW@12=D3DXGetImageInfoFromResourceW                                @151
+D3DXGetPixelShaderProfile@4=D3DXGetPixelShaderProfile                                         @152
+D3DXGetShaderConstantTable@8=D3DXGetShaderConstantTable                                       @153
+D3DXGetShaderConstantTableEx@12=D3DXGetShaderConstantTableEx                                  @154
+D3DXGetShaderInputSemantics@12=D3DXGetShaderInputSemantics                                    @155
+D3DXGetShaderOutputSemantics@12=D3DXGetShaderOutputSemantics                                  @156
+D3DXGetShaderSamplers@12=D3DXGetShaderSamplers                                                @157
+D3DXGetShaderSize@4=D3DXGetShaderSize                                                         @158
+D3DXGetShaderVersion@4=D3DXGetShaderVersion                                                   @159
+D3DXGetVertexShaderProfile@4=D3DXGetVertexShaderProfile                                       @160
+D3DXIntersect@40=D3DXIntersect                                                                @161
+D3DXIntersectSubset@44=D3DXIntersectSubset                                                    @162
+D3DXIntersectTri@32=D3DXIntersectTri                                                          @163
+D3DXLoadMeshFromXA@32=D3DXLoadMeshFromXA                                                      @164
+D3DXLoadMeshFromXInMemory@36=D3DXLoadMeshFromXInMemory                                        @165
+D3DXLoadMeshFromXResource@40=D3DXLoadMeshFromXResource                                        @166
+D3DXLoadMeshFromXW@32=D3DXLoadMeshFromXW                                                      @167
+D3DXLoadMeshFromXof@32=D3DXLoadMeshFromXof                                                    @168
+D3DXLoadMeshHierarchyFromXA@28=D3DXLoadMeshHierarchyFromXA                                    @169
+D3DXLoadMeshHierarchyFromXInMemory@32=D3DXLoadMeshHierarchyFromXInMemory                      @170
+D3DXLoadMeshHierarchyFromXW@28=D3DXLoadMeshHierarchyFromXW                                    @171
+D3DXLoadPRTBufferFromFileA@8=D3DXLoadPRTBufferFromFileA                                       @172
+D3DXLoadPRTBufferFromFileW@8=D3DXLoadPRTBufferFromFileW                                       @173
+D3DXLoadPRTCompBufferFromFileA@8=D3DXLoadPRTCompBufferFromFileA                               @174
+D3DXLoadPRTCompBufferFromFileW@8=D3DXLoadPRTCompBufferFromFileW                               @175
+D3DXLoadPatchMeshFromXof@28=D3DXLoadPatchMeshFromXof                                          @176
+D3DXLoadSkinMeshFromXof@36=D3DXLoadSkinMeshFromXof                                            @177
+D3DXLoadSurfaceFromFileA@32=D3DXLoadSurfaceFromFileA                                          @178
+D3DXLoadSurfaceFromFileInMemory@36=D3DXLoadSurfaceFromFileInMemory                            @179
+D3DXLoadSurfaceFromFileW@32=D3DXLoadSurfaceFromFileW                                          @180
+D3DXLoadSurfaceFromMemory@40=D3DXLoadSurfaceFromMemory                                        @181
+D3DXLoadSurfaceFromResourceA@36=D3DXLoadSurfaceFromResourceA                                  @182
+D3DXLoadSurfaceFromResourceW@36=D3DXLoadSurfaceFromResourceW                                  @183
+D3DXLoadSurfaceFromSurface@32=D3DXLoadSurfaceFromSurface                                      @184
+D3DXLoadVolumeFromFileA@32=D3DXLoadVolumeFromFileA                                            @185
+D3DXLoadVolumeFromFileInMemory@36=D3DXLoadVolumeFromFileInMemory                              @186
+D3DXLoadVolumeFromFileW@32=D3DXLoadVolumeFromFileW                                            @187
+D3DXLoadVolumeFromMemory@44=D3DXLoadVolumeFromMemory                                          @188
+D3DXLoadVolumeFromResourceA@36=D3DXLoadVolumeFromResourceA                                    @189
+D3DXLoadVolumeFromResourceW@36=D3DXLoadVolumeFromResourceW                                    @190
+D3DXLoadVolumeFromVolume@32=D3DXLoadVolumeFromVolume                                          @191
+D3DXMatrixAffineTransformation2D@20=D3DXMatrixAffineTransformation                            @193
+D3DXMatrixAffineTransformation@20=D3DXMatrixAffineTransformation2D                            @192
+D3DXMatrixDecompose@16=D3DXMatrixDecompose                                                    @194
+D3DXMatrixDeterminant@4=D3DXMatrixDeterminant                                                 @195
+D3DXMatrixInverse@12=D3DXMatrixInverse                                                        @196
+D3DXMatrixLookAtLH@16=D3DXMatrixLookAtLH                                                      @197
+D3DXMatrixLookAtRH@16=D3DXMatrixLookAtRH                                                      @198
+D3DXMatrixMultiply@12=D3DXMatrixMultiply                                                      @199
+D3DXMatrixMultiplyTranspose@12=D3DXMatrixMultiplyTranspose                                    @200
+D3DXMatrixOrthoLH@20=D3DXMatrixOrthoLH                                                        @201
+D3DXMatrixOrthoOffCenterLH@28=D3DXMatrixOrthoOffCenterLH                                      @202
+D3DXMatrixOrthoOffCenterRH@28=D3DXMatrixOrthoOffCenterRH                                      @203
+D3DXMatrixOrthoRH@20=D3DXMatrixOrthoRH                                                        @204
+D3DXMatrixPerspectiveFovLH@20=D3DXMatrixPerspectiveFovLH                                      @205
+D3DXMatrixPerspectiveFovRH@20=D3DXMatrixPerspectiveFovRH                                      @206
+D3DXMatrixPerspectiveLH@20=D3DXMatrixPerspectiveLH                                            @207
+D3DXMatrixPerspectiveOffCenterLH@28=D3DXMatrixPerspectiveOffCenterLH                          @208
+D3DXMatrixPerspectiveOffCenterRH@28=D3DXMatrixPerspectiveOffCenterRH                          @209
+D3DXMatrixPerspectiveRH@20=D3DXMatrixPerspectiveRH                                            @210
+D3DXMatrixReflect@8=D3DXMatrixReflect                                                         @211
+D3DXMatrixRotationAxis@12=D3DXMatrixRotationAxis                                              @212
+D3DXMatrixRotationQuaternion@8=D3DXMatrixRotationQuaternion                                   @213
+D3DXMatrixRotationX@8=D3DXMatrixRotationX                                                     @214
+D3DXMatrixRotationY@8=D3DXMatrixRotationY                                                     @215
+D3DXMatrixRotationYawPitchRoll@16=D3DXMatrixRotationYawPitchRoll                              @216
+D3DXMatrixRotationZ@8=D3DXMatrixRotationZ                                                     @217
+D3DXMatrixScaling@16=D3DXMatrixScaling                                                        @218
+D3DXMatrixShadow@12=D3DXMatrixShadow                                                          @219
+D3DXMatrixTransformation2D@28=D3DXMatrixTransformation                                        @221
+D3DXMatrixTransformation@28=D3DXMatrixTransformation2D                                        @220
+D3DXMatrixTranslation@16=D3DXMatrixTranslation                                                @222
+D3DXMatrixTranspose@8=D3DXMatrixTranspose                                                     @223
+D3DXOptimizeFaces@20=D3DXOptimizeFaces                                                        @224
+D3DXOptimizeVertices@20=D3DXOptimizeVertices                                                  @225
+D3DXPlaneFromPointNormal@12=D3DXPlaneFromPointNormal                                          @226
+D3DXPlaneFromPoints@16=D3DXPlaneFromPoints                                                    @227
+D3DXPlaneIntersectLine@16=D3DXPlaneIntersectLine                                              @228
+D3DXPlaneNormalize@8=D3DXPlaneNormalize                                                       @229
+D3DXPlaneTransform@12=D3DXPlaneTransform                                                      @230
+D3DXPlaneTransformArray@24=D3DXPlaneTransformArray                                            @231
+D3DXPreprocessShader@24=D3DXPreprocessShader                                                  @232
+D3DXPreprocessShaderFromFileA@20=D3DXPreprocessShaderFromFileA                                @233
+D3DXPreprocessShaderFromFileW@20=D3DXPreprocessShaderFromFileW                                @234
+D3DXPreprocessShaderFromResourceA@24=D3DXPreprocessShaderFromResourceA                        @235
+D3DXPreprocessShaderFromResourceW@24=D3DXPreprocessShaderFromResourceW                        @236
+D3DXQuaternionBaryCentric@24=D3DXQuaternionBaryCentric                                        @237
+D3DXQuaternionExp@8=D3DXQuaternionExp                                                         @238
+D3DXQuaternionInverse@8=D3DXQuaternionInverse                                                 @239
+D3DXQuaternionLn@8=D3DXQuaternionLn                                                           @240
+D3DXQuaternionMultiply@12=D3DXQuaternionMultiply                                              @241
+D3DXQuaternionNormalize@8=D3DXQuaternionNormalize                                             @242
+D3DXQuaternionRotationAxis@12=D3DXQuaternionRotationAxis                                      @243
+D3DXQuaternionRotationMatrix@8=D3DXQuaternionRotationMatrix                                   @244
+D3DXQuaternionRotationYawPitchRoll@16=D3DXQuaternionRotationYawPitchRoll                      @245
+D3DXQuaternionSlerp@16=D3DXQuaternionSlerp                                                    @246
+D3DXQuaternionSquad@24=D3DXQuaternionSquad                                                    @247
+D3DXQuaternionSquadSetup@28=D3DXQuaternionSquadSetup                                          @248
+D3DXQuaternionToAxisAngle@12=D3DXQuaternionToAxisAngle                                        @249
+D3DXRectPatchSize@12=D3DXRectPatchSize                                                        @250
+D3DXSHAdd@16=D3DXSHAdd                                                                        @251
+D3DXSHDot@12=D3DXSHDot                                                                        @252
+D3DXSHEvalConeLight@36=D3DXSHEvalConeLight                                                    @253
+D3DXSHEvalDirection@12=D3DXSHEvalDirection                                                    @254
+D3DXSHEvalDirectionalLight@32=D3DXSHEvalDirectionalLight                                      @255
+D3DXSHEvalHemisphereLight@52=D3DXSHEvalHemisphereLight                                        @256
+D3DXSHEvalSphericalLight@36=D3DXSHEvalSphericalLight                                          @257
+D3DXSHMultiply2@12=D3DXSHMultiply2                                                            @258
+D3DXSHMultiply3@12=D3DXSHMultiply3                                                            @259
+D3DXSHMultiply4@12=D3DXSHMultiply4                                                            @260
+D3DXSHMultiply5@12=D3DXSHMultiply5                                                            @261
+D3DXSHMultiply6@12=D3DXSHMultiply6                                                            @262
+D3DXSHPRTCompSplitMeshSC@64=D3DXSHPRTCompSplitMeshSC                                          @263
+D3DXSHPRTCompSuperCluster@24=D3DXSHPRTCompSuperCluster                                        @264
+D3DXSHProjectCubeMap@20=D3DXSHProjectCubeMap                                                  @265
+D3DXSHRotate@16=D3DXSHRotate                                                                  @266
+D3DXSHRotateZ@16=D3DXSHRotateZ                                                                @267
+D3DXSHScale@16=D3DXSHScale                                                                    @268
+D3DXSaveMeshHierarchyToFileA@20=D3DXSaveMeshHierarchyToFileA                                  @269
+D3DXSaveMeshHierarchyToFileW@20=D3DXSaveMeshHierarchyToFileW                                  @270
+D3DXSaveMeshToXA@28=D3DXSaveMeshToXA                                                          @271
+D3DXSaveMeshToXW@28=D3DXSaveMeshToXW                                                          @272
+D3DXSavePRTBufferToFileA@8=D3DXSavePRTBufferToFileA                                           @273
+D3DXSavePRTBufferToFileW@8=D3DXSavePRTBufferToFileW                                           @274
+D3DXSavePRTCompBufferToFileA@8=D3DXSavePRTCompBufferToFileA                                   @275
+D3DXSavePRTCompBufferToFileW@8=D3DXSavePRTCompBufferToFileW                                   @276
+D3DXSaveSurfaceToFileA@20=D3DXSaveSurfaceToFileA                                              @277
+D3DXSaveSurfaceToFileInMemory@20=D3DXSaveSurfaceToFileInMemory                                @278
+D3DXSaveSurfaceToFileW@20=D3DXSaveSurfaceToFileW                                              @279
+D3DXSaveTextureToFileA@16=D3DXSaveTextureToFileA                                              @280
+D3DXSaveTextureToFileInMemory@16=D3DXSaveTextureToFileInMemory                                @281
+D3DXSaveTextureToFileW@16=D3DXSaveTextureToFileW                                              @282
+D3DXSaveVolumeToFileA@20=D3DXSaveVolumeToFileA                                                @283
+D3DXSaveVolumeToFileInMemory@20=D3DXSaveVolumeToFileInMemory                                  @284
+D3DXSaveVolumeToFileW@20=D3DXSaveVolumeToFileW                                                @285
+D3DXSimplifyMesh@28=D3DXSimplifyMesh                                                          @286
+D3DXSphereBoundProbe@16=D3DXSphereBoundProbe                                                  @287
+D3DXSplitMesh@36=D3DXSplitMesh                                                                @288
+D3DXTessellateNPatches@24=D3DXTessellateNPatches                                              @289
+D3DXTessellateRectPatch@20=D3DXTessellateRectPatch                                            @290
+D3DXTessellateTriPatch@20=D3DXTessellateTriPatch                                              @291
+D3DXTriPatchSize@12=D3DXTriPatchSize                                                          @292
+D3DXUVAtlasCreate@76=D3DXUVAtlasCreate                                                        @293
+D3DXUVAtlasPack@44=D3DXUVAtlasPack                                                            @294
+D3DXUVAtlasPartition@68=D3DXUVAtlasPartition                                                  @295
+D3DXValidMesh@12=D3DXValidMesh                                                                @296
+D3DXValidPatchMesh@16=D3DXValidPatchMesh                                                      @297
+D3DXVec2BaryCentric@24=D3DXVec2BaryCentric                                                    @298
+D3DXVec2CatmullRom@24=D3DXVec2CatmullRom                                                      @299
+D3DXVec2Hermite@24=D3DXVec2Hermite                                                            @300
+D3DXVec2Normalize@8=D3DXVec2Normalize                                                         @301
+D3DXVec2Transform@12=D3DXVec2Transform                                                        @302
+D3DXVec2TransformArray@24=D3DXVec2TransformArray                                              @303
+D3DXVec2TransformCoord@12=D3DXVec2TransformCoord                                              @304
+D3DXVec2TransformCoordArray@24=D3DXVec2TransformCoordArray                                    @305
+D3DXVec2TransformNormal@12=D3DXVec2TransformNormal                                            @306
+D3DXVec2TransformNormalArray@24=D3DXVec2TransformNormalArray                                  @307
+D3DXVec3BaryCentric@24=D3DXVec3BaryCentric                                                    @308
+D3DXVec3CatmullRom@24=D3DXVec3CatmullRom                                                      @309
+D3DXVec3Hermite@24=D3DXVec3Hermite                                                            @310
+D3DXVec3Normalize@8=D3DXVec3Normalize                                                         @311
+D3DXVec3Project@24=D3DXVec3Project                                                            @312
+D3DXVec3ProjectArray@36=D3DXVec3ProjectArray                                                  @313
+D3DXVec3Transform@12=D3DXVec3Transform                                                        @314
+D3DXVec3TransformArray@24=D3DXVec3TransformArray                                              @315
+D3DXVec3TransformCoord@12=D3DXVec3TransformCoord                                              @316
+D3DXVec3TransformCoordArray@24=D3DXVec3TransformCoordArray                                    @317
+D3DXVec3TransformNormal@12=D3DXVec3TransformNormal                                            @318
+D3DXVec3TransformNormalArray@24=D3DXVec3TransformNormalArray                                  @319
+D3DXVec3Unproject@24=D3DXVec3Unproject                                                        @320
+D3DXVec3UnprojectArray@36=D3DXVec3UnprojectArray                                              @321
+D3DXVec4BaryCentric@24=D3DXVec4BaryCentric                                                    @322
+D3DXVec4CatmullRom@24=D3DXVec4CatmullRom                                                      @323
+D3DXVec4Cross@16=D3DXVec4Cross                                                                @324
+D3DXVec4Hermite@24=D3DXVec4Hermite                                                            @325
+D3DXVec4Normalize@8=D3DXVec4Normalize                                                         @326
+D3DXVec4Transform@12=D3DXVec4Transform                                                        @327
+D3DXVec4TransformArray@24=D3DXVec4TransformArray                                              @328
+D3DXWeldVertices@28=D3DXWeldVertices                                                          @329
