@@ -39,29 +39,10 @@ jobs:
           echo "sha7=${SHA7}" >> $GITHUB_OUTPUT
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
-  dxsdk:
-    name: DirectX SDK
-    runs-on: windows-latest
-    steps:
-      - id: cache
-        uses: actions/cache@v4
-        with:
-          path: DXSDK
-          key: cache-dxsdk
-      - if: steps.cache.outputs.cache-hit != 'true'
-        name: Create Cache
-        run: |
-          curl -sL https://download.microsoft.com/download/a/e/7/ae743f1f-632b-4809-87a9-aa1bb3458e31/DXSDK_Jun10.exe -o DXSDK_Jun10.exe
-          7z x DXSDK_Jun10.exe DXSDK/Include -otmp
-          7z x DXSDK_Jun10.exe DXSDK/Lib -otmp
-          mv tmp/DXSDK DXSDK
-          rm -fR DXSDK_Jun10.exe tmp
-          ls -Ra DXSDK
-
   build:
     name: Build VPinballX_${{ matrix.type }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}
     runs-on: ${{ matrix.os }}
-    needs: [ version, dxsdk ]
+    needs: [ version ]
     strategy:
       fail-fast: false
       matrix:
@@ -100,11 +81,6 @@ jobs:
           sudo apt-get update
           sudo apt install cmake nasm bison zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libgl1-mesa-dev libwayland-dev libwayland-egl-backend-dev libudev-dev libx11-dev libxrandr-dev libasound2-dev libpipewire-0.3-dev
       - uses: actions/checkout@v4
-      - if: (matrix.platform == 'windows')
-        uses: actions/cache@v4
-        with:
-          path: DXSDK
-          key: cache-dxsdk
       - name: Calculate external cache timestamp
         run: |
           echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
@@ -139,7 +115,6 @@ jobs:
           TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
           cp make/CMakeLists_${TYPE}-${{ matrix.platform }}-${{ matrix.arch }}.txt CMakeLists.txt
           if [[ "${{ matrix.platform }}" == "windows" ]]; then
-            export DXSDK_DIR="${GITHUB_WORKSPACE}/DXSDK"
             if [[ "${{ matrix.arch }}" == "x64" ]]; then
               cmake -G "Visual Studio 17 2022" -A x64 -B build
             else
@@ -229,7 +204,7 @@ jobs:
   build-dx:
     name: Build VPinballX-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}
     runs-on: windows-2025
-    needs: [ version, dxsdk ]
+    needs: [ version ]
     strategy:
       fail-fast: false
       matrix:
@@ -249,10 +224,6 @@ jobs:
             /c/msys64/usr/bin/bash.exe -l -c "pacman -S --noconfirm mingw-w64-i686-gcc mingw-w64-i686-zlib mingw-w64-i686-libwinpthread mingw-w64-i686-libiconv mingw-w64-i686-cmake"
           fi
       - uses: actions/checkout@v4
-      - uses: actions/cache@v4
-        with:
-          path: DXSDK
-          key: cache-dxsdk
       - name: Calculate external cache timestamp
         run: |
           echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
@@ -282,7 +253,6 @@ jobs:
           perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/core/git_version.h
       - name: Build
         run : |
-          export DXSDK_DIR="${GITHUB_WORKSPACE}/DXSDK"
           cp make/CMakeLists_dx9-${{ matrix.platform }}-${{ matrix.arch }}.txt CMakeLists.txt
           if [[ "${{ matrix.arch }}" == "x64" ]]; then
             cmake -G "Visual Studio 17 2022" -A x64 -B build
