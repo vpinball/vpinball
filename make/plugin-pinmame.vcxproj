@@ -163,16 +163,16 @@
         if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pinmame\" md "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pinmame\"
         xcopy /y /d /q "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pinmame\"
         xcopy /y /d /q "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pinmame\"
-		
-		if $(Platform) EQU x64 (
-			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\pinmame64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pinmame\"
-			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\pinmame64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pinmame\"
-			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\pinmame64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pinmame\"
-		) ELSE (
-			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\pinmame.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pinmame\"
-			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\pinmame.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pinmame\"
-			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-$(Platform)\pinmame.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pinmame\"
-		)
+
+        if $(Platform) EQU x64 (
+        	xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\pinmame64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pinmame\"
+        	xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\pinmame64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pinmame\"
+        	xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\pinmame64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pinmame\"
+        ) ELSE (
+        	xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\pinmame.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\pinmame\"
+        	xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\pinmame.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\pinmame\"
+        	xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\pinmame.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\pinmame\"
+        )
       </Command>
     </PostBuildEvent>
     <ClCompile>
