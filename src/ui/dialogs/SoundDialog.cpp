@@ -460,10 +460,10 @@ void SoundDialog::Export()
 
     if (selectedItemsCount)
     {
-        LVITEM lvitem;
         int sel = ListView_GetNextItem( hSoundList, -1, LVNI_SELECTED ); //next selected item 	
         if (sel != -1)
         {
+            LVITEM lvitem;
             lvitem.mask = LVIF_PARAM;
             lvitem.iItem = sel;
             lvitem.iSubItem = 0;
@@ -476,12 +476,14 @@ void SoundDialog::Export()
             ofn.hwndOwner = g_pvp->GetHwnd();
             ofn.lpstrFilter = "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0";
 
-            char filename[MAXSTRING] = {};
+            char filename[MAXSTRING];
+            filename[0] = '\0';
             if (!renameOnExport)
             {
                string filename2 = pps->GetImportPath();
                const size_t pos = filename2.find_last_of(PATH_SEPARATOR_CHAR);
-               filename2 = pos != string::npos ? filename2.substr(pos + 1) : filename2;
+               if (pos != string::npos)
+                  filename2 = filename2.substr(pos + 1);
                strncpy_s(filename, filename2.c_str(), sizeof(filename) - 1);
             }
             else
@@ -505,8 +507,10 @@ void SoundDialog::Export()
             {
                string pathName = ofn.lpstrFile;
                const size_t pos = pathName.find_last_of(PATH_SEPARATOR_CHAR);
-               pathName = pos != string::npos ? pathName.substr(0, pos + 1) : pathName;
-               while(sel != -1)
+               if (pos != string::npos)
+                  pathName = pathName.substr(0, pos + 1);
+
+               while (sel != -1 && pps != nullptr)
                {
                   string filen;
                   if (selectedItemsCount > 1)
@@ -533,7 +537,8 @@ void SoundDialog::Export()
                      }
                   }
 
-                  pt->ExportSound(pps, (selectedItemsCount > 1) ? filen : filename);
+                  if (!pt->ExportSound(pps, (selectedItemsCount > 1) ? filen : filename))
+                     ShowError("Could not export Sound");
                   sel = ListView_GetNextItem( hSoundList, sel, LVNI_SELECTED ); //next selected item
                   lvitem.iItem = sel;
                   lvitem.iSubItem = 0;
@@ -545,6 +550,7 @@ void SoundDialog::Export()
             }
         }
     }
+
     SetFocus();
 }
 

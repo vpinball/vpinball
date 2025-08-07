@@ -472,6 +472,7 @@ void ImageDialog::Import()
 
 void ImageDialog::Export()
 {
+   CCO(PinTable) *const pt = g_pvp->GetActiveTable();
    const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
    const int selectedItemsCount = ListView_GetSelectedCount(hSoundList);
 
@@ -564,17 +565,10 @@ void ImageDialog::Export()
 
             if (GetSaveFileName(&ofn))	//Get filename from user
             {
-               int begin; //select only file name from pathfilename
-               for (begin = (int)strlen(ofn.lpstrFile); begin >= 0; begin--)
-               {
-                  if (ofn.lpstrFile[begin] == PATH_SEPARATOR_CHAR)
-                  {
-                     begin++;
-                     break;
-                  }
-               }
-
-               const string pathName(ofn.lpstrFile, begin);
+               string pathName = ofn.lpstrFile;
+               const size_t pos = pathName.find_last_of(PATH_SEPARATOR_CHAR);
+               if (pos != string::npos)
+                  pathName = pathName.substr(0, pos + 1);
 
                while (sel != -1 && ppi != nullptr)
                {
@@ -584,6 +578,7 @@ void ImageDialog::Export()
                      filename = pathName;
                      if (!renameOnExport)
                      {
+                        int begin;
                         for (begin = (int)ppi->GetFilePath().length(); begin >= 0; begin--)
                         {
                            if (ppi->GetFilePath()[begin] == PATH_SEPARATOR_CHAR)
@@ -602,7 +597,6 @@ void ImageDialog::Export()
                      }
                   }
 
-                  CCO(PinTable) * const pt = g_pvp->GetActiveTable();
                   if (!pt->ExportImage(ppi, (selectedItemsCount>1) ? filename : g_filename)) //!! this will always export the image in its original format, no matter what was actually selected by the user
                      ShowError("Could not export Image");
                   sel = ListView_GetNextItem(hSoundList, sel, LVNI_SELECTED);

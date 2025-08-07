@@ -463,7 +463,7 @@ vector<uint8_t> read_file(const string& filename, const bool binary)
       ShowError(text);
       return data;
    }
-   data.resize(file.tellg());
+   data.resize((size_t)file.tellg());
    file.seekg(0, std::ios::beg);
    file.read(reinterpret_cast<char*>(data.data()), data.size());
    file.close();

@@ -221,7 +221,7 @@ void PUPMediaPlayer::StopBlocking()
    m_pVideoContext = nullptr;
    m_videoStream = -1;
 
-   for (int i = 0; i < m_videoTextures.size(); i++)
+   for (size_t i = 0; i < m_videoTextures.size(); i++)
    {
       if (m_rgbFrames[i])
          m_libAv._av_frame_free(&m_rgbFrames[i]);
@@ -306,11 +306,11 @@ void PUPMediaPlayer::Render(VPXRenderContext2D* const ctx, const SDL_Rect& destR
 
    // Search for the best frame to display and update the video texture accordingly (if needed)
    unsigned int m_renderFrameId = m_videoTextureId;
-   for (int i = 0; i < m_rgbFrames.size(); i++)
+   for (int i = 0; i < (int)m_rgbFrames.size(); i++)
    {
       if (m_activeRgbFrame >= i)
       {
-         const AVFrame* rgbFrame = m_rgbFrames[(m_activeRgbFrame + m_rgbFrames.size() - i) % m_rgbFrames.size()];
+         const AVFrame* rgbFrame = m_rgbFrames[(m_activeRgbFrame + (int)m_rgbFrames.size() - i) % (int)m_rgbFrames.size()];
          if (rgbFrame)
          {
             const double framePts = (static_cast<double>(rgbFrame->pts) * m_pVideoContext->pkt_timebase.num) / m_pVideoContext->pkt_timebase.den;
@@ -322,7 +322,7 @@ void PUPMediaPlayer::Render(VPXRenderContext2D* const ctx, const SDL_Rect& destR
 
    if (m_videoTextureId != m_renderFrameId)
    {
-      const int index = m_renderFrameId % m_videoTextures.size();
+      const unsigned int index = m_renderFrameId % (unsigned int)m_videoTextures.size();
       m_videoTexture = m_videoTextures[index];
       if (m_videoTexture)
       {

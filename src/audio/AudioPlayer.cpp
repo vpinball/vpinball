@@ -90,7 +90,7 @@ static ma_result ma_context_get_device_info__sdl(ma_context* pContext, ma_device
 void ma_audio_callback_playback__sdl(void* pUserData, SDL_AudioStream* stream, int additional_amount, const int total_amount)
 {
    auto pDevice = static_cast<ma_device_ex*>(pUserData);
-   if (pDevice->buffer.size() < total_amount)
+   if ((int)pDevice->buffer.size() < total_amount)
       pDevice->buffer.resize(total_amount);
    const int sizePerMAFrame = ma_get_bytes_per_frame(pDevice->device.playback.internalFormat, pDevice->device.playback.internalChannels);
    const int nFrames = total_amount / sizePerMAFrame;

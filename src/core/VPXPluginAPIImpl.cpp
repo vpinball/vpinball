@@ -477,7 +477,7 @@ void VPXPluginAPIImpl::ControllerOnGetDMDSrc(const unsigned int msgId, void* use
    }
 
    // Ancilliary DMDs defined on flasher objects from script
-   for (int i = 0; i < me.m_dmdSources.size(); i++)
+   for (size_t i = 0; i < me.m_dmdSources.size(); i++)
    {
       const auto& dmdSrc = me.m_dmdSources[i];
       assert(dmdSrc->m_dmdFrame);
