@@ -43,11 +43,6 @@ static const string VBvalidChars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRST
 
 INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-IScriptable::IScriptable()
-{
-   m_wzName[0] = '\0';
-}
-
 void CodeViewer::Init(IScriptableHost *psh)
 {
    CComObject<DebuggerModule>::CreateInstance(&m_pdm);
@@ -1307,9 +1302,7 @@ STDMETHODIMP CodeViewer::GetDocumentContextFromPosition(
 	return E_NOTIMPL;
 }
 
-STDMETHODIMP CodeViewer::GetApplication(
-	IDebugApplication** ppda
-)
+STDMETHODIMP CodeViewer::GetApplication(IDebugApplication** ppda)
 {
 #ifndef __STANDALONE__
 	if (m_pProcessDebugManager != nullptr)
@@ -2820,7 +2813,7 @@ bool CodeViewer::ParseStructureName(fi_vector<UserData>& ListIn, const UserData&
 				RemoveByVal(crWord);
 				RemovePadding(crWord);
 				RemoveNonVBSChars(crWord);
-				if (crWord.length() <= MAX_FIND_LENGTH && !crWord.empty()) 
+				if (!crWord.empty())
 				{
 					ud.m_keyName = crWord;
 					ud.m_uniqueKey = lowerCase(ud.m_keyName) + m_currentParentKey;
@@ -2860,7 +2853,7 @@ bool CodeViewer::ParseStructureName(fi_vector<UserData>& ListIn, const UserData&
 				RemoveByVal(crWord);
 				RemovePadding(crWord);
 				RemoveNonVBSChars(crWord);
-				if (crWord.length() <= MAX_FIND_LENGTH && !crWord.empty())
+				if (!crWord.empty())
 				{
 					ud.m_keyName = crWord;
 					ud.eTyping = eDim;
@@ -2913,7 +2906,6 @@ bool CodeViewer::ParseStructureName(fi_vector<UserData>& ListIn, const UserData&
 					m_stopErrorDisplay = true;
 					MessageBox("Construct not opened", ("Parse error on line: " + std::to_string(Lineno)).c_str(), MB_OK);
 				}
-
 				return true;
 			}
 			else
@@ -3281,65 +3273,29 @@ BOOL CodeViewer::ParseClickEvents(const int id, const SCNotification *pSCN)
          return TRUE;
       }
       case ID_SCRIPT_TOGGLE_LAST_ERROR_VISIBILITY:
-      {
-         SetLastErrorVisibility(!m_lastErrorWidgetVisible);
-         return TRUE;
-      }
+         SetLastErrorVisibility(!m_lastErrorWidgetVisible); return TRUE;
       case ID_SCRIPT_PREFERENCES:
-      {
-         DialogBox(g_pvp->theInstance, MAKEINTRESOURCE(IDD_CODEVIEW_PREFS), GetHwnd(), CVPrefProc);
-         return TRUE;
-      }
+         DialogBox(g_pvp->theInstance, MAKEINTRESOURCE(IDD_CODEVIEW_PREFS), GetHwnd(), CVPrefProc); return TRUE;
       case ID_FIND:
-      {
-         pcv->ShowFindDialog();
-         return TRUE;
-      }
+         pcv->ShowFindDialog(); return TRUE;
       case ID_REPLACE:
-      {
-         pcv->ShowFindReplaceDialog();
-         return TRUE;
-      }
+         pcv->ShowFindReplaceDialog(); return TRUE;
       case ID_EDIT_FINDNEXT:
-      {
-         pcv->Find(&pcv->m_findreplaceold);
-         return TRUE;
-      }
+         pcv->Find(&pcv->m_findreplaceold); return TRUE;
       case ID_EDIT_UNDO:
-      {
-         ::SendMessage(pcv->m_hwndScintilla, SCI_UNDO, 0, 0);
-         return TRUE;
-      }
+         ::SendMessage(pcv->m_hwndScintilla, SCI_UNDO, 0, 0); return TRUE;
       case ID_EDIT_COPY:
-      {
-         ::SendMessage(pcv->m_hwndScintilla, WM_COPY, 0, 0);
-         return TRUE;
-      }
+         ::SendMessage(pcv->m_hwndScintilla, WM_COPY, 0, 0); return TRUE;
       case ID_EDIT_CUT:
-      {
-         ::SendMessage(pcv->m_hwndScintilla, WM_CUT, 0, 0);
-         return TRUE;
-      }
+         ::SendMessage(pcv->m_hwndScintilla, WM_CUT, 0, 0); return TRUE;
       case ID_EDIT_PASTE:
-      {
-         ::SendMessage(pcv->m_hwndScintilla, WM_PASTE, 0, 0);
-         return TRUE;
-      }
+         ::SendMessage(pcv->m_hwndScintilla, WM_PASTE, 0, 0); return TRUE;
       case ID_ADD_COMMENT:
-      {
-         AddComment(pcv->m_hwndScintilla);
-         return TRUE;
-      }
+         AddComment(pcv->m_hwndScintilla); return TRUE;
       case ID_REMOVE_COMMENT:
-      {
-         RemoveComment(pcv->m_hwndScintilla);
-         return TRUE;
-      }
+         RemoveComment(pcv->m_hwndScintilla); return TRUE;
       case ID_GO_TO_DEFINITION:
-      {
-         ShowTooltipOrGoToDefinition(pSCN,false);
-         return TRUE;
-      }
+         ShowTooltipOrGoToDefinition(pSCN,false); return TRUE;
    }
 #endif
    return FALSE;
@@ -3360,25 +3316,13 @@ BOOL CodeViewer::ParseSelChangeEvent(const int id, const SCNotification *pSCN)
       case ID_TABLE_CAMERAMODE:
       case ID_TABLE_LIVEEDIT:
       case ID_TABLE_PLAY:
-      {
-         pcv->m_psh->DoCodeViewCommand(id);
-         return TRUE;
-      }
+         pcv->m_psh->DoCodeViewCommand(id); return TRUE;
       case ID_EDIT_FINDNEXT:
-      {
-         pcv->Find(&pcv->m_findreplaceold);
-         return TRUE;
-      }
+         pcv->Find(&pcv->m_findreplaceold); return TRUE;
       case ID_REPLACE:
-      {
-         pcv->ShowFindReplaceDialog();
-         return TRUE;
-      }
+         pcv->ShowFindReplaceDialog(); return TRUE;
       case ID_EDIT_UNDO:
-      {
-         ::SendMessage(pcv->m_hwndScintilla, SCI_UNDO, 0, 0);
-         return TRUE;
-      }
+         ::SendMessage(pcv->m_hwndScintilla, SCI_UNDO, 0, 0); return TRUE;
       case IDC_ITEMLIST:
       {
          pcv->ListEventsFromItem();
@@ -3386,22 +3330,17 @@ BOOL CodeViewer::ParseSelChangeEvent(const int id, const SCNotification *pSCN)
          return TRUE;
       }
       case IDC_EVENTLIST:
-      {
-         pcv->FindCodeFromEvent();
-         return TRUE;
-      }
+         pcv->FindCodeFromEvent(); return TRUE;
       case IDC_FUNCTIONLIST:
       {
          const LRESULT Listindex = ::SendMessage(pcv->m_hwndFunctionList, CB_GETCURSEL, 0, 0);
          if (Listindex != -1)
          {
-            char ConstructName[MAX_FIND_LENGTH];
-            ConstructName[0] = '\0';
-            /*size_t index =*/ ::SendMessage(pcv->m_hwndFunctionList, CB_GETLBTEXT, Listindex, (LPARAM)ConstructName);
-            int idx;
-            string s(ConstructName);
+            string s(::SendMessage(pcv->m_hwndFunctionList, CB_GETLBTEXTLEN, Listindex, 0), '\0');
+            /*size_t index =*/ ::SendMessage(pcv->m_hwndFunctionList, CB_GETLBTEXT, Listindex, (LPARAM)s.data());
             RemovePadding(s);
             StrToLower(s);
+            int idx;
             FindUD(pcv->m_pageConstructsDict, s, idx);
             if (idx != -1)
             {
@@ -3412,25 +3351,13 @@ BOOL CodeViewer::ParseSelChangeEvent(const int id, const SCNotification *pSCN)
          return TRUE;
       }
       case ID_ADD_COMMENT:
-      {
-         AddComment(pcv->m_hwndScintilla);
-         return TRUE;
-      }
+         AddComment(pcv->m_hwndScintilla); return TRUE;
       case ID_REMOVE_COMMENT:
-      {
-         RemoveComment(pcv->m_hwndScintilla);
-         return TRUE;
-      }
+         RemoveComment(pcv->m_hwndScintilla); return TRUE;
       case ID_GO_TO_DEFINITION:
-      {
-         ShowTooltipOrGoToDefinition(pSCN, false);
-         return TRUE;
-      }
+         ShowTooltipOrGoToDefinition(pSCN, false); return TRUE;
       case ID_SHOWAUTOCOMPLETE:
-      {
-         pcv->ShowAutoComplete(pSCN);
-         return TRUE;
-      }
+         pcv->ShowAutoComplete(pSCN); return TRUE;
    }//switch (id)
 #endif
    return FALSE;
@@ -3474,10 +3401,7 @@ LRESULT CodeViewer::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          break;
       }
       case WM_CLOSE:
-      {
-         pcv->SetVisible(false);
-         return TRUE;
-      }
+         pcv->SetVisible(false); return TRUE;
       case WM_SYSCOMMAND:
       {
          if (wParam == SC_MINIMIZE && g_pvp != nullptr)
@@ -3546,15 +3470,9 @@ BOOL CodeViewer::OnCommand(WPARAM wparam, LPARAM lparam)
          return TRUE;
       }
       case CBN_SELCHANGE: // Or accelerator
-      {
-         const SCNotification *const pscn = (SCNotification *)lparam;
-         return ParseSelChangeEvent(id, pscn);
-      }
+         return ParseSelChangeEvent(id, (SCNotification *)lparam);
       case BN_CLICKED:
-      {
-         const SCNotification *const pscn = (SCNotification *)lparam;
-         return ParseClickEvents(id, pscn);
-      }
+         return ParseClickEvents(id, (SCNotification *)lparam);
    }
 #endif
    return FALSE;
@@ -3969,17 +3887,6 @@ Collection::Collection()
    m_groupElements = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "GroupElementsInCollection"s, true);
 }
 
-const WCHAR *Collection::get_Name() const
-{
-   return m_wzName;
-}
-
-STDMETHODIMP Collection::get_Name(BSTR *pVal)
-{
-   *pVal = SysAllocString(m_wzName);
-   return S_OK;
-}
-
 HRESULT Collection::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
 {
    BiffWriter bw(pstm, hcrypthash);
@@ -4136,7 +4043,6 @@ STDMETHODIMP OMCollectionEnum::Skip(ULONG celt)
 STDMETHODIMP OMCollectionEnum::Reset()
 {
    m_index = 0;
-
    return S_OK;
 }
 
@@ -4194,16 +4100,5 @@ STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
       m_pcv->AddToDebugOutput(szT);
    PLOGI_IF_(PLOG_NO_DBG_OUT_INSTANCE_ID, logScript) << "Script.Print '" << szT << '\'';
 
-   return S_OK;
-}
-
-const WCHAR *DebuggerModule::get_Name() const
-{
-   return L"Debug";
-}
-
-STDMETHODIMP DebuggerModule::get_Name(BSTR *pVal)
-{
-   *pVal = SysAllocString(L"Debug");
    return S_OK;
 }

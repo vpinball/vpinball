@@ -32,7 +32,7 @@ enum SecurityLevelEnum
 class IScriptable
 {
 public:
-   IScriptable();
+   IScriptable() { m_wzName[0] = '\0'; }
 
    STDMETHOD(get_Name)(BSTR *pVal) = 0;       // fails for Decals, returns m_wzName or something custom for everything else
    virtual const WCHAR *get_Name() const = 0; // dto (and returns "Decal" for Decals, so always non-nullptr returned), but without going through BSTR conversion (necessary for COM)
@@ -77,8 +77,8 @@ public:
    ISelect *GetISelect() final { return nullptr; }
    const ISelect *GetISelect() const final { return nullptr; }
 
-   const WCHAR *get_Name() const final;
-   STDMETHOD(get_Name)(BSTR *pVal);
+   const WCHAR *get_Name() const final { return L"Debug"; }
+   STDMETHOD(get_Name)(BSTR *pVal) { *pVal = SysAllocString(L"Debug"); return S_OK; }
 
    CodeViewer *m_pcv;
 };
@@ -492,8 +492,8 @@ public:
    Collection();
 
    // IScriptable
-   const WCHAR *get_Name() const final;
-   STDMETHOD(get_Name)(BSTR *pVal);
+   const WCHAR *get_Name() const final { return m_wzName; }
+   STDMETHOD(get_Name)(BSTR *pVal) { *pVal = SysAllocString(m_wzName); return S_OK; }
    IDispatch *GetDispatch() final { return (IDispatch *)this; }
    const IDispatch *GetDispatch() const final { return (const IDispatch *)this; }
 
