@@ -89,8 +89,12 @@ FIXES:
 
 - reduce startup time (or even potential freezes/deadlocks) for large fade-speed bulb values
 
+- remove some of the limits (like maximum line length) of the code view/script editor
+
 - note that the support for ancient windows versions (e.g. Windows XP) for the DX9 build has been removed in order to be able to use newer compilers
 - due to this, VPX now allows to use the C++20 language feature set, which means that the windows build system requires Visual Studio 2019 or newer
+
+- no need anymore to download the DirectX9 SDK/dlls, its all packaged into VPX now
 
 - SDL2 code was updated and modernized to SDL3
 
