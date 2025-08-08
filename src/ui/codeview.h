@@ -18,8 +18,7 @@
 #endif
 #endif
 
-#define MAX_FIND_LENGTH 81
-#define MAX_LINE_LENGTH 2048
+#define MAX_FIND_LENGTH 81 // from MS docs: The buffer should be at least 80 characters long (for find/replace)
 
 enum SecurityLevelEnum
 {
@@ -143,8 +142,7 @@ public:
 
    HRESULT AddTemporaryItem(const BSTR bstr, IDispatch * const pdisp);
 
-   STDMETHOD(GetItemInfo)(LPCOLESTR pstrName, DWORD dwReturnMask,
-      IUnknown **ppiunkItem, ITypeInfo **ppti);
+   STDMETHOD(GetItemInfo)(LPCOLESTR pstrName, DWORD dwReturnMask, IUnknown **ppiunkItem, ITypeInfo **ppti);
 
    STDMETHOD(OnScriptError)(IActiveScriptError *pscripterror);
 
@@ -272,7 +270,7 @@ public:
    void UpdateRegWithPrefs();
    void UpdatePrefsfromReg();
 
-   void GetWordUnderCaret();
+   size_t GetWordUnderCaret(char *buf);
 
    void ListEventsFromItem();
    void FindCodeFromEvent();
@@ -305,6 +303,8 @@ public:
 
    SaveDirtyState m_sdsDirty;
    bool m_ignoreDirty;
+
+   bool m_warn_on_dupes = false;
 
    bool m_scriptError; // Whether a script error has occured - used for polling from the game
 
@@ -360,7 +360,6 @@ private:
    BOOL ParseClickEvents(const int id, const SCNotification *pSCN);
    BOOL ParseSelChangeEvent(const int id, const SCNotification *pSCN);
 
-   bool ParseOKLineLength(const size_t LineLen);
    string ParseDelimtByColon(string &wholeline);
    void ParseFindConstruct(size_t &Pos, const string &UCLine, WordType &Type, int &ConstructSize);
    bool ParseStructureName(fi_vector<UserData> &ListIn, const UserData &ud, const string &UCline, const string &line, const int Lineno);
@@ -413,6 +412,11 @@ private:
    FINDREPLACE m_findreplacestruct;
    char szFindString[MAX_FIND_LENGTH];
    char szReplaceString[MAX_FIND_LENGTH];
+   char szCaretTextBuff[MAX_FIND_LENGTH];
+
+#ifndef __STANDALONE__
+   UINT m_findMsgString; // Windows message for the FindText dialog
+#endif
 
    VectorSortString<CodeViewDispatch*> m_vcvdTemp; // Objects added through script
 
@@ -439,9 +443,6 @@ private:
    fi_vector<UserData> m_currentMembers;
    string m_autoCompString;
    string m_autoCompMembersString;
-#ifndef __STANDALONE__
-   Sci_TextRange m_currentConstruct;
-#endif
 
    HWND m_hwndItemList;
    HWND m_hwndItemText;

@@ -1905,7 +1905,8 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
          {
          case IDOK:
          {
-            char szFileName[MAXSTRING] = { 0 };
+            char szFileName[MAXSTRING];
+            szFileName[0] = '\0';
 
             GetDlgItemText(hwndDlg, IDC_FILENAME_EDIT, szFileName, MAXSTRING);
             if (szFileName[0] == '\0')

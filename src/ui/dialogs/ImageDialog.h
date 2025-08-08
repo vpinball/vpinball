@@ -33,7 +33,7 @@ private:
    void AddToolTip(const char* const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd);
 
    void ListImages(HWND hwndListView);
-   int AddListImage(HWND hwndListView, Texture *const ppi);
+   int AddListImage(HWND hwndListView, const Texture *const ppi);
 
    static int m_columnSortOrder;
    static bool m_doNotChange;  // to avoid triggering LVN_ITEMCHANGING or LVN_ITEMCHANGED code on deletion

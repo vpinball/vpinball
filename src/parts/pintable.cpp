@@ -1755,7 +1755,8 @@ bool PinTable::IsNameUnique(const wstring& wzName) const
 
 void PinTable::GetUniqueName(const ItemTypeEnum type, WCHAR *const wzUniqueName, const size_t wzUniqueName_maxlength) const
 {
-   WCHAR wzRoot[256] = { 0 };
+   WCHAR wzRoot[256];
+   wzRoot[0] = L'\0';
    GetTypeNameForType(type, wzRoot);
    GetUniqueName(wzRoot, wzUniqueName, wzUniqueName_maxlength);
 }
@@ -3250,7 +3251,8 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
             }
             if (loadfileversion > CURRENT_FILE_FORMAT_VERSION)
             {
-               char errorMsg[MAX_PATH] = { 0 };
+               char errorMsg[256];
+               errorMsg[0] = '\0';
                sprintf_s(errorMsg, sizeof(errorMsg), "This table was saved with file version %i.%02i and is newer than the supported file version %i.%02i!\nYou might get problems loading/playing it, so please update to the latest VPX at https://github.com/vpinball/vpinball/releases!", loadfileversion / 100, loadfileversion % 100, CURRENT_FILE_FORMAT_VERSION / 100, CURRENT_FILE_FORMAT_VERSION % 100);
                ShowError(errorMsg);
                /*

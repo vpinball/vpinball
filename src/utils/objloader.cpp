@@ -321,7 +321,6 @@ void ObjLoader::Save(const string& filename, const string& description, const Me
       const std::size_t pos = filename.find_last_of('.');
       assert(pos != string::npos);
       const string name = filename.substr(0, pos);
-      char number[32] = { 0 };
       for (unsigned int i = 0; i < (unsigned int)mesh.m_animationFrames.size(); i++)
       {
          vector<Vertex3D_NoTex2> vertsTmp = mesh.m_vertices;
@@ -336,6 +335,7 @@ void ObjLoader::Save(const string& filename, const string& description, const Me
             vertsTmp[t].ny = vi.ny;
             vertsTmp[t].nz = vi.nz;
          }
+         char number[16] = { 0 };
          sprintf_s(number, sizeof(number), "%05u", i);
          const string fname = name + '_' + number + ".obj";
          ExportStart(fname);

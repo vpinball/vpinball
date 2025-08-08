@@ -839,14 +839,13 @@ void ImageDialog::ListImages(HWND hwndListView)
 {
    CCO(PinTable) *const pt = g_pvp->GetActiveTable();
    if (pt)
-      for (auto img : pt->m_vimage)
+      for (const auto img : pt->m_vimage)
          AddListImage(hwndListView, img);
 }
 
-int ImageDialog::AddListImage(HWND hwndListView, Texture *const ppi)
+int ImageDialog::AddListImage(HWND hwndListView, const Texture *const ppi)
 {
 #ifndef __STANDALONE__
-   char sizeString[MAXTOKEN];
    constexpr char usedStringYes[] = "X";
    constexpr char usedStringNo[] = " ";
 
@@ -857,18 +856,21 @@ int ImageDialog::AddListImage(HWND hwndListView, Texture *const ppi)
    lvitem.pszText = (LPSTR)ppi->m_name.c_str();
    lvitem.lParam = (LPARAM)ppi;
 
-   sprintf_s(sizeString, std::size(sizeString), "%ix%i", ppi->m_width, ppi->m_height);
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
    ListView_SetItemText(hwndListView, index, 1, (LPSTR)ppi->GetFilePath().c_str());
-   ListView_SetItemText(hwndListView, index, 2, sizeString);
+   const string sizeString = std::to_string(ppi->m_width) + 'x' + std::to_string(ppi->m_height);
+   ListView_SetItemText(hwndListView, index, 2, (LPSTR)sizeString.c_str());
    ListView_SetItemText(hwndListView, index, 3, (LPSTR)usedStringNo);
 
+   {
+   char sizeString[MAXTOKEN];
    char *const sizeConv2 = StrFormatByteSize64(ppi->GetFileSize(), sizeString, MAXTOKEN);
    ListView_SetItemText(hwndListView, index, 4, sizeConv2);
 
    char *const sizeConv = StrFormatByteSize64(ppi->GetEstimatedGPUSize(), sizeString, MAXTOKEN);
    ListView_SetItemText(hwndListView, index, 5, sizeConv);
+   }
 
    const char *format = ppi->IsHDR() ? (ppi->IsOpaque() ? "RGB_ HDR" : "RGBA HDR") : (ppi->IsOpaque() ? "RGB_" : "RGBA");
    ListView_SetItemText(hwndListView, index, 6, (LPSTR)format);

@@ -149,12 +149,12 @@ void SoundDialog::ListSounds()
    ListView_DeleteAllItems(hSoundList);
    CCO(PinTable) *const pt = g_pvp->GetActiveTable();
    if (pt)
-      for (auto& sound : pt->m_vsound)
+      for (const auto sound : pt->m_vsound)
          AddListSound(sound);
 }
 
 
-int SoundDialog::AddListSound(VPX::Sound *const pps)
+int SoundDialog::AddListSound(const VPX::Sound *const pps)
 {
    LVITEM lvitem;
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
