@@ -3341,8 +3341,8 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                   if (pps)
                   {
                      // search for duplicate names, do not load dupes
-                     for (size_t i = 0; i < m_vsound.size(); ++i)
-                        if (m_vsound[i]->GetName() == pps->GetName())
+                     for (size_t i2 = 0; i2 < m_vsound.size(); ++i2)
+                        if (m_vsound[i2]->GetName() == pps->GetName())
                         {
                            PLOGE << "Duplicate sound name found: " << pps->GetName() << ", not loading it!";
                            delete pps;

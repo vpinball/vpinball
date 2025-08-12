@@ -2388,25 +2388,16 @@ bool CodeViewer::FControlMarkedSafe(const CONFIRMSAFETY *pcs)
 #ifndef __STANDALONE__
    IObjectSafety *pios = nullptr;
 
-   if (FAILED(pcs->pUnk->QueryInterface(IID_IObjectSafety, (void **)&pios)))
-      goto LError;
-
    DWORD supported, enabled;
-   if (FAILED(pios->GetInterfaceSafetyOptions(IID_IDispatch, &supported, &enabled)))
-      goto LError;
-
-   if (!(supported & INTERFACESAFE_FOR_UNTRUSTED_CALLER) || !(supported & INTERFACESAFE_FOR_UNTRUSTED_DATA))
-      goto LError;
-
-   if (!(enabled & INTERFACESAFE_FOR_UNTRUSTED_CALLER) || !(enabled & INTERFACESAFE_FOR_UNTRUSTED_DATA))
+   if (SUCCEEDED(pcs->pUnk->QueryInterface(IID_IObjectSafety, (void **)&pios)) &&
+       SUCCEEDED(pios->GetInterfaceSafetyOptions(IID_IDispatch, &supported, &enabled)) &&
+       (supported & INTERFACESAFE_FOR_UNTRUSTED_CALLER) && (supported & INTERFACESAFE_FOR_UNTRUSTED_DATA))
    {
-      if (FAILED(pios->SetInterfaceSafetyOptions(IID_IDispatch, supported, INTERFACESAFE_FOR_UNTRUSTED_CALLER | INTERFACESAFE_FOR_UNTRUSTED_DATA)))
-         goto LError;
+      // either it is already enabled, or we could enable it
+      if (((enabled & INTERFACESAFE_FOR_UNTRUSTED_CALLER) && (enabled & INTERFACESAFE_FOR_UNTRUSTED_DATA)) ||
+          SUCCEEDED(pios->SetInterfaceSafetyOptions(IID_IDispatch, supported, INTERFACESAFE_FOR_UNTRUSTED_CALLER | INTERFACESAFE_FOR_UNTRUSTED_DATA)))
+         safe = true;
    }
-
-   safe = true;
-
-LError:
 
    if (pios)
       pios->Release();
@@ -2415,19 +2406,16 @@ LError:
    return safe;
 }
 
-bool CodeViewer::FUserManuallyOkaysControl(const CONFIRMSAFETY *pcs)
+bool CodeViewer::FUserManuallyOkaysControl(const CONFIRMSAFETY *pcs) const
 {
 #ifndef __STANDALONE__
    OLECHAR *wzT;
    if (FAILED(OleRegGetUserType(pcs->clsid, USERCLASSTYPE_FULL, &wzT)))
       return false;
 
-   const string szName = MakeString(wzT);
    const LocalString ls1(IDS_UNSECURECONTROL1);
    const LocalString ls2(IDS_UNSECURECONTROL2);
-   const string szT = ls1.m_szbuffer + szName + ls2.m_szbuffer;
-
-   const int ans = MessageBox(szT.c_str(), "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
+   const int ans = MessageBox((ls1.m_szbuffer + MakeString(wzT) + ls2.m_szbuffer).c_str(), "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
 
    return (ans == IDYES);
 #else

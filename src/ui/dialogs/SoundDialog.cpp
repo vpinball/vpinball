@@ -6,9 +6,9 @@
 
 typedef struct _tagSORTDATA
 {
-    HWND hwndList;
-    int subItemIndex;
-    int sortUpDown;
+   HWND hwndList;
+   int subItemIndex;
+   int sortUpDown;
 } SORTDATA;
 
 extern SORTDATA SortData;
@@ -28,14 +28,14 @@ SoundDialog::~SoundDialog()
 
 void SoundDialog::OnDestroy()
 {
-    CDialog::OnDestroy();
+   CDialog::OnDestroy();
 }
 
 void SoundDialog::OnClose()
 {
    m_audioPlayer = nullptr;
-    SavePosition();
-    CDialog::OnClose();
+   SavePosition();
+   CDialog::OnClose();
 }
 
 static long GetSystemDPI()
@@ -58,8 +58,7 @@ static int DPIValue(int value)
 
 BOOL SoundDialog::OnInitDialog()
 {
-   m_audioPlayer = std::make_unique<VPX::AudioPlayer>(g_pvp->m_settings);
-    CCO( PinTable ) * const pt = g_pvp->GetActiveTable();
+    m_audioPlayer = std::make_unique<VPX::AudioPlayer>(g_pvp->m_settings);
     const HWND toolTipHwnd = CreateWindowEx(
       0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr, g_pvp->theInstance, nullptr);
     hSoundList = GetDlgItem( IDC_SOUNDLIST ).GetHwnd();
@@ -337,13 +336,13 @@ BOOL SoundDialog::OnCommand( WPARAM wParam, LPARAM lParam )
 
 void SoundDialog::OnOK()
 {
-    // do not call CDialog::OnOk() here because if you rename sounds keys like backspace or escape in rename mode cause an IDOK message and this function is called
+   // do not call CDialog::OnOk() here because if you rename sounds keys like backspace or escape in rename mode cause an IDOK message and this function is called
 }
 
 void SoundDialog::OnCancel()
 {
-    SavePosition();
-    CDialog::OnCancel();
+   SavePosition();
+   CDialog::OnCancel();
 }
 
 void SoundDialog::Import()
@@ -667,7 +666,7 @@ void SoundDialog::LoadPosition()
    const int w = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "SoundMngWidth"s, 1000);
    const int h = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "SoundMngHeight"s, 800);
    POINT p { x, y };
-   if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
+   if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != nullptr) // Do not apply if point is offscreen
       SetWindowPos( nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE );
 }
 

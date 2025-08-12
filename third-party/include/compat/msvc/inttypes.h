@@ -41,7 +41,7 @@
 #pragma once
 #endif
 
-#include "stdint.h"
+#include <cstdint>
 
 // 7.8 Format conversion of integer types
 

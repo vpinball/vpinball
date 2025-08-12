@@ -3,7 +3,6 @@
 #include "core/stdafx.h"
 #include "ui/resource.h"
 #include "MaterialDialog.h"
-#include "WhereUsedDialog.h"
 
 typedef struct _tagSORTDATA
 {
@@ -17,7 +16,7 @@ extern int CALLBACK MyCompProc( LPARAM lSortParam1, LPARAM lSortParam2, LPARAM l
 
 int MaterialDialog::m_columnSortOrder;
 bool MaterialDialog::m_deletingItem;
-WhereUsedDialog m_whereUsedDlg_Materials;
+WhereUsedDialog MaterialDialog::m_whereUsedDlg_Materials;
 
 void MaterialDialog::EnableAllMaterialDialogItems(const BOOL e)
 {

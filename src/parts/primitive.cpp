@@ -1067,7 +1067,7 @@ void Primitive::RenderSetup(RenderDevice *device)
       vector<Primitive *> prims;
       for (int i = 0; i < collection->m_visel.size(); i++)
       {
-         const ISelect *const pisel = collection->m_visel.ElementAt(i);
+         ISelect *const pisel = collection->m_visel.ElementAt(i);
          if (pisel->GetItemType() != eItemPrimitive)
             continue;
 

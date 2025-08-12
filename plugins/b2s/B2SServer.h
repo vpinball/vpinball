@@ -2,8 +2,8 @@
 
 #include "common.h"
 
-#include <stdint.h>
-#include <limits.h>
+#include <cstdint>
+#include <climits>
 
 namespace B2S {
 

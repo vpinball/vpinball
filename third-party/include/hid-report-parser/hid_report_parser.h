@@ -9,9 +9,9 @@
 
 #pragma once
 
-#include <assert.h>
-#include <string.h>
-#include <stdint.h>
+#include <cassert>
+#include <cstring>
+#include <cstdint>
 #include <vector>
 #include <map>
 #include <set>

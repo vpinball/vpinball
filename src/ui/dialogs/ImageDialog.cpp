@@ -3,13 +3,12 @@
 #include "core/stdafx.h"
 #include "ui/resource.h"
 #include "ImageDialog.h"
-#include "WhereUsedDialog.h"
 
 typedef struct _tagSORTDATA
 {
-    HWND hwndList;
-    int subItemIndex;
-    int sortUpDown;
+   HWND hwndList;
+   int subItemIndex;
+   int sortUpDown;
 } SORTDATA;
 
 extern SORTDATA SortData;
@@ -17,7 +16,7 @@ extern int CALLBACK MyCompProc( LPARAM lSortParam1, LPARAM lSortParam2, LPARAM l
 extern int CALLBACK MyCompProcMemValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption);
 int ImageDialog::m_columnSortOrder;
 bool ImageDialog::m_doNotChange;
-WhereUsedDialog m_whereUsedDlg_Images;
+WhereUsedDialog ImageDialog::m_whereUsedDlg_Images;
 
 ImageDialog::ImageDialog() : CDialog(IDD_IMAGEDIALOG)
 {
@@ -42,7 +41,7 @@ void ImageDialog::OnClose()
 }
 
 BOOL ImageDialog::OnInitDialog()
-{   
+{
    m_columnSortOrder = 1;
    return TRUE;
 }
@@ -434,8 +433,8 @@ void ImageDialog::OnOK()
 
 void ImageDialog::OnCancel()
 {
-    SavePosition();
-    CDialog::OnCancel();
+   SavePosition();
+   CDialog::OnCancel();
 }
 
 void ImageDialog::Import()
@@ -797,8 +796,8 @@ void ImageDialog::ReimportFrom()
                if (newImage != ppi)
                {
                   ListView_DeleteItem(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), sel);
-                  const int index = AddListImage(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), newImage);
-                  ListView_SetItemState(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), index, LVIS_SELECTED, LVIS_SELECTED);
+                  const int indexl = AddListImage(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), newImage);
+                  ListView_SetItemState(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), indexl, LVIS_SELECTED, LVIS_SELECTED);
                }
                pt->SetNonUndoableDirty(eSaveDirty);
                pt->UpdatePropertyImageList();
@@ -825,14 +824,14 @@ void ImageDialog::LoadPosition()
 
 void ImageDialog::SavePosition()
 {
-    const CRect rect = GetWindowRect();
+   const CRect rect = GetWindowRect();
 
-    g_pvp->m_settings.SaveValue(Settings::Editor, "ImageMngPosX"s, (int)rect.left);
-    g_pvp->m_settings.SaveValue(Settings::Editor, "ImageMngPosY"s, (int)rect.top);
-    const int w = rect.right - rect.left;
-    g_pvp->m_settings.SaveValue(Settings::Editor, "ImageMngWidth"s, w);
-    const int h = rect.bottom - rect.top;
-    g_pvp->m_settings.SaveValue(Settings::Editor, "ImageMngHeight"s, h);
+   g_pvp->m_settings.SaveValue(Settings::Editor, "ImageMngPosX"s, (int)rect.left);
+   g_pvp->m_settings.SaveValue(Settings::Editor, "ImageMngPosY"s, (int)rect.top);
+   const int w = rect.right - rect.left;
+   g_pvp->m_settings.SaveValue(Settings::Editor, "ImageMngWidth"s, w);
+   const int h = rect.bottom - rect.top;
+   g_pvp->m_settings.SaveValue(Settings::Editor, "ImageMngHeight"s, h);
 }
 
 void ImageDialog::ListImages(HWND hwndListView)
@@ -858,11 +857,12 @@ int ImageDialog::AddListImage(HWND hwndListView, const Texture *const ppi)
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
+   {
    ListView_SetItemText(hwndListView, index, 1, (LPSTR)ppi->GetFilePath().c_str());
    const string sizeString = std::to_string(ppi->m_width) + 'x' + std::to_string(ppi->m_height);
    ListView_SetItemText(hwndListView, index, 2, (LPSTR)sizeString.c_str());
    ListView_SetItemText(hwndListView, index, 3, (LPSTR)usedStringNo);
-
+   }
    {
    char sizeString[MAXTOKEN];
    char *const sizeConv2 = StrFormatByteSize64(ppi->GetFileSize(), sizeString, MAXTOKEN);
@@ -1002,11 +1002,11 @@ int ImageDialog::AddListImage(HWND hwndListView, const Texture *const ppi)
 
 void ImageDialog::AddToolTip(const char *const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)
 {
-    TOOLINFO toolInfo = { 0 };
-    toolInfo.cbSize = sizeof(toolInfo);
-    toolInfo.hwnd = parentHwnd;
-    toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
-    toolInfo.uId = (UINT_PTR)controlHwnd;
-    toolInfo.lpszText = (char *)text;
-    ::SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
+   TOOLINFO toolInfo = { 0 };
+   toolInfo.cbSize = sizeof(toolInfo);
+   toolInfo.hwnd = parentHwnd;
+   toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
+   toolInfo.uId = (UINT_PTR)controlHwnd;
+   toolInfo.lpszText = (char *)text;
+   ::SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
 }

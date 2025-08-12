@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "WhereUsedDialog.h"
+
 class ImageDialog final : public CDialog
 {
 public:
@@ -37,4 +39,5 @@ private:
 
    static int m_columnSortOrder;
    static bool m_doNotChange;  // to avoid triggering LVN_ITEMCHANGING or LVN_ITEMCHANGED code on deletion
+   static WhereUsedDialog m_whereUsedDlg_Images;
 };

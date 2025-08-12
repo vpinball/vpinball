@@ -66,7 +66,7 @@ public:
       COM_INTERFACE_ENTRY(IDispatch)
    END_COM_MAP()
 
-   STDMETHOD(Print)(VARIANT *pvar);
+   STDMETHOD(Print)(VARIANT *pvar) override;
 
 public:
    void Init(CodeViewer * const pcv);
@@ -78,7 +78,7 @@ public:
    const ISelect *GetISelect() const final { return nullptr; }
 
    const WCHAR *get_Name() const final { return L"Debug"; }
-   STDMETHOD(get_Name)(BSTR *pVal) { *pVal = SysAllocString(L"Debug"); return S_OK; }
+   STDMETHOD(get_Name)(BSTR *pVal) override { *pVal = SysAllocString(L"Debug"); return S_OK; }
 
    CodeViewer *m_pcv;
 };
@@ -142,9 +142,9 @@ public:
 
    HRESULT AddTemporaryItem(const BSTR bstr, IDispatch * const pdisp);
 
-   STDMETHOD(GetItemInfo)(LPCOLESTR pstrName, DWORD dwReturnMask, IUnknown **ppiunkItem, ITypeInfo **ppti);
+   STDMETHOD(GetItemInfo)(LPCOLESTR pstrName, DWORD dwReturnMask, IUnknown **ppiunkItem, ITypeInfo **ppti) override;
 
-   STDMETHOD(OnScriptError)(IActiveScriptError *pscripterror);
+   STDMETHOD(OnScriptError)(IActiveScriptError *pscripterror) override;
 
    STDMETHOD(GetLCID)(LCID *plcid) override
    {
@@ -166,7 +166,7 @@ public:
       return S_OK;
    }
 
-   STDMETHOD(OnEnterScript)();
+   STDMETHOD(OnEnterScript)() override;
 
    STDMETHODIMP OnLeaveScript() override;
 
@@ -191,21 +191,21 @@ public:
        ULONG uCharacterOffset,
        ULONG uNumChars,
        IDebugDocumentContext** ppsc
-       );
+       ) override;
 
    STDMETHOD(GetApplication)(
        IDebugApplication** ppda
-       );
+       ) override;
 
    STDMETHOD(GetRootApplicationNode)(
        IDebugApplicationNode** ppdanRoot
-       );
+       ) override;
 
    STDMETHOD(OnScriptErrorDebug)(
        IActiveScriptErrorDebug* pscripterror,
        BOOL* pfEnterDebugger,
        BOOL* pfCallOnScriptErrorWhenContinuing
-       );
+       ) override;
 
    // Internet Security interface
 
@@ -233,8 +233,8 @@ public:
 
    bool FControlAlreadyOkayed(const CONFIRMSAFETY *pcs);
    void AddControlToOkayedList(const CONFIRMSAFETY *pcs);
-   bool FControlMarkedSafe(const CONFIRMSAFETY *pcs);
-   bool FUserManuallyOkaysControl(const CONFIRMSAFETY *pcs);
+   static bool FControlMarkedSafe(const CONFIRMSAFETY *pcs);
+   bool FUserManuallyOkaysControl(const CONFIRMSAFETY *pcs) const;
 
    HRESULT STDMETHODCALLTYPE QueryService(
       REFGUID guidService,
@@ -493,7 +493,7 @@ public:
 
    // IScriptable
    const WCHAR *get_Name() const final { return m_wzName; }
-   STDMETHOD(get_Name)(BSTR *pVal) { *pVal = SysAllocString(m_wzName); return S_OK; }
+   STDMETHOD(get_Name)(BSTR *pVal) override { *pVal = SysAllocString(m_wzName); return S_OK; }
    IDispatch *GetDispatch() final { return (IDispatch *)this; }
    const IDispatch *GetDispatch() const final { return (const IDispatch *)this; }
 
@@ -505,9 +505,9 @@ public:
    HRESULT LoadData(IStream *pstm, PinTable *ppt, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
    bool LoadToken(const int id, BiffReader * const pbr) final;
 
-   STDMETHOD(get_Count)(LONG __RPC_FAR *plCount);
-   STDMETHOD(get_Item)(LONG index, IDispatch __RPC_FAR * __RPC_FAR *ppidisp);
-   STDMETHOD(get__NewEnum)(IUnknown** ppunk);
+   STDMETHOD(get_Count)(LONG __RPC_FAR *plCount) override;
+   STDMETHOD(get_Item)(LONG index, IDispatch __RPC_FAR * __RPC_FAR *ppidisp) override;
+   STDMETHOD(get__NewEnum)(IUnknown** ppunk) override;
 
    BEGIN_COM_MAP(Collection)
       COM_INTERFACE_ENTRY(IDispatch)
@@ -542,10 +542,10 @@ public:
 
    STDMETHOD(Init)(Collection *pcol);
 
-   STDMETHOD(Next)(ULONG celt, VARIANT __RPC_FAR *rgVar, ULONG __RPC_FAR *pCeltFetched);
-   STDMETHOD(Skip)(ULONG celt);
-   STDMETHOD(Reset)();
-   STDMETHOD(Clone)(IEnumVARIANT __RPC_FAR *__RPC_FAR *ppEnum);
+   STDMETHOD(Next)(ULONG celt, VARIANT __RPC_FAR *rgVar, ULONG __RPC_FAR *pCeltFetched) override;
+   STDMETHOD(Skip)(ULONG celt) override;
+   STDMETHOD(Reset)() override;
+   STDMETHOD(Clone)(IEnumVARIANT __RPC_FAR *__RPC_FAR *ppEnum) override;
 
 private:
    Collection *m_pcol;

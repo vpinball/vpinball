@@ -185,7 +185,7 @@ namespace BAM_Tracker {
 		{
 			LARGE_INTEGER stop;
 			QueryPerformanceCounter(&stop);
-			return ((stop.QuadPart - m_Time_StartValue.QuadPart) * m_Time_OneMillisecond);
+			return ((double)(stop.QuadPart - m_Time_StartValue.QuadPart) * m_Time_OneMillisecond);
 		}
 
 		/// <summary>
@@ -194,7 +194,7 @@ namespace BAM_Tracker {
 		/// <returns></returns>
 		bool IsBAMTrackerPresent() const
 		{
-			return m_pData != NULL;
+			return m_pData != nullptr;
 		}
 
 		/// <summary>

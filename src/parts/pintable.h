@@ -54,12 +54,6 @@ struct WhereUsedInfo
    string whereUsedPropertyName; // Property name where used (If searching for images this could be 'Image', 'Side Image' etc.  If search for materials this could be 'Material', 'Cap Material, 'Base Material' etc.
 };
 
-enum EnumWhereUsedSource // The 'Where Used' button appears on both the 'Image Manager' and the 'Materials Manager'.  The 'WhereUsed' dialog has a property of this enum type to 'remember' whether it's to display a list of images or materials.
-{
-   IMAGES,
-   MATERIALS
-};
-
 class ScriptGlobalTable;
 
 class PinTableMDI final : public CMDIChild

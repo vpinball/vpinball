@@ -4,6 +4,7 @@
 
 #include <wxx_commondlg.h>		// Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog 
 #include "ui/properties/PropertyDialog.h"
+#include "WhereUsedDialog.h"
 
 class MaterialDialog final : public CDialog
 {
@@ -31,6 +32,7 @@ private:
 
    static int m_columnSortOrder;
    static bool m_deletingItem;
+   static WhereUsedDialog m_whereUsedDlg_Materials;
 
    CColorDialog m_colorDialog;
    ColorButton m_colorButton1;

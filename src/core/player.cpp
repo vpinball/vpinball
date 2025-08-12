@@ -2336,16 +2336,16 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
                // We force to linear (no sRGB decoding) when rendering in sRGB colorspace, this suppose that the texture is in sRGB colorspace to get correct gamma (other situations would need dedicated shaders to handle them efficiently)
                assert(tex->m_format == BaseTexture::SRGB || tex->m_format == BaseTexture::SRGBA || tex->m_format == BaseTexture::SRGB565);
                // Disable filtering and mipmap generation if they are not needed
-               const SamplerFilter sf = (ctx->is2D && (srcW * ctx->outWidth == ctx->srcWidth * tex->width()) && (srcH * ctx->outHeight == ctx->srcHeight * tex->height())) ? SamplerFilter::SF_NONE : SamplerFilter::SF_UNDEFINED;
+               const SamplerFilter sf = (ctx->is2D && (srcW * ctx->outWidth == ctx->srcWidth * (float)tex->width()) && (srcH * ctx->outHeight == ctx->srcHeight * (float)tex->height())) ? SamplerFilter::SF_NONE : SamplerFilter::SF_UNDEFINED;
                rd->m_basicShader->SetTexture(SHADER_tex_base_color, tex.get(), !context->isLinearOutput, sf);
                const float vx1 = srcX / ctx->srcWidth;
                const float vy1 = srcY / ctx->srcHeight;
                const float vx2 = vx1 + srcW / ctx->srcWidth;
                const float vy2 = vy1 + srcH / ctx->srcHeight;
-               const float tx1 = texX / tex->width();
-               const float ty1 = 1.f - texY / tex->height();
-               const float tx2 = (texX + texW) / tex->width();
-               const float ty2 = 1.f - (texY + texH) / tex->height();
+               const float tx1 = texX / (float)tex->width();
+               const float ty1 = 1.f - texY / (float)tex->height();
+               const float tx2 = (texX + texW) / (float)tex->width();
+               const float ty2 = 1.f - (texY + texH) / (float)tex->height();
                Vertex3D_NoTex2 vertices[4] = {
                   { vx2, vy1, 0.f, 0.f, 0.f, 1.f, tx2, ty2 },
                   { vx1, vy1, 0.f, 0.f, 0.f, 1.f, tx1, ty2 },
@@ -2353,8 +2353,8 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
                   { vx1, vy2, 0.f, 0.f, 0.f, 1.f, tx1, ty1 } };
                if (rotation)
                {
-                  const float px = lerp(vx1, vx2, (pivotX - texX) / tex->width());
-                  const float py = lerp(vy1, vy2, (pivotY - texY) / tex->height());
+                  const float px = lerp(vx1, vx2, (pivotX - texX) / (float)tex->width());
+                  const float py = lerp(vy1, vy2, (pivotY - texY) / (float)tex->height());
                   Matrix3D matRot = 
                        Matrix3D::MatrixTranslate(-px, -py, 0.f)
                      * Matrix3D::MatrixRotateZ(rotation * (float)(M_PI / 180.0)) 
