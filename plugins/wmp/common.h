@@ -27,7 +27,7 @@ LPI_USE();
 #ifndef LOGD
 #define LOGD(...) LPI_LOGD(__VA_ARGS__)
 #define LOGI(...) LPI_LOGI(__VA_ARGS__)
-#define LOGW(...) LPI_LOGI(__VA_ARGS__)
+#define LOGW(...) LPI_LOGW(__VA_ARGS__)
 #define LOGE(...) LPI_LOGE(__VA_ARGS__)
 #endif
 

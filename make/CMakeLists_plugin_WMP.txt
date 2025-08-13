@@ -18,8 +18,9 @@ set(WMP_PLUGIN_SOURCES
    plugins/wmp/WMPControls.h
    plugins/wmp/WMPSettings.h
    plugins/wmp/WMPAudioPlayer.h
+   plugins/wmp/miniaudio_private.h
 
-   plugins/wmp/miniaudio_stub.c
+   plugins/wmp/miniaudio_private.c
 )
 
 if(BUILD_SHARED)

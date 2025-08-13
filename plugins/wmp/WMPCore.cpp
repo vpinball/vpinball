@@ -8,7 +8,7 @@ namespace WMP {
 WMPCore::WMPCore(MsgPluginAPI* msgApi, uint32_t endpointId, unsigned int onAudioUpdateId)
 {
    m_playState = wmppsUndefined;
-   m_pAudioPlayer = new WMPAudioPlayer(this, msgApi, endpointId, onAudioUpdateId);
+   m_pAudioPlayer = new WMPAudioPlayer(msgApi, endpointId, onAudioUpdateId);
 
    m_pAudioPlayer->UpdateVolume(m_volume, m_mute);
 

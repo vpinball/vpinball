@@ -13,9 +13,8 @@ struct AudioCallbackData {
 
 static uint32_t nextAudioResId = 1;
 
-WMPAudioPlayer::WMPAudioPlayer(WMPCore* pCore, MsgPluginAPI* msgApi, uint32_t endpointId, unsigned int onAudioUpdateId) 
-   : /*m_pCore(pCore)
-   ,*/ m_msgApi(msgApi)
+WMPAudioPlayer::WMPAudioPlayer(MsgPluginAPI* msgApi, uint32_t endpointId, unsigned int onAudioUpdateId) 
+   : m_msgApi(msgApi)
    , m_endpointId(endpointId)
    , m_onAudioUpdateId(onAudioUpdateId)
    , m_isLoaded(false)
@@ -28,15 +27,11 @@ WMPAudioPlayer::WMPAudioPlayer(WMPCore* pCore, MsgPluginAPI* msgApi, uint32_t en
 {
    m_audioResId.endpointId = m_endpointId;
    m_audioResId.resId = nextAudioResId++;
-
-   LOGI("WMP AudioPlayer created");
 }
 
 WMPAudioPlayer::~WMPAudioPlayer()
 {
    UnloadFile();
-
-   LOGI("WMP AudioPlayer destroyed");
 }
 
 bool WMPAudioPlayer::LoadFile(const string& filepath)
@@ -45,8 +40,8 @@ bool WMPAudioPlayer::LoadFile(const string& filepath)
 
    LOGI("Loading audio file: %s", filepath.c_str());
 
-   const ma_decoder_config config = ma_decoder_config_init(ma_format_f32, 0, 0);
-   ma_result result = ma_decoder_init_file(filepath.c_str(), &config, &m_decoder);
+   const ma_decoder_config config = wmp_ma_decoder_config_init(ma_format_f32, 0, 0);
+   ma_result result = wmp_ma_decoder_init_file(filepath.c_str(), &config, &m_decoder);
    if (result != MA_SUCCESS) {
       LOGE("Failed to initialize decoder for file: %s (error: %d)", filepath.c_str(), result);
       return false;
@@ -55,10 +50,10 @@ bool WMPAudioPlayer::LoadFile(const string& filepath)
    ma_format format;
    ma_uint32 channels;
    ma_uint32 sampleRate;
-   result = ma_decoder_get_data_format(&m_decoder, &format, &channels, &sampleRate, nullptr, 0);
+   result = wmp_ma_decoder_get_data_format(&m_decoder, &format, &channels, &sampleRate, nullptr, 0);
    if (result != MA_SUCCESS) {
       LOGE("Failed to get decoder format info");
-      ma_decoder_uninit(&m_decoder);
+      wmp_ma_decoder_uninit(&m_decoder);
       return false;
    }
 
@@ -76,7 +71,7 @@ void WMPAudioPlayer::UnloadFile()
    Stop();
 
    if (m_isLoaded) {
-      ma_decoder_uninit(&m_decoder);
+      wmp_ma_decoder_uninit(&m_decoder);
       m_isLoaded = false;
       m_loadedFile.clear();
       LOGI("Audio file unloaded");
@@ -122,7 +117,7 @@ void WMPAudioPlayer::Stop()
 
    StopStreaming();
    if (m_isLoaded)
-      ma_decoder_seek_to_pcm_frame(&m_decoder, 0);
+      wmp_ma_decoder_seek_to_pcm_frame(&m_decoder, 0);
 }
 
 double WMPAudioPlayer::GetPosition()
@@ -131,7 +126,7 @@ double WMPAudioPlayer::GetPosition()
       return 0.0;
 
    ma_uint64 currentFrame = 0;
-   const ma_result result = ma_decoder_get_cursor_in_pcm_frames(&m_decoder, &currentFrame);
+   const ma_result result = wmp_ma_decoder_get_cursor_in_pcm_frames(&m_decoder, &currentFrame);
 
    if (result != MA_SUCCESS) {
       LOGE("Failed to get decoder cursor position");
@@ -147,7 +142,7 @@ void WMPAudioPlayer::SetPosition(double positionInSeconds)
       return;
 
    const ma_uint64 targetFrame = (ma_uint64)(positionInSeconds * m_sampleRate);
-   const ma_result result = ma_decoder_seek_to_pcm_frame(&m_decoder, targetFrame);
+   const ma_result result = wmp_ma_decoder_seek_to_pcm_frame(&m_decoder, targetFrame);
 
    if (result == MA_SUCCESS) {
       LOGI("Seek to position: %.2f seconds (frame %llu)", positionInSeconds, targetFrame);
@@ -190,7 +185,7 @@ void WMPAudioPlayer::StartStreaming()
    
       while (!m_shouldStopStreaming && m_isPlaying && !m_isPaused) {
          ma_uint64 framesRead = 0;
-         const ma_result result = ma_decoder_read_pcm_frames(&m_decoder, audioBuffer, bufferSizeFrames, &framesRead);
+         const ma_result result = wmp_ma_decoder_read_pcm_frames(&m_decoder, audioBuffer, bufferSizeFrames, &framesRead);
 
          if (result != MA_SUCCESS || framesRead == 0) {
             LOGI("End of audio stream reached");
