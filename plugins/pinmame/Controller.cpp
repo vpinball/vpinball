@@ -9,7 +9,7 @@ Controller::Controller(MsgPluginAPI* api, unsigned int endpointId, PinmameConfig
    , m_endpointId(endpointId)
 {
    PinmameSetConfig(&config);
-   PinmameSetSoundMode(PINMAME_SOUND_MODE_DEFAULT);
+   PinmameSetSoundMode(PINMAME_SOUND_MODE_ALTSOUND);
    // PinmameSetDmdMode(PINMAME_DMD_MODE_RAW); // Unneeded as we use libpinmame controller messages
    PinmameSetHandleKeyboard(0);
    PinmameSetHandleMechanics(0xFF);

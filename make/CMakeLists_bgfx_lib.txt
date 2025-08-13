@@ -158,6 +158,7 @@ target_link_libraries(vpinball PUBLIC
    swresample
    swscale
    zip
+   AltSoundPlugin
    AlphaDMDPlugin
    B2SPlugin
    B2SLegacyPlugin
@@ -176,7 +177,6 @@ target_link_libraries(vpinball PUBLIC
 
 if(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator")
    target_link_libraries(vpinball PUBLIC
-      bass
       freetype
       harfbuzz
       bz2
