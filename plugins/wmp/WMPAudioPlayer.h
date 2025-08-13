@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common.h"
-#include <miniaudio/miniaudio.h>
+#include "miniaudio_private.h"
 #include <thread>
 #include <atomic>
 
@@ -12,7 +12,7 @@ class WMPCore;
 class WMPAudioPlayer
 {
 public:
-   WMPAudioPlayer(WMPCore* core, MsgPluginAPI* msgApi, uint32_t endpointId, unsigned int onAudioUpdateId);
+   WMPAudioPlayer(MsgPluginAPI* msgApi, uint32_t endpointId, unsigned int onAudioUpdateId);
    ~WMPAudioPlayer();
 
    bool LoadFile(const string& filepath);
@@ -34,7 +34,6 @@ private:
    void StopStreaming();
    void SendAudioChunk(const float* samples, size_t frameCount);
 
-   //WMPCore* m_pCore;
    MsgPluginAPI* const m_msgApi;
    const uint32_t m_endpointId;
    const unsigned int m_onAudioUpdateId;
