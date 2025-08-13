@@ -474,6 +474,14 @@ fun SettingsScreen(
 
                         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
+                        SwitchRow(
+                            label = "AltSound",
+                            isChecked = viewModel.pluginAltSound,
+                            onCheckedChange = { viewModel.handlePluginAltSound(value = it) },
+                        )
+
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
                         SwitchRow(label = "B2S", isChecked = viewModel.pluginB2S, onCheckedChange = { viewModel.handlePluginB2S(value = it) })
 
                         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))

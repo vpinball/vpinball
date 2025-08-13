@@ -42,8 +42,6 @@
 		C194FC822C372668009027E4 /* ActivityViewControllerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C194FC812C372668009027E4 /* ActivityViewControllerView.swift */; };
 		C19651892C46EE31002BAED9 /* VPinballFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C19651872C46EE31002BAED9 /* VPinballFramework.framework */; };
 		C196518A2C46EE31002BAED9 /* VPinballFramework.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C19651872C46EE31002BAED9 /* VPinballFramework.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		C196518B2C46EE31002BAED9 /* BassFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C19651882C46EE31002BAED9 /* BassFramework.framework */; };
-		C196518C2C46EE31002BAED9 /* BassFramework.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C19651882C46EE31002BAED9 /* BassFramework.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		C1A1153A2C8A7D100068BF3E /* TouchOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A115392C8A7D100068BF3E /* TouchOverlayView.swift */; };
 		C1A1153C2C8BE8200068BF3E /* TouchInstructionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A1153B2C8BE8200068BF3E /* TouchInstructionsView.swift */; };
 		C1A1153E2C8C69210068BF3E /* SettingsEnvironmentLightingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A1153D2C8C69210068BF3E /* SettingsEnvironmentLightingView.swift */; };
@@ -74,7 +72,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				C196518C2C46EE31002BAED9 /* BassFramework.framework in Embed Frameworks */,
 				C196518A2C46EE31002BAED9 /* VPinballFramework.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -120,7 +117,6 @@
 		C1920AFB2C6A281A00483104 /* TablePlaceholderImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TablePlaceholderImage.swift; sourceTree = "<group>"; };
 		C194FC812C372668009027E4 /* ActivityViewControllerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ActivityViewControllerView.swift; sourceTree = "<group>"; };
 		C19651872C46EE31002BAED9 /* VPinballFramework.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VPinballFramework.framework; path = VPinball/Frameworks/VPinballFramework.framework; sourceTree = "<group>"; };
-		C19651882C46EE31002BAED9 /* BassFramework.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BassFramework.framework; path = VPinball/Frameworks/BassFramework.framework; sourceTree = "<group>"; };
 		C1A115392C8A7D100068BF3E /* TouchOverlayView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TouchOverlayView.swift; sourceTree = "<group>"; };
 		C1A1153B2C8BE8200068BF3E /* TouchInstructionsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TouchInstructionsView.swift; sourceTree = "<group>"; };
 		C1A1153D2C8C69210068BF3E /* SettingsEnvironmentLightingView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsEnvironmentLightingView.swift; sourceTree = "<group>"; };
@@ -138,7 +134,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C196518B2C46EE31002BAED9 /* BassFramework.framework in Frameworks */,
 				C19651892C46EE31002BAED9 /* VPinballFramework.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -257,7 +252,6 @@
 		C19651862C46EE31002BAED9 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				C19651882C46EE31002BAED9 /* BassFramework.framework */,
 				C19651872C46EE31002BAED9 /* VPinballFramework.framework */,
 				C120EA722CA703810048EB24 /* VPinballFramework.dSYM */,
 			);
@@ -374,7 +368,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "FRAMEWORK_PATH_VPINBALL=\"${PROJECT_DIR}/VPinball/Frameworks/VPinballFramework.framework/VPinballFramework\"\nFRAMEWORK_PATH_BASS=\"${PROJECT_DIR}/VPinball/Frameworks/BassFramework.framework/BassFramework\"\n\nif [[ \"$PLATFORM_NAME\" == *\"simulator\"* ]]; then\n   lipo -create \"${PROJECT_DIR}/../../build/ios-simulator-arm64/libvpinball.dylib\" \\\n      -o \"$FRAMEWORK_PATH_VPINBALL\"\nelse\n   lipo -create \"${PROJECT_DIR}/../../build/ios-arm64/libvpinball.dylib\" \\\n      -o \"$FRAMEWORK_PATH_VPINBALL\"\nfi\n\ninstall_name_tool -id @rpath/VPinballFramework.framework/VPinballFramework \\\n   \"$FRAMEWORK_PATH_VPINBALL\"\n   \ninstall_name_tool -change \"@rpath/libbass.dylib\" \"@rpath/BassFramework.framework/BassFramework\" \\\n   \"$FRAMEWORK_PATH_VPINBALL\"\n\nif [[ \"$DEPLOYMENT_POSTPROCESSING\" == \"YES\" ]]; then\n   dsymutil \"$FRAMEWORK_PATH_VPINBALL\" \\\n      -o \"${PROJECT_DIR}/VPinball/Frameworks/dSYM/VPinballFramework.dSYM\"\n   \n   strip -ur \"$FRAMEWORK_PATH_VPINBALL\"\nfi\n\nif [[ \"$CODE_SIGNING_ALLOWED\" == \"YES\" ]]; then\n   codesign --sign \"${EXPANDED_CODE_SIGN_IDENTITY_NAME}\" \\\n      --force --deep \"$FRAMEWORK_PATH_VPINBALL\"\nfi\n\nif [[ \"$PLATFORM_NAME\" == *\"simulator\"* ]]; then\n   lipo -create \"${PROJECT_DIR}/../../third-party/runtime-libs/ios-simulator-arm64/libbass.dylib\" \\\n      -o \"$FRAMEWORK_PATH_BASS\"\nelse\n   lipo -create \"${PROJECT_DIR}/../../third-party/runtime-libs/ios-arm64/libbass.dylib\" \\\n      -o \"$FRAMEWORK_PATH_BASS\"\nfi\n\ninstall_name_tool -id @rpath/BassFramework.framework/BassFramework \\\n   \"$FRAMEWORK_PATH_BASS\"\n\nif [[ \"$CODE_SIGNING_ALLOWED\" == \"YES\" ]]; then\n   codesign --sign \"${EXPANDED_CODE_SIGN_IDENTITY_NAME}\" \\\n      --force --deep \"$FRAMEWORK_PATH_BASS\"\nfi\n\nif [[ \"$PLATFORM_NAME\" == *\"simulator\"* ]]; then\n   exit 0\nfi\n";
+			shellScript = "FRAMEWORK_PATH_VPINBALL=\"${PROJECT_DIR}/VPinball/Frameworks/VPinballFramework.framework/VPinballFramework\"\n\nif [[ \"$PLATFORM_NAME\" == *\"simulator\"* ]]; then\n   lipo -create \"${PROJECT_DIR}/../../build/ios-simulator-arm64/libvpinball.dylib\" \\\n      -o \"$FRAMEWORK_PATH_VPINBALL\"\nelse\n   lipo -create \"${PROJECT_DIR}/../../build/ios-arm64/libvpinball.dylib\" \\\n      -o \"$FRAMEWORK_PATH_VPINBALL\"\nfi\n\ninstall_name_tool -id @rpath/VPinballFramework.framework/VPinballFramework \\\n   \"$FRAMEWORK_PATH_VPINBALL\"\n\nif [[ \"$DEPLOYMENT_POSTPROCESSING\" == \"YES\" ]]; then\n   dsymutil \"$FRAMEWORK_PATH_VPINBALL\" \\\n      -o \"${PROJECT_DIR}/VPinball/Frameworks/dSYM/VPinballFramework.dSYM\"\n   \n   strip -ur \"$FRAMEWORK_PATH_VPINBALL\"\nfi\n\nif [[ \"$CODE_SIGNING_ALLOWED\" == \"YES\" ]]; then\n   codesign --sign \"${EXPANDED_CODE_SIGN_IDENTITY_NAME}\" \\\n      --force --deep \"$FRAMEWORK_PATH_VPINBALL\"\nfi\n\nif [[ \"$PLATFORM_NAME\" == *\"simulator\"* ]]; then\n   exit 0\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
