@@ -24,6 +24,7 @@ enum VPinballSettingsSection: String {
     case tableOverride = "TableOverride"
     case tableOption = "TableOption"
     case pluginAlphaDMD = "Plugin.AlphaDMD"
+    case pluginAltSound = "Plugin.AltSound"
     case pluginB2S = "Plugin.B2S"
     case pluginB2SLegacy = "Plugin.B2SLegacy"
     case pluginDMDUtil = "Plugin.DMDUtil"
