@@ -257,6 +257,13 @@ void Settings::Validate(const bool addDefaults)
    SettingInt(Section::Player, "Stereo3D"s, STEREO_OFF, STEREO_OFF, STEREO_ANAGLYPH_10, "Stereo rendering mode"s);
 
    //////////////////////////////////////////////////////////////////////////
+   // Plugin.AltSound
+
+#ifdef __STANDALONE__
+   SettingBool(GetSection("Plugin.AltSound"), "Enable"s, true, ""s);
+#endif
+
+   //////////////////////////////////////////////////////////////////////////
    // Plugin.B2SLegacy
 
 #ifdef __STANDALONE__
