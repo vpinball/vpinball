@@ -13,11 +13,6 @@ using std::string;
 // VPX main API
 #include "VPXPlugin.h"
 
-LPI_USE();
-#define LOGD LPI_LOGD
-#define LOGI LPI_LOGI
-#define LOGE LPI_LOGE
-
 #ifdef _MSC_VER
 #define PATH_SEPARATOR_CHAR '\\'
 #else
@@ -25,6 +20,12 @@ LPI_USE();
 #endif
 
 namespace Serum {
+
+LPI_USE();
+#define LOGD LPI_LOGD
+#define LOGI LPI_LOGI
+#define LOGW LPI_LOGW
+#define LOGE LPI_LOGE
 
 void SetThreadName(const std::string& name);
 string find_case_insensitive_directory_path(const string& szPath);
