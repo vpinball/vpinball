@@ -43,6 +43,7 @@ static uint8_t tintB;
 LPI_USE();
 #define LOGD LPI_LOGD
 #define LOGI LPI_LOGI
+#define LOGW LPI_LOGW
 #define LOGE LPI_LOGE
 
 LPI_IMPLEMENT

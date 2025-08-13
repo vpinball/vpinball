@@ -16,7 +16,6 @@
 #include <filesystem>
 
 #include "LoggingPlugin.h"
-LPI_IMPLEMENT // Implement shared login support
 
 using namespace std::string_literals;
 
@@ -25,6 +24,8 @@ using namespace std::string_literals;
 #endif
 
 namespace Serum {
+
+LPI_IMPLEMENT
 
 ///////////////////////////////////////////////////////////////////////////////
 // Serum Colorization plugin
