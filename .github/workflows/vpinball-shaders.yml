@@ -41,7 +41,7 @@ jobs:
 
   shaders:
     name: Shaders
-    runs-on: windows-latest
+    runs-on: windows-2025
     needs: [ version ]
     steps:
       - uses: actions/checkout@v4
