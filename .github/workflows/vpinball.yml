@@ -12,7 +12,7 @@ defaults:
 jobs:
   version:
     name: Version
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       revision: ${{ steps.version.outputs.revision }}
       version_short: ${{ steps.version.outputs.version_short }}
@@ -51,16 +51,16 @@ jobs:
           - { os: windows-2025, type: BGFX, platform: windows, arch: x64, config: Debug }
           - { os: windows-2025, type: BGFX, platform: windows, arch: x86, config: Release }
           - { os: windows-2025, type: BGFX, platform: windows, arch: x86, config: Debug }
-          - { os: macos-latest, type: BGFX, platform: macos, arch: arm64, config: Release }
-          - { os: macos-latest, type: BGFX, platform: macos, arch: x64, config: Release }
-          - { os: ubuntu-latest, type: BGFX, platform: linux, arch: x64, config: Release }
+          - { os: macos-15, type: BGFX, platform: macos, arch: arm64, config: Release }
+          - { os: macos-15, type: BGFX, platform: macos, arch: x64, config: Release }
+          - { os: ubuntu-24.04, type: BGFX, platform: linux, arch: x64, config: Release }
           - { os: windows-2025, type: GL, platform: windows, arch: x64, config: Release }
           - { os: windows-2025, type: GL, platform: windows, arch: x86, config: Release }
           - { os: windows-2025, type: GL, platform: windows, arch: x64, config: Debug }
           - { os: windows-2025, type: GL, platform: windows, arch: x86, config: Debug }
-          - { os: macos-latest, type: GL, platform: macos, arch: arm64, config: Release }
-          - { os: macos-latest, type: GL, platform: macos, arch: x64, config: Release }
-          - { os: ubuntu-latest, type: GL, platform: linux, arch: x64, config: Release }
+          - { os: macos-15, type: GL, platform: macos, arch: arm64, config: Release }
+          - { os: macos-15, type: GL, platform: macos, arch: x64, config: Release }
+          - { os: ubuntu-24.04, type: GL, platform: linux, arch: x64, config: Release }
     steps:
       - if: (matrix.platform == 'windows')
         uses: microsoft/setup-msbuild@v2
