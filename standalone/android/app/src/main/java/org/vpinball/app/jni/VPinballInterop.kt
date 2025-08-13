@@ -29,6 +29,7 @@ enum class VPinballSettingsSection(val value: String) {
     TABLE_OVERRIDE("TableOverride"),
     TABLE_OPTION("TableOption"),
     PLUGIN_ALPHA_DMD("Plugin.AlphaDMD"),
+    PLUGIN_ALT_SOUND("Plugin.AltSound"),
     PLUGIN_B2S("Plugin.B2S"),
     PLUGIN_B2S_LEGACY("Plugin.B2SLegacy"),
     PLUGIN_DMD_UTIL("Plugin.DMDUtil"),
