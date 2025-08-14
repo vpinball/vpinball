@@ -248,7 +248,7 @@ void ISelect::GetTypeNameForType(const ItemTypeEnum type, WCHAR * const buf) con
    /*const int len =*/ LoadStringW(m_vpinball->theInstance, strID, buf, 256);
    buf[256-1] = L'\0'; // in case of truncation
  #else
-   wcscpy(buf, LocalStringW(strID).m_szbuffer);
+   wcscpy_s(buf, 256, LocalStringW(strID).m_szbuffer);
 #endif
 }
 
