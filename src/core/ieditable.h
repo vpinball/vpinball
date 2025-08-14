@@ -38,7 +38,7 @@ public:
 
 
 #define INITVBA(ItemType) \
-   virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR * const wzName) \
+   virtual HRESULT InitVBA(bool fNew, WCHAR * const wzName) \
    { \
       if (fNew && !wzName) /* setup a default unique name */ \
       { \
@@ -136,7 +136,7 @@ public:
 	virtual void Uncreate() {IEditable::Uncreate();} \
 	virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo); \
 	virtual ItemTypeEnum GetItemType() const { return ItemType; } \
-	virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey); \
+	virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey); \
 	virtual HRESULT InitPostLoad(); \
 	virtual bool LoadToken(const int id, BiffReader * const pbr); \
 	virtual IDispatch *GetDispatch() {return static_cast<IDispatch *>(this);} \
@@ -256,9 +256,9 @@ public:
 
    virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo) = 0;
    virtual void ClearForOverwrite() { }
-   virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey) = 0;
+   virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey) = 0;
    virtual HRESULT InitPostLoad() = 0;
-   virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR * const wzName) = 0;
+   virtual HRESULT InitVBA(bool fNew, WCHAR * const wzName) = 0;
    virtual ISelect *GetISelect() = 0;
    virtual const ISelect *GetISelect() const = 0;
    virtual void SetDefaults(const bool fromMouseClick) = 0;

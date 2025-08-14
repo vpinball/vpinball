@@ -286,11 +286,10 @@ HRESULT BiffWriter::WriteTag(const int id)
    return hr;
 }
 
-BiffReader::BiffReader(IStream *pistream, ILoadable *piloadable, void *ppassdata, const int version, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey)
+BiffReader::BiffReader(IStream *pistream, ILoadable *piloadable, const int version, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey)
 {
    m_pistream = pistream;
    m_piloadable = piloadable;
-   m_pdata = ppassdata;
    m_version = version;
 
    m_bytesinrecordremaining = 0;

@@ -32,7 +32,7 @@ HRESULT Bumper::Init(PinTable * const ptable, const float x, const float y, cons
    SetDefaults(fromMouseClick);
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
-   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
+   return forPlay ? S_OK : InitVBA(true, nullptr);
 }
 
 void Bumper::SetDefaults(const bool fromMouseClick)
@@ -741,15 +741,15 @@ HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveFo
 }
 
 
-HRESULT Bumper::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Bumper::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    SetDefaults(false);
-   BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
+
+   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
 
    m_ptable = ptable;
 
    br.Load();
-
    return S_OK;
 }
 
@@ -757,7 +757,7 @@ bool Bumper::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
+   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
    case FID(VCEN): pbr->GetVector2(m_d.m_vCenter); break;
    case FID(RADI): pbr->GetFloat(m_d.m_radius); break;
    case FID(MATR): pbr->GetString(m_d.m_szCapMaterial); break;

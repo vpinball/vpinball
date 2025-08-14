@@ -161,7 +161,7 @@ void IEditable::MarkForDelete()
 
 void IEditable::Undelete()
 {
-   InitVBA(fTrue, 0, (WCHAR *)this);
+   InitVBA(true, (WCHAR *)this);
 
    for (size_t i = 0; i < m_vCollection.size(); i++)
    {

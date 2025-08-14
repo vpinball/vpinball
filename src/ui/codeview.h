@@ -502,8 +502,9 @@ public:
 
    //ILoadable
    HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo);
-   HRESULT LoadData(IStream *pstm, PinTable *ppt, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
+   HRESULT LoadData(IStream *pstm, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
    bool LoadToken(const int id, BiffReader * const pbr) final;
+   HRESULT InitPostLoad(PinTable * const pt);
 
    STDMETHOD(get_Count)(LONG __RPC_FAR *plCount) override;
    STDMETHOD(get_Item)(LONG index, IDispatch __RPC_FAR * __RPC_FAR *ppidisp) override;
@@ -526,6 +527,9 @@ public:
    bool m_fireEvents;
    bool m_stopSingleEvents;
    bool m_groupElements;
+
+private:
+   vector<wstring> m_tmp_isel_name;
 };
 
 class OMCollectionEnum :

@@ -39,9 +39,9 @@ HRESULT RenderProbe::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool s
    return S_OK;
 }
 
-HRESULT RenderProbe::LoadData(IStream* pstm, PinTable* ppt, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT RenderProbe::LoadData(IStream* pstm, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
-   BiffReader br(pstm, this, ppt, version, hcrypthash, hcryptkey);
+   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
    br.Load();
    return S_OK;
 }

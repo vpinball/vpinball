@@ -58,7 +58,7 @@ HRESULT Rubber::Init(PinTable *const ptable, const float x, const float y, const
       }
    }
 
-   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
+   return forPlay ? S_OK : InitVBA(true, nullptr);
 }
 
 void Rubber::SetDefaults(const bool fromMouseClick)
@@ -789,11 +789,12 @@ HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveFo
    return S_OK;
 }
 
-HRESULT Rubber::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Rubber::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    SetDefaults(false);
    m_d.m_hitHeight = -1.0f;
-   BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
+
+   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
 
    m_ptable = ptable;
 
@@ -805,7 +806,7 @@ bool Rubber::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
+   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
    case FID(HTTP): pbr->GetFloat(m_d.m_height); break;
    case FID(HTHI): pbr->GetFloat(m_d.m_hitHeight); break;
    case FID(WDTP): pbr->GetInt(m_d.m_thickness); break;
@@ -831,7 +832,8 @@ bool Rubber::LoadToken(const int id, BiffReader * const pbr)
    case FID(OVPH): pbr->GetBool(m_d.m_overwritePhysics); break;
    default:
    {
-      LoadPointToken(id, pbr, pbr->m_version);
+      if (id == FID(DPNT))
+         LoadPointToken(pbr);
       ISelect::LoadToken(id, pbr);
       break;
    }

@@ -605,7 +605,7 @@ static void OnShowChanged(FlexDMD* pFlex)
 static void OnFlexDestroyed(FlexDMD* pFlex)
 {
    bool showChanged = pFlex->GetShow();
-   flexDmds.erase(std::remove(flexDmds.begin(), flexDmds.end(), pFlex), flexDmds.end());
+   std::erase(flexDmds, pFlex);
    if (showChanged)
       OnShowChanged(pFlex);
 }

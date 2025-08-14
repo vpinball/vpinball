@@ -127,7 +127,7 @@ HRESULT HitTarget::Init(PinTable *const ptable, const float x, const float y, co
    m_d.m_vPosition.y = y;
    m_hitEvent = false;
    UpdateStatusBarInfo();
-   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
+   return forPlay ? S_OK : InitVBA(true, nullptr);
 }
 
 void HitTarget::SetDefaults(const bool fromMouseClick)
@@ -849,11 +849,11 @@ HRESULT HitTarget::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool sav
    return S_OK;
 }
 
-HRESULT HitTarget::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT HitTarget::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    SetDefaults(false);
 
-   BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
+   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
 
    m_ptable = ptable;
 
@@ -867,7 +867,7 @@ bool HitTarget::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
+   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
    case FID(VPOS): pbr->GetVector3Padded(m_d.m_vPosition); break;
    case FID(VSIZ): pbr->GetVector3Padded(m_d.m_vSize); break;
    case FID(ROTZ): pbr->GetFloat(m_d.m_rotZ); break;

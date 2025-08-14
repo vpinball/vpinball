@@ -37,12 +37,14 @@ public:
 
    static IEditable* Create(ItemTypeEnum type)
    {
-      return FindOrFail(type)->createFunc();
+      const EditableInfo* const info = FindOrFail(type);
+      return info->createFunc ? info->createFunc() : nullptr;
    }
 
    static IEditable* CreateAndInit(ItemTypeEnum type, PinTable *pt, float x, float y)
    {
-      return FindOrFail(type)->createAndInitFunc(pt, x, y);
+      const EditableInfo* const info = FindOrFail(type);
+      return info->createAndInitFunc ? info->createAndInitFunc(pt, x, y) : nullptr;
    }
 
    static int GetTypeNameStringID(ItemTypeEnum type)
@@ -52,11 +54,10 @@ public:
 
    static ItemTypeEnum TypeFromToolID(int toolID)
    {
-      for (ankerl::unordered_dense::map<ItemTypeEnum, EditableInfo>::const_iterator it = m_map.begin(); it != m_map.end(); ++it)
-      {
-         if (it->second.toolID == toolID)
-            return it->second.type;
-      }
+      for (const auto& it : m_map)
+         if (it.second.toolID == toolID)
+            return it.second.type;
+
       return eItemInvalid;
    }
 
@@ -73,14 +74,15 @@ public:
 private:
    static ankerl::unordered_dense::map<ItemTypeEnum, EditableInfo> m_map;
 
-   static EditableInfo* FindOrFail(ItemTypeEnum type)
+   static const EditableInfo* FindOrFail(ItemTypeEnum type)
    {
-      const ankerl::unordered_dense::map<ItemTypeEnum, EditableInfo>::iterator it = m_map.find(type);
+      const ankerl::unordered_dense::map<ItemTypeEnum, EditableInfo>::const_iterator it = m_map.find(type);
       if (it == m_map.end())
       {
          ShowError("Editable type not found.");
          assert(false);
-         return nullptr;
+         static constexpr EditableInfo emptyinfo = {};
+         return &emptyinfo;
       }
       else
       {

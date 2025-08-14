@@ -122,8 +122,7 @@ void PinUndo::Undo()
 
    if (m_vur.size() == m_cleanpoint)
    {
-      const LocalString ls(IDS_UNDOPASTSAVE);
-      const int result = m_ptable->ShowMessageBox(ls.m_szbuffer);
+      const int result = m_ptable->ShowMessageBox(LocalString(IDS_UNDOPASTSAVE).m_szbuffer);
       if (result != IDYES)
          return;
    }
@@ -150,8 +149,7 @@ void PinUndo::Undo()
 
       pie->ClearForOverwrite();
 
-      int foo2;
-      pie->InitLoad(pstm, m_ptable, &foo2, CURRENT_FILE_FORMAT_VERSION, 0, 0);
+      pie->InitLoad(pstm, m_ptable, CURRENT_FILE_FORMAT_VERSION, 0, 0);
       pie->InitPostLoad();
       // Stream gets released when undo record is deleted
       //pstm->Release();

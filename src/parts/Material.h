@@ -221,9 +221,9 @@ public:
       return S_OK;
    }
 
-   HRESULT LoadData(IStream* pstm, PinTable* ppt, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+   HRESULT LoadData(IStream* pstm, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
    {
-      BiffReader br(pstm, this, ppt, version, hcrypthash, hcryptkey);
+      BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
       br.Load();
       return S_OK;
    }

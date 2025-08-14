@@ -47,7 +47,7 @@ public:
 class BiffReader final
 {
 public:
-   BiffReader(IStream *pistream, ILoadable *piloadable, void *ppassdata, const int version, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey);
+   BiffReader(IStream *pistream, ILoadable *piloadable, const int version, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey);
 
    int GetBytesInRecordRemaining() const { return m_bytesinrecordremaining; }
 
@@ -93,7 +93,6 @@ public:
    HRESULT Load(std::function<bool(const int id, BiffReader *const pbr)> processToken = nullptr);
 
    IStream *m_pistream;
-   void *m_pdata;
    int m_version;
 
    HCRYPTHASH m_hcrypthash;

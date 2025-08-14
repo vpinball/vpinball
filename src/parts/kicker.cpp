@@ -42,7 +42,7 @@ HRESULT Kicker::Init(PinTable *const ptable, const float x, const float y, const
    SetDefaults(fromMouseClick);
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
-   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
+   return forPlay ? S_OK : InitVBA(true, nullptr);
 }
 
 void Kicker::SetDefaults(const bool fromMouseClick)
@@ -557,11 +557,11 @@ HRESULT Kicker::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveFo
    return S_OK;
 }
 
-HRESULT Kicker::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Kicker::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    SetDefaults(false);
 
-   BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
+   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
 
    m_ptable = ptable;
 
@@ -573,7 +573,7 @@ bool Kicker::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
+   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
    case FID(VCEN): pbr->GetStruct(&m_d.m_vCenter, sizeof(Vertex2D)); break;
    case FID(RADI): pbr->GetFloat(m_d.m_radius); break;
    case FID(KSCT): pbr->GetFloat(m_d.m_scatter); break;

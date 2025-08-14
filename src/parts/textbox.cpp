@@ -44,7 +44,7 @@ HRESULT Textbox::Init(PinTable *const ptable, const float x, const float y, cons
    m_d.m_v1.y = y;
    m_d.m_v2.x = x + width;
    m_d.m_v2.y = y + height;
-   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
+   return forPlay ? S_OK : InitVBA(true, nullptr);
 }
 
 void Textbox::SetDefaults(const bool fromMouseClick)
@@ -196,11 +196,11 @@ HRESULT Textbox::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveF
    return S_OK;
 }
 
-HRESULT Textbox::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Textbox::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    SetDefaults(false);
 
-   BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
+   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
 
    m_ptable = ptable;
 
@@ -212,7 +212,7 @@ bool Textbox::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
+   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
    case FID(VER1): pbr->GetVector2(m_d.m_v1); break;
    case FID(VER2): pbr->GetVector2(m_d.m_v2); break;
    case FID(CLRB): pbr->GetInt(m_d.m_backcolor); break;
@@ -872,7 +872,8 @@ TTF_Font* Textbox::LoadFont()
 {
    TTF_Font* pFont = nullptr;
 
-   string fontName = string_replace_all(m_fontName, " "s, string());
+   string fontName = m_fontName;
+   std::erase(fontName, ' ');
 
    vector<string> styles;
    if (m_fontBold && m_fontItalic)

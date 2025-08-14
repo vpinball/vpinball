@@ -731,8 +731,7 @@ STDMETHODIMP CodeViewer::CleanUpScriptEngine()
          {
             PLOGE << "Script did not terminate within 5s after request. Forcing close of interpreter #" << m_pScript;
             EXCEPINFO eiInterrupt = {};
-            const LocalString ls(IDS_HANG);
-            eiInterrupt.bstrDescription = MakeWideBSTR(ls.m_szbuffer);
+            eiInterrupt.bstrDescription = MakeWideBSTR(LocalString(IDS_HANG).m_szbuffer);
             //eiInterrupt.scode = E_NOTIMPL;
             eiInterrupt.wCode = 2345;
             m_pScript->InterruptScriptThread(SCRIPTTHREADID_BASE /*SCRIPTTHREADID_ALL*/, &eiInterrupt, /*SCRIPTINTERRUPT_DEBUG*/ SCRIPTINTERRUPT_RAISEEXCEPTION);
@@ -822,10 +821,7 @@ void CodeViewer::SetCaption(const string& szCaption)
    if (!external_script_name.empty())
       szT = "MODIFYING EXTERNAL SCRIPT: " + external_script_name;
    else
-   {
-      const LocalString ls(IDS_SCRIPT);
-      szT = szCaption + ' ' + ls.m_szbuffer;
-   }
+      szT = szCaption + ' ' + LocalString(IDS_SCRIPT).m_szbuffer;
 #ifndef __STANDALONE__
    SetWindowText(szT.c_str());
 #endif
@@ -1719,18 +1715,12 @@ void CodeViewer::Find(const FINDREPLACE * const pfr)
       if (!wrapped)
          ::SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)"");
       else
-      {
-         const LocalString ls(IDS_FINDLOOPED);
-         ::SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)ls.m_szbuffer);
-      }
+         ::SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)LocalString(IDS_FINDLOOPED).m_szbuffer);
    }
    else
    {
-      const LocalString ls(IDS_FINDFAILED);
-      const LocalString ls2(IDS_FINDFAILED2);
-      const string szT = string(ls.m_szbuffer) + pfr->lpstrFindWhat + ls2.m_szbuffer;
       MessageBeep(MB_ICONEXCLAMATION);
-      ::SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)szT.c_str());
+      ::SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)(string(LocalString(IDS_FINDFAILED).m_szbuffer) + pfr->lpstrFindWhat + LocalString(IDS_FINDFAILED2).m_szbuffer).c_str());
    }
 #endif
 }
@@ -1758,22 +1748,11 @@ void CodeViewer::Replace(const FINDREPLACE * const pfr)
       const size_t cpMatch = ::SendMessage(m_hwndScintilla, SCI_FINDTEXT, (WPARAM)(pfr->Flags), (LPARAM)&ft);
       if ((SSIZE_T)cpMatch < 0)
       {
+         MessageBeep(MB_ICONEXCLAMATION);
          if (cszReplaced == 0)
-         {
-            const LocalString ls(IDS_FINDFAILED);
-            const LocalString ls2(IDS_FINDFAILED2);
-            const string szT = string(ls.m_szbuffer) + ft.lpstrText + ls2.m_szbuffer;
-            MessageBeep(MB_ICONEXCLAMATION);
-            ::SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)szT.c_str());
-         }
+            ::SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)(string(LocalString(IDS_FINDFAILED).m_szbuffer) + ft.lpstrText + LocalString(IDS_FINDFAILED2).m_szbuffer).c_str());
          else
-         {
-            const LocalString ls(IDS_REPLACEALL);
-            const LocalString ls2(IDS_REPLACEALL2);
-            const string szT = string(ls.m_szbuffer) + ' ' + std::to_string(cszReplaced) + ' ' + ls2.m_szbuffer;
-            MessageBeep(MB_ICONEXCLAMATION);
-            ::SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)szT.c_str());
-         }
+            ::SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)(string(LocalString(IDS_REPLACEALL).m_szbuffer) + ' ' + std::to_string(cszReplaced) + ' ' + LocalString(IDS_REPLACEALL2).m_szbuffer).c_str());
       }
       else
       {
@@ -2413,10 +2392,7 @@ bool CodeViewer::FUserManuallyOkaysControl(const CONFIRMSAFETY *pcs) const
    if (FAILED(OleRegGetUserType(pcs->clsid, USERCLASSTYPE_FULL, &wzT)))
       return false;
 
-   const LocalString ls1(IDS_UNSECURECONTROL1);
-   const LocalString ls2(IDS_UNSECURECONTROL2);
-   const int ans = MessageBox((ls1.m_szbuffer + MakeString(wzT) + ls2.m_szbuffer).c_str(), "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
-
+   const int ans = MessageBox((LocalString(IDS_UNSECURECONTROL1).m_szbuffer + MakeString(wzT) + LocalString(IDS_UNSECURECONTROL2).m_szbuffer).c_str(), "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
    return (ans == IDYES);
 #else
    return false;
@@ -3896,9 +3872,9 @@ HRESULT Collection::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool sa
    return S_OK;
 }
 
-HRESULT Collection::LoadData(IStream *pstm, PinTable *ppt, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Collection::LoadData(IStream *pstm, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
-   BiffReader br(pstm, this, ppt, version, hcrypthash, hcryptkey);
+   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
 
    br.Load();
    return S_OK;
@@ -3922,31 +3898,38 @@ bool Collection::LoadToken(const int id, BiffReader * const pbr)
    case FID(GREL): pbr->GetBool(m_groupElements); break;
    case FID(ITEM):
    {
-      //!! BUG - item list must be up to date in table (loaded) for the reverse name lookup to work
-      const PinTable * const ppt = (PinTable *)pbr->m_pdata;
-
       //!! workaround: due to a bug in earlier versions, it can happen that the string written was twice the size
       WCHAR wzT[MAXNAMEBUFFER*2];
-      pbr->GetWideString(wzT, MAXNAMEBUFFER*2); //!! rather truncate for these special cases for the comparison below?
+      pbr->GetWideString(wzT, MAXNAMEBUFFER*2); //!! rather truncate for these special cases for the comparison in InitPostLoad?
 
-      for (size_t i = 0; i < ppt->m_vedit.size(); ++i)
-      {
-         IScriptable * const piscript = ppt->m_vedit[i]->GetScriptable();
-         if (piscript) // skip decals
-         {
-            if (wcscmp(piscript->m_wzName, wzT) == 0)
-            {
-               piscript->GetISelect()->GetIEditable()->m_vCollection.push_back(this);
-               piscript->GetISelect()->GetIEditable()->m_viCollection.push_back(m_visel.size());
-               m_visel.push_back(piscript->GetISelect());
-               return true;
-            }
-         }
-      }
+      m_tmp_isel_name.push_back(wzT);
       break;
    }
    }
    return true;
+}
+
+HRESULT Collection::InitPostLoad(PinTable *const pt)
+{
+   for (size_t n = 0; n < m_tmp_isel_name.size(); ++n)
+   for (size_t i = 0; i < pt->m_vedit.size(); ++i)
+   {
+      IScriptable *const piscript = pt->m_vedit[i]->GetScriptable();
+      if (piscript) // skip decals
+      {
+         if (piscript->m_wzName == m_tmp_isel_name[n])
+         {
+            auto iselect = piscript->GetISelect();
+            iselect->GetIEditable()->m_vCollection.push_back(this);
+            iselect->GetIEditable()->m_viCollection.push_back(m_visel.size());
+            m_visel.push_back(iselect);
+            break; // found, continue to search next name/element
+         }
+      }
+   }
+   m_tmp_isel_name.clear();
+
+   return S_OK;
 }
 
 STDMETHODIMP Collection::get_Count(LONG __RPC_FAR *plCount)

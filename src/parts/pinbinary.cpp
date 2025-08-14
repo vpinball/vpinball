@@ -39,7 +39,7 @@ HRESULT PinBinary::SaveToStream(IStream *pstream)
 
 HRESULT PinBinary::LoadFromStream(IStream *pstream, int version)
 {
-   BiffReader br(pstream, this, nullptr, version, 0, 0);
+   BiffReader br(pstream, this, version, 0, 0);
 
    br.Load();
 

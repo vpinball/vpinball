@@ -120,12 +120,6 @@ constexpr __forceinline T smoothstep(const T edge0, const T edge1, T x)
 }
 
 template <typename T>
-inline void RemoveFromVector(vector<T>& v, const T& val)
-{
-   std::erase(v, val);
-}
-
-template <typename T>
 inline void RemoveFromVectorSingle(vector<T>& v, const T& val)
 {
    typename vector<T>::const_iterator it = std::find(v.begin(), v.end(), val);

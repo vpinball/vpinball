@@ -214,7 +214,7 @@ HRESULT Primitive::Init(PinTable *const ptable, const float x, const float y, co
    m_d.m_vPosition.x = x;
    m_d.m_vPosition.y = y;
    UpdateStatusBarInfo();
-   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
+   return forPlay ? S_OK : InitVBA(true, nullptr);
 }
 
 void Primitive::SetDefaults(const bool fromMouseClick)
@@ -1636,11 +1636,11 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool sav
    return S_OK;
 }
 
-HRESULT Primitive::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Primitive::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    SetDefaults(false);
 
-   BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
+   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
 
    m_ptable = ptable;
    m_mesh.m_validBounds = false;
@@ -1668,7 +1668,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
+   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
    case FID(VPOS): pbr->GetVector3Padded(m_d.m_vPosition); break;
    case FID(VSIZ): pbr->GetVector3Padded(m_d.m_vSize); break;
    case FID(RTV0): pbr->GetFloat(m_d.m_aRotAndTra[0]); break;

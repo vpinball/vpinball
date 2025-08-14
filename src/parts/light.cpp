@@ -68,7 +68,7 @@ HRESULT Light::Init(PinTable *const ptable, const float x, const float y, const 
    m_lockedByLS = false;
    m_inPlayState = clampLightState(m_d.m_state);
    m_d.m_visible = true;
-   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
+   return forPlay ? S_OK : InitVBA(true, nullptr);
 }
 
 void Light::SetDefaults(const bool fromMouseClick)
@@ -934,7 +934,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveFor
    return S_OK;
 }
 
-HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    SetDefaults(false);
 
@@ -954,7 +954,7 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
    //m_d.m_borderwidth = 0;
    //m_d.m_bordercolor = RGB(0,0,0);
 
-   BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
+   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
 
    m_ptable = ptable;
 
@@ -969,7 +969,7 @@ bool Light::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
+   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
    case FID(VCEN): pbr->GetVector2(m_d.m_vCenter); break;
    case FID(HGHT): pbr->GetFloat(m_d.m_height); break;
    case FID(RADI): pbr->GetFloat(m_d.m_falloff); break;
@@ -1018,7 +1018,8 @@ bool Light::LoadToken(const int id, BiffReader * const pbr)
    case FID(VSBL): pbr->GetBool(m_d.m_visible); break;
    default:
    {
-      LoadPointToken(id, pbr, pbr->m_version);
+      if (id == FID(DPNT))
+         LoadPointToken(pbr);
       ISelect::LoadToken(id, pbr);
       break;
    }

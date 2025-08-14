@@ -396,20 +396,17 @@ HRESULT IHaveDragPoints::SavePointData(IStream *pstm, HCRYPTHASH hcrypthash)
 }
 
 
-void IHaveDragPoints::LoadPointToken(int id, BiffReader *pbr, int version)
+void IHaveDragPoints::LoadPointToken(BiffReader *pbr)
 {
-   if (id == FID(DPNT))
+   CComObject<DragPoint> *pdp;
+   CComObject<DragPoint>::CreateInstance(&pdp);
+   if (pdp)
    {
-      CComObject<DragPoint> *pdp;
-      CComObject<DragPoint>::CreateInstance(&pdp);
-      if (pdp)
-      {
-         pdp->AddRef();
-         pdp->Init(this, 0.f, 0.f, 0.f, false);
-         m_vdpoint.push_back(pdp);
-         BiffReader br(pbr->m_pistream, pdp, nullptr, version, pbr->m_hcrypthash, pbr->m_hcryptkey);
-         br.Load();
-      }
+      pdp->AddRef();
+      pdp->Init(this, 0.f, 0.f, 0.f, false);
+      m_vdpoint.push_back(pdp);
+      BiffReader br(pbr->m_pistream, pdp, pbr->m_version, pbr->m_hcrypthash, pbr->m_hcryptkey);
+      br.Load();
    }
 }
 

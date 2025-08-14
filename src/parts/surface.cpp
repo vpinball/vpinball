@@ -69,7 +69,7 @@ HRESULT Surface::Init(PinTable *const ptable, const float x, const float y, cons
       m_vdpoint.push_back(pdp);
    }
 
-   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
+   return forPlay ? S_OK : InitVBA(true, nullptr);
 }
 
 void Surface::WriteRegDefaults()
@@ -186,7 +186,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
    m_d.m_sideVisible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "SideVisible"s, true) : true;
    m_d.m_collidable = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Collidable"s, true) : true;
 
-   return InitVBA(fTrue, 0, nullptr);
+   return InitVBA(true, nullptr);
 }
 #endif
 
@@ -1164,10 +1164,11 @@ void Surface::ClearForOverwrite()
    ClearPointsForOverwrite();
 }
 
-HRESULT Surface::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Surface::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    SetDefaults(false);
-   BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
+
+   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
 
    m_ptable = ptable;
 
@@ -1255,7 +1256,7 @@ bool Surface::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
+   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
    case FID(HTEV): pbr->GetBool(m_d.m_hitEvent); break;
    case FID(DROP): pbr->GetBool(m_d.m_droppable); break;
    case FID(FLIP): pbr->GetBool(m_d.m_flipbook); break;
@@ -1291,7 +1292,8 @@ bool Surface::LoadToken(const int id, BiffReader * const pbr)
    case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
    default:
    {
-      LoadPointToken(id, pbr, pbr->m_version);
+      if (id == FID(DPNT))
+         LoadPointToken(pbr);
       ISelect::LoadToken(id, pbr);
       break;
    }

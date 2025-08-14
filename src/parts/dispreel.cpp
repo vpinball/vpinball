@@ -28,7 +28,7 @@ HRESULT DispReel::Init(PinTable *const ptable, const float x, const float y, con
    m_d.m_v1.y = y;
    m_d.m_v2.x = x + getBoxWidth();
    m_d.m_v2.y = y + getBoxHeight();
-   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
+   return forPlay ? S_OK : InitVBA(true, nullptr);
 }
 
 // set the defaults for the objects persistent data (m_d.*) in case this is a new instance of this object
@@ -487,11 +487,11 @@ HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool save
    return S_OK;
 }
 
-HRESULT DispReel::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT DispReel::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    SetDefaults(false);
 
-   BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
+   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
 
    m_ptable = ptable;
 
@@ -503,7 +503,7 @@ bool DispReel::LoadToken(const int id, BiffReader * const pbr)
 {
    switch (id)
    {
-   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
+   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
    case FID(VER1): pbr->GetVector2(m_d.m_v1); break;
    case FID(VER2): pbr->GetVector2(m_d.m_v2); break;
    case FID(WDTH): pbr->GetFloat(m_d.m_width); break;

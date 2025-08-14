@@ -121,7 +121,7 @@ public:
 
    virtual HRESULT SavePointData(IStream *pstm, HCRYPTHASH hcrypthash);
    //virtual HRESULT InitPointLoad(IStream *pstm, HCRYPTHASH hcrypthash);
-   virtual void LoadPointToken(int id, BiffReader *pbr, int version);
+   void LoadPointToken(BiffReader *pbr);
 
    virtual void ClearPointsForOverwrite();
 

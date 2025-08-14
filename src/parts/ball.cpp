@@ -47,7 +47,7 @@ HRESULT Ball::Init(PinTable *const ptable, const float x, const float y, const b
    m_hitBall.m_d.m_pos.x = x;
    m_hitBall.m_d.m_pos.y = y;
    m_hitBall.m_d.m_pos.z = m_hitBall.m_d.m_radius;
-   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
+   return forPlay ? S_OK : InitVBA(true, nullptr);
 }
 
 void Ball::SetObjectPos()
@@ -133,11 +133,14 @@ HRESULT Ball::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForU
    return S_OK;
 }
 
-HRESULT Ball::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Ball::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    SetDefaults(false);
-   BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
+
+   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
+
    m_ptable = ptable;
+
    br.Load();
    return S_OK;
 }
@@ -146,7 +149,7 @@ bool Ball::LoadToken(const int id, BiffReader *const pbr)
 {
    switch(id)
    {
-   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
+   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
    case FID(VCEN): pbr->GetVector3(m_hitBall.m_d.m_pos); break;
    case FID(RADI): pbr->GetFloat(m_hitBall.m_d.m_radius); break;
    case FID(MASS): pbr->GetFloat(m_hitBall.m_d.m_mass); break;

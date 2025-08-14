@@ -23,7 +23,7 @@ HRESULT PartGroup::Init(PinTable *const ptable, const float x, const float y, co
    SetDefaults(fromMouseClick);
    m_d.m_v.x = x;
    m_d.m_v.y = y;
-   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
+   return forPlay ? S_OK : InitVBA(true, nullptr);
 }
 
 STDMETHODIMP PartGroup::InterfaceSupportsErrorInfo(REFIID riid)
@@ -160,11 +160,14 @@ HRESULT PartGroup::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool sav
    return S_OK;
 }
 
-HRESULT PartGroup::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT PartGroup::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    SetDefaults(false);
-   BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
+
+   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
+
    m_ptable = ptable;
+
    br.Load();
    return S_OK;
 }
@@ -174,7 +177,7 @@ bool PartGroup::LoadToken(const int id, BiffReader * const pbr)
    switch(id)
    {
    // Default properties
-   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
+   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
    case FID(VCEN): pbr->GetVector2(m_d.m_v); break;
    case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
    case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;

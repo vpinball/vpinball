@@ -425,14 +425,14 @@ public:
    void Translate(const Vertex2D &pvOffset) final;
 
    // IEditable (mostly bogus for now)
-   void UIRenderPass1(Sur *const psur) final;
+   void UIRenderPass1(Sur *const psur) final { }
    ItemTypeEnum GetItemType() const final { return eItemTable; }
-   HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey) final;
-   HRESULT InitPostLoad() final;
-   HRESULT InitVBA(BOOL fNew, int id, WCHAR *const wzName) final;
+   HRESULT InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey) final;
+   HRESULT InitPostLoad() final { return S_OK; }
+   HRESULT InitVBA(bool fNew, WCHAR *const wzName) final { return S_OK; }
    ISelect *GetISelect() final { return (ISelect *)this; }
    const ISelect *GetISelect() const final { return (const ISelect *)this; }
-   void SetDefaults(const bool fromMouseClick) final;
+   void SetDefaults(const bool fromMouseClick) final { }
    IScriptable *GetScriptable() final { return (IScriptable *)this; }
    const IScriptable *GetScriptable() const final { return (const IScriptable *)this; }
    void SetDefaultPhysics(const bool fromMouseClick) final;
@@ -482,7 +482,7 @@ public:
    HRESULT LoadGameFromFilename(const string &filename, VPXFileFeedback& feedback);
    HRESULT LoadInfo(IStorage *pstg, HCRYPTHASH hcrypthash, int version);
    HRESULT LoadCustomInfo(IStorage *pstg, IStream *pstmTags, HCRYPTHASH hcrypthash, int version);
-   HRESULT LoadData(IStream *pstm, int &csubobj, int &csounds, int &ctextures, int &cfonts, int &ccollection, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
+   HRESULT LoadData(IStream *pstm, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
    IEditable *GetIEditable() final { return (IEditable *)this; }
    const IEditable *GetIEditable() const final { return (const IEditable *)this; }
    void Delete() final { } // Can't delete table itself
@@ -720,7 +720,7 @@ public:
    VectorProtected<CComObject<Collection>> m_vcollection;
 
    vector<RenderProbe *> m_vrenderprobe;
-   void RemoveRenderProbe(RenderProbe *pb) { m_vrenderprobe.erase(std::remove(m_vrenderprobe.begin(), m_vrenderprobe.end(), pb), m_vrenderprobe.end()); }
+   void RemoveRenderProbe(RenderProbe *pb) { std::erase(m_vrenderprobe, pb); }
    RenderProbe *NewRenderProbe() { auto pb = new RenderProbe(); m_vrenderprobe.push_back(pb); return pb; }
    const vector<RenderProbe *> &GetRenderProbeList() const { return m_vrenderprobe; }
    vector<RenderProbe *> GetRenderProbeList(RenderProbe::ProbeType type) const
@@ -871,6 +871,7 @@ private:
    bool m_moving = false;
 
    PinBinary *m_pbTempScreenshot = nullptr; // Holds contents of screenshot image until the image asks for it
+   int m_loadTemp[5] = { 0, 0, 0, 0, 0 }; // Used to temporarily store the number of elements loaded for each type (subobjects, sounds, textures, fonts, collections) during loading phase
 
    ankerl::unordered_dense::set<std::string> m_loggedSoundErrors;
 

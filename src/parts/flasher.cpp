@@ -77,7 +77,7 @@ HRESULT Flasher::Init(PinTable *const ptable, const float x, const float y, cons
    m_d.m_rotY = 0.0f;
    m_d.m_rotZ = 0.0f;
    InitShape();
-   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
+   return forPlay ? S_OK : InitVBA(true, nullptr);
 }
 
 void Flasher::SetDefaults(const bool fromMouseClick)
@@ -434,11 +434,11 @@ void Flasher::ClearForOverwrite()
 }
 
 
-HRESULT Flasher::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Flasher::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    SetDefaults(false);
 
-   BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
+   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
 
    m_ptable = ptable;
 
@@ -453,7 +453,7 @@ bool Flasher::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
+   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
    case FID(FHEI): pbr->GetFloat(m_d.m_height); break;
    case FID(FLAX): pbr->GetFloat(m_d.m_vCenter.x); break;
    case FID(FLAY): pbr->GetFloat(m_d.m_vCenter.y); break;
@@ -497,7 +497,8 @@ bool Flasher::LoadToken(const int id, BiffReader * const pbr)
    case FID(LMAP): pbr->GetString(m_d.m_szLightmap); break;
    default:
    {
-      LoadPointToken(id, pbr, pbr->m_version);
+      if (id == FID(DPNT))
+         LoadPointToken(pbr);
       ISelect::LoadToken(id, pbr);
       break;
    }

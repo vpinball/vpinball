@@ -163,7 +163,7 @@ HRESULT Trigger::Init(PinTable *const ptable, const float x, const float y, cons
    m_d.m_vCenter.y = y;
    if (m_vdpoint.empty())
       InitShape(x, y);
-   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
+   return forPlay ? S_OK : InitVBA(true, nullptr);
 }
 
 void Trigger::SetDefaults(const bool fromMouseClick)
@@ -957,16 +957,15 @@ void Trigger::WriteRegDefaults()
 #undef regKey
 }
 
-HRESULT Trigger::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT Trigger::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    SetDefaults(false);
 
-   BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
+   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
 
    m_ptable = ptable;
 
    br.Load();
-   UpdateStatusBarInfo();
    return S_OK;
 }
 
@@ -974,7 +973,7 @@ bool Trigger::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-   case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
+   case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
    case FID(VCEN): pbr->GetVector2(m_d.m_vCenter); break;
    case FID(RADI): pbr->GetFloat(m_d.m_radius); break;
    case FID(ROTA): pbr->GetFloat(m_d.m_rotation); break;
@@ -994,7 +993,8 @@ bool Trigger::LoadToken(const int id, BiffReader * const pbr)
    case FID(NAME): pbr->GetWideString(m_wzName, std::size(m_wzName)); break;
    default:
    {
-      LoadPointToken(id, pbr, pbr->m_version);
+      if (id == FID(DPNT))
+         LoadPointToken(pbr);
       ISelect::LoadToken(id, pbr);
       break;
    }

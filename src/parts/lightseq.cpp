@@ -22,7 +22,7 @@ HRESULT LightSeq::Init(PinTable *const ptable, const float x, const float y, con
    SetDefaults(fromMouseClick);
    m_d.m_v.x = x;
    m_d.m_v.y = y;
-   return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
+   return forPlay ? S_OK : InitVBA(true, nullptr);
 }
 
 void LightSeq::SetDefaults(const bool fromMouseClick)
@@ -399,11 +399,11 @@ HRESULT LightSeq::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool save
    return S_OK;
 }
 
-HRESULT LightSeq::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+HRESULT LightSeq::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    SetDefaults(false);
 
-   BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
+   BiffReader br(pstm, this, version, hcrypthash, hcryptkey);
 
    m_ptable = ptable;
 
@@ -415,7 +415,7 @@ bool LightSeq::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-       case FID(PIID): pbr->GetInt(pbr->m_pdata); break;
+       case FID(PIID): { int pid; pbr->GetInt(&pid); } break;
        case FID(VCEN): pbr->GetVector2(m_d.m_v); break;
        case FID(COLC): pbr->GetWideString(m_d.m_wzCollection); break;
        case FID(CTRX): pbr->GetFloat(m_d.m_vCenter.x); break;
