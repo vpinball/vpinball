@@ -425,11 +425,7 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
          #endif
          LOGE("PinMAME path is not defined.");
       }
-      #ifdef _MSC_VER
-      strncpy_s(const_cast<char*>(config.vpmPath), PINMAME_MAX_PATH, pinmamePath.c_str(), PINMAME_MAX_PATH - 1);
-      #else
-      strncpy(const_cast<char*>(config.vpmPath), pinmamePath.c_str(), PINMAME_MAX_PATH - 1);
-      #endif
+      strncpy_s(const_cast<char*>(config.vpmPath), PINMAME_MAX_PATH, pinmamePath.c_str());
 
       Controller* pController = new Controller(msgApi, endpointId, config);
       pController->SetOnDestroyHandler(OnControllerDestroyed);

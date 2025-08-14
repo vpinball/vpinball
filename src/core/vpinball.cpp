@@ -2780,7 +2780,7 @@ static unsigned int GenerateTournamentFileInternal(uint8_t *const dmd_data, cons
 #else
    const size_t cchar = g_pvp->GetActiveTable()->m_pcv->m_script_text.length();
    char * const szText = new char[cchar + 1];
-   strncpy_s(szText, g_pvp->GetActiveTable()->m_pcv->m_script_text.c_str(), cchar);
+   strncpy_s(szText, cchar+1, g_pvp->GetActiveTable()->m_pcv->m_script_text.c_str());
 #endif
 
    for(size_t i = 0; i < cchar; ++i)
@@ -2839,7 +2839,7 @@ static unsigned int GenerateTournamentFileInternal(uint8_t *const dmd_data, cons
    GetModuleFileName(nullptr, path, MAXSTRING);
 #elif defined(__APPLE__) //!! ??
    const char* szPath = SDL_GetBasePath();
-   strncpy_s(path, sizeof(path), szPath, sizeof(path)-1);
+   strncpy_s(path, sizeof(path), szPath);
 #else
    const ssize_t len = ::readlink("/proc/self/exe", path, sizeof(path)-1);
    if (len != -1)

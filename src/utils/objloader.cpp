@@ -352,36 +352,8 @@ void ObjLoader::Save(const string& filename, const string& description, const Me
 bool ObjLoader::ExportStart(const string& filename)
 {
 #ifndef __STANDALONE__
-   const int len = min((int)filename.length(), MAX_PATH - 1);
-   int i;
-   for (i = len; i >= 0; i--)
-   {
-      if (filename[i] == '.')
-      {
-         i++;
-         break;
-      }
-   }
-   char matName[MAX_PATH];
-   strncpy_s(matName, filename.c_str(), sizeof(matName) - 1);
-   if (i < len)
-   {
-      memcpy(matName, filename.c_str(), i);
-      matName[i] = '\0';
-      strncat_s(matName, "mtl", sizeof(matName) - strnlen_s(matName, sizeof(matName)) - 1);
-   }
-
-   for (i = len; i >= 0; i--)
-   {
-      if (matName[i] == PATH_SEPARATOR_CHAR)
-      {
-         i++;
-         break;
-      }
-   }
-   char nameOnly[MAX_PATH] = { 0 };
-   memcpy(nameOnly, matName + i, len - i);
-   if ((fopen_s(&m_matFile, matName, "wt") != 0) || !m_matFile)
+   const string matname = filename.substr(0, filename.find_last_of('.')) + ".mtl";
+   if ((fopen_s(&m_matFile, matname.c_str(), "wt") != 0) || !m_matFile)
       return false;
    fprintf_s(m_matFile, "# Visual Pinball table mat file\n");
 
@@ -389,7 +361,9 @@ bool ObjLoader::ExportStart(const string& filename)
       return false;
    m_faceIndexOffset = 0;
    fprintf_s(m_fHandle, "# Visual Pinball table OBJ file\n");
-   fprintf_s(m_fHandle, "mtllib %s\n", nameOnly);
+   const size_t pos = matname.find_last_of(PATH_SEPARATOR_CHAR);
+   const string nameonly = pos != string::npos ? matname.substr(pos+1) : matname;
+   fprintf_s(m_fHandle, "mtllib %s\n", nameonly.c_str());
 #endif
    return true;
 }
@@ -534,12 +508,10 @@ bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
    return true;
 }
 
-void ObjLoader::WriteMaterial(const string& texelName, const string& texelFilename, const Material* const mat)
+void ObjLoader::WriteMaterial(string texelName, string texelFilename, const Material* const mat)
 {
-   char texelNameCopy[MAX_PATH];
-   strncpy_s(texelNameCopy, texelName.c_str(), sizeof(texelNameCopy) - 1);
-   RemoveSpaces(texelNameCopy);
-   fprintf_s(m_matFile, "newmtl %s\n", texelNameCopy);
+   std::erase(texelName, ' ');
+   fprintf_s(m_matFile, "newmtl %s\n", texelName.c_str());
    fprintf_s(m_matFile, "Ns 7.843137\n");
    vec4 color = convertColor(mat->m_cBase, 1.f);
    fprintf_s(m_matFile, "Ka 0.000000 0.000000 0.000000\n");
@@ -551,10 +523,8 @@ void ObjLoader::WriteMaterial(const string& texelName, const string& texelFilena
    fprintf_s(m_matFile, "illum 5\n");
    if (!texelFilename.empty())
    {
-      strncpy_s(texelNameCopy, texelFilename.c_str(), sizeof(texelNameCopy) - 1);
-      RemoveSpaces(texelNameCopy);
-
-      fprintf_s(m_matFile, "map_kd %s\n", texelNameCopy);
-      fprintf_s(m_matFile, "map_ka %s\n\n", texelNameCopy);
+      std::erase(texelFilename, ' ');
+      fprintf_s(m_matFile, "map_kd %s\n", texelFilename.c_str());
+      fprintf_s(m_matFile, "map_ka %s\n\n", texelFilename.c_str());
    }
 }

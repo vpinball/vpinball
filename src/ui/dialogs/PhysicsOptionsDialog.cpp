@@ -173,14 +173,14 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             /*CComObject<PinTable>* const pt = g_pvp->GetActiveTable();
             if (pt)
             {
-               strncpy_s(szFileName, pt->m_filename.c_str(), sizeof(szFileName)-1);
+               strncpy_s(szFileName, sizeof(szFileName), pt->m_filename.c_str());
                const size_t idx = pt->m_filename.find_last_of('.');
                if (idx != string::npos && idx < MAXSTRING)
                   szFileName[idx] = '\0';
             }
             else
                szFileName[0] = '\0';*/
-            strncpy_s(szFileName, "Physics.vpp", sizeof(szFileName)-1);
+            strncpy_s(szFileName, sizeof(szFileName), "Physics.vpp");
 
             OPENFILENAME ofn = {};
             ofn.lStructSize = sizeof(OPENFILENAME);

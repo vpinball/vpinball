@@ -572,20 +572,6 @@ constexpr __forceinline float millimetersToVPUnits(const float value)
    // return value * (float)(1.0 / 0.540425);
 }
 
-// removes all whitespaces existing in a string
-inline void RemoveSpaces(char* const source)
-{
-   char* i = source;
-   char* j = source;
-   while (*j != '\0')
-   {
-      *i = *j++;
-      if (!isspace(*i))
-         i++;
-   }
-   *i = '\0';
-}
-
 string convert_decimal_point_and_trim(string sz, const bool use_locale);
 
 float sz2f(string sz, const bool force_convert_decimal_point = false);
@@ -756,6 +742,28 @@ bool is_string_numeric(const string& str);
 int string_to_int(const string& str, int default_value = 0);
 float string_to_float(const string& str, float default_value = 0.0f);
 vector<string> parse_csv_line(const string& line);
+// copies all characters of src incl. the null-terminator, BUT never more than dest_size-1, always null-terminates
+inline void strncpy_s(char* const __restrict dest, const size_t dest_size, const char* const __restrict src)
+{
+   if (!dest || dest_size == 0)
+      return;
+   size_t i = 0;
+   if (src)
+      for (; i < dest_size-1 && src[i] != '\0'; ++i)
+         dest[i] = src[i];
+   dest[i] = '\0';
+}
+// copies all characters of src incl. the null-terminator, BUT never more than dest_size-1, always null-terminates
+inline void wcsncpy_s(WCHAR* const __restrict dest, const size_t dest_size, const WCHAR* const __restrict src)
+{
+   if (!dest || dest_size == 0)
+      return;
+   size_t i = 0;
+   if (src)
+      for (; i < dest_size-1 && src[i] != L'\0'; ++i)
+         dest[i] = src[i];
+   dest[i] = L'\0';
+}
 bool string_contains_case_insensitive(const string& str1, const string& str2);
 bool string_starts_with_case_insensitive(const string& str, const string& prefix);
 string string_replace_all(const string& szStr, const string& szFrom, const string& szTo, const size_t offs = 0);

@@ -39,6 +39,7 @@ PSC_USE_ERROR();
 LPI_USE();
 #define LOGD Flex::LPI_LOGD
 #define LOGI Flex::LPI_LOGI
+#define LOGW Flex::LPI_LOGW
 #define LOGE Flex::LPI_LOGE
 
 typedef uint32_t ColorRGBA32;

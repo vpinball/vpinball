@@ -1771,7 +1771,7 @@ void PinTable::GetUniqueName(const wstring& wzRoot, WCHAR *const wzUniqueName, c
          :                            std::to_wstring(suffix));
       suffix++;
    } while (!IsNameUnique(wzName) && suffix < 1000);
-   wcscpy_s(wzUniqueName, wzUniqueName_maxlength, wzName.c_str());
+   wcsncpy_s(wzUniqueName, wzUniqueName_maxlength, wzName.c_str());
 }
 
 void PinTable::GetUniqueNamePasting(const int type, WCHAR * const wzUniqueName, const size_t wzUniqueName_maxlength) const
@@ -1886,7 +1886,7 @@ void PinTable::UIRenderPass2(Sur * const psur)
    //    SetTextColor( psur->m_hdc,RGB(180,180,180));
    //    char text[64];
    //    char number[8];
-   //    strcpy_s( text,"Layer_");
+   //    strncpy_s( text, sizeof(text), "Layer_");
    //    _itoa_s(activeLayer+1, number, 10 );
    //    strcat_s( text, number);
    //    RECT textRect;
@@ -2225,7 +2225,7 @@ PinTable* PinTable::CopyForPlay()
    #ifdef __STANDALONE__
       Textbox* const implicitDMD = (Textbox*)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemTextbox, live_table, 0, 0);
       live_table->m_pcv->RemoveItem(implicitDMD->GetScriptable());
-      wcscpy(implicitDMD->m_wzName, L"ImplicitDMD");
+      wcsncpy_s(implicitDMD->m_wzName, std::size(implicitDMD->m_wzName), L"ImplicitDMD");
       implicitDMD->m_d.m_visible = false;
       implicitDMD->m_d.m_isDMD = true;
       implicitDMD->m_d.m_fontcolor = RGB(255, 165, 0);
@@ -2235,7 +2235,7 @@ PinTable* PinTable::CopyForPlay()
 
       Flasher* const implicitDMD2 = (Flasher*)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemFlasher, live_table, 0, 0);
       live_table->m_pcv->RemoveItem(implicitDMD2->GetScriptable());
-      wcscpy(implicitDMD2->m_wzName, L"ImplicitDMD2");
+      wcsncpy_s(implicitDMD2->m_wzName, std::size(implicitDMD2->m_wzName), L"ImplicitDMD2");
       int dmdWidth = 128 * 4; // (658)
       int dmdHeight = 38 * 4; // (189)
       int x = ((live_table->m_right - live_table->m_left) - dmdWidth) / 2;
@@ -2404,7 +2404,7 @@ HRESULT PinTable::Save(const bool saveAs)
 
       const string::size_type ptr = StrFindNoCase(m_filename, ".vpt"s);
       char fileName[MAXSTRING];
-      strncpy_s(fileName, m_filename.c_str(), sizeof(fileName)-1);
+      strncpy_s(fileName, sizeof(fileName), m_filename.c_str());
       if (ptr != string::npos)
          strcpy_s(fileName+ptr, 5, ".vpx");
       ofn.lpstrFile = fileName;
@@ -3064,7 +3064,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
          mats[i].bIsMetal = m->m_type == Material::MaterialType::METAL;
          mats[i].bOpacityActive_fEdgeAlpha = m->m_bOpacityActive ? 1 : 0;
          mats[i].bOpacityActive_fEdgeAlpha |= quantizeUnsigned<7>(clamp(m->m_fEdgeAlpha, 0.f, 1.f)) << 1;
-         strncpy_s(mats[i].szName, m->m_name.c_str(), sizeof(mats[i].szName)-1);
+         strncpy_s(mats[i].szName, sizeof(mats[i].szName), m->m_name.c_str());
          for (size_t c = strnlen_s(mats[i].szName, sizeof(mats[i].szName)); c < sizeof(mats[i].szName); ++c) // to avoid garbage after 0
              mats[i].szName[c] = 0;
       }
@@ -3074,9 +3074,9 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
       for (size_t i = 0; i < m_materials.size(); i++)
       {
           const Material* const m = m_materials[i];
-          strncpy_s(phymats[i].szName, m->m_name.c_str(), sizeof(phymats[i].szName)-1);
+          strncpy_s(phymats[i].szName, sizeof(phymats[i].szName), m->m_name.c_str());
           for (size_t c = strnlen_s(phymats[i].szName, sizeof(phymats[i].szName)); c < sizeof(phymats[i].szName); ++c) // to avoid garbage after 0
-              phymats[i].szName[c] = 0;
+              phymats[i].szName[c] = '\0';
           phymats[i].fElasticity = m->m_fElasticity;
           phymats[i].fElasticityFallOff = m->m_fElasticityFalloff;
           phymats[i].fFriction = m->m_fFriction;
@@ -3620,11 +3620,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                      m_pcv->RemoveItem(textbox->GetScriptable());
                   Flasher* const dmd = (Flasher *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemFlasher, this, 0, 0);
                   m_pcv->RemoveItem(dmd->GetScriptable());
-                  #ifdef _MSC_VER
-                  wcscpy_s(dmd->m_wzName, textbox->m_wzName);
-                  #else
-                  wcscpy(dmd->m_wzName, textbox->m_wzName);
-                  #endif
+                  wcsncpy_s(dmd->m_wzName, sizeof(dmd->m_wzName), textbox->m_wzName);
                   dmd->UpdatePoint(0, textbox->m_d.m_v1.x, textbox->m_d.m_v1.y);
                   dmd->UpdatePoint(1, textbox->m_d.m_v1.x, textbox->m_d.m_v2.y);
                   dmd->UpdatePoint(2, textbox->m_d.m_v2.x, textbox->m_d.m_v2.y);
@@ -4440,7 +4436,7 @@ void PinTable::SetCollectionName(Collection *pcol, const char *szName, HWND hwnd
    {
       if (hwndList)
          ListView_SetItemText(hwndList, index, 0, (char*)szName);
-      wcscpy_s(pcol->m_wzName, wzT.c_str());
+      wcsncpy_s(pcol->m_wzName, std::size(pcol->m_wzName), wzT.c_str());
    }
 #endif
 }
@@ -5286,7 +5282,7 @@ void PinTable::ExportBlueprint()
       ofn.hwndOwner = m_vpinball->GetHwnd();
       ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif;\0WEBP (.webp)\0*.webp;\0";
       char szBlueprintFileName[MAXSTRING];
-      strncpy_s(szBlueprintFileName, m_filename.c_str(), sizeof(szBlueprintFileName)-1);
+      strncpy_s(szBlueprintFileName, sizeof(szBlueprintFileName), m_filename.c_str());
       const size_t idx = m_filename.find_last_of('.');
       if (idx != string::npos && idx < MAXSTRING)
           szBlueprintFileName[idx] = '\0';
@@ -5465,10 +5461,10 @@ void PinTable::ExportTableMesh()
 {
 #ifndef __STANDALONE__
    char szObjFileName[MAXSTRING];
-   strncpy_s(szObjFileName, m_filename.c_str(), sizeof(szObjFileName)-1);
+   strncpy_s(szObjFileName, sizeof(szObjFileName), m_filename.c_str());
    const size_t idx = m_filename.find_last_of('.');
    if (idx != string::npos && idx < MAXSTRING)
-       szObjFileName[idx] = '\0';
+      szObjFileName[idx] = '\0';
    OPENFILENAME ofn = {};
    ofn.lStructSize = sizeof(OPENFILENAME);
    ofn.hInstance = m_vpinball->theInstance;
@@ -5750,7 +5746,7 @@ void PinTable::ExportBackdropPOV() const
 	// TEXT
 	ofn.lpstrFilter = "INI file(*.ini)\0*.ini\0";
 	char szFileName[MAXSTRING];
-	strncpy_s(szFileName, m_filename.c_str(), sizeof(szFileName)-1);
+	strncpy_s(szFileName, sizeof(szFileName), m_filename.c_str());
 	const size_t idx = m_filename.find_last_of('.');
 	if(idx != string::npos && idx < MAXSTRING)
 		szFileName[idx] = '\0';
@@ -6434,7 +6430,7 @@ STDMETHODIMP PinTable::put_Name(BSTR newVal)
 
    STARTUNDO
    if (m_pcv->ReplaceName((IScriptable *)this, newName) == S_OK)
-      wcscpy_s(m_wzName, newVal);
+      wcsncpy_s(m_wzName, std::size(m_wzName), newVal);
    STOPUNDO
 
    return S_OK;
@@ -7256,7 +7252,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       rgdw = (uint32_t *)CoTaskMemAlloc((cvar + 1) * sizeof(uint32_t));
 
       rgstr[0] = (WCHAR *)CoTaskMemAlloc(7 * sizeof(WCHAR));
-      wcscpy_s(rgstr[0], 7, L"<None>");
+      wcsncpy_s(rgstr[0], 7, L"<None>");
       rgdw[0] = ~0u;
 
       for (size_t ivar = 0; ivar < cvar; ivar++)
@@ -7282,7 +7278,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       rgdw = (uint32_t *)CoTaskMemAlloc((cvar + 1) * sizeof(uint32_t));
 
       rgstr[0] = (WCHAR *)CoTaskMemAlloc(7 * sizeof(WCHAR));
-      wcscpy_s(rgstr[0], 7, L"<None>");
+      wcsncpy_s(rgstr[0], 7, L"<None>");
       rgdw[0] = ~0u;
 
       for (size_t ivar = 0; ivar < cvar; ivar++)
@@ -7327,7 +7323,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       if (wzDst == nullptr)
          ShowError("DISPID_Surface alloc failed (0)");
       // TEXT
-      wcscpy_s(wzDst, 7, L"<None>");
+      wcsncpy_s(wzDst, 7, L"<None>");
       rgstr[cvar] = wzDst;
       rgdw[cvar] = ~0u;
       cvar++;
@@ -7350,7 +7346,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
             if (wzDst == nullptr)
                ShowError("DISPID_Surface alloc failed (1)");
 
-            wcscpy_s(wzDst, cwch, sname.c_str());
+            wcsncpy_s(wzDst, cwch, sname.c_str());
             rgstr[cvar] = wzDst;
             rgdw[cvar] = (uint32_t)ivar;
             cvar++;
@@ -7366,19 +7362,19 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       rgdw = (uint32_t *)CoTaskMemAlloc((cvar) * sizeof(uint32_t));
 
       rgstr[0] = (WCHAR *)CoTaskMemAlloc(5 * sizeof(WCHAR));
-      wcscpy_s(rgstr[0], 5, L"None");
+      wcsncpy_s(rgstr[0], 5, L"None");
       rgdw[0] = ~0u;
       rgstr[1] = (WCHAR *)CoTaskMemAlloc(9 * sizeof(WCHAR));
-      wcscpy_s(rgstr[1], 9, L"Additive");
+      wcsncpy_s(rgstr[1], 9, L"Additive");
       rgdw[1] = 1;
       rgstr[2] = (WCHAR *)CoTaskMemAlloc(9 * sizeof(WCHAR));
-      wcscpy_s(rgstr[2], 9, L"Multiply");
+      wcsncpy_s(rgstr[2], 9, L"Multiply");
       rgdw[2] = 2;
       rgstr[3] = (WCHAR *)CoTaskMemAlloc(8 * sizeof(WCHAR));
-      wcscpy_s(rgstr[3], 8, L"Overlay");
+      wcsncpy_s(rgstr[3], 8, L"Overlay");
       rgdw[3] = 3;
       rgstr[4] = (WCHAR *)CoTaskMemAlloc(7 * sizeof(WCHAR));
-      wcscpy_s(rgstr[4], 7, L"Screen");
+      wcsncpy_s(rgstr[4], 7, L"Screen");
       rgdw[4] = 4;
 
       break;
@@ -7487,7 +7483,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       static const wstring filterNames[5] = { L"None"s, L"Additive"s, L"Multiply"s, L"Overlay"s, L"Screen"s };
       const size_t cwch = filterNames[idx].length() + 1;
       wzDst = (WCHAR *)malloc(cwch*sizeof(WCHAR));
-      wcscpy_s(wzDst, cwch, filterNames[idx].c_str());
+      wcsncpy_s(wzDst, cwch, filterNames[idx].c_str());
       break;
    }
    case DISPID_Surface:
@@ -7508,7 +7504,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
          if (wzDst == nullptr)
             ShowError("DISPID_Surface alloc failed (2)");
          else
-            wcscpy_s(wzDst, cwch, sname.c_str());
+            wcsncpy_s(wzDst, cwch, sname.c_str());
       }
    }
    break;
@@ -9021,7 +9017,7 @@ STDMETHODIMP PinTable::ExportPhysics()
    Flipper * const flipper = (Flipper *)m_vedit[i];
 
    char szFileName[MAXSTRING];
-   strncpy_s(szFileName, m_filename.c_str(), sizeof(szFileName)-1);
+   strncpy_s(szFileName, sizeof(szFileName), m_filename.c_str());
    const size_t idx = m_filename.find_last_of('.');
    if (idx != string::npos && idx < MAXSTRING)
       szFileName[idx] = '\0';

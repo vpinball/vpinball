@@ -515,15 +515,10 @@ VPXPluginAPIImpl::VPXPluginAPIImpl() : m_apiThread(std::this_thread::get_id())
          const std::string sectionName = "Plugin."s + name_space;
          Settings::Section section = Settings::GetSection(sectionName);
          std::string buffer;
-         valueBuf[0] = '\0';
          if (settings.LoadValue(section, name, buffer))
-         {
-            #ifdef _MSC_VER
-            strncpy_s(valueBuf, valueBufSize, buffer.c_str(), valueBufSize - 1);
-            #else
-            strncpy(valueBuf, buffer.c_str(), valueBufSize - 1);
-            #endif
-         }
+            strncpy_s(valueBuf, valueBufSize, buffer.c_str());
+         else
+            valueBuf[0] = '\0';
       });
 
    // VPX API
@@ -546,7 +541,7 @@ VPXPluginAPIImpl::VPXPluginAPIImpl() : m_apiThread(std::this_thread::get_id())
    m_api.GetTextureInfo = GetTextureInfo;
    m_api.DeleteTexture = DeleteTexture;
 
-   m_vpxPlugin = MsgPluginManager::GetInstance().RegisterPlugin("vpx", "VPX", "Visual Pinball X", "", "", "https://github.com/vpinball/vpinball", 
+   m_vpxPlugin = MsgPluginManager::GetInstance().RegisterPlugin("vpx"s, "VPX"s, "Visual Pinball X"s, ""s, ""s, "https://github.com/vpinball/vpinball"s, 
          [](const uint32_t pluginId, const MsgPluginAPI* api) {},
          []() {});
    m_vpxPlugin->Load(&MsgPluginManager::GetInstance().GetMsgAPI());

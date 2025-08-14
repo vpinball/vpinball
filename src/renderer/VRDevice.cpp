@@ -416,12 +416,12 @@ VRDevice::VRDevice()
       m_lockbarWidth = settings.LoadValueFloat(Settings::Player, "LockbarWidth"s);
       
       // Fill out an XrApplicationInfo structure detailing the names and OpenXR version.
-      // The application/engine name and version are user-definied. These may help IHVs or runtimes.
+      // The application/engine name and version are user-defined. These may help IHVs or runtimes.
       XrApplicationInfo AI;
-      strncpy_s(AI.applicationName, XR_MAX_APPLICATION_NAME_SIZE, "Visual Pinball X", XR_MAX_APPLICATION_NAME_SIZE-1);
+      strncpy_s(AI.applicationName, XR_MAX_APPLICATION_NAME_SIZE, "Visual Pinball X");
       constexpr uint32_t ver = (VP_VERSION_MAJOR / 10) << 12 | (VP_VERSION_MAJOR % 10) << 8 | (VP_VERSION_MINOR) << 4 | VP_VERSION_REV; // e.g. 0x1081 for 10.8.1
       AI.applicationVersion = ver;
-      strncpy_s(AI.engineName, XR_MAX_ENGINE_NAME_SIZE, "", XR_MAX_ENGINE_NAME_SIZE-1);
+      strncpy_s(AI.engineName, XR_MAX_ENGINE_NAME_SIZE, "");
       AI.engineVersion = 0;
       AI.apiVersion = XR_MAKE_VERSION(1, 0, 0); //XR_CURRENT_API_VERSION;
 

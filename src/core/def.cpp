@@ -152,7 +152,7 @@ LocalString::LocalString(const int resid)
    };
    const ankerl::unordered_dense::map<int, const char*>::const_iterator it = ids_map.find(resid);
    if (it != ids_map.end())
-      strncpy_s(m_szbuffer, std::size(m_szbuffer), it->second, std::size(m_szbuffer)-1);
+      strncpy_s(m_szbuffer, std::size(m_szbuffer), it->second);
 #endif
 }
 
@@ -190,7 +190,7 @@ LocalStringW::LocalStringW(const int resid)
    };
    const ankerl::unordered_dense::map<int, const WCHAR*>::const_iterator it = ids_map.find(resid);
    if (it != ids_map.end())
-      wcscpy_s(m_szbuffer, it->second);
+      wcsncpy_s(m_szbuffer, std::size(m_szbuffer), it->second);
 #endif
 }
 

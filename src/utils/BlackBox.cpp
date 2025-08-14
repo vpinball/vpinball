@@ -84,7 +84,7 @@ namespace
       messages[i].message[0] = '\0';
       if (threadName != 0)
       {
-         strncpy_s(messages[i].message, threadName, sizeof(messages[i].message)-1);
+         strncpy_s(messages[i].message, sizeof(messages[i].message), threadName);
          strncat_s(messages[i].message, ": ", sizeof(messages[i].message)-strnlen_s(messages[i].message, sizeof(messages[i].message))-1);
       }
       strncat_s(messages[i].message, msg, sizeof(messages[i].message)-strnlen_s(messages[i].message, sizeof(messages[i].message))-1);
@@ -92,7 +92,7 @@ namespace
       QueryPerformanceCounter(&TimerNow);
       messages[i].ticks = TimerNow.QuadPart;
 #else
-      strncpy_s(messages[i].message, msg, sizeof(messages[i].message)-1);
+      strncpy_s(messages[i].message, sizeof(messages[i].message), msg);
       messages[i].threadId = RDE_GET_CURRENT_THREAD_ID();
       LARGE_INTEGER TimerNow;
       QueryPerformanceCounter(&TimerNow);

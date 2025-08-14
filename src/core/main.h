@@ -52,15 +52,6 @@
 extern "C" {
    #include <atlbase.h>
 }
-#undef strncpy
-#define __STDC_WANT_LIB_EXT1__ 1
-#include <wchar.h>
-#if !defined(_MSC_VER) && !defined(__STDC_LIB_EXT1__)
-inline /*errno_t*/int wcscpy_s(wchar_t* __restrict dest, const size_t destsz, const wchar_t* __restrict src) { wcscpy(dest,src); return 0; }
-inline /*errno_t*/int wcscpy_s(wchar_t* __restrict dest, const wchar_t* __restrict src) { wcscpy(dest,src); return 0; }
-inline /*errno_t*/int wcscat_s(wchar_t* __restrict dest, const size_t destsz, const wchar_t* __restrict src) { wcscat(dest,src); return 0; }
-inline /*errno_t*/int wcscat_s(wchar_t* __restrict dest, const wchar_t* __restrict src) { wcscat(dest,src); return 0; }
-#endif
 #endif
 
 #ifdef _MSC_VER
@@ -174,12 +165,6 @@ static const string defaultPathSearch[] = { string(), "user"s +PATH_SEPARATOR_CH
 #define strnlen_s strnlen
 #define sprintf_s snprintf
 #define _snprintf_s snprintf
-
-#define STRNCPY_S3(a, b, c) strncpy(a, b, c)
-#define STRNCPY_S4(a, b, c, d) strncpy(a, c, d)
-#define GET_MACRO(_1, _2, _3, _4, NAME, ...) NAME
-#define strncpy_s(...) \
-  GET_MACRO(__VA_ARGS__, STRNCPY_S4, STRNCPY_S3)(__VA_ARGS__)
 
 #define _T(x) (x)
 #define AtoT(x) (x)

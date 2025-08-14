@@ -44,13 +44,13 @@ public:
       { \
          WCHAR wzUniqueName[std::size(m_wzName)]; \
          GetPTable()->GetUniqueName(ItemType, wzUniqueName, std::size(m_wzName)); \
-         wcscpy_s(m_wzName, wzUniqueName); \
+         wcsncpy_s(m_wzName, std::size(m_wzName), wzUniqueName); \
       } \
       if (GetScriptable() != nullptr) \
       { \
          if (GetScriptable()->m_wzName[0] == '\0') \
             /* Just in case something screws up - not good having a null script name */ \
-            wcscpy_s(GetScriptable()->m_wzName, std::to_wstring(reinterpret_cast<uintptr_t>(this)).c_str()); \
+            wcsncpy_s(GetScriptable()->m_wzName, std::size(m_wzName), std::to_wstring(reinterpret_cast<uintptr_t>(this)).c_str()); \
          GetPTable()->m_pcv->AddItem(GetScriptable(), false); \
       } \
       return S_OK; \
@@ -93,7 +93,7 @@ public:
 			return E_FAIL; \
 		if (GetPTable()->m_pcv->ReplaceName(this, newName) != S_OK) \
 			return E_FAIL; \
-		wcscpy_s(m_wzName, newName.c_str()); \
+		wcsncpy_s(m_wzName, std::size(m_wzName), newName.c_str()); \
 		return S_OK; \
 	} \
 	STDMETHOD(get_TimerInterval)(/*[out, retval]*/ LONG *pVal) {*pVal = m_d.m_tdr.m_TimerInterval; return S_OK;} \

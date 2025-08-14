@@ -27,6 +27,7 @@ namespace RemoteControl {
 LPI_USE();
 #define LOGD RemoteControl::LPI_LOGD
 #define LOGI RemoteControl::LPI_LOGI
+#define LOGW RemoteControl::LPI_LOGW
 #define LOGE RemoteControl::LPI_LOGE
 
 ///////////////////////////////////////////////////////////////////////////////

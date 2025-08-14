@@ -452,7 +452,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                break;
 
             char szFileName[MAXSTRING];
-            strncpy_s(szFileName, "Materials.mat", sizeof(szFileName)-1);
+            strncpy_s(szFileName, sizeof(szFileName), "Materials.mat");
             OPENFILENAME ofn = {};
             ofn.lStructSize = sizeof(OPENFILENAME);
             ofn.hInstance = g_pvp->theInstance;
@@ -497,7 +497,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                   mat.fOpacity = pmat->m_fOpacity;
                   mat.bOpacityActive_fEdgeAlpha = pmat->m_bOpacityActive ? 1 : 0;
                   mat.bOpacityActive_fEdgeAlpha |= quantizeUnsigned<7>(clamp(pmat->m_fEdgeAlpha, 0.f, 1.f)) << 1;
-                  strncpy_s(mat.szName, pmat->m_name.c_str(), sizeof(mat.szName)-1);
+                  strncpy_s(mat.szName, sizeof(mat.szName), pmat->m_name.c_str());
 
                   fwrite(&mat, sizeof(SaveMaterial), 1, f);
                   fwrite(&pmat->m_fElasticity, sizeof(float), 1, f);

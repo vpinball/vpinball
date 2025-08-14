@@ -50,13 +50,9 @@ void CVPreference::GetPrefsFromReg()
 	m_rgb = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, m_regName + "_color", (int)m_rgb);
 	m_pointSize = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, m_regName + "_FontPointSize", m_pointSize);
 
-	char bakupFaceName[LF_FACESIZE]; // to save the default font name, in case the corresponding registry entry is empty
-	strncpy_s(bakupFaceName, m_logFont.lfFaceName, sizeof(bakupFaceName)-1);
 	string tmp;
 	if (g_pvp->m_settings.LoadValue(Settings::CVEdit, m_regName + "_Font", tmp))
-		strncpy_s(m_logFont.lfFaceName, tmp.c_str(), sizeof(m_logFont.lfFaceName)-1);
-	else
-		strncpy_s(m_logFont.lfFaceName, bakupFaceName, sizeof(m_logFont.lfFaceName)-1);
+		strncpy_s(m_logFont.lfFaceName, sizeof(m_logFont.lfFaceName), tmp.c_str());
 
 	m_logFont.lfWeight = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, m_regName + "_FontWeight", (int)m_logFont.lfWeight);
 	m_logFont.lfItalic = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, m_regName + "_FontItalic", m_logFont.lfItalic);

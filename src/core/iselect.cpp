@@ -248,7 +248,7 @@ void ISelect::GetTypeNameForType(const ItemTypeEnum type, WCHAR * const buf) con
    /*const int len =*/ LoadStringW(m_vpinball->theInstance, strID, buf, 256);
    buf[256-1] = L'\0'; // in case of truncation
  #else
-   wcscpy_s(buf, 256, LocalStringW(strID).m_szbuffer);
+   wcsncpy_s(buf, 256, LocalStringW(strID).m_szbuffer);
 #endif
 }
 
@@ -278,7 +278,7 @@ static void SetPartGroup(ISelect* const me, const string& layerName)
          {
             const wstring newName = MakeWString(layerName);
             me->GetPTable()->m_pcv->ReplaceName(newGroup->GetIEditable()->GetScriptable(), newName);
-            wcscpy_s(newGroup->GetScriptable()->m_wzName, newName.c_str());
+            wcsncpy_s(newGroup->GetScriptable()->m_wzName, std::size(newGroup->GetScriptable()->m_wzName), newName.c_str());
             me->GetPTable()->m_vedit.push_back(newGroup);
             me->GetIEditable()->SetPartGroup(newGroup);
          }

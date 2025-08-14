@@ -322,11 +322,11 @@ namespace rde
 
    void CrashHandler::SetMiniDumpFileName(const char* name)
    {
-      strncpy_s(s_miniDumpFileName, name, sizeof(s_miniDumpFileName)-1);
+      strncpy_s(s_miniDumpFileName, sizeof(s_miniDumpFileName), name);
    }
 
    void CrashHandler::SetCrashReportFileName(const char* name)
    {
-      strncpy_s(s_reportFileName, name, sizeof(s_reportFileName)-1);
+      strncpy_s(s_reportFileName, sizeof(s_reportFileName), name);
    }
 }

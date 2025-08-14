@@ -70,7 +70,6 @@ public:
       return hr;
    }
 #endif
-   HRESULT GetString(char * const szvalue, const size_t szvalue_maxlength);
    HRESULT GetString(string& szvalue);
    HRESULT GetWideString(WCHAR* wzvalue, const size_t wzvalue_maxlength);
    HRESULT GetWideString(std::basic_string<WCHAR>& wzvalue);

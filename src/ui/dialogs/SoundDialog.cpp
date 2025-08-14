@@ -474,21 +474,20 @@ void SoundDialog::Export()
             ofn.lpstrFilter = "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0";
 
             char filename[MAXSTRING];
-            filename[0] = '\0';
             if (!renameOnExport)
             {
                string filename2 = pps->GetImportPath();
                const size_t pos = filename2.find_last_of(PATH_SEPARATOR_CHAR);
                if (pos != string::npos)
                   filename2 = filename2.substr(pos + 1);
-               strncpy_s(filename, filename2.c_str(), sizeof(filename) - 1);
+               strncpy_s(filename, sizeof(filename), filename2.c_str());
             }
             else
             {
                string filename2 = pps->GetName();
                const size_t pos = pps->GetImportPath().find_last_of('.');
                filename2 += pos != string::npos ? pps->GetImportPath().substr(pos) : ".ogg"s;
-               strncpy_s(filename, filename2.c_str(), sizeof(filename) - 1);
+               strncpy_s(filename, sizeof(filename), filename2.c_str());
             }
             ofn.lpstrFile = filename;
             ofn.nMaxFile = sizeof(filename);

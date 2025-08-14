@@ -208,7 +208,7 @@ int StackTrace::GetSymbolInfo(Address address, char* symbol, int maxSymbolLen)
 		char moduleName[MAXSTRING + 1];
 		GetFileFromPath(moduleInfo.ImageName, moduleName, MAXSTRING);
 		const int moduleLen = (int)strnlen_s(moduleName,sizeof(moduleName));
-		strncpy_s(symbol, maxSymbolLen, moduleName, maxSymbolLen-1);
+		strncpy_s(symbol, maxSymbolLen, moduleName);
 		symbol += moduleLen;
 		charsAdded += moduleLen;
 		maxSymbolLen -= moduleLen;

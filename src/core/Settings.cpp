@@ -637,7 +637,7 @@ bool Settings::LoadValue(const Section section, const string &key, void *const s
    string val;
    const bool success = LoadValue(section, key, val);
    if (success)
-      strncpy_s((char *)szbuffer, size, val.c_str(), size - 1);
+      strncpy_s((char *)szbuffer, size, val.c_str());
    else
       ((char *)szbuffer)[0] = '\0';
 
