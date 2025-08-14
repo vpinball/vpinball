@@ -418,10 +418,10 @@ VRDevice::VRDevice()
       // Fill out an XrApplicationInfo structure detailing the names and OpenXR version.
       // The application/engine name and version are user-definied. These may help IHVs or runtimes.
       XrApplicationInfo AI;
-      strcpy_s(AI.applicationName, XR_MAX_APPLICATION_NAME_SIZE, "Visual Pinball X");
+      strncpy_s(AI.applicationName, XR_MAX_APPLICATION_NAME_SIZE, "Visual Pinball X", XR_MAX_APPLICATION_NAME_SIZE-1);
       constexpr uint32_t ver = (VP_VERSION_MAJOR / 10) << 12 | (VP_VERSION_MAJOR % 10) << 8 | (VP_VERSION_MINOR) << 4 | VP_VERSION_REV; // e.g. 0x1081 for 10.8.1
       AI.applicationVersion = ver;
-      strcpy_s(AI.engineName, XR_MAX_ENGINE_NAME_SIZE, "");
+      strncpy_s(AI.engineName, XR_MAX_ENGINE_NAME_SIZE, "", XR_MAX_ENGINE_NAME_SIZE-1);
       AI.engineVersion = 0;
       AI.apiVersion = XR_MAKE_VERSION(1, 0, 0); //XR_CURRENT_API_VERSION;
 

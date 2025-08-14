@@ -152,10 +152,7 @@ LocalString::LocalString(const int resid)
    };
    const ankerl::unordered_dense::map<int, const char*>::const_iterator it = ids_map.find(resid);
    if (it != ids_map.end())
-   {
-      strcpy_s(m_szbuffer, it->second);
-      m_szbuffer[std::size(m_szbuffer)-1] = '\0'; // in case of truncation
-   }
+      strncpy_s(m_szbuffer, std::size(m_szbuffer), it->second, std::size(m_szbuffer)-1);
 #endif
 }
 
@@ -193,10 +190,7 @@ LocalStringW::LocalStringW(const int resid)
    };
    const ankerl::unordered_dense::map<int, const WCHAR*>::const_iterator it = ids_map.find(resid);
    if (it != ids_map.end())
-   {
       wcscpy_s(m_szbuffer, it->second);
-      m_szbuffer[std::size(m_szbuffer)-1] = L'\0'; // in case of truncation
-   }
 #endif
 }
 

@@ -252,12 +252,12 @@ public:
          const size_t len = timer_name.length() + 1;
          if (m_profileTimersPos + len < MAX_TIMER_LOG - 8)
          {
-            strcpy_s(&m_profileTimers[m_profileTimersPos], len, timer_name.c_str());
+            strncpy_s(&m_profileTimers[m_profileTimersPos], len, timer_name.c_str(), len-1);
             m_profileTimersPos += len;
          }
          else if (m_profileTimersPos < MAX_TIMER_LOG - 8)
          {
-            strcpy_s(&m_profileTimers[m_profileTimersPos], 4, "...");
+            strncpy_s(&m_profileTimers[m_profileTimersPos], 4, "...", 4-1);
             m_profileTimersPos += 4;
          }
       }

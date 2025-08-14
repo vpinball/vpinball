@@ -2839,7 +2839,7 @@ static unsigned int GenerateTournamentFileInternal(uint8_t *const dmd_data, cons
    GetModuleFileName(nullptr, path, MAXSTRING);
 #elif defined(__APPLE__) //!! ??
    const char* szPath = SDL_GetBasePath();
-   strcpy_s(path, sizeof(path), szPath);
+   strncpy_s(path, sizeof(path), szPath, sizeof(path)-1);
 #else
    const ssize_t len = ::readlink("/proc/self/exe", path, sizeof(path)-1);
    if (len != -1)
