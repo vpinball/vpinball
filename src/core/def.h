@@ -749,8 +749,11 @@ inline void strncpy_s(char* const __restrict dest, const size_t dest_size, const
       return;
    size_t i = 0;
    if (src)
+   {
       for (; i < dest_size-1 && src[i] != '\0'; ++i)
          dest[i] = src[i];
+      assert(src[i] == '\0');
+   }
    dest[i] = '\0';
 }
 // copies all characters of src incl. the null-terminator, BUT never more than dest_size-1, always null-terminates
@@ -760,8 +763,11 @@ inline void wcsncpy_s(WCHAR* const __restrict dest, const size_t dest_size, cons
       return;
    size_t i = 0;
    if (src)
+   {
       for (; i < dest_size-1 && src[i] != L'\0'; ++i)
          dest[i] = src[i];
+      assert(src[i] == L'\0');
+   }
    dest[i] = L'\0';
 }
 bool string_contains_case_insensitive(const string& str1, const string& str2);
