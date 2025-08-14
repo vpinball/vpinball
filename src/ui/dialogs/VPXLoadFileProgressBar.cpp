@@ -21,8 +21,7 @@ VPXLoadFileProgressBar::~VPXLoadFileProgressBar()
 
 void VPXLoadFileProgressBar::OperationStarted()
 {
-   const LocalString loadingText(IDS_LOADING);
-   ::SendMessage(m_statusBar, SB_SETTEXT, 3 | 0, (LPARAM)loadingText.m_szbuffer);
+   ::SendMessage(m_statusBar, SB_SETTEXT, 3 | 0, (LPARAM)LocalString(IDS_LOADING).m_szbuffer);
 
    const HCURSOR cursor = ::LoadCursor(nullptr, IDC_WAIT);
    ::SetCursor(cursor);

@@ -92,24 +92,23 @@ string find_case_insensitive_file_path(const string& szPath)
    return string();
 }
 
-vector<unsigned char> base64_decode(const string &encoded_string)
+vector<unsigned char> base64_decode(string encoded_string)
 {
    static const string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                                       "abcdefghijklmnopqrstuvwxyz"
                                       "0123456789+/"s;
 
-   string input = encoded_string;
-   input.erase(std::remove(input.begin(), input.end(), '\r'), input.end());
-   input.erase(std::remove(input.begin(), input.end(), '\n'), input.end());
+   std::erase(encoded_string, '\r');
+   std::erase(encoded_string, '\n');
 
-   int in_len = static_cast<int>(input.size());
+   int in_len = static_cast<int>(encoded_string.length());
    int i = 0, in_ = 0;
    unsigned char char_array_4[4], char_array_3[3];
    vector<unsigned char> ret;
 
-   while (in_len-- && (input[in_] != '=') && (std::isalnum(input[in_]) || (input[in_] == '+') || (input[in_] == '/')))
+   while (in_len-- && (encoded_string[in_] != '=') && (std::isalnum(encoded_string[in_]) || (encoded_string[in_] == '+') || (encoded_string[in_] == '/')))
    {
-      char_array_4[i++] = input[in_];
+      char_array_4[i++] = encoded_string[in_];
       in_++;
       if (i == 4)
       {

@@ -122,7 +122,7 @@ constexpr __forceinline T smoothstep(const T edge0, const T edge1, T x)
 template <typename T>
 inline void RemoveFromVector(vector<T>& v, const T& val)
 {
-   v.erase(std::remove(v.begin(), v.end(), val), v.end());
+   std::erase(v, val);
 }
 
 template <typename T>
@@ -228,7 +228,7 @@ class LocalString final
 public:
    LocalString(const int resid);
 
-   char m_szbuffer[256] = { 0 };
+   char m_szbuffer[256]; // max size would be 4096
 };
 
 class LocalStringW final
@@ -236,7 +236,7 @@ class LocalStringW final
 public:
    LocalStringW(const int resid);
 
-   WCHAR m_szbuffer[256] = { 0 };
+   WCHAR m_szbuffer[256]; // max size would be 4096
 };
 
 #ifndef M_PI
@@ -765,8 +765,10 @@ vector<string> parse_csv_line(const string& line);
 bool string_contains_case_insensitive(const string& str1, const string& str2);
 bool string_starts_with_case_insensitive(const string& str, const string& prefix);
 string string_replace_all(const string& szStr, const string& szFrom, const string& szTo, const size_t offs = 0);
+string string_replace_all(const string& szStr, const string& szFrom, const char szTo, const size_t offs = 0);
+string string_replace_all(const string& szStr, const char szFrom, const string& szTo, const size_t offs = 0);
 string create_hex_dump(const uint8_t* buffer, size_t size);
-vector<unsigned char> base64_decode(const string &encoded_string);
+vector<unsigned char> base64_decode(string encoded_string);
 #ifdef ENABLE_OPENGL
 const char* gl_to_string(GLuint value);
 #endif

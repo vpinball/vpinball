@@ -621,8 +621,7 @@ void ImageDialog::DeleteImage()
 
    if (count > 0)
    {
-      const LocalString ls(IDS_REMOVEIMAGE);
-      const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to remove this image?"*/, "Confirm Deletion", MB_YESNO | MB_DEFBUTTON2);
+      const int ans = MessageBox(LocalString(IDS_REMOVEIMAGE).m_szbuffer /*"Are you sure you want to remove this image?"*/, "Confirm Deletion", MB_YESNO | MB_DEFBUTTON2);
       if (ans == IDYES)
       {
          CCO(PinTable) * const pt = g_pvp->GetActiveTable();
@@ -664,8 +663,7 @@ void ImageDialog::Reimport()
 
    if (count > 0)
    {
-      const LocalString ls(IDS_REPLACEIMAGE);
-      const int ans = MessageBox(ls.m_szbuffer/*"Are you sure you want to replace this image?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2);
+      const int ans = MessageBox(LocalString(IDS_REPLACEIMAGE).m_szbuffer /*"Are you sure you want to replace this image?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2);
       if (ans == IDYES)
       {
          int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
@@ -771,8 +769,7 @@ void ImageDialog::ReimportFrom()
 
    if (sel != -1)
    {
-      const LocalString ls(IDS_REPLACEIMAGE);
-      const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to replace this image with a new one?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2);
+      const int ans = MessageBox(LocalString(IDS_REPLACEIMAGE).m_szbuffer /*"Are you sure you want to replace this image with a new one?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2);
       if (ans == IDYES)
       {
          string szInitialDir = g_pvp->m_settings.LoadValueWithDefault(Settings::RecentDir, "ImageDir"s, PATH_TABLES);

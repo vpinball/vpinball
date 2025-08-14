@@ -135,12 +135,15 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       if (m_activeTable)
       {
          IEditable* const partGroup = EditableRegistry::CreateAndInit(eItemPartGroup, m_activeTable, 0, 0);
-         m_activeTable->m_vedit.push_back(partGroup);
-         partGroup->SetPartGroup(GetSelectedPartGroup());
-         m_activeTable->BeginUndo();
-         m_activeTable->m_undo.MarkForCreate(partGroup);
-         m_activeTable->EndUndo();
-         Update();
+         if (partGroup)
+         {
+            m_activeTable->m_vedit.push_back(partGroup);
+            partGroup->SetPartGroup(GetSelectedPartGroup());
+            m_activeTable->BeginUndo();
+            m_activeTable->m_undo.MarkForCreate(partGroup);
+            m_activeTable->EndUndo();
+            Update();
+         }
       }
       return TRUE;
 

@@ -304,14 +304,14 @@ bool PUPManager::AddFont(TTF_Font* pFont, const string& szFilename)
 
    const string szFamilyName = string(TTF_GetFontFamilyName(pFont));
 
-   const string szNormalizedFamilyName = lowerCase(string_replace_all(szFamilyName, "  "s, " "s));
+   const string szNormalizedFamilyName = lowerCase(string_replace_all(szFamilyName, "  "s, ' '));
    m_fontMap[szNormalizedFamilyName] = pFont;
 
    string szStyleName = string(TTF_GetFontStyleName(pFont));
    if (szStyleName != "Regular")
    {
       const string szFullName = szFamilyName + ' ' + szStyleName;
-      const string szNormalizedFullName = lowerCase(string_replace_all(szFullName, "  "s, " "s));
+      const string szNormalizedFullName = lowerCase(string_replace_all(szFullName, "  "s, ' '));
       m_fontMap[szNormalizedFullName] = pFont;
    }
 
@@ -325,7 +325,7 @@ bool PUPManager::AddFont(TTF_Font* pFont, const string& szFilename)
 
 TTF_Font* PUPManager::GetFont(const string& szFont)
 {
-   string szNormalizedFamilyName = lowerCase(string_replace_all(szFont, "  "s, " "s));
+   string szNormalizedFamilyName = lowerCase(string_replace_all(szFont, "  "s, ' '));
 
    ankerl::unordered_dense::map<string, TTF_Font*>::const_iterator it = m_fontMap.find(szNormalizedFamilyName);
    if (it != m_fontMap.end())

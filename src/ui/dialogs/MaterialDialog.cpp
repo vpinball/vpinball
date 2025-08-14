@@ -526,8 +526,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          const int count = ListView_GetSelectedCount(m_hMaterialList);
          if (count > 0)
          {
-            const LocalString ls(IDS_REMOVEMATERIAL);
-            const int ans = MessageBox(ls.m_szbuffer/*"Are you sure you want to remove this material?"*/, "Confirm Deletion", MB_YESNO | MB_DEFBUTTON2);
+            const int ans = MessageBox(LocalString(IDS_REMOVEMATERIAL).m_szbuffer /*"Are you sure you want to remove this material?"*/, "Confirm Deletion", MB_YESNO | MB_DEFBUTTON2);
             if (ans == IDYES)
             {
                m_deletingItem = true;

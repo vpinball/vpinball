@@ -100,6 +100,7 @@ public:
    virtual const PinTable *GetPTable() const = 0;
 
    virtual HRESULT GetTypeName(BSTR *pVal) const;
+   // buf must be at least 256 characters long
    void GetTypeNameForType(const ItemTypeEnum type, WCHAR * const buf) const;
 
    virtual IDispatch *GetDispatch() = 0;

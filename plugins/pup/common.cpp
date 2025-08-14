@@ -96,6 +96,17 @@ string string_replace_all(const string& szStr, const string& szFrom, const strin
    return string_replace_all(szNewStr, szFrom, szTo, startPos+szTo.length());
 }
 
+string string_replace_all(const string& szStr, const string& szFrom, const char szTo, const size_t offs)
+{
+   size_t startPos = szStr.find(szFrom, offs);
+   if (startPos == string::npos)
+      return szStr;
+
+   string szNewStr = szStr;
+   szNewStr.replace(startPos, szFrom.length(), 1, szTo);
+   return string_replace_all(szNewStr, szFrom, szTo, startPos+1);
+}
+
 constexpr inline char cLower(char c)
 {
    if (c >= 'A' && c <= 'Z')

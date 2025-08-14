@@ -428,31 +428,31 @@ int _tmain(int argc, _TCHAR* argv[])
     const double rlong = lon * (M_PI / 180.);
 
     const double _AngleOfDay = AngleOfDay(day, month, year);
-    std::cout << "Angle of day: " << _AngleOfDay << std::endl;
+    std::cout << "Angle of day: " << _AngleOfDay << '\n';
 
     const double _Declination = SolarDeclination(_AngleOfDay);
-    std::cout << "Declination (Delta): " << _Declination << std::endl;
+    std::cout << "Declination (Delta): " << _Declination << '\n';
 
     const double _EquationOfTime = EquationOfTimeRadian(_AngleOfDay) * (12. / M_PI);
-    std::cout << "Equation Of Time (Delta): " << _EquationOfTime << std::endl;
+    std::cout << "Equation Of Time (Delta): " << _EquationOfTime << '\n';
 
     const double _DayDurationHours = DayDurationHours(_Declination, rlat);
-    std::cout << "Day duration: " << _DayDurationHours << std::endl;
+    std::cout << "Day duration: " << _DayDurationHours << '\n';
 
     const double _OrbitalExcentricity = OrbitalExcentricity(_AngleOfDay);
-    std::cout << "Excentricity: " << _OrbitalExcentricity << std::endl;
+    std::cout << "Excentricity: " << _OrbitalExcentricity << '\n';
 
     const double _TheoreticRadiation = TheoreticRadiation(day, month, year, rlat);
-    std::cout << "Theoretical radiation: " << _TheoreticRadiation << std::endl;
+    std::cout << "Theoretical radiation: " << _TheoreticRadiation << '\n';
 
     const double _MaxTheoreticRadiation = MaxTheoreticRadiation(year, rlat);
-    std::cout << "Max./Year Theoretical radiation: " << _MaxTheoreticRadiation << std::endl;
+    std::cout << "Max./Year Theoretical radiation: " << _MaxTheoreticRadiation << '\n';
 
     const double _SunriseLocalTime = SunsetSunriseLocalTime(day, month, year, rlong, rlat, true);
-    std::cout << "Sunrise Local Time: " << _SunriseLocalTime << std::endl;
+    std::cout << "Sunrise Local Time: " << _SunriseLocalTime << '\n';
 
     const double _SunsetLocalTime = SunsetSunriseLocalTime(day, month, year, rlong, rlat, false);
-    std::cout << "Sunset Local Time: " << _SunsetLocalTime << std::endl;
+    std::cout << "Sunset Local Time: " << _SunsetLocalTime << '\n';
 
     return 0;
 }

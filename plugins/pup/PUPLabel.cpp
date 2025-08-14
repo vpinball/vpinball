@@ -59,7 +59,7 @@ void PUPLabel::SetCaption(const string& szCaption)
 
    string szText = szCaption;
    std::ranges::replace(szText.begin(), szText.end(), '~', '\n');
-   szText = string_replace_all(szText, "\\r"s, "\n"s);
+   szText = string_replace_all(szText, "\\r"s, '\n');
 
    {
       std::lock_guard<std::mutex> lock(m_mutex);

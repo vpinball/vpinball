@@ -1240,10 +1240,7 @@ void VPinball::LoadFileName(const string& filename, const bool updateEditor, VPX
 
    const bool hashing_error = (hr == APPX_E_BLOCK_HASH_INVALID || hr == APPX_E_CORRUPT_CONTENT);
    if (hashing_error)
-   {
-      const LocalString ls(IDS_CORRUPTFILE);
-      ShowError(ls.m_szbuffer);
-   }
+      ShowError(LocalString(IDS_CORRUPTFILE).m_szbuffer);
 
    if (!SUCCEEDED(hr) && !hashing_error)
    {
@@ -1599,7 +1596,7 @@ void VPinball::UpdateRecentFileList(const string& filename)
       for (size_t i = 0; i < m_recentTableList.size(); i++)
       {
          // now search for filenames with & and replace with && so that these display correctly, and add shortcut 1..X in front
-         const string recentMenuname = '&' + std::to_string(i+1) + "  " + string_replace_all(m_recentTableList[i], "&"s, "&&"s);
+         const string recentMenuname = '&' + std::to_string(i+1) + "  " + string_replace_all(m_recentTableList[i], '&', "&&"s);
 
          // set the IDM of this menu item
          // set up the menu info block
@@ -1794,9 +1791,7 @@ int VPinball::OnCreate(CREATESTRUCT& cs)
 
    const int result = CMDIDockFrame::OnCreate(cs);
 
-   char szName[256];
-   LoadString(theInstance, IDS_PROJNAME, szName, sizeof(szName));
-   SetWindowText(szName);
+   SetWindowText(LocalString(IDS_PROJNAME).m_szbuffer);
 
    CreateDocker();
 
@@ -2494,8 +2489,7 @@ void VPinball::SetDefaultPhysics()
    CComObject<PinTable> * const ptCur = GetActiveTable();
    if (ptCur)
    {
-      const LocalString ls(IDS_DEFAULTPHYSICS);
-      const int answ = MessageBox(ls.m_szbuffer, "Continue?", MB_YESNO | MB_ICONWARNING);
+      const int answ = MessageBox(LocalString(IDS_DEFAULTPHYSICS).m_szbuffer, "Continue?", MB_YESNO | MB_ICONWARNING);
       if (answ == IDYES)
       {
          ptCur->BeginUndo();

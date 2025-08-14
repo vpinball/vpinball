@@ -120,11 +120,13 @@ string f2sz(const float f, const bool can_convert_decimal_point)
 
 LocalString::LocalString(const int resid)
 {
+   m_szbuffer[0] = '\0';
 #ifndef __STANDALONE__
    if (resid > 0)
+   {
       /*const int cchar =*/ LoadString(g_pvp->theInstance, resid, m_szbuffer, sizeof(m_szbuffer));
-   else
-      m_szbuffer[0] = '\0';
+      m_szbuffer[std::size(m_szbuffer)-1] = '\0'; // in case of truncation
+   }
 #else
    static const ankerl::unordered_dense::map<int, const char*> ids_map = {
      { IDS_SCRIPT, "Script" },
@@ -152,46 +154,48 @@ LocalString::LocalString(const int resid)
    if (it != ids_map.end())
    {
       const char* sz = it->second;
-      strncpy(m_szbuffer, sz, sizeof(m_szbuffer) - 1);
+      strncpy(m_szbuffer, sz, std::size(m_szbuffer)-1);
    }
 #endif
 }
 
 LocalStringW::LocalStringW(const int resid)
 {
+   m_szbuffer[0] = L'\0';
 #ifndef __STANDALONE__
    if (resid > 0)
+   {
       LoadStringW(g_pvp->theInstance, resid, m_szbuffer, static_cast<int>(std::size(m_szbuffer)));
-   else
-      m_szbuffer[0] = L'\0';
+      m_szbuffer[std::size(m_szbuffer)-1] = L'\0'; // in case of truncation
+   }
 #else
-   static const ankerl::unordered_dense::map<int, const char*> ids_map = {
-     { IDS_SCRIPT, "Script" },
-     { IDS_TB_BUMPER, "Bumper" },
-     { IDS_TB_DECAL, "Decal" },
-     { IDS_TB_DISPREEL, "EMReel" },
-     { IDS_TB_FLASHER, "Flasher" },
-     { IDS_TB_FLIPPER, "Flipper" },
-     { IDS_TB_GATE, "Gate" },
-     { IDS_TB_KICKER, "Kicker" },
-     { IDS_TB_LIGHT, "Light" },
-     { IDS_TB_LIGHTSEQ, "LightSeq" },
-     { IDS_TB_PLUNGER, "Plunger" },
-     { IDS_TB_PRIMITIVE, "Primitive" },
-     { IDS_TB_WALL, "Wall" },
-     { IDS_TB_RAMP, "Ramp" },
-     { IDS_TB_RUBBER, "Rubber" },
-     { IDS_TB_SPINNER, "Spinner" },
-     { IDS_TB_TEXTBOX, "TextBox" },
-     { IDS_TB_TIMER, "Timer" },
-     { IDS_TB_TRIGGER, "Trigger" },
-     { IDS_TB_TARGET, "Target" }
+   static const ankerl::unordered_dense::map<int, const WCHAR*> ids_map = {
+     { IDS_SCRIPT, L"Script" },
+     { IDS_TB_BUMPER, L"Bumper" },
+     { IDS_TB_DECAL, L"Decal" },
+     { IDS_TB_DISPREEL, L"EMReel" },
+     { IDS_TB_FLASHER, L"Flasher" },
+     { IDS_TB_FLIPPER, L"Flipper" },
+     { IDS_TB_GATE, L"Gate" },
+     { IDS_TB_KICKER, L"Kicker" },
+     { IDS_TB_LIGHT, L"Light" },
+     { IDS_TB_LIGHTSEQ, L"LightSeq" },
+     { IDS_TB_PLUNGER, L"Plunger" },
+     { IDS_TB_PRIMITIVE, L"Primitive" },
+     { IDS_TB_WALL, L"Wall" },
+     { IDS_TB_RAMP, L"Ramp" },
+     { IDS_TB_RUBBER, L"Rubber" },
+     { IDS_TB_SPINNER, L"Spinner" },
+     { IDS_TB_TEXTBOX, L"TextBox" },
+     { IDS_TB_TIMER, L"Timer" },
+     { IDS_TB_TRIGGER, L"Trigger" },
+     { IDS_TB_TARGET, L"Target" }
    };
-   const ankerl::unordered_dense::map<int, const char*>::const_iterator it = ids_map.find(resid);
+   const ankerl::unordered_dense::map<int, const WCHAR*>::const_iterator it = ids_map.find(resid);
    if (it != ids_map.end())
    {
-      const char* sz = it->second;
-      MultiByteToWideCharNull(CP_ACP, 0, sz, -1, m_szbuffer, (int)std::size(m_szbuffer));
+      const WCHAR* sz = it->second;
+      wcsncpy(m_szbuffer, sz, std::size(m_szbuffer)-1);
    }
 #endif
 }
@@ -766,6 +770,28 @@ string string_replace_all(const string& szStr, const string& szFrom, const strin
    return string_replace_all(szNewStr, szFrom, szTo, startPos+szTo.length());
 }
 
+string string_replace_all(const string& szStr, const string& szFrom, const char szTo, const size_t offs)
+{
+   size_t startPos = szStr.find(szFrom, offs);
+   if (startPos == string::npos)
+      return szStr;
+
+   string szNewStr = szStr;
+   szNewStr.replace(startPos, szFrom.length(), 1, szTo);
+   return string_replace_all(szNewStr, szFrom, szTo, startPos+1);
+}
+
+string string_replace_all(const string& szStr, const char szFrom, const string& szTo, const size_t offs)
+{
+   size_t startPos = szStr.find(szFrom, offs);
+   if (startPos == string::npos)
+      return szStr;
+
+   string szNewStr = szStr;
+   szNewStr.replace(startPos, 1, szTo);
+   return string_replace_all(szNewStr, szFrom, szTo, startPos+szTo.length());
+}
+
 string create_hex_dump(const uint8_t* buffer, size_t size)
 {
    constexpr int bytesPerLine = 32;
@@ -788,24 +814,23 @@ string create_hex_dump(const uint8_t* buffer, size_t size)
    return ss.str();
 }
 
-vector<unsigned char> base64_decode(const string &encoded_string)
+vector<unsigned char> base64_decode(string encoded_string)
 {
    static const string base64_chars =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
       "abcdefghijklmnopqrstuvwxyz"
       "0123456789+/"s;
 
-   string input = encoded_string;
-   input.erase(std::remove(input.begin(), input.end(), '\r'), input.end());
-   input.erase(std::remove(input.begin(), input.end(), '\n'), input.end());
+   std::erase(encoded_string, '\r');
+   std::erase(encoded_string, '\n');
 
-   int in_len = static_cast<int>(input.size());
+   int in_len = static_cast<int>(encoded_string.length());
    int i = 0, in_ = 0;
    unsigned char char_array_4[4], char_array_3[3];
    vector<unsigned char> ret;
 
-   while (in_len-- && (input[in_] != '=') && (std::isalnum(input[in_]) || (input[in_] == '+') || (input[in_] == '/'))) {
-      char_array_4[i++] = input[in_];
+   while (in_len-- && (encoded_string[in_] != '=') && (std::isalnum(encoded_string[in_]) || (encoded_string[in_] == '+') || (encoded_string[in_] == '/'))) {
+      char_array_4[i++] = encoded_string[in_];
       in_++;
       if (i == 4) {
          for (i = 0; i < 4; i++)

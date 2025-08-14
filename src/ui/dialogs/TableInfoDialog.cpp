@@ -59,8 +59,7 @@ BOOL TableInfoDialog::OnInitDialog()
    m_dateSavedEdit.SetWindowText(tmp.c_str());
 
    // Init list of images
-   const LocalString ls(IDS_NONE);
-   m_screenshotCombo.AddString(ls.m_szbuffer);
+   m_screenshotCombo.AddString(LocalString(IDS_NONE).m_szbuffer);
 
    for (const Texture *const pin : pt->m_vimage)
       m_screenshotCombo.AddString(pin->m_name.c_str());
@@ -231,8 +230,7 @@ void TableInfoDialog::OnOK()
 
    const string sshot = GetDlgItem(IDC_SCREENSHOT).GetWindowText().GetString();
 
-   const LocalString ls(IDS_NONE);
-   if (sshot == ls.m_szbuffer)
+   if (sshot == LocalString(IDS_NONE).m_szbuffer)
       pt->m_screenShot.clear();
    else
       pt->m_screenShot = sshot;

@@ -42,7 +42,7 @@ class VPXFileFeedback
       // of fonts the table contains.
       virtual void FontHasBeenProcessed(int fontCount, int totalFonts) {}
 
-      // Called when a table font has been processed. 'collectionCount' is the total
+      // Called when a table collection has been processed. 'collectionCount' is the total
       // number of collections processed so far. 'totalCollections' is the total number
       // of collections the table contains.
       virtual void CollectionHasBeenProcessed(int collectionCount, int totalCollections) {}

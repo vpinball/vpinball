@@ -380,8 +380,7 @@ void SoundDialog::ReImport()
     const int count = ListView_GetSelectedCount( hSoundList );
     if (count > 0)
     {
-        const LocalString ls( IDS_REPLACESOUND );
-        const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to remove this image?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2 );
+        const int ans = MessageBox( LocalString( IDS_REPLACESOUND ).m_szbuffer/*"Are you sure you want to remove this image?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2 );
         if (ans == IDYES)
         {
             int sel = ListView_GetNextItem( hSoundList, -1, LVNI_SELECTED );
@@ -421,8 +420,7 @@ void SoundDialog::ReImportFrom()
     const int sel = ListView_GetNextItem( hSoundList, -1, LVNI_SELECTED );
     if (sel != -1)
     {
-        const LocalString ls( IDS_REPLACESOUND );
-        const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to replace this sound with a new one?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2 );
+        const int ans = MessageBox(LocalString( IDS_REPLACESOUND ).m_szbuffer/*"Are you sure you want to replace this sound with a new one?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2);
         if (ans == IDYES)
         {
             string szInitialDir = g_pvp->m_settings.LoadValueWithDefault(Settings::RecentDir, "SoundDir"s, PATH_TABLES);
@@ -634,8 +632,7 @@ void SoundDialog::DeleteSound()
     const int count = ListView_GetSelectedCount( hSoundList );
     if (count > 0)
     {
-        const LocalString ls( IDS_REMOVESOUND );
-        const int ans = MessageBox( ls.m_szbuffer/*"Are you sure you want to remove this image?"*/, "Confirm Deletion", MB_YESNO | MB_DEFBUTTON2 );
+        const int ans = MessageBox(LocalString( IDS_REMOVESOUND ).m_szbuffer/*"Are you sure you want to remove this image?"*/, "Confirm Deletion", MB_YESNO | MB_DEFBUTTON2);
         if (ans == IDYES)
         {
             int sel = ListView_GetNextItem( hSoundList, -1, LVNI_SELECTED );
