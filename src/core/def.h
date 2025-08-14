@@ -17,6 +17,8 @@ using namespace std::string_literals;
 using std::string;
 using std::wstring;
 
+#include <cassert>
+
 #ifdef _MSC_VER
 #include <intrin.h>
 #ifdef _M_ARM64
