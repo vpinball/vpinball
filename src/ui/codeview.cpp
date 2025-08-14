@@ -479,6 +479,8 @@ size_t CodeViewer::GetWordUnderCaret(char *buf)
       buf[0] = '\0';
       return 0;
    }
+#else
+   return 0;
 #endif
 }
 

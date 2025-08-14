@@ -52,6 +52,7 @@
 extern "C" {
    #include <atlbase.h>
 }
+#undef strncpy
 #endif
 
 #ifdef _MSC_VER
