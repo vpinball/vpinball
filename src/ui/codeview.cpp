@@ -1869,12 +1869,12 @@ void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, 
       /*const int foo =*/ GetLastError();	// purge any errors
 
       // update the size of the buffer
-      cchar = cryptlen;
+      cchar = cryptlen/(DWORD)sizeof(char);
    }
 #endif
 
    // ensure that the script is null terminated
-   szText[cchar] = L'\0';
+   szText[cchar] = '\0';
 
    // save original script, in case an external vbs is loaded
    original_table_script.resize(cchar);

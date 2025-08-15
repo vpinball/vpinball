@@ -130,10 +130,10 @@ class Texture final : public ITexManCacheable
 {
 public:
    static Texture *CreateFromFile(const string &filename, const bool isImageData = true);
-   static Texture *CreateFromStream(IStream *pstream, int version, PinTable *pt);
+   static Texture *CreateFromStream(IStream * const pstream, int version, PinTable * const pt);
    ~Texture() override;
 
-   HRESULT SaveToStream(IStream *pstream, const PinTable *pt);
+   HRESULT SaveToStream(IStream *pstream, const PinTable *pt) const;
 
    uint64_t GetLiveHash() const override { return m_liveHash; }
    const string& GetName() const override { return m_name; }

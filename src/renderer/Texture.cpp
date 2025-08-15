@@ -869,7 +869,7 @@ Texture::Texture(string name, PinBinary* ppb, unsigned int width, unsigned int h
    assert(m_height > 0);
 }
 
-Texture* Texture::CreateFromStream(IStream *pstream, int version, PinTable *pt)
+Texture* Texture::CreateFromStream(IStream * const pstream, int version, PinTable * const pt)
 {
    string name;
    string path;
@@ -1027,7 +1027,7 @@ Texture::~Texture()
    #endif
 }
 
-HRESULT Texture::SaveToStream(IStream *pstream, const PinTable *pt)
+HRESULT Texture::SaveToStream(IStream *pstream, const PinTable *pt) const
 {
    BiffWriter bw(pstream, 0);
    bw.WriteString(FID(NAME), m_name);

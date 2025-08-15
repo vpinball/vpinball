@@ -2402,11 +2402,12 @@ HRESULT PinTable::Save(const bool saveAs)
       // TEXT
       ofn.lpstrFilter = "Visual Pinball Tables (*.vpx)\0*.vpx\0";
 
-      const string::size_type ptr = StrFindNoCase(m_filename, ".vpt"s);
-      char fileName[MAXSTRING];
-      strncpy_s(fileName, sizeof(fileName), m_filename.c_str());
+      const size_t ptr = StrFindNoCase(m_filename, ".vpt"s);
+      string filename_new = m_filename;
       if (ptr != string::npos)
-         strcpy_s(fileName+ptr, 5, ".vpx");
+         filename_new.replace(ptr+1, 3, "vpx");
+      char fileName[MAXSTRING];
+      strncpy_s(fileName, sizeof(fileName), filename_new.c_str());
       ofn.lpstrFile = fileName;
       ofn.nMaxFile = sizeof(fileName);
       ofn.lpstrDefExt = "vpx";
@@ -2456,9 +2457,9 @@ HRESULT PinTable::Save(const bool saveAs)
    }
    else
    {
-      const string::size_type ptr = StrFindNoCase(m_filename, ".vpt"s);
+      const size_t ptr = StrFindNoCase(m_filename, ".vpt"s);
       if (ptr != string::npos)
-         strcpy_s(m_filename.data()+ptr, 5, ".vpx");
+         m_filename.replace(ptr+1, 3, "vpx");
 
       STGOPTIONS stg;
       stg.usVersion = 1;
@@ -2524,40 +2525,18 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
    m_savingActive = true;
    feedback.OperationStarted();
 
-   //////////////// Begin Encryption
-   HCRYPTPROV hcp = NULL;
-   HCRYPTHASH hch = NULL;
-   HCRYPTKEY  hkey = NULL;
-   HCRYPTHASH hchkey = NULL;
+   // Hashing (to ensure file integrity)
+   HCRYPTPROV hcp = NULL; // context
+   HCRYPTHASH hch = NULL; // hash
 
-   int foo;
-
-   foo = CryptAcquireContext(&hcp, nullptr, nullptr, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_NEWKEYSET/* | CRYPT_SILENT*/);
-
-   //foo = CryptGenKey(hcp, CALG_RC2, CRYPT_EXPORTABLE, &hkey);
-
+   int foo = CryptAcquireContext(&hcp, nullptr, nullptr, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_NEWKEYSET/* | CRYPT_SILENT*/);
    foo = GetLastError();
-
-   foo = CryptCreateHash(hcp, CALG_MD2/*CALG_MAC*//*CALG_HMAC*/, NULL/*hkey*/, 0, &hch);
-
+   foo = CryptCreateHash(hcp, CALG_MD2, NULL, 0, &hch);
    foo = GetLastError();
-
    foo = CryptHashData(hch, (BYTE *)TABLE_KEY, 14, 0);
-
    foo = GetLastError();
 
-   // create a key hash (we have to use a second hash as deriving a key from the
-   // integrity hash actually modifies it, and thus it calculates the wrong hash)
-   foo = CryptCreateHash(hcp, CALG_MD5, NULL, 0, &hchkey);
-   foo = GetLastError();
-   // hash the password
-   foo = CryptHashData(hchkey, (BYTE *)TABLE_KEY, 14, 0);
-   foo = GetLastError();
-   // Create a block cipher session key based on the hash of the password.
-   foo = CryptDeriveKey(hcp, CALG_RC2, hchkey, CRYPT_EXPORTABLE | 0x00280000, &hkey);
-   foo = GetLastError();
-
-   ////////////// End Encryption
+   //
 
    const int ctotalitems = (int)(m_vedit.size() + m_vsound.size() + m_vimage.size() + m_vfont.size() + m_vcollection.size());
    int csaveditems = 0;
@@ -2688,12 +2667,10 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
 
       feedback.Finalizing();
 
+      // Authentication block
       BYTE hashval[256];
       DWORD hashlen = 256;
-
-      // Authentication block
       foo = CryptGetHashParam(hch, HP_HASHSIZE, hashval, &hashlen, 0);
-
       hashlen = 256;
       foo = CryptGetHashParam(hch, HP_HASHVAL, hashval, &hashlen, 0);
 
@@ -2705,19 +2682,11 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
          pstmItem->Write(hashval, hashlen, &writ);
          pstmItem->Release();
          pstmItem = nullptr;
-         //if (FAILED(hr)) goto Error;
-
-         //CryptExportKey(hkey, nullptr, PUBLICKEYBLOB, 0, BYTE *pbData, DWORD *pdwDataLen);
       }
 
       foo = CryptDestroyHash(hch);
-
-      foo = CryptDestroyHash(hchkey);
-
-      foo = CryptDestroyKey(hkey);
-
       foo = CryptReleaseContext(hcp, 0);
-      //////// End Authentication block
+      // End Authentication block
 
       if (SUCCEEDED(hr))
          pstgData->Commit(STGC_DEFAULT);
@@ -2729,8 +2698,6 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
       }
       pstgData->Release();
    }
-
-   //Error:
 
    feedback.Done();
    m_savingActive = false;
@@ -3126,9 +3093,8 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
 
       bw.WriteStruct(FID(CCUS), m_rgcolorcustom, sizeof(COLORREF) * 16);
 
-      // save the script source code
+      // save the script source code, incl. the computed hash to be able to check for file integrity on loading
       bw.WriteTag(FID(CODE));
-      // if the script is protected then we pass in the proper cyptokey into the code savestream
       m_pcv->SaveToStream(pstm, hcrypthash);
    }
 
@@ -3178,33 +3144,34 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
 
    feedback.OperationStarted();
 
-   HCRYPTPROV hcp = NULL;
-   HCRYPTHASH hch = NULL;
-   HCRYPTHASH hchkey = NULL;
-   HCRYPTKEY  hkey = NULL;
+   //
+
+   HCRYPTPROV hcp = NULL; // crypt context
+   HCRYPTHASH hch = NULL; // hash for file integrity check
+   HCRYPTHASH hchkey = NULL; // hash for decryption key derivation
 
    #ifndef __STANDALONE__
-   bool hashValidation = !g_pvp->m_settings.LoadValueBool(Settings::Editor, "DisableHash"s);
+   // Hashing (to ensure file integrity), can be disabled for slightly faster loading (and then also matches standalone which cannot feature this)
+   const bool hashValidation = !g_pvp->m_settings.LoadValueBool(Settings::Editor, "DisableHash"s);
+   int foo = CryptAcquireContext(&hcp, nullptr, nullptr, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_NEWKEYSET /* | CRYPT_SILENT*/);
+   foo = GetLastError();
    if (hashValidation)
    {
-      int foo;
-      foo = CryptAcquireContext(&hcp, nullptr, nullptr, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_NEWKEYSET /* | CRYPT_SILENT*/);
-      foo = GetLastError();
-      foo = CryptCreateHash(hcp, CALG_MD2 /*CALG_MAC*/ /*CALG_HMAC*/, NULL /*hkey*/, 0, &hch);
+      foo = CryptCreateHash(hcp, CALG_MD2, NULL, 0, &hch);
       foo = GetLastError();
       foo = CryptHashData(hch, (BYTE *)TABLE_KEY, 14, 0);
       foo = GetLastError();
-
-      // create a key hash (we have to use a second hash as deriving a key from the
-      // integrity hash actually modifies it, and thus it calculates the wrong hash)
-      foo = CryptCreateHash(hcp, CALG_MD5, NULL, 0, &hchkey);
-      foo = GetLastError();
-      // hash the password
-      foo = CryptHashData(hchkey, (BYTE *)TABLE_KEY, 14, 0);
-      foo = GetLastError();
-      // Create a block cipher session key based on the hash of the password.
-      // We need to figure out the file verison before we can create the key
    }
+   // Decryption, for unlocking old VP8/VP9 tables that featured password protection (and that had script encryption set);
+   // Create a key hash (we have to use a second hash as deriving a key from the
+   // integrity hash actually modifies it, and thus it calculates the wrong hash)
+   foo = CryptCreateHash(hcp, CALG_MD5, NULL, 0, &hchkey);
+   foo = GetLastError();
+   // Hash the password
+   foo = CryptHashData(hchkey, (BYTE *)TABLE_KEY, 14, 0);
+   foo = GetLastError();
+   // Create a block cipher session key based on the hash of the password.
+   // We need to figure out the file version before we can create the key
    #endif
 
    int loadfileversion = CURRENT_FILE_FORMAT_VERSION;
@@ -3216,7 +3183,8 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
       IStream *pstmGame;
       if (SUCCEEDED(hr = pstgData->OpenStream(L"GameData", nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmGame)))
       {
-         IStream* pstmVersion;
+         HCRYPTKEY hkey = NULL;
+         IStream *pstmVersion;
          if (SUCCEEDED(hr = pstgData->OpenStream(L"Version", nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmVersion)))
          {
             ULONG read;
@@ -3436,13 +3404,11 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
          feedback.Finalizing();
 
          // Authentication block
-
          if (hch && loadfileversion > 40)
          {
             if (SUCCEEDED(hr = pstgData->OpenStream(L"MAC", nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmVersion)))
             {
                BYTE hashvalOld[256];
-               //DWORD hashlenOld = 256;
                ULONG read;
                hr = pstmVersion->Read(&hashvalOld, HASHLENGTH, &read);
 
@@ -3469,11 +3435,9 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                #endif
             }
             else
-            {
-               // Error
-               hr = APPX_E_CORRUPT_CONTENT;
-            }
+               hr = APPX_E_CORRUPT_CONTENT; // Error
          }
+         // End Authentication block
 
          if (loadfileversion < 1030) // the m_fGlossyImageLerp part was included first with 10.3, so set all previously saved materials to the old default
             for (size_t i = 0; i < m_materials.size(); ++i)
@@ -3653,8 +3617,6 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
 
          // Do not consider properties converted to settings as changes to avoid creating an ini for each opened old table (they will be imported again as they are part of the VPX file)
          m_settings.SetModified(false);
-
-         //////// End Authentication block
       }
       pstgData->Release();
    }

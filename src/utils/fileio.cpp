@@ -129,26 +129,6 @@ HRESULT BiffWriter::WriteInt(const int id, const int value)
    return hr;
 }
 
-HRESULT BiffWriter::WriteString(const int id, const char * const szvalue)
-{
-   ULONG writ = 0;
-   HRESULT hr;
-   const int len = (int)strlen(szvalue);
-
-   if (FAILED(hr = WriteRecordSize((int)sizeof(int) * 2 + len)))
-      return hr;
-
-   if (FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
-      return hr;
-
-   if (FAILED(hr = WriteBytes(&len, sizeof(int), &writ)))
-      return hr;
-
-   hr = WriteBytes(szvalue, len, &writ);
-
-   return hr;
-}
-
 HRESULT BiffWriter::WriteString(const int id, const string &szvalue)
 {
    ULONG writ = 0;
