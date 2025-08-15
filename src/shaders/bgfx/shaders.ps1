@@ -338,5 +338,9 @@ if ($gen_mipmap)
 {
 	Write-Host "`n>>>>>>>>>>>>>>>> MipMap shaders"
 	New-Item -Path . -Name "../bgfx_mipmap.h" -ItemType "File" -Force -Value "// MipMap Shaders`n"
-	Process-Shader "cs_mipmap.sc" "mipmap.h" "cs_mipmap_" "compute"
+	$fmts = @("srgba8", "rgba8", "rgba16f", "rgba32f")
+	foreach ($fmt in $fmts)
+	{
+		Process-Shader "cs_mipmap.sc" "mipmap.h" ("cs_mipmap_" + $fmt + "_") "compute" @("FMT_" + $fmt)
+	}
 }
