@@ -103,4 +103,7 @@ private:
 
    typedef std::function<DisplayState(const std::string &)> displayCacheLambda;
    ankerl::unordered_dense::map<std::string, displayCacheLambda> m_displayCache;
+
+   static std::string trim_string(const std::string &str);
+   static bool try_parse_int(const std::string &str, int &value);
 };

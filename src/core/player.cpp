@@ -2374,7 +2374,7 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
             {
                PlayerRenderContext2D *context = reinterpret_cast<PlayerRenderContext2D *>(ctx);
                VPXPluginAPIImpl &vxpApi = VPXPluginAPIImpl::GetInstance();
-               std::shared_ptr<BaseTexture> const gTex = vxpApi.GetTexture(glassTex);
+               std::shared_ptr<BaseTexture> const gTex = glassTex ? vxpApi.GetTexture(glassTex) : nullptr;
                std::shared_ptr<BaseTexture> const dTex = vxpApi.GetTexture(dispTex);
                RenderDevice *const rd = g_pplayer->m_renderer->m_renderDevice;
                rd->ResetRenderState();

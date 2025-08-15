@@ -147,6 +147,12 @@ VPXTexture CreateTexture(uint8_t* rawData, int size)
    return nullptr;
 }
 
+void UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const uint8_t* image)
+{
+   if (vpxApi)
+      vpxApi->UpdateTexture(texture, width, height, format, image);
+}
+
 VPXTextureInfo* GetTextureInfo(VPXTexture texture)
 {
    if (vpxApi)

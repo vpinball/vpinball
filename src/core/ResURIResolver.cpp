@@ -1,19 +1,15 @@
 // license:GPLv3+
 
-//#include "core/stdafx.h"
-
-#define MINIMAL_DEF_H
-#include "def.h"
-
 #include "ResURIResolver.h"
-
-#include <sstream>
-using std::string;
-using namespace std::string_literals;
 
 #include "simple-uri-parser/uri_parser.h"
 
-ResURIResolver::ResURIResolver(const MsgPluginAPI& msgAPI, unsigned int endpointId, bool trackDisplays, bool trackSegDisplays, bool trackInputs, bool trackDevices)
+#include <sstream>
+#include <charconv>
+using std::string;
+using namespace std::string_literals;
+
+ResURIResolver::ResURIResolver(const MsgPluginAPI &msgAPI, unsigned int endpointId, bool trackDisplays, bool trackSegDisplays, bool trackInputs, bool trackDevices)
    : m_msgAPI(msgAPI)
    , m_endpointId(endpointId)
    , m_getDevSrcMsgId(trackDevices ? m_msgAPI.GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_GET_SRC_MSG) : 0)
@@ -73,6 +69,24 @@ ResURIResolver::~ResURIResolver()
       m_msgAPI.ReleaseMsgID(m_onDisplayChangedMsgId);
       m_msgAPI.ReleaseMsgID(m_getDisplaySrcMsgId);
    }
+}
+
+string ResURIResolver::trim_string(const string &str)
+{
+   size_t start = 0;
+   size_t end = str.length();
+   while (start < end && (str[start] == ' ' || str[start] == '\t' || str[start] == '\r' || str[start] == '\n'))
+      ++start;
+   while (end > start && (str[end - 1] == ' ' || str[end - 1] == '\t' || str[end - 1] == '\r' || str[end - 1] == '\n'))
+      --end;
+   return str.substr(start, end - start);
+}
+
+// trims leading whitespace or similar
+bool ResURIResolver::try_parse_int(const string &str, int &value)
+{
+   const string tmp = trim_string(str);
+   return (std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), value).ec == std::errc {});
 }
 
 void ResURIResolver::OnInputSrcChanged(const unsigned int msgId, void *userData, void *msgData)
@@ -312,8 +326,9 @@ ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
             const unsigned int sSize = source.width * source.height;
             if (
                // Priority 1: Find at least one display if any (size > 0)
+               displaySource == nullptr
                // Priority 2: Favor highest resolution display
-               (dsSize < sSize)
+               || (dsSize < sSize)
                // Priority 3: Favor color over monochrome
                || (dsSize == sSize && displaySource->frameFormat != source.frameFormat && displaySource->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8)
                // Priority 4: Favor RGB8 over other formats
