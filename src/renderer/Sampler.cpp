@@ -192,21 +192,29 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool genMipmaps)
          return m_nomipsTexture;
    }
 
-   // Implementation based on a compute shader for mipmap generation:
-   // - directly upload to the base mip level of the target texture (without the need for an intermediate texture & blitting)
-   // - generate mipmaps using a compute shader with a nice linear/sRGB aware Kaiser filter
-   if ((bgfx::getCaps()->supported & BGFX_CAPS_COMPUTE) != 0
-      && (bgfx::getRendererType() != bgfx::RendererType::Enum::Direct3D11) // For some reason to be fixed, this fails under DX11 (Fail to create UAV)
+
+   const bool hasDriverMipMapGen = bgfx::getCaps()->formats[m_bgfx_format] & BGFX_CAPS_FORMAT_TEXTURE_MIP_AUTOGEN;
+   const bool hasComputeMipMapGen = (bgfx::getCaps()->supported & BGFX_CAPS_COMPUTE) != 0
+      && (bgfx::getCaps()->formats[m_bgfx_format] & (BGFX_CAPS_FORMAT_TEXTURE_IMAGE_READ | BGFX_CAPS_FORMAT_TEXTURE_IMAGE_WRITE)) != 0
+      && (m_bgfx_format == bgfx::TextureFormat::Enum::RGBA8 || m_bgfx_format == bgfx::TextureFormat::Enum::RGBA16F || m_bgfx_format == bgfx::TextureFormat::Enum::RGBA32F)
       && (bgfx::getRendererType() != bgfx::RendererType::Enum::OpenGL) // BGFX's OpenGL driver will not apply uniform, breaking this implementation for OpenGL
-      && (bgfx::getRendererType() != bgfx::RendererType::Enum::OpenGLES)) // OpenGL ES does not support compute shaders
+      && (bgfx::getRendererType() != bgfx::RendererType::Enum::OpenGLES); // OpenGL ES does not support compute shaders
+
+   // Implementation based on a compute shader for mipmap generation:
+   // - needed when the driver does not support mipmap generation (e.g. DX12)
+   // - if possible (see below) directly upload to the base mip level of the target texture (without the need for an intermediate texture & blitting)
+   // - generate mipmaps using a compute shader with a linear/sRGB aware Kaiser filter
+   // The problem is that imageLoad/Store does not support sRGB images. The correct implementation would be to create a view of the sRGB texture with the sRGB flag removed, and use it in the compute shader but BGFX won't let us do that.
+   // So we have to use a linear texture for the compute shader, and then copy it to the sRGB texture using blit operations.
+   if (hasComputeMipMapGen)
    {
       if (m_textureUpdate)
       {
          assert(m_isTextureUpdateLinear || (bgfx::getCaps()->formats[m_bgfx_format] & BGFX_CAPS_FORMAT_TEXTURE_2D_SRGB));
-         const std::lock_guard<std::mutex> lock(m_textureUpdateMutex);
+         const std::lock_guard lock(m_textureUpdateMutex);
          if (!bgfx::isValid(m_mipsTexture))
          {
-            m_mipsTexture = bgfx::createTexture2D(m_width, m_height, true, 1, m_bgfx_format, (m_isTextureUpdateLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB) | BGFX_TEXTURE_COMPUTE_WRITE);
+            m_mipsTexture = bgfx::createTexture2D(m_width, m_height, true, 1, m_bgfx_format, m_isTextureUpdateLinear ? BGFX_TEXTURE_COMPUTE_WRITE : (BGFX_TEXTURE_SRGB | BGFX_TEXTURE_BLIT_DST));
             bgfx::setName(m_mipsTexture, m_name.c_str());
          }
          bgfx::updateTexture2D(m_mipsTexture, 0, 0, 0, 0, m_width, m_height, m_textureUpdate);
@@ -221,38 +229,56 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool genMipmaps)
       {
          // Generate mipmaps using a simple compute shader
          assert(bgfx::getCaps()->formats[m_bgfx_format] & BGFX_CAPS_FORMAT_TEXTURE_IMAGE_WRITE);
-
-         if (!bgfx::isValid(m_rd->m_mipmapProgram))
+         if (m_rd->m_mipmapPrograms.empty())
          {
             bgfx::RendererType::Enum type = bgfx::getRendererType();
-            static const bgfx::EmbeddedShader embeddedShaders[] = BGFX_EMBEDDED_SHADER(cs_mipmap);
-            bgfx::ShaderHandle csh = bgfx::createEmbeddedShader(embeddedShaders, type, "cs_mipmap");
-            m_rd->m_mipmapProgram = bgfx::createProgram(csh, true);
-            m_rd->m_mipmapSource = bgfx::createUniform("u_Source", bgfx::UniformType::Sampler);
-            m_rd->m_mipmapOpts = bgfx::createUniform("u_MipMapOptions", bgfx::UniformType::Vec4);
+            static const bgfx::EmbeddedShader shaders[] = {
+               BGFX_EMBEDDED_SHADER(cs_mipmap_rgba8),
+               BGFX_EMBEDDED_SHADER(cs_mipmap_rgba16f),
+               BGFX_EMBEDDED_SHADER(cs_mipmap_rgba32f),
+               BGFX_EMBEDDED_SHADER(cs_mipmap_srgba8),
+               BGFX_EMBEDDED_SHADER_END() };
+            m_rd->m_mipmapPrograms.push_back(bgfx::createProgram(bgfx::createEmbeddedShader(shaders, type, "cs_mipmap_rgba8"), true));
+            m_rd->m_mipmapPrograms.push_back(bgfx::createProgram(bgfx::createEmbeddedShader(shaders, type, "cs_mipmap_rgba16f"), true));
+            m_rd->m_mipmapPrograms.push_back(bgfx::createProgram(bgfx::createEmbeddedShader(shaders, type, "cs_mipmap_rgba32f"), true));
+            m_rd->m_mipmapPrograms.push_back(bgfx::createProgram(bgfx::createEmbeddedShader(shaders, type, "cs_mipmap_srgba8"), true));
+         }
+
+         bgfx::ProgramHandle program = BGFX_INVALID_HANDLE;
+         if (m_bgfx_format == bgfx::TextureFormat::Enum::RGBA8)
+            program = m_rd->m_mipmapPrograms[0];
+         else if (m_bgfx_format == bgfx::TextureFormat::Enum::RGBA16F)
+            program = m_rd->m_mipmapPrograms[1];
+         else if (m_bgfx_format == bgfx::TextureFormat::Enum::RGBA32F)
+            program = m_rd->m_mipmapPrograms[2];
+
+         bgfx::TextureHandle csTexture = m_mipsTexture;
+         if (!m_isTextureUpdateLinear)
+         {
+            program = m_rd->m_mipmapPrograms[3];
+            csTexture = bgfx::createTexture2D(m_width, m_height, true, 1, m_bgfx_format, BGFX_TEXTURE_COMPUTE_WRITE | BGFX_TEXTURE_BLIT_DST);
+            bgfx::blit(0, csTexture, 0, 0, 0, 0, m_mipsTexture, 0, 0, 0, 0);
          }
          const int numMipLevels = static_cast<int>(floor(log2(max(m_width, m_height)))) + 1;
          for (uint8_t mip = 1; mip < numMipLevels; ++mip)
          {
-            const vec4 mipmapOpts(
-               m_isTextureUpdateLinear ? 0.f : 1.f, 
-               1.f, // 0=2x2 Box, 1=4x4 Kaiser, 2=6x6 Kaiser, 3=6x6 smoother Kaiser => My preference goes to 1 or 2 (0 is too sharp, 3 is too blurry)
-               static_cast<float>(mip - 1), // Source mip level
-               0.f); // Unused
-            bgfx::setUniform(m_rd->m_mipmapOpts, &mipmapOpts);
-            bgfx::setTexture(0, m_rd->m_mipmapSource, m_mipsTexture, BGFX_SAMPLER_POINT | BGFX_SAMPLER_UVW_CLAMP);
-            bgfx::setImage(1, m_mipsTexture, mip, bgfx::Access::Write, m_bgfx_format);
-            bgfx::dispatch(0, m_rd->m_mipmapProgram, (std::max(1u, m_width >> mip) + 7) / 8, (std::max(1u, m_height >> mip) + 7) / 8);
+            bgfx::setImage(0, csTexture, mip - 1, bgfx::Access::Read, m_bgfx_format);
+            bgfx::setImage(1, csTexture, mip, bgfx::Access::Write, m_bgfx_format);
+            bgfx::dispatch(0, program, (std::max(1u, m_width >> mip) + 7) / 8, (std::max(1u, m_height >> mip) + 7) / 8);
+            if (!m_isTextureUpdateLinear)
+               bgfx::blit(1, m_mipsTexture, mip, 0, 0, 0, csTexture, mip, 0, 0, 0);
          }
+         if (!m_isTextureUpdateLinear)
+            bgfx::destroy(csTexture);
          m_pendingMipMapGen = false;
       }
    }
-   // Implementation based on driver mipmap generation (as OpenGL ES does not support compute shaders)
-   else if (bgfx::getCaps()->formats[m_bgfx_format] & BGFX_CAPS_FORMAT_TEXTURE_MIP_AUTOGEN)
+   // Implementation based on driver mipmap generation
+   else if (hasDriverMipMapGen)
    {
       if (m_textureUpdate)
       {
-         const std::lock_guard<std::mutex> lock(m_textureUpdateMutex);
+         const std::lock_guard lock(m_textureUpdateMutex);
          if (!bgfx::isValid(m_nomipsTexture))
          {
             m_nomipsTexture = bgfx::createTexture2D(m_width, m_height, false, 1, m_bgfx_format, m_isTextureUpdateLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB);
@@ -280,8 +306,7 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool genMipmaps)
          assert(bgfx::getCaps()->formats[m_bgfx_format] & BGFX_CAPS_FORMAT_TEXTURE_MIP_AUTOGEN);
          if (!bgfx::isValid(m_mipsTexture))
          {
-            m_mipsTexture = bgfx::createTexture2D(
-               m_width, m_height, true, 1, m_bgfx_format, (m_isTextureUpdateLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB) | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST);
+            m_mipsTexture = bgfx::createTexture2D(m_width, m_height, true, 1, m_bgfx_format, (m_isTextureUpdateLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB) | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST);
             bgfx::setName(m_mipsTexture, m_name.c_str());
          }
          bgfx::FrameBufferHandle mipsFramebuffer = bgfx::createFrameBuffer(1, &m_mipsTexture);
@@ -306,11 +331,12 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool genMipmaps)
          m_pendingMipMapGen = false;
       }
    }
+   // No mipmap generation support
    else
    {
       if (m_textureUpdate)
       {
-         const std::lock_guard<std::mutex> lock(m_textureUpdateMutex);
+         const std::lock_guard lock(m_textureUpdateMutex);
          if (!bgfx::isValid(m_mipsTexture))
          {
             m_mipsTexture = bgfx::createTexture2D(m_width, m_height, false, 1, m_bgfx_format, m_isTextureUpdateLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB);

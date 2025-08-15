@@ -282,9 +282,7 @@ public:
 
    ShaderState& GetUniformState() { return *m_uniformState; }
 
-   bgfx::ProgramHandle m_mipmapProgram = BGFX_INVALID_HANDLE;
-   bgfx::UniformHandle m_mipmapOpts = BGFX_INVALID_HANDLE;
-   bgfx::UniformHandle m_mipmapSource = BGFX_INVALID_HANDLE;
+   std::vector<bgfx::ProgramHandle> m_mipmapPrograms;
 
 private:
    bool m_renderDeviceAlive;
