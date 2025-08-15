@@ -69,7 +69,9 @@ template <typename T> __forceinline T max(const T x, const T y) { return x < y ?
 
 string string_to_lower(string str);
 string trim_string(const string& str);
+// trims leading whitespace or similar
 int string_to_int(const string& str, int defaultValue = 0);
+// trims leading whitespace or similar
 bool try_parse_int(const string& str, int& value);
 bool try_parse_color(const string& str, ColorRGBA32& value);
 string normalize_path_separators(const string& szPath);

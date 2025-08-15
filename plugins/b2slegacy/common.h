@@ -224,6 +224,7 @@ PSC_USE_ERROR();
 string find_case_insensitive_file_path(const string &szPath);
 vector<unsigned char> base64_decode(const string &encoded_string);
 bool string_starts_with_case_insensitive(const string& str, const string& prefix);
+// trims leading whitespace or similar, this is needed as e.g. B2S reels feature leading whitespace(s)
 int string_to_int(const string& str, int defaultValue);
 string title_and_path_from_filename(const string& filename);
 bool is_string_numeric(const string& str);

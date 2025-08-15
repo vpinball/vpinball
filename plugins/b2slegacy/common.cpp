@@ -17,6 +17,7 @@ static string trim_string(const string& str)
    return str.substr(start, end - start);
 }
 
+// trims leading whitespace or similar
 static bool try_parse_int(const string& str, int& value)
 {
    const string tmp = trim_string(str);
@@ -152,6 +153,7 @@ bool string_starts_with_case_insensitive(const string& str, const string& prefix
       [](char a, char b) { return cLower(a) == cLower(b); });
 }
 
+// trims leading whitespace or similar, this is needed as e.g. B2S reels feature leading whitespace(s)
 int string_to_int(const string& str, int defaultValue)
 {
    int value;

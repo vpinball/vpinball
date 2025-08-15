@@ -38,6 +38,7 @@ string trim_string(const string& str)
    return str.substr(start, end - start);
 }
 
+// trims leading whitespace or similar
 bool try_parse_int(const string& str, int& value)
 {
    const string tmp = trim_string(str);
@@ -73,6 +74,7 @@ bool try_parse_color(const string& str, ColorRGBA32& value)
    return true;
 }
 
+// trims leading whitespace or similar
 int string_to_int(const string& str, int defaultValue)
 {
    int value;

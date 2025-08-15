@@ -20,12 +20,14 @@ string trim_string(const string& str)
    return str.substr(start, end - start);
 }
 
+// trims leading whitespace or similar
 static bool try_parse_int(const string& str, int& value)
 {
    const string tmp = trim_string(str);
    return (std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), value).ec == std::errc{});
 }
 
+// trims leading whitespace or similar
 static bool try_parse_float(const string& str, float& value)
 {
    const string tmp = trim_string(str);
@@ -39,12 +41,14 @@ static bool try_parse_float(const string& str, float& value)
 #endif
 }
 
+// trims leading whitespace or similar
 int string_to_int(const string& str, int defaultValue)
 {
    int value;
    return try_parse_int(str, value) ? value : defaultValue;
 }
 
+// trims leading whitespace or similar
 float string_to_float(const string& str, float defaultValue)
 {
    float value;
