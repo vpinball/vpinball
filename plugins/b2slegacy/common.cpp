@@ -6,6 +6,23 @@
 namespace B2SLegacy
 {
 
+static string trim_string(const string& str)
+{
+   size_t start = 0;
+   size_t end = str.length();
+   while (start < end && (str[start] == ' ' || str[start] == '\t' || str[start] == '\r' || str[start] == '\n'))
+      ++start;
+   while (end > start && (str[end - 1] == ' ' || str[end - 1] == '\t' || str[end - 1] == '\r' || str[end - 1] == '\n'))
+      --end;
+   return str.substr(start, end - start);
+}
+
+static bool try_parse_int(const string& str, int& value)
+{
+   const string tmp = trim_string(str);
+   return (std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), value).ec == std::errc{});
+}
+
 constexpr inline char cLower(char c)
 {
    if (c >= 'A' && c <= 'Z')
@@ -138,10 +155,7 @@ bool string_starts_with_case_insensitive(const string& str, const string& prefix
 int string_to_int(const string& str, int defaultValue)
 {
    int value;
-   if (std::from_chars(str.c_str(), str.c_str() + str.length(), value).ec == std::errc{})
-      return value;
-   else
-      return defaultValue;
+   return try_parse_int(str, value) ? value : default_value;
 }
 
 string title_and_path_from_filename(const string& filename)
