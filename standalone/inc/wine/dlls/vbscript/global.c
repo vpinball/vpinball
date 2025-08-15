@@ -553,7 +553,7 @@ static inline HRESULT return_null(VARIANT *res)
     return S_OK;
 }
 
-static inline HRESULT return_date(VARIANT *res, double date)
+static inline HRESULT return_date(VARIANT *res, DATE date)
 {
     if(res) {
         V_VT(res) = VT_DATE;
@@ -2195,7 +2195,7 @@ static HRESULT Global_Sgn(BuiltinDisp *This, VARIANT *arg, unsigned args_cnt, VA
 static HRESULT Global_Now(BuiltinDisp *This, VARIANT *arg, unsigned args_cnt, VARIANT *res)
 {
     SYSTEMTIME lt;
-    double date;
+    DATE date;
 
     TRACE("\n");
 
@@ -2379,7 +2379,7 @@ static HRESULT Global_DateSerial(BuiltinDisp *This, VARIANT *args, unsigned args
     int year, month, day;
     UDATE ud = {{ 0 }};
     HRESULT hres;
-    double date;
+    DATE date;
 
     TRACE("\n");
 
@@ -2413,7 +2413,7 @@ static HRESULT Global_TimeSerial(BuiltinDisp *This, VARIANT *args, unsigned args
     int hour, minute, second;
     UDATE ud = {{ 0 }};
     HRESULT hres;
-    double date;
+    DATE date;
 
     TRACE("\n");
 
@@ -2590,7 +2590,7 @@ static HRESULT Global_DateAdd(BuiltinDisp *This, VARIANT *args, unsigned args_cn
     BSTR interval = NULL;
     UDATE ud = {{ 0 }};
     HRESULT hres;
-    double date;
+    DATE date;
     int count;
 
     TRACE("\n");
@@ -2658,7 +2658,7 @@ static HRESULT Global_DateDiff(BuiltinDisp *This, VARIANT *arg, unsigned args_cn
     FILETIME ft1, ft2;
     ULARGE_INTEGER ui1, ui2;
     BSTR interval;
-    double date1, date2;
+    DATE date1, date2;
     HRESULT hr;
 
     assert(3 <= args_cnt && args_cnt <= 5);
@@ -2731,7 +2731,7 @@ static HRESULT Global_DatePart(BuiltinDisp *This, VARIANT *arg, unsigned args_cn
 #else
     SYSTEMTIME st;
     BSTR interval;
-    double date;
+    DATE date;
     HRESULT hr;
 
     assert(2 <= args_cnt && args_cnt <= 4);

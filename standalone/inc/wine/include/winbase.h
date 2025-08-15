@@ -113,6 +113,10 @@ typedef struct _OFSTRUCT
 #define SEM_NOALIGNMENTFAULTEXCEPT  0x0004
 #define SEM_NOOPENFILEERRORBOX      0x8000
 
+/* RaiseFailFastException flags */
+#define FAIL_FAST_GENERATE_EXCEPTION_ADDRESS 0x0001
+#define FAIL_FAST_NO_HARD_ERROR_DLG          0x0002
+
 /* CopyFileEx flags */
 #define COPY_FILE_FAIL_IF_EXISTS        0x00000001
 #define COPY_FILE_RESTARTABLE           0x00000002
@@ -1570,6 +1574,9 @@ WINADVAPI  BOOL        WINAPI ConvertToAutoInheritPrivateObjectSecurity(PSECURIT
 WINBASEAPI HANDLE      WINAPI CreateActCtxA(PCACTCTXA);
 WINBASEAPI HANDLE      WINAPI CreateActCtxW(PCACTCTXW);
 #define                       CreateActCtx WINELIB_NAME_AW(CreateActCtx)
+WINBASEAPI HANDLE      WINAPI CreateBoundaryDescriptorA(LPCSTR,ULONG);
+                           /* CreateBoundaryDescriptorW is in namespaceapi.h */
+#define                       CreateBoundaryDescriptor WINELIB_NAME_AW(CreateBoundaryDescriptor)
 WINBASEAPI BOOL        WINAPI CreateDirectoryA(LPCSTR,LPSECURITY_ATTRIBUTES);
 WINBASEAPI BOOL        WINAPI CreateDirectoryW(LPCWSTR,LPSECURITY_ATTRIBUTES);
 #define                       CreateDirectory WINELIB_NAME_AW(CreateDirectory)
@@ -2086,6 +2093,7 @@ WINBASEAPI LPVOID      WINAPI HeapReAlloc(HANDLE,DWORD,LPVOID,SIZE_T) __WINE_ALL
 WINBASEAPI BOOL        WINAPI HeapQueryInformation(HANDLE,HEAP_INFORMATION_CLASS,PVOID,SIZE_T,PSIZE_T);
 WINBASEAPI BOOL        WINAPI HeapSetInformation(HANDLE,HEAP_INFORMATION_CLASS,PVOID,SIZE_T);
 WINBASEAPI SIZE_T      WINAPI HeapSize(HANDLE,DWORD,LPCVOID);
+WINBASEAPI BOOL        WINAPI HeapSummary(HANDLE,DWORD,LPHEAP_SUMMARY);
 WINBASEAPI BOOL        WINAPI HeapUnlock(HANDLE);
 WINBASEAPI BOOL        WINAPI HeapValidate(HANDLE,DWORD,LPCVOID);
 WINBASEAPI BOOL        WINAPI HeapWalk(HANDLE,LPPROCESS_HEAP_ENTRY);
