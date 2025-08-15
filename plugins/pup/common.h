@@ -141,8 +141,8 @@ private:
 string trim_string(const string &str);
 
 // The following function are duplicates from the main VPX codebase
-int string_to_int(const string &str, int default_value = 0);
-float string_to_float(const string &str, float default_value = 0.0f);
+int string_to_int(const string &str, int defaultValue = 0);
+float string_to_float(const string &str, float defaultValue = 0.0f);
 vector<string> parse_csv_line(const string &line);
 string string_replace_all(const string &szStr, const string &szFrom, const string &szTo, const size_t offs = 0);
 string string_replace_all(const string &szStr, const string &szFrom, const char szTo, const size_t offs = 0);

@@ -155,7 +155,7 @@ bool string_starts_with_case_insensitive(const string& str, const string& prefix
 int string_to_int(const string& str, int defaultValue)
 {
    int value;
-   return try_parse_int(str, value) ? value : default_value;
+   return try_parse_int(str, value) ? value : defaultValue;
 }
 
 string title_and_path_from_filename(const string& filename)

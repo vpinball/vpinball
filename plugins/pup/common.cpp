@@ -39,16 +39,16 @@ static bool try_parse_float(const string& str, float& value)
 #endif
 }
 
-int string_to_int(const string& str, int default_value)
+int string_to_int(const string& str, int defaultValue)
 {
    int value;
-   return try_parse_int(str, value) ? value : default_value;
+   return try_parse_int(str, value) ? value : defaultValue;
 }
 
-float string_to_float(const string& str, float default_value)
+float string_to_float(const string& str, float defaultValue)
 {
    float value;
-   return try_parse_float(str, value) ? value : default_value;
+   return try_parse_float(str, value) ? value : defaultValue;
 }
 
 vector<string> parse_csv_line(const string& line)
