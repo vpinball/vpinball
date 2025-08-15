@@ -1011,7 +1011,6 @@ void VPinball::DoPlay(const int playMode)
 #endif
 
    PLOGI << "Starting Play mode [table: " << table->m_tableName << ", play mode: " << playMode << ']';
-   ShowWindow(SW_HIDE);
    bool initError = false;
    if (false)
    {
@@ -1175,6 +1174,8 @@ void VPinball::DoPlay(const int playMode)
       #else
       auto processWindowMessages = []() {};
       #endif
+      ShowWindow(SW_HIDE);
+
       g_pplayer->GameLoop(processWindowMessages);
 
       #if (defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS))
@@ -1184,9 +1185,9 @@ void VPinball::DoPlay(const int playMode)
 
       delete g_pplayer;
       g_pplayer = nullptr;
-   }
 
-   ShowWindow(SW_SHOW);
+     ShowWindow(SW_SHOW);
+   }
 
    if (initError)
    {
