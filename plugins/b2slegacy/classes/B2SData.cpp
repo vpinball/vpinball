@@ -12,8 +12,8 @@
 
 namespace B2SLegacy {
 
-B2SData::B2SData(B2SSettings* pB2SSettings, VPXPluginAPI* vpxApi)
-   : m_pB2SSettings(pB2SSettings), m_vpxApi(vpxApi)
+B2SData::B2SData(Server* pServer, B2SSettings* pB2SSettings, VPXPluginAPI* vpxApi)
+   : m_pServer(pServer), m_pB2SSettings(pB2SSettings), m_vpxApi(vpxApi)
 {
    m_tableType = 0;
    m_dmdType = 0;

@@ -2,6 +2,7 @@
 
 #include "B2SAnimationBase.h"
 #include "B2SData.h"
+#include "../Server.h"
 
 namespace B2SLegacy {
 
@@ -71,7 +72,8 @@ void B2SAnimationBase::RaiseFinishedEvent()
 
 void B2SAnimationBase::SetSwitch(int switchid)
 {
-   // TODO: m_pB2SData->GetVPinMAME()->put_Switch(switchid, VARIANT_TRUE);
+   if (m_pB2SData->GetServer())
+      m_pB2SData->GetServer()->SetSwitch(switchid, true);
 
    if (!m_switches.contains(switchid))
       m_switches[switchid] = true;
@@ -90,8 +92,10 @@ void B2SAnimationBase::SwitchTimerElapsed(Timer* pTimer)
 {
    m_pSwitchTimer->Stop();
 
-   // TODO: for (auto& [switchid, value] : m_switches)
-   //   m_pB2SData->GetVPinMAME()->put_Switch(switchid, VARIANT_FALSE);
+   if (m_pB2SData->GetServer()) {
+      for (auto& [switchid, value] : m_switches)
+         m_pB2SData->GetServer()->SetSwitch(switchid, false);
+   }
 
    m_switches.clear();
 }

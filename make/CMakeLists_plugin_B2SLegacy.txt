@@ -19,6 +19,8 @@ set(B2SLEGACY_PLUGIN_SOURCES
    plugins/b2slegacy/utils/GraphicsPath.cpp
    plugins/b2slegacy/utils/VPXGraphics.h
    plugins/b2slegacy/utils/VPXGraphics.cpp
+   plugins/b2slegacy/utils/PinMAMEAPI.h
+   plugins/b2slegacy/utils/PinMAMEAPI.cpp
    plugins/b2slegacy/classes/AnimationInfo.h
    plugins/b2slegacy/classes/AnimationInfo.cpp
    plugins/b2slegacy/classes/B2SAnimation.h
