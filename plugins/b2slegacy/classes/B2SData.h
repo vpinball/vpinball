@@ -18,6 +18,7 @@ class B2SSettings;
 class B2SReelDisplay;
 class B2SBaseBox;
 class B2SLEDBox;
+class Server;
 class Dream7Display;
 class LEDDisplayDigitLocation;
 class LEDAreaInfo;
@@ -25,10 +26,11 @@ class LEDAreaInfo;
 class B2SData
 {
 public:
-   B2SData(B2SSettings* pB2SSettings, VPXPluginAPI* vpxApi);
+   B2SData(Server* pServer, B2SSettings* pB2SSettings, VPXPluginAPI* vpxApi);
    ~B2SData();
 
    B2SSettings* GetB2SSettings() const { return m_pB2SSettings; }
+   Server* GetServer() const { return m_pServer; }
    void Stop();
    void ClearAll(bool donotclearnames);
    string GetTableName() const { return m_szTableName; }
@@ -142,6 +144,7 @@ public:
 private:
    B2SSettings* m_pB2SSettings;
    VPXPluginAPI* m_vpxApi;
+   Server* m_pServer;
    string m_szTableName;
    string m_szTableFileName;
    string m_szBackglassFileName;

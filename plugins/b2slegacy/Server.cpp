@@ -15,16 +15,19 @@
 #include "classes/AnimationInfo.h"
 #include "classes/PictureBoxAnimation.h"
 #include "classes/B2SScreen.h"
+#include "utils/PinMAMEAPI.h"
+
 
 namespace B2SLegacy {
 
 Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi)
    : m_msgApi(msgApi),
      m_vpxApi(vpxApi),
-     m_endpointId(endpointId)
+     m_endpointId(endpointId),
+     m_pinmameApi(nullptr)
 {
    m_pB2SSettings = new B2SSettings(m_msgApi);
-   m_pB2SData = new B2SData(m_pB2SSettings, m_vpxApi);
+   m_pB2SData = new B2SData(this, m_pB2SSettings, m_vpxApi);
    m_pFormBackglass = nullptr;
    m_isVisibleStateSet = false;
    m_lastTopVisible = false;
@@ -193,40 +196,32 @@ void Server::TimerElapsed(Timer* pTimer)
       if (m_pB2SSettings->IsROMControlled()) {
          bool changed = false;
          if (callLamps) {
-            if (!m_changedLampsCalled) {
-               // TODO: call PinMAME version, then call B2S version
-               //GetChangedLamps(vArray);
-            }
+            if (!m_changedLampsCalled)
+               GetChangedLamps();
             else {
                callLamps = false;
                changed = true;
             }
          }
          if (callSolenoids) {
-            if (!m_changedSolenoidsCalled) {
-               // TODO: call PinMAME version, then call B2S version
-               //GetChangedSolenoids(vArray);
-            }
+            if (!m_changedSolenoidsCalled)
+               GetChangedSolenoids();
             else {
                callSolenoids = false;
                changed = true;
             }
          }
          if (callGIStrings) {
-            if (!m_changedGIStringsCalled) {
-               // TODO: call PinMAME version, then call B2S version
-               //GetChangedGIStrings(vArray);
-            }
+            if (!m_changedGIStringsCalled)
+               GetChangedGIStrings();
             else {
                callGIStrings = false;
                changed = true;
             }
          }
          if (callLEDs) {
-            if (!m_changedLEDsCalled) {
-               // TODO: call PinMAME version, then call B2S version
-               //GetChangedLEDs(vArray);
-            }
+            if (!m_changedLEDsCalled)
+               GetChangedLEDs();
             else {
                callLEDs = false;
                changed = true;
@@ -334,40 +329,78 @@ void Server::SetPuPHide(bool puPHide)
 {
 }
 
-void Server::GetChangedLamps(ScriptArray* psa, bool isProxied)
+void Server::GetChangedLamps()
 {
-   if (isProxied)
-      m_changedLampsCalled = true;
+   if (!m_pinmameApi)
+      return;
 
-   if (m_pB2SData->IsLampsData())
-      CheckLamps(psa);
+   ScriptArray* lampArray = m_pinmameApi->GetChangedLamps();
+   if (m_pB2SData->IsLampsData() && lampArray)
+      CheckLamps(lampArray);
 }
 
-void Server::GetChangedSolenoids(ScriptArray* psa, bool isProxied)
+void Server::GetChangedLamps(ScriptVariant* pRet)
 {
-   if (isProxied)
-      m_changedSolenoidsCalled = true;
-
-   if (m_pB2SData->IsSolenoidsData())
-      CheckSolenoids(psa);
+   m_changedLampsCalled = true;
+   if (m_pB2SData->IsLampsData() && pRet && pRet->vArray)
+      CheckLamps(pRet->vArray);
 }
 
-void Server::GetChangedGIStrings(ScriptArray* psa, bool isProxied)
+void Server::GetChangedSolenoids()
 {
-   if (isProxied)
-      m_changedGIStringsCalled = true;
+   if (!m_pinmameApi)
+      return;
 
-   if (m_pB2SData->IsGIStringsData())
-      CheckGIStrings(psa);
+   ScriptArray* solenoidArray = m_pinmameApi->GetChangedSolenoids();
+   if (m_pB2SData->IsSolenoidsData() && solenoidArray)
+      CheckSolenoids(solenoidArray);
 }
 
-void Server::GetChangedLEDs(ScriptArray* psa, bool isProxied)
+void Server::GetChangedSolenoids(ScriptVariant* pRet)
 {
-   if (isProxied)
-      m_changedLEDsCalled = true;
+   m_changedSolenoidsCalled = true;
+   if (m_pB2SData->IsSolenoidsData() && pRet && pRet->vArray)
+      CheckSolenoids(pRet->vArray);
+}
 
-   if (m_pB2SData->IsLEDsData())
-      CheckLEDs(psa);
+void Server::GetChangedGIStrings()
+{
+   if (!m_pinmameApi)
+      return;
+
+   ScriptArray* giStringArray = m_pinmameApi->GetChangedGIStrings();
+   if (m_pB2SData->IsGIStringsData() && giStringArray)
+      CheckGIStrings(giStringArray);
+}
+
+void Server::GetChangedGIStrings(ScriptVariant* pRet)
+{
+   m_changedGIStringsCalled = true;
+   if (m_pB2SData->IsGIStringsData() && pRet && pRet->vArray)
+      CheckGIStrings(pRet->vArray);
+}
+
+void Server::GetChangedLEDs()
+{
+   if (!m_pinmameApi)
+      return;
+
+   ScriptArray* ledArray = m_pinmameApi->GetChangedLEDs();
+   if (m_pB2SData->IsLEDsData() && ledArray)
+      CheckLEDs(ledArray);
+}
+
+void Server::GetChangedLEDs(ScriptVariant* pRet)
+{
+   m_changedLEDsCalled = true;
+   if (m_pB2SData->IsLEDsData() && pRet && pRet->vArray)
+      CheckLEDs(pRet->vArray);
+}
+
+void Server::SetSwitch(int switchId, bool value)
+{
+   if (m_pinmameApi)
+      m_pinmameApi->SetSwitch(switchId, value);
 }
 
 void Server::B2SSetData(int id, int value)

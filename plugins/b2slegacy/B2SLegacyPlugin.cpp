@@ -9,6 +9,7 @@
 #include "Server.h"
 #include "forms/FormDMD.h"
 #include "classes/B2SScreen.h"
+#include "utils/PinMAMEAPI.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Plugin interface
@@ -22,9 +23,7 @@ static unsigned int onGetAuxRendererId = 0;
 static unsigned int onAuxRendererChgId = 0;
 
 static ScriptClassDef* pinmameClassDef = nullptr;
-static void* pinmameInstance = nullptr;
 static int pinmameMemberStartIndex = 0;
-static B2SLegacy::Server* serverInstance = nullptr;
 
 static unsigned int getDevSrcMsgId = 0;
 static unsigned int onDevChangedMsgId = 0;
@@ -41,56 +40,15 @@ void MSGPIAPI ForwardPinMAMECall(void* me, int memberIndex, ScriptVariant* pArgs
    if (!pinmameClassDef)
       return;
 
-   const int index = memberIndex - pinmameMemberStartIndex;
-   const char* methodName = pinmameClassDef->members[index].name.name;
-
-   if (!pinmameInstance) {
-      LOGI("B2SLegacy: Creating PinMAME Controller instance via forwarding");
-      pinmameInstance = pinmameClassDef->CreateObject();
-   }
-   if (pinmameInstance) {
-      LOGD("B2SLegacy: Forwarding PinMAME call '%s' - memberIndex: %d, index: %d", methodName, memberIndex, index);
-      pinmameClassDef->members[index].Call(pinmameInstance, index, pArgs, pRet);
-   }
-
    B2SLegacy::Server* server = static_cast<B2SLegacy::Server*>(me);
    if (!server)
       return;
 
-   if (strcmp(methodName, "GameName") == 0) {
-      if (pArgs) {
-         string gameName;
-         if (pArgs[0].vString.string)
-            gameName = string(pArgs[0].vString.string);
-         LOGI("B2SLegacy: Setting GameName to '%s' in B2S settings", gameName.c_str());
-         server->GetB2SSettings()->SetGameName(gameName);
-         server->GetB2SSettings()->SetB2SName("");
-      }
-   }
-   else if (strcmp(methodName, "Run") == 0)
-      server->Run(0);
-   else if (strcmp(methodName, "Stop") == 0)
-      server->Stop();
-   else if (strcmp(methodName, "ChangedLamps") == 0) {
-      if (pRet && pRet->vArray)
-         server->GetChangedLamps(pRet->vArray, true);
-   }
-   else if (strcmp(methodName, "ChangedSolenoids") == 0) {
-      if (pRet && pRet->vArray)
-         server->GetChangedSolenoids(pRet->vArray, true);
-   }
-   else if (strcmp(methodName, "ChangedGIStrings") == 0) {
-      if (pRet && pRet->vArray)
-         server->GetChangedGIStrings(pRet->vArray, true);
-   }
-   else if (strcmp(methodName, "ChangedLEDs") == 0) {
-      if (pRet && pRet->vArray)
-         server->GetChangedLEDs(pRet->vArray, true);
-   }
-   else if (strcmp(methodName, "GetMech") == 0) {
-      if (pArgs && pRet)
-         server->CheckGetMech(pArgs[0].vInt, pRet->vInt);
-   }
+   B2SLegacy::PinMAMEAPI* pinmameApi = server->GetPinMAMEApi();
+   if (!pinmameApi)
+      pinmameApi = new B2SLegacy::PinMAMEAPI(server, pinmameClassDef);
+   if (pinmameApi)
+      pinmameApi->HandleCall(memberIndex, pinmameMemberStartIndex, pArgs, pRet);
 }
 
 PSC_ERROR_IMPLEMENT(scriptApi);
@@ -104,18 +62,16 @@ LPI_IMPLEMENT
 
 int OnRender(VPXRenderContext2D* const renderCtx, void* context)
 {
-   if (serverInstance)
-      return serverInstance->OnRender(renderCtx, context);
-
-   return 0;
+   B2SLegacy::Server* server = static_cast<B2SLegacy::Server*>(context);
+   return server ? server->OnRender(renderCtx, context) : 0;
 }
 
 void OnGetRenderer(const unsigned int msgId, void* context, void* msgData)
 {
-   static AnciliaryRendererDef backglassEntry = { "B2SLegacy", "B2S Legacy Backglass", "Renderer for B2S legacy backglass files", nullptr, OnRender };
-   static AnciliaryRendererDef dmdEntry = { "B2SLegacyDMD", "B2S Legacy DMD", "Renderer for B2S legacy DMD files", nullptr, OnRender };
-
    GetAnciliaryRendererMsg* msg = static_cast<GetAnciliaryRendererMsg*>(msgData);
+
+   AnciliaryRendererDef backglassEntry = { "B2SLegacy", "B2S Legacy Backglass", "Renderer for B2S legacy backglass files", context, OnRender };
+   AnciliaryRendererDef dmdEntry = { "B2SLegacyDMD", "B2S Legacy DMD", "Renderer for B2S legacy DMD files", context, OnRender };
 
    if (msg->window == VPXAnciliaryWindow::VPXWINDOW_Backglass) {
       if (msg->count < msg->maxEntryCount)
@@ -131,8 +87,9 @@ void OnGetRenderer(const unsigned int msgId, void* context, void* msgData)
 
 void OnDevSrcChanged(const unsigned int msgId, void* userData, void* msgData)
 {
-   if (serverInstance)
-      serverInstance->OnDevSrcChanged(msgId, userData, msgData);
+   B2SLegacy::Server* server = static_cast<B2SLegacy::Server*>(userData);
+   if (server)
+      server->OnDevSrcChanged(msgId, userData, msgData);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -235,12 +192,10 @@ MSGPI_EXPORT void MSGPIAPI B2SLegacyPluginLoad(const uint32_t sessionId, MsgPlug
    msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
    msgApi->ReleaseMsgID(getVpxApiId);
 
-   msgApi->SubscribeMsg(endpointId, onGetAuxRendererId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER), OnGetRenderer, nullptr);
    msgApi->BroadcastMsg(endpointId, onAuxRendererChgId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_AUX_RENDERER_CHG), nullptr);
 
    getDevSrcMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_GET_SRC_MSG);
    onDevChangedMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_ON_SRC_CHG_MSG);
-   msgApi->SubscribeMsg(endpointId, onDevChangedMsgId, OnDevSrcChanged, nullptr);
 
    const unsigned int getScriptApiId = msgApi->GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getScriptApiId, &scriptApi);
@@ -258,7 +213,10 @@ MSGPI_EXPORT void MSGPIAPI B2SLegacyPluginLoad(const uint32_t sessionId, MsgPlug
       Server_SCD->CreateObject = []()
       {
          B2SLegacy::Server* server = new B2SLegacy::Server(msgApi, endpointId, vpxApi);
-         serverInstance = server;
+
+         msgApi->SubscribeMsg(endpointId, onGetAuxRendererId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_AUX_RENDERER), OnGetRenderer, server);
+         msgApi->SubscribeMsg(endpointId, onDevChangedMsgId, OnDevSrcChanged, server);
+
          return static_cast<void*>(server);
       };
       scriptApi->SubmitTypeLibrary();
@@ -288,7 +246,6 @@ MSGPI_EXPORT void MSGPIAPI B2SLegacyPluginUnload()
       msgApi->ReleaseMsgID(getDevSrcMsgId);
    }
 
-   serverInstance = nullptr;
    vpxApi = nullptr;
    scriptApi = nullptr;
    msgApi = nullptr;
