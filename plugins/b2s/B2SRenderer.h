@@ -7,6 +7,8 @@
 #include "B2SDataModel.h"
 #include "ControllerPlugin.h"
 
+#include "core/ResURIResolver.h"
+
 namespace B2S {
    
 class B2SRenderer final
@@ -38,6 +40,15 @@ private:
    unsigned int m_nLamps = 0;
    int m_mechIndex = -1;
    unsigned int m_nMechs = 0;
+   ResURIResolver m_resURIResolver;
+
+   bool m_addDmd = false;
+   bool m_detectDmdFrame = false;
+   CtlResId m_dmdSrcId { 0 };
+   ivec4 m_dmdSubFrame;
+   VPXTexture m_dmdTex = nullptr;
+   std::future<ivec4> m_dmSubFrameSearch;
+   ivec4 SearchDmdSubFrame(float dmdAspectRatio);
 
    std::chrono::time_point<std::chrono::high_resolution_clock> m_lastBackglassRenderTick;
    std::chrono::time_point<std::chrono::high_resolution_clock> m_lastDmdRenderTick;

@@ -75,7 +75,7 @@
     <TargetName Condition="'$(Platform)'=='x64'">plugin-b2s64</TargetName>
     <OutDir>$(SolutionDir)..\bin\$(TargetName)\$(Configuration)-$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)..\obj\$(TargetName)\$(Configuration)-$(Platform)\</IntDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)../../src/plugins</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)../../src/plugins;$(SolutionDir)../../src</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -186,6 +186,7 @@
     <ClCompile Include="../../plugins/b2s/B2SDataModel.cpp" />
     <ClCompile Include="../../plugins/b2s/B2SRenderer.cpp" />
     <ClCompile Include="../../plugins/b2s/B2SServer.cpp" />
+    <ClCompile Include="../../src/core/ResURIResolver.cpp" />
     <ClCompile Include="../../third-party/include/tinyxml2/tinyxml2.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -193,6 +194,7 @@
     <ClInclude Include="../../plugins/b2s/B2SDataModel.h" />
     <ClInclude Include="../../plugins/b2s/B2SRenderer.h" />
     <ClInclude Include="../../plugins/b2s/B2SServer.h" />
+    <ClInclude Include="../../src/core/ResURIResolver.h" />
     <ClInclude Include="../../third-party/include/tinyxml2/tinyxml2.h" />
   </ItemGroup>
   <ItemGroup>

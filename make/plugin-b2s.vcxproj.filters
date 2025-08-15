@@ -22,6 +22,9 @@
     <ClCompile Include="../../plugins/b2s/B2SServer.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="../../src/core/ResURIResolver.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
     <ClCompile Include="../../third-party/include/tinyxml2/tinyxml2.cpp">
       <Filter>source</Filter>
     </ClCompile>
@@ -37,6 +40,9 @@
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="../../plugins/b2s/B2SServer.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="../../src/core/ResURIResolver.h">
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="../../third-party/include/tinyxml2/tinyxml2.h">
