@@ -4,6 +4,8 @@
 #include <functional>
 #include "forms/FormBackglass.h"
 #include "classes/B2SCollectData.h"
+#include "core/ResURIResolver.h"
+#include "utils/DMDOverlay.h"
 
 namespace B2SLegacy {
 
@@ -96,6 +98,8 @@ public:
    B2SSettings* GetB2SSettings() const { return m_pB2SSettings; }
    PinMAMEAPI* GetPinMAMEApi() const { return m_pinmameApi; }
    void SetPinMAMEApi(PinMAMEAPI* pinmameApi) { m_pinmameApi = pinmameApi; }
+   DMDOverlay& GetScoreviewDmdOverlay() { return m_scoreviewDmdOverlay; }
+   DMDOverlay& GetBackglassDmdOverlay() { return m_backglassDmdOverlay; }
    void GetChangedLamps();
    void GetChangedLamps(ScriptVariant* pRet);
    void GetChangedSolenoids();
@@ -176,6 +180,11 @@ private:
    VPXPluginAPI* const m_vpxApi;
    const uint32_t m_endpointId;
    PinMAMEAPI* m_pinmameApi;
+
+   ResURIResolver m_resURIResolver;
+   VPXTexture m_dmdTex = nullptr;
+   DMDOverlay m_scoreviewDmdOverlay;
+   DMDOverlay m_backglassDmdOverlay;
 
    bool m_ready = false;
    bool m_canRenderBackglass = false;

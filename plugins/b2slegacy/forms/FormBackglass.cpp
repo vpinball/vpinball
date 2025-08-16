@@ -157,6 +157,12 @@ void FormBackglass::OnPaint(VPXRenderContext2D* const ctx)
       }
    }
 
+   Server* server = m_pB2SData->GetServer();
+   if (server) {
+      server->GetBackglassDmdOverlay().UpdateBackgroundImage(GetBackgroundImage());
+      server->GetBackglassDmdOverlay().Render(ctx);
+   }
+
    Control::OnPaint(ctx);
 }
 
