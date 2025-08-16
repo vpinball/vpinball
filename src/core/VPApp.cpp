@@ -1115,8 +1115,10 @@ int VPApp::Run()
    if ((m_play || m_vpinball.m_table_played_via_SelectTableOnStart) && loadFileResult)
       m_vpinball.DoPlay(m_vpinball.m_povEdit);
 
+   #ifndef __STANDALONE__
    if (!m_run)
       m_vpinball.PostMessage(WM_CLOSE, 0, 0);
+   #endif
 
    int retval = MainMsgLoop();
 
