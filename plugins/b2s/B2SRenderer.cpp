@@ -19,18 +19,31 @@ B2SRenderer::B2SRenderer(MsgPluginAPI* const msgApi, const unsigned int endpoint
    m_grillCut = m_showGrill ? 0.f : static_cast<float>(m_b2s->m_grillHeight);
 
    char buf[32];
-   msgApi->GetSetting("B2S", "AddDMD", buf, sizeof(buf));
-   m_addDmd = atoi(buf) != 0;
-   msgApi->GetSetting("B2S", "DMDDetectPos", buf, sizeof(buf));
-   m_detectDmdFrame = atoi(buf) != 0;
-   msgApi->GetSetting("B2S", "DMDX", buf, sizeof(buf));
-   m_dmdSubFrame.x = atoi(buf);
-   msgApi->GetSetting("B2S", "DMDY", buf, sizeof(buf));
-   m_dmdSubFrame.y = atoi(buf);
-   msgApi->GetSetting("B2S", "DMDWidth", buf, sizeof(buf));
-   m_dmdSubFrame.z = atoi(buf);
-   msgApi->GetSetting("B2S", "DMDHeight", buf, sizeof(buf));
-   m_dmdSubFrame.w = atoi(buf);
+   msgApi->GetSetting("B2S", "ScoreviewDMDOverlay", buf, sizeof(buf));
+   m_scoreviewDmdOverlay = atoi(buf) != 0;
+   msgApi->GetSetting("B2S", "ScoreviewDMDAutoPos", buf, sizeof(buf));
+   m_scoreviewDetectDmdFrame = atoi(buf) != 0;
+   msgApi->GetSetting("B2S", "ScoreviewDMDX", buf, sizeof(buf));
+   m_scoreviewDmdSubFrame.x = atoi(buf);
+   msgApi->GetSetting("B2S", "ScoreviewDMDY", buf, sizeof(buf));
+   m_scoreviewDmdSubFrame.y = atoi(buf);
+   msgApi->GetSetting("B2S", "ScoreviewDMDWidth", buf, sizeof(buf));
+   m_scoreviewDmdSubFrame.z = atoi(buf);
+   msgApi->GetSetting("B2S", "ScoreviewDMDHeight", buf, sizeof(buf));
+   m_scoreviewDmdSubFrame.w = atoi(buf);
+   
+   msgApi->GetSetting("B2S", "BackglassDMDOverlay", buf, sizeof(buf));
+   m_backglassDmdOverlay = atoi(buf) != 0;
+   msgApi->GetSetting("B2S", "BackglassDMDAutoPos", buf, sizeof(buf));
+   m_backglassDetectDmdFrame = atoi(buf) != 0;
+   msgApi->GetSetting("B2S", "BackglassDMDX", buf, sizeof(buf));
+   m_backglassDmdSubFrame.x = atoi(buf);
+   msgApi->GetSetting("B2S", "BackglassDMDY", buf, sizeof(buf));
+   m_backglassDmdSubFrame.y = atoi(buf);
+   msgApi->GetSetting("B2S", "BackglassDMDWidth", buf, sizeof(buf));
+   m_backglassDmdSubFrame.z = atoi(buf);
+   msgApi->GetSetting("B2S", "BackglassDMDHeight", buf, sizeof(buf));
+   m_backglassDmdSubFrame.w = atoi(buf);
 
    VPXTextureInfo* bgTexInfo = nullptr;
    if (m_b2s->m_backglassImage.m_image)
@@ -252,6 +265,15 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx)
    for (const auto& bulb : m_b2s->m_backglassIlluminations)
       bulb.Render(ctx);
 
+   // Draw DMD overlay if enabled and available
+   if (m_backglassDmdOverlay)
+   {
+      VPXTexture backTex = m_b2s->m_backglassImage.m_image ? m_b2s->m_backglassImage.m_image
+         : m_b2s->m_backglassOffImage.m_image              ? m_b2s->m_backglassOffImage.m_image
+                                                           : m_b2s->m_backglassOnImage.m_image;
+      RenderDmdOverlay(ctx, m_backglassDetectDmdFrame ? backTex : nullptr, m_backglassDmdSrcId, m_backglassDmdSubFrame, m_backglassDmdSubFrameSearch);
+   }
+
    return true;
 }
 
@@ -278,58 +300,59 @@ bool B2SRenderer::RenderScoreview(VPXRenderContext2D* ctx)
    for (const auto& bulb : m_b2s->m_dmdIlluminations)
       bulb.Render(ctx);
 
-   // Draw the DMD if enabled and available
-   if (m_addDmd)
-   {
-      ResURIResolver::DisplayState dmd = m_resURIResolver.GetDisplayState("ctrl://default/display");
-      if (dmd.state.frame != nullptr)
-      {
-         // When DMD source change, search for the DMD sub frame as it depends on the DMD source aspect ratio
-         if (m_detectDmdFrame && m_dmdSrcId.id != dmd.source->id.id)
-         {
-            m_dmdSubFrame = ivec4();
-            m_dmdSrcId.id = dmd.source->id.id;
-            const float ar = static_cast<float>(dmd.source->width) / static_cast<float>(dmd.source->height);
-            m_dmSubFrameSearch = std::async(std::launch::async, [this, ar]() { return SearchDmdSubFrame(ar); });
-         }
-
-         if (m_dmSubFrameSearch.valid() && m_dmSubFrameSearch.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-            m_dmdSubFrame = m_dmSubFrameSearch.get();
-
-         if (m_dmdSubFrame.z != 0.f && m_dmdSubFrame.w != 0.f)
-         {
-            UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height,
-                 dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8    ? VPXTextureFormat::VPXTEXFMT_BW
-               : dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? VPXTextureFormat::VPXTEXFMT_sRGB565
-                                                                         : VPXTextureFormat::VPXTEXFMT_sRGB8,
-               dmd.state.frame);
-
-            vec4 glassArea, glassAmbient(1.f, 1.f, 1.f, 1.f), glassTint(1.f, 1.f, 1.f, 1.f), glassPad;
-            vec4 dmdTint(1.f, 1.f, 1.f, 1.f);
-            ctx->DrawDisplay(ctx, VPXDisplayRenderStyle::VPXDMDStyle_Plasma,
-               // First layer: glass
-               nullptr, glassTint.x, glassTint.y, glassTint.z, 0.f, // Glass texture, tint and roughness
-               glassArea.x, glassArea.y, glassArea.z, glassArea.w, // Glass texture coordinates (inside overall glass texture)
-               glassAmbient.x, glassAmbient.y, glassAmbient.z, // Glass lighting from room
-               // Second layer: emitter
-               m_dmdTex, dmdTint.x, dmdTint.y, dmdTint.z, 1.f, 1.f, // DMD emitter, emitter tint, emitter brightness, emitter alpha
-               glassPad.x, glassPad.y, glassPad.z, glassPad.w, // Emitter padding (from glass border)
-               // Render quad
-               static_cast<float>(m_dmdSubFrame.x), static_cast<float>(m_dmdSubFrame.y), static_cast<float>(m_dmdSubFrame.z), static_cast<float>(m_dmdSubFrame.w));
-         }
-      }
-   }
+   // Draw DMD overlay if enabled and available
+   if (m_scoreviewDmdOverlay)
+      RenderDmdOverlay(ctx, m_scoreviewDetectDmdFrame ? m_b2s->m_dmdImage.m_image : nullptr, m_scoreviewDmdSrcId, m_scoreviewDmdSubFrame, m_scoreviewDmdSubFrameSearch);
 
    return true;
 }
 
-ivec4 B2SRenderer::SearchDmdSubFrame(float dmdAspectRatio)
+void B2SRenderer::RenderDmdOverlay(VPXRenderContext2D* ctx, VPXTexture image, CtlResId& dmdSrcId, ivec4& dmdSubFrame, std::future<ivec4>& dmdSubFrameSearch)
+{
+   ResURIResolver::DisplayState dmd = m_resURIResolver.GetDisplayState("ctrl://default/display");
+   if (dmd.state.frame == nullptr)
+      return;
+
+   // When DMD source change, search for the DMD sub frame as it depends on the DMD source aspect ratio
+   if (image && dmdSrcId.id != dmd.source->id.id)
+   {
+      dmdSubFrame = ivec4();
+      dmdSrcId.id = dmd.source->id.id;
+      const float ar = static_cast<float>(dmd.source->width) / static_cast<float>(dmd.source->height);
+      dmdSubFrameSearch = std::async(std::launch::async, [this, image, ar]() { return SearchDmdSubFrame(image, ar); });
+   }
+
+   if (dmdSubFrameSearch.valid() && dmdSubFrameSearch.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+      dmdSubFrame = dmdSubFrameSearch.get();
+
+   if (dmdSubFrame.z == 0.f || dmdSubFrame.w == 0.f)
+      return;
+
+   UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height,
+      dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8         ? VPXTextureFormat::VPXTEXFMT_BW
+         : dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? VPXTextureFormat::VPXTEXFMT_sRGB565
+                                                                   : VPXTextureFormat::VPXTEXFMT_sRGB8,
+      dmd.state.frame);
+
+   vec4 glassArea, glassAmbient(1.f, 1.f, 1.f, 1.f), glassTint(1.f, 1.f, 1.f, 1.f), glassPad;
+   vec4 dmdTint(1.f, 1.f, 1.f, 1.f);
+   ctx->DrawDisplay(ctx, VPXDisplayRenderStyle::VPXDMDStyle_Plasma,
+      // First layer: glass
+      nullptr, glassTint.x, glassTint.y, glassTint.z, 0.f, // Glass texture, tint and roughness
+      glassArea.x, glassArea.y, glassArea.z, glassArea.w, // Glass texture coordinates (inside overall glass texture)
+      glassAmbient.x, glassAmbient.y, glassAmbient.z, // Glass lighting from room
+      // Second layer: emitter
+      m_dmdTex, dmdTint.x, dmdTint.y, dmdTint.z, 1.f, 1.f, // DMD emitter, emitter tint, emitter brightness, emitter alpha
+      glassPad.x, glassPad.y, glassPad.z, glassPad.w, // Emitter padding (from glass border)
+      // Render quad
+      static_cast<float>(dmdSubFrame.x), static_cast<float>(dmdSubFrame.y), static_cast<float>(dmdSubFrame.z), static_cast<float>(dmdSubFrame.w));
+}
+
+ivec4 B2SRenderer::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio)
 {
    ivec4 subFrame;
 
-   if (m_b2s->m_dmdImage.m_image == nullptr)
-      return subFrame;
-   VPXTextureInfo* texInfo = GetTextureInfo(m_b2s->m_dmdImage.m_image);
+   VPXTextureInfo* texInfo = GetTextureInfo(image);
    if (texInfo == nullptr)
       return subFrame;
 
