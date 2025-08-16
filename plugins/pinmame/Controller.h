@@ -10,7 +10,7 @@ class Game;
 class Controller final
 {
 public:
-   Controller(MsgPluginAPI* api, unsigned int endpointId, PinmameConfig& config);
+   Controller(const MsgPluginAPI* api, unsigned int endpointId, PinmameConfig& config);
    ~Controller();
 
    PSC_IMPLEMENT_REFCOUNT()
@@ -159,7 +159,7 @@ private:
    string m_splashInfoLine; // Info line shown during startup
    bool m_hidden = true; // Show/Hide PinMame window
 
-   MsgPluginAPI* const m_msgApi;
+   const MsgPluginAPI* const m_msgApi;
    const unsigned int m_endpointId;
    unsigned int m_getDmdSrcMsgId, m_onDmdChangedMsgId;
    DisplaySrcId m_defaultDmd { 0 };

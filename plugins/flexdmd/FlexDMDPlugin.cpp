@@ -314,7 +314,7 @@ PSC_CLASS_END(FlexDMD)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Plugin interface
 
-static MsgPluginAPI* msgApi = nullptr;
+static const MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
 static ScriptablePluginAPI* scriptApi = nullptr;
 
@@ -616,7 +616,7 @@ using namespace Flex;
 
 MSGPI_EXPORT void MSGPIAPI FlexDMDPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api)
 {
-   msgApi = const_cast<MsgPluginAPI*>(api);
+   msgApi = api;
    endpointId = sessionId;
 
    // Setup login

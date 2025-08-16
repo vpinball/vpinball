@@ -7,16 +7,16 @@
 
 namespace B2S {
 
-B2SRenderer::B2SRenderer(MsgPluginAPI* const msgApi, const unsigned int endpointId, std::shared_ptr<B2STable> b2s)
+B2SRenderer::B2SRenderer(const MsgPluginAPI* const msgApi, const unsigned int endpointId, std::shared_ptr<B2STable> b2s)
    : m_b2s(b2s)
    , m_msgApi(msgApi)
    , m_endpointId(endpointId)
    , m_resURIResolver(*msgApi, endpointId, true, false, false, false)
+   , m_scoreviewDmdOverlay(m_resURIResolver, m_dmdTex, m_b2s->m_dmdImage.m_image)
    , m_backglassDmdOverlay(m_resURIResolver, m_dmdTex,
         m_b2s->m_backglassImage.m_image         ? m_b2s->m_backglassImage.m_image
            : m_b2s->m_backglassOffImage.m_image ? m_b2s->m_backglassOffImage.m_image
                                                 : m_b2s->m_backglassOnImage.m_image)
-   , m_scoreviewDmdOverlay(m_resURIResolver, m_dmdTex, m_b2s->m_dmdImage.m_image)
 {
    bool m_showGrill = false;
    m_grillCut = m_showGrill ? 0.f : static_cast<float>(m_b2s->m_grillHeight);
@@ -24,7 +24,7 @@ B2SRenderer::B2SRenderer(MsgPluginAPI* const msgApi, const unsigned int endpoint
    m_scoreviewDmdOverlay.LoadSettings(msgApi, "B2S"s, "Scoreview"s);
    m_backglassDmdOverlay.LoadSettings(msgApi, "B2S"s, "Backglass"s);
 
-   VPXTextureInfo* bgTexInfo = nullptr;
+   const VPXTextureInfo* bgTexInfo = nullptr;
    if (m_b2s->m_backglassImage.m_image)
       bgTexInfo = GetTextureInfo(m_b2s->m_backglassImage.m_image);
    else if (m_b2s->m_backglassOffImage.m_image)
@@ -32,7 +32,7 @@ B2SRenderer::B2SRenderer(MsgPluginAPI* const msgApi, const unsigned int endpoint
    m_b2sWidth = bgTexInfo ? static_cast<float>(bgTexInfo->width) : 1024.f;
    m_b2sHeight = (bgTexInfo ? static_cast<float>(bgTexInfo->height) : 768.f) - m_grillCut;
 
-   VPXTextureInfo* dmdTexInfo = nullptr;
+   const VPXTextureInfo* dmdTexInfo = nullptr;
    if (m_b2s->m_dmdImage.m_image)
       dmdTexInfo = GetTextureInfo(m_b2s->m_dmdImage.m_image);
    m_dmdWidth = dmdTexInfo ? static_cast<float>(dmdTexInfo->width) : 1024.f;
@@ -62,15 +62,13 @@ bool B2SRenderer::IsPinMAMEDriven() const
 {
    if (m_b2s->m_backglassOnImage.m_image && m_b2s->m_backglassOnImage.m_romIdType != B2SRomIDType::NotDefined)
       return true;
-   for (const auto& bulb : m_b2s->m_backglassIlluminations)
-      if (bulb.m_romIdType != B2SRomIDType::NotDefined)
-         return true;
-   return false;
+   return std::ranges::any_of(m_b2s->m_backglassIlluminations, [](const B2SBulb& bulb) {
+      return bulb.m_romIdType != B2SRomIDType::NotDefined; });
 }
 
-void B2SRenderer::OnDevSrcChanged(const unsigned int msgId, void* userData, void* msgData)
+void B2SRenderer::OnDevSrcChanged(const unsigned int, void* userData, void*)
 {
-   B2SRenderer* me = static_cast<B2SRenderer*>(userData);
+   auto me = static_cast<B2SRenderer*>(userData);
    delete[] me->m_deviceStateSrc.deviceDefs;
    memset(&me->m_deviceStateSrc, 0, sizeof(me->m_deviceStateSrc));
    me->m_nSolenoids = 0;
@@ -79,46 +77,58 @@ void B2SRenderer::OnDevSrcChanged(const unsigned int msgId, void* userData, void
    me->m_lampIndex = -1;
    me->m_nLamps = 0;
    me->m_nMechs = 0;
-   GetDevSrcMsg getSrcMsg = { 1024, 0, new DevSrcId[1024] };
-   me->m_msgApi->BroadcastMsg(me->m_endpointId, me->m_getDevSrcMsgId, &getSrcMsg);
+   if (me->m_b2s->m_backglassOnImage.m_image)
+      me->m_b2s->m_backglassOnImage.m_romUpdater = []() { /* No ROM source */ };
+   for (auto& bulb : me->m_b2s->m_backglassIlluminations)
+      bulb.m_romUpdater = []() { /* No ROM source */ };
+
+   unsigned int pinmameEndpoint = me->m_msgApi->GetPluginEndpoint("PinMAME");
+   if (pinmameEndpoint == 0)
+      return;
+
+   GetDevSrcMsg getSrcMsg = { 0, 0, nullptr };
+   me->m_msgApi->SendMsg(me->m_endpointId, me->m_getDevSrcMsgId, pinmameEndpoint, &getSrcMsg);
+   vector<DevSrcId> entries(getSrcMsg.count);
+   getSrcMsg = { getSrcMsg.count, 0, entries.data() };
+   me->m_msgApi->SendMsg(me->m_endpointId, me->m_getDevSrcMsgId, pinmameEndpoint, &getSrcMsg);
    for (unsigned int i = 0; i < getSrcMsg.count; i++)
    {
-      // FIXME select PinMAME device source
-      me->m_deviceStateSrc = getSrcMsg.entries[i];
-      if (getSrcMsg.entries[i].deviceDefs)
+      if (getSrcMsg.entries[i].id.endpointId == pinmameEndpoint)
       {
-         me->m_deviceStateSrc.deviceDefs = new DeviceDef[getSrcMsg.entries[i].nDevices];
-         memcpy(me->m_deviceStateSrc.deviceDefs, getSrcMsg.entries[i].deviceDefs, getSrcMsg.entries[i].nDevices * sizeof(DeviceDef));
+         me->m_deviceStateSrc = getSrcMsg.entries[i];
+         if (getSrcMsg.entries[i].deviceDefs)
+         {
+            me->m_deviceStateSrc.deviceDefs = new DeviceDef[getSrcMsg.entries[i].nDevices];
+            memcpy(me->m_deviceStateSrc.deviceDefs, getSrcMsg.entries[i].deviceDefs, getSrcMsg.entries[i].nDevices * sizeof(DeviceDef));
+         }
       }
-      break;
    }
-   delete[] getSrcMsg.entries;
 
-   if (me->m_deviceStateSrc.deviceDefs)
+   if (me->m_deviceStateSrc.deviceDefs == nullptr)
+      return;
+
+   for (unsigned int i = 0; i < me->m_deviceStateSrc.nDevices; i++)
    {
-      for (unsigned int i = 0; i < me->m_deviceStateSrc.nDevices; i++)
+      if (me->m_deviceStateSrc.deviceDefs[i].groupId == 0x0100)
       {
-         if (me->m_deviceStateSrc.deviceDefs[i].groupId == 0x0100)
-         {
-            if (me->m_GIIndex == -1)
-               me->m_GIIndex = i;
-            me->m_nGIs++;
-         }
-         else if (me->m_deviceStateSrc.deviceDefs[i].groupId == 0x0200)
-         {
-            if (me->m_lampIndex == -1)
-               me->m_lampIndex = i;
-            me->m_nLamps++;
-         }
-         else if (me->m_deviceStateSrc.deviceDefs[i].groupId == 0x0300)
-         {
-            if (me->m_mechIndex == -1)
-               me->m_mechIndex = i;
-            me->m_nMechs++;
-         }
-         else if ((me->m_GIIndex == -1) && (me->m_lampIndex == -1))
-            me->m_nSolenoids++;
+         if (me->m_GIIndex == -1)
+            me->m_GIIndex = i;
+         me->m_nGIs++;
       }
+      else if (me->m_deviceStateSrc.deviceDefs[i].groupId == 0x0200)
+      {
+         if (me->m_lampIndex == -1)
+            me->m_lampIndex = i;
+         me->m_nLamps++;
+      }
+      else if (me->m_deviceStateSrc.deviceDefs[i].groupId == 0x0300)
+      {
+         if (me->m_mechIndex == -1)
+            me->m_mechIndex = i;
+         me->m_nMechs++;
+      }
+      else if ((me->m_GIIndex == -1) && (me->m_lampIndex == -1))
+         me->m_nSolenoids++;
    }
 
    if (me->m_b2s->m_backglassOnImage.m_image)
@@ -129,16 +139,19 @@ void B2SRenderer::OnDevSrcChanged(const unsigned int msgId, void* userData, void
       {
       case B2SSnippitType::StandardImage:bulb.m_romUpdater = me->ResolveRomPropUpdater(&bulb.m_brightness, bulb.m_romIdType, bulb.m_romId); break;
       case B2SSnippitType::MechRotatingImage: bulb.m_romUpdater = me->ResolveRomPropUpdater(&bulb.m_mechRot, bulb.m_romIdType, bulb.m_romId); break;
+      case B2SSnippitType::SelfRotatingImage: break;
       }
 }
 
 std::function<void()> B2SRenderer::ResolveRomPropUpdater(float* value, const B2SRomIDType romIdType, const int romId, const bool romInverted) const
 {
    if (m_deviceStateSrc.deviceDefs == nullptr)
-      return []() { };
+      return []() { /* No ROM source */ };
    switch (romIdType)
    {
-   case B2SRomIDType::NotDefined: break;
+   case B2SRomIDType::NotDefined:
+      break;
+
    case B2SRomIDType::Solenoid:
       if (0 < romId && (unsigned int)romId <= m_nSolenoids)
       {
@@ -149,6 +162,7 @@ std::function<void()> B2SRenderer::ResolveRomPropUpdater(float* value, const B2S
             return [this, value, index]() { *value = m_deviceStateSrc.GetFloatState(index); };
       }
       break;
+
    case B2SRomIDType::GIString:
       if (0 < romId && (unsigned int)romId <= m_nGIs)
       {
@@ -159,6 +173,7 @@ std::function<void()> B2SRenderer::ResolveRomPropUpdater(float* value, const B2S
             return [this, value, index]() { *value = m_deviceStateSrc.GetFloatState(index); };
       }
       break;
+
    case B2SRomIDType::Lamp:
       for (unsigned int i = 0; i < m_nLamps; i++)
       {
@@ -171,8 +186,8 @@ std::function<void()> B2SRenderer::ResolveRomPropUpdater(float* value, const B2S
                return [this, value, index]() { *value = m_deviceStateSrc.GetFloatState(index); };
          }
       }
-      // value = (0 < romId && (unsigned int)romId <= m_nLamps) ? m_deviceStateSrc.GetFloatState(m_LampIndex + romId - 1) : 0.f;
       break;
+
    case B2SRomIDType::Mech:
       for (unsigned int i = 0; i < m_nMechs; i++)
       {
@@ -182,10 +197,9 @@ std::function<void()> B2SRenderer::ResolveRomPropUpdater(float* value, const B2S
             return [this, value, index]() { *value = m_deviceStateSrc.GetFloatState(index); };
          }
       }
-      // value = (0 < romId && (unsigned int)romId <= m_nLamps) ? m_deviceStateSrc.GetFloatState(m_LampIndex + romId - 1) : 0.f;
       break;
    }
-   return []() { };
+   return []() { /* No ROM source */ };
 }
 
 bool B2SRenderer::Render(VPXRenderContext2D* ctx)
@@ -194,6 +208,7 @@ bool B2SRenderer::Render(VPXRenderContext2D* ctx)
    {
    case VPXAnciliaryWindow::VPXWINDOW_Backglass: return RenderBackglass(ctx);
    case VPXAnciliaryWindow::VPXWINDOW_ScoreView: return RenderScoreview(ctx);
+   case VPXAnciliaryWindow::VPXWINDOW_Topper: return false;
    }
    return false;
 }
@@ -207,7 +222,7 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx)
    auto now = std::chrono::high_resolution_clock::now();
    float elapsed = static_cast<float>((now - m_lastBackglassRenderTick).count()) / 1000000000.0f;
    m_lastBackglassRenderTick = now;
-   for (auto animation : m_b2s->m_backglassAnimations)
+   for (auto& animation : m_b2s->m_backglassAnimations)
       animation.Update(elapsed); // TODO implement slowdown settings/props (scale elapsed)
 
    // Draw background
@@ -216,7 +231,7 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx)
    {
       if (m_b2s->m_backglassImage.m_image)
       {
-         VPXTextureInfo* texInfo = GetTextureInfo(m_b2s->m_backglassImage.m_image);
+         const VPXTextureInfo* texInfo = GetTextureInfo(m_b2s->m_backglassImage.m_image);
          ctx->DrawImage(ctx, m_b2s->m_backglassImage.m_image, 1.f, 1.f, 1.f, 1.f,
             0.f, m_grillCut, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height) - m_grillCut,
             0.f, 0.f, 0.f, // No rotation
@@ -224,7 +239,7 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx)
       }
       else if (m_b2s->m_backglassOffImage.m_image)
       {
-         VPXTextureInfo* texInfo = GetTextureInfo(m_b2s->m_backglassOffImage.m_image);
+         const VPXTextureInfo* texInfo = GetTextureInfo(m_b2s->m_backglassOffImage.m_image);
          ctx->DrawImage(ctx, m_b2s->m_backglassOffImage.m_image, 1.f, 1.f, 1.f, 1.f,
             0.f, m_grillCut, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height) - m_grillCut,
             0.f, 0.f, 0.f, // No rotation
@@ -233,7 +248,7 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx)
    }
    if (m_b2s->m_backglassOnImage.m_image)
    {
-      VPXTextureInfo* texInfo = GetTextureInfo(m_b2s->m_backglassOnImage.m_image);
+      const VPXTextureInfo* texInfo = GetTextureInfo(m_b2s->m_backglassOnImage.m_image);
       ctx->DrawImage(ctx, m_b2s->m_backglassOnImage.m_image, 1.f, 1.f, 1.f, m_b2s->m_backglassOnImage.m_brightness,
          0.f, m_grillCut, static_cast<float>(texInfo->width), static_cast<float>(texInfo->height) - m_grillCut,
          0.f, 0.f, 0.f, // No rotation
@@ -259,7 +274,7 @@ bool B2SRenderer::RenderScoreview(VPXRenderContext2D* ctx)
    auto now = std::chrono::high_resolution_clock::now();
    float elapsed = static_cast<float>((now - m_lastDmdRenderTick).count()) / 1000000000.0f;
    m_lastDmdRenderTick = now;
-   for (auto animation : m_b2s->m_dmdAnimations)
+   for (auto& animation : m_b2s->m_dmdAnimations)
       animation.Update(elapsed); // TODO implement slowdown settings/props (scale elapsed)
 
    // Draw background

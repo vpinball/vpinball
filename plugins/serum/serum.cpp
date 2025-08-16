@@ -31,7 +31,7 @@ LPI_IMPLEMENT
 // - PinMame/OnGameStart: msgData is PinMame game identifier (rom name)
 // - PinMame/OnGameEnd
 
-static MsgPluginAPI* msgApi = nullptr;
+static const MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
 
 static uint32_t endpointId;
@@ -342,7 +342,7 @@ using namespace Serum;
 
 MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api)
 {
-   msgApi = const_cast<MsgPluginAPI*>(api);
+   msgApi = api;
    endpointId = sessionId;
 
    // Request and setup shared login API

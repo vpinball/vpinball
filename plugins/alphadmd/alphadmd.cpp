@@ -50,7 +50,7 @@ using namespace std::string_literals;
 
 namespace AlphaDMD {
 
-static MsgPluginAPI* msgApi = nullptr;
+static const MsgPluginAPI* msgApi = nullptr;
 static uint32_t endpointId;
 static unsigned int onDmdSrcChangedId, getDmdSrcId;
 static unsigned int onSegSrcChangedId, getSegSrcId;
@@ -241,7 +241,7 @@ static void DrawChar(const int x, const int y, const segDisplay& display, const 
 
 static void DrawDisplay(int x, int y, float*& lum, int srcIndex, bool large)
 {
-   SegSrcId& segSrc = selectedSources[srcIndex];
+   const SegSrcId& segSrc = selectedSources[srcIndex];
    for (unsigned int i = 0; i < segSrc.nElements; i++)
    {
       const SegElementType type = segSrc.elementType[i];
@@ -257,7 +257,7 @@ static void DrawDisplay(int x, int y, float*& lum, int srcIndex, bool large)
       case CTLPI_SEG_LAYOUT_14D:  img = large ? SegImg_Seg14DC_8x10 : SegImg_Seg14DC_6x10; break;
       case CTLPI_SEG_LAYOUT_14DC: img = large ? SegImg_Seg14DC_8x10 : SegImg_Seg14DC_6x10; break;
       case CTLPI_SEG_LAYOUT_16:   img =         SegImg_Seg16_8x10;                         break;
-      default: assert(false); return; break;
+      default: assert(false); return;
       }
       DrawChar(x, y, segDisplays[img], lum, nSegments[type]);
       x += segDisplays[img].width;
@@ -274,7 +274,7 @@ void SetThreadName(const std::string& name)
    std::wstring wstr(size_needed - 1, L'\0');
    if (MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, wstr.data(), size_needed) == 0)
       return;
-   HRESULT hr = SetThreadDescription(GetCurrentThread(), wstr.c_str());
+   SetThreadDescription(GetCurrentThread(), wstr.c_str());
 }
 #else
 void SetThreadName(const std::string& name)
@@ -296,8 +296,8 @@ static void RenderThread()
    std::vector<unsigned int> lastFrameId;
    while (isRunning)
    {
-      std::unique_lock<std::mutex> lock(sourceMutex);
-      updateCondVar.wait(lock);
+      std::unique_lock lock(sourceMutex);
+      updateCondVar.wait(lock, [] { return !isRunning; });
 
       if (!isRunning)
          break;
@@ -311,8 +311,7 @@ static void RenderThread()
       lastFrameId.resize(selectedSources.size());
       for (size_t i = 0, pos = 0; i < selectedSources.size(); i++)
       {
-         const SegDisplayFrame seg = selectedSources[i].GetState(selectedSources[i].id);
-         if (seg.frameId != lastFrameId[i])
+         if (const SegDisplayFrame seg = selectedSources[i].GetState(selectedSources[i].id); seg.frameId != lastFrameId[i])
          {
             changed = true;
             lastFrameId[i] = seg.frameId;
@@ -505,9 +504,9 @@ static void OnGetDisplaySrc(const unsigned int eventId, void* userData, void* ms
    msg.count++;
 }
 
-static void OnSegSrcChanged(const unsigned int eventId, void* userData, void* msgData)
+static void OnSegSrcChanged(const unsigned int, void* userData, void* msgData)
 {
-   std::lock_guard<std::mutex> lock(sourceMutex);
+   std::lock_guard lock(sourceMutex);
    bool wasRendering = !selectedSources.empty();
    selectedSources.clear();
 
@@ -585,7 +584,7 @@ using namespace AlphaDMD;
 
 MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api)
 {
-   msgApi = const_cast<MsgPluginAPI*>(api);
+   msgApi = api;
    endpointId = sessionId;
    dmd128Id = {
       .id = { endpointId, 0 },

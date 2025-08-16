@@ -2,8 +2,30 @@
 
 #include <algorithm>
 #include <filesystem>
+#include <charconv>
 
 namespace B2S {
+
+static string GetSettingString(const MsgPluginAPI* pMsgApi, const string& section, const string& key, const string& def = string())
+{
+   char buf[256];
+   pMsgApi->GetSetting(section.c_str(), key.c_str(), buf, sizeof(buf));
+   return buf[0] ? string(buf) : def;
+}
+
+int GetSettingInt(const MsgPluginAPI* pMsgApi, const string& section, const string& key, int def)
+{
+   const auto s = GetSettingString(pMsgApi, section, key, string());
+   int result;
+   return (s.empty() || (std::from_chars(s.c_str(), s.c_str() + s.length(), result).ec != std::errc {})) ? def : result;
+}
+
+bool GetSettingBool(const MsgPluginAPI* pMsgApi, const string& section, const string& key, bool def)
+{
+   const auto s = GetSettingString(pMsgApi, section, key, string());
+   int result;
+   return (s.empty() || (std::from_chars(s.c_str(), s.c_str() + s.length(), result).ec != std::errc {})) ? def : (result != 0);
+}
 
 static inline char cLower(char c)
 {

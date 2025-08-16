@@ -56,7 +56,7 @@ public:
 class ScoreView final
 {
 public:
-   ScoreView(MsgPluginAPI* api, unsigned int endpointId, VPXPluginAPI* vpxApi);
+   ScoreView(const MsgPluginAPI* api, unsigned int endpointId, VPXPluginAPI* vpxApi);
    ~ScoreView();
 
    bool HasLayouts() const { return !m_layouts.empty(); }
@@ -130,7 +130,7 @@ private:
    ankerl::unordered_dense::map<string, VPXTexture> m_images;
 
    VPXPluginAPI* const m_vpxApi;
-   MsgPluginAPI* const m_msgApi;
+   const MsgPluginAPI* const m_msgApi;
    const unsigned int m_endpointId;
 
    unsigned int m_onDmdChangedMsgId, m_onSegChangedMsgId;

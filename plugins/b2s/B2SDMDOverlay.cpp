@@ -16,21 +16,14 @@ B2SDMDOverlay::B2SDMDOverlay(ResURIResolver& resURIResolver, VPXTexture& dmdTex,
 {
 }
 
-void B2SDMDOverlay::LoadSettings(MsgPluginAPI* const msgApi, const string& pluginId, const string& prefix)
+void B2SDMDOverlay::LoadSettings(const MsgPluginAPI* const msgApi, const string& pluginId, const string& prefix)
 {
-   char buf[32];
-   msgApi->GetSetting(pluginId.c_str(), (prefix + "DMDOverlay").c_str(), buf, sizeof(buf));
-   m_enable = atoi(buf) != 0;
-   msgApi->GetSetting(pluginId.c_str(), (prefix + "DMDAutoPos").c_str(), buf, sizeof(buf));
-   m_detectDmdFrame = atoi(buf) != 0;
-   msgApi->GetSetting(pluginId.c_str(), (prefix + "DMDX").c_str(), buf, sizeof(buf));
-   m_frame.x = atoi(buf);
-   msgApi->GetSetting(pluginId.c_str(), (prefix + "DMDY").c_str(), buf, sizeof(buf));
-   m_frame.y = atoi(buf);
-   msgApi->GetSetting(pluginId.c_str(), (prefix + "DMDWidth").c_str(), buf, sizeof(buf));
-   m_frame.z = atoi(buf);
-   msgApi->GetSetting(pluginId.c_str(), (prefix + "DMDHeight").c_str(), buf, sizeof(buf));
-   m_frame.w = atoi(buf);
+   m_enable = GetSettingBool(msgApi, pluginId, prefix + "DMDOverlay", false);
+   m_detectDmdFrame = GetSettingBool(msgApi, pluginId, prefix + "DMDAutoPos", false);
+   m_frame.x = GetSettingInt(msgApi, pluginId, prefix + "DMDX", 0);
+   m_frame.y = GetSettingInt(msgApi, pluginId, prefix + "DMDY", 0);
+   m_frame.z = GetSettingInt(msgApi, pluginId, prefix + "DMDWidth", 0);
+   m_frame.w = GetSettingInt(msgApi, pluginId, prefix + "DMDHeight", 0);
 }
 
 void B2SDMDOverlay::Render(VPXRenderContext2D* ctx)
@@ -54,16 +47,21 @@ void B2SDMDOverlay::Render(VPXRenderContext2D* ctx)
    if (m_frameSearch.valid() && m_frameSearch.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
       m_frame = m_frameSearch.get();
 
-   if (m_frame.z == 0.f || m_frame.w == 0.f)
+   if (m_frame.z == 0 || m_frame.w == 0)
       return;
 
-   UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height,
-      dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8         ? VPXTextureFormat::VPXTEXFMT_BW
-         : dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? VPXTextureFormat::VPXTEXFMT_sRGB565
-                                                                   : VPXTextureFormat::VPXTEXFMT_sRGB8,
-      dmd.state.frame);
+   switch (dmd.source->frameFormat)
+   {
+   case CTLPI_DISPLAY_FORMAT_LUM8: UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_BW, dmd.state.frame); break;
+   case CTLPI_DISPLAY_FORMAT_SRGB888: UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_sRGB8, dmd.state.frame); break;
+   case CTLPI_DISPLAY_FORMAT_SRGB565: UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_sRGB565, dmd.state.frame); break;
+   default: return;
+   }
 
-   vec4 glassArea, glassAmbient(1.f, 1.f, 1.f, 1.f), glassTint(1.f, 1.f, 1.f, 1.f), glassPad;
+   vec4 glassArea;
+   vec4 glassAmbient(1.f, 1.f, 1.f, 1.f);
+   vec4 glassTint(1.f, 1.f, 1.f, 1.f);
+   vec4 glassPad;
    vec4 dmdTint(1.f, 1.f, 1.f, 1.f);
    ctx->DrawDisplay(ctx, VPXDisplayRenderStyle::VPXDMDStyle_Plasma,
       // First layer: glass
@@ -77,17 +75,16 @@ void B2SDMDOverlay::Render(VPXRenderContext2D* ctx)
       static_cast<float>(m_frame.x), static_cast<float>(m_frame.y), static_cast<float>(m_frame.z), static_cast<float>(m_frame.w));
 }
 
-ivec4 B2SDMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio)
+ivec4 B2SDMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio) const
 {
    ivec4 subFrame;
 
-   VPXTextureInfo* texInfo = GetTextureInfo(image);
+   const VPXTextureInfo* const texInfo = GetTextureInfo(image);
    if (texInfo == nullptr)
       return subFrame;
 
    // Find the largest dark rectangle in the background image
    float maxHeuristic = 0.f;
-   float selectedAspectRatio = 1.f;
    std::stack<int> st;
    vector<int> heights(texInfo->width, 0); // height of empty columns above each pixels in the row as we scan them downward
    for (unsigned int y = 0; y < texInfo->height; ++y)
@@ -119,7 +116,7 @@ ivec4 B2SDMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio)
             const int width = st.empty() ? x : x - st.top() - 1;
             const float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
             const float arMatch = aspectRatio < dmdAspectRatio ? aspectRatio / dmdAspectRatio : dmdAspectRatio / aspectRatio;
-            const float heuristic = height * width * powf(arMatch, 0.5f);
+            const float heuristic = static_cast<float>(height * width) * powf(arMatch, 0.5f);
             if (heuristic > maxHeuristic)
             {
                maxHeuristic = heuristic;

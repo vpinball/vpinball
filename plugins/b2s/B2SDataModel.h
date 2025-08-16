@@ -288,9 +288,9 @@ public:
    const B2SImage m_dmdImage;
    const vector<B2SSound> m_sounds;
    vector<B2SBulb> m_backglassIlluminations;
-   const vector<B2SAnimation> m_backglassAnimations;
+   vector<B2SAnimation> m_backglassAnimations;
    const vector<B2SBulb> m_dmdIlluminations;
-   const vector<B2SAnimation> m_dmdAnimations;
+   vector<B2SAnimation> m_dmdAnimations;
    // Missing Scores
    // Missing Reels
 };

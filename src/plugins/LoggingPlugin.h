@@ -68,7 +68,7 @@ typedef struct LoggingPluginAPI
          va_end(args); \
       } \
    } \
-   void LPISetup(unsigned int endpointId, MsgPluginAPI* msgApi) { \
+   void LPISetup(unsigned int endpointId, const MsgPluginAPI* msgApi) { \
       const unsigned int getLoggingApiId = msgApi->GetMsgID(LOGPI_NAMESPACE, LOGPI_MSG_GET_API); \
       msgApi->BroadcastMsg(endpointId, getLoggingApiId, &loggingApi); \
       msgApi->ReleaseMsgID(getLoggingApiId); \

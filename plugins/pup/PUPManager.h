@@ -68,10 +68,10 @@ class PUPTrigger;
 class PUPManager final
 {
 public:
-   PUPManager(MsgPluginAPI* msgApi, uint32_t endpointId, const string& rootPath);
+   PUPManager(const MsgPluginAPI* msgApi, uint32_t endpointId, const string& rootPath);
    ~PUPManager();
 
-   MsgPluginAPI* GetMsgAPI() const { return m_msgApi; }
+   const MsgPluginAPI* GetMsgAPI() const { return m_msgApi; }
    const string& GetRootPath() const { return m_szRootPath; }
 
    void SetGameDir(const string& szRomName);
@@ -107,7 +107,7 @@ private:
    std::thread m_thread;
    vector<PUPPlaylist*> m_playlists;
 
-   MsgPluginAPI* const m_msgApi;
+   const MsgPluginAPI* const m_msgApi;
    const uint32_t m_endpointId;
    unsigned int m_getAuxRendererId = 0, m_onAuxRendererChgId = 0;
    unsigned int m_onDmdSrcChangedId = 0, m_getDmdSrcId = 0;

@@ -28,7 +28,7 @@
 
 namespace PinUpEvents {
 
-MsgPluginAPI* msgApi = nullptr;
+const MsgPluginAPI* msgApi = nullptr;
 uint32_t endpointId;
 static unsigned int onGameStartId, onGameEndId, onSerumTriggerId, getDmdSrcId;
 
@@ -226,7 +226,7 @@ using namespace PinUpEvents;
 
 MSGPI_EXPORT void MSGPIAPI PinUpEventsPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api)
 {
-   msgApi = const_cast<MsgPluginAPI*>(api);
+   msgApi = api;
    endpointId = sessionId; 
    getDmdSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
    msgApi->SubscribeMsg(sessionId, onGameStartId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_START), onGameStart, nullptr);
