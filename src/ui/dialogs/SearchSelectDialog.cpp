@@ -765,6 +765,14 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
 
        break;
    }
+   case eItemPartGroup:
+   {
+      ListView_SetItemText(m_hElementList, idx, 1, (LPSTR) "PartGroup");
+      ListView_SetItemText(m_hElementList, idx, 3, (LPSTR) "");
+      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR) "");
+
+      break;
+   }
    default:
       assert(!"AddSearchItemToList unhandled case");
       break;
