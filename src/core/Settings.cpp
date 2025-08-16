@@ -228,9 +228,13 @@ void Settings::Validate(const bool addDefaults)
    //////////////////////////////////////////////////////////////////////////
    // GfxBackend section
 
-#ifdef __ANDROID__
-   SettingString(Section::Player, "GfxBackend"s, "OpenGLES"s, ""s);
-#endif
+   #ifdef __ANDROID__
+      SettingString(Settings::Player, "GfxBackend"s, "OpenGLES"s, ""s);
+   #elif defined(__APPLE__)
+      SettingString(Settings::Player, "GfxBackend"s, "Metal"s, ""s);
+   #else
+      SettingString(Settings::Player, "GfxBackend"s, "Default"s, ""s);
+   #endif
 
    //////////////////////////////////////////////////////////////////////////
    // Ball Rendering section

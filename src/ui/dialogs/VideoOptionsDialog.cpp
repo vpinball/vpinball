@@ -1008,7 +1008,11 @@ BOOL RenderOptPage::OnInitDialog()
       int nRendererSupported = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers);
       m_gfxBackend.SetRedraw(false);
       for (int i = 0; i < nRendererSupported; ++i)
-         m_gfxBackend.AddString(m_bgfxRendererNames[supportedRenderers[i]].c_str());
+         if (supportedRenderers[i] != bgfx::RendererType::Noop)
+            #ifndef _DEBUG // Do not include Direct3D12 in release builds as it is still experimental
+            if (supportedRenderers[i] != bgfx::RendererType::Direct3D12)
+            #endif
+               m_gfxBackend.AddString(m_bgfxRendererNames[supportedRenderers[i]].c_str());
       m_gfxBackend.SetRedraw(true);
    #else
       GetDlgItem(IDC_GFX_BACKEND_LABEL).ShowWindow(false);
@@ -1180,7 +1184,7 @@ void RenderOptPage::LoadSettings(Settings& settings)
 
    #if defined(ENABLE_BGFX)
    {
-      string gfxBackend = settings.LoadValueWithDefault(Settings::Player, "GfxBackend"s, m_bgfxRendererNames[bgfx::RendererType::Vulkan]);
+      string gfxBackend = settings.LoadValueString(Settings::Player, "GfxBackend"s);
       bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
       int nRendererSupported = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers);
       for (int i = 0; i < nRendererSupported; ++i)
