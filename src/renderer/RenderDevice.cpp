@@ -711,13 +711,7 @@ RenderDevice::RenderDevice(
    syncMode = syncMode != VideoSyncMode::VSM_NONE ? VideoSyncMode::VSM_VSYNC : VideoSyncMode::VSM_NONE;
    
    static const string bgfxRendererNames[bgfx::RendererType::Count + 1] = { "Noop"s, "Agc"s, "Direct3D11"s, "Direct3D12"s, "Gnm"s, "Metal"s, "Nvn"s, "OpenGLES"s, "OpenGL"s, "Vulkan"s, "Default"s };
-#ifdef __ANDROID__
-   string gfxBackend = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "GfxBackend"s, bgfxRendererNames[bgfx::RendererType::OpenGLES]);
-#elif defined(__APPLE__)
-   string gfxBackend = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "GfxBackend"s, bgfxRendererNames[bgfx::RendererType::Metal]);
-#else
-   string gfxBackend = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "GfxBackend"s, bgfxRendererNames[bgfx::RendererType::Vulkan]);
-#endif
+   string gfxBackend = g_pplayer->m_ptable->m_settings.LoadValueString(Settings::Player, "GfxBackend"s);
    bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
    const int nRendererSupported = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers);
    string supportedRendererLog;
@@ -727,6 +721,12 @@ RenderDevice::RenderDevice(
       if (gfxBackend == bgfxRendererNames[supportedRenderers[i]])
          init.type = supportedRenderers[i];
    }
+   if (init.type == bgfx::RendererType::Noop)
+      init.type = bgfx::RendererType::Count;
+   #ifndef _DEBUG // Disable Direct3D12 in release builds as it is not yet fully supported
+   if (init.type == bgfx::RendererType::Direct3D12)
+      init.type = bgfx::RendererType::Count;
+   #endif
    PLOGI << "Using graphics backend: " << bgfxRendererNames[init.type] << " (available: " << supportedRendererLog << ')';
 
    #ifndef __LIBVPINBALL__
