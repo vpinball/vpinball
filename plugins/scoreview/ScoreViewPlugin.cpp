@@ -23,7 +23,7 @@ namespace ScoreView
 
 LPI_IMPLEMENT // Implement shared login support
 
-static MsgPluginAPI* msgApi = nullptr;
+static const MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
 static uint32_t endpointId;
 static unsigned int onGameStartId, onGameEndId, onGetAuxRendererId, onAuxRendererChgId;
@@ -85,7 +85,7 @@ using namespace ScoreView;
 
 MSGPI_EXPORT void MSGPIAPI ScoreViewPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api)
 {
-   msgApi = const_cast<MsgPluginAPI*>(api);
+   msgApi = api;
    endpointId = sessionId;
    LPISetup(endpointId, msgApi);
 

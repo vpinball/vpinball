@@ -94,7 +94,7 @@ public:
    {
    }
 
-   void DispatchOnMainThread(MsgPluginAPI* msgApi)
+   void DispatchOnMainThread(const MsgPluginAPI* msgApi)
    {
       std::lock_guard<std::mutex> lock(m_pendingListMutex);
       m_pendingList.push_back(this);
@@ -103,7 +103,7 @@ public:
 
    void Invalidate() { m_valid = false; }
 
-   static void DispatchOnMainThread(MsgPluginAPI* msgApi, vector<AsyncCallback*>& pendingList, std::mutex& pendingListMutex, std::function<void()> callback)
+   static void DispatchOnMainThread(const MsgPluginAPI* msgApi, vector<AsyncCallback*>& pendingList, std::mutex& pendingListMutex, std::function<void()> callback)
    {
       AsyncCallback* cb = new AsyncCallback(pendingList, pendingListMutex, callback);
       cb->DispatchOnMainThread(msgApi);
@@ -112,7 +112,7 @@ public:
    // Invalidate pending triggers as their execution context is not valid any more
    static void InvalidateAllPending(vector<AsyncCallback*>& pendingList, std::mutex& pendingListMutex)
    {
-      std::lock_guard<std::mutex> lock(pendingListMutex);
+      std::lock_guard lock(pendingListMutex);
       std::for_each(pendingList.begin(), pendingList.end(), [](AsyncCallback* cb) { cb->Invalidate(); });
    }
 
@@ -121,7 +121,7 @@ public:
       AsyncCallback* tcb = static_cast<AsyncCallback*>(userdata);
       if (tcb->m_valid)
       {
-         std::unique_lock<std::mutex> lock(tcb->m_pendingListMutex);
+         std::unique_lock lock(tcb->m_pendingListMutex);
          auto it = std::ranges::find(tcb->m_pendingList, tcb);
          if (it != tcb->m_pendingList.end())
             tcb->m_pendingList.erase(it);

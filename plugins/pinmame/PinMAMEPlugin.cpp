@@ -24,21 +24,21 @@ using namespace std::string_literals;
 
 namespace PinMAME {
 
-static string GetSettingString(MsgPluginAPI* pMsgApi, const char* section, const char* key, const string& def = string())
+static string GetSettingString(const MsgPluginAPI* pMsgApi, const char* section, const char* key, const string& def = string())
 {
    char buf[256];
    pMsgApi->GetSetting(section, key, buf, sizeof(buf));
    return buf[0] ? string(buf) : def;
 }
 
-static int GetSettingInt(MsgPluginAPI* pMsgApi, const char* section, const char* key, int def = 0)
+static int GetSettingInt(const MsgPluginAPI* pMsgApi, const char* section, const char* key, int def = 0)
 {
    const auto s = GetSettingString(pMsgApi, section, key, string());
    int result;
    return (s.empty() || (std::from_chars(s.c_str(), s.c_str() + s.length(), result).ec != std::errc{})) ? def : result;
 }
 
-static bool GetSettingBool(MsgPluginAPI* pMsgApi, const char* section, const char* key, bool def = false)
+static bool GetSettingBool(const MsgPluginAPI* pMsgApi, const char* section, const char* key, bool def = false)
 {
    const auto s = GetSettingString(pMsgApi, section, key, string());
    int result;
@@ -212,7 +212,7 @@ PSC_CLASS_END(Controller)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Plugin interface
 
-static MsgPluginAPI* msgApi = nullptr;
+static const MsgPluginAPI* msgApi = nullptr;
 static ScriptablePluginAPI* scriptApi = nullptr;
 
 static uint32_t endpointId;
@@ -344,7 +344,7 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
 {
    controller = nullptr;
    endpointId = sessionId;
-   msgApi = const_cast<MsgPluginAPI*>(api);
+   msgApi = api;
 
    // Request and setup shared login API
    LPISetup(endpointId, msgApi);
@@ -439,7 +439,7 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
    scriptApi->SubmitTypeLibrary();
    scriptApi->SetCOMObjectOverride("VPinMAME.Controller", Controller_SCD);
 
-   PinmameSetMsgAPI(msgApi, endpointId);
+   PinmameSetMsgAPI(const_cast<MsgPluginAPI*>(msgApi), endpointId);
 }
 
 MSGPI_EXPORT void MSGPIAPI PinMAMEPluginUnload()

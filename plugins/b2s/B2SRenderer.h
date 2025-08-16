@@ -16,7 +16,7 @@ namespace B2S {
 class B2SRenderer final
 {
 public:
-   B2SRenderer(MsgPluginAPI* const msgApi, const unsigned int endpointId, std::shared_ptr<B2STable> b2s);
+   B2SRenderer(const MsgPluginAPI* const msgApi, const unsigned int endpointId, std::shared_ptr<B2STable> b2s);
    ~B2SRenderer();
 
    bool IsPinMAMEDriven() const;
@@ -30,9 +30,10 @@ private:
 
    std::shared_ptr<B2STable> m_b2s;
 
-   MsgPluginAPI* const m_msgApi;
+   const MsgPluginAPI* const m_msgApi;
    const unsigned int m_endpointId;
-   unsigned int m_getDevSrcMsgId = 0, m_onDevChangedMsgId = 0;
+   unsigned int m_getDevSrcMsgId = 0;
+   unsigned int m_onDevChangedMsgId = 0;
    static void OnDevSrcChanged(const unsigned int msgId, void* userData, void* msgData);
    DevSrcId m_deviceStateSrc { 0 };
    unsigned int m_nSolenoids = 0;

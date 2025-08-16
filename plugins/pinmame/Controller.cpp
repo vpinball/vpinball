@@ -4,7 +4,7 @@
 
 namespace PinMAME {
 
-Controller::Controller(MsgPluginAPI* api, unsigned int endpointId, PinmameConfig& config)
+Controller::Controller(const MsgPluginAPI* api, unsigned int endpointId, PinmameConfig& config)
    : m_msgApi(api)
    , m_endpointId(endpointId)
 {

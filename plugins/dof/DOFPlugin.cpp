@@ -37,7 +37,7 @@ using namespace std;
 
 namespace DOFPlugin {
 
-static MsgPluginAPI* msgApi = nullptr;
+static const MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
 static uint32_t endpointId;
 
@@ -334,7 +334,7 @@ using namespace DOFPlugin;
 
 MSGPI_EXPORT void MSGPIAPI DOFPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api)
 {
-   msgApi = const_cast<MsgPluginAPI*>(api);
+   msgApi = api;
    endpointId = sessionId;
 
    LPISetup(endpointId, msgApi);

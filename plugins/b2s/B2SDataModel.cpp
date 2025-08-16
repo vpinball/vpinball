@@ -9,30 +9,28 @@
 
 namespace B2S {
 
-static const tinyxml2::XMLElement* GetNode(const tinyxml2::XMLNode& doc, const std::string& nodePath)
+static const tinyxml2::XMLElement* GetNode(const tinyxml2::XMLNode& doc, std::string_view nodePath)
 {
    const tinyxml2::XMLNode* node = &doc;
    size_t pos = 0;
    size_t nextPos = nodePath.find('/', pos);
    while (nextPos != std::string::npos)
    {
-      std::string elementName = nodePath.substr(pos, nextPos - pos);
-      node = node->FirstChildElement(elementName.c_str());
+      std::string_view elementName = nodePath.substr(pos, nextPos - pos);
+      node = node->FirstChildElement(string(elementName).c_str());
       if (!node)
          return nullptr;
       pos = nextPos + 1;
       nextPos = nodePath.find('/', pos);
    }
-   std::string finalElementName = nodePath.substr(pos);
-   if (!finalElementName.empty())
-      node = node->FirstChildElement(finalElementName.c_str());
+   if (std::string_view finalElementName = nodePath.substr(pos); !finalElementName.empty())
+      node = node->FirstChildElement(string(finalElementName).c_str());
    return node ? node->ToElement() : nullptr;
 }
 
 static string GetStringAttribute(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& attributeName, const string& defVal)
 {
-   const tinyxml2::XMLElement* node = GetNode(doc, nodePath);
-   if (node)
+   if (const tinyxml2::XMLElement* node = GetNode(doc, nodePath); node)
    {
       const char* value = node->Attribute(attributeName.c_str());
       if (value)
@@ -54,8 +52,7 @@ static bool GetBoolAttribute(const tinyxml2::XMLNode& doc, const std::string& no
 
 static vec4 GetColorAttribute(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& attributeName, const vec4& defVal)
 {
-   const tinyxml2::XMLElement* node = GetNode(doc, nodePath);
-   if (node)
+   if (const tinyxml2::XMLElement* node = GetNode(doc, nodePath); node)
    {
       const char* value = node->Attribute(attributeName.c_str());
       if (value)
@@ -78,8 +75,7 @@ static vec4 GetColorAttribute(const tinyxml2::XMLNode& doc, const std::string& n
 
 static VPXTexture GetTextureAttribute(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& attributeName)
 {
-   const tinyxml2::XMLElement* node = GetNode(doc, nodePath);
-   if (node)
+   if (const tinyxml2::XMLElement* node = GetNode(doc, nodePath); node)
    {
       const char* value = node->Attribute(attributeName.c_str());
       if (value)
@@ -93,13 +89,12 @@ static VPXTexture GetTextureAttribute(const tinyxml2::XMLNode& doc, const std::s
 
 static std::shared_ptr<vector<uint8_t>> GetSoundAttribute(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& attributeName)
 {
-   const tinyxml2::XMLElement* node = GetNode(doc, nodePath);
-   if (node)
+   if (const tinyxml2::XMLElement* node = GetNode(doc, nodePath); node)
    {
       const char* value = node->Attribute(attributeName.c_str());
       if (value)
       {
-         std::shared_ptr<vector<uint8_t>> pWav = std::make_shared<vector<uint8_t>>();
+         auto pWav = std::make_shared<vector<uint8_t>>();
          vector<unsigned char> wav = base64_decode(value);
          pWav->insert(pWav->begin(), wav.begin(), wav.end());
          return pWav;
@@ -108,10 +103,9 @@ static std::shared_ptr<vector<uint8_t>> GetSoundAttribute(const tinyxml2::XMLNod
    return nullptr;
 }
 
-static B2SImage GetImageAttribute(const tinyxml2::XMLNode& doc, const std::string& nodePath, const std::string& attributeName)
+static B2SImage GetImageAttribute(const tinyxml2::XMLNode& doc, const std::string& nodePath)
 {
    const tinyxml2::XMLElement* node = GetNode(doc, nodePath);
-   //return node ? B2SImage(*node) : B2SImage();
    return B2SImage(*node);
 }
 
@@ -134,7 +128,7 @@ template <class T> static vector<T> GetFilteredList(const tinyxml2::XMLNode& doc
       return list;
    for (auto subNode = node->FirstChildElement(subNodeName.c_str()); subNode != nullptr; subNode = subNode->NextSiblingElement(subNodeName.c_str()))
    {
-      bool isBackglass = subNode->Attribute("Parent", "Backglass") != 0;
+      bool isBackglass = subNode->Attribute("Parent", "Backglass") != nullptr;
       if (isBackglass == !isDMD)
          list.emplace_back(*subNode);
    }
@@ -181,7 +175,7 @@ B2SBulb::B2SBulb(const tinyxml2::XMLNode& root)
    , m_height(GetIntAttribute(root, ""s, "Height"s, 0))
    , m_isImageSnippit(GetBoolAttribute(root, ""s, "IsImageSnippit"s, false))
    , m_snippitType(static_cast<B2SSnippitType>(GetIntAttribute(root, ""s, "SnippitType"s, 0)))
-   , m_snippitRotatingSteps(GetIntAttribute(root, ""s, "SnippitRotatingAngle"s, 0) != 0 ? (360 / GetIntAttribute(root, ""s, "SnippitRotatingAngle"s, 0)) : GetIntAttribute(root, ""s, "SnippitRotatingSteps"s, 0))
+   , m_snippitRotatingSteps(GetIntAttribute(root, ""s, "SnippitRotatingAngle"s, 0) != 0 ? (360 / GetIntAttribute(root, ""s, "SnippitRotatingAngle"s, 1)) : GetIntAttribute(root, ""s, "SnippitRotatingSteps"s, 0))
    , m_snippitRotatingInterval(GetIntAttribute(root, ""s, "SnippitRotatingInterval"s, 0))
    , m_snippitRotatingDirection(static_cast<B2SSnippitRotationDirection>(GetIntAttribute(root, ""s, "eSnippitRotationDirection"s, 0)))
    , m_snippitRotatingStopBehaviour(static_cast<B2SSnippitRotationStopBehaviour>(GetIntAttribute(root, ""s, "SnippitRotatingStopBehaviour"s, 0)))
@@ -251,14 +245,14 @@ void B2SBulb::Render(VPXRenderContext2D* ctx) const
       rotation = 360.f * (m_mechRot / static_cast<float>(m_snippitRotatingSteps));
    if (m_offImage && m_brightness < 1.f)
    {
-      VPXTextureInfo* bulb = GetTextureInfo(m_offImage);
+      const VPXTextureInfo* const bulb = GetTextureInfo(m_offImage);
       ctx->DrawImage(ctx, m_offImage, m_lightColor.x, m_lightColor.y, m_lightColor.z, 1.f,
          0.f, 0.f, static_cast<float>(bulb->width), static_cast<float>(bulb->height),
          static_cast<float>(bulb->width) * 0.5f, static_cast<float>(bulb->height) * 0.5f, rotation,
          static_cast<float>(m_locationX), static_cast<float>(m_locationY), static_cast<float>(m_width), static_cast<float>(m_height));
    }
    {
-      VPXTextureInfo* bulb = GetTextureInfo(m_image);
+      const VPXTextureInfo* const bulb = GetTextureInfo(m_image);
       ctx->DrawImage(ctx, m_image, m_lightColor.x, m_lightColor.y, m_lightColor.z, m_brightness,
          0.f, 0.f, static_cast<float>(bulb->width), static_cast<float>(bulb->height),
          static_cast<float>(bulb->width) * 0.5f, static_cast<float>(bulb->height) * 0.5f, rotation,
@@ -356,11 +350,11 @@ B2STable::B2STable(const tinyxml2::XMLNode& root)
    , m_author(GetStringAttribute(root, "Author"s, "Value"s, ""s))
    , m_artwork(GetStringAttribute(root, "Artwork"s, "Value"s, ""s))
    , m_gameName(GetStringAttribute(root, "GameName"s, "Value"s, ""s))
-   , m_thumbnailImage(GetImageAttribute(root, "Images/ThumbnailImage"s, "Value"s))
-   , m_backglassImage(GetImageAttribute(root, "Images/BackglassImage"s, "Value"s))
-   , m_backglassOnImage(GetImageAttribute(root, "Images/BackglassOnImage"s, "Value"s))
-   , m_backglassOffImage(GetImageAttribute(root, "Images/BackglassOffImage"s, "Value"s))
-   , m_dmdImage(GetImageAttribute(root, "Images/DMDImage"s, "Value"s))
+   , m_thumbnailImage(GetImageAttribute(root, "Images/ThumbnailImage"s))
+   , m_backglassImage(GetImageAttribute(root, "Images/BackglassImage"s))
+   , m_backglassOnImage(GetImageAttribute(root, "Images/BackglassOnImage"s))
+   , m_backglassOffImage(GetImageAttribute(root, "Images/BackglassOffImage"s))
+   , m_dmdImage(GetImageAttribute(root, "Images/DMDImage"s))
    , m_sounds(GetList<B2SSound>(root, "Sounds"s, "Sound"s))
    , m_backglassIlluminations(GetFilteredList<B2SBulb>(root, "Illumination"s, "Bulb"s, false))
    , m_backglassAnimations(GetFilteredList<B2SAnimation>(root, "Animations"s, "Animation"s, false))

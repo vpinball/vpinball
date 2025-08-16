@@ -8,7 +8,7 @@
 
 namespace PUP {
 
-PUPManager::PUPManager(MsgPluginAPI* msgApi, uint32_t endpointId, const string& rootPath)
+PUPManager::PUPManager(const MsgPluginAPI* msgApi, uint32_t endpointId, const string& rootPath)
    : m_szRootPath(rootPath)
    , m_msgApi(msgApi)
    , m_endpointId(endpointId)
@@ -447,7 +447,7 @@ void PUPManager::ProcessQueue()
             // Broadcast event on plugin message bus (avoid holding any reference as we don't know when this event will be processed and maybe the manager will be deleted by then)
             struct DmdEvent
             {
-               MsgPluginAPI* msgApi;
+               const MsgPluginAPI* msgApi;
                uint32_t endpointId;
                unsigned int onDmdTriggerId;
                int dmdTrigger;
