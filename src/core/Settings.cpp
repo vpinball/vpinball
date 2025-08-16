@@ -327,7 +327,7 @@ void Settings::Validate(const bool addDefaults)
    SettingFloat(Section::Player, "ScreenPlayerZ"s, 70.f, -100.f, 200.f, ""s);
    SettingFloat(Section::Player, "ScreenWidth"s, 95.89f, 1.f, 500.f, "Physical width (cm) of the display area of the playfield (main) screen."s);
    SettingFloat(Section::Player, "ScreenHeight"s, 53.94f, 1.f, 500.f, "Physical height (cm) of the display area of the playfield (main) screen."s);
-   SettingFloat(Section::Player, "ScreenInclination"s, 0.0f, -15.f, 15.f, "Inclination (degree) of the playfield (main) screen. 0 is horizontal."s);
+   SettingFloat(Section::Player, "ScreenInclination"s, 0.0f, -30.f, 30.f, "Inclination (degree) of the playfield (main) screen. 0 is horizontal."s);
    SettingFloat(Section::Player, "LockbarWidth"s, 70.f, 10.f, 150.f, "Lockbar width in centimeters (measured on the cabinet)."s);
    SettingFloat(Section::Player, "LockbarHeight"s, 85.f, 0.f, 250.f, "Lockbar height in centimeters (measured on the cabinet, from ground to top of lockbar)."s);
 
