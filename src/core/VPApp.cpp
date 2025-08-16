@@ -1072,7 +1072,7 @@ int VPApp::Run()
       if (!m_tableFileName.empty())
       {
          PLOGI << "Loading table from command line option: " << m_tableFileName;
-         m_vpinball.LoadFileName(m_tableFileName, !m_play);
+         m_vpinball.LoadFileName(m_tableFileName, !m_play && m_run);
          m_vpinball.m_table_played_via_command_line = m_play;
          loadFileResult = m_vpinball.m_ptableActive != nullptr;
          if (m_vpinball.m_ptableActive && !m_tableIniFileName.empty())
@@ -1112,13 +1112,13 @@ int VPApp::Run()
    }
    //SET_CRT_DEBUG_FIELD( _CRTDBG_LEAK_CHECK_DF );
 
-   int retval = 0;
-   if (m_run)
-   {
-      if ((m_play || m_vpinball.m_table_played_via_SelectTableOnStart) && loadFileResult)
-         m_vpinball.DoPlay(m_vpinball.m_povEdit);
-      retval = MainMsgLoop();
-   }
+   if ((m_play || m_vpinball.m_table_played_via_SelectTableOnStart) && loadFileResult)
+      m_vpinball.DoPlay(m_vpinball.m_povEdit);
+
+   if (!m_run)
+      m_vpinball.PostMessage(WM_CLOSE, 0, 0);
+
+   int retval = MainMsgLoop();
 
    m_vpinball.m_settings.Save();
 
