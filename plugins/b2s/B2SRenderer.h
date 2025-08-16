@@ -25,6 +25,7 @@ private:
    std::function<void()> ResolveRomPropUpdater(float* value, const B2SRomIDType romIdType, const int romId, const bool romInverted = false) const;
    bool RenderBackglass(VPXRenderContext2D* context);
    bool RenderScoreview(VPXRenderContext2D* context);
+   void RenderDmdOverlay(VPXRenderContext2D* context, VPXTexture image, CtlResId& dmdSrcId, ivec4& dmdSubFrame, std::future<ivec4>& dmdSubFrameSearch);
 
    std::shared_ptr<B2STable> m_b2s;
 
@@ -42,13 +43,20 @@ private:
    unsigned int m_nMechs = 0;
    ResURIResolver m_resURIResolver;
 
-   bool m_addDmd = false;
-   bool m_detectDmdFrame = false;
-   CtlResId m_dmdSrcId { 0 };
-   ivec4 m_dmdSubFrame;
    VPXTexture m_dmdTex = nullptr;
-   std::future<ivec4> m_dmSubFrameSearch;
-   ivec4 SearchDmdSubFrame(float dmdAspectRatio);
+   ivec4 SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio);
+
+   bool m_scoreviewDmdOverlay = false;
+   bool m_scoreviewDetectDmdFrame = false;
+   CtlResId m_scoreviewDmdSrcId { 0 };
+   ivec4 m_scoreviewDmdSubFrame;
+   std::future<ivec4> m_scoreviewDmdSubFrameSearch;
+
+   bool m_backglassDmdOverlay = false;
+   bool m_backglassDetectDmdFrame = false;
+   CtlResId m_backglassDmdSrcId { 0 };
+   ivec4 m_backglassDmdSubFrame;
+   std::future<ivec4> m_backglassDmdSubFrameSearch;
 
    std::chrono::time_point<std::chrono::high_resolution_clock> m_lastBackglassRenderTick;
    std::chrono::time_point<std::chrono::high_resolution_clock> m_lastDmdRenderTick;
