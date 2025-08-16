@@ -252,7 +252,7 @@ void ISelect::GetTypeNameForType(const ItemTypeEnum type, WCHAR * const buf) con
 #endif
 }
 
-static void SetPartGroup(ISelect* const me, const string& layerName)
+static void SetPartGroup(ISelect* const me, string layerName)
 {
    if (me->GetIEditable() && (me->GetItemType() != eItemDragPoint) && (me->GetItemType() != eItemLightCenter))
    {
@@ -268,6 +268,8 @@ static void SetPartGroup(ISelect* const me, const string& layerName)
             legacyPartGroup->Release();
          }
       }*/
+      if (layerName.size() >= std::size(me->GetPTable()->m_wzName))
+         layerName = layerName.substr(0, std::size(me->GetPTable()->m_wzName) - 1);
       auto partGroupF = std::ranges::find_if(me->GetPTable()->m_vedit, [layerName](IEditable *editable) {
          return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup) && editable->GetName() == layerName;
       });
