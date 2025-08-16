@@ -11,6 +11,8 @@ set(B2SLEGACY_PLUGIN_SOURCES
    plugins/b2slegacy/B2SLegacyPlugin.cpp
    plugins/b2slegacy/Server.h
    plugins/b2slegacy/Server.cpp
+   plugins/b2slegacy/utils/DMDOverlay.h
+   plugins/b2slegacy/utils/DMDOverlay.cpp
    plugins/b2slegacy/utils/Timer.h
    plugins/b2slegacy/utils/Timer.cpp
    plugins/b2slegacy/utils/Matrix.h
@@ -100,6 +102,8 @@ set(B2SLEGACY_PLUGIN_SOURCES
    plugins/b2slegacy/forms/FormBackglass.cpp
    plugins/b2slegacy/forms/FormDMD.h
    plugins/b2slegacy/forms/FormDMD.cpp
+   src/core/ResURIResolver.h
+   src/core/ResURIResolver.cpp
 
    third-party/include/tinyxml2/tinyxml2.h
    third-party/include/tinyxml2/tinyxml2.cpp

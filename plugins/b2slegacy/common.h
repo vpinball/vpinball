@@ -230,3 +230,21 @@ string title_and_path_from_filename(const string& filename);
 bool is_string_numeric(const string& str);
 
 }
+
+class vec4
+{
+public:
+   vec4() { }
+   vec4(float px, float py, float pz, float pw) : x(px), y(py), z(pz), w(pw) { }
+
+   float x = 0.f, y = 0.f, z = 0.f, w = 0.f;
+};
+
+class ivec4
+{
+public:
+   ivec4() { }
+   ivec4(int px, int py, int pz, int pw) : x(px), y(py), z(pz), w(pw) { }
+
+   int x = 0, y = 0, z = 0, w = 0;
+};

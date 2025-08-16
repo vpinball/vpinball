@@ -51,6 +51,12 @@ void FormDMD::OnPaint(VPXRenderContext2D* const ctx)
       }
    }
 
+   Server* server = m_pB2SData->GetServer();
+   if (server) {
+      server->GetScoreviewDmdOverlay().UpdateBackgroundImage(GetBackgroundImage());
+      server->GetScoreviewDmdOverlay().Render(ctx);
+   }
+
    Control::OnPaint(ctx);
 }
 
