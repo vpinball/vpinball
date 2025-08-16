@@ -59,7 +59,6 @@ class VPinballActivity : SDLActivity() {
             "SDL3_image",
             "SDL3_ttf",
             "freeimage",
-            "bass",
             "pinmame",
             "altsound",
             "dmdutil",
