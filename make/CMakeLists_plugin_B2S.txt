@@ -11,6 +11,8 @@ set(B2S_PLUGIN_SOURCES
    plugins/b2s/B2SPlugin.cpp
    plugins/b2s/B2SDataModel.h
    plugins/b2s/B2SDataModel.cpp
+   plugins/b2s/B2SDMDOverlay.h
+   plugins/b2s/B2SDMDOverlay.cpp
    plugins/b2s/B2SRenderer.h
    plugins/b2s/B2SRenderer.cpp
    plugins/b2s/B2SServer.h

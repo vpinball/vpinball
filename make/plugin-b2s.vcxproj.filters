@@ -16,6 +16,9 @@
     <ClCompile Include="../../plugins/b2s/B2SDataModel.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="../../plugins/b2s/B2SDMDOverlay.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
     <ClCompile Include="../../plugins/b2s/B2SRenderer.cpp">
       <Filter>source</Filter>
     </ClCompile>
@@ -34,6 +37,9 @@
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="../../plugins/b2s/B2SDataModel.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="../../plugins/b2s/B2SDMDOverlay.h">
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="../../plugins/b2s/B2SRenderer.h">

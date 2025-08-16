@@ -184,6 +184,7 @@
     <ClCompile Include="../../plugins/b2s/common.cpp" />
     <ClCompile Include="../../plugins/b2s/B2SPlugin.cpp" />
     <ClCompile Include="../../plugins/b2s/B2SDataModel.cpp" />
+    <ClCompile Include="../../plugins/b2s/B2SDMDOverlay.cpp" />
     <ClCompile Include="../../plugins/b2s/B2SRenderer.cpp" />
     <ClCompile Include="../../plugins/b2s/B2SServer.cpp" />
     <ClCompile Include="../../src/core/ResURIResolver.cpp" />
@@ -192,6 +193,7 @@
   <ItemGroup>
     <ClInclude Include="../../plugins/b2s/common.h" />
     <ClInclude Include="../../plugins/b2s/B2SDataModel.h" />
+    <ClInclude Include="../../plugins/b2s/B2SDMDOverlay.h" />
     <ClInclude Include="../../plugins/b2s/B2SRenderer.h" />
     <ClInclude Include="../../plugins/b2s/B2SServer.h" />
     <ClInclude Include="../../src/core/ResURIResolver.h" />
