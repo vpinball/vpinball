@@ -398,6 +398,7 @@ target_precompile_headers(vpinball PUBLIC
 
 target_compile_definitions(vpinball PRIVATE
    ENABLE_DX9
+   USE_DINPUT8
 )
 
 set(OPT_COMMON /Ob2 /O2 /Oi /arch:SSE2 /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR /Oy /GT /GL /w44005 /Zc:__cplusplus /std:c++20)
@@ -421,12 +422,12 @@ target_link_libraries(vpinball
    comctl32.lib
    freeimage.lib
    dxguid.lib
-   dinput.lib
    nvapi.lib
    winmm.lib
    hid.lib
    setupapi.lib
    SDL3.lib
+   dinput8.lib
 )
 
 target_link_options(vpinball PUBLIC

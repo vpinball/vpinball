@@ -368,7 +368,6 @@ target_link_libraries(vpinball
    comctl32.lib
    freeimage.lib
    dxguid.lib
-   dinput.lib
    nvapi.lib
    winmm.lib
    hid.lib
