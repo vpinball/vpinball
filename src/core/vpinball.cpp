@@ -1101,7 +1101,7 @@ void VPinball::DoPlay(const int playMode)
                else if (dragging)
                {
                   // Handle dragging of auxiliary windows
-                  SDL_Window *sdlWnd = SDL_GetWindowFromID(e.motion.windowID);
+                  SDL_Window *const sdlWnd = SDL_GetWindowFromID(e.motion.windowID);
                   std::vector<VPX::Window*> windows = {
                      g_pplayer->m_scoreviewOutput.GetWindow(),
                      g_pplayer->m_backglassOutput.GetWindow(),
@@ -1126,7 +1126,32 @@ void VPinball::DoPlay(const int playMode)
             }
 
             if (isPFWnd)
-               ImGui_ImplSDL3_ProcessEvent(&e);
+            {
+               if (e.type == SDL_EVENT_MOUSE_MOTION)
+               {
+                  SDL_Event rotatedEvent = e;
+                  switch (g_pplayer->m_liveUI->GetUIOrientation())
+                  {
+                  case 0: break;
+                  case 1:
+                     rotatedEvent.motion.x = e.motion.y;
+                     rotatedEvent.motion.y = ImGui::GetIO().DisplaySize.y - e.motion.x;
+                     break;
+                  case 2:
+                     rotatedEvent.motion.x = e.motion.x;
+                     rotatedEvent.motion.y = ImGui::GetIO().DisplaySize.y - e.motion.y;
+                     break;
+                  case 3:
+                     rotatedEvent.motion.x = ImGui::GetIO().DisplaySize.x - e.motion.y;
+                     rotatedEvent.motion.y = e.motion.x;
+                     break;
+                  default: assert(false); return;
+                  }
+                  ImGui_ImplSDL3_ProcessEvent(&rotatedEvent);
+               }
+               else
+                  ImGui_ImplSDL3_ProcessEvent(&e);
+            }
 
             #ifdef ENABLE_SDL_INPUT
             g_pplayer->m_pininput.HandleSDLEvent(e);

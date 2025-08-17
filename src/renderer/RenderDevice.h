@@ -56,6 +56,7 @@ public:
    ~RenderDeviceState();
 
    const RenderDevice* m_rd;
+   ShaderState* const m_uiShaderState;
    ShaderState* const m_basicShaderState;
    ShaderState* const m_DMDShaderState;
    ShaderState* const m_FBShaderState;
@@ -122,7 +123,6 @@ public:
                          const int x2 = -1, const int y2 = -1, const int w2 = -1, const int h2 = -1,
                          const int srcLayer = -1, const int dstLayer = -1);
    void SubmitVR(RenderTarget* source);
-   void RenderLiveUI();
    void DrawMesh(Shader* shader, const bool isTranparentPass, const Vertex3Ds& center, const float depthBias, MeshBuffer* mb, const PrimitiveTypes type, const uint32_t startIndex, const uint32_t indexCount);
    void DrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices, const bool isTransparent = false, const float depth = 0.f);
    void DrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices, const bool isTransparent = false, const float depth = 0.f);
@@ -188,7 +188,8 @@ public:
    bool m_framePending = false;
 
    const int m_nEyes;
-   Shader *m_basicShader = nullptr;
+   Shader* m_uiShader = nullptr;
+   Shader* m_basicShader = nullptr;
    Shader *m_DMDShader = nullptr;
    Shader *m_FBShader = nullptr;
    Shader *m_flasherShader = nullptr;
@@ -252,7 +253,7 @@ public:
    bgfx::ProgramHandle m_program = BGFX_INVALID_HANDLE; // Bound program for next draw submission
    void NextView()
    {
-      if (m_activeViewId == bgfx::getCaps()->limits.maxViews - 2) // Last view is reserved for ImGui
+      if (m_activeViewId == bgfx::getCaps()->limits.maxViews - 1)
       {
          PLOGE << "Frame submitted and flipped since BGFX view limit was reached. [BGFX was compiled with a maximum of " << bgfx::getCaps()->limits.maxViews << " views]";
          SubmitRenderFrame();
@@ -264,16 +265,19 @@ public:
       bgfx::setViewClear(m_activeViewId, BGFX_CLEAR_NONE);
       bgfx::touch(m_activeViewId);
    }
-   void SubmitAndFlipFrame()
+   void ResetActiveView()
    {
       RenderTarget::OnFrameFlushed();
-      m_activeViewId = -1;
-      // BGFX always flips backbuffer when its render queue is submitted
-      bgfx::frame();
+      m_activeViewId = 1; // view 0 & 1 are reserved for mipmap generation (so 1 is before the first available for rendering)
+   }
+   void SubmitAndFlipFrame()
+   {
+      ResetActiveView();
+      bgfx::frame(); // BGFX always flips backbuffer when its render queue is submitted
    }
    bgfx::VertexLayout* m_pVertexTexelDeclaration = nullptr;
    bgfx::VertexLayout* m_pVertexNormalTexelDeclaration = nullptr;
-   int m_activeViewId = -1;
+   int m_activeViewId = 0;
    uint64_t m_bgfxState = 0L;
 
    bool m_frameNoSync = false; // Flag set when the next frame should be submitted without VBlank sync disabled

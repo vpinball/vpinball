@@ -274,8 +274,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    m_minphyslooptime = min(m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MinPhysLoopTime"s, 0), 1000);
 
-   m_throwBalls = m_ptable->m_settings.LoadValueWithDefault(Settings::Editor, "ThrowBallsAlwaysOn"s, false);
-   m_ballControl = m_ptable->m_settings.LoadValueWithDefault(Settings::Editor, "BallControlAlwaysOn"s, false);
    m_debugBallSize = m_ptable->m_settings.LoadValueWithDefault(Settings::Editor, "ThrowBallSize"s, 50);
    m_debugBallMass = m_ptable->m_settings.LoadValueWithDefault(Settings::Editor, "ThrowBallMass"s, 1.0f);
 
@@ -623,6 +621,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    // We need to initialize the perf counter before creating the UI which uses it
    wintimer_init();
    m_liveUI = new LiveUI(m_renderer->m_renderDevice);
+   m_liveUI->m_ballControl.LoadSettings(m_ptable->m_settings);
 
    m_progressDialog.SetProgress("Loading Textures..."s, 50);
 
@@ -856,7 +855,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    if (playMode == 1)
       m_liveUI->OpenTweakMode();
    else if (playMode == 2 && m_renderer->m_stereo3D != STEREO_VR)
-      m_liveUI->OpenLiveUI();
+      m_liveUI->OpenEditorUI();
 
    // Pre-render all non-changing elements such as static walls, rails, backdrops, etc. and also static playfield reflections
    // This is done after starting the script and firing the Init event to allow script to adjust static parts on startup
@@ -1121,8 +1120,6 @@ Player::~Player()
 
    m_changed_vht.clear();
 
-   delete m_pBCTarget;
-   m_pBCTarget = nullptr;
    if (m_ptable->m_isLiveInstance)
       delete m_ptable;
    //m_ptable = nullptr;
@@ -1380,8 +1377,8 @@ void Player::DestroyBall(HitBall *pHitBall)
       m_pactiveball = m_vball.empty() ? nullptr : m_vball.front();
    if (m_pactiveballDebug == pHitBall)
       m_pactiveballDebug = m_vball.empty() ? nullptr : m_vball.front();
-   if (m_pactiveballBC == pHitBall)
-      m_pactiveballBC = nullptr;
+   if (m_liveUI->m_ballControl.GetDraggedBall() == pHitBall)
+      m_liveUI->m_ballControl.SetDraggedBall(nullptr);
 }
 
 
@@ -1970,39 +1967,6 @@ void Player::PrepareFrame(const std::function<void()>& sync)
    // Check if we should turn animate the plunger light.
    ushock_output_set(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
 
-   // Update Live UI (must be rendered using a display resolution matching the final composition)
-   {
-      int w, h;
-      m_renderer->GetRenderSize(w, h); // LiveUI is rendered after up/downscaling, so don't use AA render size;
-      if (m_renderer->IsStereo())
-      {
-         if (m_vrDevice)
-         {
-            w = m_vrDevice->GetEyeWidth();
-            h = m_vrDevice->GetEyeHeight();
-         }
-         else if (m_renderer->m_stereo3Denabled)
-         {
-            // LiveUI is rendered before stereo and upscaling, but after downscaling
-            w = min(w, m_renderer->GetBackBufferTexture()->GetWidth());
-            h = min(h, m_renderer->GetBackBufferTexture()->GetHeight());
-         }
-         else
-         {
-            // FIXME disabled stereo is not really supported since the change to layered rendering, it will fail if AA is not 100%. It has never been properly supported beside fake stereo since render buffer do not have the right resolution
-            //assert(false);
-            w = m_playfieldWnd->GetWidth();
-            h = m_playfieldWnd->GetHeight();
-         }
-      }
-      m_liveUI->Update(w, h);
-      #ifdef __LIBVPINBALL__
-         if (m_liveUIOverride)
-            VPinballLib::VPinball::SendEvent(VPinballLib::Event::LiveUIUpdate, nullptr);
-      #endif
-      m_physics->ResetPerFrameStats();
-   }
-
    // Shake screen when nudging
    if (m_NudgeShake > 0.0f)
    {
@@ -2046,6 +2010,14 @@ void Player::PrepareFrame(const std::function<void()>& sync)
    
    // Apply screenspace transforms (MSAA, AO, AA, stereo, ball motion blur, tonemapping, dithering, bloom,...)
    m_renderer->PrepareVideoBuffers(m_renderer->m_renderDevice->GetOutputBackBuffer());
+
+   // UI hook
+   #ifdef __LIBVPINBALL__
+      if (m_liveUIOverride)
+         VPinballLib::VPinball::SendEvent(VPinballLib::Event::LiveUIUpdate, nullptr);
+   #endif
+
+   m_physics->ResetPerFrameStats();
 
    m_logicProfiler.ExitProfileSection();
 

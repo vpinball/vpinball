@@ -1,0 +1,53 @@
+////GLOBAL
+#version 400
+
+// license:GPLv3+
+
+////DEFINES
+#include "Helpers.fxh"
+
+////VERTEX
+layout(location=0) in vec3 vPosition;
+layout(location=1) in vec3 vNormal;
+layout(location=2) in float2 tc;
+out float2 tex0;
+out float4 color0;
+
+uniform mat4 matWorldView;
+
+uniform float4 staticColor_Alpha;
+#define stereoOfs staticColor_Alpha.x
+#define sdrScale staticColor_Alpha.a
+
+////FRAGMENT
+uniform sampler2D tex_base_color;
+
+in float2 tex0;
+in float4 color0;
+
+out vec4 color;
+#ifdef SHADER_GL410
+flat in int glLayer_gs;
+#endif
+
+
+////vs_liveui_main
+void main()
+{
+   gl_Position = matWorldView * vec4(vPosition.x, vPosition.y, 0.0, 1.0);
+   color0 = sdrScale * float4(vNormal.rgb, vPosition.z);
+   tex0 = tc;
+   //tex0 = float2(tc.x, 1.0-tc.y);
+}
+
+
+////ps_liveui_main
+void main()
+{
+   color = texture(tex_base_color, tex0) * color0;
+}
+
+
+////TECHNIQUES
+
+LiveUI:P0:vs_liveui_main():ps_liveui_main()

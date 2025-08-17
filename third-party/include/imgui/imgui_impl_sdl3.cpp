@@ -1,3 +1,5 @@
+// Warning VPX modified version: disable access to global mouse state to support rotated UI
+
 // dear imgui: Platform Backend for SDL3
 // This needs to be used along with a Renderer (e.g. SDL_GPU, DirectX11, OpenGL3, Vulkan..)
 // (Info: SDL3 is a cross-platform general purpose library for handling windows, inputs, graphics context creation, etc.)
@@ -83,7 +85,9 @@
 #endif
 
 #if !defined(__EMSCRIPTEN__) && !defined(__ANDROID__) && !(defined(__APPLE__) && TARGET_OS_IOS) && !defined(__amigaos4__)
-#define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE    1
+// Warning: VPX modification: disable access to global mouse state to support rotated UI
+//#define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE    1
+#define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE    0
 #else
 #define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE    0
 #endif

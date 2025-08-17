@@ -458,12 +458,12 @@ void HitBall::UpdateVelocities()
 {
    if (!m_d.m_lockedInKicker) // Gravity
    {
-      if (g_pplayer->m_ballControl && this == g_pplayer->m_pactiveballBC && g_pplayer->m_pBCTarget != nullptr)
+      if (this == g_pplayer->m_liveUI->m_ballControl.GetDraggedBall())
       {
          m_d.m_vel.x *= 0.5f; // Null out most of the X/Y velocity, want a little bit so the ball can sort of find its way out of obstacles.
          m_d.m_vel.y *= 0.5f;
-         m_d.m_vel += Vertex3Ds(max(-10.0f, min(10.0f, (g_pplayer->m_pBCTarget->x - m_d.m_pos.x) * (float)(1./10.))),
-                                max(-10.0f, min(10.0f, (g_pplayer->m_pBCTarget->y - m_d.m_pos.y) * (float)(1./10.))),
+         m_d.m_vel += Vertex3Ds(max(-10.0f, min(10.0f, (g_pplayer->m_liveUI->m_ballControl.GetDraggedBallTarget().x - m_d.m_pos.x) * (float)(1./10.))),
+                                max(-10.0f, min(10.0f, (g_pplayer->m_liveUI->m_ballControl.GetDraggedBallTarget().y - m_d.m_pos.y) * (float)(1./10.))),
                                 -2.0f);
       }
       else

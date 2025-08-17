@@ -304,6 +304,7 @@ void ReportError(const char *errorText, const HRESULT hr, const char *file, cons
 
 RenderDeviceState::RenderDeviceState(RenderDevice* rd)
    : m_rd(rd)
+   , m_uiShaderState(new ShaderState(m_rd->m_uiShader, m_rd->UseLowPrecision()))
    , m_basicShaderState(new ShaderState(m_rd->m_basicShader, m_rd->UseLowPrecision()))
    , m_DMDShaderState(new ShaderState(m_rd->m_DMDShader, m_rd->UseLowPrecision()))
    , m_FBShaderState(new ShaderState(m_rd->m_FBShader, m_rd->UseLowPrecision()))
@@ -316,6 +317,7 @@ RenderDeviceState::RenderDeviceState(RenderDevice* rd)
 
 RenderDeviceState::~RenderDeviceState()
 {
+   delete m_uiShaderState;
    delete m_basicShaderState;
    delete m_DMDShaderState;
    delete m_FBShaderState;
@@ -792,6 +794,8 @@ RenderDevice::RenderDevice(
    init.debug = true;
    #endif
 
+   ResetActiveView();
+
    m_renderDeviceAlive = true;
    m_renderThread = std::thread(&RenderThread, this, init);
    m_frameReadySem.wait();
@@ -1260,6 +1264,7 @@ RenderDevice::RenderDevice(
       #endif
    }
 
+   m_uiShader = new Shader(this, Shader::UI_SHADER, m_nEyes == 2);
    m_basicShader = new Shader(this, Shader::BASIC_SHADER, m_nEyes == 2);
    m_ballShader = new Shader(this, Shader::BALL_SHADER, m_nEyes == 2);
    m_DMDShader = new Shader(this, m_isVR ? Shader::DMD_VR_SHADER : Shader::DMD_SHADER, m_nEyes == 2);
@@ -1315,6 +1320,8 @@ RenderDevice::~RenderDevice()
       SAFE_RELEASE(m_pVertexNormalTexelDeclaration);
    #endif
 
+   delete m_uiShader;
+   m_uiShader = nullptr;
    delete m_basicShader;
    m_basicShader = nullptr;
    delete m_DMDShader;
@@ -1863,6 +1870,7 @@ void RenderDevice::CopyRenderStates(const bool copyTo, RenderDeviceState& state)
 {
    assert(state.m_rd == this);
    CopyRenderStates(copyTo, state.m_renderState);
+   m_uiShader->m_state->CopyTo(copyTo, state.m_uiShaderState);
    m_basicShader->m_state->CopyTo(copyTo, state.m_basicShaderState);
    m_DMDShader->m_state->CopyTo(copyTo, state.m_DMDShaderState);
    m_FBShader->m_state->CopyTo(copyTo, state.m_FBShaderState);
@@ -1932,8 +1940,7 @@ void RenderDevice::DiscardRenderFrame()
    m_currentPass = nullptr;
    m_renderFrame->Discard();
    #ifdef ENABLE_BGFX
-      RenderTarget::OnFrameFlushed();
-      m_activeViewId = -1;
+   ResetActiveView();
    #endif
 }
 
@@ -1999,15 +2006,6 @@ void RenderDevice::SubmitVR(RenderTarget* source)
    AddRenderTargetDependency(source);
    RenderCommand* cmd = m_renderFrame->NewCommand();
    cmd->SetSubmitVR(source);
-   cmd->m_dependency = m_nextRenderCommandDependency;
-   m_nextRenderCommandDependency = nullptr;
-   m_currentPass->Submit(cmd);
-}
-
-void RenderDevice::RenderLiveUI()
-{
-   RenderCommand* cmd = m_renderFrame->NewCommand();
-   cmd->SetRenderLiveUI();
    cmd->m_dependency = m_nextRenderCommandDependency;
    m_nextRenderCommandDependency = nullptr;
    m_currentPass->Submit(cmd);

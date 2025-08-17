@@ -20,6 +20,7 @@ public:
    };
    void NextPerfMode();
    PerfMode GetPerfMode() const { return m_showPerf; }
+   void SetPerfMode(PerfMode mode) { m_showPerf = mode; }
 
    void Update();
 

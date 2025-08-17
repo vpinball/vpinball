@@ -33,10 +33,6 @@ add_executable(vpinball
 
    third-party/include/imgui/imgui_impl_sdl3.cpp
    third-party/include/imgui/imgui_impl_sdl3.h
-   third-party/include/bgfx-imgui/imgui_impl_bgfx.cpp
-   third-party/include/bgfx-imgui/imgui_impl_bgfx.h
-   third-party/include/bgfx-imgui/fs_ocornut_imgui.bin.h
-   third-party/include/bgfx-imgui/vs_ocornut_imgui.bin.h
 )
 
 target_include_directories(vpinball PUBLIC

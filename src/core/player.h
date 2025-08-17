@@ -7,7 +7,7 @@
 #include "renderer/Window.h"
 #include "physics/PhysicsEngine.h"
 #include "ui/Debugger.h"
-#include "ui/LiveUI.h"
+#include "ui/live/LiveUI.h"
 #include "input/pininput.h"
 #include "plugins/ControllerPlugin.h"
 #include "plugins/VPXPlugin.h"
@@ -146,8 +146,6 @@ public:
 
    HitBall *m_pactiveball = nullptr; // ball the script user can get with ActiveBall
    HitBall *m_pactiveballDebug = nullptr; // ball the debugger will use as ActiveBall when firing events
-   HitBall *m_pactiveballBC = nullptr; // ball that the ball control UI will use
-   Vertex3Ds *m_pBCTarget = nullptr; // if non-null, the target location for the ball to roll towards
 
    void FireSyncController();
 
@@ -348,8 +346,6 @@ public:
    HWND m_hwndDebugOutput = nullptr;
    bool m_showDebugger = false;
 
-   bool m_throwBalls = false;
-   bool m_ballControl = false;
    int  m_debugBallSize;
    float m_debugBallMass;
    bool m_debugBalls = false;           // Draw balls in the foreground via 'O' key

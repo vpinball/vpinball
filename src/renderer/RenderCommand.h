@@ -17,9 +17,8 @@ public:
 
    bool IsFullClear(const bool hasDepth) const;
    bool IsTransparent() const { return m_isTransparent; }
-   bool IsDrawCommand() const { return m_command == RC_DRAW_MESH || m_command == RC_DRAW_QUAD_PT || m_command == RC_DRAW_QUAD_PNT || m_command == RC_DRAW_LIVEUI; }
+   bool IsDrawCommand() const { return m_command == RC_DRAW_MESH || m_command == RC_DRAW_QUAD_PT || m_command == RC_DRAW_QUAD_PNT; }
    bool IsDrawMeshCommand() const { return m_command == RC_DRAW_MESH; }
-   bool IsDrawLiveUICommand() const { return m_command == RC_DRAW_LIVEUI; }
    RenderState GetRenderState() const { return m_renderState; }
    ShaderState* GetShaderState() const { return m_shaderState; }
    ShaderTechniques GetShaderTechnique() const { return m_shaderTechnique; }
@@ -36,7 +35,6 @@ public:
                 const int x1 = -1, const int y1 = -1, const int w1 = -1, const int h1 = -1,
                 const int x2 = -1, const int y2 = -1, const int w2 = -1, const int h2 = -1, const int srcLayer = -1, const int dstLayer = -1);
    void SetSubmitVR(RenderTarget* from);
-   void SetRenderLiveUI();
    void SetDrawMesh(Shader* shader, MeshBuffer* mb, const RenderDevice::PrimitiveTypes type, const uint32_t startIndex, const uint32_t indexCount, const bool isTransparent, const float depth);
    void SetDrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices, const bool isTransparent = false, const float depth = 0.f);
    void SetDrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices, const bool isTransparent = false, const float depth = 0.f);
@@ -51,7 +49,6 @@ private:
       RC_DRAW_MESH,
       RC_DRAW_QUAD_PT,
       RC_DRAW_QUAD_PNT,
-      RC_DRAW_LIVEUI,
       RC_SUBMIT_VR
    };
 

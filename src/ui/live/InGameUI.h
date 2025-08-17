@@ -11,7 +11,7 @@ public:
    ~InGameUI();
 
    void Open();
-   bool IsOpened() const { return m_tweakMode; }
+   bool IsOpened() const { return m_isOpened; }
    void Update();
    void Close();
 
@@ -25,7 +25,10 @@ private:
    class PinInput *m_pininput;
    Renderer *m_renderer;
 
+   void DisableStaticPrepass() { if (!m_isOpened || m_staticPrepassDisabled) return; m_renderer->DisableStaticPrePass(true); m_staticPrepassDisabled = true; }
+
    // State
+   bool m_isOpened = false;
    enum TweakType
    {
       TT_Int,
@@ -58,9 +61,10 @@ private:
    vector<TweakPage> m_tweakPages;
    int m_tweakState[BS_Custom + 100] = {}; // 0 = unmodified, 1 = modified, 2 = resetted
    vector<BackdropSetting> m_tweakPageOptions;
-   bool m_tweakMode = false;
    float m_tweakScroll = 0.f;
-   uint32_t m_StartTime_msec = 0; // Used for timed splash overlays
+   uint32_t m_openTimeMs = 0; // Used for timed splash overlays
+   bool m_staticPrepassDisabled = false;
    void HandleTweakInput();
    void UpdateTweakPage();
+   PinInput::InputState m_prevInputState { 0 };
 };

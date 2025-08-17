@@ -384,6 +384,16 @@ void Window::RaiseAndFocus(const bool raise)
    #endif
 }
 
+bool Window::IsFocused() const {
+   if (m_isVR)
+      return true;
+#if defined(ENABLE_SDL_VIDEO) // SDL Windowing
+   return m_nwnd == SDL_GetKeyboardFocus();
+#else // Win32 Windowing
+   return m_nwnd == GetForegroundWindow();
+#endif
+}
+
 void Window::GetPos(int& x, int& y) const
 {
    if (m_isVR)

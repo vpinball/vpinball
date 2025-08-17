@@ -44,6 +44,7 @@
 #define SHADER_TECHNIQUE(name, ...) SHADER_TECHNIQUE_##name
 enum ShaderTechniques
 {
+   SHADER_TECHNIQUE(LiveUI, SHADER_matWorldView, SHADER_tex_base_color, SHADER_staticColor_Alpha),
    SHADER_TECHNIQUE(RenderBall, SHADER_matProj, SHADER_matWorldViewProj, SHADER_matView, SHADER_matWorldView, SHADER_matWorldViewInverse, SHADER_ballLightEmission, SHADER_ballLightPos,
       SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth, SHADER_cAmbient_LightRange, SHADER_tex_diffuse_env,
       SHADER_orientation, SHADER_invTableRes_reflection, SHADER_w_h_disableLighting, SHADER_tex_ball_color, SHADER_tex_ball_playfield, SHADER_tex_ball_decal),
@@ -482,7 +483,7 @@ public:
 class Shader final
 {
 public:
-   enum ShaderId { BALL_SHADER, BASIC_SHADER, DMD_SHADER, DMD_VR_SHADER, FLASHER_SHADER, POSTPROCESS_SHADER, LIGHT_SHADER, STEREO_SHADER };
+   enum ShaderId { UI_SHADER, BALL_SHADER, BASIC_SHADER, DMD_SHADER, DMD_VR_SHADER, FLASHER_SHADER, POSTPROCESS_SHADER, LIGHT_SHADER, STEREO_SHADER };
    Shader(RenderDevice* renderDevice, const ShaderId id, const bool isStereo);
    ~Shader();
 

@@ -247,10 +247,6 @@ add_executable(vpinball WIN32
    third-party/include/BAM/BAMView.h
    third-party/include/BAM/BAM_Tracker.h
    third-party/include/BAM/BAM_ViewPortSetup.h
-   third-party/include/bgfx-imgui/imgui_impl_bgfx.cpp
-   third-party/include/bgfx-imgui/imgui_impl_bgfx.h
-   third-party/include/bgfx-imgui/fs_ocornut_imgui.bin.h
-   third-party/include/bgfx-imgui/vs_ocornut_imgui.bin.h
    third-party/include/freeimage.h
    third-party/include/serial.cpp
    third-party/include/serial.h
