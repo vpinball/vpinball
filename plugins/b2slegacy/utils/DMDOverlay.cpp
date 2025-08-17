@@ -92,22 +92,31 @@ ivec4 DMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio)
    if (texInfo == nullptr)
       return subFrame;
 
+   unsigned int pos_step;
+   switch (texInfo->format)
+   {
+   case VPXTEXFMT_BW: pos_step = 1; break;
+   case VPXTEXFMT_sRGB8: pos_step = 3; break;
+   case VPXTEXFMT_sRGBA8: pos_step = 4; break;
+   default: pos_step = 0;
+   }
+
    // Find the largest dark rectangle in the background image
    float maxHeuristic = 0.f;
    float selectedAspectRatio = 1.f;
    std::stack<int> st;
    vector<int> heights(texInfo->width, 0); // height of empty columns above each pixels in the row as we scan them downward
+   unsigned int pos = 0;
    for (unsigned int y = 0; y < texInfo->height; ++y)
    {
-      for (unsigned int x = 0; x < texInfo->width; ++x)
+      for (unsigned int x = 0; x < texInfo->width; ++x,pos+=pos_step)
       {
          uint8_t lum = 0;
-         const int pos = y * texInfo->width + x;
          switch (texInfo->format)
          {
          case VPXTEXFMT_BW: lum = texInfo->data[pos]; break;
-         case VPXTEXFMT_sRGB8: lum = static_cast<uint8_t>(0.299f * texInfo->data[pos * 3] + 0.587f * texInfo->data[pos * 3 + 1] + 0.114f * texInfo->data[pos * 3 + 2]); break;
-         case VPXTEXFMT_sRGBA8: lum = static_cast<uint8_t>(0.299f * texInfo->data[pos * 4] + 0.587f * texInfo->data[pos * 4 + 1] + 0.114f * texInfo->data[pos * 4 + 2]); break;
+         case VPXTEXFMT_sRGB8: lum = static_cast<uint8_t>(0.299f * texInfo->data[pos] + 0.587f * texInfo->data[pos + 1] + 0.114f * texInfo->data[pos + 2]); break;
+         case VPXTEXFMT_sRGBA8: lum = static_cast<uint8_t>(0.299f * texInfo->data[pos] + 0.587f * texInfo->data[pos + 1] + 0.114f * texInfo->data[pos + 2]); break;
          default: return subFrame;
          }
          if (lum < 8)
@@ -126,7 +135,7 @@ ivec4 DMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio)
             const int width = st.empty() ? x : x - st.top() - 1;
             const float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
             const float arMatch = aspectRatio < dmdAspectRatio ? aspectRatio / dmdAspectRatio : dmdAspectRatio / aspectRatio;
-            const float heuristic = height * width * powf(arMatch, 0.5f);
+            const float heuristic = static_cast<float>(height * width) * sqrtf(arMatch);
             if (heuristic > maxHeuristic)
             {
                maxHeuristic = heuristic;

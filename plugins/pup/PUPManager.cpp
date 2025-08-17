@@ -732,7 +732,7 @@ void PUPManager::OnDevSrcChanged(const unsigned int eventId, void* userData, voi
       memset(&info, 0, sizeof(info));
       me->m_msgApi->GetEndpointInfo(getSrcMsg.entries[i].id.endpointId, &info);
       DevSrcId* devSrc = nullptr;
-      if (info.id != nullptr && strcmp(info.id, "PinMAME") == 0)
+      if (info.id != nullptr && info.id == "PinMAME"s)
          devSrc = &me->m_pinmameDevSrc;
       else
          continue;
@@ -781,9 +781,9 @@ void PUPManager::OnInputSrcChanged(const unsigned int eventId, void* userData, v
       memset(&info, 0, sizeof(info));
       me->m_msgApi->GetEndpointInfo(getSrcMsg.entries[i].id.endpointId, &info);
       InputSrcId* inputSrc = nullptr;
-      if (info.id != nullptr && strcmp(info.id, "PinMAME") == 0)
+      if (info.id != nullptr && info.id == "PinMAME"s)
          inputSrc = &me->m_pinmameInputSrc;
-      else if (info.id != nullptr && strcmp(info.id, "B2S") == 0)
+      else if (info.id != nullptr && info.id == "B2S"s)
          inputSrc = &me->m_b2sInputSrc;
       else
          continue;

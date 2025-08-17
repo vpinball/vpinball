@@ -26,15 +26,15 @@ PinMAMEAPI::PinMAMEAPI(Server* server, ScriptClassDef* pinmameClassDef)
       const char* name = m_pinmameClassDef->members[i].name.name;
       unsigned int nArgs = m_pinmameClassDef->members[i].nArgs;
 
-      if (strcmp(name, "ChangedLamps") == 0 && nArgs == 0)
+      if (name == "ChangedLamps"s && nArgs == 0)
          m_changedLampsIndex = i;
-      else if (strcmp(name, "ChangedSolenoids") == 0 && nArgs == 0)
+      else if (name == "ChangedSolenoids"s && nArgs == 0)
          m_changedSolenoidsIndex = i;
-      else if (strcmp(name, "ChangedGIStrings") == 0 && nArgs == 0)
+      else if (name == "ChangedGIStrings"s && nArgs == 0)
          m_changedGIStringsIndex = i;
-      else if (strcmp(name, "ChangedLEDs") == 0 && nArgs == 4)
+      else if (name == "ChangedLEDs"s && nArgs == 4)
          m_changedLEDsIndex = i;
-      else if (strcmp(name, "Switch") == 0 && nArgs == 2)
+      else if (name == "Switch"s && nArgs == 2)
          m_setSwitchIndex = i;
    }
 
@@ -127,7 +127,7 @@ void PinMAMEAPI::HandleCall(int memberIndex, int memberStartIndex, ScriptVariant
 
    m_pinmameClassDef->members[index].Call(m_pinmameInstance, index, pArgs, pRet);
 
-   if (strcmp(methodName, "GameName") == 0) {
+   if (methodName == "GameName"s) {
       if (pArgs) {
          string gameName;
          if (pArgs[0].vString.string)
@@ -137,19 +137,19 @@ void PinMAMEAPI::HandleCall(int memberIndex, int memberStartIndex, ScriptVariant
          m_server->GetB2SSettings()->SetB2SName("");
       }
    }
-   else if (strcmp(methodName, "Run") == 0)
+   else if (methodName == "Run"s)
       m_server->Run(0);
-   else if (strcmp(methodName, "Stop") == 0)
+   else if (methodName == "Stop"s)
       m_server->Stop();
-   else if (strcmp(methodName, "ChangedLamps") == 0)
+   else if (methodName == "ChangedLamps"s)
       m_server->GetChangedLamps(pRet);
-   else if (strcmp(methodName, "ChangedSolenoids") == 0)
+   else if (methodName == "ChangedSolenoids"s)
       m_server->GetChangedSolenoids(pRet);
-   else if (strcmp(methodName, "ChangedGIStrings") == 0)
+   else if (methodName == "ChangedGIStrings"s)
       m_server->GetChangedGIStrings(pRet);
-   else if (strcmp(methodName, "ChangedLEDs") == 0)
+   else if (methodName == "ChangedLEDs"s)
       m_server->GetChangedLEDs(pRet);
-   else if (strcmp(methodName, "GetMech") == 0) {
+   else if (methodName == "GetMech"s) {
       if (pArgs && pRet)
          m_server->CheckGetMech(pArgs[0].vInt, pRet->vInt);
    }

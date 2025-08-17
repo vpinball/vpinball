@@ -263,7 +263,7 @@ static void OnDevSrcChanged(const unsigned int eventId, void* userData, void* ms
    {
       memset(&info, 0, sizeof(info));
       msgApi->GetEndpointInfo(getSrcMsg.entries[i].id.endpointId, &info);
-      if (info.id != nullptr && strcmp(info.id, "PinMAME") == 0)
+      if (info.id != nullptr && info.id == "PinMAME"s)
       {
          pinmameDevSrc = getSrcMsg.entries[i];
          if (pinmameDevSrc.deviceDefs)
@@ -312,7 +312,7 @@ static void OnInputSrcChanged(const unsigned int eventId, void* userData, void* 
    {
       memset(&info, 0, sizeof(info));
       msgApi->GetEndpointInfo(getSrcMsg.entries[i].id.endpointId, &info);
-      if (info.id != nullptr && strcmp(info.id, "PinMAME") == 0)
+      if (info.id != nullptr && info.id == "PinMAME"s)
       {
          pinmameInputSrc = getSrcMsg.entries[i];
          if (pinmameInputSrc.inputDefs)
