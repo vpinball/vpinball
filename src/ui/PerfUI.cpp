@@ -344,7 +344,7 @@ void PerfUI::Update()
       ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.75f, 0.f, 0.f, 1.f)); // Running slower than expected
    #endif
    ImGui::SetNextWindowBgAlpha(0.5f);
-   ImGui::BeginChild("FPSText", ImVec2(0.f, 0.f), ImGuiChildFlags_AutoResizeY, ImGuiWindowFlags_NoScrollbar);
+   ImGui::BeginChild("FPSText", ImVec2(0.f, 0.f), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY, ImGuiWindowFlags_NoScrollbar);
    const double frameLength = m_player->m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME);
    ImGui::Text("Render: %5.1ffps %4.1fms (%4.1fms)\nLatency: %4.1fms (%4.1fms max)",
       1e6 / frameLength, 1e-3 * frameLength, 1e-3 * m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME),
