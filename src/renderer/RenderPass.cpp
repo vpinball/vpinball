@@ -99,12 +99,6 @@ void RenderPass::SortCommands()
          if (!r1->IsDrawCommand())
             return true;
 
-         // Move LiveUI command at the end of the pass
-         if (r1->IsDrawLiveUICommand())
-            return false;
-         if (r2->IsDrawLiveUICommand())
-            return true;
-
          // Move kickers before other draw calls.
          // Kickers disable depth test to be visible through playfield. This would make them to be rendered after opaques, but since they hack depth, they need to be rendered before balls
          // > The right fix would be to remove the kicker hack (use stencil masking, alpha punch or CSG on playfield), this would also solve rendering kicker in VR

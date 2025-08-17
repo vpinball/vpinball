@@ -44,6 +44,7 @@ ShaderTechniques Shader::m_boundTechnique = ShaderTechniques::SHADER_TECHNIQUE_I
 static vector<ShaderUniforms> InitTechUniforms() { return vector<ShaderUniforms>(); }
 static vector<ShaderUniforms> InitTechUniforms(std::initializer_list<ShaderUniforms> args) { return vector<ShaderUniforms> { args }; }
 Shader::TechniqueDef Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT] {
+   SHADER_TECHNIQUE(LiveUI, SHADER_matWorldView, SHADER_tex_base_color, SHADER_staticColor_Alpha),
    SHADER_TECHNIQUE(RenderBall, SHADER_matProj, SHADER_matWorldViewProj, SHADER_matView, SHADER_matWorldView, SHADER_matWorldViewInverse, SHADER_ballLightEmission, SHADER_ballLightPos,
       SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth, SHADER_cAmbient_LightRange, SHADER_tex_diffuse_env,
       SHADER_orientation, SHADER_invTableRes_reflection, SHADER_w_h_disableLighting, SHADER_tex_ball_color, SHADER_tex_ball_playfield, SHADER_tex_ball_decal, SHADER_clip_plane),
@@ -1344,6 +1345,7 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
 }
 
 // Embedded shaders
+#include "shaders/bgfx_imgui.h"
 #include "shaders/bgfx_ball.h"
 #include "shaders/bgfx_basic.h"
 #include "shaders/bgfx_dmd.h"
@@ -1363,6 +1365,9 @@ void Shader::Load()
    #define BGFX_EMBEDDED_SHADER_ST_CLIP(a) BGFX_EMBEDDED_SHADER_ST(a##_clip), BGFX_EMBEDDED_SHADER_ST(a##_noclip)
    static const bgfx::EmbeddedShader embeddedShaders[] =
    {
+      // ImGui shaders
+      BGFX_EMBEDDED_SHADER_ST(vs_imgui),
+      BGFX_EMBEDDED_SHADER(fs_imgui),
       // Basic material shaders
       BGFX_EMBEDDED_SHADER_ST_CLIP(vs_basic_tex),
       BGFX_EMBEDDED_SHADER_ST_CLIP(vs_basic_notex),
@@ -1496,6 +1501,9 @@ void Shader::Load()
    #define STEREO(n) m_isStereo ? n##_st.name : #n
    switch (m_shaderId)
    {
+   case UI_SHADER:
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_LiveUI, STEREO(vs_imgui), "fs_imgui");
+      break;
    case BASIC_SHADER:
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_with_texture,       STEREO(vs_basic_tex_noclip),           STEREO(fs_basic_tex_noat_noclip));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_with_texture_at,    STEREO(vs_basic_tex_noclip),           STEREO(fs_basic_tex_at_noclip));
@@ -2086,6 +2094,7 @@ void Shader::Load()
 {
    switch (m_shaderId)
    {
+   case UI_SHADER: Load("UIShader.glfx"s); break;
    case BASIC_SHADER: Load("BasicShader.glfx"s); break;
    case BALL_SHADER: Load("BallShader.glfx"s); break;
    case DMD_SHADER: Load("DMDShader.glfx"s); break;
@@ -2098,6 +2107,7 @@ void Shader::Load()
    #else
    case POSTPROCESS_SHADER: Load("FBShader.glfx"s); break;
    #endif
+   default: assert(false);
    }
 }
 
@@ -2214,6 +2224,7 @@ void Shader::Load(const std::string& name)
 #include "shaders/hlsl_light.h"
 #include "shaders/hlsl_stereo.h"
 #include "shaders/hlsl_ball.h"
+#include "shaders/hlsl_ui.h"
 
 void Shader::Load()
 {
@@ -2221,6 +2232,7 @@ void Shader::Load()
    unsigned int codeSize;
    switch (m_shaderId)
    {
+   case UI_SHADER: m_shaderCodeName = "UIShader.hlsl"s; code = g_uiShaderCode; codeSize = sizeof(g_uiShaderCode); break;
    case BASIC_SHADER: m_shaderCodeName = "BasicShader.hlsl"s; code = g_basicShaderCode; codeSize = sizeof(g_basicShaderCode); break;
    case BALL_SHADER: m_shaderCodeName = "BallShader.hlsl"s; code = g_ballShaderCode; codeSize = sizeof(g_ballShaderCode); break;
    case DMD_SHADER: m_shaderCodeName = "DMDShader.hlsl"s; code = g_dmdShaderCode; codeSize = sizeof(g_dmdShaderCode); break;

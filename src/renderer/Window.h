@@ -59,6 +59,7 @@ public:
    void SetPos(const int x, const int y);
    void Show(const bool show = true);
    void RaiseAndFocus(const bool raise = true);
+   bool IsFocused() const;
 
    void SetBackBuffer(RenderTarget* rt, const bool wcgBackbuffer = false) { assert(rt == nullptr || (rt->GetWidth() == m_pixelWidth && rt->GetHeight() == m_pixelHeight)); m_backBuffer = rt; m_wcgBackbuffer = wcgBackbuffer; }
    RenderTarget* GetBackBuffer() const { return m_backBuffer; }

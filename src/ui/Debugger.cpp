@@ -50,8 +50,28 @@ BOOL DebuggerDialog::OnInitDialog()
 
     ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_SETTABWIDTH, 4, 0);
 
-    GetDlgItem(IDC_BALL_THROWING).SendMessage(BM_SETCHECK, g_pplayer->m_throwBalls ? BST_CHECKED : BST_UNCHECKED, 0);
-    GetDlgItem(IDC_BALL_CONTROL).SendMessage(BM_SETCHECK, g_pplayer->m_ballControl ? BST_CHECKED : BST_UNCHECKED, 0);
+    switch (g_pplayer->m_liveUI->m_ballControl.GetMode())
+    {
+    case BallControl::Mode::Disabled:
+       GetDlgItem(IDC_BALL_THROWING).SendMessage(BM_SETCHECK, BST_UNCHECKED, 0);
+       GetDlgItem(IDC_BALL_CONTROL).SendMessage(BM_SETCHECK, BST_UNCHECKED, 0);
+       break;
+       
+    case BallControl::Mode::DragBall:
+       GetDlgItem(IDC_BALL_THROWING).SendMessage(BM_SETCHECK, BST_UNCHECKED, 0);
+       GetDlgItem(IDC_BALL_CONTROL).SendMessage(BM_SETCHECK, BST_CHECKED, 0);
+       break;
+       
+    case BallControl::Mode::ThrowDraggedBall:
+       GetDlgItem(IDC_BALL_THROWING).SendMessage(BM_SETCHECK, BST_CHECKED, 0);
+       GetDlgItem(IDC_BALL_CONTROL).SendMessage(BM_SETCHECK, BST_CHECKED, 0);
+       break;
+       
+    case BallControl::Mode::ThrowNewBall:
+       GetDlgItem(IDC_BALL_THROWING).SendMessage(BM_SETCHECK, BST_CHECKED, 0);
+       GetDlgItem(IDC_BALL_CONTROL).SendMessage(BM_SETCHECK, BST_UNCHECKED, 0);
+       break;
+    }
 
     m_ballSizeEdit.SetWindowText(std::to_string(g_pplayer->m_debugBallSize).c_str());
 
@@ -92,15 +112,11 @@ BOOL DebuggerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             return TRUE;
         }
         case IDC_BALL_THROWING:
-        {
-            const size_t checked = GetDlgItem(IDC_BALL_THROWING).SendMessage(BM_GETCHECK, 0, 0);
-            g_pplayer->m_throwBalls = !!checked;
-            return TRUE;
-        }
         case IDC_BALL_CONTROL:
         {
-            const size_t checked = GetDlgItem(IDC_BALL_CONTROL).SendMessage(BM_GETCHECK, 0, 0);
-            g_pplayer->m_ballControl = !!checked;
+            const size_t btChecked = GetDlgItem(IDC_BALL_THROWING).SendMessage(BM_GETCHECK, 0, 0);
+            const size_t bcChecked = GetDlgItem(IDC_BALL_CONTROL).SendMessage(BM_GETCHECK, 0, 0);
+            g_pplayer->m_liveUI->m_ballControl.SetMode(!!bcChecked, !!btChecked);
             return TRUE;
         }
     }

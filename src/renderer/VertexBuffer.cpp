@@ -190,7 +190,8 @@ VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, con
          break;
       }
    }
-   if (m_sharedBuffer == nullptr)
+   // Also create a new buffer when using dynamic buffers as all backends do not support vertex offsets
+   if (!m_isStatic || m_sharedBuffer == nullptr)
    {
       m_sharedBuffer = new SharedVertexBuffer(rd, fmt, m_isStatic);
       m_rd->m_pendingSharedVertexBuffers.push_back(m_sharedBuffer);

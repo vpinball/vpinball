@@ -121,18 +121,15 @@ void PerfUI::Update()
    if (m_showPerf == PerfMode::PM_DISABLED)
       return;
 
-   ImGuiIO &io = ImGui::GetIO();
+   const ImGuiIO &io = ImGui::GetIO();
    constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
    ImGui::SetNextWindowBgAlpha(0.5f);
-   if (m_player->m_vrDevice)
-   {
-      if (m_showPerf == PerfMode::PM_STATS)
-         ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.3f, io.DisplaySize.y * 0.35f), 0, ImVec2(0.f, 0.f));
-      else
-         ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.35f), 0, ImVec2(0.5f, 0.f));
-   }
-   else
+   if (m_player->m_vrDevice == nullptr)
       ImGui::SetNextWindowPos(ImVec2(8.f * m_dpi, io.DisplaySize.y - 8.f * m_dpi), 0, ImVec2(0.f, 1.f));
+   else if (m_showPerf == PerfMode::PM_STATS) // VR with stats
+      ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.25f, io.DisplaySize.y * 0.35f), 0, ImVec2(0.f, 0.f));
+   else // VR without stats
+      ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.35f), 0, ImVec2(0.5f, 0.f));
 
    ImGui::Begin("FPS", nullptr, window_flags);
 
@@ -223,7 +220,7 @@ void PerfUI::Update()
          const float width = inner_bb.Max.x - inner_bb.Min.x;
          for (int i = 0; i < 6; i++)
          {
-            FrameProfiler *profiler = i == 0 ? &m_player->m_logicProfiler : m_player->m_renderProfiler;
+            const FrameProfiler * const profiler = i == 0 ? &m_player->m_logicProfiler : m_player->m_renderProfiler;
             if (profiler->GetPrevStart(sections[i]) == 0)
                continue;
             float start = static_cast<float>(profiler->GetPrevStart(sections[i]) - minTS) / elapse;
@@ -272,7 +269,7 @@ void PerfUI::Update()
       const int hoveredRow = ImGui::TableGetHoveredRow();
       int renderRow = 1, logicRow = 1, rowOffset = 0;
 
-      FrameProfiler* profiler = g_pplayer->m_renderProfiler;
+      const FrameProfiler* profiler = g_pplayer->m_renderProfiler;
       #ifdef ENABLE_BGFX
          PROF_ROW("Render Thread", FrameProfiler::PROFILE_FRAME)
          PROF_ROW("> Wait", FrameProfiler::PROFILE_RENDER_WAIT)
@@ -368,7 +365,7 @@ void PerfUI::Update()
       constexpr ImGuiWindowFlags window_flags_plots = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
       ImGui::SetNextWindowSize(ImVec2(530, 500));
       if (m_player->m_vrDevice)
-         ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.70f, io.DisplaySize.y * 0.35f), 0, ImVec2(1.f, 0.f));
+         ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.80f, io.DisplaySize.y * 0.35f), 0, ImVec2(1.f, 0.f));
       else
          ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x - 8.f * m_dpi, io.DisplaySize.y - 8.f * m_dpi), 0, ImVec2(1.f, 1.f));
       ImGui::Begin("Plots", nullptr, window_flags_plots);
@@ -388,7 +385,8 @@ void PerfUI::Update()
       {
          ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
          ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_LockMin);
-         ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 2000.f / min(m_player->GetTargetRefreshRate(), 200.f), ImGuiCond_Always); // range is twice the target frame rate
+         const float targetRefreshRate = clamp(m_player->m_vrDevice ? 60.f : m_player->GetTargetRefreshRate(), 24.f, 200.f);
+         ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 2000.f / targetRefreshRate, ImGuiCond_Always); // range is twice the target frame rate
          if (m_plotFPS.m_rolling)
             ImPlot::SetupAxisLimits(ImAxis_X1, 0, m_plotFPS.m_timeSpan, ImGuiCond_Always);
          else

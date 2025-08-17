@@ -885,9 +885,13 @@
     <ClCompile Include="$(SolutionDir)/../../src/renderer/ViewSetup.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/renderer/VRDevice.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/renderer/Window.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/ui/InGameUI.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/ui/LiveUI.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/ui/PerfUI.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/BallControl.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/EditorUI.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/EscSplashModal.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/InGameUI.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/LiveUI.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/NotificationOverlay.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/PerfUI.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/worker.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/codeviewedit.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/Debugger.cpp" />
@@ -1002,30 +1006,6 @@
     <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_sdl3.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_opengl3.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../third-party/include/bgfx-imgui/imgui_impl_bgfx.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_GL'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_GL'">true</ExcludedFromBuild>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_dx9.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_GL'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_GL'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
     </ClCompile>
@@ -1354,6 +1334,9 @@
     <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/StereoShader.glfx">
       <FileType>Document</FileType>
     </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/UIShader.glfx">
+      <FileType>Document</FileType>
+    </None>
     <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FXAAStereoAO.fxh">
       <FileType>Document</FileType>
     </None>
@@ -1655,9 +1638,13 @@
     <ClInclude Include="$(SolutionDir)/../../src/renderer/Window.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/trace.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/typedefs3D.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/ui/InGameUI.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/ui/LiveUI.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/ui/PerfUI.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/BallControl.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/EditorUI.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/EscSplashModal.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/InGameUI.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/LiveUI.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/NotificationOverlay.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/PerfUI.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/resource.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/worker.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/codeview.h" />
@@ -1808,42 +1795,6 @@
     <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imconfig.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/imguizmo/ImGuizmo.h" />
-    <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_opengl3_loader.h">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_opengl3.h">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_dx9.h">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_GL'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_GL'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../third-party/include/bgfx-imgui/imgui_impl_bgfx.h">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_GL'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_GL'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../third-party/include/bgfx-imgui/vs_ocornut_imgui.bin.h">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_GL'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_GL'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../third-party/include/bgfx-imgui/fs_ocornut_imgui.bin.h">
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_GL'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_GL'">true</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_win32.h">
       <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_GL'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)'=='Release_GL'">true</ExcludedFromBuild>
@@ -2026,6 +1977,19 @@
     <FxCompile Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/StereoShader.hlsl">
       <EntryPointName>stereoShaderCode</EntryPointName>
       <HeaderFileOutput>$(SolutionDir)../gen/shaders/hlsl_stereo.h</HeaderFileOutput>
+      <ShaderType>Effect</ShaderType>
+      <ShaderModel>2.0</ShaderModel>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_GL'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
+      <FileType>Document</FileType>
+    </FxCompile>
+    <FxCompile Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/UIShader.hlsl">
+      <EntryPointName>uiShaderCode</EntryPointName>
+      <HeaderFileOutput>$(SolutionDir)../gen/shaders/hlsl_ui.h</HeaderFileOutput>
       <ShaderType>Effect</ShaderType>
       <ShaderModel>2.0</ShaderModel>
       <ObjectFileOutput>

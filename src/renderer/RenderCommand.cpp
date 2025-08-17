@@ -120,18 +120,6 @@ void RenderCommand::Execute(const int nInstances, const bool log)
       break;
    }
 
-   case RC_DRAW_LIVEUI:
-   {
-      if (g_pplayer->m_liveUI)
-      {
-         if (log) {
-            PLOGI << "> Draw LiveUI";
-         }
-         g_pplayer->m_liveUI->Render();
-      }
-      break;
-   }
-
    case RC_DRAW_QUAD_PT:
    case RC_DRAW_QUAD_PNT:
    case RC_DRAW_MESH:
@@ -403,11 +391,6 @@ void RenderCommand::SetSubmitVR(RenderTarget* from)
 {
    m_command = Command::RC_SUBMIT_VR;
    m_copyFrom = from;
-}
-
-void RenderCommand::SetRenderLiveUI()
-{
-   m_command = Command::RC_DRAW_LIVEUI;
 }
 
 void RenderCommand::SetDrawMesh(

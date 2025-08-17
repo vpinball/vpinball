@@ -360,13 +360,25 @@
     <ClCompile Include="$(SolutionDir)/../../src/renderer/Window.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/ui/InGameUI.cpp">
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/BallControl.cpp">
       <Filter>ui\live</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/ui/LiveUI.cpp">
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/EditorUI.cpp">
       <Filter>ui\live</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/ui/PerfUI.cpp">
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/EscSplashModal.cpp">
+      <Filter>ui\live</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/InGameUI.cpp">
+      <Filter>ui\live</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/LiveUI.cpp">
+      <Filter>ui\live</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/NotificationOverlay.cpp">
+      <Filter>ui\live</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/PerfUI.cpp">
       <Filter>ui\live</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/hitrectsur.cpp">
@@ -684,17 +696,8 @@
     <ClCompile Include="$(SolutionDir)/../../third-party/include/serial.cpp">
       <Filter>third-party\serial</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../third-party/include/bgfx-imgui/imgui_impl_bgfx.cpp">
-      <Filter>third-party\imgui\bgfx</Filter>
-    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_win32.cpp">
       <Filter>third-party\imgui\win32</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_dx9.cpp">
-      <Filter>third-party\imgui\dx9</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_opengl3.cpp">
-      <Filter>third-party\imgui\opengl</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../third-party/include/implot/implot_items.cpp">
       <Filter>third-party\imgui\implot</Filter>
@@ -1097,13 +1100,25 @@
     <ClInclude Include="$(SolutionDir)/../../src/renderer/Window.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/ui/InGameUI.h">
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/BallControl.h">
       <Filter>ui\live</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/ui/LiveUI.h">
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/EditorUI.h">
       <Filter>ui\live</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/ui/PerfUI.h">
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/EscSplashModal.h">
+      <Filter>ui\live</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/InGameUI.h">
+      <Filter>ui\live</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/NotificationOverlay.h">
+      <Filter>ui\live</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/LiveUI.h">
+      <Filter>ui\live</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/PerfUI.h">
       <Filter>ui\live</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/resource.h">
@@ -1643,20 +1658,8 @@
     <ClInclude Include="$(SolutionDir)/../../third-party/include/bgfx-imgui/vs_ocornut_imgui.bin.h">
       <Filter>third-party\imgui\bgfx</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../third-party/include/bgfx-imgui/imgui_impl_bgfx.h">
-      <Filter>third-party\imgui\bgfx</Filter>
-    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_win32.h">
       <Filter>third-party\imgui\win32</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_dx9.h">
-      <Filter>third-party\imgui\dx9</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_opengl3.h">
-      <Filter>third-party\imgui\opengl</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_opengl3_loader.h">
-      <Filter>third-party\imgui\opengl</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../third-party/include/implot/implot.h">
       <Filter>third-party\imgui\implot</Filter>
@@ -2689,6 +2692,9 @@
     <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/StereoShader.glfx">
       <Filter>shaders\hlsl_glsl</Filter>
     </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/UIShader.glfx">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/BallShader.hlsl">
@@ -2710,6 +2716,9 @@
       <Filter>shaders\hlsl_glsl</Filter>
     </FxCompile>
     <FxCompile Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/StereoShader.hlsl">
+      <Filter>shaders\hlsl_glsl</Filter>
+    </FxCompile>
+    <FxCompile Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/UIShader.hlsl">
       <Filter>shaders\hlsl_glsl</Filter>
     </FxCompile>
   </ItemGroup>

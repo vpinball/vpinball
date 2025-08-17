@@ -14,10 +14,11 @@
 #include "plugins/VPXPlugin.h"
 #include "core/VPXPluginAPIImpl.h"
 
+
 InGameUI::InGameUI(LiveUI &liveUI)
    : m_liveUI(liveUI)
 {
-   m_StartTime_msec = msec();
+   m_openTimeMs = msec();
    m_app = g_pvp;
    m_player = g_pplayer;
    m_table = m_player->m_pEditorTable;
@@ -32,9 +33,9 @@ InGameUI::~InGameUI()
 
 void InGameUI::Open()
 {
-   if (m_tweakMode)
+   if (m_isOpened)
       return;
-   m_tweakMode = true;
+   m_isOpened = true;
    m_tweakPages.clear();
    if (!m_table->m_rules.empty())
       m_tweakPages.push_back(TP_Rules);
@@ -65,9 +66,11 @@ void InGameUI::Open()
 
 void InGameUI::Close()
 {
-   if (!m_tweakMode)
+   if (!m_isOpened)
       return;
-   m_tweakMode = false;
+   m_isOpened = false;
+   if (m_staticPrepassDisabled)
+      m_renderer->DisableStaticPrePass(false);
    m_live_table->FireOptionEvent(3); // Tweak mode closed event
 }
 
@@ -171,6 +174,7 @@ void InGameUI::HandleTweakInput()
    BackdropSetting activeTweakSetting = m_tweakPageOptions[m_activeTweakIndex];
    PinTable * const table = m_live_table;
 
+   // Legacy leyboard fly camera when in ingame option. Remove ?
    if (m_live_table->m_settings.LoadValueBool(Settings::Player, "EnableCameraModeFlyAround"s))
    {
       if (!ImGui::IsKeyDown(ImGuiKey_LeftAlt) && !ImGui::IsKeyDown(ImGuiKey_RightAlt))
@@ -197,15 +201,14 @@ void InGameUI::HandleTweakInput()
       }
    }
 
-   static PinInput::InputState prevState { 0 };
    PinInput::InputState state = m_player->m_pininput.GetInputState();
    for (int i = 0; i < eCKeys; i++)
    {
       const EnumAssignKeys keycode = static_cast<EnumAssignKeys>(i);
       int keyEvent;
-      if (state.IsKeyPressed(keycode, prevState))
+      if (state.IsKeyPressed(keycode, m_prevInputState))
          keyEvent = 1;
-      else if (state.IsKeyReleased(keycode, prevState))
+      else if (state.IsKeyReleased(keycode, m_prevInputState))
          keyEvent = 2;
       else if (state.IsKeyDown(keycode))
          keyEvent = 0;
@@ -222,6 +225,9 @@ void InGameUI::HandleTweakInput()
          else if (keycode == eRightMagnaSave)
             m_tweakScroll += speed;
       }
+
+      if (keycode == eEscape && keyEvent == 2)
+         Close();
 
       if (keycode == eLeftFlipperKey || keycode == eRightFlipperKey)
       {
@@ -274,44 +280,79 @@ void InGameUI::HandleTweakInput()
          {
             if (keyEvent != 1) // Only keydown
                continue;
+            DisableStaticPrepass();
             int vlm = viewSetup.mMode + (int)step;
             viewSetup.mMode = vlm < 0 ? VLM_WINDOW : vlm >= 3 ? VLM_LEGACY : (ViewLayoutMode)vlm;
             UpdateTweakPage();
             break;
          }
-         case BS_LookAt: viewSetup.mLookAt += incSpeed; break;
-         case BS_FOV: viewSetup.mFOV += incSpeed; break;
-         case BS_Layback: viewSetup.mLayback += incSpeed; break;
-         case BS_ViewHOfs: viewSetup.mViewHOfs += incSpeed; break;
-         case BS_ViewVOfs: viewSetup.mViewVOfs += incSpeed; break;
+         case BS_LookAt:
+            DisableStaticPrepass();
+            viewSetup.mLookAt += incSpeed;
+            break;
+         case BS_FOV:
+            DisableStaticPrepass();
+            viewSetup.mFOV += incSpeed;
+            break;
+         case BS_Layback:
+            DisableStaticPrepass();
+            viewSetup.mLayback += incSpeed;
+            break;
+         case BS_ViewHOfs:
+            DisableStaticPrepass();
+            viewSetup.mViewHOfs += incSpeed;
+            break;
+         case BS_ViewVOfs:
+            DisableStaticPrepass();
+            viewSetup.mViewVOfs += incSpeed;
+            break;
          case BS_XYZScale:
+            DisableStaticPrepass();
             viewSetup.mSceneScaleX += 0.005f * incSpeed;
             viewSetup.mSceneScaleY += 0.005f * incSpeed;
             viewSetup.mSceneScaleZ += 0.005f * incSpeed;
             break;
-         case BS_XScale: viewSetup.mSceneScaleX += 0.005f * incSpeed; break;
-         case BS_YScale: viewSetup.mSceneScaleY += 0.005f * incSpeed; break;
-         case BS_ZScale: viewSetup.mSceneScaleZ += 0.005f * incSpeed; break;
+         case BS_XScale:
+            DisableStaticPrepass();
+            viewSetup.mSceneScaleX += 0.005f * incSpeed;
+            break;
+         case BS_YScale:
+            DisableStaticPrepass();
+            viewSetup.mSceneScaleY += 0.005f * incSpeed;
+            break;
+         case BS_ZScale:
+            DisableStaticPrepass();
+            viewSetup.mSceneScaleZ += 0.005f * incSpeed;
+            break;
          case BS_XOffset:
+            DisableStaticPrepass();
             if (isWindow)
                table->m_settings.SaveValue(Settings::Player, "ScreenPlayerX"s, table->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerX"s) + 0.5f * incSpeed);
             else
                viewSetup.mViewX += 10.f * incSpeed;
             break;
          case BS_YOffset:
+            DisableStaticPrepass();
             if (isWindow)
                table->m_settings.SaveValue(Settings::Player, "ScreenPlayerY"s, table->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerY"s) + 0.5f * incSpeed);
             else
                viewSetup.mViewY += 10.f * incSpeed;
             break;
          case BS_ZOffset:
+            DisableStaticPrepass();
             if (isWindow)
                table->m_settings.SaveValue(Settings::Player, "ScreenPlayerZ"s, table->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerZ"s) + 0.5f * incSpeed);
             else
                viewSetup.mViewZ += (viewSetup.mMode == VLM_LEGACY ? 100.f : 10.f) * incSpeed;
             break;
-         case BS_WndTopZOfs: viewSetup.mWindowTopZOfs += 10.f * incSpeed; break;
-         case BS_WndBottomZOfs: viewSetup.mWindowBottomZOfs += 10.f * incSpeed; break;
+         case BS_WndTopZOfs:
+            DisableStaticPrepass();
+            viewSetup.mWindowTopZOfs += 10.f * incSpeed;
+            break;
+         case BS_WndBottomZOfs:
+            DisableStaticPrepass();
+            viewSetup.mWindowBottomZOfs += 10.f * incSpeed;
+            break;
 
          // VR Position
          case BS_VRScale: m_player->m_vrDevice->SetLockbarWidth(clamp(m_player->m_vrDevice->GetLockbarWidth() + 1.f * incSpeed, 5.f, 200.f)); break;
@@ -323,6 +364,7 @@ void InGameUI::HandleTweakInput()
 
          // Table customization
          case BS_DayNight:
+            DisableStaticPrepass();
             m_renderer->m_globalEmissionScale = clamp(m_renderer->m_globalEmissionScale + incSpeed * 0.05f, 0.f, 1.f);
             m_renderer->MarkShaderDirty();
             m_live_table->FireOptionEvent(1); // Table option changed event
@@ -348,6 +390,7 @@ void InGameUI::HandleTweakInput()
             m_live_table->FireOptionEvent(1); // Table option changed event
             break;
          case BS_Exposure:
+            DisableStaticPrepass();
             m_renderer->m_exposure = clamp(m_renderer->m_exposure + incSpeed * 0.05f, 0.f, 2.0f);
             m_live_table->FireOptionEvent(1); // Table option changed event
             break;
@@ -532,6 +575,7 @@ void InGameUI::HandleTweakInput()
          {
             if (m_tweakPages[m_activeTweakPageIndex] == TP_TableOption)
             {
+               DisableStaticPrepass();
                // Remove custom day/night and get back to the one of the table, eventually overriden by app (not table) settings
                // FIXME we just default to the table value, missing the app settings being applied (like day/night from lat/lon,... see in player.cpp)
                m_tweakState[BS_DayNight] = 2;
@@ -557,6 +601,7 @@ void InGameUI::HandleTweakInput()
             }
             else if (m_tweakPages[m_activeTweakPageIndex] == TP_PointOfView)
             {
+               DisableStaticPrepass();
                for (int i2 = BS_ViewMode; i2 < BS_WndBottomZOfs; i2++)
                   m_tweakState[i2] = 2;
                ViewSetupID id = table->m_BG_current_set;
@@ -684,6 +729,7 @@ void InGameUI::HandleTweakInput()
                // Undo POV: copy from startup table to the live one
                if (m_tweakPages[m_activeTweakPageIndex] == TP_PointOfView)
                {
+                  DisableStaticPrepass();
                   m_liveUI.PushNotification("POV undo to startup values"s, 5000);
                   ViewSetupID id = m_live_table->m_BG_current_set;
                   const PinTable *const __restrict src = m_player->m_pEditorTable;
@@ -724,11 +770,14 @@ void InGameUI::HandleTweakInput()
             m_live_table->mViewSetups[m_live_table->m_BG_current_set].mViewportRotation += 1.0f;
       }
    }
-   prevState = state;
+   m_prevInputState = state;
 }
 
 void InGameUI::Update()
 {
+   if (!m_isOpened)
+      return;
+
    HandleTweakInput();
 
    ImGui::PushFont(m_liveUI.GetOverlayFont(), m_liveUI.GetOverlayFont()->LegacySize);
@@ -971,7 +1020,7 @@ void InGameUI::Update()
       }
    }
    infos.push_back(activeTweakSetting == BS_Page ? "Flipper keys:   Previous/Next page"s : "Flipper keys:   Adjust highlighted value"s);
-   const uint32_t info = ((msec() - m_StartTime_msec) / 2000u) % (uint32_t)infos.size();
+   const uint32_t info = ((msec() - m_openTimeMs) / 2000u) % (uint32_t)infos.size();
    ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
    m_liveUI.CenteredText(infos[info]);
    ImGui::PopStyleColor();

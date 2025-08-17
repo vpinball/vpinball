@@ -224,12 +224,20 @@ set(VPX_SOURCES
    src/ui/hitsur.h
    src/ui/VPXFileFeedback.h
 
-   src/ui/LiveUI.cpp
-   src/ui/LiveUI.h
-   src/ui/InGameUI.cpp
-   src/ui/InGameUI.h
-   src/ui/PerfUI.cpp
-   src/ui/PerfUI.h
+   src/ui/live/BallControl.cpp
+   src/ui/live/BallControl.h
+   src/ui/live/EscSplashModal.cpp
+   src/ui/live/EscSplashModal.h
+   src/ui/live/LiveUI.cpp
+   src/ui/live/LiveUI.h
+   src/ui/live/EditorUI.cpp
+   src/ui/live/EditorUI.h
+   src/ui/live/InGameUI.cpp
+   src/ui/live/InGameUI.h
+   src/ui/live/NotificationOverlay.cpp
+   src/ui/live/NotificationOverlay.h
+   src/ui/live/PerfUI.cpp
+   src/ui/live/PerfUI.h
 
    src/utils/bulb.cpp
    src/utils/bulb.h

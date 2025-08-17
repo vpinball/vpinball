@@ -186,12 +186,11 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool genMipmaps)
    assert(m_textureUpdate || bgfx::isValid(m_nomipsTexture) || bgfx::isValid(m_mipsTexture));
    if (m_textureUpdate == nullptr)
    {
-      if (bgfx::isValid(m_mipsTexture))
+      if (bgfx::isValid(m_mipsTexture) && (!genMipmaps || !m_pendingMipMapGen))
          return m_mipsTexture;
-      if (!genMipmaps && bgfx::isValid(m_nomipsTexture))
+      if (bgfx::isValid(m_nomipsTexture) && !genMipmaps)
          return m_nomipsTexture;
    }
-
 
    const bool hasDriverMipMapGen = bgfx::getCaps()->formats[m_bgfx_format] & BGFX_CAPS_FORMAT_TEXTURE_MIP_AUTOGEN;
    const bool hasComputeMipMapGen = (bgfx::getCaps()->supported & BGFX_CAPS_COMPUTE) != 0
@@ -271,6 +270,7 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool genMipmaps)
          if (!m_isTextureUpdateLinear)
             bgfx::destroy(csTexture);
          m_pendingMipMapGen = false;
+         assert(m_rd->m_activeViewId >= 1);
       }
    }
    // Implementation based on driver mipmap generation
@@ -297,7 +297,7 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool genMipmaps)
       if (m_pendingMipMapGen)
       {
          // Defer mipmap generation if we are approaching BGFX limits (using magic margins)
-         if (m_rd->m_activeViewId < 0
+         if (m_rd->m_activeViewId < 2
             || m_rd->m_activeViewId >= static_cast<int>(bgfx::getCaps()->limits.maxFrameBuffers) - 16 // We approximate the number of framebuffer used by the view index
             || m_rd->m_activeViewId >= static_cast<int>(bgfx::getCaps()->limits.maxViews) - 32)
             return m_nomipsTexture;

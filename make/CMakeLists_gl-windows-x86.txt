@@ -262,8 +262,6 @@ add_executable(vpinball WIN32
    third-party/include/serial.cpp
    third-party/include/serial.h
    third-party/include/hidapi/windows/hid.cpp
-   third-party/include/imgui/imgui_impl_opengl3.cpp
-   third-party/include/imgui/imgui_impl_opengl3.h
    third-party/include/imgui/imgui_impl_sdl3.cpp
    third-party/include/imgui/imgui_impl_sdl3.h
    third-party/include/nvapi/nvapi.h

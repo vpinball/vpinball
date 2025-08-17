@@ -41,8 +41,6 @@ add_executable(vpinball
    src/input/OpenPinDevHandler.h
    src/input/OpenPinDevHandler.cpp
 
-   third-party/include/imgui/imgui_impl_opengl3.cpp
-   third-party/include/imgui/imgui_impl_opengl3.h
    third-party/include/imgui/imgui_impl_sdl3.cpp
    third-party/include/imgui/imgui_impl_sdl3.h
 )

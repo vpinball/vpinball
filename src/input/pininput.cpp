@@ -535,15 +535,6 @@ void PinInput::FireActionEvent(EnumAssignKeys action, bool isPressed)
          g_pplayer->m_showDebugger = true;
       break;
 
-   case eLeftFlipperKey:
-      // Left flipper releases ball control
-      if (isPressed)
-      {
-         delete g_pplayer->m_pBCTarget;
-         g_pplayer->m_pBCTarget = nullptr;
-      }
-      break;
-
    case eStartGameKey:
       if (m_inputState.IsKeyDown(eLockbarKey) && isPressed && g_pvp->m_ptableActive->TournamentModePossible())
          g_pvp->GenerateTournamentFile();
@@ -624,7 +615,6 @@ void PinInput::FireActionEvent(EnumAssignKeys action, bool isPressed)
       break;
 
    case eExitGame:
-      if (!g_pplayer->m_liveUI->IsOpened())
       #ifdef __STANDALONE__
          g_pplayer->SetCloseState(Player::CS_CLOSE_APP);
       #else
@@ -633,24 +623,18 @@ void PinInput::FireActionEvent(EnumAssignKeys action, bool isPressed)
       break;
 
    case eEscape:
-      if (!m_disable_esc)
+      if (!m_disable_esc && !g_pplayer->m_liveUI->IsOpened()) // Do not trigger if the UI is already opened (keyboard is handled in it)
       {
-         // Do not trigger if the UI is already opened (keyboard is handled in it)
-         if (g_pplayer->m_liveUI->IsOpened())
-            m_exitPressTimestamp = 0;
+         m_gameStartedOnce = true; // Disable autostart as player has requested close
+         if (isPressed)
+         {
+            m_exitPressTimestamp = msec();
+         }
          else
          {
-            m_gameStartedOnce = true; // Disable autostart as player has requested close
-            if (isPressed)
-            {
-               m_exitPressTimestamp = msec();
-            }
-            else
-            {
-               m_exitPressTimestamp = 0;
-               // Open UI on key up instead of key down since a long press should not trigger the UI but directly exit from the app
-               g_pplayer->SetCloseState(Player::CS_USER_INPUT);
-            }
+            m_exitPressTimestamp = 0;
+            // Open UI on key up instead of key down since a long press should not trigger the UI but directly exit from the app
+            g_pplayer->SetCloseState(Player::CS_USER_INPUT);
          }
       }
       break;
@@ -953,7 +937,9 @@ void PinInput::ProcessInput()
    if (m_autoStartTimestamp == 0) // Check if we've been initialized.
       m_autoStartTimestamp = now;
 
-   // Handle exit on long press
+   // Handle exit on long press (disable when loosing focus or using LiveUI)
+   if (!g_pplayer->m_playfieldWnd->IsFocused() || g_pplayer->m_liveUI->IsOpened())
+      m_exitPressTimestamp = 0;
    if ((g_pplayer->m_time_msec > 1000) // Game has been played at least 1 second
       && (m_exitPressTimestamp != 0) // Exit button is pressed
       && ((now - m_exitPressTimestamp) > m_exitAppPressLengthMs)) // Exit button has been pressed continuously long enough
@@ -983,7 +969,7 @@ void PinInput::ProcessInput()
 
 void PinInput::ProcessEvent(const InputEvent& event)
 {
-   if (event.type == InputEvent::Type::Mouse && !g_pplayer->m_liveUI->HasMouseCapture() && !g_pplayer->m_throwBalls && !g_pplayer->m_ballControl)
+   if (event.type == InputEvent::Type::Mouse && !g_pplayer->m_liveUI->HasMouseCapture())
    {
       const auto& it = std::ranges::find_if(m_actionMappings.begin(), m_actionMappings.end(),
          [&event](const ActionMapping& mapping) { return (mapping.type == ActionMapping::AM_Mouse) && (mapping.buttonId == event.buttonId); });

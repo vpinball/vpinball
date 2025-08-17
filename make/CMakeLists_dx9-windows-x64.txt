@@ -92,6 +92,13 @@ set_source_files_properties(src/shaders/hlsl_glsl/StereoShader.hlsl PROPERTIES
    VS_SHADER_ENTRYPOINT stereoShaderCode 
 )
 
+set_source_files_properties(src/shaders/hlsl_glsl/UIShader.hlsl PROPERTIES
+   VS_SHADER_TYPE Effect 
+   VS_SHADER_MODEL 2.0
+   VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/src/shaders/hlsl_ui.h"
+   VS_SHADER_ENTRYPOINT uiShaderCode
+)
+
 add_executable(vpinball WIN32
    ${VPX_SOURCES}
 
@@ -298,6 +305,7 @@ add_executable(vpinball WIN32
    src/shaders/hlsl_glsl/FlasherShader.hlsl
    src/shaders/hlsl_glsl/LightShader.hlsl
    src/shaders/hlsl_glsl/StereoShader.hlsl
+   src/shaders/hlsl_glsl/UIShader.hlsl
 
    third-party/include/BAM/BAMView.cpp
    third-party/include/BAM/BAMView.h
@@ -307,8 +315,6 @@ add_executable(vpinball WIN32
    third-party/include/serial.cpp
    third-party/include/serial.h
    third-party/include/hidapi/windows/hid.cpp
-   third-party/include/imgui/imgui_impl_dx9.cpp
-   third-party/include/imgui/imgui_impl_dx9.h
    third-party/include/imgui/imgui_impl_win32.cpp
    third-party/include/imgui/imgui_impl_win32.h
    third-party/include/nvapi/nvapi.h
