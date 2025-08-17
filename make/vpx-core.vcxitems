@@ -839,6 +839,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/parts/kicker.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/light.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/lightseq.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/parts/PartGroup.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/rubber.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/Sound.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/pinbinary.cpp" />
@@ -851,6 +852,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/parts/textbox.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/timer.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/parts/trigger.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/physics/AsyncDynamicQuadTree.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/physics/collide.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/physics/collideex.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/physics/kdtree.cpp" />
@@ -883,11 +885,12 @@
     <ClCompile Include="$(SolutionDir)/../../src/renderer/ViewSetup.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/renderer/VRDevice.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/renderer/Window.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/InGameUI.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/LiveUI.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/PerfUI.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/worker.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/codeviewedit.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/Debugger.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/ui/LiveUI.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/ui/PerfUI.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/codeview.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/hitrectsur.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/hitsur.cpp" />
@@ -938,6 +941,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/properties/LightseqStatesProperty.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/properties/LightStatesProperty.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/properties/LightVisualsProperty.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/properties/PartGroupVisualsProperty.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/properties/PlungerPhysicsProperty.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/properties/PlungerVisualsProperty.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/properties/PrimitivePhysicsProperty.cpp" />
@@ -975,9 +979,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/utils/ushock_output.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/variant.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/wintimer.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src\parts\PartGroup.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src\physics\AsyncDynamicQuadTree.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src\ui\properties\PartGroupVisualsProperty.cpp" />
     <ClCompile Include="$(SolutionDir)/../../third-party/include/hidapi/windows/hid.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -1427,7 +1428,7 @@
     <None Include="$(SolutionDir)/../../src/ui/res/trigger.rgs" />
     <None Include="$(SolutionDir)/../../src/ui/res/vpinball.rgs" />
     <None Include="$(SolutionDir)/../../src/ui/res/light.cur" />
-    <None Include="$(SolutionDir)/../../src\ui\res\ball.cur" />
+    <None Include="$(SolutionDir)/../../src/ui/res/ball.cur" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="$(SolutionDir)/../../src/assets/AOdither.webp">
@@ -1514,26 +1515,15 @@
     <Image Include="$(SolutionDir)/../../src/ui/res/table.ico" />
     <Image Include="$(SolutionDir)/../../src/ui/res/toolbar.bmp" />
     <Image Include="$(SolutionDir)/../../src/ui/res/wall.ico" />
-    <Image Include="$(SolutionDir)/../../src\ui\res\ball.ico" />
+    <Image Include="$(SolutionDir)/../../src/ui/res/ball.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(SolutionDir)/../../src\core\ResURIResolver.h" />
-    <ClInclude Include="$(SolutionDir)/../../src\core\VPApp.h" />
-    <ClInclude Include="$(SolutionDir)/../../src\input\DirectInputJoystickHandler.h" />
-    <ClInclude Include="$(SolutionDir)/../../src\input\DirectInputKeyboardHandler.h" />
-    <ClInclude Include="$(SolutionDir)/../../src\input\DirectInputMouseHandler.h" />
-    <ClInclude Include="$(SolutionDir)/../../src\input\OpenPinDevHandler.h" />
-    <ClInclude Include="$(SolutionDir)/../../src\input\SDLInputHandler.h" />
-    <ClInclude Include="$(SolutionDir)/../../src\input\Win32InputKeyboardHandler.h" />
-    <ClInclude Include="$(SolutionDir)/../../src\input\XInputJoystickHandler.h" />
-    <ClInclude Include="$(SolutionDir)/../../src\parts\PartGroup.h" />
-    <ClInclude Include="$(SolutionDir)/../../src\physics\AsyncDynamicQuadTree.h" />
-    <ClInclude Include="$(SolutionDir)/../../src\plugins\ScriptablePlugin.h" />
-    <ClInclude Include="$(SolutionDir)/../../src\ui\properties\PartGroupVisualsProperty.h" />
     <ClInclude Include="../gen/vpinball.h" />
     <ClInclude Include="$(SolutionDir)/../../src/audio/AudioPlayer.h" />
     <ClInclude Include="$(SolutionDir)/../../src/audio/AudioStreamPlayer.h" />
     <ClInclude Include="$(SolutionDir)/../../src/audio/SoundPlayer.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/ResURIResolver.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/VPApp.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/def.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/dispid.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/DynamicScript.h" />
@@ -1542,7 +1532,6 @@
     <ClInclude Include="$(SolutionDir)/../../src/core/ieditable.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/iselect.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/main.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/input/pininput.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/pinundo.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/stdafx.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/vpinball_h.h" />
@@ -1551,6 +1540,14 @@
     <ClInclude Include="$(SolutionDir)/../../src/core/Settings.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/TableDB.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/VPXPluginAPIImpl.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/input/pininput.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/input/DirectInputJoystickHandler.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/input/DirectInputKeyboardHandler.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/input/DirectInputMouseHandler.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/input/OpenPinDevHandler.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/input/SDLInputHandler.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/input/Win32InputKeyboardHandler.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/input/XInputJoystickHandler.h" />
     <ClInclude Include="$(SolutionDir)/../../src/math/bbox.h" />
     <ClInclude Include="$(SolutionDir)/../../src/math/math.h" />
     <ClInclude Include="$(SolutionDir)/../../src/math/matrix.h" />
@@ -1588,6 +1585,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/meshes/triggerSimpleMesh.h" />
     <ClInclude Include="$(SolutionDir)/../../src/meshes/triggerStarMesh.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/Backglass.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/parts/PartGroup.h" />
     <ClInclude Include="$(SolutionDir)/../../src/parts/dragpoint.h" />
     <ClInclude Include="$(SolutionDir)/../../src/parts/Material.h" />
     <ClInclude Include="$(SolutionDir)/../../src/parts/pinbinary.h" />
@@ -1613,7 +1611,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/parts/kicker.h" />
     <ClInclude Include="$(SolutionDir)/../../src/parts/light.h" />
     <ClInclude Include="$(SolutionDir)/../../src/parts/lightseq.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/ui/VPXFileFeedback.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/physics/AsyncDynamicQuadTree.h" />
     <ClInclude Include="$(SolutionDir)/../../src/physics/physconst.h" />
     <ClInclude Include="$(SolutionDir)/../../src/physics/kdtree.h" />
     <ClInclude Include="$(SolutionDir)/../../src/physics/hitball.h" />
@@ -1629,6 +1627,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/plugins/MsgPlugin.h" />
     <ClInclude Include="$(SolutionDir)/../../src/plugins/ControllerPlugin.h" />
     <ClInclude Include="$(SolutionDir)/../../src/plugins/PinMAMEPlugin.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/plugins/ScriptablePlugin.h" />
     <ClInclude Include="$(SolutionDir)/../../src/plugins/MsgPluginManager.h" />
     <ClInclude Include="$(SolutionDir)/../../src/plugins/VPXPlugin.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/captureExt.h" />
@@ -1656,10 +1655,11 @@
     <ClInclude Include="$(SolutionDir)/../../src/renderer/Window.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/trace.h" />
     <ClInclude Include="$(SolutionDir)/../../src/renderer/typedefs3D.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/ui/resource.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/ui/worker.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/InGameUI.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/LiveUI.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/PerfUI.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/resource.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/worker.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/codeview.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/codeviewedit.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/Debugger.h" />
@@ -1667,6 +1667,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/hitsur.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/paintsur.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/sur.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/VPXFileFeedback.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/VPXLoadFileProgressBar.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/VPXSaveFileProgressBar.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/AboutDialog.h" />
@@ -1713,6 +1714,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/properties/LightseqStatesProperty.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/properties/LightStatesProperty.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/properties/LightVisualsProperty.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/properties/PartGroupVisualsProperty.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/properties/PlungerPhysicsProperty.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/properties/PlungerVisualsProperty.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/properties/PrimitivePhysicsProperty.h" />
