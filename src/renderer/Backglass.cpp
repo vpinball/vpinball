@@ -121,7 +121,7 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
       auto currentNode = rootNode->FirstChildElement();
       while (currentNode) { // Iterate all Nodes within DirectB2SData
          auto nodeName = currentNode->Name();
-         if (strcmp(nodeName, "VRDMDLocation") == 0) {
+         if (nodeName == "VRDMDLocation"s) {
             auto attrib = currentNode->FindAttribute("LocX");
             if (attrib) m_backglass_dmd.x = atoi(attrib->Value());
             attrib = currentNode->FindAttribute("LocY");
@@ -131,11 +131,11 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
             attrib = currentNode->FindAttribute("Height");
             if (attrib) m_backglass_dmd_height = atoi(attrib->Value());
          }
-         else if (strcmp(nodeName, "GrillHeight") == 0) {
+         else if (nodeName == "GrillHeight"s) {
             auto attrib = currentNode->FindAttribute("Value");
             if (attrib) m_backglass_grill_height = atoi(attrib->Value());
          }
-         else if (strcmp(nodeName, "Illumination") == 0) {
+         else if (nodeName == "Illumination"s) {
             auto illuminationNode = currentNode->FirstChildElement();
             int bulb = 1;
             while (illuminationNode) { // Iterate all Nodes within Illumination
@@ -169,7 +169,7 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
                bulb++;
             }
          }
-         else if (strcmp(nodeName, "Images") == 0) {
+         else if (nodeName == "Images"s) {
             auto imagesNode = currentNode->FirstChildElement();
             while (imagesNode) { // Iterate all Nodes within Images
                auto attrib = imagesNode->FindAttribute("Value");
@@ -183,7 +183,7 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
                      data = new char[data_len];
                   }
                   size_t size = decode_base64(val, data, val_size, data_len);
-                  if ((size > 0) && (strcmp(imagesNode->Name(), "BackglassImage") == 0)) {
+                  if ((size > 0) && (imagesNode->Name() == "BackglassImage"s)) {
                      m_loaded_image = BaseTexture::CreateFromData(data, size, true, g_pplayer->m_ptable->m_settings.LoadValueInt(Settings::Player, "MaxTexDimension"s));
                      m_backgroundTexture = m_pd3dDevice->m_texMan.LoadTexture(m_loaded_image.get(), false);
                      m_backglass_width = m_backgroundTexture->GetWidth();

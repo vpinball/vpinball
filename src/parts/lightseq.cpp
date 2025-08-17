@@ -187,7 +187,7 @@ void LightSeq::RenderSetup(RenderDevice *device)
    for (int i = 0; i < size; ++i)
    {
       // is the name of this collection the one we are to use?
-      if (wcscmp(m_ptable->m_vcollection[i].m_wzName, m_d.m_wzCollection.c_str()) == 0)
+      if (m_ptable->m_vcollection[i].m_wzName == m_d.m_wzCollection)
       {
          // yep, set a pointer to this sub-collection
          m_pcollection = m_ptable->m_vcollection.ElementAt(i);

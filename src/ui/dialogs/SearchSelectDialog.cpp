@@ -162,7 +162,7 @@ void SearchSelectDialog::SelectElement()
         {
            char szType[MAXNAMEBUFFER*2];
            ListView_GetItemText(m_hElementList, iItem, 1, szType, std::size(szType));
-           if (strcmp(szType, "Collection") == 0)
+           if (szType == "Collection"s)
            {
               CComObject<Collection> *const pcol = (CComObject<Collection>*)lv.lParam;
               if (!pcol->m_visel.empty())

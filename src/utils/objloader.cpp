@@ -89,7 +89,7 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
          break;
       }
 
-      if (strcmp(lineHeader, "v") == 0)
+      if (lineHeader == "v"s)
       {
          Vertex3Ds tmp;
          if (fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z) != 3)
@@ -101,7 +101,7 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
             tmp.z = -tmp.z;
          m_tmpVerts.push_back(tmp);
       }
-      else if (strcmp(lineHeader, "vt") == 0)
+      else if (lineHeader == "vt"s)
       {
          Vertex2D tmp;
          if (fscanf_s(f, "%f %f", &tmp.x, &tmp.y) != 2)
@@ -113,7 +113,7 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
             tmp.y = 1.f - tmp.y;
          m_tmpTexel.push_back(tmp);
       }
-      else if (strcmp(lineHeader, "vn") == 0)
+      else if (lineHeader == "vn"s)
       {
          Vertex3Ds tmp;
          if (fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z) != 3)
@@ -125,7 +125,7 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
             tmp.z = -tmp.z;
          m_tmpNorms.push_back(tmp);
       }
-      else if (strcmp(lineHeader, "f") == 0)
+      else if (lineHeader == "f"s)
       {
          if (m_tmpVerts.empty())
          {
@@ -445,13 +445,13 @@ bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
          fclose(f);
          return true;
       }
-      if (strcmp(lineHeader, "newmtl") == 0)
+      if (lineHeader == "newmtl"s)
       {
          char buf[MAXSTRING];
          fscanf_s(f, "%s\n", buf, MAXSTRING);
          mat->m_name = buf;
       }
-      else if (strcmp(lineHeader, "Ns") == 0)
+      else if (lineHeader == "Ns"s)
       {
          float tmp;
          fscanf_s(f, "%f\n", &tmp);
@@ -467,12 +467,12 @@ bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
          if (mat->m_fRoughness < 0.01f)
             mat->m_fRoughness = 0.01f;
       }
-      else if (strcmp(lineHeader, "Ka") == 0)
+      else if (lineHeader == "Ka"s)
       {
          Vertex3Ds tmp;
          fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z);
       }
-      else if (strcmp(lineHeader, "Kd") == 0)
+      else if (lineHeader == "Kd"s)
       {
          Vertex3Ds tmp;
          fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z);
@@ -481,7 +481,7 @@ bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
          const uint32_t b = (uint32_t)(tmp.z * 255.f);
          mat->m_cBase = RGB(r, g, b);
       }
-      else if (strcmp(lineHeader, "Ks") == 0)
+      else if (lineHeader == "Ks"s)
       {
          Vertex3Ds tmp;
          fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z);
@@ -490,12 +490,12 @@ bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
          const uint32_t b = (uint32_t)(tmp.z * 255.f);
          mat->m_cGlossy = RGB(r, g, b);
       }
-      else if (strcmp(lineHeader, "Ni") == 0)
+      else if (lineHeader == "Ni"s)
       {
          float tmp;
          fscanf_s(f, "%f\n", &tmp);
       }
-      else if (strcmp(lineHeader, "d") == 0)
+      else if (lineHeader == "d"s)
       {
          float tmp;
          fscanf_s(f, "%f\n", &tmp);
