@@ -7,6 +7,7 @@
 #include "FormDMD.h"
 #include "../common.h"
 #include "../Server.h"
+#include "../utils/DMDOverlay.h"
 #include "../classes/B2SVersionInfo.h"
 #include "../classes/B2SScreen.h"
 #include "../classes/B2SAnimation.h"
@@ -27,8 +28,8 @@ namespace B2SLegacy {
 
 #include <exception>
 
-FormBackglass::FormBackglass(MsgPluginAPI* msgApi, VPXPluginAPI* vpxApi, B2SData* pB2SData)
-   : Form(msgApi, vpxApi, pB2SData),
+FormBackglass::FormBackglass(VPXPluginAPI* vpxApi, MsgPluginAPI* msgApi,uint32_t endpointId, B2SData* pB2SData)
+   : Form(vpxApi, msgApi, endpointId, pB2SData, "Backglass"),
      m_pB2SSettings(pB2SData->GetB2SSettings())
 {
    SetName("formBackglass"s);
@@ -157,13 +158,7 @@ void FormBackglass::OnPaint(VPXRenderContext2D* const ctx)
       }
    }
 
-   Server* server = m_pB2SData->GetServer();
-   if (server) {
-      server->GetBackglassDmdOverlay().UpdateBackgroundImage(GetBackgroundImage());
-      server->GetBackglassDmdOverlay().Render(ctx);
-   }
-
-   Control::OnPaint(ctx);
+   Form::OnPaint(ctx);
 }
 
 
@@ -1405,7 +1400,7 @@ void FormBackglass::RotateImage(B2SPictureBox* pPicbox, int rotationsteps, eSnip
 void FormBackglass::CheckDMDForm()
 {
    if (!m_pFormDMD && !m_pB2SSettings->IsHideB2SDMD())
-      m_pFormDMD = new FormDMD(m_msgApi, m_vpxApi, m_pB2SData);
+      m_pFormDMD = new FormDMD(m_vpxApi, m_msgApi, m_endpointId, m_pB2SData);
 }
 
 VPXTexture FormBackglass::CreateLightImage(VPXTexture image, eDualMode dualmode, const string& firstromkey_)

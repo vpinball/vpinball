@@ -13,7 +13,7 @@ class Server;
 class FormDMD final : public Form
 {
 public:
-   FormDMD(MsgPluginAPI* msgApi, VPXPluginAPI* vpxApi, B2SData* pB2SData);
+   FormDMD(VPXPluginAPI* vpxApi, MsgPluginAPI* msgApi, uint32_t endpointId, B2SData* pB2SData);
    ~FormDMD();
 
    void OnPaint(VPXRenderContext2D* const ctx) override;

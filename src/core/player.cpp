@@ -2236,10 +2236,20 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
    if (output.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
    {
       outputRT = embedRT;
-      m_outputW = output.GetEmbeddedWindow()->GetWidth();
-      m_outputH = output.GetEmbeddedWindow()->GetHeight();
-      output.GetEmbeddedWindow()->GetPos(m_outputX, m_outputY);
-      m_outputY = outputRT->GetHeight() - m_outputY - m_outputH;
+
+      const float displayScaleX = static_cast<float>(m_playfieldWnd->GetPixelWidth()) / static_cast<float>(m_playfieldWnd->GetWidth());
+      const float displayScaleY = static_cast<float>(m_playfieldWnd->GetPixelHeight()) / static_cast<float>(m_playfieldWnd->GetHeight());
+
+      const int wndW = output.GetEmbeddedWindow()->GetWidth();
+      const int wndH = output.GetEmbeddedWindow()->GetHeight();
+      int wndX;
+      int wndY;
+      output.GetEmbeddedWindow()->GetPos(wndX, wndY);
+
+      m_outputW = static_cast<int>(wndW * displayScaleX);
+      m_outputH = static_cast<int>(wndH * displayScaleY);
+      m_outputX = static_cast<int>(wndX * displayScaleX);
+      m_outputY = static_cast<int>(wndY * displayScaleY);
    }
    #ifdef ENABLE_BGFX
    else if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
@@ -2305,6 +2315,24 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
       bool isLinearOutput;
    };
 
+   int wndW;
+   int wndH;
+   if (output.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
+   {
+      wndW = output.GetEmbeddedWindow()->GetWidth();
+      wndH = output.GetEmbeddedWindow()->GetHeight();
+   }
+   else if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
+   {
+      wndW = output.GetWindow()->GetWidth();
+      wndH = output.GetWindow()->GetHeight();
+   }
+   else
+   {
+      wndW = m_outputW;
+      wndH = m_outputH;
+   }
+
    PlayerRenderContext2D context
    {
       {
@@ -2312,6 +2340,7 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
          static_cast<float>(m_outputW), static_cast<float>(m_outputH),
          1, // 2D render
          static_cast<float>(m_outputW), static_cast<float>(m_outputH),
+         static_cast<float>(wndW), static_cast<float>(wndH),
          // Draw an image
          [](VPXRenderContext2D *ctx, VPXTexture texture,
             const float tintR, const float tintG, const float tintB, const float alpha,
