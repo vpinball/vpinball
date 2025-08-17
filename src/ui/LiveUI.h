@@ -9,6 +9,7 @@
 #include "imgui_markdown/imgui_markdown.h"
 
 #include "PerfUI.h"
+#include "InGameUI.h"
 
 class LiveUI final
 {
@@ -26,7 +27,7 @@ public:
    void OpenLiveUI();
 
    void OpenTweakMode();
-   bool IsTweakMode() const { return m_tweakMode; }
+   bool IsTweakMode() const { return m_inGameUI.IsOpened(); }
 
    void HideUI();
 
@@ -34,6 +35,13 @@ public:
    bool IsShowingFPSDetails() const { return m_perfUI.GetPerfMode() != PerfUI::PerfMode::PM_DISABLED; }
    
    unsigned int PushNotification(const string &message, const int lengthMs, const unsigned int reuseId = 0);
+
+   void SetMarkdownStartId(const unsigned int startId) { markdown_start_id = startId; }
+   const ImGui::MarkdownConfig &GetMarkdownConfig() const { return markdown_config; }
+
+   ImFont *GetOverlayFont() const { return m_overlayFont; }
+   float GetDPI() const { return m_dpi; }
+   static void CenteredText(const string &text);
 
 private:
    // Main UI frame & panels
@@ -44,39 +52,8 @@ private:
    // FPS and performance overlays
    void UpdatePerfOverlay() { m_perfUI.Update(); }
 
-   // Tweak UI
-   enum TweakType { TT_Int, TT_Float, TT_Set };
-   struct TweakOption
-   {
-      TweakType type;
-      float min, max, step, def;
-      string name, unit;
-      vector<string> options;
-      TweakOption(TweakType _type, float _min, float _max, float _step, float _def, const string& _name, const string& _unit, std::initializer_list<string> _options): 
-         type(_type), min(_min), max(_max), step(_step), def(_def), name(_name), unit(_unit), options(_options) { }
-   };
-   enum TweakPage { TP_Info, TP_Rules, TP_PointOfView, TP_VRPosition, TP_TableOption, TP_Plugin00 };
-   enum BackdropSetting
-   {
-      BS_Page,
-      // Point of View
-      BS_ViewMode, BS_LookAt, BS_FOV, BS_Layback, BS_ViewHOfs, BS_ViewVOfs, BS_XYZScale, BS_XScale, BS_YScale, BS_ZScale, BS_XOffset, BS_YOffset, BS_ZOffset, BS_WndTopZOfs, BS_WndBottomZOfs,
-      // VR position
-      BS_VROrientation, BS_VRX, BS_VRY, BS_VRZ, BS_AR_VR, BS_VRScale,
-      // Table tweaks & Custom table defined options (must be the last of this enum)
-      BS_Volume, BS_BackglassVolume, BS_PlayfieldVolume, BS_DayNight, BS_Difficulty, BS_Tonemapper, BS_Exposure, BS_Custom
-   };
-   uint32_t m_lastTweakKeyDown = 0;
-   int m_activeTweakIndex = 0;
-   int m_activeTweakPageIndex = 0;
-   vector<TweakPage> m_tweakPages;
-   int m_tweakState[BS_Custom + 100] = {}; // 0 = unmodified, 1 = modified, 2 = resetted
-   vector<BackdropSetting> m_tweakPageOptions;
-   bool m_tweakMode = false;
-   float m_tweakScroll = 0.f;
-   void HandleTweakInput();
-   void UpdateTweakPage();
-   void UpdateTweakModeUI();
+   // In Game UI
+   InGameUI m_inGameUI;
 
    // Touch UI
    void UpdateTouchUI();
@@ -128,7 +105,6 @@ private:
    void PropRenderProbeCombo(const char *label, RenderProbe::ProbeType type, IEditable *undo_obj, bool is_live, string *startup_v, string *live_v, PinTable *table, const OnStringPropChange &chg_callback = nullptr);
 
    // Enter/Exit edit mode (manage table backup, dynamic mode,...)
-   void CloseTweakMode();
    void ResetCameraFromPlayer();
 
    // MarkDown support

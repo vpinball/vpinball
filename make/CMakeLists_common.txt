@@ -226,6 +226,8 @@ set(VPX_SOURCES
 
    src/ui/LiveUI.cpp
    src/ui/LiveUI.h
+   src/ui/InGameUI.cpp
+   src/ui/InGameUI.h
    src/ui/PerfUI.cpp
    src/ui/PerfUI.h
 
