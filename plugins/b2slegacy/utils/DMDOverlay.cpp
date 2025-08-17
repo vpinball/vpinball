@@ -67,6 +67,30 @@ void DMDOverlay::Render(VPXRenderContext2D* ctx)
          dmd.state.frame);
    }
 
+   float scaledX, scaledY, scaledW, scaledH;
+   
+   if (m_detectDmdFrame) {
+      // Autodetection: Scale from background image space to window space
+      const VPXTextureInfo* const texInfo = m_vpxApi->GetTextureInfo(m_backImage);
+      float scaleX = static_cast<float>(ctx->outWidth) / static_cast<float>(texInfo->width);
+      float scaleY = static_cast<float>(ctx->outHeight) / static_cast<float>(texInfo->height);
+
+      scaledX = static_cast<float>(m_frame.x) * scaleX;
+      scaledY = static_cast<float>(m_frame.y) * scaleY;
+      scaledW = static_cast<float>(m_frame.z) * scaleX;
+      scaledH = static_cast<float>(m_frame.w) * scaleY;
+   }
+   else {
+      // Manual coordinates: scale from logical window space to physical render space
+      float scaleX = ctx->outWidth / ctx->wndWidth;
+      float scaleY = ctx->outHeight / ctx->wndHeight;
+
+      scaledX = static_cast<float>(m_frame.x) * scaleX;
+      scaledY = static_cast<float>(m_frame.y) * scaleY;
+      scaledW = static_cast<float>(m_frame.z) * scaleX;
+      scaledH = static_cast<float>(m_frame.w) * scaleY;
+   }
+
    vec4 glassArea, glassAmbient(1.f, 1.f, 1.f, 1.f), glassTint(1.f, 1.f, 1.f, 1.f), glassPad;
    vec4 dmdTint(1.f, 1.f, 1.f, 1.f);
    ctx->DrawDisplay(ctx, VPXDisplayRenderStyle::VPXDMDStyle_Plasma,
@@ -78,7 +102,7 @@ void DMDOverlay::Render(VPXRenderContext2D* ctx)
       m_dmdTex, dmdTint.x, dmdTint.y, dmdTint.z, 1.f, 1.f, // DMD emitter, emitter tint, emitter brightness, emitter alpha
       glassPad.x, glassPad.y, glassPad.z, glassPad.w, // Emitter padding (from glass border)
       // Render quad
-      static_cast<float>(m_frame.x), static_cast<float>(m_frame.y), static_cast<float>(m_frame.z), static_cast<float>(m_frame.w));
+      scaledX, scaledY, scaledW, scaledH);
 }
 
 ivec4 DMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio)

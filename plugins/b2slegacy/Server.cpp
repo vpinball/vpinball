@@ -26,10 +26,7 @@ Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi)
    : m_msgApi(msgApi),
      m_vpxApi(vpxApi),
      m_endpointId(endpointId),
-     m_pinmameApi(nullptr),
-     m_resURIResolver(*msgApi, endpointId, true, false, false, false),
-     m_scoreviewDmdOverlay(m_resURIResolver, m_dmdTex, nullptr, vpxApi),
-     m_backglassDmdOverlay(m_resURIResolver, m_dmdTex, nullptr, vpxApi)
+     m_pinmameApi(nullptr)
 {
    m_pB2SSettings = new B2SSettings(m_msgApi);
    m_pB2SData = new B2SData(this, m_pB2SSettings, m_vpxApi);
@@ -61,9 +58,6 @@ Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi)
    m_nLamps = 0;
    m_mechIndex = -1;
    m_nMechs = 0;
-
-   m_scoreviewDmdOverlay.LoadSettings(msgApi, "B2SLegacy"s, "Scoreview"s);
-   m_backglassDmdOverlay.LoadSettings(msgApi, "B2SLegacy"s, "Backglass"s);
 }
 
 Server::~Server()
@@ -1614,7 +1608,7 @@ void Server::Startup()
 void Server::ShowBackglassForm()
 {
    if (!m_pFormBackglass)
-      m_pFormBackglass = new FormBackglass(m_msgApi, m_vpxApi, m_pB2SData);
+      m_pFormBackglass = new FormBackglass(m_vpxApi, m_msgApi, m_endpointId, m_pB2SData);
 
    m_pFormBackglass->Show();
    m_pFormBackglass->SetTopMost(true);

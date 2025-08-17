@@ -4,12 +4,13 @@
 #include "../Server.h"
 #include "../controls/B2SPictureBox.h"
 #include "../utils/VPXGraphics.h"
+#include "../utils/DMDOverlay.h"
 #include "LoggingPlugin.h"
 
 namespace B2SLegacy {
 
-FormDMD::FormDMD(MsgPluginAPI* msgApi, VPXPluginAPI* vpxApi, B2SData* pB2SData) :
-   Form(msgApi, vpxApi, pB2SData)
+FormDMD::FormDMD(VPXPluginAPI* vpxApi, MsgPluginAPI* msgApi, uint32_t endpointId, B2SData* pB2SData)
+   : Form(vpxApi, msgApi, endpointId, pB2SData, "Scoreview")
 {
    SetName("formDMD");
 }
@@ -51,13 +52,7 @@ void FormDMD::OnPaint(VPXRenderContext2D* const ctx)
       }
    }
 
-   Server* server = m_pB2SData->GetServer();
-   if (server) {
-      server->GetScoreviewDmdOverlay().UpdateBackgroundImage(GetBackgroundImage());
-      server->GetScoreviewDmdOverlay().Render(ctx);
-   }
-
-   Control::OnPaint(ctx);
+   Form::OnPaint(ctx);
 }
 
 
