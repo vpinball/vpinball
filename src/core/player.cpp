@@ -2613,10 +2613,10 @@ float Player::ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2)
       int index;
       sscanf_s(szLine, "%s",szWord, (unsigned)_countof(szWord));
 
-      if (!strcmp(szWord,"Key"))
+      if (szWord == "Key"s)
       {
          sscanf_s(szLine, "%s %s %d",szWord, (unsigned)_countof(szWord), szSubWord, (unsigned)_countof(szSubWord), &index);
-         if (!strcmp(szSubWord, "Down"))
+         if (szSubWord == "Down"s)
          {
             m_ptable->FireGenericKeyEvent(DISPID_GameEvents_KeyDown, index);
          }
@@ -2625,11 +2625,11 @@ float Player::ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2)
             m_ptable->FireGenericKeyEvent(DISPID_GameEvents_KeyUp, index);
          }
       }
-      else if (!strcmp(szWord, "Physics"))
+      else if (szWord == "Physics"s)
       {
          sscanf_s(szLine, "%s %s %f",szWord, (unsigned)_countof(szWord), szSubWord, (unsigned)_countof(szSubWord), &dtime);
       }
-      else if (!strcmp(szWord, "Frame"))
+      else if (szWord == "Frame"s)
       {
          int a,b,c,d;
          sscanf_s(szLine, "%s %s %f %u %u %u %u",szWord, (unsigned)_countof(szWord), szSubWord, (unsigned)_countof(szSubWord), &dtime, &a, &b, &c, &d);
@@ -2638,7 +2638,7 @@ float Player::ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2)
          pli2->HighPart = c;
          pli2->LowPart = d;
       }
-      else if (!strcmp(szWord, "Step"))
+      else if (szWord == "Step"s)
       {
          int a,b,c,d;
          sscanf_s(szLine, "%s %s %u %u %u %u",szWord, (unsigned)_countof(szWord), szSubWord, (unsigned)_countof(szSubWord), &a, &b, &c, &d);
@@ -2647,7 +2647,7 @@ float Player::ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2)
          pli2->HighPart = c;
          pli2->LowPart = d;
       }
-      else if (!strcmp(szWord,"End"))
+      else if (szWord == "End"s)
       {
          return dtime;
       }

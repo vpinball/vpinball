@@ -30,16 +30,9 @@ public:
       : m_pininput(pininput)
       , m_focusHWnd(focusWnd)
    {
-      HRESULT hr;
-      #ifdef USE_DINPUT8
-         PLOGI << "DirectInput 8 joystick input handler registered";
-         hr = DirectInput8Create(g_pvp->theInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&m_pDI, nullptr);
-         m_pDI->EnumDevices(DI8DEVCLASS_GAMECTRL, EnumJoystickCallback, this, DIEDFL_ATTACHEDONLY);
-      #else
-         PLOGI << "DirectInput joystick input handler registered";
-         hr = DirectInputCreate(g_pvp->theInstance, DIRECTINPUT_VERSION, &m_pDI, nullptr);
-         m_pDI->EnumDevices(DIDEVTYPE_JOYSTICK, EnumJoystickCallback, this, DIEDFL_ATTACHEDONLY);
-      #endif
+      PLOGI << "DirectInput 8 joystick input handler registered";
+      HRESULT hr = DirectInput8Create(g_pvp->theInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&m_pDI, nullptr);
+      m_pDI->EnumDevices(DI8DEVCLASS_GAMECTRL, EnumJoystickCallback, this, DIEDFL_ATTACHEDONLY);
    }
 
    ~DirectInputJoystickHandler() override
@@ -57,11 +50,7 @@ public:
    static constexpr uint64_t GetJoyId(const int index) { return static_cast<uint64_t>(0x100000000) | static_cast<uint64_t>(index); }
 
    int GetNJoysticks() const { return static_cast<int>(m_joysticks.size()); }
-   #ifdef USE_DINPUT8
-      LPDIRECTINPUTDEVICE8 GetJoystick(int index) const { return m_joysticks[index]; }
-   #else
-      LPDIRECTINPUTDEVICE GetJoystick(int index) const { return m_joysticks[index]; }
-   #endif
+   LPDIRECTINPUTDEVICE8 GetJoystick(int index) const { return m_joysticks[index]; }
 
    void Update(const HWND foregroundWindow) override
    {
@@ -106,11 +95,7 @@ private:
    // Callback function for enumerating objects (axes, buttons, POVs) on a joystick. This function enables user interface elements for objects that are found to exist, and scales axes min/max values.
    static BOOL CALLBACK EnumObjectsCallback(const DIDEVICEOBJECTINSTANCE* pdidoi, VOID* pContext)
    {
-      #ifdef USE_DINPUT8
-         auto joystick = (LPDIRECTINPUTDEVICE8)pContext;
-      #else
-         auto joystick = (LPDIRECTINPUTDEVICE)pContext;
-      #endif
+      auto joystick = (LPDIRECTINPUTDEVICE8)pContext;
       // For axes that are returned, set the DIPROP_RANGE property for the enumerated axis in order to scale min/max values.
       if (pdidoi->dwType & DIDFT_AXIS)
       {
@@ -148,13 +133,8 @@ private:
       dstr.diph.dwObj = 0;
       dstr.diph.dwHow = DIPH_DEVICE;
 
-      HRESULT hr;
-      #ifdef USE_DINPUT8
-         LPDIRECTINPUTDEVICE8 joystick;
-      #else
-         LPDIRECTINPUTDEVICE joystick;
-      #endif
-      hr = me->m_pDI->CreateDevice(lpddi->guidInstance, &joystick, nullptr);
+      LPDIRECTINPUTDEVICE8 joystick;
+      HRESULT hr = me->m_pDI->CreateDevice(lpddi->guidInstance, &joystick, nullptr);
       if (FAILED(hr))
          return DIENUM_CONTINUE;
 
@@ -187,15 +167,15 @@ private:
       hr = joystick->GetProperty(DIPROP_PRODUCTNAME, &dstr.diph);
       if (hr == S_OK)
       {
-         if (wcscmp(dstr.wsz, L"PinballWizard") == 0)
+         if (dstr.wsz == L"PinballWizard"s)
             joystickType = PinInput::InputLayout::PBWizard;
-         else if (wcscmp(dstr.wsz, L"UltraCade Pinball") == 0)
+         else if (dstr.wsz == L"UltraCade Pinball"s)
             joystickType = PinInput::InputLayout::UltraCade;
-         else if (wcscmp(dstr.wsz, L"Microsoft SideWinder Freestyle Pro (USB)") == 0)
+         else if (dstr.wsz == L"Microsoft SideWinder Freestyle Pro (USB)"s)
             joystickType = PinInput::InputLayout::Sidewinder;
-         else if (wcscmp(dstr.wsz, L"VirtuaPin Controller") == 0)
+         else if (dstr.wsz == L"VirtuaPin Controller"s)
             joystickType = PinInput::InputLayout::VirtuaPin;
-         else if (wcscmp(dstr.wsz, L"Pinscape Controller") == 0 || wcscmp(dstr.wsz, L"PinscapePico") == 0)
+         else if (dstr.wsz == L"Pinscape Controller"s || dstr.wsz == L"PinscapePico"s)
          {
             joystickType = PinInput::InputLayout::Generic;
             me->m_pininput.m_linearPlunger = true;
@@ -229,11 +209,6 @@ private:
    PinInput& m_pininput;
    const HWND m_focusHWnd;
 
-   #ifdef USE_DINPUT8
-      LPDIRECTINPUT8 m_pDI = nullptr;
-      vector<LPDIRECTINPUTDEVICE8> m_joysticks;
-   #else
-      LPDIRECTINPUT m_pDI = nullptr;
-      vector<LPDIRECTINPUTDEVICE> m_joysticks;
-   #endif
+   LPDIRECTINPUT8 m_pDI = nullptr;
+   vector<LPDIRECTINPUTDEVICE8> m_joysticks;
 };

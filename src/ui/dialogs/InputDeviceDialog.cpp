@@ -314,12 +314,7 @@ void InputDeviceDialog::LoadAndReconcileInputDevicePrefs()
    DirectInputJoystickHandler* diJoy = pinInput->GetDirectInputJoystickHandler();
    for (int i = 0; i < diJoy->GetNJoysticks(); i++)
    {
-      #ifdef USE_DINPUT8
-         LPDIRECTINPUTDEVICE8 joystick = diJoy->GetJoystick(i);
-      #else
-         LPDIRECTINPUTDEVICE joystick = diJoy->GetJoystick(i);
-      #endif
-
+      LPDIRECTINPUTDEVICE8 joystick = diJoy->GetJoystick(i);
       if (joystick != nullptr)
       {
          DIDEVICEINSTANCE deviceInfo;

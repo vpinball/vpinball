@@ -72,8 +72,8 @@ void DynamicTypeLibrary::RegisterScriptClass(ScriptClassDef* classDef)
 
    // Shared object must implement reference counting, and for the sake of simplicity/efficiency, we impose the implementation to be at the beginning of the vtable
    if ((classDef->nMembers < 2)
-      || (strcmp(classDef->members[0].name.name, "AddRef") != 0)
-      || (strcmp(classDef->members[1].name.name, "Release") != 0))
+      || (classDef->members[0].name.name != "AddRef"s)
+      || (classDef->members[1].name.name != "Release"s))
    {
       PLOGE << "Plugin requested to register an invalid class '" << classDef->name.name << "' which does not implement reference counting in its first 2 members";
       return;

@@ -767,11 +767,11 @@ RenderDevice::RenderDevice(
    init.platformData.backBuffer = nullptr;
    init.platformData.backBufferDS = nullptr;
    #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-   if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0) {
+   if (SDL_GetCurrentVideoDriver() == "x11"s) {
       init.platformData.ndt = SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
       init.platformData.nwh = (void*)SDL_GetNumberProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
    }
-   else if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
+   else if (SDL_GetCurrentVideoDriver() == "wayland"s) {
       init.platformData.type = bgfx::NativeWindowHandleType::Wayland;
       init.platformData.ndt = SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
       init.platformData.nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
@@ -1455,11 +1455,11 @@ void RenderDevice::AddWindow(VPX::Window* wnd)
    void* nwh;
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
    void* ndt;
-   if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0) {
+   if (SDL_GetCurrentVideoDriver() == "x11"s) {
       ndt = SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWnd), SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
       nwh = (void*)SDL_GetNumberProperty(SDL_GetWindowProperties(sdlWnd), SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
    }
-   else if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
+   else if (SDL_GetCurrentVideoDriver() == "wayland"s) {
       ndt = SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWnd), SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
       nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWnd), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
    }

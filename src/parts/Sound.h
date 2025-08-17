@@ -32,7 +32,7 @@ public:
    const string& GetImportPath() const { return m_path; }
    size_t GetFileSize() const { return m_data.size(); }
    const uint8_t* GetFileRaw() const { return m_data.data(); }
-   void SetFromFileData(std::string_view filename, vector<uint8_t> filedata);
+   void SetFromFileData(string filename, vector<uint8_t> filedata);
 
    bool SaveToFile(const string& filename) const;
    void SaveToStream(IStream* pstm) const;

@@ -79,7 +79,7 @@ MsgPluginManager::~MsgPluginManager()
 unsigned int MsgPluginManager::GetPluginEndpoint(const char* id)
 {
    MsgPluginManager& pm = GetInstance();
-   auto item = std::ranges::find_if(pm.m_plugins, [id](std::shared_ptr<MsgPlugin>& plg) { return plg->IsLoaded() && strcmp(plg->m_id.c_str(), id) == 0; });
+   auto item = std::ranges::find_if(pm.m_plugins, [id](std::shared_ptr<MsgPlugin>& plg) { return plg->IsLoaded() && plg->m_id == id; });
    if (item == pm.m_plugins.end())
       return 0;
    return item->get()->m_endpointId;
@@ -428,8 +428,8 @@ void MsgPlugin::Load(const MsgPluginAPI* msgAPI)
    {
       if (m_module == nullptr)
       {
-         const std::string load = std::string(m_id) + "PluginLoad";
-         const std::string unload = std::string(m_id) + "PluginUnload";
+         const std::string load = m_id + "PluginLoad";
+         const std::string unload = m_id + "PluginUnload";
          #if defined(_WIN32) || defined(_WIN64)
             SetDllDirectory(m_directory.c_str());
          #endif

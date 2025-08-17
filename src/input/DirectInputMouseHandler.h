@@ -9,14 +9,8 @@ public:
       : m_pininput(pininput)
       , m_focusHWnd(focusWnd)
    {
-      HRESULT hr;
-      #ifdef USE_DINPUT8
-         PLOGI << "DirectInput 8 mouse input handler registered";
-         hr = DirectInput8Create(g_pvp->theInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&m_pDI, nullptr);
-      #else
-         PLOGI << "DirectInput mouse input handler registered";
-         hr = DirectInputCreate(g_pvp->theInstance, DIRECTINPUT_VERSION, &m_pDI, nullptr);
-      #endif
+      PLOGI << "DirectInput 8 mouse input handler registered";
+      HRESULT hr = DirectInput8Create(g_pvp->theInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&m_pDI, nullptr);
       if (SUCCEEDED(m_pDI->CreateDevice(GUID_SysMouse, &m_pMouse, nullptr)))
       {
          hr = m_pMouse->SetDataFormat(&c_dfDIMouse2);
@@ -68,13 +62,8 @@ private:
    PinInput& m_pininput;
    const HWND m_focusHWnd;
 
-   #ifdef USE_DINPUT8
-      LPDIRECTINPUT8 m_pDI = nullptr;
-      LPDIRECTINPUTDEVICE8 m_pMouse = nullptr;
-   #else
-      LPDIRECTINPUT m_pDI = nullptr;
-      LPDIRECTINPUTDEVICE m_pMouse = nullptr;
-   #endif
+   LPDIRECTINPUT8 m_pDI = nullptr;
+   LPDIRECTINPUTDEVICE8 m_pMouse = nullptr;
 
    BYTE m_oldMouseButtonState[3] { 0 };
 };

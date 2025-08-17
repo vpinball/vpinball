@@ -9,14 +9,8 @@ public:
       : m_pininput(pininput)
       , m_focusHWnd(focusWnd)
    {
-      HRESULT hr;
-      #ifdef USE_DINPUT8
-         PLOGI << "DirectInput 8 keyboard input handler registered";
-         hr = DirectInput8Create(g_pvp->theInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&m_pDI, nullptr);
-      #else
-         PLOGI << "DirectInput keyboard input handler registered";
-         hr = DirectInputCreate(g_pvp->theInstance, DIRECTINPUT_VERSION, &m_pDI, nullptr);
-      #endif
+      PLOGI << "DirectInput 8 keyboard input handler registered";
+      HRESULT hr = DirectInput8Create(g_pvp->theInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&m_pDI, nullptr);
 
       hr = m_pDI->CreateDevice(GUID_SysKeyboard, &m_pKeyboard, nullptr); //Standard Keyboard device
       hr = m_pKeyboard->SetDataFormat(&c_dfDIKeyboard);
@@ -63,11 +57,6 @@ private:
    PinInput& m_pininput;
    const HWND m_focusHWnd;
 
-   #ifdef USE_DINPUT8
-      LPDIRECTINPUT8 m_pDI = nullptr;
-      LPDIRECTINPUTDEVICE8 m_pKeyboard = nullptr;
-   #else
-      LPDIRECTINPUT m_pDI = nullptr;
-      LPDIRECTINPUTDEVICE m_pKeyboard = nullptr;
-   #endif
+   LPDIRECTINPUT8 m_pDI = nullptr;
+   LPDIRECTINPUTDEVICE8 m_pKeyboard = nullptr;
 };

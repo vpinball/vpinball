@@ -24,11 +24,7 @@
 
 #include <windows.h>
 
-#ifdef USE_DINPUT8
- #define DIRECTINPUT_VERSION 0x0800
-#else
- #define DIRECTINPUT_VERSION 0x0700
-#endif
+#define DIRECTINPUT_VERSION 0x0800
 
 #ifdef __STANDALONE__
 #define RPC_NO_WINDOWS_H

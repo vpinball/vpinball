@@ -281,7 +281,7 @@ OpenPinDevHandler::OpenPinDevHandler(PinInput &pininput)
                         if (f.usageRanges.size() == 1 && f.usageRanges.front().Equals(USAGE_PAGE_GAMECONTROLS, 0)
                            && f.stringRanges.size() == 1 && !f.stringRanges.front().IsRange()
                            && hid_get_indexed_string(hDevice.get(), f.stringRanges.front().GetSingle(), strBuf, nStrBuf) == 0
-                           && wcsncmp(strBuf, L"OpenPinballDeviceStruct/", 24) == 0)
+                           && strBuf == L"OpenPinballDeviceStruct/"s)
                         {
                            // matched
                            found = true;

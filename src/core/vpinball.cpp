@@ -1997,7 +1997,7 @@ LRESULT VPinball::OnFrontEndControlsMsg(WPARAM wParam, LPARAM lParam)
                      char cls[128];
                      if (::IsWindowVisible(hwnd) && ::IsWindowEnabled(hwnd)
                          && ::RealGetWindowClassA(hwnd, cls, std::size(cls)) != 0
-                         && strcmp(cls, "#32770") == 0)
+                         && cls == "#32770"s)
                      {
                         // close it by sending IDCANCEL
                         DWORD_PTR result;

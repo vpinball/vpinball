@@ -168,9 +168,9 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
    return pps;
 }
 
-void Sound::SetFromFileData(std::string_view filename, vector<uint8_t> filedata)
+void Sound::SetFromFileData(string filename, vector<uint8_t> filedata)
 {
-   m_path = filename;
+   m_path = std::move(filename);
    m_data = std::move(filedata);
 }
 
