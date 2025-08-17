@@ -344,7 +344,6 @@ target_compile_definitions(vpinball PRIVATE
    ENABLE_SDL_VIDEO
    ENABLE_BGFX
    ENABLE_XR
-   USE_DINPUT8
    $<$<CONFIG:Debug>:BX_CONFIG_DEBUG=1>
    $<$<CONFIG:Release>:BX_CONFIG_DEBUG=0>
 )
