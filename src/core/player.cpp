@@ -2315,24 +2315,6 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
       bool isLinearOutput;
    };
 
-   int wndW;
-   int wndH;
-   if (output.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
-   {
-      wndW = output.GetEmbeddedWindow()->GetWidth();
-      wndH = output.GetEmbeddedWindow()->GetHeight();
-   }
-   else if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
-   {
-      wndW = output.GetWindow()->GetWidth();
-      wndH = output.GetWindow()->GetHeight();
-   }
-   else
-   {
-      wndW = m_outputW;
-      wndH = m_outputH;
-   }
-
    PlayerRenderContext2D context
    {
       {
@@ -2340,7 +2322,6 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
          static_cast<float>(m_outputW), static_cast<float>(m_outputH),
          1, // 2D render
          static_cast<float>(m_outputW), static_cast<float>(m_outputH),
-         static_cast<float>(wndW), static_cast<float>(wndH),
          // Draw an image
          [](VPXRenderContext2D *ctx, VPXTexture texture,
             const float tintR, const float tintG, const float tintB, const float alpha,
