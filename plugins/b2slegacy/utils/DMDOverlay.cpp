@@ -70,10 +70,10 @@ void DMDOverlay::Render(VPXRenderContext2D* ctx)
    float scaledX, scaledY, scaledW, scaledH;
    
    if (m_detectDmdFrame) {
-      // Autodetection: Scale from background image space to window space
+      // Autodetection: Scale from background image space to source space
       const VPXTextureInfo* const texInfo = m_vpxApi->GetTextureInfo(m_backImage);
-      float scaleX = static_cast<float>(ctx->outWidth) / static_cast<float>(texInfo->width);
-      float scaleY = static_cast<float>(ctx->outHeight) / static_cast<float>(texInfo->height);
+      float scaleX = static_cast<float>(ctx->srcWidth) / static_cast<float>(texInfo->width);
+      float scaleY = static_cast<float>(ctx->srcHeight) / static_cast<float>(texInfo->height);
 
       scaledX = static_cast<float>(m_frame.x) * scaleX;
       scaledY = static_cast<float>(m_frame.y) * scaleY;
@@ -81,14 +81,11 @@ void DMDOverlay::Render(VPXRenderContext2D* ctx)
       scaledH = static_cast<float>(m_frame.w) * scaleY;
    }
    else {
-      // Manual coordinates: scale from logical window space to physical render space
-      float scaleX = ctx->outWidth / ctx->wndWidth;
-      float scaleY = ctx->outHeight / ctx->wndHeight;
-
-      scaledX = static_cast<float>(m_frame.x) * scaleX;
-      scaledY = static_cast<float>(m_frame.y) * scaleY;
-      scaledW = static_cast<float>(m_frame.z) * scaleX;
-      scaledH = static_cast<float>(m_frame.w) * scaleY;
+      // Manual coordinates: use direct frame coordinates, flip Y to start from top
+      scaledX = static_cast<float>(m_frame.x);
+      scaledY = ctx->srcHeight - static_cast<float>(m_frame.y) - static_cast<float>(m_frame.w);
+      scaledW = static_cast<float>(m_frame.z);
+      scaledH = static_cast<float>(m_frame.w);
    }
 
    vec4 glassArea, glassAmbient(1.f, 1.f, 1.f, 1.f), glassTint(1.f, 1.f, 1.f, 1.f), glassPad;

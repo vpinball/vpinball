@@ -80,37 +80,29 @@ int Server::OnRender(VPXRenderContext2D* const renderCtx, void* context)
       return 0;
 
    if (!m_ready) {
-      if (renderCtx->window == VPXAnciliaryWindow::VPXWINDOW_Backglass) {
-         m_pFormBackglass->GetB2SScreen()->SetBackglassSize({ 0, 0, static_cast<int>(renderCtx->outWidth), static_cast<int>(renderCtx->outHeight) });
-         m_canRenderBackglass = true;
-      }
-      else if (renderCtx->window == VPXAnciliaryWindow::VPXWINDOW_ScoreView) {
-         m_pFormBackglass->GetB2SScreen()->SetDMDSize({ 0, 0, static_cast<int>(renderCtx->outWidth), static_cast<int>(renderCtx->outHeight) });
-         m_canRenderDMD = true;
-      }
+      if (!m_pFormBackglass->IsValid())
+         return 0;
 
-      m_renderTimeout++;
+      m_pFormBackglass->Start();
+      m_ready = true;
+   }
 
-      if ((m_canRenderBackglass && m_canRenderDMD) ||
-          (m_renderTimeout >= 60 && (m_canRenderBackglass || m_canRenderDMD))) {
-         if (m_pFormBackglass->IsValid()) {
-            m_pFormBackglass->Start();
-            m_ready = true;
-         }
+   if (renderCtx->window == VPXAnciliaryWindow::VPXWINDOW_Backglass) {
+      if (!m_pB2SSettings->IsHideB2SBackglass()) {
+         SDL_Rect& size = m_pFormBackglass->GetB2SScreen()->GetBackglassSize();
+         renderCtx->srcWidth = static_cast<float>(size.w);
+         renderCtx->srcHeight = static_cast<float>(size.h);
+         m_pFormBackglass->OnPaint(renderCtx);
+         return 1;
       }
    }
-   else {
-      if (renderCtx->window == VPXAnciliaryWindow::VPXWINDOW_Backglass) {
-         if (!m_pB2SSettings->IsHideB2SBackglass()) {
-            m_pFormBackglass->OnPaint(renderCtx);
-            return 1;
-         }
-      }
-      else if (renderCtx->window == VPXAnciliaryWindow::VPXWINDOW_ScoreView) {
-         if (m_pFormBackglass->GetFormDMD()) {
-            m_pFormBackglass->GetFormDMD()->OnPaint(renderCtx);
-            return 1;
-         }
+   else if (renderCtx->window == VPXAnciliaryWindow::VPXWINDOW_ScoreView) {
+      if (m_pFormBackglass->GetFormDMD()) {
+         SDL_Rect& size = m_pFormBackglass->GetB2SScreen()->GetDMDSize();
+         renderCtx->srcWidth = static_cast<float>(size.w);
+         renderCtx->srcHeight = static_cast<float>(size.h);
+         m_pFormBackglass->GetFormDMD()->OnPaint(renderCtx);
+         return 1;
       }
    }
 

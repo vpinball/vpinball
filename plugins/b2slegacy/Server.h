@@ -182,9 +182,6 @@ private:
    VPXTexture m_dmdTex = nullptr;
 
    bool m_ready = false;
-   bool m_canRenderBackglass = false;
-   bool m_canRenderDMD = false;
-   int m_renderTimeout = 0;
 };
 
 }

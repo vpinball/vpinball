@@ -559,8 +559,8 @@ void VPXGraphics::DrawImage(VPXPluginAPI* vpxApi, VPXRenderContext2D* ctx, VPXTe
 
    float srcX = destRect ? (float)destRect->x : 0.0f;
    float srcY = destRect ? (float)destRect->y : 0.0f;
-   float srcW = destRect ? (float)destRect->w : ctx->outWidth;
-   float srcH = destRect ? (float)destRect->h : ctx->outHeight;
+   float srcW = destRect ? (float)destRect->w : ctx->srcWidth;
+   float srcH = destRect ? (float)destRect->h : ctx->srcHeight;
 
    ctx->DrawImage(ctx, texture, tintR, tintG, tintB, alpha,
                   texX, texY, texW, texH, pivotX, pivotY, rotation,
