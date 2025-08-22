@@ -280,6 +280,8 @@ class SCNotification final { };
 
 #include "core/vpinball_h.h"
 #include "parts/pintable.h"
+#include "core/ScriptGlobalTable.h"
+#include "ui/win/PinTableMDI.h"
 
 #include "math/mesh.h"
 #include "physics/collide.h"

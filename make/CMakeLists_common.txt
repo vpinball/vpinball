@@ -34,6 +34,8 @@ set(VPX_SOURCES
    src/core/player.h
    src/core/ResURIResolver.h
    src/core/ResURIResolver.cpp
+   src/core/ScriptGlobalTable.h
+   src/core/ScriptGlobalTable.cpp
    src/core/Settings.cpp
    src/core/Settings.h
    src/core/TableDB.cpp
@@ -238,6 +240,9 @@ set(VPX_SOURCES
    src/ui/live/NotificationOverlay.h
    src/ui/live/PerfUI.cpp
    src/ui/live/PerfUI.h
+
+   src/ui/win/PinTableMDI.cpp
+   src/ui/win/PinTableMDI.h
 
    src/utils/bulb.cpp
    src/utils/bulb.h
