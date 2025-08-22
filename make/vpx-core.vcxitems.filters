@@ -174,6 +174,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/core/stdafx.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/core/ScriptGlobalTable.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/core/TableDB.cpp">
       <Filter>core</Filter>
     </ClCompile>
@@ -380,6 +383,9 @@
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/PerfUI.cpp">
       <Filter>ui\live</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/win/PinTableMDI.cpp">
+      <Filter>ui\win</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/hitrectsur.cpp">
       <Filter>ui\win</Filter>
@@ -773,6 +779,9 @@
     <ClInclude Include="$(SolutionDir)/../../src/core/pinundo.h">
       <Filter>core</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/core/ScriptGlobalTable.h">
+      <Filter>core</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/core/vpinball_h.h">
       <Filter>core</Filter>
     </ClInclude>
@@ -1120,6 +1129,9 @@
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/PerfUI.h">
       <Filter>ui\live</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/win/PinTableMDI.h">
+      <Filter>ui\win</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/resource.h">
       <Filter>ui\win</Filter>

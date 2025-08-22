@@ -29,6 +29,9 @@
 #endif
 #include "vpversion.h"
 
+#include "ui/win/PinTableMDI.h"
+
+
 #if defined(IMSPANISH)
 #define TOOLBAR_WIDTH 152
 #elif defined(IMGERMAN)
