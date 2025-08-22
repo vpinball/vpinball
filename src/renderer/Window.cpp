@@ -46,7 +46,7 @@ Window::Window(const string &title, const Settings& settings, const Settings::Se
    , m_settingsPrefix(settingsPrefix)
    , m_isVR(false)
 {
-   m_fullscreen = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "FullScreen", IsWindows10_1803orAbove());
+   m_fullscreen = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "FullScreen", false); // IsWindows10_1803orAbove());
    // FIXME remove command line override => this is hacky and not needed anymore (use INI override instead)
    if (m_settingsSection == Settings::Player)
    {
