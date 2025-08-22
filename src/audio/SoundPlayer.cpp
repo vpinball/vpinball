@@ -447,7 +447,10 @@ void SoundPlayer::Stop()
    m_commandQueue.enqueue([this]()
    {
       if (m_sound)
+      {
          ma_sound_stop(m_sound.get());
+         ma_sound_seek_to_pcm_frame(m_sound.get(), 0);
+      }
    });
 }
 
