@@ -117,7 +117,7 @@ public:
 
    void WriteRegDefaults() final;
 
-   STANDARD_EDITABLE_DECLARES(LightSeq, eItemLightSeq, LIGHTSEQ, 3)
+   STANDARD_EDITABLE_DECLARES(LightSeq, eItemLightSeq, LIGHTSEQ, VIEW_PLAYFIELD | VIEW_BACKGLASS)
 
    //DECLARE_NOT_AGGREGATABLE(LightSeq)
    // Remove the comment from the line above if you don't want your object to
