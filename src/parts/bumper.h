@@ -66,7 +66,7 @@ public:
    // Remove the comment from the line above if you don't want your object to
    // support aggregation.
 
-   STANDARD_EDITABLE_DECLARES(Bumper, eItemBumper, BUMPER, 1)
+   STANDARD_EDITABLE_DECLARES(Bumper, eItemBumper, BUMPER, VIEW_PLAYFIELD)
 
    BEGIN_CONNECTION_POINT_MAP(Bumper)
       CONNECTION_POINT_ENTRY(DIID_IBumperEvents)

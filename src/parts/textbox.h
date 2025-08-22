@@ -66,7 +66,7 @@ public:
       CONNECTION_POINT_ENTRY(DIID_ITextboxEvents)
    END_CONNECTION_POINT_MAP()
 
-   STANDARD_EDITABLE_DECLARES(Textbox, eItemTextbox, TEXTBOX, 2)
+   STANDARD_EDITABLE_DECLARES(Textbox, eItemTextbox, TEXTBOX, VIEW_BACKGLASS)
 
    void MoveOffset(const float dx, const float dy) final;
    void SetObjectPos() final;

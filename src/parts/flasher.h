@@ -81,7 +81,7 @@ public:
    Flasher();
    virtual ~Flasher();
 
-   STANDARD_EDITABLE_DECLARES(Flasher, eItemFlasher, FLASHER, 3)
+   STANDARD_EDITABLE_DECLARES(Flasher, eItemFlasher, FLASHER, VIEW_PLAYFIELD | VIEW_BACKGLASS)
 
    BEGIN_COM_MAP(Flasher)
       COM_INTERFACE_ENTRY(IFlasher)

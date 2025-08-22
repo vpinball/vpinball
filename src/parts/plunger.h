@@ -137,7 +137,7 @@ public:
    Plunger();
    virtual ~Plunger();
 
-   STANDARD_EDITABLE_DECLARES(Plunger, eItemPlunger, PLUNGER, 1)
+   STANDARD_EDITABLE_DECLARES(Plunger, eItemPlunger, PLUNGER, VIEW_PLAYFIELD)
 
    void MoveOffset(const float dx, const float dy) final;
    void SetObjectPos() final;

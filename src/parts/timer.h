@@ -76,7 +76,7 @@ public:
 
    void WriteRegDefaults() final;
 
-   STANDARD_EDITABLE_DECLARES(Timer, eItemTimer, TIMER, 3)
+   STANDARD_EDITABLE_DECLARES(Timer, eItemTimer, TIMER, VIEW_PLAYFIELD | VIEW_BACKGLASS)
 
    //DECLARE_NOT_AGGREGATABLE(Timer)
    // Remove the comment from the line above if you don't want your object to

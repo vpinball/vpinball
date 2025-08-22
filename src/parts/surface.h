@@ -61,7 +61,7 @@ public:
 
    //HRESULT InitTarget(PinTable * const ptable, const float x, const float y, const bool fromMouseClick);
 
-   STANDARD_EDITABLE_DECLARES(Surface, eItemSurface, WALL, 1)
+   STANDARD_EDITABLE_DECLARES(Surface, eItemSurface, WALL, VIEW_PLAYFIELD)
 
    BEGIN_COM_MAP(Surface)
       COM_INTERFACE_ENTRY(IWall)

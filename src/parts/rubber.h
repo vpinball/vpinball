@@ -62,7 +62,7 @@ public:
       CONNECTION_POINT_ENTRY(DIID_IRubberEvents)
    END_CONNECTION_POINT_MAP()
 
-   STANDARD_EDITABLE_DECLARES(Rubber, eItemRubber, RUBBER, 1)
+   STANDARD_EDITABLE_DECLARES(Rubber, eItemRubber, RUBBER, VIEW_PLAYFIELD)
 
       //DECLARE_NOT_AGGREGATABLE(Rubber)
       // Remove the comment from the line above if you don't want your object to
