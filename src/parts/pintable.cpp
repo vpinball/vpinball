@@ -62,15 +62,6 @@ static inline std::from_chars_result my_from_chars(const char* first, const char
 
 ScriptGlobalTable::~ScriptGlobalTable()
 {
-#ifndef __STANDALONE__
-   // Not yet implemented (needs to update LibPinMame)
-   if (m_hStateSharedMem != INVALID_HANDLE_VALUE)
-   {
-      byte * pStateMappedMem = ((byte *)g_pplayer->m_pStateMappedMem - sizeof(unsigned int));
-      UnmapViewOfFile(pStateMappedMem);
-      CloseHandle(m_hStateSharedMem);
-   }
-#endif
 }
 
 void ScriptGlobalTable::Init(VPinball *vpinball, PinTable *pt)
