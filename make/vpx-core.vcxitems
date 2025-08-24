@@ -893,6 +893,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/LiveUI.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/NotificationOverlay.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/PerfUI.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/PlumbOverlay.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/PinTableMDI.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/worker.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/codeviewedit.cpp" />
@@ -1648,6 +1649,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/LiveUI.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/NotificationOverlay.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/PerfUI.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/PlumbOverlay.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/PinTableMDI.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/resource.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/worker.h" />

@@ -86,7 +86,7 @@ Function vpmKeyDown(ByVal keycode)
 			Case keySlamDoorHit  .Switch(swSlamTilt)    = True
 			Case keySelfTest     vpmTimer.PulseSw swAdvanceTest
 			Case keyAdvance      vpmTimer.PulseSw swReturnTest
-			Case keyBangBack     vpmNudge.DoNudge   0, 6
+			Case keyBangBack     vpmNudge.DoMechTilt
 			Case LeftTiltKey     vpmNudge.DoNudge  75, 2
 			Case RightTiltKey    vpmNudge.DoNudge 285, 2
 			Case CenterTiltKey   vpmNudge.DoNudge   0, 2

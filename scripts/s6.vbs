@@ -101,7 +101,7 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyMasterEnter  .Switch(swMasterEnter)  = True
 			Case keySlamDoorHit  .Switch(swSlamTilt)     = True
 			Case keyHiscoreReset .Switch(swHiScoreReset) = True
-			Case keyBangBack     vpmNudge.DoNudge   0, 6
+			Case keyBangBack     vpmNudge.DoMechTilt
 			Case LeftTiltKey     vpmNudge.DoNudge  75, 2
 			Case RightTiltKey    vpmNudge.DoNudge 285, 2
 			Case CenterTiltKey   vpmNudge.DoNudge   0, 2

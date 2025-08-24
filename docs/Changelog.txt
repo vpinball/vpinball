@@ -13,9 +13,11 @@ FEATURES:
 
 - balls can now be created and edited directly from the editor like all other parts, and not only from the script
 
-- improved physics model for the emulated plumb tilt. Its settings will need to be adjusted either through the main editor, or using the LiveUI which has a dedicated UI for it with live feedback.
-  For the time being, there are 3 models available for nudge simulation (from keyboard or the cabinet sensor)
-   1. Legacy nudge
+- Moved the plumb simulation to VPX's physics engine with an improved physics model. NudgePlugIn_xxx.vbs files that were used depending on each user setup are not needed anymore and were removed.
+  Emulation of the plumb must be enabled in the settings, and adjusted to user setup. The LiveUI offers a dedicated UI with live feedback to ease this process.
+  When plumb emulation is enabled, in the lower left corner, a little overlay with the live plumb position will fade in/out when the plumb is approaching the Tilt threshold.
+  For reference, there are 3 models available for nudge simulation (from keyboard or the cabinet sensor) with increasing quality:
+   1. 'Legacy' nudge
       - Perform a keyboard nudge by applying a force directly to the balls, first in the forward direction, then, after a little while, in the opposite direction
       - No hardware nudging support
    2. Acceleration based nudge

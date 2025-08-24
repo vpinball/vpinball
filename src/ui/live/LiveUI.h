@@ -12,6 +12,7 @@
 #include "EditorUI.h"
 #include "EscSplashModal.h"
 #include "NotificationOverlay.h"
+#include "PlumbOverlay.h"
 #include "BallControl.h"
 
 inline constexpr const char* ID_BAM_SETTINGS = "Headtracking Settings";
@@ -70,6 +71,9 @@ private:
 
    // Touch UI overlay
    void UpdateTouchUI();
+
+   // Emulated plumb overlay
+   PlumbOverlay m_plumbOverlay;
 
    // Notifications
    NotificationOverlay m_notificationOverlay;

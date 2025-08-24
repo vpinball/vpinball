@@ -38,9 +38,12 @@ public:
    void Nudge(float angle, float force);
    Vertex3Ds GetNudgeAcceleration() const { return m_tableAcceleration + m_nudgeAcceleration; } // Table acceleration (due to nudge) expressed in VP units
    Vertex2D GetScreenNudge() const; // Table displacement
-   const Vertex3Ds& GetPlumbPos() const { return m_plumbPos; }
+   bool IsPlumbSimulated() const { return m_enablePlumbTilt; }
+   const Vertex3Ds &GetPlumbPos() const { return m_plumbPos; }
+   const Vertex3Ds &GetPlumbVel() const { return m_plumbVel; }
    float GetPlumbPoleLength() const { return m_plumbPoleLength; }
    float GetPlumbTiltThreshold() const { return m_plumbTiltThreshold; }
+   int GetPlumlbTiltIndex() const { return m_plumbTiltIndex; }
    void ReadNudgeSettings(const Settings &settings);
 
    void RayCast(const Vertex3Ds &source, const Vertex3Ds &target, const bool uiCast, vector<HitTestResult> &vhoHit);
@@ -129,6 +132,7 @@ private:
    // Tilt plumb
    bool m_enablePlumbTilt = false;
    bool m_plumbTiltHigh = false;
+   int m_plumbTiltIndex = 0;
    float m_plumbTiltThreshold;
    float m_plumbPoleLength;
    float m_plumbMassFactor;

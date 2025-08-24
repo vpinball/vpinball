@@ -240,6 +240,8 @@ set(VPX_SOURCES
    src/ui/live/NotificationOverlay.h
    src/ui/live/PerfUI.cpp
    src/ui/live/PerfUI.h
+   src/ui/live/PlumbOverlay.cpp
+   src/ui/live/PlumbOverlay.h
 
    src/ui/win/PinTableMDI.cpp
    src/ui/win/PinTableMDI.h

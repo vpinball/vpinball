@@ -86,7 +86,7 @@ Function vpmKeyDown(ByVal keycode)
 			Case StartGameKey    .Switch(swStartButton) = True
 			Case keySelfTest     .Switch(swSelfTest)    = True
 			Case keyEnter        .Switch(swEnter)       = True
-			Case keyBangBack     vpmNudge.DoNudge   0, 6
+			Case keyBangBack     vpmNudge.DoMechTilt
 			Case LeftTiltKey     vpmNudge.DoNudge  75, 2
 			Case RightTiltKey    vpmNudge.DoNudge 285, 2
 			Case CenterTiltKey   vpmNudge.DoNudge   0, 2

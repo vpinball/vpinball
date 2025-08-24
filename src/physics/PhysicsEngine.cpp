@@ -345,74 +345,14 @@ void PhysicsEngine::UpdateNudge(float dtime)
    m_nudgeAcceleration.x *= (float)(1.0/PHYS_FACTOR);
    m_nudgeAcceleration.y *= (float)(1.0/PHYS_FACTOR);
 
-   if (m_enablePlumbTilt && m_plumbTiltThreshold > 0.0f && dtime > 0.f && dtime <= 0.1f) // Ignore large time slices... forces will get crazy!
+   if (m_enablePlumbTilt && m_plumbTiltThreshold > 0.0f && dtime > 0.f && dtime <= 0.1f) // Ignore large time slices... forces would get crazy!
    {
-      #if 0
-      // If you modify this function... make sure you update the same function in the front-end!
-      //
-      // The physics on the plumb are not very accurate... but they seem to do good enough to convince players.
-      // In the real world, the plumb is a pendulum.  With force of gravity, the force of the string, the friction
-      // force of the hook, and the dampening force of the air.  Here, force is exerted only by the table tilting
-      // (the string) and dampening and friction forces are lumped together with a constant, and gravity is not
-      // present.
-      const Vertex2D nudge = Vertex2D(m_nudgeAcceleration.x * 2.0f, m_nudgeAcceleration.y * 2.0f); // For some reason, the original code needs a normalized to -2..2 value
-      //const Vertex2D nudge = Vertex2D(GetNudgeAcceleration().x * 2.0f, GetNudgeAcceleration().y * 2.0f); // GetNudgeAcceleration also takes in account the table velocity (keyboard nudge) => if doing this we must trigger mechanical tilt and not nudge
-      const float ax = sinf((nudge.x - m_plumbPos.x) * (float)(M_PI / 5.0));
-      const float ay = sinf((nudge.y - m_plumbPos.y) * (float)(M_PI / 5.0));
-
-      // Add force to the plumb.
-      m_plumbVel.x += (float)(825.0 * 0.25) * ax * dtime;
-      m_plumbVel.y += (float)(825.0 * 0.25) * ay * dtime;
-      m_plumbVel.z = 0.f;
-
-      // Check if we hit the edge.
-      const float len2 = m_plumbPos.LengthSquared();
-      const float TiltPerc = (len2 * 100.0f) / ((1.0f - m_plumbTiltThreshold) * (1.0f - m_plumbTiltThreshold));
-      bool tilted = false;
-      if (TiltPerc > 100.0f)
-      {
-         // Bounce the plumb and scrub velocity.
-         const float oolen = ((1.0f - m_plumbTiltThreshold) / sqrtf(len2)) * 0.90f;
-         m_plumbPos *= oolen;
-         m_plumbVel *= -0.025f;
-         tilted = true;
-      }
-
-      // Dampen the velocity.
-      m_plumbVel.x -= 2.50f * (m_plumbVel.x * dtime);
-      m_plumbVel.y -= 2.50f * (m_plumbVel.y * dtime);
-
-      // Check if velocity is near zero and we near center.
-      if (((m_plumbVel.x + m_plumbVel.y) > -VELOCITY_EPSILON)
-         && ((m_plumbVel.x + m_plumbVel.y) < VELOCITY_EPSILON) 
-         && (m_plumbPos.x > -0.10f) && (m_plumbPos.x < 0.10f)
-         && (m_plumbPos.y > -0.10f) && (m_plumbPos.y < 0.10f))
-      {
-         // Set the velocity to zero. This reduces annoying jittering when at rest.
-         m_plumbVel.SetZero();
-         m_plumbPos.SetZero();
-      }
-      else
-      {
-         // Update position.
-         m_plumbPos += m_plumbVel * dtime;
-      }
-
-      // Fire event (same as keyboard tilt)
-      if (m_plumbTiltHigh != tilted)
-      {
-         m_plumbTiltHigh = tilted;
-         // this triggers front nudge instead of mechanical (so using the accelerometer to simulate keyboard nudge which would be a surprising use case)
-         g_pplayer->m_pininput.FireActionEvent(eCenterTiltKey, m_plumbTiltHigh);
-         //g_pplayer->m_pininput.FireActionEvent(eMechanicalTilt, m_plumbTiltHigh);
-      }
-
-      #else
-      // Alternative implementation (work in progress for VPX 10.8.1):
+      // Up to VPX 10.8, mechanical tilt was handled in cvpmNudge defined either in core.vbs or in a NudgePlugIn_xxx defined by the user (so in VBS, with a low and unstable integration period, using very crude model)
+      // This new implementation replaces it by a physics based model, with the following differences:
       // - use full VPX 10 nudge (include table velocity) instead of partial one (would say that this is a bug of previous implementation)
       // - simulate a simplified pendulum with 3 (simplified) forces: gravity, nudge and pole, and some velocity dampening
-      // - but send mechanical tilt (like the plumb on real machine, triggering rom) instead of fake keyboard nudge (not sure why existing implementation does that: isn't the point of a plumb to tilt ?)
-      // This is not backward compatible but seems cleaner so integrated as is. If users identify problems with it, we can switch to a setting, using the previous implementation kept above
+      // - send mechanical tilt like the plumb on real machine, triggering rom tile (instead of a fake keyboard central nudge like in previous implementation. not sure why previous implementation did that: isn't the point of a plumb to actually tilt ?)
+      // Consequently NudgePlugIn_xxx scripts were also removed, support VBS script were also adapted to handle nudging and tilting separately.
       // 
       // Simple Newton model:
       // . solid pole enforced by nullifying acceleration and velocity along pole axis, while keeping pole length constant
@@ -435,9 +375,9 @@ void PhysicsEngine::UpdateNudge(float dtime)
       // Check if we hit the edge, using the pole angle (tilt threshold is 0..1000/1000 corresponding to 0..PI/4)
       const float psi = atan2f(sqrtf(m_plumbPos.x * m_plumbPos.x + m_plumbPos.y * m_plumbPos.y), -m_plumbPos.z);
       const float tiltAngle = (float)(M_PI * 0.25) * m_plumbTiltThreshold;
-      const float TiltPerc = 100.0f * psi / tiltAngle;
+      const float tiltPerc = 100.0f * psi / tiltAngle;
       bool tilted = false;
-      if (TiltPerc > 100.0f)
+      if (tiltPerc > 100.0f)
       {
          tilted = true;
          // Keep plumb inside tile limits
@@ -448,7 +388,7 @@ void PhysicsEngine::UpdateNudge(float dtime)
          const Vertex3Ds axis(sinf(theta), cosf(theta), 0.f);
          m_plumbPos.x = xy * axis.x;
          m_plumbPos.y = xy * axis.y;
-         // Bounce the plumb (reflect velocity against circle normal, dampen it)
+         // Bounce the plumb (reflect velocity against circle normal, dampen it by a magic factor)
          m_plumbVel = 0.8f * (m_plumbVel - 2.f * m_plumbVel.Dot(axis) * axis);
       }
 
@@ -456,14 +396,15 @@ void PhysicsEngine::UpdateNudge(float dtime)
       if (m_plumbTiltHigh != tilted)
       {
          m_plumbTiltHigh = tilted;
+         if (tilted)
+            m_plumbTiltIndex++; 
          g_pplayer->m_pininput.FireActionEvent(eMechanicalTilt, m_plumbTiltHigh);
       }
-      #endif
 
-      // Update player for diagnostic/table script visibility.  Only update if input value is larger than what's there.
+      // Update player for diagnostic/table script visibility. Only update if input value is larger than what's there.
       // When the table script reads the values, they will reset to 0.
-      if (TiltPerc > g_pplayer->m_ptable->m_tblNudgeReadTilt)
-         g_pplayer->m_ptable->m_tblNudgeReadTilt = TiltPerc;
+      if (tiltPerc > g_pplayer->m_ptable->m_tblNudgeReadTilt)
+         g_pplayer->m_ptable->m_tblNudgeReadTilt = tiltPerc;
       if (fabsf(nudge.x) > fabsf(g_pplayer->m_ptable->m_tblNudgeRead.x))
          g_pplayer->m_ptable->m_tblNudgeRead.x = nudge.x;
       if (fabsf(nudge.y) > fabsf(g_pplayer->m_ptable->m_tblNudgeRead.y))
