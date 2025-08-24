@@ -123,7 +123,7 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyKPEnter      .Switch(swKPEnter)     = vpmCoinDoor
 			Case keyCancel       .Switch(swKPClear)     = vpmCoinDoor
 			Case keyKPGame       .Switch(swKPGame)      = vpmCoinDoor
-			Case keyBangBack     vpmNudge.DoNudge   0, 6
+			Case keyBangBack     vpmNudge.DoMechTilt
 			Case LeftTiltKey     vpmNudge.DoNudge  75, 2
 			Case RightTiltKey    vpmNudge.DoNudge 285, 2
 			Case CenterTiltKey   vpmNudge.DoNudge   0, 2

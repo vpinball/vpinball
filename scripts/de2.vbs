@@ -84,8 +84,8 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyGreen        .Switch(swGreen)        = True
 			Case keyBlack        .Switch(swBlack)        = True
 			Case keySlamDoorHit  .Switch(swSlamTilt)     = True
-			Case keyBangBack     vpmNudge.DoNudge 0, 6
-			Case LeftTiltKey     vpmNudge.DoNudge 75, 2
+			Case keyBangBack     vpmNudge.DoMechTilt
+			Case LeftTiltKey     vpmNudge.DoNudge  75, 2
 			Case RightTiltKey    vpmNudge.DoNudge 285, 2
 			Case CenterTiltKey   vpmNudge.DoNudge   0, 2
 			Case keyVPMVolume    vpmVol

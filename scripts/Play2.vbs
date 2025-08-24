@@ -69,7 +69,7 @@ Function vpmKeyDown(ByVal keycode)
 			'Case keyDown         .Switch(swReplay1)     = True
 			'Case keyUp           .Switch(swReplay2)     = True
 			'Case keyEnter        .Switch(swReplay3)     = True
-			Case keyBangBack     vpmNudge.DoNudge   0, 6
+			Case keyBangBack     vpmNudge.DoMechTilt
 			Case LeftTiltKey     vpmNudge.DoNudge  75, 2
 			Case RightTiltKey    vpmNudge.DoNudge 285, 2
 			Case CenterTiltKey   vpmNudge.DoNudge   0, 2

@@ -447,6 +447,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
    #endif
    m_dpi = min(m_dpi, 10.f); // To avoid texture size overflows
    m_perfUI.SetDPI(m_dpi);
+   m_plumbOverlay.SetDPI(m_dpi);
 
    SetupImGuiStyle(1.0f);
 
@@ -707,6 +708,9 @@ void LiveUI::Update()
    { // No UI displayed: process ball control & throw balls
       m_ballControl.Update(width, height);
    }
+
+   // Display plumb state overlay
+   m_plumbOverlay.Update();
 
    // Display notification overlays except when script has an unaligned rotation
    m_notificationOverlay.Update(true, m_overlayFont);
