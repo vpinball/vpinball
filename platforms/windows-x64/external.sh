@@ -21,6 +21,7 @@ echo "  BGFX_PATCH_SHA: ${BGFX_PATCH_SHA}"
 echo "  PINMAME_SHA: ${PINMAME_SHA}"
 echo "  OPENXR_SHA: ${OPENXR_SHA}"
 echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
+echo "  LIBALTSOUND_SHA: ${LIBALTSOUND_SHA}"
 echo "  LIBDOF_SHA: ${LIBDOF_SHA}"
 echo "  FFMPEG_SHA: ${FFMPEG_SHA}"
 echo "  LIBZIP_SHA: ${LIBZIP_SHA}"
@@ -280,6 +281,39 @@ if [ "${LIBDMDUTIL_EXPECTED_SHA}" != "${LIBDMDUTIL_FOUND_SHA}" ]; then
 fi
 
 #
+# build libaltsound
+#
+
+LIBALTSOUND_EXPECTED_SHA="${LIBALTSOUND_SHA}"
+LIBALTSOUND_FOUND_SHA="$([ -f libaltsound/cache.txt ] && cat libaltsound/cache.txt || echo "")"
+
+if [ "${LIBALTSOUND_EXPECTED_SHA}" != "${LIBALTSOUND_FOUND_SHA}" ]; then
+   echo "Building libaltsound. Expected: ${LIBALTSOUND_EXPECTED_SHA}, Found: ${LIBALTSOUND_FOUND_SHA}"
+
+   rm -rf libaltsound
+   mkdir libaltsound
+   cd libaltsound
+
+   curl -sL https://github.com/vpinball/libaltsound/archive/${LIBALTSOUND_SHA}.tar.gz -o libaltsound-${LIBALTSOUND_SHA}.tar.gz
+   tar xzf libaltsound-${LIBALTSOUND_SHA}.tar.gz
+   mv libaltsound-${LIBALTSOUND_SHA} libaltsound
+   cd libaltsound
+   cmake \
+      -G "Visual Studio 17 2022" \
+      -DPLATFORM=win \
+      -DARCH=x64 \
+      -DBUILD_SHARED=ON \
+      -DBUILD_STATIC=OFF \
+      -B build
+   cmake --build build --config ${BUILD_TYPE}
+   cd ..
+
+   echo "$LIBALTSOUND_EXPECTED_SHA" > cache.txt
+
+   cd ..
+fi
+
+#
 # build libdof
 #
 
@@ -446,6 +480,10 @@ cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/sockpp64.lib ../../../th
 cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/sockpp64.dll ../../../third-party/runtime-libs/windows-x64
 cp libdmdutil/libdmdutil/third-party/build-libs/win/x64/cargs64.lib ../../../third-party/build-libs/windows-x64
 cp libdmdutil/libdmdutil/third-party/runtime-libs/win/x64/cargs64.dll ../../../third-party/runtime-libs/windows-x64
+
+cp libaltsound/libaltsound/build/${BUILD_TYPE}/altsound64.lib ../../../third-party/build-libs/windows-x64
+cp libaltsound/libaltsound/build/${BUILD_TYPE}/altsound64.dll ../../../third-party/runtime-libs/windows-x64
+cp libaltsound/libaltsound/src/altsound.h ../../../third-party/include
 
 cp libdof/libdof/build/${BUILD_TYPE}/dof64.lib ../../../third-party/build-libs/windows-x64
 cp libdof/libdof/build/${BUILD_TYPE}/dof64.dll ../../../third-party/runtime-libs/windows-x64

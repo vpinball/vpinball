@@ -244,7 +244,6 @@ if [ "${LIBALTSOUND_EXPECTED_SHA}" != "${LIBALTSOUND_FOUND_SHA}" ]; then
    tar xzf libaltsound-${LIBALTSOUND_SHA}.tar.gz
    mv libaltsound-${LIBALTSOUND_SHA} libaltsound
    cd libaltsound
-   ./platforms/linux/aarch64/external.sh
    cmake \
       -DPLATFORM=linux \
       -DARCH=aarch64 \
@@ -399,8 +398,7 @@ cp -a libdmdutil/libdmdutil/third-party/runtime-libs/linux/aarch64/libsockpp.{so
 cp libdmdutil/libdmdutil/third-party/runtime-libs/linux/aarch64/libcargs.so ../../../third-party/runtime-libs/linux-aarch64
 
 cp -a libaltsound/libaltsound/build/libaltsound.{so,so.*} ../../../third-party/runtime-libs/linux-aarch64
-cp -r libaltsound/libaltsound/src/altsound.h ../../../third-party/include/
-cp libaltsound/libaltsound/third-party/runtime-libs/linux/aarch64/libbass.so ../../../third-party/runtime-libs/linux-aarch64
+cp libaltsound/libaltsound/src/altsound.h ../../../third-party/include
 
 cp -a libdof/libdof/build/libdof.{so,so.*} ../../../third-party/runtime-libs/linux-aarch64
 cp -r libdof/libdof/include/DOF ../../../third-party/include/

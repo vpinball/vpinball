@@ -17,6 +17,7 @@ import org.vpinball.app.jni.VPinballMaxTexDimension
 import org.vpinball.app.jni.VPinballReflectionMode
 import org.vpinball.app.jni.VPinballSettingsSection.PLAYER
 import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_ALPHA_DMD
+import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_ALT_SOUND
 import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_B2S
 import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_B2S_LEGACY
 import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_DMD_UTIL
@@ -158,6 +159,9 @@ class SettingsViewModel : ViewModel() {
     var pluginAlphaDMD by mutableStateOf(false)
         private set
 
+    var pluginAltSound by mutableStateOf(false)
+        private set
+
     var pluginB2S by mutableStateOf(false)
         private set
 
@@ -276,6 +280,7 @@ class SettingsViewModel : ViewModel() {
         // Plugins
 
         pluginAlphaDMD = VPinballManager.loadValue(PLUGIN_ALPHA_DMD, "Enable", false)
+        pluginAltSound = VPinballManager.loadValue(PLUGIN_ALT_SOUND, "Enable", false)
         pluginB2S = VPinballManager.loadValue(PLUGIN_B2S, "Enable", false)
         pluginB2SLegacy = VPinballManager.loadValue(PLUGIN_B2S_LEGACY, "Enable", false)
         pluginDMDUtil = VPinballManager.loadValue(PLUGIN_DMD_UTIL, "Enable", false)
@@ -484,6 +489,11 @@ class SettingsViewModel : ViewModel() {
     fun handlePluginAlphaDMD(value: Boolean) {
         pluginAlphaDMD = value
         VPinballManager.saveValue(PLUGIN_ALPHA_DMD, "Enable", pluginAlphaDMD)
+    }
+
+    fun handlePluginAltSound(value: Boolean) {
+        pluginAltSound = value
+        VPinballManager.saveValue(PLUGIN_ALT_SOUND, "Enable", pluginAltSound)
     }
 
     fun handlePluginB2S(value: Boolean) {
