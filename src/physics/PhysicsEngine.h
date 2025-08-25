@@ -43,7 +43,7 @@ public:
    const Vertex3Ds &GetPlumbVel() const { return m_plumbVel; }
    float GetPlumbPoleLength() const { return m_plumbPoleLength; }
    float GetPlumbTiltThreshold() const { return m_plumbTiltThreshold; }
-   int GetPlumlbTiltIndex() const { return m_plumbTiltIndex; }
+   int GetPlumbTiltIndex() const { return m_plumbTiltIndex; }
    void ReadNudgeSettings(const Settings &settings);
 
    void RayCast(const Vertex3Ds &source, const Vertex3Ds &target, const bool uiCast, vector<HitTestResult> &vhoHit);
@@ -104,7 +104,7 @@ private:
    bool m_enableNudgeFilter = false; // Located in physic engine instead of input since it is applied at physics cycle rate, on hardware input but also on keyboard nudge
    NudgeFilter m_nudgeFilterX;
    NudgeFilter m_nudgeFilterY;
-   
+
    // Table modeled as a spring
    Vertex3Ds m_tableVel;
    Vertex3Ds m_tableDisplacement;
