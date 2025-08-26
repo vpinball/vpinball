@@ -258,7 +258,6 @@ if [ "${LIBALTSOUND_EXPECTED_SHA}" != "${LIBALTSOUND_FOUND_SHA}" ]; then
    tar xzf libaltsound-${LIBALTSOUND_SHA}.tar.gz
    mv libaltsound-${LIBALTSOUND_SHA} libaltsound
    cd libaltsound
-   ./platforms/ios/arm64/external.sh
    cmake \
       -DPLATFORM=ios \
       -DARCH=arm64 \
@@ -428,8 +427,7 @@ cp libdmdutil/libdmdutil/third-party/include/pupdmd.h ../../../third-party/inclu
 cp libdmdutil/libdmdutil/third-party/build-libs/ios/arm64/libsockpp.a ../../../third-party/build-libs/ios-arm64
 
 cp libaltsound/libaltsound/build/libaltsound.a ../../../third-party/build-libs/ios-arm64
-cp -r libaltsound/libaltsound/src/altsound.h ../../../third-party/include/
-cp libaltsound/libaltsound/third-party/runtime-libs/ios/arm64/libbass.dylib ../../../third-party/runtime-libs/ios-arm64
+cp libaltsound/libaltsound/src/altsound.h ../../../third-party/include
 
 cp libdof/libdof/build/libdof.a ../../../third-party/build-libs/ios-arm64
 cp -r libdof/libdof/include/DOF ../../../third-party/include/
