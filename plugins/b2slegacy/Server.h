@@ -13,11 +13,10 @@ class PinMAMEAPI;
 class Server
 {
 public:
-   PSC_IMPLEMENT_REFCOUNT()
-
-public:
    Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi);
    ~Server();
+
+   PSC_IMPLEMENT_REFCOUNT()
 
    void Dispose();
    static const string& GetB2SServerVersion();
