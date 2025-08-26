@@ -251,7 +251,6 @@ if [ "${LIBALTSOUND_EXPECTED_SHA}" != "${LIBALTSOUND_FOUND_SHA}" ]; then
    tar xzf libaltsound-${LIBALTSOUND_SHA}.tar.gz
    mv libaltsound-${LIBALTSOUND_SHA} libaltsound
    cd libaltsound
-   ./platforms/macos/arm64/external.sh
    cmake \
       -DPLATFORM=macos \
       -DARCH=arm64 \
@@ -415,8 +414,7 @@ cp -a libdmdutil/libdmdutil/third-party/runtime-libs/macos/arm64/libsockpp.{dyli
 cp libdmdutil/libdmdutil/third-party/runtime-libs/macos/arm64/libcargs.dylib ../../../third-party/runtime-libs/macos-arm64
 
 cp -a libaltsound/libaltsound/build/libaltsound.{dylib,*.dylib} ../../../third-party/runtime-libs/macos-arm64
-cp -r libaltsound/libaltsound/src/altsound.h ../../../third-party/include/
-cp libaltsound/libaltsound/third-party/runtime-libs/macos/arm64/libbass.dylib ../../../third-party/runtime-libs/macos-arm64
+cp libaltsound/libaltsound/src/altsound.h ../../../third-party/include
 
 cp -a libdof/libdof/build/libdof.{dylib,*.dylib} ../../../third-party/runtime-libs/macos-arm64
 cp -r libdof/libdof/include/DOF ../../../third-party/include/
