@@ -234,14 +234,34 @@ set(VPX_SOURCES
    src/ui/live/LiveUI.h
    src/ui/live/EditorUI.cpp
    src/ui/live/EditorUI.h
-   src/ui/live/InGameUI.cpp
-   src/ui/live/InGameUI.h
    src/ui/live/NotificationOverlay.cpp
    src/ui/live/NotificationOverlay.h
    src/ui/live/PerfUI.cpp
    src/ui/live/PerfUI.h
    src/ui/live/PlumbOverlay.cpp
    src/ui/live/PlumbOverlay.h
+   src/ui/live/ingameui/InGameUI.cpp
+   src/ui/live/ingameui/InGameUI.h
+   src/ui/live/ingameui/AudioSettingsPage.h
+   src/ui/live/ingameui/AudioSettingsPage.cpp
+   src/ui/live/ingameui/HomePage.h
+   src/ui/live/ingameui/HomePage.cpp
+   src/ui/live/ingameui/InGameUIItem.h
+   src/ui/live/ingameui/InGameUIItem.cpp
+   src/ui/live/ingameui/InGameUIPage.h
+   src/ui/live/ingameui/InGameUIPage.cpp
+   src/ui/live/ingameui/MiscSettingsPage.h
+   src/ui/live/ingameui/MiscSettingsPage.cpp
+   src/ui/live/ingameui/NudgeSettingsPage.h
+   src/ui/live/ingameui/NudgeSettingsPage.cpp
+   src/ui/live/ingameui/PointOfViewSettingsPage.h
+   src/ui/live/ingameui/PointOfViewSettingsPage.cpp
+   src/ui/live/ingameui/TableOptionsPage.h
+   src/ui/live/ingameui/TableOptionsPage.cpp
+   src/ui/live/ingameui/TableRulesPage.h
+   src/ui/live/ingameui/TableRulesPage.cpp
+   src/ui/live/ingameui/VRSettingsPage.h
+   src/ui/live/ingameui/VRSettingsPage.cpp
 
    src/ui/win/PinTableMDI.cpp
    src/ui/win/PinTableMDI.h

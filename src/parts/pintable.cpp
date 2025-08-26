@@ -774,6 +774,17 @@ PinTable* PinTable::CopyForPlay()
    dst->m_title = src->m_title;
    dst->m_filename = src->m_filename;
    dst->m_tableName = src->m_tableName;
+   dst->m_author = src->m_author;
+   dst->m_version = src->m_version;
+   dst->m_releaseDate = src->m_releaseDate;
+   dst->m_authorEMail = src->m_authorEMail;
+   dst->m_webSite = src->m_webSite;
+   dst->m_blurb = src->m_blurb;
+   dst->m_description = src->m_description;
+   dst->m_rules = src->m_rules;
+   dst->m_screenShot = src->m_screenShot;
+   dst->m_dateSaved = src->m_dateSaved;
+
    dst->m_left = src->m_left;
    dst->m_top = src->m_top;
    dst->m_right = src->m_right;
@@ -6757,7 +6768,7 @@ STDMETHODIMP PinTable::get_GlobalDayNight(VARIANT_BOOL *pVal)
 {
    // FIXME deprecated
    //*pVal = FTOVB(m_overwriteGlobalDayNight);
-   *pVal = FTOVB(m_settings.HasValue(Settings::Player, "OverrideTableEmissionScale"s));
+   *pVal = FTOVB(m_settings.LoadValueBool(Settings::Player, "OverrideTableEmissionScale"s));
    return S_OK;
 }
 
@@ -8078,10 +8089,7 @@ STDMETHODIMP PinTable::get_Option(BSTR optionName, float minValue, float maxValu
    }
    string name = MakeString(optionName);
    // FIXME we use the name literal as the option id which is not a good idea (risk of invalid INI, ...)
-   m_settings.RegisterSetting(Settings::TableOption, name, 2 /* show in tweak menu only */, name, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals);
-
-   float value = m_settings.LoadValueWithDefault(Settings::TableOption, name, defaultValue);
-   *param = clamp(minValue + step * roundf((value - minValue) / step), minValue, maxValue);
+   *param = m_settings.RegisterSetting(Settings::TableOption, name, 2 /* show in tweak menu only */, name, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals).value;
 
    return S_OK;
 }

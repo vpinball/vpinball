@@ -12,19 +12,26 @@ ViewSetup::ViewSetup()
 // - player position is defined in the app settings relatively from the bottom center of the screen (to avoid depending on a specific table)
 void ViewSetup::SetWindowModeFromSettings(const PinTable* const table)
 {
+   assert(mMode == VLM_WINDOW);
+   vec3 playerPos(table->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerX"s),
+                  table->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerY"s),
+                  table->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerZ"s));
+   float screenInclination = table->m_settings.LoadValueFloat(Settings::Player, "ScreenInclination"s);
+   SetViewPosFromPlayerPosition(table, playerPos, screenInclination);
+}
+
+void ViewSetup::SetViewPosFromPlayerPosition(const PinTable* const table, const vec3& playerPos, const float screenInclination)
+{
+   assert(mMode == VLM_WINDOW);
    float realToVirtual = GetRealToVirtualScale(table);
-   vec3 playerPos(CMTOVPU(table->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerX"s)),
-                  CMTOVPU(table->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerY"s)),
-                  CMTOVPU(table->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerZ"s)));
-   float inclination = table->m_settings.LoadValueFloat(Settings::Player, "ScreenInclination"s);
    float screenBotZ = GetWindowBottomZOFfset(table);
    float screenTopZ = GetWindowTopZOFfset(table);
-   const Matrix3D rotx = // Rotate by the angle between playfield and real world horizontal (scale on Y and Z axis are equal and can be ignored)
-      Matrix3D::MatrixRotateX(atan2f(screenTopZ - screenBotZ, table->m_bottom) - ANGTORAD(inclination));
-   playerPos = rotx.MultiplyVectorNoPerspective(playerPos);
-   mViewX = playerPos.x;
-   mViewY = playerPos.y;
-   mViewZ = playerPos.z + screenBotZ * mSceneScaleY / realToVirtual;
+   // Rotate by the angle between playfield and real world horizontal (scale on Y and Z axis are equal and can be ignored)
+   const Matrix3D rotx = Matrix3D::MatrixRotateX(atan2f(screenTopZ - screenBotZ, table->m_bottom) - ANGTORAD(screenInclination));
+   const vec3 pos = rotx.MultiplyVectorNoPerspective(CMTOVPU(playerPos));
+   mViewX = pos.x;
+   mViewY = pos.y;
+   mViewZ = pos.z + screenBotZ * mSceneScaleY / realToVirtual;
 }
 
 void ViewSetup::ApplyTableOverrideSettings(const Settings& settings, const ViewSetupID id)

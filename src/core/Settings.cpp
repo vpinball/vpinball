@@ -247,6 +247,8 @@ void Settings::Validate(const bool addDefaults)
    // Rendering section
 
    SettingFloat(Section::Player, "EmissionScale"s, 0.5f, 0.f, 1.f, ""s);
+   SettingBool(Section::Player, "OverrideTableEmissionScale"s, false, ""s);
+   SettingBool(Section::Player, "DynamicDayNight"s, false, ""s);
    SettingBool(Section::Player, "ForceAnisotropicFiltering"s, true, "Force anisotropic filtering for better rendering quality at the cost of a bit of performance"s);
    SettingBool(Section::Player, "ForceBloomOff"s, false, "Disable bloom for better performance"s);
 
@@ -420,6 +422,10 @@ void Settings::Validate(const bool addDefaults)
    // Sound section
 
    SettingInt(Settings::Player, "Sound3D"s, VPX::SoundConfigTypes::SNDCFG_SND3D2CH, VPX::SoundConfigTypes::SNDCFG_SND3D2CH, VPX::SoundConfigTypes::SNDCFG_SND3DSSF, ""s);
+   SettingBool(Settings::Player, "PlayMusic"s, true, ""s);
+   SettingBool(Settings::Player, "PlaySound"s, true, ""s);
+   SettingInt(Section::Player, "SoundVolume"s, 100, 0, 100, ""s);
+   SettingInt(Section::Player, "MusicVolume"s, 100, 0, 100, ""s);
 
 
    //////////////////////////////////////////////////////////////////////////
@@ -809,34 +815,51 @@ bool Settings::DeleteSubKey(const Section section, const bool deleteFromParent)
    return success;
 }
 
-void Settings::RegisterSetting(const Section section, const string& id, const unsigned int showMask, const string &name, float minValue, float maxValue, float step, float defaultValue, OptionUnit unit, const vector<string> &literals)
+Settings::OptionDef &Settings::RegisterSetting(const Section section, const string &id, const unsigned int showMask, const string &name, float minValue, float maxValue, float step,
+   float defaultValue,
+   OptionUnit unit, const vector<string> &literals)
 {
    assert(section == TableOption || section >= Plugin00); // For the time being, this system is only used for custom table and plugin options (could be extend for all options to get the benefit of validation, fast access, and remove unneeded copied states...)
-   OptionDef opt;
-   opt.section = section;
-   opt.id = id;
-   opt.showMask = showMask;
-   opt.name = name;
-   opt.minValue = minValue;
-   opt.maxValue = maxValue;
-   opt.step = step;
-   opt.defaultValue = defaultValue;
-   opt.literals = literals;
-   opt.tokenizedLiterals.clear();
-   for (size_t i = 0; i < literals.size(); ++i) {
-      if (i > 0)
-          opt.tokenizedLiterals += "||";
-      opt.tokenizedLiterals += literals[i];
-   }
-   opt.unit = unit;
+   
    vector<OptionDef> &options = section == TableOption ? m_tableOptions : m_pluginOptions;
-   for (auto& option : options)
+   OptionDef *opt = nullptr;
+   bool isNew = false;
+   for (auto &option : options)
    {
       if (option.section == section && option.id == id)
       {
-         option = opt;
-         return;
+         opt = &option;
+         break;
       }
    }
-   options.push_back(opt);
+   if (opt == nullptr)
+   {
+      isNew = true;
+      options.push_back(OptionDef());
+      opt = &options.back();
+   }
+
+   opt->section = section;
+   opt->id = id;
+   opt->showMask = showMask;
+   opt->name = name;
+   opt->minValue = minValue;
+   opt->maxValue = maxValue;
+   opt->step = step;
+   opt->defaultValue = defaultValue;
+   opt->literals = literals;
+   opt->tokenizedLiterals.clear();
+   for (size_t i = 0; i < literals.size(); ++i) {
+      if (i > 0)
+         opt->tokenizedLiterals += "||";
+      opt->tokenizedLiterals += literals[i];
+   }
+   opt->unit = unit;
+
+   if (isNew)
+      opt->value = LoadValueWithDefault(section, name, defaultValue);
+
+   opt->value = clamp(minValue + step * roundf((opt->value - minValue) / step), minValue, maxValue);
+
+   return *opt;
 }

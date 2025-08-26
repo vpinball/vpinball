@@ -37,7 +37,6 @@
 
 // Titles (used as Ids) of modal dialogs
 #define ID_VIDEO_SETTINGS "Video Options"
-#define ID_AUDIO_SETTINGS "Audio Options"
 #define ID_RENDERER_INSPECTION "Renderer Inspection"
 #define ID_ANAGLYPH_CALIBRATION "Anaglyph Calibration"
 #define ID_PLUMB_SETTINGS "Nudge & Plumb Settings"
@@ -291,7 +290,6 @@ void EditorUI::Update()
    if (showFullUI)
    {
       // Main menubar
-      bool openAudioSettings = false;
       bool openVideoSettings = false;
       bool openPlumbSettings = false;
       if (ImGui::BeginMainMenuBar())
@@ -306,10 +304,9 @@ void EditorUI::Update()
                m_player->SetPlayState(!m_player->IsPlaying());
             ImGui::EndMenu();
          }
+         // TODO move to in game ui
          if (ImGui::BeginMenu("Preferences"))
          {
-            if (ImGui::MenuItem("Audio Options"))
-               openAudioSettings = true;
             if (ImGui::MenuItem("Video Options"))
                openVideoSettings = true;
             if (ImGui::MenuItem("Nudge Options"))
@@ -332,8 +329,6 @@ void EditorUI::Update()
          m_menubar_height = ImGui::GetWindowSize().y;
          ImGui::EndMainMenuBar();
       }
-      if (openAudioSettings)
-         ImGui::OpenPopup(ID_AUDIO_SETTINGS, ImGuiPopupFlags_NoReopen);
       if (openVideoSettings)
          ImGui::OpenPopup(ID_VIDEO_SETTINGS, ImGuiPopupFlags_NoReopen);
       if (openPlumbSettings)
@@ -420,7 +415,6 @@ void EditorUI::Update()
    // Popups & Modal dialogs
    UpdateVideoOptionsModal();
    UpdateAnaglyphCalibrationModal();
-   UpdateAudioOptionsModal();
    UpdatePlumbWindow();
 
    if (m_showRendererInspection)
@@ -1269,45 +1263,6 @@ void EditorUI::UpdatePropertyUI()
    m_properties_width = ImGui::GetWindowWidth();
    ImGui::End();
    ImGui::PopStyleVar(3);
-}
-
-void EditorUI::UpdateAudioOptionsModal()
-{
-   bool open = true;
-   if (ImGui::BeginPopupModal(ID_AUDIO_SETTINGS, &open, ImGuiWindowFlags_AlwaysAutoResize))
-   {
-      bool fsound = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PlayMusic"s, true);
-      if (ImGui::Checkbox("Enable Backglass Sounds", &fsound))
-      {
-         g_pvp->m_settings.SaveValue(Settings::Player, "PlayMusic"s, fsound);
-         m_player->m_PlayMusic = fsound;
-      }
-
-      int volume = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "MusicVolume"s, 100);
-      if (ImGui::SliderInt("Backglass Volume", &volume, 0, 100))
-      {
-         g_pvp->m_settings.SaveValue(Settings::Player, "MusicVolume"s, volume);
-         m_player->m_MusicVolume = volume;
-         m_player->UpdateVolume();
-      }
-
-      fsound = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PlaySound"s, true);
-      if (ImGui::Checkbox("Enable Playfield Sounds", &fsound))
-      {
-         g_pvp->m_settings.SaveValue(Settings::Player, "PlaySound"s, fsound);
-         m_player->m_PlaySound = fsound;
-      }
-
-      volume = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "SoundVolume"s, 100);
-      if (ImGui::SliderInt("Playfield Volume", &volume, 0, 100))
-      {
-         g_pvp->m_settings.SaveValue(Settings::Player, "SoundVolume"s, volume);
-         m_player->m_SoundVolume = volume;
-         m_player->UpdateVolume();
-      }
-
-      ImGui::EndPopup();
-   }
 }
 
 void EditorUI::UpdateVideoOptionsModal()

@@ -49,6 +49,12 @@
     <Filter Include="ui\live">
       <UniqueIdentifier>{478A82E5-45F8-4946-85A0-FF5B67B89AF6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ui\live\ingame">
+      <UniqueIdentifier>{6DF89AE6-299E-4F7E-A729-9188AD1D98F1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ui\live\editor">
+      <UniqueIdentifier>{020AAA85-3A03-450C-9B86-5F11D3A9BB1A}</UniqueIdentifier>
+    </Filter>
     <Filter Include="ui\win">
       <UniqueIdentifier>{28f6598a-1408-3fc7-a6ce-93c682c026da}</UniqueIdentifier>
     </Filter>
@@ -367,12 +373,9 @@
       <Filter>ui\live</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/EditorUI.cpp">
-      <Filter>ui\live</Filter>
+      <Filter>ui\live\editor</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/EscSplashModal.cpp">
-      <Filter>ui\live</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/ui/live/InGameUI.cpp">
       <Filter>ui\live</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/LiveUI.cpp">
@@ -386,6 +389,39 @@
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/PlumbOverlay.cpp">
       <Filter>ui\live</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUI.cpp">
+      <Filter>ui\live\ingame</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/AudioSettingsPage.cpp">
+      <Filter>ui\live\ingame</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/HomePage.cpp">
+      <Filter>ui\live\ingame</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIItem.cpp">
+      <Filter>ui\live\ingame</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIPage.cpp">
+      <Filter>ui\live\ingame</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/MiscSettingsPage.cpp">
+      <Filter>ui\live\ingame</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/NudgeSettingsPage.cpp">
+      <Filter>ui\live\ingame</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/PointOfViewSettingsPage.cpp">
+      <Filter>ui\live\ingame</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/TableOptionsPage.cpp">
+      <Filter>ui\live\ingame</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/TableRulesPage.cpp">
+      <Filter>ui\live\ingame</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/VRSettingsPage.cpp">
+      <Filter>ui\live\ingame</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/PinTableMDI.cpp">
       <Filter>ui\win</Filter>
@@ -1116,12 +1152,9 @@
       <Filter>ui\live</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/EditorUI.h">
-      <Filter>ui\live</Filter>
+      <Filter>ui\live\editor</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/EscSplashModal.h">
-      <Filter>ui\live</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/ui/live/InGameUI.h">
       <Filter>ui\live</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/NotificationOverlay.h">
@@ -1135,6 +1168,39 @@
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/PlumbOverlay.h">
       <Filter>ui\live</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUI.h">
+      <Filter>ui\live\ingame</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/AudioSettingsPage.h">
+      <Filter>ui\live\ingame</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/HomePage.h">
+      <Filter>ui\live\ingame</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIItem.h">
+      <Filter>ui\live\ingame</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIPage.h">
+      <Filter>ui\live\ingame</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/MiscSettingsPage.h">
+      <Filter>ui\live\ingame</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/NudgeSettingsPage.h">
+      <Filter>ui\live\ingame</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/PointOfViewSettingsPage.h">
+      <Filter>ui\live\ingame</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/TableOptionsPage.h">
+      <Filter>ui\live\ingame</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/TableRulesPage.h">
+      <Filter>ui\live\ingame</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/VRSettingsPage.h">
+      <Filter>ui\live\ingame</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/PinTableMDI.h">
       <Filter>ui\win</Filter>

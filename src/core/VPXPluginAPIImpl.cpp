@@ -64,9 +64,7 @@ float VPXPluginAPIImpl::GetOption(const char* pageId, const char* optionId, cons
          for (int i = 0; i < nSteps; i++)
             literals.push_back(values[i]);
       }
-      settings.RegisterSetting(section, optionId, showMask, optionName, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals);
-      const float value = settings.LoadValueWithDefault(section, optionId, defaultValue);
-      return clamp(minValue + step * roundf((value - minValue) / step), minValue, maxValue);
+      return settings.RegisterSetting(section, optionId, showMask, optionName, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals).value;
    }
 }
 

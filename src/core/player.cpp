@@ -438,10 +438,10 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    for(unsigned int i = 0; i < eCKeys; ++i)
       m_rgKeys[i] = m_ptable->m_settings.LoadValueInt(Settings::Player, regkey_string[i]);
 
-   m_PlayMusic = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PlayMusic"s, true);
-   m_PlaySound = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PlaySound"s, true);
-   m_MusicVolume = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MusicVolume"s, 100);
-   m_SoundVolume = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "SoundVolume"s, 100);
+   m_PlayMusic = m_ptable->m_settings.LoadValueBool(Settings::Player, "PlayMusic"s);
+   m_PlaySound = m_ptable->m_settings.LoadValueBool(Settings::Player, "PlaySound"s);
+   m_MusicVolume = m_ptable->m_settings.LoadValueUInt(Settings::Player, "MusicVolume"s);
+   m_SoundVolume = m_ptable->m_settings.LoadValueUInt(Settings::Player, "SoundVolume"s);
    UpdateVolume();
 
    //

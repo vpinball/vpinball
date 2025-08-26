@@ -1141,9 +1141,9 @@ void RenderOptPage::LoadSettings(Settings& settings)
       m_ballDecal.EnableWindow(FALSE);
    }
 
-   m_overrideNightDay.SetCheck(settings.LoadValueWithDefault(Settings::TableOverride, "OverrideEmissionScale"s, false) ? BST_CHECKED : BST_UNCHECKED);
+   m_overrideNightDay.SetCheck(settings.LoadValueBool(Settings::TableOverride, "OverrideEmissionScale"s) ? BST_CHECKED : BST_UNCHECKED);
    m_nightDay.SetPos((int)(100.f * settings.LoadValueFloat(Settings::Player, "EmissionScale"s)),1);
-   m_autoNightDay.SetCheck(settings.LoadValueWithDefault(Settings::Player, "DynamicDayNight"s, false) ? BST_CHECKED : BST_UNCHECKED);
+   m_autoNightDay.SetCheck(settings.LoadValueBool(Settings::Player, "DynamicDayNight"s) ? BST_CHECKED : BST_UNCHECKED);
    m_geoposLat.SetWindowText(f2sz(settings.LoadValueWithDefault(Settings::Player, "Latitude"s, 52.52f)).c_str());
    m_geoposLon.SetWindowText(f2sz(settings.LoadValueWithDefault(Settings::Player, "Longitude"s, 13.37f)).c_str());
    OnCommand(IDC_OVERRIDE_DN, 0L); // Force UI update

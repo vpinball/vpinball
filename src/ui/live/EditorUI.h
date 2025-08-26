@@ -105,7 +105,6 @@ private:
    void UpdatePropertyUI();
 
    // Popups & Modals
-   void UpdateAudioOptionsModal();
    void UpdateVideoOptionsModal();
    void UpdateAnaglyphCalibrationModal();
    void UpdateRendererInspectionModal();

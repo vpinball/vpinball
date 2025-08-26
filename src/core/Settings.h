@@ -122,13 +122,14 @@ public:
       Section section;
       string id, name;
       int showMask;
-      float minValue, maxValue, step, defaultValue;
+      float minValue, maxValue, step, defaultValue, value;
       OptionUnit unit;
       vector<string> literals;
       string tokenizedLiterals;
    };
-   void RegisterSetting(const Section section, const string &id, const unsigned int showMask, const string &name, float minValue, float maxValue, float step, float defaultValue, OptionUnit unit, const vector<string> &literals);
-   const vector<OptionDef>& GetTableSettings() const { return m_tableOptions; }
+   OptionDef& RegisterSetting(const Section section, const string &id, const unsigned int showMask, const string &name, float minValue, float maxValue, float step, float defaultValue,
+      OptionUnit unit, const vector<string> &literals);
+   vector<OptionDef>& GetTableSettings() { return m_tableOptions; }
    static const vector<OptionDef>& GetPluginSettings() { return m_pluginOptions; }
 
 private:
