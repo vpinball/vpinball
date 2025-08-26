@@ -107,6 +107,8 @@ if(BUILD_SHARED)
          COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libzedmd.so.*" "${PLUGINS_DIR}/dmdutil/"
          COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libpupdmd.so" "${PLUGINS_DIR}/dmdutil/"
          COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libpupdmd.so.*" "${PLUGINS_DIR}/dmdutil/"
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libserum.so" "${PLUGINS_DIR}/dmdutil/"
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libserum.so.*" "${PLUGINS_DIR}/dmdutil/"
       )
    endif()
 endif()
