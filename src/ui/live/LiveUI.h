@@ -8,7 +8,7 @@
 #include "imgui_markdown/imgui_markdown.h"
 
 #include "PerfUI.h"
-#include "InGameUI.h"
+#include "ingameui/InGameUI.h"
 #include "EditorUI.h"
 #include "EscSplashModal.h"
 #include "NotificationOverlay.h"
@@ -44,7 +44,7 @@ public:
    BallControl m_ballControl;
 
    // In Game UI
-   InGameUI m_inGameUI;
+   VPX::InGameUI::InGameUI m_inGameUI;
 
    // Profiler display data
    PerfUI m_perfUI;

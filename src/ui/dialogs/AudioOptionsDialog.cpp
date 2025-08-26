@@ -152,11 +152,11 @@ void AudioOptionsDialog::LoadSettings()
       SaveSettings(m_editedSettings == &m_appSettings);
    m_editedSettings = &settings;
 
-   bool fsound = settings.LoadValueWithDefault(Settings::Player, "PlayMusic"s, true);
+   bool fsound = settings.LoadValueBool(Settings::Player, "PlayMusic"s);
    SendDlgItemMessage(IDC_PLAY_MUSIC, BM_SETCHECK, fsound ? BST_CHECKED : BST_UNCHECKED, 0);
    OnCommand(IDC_PLAY_MUSIC, 0L);
 
-   fsound = settings.LoadValueWithDefault(Settings::Player, "PlaySound"s, true);
+   fsound = settings.LoadValueBool(Settings::Player, "PlaySound"s);
    SendDlgItemMessage(IDC_PLAY_SOUND, BM_SETCHECK, fsound ? BST_CHECKED : BST_UNCHECKED, 0);
    OnCommand(IDC_PLAY_SOUND, 0L);
    
@@ -171,8 +171,8 @@ void AudioOptionsDialog::LoadSettings()
    default: SendDlgItemMessage(IDC_RADIO_SND3D2CH, BM_SETCHECK, BST_CHECKED, 0); break;
    }
 
-   SendDlgItemMessage(IDC_MUSIC_SLIDER, TBM_SETPOS, TRUE, settings.LoadValueWithDefault(Settings::Player, "MusicVolume"s, 100));
-   SendDlgItemMessage(IDC_SOUND_SLIDER, TBM_SETPOS, TRUE, settings.LoadValueWithDefault(Settings::Player, "SoundVolume"s, 100));
+   SendDlgItemMessage(IDC_MUSIC_SLIDER, TBM_SETPOS, TRUE, settings.LoadValueInt(Settings::Player, "MusicVolume"s));
+   SendDlgItemMessage(IDC_SOUND_SLIDER, TBM_SETPOS, TRUE, settings.LoadValueInt(Settings::Player, "SoundVolume"s));
 
    string soundDeviceName;
    if (settings.LoadValue(Settings::Player, "SoundDevice"s, soundDeviceName))

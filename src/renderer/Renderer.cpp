@@ -79,9 +79,9 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
 
    // Global emission scale
    m_globalEmissionScale = m_table->m_globalEmissionScale;
-   if (m_table->m_settings.LoadValueWithDefault(Settings::Player, "OverrideTableEmissionScale"s, false))
+   if (m_table->m_settings.LoadValueBool(Settings::Player, "OverrideTableEmissionScale"s))
    { // Overriden from settings
-      if (m_table->m_settings.LoadValueWithDefault(Settings::Player, "DynamicDayNight"s, false))
+      if (m_table->m_settings.LoadValueBool(Settings::Player, "DynamicDayNight"s))
       {
          time_t hour_machine;
          time(&hour_machine);

@@ -26,6 +26,7 @@ public:
    void ApplyTableOverrideSettings(const Settings& settings, const ViewSetupID id);
    void SaveToTableOverrideSettings(Settings& settings, const ViewSetupID id) const;
    void SetWindowModeFromSettings(const PinTable* const table);
+   void SetViewPosFromPlayerPosition(const PinTable* const table, const vec3& playerPos, const float screenInclination);
 
    float GetWindowTopZOFfset(const PinTable* const table) const;
    float GetWindowBottomZOFfset(const PinTable* const table) const;

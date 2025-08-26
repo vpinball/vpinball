@@ -667,8 +667,8 @@ void LiveUI::NewFrame()
    ImGui::NewFrame();
 
    // Only enable keyboard navigation for main splash popup as it interfer with UI keyboard shortcuts
-   if (m_escSplashModal.IsOpened())
-      io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+   if (m_escSplashModal.IsOpened() || m_inGameUI.IsOpened())
+      io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
    else
       io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard;
 }
@@ -824,13 +824,7 @@ void LiveUI::Update()
       {
          if (cmd->ElemCount != 0)
          {
-            /* TODO use RenderPass areaaOfInterest to implement scissor including stereo rendering (not really used) and for rotated view (not really used either)
-            if (g_stereoOfs[0] == 0.f && g_rotate == 0)
-            {
-               const uint16_t xx = (uint16_t)bx::max(cmd->ClipRect.x, 0.0f);
-               const uint16_t yy = (uint16_t)bx::max(cmd->ClipRect.y, 0.0f);
-               bgfx::setScissor(xx, yy, (uint16_t)bx::min(cmd->ClipRect.z, 65535.0f) - xx, (uint16_t)bx::min(cmd->ClipRect.w, 65535.0f) - yy);
-            } */
+            m_rd->m_uiShader->SetVector(SHADER_clip_plane, cmd->ClipRect.x, cmd->ClipRect.y, cmd->ClipRect.z, cmd->ClipRect.w);
             m_rd->m_uiShader->SetTexture(SHADER_tex_base_color, cmd->GetTexID());
             m_rd->DrawMesh(m_rd->m_uiShader, true, Vertex3Ds(), -10000.f, &*m_meshBuffers[n], RenderDevice::TRIANGLELIST, cmd->IdxOffset, cmd->ElemCount);
          }
@@ -895,7 +889,8 @@ void LiveUI::HideUI()
 { 
    SetupImGuiStyle(1.0f);
    m_renderer->InitLayout();
-   m_inGameUI.Close();
+   if (m_inGameUI.IsOpened())
+      m_inGameUI.Close();
    m_editorUI.Close();
    m_table->m_settings.Save();
    g_pvp->m_settings.Save();
