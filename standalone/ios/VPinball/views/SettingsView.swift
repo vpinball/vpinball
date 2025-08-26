@@ -74,16 +74,6 @@ struct SettingsView: View {
                                 .foregroundStyle(Color.secondary)
                         }
 
-                        Toggle(isOn: $settingsModel.altColor) {
-                            Text("AltColor")
-                        }
-                        .tint(Color.vpxRed)
-
-                        Toggle(isOn: $settingsModel.altSound) {
-                            Text("AltSound")
-                        }
-                        .tint(Color.vpxRed)
-
                         VStack(alignment: .leading) {
                             Toggle(isOn: $settingsModel.renderingModeOverride) {
                                 Text("Force VR Rendering Mode")
@@ -354,12 +344,6 @@ struct SettingsView: View {
         .onChange(of: settingsModel.haptics) {
             handleHaptics()
         }
-        .onChange(of: settingsModel.altColor) {
-            handleAltColor()
-        }
-        .onChange(of: settingsModel.altSound) {
-            handleAltSound()
-        }
         .onChange(of: settingsModel.renderingModeOverride) {
             handleRenderingModeOverride()
         }
@@ -379,14 +363,6 @@ struct SettingsView: View {
 
     func handleHaptics() {
         vpinballManager.saveValue(.standalone, "Haptics", settingsModel.haptics)
-    }
-
-    func handleAltColor() {
-        vpinballManager.saveValue(.standalone, "AltColor", settingsModel.altColor)
-    }
-
-    func handleAltSound() {
-        vpinballManager.saveValue(.standalone, "AltSound", settingsModel.altSound)
     }
 
     func handleRenderingModeOverride() {

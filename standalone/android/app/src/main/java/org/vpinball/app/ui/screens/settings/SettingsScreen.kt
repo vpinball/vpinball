@@ -130,14 +130,6 @@ fun SettingsScreen(
 
                         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
-                        SwitchRow(label = "AltColor", isChecked = viewModel.altColor, onCheckedChange = { viewModel.handleAltColor(value = it) })
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        SwitchRow(label = "AltSound", isChecked = viewModel.altSound, onCheckedChange = { viewModel.handleAltSound(value = it) })
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
                         SwitchRow(
                             label = "Force VR Rendering Mode",
                             isChecked = viewModel.renderingModeOverride,

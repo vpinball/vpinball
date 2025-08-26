@@ -39,12 +39,6 @@ class SettingsViewModel : ViewModel() {
     var haptics by mutableStateOf(false)
         private set
 
-    var altColor by mutableStateOf(false)
-        private set
-
-    var altSound by mutableStateOf(false)
-        private set
-
     var renderingModeOverride by mutableStateOf(false)
         private set
 
@@ -195,8 +189,6 @@ class SettingsViewModel : ViewModel() {
         // General
 
         haptics = VPinballManager.loadValue(STANDALONE, "Haptics", true)
-        altColor = VPinballManager.loadValue(STANDALONE, "AltColor", true)
-        altSound = VPinballManager.loadValue(STANDALONE, "AltSound", true)
         renderingModeOverride = (VPinballManager.loadValue(STANDALONE, "RenderingModeOverride", 2) == 2)
         liveUIOverride = VPinballManager.loadValue(STANDALONE, "LiveUIOverride", true)
         gfxBackend = VPinballGfxBackend.fromString(VPinballManager.loadValue(PLAYER, "GfxBackend", VPinballGfxBackend.OPENGLES.value))
@@ -294,16 +286,6 @@ class SettingsViewModel : ViewModel() {
     fun handleHaptics(value: Boolean) {
         haptics = value
         VPinballManager.saveValue(STANDALONE, "Haptics", haptics)
-    }
-
-    fun handleAltColor(value: Boolean) {
-        altColor = value
-        VPinballManager.saveValue(STANDALONE, "AltColor", altColor)
-    }
-
-    fun handleAltSound(value: Boolean) {
-        altSound = value
-        VPinballManager.saveValue(STANDALONE, "AltSound", altSound)
     }
 
     fun handleRenderingModeOverride(value: Boolean) {

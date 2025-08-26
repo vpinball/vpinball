@@ -4,8 +4,6 @@ class SettingsModel: ObservableObject {
     // General
 
     @Published var haptics: Bool = false
-    @Published var altColor: Bool = false
-    @Published var altSound: Bool = false
     @Published var renderingModeOverride: Bool = false
     @Published var liveUIOverride: Bool = false
     @Published var viewMode: VPinballViewMode = .desktopFSS
@@ -79,8 +77,6 @@ class SettingsModel: ObservableObject {
         // General
 
         haptics = vpinballManager.loadValue(.standalone, "Haptics", true)
-        altColor = vpinballManager.loadValue(.standalone, "AltColor", true)
-        altSound = vpinballManager.loadValue(.standalone, "AltSound", true)
         renderingModeOverride = (vpinballManager.loadValue(.standalone, "RenderingModeOverride", 2) == 2)
         liveUIOverride = vpinballManager.loadValue(.standalone, "LiveUIOverride", true)
         viewMode = VPinballViewMode(rawValue: vpinballManager.loadValue(.player, "BGSet", VPinballViewMode.desktopFSS.rawValue)) ?? .desktopFSS
