@@ -2204,6 +2204,9 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
    if (m_vrDevice != nullptr)
       return nullptr;
 
+   if (m_renderer->m_stereo3D != StereoMode::STEREO_OFF)
+      return nullptr;
+
    RenderTarget *outputRT;
    if (output.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
    {
