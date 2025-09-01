@@ -161,6 +161,7 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/src/shaders/hlsl_glsl/BallShader.glfx" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/src/shaders/hlsl_glsl/ClassicLightShader.glfx" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/src/shaders/hlsl_glsl/StereoShader.glfx" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/src/shaders/hlsl_glsl/UIShader.glfx" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/src/shaders/hlsl_glsl/Helpers.fxh" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/src/shaders/hlsl_glsl/FBShader.fxh" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/src/shaders/hlsl_glsl/Material_GL.fxh" "$<TARGET_FILE_DIR:vpinball>/../Resources/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
