@@ -1318,6 +1318,19 @@ BOOL WINAPI GetFileSizeEx(HANDLE hFile, PLARGE_INTEGER lpFileSize)
 
 DWORD WINAPI GetFullPathNameW(LPCWSTR lpFileName, DWORD nBufferLength, LPWSTR lpBuffer, LPWSTR *lpFilePart)
 {
+   if (wcscmp(lpFileName, L".") == 0) {
+      char currentDirBuffer[4096];
+      size_t i;
+      if (!getcwd(currentDirBuffer, sizeof(currentDirBuffer))) return 0;
+      int len = strlen(currentDirBuffer) + 1;
+      if (lpBuffer && nBufferLength >= len) {
+         for (i = 0; i < strlen(currentDirBuffer); i++) lpBuffer[i] = (WCHAR)currentDirBuffer[i];
+         lpBuffer[i] = L'\0';
+         if (lpFilePart) *lpFilePart = NULL;
+      }
+      return len;
+   }
+
    int len = wcslen(lpFileName) + 1;
    if (lpBuffer) {
       wcsncpy(lpBuffer, lpFileName, nBufferLength);
