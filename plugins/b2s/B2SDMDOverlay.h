@@ -20,8 +20,8 @@ private:
    ResURIResolver& m_resURIResolver;
    VPXTexture& m_dmdTex;
 
-   bool m_enable = false;
    ivec4 m_frame;
+   bool m_enable = false;
 
    bool m_detectDmdFrame = false;
    VPXTexture m_backImage;

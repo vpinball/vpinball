@@ -9,22 +9,22 @@
 
 namespace B2S {
 
-static const tinyxml2::XMLElement* GetNode(const tinyxml2::XMLNode& doc, std::string_view nodePath)
+static const tinyxml2::XMLElement* GetNode(const tinyxml2::XMLNode& doc, const std::string& nodePath)
 {
    const tinyxml2::XMLNode* node = &doc;
    size_t pos = 0;
    size_t nextPos = nodePath.find('/', pos);
    while (nextPos != std::string::npos)
    {
-      std::string_view elementName = nodePath.substr(pos, nextPos - pos);
-      node = node->FirstChildElement(string(elementName).c_str());
+      const std::string elementName = nodePath.substr(pos, nextPos - pos);
+      node = node->FirstChildElement(elementName.c_str());
       if (!node)
          return nullptr;
       pos = nextPos + 1;
       nextPos = nodePath.find('/', pos);
    }
-   if (std::string_view finalElementName = nodePath.substr(pos); !finalElementName.empty())
-      node = node->FirstChildElement(string(finalElementName).c_str());
+   if (const std::string finalElementName = nodePath.substr(pos); !finalElementName.empty())
+      node = node->FirstChildElement(finalElementName.c_str());
    return node ? node->ToElement() : nullptr;
 }
 
