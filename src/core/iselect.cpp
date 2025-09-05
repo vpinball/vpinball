@@ -268,17 +268,17 @@ static void SetPartGroup(ISelect* const me, string layerName)
             legacyPartGroup->Release();
          }
       }*/
-      if (layerName.size() >= std::size(me->GetPTable()->m_wzName))
+      if (layerName.length() >= std::size(me->GetPTable()->m_wzName))
          layerName = layerName.substr(0, std::size(me->GetPTable()->m_wzName) - 1);
-      auto partGroupF = std::ranges::find_if(me->GetPTable()->m_vedit, [layerName](IEditable *editable) {
-         return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup) && editable->GetName() == layerName;
+      const wstring newName = MakeWString(layerName);
+      const auto partGroupF = std::ranges::find_if(me->GetPTable()->m_vedit, [newName](const IEditable *editable) {
+         return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup) && (editable->GetScriptable()->m_wzName == newName);
       });
       if (partGroupF == me->GetPTable()->m_vedit.end())
       {
          PartGroup *const newGroup = static_cast<PartGroup *>(EditableRegistry::CreateAndInit(eItemPartGroup, me->GetPTable(), 0, 0));
          if (newGroup)
          {
-            const wstring newName = MakeWString(layerName);
             me->GetPTable()->m_pcv->ReplaceName(newGroup->GetIEditable()->GetScriptable(), newName);
             wcsncpy_s(newGroup->GetScriptable()->m_wzName, std::size(newGroup->GetScriptable()->m_wzName), newName.c_str());
             me->GetPTable()->m_vedit.push_back(newGroup);

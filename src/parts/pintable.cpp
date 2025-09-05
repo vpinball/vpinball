@@ -3115,14 +3115,16 @@ void PinTable::MoveCollectionDown(CComObject<Collection> *pcol)
       m_vcollection.insert(pcol, idx + 1);
 }
 
-void PinTable::SetCollectionName(Collection *pcol, const char *szName, HWND hwndList, int index)
+void PinTable::SetCollectionName(Collection *pcol, string name, HWND hwndList, int index)
 {
 #ifndef __STANDALONE__
-   const wstring wzT = MakeWString(szName);
+   if (name.length() >= std::size(pcol->m_wzName))
+      name = name.substr(0, std::size(pcol->m_wzName) - 1);
+   const wstring wzT = MakeWString(name);
    if (m_pcv->ReplaceName((IScriptable *)pcol, wzT) == S_OK)
    {
       if (hwndList)
-         ListView_SetItemText(hwndList, index, 0, (char*)szName);
+         ListView_SetItemText(hwndList, index, 0, (char*)name.c_str());
       wcsncpy_s(pcol->m_wzName, std::size(pcol->m_wzName), wzT.c_str());
    }
 #endif
@@ -5112,7 +5114,7 @@ STDMETHODIMP PinTable::get_Name(BSTR *pVal)
 STDMETHODIMP PinTable::put_Name(BSTR newVal)
 {
    const wstring newName = newVal;
-   if (newName.empty() || newName.length() >= MAXNAMEBUFFER)
+   if (newName.empty() || newName.length() >= std::size(m_wzName))
       return E_FAIL;
 
    STARTUNDO

@@ -381,7 +381,7 @@ public:
    void ListCollections(HWND hwndListView);
    int AddListCollection(HWND hwndListView, CComObject<Collection> *pcol);
    void RemoveCollection(CComObject<Collection> *pcol);
-   void SetCollectionName(Collection *pcol, const char *szName, HWND hwndList, int index);
+   void SetCollectionName(Collection *pcol, string name, HWND hwndList, int index);
 
    void DoContextMenu(int x, int y, const int menuid, ISelect *psel);
    void DoCommand(int icmd, int x, int y) final;
