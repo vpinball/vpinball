@@ -302,7 +302,7 @@ fi
 # build ffmpeg
 #
 
-FFMPEG_EXPECTED_SHA="${FFMPEG_SHA}"
+FFMPEG_EXPECTED_SHA="${FFMPEG_SHA}_002"
 FFMPEG_FOUND_SHA="$([ -f ffmpeg/cache.txt ] && cat ffmpeg/cache.txt || echo "")"
 
 if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
@@ -327,8 +327,7 @@ if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
       --prefix=. \
       --libdir=@rpath \
       --arch=arm64 \
-      --cc='clang -arch arm64' \
-      --extra-ldflags='-Wl,-ld_classic'
+      --cc='clang -arch arm64'
    make -j${NUM_PROCS}
    cd ..
 
