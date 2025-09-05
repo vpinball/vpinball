@@ -231,7 +231,7 @@ bool is_string_numeric(const string& str);
 
 }
 
-template <typename T> constexpr __forceinline T clamp(const T x, const T mn, const T mx) { return std::max(std::min(x, mx), mn); }
+template <typename T> constexpr inline T clamp(const T x, const T mn, const T mx) { return std::max(std::min(x, mx), mn); }
 
 class vec2
 {
