@@ -5,6 +5,13 @@
 // Disable Warning C4635: XML document comment target: badly-formed XML
 #pragma warning(disable : 4635)
 
+// static analysis warnings that are too strict for our use cases
+#pragma warning(disable : 26481)
+#pragma warning(disable : 26482)
+#pragma warning(disable : 26485)
+#pragma warning(disable : 26440)
+#pragma warning(disable : 26446)
+
 #ifndef __ANDROID__
 #define SDL_MAIN_HANDLED // https://wiki.libsdl.org/SDL3/SDL_SetMainReady#remarks
 #endif
