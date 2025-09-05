@@ -80,6 +80,9 @@
     <ProjectReference Include="plugin-b2s.vcxproj">
       <Project>{7D58C20E-53F4-4AD6-9004-CA6148082491}</Project>
     </ProjectReference>
+    <ProjectReference Include="plugin-b2slegacy.vcxproj">
+      <Project>{06C52E8F-573C-4F2B-A007-7588147D30E4}</Project>
+    </ProjectReference>
     <ProjectReference Include="plugin-pup.vcxproj">
       <Project>{5DFB5344-B339-49BC-B93C-B3B8D307199B}</Project>
     </ProjectReference>
@@ -109,6 +112,9 @@
     </ProjectReference>
     <ProjectReference Include="plugin-serum.vcxproj">
       <Project>{2bf90d88-9139-4e66-a778-4327311af778}</Project>
+    </ProjectReference>
+    <ProjectReference Include="plugin-wmp.vcxproj">
+      <Project>{A5155099-A29F-46B1-9D8A-75BCC9F6616C}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

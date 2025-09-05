@@ -53,6 +53,15 @@ if "%vsv%" == "2019" (
 
 
 REM ***************************************************************************************************
+copy /V /Y "plugin-b2slegacy.vcxproj" "../.build/vsproject/plugin-b2slegacy.vcxproj"
+copy /V /Y "plugin-b2slegacy.vcxproj.filters" "../.build/vsproject/plugin-b2slegacy.vcxproj.filters"
+
+if "%vsv%" == "2019" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-b2slegacy.vcxproj" /out:"../.build/vsproject/plugin-b2slegacy.vcxproj"
+)
+
+
+REM ***************************************************************************************************
 copy /V /Y "plugin-dmdutil.vcxproj" "../.build/vsproject/plugin-dmdutil.vcxproj"
 copy /V /Y "plugin-dmdutil.vcxproj.filters" "../.build/vsproject/plugin-dmdutil.vcxproj.filters"
 
@@ -150,5 +159,13 @@ if "%vsv%" == "2019" (
 	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-serum.vcxproj" /out:"../.build/vsproject/plugin-serum.vcxproj"
 )
 
+
+REM ***************************************************************************************************
+copy /V /Y "plugin-wmp.vcxproj" "../.build/vsproject/plugin-wmp.vcxproj"
+copy /V /Y "plugin-wmp.vcxproj.filters" "../.build/vsproject/plugin-wmp.vcxproj.filters"
+
+if "%vsv%" == "2019" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-wmp.vcxproj" /out:"../.build/vsproject/plugin-wmp.vcxproj"
+)
 
 endlocal

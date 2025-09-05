@@ -1,0 +1,336 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="source">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="source\classes">
+      <UniqueIdentifier>{1ac4455e-4042-469d-8933-5918fc5cc2c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\collections">
+      <UniqueIdentifier>{dce8034e-0b56-4840-837e-a1c93d6d80e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\controls">
+      <UniqueIdentifier>{bba52efc-fa32-407f-bedf-8ccd00905157}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\dream7">
+      <UniqueIdentifier>{c3e7cae7-68f7-45f9-bb69-9144eb8b55f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\forms">
+      <UniqueIdentifier>{d89882e9-efca-4126-ae5d-843cf6a5d5f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\utils">
+      <UniqueIdentifier>{6690a05d-8546-41f4-b972-961b949acdbc}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\AnimationInfo.cpp">
+      <Filter>source\classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\B2SAnimation.cpp">
+      <Filter>source\classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\B2SAnimationBase.cpp">
+      <Filter>source\classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\B2SCollectData.cpp">
+      <Filter>source\classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\B2SData.cpp">
+      <Filter>source\classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\B2SPlayer.cpp">
+      <Filter>source\classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\B2SReelDisplay.cpp">
+      <Filter>source\classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\B2SScreen.cpp">
+      <Filter>source\classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\B2SSettings.cpp">
+      <Filter>source\classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\CollectData.cpp">
+      <Filter>source\classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\ControlInfo.cpp">
+      <Filter>source\classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\EntryAction.cpp">
+      <Filter>source\classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\LEDAreaInfo.cpp">
+      <Filter>source\classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\LEDDisplayDigitLocation.cpp">
+      <Filter>source\classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\PictureBoxAnimation.cpp">
+      <Filter>source\classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\PictureBoxAnimationEntry.cpp">
+      <Filter>source\classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\Sound.cpp">
+      <Filter>source\classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\collections\AnimationCollection.cpp">
+      <Filter>source\collections</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\collections\ControlCollection.cpp">
+      <Filter>source\collections</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\collections\GenericDictionaryIgnoreCase.cpp">
+      <Filter>source\collections</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\collections\IlluminationGroupCollection.cpp">
+      <Filter>source\collections</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\collections\PictureBoxCollection.cpp">
+      <Filter>source\collections</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\collections\ReelBoxCollection.cpp">
+      <Filter>source\collections</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\collections\ReelDisplayReelBoxCollection.cpp">
+      <Filter>source\collections</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\collections\RunningAnimationsCollection.cpp">
+      <Filter>source\collections</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\collections\ZOrderCollection.cpp">
+      <Filter>source\collections</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\controls\B2SBaseBox.cpp">
+      <Filter>source\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\controls\B2SLEDBox.cpp">
+      <Filter>source\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\controls\B2SPictureBox.cpp">
+      <Filter>source\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\controls\B2SReelBox.cpp">
+      <Filter>source\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\controls\Control.cpp">
+      <Filter>source\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\dream7\Dream7Display.cpp">
+      <Filter>source\dream7</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\dream7\Segment.cpp">
+      <Filter>source\dream7</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\dream7\SegmentList.cpp">
+      <Filter>source\dream7</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\dream7\SegmentNumber.cpp">
+      <Filter>source\dream7</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\dream7\SegmentStyle.cpp">
+      <Filter>source\dream7</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\forms\Form.cpp">
+      <Filter>source\forms</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\forms\FormBackglass.cpp">
+      <Filter>source\forms</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\forms\FormDMD.cpp">
+      <Filter>source\forms</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\utils\DMDOverlay.cpp">
+      <Filter>source\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\utils\GraphicsPath.cpp">
+      <Filter>source\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\utils\Matrix.cpp">
+      <Filter>source\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\utils\PinMAMEAPI.cpp">
+      <Filter>source\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\utils\Timer.cpp">
+      <Filter>source\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\utils\VPXGraphics.cpp">
+      <Filter>source\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\B2SLegacyPlugin.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\common.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\plugins\b2slegacy\Server.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="../../src/core/ResURIResolver.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="../../third-party/include/tinyxml2/tinyxml2.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\AnimationInfo.h">
+      <Filter>source\classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\B2SAnimation.h">
+      <Filter>source\classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\B2SAnimationBase.h">
+      <Filter>source\classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\B2SCollectData.h">
+      <Filter>source\classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\B2SData.h">
+      <Filter>source\classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\B2SPlayer.h">
+      <Filter>source\classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\B2SReelDisplay.h">
+      <Filter>source\classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\B2SScreen.h">
+      <Filter>source\classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\B2SSettings.h">
+      <Filter>source\classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\B2SVersionInfo.h">
+      <Filter>source\classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\CollectData.h">
+      <Filter>source\classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\ControlInfo.h">
+      <Filter>source\classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\EntryAction.h">
+      <Filter>source\classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\LEDAreaInfo.h">
+      <Filter>source\classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\LEDDisplayDigitLocation.h">
+      <Filter>source\classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\PictureBoxAnimation.h">
+      <Filter>source\classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\PictureBoxAnimationEntry.h">
+      <Filter>source\classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\Sound.h">
+      <Filter>source\classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\collections\AnimationCollection.h">
+      <Filter>source\collections</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\collections\ControlCollection.h">
+      <Filter>source\collections</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\collections\GenericDictionaryIgnoreCase.h">
+      <Filter>source\collections</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\collections\IlluminationGroupCollection.h">
+      <Filter>source\collections</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\collections\PictureBoxCollection.h">
+      <Filter>source\collections</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\collections\ReelBoxCollection.h">
+      <Filter>source\collections</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\collections\ReelDisplayReelBoxCollection.h">
+      <Filter>source\collections</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\collections\RunningAnimationsCollection.h">
+      <Filter>source\collections</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\collections\ZOrderCollection.h">
+      <Filter>source\collections</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\controls\B2SBaseBox.h">
+      <Filter>source\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\controls\B2SLEDBox.h">
+      <Filter>source\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\controls\B2SPictureBox.h">
+      <Filter>source\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\controls\B2SReelBox.h">
+      <Filter>source\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\controls\Control.h">
+      <Filter>source\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\dream7\Dream7Display.h">
+      <Filter>source\dream7</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\dream7\Segment.h">
+      <Filter>source\dream7</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\dream7\SegmentList.h">
+      <Filter>source\dream7</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\dream7\SegmentNumber.h">
+      <Filter>source\dream7</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\dream7\SegmentStyle.h">
+      <Filter>source\dream7</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\forms\Form.h">
+      <Filter>source\forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\forms\FormBackglass.h">
+      <Filter>source\forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\forms\FormDMD.h">
+      <Filter>source\forms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\utils\DMDOverlay.h">
+      <Filter>source\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\utils\GraphicsPath.h">
+      <Filter>source\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\utils\Matrix.h">
+      <Filter>source\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\utils\PinMAMEAPI.h">
+      <Filter>source\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\utils\Timer.h">
+      <Filter>source\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\utils\VPXGraphics.h">
+      <Filter>source\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\common.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\plugins\b2slegacy\Server.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="../../src/core/ResURIResolver.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="../../third-party/include/tinyxml2/tinyxml2.h">
+      <Filter>source</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="..\..\plugins\b2slegacy\plugin.cfg">
+      <Filter>source</Filter>
+    </CopyFileToFolders>
+  </ItemGroup>
+</Project>

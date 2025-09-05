@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\plugins\b2slegacy\B2SLegacyPlugin.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\AnimationInfo.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\B2SAnimation.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\B2SAnimationBase.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\B2SCollectData.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\B2SData.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\B2SPlayer.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\B2SReelDisplay.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\B2SScreen.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\B2SSettings.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\CollectData.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\ControlInfo.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\EntryAction.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\LEDAreaInfo.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\LEDDisplayDigitLocation.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\PictureBoxAnimation.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\PictureBoxAnimationEntry.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\classes\Sound.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\collections\AnimationCollection.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\collections\ControlCollection.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\collections\GenericDictionaryIgnoreCase.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\collections\IlluminationGroupCollection.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\collections\PictureBoxCollection.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\collections\ReelBoxCollection.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\collections\ReelDisplayReelBoxCollection.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\collections\RunningAnimationsCollection.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\collections\ZOrderCollection.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\common.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\controls\B2SBaseBox.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\controls\B2SLEDBox.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\controls\B2SPictureBox.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\controls\B2SReelBox.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\controls\Control.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\dream7\Dream7Display.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\dream7\Segment.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\dream7\SegmentList.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\dream7\SegmentNumber.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\dream7\SegmentStyle.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\forms\Form.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\forms\FormBackglass.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\forms\FormDMD.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\Server.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\utils\DMDOverlay.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\utils\GraphicsPath.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\utils\Matrix.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\utils\PinMAMEAPI.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\utils\Timer.cpp" />
+    <ClCompile Include="..\..\plugins\b2slegacy\utils\VPXGraphics.cpp" />
+    <ClCompile Include="../../src/core/ResURIResolver.cpp" />
+    <ClCompile Include="../../third-party/include/tinyxml2/tinyxml2.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\AnimationInfo.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\B2SAnimation.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\B2SAnimationBase.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\B2SCollectData.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\B2SData.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\B2SPlayer.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\B2SReelDisplay.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\B2SScreen.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\B2SSettings.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\B2SVersionInfo.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\CollectData.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\ControlInfo.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\EntryAction.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\LEDAreaInfo.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\LEDDisplayDigitLocation.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\PictureBoxAnimation.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\PictureBoxAnimationEntry.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\classes\Sound.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\collections\AnimationCollection.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\collections\ControlCollection.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\collections\GenericDictionaryIgnoreCase.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\collections\IlluminationGroupCollection.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\collections\PictureBoxCollection.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\collections\ReelBoxCollection.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\collections\ReelDisplayReelBoxCollection.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\collections\RunningAnimationsCollection.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\collections\ZOrderCollection.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\common.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\controls\B2SBaseBox.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\controls\B2SLEDBox.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\controls\B2SPictureBox.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\controls\B2SReelBox.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\controls\Control.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\dream7\Dream7Display.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\dream7\Segment.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\dream7\SegmentList.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\dream7\SegmentNumber.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\dream7\SegmentStyle.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\forms\Form.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\forms\FormBackglass.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\forms\FormDMD.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\Server.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\utils\DMDOverlay.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\utils\GraphicsPath.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\utils\Matrix.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\utils\PinMAMEAPI.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\utils\Timer.h" />
+    <ClInclude Include="..\..\plugins\b2slegacy\utils\VPXGraphics.h" />
+    <ClInclude Include="../../src/core/ResURIResolver.h" />
+    <ClInclude Include="../../third-party/include/tinyxml2/tinyxml2.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{06C52E8F-573C-4F2B-A007-7588147D30E4}</ProjectGuid>
+    <RootNamespace>plugin-b2slegacy</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <TargetName Condition="'$(Platform)'=='Win32'">plugin-b2slegacy</TargetName>
+    <TargetName Condition="'$(Platform)'=='x64'">plugin-b2slegacy64</TargetName>
+    <OutDir>$(SolutionDir)..\bin\$(TargetName)\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)..\obj\$(TargetName)\$(Configuration)-$(Platform)\</IntDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)../../src/plugins;$(SolutionDir)../../src</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>SDL3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)../../third-party/build-libs/windows-x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>SDL3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)../../third-party/build-libs/windows-x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>SDL364.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)../../third-party/build-libs/windows-x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>SDL364.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)../../third-party/build-libs/windows-x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup>
+    <PostBuildEvent>
+      <Command>
+        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\b2slegacy\" md "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\b2slegacy\"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\b2slegacy\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\b2slegacy\"
+
+        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\b2slegacy\" md "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\b2slegacy\"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\b2slegacy\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\b2slegacy\"
+
+        if not exist "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\b2slegacy\" md "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\b2slegacy\"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\b2slegacy\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\b2slegacy\"
+      </Command>
+    </PostBuildEvent>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir)../../src/plugins;$(SolutionDir)../../plugins/b2slegacy;$(SolutionDir)../../third-party/include/</AdditionalIncludeDirectories>
+      <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Speed</FavorSizeOrSpeed>
+      <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Speed</FavorSizeOrSpeed>
+      <FloatingPointModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Fast</FloatingPointModel>
+      <FloatingPointModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Fast</FloatingPointModel>
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</BufferSecurityCheck>
+      <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</BufferSecurityCheck>
+      <FloatingPointExceptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</FloatingPointExceptions>
+      <FloatingPointExceptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FloatingPointExceptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="../../plugins/b2slegacy/plugin.cfg">
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
