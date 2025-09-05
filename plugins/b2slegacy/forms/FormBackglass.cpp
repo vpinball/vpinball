@@ -34,9 +34,9 @@ FormBackglass::FormBackglass(VPXPluginAPI* vpxApi, MsgPluginAPI* msgApi,uint32_t
 {
    SetName("formBackglass"s);
 
-   m_pFormDMD = NULL;
-   m_pStartupTimer = NULL;
-   m_pRotateTimer = NULL;
+   m_pFormDMD = nullptr;
+   m_pStartupTimer = nullptr;
+   m_pRotateTimer = nullptr;
    m_rotateSlowDownSteps = 0;
    m_rotateRunTillEnd = false;
    m_rotateRunToFirstStep = false;
@@ -151,7 +151,7 @@ void FormBackglass::OnPaint(VPXRenderContext2D* const ctx)
             }
             // now draw z-ordered images
             for(const auto& [key, pIllus] : *m_pB2SData->GetZOrderImages()) {
-               for (int i = 0; i < pIllus.size(); i++)
+               for (size_t i = 0; i < pIllus.size(); i++)
                   DrawImage(ctx, pIllus[i]);
             }
          }
@@ -1082,7 +1082,7 @@ void FormBackglass::LoadB2SData()
       // maybe draw some light images for pretty fast image changing
       if (top4Authentic >= minSize4Image && mergeBulbs) {
          // create some light images
-         if (m_pTopLightImage4Authentic == NULL) {
+         if (m_pTopLightImage4Authentic == nullptr) {
             SetTopLightImage4Authentic(CreateLightImage(m_pDarkImage4Authentic, eDualMode_Authentic, topkey4Authentic, "", m_topRomID4Authentic, m_topRomIDType4Authentic, m_topRomInverted4Authentic));
             if (second4Authentic > minSize4Image) {
                SetSecondLightImage4Authentic(CreateLightImage(m_pDarkImage4Authentic, eDualMode_Authentic, secondkey4Authentic, "", m_secondRomID4Authentic, m_secondRomIDType4Authentic, m_secondRomInverted4Authentic));
@@ -1096,7 +1096,7 @@ void FormBackglass::LoadB2SData()
       }
       if (m_pB2SData->IsDualBackglass() && top4Fantasy >= minSize4Image && mergeBulbs) {
          // create some light images
-         if (m_pTopLightImage4Fantasy == NULL) {
+         if (m_pTopLightImage4Fantasy == nullptr) {
             SetTopLightImage4Fantasy(CreateLightImage(m_pDarkImage4Fantasy, eDualMode_Fantasy, topkey4Fantasy, "", m_topRomID4Fantasy, m_topRomIDType4Fantasy, m_topRomInverted4Fantasy));
             if (second4Fantasy > minSize4Image) {
                SetSecondLightImage4Fantasy(CreateLightImage(m_pDarkImage4Fantasy, eDualMode_Fantasy, secondkey4Fantasy, "", m_secondRomID4Fantasy, m_secondRomIDType4Fantasy, m_secondRomInverted4Fantasy));
@@ -1293,8 +1293,8 @@ void FormBackglass::ResizeSomeImages()
    float xResizeFactor = 1.0f;
    float yResizeFactor = 1.0f;
    if (m_pDarkImage4Authentic) {
-      int width = m_vpxApi->GetTextureInfo(m_pDarkImage4Authentic)->width;
-      int height = m_vpxApi->GetTextureInfo(m_pDarkImage4Authentic)->height;
+      unsigned int width = m_vpxApi->GetTextureInfo(m_pDarkImage4Authentic)->width;
+      unsigned int height = m_vpxApi->GetTextureInfo(m_pDarkImage4Authentic)->height;
       SetDarkImage4Authentic(ResizeTexture(m_pDarkImage4Authentic, m_pB2SScreen->GetBackglassSize().w, m_pB2SScreen->GetBackglassSize().h));
       xResizeFactor = (float)width / (float)m_vpxApi->GetTextureInfo(m_pDarkImage4Authentic)->width;
       yResizeFactor = (float)height / (float)m_vpxApi->GetTextureInfo(m_pDarkImage4Authentic)->height;
@@ -1428,18 +1428,18 @@ VPXTexture FormBackglass::CreateLightImage(VPXTexture image, eDualMode dualmode,
    int secondromid = 0;
    eRomIDType secondromidtype = eRomIDType_NotDefined;
    bool secondrominverted = false;
-   if (firstromkey.substr(0, 1) == "I") {
+   if (firstromkey.starts_with('I')) {
       rominverted = true;
       firstromkey = firstromkey.substr(1);
    }
-   romidtype = (firstromkey.substr(0, 1) == "S" ? eRomIDType_Solenoid : (firstromkey.substr(0, 2) == "GI" ? eRomIDType_GIString : eRomIDType_Lamp));
+   romidtype = (firstromkey.starts_with('S') ? eRomIDType_Solenoid : (firstromkey.starts_with("GI") ? eRomIDType_GIString : eRomIDType_Lamp));
    romid = std::stoi((romidtype == eRomIDType_GIString ? firstromkey.substr(2) : firstromkey.substr(1)));
    if (!secondromkey.empty()) {
-      if (secondromkey.substr(0, 1) == "I") {
+      if (secondromkey.starts_with('I')) {
          secondrominverted = true;
          secondromkey = secondromkey.substr(1);
       }
-      secondromidtype = (secondromkey.substr(0, 1) == "S" ? eRomIDType_Solenoid : (secondromkey.substr(0, 2) == "GI" ? eRomIDType_GIString : eRomIDType_Lamp));
+      secondromidtype = (secondromkey.starts_with('S') ? eRomIDType_Solenoid : (secondromkey.starts_with("GI") ? eRomIDType_GIString : eRomIDType_Lamp));
       secondromid = std::stoi((secondromidtype == eRomIDType_GIString ? secondromkey.substr(2) : secondromkey.substr(1)));
    }
 
@@ -1489,7 +1489,7 @@ VPXTexture FormBackglass::CreateLightImage(VPXTexture image, eDualMode dualmode,
 void FormBackglass::CheckBulbs(int romid, eRomIDType romidtype, bool rominverted, eDualMode dualmode)
 {
    if (romid > 0 && romidtype != eRomIDType_NotDefined) {
-      std::map<int, vector<B2SBaseBox*>>* pUsedRomIDs = NULL;
+      std::map<int, vector<B2SBaseBox*>>* pUsedRomIDs = nullptr;
       if (romidtype == eRomIDType_Lamp)
          pUsedRomIDs = (dualmode == eDualMode_Fantasy ? m_pB2SData->GetUsedRomLampIDs4Fantasy() : m_pB2SData->GetUsedRomLampIDs4Authentic());
       else if (romidtype == eRomIDType_Solenoid)

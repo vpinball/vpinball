@@ -10,6 +10,7 @@
 
 #include <cmath>
 #include <cstring>
+#include <utils/color.h>
 
 #define MAX_GRAPHICS_POLYSIZE 16384
 
@@ -359,10 +360,10 @@ void VPXGraphics::SetPixelBlended(int x, int y, uint8_t r, uint8_t g, uint8_t b,
    float alpha = (float)a / 255.0f;
    float invAlpha = 1.0f - alpha;
 
-   m_pixelBuffer[offset + 0] = (uint8_t)(r * alpha + (float)existingR * invAlpha);
-   m_pixelBuffer[offset + 1] = (uint8_t)(g * alpha + (float)existingG * invAlpha);
-   m_pixelBuffer[offset + 2] = (uint8_t)(b * alpha + (float)existingB * invAlpha);
-   m_pixelBuffer[offset + 3] = (uint8_t)(a         + (float)existingA * invAlpha);
+   m_pixelBuffer[offset + 0] = (uint8_t)((float)r * alpha + (float)existingR * invAlpha);
+   m_pixelBuffer[offset + 1] = (uint8_t)((float)g * alpha + (float)existingG * invAlpha);
+   m_pixelBuffer[offset + 2] = (uint8_t)((float)b * alpha + (float)existingB * invAlpha);
+   m_pixelBuffer[offset + 3] = (uint8_t)((float)a         + (float)existingA * invAlpha);
 }
 
 VPXTexture VPXGraphics::GetTexture()

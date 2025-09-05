@@ -111,7 +111,7 @@ void PinMAMEAPI::SetSwitch(int switchId, bool value)
 
    ScriptVariant args[2];
    args[0].vInt = switchId;
-   args[1].vBool = value;
+   args[1].vBool = value ? 1 : 0;
 
    m_pinmameClassDef->members[m_setSwitchIndex].Call(
       m_pinmameInstance, m_setSwitchIndex, args, nullptr);

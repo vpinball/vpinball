@@ -63,7 +63,7 @@ void B2SLEDBox::OnPaint(VPXRenderContext2D* const ctx)
       //float width = (float)GetWidth() / (float)m_pB2SData->GetLEDCoordMax();
       //float height = (float)GetHeight() / (float)m_pB2SData->GetLEDCoordMax();
 
-      for (int i = 0; i < m_currentSeg.size(); i++) {
+      for (int i = 0; i < (int)m_currentSeg.size(); i++) {
          GraphicsPath* pPath = new GraphicsPath();
          pPath->AddPolygon(&m_currentSeg[i]);
          if ((m_value & (1 << i)) != 0)

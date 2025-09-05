@@ -52,9 +52,9 @@ B2SAnimationBase::B2SAnimationBase(
 
    m_pRunningAnimations = RunningAnimationsCollection::GetInstance();
 
-   m_finishedListener = NULL;
+   m_finishedListener = nullptr;
 
-   m_pSwitchTimer = NULL;
+   m_pSwitchTimer = nullptr;
 }
 
 B2SAnimationBase::~B2SAnimationBase()
@@ -66,7 +66,7 @@ void B2SAnimationBase::RaiseFinishedEvent()
 {
    if (m_finishedListener) {
       m_finishedListener();
-      m_finishedListener = NULL;
+      m_finishedListener = nullptr;
    }
 }
 

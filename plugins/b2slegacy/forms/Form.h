@@ -13,7 +13,7 @@ class Form : public Control
 {
 public:
    Form(VPXPluginAPI* vpxApi, MsgPluginAPI* msgApi, uint32_t endpointId, B2SData* pB2SData, const string& overlayType = "");
-   ~Form();
+   ~Form() override;
 
    void Show();
    void Hide();

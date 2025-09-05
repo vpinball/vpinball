@@ -7,7 +7,7 @@ using std::string;
 
 namespace B2SLegacy {
 
-class B2SSettings
+class B2SSettings final
 {
 public:
    B2SSettings(MsgPluginAPI* msgApi);
@@ -48,7 +48,7 @@ public:
    void SetHideB2SDMD(const bool hideB2SDMD) { m_hideB2SDMD = hideB2SDMD; }
    bool IsHideB2SBackglass() const { return m_hideB2SBackglass; }
    void SetHideB2SBackglass(const bool hideB2SBackglass) { m_hideB2SBackglass = hideB2SBackglass; }
-   bool IsROMControlled() { return !m_szGameName.empty(); }
+   bool IsROMControlled() const { return !m_szGameName.empty(); }
    eDualMode GetCurrentDualMode() const { return m_currentDualMode; }
    void SetCurrentDualMode(const eDualMode currentDualMode) { m_currentDualMode = currentDualMode; }
    string GetGameName() const { return m_szGameName; }

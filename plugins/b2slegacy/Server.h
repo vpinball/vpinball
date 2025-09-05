@@ -178,8 +178,6 @@ private:
    const uint32_t m_endpointId;
    PinMAMEAPI* m_pinmameApi;
 
-   VPXTexture m_dmdTex = nullptr;
-
    bool m_ready = false;
 };
 

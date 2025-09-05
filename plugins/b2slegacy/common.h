@@ -231,6 +231,26 @@ bool is_string_numeric(const string& str);
 
 }
 
+template <typename T> constexpr __forceinline T clamp(const T x, const T mn, const T mx) { return std::max(std::min(x, mx), mn); }
+
+class vec2
+{
+public:
+   vec2() { }
+   vec2(float px, float py) : x(px), y(py) { }
+
+   float x = 0.f, y = 0.f;
+};
+
+class vec3
+{
+public:
+   vec3() { }
+   vec3(float px, float py, float pz) : x(px), y(py), z(pz) { }
+
+   float x = 0.f, y = 0.f, z = 0.f;
+};
+
 class vec4
 {
 public:

@@ -15,7 +15,7 @@ B2SReelBox::B2SReelBox(VPXPluginAPI* vpxApi, B2SData* pB2SData)
    m_intermediates = -1;
    m_intermediates2go = 0;
    m_szSoundName.clear();
-   m_pSound = NULL;
+   m_pSound = nullptr;
    m_scoreType = eScoreType_NotUsed;
    m_szGroupName.clear();
    m_illuminated = false;
@@ -92,7 +92,7 @@ void B2SReelBox::ReelAnimationTimerTick(Timer* pTimer)
          m_szReelIndex = ConvertText(m_currentText);
 
          // play sound and redraw reel
-         if (m_pSound != NULL) {
+         if (m_pSound != nullptr) {
             //My.Computer.Audio.Play(Sound(), AudioPlayMode.Background)
          }
          else if (m_szSoundName == "stille") {
@@ -190,7 +190,7 @@ string B2SReelBox::ConvertValue(int value) const
    if (value >= 128 && value <= 255)
       value -= 128;
    // map value
-      switch (value) {
+   switch (value) {
          // 7-segment stuff
          case 63: ret = "0"s; break;
          case 6:  ret = "1"s; break;

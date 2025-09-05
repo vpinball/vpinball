@@ -8,7 +8,7 @@ namespace B2SLegacy {
 Control::Control(VPXPluginAPI* vpxApi)
    : m_vpxApi(vpxApi)
 {
-   m_pParent = NULL;
+   m_pParent = nullptr;
    m_szName.clear();
    m_rect = { 0, 0, 0, 0 };
    m_visible = true;
@@ -49,7 +49,7 @@ Control* Control::GetControl(const string& szName) const
       if (child->GetName() == szName)
          return child;
    }
-   return NULL;
+   return nullptr;
 }
 
 bool Control::IsVisible() const

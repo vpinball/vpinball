@@ -78,7 +78,7 @@ PictureBoxAnimation::PictureBoxAnimation(
    // pick up all involved lights
    m_lightsInvolved.clear();
    for (auto& [key, pEntry] : m_entries) {
-      for (auto& bulb : *pEntry->GetBulbs()) {
+      for (const auto& bulb : *pEntry->GetBulbs()) {
          if (!bulb.empty() && std::find(m_lightsInvolved.begin(), m_lightsInvolved.end(), bulb) == m_lightsInvolved.end())
             m_lightsInvolved.push_back(bulb);
       }
@@ -269,7 +269,7 @@ void PictureBoxAnimation::PictureBoxAnimationTick(Timer* pTimer)
             }
             else {
                m_ticker++;
-               if (m_ticker >= m_entries.size())
+               if (m_ticker >= (int)m_entries.size())
                   break;
             }
          }
@@ -281,7 +281,7 @@ void PictureBoxAnimation::PictureBoxAnimationTick(Timer* pTimer)
    // count on and maybe restart the timer
    bool restart = true;
    m_ticker++;
-   if (m_ticker >= m_entries.size()) {
+   if (m_ticker >= (int)m_entries.size()) {
        m_reachedThe0Point = true;
        m_loopticker++;
        m_ticker = 0;

@@ -9,7 +9,7 @@ class B2SPictureBox final : public B2SBaseBox
 {
 public:
    B2SPictureBox(VPXPluginAPI* vpxApi, B2SData* pB2SData);
-   virtual ~B2SPictureBox();
+   ~B2SPictureBox() override;
 
    ePictureBoxType GetPictureBoxType() const { return m_pictureBoxType; }
    void SetPictureBoxType(ePictureBoxType pictureBoxType) { m_pictureBoxType = pictureBoxType; }

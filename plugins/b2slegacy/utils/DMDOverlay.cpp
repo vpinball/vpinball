@@ -56,7 +56,7 @@ void DMDOverlay::Render(VPXRenderContext2D* ctx)
    if (m_frameSearch.valid() && m_frameSearch.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
       m_frame = m_frameSearch.get();
 
-   if (m_frame.z == 0.f || m_frame.w == 0.f)
+   if (m_frame.z == 0 || m_frame.w == 0)
       return;
 
    if (m_vpxApi) {
@@ -124,7 +124,7 @@ ivec4 DMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio)
 
    // Find the largest dark rectangle in the background image
    float maxHeuristic = 0.f;
-   float selectedAspectRatio = 1.f;
+   //float selectedAspectRatio = 1.f;
    std::stack<int> st;
    vector<int> heights(texInfo->width, 0); // height of empty columns above each pixels in the row as we scan them downward
    unsigned int pos = 0;
@@ -136,8 +136,8 @@ ivec4 DMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio)
          switch (texInfo->format)
          {
          case VPXTEXFMT_BW: lum = texInfo->data[pos]; break;
-         case VPXTEXFMT_sRGB8: lum = static_cast<uint8_t>(0.299f * texInfo->data[pos] + 0.587f * texInfo->data[pos + 1] + 0.114f * texInfo->data[pos + 2]); break;
-         case VPXTEXFMT_sRGBA8: lum = static_cast<uint8_t>(0.299f * texInfo->data[pos] + 0.587f * texInfo->data[pos + 1] + 0.114f * texInfo->data[pos + 2]); break;
+         case VPXTEXFMT_sRGB8: lum = static_cast<uint8_t>(0.299f * (float)texInfo->data[pos] + 0.587f * (float)texInfo->data[pos + 1] + 0.114f * (float)texInfo->data[pos + 2]); break;
+         case VPXTEXFMT_sRGBA8: lum = static_cast<uint8_t>(0.299f * (float)texInfo->data[pos] + 0.587f * (float)texInfo->data[pos + 1] + 0.114f * (float)texInfo->data[pos + 2]); break;
          default: return subFrame;
          }
          if (lum < 8)

@@ -30,7 +30,7 @@ Dream7Display::Dream7Display(VPXPluginAPI* vpxApi)
    m_scaleFactor = 0.5f;
    m_offsetWidth = 0;
    m_angle = 0.0f;
-   m_pMatrix = NULL;
+   m_pMatrix = nullptr;
 }
 
 Dream7Display::~Dream7Display()
@@ -83,10 +83,10 @@ void Dream7Display::SetText(const string& szText)
       nLen = (int)m_szText.length() - 1;
    int nIndex = 0;
    for (int nSegment = 0; nSegment <= nLen; nSegment++) {
-      if (nIndex >= m_segmentNumbers.size())
+      if (nIndex >= (int)m_segmentNumbers.size())
          break;
       char sChar = ' ';
-      if (!m_szText.empty() && m_szText.length() > nSegment)
+      if (!m_szText.empty() && (int)m_szText.length() > nSegment)
          sChar = m_szText.substr(nSegment, 1)[0];
       if (sChar == '.' && nIndex > 0 && !m_segmentNumbers[nIndex - 1]->GetCharacter().ends_with('.'))
          m_segmentNumbers[nIndex - 1]->SetCharacter(m_segmentNumbers[nIndex - 1]->GetCharacter() + '.');
@@ -152,7 +152,7 @@ void Dream7Display::SetGlassAlpha(const int glassAlpha)
    }
 }
 
-void Dream7Display::SetGlassAlphaCenter(const int glassAlphaCenter)
+void Dream7Display::SetGlassAlphaCenter(const uint8_t glassAlphaCenter)
 {
    for (auto& pSegmentNumber : m_segmentNumbers) {
       pSegmentNumber->GetStyle()->SetGlassAlphaCenter(glassAlphaCenter);
@@ -186,7 +186,7 @@ void Dream7Display::SetWireFrame(const bool wireFrame)
 
 void Dream7Display::SetValue(int segment, const string& value)
 {
-   if (m_segmentNumbers.size() <= segment) {
+   if ((int)m_segmentNumbers.size() <= segment) {
       return;
    }
 
@@ -195,7 +195,7 @@ void Dream7Display::SetValue(int segment, const string& value)
 
 void Dream7Display::SetValue(int segment, long value)
 {
-   if (m_segmentNumbers.size() <= segment) {
+   if ((int)m_segmentNumbers.size() <= segment) {
       return;
    }
 
@@ -220,7 +220,7 @@ void Dream7Display::InitMatrix(float shear, float scaleFactor, bool mirrored)
        shear = 0.0f;
    if (shear > 2.0f)
       shear = 2.0f;
-   if (scaleFactor <= 0.01f)
+   if (scaleFactor < 0.01f)
       scaleFactor = 0.01f;
    if (scaleFactor > 10.0f)
       scaleFactor = 10.0f;
@@ -250,7 +250,7 @@ void Dream7Display::InitMatrix(float shear, float scaleFactor, bool mirrored)
    m_pMatrix->Multiply(styleMatrix);
 }
 
-SDL_FRect Dream7Display::GetBounds(Matrix* pMatrix)
+SDL_FRect Dream7Display::GetBounds(Matrix* const pMatrix)
 {
    // determine the bounds of the whole display
    vector<SDL_FPoint> points;
@@ -296,7 +296,7 @@ void Dream7Display::InitSegments(int digits, SegmentNumberType type, float shear
          SegmentNumber* pNumber = new SegmentNumber(this);
          m_segmentNumbers.push_back(pNumber);
       }
-      while(m_segmentNumbers.size() > digits) {
+      while((int)m_segmentNumbers.size() > digits) {
          SegmentNumber* pNumber = m_segmentNumbers.back();
          m_segmentNumbers.pop_back();
          delete pNumber;

@@ -16,7 +16,7 @@ class FormBackglass final : public Form
 {
 public:
    FormBackglass(VPXPluginAPI* vpxApi, MsgPluginAPI* msgApi, uint32_t endpointId, B2SData* pB2SData);
-   ~FormBackglass();
+   ~FormBackglass() override;
 
    void Start();
    void OnPaint(VPXRenderContext2D* const ctx) override;

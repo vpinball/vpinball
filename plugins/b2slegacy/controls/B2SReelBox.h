@@ -11,7 +11,7 @@ class B2SReelBox final : public B2SBaseBox
 {
 public:
    B2SReelBox(VPXPluginAPI* vpxApi, B2SData* pB2SData);
-   virtual ~B2SReelBox();
+   ~B2SReelBox() override;
 
    void OnPaint(VPXRenderContext2D* const ctx) override;
 

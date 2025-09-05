@@ -10,11 +10,11 @@ Segment::Segment(const string& szName, float x, float y, float width, float heig
    m_on = false;
    m_glow = -1.0f;
    m_radius = 0.0f;
-   m_pStyle = NULL;
-   m_pGlassPath = NULL;
-   m_pLightPath = NULL;
-   m_pExternMatrix = NULL;
-   m_pOwnMatrix = NULL;
+   m_pStyle = nullptr;
+   m_pGlassPath = nullptr;
+   m_pLightPath = nullptr;
+   m_pExternMatrix = nullptr;
+   m_pOwnMatrix = nullptr;
 
    InitSegment(szName, x, y, width, height, angle, SegmentCap_Standard, SegmentCap_Standard, 45);
 }
@@ -24,11 +24,11 @@ Segment::Segment(const string& szName, float x, float y, float width, float heig
    m_on = false;
    m_glow = -1.0f;
    m_radius = 0.0f;
-   m_pStyle = NULL;
-   m_pGlassPath = NULL;
-   m_pLightPath = NULL;
-   m_pExternMatrix = NULL;
-   m_pOwnMatrix = NULL;
+   m_pStyle = nullptr;
+   m_pGlassPath = nullptr;
+   m_pLightPath = nullptr;
+   m_pExternMatrix = nullptr;
+   m_pOwnMatrix = nullptr;
 
    InitSegment(szName, x, y, width, height, angle, topcap, bottomcap, 45);
 }
@@ -38,11 +38,11 @@ Segment::Segment(const string& szName, float x, float y, float width, float heig
    m_on = false;
    m_glow = -1.0f;
    m_radius = 0.0f;
-   m_pStyle = NULL;
-   m_pGlassPath = NULL;
-   m_pLightPath = NULL;
-   m_pExternMatrix = NULL;
-   m_pOwnMatrix = NULL;
+   m_pStyle = nullptr;
+   m_pGlassPath = nullptr;
+   m_pLightPath = nullptr;
+   m_pExternMatrix = nullptr;
+   m_pOwnMatrix = nullptr;
 
    InitSegment(szName, x, y, width, height, angle, topcap, bottomcap, capangle);
 }
@@ -51,11 +51,11 @@ Segment::Segment(float x, float y, float radius)
 {
    m_on = false;
    m_glow = -1.0f;
-   m_pStyle = NULL;
-   m_pGlassPath = NULL;
-   m_pLightPath = NULL;
-   m_pExternMatrix = NULL;
-   m_pOwnMatrix = NULL;
+   m_pStyle = nullptr;
+   m_pGlassPath = nullptr;
+   m_pLightPath = nullptr;
+   m_pExternMatrix = nullptr;
+   m_pOwnMatrix = nullptr;
 
    InitSegmentDot(x, y, radius);
 }
@@ -258,10 +258,10 @@ void Segment::GetLightData()
 void Segment::ResetCacheData()
 {
    delete m_pGlassPath;
-   m_pGlassPath = NULL;
+   m_pGlassPath = nullptr;
 
    delete m_pLightPath;
-   m_pLightPath = NULL;
+   m_pLightPath = nullptr;
 }
 
 void Segment::SetTransform(VPXGraphics* pRenderer)

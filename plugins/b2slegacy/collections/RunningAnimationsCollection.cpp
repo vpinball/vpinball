@@ -4,7 +4,7 @@
 
 namespace B2SLegacy {
 
-RunningAnimationsCollection* RunningAnimationsCollection::m_pInstance = NULL;
+RunningAnimationsCollection* RunningAnimationsCollection::m_pInstance = nullptr;
 
 RunningAnimationsCollection* RunningAnimationsCollection::GetInstance()
 {

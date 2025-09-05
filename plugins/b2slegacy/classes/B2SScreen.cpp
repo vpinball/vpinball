@@ -20,8 +20,8 @@ B2SScreen::B2SScreen(B2SData* pB2SData, MsgPluginAPI* msgApi, VPXPluginAPI* vpxA
      m_vpxApi(vpxApi),
      m_pB2SSettings(pB2SData->GetB2SSettings())
 {
-   m_pFormBackglass = NULL;
-   m_pFormDMD = NULL;
+   m_pFormBackglass = nullptr;
+   m_pFormDMD = nullptr;
    m_playfieldSize = { 0, 0, 0, 0 };
    m_backglassMonitor.clear();
    m_backglassSize = { 0, 0, 0, 0 };
@@ -50,7 +50,7 @@ B2SScreen::~B2SScreen()
 void B2SScreen::Start(Form* pFormBackglass)
 {
    // here we go with one form for the backglass and no DMD and no grill
-   Start(pFormBackglass, NULL, { 0, 0 }, eDMDViewMode_NoDMD, 0, 0);
+   Start(pFormBackglass, nullptr, { 0, 0 }, eDMDViewMode_NoDMD, 0, 0);
 
    Show();
 }
@@ -58,7 +58,7 @@ void B2SScreen::Start(Form* pFormBackglass)
 void B2SScreen::Start(Form* pFormBackglass, int backglassGrillHeight, int smallBackglassGrillHeight)
 {
    // here we go with one form for the backglass and no DMD but with grill
-   Start(pFormBackglass, NULL, { 0, 0 }, eDMDViewMode_NoDMD, backglassGrillHeight, smallBackglassGrillHeight);
+   Start(pFormBackglass, nullptr, { 0, 0 }, eDMDViewMode_NoDMD, backglassGrillHeight, smallBackglassGrillHeight);
 }
 
 void B2SScreen::Start(Form* pFormBackglass, Form* pFormDMD, SDL_Point defaultDMDLocation)
