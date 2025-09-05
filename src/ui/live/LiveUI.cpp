@@ -574,7 +574,7 @@ void LiveUI::MarkdownLinkCallback(ImGui::MarkdownLinkCallbackData data)
       #ifdef ENABLE_SDL_VIDEO
       SDL_OpenURL(url.c_str());
       #else
-      ShellExecuteA(NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL);
+      ShellExecuteA(NULL, "open", url.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
       #endif
    }
 }
@@ -652,7 +652,7 @@ void LiveUI::NewFrame()
          int window_x, window_y;
          SDL_GetGlobalMouseState(&mouse_x_global, &mouse_y_global);
          SDL_GetWindowPosition(focused_window, &window_x, &window_y);
-         ImVec2 mousePos(mouse_x_global - window_x, mouse_y_global - window_y);
+         const ImVec2 mousePos(mouse_x_global - window_x, mouse_y_global - window_y);
          switch (m_rotate)
          {
          case 0: ImGui::GetIO().AddMousePosEvent(mousePos.x, mousePos.y); break;
@@ -785,7 +785,7 @@ void LiveUI::Update()
    m_meshBuffers.resize(draw_data->CmdListsCount);
    for (int n = 0; n < draw_data->CmdListsCount; n++)
    {
-      const ImDrawList *cmd_list = draw_data->CmdLists[n];
+      const ImDrawList * const cmd_list = draw_data->CmdLists[n];
       const unsigned int numVertices = cmd_list->VtxBuffer.size();
       const unsigned int numIndices = cmd_list->IdxBuffer.size();
 
@@ -802,17 +802,13 @@ void LiveUI::Update()
          m_meshBuffers[n]->m_vb->Lock(vb);
          for (unsigned int i = 0; i < numVertices; i++)
          {
-            uint32_t rgba = cmd_list->VtxBuffer[i].col;
-            const uint8_t a = (rgba >> 24) & 0xFF;
-            const uint8_t b = (rgba >> 16) & 0xFF;
-            const uint8_t g = (rgba >> 8) & 0xFF;
-            const uint8_t r = rgba & 0xFF;
+            const uint32_t rgba = cmd_list->VtxBuffer[i].col;
             vb[i].x = cmd_list->VtxBuffer[i].pos.x;
             vb[i].y = cmd_list->VtxBuffer[i].pos.y;
-            vb[i].z = a / 255.f;
-            vb[i].nx = r / 255.f;
-            vb[i].ny = g / 255.f;
-            vb[i].nz = b / 255.f;
+            vb[i].z = (float)((rgba >> 24) & 0xFFu) * (float)(1.0 / 255.0); // alpha
+            vb[i].nx = (float)(rgba & 0x000000FFu) * (float)(1.0 / 255.0); // red
+            vb[i].ny = (float)(rgba & 0x0000FF00u) * (float)(1.0 / 65280.0); // green
+            vb[i].nz = (float)(rgba & 0x00FF0000u) * (float)(1.0 / 16711680.0); // blue
             vb[i].tu = cmd_list->VtxBuffer[i].uv.x;
             vb[i].tv = cmd_list->VtxBuffer[i].uv.y;
          }
@@ -905,4 +901,3 @@ void LiveUI::HideUI()
    g_pvp->m_settings.Save();
    m_player->SetPlayState(true);
 }
-
