@@ -10,6 +10,11 @@
 
 #include <cmath>
 #include <cstring>
+
+#ifndef _COLORREF_DEFINED
+   typedef unsigned long COLORREF;
+   #define _COLORREF_DEFINED
+#endif
 #include <utils/color.h>
 
 #define MAX_GRAPHICS_POLYSIZE 16384
