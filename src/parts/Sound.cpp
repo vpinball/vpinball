@@ -36,25 +36,25 @@ Sound* Sound::CreateFromFile(const string& filename)
 struct WaveHeader
 {
    // [Master RIFF chunk]
-   DWORD dwRiff; // "RIFF"
-   DWORD dwSize; // Size
-   DWORD dwWave; // "WAVE"
+   uint32_t dwRiff; // "RIFF"
+   uint32_t dwSize; // Size
+   uint32_t dwWave; // "WAVE"
    // [Chunk describing the data format]
-   DWORD dwFmt; // "fmt "
-   DWORD dwFmtSize; // Wave Format Size
-   WORD wFormatTag; // format type
-   WORD wNChannels; // number of channels (i.e. mono, stereo...)
-   DWORD dwNSamplesPerSec; // sample rate
-   DWORD dwNAvgBytesPerSec; // for buffer estimation
-   WORD wNBlockAlign; // block size of data
-   WORD wBitsPerSample; // number of bits per sample of mono data
+   uint32_t dwFmt; // "fmt "
+   uint32_t dwFmtSize; // Wave Format Size
+   uint16_t wFormatTag; // format type
+   uint16_t wNChannels; // number of channels (i.e. mono, stereo...)
+   uint32_t dwNSamplesPerSec; // sample rate
+   uint32_t dwNAvgBytesPerSec; // for buffer estimation
+   uint16_t wNBlockAlign; // block size of data
+   uint16_t wBitsPerSample; // number of bits per sample of mono data
    // [Chunk containing the sampled data]
-   DWORD dwData; // "data"
-   DWORD dwDataSize; // Sampled data size
+   uint32_t dwData; // "data"
+   uint32_t dwDataSize; // Sampled data size
 };
 
 #ifndef MAKEFOURCC
-#define MAKEFOURCC(ch0, ch1, ch2, ch3) ((DWORD)(BYTE)(ch0) | ((DWORD)(BYTE)(ch1) << 8) | ((DWORD)(BYTE)(ch2) << 16) | ((DWORD)(BYTE)(ch3) << 24))
+#define MAKEFOURCC(ch0, ch1, ch2, ch3) ((uint32_t)(BYTE)(ch0) | ((uint32_t)(BYTE)(ch1) << 8) | ((uint32_t)(BYTE)(ch2) << 16) | ((uint32_t)(BYTE)(ch3) << 24))
 #endif
 
 Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
@@ -104,7 +104,7 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
       // [Master RIFF chunk]
       auto const waveHeader = reinterpret_cast<WaveHeader*>(data.data());
       waveHeader->dwRiff = MAKEFOURCC('R', 'I', 'F', 'F');
-      waveHeader->dwSize = static_cast<DWORD>(waveFileSize - 8); // File size - 8
+      waveHeader->dwSize = static_cast<uint32_t>(waveFileSize - 8); // File size - 8
       waveHeader->dwWave = MAKEFOURCC('W', 'A', 'V', 'E');
       // [Chunk describing the data format]
       waveHeader->dwFmt = MAKEFOURCC('f', 'm', 't', ' ');
@@ -117,7 +117,7 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
       waveHeader->wBitsPerSample = wfx.wBitsPerSample; // Number of bits per sample of mono data
       // [Chunk containing the sampled data]
       waveHeader->dwData = MAKEFOURCC('d', 'a', 't', 'a');
-      waveHeader->dwDataSize = static_cast<DWORD>(cdata); // Sampled data size
+      waveHeader->dwDataSize = static_cast<uint32_t>(cdata); // Sampled data size
       if (FAILED(pstm->Read(data.data() + sizeof(WaveHeader), static_cast<ULONG>(cdata), &read)))
          return nullptr;
    }
