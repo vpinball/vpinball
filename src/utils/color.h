@@ -2,12 +2,12 @@
 
 #pragma once
 
-#include "math/matrix.h"
+#include "../renderer/typedefs3D.h"
 
 #ifdef RGB
  #undef RGB
 #endif
-#define RGB(r,g,b) ((COLORREF)(((DWORD)(r)) | (((DWORD)(g))<<8) | (((DWORD)(b))<<16)))
+#define RGB(r,g,b) ((COLORREF)(((uint32_t)(r)) | (((uint32_t)(g))<<8) | (((uint32_t)(b))<<16)))
 
 inline D3DCOLOR COLORREF_to_D3DCOLOR(const COLORREF c)
 {

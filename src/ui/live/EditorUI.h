@@ -21,9 +21,6 @@ public:
    void Update();
    void Close();
 
-   // FIXME to be moved away from EditorUI
-   void OpenMainSplash();
-
 private:
    // UI Context
    LiveUI &m_liveUI;
@@ -85,7 +82,7 @@ private:
          is_live = live;
          renderprobe = data;
       }
-      bool operator==(Selection s)
+      bool operator==(Selection s) const
       {
          if (type != s.type || is_live != s.is_live)
             return false;
@@ -158,7 +155,7 @@ private:
    float m_outliner_width = 0.0f;
    string m_outlinerFilter;
    bool m_outlinerSelectLiveTab = true;
-   bool IsOutlinerFiltered(const string& name);
+   bool IsOutlinerFiltered(const string& name) const;
 
    // Properties
    float m_properties_width = 0.0f;
@@ -183,7 +180,7 @@ private:
    // 3D editor
    ImGuizmo::OPERATION m_gizmoOperation = ImGuizmo::NONE;
    ImGuizmo::MODE m_gizmoMode = ImGuizmo::WORLD;
-   bool GetSelectionTransform(Matrix3D& transform);
+   bool GetSelectionTransform(Matrix3D& transform) const;
    void SetSelectionTransform(const Matrix3D& transform, bool clearPosition = false, bool clearScale = false, bool clearRotation = false);
 
    // Editor camera

@@ -266,7 +266,7 @@ bool DynamicTypeLibrary::COMToScriptVariant(const VARIANT* cv, const ScriptTypeN
          assert(false);
          return false;
          break;
-      case TypeID::TYPEID_BOOL:   CHANGE_TYPE(VT_BOOL); sv.vBool = (V_BOOL(&v) == VARIANT_TRUE); break;
+      case TypeID::TYPEID_BOOL:   CHANGE_TYPE(VT_BOOL); sv.vBool = (V_BOOL(&v) == VARIANT_TRUE) ? 1 : 0; break;
       case TypeID::TYPEID_INT:    CHANGE_TYPE(VT_INT);  sv.vInt64 = V_INT(&v); break;
       case TypeID::TYPEID_UINT:   CHANGE_TYPE(VT_UINT); sv.vUInt = V_UINT(&v); break;
       case TypeID::TYPEID_FLOAT:  CHANGE_TYPE(VT_R4);   sv.vFloat = V_R4(&v); break;

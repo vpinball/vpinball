@@ -23,14 +23,15 @@ void PlumbOverlay::Update()
    }
 
    const float vel = m_player->m_physics->GetPlumbVel().Length();
-   float plumbFade = 0.f;
    if (vel > 0.025f)
       m_plumbFadeCounter = 0;
    else
       m_plumbFadeCounter++;
    if (m_plumbFadeCounter > 120)
       return;
-   else if (m_plumbFadeCounter < 20)
+
+   float plumbFade;
+   if (m_plumbFadeCounter < 20)
       plumbFade = 1.f;
    else 
       plumbFade = static_cast<float>(120 - m_plumbFadeCounter) / 100.f;

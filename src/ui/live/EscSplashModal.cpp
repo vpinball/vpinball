@@ -161,7 +161,7 @@ void EscSplashModal::Update()
       }
    #endif
    const ImVec2 pos = ImGui::GetWindowPos();
-   ImVec2 max = pos + ImGui::GetWindowSize();
+   const ImVec2 max = pos + ImGui::GetWindowSize();
    const bool hovered = ImGui::IsWindowHovered();
    ImGui::EndPopup();
 

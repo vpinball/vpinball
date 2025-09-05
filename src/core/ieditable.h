@@ -89,7 +89,7 @@ public:
 	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal) \
 	{ \
 		wstring newName = newVal; \
-		if (newName.empty() || newName.length() >= MAXNAMEBUFFER) \
+		if (newName.empty() || newName.length() >= std::size(m_wzName)) \
 			return E_FAIL; \
 		if (GetPTable()->m_pcv->ReplaceName(this, newName) != S_OK) \
 			return E_FAIL; \

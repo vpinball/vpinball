@@ -376,7 +376,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
        if (SetGestureConfig)
        {
            // http://msdn.microsoft.com/en-us/library/ms812373.aspx
-           const DWORD dwHwndTabletProperty =
+           constexpr DWORD dwHwndTabletProperty =
                TABLET_DISABLE_PRESSANDHOLD |      // disables press and hold (right-click) gesture
                TABLET_DISABLE_PENTAPFEEDBACK |    // disables UI feedback on pen up (waves)
                TABLET_DISABLE_PENBARRELFEEDBACK | // disables UI feedback on pen button down

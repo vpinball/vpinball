@@ -187,7 +187,7 @@ void PerfUI::Update()
       //const ImU32 col_hovered = ImGui::GetColorU32(ImGuiCol_PlotHistogramHovered) & 0x77FFFFFF;
       //const ImU32 col_outline_base = ImGui::GetColorU32(ImGuiCol_PlotHistogram) & 0x7FFFFFFF;
       //const ImU32 col_outline_hovered = ImGui::GetColorU32(ImGuiCol_PlotHistogramHovered) & 0x7FFFFFFF;
-      ImGuiContext &g = *GImGui;
+      const ImGuiContext &g = *GImGui;
       const ImGuiStyle &style = g.Style;
       ImVec2 graph_size;
       const auto blockHeight = ImGui::GetTextLineHeight() + (style.FramePadding.y * 2);
@@ -370,7 +370,7 @@ void PerfUI::Update()
          ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x - 8.f * m_dpi, io.DisplaySize.y - 8.f * m_dpi), 0, ImVec2(1.f, 1.f));
       ImGui::Begin("Plots", nullptr, window_flags_plots);
 
-      float t = static_cast<float>(m_player->m_time_sec);
+      const float t = static_cast<float>(m_player->m_time_sec);
       constexpr int rt_axis = ImPlotAxisFlags_NoTickLabels;
 
       ImPlot::GetStyle().Colors[ImPlotCol_FrameBg] = ImVec4(0.11f, 0.11f, 0.14f, 0.5f);

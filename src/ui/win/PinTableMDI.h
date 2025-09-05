@@ -13,7 +13,7 @@ public:
    override
    #endif
    ;
-   CComObject<PinTable> *GetTable() { return m_table; }
+   CComObject<PinTable> *GetTable() const { return m_table; }
    bool CanClose() const;
 
 protected:

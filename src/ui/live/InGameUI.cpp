@@ -201,7 +201,7 @@ void InGameUI::HandleTweakInput()
       }
    }
 
-   PinInput::InputState state = m_player->m_pininput.GetInputState();
+   const PinInput::InputState state = m_player->m_pininput.GetInputState();
    for (int i = 0; i < eCKeys; i++)
    {
       const EnumAssignKeys keycode = static_cast<EnumAssignKeys>(i);
@@ -267,7 +267,7 @@ void InGameUI::HandleTweakInput()
             m_tweakState[activeTweakSetting] = 0;
             if (keyEvent != 1) // Only keydown
                continue;
-            int stepi = up ? 1 : (int)m_tweakPages.size() - 1;
+            const int stepi = up ? 1 : (int)m_tweakPages.size() - 1;
             m_activeTweakPageIndex = ((m_activeTweakPageIndex + stepi) % (int)m_tweakPages.size());
             m_activeTweakIndex = 0;
             m_tweakScroll = 0.f;
@@ -281,7 +281,7 @@ void InGameUI::HandleTweakInput()
             if (keyEvent != 1) // Only keydown
                continue;
             DisableStaticPrepass();
-            int vlm = viewSetup.mMode + (int)step;
+            const int vlm = viewSetup.mMode + (int)step;
             viewSetup.mMode = vlm < 0 ? VLM_WINDOW : vlm >= 3 ? VLM_LEGACY : (ViewLayoutMode)vlm;
             UpdateTweakPage();
             break;
@@ -421,8 +421,8 @@ void InGameUI::HandleTweakInput()
                if (activeTweakSetting < BS_Custom + (int)customOptions.size())
                {
                   const auto& opt = customOptions[activeTweakSetting - BS_Custom];
-                  float nTotalSteps = (opt.maxValue - opt.minValue) / opt.step;
-                  int nMsecPerStep = nTotalSteps < 20.f ? 500 : max(5, 250 - (int)(now - startOfPress) / 10); // discrete vs continuous sliding
+                  const float nTotalSteps = (opt.maxValue - opt.minValue) / opt.step;
+                  const int nMsecPerStep = nTotalSteps < 20.f ? 500 : max(5, 250 - (int)(now - startOfPress) / 10); // discrete vs continuous sliding
                   int nSteps = (now - m_lastTweakKeyDown) / nMsecPerStep;
                   if (keyEvent == 1)
                   {
@@ -656,7 +656,7 @@ void InGameUI::HandleTweakInput()
                      { // If table does not define the glass position (for table without it, when loading we set the glass as horizontal)
                         TableDB db;
                         db.Load();
-                        int bestSizeMatch = db.GetBestSizeMatch(table->GetTableWidth(), table->GetHeight(), topHeight);
+                        const int bestSizeMatch = db.GetBestSizeMatch(table->GetTableWidth(), table->GetHeight(), topHeight);
                         if (bestSizeMatch >= 0)
                         {
                            bottomHeight = INCHESTOVPU(db.m_data[bestSizeMatch].glassBottom);
@@ -784,11 +784,11 @@ void InGameUI::Update()
    PinTable *const table = m_live_table;
    constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
    const float FontSize = ImGui::GetFontBaked()->Size;
-   ImVec2 minSize(min(FontSize * (m_tweakPages[m_activeTweakPageIndex] == TP_Rules ? 35.0f
+   const ImVec2 minSize(min(FontSize * (m_tweakPages[m_activeTweakPageIndex] == TP_Rules ? 35.0f
                                 : m_tweakPages[m_activeTweakPageIndex] == TP_Info  ? 45.0f
                                                                                    : 30.0f),
                   min(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y)),0.f);
-   ImVec2 maxSize(ImGui::GetIO().DisplaySize.x - 2.f * FontSize, 0.8f * ImGui::GetIO().DisplaySize.y - 1.f * FontSize);
+   const ImVec2 maxSize(ImGui::GetIO().DisplaySize.x - 2.f * FontSize, 0.8f * ImGui::GetIO().DisplaySize.y - 1.f * FontSize);
    ImGui::SetNextWindowBgAlpha(0.5f);
    if (m_player->m_vrDevice)
       ImGui::SetNextWindowPos(ImVec2(0.5f * ImGui::GetIO().DisplaySize.x, 0.5f * ImGui::GetIO().DisplaySize.y), 0, ImVec2(0.5f, 0.5f));
@@ -803,7 +803,7 @@ void InGameUI::Update()
    const bool isCamera = viewSetup.mMode == VLM_CAMERA;
    const bool isWindow = viewSetup.mMode == VLM_WINDOW;
 
-   BackdropSetting activeTweakSetting = m_tweakPageOptions[m_activeTweakIndex];
+   const BackdropSetting activeTweakSetting = m_tweakPageOptions[m_activeTweakIndex];
    if (ImGui::BeginTable("TweakTable", 4, /* ImGuiTableFlags_Borders */ 0))
    {
       static float vWidth = 50.f;
@@ -811,11 +811,12 @@ void InGameUI::Update()
       ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthFixed, vWidth);
       ImGui::TableSetupColumn("Unit", ImGuiTableColumnFlags_WidthFixed);
       ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed);
+      char buf[1024];
       #define CM_ROW(id, label, format, value, unit) \
       { \
-         char buf[1024]; snprintf(buf, sizeof(buf), format, value); \
+         snprintf(buf, sizeof(buf), format, value); \
          ImGui::TableNextColumn(); ImGui::TextUnformatted(label); ImGui::TableNextColumn(); \
-         float textWidth = ImGui::CalcTextSize(buf).x; vWidth = max(vWidth, textWidth); \
+         const float textWidth = ImGui::CalcTextSize(buf).x; vWidth = max(vWidth, textWidth); \
          if (textWidth < vWidth) ImGui::SameLine(vWidth - textWidth); \
          ImGui::TextUnformatted(buf); ImGui::TableNextColumn(); \
          ImGui::TextUnformatted(unit); ImGui::TableNextColumn(); \
@@ -823,7 +824,7 @@ void InGameUI::Update()
       }
       #define CM_SKIP_LINE {ImGui::TableNextColumn(); ImGui::Dummy(ImVec2(0.f, m_liveUI.GetDPI() * 3.f)); ImGui::TableNextRow();}
       const float realToVirtual = viewSetup.GetRealToVirtualScale(table);
-      for (int setting : m_tweakPageOptions)
+      for (const int setting : m_tweakPageOptions)
       {
          const bool highlight = (setting == activeTweakSetting)
                              || (activeTweakSetting == BS_XYZScale && (setting == BS_XScale || setting == BS_YScale || setting == BS_ZScale))
@@ -836,7 +837,7 @@ void InGameUI::Update()
             if (setting - BS_Custom >= (int)customOptions.size())
                continue;
             const Settings::OptionDef &opt = customOptions[setting - BS_Custom];
-            float value = table->m_settings.LoadValueWithDefault(opt.section, opt.id, opt.defaultValue);
+            const float value = table->m_settings.LoadValueWithDefault(opt.section, opt.id, opt.defaultValue);
             const string label = opt.name + ": ";
             if (!opt.literals.empty()) // List of values
             {

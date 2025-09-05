@@ -25,6 +25,11 @@
    #define D3DCOLOR_DEFINED
 #endif
 
+#ifndef _COLORREF_DEFINED
+   typedef unsigned long COLORREF;
+   #define _COLORREF_DEFINED
+#endif
+
 #ifdef ENABLE_VR
  #include "openvr.h"
 #endif

@@ -401,7 +401,7 @@ void EditorUI::Update()
       // Overlay Info Text
       ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x - 200.f * m_liveUI.GetDPI(), io.DisplaySize.y - m_toolbar_height - m_menubar_height - 5.f * m_liveUI.GetDPI())); // Fixed outliner width (to be adjusted when moving ImGui to the docking branch)
       ImGui::SetNextWindowPos(ImVec2(200.f * m_liveUI.GetDPI(), m_toolbar_height + m_menubar_height + 5.f * m_liveUI.GetDPI()));
-      ImGui::Begin("text overlay", NULL, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav);
+      ImGui::Begin("text overlay", nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav);
       switch (m_gizmoOperation)
       {
       case ImGuizmo::NONE: ImGui::TextUnformatted("Select"); break;
@@ -839,7 +839,7 @@ void EditorUI::Update()
    }
 }
 
-bool EditorUI::GetSelectionTransform(Matrix3D& transform)
+bool EditorUI::GetSelectionTransform(Matrix3D& transform) const
 {
    if (m_selection.type == EditorUI::Selection::SelectionType::S_EDITABLE)
    switch (m_selection.editable->GetItemType())
@@ -1022,7 +1022,7 @@ void EditorUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPos
    }
 }
 
-bool EditorUI::IsOutlinerFiltered(const string& name)
+bool EditorUI::IsOutlinerFiltered(const string& name) const
 {
    if (m_outlinerFilter.empty())
       return true;
