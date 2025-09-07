@@ -58,7 +58,8 @@ public:
 
    void SetPos(const int x, const int y);
    void Show(const bool show = true);
-   void RaiseAndFocus(const bool raise = true);
+   bool IsVisible() const;
+   void RaiseAndFocus();
    bool IsFocused() const;
 
    void SetBackBuffer(RenderTarget* rt, const bool wcgBackbuffer = false) { assert(rt == nullptr || (rt->GetWidth() == m_pixelWidth && rt->GetHeight() == m_pixelHeight)); m_backBuffer = rt; m_wcgBackbuffer = wcgBackbuffer; }
@@ -67,13 +68,12 @@ public:
 
    #ifdef ENABLE_SDL_VIDEO // SDL Windowing
       SDL_Window * GetCore() const { return m_nwnd; }
-
-      #ifdef _WIN32
-         HWND GetNativeHWND() const;
-      #endif
    #else // Win32 Windowing
       HWND GetCore() const { return m_nwnd; }
-      HWND GetNativeHWND() const { return m_nwnd; }
+   #endif
+
+   #ifdef _WIN32
+      HWND GetNativeHWND() const;
    #endif
 
    struct VideoMode

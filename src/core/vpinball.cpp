@@ -1054,11 +1054,11 @@ void VPinball::DoPlay(const int playMode)
                break;
             case SDL_EVENT_WINDOW_FOCUS_GAINED:
                isPFWnd = SDL_GetWindowFromID(e.window.windowID) == g_pplayer->m_playfieldWnd->GetCore();
-               g_pplayer->OnFocusChanged(true);
+               g_pplayer->OnFocusChanged();
                break;
             case SDL_EVENT_WINDOW_FOCUS_LOST:
                isPFWnd = SDL_GetWindowFromID(e.window.windowID) == g_pplayer->m_playfieldWnd->GetCore();
-               g_pplayer->OnFocusChanged(false);
+               g_pplayer->OnFocusChanged();
                break;
             case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
                isPFWnd = SDL_GetWindowFromID(e.window.windowID) == g_pplayer->m_playfieldWnd->GetCore();
@@ -2056,7 +2056,7 @@ LRESULT VPinball::OnFrontEndControlsMsg(WPARAM wParam, LPARAM lParam)
       // GAME_TO_FOREGROUND
       // If a player is running, bring its main window to the foreground
       if (g_pplayer != nullptr && g_pplayer->m_playfieldWnd != nullptr)
-         g_pplayer->m_playfieldWnd->RaiseAndFocus(true);
+         g_pplayer->m_playfieldWnd->RaiseAndFocus();
 
       // handled
       return 1;

@@ -902,7 +902,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 #endif
 
    // Show the window (for VR, even without preview, we need to create a window).
-   m_focused = true; // For some reason, we do not always receive the 'on focus' event after creation event on SDL. Just take for granted that focus is given upon showing
    m_playfieldWnd->Show();
    m_playfieldWnd->RaiseAndFocus();
 
@@ -1238,7 +1237,7 @@ void Player::SetPlayState(const bool isPlaying, const uint32_t delayBeforePauseM
    if (isPlaying || delayBeforePauseMs == 0)
    {
       m_pauseTimeTarget = 0;
-      bool willPlay = isPlaying && m_focused;
+      bool willPlay = isPlaying && m_playfieldWnd->IsFocused();
       if (wasPlaying != willPlay)
       {
          ApplyPlayingState(willPlay);
@@ -1249,18 +1248,19 @@ void Player::SetPlayState(const bool isPlaying, const uint32_t delayBeforePauseM
       m_pauseTimeTarget = m_time_msec + delayBeforePauseMs;
 }
 
-void Player::OnFocusChanged(const bool isGameFocused)
+void Player::OnFocusChanged()
 {
    // A lost focus event happens during player destruction when the main window is destroyed
    if (m_closing == CS_CLOSED)
       return;
-   if (isGameFocused)
+   if (m_playfieldWnd->IsFocused())
    {
-      PLOGI << "Focus gained";
+      PLOGI << "Playfield window gained focus";
    }
    else
    {
       #ifdef _MSC_VER
+         string title = "undefined"s;
          string focusedWnd = "undefined"s;
          HWND foregroundWnd = GetForegroundWindow();
          if (foregroundWnd)
@@ -1277,30 +1277,24 @@ void Player::OnFocusChanged(const bool isGameFocused)
                      focusedWnd = szFileName;
                }
             }
-            char title[1000];
-            GetWindowText(foregroundWnd, title, 1000);
-            PLOGI << "Focus lost. Current focused window: " << focusedWnd << ", with title: '" << title << '\'';
+            char szTitle[1000];
+            GetWindowText(foregroundWnd, szTitle, 1000);
+            title = szTitle;
+            PLOGI << "Playfield window lost focus to window with title: '" << title << "' created by application: " << focusedWnd;
          }
          else
-      #endif
-      {
-         PLOGI << "Focus lost.";
-      }
+         {
+            PLOGI << "Playfield window lost focus.";
+         }
 
-      #if defined(_MSC_VER) && !defined(DEBUG)
-         // FIXME Hacky handling of auxiliary windows (B2S, DMD, Pup,...) stealing focus under Windows: keep focused during first 5 seconds
-         // Note that m_liveUI might be null, such as when a message box pops up before the UI finishes initializing
-         if (m_time_msec < 5000 && m_liveUI != nullptr && !m_liveUI->IsOpened() && !m_debuggerDialog.IsWindow())
-            m_playfieldWnd->RaiseAndFocus();
+      #else
+         PLOGI << "Playfield window lost focus.";
       #endif
    }
    const bool wasPlaying = IsPlaying();
-   const bool willPlay = m_playing && isGameFocused;
+   const bool willPlay = m_playing && m_playfieldWnd->IsFocused();
    if (wasPlaying != willPlay)
-   {
       ApplyPlayingState(willPlay);
-      m_focused = isGameFocused;
-   }
 }
 
 void Player::ApplyPlayingState(const bool play)
@@ -2136,24 +2130,47 @@ void Player::FinishFrame()
 #endif
    }
 
-#ifdef _MSC_VER
-   // TODO hacky Win32 management: try to bring PinMAME, B2S, Freezy's DMD, Pup window back on top (to be removed when these extensions will be cleanly handled by cleaned up plugins)
-   if (m_overall_frames < 10)
-   {
-      static const std::array<string,11> overlaylist{ "MAME"s, "Virtual DMD"s, "pygame"s, "PUPSCREEN1"s, "formDMD"s, "PUPSCREEN5"s, "PUPSCREEN2"s, "Form1"s /* Old B2S */, "B2S Backglass Server"s, "B2S Background"s, "B2S DMD"s };
-      for (const string &windowtext : overlaylist)
+   #ifdef _MSC_VER
+      // Legacy hacky Win32 focus management: keep VPX focused & overlayed by the anciliary COM created window
+      // This is very hacky and does not seem to always work (we are requesting focus but also ask these window to stay on top of us as an overlay)
+      // This also means that user interaction with these anciliary windows is disabled during the first seconds after starting a table which is nothing but intuitive
+      // Finally, this means that we are doing the z ordering of these windows in between themselves (for example B2S DMD vs Freezy's DMD) which is not clean too...
+      // Window priority order is defined by the order of names in the overlaylist array below
+      // The clean way of handling this is by using windows managed by VPX through plugins & anciliary window rendering support (overlays are rendered inside the containing window)
+      if (m_time_msec < 3000)
       {
-         HWND hVPMWnd = FindWindow(nullptr, windowtext.c_str());
-         if (hVPMWnd == nullptr)
-            hVPMWnd = FindWindow(windowtext.c_str(), nullptr);
-         if (hVPMWnd != nullptr && ::IsWindowVisible(hVPMWnd))
+         static const std::array<string, 15> overlaylist {
+            // Backglass overlays
+            "B2S Backglass Server"s, "B2S Backglass"s, "B2S Background"s, "Form1"s, // B2S, including legacy 'B2S Background' and 'Form1' windows
+            "PUPSCREEN2"s, "PUPSCREEN0"s, // PinUp Player, including topper (after backglass, if overlayed over backglass)
+            "pygame"s, // PROC controller
+            // DMD & alpha segment overlays
+            "formDMD"s, // Not sure which one is this ?
+            "B2S DMD"s, // B2S (usually 16:9 DMD, eventually overlayed by Freezy's or VPinMAME DMD)
+            "PUPSCREEN5"s, "PUPSCREEN1"s, // PinUp Player DMD display (16:9 FullDMD then 4:1 standard DMD)
+            "VPinMAME"s, // VPinMAME
+            "Virtual Alphanumeric Display"s, "Virtual DMD"s, // Freezy's ExtDMD (DMD but also windows for alpha segment displays)
+         };
+         for (const string &windowtext : overlaylist)
          {
-            ::SetWindowPos(hVPMWnd, HWND_TOPMOST, 0, 0, 0, 0, (SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE)); // in some strange cases the VPinMAME window is not on top, so enforce it
-            ::BringWindowToTop(hVPMWnd);
+            HWND hVPMWnd = FindWindow(nullptr, windowtext.c_str());
+            if (hVPMWnd == nullptr)
+               hVPMWnd = FindWindow(windowtext.c_str(), nullptr);
+            if (hVPMWnd != nullptr && IsWindowVisible(hVPMWnd))
+            {
+               // Make sure the window is always on top of us, but does not take focus away from us (no activation flag, and not using BringWindowToTop which request focus)
+               SetWindowPos(hVPMWnd, HWND_TOPMOST, 0, 0, 0, 0, (SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE));
+               // Keep input focus on the VPX playfield window
+               // TODO With the latest changes (early hiding of editor window, cleaner focus management), do we really need this anymore ? Not doing it would allow user interaction with anciliary windows
+               if (GetForegroundWindow() == hVPMWnd)
+               {
+                  PLOGI << "Anciliary overlay window '" << windowtext << "' has taken input focus, keeping focus on playfield.";
+                  m_playfieldWnd->RaiseAndFocus();
+               }
+            }
          }
       }
-   }
-#endif
+   #endif
 }
 
 void Player::OnAuxRendererChanged(const unsigned int msgId, void* userData, void* msgData)
@@ -2506,8 +2523,11 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
    }
 
    #ifdef ENABLE_BGFX
-   if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
+   if (output.GetMode() == VPX::RenderOutput::OM_WINDOW && !output.GetWindow()->IsVisible())
+   {
       output.GetWindow()->Show();
+      m_playfieldWnd->RaiseAndFocus(); // Keep focus on playfield when showing an anciliary window
+   }
    #endif
 
    return rd->GetCurrentRenderTarget();

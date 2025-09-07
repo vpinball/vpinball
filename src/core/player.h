@@ -128,8 +128,8 @@ public:
    string GetPerfInfo();
 
    void SetPlayState(const bool isPlaying, const uint32_t delayBeforePauseMs = 0); // Allow to play/pause during UI interaction or to perform timed simulation steps (still needs the player window to be focused).
-   bool IsPlaying(const bool applyWndFocus = true) const { return (applyWndFocus ? (m_playing && m_focused) : m_focused) && !IsEditorMode(); }
-   void OnFocusChanged(const bool isGameFocused); // On focus lost, pause player and show mouse cursor
+   bool IsPlaying(const bool applyWndFocus = true) const { return m_playing && (applyWndFocus ? m_playfieldWnd->IsFocused() : true) && !IsEditorMode(); }
+   void OnFocusChanged(); // On focus lost, pause player and show mouse cursor
 
    uint32_t m_pauseTimeTarget = 0;
    bool m_step = false; // If set to true, the physics engine will do a single physic step and stop simulation (turning this flag to false)
@@ -155,7 +155,6 @@ public:
 
 private:
    bool m_playing = true;
-   bool m_focused = false;
    void ApplyPlayingState(const bool play);
 
 #pragma region Main Loop
