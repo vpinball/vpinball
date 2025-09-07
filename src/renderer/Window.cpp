@@ -362,23 +362,31 @@ void Window::Show(const bool show)
    #endif
 }
 
-void Window::RaiseAndFocus(const bool raise)
+bool Window::IsVisible() const
+{
+   if (m_isVR)
+      return true;
+#if defined(ENABLE_SDL_VIDEO) // SDL Windowing
+   return (SDL_GetWindowFlags(m_nwnd) & SDL_WINDOW_HIDDEN) == 0;
+#else // Win32 Windowing
+   return IsWindowVisible(m_nwnd);
+#endif
+}
+
+void Window::RaiseAndFocus()
 {
    if (m_isVR)
       return;
    #if defined(ENABLE_SDL_VIDEO) // SDL Windowing
       SDL_RaiseWindow(m_nwnd);
    #else // Win32 Windowing
-      if (raise)
-      {
-         SetForegroundWindow(m_nwnd);
+      SetForegroundWindow(m_nwnd);
 
-         // Windows automatically minimizes full-screen-exclusive windows when they're
-         // moved to the background, but it doesn't automatically restore them when
-         // they're brought back in front, so we have to do this explicitly.
-         if (IsIconic(m_nwnd))
-            SendMessage(m_nwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
-      }
+      // Windows automatically minimizes full-screen-exclusive windows when they're
+      // moved to the background, but it doesn't automatically restore them when
+      // they're brought back in front, so we have to do this explicitly.
+      if (IsIconic(m_nwnd))
+         SendMessage(m_nwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
 
       SetFocus(m_nwnd);
    #endif
@@ -647,10 +655,14 @@ void Window::GetDisplayModes(const int display, vector<VideoMode>& modes)
    #endif
 }
 
-#if defined(_WIN32) && defined(ENABLE_SDL_VIDEO)
+#if defined(_WIN32)
 HWND Window::GetNativeHWND() const
 {
-   return (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(GetCore()), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+   #if defined(ENABLE_SDL_VIDEO)
+      return (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(GetCore()), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+   #else
+      return m_nwnd;
+   #endif
 }
 #endif
 
