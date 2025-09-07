@@ -12,6 +12,7 @@ layout(location=1) in vec3 vNormal;
 layout(location=2) in float2 tc;
 out float2 tex0;
 out float4 color0;
+out float2 clipPos;
 
 uniform mat4 matWorldView;
 
@@ -24,16 +25,19 @@ uniform sampler2D tex_base_color;
 
 in float2 tex0;
 in float4 color0;
+in float2 clipPos;
 
 out vec4 color;
 #ifdef SHADER_GL410
 flat in int glLayer_gs;
 #endif
 
+uniform float4 clip_plane;
 
 ////vs_liveui_main
 void main()
 {
+   clipPos = vPosition.xy;
    gl_Position = matWorldView * vec4(vPosition.x, vPosition.y, 0.0, 1.0);
    color0 = sdrScale * float4(vNormal.rgb, vPosition.z);
    tex0 = tc;
@@ -44,6 +48,8 @@ void main()
 ////ps_liveui_main
 void main()
 {
+   if (clipPos.x < clip_plane.x || clipPos.y < clip_plane.y || clipPos.x > clip_plane.z || clipPos.y > clip_plane.w)
+      discard;
    color = texture(tex_base_color, tex0) * color0;
 }
 

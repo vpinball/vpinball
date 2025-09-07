@@ -5,6 +5,7 @@
 uniform float4x4 matWorldView : WORLDVIEWPROJ;
 
 uniform float4 staticColor_Alpha;
+uniform float4 clip_plane;
 #define stereoOfs staticColor_Alpha.x
 #define sdrScale staticColor_Alpha.a
 
@@ -21,6 +22,7 @@ struct VS_OUTPUT_2D
    float4 pos      : POSITION;
    float4 color    : COLOR0;
    float2 tex0     : TEXCOORD1;
+   float2 clipPos  : TEXCOORD2;
 };
 
 VS_OUTPUT_2D vs_liveui_main (const in float4 vPosition : POSITION0,
@@ -28,6 +30,7 @@ VS_OUTPUT_2D vs_liveui_main (const in float4 vPosition : POSITION0,
                              const in float2 tc        : TEXCOORD0)
 {
    VS_OUTPUT_2D Out;
+   Out.clipPos = vPosition.xy;
    Out.pos = mul(float4(vPosition.x, vPosition.y, 0.0, 1.0), matWorldView);
    Out.color = sdrScale * float4(vNormal.rgb, vPosition.z);
    Out.tex0 = tc;
@@ -37,6 +40,8 @@ VS_OUTPUT_2D vs_liveui_main (const in float4 vPosition : POSITION0,
 float4 ps_liveui_main(const in VS_OUTPUT_2D IN)
    : COLOR
 {
+   if (IN.clipPos.x < clip_plane.x || IN.clipPos.y < clip_plane.y || IN.clipPos.x > clip_plane.z || IN.clipPos.y > clip_plane.w)
+      discard;
    return tex2D(tex_base_color, IN.tex0) * IN.color;
 }
 
