@@ -44,7 +44,7 @@ ShaderTechniques Shader::m_boundTechnique = ShaderTechniques::SHADER_TECHNIQUE_I
 static vector<ShaderUniforms> InitTechUniforms() { return vector<ShaderUniforms>(); }
 static vector<ShaderUniforms> InitTechUniforms(std::initializer_list<ShaderUniforms> args) { return vector<ShaderUniforms> { args }; }
 Shader::TechniqueDef Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT] {
-   SHADER_TECHNIQUE(LiveUI, SHADER_matWorldView, SHADER_tex_base_color, SHADER_staticColor_Alpha),
+   SHADER_TECHNIQUE(LiveUI, SHADER_matWorldView, SHADER_tex_base_color, SHADER_staticColor_Alpha, SHADER_clip_plane),
    SHADER_TECHNIQUE(RenderBall, SHADER_matProj, SHADER_matWorldViewProj, SHADER_matView, SHADER_matWorldView, SHADER_matWorldViewInverse, SHADER_ballLightEmission, SHADER_ballLightPos,
       SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth, SHADER_cAmbient_LightRange, SHADER_tex_diffuse_env,
       SHADER_orientation, SHADER_invTableRes_reflection, SHADER_w_h_disableLighting, SHADER_tex_ball_color, SHADER_tex_ball_playfield, SHADER_tex_ball_decal, SHADER_clip_plane),

@@ -1,5 +1,5 @@
 $input a_position, a_normal, a_texcoord0
-$output v_color0, v_texcoord0, v_worldPos
+$output v_color0, v_texcoord0, v_texcoord1
 
 #include "common.sh"
 
@@ -11,9 +11,9 @@ uniform vec4 staticColor_Alpha;
 
 void main()
 {
+    v_texcoord1 = a_position.xy;
+
     vec4 ofsPos = vec4(a_position.xy, 0.0, 1.0);
-    v_worldPos = ofsPos;
-    
     #ifdef STEREO
         if (gl_InstanceID == 0)
             ofsPos.x += stereoOfs;
