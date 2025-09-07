@@ -460,12 +460,12 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
    {
       PLOGI << "Settings file was loaded from '" << path << '\'';
       Validate(createDefault);
-      for (const auto& entry : m_ini)
+      for (const auto &[key, value] : m_ini)
       {
-         if (FindIndexOf(m_settingKeys, entry.first) < 0)
+         if (FindIndexOf(m_settingKeys, key) < 0)
          {
-            PLOGI << "Registering section '" << entry.first << "' used in settings file '" << path << '\'';
-            m_settingKeys.push_back(entry.first);
+            PLOGI << "Registering section '" << key << "' used in settings file '" << path << '\'';
+            m_settingKeys.push_back(key);
          }
       }
       return true;
@@ -857,7 +857,7 @@ Settings::OptionDef &Settings::RegisterSetting(const Section section, const stri
    opt->unit = unit;
 
    if (isNew)
-      opt->value = LoadValueWithDefault(section, name, defaultValue);
+      opt->value = LoadValueWithDefault(section, id, defaultValue);
 
    opt->value = clamp(minValue + step * roundf((opt->value - minValue) / step), minValue, maxValue);
 

@@ -62,7 +62,7 @@ float VPXPluginAPIImpl::GetOption(const char* pageId, const char* optionId, cons
          const int nSteps = 1 + (int)(roundf((maxValue - minValue) / step));
          literals.reserve(nSteps);
          for (int i = 0; i < nSteps; i++)
-            literals.push_back(values[i]);
+            literals.emplace_back(values[i]);
       }
       return settings.RegisterSetting(section, optionId, showMask, optionName, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals).value;
    }
