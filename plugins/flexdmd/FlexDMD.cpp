@@ -227,7 +227,7 @@ AnimatedActor* FlexDMD::NewVideo(const string& name, const string& video)
       pAssetSrc->Release();
 
       if (assetType == AssetType_Video)
-         return (AnimatedActor*)Video::Create(this, video, name, true);
+         return (AnimatedActor*)Video::Create(this, m_pAssetManager, video, name, true);
       else if (assetType == AssetType_GIF)
          return (AnimatedActor*)GIFImage::Create(this, m_pAssetManager, video, name);
       else if (assetType == AssetType_Image)

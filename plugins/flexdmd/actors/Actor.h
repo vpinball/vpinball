@@ -34,10 +34,10 @@ public:
    virtual ActorType GetType() const { return AT_Actor; }
 
    const FlexDMD *GetFlexDMD() const { return m_pFlexDMD; }
-   
+
    void SetName(const string &szName) { m_name = szName; }
    const string &GetName() const { return m_name; }
-   
+
    void SetBounds(float x, float y, float Width, float Height) { m_x = x; m_y = y; m_width = Width; m_height = Height; }
    void SetPosition(float x, float y) { m_x = x; m_y = y; }
    void SetAlignedPosition(float x, float y, Alignment alignment) { m_x = x; m_y = y; Layout::ApplyAlign(alignment, m_width, m_height, m_x, m_y); }

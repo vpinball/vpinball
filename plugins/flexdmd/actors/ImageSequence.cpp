@@ -46,7 +46,7 @@ void ImageSequence::OnStageStateChanged()
       pFrame->SetOnStage(GetOnStage());
 }
 
-void ImageSequence::Rewind() 
+void ImageSequence::Rewind()
 {
    AnimatedActor::Rewind();
    m_frame = 0;

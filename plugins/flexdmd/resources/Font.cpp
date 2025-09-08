@@ -6,7 +6,7 @@ namespace Flex {
 Font::Font(AssetManager* pAssetManager, AssetSrc* pAssetSrc)
 {
    m_pBitmapFont = (BitmapFont*)pAssetManager->Open(pAssetSrc);
- 
+
    m_textures = new SDL_Surface*[m_pBitmapFont->GetPageCount()];
    memset((void*)m_textures, 0, sizeof(SDL_Surface*) * m_pBitmapFont->GetPageCount());
 
@@ -28,10 +28,10 @@ Font::Font(AssetManager* pAssetManager, AssetSrc* pAssetSrc)
 
          SDL_Surface* const dst = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_RGBA32);
 
-         const ColorRGBA32 outline = SDL_MapSurfaceRGBA(dst, 
-            GetRValue(pAssetSrc->GetFontBorderTint()), 
-            GetGValue(pAssetSrc->GetFontBorderTint()), 
-            GetBValue(pAssetSrc->GetFontBorderTint()), 
+         const ColorRGBA32 outline = SDL_MapSurfaceRGBA(dst,
+            GetRValue(pAssetSrc->GetFontBorderTint()),
+            GetGValue(pAssetSrc->GetFontBorderTint()),
+            GetBValue(pAssetSrc->GetFontBorderTint()),
             255);
 
          SDL_LockSurface(src);
