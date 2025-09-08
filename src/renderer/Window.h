@@ -2,13 +2,7 @@
 
 #pragma once
 
-#ifdef ENABLE_SDL_VIDEO // SDL Windowing
 #include <SDL3/SDL.h>
-#else // Win32 Windowing
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <windows.h>
-#endif
 
 #include "core/Settings.h"
 
@@ -43,14 +37,13 @@ public:
    Window(const int width, const int height); // VR Output
    ~Window();
 
-   void GetPos(int&x, int &y) const;
+   void GetPos(int& x, int& y) const;
    int GetWidth() const { return m_width; }
    int GetHeight() const { return m_height; }
    int GetPixelWidth() const { return m_pixelWidth; }
    int GetPixelHeight() const { return m_pixelHeight; }
    float GetRefreshRate() const { return m_refreshrate; } // Refresh rate of the device displaying the window. Window spread over multiple devices are not supported.
    bool IsFullScreen() const { return m_fullscreen; }
-   int GetAdapterId() const { return m_adapter; }
    int GetBitDepth() const { return m_bitdepth; }
    bool IsWCGDisplay() const { return m_wcgDisplay; } // Whether this window is on a WCG enabled display
    float GetSDRWhitePoint() const { return m_sdrWhitePoint; } // Selected SDR White Point of display in multiple of 80nits (so 3 gives 240nits for SDR white)
@@ -66,11 +59,7 @@ public:
    RenderTarget* GetBackBuffer() const { return m_backBuffer; }
    bool IsWCGBackBuffer() const { return m_wcgBackbuffer; } // Return true for HDR10/BT.2100 colorspace, otherwise Rec 709 colorspace
 
-   #ifdef ENABLE_SDL_VIDEO // SDL Windowing
-      SDL_Window * GetCore() const { return m_nwnd; }
-   #else // Win32 Windowing
-      HWND GetCore() const { return m_nwnd; }
-   #endif
+   SDL_Window * GetCore() const { return m_nwnd; }
 
    #ifdef _WIN32
       HWND GetNativeHWND() const;
@@ -86,28 +75,25 @@ public:
 
    struct DisplayConfig
    {
-      int display; // Window Display identifier (the number that appears in the native Windows settings)
-   #ifdef ENABLE_SDL_VIDEO 
-      SDL_DisplayID adapter; // SDL display/adapter identifier
-   #else
-      int adapter; // DirectX9 display/adapter identifier
-   #endif
       int top;
       int left;
       int width;
       int height;
-      bool isPrimary;
-      char DeviceName[CCHDEVICENAME]; // Device native identifier, e.g. "\\\\.\\DISPLAY1"
-      char GPU_Name[MAX_DEVICE_IDENTIFIER_STRING]; // GPU name if available, device (monitor) name otherwise
+      bool isPrimary; // Default display (used when no display is selected in the settings)
+      string displayName; // User friendly display name, should be stable accross runs, therefore used for settings
+      SDL_DisplayID display; // SDL display identifier (only valid for the lifetime of the SDL session)
+      UINT adapter; // Adapter identifier (only valid for the lifetime of the SDL session)
    };
 
-   static int GetDisplays(vector<DisplayConfig>& displays);
-   static void GetDisplayModes(const int display, vector<VideoMode>& modes);
+   DisplayConfig GetDisplayConfig(const Settings& settings) const;
+
+   static vector<DisplayConfig> GetDisplays();
+   static vector<VideoMode> GetDisplayModes(const DisplayConfig& display);
+   static DisplayConfig GetDisplayConfig(const string& displayName);
 
 private:
    int m_width, m_height;
    int m_pixelWidth, m_pixelHeight;
-   int m_display, m_adapter;
    int m_screenwidth, m_screenheight;
    bool m_fullscreen;
    float m_refreshrate;
@@ -122,11 +108,7 @@ private:
 
    class RenderTarget* m_backBuffer = nullptr;
 
-   #ifdef ENABLE_SDL_VIDEO // SDL Windowing
-      SDL_Window *m_nwnd = nullptr;
-   #else // Win32 Windowing
-      HWND m_nwnd = nullptr;
-   #endif
+   SDL_Window *m_nwnd = nullptr;
 };
 
 class RenderOutput final

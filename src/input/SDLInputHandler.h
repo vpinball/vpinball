@@ -51,12 +51,6 @@ public:
 
    void Update(const HWND foregroundWindow) override
    {
-      // When SDL Video is used, SDL events are processed during the main application message loop, so we do not do it again here
-      #if defined(ENABLE_SDL_INPUT) && !defined(ENABLE_SDL_VIDEO)
-         SDL_Event e;
-         while (SDL_PollEvent(&e) != 0)
-            HandleSDLEvent(e);
-      #endif
    }
 
    static constexpr uint64_t GetJoyId(const SDL_JoystickID& sdlId) {return static_cast<uint64_t>(0x200000000) | static_cast<uint64_t>(sdlId); }

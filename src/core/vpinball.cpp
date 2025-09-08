@@ -8,9 +8,7 @@
 #ifndef __STANDALONE__
 #include "ui/dialogs/KeysConfigDialog.h"
 #endif
-#ifdef ENABLE_SDL_VIDEO
 #include "imgui/imgui_impl_sdl3.h"
-#endif
 
 #ifdef __STANDALONE__
 #include "standalone/Standalone.h"
@@ -1037,8 +1035,7 @@ void VPinball::DoPlay(const int playMode)
       initError = true;
    else
    {
-      #ifdef ENABLE_SDL_VIDEO
-      auto processWindowMessages = [&initError]()
+      auto processWindowMessages = []()
       {
          const uint64_t startTick = usec();
          SDL_Event e;
@@ -1053,9 +1050,6 @@ void VPinball::DoPlay(const int playMode)
                g_pplayer->SetCloseState(Player::CloseState::CS_STOP_PLAY);
                break;
             case SDL_EVENT_WINDOW_FOCUS_GAINED:
-               isPFWnd = SDL_GetWindowFromID(e.window.windowID) == g_pplayer->m_playfieldWnd->GetCore();
-               g_pplayer->OnFocusChanged();
-               break;
             case SDL_EVENT_WINDOW_FOCUS_LOST:
                isPFWnd = SDL_GetWindowFromID(e.window.windowID) == g_pplayer->m_playfieldWnd->GetCore();
                g_pplayer->OnFocusChanged();
@@ -1165,44 +1159,6 @@ void VPinball::DoPlay(const int playMode)
                break;
          }
       };
-
-      #elif !defined(__STANDALONE__)
-      auto processWindowMessages = [&initError]()
-      {
-         const uint64_t startTick = usec();
-         MSG msg;
-         while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
-         {
-            if (msg.message == WM_QUIT)
-            {
-               if (g_pplayer->GetCloseState() == Player::CS_PLAYING || g_pplayer->GetCloseState() == Player::CS_USER_INPUT)
-                  g_pplayer->SetCloseState(Player::CS_STOP_PLAY);
-               return;
-            }
-            try
-            {
-               bool consumed = false;
-               if (g_pplayer->m_debugMode && g_pplayer->m_debuggerDialog.IsWindow())
-                  consumed = !!g_pplayer->m_debuggerDialog.IsSubDialogMessage(msg);
-               if (!consumed)
-               {
-                  TranslateMessage(&msg);
-                  DispatchMessage(&msg);
-               }
-            }
-            catch (...) // something failed on load/init
-            {
-               initError = true;
-            }
-
-            // Limit to 1ms of OS message processing per call
-            if ((usec() - startTick) > 1000ull)
-               break;
-         }
-      };
-      #else
-      auto processWindowMessages = []() {};
-      #endif
       g_pplayer->GameLoop(processWindowMessages);
 
       #if (defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS))

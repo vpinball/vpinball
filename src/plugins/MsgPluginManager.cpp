@@ -13,9 +13,7 @@
 
 using namespace std::string_literals;
 
-#if defined(ENABLE_SDL_VIDEO) || defined(ENABLE_SDL_INPUT) 
-   #include <SDL3/SDL_loadso.h>
-#endif
+#include <SDL3/SDL_loadso.h>
 
 #if defined(_WIN32) || defined(_WIN64)
    #ifndef WIN32_LEAN_AND_MEAN
@@ -396,21 +394,6 @@ std::shared_ptr<MsgPlugin> MsgPluginManager::GetPlugin(std::string_view pluginId
    return nullptr;
 }
 
-#if !(defined(ENABLE_SDL_VIDEO) || defined(ENABLE_SDL_INPUT)) && defined(_MSC_VER)
-static std::string GetLastErrorAsString()
-{
-   DWORD errorMessageID = ::GetLastError();
-   if (errorMessageID == 0)
-      return std::string();
-   LPSTR messageBuffer = nullptr;
-   size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-      (LPSTR)&messageBuffer, 0, NULL);
-   std::string message(messageBuffer, size);
-   LocalFree(messageBuffer);
-   return message;
-}
-#endif
-
 MsgPlugin::~MsgPlugin()
 {
    if (!m_library.empty() && IsLoaded())
@@ -433,47 +416,23 @@ void MsgPlugin::Load(const MsgPluginAPI* msgAPI)
          #if defined(_WIN32) || defined(_WIN64)
             SetDllDirectory(m_directory.c_str());
          #endif
-         #if defined(ENABLE_SDL_VIDEO) || defined(ENABLE_SDL_INPUT)
-            m_module = SDL_LoadObject(m_library.c_str());
-            if (m_module == nullptr)
-            {
-               PLOGE << "Plugin " << m_id << " failed to load library " << m_library << ": " << SDL_GetError();
-               return;
-            }
-            m_loadPlugin = (msgpi_load_plugin)SDL_LoadFunction(static_cast<SDL_SharedObject*>(m_module), load.c_str());
-            m_unloadPlugin = (msgpi_unload_plugin)SDL_LoadFunction(static_cast<SDL_SharedObject*>(m_module), unload.c_str());
-            if (m_loadPlugin == nullptr || m_unloadPlugin == nullptr)
-            {
-               SDL_UnloadObject(static_cast<SDL_SharedObject*>(m_module));
-               m_loadPlugin = nullptr;
-               m_unloadPlugin = nullptr;
-               m_module = nullptr;
-               PLOGE << "Plugin " << m_id << " invalid library " << m_library << ": required " << load << "/" << unload << " functions are not correct.";
-               return;
-            }
-         #elif defined(_WIN32) || defined(_WIN64)
-            constexpr DWORD flags = LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS;
-            m_module = LoadLibraryEx(m_library.c_str(), NULL, flags);
-            if (m_module == nullptr)
-            {
-               PLOGE << "Plugin " << m_id << " failed to load library " << m_library;
-               PLOGE << "Last error was: " << GetLastErrorAsString();
-               return;
-            }
-            m_loadPlugin = (msgpi_load_plugin)GetProcAddress(static_cast<HMODULE>(m_module), load.c_str());
-            m_unloadPlugin = (msgpi_unload_plugin)GetProcAddress(static_cast<HMODULE>(m_module), unload.c_str());
-            if (m_loadPlugin == nullptr || m_unloadPlugin == nullptr)
-            {
-               FreeLibrary(static_cast<HMODULE>(m_module));
-               m_loadPlugin = nullptr;
-               m_unloadPlugin = nullptr;
-               m_module = nullptr;
-               PLOGE << "Plugin " << m_id << " invalid library " << m_library << ": required " << load << '/' << unload << " functions are not correct.";
-               return;
-            }
-         #else
-            assert(false);
-         #endif
+         m_module = SDL_LoadObject(m_library.c_str());
+         if (m_module == nullptr)
+         {
+            PLOGE << "Plugin " << m_id << " failed to load library " << m_library << ": " << SDL_GetError();
+            return;
+         }
+         m_loadPlugin = (msgpi_load_plugin)SDL_LoadFunction(static_cast<SDL_SharedObject*>(m_module), load.c_str());
+         m_unloadPlugin = (msgpi_unload_plugin)SDL_LoadFunction(static_cast<SDL_SharedObject*>(m_module), unload.c_str());
+         if (m_loadPlugin == nullptr || m_unloadPlugin == nullptr)
+         {
+            SDL_UnloadObject(static_cast<SDL_SharedObject*>(m_module));
+            m_loadPlugin = nullptr;
+            m_unloadPlugin = nullptr;
+            m_module = nullptr;
+            PLOGE << "Plugin " << m_id << " invalid library " << m_library << ": required " << load << "/" << unload << " functions are not correct.";
+            return;
+         }
          #if defined(_WIN32) || defined(_WIN64)
             SetDllDirectory(NULL);
          #endif
@@ -504,13 +463,7 @@ void MsgPlugin::Unload()
    {
       // We use module unload instead of explicit unloading to avoid crashes due to forced unloading of modules with thread that are not yet joined
       // The only drawback is that the application keep the module (dll file) locked
-      /*
-      #if defined(ENABLE_SDL_VIDEO) || defined(ENABLE_SDL_INPUT)
-         SDL_UnloadObject(static_cast<SDL_SharedObject*>(m_module));
-      #elif defined(_WIN32) || defined(_WIN64)
-         FreeLibrary(static_cast<HMODULE>(m_module));
-      #endif
-      */
+      // SDL_UnloadObject(static_cast<SDL_SharedObject*>(m_module));
       m_module = nullptr;
       m_loadPlugin = nullptr;
       m_unloadPlugin = nullptr;

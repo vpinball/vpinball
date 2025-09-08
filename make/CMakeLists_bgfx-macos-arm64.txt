@@ -71,7 +71,6 @@ target_compile_definitions(vpinball PRIVATE
    __STANDALONE__
 
    ENABLE_BGFX
-   ENABLE_SDL_VIDEO
    ENABLE_SDL_INPUT
 
    __WINESRC__

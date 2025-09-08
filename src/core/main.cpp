@@ -218,9 +218,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 
    MsgPluginManager::GetInstance().UnloadPlugins();
 
-   #ifdef ENABLE_SDL_VIDEO
-      SDL_QuitSubSystem(SDL_INIT_VIDEO);
-   #endif
+   SDL_QuitSubSystem(SDL_INIT_VIDEO);
 
    #ifdef __STANDALONE__
       TTF_Quit();
@@ -234,9 +232,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
    }
    #endif
 
-   #if defined(ENABLE_SDL_VIDEO) || defined(ENABLE_SDL_INPUT)
-      SDL_Quit();
-   #endif
+   SDL_Quit();
 
    PLOGI << "Closing VPX...\n\n";
    #if (defined(__STANDALONE__) && (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__))

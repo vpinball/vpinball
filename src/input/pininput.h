@@ -521,7 +521,6 @@ inline unsigned int get_dik(const unsigned int vk)
 }
 #endif
 
-#ifdef ENABLE_SDL_VIDEO
 #define SDLK_TO_DIK_SIZE 105
 static constexpr Sint32 SDLK_TO_DIK[VK_TO_DIK_SIZE][2] =
 {
@@ -641,4 +640,3 @@ inline unsigned int get_dik_from_sdlk(const Sint32 sdlk)
 
    return ~0u;
 }
-#endif

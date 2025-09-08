@@ -67,7 +67,6 @@ target_compile_definitions(vpinball PRIVATE
    __OPENGLES__
 
    ENABLE_OPENGL
-   ENABLE_SDL_VIDEO
    ENABLE_SDL_INPUT
 
    __WINESRC__

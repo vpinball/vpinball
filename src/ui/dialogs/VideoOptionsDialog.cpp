@@ -54,6 +54,7 @@ private:
    Settings::Section m_wndSection = Settings::Plugin00;
    string m_wndSettingPrefix;
    bool m_wndEmbeddable;
+   vector<VPX::Window::DisplayConfig> m_displays;
    CComboBox m_wndDisplay;
    CListBox m_wndVideoModes;
    CComboBox m_wndAspectRatio;
@@ -497,22 +498,10 @@ void VideoOptionPropPage::UpdateFullscreenModesList()
    m_wndHeight.ShowWindow(fullscreen ? 0 : 1);
    GetDlgItem(IDC_RESET_WINDOW).ShowWindow(fullscreen ? 0 : 1);
 
-   int screenwidth = -1, screenheight = -1;
-   vector<VPX::Window::DisplayConfig> displays;
-   VPX::Window::GetDisplays(displays);
-   for (const VPX::Window::DisplayConfig& displayConf : displays)
-   {
-      if ((display == -1 && displayConf.isPrimary) || display == displayConf.display)
-      {
-         display = displayConf.display;
-         screenwidth = displayConf.width;
-         screenheight = displayConf.height;
-         break;
-      }
-   }
+   m_allVideoModes = VPX::Window::GetDisplayModes(m_displays[display]);
+   int screenwidth = m_displays[display].width;
+   int screenheight = m_displays[display].height;
    
-   VPX::Window::GetDisplayModes(display, m_allVideoModes);
-
    const int depthcur = GetEditedSettings().LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "ColorDepth", 32);
    const float refreshrate = GetEditedSettings().LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "RefreshRate", 0.f);
    const int widthcur = GetEditedSettings().LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "Width", -1);
@@ -575,40 +564,40 @@ void VideoOptionPropPage::LoadDisplaySettings()
    Settings& settings = GetEditedSettings();
    BeginLoad();
 
-   #if defined(ENABLE_SDL_VIDEO)
-      // Not supported so disabled
-      m_wndForce10bit.EnableWindow(false);
-   #endif
+   // FIXME remove or implement in SDL
+   m_wndForce10bit.EnableWindow(false);
 
    m_wndDisplay.SetRedraw(false);
    m_wndDisplay.ResetContent();
    m_wndDisplay.SetItemData((int)m_allVideoModes.size(), (DWORD)(m_allVideoModes.size() * 128));
-   int embedded = 2;
+   int embedded = VPX::RenderOutput::OM_WINDOW;
    if (m_wndEmbeddable)
    {
       embedded = settings.LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "Output", VPX::RenderOutput::OM_DISABLED);
       m_wndDisplay.AddString("Disabled");
       m_wndDisplay.AddString("Embedded");
-      if (embedded < 2)
+      if (embedded != VPX::RenderOutput::OM_WINDOW)
          m_wndDisplay.SetCurSel(embedded);
    }
-   vector<VPX::Window::DisplayConfig> displays;
-   VPX::Window::GetDisplays(displays);
-   int display;
-   if (!settings.LoadValue(m_wndSection, m_wndSettingPrefix + "Display", display) || (display >= (int)displays.size()))
-      display = -1;
-   for (vector<VPX::Window::DisplayConfig>::iterator dispConf = displays.begin(); dispConf != displays.end(); ++dispConf)
+   m_displays.clear();
+   m_displays = VPX::Window::GetDisplays();
+   const string selectedDisplay = settings.LoadValueString(m_wndSection, m_wndSettingPrefix + "Display");
+   bool displaySelected = false;
+   for (const auto& dispConf : m_displays)
    {
-      if (display == -1 && dispConf->isPrimary)
-         display = dispConf->display;
-      const string displayName = "Display " + std::to_string(dispConf->display + 1) + (dispConf->isPrimary ? "*: " : " : ") + std::to_string(dispConf->width) + 'x' + std::to_string(dispConf->height) + ' ' + dispConf->GPU_Name;
+      const string displayName = (dispConf.isPrimary ? '*' : ' ') + std::to_string(dispConf.width) + 'x' + std::to_string(dispConf.height) + " [" + dispConf.displayName + ']';
       m_wndDisplay.AddString(displayName.c_str());
+      if (dispConf.displayName == selectedDisplay)
+      {
+         displaySelected = true;
+         m_wndDisplay.SetCurSel(m_wndDisplay.GetCount() - 1);
+      }
+      else if (!displaySelected && dispConf.isPrimary)
+         m_wndDisplay.SetCurSel(m_wndDisplay.GetCount() - 1);
    }
-   if (embedded == 2)
-      m_wndDisplay.SetCurSel(m_wndEmbeddable ? (display + 2) : display);
    m_wndDisplay.SetRedraw(true);
 
-   const bool fullscreen = settings.LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "FullScreen", IsWindows10_1803orAbove());
+   const bool fullscreen = settings.LoadValueBool(m_wndSection, m_wndSettingPrefix + "FullScreen");
    m_wndFullscreen.SetCheck(fullscreen ? BST_CHECKED : BST_UNCHECKED);
    m_wndWindowed.SetCheck(fullscreen ? BST_UNCHECKED : BST_CHECKED);
    OnCommand(IDC_EXCLUSIVE_FULLSCREEN, 0L); // Force UI update
@@ -651,7 +640,7 @@ void VideoOptionPropPage::SaveDisplaySettings()
    if (display < 0)
       embedded = true;
    else
-      settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Display", display, !saveAll);
+      settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Display", m_displays[display].displayName, !saveAll);
 
    if (embedded)
    {
@@ -1077,11 +1066,8 @@ void RenderOptPage::LoadSettings(Settings& settings)
       m_softwareVertex.SetCheck(settings.LoadValueWithDefault(Settings::Player, "SoftwareVertexProcessing"s, false) ? BST_CHECKED : BST_UNCHECKED);
       m_rampDetail.SetPos(settings.LoadValueWithDefault(Settings::Player, "AlphaRampAccuracy"s, 10),1);
 
-      #if defined(ENABLE_SDL_VIDEO)
-         m_disableDWM.EnableWindow(false); // Not supported so disabled
-      #else
-         m_disableDWM.EnableWindow(IsWindowsVistaOr7()); // DWM may not be disabled on Windows 8+
-      #endif
+      m_disableDWM.EnableWindow(false); // Not supported so disabled => FIXME is it really unsupported ?
+      //m_disableDWM.EnableWindow(IsWindowsVistaOr7()); // DWM may not be disabled on Windows 8+
       m_disableDWM.SetCheck(settings.LoadValueWithDefault(Settings::Player, "DisableDWM"s, false) ? BST_CHECKED : BST_UNCHECKED);
       
    }
