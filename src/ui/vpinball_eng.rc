@@ -443,8 +443,6 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,83,163,10
     CONTROL         "Disable Ball Motion Blur (performance)",IDC_DISABLE_MOTION_BLUR,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,93,179,10
-    CONTROL         "Disable Desktop Composition (legacy)",IDC_DISABLE_DWM,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,103,179,10
     CONTROL         "Use Alternative Depth Buffer processing (legacy)",IDC_USE_NVIDIA_API_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,113,179,10
     CONTROL         "Use Software Vertex processing (legacy)",IDC_SOFTWARE_VP,
