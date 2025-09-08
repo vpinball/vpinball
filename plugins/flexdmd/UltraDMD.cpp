@@ -169,7 +169,7 @@ Actor* UltraDMD::ResolveImage(const string& filename, bool useFrame)
           if (assetType == AssetType_Image)
              return Image::Create(m_pFlexDMD, m_pFlexDMD->GetAssetManager(), path, string());
           else if (assetType == AssetType_Video || assetType == AssetType_GIF) {
-             AnimatedActor* pActor = m_pFlexDMD->NewVideo(path, string());
+             AnimatedActor* pActor = m_pFlexDMD->NewVideo(string(), path);
              if (pActor != nullptr) {
                 switch (m_stretchMode) {
                    case 0:
