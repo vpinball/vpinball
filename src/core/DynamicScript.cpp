@@ -486,13 +486,9 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
       break;
 
    case TypeDef::TD_CLASS:
-      if (sv.vObject == nullptr)
+      V_VT(cv) = VT_DISPATCH;
+      if (sv.vObject != nullptr)
       {
-         V_VT(cv) = VT_NULL;
-      }
-      else
-      {
-         V_VT(cv) = VT_DISPATCH;
          V_DISPATCH(cv) = new DynamicDispatch(this, typeDef.classDef->classDef, sv.vObject);
       }
       break;
