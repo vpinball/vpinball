@@ -1163,11 +1163,16 @@ void RenderOptPage::LoadSettings(Settings& settings)
    #if defined(ENABLE_BGFX)
    {
       string gfxBackend = settings.LoadValueString(Settings::Player, "GfxBackend"s);
-      bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
-      int nRendererSupported = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers);
-      for (int i = 0; i < nRendererSupported; ++i)
-         if (gfxBackend == m_bgfxRendererNames[supportedRenderers[i]])
+      TCHAR buffer[256];
+      for (int i = 0; i < m_gfxBackend.GetCount(); i++)
+      {
+         m_gfxBackend.GetLBText(i, buffer);
+         if (gfxBackend == string(buffer))
+         {
             m_gfxBackend.SetCurSel(i);
+            break;
+         }
+      }
    }
    #endif
 
