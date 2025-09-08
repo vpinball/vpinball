@@ -656,7 +656,7 @@ void RenderDevice::CaptureScreenshot(const string& filename, std::function<void(
 }
 
 RenderDevice::RenderDevice(
-   VPX::Window* const wnd, const bool isVR, const int nEyes, const bool useNvidiaApi, const bool disableDWM, const bool compressTextures, int nMSAASamples, VideoSyncMode& syncMode)
+   VPX::Window* const wnd, const bool isVR, const int nEyes, const bool useNvidiaApi, const bool compressTextures, int nMSAASamples, VideoSyncMode& syncMode)
    : m_texMan(*this)
    , m_compressTextures(compressTextures)
    , m_nEyes(nEyes)
@@ -675,23 +675,12 @@ RenderDevice::RenderDevice(
       NVAPIinit = false;
    #endif
 
-#ifndef __STANDALONE__
+#if !defined(__STANDALONE__) && !defined(ENABLE_BGFX)
     BOOL dwm = 0;
     DwmIsCompositionEnabled(&dwm);
-    m_dwm_enabled = m_dwm_was_enabled = !!dwm;
-
-    #ifdef ENABLE_BGFX
-    m_dwm_enabled = false; // Prefer using BGFX for VSync synchronization
-    #else
-    if (m_dwm_was_enabled && disableDWM && IsWindowsVistaOr7()) // windows 8 and above will not allow do disable it, but will still return S_OK
-    {
-        DwmEnableComposition(DWM_EC_DISABLECOMPOSITION);
-        m_dwm_enabled = false;
-    }
-    #endif
-    
+    m_dwm_enabled = !!dwm;
 #else
-    m_dwm_was_enabled = false;
+   // No DWM for standalone, and prefer using BGFX for VSync synchronization
     m_dwm_enabled = false;
 #endif
 
@@ -1433,9 +1422,6 @@ RenderDevice::~RenderDevice()
     * but doesn't bother to reset the FPU when it's destroyed. We reset it manually here.
     */
    _fpreset();
-
-   if (m_dwm_was_enabled)
-      DwmEnableComposition(DWM_EC_ENABLECOMPOSITION);
 #endif
 
    assert(m_pendingSharedIndexBuffers.empty());
@@ -1492,7 +1478,7 @@ void RenderDevice::AddWindow(VPX::Window* wnd)
 #endif
 }
 
-bool RenderDevice::DepthBufferReadBackAvailable()
+bool RenderDevice::DepthBufferReadBackAvailable() const
 {
 #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
    return true;

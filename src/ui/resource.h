@@ -833,7 +833,6 @@
 #define IDC_DYNAMIC_DN                  489
 #define IDC_DN_LONGITUDE                490
 #define IDC_DN_LATITUDE                 491
-#define IDC_DISABLE_DWM                 492
 #define IDC_START_VP_FILE_DIALOG        493
 #define IDC_OVERRIDE_DN                 493
 #define IDC_BLEND_DISABLE_LIGHTING      494

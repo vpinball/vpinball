@@ -68,7 +68,7 @@ public:
 class RenderDevice final
 {
 public:
-   RenderDevice(VPX::Window* const wnd, const bool isVR, const int nEyes, const bool useNvidiaApi, const bool disableDWM, const bool compressTextures, int nMSAASamples, VideoSyncMode& syncMode);
+   RenderDevice(VPX::Window* const wnd, const bool isVR, const int nEyes, const bool useNvidiaApi, const bool compressTextures, int nMSAASamples, VideoSyncMode& syncMode);
    ~RenderDevice();
 
    void AddWindow(VPX::Window* wnd);
@@ -152,7 +152,7 @@ public:
 
    RenderTarget* GetOutputBackBuffer() const { return m_outputWnd[0]->GetBackBuffer(); } // The screen render target (the only one which is not stereo when doing stereo rendering)
 
-   bool DepthBufferReadBackAvailable();
+   bool DepthBufferReadBackAvailable() const;
    bool SupportLayeredRendering() const
    {
       #if defined(ENABLE_BGFX)
@@ -231,7 +231,6 @@ private:
    RenderState m_current_renderstate, m_renderstate, m_defaultRenderState;
    bool m_logNextFrame = false; // Output a log of next frame to main application log
 
-   bool m_dwm_was_enabled;
    bool m_dwm_enabled;
 
    MeshBuffer* m_quadMeshBuffer = nullptr; // internal mesh buffer for rendering quads

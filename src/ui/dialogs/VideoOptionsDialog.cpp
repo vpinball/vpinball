@@ -116,7 +116,6 @@ private:
    CButton m_forceMotionBlurOff;
    CButton m_useAltDepth;
    CButton m_softwareVertex;
-   CButton m_disableDWM;
    CSlider m_rampDetail;
 
    CButton m_ballTrails;
@@ -909,8 +908,6 @@ BOOL RenderOptPage::OnInitDialog()
    AddToolTip(m_useAltDepth, "Activate this if you get the corresponding error message on table start, or if you experience rendering problems.");
    AttachItem(IDC_SOFTWARE_VP, m_softwareVertex);
    AddToolTip(m_softwareVertex, "Activate this if you have issues using an Intel graphics chip.");
-   AttachItem(IDC_DISABLE_DWM, m_disableDWM);
-   AddToolTip(m_disableDWM, "Disable Windows Desktop Composition (only works on Windows Vista and Windows 7 systems).\r\nMay reduce lag and improve performance on some setups.");
    AttachItem(IDC_ARASlider, m_rampDetail);
    SetupCombo(m_maxAO, 3, "Disable AO", "Static AO", "Dynamic AO");
    SetupCombo(m_maxReflection, 6, "Disable Reflections", "Balls Only", "Static Only", "Static & Balls", "Static & Unsynced Dynamic", "Dynamic");
@@ -1065,11 +1062,6 @@ void RenderOptPage::LoadSettings(Settings& settings)
       m_compressTexture.SetCheck(settings.LoadValueWithDefault(Settings::Player, "CompressTextures"s, false) ? BST_CHECKED : BST_UNCHECKED);
       m_softwareVertex.SetCheck(settings.LoadValueWithDefault(Settings::Player, "SoftwareVertexProcessing"s, false) ? BST_CHECKED : BST_UNCHECKED);
       m_rampDetail.SetPos(settings.LoadValueWithDefault(Settings::Player, "AlphaRampAccuracy"s, 10),1);
-
-      m_disableDWM.EnableWindow(false); // Not supported so disabled => FIXME is it really unsupported ?
-      //m_disableDWM.EnableWindow(IsWindowsVistaOr7()); // DWM may not be disabled on Windows 8+
-      m_disableDWM.SetCheck(settings.LoadValueWithDefault(Settings::Player, "DisableDWM"s, false) ? BST_CHECKED : BST_UNCHECKED);
-      
    }
 
    float maxFPS = settings.LoadValueFloat(Settings::Player, "MaxFramerate"s);
@@ -1240,7 +1232,6 @@ void RenderOptPage::SaveSettings(Settings& settings, bool saveAll)
    settings.SaveValue(Settings::Player, "HDRGlobalExposure"s, sz2f(GetDlgItemText(IDC_TM_HDR_SCALE).GetString()), !saveAll);
    settings.SaveValue(Settings::Player, "ForceBloomOff"s, m_forceBloomOff.GetCheck() == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "ForceMotionBlurOff"s, m_forceMotionBlurOff.GetCheck() == BST_CHECKED, !saveAll);
-   settings.SaveValue(Settings::Player, "DisableDWM"s, m_disableDWM.GetCheck() == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "AlphaRampAccuracy"s, m_rampDetail.GetPos(), !saveAll);
 
    settings.SaveValue(Settings::Player, "NudgeStrength"s, sz2f(GetDlgItemText(IDC_NUDGE_STRENGTH).GetString()), !saveAll);
