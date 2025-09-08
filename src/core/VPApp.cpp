@@ -283,9 +283,7 @@ static const string option_descs[] =
    "Displays the version"s,
    string(),
    "[table filename] Audit the table"s,
-   #ifdef ENABLE_SDL_VIDEO
-      "List available fullscreen resolutions"s,
-   #endif
+   "List available fullscreen resolutions"s,
    "List available sound devices"s,
    "Custom value 1"s,
    "Custom value 2"s,
@@ -327,9 +325,7 @@ enum option_names
    OPTION_VERSION,
    OPTION_FRONTEND_EXIT,
    OPTION_AUDIT,
-   #ifdef ENABLE_SDL_VIDEO
-      OPTION_LISTRES,
-   #endif
+   OPTION_LISTRES,
    OPTION_LISTSND,
    OPTION_CUSTOM1,
    OPTION_CUSTOM2,
@@ -631,9 +627,7 @@ string VPApp::GetCommandLineHelp()
       "\n\n-"+options[OPTION_TOURNAMENT]+           "  "+option_descs[OPTION_TOURNAMENT]+
       "\n\n-"+options[OPTION_VERSION]+              "  "+option_descs[OPTION_VERSION]+
       "\n-"  +options[OPTION_LISTSND]+              "  "+option_descs[OPTION_LISTSND]+
-   #ifdef ENABLE_SDL_VIDEO
       "\n-" + options[OPTION_LISTRES]+              "  "+option_descs[OPTION_LISTRES]+
-   #endif
    #ifdef __STANDALONE__
       "\n\n-"+options[OPTION_PREFPATH]+             "  "+option_descs[OPTION_PREFPATH]+
       "\n-"  +options[OPTION_DISPLAYID]+            "  "+option_descs[OPTION_DISPLAYID]+
@@ -877,13 +871,11 @@ void VPApp::ProcessCommandLine(int nArgs, char* szArglist[])
          m_run = false;
          break;
 
-      #ifdef ENABLE_SDL_VIDEO
       case OPTION_LISTRES:
          // Set flag instead of processing immediately - display enumeration requires SDL initialization
          m_listRes = true;
          m_run = false;
          break;
-      #endif
 
       #ifndef __STANDALONE__
       case OPTION_UNREGSERVER:
@@ -984,14 +976,12 @@ BOOL VPApp::InitInstance()
    PLOGI << "Starting VPX - " << VP_VERSION_STRING_FULL_LITERAL;
    PLOGI << "Settings file was loaded from " << m_iniFileName;
 
-   #ifdef ENABLE_SDL_VIDEO
-      SDL_SetHint(SDL_HINT_WINDOW_ALLOW_TOPMOST, "0");
-      if (!SDL_InitSubSystem(SDL_INIT_VIDEO)) {
-         PLOGE << "SDL_InitSubSystem(SDL_INIT_VIDEO) failed: " << SDL_GetError();
-         exit(1);
-      }
-      PLOGI << "SDL video driver: " << SDL_GetCurrentVideoDriver();
-   #endif
+   SDL_SetHint(SDL_HINT_WINDOW_ALLOW_TOPMOST, "0");
+   if (!SDL_InitSubSystem(SDL_INIT_VIDEO)) {
+      PLOGE << "SDL_InitSubSystem(SDL_INIT_VIDEO) failed: " << SDL_GetError();
+      exit(1);
+   }
+   PLOGI << "SDL video driver: " << SDL_GetCurrentVideoDriver();
 
    PLOGI << "m_logicalNumberOfProcessors=" << m_vpinball.GetLogicalNumberOfProcessors();
    PLOGI << "m_myPath=" << m_vpinball.m_myPath;
@@ -1030,39 +1020,21 @@ int VPApp::Run()
       return 0;
    }
 
-#ifdef ENABLE_SDL_VIDEO
    if (m_listRes)
    {
-      PLOGI << "Available fullscreen resolutions:";
-      vector<VPX::Window::DisplayConfig> displays;
-      VPX::Window::GetDisplays(displays);
-      for (int display = 0; display < displays.size(); display++)
+      vector<VPX::Window::DisplayConfig> displays = VPX::Window::GetDisplays();
+      for (const auto& display : displays)
       {
-         vector<VPX::Window::VideoMode> allVideoModes;
-         VPX::Window::GetDisplayModes(display, allVideoModes);
-         for (size_t i = 0; i < allVideoModes.size(); ++i)
+         PLOGI << "Display " << display.displayName;
+         const SDL_DisplayMode* displayMode = SDL_GetDesktopDisplayMode(display.display);
+         PLOGI << ". Windowed fullscreen mode: " << displayMode->w << 'x' << displayMode->h << " (refreshRate=" << displayMode->refresh_rate << ", pixelDensity=" << displayMode->pixel_density << ')';
+         for (const auto& mode : VPX::Window::GetDisplayModes(display))
          {
-            VPX::Window::VideoMode mode = allVideoModes.at(i);
-            PLOGI << "display " << displays.at(display).adapter << ": " << mode.width << 'x' << mode.height << " (depth=" << mode.depth << ", refreshRate=" << mode.refreshrate << ')';
+            PLOGI << ". Fullscreen mode: " << mode.width << 'x' << mode.height << " (depth=" << mode.depth << ", refreshRate=" << mode.refreshrate << ')';
          }
       }
-
-      PLOGI << "Available window fullscreen desktop resolutions:";
-      for (int display = 0; display < displays.size(); display++)
-      {
-         const SDL_DisplayMode* displayMode = SDL_GetDesktopDisplayMode(displays.at(display).adapter);
-         PLOGI << "display " << displays.at(display).adapter << ": " << displayMode->w << 'x' << displayMode->h << " (refreshRate=" << displayMode->refresh_rate
-               << ", pixelDensity=" << displayMode->pixel_density << ')';
-      }
-
-      PLOGI << "Available external window renderers:";
-      int numRenderers = SDL_GetNumRenderDrivers();
-      for (int renderer = 0; renderer < numRenderers; renderer++)
-         PLOGI << "Renderer " << renderer << ": " << SDL_GetRenderDriver(renderer);
-      
       return 0;
    }
-#endif
 
    // Start VP with file dialog open and then also playing that one?
    bool loadFileResult = true;

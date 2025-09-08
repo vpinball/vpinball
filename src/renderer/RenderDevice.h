@@ -17,9 +17,7 @@
 #include "RenderPass.h"
 #include "Window.h"
 
-#if defined(ENABLE_SDL_VIDEO)
 #include <SDL3/SDL.h>
-#endif
 
 #if defined(ENABLE_BGFX)
 #include <thread>

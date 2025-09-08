@@ -21,12 +21,6 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h" // Needed for FindRenderedTextEnd in HelpSplash (should be adapted when this function will refactored in ImGui)
 
-#if defined(ENABLE_SDL_VIDEO)
-  #include "imgui/imgui_impl_sdl3.h"
-#else
-  #include "imgui/imgui_impl_win32.h"
-#endif
-
 #if defined(ENABLE_DX9)
   #include <shellapi.h>
 #endif

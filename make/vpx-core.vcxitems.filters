@@ -741,9 +741,6 @@
     <ClCompile Include="$(SolutionDir)/../../third-party/include/serial.cpp">
       <Filter>third-party\serial</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_win32.cpp">
-      <Filter>third-party\imgui\win32</Filter>
-    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../third-party/include/implot/implot_items.cpp">
       <Filter>third-party\imgui\implot</Filter>
     </ClCompile>
@@ -1741,9 +1738,6 @@
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../third-party/include/bgfx-imgui/vs_ocornut_imgui.bin.h">
       <Filter>third-party\imgui\bgfx</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_win32.h">
-      <Filter>third-party\imgui\win32</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../third-party/include/implot/implot.h">
       <Filter>third-party\imgui\implot</Filter>

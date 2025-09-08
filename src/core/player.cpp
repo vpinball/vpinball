@@ -2,12 +2,7 @@
 
 #include "core/stdafx.h"
 
-#ifdef ENABLE_SDL_VIDEO
-  #include <SDL3/SDL_main.h>
-  #include "imgui/imgui_impl_sdl3.h"
-#else
-  #include "imgui/imgui_impl_win32.h"
-#endif
+#include <SDL3/SDL_main.h>
 
 #ifndef __STANDALONE__
 #include "BAM/BAMView.h"
@@ -36,9 +31,6 @@
 #include "renderer/captureExt.h"
 #endif
 #ifdef _MSC_VER
-#if !defined(ENABLE_SDL_VIDEO)
-#include "winsdk/legacy_touch.h"
-#endif
 // Used to log which program steals the focus from VPX
 #include "psapi.h"
 #pragma comment(lib, "Psapi")
@@ -78,79 +70,6 @@ extern marker_series series;
 // leave as-is as e.g. VPM relies on this
 #define WIN32_PLAYER_WND_CLASSNAME _T("VPPlayer")
 #define WIN32_WND_TITLE _T("Visual Pinball Player")
-
-#if !defined(ENABLE_SDL_VIDEO) // Win32 Windowing
-LRESULT CALLBACK PlayerWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-   if (g_pplayer == nullptr || g_pplayer->m_playfieldWnd == nullptr || g_pplayer->m_playfieldWnd->GetCore() != hwnd)
-      return DefWindowProc(hwnd, uMsg, wParam, lParam);
-
-   if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam))
-      return true;
-
-   switch (uMsg)
-   {
-   case WM_CLOSE:
-      g_pvp->QuitPlayer(Player::CloseState::CS_STOP_PLAY);
-      return 0;
-
-   case WM_ACTIVATE: // Toggle pause state based on window focus
-      g_pplayer->OnFocusChanged(wParam != WA_INACTIVE);
-      break;
-
-   case WM_KEYDOWN: // Hide cursor when playing
-      g_pplayer->ShowMouseCursor(false);
-      break;
-
-   case WM_MOUSEMOVE: // Show cursor if paused or if user move the mouse
-      {
-         static int m_lastcursorx = 0xfffffff, m_lastcursory = 0xfffffff; // used to detect user moving the mouse, therefore requesting the cursor to be shown
-         if (m_lastcursorx != LOWORD(lParam) || m_lastcursory != HIWORD(lParam))
-         {
-            m_lastcursorx = LOWORD(lParam);
-            m_lastcursory = HIWORD(lParam);
-            g_pplayer->ShowMouseCursor(true);
-         }
-      }
-      break;
-
-   // FIXME the following events are not handled by the SDL implementation
-   case WM_POINTERDOWN: // not implemented for SDL (SDL2 does not support touch devices under windows)
-   case WM_POINTERUP:
-   {
-#ifndef TEST_TOUCH_WITH_MOUSE
-#if (WINVER < 0x0602)
-      if (!GetPointerInfo)
-         GetPointerInfo = (pGPI)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "GetPointerInfo");
-      if (GetPointerInfo)
-#endif
-#endif
-      {
-         POINTER_INFO pointerInfo;
-#ifdef TEST_TOUCH_WITH_MOUSE
-         GetCursorPos(&pointerInfo.ptPixelLocation);
-#else
-         if (GetPointerInfo(GET_POINTERID_WPARAM(wParam), &pointerInfo))
-#endif
-         {
-            ScreenToClient(hwnd, &pointerInfo.ptPixelLocation);
-            for (unsigned int i = 0; i < MAX_TOUCHREGION; ++i)
-               if ((g_pplayer->m_touchregion_pressed[i] != (uMsg == WM_POINTERDOWN))
-                  && Intersect(touchregion[i], g_pplayer->m_playfieldWnd->GetWidth(), g_pplayer->m_playfieldWnd->GetHeight(), pointerInfo.ptPixelLocation,
-                     g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].GetRotation(g_pplayer->m_playfieldWnd->GetWidth(), g_pplayer->m_playfieldWnd->GetHeight()) != 0.f))
-               {
-                  g_pplayer->m_touchregion_pressed[i] = (uMsg == WM_POINTERDOWN);
-                  g_pplayer->m_pininput.PushActionEvent(touchActionMap[i], g_pplayer->m_touchregion_pressed[i]);
-               }
-         }
-      }
-      break;
-   }
-   }
-   return DefWindowProc(hwnd, uMsg, wParam, lParam);
-}
-#endif
-
 
 
 Player::Player(PinTable *const editor_table, PinTable *const live_table, const int playMode)
@@ -289,9 +208,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       #if defined(_MSC_VER) && !defined(__STANDALONE__)
          WNDCLASS wc = {};
          wc.hInstance = g_pvp->theInstance;
-         #ifndef ENABLE_SDL_VIDEO
-         wc.lpfnWndProc = PlayerWindowProc;
-         #elif defined(UNICODE)
+         #if defined(UNICODE)
          wc.lpfnWndProc = ::DefWindowProcW;
          #else
          wc.lpfnWndProc = ::DefWindowProcA;
@@ -300,9 +217,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
          wc.hIcon = LoadIcon(g_pvp->theInstance, MAKEINTRESOURCE(IDI_TABLE));
          wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
          ::RegisterClass(&wc);
-         #ifdef ENABLE_SDL_VIDEO
          SDL_RegisterApp(WIN32_PLAYER_WND_CLASSNAME, 0, g_pvp->theInstance);
-         #endif
       #endif
       
       const Settings* settings = &(g_pvp->m_settings); // Always use main application settings (not overridable per table)
@@ -343,84 +258,9 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
 
    // Touch screen support
-
-#if defined(ENABLE_SDL_VIDEO) // SDL windowing
    #if (defined(__APPLE__) && TARGET_OS_IOS) || defined(__ANDROID__)
-       m_supportsTouch = true;
+      m_supportsTouch = true;
    #endif
-#else // Win32 Windowing
-    // Check for Touch support
-    m_supportsTouch = ((GetSystemMetrics(SM_DIGITIZER) & NID_READY) != 0) && ((GetSystemMetrics(SM_DIGITIZER) & NID_MULTI_INPUT) != 0)
-        && (GetSystemMetrics(SM_MAXIMUMTOUCHES) != 0);
-
-   #if 1 // we do not want to handle WM_TOUCH
-   #if (WINVER < 0x0602)
-       if (!UnregisterTouchWindow)
-           UnregisterTouchWindow = (pUnregisterTouchWindow)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "UnregisterTouchWindow");
-       if (UnregisterTouchWindow)
-   #endif
-           UnregisterTouchWindow(m_playfieldWnd->GetCore());
-   #else // would be useful if handling WM_TOUCH instead of WM_POINTERDOWN
-       // Disable palm detection
-       if (!RegisterTouchWindow)
-           RegisterTouchWindow = (pRegisterTouchWindow)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "RegisterTouchWindow");
-       if (RegisterTouchWindow)
-           RegisterTouchWindow(m_playfieldWnd->GetCore(), 0);
-
-       if (!IsTouchWindow)
-           IsTouchWindow = (pIsTouchWindow)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "IsTouchWindow");
-
-       // Disable Gesture Detection
-       if (!SetGestureConfig)
-           SetGestureConfig = (pSetGestureConfig)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetGestureConfig");
-       if (SetGestureConfig)
-       {
-           // http://msdn.microsoft.com/en-us/library/ms812373.aspx
-           constexpr DWORD dwHwndTabletProperty =
-               TABLET_DISABLE_PRESSANDHOLD |      // disables press and hold (right-click) gesture
-               TABLET_DISABLE_PENTAPFEEDBACK |    // disables UI feedback on pen up (waves)
-               TABLET_DISABLE_PENBARRELFEEDBACK | // disables UI feedback on pen button down
-               TABLET_DISABLE_FLICKS;             // disables pen flicks (back, forward, drag down, drag up)
-           LPCTSTR tabletAtom = MICROSOFT_TABLETPENSERVICE_PROPERTY;
-
-           // Get the Tablet PC atom ID
-           const ATOM atomID = GlobalAddAtom(tabletAtom);
-           if (atomID)
-           {
-               // Try to disable press and hold gesture 
-               SetProp(m_playfieldWnd->GetCore(), tabletAtom, (HANDLE)dwHwndTabletProperty);
-           }
-           // Gesture configuration
-           GESTURECONFIG gc[] = { 0, 0, GC_ALLGESTURES };
-           UINT uiGcs = 1;
-           const BOOL bResult = SetGestureConfig(m_playfieldWnd->GetCore(), 0, uiGcs, gc, sizeof(GESTURECONFIG));
-       }
-   #endif
-
-    // Disable visual feedback for touch, this saves one frame of latency on touch displays
-    #if (WINVER < 0x0602)
-    if (!SetWindowFeedbackSetting)
-        SetWindowFeedbackSetting = (pSWFS)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetWindowFeedbackSetting");
-    if (SetWindowFeedbackSetting)
-    #endif
-    {
-        constexpr BOOL enabled = FALSE;
-
-        SetWindowFeedbackSetting(m_playfieldWnd->GetCore(), FEEDBACK_TOUCH_CONTACTVISUALIZATION, 0, sizeof(enabled), &enabled);
-        SetWindowFeedbackSetting(m_playfieldWnd->GetCore(), FEEDBACK_TOUCH_TAP, 0, sizeof(enabled), &enabled);
-        SetWindowFeedbackSetting(m_playfieldWnd->GetCore(), FEEDBACK_TOUCH_DOUBLETAP, 0, sizeof(enabled), &enabled);
-        SetWindowFeedbackSetting(m_playfieldWnd->GetCore(), FEEDBACK_TOUCH_PRESSANDHOLD, 0, sizeof(enabled), &enabled);
-        SetWindowFeedbackSetting(m_playfieldWnd->GetCore(), FEEDBACK_TOUCH_RIGHTTAP, 0, sizeof(enabled), &enabled);
-
-        SetWindowFeedbackSetting(m_playfieldWnd->GetCore(), FEEDBACK_PEN_BARRELVISUALIZATION, 0, sizeof(enabled), &enabled);
-        SetWindowFeedbackSetting(m_playfieldWnd->GetCore(), FEEDBACK_PEN_TAP, 0, sizeof(enabled), &enabled);
-        SetWindowFeedbackSetting(m_playfieldWnd->GetCore(), FEEDBACK_PEN_DOUBLETAP, 0, sizeof(enabled), &enabled);
-        SetWindowFeedbackSetting(m_playfieldWnd->GetCore(), FEEDBACK_PEN_PRESSANDHOLD, 0, sizeof(enabled), &enabled);
-        SetWindowFeedbackSetting(m_playfieldWnd->GetCore(), FEEDBACK_PEN_RIGHTTAP, 0, sizeof(enabled), &enabled);
-
-        SetWindowFeedbackSetting(m_playfieldWnd->GetCore(), FEEDBACK_GESTURE_PRESSANDTAP, 0, sizeof(enabled), &enabled);
-    }
-#endif
 
    // FIXME remove or at least move legacy ushock to a plugin
    ushock_output_init();
@@ -1179,9 +1019,7 @@ Player::~Player()
    }
 
    ::UnregisterClass(WIN32_PLAYER_WND_CLASSNAME, g_pvp->theInstance);
-   #ifdef ENABLE_SDL_VIDEO
    SDL_UnregisterApp();
-   #endif
 #endif
 
 #ifdef __STANDALONE__

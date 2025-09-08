@@ -786,6 +786,7 @@ RenderDevice::RenderDevice(
    init.platformData.nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
    #elif BX_PLATFORM_WINDOWS
    init.platformData.nwh = m_outputWnd[0]->GetNativeHWND();
+   init.deviceId = static_cast<uint16_t>(m_outputWnd[0]->GetDisplayConfig(g_pplayer->m_ptable->m_settings).adapter);
    #elif BX_PLATFORM_STEAMLINK
    init.platformData.ndt = wmInfo.info.vivante.display;
    init.platformData.nwh = wmInfo.info.vivante.window;
@@ -805,7 +806,7 @@ RenderDevice::RenderDevice(
 #elif defined(ENABLE_OPENGL)
    ///////////////////////////////////
    // OpenGL device initialization
-   const SDL_DisplayMode* mode = SDL_GetCurrentDisplayMode(m_outputWnd[0]->GetAdapterId());
+   const SDL_DisplayMode* mode = SDL_GetCurrentDisplayMode(SDL_GetDisplayForWindow(m_outputWnd[0]->GetCore()));
    if (mode == nullptr)
    {
       ShowError("Failed to setup OpenGL context");
@@ -879,7 +880,7 @@ RenderDevice::RenderDevice(
 
    SDL_GL_MakeCurrent(m_outputWnd[0]->GetCore(), m_sdl_context);
 
-   #if defined(ENABLE_SDL_VIDEO) && defined(ENABLE_OPENGL)
+   #if defined(ENABLE_OPENGL)
    int drawableWidth, drawableHeight, windowWidth, windowHeight;
    SDL_GetWindowSizeInPixels(m_outputWnd[0]->GetCore(), &drawableWidth, &drawableHeight); // Size in pixels
    SDL_GetWindowSize(m_outputWnd[0]->GetCore(), &windowWidth, &windowHeight); // Size in screen coordinates (taking in account HiDPI)
@@ -993,20 +994,22 @@ RenderDevice::RenderDevice(
    }
    m_pD3DEx->QueryInterface(__uuidof(IDirect3D9), reinterpret_cast<void**>(&m_pD3D));
 
-   D3DDEVTYPE devtype = D3DDEVTYPE_HAL;
-   vector<VPX::Window::DisplayConfig> displays;
-   VPX::Window::GetDisplays(displays);
-   for (const VPX::Window::DisplayConfig& disp : displays)
+   UINT adapterId = D3DADAPTER_DEFAULT;
+   UINT selectedDeviceId = m_outputWnd[0]->GetDisplayConfig(g_pplayer->m_ptable->m_settings).adapter;
+   for (UINT i = 0; i < m_pD3D->GetAdapterCount(); i++)
    {
-      if (disp.adapter == m_outputWnd[0]->GetAdapterId() && strstr(disp.GPU_Name, "PerfHUD") != nullptr)
+      D3DADAPTER_IDENTIFIER9 adapterIdentifier;
+      m_pD3D->GetAdapterIdentifier(i, 0, &adapterIdentifier);
+      if (adapterIdentifier.DeviceId == selectedDeviceId)
       {
-         devtype = D3DDEVTYPE_REF;
+         adapterId = i;
          break;
       }
    }
 
+   const D3DDEVTYPE devtype = D3DDEVTYPE_HAL;
    D3DCAPS9 caps;
-   m_pD3D->GetDeviceCaps(m_outputWnd[0]->GetAdapterId(), devtype, &caps);
+   m_pD3D->GetDeviceCaps(adapterId, devtype, &caps);
 
     // check which parameters can be used for anisotropic filter
     m_mag_aniso = (caps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFANISOTROPIC) != 0;
@@ -1022,15 +1025,15 @@ RenderDevice::RenderDevice(
     D3DFORMAT format;
     if (!m_outputWnd[0]->IsFullScreen())
     {
-        D3DDISPLAYMODE mode;
-        CHECKD3D(m_pD3D->GetAdapterDisplayMode(m_outputWnd[0]->GetAdapterId(), &mode));
-        format = mode.Format;
+       D3DDISPLAYMODE mode;
+       CHECKD3D(m_pD3D->GetAdapterDisplayMode(adapterId, &mode));
+       format = mode.Format;
     }
     else
     {
-        format = m_outputWnd[0]->GetBitDepth() == 32 ? D3DFMT_X8R8G8B8 :
-                 m_outputWnd[0]->GetBitDepth() == 30 ? D3DFMT_A2R10G10B10 :
-                                                       D3DFMT_R5G6B5;
+       format = m_outputWnd[0]->GetBitDepth() == 32 ? D3DFMT_X8R8G8B8 :
+                m_outputWnd[0]->GetBitDepth() == 30 ? D3DFMT_A2R10G10B10 :
+                                                      D3DFMT_R5G6B5;
     }
     colorFormat back_buffer_format;
     switch (format)
@@ -1054,7 +1057,7 @@ RenderDevice::RenderDevice(
     params.MultiSampleType = D3DMULTISAMPLE_NONE;
     params.MultiSampleQuality = 0;
     params.SwapEffect = D3DSWAPEFFECT_DISCARD;
-    params.hDeviceWindow = m_outputWnd[0]->GetCore();
+    params.hDeviceWindow = m_outputWnd[0]->GetNativeHWND();
     params.Windowed = !m_outputWnd[0]->IsFullScreen();
     params.EnableAutoDepthStencil = FALSE;
     params.AutoDepthStencilFormat = D3DFMT_UNKNOWN; // ignored
@@ -1064,18 +1067,18 @@ RenderDevice::RenderDevice(
     params.PresentationInterval = syncMode == VideoSyncMode::VSM_VSYNC ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
 
    // check if our HDR texture format supports/does sRGB conversion on texture reads, which must NOT be the case as we always set SRGBTexture=true independent of the format!
-   hr = m_pD3D->CheckDeviceFormat(m_outputWnd[0]->GetAdapterId(), devtype, params.BackBufferFormat, D3DUSAGE_QUERY_SRGBREAD, D3DRTYPE_TEXTURE, (D3DFORMAT)colorFormat::RGBA32F);
+   hr = m_pD3D->CheckDeviceFormat(adapterId, devtype, params.BackBufferFormat, D3DUSAGE_QUERY_SRGBREAD, D3DRTYPE_TEXTURE, (D3DFORMAT)colorFormat::RGBA32F);
    if (SUCCEEDED(hr))
       ShowError("D3D device does support D3DFMT_A32B32G32R32F SRGBTexture reads (which leads to wrong tex colors)");
    // now the same for our LDR/8bit texture format the other way round
-   hr = m_pD3D->CheckDeviceFormat(m_outputWnd[0]->GetAdapterId(), devtype, params.BackBufferFormat, D3DUSAGE_QUERY_SRGBREAD, D3DRTYPE_TEXTURE, (D3DFORMAT)colorFormat::RGBA8);
+   hr = m_pD3D->CheckDeviceFormat(adapterId, devtype, params.BackBufferFormat, D3DUSAGE_QUERY_SRGBREAD, D3DRTYPE_TEXTURE, (D3DFORMAT)colorFormat::RGBA8);
    if (!SUCCEEDED(hr))
       ShowError("D3D device does not support D3DFMT_A8R8G8B8 SRGBTexture reads (which leads to wrong tex colors)");
 
    // check if auto generation of mipmaps can be used, otherwise will be done via d3dx
    m_autogen_mipmap = (caps.Caps2 & D3DCAPS2_CANAUTOGENMIPMAP) != 0;
    if (m_autogen_mipmap)
-      m_autogen_mipmap = (m_pD3D->CheckDeviceFormat(m_outputWnd[0]->GetAdapterId(), devtype, params.BackBufferFormat, textureUsage::AUTOMIPMAP, D3DRTYPE_TEXTURE, (D3DFORMAT)colorFormat::RGBA8) == D3D_OK);
+      m_autogen_mipmap = (m_pD3D->CheckDeviceFormat(adapterId, devtype, params.BackBufferFormat, textureUsage::AUTOMIPMAP, D3DRTYPE_TEXTURE, (D3DFORMAT)colorFormat::RGBA8) == D3D_OK);
 
    //m_autogen_mipmap = false; //!! could be done to support correct sRGB/gamma correct generation of mipmaps which is not possible with auto gen mipmap in DX9! at the moment disabled, as the sRGB software path is super slow for similar mipmap filter quality
 
@@ -1085,12 +1088,11 @@ RenderDevice::RenderDevice(
    #endif
 
    // Determine if INTZ is supported
-   m_INTZ_support = (m_pD3D->CheckDeviceFormat(m_outputWnd[0]->GetAdapterId(), devtype, params.BackBufferFormat,
-                     D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_TEXTURE, ((D3DFORMAT)(MAKEFOURCC('I','N','T','Z'))))) == D3D_OK;
+   m_INTZ_support = (m_pD3D->CheckDeviceFormat(adapterId, devtype, params.BackBufferFormat, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_TEXTURE, ((D3DFORMAT)(MAKEFOURCC('I','N','T','Z'))))) == D3D_OK;
 
    // check if requested MSAA is possible
    DWORD MultiSampleQualityLevels;
-   if (!SUCCEEDED(m_pD3D->CheckDeviceMultiSampleType(m_outputWnd[0]->GetAdapterId(),
+   if (!SUCCEEDED(m_pD3D->CheckDeviceMultiSampleType(adapterId,
       devtype, params.BackBufferFormat,
       params.Windowed, params.MultiSampleType, &MultiSampleQualityLevels)))
    {
@@ -1119,9 +1121,8 @@ RenderDevice::RenderDevice(
       }
 
       hr = m_pD3DEx->CreateDeviceEx(
-         m_outputWnd[0]->GetAdapterId(),
-         devtype,
-         m_outputWnd[0]->GetCore(),
+         adapterId,
+         devtype, m_outputWnd[0]->GetNativeHWND(),
          flags /*| D3DCREATE_PUREDEVICE*/,
          &params,
          m_outputWnd[0]->IsFullScreen() ? &mode : nullptr,
@@ -1238,7 +1239,7 @@ RenderDevice::RenderDevice(
          PLOGI << "VSync source set to DX9Ex WaitForBlank";
          hasVSync = true;
       }
-   #elif defined(ENABLE_SDL_VIDEO) && defined(ENABLE_OPENGL) && !defined(__STANDALONE__)
+   #elif defined(ENABLE_OPENGL) && !defined(__STANDALONE__)
       // DXGI VSync source (Windows 7+, only used for Win32 SDL with OpenGL)
       else if (syncMode == VideoSyncMode::VSM_FRAME_PACING)
       {
@@ -1447,7 +1448,7 @@ void RenderDevice::AddWindow(VPX::Window* wnd)
    if (m_nOutputWnd >= 8)
       return;
 
-#if defined(ENABLE_BGFX) && (ENABLE_SDL_VIDEO)
+#if defined(ENABLE_BGFX)
    if ((bgfx::getCaps()->supported & BGFX_CAPS_SWAP_CHAIN) == 0)
       return;
 

@@ -4,10 +4,6 @@
 #include "core/VPXPluginAPIImpl.h"
 #include "renderer/VRDevice.h"
 
-#ifdef ENABLE_SDL_VIDEO
-   #include "imgui/imgui_impl_sdl3.h"
-#endif
-
 #ifdef __LIBVPINBALL__
    #include "standalone/VPinballLib.h"
 #endif

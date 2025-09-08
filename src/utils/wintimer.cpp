@@ -202,49 +202,7 @@ void uSleep(const uint64_t u)
 // but VP code does this already
 void uOverSleep(const uint64_t u)
 {
-#ifdef ENABLE_SDL_VIDEO
    SDL_DelayNS(u); // Experiments on Windows 11 show a minimum delay around 300-500us (half a ms), uses roughly same API calls as below
-   return;
-#elif !defined(_MSC_VER)
-   std::this_thread::sleep_for(std::chrono::nanoseconds(u)); // Seems to use Sleep() under the hood on Windows, thus use our variant below to be better on modern windows versions
-   return;
-#endif
-
-   if (sTimerInit == 0) return;
-
-   LARGE_INTEGER TimerNow;
-#ifdef _MSC_VER
-   QueryPerformanceCounter(&TimerNow);
-#else
-   TimerNow.QuadPart = SDL_GetPerformanceCounter();
-#endif
-   LARGE_INTEGER TimerEnd;
-   TimerEnd.QuadPart = TimerNow.QuadPart + ((u * TimerFreq.QuadPart) / 1000000ull);
-
-   while (TimerNow.QuadPart < TimerEnd.QuadPart)
-   {
-#ifdef _MSC_VER
-      if (!highrestimer || (TimerEnd.QuadPart - TimerNow.QuadPart) > TwoMSTimerTicks)
-#endif
-         Sleep(1); // really pause thread for 1-2ms (depending on OS)
-#ifdef _MSC_VER
-      else // pause thread for 0.5-1ms
-      {
-         HANDLE timer = CreateWaitableTimerEx(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS); // ~0.5msec resolution (unless usec < ~10 requested, which most likely triggers a spin loop then), Win10 and above only, note that this timer variant then also would not require to call timeBeginPeriod(1) before!
-         LARGE_INTEGER ft;
-         ft.QuadPart = -10 * 500; // 500 usec //!! we could go lower if some future OS (>win10) actually supports this
-         SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
-         WaitForSingleObject(timer, INFINITE);
-         CloseHandle(timer);
-      }
-#endif
-
-#ifdef _MSC_VER
-      QueryPerformanceCounter(&TimerNow);
-#else
-      TimerNow.QuadPart = SDL_GetPerformanceCounter();
-#endif
-   }
 }
 
 //

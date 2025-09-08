@@ -49,21 +49,13 @@ BaseTexture::BaseTexture(const unsigned int w, const unsigned int h, const Forma
    , m_width(w)
    , m_height(h)
    , m_liveHash(((uint64_t)this) ^ usec() ^ ((uint64_t)w << 16) ^ ((uint64_t)h << 32) ^ format)
-   #ifdef ENABLE_SDL_VIDEO
    , m_data(reinterpret_cast<uint8_t*>(SDL_aligned_alloc(16, w * h * GetPixelSize(format))))
-   #else
-   , m_data(new uint8_t[w * h * GetPixelSize(format)])
-   #endif
 {
 }
 
 BaseTexture::~BaseTexture()
 {
-#ifdef ENABLE_SDL_VIDEO
    SDL_aligned_free(m_data);
-#else
-   delete[] m_data;
-#endif
 }
 
 unsigned int BaseTexture::pitch() const

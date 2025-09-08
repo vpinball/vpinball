@@ -17,11 +17,7 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h" // Needed for FindRenderedTextEnd in HelpSplash (should be adapted when this function will refactored in ImGui)
 
-#if defined(ENABLE_SDL_VIDEO)
-  #include "imgui/imgui_impl_sdl3.h"
-#else
-  #include "imgui/imgui_impl_win32.h"
-#endif
+#include "imgui/imgui_impl_sdl3.h"
 
 #if defined(ENABLE_DX9)
   #include <shellapi.h>
@@ -423,28 +419,23 @@ LiveUI::LiveUI(RenderDevice *const rd)
    ImGuiIO &io = ImGui::GetIO();
    io.IniFilename = nullptr; //don't use an ini file for configuration
 
-   #if defined(ENABLE_SDL_VIDEO) // SDL Windowing
-      // using the specialized initializer is not needed
-      // ImGui_ImplSDL3_InitForOpenGL(m_player->m_playfieldSdlWnd, rd->m_sdl_context);
-      ImGui_ImplSDL3_InitForOther(m_player->m_playfieldWnd->GetCore());
-      //int displayIndex = SDL_GetDisplayForWindow(m_player->m_playfieldWnd->GetCore());
-      if (m_player->m_vrDevice)
-      {
-         // VR headset cover full view range, so use a relative part of the full range for the DPI
-         m_dpi = min(m_player->m_vrDevice->GetEyeWidth(), m_player->m_vrDevice->GetEyeHeight()) / 2000.f;
-      }
-      else
-      {
-         // Use display DPI setting
-         // On macOS/iOS, keep m_dpi at 1.0f. ImGui_ImplSDL3_NewFrame applies a 2.0f DisplayFramebufferScale
-         // for SDL_WINDOW_HIGH_PIXEL_DENSITY windows. A m_dpi of 2.0 would cause the UI to scale at 400%.
-         // See: https://wiki.libsdl.org/SDL3/README/highdpi
-         m_dpi = SDL_GetWindowDisplayScale(m_player->m_playfieldWnd->GetCore()) / SDL_GetWindowPixelDensity(m_player->m_playfieldWnd->GetCore());
-      }
-   #else // Win32 Windowing
-      ImGui_ImplWin32_Init(m_player->m_playfieldWnd->GetCore());
-      m_dpi = ImGui_ImplWin32_GetDpiScaleForHwnd(m_player->m_playfieldWnd->GetCore());
-   #endif
+   // using the specialized initializer is not needed
+   // ImGui_ImplSDL3_InitForOpenGL(m_player->m_playfieldSdlWnd, rd->m_sdl_context);
+   ImGui_ImplSDL3_InitForOther(m_player->m_playfieldWnd->GetCore());
+   //int displayIndex = SDL_GetDisplayForWindow(m_player->m_playfieldWnd->GetCore());
+   if (m_player->m_vrDevice)
+   {
+      // VR headset cover full view range, so use a relative part of the full range for the DPI
+      m_dpi = min(m_player->m_vrDevice->GetEyeWidth(), m_player->m_vrDevice->GetEyeHeight()) / 2000.f;
+   }
+   else
+   {
+      // Use display DPI setting
+      // On macOS/iOS, keep m_dpi at 1.0f. ImGui_ImplSDL3_NewFrame applies a 2.0f DisplayFramebufferScale
+      // for SDL_WINDOW_HIGH_PIXEL_DENSITY windows. A m_dpi of 2.0 would cause the UI to scale at 400%.
+      // See: https://wiki.libsdl.org/SDL3/README/highdpi
+      m_dpi = SDL_GetWindowDisplayScale(m_player->m_playfieldWnd->GetCore()) / SDL_GetWindowPixelDensity(m_player->m_playfieldWnd->GetCore());
+   }
    m_dpi = min(m_dpi, 10.f); // To avoid texture size overflows
    m_perfUI.SetDPI(m_dpi);
    m_plumbOverlay.SetDPI(m_dpi);
@@ -498,11 +489,7 @@ LiveUI::~LiveUI()
          tex->SetStatus(ImTextureStatus_Destroyed);
       }
 
-      #if defined(ENABLE_SDL_VIDEO)
-         ImGui_ImplSDL3_Shutdown();
-      #else
-         ImGui_ImplWin32_Shutdown();
-      #endif
+      ImGui_ImplSDL3_Shutdown();
 
       ImGui::DestroyContext();
    }
@@ -571,11 +558,7 @@ void LiveUI::MarkdownLinkCallback(ImGui::MarkdownLinkCallbackData data)
    if (!data.isImage)
    {
       std::string url(data.link, data.linkLength);
-      #ifdef ENABLE_SDL_VIDEO
       SDL_OpenURL(url.c_str());
-      #else
-      ShellExecuteA(NULL, "open", url.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
-      #endif
    }
 }
 
@@ -611,11 +594,7 @@ bool LiveUI::HasMouseCapture() const
 
 void LiveUI::NewFrame()
 {
-   #if defined(ENABLE_SDL_VIDEO)
-      ImGui_ImplSDL3_NewFrame();
-   #else
-      ImGui_ImplWin32_NewFrame();
-   #endif
+   ImGui_ImplSDL3_NewFrame();
 
    const int width = m_rd->GetCurrentPass() ? m_rd->GetCurrentPass()->m_rt->GetWidth() : 1920;
    const int height = m_rd->GetCurrentPass() ? m_rd->GetCurrentPass()->m_rt->GetHeight() : 1080;
@@ -635,34 +614,32 @@ void LiveUI::NewFrame()
       io.DisplayFramebufferScale.y = scale;
    }
 
-   #if defined(ENABLE_SDL_VIDEO)
-      // Enable mouse capture when dragging (needed when dragging main windows)
+   // Enable mouse capture when dragging (needed when dragging main windows)
+   {
+      bool want_capture = false;
+      for (int button_n = 0; button_n < ImGuiMouseButton_COUNT && !want_capture; button_n++)
+         if (ImGui::IsMouseDragging(button_n, 1.0f))
+            want_capture = true;
+      SDL_CaptureMouse(want_capture);
+   }
+   // Update mouse position to latest global state (needed when dragging main windows)
+   SDL_Window *focused_window = SDL_GetKeyboardFocus();
+   if (!SDL_GetWindowRelativeMouseMode(focused_window))
+   {
+      float mouse_x_global, mouse_y_global;
+      int window_x, window_y;
+      SDL_GetGlobalMouseState(&mouse_x_global, &mouse_y_global);
+      SDL_GetWindowPosition(focused_window, &window_x, &window_y);
+      const ImVec2 mousePos(mouse_x_global - window_x, mouse_y_global - window_y);
+      switch (m_rotate)
       {
-         bool want_capture = false;
-         for (int button_n = 0; button_n < ImGuiMouseButton_COUNT && !want_capture; button_n++)
-            if (ImGui::IsMouseDragging(button_n, 1.0f))
-               want_capture = true;
-         SDL_CaptureMouse(want_capture);
+      case 0: ImGui::GetIO().AddMousePosEvent(mousePos.x, mousePos.y); break;
+      case 1: ImGui::GetIO().AddMousePosEvent(mousePos.y, io.DisplaySize.y - mousePos.x); break;
+      case 2: ImGui::GetIO().AddMousePosEvent(mousePos.x, io.DisplaySize.y - mousePos.y); break;
+      case 3: ImGui::GetIO().AddMousePosEvent(io.DisplaySize.x - mousePos.y, mousePos.x); break;
+      default: assert(false); return;
       }
-      // Update mouse position to latest global state (needed when dragging main windows)
-      SDL_Window *focused_window = SDL_GetKeyboardFocus();
-      if (!SDL_GetWindowRelativeMouseMode(focused_window))
-      {
-         float mouse_x_global, mouse_y_global;
-         int window_x, window_y;
-         SDL_GetGlobalMouseState(&mouse_x_global, &mouse_y_global);
-         SDL_GetWindowPosition(focused_window, &window_x, &window_y);
-         const ImVec2 mousePos(mouse_x_global - window_x, mouse_y_global - window_y);
-         switch (m_rotate)
-         {
-         case 0: ImGui::GetIO().AddMousePosEvent(mousePos.x, mousePos.y); break;
-         case 1: ImGui::GetIO().AddMousePosEvent(mousePos.y, io.DisplaySize.y - mousePos.x); break;
-         case 2: ImGui::GetIO().AddMousePosEvent(mousePos.x, io.DisplaySize.y - mousePos.y); break;
-         case 3: ImGui::GetIO().AddMousePosEvent(io.DisplaySize.x - mousePos.y, mousePos.x); break;
-         default: assert(false); return;
-         }
-      }
-   #endif
+   }
 
    ImGui::NewFrame();
 
