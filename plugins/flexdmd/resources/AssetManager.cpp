@@ -53,7 +53,7 @@ void AssetManager::ClearAll()
 }
 
 void AssetManager::SetBasePath(const string& szBasePath)
-{ 
+{
    m_szBasePath = normalize_path_separators(szBasePath);
    if (!m_szBasePath.ends_with(PATH_SEPARATOR_CHAR))
       m_szBasePath += PATH_SEPARATOR_CHAR;
@@ -209,7 +209,7 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
       uint32_t tint;
       uint32_t borderTint;
       int borderSize;
- 
+
       for (size_t i = 1; i < parts.size(); i++) {
          const string& definition = parts[i];
 

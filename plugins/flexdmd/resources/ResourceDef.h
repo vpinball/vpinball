@@ -36,7 +36,7 @@ public:
          m_borderSize == other.m_borderSize;
    }
 
-   size_t hash() const 
+   size_t hash() const
    {
       size_t hashCode = -1876634251;
       hashCode = hashCode * -1521134295 + std::hash<string>{}(m_szPath);
@@ -73,7 +73,7 @@ public:
    bool operator==(const VideoDef& other) const
    {
       return m_videoFilename == other.m_videoFilename &&
-         m_loop == other.m_loop && 
+         m_loop == other.m_loop &&
          m_scaling == other.m_scaling &&
          m_alignment == other.m_alignment;
    }

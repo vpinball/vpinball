@@ -121,7 +121,7 @@ private:
 
    void DiscardFrames()
    {
-      delete m_pSurface; m_pSurface = nullptr; 
+      delete m_pSurface; m_pSurface = nullptr;
       delete[] m_rgbFrame; m_rgbFrame = nullptr;
       delete[] m_lum8Frame; m_lum8Frame = nullptr;
       m_rgbaFrame.clear();

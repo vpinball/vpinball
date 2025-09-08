@@ -12,7 +12,7 @@ ScoreBoard::ScoreBoard(FlexDMD* pFlexDMD, Font* pScoreFont, Font* pHighlightFont
 
    m_pTextFont = pTextFont;
    m_pTextFont->AddRef();
-   
+
    m_pLowerLeft = new Label(pFlexDMD, pTextFont, string(), string());
    AddActor(m_pLowerLeft);
 
@@ -42,7 +42,7 @@ ScoreBoard::~ScoreBoard()
 
 void ScoreBoard::SetBackground(Actor* pBackground)
 {
-   if (m_pBackground) 
+   if (m_pBackground)
       RemoveActor(m_pBackground);
    m_pBackground = pBackground;
    if (m_pBackground)
@@ -68,7 +68,7 @@ void ScoreBoard::SetFonts(Font* scoreFont, Font* highlightFont, Font* textFont)
    m_pTextFont->Release();
    m_pTextFont = textFont;
    m_pTextFont->AddRef();
-   
+
    SetHighlightedPlayer(m_highlightedPlayer);
    m_pLowerLeft->SetFont(textFont);
    m_pLowerRight->SetFont(textFont);

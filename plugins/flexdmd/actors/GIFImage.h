@@ -5,7 +5,7 @@
 
 namespace Flex {
 
-class GIFImage final : public AnimatedActor 
+class GIFImage final : public AnimatedActor
 {
 public:
    ~GIFImage() override;

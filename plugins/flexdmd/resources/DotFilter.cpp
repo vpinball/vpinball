@@ -32,7 +32,7 @@ void DotFilter::Filter(Bitmap* pBitmap)
             }
          }
          float bright = 1.0f + m_dotSize * m_dotSize / 1.8f;
-         pixels[(y * dst->w) + x] = SDL_MapSurfaceRGBA(dst, 
+         pixels[(y * dst->w) + x] = SDL_MapSurfaceRGBA(dst,
             (uint8_t)min((r / bright), 255.f),
             (uint8_t)min((g / bright), 255.f),
             (uint8_t)min((b / bright), 255.f),

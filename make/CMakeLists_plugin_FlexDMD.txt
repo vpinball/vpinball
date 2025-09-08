@@ -129,19 +129,34 @@ if(BUILD_SHARED)
          $<$<CONFIG:RELEASE>:/OPT:REF>
          $<$<CONFIG:RELEASE>:/OPT:ICF>
          $<$<CONFIG:RELEASE>:/LTCG>
+         /SAFESEH:NO
       )
       if (PluginArch STREQUAL "x64")
          set_target_properties(FlexDMDPlugin PROPERTIES
             OUTPUT_NAME "plugin-flexdmd64"
          )
          target_link_directories(FlexDMDPlugin PUBLIC ${CMAKE_SOURCE_DIR}/third-party/build-libs/windows-x64)
-         target_link_libraries(FlexDMDPlugin SDL364.lib SDL3_image64.lib)
+         target_link_libraries(FlexDMDPlugin
+            SDL364.lib
+            SDL3_image64.lib
+            AVCODEC64.lib
+            AVFORMAT64.lib
+            AVUTIL64.lib
+            SWSCALE64.lib
+         )
       else()
          set_target_properties(FlexDMDPlugin PROPERTIES
             OUTPUT_NAME "plugin-flexdmd"
          )
          target_link_directories(FlexDMDPlugin PUBLIC ${CMAKE_SOURCE_DIR}/third-party/build-libs/windows-x86)
-         target_link_libraries(FlexDMDPlugin SDL3.lib SDL3_image.lib)
+         target_link_libraries(FlexDMDPlugin
+            SDL3.lib
+            SDL3_image.lib
+            AVCODEC.lib
+            AVFORMAT.lib
+            AVUTIL.lib
+            SWSCALE.lib
+         )
       endif()
    else()
       set_target_properties(FlexDMDPlugin PROPERTIES
@@ -156,7 +171,14 @@ if(BUILD_SHARED)
       target_link_directories(FlexDMDPlugin PUBLIC
          ${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}
       )
-      target_link_libraries(FlexDMDPlugin PUBLIC SDL3 SDL3_image)
+      target_link_libraries(FlexDMDPlugin PUBLIC
+         SDL3
+         SDL3_image
+         avcodec
+         avformat
+         avutil
+         swscale
+      )
    endif()
 
    add_custom_command(TARGET FlexDMDPlugin POST_BUILD
@@ -171,11 +193,19 @@ if(BUILD_SHARED)
          add_custom_command(TARGET FlexDMDPlugin POST_BUILD
             COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/SDL364.dll" "${PLUGINS_DIR}/flexdmd/SDL364.dll"
             COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/SDL3_image64.dll" "${PLUGINS_DIR}/flexdmd/SDL3_image64.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/AVCODEC64.dll" "${PLUGINS_DIR}/flexdmd/AVCODEC64.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/AVFORMAT64.dll" "${PLUGINS_DIR}/flexdmd/AVFORMAT64.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/AVUTIL64.dll" "${PLUGINS_DIR}/flexdmd/AVUTIL64.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/SWSCALE64.dll" "${PLUGINS_DIR}/flexdmd/SWSCALE64.dll"
          )
       elseif (PluginArch STREQUAL "x86")
          add_custom_command(TARGET FlexDMDPlugin POST_BUILD
             COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/SDL3.dll" "${PLUGINS_DIR}/flexdmd/SDL3.dll"
             COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/SDL3_image.dll" "${PLUGINS_DIR}/flexdmd/SDL3_image.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/AVCODEC.dll" "${PLUGINS_DIR}/flexdmd/AVCODEC.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/AVFORMAT.dll" "${PLUGINS_DIR}/flexdmd/AVFORMAT.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/AVUTIL.dll" "${PLUGINS_DIR}/flexdmd/AVUTIL.dll"
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-${PluginArch}/SWSCALE.dll" "${PLUGINS_DIR}/flexdmd/SWSCALE.dll"
          )
       endif()
    elseif(PluginPlatform STREQUAL "linux")
@@ -184,6 +214,14 @@ if(BUILD_SHARED)
          COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libSDL3.so.*" "${PLUGINS_DIR}/flexdmd/"
          COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libSDL3_image.so" "${PLUGINS_DIR}/flexdmd/"
          COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libSDL3_image.so.*" "${PLUGINS_DIR}/flexdmd/"
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libavcodec.so" "${PLUGINS_DIR}/flexdmd/"
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libavcodec.so.*" "${PLUGINS_DIR}/flexdmd/"
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libavformat.so" "${PLUGINS_DIR}/flexdmd/"
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libavformat.so.*" "${PLUGINS_DIR}/flexdmd/"
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libavutil.so" "${PLUGINS_DIR}/flexdmd/"
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libavutil.so.*" "${PLUGINS_DIR}/flexdmd/"
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libswscale.so" "${PLUGINS_DIR}/flexdmd/"
+         COMMAND cp -a "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/linux-${PluginArch}/libswscale.so.*" "${PLUGINS_DIR}/flexdmd/"
       )
    endif()
 endif()
@@ -207,5 +245,16 @@ if(BUILD_STATIC)
    set_target_properties(FlexDMDPlugin PROPERTIES
       PREFIX ""
       OUTPUT_NAME "plugin-flexdmd"
+   )
+   target_link_directories(FlexDMDPlugin PUBLIC
+      ${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}
+   )
+   target_link_libraries(FlexDMDPlugin PUBLIC
+      SDL3
+      SDL3_image
+      avcodec
+      avformat
+      avutil
+      swscale
    )
 endif()

@@ -72,7 +72,7 @@ void GIFImage::ReadNextFrame()
    }
 }
 
-void GIFImage::UpdateFrame() 
+void GIFImage::UpdateFrame()
 {
    if (m_pBitmap)
       m_pActiveFrameSurface = m_pBitmap->GetFrameSurface(m_pos);
