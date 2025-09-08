@@ -9,7 +9,7 @@
 #include "Shader.h"
 #endif
 
-#ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
+#if !defined(DISABLE_FORCE_NVIDIA_OPTIMUS) && defined(ENABLE_DX9)
 #include "nvapi/nvapi.h"
 #endif
 
