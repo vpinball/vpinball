@@ -20,8 +20,6 @@
 
 //#define DISABLE_FORCE_AMD_HIGHPERF // do not enable AMD high performance device (on Laptops, etc) by default
 
-//#define TWOSIDED_TRANSPARENCY // transparent hit targets are rendered backsided first, then frontsided
-
 // Needed by ImPlot when using ImGUI
 #define IMGUI_DEFINE_MATH_OPERATORS
 
