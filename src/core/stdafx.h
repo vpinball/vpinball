@@ -20,10 +20,6 @@
 
 //#define DISABLE_FORCE_AMD_HIGHPERF // do not enable AMD high performance device (on Laptops, etc) by default
 
-#if defined(ENABLE_OPENGL) || defined(__STANDALONE__)
-#define DISABLE_FORCE_NVIDIA_OPTIMUS
-#endif
-
 //#define TWOSIDED_TRANSPARENCY // transparent hit targets are rendered backsided first, then frontsided
 
 // Needed by ImPlot when using ImGUI

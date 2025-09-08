@@ -78,19 +78,19 @@ extern "C" int __cdecl _purecall()
 
 #if !defined(__STANDALONE__)
 
-#if !defined(ENABLE_BGFX)
-#ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
-extern "C" {
-   __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
-}
-#else
-extern "C" {
-   __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000000;
-}
-#endif
-#ifndef DISABLE_FORCE_AMD_HIGHPERF
-extern "C" { _declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x00000001; }
-#endif
+#if defined(ENABLE_DX9)
+   #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
+      extern "C" {
+         __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+      }
+   #else
+      extern "C" {
+         __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000000;
+      }
+   #endif
+   #ifndef DISABLE_FORCE_AMD_HIGHPERF
+      extern "C" { _declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x00000001; }
+   #endif
 #endif
 
 #if (_WIN32_WINNT <= 0x0601 /* _WIN32_WINNT_WIN7 */ )
