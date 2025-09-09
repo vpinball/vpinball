@@ -174,13 +174,13 @@ void Controller::SetMech(int mechNo, int newVal)
 vector<uint8_t> Controller::GetNVRAM() const
 {
    vector<PinmameNVRAMState> nvramBuffer(PinmameGetMaxNVRAM());
-   int count = PinmameGetNVRAM(nvramBuffer.data());
+   const int count = PinmameGetNVRAM(nvramBuffer.data());
    if (count <= 0)
       return vector<uint8_t>();
 
    vector<uint8_t> buffer(count);
    for (int i = 0; i < count; i++)
-      buffer.push_back(nvramBuffer[i].currStat);
+      buffer[i] = nvramBuffer[i].currStat;
 
    return buffer;
 }
@@ -188,7 +188,7 @@ vector<uint8_t> Controller::GetNVRAM() const
 const vector<PinmameNVRAMState>& Controller::GetChangedNVRAM()
 {
    m_nvramStates.resize(PinmameGetMaxNVRAM()); // TODO we should use the actual size of the running machine
-   int count = PinmameGetChangedNVRAM(m_nvramStates.data());
+   const int count = PinmameGetChangedNVRAM(m_nvramStates.data());
    if (count < 0) // report error ?
       count = 0;
    m_nvramStates.resize(count);
@@ -198,7 +198,7 @@ const vector<PinmameNVRAMState>& Controller::GetChangedNVRAM()
 const vector<PinmameSoundCommand>& Controller::GetNewSoundCommands()
 {
    m_soundCommands.resize(PinmameGetMaxSoundCommands());
-   int count = PinmameGetNewSoundCommands(m_soundCommands.data());
+   const int count = PinmameGetNewSoundCommands(m_soundCommands.data());
    if (count < 0) // report error ?
       count = 0;
    m_soundCommands.resize(count);
@@ -208,7 +208,7 @@ const vector<PinmameSoundCommand>& Controller::GetNewSoundCommands()
 const vector<PinmameLampState>& Controller::GetChangedLamps()
 {
    m_lampStates.resize(PinmameGetMaxLamps()); // TODO we should use the actual size of the running machine
-   int count = PinmameGetChangedLamps(m_lampStates.data());
+   const int count = PinmameGetChangedLamps(m_lampStates.data());
    if (count < 0) // report error ?
       count = 0;
    m_lampStates.resize(count);
@@ -220,7 +220,7 @@ const vector<PinmameLEDState>& Controller::GetChangedLEDs(int nHigh, int nLow, i
    m_ledStates.resize(PinmameGetMaxLEDs()); // TODO we should use the actual size of the running machine
    uint64_t mask = ((uint64_t)nHigh << 32) | (uint64_t)nLow;
    uint64_t mask2 = ((uint64_t)nnHigh << 32) | (uint64_t)nnLow;
-   int count = PinmameGetChangedLEDs(mask, mask2, m_ledStates.data());
+   const int count = PinmameGetChangedLEDs(mask, mask2, m_ledStates.data());
    if (count < 0) // report error ?
       count = 0;
    m_ledStates.resize(count);
@@ -230,7 +230,7 @@ const vector<PinmameLEDState>& Controller::GetChangedLEDs(int nHigh, int nLow, i
 const vector<PinmameGIState>& Controller::GetChangedGIStrings()
 {
    m_giStates.resize(PinmameGetMaxGIs()); // TODO we should use the actual size of the running machine
-   int count = PinmameGetChangedGIs(m_giStates.data());
+   const int count = PinmameGetChangedGIs(m_giStates.data());
    if (count < 0) // report error ?
       count = 0;
    m_giStates.resize(count);
@@ -240,7 +240,7 @@ const vector<PinmameGIState>& Controller::GetChangedGIStrings()
 const vector<PinmameSolenoidState>& Controller::GetChangedSolenoids()
 {
    m_solenoidStates.resize(PinmameGetMaxSolenoids()); // TODO we should use the actual size of the running machine
-   int count = PinmameGetChangedSolenoids(m_solenoidStates.data());
+   const int count = PinmameGetChangedSolenoids(m_solenoidStates.data());
    if (count < 0) // report error ?
       count = 0;
    m_solenoidStates.resize(count);
