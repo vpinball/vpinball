@@ -358,14 +358,14 @@ void Settings::Validate(const bool addDefaults)
    //////////////////////////////////////////////////////////////////////////
    // Playfield view section
 
-   SettingString(Section::Player, "PlayfieldDisplay", "Default", "Display used for the main Playfield window"s);
-   SettingBool(Section::Player, "PlayfieldFullScreen", false, "Use fullscreen exclusive mode (not recommended unless you need to change the display resolution)"s);
-   SettingString(Section::Topper, "TopperDisplay", "Default", "Display used for the Topper window"s);
-   SettingBool(Section::Topper, "TopperFullScreen", false, "Use fullscreen exclusive mode (not recommended unless you need to change the display resolution)"s);
-   SettingString(Section::ScoreView, "ScoreViewDisplay", "Default", "Display used for the ScoreView window"s);
-   SettingBool(Section::ScoreView, "ScoreViewFullScreen", false, "Use fullscreen exclusive mode (not recommended unless you need to change the display resolution)"s);
-   SettingString(Section::Backglass, "BackglassDisplay", "Default", "Display used for the Backglass window"s);
-   SettingBool(Section::Backglass, "BackglassFullScreen", false, "Use fullscreen exclusive mode (not recommended unless you need to change the display resolution)"s);
+   SettingString(Section::Player, "PlayfieldDisplay"s, "Default"s, "Display used for the main Playfield window"s);
+   SettingBool(Section::Player, "PlayfieldFullScreen"s, false, "Use fullscreen exclusive mode (not recommended unless you need to change the display resolution)"s);
+   SettingString(Section::Topper, "TopperDisplay"s, "Default"s, "Display used for the Topper window"s);
+   SettingBool(Section::Topper, "TopperFullScreen"s, false, "Use fullscreen exclusive mode (not recommended unless you need to change the display resolution)"s);
+   SettingString(Section::ScoreView, "ScoreViewDisplay"s, "Default"s, "Display used for the ScoreView window"s);
+   SettingBool(Section::ScoreView, "ScoreViewFullScreen"s, false, "Use fullscreen exclusive mode (not recommended unless you need to change the display resolution)"s);
+   SettingString(Section::Backglass, "BackglassDisplay"s, "Default"s, "Display used for the Backglass window"s);
+   SettingBool(Section::Backglass, "BackglassFullScreen"s, false, "Use fullscreen exclusive mode (not recommended unless you need to change the display resolution)"s);
 
    SettingFloat(Section::Player, "MaxFramerate"s, -1.f, -1.f, 1000.f, "Maximum FPS of playfield view (minimum: 24FPS), 0 is unlimited, < 0 is limited to the display refresh rate."s);
    SettingInt(Section::Player, "SyncMode"s, VSM_NONE, VSM_NONE, VSM_FRAME_PACING, "Hardware video sync mode to use: None / Vertical Sync / Adaptative Sync / Frame Pacing."s);
@@ -388,10 +388,10 @@ void Settings::Validate(const bool addDefaults)
       case 7: dotColor = 0x00FFFFFF; break; // Generic Led
       default: dotColor = 0; assert(false);
       }
-      SettingBool(Section::DMD, prefix + "Legacy",       i == 1, ""s);
-      SettingBool(Section::DMD, prefix + "ScaleFX",      false, ""s);
-      SettingInt(Section::DMD, prefix + "DotTint",       dotColor,   0x00000000, 0x00FFFFFF, ""s);
-      SettingInt(Section::DMD, prefix + "UnlitDotColor", 0x00404040, 0x00000000, 0x00FFFFFF, ""s);
+      SettingBool(Section::DMD,  prefix + "Legacy",        i == 1, ""s);
+      SettingBool(Section::DMD,  prefix + "ScaleFX",       false, ""s);
+      SettingInt(Section::DMD,   prefix + "DotTint",       dotColor,   0x00000000, 0x00FFFFFF, ""s);
+      SettingInt(Section::DMD,   prefix + "UnlitDotColor", 0x00404040, 0x00000000, 0x00FFFFFF, ""s);
       SettingFloat(Section::DMD, prefix + "DotBrightness", 25.0f,  0.001f, 100.f, ""s);
       SettingFloat(Section::DMD, prefix + "DotSize",       (i == 2 || i == 6) ? 0.6f : 0.75f,  0.001f, 1.f, ""s); // WPC & GTS3 Neon Plasma: 0.6, Stern Red LED: 0.75
       SettingFloat(Section::DMD, prefix + "DotSharpness",  0.90f, 0.f, 1.f, ""s);

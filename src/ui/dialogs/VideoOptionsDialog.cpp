@@ -1167,7 +1167,7 @@ void RenderOptPage::LoadSettings(Settings& settings)
       for (int i = 0; i < m_gfxBackend.GetCount(); i++)
       {
          m_gfxBackend.GetLBText(i, buffer);
-         if (gfxBackend == string(buffer))
+         if (gfxBackend == buffer)
          {
             m_gfxBackend.SetCurSel(i);
             break;
