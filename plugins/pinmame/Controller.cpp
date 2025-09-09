@@ -171,6 +171,20 @@ void Controller::SetMech(int mechNo, int newVal)
    }
 }
 
+vector<uint8_t> Controller::GetNVRAM() const
+{
+   vector<PinmameNVRAMState> nvramBuffer(PinmameGetMaxNVRAM());
+   int count = PinmameGetNVRAM(nvramBuffer.data());
+   if (count <= 0)
+      return vector<uint8_t>();
+
+   vector<uint8_t> buffer(count);
+   for (int i = 0; i < count; i++)
+      buffer.push_back(nvramBuffer[i].currStat);
+
+   return buffer;
+}
+
 const vector<PinmameNVRAMState>& Controller::GetChangedNVRAM()
 {
    m_nvramStates.resize(PinmameGetMaxNVRAM()); // TODO we should use the actual size of the running machine
