@@ -197,14 +197,6 @@ void uSleep(const uint64_t u)
 //#endif
 }
 
-// can sleep too long by 500-1000 (=0.5 to 1ms) or 1000-2000 (=1 to 2ms) on older windows versions
-// needs timeBeginPeriod(1) before calling 1st time to make the Sleep(1) in here behave more or less accurately (and timeEndPeriod(1) after not needing that precision anymore)
-// but VP code does this already
-void uOverSleep(const uint64_t u)
-{
-   SDL_DelayNS(u); // Experiments on Windows 11 show a minimum delay around 300-500us (half a ms), uses roughly same API calls as below
-}
-
 //
 
 static constexpr unsigned int daysPerMonths[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }; // Number of days per month

@@ -23,7 +23,12 @@ uint64_t usec();
 
 // needs timeBeginPeriod(1) before calling 1st time to make the Sleep(1) in here behave more or less accurately (and timeEndPeriod(1) after not needing that precision anymore)
 void uSleep(const uint64_t u);
-void uOverSleep(const uint64_t u);
+
+// allowed to sleep longer, experiments on Windows 11 show a minimum oversleep of around 300-500us (half a ms)
+inline void uOverSleep(const uint64_t u)
+{
+   SDL_DelayNS(u);
+}
 
 double TheoreticRadiation(const unsigned int day, const unsigned int month, const unsigned int year, const double rlat);
 double MaxTheoreticRadiation(const unsigned int year, const double rlat);
