@@ -181,6 +181,7 @@ PSC_CLASS_START(Controller)
    PSC_PROP_R_ARRAY1(Controller, bool, Solenoid, int)
    PSC_PROP_R_ARRAY1(Controller, int32, GIString, int)
    PSC_PROP_RW_ARRAY1(Controller, int32, Dip, int)
+   PSC_PROP_R(Controller, ByteArray, NVRAM)
    PSC_PROP_R_StructArray3(Controller, PinmameNVRAMState, nvramNo, oldStat, currStat, ChangedNVRAM);
    PSC_PROP_R_StructArray2(Controller, PinmameLampState, lampNo, state, ChangedLamps);
    PSC_PROP_R_StructArray2(Controller, PinmameGIState, giNo, state, ChangedGIStrings);
