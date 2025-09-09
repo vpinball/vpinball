@@ -8,6 +8,8 @@
 #include <thread>
 #include <iomanip>
 
+#include <SDL3/SDL_timer.h>
+
 #include "unordered_dense.h"
 
 // call if msec,usec or uSleep, etc. should be more precise
