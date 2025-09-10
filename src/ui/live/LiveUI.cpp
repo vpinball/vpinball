@@ -301,7 +301,7 @@ void LiveUI::CenteredText(const string &text)
 
    ImGui::SameLine(text_indentation);
    ImGui::PushTextWrapPos(win_size.x - text_indentation);
-   ImGui::TextWrapped("%s", text.c_str());
+   ImGui::TextWrapped(text.c_str());
    ImGui::PopTextWrapPos();
 }
 

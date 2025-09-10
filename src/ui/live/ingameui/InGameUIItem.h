@@ -5,7 +5,7 @@
 namespace VPX::InGameUI
 {
 
-class InGameUIItem
+class InGameUIItem final
 {
 public:
    explicit InGameUIItem(string label)
@@ -48,7 +48,7 @@ public:
       , m_defValue(GetStepAlignedValue(static_cast<float>(defValue)))
       , m_getIntValue(getValue)
       , m_initialValue(static_cast<float>(getValue()))
-      , m_format(format)
+      , m_format(std::move(format))
       , m_onChangeInt(onChange)
       , m_onSaveInt(onSave)
       , m_path(""s) // Unused
@@ -68,7 +68,7 @@ public:
       , m_defValue(GetStepAlignedValue(defValue))
       , m_getFloatValue(getValue)
       , m_initialValue(getValue())
-      , m_format(format)
+      , m_format(std::move(format))
       , m_onChangeFloat(onChange)
       , m_onSaveFloat(onSave)
       , m_path(""s) // Unused
@@ -82,7 +82,7 @@ public:
       : m_type(Type::EnumValue) // Common
       , m_label(std::move(label))
       , m_tooltip(std::move(tooltip))
-      , m_enum(values) // Item
+      , m_enum(std::move(values)) // Item
       , m_minValue(0.f)
       , m_maxValue(static_cast<float>(values.size()))
       , m_step(1.f)
@@ -145,12 +145,12 @@ public:
       Validate();
    }
 
-   bool IsSelectable()
+   bool IsSelectable() const
    {
       return true;
       //m_type != Type::Info;
    }
-   bool IsAdjustable() { return m_type == Type::FloatValue || m_type == Type::IntValue || m_type == Type::EnumValue || m_type == Type::Toggle; }
+   bool IsAdjustable() const { return m_type == Type::FloatValue || m_type == Type::IntValue || m_type == Type::EnumValue || m_type == Type::Toggle; }
 
    float GetFloatValue() const
    {
@@ -161,12 +161,12 @@ public:
    }
    int GetIntValue() const
    {
-      float value = static_cast<float>(m_getIntValue());
-      value = clamp(value, m_minValue, m_maxValue);
-      value = GetStepAlignedValue(value);
-      return static_cast<int>(value);
+      int value = m_getIntValue();
+      value = clamp(value, static_cast<int>(m_minValue), static_cast<int>(m_maxValue));
+      value = static_cast<int>(GetStepAlignedValue(static_cast<float>(value)));
+      return value;
    }
-   bool GetBoolValue() const { return m_getBoolValue() ? 1.f : 0.f; }
+   bool GetBoolValue() const { return m_getBoolValue(); }
    void SetValue(float value);
    void SetValue(int value);
    void SetValue(bool value);
@@ -220,4 +220,4 @@ private:
    const std::function<void(float, Settings&, bool)> m_onSaveFloat;
 };
 
-};
+}

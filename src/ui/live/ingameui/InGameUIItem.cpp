@@ -12,16 +12,6 @@ void InGameUIItem::Validate()
    switch (m_type)
    {
    case Type::FloatValue:
-      assert(m_minValue < m_maxValue);
-      assert(m_step > 0.f);
-      m_initialValue = clamp(m_initialValue, m_minValue, m_maxValue);
-      m_initialValue = GetStepAlignedValue(m_initialValue);
-      m_defValue = clamp(m_defValue, m_minValue, m_maxValue);
-      m_defValue = GetStepAlignedValue(m_defValue);
-      assert(m_minValue <= m_initialValue && m_initialValue <= m_maxValue);
-      assert(m_minValue <= m_defValue && m_defValue <= m_maxValue);
-      break;
-
    case Type::IntValue:
       assert(m_minValue < m_maxValue);
       assert(m_step > 0.f);
@@ -91,8 +81,8 @@ bool InGameUIItem::IsDefaultValue() const
    {
    case Type::FloatValue: return GetFloatValue() == m_defValue;
    case Type::IntValue:
-   case Type::EnumValue: return static_cast<float>(GetIntValue()) == m_defValue;
-   case Type::Toggle: return (GetBoolValue() ? 1.f : 0.f) == m_defValue;
+   case Type::EnumValue: return GetIntValue() == static_cast<int>(m_defValue);
+   case Type::Toggle: return GetBoolValue() == (m_defValue != 0.f);
    default: return true;
    }
 }
@@ -102,7 +92,7 @@ void InGameUIItem::ResetToInitialValue()
    switch (m_type)
    {
    case Type::FloatValue: SetValue(m_initialValue); break;
-   case Type::IntValue: SetValue(static_cast<int>(m_initialValue)); break;
+   case Type::IntValue:
    case Type::EnumValue: SetValue(static_cast<int>(m_initialValue)); break;
    case Type::Toggle: SetValue(m_initialValue != 0.f); break;
    default: break;
@@ -114,7 +104,7 @@ void InGameUIItem::ResetToDefault()
    switch (m_type)
    {
    case Type::FloatValue: SetValue(m_defValue); break;
-   case Type::IntValue: SetValue(static_cast<int>(m_defValue)); break;
+   case Type::IntValue:
    case Type::EnumValue: SetValue(static_cast<int>(m_defValue)); break;
    case Type::Toggle: SetValue(m_defValue != 0.f); break;
    default: break;
@@ -168,16 +158,14 @@ void InGameUIItem::SetValue(int value)
    const int prev = GetIntValue();
    value = clamp(value, static_cast<int>(m_minValue), static_cast<int>(m_maxValue));
    value = static_cast<int>(GetStepAlignedValue(static_cast<float>(value)));
-   if (prev != static_cast<float>(value))
+   if (prev != value)
       m_onChangeInt(prev, value);
 }
 
 void InGameUIItem::SetValue(bool value)
 {
-   const float prev = GetBoolValue() ? 1.f : 0.f;
-   float newValue = value ? 1.f : 0.f;
-   if (prev != newValue)
+   if (GetBoolValue() != value)
       m_onChangeBool(value);
 }
 
-};
+}
