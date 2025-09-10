@@ -269,42 +269,42 @@ void Settings::Validate(const bool addDefaults)
    // Plugin.B2SLegacy
 
 #ifdef __STANDALONE__
-   SettingBool(GetSection("Plugin.B2SLegacy"), "Enable"s, true, ""s);
+   SettingBool(GetSection("Plugin.B2SLegacy"s), "Enable"s, true, ""s);
 #endif
 
    //////////////////////////////////////////////////////////////////////////
    // Plugin.FlexDMD
 
 #ifdef __STANDALONE__
-   SettingBool(GetSection("Plugin.FlexDMD"), "Enable"s, true, ""s);
+   SettingBool(GetSection("Plugin.FlexDMD"s), "Enable"s, true, ""s);
 #endif
 
    //////////////////////////////////////////////////////////////////////////
    // Plugin.PinMAME
 
 #ifdef __STANDALONE__
-   SettingBool(GetSection("Plugin.PinMAME"), "Enable"s, true, ""s);
+   SettingBool(GetSection("Plugin.PinMAME"s), "Enable"s, true, ""s);
 #endif
 
    //////////////////////////////////////////////////////////////////////////
    // Plugin.PUP
 
 #ifdef __LIBVPINBALL__
-   SettingBool(GetSection("Plugin.PUP"), "Enable"s, true, ""s);
+   SettingBool(GetSection("Plugin.PUP"s), "Enable"s, true, ""s);
 #endif
 
    //////////////////////////////////////////////////////////////////////////
    // Plugin.ScoreView
 
 #ifdef __STANDALONE__
-   SettingBool(GetSection("Plugin.ScoreView"), "Enable"s, true, ""s);
+   SettingBool(GetSection("Plugin.ScoreView"s), "Enable"s, true, ""s);
 #endif
 
    //////////////////////////////////////////////////////////////////////////
    // Plugin.WMP
 
 #ifdef __STANDALONE__
-   SettingBool(GetSection("Plugin.WMP"), "Enable"s, true, ""s);
+   SettingBool(GetSection("Plugin.WMP"s), "Enable"s, true, ""s);
 #endif
 
    //////////////////////////////////////////////////////////////////////////
@@ -829,7 +829,7 @@ Settings::OptionDef &Settings::RegisterSetting(const Section section, const stri
    OptionUnit unit, const vector<string> &literals)
 {
    assert(section == TableOption || section >= Plugin00); // For the time being, this system is only used for custom table and plugin options (could be extend for all options to get the benefit of validation, fast access, and remove unneeded copied states...)
-   
+
    vector<OptionDef> &options = section == TableOption ? m_tableOptions : m_pluginOptions;
    OptionDef *opt = nullptr;
    bool isNew = false;

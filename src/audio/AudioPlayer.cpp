@@ -112,7 +112,7 @@ static ma_result ma_device_init__sdl(ma_device* pDevice, const ma_device_config*
    pDeviceEx->stream = SDL_OpenAudioDeviceStream(requestedDeviceId, nullptr, ma_audio_callback_playback__sdl, pDeviceEx);
    if (pDeviceEx->stream == nullptr)
    {
-      PLOGE << "Failed to open SDL audio device (Error: " << SDL_GetError() << ")";
+      PLOGE << "Failed to open SDL audio device (Error: " << SDL_GetError() << ')';
       return MA_FAILED_TO_OPEN_BACKEND_DEVICE;
    }
    pDeviceEx->deviceID = SDL_GetAudioStreamDevice(pDeviceEx->stream);
@@ -150,7 +150,7 @@ static ma_result ma_device_init__sdl(ma_device* pDevice, const ma_device_config*
 
    // TODO check that the default channel map matches SDL channel map
    ma_channel_map_init_standard(ma_standard_channel_map_default, pDescriptorPlayback->channelMap, std::size(pDescriptorPlayback->channelMap), pDescriptorPlayback->channels);
-   
+
    PLOGI << "Audio device initialized. Device: '" << SDL_GetAudioDeviceName(pDeviceEx->deviceID) << "', Freq : " << specs.freq << ", Format: " << SDL_GetAudioFormatName(specs.format) << ", Channels: " << specs.channels << ", Driver: " << SDL_GetCurrentAudioDriver();
    return MA_SUCCESS;
 }

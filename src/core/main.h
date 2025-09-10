@@ -269,7 +269,6 @@ class SCNotification final { };
 #include "ui/codeview.h"
 
 #include "utils/lzwreader.h"
-#include "utils/lzwwriter.h"
 
 #include "parts/Sound.h"
 #include "parts/pinbinary.h"

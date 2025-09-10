@@ -1542,11 +1542,6 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool sav
 #ifndef COMPRESS_MESHES
       bw.WriteStruct(FID(M3DX), m_mesh.m_vertices.data(), (int)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices()));
 #else
-      /*bw.WriteTag(FID(M3CX));
-      {
-      LZWWriter lzwwriter(pstm, (int *)m_mesh.m_vertices.data(), sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices(), 1, sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices());
-      lzwwriter.CompressBits(8 + 1);
-      }*/
       {
       const mz_ulong slen = (mz_ulong)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices());
       mz_ulong clen = compressBound(slen);
@@ -1565,9 +1560,6 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool sav
 #ifndef COMPRESS_MESHES
          bw.WriteStruct(FID(M3DI), m_mesh.m_indices.data(), (int)(sizeof(unsigned int)*m_mesh.NumIndices()));
 #else
-         /*bw.WriteTag(FID(M3CI));
-          LZWWriter lzwwriter(pstm, (int *)m_mesh.m_indices.data(), sizeof(unsigned int)*m_mesh.NumIndices(), 1, sizeof(unsigned int)*m_mesh.NumIndices());
-          lzwwriter.CompressBits(8 + 1);*/
          const mz_ulong slen = (mz_ulong)(sizeof(unsigned int)*m_mesh.NumIndices());
          mz_ulong clen = compressBound(slen);
          mz_uint8 * c = (mz_uint8 *)malloc(clen);
@@ -1586,9 +1578,6 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool sav
 #ifndef COMPRESS_MESHES
          bw.WriteStruct(FID(M3DI), tmp.data(), (int)(sizeof(WORD)*m_mesh.NumIndices()));
 #else
-         /*bw.WriteTag(FID(M3CI));
-          LZWWriter lzwwriter(pstm, (int *)tmp.data(), sizeof(WORD)*m_mesh.NumIndices(), 1, sizeof(WORD)*m_mesh.NumIndices());
-          lzwwriter.CompressBits(8 + 1);*/
          const mz_ulong slen = (mz_ulong)(sizeof(WORD)*m_mesh.NumIndices());
          mz_ulong clen = compressBound(slen);
          mz_uint8 * c = (mz_uint8 *)malloc(clen);
@@ -1735,8 +1724,6 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
       frameData.m_frameVerts.clear();
       frameData.m_frameVerts.resize(m_numVertices);
 
-      /*LZWReader lzwreader(pbr->m_pistream, (int *)m_mesh.m_vertices.data(), sizeof(Vertex3D_NoTex2)*numVertices, 1, sizeof(Vertex3D_NoTex2)*numVertices);
-      lzwreader.Decoder();*/
       mz_ulong uclen = (mz_ulong)(sizeof(Mesh::VertData)*m_mesh.NumVertices());
       mz_uint8 * c = (mz_uint8 *)malloc(m_compressedAnimationVertices);
       pbr->GetStruct(c, m_compressedAnimationVertices);
@@ -1752,21 +1739,19 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
    {
       m_mesh.m_vertices.clear();
       m_mesh.m_vertices.resize(m_numVertices);
-      /*LZWReader lzwreader(pbr->m_pistream, (int *)m_mesh.m_vertices.data(), sizeof(Vertex3D_NoTex2)*numVertices, 1, sizeof(Vertex3D_NoTex2)*numVertices);
-       lzwreader.Decoder();*/
       mz_ulong uclen = (mz_ulong)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices());
       mz_uint8 * c = (mz_uint8 *)malloc(m_compressedVertices);
       pbr->GetStruct(c, m_compressedVertices);
-	  if (g_pPrimitiveDecompressThreadPool == nullptr)
+      if (g_pPrimitiveDecompressThreadPool == nullptr)
 		  g_pPrimitiveDecompressThreadPool = new ThreadPool(g_pvp->GetLogicalNumberOfProcessors());
 
-	  g_pPrimitiveDecompressThreadPool->enqueue([uclen, c, this] {
+      g_pPrimitiveDecompressThreadPool->enqueue([uclen, c, this] {
 		  mz_ulong uclen2 = uclen;
 		  const int error = uncompress((unsigned char *)m_mesh.m_vertices.data(), &uclen2, c, m_compressedVertices);
 		  if (error != Z_OK)
 			  ShowError("Could not uncompress primitive vertex data, error "+std::to_string(error));
 		  free(c);
-	  });
+      });
       break;
    }
 #endif
@@ -1792,26 +1777,22 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
       m_mesh.m_indices.resize(m_numIndices);
       if (m_numVertices > 65535)
       {
-         //LZWReader lzwreader(pbr->m_pistream, (int *)m_mesh.m_indices.data(), sizeof(unsigned int)*numIndices, 1, sizeof(unsigned int)*numIndices);
-         //lzwreader.Decoder();
          mz_ulong uclen = (mz_ulong)(sizeof(unsigned int)*m_mesh.NumIndices());
          mz_uint8 * c = (mz_uint8 *)malloc(m_compressedIndices);
          pbr->GetStruct(c, m_compressedIndices);
-		 if (g_pPrimitiveDecompressThreadPool == nullptr)
+         if (g_pPrimitiveDecompressThreadPool == nullptr)
 			 g_pPrimitiveDecompressThreadPool = new ThreadPool(g_pvp->GetLogicalNumberOfProcessors());
 
-		 g_pPrimitiveDecompressThreadPool->enqueue([uclen, c, this] {
+         g_pPrimitiveDecompressThreadPool->enqueue([uclen, c, this] {
 			 mz_ulong uclen2 = uclen;
 			 const int error = uncompress((unsigned char *)m_mesh.m_indices.data(), &uclen2, c, m_compressedIndices);
 			 if (error != Z_OK)
 				 ShowError("Could not uncompress (large) primitive index data, error "+std::to_string(error));
 			 free(c);
-		 });
+         });
       }
       else
       {
-         //LZWReader lzwreader(pbr->m_pistream, (int *)tmp.data(), sizeof(WORD)*numIndices, 1, sizeof(WORD)*numIndices);
-         //lzwreader.Decoder();
          mz_ulong uclen = (mz_ulong)(sizeof(WORD)*m_mesh.NumIndices());
          mz_uint8 * c = (mz_uint8 *)malloc(m_compressedIndices);
          pbr->GetStruct(c, m_compressedIndices);
