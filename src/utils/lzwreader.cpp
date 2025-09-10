@@ -1,30 +1,6 @@
 #include "core/stdafx.h"
 
-#define OUT_OF_MEMORY -10
-#define BAD_CODE_SIZE -20
-#define READ_ERROR -1
-#define WRITE_ERROR -2
-#define OPEN_ERROR -3
-#define CREATE_ERROR -4
-
-
-LZWReader::LZWReader(IStream *pstm, int *bits, int width, int height, int pitch)
-   : m_pstm(pstm)
-   , m_pbBitsOutCur((uint8_t *)bits) // - m_cbStride;//+m_cbStride*(height-1);
-   , m_cbStride(pitch)
-#ifdef _DEBUG
-   , bad_code_count(0)
-#endif
-   , m_cfilebuffer(FILE_BUF_SIZE - 1)
-   , m_width(width) // 32-bit picture
-   , m_height(height)
-   , m_linesleft(height + 1) // +1 because 1 gets taken off immediately in Decoder
-   , m_readahead(FILE_BUF_SIZE)
-{
-}
-
-
-/* DECODE.C - An LZW decoder for GIF
+/* DECODE.C - LZW decoder
  * Copyright (C) 1987, by Steven A. Bennett
  *
  * Permission is given by the author to freely redistribute and include
@@ -33,100 +9,23 @@ LZWReader::LZWReader(IStream *pstm, int *bits, int width, int height, int pitch)
  * In accordance with the above, I want to credit Steve Wilhite who wrote
  * the code which this is heavily inspired by...
  *
- * GIF and 'Graphics Interchange Format' are trademarks (tm) of
- * Compuserve, Incorporated, an H&R Block Company.
- *
- * Release Notes: This file contains a decoder routine for GIF images
+ * Release Notes: This file contains a LZW decoder routine
  * which is similar, structurally, to the original routine by Steve Wilhite.
  * It is, however, somewhat noticably faster in most cases.
- *
  */
 
-//IMPORT char *malloc();                 /* Standard C library allocation */
-
-/* IMPORT int get_byte()
- *
- *   - This external (machine specific) function is expected to return
- * either the next byte from the GIF file, or a negative number, as
- * defined in ERRS.H.
- */
-//IMPORT int get_byte();
-
-/* IMPORT int out_line(pixels, linelen)
- *     UBYTE pixels[];
- *     int linelen;
- *
- *   - This function takes a full line of pixels (one byte per pixel) and
- * displays them (or does whatever your program wants with them...).  It
- * should return zero, or negative if an error or some other event occurs
- * which would require aborting the decode process...  Note that the length
- * passed will almost always be equal to the line length passed to the
- * decoder function, with the sole exception occurring when an ending code
- * occurs in an odd place in the GIF file...  In any case, linelen will be
- * equal to the number of pixels passed...
- */
-//IMPORT int out_line();
-
-/* IMPORT int bad_code_count;
- *
- * This value is the only other global required by the using program, and
- * is incremented each time an out of range code is read by the decoder.
- * When this value is non-zero after a decode, your GIF file is probably
- * corrupt in some way...
- */
-//IMPORT int bad_code_count;
-
-
-static constexpr unsigned int code_mask[13] = {
-   0,
-   0x0001, 0x0003,
-   0x0007, 0x000F,
-   0x001F, 0x003F,
-   0x007F, 0x00FF,
-   0x01FF, 0x03FF,
-   0x07FF, 0x0FFF
-};
-
-
-/* This function initializes the decoder for reading a new image.
- */
-short LZWReader::init_exp(int size)
-{
-   curr_size = size + 1;
-   top_slot = 1 << curr_size;
-   clear = 1 << size;
-   ending = clear + 1;
-   slot = newcodes = ending + 1;
-   navail_bytes = nbits_left = 0;
-   return (0);
-}
-
-/* get_next_code()
- * - gets the next code from the GIF file.  Returns the code, or else
- * a negative number in case of file errors...
- */
-int LZWReader::get_next_code()
+// Returns the next code from the file.
+unsigned int LZWReader::get_next_code()
 {
    if (nbits_left == 0)
    {
       if (navail_bytes <= 0)
       {
-
-         /* Out of bytes in current block, so read next block
-          */
+         // Out of bytes in current block, so read next block
          pbytes = byte_buff;
-         if ((navail_bytes = get_byte()) < 0)
-            return (navail_bytes);
-         else if (navail_bytes)
-         {
-            for (int i = 0; i < navail_bytes; ++i)
-            {
-               int x;
-               if ((x = get_byte()) < 0)
-                  return (x);
-               byte_buff[i] = (uint8_t)x;
-            }
-         }
+         navail_bytes = get_byte();
+         for (int i = 0; i < navail_bytes; ++i)
+            byte_buff[i] = get_byte();
       }
       b1 = *pbytes++;
       nbits_left = 8;
@@ -138,22 +37,11 @@ int LZWReader::get_next_code()
    {
       if (navail_bytes <= 0)
       {
-
-         /* Out of bytes in current block, so read next block
-          */
+         // Out of bytes in current block, so read next block
          pbytes = byte_buff;
-         if ((navail_bytes = get_byte()) < 0)
-            return (navail_bytes);
-         else if (navail_bytes)
-         {
-            for (int i = 0; i < navail_bytes; ++i)
-            {
-               int x;
-               if ((x = get_byte()) < 0)
-                  return (x);
-               byte_buff[i] = (uint8_t)x;
-            }
-         }
+         navail_bytes = get_byte();
+         for (int i = 0; i < navail_bytes; ++i)
+            byte_buff[i] = get_byte();
       }
       b1 = *pbytes++;
       ret |= b1 << nbits_left;
@@ -161,70 +49,56 @@ int LZWReader::get_next_code()
       --navail_bytes;
    }
    nbits_left -= curr_size;
-   ret &= code_mask[curr_size];
-   return ((short)(ret));
+
+   static constexpr unsigned int code_mask[13] = { 0, 0x0001, 0x0003, 0x0007, 0x000F, 0x001F, 0x003F, 0x007F, 0x00FF, 0x01FF, 0x03FF, 0x07FF, 0x0FFF };
+
+   return (ret & code_mask[curr_size]);
 }
 
 
-/* The reason we have these separated like this instead of using
- * a structure like the original Wilhite code did, is because this
- * stuff generally produces significantly faster code when compiled...
- * This code is full of similar speedups...  (For a good book on writing
- * C for speed or for space optimization, see Efficient C by Tom Plum,
- * published by Plum-Hall Associates...)
- */
-
-/* short decoder(linewidth)
- *    short linewidth;               * Pixels per line of image *
- *
- * - This function decodes an LZW image, according to the method used
- * in the GIF spec.  Every *linewidth* "characters" (ie. pixels) decoded
- * will generate a call to out_line(), which is a user specific function
- * to display a line of pixels.  The function gets it's codes from
+/* This function decodes an LZW image, according to the method used
+ * in the GIF spec.  Every *width* characters/pixels decoded
+ * will move the output one line ahead.  The function gets it's codes from
  * get_next_code() which is responsible for reading blocks of data and
  * separating them into the proper size codes.  Finally, get_byte() is
- * the global routine to read the next byte from the GIF file.
- *
- * It is generally a good idea to have linewidth correspond to the actual
- * width of a line (as specified in the Image header) to make your own
- * code a bit simpler, but it isn't absolutely necessary.
- *
- * Returns: 0 if successful, else negative.  (See ERRS.H)
- *
+ * the global routine to read the next byte from the file.
  */
-
-short LZWReader::Decoder()
+LZWReader::LZWReader(IStream *const pstm, uint8_t *output, const unsigned int width)
+   : m_pstm(pstm)
+#ifdef _DEBUG
+   , bad_code_count(0)
+#endif
+   , m_cfilebuffer(FILE_BUF_SIZE - 1)
+   , m_readahead(FILE_BUF_SIZE)
 {
-   uint8_t *sp, *bufptr;
-   uint8_t *buf;
-   int bufcnt;
-   int c, oc, fc, code, size;
+   // Initialize for decoding a new image...
+   constexpr unsigned int size = 8;
 
-   /* Initialize for decoding a new image...
-    */
-   /*if ((size = get_byte()) < 0)
-      return (size);
-      if (size < 2 || 9 < size)
-      return (BAD_CODE_SIZE);*/
-   size = 8;
-   init_exp(size);
+   curr_size = size + 1;
+   unsigned int top_slot = 1u << curr_size; // Highest code for current size
+   constexpr unsigned int clear = 1u << size; // Value for a clear code
+   constexpr unsigned int ending = clear + 1; // Value for an ending code
+   constexpr unsigned int newcodes = ending + 1; // First available code
+   unsigned int slot = newcodes; // Last read code
+   navail_bytes = 0;
+   nbits_left = 0;
 
    /* Initialize in case they forgot to put in a clear code.
     * (This shouldn't happen, but we'll try and decode it anyway...)
     */
-   oc = fc = 0;
+   unsigned int oc = 0;
+   unsigned int fc = 0;
 
-   /* Allocate space for the decode buffer
-    */
-   buf = NextLine();
+   // Set up the decoding buffer from the output pointer
+   uint8_t *buf = output;
+   output += width;
 
-   /* Set up the stack pointer and decode buffer pointer
-    */
-   sp = stack;
-   bufptr = buf;
-   bufcnt = m_width;
+   unsigned int bufcnt = width;
 
-   /* This is the main loop.  For each code we get we pass through the
+   // Set up the stack pointer
+   uint8_t *sp = stack;
+
+   /* This is the main loop.  For each code we get, we pass through the
     * linked list of prefix codes, pushing the corresponding "character" for
     * each code onto the stack.  When the list reaches a single "character"
     * we push that on the stack too, and then start unstacking each
@@ -232,24 +106,15 @@ short LZWReader::Decoder()
     * included for the clear code, and the whole thing ends when we get
     * an ending code.
     */
+   unsigned int c;
    while ((c = get_next_code()) != ending)
    {
-
-      /* If we had a file error, return without completing the decode
-       */
-      if (c < 0)
-      {
-         break;
-         //return (0);
-      }
-
-      /* If the code is a clear code, reinitialize all necessary items.
-       */
+      // If the code is a clear code, reinitialize all necessary items.
       if (c == clear)
       {
          curr_size = size + 1;
          slot = newcodes;
-         top_slot = 1 << curr_size;
+         top_slot = 1u << curr_size;
 
          /* Continue reading codes until we get a non-clear code
           * (Another unlikely, but possible case...)
@@ -275,27 +140,24 @@ short LZWReader::Decoder()
 
          /* And let us not forget to put the char into the buffer... And
           * if, on the off chance, we were exactly one pixel from the end
-          * of the line, we have to send the buffer to the out_line()
-          * routine...
+          * of the line, we have to move the buffer forward
           */
-         if (bufptr)
-            *bufptr++ = (uint8_t)c;
+         *buf++ = (uint8_t)c;
 
          if (--bufcnt == 0)
          {
-            buf = NextLine();
-            bufptr = buf;
-            bufcnt = m_width;
+            buf = output;
+            output += width;
+            bufcnt = width;
          }
       }
       else
       {
-
          /* In this case, it's not a clear code or an ending code, so
           * it must be a code code...  So we can now decode the code into
           * a stack of character codes. (Clear as mud, right?)
           */
-         code = c;
+         unsigned int code = c;
 
          /* Here we go again with one of those off chances...  If, on the
           * off chance, the code we got is beyond the range of those already
@@ -314,7 +176,7 @@ short LZWReader::Decoder()
          }
 
          /* Here we scan back along the linked list of prefixes, pushing
-          * helpless characters (ie. suffixes) onto the stack as we do so.
+          * helpless characters (i.e. suffixes) onto the stack as we do so.
           */
          while (code >= newcodes)
          {
@@ -334,7 +196,7 @@ short LZWReader::Decoder()
          {
             fc = code;
             suffix[slot] = (uint8_t)fc;	// = code;
-            prefix[slot++] = (WCHAR)oc;
+            prefix[slot++] = (uint16_t)oc;
             oc = c;
          }
          if (slot >= top_slot)
@@ -351,53 +213,34 @@ short LZWReader::Decoder()
           */
          while (sp > stack)
          {
-            *bufptr++ = *(--sp);
+            *buf++ = *(--sp);
             if (--bufcnt == 0)
             {
-               buf = NextLine();
-               bufptr = buf;
-               bufcnt = m_width;
+               buf = output;
+               output += width;
+               bufcnt = width;
             }
          }
       }
    }
 
-   //!! BUG - is all this necessary?  Is it correct?
-   int toofar = m_readahead - m_cfilebuffer; // bytes we already read that we shouldn't have
+   LONGLONG toofar = (LONGLONG)m_readahead - m_cfilebuffer; // bytes we already read from the stream, BUT that we shouldn't have read
    toofar--;  // m_readahead == the byte we just read, so we actually used up one more than the math shows
    LARGE_INTEGER li;
    li.QuadPart = -toofar;
-   m_pstm->Seek(li, STREAM_SEEK_CUR, nullptr);
-
-   return (0);
+   m_pstm->Seek(li, STREAM_SEEK_CUR, nullptr); // move back in the stream so next VPT data chunk reads will be correct again
 }
 
-/*
- * decoder.c interface: get a byte from gif file
- */
-int LZWReader::get_byte()
+// This returns the next byte from the file
+uint8_t LZWReader::get_byte()
 {
    ++m_cfilebuffer;
    if (m_cfilebuffer == FILE_BUF_SIZE)
    {
       m_cfilebuffer = 0;
-      ULONG readahead = 0;
-      m_pstm->Read(m_pfilebufferbytes, FILE_BUF_SIZE, &readahead);
-      m_readahead = readahead;
+      m_readahead = 0;
+      m_pstm->Read(m_pfilebufferbytes, FILE_BUF_SIZE, &m_readahead);
    }
 
    return m_pfilebufferbytes[m_cfilebuffer];
-}
-
-
-uint8_t *LZWReader::NextLine()
-{
-   uint8_t *pbRet;
-
-   pbRet = m_pbBitsOutCur;
-   m_pbBitsOutCur += m_cbStride;	// fucking upside down dibs!
-
-   m_linesleft--;
-
-   return pbRet;
 }

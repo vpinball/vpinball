@@ -1,9 +1,5 @@
 #include "core/stdafx.h"
-
-static constexpr int LZW_masks[17] = { 0x0000, 0x0001, 0x0003, 0x0007, 0x000F,
-0x001F, 0x003F, 0x007F, 0x00FF,
-0x01FF, 0x03FF, 0x07FF, 0x0FFF,
-0x1FFF, 0x3FFF, 0x7FFF, 0xFFFF };
+#include "lzwwriter.h"
 
 LZWWriter::LZWWriter(IStream * pistream, int *bits, int width, int height, int pitch) : m_pistream(pistream), m_bits(bits), m_width(width), m_height(height), m_pitch(pitch)
 {
@@ -29,7 +25,7 @@ int LZWWriter::bNextPixel()
    if (m_iPixelCur == m_pitch*m_height)
       return GIFEOF;
 
-   const int ch = *(((unsigned char *)m_bits) + m_iPixelCur);
+   const unsigned char ch = *(((unsigned char *)m_bits) + m_iPixelCur);
    ++m_iPixelCur;
    ++m_iXCur;
    if (m_iXCur == m_width)
@@ -41,14 +37,16 @@ int LZWWriter::bNextPixel()
    return ch;
 }
 
-HRESULT LZWWriter::CompressBits(int init_bits)
+static constexpr int compute_hshift()
 {
-   int c;
-   int ent;
-   int disp;
-   int hsize_reg;
-   int hshift;
+   int hshift = 0;
+   for (int fcode = LZWWriter::HSIZE; fcode < 65536; fcode *= 2)
+      ++hshift;
+   return 8 - hshift; // set hash code range bound
+}
 
+void LZWWriter::CompressBits(int init_bits)
+{
    // Used to be in write gif
    m_iPixelCur = 0;
    m_iXCur = 0;
@@ -73,18 +71,16 @@ HRESULT LZWWriter::CompressBits(int init_bits)
    m_EOFCode = m_ClearCode + 1;
    m_free_ent = m_ClearCode + 2;
 
-   ent = bNextPixel();
+   int ent = bNextPixel();
 
-   hshift = 0;
-   for (int fcode = HSIZE; fcode < 65536; fcode *= 2)
-      ++hshift;
-   hshift = 8 - hshift;	// set hash code range bound
+   constexpr int hshift = compute_hshift();
 
-   hsize_reg = HSIZE;
+   constexpr int hsize_reg = HSIZE;
    ClearHash(hsize_reg);	// clear hash table
 
    Output(m_ClearCode);
 
+   int c;
    while ((c = bNextPixel()) != GIFEOF)
    {
       const int fcode = (c << MAXBITS) + ent;
@@ -95,28 +91,27 @@ HRESULT LZWWriter::CompressBits(int init_bits)
          if (m_htab[i] == fcode)
          {
             ent = m_codetab[i];
-            goto nextbyte;
+            continue; //goto nextbyte;
          }
-         if (i == 0)			/* secondary hash (after G. Knott) */
-            disp = 1;
-         else
-            disp = HSIZE - i;
+         {
+         const int disp = (i == 0) ? 1 : HSIZE - i; // secondary hash (after G. Knott)
          while (true)
          {
             i -= disp;
             if (i < 0)
                i += HSIZE;
             if (m_codetab[i] == 0)
-               goto processbyte;			/* hit empty slot */
+               break; //goto processbyte;			// hit empty slot
             if (m_htab[i] == fcode)
             {
                ent = m_codetab[i];
                goto nextbyte;
             }
          }
+         }
       }
 
-   processbyte:
+   //processbyte:
 
       Output(ent);
       ent = c;
@@ -136,12 +131,12 @@ HRESULT LZWWriter::CompressBits(int init_bits)
    // Put out the final code.
    Output(ent);
    Output(m_EOFCode);
-
-   return S_OK;
 }
 
-HRESULT LZWWriter::Output(int code)
+void LZWWriter::Output(int code)
 {
+   static constexpr int LZW_masks[17] = { 0x0000, 0x0001, 0x0003, 0x0007, 0x000F, 0x001F, 0x003F, 0x007F, 0x00FF, 0x01FF, 0x03FF, 0x07FF, 0x0FFF, 0x1FFF, 0x3FFF, 0x7FFF, 0xFFFF };
+
    m_cur_accum &= LZW_masks[m_cur_bits];
 
    if (m_cur_bits > 0)
@@ -189,17 +184,15 @@ HRESULT LZWWriter::Output(int code)
 
       FlushChar();
    }
-   return S_OK;
 }
 
-HRESULT LZWWriter::ClearBlock()
+void LZWWriter::ClearBlock()
 {
    ClearHash(HSIZE);
    m_free_ent = m_ClearCode + 2;
    m_clear_flg = true;
 
    Output(m_ClearCode);
-   return S_OK;
 }
 
 void LZWWriter::ClearHash(int hsize)
@@ -208,16 +201,14 @@ void LZWWriter::ClearHash(int hsize)
    memset(m_codetab, 0, sizeof(m_codetab));
 }
 
-HRESULT LZWWriter::CharOut(char c)
+void LZWWriter::CharOut(unsigned char c)
 {
    m_accum[m_a_count++] = c;
    if (m_a_count >= 254)
       FlushChar();
-
-   return S_OK;
 }
 
-HRESULT LZWWriter::FlushChar()
+void LZWWriter::FlushChar()
 {
    if (m_a_count > 0)
    {
@@ -225,5 +216,4 @@ HRESULT LZWWriter::FlushChar()
       WriteSz((char *)m_accum, m_a_count);
       m_a_count = 0;
    }
-   return S_OK;
 }

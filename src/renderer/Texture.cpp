@@ -887,17 +887,16 @@ Texture* Texture::CreateFromStream(IStream * const pstream, int version, PinTabl
       case FID(OPAQ): pbr->GetBool(isOpaque); isOpaqueDirty = false; break;
       case FID(BITS):
       {
-         // Old files, used to store some bitmaps as a 32-bit SBGRA picture, we now (10.8.1+) always use a compressed file format, so convert here to simplify the code
-         const size_t size = height * width;
+         // Old files used to store some bitmaps as a 32-bit SBGRA picture, we now (10.8.1+) always use a compressed file format. Convert here to simplify the code
+         const size_t size = (size_t)height * width;
          assert(ppb == nullptr && size != 0);
 
          uint8_t* const __restrict tmp = new uint8_t[size * 4];
-         LZWReader lzwreader(pbr->m_pistream, reinterpret_cast<int*>(tmp), width * 4, height, width * 4);
-         lzwreader.Decoder();
+         const LZWReader lzwreader(pbr->m_pistream, tmp, width * 4);
 
          // Find out if all alpha values are 0x00 or 0xFF
          #ifdef __OPENGLES__
-            bool has_alpha = true;
+            constexpr bool has_alpha = true;
          #else
             bool has_alpha = false;
             for (size_t o = 3; o < size * 4; o += 4)
@@ -908,7 +907,7 @@ Texture* Texture::CreateFromStream(IStream * const pstream, int version, PinTabl
                }
          #endif
 
-         // Create a FreeImage from LZW data, converting from BGR to RGB, eventually dropping the alpha channel
+         // Create a FreeImage from LZW data, converting from BGR to RGB, optionally dropping a constant (0 or 255) alpha channel
          FIBITMAP* dib = FreeImage_Allocate(width, height, has_alpha ? 32 : 24);
          uint8_t* const pdst = (uint8_t*)FreeImage_GetBits(dib);
          const unsigned int ch = has_alpha ? 4 : 3;

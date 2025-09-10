@@ -16,7 +16,7 @@ public:
    LZWWriter(IStream * pistream, int *bits, int width, int height, int pitch);
    ~LZWWriter() { }
 
-   HRESULT CompressBits(int init_bits);
+   void CompressBits(int init_bits);
 
 private:
    HRESULT WriteSz(const char *sz, int cbytes);
@@ -24,13 +24,13 @@ private:
    HRESULT WriteWord(short word);
    int bNextPixel();
 
-   HRESULT Output(int code);
-   HRESULT ClearBlock();
+   void Output(int code);
+   void ClearBlock();
    void ClearHash(int hsize);
-   HRESULT CharOut(char c);
-   HRESULT FlushChar();
+   void CharOut(unsigned char c);
+   void FlushChar();
 
-   static __forceinline int Maxcode(const int n_bits)
+   static constexpr int Maxcode(const int n_bits)
    {
        return (1 << n_bits) - 1;
    }
