@@ -281,8 +281,6 @@ set(VPX_SOURCES
    src/utils/fileio.h
    src/utils/lzwreader.cpp
    src/utils/lzwreader.h
-   src/utils/lzwwriter.cpp
-   src/utils/lzwwriter.h
    src/utils/hash.cpp
    src/utils/hash.h
    src/utils/objloader.cpp

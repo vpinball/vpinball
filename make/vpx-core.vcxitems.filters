@@ -672,9 +672,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/utils/lzwreader.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/utils/lzwwriter.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/utils/memutil.cpp">
       <Filter>utils</Filter>
     </ClCompile>
@@ -1452,9 +1449,6 @@
       <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/utils/Logger.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/utils/lzwwriter.h">
       <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/utils/lzwreader.h">
