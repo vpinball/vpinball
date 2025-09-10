@@ -41,4 +41,4 @@ private:
    InGameUIPage* m_activePage = nullptr;
 };
 
-};
+}

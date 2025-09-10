@@ -180,7 +180,7 @@ private:
    ImGuizmo::OPERATION m_gizmoOperation = ImGuizmo::NONE;
    ImGuizmo::MODE m_gizmoMode = ImGuizmo::WORLD;
    bool GetSelectionTransform(Matrix3D& transform) const;
-   void SetSelectionTransform(const Matrix3D& transform, bool clearPosition = false, bool clearScale = false, bool clearRotation = false);
+   void SetSelectionTransform(const Matrix3D& transform, bool clearPosition = false, bool clearScale = false, bool clearRotation = false) const;
 
    // Editor camera
    bool m_useEditorCam = false;

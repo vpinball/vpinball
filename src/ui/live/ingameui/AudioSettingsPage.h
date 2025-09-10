@@ -6,7 +6,7 @@
 namespace VPX::InGameUI
 {
 
-class AudioSettingsPage : public InGameUIPage
+class AudioSettingsPage final : public InGameUIPage
 {
 public:
    AudioSettingsPage();
@@ -15,4 +15,4 @@ private:
    bool m_lockVolume = true;
 };
 
-};
+}

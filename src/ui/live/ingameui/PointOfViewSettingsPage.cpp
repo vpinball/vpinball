@@ -9,7 +9,7 @@ namespace VPX::InGameUI
 {
 
 PointOfViewSettingsPage::PointOfViewSettingsPage()
-   : InGameUIPage("settings/pov", "Point of View", "Point of view's settings page:\nOptions to define rendering's point of view")
+   : InGameUIPage("settings/pov"s, "Point of View"s, "Point of view's settings page:\nOptions to define rendering's point of view"s)
 {
 }
 
@@ -94,9 +94,8 @@ void PointOfViewSettingsPage::BuildPage()
    ClearItems();
 
    ViewSetupID vsId = table->m_BG_current_set;
-   ViewSetup& viewSetup = table->mViewSetups[vsId];
+   const ViewSetup& viewSetup = table->mViewSetups[vsId];
    const bool isLegacy = viewSetup.mMode == VLM_LEGACY;
-   const float realToVirtual = viewSetup.GetRealToVirtualScale(table);
    const string keyPrefix = vsId == BG_DESKTOP ? "ViewDT"s : vsId == BG_FSS ? "ViewFSS"s : "ViewCab"s;
 
    // Evaluate a suitable default depending on overall view mode
@@ -302,7 +301,7 @@ void PointOfViewSettingsPage::BuildPage()
    zScale->SetInitialValue(100.f * m_initialViewSetup.mSceneScaleZ / m_initialViewSetup.GetRealToVirtualScale(table));
 
    auto playerX = std::make_unique<InGameUIItem>(
-      "Player X", "Player position in real world, expressed from the bottom center of the playfield, in centimeters"s, -30.f, 30.f, 0.1f, m_initialPlayerPos.x, "%4.1f cm"s,
+      "Player X"s, "Player position in real world, expressed from the bottom center of the playfield, in centimeters"s, -30.f, 30.f, 0.1f, m_initialPlayerPos.x, "%4.1f cm"s,
       [this]() { return m_playerPos.x; },
       [this](float prev, float v)
       {
@@ -313,10 +312,10 @@ void PointOfViewSettingsPage::BuildPage()
          viewSetup.SetViewPosFromPlayerPosition(table, m_playerPos, screenInclination);
          OnPointOfViewChanged();
       },
-      [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::Player, "ScreenPlayerX", v, isTableOverride); });
+      [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::Player, "ScreenPlayerX"s, v, isTableOverride); });
    playerX->SetInitialValue(m_initialPlayerPos.x);
    auto playerY = std::make_unique<InGameUIItem>(
-      "Player Y", "Player position in real world, expressed from the bottom center of the playfield, in centimeters"s, -70.f, 30.f, 0.1f, m_initialPlayerPos.y, "%4.1f cm"s,
+      "Player Y"s, "Player position in real world, expressed from the bottom center of the playfield, in centimeters"s, -70.f, 30.f, 0.1f, m_initialPlayerPos.y, "%4.1f cm"s,
       [this]() { return m_playerPos.y; },
       [this](float prev, float v)
       {
@@ -327,10 +326,10 @@ void PointOfViewSettingsPage::BuildPage()
          viewSetup.SetViewPosFromPlayerPosition(table, m_playerPos, screenInclination);
          OnPointOfViewChanged();
       },
-      [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::Player, "ScreenPlayerY", v, isTableOverride); });
+      [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::Player, "ScreenPlayerY"s, v, isTableOverride); });
    playerY->SetInitialValue(m_initialPlayerPos.y);
    auto playerZ = std::make_unique<InGameUIItem>(
-      "Player Z", "Player position in real world, expressed from the bottom center of the playfield, in centimeters"s, 30.f, 100.f, 0.1f, m_initialPlayerPos.z, "%4.1f cm"s,
+      "Player Z"s, "Player position in real world, expressed from the bottom center of the playfield, in centimeters"s, 30.f, 100.f, 0.1f, m_initialPlayerPos.z, "%4.1f cm"s,
       [this]() { return m_playerPos.z; },
       [this](float prev, float v)
       {
@@ -341,11 +340,11 @@ void PointOfViewSettingsPage::BuildPage()
          viewSetup.SetViewPosFromPlayerPosition(table, m_playerPos, screenInclination);
          OnPointOfViewChanged();
       },
-      [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::Player, "ScreenPlayerZ", v, isTableOverride); });
+      [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::Player, "ScreenPlayerZ"s, v, isTableOverride); });
    playerZ->SetInitialValue(m_initialPlayerPos.z);
 
    auto viewX = std::make_unique<InGameUIItem>(
-      isLegacy ? "X Offset" : "Camera X", "View point width offset, in centimeters"s, -30.f, 30.f, 0.1f, VPUTOCM(defViewSetup.mViewX), "%4.1f cm"s,
+      isLegacy ? "X Offset"s : "Camera X"s, "View point width offset, in centimeters"s, -30.f, 30.f, 0.1f, VPUTOCM(defViewSetup.mViewX), "%4.1f cm"s,
       [this]() { return VPUTOCM(GetCurrentViewSetup().mViewX); },
       [this](float prev, float v)
       {
@@ -355,7 +354,7 @@ void PointOfViewSettingsPage::BuildPage()
       [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerX", CMTOVPU(v), isTableOverride); });
    viewX->SetInitialValue(VPUTOCM(m_initialViewSetup.mViewX));
    auto viewY = std::make_unique<InGameUIItem>(
-      isLegacy ? "Y Offset" : "Camera Y", "View point height offset, in centimeters"s, -30.f, 100.f, 0.1f, VPUTOCM(defViewSetup.mViewY), "%4.1f cm"s,
+      isLegacy ? "Y Offset"s : "Camera Y"s, "View point height offset, in centimeters"s, -30.f, 100.f, 0.1f, VPUTOCM(defViewSetup.mViewY), "%4.1f cm"s,
       [this]() { return VPUTOCM(GetCurrentViewSetup().mViewY); },
       [this](float prev, float v)
       {
@@ -365,7 +364,7 @@ void PointOfViewSettingsPage::BuildPage()
       [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerY", CMTOVPU(v), isTableOverride); });
    viewY->SetInitialValue(VPUTOCM(m_initialViewSetup.mViewY));
    auto viewZ = std::make_unique<InGameUIItem>(
-      isLegacy ? "Z Offset" : "Camera Z", "View point vertical offset, in centimeters"s, 10.f, 100.f, 0.1f, VPUTOCM(defViewSetup.mViewZ), "%4.1f cm"s,
+      isLegacy ? "Z Offset"s : "Camera Z"s, "View point vertical offset, in centimeters"s, 10.f, 100.f, 0.1f, VPUTOCM(defViewSetup.mViewZ), "%4.1f cm"s,
       [this]() { return VPUTOCM(GetCurrentViewSetup().mViewZ); },
       [this](float prev, float v)
       {
@@ -376,7 +375,7 @@ void PointOfViewSettingsPage::BuildPage()
    viewZ->SetInitialValue(VPUTOCM(m_initialViewSetup.mViewZ));
 
    auto hOfs = std::make_unique<InGameUIItem>(
-      "Horizontal Offset", "Horizontal offset of the virtual table behind the screen 'window' in centimeters"s, -30.f, 30.f, 0.1f, defViewSetup.mViewHOfs, "%4.1f cm"s,
+      "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window' in centimeters"s, -30.f, 30.f, 0.1f, defViewSetup.mViewHOfs, "%4.1f cm"s,
       [this]() { return GetCurrentViewSetup().mViewHOfs; },
       [this](float prev, float v)
       {
@@ -386,7 +385,7 @@ void PointOfViewSettingsPage::BuildPage()
       [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "HOfs", v, isTableOverride); });
    hOfs->SetInitialValue(m_initialViewSetup.mViewHOfs);
    auto vOfs = std::make_unique<InGameUIItem>(
-      "Vertical Offset", "Vertical offset of the virtual table behind the screen 'window' in centimeters"s, -30.f, 30.f, 0.1f, defViewSetup.mViewVOfs, "%4.1f cm"s,
+      "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window' in centimeters"s, -30.f, 30.f, 0.1f, defViewSetup.mViewVOfs, "%4.1f cm"s,
       [this]() { return GetCurrentViewSetup().mViewVOfs; },
       [this](float prev, float v)
       {
@@ -397,7 +396,7 @@ void PointOfViewSettingsPage::BuildPage()
    vOfs->SetInitialValue(m_initialViewSetup.mViewVOfs);
 
    auto wndTopZ = std::make_unique<InGameUIItem>(
-      "Window Top Z Ofs.", "Distance between the 'window' (i.e. the screen) at the top of the playfield, in centimeters"s, 0.f, 50.f, 0.1f, VPUTOCM(defViewSetup.mWindowTopZOfs), "%4.1f cm"s,
+      "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield, in centimeters"s, 0.f, 50.f, 0.1f, VPUTOCM(defViewSetup.mWindowTopZOfs), "%4.1f cm"s,
       [this]() { return VPUTOCM(GetCurrentViewSetup().mWindowTopZOfs); },
       [this](float prev, float v)
       {
@@ -407,7 +406,7 @@ void PointOfViewSettingsPage::BuildPage()
       [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "WindowTop", CMTOVPU(v), isTableOverride); });
    wndTopZ->SetInitialValue(VPUTOCM(m_initialViewSetup.mWindowTopZOfs));
    auto wndBotZ = std::make_unique<InGameUIItem>(
-      "Window Bottom Z Ofs.", "Distance between the 'window' (i.e. the screen) at the bottom of the playfield, in centimeters"s, 0.f, 50.f, 0.1f, VPUTOCM(defViewSetup.mWindowBottomZOfs),
+      "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield, in centimeters"s, 0.f, 50.f, 0.1f, VPUTOCM(defViewSetup.mWindowBottomZOfs),
       "%4.1f cm"s, [this]() { return VPUTOCM(GetCurrentViewSetup().mWindowBottomZOfs); },
       [this](float prev, float v)
       {
@@ -462,4 +461,4 @@ void PointOfViewSettingsPage::BuildPage()
    }
 }
 
-};
+}

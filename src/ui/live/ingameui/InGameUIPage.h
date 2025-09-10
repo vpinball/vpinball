@@ -11,12 +11,12 @@ class InGameUIPage
 {
 public:
    InGameUIPage(const string &path, const string &title, const string &info);
-   
+
    Settings& GetSettings();
 
    void ClearItems();
    void AddItem(std::unique_ptr<InGameUIItem>& item);
-   
+
    virtual void Open();
    virtual void Close();
    virtual void Save();
@@ -55,4 +55,4 @@ private:
    bool m_resettingToInitialValues = false;
 };
 
-};
+}

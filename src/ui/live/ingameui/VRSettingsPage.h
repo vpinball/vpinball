@@ -15,4 +15,4 @@ public:
    void ResetToDefaults() override;
 };
 
-};
+}

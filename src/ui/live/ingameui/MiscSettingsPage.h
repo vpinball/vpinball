@@ -6,7 +6,7 @@
 namespace VPX::InGameUI
 {
 
-class MiscSettingsPage : public InGameUIPage
+class MiscSettingsPage final : public InGameUIPage
 {
 public:
    MiscSettingsPage();
@@ -15,4 +15,4 @@ private:
    bool m_staticPrepassDisabled = false;
 };
 
-};
+}

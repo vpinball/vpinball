@@ -6,7 +6,7 @@
 namespace VPX::InGameUI
 {
 
-class HomePage : public InGameUIPage
+class HomePage final : public InGameUIPage
 {
 public:
    HomePage();
@@ -14,4 +14,4 @@ public:
    void Open() override;
 };
 
-};
+}

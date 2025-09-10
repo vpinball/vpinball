@@ -892,7 +892,7 @@ bool EditorUI::GetSelectionTransform(Matrix3D& transform) const
    return false;
 }
 
-void EditorUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosition, bool clearScale, bool clearRotation)
+void EditorUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosition, bool clearScale, bool clearRotation) const
 {
    Matrix3D transform = newTransform;
    const Vertex3Ds right(transform._11, transform._12, transform._13);
@@ -2771,8 +2771,8 @@ void EditorUI::PropLightmapCombo(const char *label, IEditable *undo_obj, bool is
    const char *const preview_value = v->c_str();
    if (ImGui::BeginCombo(label, preview_value))
    {
-      const std::function<string(IEditable *)> map = [](IEditable *pe) -> string { return pe->GetItemType() == ItemTypeEnum::eItemLight ? pe->GetName() : string(); };
-      for (IEditable *pe : SortedCaseInsensitive(table->m_vedit, map))
+      const std::function<string(IEditable *)> map = [](const IEditable *pe) -> string { return pe->GetItemType() == ItemTypeEnum::eItemLight ? pe->GetName() : string(); };
+      for (const IEditable *pe : SortedCaseInsensitive(table->m_vedit, map))
       {
          if (pe->GetItemType() == ItemTypeEnum::eItemLight && ImGui::Selectable(pe->GetName().c_str()))
          {

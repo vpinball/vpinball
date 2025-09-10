@@ -84,8 +84,8 @@ float NotificationOverlay::RenderNotification(int index, float posY) const {
             textEnd++;
       }
    }
-   text_size.x += (padding / 2.f);
-   text_size.y = ((float)lines.size() * ImGui::GetTextLineHeightWithSpacing()) + (padding / 2.f);
+   text_size.x += padding / 2.f;
+   text_size.y = ((float)lines.size() * ImGui::GetTextLineHeightWithSpacing()) + padding / 2.f;
 
    constexpr ImGuiWindowFlags window_flags
       = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;

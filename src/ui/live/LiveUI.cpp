@@ -426,7 +426,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
    if (m_player->m_vrDevice)
    {
       // VR headset cover full view range, so use a relative part of the full range for the DPI
-      m_dpi = min(m_player->m_vrDevice->GetEyeWidth(), m_player->m_vrDevice->GetEyeHeight()) / 2000.f;
+      m_dpi = (float)min(m_player->m_vrDevice->GetEyeWidth(), m_player->m_vrDevice->GetEyeHeight()) / 2000.f;
    }
    else
    {
@@ -630,7 +630,7 @@ void LiveUI::NewFrame()
       int window_x, window_y;
       SDL_GetGlobalMouseState(&mouse_x_global, &mouse_y_global);
       SDL_GetWindowPosition(focused_window, &window_x, &window_y);
-      const ImVec2 mousePos(mouse_x_global - window_x, mouse_y_global - window_y);
+      const ImVec2 mousePos(mouse_x_global - (float)window_x, mouse_y_global - (float)window_y);
       switch (m_rotate)
       {
       case 0: ImGui::GetIO().AddMousePosEvent(mousePos.x, mousePos.y); break;
@@ -757,7 +757,7 @@ void LiveUI::Update()
    m_rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
    m_rd->m_uiShader->SetTechnique(SHADER_TECHNIQUE_LiveUI);
 
-   if (m_meshBuffers.size() < draw_data->CmdListsCount)
+   if ((int)m_meshBuffers.size() < draw_data->CmdListsCount)
       m_meshBuffers.resize(draw_data->CmdListsCount);
    m_meshBuffers.resize(draw_data->CmdListsCount);
    for (int n = 0; n < draw_data->CmdListsCount; n++)

@@ -56,7 +56,7 @@ void InGameUI::NavigateBack()
       Close();
    else
    {
-      string path = m_navigationHistory.back();
+      const string path = m_navigationHistory.back();
       Navigate(path);
       m_navigationHistory.pop_back();
       m_navigationHistory.pop_back();
@@ -67,7 +67,7 @@ void InGameUI::Open()
 {
    assert(!IsOpened());
    m_isOpened = true;
-   Navigate("homepage");
+   Navigate("homepage"s);
 }
 
 void InGameUI::Close()
@@ -106,7 +106,7 @@ void InGameUI::Update()
       }
    }
 
-   PinInput::InputState state = m_player->m_pininput.GetInputState();
+   const PinInput::InputState state = m_player->m_pininput.GetInputState();
    HandlePageInput(state);
    HandleLegacyFlyOver(state);
    m_prevInputState = state;
@@ -164,10 +164,10 @@ void InGameUI::HandlePageInput(const PinInput::InputState &state)
       m_activePage->Save();
 
    if (state.IsKeyReleased(eEscape, m_prevInputState))
-      Close(); // FIXME should a navigate back, up to InGameUI close, applied on key release as this is the way it is handle for the main splash (to be changed ?)
+      Close(); // FIXME should a navigate back, up to InGameUI close, applied on key release as this is the way it is handled for the main splash (to be changed ?)
 }
 
-// Legacy leyboard fly camera when in ingame option. Remove ?
+// Legacy keyboard fly camera when in ingame option. Remove ?
 void InGameUI::HandleLegacyFlyOver(const PinInput::InputState &state)
 {
    if (!m_player->m_ptable->m_settings.LoadValueBool(Settings::Player, "EnableCameraModeFlyAround"s))
@@ -203,5 +203,4 @@ void InGameUI::HandleLegacyFlyOver(const PinInput::InputState &state)
       m_player->m_ptable->mViewSetups[m_player->m_ptable->m_BG_current_set].mViewportRotation += 1.0f;
 }
 
-
-};
+}

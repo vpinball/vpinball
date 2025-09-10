@@ -8,7 +8,7 @@ namespace VPX::InGameUI
 {
 
 AudioSettingsPage::AudioSettingsPage()
-   : InGameUIPage("settings/audio", "Audio Settings", "")
+   : InGameUIPage("settings/audio"s, "Audio Settings"s, ""s)
 {
    const Settings& settings = GetSettings();
 
@@ -72,4 +72,4 @@ AudioSettingsPage::AudioSettingsPage()
    // int fmusic = settings.LoadValueUInt(Settings::Player, "Sound3D"s);
 }
 
-};
+}

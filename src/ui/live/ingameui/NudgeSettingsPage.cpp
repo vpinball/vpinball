@@ -8,10 +8,8 @@ namespace VPX::InGameUI
 {
 
 NudgeSettingsPage::NudgeSettingsPage()
-   : InGameUIPage("settings/nudge", "Nudge Settings", "")
+   : InGameUIPage("settings/nudge"s, "Nudge Settings"s, ""s)
 {
-   Settings &settings = GetSettings();
-
    auto enableHwSensor = std::make_unique<InGameUIItem>("Enable hardware nudge sensor"s, ""s, false,
       [this]() {
          // FIXME we should use the live state, not the persisted one
@@ -45,4 +43,4 @@ NudgeSettingsPage::NudgeSettingsPage()
 
 }
 
-};
+}

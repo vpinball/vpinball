@@ -7,7 +7,7 @@
 namespace VPX::InGameUI
 {
 
-class PointOfViewSettingsPage : public InGameUIPage
+class PointOfViewSettingsPage final : public InGameUIPage
 {
 public:
    PointOfViewSettingsPage();
@@ -31,4 +31,4 @@ private:
    bool m_staticPrepassDisabled = false;
 };
 
-};
+}

@@ -6,7 +6,7 @@
 namespace VPX::InGameUI
 {
 
-class TableOptionsPage : public InGameUIPage
+class TableOptionsPage final : public InGameUIPage
 {
 public:
    TableOptionsPage();
@@ -17,4 +17,4 @@ private:
    int GetOptionIndex(const string& id) const;
 };
 
-};
+}

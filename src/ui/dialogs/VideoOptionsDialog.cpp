@@ -596,7 +596,7 @@ void VideoOptionPropPage::LoadDisplaySettings()
    }
    m_wndDisplay.SetRedraw(true);
 
-   const bool fullscreen = settings.LoadValueBool(m_wndSection, m_wndSettingPrefix + "FullScreen");
+   const bool fullscreen = settings.LoadValueBool(m_wndSection, m_wndSettingPrefix + "FullScreen"); // IsWindows10_1803orAbove());
    m_wndFullscreen.SetCheck(fullscreen ? BST_CHECKED : BST_UNCHECKED);
    m_wndWindowed.SetCheck(fullscreen ? BST_UNCHECKED : BST_CHECKED);
    OnCommand(IDC_EXCLUSIVE_FULLSCREEN, 0L); // Force UI update

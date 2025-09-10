@@ -6,11 +6,11 @@
 namespace VPX::InGameUI
 {
 
-class NudgeSettingsPage : public InGameUIPage
+class NudgeSettingsPage final : public InGameUIPage
 {
 public:
    NudgeSettingsPage();
 
 };
 
-};
+}

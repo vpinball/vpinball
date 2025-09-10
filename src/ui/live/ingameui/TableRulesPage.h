@@ -6,11 +6,11 @@
 namespace VPX::InGameUI
 {
 
-class TableRulesPage : public InGameUIPage
+class TableRulesPage final : public InGameUIPage
 {
 public:
    TableRulesPage();
 
 };
 
-};
+}

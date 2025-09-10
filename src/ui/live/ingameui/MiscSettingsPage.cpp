@@ -8,7 +8,7 @@ namespace VPX::InGameUI
 {
 
 MiscSettingsPage::MiscSettingsPage()
-   : InGameUIPage("settings/misc", "Miscellaneous Settings", "")
+   : InGameUIPage("settings/misc"s, "Miscellaneous Settings"s, ""s)
 {
    // Global emission scale, if not overriden on commandline nor as an automatic day/night based on lat/lon, defined as a table override against the table original value
    const bool isDayNightOverriden = m_player->m_ptable->m_settings.LoadValueBool(Settings::Player, "OverrideTableEmissionScale"s);
@@ -98,7 +98,7 @@ MiscSettingsPage::MiscSettingsPage()
       {
          const float savedDifficulty = settings.LoadValueWithDefault(Settings::TableOverride, "Difficulty"s, v / 100.f);
          if (savedDifficulty != v * 100.f)
-            m_player->m_liveUI->PushNotification("You have changed the difficulty level\nThis change will only be applied after restart.", 10000);
+            m_player->m_liveUI->PushNotification("You have changed the difficulty level\nThis change will only be applied after restart."s, 10000);
          if (abs(v - 100.f * m_player->m_ptable->m_difficulty) < 0.1f)
             settings.DeleteValue(Settings::TableOverride, "Difficulty"s);
          else
@@ -107,4 +107,4 @@ MiscSettingsPage::MiscSettingsPage()
    AddItem(difficulty);
 }
 
-};
+}

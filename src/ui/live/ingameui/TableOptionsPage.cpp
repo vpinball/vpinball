@@ -8,13 +8,13 @@ namespace VPX::InGameUI
 {
 
 TableOptionsPage::TableOptionsPage()
-   : InGameUIPage("table/options", "Table Options", "")
+   : InGameUIPage("table/options"s, "Table Options"s, ""s)
 {
 }
 
 int TableOptionsPage::GetOptionIndex(const string& id) const
 {
-   for (int i = 0; i < m_player->m_ptable->m_settings.GetTableSettings().size(); i++)
+   for (int i = 0; i < (int)m_player->m_ptable->m_settings.GetTableSettings().size(); i++)
       if (m_player->m_ptable->m_settings.GetTableSettings()[i].name == id)
          return i;
    return -1;
@@ -126,4 +126,4 @@ void TableOptionsPage::Open()
    }
 }
 
-};
+}
