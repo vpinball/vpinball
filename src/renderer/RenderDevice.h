@@ -231,7 +231,9 @@ private:
    RenderState m_current_renderstate, m_renderstate, m_defaultRenderState;
    bool m_logNextFrame = false; // Output a log of next frame to main application log
 
+#if !defined(__STANDALONE__) && !defined(ENABLE_BGFX)
    bool m_dwm_enabled;
+#endif
 
    MeshBuffer* m_quadMeshBuffer = nullptr; // internal mesh buffer for rendering quads
 

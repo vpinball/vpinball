@@ -519,10 +519,10 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
             rd->Flip();
             const bgfx::Stats* stats = bgfx::getStats();
-            const uint32_t bgfxSubmit = static_cast<uint32_t>((stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000000ull / stats->cpuTimerFreq);
+            const uint64_t bgfxSubmit = (stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000000ull / stats->cpuTimerFreq;
             g_pplayer->m_logicProfiler.OnPresented(usec() - bgfxSubmit);
             g_pplayer->m_renderProfiler->ExitProfileSection();
-            g_pplayer->m_renderProfiler->AdjustBGFXSubmit(bgfxSubmit);
+            g_pplayer->m_renderProfiler->AdjustBGFXSubmit(static_cast<uint32_t>(bgfxSubmit));
 
             #ifdef MSVC_CONCURRENCY_VIEWER
             delete tagSpan;
@@ -550,7 +550,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
          if (!rd->m_framePending)
             continue;
          const bool noSync = rd->m_frameNoSync;
-         const bool needsVSync = useVSync && !noSync; // User as activated VSync and we are not processing an unsynced frame (offline rendering for example)   
+         const bool needsVSync = useVSync && !noSync; // User has activated VSync, and we are not processing an unsynced frame (offline rendering for example)   
          g_pplayer->m_curFrameSyncOnVBlank = needsVSync;
 
          // lock prepared frame and submit it
@@ -563,12 +563,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SUBMIT);
             rd->m_framePending = false; // Request next frame to be prepared as soon as possible
             rd->m_frameNoSync = false;
-            #ifdef _MSC_VER
-            // For Windows, only use GPU sync if we can't use DWM sync (GPU sync has issues when used with multiple monitors, and leads to higher visual latency)
-            if (!rd->m_dwm_enabled && (gpuVSync != needsVSync))
-            #else
             if (gpuVSync != needsVSync)
-            #endif
             {
                gpuVSync = needsVSync;
                bgfx::reset(init.resolution.width, init.resolution.height, init.resolution.reset | (gpuVSync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE), init.resolution.format);
@@ -611,11 +606,6 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             span* tagSpan = new span(series, 1, _T("BGFX->GPU"));
             #endif
             rd->Flip();
-            #ifdef _MSC_VER
-               // On Windows, sync on the main display using the composer instead of GPU VSync (this supposes that the playfield window is on the main display to behave correctly)
-               if (needsVSync && rd->m_dwm_enabled)
-                  rd->WaitForVSync(false);
-            #endif
             if (rd->m_screenshot) {
                bgfx::requestScreenShot(BGFX_INVALID_HANDLE, rd->m_screenshotFilename.c_str());
                rd->m_screenshot = false;
@@ -623,11 +613,11 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             #ifdef MSVC_CONCURRENCY_VIEWER
             delete tagSpan;
             #endif
-            const bgfx::Stats* stats = bgfx::getStats();
-            const uint32_t bgfxSubmit = static_cast<uint32_t>((stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000000ull / stats->cpuTimerFreq);
+            const bgfx::Stats* const stats = bgfx::getStats();
+            const uint64_t bgfxSubmit = (stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000000ull / stats->cpuTimerFreq;
             g_pplayer->m_logicProfiler.OnPresented(usec() - bgfxSubmit);
             g_pplayer->m_renderProfiler->ExitProfileSection();
-            g_pplayer->m_renderProfiler->AdjustBGFXSubmit(bgfxSubmit);
+            g_pplayer->m_renderProfiler->AdjustBGFXSubmit(static_cast<uint32_t>(bgfxSubmit));
          }
       }
    }
@@ -675,14 +665,11 @@ RenderDevice::RenderDevice(
       NVAPIinit = false;
    #endif
 
-#if !defined(__STANDALONE__) && !defined(ENABLE_BGFX)
-    BOOL dwm = 0;
-    DwmIsCompositionEnabled(&dwm);
-    m_dwm_enabled = !!dwm;
-#else
-   // No DWM for standalone, and prefer using BGFX for VSync synchronization
-    m_dwm_enabled = false;
-#endif
+   #if !defined(__STANDALONE__) && !defined(ENABLE_BGFX)
+      BOOL dwm = 0;
+      DwmIsCompositionEnabled(&dwm);
+      m_dwm_enabled = !!dwm;
+   #endif
 
    assert(g_pplayer != nullptr); // Player must be created to give access to the output window
 
@@ -728,7 +715,7 @@ RenderDevice::RenderDevice(
 
    init.callback = &m_bgfxCallback;
 
-   init.resolution.maxFrameLatency = maxPrerenderedFrames; // Maximum of Present operation queued (unrendered frame queued on GPU, waiting for an available backbuffer)
+   init.resolution.maxFrameLatency = clamp(maxPrerenderedFrames,0,255); // Maximum of Present operation queued (unrendered frame queued on GPU, waiting for an available backbuffer)
 
    //init.resolution.numBackBuffers = 3; // Number of backbuffers (usually 3 as 1 is locked by compositor, 1 is displayed, 1 is rendered to)
 
@@ -873,7 +860,7 @@ RenderDevice::RenderDevice(
    int drawableWidth, drawableHeight, windowWidth, windowHeight;
    SDL_GetWindowSizeInPixels(m_outputWnd[0]->GetCore(), &drawableWidth, &drawableHeight); // Size in pixels
    SDL_GetWindowSize(m_outputWnd[0]->GetCore(), &windowWidth, &windowHeight); // Size in screen coordinates (taking in account HiDPI)
-   PLOGI << "SDL drawable size: " << drawableWidth << 'x' << drawableHeight << " (window size: " << windowWidth << 'x' << windowHeight << ")";
+   PLOGI << "SDL drawable size: " << drawableWidth << 'x' << drawableHeight << " (window size: " << windowWidth << 'x' << windowHeight << ')';
    #endif
 
    #ifndef __OPENGLES__
@@ -1217,11 +1204,13 @@ RenderDevice::RenderDevice(
    
    // Ensure we have a VSync source for frame pacing
    bool hasVSync = false;
-   if (m_dwm_enabled)
-   {
-      PLOGI << "VSync source set to Windows Desktop compositor (DwmFlush)";
-      hasVSync = true;
-   }
+   #if !defined(__STANDALONE__) && !defined(ENABLE_BGFX)
+      if (m_dwm_enabled)
+      {
+         PLOGI << "VSync source set to Windows Desktop compositor (DwmFlush)";
+         hasVSync = true;
+      }
+   #endif
    #if defined(ENABLE_DX9)
       else
       {
@@ -1512,8 +1501,10 @@ void RenderDevice::WaitForVSync(const bool asynchronous)
    auto lambda = [this]()
    {
 #ifndef __STANDALONE__
+      #if !defined(ENABLE_BGFX)
       if (m_dwm_enabled)
          DwmFlush(); // Flush all commands submitted by this process including the 'Present' command. This actually syncs to the vertical blank
+      #endif
       #if defined(ENABLE_OPENGL)
       else if (m_DXGIOutput != nullptr)
          m_DXGIOutput->WaitForVBlank();
@@ -1916,7 +1907,7 @@ void RenderDevice::SubmitRenderFrame()
    #endif
 
    m_currentPass = nullptr;
-   bool rendered = m_renderFrame->Execute(m_logNextFrame);
+   const bool rendered = m_renderFrame->Execute(m_logNextFrame);
    if (rendered)
       m_logNextFrame = false;
    m_lastPresentFrameTick = usec();
