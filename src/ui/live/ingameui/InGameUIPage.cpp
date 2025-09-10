@@ -71,9 +71,9 @@ void InGameUIPage::ResetToInitialValues()
    // Note that changing the value of items may result in changing the content of m_items (page rebuilding)
    assert(!m_resettingToInitialValues);
    m_resettingToInitialValues = true;
-   for (int i = 0; i < m_items.size(); i++)
+   for (size_t i = 0; i < m_items.size(); i++)
       m_items[i]->ResetToInitialValue();
-   g_pplayer->m_liveUI->PushNotification("Changes were undoed"s, 5000);
+   g_pplayer->m_liveUI->PushNotification("Changes were undone"s, 5000);
    if (!IsModified())
       m_selectedItem = 0;
    m_resettingToInitialValues = false;
@@ -86,9 +86,9 @@ void InGameUIPage::ResetToDefaults()
    // Note that changing the value of items may result in changing the content of m_items (page rebuilding)
    assert(!m_resettingToDefaults);
    m_resettingToDefaults = true;
-   for (int i = 0; i < m_items.size(); i++)
+   for (size_t i = 0; i < m_items.size(); i++)
       m_items[i]->ResetToDefault();
-   m_resetNotifId = g_pplayer->m_liveUI->PushNotification("Settings reseted to defaults"s, 5000, m_resetNotifId);
+   m_resetNotifId = g_pplayer->m_liveUI->PushNotification("Settings reset to defaults"s, 5000, m_resetNotifId);
    if (IsDefaults())
       m_selectedItem = 0;
    m_resettingToDefaults = false;
@@ -101,7 +101,7 @@ void InGameUIPage::Save()
    // FIXME disable save on table that do not have a filename (not yet saved) and only save to table ini
    // FIXME implement, letting pages select if they save to app settings, table setting overrides, or let the user choose one of both
    Settings& settings = GetSettings();
-   const bool isTableOverride = true;
+   constexpr bool isTableOverride = true;
    for (const auto& item : m_items)
       item->Save(settings, isTableOverride);
    if (!IsModified())
@@ -128,7 +128,7 @@ void InGameUIPage::SelectPrevItem()
 
 void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
 {
-   if (m_selectedItem < 0 || m_selectedItem > m_items.size())
+   if (m_selectedItem < 0 || m_selectedItem > (int)m_items.size())
       return;
    const auto& item = m_items[m_selectedItem];
    const uint32_t now = msec();
@@ -249,9 +249,9 @@ void InGameUIPage::Render()
          return item->m_type == SaveChanges || item->m_type == ResetToDefaults || item->m_type == ResetToInitialValues || item->m_type == Back;
       });
    ImGui::SeparatorText(m_title.c_str());
-   bool undoHoovered = false;
-   bool defaultHoovered = false;
-   bool saveHoovered = false;
+   bool undoHovered = false;
+   bool defaultHovered = false;
+   bool saveHovered = false;
    float buttonWidth = ImGui ::CalcTextSize(ICON_FK_REPLY, nullptr, true).x + style.FramePadding.x * 2.0f + style.ItemSpacing.x;
    if (isAdjustable)
    {
@@ -262,10 +262,10 @@ void InGameUIPage::Render()
       buttonWidth += ImGui::CalcTextSize(ICON_FK_FLOPPY_O, nullptr, true).x + style.FramePadding.x * 2.0f;
       buttonWidth += style.ItemSpacing.x;
    }
-   bool highlighted = false;
    ImGui::SameLine(ImGui::GetWindowSize().x - buttonWidth);
    if (isAdjustable)
    {
+      bool highlighted = false;
       // Reset to defaults
       if (!IsDefaults())
       {
@@ -287,7 +287,7 @@ void InGameUIPage::Render()
       }
       if (highlighted)
          ImGui::PopStyleColor();
-      defaultHoovered = ImGui::IsItemHovered();
+      defaultHovered = ImGui::IsItemHovered();
       ImGui::EndDisabled();
 
       // Undo changes
@@ -312,7 +312,7 @@ void InGameUIPage::Render()
       }
       if (highlighted)
          ImGui::PopStyleColor();
-      undoHoovered = ImGui::IsItemHovered();
+      undoHovered = ImGui::IsItemHovered();
       ImGui::EndDisabled();
 
       // Save changes
@@ -337,14 +337,14 @@ void InGameUIPage::Render()
       }
       if (highlighted)
          ImGui::PopStyleColor();
-      saveHoovered = ImGui::IsItemHovered();
+      saveHovered = ImGui::IsItemHovered();
       ImGui::EndDisabled();
       ImGui::SameLine();
    }
 
    // Get back to previous page or to game
    m_items.push_back(std::make_unique<InGameUIItem>(InGameUIItem::Type::Back));
-   highlighted = m_player->m_liveUI->m_inGameUI.IsFlipperNav() && (m_selectedItem == m_items.size() - 1);
+   const bool highlighted = m_player->m_liveUI->m_inGameUI.IsFlipperNav() && (m_selectedItem == m_items.size() - 1);
    if (highlighted)
       ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
    if (ImGui::Button(ICON_FK_REPLY))
@@ -354,14 +354,14 @@ void InGameUIPage::Render()
    }
    if (highlighted)
       ImGui::PopStyleColor();
-   const bool backHoovered = ImGui::IsItemHovered();
+   const bool backHovered = ImGui::IsItemHovered();
 
    // As we may have changed the number of selectable items, ensure m_selectedItem is still valid
    m_selectedItem = clamp(m_selectedItem, 0, static_cast<int>(m_items.size()) - 1);
 
    // Page items
    // Note that items may trigger state change which in turn may trigger a rebuild of the page (changing m_items)
-   const InGameUIItem* hooveredItem = nullptr;
+   const InGameUIItem* hoveredItem = nullptr;
    const ImVec2 itemPadding = style.ItemSpacing;
    ImGui::BeginChild("PageItems", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - ImGui::GetTextLineHeight() * 3.f - itemPadding.y * 2.f), ImGuiChildFlags_None,
       ImGuiWindowFlags_NoBackground);
@@ -371,7 +371,7 @@ void InGameUIPage::Render()
          labelEndScreenX = max(labelEndScreenX, ImGui::CalcTextSize(item->m_label.c_str()).x);
    labelEndScreenX = ImGui::GetCursorScreenPos().x + labelEndScreenX + style.ItemSpacing.x * 2.0f + 30.f;
    const float itemEndScreenX = ImGui::GetCursorScreenPos().x + ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize("*", nullptr, true).x - itemPadding.x;
-   for (int i = 0; i < m_items.size(); i++)
+   for (int i = 0; i < (int)m_items.size(); i++)
    {
       using enum InGameUIItem::Type;
       const auto& item = m_items[i];
@@ -383,10 +383,10 @@ void InGameUIPage::Render()
       const float itemHeight = ImGui::GetTextLineHeight() + itemPadding.y * 2.f;
       const bool isMouseOver = (ImGui::IsWindowHovered()) && (ImGui::GetMousePos().y >= ImGui::GetCursorScreenPos().y - itemPadding.y - 1.f)
          && (ImGui::GetMousePos().y <= ImGui::GetCursorScreenPos().y + itemHeight - itemPadding.y);
-      const bool hoovered = (m_player->m_liveUI->m_inGameUI.IsFlipperNav() && i == m_selectedItem) || (!m_player->m_liveUI->m_inGameUI.IsFlipperNav() && isMouseOver && item->IsSelectable());
-      if (hoovered)
+      const bool hovered = (m_player->m_liveUI->m_inGameUI.IsFlipperNav() && i == m_selectedItem) || (!m_player->m_liveUI->m_inGameUI.IsFlipperNav() && isMouseOver && item->IsSelectable());
+      if (hovered)
       {
-         hooveredItem = item.get();
+         hoveredItem = item.get();
          ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
          ImGui::GetWindowDrawList()->AddRectFilled(ImGui::GetCursorScreenPos() - itemPadding,
             ImGui::GetCursorScreenPos() + ImVec2(itemPadding.x, itemPadding.y * 2.f) + ImVec2(itemEndScreenX - ImGui::GetCursorScreenPos().x + itemPadding.x, ImGui::GetTextLineHeight()),
@@ -411,7 +411,7 @@ void InGameUIPage::Render()
          ImGui::Markdown(item->m_label.c_str(), item->m_label.length(), m_player->m_liveUI->GetMarkdownConfig());
          ImGui::SetCursorScreenPos(ImGui::GetCursorScreenPos() + ImVec2(0.f, itemPadding.y));
          infoHeight = ImGui::GetCursorPosY() - infoHeight;
-         if (hoovered && m_player->m_liveUI->m_inGameUI.IsFlipperNav() && infoHeight > ImGui::GetWindowHeight())
+         if (hovered && m_player->m_liveUI->m_inGameUI.IsFlipperNav() && infoHeight > ImGui::GetWindowHeight())
          {
             const float scrollSpread = infoHeight - ImGui::GetWindowHeight();
             m_pressedItemScroll = clamp(m_pressedItemScroll, 0.f, scrollSpread);
@@ -424,7 +424,7 @@ void InGameUIPage::Render()
          ImGui::SetCursorScreenPos(ImGui::GetCursorScreenPos() + ImVec2(0.f, itemPadding.y));
          ImGui::Text(ICON_FK_ANGLE_DOUBLE_RIGHT);
          ImGui::SameLine(0.f, 10.f);
-         ImGui::Text("%s", item->m_label.c_str());
+         ImGui::Text(item->m_label.c_str());
          ImGui::SetCursorScreenPos(ImGui::GetCursorScreenPos() + ImVec2(0.f, itemPadding.y));
          if (isMouseOver && ImGui::IsMouseClicked(ImGuiMouseButton_::ImGuiMouseButton_Left))
          {
@@ -435,7 +435,7 @@ void InGameUIPage::Render()
 
       case Toggle:
       {
-         ImGui::Text("%s", item->m_label.c_str());
+         ImGui::Text(item->m_label.c_str());
          ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
          bool v = item->GetBoolValue();
          ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
@@ -444,9 +444,9 @@ void InGameUIPage::Render()
             ImVec2 p = ImGui::GetCursorScreenPos();
             ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
-            float height = ImGui::GetFrameHeight();
-            float width = height * 1.75f;
-            float radius = height * 0.50f;
+            const float height = ImGui::GetFrameHeight();
+            const float width = height * 1.75f;
+            const float radius = height * 0.50f;
             p.x = itemEndScreenX - width;
 
             if (ImGui::InvisibleButton(item->m_label.c_str(), ImVec2(itemEndScreenX - ImGui::GetCursorScreenPos().x, height)))
@@ -471,7 +471,7 @@ void InGameUIPage::Render()
 
       case EnumValue:
       {
-         ImGui::Text("%s", item->m_label.c_str());
+         ImGui::Text(item->m_label.c_str());
          ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
          int v = item->GetIntValue();
          ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
@@ -496,7 +496,7 @@ void InGameUIPage::Render()
 
       case FloatValue:
       {
-         ImGui::Text("%s", item->m_label.c_str());
+         ImGui::Text(item->m_label.c_str());
          ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
          float v = item->GetFloatValue();
          ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
@@ -512,7 +512,7 @@ void InGameUIPage::Render()
 
       case IntValue:
       {
-         ImGui::Text("%s", item->m_label.c_str());
+         ImGui::Text(item->m_label.c_str());
          ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
          int v = item->GetIntValue();
          ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
@@ -530,7 +530,7 @@ void InGameUIPage::Render()
       default: assert(false); break;
       }
 
-      if (hoovered)
+      if (hovered)
          ImGui::PopStyleColor();
    }
    ImGui::Dummy(ImVec2(0, 0));
@@ -539,18 +539,18 @@ void InGameUIPage::Render()
    ImGui::Separator();
 
    ImGui::BeginChild("Info", ImVec2(), ImGuiChildFlags_None, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar);
-   if (hooveredItem && std::ranges::find_if(m_items, [hooveredItem](auto& item) { return item.get() == hooveredItem; }) != m_items.end() && !hooveredItem->m_tooltip.empty())
-      ImGui::TextWrapped("%s", hooveredItem->m_tooltip.c_str());
-   else if (undoHoovered)
-      ImGui::TextWrapped("%s", "Undo changes\n[Input shortcut: Credit Button]");
-   else if (defaultHoovered)
-      ImGui::TextWrapped("%s", "Reset page to defaults\n[Input shortcut: Launch Button]");
-   else if (saveHoovered)
-      ImGui::TextWrapped("%s", "Save changes\n[Input shortcut: Start Button]");
-   else if (backHoovered)
-      ImGui::TextWrapped("%s", "Get back\n[Input shortcut: Quit Button]");
+   if (hoveredItem && std::ranges::find_if(m_items, [hoveredItem](auto& item) { return item.get() == hoveredItem; }) != m_items.end() && !hoveredItem->m_tooltip.empty())
+      ImGui::TextWrapped(hoveredItem->m_tooltip.c_str());
+   else if (undoHovered)
+      ImGui::TextWrapped("Undo changes\n[Input shortcut: Credit Button]");
+   else if (defaultHovered)
+      ImGui::TextWrapped("Reset page to defaults\n[Input shortcut: Launch Button]");
+   else if (saveHovered)
+      ImGui::TextWrapped("Save changes\n[Input shortcut: Start Button]");
+   else if (backHovered)
+      ImGui::TextWrapped("Get back\n[Input shortcut: Quit Button]");
    else if (!m_info.empty())
-      ImGui::TextWrapped("%s", m_info.c_str());
+      ImGui::TextWrapped(m_info.c_str());
    ImGui::EndChild();
 
    ImGui::PopStyleColor();
@@ -558,4 +558,4 @@ void InGameUIPage::Render()
 }
 
 
-};
+}
