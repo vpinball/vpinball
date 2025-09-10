@@ -907,10 +907,9 @@ Texture* Texture::CreateFromStream(IStream * const pstream, int version, PinTabl
                }
          #endif
 
-         // Create a FreeImage from LZW data, converting from BGR to RGB, optionally dropping a constant (0 or 255) alpha channel
+         // Create a FreeImage from LZW data, optionally dropping a constant (0 or 255) alpha channel
          FIBITMAP* dib = FreeImage_Allocate(width, height, has_alpha ? 32 : 24);
          uint8_t* const pdst = (uint8_t*)FreeImage_GetBits(dib);
-         const unsigned int ch = has_alpha ? 4 : 3;
          const unsigned int pitch = width * 4;
          const unsigned int pitch_dst = FreeImage_GetPitch(dib);
          const uint8_t* spch = tmp + (height * pitch);
@@ -918,14 +917,15 @@ Texture* Texture::CreateFromStream(IStream * const pstream, int version, PinTabl
          {
             const uint8_t* __restrict src = (spch -= pitch); // start on previous previous line
             uint8_t* __restrict dst = pdst + i * pitch_dst;
-            for (unsigned int x = 0; x < width; x++, src += 4, dst += ch) // copy and swap red & blue
-            {
-               dst[0] = src[2];
-               dst[1] = src[1];
-               dst[2] = src[0];
-               if (has_alpha)
-                  dst[3] = src[3];
-            }
+            if (has_alpha)
+               memcpy(dst, src, pitch);
+            else
+               for (unsigned int x = 0; x < width; x++, src += 4, dst += 3) // copy without alpha channel
+               {
+                  dst[0] = src[0];
+                  dst[1] = src[1];
+                  dst[2] = src[2];
+               }
          }
 
          // Convert to a lossless webp
