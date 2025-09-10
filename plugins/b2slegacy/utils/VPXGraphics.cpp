@@ -12,7 +12,7 @@
 #include <cstring>
 
 #ifndef _COLORREF_DEFINED
-   typedef unsigned long COLORREF;
+   typedef unsigned int COLORREF;
    #define _COLORREF_DEFINED
 #endif
 #include <utils/color.h>
@@ -416,10 +416,11 @@ void VPXGraphics::SetTransform(Matrix* pModelMatrix)
 
 void VPXGraphics::FillRectangle(const SDL_Rect& rect)
 {
-   uint8_t r = GetRValue(m_color);
-   uint8_t g = GetGValue(m_color);
-   uint8_t b = GetBValue(m_color);
-   uint8_t a = m_alpha;
+   const uint32_t r = GetRValue(m_color);
+   const uint32_t g = GetGValue(m_color);
+   const uint32_t b = GetBValue(m_color);
+   const uint32_t a = m_alpha;
+   const uint32_t col = (a << 24) | (b << 16) | (g << 8) | r;
 
    int x1 = rect.x + m_translateX;
    int y1 = rect.y + m_translateY;
@@ -431,9 +432,13 @@ void VPXGraphics::FillRectangle(const SDL_Rect& rect)
    x2 = std::min(m_width, x2);
    y2 = std::min(m_height, y2);
 
-   for (int y = y1; y < y2; y++) {
-      for (int x = x1; x < x2; x++)
-         SetPixel(x, y, r, g, b, a);
+   uint32_t* const __restrict buf = reinterpret_cast<uint32_t*>(m_pixelBuffer);
+
+   for (int y = y1; y < y2; y++)
+   {
+      int offset = y * m_width + x1;
+      for (int x = x1; x < x2; x++,offset++)
+         buf[offset] = col;
    }
 
    m_needsTextureUpdate = true;
