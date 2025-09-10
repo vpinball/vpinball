@@ -424,7 +424,7 @@ void InGameUIPage::Render()
          ImGui::SetCursorScreenPos(ImGui::GetCursorScreenPos() + ImVec2(0.f, itemPadding.y));
          ImGui::Text(ICON_FK_ANGLE_DOUBLE_RIGHT);
          ImGui::SameLine(0.f, 10.f);
-         ImGui::Text(item->m_label.c_str());
+         ImGui::Text("%s", item->m_label.c_str());
          ImGui::SetCursorScreenPos(ImGui::GetCursorScreenPos() + ImVec2(0.f, itemPadding.y));
          if (isMouseOver && ImGui::IsMouseClicked(ImGuiMouseButton_::ImGuiMouseButton_Left))
          {
@@ -435,7 +435,7 @@ void InGameUIPage::Render()
 
       case Toggle:
       {
-         ImGui::Text(item->m_label.c_str());
+         ImGui::Text("%s", item->m_label.c_str());
          ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
          bool v = item->GetBoolValue();
          ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
@@ -471,7 +471,7 @@ void InGameUIPage::Render()
 
       case EnumValue:
       {
-         ImGui::Text(item->m_label.c_str());
+         ImGui::Text("%s", item->m_label.c_str());
          ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
          int v = item->GetIntValue();
          ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
@@ -496,7 +496,7 @@ void InGameUIPage::Render()
 
       case FloatValue:
       {
-         ImGui::Text(item->m_label.c_str());
+         ImGui::Text("%s", item->m_label.c_str());
          ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
          float v = item->GetFloatValue();
          ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
@@ -512,7 +512,7 @@ void InGameUIPage::Render()
 
       case IntValue:
       {
-         ImGui::Text(item->m_label.c_str());
+         ImGui::Text("%s", item->m_label.c_str());
          ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
          int v = item->GetIntValue();
          ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
@@ -540,7 +540,7 @@ void InGameUIPage::Render()
 
    ImGui::BeginChild("Info", ImVec2(), ImGuiChildFlags_None, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar);
    if (hoveredItem && std::ranges::find_if(m_items, [hoveredItem](auto& item) { return item.get() == hoveredItem; }) != m_items.end() && !hoveredItem->m_tooltip.empty())
-      ImGui::TextWrapped(hoveredItem->m_tooltip.c_str());
+      ImGui::TextWrapped("%s", hoveredItem->m_tooltip.c_str());
    else if (undoHovered)
       ImGui::TextWrapped("Undo changes\n[Input shortcut: Credit Button]");
    else if (defaultHovered)
@@ -550,7 +550,7 @@ void InGameUIPage::Render()
    else if (backHovered)
       ImGui::TextWrapped("Get back\n[Input shortcut: Quit Button]");
    else if (!m_info.empty())
-      ImGui::TextWrapped(m_info.c_str());
+      ImGui::TextWrapped("%s", m_info.c_str());
    ImGui::EndChild();
 
    ImGui::PopStyleColor();
