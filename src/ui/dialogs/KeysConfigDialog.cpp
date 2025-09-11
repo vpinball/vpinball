@@ -586,13 +586,8 @@ BOOL KeysConfigDialog::OnInitDialog()
     if (inputApi == 1) inputApiIndex = 0;
     if (inputApi > 1) inputApiIndex--;
 #endif
-#ifdef ENABLE_SDL_INPUT
     ::SendMessage(hwndInputApi, CB_ADDSTRING, 0, (LPARAM)"SDL");//2
     inputApiCount++;
-#else
-    if (inputApi == 2) inputApiIndex = 0;
-    if (inputApi > 2) inputApiIndex--;
-#endif
     ::SendMessage(hwndInputApi, CB_SETCURSEL, inputApiIndex, 0);
 
     GetDlgItem(IDC_COMBO_RUMBLE).EnableWindow(inputApiCount > 1);
@@ -898,9 +893,6 @@ void KeysConfigDialog::OnOK()
     int inputApi = (int)SendDlgItemMessage(IDC_COMBO_INPUT_API, CB_GETCURSEL, 0, 0);
 #ifndef ENABLE_XINPUT
     if (inputApi >= 1) inputApi++;
-#endif
-#ifndef ENABLE_SDL_INPUT
-    if (inputApi >= 2) inputApi++;
 #endif
     g_pvp->m_settings.SaveValue(Settings::Player, "InputApi"s, inputApi);
 

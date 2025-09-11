@@ -79,7 +79,6 @@ target_compile_definitions(vpinball PRIVATE
    __STANDALONE__
 
    ENABLE_OPENGL
-   ENABLE_SDL_INPUT
 
    __WINESRC__
    WINE_UNICODE_NATIVE

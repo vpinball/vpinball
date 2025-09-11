@@ -336,7 +336,6 @@ target_precompile_headers(vpinball PUBLIC
 )
 
 target_compile_definitions(vpinball PRIVATE
-   ENABLE_SDL_INPUT
    ENABLE_BGFX
    ENABLE_XR
    $<$<CONFIG:Debug>:BX_CONFIG_DEBUG=1>

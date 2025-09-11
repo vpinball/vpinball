@@ -11,10 +11,8 @@
 #pragma comment(lib, "XInput.lib")
 #endif
 
-#ifdef ENABLE_SDL_INPUT
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_gamepad.h>
-#endif
 
 // Maximum number of joysticks
 #define PININ_JOYMXCNT 8
@@ -370,13 +368,11 @@ private:
 
    int m_rumbleMode = 0; // 0=Off, 1=Table only, 2=Generic only, 3=Table with generic as fallback
 
-#if defined(ENABLE_SDL_INPUT)
 public:
    void HandleSDLEvent(SDL_Event& e);
 
 private:
    class SDLInputHandler* m_sdlHandler = nullptr;
-#endif
 
 #ifdef _WIN32
 public:

@@ -91,7 +91,6 @@ target_compile_definitions(vpinball PRIVATE
     __LIBVPINBALL__
 
     ENABLE_BGFX
-    ENABLE_SDL_INPUT
 
     __WINESRC__
     WINE_UNICODE_NATIVE

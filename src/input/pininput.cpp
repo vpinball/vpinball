@@ -19,9 +19,7 @@
    #include "input/XInputJoystickHandler.h"
 #endif
 
-#ifdef ENABLE_SDL_INPUT
-   #include "input/SDLInputHandler.h"
-#endif
+#include "input/SDLInputHandler.h"
 
 #ifndef __LIBVPINBALL__
    #include "input/OpenPinDevHandler.h"
@@ -30,9 +28,7 @@
 
 PinInput::PinInput()
    : m_onActionEventMsgId(VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_ACTION_CHANGED))
-   #ifdef ENABLE_SDL_INPUT
-      , m_joypmcancel(SDL_GAMEPAD_BUTTON_NORTH + 1)
-   #endif
+   , m_joypmcancel(SDL_GAMEPAD_BUTTON_NORTH + 1)
 {
 #ifdef _WIN32
    // Cache the initial state of sticky keys
@@ -119,21 +115,13 @@ void PinInput::Init()
 
    // Initialize device handlers
 
-   #if defined(ENABLE_SDL_INPUT)
-      auto inputAPI = static_cast<InputAPI>(g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "InputApi"s, PI_SDL));
-   #else
-      auto inputAPI = static_cast<InputAPI>(g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "InputApi"s, PI_DIRECTINPUT));
-   #endif
+   auto inputAPI = static_cast<InputAPI>(g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "InputApi"s, PI_SDL));
 
    if (inputAPI == PI_SDL)
-   #if defined(ENABLE_SDL_INPUT)
    {
       m_inputHandlers.push_back(std::make_unique<SDLInputHandler>(*this));
       m_sdlHandler = static_cast<SDLInputHandler*>(m_inputHandlers.back().get());
    }
-   #else
-      inputAPI = PI_DIRECTINPUT;
-   #endif
 
    if (inputAPI == PI_XINPUT)
    #ifdef ENABLE_XINPUT
@@ -177,9 +165,7 @@ void PinInput::UnInit()
    m_analogActionMappings.clear();
    m_inputHandlers.clear();
 
-   #if defined(ENABLE_SDL_INPUT)
-      m_sdlHandler = nullptr;
-   #endif
+   m_sdlHandler = nullptr;
 
    #ifdef _WIN32
       // restore the state of the sticky keys
@@ -291,14 +277,11 @@ void PinInput::PushJoystickAxisEvent(uint64_t joystickId, int axisId, int value)
    ProcessEvent(e);
 }
 
-
-#if defined(ENABLE_SDL_INPUT)
 void PinInput::HandleSDLEvent(SDL_Event &e)
 {
    if (m_sdlHandler)
       m_sdlHandler->HandleSDLEvent(e);
 }
-#endif
 
 #if defined(_WIN32)
 DirectInputJoystickHandler* PinInput::GetDirectInputJoystickHandler() const
