@@ -152,7 +152,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(WindowsSDK_IncludePath);$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>ENABLE_SDL_INPUT;ENABLE_OPENGL;WIN32;_DEBUG;DEBUG_REFCOUNT_TRIGGER;_WINDOWS;MYDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ENABLE_OPENGL;WIN32;_DEBUG;DEBUG_REFCOUNT_TRIGGER;_WINDOWS;MYDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -211,7 +211,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(WindowsSDK_IncludePath);$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>ENABLE_SDL_INPUT;BX_CONFIG_DEBUG=1;ENABLE_BGFX;WIN32;_DEBUG;DEBUG_REFCOUNT_TRIGGER;_WINDOWS;MYDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BX_CONFIG_DEBUG=1;ENABLE_BGFX;WIN32;_DEBUG;DEBUG_REFCOUNT_TRIGGER;_WINDOWS;MYDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -322,7 +322,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(WindowsSDK_IncludePath);$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>ENABLE_SDL_INPUT;ENABLE_OPENGL;WIN32;_DEBUG;DEBUG_REFCOUNT_TRIGGER;_WINDOWS;MYDEBUG;DEBUGPHYSICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ENABLE_OPENGL;WIN32;_DEBUG;DEBUG_REFCOUNT_TRIGGER;_WINDOWS;MYDEBUG;DEBUGPHYSICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -374,7 +374,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(WindowsSDK_IncludePath);$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>ENABLE_SDL_INPUT;BX_CONFIG_DEBUG=1;ENABLE_BGFX;WIN32;_DEBUG;DEBUG_REFCOUNT_TRIGGER;_WINDOWS;MYDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BX_CONFIG_DEBUG=1;ENABLE_BGFX;WIN32;_DEBUG;DEBUG_REFCOUNT_TRIGGER;_WINDOWS;MYDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -491,7 +491,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>$(WindowsSDK_IncludePath);$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>ENABLE_SDL_INPUT;ENABLE_OPENGL;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ENABLE_OPENGL;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -554,7 +554,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>$(WindowsSDK_IncludePath);$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>BX_CONFIG_DEBUG=0;ENABLE_BGFX;ENABLE_SDL_INPUT;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BX_CONFIG_DEBUG=0;ENABLE_BGFX;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -679,7 +679,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>$(WindowsSDK_IncludePath);$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>ENABLE_SDL_INPUT;ENABLE_OPENGL;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ENABLE_OPENGL;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -741,7 +741,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>$(WindowsSDK_IncludePath);$(SolutionDir)../gen/;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include;$(SolutionDir)../../third-party/include/compat/msvc;$(SolutionDir)../../third-party/include/glad/include;$(SolutionDir)../../third-party/include/win32xx/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>BX_CONFIG_DEBUG=0;ENABLE_BGFX;ENABLE_SDL_INPUT;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BX_CONFIG_DEBUG=0;ENABLE_BGFX;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>

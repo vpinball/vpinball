@@ -1150,9 +1150,7 @@ void VPinball::DoPlay(const int playMode)
                   ImGui_ImplSDL3_ProcessEvent(&e);
             }
 
-            #ifdef ENABLE_SDL_INPUT
             g_pplayer->m_pininput.HandleSDLEvent(e);
-            #endif
 
             // Limit to 1ms of OS message processing per call
             if ((usec() - startTick) > 1000ull)
