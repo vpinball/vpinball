@@ -18,12 +18,12 @@ namespace PUP {
 #endif
 
 PUPMediaPlayer::PUPMediaPlayer(const string& name)
-   : m_libAv(LibAV::GetInstance())
-   , m_name(name)
-   , m_commandQueue(1)
+   : m_name(name)
    , m_rgbFrames(3)
    , m_videoTextures(3)
-   , m_scaledMask(nullptr, SDL_DestroySurface)
+   , m_scaledMask(nullptr, &SDL_DestroySurface)
+   , m_libAv(LibAV::LibAV::GetInstance())
+   , m_commandQueue(1)
 {
    assert(m_libAv.isLoaded);
    assert(m_rgbFrames.size() == m_videoTextures.size());
@@ -95,6 +95,9 @@ void PUPMediaPlayer::Play(const string& filename)
          LOGE("Unable to open: filename=%s", filename.c_str());
          return;
       }
+
+      // Retrieve stream information (some formats do not have these available in the header, so this is needed to read a few frames and get the info)
+      m_libAv._avformat_find_stream_info(m_pFormatContext, nullptr);
 
       // Find video stream
       for (unsigned int i = 0; i < m_pFormatContext->nb_streams; i++)

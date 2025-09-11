@@ -186,7 +186,7 @@ CtlResId UpdateAudioStream(AudioUpdateMsg* msg)
    msgApi->RunOnMainThread(0, [](void* userData) {
       AudioUpdateMsg* msg = static_cast<AudioUpdateMsg*>(userData);
       msgApi->BroadcastMsg(endpointId, onAudioUpdateId, msg);
-      LibAV::GetInstance()._av_free(msg->buffer);
+      LibAV::LibAV::GetInstance()._av_free(msg->buffer);
       delete msg;
    }, msg);
    return id;

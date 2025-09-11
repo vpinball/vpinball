@@ -80,7 +80,7 @@ private:
    std::thread m_thread;
    bool m_running = false;
 
-   const LibAV& m_libAv;
+   const LibAV::LibAV& m_libAv;
 
    ThreadPool m_commandQueue;
 };

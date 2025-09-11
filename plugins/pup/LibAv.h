@@ -8,7 +8,8 @@ extern "C" {
    #include "libswresample/swresample.h"
 }
 
-namespace PUP {
+namespace LibAV
+{
 
 #ifdef _WIN32
 // As LibAvCodec is fairly heavy, we only load it when used to limit startup time impact
@@ -49,6 +50,7 @@ public:
    typedef int(CDECL* fn_av_seek_frame)(AVFormatContext* s, int stream_index, int64_t timestamp, int flags);
    typedef int(CDECL* fn_avformat_open_input)(AVFormatContext** ps, const char* url, const AVInputFormat* fmt, AVDictionary** options);
    typedef void(CDECL* fn_avformat_close_input)(AVFormatContext** s);
+   typedef int(CDECL* fn_avformat_find_stream_info)(AVFormatContext* ic, AVDictionary** options);
 
    typedef AVPacket*(CDECL* fn_av_packet_alloc)(void);
    typedef void(CDECL* fn_av_packet_free)(AVPacket** pkt);
@@ -89,6 +91,7 @@ public:
    fn_av_seek_frame _av_seek_frame = nullptr;
    fn_avformat_open_input _avformat_open_input = nullptr;
    fn_avformat_close_input _avformat_close_input = nullptr;
+   fn_avformat_find_stream_info _avformat_find_stream_info = nullptr;
 
    fn_av_packet_alloc _av_packet_alloc = nullptr;
    fn_av_packet_free _av_packet_free = nullptr;
@@ -182,6 +185,7 @@ private:
          _av_seek_frame = reinterpret_cast<fn_av_seek_frame>(GetProcAddress(hinstLib, "av_seek_frame"));
          _avformat_open_input = reinterpret_cast<fn_avformat_open_input>(GetProcAddress(hinstLib, "avformat_open_input"));
          _avformat_close_input = reinterpret_cast<fn_avformat_close_input>(GetProcAddress(hinstLib, "avformat_close_input"));
+         _avformat_find_stream_info = reinterpret_cast<fn_avformat_find_stream_info>(GetProcAddress(hinstLib, "avformat_find_stream_info"));
          isLoaded &= _av_find_best_stream && _av_read_frame && _av_seek_frame && _avformat_open_input && _avformat_close_input;
       }
 
