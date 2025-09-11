@@ -627,7 +627,7 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
    if (screen == nullptr || screen->GetCustomPos() != nullptr)
       return false;
 
-   if (!LibAV::GetInstance().isLoaded)
+   if (!LibAV::LibAV::GetInstance().isLoaded)
       return false;
 
    renderCtx->srcWidth = renderCtx->outWidth;
