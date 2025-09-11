@@ -175,6 +175,47 @@
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL3_image64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL3_image64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL3_image64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\"
+
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\AVCODEC64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\AVCODEC64-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\AVCODEC64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\AVCODEC64-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\AVCODEC64.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\AVCODEC64-61.DLL"
+
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\AVFORMAT64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\AVFORMAT64-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\AVFORMAT64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\AVFORMAT64-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\AVFORMAT64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\AVFORMAT64-61.DLL"
+
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\AVUTIL64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\AVUTIL64-59.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\AVUTIL64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\AVUTIL64-59.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\AVUTIL64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\AVUTIL64-59.DLL"
+
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SWRESAMPLE64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\SWRESAMPLE64-5.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SWRESAMPLE64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\SWRESAMPLE64-5.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SWRESAMPLE64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\SWRESAMPLE64-5.DLL"
+
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SWSCALE64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\SWSCALE64-8.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SWSCALE64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\SWSCALE64-8.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SWSCALE64.DLL" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\SWSCALE64-8.DLL"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libiconv-2.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libiconv-2.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libiconv-2.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\zlib1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\zlib1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\zlib1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libbz2-1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libbz2-1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libbz2-1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\liblzma-5.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\liblzma-5.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\liblzma-5.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\"
+
 		) ELSE (
 			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
 			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
@@ -183,6 +224,38 @@
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3_image.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3_image.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3_image.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\"
+
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\AVCODEC.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\AVCODEC-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\AVCODEC.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\AVCODEC-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\AVCODEC.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\AVCODEC-61.DLL"
+
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\AVFORMAT.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\AVFORMAT-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\AVFORMAT.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\AVFORMAT-61.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\AVFORMAT.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\AVFORMAT-61.DLL"
+
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\AVUTIL.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\AVUTIL-59.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\AVUTIL.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\AVUTIL-59.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\AVUTIL.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\AVUTIL-59.DLL"
+
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SWRESAMPLE.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\SWRESAMPLE-5.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SWRESAMPLE.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\SWRESAMPLE-5.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SWRESAMPLE.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\SWRESAMPLE-5.DLL"
+
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SWSCALE.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\SWSCALE-8.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SWSCALE.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\SWSCALE-8.DLL"
+			copy /y "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SWSCALE.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\SWSCALE-8.DLL"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libiconv-2.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libiconv-2.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libiconv-2.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\zlib1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\zlib1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\zlib1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\"
+
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(Configuration)-$(Platform)\plugins\flexdmd\"
 		)
       </Command>
     </PostBuildEvent>
