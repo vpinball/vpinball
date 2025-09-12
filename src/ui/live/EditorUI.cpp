@@ -887,6 +887,7 @@ bool EditorUI::GetSelectionTransform(Matrix3D& transform) const
       transform = Matrix3D::MatrixTranslate(center.x, center.y, 0.5f * (obj->m_d.m_heightbottom + obj->m_d.m_heighttop));
       return true;
    }
+   default: break; // Unsupported item type
    }
 
    return false;
@@ -1007,6 +1008,7 @@ void EditorUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPos
       obj->m_d.m_heighttop += posZ - pz;
       break;
    }
+   default: break; // Unsupported item type
    }
 }
 

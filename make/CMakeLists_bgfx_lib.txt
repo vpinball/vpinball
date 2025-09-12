@@ -145,8 +145,6 @@ target_link_libraries(vpinball PUBLIC
    sockpp
    dof
    avcodec
-   avdevice
-   avfilter
    avformat
    avutil
    swresample

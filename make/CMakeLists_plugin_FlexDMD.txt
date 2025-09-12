@@ -139,10 +139,6 @@ if(BUILD_SHARED)
          target_link_libraries(FlexDMDPlugin
             SDL364.lib
             SDL3_image64.lib
-            AVCODEC64.lib
-            AVFORMAT64.lib
-            AVUTIL64.lib
-            SWSCALE64.lib
          )
       else()
          set_target_properties(FlexDMDPlugin PROPERTIES
@@ -152,10 +148,6 @@ if(BUILD_SHARED)
          target_link_libraries(FlexDMDPlugin
             SDL3.lib
             SDL3_image.lib
-            AVCODEC.lib
-            AVFORMAT.lib
-            AVUTIL.lib
-            SWSCALE.lib
          )
       endif()
    else()
@@ -177,6 +169,7 @@ if(BUILD_SHARED)
          avcodec
          avformat
          avutil
+         swresample
          swscale
       )
    endif()

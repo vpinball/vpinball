@@ -634,6 +634,8 @@ void PinInput::FireActionEvent(EnumAssignKeys action, bool isPressed)
          g_pplayer->m_vrDevice->TableDown();
       break;
    #endif
+   
+   default: break;
    }
 
    if (!g_pplayer->m_liveUI->IsTweakMode() && isPressed && (action == eLeftFlipperKey || action == eRightFlipperKey || action == eStagedLeftFlipperKey || action == eStagedRightFlipperKey))

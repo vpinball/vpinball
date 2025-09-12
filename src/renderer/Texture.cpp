@@ -553,6 +553,7 @@ std::shared_ptr<BaseTexture> BaseTexture::Convert(Format format) const
             return nullptr;
          copy_rgb_rgba<false>((unsigned int*)tex->data(), datac(), (size_t)width() * height());
          break;
+      default: break;
       }
       break;
 
@@ -565,6 +566,7 @@ std::shared_ptr<BaseTexture> BaseTexture::Convert(Format format) const
             return nullptr;
          copy_rgb_rgba<false>((unsigned int*)tex->data(), datac(), (size_t)width() * height());
          break;
+      default: break;
       }
       break;
 
@@ -587,6 +589,7 @@ std::shared_ptr<BaseTexture> BaseTexture::Convert(Format format) const
             }
          }
          break;
+      default: break;
       }
       break;
 
@@ -612,6 +615,7 @@ std::shared_ptr<BaseTexture> BaseTexture::Convert(Format format) const
             tex->SetIsOpaque(true);
          }
          break;
+      default: break;
       }
       break;
 
@@ -635,6 +639,7 @@ std::shared_ptr<BaseTexture> BaseTexture::Convert(Format format) const
             }
          }
          break;
+         default: break;
       }
       break;
    
@@ -658,8 +663,12 @@ std::shared_ptr<BaseTexture> BaseTexture::Convert(Format format) const
             }
          }
          break;
+         default: break;
       }
       break;
+
+   default: break;
+
    }
 
    // Copy without conversion
