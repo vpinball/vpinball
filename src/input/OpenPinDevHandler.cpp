@@ -461,30 +461,30 @@ void OpenPinDevHandler::Update(const HWND foregroundWindow)
       {
          uint32_t mask; // bit for the key in OpenPinballDeviceReportStruct::pinballButtons
          EnumAssignKeys mappedAction; // mapped action, or EnumAssignKeys::eCKeys if a direct VPM key is used instead
-         BYTE vpmKey; // DIK_xxx key ID of VPM key, or 0 if an action assignment is used instead
+         SDL_Scancode vpmKey; // SDL_SCANCODE_xxx key ID of VPM key, or 0 (SDL_SCANCODE_UNKNOWN) if an action assignment is used instead
       } keyMap[] = {
          { 0x00000001, eStartGameKey },             // Start (start game)
          { 0x00000002, eExitGame },                 // Exit (end game)
          { 0x00000004, eAddCreditKey },             // Coin 1 (left coin chute)
          { 0x00000008, eAddCreditKey2 },            // Coin 2 (middle coin chute)
-         { 0x00000010, eCKeys, DIK_5 },             // Coin 3 (right coin chute)
-         { 0x00000020, eCKeys, DIK_6 },             // Coin 4 (fourth coin chute/dollar bill acceptor)
-         { 0x00000040, eCKeys, DIK_2 },             // Extra Ball/Buy-In
+         { 0x00000010, eCKeys, SDL_SCANCODE_5 },             // Coin 3 (right coin chute)
+         { 0x00000020, eCKeys, SDL_SCANCODE_6 }, // Coin 4 (fourth coin chute/dollar bill acceptor)
+         { 0x00000040, eCKeys, SDL_SCANCODE_2 }, // Extra Ball/Buy-In
          { 0x00000080, ePlungerKey },               // Launch Ball
          { 0x00000100, eLockbarKey },               // Fire button (lock bar top button)
          { 0x00000200, eLeftFlipperKey },           // Left flipper button primary switch
          { 0x00000400, eRightFlipperKey },          // Right flipper button primary switch
-         { 0x00000800, eStagedLeftFlipperKey, 0 },  // Left flipper button secondary switch (upper flipper actuator)
-         { 0x00001000, eStagedRightFlipperKey, 0 }, // Right flipper button secondary switch (upper flipper actuator)
+         { 0x00000800, eStagedLeftFlipperKey },  // Left flipper button secondary switch (upper flipper actuator)
+         { 0x00001000, eStagedRightFlipperKey }, // Right flipper button secondary switch (upper flipper actuator)
          { 0x00002000, eLeftMagnaSave },            // Left MagnaSave button
          { 0x00004000, eRightMagnaSave },           // Right MagnaSave button
          { 0x00008000, eMechanicalTilt },           // Tilt bob
-         { 0x00010000, eCKeys, DIK_HOME },          // Slam tilt switch
-         { 0x00020000, eCKeys, DIK_END },           // Coin door position switch
-         { 0x00040000, eCKeys, DIK_7 },             // Service panel Cancel
-         { 0x00080000, eCKeys, DIK_8 },             // Service panel Down
-         { 0x00100000, eCKeys, DIK_9 },             // Service panel Up
-         { 0x00200000, eCKeys, DIK_0 },             // Service panel Enter
+         { 0x00010000, eCKeys, SDL_SCANCODE_HOME }, // Slam tilt switch
+         { 0x00020000, eCKeys, SDL_SCANCODE_END }, // Coin door position switch
+         { 0x00040000, eCKeys, SDL_SCANCODE_7 }, // Service panel Cancel
+         { 0x00080000, eCKeys, SDL_SCANCODE_8 }, // Service panel Down
+         { 0x00100000, eCKeys, SDL_SCANCODE_9 }, // Service panel Up
+         { 0x00200000, eCKeys, SDL_SCANCODE_0 }, // Service panel Enter
          { 0x00400000, eLeftTiltKey },              // Left Nudge
          { 0x00800000, eCenterTiltKey },            // Forward Nudge
          { 0x01000000, eRightTiltKey },             // Right Nudge

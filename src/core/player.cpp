@@ -276,7 +276,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_progressDialog.SetProgress("Initializing Visuals..."s, 10);
 
    for(unsigned int i = 0; i < eCKeys; ++i)
-      m_rgKeys[i] = m_ptable->m_settings.LoadValueInt(Settings::Player, regkey_string[i]);
+      m_rgKeys[i] = GetSDLScancodeFromDirectInputKey(m_ptable->m_settings.LoadValueInt(Settings::Player, regkey_string[i]));
 
    m_PlayMusic = m_ptable->m_settings.LoadValueBool(Settings::Player, "PlayMusic"s);
    m_PlaySound = m_ptable->m_settings.LoadValueBool(Settings::Player, "PlaySound"s);
@@ -340,8 +340,8 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_pininput.Init();
 
 #ifndef __STANDALONE__
-   const unsigned int lflip = get_vk(m_rgKeys[eLeftFlipperKey]);
-   const unsigned int rflip = get_vk(m_rgKeys[eRightFlipperKey]);
+   const unsigned int lflip = GetWin32VirtualKeyFromSDLScancode(m_rgKeys[eLeftFlipperKey]);
+   const unsigned int rflip = GetWin32VirtualKeyFromSDLScancode(m_rgKeys[eRightFlipperKey]);
    if (((GetAsyncKeyState(VK_LSHIFT) & 0x8000) && (GetAsyncKeyState(VK_RSHIFT) & 0x8000))
       || ((lflip != ~0u) && (rflip != ~0u) && (GetAsyncKeyState(lflip) & 0x8000) && (GetAsyncKeyState(rflip) & 0x8000)))
    {

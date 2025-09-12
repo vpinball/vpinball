@@ -15,7 +15,7 @@
 #include "PlumbOverlay.h"
 #include "BallControl.h"
 
-inline constexpr const char* ID_BAM_SETTINGS = "Headtracking Settings";
+inline constexpr const char *ID_BAM_SETTINGS = "Headtracking Settings";
 
 class LiveUI final
 {
@@ -55,7 +55,7 @@ public:
    ImFont *GetOverlayFont() const { return m_overlayFont; }
    float GetDPI() const { return m_dpi; }
    int GetUIOrientation() const { return m_rotate; }
-   static ImGuiKey GetImGuiKeysFromDIkeycode(const int dik);
+   static ImGuiKey GetImGuiKeyFromSDLScancode(const SDL_Scancode sdlk);
    static void CenteredText(const string &text);
 
 private:

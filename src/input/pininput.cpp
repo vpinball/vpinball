@@ -9,8 +9,6 @@
 #endif
 
 #ifdef _WIN32
-   #include "input/Win32InputKeyboardHandler.h"
-   #include "input/DirectInputKeyboardHandler.h"
    #include "input/DirectInputMouseHandler.h"
    #include "input/DirectInputJoystickHandler.h"
 #endif
@@ -91,16 +89,19 @@ void PinInput::Init()
    m_joypmenter = settings.LoadValueWithDefault(Settings::Player, "JoyPMEnter"s, m_joypmenter);
 
    m_joycustom1 = settings.LoadValueWithDefault(Settings::Player, "JoyCustom1"s, m_joycustom1);
-   m_joycustom1key = settings.LoadValueWithDefault(Settings::Player, "JoyCustom1Key"s, m_joycustom1key);
+   m_joycustom1key = GetSDLScancodeFromDirectInputKey(settings.LoadValueWithDefault(Settings::Player, "JoyCustom1Key"s, m_joycustom1key));
    m_joycustom2 = settings.LoadValueWithDefault(Settings::Player, "JoyCustom2"s, m_joycustom2);
-   m_joycustom2key = settings.LoadValueWithDefault(Settings::Player, "JoyCustom2Key"s, m_joycustom2key);
+   m_joycustom2key = GetSDLScancodeFromDirectInputKey(settings.LoadValueWithDefault(Settings::Player, "JoyCustom2Key"s, m_joycustom2key));
    m_joycustom3 = settings.LoadValueWithDefault(Settings::Player, "JoyCustom3"s, m_joycustom3);
-   m_joycustom3key = settings.LoadValueWithDefault(Settings::Player, "JoyCustom3Key"s, m_joycustom3key);
+   m_joycustom3key = GetSDLScancodeFromDirectInputKey(settings.LoadValueWithDefault(Settings::Player, "JoyCustom3Key"s, m_joycustom3key));
    m_joycustom4 = settings.LoadValueWithDefault(Settings::Player, "JoyCustom4"s, m_joycustom4);
-   m_joycustom4key = settings.LoadValueWithDefault(Settings::Player, "JoyCustom4Key"s, m_joycustom4key);
+   m_joycustom4key = GetSDLScancodeFromDirectInputKey(settings.LoadValueWithDefault(Settings::Player, "JoyCustom4Key"s, m_joycustom4key));
 
    for (unsigned int i = 0; i < eCKeys; ++i)
-      MapActionToKeyboard(static_cast<EnumAssignKeys>(i), g_pvp->m_settings.LoadValueInt(Settings::Player, regkey_string[i]), true);
+   {
+      const int vk = g_pvp->m_settings.LoadValueInt(Settings::Player, regkey_string[i]);
+      MapActionToKeyboard(static_cast<EnumAssignKeys>(i), GetSDLScancodeFromDirectInputKey(vk), true);
+   }
 
    MapActionToMouse(eLeftFlipperKey, settings.LoadValueInt(Settings::Player, "JoyLFlipKey"s), true);
    MapActionToMouse(eRightFlipperKey, settings.LoadValueInt(Settings::Player, "JoyRFlipKey"s), true);
@@ -131,12 +132,6 @@ void PinInput::Init()
    #endif
 
    #ifdef _WIN32
-      if (inputAPI != PI_SDL) // XInput does not handle keyboard
-      #ifdef USE_DINPUT_FOR_KEYBOARD
-         m_inputHandlers.push_back(std::make_unique<DirectInputKeyboardHandler>(*this, m_focusHWnd));
-      #else
-         m_inputHandlers.push_back(std::make_unique<Win32InputKeyboardHandler>(*this, m_focusHWnd));
-      #endif
       if (inputAPI == PI_DIRECTINPUT)
       {
          m_inputHandlers.push_back(std::make_unique<DirectInputJoystickHandler>(*this, m_focusHWnd));
@@ -192,14 +187,14 @@ void PinInput::MapActionToMouse(EnumAssignKeys action, int button, bool replace)
    m_actionMappings.push_back(mapping);
 }
 
-void PinInput::MapActionToKeyboard(EnumAssignKeys action, int keycode, bool replace)
+void PinInput::MapActionToKeyboard(EnumAssignKeys action, SDL_Scancode scancode, bool replace)
 {
    if (replace)
       std::erase_if(m_actionMappings, [action](const ActionMapping& am) { return (am.action == action) && (am.type == ActionMapping::AM_Keyboard); });
    ActionMapping mapping;
    mapping.action = action;
    mapping.type = ActionMapping::AM_Keyboard;
-   mapping.keycode = keycode;
+   mapping.scancode = scancode;
    m_actionMappings.push_back(mapping);
 }
 
@@ -248,11 +243,12 @@ void PinInput::PushMouseEvent(int button, bool isPressed)
    ProcessEvent(e);
 }
 
-void PinInput::PushKeyboardEvent(int keycode, bool isPressed)
+void PinInput::PushKeyboardEvent(SDL_Keycode keycode, SDL_Scancode scancode, bool isPressed)
 {
    InputEvent e;
    e.type = InputEvent::Type::Keyboard;
    e.keycode = keycode;
+   e.scancode = scancode;
    e.isPressed = isPressed;
    ProcessEvent(e);
 }
@@ -439,17 +435,31 @@ void PinInput::PlayRumble(const float lowFrequencySpeed, const float highFrequen
    #endif
 }
 
-void PinInput::FireGenericKeyEvent(const int dispid, int keycode)
+void PinInput::FireGenericKeyEvent(const int dispid, SDL_Scancode scancode)
 {
-   // Check if we are mirrored & Swap left & right input.
+   // Check if we are mirrored & Swap (some) left & right input.
    if (g_pplayer->m_ptable->m_tblMirrorEnabled)
    {
-      if (keycode == DIK_LSHIFT) keycode = DIK_RSHIFT;
-      else if (keycode == DIK_RSHIFT) keycode = DIK_LSHIFT;
-      else if (keycode == DIK_LEFT) keycode = DIK_RIGHT;
-      else if (keycode == DIK_RIGHT) keycode = DIK_LEFT;
+      switch (scancode)
+      {
+      case SDL_SCANCODE_LSHIFT: scancode = SDL_SCANCODE_RSHIFT; break;
+      case SDL_SCANCODE_RSHIFT: scancode = SDL_SCANCODE_LSHIFT; break;
+      case SDL_SCANCODE_LCTRL: scancode = SDL_SCANCODE_RCTRL; break;
+      case SDL_SCANCODE_RCTRL: scancode = SDL_SCANCODE_LCTRL; break;
+      case SDL_SCANCODE_RIGHT: scancode = SDL_SCANCODE_LEFT; break;
+      case SDL_SCANCODE_LEFT: scancode = SDL_SCANCODE_RIGHT; break;
+      case SDL_SCANCODE_LGUI: scancode = SDL_SCANCODE_RGUI; break;
+      case SDL_SCANCODE_RGUI: scancode = SDL_SCANCODE_LGUI; break;
+      default: break;
+      }
    }
-   g_pplayer->m_ptable->FireGenericKeyEvent(dispid, keycode);
+   const unsigned char dik = GetDirectInputKeyFromSDLScancode(scancode);
+   if (dik == 0)
+   {
+      PLOGE << "No DirectInput mapping for SDL scancode '" << (int)scancode << "'. Key event was dropped.";
+      return;
+   }
+   g_pplayer->m_ptable->FireGenericKeyEvent(dispid, dik);
 }
 
 void PinInput::FireActionEvent(EnumAssignKeys action, bool isPressed)
@@ -960,11 +970,11 @@ void PinInput::ProcessEvent(const InputEvent& event)
    else if (event.type == InputEvent::Type::Keyboard)
    {
       const auto& it = std::ranges::find_if(m_actionMappings.begin(), m_actionMappings.end(),
-         [&event](const ActionMapping& mapping) { return (mapping.type == ActionMapping::AM_Keyboard) && (mapping.keycode == event.keycode); });
+         [&event](const ActionMapping& mapping) { return (mapping.type == ActionMapping::AM_Keyboard) && (mapping.scancode == event.scancode); });
       if (it != m_actionMappings.end())
          FireActionEvent(it->action, event.isPressed);
       else if (!g_pplayer->m_liveUI->HasKeyboardCapture())
-         FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, event.keycode);
+         FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, event.scancode);
    }
    else if (event.type == InputEvent::Type::Action)
    {
@@ -987,21 +997,21 @@ void PinInput::ProcessEvent(const InputEvent& event)
          else if (m_joycustom4 == event.buttonId)
             FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, m_joycustom4key);
          else if (m_joypmbuyin == event.buttonId)
-            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_2);
+            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, SDL_SCANCODE_2);
          else if (m_joypmcoin3 == event.buttonId)
-            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_5);
+            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, SDL_SCANCODE_5);
          else if (m_joypmcoin4 == event.buttonId)
-            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_6);
+            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, SDL_SCANCODE_6);
          else if (m_joypmcoindoor == event.buttonId)
-            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_END);
+            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, SDL_SCANCODE_END);
          else if (m_joypmcancel == event.buttonId)
-            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_7);
+            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, SDL_SCANCODE_7);
          else if (m_joypmdown == event.buttonId)
-            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_8);
+            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, SDL_SCANCODE_8);
          else if (m_joypmup == event.buttonId)
-            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_9);
+            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, SDL_SCANCODE_9);
          else if (m_joypmenter == event.buttonId)
-            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_0);
+            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, SDL_SCANCODE_0);
       }
    }
    else if (event.type == InputEvent::Type::JoyAxis)

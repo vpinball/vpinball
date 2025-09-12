@@ -3198,9 +3198,9 @@ void PinTable::SetMyScrollInfo()
 #endif
 }
 
-void PinTable::FireGenericKeyEvent(int dispid, int keycode)
+void PinTable::FireGenericKeyEvent(int dispid, int dik)
 {
-   CComVariant rgvar[1] = { CComVariant(keycode) };
+   CComVariant rgvar[1] = { CComVariant(dik) };
    DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
    FireDispID(dispid, &dispparams);
 }

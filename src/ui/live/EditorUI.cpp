@@ -1818,7 +1818,7 @@ void EditorUI::UpdateRendererInspectionModal()
       }
 
       ImGui::TextUnformatted("Press F11 to reset min/max/average timings");
-      if (ImGui::IsKeyPressed(m_liveUI.GetImGuiKeysFromDIkeycode(m_player->m_rgKeys[eFrameCount])))
+      if (ImGui::IsKeyPressed(LiveUI::GetImGuiKeyFromSDLScancode(m_player->m_rgKeys[eFrameCount])))
          m_player->InitFPS();
 
       // Other detailed information

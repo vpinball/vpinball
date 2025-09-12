@@ -48,6 +48,7 @@ set(VPX_SOURCES
 
    src/input/pininput.h
    src/input/pininput.cpp
+   src/input/ScanCodes.h
    src/input/SDLInputHandler.h
 
    src/math/bbox.h

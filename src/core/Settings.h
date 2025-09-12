@@ -141,6 +141,7 @@ private:
    void RegisterStringSetting(const Section section, const string &key, const string &defVal, const bool addDefaults, const string &comments = string());
    void RegisterBoolSetting(const Section section, const string &key, const bool defVal, const bool addDefaults, const string &comments = string());
    void RegisterIntSetting(const Section section, const string &key, const int defVal, const int minVal, const int maxVal, const bool addDefaults, const string &comments = string());
+   void RegisterUIntSetting(const Section section, const string &key, const unsigned int defVal, const unsigned int minVal, const unsigned int maxVal, const bool addDefaults, const string &comments = string());
    void RegisterFloatSetting(const Section section, const string &key, const float defVal, const float minVal, const float maxVal, const bool addDefaults, const string &comments = string());
 
    bool m_modified = false;
