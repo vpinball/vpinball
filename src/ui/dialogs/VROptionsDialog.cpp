@@ -8,258 +8,23 @@ static bool oldScaleValue = false;
 static float scaleRelative = 1.0f;
 static float scaleAbsolute = 55.0f;
 
-static char rgszKeyName[][10] = {
-   "",
-   "Escape", //DIK_ESCAPE          0x01
-   "1", //DIK_1               0x02
-   "2", //DIK_2               0x03
-   "3", //DIK_3               0x04
-   "4", //DIK_4               0x05
-   "5", //DIK_5               0x06
-   "6", //DIK_6               0x07
-   "7", //DIK_7               0x08
-   "8", //DIK_8               0x09
-   "9", //DIK_9               0x0A
-   "0", //DIK_0               0x0B
-   "-", //DIK_MINUS           0x0C    /* - on main keyboard */
-   "=", //DIK_EQUALS          0x0D
-   "Backspace", //DIK_BACK            0x0E    /* backspace */
-   "Tab", //DIK_TAB             0x0F
-   "Q", //DIK_Q               0x10
-   "W", //DIK_W               0x11
-   "E", //DIK_E               0x12
-   "R", //DIK_R               0x13
-   "T", //DIK_T               0x14
-   "Y", //DIK_Y               0x15
-   "U", //DIK_U               0x16
-   "I", //DIK_I               0x17
-   "O", //DIK_O               0x18
-   "P", //DIK_P               0x19
-   "[", //DIK_LBRACKET        0x1A
-   "]", //DIK_RBRACKET        0x1B
-   "Enter", //DIK_RETURN          0x1C    /* Enter on main keyboard */
-   "L Ctrl", //DIK_LCONTROL        0x1D
-   "A", //DIK_A               0x1E
-   "S", //DIK_S               0x1F
-   "D", //DIK_D               0x20
-   "F", //DIK_F               0x21
-   "G", //DIK_G               0x22
-   "H", //DIK_H               0x23
-   "J", //DIK_J               0x24
-   "K", //DIK_K               0x25
-   "L", //DIK_L               0x26
-   ";", //DIK_SEMICOLON       0x27
-   "'", //DIK_APOSTROPHE      0x28
-   "`", //DIK_GRAVE           0x29    /* accent grave */
-   "L Shift", //DIK_LSHIFT          0x2A
-   "\\", //DIK_BACKSLASH       0x2B
-   "Z", //DIK_Z               0x2C
-   "X", //DIK_X               0x2D
-   "C", //DIK_C               0x2E
-   "V", //DIK_V               0x2F
-   "B", //DIK_B               0x30
-   "N", //DIK_N               0x31
-   "M", //DIK_M               0x32
-   ",", //DIK_COMMA           0x33
-   ".", //DIK_PERIOD          0x34    /* . on main keyboard */
-   "/", //DIK_SLASH           0x35    /* / on main keyboard */
-   "R Shift", //DIK_RSHIFT          0x36
-   "*", //DIK_MULTIPLY        0x37    /* * on numeric keypad */
-   "Menu", //DIK_LMENU           0x38    /* left Alt */
-   "Space", //DIK_SPACE           0x39
-   "Caps Lock", //DIK_CAPITAL         0x3A
-   "F1", //DIK_F1              0x3B
-   "F2", //DIK_F2              0x3C
-   "F3", //DIK_F3              0x3D
-   "F4", //DIK_F4              0x3E
-   "F5", //DIK_F5              0x3F
-   "F6", //DIK_F6              0x40
-   "F7", //DIK_F7              0x41
-   "F8", //DIK_F8              0x42
-   "F9", //DIK_F9              0x43
-   "F10", //DIK_F10             0x44
-   "NumLock", //DIK_NUMLOCK         0x45
-   "ScrollLck", //DIK_SCROLL          0x46    /* Scroll Lock */
-   "Numpad 7", //DIK_NUMPAD7         0x47
-   "Numpad 8", //DIK_NUMPAD8         0x48
-   "Numpad 9", //DIK_NUMPAD9         0x49
-   "-", //DIK_SUBTRACT        0x4A    /* - on numeric keypad */
-   "Numpad 4", //DIK_NUMPAD4         0x4B
-   "Numpad 5", //DIK_NUMPAD5         0x4C
-   "Numpad 6", //DIK_NUMPAD6         0x4D
-   "+", //DIK_ADD             0x4E    /* + on numeric keypad */
-   "Numpad 1", //DIK_NUMPAD1         0x4F
-   "Numpad 2", //DIK_NUMPAD2         0x50
-   "Numpad 3", //DIK_NUMPAD3         0x51
-   "Numpad 0", //DIK_NUMPAD0         0x52
-   "Numpad .", //DIK_DECIMAL         0x53    /* . on numeric keypad */
-   "", //0x54
-   "", //0x55
-   "<>|", //DIK_OEM_102         0x56    /* < > | on UK/Germany keyboards */
-   "F11", //DIK_F11             0x57
-   "F12", //DIK_F12             0x58
-   "", //0x59
-   "", //0x5A
-   "", //0x5B
-   "", //0x5C
-   "", //0x5D
-   "", //0x5E
-   "", //0x5F
-   "", //0x60
-   "", //0x61
-   "", //0x62
-   "", //0x63
-   "F13", //DIK_F13             0x64    /*                     (NEC PC98) */
-   "F14", //DIK_F14             0x65    /*                     (NEC PC98) */
-   "F15", //DIK_F15             0x66    /*                     (NEC PC98) */
-   "", //0x67
-   "", //0x68
-   "", //0x69
-   "", //0x6A
-   "", //0x6B
-   "", //0x6C
-   "", //0x6D
-   "", //0x6E
-   "", //0x6F
 
-   "", //0x70
-   "", //0x71
-   "", //0x72
-   "", //0x73
-   "", //0x74
-   "", //0x75
-   "", //0x76
-   "", //0x77
-   "", //0x78
-   "", //0x79
-   "", //0x7A
-   "", //0x7B
-   "", //0x7C
-   "", //0x7D
-   "", //0x7E
-   "", //0x7F
-
-   "", //0x80
-   "", //0x81
-   "", //0x82
-   "", //0x83
-   "", //0x84
-   "", //0x85
-   "", //0x86
-   "", //0x87
-   "", //0x88
-   "", //0x89
-   "", //0x8A
-   "", //0x8B
-   "", //0x8C
-   "", //0x8D
-   "", //0x8E
-   "", //0x8F
-
-   "", //0x90
-   "", //0x91
-   "", //0x92
-   "", //0x93
-   "", //0x94
-   "", //0x95
-   "", //0x96
-   "", //0x97
-   "", //0x98
-   "", //0x99
-   "", //0x9A
-   "", //0x9B
-
-   "Num Enter", //#define DIK_NUMPADENTER     0x9C    /* Enter on numeric keypad */
-   "R Ctrl", //DIK_RCONTROL        0x9D
-
-   "", //0x9E
-   "", //0x9F
-
-   "", //0xA0
-   "", //0xA1
-   "", //0xA2
-   "", //0xA3
-   "", //0xA4
-   "", //0xA5
-   "", //0xA6
-   "", //0xA7
-   "", //0xA8
-   "", //0xA9
-   "", //0xAA
-   "", //0xAB
-   "", //0xAC
-   "", //0xAD
-   "", //0xAE
-   "", //0xAF
-
-   "", //0xB0
-   "", //0xB1
-   "", //0xB2
-   "", //0xB3
-   "", //0xB4
-
-   "Numpad /", //#define DIK_DIVIDE          0xB5    /* / on numeric keypad */
-   "", //0xB6
-   "", //#define DIK_SYSRQ           0xB7
-   "R Alt", //DIK_RMENU           0xB8    /* right Alt */
-
-   "", //0xB9
-   "", //0xBA
-   "", //0xBB
-   "", //0xBC
-   "", //0xBD
-   "", //0xBE
-   "", //0xBF
-
-   "", //0xC0
-   "", //0xC1
-   "", //0xC2
-   "", //0xC3
-   "", //0xC4
-   "", //0xC5
-   "", //0xC6
-
-   "Home", //DIK_HOME            0xC7    /* Home on arrow keypad */
-   "Up", //DIK_UP              0xC8    /* UpArrow on arrow keypad */
-   "Page Up", //DIK_PRIOR           0xC9    /* PgUp on arrow keypad */
-   "", //0xCA
-   "Left", //DIK_LEFT            0xCB    /* LeftArrow on arrow keypad */
-   "", //0xCC
-   "Right", //DIK_RIGHT           0xCD    /* RightArrow on arrow keypad */
-   "", //0xCE
-   "End", //DIK_END             0xCF    /* End on arrow keypad */
-   "Down", //DIK_DOWN            0xD0    /* DownArrow on arrow keypad */
-   "Page Down", //DIK_NEXT            0xD1    /* PgDn on arrow keypad */
-   "Insert", //DIK_INSERT          0xD2    /* Insert on arrow keypad */
-   "Delete", //DIK_DELETE          0xD3    /* Delete on arrow keypad */
-
-   "", //0xD4
-   "", //0xD5
-   "", //0xD6
-   "", //0xD7
-   "", //0xD8
-   "", //0xD9
-   "", //0xDA
-
-   "L Windows", //DIK_LWIN            0xDB    /* Left Windows key */
-   "R Windows", //DIK_RWIN            0xDC    /* Right Windows key */
-   "Apps Menu", //DIK_APPS            0xDD    /* AppMenu key */
-};
-
-static int GetNextKey()
+static SDL_Scancode GetNextKey()
 {
-   for (unsigned int i = 0; i < 0xFF; ++i)
+   SDL_Scancode sdlk = SDL_SCANCODE_UNKNOWN;
+   for (unsigned int i = VK_BACK; i <= VK_OEM_CLEAR; ++i)
    {
       const SHORT keyState = GetAsyncKeyState(i);
       if (keyState & 1)
       {
-         const unsigned int dik = get_dik(i);
-         if (dik != ~0u)
-            return dik;
+         const SDL_Scancode sc = GetSDLScancodeFromWin32VirtualKey(i);
+         if (sc != SDL_SCANCODE_UNKNOWN)
+            sdlk = sc; // search for a higher key value as some keys have first undifferentiated values (shift) then differentiated values (left shift, right shift)
       }
    }
-   return 0;
+   return sdlk;
 }
+
 
 class KeyWindowStruct
 {
@@ -282,23 +47,6 @@ LRESULT CALLBACK MyKeyButtonProc2(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 
 VROptionsDialog::VROptionsDialog() : CDialog(IDD_VR_OPTIONS)
 {
-   // Adjust keyboard translation to user keyboard layout
-   HKL layout = GetKeyboardLayout(0);
-   BYTE State[256];
-   // Translate for a default keyboard state
-   //if (GetKeyboardState(State) != FALSE)
-   memset(State, 0, sizeof(State));
-   State[VK_CAPITAL] = 1; // Get CAPS LOCK variant of the key
-   for (int scancode = 0x00; scancode <= 0xDD; scancode++)
-   {
-      BYTE result[2];
-      UINT vk = MapVirtualKeyEx(scancode, 1, layout);
-      if (rgszKeyName[scancode][1] == 0 && ToAsciiEx(vk, scancode, State, (LPWORD)result, 0, layout) == 1)
-      {
-         rgszKeyName[scancode][0] = (char)result[0];
-         rgszKeyName[scancode][1] = '\0';
-      }
-   }
 }
 
 void VROptionsDialog::AddToolTip(const char * const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)
@@ -479,10 +227,11 @@ BOOL VROptionsDialog::OnInitDialog()
    for (unsigned int i = eTableRecenter; i <= eTableDown; ++i)
       if (regkey_idc[i] != -1)
       {
-         const int key = static_cast<EnumAssignKeys>(g_pvp->m_settings.LoadValueInt(Settings::Player, regkey_string[i]));
+         const int dik = static_cast<EnumAssignKeys>(g_pvp->m_settings.LoadValueInt(Settings::Player, regkey_string[i]));
          const HWND hwndControl = GetDlgItem(regkey_idc[i]);
-         ::SetWindowText(hwndControl, rgszKeyName[key]);
-         ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
+         ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, dik);
+         SDL_Keycode sdlKeycode = SDL_GetKeyFromScancode(GetSDLScancodeFromDirectInputKey(dik), SDL_KMOD_NONE, false);
+         ::SetWindowText(hwndControl, SDL_GetKeyName(sdlKeycode));
       }
 
    for (unsigned int i = 0; i < 3; ++i)
@@ -587,31 +336,25 @@ INT_PTR VROptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    case WM_TIMER:
    {
       KeyWindowStruct* const pksw = (KeyWindowStruct*)GetWindowLongPtr(GWLP_USERDATA);
-      const int key = GetNextKey();
-      if (key != 0)
-      {
-         if (key < 0xDD) // Key mapping
-         {
-            int key_esc;
-            const bool hr = g_pvp->m_settings.LoadValue(Settings::Player, "EscapeKey"s, key_esc);
-            if (!hr || key_esc > 0xdd)
-               key_esc = DIK_ESCAPE;
+      SDL_Scancode sdlScancode = GetNextKey();
+      if (sdlScancode == SDL_SCANCODE_UNKNOWN)
+         break; // no key pressed
 
-            if (key == key_esc)
-            {
-               // reset key to old value
-               const size_t oldkey = ::GetWindowLongPtr(pksw->hwndKeyControl, GWLP_USERDATA);
-               ::SetWindowText(pksw->hwndKeyControl, rgszKeyName[oldkey]);
-            }
-            else
-            {
-               ::SetWindowText(pksw->hwndKeyControl, rgszKeyName[key]);
-               ::SetWindowLongPtr(pksw->hwndKeyControl, GWLP_USERDATA, key);
-            }
-            KillTimer(pksw->m_timerid);
-            pksw->m_timerid = 0;
-         }
-      }
+      int dik = GetDirectInputKeyFromSDLScancode(sdlScancode);
+      if (dik == 0)
+         break; // unmapped key
+
+      if (dik == DIK_ESCAPE)
+         sdlScancode = GetSDLScancodeFromDirectInputKey(::GetWindowLongPtr(pksw->hwndKeyControl, GWLP_USERDATA)); // reset key to old value
+      else
+         ::SetWindowLongPtr(pksw->hwndKeyControl, GWLP_USERDATA, dik);
+
+      // Display key name using user keyboard layout (but store it as scancode to support user layout change)
+      SDL_Keycode sdlKeycode = SDL_GetKeyFromScancode(sdlScancode, SDL_KMOD_NONE, false);
+      ::SetWindowText(pksw->hwndKeyControl, SDL_GetKeyName(sdlKeycode));
+
+      KillTimer(pksw->m_timerid);
+      pksw->m_timerid = 0;
       break;
    }
    #endif
@@ -755,8 +498,8 @@ void VROptionsDialog::OnOK()
 
     for (unsigned int i = eTableRecenter; i <= eTableDown; ++i) if (regkey_idc[i] != -1)
     {
-        const size_t key = GetDlgItem(regkey_idc[i]).GetWindowLongPtr(GWLP_USERDATA);
-        g_pvp->m_settings.SaveValue(Settings::Player, regkey_string[i], (int)key);
+       const size_t dik = GetDlgItem(regkey_idc[i]).GetWindowLongPtr(GWLP_USERDATA);
+       g_pvp->m_settings.SaveValue(Settings::Player, regkey_string[i], (int)dik);
     }
 
    CDialog::OnOK();
@@ -789,8 +532,8 @@ void VROptionsDialog::StartTimer(int nID)
    if (pksw->m_timerid == NULL) //add
    { //add
       // corrects input error with space bar
-      const int key = GetNextKey();
-      if (key == 0x39)
+      const SDL_Scancode key = GetNextKey();
+      if (key == SDL_SCANCODE_SPACE)
       {
          GetNextKey(); // Clear the current buffer out
          return;

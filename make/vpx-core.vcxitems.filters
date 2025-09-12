@@ -1928,28 +1928,25 @@
     <ClInclude Include="$(SolutionDir)/../../src/physics/AsyncDynamicQuadTree.h">
       <Filter>physics</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/input/DirectInputJoystickHandler.h">
+    <ClInclude Include="$(SolutionDir)/../../src/input/pininput.h">
       <Filter>input</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/input/DirectInputKeyboardHandler.h">
+    <ClInclude Include="$(SolutionDir)/../../src/input/DirectInputJoystickHandler.h">
       <Filter>input</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/input/DirectInputMouseHandler.h">
       <Filter>input</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/input/OpenPinDevHandler.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/input/ScanCodes.h">
+      <Filter>input</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/input/SDLInputHandler.h">
       <Filter>input</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/input/Win32InputKeyboardHandler.h">
-      <Filter>input</Filter>
-    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/input/XInputJoystickHandler.h">
-      <Filter>input</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/input/pininput.h">
-      <Filter>input</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/input/OpenPinDevHandler.h">
       <Filter>input</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/parts/PartGroup.h">

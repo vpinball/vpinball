@@ -63,11 +63,7 @@ public:
       case SDL_EVENT_KEY_DOWN:
       case SDL_EVENT_KEY_UP:
          if (e.key.repeat == 0)
-         {
-            const unsigned int dik = get_dik_from_sdlk(e.key.key);
-            if (dik != ~0u)
-               m_pininput.PushKeyboardEvent(dik, e.type == SDL_EVENT_KEY_DOWN);
-         }
+            m_pininput.PushKeyboardEvent(e.key.key, e.key.scancode, e.type == SDL_EVENT_KEY_DOWN);
          break;
 
       case SDL_EVENT_GAMEPAD_ADDED:

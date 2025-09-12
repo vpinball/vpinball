@@ -84,6 +84,23 @@ void Settings::RegisterIntSetting(const Section section, const string &key, cons
       SaveValue(section, key, defVal);
 }
 
+void Settings::RegisterUIntSetting(const Section section, const string &key, const unsigned int defVal, const unsigned int minVal, const unsigned int maxVal, const bool addDefaults, const string &comments)
+{
+   assert((minVal <= defVal) && (defVal <= maxVal));
+   #ifdef DEBUG
+      m_validatedKeys[section].insert(key);
+   #endif
+   unsigned int val;
+   bool present = LoadValue(section, key, val);
+   if (present && ((val < minVal) || (val > maxVal)))
+   {
+      DeleteValue(section, key);
+      present = false;
+   }
+   if (!present && addDefaults)
+      SaveValue(section, key, defVal);
+}
+
 void Settings::RegisterFloatSetting(const Section section, const string &key, const float defVal, const float minVal, const float maxVal, const bool addDefaults, const string &comments)
 {
    assert((minVal <= defVal) && (defVal <= maxVal));
@@ -119,10 +136,11 @@ void Settings::RegisterFloatSetting(const Section section, const string &key, co
 // a static enum definition in Settings.h which will be used for array access.
 void Settings::Validate(const bool addDefaults)
 {
-   #define SettingString(section, name, defVal, comment) RegisterStringSetting(section, name, defVal, addDefaults, comment);
-   #define SettingBool(section, name, defVal, comment) RegisterBoolSetting(section, name, defVal, addDefaults, comment);
-   #define SettingFloat(section, name, defVal, minVal, maxVal, comment) RegisterFloatSetting(section, name, defVal, minVal, maxVal, addDefaults, comment);
-   #define SettingInt(section, name, defVal, minVal, maxVal, comment) RegisterIntSetting(section, name, defVal, minVal, maxVal, addDefaults, comment);
+   #define SettingString(section, name, defVal, comment) RegisterStringSetting(section, name, defVal, addDefaults, comment)
+   #define SettingBool(section, name, defVal, comment) RegisterBoolSetting(section, name, defVal, addDefaults, comment)
+   #define SettingFloat(section, name, defVal, minVal, maxVal, comment) RegisterFloatSetting(section, name, defVal, minVal, maxVal, addDefaults, comment)
+   #define SettingInt(section, name, defVal, minVal, maxVal, comment) RegisterIntSetting(section, name, defVal, minVal, maxVal, addDefaults, comment)
+   #define SettingUInt(section, name, defVal, minVal, maxVal, comment) RegisterUIntSetting(section, name, defVal, minVal, maxVal, addDefaults, comment)
    
    //////////////////////////////////////////////////////////////////////////
    // LiveUI section
@@ -136,65 +154,65 @@ void Settings::Validate(const bool addDefaults)
    SettingBool(Section::Player, "PBWDefaultLayout"s, false, "Disable default layout of recognized Pincab controllers (DirectInput only)."s);
    SettingBool(Section::Player, "DisableESC"s, false, "Disable ESC key as exit action button."s);
 
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eLeftFlipperKey], DIK_LSHIFT, 0x00, 0xFFFF, ""s);
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eRightFlipperKey], DIK_RSHIFT, 0x00, 0xFFFF, ""s);
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eStagedLeftFlipperKey], DIK_LWIN, 0x00, 0xFFFF, ""s);
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eStagedRightFlipperKey], DIK_RALT, 0x00, 0xFFFF, ""s);
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eLeftTiltKey], DIK_Z, 0x00, 0xFFFF, ""s);
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eRightTiltKey], DIK_SLASH, 0x00, 0xFFFF, ""s);
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eCenterTiltKey], DIK_SPACE, 0x00, 0xFFFF, ""s);
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::ePlungerKey], DIK_RETURN, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eLeftFlipperKey], DIK_LSHIFT, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eRightFlipperKey], DIK_RSHIFT, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eStagedLeftFlipperKey], DIK_LWIN, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eStagedRightFlipperKey], DIK_RALT, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eLeftTiltKey], DIK_Z, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eRightTiltKey], DIK_SLASH, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eCenterTiltKey], DIK_SPACE, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::ePlungerKey], DIK_RETURN, 0x00, 0xFFFF, ""s);
    #if !defined(__APPLE__) && !defined(__ANDROID__)
-      SettingInt(Section::Player, regkey_string[EnumAssignKeys::eFrameCount], DIK_F11, 0x00, 0xFFFF, ""s);
+      SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eFrameCount], DIK_F11, 0x00, 0xFFFF, ""s);
    #else
-      SettingInt(Section::Player, regkey_string[EnumAssignKeys::eFrameCount], DIK_F1, 0x00, 0xFFFF, ""s);
+      SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eFrameCount], DIK_F1, 0x00, 0xFFFF, ""s);
    #endif
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eDBGBalls], DIK_O, 0x00, 0xFFFF, ""s);
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eDebugger], DIK_D, 0x00, 0xFFFF, ""s);
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eAddCreditKey], DIK_5, 0x00, 0xFFFF, ""s);
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eAddCreditKey2], DIK_4, 0x00, 0xFFFF, ""s);
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eStartGameKey], DIK_1, 0x00, 0xFFFF, ""s);
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eMechanicalTilt], DIK_T, 0x00, 0xFFFF, ""s);
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eRightMagnaSave], DIK_RCONTROL, 0x00, 0xFFFF, ""s);
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eLeftMagnaSave], DIK_LCONTROL, 0x00, 0xFFFF, ""s);
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eExitGame], DIK_Q, 0x00, 0xFFFF, ""s);
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eVolumeUp], DIK_EQUALS, 0x00, 0xFFFF, ""s);
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eVolumeDown], DIK_MINUS, 0x00, 0xFFFF, ""s);
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eLockbarKey], DIK_LALT, 0x00, 0xFFFF, ""s);
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eEnable3D], DIK_F10, 0x00, 0xFFFF, ""s);
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eTableRecenter], DIK_NUMPAD5, 0x00, 0xFFFF, ""s);
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eTableUp], DIK_NUMPAD8, 0x00, 0xFFFF, ""s);
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eTableDown], DIK_NUMPAD2, 0x00, 0xFFFF, ""s);
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eEscape], DIK_ESCAPE, 0x00, 0xFFFF, ""s);
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::ePause], DIK_P, 0x00, 0xFFFF, ""s);
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eTweak], DIK_F12, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eDBGBalls], DIK_O, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eDebugger], DIK_D, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eAddCreditKey], DIK_5, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eAddCreditKey2], DIK_4, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eStartGameKey], DIK_1, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eMechanicalTilt], DIK_T, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eRightMagnaSave], DIK_RCONTROL, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eLeftMagnaSave], DIK_LCONTROL, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eExitGame], DIK_Q, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eVolumeUp], DIK_EQUALS, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eVolumeDown], DIK_MINUS, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eLockbarKey], DIK_LALT, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eEnable3D], DIK_F10, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eTableRecenter], DIK_NUMPAD5, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eTableUp], DIK_NUMPAD8, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eTableDown], DIK_NUMPAD2, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eEscape], DIK_ESCAPE, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::ePause], DIK_P, 0x00, 0xFFFF, ""s);
+   SettingUInt(Section::Player, regkey_string[EnumAssignKeys::eTweak], DIK_F12, 0x00, 0xFFFF, ""s);
 
-   SettingInt(Settings::Player, "JoyLFlipKey"s, 0, 0x00, 0xFFFF, ""s);
-   SettingInt(Settings::Player, "JoyRFlipKey"s, 0, 0x00, 0xFFFF, ""s);
-   SettingInt(Settings::Player, "JoyStagedLFlipKey"s, 0, 0x00, 0xFFFF, ""s);
-   SettingInt(Settings::Player, "JoyStagedRFlipKey"s, 0, 0x00, 0xFFFF, ""s);
-   SettingInt(Settings::Player, "JoyLTiltKey"s, 0, 0x00, 0xFFFF, ""s);
-   SettingInt(Settings::Player, "JoyRTiltKey"s, 0, 0x00, 0xFFFF, ""s);
-   SettingInt(Settings::Player, "JoyCTiltKey"s, 0, 0x00, 0xFFFF, ""s);
-   SettingInt(Settings::Player, "JoyPlungerKey"s, 0, 0x00, 0xFFFF, ""s);
-   SettingInt(Settings::Player, "JoyFrameCount"s, 0, 0x00, 0xFFFF, ""s);
-   SettingInt(Settings::Player, "JoyDebugKey"s, 0, 0x00, 0xFFFF, ""s);
-   SettingInt(Settings::Player, "JoyDebuggerKey"s, 0, 0x00, 0xFFFF, ""s);
-   SettingInt(Settings::Player, "JoyAddCreditKey"s, 0, 0x00, 0xFFFF, ""s);
-   SettingInt(Settings::Player, "JoyAddCredit2Key"s, 0, 0x00, 0xFFFF, ""s);
-   SettingInt(Settings::Player, "JoyStartGameKey"s, 0, 0x00, 0xFFFF, ""s);
-   SettingInt(Settings::Player, "JoyMechTiltKey"s, 0, 0x00, 0xFFFF, ""s);
-   SettingInt(Settings::Player, "JoyRMagnaSave"s, 0, 0x00, 0xFFFF, ""s);
-   SettingInt(Settings::Player, "JoyLMagnaSave"s, 0, 0x00, 0xFFFF, ""s);
-   SettingInt(Settings::Player, "JoyExitGameKey"s, 0, 0x00, 0xFFFF, ""s);
-   SettingInt(Settings::Player, "JoyVolumeUp"s, 0, 0x00, 0xFFFF, ""s);
-   SettingInt(Settings::Player, "JoyVolumeDown"s, 0, 0x00, 0xFFFF, ""s);
-   SettingInt(Settings::Player, "JoyLockbarKey"s, 0, 0x00, 0xFFFF, ""s);
-   SettingInt(Settings::Player, "JoyTableRecenterKey"s, 0, 0x00, 0xFFFF, ""s);
-   SettingInt(Settings::Player, "JoyTableUpKey"s, 0, 0x00, 0xFFFF, ""s);
-   SettingInt(Settings::Player, "JoyTableDownKey"s, 0, 0x00, 0xFFFF, ""s);
-   SettingInt(Settings::Player, "JoyPauseKey"s, 0, 0x00, 0xFFFF, ""s);
-   SettingInt(Settings::Player, "JoyTweakKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingUInt(Settings::Player, "JoyLFlipKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
+   SettingUInt(Settings::Player, "JoyRFlipKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
+   SettingUInt(Settings::Player, "JoyStagedLFlipKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
+   SettingUInt(Settings::Player, "JoyStagedRFlipKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
+   SettingUInt(Settings::Player, "JoyLTiltKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
+   SettingUInt(Settings::Player, "JoyRTiltKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
+   SettingUInt(Settings::Player, "JoyCTiltKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
+   SettingUInt(Settings::Player, "JoyPlungerKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
+   SettingUInt(Settings::Player, "JoyFrameCount"s, 0, 0x00, 0xFFFFFFFFu, ""s);
+   SettingUInt(Settings::Player, "JoyDebugKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
+   SettingUInt(Settings::Player, "JoyDebuggerKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
+   SettingUInt(Settings::Player, "JoyAddCreditKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
+   SettingUInt(Settings::Player, "JoyAddCredit2Key"s, 0, 0x00, 0xFFFFFFFFu, ""s);
+   SettingUInt(Settings::Player, "JoyStartGameKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
+   SettingUInt(Settings::Player, "JoyMechTiltKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
+   SettingUInt(Settings::Player, "JoyRMagnaSave"s, 0, 0x00, 0xFFFFFFFFu, ""s);
+   SettingUInt(Settings::Player, "JoyLMagnaSave"s, 0, 0x00, 0xFFFFFFFFu, ""s);
+   SettingUInt(Settings::Player, "JoyExitGameKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
+   SettingUInt(Settings::Player, "JoyVolumeUp"s, 0, 0x00, 0xFFFFFFFFu, ""s);
+   SettingUInt(Settings::Player, "JoyVolumeDown"s, 0, 0x00, 0xFFFFFFFFu, ""s);
+   SettingUInt(Settings::Player, "JoyLockbarKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
+   SettingUInt(Settings::Player, "JoyTableRecenterKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
+   SettingUInt(Settings::Player, "JoyTableUpKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
+   SettingUInt(Settings::Player, "JoyTableDownKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
+   SettingUInt(Settings::Player, "JoyPauseKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
+   SettingUInt(Settings::Player, "JoyTweakKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
 
    //////////////////////////////////////////////////////////////////////////
    // GfxBackend section
@@ -424,6 +442,7 @@ void Settings::Validate(const bool addDefaults)
    #undef SettingBool
    #undef SettingFloat
    #undef SettingInt
+   #undef SettingUInt
 }
 
 void Settings::ResetValue(const Section section, const string& key)
