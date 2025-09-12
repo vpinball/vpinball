@@ -267,6 +267,9 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx)
 
 bool B2SRenderer::RenderScoreview(VPXRenderContext2D* ctx)
 {
+   if (m_b2s->m_dmdImage.m_image == nullptr && m_b2s->m_dmdIlluminations.empty())
+      return false;
+
    ctx->srcWidth = m_dmdWidth;
    ctx->srcHeight = m_dmdHeight;
 
