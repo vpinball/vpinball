@@ -124,8 +124,6 @@ target_link_libraries(vpinball PUBLIC
    dmdutil
    dof
    avcodec
-   avdevice
-   avfilter
    avformat
    avutil
    swresample

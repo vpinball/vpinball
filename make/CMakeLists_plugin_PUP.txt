@@ -8,6 +8,7 @@ set(CMAKE_C_STANDARD 99)
 set(PUP_PLUGIN_SOURCES
    plugins/pup/common.h
    plugins/pup/common.cpp
+   plugins/pup/common.cpp
    plugins/pup/LibAv.h
    plugins/pup/PUPPlugin.cpp
    plugins/pup/PUPCustomPos.h
@@ -114,8 +115,6 @@ if(BUILD_SHARED)
          SDL3_image
          SDL3_ttf
          avcodec
-         avdevice
-         avfilter
          avformat
          avutil
          swresample

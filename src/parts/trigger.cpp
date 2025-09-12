@@ -1140,7 +1140,7 @@ STDMETHODIMP Trigger::DestroyBall(int *pVal)
          if (it != ball->m_d.m_vpVolObjs->end())
          {
             if (pVal)
-               *pVal++;
+               (*pVal) = (*pVal) + 1;
             ball->m_d.m_vpVolObjs->erase(it);
             g_pplayer->DestroyBall(ball); // inside trigger volume?
          }
