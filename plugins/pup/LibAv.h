@@ -244,6 +244,7 @@ private:
       _av_seek_frame = &av_seek_frame;
       _avformat_open_input = &avformat_open_input;
       _avformat_close_input = &avformat_close_input;
+      _avformat_find_stream_info = &avformat_find_stream_info;
 
       _av_fast_malloc = &av_fast_malloc;
       _av_frame_alloc = &av_frame_alloc;
