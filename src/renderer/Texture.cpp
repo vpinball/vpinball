@@ -1155,7 +1155,8 @@ void Texture::UpdateOpaque() const
    if (!m_isOpaqueDirty)
       return;
    m_isOpaqueDirty = false;
-   m_isOpaque = GetRawBitmap(false, 0)->IsOpaque();
+   auto bitmap = GetRawBitmap(false, 0);
+   m_isOpaque = bitmap ? bitmap->IsOpaque() : false;
 }
 
 void Texture::SetIsOpaque(const bool v) const
