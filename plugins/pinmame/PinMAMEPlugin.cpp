@@ -418,13 +418,22 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
       }
       if (pinmamePath.empty())
       {
-         // FIXME implement a last resort or just ask the user to define its path setup in the settings ?
          #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
-            //pinmamePath = find_directory_case_insensitive(g_pvp->m_szMyPath, "pinmame"s);
+            if (vpxApi != nullptr)
+            { 
+               VPXInfo vpxInfo;
+               vpxApi->GetVpxInfo(&vpxInfo);
+               pinmamePath = find_case_insensitive_directory_path(vpxInfo.prefPath + "pinmame"s);
+            }
+            else {
+               LOGE("PinMAME path is not defined.");
+            }
+         #elif defined(__APPLE__) || defined(__linux__)
+            pinmamePath = string(getenv("HOME")) + PATH_SEPARATOR_CHAR + ".pinmame" + PATH_SEPARATOR_CHAR;
          #else
-            //pinmamePath = string(getenv("HOME")) + PATH_SEPARATOR_CHAR + ".pinmame" + PATH_SEPARATOR_CHAR;
+            // FIXME implement a last resort or just ask the user to define its path setup in the settings ?
+            LOGE("PinMAME path is not defined.");
          #endif
-         LOGE("PinMAME path is not defined.");
       }
       strncpy_s(const_cast<char*>(config.vpmPath), PINMAME_MAX_PATH, pinmamePath.c_str());
 

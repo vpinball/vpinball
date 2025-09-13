@@ -14,7 +14,7 @@ public:
 
    PSC_IMPLEMENT_REFCOUNT()
 
-   void Init(int screenNum, const string& rootDir);
+   void Init(int screenNum, const string& romName);
    void playlistadd(int screenNum, const string& folder, int sort, int restSeconds);
    void playlistplay(int screenNum, const string& playlist);
    void playlistplayex(int screenNum, const string& playlist, const string& playfilename, int volume, int forceplay);

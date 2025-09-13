@@ -29,9 +29,9 @@ PUPPinDisplay::~PUPPinDisplay()
    m_pupManager.Unload();
 }
 
-void PUPPinDisplay::Init(int screenNum, const string& RootDir)
+void PUPPinDisplay::Init(int screenNum, const string& romName)
 {
-   m_pupManager.SetGameDir(RootDir);
+   m_pupManager.SetGameDir(romName);
    m_pupManager.AddScreen(screenNum);
 }
 
