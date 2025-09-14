@@ -190,6 +190,17 @@ void PinInput::MapActionToKeyboard(EnumAssignKeys action, SDL_Scancode scancode,
 {
    if (replace)
       std::erase_if(m_actionMappings, [action](const ActionMapping& am) { return (am.action == action) && (am.type == ActionMapping::AM_Keyboard); });
+   const auto& it = std::ranges::find_if(m_actionMappings.begin(), m_actionMappings.end(),
+      [scancode](const ActionMapping& mapping) { return (mapping.type == ActionMapping::AM_Keyboard) && (mapping.scancode == scancode); });
+   if (it != m_actionMappings.end())
+   {
+      // We do not support mapping multiple actions to the same input
+      const string msg = "Input mapping conflict: at least 2 different actions are mapped to the same key '"s + SDL_GetScancodeName(scancode) + '\'';
+      PLOGE << msg;
+      if (g_pplayer && g_pplayer->m_liveUI)
+         g_pplayer->m_liveUI->PushNotification(msg, 3000);
+      return;
+   }
    ActionMapping mapping;
    mapping.action = action;
    mapping.type = ActionMapping::AM_Keyboard;
