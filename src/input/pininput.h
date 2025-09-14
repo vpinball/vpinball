@@ -370,6 +370,7 @@ public:
 
 private:
    class SDLInputHandler* m_sdlHandler = nullptr;
+   bool m_useSDLJoyAPI;
 
 #ifdef _WIN32
 public:

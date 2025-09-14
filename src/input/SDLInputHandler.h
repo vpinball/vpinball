@@ -55,7 +55,7 @@ public:
 
    static constexpr uint64_t GetJoyId(const SDL_JoystickID& sdlId) {return static_cast<uint64_t>(0x200000000) | static_cast<uint64_t>(sdlId); }
 
-   void HandleSDLEvent(SDL_Event& e)
+   void HandleSDLEvent(SDL_Event& e, bool processJoystick)
    {
       switch (e.type)
       {
@@ -71,13 +71,13 @@ public:
          break;
 
       case SDL_EVENT_GAMEPAD_AXIS_MOTION:
-         if (e.gaxis.axis < 6)
+         if (processJoystick && e.gaxis.axis < 6)
             m_pininput.PushJoystickAxisEvent(GetJoyId(e.gaxis.which), e.gaxis.axis + 1, static_cast<float>(e.gaxis.value) / 32768.f);
          break;
 
       case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
       case SDL_EVENT_GAMEPAD_BUTTON_UP:
-         if (e.gbutton.button < 32)
+         if (processJoystick && e.gbutton.button < 32)
             m_pininput.PushJoystickButtonEvent(GetJoyId(e.gaxis.which), e.gbutton.button, e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN);
          break;
 
@@ -87,13 +87,13 @@ public:
          break;
 
       case SDL_EVENT_JOYSTICK_AXIS_MOTION:
-         if (e.jaxis.axis < 6)
+         if (processJoystick && e.jaxis.axis < 6)
             m_pininput.PushJoystickAxisEvent(GetJoyId(e.gaxis.which), e.gaxis.axis + 1, static_cast<float>(e.gaxis.value) / 32768.f);
          break;
 
       case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
       case SDL_EVENT_JOYSTICK_BUTTON_UP:
-         if (e.jbutton.button < 32)
+         if (processJoystick && e.jbutton.button < 32)
             m_pininput.PushJoystickButtonEvent(GetJoyId(e.gaxis.which), e.gbutton.button, e.type == SDL_EVENT_JOYSTICK_BUTTON_DOWN);
          break;
 
@@ -117,6 +117,9 @@ public:
          }
          break;
       #endif
+
+      default:
+         break;
       }
    }
 
