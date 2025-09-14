@@ -118,11 +118,10 @@ void PinInput::Init()
 
    auto inputAPI = static_cast<InputAPI>(g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "InputApi"s, PI_SDL));
 
-   if (inputAPI == PI_SDL)
-   {
-      m_inputHandlers.push_back(std::make_unique<SDLInputHandler>(*this));
-      m_sdlHandler = static_cast<SDLInputHandler*>(m_inputHandlers.back().get());
-   }
+   // We always have an SDL handler as keyboard is always handled by SDL
+   m_inputHandlers.push_back(std::make_unique<SDLInputHandler>(*this));
+   m_sdlHandler = static_cast<SDLInputHandler*>(m_inputHandlers.back().get());
+   m_useSDLJoyAPI = (inputAPI == PI_SDL);
 
    if (inputAPI == PI_XINPUT)
    #ifdef ENABLE_XINPUT
@@ -276,8 +275,7 @@ void PinInput::PushJoystickAxisEvent(uint64_t joystickId, int axisId, float valu
 
 void PinInput::HandleSDLEvent(SDL_Event &e)
 {
-   if (m_sdlHandler)
-      m_sdlHandler->HandleSDLEvent(e);
+   m_sdlHandler->HandleSDLEvent(e, m_useSDLJoyAPI);
 }
 
 #if defined(_WIN32)
