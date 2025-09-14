@@ -245,6 +245,8 @@ set(VPX_SOURCES
    src/ui/live/ingameui/InGameUI.h
    src/ui/live/ingameui/AudioSettingsPage.h
    src/ui/live/ingameui/AudioSettingsPage.cpp
+   src/ui/live/ingameui/GraphicSettingsPage.h
+   src/ui/live/ingameui/GraphicSettingsPage.cpp
    src/ui/live/ingameui/HomePage.h
    src/ui/live/ingameui/HomePage.cpp
    src/ui/live/ingameui/InGameUIItem.h

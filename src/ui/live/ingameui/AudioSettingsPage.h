@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "InGameUIItem.h"
 
 namespace VPX::InGameUI
 {

@@ -2,17 +2,16 @@
 
 #pragma once
 
+
 #include "InGameUIItem.h"
 
 namespace VPX::InGameUI
 {
 
-class HomePage final : public InGameUIPage
+class GraphicSettingsPage final : public InGameUIPage
 {
 public:
-   HomePage();
-
-   void Open() override;
+   GraphicSettingsPage();
 };
 
 }

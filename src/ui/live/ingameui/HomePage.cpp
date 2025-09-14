@@ -48,10 +48,10 @@ void HomePage::Open()
    auto miscSettings = std::make_unique<InGameUIItem>("Miscellaneous Settings"s, ""s, "settings/misc"s);
    AddItem(miscSettings);
 
-   /*auto graphicSettings = std::make_unique<InGameUIItem>("Graphic Settings"s, ""s, "settings/graphic"s);
+   auto graphicSettings = std::make_unique<InGameUIItem>("Graphic Settings"s, ""s, "settings/graphic"s);
    AddItem(graphicSettings);
 
-   auto displaySettings = std::make_unique<InGameUIItem>("Display Settings"s, ""s, "settings/display"s);
+   /*auto displaySettings = std::make_unique<InGameUIItem>("Display Settings"s, ""s, "settings/display"s);
    AddItem(displaySettings);
 
    auto inputSettings = std::make_unique<InGameUIItem>("Input Settings"s, ""s, "settings/input"s);

@@ -895,6 +895,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/PlumbOverlay.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUI.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/AudioSettingsPage.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/GraphicSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/HomePage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIItem.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIPage.cpp" />
@@ -1649,6 +1650,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/PlumbOverlay.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUI.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/AudioSettingsPage.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/GraphicSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/HomePage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIItem.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIPage.h" />
