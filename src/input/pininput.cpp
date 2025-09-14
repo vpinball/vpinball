@@ -263,13 +263,14 @@ void PinInput::PushJoystickButtonEvent(uint64_t joystickId, int buttonId, bool i
    ProcessEvent(e);
 }
 
-void PinInput::PushJoystickAxisEvent(uint64_t joystickId, int axisId, int value)
+void PinInput::PushJoystickAxisEvent(uint64_t joystickId, int axisId, float value)
 {
+   assert(-1.f <= value && value <= 1.f);
    InputEvent e;
    e.type = InputEvent::Type::JoyAxis;
    e.joystickId = joystickId;
    e.axisId = axisId;
-   e.value = value;
+   e.value = static_cast<int>(value * JOYRANGEMX);
    ProcessEvent(e);
 }
 
