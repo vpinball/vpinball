@@ -104,19 +104,18 @@ public:
                   m_pininput.PushJoystickButtonEvent(GetJoyId(joy.id), mappingTable[i].di, (state.Gamepad.wButtons & mappingTable[i].xi) > 0);
                i++;
             }
-            // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
-            if (joy.state.Gamepad.sThumbLX != state.Gamepad.sThumbLX)
-               m_pininput.PushJoystickAxisEvent(GetJoyId(joy.id), 1, state.Gamepad.sThumbLX * -2);
-            if (joy.state.Gamepad.sThumbLY != state.Gamepad.sThumbLY)
-               m_pininput.PushJoystickAxisEvent(GetJoyId(joy.id), 2, state.Gamepad.sThumbLY * -2);
-            if (joy.state.Gamepad.bLeftTrigger != state.Gamepad.bLeftTrigger)
-               m_pininput.PushJoystickAxisEvent(GetJoyId(joy.id), 3, state.Gamepad.bLeftTrigger * 512);
-            if (joy.state.Gamepad.sThumbRX != state.Gamepad.sThumbRX)
-               m_pininput.PushJoystickAxisEvent(GetJoyId(joy.id), 4, state.Gamepad.sThumbRX * -2);
-            if (joy.state.Gamepad.sThumbRY != state.Gamepad.sThumbRY)
-               m_pininput.PushJoystickAxisEvent(GetJoyId(joy.id), 5, state.Gamepad.sThumbRY * -2);
-            if (joy.state.Gamepad.bRightTrigger != state.Gamepad.bRightTrigger)
-               m_pininput.PushJoystickAxisEvent(GetJoyId(joy.id), 6, state.Gamepad.bRightTrigger * 512);
+            if (joy.state.Gamepad.sThumbLX != state.Gamepad.sThumbLX) // Axis range is -32768..32767
+               m_pininput.PushJoystickAxisEvent(GetJoyId(joy.id), 1, static_cast<float>(-state.Gamepad.sThumbLX) / 32768.f);
+            if (joy.state.Gamepad.sThumbLY != state.Gamepad.sThumbLY) // Axis range is -32768..32767
+               m_pininput.PushJoystickAxisEvent(GetJoyId(joy.id), 2, static_cast<float>(-state.Gamepad.sThumbLY) / 32768.f);
+            if (joy.state.Gamepad.bLeftTrigger != state.Gamepad.bLeftTrigger) // Trigger range is 0..255
+               m_pininput.PushJoystickAxisEvent(GetJoyId(joy.id), 3, static_cast<float>(-state.Gamepad.bLeftTrigger) / 255.f);
+            if (joy.state.Gamepad.sThumbRX != state.Gamepad.sThumbRX) // Axis range is -32768..32767
+               m_pininput.PushJoystickAxisEvent(GetJoyId(joy.id), 4, static_cast<float>(-state.Gamepad.sThumbRX) / 32768.f);
+            if (joy.state.Gamepad.sThumbRY != state.Gamepad.sThumbRY) // Axis range is -32768..32767
+               m_pininput.PushJoystickAxisEvent(GetJoyId(joy.id), 5, static_cast<float>(-state.Gamepad.sThumbRY) / 32768.f);
+            if (joy.state.Gamepad.bRightTrigger != state.Gamepad.bRightTrigger) // Trigger range is 0..255
+               m_pininput.PushJoystickAxisEvent(GetJoyId(joy.id), 6, static_cast<float>(-state.Gamepad.bRightTrigger) / 255.f);
             memcpy(&joy.state, &state, sizeof(XINPUT_STATE));
          }
       }

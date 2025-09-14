@@ -57,7 +57,6 @@ public:
 
    void HandleSDLEvent(SDL_Event& e)
    {
-      static constexpr int axisMultiplier[] = { 2, 2, 2, 2, 256, 256 }; // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
       switch (e.type)
       {
       case SDL_EVENT_KEY_DOWN:
@@ -73,7 +72,7 @@ public:
 
       case SDL_EVENT_GAMEPAD_AXIS_MOTION:
          if (e.gaxis.axis < 6)
-            m_pininput.PushJoystickAxisEvent(GetJoyId(e.gaxis.which), e.gaxis.axis + 1, e.gaxis.value * axisMultiplier[e.gaxis.axis]);
+            m_pininput.PushJoystickAxisEvent(GetJoyId(e.gaxis.which), e.gaxis.axis + 1, static_cast<float>(e.gaxis.value) / 32768.f);
          break;
 
       case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
@@ -89,7 +88,7 @@ public:
 
       case SDL_EVENT_JOYSTICK_AXIS_MOTION:
          if (e.jaxis.axis < 6)
-            m_pininput.PushJoystickAxisEvent(GetJoyId(e.gaxis.which), e.gaxis.axis + 1, e.gaxis.value * axisMultiplier[e.gaxis.axis]);
+            m_pininput.PushJoystickAxisEvent(GetJoyId(e.gaxis.which), e.gaxis.axis + 1, static_cast<float>(e.gaxis.value) / 32768.f);
          break;
 
       case SDL_EVENT_JOYSTICK_BUTTON_DOWN:

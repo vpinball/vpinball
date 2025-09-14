@@ -399,11 +399,6 @@ void OpenPinDevHandler::Update(const HWND foregroundWindow)
    if (!isNewReport)
       return;
 
-   // Axis scaling factor.  All Open Pinball Device analog axes are
-   // int16_t's (-32768..+32767).  The VP functional axes are designed
-   // for joystick input, so we must rescale to VP's joystick scale.
-   constexpr int scaleFactor = (2 * JOYRANGEMX) / 65536;
-
    // Process the analog axis inputs.
    // 
    // The UI was hacked to have a custom axis #9 corresponding to OpenPinDev (instead of an axis)
@@ -411,27 +406,29 @@ void OpenPinDevHandler::Update(const HWND foregroundWindow)
    // done (but this is somewhat wrong as this approach is not consistent and not scalable to all
    // existing hardware => this needs to be removed).
    // 
+   // All Open Pinball Device analog axes are int16_t's (-32768..+32767) and therefore scaled accordingly to normalized units.
+   // 
    // We simply push the value of the singleton device using virtual custom axis 10..13.
    // TODO This should be reimplemented in favor of the general handling. as virtual axis does not 
    // follow the overall scheme and makes the definition inconsistent, and won't scale with other hardware.
    {
       // Nudge X input - use velocity or acceleration input, according to the user preferences
-      int const val = (g_pplayer->IsAccelInputAsVelocity() ? cr.vxNudge : cr.axNudge) * scaleFactor;
+      float const val = static_cast<float>(g_pplayer->IsAccelInputAsVelocity() ? cr.vxNudge : cr.axNudge) / 32768.f;
       m_pininput.PushJoystickAxisEvent(GetJoyId(0), 10, -val);
    }
    {
       // Nudge Y input - use velocity or acceleration input, according to the user preferences
-      int const val = (g_pplayer->IsAccelInputAsVelocity() ? cr.vyNudge : cr.ayNudge) * scaleFactor;
+      float const val = static_cast<float>(g_pplayer->IsAccelInputAsVelocity() ? cr.vyNudge : cr.ayNudge) / 32768.f;
       m_pininput.PushJoystickAxisEvent(GetJoyId(0), 11, -val);
    }
    {
       // Plunger position input
-      const int val = cr.plungerPos * scaleFactor;
+      float const val = static_cast<float>(cr.plungerPos) / 32768.f;
       m_pininput.PushJoystickAxisEvent(GetJoyId(0), 12, -val);
    }
    {
       // Plunger speed input
-      int const val = cr.plungerSpeed * scaleFactor;
+      float const val = static_cast<float>(cr.plungerSpeed) / 32768.f;
       m_pininput.PushJoystickAxisEvent(GetJoyId(0), 13, -val);
    }
 

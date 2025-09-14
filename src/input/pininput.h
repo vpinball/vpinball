@@ -30,15 +30,6 @@
 // ultimately interpreted as either Nudge X/Y values or Plunger Position
 // or Speed values, all of which are translated to internal units before
 // they affect anything that a user or script sees.
-//
-// WARNING!! These constants CANNOT BE CHANGED without breaking SDL and
-// XInput (at least; there might be others).  The SDL and XInput code
-// contain hard-coded formulas with naked integer constants that HAPPEN
-// TO scale their input to this range, but without reference to the
-// JOYRANGE symbols, so you'd have to make corresponding changes in
-// the SDL and XInput code (at least) if JOYRANGE ever changed.  If
-// anyone ever changes the range, be sure to test all of the input APIs
-// to make sure all of those hidden assumptions are fixed up.
 #define JOYRANGEMX (+65536)
 #define JOYRANGE   (2 * JOYRANGEMX + 1)
 
@@ -207,7 +198,7 @@ public:
    void PushMouseEvent(int button, bool isPressed);
    void PushKeyboardEvent(SDL_Keycode keycode, SDL_Scancode scancode, bool isPressed);
    void PushJoystickButtonEvent(uint64_t joystickId, int buttonId, bool isPressed);
-   void PushJoystickAxisEvent(uint64_t joystickId, int axisId, int value);
+   void PushJoystickAxisEvent(uint64_t joystickId, int axisId, float value);
 
    void ProcessInput(); // Gather and process events
 

@@ -74,14 +74,14 @@ public:
                   {
                      switch (didod[i].dwOfs)
                      {
-                     case DIJOFS_X: m_pininput.PushJoystickAxisEvent(joyId, 1, didod[i].dwData); break;
-                     case DIJOFS_Y: m_pininput.PushJoystickAxisEvent(joyId, 2, didod[i].dwData); break;
-                     case DIJOFS_Z: m_pininput.PushJoystickAxisEvent(joyId, 3, didod[i].dwData); break;
-                     case DIJOFS_RX: m_pininput.PushJoystickAxisEvent(joyId, 4, didod[i].dwData); break;
-                     case DIJOFS_RY: m_pininput.PushJoystickAxisEvent(joyId, 5, didod[i].dwData); break;
-                     case DIJOFS_RZ: m_pininput.PushJoystickAxisEvent(joyId, 6, didod[i].dwData); break;
-                     case DIJOFS_SLIDER(0): m_pininput.PushJoystickAxisEvent(joyId, 7, didod[i].dwData); break;
-                     case DIJOFS_SLIDER(1): m_pininput.PushJoystickAxisEvent(joyId, 8, didod[i].dwData); break;
+                     case DIJOFS_X: m_pininput.PushJoystickAxisEvent(joyId, 1, static_cast<float>(didod[i].dwData) / m_axisRange); break;
+                     case DIJOFS_Y: m_pininput.PushJoystickAxisEvent(joyId, 2, static_cast<float>(didod[i].dwData) / m_axisRange); break;
+                     case DIJOFS_Z: m_pininput.PushJoystickAxisEvent(joyId, 3, static_cast<float>(didod[i].dwData) / m_axisRange); break;
+                     case DIJOFS_RX: m_pininput.PushJoystickAxisEvent(joyId, 4, static_cast<float>(didod[i].dwData) / m_axisRange); break;
+                     case DIJOFS_RY: m_pininput.PushJoystickAxisEvent(joyId, 5, static_cast<float>(didod[i].dwData) / m_axisRange); break;
+                     case DIJOFS_RZ: m_pininput.PushJoystickAxisEvent(joyId, 6, static_cast<float>(didod[i].dwData) / m_axisRange); break;
+                     case DIJOFS_SLIDER(0): m_pininput.PushJoystickAxisEvent(joyId, 7, static_cast<float>(didod[i].dwData) / m_axisRange); break;
+                     case DIJOFS_SLIDER(1): m_pininput.PushJoystickAxisEvent(joyId, 8, static_cast<float>(didod[i].dwData) / m_axisRange); break;
                      }
                   }
                }
@@ -104,8 +104,10 @@ private:
          diprg.diph.dwHeaderSize = sizeof(DIPROPHEADER);
          diprg.diph.dwObj = pdidoi->dwType; // Specify the enumerated axis
          diprg.diph.dwHow = DIPH_BYID;
-         diprg.lMin = -JOYRANGEMX;
-         diprg.lMax =  JOYRANGEMX;
+         // FIXME this is incorrect as these properties may be read only and/or ignored by the device.
+         // We should do the opposite: get the device range and use it to scale the acquired values.
+         diprg.lMin = -static_cast<int>(m_axisRange);
+         diprg.lMax = static_cast<int>(m_axisRange);
          if (FAILED(joystick->SetProperty(DIPROP_RANGE, &diprg.diph)))
             return DIENUM_STOP;
 
@@ -208,6 +210,8 @@ private:
 private:
    PinInput& m_pininput;
    const HWND m_focusHWnd;
+
+   static constexpr float m_axisRange = 65536.f;
 
    LPDIRECTINPUT8 m_pDI = nullptr;
    vector<LPDIRECTINPUTDEVICE8> m_joysticks;
