@@ -9,6 +9,7 @@
 #include "TableOptionsPage.h"
 #include "TableRulesPage.h"
 #include "AudioSettingsPage.h"
+#include "GraphicSettingsPage.h"
 #include "MiscSettingsPage.h"
 #include "NudgeSettingsPage.h"
 #include "PointOfViewSettingsPage.h"
@@ -25,6 +26,7 @@ InGameUI::InGameUI(LiveUI &liveUI)
    AddPage(std::make_unique<TableOptionsPage>());
    AddPage(std::make_unique<TableRulesPage>());
    AddPage(std::make_unique<AudioSettingsPage>());
+   AddPage(std::make_unique<GraphicSettingsPage>());
    AddPage(std::make_unique<MiscSettingsPage>());
    AddPage(std::make_unique<NudgeSettingsPage>());
    AddPage(std::make_unique<PointOfViewSettingsPage>());
