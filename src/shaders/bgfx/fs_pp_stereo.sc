@@ -165,7 +165,7 @@ vec3 DeghostAnaglyph(const vec3 lCol, const vec3 rCol)
 void main()
 {
    #if defined(TB)
-      #if BGFX_SHADER_LANGUAGE_GLSL
+      #if TEX_V_IS_UP
          gl_FragColor = vec4(gatherEyeColor(vec2(v_texcoord0.x, v_texcoord0.y * 2.0), v_texcoord0.y >= 0.5), 1.0);
       #else
          gl_FragColor = vec4(gatherEyeColor(vec2(v_texcoord0.x, v_texcoord0.y * 2.0), v_texcoord0.y < 0.5), 1.0);
@@ -173,13 +173,13 @@ void main()
    #elif defined(SBS)
       gl_FragColor = vec4(gatherEyeColor(vec2(v_texcoord0.x * 2.0, v_texcoord0.y), v_texcoord0.x < 0.5), 1.0);
    #elif defined(INT)
-      #if BGFX_SHADER_LANGUAGE_GLSL
+      #if TEX_V_IS_UP
          gl_FragColor = vec4(gatherEyeColor(v_texcoord0, fract(gl_FragCoord.y*0.5) >= 0.5), 1.0);
       #else
          gl_FragColor = vec4(gatherEyeColor(v_texcoord0, fract(gl_FragCoord.y*0.5) < 0.5), 1.0);
       #endif
    #elif defined(FLIPPED_INT)
-      #if BGFX_SHADER_LANGUAGE_GLSL
+      #if TEX_V_IS_UP
          gl_FragColor = vec4(gatherEyeColor(v_texcoord0, fract(gl_FragCoord.y*0.5) < 0.5), 1.0);
       #else
          gl_FragColor = vec4(gatherEyeColor(v_texcoord0, fract(gl_FragCoord.y*0.5) >= 0.5), 1.0);

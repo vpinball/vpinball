@@ -30,17 +30,19 @@ SAMPLER2DSTEREO(tex_depth,        4); // Current Render DepthBuffer
 void main()
 {
 	const int nSamples = int(NSAMPLES_F);
-	#if BGFX_SHADER_LANGUAGE_GLSL
-		// OpenGL and OpenGL ES have reversed render targets (shader is fed with the same texture coordinates and we handle this here), and used -1..1 NDC mapped to 0..1 depth buffer
-		const vec2 screenUV = vec2(v_texcoord0.x, 1. - v_texcoord0.y); // Coordinate to sample renders for the target pixel
+	// gl_FragCoord is from bottomLeft for GL/GLES or topLeft for others, so using any of these 2 lines are the same
+	//const vec2 screenUV = vec2(gl_FragCoord.x * w_h_height.x, gl_FragCoord.y * w_h_height.y);
+	const vec2 screenUV = v_texcoord0.xy;
+	#if TEX_V_IS_UP
+		// OpenGL and OpenGL ES use -1..1 NDC mapped to 0..1 depth buffer
 		const float screenDepth = texStereoNoLod(tex_depth, screenUV).x * 2. - 1.;
+		const vec4 projPos = vec4(screenUV.x * 2. - 1., 1. - (1.0 - screenUV.y) * 2., screenDepth, 1.);
 	#else
-		const vec2 screenUV = v_texcoord0.xy; //const vec2 screenUV = vec2(gl_FragCoord.x/w_h_height.x, gl_FragCoord.y/w_h_height.y);
 		const float screenDepth = texStereoNoLod(tex_depth, screenUV).x;
+		const vec4 projPos = vec4(screenUV.x * 2. - 1., 1. - screenUV.y * 2., screenDepth, 1.);
 	#endif
 
 	// Compute position in world/view space of rendered fragment
-	const vec4 projPos = vec4(v_texcoord0.x * 2. - 1., 1. - v_texcoord0.y * 2., screenDepth, 1.);
 	#ifdef STEREO
 		vec4 pixelPos = mul(matProjInv[int(v_eye)], projPos);
 	#else
@@ -108,8 +110,8 @@ void main()
 			#endif
 			prev_proj.xy /= prev_proj.w;
 			cur_proj.xy  /= cur_proj.w;
-			#if BGFX_SHADER_LANGUAGE_GLSL
-				// OpenGL and OpenGL ES have reversed render targets
+			#if TEX_V_IS_UP
+				// OpenGL and OpenGL ES have reversed texture coordinate system (0,0 is bottom left)
 				const vec3 prev_sample = texStereoNoLod(tex_prev_render, vec2_splat(0.5) + 0.5 * prev_proj.xy).rgb;
 				const vec3 cur_sample  = texStereoNoLod(tex_cur_render,  vec2_splat(0.5) + 0.5 * cur_proj.xy ).rgb;
 			#else

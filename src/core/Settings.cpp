@@ -240,6 +240,7 @@ void Settings::Validate(const bool addDefaults)
    SettingBool(Section::Player, "DynamicDayNight"s, false, ""s);
    SettingBool(Section::Player, "ForceAnisotropicFiltering"s, true, "Force anisotropic filtering for better rendering quality at the cost of a bit of performance"s);
    SettingBool(Section::Player, "ForceBloomOff"s, false, "Disable bloom for better performance"s);
+   SettingBool(Section::Player, "ForceMotionBlurOff"s, false, "Disable ball motion blur for better performance"s);
 
 #ifndef __LIBVPINBALL__
    SettingInt(Section::Player, "MaxTexDimension"s, 0, 0, 16384, "Maximum texture dimension. Images sized above this limit will be automatically scaled down on load."s);

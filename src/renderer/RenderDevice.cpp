@@ -1175,18 +1175,7 @@ RenderDevice::RenderDevice(
        1.0f, -1.0f, 0.0f, 1.0f, 1.0f,
       -1.0f, -1.0f, 0.0f, 0.0f, 1.0f
    };
-   #if defined(ENABLE_BGFX)
-   static constexpr float reversedVerts[4 * 5] =
-   {
-       1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-      -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-       1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-      -1.0f, -1.0f, 0.0f, 0.0f, 0.0f
-   };
-   VertexBuffer* quadVertexBuffer = new VertexBuffer(this, 4, bgfx::getCaps()->originBottomLeft ? reversedVerts : verts, false, VertexFormat::VF_POS_TEX);
-   #else
    VertexBuffer* quadVertexBuffer = new VertexBuffer(this, 4, verts, false, VertexFormat::VF_POS_TEX);
-   #endif
    m_quadMeshBuffer = new MeshBuffer(L"Fullscreen Quad"s, quadVertexBuffer);
 
    #if defined(ENABLE_OPENGL)
