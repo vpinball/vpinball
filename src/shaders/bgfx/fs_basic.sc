@@ -134,7 +134,7 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
    const vec3 refracted_pos = pos + refractionThickness * R; // Shift ray by the thickness of the material
    const vec4 proj = mul(mProj, vec4(refracted_pos, 1.0));
 
-   #if BGFX_SHADER_LANGUAGE_GLSL
+   #if TEX_V_IS_UP
    // OpenGL and OpenGL ES have reversed render targets
    vec2 uv = vec2(0.5, 0.5) + proj.xy * (0.5 / proj.w);
    #else

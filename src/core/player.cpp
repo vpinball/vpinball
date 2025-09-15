@@ -2314,6 +2314,7 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
       rd->m_FBShader->SetTextureNull(SHADER_tex_depth);
       rd->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_anciliaryWndHdrRT[window]->GetColorSampler());
       rd->m_FBShader->SetTexture(SHADER_tex_fb_filtered, m_anciliaryWndHdrRT[window]->GetColorSampler());
+      rd->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / m_anciliaryWndHdrRT[window]->GetWidth()), (float)(1.0 / m_anciliaryWndHdrRT[window]->GetHeight()), 1.0f, 1.0f);
       rd->m_FBShader->SetVector(SHADER_bloom_dither_colorgrade,
          0.f, // Bloom
          output.GetWindow()->IsWCGBackBuffer() ? 0.f : 1.f, // Dither

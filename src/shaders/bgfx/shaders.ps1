@@ -2,15 +2,18 @@
 
 $gen_ball = $true
 $gen_basic = $true
-$gen_blur = $true
 $gen_dmd = $true
 $gen_flasher = $true
 $gen_light = $true
+
+# Postprocess shaders
+$gen_blur = $true
 $gen_motionblur = $true
 $gen_postprocess = $true
 $gen_stereo = $true
 $gen_tonemap = $true
 $gen_antialiasing = $true
+
 $gen_imgui = $true
 $gen_mipmap = $true
 
@@ -21,13 +24,13 @@ $debug = $false
 function Process-Shader {
    Param($Source, $OutputFile, $Header, $Type, $Defines=@())
 
-   $outputs = @('mtl ', 'essl', 'glsl', 'dx11', 'spv ')
+   $outputs = @('mtl', 'essl', 'glsl', 'dx11', 'spv')
    $targets = @(
-      '--platform osx     -p metal -O 3', # '--platform ios -p metal'
-      '--platform windows -p 320_es    ', # '--platform android -p 320_es'
-      '--platform windows -p 440       ', # '--platform linux -p440'
-      '--platform windows -p s_5_0 -O 3', # '--platform windows -p s_5_0 --debug -O 0' for debug in Renderdoc & MS Visual Studio (see https://www.intel.com/content/www/us/en/developer/articles/technical/shader-debugging-for-bgfx-rendering-engine.html)
-      '--platform windows -p spirv     ')
+      '--platform osx     -p metal -O 3', # Metal     '--platform ios -p metal'
+      '--platform windows -p 320_es    ', # OpenGL ES '--platform android -p 320_es'
+      '--platform windows -p 440       ', # OpenGL    '--platform linux -p440'
+      '--platform windows -p s_5_0 -O 3', # DirectX   '--platform windows -p s_5_0 --debug -O 0' for debug in Renderdoc & MS Visual Studio (see https://www.intel.com/content/www/us/en/developer/articles/technical/shader-debugging-for-bgfx-rendering-engine.html)
+      '--platform windows -p spirv     ') # Vulkan
    $shaderc = ".\shaderc.exe"
 
    $OutputPath = ("../bgfx_" + $OutputFile)
@@ -39,9 +42,10 @@ function Process-Shader {
    {
       $CmdLine = "-f " + $Source + " " + $targets[$i] + " --bin2c " + $Header + $outputs[$i] + " --type " + $Type
       #$CmdLine = "-f " + $Source + " " + $Target + " -o shaders/" + $Header + ".bin --type " + $Type
+	  $CmdLine = $CmdLine + " --define TARGET_" + $outputs[$i] + ";"
       If($Defines.count -ne 0)
       {
-         $CmdLine = $CmdLine + " --define " + ($Defines -join ';')
+         $CmdLine = $CmdLine + ($Defines -join ';')
       }
       if ($debug)
       {
@@ -49,6 +53,7 @@ function Process-Shader {
       }
       $CmdLine = $CmdLine + " -o tmp.h"
       $Parms = $CmdLine.Split(" ")
+      #Write-Host $CmdLine
       & "$shaderc" $Parms
       Get-Content -Path "tmp.h" | Add-Content -Path $OutputPath
       Remove-Item "tmp.h"

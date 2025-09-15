@@ -44,7 +44,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_sharpen = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Sharpen"s, 0);
    m_ss_refl = m_table->m_settings.LoadValueWithDefault(Settings::Player, "SSRefl"s, false);
    m_bloomOff = m_table->m_settings.LoadValueBool(Settings::Player, "ForceBloomOff"s);
-   m_motionBlurOff = m_table->m_settings.LoadValueWithDefault(Settings::Player, "ForceMotionBlurOff"s, false);
+   m_motionBlurOff = m_table->m_settings.LoadValueBool(Settings::Player, "ForceMotionBlurOff"s);
    const int maxReflection = m_table->m_settings.LoadValueWithDefault(Settings::Player, "PFReflection"s, -1);
    if (maxReflection != -1)
       m_maxReflectionMode = (RenderProbe::ReflectionMode)maxReflection;
@@ -281,6 +281,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       m_renderDevice->SetRenderTarget("Env Irradiance PreCalc"s, m_envRadianceTexture);
       m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_irradiance);
       m_renderDevice->m_FBShader->SetTexture(SHADER_tex_env, m_envSampler);
+      m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / m_envSampler->GetWidth()), (float)(1.0 / m_envSampler->GetHeight()), 1.0f, 1.0f);
       m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
       m_renderDevice->SubmitRenderFrame(); // Force submission as result users do not explicitly declare the dependency on this pass
       m_renderDevice->m_basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
@@ -1915,13 +1916,6 @@ void Renderer::Bloom()
       {  1.0f, -1.0f, 0.0f, 1.0f + (float)(2.25 / w), 1.0f + (float)(2.25 / h) },
       { -1.0f, -1.0f, 0.0f, 0.0f + (float)(2.25 / w), 1.0f + (float)(2.25 / h) }
    };
-   #if defined(ENABLE_BGFX)
-   if (bgfx::getCaps()->originBottomLeft)
-   {
-      shiftedVerts[0].tv = shiftedVerts[1].tv = 1.0f + (float)(2.25 / h);
-      shiftedVerts[2].tv = shiftedVerts[3].tv = 0.0f + (float)(2.25 / h);
-   }
-   #endif
    {
       m_renderDevice->m_FBShader->SetTextureNull(SHADER_tex_fb_filtered);
 
@@ -2307,13 +2301,6 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
       {  1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 1.0f },
       { -1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 1.0f }
    };
-   #if defined(ENABLE_BGFX)
-   if (bgfx::getCaps()->originBottomLeft)
-   {
-      shiftedVerts[0].tv = shiftedVerts[1].tv = 1.0f;
-      shiftedVerts[2].tv = shiftedVerts[3].tv = 0.0f;
-   }
-   #endif
    m_renderDevice->m_FBShader->SetTechnique(tonemapTechnique);
    m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, shiftedVerts);
    RenderTarget* tonemapRT = outputRT;
@@ -2384,8 +2371,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
 
          m_renderDevice->m_FBShader->SetFloat4v(SHADER_balls, balls, MAX_BALL_SHADOW);
          m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height,
-            static_cast<float>(outputRT->GetWidth()),
-            static_cast<float>(outputRT->GetHeight()),
+            static_cast<float>(1.0 / renderedRT->GetWidth()), static_cast<float>(1.0 / renderedRT->GetHeight()),
             0.f /* unused */ ,static_cast<float>(min(32, nSamples)));
          m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_motionblur);
          m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, verts);
@@ -2407,16 +2393,13 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
             m_renderDevice->m_FBShader->SetTexture(SHADER_tex_ao, GetAORenderTarget(1)->GetColorSampler());
             m_renderDevice->AddRenderTargetDependency(GetAORenderTarget(1));
          }
-         m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, static_cast<float>(outputRT->GetWidth()), static_cast<float>(outputRT->GetHeight()), jitter, jitter);
+         m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, 
+            static_cast<float>(1.0 / outputRT->GetWidth()), static_cast<float>(1.0 / outputRT->GetHeight()), jitter, jitter);
          m_renderDevice->m_FBShader->SetTechnique(tonemapTechnique);
          for (int i = 0; i < nQuads * 4; i++)
          {
             quads[i].x += m_ScreenOffset.x;
             quads[i].y += m_ScreenOffset.y;
-            #if defined(ENABLE_BGFX)
-            if (bgfx::getCaps()->originBottomLeft)
-               quads[i].tv = 1.0f - quads[i].tv;
-            #endif
          }
          for (int i = 0; i < nQuads; i++)
             m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, quads + i * 4);
@@ -2494,6 +2477,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
       m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
       m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
       m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_DLAA);
+      m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetWidth(), 1.f);
       m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
       renderedRT = outputRT;
    }
@@ -2567,6 +2551,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
       m_renderDevice->AddRenderTargetDependency(renderedRT);
       m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
       m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_copy);
+      m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), 1.0f, 1.0f);
       m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
       renderedRT = outputRT;
    }
@@ -2650,9 +2635,6 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
             { -1.0f, -1.0f, 0.0f, static_cast<float>(x     ) / w, static_cast<float>(y + fh) / h },
             {  1.0f, -1.0f, 0.0f, static_cast<float>(x + fw) / w, static_cast<float>(y + fh) / h }
          };
-         if (bgfx::getCaps()->originBottomLeft)
-            for (int i = 0; i < 4; i++)
-               verts[i].tv = 1.f - verts[i].tv;
          m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
          m_renderDevice->m_FBShader->SetVector(SHADER_bloom_dither_colorgrade, 0.f, 0.f, 0.f, 0.f);
          m_renderDevice->m_FBShader->SetVector(SHADER_exposure_wcg, m_exposure, 1.f, /*100.f*/ /*203.f*/ 350.f / 10000.f, 0.f); 
@@ -2737,6 +2719,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
          m_renderDevice->m_stereoShader->SetTexture(SHADER_tex_stereo_depth, GetBackBufferTexture()->GetDepthSampler());
       }
       m_renderDevice->m_stereoShader->SetTexture(SHADER_tex_stereo_fb, renderedRT->GetColorSampler());
+      m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), 1.0f, 1.0f);
       m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_stereoShader);
    }
    else

@@ -12,6 +12,14 @@
 #define DX9
 #endif
 
+#if defined(TARGET_glsl) || defined(TARGET_essl)
+	// OpenGL and OpenGL ES images have coordinates with origin at bottom left and y pointing up
+	// This needs to be taken in account when sampling texture or using gl_FragCoord
+	#define TEX_V_IS_UP 1
+#else
+	#define TEX_V_IS_UP 0
+#endif
+
 #define texNoLod(tex, pos) texture2DLod(tex, pos, 0.0)
 
 #ifdef STEREO

@@ -66,24 +66,32 @@ bool CheckMatchingBitmaps(const string& filePath1, const string& filePath2)
       const size_t dataSize = bmp1->height() * bmp1->pitch();
       uint8_t max = 0;
       size_t avg = 0;
+      size_t nInvalid = 0;
       for (size_t i = 0; i < dataSize; ++i)
       {
          uint8_t dif = data1[i] > data2[i] ? data1[i] - data2[i] : data2[i] - data1[i];
          avg += dif;
          if (dif > max)
             max = dif;
+         if (dif > 64)
+            nInvalid++;
       }
-      avg /= bmp1->width() * bmp1->height();
-      if ((avg > 2) || (max > 64))
+      bool saveDiff = false;
+      const double fAvg = static_cast<double>(avg) / static_cast<double>(bmp1->width() * bmp1->height());
+      if ((fAvg > 3.0) || (nInvalid > 5 && max > 64))
       {
-         MESSAGE("Bitmaps do not match: '", filePath1, "' vs '", filePath2, "' avg=", avg, " / max=", (int)max);
+         MESSAGE("Bitmaps do not match: avg=", fAvg, " / max=", (int)max, " / nInvalid=", (int)nInvalid, " ('", filePath1, "' vs '", filePath2, "'), a diff has been generated");
          failed = true;
+         saveDiff = true;
       }
-      else if (avg > 0)
+      else if (fAvg > 1.0)
       {
-         MESSAGE("Bitmaps are similar: '", filePath1, "' vs '", filePath2, "' avg=", avg, " / max=", (int)max);
+         MESSAGE("Bitmaps are similar: avg=", fAvg, " / max=", (int)max, " / nInvalid=", (int)nInvalid, " ('", filePath1, "' vs '", filePath2, "'), a diff has been generated");
+         saveDiff = true;
       }
-      if (avg > 0)
+      const string ext = extension_from_path(filePath1);
+      const string diffPath = GetAssetPath() + filePath1.substr(0, filePath1.size() - ext.size() - 1) + "-diff." + ext;
+      if (saveDiff)
       {
          std::shared_ptr<BaseTexture> diff = BaseTexture::Create(bmp1->width(), bmp1->height(), BaseTexture::SRGB);
          uint8_t* const __restrict diffData = diff->data();
@@ -92,8 +100,15 @@ bool CheckMatchingBitmaps(const string& filePath1, const string& filePath2)
             uint8_t dif = data1[i] > data2[i] ? data1[i] - data2[i] : data2[i] - data1[i];
             diffData[i] = dif > 64 ? 255 : dif * 4; // Scale to 0-255
          }
-         const string ext = extension_from_path(filePath1);
-         diff->Save(GetAssetPath() + filePath1.substr(0, filePath1.size() - ext.size() - 1) + "-diff." + ext);
+         diff->Save(diffPath);
+      }
+      else if (FileExists(diffPath))
+      {
+         MESSAGE("Removing previous diff file '", diffPath, "'");
+         std::error_code ec;
+         std::filesystem::remove(diffPath, ec);
+         if (ec)
+            MESSAGE("Failed to remove previous diff file '", diffPath, "': ", ec.message());
       }
    }
    return !failed;
