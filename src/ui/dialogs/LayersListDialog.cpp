@@ -399,13 +399,21 @@ void LayerTreeView::Update()
             // Mark for deletion, with all its children
             existing->pendingDelete = true;
             if (existing->editable->GetItemType() == eItemPartGroup)
-               std::ranges::for_each(m_content, [existing](TreeEntry& te) {
-                     PartGroup* pg = te.editable->GetPartGroup();
-                     while (pg != nullptr && pg != existing->editable)
-                        pg = pg->GetPartGroup();
+            {
+               for (auto& te : m_content)
+               {
+                  const PartGroup* pg = te.editable->GetPartGroup();
+                  while (pg != nullptr)
+                  {
                      if (pg == existing->editable)
+                     {
                         te.pendingDelete = true;
-                  });
+                        break;
+                     }
+                     pg = pg->GetPartGroup();
+                  }
+               }
+            }
          }
       }
 

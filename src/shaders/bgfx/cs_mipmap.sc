@@ -49,7 +49,7 @@ vec4 linearToSrgb(vec4 c) {
 // 0=2x2 Box, 1=4x4 Kaiser, 2=6x6 Kaiser, 3=6x6 smoother Kaiser => My preference goes to 1 or 2 (0 is too sharp, 3 is too blurry)
 //uniform vec4         u_MipMapOptions;
 //#define filterMode   u_MipMapOptions.x
-#define filterMode 1.0
+//#define filterMode 1.0
 
 // 4x4 Kaiser normalized convolution kernel
 CONST(float g_kaiserKernel4[4][4]) = {
@@ -82,13 +82,14 @@ CONST(float g_kaiserKernel6s[6][6]) = {
 NUM_THREADS(8, 8, 1)
 void main() {
     ivec2 dstCoord = ivec2(gl_GlobalInvocationID.xy);
+    CONST(ivec2 srcSize) = imageSize(u_Source);
     CONST(ivec2 dstSize) = imageSize(u_Destination);
     if (any(greaterThanEqual(dstCoord, dstSize)))
         return;
 
     vec4 color = vec4_splat(0.0);
 
-    if (filterMode == 0.0) {
+    /*if (filterMode == 0.0) {
         ivec2 srcCoord = dstCoord * 2;
         color += texLoad(u_Source, srcCoord              );
         color += texLoad(u_Source, srcCoord + ivec2(0, 1));
@@ -96,12 +97,22 @@ void main() {
         color += texLoad(u_Source, srcCoord + ivec2(1, 1));
         color /= 4.0;
     }
-    else if (filterMode == 1.0) {
+    else if (filterMode == 1.0) {*/
         ivec2 srcCoord = dstCoord * 2 - ivec2(1, 1);
+		float weight = 0.0;
         for (int dy = 0; dy < 4; ++dy)
             for (int dx = 0; dx < 4; ++dx)
-                color += g_kaiserKernel4[dx][dy] * texLoad(u_Source, srcCoord + ivec2(dx, dy));
-    }
+			{
+				// Fetching texel outside of the image range has undefined behavior and would break the mipmap
+				ivec2 pos = srcCoord + ivec2(dx, dy);
+				if (pos.x >= 0 && pos.y >= 0 && pos.x < srcSize.x && pos.y < srcSize.y)
+				{
+					color += g_kaiserKernel4[dx][dy] * texLoad(u_Source, srcCoord + ivec2(dx, dy));
+					weight += g_kaiserKernel4[dx][dy];
+				}
+			}
+		color = color / weight;
+    /*}
     else if (filterMode == 2.0) {
         ivec2 srcCoord = dstCoord * 2 - ivec2(2, 2);
         for (int dy = 0; dy < 6; ++dy)
@@ -113,7 +124,7 @@ void main() {
         for (int dy = 0; dy < 6; ++dy)
             for (int dx = 0; dx < 6; ++dx)
                 color += g_kaiserKernel6s[dx][dy] * texLoad(u_Source, srcCoord + ivec2(dx, dy));
-    }
+    }*/
     
     texStore(u_Destination, dstCoord, color);
 }
