@@ -75,7 +75,7 @@ void EscSplashModal::Update()
 
    // Key shortcut: click on the button, or press escape key (react on key released, otherwise it would immediately reopen the UI,...)
    int keyShortcut = 0;
-      if (enableKeyboardShortcuts && (ImGui::IsKeyReleased(ImGuiKey_Escape) || ((ImGui::IsKeyReleased(LiveUI::GetImGuiKeyFromSDLScancode(m_player->m_rgKeys[eEscape])) && !m_disable_esc))))
+      if (enableKeyboardShortcuts && (ImGui::IsKeyReleased(ImGuiKey_Escape) || ((ImGui::IsKeyReleased(LiveUI::GetImGuiKeyFromSDLScancode(m_player->m_actionToSDLScanCodeMapping[eEscape])) && !m_disable_esc))))
       keyShortcut = 1;
 
    // Map action to ImgUI navigation
@@ -130,7 +130,7 @@ void EscSplashModal::Update()
    }
    #ifndef __STANDALONE__
       // Quit: click on the button, or press exit button
-   if (ImGui::Button("Quit to Editor", size) || (enableKeyboardShortcuts && ImGui::IsKeyPressed(LiveUI::GetImGuiKeyFromSDLScancode(m_player->m_rgKeys[eExitGame]))))
+   if (ImGui::Button("Quit to Editor", size) || (enableKeyboardShortcuts && ImGui::IsKeyPressed(LiveUI::GetImGuiKeyFromSDLScancode(m_player->m_actionToSDLScanCodeMapping[eExitGame]))))
       {
          m_table->QuitPlayer(Player::CS_STOP_PLAY);
       }
@@ -154,7 +154,7 @@ void EscSplashModal::Update()
             ImGui::GetIO().MousePos.y = 0;
          }
       #endif
-      if (ImGui::Button("Quit", size) || (enableKeyboardShortcuts && ImGui::IsKeyPressed(LiveUI::GetImGuiKeyFromSDLScancode(m_player->m_rgKeys[eExitGame]))))
+      if (ImGui::Button("Quit", size) || (enableKeyboardShortcuts && ImGui::IsKeyPressed(LiveUI::GetImGuiKeyFromSDLScancode(m_player->m_actionToSDLScanCodeMapping[eExitGame]))))
       {
          ImGui::CloseCurrentPopup();
          m_table->QuitPlayer(Player::CS_CLOSE_APP);

@@ -207,97 +207,97 @@ STDMETHODIMP ScriptGlobalTable::get_Name(BSTR *pVal)
 
 STDMETHODIMP ScriptGlobalTable::get_LeftFlipperKey(LONG *pVal)
 {
-   *pVal = g_pplayer->m_rgKeys[eLeftFlipperKey];
+   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eLeftFlipperKey]);
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_RightFlipperKey(LONG *pVal)
 {
-   *pVal = g_pplayer->m_rgKeys[eRightFlipperKey];
+   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eRightFlipperKey]);
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_StagedLeftFlipperKey(LONG *pVal)
 {
-   *pVal = g_pplayer->m_rgKeys[eStagedLeftFlipperKey];
+   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eStagedLeftFlipperKey]);
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_StagedRightFlipperKey(LONG *pVal)
 {
-   *pVal = g_pplayer->m_rgKeys[eStagedRightFlipperKey];
+   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eStagedRightFlipperKey]);
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_LeftTiltKey(LONG *pVal)
 {
-   *pVal = g_pplayer->m_rgKeys[eLeftTiltKey];
+   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eLeftTiltKey]);
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_RightTiltKey(LONG *pVal)
 {
-   *pVal = g_pplayer->m_rgKeys[eRightTiltKey];
+   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eRightTiltKey]);
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_CenterTiltKey(LONG *pVal)
 {
-   *pVal = g_pplayer->m_rgKeys[eCenterTiltKey];
+   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eCenterTiltKey]);
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_PlungerKey(LONG *pVal)
 {
-   *pVal = g_pplayer->m_rgKeys[ePlungerKey];
+   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[ePlungerKey]);
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_StartGameKey(LONG *pVal)
 {
-   *pVal = g_pplayer->m_rgKeys[eStartGameKey];
+   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eStartGameKey]);
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_AddCreditKey(LONG *pVal)
 {
-   *pVal = g_pplayer->m_rgKeys[eAddCreditKey];
+   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eAddCreditKey]);
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_AddCreditKey2(LONG *pVal)
 {
-   *pVal = g_pplayer->m_rgKeys[eAddCreditKey2];
+   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eAddCreditKey2]);
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_MechanicalTilt(LONG *pVal)
 {
-   *pVal = g_pplayer->m_rgKeys[eMechanicalTilt];
+   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eMechanicalTilt]);
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_LeftMagnaSave(LONG *pVal)
 {
-   *pVal = g_pplayer->m_rgKeys[eLeftMagnaSave];
+   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eLeftMagnaSave]);
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_RightMagnaSave(LONG *pVal)
 {
-   *pVal = g_pplayer->m_rgKeys[eRightMagnaSave];
+   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eRightMagnaSave]);
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_ExitGame(LONG *pVal)
 {
-   *pVal = g_pplayer->m_rgKeys[eExitGame];
+   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eExitGame]);
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_LockbarKey(LONG *pVal)
 {
-   *pVal = g_pplayer->m_rgKeys[eLockbarKey];
+   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eLockbarKey]);
    return S_OK;
 }
 
@@ -305,10 +305,10 @@ STDMETHODIMP ScriptGlobalTable::get_JoyCustomKey(LONG index, LONG *pVal)
 {
    switch (index)
    {
-   case 1: *pVal = g_pplayer->m_pininput.m_joycustom1key; break;
-   case 2: *pVal = g_pplayer->m_pininput.m_joycustom2key; break;
-   case 3: *pVal = g_pplayer->m_pininput.m_joycustom3key; break;
-   case 4: *pVal = g_pplayer->m_pininput.m_joycustom4key; break;
+   case 1: *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_pininput.m_joycustom1key); break;
+   case 2: *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_pininput.m_joycustom2key); break;
+   case 3: *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_pininput.m_joycustom3key); break;
+   case 4: *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_pininput.m_joycustom4key); break;
    default: return E_FAIL;
    }
 

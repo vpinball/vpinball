@@ -32,7 +32,7 @@ static constexpr RECT touchregion[MAX_TOUCHREGION] = { //left,top,right,bottom (
    { 70, 90, 100, 100 },  // Plunger
 };
 
-static constexpr EnumAssignKeys touchActionMap[MAX_TOUCHREGION] = {
+static constexpr EnumPlayerActions touchActionMap[MAX_TOUCHREGION] = {
    eAddCreditKey, //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    eEscape,
    eLeftMagnaSave,
@@ -282,7 +282,7 @@ private:
 #pragma region Input
 public:
    PinInput m_pininput;
-   SDL_Scancode m_rgKeys[eCKeys]; // Player's key assignments (keycode triggering each action)
+   SDL_Scancode m_actionToSDLScanCodeMapping[eActionCount]; // Player's key assignments (keycode triggering each action)
    bool m_supportsTouch = false; // Display is a touchscreen?
    bool m_touchregion_pressed[MAX_TOUCHREGION]; // status for each touch region to avoid multitouch double triggers (true = finger on, false = finger off)
    void ShowMouseCursor(const bool show) { m_drawCursor = show; UpdateCursorState(); }

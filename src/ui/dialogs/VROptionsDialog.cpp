@@ -227,7 +227,7 @@ BOOL VROptionsDialog::OnInitDialog()
    for (unsigned int i = eTableRecenter; i <= eTableDown; ++i)
       if (regkey_idc[i] != -1)
       {
-         const int dik = static_cast<EnumAssignKeys>(g_pvp->m_settings.LoadValueInt(Settings::Player, regkey_string[i]));
+         const int dik = g_pvp->m_settings.LoadValueInt(Settings::Player, regkey_string[i]);
          const HWND hwndControl = GetDlgItem(regkey_idc[i]);
          ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, dik);
          SDL_Keycode sdlKeycode = SDL_GetKeyFromScancode(GetSDLScancodeFromDirectInputKey(dik), SDL_KMOD_NONE, false);

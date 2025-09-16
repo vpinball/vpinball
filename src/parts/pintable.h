@@ -347,7 +347,6 @@ public:
    void ImportVPP(const string &filename);
 
    void FireOptionEvent(int event);
-   void FireGenericKeyEvent(int dispid, int dik);
 
    VPX::Sound *ImportSound(const string &filename);
    void ReImportSound(VPX::Sound *const pps, const string &filename);
