@@ -76,8 +76,13 @@ mat3 TBN_trafo(const vec3 N, const vec3 V, const vec2 uv)
    // derivatives: edge vectors for tri-pos and tri-uv
    const vec3 dpx = dFdx(V);
    const vec3 dpy = dFdy(V);
-   const vec2 duvx = dFdx(uv);
-   const vec2 duvy = dFdy(uv);
+   #if TEX_V_IS_UP
+      const vec2 duvx = dFdx(uv);
+      const vec2 duvy = dFdy(uv);
+   #else
+      const vec2 duvx = dFdx(vec2(uv.x, -uv.y));
+      const vec2 duvy = dFdy(vec2(uv.x, -uv.y));
+   #endif
 
    // solve linear system
    const vec3 dp2perp = cross(N, dpy);
