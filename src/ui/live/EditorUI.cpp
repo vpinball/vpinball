@@ -1267,26 +1267,6 @@ void EditorUI::UpdateVideoOptionsModal()
    bool p_open = true;
    if (ImGui::BeginPopupModal(ID_VIDEO_SETTINGS, &p_open, ImGuiWindowFlags_AlwaysAutoResize))
    {
-      if (ImGui::CollapsingHeader("Anti-Aliasing", ImGuiTreeNodeFlags_DefaultOpen))
-      {
-         const char *postprocessed_aa_items[] = { "Disabled", "Fast FXAA", "Standard FXAA", "Quality FXAA", "Fast NFAA", "Standard DLAA", "Quality SMAA" };
-         if (ImGui::Combo("Postprocessed AA", &m_renderer->m_FXAA, postprocessed_aa_items, IM_ARRAYSIZE(postprocessed_aa_items)))
-            g_pvp->m_settings.SaveValue(Settings::Player, "FXAA"s, m_renderer->m_FXAA);
-         const char *sharpen_items[] = { "Disabled", "CAS", "Bilateral CAS" };
-         if (ImGui::Combo("Sharpen", &m_renderer->m_sharpen, sharpen_items, IM_ARRAYSIZE(sharpen_items)))
-            g_pvp->m_settings.SaveValue(Settings::Player, "Sharpen"s, m_renderer->m_sharpen);
-      }
-      
-      if (ImGui::CollapsingHeader("Performance & Troubleshooting", ImGuiTreeNodeFlags_DefaultOpen))
-      {
-         if (ImGui::Checkbox("Force Tonemapping off on HDR display", &m_renderer->m_HDRforceDisableToneMapper))
-            g_pvp->m_settings.SaveValue(Settings::Player, "HDRDisableToneMapper"s, m_renderer->m_HDRforceDisableToneMapper);
-         if (ImGui::Checkbox("Force Bloom filter off", &m_renderer->m_bloomOff))
-            g_pvp->m_settings.SaveValue(Settings::Player, "ForceBloomOff"s, m_renderer->m_bloomOff);
-         if (ImGui::Checkbox("Force Motion blur off", &m_renderer->m_motionBlurOff))
-            g_pvp->m_settings.SaveValue(Settings::Player, "ForceMotionBlurOff"s, m_renderer->m_motionBlurOff);
-      }
-      
       if (ImGui::CollapsingHeader("Ball Rendering", ImGuiTreeNodeFlags_DefaultOpen))
       {
          bool antiStretch = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "BallAntiStretch"s, false);
