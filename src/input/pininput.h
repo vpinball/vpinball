@@ -40,7 +40,7 @@
 
 
 // NOTE that the following 3 definitions need to be in sync in their order!
-enum EnumAssignKeys
+enum EnumPlayerActions
 {
    eLeftFlipperKey,
    eRightFlipperKey,
@@ -70,10 +70,10 @@ enum EnumAssignKeys
    eEscape,
    ePause,
    eTweak,
-   eCKeys
+   eActionCount
 };
 
-static const string regkey_string[eCKeys] = {
+static const string regkey_string[eActionCount] = {
    "LFlipKey"s,
    "RFlipKey"s,
    "StagedLFlipKey"s,
@@ -104,7 +104,7 @@ static const string regkey_string[eCKeys] = {
    "TweakKey"s
 };
 
-static constexpr int regkey_idc[eCKeys] = {
+static constexpr int regkey_idc[eActionCount] = {
    IDC_LEFTFLIPPER,
    IDC_RIGHTFLIPPER,
    IDC_STAGEDLEFTFLIPPER,
@@ -172,9 +172,9 @@ public:
    };
    void SetupJoyMapping(uint64_t joystickId, InputLayout inputLayout);
    void UnmapJoy(uint64_t joyId);
-   void MapActionToMouse(EnumAssignKeys action, int button, bool replace);
-   void MapActionToKeyboard(EnumAssignKeys action, SDL_Scancode scancode, bool replace);
-   void MapActionToJoystick(EnumAssignKeys action, uint64_t joystickId, int buttonId, bool replace);
+   void MapActionToMouse(EnumPlayerActions action, int button, bool replace);
+   void MapActionToKeyboard(EnumPlayerActions action, SDL_Scancode scancode, bool replace);
+   void MapActionToJoystick(EnumPlayerActions action, uint64_t joystickId, int buttonId, bool replace);
    void MapAnalogActionToJoystick(AnalogAction output, uint64_t joystickId, int axisId, bool revert, bool replace);
 
    // Enqueue events for processing
@@ -185,7 +185,7 @@ public:
          Action, Mouse, Keyboard, JoyButton, JoyAxis
       };
       Type type;
-      EnumAssignKeys action; // Type::Action
+      EnumPlayerActions action; // Type::Action
       uint64_t joystickId; // Type::JoyButton, Type::JoyAxis
       int axisId; // Type::JoyAxis
       int value;  // Type::JoyAxis
@@ -194,7 +194,7 @@ public:
       SDL_Scancode scancode; // Type::Keyboard
       bool isPressed; // Type::Keyboard, Type::Action, Type::Mouse
    };
-   void PushActionEvent(EnumAssignKeys action, bool isPressed);
+   void PushActionEvent(EnumPlayerActions action, bool isPressed);
    void PushMouseEvent(int button, bool isPressed);
    void PushKeyboardEvent(SDL_Keycode keycode, SDL_Scancode scancode, bool isPressed);
    void PushJoystickButtonEvent(uint64_t joystickId, int buttonId, bool isPressed);
@@ -202,8 +202,8 @@ public:
 
    void ProcessInput(); // Gather and process events
 
-   void FireActionEvent(EnumAssignKeys action, bool isPressed);
-   static void FireGenericKeyEvent(const int dispid, SDL_Scancode scancode);
+   void FireActionEvent(EnumPlayerActions action, bool isPressed);
+   static void FireGenericKeyEvent(SDL_Scancode scancode, bool isPressed);
 
    bool HasMechPlungerSpeed() const;
    float GetPlungerSpeed() const;
@@ -223,31 +223,31 @@ public:
    {
       uint64_t actionState;
 
-      void SetPressed(EnumAssignKeys key)
+      void SetPressed(EnumPlayerActions key)
       {
          uint64_t mask = static_cast<uint64_t>(1) << static_cast<int>(key);
          actionState |= mask;
       }
 
-      void SetReleased(EnumAssignKeys key)
+      void SetReleased(EnumPlayerActions key)
       {
          uint64_t mask = static_cast<uint64_t>(1) << static_cast<int>(key);
          actionState &= ~mask;
       }
 
-      bool IsKeyPressed(EnumAssignKeys key, const InputState &prev) const
+      bool IsKeyPressed(EnumPlayerActions key, const InputState &prev) const
       {
          uint64_t mask = static_cast<uint64_t>(1) << static_cast<int>(key);
          return (actionState & mask) != 0 && (prev.actionState & mask) == 0;
       }
 
-      bool IsKeyDown(EnumAssignKeys key) const
+      bool IsKeyDown(EnumPlayerActions key) const
       {
          uint64_t mask = static_cast<uint64_t>(1) << static_cast<int>(key);
          return (actionState & mask) != 0;
       }
 
-      bool IsKeyReleased(EnumAssignKeys key, const InputState &prev) const
+      bool IsKeyReleased(EnumPlayerActions key, const InputState &prev) const
       {
          uint64_t mask = static_cast<uint64_t>(1) << static_cast<int>(key);
          return (actionState & mask) == 0 && (prev.actionState & mask) != 0;
@@ -304,7 +304,7 @@ private:
 
    struct ActionMapping
    {
-      EnumAssignKeys action = EnumAssignKeys::eCKeys;
+      EnumPlayerActions action = EnumPlayerActions::eActionCount;
 
       enum AMType
       {

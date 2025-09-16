@@ -97,10 +97,10 @@ void PinInput::Init()
    m_joycustom4 = settings.LoadValueWithDefault(Settings::Player, "JoyCustom4"s, m_joycustom4);
    m_joycustom4key = GetSDLScancodeFromDirectInputKey(settings.LoadValueWithDefault(Settings::Player, "JoyCustom4Key"s, m_joycustom4key));
 
-   for (unsigned int i = 0; i < eCKeys; ++i)
+   for (unsigned int i = 0; i < eActionCount; ++i)
    {
       const int vk = g_pvp->m_settings.LoadValueInt(Settings::Player, regkey_string[i]);
-      MapActionToKeyboard(static_cast<EnumAssignKeys>(i), GetSDLScancodeFromDirectInputKey(vk), true);
+      MapActionToKeyboard(static_cast<EnumPlayerActions>(i), GetSDLScancodeFromDirectInputKey(vk), true);
    }
 
    MapActionToMouse(eLeftFlipperKey, settings.LoadValueInt(Settings::Player, "JoyLFlipKey"s), true);
@@ -175,7 +175,7 @@ void PinInput::UnmapJoy(uint64_t joyId)
    std::erase_if(m_analogActionMappings, [joyId](const AnalogActionMapping& am) { return am.joystickId == joyId; });
 }
 
-void PinInput::MapActionToMouse(EnumAssignKeys action, int button, bool replace)
+void PinInput::MapActionToMouse(EnumPlayerActions action, int button, bool replace)
 {
    if (replace)
       std::erase_if(m_actionMappings, [action](const ActionMapping& am) { return (am.action == action) && (am.type == ActionMapping::AM_Mouse); });
@@ -186,7 +186,7 @@ void PinInput::MapActionToMouse(EnumAssignKeys action, int button, bool replace)
    m_actionMappings.push_back(mapping);
 }
 
-void PinInput::MapActionToKeyboard(EnumAssignKeys action, SDL_Scancode scancode, bool replace)
+void PinInput::MapActionToKeyboard(EnumPlayerActions action, SDL_Scancode scancode, bool replace)
 {
    if (replace)
       std::erase_if(m_actionMappings, [action](const ActionMapping& am) { return (am.action == action) && (am.type == ActionMapping::AM_Keyboard); });
@@ -208,7 +208,7 @@ void PinInput::MapActionToKeyboard(EnumAssignKeys action, SDL_Scancode scancode,
    m_actionMappings.push_back(mapping);
 }
 
-void PinInput::MapActionToJoystick(EnumAssignKeys action, uint64_t joystickId, int buttonId, bool replace)
+void PinInput::MapActionToJoystick(EnumPlayerActions action, uint64_t joystickId, int buttonId, bool replace)
 {
    if (replace)
       std::erase_if(m_actionMappings, [action](const ActionMapping& am) { return (am.action == action) && (am.type == ActionMapping::AM_Joystick); });
@@ -235,7 +235,7 @@ void PinInput::MapAnalogActionToJoystick(AnalogAction output, uint64_t joystickI
 
 // Since input event processing is single threaded on the main game logic thread, we do not queue events but directly process them
 
-void PinInput::PushActionEvent(EnumAssignKeys action, bool isPressed)
+void PinInput::PushActionEvent(EnumPlayerActions action, bool isPressed)
 {
    InputEvent e;
    e.type = InputEvent::Type::Action;
@@ -305,9 +305,9 @@ void PinInput::SetInputState(const InputState& state)
 {
    uint64_t changes = state.actionState ^ m_inputState.actionState;
    uint64_t mask = 1ull;
-   for (int i = 0; i < eCKeys; i++, mask <<= 1)
+   for (int i = 0; i < eActionCount; i++, mask <<= 1)
       if (changes & mask)
-         FireActionEvent(static_cast<EnumAssignKeys>(i), (state.actionState & mask) != 0);
+         FireActionEvent(static_cast<EnumPlayerActions>(i), (state.actionState & mask) != 0);
    m_inputState = state;
 }
 
@@ -445,9 +445,9 @@ void PinInput::PlayRumble(const float lowFrequencySpeed, const float highFrequen
    #endif
 }
 
-void PinInput::FireGenericKeyEvent(const int dispid, SDL_Scancode scancode)
+void PinInput::FireGenericKeyEvent(SDL_Scancode scancode, bool isPressed)
 {
-   // Check if we are mirrored & Swap (some) left & right input.
+   // Check if we are mirrored & swap (some) left & right input.
    if (g_pplayer->m_ptable->m_tblMirrorEnabled)
    {
       switch (scancode)
@@ -469,10 +469,12 @@ void PinInput::FireGenericKeyEvent(const int dispid, SDL_Scancode scancode)
       PLOGE << "No DirectInput mapping for SDL scancode '" << (int)scancode << "'. Key event was dropped.";
       return;
    }
-   g_pplayer->m_ptable->FireGenericKeyEvent(dispid, dik);
+   CComVariant rgvar[1] = { CComVariant(dik) };
+   DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
+   g_pplayer->m_ptable->FireDispID(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, &dispparams);
 }
 
-void PinInput::FireActionEvent(EnumAssignKeys action, bool isPressed)
+void PinInput::FireActionEvent(EnumPlayerActions action, bool isPressed)
 {
    // Allow plugins to react to action event, filter, ...
 
@@ -482,16 +484,6 @@ void PinInput::FireActionEvent(EnumAssignKeys action, bool isPressed)
 
    // Update input state
  
-   if (g_pplayer->m_ptable->m_tblMirrorEnabled)
-   {
-      if (action == eLeftFlipperKey) action = eRightFlipperKey;
-      else if (action == eRightFlipperKey) action = eLeftFlipperKey;
-      else if (action == eStagedLeftFlipperKey) action = eStagedRightFlipperKey;
-      else if (action == eStagedRightFlipperKey) action = eStagedLeftFlipperKey;
-      else if (action == eLeftMagnaSave) action = eRightMagnaSave;
-      else if (action == eRightMagnaSave) action = eLeftMagnaSave;
-   }
-
    if (isPressed == m_inputState.IsKeyDown(action))
       return; // Action has been discarded by a plugin
    else if (isPressed)
@@ -667,7 +659,7 @@ void PinInput::FireActionEvent(EnumAssignKeys action, bool isPressed)
    }
 
    if (!g_pplayer->m_liveUI->IsTweakMode() && !g_pplayer->m_liveUI->HasKeyboardCapture())
-      g_pplayer->m_ptable->FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[action]);
+      FireGenericKeyEvent(g_pplayer->m_actionToSDLScanCodeMapping[action], isPressed);
 }
 
 void PinInput::Autostart(const uint32_t initialDelayMs, const uint32_t retryDelayMs)
@@ -984,7 +976,7 @@ void PinInput::ProcessEvent(const InputEvent& event)
       if (it != m_actionMappings.end())
          FireActionEvent(it->action, event.isPressed);
       else if (!g_pplayer->m_liveUI->HasKeyboardCapture())
-         FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, event.scancode);
+         FireGenericKeyEvent(event.scancode, event.isPressed);
    }
    else if (event.type == InputEvent::Type::Action)
    {
@@ -999,29 +991,29 @@ void PinInput::ProcessEvent(const InputEvent& event)
       else
       {
          if (m_joycustom1 == event.buttonId)
-            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, m_joycustom1key);
+            FireGenericKeyEvent(m_joycustom1key, event.isPressed);
          else if (m_joycustom2 == event.buttonId)
-            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, m_joycustom2key);
+            FireGenericKeyEvent(m_joycustom2key, event.isPressed);
          else if (m_joycustom3 == event.buttonId)
-            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, m_joycustom3key);
+            FireGenericKeyEvent(m_joycustom3key, event.isPressed);
          else if (m_joycustom4 == event.buttonId)
-            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, m_joycustom4key);
+            FireGenericKeyEvent(m_joycustom4key, event.isPressed);
          else if (m_joypmbuyin == event.buttonId)
-            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, SDL_SCANCODE_2);
+            FireGenericKeyEvent(SDL_SCANCODE_2, event.isPressed);
          else if (m_joypmcoin3 == event.buttonId)
-            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, SDL_SCANCODE_5);
+            FireGenericKeyEvent(SDL_SCANCODE_5, event.isPressed);
          else if (m_joypmcoin4 == event.buttonId)
-            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, SDL_SCANCODE_6);
+            FireGenericKeyEvent(SDL_SCANCODE_6, event.isPressed);
          else if (m_joypmcoindoor == event.buttonId)
-            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, SDL_SCANCODE_END);
+            FireGenericKeyEvent(SDL_SCANCODE_END, event.isPressed);
          else if (m_joypmcancel == event.buttonId)
-            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, SDL_SCANCODE_7);
+            FireGenericKeyEvent(SDL_SCANCODE_7, event.isPressed);
          else if (m_joypmdown == event.buttonId)
-            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, SDL_SCANCODE_8);
+            FireGenericKeyEvent(SDL_SCANCODE_8, event.isPressed);
          else if (m_joypmup == event.buttonId)
-            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, SDL_SCANCODE_9);
+            FireGenericKeyEvent(SDL_SCANCODE_9, event.isPressed);
          else if (m_joypmenter == event.buttonId)
-            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, SDL_SCANCODE_0);
+            FireGenericKeyEvent(SDL_SCANCODE_0, event.isPressed);
       }
    }
    else if (event.type == InputEvent::Type::JoyAxis)

@@ -263,7 +263,7 @@ BOOL KeysConfigDialog::OnInitDialog()
     AddStringAxis("UDAxis"s, IDC_UDAXISCOMBO, 2); // assume Y Axis as standard
     AddStringAxis("PlungerSpeedAxis"s, IDC_PLUNGERSPEEDAXIS, 0); // not assigned by default
 
-    for (unsigned int i = 0; i < eCKeys; ++i)
+    for (unsigned int i = 0; i < eActionCount; ++i)
       if (regkey_idc[i] != -1 && GetDlgItem(regkey_idc[i]) && GetDlgItem(regkey_idc[i]).IsWindow())
       {
          const int dik = g_pvp->m_settings.LoadValueInt(Settings::Player, regkey_string[i]);
@@ -585,7 +585,7 @@ void KeysConfigDialog::OnOK()
     float tiltInertia = clamp(sz2f(GetDlgItemText(IDC_TILT_INERTIA).GetString()), 0.f, 1000.f);
     g_pvp->m_settings.SaveValue(Settings::Player, "TiltInertia"s, tiltInertia);
 
-   for (unsigned int i = 0; i < eCKeys; ++i) if (regkey_idc[i] != -1)
+   for (unsigned int i = 0; i < eActionCount; ++i) if (regkey_idc[i] != -1)
       if (regkey_idc[i] != -1 && GetDlgItem(regkey_idc[i]) && GetDlgItem(regkey_idc[i]).IsWindow())
       {
          const size_t dik = GetDlgItem(regkey_idc[i]).GetWindowLongPtr(GWLP_USERDATA);
