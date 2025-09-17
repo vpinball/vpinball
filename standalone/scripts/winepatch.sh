@@ -1,7 +1,7 @@
 #!/bin/bash
 
-WINE_SRC="/Users/jmillard/wine"
-WINE_VPX="/Users/jmillard/vpinball/standalone/inc/wine"
+WINE_SRC="/Users/jmillard/vpx/wine"
+WINE_VPX="/Users/jmillard/vpx/vpinball/standalone/inc/wine"
 
 find $WINE_VPX -type f | while read i; do
   if [[ "$i" == *".DS_Store" ]]; then
@@ -15,7 +15,7 @@ find $WINE_VPX -type f | while read i; do
         FILE="$WINE_SRC/$RELATIVE_PATH"
         if [ -f "$FILE" ]; then
             touch "$i"
-            PATCH=$(diff -w -u "$FILE" "$i")
+            PATCH=$(diff -u --label "$FILE" --label "$i" -w "$FILE" "$i")
             if [ ! -z "$PATCH" ]; then
                echo "$PATCH"
             fi
