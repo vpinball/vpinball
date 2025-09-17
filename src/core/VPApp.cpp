@@ -384,10 +384,8 @@ void showDisplayIDs()
       SDL_RenderClear(pRenderers[i]);
 
       // put display number on renderer
-      char dtext[50 + 1];
-      snprintf(dtext, sizeof(dtext), "%d\n(%dx%d)", pDisplays[i],  displayBounds.x,  displayBounds.y);
       SDL_Color white = {255, 255, 255};
-      SDL_Surface* pSurface = TTF_RenderText_Solid_Wrapped(pFont, dtext, 0, white, 900);
+      SDL_Surface* pSurface = TTF_RenderText_Solid_Wrapped(pFont, (std::to_string(pDisplays[i]) + "\n(" + std::to_string(displayBounds.x) + 'x' + std::to_string(displayBounds.y) + ')').c_str(), 0, white, 900);
       if (!pSurface)
          continue;
       float textWidth = pSurface->w;

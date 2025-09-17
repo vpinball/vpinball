@@ -1778,7 +1778,7 @@ void CodeViewer::SaveToStream(IStream *pistream, const HCRYPTHASH hcrypthash)
 {
 #ifndef __STANDALONE__
    size_t cchar = ::SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
-   char * szText = new char[cchar + MAXNAMEBUFFER + 1]; //!! MAXNAMEBUFFER ??
+   char * szText = new char[cchar + 1];
    ::SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
 
    // if there was an external vbs loaded, save the script to that file

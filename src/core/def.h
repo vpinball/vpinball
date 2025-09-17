@@ -108,17 +108,17 @@ constexpr __forceinline int clamp(const int x, const int mn, const int mx)
 template <typename T>
 constexpr __forceinline T saturate(const T x)
 {
-   return max(min(x,T(1)),T(0));
+   return max(min(x,T{1}),T{0});
 }
 
 template <typename T>
 constexpr __forceinline T smoothstep(const T edge0, const T edge1, T x)
 {
    if (edge0 == edge1)
-      return (x >= edge0) ? T(1) : T(0);
+      return (x >= edge0) ? T{1} : T{0};
    x = (x - edge0) / (edge1 - edge0);
    x = saturate(x);
-   return x * x * (T(3) - T(2) * x);
+   return x * x * (T{3} - T{2} * x);
 }
 
 template <typename T>
@@ -146,9 +146,8 @@ inline int FindIndexOf(const vector<T>& v, const T& val)
 #define BOOL int
 #endif
 
-#define MAXNAMEBUFFER 32
-#define MAXSTRING 1024 // usually used for paths,filenames,etc
-#define MAXTOKEN (32*4)
+#define MAXNAMEBUFFER 32 // material and IScriptable names only
+#define MAXSTRING 1024 // usually used for paths,filenames,temporary text buffers,etc
 
 #define CCO(x) CComObject<x>
 
@@ -158,9 +157,7 @@ inline int FindIndexOf(const vector<T>& v, const T& val)
 inline void ref_count_trigger(const ULONG r, const char *file, const int line) // helper for debugging
 {
 #ifdef DEBUG_REFCOUNT_TRIGGER
-   char msg[128];
-   sprintf_s(msg, sizeof(msg), "Ref Count: %u at %s:%d", r, file, line);
-   /*g_pvp->*/MessageBox(nullptr, msg, "Error", MB_OK | MB_ICONEXCLAMATION);
+   /*g_pvp->*/MessageBox(nullptr, ("Ref Count: "+std::to_string(r)+" at "+file+':'+std::to_string(line)).c_str(), "Error", MB_OK | MB_ICONEXCLAMATION);
 #endif
 }
 
@@ -581,6 +578,8 @@ string f2sz(const float f, const bool can_convert_decimal_point = true);
 
 HRESULT OpenURL(const string& szURL);
 
+string SizeToReadable(const size_t bytes);
+
 WCHAR* MakeWide(const char* const sz);
 #ifndef MINIMAL_DEF_H
 BSTR MakeWideBSTR(const string& sz);
@@ -696,7 +695,7 @@ CONSTEXPR inline string upperCase(string input)
 }
 
 // Find strB within strA, case-insensitive, returns the position of strB in strA or string::npos if not found
-inline string::size_type StrFindNoCase(string strA, string strB)
+CONSTEXPR inline string::size_type StrFindNoCase(string strA, string strB)
 {
    StrToLower(strA);
    StrToLower(strB);

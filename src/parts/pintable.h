@@ -38,17 +38,6 @@ struct LightSource
    Vertex3Ds pos;
 };
 
-struct ProtectionData
-{
-   int32_t fileversion;
-   int32_t size;
-   uint8_t paraphrase[16 + 8];
-   uint32_t flags;
-   int32_t keyversion;
-   int32_t spare1;
-   int32_t spare2;
-};
-
 struct WhereUsedInfo
 {
    string searchObjectName;      // Source object to search for (images, materials etc)
@@ -642,8 +631,8 @@ public:
    float m_elasticityFalloff;
    float m_scatter;
    float m_defaultScatter = 0.f;
-   
-   int m_plungerNormalize = 100;  //Mech-Plunger component adjustment or weak spring, aging
+
+   int m_plungerNormalize = 100;  // Mech-Plunger component adjustment or weak spring, aging
    bool m_plungerFilter = false;
 
    float m_nudgeTime = 5.f;
@@ -651,18 +640,18 @@ public:
    float m_tblNudgeReadTilt = 0.f;
    Vertex2D m_tblNudgePlumb;
 
-   bool m_tblAutoStartEnabled;
    uint32_t m_tblAutoStart; // msecs before trying an autostart if doing once-only method .. 0 is automethod
    uint32_t m_tblAutoStartRetry; // msecs before retrying to autostart.
+   bool m_tblAutoStartEnabled;
 
    bool m_tblMirrorEnabled = false; // Mirror tables left to right.  This is activated by a cheat during table selection.
+
+   bool m_script_protected = false; // To be able to decrypt old tables with protected script
 
    float m_difficulty = 0.2f; // table difficulty Level
    float m_globalDifficulty; // global difficulty, that is to say table difficulty eventually overriden from settings
 
    short2 m_oldMousePos;
-
-   ProtectionData m_protectionData;
 
    string m_image;
    string m_playfieldMaterial;

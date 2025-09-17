@@ -194,6 +194,24 @@ LocalStringW::LocalStringW(const int resid)
 #endif
 }
 
+// Formats a byte size/value into a human-readable string (e.g. 1305486 -> 1.2 MiB).
+string SizeToReadable(const size_t bytes)
+{
+   static constexpr char suffixes[] = { 'K', 'M', 'G', 'T', 'P', 'E' };
+
+   // Format with one decimal for KiB and above, no decimal for bytes
+   if (bytes < 1024)
+      return std::to_string(bytes) + " B";
+
+   double size = static_cast<double>(bytes);
+   int suffixIndex = 0;
+   while (size >= 1024.0 && suffixIndex++ < (int)std::size(suffixes)-1)
+      size /= 1024.0;
+
+   const int whole = (int)size;
+   return std::to_string(whole) + '.' + std::to_string((int)((size-whole)*10.0 + 0.5)) + ' ' + suffixes[suffixIndex-1] + "iB";
+}
+
 WCHAR *MakeWide(const char* const sz)
 {
    const int len = MultiByteToWideChar(CP_ACP, 0, sz, -1, nullptr, 0); //(int)strlen(sz) + 1; // include null termination

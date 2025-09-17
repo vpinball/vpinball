@@ -78,8 +78,6 @@ PinTable::PinTable()
    m_psgt->AddRef();
    m_psgt->Init(m_vpinball, this);
 
-   memset(&m_protectionData, 0, sizeof(m_protectionData)); //!!
-
    m_globalDifficulty = m_settings.LoadValueWithDefault(Settings::TableOverride, "Difficulty"s, m_difficulty);
 
    m_tblAutoStart = m_settings.LoadValueWithDefault(Settings::Player, "Autostart"s, 0) * 10;
@@ -2631,14 +2629,26 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
       break;
    case FID(BLST): pbr->GetFloat(m_bloom_strength); break;
    case FID(BCLR): pbr->GetInt(m_colorbackdrop); break;
-   case FID(SECB): pbr->GetStruct(&m_protectionData, sizeof(ProtectionData)); break;
-   case FID(CODE):
+   case FID(SECB): // old protection/encryption data
    {
-      // if the script is protected then we pass in the proper cryptokey into the code loadstream
-      const bool script_protected = (((m_protectionData.flags & DISABLE_EVERYTHING) == DISABLE_EVERYTHING) ||
-          ((m_protectionData.flags & DISABLE_SCRIPT_EDITING) == DISABLE_SCRIPT_EDITING));
+      struct ProtectionData
+      {
+         int32_t fileversion;
+         int32_t size;
+         uint8_t paraphrase[16 + 8];
+         uint32_t flags;
+         int32_t keyversion;
+         int32_t spare1;
+         int32_t spare2;
+      } protectionData;
 
-      m_pcv->LoadFromStream(pbr->m_pistream, pbr->m_hcrypthash, script_protected ? pbr->m_hcryptkey : NULL);
+      pbr->GetStruct(&protectionData, sizeof(ProtectionData));
+      m_script_protected = ((protectionData.flags & DISABLE_EVERYTHING) == DISABLE_EVERYTHING) || ((protectionData.flags & DISABLE_SCRIPT_EDITING) == DISABLE_SCRIPT_EDITING);
+      break;
+   }
+   case FID(CODE): // if the script is protected then we pass in the proper cryptokey into the code loadstream
+   {
+      m_pcv->LoadFromStream(pbr->m_pistream, pbr->m_hcrypthash, m_script_protected ? pbr->m_hcryptkey : NULL);
       break;
    }
    case FID(CCUS): pbr->GetStruct(m_rgcolorcustom, sizeof(COLORREF) * 16); break;
@@ -5768,21 +5778,21 @@ string PinTable::AuditTable(bool log) const
    size_t totalSize = 0, totalGpuSize = 0;
    for (const auto sound : m_vsound)
    {
-      //ss << "  . Sound: '" << sound->m_name << "', size: " << (sound->m_cdata / 1024) << "KiB\r\n";
+      //ss << "  . Sound: '" << sound->m_name << "', size: " << SizeToReadable(sound->m_cdata) << "\r\n";
       totalSize += sound->GetFileSize();
    }
-   ss << ". Total sound size: " << (totalSize / (1024 * 1024)) << "MiB\r\n";
+   ss << ". Total sound size: " << SizeToReadable(totalSize) << "\r\n";
 
    totalSize = 0;
    for (const auto image : m_vimage)
    {
       size_t imageSize = image->GetFileSize();
       size_t gpuSize = image->GetEstimatedGPUSize();
-      //ss << "  . Image: '" << image->m_name << "', size: " << (imageSize / 1024) << "KiB, GPU mem size: " << (gpuSize / 1024) << "KiB\r\n";
+      //ss << "  . Image: '" << image->m_name << "', size: " << SizeToReadable(imageSize) << ", GPU mem size: " << SizeToReadable(gpuSize) << "\r\n";
       totalSize += imageSize;
       totalGpuSize += gpuSize;
    }
-   ss << ". Total image size: " << (totalSize / (1024 * 1024)) << "MiB in VPX file, at least " << (totalGpuSize / (1024 * 1024)) << "MiB in GPU memory when played\r\n";
+   ss << ". Total image size: " << SizeToReadable(totalSize) << " in VPX file, at least " << SizeToReadable(totalGpuSize) << " in GPU memory when played\r\n";
 
    int nPrimTris = 0, primMemSize = 0;
    for (const auto part : m_vedit)
@@ -5792,7 +5802,7 @@ string PinTable::AuditTable(bool log) const
          primMemSize += (int) ((Primitive *)part)->m_mesh.NumVertices() * sizeof(Vertex3D_NoTex2);
          nPrimTris += (int) ((Primitive *)part)->m_mesh.NumIndices() / 3;
       }
-   ss << ". Total number of faces used in primitives: " << nPrimTris << ", needing " << (primMemSize / (1024 * 1024)) << "MiB in GPU memory when played\r\n";
+   ss << ". Total number of faces used in primitives: " << nPrimTris << ", needing " << SizeToReadable(primMemSize) << " in GPU memory when played\r\n";
 
    const string msg = "Table audit:\r\n" + ss.str();
    if (log)
