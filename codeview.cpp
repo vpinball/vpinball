@@ -637,7 +637,7 @@ HRESULT CodeViewer::ReplaceName(IScriptable * const piscript, const WCHAR * cons
 
 STDMETHODIMP CodeViewer::InitializeScriptEngine()
 {
-	const HRESULT vbScriptResult = CoCreateInstance(CLSID_VBScript, 0, CLSCTX_ALL/*CLSCTX_INPROC_SERVER*/, IID_IActiveScriptParse, (LPVOID*)&m_pScriptParse); //!! CLSCTX_INPROC_SERVER good enough?!
+	const HRESULT vbScriptResult = CoCreateInstance(CLSID_VBScript, 0, CLSCTX_INPROC_SERVER|CLSCTX_INPROC_HANDLER|CLSCTX_LOCAL_SERVER/*CLSCTX_INPROC_SERVER*/, IID_IActiveScriptParse, (LPVOID*)&m_pScriptParse); //!! CLSCTX_INPROC_SERVER good enough?!
 	if (vbScriptResult != S_OK) return vbScriptResult;
 
 	// This can fail on some systems (I tested with wine 6.9 and this fails)
@@ -645,7 +645,7 @@ STDMETHODIMP CodeViewer::InitializeScriptEngine()
 	CoCreateInstance(
 		CLSID_ProcessDebugManager,
 		0,
-		CLSCTX_ALL,
+		CLSCTX_INPROC_SERVER|CLSCTX_INPROC_HANDLER|CLSCTX_LOCAL_SERVER,
 		IID_IProcessDebugManager,
 		(LPVOID*)&m_pProcessDebugManager
 	);
