@@ -1,4 +1,5 @@
 #include "core/stdafx.h"
+#include "core/ScriptGlobalTable.h"
 #include "olectl.h"
 
 STDMETHODIMP Collection::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid, DISPID* rgDispId) {
