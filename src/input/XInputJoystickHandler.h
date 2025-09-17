@@ -13,7 +13,7 @@ public:
       for (DWORD i = 0; i < XUSER_MAX_COUNT; i++)
       {
          XINPUT_STATE state = {};
-         DWORD hr = XInputGetState(i, &state);
+         const DWORD hr = XInputGetState(i, &state);
          if (hr == ERROR_SUCCESS)
          {
             Device joy;
@@ -30,7 +30,7 @@ public:
          m_pininput.UnmapJoy(GetJoyId(joy.id));
    }
 
-   static constexpr uint64_t GetJoyId(const int index) { return static_cast<uint64_t>(0x300000000) | static_cast<uint64_t>(index); }
+   static constexpr uint64_t GetJoyId(const unsigned int index) { return 0x300000000ull | static_cast<uint64_t>(index); }
 
    void PlayRumble(const float lowFrequencySpeed, const float highFrequencySpeed, const int ms_duration) override
    {
@@ -88,7 +88,7 @@ public:
       for (Device joy : m_devices)
       {
          XINPUT_STATE state = {};
-         DWORD hr = XInputGetState(joy.id, &state);
+         const DWORD hr = XInputGetState(joy.id, &state);
          if (hr == ERROR_SUCCESS)
          {
             if (stopRumble)
@@ -97,11 +97,11 @@ public:
                XInputSetState(joy.id, &vibration);
             }
 
-            int i = 0;
+            unsigned int i = 0;
             while (mappingTable[i].xi != 0)
             {
                if ((joy.state.Gamepad.wButtons & mappingTable[i].xi) != (state.Gamepad.wButtons & mappingTable[i].xi))
-                  m_pininput.PushJoystickButtonEvent(GetJoyId(joy.id), mappingTable[i].di, (state.Gamepad.wButtons & mappingTable[i].xi) > 0);
+                  m_pininput.PushJoystickButtonEvent(GetJoyId(joy.id), mappingTable[i].di, (state.Gamepad.wButtons & mappingTable[i].xi) != 0);
                i++;
             }
             if (joy.state.Gamepad.sThumbLX != state.Gamepad.sThumbLX) // Axis range is -32768..32767
@@ -127,7 +127,7 @@ private:
 
    struct Device
    {
-      int id;
+      unsigned int id;
       XINPUT_STATE state { 0 };
    };
    vector<Device> m_devices;

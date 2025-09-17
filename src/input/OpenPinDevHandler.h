@@ -10,7 +10,7 @@ public:
    void Update(const HWND foregroundWindow) override;
 
 private:
-   static constexpr uint64_t GetJoyId(const int index) { return static_cast<uint64_t>(0x400000000) | static_cast<uint64_t>(index); }
+   static constexpr uint64_t GetJoyId(const unsigned int index) { return 0x400000000ull | static_cast<uint64_t>(index); }
 
 private:
    PinInput& m_pininput;
@@ -19,7 +19,7 @@ private:
    // by the OPD implementation module, so that the whole implementation
    // can be detached at the build script level.
    OpenPinDevContext* m_OpenPinDevContext = nullptr;
-   
+
    // Open Pinball Device button status, for detecting button up/down events
    uint32_t m_openPinDev_generic_buttons = 0;
    uint32_t m_openPinDev_pinball_buttons = 0;

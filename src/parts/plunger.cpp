@@ -1231,7 +1231,7 @@ STDMETHODIMP Plunger::CreateBall(IBall **pResult)
    if (m_phitplunger)
    {
       const float x = (m_phitplunger->m_plungerMover.m_x + m_phitplunger->m_plungerMover.m_x2) * 0.5f;
-      const float y = m_phitplunger->m_plungerMover.m_pos - (25.0f + 0.01f); //!! assumes ball radius 25
+      const float y = m_phitplunger->m_plungerMover.m_pos - (float)(PHYS_SKIN + 0.01); //!! assumes ball radius 25
 
       const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, x, y);
 

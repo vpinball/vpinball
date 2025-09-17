@@ -160,7 +160,7 @@ void SearchSelectDialog::SelectElement()
         lv.mask = LVIF_PARAM;
         if (ListView_GetItem(m_hElementList, &lv) == TRUE)
         {
-           char szType[MAXNAMEBUFFER*2];
+           char szType[MAXSTRING];
            ListView_GetItemText(m_hElementList, iItem, 1, szType, std::size(szType));
            if (szType == "Collection"s)
            {

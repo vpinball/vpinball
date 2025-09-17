@@ -4,6 +4,8 @@
 #include "ui/resource.h"
 #include "VROptionsDialog.h"
 
+#include "input/ScanCodes.h"
+
 static bool oldScaleValue = false;
 static float scaleRelative = 1.0f;
 static float scaleAbsolute = 55.0f;
@@ -345,7 +347,7 @@ INT_PTR VROptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          break; // unmapped key
 
       if (dik == DIK_ESCAPE)
-         sdlScancode = GetSDLScancodeFromDirectInputKey(::GetWindowLongPtr(pksw->hwndKeyControl, GWLP_USERDATA)); // reset key to old value
+         sdlScancode = GetSDLScancodeFromDirectInputKey((unsigned char)::GetWindowLongPtr(pksw->hwndKeyControl, GWLP_USERDATA)); // reset key to old value
       else
          ::SetWindowLongPtr(pksw->hwndKeyControl, GWLP_USERDATA, dik);
 

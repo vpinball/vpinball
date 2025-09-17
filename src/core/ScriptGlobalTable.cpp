@@ -6,6 +6,8 @@
 #include "core/vpversion.h"
 #include "core/VPXPluginAPIImpl.h"
 
+#include "input/ScanCodes.h"
+
 #ifndef __STANDALONE__
 #include "renderer/captureExt.h"
 #include <atlsafe.h>
@@ -93,7 +95,7 @@ STDMETHODIMP ScriptGlobalTable::NudgeSetCalibration(int XMax, int YMax, int XGai
 		g_pvp->m_settings.DeleteValue(Settings::Player, "TiltSensitivity"s);
 
 	if (g_pplayer)
-      g_pplayer->m_pininput.ReInit();
+		g_pplayer->m_pininput.ReInit();
 
 	return S_OK;
 }

@@ -46,7 +46,7 @@ public:
    static std::shared_ptr<BaseTexture> CreateFromHBitmap(const HBITMAP hbm, unsigned int maxTexDimension, bool with_alpha = true) noexcept;
    static void Update(std::shared_ptr<BaseTexture>& texture, const unsigned int w, const unsigned int h, const Format format, const uint8_t *image); // Update eventually recreating the texture
 
-   static bool IsLinearFormat(const Format format) { return (format != SRGB && format != SRGBA && format != SRGB565); }
+   static constexpr bool IsLinearFormat(const Format format) { return (format != SRGB && format != SRGBA && format != SRGB565); }
    static Format GetFormatWithAlpha(const Format format)
    {
       switch (format)

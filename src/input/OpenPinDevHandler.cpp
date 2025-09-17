@@ -439,7 +439,7 @@ void OpenPinDevHandler::Update(const HWND foregroundWindow)
    {
       // Visit each button.  VP's internal joystick buttons are
       // numbered #1 to #32.
-      for (int buttonNum = 1, bit = 1; buttonNum <= 32; ++buttonNum, bit <<= 1)
+      for (unsigned int buttonNum = 1, bit = 1; buttonNum <= 32; ++buttonNum, bit <<= 1)
       {
          // check for a state change
          const bool isDown = (cr.genericButtons & bit) != 0;

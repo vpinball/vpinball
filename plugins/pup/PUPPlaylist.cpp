@@ -124,7 +124,7 @@ const string& PUPPlaylist::GetNextPlayFile()
 {
    if (!m_randomize) {
       const string& file = m_files[m_lastIndex];
-      if (++m_lastIndex >= m_files.size())
+      if (++m_lastIndex >= (int)m_files.size())
          m_lastIndex = 0;
       return file;
    }

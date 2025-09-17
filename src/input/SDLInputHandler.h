@@ -53,7 +53,7 @@ public:
    {
    }
 
-   static constexpr uint64_t GetJoyId(const SDL_JoystickID& sdlId) {return static_cast<uint64_t>(0x200000000) | static_cast<uint64_t>(sdlId); }
+   static constexpr uint64_t GetJoyId(const SDL_JoystickID& sdlId) {return 0x200000000ull | static_cast<uint64_t>(sdlId); }
 
    void HandleSDLEvent(SDL_Event& e, bool processJoystick)
    {

@@ -1,5 +1,7 @@
 #include "core/stdafx.h"
 
+#include "lzwreader.h"
+
 /* DECODE.C - LZW decoder
  * Copyright (C) 1987, by Steven A. Bennett
  *

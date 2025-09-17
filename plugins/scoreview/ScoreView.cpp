@@ -422,7 +422,7 @@ void ScoreView::LoadGlass(Visual& visual)
          {
             std::streamsize size = file.tellg();
             file.seekg(0, std::ios::beg);
-            std::vector<uint8_t> buffer(size);
+            std::vector<uint8_t> buffer((size_t)size);
             file.read(reinterpret_cast<char*>(buffer.data()), size);
             file.close();
             visual.glass = m_vpxApi->CreateTexture(buffer.data(), static_cast<int>(size));

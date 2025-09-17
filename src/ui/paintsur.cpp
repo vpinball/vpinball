@@ -2,6 +2,8 @@
 
 #include "core/stdafx.h"
 
+#include "paintsur.h"
+
 #include <WinGDI.h> // for AlphaBlend()
 #pragma comment(lib, "Msimg32.lib") // dto.
 

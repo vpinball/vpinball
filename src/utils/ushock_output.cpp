@@ -28,6 +28,8 @@
 
 #include "core/stdafx.h"
 
+#include "utils/ushock_output.h"
+
 // This code should be understandable using
 // the following URL:
 // http://www.edn.com/article/CA243218.html

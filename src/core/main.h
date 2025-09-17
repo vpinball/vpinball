@@ -5,19 +5,6 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 
-#if defined(ENABLE_OPENGL) && !defined(__STANDALONE__)
-// Needed for external capture for VR on Windows
-#include <d3d11_1.h>
-#include <dxgi1_2.h>
-#pragma comment(lib, "d3d11.lib")
-#pragma comment(lib, "dxgi.lib")
-#endif
-
-#if defined(ENABLE_BGFX) && !defined(__STANDALONE__)
-#include <d3d11_1.h>
-#include <dxgi1_6.h>
-#endif
-
 #ifdef __STANDALONE__
 #define __null 0
 #endif
@@ -268,9 +255,6 @@ class SCNotification final { };
 #include "ieditable.h"
 #include "ui/codeview.h"
 
-#include "utils/lzwreader.h"
-
-#include "parts/Sound.h"
 #include "parts/pinbinary.h"
 
 #include "plugins/MsgPluginManager.h"
@@ -279,15 +263,12 @@ class SCNotification final { };
 
 #include "core/vpinball_h.h"
 #include "parts/pintable.h"
-#include "core/ScriptGlobalTable.h"
-#include "ui/win/PinTableMDI.h"
 
 #include "math/mesh.h"
 #include "physics/collide.h"
 #include "renderer/Renderer.h"
 
 #include "ui/sur.h"
-#include "ui/paintsur.h"
 #include "ui/hitsur.h"
 #include "ui/hitrectsur.h"
 
@@ -325,12 +306,7 @@ class SCNotification final { };
 #include "parts/rubber.h"
 #include "parts/PartGroup.h"
 
-#include "utils/ushock_output.h"
-
-#include "physics/kdtree.h"
-
 #include "renderer/trace.h"
-#include "renderer/Window.h"
 
 inline void ShowError(const char* const sz)
 {

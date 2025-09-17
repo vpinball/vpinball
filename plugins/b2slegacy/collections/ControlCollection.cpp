@@ -29,7 +29,7 @@ void ControlCollection::Add(ControlInfo* pControlInfo)
 
 void ControlCollection::SetScore(B2SData* pB2SData, int score)
 {
-   string scoreAsString = string(m_digits > std::to_string(score).length()
+   string scoreAsString = string(m_digits > (int)std::to_string(score).length()
       ? m_digits - (int)std::to_string(score).length() : 0,  ' ') + std::to_string(score);
    if ((int)scoreAsString.length() > m_digits)
       scoreAsString = scoreAsString.substr(scoreAsString.length() - m_digits);

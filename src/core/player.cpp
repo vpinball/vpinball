@@ -42,6 +42,10 @@
 #include "plugins/VPXPlugin.h"
 #include "core/VPXPluginAPIImpl.h"
 
+#include "input/ScanCodes.h"
+
+#include "utils/ushock_output.h"
+
 // MSVC Concurrency Viewer support
 // This requires to add the MSVC Concurrency SDK to the project
 //#define MSVC_CONCURRENCY_VIEWER
@@ -1098,27 +1102,24 @@ void Player::OnFocusChanged()
    else
    {
       #ifdef _MSC_VER
-         string title = "undefined"s;
-         string focusedWnd = "undefined"s;
          HWND foregroundWnd = GetForegroundWindow();
          if (foregroundWnd)
          {
+            string focusedWnd = "undefined"s;
             DWORD foregroundProcessId;
             DWORD foregroundThreadId = GetWindowThreadProcessId(foregroundWnd, &foregroundProcessId);
+            char tmp[MAXSTRING];
             if (foregroundProcessId)
             {
                HANDLE foregroundProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION /* PROCESS_QUERY_INFORMATION | PROCESS_VM_READ */, FALSE, foregroundProcessId);
                if (foregroundProcess)
                {
-                  char szFileName[MAXSTRING];
-                  if (GetProcessImageFileName(foregroundProcess, szFileName, MAXSTRING))
-                     focusedWnd = szFileName;
+                  if (GetProcessImageFileName(foregroundProcess, tmp, std::size(tmp)))
+                     focusedWnd = tmp;
                }
             }
-            char szTitle[1000];
-            GetWindowText(foregroundWnd, szTitle, 1000);
-            title = szTitle;
-            PLOGI << "Playfield window lost focus to window with title: '" << title << "' created by application: " << focusedWnd;
+            GetWindowText(foregroundWnd, tmp, std::size(tmp));
+            PLOGI << "Playfield window lost focus to window with title: '" << tmp << "' created by application: " << focusedWnd;
          }
          else
          {

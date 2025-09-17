@@ -5,6 +5,8 @@
 #include "KeysConfigDialog.h"
 #include "InputDeviceDialog.h"
 
+#include "input/ScanCodes.h"
+
 static SDL_Scancode GetNextKey()
 {
    SDL_Scancode sdlk = SDL_SCANCODE_UNKNOWN;

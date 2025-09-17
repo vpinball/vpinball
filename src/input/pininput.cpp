@@ -4,6 +4,8 @@
 #include "core/VPXPluginAPIImpl.h"
 #include "renderer/VRDevice.h"
 
+#include "ScanCodes.h"
+
 #ifdef __LIBVPINBALL__
    #include "standalone/VPinballLib.h"
 #endif
@@ -116,7 +118,7 @@ void PinInput::Init()
 
    // Initialize device handlers
 
-   auto inputAPI = static_cast<InputAPI>(g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "InputApi"s, PI_SDL));
+   const auto inputAPI = static_cast<InputAPI>(g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "InputApi"s, PI_SDL));
 
    // We always have an SDL handler as keyboard is always handled by SDL
    m_inputHandlers.push_back(std::make_unique<SDLInputHandler>(*this));
@@ -263,7 +265,7 @@ void PinInput::PushKeyboardEvent(SDL_Keycode keycode, SDL_Scancode scancode, boo
    ProcessEvent(e);
 }
 
-void PinInput::PushJoystickButtonEvent(uint64_t joystickId, int buttonId, bool isPressed)
+void PinInput::PushJoystickButtonEvent(uint64_t joystickId, unsigned int buttonId, bool isPressed)
 {
    InputEvent e;
    e.type = InputEvent::Type::JoyButton;
@@ -303,7 +305,7 @@ const PinInput::InputState& PinInput::GetInputState() const
  
 void PinInput::SetInputState(const InputState& state)
 {
-   uint64_t changes = state.actionState ^ m_inputState.actionState;
+   const uint64_t changes = state.actionState ^ m_inputState.actionState;
    uint64_t mask = 1ull;
    for (int i = 0; i < eActionCount; i++, mask <<= 1)
       if (changes & mask)

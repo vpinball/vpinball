@@ -29,7 +29,7 @@
 //
 // (#define DIK_ABNT_C2         0x7E    /* Numpad . on Brazilian keyboard */ - system should map this to KP_COMMA or something,
 //                                         according to USB doc, so probably it doesn't need mapping here)
-static unsigned char sdlScanCodeToDIK[512] = {
+static constexpr unsigned char sdlScanCodeToDIK[512] = {
    0x0, //	SDL_SCANCODE_UNKNOWN = 0, => 0 should also work for dinput codes as "not assigned/unknown"
    0x0, //	// 1 (unused)
    0x0, //	// 2 (unused)
@@ -360,7 +360,7 @@ static unsigned char sdlScanCodeToDIK[512] = {
 inline SDL_Scancode GetSDLScancodeFromDirectInputKey(const unsigned char dikCode)
 {
    if (dikCode < 0xEF)
-      for (int i = 0; i < 512; ++i)
+      for (size_t i = 0; i < std::size(sdlScanCodeToDIK); ++i)
          if (sdlScanCodeToDIK[i] == dikCode)
             return static_cast<SDL_Scancode>(i);
    return SDL_SCANCODE_UNKNOWN;
@@ -369,7 +369,7 @@ inline SDL_Scancode GetSDLScancodeFromDirectInputKey(const unsigned char dikCode
 inline unsigned char GetDirectInputKeyFromSDLScancode(const SDL_Scancode sdlk)
 {
    const int idx = static_cast<int>(sdlk);
-   if (idx < 0 || idx >= 512)
+   if (idx < 0 || idx >= (int)std::size(sdlScanCodeToDIK))
       return sdlScanCodeToDIK[SDL_SCANCODE_UNKNOWN];
    return sdlScanCodeToDIK[idx];
 }
@@ -385,7 +385,7 @@ inline unsigned char GetDirectInputKeyFromSDLScancode(const SDL_Scancode sdlk)
 #ifdef WIN32
 
 /* *INDENT-OFF* */ // clang-format off
-static const SDL_Scancode win32VKtoSDLScanCode[] = {
+static constexpr SDL_Scancode win32VKtoSDLScanCode[] = {
     /*0x00*/ SDL_SCANCODE_UNKNOWN,
     /*0x01*/ SDL_SCANCODE_ESCAPE,
     /*0x02*/ SDL_SCANCODE_1,

@@ -13,6 +13,8 @@
 
 #include "math/math.h"
 
+#include "utils/lzwreader.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_JPEG // only use the SSE2-JPG path from stbi, as all others are not faster than FreeImage //!! can remove stbi again if at some point FreeImage incorporates libjpeg-turbo or something similar
 #define STBI_NO_STDIO
@@ -924,16 +926,17 @@ Texture* Texture::CreateFromStream(IStream * const pstream, int version, PinTabl
          const uint8_t* spch = tmp + (height * pitch);
          for (unsigned int i = 0; i < height; i++)
          {
-            const uint8_t* __restrict src = (spch -= pitch); // start on previous previous line
+            const uint32_t* const __restrict src = (const uint32_t*)(spch -= pitch); // start on previous previous line
             uint8_t* __restrict dst = pdst + i * pitch_dst;
             if (has_alpha)
                memcpy(dst, src, pitch);
             else
-               for (unsigned int x = 0; x < width; x++, src += 4, dst += 3) // copy without alpha channel
+               for (unsigned int x = 0; x < width; x++, dst += 3) // copy without alpha channel
                {
-                  dst[0] = src[0];
-                  dst[1] = src[1];
-                  dst[2] = src[2];
+                  const unsigned int rgba = src[x];
+                  dst[0] = rgba;
+                  dst[1] = rgba >> 8;
+                  dst[2] = rgba >> 16;
                }
          }
 

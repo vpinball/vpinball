@@ -10,6 +10,8 @@
 #include "plugins/VPXPlugin.h"
 #include "core/VPXPluginAPIImpl.h"
 
+#include "utils/ushock_output.h"
+
 PhysicsEngine::PhysicsEngine(PinTable *const table)
    : m_hitPlayfield(table)
    , m_hitTopGlass(table)

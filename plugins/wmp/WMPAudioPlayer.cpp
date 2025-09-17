@@ -198,7 +198,7 @@ void WMPAudioPlayer::StartStreaming()
                audioBuffer[i] *= volume;
          }
 
-         SendAudioChunk(audioBuffer, framesRead);
+         SendAudioChunk(audioBuffer, (size_t)framesRead);
 
          double bufferDurationMs = (double)framesRead / (double)m_sampleRate * 1000.0;
          std::this_thread::sleep_for(std::chrono::microseconds((int)(bufferDurationMs * 800)));

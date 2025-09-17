@@ -20,6 +20,8 @@
 #include "core/VPXPluginAPIImpl.h"
 #include "core/ScriptGlobalTable.h"
 
+#include "utils/ushock_output.h"
+#include "ui/paintsur.h"
 
 #ifdef __STANDALONE__
 #include "standalone/Standalone.h"

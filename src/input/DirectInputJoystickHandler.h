@@ -47,14 +47,14 @@ public:
       SAFE_RELEASE(m_pDI);
    }
 
-   static constexpr uint64_t GetJoyId(const int index) { return static_cast<uint64_t>(0x100000000) | static_cast<uint64_t>(index); }
+   static constexpr uint64_t GetJoyId(const unsigned int index) { return 0x100000000ull | static_cast<uint64_t>(index); }
 
    int GetNJoysticks() const { return static_cast<int>(m_joysticks.size()); }
    LPDIRECTINPUTDEVICE8 GetJoystick(int index) const { return m_joysticks[index]; }
 
    void Update(const HWND foregroundWindow) override
    {
-      int index = 0;
+      unsigned int index = 0;
       for (auto joystick : m_joysticks)
       {
          HRESULT hr = joystick->Acquire();
@@ -65,7 +65,7 @@ public:
             hr = joystick->GetDeviceData(sizeof(DIDEVICEOBJECTDATA), didod, &dwElements, 0);
             if ((hr == S_OK || hr == DI_BUFFEROVERFLOW) && (m_focusHWnd == foregroundWindow))
             {
-               uint64_t joyId = GetJoyId(index);
+               const uint64_t joyId = GetJoyId(index);
                for (DWORD i = 0; i < dwElements; i++)
                {
                   if ((didod[i].dwOfs >= DIJOFS_BUTTON0) && (didod[i].dwOfs <= DIJOFS_BUTTON31))
@@ -201,7 +201,7 @@ private:
       // Enumerate the joystick objects. The callback function enabled user interface elements for objects that are found, and sets the min/max values property for discovered axes.
       hr = joystick->EnumObjects(EnumObjectsCallback, (VOID*)joystick, DIDFT_ALL);
 
-      me->m_pininput.SetupJoyMapping(GetJoyId(static_cast<int>(me->m_joysticks.size())), joystickType);
+      me->m_pininput.SetupJoyMapping(GetJoyId(static_cast<unsigned int>(me->m_joysticks.size())), joystickType);
       me->m_joysticks.push_back(joystick);
 
       return DIENUM_CONTINUE;

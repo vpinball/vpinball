@@ -98,7 +98,7 @@ __forceinline float dequantizeSignedPercent(const int i)
     return clamp(precise_divide((float)i, N), -1.f, 1.f); //!! test: optimize div or does this break precision?
 }
 
-__forceinline int quantizeSignedPercent(const float x)
+constexpr __forceinline int quantizeSignedPercent(const float x)
 {
     constexpr int N = 100, Np1 = 101;
     return clamp((int)(x * (float)Np1), -N, N);
@@ -346,7 +346,7 @@ inline float half2float_noLUT(const uint16_t x) { // IEEE-754 16-bit floating-po
 }
 
 // matches float2half() exactly
-inline uint16_t float2half_noLUT(const float value)
+CONSTEXPR inline uint16_t float2half_noLUT(const float value)
 {
 #if (defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) && !(defined(__RPI__) || defined(__RK3588__))
    return half_as_ushort((_Float16)value);

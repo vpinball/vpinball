@@ -4,6 +4,11 @@
 #include "captureExt.h"
 #include "comdef.h"
 
+#if defined(ENABLE_OPENGL) && !defined(__STANDALONE__)
+// Needed for external capture for VR on Windows
+#pragma comment(lib, "d3d11.lib")
+#endif
+
 #if defined(EXT_CAPTURE)
 DXGIRegistry g_DXGIRegistry;
 ExtCaptureManager g_ExtCaptureManager;

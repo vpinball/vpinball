@@ -14,8 +14,6 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_gamepad.h>
 
-#include "ScanCodes.h"
-
 // Maximum number of joysticks
 #define PININ_JOYMXCNT 8
 
@@ -197,7 +195,7 @@ public:
    void PushActionEvent(EnumPlayerActions action, bool isPressed);
    void PushMouseEvent(int button, bool isPressed);
    void PushKeyboardEvent(SDL_Keycode keycode, SDL_Scancode scancode, bool isPressed);
-   void PushJoystickButtonEvent(uint64_t joystickId, int buttonId, bool isPressed);
+   void PushJoystickButtonEvent(uint64_t joystickId, unsigned int buttonId, bool isPressed);
    void PushJoystickAxisEvent(uint64_t joystickId, int axisId, float value);
 
    void ProcessInput(); // Gather and process events
@@ -299,7 +297,7 @@ private:
    int m_joycustom2 = 0;
    int m_joycustom3 = 0;
    int m_joycustom4 = 0;
-   
+
    const unsigned int m_onActionEventMsgId;
 
    struct ActionMapping
@@ -376,7 +374,7 @@ private:
 public:
    void SetFocusWindow(HWND focusWnd);
    class DirectInputJoystickHandler* GetDirectInputJoystickHandler() const;
-   
+
 private:
    HWND m_focusHWnd = nullptr;
    STICKYKEYS m_startupStickyKeys { 0 };
