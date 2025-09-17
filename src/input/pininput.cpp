@@ -118,7 +118,7 @@ void PinInput::Init()
 
    // Initialize device handlers
 
-   const auto inputAPI = static_cast<InputAPI>(g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "InputApi"s, PI_SDL));
+   auto inputAPI = static_cast<InputAPI>(g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "InputApi"s, PI_SDL));
 
    // We always have an SDL handler as keyboard is always handled by SDL
    m_inputHandlers.push_back(std::make_unique<SDLInputHandler>(*this));
