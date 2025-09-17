@@ -933,16 +933,17 @@ HRESULT external_open_storage(const OLECHAR* pwcsName, IStorage* pstgPriority, D
 
 HRESULT external_create_object(const WCHAR* progid, IClassFactory* cf, IUnknown* obj)
 {
-   HRESULT hres = E_NOTIMPL;
+   // External objects should now be handled using the DynamicScript overrides in 10.8.1.
+   // Keeping as a fallback, and to allow for syncing Wine updates to 10.8.0 Standalone.
+
+   IUnknown** ppObj = (IUnknown**)&obj;
+   *ppObj = NULL;
 
    const char* const szT = MakeChar(progid);
-   PLOGI.printf("progid=%s, hres=0x%08x", szT, hres);
-   if (hres == E_NOTIMPL) {
-      PLOGW << "Creating an object of type \"" << szT << "\" is not supported";
-   }
+   PLOGW << "Creating an object of type \"" << szT << "\" is not supported";
    delete[] szT;
 
-   return hres;
+   return CLASS_E_CLASSNOTAVAILABLE;
 }
 
 void external_log_info(const char* format, ...)

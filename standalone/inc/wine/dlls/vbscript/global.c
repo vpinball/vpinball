@@ -2505,16 +2505,8 @@ static HRESULT Global_CreateObject(BuiltinDisp *This, VARIANT *arg, unsigned arg
     }
 
     obj = create_object(This->ctx, V_BSTR(arg));
-#ifndef __STANDALONE__
     if(!obj)
         return VB_E_CANNOT_CREATE_OBJ;
-#else
-    if(!obj) {
-        V_VT(res) = VT_DISPATCH;
-        V_DISPATCH(res) = NULL;
-        return S_OK;
-    }
-#endif
 
     if(res) {
         hres = IUnknown_QueryInterface(obj, &IID_IDispatch, (void**)&V_DISPATCH(res));
