@@ -741,6 +741,7 @@ public:
    float m_globalEmissionScale = 1.f;
    float m_AOScale;
    float m_SSRScale;
+   float m_groundToPlayfieldHeight = 84.f; // Height of playfield from ground in cm (corresponding to cab model for VR)
 
    float m_playfieldReflectionStrength; // default (implicit) playfield reflection strength (0 to disable playfield reflection)
 
@@ -845,6 +846,4 @@ private:
 
    ToneMapper m_toneMapper = ToneMapper::TM_AGX;
    float m_exposure = 1.f;
-
-   inline float ApplyDifficulty(float minValue, float MaxValue) const;
 };

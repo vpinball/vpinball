@@ -1344,11 +1344,15 @@
 #define IDB_TRISTATE_ICONS16            961
 #define IDC_MASK_PLAYFIELD              962
 #define IDC_MASK_MIXED_REALITY          963
-#define IDC_MASK_AUGMENTED_REALITY      964
+#define IDC_MASK_VIRTUAL_REALITY        964
 #define IDC_SPACE_REFERENCE             965
 #define IDD_PROPPARTGROUP_VISUALS       966
 #define IDC_LOCKBAR_HEIGHT_FROM_GROUND  967
 #define IDS_IMAGE_FILE_SIZE             968
+#define IDC_MASK_DESKTOP                969
+#define IDC_MASK_FSS                    970
+#define IDC_MASK_CABINET                971
+#define IDC_TABLE_GROUND_TO_PLAYFIELD_HEIGHT_EDIT 972
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
@@ -1546,7 +1550,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        681
 #define _APS_NEXT_COMMAND_VALUE         4030
-#define _APS_NEXT_CONTROL_VALUE         969
+#define _APS_NEXT_CONTROL_VALUE         973
 #define _APS_NEXT_SYMED_VALUE           191
 #endif
 #endif

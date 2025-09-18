@@ -13,19 +13,27 @@ public:
    Vertex2D m_v;
 
    // PartGroup properties
-   enum VisibilityMask
+   enum PlayerModeVisibilityMask
    {
-      VM_PLAYFIELD       = 0x0001,
-      VM_MIXED_REALITY   = 0x0002,
-      VM_VIRTUAL_REALITY = 0x0004,
-      VM_SCOREVIEW       = 0x0008, // Reserved (Not yet used)
-      VM_BACKGLASS       = 0x0010, // Reserved (Not yet used)
-      VM_TOPPER          = 0x0020, // Reserved (Not yet used)
-      VM_APRON_LEFT      = 0x0040, // Reserved (Not yet used)
-      VM_APRON_RIGHT     = 0x0080, // Reserved (Not yet used)
-      VM_ALL             = 0xFFFF,
+      PMVM_DESKTOP         = 0x0001, // Enable if player is in desktop mode (not VR/AR, played on a landscape device, showing desktop backdrop)
+      PMVM_FSS             = 0x0002, // Enable if player is in full single screen mode (not VR/AR, played on a portrait device showing cab & backglass)
+      PMVM_CABINET         = 0x0004, // Enable if player is in cabinet mode (not VR/AR, played on a pincab device)
+      PMVM_MIXED_REALITY   = 0x0008, // Enable if player is in AR mode
+      PMVM_VIRTUAL_REALITY = 0x0010, // Enable if player is in VR mode
+      PMVM_ALL             = 0xFFFF,
    };
-   unsigned int m_visibilityMask = VM_ALL;
+   enum ViewVisibilityMask
+   {
+      VVM_PLAYFIELD       = 0x0001, // Enable in playfield view
+      VVM_SCOREVIEW       = 0x0002, // Enable in score view (Not yet used)
+      VVM_BACKGLASS       = 0x0004, // Enable in backglass view (Not yet used)
+      VVM_TOPPER          = 0x0008, // Enable in topper view (Not yet used)
+      VVM_APRON_LEFT      = 0x0010, // Enable in left apron view (Not yet used)
+      VVM_APRON_RIGHT     = 0x0020, // Enable in right apron view (Not yet used)
+      VVM_ALL             = 0xFFFF,
+   };
+   unsigned int m_playerModeVisibilityMask = PMVM_ALL;
+   unsigned int m_viewVisibilityMask = VVM_ALL;
    enum class SpaceReference : int
    {
       SR_PLAYFIELD, // Relative to cabinet with playfield inclination and local coordinate system applied (usual local playfield coordinate system tailored for table design)
@@ -96,7 +104,8 @@ public:
 
    // IPartGroup
 
-   unsigned int GetVisibilityMask() const;
+   unsigned int GetPlayerModeVisibilityMask() const;
+   unsigned int GetViewVisibilityMask() const;
    PartGroupData::SpaceReference GetReferenceSpace() const;
 
    PartGroupData m_d;

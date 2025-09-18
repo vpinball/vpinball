@@ -34,7 +34,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_stereo3Denabled = m_table->m_settings.LoadValueBool(Settings::Player, "Stereo3DEnabled"s);
    m_toneMapper = (ToneMapper)m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "ToneMapper"s, m_table->GetToneMapper());
    m_toneMapper = clamp(m_toneMapper, TM_REINHARD, TM_AGX_PUNCHY);
-   m_HDRforceDisableToneMapper = m_table->m_settings.LoadValueWithDefault(Settings::Player, "HDRDisableToneMapper"s, true);
+   m_HDRforceDisableToneMapper = m_table->m_settings.LoadValueBool(Settings::Player, "HDRDisableToneMapper"s);
    m_exposure = m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "Exposure"s, m_table->GetExposure());
    m_dynamicAO = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DynamicAO"s, true);
    m_disableAO = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DisableAO"s, false);
@@ -1155,12 +1155,16 @@ void Renderer::RenderFrame()
    m_renderableToInit.clear();
 
    // Update backdrop visibility and visibility mask
-   // For the time being, the RenderFrame only support rendering one 3D view, used for main scene, mixed realaity and virtual reality
-   // Dedicated 3D rendering for backglass, topper, apron are not yet implemented
+   // For the time being, the RenderFrame only support rendering one 3D view for main scene: dedicated 3D rendering for backglass, topper, apron are not yet implemented
    m_noBackdrop = (g_pplayer->m_vrDevice != nullptr) || (m_table->m_BG_current_set == BG_FULLSCREEN);
-   m_visibilityMask = g_pplayer->m_vrDevice == nullptr ? PartGroupData::VisibilityMask::VM_PLAYFIELD
-                    : m_vrApplyColorKey ?               (PartGroupData::VisibilityMask::VM_PLAYFIELD | PartGroupData::VisibilityMask::VM_MIXED_REALITY)
-                    :                                   (PartGroupData::VisibilityMask::VM_PLAYFIELD | PartGroupData::VisibilityMask::VM_MIXED_REALITY | PartGroupData::VisibilityMask::VM_VIRTUAL_REALITY);
+   if (g_pplayer->m_vrDevice)
+      m_visibilityMask = m_vrApplyColorKey ? PartGroupData::PlayerModeVisibilityMask::PMVM_MIXED_REALITY : PartGroupData::PlayerModeVisibilityMask::PMVM_VIRTUAL_REALITY;
+   else if (m_table->m_BG_current_set == BG_FULLSCREEN)
+      m_visibilityMask = PartGroupData::PlayerModeVisibilityMask::PMVM_CABINET;
+   else if (m_table->m_BG_current_set == BG_FSS)
+      m_visibilityMask = PartGroupData::PlayerModeVisibilityMask::PMVM_FSS;
+   else if (m_table->m_BG_current_set == BG_DESKTOP)
+      m_visibilityMask = PartGroupData::PlayerModeVisibilityMask::PMVM_DESKTOP;
 
    // Setup ball rendering: collect all lights that can reflect on balls
    m_ballTrailMeshBufferPos = 0;
@@ -1176,11 +1180,13 @@ void Renderer::RenderFrame()
    m_renderDevice->m_ballShader->SetTexture(SHADER_tex_ball_playfield, GetPreviousBackBufferTexture()->GetColorSampler());
 
    // Update camera point of view
+   m_mvpSpaceReference = PartGroupData::SpaceReference::SR_PLAYFIELD;
    #if defined(ENABLE_VR) || defined(ENABLE_XR)
    if (m_stereo3D == STEREO_VR)
    {
-      m_mvpSpaceReference = PartGroupData::SpaceReference::SR_PLAYFIELD;
-      g_pplayer->m_vrDevice->UpdateVRPosition(PartGroupData::SpaceReference::SR_PLAYFIELD, GetMVP());
+      g_pplayer->m_vrDevice->UpdateVRPosition(m_mvpSpaceReference, GetMVP());
+      UpdateBasicShaderMatrix();
+      UpdateBallShaderMatrix();
    }
    else 
    #endif
@@ -1196,6 +1202,7 @@ void Renderer::RenderFrame()
          m_mvp->SetProj(eye, matProj[eye]);
       #endif
    }
+   m_playfieldView = m_mvp->GetView();
 
    // Start from the prerendered parts/background or a clear background for VR
    if (m_stereo3D == STEREO_VR || g_pplayer->GetInfoMode() == IF_DYNAMIC_ONLY)
@@ -1556,21 +1563,48 @@ extern marker_series series;
 void Renderer::RenderItem(IEditable* renderable, bool isNoBackdrop)
 {
    if ((isNoBackdrop && renderable->m_backglass) // Don't render backdrop items in reflections or VR & cabinet modes
-      || (renderable->GetPartGroup() != nullptr && ((renderable->GetPartGroup()->GetVisibilityMask() & m_visibilityMask) == 0))) // Apply visibility mask
+      || (renderable->GetPartGroup() != nullptr && ((renderable->GetPartGroup()->GetPlayerModeVisibilityMask() & m_visibilityMask) == 0)) // Apply player mode visibility mask
+      || (renderable->GetPartGroup() != nullptr && ((renderable->GetPartGroup()->GetViewVisibilityMask() & PartGroupData::ViewVisibilityMask::VVM_PLAYFIELD) == 0))) // Apply view visibility mask
       return;
       
-   #if defined(ENABLE_XR)
-   if (m_stereo3D == STEREO_VR)
+   const PartGroupData::SpaceReference spaceReference = renderable->GetPartGroup() ? renderable->GetPartGroup()->GetReferenceSpace() : PartGroupData::SpaceReference::SR_PLAYFIELD;
+   if (m_mvpSpaceReference != spaceReference)
    {
-      PartGroupData::SpaceReference spaceReference = renderable->GetPartGroup() ? renderable->GetPartGroup()->GetReferenceSpace() : PartGroupData::SpaceReference::SR_PLAYFIELD;
-      if (m_mvpSpaceReference != spaceReference)
+      #if defined(ENABLE_XR)
+      if (m_stereo3D == STEREO_VR)
       {
-         m_mvpSpaceReference = spaceReference;
-         g_pplayer->m_vrDevice->UpdateVRPosition(m_mvpSpaceReference, GetMVP());
-         UpdateBasicShaderMatrix();
+         g_pplayer->m_vrDevice->UpdateVRPosition(spaceReference, GetMVP());
       }
+      else
+      #endif
+      {
+         switch (spaceReference)
+         {
+         case PartGroupData::SpaceReference::SR_CABINET:
+         case PartGroupData::SpaceReference::SR_CABINET_FEET:
+         case PartGroupData::SpaceReference::SR_ROOM:
+         {
+            const PinTable* const table = g_pplayer->m_ptable;
+            //const float baseSlope = lerp(table->m_angletiltMin, table->m_angletiltMax, table->m_difficulty);
+            //const Matrix3D cabinetSlope = Matrix3D::MatrixRotateX(ANGTORAD(table->GetPlayfieldSlope() - baseSlope));
+            const Matrix3D pfToCab = Matrix3D::MatrixTranslate(0.f, 0.f, -CMTOVPU(table->m_groundToPlayfieldHeight));
+            const Matrix3D cabView = pfToCab * m_playfieldView; // * cabinetSlope;
+            m_mvp->SetView(cabView);
+            break;
+         }
+         
+         case PartGroupData::SpaceReference::SR_PLAYFIELD:
+         default:
+         {
+            m_mvp->SetView(m_playfieldView);
+            break;
+         }
+         }
+      }
+      m_mvpSpaceReference = spaceReference;
+      UpdateBasicShaderMatrix();
+      UpdateBallShaderMatrix();
    }
-   #endif
 
    renderable->GetIHitable()->Render(m_render_mask);
 }

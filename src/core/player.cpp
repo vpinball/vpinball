@@ -455,7 +455,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_physics = new PhysicsEngine(m_ptable);
    const float minSlope = (m_ptable->m_overridePhysics ? m_ptable->m_fOverrideMinSlope : m_ptable->m_angletiltMin);
    const float maxSlope = (m_ptable->m_overridePhysics ? m_ptable->m_fOverrideMaxSlope : m_ptable->m_angletiltMax);
-   const float slope = minSlope + (maxSlope - minSlope) * m_ptable->m_globalDifficulty;
+   const float slope = lerp(minSlope, maxSlope, m_ptable->m_globalDifficulty);
    m_physics->SetGravity(slope, m_ptable->m_overridePhysics ? m_ptable->m_fOverrideGravityConstant : m_ptable->m_Gravity);
 
    InitFPS();
