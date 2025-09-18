@@ -195,6 +195,7 @@ private:
    PinTable* const m_table;
 
    ModelViewProj* m_mvp = nullptr; // Store the active Model / View / Projection
+   Matrix3D m_playfieldView; // Store the base playfield view matrix computed at beginning of frame render
    PartGroupData::SpaceReference m_mvpSpaceReference = PartGroupData::SpaceReference::SR_PLAYFIELD;
 
    bool m_isStaticPrepassDirty = true;

@@ -16,10 +16,14 @@ protected:
     INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 private:
-   void UpdateVisibilityMask(PartGroup* const partGroup, PartGroupData::VisibilityMask mask, bool checked);
+   void UpdatePlayerModeVisibilityMask(PartGroup* const partGroup, PartGroupData::PlayerModeVisibilityMask mask, bool checked);
+   void UpdateViewVisibilityMask(PartGroup* const partGroup, PartGroupData::ViewVisibilityMask mask, bool checked);
 
    CComboBox m_referenceSpace;
-   CButton   m_visibilityPlayfield;
-   CButton   m_visibilityMixedReality;
-   CButton   m_visibilityVirtualReality;
+   CButton m_visibilityPlayfield;
+   CButton m_visibilityDesktop;
+   CButton m_visibilityFSS;
+   CButton m_visibilityCabinet;
+   CButton m_visibilityMixedReality;
+   CButton m_visibilityVirtualReality;
 };

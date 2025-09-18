@@ -33,6 +33,7 @@ private:
     EditBox m_tableHeightEdit;
     EditBox m_bottomGlassHeightEdit;
     EditBox m_topGlassHeightEdit;
+    EditBox m_groundToPlayfieldHeightEdit;
     EditBox m_minSlopeEdit;
     EditBox m_maxSlopeEdit;
     EditBox m_gameplayDifficultyEdit;

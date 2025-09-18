@@ -1044,7 +1044,7 @@ void RenderOptPage::LoadSettings(Settings& settings)
       m_maxReflection.SetCurSel(maxReflection);
 
       m_useAltDepth.SetCheck(settings.LoadValueWithDefault(Settings::Player, "UseNVidiaAPI"s, false) ? BST_CHECKED : BST_UNCHECKED);
-      m_forceTMOff.SetCheck(settings.LoadValueWithDefault(Settings::Player, "HDRDisableToneMapper"s, true) ? BST_CHECKED : BST_UNCHECKED);
+      m_forceTMOff.SetCheck(settings.LoadValueBool(Settings::Player, "HDRDisableToneMapper"s) ? BST_CHECKED : BST_UNCHECKED);
 #if defined(ENABLE_BGFX)
       //if (!SDL_GetBooleanProperty(props, SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN, false)) {
       //   m_forceTMOff.EnableWindow(false);
