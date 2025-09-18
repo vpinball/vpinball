@@ -271,26 +271,26 @@ void VPinball::InitTools()
 // Load editor behavior options from the settings
 void VPinball::LoadEditorSetupFromSettings()
 {
-   m_alwaysDrawDragPoints = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "ShowDragPoints"s, false);
-   m_alwaysDrawLightCenters = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "DrawLightCenters"s, false);
-   m_gridSize = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "GridSize"s, 50);
+   m_alwaysDrawDragPoints = m_settings.LoadValueWithDefault(Settings::Editor, "ShowDragPoints"s, false);
+   m_alwaysDrawLightCenters = m_settings.LoadValueWithDefault(Settings::Editor, "DrawLightCenters"s, false);
+   m_gridSize = m_settings.LoadValueWithDefault(Settings::Editor, "GridSize"s, 50);
 
-   const bool autoSave = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "AutoSaveOn"s, true);
+   const bool autoSave = m_settings.LoadValueWithDefault(Settings::Editor, "AutoSaveOn"s, true);
    if (autoSave)
    {
-      m_autosaveTime = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "AutoSaveTime"s, AUTOSAVE_DEFAULT_TIME);
+      m_autosaveTime = m_settings.LoadValueWithDefault(Settings::Editor, "AutoSaveTime"s, AUTOSAVE_DEFAULT_TIME);
       SetAutoSaveMinutes(m_autosaveTime);
    }
    else
       m_autosaveTime = -1;
 
-   m_securitylevel = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "SecurityLevel"s, DEFAULT_SECURITY_LEVEL);
+   m_securitylevel = m_settings.LoadValueWithDefault(Settings::Player, "SecurityLevel"s, DEFAULT_SECURITY_LEVEL);
 
-   m_dummyMaterial.m_cBase = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "DefaultMaterialColor"s, 0xB469FF);
-   m_elemSelectColor = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "ElementSelectColor"s, 0x00FF0000);
-   m_elemSelectLockedColor = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "ElementSelectLockedColor"s, 0x00A7726D);
-   m_backgroundColor = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "BackgroundColor"s, 0x008D8D8D);
-   m_fillColor = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "FillColor"s, 0x00B1CFB3);
+   m_dummyMaterial.m_cBase = m_settings.LoadValueWithDefault(Settings::Editor, "DefaultMaterialColor"s, 0xB469FF);
+   m_elemSelectColor = m_settings.LoadValueWithDefault(Settings::Editor, "ElementSelectColor"s, 0x00FF0000);
+   m_elemSelectLockedColor = m_settings.LoadValueWithDefault(Settings::Editor, "ElementSelectLockedColor"s, 0x00A7726D);
+   m_backgroundColor = m_settings.LoadValueWithDefault(Settings::Editor, "BackgroundColor"s, 0x008D8D8D);
+   m_fillColor = m_settings.LoadValueWithDefault(Settings::Editor, "FillColor"s, 0x00B1CFB3);
 
    if (m_securitylevel < eSecurityNone || m_securitylevel > eSecurityNoControls)
       m_securitylevel = eSecurityNoControls;
@@ -300,13 +300,13 @@ void VPinball::LoadEditorSetupFromSettings()
    for (int i = 0; i < LAST_OPENED_TABLE_COUNT; i++)
    {
       string szTableName;
-      if (g_pvp->m_settings.LoadValue(Settings::RecentDir, "TableFileName" + std::to_string(i), szTableName))
+      if (m_settings.LoadValue(Settings::RecentDir, "TableFileName" + std::to_string(i), szTableName))
          m_recentTableList.push_back(szTableName);
       else
          break;
    }
 
-   m_convertToUnit = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "Units"s, 0);
+   m_convertToUnit = m_settings.LoadValueWithDefault(Settings::Editor, "Units"s, 0);
 }
 
 void VPinball::AddMDITable(PinTableMDI* mdiTable) 
@@ -432,7 +432,7 @@ void VPinball::ResetAllDockers()
 #ifndef __STANDALONE__
    const bool createNotes = m_dockNotes != nullptr;
    CloseAllDockers();
-   // FIXME these are Windows only registry key. Move to g_pvp->m_settings. ?
+   // FIXME these are Windows only registry key. Move to m_settings. ?
    // DeleteSubKey("Editor\\Dock Windows"s); // Old Win32xx
    // DeleteSubKey("Editor\\Dock Settings"s);// Win32xx 9+
    CreateDocker();
@@ -1034,7 +1034,7 @@ void VPinball::DoPlay(const int playMode)
       initError = true;
    else
    {
-      auto processWindowMessages = []()
+      auto processWindowMessages = [this]()
       {
          const uint64_t startTick = usec();
          SDL_Event e;
@@ -1055,7 +1055,7 @@ void VPinball::DoPlay(const int playMode)
                break;
             case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
                isPFWnd = SDL_GetWindowFromID(e.window.windowID) == g_pplayer->m_playfieldWnd->GetCore();
-               g_pvp->QuitPlayer(Player::CloseState::CS_STOP_PLAY);
+               QuitPlayer(Player::CloseState::CS_STOP_PLAY);
                break;
             case SDL_EVENT_KEY_UP:
             case SDL_EVENT_KEY_DOWN:
@@ -1171,7 +1171,7 @@ void VPinball::DoPlay(const int playMode)
 
    if (initError)
    {
-      g_pvp->m_table_played_via_SelectTableOnStart = false;
+      m_table_played_via_SelectTableOnStart = false;
    }
 
    #ifdef __LIBVPINBALL__
@@ -1181,7 +1181,7 @@ void VPinball::DoPlay(const int playMode)
 
 bool VPinball::LoadFile(const bool updateEditor, VPXFileFeedback* feedback)
 {
-   string szInitialDir = g_pvp->m_settings.LoadValueWithDefault(Settings::RecentDir, "LoadDir"s, PATH_TABLES);
+   string szInitialDir = m_settings.LoadValueWithDefault(Settings::RecentDir, "LoadDir"s, PATH_TABLES);
 
    vector<string> filename;
    if (!OpenFileDialog(szInitialDir, filename, "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0", "vpx", 0,
@@ -1190,7 +1190,7 @@ bool VPinball::LoadFile(const bool updateEditor, VPXFileFeedback* feedback)
 
    const size_t index = filename[0].find_last_of(PATH_SEPARATOR_CHAR);
    if (index != string::npos)
-      g_pvp->m_settings.SaveValue(Settings::RecentDir, "LoadDir"s, filename[0].substr(0, index));
+      m_settings.SaveValue(Settings::RecentDir, "LoadDir"s, filename[0].substr(0, index));
 
    LoadFileName(filename[0], updateEditor, feedback);
 
@@ -1241,7 +1241,7 @@ void VPinball::LoadFileName(const string& filename, const bool updateEditor, VPX
 #endif
 
 #ifdef __STANDALONE__
-      g_pvp->m_ptableActive = ppt;
+      m_ptableActive = ppt;
 #endif
 
       ppt->InitTablePostLoad();
@@ -1257,7 +1257,7 @@ void VPinball::LoadFileName(const string& filename, const bool updateEditor, VPX
          for (int j = 0; j < 15; j++)
          {
             hasTablePovSettings |= ppt->m_settings.HasValue(Settings::TableOverride, vsPrefix[i] + vsFields[j], false);
-            hasAppPovSettings |= g_pvp->m_settings.HasValue(Settings::TableOverride, vsPrefix[i] + vsFields[j], false);
+            hasAppPovSettings |= m_settings.HasValue(Settings::TableOverride, vsPrefix[i] + vsFields[j], false);
          }
       if (!hasTablePovSettings)
       {
@@ -1297,7 +1297,7 @@ void VPinball::LoadFileName(const string& filename, const bool updateEditor, VPX
       }
 
       // get the load path from the filename
-      g_pvp->m_settings.SaveValue(Settings::RecentDir, "LoadDir"s, m_currentTablePath);
+      m_settings.SaveValue(Settings::RecentDir, "LoadDir"s, m_currentTablePath);
 
       // make sure the load directory is the active directory
       SetCurrentDirectory(m_currentTablePath.c_str());
@@ -1550,7 +1550,7 @@ void VPinball::UpdateRecentFileList(const string& filename)
       {
          m_recentTableList.push_back(tableName);
          // write entry to the registry
-         g_pvp->m_settings.SaveValue(Settings::RecentDir, "TableFileName" + std::to_string(i), tableName);
+         m_settings.SaveValue(Settings::RecentDir, "TableFileName" + std::to_string(i), tableName);
 
          if (++i == LAST_OPENED_TABLE_COUNT)
             break;
@@ -1702,12 +1702,12 @@ void VPinball::OnClose()
 
       if (GetWindowPlacement(winpl))
       {
-         g_pvp->m_settings.SaveValue(Settings::Editor, "WindowLeft"s, (int)winpl.rcNormalPosition.left);
-         g_pvp->m_settings.SaveValue(Settings::Editor, "WindowTop"s, (int)winpl.rcNormalPosition.top);
-         g_pvp->m_settings.SaveValue(Settings::Editor, "WindowRight"s, (int)winpl.rcNormalPosition.right);
-         g_pvp->m_settings.SaveValue(Settings::Editor, "WindowBottom"s, (int)winpl.rcNormalPosition.bottom);
+         m_settings.SaveValue(Settings::Editor, "WindowLeft"s, (int)winpl.rcNormalPosition.left);
+         m_settings.SaveValue(Settings::Editor, "WindowTop"s, (int)winpl.rcNormalPosition.top);
+         m_settings.SaveValue(Settings::Editor, "WindowRight"s, (int)winpl.rcNormalPosition.right);
+         m_settings.SaveValue(Settings::Editor, "WindowBottom"s, (int)winpl.rcNormalPosition.bottom);
 
-         g_pvp->m_settings.SaveValue(Settings::Editor, "WindowMaximized"s, !!IsZoomed());
+         m_settings.SaveValue(Settings::Editor, "WindowMaximized"s, !!IsZoomed());
       }
       if (!m_open_minimized) // otherwise the window/dock settings are screwed up and have to be manually restored each time
          SaveDockRegistrySettings(DOCKER_REGISTRY_KEY);
@@ -1813,12 +1813,12 @@ void VPinball::OnInitialUpdate()
    int left, top, right, bottom;
    BOOL maximized;
 
-   const bool hrleft = g_pvp->m_settings.LoadValue(Settings::Editor, "WindowLeft"s, left);
-   const bool hrtop = g_pvp->m_settings.LoadValue(Settings::Editor, "WindowTop"s, top);
-   const bool hrright = g_pvp->m_settings.LoadValue(Settings::Editor, "WindowRight"s, right);
-   const bool hrbottom = g_pvp->m_settings.LoadValue(Settings::Editor, "WindowBottom"s, bottom);
+   const bool hrleft = m_settings.LoadValue(Settings::Editor, "WindowLeft"s, left);
+   const bool hrtop = m_settings.LoadValue(Settings::Editor, "WindowTop"s, top);
+   const bool hrright = m_settings.LoadValue(Settings::Editor, "WindowRight"s, right);
+   const bool hrbottom = m_settings.LoadValue(Settings::Editor, "WindowBottom"s, bottom);
 
-   const bool hrmax = g_pvp->m_settings.LoadValue(Settings::Editor, "WindowMaximized"s, maximized);
+   const bool hrmax = m_settings.LoadValue(Settings::Editor, "WindowMaximized"s, maximized);
 
    if (hrleft && hrtop && hrright && hrbottom)
    {
@@ -2429,7 +2429,7 @@ void VPinball::ToggleScriptEditor()
    if (ptCur)
    {
 #ifndef __STANDALONE__
-      const bool alwaysViewScript = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "AlwaysViewScript"s, false);
+      const bool alwaysViewScript = m_settings.LoadValueWithDefault(Settings::Editor, "AlwaysViewScript"s, false);
 
       ptCur->m_pcv->SetVisible(alwaysViewScript || !(ptCur->m_pcv->m_visible && !ptCur->m_pcv->m_minimized));
 #endif
@@ -2489,7 +2489,7 @@ void VPinball::SetViewSolidOutline(size_t viewId)
       GetMenu().CheckMenuItem(ID_VIEW_OUTLINE, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_UNCHECKED : MF_CHECKED));
 
       ptCur->SetDirtyDraw();
-      g_pvp->m_settings.SaveValue(Settings::Editor, "RenderSolid"s, ptCur->m_renderSolid);
+      m_settings.SaveValue(Settings::Editor, "RenderSolid"s, ptCur->m_renderSolid);
 #endif
    }
 }
@@ -2912,7 +2912,7 @@ void VPinball::GenerateTournamentFile()
    GenerateTournamentFileInternal2(dmd_data, dmd_size, res);
 
    FILE *f;
-   if (fopen_s(&f, (g_pvp->GetActiveTable()->m_filename + ".txt").c_str(), "w") == 0 && f)
+   if (fopen_s(&f, (GetActiveTable()->m_filename + ".txt").c_str(), "w") == 0 && f)
    {
       fprintf(f, "%03X", g_pplayer->m_dmdSize.x);
       fprintf(f, "%03X", g_pplayer->m_dmdSize.y);
@@ -2931,7 +2931,7 @@ void VPinball::GenerateTournamentFile()
          fprintf(f,"%02X",dmd_data[i]);
       fclose(f);
 
-      g_pplayer->m_liveUI->PushNotification("Tournament file saved as " + g_pvp->GetActiveTable()->m_filename + ".txt", 4000);
+      g_pplayer->m_liveUI->PushNotification("Tournament file saved as " + GetActiveTable()->m_filename + ".txt", 4000);
    }
    else
       g_pplayer->m_liveUI->PushNotification("Cannot save Tournament file"s, 4000);
