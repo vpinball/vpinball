@@ -79,7 +79,7 @@ private:
    void OpenRecentFile(const size_t menuId);
    void CopyPasteElement(const CopyPasteModes mode);
    void InitTools();
-   void InitRegValues();
+   void LoadEditorSetupFromSettings();
    bool CanClose();
    void GetMyPath();
    void UpdateRecentFileList(const string& filename);

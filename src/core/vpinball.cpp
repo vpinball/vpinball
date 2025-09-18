@@ -147,9 +147,9 @@ VPinball::VPinball()
    m_pinSimFrontEndControlsMsg = RegisterWindowMessageA("PinSim::FrontEndControls");
 #endif
 
-#ifdef __STANDALONE__
+   LoadEditorSetupFromSettings();
+
    wintimer_init();
-#endif
 }
 
 //deletes clipboard
@@ -268,12 +268,8 @@ void VPinball::InitTools()
    m_ToolCur = IDC_SELECT;
 }
 
-//Initializes Default Values of many variables (from Registry if keys are present).
-//Registry Values under HKEY-CURRENT-USER/Software/Visual Pinball
-//Deadzone, ShowDragPoints, DrawLightCenters,
-//AutoSaveOn, AutoSaveTime, SecurityLevel
-//Gets the last loaded Tables (List under File-Menu)
-void VPinball::InitRegValues()
+// Load editor behavior options from the settings
+void VPinball::LoadEditorSetupFromSettings()
 {
    m_alwaysDrawDragPoints = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "ShowDragPoints"s, false);
    m_alwaysDrawLightCenters = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "DrawLightCenters"s, false);
@@ -868,8 +864,8 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
    case ID_EDIT_EDITOROPTIONS:
    {
       m_editorOptDialog.DoModal(GetHwnd());
-      // refresh editor options from the registry
-      InitRegValues();
+      // refresh editor options that we may have changed
+      LoadEditorSetupFromSettings();
       // force a screen refresh (it an active table is loaded)
       CComObject<PinTable> * const ptCur = GetActiveTable();
       if (ptCur)
@@ -957,9 +953,8 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
    case ID_PREFERENCES_SECURITYOPTIONS:
    {
       DialogBoxParam(theInstance, MAKEINTRESOURCE(IDD_SECURITY_OPTIONS), GetHwnd(), SecurityOptionsProc, 0);
-
-      // refresh editor options from the registry
-      InitRegValues();
+      // refresh editor options that we may have changed
+      LoadEditorSetupFromSettings();
       return true;
    }
    case ID_EDIT_KEYS:
@@ -1800,13 +1795,10 @@ LRESULT VPinball::OnPaint(UINT msg, WPARAM wparam, LPARAM lparam)
    return 0;
 }
 
+// Called when window is initially updated to be able to perform initial setup of the window and its children
 void VPinball::OnInitialUpdate()
 {
-   wintimer_init();                    // calibrate the timer routines
-
    PLOGI << "OnInitialUpdate";
-
-   InitRegValues(); // get default values from registry
 
 #ifndef __STANDALONE__
    SetAccelerators(IDR_VPACCEL);
