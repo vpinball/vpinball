@@ -79,7 +79,6 @@ private:
    void OpenRecentFile(const size_t menuId);
    void CopyPasteElement(const CopyPasteModes mode);
    void InitTools();
-   void LoadEditorSetupFromSettings();
    bool CanClose();
    void GetMyPath();
    void UpdateRecentFileList(const string& filename);
@@ -92,6 +91,7 @@ public:
    void ToggleScriptEditor();
    void ToggleBackglassView();
    bool ParseCommand(const size_t code, const bool notify);
+   void LoadEditorSetupFromSettings();
 
    CComObject<PinTable> *GetActiveTable();
    bool LoadFile(const bool updateEditor, VPXFileFeedback* feedback = nullptr);
