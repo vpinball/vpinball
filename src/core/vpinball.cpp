@@ -146,6 +146,10 @@ VPinball::VPinball()
    // register the PinSim::FrontEndControls name window message
    m_pinSimFrontEndControlsMsg = RegisterWindowMessageA("PinSim::FrontEndControls");
 #endif
+
+#ifdef __STANDALONE__
+   wintimer_init();
+#endif
 }
 
 //deletes clipboard

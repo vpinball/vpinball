@@ -92,11 +92,11 @@ void restore_win_timer_resolution()
 //
 
 static unsigned int sTimerInit = 0;
-static LARGE_INTEGER TimerFreq;
-static LARGE_INTEGER sTimerStart;
-static LONGLONG OneMSTimerTicks;
-static LONGLONG TwoMSTimerTicks;
-static char highrestimer;
+static LARGE_INTEGER TimerFreq = {};
+static LARGE_INTEGER sTimerStart = {};
+static LONGLONG OneMSTimerTicks = 0;
+static LONGLONG TwoMSTimerTicks = 0;
+static char highrestimer = 0;
 
 // call before 1st use of msec,usec or uSleep
 void wintimer_init()
