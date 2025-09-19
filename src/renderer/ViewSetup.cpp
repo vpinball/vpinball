@@ -246,11 +246,11 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, cons
    Matrix3D scale, coords, lookat, layback, matView;
    #ifdef ENABLE_DX9
       // Shift by half a pixel
-      const float backBufferWidth = g_pplayer && g_pplayer->m_renderer ? static_cast<float>(g_pplayer->m_renderer->m_renderDevice->GetOutputBackBuffer()->GetWidth()) : 0.f;
-      const float backBufferHeight = g_pplayer && g_pplayer->m_renderer ? static_cast<float>(g_pplayer->m_renderer->m_renderDevice->GetOutputBackBuffer()->GetHeight()) : 0.f;
+      const float inv_backBufferWidth = g_pplayer && g_pplayer->m_renderer ? 1.0f / static_cast<float>(g_pplayer->m_renderer->m_renderDevice->GetOutputBackBuffer()->GetWidth()) : 0.f;
+      const float Inv_backBufferHeight = g_pplayer && g_pplayer->m_renderer ? 1.0f / static_cast<float>(g_pplayer->m_renderer->m_renderDevice->GetOutputBackBuffer()->GetHeight()) : 0.f;
       const Matrix3D projTrans = Matrix3D::MatrixTranslate(
-         xpixoff - 1.0f / backBufferWidth,
-         ypixoff + 1.0f / backBufferHeight,
+         xpixoff - inv_backBufferWidth,
+         ypixoff + inv_backBufferHeight,
          0.f); // in-pixel offset for manual oversampling
    #else
       const Matrix3D projTrans = Matrix3D::MatrixTranslate(xpixoff, ypixoff, 0.f); // in-pixel offset for manual oversampling
@@ -351,7 +351,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, cons
    case VLM_WINDOW:
    {
       // Fit camera to adjusted table bounds, along vertical axis
-      const Matrix3D fit = 
+      const Matrix3D fit =
            Matrix3D::MatrixTranslate(-0.5f * table->m_right, -0.5f * table->m_bottom, -windowBotZ) // Center of scaling
          * Matrix3D::MatrixScale(1.f / realToVirtual) // We do not apply the scene scale since we want to fit the scaled version of the table as if it was the normal version (otherwise it would reverse the scaling during the fitting)
          * Matrix3D::MatrixTranslate(0.5f * table->m_right, 0.5f * table->m_bottom, windowBotZ) // Reverse center of scaling
