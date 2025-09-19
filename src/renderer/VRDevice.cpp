@@ -148,31 +148,31 @@ inline static float XrRcpSqrt(const float x)
    return rcp;
 }
 
-inline static void XrVector3f_Lerp(XrVector3f* result, const XrVector3f* a, const XrVector3f* b, const float fraction) {
-    result->x = a->x + fraction * (b->x - a->x);
-    result->y = a->y + fraction * (b->y - a->y);
-    result->z = a->z + fraction * (b->z - a->z);
+inline static void XrVector3f_Lerp(XrVector3f* const result, const XrVector3f* const a, const XrVector3f* const b, const float fraction) {
+   result->x = a->x + fraction * (b->x - a->x);
+   result->y = a->y + fraction * (b->y - a->y);
+   result->z = a->z + fraction * (b->z - a->z);
 }
 
-inline static void XrVector3f_Scale(XrVector3f* result, const XrVector3f* a, const float scaleFactor) {
-    result->x = a->x * scaleFactor;
-    result->y = a->y * scaleFactor;
-    result->z = a->z * scaleFactor;
+inline static void XrVector3f_Scale(XrVector3f* const result, const XrVector3f* const a, const float scaleFactor) {
+   result->x = a->x * scaleFactor;
+   result->y = a->y * scaleFactor;
+   result->z = a->z * scaleFactor;
 }
 
-inline static void XrQuaternionf_Lerp(XrQuaternionf* result, const XrQuaternionf* a, const XrQuaternionf* b, const float fraction) {
-    const float s = a->x * b->x + a->y * b->y + a->z * b->z + a->w * b->w;
-    const float fa = 1.0f - fraction;
-    const float fb = (s < 0.0f) ? -fraction : fraction;
-    const float x = a->x * fa + b->x * fb;
-    const float y = a->y * fa + b->y * fb;
-    const float z = a->z * fa + b->z * fb;
-    const float w = a->w * fa + b->w * fb;
-    const float lengthRcp = XrRcpSqrt(x * x + y * y + z * z + w * w);
-    result->x = x * lengthRcp;
-    result->y = y * lengthRcp;
-    result->z = z * lengthRcp;
-    result->w = w * lengthRcp;
+inline static void XrQuaternionf_Lerp(XrQuaternionf* const result, const XrQuaternionf* const a, const XrQuaternionf* const b, const float fraction) {
+   const float s = a->x * b->x + a->y * b->y + a->z * b->z + a->w * b->w;
+   const float fa = 1.0f - fraction;
+   const float fb = (s < 0.0f) ? -fraction : fraction;
+   const float x = a->x * fa + b->x * fb;
+   const float y = a->y * fa + b->y * fb;
+   const float z = a->z * fa + b->z * fb;
+   const float w = a->w * fa + b->w * fb;
+   const float lengthRcp = XrRcpSqrt(x * x + y * y + z * z + w * w);
+   result->x = x * lengthRcp;
+   result->y = y * lengthRcp;
+   result->z = z * lengthRcp;
+   result->w = w * lengthRcp;
 }
 
 inline static void XrPosef_ToMatrix3D(Matrix3D* result, const XrPosef* pose)
@@ -405,12 +405,12 @@ VRDevice::VRDevice()
       m_slope = settings.LoadValueWithDefault(Settings::PlayerVR, "Slope"s, 6.5f);
    #endif
    m_worldDirty = true;
-   
+
    #if defined(ENABLE_XR)
-      // Relative scale factor and positionning
+      // Relative scale factor and positioning
       m_lockbarWidth = settings.LoadValueFloat(Settings::Player, "LockbarWidth"s);
       m_lockbarHeight = g_pvp->m_settings.LoadValueFloat(Settings::Player, "LockbarHeight");
-      
+
       // Fill out an XrApplicationInfo structure detailing the names and OpenXR version.
       // The application/engine name and version are user-defined. These may help IHVs or runtimes.
       XrApplicationInfo AI;
@@ -1354,7 +1354,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
 
             // Fixed value of 5 cm between playfield bottom and lockbar border
             // We could (should ?) make this a table data but this does not vary that much so this seems fine for the time being
-            const float lockbarToPlayfield = 5.f;
+            constexpr float lockbarToPlayfield = 5.f;
 
             // Before 10.8.1, there weren't multiple space reference, so room used to be inclined to compensate the playfield inclination.
             // This may leads to slight visual artefact for old VR room (that is to say very slightly inclined room).
@@ -1405,7 +1405,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
                    + (1.f - m_scale) * (table->m_bottom - table->m_top),
                    0.f)
                * Matrix3D::MatrixTranslate(
-                  -CMTOVPU(m_tablePos.x), // For the ease of positionning, align the room to the table view setting, except for z which must stay on ground
+                  -CMTOVPU(m_tablePos.x), // For the ease of positioning, align the room to the table view setting, except for z which must stay on ground
                    CMTOVPU(m_tablePos.y + lockbarToPlayfield),
                    0.f)
                * viewOrientation; // Reapply view orientation
@@ -1717,7 +1717,7 @@ void VRDevice::RecenterTable()
 {
    #ifdef ENABLE_XR
       m_recenterTable = true;
-      
+
    #elif defined(ENABLE_VR)
       float headX = 0.f, headY = 0.f;
       const float w = m_scale * (g_pplayer->m_ptable->m_right - g_pplayer->m_ptable->m_left) * 0.5f;

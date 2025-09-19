@@ -24,8 +24,8 @@ void ViewSetup::SetViewPosFromPlayerPosition(const PinTable* const table, const 
 {
    assert(mMode == VLM_WINDOW);
    float realToVirtual = GetRealToVirtualScale(table);
-   float screenBotZ = GetWindowBottomZOFfset(table);
-   float screenTopZ = GetWindowTopZOFfset(table);
+   float screenBotZ = GetWindowBottomZOffset(table);
+   float screenTopZ = GetWindowTopZOffset(table);
    // Rotate by the angle between playfield and real world horizontal (scale on Y and Z axis are equal and can be ignored)
    const Matrix3D rotx = Matrix3D::MatrixRotateX(atan2f(screenTopZ - screenBotZ, table->m_bottom) - ANGTORAD(screenInclination));
    const vec3 pos = rotx.MultiplyVectorNoPerspective(CMTOVPU(playerPos));
@@ -108,7 +108,7 @@ void ViewSetup::SaveToTableOverrideSettings(Settings& settings, const ViewSetupI
    }
 }
 
-float ViewSetup::GetWindowTopZOFfset(const PinTable* const table) const
+float ViewSetup::GetWindowTopZOffset(const PinTable* const table) const
 {
    if (mMode == VLM_WINDOW)
       return mWindowTopZOfs;
@@ -116,7 +116,7 @@ float ViewSetup::GetWindowTopZOFfset(const PinTable* const table) const
       return 0.f;
 }
 
-float ViewSetup::GetWindowBottomZOFfset(const PinTable* const table) const
+float ViewSetup::GetWindowBottomZOffset(const PinTable* const table) const
 {
    // result is in the table coordinate system (so, usually between 0 and table->bottomglassheight)
    if (mMode == VLM_WINDOW)
@@ -144,7 +144,7 @@ float ViewSetup::GetRealToVirtualScale(const PinTable* const table) const
 {
    if (mMode == VLM_WINDOW)
    {
-      float windowBotZ = GetWindowBottomZOFfset(table), windowTopZ = GetWindowTopZOFfset(table);
+      float windowBotZ = GetWindowBottomZOffset(table), windowTopZ = GetWindowTopZOffset(table);
       const float screenHeight = table->m_settings.LoadValueFloat(Settings::Player, "ScreenWidth"s); // Physical width (always measured in landscape orientation) is the height in window mode
       // const float inc = atan2f(mSceneScaleZ * (windowTopZ - windowBotZ), mSceneScaleY * table->m_bottom);
       const float inc = atan2f(windowTopZ - windowBotZ, table->m_bottom);
@@ -154,13 +154,13 @@ float ViewSetup::GetRealToVirtualScale(const PinTable* const table) const
       return 1.f;
 }
 
-void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, const bool stereo, ModelViewProj& mvp, const vec3& cam, const float cam_inc, const float xpixoff, const float ypixoff)
+void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, const bool stereo, ModelViewProj& mvp, const vec3& cam, const float cam_inc, const float xpixoff, const float ypixoff) const
 {
    const float FOV = (mFOV < 1.0f) ? 1.0f : mFOV; // Can't have a real zero FOV, but this will look almost the same
    const bool isLegacy = mMode == VLM_LEGACY;
    const bool isWindow = mMode == VLM_WINDOW;
    float camx = cam.x, camy = cam.y, camz = cam.z;
-   float windowBotZ = GetWindowBottomZOFfset(table), windowTopZ = GetWindowTopZOFfset(table);
+   float windowBotZ = GetWindowBottomZOffset(table), windowTopZ = GetWindowTopZOffset(table);
 
    // Scale to convert a value expressed in the player 'real' world to our virtual world (where the geometry is defined)
    float realToVirtual = GetRealToVirtualScale(table);
@@ -246,8 +246,8 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, cons
    Matrix3D scale, coords, lookat, layback, matView;
    #ifdef ENABLE_DX9
       // Shift by half a pixel
-      const float backBufferWidth = static_cast<float>(g_pplayer->m_renderer->m_renderDevice->GetOutputBackBuffer()->GetWidth());
-      const float backBufferHeight = static_cast<float>(g_pplayer->m_renderer->m_renderDevice->GetOutputBackBuffer()->GetHeight());
+      const float backBufferWidth = g_pplayer && g_pplayer->m_renderer ? static_cast<float>(g_pplayer->m_renderer->m_renderDevice->GetOutputBackBuffer()->GetWidth()) : 0.f;
+      const float backBufferHeight = g_pplayer && g_pplayer->m_renderer ? static_cast<float>(g_pplayer->m_renderer->m_renderDevice->GetOutputBackBuffer()->GetHeight()) : 0.f;
       const Matrix3D projTrans = Matrix3D::MatrixTranslate(
          xpixoff - 1.0f / backBufferWidth,
          ypixoff + 1.0f / backBufferHeight,
