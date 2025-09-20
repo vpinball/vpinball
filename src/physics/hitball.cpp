@@ -20,6 +20,18 @@ HitBall::~HitBall()
    delete m_d.m_vpVolObjs;
 }
 
+void HitBall::OnPhysicStepProcessed(uint64_t physicsTimeMs)
+{
+   // Store latest position every 10ms, in an array of 10 slots, so 100ms history
+   const int pos = static_cast<int>((physicsTimeMs / 10) % static_cast<uint64_t>(MAX_BALL_TRAIL_POS)); // 10ms steps
+   m_oldpos[pos] = m_d.m_pos;
+}
+
+const Vertex3Ds& HitBall::GetOldPosition(uint64_t physicsTimeMs) const
+{
+   const int pos = static_cast<int>((physicsTimeMs / 10) % static_cast<uint64_t>(MAX_BALL_TRAIL_POS)); // 10ms steps
+   return m_oldpos[pos];
+}
 
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Ball/BallCollider.cs
 

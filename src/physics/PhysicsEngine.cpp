@@ -665,16 +665,9 @@ void PhysicsEngine::UpdatePhysics()
       //primary physics loop
       PhysicsSimulateCycle(physics_diff_time); // main simulator call
 
-      //ball trail, keep old pos of balls
-      for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
-      {
-         HitBall *const pball = g_pplayer->m_vball[i];
-         pball->m_oldpos[pball->m_ringcounter_oldpos / (10000 / PHYSICS_STEPTIME)] = pball->m_d.m_pos;
-
-         pball->m_ringcounter_oldpos++;
-         if (pball->m_ringcounter_oldpos == MAX_BALL_TRAIL_POS*(10000 / PHYSICS_STEPTIME))
-            pball->m_ringcounter_oldpos = 0;
-      }
+      // Store new position of balls for ball trails
+      for (const auto hitBall : g_pplayer->m_vball)
+         hitBall->OnPhysicStepProcessed(g_pplayer->m_time_msec);
 
       //PLOGD << "PT: " << physics_diff_time << ' ' << physics_to_graphic_diff_time << ' ' << (uint32_t)(m_curPhysicsFrameTime/1000) << ' ' << (uint32_t)(initial_time_usec/1000) << ' ' << cur_time_msec;
 
@@ -893,35 +886,42 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
 
       #ifdef C_BALL_SPIN_HACK
          // hacky killing of ball spin on resting balls (very low and very high spinning)
-         for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
+         for (HitBall *const pball : g_pplayer->m_vball)
          {
-            HitBall *const pball = g_pplayer->m_vball[i];
+            if (pball->m_coll.m_hitdistance >= (float)PHYS_TOUCH)
+               continue;
 
-            const unsigned int p0 = (pball->m_ringcounter_oldpos / (10000 / PHYSICS_STEPTIME) + 1) % MAX_BALL_TRAIL_POS;
-            const unsigned int p1 = (pball->m_ringcounter_oldpos / (10000 / PHYSICS_STEPTIME) + 2) % MAX_BALL_TRAIL_POS;
+            Vertex3Ds oldPos0 = pball->GetOldPosition(g_pplayer->m_time_msec - 90); // Position 90ms ago
+            if (oldPos0.x == FLT_MAX)
+               continue;
 
-            if (/*pball->m_coll.m_hitRigid &&*/ (pball->m_coll.m_hitdistance < (float)PHYS_TOUCH) && (pball->m_oldpos[p0].x != FLT_MAX) && (pball->m_oldpos[p1].x != FLT_MAX)) // only if already initialized
+            Vertex3Ds oldPos1 = pball->GetOldPosition(g_pplayer->m_time_msec - 80); // Position 80ms ago
+            if (oldPos1.x == FLT_MAX)
+               continue;
+
+            /*
+            const float mag = pball->m_vel.x*pball->m_vel.x + pball->m_vel.y*pball->m_vel.y; // values below are copy pasted from above
+            if (pball->m_drsq < 8.0e-5f
+                  && mag < 1.0e-3f*m_gravity*m_gravity / GRAVITYCONST / GRAVITYCONST
+                  && fabsf(pball->m_vel.z) < 0.2f*m_gravity / GRAVITYCONST
+                  && pball->m_angularmomentum.Length() < 0.9f*m_gravity / GRAVITYCONST)
+                  //&& rand_mt_01() < 0.95f)
             {
-               /*const float mag = pball->m_vel.x*pball->m_vel.x + pball->m_vel.y*pball->m_vel.y; // values below are copy pasted from above
-               if (pball->m_drsq < 8.0e-5f && mag < 1.0e-3f*m_gravity*m_gravity / GRAVITYCONST / GRAVITYCONST && fabsf(pball->m_vel.z) < 0.2f*m_gravity / GRAVITYCONST
-               && pball->m_angularmomentum.Length() < 0.9f*m_gravity / GRAVITYCONST
-               ) //&& rand_mt_01() < 0.95f)
-               {
                pball->m_angularmomentum *= 0.05f; // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
-               }*/
+            }
+            */
 
-               const Vertex3Ds diff_pos = pball->m_oldpos[p0] - pball->m_d.m_pos;
-               const float mag = diff_pos.x*diff_pos.x + diff_pos.y*diff_pos.y;
-               const Vertex3Ds diff_pos2 = pball->m_oldpos[p1] - pball->m_d.m_pos;
-               const float mag2 = diff_pos2.x*diff_pos2.x + diff_pos2.y*diff_pos2.y;
+            const Vertex3Ds diff_pos = oldPos0 - pball->m_d.m_pos;
+            const float mag = diff_pos.x * diff_pos.x + diff_pos.y * diff_pos.y; // squared distance in the playfield plane, since 90ms
+            const Vertex3Ds diff_pos2 = oldPos1 - pball->m_d.m_pos;
+            const float mag2 = diff_pos2.x * diff_pos2.x + diff_pos2.y * diff_pos2.y; // squared distance in the playfield plane, since 80ms
 
-               const float threshold = (pball->m_angularmomentum.x*pball->m_angularmomentum.x + pball->m_angularmomentum.y*pball->m_angularmomentum.y) / max(mag, mag2);
+            const float threshold = (pball->m_angularmomentum.x*pball->m_angularmomentum.x + pball->m_angularmomentum.y*pball->m_angularmomentum.y) / max(mag, mag2);
 
-               if (!infNaN(threshold) && threshold > 666.f)
-               {
-                  const float damp = clamp(1.0f - (threshold - 666.f) / 10000.f, 0.23f, 1.f); // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
-                  pball->m_angularmomentum *= damp;
-               }
+            if (!infNaN(threshold) && threshold > 666.f)
+            {
+               const float damp = clamp(1.0f - (threshold - 666.f) / 10000.f, 0.23f, 1.f); // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
+               pball->m_angularmomentum *= damp;
             }
          }
       #endif

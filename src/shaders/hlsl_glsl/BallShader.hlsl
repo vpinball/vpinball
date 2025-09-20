@@ -262,7 +262,8 @@ float4 psBallDebug(in vout IN) : COLOR
 
 float4 psBallTrail( in voutTrail IN ) : COLOR
 {
-   const float3 ballImageColor = tex2D(tex_ball_color, IN.tex0_alpha.xy).rgb;
+   // the texture used is the ball HDR IBL so it can lead to very high value => keep it SDR
+   const float3 ballImageColor = saturate(tex2D(tex_ball_color, IN.tex0_alpha.xy).rgb);
    if (disableLighting)
       return float4(ballImageColor, IN.tex0_alpha.z);
    else
