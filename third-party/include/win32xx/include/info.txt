@@ -29,7 +29,6 @@ Supported Compilers and Integrated Development Environments (IDEs)
 ==================================================================
 Win32++ supports the following:
 * CodeBlocks
-
 * Embarcadero Dev-C++
 * Embarcadero Rad Studio 12 Community Edition
 * Mingw-64 32bit and 64bit Compiler
@@ -67,8 +66,9 @@ The programs compiled with Win32++ can run on the following operating systems:
 * Windows Server 2019
 * Windows Server 2022
 
-Win32++ is Unicode compliant and can therefore be used to develop Unicode
-applications.  
+Win32++ is Unicode compliant. Unicode applications can run on all supported
+operating systems. Unicode applications are not supported on older operating
+systems such as Win95, Win98 and WinME.
 
 64bit code only runs on 64bit operating systems. 32bit code runs on both
 32bit and 64bit operating systems.

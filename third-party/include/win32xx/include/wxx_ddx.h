@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -60,8 +60,10 @@
 // To use CDataExchange, perform the following steps:
 // * Override DoDataExchange and specify the appropriate DDX and DDV functions.
 // * Call UpdateData(dataExchange, FALSE) to initialize the controls and assign
-//    their values. This is typically done in the dialog's OnInitDialog function.
-// * Call UpdateData(dataExchange, TRUE) to validate and retrieve the control data.
+//    their values. This is typically done in the dialog's OnInitDialog
+//    function.
+// * Call UpdateData(dataExchange, TRUE) to validate and retrieve the control
+// data.
 
 
 #ifndef _WIN32XX_DDX_H_
@@ -85,13 +87,6 @@ namespace Win32xx
     // DDX read/write direction (easier to remember)
     const BOOL SENDTOCONTROL   = FALSE; // set variable values into controls
     const BOOL READFROMCONTROL = TRUE;  // get values from controls into variables
-
-
-    ///////////////////////////////////////////////////////////////////////////
-    //
-    //  Declaration of the CDataExchange class.
-    //
-    ///////////////////////////////////////////////////////////////////////////
 
 
     ////////////////////////////////////////////////////////////
@@ -173,7 +168,6 @@ namespace Win32xx
 
 
 }   // namespace Win32xx
-
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -282,7 +276,7 @@ namespace Win32xx
         }
 
         // Set the given DateTime range.
-        SYSTEMTIME sta[2]{};
+        SYSTEMTIME sta[2] = {};
         sta[0] = min;
         sta[1] = max;
 
@@ -384,7 +378,7 @@ namespace Win32xx
             }
         }
 
-        SYSTEMTIME minMax[2]{};
+        SYSTEMTIME minMax[2] = {};
         DWORD limit = GDTR_MIN | GDTR_MAX;
         minMax[0] = min;
         minMax[1] = max;

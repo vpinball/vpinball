@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -36,9 +36,9 @@
 ////////////////////////////////////////////////////////
 
 
-///////////////////////////////////////////////////////
+///////////////////////////////////////
 // wxx_rich_edit.h
-//  Declaration of the CRichEdit class
+//  Declaration of the CRichEdit class.
 
 #ifndef _WIN32XX_RICHEDIT_H_
 #define _WIN32XX_RICHEDIT_H_
@@ -92,6 +92,7 @@ namespace Win32xx
         DWORD   GetParaFormat(PARAFORMAT2& format) const;
         BOOL    GetPunctuation(UINT type, PUNCTUATION& puncInfo) const;
         void    GetRect(RECT& rc) const;
+        CRect   GetRect() const;
         UNDONAMEID GetRedoName() const;
         void    GetSel(CHARRANGE& range) const;
         void    GetSel(long& startChar, long& endChar) const;
@@ -157,15 +158,13 @@ namespace Win32xx
 
 }
 
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 namespace Win32xx
 {
 
-    ///////////////////////////////////////////////
-    // Definitions of the CRichEdit class
+    //////////////////////////////////////
+    // Definitions of the CRichEdit class.
     //
 
     inline CRichEdit::CRichEdit()
@@ -237,7 +236,8 @@ namespace Win32xx
         return static_cast<BOOL>(SendMessage(EM_CANUNDO, 0, 0));
     }
 
-    // Gets information about the character closest to a specified point in the client area of an edit control.
+    // Gets information about the character closest to a specified point in the
+    // client area of an edit control.
     // Refer to EM_CHARFROMPOS in the Windows API documentation for more information.
     inline int CRichEdit::CharFromPos(CPoint pt) const
     {
@@ -405,10 +405,12 @@ namespace Win32xx
         return static_cast<long>(SendMessage(EM_GETLIMITTEXT, 0, 0));
     }
 
-    // Copies a line of text from the rich edit control and places it in the specified buffer.
-    // buffer is a pointer to the buffer that receives a copy of the line. Before sending the message,
-    // set the first word of this buffer to the size, in TCHARs, of the buffer.
-    // The copied line does not contain a terminating null character.
+    // Copies a line of text from the rich edit control and places it in the
+    // specified buffer.
+    // The buffer parameter is a pointer to the buffer that receives a copy of
+    // the line. Before sending the message, set the first word of this buffer
+    // to the size, in TCHARs, of the buffer. The copied line does not contain
+    // a terminating null character.
     // Refer to EM_GETLINE in the Windows API documentation for more information.
     inline int CRichEdit::GetLine(int index, LPTSTR buffer) const
     {
@@ -418,8 +420,9 @@ namespace Win32xx
         return static_cast<int>(SendMessage(EM_GETLINE, wparam, lparam));
     }
 
-    // Copies a line of text from the rich edit control and places it in the specified buffer.
-    // The copied line does not contain a terminating null character.
+    // Copies a line of text from the rich edit control and places it in the
+    // specified buffer. The copied line does not contain a terminating null
+    // character.
     // Refer to EM_GETLINE in the Windows API documentation for more information.
     inline int CRichEdit::GetLine(int index, LPTSTR buffer, int maxLength) const
     {
@@ -438,7 +441,8 @@ namespace Win32xx
         return static_cast<int>(SendMessage(EM_GETLINECOUNT, 0, 0));
     }
 
-    // Retrieves a flag than indicates whether the contents of the edit control have been modified.
+    // Retrieves a flag than indicates whether the contents of the edit control
+    // have been modified.
     // Refer to EM_GETMODIFY in the Windows API documentation for more information.
     inline BOOL CRichEdit::GetModify() const
     {
@@ -483,14 +487,26 @@ namespace Win32xx
         return static_cast<BOOL>(SendMessage(EM_GETPUNCTUATION, wparam, lparam));
     }
 
-    // Retrieves the formatting rectangle. The formatting rectangle is the limiting
-    // rectangle into which text can be drawn.
+    // Retrieves the formatting rectangle. The formatting rectangle is the
+    // limiting rectangle into which text can be drawn.
     // Refer to EM_GETRECT in the Windows API documentation for more information.
     inline void CRichEdit::GetRect(RECT& rc) const
     {
         assert(IsWindow());
         LPARAM lparam = reinterpret_cast<LPARAM>(&rc);
         SendMessage(EM_GETRECT, 0, lparam);
+    }
+
+    // Retrieves the formatting rectangle. The formatting rectangle is the
+    // limiting rectangle into which text can be drawn.
+    // Refer to EM_GETRECT in the Windows API documentation for more information.
+    inline CRect CRichEdit::GetRect() const
+    {
+        assert(IsWindow());
+        CRect rc;
+        LPARAM lparam = reinterpret_cast<LPARAM>(&rc);
+        SendMessage(EM_GETRECT, 0, lparam);
+        return rc;
     }
 
     // Retrieves the type of the next action, if any, in the control's redo queue.
@@ -516,7 +532,7 @@ namespace Win32xx
     inline void CRichEdit::GetSel(long& startChar, long& endChar) const
     {
         assert(IsWindow());
-        CHARRANGE range{};
+        CHARRANGE range = {};
         LPARAM lparam = reinterpret_cast<LPARAM>(&range);
         SendMessage(EM_EXGETSEL, 0, lparam);
         startChar = range.cpMin;
@@ -564,13 +580,14 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-        CHARRANGE cr{};
+        CHARRANGE cr = {};
         LPARAM lparam = reinterpret_cast<LPARAM>(&cr);
         SendMessage(EM_EXGETSEL, 0, lparam);
         return GetTextRange(cr.cpMin, cr.cpMax);
     }
 
-    // Retrieves the length of the text, in characters. Does not include the terminating null character.
+    // Retrieves the length of the text, in characters. Does not include the
+    // terminating null character.
     // Refer to WM_GETTEXTLENGTH in the Windows API documentation for more information.
     inline long CRichEdit::GetTextLength() const
     {
@@ -578,12 +595,13 @@ namespace Win32xx
         return static_cast<long>(SendMessage(WM_GETTEXTLENGTH, 0, 0));
     }
 
-    // Returns the number of TCHARs in the rich edit control, depending on the flags specified.
+    // Returns the number of TCHARs in the rich edit control, depending on the
+    // flags specified.
     // Refer to EM_GETTEXTLENGTHEX in the Windows API documentation for more information.
     inline long CRichEdit::GetTextLengthEx(DWORD flags, UINT codePage /* = -1 */) const
     {
         assert(IsWindow());
-        GETTEXTLENGTHEX gtle{};
+        GETTEXTLENGTHEX gtle = {};
         gtle.flags = flags;
         gtle.codepage = codePage;
 
@@ -604,13 +622,13 @@ namespace Win32xx
     inline CString CRichEdit::GetTextRange(int first, int last) const
     {
         assert(IsWindow());
-        CHARRANGE range{};
+        CHARRANGE range = {};
         range.cpMin = first;
         range.cpMax = last;
         int lastChar = (last == -1)? GetTextLength() : last;
 
         CString rangeString;
-        TEXTRANGE tr{};
+        TEXTRANGE tr = {};
         tr.chrg = range;
         tr.lpstrText = rangeString.GetBuffer(lastChar - first + 1);
         LPARAM lparam = reinterpret_cast<LPARAM>(&tr);
@@ -672,9 +690,10 @@ namespace Win32xx
     }
 
     // Retrieves the length of a given line containing the specified character.
-    // charIndex - Specifies the character index of a character in the line whose length is to be retrieved.
-    //             This parameter can be -1. In this case, the message returns the number of unselected
-    //             characters on lines containing selected characters.
+    // The charIndex parameter specifies the character index of a character in
+    // the line whose length is to be retrieved. This parameter can be -1. In
+    // this case, the message returns the number of unselected characters on
+    // lines containing selected characters.
     // Refer to EM_LINELENGTH in the Windows API documentation for more information.
     inline int CRichEdit::LineLength(int charIndex /* = -1 */) const
     {
@@ -702,11 +721,12 @@ namespace Win32xx
 
     // Inserts the contents of the Clipboard in the specified data format.
     // Refer to EM_PASTESPECIAL in the Windows API documentation for more information.
-    inline void CRichEdit::PasteSpecial(UINT clipFormat, DWORD aspect /* = nullptr */, HMETAFILE mf /* = nullptr */) const
+    inline void CRichEdit::PasteSpecial(UINT clipFormat,
+        DWORD aspect /* = nullptr */, HMETAFILE mf /* = nullptr */) const
     {
         assert(IsWindow());
 
-        REPASTESPECIAL rps{};
+        REPASTESPECIAL rps = {};
         rps.dwAspect = aspect;
         rps.dwParam = reinterpret_cast<DWORD_PTR>(mf);
         WPARAM wparam = static_cast<WPARAM>(clipFormat);
@@ -787,7 +807,8 @@ namespace Win32xx
         return static_cast<BOOL>(SendMessage(EM_SETCHARFORMAT, 0, lparam));
     }
 
-    // Sets the event mask. The event mask specifies which notification messages the control sends to its parent window.
+    // Sets the event mask. The event mask specifies which notification
+    // messages the control sends to its parent window.
     // Refer to EM_SETEVENTMASK in the Windows API documentation for more information.
     inline DWORD CRichEdit::SetEventMask(DWORD mask) const
     {
@@ -796,7 +817,8 @@ namespace Win32xx
         return static_cast<DWORD>(SendMessage(EM_SETEVENTMASK, 0, lparam));
     }
 
-    // Sets or clears the modification flag. The modification flag indicates whether the text has been modified.
+    // Sets or clears the modification flag. The modification flag indicates
+    // whether the text has been modified.
     // Refer to EM_SETMODIFY in the Windows API documentation for more information.
     inline void CRichEdit::SetModify(BOOL isModified /* = TRUE */) const
     {
@@ -865,8 +887,8 @@ namespace Win32xx
         return static_cast<BOOL>(SendMessage(EM_SETREADONLY, wparam, 0));
     }
 
-    // Sets the formatting rectangle. The formatting rectangle is the limiting rectangle into
-    // which the control draws the text.
+    // Sets the formatting rectangle. The formatting rectangle is the limiting
+    // rectangle into which the control draws the text.
     // Refer to EM_SETRECT in the Windows API documentation for more information.
     inline void CRichEdit::SetRect(RECT rc) const
     {
@@ -881,7 +903,7 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-        CHARRANGE cr{};
+        CHARRANGE cr = {};
         cr.cpMin = startChar;
         cr.cpMax = endChar;
         LPARAM lparam = reinterpret_cast<LPARAM>(&cr);
@@ -915,7 +937,8 @@ namespace Win32xx
         return static_cast<BOOL>(SendMessage(EM_SETCHARFORMAT, SCF_SELECTION, lparam));
     }
 
-    // Sets the target output device and line width used for "what you see is what you get" (WYSIWYG) formatting.
+    // Sets the target output device and line width used for "what you see is
+    // what you get" (WYSIWYG) formatting.
     // Refer to EM_SETTARGETDEVICE in the Windows API documentation for more information.
     inline BOOL CRichEdit::SetTargetDevice(HDC dc, long lineWidth) const
     {
@@ -925,7 +948,8 @@ namespace Win32xx
         return static_cast<BOOL>(SendMessage(EM_SETTARGETDEVICE, wparam, lparam));
     }
 
-    // Sets the text mode or undo level of the rich edit control. The message fails if the control contains text.
+    // Sets the text mode or undo level of the rich edit control. The message
+    // fails if the control contains text.
     // Refer to EM_SETTEXTMODE in the Windows API documentation for more information.
     inline BOOL CRichEdit::SetTextMode(UINT mode) const
     {
@@ -962,8 +986,9 @@ namespace Win32xx
         return static_cast<BOOL>(SendMessage(EM_SETCHARFORMAT, (SCF_SELECTION | SCF_WORD), lparam));
     }
 
-    // Stops the control from collecting additional typing actions into the current undo action.
-    // The control stores the next typing action, if any, into a new action in the undo queue.
+    // Stops the control from collecting additional typing actions into the
+    // current undo action. The control stores the next typing action, if any,
+    // into a new action in the undo queue.
     // Refer to EM_STOPGROUPTYPING in the Windows API documentation for more information.
     inline void CRichEdit::StopGroupTyping() const
     {

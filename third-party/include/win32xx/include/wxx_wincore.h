@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -74,8 +74,8 @@ int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     CWinApp theApp;
 
     // Create our view window
-    CView MyWin;
-    MyWin.Create();
+    CView myWin;
+    myWin.Create();
 
     // Run the application's message loop
     return theApp.Run();
@@ -100,8 +100,8 @@ int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 namespace Win32xx
 {
 
-    ////////////////////////////////////////
-    // Global Functions
+    ////////////////////
+    // Global Functions.
     //
 
     // Returns the path to the AppData folder. Returns the MyDocuments
@@ -192,7 +192,7 @@ namespace Win32xx
 
         // Retrieve the window's dpi if we can.
         using PGETDPIFORWINDOW = UINT (WINAPI*)(HWND);
-        HMODULE user = GetModuleHandle(_T("user32.dll"));
+        HMODULE user = ::GetModuleHandle(_T("user32.dll"));
         if (user && ::IsWindow(wnd))
         {
             PGETDPIFORWINDOW pGetDpiForWindow = reinterpret_cast<PGETDPIFORWINDOW>(
@@ -209,30 +209,39 @@ namespace Win32xx
 
     // Scales the specified bitmap up by the specified scale factor.
     // Bitmap sizes can usually be multiplied by an integer value without
-    // losing visual quality.
+    // losing visual quality. Returns a Device Independent Bitmap (DIB).
     inline CBitmap ScaleUpBitmap(const CBitmap& bitmap, int scale)
     {
         assert(bitmap.GetHandle() != nullptr);
         assert(scale != 0);
 
-        // Get the size of the bitmap.
-        CSize size = bitmap.GetSize();
-        int newWidth = size.cx * scale;
-        int newHeight = size.cy * scale;
-
-        // Create the device contexts.
-        CClientDC clientDC(HWND_DESKTOP);
-        CMemDC newImageDC(clientDC);
-        CMemDC imageDC(clientDC);
-
-        // Create and select the bitmaps.
-        newImageDC.CreateCompatibleBitmap(clientDC, newWidth, newHeight);
+        // Select the bitmap into a memory DC.
+        CMemDC imageDC(nullptr);
         imageDC.SelectObject(bitmap);
 
-        // Stretch the bitmap to the new size.
-        newImageDC.SetStretchBltMode(COLORONCOLOR);
-        newImageDC.StretchBlt(0, 0, newWidth, newHeight, imageDC, 0, 0,
-            size.cx, size.cy, SRCCOPY);
+        // Create and select a DIB using CreateDIBSection.
+        CMemDC newImageDC(nullptr);
+        BITMAP  bm = bitmap.GetBitmapData();
+        bm.bmWidth = bm.bmWidth * scale;
+        bm.bmHeight = bm.bmHeight * scale;
+        CBitmapInfoPtr pbmi(bm);
+        newImageDC.CreateDIBSection(newImageDC, pbmi, DIB_RGB_COLORS, nullptr,
+            nullptr, 0);
+
+        // Copy the color table from the vertical to the horizontal DIB.
+        if (bm.bmBitsPixel <= 8)
+        {
+            UINT numColors = 1U << bm.bmBitsPixel;
+            std::vector<RGBQUAD> colors(numColors);
+            RGBQUAD* colorTable = colors.data();
+            ::GetDIBColorTable(imageDC, 0, numColors, colorTable);
+            ::SetDIBColorTable(newImageDC, 0, numColors, colorTable);
+        }
+
+        // Resize the bitmap to the new image size.
+        CSize szImage = bitmap.GetSize();
+        newImageDC.StretchBlt(0, 0, bm.bmWidth, bm.bmHeight, imageDC, 0, 0,
+            szImage.cx, szImage.cy, SRCCOPY);
 
         return newImageDC.DetachBitmap();
     }
@@ -278,7 +287,7 @@ namespace Win32xx
     // Destructor
     inline CWnd::~CWnd()
     {
-        if (CWinApp::SetnGetThis() != nullptr) // Is the CWinApp object still valid?
+        if (IsAppRunning()) // Is the CWinApp object still valid?
         {
             // Only destroy windows managed by C++.
             if (GetCWndPtr(*this) == this)
@@ -287,23 +296,14 @@ namespace Win32xx
                     ::DestroyWindow(*this);
             }
 
-            RemoveFromMap();
+            GetApp()->RemoveCWndFromMap(this);
         }
     }
 
     // Store the window handle and CWnd pointer in the HWND map.
     inline void CWnd::AddToMap()
     {
-        CThreadLock mapLock(GetApp()->m_wndLock);
-
-        // This HWND is should not be in the map yet.
-        assert (GetApp()->GetCWndFromMap(*this) == nullptr);
-
-        // Remove any old map entry for this CWnd (required when the CWnd is reused).
-        RemoveFromMap();
-
-        // Add the (HWND, CWnd*) pair to the map
-        GetApp()->m_mapHWND.emplace(std::make_pair(GetHwnd(), this));
+        GetApp()->AddCWndToMap(*this, this);
     }
 
     // Attaches a CWnd object to an existing window and calls the OnAttach virtual function.
@@ -350,7 +350,7 @@ namespace Win32xx
             parentRect = desktopRect;
 
         HMONITOR hActiveMonitor = MonitorFromWindow(*this, MONITOR_DEFAULTTONEAREST);
-        MONITORINFO mi{};
+        MONITORINFO mi = {};
         mi.cbSize = sizeof(mi);
 
         if (::GetMonitorInfo(hActiveMonitor, &mi))
@@ -377,19 +377,21 @@ namespace Win32xx
     // Returns the CWnd to its default state.
     inline void CWnd::Cleanup()
     {
-        RemoveFromMap();
+        GetApp()->RemoveCWndFromMap(this);
         m_wnd = nullptr;
         m_prevWindowProc = nullptr;
     }
 
-    // Creates the window with default parameters. The PreRegisterClass and PreCreate
-    // functions are called when the Create function is used. Override PreRegisterClass
-    // to register a new window class for the window, otherwise a default window class is used.
-    // Override PreCreate to specify the CREATESTRUCT parameters, otherwise default parameters
-    // are used. A failure to create a window throws an exception.
+    // Creates the window with default parameters. The PreRegisterClass and
+    // PreCreate functions are called when the Create function is used.
+    // Override PreRegisterClass to register a new window class for the
+    // window, otherwise a default window class is used.
+    // Override PreCreate to specify the CREATESTRUCT parameters, otherwise
+    // default parameters are used.
+    // A failure to create a window throws an exception.
     inline HWND CWnd::Create(HWND parent /* = nullptr */)
     {
-        WNDCLASS wc{};
+        WNDCLASS wc = {};
 
         // Allow the WNDCLASS parameters to be modified.
         PreRegisterClass(wc);
@@ -399,8 +401,9 @@ namespace Win32xx
             VERIFY(RegisterClass(wc));
 
         // Set the CREATESTUCT parameters to reasonable defaults.
-        CREATESTRUCT cs{};
-        LONG dwOverlappedStyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
+        CREATESTRUCT cs = {};
+        LONG dwOverlappedStyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU
+            | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
         cs.style = WS_VISIBLE | ((parent)? WS_CHILD : dwOverlappedStyle );
         cs.hwndParent = parent;
 
@@ -412,8 +415,6 @@ namespace Win32xx
             cs.cy = CW_USEDEFAULT;
         }
 
-        cs.lpszClass = wc.lpszClassName;
-
         // Allow the CREATESTRUCT parameters to be modified.
         PreCreate(cs);
 
@@ -421,9 +422,9 @@ namespace Win32xx
         HWND wnd;
 
         // Create the window.
-        wnd = CreateEx(cs.dwExStyle, cs.lpszClass, cs.lpszName, style,
-                cs.x, cs.y, cs.cx, cs.cy, cs.hwndParent,
-                cs.hMenu, cs.lpCreateParams);
+        wnd = CreateEx(cs.dwExStyle, wc.lpszClassName, cs.lpszName, style,
+                cs.x, cs.y, cs.cx, cs.cy, cs.hwndParent, cs.hMenu,
+                cs.lpCreateParams);
 
         // Show the window maximized, minimized, or normal.
         if (cs.style & WS_VISIBLE)
@@ -442,9 +443,9 @@ namespace Win32xx
     // Creates the window by specifying each parameter. The lpszClassName must
     //  be a predefined class name or registered with RegisterClass. A failure
     //  to create a window throws an exception.
-    inline HWND CWnd::CreateEx(DWORD exStyle, LPCTSTR className, LPCTSTR windowName,
-                               DWORD style, RECT rc, HWND parent, UINT id,
-                               LPVOID lparam /*= nullptr*/)
+    inline HWND CWnd::CreateEx(DWORD exStyle, LPCTSTR className,
+        LPCTSTR windowName, DWORD style, RECT rc, HWND parent, UINT id,
+        LPVOID lparam /*= nullptr*/)
     {
         int x = rc.left;
         int y = rc.top;
@@ -453,17 +454,18 @@ namespace Win32xx
 
         INT_PTR idMenu = static_cast<INT_PTR>(id);
         HMENU menu = parent ? reinterpret_cast<HMENU>(idMenu) :
-                              ::LoadMenu(GetApp()->GetResourceHandle(), MAKEINTRESOURCE(id));
+            ::LoadMenu(GetApp()->GetResourceHandle(), MAKEINTRESOURCE(id));
 
-        return CreateEx(exStyle, className, windowName, style, x, y, cx, cy, parent, menu, lparam);
+        return CreateEx(exStyle, className, windowName, style, x, y, cx, cy,
+            parent, menu, lparam);
     }
 
     // Creates the window by specifying each parameter. The lpszClassName must
     //  be a predefined class name or registered with RegisterClass. A failure
     //  to create a window throws an exception.
-    inline HWND CWnd::CreateEx(DWORD exStyle, LPCTSTR className, LPCTSTR windowName,
-                               DWORD style, int x, int y, int width, int height, HWND parent,
-                               HMENU idOrMenu, LPVOID lparam /*= nullptr*/)
+    inline HWND CWnd::CreateEx(DWORD exStyle, LPCTSTR className,
+        LPCTSTR windowName, DWORD style, int x, int y, int width, int height,
+        HWND parent, HMENU idOrMenu, LPVOID lparam /*= nullptr*/)
     {
         assert( !IsWindow() );     // Only one window per CWnd instance allowed.
         Cleanup();
@@ -475,7 +477,7 @@ namespace Win32xx
         else
             classString = className;
 
-        WNDCLASS wc{};
+        WNDCLASS wc = {};
         wc.lpszClassName = classString;
         wc.hbrBackground = static_cast<HBRUSH>(::GetStockObject(WHITE_BRUSH));
         wc.hCursor       = ::LoadCursor(nullptr, IDC_ARROW);
@@ -491,8 +493,9 @@ namespace Win32xx
         m_wnd = nullptr;
 
         // Create the window.
-        HWND wnd = ::CreateWindowEx(exStyle, classString, windowName, style, x, y, width, height,
-                                parent, idOrMenu, GetApp()->GetInstanceHandle(), lparam);
+        HWND wnd = ::CreateWindowEx(exStyle, classString, windowName, style, x,
+            y, width, height, parent, idOrMenu, GetApp()->GetInstanceHandle(),
+            lparam);
 
         // Tidy up
         pTLSData->pWnd = nullptr;
@@ -545,7 +548,7 @@ namespace Win32xx
             SetWindowLongPtr(GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(m_prevWindowProc));
 
         HWND wnd = GetHwnd();
-        RemoveFromMap();
+        GetApp()->RemoveCWndFromMap(this);
         m_wnd = nullptr;
         m_prevWindowProc = nullptr;
 
@@ -596,7 +599,8 @@ namespace Win32xx
         // dx.DDX_Check(IDC_CHECK_C,        m_checkC);
     }
 
-    // Scales the specified font to the Dots Per Inch (DPI) scaling reported by GetWindowDpi.
+    // Scales the specified font to the Dots Per Inch (DPI) scaling
+    // reported by GetWindowDpi.
     inline CFont CWnd::DpiScaleFont(const CFont& font, int pointSize) const
     {
         int dpi = GetWindowDpi(*this);
@@ -607,7 +611,8 @@ namespace Win32xx
         return dpiFont;
     }
 
-    // Scales the specified int to the Dots Per Inch (DPI) scaling reported by GetWindowDpi.
+    // Scales the specified int to the Dots Per Inch (DPI) scaling
+    // reported by GetWindowDpi.
     inline int CWnd::DpiScaleInt(int value) const
     {
         int dpi = GetWindowDpi(*this);
@@ -616,7 +621,8 @@ namespace Win32xx
         return dpiValue;
     }
 
-   // Scales the specified logfont to the Dots Per Inch (DPI) scaling reported by GetWindowDpi.
+   // Scales the specified logfont to the Dots Per Inch (DPI) scaling
+   // reported by GetWindowDpi.
    inline LOGFONT CWnd::DpiScaleLogfont(LOGFONT logfont, int pointSize) const
     {
         int dpi = GetWindowDpi(*this);
@@ -625,7 +631,8 @@ namespace Win32xx
         return logfont;
     }
 
-    // Scales the specified rect to the Dots Per Inch (DPI) scaling reported by GetWindowDpi.
+    // Scales the specified rect to the Dots Per Inch (DPI) scaling
+    // reported by GetWindowDpi.
     inline CRect CWnd::DpiScaleRect(RECT rc) const
     {
         int dpi = GetWindowDpi(*this);
@@ -637,7 +644,8 @@ namespace Win32xx
         return CRect(left, top, right, bottom);
     }
 
-    // Scales up the specified bitmap to the Dots Per Inch (DPI) scaling reported by GetWindowDpi.
+    // Scales up the specified bitmap to the Dots Per Inch (DPI) scaling
+    // reported by GetWindowDpi.
     inline CBitmap CWnd::DpiScaleUpBitmap(const CBitmap& bitmap) const
     {
         int dpi = GetWindowDpi(*this);
@@ -710,7 +718,8 @@ namespace Win32xx
         return str;
     }
 
-    // A function used internally to call OnMessageReflect. Don't call or override this function.
+    // A function used internally to call OnMessageReflect. Don't call or
+    // override this function.
     inline LRESULT CWnd::MessageReflect(UINT msg, WPARAM wparam, LPARAM lparam) const
     {
         HWND wnd = nullptr;
@@ -947,6 +956,8 @@ namespace Win32xx
     }
 
     // Called by CWnd::Create to set some window creation parameters.
+    // Note: The lpszClass parameter is ignored. The class name must be
+    //       assigned in the PreRegisterClass function if required.
     inline void CWnd::PreCreate(CREATESTRUCT&)
     {
         // Override this function to set the CREATESTRUCT values prior to window creation.
@@ -955,12 +966,14 @@ namespace Win32xx
         //  window extended styles
         //  window position
         //  window menu
-        //  window class name
         //  window name (caption)
     }
 
     // Called by CWnd::Create to set some window class parameters.
-    // Used to set the window type (ClassName) and for setting the background brush and cursor.
+    // Used to set the window type (ClassName) and for setting the background
+    // brush and cursor.
+    // Note: The lpszClassName parameter must be assigned for this function
+    // to take effect.
     inline void CWnd::PreRegisterClass(WNDCLASS&)
     {
         // Override this function to set the WNDCLASS values prior to window creation.
@@ -994,7 +1007,7 @@ namespace Win32xx
         assert((wc.lpszClassName != nullptr) && (lstrlen(wc.lpszClassName) <=  WXX_MAX_STRING_SIZE));
 
         // Check to see if this classname is already registered.
-        WNDCLASS wcTest{};
+        WNDCLASS wcTest = {};
         BOOL done = FALSE;
 
         if (::GetClassInfo(GetApp()->GetInstanceHandle(), wc.lpszClassName, &wcTest))
@@ -1013,31 +1026,6 @@ namespace Win32xx
         }
 
         return done;
-    }
-
-    // Removes this CWnd's pointer from the application's map.
-    inline BOOL CWnd::RemoveFromMap()
-    {
-        BOOL success = FALSE;
-
-        if (CWinApp::SetnGetThis() != nullptr)          // Is the CWinApp object still valid?
-        {
-            CThreadLock mapLock(GetApp()->m_wndLock);
-
-            // Erase the CWnd pointer entry from the map.
-            auto& map = GetApp()->m_mapHWND;
-            for (auto it = map.begin(); it != map.end(); ++it)
-            {
-                if (this == it->second)
-                {
-                    map.erase(it);
-                    success = TRUE;
-                    break;
-                }
-            }
-        }
-
-        return success;
     }
 
     // Sets the large icon associated with the window.
@@ -1120,8 +1108,11 @@ namespace Win32xx
     {
         assert(::IsWindow(wnd));
 
+        // Store the CWnd pointer in the HWND map.
         m_wnd = wnd;
-        AddToMap();         // Store the CWnd pointer in the HWND map
+        AddToMap();
+
+        // Store the old window procedure.
         LONG_PTR pWndProc = reinterpret_cast<LONG_PTR>(CWnd::StaticWindowProc);
         LONG_PTR pRes = ::SetWindowLongPtr(wnd, GWLP_WNDPROC, pWndProc);
         m_prevWindowProc = reinterpret_cast<WNDPROC>(pRes);
@@ -1221,7 +1212,7 @@ namespace Win32xx
         {
             LPCREATESTRUCT pcs = reinterpret_cast<LPCREATESTRUCT>(lparam);
             if (pcs == nullptr)
-                throw CWinException(_T("WM_CREATE failed"));
+                throw CWinException(GetApp()->MsgWndCreate());
 
             return OnCreate(*pcs);
         }

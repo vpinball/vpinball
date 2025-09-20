@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -36,7 +36,7 @@
 ////////////////////////////////////////////////////////
 
 
-///////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////
 // wxx_themes.h
 //  Declaration of the following structs:
 //  MenuTheme, ReBarTheme, StatusBarTheme and ToolBarTheme
@@ -49,8 +49,8 @@
 namespace Win32xx
 {
 
-    ////////////////////////////////////////////////
-    // Declarations of structures for themes
+    /////////////////////////////////////////
+    // Declarations of structures for themes.
     //
 
     // Defines the theme colors for the MenuBar and popup menues.
@@ -125,30 +125,6 @@ namespace Win32xx
         }
 
         return isAeroThemed;
-    }
-
-    // Returns TRUE if XP themes are being used.
-    inline BOOL IsXPThemed()
-    {
-        BOOL isXPThemed = FALSE;
-
-        HMODULE theme = ::GetModuleHandle(_T("uxtheme.dll"));
-        if (theme != nullptr)
-        {
-            // Declare pointers to functions.
-            FARPROC pIsAppThemed   = ::GetProcAddress(theme, "IsAppThemed");
-            FARPROC pIsThemeActive = ::GetProcAddress(theme, "IsThemeActive");
-
-            if (pIsAppThemed && pIsThemeActive)
-            {
-                if (pIsAppThemed() && pIsThemeActive())
-                {
-                    isXPThemed = TRUE;
-                }
-            }
-        }
-
-        return isXPThemed;
     }
 
 } // namespace Win32xx

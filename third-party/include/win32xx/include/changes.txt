@@ -1,3 +1,82 @@
+Version 10.2
+============
+This version adds the CFolderDialogEx class, the CPager class, the
+ToolbarBuilder sample, and the IFileDialog sample. The ToolbarBuilder is sample
+is a useful utility for building a bitmap for use with toolbars. 
+
+New Features and Enhancements
+-----------------------------
+* Added the CFolderDialogEx class.
+  The CFolderDialogEx provides a modal dialog that allows users to select a
+  folder. It is based on the IFileDialog interface. CFolderDialogEx is a modern
+  replacement for the CFolderDialog class. It supports dark mode applications,
+  whereas CFolderDialog does not. CFolderDialogEx is not supported on
+  Windows XP.
+
+* Added the CPager class.
+  CPager manages a pager control. A pager control is a window container that
+  is used with a window that does not have enough display area to show all
+  of its content. For example, if our application has a toolbar that is not
+  wide enough to show all of its items, we can assign the toolbar to a pager
+  control and users will be able to scroll to the left or right to access all
+  of the items. We can also create pager controls that scroll vertically.
+
+* Added the IsAppRunning global function.
+  This function returns TRUE if the Win32++ framework is running. Declare
+  either a CWinApp object, or an object inherited from CWinApp to start
+  Win32++.
+
+* Added the TaskDialogBox global function.
+  This function creates a TaskDialog that simulates a simple MessageBox.
+  TaskDialogs support per monitor DPI aware version 2, but a MessageBox
+  currently does not. TaskDialogs are not supported on Windows XP.
+
+* Added the ToolbarBuilder sample.
+  This sample is a handy tool for creating and editing bitmaps for use in
+  toolbars. It can load, modify and save 4bit, 8bit 16bit, 24bit and 32bit
+  bitmaps. When an image loaded and then saved, it is saved with the same bits
+  per pixel as the loaded image. Images with a bits per pixel 24 or less can be
+  displayed with a transparency mask color.
+
+* Added the IFileDialog sample.
+  This sample demonstrates how to use and customise IFileOpenDialog and
+  IFileSaveDialog. These dialogs can used in place of GetOpenFileName,
+  GetSaveFileName and SHBrowseForFolder.
+
+* Updated CMenubar.
+  The menubar now supports single menu items as well as popup menus.
+
+* Extended CBitmapInfoPtr.
+  A CBitmapInfoPtr object can now be constructed from a BITMAP struct.
+
+* Updated the support for Embarcadero's C++ Builder.
+  Support for modern Windows 64-bit compiler has been added to the C++ Builder
+  project files. These project files now support the Win32, Win64 and Win64x
+  platforms.
+
+* Updated many of the samples.
+
+Changes in detail
+-----------------
+Added the CFolderDialogEx         - class
+Added the CPager                  - class
+Added IsAppRunning                - global function
+Added TaskDialogBox               - global function
+Added CBitmapInfoPtr::CBitmapInfoPtr(const BITMAP& bitmap) additional overload
+Added CEdit::GetRect              - additional overload
+Added CListBox::GetItemRect       - additional overload
+Added CListView::GetItemRect      - additional overload
+Added CRichEdit::GetRect          - additional overload
+Added CTab::GetItemRect           - additional overload
+Added CTreeView::GetItemRect      - additional overload
+Added CGDIObject::Destroy         - member function
+Added CImageList::Destroy         - member function
+Added CMenu::Destroy              - member function
+Removed CGDIObject::DeleteObject
+Removed CImageList::DeleteImageList
+Removed CMenu::DestroyMenu
+
+
 Version 10.1
 ============
 This version updates the library and samples to make better use of the new
@@ -43,7 +122,7 @@ New Features and Enhancements
 
 * Updated CPrintDialog.
    CPrintDialog now displays the classic print dialog by default. To display
-   the modern print dialog available on Windows 10 and 11, remove the 
+   the modern print dialog available on Windows 10 and 11, remove the
    PD_ENABLEPRINTHOOK flag. This can be done as follows:
    CPrintDialog PrintDialog(0);
 
@@ -55,7 +134,7 @@ Changes in detail
  - Added CStringT::CStringT(CStringT&& str)          CStringT move constructor
  - Added CStringT::operator=(CStringT&& str)         CStringT move assignment
 
-Removed the following deprecated classes and functions: 
+Removed the following deprecated classes and functions:
  - Shared_Ptr                  class    - use unique_ptr or shared_ptr instead.
  - CFrameT::IsRebarSupported   function - not required, always TRUE.
  - CSocket::StartAsync         function - use CSocket::StartEvents instead.
@@ -63,18 +142,18 @@ Removed the following deprecated classes and functions:
  - CToolBar::AddReplaceBitmap  function - use CToolBar::SetImageList instead.
  - CToolBar::ReplaceBitmap     function - use CToolBar::SetImageList instead.
  - ::GetSizeofMenuItemInfo     function - use sizeof(MENUITEMINFO) instead.
- - ::GetComCtlVersion          function - not required for Windows XP and later.
- 
+ - ::GetComCtlVersion          function - not required for Windows XP or later.
+
 
 Version 10.0
 ============
 This version updates the library to utilize features available in C++11 and
-C++14. Win32++ now uses the unique_ptr and shared_ptr smart pointers. These
-smart pointers are used in place of Shared_Ptr when adding new instances of
-CTab, CMDIChild, CPropertySheet and CDocker.
+C++14. Win32++ now uses the unique_ptr smart pointer. This smart pointer is
+used in place of Shared_Ptr when adding new instances of CTab, CMDIChild,
+CPropertySheet and CDocker.
 
 There is now no requirement to use any raw pointers when allocating memory in
-code that uses the Win32++ library. Users of Win32++ are now free to avoid 
+code that uses the Win32++ library. Users of Win32++ are now free to avoid
 the use of both new and delete, and instead wrap all memory allocations in
 smart pointers. This helps to avoid memory leaks and improve exception safety
 in code that uses Win32++.
@@ -82,7 +161,7 @@ in code that uses Win32++.
 The C++ compilers that Win32++ supports have changed. Older compilers that
 don't support C++14 are no longer supported.
 
-Win32++ version 10.0 only supports the Windows XP and later operating systems. 
+Win32++ version 10.0 only supports the Windows XP and later operating systems.
 Win32++ version 9.6.1 is the latest version to support the operating systems
 older than Windows XP. Win32++ version 9.6.1 supports Win95 through to
 Windows 11.
@@ -132,11 +211,11 @@ Other changes include:
  * Updated CMenu. CMenu now uses a shared_ptr for its reference counting.
  * Updated CImageList. CImageList now uses a shared_ptr for its reference counting.
 
-* The values for WINVER and related macros are now set to values suitable for 
+* The values for WINVER and related macros are now set to values suitable for
   Windows 10 and Windows 11 by Win32++. Specifying different values for these macros
-  before including wincore.h is no longer supported. Win32++ version 10 supports
+  before including wxx_wincore.h is no longer supported. Win32++ version 10 supports
   all operating systems Windows XP and later irrespective of the values of these
-  version macros. 
+  version macros.
 
 
 Changes in detail
@@ -154,7 +233,7 @@ Added CTabbedMDI::AddMDIChild    - additional override for std::unique_ptr
 Modified CDocker::NewDockFromID  - returns a std::unique_ptr
 Modified CTabbedMDI::NewMDIChildFromID - returns a std::unique_ptr
 
-The type definitions for the smart pointers is in Win32++ have been updated 
+The type definitions for the smart pointers is in Win32++ have been updated
 as follows:
   using DockPtr = std::unique_ptr<CDocker>;
   using EnhMetaDataPtr = std::shared_ptr<EnhMetaFileData>;
@@ -180,23 +259,20 @@ versions of Win32++. Code that uses deprecated features should be updated.
  * CToolBar::AddReplaceBitmap  function - use CToolBar::SetImageList instead.
  * ::GetSizeofMenuItemInfo     function - use sizeof(MENUITEMINFO) instead.
  * ::GetComCtlVersion          function - not required for Windows XP and later.
- * MIN and MAX macros          function - use std::min and std::max instead. 
+ * MIN and MAX macros          function - use std::min and std::max instead.
 
 Supported Compilers
 -------------------
 The following compilers are supported by this version of Win32++:
-
-The modern GNU C++ compilers from the following projects:
- * MinGW
- * TDM-GCC    (ships with Code::Blocks and Embarcadero Dev-C++)
- * MinGW-w64  (the latest GNU C++ compilers available)
-
-Visual Studio Community 2015
-Visual Studio Community 2017
-Visual Studio Community 2019
-Visual Studio Community 2022
-
-Embarcadero C++ Community Edition (Rad Studio 11)
+ * The modern GNU C++ compilers from the following projects:
+    - MinGW
+    - TDM-GCC    (ships with Code::Blocks and Embarcadero Dev-C++)
+    - MinGW-w64  (the most modern GNU C++ compilers available)
+ * Visual Studio Community 2015
+ * Visual Studio Community 2017
+ * Visual Studio Community 2019
+ * Visual Studio Community 2022
+ * Embarcadero C++ Community Edition (Rad Studio 11)
 
 Code for Windows XP can be compiled with Visual Studio Community 2015 and the GNU compilers.
 
@@ -217,17 +293,17 @@ Support has been added for the C++ compiler from Embarcadero.
 This version also adds the ScintillaDemo sample. Scintilla is a free source code
 and text editing component. On Windows, Scintilla is a Windows control that can be
 as a direct replacement for a RichEdit control. Scintilla has a number of features
-missing RichEdit controls and has better support for printing.
+missing from RichEdit controls and has better support for printing.
 
 Scintilla can be downloaded from:
 https://www.scintilla.org/ScintillaDownload.html
 
 New Features and Enhancements
 -----------------------------
- * Added support for the C++ compilers from Embarcadero. 
+ * Added support for the C++ compilers from Embarcadero.
     The samples include the project files for C++Builder 11 Community Edition
     from Embarcadero.
- 
+
  * Added support for std::min and std::max.
 
  * The MIN and MAX macros are are now deprecated and will be removed in future
@@ -241,16 +317,6 @@ New Features and Enhancements
 * The samples now use larger icons.
     Larger icons are suitable for applications that are placed on the desktop
     on higher resolution monitors.
-
-Changes in detail
------------------
-Added:   CString::Append
-Added:   CTab::SetTabIcon         Additional overload.
-
-Added:   ScintillaDemo sample.
-
-Added    Support for std::min and std::max.
-Removed: Support for Visual Studio 6.
 
 
 Version 9.5.2
@@ -270,48 +336,6 @@ New Features and Enhancements
     Some CTime constructors have been updated, and others removed.
  * Updated the docker samples to eliminate jitter when the dockers are resized.
 
-Changes in detail
------------------
-Added:  tm* ::GMTime(tm& atm, const time_t& t)              global function
-Added:  tm* ::LocalTime(tm& atm, const time_t& t)           global function
-
-Added CFrameT<T>::RemoveKbdHook()
-
-Added:  CStringA operator+(const CStringA& string1, const CStringA& string2)
-Added:  CStringW operator+(const CStringW& string1, const CStringW& string2)
-
-Added:  CString(const CStringA& str)
-Added:  CString(const CStringW& str)
-Added:  CString& operator=(const CStringA& str)
-Added:  CString& operator=(const CStringW& str)
-Added:  CString operator+(const CString& string1, const CStringA& string2)
-Added:  CString operator+(const CString& string1, const CStringW& string2)
-Added:  CString operator+(const CStringA& string1, const CString& string2)
-Added:  CString operator+(const CStringW& string1, const CString& string2)
-
-Added:  CString& operator+=(const CStringA& str);
-Added:  CString& operator+=(const CStringW& str);
-
-Added:  CString ToCString(const CStringA& string)
-Added:  CString ToCString(const CStringW& string)
-Added:  CString ToCString(const CString& string)
-
-Modified: CTime(int year, int month, int day, int hour, int min, int sec, int isDST = -1);
-Modified: CTime::GetDayOfWeek    Now returns value in the range 1 through 7
-
-Removed: CTime(UINT yr, UINT mo, UINT wkday, UINT nthwk, UINT hr, UINT min, UINT sec, int isDST = -1);
-Removed: CTime(UINT yr, UINT doy, UINT hr, UINT min, UINT sec, int isDST = -1);
-
-Removed: time_tm typedef
-Removed: timespan_t typedef
-
-Removed: CString::Left                    redundant
-Removed: CString::Mid                     redundant
-Removed: CString::right                   redundant
-Removed: CString::SpanExcluding           redundant
-Removed: CString::SpanIncluding           redundant
-Removed: CString::Tokenize                redundant
-
 
 Version 9.5.1
 =============
@@ -330,19 +354,11 @@ New Features and Enhancements
    container from being undocked or closed.
 * Adds support for MinGW-w64 version 13.2.0.
 
-Changes in detail
------------------
-Added CDockContainer::UndockContainerGroup
-Added CResizer::OnAfterDpiChange
-Added CResizer::OnBeforeDpiChange
-Removed CDocker::OnWindowPosChanging
-Removed CTabbedMDI::OnDpiChangedBeforeParent
-
 
 Version 9.5
 ===========
 This version adds a CustomPrintDlg sample. This sample provides an
-alternative to the PrintDlg and PrintDlgEx common dialogs which have had 
+alternative to the PrintDlg and PrintDlgEx common dialogs which have had
 their functionality downgraded in Windows 11.
 
 New Features and Enhancements
@@ -359,40 +375,6 @@ New Features and Enhancements
 * Optimized the redrawing of frames and dockers when moving windows between
   monitors with different display settings.
 * Simplified support for additional toolbars in frames.
-
-Changes in detail
------------------
-Added CDockContainer::SetTabsFontSize
-Added CDockContainer::SetTabsIconSize
-Added CFrameT::SetToolBarImages       Added overload for additional toolbars
-Added CImageList::CreateDragImage
-Added CPrintPreview::CPrintPreview    Additional constructor
-Added CTab::SetTabsFontSize
-Added CTab::SetTabsIconSize
-Added CWinApp::GetHDevMode
-Added CWinApp::GetHDevNames
-Added CWinApp::ResetPrinterMemory
-Added CWinApp::UpdateDefaultPrinter
-Added CWinApp::UpdatePrinterMemory
-
-Modified CDockContainer::SetTBImageList        removed CImageList& argument
-Modified CDockContainer::SetTBImageListDis     removed CImageList& argument
-Modified CDockContainer::SetTBImageListHot     removed CImageList& argument
-Modified CFrameT::SetTBImageList               removed CImageList& argument
-Modified CFrameT::SetTBImageListDis            removed CImageList& argument
-Modified CFrameT::SetTBImageListHot            removed CImageList& argument
-Modified CComboBoxEx::SetImageList             returns CImageList
-Modified CHeader::SetImageList                 returns CImageList
-Modified CListView::SetImageList               returns CImageList
-Modified CTab::SetImageList                    returns CImageList
-Modified CToolBar::SetDisableImageList         returns CImageList
-Modified CToolBar::SetHotImageList             returns CImageList
-Modified CToolBar::SetImageList                returns CImageList
-Modified CTreeView::SetImageList               returns CImageList
-
-Removed CTab::SetTabHeight
-Removed the PrintDialogEx sample
-Removed the MDIDockFrame sample
 
 
 Version 9.4
@@ -432,7 +414,7 @@ when they are moved between monitors with different Dots Per Inch (DPI)
 settings.
 
 The new FrameEx sample demonstrates the use of PNG resources instead of bitmap
-resources for the toolbar and menu images. 
+resources for the toolbar and menu images.
 
 New Features and Enhancements
 -----------------------------
@@ -442,29 +424,29 @@ New Features and Enhancements
   a noticeable loss of visual quality.
 
 * The menu icon bitmaps are automatically scaled up to fit the menu item.
-  Note that menu icon bitmaps are not scaled down to fit the menu item, as 
+  Note that menu icon bitmaps are not scaled down to fit the menu item, as
   that would result in poor image quality. If the menu item images specified
   in the frame's SetupMenuItemIcons are too big to fit in the menu item,
   the menu icons are not displayed.
 
-* Frames support per monitor DPI awareness by resizing themselves to the 
+* Frames support per monitor DPI awareness by resizing themselves to the
   size recommended by the WM_DPICHANGED message in the OnDpiChanged function.
   They also automatically adjust the toolbar images, menu icons, and statusbar
   fonts when the frame window is moved between monitors with different DPI
-  settings.  
+  settings.
 
 * Dockers and docking frames call OnDpiChanged and OnDpiChangedBeforeParent
   in response to WM_DPICHANGED and WM_DPICHANGED_BEFOREARENT to rearrange
   dockers after a DPI change occurs. View windows should handle the
-  WM_DPICHANGEDBEFOREPARENT message if they need to account for DPI 
-  changes.  
-  
+  WM_DPICHANGEDBEFOREPARENT message if they need to account for DPI
+  changes.
+
 * CResizer supports per monitor DPI awareness by repositioning the child
   windows when the WM_DPICHANGED or WM_DPICHANGED_BEFOREPARENT message is
   handled.
 
 * Added the FrameEx sample.
-  The FrameEx sample uses PNG images instead of bitmaps for the toolbar 
+  The FrameEx sample uses PNG images instead of bitmaps for the toolbar
   and menu item images. As PNG images scale better than bitmaps, this approach
   is better for applications supporting Per Monitor DPI and high resolution
   monitors.
@@ -489,7 +471,7 @@ The GetWindowDpi function retrieves the window's current DPI. We can also
 call GetWindowDpi(HWND_DESKTOP) to retrieve the system DPI, and the desktop's
 DPI when per monitor dpi awareness is enabled.
 
-The various DpiScaleXXX functions take values that are appropriate for a 
+The various DpiScaleXXX functions take values that are appropriate for a
 a scaling factor of 100% and scale them up to the appropriate values for
 the current window's Dots Per Inch (DPI).
 
@@ -505,14 +487,14 @@ To add per-monitor dpi aware v2 to your application, use a manifest that
 includes the per monitor dpi aware v2 entry, such as "PerMonitorV2.manifest"
 provided in many of the samples. The manifest should be specified in the
 application's resource script, often called "resource.rc". You may also need
-to handle the WM_DPICHANGED_BEFOREPARENT message in view windows if they 
+to handle the WM_DPICHANGED_BEFOREPARENT message in view windows if they
 require special DPI handling.
 
 If per monitor dpi aware v2 is enabled, a WM_DPICHANGED message is sent to the
-top level windows after the DPI change occurs. That usually occurs when the 
+top level windows after the DPI change occurs. That usually occurs when the
 window is moved between monitors, but can also occur as a result of a settings
 change. A WM_DPICHANGED_BEFOREPARENT to all of the top level window's child and
-descendant windows before the WM_DPICHANGED message is sent. A 
+descendant windows before the WM_DPICHANGED message is sent. A
 WM_DPICHANGED_AFTERPARENT message is is sent to all of the top level window's
 child and descendant windows After the WM_DPICHANGED is sent.
 
@@ -524,8 +506,8 @@ Sent to the top level window before the DPI change occurs. The WPARAM
 contains the new DPI.
 
 WM_DPICHANGED
-Sent to top level windows after a DPI change occurs. The LPARAM contains a 
-pointer to rect that provides the suggested new size of the window. 
+Sent to top level windows after a DPI change occurs. The LPARAM contains a
+pointer to rect that provides the suggested new size of the window.
 
 WM_DPICHANGED_BEFOREPARENT
 Sent before the DPI change to all child windows and descendants of the top
@@ -549,7 +531,7 @@ New Features and Enhancements
 * Added support for colored text in the status bar.
   CFrame now uses owner draw to render the status bar, allowing different
   colored text to be displayed. The StatusBarTheme struct has been extended
-  to allow the status bar text color to be specified. The Themes sample 
+  to allow the status bar text color to be specified. The Themes sample
   demonstrates the use of different colored text in the status bar.
 
 * Added support for dark mode.
@@ -560,11 +542,11 @@ New Features and Enhancements
 
 * Added the DarkModeFrame sample.
   This samples demonstrates how to make a Win32++ application dark mode aware.
-  It uses the Windows App API which is an optional feature that can be 
+  It uses the Windows App API which is an optional feature that can be
   installed with Visual Studio Community 2022. This sample detects when the
   Windows theme is using dark mode, and adjusts the frame's theme accordingly.
-  The sample also uses a dialog that supports dark mode to display the 
-  information about the application. 
+  The sample also uses a dialog that supports dark mode to display the
+  information about the application.
   This samples requires Windows 10 or later.
 
 
@@ -578,7 +560,7 @@ New Features and Enhancements
 * Updated the images for menus used by CFrame and CDockFrame.
   - Win32++ now supports a range of image sizes displayed in the popup menu for
     CFrame and CDockFrame. The GetMenuIconHeight function returns the
-    appropriate height of these images in pixels (16, 24, 32 etc.). The 
+    appropriate height of these images in pixels (16, 24, 32 etc.). The
     framework will automatically scale the toolbar images down to a size
     suitable for the popup menu for the toolbar bitmap with a resource ID of
     IDW_MAIN. Alternatively you can provide icons with multiple image sizes as
@@ -605,18 +587,18 @@ New Features and Enhancements
 -----------------------------
 * Updated thread support. Thread classes now use the CThreadT class template.
   Threads that support windows continue to use CWinThread. Worker threads now
-  use CWorkThread. 
+  use CWorkThread.
   CWinThread inherits from CThreadT<CMessagePump>.
   CWorkThread inherits from CThreadT<CObject>.
 
-* The values for WINVER and related macros now default to values suitable for 
+* The values for WINVER and related macros now default to values suitable for
   Windows 10 and Windows 11. Different values can be specified before including
   wincore.h if required. These values can be specified in stdafx.h by including
   targetver.h as shown in the samples. Visual Studio 6 will require WINVER to
   be set to values appropriate for Win95 or Win98.
 
 * Updated CDialog
-  Added a default constructor. Use either the SetDialogTemplate, 
+  Added a default constructor. Use either the SetDialogTemplate,
   SetDialogResource or SetDialogFromID functions to specify the dialog if the
   default constructor is used.
 
@@ -630,7 +612,7 @@ New Features and Enhancements
   windows executable or dll file. The user can select a dialog from the list
   of dialogs found in the file. The dialog template of the selected dialog is
   displayed in a rich edit view as an unsigned char array in a manner that can
-  be saved to a header file. The program then creates the dialog from the 
+  be saved to a header file. The program then creates the dialog from the
   displayed dialog template and displays it.
 
 * Added the PrintDialogEx sample.
@@ -824,7 +806,7 @@ The following classes have also been updated:
 
 Version 7.3
 ===========
-This version enhances the appearance of frame menus on Vista and Windows 7.
+This version enhances the appearance of frame menus on Vista and Windows 7
 The following classes have also been added:
  * CDateTime
  * CHeader
@@ -931,7 +913,7 @@ Frame applications now store the window size and position in the registry.
 Version 6.1
 ===========
 Win32++ is now implemented as a header only library, and now supports
-building 64bit applications. 
+building 64bit applications.
 
 The following classes have also been added:
  * CListView.

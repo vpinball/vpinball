@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -45,34 +45,37 @@
 // wxx_mutex.h
 // This file contains the declarations of the following set of classes.
 //
-// 1) CEvent: Creates a named or unnamed event. Use the SetEvent function to set
-//            the state of an event object to signalled. Use the ResetEvent function
-//            to reset the state of an event object to non-signalled. Threads can check
-//            the status of the event with one of the wait functions. When the state of
-//            an auto-reset event object is signalled, it remains signalled until a
-//            single waiting thread is released. The system then automatically resets the
-//            state to non-signalled. If no threads are waiting, the event object's state
-//            remains signalled.
+// 1) CEvent: Creates a named or unnamed event. Use the SetEvent function to
+//            set the state of an event object to signalled. Use the ResetEvent
+//            function to reset the state of an event object to non-signalled.
+//            Threads can check the status of the event with one of the wait
+//            functions. When the state of an auto-reset event object is
+//            signalled, it remains signalled until a single waiting thread is
+//            released. The system then automatically resets the state to
+//            non-signalled. If no threads are waiting, the event object's
+//            state remains signalled.
 //
-// 2) CMutex: Creates a named or unnamed mutex. Threads use one of the wait functions
-//            to request ownership of the mutex. The state of a mutex object is signalled
-//            when it is not owned by any thread. Threads can check the status of the event
-//            with one of the wait functions.
+// 2) CMutex: Creates a named or unnamed mutex. Threads use one of the wait
+//            functions to request ownership of the mutex. The state of a mutex
+//            object is signalled when it is not owned by any thread. Threads
+//            can check the status of the event with one of the wait functions.
 //
-// 3) CSemaphore: Creates a named or unnamed semaphore. The state of a semaphore object is
-//            signalled when its count is greater than zero, and non-signalled when its
-//            count is equal to zero. The initialCount parameter specifies the initial count.
-//            Each time a waiting thread is released because of the semaphore's signalled
-//            state, the count of the semaphore is decreased by one. Threads can check
-//            the status of the event with one of the wait functions.
+// 3) CSemaphore: Creates a named or unnamed semaphore. The state of a
+//            semaphore object is signalled when its count is greater than
+//            zero, and non-signalled when its count is equal to zero. The
+//            initialCount parameter specifies the initial count.
+//            Each time a waiting thread is released because of the semaphore's
+//            signalled state, the count of the semaphore is decreased by one.
+//            Threads can check the status of the event with one of the wait
+//            functions.
 //
 
 
 namespace Win32xx
 {
-    ////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////
     // CEvent manages an event object. Event objects can be set to
-    // a signalled or nonsignalled state to facilitate synchronization
+    // a signalled or non-signalled state to facilitate synchronization
     // between threads.
     class CEvent
     {
@@ -93,7 +96,7 @@ namespace Win32xx
         HANDLE m_event;
     };
 
-    ////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////
     // CMutex manages a mutex object. A mutex object is a
     // synchronization object whose state is set to signalled
     // when it is not owned by any thread, and non-signalled
@@ -139,8 +142,9 @@ namespace Win32xx
     };
 
 
-    /////////////////////////////////////////
-    // CEvent member function definitions
+    //////////////////////////////////////
+    // CEvent member function definitions.
+    //
 
     // Creates a named or unnamed event.
     // Parameters:
@@ -174,8 +178,9 @@ namespace Win32xx
     }
 
 
-    /////////////////////////////////////////
-    // CMutex member function definitions
+    //////////////////////////////////////
+    // CMutex member function definitions.
+    //
 
     // Creates a named or unnamed mutex.
     // Parameters:
@@ -195,8 +200,9 @@ namespace Win32xx
     }
 
 
-    /////////////////////////////////////////
-    // CMutex member function definitions
+    //////////////////////////////////////
+    // CMutex member function definitions.
+    //
 
     // Creates a named or unnamed semaphore.
     // Parameters:

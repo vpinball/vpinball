@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -75,8 +75,8 @@ namespace Win32xx
 namespace Win32xx
 {
 
-    ///////////////////////////////////////
-    // Definitions for the CHGlobal class
+    //////////////////////////////////////
+    // Definitions for the CHGlobal class.
     //
 
     // Allocates a new global memory buffer for this object.

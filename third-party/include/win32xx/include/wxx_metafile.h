@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -74,12 +74,12 @@ namespace Win32xx
         HENHMETAFILE enhMetaFile;
     };
 
-    ///////////////////////////////////////////////////////////////////////////////
-    // CMetaFile wraps a HMETAFILE. CMetaFile can be used anywhere a HMETAFILE can
-    // be used. CMetaFile objects are reference counted, so they can be safely
-    // copied. CMetatFile automatically deletes the HMETAFILE when the last copy of
-    // the CMetaFile object goes out of scope. The CMetaFileDC::Close function
-    // returns a CMetaFile object.
+    //////////////////////////////////////////////////////////////////////////
+    // CMetaFile wraps a HMETAFILE. CMetaFile can be used anywhere a HMETAFILE
+    // can be used. CMetaFile objects are reference counted, so they can be
+    // safely copied. CMetatFile automatically deletes the HMETAFILE when the
+    // last copy of the CMetaFile object goes out of scope. The
+    // CMetaFileDC::Close function returns a CMetaFile object.
     class CMetaFile final
     {
         friend class CMetaFileDC;
@@ -127,12 +127,11 @@ namespace Win32xx
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 namespace Win32xx
 {
 
-    /////////////////////////////////////////////////////
-    // Definitions for the the CMetaFile class
+    ///////////////////////////////////////////
+    // Definitions for the the CMetaFile class.
     //
     inline CMetaFile::CMetaFile() : m_pData(std::make_shared<MetaFileData>())
     {
@@ -167,9 +166,6 @@ namespace Win32xx
 
     inline void CMetaFile::Release()
     {
-        if (CWinApp::SetnGetThis())
-            CThreadLock mapLock(GetApp()->m_gdiLock);
-
         // Delete the metafile when the last copy goes out of scope.
         if (m_pData.use_count() == 1 && m_pData->metaFile != nullptr)
         {
@@ -178,8 +174,8 @@ namespace Win32xx
     }
 
 
-    /////////////////////////////////////////////////////
-    // Definitions for the the CEnhMetaFile class
+    //////////////////////////////////////////////
+    // Definitions for the the CEnhMetaFile class.
     //
     inline CEnhMetaFile::CEnhMetaFile() : m_pData(std::make_shared<EnhMetaFileData>())
     {
@@ -214,9 +210,6 @@ namespace Win32xx
 
     inline void CEnhMetaFile::Release()
     {
-        if (CWinApp::SetnGetThis())
-            CThreadLock mapLock(GetApp()->m_gdiLock);
-
         // Delete the enhanced metafile when the last copy goes out of scope.
         if (m_pData.use_count() == 1 && m_pData->enhMetaFile != nullptr)
         {

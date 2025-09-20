@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -36,7 +36,7 @@
 ////////////////////////////////////////////////////////
 
 
-////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
 // wxx_menumetrics.h
 //  Declaration of the following classes and structs:
 //  Margins, MenuItemData, and CMenuMetrics.
@@ -129,14 +129,17 @@ namespace Win32xx
 
         // Wrappers for Windows API functions.
         HRESULT CloseThemeData() const;
-        HRESULT DrawThemeBackground(HDC dc, int partID, int stateID, const RECT* pRect, const RECT* pClipRect) const;
-        HRESULT DrawThemeText(HDC dc, int partID, int stateID, LPCWSTR text, int charCount, DWORD textFlags,
-                              DWORD textFlags2, LPCRECT pRect) const;
-        HRESULT GetThemePartSize(HDC dc, int partID, int stateID, LPCRECT prc, THEMESIZE eSize, SIZE* psz) const;
+        HRESULT DrawThemeBackground(HDC dc, int partID, int stateID, const RECT* pRect,
+            const RECT* pClipRect) const;
+        HRESULT DrawThemeText(HDC dc, int partID, int stateID, LPCWSTR text,
+            int charCount, DWORD textFlags, DWORD textFlags2, LPCRECT pRect) const;
+        HRESULT GetThemePartSize(HDC dc, int partID, int stateID, LPCRECT prc,
+            THEMESIZE eSize, SIZE* psz) const;
         HRESULT GetThemeInt(int partID, int stateID, int propID, int* pVal) const;
-        HRESULT GetThemeMargins(HDC dc, int partID, int stateID, int propID, LPRECT prc, Margins* pMargins) const;
-        HRESULT GetThemeTextExtent(HDC dc, int partID, int stateID, LPCWSTR text, int charCount, DWORD textFlags,
-                                   LPCRECT pBoundingRect, LPRECT pExtentRect) const;
+        HRESULT GetThemeMargins(HDC dc, int partID, int stateID, int propID,
+            LPRECT prc, Margins* pMargins) const;
+        HRESULT GetThemeTextExtent(HDC dc, int partID, int stateID, LPCWSTR text,
+            int charCount, DWORD textFlags, LPCRECT pBoundingRect, LPRECT pExtentRect) const;
         BOOL    IsThemeBackgroundPartiallyTransparent(int partID, int stateID) const;
         HANDLE  OpenThemeData(HWND wnd, LPCWSTR classList) const;
 
@@ -175,9 +178,7 @@ namespace Win32xx
 
 }
 
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 namespace Win32xx
 {
@@ -185,10 +186,12 @@ namespace Win32xx
     //////////////////////////////////////////
     // Definitions for the CMenuMetrics class.
     //
-    inline CMenuMetrics::CMenuMetrics() : m_theme(nullptr), m_pfnCloseThemeData(nullptr), m_pfnDrawThemeBackground(nullptr),
-                                            m_pfnDrawThemeText(nullptr), m_pfnGetThemePartSize(nullptr), m_pfnGetThemeInt(nullptr),
-                                            m_pfnGetThemeMargins(nullptr), m_pfnGetThemeTextExtent(nullptr),
-                                            m_pfnIsThemeBGPartTransparent(nullptr), m_pfnOpenThemeData(nullptr)
+    inline CMenuMetrics::CMenuMetrics() : m_theme(nullptr),
+        m_pfnCloseThemeData(nullptr), m_pfnDrawThemeBackground(nullptr),
+        m_pfnDrawThemeText(nullptr), m_pfnGetThemePartSize(nullptr),
+        m_pfnGetThemeInt(nullptr), m_pfnGetThemeMargins(nullptr),
+        m_pfnGetThemeTextExtent(nullptr), m_pfnIsThemeBGPartTransparent(nullptr),
+        m_pfnOpenThemeData(nullptr)
     {
         Initialize();
     }
@@ -209,7 +212,8 @@ namespace Win32xx
     }
 
     // Draws the border and fill defined by the visual style for the specified control part.
-    inline HRESULT CMenuMetrics::DrawThemeBackground(HDC dc, int partID, int stateID, const RECT *pRect, const RECT *pClipRect) const
+    inline HRESULT CMenuMetrics::DrawThemeBackground(HDC dc, int partID,
+        int stateID, const RECT *pRect, const RECT *pClipRect) const
     {
         assert(m_theme);
         if (m_pfnDrawThemeBackground)
@@ -219,8 +223,8 @@ namespace Win32xx
     }
 
     // Draws text using the color and font defined by the visual style.
-    inline HRESULT CMenuMetrics::DrawThemeText(HDC dc, int partID, int stateID, LPCWSTR text, int charCount,
-                                               DWORD textFlags, DWORD textFlags2, LPCRECT pRect) const
+    inline HRESULT CMenuMetrics::DrawThemeText(HDC dc, int partID, int stateID,
+        LPCWSTR text, int charCount, DWORD textFlags, DWORD textFlags2, LPCRECT pRect) const
     {
         assert(m_theme);
         if (m_pfnDrawThemeText)
@@ -351,8 +355,8 @@ namespace Win32xx
     }
 
     // Calculates the original size of the part defined by a visual style.
-    inline HRESULT CMenuMetrics::GetThemePartSize(HDC dc, int partID, int stateID, LPCRECT prc,
-                                                  THEMESIZE eSize, SIZE* psz) const
+    inline HRESULT CMenuMetrics::GetThemePartSize(HDC dc, int partID,
+        int stateID, LPCRECT prc, THEMESIZE eSize, SIZE* psz) const
     {
         assert(m_theme);
         if (m_pfnGetThemePartSize)
@@ -372,8 +376,8 @@ namespace Win32xx
     }
 
     // Retrieves the value of a MARGINS property.
-    inline HRESULT CMenuMetrics::GetThemeMargins(HDC dc, int partID, int stateID, int propID,
-                                                 LPRECT prc, Margins* pMargins) const
+    inline HRESULT CMenuMetrics::GetThemeMargins(HDC dc, int partID, int stateID,
+        int propID, LPRECT prc, Margins* pMargins) const
     {
         assert(m_theme);
         if (m_pfnGetThemeMargins)
@@ -383,9 +387,9 @@ namespace Win32xx
     }
 
     // Calculates the size and location of the specified text when rendered in the visual style font.
-    inline HRESULT CMenuMetrics::GetThemeTextExtent(HDC dc, int partID, int stateID, LPCWSTR text,
-                                                    int charCount, DWORD textFlags, LPCRECT pBoundingRect,
-                                                    LPRECT pExtentRect) const
+    inline HRESULT CMenuMetrics::GetThemeTextExtent(HDC dc, int partID,
+        int stateID, LPCWSTR text, int charCount, DWORD textFlags,
+        LPCRECT pBoundingRect, LPRECT pExtentRect) const
     {
         assert(m_theme);
         if (m_pfnGetThemeTextExtent)

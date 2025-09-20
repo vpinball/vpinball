@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -36,7 +36,7 @@
 ////////////////////////////////////////////////////////
 
 
-////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 // CFolderDialog class.
 //  This class wraps SHBrowseForFolder to display a dialog for
 //  choosing a folder.
@@ -45,7 +45,7 @@
 //  freed when the object goes out of scope.
 
 
-////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //
 //  Coding example.
 //
@@ -68,7 +68,7 @@
 //      // Release the memory allocated for our pidlRoot.
 //      ILFree(pidlRoot);
 //
-////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
 
 #ifndef _WIN32XX_FOLDERDIALOG_H_
@@ -79,7 +79,7 @@
 
 namespace Win32xx
 {
-    ////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////
     // CFolderDialog manages a dialog box that allows users
     // to select a folder.
     class CFolderDialog : public CDialog
@@ -133,10 +133,12 @@ namespace Win32xx
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
-
 namespace Win32xx
 {
+
+    ///////////////////////////////////////////
+    // Definitions for the CFolderDialog class.
+    //
 
     inline CFolderDialog::CFolderDialog() : m_pidlRoot(nullptr), m_fullPidl(nullptr), m_imageIndex(0)
     {
@@ -193,6 +195,7 @@ namespace Win32xx
     inline INT_PTR CFolderDialog::DoModal(HWND parent)
     {
         CoTaskMemFree(m_fullPidl);
+        m_displayName.Empty();
         m_fullPidl = nullptr;
         m_bi.lpszTitle = m_title.c_str();
         m_bi.pszDisplayName = m_displayName.GetBuffer(MAX_PATH);

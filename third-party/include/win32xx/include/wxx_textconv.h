@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -36,7 +36,7 @@
 ////////////////////////////////////////////////////////
 
 
-////////////////////////////////////////////////////////
+//////////////////////////////////////////////////
 // wxx_textconv.h
 //  Definitions of the CAtoA, CAtoW, CWtoA, CWtoW,
 //    CAtoBSTR and CWtoBSTR classes
@@ -260,8 +260,8 @@ namespace Win32xx
     }
 
 
-    ////////////////////////////////////////
-    // Global Functions
+    ////////////////////
+    // Global Functions.
     //
 
     // Trace sends a string to the debug/output pane, or an external debugger.

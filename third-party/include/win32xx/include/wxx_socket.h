@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -36,28 +36,14 @@
 ////////////////////////////////////////////////////////
 
 
-////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
 // wxx_socket.h
 //  Declaration of the CSocket class
 //
 // The CSocket class represents a network socket. It can be used to create
-// two types of sockets namely:
-// 1) An asycn socket.
-// 2) An event socket.
+// an event socket.
 //
-// 1. Async Sockets.
-// These sockets use StartAsync to monitor network events. Network events are
-// passed to the specified window as a window message and processed in the
-// window procedure. The network events can be one of:
-// FD_READ; FD_WRITE; FD_OOB; FD_ACCEPT; FD_CONNECT; FD_CLOSE; FD_QOS;
-// FD_GROUP_QOS; FD_ROUTINGINTERFACE_CHANGE; FD_ADDRESS_LIST_CHANGE;
-// FD_ADDRESS_LIST_CHANGE.
-// Refer to GetAsyncSelect in the Windows API documentation for more
-// information on using async sockets.
-// Refer to the NetClientAsync and NetServerAsync samples for an example of
-// how to use this class to create async sockets for a TCP/UDP client & server.
-//
-// 2. Event Sockets
+// Event Sockets
 // These sockets use StartEvents to monitor network events. A separate thread
 // is created for each event socket. After StartEvents is called, CSocket
 // monitors the socket and responds automatically to network events.
@@ -110,7 +96,8 @@
 //    We are now ready to send and receive data from the server.
 // * Use Send to send data to the server.
 // * Override OnReceive and use Receive to receive data from the server
-// * OnDisconnect can be used to detect when the client is disconnected from the server.
+// * OnDisconnect can be used to detect when the client is disconnected from the
+//    server.
 
 // Notes regarding IPv6 support
 // * IPv6 is supported on Windows Vista and above. Windows XP with SP2 provides
@@ -202,6 +189,10 @@ namespace Win32xx
 namespace Win32xx
 {
 
+    ////////////////////////////////////
+    // Definitions of the CSocket class.
+    //
+
     inline CSocket::CSocket() : m_socket(INVALID_SOCKET), m_stopRequest(FALSE, TRUE)
     {
         // Initialize the Windows Socket services.
@@ -262,7 +253,7 @@ namespace Win32xx
 
         if (IsIPV6Supported())
         {
-            ADDRINFOT hints{};
+            ADDRINFOT hints = {};
             hints.ai_flags = AI_NUMERICHOST | AI_PASSIVE;
             ADDRINFOT *AddrInfo;
             CString portName;
@@ -289,8 +280,10 @@ namespace Win32xx
         else
         {
             sockaddr_in clientService = {};
+            IN_ADDR ipv4_addr = {};
+            inet_pton(AF_INET, TtoA(addr), &ipv4_addr);
             clientService.sin_family = AF_INET;
-            clientService.sin_addr.s_addr = inet_addr(TtoA(addr));
+            clientService.sin_addr = ipv4_addr;
             clientService.sin_port = htons( static_cast<u_short>(port) );
 
             result = ::bind( m_socket, reinterpret_cast<SOCKADDR*>( &clientService), sizeof(clientService) );
@@ -319,7 +312,7 @@ namespace Win32xx
 
         if (IsIPV6Supported())
         {
-            ADDRINFOT hints{};
+            ADDRINFOT hints = {};
             hints.ai_flags = AI_NUMERICHOST | AI_PASSIVE;
             ADDRINFOT *AddrInfo;
 
@@ -346,8 +339,10 @@ namespace Win32xx
         else
         {
             sockaddr_in clientService = {};
+            IN_ADDR ipv4_addr = {};
+            inet_pton(AF_INET, TtoA(addr), &ipv4_addr);
             clientService.sin_family = AF_INET;
-            clientService.sin_addr.s_addr = inet_addr( TtoA(addr) );
+            clientService.sin_addr = ipv4_addr;
             clientService.sin_port = htons( static_cast<u_short>(port) );
 
             result = ::connect( m_socket, reinterpret_cast<SOCKADDR*>( &clientService ), sizeof(clientService) );
@@ -416,7 +411,7 @@ namespace Win32xx
         CEvent& stopRequestEvent = pSocket->m_stopRequest;
         SOCKET& clientSocket = pSocket->m_socket;
 
-        WSAEVENT allEvents[2]{};
+        WSAEVENT allEvents[2] = {};
         allEvents[0] = ::WSACreateEvent();
         allEvents[1] = stopRequestEvent.GetHandle();
         long events = FD_READ | FD_WRITE | FD_OOB | FD_ACCEPT | FD_CONNECT | FD_CLOSE;
@@ -637,7 +632,7 @@ namespace Win32xx
 
         if (IsIPV6Supported())
         {
-            ADDRINFOT hints{};
+            ADDRINFOT hints = {};
             hints.ai_flags = AI_NUMERICHOST | AI_PASSIVE;
             ADDRINFOT *addrInfo;
             CString portName;
@@ -666,8 +661,10 @@ namespace Win32xx
         else
         {
             sockaddr_in clientService = {};
+            IN_ADDR ipv4_addr = {};
+            inet_pton(AF_INET, TtoA(addr), &ipv4_addr);
             clientService.sin_family = AF_INET;
-            clientService.sin_addr.s_addr = inet_addr(TtoA(addr));
+            clientService.sin_addr = ipv4_addr;
             clientService.sin_port = htons( static_cast<u_short>(port) );
 
             result = ::sendto( m_socket, send, len, flags, reinterpret_cast<SOCKADDR*>( &clientService ), sizeof(clientService) );

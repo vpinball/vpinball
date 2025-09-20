@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -118,13 +118,13 @@ namespace Win32xx
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 namespace Win32xx
 {
 
-    ///////////////////////////////////
-    // Definitions for the CReBar class
+    ////////////////////////////////////
+    // Definitions for the CReBar class.
     //
+
     inline CReBar::CReBar() : m_isDragging(FALSE), m_menuBar(nullptr), m_oldParam(0)
     {
     }
@@ -148,7 +148,7 @@ namespace Win32xx
 
         for (int band = 0; band < GetBandCount(); ++band)
         {
-            REBARBANDINFO rbbi{};
+            REBARBANDINFO rbbi = {};
             rbbi.cbSize = GetSizeofRBBI();
             rbbi.fMask = RBBIM_CHILD;
             GetBandInfo(band, rbbi);
@@ -251,11 +251,7 @@ namespace Win32xx
     inline UINT CReBar::GetSizeofRBBI() const
     {
         assert(IsWindow());
-
-        UINT size = sizeof(REBARBANDINFO);
-        if ((GetWinVersion() < 2600))
-            size = REBARBANDINFO_V6_SIZE;
-
+        UINT  size = REBARBANDINFO_V6_SIZE;
         return size;
     }
 
@@ -286,14 +282,14 @@ namespace Win32xx
         VERIFY(ScreenToClient(pt));
 
         // Get the rebar band with the point.
-        RBHITTESTINFO rbhti{};
+        RBHITTESTINFO rbhti = {};
         rbhti.pt = pt;
         int iBand = HitTest(rbhti);
 
         if (iBand >= 0)
         {
             // Get the rebar band's wnd.
-            REBARBANDINFO rbbi{};
+            REBARBANDINFO rbbi = {};
             rbbi.cbSize = GetSizeofRBBI();
             rbbi.fMask = RBBIM_CHILD;
             GetBandInfo(iBand, rbbi);
@@ -330,7 +326,7 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-        REBARBANDINFO rbbi{};
+        REBARBANDINFO rbbi = {};
         rbbi.cbSize = GetSizeofRBBI();
         rbbi.fMask = RBBIM_STYLE;
         GetBandInfo(band, rbbi);
@@ -338,7 +334,7 @@ namespace Win32xx
         return !(rbbi.fStyle & RBBS_HIDDEN);
     }
 
-    // Permit the parent window to handle the drawing of the ReBar's background.
+    // Permit the parent window to handle the drawing of the rebar's background.
     // Return TRUE to suppress default background drawing.
     // Refer to UWM_DRAWRBBKGND in the Windows API documentation for more information.
     inline BOOL CReBar::OnEraseBkgnd(CDC& dc)
@@ -358,7 +354,6 @@ namespace Win32xx
     // Set the window class
     inline void CReBar::PreRegisterClass(WNDCLASS& wc)
     {
-
         wc.lpszClassName =  REBARCLASSNAME;
     }
 
@@ -425,7 +420,9 @@ namespace Win32xx
     // Called when the left button is released.
     inline LRESULT CReBar::OnLButtonUp(UINT msg, WPARAM wparam, LPARAM lparam)
     {
-        ReBarTheme* pTheme = reinterpret_cast<ReBarTheme*>(GetParent().SendMessage(UWM_GETRBTHEME, 0, 0));
+        ReBarTheme* pTheme = reinterpret_cast<ReBarTheme*>(
+            GetParent().SendMessage(UWM_GETRBTHEME, 0, 0));
+
         if (pTheme && pTheme->UseThemes && pTheme->LockMenuBand)
         {
             // Use move messages to limit the resizing of bands.
@@ -447,7 +444,9 @@ namespace Win32xx
     {
         if (m_isDragging)
         {
-            ReBarTheme* pTheme = reinterpret_cast<ReBarTheme*>(GetParent().SendMessage(UWM_GETRBTHEME, 0, 0));
+            ReBarTheme* pTheme = reinterpret_cast<ReBarTheme*>(
+                GetParent().SendMessage(UWM_GETRBTHEME, 0, 0));
+
             if (pTheme && pTheme->UseThemes && pTheme->LockMenuBand)
             {
                 // We want to lock the first row in place, but allow other bands to move!
@@ -478,7 +477,8 @@ namespace Win32xx
     inline LRESULT CReBar::OnTBWinPosChanging(UINT, WPARAM, LPARAM)
     {
         // Adjust size for toolbars inside a rebar.
-        ReBarTheme* pTheme = reinterpret_cast<ReBarTheme*>(GetParent().SendMessage(UWM_GETRBTHEME, 0, 0));
+        ReBarTheme* pTheme = reinterpret_cast<ReBarTheme*>(
+            GetParent().SendMessage(UWM_GETRBTHEME, 0, 0));
 
         return (pTheme && pTheme->UseThemes && pTheme->ShortBands) ? TRUE : FALSE;
     }
@@ -488,7 +488,7 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-        REBARBANDINFO rbbi{};
+        REBARBANDINFO rbbi = {};
         rbbi.cbSize = GetSizeofRBBI();
         rbbi.fMask = RBBIM_CHILDSIZE | RBBIM_SIZE;
 
@@ -508,7 +508,7 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-        REBARBANDINFO rbbi{};
+        REBARBANDINFO rbbi = {};
         rbbi.cbSize = GetSizeofRBBI();
         rbbi.fMask  = RBBIM_STYLE;
         GetBandInfo(band, rbbi);
@@ -523,11 +523,12 @@ namespace Win32xx
     // Sets the band's color.
     // Note:    No effect with XP themes enabled
     //          No effect if a bitmap has been set
-    inline BOOL CReBar::SetBandColor(int band, COLORREF foreground, COLORREF background) const
+    inline BOOL CReBar::SetBandColor(int band, COLORREF foreground,
+        COLORREF background) const
     {
         assert(IsWindow());
 
-        REBARBANDINFO rbbi{};
+        REBARBANDINFO rbbi = {};
         rbbi.cbSize = GetSizeofRBBI();
         rbbi.fMask = RBBIM_COLORS;
         rbbi.clrFore = foreground;
@@ -578,7 +579,7 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-        REBARBANDINFO rbbi{};
+        REBARBANDINFO rbbi = {};
         rbbi.cbSize = GetSizeofRBBI();
         rbbi.fMask = RBBIM_STYLE;
         GetBandInfo(band, rbbi);

@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -76,7 +76,7 @@
 
 namespace Win32xx
 {
-    ////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
     // This is the base class for all exceptions defined by Win32++.
     // This class has a pure virtual function and is an abstract class.
     // We can't throw a CException directly, but we can throw any exception
@@ -194,6 +194,12 @@ namespace Win32xx
         virtual const char* what () const noexcept override;
     };
 
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+namespace Win32xx
+{
 
     ////////////////////////////////////////
     // Definitions for the CException class.
@@ -209,6 +215,9 @@ namespace Win32xx
         // Store error information in m_errorString.
         DWORD flags = FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
         ::FormatMessage(flags, nullptr, m_error, 0, m_errorString, WXX_MAX_STRING_SIZE-1, nullptr);
+
+        if (m_error == 0 && IsAppRunning())
+            StrCopy(m_errorString, GetApp()->MsgNoError(), WXX_MAX_STRING_SIZE);
     }
 
 
@@ -225,6 +234,9 @@ namespace Win32xx
         // Store error information in m_errorString.
         DWORD flags = FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
         ::FormatMessage(flags, nullptr, m_error, 0, m_errorString, WXX_MAX_STRING_SIZE-1, nullptr);
+
+        if (m_error == 0 && IsAppRunning())
+            StrCopy(m_errorString, GetApp()->MsgNoError(), WXX_MAX_STRING_SIZE);
     }
 
     // CException copy constructor.
@@ -450,7 +462,7 @@ namespace Win32xx
     }
 
 
-    //////////////////////////////////////////////////
+    ///////////////////////////////////////////////
     // Definitions of the CResourceException class.
     //
 

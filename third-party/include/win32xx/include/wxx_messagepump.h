@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -44,6 +44,11 @@
 
 namespace Win32xx
 {
+
+    //////////////////////////////////////////
+    // Definitions for the CMessagePump class.
+    //
+
     // InitInstance is called when the thread or application starts.
     // Override this function to perform tasks such as creating a window.
     // Return TRUE to indicate success and run the message loop.
@@ -56,7 +61,7 @@ namespace Win32xx
     // them to a window procedure.
     inline int CMessagePump::MessageLoop()
     {
-        MSG msg{};
+        MSG msg = {};
         int status = 1;
         LONG count = 0;
 

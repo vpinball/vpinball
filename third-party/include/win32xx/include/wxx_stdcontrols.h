@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -36,7 +36,7 @@
 ////////////////////////////////////////////////////////
 
 
-////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 // wxx_stdcontrols.h
 //  Declaration of the CButton, CEdit, CListBox and CStatic classes
 
@@ -115,6 +115,7 @@ namespace Win32xx
         BOOL   GetModify() const;
         TCHAR  GetPasswordChar() const;
         void   GetRect(RECT& rc) const;
+        CRect  GetRect() const;
         void   GetSel(int& startChar, int& endChar) const;
         DWORD  GetSel() const;
         long   GetTextLength() const;
@@ -180,6 +181,7 @@ namespace Win32xx
         void* GetItemDataPtr(int index) const;
         int  GetItemHeight(int index) const;
         int  GetItemRect(int index, RECT& rc) const;
+        CRect GetItemRect(int index) const;
         LCID GetLocale() const;
         int  GetSel(int index) const;
         int  GetText(int index, LPTSTR buffer) const;
@@ -263,9 +265,7 @@ namespace Win32xx
 
 }
 
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 namespace Win32xx
 {
@@ -283,9 +283,11 @@ namespace Win32xx
     }
 
     // Returns the style of the button. Possible styles are:
-    // BS_3STATE, BS_AUTO3STATE, BS_AUTOCHECKBOX, BS_AUTORADIOBUTTON, BS_CHECKBOX, BS_DEFPUSHBUTTON, BS_GROUPBOX,
-    // BS_LEFTEXT, BS_OWNERDRAW, BS_BITMAP, BS_BOTTOM, BS_CENTER, BS_ICON, BS_FLAT, BS_MULTILINE, BS_PUSHLIKE,
-    // BS_RIGHT, BS_RIGHTBUTTON, BS_TEXT, BS_TOP, BS_TYHPEMASK, BS_VCENTER.
+    // BS_3STATE, BS_AUTO3STATE, BS_AUTOCHECKBOX, BS_AUTORADIOBUTTON,
+    // BS_CHECKBOX, BS_DEFPUSHBUTTON, BS_GROUPBOX, BS_LEFTEXT, BS_OWNERDRAW,
+    // BS_BITMAP, BS_BOTTOM, BS_CENTER, BS_ICON, BS_FLAT, BS_MULTILINE,
+    // BS_PUSHLIKE, BS_RIGHT, BS_RIGHTBUTTON, BS_TEXT, BS_TOP, BS_TYHPEMASK,
+    // BS_VCENTER.
     inline UINT CButton::GetButtonStyle() const
     {
         assert(IsWindow());
@@ -348,9 +350,11 @@ namespace Win32xx
     }
 
     // Sets the button style. Possible styles are:
-    // BS_3STATE, BS_AUTO3STATE, BS_AUTOCHECKBOX, BS_AUTORADIOBUTTON, BS_CHECKBOX, BS_DEFPUSHBUTTON, BS_GROUPBOX,
-    // BS_LEFTEXT, BS_OWNERDRAW, BS_BITMAP, BS_BOTTOM, BS_CENTER, BS_ICON, BS_FLAT, BS_MULTILINE, BS_PUSHLIKE,
-    // BS_RIGHT, BS_RIGHTBUTTON, BS_TEXT, BS_TOP, BS_TYHPEMASK, BS_VCENTER.
+    // BS_3STATE, BS_AUTO3STATE, BS_AUTOCHECKBOX, BS_AUTORADIOBUTTON,
+    // BS_CHECKBOX, BS_DEFPUSHBUTTON, BS_GROUPBOX, BS_LEFTEXT, BS_OWNERDRAW,
+    // BS_BITMAP, BS_BOTTOM, BS_CENTER, BS_ICON, BS_FLAT, BS_MULTILINE,
+    // BS_PUSHLIKE, BS_RIGHT, BS_RIGHTBUTTON, BS_TEXT, BS_TOP, BS_TYHPEMASK,
+    // BS_VCENTER.
     // Refer to BM_SETSTYLE in the Windows API documentation for more information.
     inline void CButton::SetButtonStyle(DWORD style, BOOL redraw) const
     {
@@ -405,8 +409,8 @@ namespace Win32xx
     }
 
 
-    ////////////////////////////////////////
-    // Definitions for the CEdit class
+    ///////////////////////////////////
+    // Definitions for the CEdit class.
     //
 
     // Adds text to the end of the document.
@@ -428,7 +432,8 @@ namespace Win32xx
         return static_cast<BOOL>(SendMessage(EM_CANUNDO, 0, 0));
     }
 
-    // Returns the character index and line index of the character nearest the specified point.
+    // Returns the character index and line index of the character nearest the
+    // specified point.
     // Refer to EM_CHARFROMPOS in the Windows API documentation for more information.
     inline int CEdit::CharFromPos(CPoint pt) const
     {
@@ -444,7 +449,8 @@ namespace Win32xx
         SendMessage(WM_CLEAR, 0, 0);
     }
 
-    // Copies text to the clipboard unless the style is ES_PASSWORD, in which case the message returns zero.
+    // Copies text to the clipboard unless the style is ES_PASSWORD, in which
+    // case the message returns zero.
     // Refer to WM_COPY in the Windows API documentation for more information.
     inline void CEdit::Copy() const
     {
@@ -452,7 +458,8 @@ namespace Win32xx
         SendMessage(WM_COPY, 0, 0);
     }
 
-    // Cuts the selection to the clipboard, or deletes the character to the left of the cursor if there is no selection.
+    // Cuts the selection to the clipboard, or deletes the character to the
+    // left of the cursor if there is no selection.
     // Refer to WM_CUT in the Windows API documentation for more information.
     inline void CEdit::Cut() const
     {
@@ -460,8 +467,9 @@ namespace Win32xx
         SendMessage(WM_CUT, 0, 0);
     }
 
-    // Returns the zero-based index of the first visible character in a single-line edit control
-    // or the zero-based index of the uppermost visible line in a multi-line edit control.
+    // Returns the zero-based index of the first visible character in a
+    // single-line edit control or the zero-based index of the uppermost
+    // visible line in a multi-line edit control.
     // Refer to EM_GETFIRSTVISIBLELINE in the Windows API documentation for more information.
     inline int CEdit::GetFirstVisibleLine() const
     {
@@ -469,7 +477,8 @@ namespace Win32xx
         return static_cast<int>(SendMessage(EM_GETFIRSTVISIBLELINE, 0, 0));
     }
 
-    // Returns a handle identifying the buffer containing the multi-line edit control's text.
+    // Returns a handle identifying the buffer containing the multi-line edit
+    // control's text.
     // It is not processed by single-line edit controls.
     // Refer to EM_GETHANDLE in the Windows API documentation for more information.
     inline HLOCAL CEdit::GetHandle() const
@@ -528,7 +537,8 @@ namespace Win32xx
         return static_cast<DWORD>(SendMessage(EM_GETMARGINS, 0, 0));
     }
 
-    // Returns a flag indicating whether the content of an edit control has been modified.
+    // Returns a flag indicating whether the content of an edit control has
+    // been modified.
     // Refer to EM_GETMODIFY in the Windows API documentation for more information.
     inline BOOL CEdit::GetModify() const
     {
@@ -536,7 +546,8 @@ namespace Win32xx
         return static_cast<BOOL>(SendMessage(EM_GETMODIFY, 0, 0));
     }
 
-    // Returns the character that edit controls use in conjunction with the ES_PASSWORD style.
+    // Returns the character that edit controls use in conjunction with the
+    // ES_PASSWORD style.
     // Refer to EM_GETPASSWORDCHAR in the Windows API documentation for more information.
     inline TCHAR CEdit::GetPasswordChar() const
     {
@@ -553,7 +564,19 @@ namespace Win32xx
         SendMessage(EM_GETRECT, 0, lparam);
     }
 
-    // Retrieves the starting and ending character positions of the current selection in the edit control.
+    // Returns the coordinates of the formatting rectangle in an edit control.
+    // Refer to EM_GETRECT in the Windows API documentation for more information.
+    inline CRect CEdit::GetRect() const
+    {
+        assert(IsWindow());
+        CRect rc;
+        LPARAM lparam = reinterpret_cast<LPARAM>(&rc);
+        SendMessage(EM_GETRECT, 0, lparam);
+        return rc;
+    }
+
+    // Retrieves the starting and ending character positions of the current
+    // selection in the edit control.
     // Refer to EM_GETSEL in the Windows API documentation for more information.
     inline void CEdit::GetSel(int& startChar, int& endChar) const
     {
@@ -563,7 +586,8 @@ namespace Win32xx
         SendMessage(EM_GETSEL, wparam, lparam);
     }
 
-    // Retrieves the starting and ending character positions of the current selection in the edit control.
+    // Retrieves the starting and ending character positions of the current
+    // selection in the edit control.
     // Refer to EM_GETSEL in the Windows API documentation for more information.
     inline DWORD CEdit::GetSel() const
     {
@@ -571,7 +595,8 @@ namespace Win32xx
         return static_cast<DWORD>(SendMessage(EM_GETSEL, 0, 0));
     }
 
-    // Retrieves the length of the text, in characters. Does not include the terminating null character.
+    // Retrieves the length of the text, in characters. Does not include the
+    // terminating null character.
     // Refer to WM_GETTEXTLENGTH in the Windows API documentation for more information.
     inline long CEdit::GetTextLength() const
     {
@@ -587,8 +612,9 @@ namespace Win32xx
         SendMessage(EM_EMPTYUNDOBUFFER, 0, 0);
     }
 
-    // Adds or removes soft line-break characters (two carriage returns and a line feed) to the ends of wrapped lines
-    // in a multi-line edit control. It is not processed by single-line edit controls.
+    // Adds or removes soft line-break characters (two carriage returns and a
+    // line feed) to the ends of wrapped lines in a multi-line edit control.
+    // It is not processed by single-line edit controls.
     // Refer to EM_FMTLINES in the Windows API documentation for more information.
     inline BOOL CEdit::FmtLines(BOOL addEOL) const
     {
@@ -597,8 +623,8 @@ namespace Win32xx
         return static_cast<BOOL>(SendMessage(EM_FMTLINES, wparam, 0));
     }
 
-    // Sets the text limit of an edit control. The text limit is the maximum amount of text, in TCHARs,
-    // that the user can type into the edit control.
+    // Sets the text limit of an edit control. The text limit is the maximum
+    // amount of text, in TCHARs, that the user can type into the edit control.
     // Refer to EM_LIMITTEXT in the Windows API documentation for more information.
     inline void CEdit::LimitText(int limit) const
     {
@@ -607,7 +633,8 @@ namespace Win32xx
         SendMessage(EM_LIMITTEXT, wparam, 0);
     }
 
-    // Returns the zero-based number of the line in a multi-line edit control that contains a specified character index.
+    // Returns the zero-based number of the line in a multi-line edit control
+    // that contains a specified character index.
     // This message is the reverse of LineIndex function.
     // Refer to EM_LINEFROMCHAR in the Windows API documentation for more information.
     inline int CEdit::LineFromChar(int index) const
@@ -627,8 +654,9 @@ namespace Win32xx
         return static_cast<int>(SendMessage(EM_LINEINDEX, wparam, 0));
     }
 
-    // Returns the length, in characters, of a single-line edit control. In a multi-line edit control,
-    //  returns the length, in characters, of a specified line.
+    // Returns the length, in characters, of a single-line edit control. In a
+    // multi-line edit control, returns the length, in characters, of a
+    // specified line.
     // Refer to EM_LINELENGTH in the Windows API documentation for more information.
     inline int CEdit::LineLength(int line) const
     {
@@ -637,7 +665,8 @@ namespace Win32xx
         return static_cast<int>(SendMessage(EM_LINELENGTH, wparam, 0));
     }
 
-    // Scrolls the text vertically in a single-line edit control or horizontally in a multi-line edit control.
+    // Scrolls the text vertically in a single-line edit control or
+    // horizontally in a multi-line edit control.
     // Refer to EM_LINESCROLL in the Windows API documentation for more information.
     inline void CEdit::LineScroll(int lines, int chars) const
     {
@@ -647,7 +676,8 @@ namespace Win32xx
         SendMessage(EM_LINESCROLL, wparam, lparam);
     }
 
-    // Pastes text from the clipboard into the edit control window at the caret position.
+    // Pastes text from the clipboard into the edit control window at the caret
+    // position.
     // Refer to WM_PASTE in the Windows API documentation for more information.
     inline void CEdit::Paste() const
     {
@@ -676,8 +706,9 @@ namespace Win32xx
         wc.lpszClassName = _T("Edit");
     }
 
-    // Replaces the current selection with the text in an application-supplied buffer, sends the parent window
-    // EN_UPDATE and EN_CHANGE messages, and updates the undo buffer.
+    // Replaces the current selection with the text in an application-supplied
+    // buffer, sends the parent window EN_UPDATE and EN_CHANGE messages, and
+    // updates the undo buffer.
     // Refer to EM_REPLACESEL in the Windows API documentation for more information.
     inline void CEdit::ReplaceSel(LPCTSTR newText, BOOL canUndo) const
     {
@@ -687,8 +718,8 @@ namespace Win32xx
         SendMessage(EM_REPLACESEL, wparam, lparam);
     }
 
-    // Sets a handle to the memory used as a text buffer, empties the undo buffer,
-    // resets the scroll positions to zero, and redraws the window.
+    // Sets a handle to the memory used as a text buffer, empties the undo
+    // buffer, resets the scroll positions to zero, and redraws the window.
     // Refer to EM_SETHANDLE in the Windows API documentation for more information.
     inline void CEdit::SetHandle(HLOCAL buffer) const
     {
@@ -697,7 +728,8 @@ namespace Win32xx
         SendMessage(EM_SETHANDLE, wparam, 0);
     }
 
-    // Sets the maximum number of characters the user may enter in the edit control.
+    // Sets the maximum number of characters the user may enter in the edit
+    // control.
     // Refer to EM_SETLIMITTEXT in the Windows API documentation for more information.
     inline void CEdit::SetLimitText(UINT max) const
     {
@@ -706,7 +738,8 @@ namespace Win32xx
         SendMessage(EM_SETLIMITTEXT, wparam, 0);
     }
 
-    // Sets the widths of the left and right margins, and redraws the edit control to reflect the new margins.
+    // Sets the widths of the left and right margins, and redraws the edit
+    // control to reflect the new margins.
     // Refer to EM_SETMARGINS in the Windows API documentation for more information.
     inline void CEdit::SetMargins(UINT left, UINT right) const
     {
@@ -715,7 +748,8 @@ namespace Win32xx
         SendMessage(EM_SETMARGINS, (EC_LEFTMARGIN | EC_RIGHTMARGIN), lparam);
     }
 
-    // Sets or clears the modification flag to indicate whether the edit control has been modified.
+    // Sets or clears the modification flag to indicate whether the edit
+    // control has been modified.
     // Refer to EM_SETMODIFY in the Windows API documentation for more information.
     inline void CEdit::SetModify(BOOL isModified) const
     {
@@ -724,7 +758,8 @@ namespace Win32xx
         SendMessage(EM_SETMODIFY, wparam, 0);
     }
 
-    // Defines the character that edit controls use in conjunction with the ES_PASSWORD style.
+    // Defines the character that edit controls use in conjunction with the
+    // ES_PASSWORD style.
     // Refer to EM_SETPASSWORDCHAR in the Windows API documentation for more information.
     inline void CEdit::SetPasswordChar(TCHAR ch) const
     {
@@ -742,7 +777,8 @@ namespace Win32xx
         return static_cast<BOOL>(SendMessage(EM_SETREADONLY, wparam, 0));
     }
 
-    // Sets the formatting rectangle for the multi-line edit control and redraws the window.
+    // Sets the formatting rectangle for the multi-line edit control and
+    // redraws the window.
     // Refer to EM_SETRECT in the Windows API documentation for more information.
     inline void CEdit::SetRect(RECT rc) const
     {
@@ -751,7 +787,8 @@ namespace Win32xx
         SendMessage(EM_SETRECT, 0, lparam);
     }
 
-    // Sets the formatting rectangle for the multi-line edit control but does not redraw the window.
+    // Sets the formatting rectangle for the multi-line edit control but does
+    // not redraw the window.
     // Refer to EM_SETRECTNP in the Windows API documentation for more information.
     inline void CEdit::SetRectNP(RECT rc) const
     {
@@ -760,8 +797,8 @@ namespace Win32xx
         SendMessage(EM_SETRECTNP, 0, lparam);
     }
 
-    // Selects a range of characters in the edit control by setting the starting
-    // and ending positions to be selected.
+    // Selects a range of characters in the edit control by setting the
+    //starting and ending positions to be selected.
     // Refer to EM_SETSEL in the Windows API documentation for more information.
     inline void CEdit::SetSel(DWORD selection, BOOL isScrolled) const
     {
@@ -773,8 +810,8 @@ namespace Win32xx
             SendMessage(EM_SCROLLCARET, 0, 0);
     }
 
-    // Selects a range of characters in the edit control by setting the starting
-    // and ending positions to be selected.
+    // Selects a range of characters in the edit control by setting the
+    // starting and ending positions to be selected.
     // Refer to EM_SETSEL in the Windows API documentation for more information.
     inline void CEdit::SetSel(int startChar, int endChar, BOOL isScrolled) const
     {
@@ -814,7 +851,8 @@ namespace Win32xx
         return static_cast<BOOL>(SendMessage(EM_SETTABSTOPS, wparam, lparam));
     }
 
-    // Removes any text that was just inserted or inserts any deleted characters and sets the selection to the inserted text.
+    // Removes any text that was just inserted or inserts any deleted
+    // characters and sets the selection to the inserted text.
     // Refer to EM_UNDO in the Windows API documentation for more information.
     inline void CEdit::Undo() const
     {
@@ -823,8 +861,8 @@ namespace Win32xx
     }
 
 
-    ////////////////////////////////////////
-    // Definitions for the CListbox class
+    //////////////////////////////////////
+    // Definitions for the CListbox class.
     //
 
     // Adds a string to a list box and returns its index.
@@ -836,9 +874,10 @@ namespace Win32xx
         return static_cast<int>(SendMessage(LB_ADDSTRING, 0, lparam));
     }
 
-    // Called by in response to the WM_COMPAREITEM message to determine the relative position
-    // of a new item in a sorted owner-draw list box. Override this function in an owner-drawn
-    // List-Box to specify the sort order when items are added using AddString.
+    // Called by in response to the WM_COMPAREITEM message to determine the
+    // relative position of a new item in a sorted owner-draw list box.
+    // Override this function in an owner-drawn List-Box to specify the sort
+    // order when items are added using AddString.
     inline int CListBox::CompareItem(LPCOMPAREITEMSTRUCT)
     {
         // The return value indicates the relative position of the two items.
@@ -852,7 +891,8 @@ namespace Win32xx
         return 0;
     }
 
-    // Removes a string from a list box and returns the number of strings remaining in the list.
+    // Removes a string from a list box and returns the number of strings
+    // remaining in the list.
     // Refer to LB_DELETESTRING in the Windows API documentation for more information.
     inline int CListBox::DeleteString(UINT index) const
     {
@@ -861,7 +901,8 @@ namespace Win32xx
         return static_cast<int>(SendMessage(LB_DELETESTRING, wparam, 0));
     }
 
-    // Adds a list of filenames to a list box and returns the index of the last filename added.
+    // Adds a list of filenames to a list box and returns the index of the last
+    // filename added.
     // Refer to LB_DIR in the Windows API documentation for more information.
     inline int CListBox::Dir(UINT attr, LPCTSTR wildCard) const
     {
@@ -871,7 +912,8 @@ namespace Win32xx
         return static_cast<int>(SendMessage(LB_DIR, wparam, lparam));
     }
 
-    // Returns the index of the first string in the list box that begins with a specified string.
+    // Returns the index of the first string in the list box that begins with a
+    // specified string.
     // Refer to LB_FINDSTRING in the Windows API documentation for more information.
     inline int CListBox::FindString(int startAfter, LPCTSTR string) const
     {
@@ -881,7 +923,8 @@ namespace Win32xx
         return static_cast<int>(SendMessage(LB_FINDSTRING, wparam, lparam));
     }
 
-    // Returns the index of the string in the list box that is equal to a specified string.
+    // Returns the index of the string in the list box that is equal to a
+    // specified string.
     // Refer to LB_FINDSTRINGEXACT in the Windows API documentation for more information.
     inline int CListBox::FindStringExact(int indexStart, LPCTSTR findString) const
     {
@@ -978,8 +1021,21 @@ namespace Win32xx
         return static_cast<int>(SendMessage(LB_GETITEMRECT, wparam, lparam));
     }
 
-    // Retrieves the locale of the list box. The high-order word contains the country/region code
-    // and the low-order word contains the language identifier.
+    // Retrieves the client coordinates of the specified list box item.
+    // Refer to LB_GETITEMRECT in the Windows API documentation for more information.
+    inline CRect CListBox::GetItemRect(int index) const
+    {
+        assert(IsWindow());
+        CRect rc;
+        WPARAM wparam = static_cast<WPARAM>(index);
+        LPARAM lparam = reinterpret_cast<LPARAM>(&rc);
+        SendMessage(LB_GETITEMRECT, wparam, lparam);
+        return rc;
+    }
+
+    // Retrieves the locale of the list box. The high-order word contains the
+    // country/region code and the low-order word contains the language
+    // identifier.
     // Refer to LB_GETLOCALE in the Windows API documentation for more information.
     inline LCID CListBox::GetLocale() const
     {
@@ -1004,8 +1060,9 @@ namespace Win32xx
         return static_cast<int>(SendMessage(LB_GETSELCOUNT, 0, 0));
     }
 
-    // Creates an array of the indexes of all selected items in a multiple-selection list box
-    // and returns the total number of selected items.
+    // Creates an array of the indexes of all selected items in a
+    // multiple-selection list box and returns the total number of selected
+    // items.
     // Refer to LB_GETSELITEMS in the Windows API documentation for more information.
     inline int CListBox::GetSelItems(int maxItems, LPINT pIndexArray) const
     {
@@ -1015,7 +1072,8 @@ namespace Win32xx
         return static_cast<int>(SendMessage(LB_GETSELITEMS, wparam, lparam));
     }
 
-    // Retrieves the string associated with a specified item and the length of the string.
+    // Retrieves the string associated with a specified item and the length
+    // of the string.
     // Refer to LB_GETTEXT in the Windows API documentation for more information.
     inline int CListBox::GetText(int index, LPTSTR buffer) const
     {
@@ -1025,7 +1083,8 @@ namespace Win32xx
         return static_cast<int>(SendMessage(LB_GETTEXT, wparam, lparam));
     }
 
-    // Returns the length, in characters, of the string associated with a specified item.
+    // Returns the length, in characters, of the string associated with a
+    // specified item.
     // Refer to LB_GETTEXTLEN in the Windows API documentation for more information.
     inline int CListBox::GetTextLen(int index) const
     {
@@ -1042,7 +1101,8 @@ namespace Win32xx
         return static_cast<int>(SendMessage(LB_GETTOPINDEX, 0, 0));
     }
 
-    // Retrieves the zero-based index of the item nearest the specified point in a list box.
+    // Retrieves the zero-based index of the item nearest the specified point
+    // in a list box.
     // Refer to LB_ITEMFROMPOINT in the Windows API documentation for more information.
     inline UINT CListBox::ItemFromPoint(CPoint pt, BOOL& isOutside) const
     {
@@ -1053,18 +1113,20 @@ namespace Win32xx
     }
 
     // Handle messages reflected back from the parent window.
-    // Override this function in your derived class to handle these special messages:
-    // WM_COMMAND, WM_CTLCOLORBTN, WM_CTLCOLOREDIT, WM_CTLCOLORDLG, WM_CTLCOLORLISTBOX,
-    // WM_CTLCOLORSCROLLBAR, WM_CTLCOLORSTATIC, WM_CHARTOITEM,  WM_VKEYTOITEM,
-    // WM_HSCROLL, WM_VSCROLL, WM_DRAWITEM, WM_MEASUREITEM, WM_DELETEITEM,
-    // WM_COMPAREITEM, WM_PARENTNOTIFY.
+    // Override this function in your derived class to handle these special
+    // messages:
+    // WM_COMMAND, WM_CTLCOLORBTN, WM_CTLCOLOREDIT, WM_CTLCOLORDLG,
+    // WM_CTLCOLORLISTBOX, WM_CTLCOLORSCROLLBAR, WM_CTLCOLORSTATIC,
+    // WM_CHARTOITEM,  WM_VKEYTOITEM, WM_HSCROLL, WM_VSCROLL, WM_DRAWITEM,
+    // WM_MEASUREITEM, WM_DELETEITEM, WM_COMPAREITEM, WM_PARENTNOTIFY.
     inline LRESULT CListBox::OnMessageReflect(UINT msg, WPARAM, LPARAM lparam)
     {
         switch (msg)
         {
         case WM_COMPAREITEM:
         {
-            LPCOMPAREITEMSTRUCT pCompareItemStruct = reinterpret_cast<LPCOMPAREITEMSTRUCT>(lparam);
+            LPCOMPAREITEMSTRUCT pCompareItemStruct = reinterpret_cast<
+                LPCOMPAREITEMSTRUCT>(lparam);
             return CompareItem(pCompareItemStruct);
         }
         }
@@ -1253,7 +1315,8 @@ namespace Win32xx
     // Definitions for the CStatic class
     //
 
-    // Returns the handle to the bitmap for the static control set by CStatic::SetBitmap.
+    // Returns the handle to the bitmap for the static control set by
+    // CStatic::SetBitmap.
     // Refer to STM_GETIMAGE in the Windows API documentation for more information.
     inline HBITMAP CStatic::GetBitmap() const
     {
@@ -1261,7 +1324,8 @@ namespace Win32xx
         return reinterpret_cast<HBITMAP>(SendMessage(STM_GETIMAGE, IMAGE_BITMAP, 0));
     }
 
-    // Returns the handle to the cursor for the static control set by CStatic::SetCursor.
+    // Returns the handle to the cursor for the static control set by
+    // CStatic::SetCursor.
     // Refer to STM_GETIMAGE in the Windows API documentation for more information.
     inline HCURSOR CStatic::GetCursor() const
     {
@@ -1269,15 +1333,18 @@ namespace Win32xx
         return reinterpret_cast<HCURSOR>(SendMessage(STM_GETIMAGE, IMAGE_CURSOR, 0));
     }
 
-    // Returns the handle to the enhanced meta-file for the static control set by CStatic::SetEnhMetaFile.
+    // Returns the handle to the enhanced meta-file for the static control set
+    // by CStatic::SetEnhMetaFile.
     // Refer to STM_GETIMAGE in the Windows API documentation for more information.
     inline HENHMETAFILE CStatic::GetEnhMetaFile() const
     {
         assert(IsWindow());
-        return reinterpret_cast<HENHMETAFILE>(SendMessage(STM_GETIMAGE, IMAGE_ENHMETAFILE, 0));
+        return reinterpret_cast<HENHMETAFILE>(SendMessage(STM_GETIMAGE,
+            IMAGE_ENHMETAFILE, 0));
     }
 
-    // Returns the handle to the icon for the static control set by CStatic::SetIcon.
+    // Returns the handle to the icon for the static control set by
+    // CStatic::SetIcon.
     // Refer to STM_GETIMAGE in the Windows API documentation for more information.
     inline HICON CStatic::GetIcon() const
     {
@@ -1300,7 +1367,8 @@ namespace Win32xx
     {
         assert(IsWindow());
         LPARAM lparam = reinterpret_cast<LPARAM>(bitmap);
-        return reinterpret_cast<HBITMAP>(SendMessage(STM_SETIMAGE, IMAGE_BITMAP, lparam));
+        return reinterpret_cast<HBITMAP>(SendMessage(STM_SETIMAGE,
+            IMAGE_BITMAP, lparam));
     }
 
     // Associates a new cursor image with the static control.
@@ -1312,19 +1380,21 @@ namespace Win32xx
     {
         assert(IsWindow());
         LPARAM lparam = reinterpret_cast<LPARAM>(cursor);
-        return reinterpret_cast<HCURSOR>(SendMessage(STM_SETIMAGE, IMAGE_CURSOR, lparam));
+        return reinterpret_cast<HCURSOR>(SendMessage(STM_SETIMAGE,
+            IMAGE_CURSOR, lparam));
     }
 
     // Associates a new enhanced metafile image with the static control.
-    // The enhanced metafile will be drawn in the upper-left corner and the static
-    // control will be resized to the size of the enhanced metafile.
-    // This function requires the SS_ENHMETAFILE style
+    // The enhanced metafile will be drawn in the upper-left corner and the
+    // static control will be resized to the size of the enhanced metafile.
+    // This function requires the SS_ENHMETAFILE style.
     // Refer to STM_SETIMAGE in the Windows API documentation for more information.
     inline HENHMETAFILE CStatic::SetEnhMetaFile(HENHMETAFILE metaFile) const
     {
         assert(IsWindow());
         LPARAM lparam = reinterpret_cast<LPARAM>(metaFile);
-        return reinterpret_cast<HENHMETAFILE>(SendMessage(STM_SETIMAGE, IMAGE_ENHMETAFILE, lparam));
+        return reinterpret_cast<HENHMETAFILE>(SendMessage(STM_SETIMAGE,
+            IMAGE_ENHMETAFILE, lparam));
     }
 
     // Associates a new icon image with the static control.
@@ -1336,7 +1406,8 @@ namespace Win32xx
     {
         assert(IsWindow());
         LPARAM lparam = reinterpret_cast<LPARAM>(icon);
-        return reinterpret_cast<HICON>(SendMessage(STM_SETIMAGE, IMAGE_ICON, lparam));
+        return reinterpret_cast<HICON>(SendMessage(STM_SETIMAGE, IMAGE_ICON,
+            lparam));
     }
 
 }

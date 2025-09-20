@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -36,7 +36,7 @@
 ////////////////////////////////////////////////////////
 
 
-///////////////////////////////////////////////////////
+////////////////////////////////////////////////
 // wxx_tab.h
 //  Declaration of the CTab and CMDITab classes.
 
@@ -97,7 +97,7 @@ namespace Win32xx
             CSelectDialog& operator=(const CSelectDialog&) = delete;
 
             std::vector<CString> m_items;
-            UINT IDC_LIST;
+            static constexpr UINT IDC_LIST = 122;
         };
 
     public:
@@ -163,6 +163,7 @@ namespace Win32xx
         BOOL        GetItem(int tab, LPTCITEM pTabInfo) const;
         int         GetItemCount() const;
         BOOL        GetItemRect(int tab, RECT& rc) const;
+        CRect       GetItemRect(int tab) const;
         int         GetRowCount() const;
         HWND        GetToolTips() const;
         BOOL        HighlightItem(int tabID, WORD highlight) const;
@@ -293,9 +294,7 @@ namespace Win32xx
 
 }
 
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 namespace Win32xx
 {
@@ -303,8 +302,9 @@ namespace Win32xx
     //////////////////////////////////////////////////////////////
     // Definitions for the CSelectDialog class nested within CTab.
     //
+
     inline CTab::CSelectDialog::CSelectDialog(LPCDLGTEMPLATE pDlgTemplate) :
-                    CDialog(pDlgTemplate), IDC_LIST(122)
+        CDialog(pDlgTemplate)
     {
     }
 
@@ -339,7 +339,7 @@ namespace Win32xx
     //
 
     inline CTab::CTab() : m_pActiveView(nullptr), m_isShowingButtons(FALSE), m_isTracking(FALSE),
-                          m_isClosePressed(FALSE), m_isListPressed(FALSE), m_isListMenuActive(FALSE)
+        m_isClosePressed(FALSE), m_isListPressed(FALSE), m_isListMenuActive(FALSE)
     {
         /*
         103 DIALOGEX 0, 0, 208, 202
@@ -437,7 +437,7 @@ namespace Win32xx
         m_tabViews.push_back(std::move(view));
 
         // Add the tab to the tab control.
-        TCITEM tie{};
+        TCITEM tie = {};
         tie.mask = TCIF_TEXT | TCIF_IMAGE;
         tie.iImage = tpi.tabImage;
         tie.pszText = const_cast<LPTSTR>(tpi.tabText.c_str());
@@ -808,7 +808,7 @@ namespace Win32xx
             CClientDC dcClient(*this);
             dcClient.SelectObject(m_tabFont);
             CString str;
-            TCITEM tcItem{};
+            TCITEM tcItem = {};
             tcItem.mask = TCIF_TEXT |TCIF_IMAGE;
             tcItem.cchTextMax = WXX_MAX_STRING_SIZE;
             tcItem.pszText = str.GetBuffer(WXX_MAX_STRING_SIZE);
@@ -897,7 +897,7 @@ namespace Win32xx
     // Sends a UMN_TABCHANGED notification.
     inline void CTab::NotifyChanged()
     {
-        NMHDR nmhdr{};
+        NMHDR nmhdr = {};
         nmhdr.hwndFrom = *this;
         nmhdr.code = UMN_TABCHANGED;
         LPARAM lparam = reinterpret_cast<LPARAM>(&nmhdr);
@@ -909,7 +909,7 @@ namespace Win32xx
     // Sends a UWN_TABDRAGGED notification.
     inline void CTab::NotifyDragged()
     {
-        NMHDR nmhdr{};
+        NMHDR nmhdr = {};
         nmhdr.hwndFrom = *this;
         nmhdr.code = UWN_TABDRAGGED;
         LPARAM lparam = reinterpret_cast<LPARAM>(&nmhdr);
@@ -920,7 +920,7 @@ namespace Win32xx
     inline BOOL CTab::NotifyTabClosing(int page)
     {
         UINT controlID = GetDlgCtrlID();
-        TABNMHDR tabNMHDR{};
+        TABNMHDR tabNMHDR = {};
         tabNMHDR.hdr.code = UWN_TABCLOSE;
         tabNMHDR.hdr.hwndFrom = *this;
         tabNMHDR.hdr.idFrom = controlID;
@@ -1022,7 +1022,7 @@ namespace Win32xx
 
         if (!m_isTracking)
         {
-            TRACKMOUSEEVENT TrackMouseEventStruct{};
+            TRACKMOUSEEVENT TrackMouseEventStruct = {};
             TrackMouseEventStruct.cbSize = sizeof(TrackMouseEventStruct);
             TrackMouseEventStruct.dwFlags = TME_LEAVE;
             TrackMouseEventStruct.hwndTrack = *this;
@@ -1139,9 +1139,9 @@ namespace Win32xx
         }
     }
 
-    // Called in response to a WM_DPICHANGED_AFTERPARENT message that is sent to child
-    // windows after a DPI change. A WM_DPICHANGED_AFTERPARENT is only received when the
-    // application is DPI_AWARENESS_PER_MONITOR_AWARE.
+    // Called in response to a WM_DPICHANGED_AFTERPARENT message that is sent
+    // to child windows after a DPI change. A WM_DPICHANGED_AFTERPARENT is only
+    // received when the application is DPI_AWARENESS_PER_MONITOR_AWARE.
     inline LRESULT CTab::OnDpiChangedAfterParent(UINT, WPARAM, LPARAM)
     {
         UpdateTabs();
@@ -1379,7 +1379,7 @@ namespace Win32xx
     inline void CTab::SetTabIcon(int tab, HICON icon)
     {
         assert (GetItemCount() > tab);
-        TCITEM tci{};
+        TCITEM tci = {};
         tci.mask = TCIF_IMAGE;
         GetItem(tab, &tci);
         if (tci.iImage >= 0)
@@ -1447,7 +1447,7 @@ namespace Win32xx
         size_t tabIndex = static_cast<size_t>(tab);
         if (tabIndex < GetAllTabs().size())
         {
-            TCITEM Item{};
+            TCITEM Item = {};
             Item.mask = TCIF_TEXT;
             Item.pszText = const_cast<LPTSTR>(text);
 
@@ -1537,13 +1537,13 @@ namespace Win32xx
             TabPageInfo t2 = GetTabPageInfo(tab2);
             int length = 30;
 
-            TCITEM item1{};
+            TCITEM item1 = {};
             item1.mask = TCIF_IMAGE | TCIF_PARAM | TCIF_RTLREADING | TCIF_STATE | TCIF_TEXT;
             item1.cchTextMax = length;
             item1.pszText = const_cast<LPTSTR>(t1.tabText.c_str());
             GetItem(tab1, &item1);
 
-            TCITEM item2{};
+            TCITEM item2 = {};
             item2.mask = TCIF_IMAGE | TCIF_PARAM | TCIF_RTLREADING | TCIF_STATE | TCIF_TEXT;
             item2.cchTextMax = length;
             item2.pszText = const_cast<LPTSTR>(t2.tabText.c_str());
@@ -1590,12 +1590,12 @@ namespace Win32xx
         RecalcLayout();
     }
 
-    // Assigns or removes tab control's image-list as required.
+    // Assigns or removes tab control's image list as required.
     inline void CTab::UpdateImageList()
     {
         DWORD style = GetStyle();
         if (style & TCS_FIXEDWIDTH && style & TCS_OWNERDRAWFIXED)
-            // Remove the image-list to allow very narrow tabs.
+            // Remove the image list to allow very narrow tabs.
             SetImageList(0);
         else
             SetImageList(m_images);
@@ -1727,6 +1727,16 @@ namespace Win32xx
     {
         assert(IsWindow());
         return TabCtrl_GetItemRect(*this, tab, &rc);
+    }
+
+    // Retrieves the bounding rectangle for a tab in a tab control.
+    // Refer to TabCtrl_GetItemRect in the Windows API documentation for more information.
+    inline CRect CTab::GetItemRect(int tab) const
+    {
+        assert(IsWindow());
+        CRect rc;
+        TabCtrl_GetItemRect(*this, tab, &rc);
+        return rc;
     }
 
     // Retrieves the current number of rows of tabs in a tab control.
@@ -1937,7 +1947,7 @@ namespace Win32xx
     // Creates the TabbedMDI window.
     inline HWND CTabbedMDI::Create(HWND parent /* = 0*/)
     {
-        CLIENTCREATESTRUCT clientcreate{};
+        CLIENTCREATESTRUCT clientcreate = {};
         clientcreate.hWindowMenu  = *this;
         clientcreate.idFirstChild = IDW_FIRSTCHILD ;
         DWORD style = WS_CHILD | WS_VISIBLE | MDIS_ALLCHILDSTYLES | WS_CLIPCHILDREN;
@@ -2102,7 +2112,7 @@ namespace Win32xx
     }
 
     // Handles notifications.
-    inline LRESULT CTabbedMDI::OnNotify(WPARAM /*wparam*/, LPARAM lparam)
+    inline LRESULT CTabbedMDI::OnNotify(WPARAM, LPARAM lparam)
     {
         LPNMHDR pHeader = reinterpret_cast<LPNMHDR>(lparam);
         assert(pHeader);
@@ -2121,7 +2131,7 @@ namespace Win32xx
                     CPoint pt = GetCursorPos();
                     VERIFY(GetTab().ScreenToClient(pt));
 
-                    TCHITTESTINFO info{};
+                    TCHITTESTINFO info = {};
                     info.pt = pt;
                     int tab = GetTab().HitTest(info);
                     if (tab >= 0)

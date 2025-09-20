@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -36,7 +36,7 @@
 ////////////////////////////////////////////////////////
 
 
-///////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////
 // wxx_ribbon.h
 //  Declaration of the following classes:
 //  CRibbon, CRibbonFrameT, CRibbonFrame, CRibbonDockFrame
@@ -78,14 +78,15 @@ namespace Win32xx
             __deref_out IUICommandHandler** ppCommandHandler) override;
         virtual STDMETHODIMP OnDestroyUICommand(UINT32 commandId, __in UI_COMMANDTYPE typeID,
             __in_opt IUICommandHandler* commandHandler) override;
-        virtual STDMETHODIMP OnViewChanged(UINT32 viewId, __in UI_VIEWTYPE typeId, __in IUnknown* pView,
-            UI_VIEWVERB verb, INT uReasonCode) override;
+        virtual STDMETHODIMP OnViewChanged(UINT32 viewId, __in UI_VIEWTYPE typeId,
+            __in IUnknown* pView, UI_VIEWVERB verb, INT uReasonCode) override;
 
         // IUICommandHandle methods
-        virtual STDMETHODIMP Execute(UINT32 nCmdID, UI_EXECUTIONVERB verb, __in_opt const PROPERTYKEY* key, __in_opt const PROPVARIANT* value,
-                                          __in_opt IUISimplePropertySet* pCommandExecutionProperties) override;
-        virtual STDMETHODIMP UpdateProperty(UINT32 nCmdID, __in REFPROPERTYKEY key, __in_opt const PROPVARIANT* currentValue,
-                                                 __out PROPVARIANT* newValue) override;
+        virtual STDMETHODIMP Execute(UINT32 nCmdID, UI_EXECUTIONVERB verb,
+            __in_opt const PROPERTYKEY* key, __in_opt const PROPVARIANT* value,
+            __in_opt IUISimplePropertySet* pCommandExecutionProperties) override;
+        virtual STDMETHODIMP UpdateProperty(UINT32 nCmdID, __in REFPROPERTYKEY key,
+            __in_opt const PROPVARIANT* currentValue, __out PROPVARIANT* newValue) override;
         virtual STDMETHODIMP CreateRibbon(HWND wnd);
         virtual STDMETHODIMP DestroyRibbon();
 
@@ -103,8 +104,6 @@ namespace Win32xx
         CRibbon& operator=(const CRibbon&) = delete;
 
         IUIFramework* m_pRibbonFramework;
-        LONG m_count;                         // Reference count.
-
     };
 
     ///////////////////////////////////////////////////
@@ -133,7 +132,6 @@ namespace Win32xx
             STDMETHODIMP GetValue(__in REFPROPERTYKEY key, __out PROPVARIANT* value) override;
 
         private:
-            LONG m_count;                        // Reference count.
             WCHAR m_displayName[MAX_PATH];
             WCHAR m_fullPath[MAX_PATH];
         };
@@ -147,7 +145,8 @@ namespace Win32xx
         virtual CRect GetViewRect() const override;
         virtual int  OnCreate(CREATESTRUCT& cs) override;
         virtual void OnDestroy() override;
-        virtual STDMETHODIMP OnViewChanged(UINT32 viewId, UI_VIEWTYPE typeId, IUnknown* pView, UI_VIEWVERB verb, INT32 reasonCode) override;
+        virtual STDMETHODIMP OnViewChanged(UINT32 viewId, UI_VIEWTYPE typeId,
+            IUnknown* pView, UI_VIEWVERB verb, INT32 reasonCode) override;
         virtual HRESULT PopulateRibbonRecentItems(PROPVARIANT* value);
         virtual void UpdateMRUMenu() override;
 
@@ -158,7 +157,7 @@ namespace Win32xx
         std::vector<RecentFilesPtr> m_recentFiles;
     };
 
-    ////////////////////////////////////////////////////
+    /////////////////////////////////////////////////
     // This class provides an SDI frame with a Ribbon
     // Framework.
     class CRibbonFrame : public CRibbonFrameT<CFrame>
@@ -172,7 +171,7 @@ namespace Win32xx
         CRibbonFrame& operator=(const CRibbonFrame&) = delete;
     };
 
-    ////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
     // CRibbonDockFrame manages a frame that supports the
     // ribbon user interface and docking.
     class CRibbonDockFrame : public CRibbonFrameT<CDockFrame>
@@ -186,7 +185,7 @@ namespace Win32xx
         CRibbonDockFrame& operator=(const CRibbonDockFrame&) = delete;
     };
 
-    //////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////
     // CRibbonMDIFrame manages a frame that supports the Multiple
     // Document Interface (MDI) and the Ribbon user interface.
     class CRibbonMDIFrame : public CRibbonFrameT<CMDIFrame>
@@ -217,38 +216,39 @@ namespace Win32xx
 
 }
 
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 namespace Win32xx
 {
-    //////////////////////////////////////////////
-    // Definitions for the CRibbon class
+    /////////////////////////////////////
+    // Definitions for the CRibbon class.
     //
 
-    inline CRibbon::CRibbon() : m_pRibbonFramework(nullptr), m_count(0)
+    inline CRibbon::CRibbon() : m_pRibbonFramework(nullptr)
     {
     }
 
 
-    //////////////////////////////////
+    ///////////////////////////////////
     // IUnknown method implementations.
 
 
     inline STDMETHODIMP_(ULONG) CRibbon::AddRef()
     {
-        return static_cast<ULONG>(InterlockedIncrement(&m_count));
+        // Automatic deletion is not required.
+        return 1;
     }
 
     inline STDMETHODIMP_(ULONG) CRibbon::Release()
     {
-        return static_cast<ULONG>(InterlockedDecrement(&m_count));
+        // Automatic deletion is not required.
+        return 1;
     }
 
     // Responds to execute events on Commands bound to the Command handler.
-    inline STDMETHODIMP CRibbon::Execute(UINT32, UI_EXECUTIONVERB, __in_opt const PROPERTYKEY*, __in_opt const PROPVARIANT*,
-                                          __in_opt IUISimplePropertySet*)
+    inline STDMETHODIMP CRibbon::Execute(UINT32, UI_EXECUTIONVERB,
+        __in_opt const PROPERTYKEY*, __in_opt const PROPVARIANT*,
+        __in_opt IUISimplePropertySet*)
     {
         return E_NOTIMPL;
     }
@@ -273,14 +273,14 @@ namespace Win32xx
             return E_NOINTERFACE;
         }
 
-        AddRef();
         return S_OK;
     }
 
 
-    // Called by the Ribbon framework for each command specified in markup, to bind the Command to an IUICommandHandler.
-    inline STDMETHODIMP CRibbon::OnCreateUICommand(UINT32, __in UI_COMMANDTYPE,
-                                                 __deref_out IUICommandHandler** ppCommandHandler)
+    // Called by the Ribbon framework for each command specified in markup,
+    // to bind the Command to an IUICommandHandler.
+    inline STDMETHODIMP CRibbon::OnCreateUICommand(UINT32,
+        __in UI_COMMANDTYPE, __deref_out IUICommandHandler** ppCommandHandler)
     {
         // By default we use the single command handler provided as part of CRibbon.
         // Override this function to account for multiple command handlers.
@@ -288,23 +288,26 @@ namespace Win32xx
         return QueryInterface(IID_PPV_ARGS(ppCommandHandler));
     }
 
-    // Called when the state of the Ribbon changes, for example, created, destroyed, or resized.
-    inline STDMETHODIMP CRibbon::OnViewChanged(UINT32, __in UI_VIEWTYPE, __in IUnknown*,
-                                             UI_VIEWVERB, INT)
+    // Called when the state of the Ribbon changes, for example, created,
+    // destroyed, or resized.
+    inline STDMETHODIMP CRibbon::OnViewChanged(UINT32, __in UI_VIEWTYPE,
+        __in IUnknown*, UI_VIEWVERB, INT)
     {
         return E_NOTIMPL;
     }
 
-    // Called by the Ribbon framework for each command at the time of ribbon destruction.
+    // Called by the Ribbon framework for each command at the time of ribbon
+    // destruction.
     inline STDMETHODIMP CRibbon::OnDestroyUICommand(UINT32, __in UI_COMMANDTYPE,
-                                                  __in_opt IUICommandHandler*)
+        __in_opt IUICommandHandler*)
     {
         return E_NOTIMPL;
     }
 
-    // Called by the Ribbon framework when a command property (PKEY) needs to be updated.
-    inline STDMETHODIMP CRibbon::UpdateProperty(UINT32, __in REFPROPERTYKEY, __in_opt const PROPVARIANT*,
-                                                 __out PROPVARIANT*)
+    // Called by the Ribbon framework when a command property (PKEY) needs to
+    // be updated.
+    inline STDMETHODIMP CRibbon::UpdateProperty(UINT32, __in REFPROPERTYKEY,
+        __in_opt const PROPVARIANT*, __out PROPVARIANT*)
     {
         return E_NOTIMPL;
     }
@@ -314,13 +317,15 @@ namespace Win32xx
     {
         HRESULT hr;
         // Instantiate the Ribbon framework object.
-        if (SUCCEEDED(hr = ::CoCreateInstance(CLSID_UIRibbonFramework, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&m_pRibbonFramework))))
+        if (SUCCEEDED(hr = ::CoCreateInstance(CLSID_UIRibbonFramework, nullptr,
+            CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&m_pRibbonFramework))))
         {
             // Connect the host application to the Ribbon framework.
             assert(m_pRibbonFramework);
             if (SUCCEEDED(hr = m_pRibbonFramework->Initialize(wnd, this)))
             {
-                // Load the binary markup. APPLICATION_RIBBON is the default name generated by uicc.
+                // Load the binary markup. APPLICATION_RIBBON is the default
+                // name generated by uicc.
                 hr = m_pRibbonFramework->LoadUI(::GetModuleHandle(0), L"APPLICATION_RIBBON");
             }
         }
@@ -364,8 +369,8 @@ namespace Win32xx
     }
 
 
-    //////////////////////////////////////////////
-    // Definitions for the CRibbonFrameT class template
+    ////////////////////////////////////////////////////
+    // Definitions for the CRibbonFrameT class template.
     //
 
     // Get the frame's client area.
@@ -429,7 +434,8 @@ namespace Win32xx
 
     // Called when the ribbon's view has changed.
     template <class T>
-    inline STDMETHODIMP CRibbonFrameT<T>::OnViewChanged(UINT32, UI_VIEWTYPE typeId, IUIApplication::IUnknown*, UI_VIEWVERB verb, INT32)
+    inline STDMETHODIMP CRibbonFrameT<T>::OnViewChanged(UINT32,
+        UI_VIEWTYPE typeId, IUIApplication::IUnknown*, UI_VIEWVERB verb, INT32)
     {
         HRESULT result = E_NOTIMPL;
 
@@ -469,7 +475,7 @@ namespace Win32xx
 
             for (const CString& fileName : fileNames)
             {
-                WCHAR curFileName[MAX_PATH] = {0};
+                WCHAR curFileName[MAX_PATH] = {};
                 StrCopyW(curFileName, TtoW(fileName), MAX_PATH);
 
                 m_recentFiles.push_back(std::make_unique<CRecentFiles>(curFileName));
@@ -498,19 +504,21 @@ namespace Win32xx
     }
 
 
-    ////////////////////////////////////////////////////////
-    // Declaration of the nested CRecentFiles class
+    ////////////////////////////////////////////////
+    // Declaration of the nested CRecentFiles class.
     //
     template <class T>
-    inline CRibbonFrameT<T>::CRecentFiles::CRecentFiles(PWSTR fullPath) : m_count(0)
+    inline CRibbonFrameT<T>::CRecentFiles::CRecentFiles(PWSTR fullPath)
     {
-        SHFILEINFOW sfi{};
+        SHFILEINFOW sfi = {};
         DWORD_PTR ptr = 0;
         m_fullPath[0] = L'\0';
         m_displayName[0] = L'\0';
 
         StrCopyW(m_fullPath, fullPath, MAX_PATH);
-        ptr = ::SHGetFileInfoW(fullPath, FILE_ATTRIBUTE_NORMAL, &sfi, sizeof(sfi), SHGFI_DISPLAYNAME | SHGFI_USEFILEATTRIBUTES);
+        ptr = ::SHGetFileInfoW(fullPath, FILE_ATTRIBUTE_NORMAL, &sfi,
+            sizeof(sfi), SHGFI_DISPLAYNAME | SHGFI_USEFILEATTRIBUTES);
+
         if (ptr != 0)
         {
             StrCopyW(m_displayName, sfi.szDisplayName, MAX_PATH);
@@ -525,17 +533,20 @@ namespace Win32xx
     template <class T>
     inline STDMETHODIMP_(ULONG) CRibbonFrameT<T>::CRecentFiles::AddRef()
     {
-        return static_cast<ULONG>(InterlockedIncrement(&m_count));
+        // Automatic deletion is not required.
+        return 1;
     }
 
     template <class T>
     inline STDMETHODIMP_(ULONG) CRibbonFrameT<T>::CRecentFiles::Release()
     {
-        return static_cast<ULONG>(InterlockedDecrement(&m_count));
+        // Automatic deletion is not required.
+        return 1;
     }
 
     template <class T>
-    inline STDMETHODIMP CRibbonFrameT<T>::CRecentFiles::QueryInterface(REFIID iid, void** ppObject)
+    inline STDMETHODIMP CRibbonFrameT<T>::CRecentFiles::QueryInterface(
+        REFIID iid, void** ppObject)
     {
         if (!ppObject)
         {
@@ -556,13 +567,13 @@ namespace Win32xx
             return E_NOINTERFACE;
         }
 
-        AddRef();
         return S_OK;
     }
 
     // IUISimplePropertySet methods.
     template <class T>
-    inline STDMETHODIMP CRibbonFrameT<T>::CRecentFiles::GetValue(__in REFPROPERTYKEY key, __out PROPVARIANT *ppropvar)
+    inline STDMETHODIMP CRibbonFrameT<T>::CRecentFiles::GetValue(
+        __in REFPROPERTYKEY key, __out PROPVARIANT *ppropvar)
     {
         HRESULT result = HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
 

@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -112,11 +112,15 @@ namespace Win32xx
 
 }
 
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 namespace Win32xx
 {
+
+    ///////////////////////////////////
+    // Definitions for the CFile class.
+    //
+
     inline CFile::CFile() : m_file(INVALID_HANDLE_VALUE)
     {
     }
@@ -125,7 +129,8 @@ namespace Win32xx
     {
     }
 
-    // Possible nOpenFlag values: CREATE_NEW, CREATE_ALWAYS, OPEN_EXISTING, OPEN_ALWAYS, TRUNCATE_EXISTING
+    // Possible nOpenFlag values: CREATE_NEW, CREATE_ALWAYS, OPEN_EXISTING,
+    //                            OPEN_ALWAYS, TRUNCATE_EXISTING.
     // Default value: OPEN_EXISTING | modeReadWrite
     // The following modes are also supported:
     //  modeCreate      Creates a new file. Truncates an existing file to length 0.
@@ -146,11 +151,16 @@ namespace Win32xx
     }
 
     // Possible attribute values:
-    //   FILE_ATTRIBUTE_ARCHIVE, FILE_ATTRIBUTE_ENCRYPTED, FILE_ATTRIBUTE_HIDDEN, FILE_ATTRIBUTE_NORMAL,
-    //   FILE_ATTRIBUTE_NOT_CONTENT_INDEXED, FILE_ATTRIBUTE_OFFLINE, FILE_ATTRIBUTE_READONLY, FILE_ATTRIBUTE_SYSTEM,
-    //   FILE_ATTRIBUTE_TEMPORARY, FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_DELETE_ON_CLOSE, FILE_FLAG_NO_BUFFERING,
-    //   FILE_FLAG_OPEN_NO_RECALL, FILE_FLAG_OPEN_REPARSE_POINT, FILE_FLAG_OVERLAPPED, FILE_FLAG_POSIX_SEMANTICS,
-    //   FILE_FLAG_RANDOM_ACCESS, FILE_FLAG_SEQUENTIAL_SCAN, FILE_FLAG_WRITE_THROUGH.
+    //   FILE_ATTRIBUTE_ARCHIVE, FILE_ATTRIBUTE_ENCRYPTED,
+    //   FILE_ATTRIBUTE_HIDDEN, FILE_ATTRIBUTE_NORMAL,
+    //   FILE_ATTRIBUTE_NOT_CONTENT_INDEXED, FILE_ATTRIBUTE_OFFLINE,
+    //   FILE_ATTRIBUTE_READONLY, FILE_ATTRIBUTE_SYSTEM,
+    //   FILE_ATTRIBUTE_TEMPORARY, FILE_FLAG_BACKUP_SEMANTICS,
+    //   FILE_FLAG_DELETE_ON_CLOSE, FILE_FLAG_NO_BUFFERING,
+    //   FILE_FLAG_OPEN_NO_RECALL, FILE_FLAG_OPEN_REPARSE_POINT,
+    //   FILE_FLAG_OVERLAPPED, FILE_FLAG_POSIX_SEMANTICS,
+    //   FILE_FLAG_RANDOM_ACCESS, FILE_FLAG_SEQUENTIAL_SCAN,
+    //   FILE_FLAG_WRITE_THROUGH.
     // Refer to CreateFile in the Windows API documentation for more information.
     inline CFile::CFile(LPCTSTR fileName, UINT openFlags, DWORD attributes) : m_file(INVALID_HANDLE_VALUE)
     {
@@ -169,7 +179,8 @@ namespace Win32xx
         return m_file;
     }
 
-    // Closes the file associated with this object. Closed file can no longer be read or written to.
+    // Closes the file associated with this object. Closed file can no longer
+    // be read or written to.
     // Refer to CloseHandle in the Windows API documentation for more information.
     inline void CFile::Close()
     {
@@ -215,13 +226,15 @@ namespace Win32xx
         return directory;
     }
 
-    // Returns the filename of the file associated with this object, not including the directory.
+    // Returns the filename of the file associated with this object, not
+    // including the directory.
     inline const CString& CFile::GetFileName() const
     {
         return m_fileName;
     }
 
-    // Returns the extension part of the filename of the file associated with this object.
+    // Returns the extension part of the filename of the file associated with
+    // this object.
     inline CString CFile::GetFileNameExt() const
     {
         CString extension;
@@ -232,7 +245,8 @@ namespace Win32xx
         return extension;
     }
 
-    // Returns the filename of the file associated with this object, not including the directory, without its extension.
+    // Returns the filename of the file associated with this object, not
+    // including the directory, without its extension.
     inline CString CFile::GetFileNameWOExt() const
     {
         CString fileNameWOExt = m_fileName;
@@ -243,7 +257,8 @@ namespace Win32xx
         return fileNameWOExt;
     }
 
-    // Returns the full filename including the directory of the file associated with this object.
+    // Returns the full filename including the directory of the file associated
+    // with this object.
     inline const CString& CFile::GetFilePath() const
     {
         return m_filePath;
@@ -285,7 +300,8 @@ namespace Win32xx
         return result;
     }
 
-    // Returns the current value of the file pointer that can be used in subsequent calls to Seek.
+    // Returns the current value of the file pointer that can be used in
+    // subsequent calls to Seek.
     // Refer to SetFilePointer in the Windows API documentation for more information.
     inline ULONGLONG CFile::GetPosition() const
     {
@@ -313,7 +329,8 @@ namespace Win32xx
     }
 
     // Prepares a file to be written to or read from.
-    // Possible openFlag values: CREATE_NEW, CREATE_ALWAYS, OPEN_EXISTING, OPEN_ALWAYS, TRUNCATE_EXISTING
+    // Possible openFlag values: CREATE_NEW, CREATE_ALWAYS, OPEN_EXISTING,
+    //                           OPEN_ALWAYS, TRUNCATE_EXISTING
     // Default value: OPEN_EXISTING | modeReadWrite
     // The following modes are also supported:
     //  modeCreate      Creates a new file. Truncates an existing file to length 0.
@@ -327,11 +344,16 @@ namespace Win32xx
     //  shareDenyRead   Denies read access to all others.
     //  shareDenyNone   No sharing restrictions.
     // Possible attribute values:
-    //   FILE_ATTRIBUTE_ARCHIVE, FILE_ATTRIBUTE_ENCRYPTED, FILE_ATTRIBUTE_HIDDEN, FILE_ATTRIBUTE_NORMAL,
-    //   FILE_ATTRIBUTE_NOT_CONTENT_INDEXED, FILE_ATTRIBUTE_OFFLINE, FILE_ATTRIBUTE_READONLY, FILE_ATTRIBUTE_SYSTEM,
-    //   FILE_ATTRIBUTE_TEMPORARY, FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_DELETE_ON_CLOSE, FILE_FLAG_NO_BUFFERING,
-    //   FILE_FLAG_OPEN_NO_RECALL, FILE_FLAG_OPEN_REPARSE_POINT, FILE_FLAG_OVERLAPPED, FILE_FLAG_POSIX_SEMANTICS,
-    //   FILE_FLAG_RANDOM_ACCESS, FILE_FLAG_SEQUENTIAL_SCAN, FILE_FLAG_WRITE_THROUGH.
+    //   FILE_ATTRIBUTE_ARCHIVE, FILE_ATTRIBUTE_ENCRYPTED,
+    //   FILE_ATTRIBUTE_HIDDEN, FILE_ATTRIBUTE_NORMAL,
+    //   FILE_ATTRIBUTE_NOT_CONTENT_INDEXED, FILE_ATTRIBUTE_OFFLINE,
+    //   FILE_ATTRIBUTE_READONLY, FILE_ATTRIBUTE_SYSTEM,
+    //   FILE_ATTRIBUTE_TEMPORARY, FILE_FLAG_BACKUP_SEMANTICS,
+    //   FILE_FLAG_DELETE_ON_CLOSE, FILE_FLAG_NO_BUFFERING,
+    //   FILE_FLAG_OPEN_NO_RECALL, FILE_FLAG_OPEN_REPARSE_POINT,
+    //   FILE_FLAG_OVERLAPPED, FILE_FLAG_POSIX_SEMANTICS,
+    //   FILE_FLAG_RANDOM_ACCESS, FILE_FLAG_SEQUENTIAL_SCAN,
+    //   FILE_FLAG_WRITE_THROUGH.
     // Refer to CreateFile in the Windows API documentation for more information.
     inline void CFile::Open(LPCTSTR fileName, UINT openFlags, DWORD attributes)
     {
@@ -448,7 +470,8 @@ namespace Win32xx
     }
 
     // Assigns the specified full file path to this object.
-    // Call this function if the file path is not supplied when the CFile is constructed.
+    // Call this function if the file path is not supplied when the CFile is
+    // constructed.
     // Note: this function does not open or create the specified file.
     inline void CFile::SetFilePath(LPCTSTR fileName)
     {

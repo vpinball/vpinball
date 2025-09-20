@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -36,9 +36,9 @@
 ////////////////////////////////////////////////////////
 
 
-////////////////////////////////////////////////////////
+////////////////////////////////////////////////
 // wxx_dockframe.h
-//  Declaration of CDockFrame and CMDIDockFrame
+//  Declaration of CDockFrame and CMDIDockFrame.
 
 
 #ifndef _WIN32XX_DOCKFRAME_H_
@@ -69,8 +69,8 @@
 namespace Win32xx
 {
 
-    /////////////////////////////////////////
-    // Provides a Single Document Interface (SDI) frame with docking
+    /////////////////////////////////////////////////////////////////
+    // Provides a Single Document Interface (SDI) frame with docking.
     class CDockFrame : public CFrameT<CDocker>
     {
     public:
@@ -98,7 +98,7 @@ namespace Win32xx
     };
 
 
-    //////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////
     // Provides a frame that supports the Multiple Document Interface
     // (MDI) and docking. It also manages the creation and position
     // of child windows, such as the menubar, toolbar, and statusbar.
@@ -120,15 +120,13 @@ namespace Win32xx
 
 }
 
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 namespace Win32xx
 {
 
-    /////////////////////////////////////////
-    // Definitions for the CDockFrame class
+    ////////////////////////////////////////
+    // Definitions for the CDockFrame class.
     //
 
     // Called when the frame window is activated.
@@ -241,8 +239,8 @@ namespace Win32xx
         return CFrameT<CDocker>::WndProcDefault(msg, wparam, lparam);
     }
 
-    //////////////////////////////////////////
-    // Definitions for the CMDIDockFrame class
+    ///////////////////////////////////////////
+    // Definitions for the CMDIDockFrame class.
     //
 
     // Constructor.

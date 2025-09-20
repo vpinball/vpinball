@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -55,7 +55,8 @@ namespace Win32xx
         virtual ~CThreadT() override;
 
         // Operations
-        HANDLE  CreateThread(unsigned initflag = 0, unsigned stack_size = 0, LPSECURITY_ATTRIBUTES pSecurityAttributes = nullptr);
+        HANDLE  CreateThread(unsigned initflag = 0, unsigned stack_size = 0,
+            LPSECURITY_ATTRIBUTES pSecurityAttributes = nullptr);
         HANDLE  GetThread() const;
         UINT    GetThreadID() const;
         int     GetThreadPriority() const;
@@ -88,7 +89,7 @@ namespace Win32xx
     {
     public:
         CWorkThread(PTHREADPROC pThreadProc, LPVOID pParam)
-              : WorkThread(pThreadProc, pParam) {}
+            : WorkThread(pThreadProc, pParam) {}
         virtual ~CWorkThread() override = default;
 
     private:
@@ -120,21 +121,21 @@ namespace Win32xx
 namespace Win32xx
 {
 
-    //////////////////////////////////////////////
-    // Definitions for the CThreadT class template
+    ///////////////////////////////////////////////
+    // Definitions for the CThreadT class template.
     //
 
     // CThreadT constructor.
     template <class T>
-    inline CThreadT<T>::CThreadT() : m_pThreadProc(0), m_pThreadParams(0), m_thread(0),
-        m_threadID(0)
+    inline CThreadT<T>::CThreadT() : m_pThreadProc(0), m_pThreadParams(0),
+        m_thread(0), m_threadID(0)
     {
     }
 
     // CThreadT constructor.
     template <class T>
-    inline CThreadT<T>::CThreadT(PTHREADPROC pThreadProc, LPVOID pParam) :m_pThreadProc(0),
-        m_pThreadParams(0), m_thread(0), m_threadID(0)
+    inline CThreadT<T>::CThreadT(PTHREADPROC pThreadProc, LPVOID pParam) :
+        m_pThreadProc(0), m_pThreadParams(0), m_thread(0), m_threadID(0)
     {
         m_pThreadProc = pThreadProc;
         m_pThreadParams = pParam;
@@ -165,7 +166,8 @@ namespace Win32xx
     // pSecurityAttributes      Either a pointer to SECURITY_ATTRIBUTES or 0.
     // Refer to CreateThread in the Windows API documentation for more information.
     template <class T>
-    inline HANDLE CThreadT<T>::CreateThread(unsigned initflag /* = 0*/, unsigned stack_size /* = 0*/,
+    inline HANDLE CThreadT<T>::CreateThread(unsigned initflag /* = 0*/,
+        unsigned stack_size /* = 0*/,
         LPSECURITY_ATTRIBUTES pSecurityAttributes /* = nullptr*/)
     {
         // Reusing the CWinThread.
@@ -175,8 +177,9 @@ namespace Win32xx
             ::CloseHandle(m_thread);
         }
 
-        m_thread = reinterpret_cast<HANDLE>(::_beginthreadex(pSecurityAttributes, stack_size,
-            m_pThreadProc, m_pThreadParams, initflag, &m_threadID));
+        m_thread = reinterpret_cast<HANDLE>(::_beginthreadex(
+            pSecurityAttributes, stack_size, m_pThreadProc,
+            m_pThreadParams, initflag, &m_threadID));
 
         if (m_thread == nullptr)
             throw CWinException(GetApp()->MsgAppThread());

@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -59,7 +59,6 @@
 #include "wxx_appcore0.h"
 
 
-
 namespace Win32xx
 {
 
@@ -82,7 +81,8 @@ namespace Win32xx
         BOOL IsHScrollVisible() const    { return (GetStyle() &  WS_HSCROLL) != FALSE; }
         BOOL IsVScrollVisible() const    { return (GetStyle() &  WS_VSCROLL) != FALSE; }
         void SetScrollPosition(POINT pt);
-        void SetScrollSizes(CSize totalSize = CSize(0,0), CSize pageSize = CSize(0,0), CSize lineSize = CSize(0,0));
+        void SetScrollSizes(CSize totalSize = CSize(0,0),
+            CSize pageSize = CSize(0,0), CSize lineSize = CSize(0,0));
         void SetScrollBkgnd(const CBrush& bkgndBrush) { m_bkgndBrush = bkgndBrush; }
 
     protected:
@@ -112,9 +112,7 @@ namespace Win32xx
 
 }
 
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 namespace Win32xx
 {
@@ -158,7 +156,7 @@ namespace Win32xx
     inline LRESULT CScrollView::OnHScroll(UINT, WPARAM wparam, LPARAM)
     {
         CPoint newPos = m_currentPos;
-        SCROLLINFO si{};
+        SCROLLINFO si = {};
         si.cbSize = sizeof(si);
         si.fMask = SIF_TRACKPOS;
 
@@ -331,7 +329,7 @@ namespace Win32xx
     inline LRESULT CScrollView::OnVScroll(UINT, WPARAM wparam, LPARAM)
     {
         CPoint newPos = m_currentPos;
-        SCROLLINFO si{};
+        SCROLLINFO si = {};
         si.cbSize = sizeof(si);
         si.fMask = SIF_TRACKPOS;
 
@@ -433,7 +431,8 @@ namespace Win32xx
 
     // Sets the various Scroll Size parameters.
     // Note that a sizeTotal of CSize(0,0) turns scrolling off.
-    inline void CScrollView::SetScrollSizes(CSize totalSize, CSize pageSize, CSize lineSize)
+    inline void CScrollView::SetScrollSizes(CSize totalSize, CSize pageSize,
+        CSize lineSize)
     {
         if (IsWindow())
         {
@@ -487,7 +486,7 @@ namespace Win32xx
                 // CRect of view, unaffected by scroll bars.
                 CRect viewRect = GetWindowRect();
 
-                SCROLLINFO si{};
+                SCROLLINFO si = {};
                 si.cbSize = sizeof(si);
                 si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
                 si.nMin = 0;
@@ -495,8 +494,9 @@ namespace Win32xx
                 bool isHBAlwaysOn = (totalRect.Width() > viewRect.Width());         // Horizontal Bar always on.
                 bool isVBAlwaysOn = (totalRect.Height() > viewRect.Height());       // Vertical Bar always on.
 
-                // Horizontal Bars are always shown if the total width is greater than the window's width.
-                // They are also shown if the vertical bar is shown, and the total width is greater than
+                // Horizontal Bars are always shown if the total width is
+                // greater than the window's width. They are also shown if the
+                // vertical bar is shown, and the total width is greater than
                 // the client width. Client width = window width - scrollbar width.
                 if (isHBAlwaysOn || ((totalRect.Width() > clientRect.Width()) && isVBAlwaysOn))
                 {
@@ -512,8 +512,9 @@ namespace Win32xx
                     ShowScrollBar(SB_HORZ, FALSE);
                 }
 
-                // Vertical Bars are always shown if the total height is greater than the window's height.
-                // They are also shown if the horizontal bar is shown, and the total height is greater than
+                // Vertical Bars are always shown if the total height is
+                // greater than the window's height. They are also shown if the
+                // horizontal bar is shown, and the total height is greater than
                 // the client height. Client height = window height - scrollbar width.
                 if (isVBAlwaysOn || ((totalRect.Height() > clientRect.Height()) && isHBAlwaysOn))
                 {
@@ -530,16 +531,21 @@ namespace Win32xx
                 }
 
                 // Perform any additional scrolling required by window resizing.
-                int cxScroll = ::GetSystemMetrics(SM_CXVSCROLL) * GetWindowDpi(*this) / GetWindowDpi(HWND_DESKTOP);
-                int cyScroll = ::GetSystemMetrics(SM_CYHSCROLL) * GetWindowDpi(*this) / GetWindowDpi(HWND_DESKTOP);
+                int cxScroll = ::GetSystemMetrics(SM_CXVSCROLL) * GetWindowDpi(
+                    *this) / GetWindowDpi(HWND_DESKTOP);
+                int cyScroll = ::GetSystemMetrics(SM_CYHSCROLL) * GetWindowDpi(
+                    *this) / GetWindowDpi(HWND_DESKTOP);
+
                 cxScroll = IsVScrollVisible() ? cxScroll : 0;
                 cyScroll = IsHScrollVisible() ? cyScroll : 0;
                 int currentPosX = m_currentPos.x;
                 int currentPosY = m_currentPos.y;
-                int xNewPos = std::min(currentPosX, totalRect.Width() - viewRect.Width() + cxScroll);
+                int xNewPos = std::min(currentPosX, totalRect.Width() -
+                    viewRect.Width() + cxScroll);
                 xNewPos = std::max(xNewPos, 0);
                 int xDelta = xNewPos - m_currentPos.x;
-                int yNewPos = std::min(currentPosY, totalRect.Height() - viewRect.Height() + cyScroll);
+                int yNewPos = std::min(currentPosY, totalRect.Height() -
+                    viewRect.Height() + cyScroll);
                 yNewPos = std::max(yNewPos, 0);
                 int yDelta = yNewPos - m_currentPos.y;
                 ScrollWindowEx(-xDelta, -yDelta, nullptr, nullptr, 0, nullptr, SW_INVALIDATE);

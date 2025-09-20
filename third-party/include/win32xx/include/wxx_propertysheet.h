@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -103,8 +103,10 @@ namespace Win32xx
         CPropertyPage(const CPropertyPage&) = delete;
         CPropertyPage& operator=(const CPropertyPage&) = delete;
 
-        static UINT CALLBACK StaticPropSheetPageProc(HWND wnd, UINT msg, LPPROPSHEETPAGE ppsp);
-        static INT_PTR CALLBACK StaticDialogProc(HWND hDlg, UINT msg, WPARAM wparam, LPARAM lparam);
+        static UINT CALLBACK StaticPropSheetPageProc(HWND wnd, UINT msg,
+            LPPROPSHEETPAGE ppsp);
+        static INT_PTR CALLBACK StaticDialogProc(HWND hDlg, UINT msg,
+            WPARAM wparam, LPARAM lparam);
 
         PROPSHEETPAGE m_psp;
         CString m_title;
@@ -172,8 +174,8 @@ namespace Win32xx
 namespace Win32xx
 {
 
-    //////////////////////////////////////////
-    // Definitions for the CPropertyPage class
+    ///////////////////////////////////////////
+    // Definitions for the CPropertyPage class.
     //
 
     inline CPropertyPage::CPropertyPage(UINT templateID, LPCTSTR title /* = nullptr*/)
@@ -221,7 +223,8 @@ namespace Win32xx
 
     // Provides default handling for the property page's message.
     // The DialogProc functions should pass unhandled messages to this function.
-    inline INT_PTR CPropertyPage::DialogProcDefault(UINT msg, WPARAM wparam, LPARAM lparam)
+    inline INT_PTR CPropertyPage::DialogProcDefault(UINT msg, WPARAM wparam,
+        LPARAM lparam)
     {
         switch (msg)
         {
@@ -507,8 +510,8 @@ namespace Win32xx
     }
 
 
-    ///////////////////////////////////////////
-    // Definitions for the CPropertySheet class
+    ////////////////////////////////////////////
+    // Definitions for the CPropertySheet class.
     //
 
     inline CPropertySheet::CPropertySheet(UINT captionID, HWND parent /* = nullptr*/)
@@ -524,7 +527,8 @@ namespace Win32xx
             reinterpret_cast<void*>(CPropertySheet::Callback));
     }
 
-    inline CPropertySheet::CPropertySheet(LPCTSTR caption /*= nullptr*/, HWND parent /* = nullptr*/)
+    inline CPropertySheet::CPropertySheet(LPCTSTR caption /*= nullptr*/,
+        HWND parent /* = nullptr*/)
     {
         m_psh = {};
         SetTitle(caption);
@@ -647,7 +651,8 @@ namespace Win32xx
         return wnd;
     }
 
-    // Display either a modal or modeless property sheet, depending on the PROPSHEETHEADER flags.
+    // Display either a modal or modeless property sheet, depending on the
+    // PROPSHEETHEADER flags.
     // Refer to PropertySheet in the Windows API documentation for more information.
     inline INT_PTR CPropertySheet::CreatePropertySheet(LPCPROPSHEETHEADER pPSH)
     {
@@ -690,7 +695,8 @@ namespace Win32xx
     }
 
     // Called when a property sheet is destroyed.
-    // Note: To destroy a property sheet from within an application, post a WM_CLOSE.
+    // Note: To destroy a property sheet from within an application, post a
+    // WM_CLOSE message.
     inline void CPropertySheet::Destroy()
     {
         CWnd::Destroy();

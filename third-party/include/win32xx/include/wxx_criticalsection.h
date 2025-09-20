@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -47,9 +47,9 @@ namespace Win32xx
     // This class is used for thread synchronisation. A critical section object
     // provides synchronization similar to that provided by a mutex object,
     // except that a critical section can be used only by the threads of a
-    // single process. Critical sections are faster and more efficient than mutexes.
-    // The CCriticalSection object should be created in the primary thread. Create
-    // them as member variables in your CWinApp derived class.
+    // single process. Critical sections are faster and more efficient than
+    // mutexes. The CCriticalSection object should be created in the primary
+    // thread. Create them as member variables in your CWinApp derived class.
     class CCriticalSection
     {
     public:
@@ -92,8 +92,8 @@ namespace Win32xx
 namespace Win32xx
 {
 
-    /////////////////////////////////////////////
-    // Definitions for the CCriticalSection class
+    //////////////////////////////////////////////
+    // Definitions for the CCriticalSection class.
     //
     inline CCriticalSection::CCriticalSection() : m_count(0)
     {

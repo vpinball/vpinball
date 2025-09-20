@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -104,6 +104,11 @@ namespace Win32xx
 
 namespace Win32xx
 {
+
+    /////////////////////////////////////
+    // Definitions for the CRegKey class.
+    //
+
     inline CRegKey::CRegKey() : m_key(nullptr)
     {
     }
@@ -153,7 +158,7 @@ namespace Win32xx
 
     // Creates the specified registry key.
     inline LONG CRegKey::Create(HKEY keyParent, LPCTSTR keyName, LPTSTR className, DWORD options,
-                   REGSAM samDesired, LPSECURITY_ATTRIBUTES secAttr, LPDWORD disposition)
+        REGSAM samDesired, LPSECURITY_ATTRIBUTES secAttr, LPDWORD disposition)
     {
         HKEY key = nullptr;
         LONG result =  ::RegCreateKeyEx(keyParent, keyName, 0, className, options, samDesired, secAttr, &key, disposition);
@@ -187,7 +192,7 @@ namespace Win32xx
         return key;
     }
 
-    // Enumerates subkeys of the specified open registry key.
+    // Enumerates sub-keys of the specified open registry key.
     inline LONG CRegKey::EnumKey(DWORD index, LPTSTR name, LPDWORD nameLength, FILETIME* lastWriteTime) const
     {
         assert(m_key);
@@ -276,7 +281,7 @@ namespace Win32xx
         return result;
     }
 
-    // Retrieves the multistring data for the specified value name.
+    // Retrieves the multi-string data for the specified value name.
     inline LONG CRegKey::QueryMultiStringValue(LPCTSTR valueName, LPTSTR value, ULONG* chars) const
     {
         assert(m_key);
@@ -355,7 +360,7 @@ namespace Win32xx
         return DeleteSubKey(keyName);
     }
 
-    // Removes the specified key and any subkeys from the registry.
+    // Removes the specified key and any sub-keys from the registry.
     inline LONG CRegKey::RecurseDeleteKey(LPCTSTR keyName) const
     {
         assert(m_key);

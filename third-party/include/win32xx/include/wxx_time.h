@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -108,7 +108,8 @@ namespace Win32xx
         CTime(const CTime& t);
         CTime(time_t t);
         CTime(tm atm);
-        CTime(int year, int month, int day, int hour, int min, int sec, int isDST = -1);
+        CTime(int year, int month, int day, int hour, int min, int sec,
+            int isDST = -1);
         CTime(WORD dosDate, WORD dosTime, int isDST = -1);
         CTime(SYSTEMTIME st, int isDST = -1);
         CTime(FILETIME ft,  int isDST = -1);
@@ -232,7 +233,8 @@ namespace Win32xx
     {
         tm* ptm = &atm;
 
-#if defined(__BORLANDC__)  // For Embacadero support
+#if (defined(__BORLANDC__) && !defined(__MINGW64__))
+        // For older Embarcadero compilers.
         if (::gmtime_s(&t, &atm) == 0)
             ptm = nullptr;
 #else
@@ -254,7 +256,8 @@ namespace Win32xx
     {
         tm* ptm = &atm;
 
-#if defined(__BORLANDC__)  // For Embacadero support
+#if (defined(__BORLANDC__) && !defined(__MINGW64__))
+        // For older Embarcadero compilers.
         if (::localtime_s(&t, &atm) == 0)
             ptm = nullptr;
 #else
@@ -427,7 +430,9 @@ namespace Win32xx
         if (ptm != nullptr)
         {
             const size_t  bufferSize = 128;
-            VERIFY((::_tcsftime(formatString.GetBuffer(bufferSize), bufferSize, format, &atm)) != 0);
+            VERIFY((::_tcsftime(formatString.GetBuffer(bufferSize), bufferSize,
+                format, &atm)) != 0);
+
             formatString.ReleaseBuffer();
         }
 
@@ -464,16 +469,18 @@ namespace Win32xx
         if (ptm != nullptr)
         {
             const size_t  bufferSize = 128;
-            VERIFY(::_tcsftime(formatString.GetBuffer(bufferSize), bufferSize, fmt0.c_str(), ptm) != 0);
+            VERIFY(::_tcsftime(formatString.GetBuffer(bufferSize), bufferSize,
+                fmt0.c_str(), ptm) != 0);
+
             formatString.ReleaseBuffer();
         }
 
         return formatString;
     }
 
-    // Returns a CString that contains formatted time as a UTC time. The FormatID
-    // parameter specifies a resource containing the formatting string which is
-    // similar to the printf formatting string.
+    // Returns a CString that contains formatted time as a UTC time. The
+    // formatID parameter specifies a resource containing the formatting string
+    // which is similar to the printf formatting string.
     inline CString CTime::FormatGmt(UINT formatID) const
     {
         CString strFormat;
@@ -492,8 +499,9 @@ namespace Win32xx
 
         if (ptm)
         {
-            SYSTEMTIME st = {static_cast<WORD>(1900 + ptm->tm_year), static_cast<WORD>(1 + ptm->tm_mon),
-                static_cast<WORD>(ptm->tm_wday), static_cast<WORD>(ptm->tm_mday), static_cast<WORD>(ptm->tm_hour),
+            SYSTEMTIME st = {static_cast<WORD>(1900 + ptm->tm_year),
+                static_cast<WORD>(1 + ptm->tm_mon),    static_cast<WORD>(ptm->tm_wday),
+                static_cast<WORD>(ptm->tm_mday), static_cast<WORD>(ptm->tm_hour),
                 static_cast<WORD>(ptm->tm_min), static_cast<WORD>(ptm->tm_sec), 0};
             SystemTimeToFileTime(&st, &ft);
             rval = true;
@@ -664,7 +672,7 @@ namespace Win32xx
         return CTime(m_time + ts.m_timespan);
     }
 
-    // Increments this CTime object by the specifed time span.
+    // Increments this CTime object by the specified time span.
     inline CTime& CTime::operator+=(const CTimeSpan& ts)
     {
         m_time += ts.m_timespan;
@@ -711,14 +719,14 @@ namespace Win32xx
     }
 
     // Returns true if the time represented by this CTime object is less
-    // than or equal tothe one represented by the specified CTime.
+    // than or equal to the one represented by the specified CTime.
     inline bool CTime::operator<=(const CTime& time) const
     {
         return m_time <= time.m_time;
     }
 
     // Returns true if the time represented by this CTime object is greater
-    // than or eqaul to the one represented by the specified CTime.
+    // than or equal to the one represented by the specified CTime.
     inline bool CTime::operator>=(const CTime& time) const
     {
         return m_time >= time.m_time;
@@ -944,7 +952,7 @@ namespace Win32xx
         return m_timespan > ts.m_timespan;
     }
 
-    // Returns true if the specified value is less than or eqaul to this
+    // Returns true if the specified value is less than or equal to this
     // CTimeSpan object.
     inline bool CTimeSpan::operator<=(const CTimeSpan& ts) const
     {

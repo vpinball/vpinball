@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -51,8 +51,8 @@
 #include "wxx_appcore0.h"
 #include "wxx_textconv.h"
 #include "wxx_wincore0.h"
-#include "wxx_exception.h"
 #include "wxx_cstring.h"
+#include "wxx_exception.h"
 #include "wxx_messagepump.h"
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -76,11 +76,13 @@ namespace Win32xx
     //
     /////////////////////////////////////////////////////////////////////
 
+#ifndef WIN32_LEAN_AND_MEAN
     using CDevMode = CGlobalLock<DEVMODE>;
     using CDevNames = CGlobalLock<DEVNAMES>;
+#endif
 
-    ////////////////////////////////////////
-    // Definitions for the CGlobalLock class
+    /////////////////////////////////////////
+    // Definitions for the CGlobalLock class.
     //
 
     // Constructor.
@@ -142,6 +144,8 @@ namespace Win32xx
         }
     }
 
+#ifndef WIN32_LEAN_AND_MEAN
+
     // Returns a const TCHAR* for the DEVNAMES in the global memory.
     template <>
     inline LPCTSTR CDevNames::c_str() const
@@ -190,6 +194,7 @@ namespace Win32xx
         return (m_p != nullptr) ? ((*this)->wDefault & DN_DEFAULTPRN) : false;
     }
 
+    #endif // WIN32_LEAN_AND_MEAN
 
     ////////////////////////////////////
     // Definitions for the CWinApp class
@@ -199,10 +204,6 @@ namespace Win32xx
     inline CWinApp::CWinApp() : m_callback(nullptr)
     {
         CThreadLock appLock(m_appLock);
-
-        // This assert fails if Win32++ has already been started.
-        // There should only be one instance of CWinApp running at a time.
-        assert(SetnGetThis() == nullptr);
 
         if (SetnGetThis() == nullptr)
         {
@@ -233,6 +234,9 @@ namespace Win32xx
             else
                 throw CNotSupportedException(MsgTlsIndexes());
         }
+        else
+            // Throw an exception if we run more than one instance of CWinApp.
+            throw CNotSupportedException(MsgCWinApp());
     }
 
     // Destructor
@@ -265,31 +269,46 @@ namespace Win32xx
     }
 
     // Adds a HDC and CDC_Data* pair to the map.
-    inline void CWinApp::AddCDCData(HDC dc, std::weak_ptr<CDC_Data> pData)
+    inline void CWinApp::AddCDCDataToMap(HDC dc, std::weak_ptr<CDC_Data> pData)
     {
         CThreadLock mapLock(m_gdiLock);
         m_mapCDCData.emplace(std::make_pair(dc, pData));
     }
 
     // Adds a HGDIOBJ and CGDI_Data* pair to the map.
-    inline void CWinApp::AddCGDIData(HGDIOBJ gdi, std::weak_ptr<CGDI_Data> pData)
+    inline void CWinApp::AddCGDIDataToMap(HGDIOBJ gdi, std::weak_ptr<CGDI_Data> pData)
     {
         CThreadLock mapLock(m_gdiLock);
         m_mapCGDIData.emplace(std::make_pair(gdi, pData));
     }
 
     // Adds a HIMAGELIST and CIml_Data* pair to the map.
-    inline void CWinApp::AddCImlData(HIMAGELIST images, std::weak_ptr<CIml_Data> pData)
+    inline void CWinApp::AddCImlDataToMap(HIMAGELIST images, std::weak_ptr<CIml_Data> pData)
     {
-        CThreadLock mapLock(m_wndLock);
+        CThreadLock mapLock(m_gdiLock);
         m_mapCImlData.emplace(std::make_pair(images, pData));
     }
 
     // Adds a HMENU and CMenu_Data* to the map.
-    inline void CWinApp::AddCMenuData(HMENU menu, std::weak_ptr<CMenu_Data> pData)
+    inline void CWinApp::AddCMenuDataToMap(HMENU menu, std::weak_ptr<CMenu_Data> pData)
     {
         CThreadLock mapLock(m_wndLock);
         m_mapCMenuData.emplace(std::make_pair(menu, pData));
+    }
+
+    // Adds the window handle and CWnd pointer in the HWND map.
+    inline void CWinApp::AddCWndToMap(HWND wnd, CWnd* pWnd)
+    {
+        CThreadLock mapLock(m_wndLock);
+
+        // This HWND is should not be in the map yet.
+        assert(GetCWndFromMap(wnd) == nullptr);
+
+        // Remove any old map entry for this CWnd (required when the CWnd is reused).
+        RemoveCWndFromMap(pWnd);
+
+        // Add the (HWND, CWnd*) pair to the map
+        m_mapHWND.emplace(std::make_pair(wnd, pWnd));
     }
 
     // Retrieves a pointer to CDC_Data from the map.
@@ -323,7 +342,7 @@ namespace Win32xx
     // Retrieves a pointer to CIml_Data from the map.
     inline std::weak_ptr<CIml_Data> CWinApp::GetCImlData(HIMAGELIST images)
     {
-        CThreadLock mapLock(m_wndLock);
+        CThreadLock mapLock(m_gdiLock);
 
         // Find the CImageList data mapped to this HIMAGELIST.
         std::weak_ptr<CIml_Data> pCImlData;
@@ -452,6 +471,79 @@ namespace Win32xx
         return ::LoadImage(GetResourceHandle(), MAKEINTRESOURCE (imageID), type, cx, cy, flags);
     }
 
+    // Removes this CWnd's pointer from m_mapHWND.
+    inline void CWinApp::RemoveCWndFromMap(CWnd* pWnd)
+    {
+        CThreadLock mapLock(m_wndLock);
+
+        // Erase the CWnd pointer entry from the map.
+        auto& map = GetApp()->m_mapHWND;
+        for (auto it = map.begin(); it != map.end(); ++it)
+        {
+            if (pWnd == it->second)
+            {
+                map.erase(it);
+                break;
+            }
+        }
+    }
+
+    // Remove the device context from m_mapCDCData.
+    inline void CWinApp::RemoveDCFromMap(HDC dc)
+    {
+        CThreadLock mapLock(m_gdiLock);
+
+        // Find the CDC data entry in the map.
+        auto it = m_mapCDCData.find(dc);
+        if (it != m_mapCDCData.end())
+        {
+            // Erase the CDC data entry from the map
+            m_mapCDCData.erase(it);
+        }
+    }
+
+    // Remove the GDI object from m_mapCGDIData.
+    inline void CWinApp::RemoveGDIObjectFromMap(HGDIOBJ gdiObject)
+    {
+        CThreadLock mapLock(m_gdiLock);
+
+        // Find the CGdiObject data pointer in the map.
+        auto it = m_mapCGDIData.find(gdiObject);
+        if (it != m_mapCGDIData.end())
+        {
+            // Erase the CGDIObject pointer entry from the map.
+            m_mapCGDIData.erase(it);
+        }
+    }
+
+    // Remove the image list from m_mapCImlData.
+    inline void CWinApp::RemoveImageListFromMap(HIMAGELIST images)
+    {
+        CThreadLock mapLock(m_gdiLock);
+
+        // Find the CImageList data pointer in the map.
+        auto it = m_mapCImlData.find(images);
+        if (it != m_mapCImlData.end())
+        {
+            // Erase the CMenu data pointer in the map.
+            m_mapCImlData.erase(it);
+        }
+    }
+
+    // Remove the menu from m_mapCMenuData.
+    inline void CWinApp::RemoveMenuFromMap(HMENU menu)
+    {
+        CThreadLock mapLock(m_wndLock);
+
+        // Find the CMenu data pointer in the map.
+        auto m = m_mapCMenuData.find(menu);
+        if (m != m_mapCMenuData.end())
+        {
+            // Erase the CMenu data pointer in the map.
+            m_mapCMenuData.erase(m);
+        }
+    }
+
     // Frees the global memory handles for the application's printer.
     inline void CWinApp::ResetPrinterMemory()
     {
@@ -463,7 +555,7 @@ namespace Win32xx
     // address of CWnd::StaticWindowProc.
     inline void CWinApp::SetCallback()
     {
-        WNDCLASS defaultWC{};
+        WNDCLASS defaultWC = {};
         LPCTSTR className    = _T("Win32++ Temporary Window Class");
         defaultWC.hInstance     = GetInstanceHandle();
         defaultWC.lpfnWndProc   = CWnd::StaticWindowProc;
@@ -558,12 +650,14 @@ namespace Win32xx
     // and the default printer has changed.
     inline void CWinApp::UpdateDefaultPrinter()
     {
+        #ifndef WIN32_LEAN_AND_MEAN
+
         CThreadLock lock(m_printLock);
 
         if (m_devNames.Get() == nullptr)
         {
             // Allocate global printer memory by specifying the default printer.
-            PRINTDLG pd{};
+            PRINTDLG pd = {};
             pd.Flags = PD_RETURNDEFAULT;
             pd.lStructSize = sizeof(pd);
             ::PrintDlg(&pd);
@@ -576,7 +670,7 @@ namespace Win32xx
             if (CDevNames(m_devNames).IsDefaultPrinter())
             {
                 // Get current default printer
-                PRINTDLG pd{};
+                PRINTDLG pd = {};
                 pd.lStructSize = sizeof(pd);
                 pd.Flags = PD_RETURNDEFAULT;
                 ::PrintDlg(&pd);
@@ -590,9 +684,11 @@ namespace Win32xx
                 else
                 {
                     // Compare current default printer to the one in global memory
-                    if (CDevNames(m_devNames).GetDeviceName() != CDevNames(pd.hDevNames).GetDeviceName() ||
-                        CDevNames(m_devNames).GetDriverName() != CDevNames(pd.hDevNames).GetDriverName() ||
-                        CDevNames(m_devNames).GetPortName()   != CDevNames(pd.hDevNames).GetPortName())
+                    CDevNames mNames(m_devNames);
+                    CDevNames hNames(pd.hDevNames);
+                    if (mNames.GetDeviceName() != hNames.GetDeviceName() ||
+                        mNames.GetDriverName() != hNames.GetDriverName() ||
+                        mNames.GetPortName()   != hNames.GetPortName())
                     {
                         // Default printer has changed. Reset the global memory.
                         m_devMode.Free();
@@ -608,6 +704,8 @@ namespace Win32xx
                 }
             }
         }
+
+#endif // WIN32_LEAN_AND_MEAN
     }
 
     // Updates the current printer global memory with the specified memory
@@ -620,9 +718,12 @@ namespace Win32xx
     }
 
     // Messages used for exceptions.
-    inline CString CWinApp::MsgAppThread() const
-    { return _T("Failed to create thread."); }
 
+    // No error message.
+    inline CString CWinApp::MsgNoError() const
+    { return _T("There is no additional error information."); }
+
+    // Archive Messages.
     inline CString CWinApp::MsgArReadFail() const
     { return _T("Failed to read from archive."); }
 
@@ -631,6 +732,10 @@ namespace Win32xx
 
     inline CString CWinApp::MsgArNotCStringW() const
     { return _T("Unicode characters stored. Not a CStringA."); }
+
+    // Thread and Semaphore Messages.
+    inline CString CWinApp::MsgAppThread() const
+    { return _T("Failed to create thread."); }
 
     inline CString CWinApp::MsgCriticalSection() const
     { return _T("Failed to create critical section."); }
@@ -644,26 +749,25 @@ namespace Win32xx
     inline CString CWinApp::MsgMtxSemaphore() const
     { return _T("Unable to create semaphore."); }
 
-    inline CString CWinApp::MsgWndCreate() const
-    { return _T("Failed to create window."); }
-
-    inline CString CWinApp::MsgWndDialog() const
-    { return _T("Failed to create dialog."); }
-
-    inline CString CWinApp::MsgWndGlobalLock() const
-    { return _T("CGlobalLock failed to lock handle."); }
-
-    inline CString CWinApp::MsgWndPropertSheet() const
-    { return _T("Failed to create PropertySheet."); }
-
+    // Winsock Messages.
     inline CString CWinApp::MsgSocWSAStartup() const
     { return _T("WSAStartup failed."); }
 
     inline CString CWinApp::MsgSocWS2Dll() const
     { return _T("Failed to load WS2_2.dll."); }
 
+    // Window creation Messages.
+    inline CString CWinApp::MsgWndCreate() const
+    { return _T("Failed to create window."); }
+
+    inline CString CWinApp::MsgWndDialog() const
+    { return _T("Failed to create dialog."); }
+
     inline CString CWinApp::MsgIPControl() const
     { return _T("IP Address Control not supported!."); }
+
+    inline CString CWinApp::MsgWndPropertSheet() const
+    { return _T("Failed to create PropertySheet."); }
 
     inline CString CWinApp::MsgRichEditDll() const
     { return _T("Failed to load the RichEdit dll."); }
@@ -747,13 +851,16 @@ namespace Win32xx
 
     // Image list, Menu and Printer messages
     inline CString CWinApp::MsgImageList() const
-    { return _T("Failed to create imagelist."); }
+    { return _T("Failed to create image list."); }
 
     inline CString CWinApp::MsgMenu() const
     { return _T("Failed to create menu."); }
 
     inline CString CWinApp::MsgPrintFound() const
     { return _T("No printer available."); }
+
+    inline CString CWinApp::MsgWndGlobalLock() const
+    { return _T("CGlobalLock failed to lock handle."); }
 
     // DDX anomaly prompting messages.
     inline CString CWinApp::MsgDDX_Byte() const
@@ -795,8 +902,11 @@ namespace Win32xx
     { return _T("Invalid time."); }
 
     // CWinApp messages
+    inline CString CWinApp::MsgCWinApp() const
+    { return _T("Only one instance of CWinApp can run at a time"); }
+
     inline CString CWinApp::MsgTlsIndexes() const
-    { return _T("No availabe Thread Local Storage Indexes."); }
+    { return _T("No available Thread Local Storage Indexes."); }
 
 
     /////////////////////////////////////////////////////////
@@ -876,12 +986,12 @@ namespace Win32xx
 
         // The ANSI and UNICODE versions of LoadString behave differently.
         // This technique only works for LoadStringW.
-        LPCWSTR pString;
+        LPCWSTR pString = nullptr;
         int charCount = ::LoadStringW(GetApp()->GetResourceHandle(), id,
             reinterpret_cast<LPWSTR>(&pString), 0);
 
         if (charCount > 0)
-            m_str.assign(pString, charCount);
+            m_str.assign(pString, static_cast<size_t>(charCount));
 
         return (charCount != 0);
     }

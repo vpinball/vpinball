@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -58,7 +58,7 @@ namespace Win32xx
 
     ////////////////////////////////////////////////
     // Forward declarations.
-    //  These classes are defined later or elsewhere
+    //
     class CArchive;
     class CBitmap;
     class CBrush;
@@ -92,7 +92,7 @@ namespace Win32xx
     struct MetaFileData;
     struct TLSData;
 
-    // Define the maximum size for TCHAR strings
+    // Define the maximum size for strings.
     constexpr int WXX_MAX_STRING_SIZE = 255;
 
     // Some useful smart pointer aliases
@@ -218,6 +218,7 @@ namespace Win32xx
         friend class CWinThread;
         friend class CWnd;
         friend CWinApp* GetApp();
+        friend BOOL IsAppRunning();
 
     public:
         CWinApp();
@@ -235,8 +236,10 @@ namespace Win32xx
         HCURSOR   LoadCursor(UINT cursorID) const;
         HICON     LoadIcon(LPCTSTR resourceName) const;
         HICON     LoadIcon(UINT iconID) const;
-        HANDLE    LoadImage(LPCTSTR resourceName, UINT type, int cx, int  cy, UINT flags = LR_DEFAULTCOLOR) const;
-        HANDLE    LoadImage(UINT imageID, UINT type, int cx, int cy, UINT flags = LR_DEFAULTCOLOR) const;
+        HANDLE    LoadImage(LPCTSTR resourceName, UINT type, int cx, int  cy,
+            UINT flags = LR_DEFAULTCOLOR) const;
+        HANDLE    LoadImage(UINT imageID, UINT type, int cx, int cy,
+            UINT flags = LR_DEFAULTCOLOR) const;
         HCURSOR   LoadStandardCursor(LPCTSTR cursorName) const;
         HICON     LoadStandardIcon(LPCTSTR iconName) const;
         void      ResetPrinterMemory();
@@ -250,14 +253,20 @@ namespace Win32xx
         CWinApp(const CWinApp&) = delete;
         CWinApp& operator=(const CWinApp&) = delete;
 
-        void AddCDCData(HDC dc, std::weak_ptr<CDC_Data> pData);
-        void AddCGDIData(HGDIOBJ gdi, std::weak_ptr<CGDI_Data> pData);
-        void AddCImlData(HIMAGELIST images, std::weak_ptr<CIml_Data> pData);
-        void AddCMenuData(HMENU menu, std::weak_ptr<CMenu_Data> pData);
+        void AddCDCDataToMap(HDC dc, std::weak_ptr<CDC_Data> pData);
+        void AddCGDIDataToMap(HGDIOBJ gdi, std::weak_ptr<CGDI_Data> pData);
+        void AddCImlDataToMap(HIMAGELIST images, std::weak_ptr<CIml_Data> pData);
+        void AddCMenuDataToMap(HMENU menu, std::weak_ptr<CMenu_Data> pData);
+        void AddCWndToMap(HWND wnd, CWnd* pWnd);
         std::weak_ptr<CDC_Data>  GetCDCData(HDC dc);
         std::weak_ptr<CGDI_Data> GetCGDIData(HGDIOBJ object);
         std::weak_ptr<CIml_Data> GetCImlData(HIMAGELIST images);
         std::weak_ptr<CMenu_Data> GetCMenuData(HMENU menu);
+        void RemoveCWndFromMap(CWnd* pWnd);
+        void RemoveDCFromMap(HDC dc);
+        void RemoveGDIObjectFromMap(HGDIOBJ gdiObject);
+        void RemoveImageListFromMap(HIMAGELIST images);
+        void RemoveMenuFromMap(HMENU menu);
         void SetCallback();
         void SetTlsData();
 
@@ -268,11 +277,11 @@ namespace Win32xx
         std::map<HIMAGELIST, std::weak_ptr<CIml_Data>> m_mapCImlData;
         std::map<HMENU, std::weak_ptr<CMenu_Data>> m_mapCMenuData;
         std::map<HWND, CWnd*> m_mapHWND;       // maps window handles to CWnd objects
-        std::vector<TLSDataPtr> m_allTLSData;     // vector of TLSData smart pointers, one for each thread
-        CCriticalSection m_appLock;   // thread synchronization for CWinApp and TLS.
-        CCriticalSection m_gdiLock;   // thread synchronization for m_mapCDCData and m_mapCGDIData.
+        std::vector<TLSDataPtr> m_allTLSData;  // vector of TLSData smart pointers, one for each thread
+        CCriticalSection m_appLock;   // thread synchronization for CWinApp and TLS
+        CCriticalSection m_gdiLock;   // thread synchronization for m_mapCDCData and m_mapCGDIData
         CCriticalSection m_wndLock;   // thread synchronization for m_mapHWND etc.
-        CCriticalSection m_printLock; // thread synchronization for printing.
+        CCriticalSection m_printLock; // thread synchronization for printing
         HINSTANCE m_instance;         // handle to the application's instance
         HINSTANCE m_resource;         // handle to the application's resources
         DWORD m_tlsData;              // Thread Local Storage data
@@ -282,23 +291,32 @@ namespace Win32xx
 
     public:
         // Message strings used for exceptions.
-        virtual CString MsgAppThread() const;
+
+        // No error message.
+        virtual CString MsgNoError() const;
+
+        // Archive Messages.
         virtual CString MsgArReadFail() const;
         virtual CString MsgArNotCStringA() const;
         virtual CString MsgArNotCStringW() const;
+
+        // Thread and Semaphore Messages.
+        virtual CString MsgAppThread() const;
         virtual CString MsgCriticalSection() const;
         virtual CString MsgMtxEvent() const;
         virtual CString MsgMtxMutex() const;
         virtual CString MsgMtxSemaphore() const;
-
-        // Message strings used for windows.
-        virtual CString MsgWndCreate() const;
-        virtual CString MsgWndDialog() const;
         virtual CString MsgWndGlobalLock() const;
-        virtual CString MsgWndPropertSheet() const;
+
+        // Winsock Messages.
         virtual CString MsgSocWSAStartup() const;
         virtual CString MsgSocWS2Dll() const;
+
+        // Window Creation Messages.
+        virtual CString MsgWndCreate() const;
+        virtual CString MsgWndDialog() const;
         virtual CString MsgIPControl() const;
+        virtual CString MsgWndPropertSheet() const;
         virtual CString MsgRichEditDll() const;
         virtual CString MsgTaskDialog() const;
 
@@ -353,15 +371,25 @@ namespace Win32xx
         virtual CString MsgTimeValid() const;
 
         // Message used for CWinApp.
+        virtual CString MsgCWinApp() const;
         virtual CString MsgTlsIndexes() const;
     };
 
-    // Returns a pointer to the CWinApp derived class.
+    // Returns a pointer to the CWinApp object.
+    // Asserts if Win32++ hasn't been started. Declare a CWinApp object,
+    // or an object inherited from CWinApp to start Win32++.
     inline CWinApp* GetApp()
     {
         CWinApp* pApp = CWinApp::SetnGetThis();
         assert(pApp);  // This assert fails if Win32++ isn't started.
         return pApp;
+    }
+
+    // Returns true if TRUE if Win32++ has been started. Declare a CWinApp
+    // object, or an object inherited from CWinApp to start Win32++.
+    inline BOOL IsAppRunning()
+    {
+        return  (CWinApp::SetnGetThis() != nullptr);
     }
 
 } // namespace Win32xx

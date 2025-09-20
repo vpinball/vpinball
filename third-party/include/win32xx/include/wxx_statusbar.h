@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -79,9 +79,7 @@ namespace Win32xx
 
 }
 
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 namespace Win32xx
 {
@@ -90,9 +88,9 @@ namespace Win32xx
     // Definitions for the CStatusBar class.
     //
 
-    // Sets the number of parts in a status window and the coordinate of the right edge of each part.
-    // If an element of iPaneWidths is -1, the right edge of the corresponding part extends
-    // to the border of the window.
+    // Sets the number of parts in a status window and the coordinate of the
+    // right edge of each part. If an element of iPaneWidths is -1, the right
+    // edge of the corresponding part extends to the border of the window.
     // Refer to SB_SETPARTS in the Windows API documentation for more information.
     inline BOOL CStatusBar::CreateParts(int parts, const int paneWidths[]) const
     {
@@ -163,8 +161,8 @@ namespace Win32xx
     // Called when the background needs erasing.
     inline BOOL CStatusBar::OnEraseBkgnd(CDC& dc)
     {
-        // Permit the parent window to handle the drawing of the StatusBar's background.
-        // Return TRUE to suppress default background drawing.
+        // Permit the parent window to handle the drawing of the StatusBar's
+        // background. Return TRUE to suppress default background drawing.
         return static_cast<BOOL>(GetParent().SendMessage(UWM_DRAWSBBKGND,
             reinterpret_cast<WPARAM>(&dc), reinterpret_cast<LPARAM>(this)));
     }
@@ -222,22 +220,24 @@ namespace Win32xx
         return static_cast<BOOL>(SendMessage(SB_SETICON, wparam, lparam));
     }
 
-    // Changes the width of an existing pane, or creates a new pane with the specified width.
-    // A width of -1 for the last part sets the width to the border of the window.
+    // Changes the width of an existing pane, or creates a new pane with the
+    // specified width. A width of -1 for the last part sets the width to the
+    // border of the window.
     // Refer to SB_SETPARTS in the Windows API documentation for more information.
     inline BOOL CStatusBar::SetPartWidth(int part, int width) const
     {
         assert(IsWindow());
         assert(part >= 0 && part <= 255);
 
-        // Fill the oldWidths vector with the current width of the StatusBar parts.
-        size_t oldCount = static_cast<int>(SendMessage(SB_GETPARTS, 0, 0));
+        // Fill the oldWidths vector with the current width of the StatusBar
+        // parts.
+        size_t oldCount = static_cast<size_t>(SendMessage(SB_GETPARTS, 0, 0));
         std::vector<int> oldWidths(oldCount, 0);
         SendMessage(SB_GETPARTS, static_cast<WPARAM>(oldCount),
             reinterpret_cast<LPARAM>(oldWidths.data()));
 
         // Fill the newWidths vector with the new width of the StatusBar parts.
-        size_t newCount = std::max(part+1, static_cast<int>(oldCount));
+        size_t newCount = std::max(static_cast<size_t>(part) +1, oldCount);
         std::vector<int> newWidths(newCount, 0);
         newWidths.insert(newWidths.begin(), oldWidths.begin(), oldWidths.end());
         int* pNewWidthsArray = newWidths.data();
@@ -257,8 +257,8 @@ namespace Win32xx
             reinterpret_cast<LPARAM>(pNewWidthsArray)));
     }
 
-    // Specifies whether a status window displays simple text or displays all window parts
-    // set by a previous SB_SETPARTS message.
+    // Specifies whether a status window displays simple text or displays all
+    // window parts set by a previous SB_SETPARTS message.
     // Refer to SB_SIMPLE in the Windows API documentation for more information.
     inline void CStatusBar::SetSimple(BOOL isSimple /* = TRUE*/) const
     {

@@ -1,5 +1,5 @@
-// Win32++   Version 10.1.0
-// Release Date: 17th Feb 2025
+// Win32++   Version 10.2.0
+// Release Date: 20th September 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -85,7 +85,7 @@
 namespace Win32xx
 {
 
-    ////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////
     // This class encapsulates the Windows API PrintDlgEx function.
     // The PrintDlgEx function displays a property sheet. The property
     // sheet allows the user to specify the printer, and the properties
@@ -154,6 +154,16 @@ namespace Win32xx
         IPrintDialogServices* m_pServices;
         CHGlobal m_currentModeBuffer;
     };
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+namespace Win32xx
+{
+
+    //////////////////////////////////////////////
+    // CPrintDialogEx member function definitions.
+    //
 
     // Constructor for CPrintDialogEx class. The flags parameter specifies the
     // flags for the PRINTDLGEX structure. Refer to the description of the
@@ -271,7 +281,7 @@ namespace Win32xx
         {
             // Retrieve the size of the current DevMode.
             UINT size = 0;
-            DEVMODE tempMode{};
+            DEVMODE tempMode = {};
             m_pServices->GetCurrentDevMode(&tempMode, &size);
 
             // Retrieve the current DevMode.
@@ -347,7 +357,7 @@ namespace Win32xx
     // unlocks the memory when it goes out of scope.
     // Usage:
     //  CDevMode pDevMode = GetDevMode();
-    //  Then use pDevMode as if it were a LPDEVMODE
+    //  Then use pDevMode as if it were a LPDEVMODE.
     inline CDevMode CPrintDialogEx::GetDevMode() const
     {
         if (GetApp()->GetHDevMode().Get() == nullptr)
@@ -364,7 +374,7 @@ namespace Win32xx
     // unlocks the memory when it goes out of scope.
     // Usage:
     //  CDevNames pDevNames = GetDevNames();
-    //  Then use pDevNames as if it were a LPDEVNAMES
+    //  Then use pDevNames as if it were a LPDEVNAMES.
     inline CDevNames CPrintDialogEx::GetDevNames() const
     {
         if (GetApp()->GetHDevNames().Get() == nullptr)
