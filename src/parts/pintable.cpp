@@ -3515,10 +3515,10 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
    if (icmd != 0)
       psel->DoCommand(icmd, x, y);
 
-   newMenu.DestroyMenu();
+   newMenu.Destroy();
 
    if (menuid != -1)
-       mainMenu.DestroyMenu();
+       mainMenu.Destroy();
 #endif
 }
 
