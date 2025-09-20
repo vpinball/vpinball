@@ -101,7 +101,7 @@ static void UpdateThread()
    while (isRunning && pDmd && selectedDmdId.id.id != 0)
    {
       // Fixed update at 60 FPS
-      std::this_thread::sleep_for(std::chrono::nanoseconds(16666));
+      std::this_thread::sleep_for(std::chrono::microseconds(16666));
 
       std::lock_guard<std::mutex> lock(sourceMutex);
 
