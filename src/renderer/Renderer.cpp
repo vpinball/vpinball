@@ -1583,22 +1583,13 @@ void Renderer::RenderItem(IEditable* renderable, bool isNoBackdrop)
          case PartGroupData::SpaceReference::SR_CABINET:
          case PartGroupData::SpaceReference::SR_CABINET_FEET:
          case PartGroupData::SpaceReference::SR_ROOM:
-         {
-            const PinTable* const table = g_pplayer->m_ptable;
-            //const float baseSlope = lerp(table->m_angletiltMin, table->m_angletiltMax, table->m_difficulty);
-            //const Matrix3D cabinetSlope = Matrix3D::MatrixRotateX(ANGTORAD(table->GetPlayfieldSlope() - baseSlope));
-            const Matrix3D pfToCab = Matrix3D::MatrixTranslate(0.f, 0.f, -CMTOVPU(table->m_groundToPlayfieldHeight));
-            const Matrix3D cabView = pfToCab * m_playfieldView; // * cabinetSlope;
-            m_mvp->SetView(cabView);
+            m_mvp->SetView(g_pplayer->m_ptable->GetDefaultPlayfieldToCabMatrix() * m_playfieldView);
             break;
-         }
          
          case PartGroupData::SpaceReference::SR_PLAYFIELD:
          default:
-         {
             m_mvp->SetView(m_playfieldView);
             break;
-         }
          }
       }
       m_mvpSpaceReference = spaceReference;
