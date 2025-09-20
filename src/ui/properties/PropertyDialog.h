@@ -285,6 +285,12 @@ public:
         return fv;
     }
 
+    static float GetFloatTextboxInchesToVPU(const CEdit &textbox)
+    {
+       const float fv = sz2f(textbox.GetWindowText().GetString());
+       return INCHESTOVPU(fv);
+    }
+
     static int GetIntTextbox(const CEdit &textbox)
     {
         int value;

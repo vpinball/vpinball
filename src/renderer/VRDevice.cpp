@@ -1340,17 +1340,17 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
             const Matrix3D viewOrientation = rotz * rotx2;
             const Matrix3D viewOrientationInv = Matrix3D::MatrixInverse(viewOrientation);
 
-            // The table defines the height of the playfield inside its cabinet model, as well as the playfield base inclination.
-            // This allows to fit the cabinet & playfield models to the real world space.
-            // If user adjust the inclination, then the cab is rotated, with the legs stretching a bit as they would in real life (using caster adjustments)
-            const float groundToPlayfieldHeight = table->m_groundToPlayfieldHeight;
-            const float baseSlope = lerp(table->m_angletiltMin, table->m_angletiltMax, table->m_difficulty);
-
-            // The user defines in his settings the real world height where he wants the lockbar to be.
+            // The user defines in his settings the real world height where he wants the top of the lockbar to be.
             // The real world playfield height is then computed by removing the glass distance at the playfield bottom (typically 2 to 3").
             // The m_tablePos allows to slightly adjust this height on a per table basis.
             // In the end Playfield height = m_tablePos.z (User adjustement) + m_lockBatHeight (Real world lockbar height) - glass distance * scale
             const float scaledGlassHeight = m_scale * VPUTOCM(table->m_glassBottomHeight);
+
+            // The table defines the height of the lockbar of its cabinet model, as well as the playfield base inclination.
+            // This allows to fit the cabinet & playfield models to the real world space.
+            // If user adjust the inclination, then the cab is rotated as it would in real life (still missing the legs stretching a bit using caster adjustments)
+            const float groundToPlayfieldHeight = m_scale * table->m_groundToLockbarHeight - m_scale * table->m_glassBottomHeight;
+            const float baseSlope = lerp(table->m_angletiltMin, table->m_angletiltMax, table->m_difficulty);
 
             // Fixed value of 5 cm between playfield bottom and lockbar border
             // We could (should ?) make this a table data but this does not vary that much so this seems fine for the time being
@@ -1377,15 +1377,15 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
                * Matrix3D::MatrixTranslate(
                   -CMTOVPU(m_tablePos.x),
                    CMTOVPU(m_tablePos.y + lockbarToPlayfield),
-                   // Cabinet model has its z origin at the feet level, m_groundToPlayfieldHeight corresponding to the playfield level, so we move it down (to real world ground) then up to match user seyup (where we placed the playfield)
-                   CMTOVPU(m_tablePos.z + m_lockbarHeight - scaledGlassHeight) - CMTOVPU(m_scale * groundToPlayfieldHeight))
+                   // Cabinet model has its z origin at the feet level, m_groundToLockbarHeight corresponding to the playfield level, so we move it down (to real world ground) then up to match user seyup (where we placed the playfield)
+                   CMTOVPU(m_tablePos.z + m_lockbarHeight - scaledGlassHeight) - groundToPlayfieldHeight)
                * cabinetSlope // Apply cabinet slope
                * viewOrientation; // Reapply view orientation
             m_cabWorld = m_pfWorld * pfToCab;
 
             // Feet are always touching the ground, scaled against the real world vs model defined playfield level
             // Note that since we are rotating the cabinet with its feet, the feet may slightly leave or enter the ground.
-            const float feetScale = (m_tablePos.z + m_lockbarHeight - scaledGlassHeight) / (m_scale * groundToPlayfieldHeight);
+            const float feetScale = (m_tablePos.z + m_lockbarHeight - scaledGlassHeight) / VPUTOCM(groundToPlayfieldHeight);
             const Matrix3D pfToFeet = viewOrientationInv // Revert view orientation
                * playfieldPosInv * playfieldSlopeInv // Revert playfield slope
                * Matrix3D::MatrixTranslate(

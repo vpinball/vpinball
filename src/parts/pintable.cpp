@@ -1731,7 +1731,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    bw.WriteFloat(FID(GLES), m_globalEmissionScale);
    bw.WriteFloat(FID(AOSC), m_AOScale);
    bw.WriteFloat(FID(SSSC), m_SSRScale);
-   bw.WriteFloat(FID(CPFH), m_groundToPlayfieldHeight);
+   bw.WriteFloat(FID(CLBH), m_groundToLockbarHeight);
 
    bw.WriteFloat(FID(SVOL), m_TableSoundVolume);
    bw.WriteFloat(FID(MVOL), m_TableMusicVolume);
@@ -2564,7 +2564,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(GLES): pbr->GetFloat(m_globalEmissionScale); break;
    case FID(AOSC): pbr->GetFloat(m_AOScale); break;
    case FID(SSSC): pbr->GetFloat(m_SSRScale); break;
-   case FID(CPFH): pbr->GetFloat(m_groundToPlayfieldHeight); break;
+   case FID(CLBH): pbr->GetFloat(m_groundToLockbarHeight); break;
    // Removed in 10.8 since we now directly define reflection in render probe. Table author can disable default playfield reflection by setting PF reflection strength to 0. Player uses app/table settings to tweak
    //case FID(BREF): pbr->GetInt(m_useReflectionForBalls); break;
    case FID(PLST):
