@@ -18,7 +18,6 @@ BOOL PartGroupVisualsProperty::OnInitDialog()
    m_referenceSpace.AddString("Room");
    m_referenceSpace.AddString("Inherit");
    m_referenceSpace.SetRedraw(true);
-   AttachItem(IDC_MASK_PLAYFIELD, m_visibilityPlayfield);
    AttachItem(IDC_MASK_DESKTOP, m_visibilityDesktop);
    AttachItem(IDC_MASK_FSS, m_visibilityFSS);
    AttachItem(IDC_MASK_CABINET, m_visibilityCabinet);
@@ -35,8 +34,6 @@ BOOL PartGroupVisualsProperty::OnInitDialog()
    m_resizer.AddChild(m_visibilityVirtualReality, CResizer::topleft, RD_STRETCH_WIDTH);
    m_resizer.AddChild(GetDlgItem(IDC_STATIC2).GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
    m_resizer.AddChild(m_referenceSpace, CResizer::topleft, RD_STRETCH_WIDTH);
-   m_resizer.AddChild(GetDlgItem(IDC_STATIC3).GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
-   m_resizer.AddChild(m_visibilityPlayfield, CResizer::topleft, RD_STRETCH_WIDTH);
    return TRUE;
 }
 
@@ -55,9 +52,6 @@ void PartGroupVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
    if (dispid == IDC_SPACE_REFERENCE || dispid == -1)
       m_referenceSpace.SetCurSel(static_cast<int>(partGroup->m_d.m_spaceReference));
 
-   if (dispid == IDC_MASK_PLAYFIELD || dispid == -1)
-      m_visibilityPlayfield.SetCheck((partGroup->m_d.m_viewVisibilityMask & PartGroupData::ViewVisibilityMask::VVM_PLAYFIELD) ? BST_CHECKED : BST_UNCHECKED);
-   
    if (dispid == IDC_MASK_DESKTOP || dispid == -1)
       m_visibilityDesktop.SetCheck((partGroup->m_d.m_playerModeVisibilityMask & PartGroupData::PlayerModeVisibilityMask::PMVM_DESKTOP) ? BST_CHECKED : BST_UNCHECKED);
    if (dispid == IDC_MASK_FSS || dispid == -1)
@@ -84,20 +78,6 @@ void PartGroupVisualsProperty::UpdatePlayerModeVisibilityMask(PartGroup* const p
    }
 }
 
-void PartGroupVisualsProperty::UpdateViewVisibilityMask(PartGroup* const partGroup, PartGroupData::ViewVisibilityMask mask, bool checked)
-{
-   const bool wasChecked = (partGroup->m_d.m_viewVisibilityMask & mask) != 0;
-   if (checked != wasChecked)
-   {
-      PropertyDialog::StartUndo(partGroup);
-      if (checked)
-         partGroup->m_d.m_viewVisibilityMask |= mask;
-      else
-         partGroup->m_d.m_viewVisibilityMask &= ~mask;
-      PropertyDialog::EndUndo(partGroup);
-   }
-}
-
 void PartGroupVisualsProperty::UpdateProperties(const int dispid)
 {
    for (int i = 0; i < m_pvsel->size(); i++)
@@ -109,10 +89,6 @@ void PartGroupVisualsProperty::UpdateProperties(const int dispid)
       {
       case IDC_SPACE_REFERENCE:
          partGroup->m_d.m_spaceReference = static_cast<PartGroupData::SpaceReference>(m_referenceSpace.GetCurSel());
-         break;
-
-      case IDC_MASK_PLAYFIELD:
-         UpdateViewVisibilityMask(partGroup, PartGroupData::ViewVisibilityMask::VVM_PLAYFIELD, m_visibilityPlayfield.GetCheck() == BST_CHECKED);
          break;
 
       case IDC_MASK_DESKTOP:

@@ -22,18 +22,7 @@ public:
       PMVM_VIRTUAL_REALITY = 0x0010, // Enable if player is in VR mode
       PMVM_ALL             = 0xFFFF,
    };
-   enum ViewVisibilityMask
-   {
-      VVM_PLAYFIELD       = 0x0001, // Enable in playfield view
-      VVM_SCOREVIEW       = 0x0002, // Enable in score view (Not yet used)
-      VVM_BACKGLASS       = 0x0004, // Enable in backglass view (Not yet used)
-      VVM_TOPPER          = 0x0008, // Enable in topper view (Not yet used)
-      VVM_APRON_LEFT      = 0x0010, // Enable in left apron view (Not yet used)
-      VVM_APRON_RIGHT     = 0x0020, // Enable in right apron view (Not yet used)
-      VVM_ALL             = 0xFFFF,
-   };
    unsigned int m_playerModeVisibilityMask = PMVM_ALL;
-   unsigned int m_viewVisibilityMask = VVM_ALL;
    enum class SpaceReference : int
    {
       SR_PLAYFIELD, // Relative to cabinet with playfield inclination and local coordinate system applied (usual local playfield coordinate system tailored for table design)
@@ -105,7 +94,6 @@ public:
    // IPartGroup
 
    unsigned int GetPlayerModeVisibilityMask() const;
-   unsigned int GetViewVisibilityMask() const;
    PartGroupData::SpaceReference GetReferenceSpace() const;
 
    PartGroupData m_d;

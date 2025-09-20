@@ -113,13 +113,6 @@ unsigned int PartGroup::GetPlayerModeVisibilityMask() const
    return m_d.m_playerModeVisibilityMask;
 }
 
-unsigned int PartGroup::GetViewVisibilityMask() const
-{
-   if (GetPartGroup() != nullptr)
-      return m_d.m_viewVisibilityMask & GetPartGroup()->GetViewVisibilityMask();
-   return m_d.m_viewVisibilityMask;
-}
-
 PartGroupData::SpaceReference PartGroup::GetReferenceSpace() const
 {
    if (m_d.m_spaceReference != PartGroupData::SpaceReference::SR_INHERIT)
@@ -160,7 +153,6 @@ HRESULT PartGroup::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool sav
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteBool(FID(BGLS), m_backglass);
    // PartGroup properties
-   bw.WriteInt(FID(VMSK), static_cast<int>(m_d.m_viewVisibilityMask));
    bw.WriteInt(FID(PMSK), static_cast<int>(m_d.m_playerModeVisibilityMask));
    bw.WriteInt(FID(SPRF), static_cast<int>(m_d.m_spaceReference));
    ISelect::SaveData(pstm, hcrypthash);
@@ -193,7 +185,6 @@ bool PartGroup::LoadToken(const int id, BiffReader * const pbr)
    case FID(BGLS): pbr->GetBool(m_backglass); break;
    // PartGroup properties
    case FID(PMSK): pbr->GetInt(&m_d.m_playerModeVisibilityMask); break;
-   case FID(VMSK): pbr->GetInt(&m_d.m_viewVisibilityMask); break;
    case FID(SPRF): pbr->GetInt(&m_d.m_spaceReference); break;
    default: ISelect::LoadToken(id, pbr); break;
    }
