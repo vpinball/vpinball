@@ -301,6 +301,8 @@ std::shared_ptr<BaseTexture> BaseTexture::CreateFromFreeImage(FIBITMAP* dib, con
       }
    }
 
+   assert(tex->data());
+
    tex->m_realWidth = pictureWidth;
    tex->m_realHeight = pictureHeight;
 

@@ -1551,7 +1551,7 @@ BOOL CabinetOptPage::OnInitDialog()
    AttachItem(IDC_LOCKBAR_WIDTH, m_lockbarWidth);
    AddToolTip(m_lockbarWidth, "Physical width of the lockbar in centimeters.\r\n\r\nThis is needed for Virtual Reality automatic scaling mode.");
    AttachItem(IDC_LOCKBAR_HEIGHT_FROM_GROUND, m_lockbarHeight);
-   AddToolTip(m_lockbarHeight, "Physical height of the lockbar in centimeters measured from ground.\r\n\r\nThis is used for Virtual Reality positionning.");
+   AddToolTip(m_lockbarHeight, "Physical height of the lockbar in centimeters measured from ground.\r\n\r\nThis is used for Virtual Reality positioning.");
 
    LoadSettings(GetEditedSettings());
    return TRUE;
