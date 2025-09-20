@@ -3,7 +3,7 @@ VP 10.8.1 Changelog
 
 Main highlighted features, detailed below:
 - VPX is now available as a standalone player on a large variety of platforms: Linux, Mac, iPhone, Android, RaspBerry,...
-- Major internal technical update: BGFX variant is now the default flavor, DX9 and OpenGL version are deprecated and should not be used anymore,
+- Major internal technical update: BGFX variant is now the default flavor, DX9 and OpenGL versions are deprecated and should not be used anymore,
 - Deep work on gameplay stability and latency has been performed leading to better overall game stability, latency and nudging.
 
 Note that these changes need configuration updates when upgrading, at least for input, display and nudging.
@@ -36,7 +36,7 @@ FEATURES:
 
 - add a new flavor of VPX named 'BGFX'. This flavor uses the BGFX library to interface with all the latest rendering backends (Vulkan, Metal, DirectX11/12, OpenGL,...) with some unique benefits:
   . it supports Variable Refresh Rate display (when VSync is switched off)
-  . it uses multiple CPU cores to separately process the rendering from the game simulation, allowing for lower input/physics/controller latency, far better nudging, more stable gameplay emulation, as well as a performance boost
+  . it uses multiple CPU cores to separately process the rendering from the game simulation, allowing for lower input/physics/controller latency, better nudging, more stable gameplay emulation, as well as a performance boost
   . it supports rendering to multiple outputs (windows)
 
 - add a new 'ScoreView' which renders the segment displays or DMD to a dedicated window (BGFX variant only). The scoreview uses a layout defined in a 'scv' file placed along the table file
@@ -58,19 +58,18 @@ FEATURES:
    that table object into the 'Properties' editor dialog for you.
 
 - VR/XR was rewritten and is now fully supported by VPX, using OpenXR in its BGFX variant.
-  Note that previous OpenVR variant using OpenGL is deprecated and is unlikely to work well, it does not include any of the improvment list below and will be removed in coming VPX updates.
+  Note that previous OpenVR variant using OpenGL is deprecated and is unlikely to work well, it does not include any of the improvment listed below and will be removed in coming VPX updates.
   . All OpenXR backend are supported (Virtual Desktop, SteamVR, Meta Quest Link, ...),
   . Layers (see below) now have properties to automatically show/hide parts depending on the player mode
   . Layers (see below) now have properties to perform adequate positionning stretching depending on player situation, allowing to keep room element sized to real world, while adjusting pinball machine to user choice, eventually matching a real world cabinet or controller
   . All scaling is now done using OpenXR framework, based on target lockbar width which can be adjusted in the tweak UI, for example to match the width of a cab, a keyboard or any controller.
   . Table files now include cabinet size informations (glass heights as well as playfield position inside cabinet, which must correspond to the cabinet model included in the VR scene)
-  . Support for color keyed passthrough mode has been added (for example using Virtual Desktop) allowing to play in mixed reality,
+  . Support for color keyed passthrough mode has been added allowing to play in mixed reality (for example using Virtual Desktop),
   . OpenXR latency reduction framework is fully implemented:
     - by taking into account the headset latency when rendering,
     - by providing the headset with information for live reprojection (depth data).
   . Correct colorspace for all headsets (no more washed out colors that needed some hacks in previous version),
-  . VPX's TweakUI is now fully supported in VR, which allows to adjust all settings in-game using the usual pinball controls,
-    also supporting continuous recentering by keeping the 'reset' button pressed.
+  . VPX's TweakUI is now fully supported in VR, which allows to adjust all settings in-game using the usual pinball controls, also supporting continuous recentering.
 
 - number of layers is not limited anymore. Layers can also be nested and they now feature properties:
   . a visibility mask, that allows to filter on which player mode layers are active (desktop, cabinet, virtual reality, mixed reality, ...)
@@ -93,15 +92,15 @@ FEATURES:
   This feature is still in early stage and should be considered as a 'feature preview' as it will most likely evolve and the programming interface is not yet fully stabilized.
   The following beta plugins are included with VPX:
   . AlphaDMD: render alpahanumeric segment display inside any DMD (physical or virtual)
-  . B2S legacy: render B2S backglass and fulldmd files to VPX anciliary windows
-  . B2S: a newer B2S renderer which supports light fading, better mech animation, but is far from feature complete
+  . B2S legacy: render backglass and fulldmd of B2S files to VPX anciliary windows
+  . B2S: a newer B2S renderer which supports light fading, better mech animation, but is still far from feature complete
   . DMDUtil: support rendering to physical DMDs (ZeDMD,...)
   . DOF: a preliminary port of the Direct Output Framework which allows to drive feedback hardwares (lights, shaker, fan,...)
   . FlexDMD: a port of FlexDMD & UltraDMD, which are tools to render and animate DMD for homebrew tables
   . PinMAME: a direct interface to PinMAME with some bonus features like alhanumeric segment fading
-  . PinUp: a preliminary port of PinUp Player that renders and animate video backglass, topper, fullDMD display
+  . PinUp: a preliminary port of PinUp Player that renders and animate video backglass, topper and fullDMD display
   . Remote Control: a plugin that allows to control an instance of VPX from another running instance. For example running VPX on a little controller PC that communicates with a powerful computer that runs VPX driving a VR headset
-  . Scoreview: a tool to provide default score rendering (a.k.a. DMD but also supporting alphanumeric segment display)
+  . Scoreview: a tool to provide default score rendering (for example DMD but also supporting alphanumeric segment display, including dimmed segments)
   . Serum: a DMD colorizer
   . WMP: the window media player, but as a portable plugin, running on any of the supported platforms
   

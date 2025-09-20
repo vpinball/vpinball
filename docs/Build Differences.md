@@ -5,7 +5,7 @@ The main differences between these flavors are described here.
 
 Beside the graphic backend flavor, VPX is provided as:
 - a full featured editor and player for Windows system
-- a standalone player for other platforms, targeted at devices supporting Vulkan, OpenGL 4.1 (desktop) or OpenGL ES 3.0 (mobile and single-board computer) with GLSL 3.0.
+- a standalone player for other platforms, targeted at devices supporting Vulkan (desktop and single-board computer), Metal (Apple devices) or OpenGL ES 3.0 with GLSL 3.0 (mobile and single-board computer).
 
 
 ## BGFX

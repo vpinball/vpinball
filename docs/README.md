@@ -15,6 +15,7 @@
 2. Scripting
    1. [API Reference](<Script API Reference.md>)
 3. Upgrading to new version
-   1. [Upgrading to VPX 10.8.X](<Upgrading Table 10.8.md>)
+   - [Upgrading to VPX 10.8.1](<Upgrading Table 10.8.1.md>)
+   - [Upgrading to VPX 10.8](<Upgrading Table 10.8.md>)
 
 <sub><sup>[Information applicable to version 10.8.1 Beta]</sup></sub>
