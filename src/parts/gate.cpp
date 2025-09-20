@@ -296,6 +296,9 @@ void Gate::RenderBlueprint(Sur *psur, const bool solid)
 
 void Gate::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
+   if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::SR_PLAYFIELD)
+      return;
+
    if (isUI)
    {
       // FIXME implement UI picking

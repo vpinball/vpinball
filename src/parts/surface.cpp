@@ -327,6 +327,9 @@ void Surface::RenderBlueprint(Sur *psur, const bool solid)
 
 void Surface::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
+   if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::SR_PLAYFIELD)
+      return;
+
    vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
 

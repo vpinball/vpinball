@@ -202,6 +202,9 @@ void Ball::RenderBlueprint(Sur *psur, const bool solid)
 
 void Ball::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
+   if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::SR_PLAYFIELD)
+      return;
+
    physics->AddCollider(&m_hitBall, isUI);
 }
 

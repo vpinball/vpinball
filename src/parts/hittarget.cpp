@@ -248,6 +248,9 @@ constexpr WORD dropTargetHitPlaneIndices[num_dropTargetHitPlaneIndices] =
 
 void HitTarget::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
+   if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::SR_PLAYFIELD)
+      return;
+
    TransformVertices();
 
    if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetFlatSimple || m_d.m_targetType == DropTargetSimple)

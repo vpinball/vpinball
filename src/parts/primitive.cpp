@@ -347,6 +347,9 @@ void Primitive::WriteRegDefaults()
 
 void Primitive::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
+   if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::SR_PLAYFIELD)
+      return;
+
    m_useAsPlayfield = IsPlayfield();
 
    //
