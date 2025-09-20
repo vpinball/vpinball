@@ -122,7 +122,7 @@ static void ColorizeThread()
    while (isRunning)
    {
       // Original PinMAME code would evaluate DMD frames at a fixed 60 FPS and color rotation are also based on a 60FPS rate. So update at this pace.
-      std::this_thread::sleep_for(std::chrono::nanoseconds(16666));
+      std::this_thread::sleep_for(std::chrono::microseconds(16666));
 
       std::lock_guard<std::mutex> lock1(sourceMutex);
       if (dmdId.id.id == 0)

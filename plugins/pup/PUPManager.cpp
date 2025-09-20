@@ -356,7 +356,7 @@ void PUPManager::ProcessQueue()
    while (m_isRunning)
    {
       std::unique_lock<std::mutex> lock(m_queueMutex);
-      m_queueCondVar.wait_for(lock, std::chrono::nanoseconds(16666), [this] { return !m_triggerDataQueue.empty() || !m_triggerDmdQueue.empty() || !m_isRunning; });
+      m_queueCondVar.wait_for(lock, std::chrono::microseconds(16666), [this] { return !m_triggerDataQueue.empty() || !m_triggerDmdQueue.empty() || !m_isRunning; });
 
       if (!m_isRunning)
       {
