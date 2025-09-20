@@ -534,6 +534,9 @@ float Rubber::GetSurfaceHeight(float x, float y) const
 
 void Rubber::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
+   if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::SR_PLAYFIELD)
+      return;
+
    ankerl::unordered_dense::set<std::pair<unsigned, unsigned>> addedEdges;
 
    if (!isUI)

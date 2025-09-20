@@ -148,6 +148,9 @@ void Kicker::UIRenderPass2(Sur * const psur)
 
 void Kicker::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
+   if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::SR_PLAYFIELD)
+      return;
+
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    const float radius = m_d.m_radius * (m_d.m_legacyMode ? (m_d.m_fallThrough ? 0.75f : 0.6f) // reduce the hit circle radius because only the inner circle of the kicker should start a hit event
                                                          : 1.f);

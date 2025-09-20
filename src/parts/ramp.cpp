@@ -549,6 +549,9 @@ float Ramp::GetSurfaceHeight(float x, float y) const
 
 void Ramp::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
+   if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::SR_PLAYFIELD)
+      return;
+
    float *rgheight1;
    int cvertex;
    const Vertex2D *const rgvLocal = GetRampVertex(cvertex, &rgheight1, nullptr, nullptr, nullptr, HIT_SHAPE_DETAIL_LEVEL, true);

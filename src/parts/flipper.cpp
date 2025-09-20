@@ -233,6 +233,9 @@ void Flipper::UpdatePhysicsSettings()
 
 void Flipper::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
+   if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::SR_PLAYFIELD)
+      return;
+
    UpdatePhysicsSettings();
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
    if (m_d.m_FlipperRadiusMin > 0.f && m_d.m_FlipperRadiusMax > m_d.m_FlipperRadiusMin)
