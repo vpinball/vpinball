@@ -555,16 +555,20 @@ void Primitive::RecalculateMatrices()
                  * Matrix3D::MatrixTranslate(m_d.m_vPosition.x, m_d.m_vPosition.y, m_d.m_vPosition.z);
 }
 
-// recalculate vertices for editor display
+// recalculate vertices for editor display & physics setup
 void Primitive::TransformVertices()
 {
    m_vertices.resize(m_mesh.NumVertices());
    m_normals.resize(m_mesh.NumVertices());
 
+   Matrix3D fullMatrix = m_fullMatrix;
+   if (GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::SR_PLAYFIELD)
+      fullMatrix = fullMatrix * m_ptable->GetDefaultPlayfieldToCabMatrix();
+
    for (size_t i = 0; i < m_mesh.NumVertices(); i++)
    {
-      m_vertices[i] = m_fullMatrix * m_mesh.m_vertices[i];
-      Vertex3Ds n = m_fullMatrix.MultiplyVectorNoTranslateNormal(m_mesh.m_vertices[i]);
+      m_vertices[i] = fullMatrix * m_mesh.m_vertices[i];
+      Vertex3Ds n = fullMatrix.MultiplyVectorNoTranslateNormal(m_mesh.m_vertices[i]);
       n.Normalize();
       m_normals[i] = n.z;
    }
@@ -582,6 +586,9 @@ void Primitive::UIRenderPass1(Sur * const psur)
 
 void Primitive::UIRenderPass2(Sur * const psur)
 {
+   RecalculateMatrices();
+   TransformVertices();
+
    psur->SetLineColor(RGB(0, 0, 0), false, 1);
    psur->SetObject(this);
    if (!m_d.m_displayTexture)
@@ -1000,8 +1007,6 @@ void Primitive::CalculateBuiltinOriginal()
 void Primitive::UpdateStatusBarInfo()
 {
    CalculateBuiltinOriginal();
-   RecalculateMatrices();
-   TransformVertices();
    if (m_d.m_use3DMesh)
    {
        const string tbuf = "Vertices: " + std::to_string(m_mesh.NumVertices()) + " | Polygons: " + std::to_string(m_mesh.NumIndices());
