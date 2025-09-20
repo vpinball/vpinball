@@ -1,11 +1,11 @@
-# Upgrading a table to 10.8.X
+# Upgrading a table to 10.8
 
-VPX 10.8.X tries to be entirely backwards compatible. Therefore, existing tables should look exactly the same as with 10.7, except for the 3 following points:
+VPX 10.8 tries to be entirely backwards compatible. Therefore, existing tables should look exactly the same as with 10.7, except for the 3 following points:
 - parts below the playfield used to be always invisible unless they were tagged as 'Active', now they can be visible (e.g. through kicker holes),
 - reflections used to be rendered differently, so they will likely look somewhat different than before,
 - scripts were not allowed to adjust static parts at all, now this is possible during table initialization, therefore tables that would tweak a static part (intentionally or by accident) and rely on the fact that the changes are not processed will need to be updated.
 
-Beside these eventually needed updates, 10.8.X offers new features that can be leveraged by updating the table. The main ones are described below.
+Beside these eventually needed updates, 10.8 offers new features that can be leveraged by updating the table. The main ones are described below.
 
 
 ## Table of Contents
@@ -137,7 +137,7 @@ Custom fading of lights and flashers can also be largely simplified by using the
 
 
 ## Better Static Parts
-VPX 10.8.X allows the script to update the properties of 'static' parts during initialization and preprocessing, so within the main script part and in all the 'Init' events of the table and its parts. This can for example be leveraged to adjust the visibility of static parts depending on the display setup (e.g. VR vs cab vs desktop vs FSS) or user-selected options.
+VPX 10.8 allows the script to update the properties of 'static' parts during initialization and preprocessing, so within the main script part and in all the 'Init' events of the table and its parts. This can for example be leveraged to adjust the visibility of static parts depending on the display setup (e.g. VR vs cab vs desktop vs FSS) or user-selected options.
 
 For example:
 ```
@@ -180,4 +180,4 @@ Left image shows an (exaggerated) ambient occlusion artefact due to depth maskin
 
 Left image shows the ramp from VPW's Last Action Hero in 10.7, while the right image shows it with the mask option disabled.
 
-<sub><sup>[Information applicable to version 10.8.X]</sup></sub>
+<sub><sup>[Information applicable to version 10.8]</sup></sub>
