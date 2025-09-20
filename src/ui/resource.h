@@ -1351,7 +1351,7 @@
 #define IDC_MASK_DESKTOP                969
 #define IDC_MASK_FSS                    970
 #define IDC_MASK_CABINET                971
-#define IDC_TABLE_GROUND_TO_PLAYFIELD_HEIGHT_EDIT 972
+#define IDC_TABLE_GROUND_TO_LOCKBAR_HEIGHT_EDIT 972
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042

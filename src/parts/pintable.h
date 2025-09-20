@@ -741,12 +741,12 @@ public:
    float m_globalEmissionScale = 1.f;
    float m_AOScale;
    float m_SSRScale;
-   float m_groundToPlayfieldHeight = 84.f; // Height of playfield from ground in cm (corresponding to cab model for VR)
+   float m_groundToLockbarHeight = CMTOVPU(91.f); // Height of lockbar from ground (corresponding to cab model for VR)
    Matrix3D GetDefaultPlayfieldToCabMatrix() const
    {
       //const float baseSlope = lerp(table->m_angletiltMin, table->m_angletiltMax, table->m_difficulty);
       //const Matrix3D cabinetSlope = Matrix3D::MatrixRotateX(ANGTORAD(table->GetPlayfieldSlope() - baseSlope));
-      return Matrix3D::MatrixTranslate(0.f, 0.f, -CMTOVPU(m_groundToPlayfieldHeight));
+      return Matrix3D::MatrixTranslate(0.f, 0.f, -(m_groundToLockbarHeight - m_glassBottomHeight));
    }
 
    float m_playfieldReflectionStrength; // default (implicit) playfield reflection strength (0 to disable playfield reflection)

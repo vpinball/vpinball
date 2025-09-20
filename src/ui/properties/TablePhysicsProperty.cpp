@@ -22,7 +22,7 @@ TablePhysicsProperty::TablePhysicsProperty(const VectorProtected<ISelect> *pvsel
     m_maxSlopeEdit.SetDialog(this);
     m_gameplayDifficultyEdit.SetDialog(this);
     m_overwritePhysicsSetCombo.SetDialog(this);
-    m_groundToPlayfieldHeightEdit.SetDialog(this);
+    m_groundToLockbarHeightEdit.SetDialog(this);
 
     m_physicSetList.push_back("Disable"s);
     m_physicSetList.push_back("Set1"s);
@@ -62,15 +62,15 @@ void TablePhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
     if (dispid == IDC_FILTER_MECH_PLUNGER_CHECK || dispid == -1)
         PropertyDialog::SetCheckboxState(m_hFilterMechanicalPlungerCheck, table->m_plungerFilter);
     if (dispid == IDC_TABLE_WIDTH_EDIT || dispid == -1)
-        PropertyDialog::SetFloatTextbox(m_tableWidthEdit, table->GetTableWidth());
+        PropertyDialog::SetFloatTextbox(m_tableWidthEdit, VPUTOINCHES(table->GetTableWidth()));
     if (dispid == IDC_TABLE_HEIGHT_EDIT || dispid == -1)
-        PropertyDialog::SetFloatTextbox(m_tableHeightEdit, table->GetHeight());
+        PropertyDialog::SetFloatTextbox(m_tableHeightEdit, VPUTOINCHES(table->GetHeight()));
     if (dispid == IDC_TABLE_GLASS_BOTTOM_HEIGHT_EDIT || dispid == -1)
-        PropertyDialog::SetFloatTextbox(m_bottomGlassHeightEdit, table->m_glassBottomHeight);
+        PropertyDialog::SetFloatTextbox(m_bottomGlassHeightEdit, VPUTOINCHES(table->m_glassBottomHeight));
     if (dispid == IDC_TABLE_GLASS_TOP_HEIGHT_EDIT || dispid == -1)
-        PropertyDialog::SetFloatTextbox(m_topGlassHeightEdit, table->m_glassTopHeight);
-    if (dispid == IDC_TABLE_GROUND_TO_PLAYFIELD_HEIGHT_EDIT || dispid == -1)
-       PropertyDialog::SetFloatTextbox(m_groundToPlayfieldHeightEdit, table->m_groundToPlayfieldHeight);
+        PropertyDialog::SetFloatTextbox(m_topGlassHeightEdit, VPUTOINCHES(table->m_glassTopHeight));
+    if (dispid == IDC_TABLE_GROUND_TO_LOCKBAR_HEIGHT_EDIT || dispid == -1)
+       PropertyDialog::SetFloatTextbox(m_groundToLockbarHeightEdit, VPUTOINCHES(table->m_groundToLockbarHeight));
     if (dispid == IDC_MIN_DIFFICULTY_EDIT || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_minSlopeEdit, table->m_angletiltMin);
     if (dispid == IDC_MAX_DIFFICULTY_EDIT || dispid == -1)
@@ -122,19 +122,19 @@ void TablePhysicsProperty::UpdateProperties(const int dispid)
             CHECK_UPDATE_ITEM(table->m_plungerFilter, PropertyDialog::GetCheckboxState(m_hFilterMechanicalPlungerCheck), table);
             break;
         case IDC_TABLE_WIDTH_EDIT:
-            CHECK_UPDATE_VALUE_SETTER(table->SetTableWidth, table->GetTableWidth, PropertyDialog::GetFloatTextbox, m_tableWidthEdit, table);
+            CHECK_UPDATE_VALUE_SETTER(table->SetTableWidth, table->GetTableWidth, PropertyDialog::GetFloatTextboxInchesToVPU, m_tableWidthEdit, table);
             break;
         case IDC_TABLE_HEIGHT_EDIT:
-            CHECK_UPDATE_VALUE_SETTER(table->SetHeight, table->GetHeight, PropertyDialog::GetFloatTextbox, m_tableHeightEdit, table);
+            CHECK_UPDATE_VALUE_SETTER(table->SetHeight, table->GetHeight, PropertyDialog::GetFloatTextboxInchesToVPU, m_tableHeightEdit, table);
             break;
         case IDC_TABLE_GLASS_BOTTOM_HEIGHT_EDIT:
-            CHECK_UPDATE_ITEM(table->m_glassBottomHeight, PropertyDialog::GetFloatTextbox(m_bottomGlassHeightEdit), table);
+            CHECK_UPDATE_ITEM(table->m_glassBottomHeight, PropertyDialog::GetFloatTextboxInchesToVPU(m_bottomGlassHeightEdit), table);
             break;
         case IDC_TABLE_GLASS_TOP_HEIGHT_EDIT:
-            CHECK_UPDATE_ITEM(table->m_glassTopHeight, PropertyDialog::GetFloatTextbox(m_topGlassHeightEdit), table);
+            CHECK_UPDATE_ITEM(table->m_glassTopHeight, PropertyDialog::GetFloatTextboxInchesToVPU(m_topGlassHeightEdit), table);
             break;
-        case IDC_TABLE_GROUND_TO_PLAYFIELD_HEIGHT_EDIT:
-           CHECK_UPDATE_ITEM(table->m_groundToPlayfieldHeight, PropertyDialog::GetFloatTextbox(m_groundToPlayfieldHeightEdit), table);
+        case IDC_TABLE_GROUND_TO_LOCKBAR_HEIGHT_EDIT:
+           CHECK_UPDATE_ITEM(table->m_groundToLockbarHeight, PropertyDialog::GetFloatTextboxInchesToVPU(m_groundToLockbarHeightEdit), table);
            break;
         case IDC_MIN_DIFFICULTY_EDIT:
             CHECK_UPDATE_ITEM(table->m_angletiltMin, PropertyDialog::GetFloatTextbox(m_minSlopeEdit), table);
@@ -176,7 +176,7 @@ BOOL TablePhysicsProperty::OnInitDialog()
     m_tableHeightEdit.AttachItem(IDC_TABLE_HEIGHT_EDIT);
     m_bottomGlassHeightEdit.AttachItem(IDC_TABLE_GLASS_BOTTOM_HEIGHT_EDIT);
     m_topGlassHeightEdit.AttachItem(IDC_TABLE_GLASS_TOP_HEIGHT_EDIT);
-    m_groundToPlayfieldHeightEdit.AttachItem(IDC_TABLE_GROUND_TO_PLAYFIELD_HEIGHT_EDIT);
+    m_groundToLockbarHeightEdit.AttachItem(IDC_TABLE_GROUND_TO_LOCKBAR_HEIGHT_EDIT);
     m_minSlopeEdit.AttachItem(IDC_MIN_DIFFICULTY_EDIT);
     m_maxSlopeEdit.AttachItem(IDC_MAX_DIFFICULTY_EDIT);
     m_gameplayDifficultyEdit.AttachItem(IDC_GAME_DIFFICULTY_EDIT);
@@ -221,7 +221,7 @@ BOOL TablePhysicsProperty::OnInitDialog()
     m_resizer.AddChild(m_tableHeightEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_bottomGlassHeightEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_topGlassHeightEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_groundToPlayfieldHeightEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_groundToLockbarHeightEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_minSlopeEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_maxSlopeEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_gameplayDifficultyEdit, CResizer::topleft, RD_STRETCH_WIDTH);
