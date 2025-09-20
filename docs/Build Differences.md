@@ -27,7 +27,7 @@ This flavor is available as a window player/editor application and as a standalo
 ## DirectX 9
 This is the original flavor of VPX which has been developed during the last 20+ years.
 
-It runs on all Windows builds starting from Windows XP and is the reference build. Nowadays, it is only used as a reference build to ensure improvments are backward compatible but it should not be used anymore as if has a limited feature set and is largely deprecated (DirectX 9 was replaced by DirectX 10 in 2006).
+It runs on all Windows builds starting from Windows 7 (building with older VC++ for XP may still be possible) and is the reference build. Nowadays, it is only used as a reference build to ensure improvments are backward compatible but it should not be used anymore as if has a limited feature set and is largely deprecated (DirectX 9 was replaced by DirectX 10 in 2006).
 
 This flavor is only available as a window player/editor application.
 
