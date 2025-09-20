@@ -508,7 +508,7 @@ void EditorUI::Update()
          ImGui::PushStyleColor(ImGuiCol_PlotLines, IM_COL32(255, 0, 0, 255)); // We abuse ImGui colors to pass render colors
          ImGui::PushStyleColor(ImGuiCol_PlotHistogram, IM_COL32(255, 0, 0, 64));
          for (auto pho : m_player->m_physics->GetHitObjects())
-            if (pho != nullptr && (m_physOverlay == PO_ALL || (m_physOverlay == PO_SELECTED && pho->m_editable == m_selection.editable)) && overlayDrawList->VtxBuffer.Size < 40000)
+            if (pho != nullptr && (m_physOverlay == PO_ALL || (m_physOverlay == PO_SELECTED && pho->m_editable == m_selection.editable)))
                pho->DrawUI(project, overlayDrawList, true);
          ImGui::PopStyleColor(2);
       }
