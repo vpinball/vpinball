@@ -58,8 +58,6 @@
 
 //
 
-#define MAX_BALL_TRAIL_POS 10 // fake/artistic ball motion trail
-
 #define MAX_REELS          32
 
 #define LIGHTSEQGRIDSCALE  20

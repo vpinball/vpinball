@@ -27,7 +27,8 @@ void main() {
    if (v_clipDistance < 0.0)
       discard;
    #endif
-   const vec3 ballImageColor = texture2D(tex_ball_color, v_worldPos.xy).rgb;
+   // the texture used is the ball HDR IBL so it can lead to very high value => keep it SDR
+   const vec3 ballImageColor = saturate(texture2D(tex_ball_color, v_worldPos.xy).rgb);
    if (w_h_disableLighting.z != 0.)
       gl_FragColor = vec4(ballImageColor, trailAlpha);
    else

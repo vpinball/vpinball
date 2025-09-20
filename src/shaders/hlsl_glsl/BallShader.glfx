@@ -300,7 +300,8 @@ in vec3 tex0_alpha;
 void main()
 {
    FS_LAYER_TO_GLOBAL;
-   const float3 ballImageColor = texture(tex_ball_color, tex0_alpha.xy).rgb;
+   // the texture used is the ball HDR IBL so it can lead to very high value => keep it SDR
+   const float3 ballImageColor = saturate(texture(tex_ball_color, tex0_alpha.xy).rgb);
    if (disableLighting)
       color = float4(ballImageColor, tex0_alpha.z);
    else

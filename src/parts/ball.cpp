@@ -492,16 +492,14 @@ void Ball::Render(const unsigned int renderMask)
       unsigned int nVertices = 0;
       for (int i2 = 0; i2 < MAX_BALL_TRAIL_POS - 1; ++i2)
       {
-         int i3 = m_hitBall.m_ringcounter_oldpos / (10000 / PHYSICS_STEPTIME) - i2;
-         if (i3 < 0)
-            i3 += MAX_BALL_TRAIL_POS;
-         int io = i3 - 1;
-         if (io < 0)
-            io += MAX_BALL_TRAIL_POS;
-         if ((m_hitBall.m_oldpos[i3].x == FLT_MAX) && (m_hitBall.m_oldpos[io].x == FLT_MAX))
-            continue; // No position data => discard
+         const Vertex3Ds &pos1 = m_hitBall.GetOldPosition(g_pplayer->m_time_msec - 10 * i2);
+         if (pos1.x == FLT_MAX)
+            continue;
+         const Vertex3Ds &pos2 = m_hitBall.GetOldPosition(g_pplayer->m_time_msec - 10 * (i2 + 1));
+         if (pos2.x == FLT_MAX)
+            continue;
 
-         Vertex3Ds vec(m_hitBall.m_oldpos[io].x - m_hitBall.m_oldpos[i3].x, m_hitBall.m_oldpos[io].y - m_hitBall.m_oldpos[i3].y, m_hitBall.m_oldpos[io].z - m_hitBall.m_oldpos[i3].z);
+         Vertex3Ds vec(pos2.x - pos1.x, pos2.y - pos1.y, pos2.z - pos1.z);
          const float ls = vec.LengthSquared();
          if (ls <= 1e-3f)
             continue; // Too small => discard
@@ -517,20 +515,20 @@ void Ball::Render(const unsigned int renderMask)
          const Vertex3Ds n = CrossProduct(vec, up) * r;
 
          Vertex3D_NoTex2 quadVertices[4];
-         quadVertices[0].x = m_hitBall.m_oldpos[i3].x - n.x;
-         quadVertices[0].y = m_hitBall.m_oldpos[i3].y - n.y;
-         quadVertices[0].z = m_hitBall.m_oldpos[i3].z - n.z;
-         quadVertices[1].x = m_hitBall.m_oldpos[i3].x + n.x;
-         quadVertices[1].y = m_hitBall.m_oldpos[i3].y + n.y;
-         quadVertices[1].z = m_hitBall.m_oldpos[i3].z + n.z;
-         quadVertices[2].x = m_hitBall.m_oldpos[io].x + n.x;
-         quadVertices[2].y = m_hitBall.m_oldpos[io].y + n.y;
-         quadVertices[2].z = m_hitBall.m_oldpos[io].z + n.z;
-         quadVertices[3].x = m_hitBall.m_oldpos[io].x - n.x;
-         quadVertices[3].y = m_hitBall.m_oldpos[io].y - n.y;
-         quadVertices[3].z = m_hitBall.m_oldpos[io].z - n.z;
+         quadVertices[0].x = pos1.x - n.x;
+         quadVertices[0].y = pos1.y - n.y;
+         quadVertices[0].z = pos1.z - n.z;
+         quadVertices[1].x = pos1.x + n.x;
+         quadVertices[1].y = pos1.y + n.y;
+         quadVertices[1].z = pos1.z + n.z;
+         quadVertices[2].x = pos2.x + n.x;
+         quadVertices[2].y = pos2.y + n.y;
+         quadVertices[2].z = pos2.z + n.z;
+         quadVertices[3].x = pos2.x - n.x;
+         quadVertices[3].y = pos2.y - n.y;
+         quadVertices[3].z = pos2.z - n.z;
 
-         quadVertices[0].nx = quadVertices[1].nx = quadVertices[2].nx = quadVertices[3].nx = bc; //!! abuses normal for now for the color/alpha
+         quadVertices[0].nx = quadVertices[1].nx = quadVertices[2].nx = quadVertices[3].nx = saturate(bc); //!! abuses normal for now for the color/alpha
 
          quadVertices[0].tu = 0.5f + (float)(i2) * (float)(1.0 / (2.0 * (MAX_BALL_TRAIL_POS - 1)));
          quadVertices[0].tv = 0.f;
