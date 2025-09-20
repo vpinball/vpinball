@@ -1563,8 +1563,7 @@ extern marker_series series;
 void Renderer::RenderItem(IEditable* renderable, bool isNoBackdrop)
 {
    if ((isNoBackdrop && renderable->m_backglass) // Don't render backdrop items in reflections or VR & cabinet modes
-      || (renderable->GetPartGroup() != nullptr && ((renderable->GetPartGroup()->GetPlayerModeVisibilityMask() & m_visibilityMask) == 0)) // Apply player mode visibility mask
-      || (renderable->GetPartGroup() != nullptr && ((renderable->GetPartGroup()->GetViewVisibilityMask() & PartGroupData::ViewVisibilityMask::VVM_PLAYFIELD) == 0))) // Apply view visibility mask
+      || (renderable->GetPartGroup() != nullptr && ((renderable->GetPartGroup()->GetPlayerModeVisibilityMask() & m_visibilityMask) == 0))) // Apply player mode visibility mask
       return;
       
    const PartGroupData::SpaceReference spaceReference = renderable->GetPartGroup() ? renderable->GetPartGroup()->GetReferenceSpace() : PartGroupData::SpaceReference::SR_PLAYFIELD;

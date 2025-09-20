@@ -1342,7 +1342,6 @@
 #define IDC_PARTGROUP                   959
 #define IDR_PARTGROUP                   960
 #define IDB_TRISTATE_ICONS16            961
-#define IDC_MASK_PLAYFIELD              962
 #define IDC_MASK_MIXED_REALITY          963
 #define IDC_MASK_VIRTUAL_REALITY        964
 #define IDC_SPACE_REFERENCE             965
