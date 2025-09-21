@@ -10,7 +10,9 @@ namespace VPX::InGameUI
 class InGameUIPage
 {
 public:
-   InGameUIPage(const string &path, const string &title, const string &info);
+   enum class SaveMode { None, Global, Table, Both };
+
+   InGameUIPage(const string& path, const string& title, const string& info, SaveMode saveMode);
 
    Settings& GetSettings();
 
@@ -20,6 +22,8 @@ public:
    virtual void Open();
    virtual void Close();
    virtual void Save();
+   void SaveGlobally();
+   void SaveTableOverride();
    virtual void ResetToInitialValues();
    virtual void ResetToDefaults();
    bool IsResettingToDefaults() const { return m_resettingToDefaults; }
@@ -43,6 +47,7 @@ private:
    const string m_path;
    const string m_title;
    const string m_info;
+   const SaveMode m_saveMode;
    float m_adjustedValue = 0.f;
    uint32_t m_lastUpdateMs = 0;
    uint32_t m_pressStartMs = 0;
@@ -53,6 +58,8 @@ private:
    unsigned int m_resetNotifId = 0;
    bool m_resettingToDefaults = false;
    bool m_resettingToInitialValues = false;
+   bool m_selectGlobalOrTablePopup = false;
+   bool m_selectGlobalOrDiscardPopup = false;
 };
 
 }

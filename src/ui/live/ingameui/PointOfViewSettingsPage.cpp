@@ -9,7 +9,7 @@ namespace VPX::InGameUI
 {
 
 PointOfViewSettingsPage::PointOfViewSettingsPage()
-   : InGameUIPage("settings/pov"s, "Point of View"s, "Point of view's settings page:\nOptions to define rendering's point of view"s)
+   : InGameUIPage("settings/pov"s, "Point of View"s, "Point of view's settings page:\nOptions to define rendering's point of view"s, SaveMode::Table)
 {
 }
 
@@ -40,27 +40,7 @@ void PointOfViewSettingsPage::Close()
 
 void PointOfViewSettingsPage::Save()
 {
-   Settings& settings = GetSettings();
-   const PinTable* const table = m_player->m_ptable;
-   ViewSetupID vsId = table->m_BG_current_set;
-   const string keyPrefix = vsId == BG_DESKTOP ? "ViewDT"s : vsId == BG_FSS ? "ViewFSS"s : "ViewCab"s;
-   settings.DeleteValue(Settings::TableOverride, keyPrefix + "Mode");
-   settings.DeleteValue(Settings::TableOverride, keyPrefix + "ScaleX");
-   settings.DeleteValue(Settings::TableOverride, keyPrefix + "ScaleY");
-   settings.DeleteValue(Settings::TableOverride, keyPrefix + "ScaleZ");
-   settings.DeleteValue(Settings::TableOverride, keyPrefix + "Rotation");
-   settings.DeleteValue(Settings::TableOverride, keyPrefix + "PlayerX");
-   settings.DeleteValue(Settings::TableOverride, keyPrefix + "PlayerY");
-   settings.DeleteValue(Settings::TableOverride, keyPrefix + "PlayerZ");
-   settings.DeleteValue(Settings::TableOverride, keyPrefix + "LookAt");
-   settings.DeleteValue(Settings::TableOverride, keyPrefix + "FOV");
-   settings.DeleteValue(Settings::TableOverride, keyPrefix + "HOfs");
-   settings.DeleteValue(Settings::TableOverride, keyPrefix + "VOfs");
-   settings.DeleteValue(Settings::TableOverride, keyPrefix + "WindowTop");
-   settings.DeleteValue(Settings::TableOverride, keyPrefix + "WindowBot");
-   settings.DeleteValue(Settings::TableOverride, keyPrefix + "Layback");
    InGameUIPage::Save();
-
    // FIXME this should be part of the action, not of the ingameui
    if (g_pvp->m_povEdit)
       g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
@@ -102,34 +82,37 @@ void PointOfViewSettingsPage::BuildPage()
    ViewSetup defViewSetup;
    if (const bool portrait = m_player->m_playfieldWnd->GetWidth() < m_player->m_playfieldWnd->GetHeight(); vsId == BG_DESKTOP && !portrait)
    { // Desktop
-      defViewSetup.mMode = (ViewLayoutMode)g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopMode"s, VLM_CAMERA);
-      defViewSetup.mViewX = CMTOVPU(g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopCamX"s, 0.f));
-      defViewSetup.mViewY = CMTOVPU(g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopCamY"s, 20.f));
-      defViewSetup.mViewZ = CMTOVPU(g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopCamZ"s, 70.f));
-      defViewSetup.mSceneScaleX = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopScaleX"s, 1.f);
-      defViewSetup.mSceneScaleY = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopScaleY"s, 1.f);
-      defViewSetup.mSceneScaleZ = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopScaleZ"s, 1.f);
-      defViewSetup.mFOV = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopFov"s, 50.f);
-      defViewSetup.mLookAt = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopLookAt"s, 25.0f);
-      defViewSetup.mViewVOfs = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopViewVOfs"s, 14.f);
+      Settings& settings = GetSettings();
+      defViewSetup.mMode = (ViewLayoutMode)settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopMode"s, VLM_CAMERA);
+      defViewSetup.mViewX = CMTOVPU(settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopCamX"s, 0.f));
+      defViewSetup.mViewY = CMTOVPU(settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopCamY"s, 20.f));
+      defViewSetup.mViewZ = CMTOVPU(settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopCamZ"s, 70.f));
+      defViewSetup.mSceneScaleX = settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopScaleX"s, 1.f);
+      defViewSetup.mSceneScaleY = settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopScaleY"s, 1.f);
+      defViewSetup.mSceneScaleZ = settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopScaleZ"s, 1.f);
+      defViewSetup.mFOV = settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopFov"s, 50.f);
+      defViewSetup.mLookAt = settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopLookAt"s, 25.0f);
+      defViewSetup.mViewVOfs = settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopViewVOfs"s, 14.f);
    }
    else if (vsId == BG_DESKTOP || vsId == BG_FSS)
    { // FSS
-      defViewSetup.mMode = (ViewLayoutMode)g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSMode"s, VLM_CAMERA);
-      defViewSetup.mViewX = CMTOVPU(g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSCamX"s, 0.f));
-      defViewSetup.mViewY = CMTOVPU(g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSCamY"s, 20.f));
-      defViewSetup.mViewZ = CMTOVPU(g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSCamZ"s, 70.f));
-      defViewSetup.mSceneScaleX = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSScaleX"s, 1.f);
-      defViewSetup.mSceneScaleY = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSScaleY"s, 1.f);
-      defViewSetup.mSceneScaleZ = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSScaleZ"s, 1.f);
-      defViewSetup.mFOV = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSFov"s, 77.f);
-      defViewSetup.mLookAt = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSLookAt"s, 50.0f);
-      defViewSetup.mViewVOfs = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSViewVOfs"s, 22.f);
+      Settings& settings = GetSettings();
+      defViewSetup.mMode = (ViewLayoutMode)settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSMode"s, VLM_CAMERA);
+      defViewSetup.mViewX = CMTOVPU(settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSCamX"s, 0.f));
+      defViewSetup.mViewY = CMTOVPU(settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSCamY"s, 20.f));
+      defViewSetup.mViewZ = CMTOVPU(settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSCamZ"s, 70.f));
+      defViewSetup.mSceneScaleX = settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSScaleX"s, 1.f);
+      defViewSetup.mSceneScaleY = settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSScaleY"s, 1.f);
+      defViewSetup.mSceneScaleZ = settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSScaleZ"s, 1.f);
+      defViewSetup.mFOV = settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSFov"s, 77.f);
+      defViewSetup.mLookAt = settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSLookAt"s, 50.0f);
+      defViewSetup.mViewVOfs = settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSViewVOfs"s, 22.f);
    }
    else if (vsId == BG_FULLSCREEN)
    { // Cabinet mode
-      const float screenWidth = g_pvp->m_settings.LoadValueFloat(Settings::Player, "ScreenWidth"s);
-      const float screenHeight = g_pvp->m_settings.LoadValueFloat(Settings::Player, "ScreenHeight"s);
+      Settings& settings = GetSettings();
+      const float screenWidth = settings.LoadValueFloat(Settings::Player, "ScreenWidth"s);
+      const float screenHeight = settings.LoadValueFloat(Settings::Player, "ScreenHeight"s);
       if (screenWidth <= 1.f || screenHeight <= 1.f)
       {
          // TODO include a link to the cabinet setting page with screen size setup
@@ -181,6 +164,7 @@ void PointOfViewSettingsPage::BuildPage()
          OnPointOfViewChanged();
          BuildPage();
       },
+      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "Mode"); },
       [keyPrefix](int v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "Mode", v, isTableOverride); });
    viewMode->SetInitialValue(m_initialViewSetup.mMode);
 
@@ -191,6 +175,7 @@ void PointOfViewSettingsPage::BuildPage()
          GetCurrentViewSetup().mLookAt = v;
          OnPointOfViewChanged();
       },
+      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "LookAt"); },
       [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "LookAt", v, isTableOverride); });
    lookAt->SetInitialValue(m_initialViewSetup.mLookAt);
 
@@ -201,6 +186,7 @@ void PointOfViewSettingsPage::BuildPage()
          GetCurrentViewSetup().mLookAt = v;
          OnPointOfViewChanged();
       },
+      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "LookAt"); },
       [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "LookAt", v, isTableOverride); });
    inclination->SetInitialValue(m_initialViewSetup.mLookAt);
 
@@ -211,6 +197,7 @@ void PointOfViewSettingsPage::BuildPage()
          GetCurrentViewSetup().mFOV = v;
          OnPointOfViewChanged();
       },
+      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "FOV"); },
       [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "FOV", v, isTableOverride); });
    fov->SetInitialValue(m_initialViewSetup.mFOV);
 
@@ -221,6 +208,7 @@ void PointOfViewSettingsPage::BuildPage()
          GetCurrentViewSetup().mLayback = v;
          OnPointOfViewChanged();
       },
+      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "Layback"); },
       [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "Layback", v, isTableOverride); });
    layback->SetInitialValue(m_initialViewSetup.mLayback);
 
@@ -228,6 +216,7 @@ void PointOfViewSettingsPage::BuildPage()
       "Lock XYZ Scale"s, "Scale all axis homogeneously (recommended)"s, true, 
       [this]() { return m_lockScale; },
       [this](bool v) { m_lockScale = v; },
+      [](Settings&) { /* UI state is not persisted */ },
       [](bool, const Settings&, bool) { /* UI state is not persisted */ });
 
    auto xScale = std::make_unique<InGameUIItem>(
@@ -250,6 +239,7 @@ void PointOfViewSettingsPage::BuildPage()
          }
          OnPointOfViewChanged();
       },
+      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "ScaleX"); },
       [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleX", v, isTableOverride); });
    xScale->SetInitialValue(100.f * m_initialViewSetup.mSceneScaleX / m_initialViewSetup.GetRealToVirtualScale(table));
 
@@ -273,6 +263,7 @@ void PointOfViewSettingsPage::BuildPage()
          }
          OnPointOfViewChanged();
       },
+      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "ScaleY"); },
       [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleY", v, isTableOverride); });
    yScale->SetInitialValue(100.f * m_initialViewSetup.mSceneScaleY / m_initialViewSetup.GetRealToVirtualScale(table));
 
@@ -297,6 +288,7 @@ void PointOfViewSettingsPage::BuildPage()
          }
          OnPointOfViewChanged();
       },
+      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "ScaleZ"); },
       [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleZ", v, isTableOverride); });
    zScale->SetInitialValue(100.f * m_initialViewSetup.mSceneScaleZ / m_initialViewSetup.GetRealToVirtualScale(table));
 
@@ -312,6 +304,7 @@ void PointOfViewSettingsPage::BuildPage()
          viewSetup.SetViewPosFromPlayerPosition(table, m_playerPos, screenInclination);
          OnPointOfViewChanged();
       },
+      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::Player, keyPrefix + "ScreenPlayerX"); },
       [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::Player, "ScreenPlayerX"s, v, isTableOverride); });
    playerX->SetInitialValue(m_initialPlayerPos.x);
    auto playerY = std::make_unique<InGameUIItem>(
@@ -326,6 +319,7 @@ void PointOfViewSettingsPage::BuildPage()
          viewSetup.SetViewPosFromPlayerPosition(table, m_playerPos, screenInclination);
          OnPointOfViewChanged();
       },
+      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::Player, keyPrefix + "ScreenPlayerY"); },
       [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::Player, "ScreenPlayerY"s, v, isTableOverride); });
    playerY->SetInitialValue(m_initialPlayerPos.y);
    auto playerZ = std::make_unique<InGameUIItem>(
@@ -340,6 +334,7 @@ void PointOfViewSettingsPage::BuildPage()
          viewSetup.SetViewPosFromPlayerPosition(table, m_playerPos, screenInclination);
          OnPointOfViewChanged();
       },
+      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::Player, keyPrefix + "ScreenPlayerZ"); },
       [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::Player, "ScreenPlayerZ"s, v, isTableOverride); });
    playerZ->SetInitialValue(m_initialPlayerPos.z);
 
@@ -351,6 +346,7 @@ void PointOfViewSettingsPage::BuildPage()
          GetCurrentViewSetup().mViewX = CMTOVPU(v);
          OnPointOfViewChanged();
       },
+      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "PlayerX"); },
       [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerX", CMTOVPU(v), isTableOverride); });
    viewX->SetInitialValue(VPUTOCM(m_initialViewSetup.mViewX));
    auto viewY = std::make_unique<InGameUIItem>(
@@ -361,6 +357,7 @@ void PointOfViewSettingsPage::BuildPage()
          GetCurrentViewSetup().mViewY = CMTOVPU(v);
          OnPointOfViewChanged();
       },
+      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "PlayerY"); },
       [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerY", CMTOVPU(v), isTableOverride); });
    viewY->SetInitialValue(VPUTOCM(m_initialViewSetup.mViewY));
    auto viewZ = std::make_unique<InGameUIItem>(
@@ -371,6 +368,7 @@ void PointOfViewSettingsPage::BuildPage()
          GetCurrentViewSetup().mViewZ = CMTOVPU(v);
          OnPointOfViewChanged();
       },
+      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "PlayerZ"); },
       [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerZ", CMTOVPU(v), isTableOverride); });
    viewZ->SetInitialValue(VPUTOCM(m_initialViewSetup.mViewZ));
 
@@ -382,6 +380,7 @@ void PointOfViewSettingsPage::BuildPage()
          GetCurrentViewSetup().mViewHOfs = v;
          OnPointOfViewChanged();
       },
+      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "HOfs"); },
       [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "HOfs", v, isTableOverride); });
    hOfs->SetInitialValue(m_initialViewSetup.mViewHOfs);
    auto vOfs = std::make_unique<InGameUIItem>(
@@ -392,6 +391,7 @@ void PointOfViewSettingsPage::BuildPage()
          GetCurrentViewSetup().mViewVOfs = v;
          OnPointOfViewChanged();
       },
+      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "VOfs"); },
       [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "VOfs", v, isTableOverride); });
    vOfs->SetInitialValue(m_initialViewSetup.mViewVOfs);
 
@@ -403,6 +403,7 @@ void PointOfViewSettingsPage::BuildPage()
          GetCurrentViewSetup().mWindowTopZOfs = CMTOVPU(v);
          OnPointOfViewChanged();
       },
+      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "WindowTop"); },
       [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "WindowTop", CMTOVPU(v), isTableOverride); });
    wndTopZ->SetInitialValue(VPUTOCM(m_initialViewSetup.mWindowTopZOfs));
    auto wndBotZ = std::make_unique<InGameUIItem>(
@@ -413,6 +414,7 @@ void PointOfViewSettingsPage::BuildPage()
          GetCurrentViewSetup().mWindowBottomZOfs = CMTOVPU(v);
          OnPointOfViewChanged();
       },
+      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "WindowBot"); },
       [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "WindowBot", CMTOVPU(v), isTableOverride); });
    wndBotZ->SetInitialValue(VPUTOCM(m_initialViewSetup.mWindowBottomZOfs));
 

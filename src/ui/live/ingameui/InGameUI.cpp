@@ -124,6 +124,28 @@ void InGameUI::HandlePageInput(const PinInput::InputState &state)
    if (ImGui::IsAnyItemActive())
       return;
 
+   // For popups, we use ImGui navigation by forwarding events
+   if (ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopupId))
+   {
+      if (state.IsKeyPressed(eLeftMagnaSave, m_prevInputState))
+         ImGui::GetIO().AddKeyEvent(ImGuiKey_UpArrow, true);
+      else if (state.IsKeyReleased(eLeftMagnaSave, m_prevInputState))
+         ImGui::GetIO().AddKeyEvent(ImGuiKey_UpArrow, false);
+      if (state.IsKeyPressed(eRightMagnaSave, m_prevInputState))
+         ImGui::GetIO().AddKeyEvent(ImGuiKey_DownArrow, true);
+      else if (state.IsKeyReleased(eRightMagnaSave, m_prevInputState))
+         ImGui::GetIO().AddKeyEvent(ImGuiKey_DownArrow, false);
+      if (state.IsKeyPressed(eLeftFlipperKey, m_prevInputState))
+         ImGui::GetIO().AddKeyEvent(ImGuiKey_Enter, true);
+      else if (state.IsKeyReleased(eLeftFlipperKey, m_prevInputState))
+         ImGui::GetIO().AddKeyEvent(ImGuiKey_Enter, false);
+      if (state.IsKeyPressed(eRightFlipperKey, m_prevInputState))
+         ImGui::GetIO().AddKeyEvent(ImGuiKey_Enter, true);
+      else if (state.IsKeyReleased(eRightFlipperKey, m_prevInputState))
+         ImGui::GetIO().AddKeyEvent(ImGuiKey_Enter, false);
+      return;
+   }
+
    if (state.IsKeyPressed(eLeftMagnaSave, m_prevInputState))
    {
       const bool wasFlipperNav = m_useFlipperNav;

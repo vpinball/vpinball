@@ -8,7 +8,7 @@ namespace VPX::InGameUI
 {
 
 TableOptionsPage::TableOptionsPage()
-   : InGameUIPage("table/options"s, "Table Options"s, ""s)
+   : InGameUIPage("table/options"s, "Table Options"s, ""s, SaveMode::None)
 {
 }
 
@@ -51,13 +51,21 @@ void TableOptionsPage::Open()
                opt.value = static_cast<float>(v);
                m_player->m_ptable->FireOptionEvent(1); // Table option changed event
             },
+            [this, optId](Settings& settings)
+            {
+               int index = GetOptionIndex(optId);
+               if (index == -1)
+                  return;
+               const Settings::OptionDef& opt = settings.GetTableSettings()[index];
+               settings.DeleteValue(Settings::TableOption, opt.name);
+            },
             [this, optId](int v, Settings& settings, bool isTableOverride)
             {
                int index = GetOptionIndex(optId);
                if (index == -1)
                   return;
                const Settings::OptionDef& opt = settings.GetTableSettings()[index];
-               settings.SaveValue(Settings::TableOption, opt.name, v);
+               settings.SaveValue(Settings::TableOption, opt.name, v, isTableOverride);
             });
          AddItem(item);
       }
@@ -81,6 +89,14 @@ void TableOptionsPage::Open()
                Settings::OptionDef& opt = m_player->m_ptable->m_settings.GetTableSettings()[index];
                opt.value = static_cast<float>(v);
                m_player->m_ptable->FireOptionEvent(1); // Table option changed event
+            },
+            [this, optId](Settings& settings)
+            {
+               int index = GetOptionIndex(optId);
+               if (index == -1)
+                  return;
+               const Settings::OptionDef& opt = settings.GetTableSettings()[index];
+               settings.DeleteValue(Settings::TableOption, opt.name);
             },
             [this, optId](int v, Settings& settings, bool isTableOverride)
             {
@@ -112,6 +128,14 @@ void TableOptionsPage::Open()
                Settings::OptionDef& opt = m_player->m_ptable->m_settings.GetTableSettings()[index];
                opt.value = v / scale;
                m_player->m_ptable->FireOptionEvent(1); // Table option changed event
+            },
+            [this, optId](Settings& settings)
+            {
+               int index = GetOptionIndex(optId);
+               if (index == -1)
+                  return;
+               const Settings::OptionDef& opt = settings.GetTableSettings()[index];
+               settings.DeleteValue(Settings::TableOption, opt.name);
             },
             [this, optId, scale](float v, Settings& settings, bool isTableOverride)
             {

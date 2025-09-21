@@ -8,7 +8,7 @@ namespace VPX::InGameUI
 {
 
 MiscSettingsPage::MiscSettingsPage()
-   : InGameUIPage("settings/misc"s, "Miscellaneous Settings"s, ""s)
+   : InGameUIPage("settings/misc"s, "Miscellaneous Settings"s, ""s, SaveMode::Table)
 {
    // Global emission scale, if not overriden on commandline nor as an automatic day/night based on lat/lon, defined as a table override against the table original value
    const bool isDayNightOverriden = m_player->m_ptable->m_settings.LoadValueBool(Settings::Player, "OverrideTableEmissionScale"s);
@@ -29,17 +29,18 @@ MiscSettingsPage::MiscSettingsPage()
                m_staticPrepassDisabled = true;
             }
          },
+         [](Settings& settings)
+         {
+            settings.DeleteValue(Settings::Player, "OverrideTableEmissionScale"s);
+            settings.DeleteValue(Settings::Player, "EmissionScale"s);
+         },
          [this](float v, Settings& settings, bool isTableOverride)
          {
-            if (abs(v - 100.f * m_player->m_ptable->m_globalEmissionScale) < 0.1f)
+            assert(isTableOverride);
+            if (abs(v - 100.f * m_player->m_ptable->m_globalEmissionScale) >= 0.1f)
             {
-               settings.DeleteValue(Settings::Player, "OverrideTableEmissionScale"s);
-               settings.DeleteValue(Settings::Player, "EmissionScale"s);
-            }
-            else
-            {
-               settings.SaveValue(Settings::Player, "OverrideTableEmissionScale"s, true);
-               settings.SaveValue(Settings::Player, "EmissionScale"s, v / 100.f);
+               settings.SaveValue(Settings::Player, "OverrideTableEmissionScale"s, true, isTableOverride);
+               settings.SaveValue(Settings::Player, "EmissionScale"s, v / 100.f, isTableOverride);
             }
          });
       AddItem(dayNight);
@@ -50,20 +51,15 @@ MiscSettingsPage::MiscSettingsPage()
    {
       auto toneMapper = std::make_unique<InGameUIItem>(
          "Tonemapper"s, "Select the way colors that are too bright to be rendered by the display are handled"s,
-         #ifdef ENABLE_BGFX
-            vector({ "Reinhard"s, "AgX"s, "Filmic"s, "Neutral"s, "AgX Punchy"s }),
-         #else
-            vector({ "Reinhard"s, "AgX"s, "Filmic"s, "Neutral"s }),
-         #endif
+#ifdef ENABLE_BGFX
+         vector({ "Reinhard"s, "AgX"s, "Filmic"s, "Neutral"s, "AgX Punchy"s }),
+#else
+         vector({ "Reinhard"s, "AgX"s, "Filmic"s, "Neutral"s }),
+#endif
          static_cast<int>(m_player->m_ptable->GetToneMapper()), [this]() { return static_cast<int>(m_player->m_renderer->m_toneMapper); },
          [this](int prev, int v) { m_player->m_renderer->m_toneMapper = static_cast<ToneMapper>(v); },
-         [this](int v, Settings& settings, bool isTableOverride)
-         {
-            if (v == static_cast<int>(m_player->m_ptable->GetToneMapper()))
-               settings.DeleteValue(Settings::TableOverride, "ToneMapper"s);
-            else
-               settings.SaveValue(Settings::TableOverride, "ToneMapper"s, v);
-         });
+         [](Settings& settings) { settings.DeleteValue(Settings::Player, "ToneMapper"s); },
+         [this](int v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, "ToneMapper"s, v, isTableOverride); });
       AddItem(toneMapper);
    }
 
@@ -76,12 +72,11 @@ MiscSettingsPage::MiscSettingsPage()
          m_player->m_renderer->m_exposure = v / 100.f;
          m_player->m_ptable->FireOptionEvent(1); // Table option changed event
       },
+      [](Settings& settings) { settings.DeleteValue(Settings::Player, "Exposure"s); },
       [this](float v, Settings& settings, bool isTableOverride)
       {
-         if (abs(v - 100.f * m_player->m_ptable->GetExposure()) < 0.1f)
-            settings.DeleteValue(Settings::TableOverride, "Exposure"s);
-         else
-            settings.SaveValue(Settings::TableOverride, "Exposure"s, v);
+         if (abs(v - 100.f * m_player->m_ptable->GetExposure()) >= 0.1f)
+            settings.SaveValue(Settings::TableOverride, "Exposure"s, v, isTableOverride);
       });
    AddItem(exposure);
 
@@ -94,15 +89,12 @@ MiscSettingsPage::MiscSettingsPage()
          m_player->m_ptable->m_globalDifficulty = v / 100.f;
          m_player->m_ptable->FireOptionEvent(1); // Table option changed event
       },
+      [](Settings& settings) { settings.DeleteValue(Settings::Player, "Difficulty"s); },
       [this](float v, Settings& settings, bool isTableOverride)
       {
-         const float savedDifficulty = settings.LoadValueWithDefault(Settings::TableOverride, "Difficulty"s, v / 100.f);
-         if (savedDifficulty != v * 100.f)
-            m_player->m_liveUI->PushNotification("You have changed the difficulty level\nThis change will only be applied after restart."s, 10000);
-         if (abs(v - 100.f * m_player->m_ptable->m_difficulty) < 0.1f)
-            settings.DeleteValue(Settings::TableOverride, "Difficulty"s);
-         else
-            settings.SaveValue(Settings::TableOverride, "Difficulty"s, v);
+         m_player->m_liveUI->PushNotification("You have changed the difficulty level\nThis change will only be applied after restart."s, 10000);
+         if (abs(v - 100.f * m_player->m_ptable->m_difficulty) >= 0.1f)
+            settings.SaveValue(Settings::TableOverride, "Difficulty"s, v, isTableOverride);
       });
    AddItem(difficulty);
 }
