@@ -142,6 +142,8 @@ public:
    RenderTarget* GetOffscreenVR(int eye) const { return eye == 0 ? m_pOffscreenVRLeft : m_pOffscreenVRRight; }
    RenderTarget* GetBackBufferTexture() const { return m_pOffscreenBackBufferTexture1; } // Main render target, with MSAA resolved if any, also may have stereo output (2 viewports)
 
+   unsigned int GetPlayerModeVisibilityMask() const { return m_visibilityMask; }
+
 private:
    void RenderItem(IEditable* renderable, bool isNoBackdrop);
    void RenderStaticPrepass();

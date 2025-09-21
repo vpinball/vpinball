@@ -369,11 +369,15 @@ void EditorUI::Update()
          ImGui::OpenPopup("Selection filter Popup");
       if (ImGui::BeginPopup("Selection filter Popup"))
       {
+         bool visible = m_selectionFilter & SelectionFilter::SF_VisibleOnly;
          bool pf = m_selectionFilter & SelectionFilter::SF_Playfield;
          bool prims = m_selectionFilter & SelectionFilter::SF_Primitives;
          bool lights = m_selectionFilter & SelectionFilter::SF_Lights;
          bool flashers = m_selectionFilter & SelectionFilter::SF_Flashers;
          ImGui::TextUnformatted("Selection filters:");
+         ImGui::Separator();
+         if (ImGui::Checkbox("Visible Only", &visible))
+            m_selectionFilter = (m_selectionFilter & ~SelectionFilter::SF_VisibleOnly) | (visible ? SelectionFilter::SF_VisibleOnly : 0x0000);
          ImGui::Separator();
          if (ImGui::Checkbox("Playfield", &pf))
             m_selectionFilter = (m_selectionFilter & ~SelectionFilter::SF_Playfield) | (pf ? SelectionFilter::SF_Playfield : 0x0000);
@@ -599,20 +603,52 @@ void EditorUI::Update()
          m_player->m_physics->RayCast(v3d, v3d2, true, vhoUnfilteredHit);
 
          vector<HitTestResult> vhoHit;
+         bool visibleOnly = m_selectionFilter & SelectionFilter::SF_VisibleOnly;
          bool noPF = !(m_selectionFilter & SelectionFilter::SF_Playfield);
          bool noPrims = !(m_selectionFilter & SelectionFilter::SF_Primitives);
          bool noLights = !(m_selectionFilter & SelectionFilter::SF_Lights);
          bool noFlashers = !(m_selectionFilter & SelectionFilter::SF_Flashers);
          for (const auto& hr : vhoUnfilteredHit)
          {
-            if (noPF && hr.m_obj->m_editable && hr.m_obj->m_editable->GetItemType() == ItemTypeEnum::eItemPrimitive && ((Primitive*)hr.m_obj->m_editable)->IsPlayfield())
-               continue;
-            if (noPrims && hr.m_obj->m_editable && hr.m_obj->m_editable->GetItemType() == ItemTypeEnum::eItemPrimitive)
-               continue;
-            if (noLights && hr.m_obj->m_editable && hr.m_obj->m_editable->GetItemType() == ItemTypeEnum::eItemLight)
-               continue;
-            if (noFlashers && hr.m_obj->m_editable && hr.m_obj->m_editable->GetItemType() == ItemTypeEnum::eItemFlasher)
-               continue;
+            const auto type = hr.m_obj->m_editable->GetItemType();
+            const auto editable = hr.m_obj->m_editable;
+            if (editable)
+            {
+               if (editable->GetPartGroup() && (editable->GetPartGroup()->GetPlayerModeVisibilityMask() & m_renderer->GetPlayerModeVisibilityMask()) == 0)
+                  continue;
+               if (noPF && type == ItemTypeEnum::eItemPrimitive && static_cast<Primitive *>(editable)->IsPlayfield())
+                  continue;
+               if (noPrims && type == ItemTypeEnum::eItemPrimitive)
+                  continue;
+               if (noLights && type == ItemTypeEnum::eItemLight)
+                  continue;
+               if (noFlashers && type == ItemTypeEnum::eItemFlasher)
+                  continue;
+               if (visibleOnly)
+               {
+                  bool visible = true;
+                  switch (type)
+                  {
+                  // Not handled: eItemFlasher, eItemTimer, eItemTextbox, eItemDecal, eItemTable, eItemLightCenter, eItemDragPoint, eItemCollection, eItemDispReel, eItemLightSeq,
+                  case ItemTypeEnum::eItemSurface: visible = static_cast<Surface *>(editable)->m_d.m_visible; break;
+                  case ItemTypeEnum::eItemFlipper: visible = static_cast<Flipper *>(editable)->m_d.m_visible; break;
+                  case ItemTypeEnum::eItemPlunger: visible = static_cast<Plunger *>(editable)->m_d.m_visible; break;
+                  case ItemTypeEnum::eItemBumper: visible = static_cast<Bumper *>(editable)->m_d.m_visible; break;
+                  case ItemTypeEnum::eItemTrigger: visible = static_cast<Trigger *>(editable)->m_d.m_visible; break;
+                  case ItemTypeEnum::eItemLight: visible = static_cast<Light *>(editable)->m_d.m_visible; break;
+                  case ItemTypeEnum::eItemKicker: visible = static_cast<Kicker *>(editable)->m_d.m_visible; break;
+                  case ItemTypeEnum::eItemGate: visible = static_cast<Gate *>(editable)->m_d.m_visible; break;
+                  case ItemTypeEnum::eItemSpinner: visible = static_cast<Spinner *>(editable)->m_d.m_visible; break;
+                  case ItemTypeEnum::eItemRamp: visible = static_cast<Ramp *>(editable)->m_d.m_visible; break;
+                  case ItemTypeEnum::eItemPrimitive: visible = static_cast<Primitive *>(editable)->m_d.m_visible; break;
+                  case ItemTypeEnum::eItemRubber: visible = static_cast<Rubber *>(editable)->m_d.m_visible; break;
+                  case ItemTypeEnum::eItemHitTarget: visible = static_cast<HitTarget *>(editable)->m_d.m_visible; break;
+                  default: break;
+                  }
+                  if (!visible)
+                     continue;
+               }
+            }
             vhoHit.push_back(hr);
          }
 

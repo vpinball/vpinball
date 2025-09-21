@@ -105,6 +105,20 @@ FEATURES:
   . Serum: a DMD colorizer
   . WMP: the window media player, but as a portable plugin, running on any of the supported platforms
 
+- LiveEditor (used to be called LiveUI, now splitted between LiveEditor for editing and InGameUI for all settings):
+  . Fix picking, now supporting precise picking of most elements
+  . Change mouse & keyboard interaction to mostly match Blender UX (no more view cube, use mouse drag to orient view, keypad to focus or use predefined views)
+  . Support adjusting table at runtime for most elements (update physics, support picking after moving, handle resuming gameplay)
+  . Add selection and display filters
+  . Allow to display physics collider as a red overlay
+  . Fix invalid overlays (missing parts, incorrect position)
+
+- InGameUI (used to be called LiveUI or TweakUI):
+  . Support all player mode (VR, XR, cabinet, desktop) and all screen orientations
+  . Add mouse interaction support
+  . Add setting pages, moving lots of settings inside these pages
+
+- Performance overlay have been improved with better insights and its display state is now persisted
 
 FIXES:
 
@@ -122,11 +136,7 @@ FIXES:
 
 - remove some of the limits (like maximum line length) of the code view/script editor
 
-- LiveUI:
- - fix overlaying physics
- - fix mouse interaction when viewport is rotated
- - enable LiveUI pages in all viewport orientations
- - fix delayed mipmap generation (happens when starting with static rendering, then opening LiveUI)
+- LiveUI: fix delayed mipmap generation (happens when starting with static rendering, then opening LiveUI)
 
 - note that the support for ancient windows versions (e.g. Windows XP) for the DX9 build has been removed in order to be able to use newer compilers
 - due to this, VPX now allows to use the C++20 language feature set, which means that the windows build system requires Visual Studio 2019 or newer
