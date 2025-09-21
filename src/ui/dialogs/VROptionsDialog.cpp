@@ -64,8 +64,6 @@ void VROptionsDialog::AddToolTip(const char * const text, HWND parentHwnd, HWND 
 
 void VROptionsDialog::ResetVideoPreferences()
 {
-   SendDlgItemMessage(IDC_VR_PREVIEW, CB_SETCURSEL, VRPREVIEW_LEFT, 0);
-
    constexpr bool scaleToFixedWidth = false;
    oldScaleValue = scaleToFixedWidth;
    SendDlgItemMessage(IDC_SCALE_TO_CM, BM_SETCHECK, scaleToFixedWidth ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -104,7 +102,6 @@ BOOL VROptionsDialog::OnInitDialog()
       AddToolTip("Disable VR auto-detection, e.g. if Visual Pinball refuses to start up.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_TURN_VR_ON).GetHwnd());
       AddToolTip("What sources should be used for DMD?\nOnly internally supplied via Script/Text Label/Flasher\nScreenreader (see screenreader.ini)\nFrom Shared Memory API", hwndDlg, toolTipHwnd, GetDlgItem(IDC_DMD_SOURCE).GetHwnd());
       AddToolTip("What sources should be used for Backglass?\nOnly internal background\nTry to open a directb2s file\ndirectb2s file dialog\nScreenreader (see screenreader.ini)\nFrom Shared Memory API", hwndDlg, toolTipHwnd, GetDlgItem(IDC_BG_SOURCE).GetHwnd());
-      AddToolTip("Select which VR-output/eye(s) to be displayed on the computer screen.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_VR_PREVIEW).GetHwnd());
       AddToolTip("Pixel format for VR Rendering.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd());
       AddToolTip("Attempt to capture an external DMD window such as Freezy/DMDext, UltraDMD or P-ROC.\r\n\r\nFor Freezy/DMDext the DmdDevice.ini needs to set 'stayontop = true'.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_CAP_EXTDMD).GetHwnd());
       AddToolTip("Attempt to capture the PUP player window and display it as a Backglass in VR.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_CAP_PUP).GetHwnd());
@@ -137,24 +134,7 @@ BOOL VROptionsDialog::OnInitDialog()
       GetDlgItem(IDC_BTTABLEDOWN).ShowWindow(SW_HIDE);
       GetDlgItem(IDC_TABLEDOWN_TEXT).ShowWindow(SW_HIDE);
       GetDlgItem(IDC_JOYTABLEDOWN).ShowWindow(SW_HIDE);
-
-   #else
-      GetDlgItem(IDC_COLOR_BUTTON1).EnableWindow(FALSE);
-      GetDlgItem(IDC_ENABLE_PASSTHROUGH_COLOR).EnableWindow(FALSE);
    #endif
-
-   const VRPreviewMode vrPreview = (VRPreviewMode)g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "VRPreview"s, VRPREVIEW_LEFT);
-   HWND hwnd = GetDlgItem(IDC_VR_PREVIEW).GetHwnd();
-   ::SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
-   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Disabled");
-   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Left Eye");
-   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Right Eye");
-   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Both Eyes");
-   ::SendMessage(hwnd, CB_SETCURSEL, (int)vrPreview, 0);
-   ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
-
-   const bool shrinkToFit = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ShrinkPreview"s, false);
-   SendDlgItemMessage(IDC_SHRINK, BM_SETCHECK, shrinkToFit ? BST_CHECKED : BST_UNCHECKED, 0);
 
    SetDlgItemText(IDC_VRPREVIEW_WIDTH, std::to_string(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PreviewWidth"s, 640)).c_str());
    SetDlgItemText(IDC_VRPREVIEW_HEIGHT, std::to_string(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PreviewHeight"s, 640)).c_str());
@@ -176,7 +156,7 @@ BOOL VROptionsDialog::OnInitDialog()
    SetDlgItemText(IDC_VR_OFFSET_Z, f2sz(g_pvp->m_settings.LoadValueFloat(Settings::PlayerVR, "TableZ"s)).c_str());
 
    const int askToTurnOn = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "AskToTurnOn"s, 1);
-   hwnd = GetDlgItem(IDC_TURN_VR_ON).GetHwnd();
+   HWND hwnd = GetDlgItem(IDC_TURN_VR_ON).GetHwnd();
    ::SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"VR enabled");
    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"VR autodetect");
@@ -219,12 +199,6 @@ BOOL VROptionsDialog::OnInitDialog()
    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"RGBA 16F");
    ::SendMessage(hwnd, CB_SETCURSEL, textureModeVR, 0);
    ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
-
-   on = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "UsePassthroughColor"s, false);
-   SendDlgItemMessage(IDC_ENABLE_PASSTHROUGH_COLOR, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
-
-   AttachItem(IDC_COLOR_BUTTON1, m_colorKey);
-   m_colorKey.SetColor(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PassthroughColor"s, static_cast<int>(0xFFBB4700)));
 
    for (unsigned int i = eTableRecenter; i <= eTableDown; ++i)
       if (regkey_idc[i] != -1)
@@ -328,12 +302,6 @@ INT_PTR VROptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    switch (uMsg)
    {
-   case WM_DRAWITEM:
-      switch (wParam)
-      {
-      case IDC_COLOR_BUTTON1: m_colorKey.DrawItem(reinterpret_cast<LPDRAWITEMSTRUCT>(lParam)); return TRUE;
-      }
-      break;
    #ifndef ENABLE_XR
    case WM_TIMER:
    {
@@ -417,22 +385,6 @@ BOOL VROptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          break;
       }
       #endif
-      case IDC_COLOR_BUTTON1:
-      {
-         CHOOSECOLOR cc = m_colorDialog.GetParameters();
-         cc.Flags = CC_FULLOPEN | CC_RGBINIT;
-         m_colorDialog.SetParameters(cc);
-         if (g_pvp->GetActiveTable())
-            m_colorDialog.SetCustomColors(g_pvp->GetActiveTable()->m_rgcolorcustom);
-         m_colorDialog.SetColor(m_colorKey.GetColor());
-         if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
-         {
-            if (g_pvp->GetActiveTable())
-               memcpy(g_pvp->GetActiveTable()->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(g_pvp->GetActiveTable()->m_rgcolorcustom));
-            m_colorKey.SetColor(m_colorDialog.GetColor());
-         }
-      }
-      break;
       default:
          return FALSE;
    }
@@ -443,14 +395,6 @@ void VROptionsDialog::OnOK()
 {
    const size_t textureModeVR = SendDlgItemMessage(IDC_COMBO_TEXTURE, CB_GETCURSEL, 0, 0);
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "EyeFBFormat"s, (int)textureModeVR);
-
-   LRESULT vrPreview = SendDlgItemMessage(IDC_VR_PREVIEW, CB_GETCURSEL, 0, 0);
-   if (vrPreview == LB_ERR)
-      vrPreview = VRPREVIEW_LEFT;
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "VRPreview"s, (int)vrPreview);
-
-   const bool shrinkToFit = IsDlgButtonChecked(IDC_SHRINK) != 0;
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "ShrinkPreview"s, shrinkToFit);
 
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "PreviewWidth"s, sz2f(GetDlgItemText(IDC_VRPREVIEW_WIDTH).GetString()));
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "PreviewHeight"s, sz2f(GetDlgItemText(IDC_VRPREVIEW_HEIGHT).GetString()));
@@ -466,14 +410,6 @@ void VROptionsDialog::OnOK()
    //For compatibility keep these in Player instead of PlayerVR
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "Slope"s, sz2f(GetDlgItemText(IDC_VR_SLOPE).GetString()));
 
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "Orientation"s, sz2f(GetDlgItemText(IDC_3D_VR_ORIENTATION).GetString()));
-
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "TableX"s, sz2f(GetDlgItemText(IDC_VR_OFFSET_X).GetString()));
-
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "TableY"s, sz2f(GetDlgItemText(IDC_VR_OFFSET_Y).GetString()));
-
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "TableZ"s, sz2f(GetDlgItemText(IDC_VR_OFFSET_Z).GetString()));
-
    const size_t askToTurnOn = SendDlgItemMessage(IDC_TURN_VR_ON, CB_GETCURSEL, 0, 0);
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "AskToTurnOn"s, (int)askToTurnOn);
 
@@ -488,11 +424,6 @@ void VROptionsDialog::OnOK()
 
    selected = IsDlgButtonChecked(IDC_CAP_PUP)!= 0;
    g_pvp->m_settings.SaveValue(Settings::Player, "CapturePUP"s, selected);
-
-   selected = IsDlgButtonChecked(IDC_ENABLE_PASSTHROUGH_COLOR) != 0;
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "UsePassthroughColor"s, selected);
-
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "PassthroughColor"s, static_cast<unsigned int>(m_colorKey.GetColor()));
 
    SetValue(IDC_JOYTABLERECENTER, Settings::Player, "JoyTableRecenterKey"s);
    SetValue(IDC_JOYTABLEUP, Settings::Player, "JoyTableUpKey"s);

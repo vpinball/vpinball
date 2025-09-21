@@ -38,8 +38,8 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_exposure = m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "Exposure"s, m_table->GetExposure());
    m_dynamicAO = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DynamicAO"s, true);
    m_disableAO = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DisableAO"s, false);
-   m_vrPreview = (VRPreviewMode)m_table->m_settings.LoadValueWithDefault(Settings::PlayerVR, "VRPreview"s, (int)VRPREVIEW_LEFT);
-   m_vrPreviewShrink = m_table->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ShrinkPreview"s, false);
+   m_vrPreview = (VRPreviewMode)m_table->m_settings.LoadValueInt(Settings::PlayerVR, "VRPreview"s);
+   m_vrPreviewShrink = m_table->m_settings.LoadValueBool(Settings::PlayerVR, "ShrinkPreview"s);
    m_FXAA = m_table->m_settings.LoadValueWithDefault(Settings::Player, "FXAA"s, (int)Disabled);
    m_sharpen = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Sharpen"s, 0);
    m_ss_refl = m_table->m_settings.LoadValueWithDefault(Settings::Player, "SSRefl"s, false);
@@ -72,7 +72,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
          m_decalImage = BaseTexture::CreateFromFile(imageName, m_table->m_settings.LoadValueInt(Settings::Player, "MaxTexDimension"s));
    }
    m_vrApplyColorKey = m_table->m_settings.LoadValueWithDefault(Settings::PlayerVR, "UsePassthroughColor"s, false);
-   m_vrColorKey = convertColor(m_table->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PassthroughColor"s, static_cast<int>(0xFFBB4700)), 1.f);
+   m_vrColorKey = convertColor(m_table->m_settings.LoadValueInt(Settings::PlayerVR, "PassthroughColor"s), 1.f);
    m_vrColorKey.x = InvsRGB(m_vrColorKey.x);
    m_vrColorKey.y = InvsRGB(m_vrColorKey.y);
    m_vrColorKey.z = InvsRGB(m_vrColorKey.z);

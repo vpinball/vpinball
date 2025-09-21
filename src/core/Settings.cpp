@@ -311,6 +311,9 @@ void Settings::Validate(const bool addDefaults)
    SettingFloat(Settings::PlayerVR, "TableX"s, 0.f, -300.f, 300.f, "VR scene horizontal X offset (cm)."s);
    SettingFloat(Settings::PlayerVR, "TableY"s, 0.f, -300.f, 300.f, "VR scene horizontal Y offset (cm)."s);
    SettingFloat(Settings::PlayerVR, "TableZ"s, 0.f, -300.f, 300.f, "VR scene vertical offset (cm)s"s);
+   SettingBool(Settings::PlayerVR, "ShrinkPreview"s, false, ""s);
+   SettingInt(Section::PlayerVR, "VRPreview"s, 1, 0, 3, ""s);
+   SettingInt(Section::PlayerVR, "PassthroughColor"s, 0xBB4700, 0x000000, 0xFFFFFF, ""s);
 
    //////////////////////////////////////////////////////////////////////////
    // Cabinet section
