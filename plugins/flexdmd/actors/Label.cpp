@@ -6,7 +6,8 @@
 
 namespace Flex {
 
-Label::Label(FlexDMD* pFlexDMD, Font* pFont, const string& text, const string& name) : Actor(pFlexDMD, name)
+Label::Label(const FlexDMD* pFlexDMD, Font* pFont, const string& text, const string& name)
+   : Actor(pFlexDMD, name)
 {
    m_alignment = Alignment_Center;
 

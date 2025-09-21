@@ -103,18 +103,18 @@ std::pair<unsigned int, uint8_t*> VPXFile::ReadImage(const string& path, bool na
          {
             uint8_t* const data = new uint8_t[size];
             reader.Read(size, data);
-            if (data[0] == 0x89 && data[1] == 0x50 && data[2] == 0x4E && data[3] == 0x47 && data[4] == 0x0D && data[5] == 0x0A && data[6] == 0x1A && data[7] == 0x0A)
+            if (size > 7 && data[0] == 0x89 && data[1] == 0x50 && data[2] == 0x4E && data[3] == 0x47 && data[4] == 0x0D && data[5] == 0x0A && data[6] == 0x1A && data[7] == 0x0A)
             {
                // PNG
                return { size, data };
             }
-            else if (data[0] == 0xFF && data[1] == 0xD8)
+            else if (size > 2 && data[0] == 0xFF && data[1] == 0xD8)
             {
                // JPG
                return { size, data };
             }
-            else if (data[0] == 0x23 && data[1] == 0x3F && data[2] == 0x52 && data[3] == 0x41 && data[4] == 0x44 && data[5] == 0x49 && data[6] == 0x41 && data[7] == 0x4E && data[8] == 0x43
-               && data[9] == 0x45 && data[10] == 0x0A)
+            else if (size > 10 && data[0] == 0x23 && data[1] == 0x3F && data[2] == 0x52 && data[3] == 0x41 && data[4] == 0x44 && data[5] == 0x49 && data[6] == 0x41 && data[7] == 0x4E
+               && data[8] == 0x43 && data[9] == 0x45 && data[10] == 0x0A)
             {
                // HDR (unsupported)
                delete[] data;

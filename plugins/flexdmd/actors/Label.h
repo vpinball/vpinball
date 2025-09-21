@@ -8,7 +8,7 @@ namespace Flex {
 class Label final : public Actor
 {
 public:
-   Label(FlexDMD* pFlexDMD, Font* pFont, const string& text, const string& name);
+   Label(const FlexDMD* pFlexDMD, Font* pFont, const string& text, const string& name);
    ~Label() override;
 
    ActorType GetType() const override { return AT_Label; }
