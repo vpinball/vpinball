@@ -8,7 +8,7 @@ namespace VPX::InGameUI
 {
 
 HomePage::HomePage()
-   : InGameUIPage("homepage"s, "Visual Pinball X"s, ""s)
+   : InGameUIPage("homepage"s, "Visual Pinball X"s, ""s, SaveMode::None)
 {
 }
 

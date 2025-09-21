@@ -38,7 +38,7 @@ public:
    }
 
    InGameUIItem(string label, string tooltip, int min, int max, int defValue, string format, std::function<int()> getValue, std::function<void(int, int)> onChange,
-      std::function<void(int, Settings&, bool)> onSave)
+      std::function<void(Settings&)> onResetSave, std::function<void(int, Settings&, bool)> onSave)
       : m_type(Type::IntValue) // Common
       , m_label(std::move(label))
       , m_tooltip(std::move(tooltip))
@@ -50,6 +50,7 @@ public:
       , m_initialValue(static_cast<float>(getValue()))
       , m_format(std::move(format))
       , m_onChangeInt(onChange)
+      , m_onResetSave(onResetSave)
       , m_onSaveInt(onSave)
       , m_path(""s) // Unused
       , m_enum()
@@ -58,7 +59,7 @@ public:
    }
 
    InGameUIItem(string label, string tooltip, float min, float max, float step, float defValue, string format, std::function<float()> getValue, std::function<void(float, float)> onChange,
-      std::function<void(float, Settings&, bool)> onSave)
+      std::function<void(Settings&)> onResetSave, std::function<void(float, Settings&, bool)> onSave)
       : m_type(Type::FloatValue) // Common
       , m_label(std::move(label))
       , m_tooltip(std::move(tooltip))
@@ -70,6 +71,7 @@ public:
       , m_initialValue(getValue())
       , m_format(std::move(format))
       , m_onChangeFloat(onChange)
+      , m_onResetSave(onResetSave)
       , m_onSaveFloat(onSave)
       , m_path(""s) // Unused
       , m_enum()
@@ -78,7 +80,7 @@ public:
    }
 
    InGameUIItem(string label, string tooltip, std::vector<string> values, int defValue, std::function<int()> getValue, std::function<void(int, int)> onChange,
-      std::function<void(int, Settings&, bool)> onSave)
+      std::function<void(Settings&)> onResetSave, std::function<void(int, Settings&, bool)> onSave)
       : m_type(Type::EnumValue) // Common
       , m_label(std::move(label))
       , m_tooltip(std::move(tooltip))
@@ -90,6 +92,7 @@ public:
       , m_getIntValue(getValue)
       , m_initialValue(static_cast<float>(getValue()))
       , m_onChangeInt(onChange)
+      , m_onResetSave(onResetSave)
       , m_onSaveInt(onSave)
       , m_path(""s) // Unused
       , m_format(""s)
@@ -97,7 +100,8 @@ public:
       Validate();
    }
 
-   InGameUIItem(string label, string tooltip, bool defValue, std::function<bool()> getValue, std::function<void(bool)> onChange, std::function<void(bool, Settings&, bool)> onSave)
+   InGameUIItem(string label, string tooltip, bool defValue, std::function<bool()> getValue, std::function<void(bool)> onChange, std::function<void(Settings&)> onResetSave,
+      std::function<void(bool, Settings&, bool)> onSave)
       : m_type(Type::Toggle) // Common
       , m_label(std::move(label))
       , m_tooltip(std::move(tooltip))
@@ -108,6 +112,7 @@ public:
       , m_getBoolValue(getValue)
       , m_initialValue(getValue() ? 1.f : 0.f)
       , m_onChangeBool(onChange)
+      , m_onResetSave(onResetSave)
       , m_onSaveBool(onSave)
       , m_path(""s) // Unused
       , m_enum()
@@ -175,6 +180,7 @@ public:
    void SetInitialValue(int v);
    void SetInitialValue(float v);
    bool IsModified() const;
+   void ResetSave(Settings& settings) const;
    void Save(Settings& settings, bool isTableOverride);
    void ResetToInitialValue();
 
@@ -202,6 +208,26 @@ public:
    // Properties shared by value items
    const string m_format;
 
+   static std::function<void(Settings&)> ResetSetting(const Settings::Section section, const string& key)
+   {
+      return [section, key](Settings& settings) { settings.DeleteValue(section, key); };
+   }
+
+   static std::function<void(int, Settings&, bool)> SaveSettingInt(const Settings::Section section, const string& key)
+   {
+      return [section, key](int v, Settings& settings, bool isTableOverride) { settings.SaveValue(section, key, v, isTableOverride); };
+   }
+
+   static std::function<void(bool, Settings&, bool)> SaveSettingBool(const Settings::Section section, const string& key)
+   {
+      return [section, key](bool v, Settings& settings, bool isTableOverride) { settings.SaveValue(section, key, v, isTableOverride); };
+   }
+
+   static std::function<void(float, Settings&, bool)> SaveSettingFloat(const Settings::Section section, const string& key)
+   {
+      return [section, key](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(section, key, v, isTableOverride); };
+   }
+
 private:
    void Validate();
    float GetStepAlignedValue(float v) const { return m_minValue + roundf((v - m_minValue) / m_step) * m_step; }
@@ -215,6 +241,7 @@ private:
    const std::function<void(int, int)> m_onChangeInt;
    const std::function<float()> m_getFloatValue;
    const std::function<void(float, float)> m_onChangeFloat;
+   const std::function<void(Settings&)> m_onResetSave;
    const std::function<void(int, Settings&, bool)> m_onSaveInt;
    const std::function<void(bool, Settings&, bool)> m_onSaveBool;
    const std::function<void(float, Settings&, bool)> m_onSaveFloat;

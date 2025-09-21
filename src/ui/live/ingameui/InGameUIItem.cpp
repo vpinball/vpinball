@@ -111,6 +111,8 @@ void InGameUIItem::ResetToDefault()
    }
 }
 
+void InGameUIItem::ResetSave(Settings& settings) const { m_onResetSave(settings); }
+
 void InGameUIItem::Save(Settings& settings, bool isTableOverride)
 {
    switch (m_type)

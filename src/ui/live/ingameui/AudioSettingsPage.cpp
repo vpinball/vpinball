@@ -8,7 +8,7 @@ namespace VPX::InGameUI
 {
 
 AudioSettingsPage::AudioSettingsPage()
-   : InGameUIPage("settings/audio"s, "Audio Settings"s, ""s)
+   : InGameUIPage("settings/audio"s, "Audio Settings"s, ""s, SaveMode::Both)
 {
    const Settings& settings = GetSettings();
 
@@ -17,11 +17,13 @@ AudioSettingsPage::AudioSettingsPage()
       "Lock Volumes"s, "Adjust backlglass and playfield volume simultaneaously"s, true,
       [this]() { return m_lockVolume; },
       [this](bool v) { m_lockVolume = v; },
+      [](Settings&) { /* UI state is not persisted */ },
       [](bool, const Settings&, bool) { /* UI state is not persisted */ });
    AddItem(lockVolume);
 
    auto backglassVolume = std::make_unique<InGameUIItem>(
-      "Backglass Volume"s, "Main volume for music and sound played in the backglass speakers"s, 0, 100, m_player->m_ptable->m_settings.LoadValueInt(Settings::Player, "MusicVolume"s),
+      "Backglass Volume"s, "Main volume for music and sound played in the backglass speakers"s, 0, 100, 
+      m_player->m_ptable->m_settings.LoadValueInt(Settings::Player, "MusicVolume"s),
       "%3d %%"s, [this]() { return m_player->m_MusicVolume; },
       [this](int prev, int v)
       {
@@ -30,11 +32,13 @@ AudioSettingsPage::AudioSettingsPage()
             m_player->m_SoundVolume = clamp(m_player->m_SoundVolume + v - prev, 0, 100);
          m_player->UpdateVolume();
       },
-      [](int v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::Player, "MusicVolume"s, v, isTableOverride); });
+      InGameUIItem::ResetSetting(Settings::Player, "MusicVolume"s),
+      InGameUIItem::SaveSettingInt(Settings::Player, "MusicVolume"s));
    AddItem(backglassVolume);
 
    auto playfieldVolume = std::make_unique<InGameUIItem>(
-      "Playfield Volume"s, "Main volume for mechanical sounds coming from the playfield"s, 0, 100, m_player->m_ptable->m_settings.LoadValueInt(Settings::Player, "SoundVolume"s), "%3d %%"s,
+      "Playfield Volume"s, "Main volume for mechanical sounds coming from the playfield"s, 0, 100,
+      settings.LoadValueInt(Settings::Player, "SoundVolume"s), "%3d %%"s,
       [this]() { return m_player->m_SoundVolume; },
       [this](int prev, int v)
       {
@@ -43,30 +47,37 @@ AudioSettingsPage::AudioSettingsPage()
             m_player->m_MusicVolume = clamp(m_player->m_MusicVolume + v - prev, 0, 100);
          m_player->UpdateVolume();
       },
-      [](int v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::Player, "SoundVolume"s, v, isTableOverride); });
+      InGameUIItem::ResetSetting(Settings::Player, "SoundVolume"s),
+      InGameUIItem::SaveSettingInt(Settings::Player, "SoundVolume"s));
    AddItem(playfieldVolume);
 
    // FIXME play music is not really dynamic at the moment => switch to a clean mute/unmute implementation
    auto enableBackglass = std::make_unique<InGameUIItem>(
-      "Enable Backglass"s, "Enable/Disable backglass game sound & music"s, settings.LoadValueBool(Settings::Player, "PlayMusic"s), [this]() { return m_player->m_PlayMusic; },
+      "Enable Backglass"s, "Enable/Disable backglass game sound & music"s,
+      settings.LoadValueBool(Settings::Player, "PlayMusic"s),
+      [this]() { return m_player->m_PlayMusic; },
       [this](bool v)
       {
          m_player->m_PlayMusic = v;
          m_player->UpdateVolume();
       },
-      [](bool v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::Player, "PlayMusic"s, v, isTableOverride); });
+      InGameUIItem::ResetSetting(Settings::Player, "PlayMusic"s),
+      InGameUIItem::SaveSettingBool(Settings::Player, "PlayMusic"s));
    AddItem(enableBackglass);
    // if (settings.LoadValue(Settings::Player, "SoundDeviceBG"s, soundDeviceBGName))
 
    // FIXME play sound is not really dynamic at the moment => switch to a clean mute/unmute implementation
    auto enablePlayfield = std::make_unique<InGameUIItem>(
-      "Enable Playfield"s, "Enable/Disable playfield mechanical sounds"s, settings.LoadValueBool(Settings::Player, "PlaySound"s), [this]() { return m_player->m_PlaySound; },
+      "Enable Playfield"s, "Enable/Disable playfield mechanical sounds"s,
+      settings.LoadValueBool(Settings::Player, "PlaySound"s),
+      [this]() { return m_player->m_PlaySound; },
       [this](bool v)
       {
          m_player->m_PlaySound = v;
          m_player->UpdateVolume();
       },
-      [](bool v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::Player, "PlaySound"s, v, isTableOverride); });
+      InGameUIItem::ResetSetting(Settings::Player, "PlaySound"s),
+      InGameUIItem::SaveSettingBool(Settings::Player, "PlaySound"s));
    AddItem(enablePlayfield);
    // if (settings.LoadValue(Settings::Player, "SoundDevice"s, soundDeviceName))
    // int fmusic = settings.LoadValueUInt(Settings::Player, "Sound3D"s);

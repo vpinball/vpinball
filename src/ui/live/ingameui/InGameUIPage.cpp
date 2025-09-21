@@ -9,11 +9,15 @@
 namespace VPX::InGameUI
 {
 
-InGameUIPage::InGameUIPage(const string& path, const string& title, const string& info)
+static constexpr const char* SELECT_TABLE_OR_GLOBAL = "Save globally or for table ?";
+static constexpr const char* CONFIRM_GLOBAL_SAVE = "Save to global setting ?";
+
+InGameUIPage::InGameUIPage(const string& path, const string& title, const string& info, SaveMode saveMode)
    : m_player(g_pplayer)
    , m_path(path)
    , m_title(title)
    , m_info(info)
+   , m_saveMode(saveMode)
 {
    assert(m_player);
 }
@@ -98,14 +102,50 @@ void InGameUIPage::Save()
 {
    if (!IsModified())
       return;
-   // FIXME disable save on table that do not have a filename (not yet saved) and only save to table ini
-   // FIXME implement, letting pages select if they save to app settings, table setting overrides, or let the user choose one of both
-   Settings& settings = GetSettings();
-   constexpr bool isTableOverride = true;
-   for (const auto& item : m_items)
-      item->Save(settings, isTableOverride);
+   const bool canSaveTableOverrides = FileExists(m_player->m_ptable->m_filename);
+   switch (m_saveMode)
+   {
+   case SaveMode::Both:
+      m_selectGlobalOrTablePopup = canSaveTableOverrides;
+      m_selectGlobalOrDiscardPopup = !canSaveTableOverrides;
+      break;
+
+   case SaveMode::Global:
+      SaveGlobally();
+      break;
+
+   case SaveMode::Table:
+      if (!canSaveTableOverrides)
+         m_player->m_liveUI->PushNotification("You need to save the table before saving table setting overrides", 5000);
+      else
+         SaveTableOverride();
+      break;
+   }
    if (!IsModified())
       m_selectedItem = 0;
+}
+
+void InGameUIPage::SaveGlobally()
+{
+   // First reset any table override
+   Settings& settings = m_player->m_ptable->m_settings;
+   for (const auto& item : m_items)
+      item->ResetSave(settings);
+   // Then save to application settings
+   settings = g_pvp->m_settings;
+   for (const auto& item : m_items)
+      item->Save(settings, false);
+}
+
+void InGameUIPage::SaveTableOverride()
+{
+   // First reset any table override (to start from a clear ground if saved items depends on user selection)
+   Settings& settings = m_player->m_ptable->m_settings;
+   for (const auto& item : m_items)
+      item->ResetSave(settings);
+   // Then save to table override
+   for (const auto& item : m_items)
+      item->Save(settings, true);
 }
 
 void InGameUIPage::SelectNextItem()
@@ -220,6 +260,7 @@ void InGameUIPage::Render()
 {
    const ImGuiIO& io = ImGui::GetIO();
    const ImGuiStyle& style = ImGui::GetStyle();
+
    ImGui::SetNextWindowBgAlpha(0.5f);
    if (m_player->m_vrDevice)
    {
@@ -554,7 +595,47 @@ void InGameUIPage::Render()
    ImGui::EndChild();
 
    ImGui::PopStyleColor();
+
    ImGui::End();
+
+   if (m_selectGlobalOrTablePopup)
+      ImGui::OpenPopup(SELECT_TABLE_OR_GLOBAL);
+   if (ImGui::BeginPopupModal(SELECT_TABLE_OR_GLOBAL, &m_selectGlobalOrTablePopup))
+   {
+      if (ImGui::Button("Save changes globally"))
+      {
+         SaveGlobally();
+         ImGui::CloseCurrentPopup();
+         m_selectGlobalOrTablePopup = false;
+      }
+      if (ImGui::Button("Save only for this table"))
+      {
+         SaveTableOverride();
+         ImGui::CloseCurrentPopup();
+         m_selectGlobalOrTablePopup = false;
+      }
+      ImGui::EndPopup();
+   }
+
+   if (m_selectGlobalOrDiscardPopup)
+      ImGui::OpenPopup(CONFIRM_GLOBAL_SAVE);
+   if (ImGui::BeginPopupModal(CONFIRM_GLOBAL_SAVE, &m_selectGlobalOrDiscardPopup))
+   {
+      ImGui::Text("This table has not been saved yet.\nChanges may only be saved to global settings.\n\nDo you want to save to global settings?\n");
+      if (ImGui::Button("Don't Save"))
+      {
+         ImGui::CloseCurrentPopup();
+         m_selectGlobalOrDiscardPopup = false;
+      }
+      ImGui::SameLine();
+      if (ImGui::Button("Save changes globally"))
+      {
+         SaveGlobally();
+         ImGui::CloseCurrentPopup();
+         m_selectGlobalOrDiscardPopup = false;
+      }
+      ImGui::EndPopup();
+   }
 }
 
 
