@@ -780,7 +780,6 @@
 #define IDC_EDGE_FACTOR_UI              454
 #define IDC_SHRINK                      454
 #define IDC_REFLECT_ON_BALLS            455
-#define IDC_ENABLE_PASSTHROUGH_COLOR    455
 #define IDC_NUDGE_STRENGTH              456
 #define IDC_SHADOWS                     456
 #define IDC_COLOR_FULL                  457
@@ -918,7 +917,6 @@
 #define IDS_INPUT                       551
 #define IDC_VR_OFFSET_Z                 551
 #define IDS_UNHIDEALL                   552
-#define IDC_VR_PREVIEW                  552
 #define IDS_HIDE                        553
 #define IDC_VR_SCALE                    553
 #define IDC_MODIFY3DSTEREO              554

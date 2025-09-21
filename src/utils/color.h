@@ -43,6 +43,11 @@ inline COLORREF convertColorRGB(const vec4& color)
    return RGB(r, g, b);
 }
 
+inline float sRGB(const float f)
+{
+   return (f <= 0.0031308f) ? (12.92f * f) : (1.055f * powf(f, (float)(1.0 / 2.4)) - 0.055f);
+}
+
 inline float InvsRGB(const float x)
 {
    return (x <= 0.04045f) ? (x * (float)(1.0 / 12.92)) : (powf(x * (float)(1.0 / 1.055) + (float)(0.055 / 1.055), 2.4f));

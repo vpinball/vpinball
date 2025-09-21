@@ -222,10 +222,10 @@ private:
 
 public:
    bool m_vrApplyColorKey = false;
-private:
    bool m_vrPreviewShrink = false;
    vec4 m_vrColorKey = vec4(0.f, 0.f, 0.f, 0.f);
 
+private:
    Vertex2D m_ScreenOffset = Vertex2D(0.f, 0.f); // for screen shake effect during nudge
 
    Texture* m_tonemapLUT = nullptr;
