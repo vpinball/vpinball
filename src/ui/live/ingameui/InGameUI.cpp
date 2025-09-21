@@ -70,6 +70,7 @@ void InGameUI::Open()
    assert(!IsOpened());
    m_isOpened = true;
    Navigate("homepage"s);
+   m_useFlipperNav = m_player->m_vrDevice || m_player->m_ptable->m_BG_current_set == ViewSetupID::BG_FULLSCREEN;
 }
 
 void InGameUI::Close()
