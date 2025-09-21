@@ -221,8 +221,8 @@ void Anaglyph::SetPhotoCalibration(const Matrix3& display, const Matrix3& leftFi
       for (int j = 0; j < 3; j++)
          dMat[(j + 3) + (i + 3) * 6] = display.m_d[i][j];
    float rMat[3 * 6]; // R matrix made from left and right transmission matrices
-   memcpy(rMat, &leftFilter._11, 3 * 3 * sizeof(float));
-   memcpy(&rMat[3 * 3], &rightFilter._11, 3 * 3 * sizeof(float));
+   memcpy(rMat, leftFilter.m_d, sizeof(leftFilter.m_d));
+   memcpy(&rMat[3 * 3], rightFilter.m_d, sizeof(rightFilter.m_d));
    Matrix3 bMat;
    bMat.SetIdentity(0.f); // B = transpose(R) x R
    for (int i = 0; i < 3; i++)
