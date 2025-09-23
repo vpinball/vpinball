@@ -1,6 +1,6 @@
 #include "core/stdafx.h"
 
-#ifdef DEBUG_XXX  // remove method in perference to DevPartner
+#ifdef DEBUG_XXX  // remove method in preference to other memory leak analyzer like AddressSanatizer, DevPartner,...
 
 #pragma comment(lib, "dbghelp.lib")
 #include "dbghelp.h"
@@ -17,7 +17,7 @@ void __cdecl MemLeakAlert(void * pUserData, size_t nBytes)
    {
       st[i] = pdata[i];
    }
-   sprintf_s(szT, sizeof(szT), "Memory leak at 0x%.8x.\nStack trace:\n0x%.8x\n0x%.8x\n0x%.8x\n0x%.8x\n0x%.8x\n\nWould you like to debug?  (Cancel skips reporting any other leaks)",(int)pUserData+PREEXTRA,st[0],st[1],st[2],st[3],st[4]);
+   sprintf_s(szT, sizeof(szT), "Memory leak at 0x%.8x.\nStack trace:\n0x%.8x\n0x%.8x\n0x%.8x\n0x%.8x\n0x%.8x\n\nWould you like to debug?  (Cancel skips reporting any other leaks)",(char*)pUserData+PREEXTRA,st[0],st[1],st[2],st[3],st[4]);
    const int ans = g_pvp->MessageBox(szT, "Memory Leak", MB_YESNOCANCEL | MB_ICONWARNING | MB_DEFBUTTON2);
    switch (ans)
    {
@@ -58,10 +58,9 @@ BOOL CALLBACK DoMemoryRead(HANDLE dp, DWORD addr, LPVOID buf, DWORD size, LPDWOR
    return ReadProcessMemory( dp, (void *)addr, buf, size, lpcb );
 }
 
-void * operator new( unsigned int cb )
+void * operator new( size_t cb )
 {
-   const int extraspace = 5*sizeof(void*);
-   void *res = _malloc_dbg(cb + extraspace, _CLIENT_BLOCK, "", 0);
+   void *res = _malloc_dbg(cb + PREEXTRA, _CLIENT_BLOCK, "", 0);
 
    HANDLE hProcess = GetCurrentProcess();
    HANDLE hThread = GetCurrentThread();
@@ -93,28 +92,29 @@ void * operator new( unsigned int cb )
    //((int *)res)[0] = allocid++;
    //((int *)res)[1] = 0xdeadbeef;
 
-   return (void *)((int)res+extraspace);
+   return (void *)((char *)res + PREEXTRA);
 }
 
-void *operator new[](std::size_t s)
-{
+void *operator new[](size_t s) {
    return (operator new)(s);
 }
 
 void operator delete(void * p)
 {
    if (p == nullptr)
-   {
       return;
-   }
-
-   const int extraspace = 5*sizeof(void*);
-
-   _free_dbg((void *)((int)p-extraspace), _CLIENT_BLOCK);
+   _free_dbg((void *)((char *)p - PREEXTRA), _CLIENT_BLOCK);
 }
 
-void operator delete[](void *p) throw()
-{
+void operator delete(void *p, size_t size) {
+   (operator delete)(p);
+}
+
+void operator delete[](void *p) throw() {
+   (operator delete)(p);
+}
+
+void operator delete[](void *p, size_t size) throw() {
    (operator delete)(p);
 }
 
