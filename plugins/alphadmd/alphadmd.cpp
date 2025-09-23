@@ -445,8 +445,11 @@ static void RenderThread()
          break;
       case Layout_4x6_2x2_1x6: return; // Unsupported
       case Layout_4x7:
-         _2x7Alpha_2x7Num(seg_data); break;
-         _4x7Num10(seg_data); break;
+         if (firstType >= CTLPI_SEG_LAYOUT_14)
+            _2x7Alpha_2x7Num(seg_data);
+         else
+            _4x7Num10(seg_data);
+         break;
       case Layout_4x7_2x2:
          if ((firstType == CTLPI_SEG_LAYOUT_9) || (firstType == CTLPI_SEG_LAYOUT_9C))
             _2x7Num10_2x7Num10_4x1Num(seg_data);
