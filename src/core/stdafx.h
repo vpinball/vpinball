@@ -42,8 +42,6 @@
 
 //#define ENABLE_TRACE // enables all TRACE_FUNCTION() calls to use D3DPERF_Begin/EndEvent
 
-//#define DEBUG_XXX // helps to detect out-of-bounds access, needs to link dbghelp.lib then
-
 #define EDITOR_BG_WIDTH    1000
 #define EDITOR_BG_HEIGHT   750
 

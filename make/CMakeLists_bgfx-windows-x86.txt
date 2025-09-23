@@ -205,8 +205,6 @@ add_executable(vpinball WIN32
    src/ui/properties/WallVisualsProperty.cpp
    src/ui/properties/WallVisualsProperty.h
 
-   src/utils/memutil.cpp
-   src/utils/memutil.h
    src/utils/StackTrace.cpp
    src/utils/StackTrace.h
    src/utils/MemoryStatus.cpp

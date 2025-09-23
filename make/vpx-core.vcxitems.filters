@@ -675,9 +675,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/utils/lzwreader.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/utils/memutil.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/utils/variant.cpp">
       <Filter>utils</Filter>
     </ClCompile>
@@ -1461,9 +1458,6 @@
       <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/utils/MemoryStatus.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/utils/memutil.h">
       <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/utils/objloader.h">

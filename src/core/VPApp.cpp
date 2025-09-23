@@ -106,7 +106,7 @@ typedef BOOL(WINAPI *pSDARP)(ORIENTATION_PREFERENCE orientation);
 static pSDARP SetDisplayAutoRotationPreferences = nullptr;
 #endif
 
-#if 0 //!defined(DEBUG_XXX) && !defined(_CRTDBG_MAP_ALLOC) //&& (!defined(__STDCPP_DEFAULT_NEW_ALIGNMENT__) || (__STDCPP_DEFAULT_NEW_ALIGNMENT__ < 16))
+#if 0 //!defined(_CRTDBG_MAP_ALLOC) //&& (!defined(__STDCPP_DEFAULT_NEW_ALIGNMENT__) || (__STDCPP_DEFAULT_NEW_ALIGNMENT__ < 16))
 // previous: somewhat custom new/delete was still needed, otherwise VPX crashed when exiting the player
 //  was this due to old win32xx's whacky Shared_Ptr implementation?
 void *operator new(const size_t size_req)
@@ -551,9 +551,6 @@ VPApp::~VPApp()
    g_app = nullptr;
 
    #ifdef _CRTDBG_MAP_ALLOC
-      #ifdef DEBUG_XXX  //disable this in preference to DevPartner
-         _CrtSetDumpClient(MemLeakAlert);
-      #endif
       _CrtDumpMemoryLeaks();
    #endif
 }
