@@ -121,47 +121,57 @@ void Server::OnDevSrcChanged(const unsigned int msgId, void* userData, void* msg
    m_mechIndex = -1;
    m_nMechs = 0;
 
-   GetDevSrcMsg getSrcMsg = { 1024, 0, new DevSrcId[1024] };
-   m_msgApi->BroadcastMsg(m_endpointId, m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_GET_SRC_MSG), &getSrcMsg);
+   unsigned int pinmameEndpoint = m_msgApi->GetPluginEndpoint("PinMAME");
+   if (pinmameEndpoint == 0)
+      return;
 
+   unsigned int getDevSrcMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DEVICE_GET_SRC_MSG);
+   GetDevSrcMsg getSrcMsg = { 0, 0, nullptr };
+   m_msgApi->SendMsg(m_endpointId, getDevSrcMsgId, pinmameEndpoint, &getSrcMsg);
+   vector<DevSrcId> entries(getSrcMsg.count);
+   getSrcMsg = { getSrcMsg.count, 0, entries.data() };
+   m_msgApi->SendMsg(m_endpointId, getDevSrcMsgId, pinmameEndpoint, &getSrcMsg);
+   m_msgApi->ReleaseMsgID(getDevSrcMsgId);
    for (unsigned int i = 0; i < getSrcMsg.count; i++)
    {
-      m_deviceStateSrc = getSrcMsg.entries[i];
-      if (getSrcMsg.entries[i].deviceDefs)
+      if (getSrcMsg.entries[i].id.endpointId == pinmameEndpoint)
       {
-         m_deviceStateSrc.deviceDefs = new DeviceDef[getSrcMsg.entries[i].nDevices];
-         memcpy(m_deviceStateSrc.deviceDefs, getSrcMsg.entries[i].deviceDefs, getSrcMsg.entries[i].nDevices * sizeof(DeviceDef));
+         m_deviceStateSrc = getSrcMsg.entries[i];
+         if (getSrcMsg.entries[i].deviceDefs)
+         {
+            m_deviceStateSrc.deviceDefs = new DeviceDef[getSrcMsg.entries[i].nDevices];
+            memcpy(m_deviceStateSrc.deviceDefs, getSrcMsg.entries[i].deviceDefs, getSrcMsg.entries[i].nDevices * sizeof(DeviceDef));
+         }
+         break;
       }
-      break;
    }
-   delete[] getSrcMsg.entries;
 
-   if (m_deviceStateSrc.deviceDefs)
+   if (m_deviceStateSrc.deviceDefs == nullptr)
+      return;
+
+   for (unsigned int i = 0; i < m_deviceStateSrc.nDevices; i++)
    {
-      for (unsigned int i = 0; i < m_deviceStateSrc.nDevices; i++)
+      if (m_deviceStateSrc.deviceDefs[i].groupId == 0x0100)
       {
-         if (m_deviceStateSrc.deviceDefs[i].groupId == 0x0100)
-         {
-            if (m_GIIndex == -1)
-               m_GIIndex = i;
-            m_nGIs++;
-         }
-         else if (m_deviceStateSrc.deviceDefs[i].groupId == 0x0200)
-         {
-            if (m_lampIndex == -1)
-               m_lampIndex = i;
-            m_nLamps++;
-         }
-         else if (m_deviceStateSrc.deviceDefs[i].groupId == 0x0300)
-         {
-            if (m_mechIndex == -1)
-               m_mechIndex = i;
-            m_nMechs++;
-         }
-         else if ((m_GIIndex == -1) && (m_lampIndex == -1))
-         {
-            m_nSolenoids++;
-         }
+         if (m_GIIndex == -1)
+            m_GIIndex = i;
+         m_nGIs++;
+      }
+      else if (m_deviceStateSrc.deviceDefs[i].groupId == 0x0200)
+      {
+         if (m_lampIndex == -1)
+            m_lampIndex = i;
+         m_nLamps++;
+      }
+      else if (m_deviceStateSrc.deviceDefs[i].groupId == 0x0300)
+      {
+         if (m_mechIndex == -1)
+            m_mechIndex = i;
+         m_nMechs++;
+      }
+      else if ((m_GIIndex == -1) && (m_lampIndex == -1))
+      {
+         m_nSolenoids++;
       }
    }
 

@@ -101,6 +101,7 @@ void B2SRenderer::OnDevSrcChanged(const unsigned int, void* userData, void*)
             me->m_deviceStateSrc.deviceDefs = new DeviceDef[getSrcMsg.entries[i].nDevices];
             memcpy(me->m_deviceStateSrc.deviceDefs, getSrcMsg.entries[i].deviceDefs, getSrcMsg.entries[i].nDevices * sizeof(DeviceDef));
          }
+         break;
       }
    }
 
