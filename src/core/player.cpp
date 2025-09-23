@@ -2232,7 +2232,7 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
                rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
                g_pplayer->m_renderer->SetupDMDRender(style, false, 
                   vec3(dispTintR, dispTintG, dispTintB), brightness, dTex, alpha,
-                  context->isLinearOutput ? Renderer::ColorSpace::Reinhard_sRGB : Renderer::ColorSpace::Reinhard_sRGB,
+                  context->isLinearOutput ? Renderer::ColorSpace::Linear : Renderer::ColorSpace::Reinhard_sRGB,
                   nullptr, // No parallax
                   vec4(dispPadL, dispPadT, dispPadR, dispPadB),
                   vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex.get(),
@@ -2274,7 +2274,7 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
                g_pplayer->m_renderer->SetupSegmentRenderer(style, false,
                   vec3(dispTintR, dispTintG, dispTintB), brightness, (Renderer::SegmentFamily)shapeHint,
                   type, state,
-                  context->isLinearOutput ? Renderer::ColorSpace::Reinhard_sRGB : Renderer::ColorSpace::Reinhard_sRGB, 
+                  context->isLinearOutput ? Renderer::ColorSpace::Linear : Renderer::ColorSpace::Reinhard_sRGB, 
                   nullptr, // No parallax
                   vec4(dispPadL, dispPadT, dispPadR, dispPadB),
                   vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex.get(),
