@@ -157,7 +157,6 @@ static void HelpSplash(const string &text, int rotation)
 static void HelpEditableHeader(bool is_live, IEditable *editable, IEditable *live_editable)
 {
    IEditable *notnull_editable = editable ? editable : live_editable;
-   IEditable *select_editable = is_live ? live_editable : editable;
    if (notnull_editable == nullptr)
       return;
    string title;
@@ -187,13 +186,17 @@ static void HelpEditableHeader(bool is_live, IEditable *editable, IEditable *liv
    default: break;
    }
    LiveUI::CenteredText(title);
-   ImGui::BeginDisabled(is_live); // Do not edit name of live objects, it would likely break the script
-   string name = select_editable ? select_editable->GetName() : string();
-   if (ImGui::InputText("Name", &name))
+
+   IEditable *select_editable = is_live ? live_editable : editable;
+   if (select_editable)
    {
-      editable->SetName(name);
+      ImGui::BeginDisabled(is_live); // Do not edit name of live objects, it would likely break the script
+      string name = select_editable->GetName();
+      if (ImGui::InputText("Name", &name))
+         select_editable->SetName(name);
+      ImGui::EndDisabled();
    }
-   ImGui::EndDisabled();
+
    ImGui::Separator();
 }
 
