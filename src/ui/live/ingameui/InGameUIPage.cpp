@@ -128,24 +128,27 @@ void InGameUIPage::Save()
 void InGameUIPage::SaveGlobally()
 {
    // First reset any table override
-   Settings& settings = m_player->m_ptable->m_settings;
+   Settings& tableSettings = m_player->m_ptable->m_settings;
    for (const auto& item : m_items)
-      item->ResetSave(settings);
+      item->ResetSave(tableSettings);
+   tableSettings.Save();
    // Then save to application settings
-   settings = g_pvp->m_settings;
+   Settings& appSettings = g_pvp->m_settings;
    for (const auto& item : m_items)
-      item->Save(settings, false);
+      item->Save(appSettings, false);
+   appSettings.Save();
 }
 
 void InGameUIPage::SaveTableOverride()
 {
-   // First reset any table override (to start from a clear ground if saved items depends on user selection)
-   Settings& settings = m_player->m_ptable->m_settings;
+   // First reset any table override (to start from a clear ground if saved items depends on user selection, note that some item may impact multiple settings so we save them afterward)
+   Settings& tableSettings = m_player->m_ptable->m_settings;
    for (const auto& item : m_items)
-      item->ResetSave(settings);
+      item->ResetSave(tableSettings);
    // Then save to table override
    for (const auto& item : m_items)
-      item->Save(settings, true);
+      item->Save(tableSettings, true);
+   tableSettings.Save();
 }
 
 void InGameUIPage::SelectNextItem()

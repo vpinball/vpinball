@@ -120,6 +120,8 @@ FEATURES:
 
 - Performance overlay have been improved with better insights and its display state is now persisted
 
+- Table settings override will only save actual overrides, that is to say settings different from application settings and from default value
+
 FIXES:
 
 - allow for larger inclination value range
