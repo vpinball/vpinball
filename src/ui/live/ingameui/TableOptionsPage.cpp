@@ -8,7 +8,7 @@ namespace VPX::InGameUI
 {
 
 TableOptionsPage::TableOptionsPage()
-   : InGameUIPage("table/options"s, "Table Options"s, ""s, SaveMode::None)
+   : InGameUIPage("table/options"s, "Table Options"s, ""s, SaveMode::Table)
 {
 }
 
@@ -104,7 +104,7 @@ void TableOptionsPage::Open()
                if (index == -1)
                   return;
                const Settings::OptionDef& opt = settings.GetTableSettings()[index];
-               settings.SaveValue(Settings::TableOption, opt.name, v);
+               settings.SaveValue(Settings::TableOption, opt.name, v, isTableOverride);
             });
          AddItem(item);
       }
@@ -143,7 +143,7 @@ void TableOptionsPage::Open()
                if (index == -1)
                   return;
                const Settings::OptionDef& opt = settings.GetTableSettings()[index];
-               settings.SaveValue(Settings::TableOption, opt.name, v / scale);
+               settings.SaveValue(Settings::TableOption, opt.name, v / scale, isTableOverride);
             });
          AddItem(item);
       }

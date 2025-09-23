@@ -747,21 +747,35 @@ bool Settings::SaveValue(const Section section, const string &key, const string 
 {
    if (key.empty())
       return false;
+   m_modified = true;
    if (m_parent && overrideMode)
    {
-      string value;
-      if (m_parent->LoadValue(section, key, value) && value == val)
-      {
-         // This is an override and it has the same value as parent: remove it and rely on parent
-         if (m_ini.get(m_settingKeys[section]).has(key))
-         {
-            m_modified = true;
-            m_ini[m_settingKeys[section]].remove(key);
-         }
+      // Handle overriding parent's settings
+      if (m_ini.get(m_settingKeys[section]).has(key))
+         m_ini[m_settingKeys[section]].remove(key);
+
+      // If it has the same value as parent, remove and rely on parent
+      string parentValue;
+      const bool isDefinedInParent = m_parent->LoadValue(section, key, parentValue);
+      if (isDefinedInParent && parentValue == val)
          return true;
+
+      // If it has the default value and parent is missing it, remove and rely on default
+      if (!isDefinedInParent && (section == Section::TableOption || section >= Section::Plugin00))
+      {
+         for (const OptionDef &opt : section == Section::TableOption ? m_tableOptions : m_pluginOptions)
+         {
+            if (opt.section == section && opt.id == key)
+            {
+               const bool isInt = !opt.literals.empty() || (round(opt.step) == 1.f && round(opt.minValue) == opt.minValue);
+               const string def = isInt ? std::to_string(static_cast<int>(opt.defaultValue)) : f2sz(opt.defaultValue, false);
+               if (def == val)
+                  return true;
+               break;
+            }
+         }
       }
    }
-   m_modified = true;
    m_ini[m_settingKeys[section]][key] = val;
    return true;
 }
