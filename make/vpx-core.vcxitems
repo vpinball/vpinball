@@ -990,7 +990,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/utils/Logger.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/lzwreader.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/MemoryStatus.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/utils/memutil.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/objloader.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/StackTrace.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/ushock_output.cpp" />
@@ -1748,7 +1747,6 @@
     <ClInclude Include="$(SolutionDir)/../../src/utils/Logger.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/lzwreader.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/MemoryStatus.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/utils/memutil.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/objloader.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/StackTrace.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/ushock_output.h" />
