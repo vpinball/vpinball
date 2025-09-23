@@ -806,96 +806,103 @@ Player::~Player()
    // Save list of used textures to avoid stuttering in next play
    if ((m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0) && FileExists(m_ptable->m_filename))
    {
-      string dir = g_pvp->m_myPrefPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_title + PATH_SEPARATOR_CHAR;
-      std::filesystem::create_directories(std::filesystem::path(dir));
-
-      tinyxml2::XMLDocument xmlDoc;
-      tinyxml2::XMLElement* root;
-      ankerl::unordered_dense::map<string, tinyxml2::XMLElement*> textureAge;
-      const string path = dir + "used_textures.xml";
-      if (FileExists(path))
+      try
       {
-         std::ifstream myFile(path);
-         std::stringstream buffer;
-         buffer << myFile.rdbuf();
-         myFile.close();
-         const string xml = buffer.str();
-         if (xmlDoc.Parse(xml.c_str()) == tinyxml2::XML_SUCCESS)
+         string dir = g_pvp->m_myPrefPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_title + PATH_SEPARATOR_CHAR;
+         std::filesystem::create_directories(std::filesystem::path(dir));
+
+         tinyxml2::XMLDocument xmlDoc;
+         tinyxml2::XMLElement *root;
+         ankerl::unordered_dense::map<string, tinyxml2::XMLElement *> textureAge;
+         const string path = dir + "used_textures.xml";
+         if (FileExists(path))
          {
-            vector<tinyxml2::XMLElement *> toRemove;
-            int age;
-            root = xmlDoc.FirstChildElement("textures");
-            for (tinyxml2::XMLElement* node = root->FirstChildElement("texture"); node != nullptr; node = node->NextSiblingElement())
+            std::ifstream myFile(path);
+            std::stringstream buffer;
+            buffer << myFile.rdbuf();
+            myFile.close();
+            const string xml = buffer.str();
+            if (xmlDoc.Parse(xml.c_str()) == tinyxml2::XML_SUCCESS)
             {
-               const char *name = node->GetText();
-               if (name)
+               vector<tinyxml2::XMLElement *> toRemove;
+               int age;
+               root = xmlDoc.FirstChildElement("textures");
+               for (tinyxml2::XMLElement *node = root->FirstChildElement("texture"); node != nullptr; node = node->NextSiblingElement())
                {
-                  const string name_s = name;
-                  if (textureAge.count(name_s) == 1)
-                     toRemove.push_back(textureAge[name_s]);
-                  textureAge[name_s] = node;
-                  if (node->QueryIntAttribute("age", &age) == tinyxml2::XML_SUCCESS)
-                     node->SetAttribute("age", age + 1);
+                  const char *name = node->GetText();
+                  if (name)
+                  {
+                     const string name_s = name;
+                     if (textureAge.count(name_s) == 1)
+                        toRemove.push_back(textureAge[name_s]);
+                     textureAge[name_s] = node;
+                     if (node->QueryIntAttribute("age", &age) == tinyxml2::XML_SUCCESS)
+                        node->SetAttribute("age", age + 1);
+                     else
+                        node->SetAttribute("age", 0);
+                  }
                   else
-                     node->SetAttribute("age", 0);
+                  {
+                     toRemove.push_back(node);
+                  }
                }
-               else
+               // Remove old entries (texture that were not used during a high number of play count)
+               for (auto it = textureAge.cbegin(); it != textureAge.cend();)
                {
-                  toRemove.push_back(node);
+                  if (it->second->QueryIntAttribute("age", &age) == tinyxml2::XML_SUCCESS && age >= 100)
+                  {
+                     toRemove.push_back(it->second);
+                     it = textureAge.erase(it);
+                  }
+                  else
+                  {
+                     ++it;
+                  }
                }
+               // Delete too old, duplicates and invalid nodes
+               for (tinyxml2::XMLElement *node : toRemove)
+                  root->DeleteChild(node);
             }
-            // Remove old entries (texture that were not used during a high number of play count)
-            for (auto it = textureAge.cbegin(); it != textureAge.cend();)
-            {
-               if (it->second->QueryIntAttribute("age", &age) == tinyxml2::XML_SUCCESS && age >= 100)
-               {
-                  toRemove.push_back(it->second);
-                  it = textureAge.erase(it);
-               }
-               else
-               {
-                  ++it;
-               }
-            }
-            // Delete too old, duplicates and invalid nodes
-            for (tinyxml2::XMLElement* node : toRemove)
-               root->DeleteChild(node);
          }
-      }
-      else
-      {
-         root = xmlDoc.NewElement("textures");
-         xmlDoc.InsertEndChild(xmlDoc.NewDeclaration());
-         xmlDoc.InsertEndChild(root);
-      }
-
-      vector<ITexManCacheable *> textures = m_renderer->m_renderDevice->m_texMan.GetLoadedTextures();
-      for (ITexManCacheable *memtex : textures)
-      {
-         auto tex = std::ranges::find_if(m_ptable->m_vimage.begin(), m_ptable->m_vimage.end(), [&memtex](Texture *&x) { return (!x->m_name.empty()) && x == memtex; });
-         if (tex != m_ptable->m_vimage.end())
+         else
          {
-            tinyxml2::XMLElement *node = textureAge[(*tex)->m_name];
-            if (node == nullptr)
-            {
-               node = xmlDoc.NewElement("texture");
-               node->SetText((*tex)->m_name.c_str());
-               root->InsertEndChild(node);
-            }
-            node->DeleteAttribute("clampu");
-            node->DeleteAttribute("clampv");
-            node->DeleteAttribute("filter");
-            node->DeleteAttribute("prerender");
-            node->SetAttribute("linear", m_renderer->m_renderDevice->m_texMan.IsLinearRGB(memtex));
-            node->SetAttribute("age", 0);
+            root = xmlDoc.NewElement("textures");
+            xmlDoc.InsertEndChild(xmlDoc.NewDeclaration());
+            xmlDoc.InsertEndChild(root);
          }
-      }
 
-      std::ofstream myfile(path);
-      tinyxml2::XMLPrinter prn;
-      xmlDoc.Print(&prn);
-      myfile << prn.CStr();
-      myfile.close();
+         vector<ITexManCacheable *> textures = m_renderer->m_renderDevice->m_texMan.GetLoadedTextures();
+         for (ITexManCacheable *memtex : textures)
+         {
+            auto tex = std::ranges::find_if(m_ptable->m_vimage.begin(), m_ptable->m_vimage.end(), [&memtex](Texture *&x) { return (!x->m_name.empty()) && x == memtex; });
+            if (tex != m_ptable->m_vimage.end())
+            {
+               tinyxml2::XMLElement *node = textureAge[(*tex)->m_name];
+               if (node == nullptr)
+               {
+                  node = xmlDoc.NewElement("texture");
+                  node->SetText((*tex)->m_name.c_str());
+                  root->InsertEndChild(node);
+               }
+               node->DeleteAttribute("clampu");
+               node->DeleteAttribute("clampv");
+               node->DeleteAttribute("filter");
+               node->DeleteAttribute("prerender");
+               node->SetAttribute("linear", m_renderer->m_renderDevice->m_texMan.IsLinearRGB(memtex));
+               node->SetAttribute("age", 0);
+            }
+         }
+
+         std::ofstream myfile(path);
+         tinyxml2::XMLPrinter prn;
+         xmlDoc.Print(&prn);
+         myfile << prn.CStr();
+         myfile.close();
+      }
+      catch (...)
+      {
+         PLOGE << "Failed to update list of texture used in table cache";
+      }
    }
 
    // Save adjusted VR settings
