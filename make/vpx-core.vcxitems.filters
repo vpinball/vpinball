@@ -1934,9 +1934,6 @@
     <ClInclude Include="$(SolutionDir)/../../src/input/DirectInputJoystickHandler.h">
       <Filter>input</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/input/DirectInputMouseHandler.h">
-      <Filter>input</Filter>
-    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/input/OpenPinDevHandler.h">
       <Filter>input</Filter>
     </ClInclude>

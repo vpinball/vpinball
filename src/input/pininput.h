@@ -193,8 +193,8 @@ public:
       bool isPressed; // Type::Keyboard, Type::Action, Type::Mouse
    };
    void PushActionEvent(EnumPlayerActions action, bool isPressed);
-   void PushMouseEvent(int button, bool isPressed);
-   void PushKeyboardEvent(SDL_Keycode keycode, SDL_Scancode scancode, bool isPressed);
+   void PushMouseEvent(const SDL_MouseButtonEvent& event);
+   void PushKeyboardEvent(const SDL_KeyboardEvent& event);
    void PushJoystickButtonEvent(uint64_t joystickId, unsigned int buttonId, bool isPressed);
    void PushJoystickAxisEvent(uint64_t joystickId, int axisId, float value);
 

@@ -1528,7 +1528,6 @@
     <ClInclude Include="$(SolutionDir)/../../src/core/VPXPluginAPIImpl.h" />
     <ClInclude Include="$(SolutionDir)/../../src/input/pininput.h" />
     <ClInclude Include="$(SolutionDir)/../../src/input/DirectInputJoystickHandler.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/input/DirectInputMouseHandler.h" />
     <ClInclude Include="$(SolutionDir)/../../src/input/OpenPinDevHandler.h" />
     <ClInclude Include="$(SolutionDir)/../../src/input/ScanCodes.h" />
     <ClInclude Include="$(SolutionDir)/../../src/input/SDLInputHandler.h" />
