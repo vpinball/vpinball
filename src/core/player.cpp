@@ -4,6 +4,8 @@
 
 #include <SDL3/SDL_main.h>
 
+#include "imgui/imgui_impl_sdl3.h"
+
 #ifndef __STANDALONE__
 #include "BAM/BAMView.h"
 #endif
@@ -1506,12 +1508,135 @@ void Player::LockForegroundWindow(const bool enable)
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-void Player::GameLoop(std::function<void()> ProcessOSMessages)
+void Player::ProcessOSMessages()
+{
+   const uint64_t startTick = usec();
+   SDL_Event e;
+   bool isPFWnd = true;
+   static Vertex2D dragStart;
+   static int dragging = 0;
+   while (SDL_PollEvent(&e) != 0)
+   {
+      switch (e.type)
+      {
+      case SDL_EVENT_QUIT: SetCloseState(Player::CloseState::CS_STOP_PLAY); break;
+      case SDL_EVENT_WINDOW_FOCUS_GAINED:
+      case SDL_EVENT_WINDOW_FOCUS_LOST:
+         isPFWnd = SDL_GetWindowFromID(e.window.windowID) == m_playfieldWnd->GetCore();
+         OnFocusChanged();
+         break;
+
+      case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+         isPFWnd = SDL_GetWindowFromID(e.window.windowID) == m_playfieldWnd->GetCore();
+         SetCloseState(Player::CloseState::CS_STOP_PLAY);
+         break;
+
+      case SDL_EVENT_KEY_UP:
+      case SDL_EVENT_KEY_DOWN:
+         isPFWnd = SDL_GetWindowFromID(e.key.windowID) == m_playfieldWnd->GetCore();
+         ShowMouseCursor(false);
+         break;
+
+      case SDL_EVENT_TEXT_INPUT: isPFWnd = SDL_GetWindowFromID(e.text.windowID) == m_playfieldWnd->GetCore(); break;
+      case SDL_EVENT_MOUSE_WHEEL: isPFWnd = SDL_GetWindowFromID(e.wheel.windowID) == m_playfieldWnd->GetCore(); break;
+      case SDL_EVENT_MOUSE_BUTTON_DOWN:
+      case SDL_EVENT_MOUSE_BUTTON_UP:
+         isPFWnd = SDL_GetWindowFromID(e.button.windowID) == m_playfieldWnd->GetCore();
+         if (!isPFWnd)
+         {
+            if (e.type == SDL_EVENT_MOUSE_BUTTON_UP)
+               dragging = 0;
+            else if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN && dragging == 0)
+               dragging = 1;
+         }
+         break;
+
+      case SDL_EVENT_MOUSE_MOTION:
+         isPFWnd = SDL_GetWindowFromID(e.motion.windowID) == m_playfieldWnd->GetCore();
+         if (isPFWnd)
+         {
+            // We scale motion data since SDL expects DPI scaled points coordinates on Apple device, while it uses pixel coordinates on other devices (see SDL_WINDOWS_DPI_SCALING)
+            // For the time being, VPX always uses pixel coordinates, using setup obtained at window creation time.
+            e.motion.x *= SDL_GetWindowPixelDensity(m_playfieldWnd->GetCore());
+            e.motion.y *= SDL_GetWindowPixelDensity(m_playfieldWnd->GetCore());
+            static float m_lastcursorx = FLT_MAX, m_lastcursory = FLT_MAX;
+            if (m_lastcursorx != e.motion.x || m_lastcursory != e.motion.y)
+            {
+               m_lastcursorx = e.motion.x;
+               m_lastcursory = e.motion.y;
+               ShowMouseCursor(true);
+            }
+         }
+         else if (dragging)
+         {
+            // Handle dragging of auxiliary windows
+            SDL_Window *const sdlWnd = SDL_GetWindowFromID(e.motion.windowID);
+            std::vector<VPX::Window *> windows = {
+               m_scoreviewOutput.GetWindow(),
+               m_backglassOutput.GetWindow(),
+               m_topperOutput.GetWindow(),
+            };
+            for (VPX::Window *wnd : windows)
+            {
+               if (wnd && sdlWnd == wnd->GetCore())
+               {
+                  int x, y;
+                  wnd->GetPos(x, y);
+                  Vertex2D click(x + e.motion.x, y + e.motion.y);
+                  if (dragging > 1)
+                     wnd->SetPos(static_cast<int>(x + click.x - dragStart.x), static_cast<int>(y + click.y - dragStart.y));
+                  dragStart = click;
+                  dragging = 2;
+                  break;
+               }
+            }
+         }
+         break;
+      }
+
+      if (isPFWnd)
+      {
+         if (e.type == SDL_EVENT_MOUSE_MOTION)
+         {
+            SDL_Event rotatedEvent = e;
+            switch (m_liveUI->GetUIOrientation())
+            {
+            case 0: break;
+            case 1:
+               rotatedEvent.motion.x = e.motion.y;
+               rotatedEvent.motion.y = ImGui::GetIO().DisplaySize.y - e.motion.x;
+               break;
+            case 2:
+               rotatedEvent.motion.x = e.motion.x;
+               rotatedEvent.motion.y = ImGui::GetIO().DisplaySize.y - e.motion.y;
+               break;
+            case 3:
+               rotatedEvent.motion.x = ImGui::GetIO().DisplaySize.x - e.motion.y;
+               rotatedEvent.motion.y = e.motion.x;
+               break;
+            default: assert(false); return;
+            }
+            ImGui_ImplSDL3_ProcessEvent(&rotatedEvent);
+         }
+         else
+            ImGui_ImplSDL3_ProcessEvent(&e);
+      }
+
+      m_pininput.HandleSDLEvent(e);
+
+      // Limit to 1ms of OS message processing per call
+      if ((usec() - startTick) > 1000ull)
+         break;
+   }
+};
+
+
+void Player::GameLoop()
 {
    // Stereo must be run unthrottled to let OpenVR set the frame pace according to the head set
    assert(!(m_renderer->m_stereo3D == STEREO_VR && (m_videoSyncMode != VideoSyncMode::VSM_NONE || m_maxFramerate < 1000.f)));
 
-   auto sync = [this, ProcessOSMessages]()
+   auto sync = [this]()
    {
       // Controller sync
       #ifdef MSVC_CONCURRENCY_VIEWER
