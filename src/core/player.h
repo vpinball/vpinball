@@ -159,7 +159,7 @@ private:
 
 #pragma region Main Loop
 public:
-   void GameLoop(std::function<void()> ProcessOSMessages);
+   void GameLoop();
 
    VideoSyncMode m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING;
    bool m_lastFrameSyncOnVBlank = false;
@@ -177,6 +177,7 @@ private:
    uint64_t m_startFrameTick;  // System time in us when render frame was started (beginning of frame animation then collect,...)
    unsigned int m_onPrepareFrameMsgId;
 
+   void ProcessOSMessages();
    void MultithreadedGameLoop(const std::function<void()>& sync);
    void FramePacingGameLoop(const std::function<void()>& sync);
    void GPUQueueStuffingGameLoop(const std::function<void()>& sync);
