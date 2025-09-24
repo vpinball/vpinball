@@ -59,10 +59,14 @@ public:
    {
       switch (e.type)
       {
+      case SDL_EVENT_MOUSE_BUTTON_DOWN:
+      case SDL_EVENT_MOUSE_BUTTON_UP:
+         m_pininput.PushMouseEvent(e.button);
+         break;
+
       case SDL_EVENT_KEY_DOWN:
       case SDL_EVENT_KEY_UP:
-         if (e.key.repeat == 0)
-            m_pininput.PushKeyboardEvent(e.key.key, e.key.scancode, e.type == SDL_EVENT_KEY_DOWN);
+         m_pininput.PushKeyboardEvent(e.key);
          break;
 
       case SDL_EVENT_GAMEPAD_ADDED:

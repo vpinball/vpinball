@@ -11,7 +11,6 @@
 #endif
 
 #ifdef _WIN32
-   #include "input/DirectInputMouseHandler.h"
    #include "input/DirectInputJoystickHandler.h"
 #endif
 
@@ -140,9 +139,6 @@ void PinInput::Init()
          m_rumbleMode = 0;
       }
 
-      if (settings.LoadValueWithDefault(Settings::Player, "EnableMouseInPlayer"s, true))
-         m_inputHandlers.push_back(std::make_unique<DirectInputMouseHandler>(*this, m_focusHWnd));
-
       // Disable Sticky Keys
       STICKYKEYS newStickyKeys = {};
       newStickyKeys.cbSize = sizeof(STICKYKEYS);
@@ -246,22 +242,26 @@ void PinInput::PushActionEvent(EnumPlayerActions action, bool isPressed)
    ProcessEvent(e);
 }
 
-void PinInput::PushMouseEvent(int button, bool isPressed)
+void PinInput::PushMouseEvent(const SDL_MouseButtonEvent& event)
 {
+   // TODO there may be multiple mice on the system (especially for custom cabinet builds => use e.button.which)
    InputEvent e;
    e.type = InputEvent::Type::Mouse;
-   e.buttonId = button;
-   e.isPressed = isPressed;
+   e.buttonId = event.button;
+   e.isPressed = event.down;
    ProcessEvent(e);
 }
 
-void PinInput::PushKeyboardEvent(SDL_Keycode keycode, SDL_Scancode scancode, bool isPressed)
+void PinInput::PushKeyboardEvent(const SDL_KeyboardEvent& event)
 {
+   if (event.repeat != 0)
+      return;
+   // TODO there may be multiple keyboards on the system (especially for custom cabinet builds => use e.key.which)
    InputEvent e;
    e.type = InputEvent::Type::Keyboard;
-   e.keycode = keycode;
-   e.scancode = scancode;
-   e.isPressed = isPressed;
+   e.keycode = event.key;
+   e.scancode = event.scancode;
+   e.isPressed = event.type == SDL_EVENT_KEY_DOWN;
    ProcessEvent(e);
 }
 
@@ -964,7 +964,8 @@ void PinInput::ProcessInput()
 
 void PinInput::ProcessEvent(const InputEvent& event)
 {
-   if (event.type == InputEvent::Type::Mouse && !g_pplayer->m_liveUI->HasMouseCapture())
+   if (event.type == InputEvent::Type::Mouse && !g_pplayer->m_liveUI->HasMouseCapture() 
+      && g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "EnableMouseInPlayer"s, true))
    {
       const auto& it = std::ranges::find_if(m_actionMappings.begin(), m_actionMappings.end(),
          [&event](const ActionMapping& mapping) { return (mapping.type == ActionMapping::AM_Mouse) && (mapping.buttonId == event.buttonId); });
