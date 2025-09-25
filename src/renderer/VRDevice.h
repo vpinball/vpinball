@@ -20,6 +20,8 @@ public:
    float GetLockbarWidth() const { return m_lockbarWidth; }
    void SetLockbarWidth(float width) { m_lockbarWidth = width; m_worldDirty = true; }
 
+   void TableUp();
+   void TableDown();
    void RecenterTable();
    float GetSceneOrientation() const { return m_orientation; }
    const Vertex3Ds& GetSceneOffset() const { return m_tablePos; }
@@ -64,8 +66,6 @@ public:
    static bool IsVRturnedOn();
    bool IsVRReady() const;
    void SubmitFrame(std::shared_ptr<Sampler> leftEye, std::shared_ptr<Sampler> rightEye);
-   void TableUp();
-   void TableDown();
 
 private:
    static vr::IVRSystem* m_pHMD;
