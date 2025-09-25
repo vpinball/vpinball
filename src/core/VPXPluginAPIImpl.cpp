@@ -300,7 +300,7 @@ void VPXPluginAPIImpl::SetCOMObjectOverride(const char* className, const ScriptC
 }
 
 #include <regex>
-string VPXPluginAPIImpl::ApplyScriptCOMObjectOverrides(string& script) const
+string VPXPluginAPIImpl::ApplyScriptCOMObjectOverrides(const string& script) const
 {
    if (m_scriptCOMObjectOverrides.empty())
       return script;

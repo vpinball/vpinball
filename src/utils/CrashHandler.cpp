@@ -1,4 +1,5 @@
 #include "core/stdafx.h"
+
 #include "CrashHandler.h"
 #include "BlackBox.h"
 #include "MemoryStatus.h"
@@ -13,20 +14,18 @@
 
 namespace
 {
-   char s_miniDumpFileName[MAX_PATH] = "crash.dmp";
-   char s_reportFileName[MAX_PATH] = "crash.txt";
+   string s_miniDumpFileName = "crash.dmp"s;
+   string s_reportFileName = "crash.txt"s;
 
    void WriteProcessName(FILE* f)
    {
       fprintf(f, "Process: ");
-      char buffer[MAX_PATH + 1];
-      const HMODULE hModule = nullptr;
-      GetModuleFileName(hModule, buffer, MAX_PATH);
-      const char* lastSeparatorPos = strrchr(buffer, PATH_SEPARATOR_CHAR);
+      const string buffer = GetExecutablePath();
+      const char* lastSeparatorPos = strrchr(buffer.c_str(), PATH_SEPARATOR_CHAR);
       if (lastSeparatorPos != nullptr)
          fprintf(f, "%s", lastSeparatorPos + 1); // +1 -> skip over separator
       else
-         fprintf(f, "%s", buffer);
+         fprintf(f, "%s", buffer.c_str());
    }
 
    typedef HRESULT(STDAPICALLTYPE *pRGV)(LPOSVERSIONINFOEXW osi);
@@ -191,9 +190,9 @@ namespace
       fprintf(f, "\n");
    }
 
-   bool WriteMiniDump(EXCEPTION_POINTERS* exceptionPtrs, const char* filename)
+   bool WriteMiniDump(EXCEPTION_POINTERS* exceptionPtrs, const string& filename)
    {
-      const HANDLE hDump = ::CreateFile(filename, GENERIC_WRITE, FILE_SHARE_READ, 0,
+      const HANDLE hDump = ::CreateFile(filename.c_str(), GENERIC_WRITE, FILE_SHARE_READ, 0,
          CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
       if (hDump != INVALID_HANDLE_VALUE)
       {
@@ -293,7 +292,7 @@ namespace
       const bool miniDumpOK = WriteMiniDump(exceptionPtrs, s_miniDumpFileName);
 
       FILE* f;
-      if ((fopen_s(&f, s_reportFileName, "wt") == 0) && f)
+      if ((fopen_s(&f, s_reportFileName.c_str(), "wt") == 0) && f)
 	  {
 		  WriteHeader(f);
 		  WriteExceptionInfo(f, exceptionPtrs);
@@ -320,13 +319,13 @@ namespace rde
       SetUnhandledExceptionFilter(MyExceptionFilter);
    }
 
-   void CrashHandler::SetMiniDumpFileName(const char* name)
+   void CrashHandler::SetMiniDumpFileName(const string& name)
    {
-      strncpy_s(s_miniDumpFileName, sizeof(s_miniDumpFileName), name);
+      s_miniDumpFileName = name;
    }
 
-   void CrashHandler::SetCrashReportFileName(const char* name)
+   void CrashHandler::SetCrashReportFileName(const string& name)
    {
-      strncpy_s(s_reportFileName, sizeof(s_reportFileName), name);
+      s_reportFileName = name;
    }
 }

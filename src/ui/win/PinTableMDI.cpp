@@ -83,18 +83,18 @@ int PinTableMDI::OnCreate(CREATESTRUCT &cs)
 
 void PinTableMDI::OnClose()
 {
-    if(m_vpinball->IsClosing() || CanClose())
-    {
 #ifndef __STANDALONE__
-        if(g_pvp->GetNotesDocker() != nullptr)
-        {
-           g_pvp->GetNotesDocker()->UpdateText();
-           g_pvp->GetNotesDocker()->CleanText();
-        }
-        m_table->KillTimer(VPinball::TIMER_ID_AUTOSAVE);
-        CMDIChild::OnClose();
+   if (m_vpinball->IsClosing() || CanClose())
+   {
+      if(g_pvp->GetNotesDocker() != nullptr)
+      {
+         g_pvp->GetNotesDocker()->UpdateText();
+         g_pvp->GetNotesDocker()->CleanText();
+      }
+      m_table->KillTimer(VPinball::TIMER_ID_AUTOSAVE);
+      CMDIChild::OnClose();
+   }
 #endif
-    }
 }
 
 LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)

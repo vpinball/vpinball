@@ -29,7 +29,7 @@
 #include "renderer/Anaglyph.h"
 #include "renderer/VRDevice.h"
 #include "renderer/typedefs3D.h"
-#ifndef __STANDALONE__
+#ifdef EXT_CAPTURE
 #include "renderer/captureExt.h"
 #endif
 #ifdef _MSC_VER
@@ -214,7 +214,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       #if defined(_MSC_VER) && !defined(__STANDALONE__)
          WNDCLASS wc = {};
          wc.hInstance = g_pvp->theInstance;
-         #if defined(UNICODE)
+         #ifdef _UNICODE
          wc.lpfnWndProc = ::DefWindowProcW;
          #else
          wc.lpfnWndProc = ::DefWindowProcA;
@@ -364,7 +364,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    }
 
 #ifndef __STANDALONE__
-   // if left flipper or shift hold during load, then swap DT/FS view (for quick testing)
+   // if left flipper or shift are held during load, then swap DT/FS view (for quick testing)
    if (m_ptable->m_BG_current_set != BG_FSS &&
        !m_ptable->m_tblMirrorEnabled &&
        ((GetAsyncKeyState(VK_LSHIFT) & 0x8000)

@@ -1,15 +1,15 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+
+#ifdef EXT_CAPTURE
+
 #include "captureExt.h"
 #include "comdef.h"
 
-#if defined(ENABLE_OPENGL) && !defined(__STANDALONE__)
 // Needed for external capture for VR on Windows
 #pragma comment(lib, "d3d11.lib")
-#endif
 
-#if defined(EXT_CAPTURE)
 DXGIRegistry g_DXGIRegistry;
 ExtCaptureManager g_ExtCaptureManager;
 
@@ -400,14 +400,4 @@ void ExtCaptureManager::UpdateThread()
       }
    }
 }
-
-#else
-
-void StartDMDCapture() { }
-void StartPUPCapture() { }
-void UpdateExtCaptures() { }
-void StopCaptures() { }
-bool HasDMDCapture() { return false; }
-bool HasPUPCapture() { return false; }
-
 #endif

@@ -2,11 +2,18 @@
 
 #pragma once
 
+// Disabled for DX9 since it causes conflict with DX9
+// Also disabled for BGFX at the moment
+#ifdef EXT_CAPTURE
 #include "renderer/typedefs3D.h"
 
 #include <vector>
 #include <string>
 #include <mutex>
+
+#include <d3d11.h>
+#include <dxgi1_2.h>
+#include <dxgi1_5.h>
 
 void StartDMDCapture();
 void StartPUPCapture();
@@ -14,12 +21,6 @@ void UpdateExtCaptures();
 void StopCaptures();
 bool HasDMDCapture();
 bool HasPUPCapture();
-
-// Disabled for DX9 since it causes conflict with DX9
-#ifdef EXT_CAPTURE
-#include <d3d11.h>
-#include <dxgi1_2.h>
-#include <dxgi1_5.h>
 
 class DXGIRegistry final
 {

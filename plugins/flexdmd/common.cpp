@@ -145,6 +145,29 @@ string find_case_insensitive_file_path(const string& szPath)
    return string();
 }
 
+#ifdef _WIN32
+template <class T>
+T GetModulePath(HMODULE hModule)
+{
+   T path;
+   DWORD size = MAX_PATH;
+   while (true)
+   {
+      path.resize(size);
+      const DWORD length = ::GetModuleFileName(hModule, path.data(), size);
+      if (length == 0)
+         return {};
+      if (length < size)
+      {
+         path.resize(length); // Trim excess
+         return path;
+      }
+      // length == size could both mean that it just did fit in, or it was truncated, so try again with a bigger buffer
+      size *= 2;
+   }
+}
+#endif
+
 string GetPluginPath()
 {
 #ifdef _WIN32
@@ -155,16 +178,15 @@ string GetPluginPath()
             _T("FlexDMDPluginLoad"), &hm) == 0)
         return string();
 
-    TCHAR buf[MAX_PATH];
-    if (GetModuleFileName(hm, buf, MAX_PATH) == 0)
-        return string();
-
 #ifdef _UNICODE
-    const int size_needed = WideCharToMultiByte(CP_UTF8, 0, buf, -1, nullptr, 0, nullptr, nullptr);
+    const std::wstring buf = GetModulePath<std::wstring>(hm);
+    if (buf.empty())
+       return string();
+    const int size_needed = WideCharToMultiByte(CP_UTF8, 0, buf.c_str(), -1, nullptr, 0, nullptr, nullptr);
     string pathBuf(size_needed - 1, '\0');
-    WideCharToMultiByte(CP_UTF8, 0, buf, -1, pathBuf.data(), size_needed, nullptr, nullptr);
+    WideCharToMultiByte(CP_UTF8, 0, buf.c_str(), -1, pathBuf.data(), size_needed, nullptr, nullptr);
 #else
-    const string pathBuf(buf);
+    const string pathBuf = GetModulePath<string>(hm);
 #endif
 #else
     Dl_info info{};

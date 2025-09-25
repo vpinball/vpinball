@@ -708,11 +708,32 @@ void SetThreadName(const string& name);
  * @brief Detect whether the program is running on the Wine compatibility layer
  */
 bool IsOnWine();
+
+#ifdef _WIN32
 bool IsWindowsVistaOr7();
 bool IsWindows10_1803orAbove();
 
-#ifndef __STANDALONE__
-string GetExecutablePath();
+template <class T> T GetModulePath(HMODULE hModule) // string or wstring
+{
+   T path;
+   DWORD size = MAX_PATH;
+   while (true)
+   {
+      path.resize(size);
+      const DWORD length = ::GetModuleFileName(hModule, path.data(), size);
+      if (length == 0)
+         return {};
+      if (length < size)
+      {
+         path.resize(length); // Trim excess
+         return path;
+      }
+      // length == size could both mean that it just did fit in, or it was truncated, so try again with a bigger buffer
+      size *= 2;
+   }
+}
+#define GetExecutablePath() GetModulePath<string>(nullptr)
+#define GetExecutablePathW() GetModulePath<wstring>(nullptr)
 #endif
 
 vector<uint8_t> read_file(const string& filename, const bool binary = true);

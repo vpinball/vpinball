@@ -4,7 +4,7 @@
 #include "renderer/Shader.h"
 #include "renderer/IndexBuffer.h"
 #include "renderer/VertexBuffer.h"
-#ifndef __STANDALONE__
+#ifdef EXT_CAPTURE
 #include "renderer/captureExt.h"
 #endif
 #include "core/VPXPluginAPIImpl.h"

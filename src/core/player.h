@@ -336,12 +336,12 @@ private:
 
 public:
    bool m_debugWindowActive = false;
+   bool m_debugMode = false;
+   bool m_showDebugger = false;
+   HWND m_hwndDebugOutput = nullptr;
 #ifndef __STANDALONE__
    DebuggerDialog m_debuggerDialog;
 #endif
-   bool m_debugMode = false;
-   HWND m_hwndDebugOutput = nullptr;
-   bool m_showDebugger = false;
 
    int  m_debugBallSize;
    float m_debugBallMass;

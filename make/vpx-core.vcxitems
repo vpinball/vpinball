@@ -986,14 +986,12 @@
     <ClCompile Include="$(SolutionDir)/../../src/utils/CrashHandler.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/def.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/fileio.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/utils/hash.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/Logger.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/lzwreader.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/MemoryStatus.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/objloader.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/StackTrace.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/ushock_output.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/utils/variant.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/utils/wintimer.cpp" />
     <ClCompile Include="$(SolutionDir)/../../third-party/include/hidapi/windows/hid.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -1749,7 +1747,6 @@
     <ClInclude Include="$(SolutionDir)/../../src/utils/objloader.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/StackTrace.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/ushock_output.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/utils/variant.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/vector.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/vectorsort.h" />
     <ClInclude Include="$(SolutionDir)/../../src/utils/wintimer.h" />

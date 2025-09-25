@@ -435,11 +435,7 @@ bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
    while (true)
    {
       char lineHeader[256];
-      const int res = fscanf_s(f, "\n%s", lineHeader
-#ifndef __STANDALONE__
-      ,static_cast<unsigned int>(sizeof(lineHeader))
-#endif
-      );
+      const int res = fscanf_s(f, "\n%s", lineHeader, static_cast<unsigned int>(sizeof(lineHeader)));
       if (res == EOF)
       {
          fclose(f);

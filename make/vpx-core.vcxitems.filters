@@ -675,9 +675,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/utils/lzwreader.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/utils/variant.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/utils/BlackBox.cpp">
       <Filter>utils</Filter>
     </ClCompile>
@@ -688,9 +685,6 @@
       <Filter>utils</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/utils/StackTrace.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/utils/hash.cpp">
       <Filter>utils</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/utils/objloader.cpp">
@@ -1464,9 +1458,6 @@
       <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/utils/StackTrace.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/utils/variant.h">
       <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/utils/vector.h">

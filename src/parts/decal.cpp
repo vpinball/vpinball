@@ -67,9 +67,9 @@ void Decal::SetDefaults(const bool fromMouseClick)
    m_d.m_color = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Color"s, (int)RGB(0,0,0)) : RGB(0,0,0);
    m_d.m_verticalText = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "VerticalText"s, false) : false;
 
+#ifndef __STANDALONE__
    if (!m_pIFont)
    {
-#ifndef __STANDALONE__
       FONTDESC fd;
       fd.cbSizeofstruct = sizeof(FONTDESC);
 
@@ -93,8 +93,8 @@ void Decal::SetDefaults(const bool fromMouseClick)
       OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
       if (hr && fromMouseClick)
          delete [] fd.lpstrName;
-#endif
    }
+#endif
 
 #undef regKey
 }
@@ -127,9 +127,9 @@ void Decal::WriteRegDefaults()
    g_pvp->m_settings.SaveValue(regKey, "VerticalText"s, m_d.m_verticalText);
    g_pvp->m_settings.SaveValue(regKey, "Surface"s, m_d.m_szSurface);
 
+#ifndef __STANDALONE__
    if (m_pIFont)
    {
-#ifndef __STANDALONE__
       FONTDESC fd;
       fd.cbSizeofstruct = sizeof(FONTDESC);
       m_pIFont->get_Size(&fd.cySize);
@@ -148,8 +148,8 @@ void Decal::WriteRegDefaults()
       g_pvp->m_settings.SaveValue(regKey, "FontItalic"s, fd.fItalic);
       g_pvp->m_settings.SaveValue(regKey, "FontUnderline"s, fd.fUnderline);
       g_pvp->m_settings.SaveValue(regKey, "FontStrikeThrough"s, fd.fStrikethrough);
-#endif
    }
+#endif
 
 #undef regKey
 }
@@ -532,9 +532,9 @@ void Decal::RenderSetup(RenderDevice *device)
 
    UpdateBounds();
    
+#ifndef __STANDALONE__
    if (m_d.m_decaltype == DecalText)
    {
-#ifndef __STANDALONE__
       RECT rcOut = { };
       const int len = (int)m_d.m_text.length();
       const HFONT hFont = GetFont();
@@ -646,8 +646,8 @@ void Decal::RenderSetup(RenderDevice *device)
       dc.SelectObject(oldBmp);
       DeleteObject(hFont);
       DeleteObject(hbm);
-#endif
    }
+#endif
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 

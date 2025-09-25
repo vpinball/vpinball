@@ -1,5 +1,4 @@
-#ifndef DEBUG_MEMORY_STATUS_H
-#define DEBUG_MEMORY_STATUS_H
+#pragma once
 
 namespace rde
 {
@@ -15,5 +14,3 @@ struct MemoryStatus
 	size_t	totalCommited;
 };
 }
-
-#endif

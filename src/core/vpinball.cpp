@@ -1115,9 +1115,7 @@ void VPinball::LoadFileName(const string& filename, const bool updateEditor, VPX
       const DWORD attr = GetFileAttributes(filename.c_str());
       if ((attr != INVALID_FILE_ATTRIBUTES) && (attr & FILE_ATTRIBUTE_READONLY))
          ppt->m_title += " [READ ONLY]";
-#endif
-
-#ifdef __STANDALONE__
+#else
       m_ptableActive = ppt;
 #endif
 
@@ -1975,12 +1973,10 @@ STDMETHODIMP VPinball::QuitPlayer(int CloseType)
    {
       g_pplayer->SetCloseState((Player::CloseState)CloseType);
    }
-   else
-   {
 #ifndef __STANDALONE__
+   else
       PostMessage(WM_CLOSE, 0, 0);
 #endif
-   }
 
    return S_OK;
 }
@@ -2302,25 +2298,25 @@ void VPinball::ToggleBackglassView()
 
 void VPinball::ToggleScriptEditor()
 {
+#ifndef __STANDALONE__
    CComObject<PinTable> * const ptCur = GetActiveTable();
    if (ptCur)
    {
-#ifndef __STANDALONE__
       const bool alwaysViewScript = m_settings.LoadValueWithDefault(Settings::Editor, "AlwaysViewScript"s, false);
 
       ptCur->m_pcv->SetVisible(alwaysViewScript || !(ptCur->m_pcv->m_visible && !ptCur->m_pcv->m_minimized));
-#endif
 
       //SendMessage(m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_SCRIPT, MAKELONG(ptCur->m_pcv->m_visible && !ptCur->m_pcv->m_minimized, 0));
    }
+#endif
 }
 
 void VPinball::ShowSearchSelect()
 {
+#ifndef __STANDALONE__
    CComObject<PinTable> * const ptCur = GetActiveTable();
    if (ptCur)
    {
-#ifndef __STANDALONE__
       if (!ptCur->m_searchSelectDlg.IsWindow())
       {
          ptCur->m_searchSelectDlg.Create(GetHwnd());
@@ -2335,8 +2331,8 @@ void VPinball::ShowSearchSelect()
          ptCur->m_searchSelectDlg.ShowWindow();
          ptCur->m_searchSelectDlg.SetForegroundWindow();
       }
-#endif
    }
+#endif
 }
 
 void VPinball::SetDefaultPhysics()
@@ -2357,42 +2353,42 @@ void VPinball::SetDefaultPhysics()
 
 void VPinball::SetViewSolidOutline(size_t viewId)
 {
+#ifndef __STANDALONE__
    CComObject<PinTable> * const ptCur = GetActiveTable();
    if (ptCur)
    {
-#ifndef __STANDALONE__
       ptCur->m_renderSolid = (viewId == ID_VIEW_SOLID);
       GetMenu().CheckMenuItem(ID_VIEW_SOLID, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_CHECKED : MF_UNCHECKED));
       GetMenu().CheckMenuItem(ID_VIEW_OUTLINE, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_UNCHECKED : MF_CHECKED));
 
       ptCur->SetDirtyDraw();
       m_settings.SaveValue(Settings::Editor, "RenderSolid"s, ptCur->m_renderSolid);
-#endif
    }
+#endif
 }
 
 void VPinball::ShowGridView()
 {
+#ifndef __STANDALONE__
    CComObject<PinTable> * const ptCur = GetActiveTable();
    if (ptCur)
    {
-#ifndef __STANDALONE__
       ptCur->put_DisplayGrid(FTOVB(!ptCur->m_grid));
       GetMenu().CheckMenuItem(ID_VIEW_GRID, MF_BYCOMMAND | (ptCur->m_grid ? MF_CHECKED : MF_UNCHECKED));
-#endif
    }
+#endif
 }
 
 void VPinball::ShowBackdropView()
 {
+#ifndef __STANDALONE__
    CComObject<PinTable> * const ptCur = GetActiveTable();
    if (ptCur)
    {
-#ifndef __STANDALONE__
       ptCur->put_DisplayBackdrop(FTOVB(!ptCur->m_backdrop));
       GetMenu().CheckMenuItem(ID_VIEW_BACKDROP, MF_BYCOMMAND | (ptCur->m_backdrop ? MF_CHECKED : MF_UNCHECKED));
-#endif
    }
+#endif
 }
 
 void VPinball::AddControlPoint()
@@ -2689,14 +2685,14 @@ static unsigned int GenerateTournamentFileInternal(uint8_t *const dmd_data, cons
 
    //
 
-   char path[MAXSTRING];
 #ifdef _MSC_VER
-   GetModuleFileName(nullptr, path, MAXSTRING);
+   const string strpath = GetExecutablePath();
+   const char* const path = strpath.c_str();
 #elif defined(__APPLE__) //!! ??
-   const char* szPath = SDL_GetBasePath();
-   strncpy_s(path, sizeof(path), szPath);
+   const char* const path = SDL_GetBasePath();
 #else
-   const ssize_t len = ::readlink("/proc/self/exe", path, sizeof(path)-1);
+   char path[MAXSTRING];
+   const ssize_t len = ::readlink("/proc/self/exe", path, sizeof(path) - 1);
    if (len != -1)
       path[len] = '\0';
 #endif

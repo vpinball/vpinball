@@ -8,8 +8,10 @@
 
 #include "input/ScanCodes.h"
 
-#ifndef __STANDALONE__
+#ifdef EXT_CAPTURE
 #include "renderer/captureExt.h"
+#endif
+#ifndef __STANDALONE__
 #include <atlsafe.h>
 #endif
 
@@ -521,6 +523,35 @@ STDMETHODIMP ScriptGlobalTable::AddObject(BSTR Name, IDispatch *pdisp)
    return S_OK;
 }
 
+// Variant helpers
+#define SetVarBstr(_pvar,_bstr) {VariantClear(_pvar);V_VT(_pvar)=VT_BSTR;V_BSTR(_pvar)=(_bstr);}
+
+static BSTR BstrFromVariant(VARIANT *pvar, LCID lcid)
+{
+   VARIANT var;
+   VariantInit(&var);
+
+   if (V_VT(pvar) == VT_BOOL)
+   {
+      const OLECHAR *pszBool = (V_BOOL(pvar)) ? L"True" : L"False";
+      V_BSTR(&var) = SysAllocString(pszBool);
+
+      return V_BSTR(&var);
+   }
+   else
+   {
+      // Ask OLEAUT32 to handle this.
+      const HRESULT hr = ::VariantChangeTypeEx(&var, pvar, lcid, 0, VT_BSTR);
+      if (hr == S_OK)
+      {
+         assert(V_VT(&var) == VT_BSTR);
+         return V_BSTR(&var);
+      }
+      else
+         return nullptr;
+   }
+}
+
 STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIANT Value)
 {
    HRESULT hr;
@@ -953,7 +984,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDHeight(int pVal)
 
 STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!! use 64bit instead of 8bit to reduce overhead??
 {
-   #ifndef __STANDALONE__
+   #ifdef EXT_CAPTURE
       if (HasDMDCapture()) // If DMD capture is enabled check if external DMD exists
          return S_OK;
    #endif
@@ -998,7 +1029,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as
 
 STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! assumes VT_UI4 as input //!! use 64bit instead of 32bit to reduce overhead??
 {
-   #ifndef __STANDALONE__
+   #ifdef EXT_CAPTURE
       if (HasDMDCapture()) // If DMD capture is enabled check if external DMD exists
          return S_OK;
    #endif

@@ -303,9 +303,6 @@ VideoOptionProperties::VideoOptionProperties(HWND hParent /* = nullptr*/)
 
 #pragma region VideoOptionProperties
 
-// Declared in RenderDevice. Desktop composition may only be disabled on Windows Vista & 7
-extern bool IsWindowsVistaOr7();
-
 static const int2 aspectRatios[] = {
    int2( 0,  0), // Free
    int2( 4,  3), // [Landscape]

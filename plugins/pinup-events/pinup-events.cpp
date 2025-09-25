@@ -150,6 +150,29 @@ void onSerumTrigger(const unsigned int eventId, void* userData, void* eventData)
       pupTrigger(*trigger);
 }
 
+#ifdef _WIN32
+template <class T>
+T GetModulePath(HMODULE hModule)
+{
+   T path;
+   DWORD size = MAX_PATH;
+   while (true)
+   {
+      path.resize(size);
+      const DWORD length = ::GetModuleFileName(hModule, path.data(), size);
+      if (length == 0)
+         return {};
+      if (length < size)
+      {
+         path.resize(length); // Trim excess
+         return path;
+      }
+      // length == size could both mean that it just did fit in, or it was truncated, so try again with a bigger buffer
+      size *= 2;
+   }
+}
+#endif
+
 void onGameStart(const unsigned int eventId, void* userData, void* eventData)
 {
    // Select main DMD from the list of DMD sources (this is not fully clean as this rely on the fact that PinMAME sends the game start event after declaring its displays, we should listen for display source changes)
@@ -174,14 +197,13 @@ void onGameStart(const unsigned int eventId, void* userData, void* eventData)
    HMODULE hm = nullptr;
    if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, _T("PluginLoad"), &hm) == 0)
       return;
-   TCHAR path[MAX_PATH];
-   if (GetModuleFileName(hm, path, MAX_PATH) == 0)
+#ifdef _UNICODE
+   std::wstring fullpath = GetModulePath<std::wstring>(hm);
+#else
+   std::string fullpath = GetModulePath<std::string>(hm);
+#endif
+   if (fullpath.empty())
       return;
-   #ifdef _UNICODE
-      std::wstring fullpath(path);
-   #else
-      std::string fullpath(path);
-   #endif
    fullpath = fullpath.substr(0, fullpath.find_last_of(_T("\\/"))) + _T('\\');
    #if (INTPTR_MAX == INT32_MAX)
       fullpath += _T("dmddevicePUP.DLL");

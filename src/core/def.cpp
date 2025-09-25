@@ -316,7 +316,7 @@ char *MakeChar(const WCHAR* const wz)
 
 HRESULT OpenURL(const string& szURL)
 {
-#ifndef __STANDALONE__
+#ifdef _WIN32
    IUniformResourceLocator* pURL;
 
    HRESULT hres = CoCreateInstance(CLSID_InternetShortcut, nullptr, CLSCTX_INPROC_SERVER, IID_IUniformResourceLocator, (void**)&pURL);
@@ -390,12 +390,12 @@ bool IsOnWine()
    return result;
 }
 
+#ifdef _WIN32
 typedef HRESULT(STDAPICALLTYPE* pRGV)(LPOSVERSIONINFOEXW osi);
 static pRGV mRtlGetVersion = nullptr;
 
 bool IsWindows10_1803orAbove()
 {
-#ifndef __STANDALONE__
    if (mRtlGetVersion == nullptr)
       mRtlGetVersion = (pRGV)GetProcAddress(GetModuleHandle(TEXT("ntdll")), "RtlGetVersion"); // apparently the only really reliable solution to get the OS version (as of Win10 1803)
 
@@ -414,14 +414,10 @@ bool IsWindows10_1803orAbove()
    }
 
    return false;
-#else
-   return true;
-#endif
 }
 
 bool IsWindowsVistaOr7()
 {
-#ifndef __STANDALONE__
    OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0, { 0 }, 0, 0, 0, 0, 0 };
    const DWORDLONG dwlConditionMask = //VerSetConditionMask(
       VerSetConditionMask(VerSetConditionMask(0, VER_MAJORVERSION, VER_EQUAL), VER_MINORVERSION, VER_EQUAL) /*,
@@ -441,31 +437,6 @@ bool IsWindowsVistaOr7()
    const bool win7 = VerifyVersionInfoW(&osvi2, VER_MAJORVERSION | VER_MINORVERSION /*| VER_SERVICEPACKMAJOR*/, dwlConditionMask) != FALSE;
 
    return vista || win7;
-#else
-   return false;
-#endif
-}
-
-#ifndef __STANDALONE__
-string GetExecutablePath()
-{
-   std::string path;
-   DWORD size = MAX_PATH;
-   while (true)
-   {
-      path.resize(size);
-      DWORD length = ::GetModuleFileNameA(nullptr, &path[0], size);
-      if (length == 0)
-      {
-         return {};
-      }
-      else if (length < size)
-      {
-         path.resize(length); // Trim excess
-         return path;
-      }
-      size *= 2;
-   }
 }
 #endif
 

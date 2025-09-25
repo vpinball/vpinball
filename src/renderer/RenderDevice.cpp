@@ -36,7 +36,7 @@
 #elif defined(ENABLE_OPENGL)
 #include "typedefs3D.h"
 #include "TextureManager.h"
-#ifndef __STANDALONE__
+#ifdef EXT_CAPTURE
 #include "captureExt.h"
 #endif
 
@@ -899,7 +899,7 @@ RenderDevice::RenderDevice(
    if (gl_majorVersion < 4 || (gl_majorVersion == 4 && gl_minorVersion < 3))
    {
       const string errorMsg = "Your graphics card only supports OpenGL " + std::to_string(gl_majorVersion) + '.' + std::to_string(gl_minorVersion) + ", but VPX requires OpenGL 4.3 or newer.";
-      ShowError(errorMsg.c_str());
+      ShowError(errorMsg);
       exit(-1);
    }
    #endif

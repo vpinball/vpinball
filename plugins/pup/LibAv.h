@@ -140,9 +140,9 @@ private:
    #ifdef _WIN32
       HINSTANCE hinstLib;
       #if (INTPTR_MAX == INT32_MAX)
-      bool x64 = false;
+      constexpr bool x64 = false;
       #else
-      bool x64 = true;
+      constexpr bool x64 = true;
       #endif
 
       HMODULE hm = nullptr;

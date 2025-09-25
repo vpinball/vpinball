@@ -3,7 +3,7 @@
 #include "core/stdafx.h"
 #include "renderer/Shader.h"
 #include "renderer/RenderCommand.h"
-#ifndef __STANDALONE__
+#ifdef EXT_CAPTURE
 #include "renderer/captureExt.h"
 #endif
 
@@ -481,7 +481,7 @@ void Textbox::Render(const unsigned int renderMask)
 
    if (is_dmd)
    {
-#ifndef __STANDALONE__
+#ifdef EXT_CAPTURE
       const bool isExternalDMD = HasDMDCapture();
 #else
       constexpr bool isExternalDMD = false;

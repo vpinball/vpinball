@@ -35,10 +35,10 @@ bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool conver
       ShowError("Can't find sequence of obj files! The file name of the sequence must be <meshname>_x.obj where x is the frame number!");
       return false;
    }
+#ifndef __STANDALONE__
    idx++;
    name = name.substr(0,idx);
    string sname = name + "*.obj";
-#ifndef __STANDALONE__
    WIN32_FIND_DATA data;
    const HANDLE h = FindFirstFile(sname.c_str(), &data);
    vector<string> allFiles;

@@ -300,9 +300,9 @@ BOOL VROptionsDialog::OnInitDialog()
 
 INT_PTR VROptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+#ifndef ENABLE_XR
    switch (uMsg)
    {
-   #ifndef ENABLE_XR
    case WM_TIMER:
    {
       KeyWindowStruct* const pksw = (KeyWindowStruct*)GetWindowLongPtr(GWLP_USERDATA);
@@ -327,8 +327,8 @@ INT_PTR VROptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       pksw->m_timerid = 0;
       break;
    }
-   #endif
    }
+#endif
 
    return DialogProcDefault(uMsg, wParam, lParam);
 }

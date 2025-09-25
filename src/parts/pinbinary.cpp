@@ -93,7 +93,8 @@ void PinFont::Register()
 
    string path = GetExecutablePath();
    const size_t pos = path.find_last_of(PATH_SEPARATOR_CHAR);
-   path = pos != string::npos ? path.substr(0, pos + 1) : path;
+   if (pos != string::npos)
+       path = path.substr(0, pos + 1);
 
    static int tempFontNumber = -1;
    tempFontNumber++;

@@ -85,7 +85,7 @@ protected:
    void inetPton(const char* host, struct sockaddr_in& saddr_in)
    {
       #ifdef _WIN32
-         #ifdef UNICODE
+         #ifdef _UNICODE
             InetPtonA(AF_INET, host, &(saddr_in.sin_addr.s_addr));
          #else
             InetPton(AF_INET, host, &(saddr_in.sin_addr.s_addr));

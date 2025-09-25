@@ -6,8 +6,6 @@
 
 #include "minid3d9.h"
 
-#define _STR(x)    # x
-#define  STR(x)    _STR(x)
 #define _WIDEN(x)  L ## x
 #define  WIDEN(x)  _WIDEN(x)
 

@@ -29,7 +29,7 @@ public:
    static unsigned int GetMsgID(const char* name_space, const char* name) { return MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(name_space, name); }
    static void ReleaseMsgID(const unsigned int msgId) { MsgPluginManager::GetInstance().GetMsgAPI().ReleaseMsgID(msgId); }
 
-   string ApplyScriptCOMObjectOverrides(string& script) const;
+   string ApplyScriptCOMObjectOverrides(const string& script) const;
    IDispatch* CreateCOMPluginObject(const string& classId);
 
    std::shared_ptr<BaseTexture> GetTexture(VPXTexture texture) const;

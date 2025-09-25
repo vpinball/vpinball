@@ -119,7 +119,7 @@ void Settings::RegisterFloatSetting(const Section section, const string &key, co
 }
 
 
-// This methods declares the static settings supported by VPX.
+// This method declares the static settings supported by VPX.
 //
 // All static (known at compile time) settings should be declared here with their corresponding properties, allowing 
 // to improve setting management by:
@@ -127,7 +127,7 @@ void Settings::RegisterFloatSetting(const Section section, const string &key, co
 // - adding the ability to generate a friendly up-to-date default setting file with usage comments
 // - adding static, explicit typîng to avoid unexpected data conversions
 // - remove duplicated default values spread all over the codebase which happens to not always be equals
-// - allow to move to a simple array based access, improving performance and lowering the need to cache settings into local unsinced fields
+// - allow to move to a simple array based access, improving performance and lowering the need to cache settings into local unsynced fields
 //
 // To allow a slow and smooth transition, settings are declared here little by little. Once registered here, settings may not be accessed
 // using LoadWithDefaultValue (it is asserted in Debug builds).
@@ -310,7 +310,7 @@ void Settings::Validate(const bool addDefaults)
 
    SettingFloat(Settings::PlayerVR, "TableX"s, 0.f, -300.f, 300.f, "VR scene horizontal X offset (cm)."s);
    SettingFloat(Settings::PlayerVR, "TableY"s, 0.f, -300.f, 300.f, "VR scene horizontal Y offset (cm)."s);
-   SettingFloat(Settings::PlayerVR, "TableZ"s, 0.f, -300.f, 300.f, "VR scene vertical offset (cm)s"s);
+   SettingFloat(Settings::PlayerVR, "TableZ"s, 0.f, -300.f, 300.f, "VR scene vertical offset (cm)."s);
    SettingBool(Settings::PlayerVR, "ShrinkPreview"s, false, ""s);
    SettingInt(Section::PlayerVR, "VRPreview"s, 1, 0, 3, ""s);
    SettingInt(Section::PlayerVR, "PassthroughColor"s, 0xBB4700, 0x000000, 0xFFFFFF, ""s);
@@ -500,8 +500,7 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
          if (j == Section::Version)
             continue;
 
-         string regpath(j == Section::Controller ? "Software\\Visual Pinball\\"s : "Software\\Visual Pinball\\VP10\\"s);
-         regpath += m_settingKeys[j];
+         const string regpath = (j == Section::Controller ? "Software\\Visual Pinball\\" : "Software\\Visual Pinball\\VP10\\") + m_settingKeys[j];
 
          HKEY hk;
          LSTATUS res = RegOpenKeyEx(HKEY_CURRENT_USER, regpath.c_str(), 0, KEY_READ, &hk);

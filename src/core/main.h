@@ -87,6 +87,10 @@ using std::vector;
 static string defaultFileNameSearch[] = { string(), string(), string(), string(), string(), string(), string() };
 static const string defaultPathSearch[] = { string(), "user"s +PATH_SEPARATOR_CHAR, "scripts"s +PATH_SEPARATOR_CHAR, "tables"s +PATH_SEPARATOR_CHAR, string(), string(), string() };
 
+// RESULT codes
+#define S_FAIL MAKE_SCODE(SEVERITY_ERROR, FACILITY_CONTROL, 1004)
+#define hrNotImplemented ResultFromScode(E_NOTIMPL)
+
 #ifndef __STANDALONE__
 
 #ifndef USER_DEFAULT_SCREEN_DPI
@@ -130,9 +134,9 @@ static const string defaultPathSearch[] = { string(), "user"s +PATH_SEPARATOR_CH
 #include <wxx_treeview.h>		// Add CTreeView
 //#include <wxx_webbrowser.h>		// Add CAXWindow, CWebBrowser
 //#include <wxx_wincore.h>
-#endif
 
-#ifdef __STANDALONE__
+#else
+
 #define fopen_s(pFile, filename, mode) (((*(pFile)) = fopen((filename), (mode))) == nullptr)
 #define fprintf_s fprintf
 #define fread_s(buffer, bufferSize, elementSize, count, stream) fread(buffer, bufferSize, count, stream)
@@ -159,9 +163,6 @@ static const string defaultPathSearch[] = { string(), "user"s +PATH_SEPARATOR_CH
 
 #undef SetCurrentDirectory
 #define SetCurrentDirectory SetCurrentDirectoryA
-
-#undef GetModuleFileName
-#define GetModuleFileName GetModuleFileNameA
 
 #undef MessageBox
 #define MessageBox MessageBoxA
@@ -230,7 +231,6 @@ class SCNotification final { };
 
 #include "dispid.h"
 
-#include "utils/variant.h"
 #include "utils/vector.h"
 #include "utils/vectorsort.h"
 #ifndef __STANDALONE__

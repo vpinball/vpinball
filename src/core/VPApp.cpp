@@ -473,11 +473,9 @@ VPApp::VPApp(HINSTANCE hInstance)
       _Module.Init(ObjectMap, m_vpinball.theInstance, &LIBID_VPinballLib);
 
       // load and register VP type library for COM integration
-      char szFileName[MAXSTRING];
-      if (GetModuleFileName(m_vpinball.theInstance, szFileName, MAXSTRING))
       {
          ITypeLib *ptl = nullptr;
-         const wstring wFileName = MakeWString(szFileName);
+         const wstring wFileName = GetModulePath<wstring>(m_vpinball.theInstance);
          if (SUCCEEDED(LoadTypeLib(wFileName.c_str(), &ptl)))
          {
             // first try to register system-wide (if running as admin)

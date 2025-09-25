@@ -584,21 +584,21 @@ void CodeViewer::RemoveItem(IScriptable * const piscript)
    m_vcvd.RemoveElementAt(idx);
 
    // Remove item from dropdown
-   char * const szT = MakeChar(name);
 #ifndef __STANDALONE__
+   char * const szT = MakeChar(name);
    const size_t index = ::SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
    ::SendMessage(m_hwndItemList, CB_DELETESTRING, index, 0);
-#endif
    delete [] szT;
+#endif
 
    delete pcvd;
 }
 
 void CodeViewer::SelectItem(IScriptable * const piscript)
 {
+#ifndef __STANDALONE__
    char * const szT = MakeChar(piscript->get_Name());
 
-#ifndef __STANDALONE__
    const LRESULT index = ::SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
    if (index != CB_ERR)
    {
@@ -606,8 +606,9 @@ void CodeViewer::SelectItem(IScriptable * const piscript)
 
       ListEventsFromItem();
    }
-#endif
+
    delete [] szT;
+#endif
 }
 
 HRESULT CodeViewer::ReplaceName(IScriptable *const piscript, const wstring &wzNew)
@@ -632,22 +633,20 @@ HRESULT CodeViewer::ReplaceName(IScriptable *const piscript, const wstring &wzNe
    m_vcvd.AddSortedString(pcvd); // and re-add
 
    // Remove old name from dropdown and replace it with the new
-   char * szT = MakeChar(name);
 #ifndef __STANDALONE__
+   char * szT = MakeChar(name);
    size_t index = ::SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
    ::SendMessage(m_hwndItemList, CB_DELETESTRING, index, 0);
-#endif
    delete [] szT;
 
    szT = MakeChar(wzNew.c_str());
-#ifndef __STANDALONE__
    index = ::SendMessage(m_hwndItemList, CB_ADDSTRING, 0, (size_t)szT);
    ::SendMessage(m_hwndItemList, CB_SETITEMDATA, index, (size_t)piscript);
 
    ::SendMessage(m_hwndItemList, CB_SETCURSEL, index, 0);
    ListEventsFromItem(); // Just to get us into a good state
-#endif
    delete [] szT;
+#endif
 
    return S_OK;
 }
@@ -819,12 +818,12 @@ void CodeViewer::SetEnabled(const bool enabled)
 
 void CodeViewer::SetCaption(const string& szCaption)
 {
+#ifndef __STANDALONE__
    string szT;
    if (!external_script_name.empty())
       szT = "MODIFYING EXTERNAL SCRIPT: " + external_script_name;
    else
       szT = szCaption + ' ' + LocalString(IDS_SCRIPT).m_szbuffer;
-#ifndef __STANDALONE__
    SetWindowText(szT.c_str());
 #endif
 }
@@ -1200,14 +1199,14 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 		g_pplayer->LockForegroundWindow(false);
 
 	CComObject<PinTable>* const pt = g_pvp->GetActiveTable();
+#ifndef __STANDALONE__
 	if (pt)
 	{
-#ifndef __STANDALONE__
 		pt->m_pcv->SetVisible(true);
 		pt->m_pcv->ShowWindow(SW_RESTORE);
 		pt->m_pcv->ColorError(nLine, nChar);
-#endif
 	}
+#endif
 
 	// Check if this is a compile error or a runtime error
 	SCRIPTSTATE state;
@@ -1402,7 +1401,6 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	errorStream << L"Line: " << nLine << "\r\n";
 	errorStream << (exception.bstrDescription ? exception.bstrDescription : L"Description unavailable") << "\r\n";
 
-#ifndef __STANDALONE__
 	// Get stack trace
 	IDebugStackFrame* errStackFrame;
 	if (pscripterror->GetStackFrame(&errStackFrame) == S_OK)
@@ -1477,7 +1475,6 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
          thread->Release();
       }
 	}
-#endif
 
 	errorStream << L"\r\n";
 
@@ -1502,7 +1499,6 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	if (!m_suppressErrorDialogs
 		&& !(g_pplayer != nullptr && g_pplayer->GetCloseState() == Player::CloseState::CS_CLOSE_APP))
 	{
-#ifndef __STANDALONE__
 		g_pvp->EnableWindow(FALSE);
 		ScriptErrorDialog scriptErrorDialog(errorStr);
 
@@ -1515,7 +1511,6 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 
 		if (pt != nullptr)
 			::SetFocus(pt->m_pcv->m_hwndScintilla);
-#endif
 	}
 #endif
 

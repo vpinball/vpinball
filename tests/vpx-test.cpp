@@ -39,12 +39,10 @@ string GetAssetPath()
    HMODULE hm = nullptr;
    if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, _T("GetAssetPath"), &hm) == 0)
       return ""s;
-   TCHAR path[MAX_PATH];
-   if (GetModuleFileName(hm, path, MAX_PATH) == 0)
-      return ""s;
-   std::string fullpath(path);
-   fullpath = fullpath.substr(0, fullpath.find_last_of(_T("\\/"))) + _T('\\');
-   return fullpath + "test-assets\\";
+   string path = GetModulePath<string>(hm);
+   if (path.empty())
+      return path;
+   return path.substr(0, path.find_last_of(_T("\\/"))) + "\\test-assets\\";
 }
 
 bool CheckMatchingBitmaps(const string& filePath1, const string& filePath2)

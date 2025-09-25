@@ -764,9 +764,7 @@ PinTable* PinTable::CopyForPlay()
       script = VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(script);
       ::SendMessage(dst->m_pcv->m_hwndScintilla, SCI_SETTEXT, 0, (size_t)script.c_str());
    #else
-      std::string script = src->m_pcv->m_script_text;
-      script = VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(script);
-      dst->m_pcv->m_script_text = script;
+      dst->m_pcv->m_script_text = VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(src->m_pcv->m_script_text);
    #endif
 
    dst->m_settings = src->m_settings;
@@ -4221,7 +4219,7 @@ void PinTable::ImportBackdropPOV(const string &filename)
       vector<string> fileNames;
       if (!m_vpinball->OpenFileDialog(initialDir, fileNames, 
          "User settings file (*.ini)\0*.ini\0Old POV file (*.pov)\0*.pov\0Legacy POV file(*.xml)\0*.xml\0",
-         "ini", 0, toUserSettings ? "Import POV to user settings" : "Import POV to table properties"))
+         "ini", 0, toUserSettings ? "Import POV to user settings"s : "Import POV to table properties"s))
          return;
       file = fileNames[0];
       const size_t index = file.find_last_of(PATH_SEPARATOR_CHAR);

@@ -40,7 +40,9 @@
 //#define DEBUG_NO_SOUND
 //#define DEBUG_REFCOUNT_TRIGGER
 
-//#define ENABLE_TRACE // enables all TRACE_FUNCTION() calls to use D3DPERF_Begin/EndEvent
+#ifdef ENABLE_DX9
+ //#define ENABLE_TRACE // enables all TRACE_FUNCTION() calls to use D3DPERF_Begin/EndEvent
+#endif
 
 #define EDITOR_BG_WIDTH    1000
 #define EDITOR_BG_HEIGHT   750

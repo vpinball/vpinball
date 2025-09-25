@@ -574,7 +574,6 @@ bool DispReel::LoadToken(const int id, BiffReader * const pbr)
       pbr->ReadBytes(data, 1); // nameLen
       pbr->ReadBytes(data, data[0]); // name
 #endif
-
       break;
    }
    default: ISelect::LoadToken(id, pbr); break;

@@ -7,9 +7,9 @@ namespace CrashHandler
 {
 void Init();
 // crash.txt by default
-void SetCrashReportFileName(const char* name);
+void SetCrashReportFileName(const string& name);
 // crash.dmp by default
-void SetMiniDumpFileName(const char* name);
+void SetMiniDumpFileName(const string& name);
 }
 }
 

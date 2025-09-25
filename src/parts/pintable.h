@@ -8,9 +8,6 @@
 
 #include <atomic>
 #include "utils/hash.h"
-#ifndef __STANDALONE__
-#include "ui/dialogs/SearchSelectDialog.h"
-#endif
 #include "renderer/RenderProbe.h"
 #include "renderer/ViewSetup.h"
 
@@ -18,7 +15,9 @@
 
 #include "ui/win/PinTableMDI.h"
 
-#ifdef __STANDALONE__
+#ifndef __STANDALONE__
+#include "ui/dialogs/SearchSelectDialog.h"
+#else
 #include <iostream>
 class Light;
 #endif

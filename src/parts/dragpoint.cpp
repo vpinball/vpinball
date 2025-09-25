@@ -692,10 +692,10 @@ STDMETHODIMP DragPoint::put_TextureCoordinateU(float newVal)
    return S_OK;
 }
 
+#ifndef __STANDALONE__
 static int rotateApplyCount = 0;
 INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-#ifndef __STANDALONE__
    ISelect *psel;
 
    switch (uMsg)
@@ -990,7 +990,6 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
       }
       break;
    }
-#endif
 
    return FALSE;
 }
@@ -998,7 +997,6 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 static int translateApplyCount = 0;
 INT_PTR CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-#ifndef __STANDALONE__
    ISelect *psel;
 
    switch (uMsg)
@@ -1080,7 +1078,7 @@ INT_PTR CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lP
       }
       break;
    }
-#endif
 
    return FALSE;
 }
+#endif
