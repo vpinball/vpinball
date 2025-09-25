@@ -921,11 +921,9 @@
 #define IDC_VR_SCALE                    553
 #define IDC_MODIFY3DSTEREO              554
 #define IDC_NEAR_PLANE                  554
-#define IDC_VRPREVIEW_WIDTH             555
 #define IDC_DMD2                        555
 #define IDC_USE_SCRIPT_DMD_CHECK        555
 #define IDC_ADDBLEND                    556
-#define IDC_VRPREVIEW_HEIGHT            556
 #define IDC_DMD                         557
 #define IDC_LIGHTAMBIENT                558
 #define IDC_LIGHT0EMISSION              559
@@ -1314,6 +1312,7 @@
 #define IDD_PFVIEW_OPT                  931
 #define IDD_SCOREVIEW_OPT               933
 #define IDD_BACKGLASS_OPT               934
+#define IDD_VRPREVIEW_OPT               935
 #define IDC_DOT_TINT                    935
 #define IDC_DOT_SIZE                    936
 #define IDC_DOT_BRIGHTNESS              937

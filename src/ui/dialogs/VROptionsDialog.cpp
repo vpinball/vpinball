@@ -136,9 +136,6 @@ BOOL VROptionsDialog::OnInitDialog()
       GetDlgItem(IDC_JOYTABLEDOWN).ShowWindow(SW_HIDE);
    #endif
 
-   SetDlgItemText(IDC_VRPREVIEW_WIDTH, std::to_string(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PreviewWidth"s, 640)).c_str());
-   SetDlgItemText(IDC_VRPREVIEW_HEIGHT, std::to_string(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PreviewHeight"s, 640)).c_str());
-
    const bool scaleToFixedWidth = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleToFixedWidth"s, false);
    oldScaleValue = scaleToFixedWidth;
    SendDlgItemMessage(IDC_SCALE_TO_CM, BM_SETCHECK, scaleToFixedWidth ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -395,9 +392,6 @@ void VROptionsDialog::OnOK()
 {
    const size_t textureModeVR = SendDlgItemMessage(IDC_COMBO_TEXTURE, CB_GETCURSEL, 0, 0);
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "EyeFBFormat"s, (int)textureModeVR);
-
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "PreviewWidth"s, sz2f(GetDlgItemText(IDC_VRPREVIEW_WIDTH).GetString()));
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "PreviewHeight"s, sz2f(GetDlgItemText(IDC_VRPREVIEW_HEIGHT).GetString()));
 
    const bool scaleToFixedWidth = IsDlgButtonChecked(IDC_SCALE_TO_CM)!= 0;
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "ScaleToFixedWidth"s, scaleToFixedWidth);

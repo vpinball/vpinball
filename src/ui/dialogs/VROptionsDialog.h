@@ -19,7 +19,4 @@ private:
    void ResetVideoPreferences();
    void SetValue(int nID, const Settings::Section& section, const string& key);
    void StartTimer(int nID);
-
-   ColorButton m_colorKey;
-   CColorDialog m_colorDialog;
 };
