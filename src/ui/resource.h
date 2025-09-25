@@ -900,14 +900,11 @@
 #define IDD_PROPTABLE_PHYSICS2          547
 #define IDC_STATIC_SOUNDDEVICE2         547
 #define IDD_PROPTABLE_PHYSICS           547
-#define IDC_3D_VR_ORIENTATION           547
 #define IDC_FAKE_STEREO                 547
-#define IDC_VR_OFFSET_X                 548
 #define IDC_3D_STEREO_ANAGLYPH_FILTER   548
 #define IDC_GLASS_PAD_BOTTOM            548
 #define IDS_DIMENSIONSSLOPE             549
 #define IDD_PROPFLASHER_VISUALS         549
-#define IDC_VR_OFFSET_Y                 549
 #define IDC_FRAME_PAD_RIGHT             549
 #define IDS_LIGHTSOURCES                550
 #define IDD_PROPRAMP_PHYSICS1           550
@@ -915,7 +912,6 @@
 #define IDC_VR_SLOPE                    550
 #define IDC_FRAME_PAD_BOTTOM            550
 #define IDS_INPUT                       551
-#define IDC_VR_OFFSET_Z                 551
 #define IDS_UNHIDEALL                   552
 #define IDS_HIDE                        553
 #define IDC_VR_SCALE                    553
@@ -953,7 +949,6 @@
 #define IDC_ENABLE_SSR                  590
 #define IDC_BLOOM_OFF                   591
 #define IDC_PLUNGERRETRACT              592
-#define IDC_DMD_SOURCE                  593
 #define IDC_IMPORT_NO_FORSYTH           593
 #define IDC_SHARPEN_COMBO               594
 #define IDC_GET_INPLAYSTATE             595
@@ -1179,14 +1174,10 @@
 #define IDC_PROP_TAB                    827
 #define IDC_VR_SLOPE_LABEL              827
 #define IDC_3D_STEREO_OFS_LABEL2        827
-#define IDC_3D_VR_ORIENTATION_LABEL     828
 #define IDC_3D_STEREO_OFS_LABEL3        828
-#define IDC_VR_OFFSET_X_LABEL           829
 #define IDC_3D_STEREO_OFS_LABEL4        829
 #define IDC_MULTIPLE_ELEMENTS_SELECTED_STATIC 830
-#define IDC_VR_OFFSET_Y_LABEL           830
 #define IDC_3D_STEREO_MS_LABEL2         830
-#define IDC_VR_OFFSET_Z_LABEL           831
 #define IDC_3D_STEREO_ZPD_LABEL2        831
 #define IDC_3D_STEREO_OFS_LABEL5        832
 #define IDC_ASSIGN_BUTTON               833
@@ -1264,7 +1255,6 @@
 #define IDC_SHARPEN_LABEL               883
 #define IDC_FRAME_PAD_TOP               883
 #define IDC_BALL_ANTISTRETCH            884
-#define IDC_BG_SOURCE                   885
 #define IDC_BACKGLASS_GROUP             886
 #define IDC_BACKGLASS_GROUP2            887
 #define IDC_REFLECTION_PROBE            888

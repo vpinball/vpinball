@@ -62,36 +62,6 @@ void VROptionsDialog::AddToolTip(const char * const text, HWND parentHwnd, HWND 
    ::SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
 }
 
-void VROptionsDialog::ResetVideoPreferences()
-{
-   constexpr bool scaleToFixedWidth = false;
-   oldScaleValue = scaleToFixedWidth;
-   SendDlgItemMessage(IDC_SCALE_TO_CM, BM_SETCHECK, scaleToFixedWidth ? BST_CHECKED : BST_UNCHECKED, 0);
-
-   scaleRelative = 1.0f;
-   scaleAbsolute = 55.0f;
-
-   SetDlgItemText(IDC_VR_SCALE, f2sz(scaleToFixedWidth ? scaleAbsolute : scaleRelative).c_str());
-
-   SetDlgItemText(IDC_NEAR_PLANE, f2sz(5.0f).c_str());
-   SetDlgItemText(IDC_VR_SLOPE, f2sz(6.5f).c_str());
-
-   SetDlgItemText(IDC_3D_VR_ORIENTATION, f2sz(0.0f).c_str());
-   SetDlgItemText(IDC_VR_OFFSET_X, f2sz(0.0f).c_str());
-   SetDlgItemText(IDC_VR_OFFSET_Y, f2sz(0.0f).c_str());
-   SetDlgItemText(IDC_VR_OFFSET_Z, f2sz(80.0f).c_str());
-
-   SendDlgItemMessage(IDC_TURN_VR_ON, CB_SETCURSEL, 1, 0);
-
-   SendDlgItemMessage(IDC_DMD_SOURCE, CB_SETCURSEL, 1, 0);
-   SendDlgItemMessage(IDC_BG_SOURCE, CB_SETCURSEL, 1, 0);
-
-   SendDlgItemMessage(IDC_CAP_EXTDMD, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
-   SendDlgItemMessage(IDC_CAP_PUP, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
-
-   SendDlgItemMessage(IDC_COMBO_TEXTURE, CB_SETCURSEL, 1, 0);
-}
-
 BOOL VROptionsDialog::OnInitDialog()
 {
    const HWND hwndDlg = GetHwnd();
@@ -100,8 +70,6 @@ BOOL VROptionsDialog::OnInitDialog()
    {
       ::SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);
       AddToolTip("Disable VR auto-detection, e.g. if Visual Pinball refuses to start up.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_TURN_VR_ON).GetHwnd());
-      AddToolTip("What sources should be used for DMD?\nOnly internally supplied via Script/Text Label/Flasher\nScreenreader (see screenreader.ini)\nFrom Shared Memory API", hwndDlg, toolTipHwnd, GetDlgItem(IDC_DMD_SOURCE).GetHwnd());
-      AddToolTip("What sources should be used for Backglass?\nOnly internal background\nTry to open a directb2s file\ndirectb2s file dialog\nScreenreader (see screenreader.ini)\nFrom Shared Memory API", hwndDlg, toolTipHwnd, GetDlgItem(IDC_BG_SOURCE).GetHwnd());
       AddToolTip("Pixel format for VR Rendering.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd());
       AddToolTip("Attempt to capture an external DMD window such as Freezy/DMDext, UltraDMD or P-ROC.\r\n\r\nFor Freezy/DMDext the DmdDevice.ini needs to set 'stayontop = true'.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_CAP_EXTDMD).GetHwnd());
       AddToolTip("Attempt to capture the PUP player window and display it as a Backglass in VR.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_CAP_PUP).GetHwnd());
@@ -119,21 +87,9 @@ BOOL VROptionsDialog::OnInitDialog()
       GetDlgItem(IDC_NEAR_LABEL).ShowWindow(SW_HIDE); // OpenXR use fixed near plane distance in real world unit
       GetDlgItem(IDC_NEAR_PLANE).ShowWindow(SW_HIDE);
 
+      GetDlgItem(IDC_STATIC21).ShowWindow(SW_HIDE);
       GetDlgItem(IDC_VR_SLOPE_LABEL).ShowWindow(SW_HIDE); // OpenXR only compensate the playfield slope (no additional user adjustment)
       GetDlgItem(IDC_VR_SLOPE).ShowWindow(SW_HIDE);
-
-      GetDlgItem(IDC_BTTABLERECENTER).ShowWindow(SW_HIDE); // Position is managed through TweakUI, not custom key shortcuts
-      GetDlgItem(IDC_TABLEREC_TEXT).ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_JOYTABLERECENTER).ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_STATIC4).ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_STATIC5).ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_STATIC6).ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_BTTABLEUP).ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_TABLEUP_TEXT).ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_JOYTABLEUP).ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_BTTABLEDOWN).ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_TABLEDOWN_TEXT).ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_JOYTABLEDOWN).ShowWindow(SW_HIDE);
    #endif
 
    const bool scaleToFixedWidth = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleToFixedWidth"s, false);
@@ -147,10 +103,6 @@ BOOL VROptionsDialog::OnInitDialog()
 
    SetDlgItemText(IDC_NEAR_PLANE, f2sz(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "NearPlane"s, 5.0f)).c_str());
    SetDlgItemText(IDC_VR_SLOPE, f2sz(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "Slope"s, 6.5f)).c_str());
-   SetDlgItemText(IDC_3D_VR_ORIENTATION, f2sz(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "Orientation"s, 0.0f)).c_str());
-   SetDlgItemText(IDC_VR_OFFSET_X, f2sz(g_pvp->m_settings.LoadValueFloat(Settings::PlayerVR, "TableX"s)).c_str());
-   SetDlgItemText(IDC_VR_OFFSET_Y, f2sz(g_pvp->m_settings.LoadValueFloat(Settings::PlayerVR, "TableY"s)).c_str());
-   SetDlgItemText(IDC_VR_OFFSET_Z, f2sz(g_pvp->m_settings.LoadValueFloat(Settings::PlayerVR, "TableZ"s)).c_str());
 
    const int askToTurnOn = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "AskToTurnOn"s, 1);
    HWND hwnd = GetDlgItem(IDC_TURN_VR_ON).GetHwnd();
@@ -159,25 +111,6 @@ BOOL VROptionsDialog::OnInitDialog()
    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"VR autodetect");
    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"VR disabled");
    ::SendMessage(hwnd, CB_SETCURSEL, askToTurnOn, 0);
-   ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
-
-   const int DMDsource = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "DMDSource"s, 1); // Unimplemented for the time being
-   hwnd = GetDlgItem(IDC_DMD_SOURCE).GetHwnd();
-   ::SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
-   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Internal Text/Flasher (via vbscript)");
-   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Screenreader");
-   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"SharedMemory API");
-   ::SendMessage(hwnd, CB_SETCURSEL, DMDsource, 0);
-   ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
-
-   const int BGsource = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "BGSource"s, 1); // Unimplemented for the time being
-   hwnd = GetDlgItem(IDC_BG_SOURCE).GetHwnd();
-   ::SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
-   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Default table background");
-   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"directb2s File (auto only)");
-   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"directb2s File");
-   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"SharedMemory API");
-   ::SendMessage(hwnd, CB_SETCURSEL, BGsource, 0);
    ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    bool on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "CaptureExternalDMD"s, false);
@@ -256,9 +189,6 @@ BOOL VROptionsDialog::OnInitDialog()
       }
       ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
       ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
-      #ifdef ENABLE_XR
-         ::EnableWindow(hwnd, FALSE);
-      #endif
    }
 
    //
@@ -274,30 +204,20 @@ BOOL VROptionsDialog::OnInitDialog()
    g_ButtonProc2 = (WNDPROC)::GetWindowLongPtr(hwndButton, GWLP_WNDPROC);
    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc2);
    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-   #ifdef ENABLE_XR
-      ::EnableWindow(hwndButton, FALSE);
-   #endif
 
    hwndButton = GetDlgItem(IDC_BTTABLEUP).GetHwnd();
    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc2);
    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-   #ifdef ENABLE_XR
-      ::EnableWindow(hwndButton, FALSE);
-   #endif
 
    hwndButton = GetDlgItem(IDC_BTTABLEDOWN).GetHwnd();
    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc2);
    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-   #ifdef ENABLE_XR
-      ::EnableWindow(hwndButton, FALSE);
-   #endif
 
    return TRUE;
 }
 
 INT_PTR VROptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-#ifndef ENABLE_XR
    switch (uMsg)
    {
    case WM_TIMER:
@@ -325,7 +245,6 @@ INT_PTR VROptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       break;
    }
    }
-#endif
 
    return DialogProcDefault(uMsg, wParam, lParam);
 }
@@ -336,11 +255,6 @@ BOOL VROptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
    switch (LOWORD(wParam))
    {
-      case IDC_DEFAULTS:
-      {
-         ResetVideoPreferences();
-         break;
-      }
       case IDC_SCALE_TO_CM:
       {
          #ifdef ENABLE_XR
@@ -362,7 +276,6 @@ BOOL VROptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          #endif
          break;
       }
-      #ifndef ENABLE_XR
       case IDC_BTTABLERECENTER:
       {
          if (HIWORD(wParam) == BN_CLICKED)
@@ -381,7 +294,6 @@ BOOL VROptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             StartTimer(IDC_TABLEDOWN_TEXT);
          break;
       }
-      #endif
       default:
          return FALSE;
    }
@@ -406,12 +318,6 @@ void VROptionsDialog::OnOK()
 
    const size_t askToTurnOn = SendDlgItemMessage(IDC_TURN_VR_ON, CB_GETCURSEL, 0, 0);
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "AskToTurnOn"s, (int)askToTurnOn);
-
-   const size_t dmdSource = SendDlgItemMessage(IDC_DMD_SOURCE, CB_GETCURSEL, 0, 0);
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "DMDSource"s, (int)dmdSource);
-
-   const size_t bgSource = SendDlgItemMessage(IDC_BG_SOURCE, CB_GETCURSEL, 0, 0);
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "BGSource"s, (int)bgSource);
 
    bool selected = IsDlgButtonChecked(IDC_CAP_EXTDMD)!= 0;
    g_pvp->m_settings.SaveValue(Settings::Player, "CaptureExternalDMD"s, selected);

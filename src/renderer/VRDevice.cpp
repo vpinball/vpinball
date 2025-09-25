@@ -1533,7 +1533,6 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
 }
 #endif
 
-#ifdef ENABLE_VR
 void VRDevice::TableUp()
 {
    m_tablePos.z += 1.0f;
@@ -1550,8 +1549,8 @@ void VRDevice::TableDown()
    m_worldDirty = true;
 }
 
-bool VRDevice::IsVRinstalled()
-{
+#ifdef ENABLE_VR
+bool VRDevice::IsVRinstalled() {
    return vr::VR_IsRuntimeInstalled();
 }
 

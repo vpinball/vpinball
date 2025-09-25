@@ -637,7 +637,6 @@ void PinInput::FireActionEvent(EnumPlayerActions action, bool isPressed)
          g_pplayer->m_vrDevice->RecenterTable();
       break;
 
-   #if defined(ENABLE_VR)
    case eTableUp:
       if (g_pplayer->m_vrDevice && !isPressed)
          g_pplayer->m_vrDevice->TableUp();
@@ -647,7 +646,6 @@ void PinInput::FireActionEvent(EnumPlayerActions action, bool isPressed)
       if (g_pplayer->m_vrDevice && !isPressed)
          g_pplayer->m_vrDevice->TableDown();
       break;
-   #endif
    
    default: break;
    }
