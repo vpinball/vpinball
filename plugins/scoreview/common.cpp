@@ -146,7 +146,7 @@ T GetModulePath(HMODULE hModule)
    while (true)
    {
       path.resize(size);
-      const DWORD length = ::GetModuleFileName(hModule, path.data(), size);
+      const DWORD length = ::GetModuleFileName(hModule, (TCHAR*)path.data(), size);
       if (length == 0)
          return {};
       if (length < size)
