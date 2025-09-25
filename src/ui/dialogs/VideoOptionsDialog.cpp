@@ -276,6 +276,26 @@ private:
    CComboBox m_viewMode;
 };
 
+class VRPreviewOptPage final : public VideoOptionPropPage
+{
+public:
+   VRPreviewOptPage(Settings& appSettings, Settings& tableSettings);
+   ~VRPreviewOptPage() override { }
+
+   VRPreviewOptPage(const VRPreviewOptPage&) = delete;
+   VRPreviewOptPage& operator=(const VRPreviewOptPage&) = delete;
+
+protected:
+   BOOL OnInitDialog() override;
+   BOOL OnApply() override;
+
+   void LoadSettings(Settings& settings) override;
+   void SaveSettings(Settings& settings, bool saveAll) override;
+
+private:
+   CComboBox m_viewMode;
+};
+
 
 
 VideoOptionProperties::VideoOptionProperties(HWND hParent /* = nullptr*/)
@@ -294,6 +314,9 @@ VideoOptionProperties::VideoOptionProperties(HWND hParent /* = nullptr*/)
    #if defined(ENABLE_BGFX)
       AddPage(new ScoreViewOptPage(m_appSettings, m_tableSettings));
       AddPage(new BackglassViewOptPage(m_appSettings, m_tableSettings));
+   #endif
+   #if defined(ENABLE_XR) || defined(ENABLE_VR)
+      AddPage(new VRPreviewOptPage(m_appSettings, m_tableSettings));
    #endif
 }
 
@@ -406,11 +429,8 @@ void VideoOptionPropPage::InitDisplayControls(const Settings::Section wndSection
    AddToolTip(m_wndForce10bit, "Enforces 10Bit (WCG) rendering.\r\nRequires a corresponding 10Bit output capable graphics card and monitor.\r\nAlso requires to have exclusive fullscreen mode enforced (for now).");
    AttachItem(IDC_WIDTH_EDIT, m_wndWidth);
    AttachItem(IDC_HEIGHT_EDIT, m_wndHeight);
-   if (m_wndEmbeddable)
-   {
-      AttachItem(IDC_X_OFFSET_EDIT, m_wndX);
-      AttachItem(IDC_Y_OFFSET_EDIT, m_wndY);
-   }
+   AttachItem(IDC_X_OFFSET_EDIT, m_wndX);
+   AttachItem(IDC_Y_OFFSET_EDIT, m_wndY);
    m_wndAspectRatio.SetRedraw(false);
    m_wndAspectRatio.AddString("Free");
    for (size_t j = 1; j < std::size(aspectRatios); j++)
@@ -479,19 +499,16 @@ void VideoOptionPropPage::UpdateFullscreenModesList()
    m_wndVideoModes.ShowWindow(fullscreen ? 1 : 0);
    m_wndForce10bit.ShowWindow(fullscreen ? 1 : 0);
    // Window settings
-   if (m_wndEmbeddable)
-   {
-      GetDlgItem(IDC_X_LABEL).ShowWindow(0);
-      GetDlgItem(IDC_Y_LABEL).ShowWindow(0);
-      m_wndX.ShowWindow(0);
-      m_wndY.ShowWindow(0);
-   }
    GetDlgItem(IDC_AR_LABEL).ShowWindow(fullscreen ? 0 : 1);
    m_wndAspectRatio.ShowWindow(fullscreen ? 0 : 1);
    GetDlgItem(IDC_WIDTH_LABEL).ShowWindow(fullscreen ? 0 : 1);
    m_wndWidth.ShowWindow(fullscreen ? 0 : 1);
    GetDlgItem(IDC_HEIGHT_LABEL).ShowWindow(fullscreen ? 0 : 1);
    m_wndHeight.ShowWindow(fullscreen ? 0 : 1);
+   GetDlgItem(IDC_X_LABEL).ShowWindow(fullscreen ? 0 : 1);
+   m_wndX.ShowWindow(fullscreen ? 0 : 1);
+   GetDlgItem(IDC_Y_LABEL).ShowWindow(fullscreen ? 0 : 1);
+   m_wndY.ShowWindow(fullscreen ? 0 : 1);
    GetDlgItem(IDC_RESET_WINDOW).ShowWindow(fullscreen ? 0 : 1);
 
    m_allVideoModes = VPX::Window::GetDisplayModes(m_displays[display]);
@@ -640,10 +657,10 @@ void VideoOptionPropPage::SaveDisplaySettings()
 
    if (embedded)
    {
-      int x = GetDlgItemInt(IDC_X_OFFSET_EDIT, TRUE);
-      int y = GetDlgItemInt(IDC_Y_OFFSET_EDIT, TRUE);
-      int width = GetDlgItemInt(IDC_WIDTH_EDIT, TRUE);
-      int height = GetDlgItemInt(IDC_HEIGHT_EDIT, TRUE);
+      const int x = GetDlgItemInt(IDC_X_OFFSET_EDIT, TRUE);
+      const int y = GetDlgItemInt(IDC_Y_OFFSET_EDIT, TRUE);
+      const int width = GetDlgItemInt(IDC_WIDTH_EDIT, TRUE);
+      const int height = GetDlgItemInt(IDC_HEIGHT_EDIT, TRUE);
       settings.SaveValue(m_wndSection, m_wndSettingPrefix + "WndX", x, !saveAll);
       settings.SaveValue(m_wndSection, m_wndSettingPrefix + "WndY", y, !saveAll);
       settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Width", width, !saveAll);
@@ -667,18 +684,24 @@ void VideoOptionPropPage::SaveDisplaySettings()
       else
       {
          const int arMode = m_wndAspectRatio.GetCurSel();
-         const int width  = GetDlgItemInt(IDC_WIDTH_EDIT, TRUE);
+         const int x = GetDlgItemInt(IDC_X_OFFSET_EDIT, TRUE);
+         const int y = GetDlgItemInt(IDC_Y_OFFSET_EDIT, TRUE);
+         const int width = GetDlgItemInt(IDC_WIDTH_EDIT, TRUE);
                int height = GetDlgItemInt(IDC_HEIGHT_EDIT, TRUE);
          if (arMode > 0)
             height = (int)(width * (double)aspectRatios[arMode].y / (double)aspectRatios[arMode].x);
          if (!saveAll)
          {
             settings.DeleteValue(m_wndSection, m_wndSettingPrefix + "AspectRatio");
+            settings.DeleteValue(m_wndSection, m_wndSettingPrefix + "WndX");
+            settings.DeleteValue(m_wndSection, m_wndSettingPrefix + "WndY");
             settings.DeleteValue(m_wndSection, m_wndSettingPrefix + "Width");
             settings.DeleteValue(m_wndSection, m_wndSettingPrefix + "Height");
             settings.DeleteValue(m_wndSection, m_wndSettingPrefix + "ColorDepth");
             settings.DeleteValue(m_wndSection, m_wndSettingPrefix + "RefreshRate");
          }
+         settings.SaveValue(m_wndSection, m_wndSettingPrefix + "WndX", x, !saveAll);
+         settings.SaveValue(m_wndSection, m_wndSettingPrefix + "WndY", y, !saveAll);
          if (width > 0 && height > 0)
          {
             settings.SaveValue(m_wndSection, m_wndSettingPrefix + "AspectRatio", arMode, !saveAll);
@@ -764,11 +787,15 @@ BOOL VideoOptionPropPage::OnCommand(WPARAM wParam, LPARAM lParam)
       UpdateDisplayHeightFromWidth();
       break;
    case IDC_HEIGHT_EDIT:
+   case IDC_X_OFFSET_EDIT:
+   case IDC_Y_OFFSET_EDIT:
       if (HIWORD(wParam) == EN_CHANGE)
          PropChanged();
       break;
    case IDC_RESET_WINDOW:
       PropChanged();
+      SetDlgItemInt(IDC_X_OFFSET_EDIT, -1, TRUE);
+      SetDlgItemInt(IDC_Y_OFFSET_EDIT, -1, TRUE);
       (void)m_appSettings.DeleteValue(m_wndSection, m_wndSettingPrefix + "WndX");
       (void)m_appSettings.DeleteValue(m_wndSection, m_wndSettingPrefix + "WndY");
       break;
@@ -2028,6 +2055,41 @@ void BackglassViewOptPage::SaveSettings(Settings& settings, bool saveAll)
 }
 
 BOOL BackglassViewOptPage::OnApply()
+{
+   ApplyChanges();
+   return TRUE;
+}
+
+#pragma endregion
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// VR Preview Options
+
+#pragma region VRPreviewOptPage
+
+VRPreviewOptPage::VRPreviewOptPage(Settings& appSettings, Settings& tableSettings)
+   : VideoOptionPropPage(IDD_BACKGLASS_OPT, _T("VR Preview"), appSettings, tableSettings)
+{
+}
+
+BOOL VRPreviewOptPage::OnInitDialog()
+{
+   VideoOptionPropPage::OnInitDialog();
+   InitDisplayControls(Settings::PlayerVR, "Preview"s, false);
+   LoadSettings(GetEditedSettings());
+   return TRUE;
+}
+
+void VRPreviewOptPage::LoadSettings(Settings& settings)
+{
+   BeginLoad();
+   LoadDisplaySettings();
+   EndLoad();
+}
+
+void VRPreviewOptPage::SaveSettings(Settings& settings, bool saveAll) { SaveDisplaySettings(); }
+
+BOOL VRPreviewOptPage::OnApply()
 {
    ApplyChanges();
    return TRUE;
