@@ -695,11 +695,21 @@ CONSTEXPR inline string upperCase(string input)
 }
 
 // Find strB within strA, case-insensitive, returns the position of strB in strA or string::npos if not found
-CONSTEXPR inline string::size_type StrFindNoCase(string strA, string strB)
+CONSTEXPR inline size_t StrFindNoCase(const string& strA, const string& strB)
 {
-   StrToLower(strA);
-   StrToLower(strB);
-   return strA.find(strB);
+   if (strA.length() < strB.length())
+      return string::npos;
+
+   size_t i = 0;
+   for (size_t j = 0; j < strB.length(); ++j)
+      if (cLower(strA[i + j]) != cLower(strB[j]))
+      {
+         ++i;
+         if (i > strA.length() - strB.length())
+            return string::npos;
+         j = 0;
+      }
+   return i;
 }
 
 void SetThreadName(const string& name);

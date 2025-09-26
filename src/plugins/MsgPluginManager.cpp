@@ -42,6 +42,9 @@ using namespace std::string_literals;
    #define _stricmp strcasecmp
 #endif
 
+#define MINIMAL_DEF_H
+#include "core/def.h"
+
 
 MsgPluginManager& MsgPluginManager::GetInstance()
 {
@@ -386,10 +389,10 @@ void MsgPluginManager::UnloadPlugins()
          plugin->Unload();
 }
 
-std::shared_ptr<MsgPlugin> MsgPluginManager::GetPlugin(std::string_view pluginId) const
+std::shared_ptr<MsgPlugin> MsgPluginManager::GetPlugin(const std::string& pluginId) const
 {
-   for (auto plugin : m_plugins)
-      if(std::equal(plugin->m_id.begin(), plugin->m_id.end(), pluginId.begin(), pluginId.end(), [](char a, char b) { return std::tolower(a) == std::tolower(b); }))
+   for (const auto& plugin : m_plugins)
+      if (StrCompareNoCase(plugin->m_id, pluginId))
          return plugin;
    return nullptr;
 }
