@@ -46,14 +46,14 @@ constexpr inline char cLower(char c)
    return c;
 }
 
-static bool StrCompareNoCase(const string& strA, const string& strB)
+static bool StrCompareNoCase(const std::string& strA, const std::string& strB)
 {
    return strA.length() == strB.length()
       && std::equal(strA.begin(), strA.end(), strB.begin(),
          [](char a, char b) { return cLower(a) == cLower(b); });
 }
 
-static bool StrCompareNoCase(const string& strA, const char* const strB)
+static bool StrCompareNoCase(const std::string& strA, const char* const strB)
 {
    return strA.length() == strlen(strB)
       && std::equal(strA.begin(), strA.end(), strB,
