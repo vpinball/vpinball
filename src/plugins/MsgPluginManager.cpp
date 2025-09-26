@@ -38,7 +38,7 @@ using namespace std::string_literals;
    #endif
 #endif
 
-
+#ifdef __STANDALONE__ // otherwise def.h is pulled in indirectly
 constexpr inline char cLower(char c)
 {
    if (c >= 'A' && c <= 'Z')
@@ -59,6 +59,7 @@ static bool StrCompareNoCase(const std::string& strA, const char* const strB)
       && std::equal(strA.begin(), strA.end(), strB,
          [](char a, char b) { return cLower(a) == cLower(b); });
 }
+#endif
 
 
 MsgPluginManager& MsgPluginManager::GetInstance()
