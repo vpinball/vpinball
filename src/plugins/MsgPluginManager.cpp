@@ -38,12 +38,27 @@ using namespace std::string_literals;
    #endif
 #endif
 
-#if defined(__APPLE__) || (defined(__linux) || defined(__linux__)) || defined(__ANDROID__)
-   #define _stricmp strcasecmp
-#endif
 
-#define MINIMAL_DEF_H
-#include "core/def.h"
+constexpr inline char cLower(char c)
+{
+   if (c >= 'A' && c <= 'Z')
+      c ^= 32; //ASCII convention
+   return c;
+}
+
+static bool StrCompareNoCase(const string& strA, const string& strB)
+{
+   return strA.length() == strB.length()
+      && std::equal(strA.begin(), strA.end(), strB.begin(),
+         [](char a, char b) { return cLower(a) == cLower(b); });
+}
+
+static bool StrCompareNoCase(const string& strA, const char* const strB)
+{
+   return strA.length() == strlen(strB)
+      && std::equal(strA.begin(), strA.end(), strB,
+         [](char a, char b) { return cLower(a) == cLower(b); });
+}
 
 
 MsgPluginManager& MsgPluginManager::GetInstance()
@@ -109,7 +124,7 @@ unsigned int MsgPluginManager::GetMsgID(const char* name_space, const char* name
    for (MsgEntry& msg : pm.m_msgs)
       if (freeMsg == nullptr && msg.refCount == 0)
          freeMsg = &msg;
-      else if ((_stricmp(msg.name_space.c_str(), name_space) == 0) && (_stricmp(msg.name.c_str(), name) == 0))
+      else if (StrCompareNoCase(msg.name_space, name_space) && StrCompareNoCase(msg.name, name))
       {
          msg.refCount++;
          return msg.id;

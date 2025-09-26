@@ -682,6 +682,13 @@ inline bool StrCompareNoCase(const string& strA, const string& strB)
          [](char a, char b) { return cLower(a) == cLower(b); });
 }
 
+inline bool StrCompareNoCase(const string& strA, const char* const strB)
+{
+   return strA.length() == strlen(strB)
+      && std::equal(strA.begin(), strA.end(), strB,
+         [](char a, char b) { return cLower(a) == cLower(b); });
+}
+
 CONSTEXPR inline string lowerCase(string input)
 {
    StrToLower(input);
