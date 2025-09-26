@@ -2068,7 +2068,7 @@ BOOL BackglassViewOptPage::OnApply()
 #pragma region VRPreviewOptPage
 
 VRPreviewOptPage::VRPreviewOptPage(Settings& appSettings, Settings& tableSettings)
-   : VideoOptionPropPage(IDD_BACKGLASS_OPT, _T("VR Preview"), appSettings, tableSettings)
+   : VideoOptionPropPage(IDD_VRPREVIEW_OPT, _T("VR Preview"), appSettings, tableSettings)
 {
 }
 
