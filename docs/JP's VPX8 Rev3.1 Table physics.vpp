@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<physics>
+    <name>JP's VPX8 Physics Rev3.1</name>
+    <table>
+        <gravityConstant>0.981</gravityConstant>
+        <contactFriction>0.025</contactFriction>
+        <elasticity>0.2</elasticity>
+        <elasticityFalloff>0.1</elasticityFalloff>
+        <defaultElementScatter>5</defaultElementScatter>
+        <playfieldScatter>5</playfieldScatter>
+        <playfieldminslope>6</playfieldminslope>
+        <playfieldmaxslope>6</playfieldmaxslope>
+    </table>
+    <flipper>
+        <speed>1</speed>
+        <strength>3600</strength>
+        <elasticity>0.6</elasticity>
+        <scatter>0</scatter>
+        <eosTorque>0.5</eosTorque>
+        <eosTorqueAngle>10</eosTorqueAngle>
+        <returnStrength>0.05</returnStrength>
+        <elasticityFalloff>0.5</elasticityFalloff>
+        <friction>0.25</friction>
+        <coilRampUp>1</coilRampUp>
+    </flipper>
+</physics>
