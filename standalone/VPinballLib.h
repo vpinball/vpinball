@@ -208,7 +208,7 @@ private:
    void ProcessResetViewSetup();
    void Cleanup();
 
-   vector<std::shared_ptr<MsgPlugin>> m_plugins;
+   vector<std::shared_ptr<MsgPI::MsgPlugin>> m_plugins;
    std::queue<std::function<void()>> m_liveUIQueue;
    std::mutex m_liveUIMutex;
    std::function<void*(Event, void*)> m_eventCallback;
