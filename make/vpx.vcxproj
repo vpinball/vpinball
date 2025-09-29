@@ -83,13 +83,13 @@
     <ProjectReference Include="plugin-b2slegacy.vcxproj">
       <Project>{06C52E8F-573C-4F2B-A007-7588147D30E4}</Project>
     </ProjectReference>
-    <ProjectReference Include="plugin-pup.vcxproj">
+    <ProjectReference Include="plugin-pup.vcxproj" Condition="'$(Platform)'=='x64'">
       <Project>{5DFB5344-B339-49BC-B93C-B3B8D307199B}</Project>
     </ProjectReference>
-    <ProjectReference Include="plugin-dmdutil.vcxproj">
+    <ProjectReference Include="plugin-dmdutil.vcxproj" Condition="'$(Platform)'=='x64'">
       <Project>{DAFBE049-4233-430B-9A04-63223C3972E3}</Project>
     </ProjectReference>
-    <ProjectReference Include="plugin-dof.vcxproj">
+    <ProjectReference Include="plugin-dof.vcxproj" Condition="'$(Platform)'=='x64'">
       <Project>{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}</Project>
     </ProjectReference>
     <ProjectReference Include="plugin-helloscript.vcxproj">
@@ -104,7 +104,7 @@
     <ProjectReference Include="plugin-pinmame.vcxproj">
       <Project>{2bf90d88-9139-4e66-a778-4327311af77c}</Project>
     </ProjectReference>
-    <ProjectReference Include="plugin-pinup-events.vcxproj">
+    <ProjectReference Include="plugin-pinup-events.vcxproj" Condition="'$(Platform)'=='x64'">
       <Project>{2bf90d88-9139-4e66-a778-4327311af779}</Project>
     </ProjectReference>
     <ProjectReference Include="plugin-remote-control.vcxproj">
