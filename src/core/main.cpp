@@ -187,15 +187,15 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
       VPApp theApp(hInstance);
       theApp.ProcessCommandLine();
       theApp.InitInstance();
-      MsgPluginManager::GetInstance().ScanPluginFolder(g_pvp->m_myPath + "plugins",
-         [](MsgPlugin& plugin)
+      MsgPI::MsgPluginManager::GetInstance().ScanPluginFolder(g_pvp->m_myPath + "plugins",
+         [](MsgPI::MsgPlugin& plugin)
          {
          static const char *enableDisable[] = { "Disabled", "Enabled" };
          int enabled = (int)VPXPluginAPIImpl::GetInstance().getAPI().GetOption(plugin.m_id.c_str(), 
             "Enable", VPX_OPT_SHOW_UI, "Enable plugin", 0.f, 1.f, 1.f, 0.f, VPXPluginAPI::NONE, enableDisable);
          if (enabled)
          {
-            plugin.Load(&MsgPluginManager::GetInstance().GetMsgAPI());
+            plugin.Load(&MsgPI::MsgPluginManager::GetInstance().GetMsgAPI());
          }
          else
          {
@@ -216,7 +216,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
       retval = -1;
    }
 
-   MsgPluginManager::GetInstance().UnloadPlugins();
+   MsgPI::MsgPluginManager::GetInstance().UnloadPlugins();
 
    SDL_QuitSubSystem(SDL_INIT_VIDEO);
 

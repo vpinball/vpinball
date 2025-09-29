@@ -85,7 +85,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    , m_backglassOutput("Visual Pinball - Backglass"s, live_table->m_settings, Settings::Backglass, "Backglass"s)
    , m_topperOutput("Visual Pinball - Topper"s, live_table->m_settings, Settings::Topper, "Topper"s)
    , m_audioPlayer(std::make_unique<VPX::AudioPlayer>(live_table->m_settings))
-   , m_resURIResolver(MsgPluginManager::GetInstance().GetMsgAPI(), VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), true, true, true, true)
+   , m_resURIResolver(MsgPI::MsgPluginManager::GetInstance().GetMsgAPI(), VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), true, true, true, true)
 {
    // For the time being, lots of access are made through the global singleton, so ensure we are unique, and define it as soon as needed
    assert(g_pplayer == nullptr);
@@ -683,7 +683,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       m_fplaylog = fopen("c:\\badlog.txt", "r");
 #endif
 
-   const MsgPluginAPI *msgApi = &MsgPluginManager::GetInstance().GetMsgAPI();
+   const MsgPluginAPI *msgApi = &MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
 
    m_onPrepareFrameMsgId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
    m_onAudioUpdatedMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_UPDATE_MSG);
@@ -797,7 +797,7 @@ Player::~Player()
    }
 
    // Release plugin message Ids
-   const MsgPluginAPI *msgApi = &MsgPluginManager::GetInstance().GetMsgAPI();
+   const MsgPluginAPI *msgApi = &MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
    msgApi->UnsubscribeMsg(m_onAudioUpdatedMsgId, OnAudioUpdated);
    msgApi->ReleaseMsgID(m_onAudioUpdatedMsgId);
    msgApi->ReleaseMsgID(m_onPrepareFrameMsgId);
@@ -1651,7 +1651,7 @@ void Player::GameLoop()
          // TODO These updates should also be done directly in the physics engine after collision events
          FireSyncController(); // Trigger script sync event (to sync solenoids back)
       }
-      MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
+      MsgPI::MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
       #ifdef MSVC_CONCURRENCY_VIEWER
       delete tagSpan;
       #endif
@@ -2147,7 +2147,7 @@ void Player::FinishFrame()
 void Player::OnAuxRendererChanged(const unsigned int msgId, void* userData, void* msgData)
 {
    Player * const me = static_cast<Player *>(userData);
-   const MsgPluginAPI *m_msgApi = &MsgPluginManager::GetInstance().GetMsgAPI();
+   const MsgPluginAPI *m_msgApi = &MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
    for (int i = 0; i <= VPXAnciliaryWindow::VPXWINDOW_Topper; i++)
    {
       const VPXAnciliaryWindow window = (VPXAnciliaryWindow) i;
@@ -2520,7 +2520,7 @@ void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgD
       if (msg.buffer != nullptr)
       {
          MsgEndpointInfo info;
-         MsgPluginManager::GetInstance().GetMsgAPI().GetEndpointInfo(msg.id.endpointId, &info);
+         MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().GetEndpointInfo(msg.id.endpointId, &info);
          const int nChannels = (msg.type == CTLPI_AUDIO_SRC_BACKGLASS_MONO) ? 1 : 2;
          VPX::AudioPlayer::AudioStreamID const stream = me->m_audioPlayer->OpenAudioStream("Plugin."s + info.name + '.' + std::to_string(msg.id.resId), static_cast<int>(msg.sampleRate), nChannels, msg.format == CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT);
          if (stream)
