@@ -133,12 +133,12 @@ void VPinball::LoadPlugins()
              nullptr
          )) {
          auto& p = plugins[i];
-         auto plugin = MsgPluginManager::GetInstance().RegisterPlugin(
+         auto plugin = MsgPI::MsgPluginManager::GetInstance().RegisterPlugin(
             p.id, p.id, p.id,
             "", "", "",
             p.load, p.unload
          );
-         plugin->Load(&MsgPluginManager::GetInstance().GetMsgAPI());
+         plugin->Load(&MsgPI::MsgPluginManager::GetInstance().GetMsgAPI());
          m_plugins.push_back(plugin);
       }
    }
