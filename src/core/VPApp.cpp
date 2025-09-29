@@ -1096,7 +1096,7 @@ int VPApp::Run()
 BOOL VPApp::OnIdle(LONG count)
 {
 #ifndef __STANDALONE__
-   MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
+   MsgPI::MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
    if (!g_pplayer && m_vpinball.m_table_played_via_SelectTableOnStart)
    {
       // If player has been closed in the meantime, check if we should display the file open dialog again to select/play the next table

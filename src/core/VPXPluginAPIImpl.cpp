@@ -214,7 +214,7 @@ VPXTextureInfo* VPXPluginAPIImpl::GetTextureInfo(VPXTexture texture)
 
 void VPXPluginAPIImpl::DeleteTexture(VPXTexture texture)
 {
-   MsgPluginManager::GetInstance().GetMsgAPI().RunOnMainThread(0, 
+   MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().RunOnMainThread(0, 
       [](void* context) {
       VPXTextureBlock* tex = reinterpret_cast<VPXTextureBlock*>(context);
       if (tex)
@@ -366,7 +366,7 @@ IDispatch* VPXPluginAPIImpl::CreateCOMPluginObject(const string& classId)
 void VPXPluginAPIImpl::OnGameStart()
 {
    assert(m_dmdSources.empty());
-   const auto& msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
+   const auto& msgApi = MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
 
    unsigned int onDisplayGetSrcMsgId = msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
    msgApi.SubscribeMsg(GetVPXEndPointId(), onDisplayGetSrcMsgId, &ControllerOnGetDMDSrc, this);
@@ -382,7 +382,7 @@ void VPXPluginAPIImpl::OnGameStart()
 
 void VPXPluginAPIImpl::OnGameEnd()
 {
-   const auto& msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
+   const auto& msgApi = MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
 
    unsigned int onDisplayGetSrcMsgId = msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
    msgApi.UnsubscribeMsg(onDisplayGetSrcMsgId, &ControllerOnGetDMDSrc);
@@ -393,9 +393,9 @@ void VPXPluginAPIImpl::OnGameEnd()
    msgApi.BroadcastMsg(GetVPXEndPointId(), m_onDisplaySrcChg, nullptr);
    msgApi.ReleaseMsgID(m_onDisplaySrcChg);
 
-   unsigned int onGameEndMsgId = MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END);
+   unsigned int onGameEndMsgId = MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END);
    msgApi.BroadcastMsg(GetVPXEndPointId(), onGameEndMsgId, nullptr);
-   MsgPluginManager::GetInstance().GetMsgAPI().ReleaseMsgID(onGameEndMsgId);
+   MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().ReleaseMsgID(onGameEndMsgId);
 }
 
 void VPXPluginAPIImpl::UpdateDMDSource(Flasher* flasher, bool isAdd)
@@ -416,7 +416,7 @@ void VPXPluginAPIImpl::UpdateDMDSource(Flasher* flasher, bool isAdd)
       }
    }
 
-   const auto& msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
+   const auto& msgApi = MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
    msgApi.BroadcastMsg(GetVPXEndPointId(), m_onDisplaySrcChg, nullptr);
 }
 
@@ -506,8 +506,8 @@ VPXPluginAPIImpl& VPXPluginAPIImpl::GetInstance()
 VPXPluginAPIImpl::VPXPluginAPIImpl() : m_apiThread(std::this_thread::get_id())
 {
    // Message host
-   const auto& msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
-   MsgPluginManager::GetInstance().SetSettingsHandler([](const char* name_space, const char* name, char* valueBuf, unsigned int valueBufSize)
+   const auto& msgApi = MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
+   MsgPI::MsgPluginManager::GetInstance().SetSettingsHandler([](const char* name_space, const char* name, char* valueBuf, unsigned int valueBufSize)
       {
          const Settings& settings = g_pplayer ? g_pplayer->m_ptable->m_settings : g_pvp->m_settings;
          const std::string sectionName = "Plugin."s + name_space;
@@ -539,10 +539,10 @@ VPXPluginAPIImpl::VPXPluginAPIImpl() : m_apiThread(std::this_thread::get_id())
    m_api.GetTextureInfo = GetTextureInfo;
    m_api.DeleteTexture = DeleteTexture;
 
-   m_vpxPlugin = MsgPluginManager::GetInstance().RegisterPlugin("vpx"s, "VPX"s, "Visual Pinball X"s, ""s, ""s, "https://github.com/vpinball/vpinball"s, 
+   m_vpxPlugin = MsgPI::MsgPluginManager::GetInstance().RegisterPlugin("vpx"s, "VPX"s, "Visual Pinball X"s, ""s, ""s, "https://github.com/vpinball/vpinball"s, 
          [](const uint32_t pluginId, const MsgPluginAPI* api) {},
          []() {});
-   m_vpxPlugin->Load(&MsgPluginManager::GetInstance().GetMsgAPI());
+   m_vpxPlugin->Load(&MsgPI::MsgPluginManager::GetInstance().GetMsgAPI());
    msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API), &OnGetVPXPluginAPI, nullptr);
 
    // Logging API

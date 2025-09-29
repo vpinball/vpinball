@@ -16,6 +16,9 @@
 #include <memory>
 #include <functional>
 
+namespace MsgPI
+{
+
 typedef void (*msgpi_load_plugin)(const uint32_t pluginId, const MsgPluginAPI* api);
 typedef void (*msgpi_unload_plugin)();
 
@@ -144,3 +147,5 @@ private:
 
    std::thread::id m_apiThread;
 };
+
+}

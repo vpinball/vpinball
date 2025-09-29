@@ -38,7 +38,9 @@ using namespace std::string_literals;
    #endif
 #endif
 
-#ifdef __STANDALONE__ // otherwise def.h is pulled in indirectly
+namespace MsgPI
+{
+
 constexpr inline char cLower(char c)
 {
    if (c >= 'A' && c <= 'Z')
@@ -48,19 +50,13 @@ constexpr inline char cLower(char c)
 
 static bool StrCompareNoCase(const std::string& strA, const std::string& strB)
 {
-   return strA.length() == strB.length()
-      && std::equal(strA.begin(), strA.end(), strB.begin(),
-         [](char a, char b) { return cLower(a) == cLower(b); });
+   return strA.length() == strB.length() && std::equal(strA.begin(), strA.end(), strB.begin(), [](char a, char b) { return cLower(a) == cLower(b); });
 }
 
 static bool StrCompareNoCase(const std::string& strA, const char* const strB)
 {
-   return strA.length() == strlen(strB)
-      && std::equal(strA.begin(), strA.end(), strB,
-         [](char a, char b) { return cLower(a) == cLower(b); });
+   return strA.length() == strlen(strB) && std::equal(strA.begin(), strA.end(), strB, [](char a, char b) { return cLower(a) == cLower(b); });
 }
-#endif
-
 
 MsgPluginManager& MsgPluginManager::GetInstance()
 {
@@ -78,7 +74,7 @@ MsgPluginManager::MsgPluginManager()
    m_api.BroadcastMsg = BroadcastMsg;
    m_api.SendMsg = SendMsg;
    m_api.ReleaseMsgID = ReleaseMsgID;
-   m_api.GetSetting = GetSetting; 
+   m_api.GetSetting = GetSetting;
    m_api.RunOnMainThread = RunOnMainThread;
    m_apiThread = std::this_thread::get_id();
 }
@@ -151,11 +147,11 @@ void MsgPluginManager::SubscribeMsg(const uint32_t endpointId, const unsigned in
    assert(msgId < pm.m_msgs.size());
    assert(pm.m_msgs[msgId].refCount > 0);
    assert(1 <= endpointId && endpointId < pm.m_nextEndpointId);
-   #ifdef DEBUG
-      // Callback are only allowed to be registered once per message
-      for (const CallbackEntry entry : pm.m_msgs[msgId].callbacks)
-         assert(entry.callback != callback);
-   #endif
+#ifdef DEBUG
+   // Callback are only allowed to be registered once per message
+   for (const CallbackEntry entry : pm.m_msgs[msgId].callbacks)
+      assert(entry.callback != callback);
+#endif
    if (pm.m_broadcastInProgress)
       pm.m_deferredAfterBroadCastRunnables.push_back([endpointId, msgId, callback, userData]() { SubscribeMsg(endpointId, msgId, callback, userData); });
    else
@@ -253,10 +249,10 @@ void MsgPluginManager::RunOnMainThread(const double delayInS, const msgpi_timer_
    if (delayInS < 0.)
    {
       pm.m_timers.insert(pm.m_timers.begin(), TimerEntry { callback, userData, std::chrono::high_resolution_clock::now() });
-      #ifdef _MSC_VER
-         // Wake up message loop
-         PostThreadMessage(GetCurrentThreadId(), WM_USER + 12345, 0, 0);
-      #endif
+#ifdef _MSC_VER
+      // Wake up message loop
+      PostThreadMessage(GetCurrentThreadId(), WM_USER + 12345, 0, 0);
+#endif
       // FIXME block cleanly until processed
       lock.unlock();
       while (!pm.m_timers.empty())
@@ -265,11 +261,11 @@ void MsgPluginManager::RunOnMainThread(const double delayInS, const msgpi_timer_
    else
    {
       auto timer = TimerEntry { callback, userData, std::chrono::high_resolution_clock::now() + std::chrono::microseconds(static_cast<int64_t>(delayInS * 1000000)) };
-      pm.m_timers.insert(std::ranges::upper_bound(pm.m_timers.begin(), pm.m_timers.end(), timer, [](const TimerEntry &a, const TimerEntry &b) { return a.time < b.time; }), timer);
-      #ifdef _MSC_VER
-         // Wake up message loop
-         PostThreadMessage(GetCurrentThreadId(), WM_USER + 12345, 0, 0);
-      #endif
+      pm.m_timers.insert(std::ranges::upper_bound(pm.m_timers.begin(), pm.m_timers.end(), timer, [](const TimerEntry& a, const TimerEntry& b) { return a.time < b.time; }), timer);
+#ifdef _MSC_VER
+      // Wake up message loop
+      PostThreadMessage(GetCurrentThreadId(), WM_USER + 12345, 0, 0);
+#endif
    }
 }
 
@@ -306,7 +302,8 @@ static std::string unquote(const std::string& str)
    return str;
 }
 
-std::shared_ptr<MsgPlugin> MsgPluginManager::RegisterPlugin(const std::string& id, const std::string& name, const std::string& description, const std::string& author, const std::string& version, const std::string& link, msgpi_load_plugin loadPlugin, msgpi_unload_plugin unloadPlugin)
+std::shared_ptr<MsgPlugin> MsgPluginManager::RegisterPlugin(const std::string& id, const std::string& name, const std::string& description, const std::string& author,
+   const std::string& version, const std::string& link, msgpi_load_plugin loadPlugin, msgpi_unload_plugin unloadPlugin)
 {
    assert(loadPlugin != nullptr);
    assert(unloadPlugin != nullptr);
@@ -324,39 +321,40 @@ void MsgPluginManager::ScanPluginFolder(const std::string& pluginDir, const std:
       return;
    }
    std::string libraryKey;
-   #ifdef _MSC_VER
-      #if (INTPTR_MAX == INT32_MAX)
-         libraryKey = "windows.x86"s;
-      #else
-         libraryKey = "windows.x64"s;
-      #endif
-   #elif defined(__ANDROID__) // leave here, as it also defines linux
-      #if defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__)
-         #if (INTPTR_MAX == INT32_MAX)
-            libraryKey = "android.x86_32"s;
-         #else
-            libraryKey = "android.x86_64"s;
-         #endif
-      #elif (INTPTR_MAX == INT32_MAX)
-         libraryKey = "android.x86_32"s;
-      #endif
-   #elif (defined(__linux) || defined(__linux__))
-      #if defined(__aarch64__)
-         libraryKey = "linux.aarch64"s;
-      #else
-         libraryKey = "linux.x64"s;
-      #endif
-   #elif defined(__APPLE__)
-      #if defined(TARGET_OS_IOS) && TARGET_OS_IOS
-         // Not yet implemented
-      #elif defined(TARGET_OS_TV) && TARGET_OS_TV
-         // Not yet implemented
-      #elif defined(__aarch64__)
-         libraryKey = "macos.arm64"s;
-      #else
-         libraryKey = "macos.x64"s;
-      #endif
-   #endif
+#ifdef _MSC_VER
+#if (INTPTR_MAX == INT32_MAX)
+   libraryKey = "windows.x86"s;
+#else
+   libraryKey = "windows.x64"s;
+#endif
+#elif defined(__ANDROID__) // leave here, as it also defines linux
+#if defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__)           \
+   || defined(__x86_64__)
+#if (INTPTR_MAX == INT32_MAX)
+   libraryKey = "android.x86_32"s;
+#else
+   libraryKey = "android.x86_64"s;
+#endif
+#elif (INTPTR_MAX == INT32_MAX)
+   libraryKey = "android.x86_32"s;
+#endif
+#elif (defined(__linux) || defined(__linux__))
+#if defined(__aarch64__)
+   libraryKey = "linux.aarch64"s;
+#else
+   libraryKey = "linux.x64"s;
+#endif
+#elif defined(__APPLE__)
+#if defined(TARGET_OS_IOS) && TARGET_OS_IOS
+   // Not yet implemented
+#elif defined(TARGET_OS_TV) && TARGET_OS_TV
+   // Not yet implemented
+#elif defined(__aarch64__)
+   libraryKey = "macos.arm64"s;
+#else
+   libraryKey = "macos.x64"s;
+#endif
+#endif
    if (libraryKey.empty())
    {
       // Unsupported platform
@@ -382,14 +380,8 @@ void MsgPluginManager::ScanPluginFolder(const std::string& pluginDir, const std:
                PLOGE << "Plugin " << id << " has an invalid library reference to a missing file for " << libraryKey << ": " << libraryFile;
                continue;
             }
-            std::shared_ptr<MsgPlugin> plugin = std::make_shared<MsgPlugin>(id, 
-               unquote(ini["configuration"s].get("name"s)),
-               unquote(ini["configuration"s].get("description"s)),
-               unquote(ini["configuration"s].get("author"s)),
-               unquote(ini["configuration"s].get("version"s)),
-               unquote(ini["configuration"s].get("link"s)),
-               entry.path().string(),
-               libraryPath,
+            std::shared_ptr<MsgPlugin> plugin = std::make_shared<MsgPlugin>(id, unquote(ini["configuration"s].get("name"s)), unquote(ini["configuration"s].get("description"s)),
+               unquote(ini["configuration"s].get("author"s)), unquote(ini["configuration"s].get("version"s)), unquote(ini["configuration"s].get("link"s)), entry.path().string(), libraryPath,
                m_nextEndpointId++);
             m_plugins.push_back(plugin);
             callback(*plugin);
@@ -432,9 +424,9 @@ void MsgPlugin::Load(const MsgPluginAPI* msgAPI)
       {
          const std::string load = m_id + "PluginLoad";
          const std::string unload = m_id + "PluginUnload";
-         #if defined(_WIN32) || defined(_WIN64)
-            SetDllDirectory(m_directory.c_str());
-         #endif
+#if defined(_WIN32) || defined(_WIN64)
+         SetDllDirectory(m_directory.c_str());
+#endif
          m_module = SDL_LoadObject(m_library.c_str());
          if (m_module == nullptr)
          {
@@ -452,9 +444,9 @@ void MsgPlugin::Load(const MsgPluginAPI* msgAPI)
             PLOGE << "Plugin " << m_id << " invalid library " << m_library << ": required " << load << "/" << unload << " functions are not correct.";
             return;
          }
-         #if defined(_WIN32) || defined(_WIN64)
-            SetDllDirectory(NULL);
-         #endif
+#if defined(_WIN32) || defined(_WIN64)
+         SetDllDirectory(NULL);
+#endif
       }
    }
    m_isLoaded = true;
@@ -487,4 +479,6 @@ void MsgPlugin::Unload()
       m_loadPlugin = nullptr;
       m_unloadPlugin = nullptr;
    }
+}
+
 }

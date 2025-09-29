@@ -24,10 +24,10 @@ public:
 
    const VPXPluginAPI& getAPI() const { return m_api; }
    unsigned int GetVPXEndPointId() const { return m_vpxPlugin->m_endpointId; }
-   void BroadcastVPXMsg(const unsigned int msgId, void* data) const { MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(m_vpxPlugin->m_endpointId, msgId, data); }
+   void BroadcastVPXMsg(const unsigned int msgId, void* data) const { MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(m_vpxPlugin->m_endpointId, msgId, data); }
 
-   static unsigned int GetMsgID(const char* name_space, const char* name) { return MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(name_space, name); }
-   static void ReleaseMsgID(const unsigned int msgId) { MsgPluginManager::GetInstance().GetMsgAPI().ReleaseMsgID(msgId); }
+   static unsigned int GetMsgID(const char* name_space, const char* name) { return MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(name_space, name); }
+   static void ReleaseMsgID(const unsigned int msgId) { MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().ReleaseMsgID(msgId); }
 
    string ApplyScriptCOMObjectOverrides(const string& script) const;
    IDispatch* CreateCOMPluginObject(const string& classId);
@@ -42,7 +42,7 @@ private:
    VPXPluginAPIImpl();
 
    // VPX API
-   std::shared_ptr<MsgPlugin> m_vpxPlugin;
+   std::shared_ptr<MsgPI::MsgPlugin> m_vpxPlugin;
    static void OnGetVPXPluginAPI(const unsigned int msgId, void* userData, void* msgData);
    VPXPluginAPI m_api;
    const std::thread::id m_apiThread;
