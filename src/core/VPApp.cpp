@@ -475,7 +475,7 @@ VPApp::VPApp(HINSTANCE hInstance)
       // load and register VP type library for COM integration
       {
          ITypeLib *ptl = nullptr;
-         const wstring wFileName = GetModulePath<wstring>(m_vpinball.theInstance);
+         const wstring wFileName = MakeWString(GetModulePath<string>(m_vpinball.theInstance));
          if (SUCCEEDED(LoadTypeLib(wFileName.c_str(), &ptl)))
          {
             // first try to register system-wide (if running as admin)
