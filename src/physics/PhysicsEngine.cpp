@@ -290,29 +290,23 @@ void PhysicsEngine::UpdateNudge(float dtime)
       const Vertex3Ds force = -m_nudgeSpring * m_tableDisplacement - m_nudgeDamping * m_tableVel;
       m_tableVel          += (float)PHYS_FACTOR * force;
       m_tableDisplacement += (float)PHYS_FACTOR * m_tableVel;
-
       m_tableAcceleration = (m_tableVel - m_tableVelOld) * (float)(1.0/PHYS_FACTOR);
       m_tableVelOld = m_tableVel;
 
-      // Acquire from sensor input
-      Vertex2D sensor = g_pplayer->m_pininput.GetNudge();
-
-      // Simulate hardware nudge by getting the cabinet velocity and applying it to the table spring model
+      // Simulate hardware nudge by getting the cabinet acceleration (eventually through velocity sensor) and applying it directly to the ball
+      Vertex2D sensor = g_pplayer->m_pininput.GetNudge(); // Acquire from sensor input
       if (g_pplayer->IsAccelInputAsVelocity())
       {
          // Compute acceleration from acquired table velocity and apply it as a force to the balls.
          // Apply the external accelerometer-based nudge velocity input (which is
          // a separate input from the traditional acceleration input)
          Vertex3Ds sensorTableVelocity(sensor.x, sensor.y, 0.f);
-         m_tableAcceleration += (sensorTableVelocity - m_prevSensorTableVelocity) * (float)(1.0/PHYS_FACTOR);
+         m_nudgeAcceleration = sensorTableVelocity - m_prevSensorTableVelocity;
          m_prevSensorTableVelocity = sensorTableVelocity;
-
-         // No ball 'nudge' force directly applied to the ball, only force resulting from table acceleration
-         m_nudgeAcceleration.SetZero();
+         m_enableNudgeFilter = false; // the nudge filter is only designed for acceleration data
       }
       else
       {
-         // Simulate hardware nudge by getting the cabinet acceleration and applying it directly to the ball
          m_nudgeAcceleration.Set(sensor.x, sensor.y, 0.f);
       }
    }
@@ -320,17 +314,17 @@ void PhysicsEngine::UpdateNudge(float dtime)
    else if (m_legacyNudgeTime != 0)
    {
       m_legacyNudgeTime--;
-      if (m_legacyNudgeTime == 95)
+      if (m_legacyNudgeTime == 95) // 5ms front
       {
          m_nudgeAcceleration.x = -m_legacyNudgeBack.x * 2.0f;
          m_nudgeAcceleration.y = m_legacyNudgeBack.y * 2.0f;
       }
-      else if (m_legacyNudgeTime == 90)
+      else if (m_legacyNudgeTime == 90) // 5ms back
       {
          m_nudgeAcceleration.x = m_legacyNudgeBack.x;
          m_nudgeAcceleration.y = -m_legacyNudgeBack.y;
       }
-      else
+      else // Prevent new nudge during the remaining 90ms
       {
          m_nudgeAcceleration.SetZero();
       }
@@ -344,8 +338,8 @@ void PhysicsEngine::UpdateNudge(float dtime)
    }
 
    // Convert to force
-   m_nudgeAcceleration.x *= (float)(1.0/PHYS_FACTOR);
-   m_nudgeAcceleration.y *= (float)(1.0/PHYS_FACTOR);
+   m_nudgeAcceleration.x *= static_cast<float>(1.0 / PHYS_FACTOR);
+   m_nudgeAcceleration.y *= static_cast<float>(1.0 / PHYS_FACTOR);
 
    if (m_enablePlumbTilt && m_plumbTiltThreshold > 0.0f && dtime > 0.f && dtime <= 0.1f) // Ignore large time slices... forces would get crazy!
    {
