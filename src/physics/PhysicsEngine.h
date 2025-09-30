@@ -100,34 +100,31 @@ private:
 #pragma region Nudge & Tilt Plumb
    void UpdateNudge(float dtime);
 
-   Vertex3Ds m_nudgeAcceleration; // filtered nudge acceleration acquired from hardware or resulting of keyboard nudge
+   // Legacy nudge: apply a given acceleration for a given amount of time
+   // Hardware nudge: acquire acceleration and apply it (eventually deriving it from acquired velocity)
+   Vertex3Ds m_nudgeAcceleration; // used by both hardware nudge and legacy keyboard nudge
    bool m_enableNudgeFilter = false; // Located in physic engine instead of input since it is applied at physics cycle rate, on hardware input but also on keyboard nudge
    NudgeFilter m_nudgeFilterX;
    NudgeFilter m_nudgeFilterY;
-
-   // Table modeled as a spring
-   Vertex3Ds m_tableVel;
-   Vertex3Ds m_tableDisplacement;
-   Vertex3Ds m_tableVelOld;
-   Vertex3Ds m_tableAcceleration;
-   float m_nudgeSpring;
-   float m_nudgeDamping;
-
    // External accelerometer velocity input.  This is for newer
-   // pin cab I/O controllers that can integrate acceleration 
+   // pin cab I/O controllers that can integrate acceleration
    // samples on the device side to compute the instantaneous
    // cabinet velocity, and pass the velocity data to the host.
-   //
-   // Velocities computed on the device side are applied to the
-   // physics model the same way as the velocities computed from
-   // the "spring model" for scripted nudge force inputs.
-   Vertex3Ds m_prevSensorTableVelocity;
+   Vertex3Ds m_prevSensorTableVelocity; // Used to compute acceleration from acquired velocities
 
    // legacy/VP9 style keyboard nudging
    bool m_legacyNudge = false;
    float m_legacyNudgeStrength = 0.f;
    Vertex2D m_legacyNudgeBack;
    int m_legacyNudgeTime = 0;
+
+   // New keyboard nudge: the table is modeled as a spring, Nudge(x,y) apply an initial velocity (m_tableVel) which results in some oscillations
+   Vertex3Ds m_tableVel;
+   Vertex3Ds m_tableDisplacement;
+   Vertex3Ds m_tableVelOld;
+   Vertex3Ds m_tableAcceleration;
+   float m_nudgeSpring;
+   float m_nudgeDamping;
 
    // Tilt plumb
    bool m_enablePlumbTilt = false;
