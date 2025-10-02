@@ -583,10 +583,9 @@ void VideoOptionPropPage::LoadDisplaySettings()
    m_wndDisplay.SetRedraw(false);
    m_wndDisplay.ResetContent();
    m_wndDisplay.SetItemData((int)m_allVideoModes.size(), (DWORD)(m_allVideoModes.size() * 128));
-   int embedded = VPX::RenderOutput::OM_WINDOW;
    if (m_wndEmbeddable)
    {
-      embedded = settings.LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "Output", VPX::RenderOutput::OM_DISABLED);
+      int embedded = settings.LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "Output", VPX::RenderOutput::OM_DISABLED); // VPX::RenderOutput::OM_WINDOW
       m_wndDisplay.AddString("Disabled");
       m_wndDisplay.AddString("Embedded");
       if (embedded != VPX::RenderOutput::OM_WINDOW)
@@ -1206,7 +1205,7 @@ void RenderOptPage::LoadSettings(Settings& settings)
 void RenderOptPage::SaveSettings(Settings& settings, bool saveAll)
 {
    BOOL nothing = 0;
-   
+
    settings.SaveValue(Settings::Player, "MaxFramerate"s, sz2f(GetDlgItemText(IDC_MAX_FPS).GetString()), !saveAll);
    int syncMode = m_syncMode.GetCurSel();
    settings.SaveValue(Settings::Player, "SyncMode"s, syncMode < 0 ? VideoSyncMode::VSM_FRAME_PACING : syncMode, !saveAll);
@@ -1596,7 +1595,7 @@ void CabinetOptPage::LoadSettings(Settings& settings)
 
    m_lockbarWidth.SetWindowText(f2sz(settings.LoadValueFloat(Settings::Player, "LockbarWidth"s)).c_str());
    m_lockbarHeight.SetWindowText(f2sz(settings.LoadValueFloat(Settings::Player, "LockbarHeight"s)).c_str());
-   
+
    EndLoad();
 }
 
