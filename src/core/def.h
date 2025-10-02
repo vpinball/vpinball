@@ -737,7 +737,11 @@ template <class T> T GetModulePath(HMODULE hModule) // string or wstring
    while (true)
    {
       path.resize(size);
-      const DWORD length = ::GetModuleFileName(hModule, path.data(), size);
+      DWORD length;
+      if constexpr (std::is_same_v<T, std::string>)
+         length = ::GetModuleFileNameA(hModule, path.data(), size);
+      else
+         length = ::GetModuleFileNameW(hModule, path.data(), size);
       if (length == 0)
          return {};
       if (length < size)

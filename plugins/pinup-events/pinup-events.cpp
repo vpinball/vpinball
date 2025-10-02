@@ -152,14 +152,18 @@ void onSerumTrigger(const unsigned int eventId, void* userData, void* eventData)
 
 #ifdef _WIN32
 template <class T>
-T GetModulePath(HMODULE hModule)
+static T GetModulePath(HMODULE hModule)
 {
    T path;
    DWORD size = MAX_PATH;
    while (true)
    {
       path.resize(size);
-      const DWORD length = ::GetModuleFileName(hModule, path.data(), size);
+      DWORD length;
+      if constexpr (std::is_same_v<T, std::string>)
+         length = ::GetModuleFileNameA(hModule, path.data(), size);
+      else
+         length = ::GetModuleFileNameW(hModule, path.data(), size);
       if (length == 0)
          return {};
       if (length < size)
@@ -233,7 +237,7 @@ void onGameStart(const unsigned int eventId, void* userData, void* eventData)
 
 void onGameEnd(const unsigned int eventId, void* userData, void* eventData)
 {
-   dmdId = { 0 };
+   dmdId = {};
    if (dmdDevicePupDll)
    {
       pupClose();
