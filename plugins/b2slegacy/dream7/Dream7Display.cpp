@@ -87,7 +87,7 @@ void Dream7Display::SetText(const string& szText)
          break;
       char sChar = ' ';
       if (!m_szText.empty() && (int)m_szText.length() > nSegment)
-         sChar = m_szText.substr(nSegment, 1)[0];
+         sChar = m_szText[nSegment];
       if (sChar == '.' && nIndex > 0 && !m_segmentNumbers[nIndex - 1]->GetCharacter().ends_with('.'))
          m_segmentNumbers[nIndex - 1]->SetCharacter(m_segmentNumbers[nIndex - 1]->GetCharacter() + '.');
       else {
@@ -186,18 +186,16 @@ void Dream7Display::SetWireFrame(const bool wireFrame)
 
 void Dream7Display::SetValue(int segment, const string& value)
 {
-   if ((int)m_segmentNumbers.size() <= segment) {
+   if ((int)m_segmentNumbers.size() <= segment)
       return;
-   }
 
    m_segmentNumbers[segment]->DisplayCharacter(value);
 }
 
 void Dream7Display::SetValue(int segment, long value)
 {
-   if ((int)m_segmentNumbers.size() <= segment) {
+   if ((int)m_segmentNumbers.size() <= segment)
       return;
-   }
 
    m_segmentNumbers[segment]->DisplayBitCode(value);
 }

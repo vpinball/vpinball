@@ -21,7 +21,7 @@ public:
    void SetLEDType(eLEDType ledType);
    int GetValue() const { return m_value; }
    void SetValue(int value, bool refresh = false);
-   string GetText() const { return m_text; }
+   const string& GetText() const { return m_text; }
    void SetText(const string& text);
 
 private:

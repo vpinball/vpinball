@@ -90,9 +90,9 @@ void SegmentNumber::InitSegments(const SegmentNumberType type, const float thick
       delete pSegment;
    m_segments.clear();
 
-   float TH = thickness;
-   float T4 = TH / 4.0f;
-   float T2 = TH / 2.0f;
+   const float TH = thickness;
+   const float T4 = TH / 4.0f;
+   const float T2 = TH / 2.0f;
    m_type = type;
    m_thickness = TH;
    switch (type) {
@@ -108,14 +108,14 @@ void SegmentNumber::InitSegments(const SegmentNumberType type, const float thick
          break;
       case SegmentNumberType_FourteenSegment:
       {
-         float angleDiag = 26.5f + T4;
-         float MT = TH - T4;
-         float sinA = sinf(angleDiag * (float)(M_PI / 180.0));
-         float cosA = cosf(angleDiag * (float)(M_PI / 180.0));
-         float nTanA = tanf(angleDiag * (float)(M_PI / 180.0));
-         float diagX = cosA * MT;
-         float diagY = sinA * MT;
-         float diagHeight = (58.f - TH - MT / 2.f) / sinA + MT / nTanA;
+         const float angleDiag = 26.5f + T4;
+         const float MT = TH - T4;
+         const float sinA = sinf(angleDiag * (float)(M_PI / 180.0));
+         const float cosA = cosf(angleDiag * (float)(M_PI / 180.0));
+         const float nTanA = tanf(angleDiag * (float)(M_PI / 180.0));
+         const float diagX = cosA * MT;
+         const float diagY = sinA * MT;
+         const float diagHeight = (58.f - TH - MT / 2.f) / sinA + MT / nTanA;
          m_segments.push_back(new Segment("a"s, T4 + 2.f, TH, TH, 120.f - T2, -90, SegmentCap_MoreRight, SegmentCap_MoreRight));
          m_segments.push_back(new Segment("b"s, 124.f - TH, T4 + 2.f, TH, 110.f - T4, 0, SegmentCap_MoreRight, SegmentCap_Standard));
          m_segments.push_back(new Segment("c"s, 124.f - TH, 116, TH, 110.f - T4, 0, SegmentCap_Standard, SegmentCap_MoreRight));

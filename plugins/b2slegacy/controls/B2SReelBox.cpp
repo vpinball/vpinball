@@ -44,14 +44,14 @@ void B2SReelBox::OnPaint(VPXRenderContext2D* const ctx)
          if (m_intermediates == -1 && m_pTimer->IsEnabled()) {
             name = m_szReelType + '_' + m_szReelIndex + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string()) + '_' + std::to_string(m_firstintermediatecount);
             if (pIntImages->contains(name)) {
-               VPXGraphics::DrawImage(m_vpxApi, ctx, (*pIntImages)[name], NULL, &rect);
+               VPXGraphics::DrawImage(m_vpxApi, ctx, (*pIntImages)[name], nullptr, &rect);
                m_firstintermediatecount++;
                m_intermediates2go = 2;
             }
             else {
                name = m_szReelType + '_' + ConvertText(m_currentText + 1) + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string());
                if (pImages->contains(name))
-                  VPXGraphics::DrawImage(m_vpxApi, ctx, (*pImages)[name], NULL, &rect);
+                  VPXGraphics::DrawImage(m_vpxApi, ctx, (*pImages)[name], nullptr, &rect);
                m_intermediates = m_firstintermediatecount - 1;
                m_intermediates2go = 1;
             }
@@ -59,7 +59,7 @@ void B2SReelBox::OnPaint(VPXRenderContext2D* const ctx)
          else if (m_intermediates2go > 0) {
             name = m_szReelType + '_' + m_szReelIndex + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string()) + '_' + std::to_string(m_intermediates - m_intermediates2go + 1);
             if (pIntImages->contains(name))
-               VPXGraphics::DrawImage(m_vpxApi, ctx, (*pIntImages)[name], NULL, &rect);
+               VPXGraphics::DrawImage(m_vpxApi, ctx, (*pIntImages)[name], nullptr, &rect);
          }
          else {
             if (m_intermediates2go == 0 && m_intermediates > 0)
@@ -67,7 +67,7 @@ void B2SReelBox::OnPaint(VPXRenderContext2D* const ctx)
             else
                name = m_szReelType + '_' + m_szReelIndex + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string());
             if (pImages->contains(name))
-               VPXGraphics::DrawImage(m_vpxApi, ctx, (*pImages)[name], NULL, &rect);
+               VPXGraphics::DrawImage(m_vpxApi, ctx, (*pImages)[name], nullptr, &rect);
          }
       }
    }
@@ -130,13 +130,15 @@ void B2SReelBox::SetRollingInterval(int rollingInterval)
 
 void B2SReelBox::SetReelType(const string& szReelType)
 {
-   string value = szReelType;
-
-   m_szReelIndex = "0"s;
-   if (szReelType.substr(value.length() - 1, 1) == "_") {
+   string value;
+   if (szReelType.back() == '_') {
       m_length = 2;
       m_szReelIndex = "00"s;
-      value = value.substr(0, value.length() - 1);
+      value = szReelType.substr(0, szReelType.length() - 1);
+   }
+   else {
+      m_szReelIndex = "0"s;
+      value = szReelType;
    }
    if (string_starts_with_case_insensitive(szReelType, "led"s) || string_starts_with_case_insensitive(szReelType, "importedled"s)) {
       m_led = true;
@@ -208,7 +210,9 @@ string B2SReelBox::ConvertValue(int value) const
          case 103:ret = "9"s; break;
          default: ret = m_initValue; break;
       }
-   return (m_length == 2 ? "0"s : string()) + ret;
+   if(m_length == 2)
+      ret = '0' + ret;
+   return ret;
 }
 
 string B2SReelBox::ConvertText(int text) const

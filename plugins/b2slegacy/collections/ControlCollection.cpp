@@ -46,11 +46,11 @@ void ControlCollection::SetScore(B2SData* pB2SData, int score)
          case eControlType_Dream7LEDDisplay:
             if (!pControl->GetLEDDisplay()->IsVisible()) {
                for (int i = pControl->GetStartDigit(); i < pControl->GetStartDigit() + pControl->GetDigits(); i++)
-                  (*pB2SData->GetLEDs())["LEDBox" + std::to_string(i)]->SetText(partofscore.substr(i - pControl->GetStartDigit(), 1));
+                  (*pB2SData->GetLEDs())["LEDBox" + std::to_string(i)]->SetText(string(1,partofscore[i - pControl->GetStartDigit()]));
             }
             else {
                for (int i = 0; i < pControl->GetDigits(); i++)
-                  pControl->GetLEDDisplay()->SetValue(i, partofscore.substr(i, 1));
+                  pControl->GetLEDDisplay()->SetValue(i, string(1,partofscore[i]));
             }
             break;
          case eControlType_ReelBox:

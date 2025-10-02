@@ -1455,45 +1455,45 @@ void Server::MyB2SSetScore(int digit, int score)
 {
    if (m_pB2SData->IsBackglassRunning()) {
       if (digit > 0) {
-         bool useLEDs = (m_pB2SData->GetLEDs()->contains(string("LEDBox" + std::to_string(digit))) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered);
-         bool useLEDDisplays = (m_pB2SData->GetLEDDisplayDigits()->contains(digit - 1) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Dream7);
-         bool useReels = m_pB2SData->GetReels()->contains(string("ReelBox" + std::to_string(digit)));
+         const bool useLEDs = (m_pB2SData->GetLEDs()->contains(string("LEDBox" + std::to_string(digit))) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered);
+         const bool useLEDDisplays = (m_pB2SData->GetLEDDisplayDigits()->contains(digit - 1) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Dream7);
+         const bool useReels = m_pB2SData->GetReels()->contains(string("ReelBox" + std::to_string(digit)));
 
          if (useLEDs) {
             // Check the passed digit
-            string led = "LEDBox" + std::to_string(digit);
+            const string led = "LEDBox" + std::to_string(digit);
 
             // Get all necessary display data
-            int startdigit = (*m_pB2SData->GetLEDs())[led]->GetStartDigit();
-            int digits = (*m_pB2SData->GetLEDs())[led]->GetDigits();
-            string scoreAsString = string(digits - std::to_string(score).length(), ' ') + std::to_string(score);
+            const int startdigit = (*m_pB2SData->GetLEDs())[led]->GetStartDigit();
+            const int digits = (*m_pB2SData->GetLEDs())[led]->GetDigits();
+            const string scoreAsString = string(digits - std::to_string(score).length(), ' ') + std::to_string(score);
 
             // Set digits
             for (int i = startdigit + digits - 1; i >= startdigit; i--)
-               (*m_pB2SData->GetLEDs())["LEDBox" + std::to_string(i)]->SetText(scoreAsString.substr(i - startdigit, 1));
+               (*m_pB2SData->GetLEDs())["LEDBox" + std::to_string(i)]->SetText(string(1,scoreAsString[i - startdigit]));
          }
          else if (useLEDDisplays) {
             LEDDisplayDigitLocation* pLEDDisplayDigitLocation = (*m_pB2SData->GetLEDDisplayDigits())[digit - 1];
             // Get all necessary display data
-            int digits = pLEDDisplayDigitLocation->GetLEDDisplay()->GetDigits();
-            string scoreAsString = string(digits - std::to_string(score).length(), ' ') + std::to_string(score);
+            const int digits = pLEDDisplayDigitLocation->GetLEDDisplay()->GetDigits();
+            const string scoreAsString = string(digits - std::to_string(score).length(), ' ') + std::to_string(score);
 
             // Set digits
             for (int i = digits - 1; i >= 0; i--)
-               pLEDDisplayDigitLocation->GetLEDDisplay()->SetValue(i, scoreAsString.substr(i, 1));
+               pLEDDisplayDigitLocation->GetLEDDisplay()->SetValue(i, string(1,scoreAsString[i]));
          }
          else if (useReels) {
             // Reels are used
-            string reel = "ReelBox" + std::to_string(digit);
+            const string reel = "ReelBox" + std::to_string(digit);
 
             // Get all necessary display data
-            int startdigit = (*m_pB2SData->GetReels())[reel]->GetStartDigit();
-            int digits = (*m_pB2SData->GetReels())[reel]->GetDigits();
-            string scoreAsString = string(digits - std::to_string(score).length(), '0') + std::to_string(score);
+            const int startdigit = (*m_pB2SData->GetReels())[reel]->GetStartDigit();
+            const int digits = (*m_pB2SData->GetReels())[reel]->GetDigits();
+            const string scoreAsString = string(digits - std::to_string(score).length(), '0') + std::to_string(score);
 
             // Set digits
             for (int i = startdigit + digits - 1; i >= startdigit; i--)
-               (*m_pB2SData->GetReels())["ReelBox" + std::to_string(i)]->SetText(std::stoi(scoreAsString.substr(i - startdigit, 1)), true);
+               (*m_pB2SData->GetReels())["ReelBox" + std::to_string(i)]->SetText(scoreAsString[i - startdigit] - '0', true); // convert char to int
          }
       }
    }
