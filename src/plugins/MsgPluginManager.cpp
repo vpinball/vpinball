@@ -361,31 +361,50 @@ void MsgPluginManager::ScanPluginFolder(const std::string& pluginDir, const std:
       return;
    }
 
+   // Collect plugin directories containing plugin.cfg
+   std::vector<std::filesystem::directory_entry> pluginDirs;
    for (const auto& entry : std::filesystem::directory_iterator(pluginDir))
    {
       if (entry.is_directory())
       {
-         mINI::INIStructure ini;
-         mINI::INIFile file(entry.path().string() + PATH_SEPARATOR_CHAR + "plugin.cfg");
-         if (file.read(ini) && ini.has("configuration"s) && ini["configuration"s].has("id"s) && ini.has("libraries"s) && ini["libraries"s].has(libraryKey))
+         auto cfgPath = entry.path() / "plugin.cfg";
+         if (std::filesystem::exists(cfgPath))
          {
-            std::string id = unquote(ini["configuration"s]["id"s]);
-            for (auto it = m_plugins.begin(); it != m_plugins.end(); ++it)
-               if ((*it)->m_id == id)
-                  it = m_plugins.erase(it);
-            const std::string libraryFile = unquote(ini["libraries"s][libraryKey]);
-            const std::string libraryPath = entry.path().string() + PATH_SEPARATOR_CHAR + libraryFile;
-            if (!std::filesystem::exists(libraryPath))
-            {
-               PLOGE << "Plugin " << id << " has an invalid library reference to a missing file for " << libraryKey << ": " << libraryFile;
-               continue;
-            }
-            std::shared_ptr<MsgPlugin> plugin = std::make_shared<MsgPlugin>(id, unquote(ini["configuration"s].get("name"s)), unquote(ini["configuration"s].get("description"s)),
-               unquote(ini["configuration"s].get("author"s)), unquote(ini["configuration"s].get("version"s)), unquote(ini["configuration"s].get("link"s)), entry.path().string(), libraryPath,
-               m_nextEndpointId++);
-            m_plugins.push_back(plugin);
-            callback(*plugin);
+             pluginDirs.push_back(entry);
          }
+      }
+   }
+
+   // modify the vector and make sure "pinmame" is first plugin we load as others depend on it
+   std::ranges::sort(pluginDirs, [](const std::filesystem::directory_entry& a, const std::filesystem::directory_entry& b)
+   {
+      if (a.path().filename() == "pinmame") return true;
+      if (b.path().filename() == "pinmame") return false;
+      return a.path().filename() < b.path().filename();
+   });
+
+   for (const auto& entry : pluginDirs)
+   {
+      mINI::INIStructure ini;
+      mINI::INIFile file(entry.path().string() + PATH_SEPARATOR_CHAR + "plugin.cfg");
+      if (file.read(ini) && ini.has("configuration"s) && ini["configuration"s].has("id"s) && ini.has("libraries"s) && ini["libraries"s].has(libraryKey))
+      {
+         std::string id = unquote(ini["configuration"s]["id"s]);
+         for (auto it = m_plugins.begin(); it != m_plugins.end(); ++it)
+            if ((*it)->m_id == id)
+               it = m_plugins.erase(it);
+         const std::string libraryFile = unquote(ini["libraries"s][libraryKey]);
+         const std::string libraryPath = entry.path().string() + PATH_SEPARATOR_CHAR + libraryFile;
+         if (!std::filesystem::exists(libraryPath))
+         {
+            PLOGE << "Plugin " << id << " has an invalid library reference to a missing file for " << libraryKey << ": " << libraryFile;
+            continue;
+         }
+         std::shared_ptr<MsgPlugin> plugin = std::make_shared<MsgPlugin>(id, unquote(ini["configuration"s].get("name"s)), unquote(ini["configuration"s].get("description"s)),
+            unquote(ini["configuration"s].get("author"s)), unquote(ini["configuration"s].get("version"s)), unquote(ini["configuration"s].get("link"s)), entry.path().string(), libraryPath,
+            m_nextEndpointId++);
+         m_plugins.push_back(plugin);
+         callback(*plugin);
       }
    }
 }
