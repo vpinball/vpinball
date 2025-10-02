@@ -542,7 +542,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       if (IsValidString(flipper->m_d.m_szImage))
          textBuf = flipper->m_d.m_szImage;
       ListView_SetItemText(m_hElementList, idx, 1, (LPSTR)"Flipper");
-      ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)"");
+      ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
 
       if (IsValidString(flipper->m_d.m_szMaterial))
          firstImage = flipper->m_d.m_szMaterial;
@@ -555,7 +555,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
             textBuf += "--";
          textBuf += secondImage;
       }
-      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)"");
+      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
 
       textBuf.clear();
       if (IsValidString(flipper->m_d.m_szPhysicsMaterial))
