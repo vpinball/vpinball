@@ -115,7 +115,7 @@ private:
 
    // These field are (lazily) computed from the data, therefore they do not impact the constness of the object
    mutable bool m_isMD5Dirty = true;
-   mutable uint8_t m_md5Hash[16] = { 0 };
+   mutable uint8_t m_md5Hash[16] = {};
    mutable bool m_isOpaqueDirty = true;
    mutable bool m_isOpaque = true;
    mutable ankerl::unordered_dense::map<Format, std::shared_ptr<BaseTexture>> m_aliases;
@@ -174,7 +174,7 @@ private:
    mutable std::weak_ptr<BaseTexture> m_imageBuffer; // Decoded version of the texture in a format suitable for GPU sampling. Note that width and height of the decoded block can be different than width and height of the image since the surface can be limited to smaller sizes by the user or memory
    mutable HBITMAP m_hbmGDIVersion = nullptr;
    mutable bool m_isMD5Dirty = true;
-   mutable uint8_t m_md5Hash[16] = { 0 };
+   mutable uint8_t m_md5Hash[16] = {};
    mutable bool m_isOpaqueDirty = true;
    mutable bool m_isOpaque = true;
 };

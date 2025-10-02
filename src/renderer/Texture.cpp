@@ -883,7 +883,7 @@ Texture* Texture::CreateFromStream(IStream * const pstream, int version, PinTabl
    float alphaTestValue = static_cast<float>(-1.0 / 255.0);
    PinBinary* ppb = nullptr;
    bool isMD5Dirty = true;
-   uint8_t md5Hash[16] = { 0 };
+   uint8_t md5Hash[16] = {};
    bool isOpaqueDirty = true;
    bool isOpaque = true;
    BiffReader br(pstream, nullptr, version, 0, 0);

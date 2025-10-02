@@ -173,8 +173,8 @@ void ushock_output_init()
    if (hnd != INVALID_HANDLE_VALUE)
    {
       printf("Connected to PBW controller\n");
-      unsigned char buffer[1024] = { 0 };
-      unsigned char inbuffer[1024] = { 0 };
+      unsigned char buffer[1024] = {};
+      unsigned char inbuffer[1024] = {};
 
       HidD_GetPreparsedData(hnd, &HidParsedData);
 
@@ -307,7 +307,7 @@ void ushock_output_update(const uint32_t cur_time_msec)
       // This really needs serious optimization by putting in a separate thread or something - AMH
       if (mask != last_written)
       {
-         unsigned char buffer[1024] = { 0 };
+         unsigned char buffer[1024] = {};
 
          HANDLE sReportEvent = CreateEvent(nullptr, 1, 0, nullptr);
 

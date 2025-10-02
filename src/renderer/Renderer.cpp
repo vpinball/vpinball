@@ -999,8 +999,8 @@ void Renderer::SetupShaders()
    emission.z *= m_table->m_lightEmissionScale * m_globalEmissionScale;
 
 #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
-   float lightPos[MAX_LIGHT_SOURCES][4] = { 0.f };
-   float lightEmission[MAX_LIGHT_SOURCES][4] = { 0.f };
+   float lightPos[MAX_LIGHT_SOURCES][4] = { };
+   float lightEmission[MAX_LIGHT_SOURCES][4] = { };
 
    for (unsigned int i = 0; i < MAX_LIGHT_SOURCES; ++i)
    {
@@ -1565,7 +1565,7 @@ void Renderer::RenderItem(IEditable* renderable, bool isNoBackdrop)
    if ((isNoBackdrop && renderable->m_backglass) // Don't render backdrop items in reflections or VR & cabinet modes
       || (renderable->GetPartGroup() != nullptr && ((renderable->GetPartGroup()->GetPlayerModeVisibilityMask() & m_visibilityMask) == 0))) // Apply player mode visibility mask
       return;
-      
+
    const PartGroupData::SpaceReference spaceReference = renderable->GetPartGroup() ? renderable->GetPartGroup()->GetReferenceSpace() : PartGroupData::SpaceReference::SR_PLAYFIELD;
    if (m_mvpSpaceReference != spaceReference)
    {
@@ -1584,7 +1584,7 @@ void Renderer::RenderItem(IEditable* renderable, bool isNoBackdrop)
          case PartGroupData::SpaceReference::SR_ROOM:
             m_mvp->SetView(g_pplayer->m_ptable->GetDefaultPlayfieldToCabMatrix() * m_playfieldView);
             break;
-         
+
          case PartGroupData::SpaceReference::SR_PLAYFIELD:
          default:
             m_mvp->SetView(m_playfieldView);
@@ -1946,7 +1946,7 @@ void Renderer::Bloom()
       // switch to 'bloom' output buffer to collect clipped framebuffer values
       m_renderDevice->SetRenderTarget("Bloom Cut Off"s, GetBloomBufferTexture(), false);
       m_renderDevice->AddRenderTargetDependency(GetBackBufferTexture());
-      
+
       m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, GetBackBufferTexture()->GetColorSampler());
       m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, (float) (1.0 / w), (float) (1.0 / h), m_table->m_bloom_strength, 1.0f);
       m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_bloom);

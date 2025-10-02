@@ -6,7 +6,7 @@
 #include "core/ResURIResolver.h"
 
 namespace B2S {
-   
+
 class B2SDMDOverlay final
 {
 public:
@@ -25,7 +25,7 @@ private:
 
    bool m_detectDmdFrame = false;
    VPXTexture m_backImage;
-   CtlResId m_detectSrcId { 0 };
+   CtlResId m_detectSrcId {};
    std::future<ivec4> m_frameSearch;
 };
 

@@ -356,7 +356,7 @@ vector<Window::DisplayConfig> Window::GetDisplays()
                   hr = pOutput->GetDesc(&desc);
                   if (SUCCEEDED(hr))
                   {
-                     DisplayConfig displayConf { 0 };
+                     DisplayConfig displayConf {};
                      displayConf.top = desc.DesktopCoordinates.top;
                      displayConf.left = desc.DesktopCoordinates.left;
                      displayConf.width = desc.DesktopCoordinates.right - desc.DesktopCoordinates.left;
@@ -386,7 +386,7 @@ vector<Window::DisplayConfig> Window::GetDisplays()
       {
          SDL_Rect displayBounds;
          if (SDL_GetDisplayBounds(displayIDs[i], &displayBounds)) {
-            DisplayConfig displayConf { 0 };
+            DisplayConfig displayConf {};
             displayConf.top = displayBounds.y;
             displayConf.left = displayBounds.x;
             displayConf.width = displayBounds.w;
@@ -411,7 +411,7 @@ vector<Window::VideoMode> Window::GetDisplayModes(const DisplayConfig& display)
    int count;
    SDL_DisplayMode** displayModes = SDL_GetFullscreenDisplayModes(display.display, &count);
    for (int mode = 0; mode < count; ++mode) {
-      SDL_DisplayMode* sdlMode = displayModes[mode];
+      SDL_DisplayMode* const sdlMode = displayModes[mode];
       VideoMode vmode = {};
       vmode.width = sdlMode->w;
       vmode.height = sdlMode->h;
@@ -453,7 +453,7 @@ vector<Window::VideoMode> Window::GetDisplayModes(const DisplayConfig& display)
 Window::DisplayConfig Window::GetDisplayConfig(const string& display)
 {
    bool displayFound = false;
-   DisplayConfig selectedDisplay { 0 };
+   DisplayConfig selectedDisplay {};
    vector<DisplayConfig> displays = GetDisplays();
    for (const DisplayConfig& dispConf : displays)
    {

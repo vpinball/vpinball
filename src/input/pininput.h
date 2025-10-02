@@ -317,7 +317,7 @@ private:
       int buttonId;
    };
    vector<ActionMapping> m_actionMappings;
-   InputState m_inputState { 0 };
+   InputState m_inputState {};
 
    struct AnalogActionMapping
    {
@@ -377,7 +377,7 @@ public:
 
 private:
    HWND m_focusHWnd = nullptr;
-   STICKYKEYS m_startupStickyKeys { 0 };
+   STICKYKEYS m_startupStickyKeys {};
    class DirectInputJoystickHandler* m_joystickDIHandler = nullptr;
 #endif
 };

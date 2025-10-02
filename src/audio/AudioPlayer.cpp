@@ -263,7 +263,7 @@ AudioPlayer::AudioPlayer(const Settings& settings)
    };
 
    {
-      SDLDeviceInfo deviceInfo { m_backglassAudioDevice, { 0 } };
+      SDLDeviceInfo deviceInfo { m_backglassAudioDevice, {} };
       ma_context_get_device_info(m_maContext.get(), ma_device_type_playback, nullptr, &deviceInfo.dev);
       ma_context_enumerate_devices(m_maContext.get(), selectDevice, &deviceInfo);
 
@@ -297,7 +297,7 @@ AudioPlayer::AudioPlayer(const Settings& settings)
    }
 
    {
-      SDLDeviceInfo deviceInfo { m_playfieldAudioDevice, { 0 } };
+      SDLDeviceInfo deviceInfo { m_playfieldAudioDevice, {} };
       ma_context_get_device_info(m_maContext.get(), ma_device_type_playback, nullptr, &deviceInfo.dev);
       ma_context_enumerate_devices(m_maContext.get(), selectDevice, &deviceInfo);
 
@@ -502,7 +502,7 @@ void AudioPlayer::StopSound(Sound* sound)
 
 SoundSpec AudioPlayer::GetSoundInformations(const Sound* const sound) const
 {
-   SoundSpec specs { 0 };
+   SoundSpec specs {};
    ma_decoder decoder;
    if (ma_decoder_config decoderConfig = ma_decoder_config_init(ma_format_unknown, 0, 0);
       ma_decoder_init_memory(sound->GetFileRaw(), sound->GetFileSize(), &decoderConfig, &decoder) != MA_SUCCESS)

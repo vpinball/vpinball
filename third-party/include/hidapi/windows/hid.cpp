@@ -622,7 +622,7 @@ static hid_internal_detect_bus_type_result hid_internal_detect_bus_type(const wc
 	wchar_t *device_id = NULL, *compatible_ids = NULL;
 	CONFIGRET cr;
 	DEVINST dev_node;
-	hid_internal_detect_bus_type_result result = { 0 };
+	hid_internal_detect_bus_type_result result = { };
 
 	/* Get the device id from interface path */
 	device_id = (wchar_t *)hid_internal_get_device_interface_property(interface_path, &DEVPKEY_Device_InstanceId, DEVPROP_TYPE_STRING);

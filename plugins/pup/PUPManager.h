@@ -114,14 +114,14 @@ private:
    unsigned int m_onDevSrcChangedId = 0, m_getDevSrcId = 0;
    unsigned int m_onInputSrcChangedId = 0, m_getInputSrcId = 0;
    unsigned int m_onSerumTriggerId = 0, m_onDmdTriggerId = 0;
-   DevSrcId m_pinmameDevSrc { 0 };
+   DevSrcId m_pinmameDevSrc {};
    unsigned int m_nPMSolenoids = 0;
    int m_PMGIIndex = -1;
    unsigned int m_nPMGIs = 0;
    int m_PMLampIndex = -1;
    unsigned int m_nPMLamps = 0;
-   InputSrcId m_pinmameInputSrc { 0 };
-   InputSrcId m_b2sInputSrc { 0 };
+   InputSrcId m_pinmameInputSrc {};
+   InputSrcId m_b2sInputSrc {};
 
    struct PollDmdContext
    {
@@ -131,15 +131,15 @@ private:
    };
    PollDmdContext* m_pollDmdContext = nullptr;
    unsigned int m_lastFrameId = 0;
-   DisplaySrcId m_dmdId { 0 };
+   DisplaySrcId m_dmdId {};
    std::unique_ptr<PUPDMD::DMD> m_dmd;
    std::queue<uint8_t*> m_triggerDmdQueue;
-   uint8_t m_rgbFrame[128 * 32 * 3] { 0 };
-   uint8_t m_palette4[4 * 3] { 0 };
-   uint8_t m_palette16[16 * 3] { 0 };
+   uint8_t m_rgbFrame[128 * 32 * 3] {};
+   uint8_t m_palette4[4 * 3] {};
+   uint8_t m_palette16[16 * 3] {};
    
    static int Render(VPXRenderContext2D* const renderCtx, void* context);
-   static void OnGetRenderer(const unsigned int eventId, void* userData, void* eventData);
+   static void OnGetRenderer(const unsigned int eventId, void* context, void* msgData);
    static void OnSerumTrigger(const unsigned int eventId, void* userData, void* eventData);
    static void OnDMDSrcChanged(const unsigned int eventId, void* userData, void* eventData);
    static void OnDevSrcChanged(const unsigned int eventId, void* userData, void* eventData);

@@ -14,8 +14,8 @@ namespace
 {
 	void GetFileFromPath(const char* path, char* file, int fileNameSize)
 	{
-		char ext[_MAX_EXT] = { 0 };
-		_splitpath_s(path, 0, 0, 0, 0, file, fileNameSize, ext, _MAX_EXT);
+		char ext[_MAX_EXT] = {};
+		_splitpath_s(path, nullptr, 0, nullptr, 0, file, fileNameSize, ext, _MAX_EXT);
 		strncat_s(file, fileNameSize, ext, _MAX_EXT);
 	}
 
@@ -218,7 +218,7 @@ int StackTrace::GetSymbolInfo(Address address, char* symbol, int maxSymbolLen)
 
 	// Symbol name
 	ULONG64 symbolBuffer[(sizeof(SYMBOL_INFO) + MAX_SYM_NAME*sizeof(TCHAR) +
-			sizeof(ULONG64) - 1) / sizeof(ULONG64)] = { 0 };
+			sizeof(ULONG64) - 1) / sizeof(ULONG64)] = {};
 	IMAGEHLP_SYMBOL64* symbolInfo = reinterpret_cast<IMAGEHLP_SYMBOL64*>(symbolBuffer);
 	symbolInfo->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL64);
 	symbolInfo->MaxNameLength = MAX_SYM_NAME;

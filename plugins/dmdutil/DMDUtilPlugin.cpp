@@ -31,7 +31,7 @@ static unsigned int getDmdSrcMsgId;
 
 static std::mutex sourceMutex;
 static std::thread updateThread;
-static DisplaySrcId selectedDmdId = {0};
+static DisplaySrcId selectedDmdId = {};
 static bool isRunning = false;
 
 static DMDUtil::DMD* pDmd = nullptr;
@@ -142,7 +142,7 @@ static void UpdateThread()
 
 static void onDmdSrcChanged(const unsigned int msgId, void* userData, void* msgData)
 {
-   DisplaySrcId newDmdId = { 0 };
+   DisplaySrcId newDmdId = {};
 
    GetDisplaySrcMsg getSrcMsg = { 1024, 0, new DisplaySrcId[1024] };
    msgApi->BroadcastMsg( endpointId, getDmdSrcMsgId, &getSrcMsg);

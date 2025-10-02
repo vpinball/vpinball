@@ -1868,7 +1868,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
    {
    case WM_INITDIALOG:
    {
-      constexpr char nullstring[8] = { 0 };
+      constexpr char nullstring[8] = {};
 
       prim = (Primitive*)lParam;
       SetDlgItemText(hwndDlg, IDC_FILENAME_EDIT, nullstring);

@@ -51,8 +51,8 @@ static unsigned int onInputSrcChangedId;
 
 static std::mutex sourceMutex;
 static bool isRunning = false;
-static DevSrcId pinmameDevSrc = { 0 };
-static InputSrcId pinmameInputSrc = { 0 };
+static DevSrcId pinmameDevSrc = {};
+static InputSrcId pinmameInputSrc = {};
 static unsigned int nPmSolenoids = 0;
 static int pmGiIndex = -1;
 static unsigned int nPmGIs = 0;

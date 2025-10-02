@@ -34,7 +34,7 @@ private:
    Player *m_player;
    bool m_isOpened = false;
    bool m_useFlipperNav = false;
-   PinInput::InputState m_prevInputState { 0 };
+   PinInput::InputState m_prevInputState {};
    bool m_playerPaused = false;
    ankerl::unordered_dense::map<string, std::unique_ptr<InGameUIPage>> m_pages;
    vector<string> m_navigationHistory;

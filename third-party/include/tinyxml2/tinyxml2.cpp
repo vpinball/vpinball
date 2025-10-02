@@ -322,7 +322,7 @@ const char* StrPair::GetStr()
 
                     if ( *(p+1) == '#' ) {
                         const int buflen = 10;
-                        char buf[buflen] = { 0 };
+                        char buf[buflen] = {};
                         int len = 0;
                         const char* adjusted = const_cast<char*>( XMLUtil::GetCharacterRef( p, buf, &len ) );
                         if ( adjusted == 0 ) {

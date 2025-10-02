@@ -123,7 +123,7 @@ public:
 class UdpSocket : public Socket
 {
 protected:
-   struct sockaddr_in _si_other { 0 };
+   struct sockaddr_in _si_other {};
    socklen_t _slen = sizeof(_si_other);
 
    void setupTimeout(uint32_t msec)

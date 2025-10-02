@@ -418,7 +418,7 @@ bool IsWindows10_1803orAbove()
 
 bool IsWindowsVistaOr7()
 {
-   OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0, { 0 }, 0, 0, 0, 0, 0 };
+   OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0, {}, 0, 0, 0, 0, 0 };
    const DWORDLONG dwlConditionMask = //VerSetConditionMask(
       VerSetConditionMask(VerSetConditionMask(0, VER_MAJORVERSION, VER_EQUAL), VER_MINORVERSION, VER_EQUAL) /*,
       VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL)*/
@@ -429,7 +429,7 @@ bool IsWindowsVistaOr7()
 
    const bool vista = VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION /*| VER_SERVICEPACKMAJOR*/, dwlConditionMask) != FALSE;
 
-   OSVERSIONINFOEXW osvi2 = { sizeof(osvi), 0, 0, 0, 0, { 0 }, 0, 0, 0, 0, 0 };
+   OSVERSIONINFOEXW osvi2 = { sizeof(osvi), 0, 0, 0, 0, {}, 0, 0, 0, 0, 0 };
    osvi2.dwMajorVersion = HIBYTE(_WIN32_WINNT_WIN7);
    osvi2.dwMinorVersion = LOBYTE(_WIN32_WINNT_WIN7);
    //osvi2.wServicePackMajor = 0;

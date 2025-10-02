@@ -64,7 +64,7 @@ static bool NvAPI_OK_Verify(NvAPI_Status status)
    if (status == NVAPI_OK)
       return true;
 
-   NvAPI_ShortString szDesc = { 0 };
+   NvAPI_ShortString szDesc = {};
    NvAPI_GetErrorMessage(status, szDesc);
 
    PLOGI << "NVAPI error: " << szDesc;

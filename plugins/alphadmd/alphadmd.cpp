@@ -64,12 +64,12 @@ static std::condition_variable updateCondVar;
 static bool isRunning = false;
 
 static DisplaySrcId dmd128Id, dmd256Id;
-static uint8_t renderFrame[128 * 32] = {0};
-static uint8_t dmd128Frame[128 * 32] = {0};
-static uint8_t dmd256Frame[256 * 64] = {0};
+static uint8_t renderFrame[128 * 32] = {};
+static uint8_t dmd128Frame[128 * 32] = {};
+static uint8_t dmd256Frame[256 * 64] = {};
 static unsigned int renderFrameId = 0;
 
-static uint8_t identifyFrame[128*32] = {0};
+static uint8_t identifyFrame[128*32] = {};
 static unsigned int identifyFrameId = 0;
 
 LPI_USE();
@@ -285,14 +285,14 @@ void SetThreadName(const std::string& name)
    pthread_setname_np(pthread_self(), name.c_str());
 #endif
 }
-#endif   
+#endif
 
 static void RenderThread()
 {
    SetThreadName("AlphaDMD.RenderThread"s);
-   uint16_t seg_data[128] = { 0 };
-   uint16_t seg_data2[128] = { 0 };
-   float groupLum[128 * 16] = { 0 };
+   uint16_t seg_data[128] = {};
+   uint16_t seg_data2[128] = {};
+   float groupLum[128 * 16] = {};
    std::vector<unsigned int> lastFrameId;
    while (isRunning)
    {

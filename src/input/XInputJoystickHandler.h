@@ -128,7 +128,7 @@ private:
    struct Device
    {
       unsigned int id;
-      XINPUT_STATE state { 0 };
+      XINPUT_STATE state {};
    };
    vector<Device> m_devices;
 

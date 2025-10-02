@@ -33,7 +33,7 @@ LRESULT LayersListDialog::OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam
 
 void LayersListDialog::AddToolTip(const char* const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)
 {
-   TOOLINFO toolInfo = { 0 };
+   TOOLINFO toolInfo = {};
    toolInfo.cbSize = sizeof(toolInfo);
    toolInfo.hwnd = parentHwnd;
    toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
@@ -322,7 +322,7 @@ void LayerTreeView::Update()
       TreeView_SetItemState(GetHwnd(), m_hRootItem, INDEXTOSTATEIMAGEMASK(1), TVIS_STATEIMAGEMASK);
       return;
    }
-   
+
    // Build new content list (in the end, a tree is a hierarchically displayed list)
    vector<TreeEntry> newContent;
    const string filter = m_isCaseSensitiveFilter ? lowerCase(m_filter) : m_filter;
@@ -545,7 +545,7 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
    case WM_SETFOCUS: GetApp()->SetAccelerators(m_accel, GetHwnd()); break;
    case WM_KILLFOCUS: GetApp()->SetAccelerators(g_pvp->GetFrameAccel(), g_pvp->GetHwnd()); break;
    case WM_MOUSEACTIVATE: SetFocus(); break;
-      
+
    case WM_MOUSEMOVE:
       if (m_dragging)
       {
@@ -637,10 +637,10 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
       }
       return TRUE;
    }
-      
+
    case NM_CLICK:
       return OnNMClick(lpnmh);
-      
+
    case NM_DBLCLK:
       return OnNMDBClick(lpnmh);
    }

@@ -42,7 +42,7 @@ static bool isRunning = false;
 static std::mutex sourceMutex;
 static std::mutex stateMutex;
 static std::thread colorizeThread;
-static DisplaySrcId dmdId = { 0 };
+static DisplaySrcId dmdId = {};
 
 static Serum_Frame_Struc* pSerum = nullptr;
 static unsigned int lastRawFrameId = 0;
@@ -225,7 +225,7 @@ static void OnGetRenderDMDSrc(const unsigned int eventId, void* userData, void* 
    {
       if (msg.count < msg.maxEntryCount)
       {
-         msg.entries[msg.count] = { 0 };
+         msg.entries[msg.count] = {};
          msg.entries[msg.count].id = { endpointId, 0 };
          msg.entries[msg.count].overrideId = dmdId.id;
          msg.entries[msg.count].width = state->m_width32;
@@ -239,7 +239,7 @@ static void OnGetRenderDMDSrc(const unsigned int eventId, void* userData, void* 
    {
       if (msg.count < msg.maxEntryCount)
       {
-         msg.entries[msg.count] = { 0 };
+         msg.entries[msg.count] = {};
          msg.entries[msg.count].id = { endpointId, 0 };
          msg.entries[msg.count].overrideId = dmdId.id;
          msg.entries[msg.count].width = state->m_width;
@@ -253,7 +253,7 @@ static void OnGetRenderDMDSrc(const unsigned int eventId, void* userData, void* 
    {
       if (msg.count < msg.maxEntryCount)
       {
-         msg.entries[msg.count] = { 0 };
+         msg.entries[msg.count] = {};
          msg.entries[msg.count].id = { endpointId, 1 };
          msg.entries[msg.count].overrideId = dmdId.id;
          msg.entries[msg.count].width = state->m_width64;

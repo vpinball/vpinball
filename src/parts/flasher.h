@@ -188,7 +188,7 @@ private:
    bool m_isVideoCap = false;
    int m_videoCapWidth = 0;
    int m_videoCapHeight = 0;
-   RECT m_videoSourceRect { 0 };
+   RECT m_videoSourceRect {};
    HWND m_videoCapHwnd = nullptr;
    std::shared_ptr<BaseTexture> m_videoCapTex = nullptr;
 

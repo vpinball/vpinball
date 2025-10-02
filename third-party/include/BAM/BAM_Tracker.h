@@ -55,10 +55,10 @@ namespace BAM_Tracker {
 	};
 
 	/// <summary>
-	/// Data recived from BAM Tracker.
+	/// Data received from BAM Tracker.
 	/// </summary>
 	struct TData {
-		// values for HRTimer to synchonize tracker and client timers.
+		// values for HRTimer to synchronize tracker and client timers.
 		LARGE_INTEGER Time_StartValue;
 		double Time_OneMillisecond;
 
@@ -95,7 +95,7 @@ namespace BAM_Tracker {
 			double Tend = d.EndPosition[3];
 			double Tepsilon = 1.0; // 1 ms differenc is to small but it will never happed.
 			double dT = Tend - Tstart;
-			
+
 			// Block interpolation if for long time there is no new HT data
 			constexpr double dTmin = 200; // time, when we start to slow down move if there is no new HT data
 			constexpr double dTmax = 400; // max time without HT data
@@ -209,9 +209,9 @@ namespace BAM_Tracker {
 			if (!m_pData)
 				return false;
 
-			static double lastP[4] = { 0 };
-			static TPlayerData lastPD = { 0 };
-			static TPlayerData d2 = { 0 };
+			static double lastP[4] = {};
+			static TPlayerData lastPD = {};
+			static TPlayerData d2 = {};
 			
 			TPlayerData d = m_pData->Data[m_pData->UsedDataSlot];
 

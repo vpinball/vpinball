@@ -243,7 +243,7 @@ bool SaveFile(const std::wstring& path, const void* data, SIZE_T size)
 std::string LoadFile(const std::wstring& path)
 {
    HANDLE hFile;
-   OVERLAPPED ol = { 0 };
+   OVERLAPPED ol = {};
 
    hFile = CreateFileW(path.c_str(), GENERIC_READ,
       FILE_SHARE_READ, //FILE_SHARE_READ | FILE_FLAG_OVERLAPPED,

@@ -4,12 +4,12 @@
   // Encode frame with a UINT8 per dot (0..3 value)
   #define ANFB_USE_BITPLANES 0
   #define ANFB_USE_LUMINANCE 1
-  static UINT8 AlphaNumericFrameBuffer[128*32] = {0};
+  static UINT8 AlphaNumericFrameBuffer[128*32] = {};
 #else
   // Custom encoding for PinDMD devices, using 4 bit planes to encode dot state
   #define ANFB_USE_BITPLANES 1
   #define ANFB_USE_LUMINANCE 0
-  static UINT8 AlphaNumericFrameBuffer[128*32*4/8] = {0};
+  static UINT8 AlphaNumericFrameBuffer[128*32*4/8] = {};
 #endif
 
 static const UINT8 segSizes[8][16] = {
@@ -210,10 +210,10 @@ static void drawPixel(const int x, const int y, const UINT8 colour)
    if(do16==1)
 #endif
    {
-	AlphaNumericFrameBuffer[v+1024] |= z;
-	AlphaNumericFrameBuffer[v+1536] |= z;
-	AlphaNumericFrameBuffer[v+1024] ^= z;
-	AlphaNumericFrameBuffer[v+1536] ^= z;
+   AlphaNumericFrameBuffer[v+1024] |= z;
+   AlphaNumericFrameBuffer[v+1536] |= z;
+   AlphaNumericFrameBuffer[v+1024] ^= z;
+   AlphaNumericFrameBuffer[v+1536] ^= z;
    }
    // set low buffer pixel
    if (colour & 1)
@@ -225,8 +225,8 @@ static void drawPixel(const int x, const int y, const UINT8 colour)
    if(do16==1)
 #endif
    if (colour!=0){
-		AlphaNumericFrameBuffer[v+1024] |= z;
-		AlphaNumericFrameBuffer[v+1536] ^= z;
+      AlphaNumericFrameBuffer[v+1024] |= z;
+      AlphaNumericFrameBuffer[v+1536] ^= z;
    }
 #elif ANFB_USE_LUMINANCE
    AlphaNumericFrameBuffer[y * 128 + x] = colour;
@@ -284,9 +284,9 @@ static void _2x16Alpha(const UINT16 *const seg_data)
 {
 	for (int i=0; i<16; i++) {
 		for (int j=0; j<16; j++) {
-			if ((seg_data[i] >> j) & 0x1) 
+			if ((seg_data[i] >> j) & 0x1)
 				drawSegment(i*8, 2, 0, j, 3);
-			if ((seg_data[i+16] >> j) & 0x1) 
+			if ((seg_data[i+16] >> j) & 0x1)
 				drawSegment(i*8, 19, 0, j, 3);
 		}
 		smoothDigitCorners(i*8,2);
@@ -304,9 +304,9 @@ static void _2x20Alpha(const UINT16 *const seg_data)
 {
 	for (int i=0; i<20; i++) {
 		for (int j=0; j<16; j++) {
-			if ((seg_data[i] >> j) & 0x1) 
+			if ((seg_data[i] >> j) & 0x1)
 				drawSegment(i*6+4, 2, 7, j, 3);
-			if ((seg_data[i+20] >> j) & 0x1) 
+			if ((seg_data[i+20] >> j) & 0x1)
 				drawSegment(i*6+4, 19, 7, j, 3);
 		}
 		smoothDigitCorners6Px(i*6+4,2);
@@ -326,10 +326,10 @@ static void _2x7Alpha_2x7Num(const UINT16 *const seg_data)
 	for (int i=0; i<14; i++) {
 		for (int j=0; j<16; j++) {
 			// 2x7 alphanumeric
-			if ((seg_data[i] >> j) & 0x1) 
+			if ((seg_data[i] >> j) & 0x1)
 				drawSegment((i+((i<7)?0:2))*8, 2, 0, j, 3);
 			// 2x7 numeric
-			if ((seg_data[i+14] >> j) & 0x1) 
+			if ((seg_data[i+14] >> j) & 0x1)
 				drawSegment((i+((i<7)?0:2))*8, 19, 1, j, 3);
 		}
 		smoothDigitCorners((i+((i<7)?0:2))*8,2);
@@ -350,10 +350,10 @@ static void _2x7Alpha_2x7Num_4x1Num(const UINT16 *const seg_data)
 	for (int i=0; i<14; i++) {
 		for (int j=0; j<16; j++) {
 			// 2x7 alphanumeric
-			if ((seg_data[i] >> j) & 0x1) 
+			if ((seg_data[i] >> j) & 0x1)
 				drawSegment((i+((i<7)?0:2))*8, 0, 0, j, 3);
 			// 2x7 numeric
-			if ((seg_data[i+14] >> j) & 0x1) 
+			if ((seg_data[i+14] >> j) & 0x1)
 				drawSegment((i+((i<7)?0:2))*8, 21, 1, j, 3);
 		}
 		smoothDigitCorners((i+((i<7)?0:2))*8,0);
@@ -361,13 +361,13 @@ static void _2x7Alpha_2x7Num_4x1Num(const UINT16 *const seg_data)
 	}
 	// 4x1 numeric small
 	for (int j=0; j<16; j++) {
-		if ((seg_data[28] >> j) & 0x1) 
+		if ((seg_data[28] >> j) & 0x1)
 			drawSegment(8, 12, 5, j, 3);
-		if ((seg_data[29] >> j) & 0x1) 
+		if ((seg_data[29] >> j) & 0x1)
 			drawSegment(16, 12, 5, j, 3);
-		if ((seg_data[30] >> j) & 0x1) 
+		if ((seg_data[30] >> j) & 0x1)
 			drawSegment(32, 12, 5, j, 3);
-		if ((seg_data[31] >> j) & 0x1) 
+		if ((seg_data[31] >> j) & 0x1)
 			drawSegment(40, 12, 5, j, 3);
 	}
 }
@@ -385,10 +385,10 @@ static void _2x6Num_2x6Num_4x1Num(const UINT16 *const seg_data)
 	for (int i=0; i<12; i++) {
 		for (int j=0; j<16; j++) {
 			// 2x6 numeric
-			if ((seg_data[i] >> j) & 0x1) 
+			if ((seg_data[i] >> j) & 0x1)
 				drawSegment((i+((i<6)?0:4))*8, 0, 1, j, 3);
 			// 2x6 numeric
-			if ((seg_data[i+12] >> j) & 0x1) 
+			if ((seg_data[i+12] >> j) & 0x1)
 				drawSegment((i+((i<6)?0:4))*8, 12, 1, j, 3);
 		}
 		smoothDigitCorners((i+((i<6)?0:4))*8,0);
@@ -396,13 +396,13 @@ static void _2x6Num_2x6Num_4x1Num(const UINT16 *const seg_data)
 	}
 	// 4x1 numeric small
 	for (int j=0; j<16; j++) {
-		if ((seg_data[24] >> j) & 0x1) 
+		if ((seg_data[24] >> j) & 0x1)
 			drawSegment(8, 24, 5, j, 3);
-		if ((seg_data[25] >> j) & 0x1) 
+		if ((seg_data[25] >> j) & 0x1)
 			drawSegment(16, 24, 5, j, 3);
-		if ((seg_data[26] >> j) & 0x1) 
+		if ((seg_data[26] >> j) & 0x1)
 			drawSegment(32, 24, 5, j, 3);
-		if ((seg_data[27] >> j) & 0x1) 
+		if ((seg_data[27] >> j) & 0x1)
 			drawSegment(40, 24, 5, j, 3);
 	}
 }
@@ -420,10 +420,10 @@ static void _2x6Num10_2x6Num10_4x1Num(const UINT16 *const seg_data)
 	for (int i=0; i<12; i++) {
 		for (int j=0; j<16; j++) {
 			// 2x6 numeric
-			if ((seg_data[i] >> j) & 0x1) 
+			if ((seg_data[i] >> j) & 0x1)
 				drawSegment((i+((i<6)?0:4))*8, 0, 2, j, 3);
 			// 2x6 numeric
-			if ((seg_data[i+12] >> j) & 0x1) 
+			if ((seg_data[i+12] >> j) & 0x1)
 				drawSegment((i+((i<6)?0:4))*8, 20, 2, j, 3);
 		}
 		smoothDigitCorners((i+((i<6)?0:4))*8,0);
@@ -431,13 +431,13 @@ static void _2x6Num10_2x6Num10_4x1Num(const UINT16 *const seg_data)
 	}
 	// 4x1 numeric small
 	for (int j=0; j<16; j++) {
-		if ((seg_data[24] >> j) & 0x1) 
+		if ((seg_data[24] >> j) & 0x1)
 			drawSegment(8, 12, 5, j, 3);
-		if ((seg_data[25] >> j) & 0x1) 
+		if ((seg_data[25] >> j) & 0x1)
 			drawSegment(16, 12, 5, j, 3);
-		if ((seg_data[26] >> j) & 0x1) 
+		if ((seg_data[26] >> j) & 0x1)
 			drawSegment(32, 12, 5, j, 3);
-		if ((seg_data[27] >> j) & 0x1) 
+		if ((seg_data[27] >> j) & 0x1)
 			drawSegment(40, 12, 5, j, 3);
 	}
 }
@@ -455,10 +455,10 @@ static void _2x7Num_2x7Num_4x1Num(const UINT16 *const seg_data)
 	for (int i=0; i<14; i++) {
 		for (int j=0; j<16; j++) {
 			// 2x7 numeric
-			if ((seg_data[i] >> j) & 0x1) 
+			if ((seg_data[i] >> j) & 0x1)
 				drawSegment((i+((i<7)?0:2))*8, 0, 1, j, 3);
 			// 2x7 numeric
-			if ((seg_data[i+14] >> j) & 0x1) 
+			if ((seg_data[i+14] >> j) & 0x1)
 				drawSegment((i+((i<7)?0:2))*8, 12, 1, j, 3);
 		}
 		smoothDigitCorners((i+((i<7)?0:2))*8,0);
@@ -466,13 +466,13 @@ static void _2x7Num_2x7Num_4x1Num(const UINT16 *const seg_data)
 	}
 	// 4x1 numeric small
 	for (int j=0; j<16; j++) {
-		if ((seg_data[28] >> j) & 0x1) 
+		if ((seg_data[28] >> j) & 0x1)
 			drawSegment(16, 24, 5, j, 3);
-		if ((seg_data[29] >> j) & 0x1) 
+		if ((seg_data[29] >> j) & 0x1)
 			drawSegment(24, 24, 5, j, 3);
-		if ((seg_data[30] >> j) & 0x1) 
+		if ((seg_data[30] >> j) & 0x1)
 			drawSegment(40, 24, 5, j, 3);
-		if ((seg_data[31] >> j) & 0x1) 
+		if ((seg_data[31] >> j) & 0x1)
 			drawSegment(48, 24, 5, j, 3);
 	}
 }
@@ -490,10 +490,10 @@ static void _2x7Num_2x7Num_10x1Num(const UINT16 *const seg_data, const UINT16 *c
 	for (int i=0; i<14; i++) {
 		for (int j=0; j<16; j++) {
 			// 2x7 numeric
-			if ((seg_data[i] >> j) & 0x1) 
+			if ((seg_data[i] >> j) & 0x1)
 				drawSegment((i+((i<7)?0:2))*8, 0, 1, j, 3);
 			// 2x7 numeric
-			if ((seg_data[i+14] >> j) & 0x1) 
+			if ((seg_data[i+14] >> j) & 0x1)
 				drawSegment((i+((i<7)?0:2))*8, 12, 1, j, 3);
 		}
 		smoothDigitCorners((i+((i<7)?0:2))*8,0);
@@ -501,25 +501,25 @@ static void _2x7Num_2x7Num_10x1Num(const UINT16 *const seg_data, const UINT16 *c
 	}
 	// 10x1 numeric small
 	for (int j=0; j<16; j++) {
-		if ((seg_data[28] >> j) & 0x1) 
+		if ((seg_data[28] >> j) & 0x1)
 			drawSegment(16, 24, 5, j, 3);
-		if ((seg_data[29] >> j) & 0x1) 
+		if ((seg_data[29] >> j) & 0x1)
 			drawSegment(24, 24, 5, j, 3);
-		if ((seg_data[30] >> j) & 0x1) 
+		if ((seg_data[30] >> j) & 0x1)
 			drawSegment(40, 24, 5, j, 3);
-		if ((seg_data[31] >> j) & 0x1) 
+		if ((seg_data[31] >> j) & 0x1)
 			drawSegment(48, 24, 5, j, 3);
-		if ((extra_seg_data[0] >> j) & 0x1) 
+		if ((extra_seg_data[0] >> j) & 0x1)
 			drawSegment(64, 24, 5, j, 3);
-		if ((extra_seg_data[1] >> j) & 0x1) 
+		if ((extra_seg_data[1] >> j) & 0x1)
 			drawSegment(72, 24, 5, j, 3);
-		if ((extra_seg_data[2] >> j) & 0x1) 
+		if ((extra_seg_data[2] >> j) & 0x1)
 			drawSegment(88, 24, 5, j, 3);
-		if ((extra_seg_data[3] >> j) & 0x1) 
+		if ((extra_seg_data[3] >> j) & 0x1)
 			drawSegment(96, 24, 5, j, 3);
-		if ((extra_seg_data[4] >> j) & 0x1) 
+		if ((extra_seg_data[4] >> j) & 0x1)
 			drawSegment(112, 24, 5, j, 3);
-		if ((extra_seg_data[5] >> j) & 0x1) 
+		if ((extra_seg_data[5] >> j) & 0x1)
 			drawSegment(120, 24, 5, j, 3);
 	}
 }
@@ -537,10 +537,10 @@ static void _2x7Num_2x7Num_4x1Num_gen7(const UINT16 *const seg_data)
 	for (int i=0; i<14; i++) {
 		for (int j=0; j<16; j++) {
 			// 2x7 numeric
-			if ((seg_data[i] >> j) & 0x1) 
+			if ((seg_data[i] >> j) & 0x1)
 				drawSegment((i+((i<7)?0:2))*8, 21, 1, j, 3);
 			// 2x7 numeric
-			if ((seg_data[i+14] >> j) & 0x1) 
+			if ((seg_data[i+14] >> j) & 0x1)
 				drawSegment((i+((i<7)?0:2))*8, 1, 1, j, 3);
 		}
 		smoothDigitCorners((i+((i<7)?0:2))*8,21);
@@ -548,13 +548,13 @@ static void _2x7Num_2x7Num_4x1Num_gen7(const UINT16 *const seg_data)
 	}
 	// 4x1 numeric small
 	for (int j=0; j<16; j++) {
-		if ((seg_data[28] >> j) & 0x1) 
+		if ((seg_data[28] >> j) & 0x1)
 			drawSegment(8, 13, 5, j, 3);
-		if ((seg_data[29] >> j) & 0x1) 
+		if ((seg_data[29] >> j) & 0x1)
 			drawSegment(16, 13, 5, j, 3);
-		if ((seg_data[30] >> j) & 0x1) 
+		if ((seg_data[30] >> j) & 0x1)
 			drawSegment(32, 13, 5, j, 3);
-		if ((seg_data[31] >> j) & 0x1) 
+		if ((seg_data[31] >> j) & 0x1)
 			drawSegment(40, 13, 5, j, 3);
 	}
 }
@@ -572,10 +572,10 @@ static void _2x7Num10_2x7Num10_4x1Num(const UINT16 *const seg_data)
 	for (int i=0; i<14; i++) {
 		for (int j=0; j<16; j++) {
 			// 2x7 numeric
-			if ((seg_data[i] >> j) & 0x1) 
+			if ((seg_data[i] >> j) & 0x1)
 				drawSegment((i+((i<7)?0:2))*8, 0, 2, j, 3);
 			// 2x7 numeric
-			if ((seg_data[i+14] >> j) & 0x1) 
+			if ((seg_data[i+14] >> j) & 0x1)
 				drawSegment((i+((i<7)?0:2))*8, 20, 2, j, 3);
 		}
 		smoothDigitCorners((i+((i<7)?0:2))*8,0);
@@ -583,13 +583,13 @@ static void _2x7Num10_2x7Num10_4x1Num(const UINT16 *const seg_data)
 	}
 	// 4x1 numeric small
 	for (int j=0; j<16; j++) {
-		if ((seg_data[28] >> j) & 0x1) 
+		if ((seg_data[28] >> j) & 0x1)
 			drawSegment(8, 12, 5, j, 3);
-		if ((seg_data[29] >> j) & 0x1) 
+		if ((seg_data[29] >> j) & 0x1)
 			drawSegment(16, 12, 5, j, 3);
-		if ((seg_data[30] >> j) & 0x1) 
+		if ((seg_data[30] >> j) & 0x1)
 			drawSegment(32, 12, 5, j, 3);
-		if ((seg_data[31] >> j) & 0x1) 
+		if ((seg_data[31] >> j) & 0x1)
 			drawSegment(40, 12, 5, j, 3);
 	}
 }
@@ -605,10 +605,10 @@ static void _4x7Num10(const UINT16 *const seg_data)
 	for (int i=0; i<14; i++) {
 		for (int j=0; j<16; j++) {
 			// 2x7 numeric10
-			if ((seg_data[i] >> j) & 0x1) 
+			if ((seg_data[i] >> j) & 0x1)
 				drawSegment((i+((i<7)?0:2))*8, 1, 2, j, 3);
 			// 2x7 numeric10
-			if ((seg_data[i+14] >> j) & 0x1) 
+			if ((seg_data[i+14] >> j) & 0x1)
 				drawSegment((i+((i<7)?0:2))*8, 13, 2, j, 3);
 		}
 		smoothDigitCorners((i+((i<7)?0:2))*8,1);
@@ -628,13 +628,13 @@ static void _6x4Num_4x1Num(const UINT16 *const seg_data)
 	for (int i=0; i<8; i++) {
 		for (int j=0; j<16; j++) {
 			// 2x4 numeric
-			if ((seg_data[i] >> j) & 0x1) 
+			if ((seg_data[i] >> j) & 0x1)
 				drawSegment((i+((i<4)?0:2))*8, 1, 5, j, 3);
 			// 2x4 numeric
-			if ((seg_data[i+8] >> j) & 0x1) 
+			if ((seg_data[i+8] >> j) & 0x1)
 				drawSegment((i+((i<4)?0:2))*8, 9, 5, j, 3);
 			// 2x4 numeric
-			if ((seg_data[i+16] >> j) & 0x1) 
+			if ((seg_data[i+16] >> j) & 0x1)
 				drawSegment((i+((i<4)?0:2))*8, 17, 5, j, 3);
 		}
 		smoothDigitCorners((i+((i<4)?0:2))*8,1);
@@ -643,13 +643,13 @@ static void _6x4Num_4x1Num(const UINT16 *const seg_data)
 	}
 	// 4x1 numeric small
 	for (int j=0; j<16; j++) {
-		if ((seg_data[24] >> j) & 0x1) 
+		if ((seg_data[24] >> j) & 0x1)
 			drawSegment(16, 25, 5, j, 3);
-		if ((seg_data[25] >> j) & 0x1) 
+		if ((seg_data[25] >> j) & 0x1)
 			drawSegment(24, 25, 5, j, 3);
-		if ((seg_data[26] >> j) & 0x1) 
+		if ((seg_data[26] >> j) & 0x1)
 			drawSegment(48, 25, 5, j, 3);
-		if ((seg_data[27] >> j) & 0x1) 
+		if ((seg_data[27] >> j) & 0x1)
 			drawSegment(56, 25, 5, j, 3);
 	}
 }
@@ -667,26 +667,26 @@ static void _2x7Num_4x1Num_1x16Alpha(const UINT16 *const seg_data)
 	for (int i=0; i<14; i++) {
 		for (int j=0; j<16; j++) {
 			// 2x7 numeric
-			if ((seg_data[i] >> j) & 0x1) 
+			if ((seg_data[i] >> j) & 0x1)
 				drawSegment((i+((i<7)?0:2))*8, 0, 1, j, 3);
 		}
 		smoothDigitCorners((i+((i<7)?0:2))*8,0);
 	}
 	// 4x1 numeric small
 	for (int j=0; j<16; j++) {
-		if ((seg_data[14] >> j) & 0x1) 
+		if ((seg_data[14] >> j) & 0x1)
 			drawSegment(16, 12, 5, j, 3);
-		if ((seg_data[15] >> j) & 0x1) 
+		if ((seg_data[15] >> j) & 0x1)
 			drawSegment(24, 12, 5, j, 3);
-		if ((seg_data[16] >> j) & 0x1) 
+		if ((seg_data[16] >> j) & 0x1)
 			drawSegment(40, 12, 5, j, 3);
-		if ((seg_data[17] >> j) & 0x1) 
+		if ((seg_data[17] >> j) & 0x1)
 			drawSegment(48, 12, 5, j, 3);
 	}
 	// 1x16 alphanumeric
 	for (int i=0; i<12; i++) {
 		for (int j=0; j<16; j++) {
-			if ((seg_data[i+18] >> j) & 0x1) 
+			if ((seg_data[i+18] >> j) & 0x1)
 				drawSegment((i*8)+16, 21, 0, j, 3);
 		}
 		smoothDigitCorners((i*8)+16,21);
@@ -706,7 +706,7 @@ static void _1x16Alpha_1x16Num_1x7Num(const UINT16 * const seg_data)
 	// 1x16 alphanumeric
 	for (int i=0; i<16; i++) {
 		for (int j=0; j<16; j++) {
-			if ((seg_data[i] >> j) & 0x1) 
+			if ((seg_data[i] >> j) & 0x1)
 				drawSegment((i*8), 9, 0, j, 3);
 		}
 		smoothDigitCorners((i*8),9);
@@ -714,7 +714,7 @@ static void _1x16Alpha_1x16Num_1x7Num(const UINT16 * const seg_data)
 	// 1x16 numeric
 	for (int i=0; i<16; i++) {
 		for (int j=0; j<16; j++) {
-			if ((seg_data[i+16] >> j) & 0x1) 
+			if ((seg_data[i+16] >> j) & 0x1)
 				drawSegment((i*8), 21, 1, j, 3);
 		}
 		smoothDigitCorners((i*8),21);
@@ -722,7 +722,7 @@ static void _1x16Alpha_1x16Num_1x7Num(const UINT16 * const seg_data)
 	// 1x7 numeric small
 	for (int i=0; i<7; i++) {
 		for (int j=0; j<16; j++) {
-			if ((seg_data[i+32] >> j) & 0x1) 
+			if ((seg_data[i+32] >> j) & 0x1)
 				drawSegment(i*8+68, 1, 5, j, 3);
 		}
 	}

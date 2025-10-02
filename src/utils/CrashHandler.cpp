@@ -196,7 +196,7 @@ namespace
          CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
       if (hDump != INVALID_HANDLE_VALUE)
       {
-         MINIDUMP_EXCEPTION_INFORMATION dumpInfo = { 0 };
+         MINIDUMP_EXCEPTION_INFORMATION dumpInfo = {};
          dumpInfo.ClientPointers = TRUE;
          dumpInfo.ExceptionPointers = exceptionPtrs;
          dumpInfo.ThreadId = ::GetCurrentThreadId();

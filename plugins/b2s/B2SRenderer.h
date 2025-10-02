@@ -35,7 +35,7 @@ private:
    unsigned int m_getDevSrcMsgId = 0;
    unsigned int m_onDevChangedMsgId = 0;
    static void OnDevSrcChanged(const unsigned int msgId, void* userData, void* msgData);
-   DevSrcId m_deviceStateSrc { 0 };
+   DevSrcId m_deviceStateSrc {};
    unsigned int m_nSolenoids = 0;
    int m_GIIndex = -1;
    unsigned int m_nGIs = 0;

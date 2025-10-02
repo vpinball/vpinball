@@ -165,7 +165,7 @@ CtlResId UpdateAudioStream(AudioUpdateMsg* msg)
    if (msg->volume == 0.0f)
    {
       StopAudioStream(msg->id);
-      return { 0 };
+      return {};
    }
    CtlResId id = msg->id;
    if (id.id == 0)

@@ -335,7 +335,7 @@ void ObjLoader::Save(const string& filename, const string& description, const Me
             vertsTmp[t].ny = vi.ny;
             vertsTmp[t].nz = vi.nz;
          }
-         char number[16] = { 0 };
+         char number[16] = {};
          sprintf_s(number, sizeof(number), "%05u", i);
          const string fname = name + '_' + number + ".obj";
          ExportStart(fname);

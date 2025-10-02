@@ -347,7 +347,7 @@ void WhereUsedDialog::RefreshList()
 
 void WhereUsedDialog::AddToolTip(const char *const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)
 {
-   TOOLINFO toolInfo = { 0 };
+   TOOLINFO toolInfo = {};
    toolInfo.cbSize = sizeof(toolInfo);
    toolInfo.hwnd = parentHwnd;
    toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
