@@ -310,11 +310,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
          textBuf += thirdImage;
       }
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
-
-      textBuf.clear();
-      if (IsValidString(sur->m_d.m_szPhysicsMaterial))
-         textBuf = sur->m_d.m_szPhysicsMaterial;
-      ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
+      ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)(IsValidString(sur->m_d.m_szPhysicsMaterial) ? sur->m_d.m_szPhysicsMaterial.c_str() : ""));
 
       ListView_SetItemText(m_hElementList, idx, 6, (LPSTR)"N/A"); //!!
       ListView_SetItemText(m_hElementList, idx, 7, (LPSTR)(sur->m_d.m_collidable ? usedStringYes : usedStringNo));
@@ -324,25 +320,16 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 11, (LPSTR)(sur->StaticRendering() ? usedStringYes : usedStringNo));
       ListView_SetItemText(m_hElementList, idx, 12, /*sur->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)"N/A");
+
       break;
    }
    case eItemRamp:
    {
       const Ramp *const ramp = (Ramp*)piedit;
-      if (IsValidString(ramp->m_d.m_szImage))
-         textBuf = ramp->m_d.m_szImage;
       ListView_SetItemText(m_hElementList, idx, 1, (LPSTR)"Ramp");
-      ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
-
-      textBuf.clear();
-      if (IsValidString(ramp->m_d.m_szMaterial))
-         textBuf = ramp->m_d.m_szMaterial;
-      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
-
-      textBuf.clear();
-      if (IsValidString(ramp->m_d.m_szPhysicsMaterial))
-         textBuf = ramp->m_d.m_szPhysicsMaterial;
-      ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
+      ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)(IsValidString(ramp->m_d.m_szImage) ? ramp->m_d.m_szImage.c_str() : ""));
+      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)(IsValidString(ramp->m_d.m_szMaterial) ? ramp->m_d.m_szMaterial.c_str() : ""));
+      ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)(IsValidString(ramp->m_d.m_szPhysicsMaterial) ? ramp->m_d.m_szPhysicsMaterial.c_str() : ""));
 
       ListView_SetItemText(m_hElementList, idx, 6, (LPSTR)"N/A"); //!!
       ListView_SetItemText(m_hElementList, idx, 7, (LPSTR)(ramp->m_d.m_collidable ? usedStringYes : usedStringNo));
@@ -354,6 +341,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 11, (LPSTR)(mat == nullptr || !mat->m_bOpacityActive ? usedStringYes : usedStringNo)); //!!
       ListView_SetItemText(m_hElementList, idx, 12, (LPSTR)(ramp->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo));
       ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)"N/A");
+
       break;
    }
    case eItemFlasher:
@@ -382,25 +370,16 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 11, /*flasher->StaticRendering() ? usedStringYes : usedStringNo*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 12, /*flasher->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)"N/A");
+
       break;
    }
    case eItemRubber:
    {
       const Rubber *const rubber = (Rubber*)piedit;
-      if (IsValidString(rubber->m_d.m_szImage))
-         textBuf = rubber->m_d.m_szImage;
       ListView_SetItemText(m_hElementList, idx, 1, (LPSTR)"Rubber");
-      ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
-
-      textBuf.clear();
-      if (IsValidString(rubber->m_d.m_szMaterial))
-         textBuf = rubber->m_d.m_szMaterial;
-      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
-
-      textBuf.clear();
-      if (IsValidString(rubber->m_d.m_szPhysicsMaterial))
-         textBuf = rubber->m_d.m_szPhysicsMaterial;
-      ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
+      ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)(IsValidString(rubber->m_d.m_szImage) ? rubber->m_d.m_szImage.c_str() : ""));
+      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)(IsValidString(rubber->m_d.m_szMaterial) ? rubber->m_d.m_szMaterial.c_str() : ""));
+      ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)(IsValidString(rubber->m_d.m_szPhysicsMaterial) ? rubber->m_d.m_szPhysicsMaterial.c_str() : ""));
 
       ListView_SetItemText(m_hElementList, idx, 6, (LPSTR)"N/A"); //!!
       ListView_SetItemText(m_hElementList, idx, 7, (LPSTR)(rubber->m_d.m_collidable ? usedStringYes : usedStringNo));
@@ -410,25 +389,16 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 11, (LPSTR)(rubber->m_d.m_staticRendering ? usedStringYes : usedStringNo));
       ListView_SetItemText(m_hElementList, idx, 12, (LPSTR)(rubber->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo));
       ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)"N/A");
+
       break;
    }
    case eItemSpinner:
    {
       const Spinner *const spinner = (Spinner*)piedit;
-      if (IsValidString(spinner->m_d.m_szImage))
-         textBuf = spinner->m_d.m_szImage;
       ListView_SetItemText(m_hElementList, idx, 1, (LPSTR)"Spinner");
-      ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
-
-      textBuf.clear();
-      if (IsValidString(spinner->m_d.m_szMaterial))
-         textBuf = spinner->m_d.m_szMaterial;
-      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
-
-      textBuf.clear();
-      if (IsValidString(spinner->m_d.m_szPhysicsMaterial))
-         textBuf = spinner->m_d.m_szPhysicsMaterial;
-      ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
+      ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)(IsValidString(spinner->m_d.m_szImage) ? spinner->m_d.m_szImage.c_str() : ""));
+      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)(IsValidString(spinner->m_d.m_szMaterial) ? spinner->m_d.m_szMaterial.c_str() : ""));
+      ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)(IsValidString(spinner->m_d.m_szPhysicsMaterial) ? spinner->m_d.m_szPhysicsMaterial.c_str() : ""));
 
       ListView_SetItemText(m_hElementList, idx, 6, (LPSTR)"N/A"); //!!
       ListView_SetItemText(m_hElementList, idx, 7, (LPSTR)(spinner->m_d.m_collidable ? usedStringYes : usedStringNo));
@@ -438,6 +408,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 11, /*spinner->StaticRendering() ? usedStringYes : usedStringNo*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 12, (LPSTR)(spinner->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo));
       ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)spinner->m_d.m_szSurface.c_str());
+
       break;
    }
    case eItemKicker:
@@ -445,15 +416,8 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       const Kicker *const kicker = (Kicker*)piedit;
       ListView_SetItemText(m_hElementList, idx, 1, (LPSTR)"Kicker");
       ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)"");
-
-      if (IsValidString(kicker->m_d.m_szMaterial))
-         textBuf = kicker->m_d.m_szMaterial;
-      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
-
-      textBuf.clear();
-      if (IsValidString(kicker->m_d.m_szPhysicsMaterial))
-         textBuf = kicker->m_d.m_szPhysicsMaterial;
-      ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
+      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)(IsValidString(kicker->m_d.m_szMaterial) ? kicker->m_d.m_szMaterial.c_str() : ""));
+      ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)(IsValidString(kicker->m_d.m_szPhysicsMaterial) ? kicker->m_d.m_szPhysicsMaterial.c_str() : ""));
 
       ListView_SetItemText(m_hElementList, idx, 6, (LPSTR)"N/A"); //!!
       ListView_SetItemText(m_hElementList, idx, 7, (LPSTR)(kicker->m_d.m_collidable ? usedStringYes : usedStringNo));
@@ -463,15 +427,14 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 11, /*kicker->StaticRendering() ? usedStringYes : usedStringNo*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 12, (LPSTR)(kicker->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo));
       ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)kicker->m_d.m_szSurface.c_str());
+
       break;
    }
    case eItemLight:
    {
       const Light *const light = (Light*)piedit;
-      if (IsValidString(light->m_d.m_szImage))
-         textBuf = light->m_d.m_szImage;
       ListView_SetItemText(m_hElementList, idx, 1, (LPSTR)"Light");
-      ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
+      ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)(IsValidString(light->m_d.m_szImage) ? light->m_d.m_szImage.c_str() : ""));
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)"");
 
       ListView_SetItemText(m_hElementList, idx, 6, (LPSTR)"N/A"); //!!
@@ -482,6 +445,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 11, /*light->StaticRendering() ? usedStringYes : usedStringNo*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 12, (LPSTR)(light->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo));
       ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)light->m_d.m_szSurface.c_str());
+
       break;
    }
    case eItemBumper:
@@ -519,31 +483,26 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 1, (LPSTR)"Bumper");
       ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)"");
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
-
-      textBuf.clear();
-      if (IsValidString(bumper->m_d.m_szPhysicsMaterial))
-         textBuf = bumper->m_d.m_szPhysicsMaterial;
-      ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
+      ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)(IsValidString(bumper->m_d.m_szPhysicsMaterial) ? bumper->m_d.m_szPhysicsMaterial.c_str() : ""));
 
       ListView_SetItemText(m_hElementList, idx, 6, (LPSTR)"N/A"); //!!
       ListView_SetItemText(m_hElementList, idx, 7, (LPSTR)(bumper->m_d.m_collidable ? usedStringYes : usedStringNo));
-      bool fully_visible = bumper->m_d.m_capVisible && bumper->m_d.m_baseVisible && bumper->m_d.m_ringVisible && bumper->m_d.m_skirtVisible;
-      bool partly_visible = bumper->m_d.m_capVisible || bumper->m_d.m_baseVisible || bumper->m_d.m_ringVisible || bumper->m_d.m_skirtVisible;
+      const bool fully_visible = bumper->m_d.m_capVisible && bumper->m_d.m_baseVisible && bumper->m_d.m_ringVisible && bumper->m_d.m_skirtVisible;
+      const bool partly_visible = bumper->m_d.m_capVisible || bumper->m_d.m_baseVisible || bumper->m_d.m_ringVisible || bumper->m_d.m_skirtVisible;
       ListView_SetItemText(m_hElementList, idx, 8, (LPSTR)(fully_visible ? usedStringYes : (partly_visible ? "/" : usedStringNo)));
       ListView_SetItemText(m_hElementList, idx, 9, (LPSTR)(bumper->m_d.m_tdr.m_TimerEnabled ? usedStringYes : usedStringNo));
       ListView_SetItemText(m_hElementList, idx, 10, /*bumper->m_d.m_depthBias*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 11, /*bumper->StaticRendering() ? usedStringYes : usedStringNo*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 12, (LPSTR)(bumper->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo));
       ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)bumper->m_d.m_szSurface.c_str());
+
       break;
    }
    case eItemFlipper:
    {
       const Flipper* const flipper = (Flipper*)piedit;
-      if (IsValidString(flipper->m_d.m_szImage))
-         textBuf = flipper->m_d.m_szImage;
       ListView_SetItemText(m_hElementList, idx, 1, (LPSTR)"Flipper");
-      ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)"");
+      ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)(IsValidString(flipper->m_d.m_szImage) ? flipper->m_d.m_szImage.c_str() : ""));
 
       if (IsValidString(flipper->m_d.m_szMaterial))
          firstImage = flipper->m_d.m_szMaterial;
@@ -556,12 +515,9 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
             textBuf += "--";
          textBuf += secondImage;
       }
-      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)"");
+      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
 
-      textBuf.clear();
-      if (IsValidString(flipper->m_d.m_szPhysicsMaterial))
-         textBuf = flipper->m_d.m_szPhysicsMaterial;
-      ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
+      ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)(IsValidString(flipper->m_d.m_szPhysicsMaterial) ? flipper->m_d.m_szPhysicsMaterial.c_str() : ""));
 
       ListView_SetItemText(m_hElementList, idx, 6, (LPSTR)"N/A"); //!!
       ListView_SetItemText(m_hElementList, idx, 7, (LPSTR)(flipper->m_d.m_collidable ? usedStringYes : usedStringNo));
@@ -571,6 +527,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 11, /*flipper->StaticRendering() ? usedStringYes : usedStringNo*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 12, (LPSTR)(flipper->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo));
       ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)flipper->m_d.m_szSurface.c_str());
+
       break;
    }
    case eItemGate:
@@ -578,15 +535,8 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       const Gate *const gate = (Gate*)piedit;
       ListView_SetItemText(m_hElementList, idx, 1, (LPSTR)"Gate");
       ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)"");
-
-      if (IsValidString(gate->m_d.m_szMaterial))
-         textBuf = gate->m_d.m_szMaterial;
-      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
-
-      textBuf.clear();
-      if (IsValidString(gate->m_d.m_szPhysicsMaterial))
-         textBuf = gate->m_d.m_szPhysicsMaterial;
-      ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
+      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)(IsValidString(gate->m_d.m_szMaterial) ? gate->m_d.m_szMaterial.c_str() : ""));
+      ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)(IsValidString(gate->m_d.m_szPhysicsMaterial) ? gate->m_d.m_szPhysicsMaterial.c_str() : ""));
 
       ListView_SetItemText(m_hElementList, idx, 6, (LPSTR)"N/A"); //!!
       ListView_SetItemText(m_hElementList, idx, 7, (LPSTR)(gate->m_d.m_collidable ? usedStringYes : usedStringNo));
@@ -596,6 +546,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 11, /*gate->StaticRendering() ? usedStringYes : usedStringNo*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 12, (LPSTR)(gate->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo));
       ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)gate->m_d.m_szSurface.c_str());
+
       break;
    }
    case eItemTrigger:
@@ -603,15 +554,8 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       const Trigger *const trigger = (Trigger*)piedit;
       ListView_SetItemText(m_hElementList, idx, 1, (LPSTR)"Trigger");
       ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)"");
-
-      if (IsValidString(trigger->m_d.m_szMaterial))
-         textBuf = trigger->m_d.m_szMaterial;
-      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
-
-      textBuf.clear();
-      if (IsValidString(trigger->m_d.m_szPhysicsMaterial))
-         textBuf = trigger->m_d.m_szPhysicsMaterial;
-      ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
+      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)(IsValidString(trigger->m_d.m_szMaterial) ? trigger->m_d.m_szMaterial.c_str() : ""));
+      ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)(IsValidString(trigger->m_d.m_szPhysicsMaterial) ? trigger->m_d.m_szPhysicsMaterial.c_str() : ""));
 
       ListView_SetItemText(m_hElementList, idx, 6, (LPSTR)"N/A"); //!!
       ListView_SetItemText(m_hElementList, idx, 7, (LPSTR)(trigger->m_d.m_collidable ? usedStringYes : usedStringNo));
@@ -621,6 +565,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 11, /*trigger->StaticRendering() ? usedStringYes : usedStringNo*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 12, (LPSTR)(trigger->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo));
       ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)trigger->m_d.m_szSurface.c_str());
+
       break;
    }
    case eItemTimer:
@@ -642,20 +587,10 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
    case eItemPlunger:
    {
       const Plunger *const plunger = (Plunger*)piedit;
-      if (IsValidString(plunger->m_d.m_szImage))
-         textBuf = plunger->m_d.m_szImage;
       ListView_SetItemText(m_hElementList, idx, 1, (LPSTR)"Plunger");
-      ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
-
-      textBuf.clear();
-      if (IsValidString(plunger->m_d.m_szMaterial))
-         textBuf = plunger->m_d.m_szMaterial;
-      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
-
-      textBuf.clear();
-      if (IsValidString(plunger->m_d.m_szPhysicsMaterial))
-         textBuf = plunger->m_d.m_szPhysicsMaterial;
-      ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
+      ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)(IsValidString(plunger->m_d.m_szImage) ? plunger->m_d.m_szImage.c_str() : ""));
+      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)(IsValidString(plunger->m_d.m_szMaterial) ? plunger->m_d.m_szMaterial.c_str() : ""));
+      ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)(IsValidString(plunger->m_d.m_szPhysicsMaterial) ? plunger->m_d.m_szPhysicsMaterial.c_str() : ""));
 
       ListView_SetItemText(m_hElementList, idx, 6, (LPSTR)"N/A"); //!!
       ListView_SetItemText(m_hElementList, idx, 7, (LPSTR)(plunger->m_d.m_collidable ? usedStringYes : usedStringNo));
@@ -665,16 +600,14 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 11, /*plunger->StaticRendering() ? usedStringYes : usedStringNo*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 12, (LPSTR)(plunger->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo));
       ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)plunger->m_d.m_szSurface.c_str());
+
       break;
    }
    case eItemDispReel:
    {
       const DispReel *const dispReel = (DispReel*)piedit;
-      if (IsValidString(dispReel->m_d.m_szImage))
-         textBuf = dispReel->m_d.m_szImage;
-
       ListView_SetItemText(m_hElementList, idx, 1, (LPSTR)"EMReel");
-      ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
+      ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)(IsValidString(dispReel->m_d.m_szImage) ? dispReel->m_d.m_szImage.c_str() : ""));
       ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)"");
 
       break;
@@ -682,20 +615,10 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
    case eItemPrimitive:
    {
       const Primitive *const primitive = (Primitive*)piedit;
-      if (IsValidString(primitive->m_d.m_szImage))
-         textBuf = primitive->m_d.m_szImage;
       ListView_SetItemText(m_hElementList, idx, 1, (LPSTR)"Primitive");
-      ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
-
-      textBuf.clear();
-      if (IsValidString(primitive->m_d.m_szMaterial))
-         textBuf = primitive->m_d.m_szMaterial;
-      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
-
-      textBuf.clear();
-      if (IsValidString(primitive->m_d.m_szPhysicsMaterial))
-         textBuf = primitive->m_d.m_szPhysicsMaterial;
-      ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
+      ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)(IsValidString(primitive->m_d.m_szImage) ? primitive->m_d.m_szImage.c_str() : ""));
+      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)(IsValidString(primitive->m_d.m_szMaterial) ? primitive->m_d.m_szMaterial.c_str() : ""));
+      ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)(IsValidString(primitive->m_d.m_szPhysicsMaterial) ? primitive->m_d.m_szPhysicsMaterial.c_str() : ""));
 
       ListView_SetItemText(m_hElementList, idx, 6, (LPSTR)"N/A"); //!!
       ListView_SetItemText(m_hElementList, idx, 7, (LPSTR)(primitive->m_d.m_collidable && (!primitive->m_d.m_toy || primitive->IsPlayfield()) ? usedStringYes : usedStringNo));
@@ -705,25 +628,16 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 11, (LPSTR)(primitive->m_d.m_staticRendering ? usedStringYes : usedStringNo));
       ListView_SetItemText(m_hElementList, idx, 12, (LPSTR)(primitive->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo));
       ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)"N/A");
+
       break;
    }
    case eItemHitTarget:
    {
       const HitTarget *const hitTarget = (HitTarget*)piedit;
-      if (IsValidString(hitTarget->m_d.m_szImage))
-         textBuf = hitTarget->m_d.m_szImage;
       ListView_SetItemText(m_hElementList, idx, 1, (LPSTR)"Target");
-      ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
-
-      textBuf.clear();
-      if (IsValidString(hitTarget->m_d.m_szMaterial))
-         textBuf = hitTarget->m_d.m_szMaterial;
-      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
-
-      textBuf.clear();
-      if (IsValidString(hitTarget->m_d.m_szPhysicsMaterial))
-         textBuf = hitTarget->m_d.m_szPhysicsMaterial;
-      ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
+      ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)(IsValidString(hitTarget->m_d.m_szImage) ? hitTarget->m_d.m_szImage.c_str() : ""));
+      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)(IsValidString(hitTarget->m_d.m_szMaterial) ? hitTarget->m_d.m_szMaterial.c_str() : ""));
+      ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)(IsValidString(hitTarget->m_d.m_szPhysicsMaterial) ? hitTarget->m_d.m_szPhysicsMaterial.c_str() : ""));
 
       ListView_SetItemText(m_hElementList, idx, 6, (LPSTR)"N/A"); //!!
       ListView_SetItemText(m_hElementList, idx, 7, (LPSTR)(hitTarget->m_d.m_collidable ? usedStringYes : usedStringNo));
@@ -733,27 +647,18 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
       ListView_SetItemText(m_hElementList, idx, 11, /*hitTarget->StaticRendering() ? usedStringYes : usedStringNo*/ (LPSTR)"N/A");
       ListView_SetItemText(m_hElementList, idx, 12, (LPSTR)(hitTarget->m_d.m_reflectionEnabled ? usedStringYes : usedStringNo));
       ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)"N/A");
+
       break;
    }
    case eItemDecal:
    {
       const Decal *const decal = (Decal*)piedit;
-      if (IsValidString(decal->m_d.m_szImage))
-         textBuf = decal->m_d.m_szImage;
       ListView_SetItemText(m_hElementList, idx, 1, (LPSTR)"Decal");
-      ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)textBuf.c_str());
-
-      textBuf.clear();
-      if (IsValidString(decal->m_d.m_szMaterial))
-         textBuf = decal->m_d.m_szMaterial;
-      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)textBuf.c_str());
-
-      textBuf.clear();
-      if (IsValidString(decal->m_d.m_szPhysicsMaterial))
-         textBuf = decal->m_d.m_szPhysicsMaterial;
-      ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)textBuf.c_str());
-
+      ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)(IsValidString(decal->m_d.m_szImage) ? decal->m_d.m_szImage.c_str() : ""));
+      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)(IsValidString(decal->m_d.m_szMaterial) ? decal->m_d.m_szMaterial.c_str() : ""));
+      ListView_SetItemText(m_hElementList, idx, 5, (LPSTR)(IsValidString(decal->m_d.m_szPhysicsMaterial) ? decal->m_d.m_szPhysicsMaterial.c_str() : ""));
       ListView_SetItemText(m_hElementList, idx, 13, (LPSTR)decal->m_d.m_szSurface.c_str());
+
       break;
    }
    case eItemLightSeq:
@@ -767,9 +672,9 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
    }
    case eItemPartGroup:
    {
-      ListView_SetItemText(m_hElementList, idx, 1, (LPSTR) "PartGroup");
-      ListView_SetItemText(m_hElementList, idx, 3, (LPSTR) "");
-      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR) "");
+      ListView_SetItemText(m_hElementList, idx, 1, (LPSTR)"PartGroup");
+      ListView_SetItemText(m_hElementList, idx, 3, (LPSTR)"");
+      ListView_SetItemText(m_hElementList, idx, 4, (LPSTR)"");
 
       break;
    }
