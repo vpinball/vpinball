@@ -3027,7 +3027,7 @@ void CodeViewer::RemoveByVal(string &line)
 	{
 		Pos += 5;
 		if ((SSIZE_T)(LL-Pos) < 0) return;
-		line = line.substr(Pos, (LL-Pos) );
+		line = line.substr(Pos, (LL-Pos));
 	}
 }
 

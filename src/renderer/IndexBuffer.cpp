@@ -15,7 +15,7 @@ public:
    bgfx::IndexBufferHandle m_ib = BGFX_INVALID_HANDLE;
    bgfx::DynamicIndexBufferHandle m_dib = BGFX_INVALID_HANDLE;
    bool IsCreated() const override { return m_isStatic ? bgfx::isValid(m_ib) : bgfx::isValid(m_dib); }
-   
+
    #elif defined(ENABLE_OPENGL)
    GLuint m_ib = 0;
    void Bind() const { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ib); };
@@ -264,14 +264,14 @@ void IndexBuffer::ApplyOffset(VertexBuffer* vb)
          const unsigned int count = upload.size / m_sizePerIndex;
          if (m_indexFormat == FMT_INDEX16)
          {
-            uint16_t* const __restrict indices = (uint16_t*)upload.data;
+            uint16_t* const __restrict indices = reinterpret_cast<uint16_t*>(upload.data);
             for (unsigned int i = 0; i < count; i++)
                indices[i] += offset;
          }
          else // FMT_INDEX32
          {
             assert(m_indexFormat == FMT_INDEX32);
-            uint32_t* const __restrict indices = (uint32_t*)upload.data;
+            uint32_t* const __restrict indices = reinterpret_cast<uint32_t*>(upload.data);
             for (unsigned int i = 0; i < count; i++)
                indices[i] += offset;
          }

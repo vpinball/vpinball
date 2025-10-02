@@ -328,19 +328,19 @@ static std::vector<FlexDMD*> flexDmds;
 
 static bool hasAlpha = false;
 static unsigned int onSegSrcChangedId, getSegSrcId;
-static float segLuminances[16 * 128] = { 0 };
+static float segLuminances[16 * 128] = {};
 
 static SegDisplayFrame GetState(const CtlResId id)
 {
    // FIXME implement new output ids
    if (id.endpointId != endpointId)
       return { 0, nullptr };
-   int flexId = id.resId >> 8;
-   int subId = id.resId & 0x0FF;
+   uint32_t flexId = id.resId >> 8;
+   uint32_t subId = id.resId & 0x0FF;
    static int sizes[17][14] = {
-      { 0 }, // RenderMode_DMD_GRAY_2
-      { 0 }, // RenderMode_DMD_GRAY_4
-      { 0 }, // RenderMode_DMD_RGB
+      {}, // RenderMode_DMD_GRAY_2
+      {}, // RenderMode_DMD_GRAY_4
+      {}, // RenderMode_DMD_RGB
       { 16, 16 }, // RenderMode_SEG_2x16Alpha
       { 20, 20 }, // RenderMode_SEG_2x20Alpha
       { 7, 7, 7, 7 }, // RenderMode_SEG_2x7Alpha_2x7Num
@@ -362,7 +362,7 @@ static SegDisplayFrame GetState(const CtlResId id)
       {
          int pos = 0;
          float* lum = segLuminances;
-         for (int i = 0; i < subId; i++)
+         for (uint32_t i = 0; i < subId; i++)
          {
             pos += sizes[pFlex->GetRenderMode()][i];
             lum += sizes[pFlex->GetRenderMode()][i] * 16;
@@ -384,7 +384,7 @@ static void AddSegSrc(GetSegSrcMsg& msg, uint32_t flexId, int displayIndex, int 
 {
    if (msg.count < msg.maxEntryCount)
    {
-      msg.entries[msg.count] = { 0 };
+      msg.entries[msg.count] = {};
       msg.entries[msg.count].id = { endpointId, flexId << 8 | displayIndex };
       msg.entries[msg.count].groupId = { endpointId, flexId };
       msg.entries[msg.count].hardware = CTLPI_SEG_HARDWARE_UNKNOWN;
@@ -546,7 +546,7 @@ static void onGetRenderDMDSrc(const unsigned int eventId, void* userData, void* 
       {
          if (msg.count < msg.maxEntryCount)
          {
-            msg.entries[msg.count] = { 0 };
+            msg.entries[msg.count] = {};
             msg.entries[msg.count].id = { endpointId, pFlex->GetId() };
             msg.entries[msg.count].groupId = { endpointId, pFlex->GetId() };
             msg.entries[msg.count].width = pFlex->GetWidth();

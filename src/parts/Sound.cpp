@@ -137,7 +137,7 @@ Sound* Sound::CreateFromStream(IStream* pstm, const int LoadFileVersion)
    {
       if (FAILED(pstm->Read(&outputTarget, sizeof(char), &read)))
          return nullptr;
-      if (outputTarget < 0 || outputTarget > SoundOutTypes::SNDOUT_BACKGLASS)
+      if (outputTarget > SoundOutTypes::SNDOUT_BACKGLASS)
          outputTarget = static_cast<uint8_t>(SoundOutTypes::SNDOUT_TABLE);
       if (FAILED(pstm->Read(&volume, sizeof(int32_t), &read)))
          return nullptr;

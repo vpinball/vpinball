@@ -150,7 +150,7 @@ private:
    int32_t m_runtimeVersion = 1008;
    bool m_clear = false;
    int m_renderLockCount = 0;
-   uint16_t m_segData[128] = { 0 };
+   uint16_t m_segData[128] = {};
    int m_width = 128;
    int m_height = 32;
    Group* m_pStage;

@@ -549,7 +549,7 @@ RenderTarget* RenderTarget::Duplicate(const string& name, const bool shareDepthS
    return new RenderTarget(m_rd, m_type, name, m_width, m_height, m_format, m_has_depth, m_nMSAASamples, "Failed to duplicate render target", shareDepthSurface ? this : nullptr);
 }
 
-void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool copyDepth,
+void RenderTarget::CopyTo(RenderTarget* const dest, const bool copyColor, const bool copyDepth,
    const int x1, const int y1, const int w1, const int h1,
    const int x2, const int y2, const int w2, const int h2, 
    const int srcLayer, const int dstLayer)

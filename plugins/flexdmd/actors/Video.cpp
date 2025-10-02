@@ -78,27 +78,27 @@ Video* Video::Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const strin
          }
       }
       m_libAv._av_packet_unref(pPacket);
-    }
+   }
 
-    m_libAv._av_frame_free(&pFrame);
-    m_libAv._av_packet_free(&pPacket);
+   m_libAv._av_frame_free(&pFrame);
+   m_libAv._av_packet_free(&pPacket);
 
-    if (m_pVideoConversionContext)
-       m_libAv._sws_freeContext(m_pVideoConversionContext);
+   if (m_pVideoConversionContext)
+      m_libAv._sws_freeContext(m_pVideoConversionContext);
 
-    if (m_pCodecContext)
-       m_libAv._avcodec_free_context(&m_pCodecContext);
+   if (m_pCodecContext)
+      m_libAv._avcodec_free_context(&m_pCodecContext);
 
-    if (m_pFormatContext)
-       m_libAv._avformat_close_input(&m_pFormatContext);
+   if (m_pFormatContext)
+      m_libAv._avformat_close_input(&m_pFormatContext);
 
-    pVideo->SetPrefWidth((float)w);
-    pVideo->SetPrefHeight((float)h);
-    pVideo->m_length = pVideo->m_frames.size() * pVideo->m_frameDuration;
-    pVideo->Rewind();
-    pVideo->Pack();
+   pVideo->SetPrefWidth(w);
+   pVideo->SetPrefHeight(h);
+   pVideo->m_length = pVideo->m_frames.size() * pVideo->m_frameDuration;
+   pVideo->Rewind();
+   pVideo->Pack();
 
-    return pVideo;
+   return pVideo;
 }
 
 void Video::OnStageStateChanged()

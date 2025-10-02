@@ -149,7 +149,7 @@ void MsgPluginManager::SubscribeMsg(const uint32_t endpointId, const unsigned in
    assert(1 <= endpointId && endpointId < pm.m_nextEndpointId);
 #ifdef DEBUG
    // Callback are only allowed to be registered once per message
-   for (const CallbackEntry entry : pm.m_msgs[msgId].callbacks)
+   for (const CallbackEntry& entry : pm.m_msgs[msgId].callbacks)
       assert(entry.callback != callback);
 #endif
    if (pm.m_broadcastInProgress)
@@ -190,7 +190,7 @@ void MsgPluginManager::BroadcastMsg(const uint32_t endpointId, const unsigned in
    assert(pm.m_msgs[msgId].refCount > 0);
    assert(1 <= endpointId && endpointId < pm.m_nextEndpointId);
    pm.m_broadcastInProgress++;
-   for (const CallbackEntry entry : pm.m_msgs[msgId].callbacks)
+   for (const CallbackEntry& entry : pm.m_msgs[msgId].callbacks)
       entry.callback(msgId, entry.context, data);
    pm.m_broadcastInProgress--;
    if (pm.m_broadcastInProgress == 0 && !pm.m_deferredAfterBroadCastRunnables.empty())
@@ -208,7 +208,7 @@ void MsgPluginManager::SendMsg(const uint32_t endpointId, const unsigned int msg
    assert(msgId < pm.m_msgs.size());
    assert(pm.m_msgs[msgId].refCount > 0);
    assert(1 <= endpointId && endpointId < pm.m_nextEndpointId);
-   for (const CallbackEntry entry : pm.m_msgs[msgId].callbacks)
+   for (const CallbackEntry& entry : pm.m_msgs[msgId].callbacks)
       if (entry.endpointId == targetEndpointId)
       {
          entry.callback(msgId, entry.context, data);

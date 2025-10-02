@@ -872,7 +872,7 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
             //if (m_contacts[i].m_hittime <= hittime) // does not happen often, and values then look sane, so do this check //!! why does this break some collisions (MM NZ&TT Reloaded Skitso, also CCC (Saloon))? maybe due to ball colliding with multiple things and then some sideeffect?
                m_contacts[i].m_obj->Contact(m_contacts[i], hittime);
       else
-         for (size_t i = m_contacts.size() - 1; i != -1; --i)
+         for (int i = (int)m_contacts.size() - 1; i != -1; --i)
             //if (m_contacts[i].m_hittime <= hittime) // does not happen often, and values then look sane, so do this check //!! why does this break some collisions (MM NZ&TT Reloaded Skitso, also CCC (Saloon))? maybe due to ball colliding with multiple things and then some sideeffect?
                m_contacts[i].m_obj->Contact(m_contacts[i], hittime);
 

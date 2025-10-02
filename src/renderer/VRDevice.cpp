@@ -243,7 +243,7 @@ public:
       if (FAILED(result))                                                                                                                                                                    \
       {                                                                                                                                                                                      \
          PLOGE << "ERROR: D3D11: " << std::hex << "0x" << result << std::dec;                                                                                                                \
-         PLOGE << "ERROR: D3D11: " << (y);                                                                                                                                                     \
+         PLOGE << "ERROR: D3D11: " << (y);                                                                                                                                                   \
       }                                                                                                                                                                                      \
    }
 
@@ -391,7 +391,7 @@ private:
 
 VRDevice::VRDevice()
 {
-   Settings& settings = g_pvp->GetActiveTable()->m_settings;
+   const Settings& settings = g_pvp->GetActiveTable()->m_settings;
    #if defined(ENABLE_VR) || defined(ENABLE_XR)
       // Scene offset (vertical rotation and horizontal shift)
       m_orientation = settings.LoadValueWithDefault(Settings::PlayerVR, "Orientation"s, 0.0f);

@@ -594,7 +594,7 @@ inline string ParseRemoveVBSLineComments(string &line)
    string RetVal = line.substr(commentIdx + 1);
    RemovePadding(RetVal);
    if (commentIdx > 0)
-      line = line.substr(0, commentIdx);
+      line.resize(commentIdx);
    else
       line.clear();
    return RetVal;

@@ -248,26 +248,26 @@ void HitFlipper::CalcHitBBox()
 
 void FlipperMoverObject::SetStartAngle(const float r)
 {
-    m_angleStart = r;
-    const float angleMin = min(m_angleStart, m_angleEnd);
-    const float angleMax = max(m_angleStart, m_angleEnd);
+   m_angleStart = r;
+   const float angleMin = min(m_angleStart, m_angleEnd);
+   const float angleMax = max(m_angleStart, m_angleEnd);
 
-    if (m_angleCur > angleMax)
-        m_angleCur = angleMax;
-    if (m_angleCur < angleMin)
-        m_angleCur = angleMin;
+   if (m_angleCur > angleMax)
+      m_angleCur = angleMax;
+   if (m_angleCur < angleMin)
+      m_angleCur = angleMin;
 }
 
 void FlipperMoverObject::SetEndAngle(const float r)
 {
-    m_angleEnd = r;
-    const float angleMin = min(m_angleStart, m_angleEnd);
-    const float angleMax = max(m_angleStart, m_angleEnd);
+   m_angleEnd = r;
+   const float angleMin = min(m_angleStart, m_angleEnd);
+   const float angleMax = max(m_angleStart, m_angleEnd);
 
-    if (m_angleCur > angleMax)
-        m_angleCur = angleMax;
-    if (m_angleCur < angleMin)
-        m_angleCur = angleMin;
+   if (m_angleCur > angleMax)
+      m_angleCur = angleMax;
+   if (m_angleCur < angleMin)
+      m_angleCur = angleMin;
 }
 
 float FlipperMoverObject::GetReturnRatio() const
@@ -1122,22 +1122,21 @@ void HitFlipper::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* 
 {
    if (m_enabled)
    {
-      Vertex2D center = m_flipperMover.m_hitcircleBase.center;
-      float radius = m_flipperMover.m_hitcircleBase.radius;
-      float angle = m_flipperMover.m_angleCur;
+      const float angle = m_flipperMover.m_angleCur;
       const ImU32 lCol = ImGui::GetColorU32(ImGuiCol_PlotLines), fCol = ImGui::GetColorU32(ImGuiCol_PlotHistogram);
-      const Vertex2D p0 = project(Vertex3Ds(center.x, center.y, m_hitBBox.zlow));
-      const Vertex2D q0 = project(Vertex3Ds(center.x, center.y, m_hitBBox.zhigh));
+      const Vertex2D p0 = project(Vertex3Ds(m_flipperMover.m_hitcircleBase.center.x, m_flipperMover.m_hitcircleBase.center.y, m_hitBBox.zlow));
+      const Vertex2D q0 = project(Vertex3Ds(m_flipperMover.m_hitcircleBase.center.x, m_flipperMover.m_hitcircleBase.center.y, m_hitBBox.zhigh));
       Vertex2D p2, q2;
       for (int i = 0; i <= 32; i++)
       {
-         center = m_flipperMover.m_hitcircleBase.center;
+         Vertex2D center = m_flipperMover.m_hitcircleBase.center;
+         float radius;
          if ((i >= 16) && (i < 32))
          {
-            float anglerad = angle;
+            const float anglerad = angle;
             radius = m_flipperMover.m_endradius;
-            center.x += sinf(anglerad) * (m_flipperMover.m_flipperradius);
-            center.y -= cosf(anglerad) * (m_flipperMover.m_flipperradius);
+            center.x += sinf(anglerad) * m_flipperMover.m_flipperradius;
+            center.y -= cosf(anglerad) * m_flipperMover.m_flipperradius;
          }
          else
          {

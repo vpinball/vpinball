@@ -504,7 +504,7 @@ void SoundDialog::Export()
                string pathName = ofn.lpstrFile;
                const size_t pos = pathName.find_last_of(PATH_SEPARATOR_CHAR);
                if (pos != string::npos)
-                  pathName = pathName.substr(0, pos + 1);
+                  pathName.resize(pos + 1);
 
                while (sel != -1 && pps != nullptr)
                {
@@ -679,7 +679,7 @@ void SoundDialog::SavePosition()
 
 void SoundDialog::AddToolTip(const char *const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)
 {
-   TOOLINFO toolInfo = { 0 };
+   TOOLINFO toolInfo = {};
    toolInfo.cbSize = sizeof(toolInfo);
    toolInfo.hwnd = parentHwnd;
    toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;

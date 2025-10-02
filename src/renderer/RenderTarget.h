@@ -27,7 +27,7 @@ public:
    std::shared_ptr<Sampler> GetDepthSampler() const { return m_depth_sampler; }
 
    RenderTarget* Duplicate(const string& name, const bool shareDepthSurface = false);
-   void CopyTo(RenderTarget* dest, const bool copyColor = true, const bool copyDepth = true, 
+   void CopyTo(RenderTarget* const dest, const bool copyColor = true, const bool copyDepth = true, 
       const int x1 = -1, const int y1 = -1, const int w1 = -1, const int h1 = -1,
       const int x2 = -1, const int y2 = -1, const int w2 = -1, const int h2 = -1,
       const int srcLayer = -1, const int dstLayer = -1);

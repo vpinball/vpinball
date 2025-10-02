@@ -115,7 +115,7 @@ Actor* Group::Get(const string& name)
       else
       {
          // relative path from current group 'xx/yy/zz'
-         string groupName = name.substr(0, pos);
+         const string groupName = name.substr(0, pos);
          for (Actor* child : m_children)
          {
             if ((child->GetType() == Actor::AT_Group) && (child->GetName() == groupName))

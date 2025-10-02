@@ -82,7 +82,7 @@ public:
          FireVoidEvent(dispid);
    }
 
-   HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
+   HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override
    {
       if (dispid != DISPID_TimerEvents_Timer)
          g_frameProfiler->EnterScriptSection(dispid, string());
