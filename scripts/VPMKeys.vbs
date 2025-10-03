@@ -68,10 +68,6 @@ Option Explicit
 ' This is a list of standard keys used by *.vbs files
 '
 
-' Double leaf/staged flipper switches: By default these are just set to LeftFlipperKey and RightFlipperKey
-Dim keyStagedFlipperL : keyStagedFlipperL = LeftFlipperKey
-Dim keyStagedFlipperR : keyStagedFlipperR = RightFlipperKey
-
 Const keyShowOpts	= 59  '(F1)		Show options
 Const keyShowKeys	= 60  '(F2)		Show Keys
 Const keyReset		= 61  '(F3)		Reset Emulation

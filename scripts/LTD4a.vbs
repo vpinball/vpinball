@@ -79,8 +79,8 @@ Function vpmKeyDown(ByVal keycode)
 				End If
 			Case RightMagnaSave .Switch(swURFlip) = True : vpmKeyDown = False
 			Case LeftMagnaSave  .Switch(swULFlip) = True : vpmKeyDown = False
-			Case keyStagedFlipperL .Switch(swULFlip) = True : vpmKeyDown = False
-			Case keyStagedFlipperR .Switch(swURFlip) = True : vpmKeyDown = False
+			Case StagedLeftFlipperKey .Switch(swULFlip) = True : vpmKeyDown = False
+			Case StagedRightFlipperKey .Switch(swURFlip) = True : vpmKeyDown = False
 			Case keyInsertCoin1  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin1'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : If Not IsEmpty(Eval("SCoin")) Then Playsound SCoin
 			Case StartGameKey    .Switch(swStartButton) = True
@@ -112,8 +112,8 @@ Function vpmKeyUp(ByVal keycode)
 				End If
 			Case RightMagnaSave .Switch(swURFlip) = False : vpmKeyUp = False
 			Case LeftMagnaSave  .Switch(swULFlip) = False : vpmKeyUp = False
-			Case keyStagedFlipperL .Switch(swULFlip) = False : vpmKeyUp = False
-			Case keyStagedFlipperR .Switch(swURFlip) = False : vpmKeyUp = False
+			Case StagedLeftFlipperKey .Switch(swULFlip) = False : vpmKeyUp = False
+			Case StagedRightFlipperKey .Switch(swURFlip) = False : vpmKeyUp = False
 			Case StartGameKey    .Switch(swStartButton) = False
 			Case keySelfTest     .Switch(swSelfTest)    = False
 			Case keyEnter        .Switch(swEnter)       = False
