@@ -129,22 +129,37 @@ void VPXPluginAPIImpl::SetActiveViewSetup(VPXViewSetupDef* view)
 ///////////////////////////////////////////////////////////////////////////////
 // Input API
 
-void VPXPluginAPIImpl::GetInputState(uint64_t* keyState, float* nudgeX, float* nudgeY, float* plunger)
+void VPXPluginAPIImpl::SetActionState(const VPXAction actionId, const int isPressed)
 {
-   const Vertex2D& nudge = g_pplayer->m_pininput.GetNudge();
-   *nudgeX = nudge.x;
-   *nudgeY = nudge.y;
-   *plunger = g_pplayer->m_pininput.GetPlungerPos();
-   *keyState = g_pplayer->m_pininput.GetInputState().actionState;
+   if (!g_pplayer)
+      return; // No game in progress
+
+   VPXPluginAPIImpl& me = VPXPluginAPIImpl::GetInstance();
+   auto it = me.m_actionMap.find(actionId);
+   if (it == me.m_actionMap.end())
+      return; // action not mapped
+
+   const std::unique_ptr<InputAction>& action = g_pplayer->m_pininput.GetInputActions()[it->second.first];
+   if (it->second.second == -1)
+      it->second.second = action->NewDirectStateSlot();
+   action->SetDirectState(it->second.second, isPressed != 0);
 }
 
-void VPXPluginAPIImpl::SetInputState(const uint64_t keyState, const float nudgeX, const float nudgeY, const float plunger)
+void VPXPluginAPIImpl::SetNudgeState(const int stateMask, const float nudgeAccelerationX, const float nudgeAccelerationY)
 {
-   PinInput::InputState state;
-   state.actionState = keyState;
-   g_pplayer->m_pininput.SetInputState(state);
-   g_pplayer->m_pininput.SetNudge(Vertex2D(nudgeX, nudgeY));
-   g_pplayer->m_pininput.SetPlungerPos(plunger);
+   if (!g_pplayer)
+      return; // No game in progress
+
+   g_pplayer->m_pininput.SetNudge((stateMask & 1) != 0, nudgeAccelerationX, nudgeAccelerationY);
+}
+
+void VPXPluginAPIImpl::SetPlungerState(const int stateMask, const float plungerPos, const float plungerSpeed)
+{
+   if (!g_pplayer)
+      return; // No game in progress
+
+   g_pplayer->m_pininput.SetPlungerPos((stateMask & 1) == 0x01, plungerPos);
+   g_pplayer->m_pininput.SetPlungerSpeed((stateMask & 3) == 0x03, plungerSpeed); // With speed and overriden
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -378,6 +393,33 @@ void VPXPluginAPIImpl::OnGameStart()
 
    m_onDisplaySrcChg = msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
    msgApi.BroadcastMsg(GetVPXEndPointId(), m_onDisplaySrcChg, nullptr);
+
+      const InputManager& inputManager = g_pplayer->m_pininput;
+   m_actionMap[VPXACTION_LeftFlipper] = { inputManager.GetLeftFlipperActionId(), -1 };
+   m_actionMap[VPXACTION_RightFlipper] = { inputManager.GetRightFlipperActionId(), -1 };
+   m_actionMap[VPXACTION_StagedLeftFlipper] = { inputManager.GetStagedLeftFlipperActionId(), -1 };
+   m_actionMap[VPXACTION_StagedRightFlipper] = { inputManager.GetStagedRightFlipperActionId(), -1 };
+   m_actionMap[VPXACTION_LeftMagnaSave] = { inputManager.GetLeftMagnaActionId(), -1 };
+   m_actionMap[VPXACTION_RightMagnaSave] = { inputManager.GetRightMagnaActionId(), -1 };
+   m_actionMap[VPXACTION_LaunchBall] = { inputManager.GetLaunchBallActionId(), -1 };
+   m_actionMap[VPXACTION_LeftNudge] = { inputManager.GetLeftNudgeActionId(), -1 };
+   m_actionMap[VPXACTION_CenterNudge] = { inputManager.GetCenterNudgeActionId(), -1 };
+   m_actionMap[VPXACTION_RightNudge] = { inputManager.GetRightNudgeActionId(), -1 };
+   m_actionMap[VPXACTION_Tilt] = { inputManager.GetTiltActionId(), -1 };
+   m_actionMap[VPXACTION_AddCredit] = { inputManager.GetAddCreditActionId(0), -1 };
+   m_actionMap[VPXACTION_AddCredit2] = { inputManager.GetAddCreditActionId(1), -1 };
+   m_actionMap[VPXACTION_StartGame] = { inputManager.GetStartActionId(), -1 };
+   m_actionMap[VPXACTION_Lockbar] = { inputManager.GetLockbarActionId(), -1 };
+   //m_actionMap[VPXACTION_Pause] = { inputManager.GetPauseActionId(), -1 };
+   m_actionMap[VPXACTION_PerfOverlay] = { inputManager.GetLeftFlipperActionId(), -1 };
+   m_actionMap[VPXACTION_ExitInteractive] = { inputManager.GetExitInteractiveActionId(), -1 };
+   m_actionMap[VPXACTION_ExitGame] = { inputManager.GetExitGameActionId(), -1 };
+   //m_actionMap[VPXACTION_InGameUI] = { inputManager.GetIn(), -1 };
+   m_actionMap[VPXACTION_VolumeDown] = { inputManager.GetVolumeDownActionId(), -1 };
+   m_actionMap[VPXACTION_VolumeUp] = { inputManager.GetVolumeUpActionId(), -1 };
+   //m_actionMap[VPXACTION_VRRecenter] = { inputManager.GetVRRecenterActionId(), -1 };
+   //m_actionMap[VPXACTION_VRUp] = { inputManager.GetVRUpActionId(), -1 };
+   //m_actionMap[VPXACTION_VRDown] = { inputManager.GetVRDownActionId(), -1 };
 }
 
 void VPXPluginAPIImpl::OnGameEnd()
@@ -396,6 +438,8 @@ void VPXPluginAPIImpl::OnGameEnd()
    unsigned int onGameEndMsgId = MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END);
    msgApi.BroadcastMsg(GetVPXEndPointId(), onGameEndMsgId, nullptr);
    MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().ReleaseMsgID(onGameEndMsgId);
+
+   m_actionMap.clear();
 }
 
 void VPXPluginAPIImpl::UpdateDMDSource(Flasher* flasher, bool isAdd)
@@ -531,8 +575,9 @@ VPXPluginAPIImpl::VPXPluginAPIImpl() : m_apiThread(std::this_thread::get_id())
    m_api.GetActiveViewSetup = GetActiveViewSetup;
    m_api.SetActiveViewSetup = SetActiveViewSetup;
 
-   m_api.GetInputState = GetInputState;
-   m_api.SetInputState = SetInputState;
+   m_api.SetActionState = SetActionState;
+   m_api.SetNudgeState = SetNudgeState;
+   m_api.SetPlungerState = SetPlungerState;
 
    m_api.CreateTexture = CreateTexture;
    m_api.UpdateTexture = UpdateTexture;

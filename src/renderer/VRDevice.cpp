@@ -1533,19 +1533,11 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
 }
 #endif
 
-void VRDevice::TableUp()
+void VRDevice::OffsetTable(float dx, float dy, float dz)
 {
-   m_tablePos.z += 1.0f;
-   if (m_tablePos.z > 250.0f)
-      m_tablePos.z = 250.0f;
-   m_worldDirty = true;
-}
-
-void VRDevice::TableDown()
-{
-   m_tablePos.z -= 1.0f;
-   if (m_tablePos.z < 0.0f)
-      m_tablePos.z = 0.0f;
+   m_tablePos.x = clamp(m_tablePos.x + dx, -100.0f, 100.0f);
+   m_tablePos.y = clamp(m_tablePos.y + dy, -100.0f, 100.0f);
+   m_tablePos.z = clamp(m_tablePos.z + dz, 0.0f, 250.0f);
    m_worldDirty = true;
 }
 

@@ -28,14 +28,13 @@ public:
    bool IsFlipperNav() const { return m_useFlipperNav; }
 
 private:
-   void HandlePageInput(const PinInput::InputState &state);
-   void HandleLegacyFlyOver(const PinInput::InputState &state);
+   void HandlePageInput(const InputManager::ActionState &state);
+   void HandleLegacyFlyOver(const InputManager::ActionState &state);
 
    Player *m_player;
    bool m_isOpened = false;
    bool m_useFlipperNav = false;
-   PinInput::InputState m_prevInputState {};
-   bool m_playerPaused = false;
+   InputManager::ActionState m_prevActionState { };
    ankerl::unordered_dense::map<string, std::unique_ptr<InGameUIPage>> m_pages;
    vector<string> m_navigationHistory;
    InGameUIPage* m_activePage = nullptr;

@@ -8,9 +8,51 @@ namespace VPX::InGameUI
 class InGameUIItem final
 {
 public:
-   explicit InGameUIItem(string label)
-      : m_type(Type::Info) // Common
+   enum class LabelType
+   {
+      Info, // Not scrollable basic text
+      Header, // Not scrollable basic text, formated to split sections of the item list
+      Markdown // Scrollable (therefore selectable), advanced formatting
+   };
+   explicit InGameUIItem(LabelType type, string label)
+      : m_type(Type::Label) // Common
+      , m_labelType(type)
       , m_label(std::move(label))
+      , m_path(""s) // Unused
+      , m_minValue(0.f)
+      , m_maxValue(0.f)
+      , m_step(0.f)
+      , m_defValue(0.f)
+      , m_initialValue(0.f)
+      , m_enum()
+   {
+      Validate();
+   }
+
+   explicit InGameUIItem(const string& label, const string& tooltip, class InputAction* inputAction)
+      : m_type(Type::ActionInputMapping) // Common
+      , m_label(label)
+      , m_tooltip(tooltip)
+      , m_inputAction(inputAction)
+      , m_initialStringValue(inputAction->GetMappingString())
+      , m_defStringValue(inputAction->GetDefaultMappingString())
+      , m_path(""s) // Unused
+      , m_minValue(0.f)
+      , m_maxValue(0.f)
+      , m_step(0.f)
+      , m_defValue(0.f)
+      , m_enum()
+   {
+      Validate();
+   }
+
+   explicit InGameUIItem(const string& label, const string& tooltip, class PhysicsSensor* physicsSensor, int typeMask)
+      : m_type(Type::PhysicsSensorMapping) // Common
+      , m_label(label)
+      , m_tooltip(tooltip)
+      , m_physicsSensor(physicsSensor)
+      , m_physicsSensorTypeMask(typeMask)
+      , m_initialStringValue(physicsSensor->GetMappingString())
       , m_path(""s) // Unused
       , m_minValue(0.f)
       , m_maxValue(0.f)
@@ -123,12 +165,14 @@ public:
    enum class Type
    {
       // Generic items
-      Info,
+      Label,
       Navigation,
       FloatValue,
       IntValue,
       EnumValue,
       Toggle,
+      ActionInputMapping,
+      PhysicsSensorMapping,
       // Core actions
       Back,
       ResetToDefaults,
@@ -152,10 +196,13 @@ public:
 
    bool IsSelectable() const
    {
-      return true;
-      //m_type != Type::Info;
+      return m_type != Type::Label || m_labelType == LabelType::Markdown;
    }
-   bool IsAdjustable() const { return m_type == Type::FloatValue || m_type == Type::IntValue || m_type == Type::EnumValue || m_type == Type::Toggle; }
+   bool IsAdjustable() const
+   {
+      return m_type == Type::FloatValue || m_type == Type::IntValue || m_type == Type::EnumValue || m_type == Type::Toggle || m_type == Type::ActionInputMapping
+         || m_type == Type::PhysicsSensorMapping;
+   }
 
    float GetFloatValue() const
    {
@@ -172,13 +219,14 @@ public:
       return value;
    }
    bool GetBoolValue() const { return m_getBoolValue(); }
-   void SetValue(float value);
-   void SetValue(int value);
-   void SetValue(bool value);
+   void SetValue(float value) const;
+   void SetValue(int value) const;
+   void SetValue(bool value) const;
 
    void SetInitialValue(bool v);
    void SetInitialValue(int v);
    void SetInitialValue(float v);
+   void SetInitialValue(const string& s);
    bool IsModified() const;
    void ResetSave(Settings& settings) const;
    void Save(Settings& settings, bool isTableOverride);
@@ -187,12 +235,21 @@ public:
    void SetDefaultValue(bool v);
    void SetDefaultValue(int v);
    void SetDefaultValue(float v);
+   void SetDefaultValue(const string& s);
    bool IsDefaultValue() const;
    void ResetToDefault();
 
    const Type m_type;
    const string m_label;
    const string m_tooltip;
+
+   // Label
+   const LabelType m_labelType = LabelType::Header;
+
+   // Input mapping
+   class InputAction* m_inputAction;
+   class PhysicsSensor* m_physicsSensor;
+   int m_physicsSensorTypeMask;
 
    // Navigation item
    const string m_path;
@@ -234,6 +291,8 @@ private:
 
    float m_defValue;
    float m_initialValue;
+   string m_defStringValue;
+   string m_initialStringValue;
 
    const std::function<bool()> m_getBoolValue;
    const std::function<void(bool)> m_onChangeBool;

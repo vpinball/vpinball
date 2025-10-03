@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 
 #include <SDL3/SDL_main.h>
+#include "imgui/imgui_impl_sdl3.h"
 
 #include "imgui/imgui_impl_sdl3.h"
 
@@ -135,16 +136,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    }
 #endif
 
-   m_plungerSpeedScale = 1.0f;
-   m_curMechPlungerPos = 0;
-
-   m_plungerSpeedScale = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PlungerSpeedScale"s, 100.0f) / 100.0f;
-   if (m_plungerSpeedScale <= 0.0f)
-      m_plungerSpeedScale = 1.0f;
-
-   // Accelerometer inputs are accelerations (not velocities) by default
-   m_accelInputIsVelocity = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "AccelVelocityInput"s, false);
-
    bool useVR = false;
    #if defined(ENABLE_VR) || defined(ENABLE_XR)
       const int vrDetectionMode = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "AskToTurnOn"s, 1);
@@ -201,9 +192,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    m_debugBallSize = m_ptable->m_settings.LoadValueWithDefault(Settings::Editor, "ThrowBallSize"s, 50);
    m_debugBallMass = m_ptable->m_settings.LoadValueWithDefault(Settings::Editor, "ThrowBallMass"s, 1.0f);
-
-   for (unsigned int i = 0; i < MAX_TOUCHREGION; ++i)
-      m_touchregion_pressed[i] = false;
 
 #ifdef __LIBVPINBALL__
    m_liveUIOverride = g_pvp->m_settings.LoadValueWithDefault(Settings::Standalone, "LiveUIOverride"s, true);
@@ -262,12 +250,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       PLOGI << "Synchronization mode: " << m_videoSyncMode << " with maximum FPS: " << m_maxFramerate << ", display FPS: " << pfRefreshRate;
    }
 
-
-   // Touch screen support
-   #if (defined(__APPLE__) && TARGET_OS_IOS) || defined(__ANDROID__)
-      m_supportsTouch = true;
-   #endif
-
    // FIXME remove or at least move legacy ushock to a plugin
    ushock_output_init();
 
@@ -280,9 +262,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    set_lowest_possible_win_timer_resolution();
 
    m_progressDialog.SetProgress("Initializing Visuals..."s, 10);
-
-   for(unsigned int i = 0; i < eActionCount; ++i)
-      m_actionToSDLScanCodeMapping[i] = GetSDLScancodeFromDirectInputKey(m_ptable->m_settings.LoadValueInt(Settings::Player, regkey_string[i]));
 
    m_PlayMusic = m_ptable->m_settings.LoadValueBool(Settings::Player, "PlayMusic"s);
    m_PlaySound = m_ptable->m_settings.LoadValueBool(Settings::Player, "PlaySound"s);
@@ -339,53 +318,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_renderer->m_renderDevice->m_vsyncCount = 1;
 
    PLOGI << "Initializing inputs & implicit objects"; // For profiling
-
-   #ifdef _WIN32
-      m_pininput.SetFocusWindow(m_playfieldWnd->GetNativeHWND());
-   #endif
-   m_pininput.Init();
-
-#ifndef __STANDALONE__
-   const unsigned int lflip = GetWin32VirtualKeyFromSDLScancode(m_actionToSDLScanCodeMapping[eLeftFlipperKey]);
-   const unsigned int rflip = GetWin32VirtualKeyFromSDLScancode(m_actionToSDLScanCodeMapping[eRightFlipperKey]);
-   if (((GetAsyncKeyState(VK_LSHIFT) & 0x8000) && (GetAsyncKeyState(VK_RSHIFT) & 0x8000))
-      || ((lflip != ~0u) && (rflip != ~0u) && (GetAsyncKeyState(lflip) & 0x8000) && (GetAsyncKeyState(rflip) & 0x8000)))
-   {
-      m_ptable->m_tblMirrorEnabled = true;
-   }
-   else
-#endif
-      m_ptable->m_tblMirrorEnabled = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "mirror"s, false);
-   if (m_ptable->m_tblMirrorEnabled)
-   {
-      m_audioPlayer->SetMirrored(true);
-      int rotation = (int)(m_ptable->mViewSetups[m_ptable->m_BG_current_set].GetRotation(m_playfieldWnd->GetWidth(), m_playfieldWnd->GetHeight())) / 90;
-      m_renderer->GetMVP().SetFlip(rotation == 0 || rotation == 2 ? ModelViewProj::FLIPX : ModelViewProj::FLIPY);
-   }
-
-#ifndef __STANDALONE__
-   // if left flipper or shift are held during load, then swap DT/FS view (for quick testing)
-   if (m_ptable->m_BG_current_set != BG_FSS &&
-       !m_ptable->m_tblMirrorEnabled &&
-       ((GetAsyncKeyState(VK_LSHIFT) & 0x8000)
-       || ((lflip != ~0u) && (GetAsyncKeyState(lflip) & 0x8000))))
-   {
-      switch (m_ptable->m_BG_current_set)
-      {
-      case BG_DESKTOP: m_ptable->m_BG_override = BG_FSS; break;
-      case BG_FSS: m_ptable->m_BG_override = BG_DESKTOP; break;
-      default: break;
-      }
-      m_ptable->UpdateCurrentBGSet();
-   }
-#endif
-
-   // Initialize default state
-   RenderState state;
-   state.SetRenderState(RenderState::CULLMODE, m_ptable->m_tblMirrorEnabled ? RenderState::CULL_CW : RenderState::CULL_CCW);
-   m_renderer->m_renderDevice->CopyRenderStates(false, state);
-   m_renderer->m_renderDevice->SetDefaultRenderState();
-   m_renderer->InitLayout();
 
    Ball::ResetBallIDCounter();
 
@@ -468,6 +400,43 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    wintimer_init();
    m_liveUI = new LiveUI(m_renderer->m_renderDevice);
    m_liveUI->m_ballControl.LoadSettings(m_ptable->m_settings);
+
+   m_ptable->m_tblMirrorEnabled = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "mirror"s, false);
+   #ifndef __STANDALONE__
+   {
+      const int vkLeftFlip = m_pininput.GetWindowVirtualKeyForAction(m_pininput.GetLeftFlipperActionId());
+      const int vkRightFlip = m_pininput.GetWindowVirtualKeyForAction(m_pininput.GetRightFlipperActionId());
+      const bool leftFlipPressed = (GetAsyncKeyState(VK_LSHIFT) & 0x8000) || ((vkLeftFlip != ~0u) && (GetAsyncKeyState(vkLeftFlip) & 0x8000));
+      const bool rightFlipPressed = (GetAsyncKeyState(VK_RSHIFT) & 0x8000) || ((vkRightFlip != ~0u) && (GetAsyncKeyState(vkRightFlip) & 0x8000));
+
+      // if both flippers are hold, then mirror table
+      if (leftFlipPressed && rightFlipPressed)
+      {
+         PLOGI << "Both flippers detected as held down during load, enabling table mirroring";
+         m_ptable->m_tblMirrorEnabled = true;
+      }
+
+      // if left flipper is hold during load, then swap DT/FS view (for quick testing)
+      if (m_ptable->m_BG_current_set != BG_FSS && !m_ptable->m_tblMirrorEnabled && leftFlipPressed)
+      {
+         PLOGI << "Left flipper detected as held down during load, swapping playfield/backglass view";
+         switch (m_ptable->m_BG_current_set)
+         {
+         case BG_DESKTOP: m_ptable->m_BG_override = BG_FSS; break;
+         case BG_FSS: m_ptable->m_BG_override = BG_DESKTOP; break;
+         default: break;
+         }
+         m_ptable->UpdateCurrentBGSet();
+      }
+   }
+   #endif
+
+   if (m_ptable->m_tblMirrorEnabled)
+   {
+      m_audioPlayer->SetMirrored(true);
+      int rotation = (int)(m_ptable->mViewSetups[m_ptable->m_BG_current_set].GetRotation(m_playfieldWnd->GetWidth(), m_playfieldWnd->GetHeight())) / 90;
+      m_renderer->GetMVP().SetFlip(rotation == 0 || rotation == 2 ? ModelViewProj::FLIPX : ModelViewProj::FLIPY);
+   }
 
    m_progressDialog.SetProgress("Loading Textures..."s, 50);
 
@@ -615,6 +584,11 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_progressDialog.SetProgress("Initializing Renderer..."s, 60);
 
    // Setup rendering and timers
+   RenderState state;
+   state.SetRenderState(RenderState::CULLMODE, m_ptable->m_tblMirrorEnabled ? RenderState::CULL_CW : RenderState::CULL_CCW);
+   m_renderer->m_renderDevice->CopyRenderStates(false, state);
+   m_renderer->m_renderDevice->SetDefaultRenderState();
+   m_renderer->InitLayout();
    for (RenderProbe *probe : m_ptable->m_vrenderprobe)
       probe->RenderSetup(m_renderer);
    for (auto editable : m_ptable->m_vedit)
@@ -758,7 +732,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    if (!m_liveUIOverride) {
 #endif
       const int numberOfTimesToShowTouchMessage = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "NumberOfTimesToShowTouchMessage"s, 10);
-      if (m_supportsTouch && numberOfTimesToShowTouchMessage != 0) //!! visualize with real buttons or at least the areas?? Add extra buttons?
+      if (m_pininput.HasTouchInput() && numberOfTimesToShowTouchMessage != 0) //!! visualize with real buttons or at least the areas?? Add extra buttons?
       {
          g_pvp->m_settings.SaveValue(Settings::Player, "NumberOfTimesToShowTouchMessage"s, max(numberOfTimesToShowTouchMessage - 1, 0));
          m_liveUI->PushNotification("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
@@ -921,7 +895,6 @@ Player::~Player()
 
    delete m_liveUI;
    m_liveUI = nullptr;
-   m_pininput.UnInit();
    delete m_physics;
    m_physics = nullptr;
 
@@ -1341,76 +1314,6 @@ int Player::NudgeGetTilt()
 }
 #endif
 
-#define IIR_Order 4
-
-// coefficients for IIR_Order Butterworth filter set to 10 Hz passband
-static constexpr float IIR_a[IIR_Order + 1] = {
-   0.0048243445f,
-   0.019297378f,
-   0.028946068f,
-   0.019297378f,
-   0.0048243445f };
-
-static constexpr float IIR_b[IIR_Order + 1] = {
-   1.00000000f, //if not 1 add division below
-   -2.369513f,
-   2.3139884f,
-   -1.0546654f,
-   0.1873795f };
-
-// called on every integral physics frame, only really triggered if before MechPlungerIn() was called, which again relies on an hardware device being used
-void Player::MechPlungerUpdate()
-{
-   static int init = IIR_Order; // first time call
-   static float x[IIR_Order + 1] = { 0, 0, 0, 0, 0 };
-   static float y[IIR_Order + 1] = { 0, 0, 0, 0, 0 };
-
-   //http://www.dsptutor.freeuk.com/IIRFilterDesign/IIRFilterDesign.html  
-   // (this applet is set to 8000Hz sample rate, therefore, multiply ...
-   // our values by 80 to shift sample clock of 100hz to 8000hz)
-
-   m_plungerUpdateCount++;
-   if (m_plungerUpdateCount <= 3)
-   {
-      init = IIR_Order;
-      m_curMechPlungerPos = 0;
-      return; // not until a real value is entered
-   }
-
-   // get the sum of current plunger inputs across joysticks
-   float curPos = m_pininput.GetPlungerPos();
-
-   if (!m_ptable->m_plungerFilter)
-   {
-      m_curMechPlungerPos = curPos;
-      return;
-   }
-
-   x[0] = curPos; //initialize filter
-   do
-   {
-      y[0] = IIR_a[0] * x[0];   // initial
-
-      for (int i = IIR_Order; i > 0; --i) // all terms but the zero-th 
-      {
-         y[0] += (IIR_a[i] * x[i] - IIR_b[i] * y[i]);// /b[0]; always one     // sum terms from high to low
-         x[i] = x[i - 1];          //shift 
-         y[i] = y[i - 1];          //shift
-      }
-   } while (init-- > 0); //loop until all registers are initialized with the first input
-
-   init = 0;
-
-   m_curMechPlungerPos = y[0];
-}
-
-float Player::GetMechPlungerSpeed() const 
-{ 
-    return m_pininput.GetPlungerSpeed();
-}
-
-//++++++++++++++++++++++++++++++++++++++++
-
 #pragma endregion
 
 
@@ -1570,7 +1473,7 @@ void Player::ProcessOSMessages()
          else if (dragging)
          {
             // Handle dragging of auxiliary windows
-            SDL_Window *const sdlWnd = SDL_GetWindowFromID(e.motion.windowID);
+            const SDL_Window *const sdlWnd = SDL_GetWindowFromID(e.motion.windowID);
             std::vector<VPX::Window *> windows = {
                m_scoreviewOutput.GetWindow(),
                m_backglassOutput.GetWindow(),
@@ -1596,26 +1499,33 @@ void Player::ProcessOSMessages()
 
       if (isPFWnd)
       {
-         if (e.type == SDL_EVENT_MOUSE_MOTION)
+         auto applyPFRotation = [this](const float x, const float y, float& rx, float& ry)
          {
-            SDL_Event rotatedEvent = e;
             switch (m_liveUI->GetUIOrientation())
             {
-            case 0: break;
+            case 0:
+               rx = x;
+               ry = y;
+               break;
             case 1:
-               rotatedEvent.motion.x = e.motion.y;
-               rotatedEvent.motion.y = ImGui::GetIO().DisplaySize.y - e.motion.x;
+               rx = y;
+               ry = ImGui::GetIO().DisplaySize.y - x;
                break;
             case 2:
-               rotatedEvent.motion.x = e.motion.x;
-               rotatedEvent.motion.y = ImGui::GetIO().DisplaySize.y - e.motion.y;
+               rx = x;
+               ry = ImGui::GetIO().DisplaySize.y - y;
                break;
             case 3:
-               rotatedEvent.motion.x = ImGui::GetIO().DisplaySize.x - e.motion.y;
-               rotatedEvent.motion.y = e.motion.x;
+               rx = ImGui::GetIO().DisplaySize.x - y;
+               ry = x;
                break;
             default: assert(false); return;
             }
+         };
+         if (e.type == SDL_EVENT_MOUSE_MOTION)
+         {
+            SDL_Event rotatedEvent = e;
+            applyPFRotation(e.motion.x, e.motion.y, rotatedEvent.motion.x, rotatedEvent.motion.y);
             ImGui_ImplSDL3_ProcessEvent(&rotatedEvent);
          }
          else
@@ -2593,7 +2503,9 @@ float Player::ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2)
       if (szWord == "Key"s)
       {
          sscanf_s(szLine, "%s %s %d",szWord, (unsigned)_countof(szWord), szSubWord, (unsigned)_countof(szSubWord), &index);
-         m_pininput.FireGenericKeyEvent(GetSDLScancodeFromDirectInputKey(index), szSubWord == "Down"s);
+         CComVariant rgvar[1] = { CComVariant(index) };
+         DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
+         g_pplayer->m_ptable->FireDispID(szSubWord == "Down"s ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, &dispparams);
       }
       else if (szWord == "Physics"s)
       {

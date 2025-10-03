@@ -116,7 +116,7 @@ void PointOfViewSettingsPage::BuildPage()
       if (screenWidth <= 1.f || screenHeight <= 1.f)
       {
          // TODO include a link to the cabinet setting page with screen size setup
-         auto info = std::make_unique<InGameUIItem>("You must setup your screen size before using Window mode"s);
+         auto info = std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "You must setup your screen size before using Window mode"s);
          AddItem(info);
          return;
       }

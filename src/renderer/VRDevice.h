@@ -20,8 +20,7 @@ public:
    float GetLockbarWidth() const { return m_lockbarWidth; }
    void SetLockbarWidth(float width) { m_lockbarWidth = width; m_worldDirty = true; }
 
-   void TableUp();
-   void TableDown();
+   void OffsetTable(float dx, float dy, float dz);
    void RecenterTable();
    float GetSceneOrientation() const { return m_orientation; }
    const Vertex3Ds& GetSceneOffset() const { return m_tablePos; }

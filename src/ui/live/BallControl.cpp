@@ -37,9 +37,9 @@ void BallControl::Update(const int width, const int height)
 {
    using enum Mode;
    const Player *const player = g_pplayer;
-   const PinInput::InputState &inputState = player->m_pininput.GetInputState();
-   const bool leftFlipperPressed = inputState.IsKeyPressed(eLeftFlipperKey, m_prevInputState);
-   m_prevInputState = inputState;
+   const InputManager::ActionState &inputState = player->m_pininput.GetActionState();
+   const bool leftFlipperPressed = inputState.IsKeyPressed(player->m_pininput.GetLeftFlipperActionId(), m_prevActionState);
+   m_prevActionState = inputState;
 
    switch (m_mode)
    {

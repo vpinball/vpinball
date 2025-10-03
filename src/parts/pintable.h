@@ -11,7 +11,7 @@
 #include "renderer/RenderProbe.h"
 #include "renderer/ViewSetup.h"
 
-#include "input/pininput.h"
+#include "input/InputManager.h"
 
 #include "ui/win/PinTableMDI.h"
 

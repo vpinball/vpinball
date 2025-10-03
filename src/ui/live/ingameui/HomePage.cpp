@@ -52,13 +52,16 @@ void HomePage::Open()
    AddItem(graphicSettings);
 
    /*auto displaySettings = std::make_unique<InGameUIItem>("Display Settings"s, ""s, "settings/display"s);
-   AddItem(displaySettings);
+   AddItem(displaySettings);*/
 
    auto inputSettings = std::make_unique<InGameUIItem>("Input Settings"s, ""s, "settings/input"s);
    AddItem(inputSettings);
 
+   auto plungerSettings = std::make_unique<InGameUIItem>("Plunger Settings"s, ""s, "settings/plunger"s);
+   AddItem(plungerSettings);
+
    auto nudgeSettings = std::make_unique<InGameUIItem>("Nudge & Tilt Settings"s, ""s, "settings/nudge"s);
-   AddItem(nudgeSettings);*/
+   AddItem(nudgeSettings);
 
    // TODO implement Plugin option system to new UI (note that, for the time being, plugin setting system is just an unused draft so far, see GetOption in VPXPlugin.h)
 

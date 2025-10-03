@@ -170,11 +170,11 @@ void PlungerMoverObject::SetObjects(const float len)
 // Pinscape device with plunger speed support.
 float PlungerMoverObject::MechPlunger() const
 {
-   const float pos = g_pplayer->m_curMechPlungerPos / static_cast<float>(JOYRANGEMX);
+   const float pos = g_pplayer->m_pininput.GetPlungerPos();
    if (g_pplayer->m_pininput.m_linearPlunger)
    {
       // Linear plunger device - the joystick must be calibrated such that the park
-      // position reads as 0 and the fully retracted position reads as JOYRANGEMX.  The
+      // position reads as 0 and the fully retracted position reads as 1.0.  The
       // scaling factor between physical units and joystick units must be the same on the
       // positive and negative sides.  (The maximum forward position is not calibrated.)
       return lerp(m_restPos, 1.f, pos);
@@ -182,8 +182,8 @@ float PlungerMoverObject::MechPlunger() const
    else
    {
       // Standard plunger device - the joystick must be calibrated such that the park
-      // position reads as 0, the fully retracted position reads as -JOYRANGEMX, and the
-      // full forward position reads as -JOYRANGEMX.
+      // position reads as 0, the fully retracted position reads as -1.0, and the
+      // full forward position reads as -1.0.
       return m_restPos + ((pos < 0) ? pos * m_restPos : pos * (1.0f - m_restPos));
    }
 }
@@ -204,12 +204,8 @@ float PlungerMoverObject::MechPlunger() const
 // unreliable at best.
 float PlungerMoverObject::MechPlungerSpeed() const
 {
-   // Get the current speed reading
-   float v = g_pplayer->GetMechPlungerSpeed();
-
-   // normalized the joystick input to -1..+1
-   v *= 1.0f / (2.f * JOYRANGEMX);
-
+   // Get the current speed reading, normalized in -1..+1
+   //
    // The joystick report is device-defined speed units.  We
    // need to convert these to local speed units.  Since the
    // report units are device-specific, the conversion factor
@@ -224,7 +220,7 @@ float PlungerMoverObject::MechPlungerSpeed() const
    // plunger length, that happens to equal VP9's native speed
    // units, so the scaling factor should be set to about 100%
    // when a Pinscape Pico is in use.
-   v *= g_pplayer->m_plungerSpeedScale;
+   float v = g_pplayer->m_pininput.GetPlungerSpeed();
 
    // Scale to the virtual plunger we're operating.  The device
    // units are inherently relative to the length of the actual
@@ -459,8 +455,8 @@ void PlungerMoverObject::UpdateVelocities()
       // mechanical plunger and we're operating as an auto plunger.
       // When the timer reaches zero, we'll send the corresponding
       // KeyUp event and cancel the timer.
-      if ((--m_autoFireTimer == 0) && (g_pplayer != nullptr))
-         g_pplayer->m_pininput.FireActionEvent(ePlungerKey, false);
+      if (g_pplayer && m_autoFireTimerInputStateSlot != -1 && (--m_autoFireTimer == 0) && (g_pplayer != nullptr))
+         g_pplayer->m_pininput.GetInputActions()[g_pplayer->m_pininput.GetLaunchBallActionId()]->SetDirectState(m_autoFireTimerInputStateSlot, false);
    }
    else if (autoPlunger && dmech > ReleaseThreshold)
    {
@@ -498,7 +494,11 @@ void PlungerMoverObject::UpdateVelocities()
       // perform any other tasks it normally does when the
       // actual Launch Ball button is pressed.
       if (g_pplayer)
-         g_pplayer->m_pininput.FireActionEvent(ePlungerKey, true);
+      {
+         if (m_autoFireTimerInputStateSlot < 0)
+            m_autoFireTimerInputStateSlot = g_pplayer->m_pininput.GetInputActions()[g_pplayer->m_pininput.GetLaunchBallActionId()]->NewDirectStateSlot();
+         g_pplayer->m_pininput.GetInputActions()[g_pplayer->m_pininput.GetLaunchBallActionId()]->SetDirectState(m_autoFireTimerInputStateSlot, true);
+      }
 
       // start the timer to send the corresponding KeyUp in 100ms
       m_autoFireTimer = 101;

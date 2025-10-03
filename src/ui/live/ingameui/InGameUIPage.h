@@ -41,6 +41,11 @@ public:
 
    const string &GetPath() const { return m_path; }
 
+   virtual bool IsPlayerPauseAllowed() const { return true; }
+
+   ImVec2 GetWindowPos() const { return m_windowPos; }
+   ImVec2 GetWindowSize() const { return m_windowSize; }
+
    Player* const m_player;
 
 private:
@@ -48,6 +53,8 @@ private:
    const string m_title;
    const string m_info;
    const SaveMode m_saveMode;
+   ImVec2 m_windowPos = ImVec2(0.f, 0.f);
+   ImVec2 m_windowSize = ImVec2(0.f, 0.f);
    float m_adjustedValue = 0.f;
    uint32_t m_lastUpdateMs = 0;
    uint32_t m_pressStartMs = 0;
@@ -58,8 +65,20 @@ private:
    unsigned int m_resetNotifId = 0;
    bool m_resettingToDefaults = false;
    bool m_resettingToInitialValues = false;
+
+   void RenderSaveOptionPopup();
    bool m_selectGlobalOrTablePopup = false;
    bool m_selectGlobalOrDiscardPopup = false;
+
+   void RenderInputActionPopup();
+   bool m_defineActionPopup = false;
+   InGameUIItem* m_defineActionItem = nullptr;
+
+   void RenderSensorPopup();
+   bool m_defineSensorPopup = false;
+   InGameUIItem* m_defineSensorItem = nullptr;
+
+   void RenderToggle(const string& label, const ImVec2& size, bool& v) const;
 };
 
 }

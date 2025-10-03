@@ -7,6 +7,17 @@
 VPX 10.8.1 tries to be entirely backwards compatible and should not require any update to existing tables. Informations below describe new features and how to support them.
 
 
+
+## Inputs
+
+As VPX used to be only available under Windows operating system, its input system was tied to it, using a combination of Direct Input and native Windows methods, but also allowing to select XInput and SDL input for which support was added along the years.
+This lead to some issues as these 3 input systems were not implemented the same way, mixing joystick and gamepads definition, allowing to select device or accumulating them, and making setup incompatible between them.
+In VPX 10.8.1, the input system has been entirely rewriten to solve this, also integrating new uses cases.
+
+***As a consequence, input button/keys/joystick must be redefined when upgrading from an earlier release***
+
+
+
 ## VR/XR Setup
 
 To support Virtual Reality and Mixed Reality play, tables must include environment elements like a room and a cabinet beside the usual playfield elements.

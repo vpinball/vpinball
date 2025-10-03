@@ -36,6 +36,7 @@ public:
       Editor,
       Standalone,
       Player, /* Main playfield Rendering & Display */
+      Input,
       DMD, /* DMD Rendering */
       Alpha, /* Alpha segment Rendering */
       Backglass, /* Backglass Display */

@@ -294,9 +294,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/physics/hitplunger.cpp">
       <Filter>physics</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/physics/NudgeFilter.cpp">
-      <Filter>physics</Filter>
-    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/physics/PhysicsEngine.cpp">
       <Filter>physics</Filter>
     </ClCompile>
@@ -387,6 +384,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/PerfUI.cpp">
       <Filter>ui\live</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/PlotData.cpp">
+      <Filter>ui\live</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/PlumbOverlay.cpp">
       <Filter>ui\live</Filter>
     </ClCompile>
@@ -408,10 +408,16 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIPage.cpp">
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InputSettingsPage.cpp">
+      <Filter>ui\live\ingame</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/MiscSettingsPage.cpp">
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/NudgeSettingsPage.cpp">
+      <Filter>ui\live\ingame</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/PlungerSettingsPage.cpp">
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/PointOfViewSettingsPage.cpp">
@@ -460,9 +466,6 @@
       <Filter>ui\win\dialogs</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/ImageDialog.cpp">
-      <Filter>ui\win\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/InputDeviceDialog.cpp">
       <Filter>ui\win\dialogs</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/MaterialDialog.cpp">
@@ -753,7 +756,16 @@
     <ClCompile Include="$(SolutionDir)/../../src/physics/AsyncDynamicQuadTree.cpp">
       <Filter>physics</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/input/pininput.cpp">
+    <ClCompile Include="$(SolutionDir)/../../src/input/PhysicsSensor.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/input/InputAction.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/input/SensorFilter.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/input/InputManager.cpp">
       <Filter>input</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/input/OpenPinDevHandler.cpp">
@@ -1040,9 +1052,6 @@
     <ClInclude Include="$(SolutionDir)/../../src/physics/kdtree.h">
       <Filter>physics</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/physics/NudgeFilter.h">
-      <Filter>physics</Filter>
-    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/physics/PhysicsEngine.h">
       <Filter>physics</Filter>
     </ClInclude>
@@ -1154,6 +1163,9 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/PerfUI.h">
       <Filter>ui\live</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/PlotData.h">
+      <Filter>ui\live</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/PlumbOverlay.h">
       <Filter>ui\live</Filter>
     </ClInclude>
@@ -1175,10 +1187,16 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIPage.h">
       <Filter>ui\live\ingame</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InputSettingsPage.h">
+      <Filter>ui\live\ingame</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/MiscSettingsPage.h">
       <Filter>ui\live\ingame</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/NudgeSettingsPage.h">
+      <Filter>ui\live\ingame</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/PlungerSettingsPage.h">
       <Filter>ui\live\ingame</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/PointOfViewSettingsPage.h">
@@ -1233,9 +1251,6 @@
       <Filter>ui\win\dialogs</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/ImageDialog.h">
-      <Filter>ui\win\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/InputDeviceDialog.h">
       <Filter>ui\win\dialogs</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/SearchSelectDialog.h">
@@ -1919,22 +1934,31 @@
     <ClInclude Include="$(SolutionDir)/../../src/physics/AsyncDynamicQuadTree.h">
       <Filter>physics</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/input/pininput.h">
+    <ClInclude Include="$(SolutionDir)/../../src/input/ButtonMapping.h">
       <Filter>input</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/input/DirectInputJoystickHandler.h">
+    <ClInclude Include="$(SolutionDir)/../../src/input/InputAction.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/input/SensorFilter.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/input/InputManager.h">
       <Filter>input</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/input/OpenPinDevHandler.h">
       <Filter>input</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/input/PhysicsSensor.h">
+      <Filter>input</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/input/ScanCodes.h">
       <Filter>input</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/input/SDLInputHandler.h">
+    <ClInclude Include="$(SolutionDir)/../../src/input/SensorMapping.h">
       <Filter>input</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/input/XInputJoystickHandler.h">
+    <ClInclude Include="$(SolutionDir)/../../src/input/SDLInputHandler.h">
       <Filter>input</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/parts/PartGroup.h">

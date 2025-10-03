@@ -66,10 +66,8 @@ add_executable(vpinball WIN32
    src/ui/worker.h
    src/ui/resource.h
 
-   src/input/DirectInputJoystickHandler.h
    src/input/OpenPinDevHandler.h
    src/input/OpenPinDevHandler.cpp
-   src/input/XInputJoystickHandler.h
 
    src/ui/paintsur.cpp
    src/ui/paintsur.h
@@ -89,8 +87,6 @@ add_executable(vpinball WIN32
    src/ui/dialogs/EditorOptionsDialog.h
    src/ui/dialogs/ImageDialog.cpp
    src/ui/dialogs/ImageDialog.h
-   src/ui/dialogs/InputDeviceDialog.cpp
-   src/ui/dialogs/InputDeviceDialog.h
    src/ui/dialogs/KeysConfigDialog.cpp
    src/ui/dialogs/KeysConfigDialog.h
    src/ui/dialogs/LayersListDialog.cpp

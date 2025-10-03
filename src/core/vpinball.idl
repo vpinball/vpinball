@@ -698,7 +698,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
         ]
         interface ITableGlobal : IDispatch
                 {
-                [id(3), helpstring("method PlaySound")] HRESULT PlaySound(BSTR Sound, [defaultvalue(1)] long LoopCount, [defaultvalue(1)] float Volume, [defaultvalue(0)] float pan, [defaultvalue(0)] float randompitch, [defaultvalue(0)] long pitch, [defaultvalue(0)] VARIANT_BOOL usesame, [defaultvalue(1)] VARIANT_BOOL restart, [defaultvalue(0)] float front_rear_fade);
+
                 [propget, id(4), helpstring("property LeftFlipperKey")] HRESULT LeftFlipperKey([out, retval] long *pVal);
                 [propget, id(5), helpstring("property RightFlipperKey")] HRESULT RightFlipperKey([out, retval] long *pVal);
                 [propget, id(825), helpstring("property StagedLeftFlipperKey")] HRESULT StagedLeftFlipperKey([out, retval] long *pVal);
@@ -707,10 +707,21 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propget, id(7), helpstring("property RightTiltKey")] HRESULT RightTiltKey([out, retval] long *pVal);
                 [propget, id(8), helpstring("property CenterTiltKey")] HRESULT CenterTiltKey([out, retval] long *pVal);
                 [propget, id(9), helpstring("property PlungerKey")] HRESULT PlungerKey([out, retval] long *pVal);
+                [propget, id(12), helpstring("property StartGameKey")] HRESULT StartGameKey([out, retval] long *pVal);
+                [propget, id(20), helpstring("property AddCreditKey")] HRESULT AddCreditKey([out, retval] long *pVal);
+                [propget, id(67), helpstring("property AddCreditKey2")] HRESULT AddCreditKey2([out, retval] long *pVal);
+                [propget, id(30), helpstring("property MechanicalTilt")] HRESULT MechanicalTilt([out, retval] long *pVal);
+                [propget, id(31), helpstring("property LeftMagnaSave")] HRESULT LeftMagnaSave([out, retval] long *pVal);
+                [propget, id(32), helpstring("property RightMagnaSave")] HRESULT RightMagnaSave([out, retval] long *pVal);
+                [propget, id(34), helpstring("property ExitGame")] HRESULT ExitGame([out, retval] long *pVal);
+                [propget, id(803), helpstring("property LockbarKey")] HRESULT LockbarKey([out, retval] long *pVal);
+                [propget, id(808), helpstring("property JoyCustomKey")] HRESULT JoyCustomKey([in] long index, [out, retval] long *pVal);
+                [propget, id(809), helpstring("property VPXActionKey")] HRESULT VPXActionKey([in] long index, [out, retval] long *pVal);
+                
+                [id(3), helpstring("method PlaySound")] HRESULT PlaySound(BSTR Sound, [defaultvalue(1)] long LoopCount, [defaultvalue(1)] float Volume, [defaultvalue(0)] float pan, [defaultvalue(0)] float randompitch, [defaultvalue(0)] long pitch, [defaultvalue(0)] VARIANT_BOOL usesame, [defaultvalue(1)] VARIANT_BOOL restart, [defaultvalue(0)] float front_rear_fade);
                 [id(10), helpstring("method PlayMusic")] HRESULT PlayMusic(BSTR str, [defaultvalue(1)] float Volume);
                 [propput, id(15), helpstring("property MusicVolume")] HRESULT MusicVolume(float Volume);
                 [id(11), helpstring("method EndMusic")] HRESULT EndMusic();
-                [propget, id(12), helpstring("property StartGameKey")] HRESULT StartGameKey([out, retval] long *pVal);
                 [propget, id(13),  helpstring("property UserDirectory")] HRESULT UserDirectory([out, retval] BSTR *pVal);
                 [propget, id(256), helpstring("property TablesDirectory")] HRESULT TablesDirectory([out, retval] BSTR *pVal);
                 [propget, id(257), helpstring("property MusicDirectory")] HRESULT MusicDirectory([in, optional] VARIANT pSubDir, [out, retval] BSTR *pVal);
@@ -729,8 +740,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [id(17), helpstring("method SaveValue")] HRESULT SaveValue(BSTR TableName, BSTR ValueName, VARIANT Value);
                 [id(18), helpstring("method LoadValue")] HRESULT LoadValue(BSTR TableName, BSTR ValueName, [out, retval] VARIANT *Value);
                 [propget, id(19), helpstring("property ActiveBall")] HRESULT ActiveBall([out, retval] IBall **pVal);
-                [propget, id(20), helpstring("property AddCreditKey")] HRESULT AddCreditKey([out, retval] long *pVal);
-                [propget, id(67), helpstring("property AddCreditKey2")] HRESULT AddCreditKey2([out, retval] long *pVal);
                 [propget, id(22), helpstring("property GameTime")] HRESULT GameTime([out, retval] long *pVal);
                 [propget, id(263), helpstring("property PreciseGameTime")] HRESULT PreciseGameTime([out, retval] double *pVal);
                 [propget, id(232), helpstring("property FrameIndex")] HRESULT FrameIndex([out, retval] long *pVal);
@@ -746,12 +755,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [id(806), helpstring("method NudgeSensorStatus")] HRESULT NudgeSensorStatus([out] VARIANT *XNudge, [out] VARIANT *YNudge);
                 [id(807), helpstring("method NudgeTiltStatus")] HRESULT NudgeTiltStatus([out] VARIANT *XPlumb, [out] VARIANT *YPlumb, [out] VARIANT *TiltPercent);
 
-                [propget, id(30), helpstring("property MechanicalTilt")] HRESULT MechanicalTilt([out, retval] long *pVal);
-                [propget, id(31), helpstring("property LeftMagnaSave")] HRESULT LeftMagnaSave([out, retval] long *pVal);
-                [propget, id(32), helpstring("property RightMagnaSave")] HRESULT RightMagnaSave([out, retval] long *pVal);
-                [propget, id(34), helpstring("property ExitGame")] HRESULT ExitGame([out, retval] long *pVal);
-                [propget, id(803), helpstring("property LockbarKey")] HRESULT LockbarKey([out, retval] long *pVal);
-                [propget, id(808), helpstring("property JoyCustomKey")] HRESULT JoyCustomKey([in] long index, [out, retval] long *pVal);
                 [id(33), helpstring("method FireKnocker")] HRESULT FireKnocker([defaultvalue(1)] int Count);
                 [id(37), helpstring("method QuitPlayer")] HRESULT QuitPlayer([defaultvalue(0)] int CloseType);
 

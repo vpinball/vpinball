@@ -24,8 +24,26 @@ public:
    STDMETHOD(get_GameTime)(/*[out, retval]*/ LONG *pVal);
    STDMETHOD(get_PreciseGameTime)(/*[out, retval]*/ double *pVal);
    STDMETHOD(get_SystemTime)(/*[out, retval]*/ LONG *pVal);
+
+   STDMETHOD(get_RightFlipperKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_LeftFlipperKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_StagedRightFlipperKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_StagedLeftFlipperKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_LeftMagnaSave)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_RightMagnaSave)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_PlungerKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_LeftTiltKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_RightTiltKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_CenterTiltKey)(/*[out, retval]*/ LONG *pVal);
    STDMETHOD(get_AddCreditKey)(/*[out, retval]*/ LONG *pVal);
    STDMETHOD(get_AddCreditKey2)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_StartGameKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_MechanicalTilt)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_ExitGame)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_LockbarKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_JoyCustomKey)(/*[in]*/ LONG index, /*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_VPXActionKey)(/*[in]*/ LONG index, /*[out, retval]*/ LONG *pVal);
+
    STDMETHOD(get_ActiveBall)(/*[out, retval]*/ IBall **pVal);
    STDMETHOD(LoadValue)(BSTR TableName, BSTR ValueName, /*[out, retval]*/ VARIANT *Value);
    STDMETHOD(SaveValue)(BSTR TableName, BSTR ValueName, VARIANT Value);
@@ -43,18 +61,9 @@ public:
    STDMETHOD(get_PlatformCPU)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(get_PlatformBits)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_ShowCursor)(/*[in]*/ VARIANT_BOOL enable);
-   STDMETHOD(get_StartGameKey)(/*[out, retval]*/ LONG *pVal);
    STDMETHOD(PlayMusic)(BSTR str, float volume);
    STDMETHOD(put_MusicVolume)(float volume);
    STDMETHOD(EndMusic)();
-   STDMETHOD(get_PlungerKey)(/*[out, retval]*/ LONG *pVal);
-   STDMETHOD(get_CenterTiltKey)(/*[out, retval]*/ LONG *pVal);
-   STDMETHOD(get_RightTiltKey)(/*[out, retval]*/ LONG *pVal);
-   STDMETHOD(get_LeftTiltKey)(/*[out, retval]*/ LONG *pVal);
-   STDMETHOD(get_RightFlipperKey)(/*[out, retval]*/ LONG *pVal);
-   STDMETHOD(get_LeftFlipperKey)(/*[out, retval]*/ LONG *pVal);
-   STDMETHOD(get_StagedRightFlipperKey)(/*[out, retval]*/ LONG *pVal);
-   STDMETHOD(get_StagedLeftFlipperKey)(/*[out, retval]*/ LONG *pVal);
 
    STDMETHOD(put_DMDWidth)(/*[in]*/ int pVal);
    STDMETHOD(put_DMDHeight)(/*[in]*/ int pVal);
@@ -88,12 +97,6 @@ public:
 
    const WCHAR *get_Name() const final;
    STDMETHOD(get_Name)(BSTR *pVal);
-   STDMETHOD(get_MechanicalTilt)(/*[out, retval]*/ LONG *pVal);
-   STDMETHOD(get_LeftMagnaSave)(/*[out, retval]*/ LONG *pVal);
-   STDMETHOD(get_RightMagnaSave)(/*[out, retval]*/ LONG *pVal);
-   STDMETHOD(get_ExitGame)(/*[out, retval]*/ LONG *pVal);
-   STDMETHOD(get_LockbarKey)(/*[out, retval]*/ LONG *pVal);
-   STDMETHOD(get_JoyCustomKey)(/*[in]*/ LONG index, /*[out, retval]*/ LONG *pVal);
 
    STDMETHOD(GetBalls)(/*[out, retval]*/ LPSAFEARRAY *pVal);
    STDMETHOD(GetElements)(/*[out, retval]*/ LPSAFEARRAY *pVal);

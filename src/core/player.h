@@ -8,43 +8,13 @@
 #include "physics/PhysicsEngine.h"
 #include "ui/Debugger.h"
 #include "ui/live/LiveUI.h"
-#include "input/pininput.h"
+#include "input/InputManager.h"
 #include "plugins/ControllerPlugin.h"
 #include "plugins/VPXPlugin.h"
 #include "ResURIResolver.h"
 #include "audio/AudioPlayer.h"
 
 class VRDevice;
-
-#define MAX_TOUCHREGION 11
-
-static constexpr RECT touchregion[MAX_TOUCHREGION] = { //left,top,right,bottom (in % of screen)
-   { 0, 0, 50, 10 },      // Extra Ball
-   { 50, 0, 100, 10 },    // Escape
-   { 0, 10, 50, 30 },     // 2nd Left Button
-   { 50, 10, 100, 30 },   // 2nd Right Button
-   { 0, 30, 50, 60 },     // Left Nudge Button
-   { 50, 30, 100, 60 },   // Right Nudge Button
-   { 0, 60, 30, 90 },     // 1st Left Button (Flipper)
-   { 30, 60, 70, 100 },   // Center Nudge Button
-   { 70, 60, 100, 90 },   // 1st Right Button (Flipper)
-   { 0, 90, 30, 100 },    // Start
-   { 70, 90, 100, 100 },  // Plunger
-};
-
-static constexpr EnumPlayerActions touchActionMap[MAX_TOUCHREGION] = {
-   eAddCreditKey, //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   eEscape,
-   eLeftMagnaSave,
-   eRightMagnaSave,
-   eLeftTiltKey,
-   eRightTiltKey,
-   eLeftFlipperKey,
-   eCenterTiltKey,
-   eRightFlipperKey,
-   eStartGameKey,
-   ePlungerKey
-};
 
 enum InfoMode
 {
@@ -186,30 +156,18 @@ private:
 
 #pragma region MechPlunger
 public:
-   float GetMechPlungerSpeed() const;
-   void MechPlungerUpdate();
-
    uint32_t m_LastPlungerHit = 0; // the last time the plunger was in contact (at least the vicinity) of the ball
-   float m_curMechPlungerPos; // position from joystick axis input, if a position axis is assigned
-   float m_plungerSpeedScale; // scaling factor for plunger speed input, to convert from joystick to internal units
 
-private:
-   int m_plungerUpdateCount = 0;
 #pragma endregion
 
 
 #pragma region Nudge
 public:
-   bool IsAccelInputAsVelocity() const { return m_accelInputIsVelocity; }
-   
    #ifdef UNUSED_TILT
    int NudgeGetTilt(); // returns non-zero when appropriate to set the tilt switch
    #endif
 
    float m_NudgeShake; // whether to shake the screen during nudges and how much
-
-private:
-   bool m_accelInputIsVelocity;
 #pragma endregion
 
 
@@ -282,10 +240,7 @@ private:
 
 #pragma region Input
 public:
-   PinInput m_pininput;
-   SDL_Scancode m_actionToSDLScanCodeMapping[eActionCount]; // Player's key assignments (keycode triggering each action)
-   bool m_supportsTouch = false; // Display is a touchscreen?
-   bool m_touchregion_pressed[MAX_TOUCHREGION]; // status for each touch region to avoid multitouch double triggers (true = finger on, false = finger off)
+   InputManager m_pininput;
    void ShowMouseCursor(const bool show) { m_drawCursor = show; UpdateCursorState(); }
 
 private:

@@ -46,9 +46,17 @@ set(VPX_SOURCES
    src/core/VPXPluginAPIImpl.h
    src/core/VPXPluginAPIImpl.cpp
 
-   src/input/pininput.h
-   src/input/pininput.cpp
+   src/input/ButtonMapping.h
+   src/input/InputAction.h
+   src/input/InputAction.cpp
+   src/input/SensorFilter.h
+   src/input/SensorFilter.cpp
+   src/input/InputManager.h
+   src/input/InputManager.cpp
+   src/input/PhysicsSensor.h
+   src/input/PhysicsSensor.cpp
    src/input/ScanCodes.h
+   src/input/SensorMapping.h
    src/input/SDLInputHandler.h
 
    src/math/bbox.h
@@ -160,8 +168,6 @@ set(VPX_SOURCES
    src/physics/hittimer.h
    src/physics/kdtree.cpp
    src/physics/kdtree.h
-   src/physics/NudgeFilter.cpp
-   src/physics/NudgeFilter.h
    src/physics/PhysicsEngine.cpp
    src/physics/PhysicsEngine.h
    src/physics/quadtree.cpp
@@ -239,6 +245,8 @@ set(VPX_SOURCES
    src/ui/live/NotificationOverlay.h
    src/ui/live/PerfUI.cpp
    src/ui/live/PerfUI.h
+   src/ui/live/PlotData.cpp
+   src/ui/live/PlotData.h
    src/ui/live/PlumbOverlay.cpp
    src/ui/live/PlumbOverlay.h
    src/ui/live/ingameui/InGameUI.cpp
@@ -253,10 +261,14 @@ set(VPX_SOURCES
    src/ui/live/ingameui/InGameUIItem.cpp
    src/ui/live/ingameui/InGameUIPage.h
    src/ui/live/ingameui/InGameUIPage.cpp
+   src/ui/live/ingameui/InputSettingsPage.h
+   src/ui/live/ingameui/InputSettingsPage.cpp
    src/ui/live/ingameui/MiscSettingsPage.h
    src/ui/live/ingameui/MiscSettingsPage.cpp
    src/ui/live/ingameui/NudgeSettingsPage.h
    src/ui/live/ingameui/NudgeSettingsPage.cpp
+   src/ui/live/ingameui/PlungerSettingsPage.h
+   src/ui/live/ingameui/PlungerSettingsPage.cpp
    src/ui/live/ingameui/PointOfViewSettingsPage.h
    src/ui/live/ingameui/PointOfViewSettingsPage.cpp
    src/ui/live/ingameui/TableOptionsPage.h
