@@ -5,7 +5,6 @@
 #include "physics/kdtree.h"
 #include "physics/quadtree.h"
 #include "physics/AsyncDynamicQuadTree.h"
-#include "physics/NudgeFilter.h"
 
 class PhysicsEngine final
 {
@@ -38,13 +37,22 @@ public:
    void Nudge(float angle, float force);
    Vertex3Ds GetNudgeAcceleration() const { return m_tableAcceleration + m_nudgeAcceleration; } // Table acceleration (due to nudge) expressed in VP units
    Vertex2D GetScreenNudge() const; // Table displacement
+   bool IsLegacyKeyboardNudge() const { return m_legacyNudge; }
+   void SetLegacyKeyboardNudge(bool legacyNudge) { m_legacyNudge = legacyNudge; }
+   float GetLegacyKeyboardNudgeStrength() const { return m_legacyNudgeStrength; }
+   void SetLegacyKeyboardNudgeStrength(float strength) { m_legacyNudgeStrength = strength; }
+   void ReadNudgeSettings(const Settings &settings);
+
    bool IsPlumbSimulated() const { return m_enablePlumbTilt; }
+   void EnablePlumbSimulation(bool enable) { m_enablePlumbTilt = enable; }
    const Vertex3Ds &GetPlumbPos() const { return m_plumbPos; }
    const Vertex3Ds &GetPlumbVel() const { return m_plumbVel; }
    float GetPlumbPoleLength() const { return m_plumbPoleLength; }
    float GetPlumbTiltThreshold() const { return m_plumbTiltThreshold; }
+   void SetPlumbTiltThreshold(float v) { m_plumbTiltThreshold = v; }
+   float GetPlumbInertia() const { return m_plumbMassFactor; }
+   void SetPlumbInertia(float v) { m_plumbMassFactor = v; }
    int GetPlumbTiltIndex() const { return m_plumbTiltIndex; }
-   void ReadNudgeSettings(const Settings &settings);
 
    void RayCast(const Vertex3Ds &source, const Vertex3Ds &target, const bool uiCast, vector<HitTestResult> &vhoHit);
 
@@ -103,9 +111,6 @@ private:
    // Legacy nudge: apply a given acceleration for a given amount of time
    // Hardware nudge: acquire acceleration and apply it (eventually deriving it from acquired velocity)
    Vertex3Ds m_nudgeAcceleration; // used by both hardware nudge and legacy keyboard nudge
-   bool m_enableNudgeFilter = false; // Located in physic engine instead of input since it is applied at physics cycle rate, on hardware input but also on keyboard nudge
-   NudgeFilter m_nudgeFilterX;
-   NudgeFilter m_nudgeFilterY;
    // External accelerometer velocity input.  This is for newer
    // pin cab I/O controllers that can integrate acceleration
    // samples on the device side to compute the instantaneous
@@ -129,6 +134,7 @@ private:
    // Tilt plumb
    bool m_enablePlumbTilt = false;
    bool m_plumbTiltHigh = false;
+   int m_plumbTiltInputSlot = -1;
    int m_plumbTiltIndex = 0;
    float m_plumbTiltThreshold;
    float m_plumbPoleLength;

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "input/pininput.h"
+#include "input/InputManager.h"
 
 #include "imgui/imgui.h"
 #include "imgui_markdown/imgui_markdown.h"
@@ -38,6 +38,10 @@ public:
    void ToggleFPS() { m_perfUI.NextPerfMode(); }
    bool IsShowingFPSDetails() const { return m_perfUI.GetPerfMode() != PerfUI::PerfMode::PM_DISABLED; }
    
+   bool ProposeInputLayout(const string &deviceName, const std::function<void(bool, bool)> &handler);
+
+   void ShowTouchOverlay(bool show) { m_showTouchOverlay = show; }
+
    unsigned int PushNotification(const string &message, const int lengthMs, const unsigned int reuseId = 0) { return m_notificationOverlay.PushNotification(message, lengthMs, reuseId); }
 
    // Ball Control
@@ -71,12 +75,19 @@ private:
 
    // Touch UI overlay
    void UpdateTouchUI();
+   bool m_showTouchOverlay;
 
    // Emulated plumb overlay
    PlumbOverlay m_plumbOverlay;
 
    // Notifications
    NotificationOverlay m_notificationOverlay;
+
+   // Autodected Input Device popup
+   string m_deviceLayoutName;
+   bool m_deviceLayoutDontAskAgain;
+   std::function<void(bool, bool)> m_deviceLayoutHandler;
+   void UpdateDeviceLayoutPopup();
 
    // MarkDown support
    ImGuiID markdown_start_id;
@@ -90,7 +101,7 @@ private:
    Player   *m_player;
    PinTable *m_table; // The edited table
    PinTable *m_live_table; // The live copy of the edited table being played by the player (all properties can be changed at any time by the script)
-   PinInput *m_pininput;
+   InputManager *m_pininput;
    Renderer *m_renderer;
 
    // Rendering

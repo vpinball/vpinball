@@ -298,7 +298,8 @@ void onControllerActionEvent(const unsigned int eventId, void* userData, void* e
 void onControllerUpdatePhysics(const unsigned int eventId, void* userData, void* eventData)
 {
    // Gather input state and broadcast it to the server
-   uint64_t newKeyState;
+   // FIXME reimplement
+   /* uint64_t newKeyState;
    float newNudgeX, newNudgeY, newPlunger;
    vpxApi->GetInputState(&newKeyState, &newNudgeX, &newNudgeY, &newPlunger);
    if ((lastState.keyState != actionState) || (lastState.nudgeX != newNudgeX) || (lastState.nudgeY != newNudgeY) || (lastState.plunger != newPlunger))
@@ -309,7 +310,7 @@ void onControllerUpdatePhysics(const unsigned int eventId, void* userData, void*
       lastState.nudgeY = newNudgeY;
       lastState.plunger = newPlunger;
       msgReadySem.release();
-   }
+   }*/
 }
 
 void onPlayerUpdatePhysics(const unsigned int eventId, void* userData, void* eventData)
@@ -319,8 +320,8 @@ void onPlayerUpdatePhysics(const unsigned int eventId, void* userData, void* eve
    {
       // LOGI(">>> New InputState %08x", lastState.timestamp);
       lastPlayerAppliedStateTimestamp = lastState.timestamp;
-      actionState = lastState.keyState & ~(1 << VPXACTION_Debugger);
-      vpxApi->SetInputState(actionState, lastState.nudgeX, lastState.nudgeY, lastState.plunger);
+      actionState = lastState.keyState;
+      // FIXME vpxApi->SetInputState(actionState, lastState.nudgeX, lastState.nudgeY, lastState.plunger);
    }
 }
 
@@ -386,7 +387,7 @@ void onGameStart(const unsigned int eventId, void* userData, void* eventData)
       msgApi->SubscribeMsg(endpointId, onUpdatePhysicsId, onControllerUpdatePhysics, nullptr);
       msgApi->SubscribeMsg(endpointId, onPrepareFrameId, onPrepareFrame, nullptr);
       float newNudgeX, newNudgeY, newPlunger;
-      vpxApi->GetInputState(&actionState, &newNudgeX, &newNudgeY, &newPlunger);
+      // FIXME vpxApi->GetInputState(&actionState, &newNudgeX, &newNudgeY, &newPlunger);
    }
    else if (opt == 2)
    {

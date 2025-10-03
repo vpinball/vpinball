@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "input/pininput.h"
+#include "input/InputManager.h"
 
 #include "imgui/imgui.h"
 #include "imguizmo/ImGuizmo.h"
@@ -28,7 +28,7 @@ private:
    Player *m_player;
    PinTable *m_table; // The edited table
    PinTable *m_live_table; // The live copy of the edited table being played by the player (all properties can be changed at any time by the script)
-   PinInput *m_pininput;
+   InputManager *m_pininput;
    Renderer *m_renderer;
    struct Selection
    {
@@ -108,7 +108,6 @@ private:
    void UpdateVideoOptionsModal();
    void UpdateAnaglyphCalibrationModal();
    void UpdateRendererInspectionModal();
-   void UpdatePlumbWindow();
 
    // UI Selection & properties
    void ImageProperties();

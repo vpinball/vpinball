@@ -33,7 +33,6 @@
 #define ID_VIDEO_SETTINGS "Video Options"
 #define ID_RENDERER_INSPECTION "Renderer Inspection"
 #define ID_ANAGLYPH_CALIBRATION "Anaglyph Calibration"
-#define ID_PLUMB_SETTINGS "Nudge & Plumb Settings"
 
 #define PROP_WIDTH (125.f * m_liveUI.GetDPI())
 #define PROP_TIMER(is_live, startup_obj, live_obj) \
@@ -288,7 +287,6 @@ void EditorUI::Update()
    {
       // Main menubar
       bool openVideoSettings = false;
-      bool openPlumbSettings = false;
       if (ImGui::BeginMainMenuBar())
       {
          if (!m_table->IsLocked() && ImGui::BeginMenu("Debug"))
@@ -306,8 +304,6 @@ void EditorUI::Update()
          {
             if (ImGui::MenuItem("Video Options"))
                openVideoSettings = true;
-            if (ImGui::MenuItem("Nudge Options"))
-               openPlumbSettings = true;
             ImGui::EndMenu();
          }
          float buttonWidth = ImGui::CalcTextSize(ICON_FK_REPLY, nullptr, true).x + ImGui::GetStyle().FramePadding.x * 2.0f
@@ -328,8 +324,6 @@ void EditorUI::Update()
       }
       if (openVideoSettings)
          ImGui::OpenPopup(ID_VIDEO_SETTINGS, ImGuiPopupFlags_NoReopen);
-      if (openPlumbSettings)
-         ImGui::OpenPopup(ID_PLUMB_SETTINGS, ImGuiPopupFlags_NoReopen);
 
       // Main toolbar
       m_toolbar_height = 20.f * m_liveUI.GetDPI();
@@ -416,7 +410,6 @@ void EditorUI::Update()
    // Popups & Modal dialogs
    UpdateVideoOptionsModal();
    UpdateAnaglyphCalibrationModal();
-   UpdatePlumbWindow();
 
    if (m_showRendererInspection)
       UpdateRendererInspectionModal();
@@ -1606,182 +1599,6 @@ void EditorUI::UpdateAnaglyphCalibrationModal()
    ImGui::PopStyleColor();
 }
 
-void EditorUI::UpdatePlumbWindow()
-{
-   // TODO table or global settings ?
-   bool open = true;
-   if (ImGui::BeginPopupModal(ID_PLUMB_SETTINGS, &open, ImGuiWindowFlags_AlwaysAutoResize))
-   {
-      // Physical accelerator settings
-      bool accEnabled = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWEnabled"s, true);
-      if (ImGui::Checkbox("Acc. Enabled", &accEnabled))
-      {
-         g_pvp->m_settings.SaveValue(Settings::Player, "PBWEnabled"s, accEnabled);
-         m_player->m_pininput.ReInit();
-      }
-      ImGui::BeginDisabled(!accEnabled);
-      int accMax[] = { m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelMaxX"s, 100), m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelMaxY"s, 100) };
-      if (ImGui::InputInt2("Acc. Maximum", accMax))
-      {
-         g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelMaxX"s, accMax[0]);
-         g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelMaxY"s, accMax[1]);
-         m_player->m_pininput.ReInit();
-      }
-      int accGain[] = { m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelGainX"s, 150), m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelGainY"s, 150) };
-      if (ImGui::InputInt2("Acc. Gain", accGain))
-      {
-         g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelGainX"s, accGain[0]);
-         g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelGainY"s, accGain[1]);
-         m_player->m_pininput.ReInit();
-      }
-      int accSensitivity = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "NudgeSensitivity"s, 500);
-      if (ImGui::InputInt("Acc. Sensitivity", &accSensitivity))
-      {
-         g_pvp->m_settings.SaveValue(Settings::Player, "NudgeSensitivity"s, accSensitivity);
-         m_player->m_pininput.ReInit();
-      }
-      bool accOrientationEnabled = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWRotationCB"s, false); // TODO Legacy stuff => remove and only keep rotation
-      int accOrientation = accOrientationEnabled ? m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWRotationValue"s, 500) : 0;
-      if (ImGui::InputInt("Acc. Rotation", &accOrientation))
-      {
-         g_pvp->m_settings.SaveValue(Settings::Player, "PBWRotationCB"s, accOrientation != 0);
-         g_pvp->m_settings.SaveValue(Settings::Player, "PBWRotationValue"s, accOrientation);
-         m_player->m_pininput.ReInit();
-      }
-      bool accFaceUp = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWNormalMount"s, true);
-      if (ImGui::Checkbox("Acc. Face Up", &accFaceUp))
-      {
-         g_pvp->m_settings.SaveValue(Settings::Player, "PBWNormalMount"s, accFaceUp);
-         m_player->m_pininput.ReInit();
-      }
-      bool accFilter = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "EnableNudgeFilter"s, false);
-      if (ImGui::Checkbox("Acc. Filter", &accFilter))
-      {
-         g_pvp->m_settings.SaveValue(Settings::Player, "EnableNudgeFilter"s, accFilter);
-         m_player->m_pininput.ReInit();
-      }
-      ImGui::EndDisabled();
-
-      ImGui::Separator();
-
-      // Tilt plumb settings
-      bool enablePlumbTilt = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "TiltSensCB"s, false);
-      if (ImGui::Checkbox("Enable virtual Tilt plumb", &enablePlumbTilt))
-      {
-         g_pvp->m_settings.SaveValue(Settings::Player, "TiltSensCB"s, enablePlumbTilt);
-         m_player->m_physics->ReadNudgeSettings(m_live_table->m_settings);
-      }
-      ImGui::BeginDisabled(!enablePlumbTilt);
-      float plumbTiltThreshold = (float)m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "TiltSensitivity"s, 400) * (float)(45. / 1000.);
-      if (ImGui::InputFloat("Tilt threshold angle", &plumbTiltThreshold, 0.1f, 1.0f, "%.1f"))
-      {
-         g_pvp->m_settings.SaveValue(Settings::Player, "TiltSensitivity"s, static_cast<int>(round(plumbTiltThreshold * (float)(1000. / 45.))));
-         m_player->m_physics->ReadNudgeSettings(m_live_table->m_settings);
-      }
-      float plumbTiltMass = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "TiltInertia"s, 100.f);
-      if (ImGui::InputFloat("Tilt inertia factor", &plumbTiltMass, 1.f, 10.f, "%.1f"))
-      {
-         g_pvp->m_settings.SaveValue(Settings::Player, "TiltInertia"s, plumbTiltMass);
-         m_player->m_physics->ReadNudgeSettings(m_live_table->m_settings);
-      }
-      ImGui::EndDisabled();
-
-      ImGui::Separator();
-
-      ImGui::TextUnformatted("Nudge & Plumb State");
-      constexpr int panelSize = 100;
-      if (ImGui::BeginTable("PlumbInfo", 2, ImGuiTableFlags_Borders))
-      {
-         ImGui::TableSetupColumn("Col1", ImGuiTableColumnFlags_WidthFixed, panelSize * m_liveUI.GetDPI());
-         ImGui::TableSetupColumn("Col2", ImGuiTableColumnFlags_WidthFixed, panelSize * m_liveUI.GetDPI());
-      
-         ImGui::TableNextColumn();
-         ImGui::TextUnformatted("Cab. Sensor");
-         ImGui::TableNextColumn();
-         ImGui::TextUnformatted("Plumb Position");
-         ImGui::TableNextRow();
-
-         const ImVec2 fullSize = ImVec2(panelSize * m_liveUI.GetDPI(), panelSize * m_liveUI.GetDPI());
-         const ImVec2 halfSize = fullSize * 0.5f;
-         ImGui::TableNextColumn();
-         {
-            ImGui::BeginChild("Sensor", fullSize);
-            const ImVec2 &pos = ImGui::GetWindowPos();
-            ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(0.f, halfSize.y), pos + ImVec2(fullSize.x, halfSize.y), IM_COL32_WHITE);
-            ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(halfSize.x, 0.f), pos + ImVec2(halfSize.y, fullSize.y), IM_COL32_WHITE);
-            const Vertex2D &acc = m_player->m_pininput.GetNudge(); // Range: -1..1
-            ImVec2 accPos = pos + halfSize + ImVec2(acc.x, acc.y) * halfSize * 2.f + ImVec2(0.5f, 0.5f);
-            ImGui::GetWindowDrawList()->AddCircleFilled(accPos, 5.f * m_liveUI.GetDPI(), IM_COL32(255, 0, 0, 255));
-            ImGui::EndChild();
-         }
-         ImGui::TableNextColumn();
-         {
-            ImGui::BeginDisabled(!enablePlumbTilt);
-            ImGui::BeginChild("PlumbPos", fullSize);
-            const ImVec2 &pos = ImGui::GetWindowPos();
-            ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(0.f, halfSize.y), pos + ImVec2(fullSize.x, halfSize.y), IM_COL32_WHITE);
-            ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(halfSize.x, 0.f), pos + ImVec2(halfSize.y, fullSize.y), IM_COL32_WHITE);
-            // Tilt circle
-            const ImVec2 scale = halfSize * 1.5f;
-            const ImVec2 radius = scale * sin(m_player->m_physics->GetPlumbTiltThreshold() * (float)(M_PI * 0.25));
-            ImGui::GetWindowDrawList()->AddEllipse(pos + halfSize, radius, IM_COL32(255, 0, 0, 255));
-            // Plumb position
-            const Vertex3Ds &plumb = m_player->m_physics->GetPlumbPos();
-            const ImVec2 plumbPos = pos + halfSize + scale * ImVec2(plumb.x, plumb.y) / m_player->m_physics->GetPlumbPoleLength() + ImVec2(0.5f, 0.5f);
-            ImGui::GetWindowDrawList()->AddLine(pos + halfSize, plumbPos, IM_COL32(255, 128, 0, 255));
-            ImGui::GetWindowDrawList()->AddCircleFilled(plumbPos, 5.f * m_liveUI.GetDPI(), IM_COL32(255, 0, 0, 255));
-            ImGui::EndChild();
-            ImGui::EndDisabled();
-         }
-         ImGui::TableNextRow();
-
-         ImGui::TableNextColumn();
-         ImGui::TextUnformatted("Table Acceleration");
-         ImGui::TableNextColumn();
-         ImGui::TextUnformatted("Plumb Angle");
-         ImGui::TableNextRow();
-
-         ImGui::TableNextColumn();
-         {
-            ImGui::BeginChild("Table Acceleration", fullSize);
-            const ImVec2 &pos = ImGui::GetWindowPos();
-            ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(0.f, halfSize.y), pos + ImVec2(fullSize.x, halfSize.y), IM_COL32_WHITE);
-            ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(halfSize.x, 0.f), pos + ImVec2(halfSize.y, fullSize.y), IM_COL32_WHITE);
-            const Vertex3Ds nudge = (float)PHYS_FACTOR * m_player->m_physics->GetNudgeAcceleration(); // Range: -1..1
-            const ImVec2 nudgePos = pos + halfSize + ImVec2(nudge.x, nudge.y) * halfSize * 2.f + ImVec2(0.5f, 0.5f);
-            ImGui::GetWindowDrawList()->AddCircleFilled(nudgePos, 5.f * m_liveUI.GetDPI(), IM_COL32(255, 0, 0, 255));
-            ImGui::EndChild();
-         }
-         ImGui::TableNextColumn();
-         {
-            ImGui::BeginDisabled(!enablePlumbTilt);
-            ImGui::BeginChild("PlumbAngle", ImVec2(panelSize * m_liveUI.GetDPI(), panelSize * m_liveUI.GetDPI()));
-            const ImVec2 &pos = ImGui::GetWindowPos();
-            const Vertex3Ds& plumb = m_player->m_physics->GetPlumbPos();
-            float radius = min(fullSize.x, fullSize.y) * 0.9f;
-            // Tilt limits
-            float angle = m_player->m_physics->GetPlumbTiltThreshold() * (float)(M_PI * 0.25);
-            ImVec2 plumbPos = pos + ImVec2(halfSize.x + sinf(angle) * radius, cosf(angle) * radius);
-            ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(halfSize.x, 0.f), plumbPos, IM_COL32(255, 0, 0, 255));
-            plumbPos = pos + ImVec2(halfSize.x - sin(angle) * radius, cos(angle) * radius);
-            ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(halfSize.x, 0.f), plumbPos, IM_COL32(255, 0, 0, 255));
-            // Plumb position
-            angle = atan2f(sqrt(plumb.x * plumb.x + plumb.y * plumb.y), -plumb.z);
-            const float theta = atan2(plumb.x, plumb.y);
-            if (theta + (float)(M_PI/2.) < 0.f || theta + (float)(M_PI/2.) >= (float)M_PI)
-               angle = -angle;
-            plumbPos = pos + ImVec2(halfSize.x + sinf(angle) * radius, cosf(angle) * radius);
-            ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(halfSize.x, 0.f), plumbPos, IM_COL32(255, 128, 0, 255));
-            ImGui::GetWindowDrawList()->AddCircleFilled(plumbPos, 5.f * m_liveUI.GetDPI(), IM_COL32(255, 0, 0, 255));
-            ImGui::EndChild();
-            ImGui::EndDisabled();
-         }
-         ImGui::EndTable();
-      }
-      ImGui::EndPopup();
-   }
-}
-
 void EditorUI::UpdateRendererInspectionModal()
 {
    // FIXME m_renderer->DisableStaticPrePass(false);
@@ -1836,9 +1653,9 @@ void EditorUI::UpdateRendererInspectionModal()
          ImGui::NewLine();
       }
 
-      ImGui::TextUnformatted("Press F11 to reset min/max/average timings");
+      /* ImGui::TextUnformatted("Press F11 to reset min/max/average timings");
       if (ImGui::IsKeyPressed(LiveUI::GetImGuiKeyFromSDLScancode(m_player->m_actionToSDLScanCodeMapping[eFrameCount])))
-         m_player->InitFPS();
+         m_player->InitFPS();*/
 
       // Other detailed information
       ImGui::TextUnformatted(m_player->GetPerfInfo().c_str());

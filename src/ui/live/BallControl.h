@@ -48,5 +48,5 @@ private:
    bool m_dragging = false;
    HitBall *m_draggedBall = nullptr;
    Vertex3Ds m_dragTarget;
-   PinInput::InputState m_prevInputState {};
+   InputManager::ActionState m_prevActionState { };
 };

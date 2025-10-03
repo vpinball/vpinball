@@ -40,6 +40,27 @@ FEATURES:
   . it uses multiple CPU cores to separately process the rendering from the game simulation, allowing for lower input/physics/controller latency, better nudging, more stable gameplay emulation, as well as a performance boost
   . it supports rendering to multiple outputs (windows)
 
+- input system was rewritten with the following changes:
+  . selecting between an input API is no more needed, SDL is now used on all platforms (on Windows it supports simultaneously all XInput & DirectInput devices),
+  . the user interface to define inputs has been moved to the in-game user interface
+  . it is now possible to use a combination of multiple inputs for an action (for example pressing 2 buttons simultaneously)
+  . it is now possible to define multiple bindings per action, for example a keyboard key as well as 2 different joystick buttons
+  . staged flippers are now always implemented with the default binding mapping both lower and upper flippers to the same button
+  . using joystick stick/triggers for buttons is supported, for example allowing to map staged flipper at different trigger thresholds
+  . joystick 'hats' can be used as buttons, each direction being considered as an independent button
+  . nudge now also support position sensors, allowing to use a joystick to nudge
+  . more keyboard layouts are now supported (japanese keyboards, ...)
+  . new actions have been added, for example for adjusting the VR scene position
+  . the option to disable the 'Escape' key has been removed and replaced by a mapping like all other actions (it is used to open interactive exit)
+  . all key events are now broadcasted to the table's script, separately from the named action event (left flipper, right magna save, ...)
+  . on Windows platform, the presence of xinput.dll is no more needed, allowing to run VPX on Windows installs without the XBox Gaming Subsystem
+  . on Windows platform, the accessibility shortcuts are now fully disabled when playing
+  . on Windows platform, the Windows keys can now be used as a normal key input
+  . a few hardware devices and generic layouts are automatically detected, when this happens, the user is proposed to apply the corresponding default mapping. Support for some very old hardware has been removed (Microsoft's Sidewinder, UltraCade's UltraPin,...)
+  . the hardware acceleration filter may no more be enabled for keyboard nudge (as it is not supposed to be used for keyboard nudge)
+  The new input setup is stored along the old one to allow keeping older versions of VPX together with newers.
+  This change requires users to redefine their input settings in the new UI.
+
 - add a new 'ScoreView' which renders the segment displays or DMD to a dedicated window (BGFX variant only). The scoreview uses a layout defined in a 'scv' file placed along the table file
   matching its name, or by automatically selecting one of the default layouts matching the available displays at runtime. Default layout files in the asset folder show the syntax used to
   define the layout.
@@ -112,6 +133,7 @@ FEATURES:
   . Add selection and display filters
   . Allow to display physics collider as a red overlay
   . Fix invalid overlays (missing parts, incorrect position)
+  . Navigation using flipper input has been unified: magna buttons allows to move while flipper buttons allow to select
 
 - InGameUI (used to be called LiveUI or TweakUI):
   . Support all player mode (VR, XR, cabinet, desktop) and all screen orientations
@@ -150,8 +172,6 @@ FIXES:
 - the BASS sound engine was replaced/unified with SDL3+miniaudio, fixing the pitch/volume adjustment of 'ogg' files.
   As a consequence 'ogg' files should now be favored over legacy 'wav'.
   In general, multiple issues/regressions (e.g. too low volume) found in 10.8 were fixed due to this.
-
-- DirectX/DirectInput 8 port for input handling
 
 - see Changelog_Scripts.txt for the respective core script changes (version 3.62)
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes

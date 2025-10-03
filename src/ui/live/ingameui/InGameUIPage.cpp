@@ -203,7 +203,10 @@ void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
 
    switch (item->m_type)
    {
-   case InGameUIItem::Type::Info: m_pressedItemScroll += speedFactor * direction; break;
+   case InGameUIItem::Type::Label:
+      if (item->m_labelType == InGameUIItem::LabelType::Markdown)
+         m_pressedItemScroll += speedFactor * direction;
+      break;
 
    case InGameUIItem::Type::Navigation: m_player->m_liveUI->m_inGameUI.Navigate(item->m_path); break;
 
@@ -232,6 +235,42 @@ void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
             item->SetValue((item->GetIntValue() + static_cast<int>(item->m_enum.size()) - 1) % static_cast<int>(item->m_enum.size()));
          else
             item->SetValue((item->GetIntValue() + 1) % static_cast<int>(item->m_enum.size()));
+      }
+      break;
+
+   case InGameUIItem::Type::ActionInputMapping:
+      if (isInitialPress)
+      {
+         if (direction < 0.f)
+         {
+            item->m_inputAction->ClearMapping();
+            // Base navigation items must always be mapped (otherwise navigation ends up broken), so immediately start a mapping definition
+            if (item->m_inputAction->IsNavigationAction())
+            {
+               m_defineActionPopup = true;
+               m_defineActionItem = item.get();
+            }
+         }
+         else
+         {
+            m_defineActionPopup = true;
+            m_defineActionItem = item.get();
+         }
+      }
+      break;
+
+   case InGameUIItem::Type::PhysicsSensorMapping:
+      if (isInitialPress)
+      {
+         if (direction < 0.f)
+         {
+            item->m_physicsSensor->ClearMapping();
+         }
+         else
+         {
+            m_defineSensorPopup = true;
+            m_defineSensorItem = item.get();
+         }
       }
       break;
 
@@ -415,6 +454,8 @@ void InGameUIPage::Render()
          labelEndScreenX = max(labelEndScreenX, ImGui::CalcTextSize(item->m_label.c_str()).x);
    labelEndScreenX = ImGui::GetCursorScreenPos().x + labelEndScreenX + style.ItemSpacing.x * 2.0f + 30.f;
    const float itemEndScreenX = ImGui::GetCursorScreenPos().x + ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize("*", nullptr, true).x - itemPadding.x;
+   const float closeButtonWidth = ImGui::CalcTextSize(ICON_FK_TIMES, nullptr, true).x + style.FramePadding.x * 2.0f;
+   const float circleTextWidth = ImGui::CalcTextSize(ICON_FK_CIRCLE, nullptr, true).x + style.FramePadding.x * 2.0f;
    for (int i = 0; i < (int)m_items.size(); i++)
    {
       using enum InGameUIItem::Type;
@@ -446,20 +487,41 @@ void InGameUIPage::Render()
 
       switch (item->m_type)
       {
-      case Info:
+      case Label:
       {
          float infoHeight = ImGui::GetCursorPosY();
          ImGui::SetCursorScreenPos(ImGui::GetCursorScreenPos() + ImVec2(0.f, itemPadding.y));
          ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x - 60.f);
-         m_player->m_liveUI->SetMarkdownStartId(ImGui::GetItemID());
-         ImGui::Markdown(item->m_label.c_str(), item->m_label.length(), m_player->m_liveUI->GetMarkdownConfig());
-         ImGui::SetCursorScreenPos(ImGui::GetCursorScreenPos() + ImVec2(0.f, itemPadding.y));
-         infoHeight = ImGui::GetCursorPosY() - infoHeight;
-         if (hovered && m_player->m_liveUI->m_inGameUI.IsFlipperNav() && infoHeight > ImGui::GetWindowHeight())
+         switch (item->m_labelType)
          {
-            const float scrollSpread = infoHeight - ImGui::GetWindowHeight();
-            m_pressedItemScroll = clamp(m_pressedItemScroll, 0.f, scrollSpread);
-            ImGui::SetScrollY(ImGui::GetCursorPosY() - infoHeight + m_pressedItemScroll);
+         case InGameUIItem::LabelType::Info:
+            ImGui::Text("%s", item->m_label.c_str());
+            ImGui::SetCursorScreenPos(ImGui::GetCursorScreenPos() + ImVec2(0.f, itemPadding.y));
+            break;
+         case InGameUIItem::LabelType::Header:
+         {
+            ImGui::Text("%s", item->m_label.c_str());
+            ImVec2 min = ImGui::GetItemRectMin();
+            ImVec2 max = ImGui::GetItemRectMax();
+            min.y = max.y;
+            ImGui::GetWindowDrawList()->AddLine(min, max, IM_COL32_WHITE, 1.0f);
+            ImGui::SetCursorScreenPos(ImGui::GetCursorScreenPos() + ImVec2(0.f, itemPadding.y));
+            break;
+         }
+         case InGameUIItem::LabelType::Markdown:
+         {
+            m_player->m_liveUI->SetMarkdownStartId(ImGui::GetItemID());
+            ImGui::Markdown(item->m_label.c_str(), item->m_label.length(), m_player->m_liveUI->GetMarkdownConfig());
+            ImGui::SetCursorScreenPos(ImGui::GetCursorScreenPos() + ImVec2(0.f, itemPadding.y));
+            infoHeight = ImGui::GetCursorPosY() - infoHeight;
+            if (hovered && m_player->m_liveUI->m_inGameUI.IsFlipperNav() && infoHeight > ImGui::GetWindowHeight())
+            {
+               const float scrollSpread = infoHeight - ImGui::GetWindowHeight();
+               m_pressedItemScroll = clamp(m_pressedItemScroll, 0.f, scrollSpread);
+               ImGui::SetScrollY(ImGui::GetCursorPosY() - infoHeight + m_pressedItemScroll);
+            }
+            break;
+         }
          }
          break;
       }
@@ -482,28 +544,7 @@ void InGameUIPage::Render()
          ImGui::Text("%s", item->m_label.c_str());
          ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
          bool v = item->GetBoolValue();
-         ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
-         // Basic Toggle button, based on https://github.com/ocornut/imgui/issues/1537#issuecomment-355562097
-         {
-            ImVec2 p = ImGui::GetCursorScreenPos();
-            ImDrawList* draw_list = ImGui::GetWindowDrawList();
-
-            const float height = ImGui::GetFrameHeight();
-            const float width = height * 1.75f;
-            const float radius = height * 0.50f;
-            p.x = itemEndScreenX - width;
-
-            if (ImGui::InvisibleButton(item->m_label.c_str(), ImVec2(itemEndScreenX - ImGui::GetCursorScreenPos().x, height)))
-               v = !v;
-            ImU32 col_bg;
-            if (ImGui::IsItemHovered())
-               col_bg = v ? IM_COL32(64 + 20, 180, 32 + 20, 255) : IM_COL32(64, 64, 64, 255);
-            else
-               col_bg = v ? IM_COL32(64, 180, 32, 255) : IM_COL32(37, 37, 37, 255);
-
-            draw_list->AddRectFilled(p, ImVec2(p.x + width, p.y + height), col_bg, height * 0.5f);
-            draw_list->AddCircleFilled(ImVec2(v ? (p.x + width - radius) : (p.x + radius), p.y + radius), radius - 3.5f, IM_COL32(255, 255, 255, 255));
-         }
+         RenderToggle(item->m_label, ImVec2(itemEndScreenX - ImGui::GetCursorScreenPos().x, ImGui::GetFrameHeight()), v);
          item->SetValue(v);
          if (item->IsModified())
          {
@@ -520,13 +561,12 @@ void InGameUIPage::Render()
          int v = item->GetIntValue();
          ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
          ImGui::Combo(("##" + item->m_label).c_str(), &v,
-            [](void* data, int idx, const char** out_text)
+            [](void* data, int idx)
             {
                const auto* vec = static_cast<const vector<string>*>(data);
                if (idx < 0 || idx >= (int)vec->size())
-                  return false;
-               *out_text = vec->at(idx).c_str();
-               return true;
+                  return "";
+               return vec->at(idx).c_str();
             },
             (void*)&item->m_enum, (int)item->m_enum.size());
          item->SetValue(v);
@@ -534,6 +574,69 @@ void InGameUIPage::Render()
          {
             ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
             ImGui::Text(ICON_FK_PENCIL);
+         }
+         break;
+      }
+
+      case ActionInputMapping:
+      {
+         ImGui::Text("%s", item->m_label.c_str());
+         if (item->m_inputAction->IsMapped())
+         {
+            ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
+            if (ImGui::Button((""s + ICON_FK_TIMES + "##" + item->m_label).c_str(), ImVec2(closeButtonWidth, 0)))
+            {
+               item->m_inputAction->ClearMapping();
+               if (item->m_inputAction->IsNavigationAction())
+               {
+                  m_defineActionPopup = true;
+                  m_defineActionItem = item.get();
+               }
+            }
+            ImGui::SameLine();
+         }
+         else
+         {
+            ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x + closeButtonWidth + style.ItemSpacing.x);
+         }
+         const string mappingLabel = item->m_inputAction->GetMappingLabel();
+         const float mapButtonWidth = itemEndScreenX - ImGui::GetCursorScreenPos().x - circleTextWidth - style.ItemSpacing.x;
+         if (ImGui::Button((mappingLabel + "##" + item->m_label).c_str(), ImVec2(mapButtonWidth, 0)))
+         {
+            m_defineActionPopup = true;
+            m_defineActionItem = item.get();
+         }
+         if (ImGui::CalcTextSize(mappingLabel.c_str()).x >= mapButtonWidth - style.ItemSpacing.x * 2.f)
+            ImGui::SetItemTooltip("%s", mappingLabel.c_str());
+         {
+            string state = item->m_inputAction->IsPressed() ? ICON_FK_CIRCLE : ICON_FK_CIRCLE_O;
+            ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x - circleTextWidth);
+            ImGui::Text("%s", state.c_str());
+         }
+         if (item->IsModified())
+         {
+            ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
+            ImGui::Text(ICON_FK_PENCIL);
+         }
+         break;
+      }
+
+      case PhysicsSensorMapping:
+      {
+         ImGui::Text("%s", item->m_label.c_str());
+         if (!item->m_physicsSensor->IsMapped())
+            ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x + closeButtonWidth + style.ItemSpacing.x);
+         else
+         {
+            ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
+            if (ImGui::Button((""s + ICON_FK_TIMES + "##" + item->m_label).c_str(), ImVec2(closeButtonWidth, 0)))
+               item->m_physicsSensor->ClearMapping();
+            ImGui::SameLine();
+         }
+         if (ImGui::Button((item->m_physicsSensor->GetMappingLabel() + "##" + item->m_label).c_str(), ImVec2(itemEndScreenX - ImGui::GetCursorScreenPos().x - closeButtonWidth, 0)))
+         {
+            m_defineSensorPopup = true;
+            m_defineSensorItem = item.get();
          }
          break;
       }
@@ -599,8 +702,165 @@ void InGameUIPage::Render()
 
    ImGui::PopStyleColor();
 
+   m_windowPos = ImGui::GetWindowPos();
+   m_windowSize = ImGui::GetWindowSize();
+   
    ImGui::End();
 
+   RenderSensorPopup();
+   RenderInputActionPopup();
+   RenderSaveOptionPopup();
+}
+
+void InGameUIPage::RenderSensorPopup()
+{
+   if (!m_defineSensorPopup && m_defineSensorItem)
+      m_defineSensorItem = nullptr;
+   if (m_defineSensorItem && m_defineSensorPopup && !ImGui::IsPopupOpen((m_defineSensorItem->m_label + " input binding").c_str()))
+   {
+      vector<uint32_t> sensors = m_player->m_pininput.GetAllAxis();
+      if (sensors.empty())
+      {
+         m_defineSensorItem = nullptr;
+         m_defineSensorPopup = false;
+         m_player->m_liveUI->PushNotification("No physics sensor connected.", 5000);
+         return;
+      }
+      if (!m_defineSensorItem->m_physicsSensor->IsMapped())
+      {
+         uint32_t id = sensors[0];
+         uint16_t deviceId = id >> 16;
+         uint16_t axisId = id & 0xFFFF;
+         SensorMapping::Type type = (m_defineSensorItem->m_physicsSensorTypeMask & 1) ? SensorMapping::Type::Position
+            : (m_defineSensorItem->m_physicsSensorTypeMask & 2)                       ? SensorMapping::Type::Velocity
+                                                                                      : SensorMapping::Type::Acceleration;
+         m_defineSensorItem->m_physicsSensor->SetMapping(SensorMapping(nullptr, nullptr, deviceId, axisId, type));
+      }
+      ImGui::OpenPopup((m_defineSensorItem->m_label + " input binding").c_str());
+   }
+   if (m_defineSensorItem && ImGui::BeginPopupModal((m_defineSensorItem->m_label + " input binding").c_str(), &m_defineSensorPopup, ImGuiWindowFlags_AlwaysAutoResize))
+   {
+      ImGui::Text(("Select the hardware sensor you want to use for "s + m_defineSensorItem->m_label).c_str(), m_defineSensorItem->m_label.c_str());
+      ImGui::Spacing();
+
+      const vector<uint32_t> sensors = m_player->m_pininput.GetAllAxis();
+
+      int selectedAxis = -1;
+      vector<string> axisNames;
+      int i = 0;
+      for (uint32_t id : sensors)
+      {
+         const uint16_t deviceId = id >> 16;
+         const uint16_t axisId = id & 0xFFFF;
+         axisNames.emplace_back(m_player->m_pininput.GetDeviceElementName(deviceId, axisId) + " (" + m_player->m_pininput.GetDeviceName(deviceId) + ')');
+         if (deviceId == m_defineSensorItem->m_physicsSensor->GetMapping().GetDeviceId() && axisId == m_defineSensorItem->m_physicsSensor->GetMapping().GetAxisId())
+            selectedAxis = i;
+         i++;
+      }
+      if (ImGui::Combo("Hardware Sensor", &selectedAxis, [](void* user_data, int idx) { return static_cast<vector<string>*>(user_data)->at(idx).c_str(); }, &axisNames, static_cast<int>(axisNames.size())))
+      {
+         const uint16_t deviceId = sensors[selectedAxis] >> 16;
+         const uint16_t axisId = sensors[selectedAxis] & 0xFFFF;
+         SensorMapping mapping(nullptr, nullptr, deviceId, axisId, SensorMapping::Type::Velocity);
+         mapping.SetDeadZone(m_defineSensorItem->m_physicsSensor->GetMapping().GetDeadZone());
+         mapping.SetScale(m_defineSensorItem->m_physicsSensor->GetMapping().GetScale());
+         mapping.SetLimit(m_defineSensorItem->m_physicsSensor->GetMapping().GetLimit());
+         m_defineSensorItem->m_physicsSensor->SetMapping(mapping);
+      }
+
+      if (m_defineSensorItem->m_physicsSensorTypeMask != 1 && m_defineSensorItem->m_physicsSensorTypeMask != 2 && m_defineSensorItem->m_physicsSensorTypeMask != 4)
+      {
+         vector<SensorMapping::Type> types;
+         vector<string> names;
+         for (int i = 0; i < 3; i++)
+            if (m_defineSensorItem->m_physicsSensorTypeMask & (1 << i))
+               switch (i)
+               {
+               case 0: names.emplace_back("Position"); types.push_back(SensorMapping::Type::Position); break;
+               case 1: names.emplace_back("Velocity"); types.push_back(SensorMapping::Type::Velocity); break;
+               case 2: names.emplace_back("Acceleration"); types.push_back(SensorMapping::Type::Acceleration); break;
+               }
+         int sensorType = FindIndexOf(types, m_defineSensorItem->m_physicsSensor->GetMapping().GetType());
+         if (ImGui::Combo("Sensor Type", &sensorType, [](void* user_data, int idx) { return static_cast<vector<string>*>(user_data)->at(idx).c_str(); }, &names, static_cast<int>(names.size())))
+         {
+            const uint16_t deviceId = m_defineSensorItem->m_physicsSensor->GetMapping().GetDeviceId();
+            const uint16_t axisId = m_defineSensorItem->m_physicsSensor->GetMapping().GetDeviceId();
+            SensorMapping mapping(nullptr, nullptr, deviceId, axisId, types[sensorType]);
+            mapping.SetDeadZone(m_defineSensorItem->m_physicsSensor->GetMapping().GetDeadZone());
+            mapping.SetScale(m_defineSensorItem->m_physicsSensor->GetMapping().GetScale());
+            mapping.SetLimit(m_defineSensorItem->m_physicsSensor->GetMapping().GetLimit());
+            m_defineSensorItem->m_physicsSensor->SetMapping(mapping);
+         }
+      }
+
+      SensorMapping& mapping = m_defineSensorItem->m_physicsSensor->GetMapping();
+
+      float scale = mapping.GetScale();
+      bool reversedAxis = scale < 0.f;
+      float gain = 100.f * (reversedAxis ? -scale : scale);
+      RenderToggle("Reversed axis", ImVec2(300.f, ImGui::GetFrameHeight()), reversedAxis);
+      ImGui::SameLine();
+      ImGui::Text("Reversed axis");
+
+      if (float deadZone = mapping.GetDeadZone() * 100.f; ImGui::SliderFloat("Dead Zone", &deadZone, 0.f, 30.f, "%4.1f %%"))
+         mapping.SetDeadZone(deadZone / 100.f);
+
+      ImGui::SliderFloat("Gain", &gain, 0.f, 500.f, "%4.1f %%");
+      mapping.SetScale((reversedAxis ? -gain : gain) / 100.f);
+
+      if (float limit = mapping.GetLimit(); ImGui::SliderFloat("Limit", &limit, 0.f, 10.f, "%4.2f"))
+         mapping.SetLimit(limit);
+
+      ImGui::Spacing();
+      if (ImGui::Button("Done"))
+      {
+         ImGui::CloseCurrentPopup();
+         m_defineSensorItem = nullptr;
+      }
+
+      ImGui::EndPopup();
+   }
+}
+
+void InGameUIPage::RenderInputActionPopup()
+{
+   if (!m_defineActionPopup && m_defineActionItem)
+   {
+      assert(false); // Not supposed to happen as the only way to close the popup is to actually define a mapping which deselect the item
+      if (m_defineActionItem->m_inputAction->IsNavigationAction() && !m_defineActionItem->m_inputAction->IsMapped())
+         m_defineActionPopup = true;
+      else
+         m_defineActionItem = nullptr;
+   }
+   if (m_defineActionItem && m_defineActionPopup && !ImGui::IsPopupOpen((m_defineActionItem->m_label + " input binding").c_str()))
+   {
+      ImGui::OpenPopup((m_defineActionItem->m_label + " input binding").c_str());
+      m_player->m_pininput.StartButtonCapture();
+   }
+   if (m_defineActionItem && ImGui::BeginPopupModal((m_defineActionItem->m_label + " input binding").c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+   {
+      ImGui::Text("Press the key/button or combination of keys/buttons\nyou want to use for the action '%s'", m_defineActionItem->m_label.c_str());
+      ImGui::Spacing();
+      ImGui::Separator();
+      ImGui::Spacing();
+      ImGui::Text("New mapping: %s", m_player->m_pininput.GetMappingLabel(m_player->m_pininput.GetButtonCapture()).c_str());
+      ImGui::Spacing();
+      ImGui::Separator();
+      if (m_player->m_pininput.IsButtonCaptureDone())
+      {
+         m_defineActionItem->m_inputAction->AddMapping(m_player->m_pininput.GetButtonCapture());
+         if (!(m_defineActionItem->m_inputAction->IsNavigationAction() && !m_defineActionItem->m_inputAction->IsMapped()))
+         {
+            ImGui::CloseCurrentPopup();
+            m_defineActionItem = nullptr;
+         }
+      }
+      ImGui::EndPopup();
+   }
+}
+
+void InGameUIPage::RenderSaveOptionPopup()
+{
    if (m_selectGlobalOrTablePopup)
       ImGui::OpenPopup(SELECT_TABLE_OR_GLOBAL);
    if (ImGui::BeginPopupModal(SELECT_TABLE_OR_GLOBAL, &m_selectGlobalOrTablePopup))
@@ -641,5 +901,29 @@ void InGameUIPage::Render()
    }
 }
 
+// Basic Toggle button, based on https://github.com/ocornut/imgui/issues/1537#issuecomment-355562097
+void InGameUIPage::RenderToggle(const string& label, const ImVec2& size, bool& v) const
+{
+   ImVec2 p = ImGui::GetCursorScreenPos();
+   ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+   const float height = size.y;
+   const float width = height * 1.75f;
+   const float radius = height * 0.50f;
+   float itemEndScreenX = ImGui::GetCursorScreenPos().x + size.x;
+   p.x = itemEndScreenX - width;
+
+   ImGui::SetNextItemWidth(size.x);
+   if (ImGui::InvisibleButton(label.c_str(), size))
+      v = !v;
+   ImU32 col_bg;
+   if (ImGui::IsItemHovered())
+      col_bg = v ? IM_COL32(64 + 20, 180, 32 + 20, 255) : IM_COL32(64, 64, 64, 255);
+   else
+      col_bg = v ? IM_COL32(64, 180, 32, 255) : IM_COL32(37, 37, 37, 255);
+
+   draw_list->AddRectFilled(p, ImVec2(p.x + width, p.y + height), col_bg, height * 0.5f);
+   draw_list->AddCircleFilled(ImVec2(v ? (p.x + width - radius) : (p.x + radius), p.y + radius), radius - 3.5f, IM_COL32(255, 255, 255, 255));
+}
 
 }

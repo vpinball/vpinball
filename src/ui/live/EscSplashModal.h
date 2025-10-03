@@ -20,7 +20,6 @@ private:
 
    LiveUI& m_liveUI;
    ImVec2 m_initialDragPos;
-   bool m_disable_esc = false;
-   PinInput::InputState m_prevInputState {};
+   InputManager::ActionState m_prevActionState { };
    uint32_t m_openTimestamp = 0; // Used to delay keyboard shortcut
 };

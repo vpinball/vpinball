@@ -215,6 +215,8 @@ LiveUI::LiveUI(RenderDevice *const rd)
    io.BackendFlags |= ImGuiBackendFlags_RendererHasTextures;
 
    NewFrame();
+
+   m_showTouchOverlay = g_pvp->m_settings.LoadValueBool(Settings::Player, "TouchOverlay"s);
 }
 
 LiveUI::~LiveUI()
@@ -388,7 +390,7 @@ void LiveUI::NewFrame()
 
    // Only enable keyboard navigation for main splash popup as it interfer with UI keyboard shortcuts
    if (m_escSplashModal.IsOpened() || m_inGameUI.IsOpened())
-      io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
+      io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
    else
       io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard;
 }
@@ -405,6 +407,11 @@ void LiveUI::Update()
    UpdateTouchUI();
 
    ImGui::PushFont(m_baseFont, m_baseFont->LegacySize);
+
+   if (!m_deviceLayoutName.empty())
+   {
+      UpdateDeviceLayoutPopup();
+   }
 
    if (m_escSplashModal.IsOpened())
    {
@@ -556,7 +563,7 @@ void LiveUI::Update()
 
 void LiveUI::UpdateTouchUI()
 {
-   if (!m_player->m_supportsTouch)
+   if (!m_player->m_pininput.HasTouchInput())
       return;
 
 #ifdef __LIBVPINBALL__
@@ -564,7 +571,7 @@ void LiveUI::UpdateTouchUI()
       return;
 #endif
 
-   if (!g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "TouchOverlay"s, false))
+   if (!m_showTouchOverlay)
       return;
 
    const ImGuiIO &io = ImGui::GetIO();
@@ -582,9 +589,9 @@ void LiveUI::UpdateTouchUI()
 
    ImGui::Begin("Touch Controls", nullptr, window_flags);
    ImDrawList *drawList = ImGui::GetWindowDrawList();
-   for (int i = 0; i < MAX_TOUCHREGION; ++i)
+   for (const auto& region : m_pininput->GetTouchState())
    {
-      RECT rect = touchregion[i];
+      const RECT& rect = region.region;
 
       ImVec2 topLeft((float)rect.left * screenWidth / 100.0f, (float)rect.top * screenHeight / 100.0f);
       ImVec2 bottomRight((float)rect.right * screenWidth / 100.0f, (float)rect.bottom * screenHeight / 100.0f);
@@ -617,8 +624,48 @@ void LiveUI::HideUI()
    m_player->SetPlayState(true);
 }
 
+bool LiveUI::ProposeInputLayout(const string &deviceName, const std::function<void(bool, bool)> &handler)
+{
+   if (!m_deviceLayoutName.empty())
+      return false;
+   m_deviceLayoutName = deviceName;
+   m_deviceLayoutHandler = handler;
+   m_deviceLayoutDontAskAgain = false;
+   return true;
+}
+
+void LiveUI::UpdateDeviceLayoutPopup()
+{
+   if (!m_deviceLayoutName.empty())
+      ImGui::OpenPopup("Apply Device Layout ?");
+   ImGui::SetNextWindowSize(ImVec2(350.f * m_dpi, 0.f));
+   if (ImGui::BeginPopupModal("Apply Device Layout ?"))
+   {
+      ImGui::TextWrapped("Device '%s' was detected. Would you like the default input layout to be applied ?", m_deviceLayoutName.c_str());
+      ImGui::Separator();
+      ImGui::Checkbox("Don't ask again", &m_deviceLayoutDontAskAgain);
+      ImGui::Separator();
+      if (ImGui::Button("Discard"))
+      {
+         m_deviceLayoutName = "";
+         m_deviceLayoutHandler(false, m_deviceLayoutDontAskAgain);
+         ImGui::CloseCurrentPopup();
+      }
+      ImGui::SameLine(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize("Apply").x - ImGui::GetStyle().FramePadding.x * 2.f);
+      if (ImGui::Button("Apply"))
+      {
+         m_deviceLayoutName = "";
+         m_deviceLayoutHandler(true, m_deviceLayoutDontAskAgain);
+         ImGui::CloseCurrentPopup();
+      }
+      ImGui::EndPopup();
+   }
+}
+
 extern ImGuiKey ImGui_ImplSDL3_KeyEventToImGuiKey(SDL_Keycode keycode, SDL_Scancode scancode);
 ImGuiKey LiveUI::GetImGuiKeyFromSDLScancode(const SDL_Scancode sdlk)
 {
    return ImGui_ImplSDL3_KeyEventToImGuiKey(SDL_GetKeyFromScancode(sdlk, SDL_KMOD_NONE, false), sdlk);
 }
+
+

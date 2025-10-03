@@ -170,7 +170,6 @@ void ResetVPX()
    settings.SaveValue(Settings::Section::Player, "PlayfieldFullScreen"s, 0);
    settings.SaveValue(Settings::Section::Player, "PlayfieldWidth"s, 1920);
    settings.SaveValue(Settings::Section::Player, "PlayfieldHeight"s, 1080);
-   settings.SaveValue(Settings::Section::Player, "EnableMouseInPlayer"s, false);
    settings.SaveValue(Settings::Section::Player, "NumberOfTimesToShowTouchMessage"s, 0);
    settings.SaveValue(Settings::Section::Player, "DisableAO"s, true);
 }

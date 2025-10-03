@@ -812,8 +812,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/core/ieditable.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/editablereg.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/iselect.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/input/pininput.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/input/OpenPinDevHandler.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/pinundo.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/vpinball.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/VPApp.cpp" />
@@ -825,6 +823,11 @@
     <ClCompile Include="$(SolutionDir)/../../src/core/ResURIResolver.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/input/InputAction.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/input/SensorFilter.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/input/InputManager.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/input/OpenPinDevHandler.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/input/PhysicsSensor.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/math/math.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/math/matrix.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/renderer/Backglass.cpp" />
@@ -860,7 +863,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/physics/hitball.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/physics/hitflipper.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/physics/hitplunger.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/physics/NudgeFilter.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/physics/PhysicsEngine.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/physics/quadtree.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/plugins/MsgPluginManager.cpp">
@@ -892,6 +894,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/LiveUI.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/NotificationOverlay.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/PerfUI.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/PlotData.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/PlumbOverlay.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUI.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/AudioSettingsPage.cpp" />
@@ -899,8 +902,10 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/HomePage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIItem.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIPage.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InputSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/MiscSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/NudgeSettingsPage.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/PlungerSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/PointOfViewSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/TableOptionsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/TableRulesPage.cpp" />
@@ -922,7 +927,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/DrawingOrderDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/EditorOptionsDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/ImageDialog.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/InputDeviceDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/KeysConfigDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/LayersListDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/MaterialDialog.cpp" />
@@ -1524,12 +1528,15 @@
     <ClInclude Include="$(SolutionDir)/../../src/core/Settings.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/TableDB.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/VPXPluginAPIImpl.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/input/pininput.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/input/DirectInputJoystickHandler.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/input/ButtonMapping.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/input/InputAction.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/input/SensorFilter.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/input/InputManager.h" />
     <ClInclude Include="$(SolutionDir)/../../src/input/OpenPinDevHandler.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/input/PhysicsSensor.h" />
     <ClInclude Include="$(SolutionDir)/../../src/input/ScanCodes.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/input/SensorMapping.h" />
     <ClInclude Include="$(SolutionDir)/../../src/input/SDLInputHandler.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/input/XInputJoystickHandler.h" />
     <ClInclude Include="$(SolutionDir)/../../src/math/bbox.h" />
     <ClInclude Include="$(SolutionDir)/../../src/math/math.h" />
     <ClInclude Include="$(SolutionDir)/../../src/math/matrix.h" />
@@ -1603,7 +1610,6 @@
     <ClInclude Include="$(SolutionDir)/../../src/physics/hitflipper.h" />
     <ClInclude Include="$(SolutionDir)/../../src/physics/hitplunger.h" />
     <ClInclude Include="$(SolutionDir)/../../src/physics/hittimer.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/physics/NudgeFilter.h" />
     <ClInclude Include="$(SolutionDir)/../../src/physics/PhysicsEngine.h" />
     <ClInclude Include="$(SolutionDir)/../../src/physics/quadtree.h" />
     <ClInclude Include="$(SolutionDir)/../../src/plugins/MsgPlugin.h" />
@@ -1643,6 +1649,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/LiveUI.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/NotificationOverlay.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/PerfUI.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/PlotData.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/PlumbOverlay.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUI.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/AudioSettingsPage.h" />
@@ -1650,8 +1657,10 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/HomePage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIItem.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIPage.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InputSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/MiscSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/NudgeSettingsPage.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/PlungerSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/PointOfViewSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/TableOptionsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/TableRulesPage.h" />
@@ -1676,7 +1685,6 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/DrawingOrderDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/EditorOptionsDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/ImageDialog.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/InputDeviceDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/KeysConfigDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/LayersListDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/MaterialDialog.h" />

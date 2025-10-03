@@ -10,8 +10,10 @@
 #include "TableRulesPage.h"
 #include "AudioSettingsPage.h"
 #include "GraphicSettingsPage.h"
+#include "InputSettingsPage.h"
 #include "MiscSettingsPage.h"
 #include "NudgeSettingsPage.h"
+#include "PlungerSettingsPage.h"
 #include "PointOfViewSettingsPage.h"
 #include "VRSettingsPage.h"
 
@@ -23,13 +25,15 @@ InGameUI::InGameUI(LiveUI &liveUI)
    : m_player(g_pplayer)
 {
    AddPage(std::make_unique<HomePage>());
-   AddPage(std::make_unique<TableOptionsPage>());
-   AddPage(std::make_unique<TableRulesPage>());
    AddPage(std::make_unique<AudioSettingsPage>());
    AddPage(std::make_unique<GraphicSettingsPage>());
+   AddPage(std::make_unique<InputSettingsPage>());
    AddPage(std::make_unique<MiscSettingsPage>());
    AddPage(std::make_unique<NudgeSettingsPage>());
+   AddPage(std::make_unique<PlungerSettingsPage>());
    AddPage(std::make_unique<PointOfViewSettingsPage>());
+   AddPage(std::make_unique<TableOptionsPage>());
+   AddPage(std::make_unique<TableRulesPage>());
    if (m_player->m_vrDevice)
       AddPage(std::make_unique<VRSettingsPage>());
 }
@@ -77,9 +81,8 @@ void InGameUI::Close()
 {
    assert(IsOpened());
    m_isOpened = false;
-   if (m_playerPaused)
+   if (!m_player->IsPlaying(false))
       m_player->SetPlayState(true);
-   m_playerPaused = false;
    m_player->m_ptable->FireOptionEvent(3); // Tweak mode closed event
    if (m_activePage)
       m_activePage->Close();
@@ -91,33 +94,39 @@ void InGameUI::Update()
       return;
 
    // Only pause player if balls are moving to keep attract mode if possible
-   if (!m_playerPaused)
+   if (m_player->IsPlaying(false))
    {
-      bool ballMoving = false;
-      for (const auto &ball : m_player->m_vball)
+      if (m_activePage->IsPlayerPauseAllowed())
       {
-         if (ball->m_d.m_vel.LengthSquared() > 0.25f)
+         bool ballMoving = false;
+         for (const auto &ball : m_player->m_vball)
          {
-            ballMoving = true;
-            break;
+            if (ball->m_d.m_vel.LengthSquared() > 0.25f)
+            {
+               ballMoving = true;
+               break;
+            }
+         }
+         if (ballMoving)
+         {
+            m_player->SetPlayState(false);
          }
       }
-      if (ballMoving)
-      {
-         m_player->SetPlayState(false);
-         m_playerPaused = true;
-      }
+   }
+   else if (!m_activePage->IsPlayerPauseAllowed())
+   {
+      m_player->SetPlayState(true);
    }
 
-   const PinInput::InputState state = m_player->m_pininput.GetInputState();
+   const InputManager::ActionState state = m_player->m_pininput.GetActionState();
    HandlePageInput(state);
    HandleLegacyFlyOver(state);
-   m_prevInputState = state;
+   m_prevActionState = state;
 
    m_activePage->Render();
 }
 
-void InGameUI::HandlePageInput(const PinInput::InputState &state)
+void InGameUI::HandlePageInput(const InputManager::ActionState &state)
 {
    // Disable keyboard shortcut if no control editing is in progress
    // TODO: we should only continue to process gamepad & VR controller
@@ -127,26 +136,26 @@ void InGameUI::HandlePageInput(const PinInput::InputState &state)
    // For popups, we use ImGui navigation by forwarding events
    if (ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopupId))
    {
-      if (state.IsKeyPressed(eLeftMagnaSave, m_prevInputState))
+      if (state.IsKeyPressed(m_player->m_pininput.GetLeftMagnaActionId(), m_prevActionState))
          ImGui::GetIO().AddKeyEvent(ImGuiKey_UpArrow, true);
-      else if (state.IsKeyReleased(eLeftMagnaSave, m_prevInputState))
+      else if (state.IsKeyReleased(m_player->m_pininput.GetLeftMagnaActionId(), m_prevActionState))
          ImGui::GetIO().AddKeyEvent(ImGuiKey_UpArrow, false);
-      if (state.IsKeyPressed(eRightMagnaSave, m_prevInputState))
+      if (state.IsKeyPressed(m_player->m_pininput.GetRightMagnaActionId(), m_prevActionState))
          ImGui::GetIO().AddKeyEvent(ImGuiKey_DownArrow, true);
-      else if (state.IsKeyReleased(eRightMagnaSave, m_prevInputState))
+      else if (state.IsKeyReleased(m_player->m_pininput.GetRightMagnaActionId(), m_prevActionState))
          ImGui::GetIO().AddKeyEvent(ImGuiKey_DownArrow, false);
-      if (state.IsKeyPressed(eLeftFlipperKey, m_prevInputState))
+      if (state.IsKeyPressed(m_player->m_pininput.GetLeftFlipperActionId(), m_prevActionState))
          ImGui::GetIO().AddKeyEvent(ImGuiKey_Enter, true);
-      else if (state.IsKeyReleased(eLeftFlipperKey, m_prevInputState))
+      else if (state.IsKeyReleased(m_player->m_pininput.GetLeftFlipperActionId(), m_prevActionState))
          ImGui::GetIO().AddKeyEvent(ImGuiKey_Enter, false);
-      if (state.IsKeyPressed(eRightFlipperKey, m_prevInputState))
+      if (state.IsKeyPressed(m_player->m_pininput.GetRightFlipperActionId(), m_prevActionState))
          ImGui::GetIO().AddKeyEvent(ImGuiKey_Enter, true);
-      else if (state.IsKeyReleased(eRightFlipperKey, m_prevInputState))
+      else if (state.IsKeyReleased(m_player->m_pininput.GetRightFlipperActionId(), m_prevActionState))
          ImGui::GetIO().AddKeyEvent(ImGuiKey_Enter, false);
       return;
    }
 
-   if (state.IsKeyPressed(eLeftMagnaSave, m_prevInputState))
+   if (state.IsKeyPressed(m_player->m_pininput.GetLeftMagnaActionId(), m_prevActionState))
    {
       const bool wasFlipperNav = m_useFlipperNav;
       m_useFlipperNav = true;
@@ -155,7 +164,7 @@ void InGameUI::HandlePageInput(const PinInput::InputState &state)
          m_activePage->SelectNextItem();
    }
 
-   if (state.IsKeyPressed(eRightMagnaSave, m_prevInputState))
+   if (state.IsKeyPressed(m_player->m_pininput.GetRightMagnaActionId(), m_prevActionState))
    {
       const bool wasFlipperNav = m_useFlipperNav;
       m_useFlipperNav = true;
@@ -164,20 +173,20 @@ void InGameUI::HandlePageInput(const PinInput::InputState &state)
          m_activePage->SelectPrevItem();
    }
 
-   if (m_useFlipperNav && state.IsKeyPressed(eLeftFlipperKey, m_prevInputState))
+   if (m_useFlipperNav && state.IsKeyPressed(m_player->m_pininput.GetLeftFlipperActionId(), m_prevActionState))
       m_activePage->AdjustItem(-1, true);
-   else if (m_useFlipperNav && state.IsKeyDown(eLeftFlipperKey))
+   else if (m_useFlipperNav && state.IsKeyDown(m_player->m_pininput.GetLeftFlipperActionId()))
       m_activePage->AdjustItem(-1, false);
 
-   if (m_useFlipperNav && state.IsKeyPressed(eRightFlipperKey, m_prevInputState))
+   if (m_useFlipperNav && state.IsKeyPressed(m_player->m_pininput.GetRightFlipperActionId(), m_prevActionState))
       m_activePage->AdjustItem(1, true);
-   else if (m_useFlipperNav && state.IsKeyDown(eRightFlipperKey))
+   else if (m_useFlipperNav && state.IsKeyDown(m_player->m_pininput.GetRightFlipperActionId()))
       m_activePage->AdjustItem(1, false);
 
-   if (state.IsKeyPressed(ePlungerKey, m_prevInputState))
+   if (state.IsKeyPressed(m_player->m_pininput.GetLaunchBallActionId(), m_prevActionState))
       m_activePage->ResetToDefaults();
 
-   if (state.IsKeyPressed(eAddCreditKey, m_prevInputState))
+   if (state.IsKeyPressed(m_player->m_pininput.GetAddCreditActionId(0), m_prevActionState))
    {
       if (g_pvp->m_povEdit)
          g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
@@ -185,15 +194,15 @@ void InGameUI::HandlePageInput(const PinInput::InputState &state)
          m_activePage->ResetToInitialValues();
    }
 
-   if (state.IsKeyPressed(eStartGameKey, m_prevInputState))
+   if (state.IsKeyPressed(m_player->m_pininput.GetStartActionId(), m_prevActionState))
       m_activePage->Save();
 
-   if (state.IsKeyReleased(eEscape, m_prevInputState))
+   if (state.IsKeyReleased(m_player->m_pininput.GetExitInteractiveActionId(), m_prevActionState))
       Close(); // FIXME should a navigate back, up to InGameUI close, applied on key release as this is the way it is handled for the main splash (to be changed ?)
 }
 
 // Legacy keyboard fly camera when in ingame option. Remove ?
-void InGameUI::HandleLegacyFlyOver(const PinInput::InputState &state)
+void InGameUI::HandleLegacyFlyOver(const InputManager::ActionState &state)
 {
    if (!m_player->m_ptable->m_settings.LoadValueBool(Settings::Player, "EnableCameraModeFlyAround"s))
       return;
@@ -221,10 +230,10 @@ void InGameUI::HandleLegacyFlyOver(const PinInput::InputState &state)
          m_player->m_renderer->m_inc -= 0.01f;
    }
 
-   if (state.IsKeyDown(eLeftTiltKey))
+   if (state.IsKeyDown(m_player->m_pininput.GetLeftNudgeActionId()))
       m_player->m_ptable->mViewSetups[m_player->m_ptable->m_BG_current_set].mViewportRotation -= 1.0f;
 
-   if (state.IsKeyDown(eRightTiltKey))
+   if (state.IsKeyDown(m_player->m_pininput.GetRightNudgeActionId()))
       m_player->m_ptable->mViewSetups[m_player->m_ptable->m_BG_current_set].mViewportRotation += 1.0f;
 }
 

@@ -61,45 +61,14 @@ STDMETHODIMP ScriptGlobalTable::Nudge(float Angle, float Force)
 
 STDMETHODIMP ScriptGlobalTable::NudgeGetCalibration(VARIANT *XMax, VARIANT *YMax, VARIANT *XGain, VARIANT *YGain, VARIANT *DeadZone, VARIANT *TiltSensitivity)
 {
-	int tmp;
-
-	if (g_pvp->m_settings.LoadValue(Settings::Player, "PBWAccelGainX"s, tmp))
-		CComVariant(tmp).Detach(XGain);
-	if (g_pvp->m_settings.LoadValue(Settings::Player, "PBWAccelGainY"s, tmp))
-		CComVariant(tmp).Detach(YGain);
-	if (g_pvp->m_settings.LoadValue(Settings::Player, "PBWAccelMaxX"s, tmp))
-		CComVariant(tmp).Detach(XMax);
-	if (g_pvp->m_settings.LoadValue(Settings::Player, "PBWAccelMaxY"s, tmp))
-		CComVariant(tmp).Detach(YMax);
-	if (g_pvp->m_settings.LoadValue(Settings::Player, "DeadZone"s, tmp))
-		CComVariant(tmp).Detach(DeadZone);
-	if (g_pvp->m_settings.LoadValue(Settings::Player, "TiltSensitivity"s, tmp))
-		CComVariant(tmp).Detach(TiltSensitivity);
-
-	return S_OK;
+   // Deprecated
+   return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::NudgeSetCalibration(int XMax, int YMax, int XGain, int YGain, int DeadZone, int TiltSensitivity)
 {
-	g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelGainX"s, max(XGain, 0));
-	g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelGainY"s, max(YGain, 0));
-	g_pvp->m_settings.SaveValue(Settings::Player, "DeadZone"s, clamp(DeadZone, 0,100));
-	g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelMaxX"s, clamp(XMax, 0,100));
-	g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelMaxY"s, clamp(YMax, 0,100));
-
-	g_pvp->m_settings.SaveValue(Settings::Player, "TiltSensCB"s, TiltSensitivity > 0);
-	if (TiltSensitivity > 0)
-	{
-		g_pvp->m_settings.SaveValue(Settings::Player, "TiltSensValue"s, TiltSensitivity);
-		g_pvp->m_settings.SaveValue(Settings::Player, "TiltSensitivity"s, TiltSensitivity);
-	}
-	else
-		g_pvp->m_settings.DeleteValue(Settings::Player, "TiltSensitivity"s);
-
-	if (g_pplayer)
-		g_pplayer->m_pininput.ReInit();
-
-	return S_OK;
+   // Deprecated
+   return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::NudgeSensorStatus(VARIANT *XNudge, VARIANT *YNudge)
@@ -211,115 +180,155 @@ STDMETHODIMP ScriptGlobalTable::get_Name(BSTR *pVal)
 
 STDMETHODIMP ScriptGlobalTable::get_LeftFlipperKey(LONG *pVal)
 {
-   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eLeftFlipperKey]);
+   *pVal = 0x10000 | (g_pplayer->m_ptable->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetRightFlipperActionId() :  g_pplayer->m_pininput.GetLeftFlipperActionId());
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_RightFlipperKey(LONG *pVal)
 {
-   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eRightFlipperKey]);
+   *pVal = 0x10000 | (g_pplayer->m_ptable->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetLeftFlipperActionId() : g_pplayer->m_pininput.GetRightFlipperActionId());
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_StagedLeftFlipperKey(LONG *pVal)
 {
-   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eStagedLeftFlipperKey]);
+   *pVal = 0x10000 | (g_pplayer->m_ptable->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetStagedRightFlipperActionId() : g_pplayer->m_pininput.GetStagedLeftFlipperActionId());
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_StagedRightFlipperKey(LONG *pVal)
 {
-   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eStagedRightFlipperKey]);
+   *pVal = 0x10000 | (g_pplayer->m_ptable->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetStagedLeftFlipperActionId() : g_pplayer->m_pininput.GetStagedRightFlipperActionId());
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_LeftTiltKey(LONG *pVal)
 {
-   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eLeftTiltKey]);
+   *pVal = 0x10000 | (g_pplayer->m_ptable->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetRightNudgeActionId() : g_pplayer->m_pininput.GetLeftNudgeActionId());
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_RightTiltKey(LONG *pVal)
 {
-   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eRightTiltKey]);
+   *pVal = 0x10000 | (g_pplayer->m_ptable->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetLeftNudgeActionId() : g_pplayer->m_pininput.GetRightNudgeActionId());
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_CenterTiltKey(LONG *pVal)
 {
-   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eCenterTiltKey]);
+   *pVal = 0x10000 | g_pplayer->m_pininput.GetCenterNudgeActionId();
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_PlungerKey(LONG *pVal)
 {
-   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[ePlungerKey]);
+   *pVal = 0x10000 | g_pplayer->m_pininput.GetLaunchBallActionId();
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_StartGameKey(LONG *pVal)
 {
-   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eStartGameKey]);
+   *pVal = 0x10000 | g_pplayer->m_pininput.GetStartActionId();
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_AddCreditKey(LONG *pVal)
 {
-   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eAddCreditKey]);
+   *pVal = 0x10000 | g_pplayer->m_pininput.GetAddCreditActionId(0);
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_AddCreditKey2(LONG *pVal)
 {
-   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eAddCreditKey2]);
+   *pVal = 0x10000 | g_pplayer->m_pininput.GetAddCreditActionId(1);
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_MechanicalTilt(LONG *pVal)
 {
-   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eMechanicalTilt]);
+   *pVal = 0x10000 | g_pplayer->m_pininput.GetTiltActionId();
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_LeftMagnaSave(LONG *pVal)
 {
-   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eLeftMagnaSave]);
+   *pVal = 0x10000 | (g_pplayer->m_ptable->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetRightMagnaActionId() : g_pplayer->m_pininput.GetLeftMagnaActionId());
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_RightMagnaSave(LONG *pVal)
 {
-   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eRightMagnaSave]);
+   *pVal = 0x10000 | (g_pplayer->m_ptable->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetLeftMagnaActionId() : g_pplayer->m_pininput.GetRightMagnaActionId());
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_ExitGame(LONG *pVal)
 {
-   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eExitGame]);
+   *pVal = 0x10000 | g_pplayer->m_pininput.GetExitGameActionId();
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_LockbarKey(LONG *pVal)
 {
-   *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_actionToSDLScanCodeMapping[eLockbarKey]);
+   *pVal = 0x10000 | g_pplayer->m_pininput.GetLockbarActionId();
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_JoyCustomKey(LONG index, LONG *pVal)
 {
-   switch (index)
-   {
-   case 1: *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_pininput.m_joycustom1key); break;
-   case 2: *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_pininput.m_joycustom2key); break;
-   case 3: *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_pininput.m_joycustom3key); break;
-   case 4: *pVal = GetDirectInputKeyFromSDLScancode(g_pplayer->m_pininput.m_joycustom4key); break;
-   default: return E_FAIL;
-   }
-
+   if (index < 1 || index > 4)
+      return E_FAIL;
+   *pVal = 0x10000 | g_pplayer->m_pininput.GetJoyCustomActionId(index - 1);
    return S_OK;
 }
 
-bool ScriptGlobalTable::GetTextFileFromDirectory(const string& filename, const string& dirname, BSTR *pContents)
+STDMETHODIMP ScriptGlobalTable::get_VPXActionKey(LONG index, LONG *pVal)
+{
+   switch (index)
+   {
+   case 0: *pVal = 0x10000 | g_pplayer->m_pininput.GetLeftFlipperActionId(); break;
+   case 1: *pVal = 0x10000 | g_pplayer->m_pininput.GetRightFlipperActionId(); break;
+   case 2: *pVal = 0x10000 | g_pplayer->m_pininput.GetStagedLeftFlipperActionId(); break;
+   case 3: *pVal = 0x10000 | g_pplayer->m_pininput.GetStagedRightFlipperActionId(); break;
+   case 4: *pVal = 0x10000 | g_pplayer->m_pininput.GetLeftNudgeActionId(); break;
+   case 5: *pVal = 0x10000 | g_pplayer->m_pininput.GetRightNudgeActionId(); break;
+   case 6: *pVal = 0x10000 | g_pplayer->m_pininput.GetCenterNudgeActionId(); break;
+   case 7: *pVal = 0x10000 | g_pplayer->m_pininput.GetLaunchBallActionId(); break;
+   case 8: *pVal = 0x10000 | g_pplayer->m_pininput.GetStartActionId(); break;
+   case 9: *pVal = 0x10000 | g_pplayer->m_pininput.GetAddCreditActionId(0); break;
+   case 10: *pVal = 0x10000 | g_pplayer->m_pininput.GetAddCreditActionId(1); break;
+   case 11: *pVal = 0x10000 | g_pplayer->m_pininput.GetAddCreditActionId(2); break;
+   case 12: *pVal = 0x10000 | g_pplayer->m_pininput.GetAddCreditActionId(3); break;
+   case 13: *pVal = 0x10000 | g_pplayer->m_pininput.GetTiltActionId(); break;
+   case 14: *pVal = 0x10000 | g_pplayer->m_pininput.GetLeftMagnaActionId(); break;
+   case 15: *pVal = 0x10000 | g_pplayer->m_pininput.GetRightMagnaActionId(); break;
+   case 16: *pVal = 0x10000 | g_pplayer->m_pininput.GetExitGameActionId(); break;
+   case 17: *pVal = 0x10000 | g_pplayer->m_pininput.GetExitInteractiveActionId(); break;
+   case 18: *pVal = 0x10000 | g_pplayer->m_pininput.GetLockbarActionId(); break;
+   case 20: *pVal = 0x10000 | g_pplayer->m_pininput.GetVolumeDownActionId(); break;
+   case 21: *pVal = 0x10000 | g_pplayer->m_pininput.GetVolumeUpActionId(); break;
+   case 22: *pVal = 0x10000 | g_pplayer->m_pininput.GetExtraBallActionId(); break;
+   case 23: *pVal = 0x10000 | g_pplayer->m_pininput.GetSlamTiltActionId(); break;
+   case 24: *pVal = 0x10000 | g_pplayer->m_pininput.GetCoinDoorActionId(); break;
+   case 25: *pVal = 0x10000 | g_pplayer->m_pininput.GetServiceActionId(0); break;
+   case 26: *pVal = 0x10000 | g_pplayer->m_pininput.GetServiceActionId(1); break;
+   case 27: *pVal = 0x10000 | g_pplayer->m_pininput.GetServiceActionId(2); break;
+   case 28: *pVal = 0x10000 | g_pplayer->m_pininput.GetServiceActionId(3); break;
+   case 29: *pVal = 0x10000 | g_pplayer->m_pininput.GetServiceActionId(4); break;
+   case 30: *pVal = 0x10000 | g_pplayer->m_pininput.GetServiceActionId(5); break;
+   case 31: *pVal = 0x10000 | g_pplayer->m_pininput.GetServiceActionId(6); break;
+   case 32: *pVal = 0x10000 | g_pplayer->m_pininput.GetServiceActionId(7); break;
+   // 33-63 reserved for future use
+   case 64: *pVal = 0x10000 | g_pplayer->m_pininput.GetJoyCustomActionId(0); break;
+   case 65: *pVal = 0x10000 | g_pplayer->m_pininput.GetJoyCustomActionId(1); break;
+   case 66: *pVal = 0x10000 | g_pplayer->m_pininput.GetJoyCustomActionId(2); break;
+   case 67: *pVal = 0x10000 | g_pplayer->m_pininput.GetJoyCustomActionId(3); break;
+   default: return E_FAIL;
+   }
+   return S_OK;
+}
+
+bool ScriptGlobalTable::GetTextFileFromDirectory(const string &filename, const string &dirname, BSTR *pContents)
 {
    string szPath;
    if (!dirname.empty())

@@ -45,6 +45,12 @@ void InGameUIItem::SetInitialValue(float v)
    Validate();
 }
 
+void InGameUIItem::SetInitialValue(const string& v)
+{
+   m_initialStringValue = v;
+   Validate();
+}
+
 void InGameUIItem::SetDefaultValue(bool v)
 {
    m_defValue = v ? 1.f : 0.f;
@@ -63,6 +69,12 @@ void InGameUIItem::SetDefaultValue(float v)
    Validate();
 }
 
+void InGameUIItem::SetDefaultValue(const string& v)
+{
+   m_defStringValue = v;
+   Validate();
+}
+
 bool InGameUIItem::IsModified() const
 {
    switch (m_type)
@@ -71,6 +83,8 @@ bool InGameUIItem::IsModified() const
    case Type::IntValue:
    case Type::EnumValue: return GetIntValue() != static_cast<int>(m_initialValue);
    case Type::Toggle: return GetBoolValue() != (m_initialValue != 0.f);
+   case Type::ActionInputMapping: return m_inputAction->GetMappingString() != m_initialStringValue; break;
+   case Type::PhysicsSensorMapping: return m_physicsSensor->GetMappingString() != m_initialStringValue; break;
    default: return false;
    }
 }
@@ -83,6 +97,8 @@ bool InGameUIItem::IsDefaultValue() const
    case Type::IntValue:
    case Type::EnumValue: return GetIntValue() == static_cast<int>(m_defValue);
    case Type::Toggle: return GetBoolValue() == (m_defValue != 0.f);
+   case Type::ActionInputMapping: return m_inputAction->GetMappingString() == m_defStringValue; break;
+   case Type::PhysicsSensorMapping: return m_physicsSensor->GetMappingString() == m_defStringValue; break;
    default: return true;
    }
 }
@@ -95,6 +111,8 @@ void InGameUIItem::ResetToInitialValue()
    case Type::IntValue:
    case Type::EnumValue: SetValue(static_cast<int>(m_initialValue)); break;
    case Type::Toggle: SetValue(m_initialValue != 0.f); break;
+   case Type::ActionInputMapping: m_inputAction->SetMapping(m_initialStringValue); break;
+   case Type::PhysicsSensorMapping: m_physicsSensor->SetMapping(m_initialStringValue); break;
    default: break;
    }
 }
@@ -107,6 +125,8 @@ void InGameUIItem::ResetToDefault()
    case Type::IntValue:
    case Type::EnumValue: SetValue(static_cast<int>(m_defValue)); break;
    case Type::Toggle: SetValue(m_defValue != 0.f); break;
+   case Type::ActionInputMapping: m_inputAction->SetMapping(m_defStringValue); break;
+   case Type::PhysicsSensorMapping: m_physicsSensor->SetMapping(m_defStringValue); break;
    default: break;
    }
 }
@@ -146,11 +166,21 @@ void InGameUIItem::Save(Settings& settings, bool isTableOverride)
       break;
    }
 
+   case Type::ActionInputMapping:
+      m_inputAction->SaveMapping(settings);
+      m_initialStringValue = m_inputAction->GetMappingString();
+      break;
+
+   case Type::PhysicsSensorMapping:
+      m_physicsSensor->SaveMapping(settings);
+      m_initialStringValue = m_physicsSensor->GetMappingString();
+      break;
+
    default: break;
    }
 }
 
-void InGameUIItem::SetValue(float value)
+void InGameUIItem::SetValue(float value) const
 {
    const float prev = GetFloatValue();
    value = clamp(value, m_minValue, m_maxValue);
@@ -159,7 +189,7 @@ void InGameUIItem::SetValue(float value)
       m_onChangeFloat(prev, value);
 }
 
-void InGameUIItem::SetValue(int value)
+void InGameUIItem::SetValue(int value) const
 {
    const int prev = GetIntValue();
    value = clamp(value, static_cast<int>(m_minValue), static_cast<int>(m_maxValue));
@@ -168,7 +198,7 @@ void InGameUIItem::SetValue(int value)
       m_onChangeInt(prev, value);
 }
 
-void InGameUIItem::SetValue(bool value)
+void InGameUIItem::SetValue(bool value) const
 {
    if (GetBoolValue() != value)
       m_onChangeBool(value);

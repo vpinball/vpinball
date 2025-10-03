@@ -85,10 +85,11 @@ struct OpenPinballDeviceReport
 class OpenPinDev final
 {
 public:
-   OpenPinDev(hid_device *hDevice, uint8_t reportID, size_t reportSize, const wchar_t *deviceStructVersionString) :
+   OpenPinDev(hid_device *hDevice, uint8_t reportID, size_t reportSize, const wchar_t *deviceStructVersionString, uint16_t deviceId) :
        hDevice(hDevice), 
        reportID(reportID),
-       reportSize(reportSize)
+       reportSize(reportSize),
+       deviceId(deviceId)
    {
       // Parse the device struct version string into a DWORD, with the major
       // version in the high word and the minor version in the low word.
@@ -150,14 +151,27 @@ public:
          if (readResult <= 0)
             break;
 
+         OpenPinballDeviceReport prev_r = r;
+
          // Read completed.  Extract the Open Pinball Device struct from the
          // byte buffer, and flag that a new report is available.
          r.LoadFromUSB(&buf[1], readResult - 1);
+
+         if (onNewReport)
+            onNewReport(this, prev_r, r);
+
          isNewReport = true;
       }
 
       // return the new-report status
       return isNewReport;
+   }
+
+   uint16_t GetDeviceId() const { return deviceId; }
+
+   void SetOnNewReportHandler(std::function<void(const OpenPinDev *const pindev, const OpenPinballDeviceReport &prevReport, const OpenPinballDeviceReport &report)> handler)
+   {
+      onNewReport = handler;
    }
 
 protected:
@@ -172,6 +186,12 @@ protected:
       }
       return acc;
    }
+
+   // Id given by InputManager
+   uint16_t deviceId = 0xFFFF;
+
+   // On new report handler
+   std::function<void(const OpenPinDev * const pindev, const OpenPinballDeviceReport &prevReport, const OpenPinballDeviceReport &report)> onNewReport;
 
    // device handle (hidapi library type)
    hid_device *hDevice = nullptr;
@@ -193,7 +213,7 @@ protected:
    size_t reportSize;
    std::vector<uint8_t> buf;
 
-   // last report read
+   // last report read and the one before
    OpenPinballDeviceReport r;
 };
 
@@ -209,8 +229,8 @@ class OpenPinDevContext final
 
 // Initialize the Open Pinball Device interface.  Searches for active
 // devices and adds them to our internal list.
-OpenPinDevHandler::OpenPinDevHandler(PinInput &pininput)
-   : m_pininput(pininput)
+OpenPinDevHandler::OpenPinDevHandler(InputManager &pininput)
+   : m_inputManager(pininput)
    , m_OpenPinDevContext(new OpenPinDevContext())
 {
    PLOGI << "OpenPinDev input handler registered";
@@ -296,10 +316,122 @@ OpenPinDevHandler::OpenPinDevHandler(PinInput &pininput)
                            parser.Parse(rp, rdSize, &sizeScanner);
                            size_t reportSize = (sizeScanner.ReportSize(hidrp::ReportType::input, f.reportID) + 7) / 8 + 1;
 
+                           // Register device to the input manager
+                           uint16_t deviceId = m_inputManager.RegisterDevice("OpenPinDev", InputManager::DeviceType::OpenPinDev, "OpenPinDev");
+                           m_inputManager.RegisterElementName(deviceId, false, 0, "Start Game");
+                           m_inputManager.RegisterElementName(deviceId, false, 1, "Quit Game");
+                           m_inputManager.RegisterElementName(deviceId, false, 2, "Coin");
+                           m_inputManager.RegisterElementName(deviceId, false, 3, "Coin 2");
+                           m_inputManager.RegisterElementName(deviceId, false, 4, "Coin 3");
+                           m_inputManager.RegisterElementName(deviceId, false, 5, "Coin 4");
+                           m_inputManager.RegisterElementName(deviceId, false, 6, "Extra Ball");
+                           m_inputManager.RegisterElementName(deviceId, false, 7, "Launch Ball");
+                           m_inputManager.RegisterElementName(deviceId, false, 8, "Fire Button");
+                           m_inputManager.RegisterElementName(deviceId, false, 9, "Left Flipper");
+                           m_inputManager.RegisterElementName(deviceId, false, 10, "Right Flipper");
+                           m_inputManager.RegisterElementName(deviceId, false, 11, "Left Staged Flipper");
+                           m_inputManager.RegisterElementName(deviceId, false, 12, "Right Staged Flipper");
+                           m_inputManager.RegisterElementName(deviceId, false, 13, "Left Magna");
+                           m_inputManager.RegisterElementName(deviceId, false, 14, "Right Magna");
+                           m_inputManager.RegisterElementName(deviceId, false, 15, "Tilt");
+                           m_inputManager.RegisterElementName(deviceId, false, 16, "Slam tilt");
+                           m_inputManager.RegisterElementName(deviceId, false, 17, "Coin door");
+                           m_inputManager.RegisterElementName(deviceId, false, 18, "Service Cancel");
+                           m_inputManager.RegisterElementName(deviceId, false, 19, "Service Down");
+                           m_inputManager.RegisterElementName(deviceId, false, 20, "Service Up");
+                           m_inputManager.RegisterElementName(deviceId, false, 21, "Service Enter");
+                           m_inputManager.RegisterElementName(deviceId, false, 22, "Left Nudge");
+                           m_inputManager.RegisterElementName(deviceId, false, 23, "Forward Nudge");
+                           m_inputManager.RegisterElementName(deviceId, false, 24, "Right Nudge");
+                           m_inputManager.RegisterElementName(deviceId, false, 25, "Audio Up");
+                           m_inputManager.RegisterElementName(deviceId, false, 26, "Audio Down");
+                           for (int i = 0; i < 32; i++)
+                              m_inputManager.RegisterElementName(deviceId, false, static_cast<uint16_t>(0x0100 | i), "Button #" + std::to_string(i));
+                           m_inputManager.RegisterElementName(deviceId, true, 0x0200, "Plunger Position");
+                           m_inputManager.RegisterElementName(deviceId, true, 0x0201, "Plunger Speed");
+                           m_inputManager.RegisterElementName(deviceId, true, 0x0202, "Nudge X Acceleration");
+                           m_inputManager.RegisterElementName(deviceId, true, 0x0203, "Nudge Y Acceleration");
+                           m_inputManager.RegisterElementName(deviceId, true, 0x0204, "Nudge X Speed");
+                           m_inputManager.RegisterElementName(deviceId, true, 0x0205, "Nudge Y Speed");
+                           auto defaultMapping = [this, deviceId](
+                              std::function<bool(const vector<ButtonMapping>&, unsigned int)> mapButton, //
+                              std::function<bool(const SensorMapping&, SensorMapping::Type type, bool isLinear)> mapPlunger, //
+                              std::function<bool(const SensorMapping&, const SensorMapping&)> mapNudge)
+                           {
+                              bool success = true;
+                              success &= mapButton(ButtonMapping::Create(deviceId, 0), m_inputManager.GetStartActionId()); // Start (start game)
+                              success &= mapButton(ButtonMapping::Create(deviceId, 1), m_inputManager.GetExitGameActionId()); // Exit (end game)
+                              success &= mapButton(ButtonMapping::Create(deviceId, 2), m_inputManager.GetAddCreditActionId(0)); // Coin 1 (left coin chute)
+                              success &= mapButton(ButtonMapping::Create(deviceId, 3), m_inputManager.GetAddCreditActionId(1)); // Coin 2 (middle coin chute)
+                              success &= mapButton(ButtonMapping::Create(deviceId, 4), m_inputManager.GetAddCreditActionId(2)); // Coin 3 (right coin chute)
+                              success &= mapButton(ButtonMapping::Create(deviceId, 5), m_inputManager.GetAddCreditActionId(3)); // Coin 4 (fourth coin chute/dollar bill acceptor)
+                              success &= mapButton(ButtonMapping::Create(deviceId, 6), m_inputManager.GetExtraBallActionId()); // Extra Ball/Buy-In
+                              success &= mapButton(ButtonMapping::Create(deviceId, 7), m_inputManager.GetLaunchBallActionId()); // Launch Ball
+                              success &= mapButton(ButtonMapping::Create(deviceId, 8), m_inputManager.GetLockbarActionId()); // Fire button (lock bar top button)
+                              success &= mapButton(ButtonMapping::Create(deviceId, 9), m_inputManager.GetLeftFlipperActionId()); // Left flipper button primary switch
+                              success &= mapButton(ButtonMapping::Create(deviceId, 10), m_inputManager.GetRightFlipperActionId()); // Right flipper button primary switch
+                              success &= mapButton(ButtonMapping::Create(deviceId, 11), m_inputManager.GetStagedLeftFlipperActionId()); // Left flipper button secondary switch (upper flipper actuator)
+                              success &= mapButton(ButtonMapping::Create(deviceId, 12), m_inputManager.GetStagedRightFlipperActionId()); // Right flipper button secondary switch (upper flipper actuator)
+                              success &= mapButton(ButtonMapping::Create(deviceId, 13), m_inputManager.GetLeftMagnaActionId()); // Left MagnaSave button
+                              success &= mapButton(ButtonMapping::Create(deviceId, 14), m_inputManager.GetRightMagnaActionId()); // Right MagnaSave button
+                              success &= mapButton(ButtonMapping::Create(deviceId, 15), m_inputManager.GetTiltActionId()); // Tilt bob
+                              success &= mapButton(ButtonMapping::Create(deviceId, 16), m_inputManager.GetSlamTiltActionId()); // Slam tilt switch
+                              success &= mapButton(ButtonMapping::Create(deviceId, 17), m_inputManager.GetCoinDoorActionId()); // Coin door position switch
+                              success &= mapButton(ButtonMapping::Create(deviceId, 18), m_inputManager.GetServiceActionId(0)); // Service panel Cancel
+                              success &= mapButton(ButtonMapping::Create(deviceId, 19), m_inputManager.GetServiceActionId(1)); // Service panel Down
+                              success &= mapButton(ButtonMapping::Create(deviceId, 20), m_inputManager.GetServiceActionId(2)); // Service panel Up
+                              success &= mapButton(ButtonMapping::Create(deviceId, 21), m_inputManager.GetServiceActionId(3)); // Service panel Enter
+                              success &= mapButton(ButtonMapping::Create(deviceId, 22), m_inputManager.GetLeftNudgeActionId()); // Left Nudge
+                              success &= mapButton(ButtonMapping::Create(deviceId, 23), m_inputManager.GetCenterNudgeActionId()); // Forward Nudge
+                              success &= mapButton(ButtonMapping::Create(deviceId, 24), m_inputManager.GetRightNudgeActionId()); // Right Nudge
+                              success &= mapButton(ButtonMapping::Create(deviceId, 25), m_inputManager.GetVolumeUpActionId()); // Audio volume up
+                              success &= mapButton(ButtonMapping::Create(deviceId, 26), m_inputManager.GetVolumeDownActionId()); // Audio volume down
+                              success &= mapPlunger(SensorMapping::Create(deviceId, 0x200, SensorMapping::Type::Position), SensorMapping::Type::Position, true); // Plunger position
+                              success &= mapPlunger(SensorMapping::Create(deviceId, 0x201, SensorMapping::Type::Velocity), SensorMapping::Type::Velocity, true); // Plunger speed
+                              success &= mapNudge(SensorMapping::Create(deviceId, 0x204, SensorMapping::Type::Velocity), SensorMapping::Create(deviceId, 0x205, SensorMapping::Type::Velocity)); // Nudge speed
+                              return success;
+                           };
+                           m_inputManager.RegisterDefaultMapping(deviceId, defaultMapping);
+
+                           // Setup new device
+                           OpenPinDev* pinDev = new OpenPinDev(hDevice.release(), f.reportID, reportSize, &strBuf[24], deviceId);
+                           pinDev->SetOnNewReportHandler(
+                              [this](const OpenPinDev *const pindev, const OpenPinballDeviceReport &prevReport, const OpenPinballDeviceReport &report)
+                           {
+                              uint64_t timestampNs = report.timestamp * 1000ULL;
+                              for (unsigned int buttonNum = 1, bit = 1; buttonNum <= 27; ++buttonNum, bit <<= 1)
+                              {
+                                 const bool isDown = (report.pinballButtons & bit) != 0;
+                                 const bool wasDown = (prevReport.pinballButtons & bit) != 0;
+                                 if (isDown != wasDown)
+                                    m_inputManager.PushButtonEvent(pindev->GetDeviceId(), static_cast<uint16_t>(buttonNum), timestampNs, isDown);
+                              }
+
+                              for (unsigned int buttonNum = 1, bit = 1; buttonNum <= 32; ++buttonNum, bit <<= 1)
+                              {
+                                 const bool isDown = (report.genericButtons & bit) != 0;
+                                 const bool wasDown = (prevReport.genericButtons & bit) != 0;
+                                 if (isDown != wasDown)
+                                    m_inputManager.PushButtonEvent(pindev->GetDeviceId(), static_cast<uint16_t>(0x0100 | buttonNum), timestampNs, isDown);
+                              }
+
+                              if (report.plungerPos != prevReport.plungerPos)
+                                 m_inputManager.PushAxisEvent(pindev->GetDeviceId(), 0x200, timestampNs, static_cast<float>(report.plungerPos) / 32768.f);
+                              if (report.plungerSpeed != prevReport.plungerSpeed)
+                                 m_inputManager.PushAxisEvent(pindev->GetDeviceId(), 0x201, timestampNs, static_cast<float>(report.plungerSpeed) / 32768.f);
+                              if (report.axNudge != prevReport.axNudge)
+                                 m_inputManager.PushAxisEvent(pindev->GetDeviceId(), 0x202, timestampNs, static_cast<float>(report.axNudge) / 32768.f);
+                              if (report.ayNudge != prevReport.ayNudge)
+                                 m_inputManager.PushAxisEvent(pindev->GetDeviceId(), 0x203, timestampNs, static_cast<float>(report.ayNudge) / 32768.f);
+                              if (report.vxNudge != prevReport.vxNudge)
+                                 m_inputManager.PushAxisEvent(pindev->GetDeviceId(), 0x204, timestampNs, static_cast<float>(report.vxNudge) / 32768.f);
+                              if (report.vyNudge != prevReport.vyNudge)
+                                 m_inputManager.PushAxisEvent(pindev->GetDeviceId(), 0x205, timestampNs, static_cast<float>(report.vyNudge) / 32768.f);
+                           });
+
                            // add it to the active device list, releasing ownership of the device
                            // handle to the list object
-                           m_OpenPinDevContext->m_openPinDevs.emplace_back(
-                               new OpenPinDev(hDevice.release(), f.reportID, reportSize, &strBuf[24]));
+                           m_OpenPinDevContext->m_openPinDevs.emplace_back(pinDev);
 
                            // stop searching - there should be only one match
                            break;
@@ -311,7 +443,6 @@ OpenPinDevHandler::OpenPinDevHandler(PinInput &pininput)
                   if (found)
                   {
                      PLOGI << "OpenPinballDevice found and registered.";
-                     m_pininput.SetupJoyMapping(GetJoyId(0), PinInput::InputLayout::OpenPinDev);
                      break;
                   }
                }
@@ -334,7 +465,7 @@ OpenPinDevHandler::~OpenPinDevHandler()
 }
 
 // Read input from the Open Pinball Device inputs
-void OpenPinDevHandler::Update(const HWND foregroundWindow)
+void OpenPinDevHandler::Update()
 {
    // Combined report.  In keeping with Visual Pinball's treatment of
    // multiple gamepads, we merge the input across devices if there are
@@ -344,170 +475,5 @@ void OpenPinDevHandler::Update(const HWND foregroundWindow)
    // read input from each device
    bool isNewReport = false;
    for (auto &p : m_OpenPinDevContext->m_openPinDevs)
-   {
-      // check for a new report
-      if (p->ReadReport())
-         isNewReport = true;
-
-      // Merge the data into the combined struct.  For the accelerometer
-      // and plunger analog quantities, just arbitrarily pick the last
-      // input that's sending non-zero values.  Devices that don't have
-      // those sensors attached will send zeroes, so this strategy yields
-      // sensible results for the sensible case where the user only has
-      // one plunger and one accelerometer, but they're attached to
-      // separate Open Pinball Device microcontrollers.  If the user has
-      // multiple accelerometers in the system, our merge strategy will
-      // arbitrarily pick whichever one enumerated last, which isn't
-      // necessarily a sensible result, but that seems fair enough
-      // because the user's actual configuration isn't sensible either.
-      // I mean, what do they expect us to do with two accelerometer
-      // inputs?  Note that this is a different situation from the
-      // traditional multiple-joysticks case, because in the case of
-      // joysticks, there are plenty of good reasons to have more than
-      // one attached.  One might be set up as a pinball device, and two
-      // more *actual joysticks* might be present as well because the
-      // user also plays some non-pinball video games.  Joysticks are
-      // generic: we can't tell from the HID descriptor if it's an
-      // accelerometer pretending to be a joystick, vs an actual
-      // joystick.  The Pinball Device definition doesn't suffer from
-      // that ambiguity.  We can be sure that an accelerometer there
-      // is an accelerometer, so there aren't any valid use cases where
-      // you'd have two or more of them.
-      //
-      // Merge the buttons by ORing all of the button masks together.
-      // If the user has configured the same button number on more than
-      // one device, they probably actually want the buttons to perform
-      // the same logical function, so ORing them yields the right result.
-      const auto &r = p->CurrentReport();
-      if (r.axNudge != 0)
-         cr.axNudge = r.axNudge;
-      if (r.ayNudge != 0)
-         cr.ayNudge = r.ayNudge;
-      if (r.vxNudge != 0)
-         cr.vxNudge = r.vxNudge;
-      if (r.vyNudge != 0)
-         cr.vyNudge = r.vyNudge;
-      if (r.plungerPos != 0)
-         cr.plungerPos = r.plungerPos;
-      if (r.plungerSpeed != 0)
-         cr.plungerSpeed = r.plungerSpeed;
-      cr.genericButtons |= r.genericButtons;
-      cr.pinballButtons |= r.pinballButtons;
-   }
-
-   // if there were no reports, there's no need to update the player
-   if (!isNewReport)
-      return;
-
-   // Process the analog axis inputs.
-   // 
-   // The UI was hacked to have a custom axis #9 corresponding to OpenPinDev (instead of an axis)
-   // This allows to detect the axis associated with the OpenPinDev device when the mapping is
-   // done (but this is somewhat wrong as this approach is not consistent and not scalable to all
-   // existing hardware => this needs to be removed).
-   // 
-   // All Open Pinball Device analog axes are int16_t's (-32768..+32767) and therefore scaled accordingly to normalized units.
-   // 
-   // We simply push the value of the singleton device using virtual custom axis 10..13.
-   // TODO This should be reimplemented in favor of the general handling. as virtual axis does not 
-   // follow the overall scheme and makes the definition inconsistent, and won't scale with other hardware.
-   {
-      // Nudge X input - use velocity or acceleration input, according to the user preferences
-      float const val = static_cast<float>(g_pplayer->IsAccelInputAsVelocity() ? cr.vxNudge : cr.axNudge) / 32768.f;
-      m_pininput.PushJoystickAxisEvent(GetJoyId(0), 10, -val);
-   }
-   {
-      // Nudge Y input - use velocity or acceleration input, according to the user preferences
-      float const val = static_cast<float>(g_pplayer->IsAccelInputAsVelocity() ? cr.vyNudge : cr.ayNudge) / 32768.f;
-      m_pininput.PushJoystickAxisEvent(GetJoyId(0), 11, -val);
-   }
-   {
-      // Plunger position input
-      float const val = static_cast<float>(cr.plungerPos) / 32768.f;
-      m_pininput.PushJoystickAxisEvent(GetJoyId(0), 12, -val);
-   }
-   {
-      // Plunger speed input
-      float const val = static_cast<float>(cr.plungerSpeed) / 32768.f;
-      m_pininput.PushJoystickAxisEvent(GetJoyId(0), 13, -val);
-   }
-
-   // Check for button state changes to the generic buttons, which map
-   // to the like-numbered joystick buttons.  Fire a joystick button
-   // event for each button with a change of state since our last read.
-   if (cr.genericButtons != m_openPinDev_generic_buttons)
-   {
-      // Visit each button.  VP's internal joystick buttons are
-      // numbered #1 to #32.
-      for (unsigned int buttonNum = 1, bit = 1; buttonNum <= 32; ++buttonNum, bit <<= 1)
-      {
-         // check for a state change
-         const bool isDown = (cr.genericButtons & bit) != 0;
-         const bool wasDown = (m_openPinDev_generic_buttons & bit) != 0;
-         if (isDown != wasDown)
-            m_pininput.PushJoystickButtonEvent(GetJoyId(0), buttonNum, isDown);
-      }
-
-      // remember the new button state
-      m_openPinDev_generic_buttons = cr.genericButtons;
-   }
-   if (cr.pinballButtons != m_openPinDev_pinball_buttons)
-   {
-      // mapping from Open Pinball Device mask bits to VP/VPM keys
-      static constexpr struct KeyMap
-      {
-         uint32_t mask; // bit for the key in OpenPinballDeviceReportStruct::pinballButtons
-         EnumPlayerActions mappedAction; // mapped action, or EnumPlayerActions::eActionCount if a direct VPM key is used instead
-         SDL_Scancode vpmKey; // SDL_SCANCODE_xxx key ID of VPM key, or 0 (SDL_SCANCODE_UNKNOWN) if an action assignment is used instead
-      } keyMap[] = {
-         { 0x00000001, eStartGameKey },             // Start (start game)
-         { 0x00000002, eExitGame },                 // Exit (end game)
-         { 0x00000004, eAddCreditKey },             // Coin 1 (left coin chute)
-         { 0x00000008, eAddCreditKey2 },            // Coin 2 (middle coin chute)
-         { 0x00000010, eActionCount, SDL_SCANCODE_5 },             // Coin 3 (right coin chute)
-         { 0x00000020, eActionCount, SDL_SCANCODE_6 }, // Coin 4 (fourth coin chute/dollar bill acceptor)
-         { 0x00000040, eActionCount, SDL_SCANCODE_2 }, // Extra Ball/Buy-In
-         { 0x00000080, ePlungerKey },               // Launch Ball
-         { 0x00000100, eLockbarKey },               // Fire button (lock bar top button)
-         { 0x00000200, eLeftFlipperKey },           // Left flipper button primary switch
-         { 0x00000400, eRightFlipperKey },          // Right flipper button primary switch
-         { 0x00000800, eStagedLeftFlipperKey },  // Left flipper button secondary switch (upper flipper actuator)
-         { 0x00001000, eStagedRightFlipperKey }, // Right flipper button secondary switch (upper flipper actuator)
-         { 0x00002000, eLeftMagnaSave },            // Left MagnaSave button
-         { 0x00004000, eRightMagnaSave },           // Right MagnaSave button
-         { 0x00008000, eMechanicalTilt },           // Tilt bob
-         { 0x00010000, eActionCount, SDL_SCANCODE_HOME }, // Slam tilt switch
-         { 0x00020000, eActionCount, SDL_SCANCODE_END }, // Coin door position switch
-         { 0x00040000, eActionCount, SDL_SCANCODE_7 }, // Service panel Cancel
-         { 0x00080000, eActionCount, SDL_SCANCODE_8 }, // Service panel Down
-         { 0x00100000, eActionCount, SDL_SCANCODE_9 }, // Service panel Up
-         { 0x00200000, eActionCount, SDL_SCANCODE_0 }, // Service panel Enter
-         { 0x00400000, eLeftTiltKey },              // Left Nudge
-         { 0x00800000, eCenterTiltKey },            // Forward Nudge
-         { 0x01000000, eRightTiltKey },             // Right Nudge
-         { 0x02000000, eVolumeUp },                 // Audio volume up
-         { 0x04000000, eVolumeDown },               // Audio volume down
-      };
-
-      // Visit each pre-assigned button
-      const KeyMap *m = keyMap;
-      for (size_t i = 0; i < std::size(keyMap); ++i, ++m)
-      {
-         // check for a state change
-         uint32_t const mask = m->mask;
-
-         const bool isDown = (cr.pinballButtons & mask) != 0;
-         const bool wasDown = (m_openPinDev_pinball_buttons & mask) != 0;
-         if (isDown != wasDown)
-         {
-            if (m->mappedAction != EnumPlayerActions::eActionCount)
-               m_pininput.FireActionEvent(m->mappedAction, isDown);
-            else
-               PinInput::FireGenericKeyEvent(m->vpmKey, isDown);
-         }
-      }
-
-      // remember the new button state
-      m_openPinDev_pinball_buttons = cr.pinballButtons;
-   }
+      p->ReadReport();
 }

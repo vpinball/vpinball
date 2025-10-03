@@ -68,42 +68,45 @@ Option Explicit
 ' This is a list of standard keys used by *.vbs files
 '
 
+' VBS based user interface
 Const keyShowOpts	= 59  '(F1)		Show options
 Const keyShowKeys	= 60  '(F2)		Show Keys
 Const keyReset		= 61  '(F3)		Reset Emulation
 Const keyFrame		= 62  '(F4)		Toggle Window Lock
 Const keyDoubleSize	= 63  '(F5)		Toggle displaysize
 Const keyShowDips	= 64  '(F6)		Show Dip Switch / Options Menu
-Const keyAddBall	= 48  '(B)		Add extra ball
-Const keyBangBack	= 20  '(T)		Bang Back
+Const keyVPMVolume	= 88  '(F12)	Added Control to set VPM Volume
 
-Const keyInsertCoin1	 = 4   '(3)		Insert coin in slot 1
-Const keyInsertCoin2	 = 5   '(4)		Insert coin in slot 2
-Const keyInsertCoin3	 = 6   '(5)		Insert coin in slot 3
-Const keyInsertCoin4	 = 7   '(6)		Insert coin in slot 4
-Const keySlamDoorHit	 = 199 '(Home)	Slam Tilt
-Const keyCoinDoor		 = 207 '(End)	Opening/Closing Coin Door
+' Cabinet switches
+Dim keyAddBall:	    keyAddBall     = VPXActionKey(22) '(B) Add extra ball
+Dim keyBangBack:    keyBangBack    = VPXActionKey(13) '(T) Bang Back
+Dim keyInsertCoin1: keyInsertCoin1 = VPXActionKey( 9) '(3) Insert coin in slot 1
+Dim keyInsertCoin2: keyInsertCoin2 = VPXActionKey(10) '(4) Insert coin in slot 2
+Dim keyInsertCoin3: keyInsertCoin3 = VPXActionKey(11) '(5) Insert coin in slot 3
+Dim keyInsertCoin4: keyInsertCoin4 = VPXActionKey(12) '(6) Insert coin in slot 4
+Dim keySlamDoorHit: keySlamDoorHit = VPXActionKey(23) '(Home) Slam Tilt
+Dim keyCoinDoor:    keyCoinDoor    = VPXActionKey(24) '(End) Opening/Closing Coin Door
 Const toggleKeyCoinDoor	 = True '		If true then a key press/switch change will flip the state from on/off, if false then one will have the real coindoor behaviour (for cabinet setups with real coindoors)
 Const inverseKeyCoinDoor = False '		If false then the coindoor switch behaves like a original coindoor (key pressed = closed, key not pressed = open), otherwise the switch is inverted (key pressed = open, key not pressed = closed)
 
-Const keyCancel		 	= 8   '(7)		Coin Door Cancel Button (WPC)
-Const keyDown			= 9   '(8)		Coin Door Down Button (WPC)
-Const keyUp			 	= 10  '(9)		Coin Door Up Button (WPC)
-Const keyEnter		 	= 11  '(0)		Coin Door Enter Button (WPC)
-Const keyAdvance		= 9   '(8)		Coin Door Advance Button
-Const keyUpDown		 	= 8   '(7)		Coin Door Up/Down Button
-Const keyCPUDiag		= 10  '(9)		CPU Diagnostic Button
-Const keySoundDiag	 	= 11  '(0)		Sound CPU Diagnostic Button
-Const keyMasterEnter	= 201 '(PgUp)	Master Enter
-Const keyHiScoreReset	= 7   '(6)		Reset Hiscores
-Const keySelfTest		= 8   '(7)
-Const keyBlack		 	= 8   '(7)		Sega/Data East/Stern
-Const keyGreen		 	= 9   '(8)		Sega/Data East/Stern
-Const keyRed			= 10  '(9)		Sega/Data East/Stern
-Const keyKPGame		 	= 7   '(6)		Bally 6803
-Const keyKPEnter		= 156 '(NumpadEnter)
-Const keyVPMVolume	 	= 88  '(F12)	Added Control to set VPM Volume
-Const keyConfigurations = 12 '(-)		Taito
+' Service switches
+Dim keyCancel:         keyCancel         = VPXActionKey(25) '(7)		Coin Door Cancel Button (WPC)
+Dim keyDown:           keyDown           = VPXActionKey(26) '(8)		Coin Door Down Button (WPC)
+Dim keyUp:             keyUp             = VPXActionKey(27) '(9)		Coin Door Up Button (WPC)
+Dim keyEnter:          keyEnter          = VPXActionKey(28) '(0)		Coin Door Enter Button (WPC)
+Dim keyAdvance:        keyAdvance        = VPXActionKey(26) '(8)		Coin Door Advance Button
+Dim keyUpDown:         keyUpDown         = VPXActionKey(25) '(7)		Coin Door Up/Down Button
+Dim keyCPUDiag:        keyCPUDiag        = VPXActionKey(27) '(9)		CPU Diagnostic Button
+Dim keySoundDiag:      keySoundDiag      = VPXActionKey(28) '(0)		Sound CPU Diagnostic Button
+Dim keyMasterEnter:    keyMasterEnter    = VPXActionKey(30) '(PgUp)		Master Enter
+Dim keyHiScoreReset:   keyHiScoreReset   = VPXActionKey(29) '(6)		Reset Hiscores
+Dim keySelfTest:       keySelfTest       = VPXActionKey(25) '(7)
+Dim keyBlack:          keyBlack          = VPXActionKey(25) '(7)		Sega/Data East/Stern
+Dim keyGreen:          keyGreen          = VPXActionKey(26) '(8)		Sega/Data East/Stern
+Dim keyRed:	           keyRed            = VPXActionKey(27) '(9)		Sega/Data East/Stern
+Dim keyConfigurations: keyConfigurations = VPXActionKey(31) '(-)		Taito
+Dim keyKPGame:         keyKPGame         = VPXActionKey(29) '(6)		Bally 6803
+Const keyKPEnter                         = 156              '(NumpadEnter) see 6803.vbs for complete keypad
 
 ' Optional keys
 ' These are not used nor handled by the vbs files

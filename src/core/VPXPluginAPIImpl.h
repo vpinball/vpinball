@@ -58,8 +58,10 @@ private:
    static void GetActiveViewSetup(VPXViewSetupDef* view);
    static void SetActiveViewSetup(VPXViewSetupDef* view);
 
-   static void GetInputState(uint64_t* keyState, float* nudgeX, float* nudgeY, float* plunger);
-   static void SetInputState(const uint64_t keyState, const float nudgeX, const float nudgeY, const float plunger);
+   static void SetActionState(const VPXAction actionId, const int isPressed);
+   static void SetNudgeState(const int stateMask, const float nudgeAccelerationX, const float nudgeAccelerationY); // Bit 0 = override state
+   static void SetPlungerState(const int stateMask, const float plungerPos, const float plungerSpeed); // Bit 0 = override state, bit 1 = hasSpeedSensor
+   ankerl::unordered_dense::map<VPXAction, std::pair<unsigned int, int>> m_actionMap;
 
    static VPXTexture CreateTexture(uint8_t* rawData, int size);
    static void UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const uint8_t* image);

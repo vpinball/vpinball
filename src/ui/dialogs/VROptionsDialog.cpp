@@ -11,42 +11,6 @@ static float scaleRelative = 1.0f;
 static float scaleAbsolute = 55.0f;
 
 
-static SDL_Scancode GetNextKey()
-{
-   SDL_Scancode sdlk = SDL_SCANCODE_UNKNOWN;
-   for (unsigned int i = VK_BACK; i <= VK_OEM_CLEAR; ++i)
-   {
-      const SHORT keyState = GetAsyncKeyState(i);
-      if (keyState & 1)
-      {
-         const SDL_Scancode sc = GetSDLScancodeFromWin32VirtualKey(i);
-         if (sc != SDL_SCANCODE_UNKNOWN)
-            sdlk = sc; // search for a higher key value as some keys have first undifferentiated values (shift) then differentiated values (left shift, right shift)
-      }
-   }
-   return sdlk;
-}
-
-
-class KeyWindowStruct
-{
-public:
-   PinInput pi;
-   HWND hwndKeyControl; // window to get the key assignment
-   UINT_PTR m_timerid; // timer id for our key assignment
-};
-
-static WNDPROC g_ButtonProc2;
-
-LRESULT CALLBACK MyKeyButtonProc2(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-   if (uMsg == WM_GETDLGCODE)
-      // Eat all acceleratable messges
-      return (DLGC_WANTARROWS | DLGC_WANTTAB | DLGC_WANTALLKEYS | DLGC_WANTCHARS);
-   else
-      return CallWindowProc(g_ButtonProc2, hwnd, uMsg, wParam, lParam);
-}
-
 VROptionsDialog::VROptionsDialog() : CDialog(IDD_VR_OPTIONS)
 {
 }
@@ -83,7 +47,6 @@ BOOL VROptionsDialog::OnInitDialog()
       GetDlgItem(IDC_STATIC1).ShowWindow(SW_HIDE); // No performance/hack option for the time being
       GetDlgItem(IDC_STATIC2).ShowWindow(SW_HIDE);
       GetDlgItem(IDC_COMBO_TEXTURE).ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_STATIC3).ShowWindow(SW_HIDE);
       GetDlgItem(IDC_NEAR_LABEL).ShowWindow(SW_HIDE); // OpenXR use fixed near plane distance in real world unit
       GetDlgItem(IDC_NEAR_PLANE).ShowWindow(SW_HIDE);
 
@@ -130,123 +93,7 @@ BOOL VROptionsDialog::OnInitDialog()
    ::SendMessage(hwnd, CB_SETCURSEL, textureModeVR, 0);
    ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
-   for (unsigned int i = eTableRecenter; i <= eTableDown; ++i)
-      if (regkey_idc[i] != -1)
-      {
-         const int dik = g_pvp->m_settings.LoadValueInt(Settings::Player, regkey_string[i]);
-         const HWND hwndControl = GetDlgItem(regkey_idc[i]);
-         ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, dik);
-         SDL_Keycode sdlKeycode = SDL_GetKeyFromScancode(GetSDLScancodeFromDirectInputKey(dik), SDL_KMOD_NONE, false);
-         ::SetWindowText(hwndControl, SDL_GetKeyName(sdlKeycode));
-      }
-
-   for (unsigned int i = 0; i < 3; ++i)
-   {
-      bool hr;
-      int item, selected;
-      switch (i)
-      {
-      case 0: hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyTableRecenterKey"s, selected); item = IDC_JOYTABLERECENTER; break;
-      case 1: hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyTableUpKey"s, selected); item = IDC_JOYTABLEUP; break;
-      case 2: hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyTableDownKey"s, selected); item = IDC_JOYTABLEDOWN; break;
-      }
-      
-      if (!hr)
-         selected = 0; // assume no assignment as standard
-
-      hwnd = GetDlgItem(item).GetHwnd();
-      ::SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "(none)");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Button 1");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Button 2");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Button 3");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Button 4");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Button 5");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Button 6");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Button 7");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Button 8");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Button 9");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Button 10");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Button 11");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Button 12");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Button 13");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Button 14");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Button 15");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Button 16");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Button 17");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Button 18");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Button 19");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Button 20");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Button 21");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Button 22");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Button 23");
-      ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Button 24");
-      if (item == IDC_JOYLFLIPCOMBO || item == IDC_JOYRFLIPCOMBO || item == IDC_JOYPLUNGERCOMBO)
-      {
-         ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Left Mouse");
-         ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Right Mouse");
-         ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Middle Mouse");
-      }
-      ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
-      ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
-   }
-
-   //
-
-   KeyWindowStruct* const pksw = new KeyWindowStruct();
-   pksw->pi.SetFocusWindow(GetHwnd());
-   pksw->pi.Init();
-   pksw->m_timerid = 0;
-   SetWindowLongPtr(GWLP_USERDATA, (size_t)pksw);
-
-   // Set buttons to ignore keyboard shortcuts when using DirectInput
-   HWND hwndButton = GetDlgItem(IDC_BTTABLERECENTER).GetHwnd();
-   g_ButtonProc2 = (WNDPROC)::GetWindowLongPtr(hwndButton, GWLP_WNDPROC);
-   ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc2);
-   ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-   hwndButton = GetDlgItem(IDC_BTTABLEUP).GetHwnd();
-   ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc2);
-   ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
-   hwndButton = GetDlgItem(IDC_BTTABLEDOWN).GetHwnd();
-   ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc2);
-   ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
-
    return TRUE;
-}
-
-INT_PTR VROptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-   switch (uMsg)
-   {
-   case WM_TIMER:
-   {
-      KeyWindowStruct* const pksw = (KeyWindowStruct*)GetWindowLongPtr(GWLP_USERDATA);
-      SDL_Scancode sdlScancode = GetNextKey();
-      if (sdlScancode == SDL_SCANCODE_UNKNOWN)
-         break; // no key pressed
-
-      int dik = GetDirectInputKeyFromSDLScancode(sdlScancode);
-      if (dik == 0)
-         break; // unmapped key
-
-      if (dik == DIK_ESCAPE)
-         sdlScancode = GetSDLScancodeFromDirectInputKey((unsigned char)::GetWindowLongPtr(pksw->hwndKeyControl, GWLP_USERDATA)); // reset key to old value
-      else
-         ::SetWindowLongPtr(pksw->hwndKeyControl, GWLP_USERDATA, dik);
-
-      // Display key name using user keyboard layout (but store it as scancode to support user layout change)
-      SDL_Keycode sdlKeycode = SDL_GetKeyFromScancode(sdlScancode, SDL_KMOD_NONE, false);
-      ::SetWindowText(pksw->hwndKeyControl, SDL_GetKeyName(sdlKeycode));
-
-      KillTimer(pksw->m_timerid);
-      pksw->m_timerid = 0;
-      break;
-   }
-   }
-
-   return DialogProcDefault(uMsg, wParam, lParam);
 }
 
 BOOL VROptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
@@ -274,24 +121,6 @@ BOOL VROptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             oldScaleValue = isScaleToLockbarWidth;
          }
          #endif
-         break;
-      }
-      case IDC_BTTABLERECENTER:
-      {
-         if (HIWORD(wParam) == BN_CLICKED)
-            StartTimer(IDC_TABLEREC_TEXT);
-         break;
-      }
-      case IDC_BTTABLEUP:
-      {
-         if (HIWORD(wParam) == BN_CLICKED)
-            StartTimer(IDC_TABLEUP_TEXT);
-         break;
-      }
-      case IDC_BTTABLEDOWN:
-      {
-         if (HIWORD(wParam) == BN_CLICKED)
-            StartTimer(IDC_TABLEDOWN_TEXT);
          break;
       }
       default:
@@ -325,61 +154,5 @@ void VROptionsDialog::OnOK()
    selected = IsDlgButtonChecked(IDC_CAP_PUP)!= 0;
    g_pvp->m_settings.SaveValue(Settings::Player, "CapturePUP"s, selected);
 
-   SetValue(IDC_JOYTABLERECENTER, Settings::Player, "JoyTableRecenterKey"s);
-   SetValue(IDC_JOYTABLEUP, Settings::Player, "JoyTableUpKey"s);
-   SetValue(IDC_JOYTABLEDOWN, Settings::Player, "JoyTableDownKey"s);
-
-    for (unsigned int i = eTableRecenter; i <= eTableDown; ++i) if (regkey_idc[i] != -1)
-    {
-       const size_t dik = GetDlgItem(regkey_idc[i]).GetWindowLongPtr(GWLP_USERDATA);
-       g_pvp->m_settings.SaveValue(Settings::Player, regkey_string[i], (int)dik);
-    }
-
    CDialog::OnOK();
-}
-
-void VROptionsDialog::OnDestroy()
-{
-   KeyWindowStruct* const pksw = (KeyWindowStruct*)GetWindowLongPtr(GWLP_USERDATA);
-   if (pksw->m_timerid)
-   {
-      KillTimer(pksw->m_timerid);
-      pksw->m_timerid = 0;
-   }
-   pksw->pi.UnInit();
-   CDialog::OnDestroy();
-}
-
-void VROptionsDialog::SetValue(int nID, const Settings::Section& section, const string& key)
-{
-   LRESULT selected = SendDlgItemMessage(nID, CB_GETCURSEL, 0, 0);
-   if (selected == LB_ERR)
-      selected = 2; // assume both as standard
-   g_pvp->m_settings.SaveValue(section, key, (int)selected);
-}
-
-void VROptionsDialog::StartTimer(int nID)
-{
-   KeyWindowStruct* const pksw = (KeyWindowStruct*)GetWindowLongPtr(GWLP_USERDATA);
-   const HWND hwndKeyWindow = GetDlgItem(nID).GetHwnd();
-   if (pksw->m_timerid == NULL) //add
-   { //add
-      // corrects input error with space bar
-      const SDL_Scancode key = GetNextKey();
-      if (key == SDL_SCANCODE_SPACE)
-      {
-         GetNextKey(); // Clear the current buffer out
-         return;
-      }
-
-      GetNextKey(); // Clear the current buffer out
-
-      pksw->m_timerid = SetTimer(100, 50, nullptr);
-      pksw->hwndKeyControl = hwndKeyWindow;
-      ::SetWindowText(pksw->hwndKeyControl, "????");
-      while (GetNextKey() != NULL) //clear entire keyboard buffer contents
-      {
-         GetNextKey();
-      }
-   }
 }

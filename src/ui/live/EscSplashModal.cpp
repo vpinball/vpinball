@@ -10,7 +10,6 @@ void EscSplashModal::Open()
       return;
    ImGui::OpenPopup(ID_MODAL_SPLASH);
    m_openTimestamp = msec();
-   m_disable_esc = g_pplayer->m_ptable->m_settings.LoadValueBool(Settings::Player, "DisableESC"s);
    g_pplayer->SetPlayState(false);
 }
 
@@ -75,30 +74,34 @@ void EscSplashModal::Update()
 
    // Key shortcut: click on the button, or press escape key (react on key released, otherwise it would immediately reopen the UI,...)
    int keyShortcut = 0;
-      if (enableKeyboardShortcuts && (ImGui::IsKeyReleased(ImGuiKey_Escape) || ((ImGui::IsKeyReleased(LiveUI::GetImGuiKeyFromSDLScancode(m_player->m_actionToSDLScanCodeMapping[eEscape])) && !m_disable_esc))))
+   if (enableKeyboardShortcuts && ImGui::IsKeyReleased(ImGuiKey_Escape))
       keyShortcut = 1;
 
    // Map action to ImgUI navigation
    if (m_player)
    {
-      const PinInput::InputState& state = m_player->m_pininput.GetInputState();
-      if (state.IsKeyPressed(eLeftFlipperKey, m_prevInputState))
+      const InputManager::ActionState &state = m_player->m_pininput.GetActionState();
+      if (state.IsKeyPressed(m_player->m_pininput.GetLeftMagnaActionId(), m_prevActionState))
          ImGui::GetIO().AddKeyEvent(ImGuiKey_UpArrow, true);
-      else if (state.IsKeyReleased(eLeftFlipperKey, m_prevInputState))
+      else if (state.IsKeyReleased(m_player->m_pininput.GetLeftMagnaActionId(), m_prevActionState))
          ImGui::GetIO().AddKeyEvent(ImGuiKey_UpArrow, false);
-      if (state.IsKeyPressed(eRightFlipperKey, m_prevInputState))
+      if (state.IsKeyPressed(m_player->m_pininput.GetRightMagnaActionId(), m_prevActionState))
          ImGui::GetIO().AddKeyEvent(ImGuiKey_DownArrow, true);
-      else if (state.IsKeyReleased(eRightFlipperKey, m_prevInputState))
+      else if (state.IsKeyReleased(m_player->m_pininput.GetRightMagnaActionId(), m_prevActionState))
          ImGui::GetIO().AddKeyEvent(ImGuiKey_DownArrow, false);
-      if (state.IsKeyPressed(eStartGameKey, m_prevInputState))
+      bool wasPressed = m_prevActionState.IsKeyDown(m_player->m_pininput.GetLeftFlipperActionId())
+         || m_prevActionState.IsKeyDown(m_player->m_pininput.GetRightFlipperActionId())
+         || m_prevActionState.IsKeyDown(m_player->m_pininput.GetLaunchBallActionId());
+      bool isPressed = state.IsKeyDown(m_player->m_pininput.GetLeftFlipperActionId())
+         || state.IsKeyDown(m_player->m_pininput.GetRightFlipperActionId())
+         || state.IsKeyDown(m_player->m_pininput.GetLaunchBallActionId());
+      if (!wasPressed && isPressed)
          ImGui::GetIO().AddKeyEvent(ImGuiKey_Enter, true);
-      else if (state.IsKeyReleased(eStartGameKey, m_prevInputState))
+      else if (wasPressed && !isPressed)
          ImGui::GetIO().AddKeyEvent(ImGuiKey_Enter, false);
-      if (state.IsKeyPressed(ePlungerKey, m_prevInputState))
-         ImGui::GetIO().AddKeyEvent(ImGuiKey_Space, true);
-      else if (state.IsKeyReleased(ePlungerKey, m_prevInputState))
-         ImGui::GetIO().AddKeyEvent(ImGuiKey_Space, false);
-      m_prevInputState = state;
+      if (enableKeyboardShortcuts && state.IsKeyReleased(m_player->m_pininput.GetExitInteractiveActionId(), m_prevActionState))
+         keyShortcut = 1;
+      m_prevActionState = state;
    }
 
    if (ImGui::Button("Resume Game", size) || (keyShortcut == 1))
@@ -129,18 +132,17 @@ void EscSplashModal::Update()
       g_pvp->GenerateTournamentFile();
    }
    #ifndef __STANDALONE__
-      // Quit: click on the button, or press exit button
-   if (ImGui::Button("Quit to Editor", size) || (enableKeyboardShortcuts && ImGui::IsKeyPressed(LiveUI::GetImGuiKeyFromSDLScancode(m_player->m_actionToSDLScanCodeMapping[eExitGame]))))
-      {
+      // Quit: click on the button
+      if (ImGui::Button("Quit to Editor", size))
          m_table->QuitPlayer(Player::CS_STOP_PLAY);
-      }
    #else
       #if ((defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS)) || defined(__ANDROID__))
-         bool showTouchOverlay = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "TouchOverlay"s, false);
+         bool showTouchOverlay = g_pvp->m_settings.LoadValueBool(Settings::Player, "TouchOverlay"s);
          if (ImGui::Button(showTouchOverlay ? "Disable Touch Overlay" : "Enable Touch Overlay", size))
          {
             showTouchOverlay = !showTouchOverlay;
             g_pvp->m_settings.SaveValue(Settings::Player, "TouchOverlay"s, showTouchOverlay);
+            m_liveUI.ShowTouchOverlay(showTouchOverlay);
 
             ImGui::GetIO().MousePos.x = 0;
             ImGui::GetIO().MousePos.y = 0;
@@ -154,7 +156,7 @@ void EscSplashModal::Update()
             ImGui::GetIO().MousePos.y = 0;
          }
       #endif
-      if (ImGui::Button("Quit", size) || (enableKeyboardShortcuts && ImGui::IsKeyPressed(LiveUI::GetImGuiKeyFromSDLScancode(m_player->m_actionToSDLScanCodeMapping[eExitGame]))))
+      if (ImGui::Button("Quit", size))
       {
          ImGui::CloseCurrentPopup();
          m_table->QuitPlayer(Player::CS_CLOSE_APP);

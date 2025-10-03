@@ -6,7 +6,7 @@
 #include <cstdio>
 #include <filesystem>
 
-static const string regKey[Settings::Plugin00] = { "Controller"s, "Editor"s, "Standalone"s, "Player"s, "DMD"s, "Alpha"s, 
+static const string regKey[Settings::Plugin00] = { "Controller"s, "Editor"s, "Standalone"s, "Player"s, "Input"s, "DMD"s, "Alpha"s, 
       "Backglass"s, "ScoreView"s, "Topper"s, "PlayerVR"s, "RecentDir"s, "Version"s, "CVEdit"s, "TableOverride"s, "TableOption"s, "ControllerDevices"s,
       "DefaultProps\\Ball"s, "DefaultProps\\Bumper"s, "DefaultProps\\Decal"s, "DefaultProps\\EMReel"s, "DefaultProps\\Flasher"s, "DefaultProps\\Flipper"s,
       "DefaultProps\\Gate"s, "DefaultProps\\HitTarget"s, "DefaultProps\\Kicker"s, "DefaultProps\\Light"s, "DefaultProps\\LightSequence"s,
@@ -147,72 +147,21 @@ void Settings::Validate(const bool addDefaults)
 
    SettingInt(Section::Player, "ShowFPS"s, 0, 0, 2, "Performance overlay display mode (0=disable, 1=FPS, 2=Full)"s);
 
+
    //////////////////////////////////////////////////////////////////////////
-   // Input section
+   // Input, plunger, nudge and plumb section
 
    SettingInt(Section::Player, "Exitconfirm"s, 120, 0, 30*60, "Length of a long ESC press that directly closes the app, (sadly) expressed in seconds * 60."s);
-   SettingBool(Section::Player, "PBWDefaultLayout"s, false, "Disable default layout of recognized Pincab controllers (DirectInput only)."s);
-   SettingBool(Section::Player, "DisableESC"s, false, "Disable ESC key as exit action button."s);
+   
+   SettingBool(Section::Player, "PlungerRetract"s, false, "Enable 1 second retract."s);
+   SettingBool(Section::Player, "PlungerLinearSensor"s, false, "Symmetric or assymetric plunger position sensor."s);
+   
+   SettingBool(Section::Player, "SimulatedPlumb"s, true, "Enable plumb simulation"s);
+   SettingFloat(Section::Player, "PlumbMassFactor"s, 0.1f, 0.f, 1.f, "Plumb inertia factor"s);
+   SettingFloat(Section::Player, "PlumbThresholdAngle"s, 35.f, 5.f, 60.f, "Angle that causes tilt"s);
 
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eLeftFlipperKey], DIK_LSHIFT, 0x00, 0xFFFF, ""s);
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eRightFlipperKey], DIK_RSHIFT, 0x00, 0xFFFF, ""s);
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eStagedLeftFlipperKey], DIK_LWIN, 0x00, 0xFFFF, ""s);
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eStagedRightFlipperKey], DIK_RALT, 0x00, 0xFFFF, ""s);
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eLeftTiltKey], DIK_Z, 0x00, 0xFFFF, ""s);
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eRightTiltKey], DIK_SLASH, 0x00, 0xFFFF, ""s);
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eCenterTiltKey], DIK_SPACE, 0x00, 0xFFFF, ""s);
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::ePlungerKey], DIK_RETURN, 0x00, 0xFFFF, ""s);
-   #if !defined(__APPLE__) && !defined(__ANDROID__)
-      SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eFrameCount], DIK_F11, 0x00, 0xFFFF, ""s);
-   #else
-      SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eFrameCount], DIK_F1, 0x00, 0xFFFF, ""s);
-   #endif
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eDBGBalls], DIK_O, 0x00, 0xFFFF, ""s);
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eDebugger], DIK_D, 0x00, 0xFFFF, ""s);
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eAddCreditKey], DIK_5, 0x00, 0xFFFF, ""s);
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eAddCreditKey2], DIK_4, 0x00, 0xFFFF, ""s);
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eStartGameKey], DIK_1, 0x00, 0xFFFF, ""s);
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eMechanicalTilt], DIK_T, 0x00, 0xFFFF, ""s);
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eRightMagnaSave], DIK_RCONTROL, 0x00, 0xFFFF, ""s);
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eLeftMagnaSave], DIK_LCONTROL, 0x00, 0xFFFF, ""s);
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eExitGame], DIK_Q, 0x00, 0xFFFF, ""s);
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eVolumeUp], DIK_EQUALS, 0x00, 0xFFFF, ""s);
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eVolumeDown], DIK_MINUS, 0x00, 0xFFFF, ""s);
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eLockbarKey], DIK_LALT, 0x00, 0xFFFF, ""s);
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eEnable3D], DIK_F10, 0x00, 0xFFFF, ""s);
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eTableRecenter], DIK_NUMPAD5, 0x00, 0xFFFF, ""s);
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eTableUp], DIK_NUMPAD8, 0x00, 0xFFFF, ""s);
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eTableDown], DIK_NUMPAD2, 0x00, 0xFFFF, ""s);
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eEscape], DIK_ESCAPE, 0x00, 0xFFFF, ""s);
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::ePause], DIK_P, 0x00, 0xFFFF, ""s);
-   SettingUInt(Section::Player, regkey_string[EnumPlayerActions::eTweak], DIK_F12, 0x00, 0xFFFF, ""s);
-
-   SettingUInt(Settings::Player, "JoyLFlipKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
-   SettingUInt(Settings::Player, "JoyRFlipKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
-   SettingUInt(Settings::Player, "JoyStagedLFlipKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
-   SettingUInt(Settings::Player, "JoyStagedRFlipKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
-   SettingUInt(Settings::Player, "JoyLTiltKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
-   SettingUInt(Settings::Player, "JoyRTiltKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
-   SettingUInt(Settings::Player, "JoyCTiltKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
-   SettingUInt(Settings::Player, "JoyPlungerKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
-   SettingUInt(Settings::Player, "JoyFrameCount"s, 0, 0x00, 0xFFFFFFFFu, ""s);
-   SettingUInt(Settings::Player, "JoyDebugKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
-   SettingUInt(Settings::Player, "JoyDebuggerKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
-   SettingUInt(Settings::Player, "JoyAddCreditKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
-   SettingUInt(Settings::Player, "JoyAddCredit2Key"s, 0, 0x00, 0xFFFFFFFFu, ""s);
-   SettingUInt(Settings::Player, "JoyStartGameKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
-   SettingUInt(Settings::Player, "JoyMechTiltKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
-   SettingUInt(Settings::Player, "JoyRMagnaSave"s, 0, 0x00, 0xFFFFFFFFu, ""s);
-   SettingUInt(Settings::Player, "JoyLMagnaSave"s, 0, 0x00, 0xFFFFFFFFu, ""s);
-   SettingUInt(Settings::Player, "JoyExitGameKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
-   SettingUInt(Settings::Player, "JoyVolumeUp"s, 0, 0x00, 0xFFFFFFFFu, ""s);
-   SettingUInt(Settings::Player, "JoyVolumeDown"s, 0, 0x00, 0xFFFFFFFFu, ""s);
-   SettingUInt(Settings::Player, "JoyLockbarKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
-   SettingUInt(Settings::Player, "JoyTableRecenterKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
-   SettingUInt(Settings::Player, "JoyTableUpKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
-   SettingUInt(Settings::Player, "JoyTableDownKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
-   SettingUInt(Settings::Player, "JoyPauseKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
-   SettingUInt(Settings::Player, "JoyTweakKey"s, 0, 0x00, 0xFFFFFFFFu, ""s);
+   SettingBool(Section::Player, "EnableLegacyNudge"s, false, ""s);
+   SettingFloat(Section::Player, "LegacyNudgeStrength"s, 1.f, 0.01f, 5.f, ""s);
 
    //////////////////////////////////////////////////////////////////////////
    // GfxBackend section
@@ -363,6 +312,8 @@ void Settings::Validate(const bool addDefaults)
 
    SettingFloat(Section::Player, "MaxFramerate"s, -1.f, -1.f, 1000.f, "Maximum FPS of playfield view (minimum: 24FPS), 0 is unlimited, < 0 is limited to the display refresh rate."s);
    SettingInt(Section::Player, "SyncMode"s, VSM_NONE, VSM_NONE, VSM_FRAME_PACING, "Hardware video sync mode to use: None / Vertical Sync / Adaptative Sync / Frame Pacing."s);
+
+   SettingBool(Section::Player, "TouchOverlay"s, false, "Display an overlay showing touch regions"s);
 
    //////////////////////////////////////////////////////////////////////////
    // DMD section
