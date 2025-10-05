@@ -16,6 +16,7 @@ public:
    void Close() override;
    void Save() override;
    void ResetToInitialValues() override;
+   void ResetToDefaults() override;
 
 private:
    void BuildPage();
