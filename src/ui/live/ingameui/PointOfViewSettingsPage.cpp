@@ -55,6 +55,16 @@ void PointOfViewSettingsPage::ResetToInitialValues()
       g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
 }
 
+void PointOfViewSettingsPage::ResetToDefaults()
+{
+   InGameUIPage::ResetToDefaults();
+   PinTable* table = m_player->m_ptable;
+   ViewSetup& viewSetup = GetCurrentViewSetup();
+   const float screenInclination = table->m_settings.LoadValueFloat(Settings::Player, "ScreenInclination"s);
+   viewSetup.SetViewPosFromPlayerPosition(table, m_playerPos, screenInclination);
+   OnPointOfViewChanged();
+}
+
 void PointOfViewSettingsPage::OnPointOfViewChanged()
 {
    assert(m_opened);
@@ -240,7 +250,11 @@ void PointOfViewSettingsPage::BuildPage()
          OnPointOfViewChanged();
       },
       [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "ScaleX"); },
-      [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleX", v, isTableOverride); });
+      [this, keyPrefix](float v, Settings& settings, bool isTableOverride) {
+         const ViewSetup& viewSetup = GetCurrentViewSetup();
+         const float realToVirtual = viewSetup.GetRealToVirtualScale(m_player->m_ptable);
+         settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleX", v * realToVirtual / 100.f, isTableOverride);
+      });
    xScale->SetInitialValue(100.f * m_initialViewSetup.mSceneScaleX / m_initialViewSetup.GetRealToVirtualScale(table));
 
    auto yScale = std::make_unique<InGameUIItem>(
@@ -264,7 +278,11 @@ void PointOfViewSettingsPage::BuildPage()
          OnPointOfViewChanged();
       },
       [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "ScaleY"); },
-      [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleY", v, isTableOverride); });
+      [this, keyPrefix](float v, Settings& settings, bool isTableOverride) {
+         const ViewSetup& viewSetup = GetCurrentViewSetup();
+         const float realToVirtual = viewSetup.GetRealToVirtualScale(m_player->m_ptable);
+         settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleY", v * realToVirtual / 100.f, isTableOverride);
+      });
    yScale->SetInitialValue(100.f * m_initialViewSetup.mSceneScaleY / m_initialViewSetup.GetRealToVirtualScale(table));
 
    auto zScale = std::make_unique<InGameUIItem>(
@@ -289,7 +307,11 @@ void PointOfViewSettingsPage::BuildPage()
          OnPointOfViewChanged();
       },
       [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "ScaleZ"); },
-      [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleZ", v, isTableOverride); });
+      [this, keyPrefix](float v, Settings& settings, bool isTableOverride) {
+         const ViewSetup& viewSetup = GetCurrentViewSetup();
+         const float realToVirtual = viewSetup.GetRealToVirtualScale(m_player->m_ptable);
+         settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleZ", v * realToVirtual / 100.f, isTableOverride);
+      });
    zScale->SetInitialValue(100.f * m_initialViewSetup.mSceneScaleZ / m_initialViewSetup.GetRealToVirtualScale(table));
 
    auto playerX = std::make_unique<InGameUIItem>(
@@ -418,6 +440,19 @@ void PointOfViewSettingsPage::BuildPage()
       [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "WindowBot", CMTOVPU(v), isTableOverride); });
    wndBotZ->SetInitialValue(VPUTOCM(m_initialViewSetup.mWindowBottomZOfs));
 
+
+   auto vpRotation = std::make_unique<InGameUIItem>(
+      "Viewport Rotation"s, ""s, 0.f, 360.f, 90.0f, defViewSetup.mViewportRotation, "%3.0f deg"s, //
+      [this]() { return GetCurrentViewSetup().mViewportRotation; }, //
+      [this](float prev, float v)
+      {
+         GetCurrentViewSetup().mViewportRotation = v;
+         OnPointOfViewChanged();
+      },
+      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "Rotation"); },
+      [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "Rotation", v, isTableOverride); });
+   vpRotation->SetInitialValue(m_initialViewSetup.mViewportRotation);
+
    AddItem(viewMode);
    switch (viewSetup.mMode)
    {
@@ -432,6 +467,7 @@ void PointOfViewSettingsPage::BuildPage()
       AddItem(viewX);
       AddItem(viewY);
       AddItem(viewZ);
+      AddItem(vpRotation);
       break;
 
    case VLM_CAMERA:
@@ -446,6 +482,7 @@ void PointOfViewSettingsPage::BuildPage()
       AddItem(viewX);
       AddItem(viewY);
       AddItem(viewZ);
+      AddItem(vpRotation);
       break;
 
    case VLM_WINDOW:
@@ -459,6 +496,7 @@ void PointOfViewSettingsPage::BuildPage()
       AddItem(playerX);
       AddItem(playerY);
       AddItem(playerZ);
+      AddItem(vpRotation);
       break;
    }
 }
