@@ -930,14 +930,6 @@ public class IDLParserToCpp {
 		IDLParserToCpp parser = new IDLParserToCpp();
 
 		parser.parse(
-				"../../inc/b2s/B2S.idl",
-				"b2s_i_proxy.cpp",
-				Arrays.asList(
-						new IDLInterface("_Server", "Server")),
-				Arrays.asList("Server.h"),
-				true);
-
-		parser.parse(
 			"../../../src/core/vpinball.idl",
 			"vpinball_standalone_i_proxy.cpp",
 			Arrays.asList(
