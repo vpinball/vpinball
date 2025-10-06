@@ -12,14 +12,14 @@ import androidx.compose.ui.res.painterResource
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
 import org.vpinball.app.R
-import org.vpinball.app.data.entity.PinTable
+import org.vpinball.app.Table
 import org.vpinball.app.ui.screens.common.ProgressOverlay
 import org.vpinball.app.ui.theme.LightBlack
 import org.vpinball.app.util.drawWithGradient
 import org.vpinball.app.util.loadImage
 
 @Composable
-fun LoadingScreen(table: PinTable, progress: Int, status: String?, modifier: Modifier = Modifier) {
+fun LoadingScreen(table: Table, progress: Int, status: String?, modifier: Modifier = Modifier) {
     val hazeState = remember { HazeState() }
 
     val bitmap = remember { table.loadImage() }

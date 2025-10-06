@@ -1,12 +1,11 @@
 import PhotosUI
-import SwiftData
 import SwiftUI
 
 struct TableListButton: View {
-    @EnvironmentObject var vpinballViewModel: VPinballViewModel
+    @ObservedObject var vpinballViewModel = VPinballViewModel.shared
 
-    @State var table: PinTable
-    @State var selectedTable: PinTable?
+    let table: Table
+    @State var selectedTable: Table?
 
     var showTitle = true
 
@@ -42,9 +41,9 @@ struct TableListButton: View {
                     }
 
                     Button(action: {
-                        handleShowChangeArtwork()
+                        handleShowTableImage()
                     }) {
-                        Label("Change Artwork",
+                        Label("Table Image",
                               systemImage: "photo")
                     }
 
@@ -53,7 +52,7 @@ struct TableListButton: View {
                     Button(action: {
                         handleViewScript()
                     }) {
-                        Label(table.hasScript() ? "View Script" : "Extract Script",
+                        Label(table.hasScriptFile() ? "View Script" : "Extract Script",
                               systemImage: "applescript")
                     }
 
@@ -75,7 +74,7 @@ struct TableListButton: View {
                         Label("Reset",
                               systemImage: "gobackward")
                     }
-                    .disabled(!table.hasIni())
+                    .disabled(!table.hasIniFile())
 
                     Divider()
 
@@ -87,14 +86,13 @@ struct TableListButton: View {
                               systemImage: "trash")
                     }
                 }
-            }
-            preview: {
+            } preview: {
                 TableImageView(table: table)
                     .padding(4)
                     .background(Color.black)
                     .frame(height: 300)
             }
-            .id(table.lastUpdate)
+            .id(table.modifiedAt)
     }
 
     func handleShowRename() {
@@ -104,9 +102,9 @@ struct TableListButton: View {
         }
     }
 
-    func handleShowChangeArtwork() {
+    func handleShowTableImage() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            vpinballViewModel.setAction(action: .changeArtwork,
+            vpinballViewModel.setAction(action: .tableImage,
                                         table: table)
         }
     }

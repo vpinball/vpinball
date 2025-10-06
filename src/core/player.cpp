@@ -2,22 +2,23 @@
 
 #include "core/stdafx.h"
 
-#include <SDL3/SDL_main.h>
-#include "imgui/imgui_impl_sdl3.h"
-
-#include "imgui/imgui_impl_sdl3.h"
-
 #ifndef __STANDALONE__
 #include "BAM/BAMView.h"
 #endif
 
+#ifndef __STANDALONE__
+#define SDL_MAIN_NOIMPL
+#include <SDL3/SDL_main.h>
+#endif
+
+#include "imgui/imgui_impl_sdl3.h"
+
 #ifdef __STANDALONE__
-#include "standalone/Standalone.h"
 #include "unordered_dense.h"
 #endif
 
 #ifdef __LIBVPINBALL__
-#include "standalone/VPinballLib.h"
+#include "lib/src/VPinballLib.h"
 #endif
 
 #include <iomanip>
@@ -99,10 +100,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    m_progressDialog.Create(g_pvp->GetHwnd());
    m_progressDialog.ShowWindow(g_pvp->m_open_minimized ? SW_HIDE : SW_SHOWNORMAL);
-
-#ifdef __LIBVPINBALL__
-   VPinballLib::VPinball::SendEvent(VPinballLib::Event::CreatingPlayer, nullptr);
-#endif
 
    m_progressDialog.SetProgress("Creating Player..."s, 1);
 
@@ -192,10 +189,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    m_debugBallSize = m_ptable->m_settings.LoadValueWithDefault(Settings::Editor, "ThrowBallSize"s, 50);
    m_debugBallMass = m_ptable->m_settings.LoadValueWithDefault(Settings::Editor, "ThrowBallMass"s, 1.0f);
-
-#ifdef __LIBVPINBALL__
-   m_liveUIOverride = g_pvp->m_settings.LoadValueWithDefault(Settings::Standalone, "LiveUIOverride"s, true);
-#endif
 
    PLOGI << "Creating main window"; // For profiling
    {
@@ -288,16 +281,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       ShowError(szFoo);
       throw hr;
    }
-
-#ifdef __LIBVPINBALL__
-   VPinballLib::WindowCreatedData windowCreatedData = {};
-#if (defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS))
-   SDL_PropertiesID props = SDL_GetWindowProperties(m_playfieldWnd->GetCore());
-   windowCreatedData.pWindow = (void*)SDL_GetPointerProperty(props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, NULL);
-#endif
-   windowCreatedData.pTitle = SDL_GetWindowTitle(m_playfieldWnd->GetCore());
-   VPinballLib::VPinball::SendEvent(VPinballLib::Event::WindowCreated, &windowCreatedData);
-#endif
 
    #if defined(ENABLE_BGFX)
    if (m_vrDevice == nullptr) // Anciliary windows are not yet supported while in VR mode
@@ -620,11 +603,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    }
    #endif
 
-#ifdef __STANDALONE__
-   g_pStandalone = Standalone::GetInstance();
-   g_pStandalone->PreStartup();
-#endif
-
    if (!IsEditorMode())
    {
       PLOGI << "Starting script"; // For profiling
@@ -693,11 +671,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    PLOGI << "Startup done"; // For profiling
 
 #ifdef __LIBVPINBALL__
-   VPinballLib::VPinball::SendEvent(VPinballLib::Event::PlayerStarted, nullptr);
-#endif
-
-#ifdef __STANDALONE__
-   g_pStandalone->PostStartup();
+   VPinballLib::VPinballLib::SendEvent(VPINBALL_EVENT_PLAYER_STARTED, nullptr);
 #endif
 
 #ifndef __STANDALONE__
@@ -728,19 +702,13 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    // Popup notification on startup
    if (m_renderer->m_stereo3D != STEREO_OFF && m_renderer->m_stereo3D != STEREO_VR && !m_renderer->m_stereo3Denabled)
       m_liveUI->PushNotification("3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on"s, 4000);
-#ifdef __LIBVPINBALL__
-   if (!m_liveUIOverride) {
-#endif
-      const int numberOfTimesToShowTouchMessage = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "NumberOfTimesToShowTouchMessage"s, 10);
-      if (m_pininput.HasTouchInput() && numberOfTimesToShowTouchMessage != 0) //!! visualize with real buttons or at least the areas?? Add extra buttons?
-      {
-         g_pvp->m_settings.SaveValue(Settings::Player, "NumberOfTimesToShowTouchMessage"s, max(numberOfTimesToShowTouchMessage - 1, 0));
-         m_liveUI->PushNotification("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
-                                    "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit"s, 12000);
-      }
-#ifdef __LIBVPINBALL__
+   const int numberOfTimesToShowTouchMessage = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "NumberOfTimesToShowTouchMessage"s, 10);
+   if (m_pininput.HasTouchInput() && numberOfTimesToShowTouchMessage != 0) //!! visualize with real buttons or at least the areas?? Add extra buttons?
+   {
+      g_pvp->m_settings.SaveValue(Settings::Player, "NumberOfTimesToShowTouchMessage"s, max(numberOfTimesToShowTouchMessage - 1, 0));
+      m_liveUI->PushNotification("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
+                                 "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit"s, 12000);
    }
-#endif
 }
 
 Player::~Player()
@@ -751,10 +719,6 @@ Player::~Player()
    bool appExitRequested = (m_closing == CS_CLOSE_APP);
    m_closing = CS_CLOSED;
    PLOGI << "Closing player...";
-
-#ifdef __LIBVPINBALL__
-   VPinballLib::VPinball::SendEvent(VPinballLib::Event::PlayerClosing, nullptr);
-#endif
 
    // Signal plugins early since most fields will become invalid
    VPXPluginAPIImpl::GetInstance().OnGameEnd();
@@ -1008,14 +972,10 @@ Player::~Player()
    SDL_UnregisterApp();
 #endif
 
-#ifdef __STANDALONE__
-   g_pStandalone->Shutdown();
-#endif
-
    PLOGI << "Player closed.";
 
 #ifdef __LIBVPINBALL__
-   VPinballLib::VPinball::SendEvent(VPinballLib::Event::PlayerClosed, nullptr);
+   VPinballLib::VPinballLib::SendEvent(VPINBALL_EVENT_PLAYER_CLOSED, nullptr);
 #endif
 }
 
@@ -1418,7 +1378,11 @@ void Player::ProcessOSMessages()
    bool isPFWnd = true;
    static Vertex2D dragStart;
    static int dragging = 0;
+#ifndef __LIBVPINBALL__
    while (SDL_PollEvent(&e) != 0)
+#else
+   while (VPinballLib::VPinballLib::Instance().PollAppEvent(e))
+#endif
    {
       switch (e.type)
       {
@@ -1568,17 +1532,16 @@ void Player::GameLoop()
       // Flush any pending frame
       m_renderer->m_renderDevice->m_frameReadySem.post();
 
-      #ifdef __ANDROID__
-         MultithreadedGameLoop(sync);
-      #else
-         #ifdef __LIBVPINBALL__
-            auto gameLoop = [this, sync]() {
-               MultithreadedGameLoop(sync);
-            };
-            VPinballLib::VPinball::GetInstance().SetGameLoop(gameLoop);
-         #else
+      m_renderer->m_renderDevice->m_frameMutex.unlock();
+      m_logicProfiler.SetThreadLock();
+
+      #ifdef __LIBVPINBALL__
+         auto gameLoop = [this, sync]() {
             MultithreadedGameLoop(sync);
-         #endif
+         };
+         VPinballLib::VPinballLib::Instance().SetGameLoop(gameLoop);
+      #else
+         MultithreadedGameLoop(sync);
       #endif
    #else
       delete m_renderProfiler;
@@ -1593,9 +1556,11 @@ void Player::GameLoop()
 void Player::MultithreadedGameLoop(const std::function<void()>& sync)
 {
 #ifdef ENABLE_BGFX
-   m_renderer->m_renderDevice->m_frameMutex.unlock();
-   m_logicProfiler.SetThreadLock();
-   while (GetCloseState() == CS_PLAYING || GetCloseState() == CS_USER_INPUT)
+   while (GetCloseState() == CS_PLAYING || GetCloseState() == CS_USER_INPUT
+#ifdef __LIBVPINBALL__
+      || GetCloseState() == CS_CLOSE_CAPTURE_SCREENSHOT
+#endif
+   )
    {
       // Continuously process input, synchronize with emulation and step physics to keep latency low
       sync();
@@ -1610,6 +1575,7 @@ void Player::MultithreadedGameLoop(const std::function<void()>& sync)
          m_renderer->m_renderDevice->m_frameReadySem.post();
          m_renderer->m_renderDevice->m_frameMutex.unlock();
       }
+#ifndef __LIBVPINBALL__
       else
       {
          m_logicProfiler.EnterProfileSection(FrameProfiler::PROFILE_SLEEP);
@@ -1620,8 +1586,8 @@ void Player::MultithreadedGameLoop(const std::function<void()>& sync)
          // YieldProcessor();
          m_logicProfiler.ExitProfileSection();
       }
-#if (defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS))
-      // iOS has its own game loop so we need to break here
+#else
+      // Android and iOS use SDL main callbacks and use SDL_AppIterate
       break;
 #endif
    }
@@ -1883,12 +1849,6 @@ void Player::PrepareFrame(const std::function<void()>& sync)
    // Apply screenspace transforms (MSAA, AO, AA, stereo, ball motion blur, tonemapping, dithering, bloom,...)
    m_renderer->PrepareVideoBuffers(m_renderer->m_renderDevice->GetOutputBackBuffer());
 
-   // UI hook
-   #ifdef __LIBVPINBALL__
-      if (m_liveUIOverride)
-         VPinballLib::VPinball::SendEvent(VPinballLib::Event::LiveUIUpdate, nullptr);
-   #endif
-
    m_physics->ResetPerFrameStats();
 
    m_logicProfiler.ExitProfileSection();
@@ -1974,14 +1934,7 @@ void Player::FinishFrame()
       if (g_pvp->m_disable_pause_menu || m_renderer->m_stereo3D == STEREO_VR)
          m_closing = CS_STOP_PLAY;
       else {
-#ifdef __LIBVPINBALL__
-         if (m_liveUIOverride)
-            VPinballLib::VPinball::SendEvent(VPinballLib::Event::LiveUIToggle, nullptr);
-         else
-            m_liveUI->OpenMainSplash();
-#else
          m_liveUI->OpenMainSplash();
-#endif
       }
    }
 

@@ -32,6 +32,18 @@ HomePage::HomePage()
 
    AddItem(std::make_unique<InGameUIItem>("Graphic Settings"s, ""s, "settings/graphic"s));
 
+   if (m_player->m_backglassOutput.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
+   {
+      auto backglass = std::make_unique<InGameUIItem>("Backglass"s, ""s, "settings/backglass"s);
+      AddItem(std::move(backglass));
+   }
+
+   if (m_player->m_scoreViewOutput.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
+   {
+      auto scoreView = std::make_unique<InGameUIItem>("Score View"s, ""s, "settings/scoreview"s);
+      AddItem(std::move(scoreView));
+   }
+
    // AddItem(std::make_unique<InGameUIItem>("Display Settings"s, ""s, "settings/display"s));
 
    AddItem(std::make_unique<InGameUIItem>("Input Settings"s, ""s, "settings/input"s));

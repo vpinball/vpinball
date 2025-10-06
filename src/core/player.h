@@ -119,10 +119,6 @@ public:
 
    void FireSyncController();
 
-#ifdef __LIBVPINBALL__
-   bool m_liveUIOverride = false;
-#endif
-
 private:
    bool m_playing = true;
    void ApplyPlayingState(const bool play);
@@ -217,8 +213,8 @@ public:
 #pragma region Rendering
 public:
    VPX::Window *m_playfieldWnd = nullptr;
-   VPX::RenderOutput m_scoreViewOutput;
    VPX::RenderOutput m_backglassOutput;
+   VPX::RenderOutput m_scoreViewOutput;
    VPX::RenderOutput m_topperOutput;
    Renderer *m_renderer = nullptr;
    VRDevice *m_vrDevice = nullptr;
@@ -282,7 +278,10 @@ public:
       CS_STOP_PLAY = 2,  // Stop play and get back to editor, if started without user input (minimized) then close the application
       CS_CLOSE_APP = 3,  // Close the application and get back to operating system
       CS_FORCE_STOP = 4, // Force close the application and get back to operating system
-      CS_CLOSED = 5      // Closing (or closed is called from another thread, but g_pplayer is null when closed)
+      CS_CLOSED = 5,     // Closing (or closed is called from another thread, but g_pplayer is null when closed)
+#ifdef __LIBVPINBALL__
+      CS_CLOSE_CAPTURE_SCREENSHOT = 6 // Close and capture screenshot for table image
+#endif
    };
    void SetCloseState(CloseState state) { if (m_closing != CS_CLOSED) m_closing = state; }
    CloseState GetCloseState() const { return m_closing; }

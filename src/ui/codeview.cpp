@@ -8,7 +8,7 @@
 #endif
 
 #ifdef __LIBVPINBALL__
-#include "standalone/VPinballLib.h"
+#include "lib/src/VPinballLib.h"
 #endif
 
 // The GUID used to identify the coclass of the VB Script engine
@@ -1214,8 +1214,8 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	const bool isRuntimeError = (state == SCRIPTSTATE_CONNECTED);
 
 #ifdef __LIBVPINBALL__
-	VPinballLib::ScriptErrorData scriptErrorStruct = { isRuntimeError ? VPinballLib::ScriptErrorType::Runtime : VPinballLib::ScriptErrorType::Compile, (int)nLine, (int)nChar, szT.c_str() };
-	VPinballLib::VPinball::SendEvent(VPinballLib::Event::ScriptError, &scriptErrorStruct);
+	VPinballLib::ScriptErrorData scriptErrorStruct = { isRuntimeError ? VPINBALL_SCRIPT_ERROR_TYPE_RUNTIME : VPINBALL_SCRIPT_ERROR_TYPE_COMPILE, (int)nLine, (int)nChar, szT.c_str() };
+	VPinballLib::VPinballLib::SendEvent(VPINBALL_EVENT_SCRIPT_ERROR, &scriptErrorStruct);
 #endif
 
 	// Error log content

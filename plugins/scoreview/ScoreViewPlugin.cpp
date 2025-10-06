@@ -27,20 +27,20 @@ static const MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
 static uint32_t endpointId;
 static unsigned int onGameStartId, onGameEndId, onGetAuxRendererId, onAuxRendererChgId;
-static std::unique_ptr<ScoreView> scoreview;
+static std::unique_ptr<ScoreView> scoreView;
 
 int OnRender(VPXRenderContext2D* ctx, void*)
 {
    if ((ctx->window != VPXAnciliaryWindow::VPXWINDOW_Backglass) && (ctx->window != VPXAnciliaryWindow::VPXWINDOW_ScoreView))
       return false;
-   if (scoreview == nullptr)
+   if (scoreView == nullptr)
    {
       VPXTableInfo tableInfo;
       vpxApi->GetTableInfo(&tableInfo);
 
-      scoreview = std::make_unique<ScoreView>(msgApi, endpointId, vpxApi);
-      scoreview->Load(PathFromFilename(tableInfo.path));
-      if (!scoreview->HasLayouts())
+      scoreView = std::make_unique<ScoreView>(msgApi, endpointId, vpxApi);
+      scoreView->Load(PathFromFilename(tableInfo.path));
+      if (!scoreView->HasLayouts())
       {
          // Load default layouts provided with plugin
          string path;
@@ -52,10 +52,10 @@ int OnRender(VPXRenderContext2D* ctx, void*)
          path = GetPluginPath();
          #endif
          path += "layouts"s + PATH_SEPARATOR_CHAR;
-         scoreview->Load(path);
+         scoreView->Load(path);
       }
    }
-   return scoreview->Render(ctx) ? 1 : 0;
+   return scoreView->Render(ctx) ? 1 : 0;
 }
 
 void OnGetRenderer(const unsigned int msgId, void* context, void* msgData)
@@ -76,7 +76,7 @@ void OnGameStart(const unsigned int eventId, void* userData, void* eventData)
 
 void OnGameEnd(const unsigned int eventId, void* userData, void* eventData)
 {
-   scoreview = nullptr;
+   scoreView = nullptr;
 }
 
 }

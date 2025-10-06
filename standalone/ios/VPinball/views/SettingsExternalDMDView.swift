@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct SettingsExternalDMDView: View {
-    @EnvironmentObject var vpinballViewModel: VPinballViewModel
-    @EnvironmentObject var settingsModel: SettingsModel
+    @ObservedObject var settingsModel: SettingsModel
+    @ObservedObject var vpinballViewModel = VPinballViewModel.shared
 
     var showInput: (String, String, UIKeyboardType, @escaping (String) -> Void) -> Void
 
@@ -138,7 +138,7 @@ struct SettingsExternalDMDView: View {
     }
 
     func handlePortConfirm(value: String) {
-        if let port = Int(value), port >= 0 && port <= 65535 {
+        if let port = Int(value), port >= 0, port <= 65535 {
             switch settingsModel.externalDMD {
             case .dmdServer:
                 settingsModel.dmdServerPort = port
@@ -164,8 +164,6 @@ struct SettingsExternalDMDView: View {
 
 #Preview {
     List {
-        SettingsView()
+        SettingsExternalDMDView(settingsModel: SettingsModel()) { _, _, _, _ in }
     }
-    .environmentObject(VPinballViewModel.shared)
-    .environmentObject(SettingsModel())
 }

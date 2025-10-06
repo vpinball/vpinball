@@ -23,6 +23,8 @@ public:
    void GetPos(int& x, int& y) const { x = m_x; y = m_y; }
    int GetWidth() const { return m_width; }
    int GetHeight() const { return m_height; }
+   void SetPos(int x, int y) { m_x = x; m_y = y; }
+   void SetSize(int width, int height) { m_width = width; m_height = height; }
 
 private:
    int m_x, m_y;

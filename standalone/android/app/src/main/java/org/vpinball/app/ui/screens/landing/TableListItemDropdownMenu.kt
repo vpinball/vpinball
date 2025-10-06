@@ -23,17 +23,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import org.vpinball.app.R
-import org.vpinball.app.data.entity.PinTable
+import org.vpinball.app.Table
 import org.vpinball.app.ui.theme.VpxRed
-import org.vpinball.app.util.hasIni
-import org.vpinball.app.util.hasScript
+import org.vpinball.app.util.hasIniFile
+import org.vpinball.app.util.hasScriptFile
 
 @Composable
 fun TableListItemDropdownMenu(
-    table: PinTable,
+    table: Table,
     expanded: MutableState<Boolean>,
     onRename: () -> Unit,
-    onChangeArtwork: () -> Unit,
+    onTableImage: () -> Unit,
     onViewScript: () -> Unit,
     onShare: () -> Unit,
     onReset: () -> Unit,
@@ -49,8 +49,8 @@ fun TableListItemDropdownMenu(
     DropdownMenu(expanded = expanded.value, onDismissRequest = { expanded.value = false }, offset = offset) {
         LaunchedEffect(expanded.value) {
             if (expanded.value) {
-                scriptExists = table.hasScript()
-                iniExists = table.hasIni()
+                scriptExists = table.hasScriptFile()
+                iniExists = table.hasIniFile()
             }
         }
 
@@ -77,13 +77,13 @@ fun TableListItemDropdownMenu(
         HorizontalDivider()
 
         DropdownMenuItem(
-            text = { Text("Change Artwork", style = MaterialTheme.typography.bodyLarge) },
+            text = { Text("Table Image", style = MaterialTheme.typography.bodyLarge) },
             trailingIcon = {
                 Icon(painter = painterResource(id = R.drawable.img_sf_photo), contentDescription = null, modifier = Modifier.size(20.dp))
             },
             onClick = {
                 expanded.value = false
-                onChangeArtwork()
+                onTableImage()
             },
         )
 

@@ -7,7 +7,7 @@
 #include "ScanCodes.h"
 
 #ifdef __LIBVPINBALL__
-   #include "standalone/VPinballLib.h"
+   #include "lib/src/VPinballLib.h"
 #endif
 
 #include "input/SDLInputHandler.h"
@@ -1165,12 +1165,15 @@ void InputManager::PlayRumble(const float lowFrequencySpeed, const float highFre
       handler->PlayRumble(lowFrequencySpeed, highFrequencySpeed, ms_duration);
 
    #ifdef __LIBVPINBALL__
+      if (!g_pvp->m_settings.LoadValueWithDefault(Settings::Standalone, "Haptics"s, true))
+         return;
+
       VPinballLib::RumbleData rumbleData = {
          (uint16_t)(saturate(lowFrequencySpeed) * 65535.f),
          (uint16_t)(saturate(highFrequencySpeed) * 65535.f),
          (uint32_t)ms_duration
       };
-      VPinballLib::VPinball::SendEvent(VPinballLib::Event::Rumble, &rumbleData);
+      VPinballLib::VPinballLib::SendEvent(VPINBALL_EVENT_RUMBLE, &rumbleData);
    #endif
 }
 

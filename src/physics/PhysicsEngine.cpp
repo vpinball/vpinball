@@ -643,7 +643,9 @@ void PhysicsEngine::UpdatePhysics()
    assert(m_curPhysicsFrameTime < m_nextPhysicsFrameTime);
    assert(m_curPhysicsFrameTime <= initial_time_usec);
    assert(initial_time_usec <= m_nextPhysicsFrameTime);
+#ifndef __STANDALONE__
    assert(g_pplayer->m_time_sec <= (double)(initial_time_usec - m_startTime_usec) / 1000000.0);
+#endif
 
    // The physics is emulated by PHYSICS_STEPTIME, but the overall emulation time is more precise
    g_pplayer->m_time_sec = (double)(initial_time_usec - m_startTime_usec) / 1000000.0;

@@ -52,7 +52,7 @@ After downloading from the App Store, launch the app:
 <img src="img/quick-start-2.png" width="150" hspace="20">
 </p>
 
-On the *Table Selection* screen, tap the *+* button in the upper right and select the *exampleTable.vpx* option:
+On the *Table Selection* screen, tap the *+* button in the upper right and select the *blankTable.vpx* option:
 
 <p align="center">
 <img src="img/quick-start-3.png" width="150" hspace="20">
@@ -135,7 +135,7 @@ The following actions are available:
 - *Resume* - Resume playing
 - *Overlay* - Toggles the *Touch Overlay* on/off
 - *FPS* - Toggles the *Frames Per Second HUD* on/off
-- *Artwork* - Capture the current screen and save as table artwork
+- *Table Image* - Capture the current screen and save as table image
 - *Quit* - Return to the *Table Selection* screen
 
 In addition to the above actions, *Table Options* and *Point of View* can be adjusted:
@@ -225,7 +225,7 @@ You can change the layout and sort order of the *Table Selection* screen by tapp
 Long pressing on a table will display a context menu with the following actions:
 
 - Rename
-- Change Artwork
+- Table Image
 - View Script
 - Share
 - Reset

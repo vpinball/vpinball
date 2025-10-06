@@ -41,8 +41,6 @@ set(VPX_STANDALONE_SOURCES
    standalone/vpinball_standalone_i_proxy.cpp
    standalone/PoleStream.cpp
    standalone/PoleStorage.cpp
-   standalone/Standalone.cpp
-   standalone/Standalone.h
 
    third-party/include/pole/pole.cpp
 )

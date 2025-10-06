@@ -15,7 +15,7 @@
 #include "renderer/VRDevice.h"
 
 #ifdef __LIBVPINBALL__
-#include "standalone/VPinballLib.h"
+#include "lib/src/VPinballLib.h"
 #endif
 
 #define MAX_BALL_SHADOW 8
@@ -1653,7 +1653,7 @@ void Renderer::RenderStaticPrepass()
       g_pplayer->m_progressDialog.SetProgress("Prerendering Static Parts..."s, progress);
 #ifdef __LIBVPINBALL__
       VPinballLib::ProgressData progressData = { (n_iter - iter) * 100 / n_iter };
-      VPinballLib::VPinball::SendEvent(VPinballLib::Event::Prerendering, &progressData);
+      VPinballLib::VPinballLib::SendEvent(VPINBALL_EVENT_PRERENDERING, &progressData);
 #endif
       m_renderDevice->m_curDrawnTriangles = 0;
 

@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import org.vpinball.app.R
 import org.vpinball.app.TableListMode
 import org.vpinball.app.TableListSortOrder
-import org.vpinball.app.data.repository.TestPinTableRepository
 import org.vpinball.app.ui.theme.VPinballTheme
 
 @Composable
@@ -214,7 +213,7 @@ fun TableListModeDropdownMenu(expanded: Boolean, onDismissRequest: () -> Unit, v
 @Preview
 @Composable
 private fun TableListModeDropdownMenuPreview() {
-    val viewModel = LandingScreenViewModel(TestPinTableRepository)
+    val viewModel = LandingScreenViewModel()
 
     VPinballTheme {
         Scaffold(

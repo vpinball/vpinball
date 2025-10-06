@@ -251,6 +251,8 @@ set(VPX_SOURCES
    src/ui/live/ingameui/InGameUI.h
    src/ui/live/ingameui/AudioSettingsPage.h
    src/ui/live/ingameui/AudioSettingsPage.cpp
+   src/ui/live/ingameui/BackglassPage.h
+   src/ui/live/ingameui/BackglassPage.cpp
    src/ui/live/ingameui/ExitSplashPage.cpp
    src/ui/live/ingameui/ExitSplashPage.h
    src/ui/live/ingameui/GraphicSettingsPage.h
@@ -271,6 +273,8 @@ set(VPX_SOURCES
    src/ui/live/ingameui/PlungerSettingsPage.cpp
    src/ui/live/ingameui/PointOfViewSettingsPage.h
    src/ui/live/ingameui/PointOfViewSettingsPage.cpp
+   src/ui/live/ingameui/ScoreViewPage.h
+   src/ui/live/ingameui/ScoreViewPage.cpp
    src/ui/live/ingameui/TableOptionsPage.h
    src/ui/live/ingameui/TableOptionsPage.cpp
    src/ui/live/ingameui/TableRulesPage.h
