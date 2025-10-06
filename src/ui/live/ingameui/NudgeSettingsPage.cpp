@@ -156,6 +156,7 @@ void NudgeSettingsPage::Render()
    ImGui::SetNextWindowSize(winSize);
    ImGui::Begin("NudgeOverlay", nullptr, window_flags);
    ImPlot::PushStyleColor(ImPlotCol_LegendBg, ImVec4(0.11f, 0.11f, 0.14f, 0.03f));
+   ImGui::PushFont(nullptr, style.FontSizeBase * 0.5f); // Smaller font to keep grtaphics readable
 
    AppendPlot();
 
@@ -200,7 +201,7 @@ void NudgeSettingsPage::Render()
       const Vertex3Ds& plumb = m_player->m_physics->GetPlumbPos();
       const ImVec2 plumbPos = pos + halfSize + scale * ImVec2(plumb.x, plumb.y) / m_player->m_physics->GetPlumbPoleLength() + ImVec2(0.5f, 0.5f);
       ImGui::GetWindowDrawList()->AddLine(pos + halfSize, plumbPos, IM_COL32(255, 128, 0, 255));
-      ImGui::GetWindowDrawList()->AddCircleFilled(plumbPos, 5.f * m_player->m_liveUI->GetDPI(), IM_COL32(255, 0, 0, 255));
+      ImGui::GetWindowDrawList()->AddCircleFilled(plumbPos, 2.5f * m_player->m_liveUI->GetDPI(), IM_COL32(255, 0, 0, 255));
    }
    ImGui::EndChild();
 
@@ -227,11 +228,12 @@ void NudgeSettingsPage::Render()
       ImPlot::PopStyleColor();
       ImPlot::EndPlot();
    }
+   ImGui::PopFont();
 
    ImGui::SameLine();
 
    ImGui::BeginChild("SensorInfo", ImVec2(plumbSize, plumbSize));
-   ImGui::SetCursorPos(ImGui::GetCursorPos() + ImVec2(16.f, 16.f));
+   ImGui::SetCursorPos(ImGui::GetCursorPos() + ImVec2(2.f, 2.f));
    ImGui::BeginGroup();
    ImGui::Text("Sensor Refresh Rate");
    if (msec() - m_resetTimestampMs > 2000)

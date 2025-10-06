@@ -77,10 +77,11 @@ void PlungerSettingsPage::Render()
    ImGui::SetNextWindowBgAlpha(0.5f);
    ImGui::SetNextWindowSize(winSize);
    ImGui::Begin("PlungerOverlay", nullptr, window_flags);
+   ImPlot::PushStyleColor(ImPlotCol_LegendBg, ImVec4(0.11f, 0.11f, 0.14f, 0.03f));
+   ImGui::PushFont(nullptr, style.FontSizeBase * 0.5f); // Smaller font to keep grtaphics readable
 
    AppendPlot();
 
-   ImPlot::PushStyleColor(ImPlotCol_LegendBg, ImVec4(0.11f, 0.11f, 0.14f, 0.03f));
    if (ImPlot::BeginPlot("##Script", ImVec2(-1, -1), ImPlotFlags_None))
    {
       ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoTickLabels);
@@ -100,8 +101,9 @@ void PlungerSettingsPage::Render()
       ImPlot::PlotLine("Position", &m_positionPlot.m_data[0].x, &m_positionPlot.m_data[0].y, m_positionPlot.m_data.size(), ImPlotLineFlags_None, m_positionPlot.m_offset, 2 * sizeof(float));
       ImPlot::EndPlot();
    }
-   ImPlot::PopStyleColor();
 
+   ImGui::PopFont();
+   ImPlot::PopStyleColor();
    ImGui::End();
 }
 
