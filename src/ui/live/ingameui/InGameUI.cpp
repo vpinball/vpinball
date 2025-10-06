@@ -133,6 +133,13 @@ void InGameUI::HandlePageInput(const InputManager::ActionState &state)
    if (ImGui::IsAnyItemActive())
       return;
 
+   // If user has moved the mouse, disable flipper navigation
+   if (ImGui::GetMousePos() != m_prevMousePos)
+   {
+      m_prevMousePos = ImGui::GetMousePos();
+      m_useFlipperNav = false;
+   }
+
    // For popups, we use ImGui navigation by forwarding events
    if (ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopupId))
    {
