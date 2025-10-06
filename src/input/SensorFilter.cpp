@@ -18,7 +18,7 @@ void VelocityToAccelerationFilter::Push(uint64_t timestampNs, float value)
 
 float VelocityToAccelerationFilter::Get(uint64_t timestampNs)
 {
-   const float dt = static_cast<float>(DEFAULT_STEPTIME_S / 0.001); // Millisecond step (in Visual Pinball Time)
+   constexpr float dt = static_cast<float>(DEFAULT_STEPTIME_S / 0.001); // Millisecond step (in Visual Pinball Time)
 
    const uint32_t timestampMs = static_cast<uint32_t>(timestampNs / 1000000);
 
@@ -56,7 +56,7 @@ void PositionToAccelerationFilter::Push(uint64_t timestampNs, float value)
 
 float PositionToAccelerationFilter::Get(uint64_t timestampNs)
 {
-   const float dt = static_cast<float>(DEFAULT_STEPTIME_S / 0.001); // Millisecond step (in Visual Pinball Time)
+   constexpr float dt = static_cast<float>(DEFAULT_STEPTIME_S / 0.001); // Millisecond step (in Visual Pinball Time)
 
    const uint32_t timestampMs = static_cast<uint32_t>(timestampNs / 1000000);
 
@@ -105,7 +105,7 @@ float PlungerPositionFilter::Get(uint64_t timestampNs)
    // Advance the filter by steps of 1ms until up to date with game (1KHz sampling, aligned on physics engine)
    while (m_filterTimestampMs < timestampMs)
    {
-      m_x[0] = m_source->Get(m_filterTimestampMs * 1000000);
+      m_x[0] = m_source->Get(m_filterTimestampMs * 1000000ull);
       m_y[0] = IIR_a[0] * m_x[0]; // initial
       for (int i = IIR_Order; i > 0; --i) // all terms but the zero-th
       {
@@ -216,8 +216,8 @@ float NudgeAccelerationFilter::Get(uint64_t timestampNs)
    // Advance the filter by steps of 1ms until up to date with game (1KHz sampling, aligned on physics engine)
    while (m_filterTimestampMs < timestampMs)
    {
-      float a = m_source->Get(m_filterTimestampMs * 1000000);
-      const uint64_t frameTime = m_filterTimestampMs * 1000;
+      float a = m_source->Get(m_filterTimestampMs * 1000000ull);
+      const uint64_t frameTime = m_filterTimestampMs * 1000ull;
       IF_DEBUG_NUDGE(string notes; float aIn = a;)
 
       // if we're not roughly at rest, reset the last motion timer
