@@ -633,11 +633,15 @@ void InGameUIPage::Render()
                item->m_physicsSensor->ClearMapping();
             ImGui::SameLine();
          }
-         if (ImGui::Button((item->m_physicsSensor->GetMappingLabel() + "##" + item->m_label).c_str(), ImVec2(itemEndScreenX - ImGui::GetCursorScreenPos().x - closeButtonWidth, 0)))
+         const string mappingLabel = item->m_physicsSensor->GetMappingLabel();
+         const float mapButtonWidth = itemEndScreenX - ImGui::GetCursorScreenPos().x - closeButtonWidth;
+         if (ImGui::Button((mappingLabel + "##" + item->m_label).c_str(), ImVec2(mapButtonWidth, 0)))
          {
             m_defineSensorPopup = true;
             m_defineSensorItem = item.get();
          }
+         if (ImGui::CalcTextSize(mappingLabel.c_str()).x >= mapButtonWidth - style.ItemSpacing.x * 2.f)
+            ImGui::SetItemTooltip("%s", mappingLabel.c_str());
          break;
       }
 
