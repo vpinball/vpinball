@@ -166,25 +166,12 @@ LiveUI::LiveUI(RenderDevice *const rd)
    // ImGui_ImplSDL3_InitForOpenGL(m_player->m_playfieldSdlWnd, rd->m_sdl_context);
    ImGui_ImplSDL3_InitForOther(m_player->m_playfieldWnd->GetCore());
    //int displayIndex = SDL_GetDisplayForWindow(m_player->m_playfieldWnd->GetCore());
-   if (m_player->m_vrDevice)
-   {
-      // VR headset cover full view range, so use a relative part of the full range for the DPI
-      m_dpi = (float)min(m_player->m_vrDevice->GetEyeWidth(), m_player->m_vrDevice->GetEyeHeight()) / 2000.f;
-   }
-   else
-   {
-      // Use display DPI setting
-      // On macOS/iOS, keep m_dpi at 1.0f. ImGui_ImplSDL3_NewFrame applies a 2.0f DisplayFramebufferScale
-      // for SDL_WINDOW_HIGH_PIXEL_DENSITY windows. A m_dpi of 2.0 would cause the UI to scale at 400%.
-      // See: https://wiki.libsdl.org/SDL3/README/highdpi
-      m_dpi = SDL_GetWindowDisplayScale(m_player->m_playfieldWnd->GetCore()) / SDL_GetWindowPixelDensity(m_player->m_playfieldWnd->GetCore());
-   }
-   m_dpi = min(m_dpi, 10.f); // To avoid texture size overflows
-   m_perfUI.SetDPI(m_dpi);
-   m_plumbOverlay.SetDPI(m_dpi);
 
    SetupImGuiStyle(1.0f);
 
+   UpdateDPI();
+   m_perfUI.SetDPI(m_dpi);
+   m_plumbOverlay.SetDPI(m_dpi);
    ImGui::GetStyle().ScaleAllSizes(m_dpi);
 
    // UI fonts
@@ -337,8 +324,40 @@ bool LiveUI::HasMouseCapture() const
    return ImGui::GetIO().WantCaptureMouse || m_ballControl.GetMode() != BallControl::Mode::Disabled;
 }
 
+void LiveUI::UpdateDPI()
+{
+   float prevDPI = m_dpi;
+   if (m_player->m_vrDevice)
+   {
+      // VR headset cover full view range, so use a relative part of the full range for the DPI
+      m_dpi = static_cast<float>(min(m_player->m_vrDevice->GetEyeWidth(), m_player->m_vrDevice->GetEyeHeight())) / 2000.f;
+   }
+   else
+   {
+      // Use display DPI setting
+      // On macOS/iOS, keep m_dpi at 1.0f. ImGui_ImplSDL3_NewFrame applies a 2.0f DisplayFramebufferScale
+      // for SDL_WINDOW_HIGH_PIXEL_DENSITY windows. A m_dpi of 2.0 would cause the UI to scale at 400%.
+      // See: https://wiki.libsdl.org/SDL3/README/highdpi
+      m_dpi = SDL_GetWindowDisplayScale(m_player->m_playfieldWnd->GetCore()) / SDL_GetWindowPixelDensity(m_player->m_playfieldWnd->GetCore());
+
+      // For cabinet mode, the user is not standing in front of screen, so scale out the UI based on display size to be more readable (more "game like")
+      if (m_player->m_ptable->m_BG_current_set == ViewSetupID::BG_FULLSCREEN)
+      {
+         m_dpi = max(m_dpi, static_cast<float>(m_player->m_playfieldWnd->GetWidth()) / 750.f);
+      }
+   }
+   m_dpi = min(m_dpi, 10.f); // To avoid texture size overflows
+   if (m_dpi != prevDPI && prevDPI > 0)
+   {
+      m_perfUI.SetDPI(m_dpi);
+      m_plumbOverlay.SetDPI(m_dpi);
+      ImGui::GetStyle().ScaleAllSizes(m_dpi / prevDPI);
+   }
+}
+
 void LiveUI::NewFrame()
 {
+   UpdateDPI();
    ImGui_ImplSDL3_NewFrame();
 
    const int width = m_rd->GetCurrentPass() ? m_rd->GetCurrentPass()->m_rt->GetWidth() : 1920;
