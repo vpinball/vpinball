@@ -36,24 +36,26 @@ void PlumbOverlay::Update()
    else 
       plumbFade = static_cast<float>(120 - m_plumbFadeCounter) / 100.f;
 
-   const ImVec2 fullSize = ImVec2(200.f * m_dpi, 200.f * m_dpi);
+   const ImVec2 fullSize = ImVec2(100.f * m_dpi, 100.f * m_dpi);
    const ImVec2 halfSize = fullSize * 0.5f;
-   constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+   constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground| ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings
+      | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
    ImGui::SetNextWindowPos(ImVec2(0.f, ImGui::GetIO().DisplaySize.y - fullSize.y));
-   ImGui::PushStyleColor(ImGuiCol_WindowBg, IM_COL32(m_tiltFade * 255.f, 0, 0, plumbFade * 64.f));
    ImGui::SetNextWindowSize(fullSize);
    ImGui::Begin("PlumbOverlay", nullptr, window_flags);
    const ImVec2 &pos = ImGui::GetWindowPos();
-   ImU32 alphaCol = IM_COL32(255, 0, 0, plumbFade * 255.f);
-   // Tilt circle
    const ImVec2 radius = fullSize * (0.5f * 0.8f);
-   const ImVec2 scale = radius / sin(m_player->m_physics->GetPlumbTiltThreshold() * (float)(M_PI * 0.25));
+   const ImVec2 scale = radius / sin(m_player->m_physics->GetPlumbTiltThreshold());
+   // Background
+   ImU32 backCol = IM_COL32(m_tiltFade * 255.f, 0, 0, plumbFade * 64.f);
+   ImGui::GetWindowDrawList()->AddEllipseFilled(pos + halfSize, radius * 1.1f, backCol);
+   // Tilt circle
+   ImU32 alphaCol = IM_COL32(255, 0, 0, plumbFade * 255.f);
    ImGui::GetWindowDrawList()->AddEllipse(pos + halfSize, radius, alphaCol);
    // Plumb position
    const Vertex3Ds &plumb = m_player->m_physics->GetPlumbPos();
    const ImVec2 plumbPos = pos + halfSize + scale * ImVec2(plumb.x, plumb.y) / m_player->m_physics->GetPlumbPoleLength() + ImVec2(0.5f, 0.5f);
    ImGui::GetWindowDrawList()->AddLine(pos + halfSize, plumbPos, alphaCol);
-   ImGui::GetWindowDrawList()->AddCircleFilled(plumbPos, 5.f * m_dpi, alphaCol);
+   ImGui::GetWindowDrawList()->AddCircleFilled(plumbPos, 2.5f * m_dpi, alphaCol);
    ImGui::End();
-   ImGui::PopStyleColor();
 }
