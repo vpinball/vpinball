@@ -89,8 +89,6 @@ public:
    //STDMETHOD(get_updateDmdPixels)(/*[in]*/ int **buf, /*[in]*/ int width, /*[in]*/ int height, /*[out, retval]*/ int *pVal);
    //STDMETHOD(get_ChangedLEDsState)(/*[in]*/ int nHigh, int nLow, int nnHigh, int nnLow, int **buf, /*[out, retval]*/ int *pVal);
    //STDMETHOD(get_Settings)(/*[out, retval]*/ IControllerSettings **pVal);
-   //STDMETHOD(get_LockDisplay)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-   //STDMETHOD(put_LockDisplay)(/*[in]*/ VARIANT_BOOL newVal);
    //STDMETHOD(get_GIStrings)(/*[out, retval]*/ VARIANT *pVal);
    //STDMETHOD(get_Solenoids)(/*[out, retval]*/ VARIANT *pVal);
    //STDMETHOD(get_ChangedGIStrings)(/*[out, retval]*/ VARIANT *pVal);
@@ -120,6 +118,8 @@ public:
    //STDMETHOD(get_AudioDeviceModule)(/*[in]*/ int num, /*[out, retval]*/ BSTR *pVal);
    //STDMETHOD(get_CurrentAudioDevice)(/*[out, retval]*/ int *pVal);
    //STDMETHOD(put_CurrentAudioDevice)(/*[in]*/ int num);
+   bool GetLockDisplay() const { LOGE("LockDisplay is deprecated"); return false; }
+   void SetLockDisplay(bool v) const { LOGE("LockDisplay is deprecated"); }
    bool GetDoubleSize() const { LOGE("DoubleSize is deprecated"); return false; }
    void SetDoubleSize(bool v) const { LOGE("DoubleSize is deprecated"); }
    bool GetShowFrame() const { LOGE("ShowFrame is deprecated"); return false; }
