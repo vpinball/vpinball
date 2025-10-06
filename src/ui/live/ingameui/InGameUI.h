@@ -32,6 +32,7 @@ private:
    void HandleLegacyFlyOver(const InputManager::ActionState &state);
 
    Player *m_player;
+   ImVec2 m_prevMousePos;
    bool m_isOpened = false;
    bool m_useFlipperNav = false;
    InputManager::ActionState m_prevActionState { };
