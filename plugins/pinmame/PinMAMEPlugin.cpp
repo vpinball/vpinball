@@ -198,6 +198,7 @@ PSC_CLASS_START(Controller)
    PSC_PROP_R_ARRAY1(Controller, Game, Games, string)
    // Deprecated properties
    PSC_PROP_RW(Controller, bool, DoubleSize)
+   PSC_PROP_RW(Controller, bool, LockDisplay)
    PSC_PROP_RW(Controller, bool, ShowFrame)
    PSC_PROP_RW(Controller, bool, ShowDMDOnly)
    PSC_PROP_RW(Controller, bool, ShowTitle)
