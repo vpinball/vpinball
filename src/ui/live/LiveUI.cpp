@@ -303,7 +303,11 @@ ImGui::MarkdownImageData LiveUI::MarkdownImageCallback(ImGui::MarkdownLinkCallba
    std::shared_ptr<Sampler> sampler = ui->m_renderer->m_renderDevice->m_texMan.LoadTexture(ppi, false);
    if (sampler == nullptr)
       return ImGui::MarkdownImageData {};
-   ImGui::MarkdownImageData imageData { true, false, sampler, ImVec2(static_cast<float>(sampler->GetWidth()), static_cast<float>(sampler->GetHeight())) };
+
+   // Fixed image scaling corresponding to InGameUI overlay size for an image of 1024px width
+   const ImGuiIO &io = ImGui::GetIO();
+   const float imgScale = (io.DisplaySize.x > io.DisplaySize.y ? 0.35f : 0.75f) * io.DisplaySize.x / 1024.f;
+   ImGui::MarkdownImageData imageData { true, false, sampler, ImVec2(static_cast<float>(sampler->GetWidth()), static_cast<float>(sampler->GetHeight())) * imgScale };
    ImVec2 const contentSize = ImGui::GetContentRegionAvail();
    if (imageData.size.x > contentSize.x)
    {
