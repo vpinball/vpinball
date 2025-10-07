@@ -230,7 +230,7 @@ private:
    void SubmitFrame();
    void FinishFrame();
 
-   RenderTarget *RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTarget *playfieldRT);
+   RenderTarget *RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTarget *embedRT);
    static void OnAuxRendererChanged(const unsigned int msgId, void *userData, void *msgData);
    RenderTarget *m_anciliaryWndHdrRT[VPXAnciliaryWindow::VPXWINDOW_Topper + 1] { nullptr };
    unsigned int m_getAuxRendererId = 0, m_onAuxRendererChgId = 0;

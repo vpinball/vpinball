@@ -318,7 +318,7 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
       VPXTableInfo tableInfo;
       vpxApi->GetTableInfo(&tableInfo);
       std::filesystem::path tablePath = tableInfo.path;
-      string path = find_case_insensitive_directory_path(tablePath.parent_path().string() + PATH_SEPARATOR_CHAR + "pinmame"s + PATH_SEPARATOR_CHAR + "altcolor"s);
+      string path = find_case_insensitive_directory_path(tablePath.parent_path().string() + PATH_SEPARATOR_CHAR + "pinmame" + PATH_SEPARATOR_CHAR + "altcolor");
       if (!path.empty())
          strncpy_s(crzFolder, sizeof(crzFolder), path.c_str());
    }

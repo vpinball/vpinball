@@ -29,14 +29,15 @@ void ControlCollection::Add(ControlInfo* pControlInfo)
 
 void ControlCollection::SetScore(B2SData* pB2SData, int score)
 {
-   string scoreAsString = string(m_digits > (int)std::to_string(score).length()
-      ? m_digits - (int)std::to_string(score).length() : 0,  ' ') + std::to_string(score);
-   if ((int)scoreAsString.length() > m_digits)
+   string scoreAsString = std::to_string(score);
+   if (m_digits > (int)scoreAsString.length())
+      scoreAsString = string(m_digits - (int)scoreAsString.length(), ' ') + scoreAsString;
+   else if ((int)scoreAsString.length() > m_digits)
       scoreAsString = scoreAsString.substr(scoreAsString.length() - m_digits);
 
    for (auto& pControl : *this) {
       // get the part of the score
-      string partofscore = scoreAsString.substr(0, pControl->GetDigits());
+      const string partofscore = scoreAsString.substr(0, pControl->GetDigits());
 
       // pass matching score part to real control
       switch (pControl->GetType()) {

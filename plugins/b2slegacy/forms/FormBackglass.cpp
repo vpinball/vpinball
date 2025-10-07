@@ -1083,28 +1083,28 @@ void FormBackglass::LoadB2SData()
       if (top4Authentic >= minSize4Image && mergeBulbs) {
          // create some light images
          if (m_pTopLightImage4Authentic == nullptr) {
-            SetTopLightImage4Authentic(CreateLightImage(m_pDarkImage4Authentic, eDualMode_Authentic, topkey4Authentic, "", m_topRomID4Authentic, m_topRomIDType4Authentic, m_topRomInverted4Authentic));
+            SetTopLightImage4Authentic(CreateLightImage(m_pDarkImage4Authentic, eDualMode_Authentic, topkey4Authentic, ""s, m_topRomID4Authentic, m_topRomIDType4Authentic, m_topRomInverted4Authentic));
             if (second4Authentic > minSize4Image) {
-               SetSecondLightImage4Authentic(CreateLightImage(m_pDarkImage4Authentic, eDualMode_Authentic, secondkey4Authentic, "", m_secondRomID4Authentic, m_secondRomIDType4Authentic, m_secondRomInverted4Authentic));
+               SetSecondLightImage4Authentic(CreateLightImage(m_pDarkImage4Authentic, eDualMode_Authentic, secondkey4Authentic, ""s, m_secondRomID4Authentic, m_secondRomIDType4Authentic, m_secondRomInverted4Authentic));
                SetTopAndSecondLightImage4Authentic(CreateLightImage(m_pDarkImage4Authentic, eDualMode_Authentic, topkey4Authentic, secondkey4Authentic));
             }
          }
          else {
-            SetSecondLightImage4Authentic(CreateLightImage(m_pDarkImage4Authentic, eDualMode_Authentic, topkey4Authentic, "", m_secondRomID4Authentic, m_secondRomIDType4Authentic, m_secondRomInverted4Authentic));
+            SetSecondLightImage4Authentic(CreateLightImage(m_pDarkImage4Authentic, eDualMode_Authentic, topkey4Authentic, ""s, m_secondRomID4Authentic, m_secondRomIDType4Authentic, m_secondRomInverted4Authentic));
             SetTopAndSecondLightImage4Authentic(CreateLightImage(m_pTopLightImage4Authentic, eDualMode_Authentic, topkey4Authentic));
          }
       }
       if (m_pB2SData->IsDualBackglass() && top4Fantasy >= minSize4Image && mergeBulbs) {
          // create some light images
          if (m_pTopLightImage4Fantasy == nullptr) {
-            SetTopLightImage4Fantasy(CreateLightImage(m_pDarkImage4Fantasy, eDualMode_Fantasy, topkey4Fantasy, "", m_topRomID4Fantasy, m_topRomIDType4Fantasy, m_topRomInverted4Fantasy));
+            SetTopLightImage4Fantasy(CreateLightImage(m_pDarkImage4Fantasy, eDualMode_Fantasy, topkey4Fantasy, ""s, m_topRomID4Fantasy, m_topRomIDType4Fantasy, m_topRomInverted4Fantasy));
             if (second4Fantasy > minSize4Image) {
-               SetSecondLightImage4Fantasy(CreateLightImage(m_pDarkImage4Fantasy, eDualMode_Fantasy, secondkey4Fantasy, "", m_secondRomID4Fantasy, m_secondRomIDType4Fantasy, m_secondRomInverted4Fantasy));
+               SetSecondLightImage4Fantasy(CreateLightImage(m_pDarkImage4Fantasy, eDualMode_Fantasy, secondkey4Fantasy, ""s, m_secondRomID4Fantasy, m_secondRomIDType4Fantasy, m_secondRomInverted4Fantasy));
                SetTopAndSecondLightImage4Fantasy(CreateLightImage(m_pDarkImage4Fantasy, eDualMode_Fantasy, topkey4Fantasy, secondkey4Fantasy));
             }
          }
          else {
-            SetSecondLightImage4Fantasy(CreateLightImage(m_pDarkImage4Fantasy, eDualMode_Fantasy, topkey4Fantasy, "", m_secondRomID4Fantasy, m_secondRomIDType4Fantasy, m_secondRomInverted4Fantasy));
+            SetSecondLightImage4Fantasy(CreateLightImage(m_pDarkImage4Fantasy, eDualMode_Fantasy, topkey4Fantasy, ""s, m_secondRomID4Fantasy, m_secondRomIDType4Fantasy, m_secondRomInverted4Fantasy));
             SetTopAndSecondLightImage4Fantasy(CreateLightImage(m_pTopLightImage4Fantasy, eDualMode_Fantasy, topkey4Fantasy));
          }
       }

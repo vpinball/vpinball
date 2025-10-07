@@ -70,7 +70,7 @@ PictureBoxAnimation::PictureBoxAnimation(
          pulseswitch = 0;
       }
       if (pulseswitch > 0) {
-         m_entries[(int)m_entries.size() + 1] = new EntryAction(std::vector<std::string>{""}, 0, true, 0, pulseswitch);
+         m_entries[(int)m_entries.size() + 1] = new EntryAction(std::vector<std::string>{""s}, 0, true, 0, pulseswitch);
          pulseswitch = 0;
       }
    }

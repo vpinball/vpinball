@@ -53,7 +53,7 @@ void PUPManager::SetGameDir(const string& szRomName)
          VPXTableInfo tableInfo;
          vpxApi->GetTableInfo(&tableInfo);
          std::filesystem::path tablePath = tableInfo.path;
-         m_szRootPath = find_case_insensitive_directory_path(tablePath.parent_path().string() + PATH_SEPARATOR_CHAR + "pupvideos"s);
+         m_szRootPath = find_case_insensitive_directory_path(tablePath.parent_path().string() + PATH_SEPARATOR_CHAR + "pupvideos");
 
          if (!m_szRootPath.empty()) {
             LOGI("PUP folder was found at '%s'", m_szRootPath.c_str());

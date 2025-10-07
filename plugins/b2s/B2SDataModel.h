@@ -22,7 +22,7 @@ class B2SImage final
 public:
    B2SImage()
       : m_image(nullptr)
-      , m_filename(""s)
+      , m_filename()
       , m_romId(0)
       , m_romIdType(B2SRomIDType::NotDefined)
    {

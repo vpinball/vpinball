@@ -273,7 +273,7 @@ MSGPI_EXPORT void MSGPIAPI PUPPluginLoad(const uint32_t sessionId, const MsgPlug
    string rootPath = normalize_path_separators(pupFolder);
    if (!rootPath.ends_with(PATH_SEPARATOR_CHAR))
       rootPath += PATH_SEPARATOR_CHAR;
-   rootPath = find_case_insensitive_directory_path(rootPath + "pupvideos"s);
+   rootPath = find_case_insensitive_directory_path(rootPath + "pupvideos");
    if (rootPath.empty())
    {
       LOGW("PUP folder was not found (settings is '%s')", pupFolder);
