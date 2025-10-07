@@ -317,42 +317,42 @@ OpenPinDevHandler::OpenPinDevHandler(InputManager &pininput)
                            size_t reportSize = (sizeScanner.ReportSize(hidrp::ReportType::input, f.reportID) + 7) / 8 + 1;
 
                            // Register device to the input manager
-                           uint16_t deviceId = m_inputManager.RegisterDevice("OpenPinDev", InputManager::DeviceType::OpenPinDev, "OpenPinDev");
-                           m_inputManager.RegisterElementName(deviceId, false, 0, "Start Game");
-                           m_inputManager.RegisterElementName(deviceId, false, 1, "Quit Game");
-                           m_inputManager.RegisterElementName(deviceId, false, 2, "Coin");
-                           m_inputManager.RegisterElementName(deviceId, false, 3, "Coin 2");
-                           m_inputManager.RegisterElementName(deviceId, false, 4, "Coin 3");
-                           m_inputManager.RegisterElementName(deviceId, false, 5, "Coin 4");
-                           m_inputManager.RegisterElementName(deviceId, false, 6, "Extra Ball");
-                           m_inputManager.RegisterElementName(deviceId, false, 7, "Launch Ball");
-                           m_inputManager.RegisterElementName(deviceId, false, 8, "Fire Button");
-                           m_inputManager.RegisterElementName(deviceId, false, 9, "Left Flipper");
-                           m_inputManager.RegisterElementName(deviceId, false, 10, "Right Flipper");
-                           m_inputManager.RegisterElementName(deviceId, false, 11, "Left Staged Flipper");
-                           m_inputManager.RegisterElementName(deviceId, false, 12, "Right Staged Flipper");
-                           m_inputManager.RegisterElementName(deviceId, false, 13, "Left Magna");
-                           m_inputManager.RegisterElementName(deviceId, false, 14, "Right Magna");
-                           m_inputManager.RegisterElementName(deviceId, false, 15, "Tilt");
-                           m_inputManager.RegisterElementName(deviceId, false, 16, "Slam tilt");
-                           m_inputManager.RegisterElementName(deviceId, false, 17, "Coin door");
-                           m_inputManager.RegisterElementName(deviceId, false, 18, "Service Cancel");
-                           m_inputManager.RegisterElementName(deviceId, false, 19, "Service Down");
-                           m_inputManager.RegisterElementName(deviceId, false, 20, "Service Up");
-                           m_inputManager.RegisterElementName(deviceId, false, 21, "Service Enter");
-                           m_inputManager.RegisterElementName(deviceId, false, 22, "Left Nudge");
-                           m_inputManager.RegisterElementName(deviceId, false, 23, "Forward Nudge");
-                           m_inputManager.RegisterElementName(deviceId, false, 24, "Right Nudge");
-                           m_inputManager.RegisterElementName(deviceId, false, 25, "Audio Up");
-                           m_inputManager.RegisterElementName(deviceId, false, 26, "Audio Down");
+                           uint16_t deviceId = m_inputManager.RegisterDevice("OpenPinDev"s, InputManager::DeviceType::OpenPinDev, "OpenPinDev"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 0, "Start Game"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 1, "Quit Game"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 2, "Coin"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 3, "Coin 2"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 4, "Coin 3"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 5, "Coin 4"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 6, "Extra Ball"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 7, "Launch Ball"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 8, "Fire Button"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 9, "Left Flipper"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 10, "Right Flipper"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 11, "Left Staged Flipper"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 12, "Right Staged Flipper"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 13, "Left Magna"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 14, "Right Magna"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 15, "Tilt"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 16, "Slam tilt"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 17, "Coin door"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 18, "Service Cancel"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 19, "Service Down"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 20, "Service Up"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 21, "Service Enter"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 22, "Left Nudge"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 23, "Forward Nudge"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 24, "Right Nudge"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 25, "Audio Up"s);
+                           m_inputManager.RegisterElementName(deviceId, false, 26, "Audio Down"s);
                            for (int i = 0; i < 32; i++)
                               m_inputManager.RegisterElementName(deviceId, false, static_cast<uint16_t>(0x0100 | i), "Button #" + std::to_string(i));
-                           m_inputManager.RegisterElementName(deviceId, true, 0x0200, "Plunger Position");
-                           m_inputManager.RegisterElementName(deviceId, true, 0x0201, "Plunger Speed");
-                           m_inputManager.RegisterElementName(deviceId, true, 0x0202, "Nudge X Acceleration");
-                           m_inputManager.RegisterElementName(deviceId, true, 0x0203, "Nudge Y Acceleration");
-                           m_inputManager.RegisterElementName(deviceId, true, 0x0204, "Nudge X Speed");
-                           m_inputManager.RegisterElementName(deviceId, true, 0x0205, "Nudge Y Speed");
+                           m_inputManager.RegisterElementName(deviceId, true, 0x0200, "Plunger Position"s);
+                           m_inputManager.RegisterElementName(deviceId, true, 0x0201, "Plunger Speed"s);
+                           m_inputManager.RegisterElementName(deviceId, true, 0x0202, "Nudge X Acceleration"s);
+                           m_inputManager.RegisterElementName(deviceId, true, 0x0203, "Nudge Y Acceleration"s);
+                           m_inputManager.RegisterElementName(deviceId, true, 0x0204, "Nudge X Speed"s);
+                           m_inputManager.RegisterElementName(deviceId, true, 0x0205, "Nudge Y Speed"s);
                            auto defaultMapping = [this, deviceId](
                               const std::function<bool(const vector<ButtonMapping>&, unsigned int)>& mapButton, //
                               const std::function<bool(const SensorMapping&, SensorMapping::Type type, bool isLinear)>& mapPlunger, //

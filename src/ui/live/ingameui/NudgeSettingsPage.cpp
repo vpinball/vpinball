@@ -15,7 +15,7 @@ NudgeSettingsPage::NudgeSettingsPage()
 
    ////////////////////////////////////////////////////////////////////////////////////////////////
 
-   auto hardwareNudge = std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Hardware sensor based emulated nudge");
+   auto hardwareNudge = std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Hardware sensor based emulated nudge"s);
    AddItem(hardwareNudge);
 
    for (int i = 0; i < 2; i++)
@@ -32,7 +32,7 @@ NudgeSettingsPage::NudgeSettingsPage()
       AddItem(nudgeYItem);
 
       auto sensorOrientation = std::make_unique<InGameUIItem>(
-         "Sensor "s + std::to_string(i + 1) + " - Orientation"s, "Define sensor orientation"s, 0.f, 360.f, 1.0f, 0.f, "%4.1f deg"s,
+         "Sensor " + std::to_string(i + 1) + " - Orientation", "Define sensor orientation"s, 0.f, 360.f, 1.0f, 0.f, "%4.1f deg"s,
          [this, i]() { return RADTOANG(GetInput().GetNudgeOrientation(i)); }, //
          [this, i](float prev, float v) { GetInput().SetNudgeOrientation(i, ANGTORAD(v)); }, //
          [i](Settings& settings) { settings.DeleteValue(Settings::Player, "NudgeOrientation" + std::to_string(i + 1)); }, //
@@ -40,17 +40,17 @@ NudgeSettingsPage::NudgeSettingsPage()
       AddItem(sensorOrientation);
 
       auto accFilter = std::make_unique<InGameUIItem>(
-         "Sensor "s + std::to_string(i + 1) + " - Use Filter"s, "Enable/Disable filtering acquired value to prevent noise"s, false,
+         "Sensor " + std::to_string(i + 1) + " - Use Filter", "Enable/Disable filtering acquired value to prevent noise"s, false,
          [this, i]() { return GetInput().IsNudgeFiltered(i); }, //
          [this, i](bool v) { GetInput().SetNudgeFiltered(i, v); }, //
-         InGameUIItem::ResetSetting(Settings::Player, "NudgeFilter"s + std::to_string(i + 1)), //
-         InGameUIItem::SaveSettingBool(Settings::Player, "NudgeFilter"s + std::to_string(i + 1)));
+         InGameUIItem::ResetSetting(Settings::Player, "NudgeFilter" + std::to_string(i + 1)), //
+         InGameUIItem::SaveSettingBool(Settings::Player, "NudgeFilter" + std::to_string(i + 1)));
       AddItem(accFilter);
    }
 
    ////////////////////////////////////////////////////////////////////////////////////////////////
 
-   auto plumb = std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Emulated tilt plumb");
+   auto plumb = std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Emulated tilt plumb"s);
    AddItem(plumb);
 
    auto enablePlumb = std::make_unique<InGameUIItem>(
@@ -79,7 +79,7 @@ NudgeSettingsPage::NudgeSettingsPage()
 
    ////////////////////////////////////////////////////////////////////////////////////////////////
 
-   auto keyboardNudge = std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Keyboard emulated nudge");
+   auto keyboardNudge = std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Keyboard emulated nudge"s);
    AddItem(keyboardNudge);
 
    auto legacyNudge = std::make_unique<InGameUIItem>(
@@ -94,8 +94,8 @@ NudgeSettingsPage::NudgeSettingsPage()
       "Legacy Nudge Strength"s, "Strength of nudge when using the legacy keyboard nudge mode"s, 0.f, 90.f, 0.1f, 1.f, "%4.1f"s,
       [this]() { return m_player->m_physics->GetLegacyKeyboardNudgeStrength(); }, //
       [this](float prev, float v) { m_player->m_physics->SetLegacyKeyboardNudgeStrength(v); }, //
-      [](Settings& settings) { settings.DeleteValue(Settings::Player, "LegacyNudgeStrength"); }, //
-      [](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::Player, "LegacyNudgeStrength", v, isTableOverride); });
+      [](Settings& settings) { settings.DeleteValue(Settings::Player, "LegacyNudgeStrength"s); }, //
+      [](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::Player, "LegacyNudgeStrength"s, v, isTableOverride); });
    AddItem(legacyNudgeStrength);
 
    m_nudgeXPlot.m_rolling = true;
@@ -125,7 +125,7 @@ void NudgeSettingsPage::Close()
 
 void NudgeSettingsPage::AppendPlot()
 {
-   const float t = static_cast<float>(msec()) / 1000.f;
+   const float t = static_cast<float>(msec() / 1000.);
    Vertex2D nudge = m_player->m_pininput.GetNudge();
    m_nudgeXPlot.AddPoint(t, nudge.x);
    m_nudgeYPlot.AddPoint(t, nudge.y);
@@ -142,7 +142,6 @@ void NudgeSettingsPage::Render()
 {
    InGameUIPage::Render();
 
-   const ImGuiIO& io = ImGui::GetIO();
    const ImGuiStyle& style = ImGui::GetStyle();
 
    const ImVec2 winSize = ImVec2(GetWindowSize().x, 400.f);
@@ -236,9 +235,10 @@ void NudgeSettingsPage::Render()
    ImGui::SetCursorPos(ImGui::GetCursorPos() + ImVec2(2.f, 2.f));
    ImGui::BeginGroup();
    ImGui::Text("Sensor Refresh Rate");
-   if (msec() - m_resetTimestampMs > 2000)
+   const uint32_t ms = msec();
+   if (ms - m_resetTimestampMs > 2000)
    {
-      m_resetTimestampMs = msec();
+      m_resetTimestampMs = ms;
       for (int i = 0; i < 2; i++)
       {
          m_sensorAcqPeriod[i * 2] = 0;

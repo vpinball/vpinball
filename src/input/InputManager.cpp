@@ -21,8 +21,8 @@
 
 InputManager::InputManager()
    : m_onActionEventMsgId(VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_ACTION_CHANGED))
-   , m_keyboardDeviceId(RegisterDevice("Key", InputManager::DeviceType::Keyboard, "Keyboards")) // Base device: merge inputs from all connected keyboards
-   , m_mouseDeviceId(RegisterDevice("Mouse", InputManager::DeviceType::Mouse, "Mouse")) // Base device: merge inputs from all connected mice
+   , m_keyboardDeviceId(RegisterDevice("Key"s, InputManager::DeviceType::Keyboard, "Keyboards"s)) // Base device: merge inputs from all connected keyboards
+   , m_mouseDeviceId(RegisterDevice("Mouse"s, InputManager::DeviceType::Mouse, "Mouse"s)) // Base device: merge inputs from all connected mice
 {
    const Settings& settings = g_pvp->m_settings;
 
@@ -60,13 +60,13 @@ InputManager::InputManager()
    // Analog sensors for plunger and nudge
    for (int i = 0; i < 2; i++)
    {
-      m_nudgeXSensor[i] = std::make_unique<PhysicsSensor>(this, "NudgeX" + std::to_string(i + 1), "Sensor " + std::to_string(i + 1) + " - Nudge Side", SensorMapping::Type::Acceleration, "");
-      m_nudgeYSensor[i] = std::make_unique<PhysicsSensor>(this, "NudgeY" + std::to_string(i + 1), "Sensor " + std::to_string(i + 1) + " - Nudge Front", SensorMapping::Type::Acceleration, "");
+      m_nudgeXSensor[i] = std::make_unique<PhysicsSensor>(this, "NudgeX" + std::to_string(i + 1), "Sensor " + std::to_string(i + 1) + " - Nudge Side", SensorMapping::Type::Acceleration, ""s);
+      m_nudgeYSensor[i] = std::make_unique<PhysicsSensor>(this, "NudgeY" + std::to_string(i + 1), "Sensor " + std::to_string(i + 1) + " - Nudge Front", SensorMapping::Type::Acceleration, ""s);
       m_nudgeFilter[i] = !settings.LoadValueWithDefault(Settings::Player, "NudgeOrientation" + std::to_string(i + 1), true);
       SetNudgeFiltered(i, !m_nudgeFilter[i]);
    }
-   m_plungerPositionSensor = std::make_unique<PhysicsSensor>(this, "PlungerPos", "Plunger Position", SensorMapping::Type::Position, "");
-   m_plungerVelocitySensor = std::make_unique<PhysicsSensor>(this, "PlungerVel", "Plunger Velocity", SensorMapping::Type::Velocity, "");
+   m_plungerPositionSensor = std::make_unique<PhysicsSensor>(this, "PlungerPos"s, "Plunger Position"s, SensorMapping::Type::Position, ""s);
+   m_plungerVelocitySensor = std::make_unique<PhysicsSensor>(this, "PlungerVel"s, "Plunger Velocity"s, SensorMapping::Type::Velocity, ""s);
    m_plungerPositionSensor->SetFilter(std::make_unique<PlungerPositionFilter>());
 
    m_exitPressTimestamp = 0;
@@ -78,7 +78,6 @@ InputManager::InputManager()
    {
       LoadDevicesFromSettings();
 
-      const Settings& settings = g_pvp->m_settings;
       for (const auto& action : m_inputActions)
          action->LoadMapping(settings);
 
@@ -108,9 +107,9 @@ InputManager::InputManager()
    const bool* sdlKeyStates = SDL_GetKeyboardState(&nSDLKeys);
    for (const auto& [deviceAndButtonId, mappings] : m_buttonMappings)
    {
-      if (((deviceAndButtonId & 0xFFFF0000) >> 16) == m_keyboardDeviceId)
+      if (((deviceAndButtonId & 0xFFFF0000u) >> 16) == m_keyboardDeviceId)
       {
-         int sdlScancode = deviceAndButtonId & 0x0000FFFF;
+         int sdlScancode = deviceAndButtonId & 0x0000FFFFu;
          if (sdlScancode < nSDLKeys && sdlKeyStates[sdlScancode])
             for (auto& mapping : mappings)
                mapping->SetPressed(true);
@@ -271,7 +270,7 @@ void InputManager::ApplyDefaultDeviceMapping(uint16_t deviceId)
 void InputManager::LoadDevicesFromSettings()
 {
    const Settings& settings = g_pvp->m_settings;
-   std::istringstream deviceStream(settings.LoadValueWithDefault(Settings::Input, "Devices", ""s));
+   std::istringstream deviceStream(settings.LoadValueWithDefault(Settings::Input, "Devices"s, ""s));
    std::string deviceSettingId;
    while (std::getline(deviceStream, deviceSettingId, ';'))
    {
@@ -311,10 +310,10 @@ void InputManager::SaveDevicesToSettings() const
    for (size_t i = 0; i < m_inputDevices.size(); ++i)
    {
       if (i > 0)
-         deviceList << ";";
+         deviceList << ';';
       deviceList << m_inputDevices[i].m_settingsId;
    }
-   settings.SaveValue(Settings::Input, "Devices", deviceList.str());
+   settings.SaveValue(Settings::Input, "Devices"s, deviceList.str());
 
    for (const auto& device : m_inputDevices)
    {
@@ -389,8 +388,6 @@ void InputManager::ProcessInput()
       return; // only if player is running
    g_pplayer->m_logicProfiler.OnProcessInput();
 
-   const uint32_t now = msec();
-
    // Gather input from all handlers
    for (const auto& handler : m_inputHandlers)
       handler->Update();
@@ -399,7 +396,7 @@ void InputManager::ProcessInput()
    if (g_pplayer->m_ptable->m_tblAutoStartEnabled)
       Autostart(g_pplayer->m_ptable->m_tblAutoStart, g_pplayer->m_ptable->m_tblAutoStartRetry);
    if (m_autoStartTimestamp == 0) // Check if we've been initialized.
-      m_autoStartTimestamp = now;
+      m_autoStartTimestamp = msec();
 
    // Update continuous actions
    for (const auto action : m_onUpdateActions)
@@ -408,9 +405,10 @@ void InputManager::ProcessInput()
    // Process axis capture: if we have rested long enough, register the button release and stop capture
    if (m_buttonCaptureState == 1)
    {
+      const uint32_t ms = msec();
       for (ButtonMapping& bm : m_buttonCapture)
       {
-         if (bm.m_buttonCapturePos != 0 && msec() > bm.m_buttonCaptureStartMs + 200)
+         if (bm.m_buttonCapturePos != 0 && ms > bm.m_buttonCaptureStartMs + 200)
          {
             switch (bm.m_buttonCapturePos)
             {
@@ -597,11 +595,11 @@ void InputManager::PushTouchEvent(float relativeX, float relativeY, uint64_t tim
 void InputManager::CreateInputActions()
 {
 
-   auto keyMapping = [](const SDL_Scancode sdlScancode) { return "Key;"s + std::to_string(static_cast<int>(sdlScancode)); };
+   auto keyMapping = [](const SDL_Scancode sdlScancode) { return "Key;" + std::to_string(static_cast<int>(sdlScancode)); };
 
    auto addKeyAction = [this, keyMapping](const string& settingId, const string& label, const SDL_Scancode sdlScancode)
    {
-      auto newAction = AddAction(std::make_unique<InputAction>(this, settingId, label, sdlScancode == SDL_SCANCODE_UNKNOWN ? "" : keyMapping(sdlScancode),
+      auto newAction = AddAction(std::make_unique<InputAction>(this, settingId, label, sdlScancode == SDL_SCANCODE_UNKNOWN ? ""s : keyMapping(sdlScancode),
          [](const InputAction& action, bool, bool isPressed)
          {
             if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture())
@@ -634,26 +632,26 @@ void InputManager::CreateInputActions()
       return newAction->GetActionId();
    };
 
-   m_leftFlipperActionId = addFlipperKeyAction("LeftFlipper", "Left Flipper", SDL_SCANCODE_LSHIFT);
-   m_rightFlipperActionId = addFlipperKeyAction("RightFlipper", "Right Flipper", SDL_SCANCODE_RSHIFT);
-   m_stagedLeftFlipperActionId = addFlipperKeyAction("LeftStagedFlipper", "Left Staged Flipper", SDL_SCANCODE_LSHIFT); // SDL_SCANCODE_LGUI
-   m_stagedRightFlipperActionId = addFlipperKeyAction("RightStagedFlipper", "Right Staged Flipper", SDL_SCANCODE_RSHIFT); // SDL_SCANCODE_RALT
-   m_leftMagnaActionId = addKeyAction("LeftMagna", "Left Magna", SDL_SCANCODE_LCTRL);
-   m_rightMagnaActionId = addKeyAction("RightMagna", "Right Magna", SDL_SCANCODE_RCTRL);
-   m_launchBallActionId = addKeyAction("LaunchBall", "Launch Ball", SDL_SCANCODE_RETURN);
-   m_leftNudgeActionId = addKeyAction("LeftNudge", "Left Nudge", SDL_SCANCODE_Z);
-   m_rightNudgeActionId = addKeyAction("RightNudge", "Right Nudge", SDL_SCANCODE_SLASH);
-   m_centerNudgeActionId = addKeyAction("CenterNudge", "Center Nudge", SDL_SCANCODE_SPACE);
-   m_tiltActionId = addKeyAction("Tilt", "Tilt", SDL_SCANCODE_T);
-   m_addCreditActionId[0] = addKeyAction("Credit1", "Credit (1)", SDL_SCANCODE_3);
-   m_addCreditActionId[1] = addKeyAction("Credit2", "Credit (2)", SDL_SCANCODE_4);
-   m_addCreditActionId[2] = addKeyAction("Credit3", "Credit (3)", SDL_SCANCODE_5);
-   m_addCreditActionId[3] = addKeyAction("Credit4", "Credit (4)", SDL_SCANCODE_6);
-   m_startActionId = addKeyAction("Start", "Start", SDL_SCANCODE_1);
-   m_extraBallActionId = addKeyAction("ExtraBall", "Extra Ball", SDL_SCANCODE_B);
-   m_lockbarActionId = addKeyAction("Lockbar", "Lockbar", SDL_SCANCODE_LALT);
+   m_leftFlipperActionId = addFlipperKeyAction("LeftFlipper"s, "Left Flipper"s, SDL_SCANCODE_LSHIFT);
+   m_rightFlipperActionId = addFlipperKeyAction("RightFlipper"s, "Right Flipper"s, SDL_SCANCODE_RSHIFT);
+   m_stagedLeftFlipperActionId = addFlipperKeyAction("LeftStagedFlipper"s, "Left Staged Flipper"s, SDL_SCANCODE_LSHIFT); // SDL_SCANCODE_LGUI
+   m_stagedRightFlipperActionId = addFlipperKeyAction("RightStagedFlipper"s, "Right Staged Flipper"s, SDL_SCANCODE_RSHIFT); // SDL_SCANCODE_RALT
+   m_leftMagnaActionId = addKeyAction("LeftMagna"s, "Left Magna"s, SDL_SCANCODE_LCTRL);
+   m_rightMagnaActionId = addKeyAction("RightMagna"s, "Right Magna"s, SDL_SCANCODE_RCTRL);
+   m_launchBallActionId = addKeyAction("LaunchBall"s, "Launch Ball"s, SDL_SCANCODE_RETURN);
+   m_leftNudgeActionId = addKeyAction("LeftNudge"s, "Left Nudge"s, SDL_SCANCODE_Z);
+   m_rightNudgeActionId = addKeyAction("RightNudge"s, "Right Nudge"s, SDL_SCANCODE_SLASH);
+   m_centerNudgeActionId = addKeyAction("CenterNudge"s, "Center Nudge"s, SDL_SCANCODE_SPACE);
+   m_tiltActionId = addKeyAction("Tilt"s, "Tilt"s, SDL_SCANCODE_T);
+   m_addCreditActionId[0] = addKeyAction("Credit1"s, "Credit (1)"s, SDL_SCANCODE_3);
+   m_addCreditActionId[1] = addKeyAction("Credit2"s, "Credit (2)"s, SDL_SCANCODE_4);
+   m_addCreditActionId[2] = addKeyAction("Credit3"s, "Credit (3)"s, SDL_SCANCODE_5);
+   m_addCreditActionId[3] = addKeyAction("Credit4"s, "Credit (4)"s, SDL_SCANCODE_6);
+   m_startActionId = addKeyAction("Start"s, "Start"s, SDL_SCANCODE_1);
+   m_extraBallActionId = addKeyAction("ExtraBall"s, "Extra Ball"s, SDL_SCANCODE_B);
+   m_lockbarActionId = addKeyAction("Lockbar"s, "Lockbar"s, SDL_SCANCODE_LALT);
 
-   auto pause = AddAction(std::make_unique<InputAction>(this, "Pause", "Pause Game", keyMapping(SDL_SCANCODE_P),
+   auto pause = AddAction(std::make_unique<InputAction>(this, "Pause"s, "Pause Game"s, keyMapping(SDL_SCANCODE_P),
       [](const InputAction&, bool, bool isPressed)
       {
          if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
@@ -661,7 +659,7 @@ void InputManager::CreateInputActions()
          g_pplayer->SetPlayState(!g_pplayer->IsPlaying());
       }));
 
-   auto perfOverlay = AddAction(std::make_unique<InputAction>(this, "PerfOverlay", "Toggle Perf. Overlay", keyMapping(SDL_SCANCODE_F11),
+   auto perfOverlay = AddAction(std::make_unique<InputAction>(this, "PerfOverlay"s, "Toggle Perf. Overlay"s, keyMapping(SDL_SCANCODE_F11),
       [](const InputAction&, bool, bool isPressed)
       {
          if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
@@ -669,7 +667,7 @@ void InputManager::CreateInputActions()
          g_pplayer->m_liveUI->ToggleFPS();
       }));
 
-   auto exitAction = AddAction(std::make_unique<InputAction>(this, "ExitInteractive", "Interactive Exit", keyMapping(SDL_SCANCODE_ESCAPE),
+   auto exitAction = AddAction(std::make_unique<InputAction>(this, "ExitInteractive"s, "Interactive Exit"s, keyMapping(SDL_SCANCODE_ESCAPE),
       [this](const InputAction&, bool wasPressed, bool isPressed)
       {
          if (!g_pplayer->m_playfieldWnd->IsFocused() // Focus lost
@@ -701,7 +699,7 @@ void InputManager::CreateInputActions()
    m_exitInteractiveActionId = exitAction->GetActionId();
 
    m_exitGameActionId = AddAction(
-      std::make_unique<InputAction>(this, "ExitGame", "Exit Game", keyMapping(SDL_SCANCODE_Q),
+      std::make_unique<InputAction>(this, "ExitGame"s, "Exit Game"s, keyMapping(SDL_SCANCODE_Q),
          [](const InputAction& action, bool, bool isPressed)
          {
             if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture())
@@ -716,7 +714,7 @@ void InputManager::CreateInputActions()
             #endif
          }))->GetActionId();
 
-   auto inGameUI = AddAction(std::make_unique<InputAction>(this, "InGameUI", "Toggle InGame UI", keyMapping(SDL_SCANCODE_F12),
+   auto inGameUI = AddAction(std::make_unique<InputAction>(this, "InGameUI"s, "Toggle InGame UI"s, keyMapping(SDL_SCANCODE_F12),
       [](const InputAction&, bool, bool isPressed)
       {
          if (g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
@@ -727,7 +725,7 @@ void InputManager::CreateInputActions()
             g_pplayer->m_liveUI->OpenInGameUI();
       }));
 
-   auto volumeDown = AddAction(std::make_unique<InputAction>(this, "VolumeDown", "Volume Down", keyMapping(SDL_SCANCODE_MINUS),
+   auto volumeDown = AddAction(std::make_unique<InputAction>(this, "VolumeDown"s, "Volume Down"s, keyMapping(SDL_SCANCODE_MINUS),
       [this](const InputAction&, bool, bool isPressed)
       {
          if (!isPressed)
@@ -740,7 +738,7 @@ void InputManager::CreateInputActions()
    volumeDown->SetRepeatPeriod(75);
    m_volumeDownActionId = volumeDown->GetActionId();
 
-   auto volumeUp = AddAction(std::make_unique<InputAction>(this, "VolumeUp", "Volume Up", keyMapping(SDL_SCANCODE_EQUALS),
+   auto volumeUp = AddAction(std::make_unique<InputAction>(this, "VolumeUp"s, "Volume Up"s, keyMapping(SDL_SCANCODE_EQUALS),
       [this](const InputAction&, bool, bool isPressed)
       {
          if (!isPressed)
@@ -753,7 +751,7 @@ void InputManager::CreateInputActions()
    volumeUp->SetRepeatPeriod(75);
    m_volumeUpActionId = volumeUp->GetActionId();
 
-   auto showRules = AddAction(std::make_unique<InputAction>(this, "ShowRules", "Show Rules", "",
+   auto showRules = AddAction(std::make_unique<InputAction>(this, "ShowRules"s, "Show Rules"s, ""s,
       [this](const InputAction&, bool, bool isPressed)
       {
          if (g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
@@ -767,14 +765,14 @@ void InputManager::CreateInputActions()
          }
       }));
 
-   m_slamTiltActionId = addKeyAction("SlamTilt", "Slam Tilt", SDL_SCANCODE_HOME);
-   m_coinDoorActionId = addKeyAction("CoinDoor", "Coin Door", SDL_SCANCODE_END);
-   m_resetActionId = addKeyAction("Reset", "Reset", SDL_SCANCODE_F3);
+   m_slamTiltActionId = addKeyAction("SlamTilt"s, "Slam Tilt"s, SDL_SCANCODE_HOME);
+   m_coinDoorActionId = addKeyAction("CoinDoor"s, "Coin Door"s, SDL_SCANCODE_END);
+   m_resetActionId = addKeyAction("Reset"s, "Reset"s, SDL_SCANCODE_F3);
    constexpr SDL_Scancode serviceKeys[8] = { SDL_SCANCODE_7, SDL_SCANCODE_8, SDL_SCANCODE_9, SDL_SCANCODE_0, SDL_SCANCODE_6, SDL_SCANCODE_PAGEUP, SDL_SCANCODE_MINUS, SDL_SCANCODE_UNKNOWN };
    for (int i = 0; i < 8; ++i)
       m_serviceActionId[i] = addKeyAction("Service" + std::to_string(i + 1), "Service Button #" + std::to_string(i + 1), serviceKeys[i]);
 
-   auto vrCenter = AddAction(std::make_unique<InputAction>(this, "VRCenter", "Align VR view", keyMapping(SDL_SCANCODE_KP_5),
+   auto vrCenter = AddAction(std::make_unique<InputAction>(this, "VRCenter"s, "Align VR view"s, keyMapping(SDL_SCANCODE_KP_5),
       [](const InputAction&, bool, bool isPressed)
       {
          if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
@@ -783,7 +781,7 @@ void InputManager::CreateInputActions()
             g_pplayer->m_vrDevice->RecenterTable();
       }));
 
-   auto vrUp = AddAction(std::make_unique<InputAction>(this, "VRUp", "Move VR view up", keyMapping(SDL_SCANCODE_KP_8),
+   auto vrUp = AddAction(std::make_unique<InputAction>(this, "VRUp"s, "Move VR view up"s, keyMapping(SDL_SCANCODE_KP_8),
       [](const InputAction&, bool, bool isPressed)
       {
          if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
@@ -792,7 +790,7 @@ void InputManager::CreateInputActions()
             g_pplayer->m_vrDevice->OffsetTable(0.f, 0.f, 1.f);
       }));
 
-   auto vrDown = AddAction(std::make_unique<InputAction>(this, "VRDown", "Move VR view down", keyMapping(SDL_SCANCODE_KP_2),
+   auto vrDown = AddAction(std::make_unique<InputAction>(this, "VRDown"s, "Move VR view down"s, keyMapping(SDL_SCANCODE_KP_2),
       [](const InputAction&, bool, bool isPressed)
       {
          if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
@@ -801,7 +799,7 @@ void InputManager::CreateInputActions()
             g_pplayer->m_vrDevice->OffsetTable(0.f, 0.f, -1.f);
       }));
 
-   auto vrFront = AddAction(std::make_unique<InputAction>(this, "VRFront", "Move VR view to the front", "",
+   auto vrFront = AddAction(std::make_unique<InputAction>(this, "VRFront"s, "Move VR view to the front"s, ""s,
       [](const InputAction&, bool, bool isPressed)
       {
          if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed || !g_pplayer->m_vrDevice)
@@ -809,7 +807,7 @@ void InputManager::CreateInputActions()
          g_pplayer->m_vrDevice->OffsetTable(0.f, 1.f, 0.f);
       }));
 
-   auto vrBack = AddAction(std::make_unique<InputAction>(this, "VRBack", "Move VR view to the back", "",
+   auto vrBack = AddAction(std::make_unique<InputAction>(this, "VRBack"s, "Move VR view to the back"s, ""s,
       [](const InputAction&, bool, bool isPressed)
       {
          if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed || !g_pplayer->m_vrDevice)
@@ -817,7 +815,7 @@ void InputManager::CreateInputActions()
          g_pplayer->m_vrDevice->OffsetTable(0.f, -1.f, 0.f);
       }));
 
-   auto vrLeft = AddAction(std::make_unique<InputAction>(this, "VRLeft", "Move VR view to the left", "",
+   auto vrLeft = AddAction(std::make_unique<InputAction>(this, "VRLeft"s, "Move VR view to the left"s, ""s,
       [](const InputAction&, bool, bool isPressed)
       {
          if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed || !g_pplayer->m_vrDevice)
@@ -825,7 +823,7 @@ void InputManager::CreateInputActions()
          g_pplayer->m_vrDevice->OffsetTable(-1.f, 0.f, 0.f);
       }));
 
-   auto vrRight = AddAction(std::make_unique<InputAction>(this, "VRRight", "Move VR view to the right", "",
+   auto vrRight = AddAction(std::make_unique<InputAction>(this, "VRRight"s, "Move VR view to the right"s, ""s,
       [](const InputAction&, bool, bool isPressed)
       {
          if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed || !g_pplayer->m_vrDevice)
@@ -833,7 +831,7 @@ void InputManager::CreateInputActions()
          g_pplayer->m_vrDevice->OffsetTable(1.f, 0.f, 0.f);
       }));
 
-   AddAction(std::make_unique<InputAction>(this, "GenTournament", "Create Tournament File", keyMapping(SDL_SCANCODE_LALT) + " & " + keyMapping(SDL_SCANCODE_1),
+   AddAction(std::make_unique<InputAction>(this, "GenTournament"s, "Create Tournament File"s, keyMapping(SDL_SCANCODE_LALT) + " & " + keyMapping(SDL_SCANCODE_1),
       [](const InputAction&, bool, bool isPressed)
       {
          if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
@@ -842,7 +840,7 @@ void InputManager::CreateInputActions()
             g_pvp->GenerateTournamentFile();
       }));
 
-   AddAction(std::make_unique<InputAction>(this, "DebugBalls", "Debug Balls", keyMapping(SDL_SCANCODE_O),
+   AddAction(std::make_unique<InputAction>(this, "DebugBalls"s, "Debug Balls"s, keyMapping(SDL_SCANCODE_O),
       [](const InputAction&, bool, bool isPressed)
       {
          if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
@@ -850,7 +848,7 @@ void InputManager::CreateInputActions()
          g_pplayer->m_debugBalls = !g_pplayer->m_debugBalls;
       }));
 
-   AddAction(std::make_unique<InputAction>(this, "Debugger", "Open Debugger", keyMapping(SDL_SCANCODE_D),
+   AddAction(std::make_unique<InputAction>(this, "Debugger"s, "Open Debugger"s, keyMapping(SDL_SCANCODE_D),
       [this](const InputAction&, bool, bool isPressed)
       {
          m_gameStartedOnce = true; // disable autostart as player as requested debugger instead
@@ -859,7 +857,7 @@ void InputManager::CreateInputActions()
          g_pplayer->m_showDebugger = true;
       }));
 
-   AddAction(std::make_unique<InputAction>(this, "ToggleStereo", "Select Stereo Mode", keyMapping(SDL_SCANCODE_F10),
+   AddAction(std::make_unique<InputAction>(this, "ToggleStereo"s, "Select Stereo Mode"s, keyMapping(SDL_SCANCODE_F10),
       [this](const InputAction&, bool, bool isPressed)
       {
          if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
@@ -937,7 +935,7 @@ void InputManager::CreateInputActions()
 
    auto addJoyCustomAction = [this](const string& settingId, const string& label)
    {
-      auto newAction = AddAction(std::make_unique<InputAction>(this, settingId, label, "",
+      auto newAction = AddAction(std::make_unique<InputAction>(this, settingId, label, ""s,
          [](const InputAction& action, bool, bool isPressed)
          {
             if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture())
@@ -948,10 +946,10 @@ void InputManager::CreateInputActions()
          }));
       return newAction->GetActionId();
    };
-   m_joyCustomActionId[0] = addJoyCustomAction("Custom1", "Custom Button #1");
-   m_joyCustomActionId[1] = addJoyCustomAction("Custom2", "Custom Button #2");
-   m_joyCustomActionId[2] = addJoyCustomAction("Custom3", "Custom Button #3");
-   m_joyCustomActionId[3] = addJoyCustomAction("Custom4", "Custom Button #4");
+   m_joyCustomActionId[0] = addJoyCustomAction("Custom1"s, "Custom Button #1"s);
+   m_joyCustomActionId[1] = addJoyCustomAction("Custom2"s, "Custom Button #2"s);
+   m_joyCustomActionId[2] = addJoyCustomAction("Custom3"s, "Custom Button #3"s);
+   m_joyCustomActionId[3] = addJoyCustomAction("Custom4"s, "Custom Button #4"s);
 }
 
 InputAction* InputManager::AddAction(std::unique_ptr<InputAction>&& action)
@@ -970,7 +968,7 @@ bool InputManager::IsPressed(int actionId) const
 int InputManager::GetWindowVirtualKeyForAction(unsigned int actionId) const
 {
    #ifndef __STANDALONE__
-      // Very basic and unefficient way of searching for a keyboard mapping, but this is only used once to detect table mirroring
+      // Very basic and inefficient way of searching for a keyboard mapping, but this is only used once to detect table mirroring
       assert(0 <= actionId && actionId < static_cast<int>(m_inputActions.size()));
       vector<ButtonMapping> mapping;
       for (unsigned char vk = VK_ESCAPE; vk <= VK_OEM_3; vk++)
@@ -1223,7 +1221,7 @@ void InputManager::Autostart(const uint32_t initialDelayMs, const uint32_t retry
 
 
 #ifdef _WIN32
-// Somewhat hacky code to handle accessibility features and OS levels shortcuts but done as per Microsoft recommandations
+// Somewhat hacky code to handle accessibility features and OS levels shortcuts but done as per Microsoft recommendations
 // See: https://learn.microsoft.com/en-us/windows/win32/dxtecharts/disabling-shortcut-keys-in-games
 
 LRESULT CALLBACK InputManager::LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
