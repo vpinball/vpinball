@@ -153,7 +153,6 @@ private:
       -1.0546654f,
       0.1873795f };
 
-   //int m_init = IIR_Order;
    float m_x[IIR_Order + 1] = {};
    float m_y[IIR_Order + 1] = {};
 
