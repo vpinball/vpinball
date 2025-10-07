@@ -69,13 +69,14 @@ Option Explicit
 '
 
 ' VBS based user interface
+' (only for VPinMAME COM component, not needed for PinMAME plugin)
 Const keyShowOpts	= 59  '(F1)		Show options
 Const keyShowKeys	= 60  '(F2)		Show Keys
-Const keyReset		= 61  '(F3)		Reset Emulation
-Const keyFrame		= 62  '(F4)		Toggle Window Lock
-Const keyDoubleSize	= 63  '(F5)		Toggle displaysize
+Dim keyReset: keyReset = VPXActionKey(19) '(F3) Reset Emulation
+Const keyFrame		= 62  '(F4)		Toggle Window Lock (no operation if not usig VPinMAME)
+Const keyDoubleSize	= 63  '(F5)		Toggle displaysize (no operation if not usig VPinMAME)
 Const keyShowDips	= 64  '(F6)		Show Dip Switch / Options Menu
-Const keyVPMVolume	= 88  '(F12)	Added Control to set VPM Volume
+Const keyVPMVolume	= 88  '(F12)	Show input box to set VPM Volume (no operation if not usig VPinMAME)
 
 ' Cabinet switches
 Dim keyAddBall:	    keyAddBall     = VPXActionKey(22) '(B) Add extra ball
