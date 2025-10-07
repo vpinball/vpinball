@@ -690,7 +690,7 @@ END
 
 IDD_KEYS DIALOGEX 0, 0, 627, 342
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Direct Ooutput Framework"
+CAPTION "Direct Output Framework"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "Enable flying around (Arrow Keys + Left Alt Key) during Tweak Mode",IDC_ENABLE_CAMERA_FLY_AROUND,

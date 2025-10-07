@@ -2943,7 +2943,7 @@ Sub NVOffset(version) ' version 2 for dB2S compatibility
 End Sub
 
 Sub VPMVol
-	' PinMAME plugin stream its sound through VPX, using VPX mixing and therefore volume settings
+	' PinMAME plugin streams its sound through VPX, using VPX mixing and therefore volume settings
 	if IsPluginPinMAME Then Exit Sub
 	if PlatformOS <> "windows" then
 		MsgBox "VPinMAME Volume adjustment is not supported on standalone versions of Visual Pinball."

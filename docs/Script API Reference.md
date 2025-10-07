@@ -60,10 +60,13 @@ As for coding light sequences for original tables, please check this helper app:
 | *StartGameKey | int | |
 | *AddCreditKey | int | |
 | *AddCreditKey2 | int | |
+| *MechanicalTilt | int | |
+| *ExitGame | int | |
 | *LeftMagnaSave | int | |
 | *RightMagnaSave | int | |
 | *LockbarKey | int | |
 | *JoyCustomKey(int index) | int | 1..4 to get the custom key mappings |
+| *VPXActionKey(int index) | int | |
 | | | |
 | *ActiveBall | Ball | returns the current ball |
 | *ActiveTable | Table | returns the currently played table element |

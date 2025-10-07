@@ -9,7 +9,8 @@ As for coding light sequences for original tables, please check this helper app:
 
 Changelog:
 10.8.1:
-- add PreciseGameTime (same as GameTime but using seconds and more precise for better emulation syncronization)
+- add PreciseGameTime (same as GameTime but using seconds and more precise for better emulation syncronization) to the globals
+- add VPXActionKey to the globals
 
 10.8.0:
 - add LoadTexture to the globals
@@ -146,10 +147,13 @@ Variables
 *StartGameKey
 *AddCreditKey
 *AddCreditKey2
+*MechanicalTilt
+*ExitGame
 *LeftMagnaSave
 *RightMagnaSave
 *LockbarKey
 *JoyCustomKey(int index) - 1..4 to get the custom key mappings
+*VPXActionKey(int index)
 
 *ActiveBall - returns the current ball
 *ActiveTable - returns the currently played table element
