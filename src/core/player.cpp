@@ -1499,6 +1499,7 @@ void Player::ProcessOSMessages()
 
       if (isPFWnd)
       {
+         // Forward events to ImGui, including touch/pen events which are forwarded as mouse events
          auto applyPFRotation = [this](const float x, const float y, float& rx, float& ry)
          {
             switch (m_liveUI->GetUIOrientation())
