@@ -129,6 +129,9 @@ static void ColorizeThread()
          continue;
 
       const DisplayFrame frame = dmdId.GetIdentifyFrame(dmdId.id);
+      if (frame.frame == nullptr)
+         break;
+
       if (frame.frameId != lastFrameId)
       {
          // We received a new identify frame to match & colorize
