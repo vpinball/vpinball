@@ -32,8 +32,8 @@ public:
    void OpenEditorUI() { m_editorUI.Open(); }
    void HideUI();
 
-   void OpenTweakMode();
-   bool IsTweakMode() const { return m_inGameUI.IsOpened(); }
+   void OpenInGameUI(const string& page = "homepage"s);
+   bool IsInGameUIOpened() const { return m_inGameUI.IsOpened(); }
 
    void ToggleFPS() { m_perfUI.NextPerfMode(); }
    bool IsShowingFPSDetails() const { return m_perfUI.GetPerfMode() != PerfUI::PerfMode::PM_DISABLED; }

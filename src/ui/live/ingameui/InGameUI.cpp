@@ -69,11 +69,11 @@ void InGameUI::NavigateBack()
    }
 }
 
-void InGameUI::Open()
+void InGameUI::Open(const string& page)
 {
    assert(!IsOpened());
    m_isOpened = true;
-   Navigate("homepage"s);
+   Navigate(page);
    m_useFlipperNav = m_player->m_vrDevice || m_player->m_ptable->m_BG_current_set == ViewSetupID::BG_FULLSCREEN;
 }
 

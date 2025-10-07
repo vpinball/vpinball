@@ -16,8 +16,9 @@ public:
    explicit InGameUI(LiveUI &liveUI);
    ~InGameUI() = default;
 
-   void Open();
+   void Open(const string& page);
    bool IsOpened() const { return m_isOpened; }
+   bool IsOpened(const string& page) const { return m_isOpened && m_activePage->GetPath() == page; }
    void Update();
    void Close();
 

@@ -673,7 +673,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    // Open UI if requested (this also disables static prerendering, so must be done before performing it)
    if (playMode == 1)
-      m_liveUI->OpenTweakMode();
+      m_liveUI->OpenInGameUI();
    else if (playMode == 2 && m_renderer->m_stereo3D != STEREO_VR)
       m_liveUI->OpenEditorUI();
 

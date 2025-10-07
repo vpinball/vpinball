@@ -629,10 +629,10 @@ void LiveUI::UpdateTouchUI()
    ImGui::PopStyleVar(2);
 }
 
-void LiveUI::OpenTweakMode()
+void LiveUI::OpenInGameUI(const string& page)
 {
-   m_editorUI.Close();
-   m_inGameUI.Open();
+   HideUI();
+   m_inGameUI.Open(page);
 }
 
 void LiveUI::HideUI()
