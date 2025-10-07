@@ -113,7 +113,7 @@ void EscSplashModal::Update()
    if (ImGui::Button("Table Options", size) || (keyShortcut == 2))
    {
       ImGui::CloseCurrentPopup();
-      m_liveUI.OpenTweakMode();
+      m_liveUI.OpenInGameUI();
    }
    #if !((defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__))
       if (m_player->m_headTracking && ImGui::Button("Adjust Headtracking", size))

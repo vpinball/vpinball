@@ -487,7 +487,7 @@ void InputManager::PushButtonEvent(uint16_t deviceId, uint16_t buttonId, uint64_
          mapping->SetPressed(isPressed);
 
    // Special handling for keyboard events to trigger custom KeyDown/KeyUp events in the script based on Windows DirectInput key codes
-   if (deviceId == m_keyboardDeviceId && !g_pplayer->m_liveUI->IsTweakMode() && !g_pplayer->m_liveUI->HasKeyboardCapture())
+   if (deviceId == m_keyboardDeviceId && !g_pplayer->m_liveUI->IsInGameUIOpened() && !g_pplayer->m_liveUI->HasKeyboardCapture())
    {
       const unsigned char dik = GetDirectInputKeyFromSDLScancode(static_cast<SDL_Scancode>(buttonId));
       if (dik != 0)
@@ -604,7 +604,7 @@ void InputManager::CreateInputActions()
       auto newAction = AddAction(std::make_unique<InputAction>(this, settingId, label, sdlScancode == SDL_SCANCODE_UNKNOWN ? "" : keyMapping(sdlScancode),
          [](const InputAction& action, bool, bool isPressed)
          {
-            if (g_pplayer->m_liveUI->IsTweakMode() || g_pplayer->m_liveUI->HasKeyboardCapture())
+            if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture())
                return;
             CComVariant rgvar[1] = { CComVariant(0x10000 | static_cast<int>(action.GetActionId())) };
             DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
@@ -618,7 +618,7 @@ void InputManager::CreateInputActions()
       auto newAction = AddAction(std::make_unique<InputAction>(this, settingId, label, keyMapping(sdlScancode),
          [this](const InputAction& action, bool, bool isPressed)
          {
-            if (g_pplayer->m_liveUI->IsTweakMode() || g_pplayer->m_liveUI->HasKeyboardCapture())
+            if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture())
                return;
             if (isPressed)
             {
@@ -656,7 +656,7 @@ void InputManager::CreateInputActions()
    auto pause = AddAction(std::make_unique<InputAction>(this, "Pause", "Pause Game", keyMapping(SDL_SCANCODE_P),
       [](const InputAction&, bool, bool isPressed)
       {
-         if (g_pplayer->m_liveUI->IsTweakMode() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
+         if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
             return;
          g_pplayer->SetPlayState(!g_pplayer->IsPlaying());
       }));
@@ -664,7 +664,7 @@ void InputManager::CreateInputActions()
    auto perfOverlay = AddAction(std::make_unique<InputAction>(this, "PerfOverlay", "Toggle Perf. Overlay", keyMapping(SDL_SCANCODE_F11),
       [](const InputAction&, bool, bool isPressed)
       {
-         if (g_pplayer->m_liveUI->IsTweakMode() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
+         if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
             return;
          g_pplayer->m_liveUI->ToggleFPS();
       }));
@@ -704,7 +704,7 @@ void InputManager::CreateInputActions()
       std::make_unique<InputAction>(this, "ExitGame", "Exit Game", keyMapping(SDL_SCANCODE_Q),
          [](const InputAction& action, bool, bool isPressed)
          {
-            if (g_pplayer->m_liveUI->IsTweakMode() || g_pplayer->m_liveUI->HasKeyboardCapture())
+            if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture())
                return;
             CComVariant rgvar[1] = { CComVariant(0x10000 | static_cast<int>(action.GetActionId())) };
             DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
@@ -719,12 +719,12 @@ void InputManager::CreateInputActions()
    auto inGameUI = AddAction(std::make_unique<InputAction>(this, "InGameUI", "Toggle InGame UI", keyMapping(SDL_SCANCODE_F12),
       [](const InputAction&, bool, bool isPressed)
       {
-         if (g_pplayer->m_liveUI->IsTweakMode() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
+         if (g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
             return;
-         if (g_pplayer->m_liveUI->IsTweakMode())
+         if (g_pplayer->m_liveUI->IsInGameUIOpened())
             g_pplayer->m_liveUI->HideUI();
          else
-            g_pplayer->m_liveUI->OpenTweakMode();
+            g_pplayer->m_liveUI->OpenInGameUI();
       }));
 
    auto volumeDown = AddAction(std::make_unique<InputAction>(this, "VolumeDown", "Volume Down", keyMapping(SDL_SCANCODE_MINUS),
@@ -753,6 +753,20 @@ void InputManager::CreateInputActions()
    volumeUp->SetRepeatPeriod(75);
    m_volumeUpActionId = volumeUp->GetActionId();
 
+   auto showRules = AddAction(std::make_unique<InputAction>(this, "ShowRules", "Show Rules", "",
+      [this](const InputAction&, bool, bool isPressed)
+      {
+         if (g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
+            return;
+         if (g_pplayer->m_liveUI->m_inGameUI.IsOpened("table/rules"s))
+            g_pplayer->m_liveUI->HideUI();
+         else
+         {
+            g_pplayer->m_liveUI->HideUI();
+            g_pplayer->m_liveUI->OpenInGameUI("table/rules"s);
+         }
+      }));
+
    m_slamTiltActionId = addKeyAction("SlamTilt", "Slam Tilt", SDL_SCANCODE_HOME);
    m_coinDoorActionId = addKeyAction("CoinDoor", "Coin Door", SDL_SCANCODE_END);
    m_resetActionId = addKeyAction("Reset", "Reset", SDL_SCANCODE_F3);
@@ -763,7 +777,7 @@ void InputManager::CreateInputActions()
    auto vrCenter = AddAction(std::make_unique<InputAction>(this, "VRCenter", "Align VR view", keyMapping(SDL_SCANCODE_KP_5),
       [](const InputAction&, bool, bool isPressed)
       {
-         if (g_pplayer->m_liveUI->IsTweakMode() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
+         if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
             return;
          if (g_pplayer->m_vrDevice)
             g_pplayer->m_vrDevice->RecenterTable();
@@ -772,7 +786,7 @@ void InputManager::CreateInputActions()
    auto vrUp = AddAction(std::make_unique<InputAction>(this, "VRUp", "Move VR view up", keyMapping(SDL_SCANCODE_KP_8),
       [](const InputAction&, bool, bool isPressed)
       {
-         if (g_pplayer->m_liveUI->IsTweakMode() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
+         if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
             return;
          if (g_pplayer->m_vrDevice)
             g_pplayer->m_vrDevice->OffsetTable(0.f, 0.f, 1.f);
@@ -781,7 +795,7 @@ void InputManager::CreateInputActions()
    auto vrDown = AddAction(std::make_unique<InputAction>(this, "VRDown", "Move VR view down", keyMapping(SDL_SCANCODE_KP_2),
       [](const InputAction&, bool, bool isPressed)
       {
-         if (g_pplayer->m_liveUI->IsTweakMode() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
+         if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
             return;
          if (g_pplayer->m_vrDevice)
             g_pplayer->m_vrDevice->OffsetTable(0.f, 0.f, -1.f);
@@ -790,7 +804,7 @@ void InputManager::CreateInputActions()
    auto vrFront = AddAction(std::make_unique<InputAction>(this, "VRFront", "Move VR view to the front", "",
       [](const InputAction&, bool, bool isPressed)
       {
-         if (g_pplayer->m_liveUI->IsTweakMode() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed || !g_pplayer->m_vrDevice)
+         if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed || !g_pplayer->m_vrDevice)
             return;
          g_pplayer->m_vrDevice->OffsetTable(0.f, 1.f, 0.f);
       }));
@@ -798,7 +812,7 @@ void InputManager::CreateInputActions()
    auto vrBack = AddAction(std::make_unique<InputAction>(this, "VRBack", "Move VR view to the back", "",
       [](const InputAction&, bool, bool isPressed)
       {
-         if (g_pplayer->m_liveUI->IsTweakMode() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed || !g_pplayer->m_vrDevice)
+         if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed || !g_pplayer->m_vrDevice)
             return;
          g_pplayer->m_vrDevice->OffsetTable(0.f, -1.f, 0.f);
       }));
@@ -806,7 +820,7 @@ void InputManager::CreateInputActions()
    auto vrLeft = AddAction(std::make_unique<InputAction>(this, "VRLeft", "Move VR view to the left", "",
       [](const InputAction&, bool, bool isPressed)
       {
-         if (g_pplayer->m_liveUI->IsTweakMode() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed || !g_pplayer->m_vrDevice)
+         if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed || !g_pplayer->m_vrDevice)
             return;
          g_pplayer->m_vrDevice->OffsetTable(-1.f, 0.f, 0.f);
       }));
@@ -814,7 +828,7 @@ void InputManager::CreateInputActions()
    auto vrRight = AddAction(std::make_unique<InputAction>(this, "VRRight", "Move VR view to the right", "",
       [](const InputAction&, bool, bool isPressed)
       {
-         if (g_pplayer->m_liveUI->IsTweakMode() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed || !g_pplayer->m_vrDevice)
+         if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed || !g_pplayer->m_vrDevice)
             return;
          g_pplayer->m_vrDevice->OffsetTable(1.f, 0.f, 0.f);
       }));
@@ -822,7 +836,7 @@ void InputManager::CreateInputActions()
    AddAction(std::make_unique<InputAction>(this, "GenTournament", "Create Tournament File", keyMapping(SDL_SCANCODE_LALT) + " & " + keyMapping(SDL_SCANCODE_1),
       [](const InputAction&, bool, bool isPressed)
       {
-         if (g_pplayer->m_liveUI->IsTweakMode() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
+         if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
             return;
          if (g_pvp->m_ptableActive->TournamentModePossible())
             g_pvp->GenerateTournamentFile();
@@ -831,7 +845,7 @@ void InputManager::CreateInputActions()
    AddAction(std::make_unique<InputAction>(this, "DebugBalls", "Debug Balls", keyMapping(SDL_SCANCODE_O),
       [](const InputAction&, bool, bool isPressed)
       {
-         if (g_pplayer->m_liveUI->IsTweakMode() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
+         if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
             return;
          g_pplayer->m_debugBalls = !g_pplayer->m_debugBalls;
       }));
@@ -840,7 +854,7 @@ void InputManager::CreateInputActions()
       [this](const InputAction&, bool, bool isPressed)
       {
          m_gameStartedOnce = true; // disable autostart as player as requested debugger instead
-         if (g_pplayer->m_liveUI->IsTweakMode() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
+         if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
             return;
          g_pplayer->m_showDebugger = true;
       }));
@@ -848,7 +862,7 @@ void InputManager::CreateInputActions()
    AddAction(std::make_unique<InputAction>(this, "ToggleStereo", "Select Stereo Mode", keyMapping(SDL_SCANCODE_F10),
       [this](const InputAction&, bool, bool isPressed)
       {
-         if (g_pplayer->m_liveUI->IsTweakMode() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
+         if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture() || !isPressed)
             return;
          if (IsAnaglyphStereoMode(g_pplayer->m_renderer->m_stereo3D))
          {
@@ -926,7 +940,7 @@ void InputManager::CreateInputActions()
       auto newAction = AddAction(std::make_unique<InputAction>(this, settingId, label, "",
          [](const InputAction& action, bool, bool isPressed)
          {
-            if (g_pplayer->m_liveUI->IsTweakMode() || g_pplayer->m_liveUI->HasKeyboardCapture())
+            if (g_pplayer->m_liveUI->IsInGameUIOpened() || g_pplayer->m_liveUI->HasKeyboardCapture())
                return;
             CComVariant rgvar[1] = { CComVariant(0x10000 | static_cast<int>(action.GetActionId())) };
             DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
