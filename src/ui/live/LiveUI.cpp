@@ -670,14 +670,14 @@ void LiveUI::UpdateDeviceLayoutPopup()
       ImGui::Separator();
       if (ImGui::Button("Discard"))
       {
-         m_deviceLayoutName = "";
+         m_deviceLayoutName = ""s;
          m_deviceLayoutHandler(false, m_deviceLayoutDontAskAgain);
          ImGui::CloseCurrentPopup();
       }
       ImGui::SameLine(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize("Apply").x - ImGui::GetStyle().FramePadding.x * 2.f);
       if (ImGui::Button("Apply"))
       {
-         m_deviceLayoutName = "";
+         m_deviceLayoutName = ""s;
          m_deviceLayoutHandler(true, m_deviceLayoutDontAskAgain);
          ImGui::CloseCurrentPopup();
       }

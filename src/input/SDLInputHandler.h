@@ -88,7 +88,7 @@ public:
    }
 
 private:
-   string GetJoySettingId(SDL_Joystick* joy) const
+   static string GetJoySettingId(SDL_Joystick* joy)
    {
       if (const char* serial = SDL_GetJoystickSerial(joy); serial)
          return "SDLJoy_"s + serial;
@@ -105,64 +105,64 @@ private:
    {
       switch (SDL_GetGamepadButtonLabel(gamepad, button))
       {
-      case SDL_GAMEPAD_BUTTON_LABEL_A: return "A";
-      case SDL_GAMEPAD_BUTTON_LABEL_B: return "B";
-      case SDL_GAMEPAD_BUTTON_LABEL_X: return "X";
-      case SDL_GAMEPAD_BUTTON_LABEL_Y: return "Y";
-      case SDL_GAMEPAD_BUTTON_LABEL_CROSS: return "Cross"; // ICON_FK_TIMES
-      case SDL_GAMEPAD_BUTTON_LABEL_CIRCLE: return "Circle"; // ICON_FK_CIRCLE_O
-      case SDL_GAMEPAD_BUTTON_LABEL_SQUARE: return "Square"; // ICON_FK_SQUARE_O
-      case SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE: return "Triangle"; // Sadly, nothing for triangle
+      case SDL_GAMEPAD_BUTTON_LABEL_A: return "A"s;
+      case SDL_GAMEPAD_BUTTON_LABEL_B: return "B"s;
+      case SDL_GAMEPAD_BUTTON_LABEL_X: return "X"s;
+      case SDL_GAMEPAD_BUTTON_LABEL_Y: return "Y"s;
+      case SDL_GAMEPAD_BUTTON_LABEL_CROSS: return "Cross"s; // ICON_FK_TIMES
+      case SDL_GAMEPAD_BUTTON_LABEL_CIRCLE: return "Circle"s; // ICON_FK_CIRCLE_O
+      case SDL_GAMEPAD_BUTTON_LABEL_SQUARE: return "Square"s; // ICON_FK_SQUARE_O
+      case SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE: return "Triangle"s; // Sadly, nothing for triangle
       default:
          switch (button)
          {
-         case SDL_GAMEPAD_BUTTON_SOUTH: return "South";
-         case SDL_GAMEPAD_BUTTON_EAST: return "East";
-         case SDL_GAMEPAD_BUTTON_WEST: return "West";
-         case SDL_GAMEPAD_BUTTON_NORTH: return "North";
-         case SDL_GAMEPAD_BUTTON_BACK: return "Back";
-         case SDL_GAMEPAD_BUTTON_GUIDE: return "Guide";
-         case SDL_GAMEPAD_BUTTON_START: return "Start";
-         case SDL_GAMEPAD_BUTTON_LEFT_STICK: return "Left Stick";
-         case SDL_GAMEPAD_BUTTON_RIGHT_STICK: return "Right Stick";
-         case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: return "Left Shoulder";
-         case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER: return "Right Shoulder";
-         case SDL_GAMEPAD_BUTTON_DPAD_UP: return "DPad Up";
-         case SDL_GAMEPAD_BUTTON_DPAD_DOWN: return "DPad Down";
-         case SDL_GAMEPAD_BUTTON_DPAD_LEFT: return "DPad Left";
-         case SDL_GAMEPAD_BUTTON_DPAD_RIGHT: return "DPad Right";
-         case SDL_GAMEPAD_BUTTON_MISC1: return "Misc #1";
-         case SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1: return "Right Paddle 1";
-         case SDL_GAMEPAD_BUTTON_LEFT_PADDLE1: return "Left Paddle 1";
-         case SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2: return "Right Paddle 2";
-         case SDL_GAMEPAD_BUTTON_LEFT_PADDLE2: return "Left Paddle 2";
-         case SDL_GAMEPAD_BUTTON_TOUCHPAD: return "Touchpad";
-         case SDL_GAMEPAD_BUTTON_MISC2: return "Misc #2";
-         case SDL_GAMEPAD_BUTTON_MISC3: return "Misc #3";
-         case SDL_GAMEPAD_BUTTON_MISC4: return "Misc #4";
-         case SDL_GAMEPAD_BUTTON_MISC5: return "Misc #5";
-         case SDL_GAMEPAD_BUTTON_MISC6: return "Misc #6";
+         case SDL_GAMEPAD_BUTTON_SOUTH: return "South"s;
+         case SDL_GAMEPAD_BUTTON_EAST: return "East"s;
+         case SDL_GAMEPAD_BUTTON_WEST: return "West"s;
+         case SDL_GAMEPAD_BUTTON_NORTH: return "North"s;
+         case SDL_GAMEPAD_BUTTON_BACK: return "Back"s;
+         case SDL_GAMEPAD_BUTTON_GUIDE: return "Guide"s;
+         case SDL_GAMEPAD_BUTTON_START: return "Start"s;
+         case SDL_GAMEPAD_BUTTON_LEFT_STICK: return "Left Stick"s;
+         case SDL_GAMEPAD_BUTTON_RIGHT_STICK: return "Right Stick"s;
+         case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: return "Left Shoulder"s;
+         case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER: return "Right Shoulder"s;
+         case SDL_GAMEPAD_BUTTON_DPAD_UP: return "DPad Up"s;
+         case SDL_GAMEPAD_BUTTON_DPAD_DOWN: return "DPad Down"s;
+         case SDL_GAMEPAD_BUTTON_DPAD_LEFT: return "DPad Left"s;
+         case SDL_GAMEPAD_BUTTON_DPAD_RIGHT: return "DPad Right"s;
+         case SDL_GAMEPAD_BUTTON_MISC1: return "Misc #1"s;
+         case SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1: return "Right Paddle 1"s;
+         case SDL_GAMEPAD_BUTTON_LEFT_PADDLE1: return "Left Paddle 1"s;
+         case SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2: return "Right Paddle 2"s;
+         case SDL_GAMEPAD_BUTTON_LEFT_PADDLE2: return "Left Paddle 2"s;
+         case SDL_GAMEPAD_BUTTON_TOUCHPAD: return "Touchpad"s;
+         case SDL_GAMEPAD_BUTTON_MISC2: return "Misc #2"s;
+         case SDL_GAMEPAD_BUTTON_MISC3: return "Misc #3"s;
+         case SDL_GAMEPAD_BUTTON_MISC4: return "Misc #4"s;
+         case SDL_GAMEPAD_BUTTON_MISC5: return "Misc #5"s;
+         case SDL_GAMEPAD_BUTTON_MISC6: return "Misc #6"s;
          }
          break;
       }
-      return "";
+      return ""s;
    }
 
    static string GetGamepadAxisName(SDL_Gamepad* gamepad, SDL_GamepadAxis axis)
    {
       switch (axis)
       {
-      case SDL_GAMEPAD_AXIS_LEFTX: return "Left Stick X"; break;
-      case SDL_GAMEPAD_AXIS_LEFTY: return "Left Stick Y"; break;
-      case SDL_GAMEPAD_AXIS_RIGHTX: return "Right Stick X"; break;
-      case SDL_GAMEPAD_AXIS_RIGHTY: return "Right Stick Y"; break;
-      case SDL_GAMEPAD_AXIS_LEFT_TRIGGER: return "Left Trigger"; break;
-      case SDL_GAMEPAD_AXIS_RIGHT_TRIGGER: return "Right Trigger"; break;
+      case SDL_GAMEPAD_AXIS_LEFTX: return "Left Stick X"s;
+      case SDL_GAMEPAD_AXIS_LEFTY: return "Left Stick Y"s;
+      case SDL_GAMEPAD_AXIS_RIGHTX: return "Right Stick X"s;
+      case SDL_GAMEPAD_AXIS_RIGHTY: return "Right Stick Y"s;
+      case SDL_GAMEPAD_AXIS_LEFT_TRIGGER: return "Left Trigger"s;
+      case SDL_GAMEPAD_AXIS_RIGHT_TRIGGER: return "Right Trigger"s;
       }
-      return "";
+      return ""s;
    }
 
-   uint16_t GetGamepadButton(SDL_GamepadButton button, SDL_GamepadBinding** bindings, int nBindings)
+   static uint16_t GetGamepadButton(SDL_GamepadButton button, SDL_GamepadBinding** bindings, int nBindings)
    {
       for (int i = 0; i < nBindings; i++)
       {
@@ -185,7 +185,7 @@ private:
       return 0xFFFF;
    }
 
-   uint16_t GetGamepadAxis(SDL_GamepadAxis axis, SDL_GamepadBinding** bindings, int nBindings)
+   static uint16_t GetGamepadAxis(SDL_GamepadAxis axis, SDL_GamepadBinding** bindings, int nBindings)
    {
       for (int i = 0; i < nBindings; i++)
          if (bindings[i]->input_type == SDL_GAMEPAD_BINDTYPE_AXIS && bindings[i]->output_type == SDL_GAMEPAD_BINDTYPE_AXIS && bindings[i]->output.axis.axis == axis)
@@ -247,13 +247,13 @@ private:
       uint16_t deviceId = m_pininput.RegisterDevice(settingId, InputManager::DeviceType::Joystick, joyName);
       m_joystickIds[id] = deviceId;
 
-      // Register all axis to allow selection in the UI (they will evetually be overriden if identified below)
+      // Register all axis to allow selection in the UI (they will eventually be overriden if identified below)
       const int nAxis = SDL_GetNumJoystickAxes(joystick);
       for (int axis = 0; axis < nAxis; axis++)
-         m_pininput.RegisterElementName(deviceId, true, 0x0200 | static_cast<uint16_t>(axis), "Axis #"s + std::to_string(axis));
+         m_pininput.RegisterElementName(deviceId, true, 0x0200 | static_cast<uint16_t>(axis), "Axis #" + std::to_string(axis));
 
       // We are using the gamepad API the opposite of its intent: it is designed to be used when a game expects some standard layout and
-      // matches them against the actual joystick. In our case, we don't care about standard layout as we use non standard devices but
+      // matches them against the actual joystick. In our case, we don't care about standard layout as we use non standard devices, but
       // we are interested on the button binding for better button naming (if available) and for generic gamepad layout detection
       if (SDL_IsGamepad(id))
       {
@@ -328,9 +328,9 @@ private:
                      leftTrigger, rightTrigger, leftShoulder, rightShoulder, leftStickX, leftStickY, rightStickY,
                      southButton, northButton, eastButton, backButton, startButton,
                      dpadLeftButton, dpadRightButton, dpadUpButton, dpadDownButton]( //
-                     std::function<bool(const vector<ButtonMapping>&, unsigned int)> mapButton, //
-                     std::function<bool(const SensorMapping&, SensorMapping::Type type, bool isLinear)> mapPlunger, //
-                     std::function<bool(const SensorMapping&, const SensorMapping&)> mapNudge)
+                     const std::function<bool(const vector<ButtonMapping>&, unsigned int)>& mapButton, //
+                     const std::function<bool(const SensorMapping&, SensorMapping::Type type, bool isLinear)>& mapPlunger, //
+                     const std::function<bool(const SensorMapping&, const SensorMapping&)>& mapNudge)
                   {
                      bool success = true;
                      success &= mapButton(ButtonMapping::Create(deviceId, leftTrigger, -0.3f), m_pininput.GetLeftFlipperActionId());
@@ -375,16 +375,16 @@ private:
       {
          // We only register the 6 predefined axis. The other ports are all generic and based on user configuration
          // Note: the default mapping we propose only maps the plunger and nudge acceleration, leaving the user to decide if he wants to use velocities as well (with a recent enough firmware)
-         m_pininput.RegisterElementName(deviceId, true, 0x0200, "Nudge X Acceleration");
-         m_pininput.RegisterElementName(deviceId, true, 0x0201, "Nudge Y Acceleration");
-         m_pininput.RegisterElementName(deviceId, true, 0x0202, "Plunger Position");
-         m_pininput.RegisterElementName(deviceId, true, 0x0203, "Nudge X Velocity");
-         m_pininput.RegisterElementName(deviceId, true, 0x0204, "Nudge Y Velocity");
-         m_pininput.RegisterElementName(deviceId, true, 0x0205, "Plunger Velocity");
+         m_pininput.RegisterElementName(deviceId, true, 0x0200, "Nudge X Acceleration"s);
+         m_pininput.RegisterElementName(deviceId, true, 0x0201, "Nudge Y Acceleration"s);
+         m_pininput.RegisterElementName(deviceId, true, 0x0202, "Plunger Position"s);
+         m_pininput.RegisterElementName(deviceId, true, 0x0203, "Nudge X Velocity"s);
+         m_pininput.RegisterElementName(deviceId, true, 0x0204, "Nudge Y Velocity"s);
+         m_pininput.RegisterElementName(deviceId, true, 0x0205, "Plunger Velocity"s);
          auto defaultMapping = [this, deviceId]( //
-            std::function<bool(const vector<ButtonMapping>&, unsigned int)> mapButton, //
-            std::function<bool(const SensorMapping&, SensorMapping::Type type, bool isLinear)> mapPlunger, //
-            std::function<bool(const SensorMapping&, const SensorMapping&)> mapNudge)
+            const std::function<bool(const vector<ButtonMapping>&, unsigned int)>& mapButton, //
+            const std::function<bool(const SensorMapping&, SensorMapping::Type type, bool isLinear)>& mapPlunger, //
+            const std::function<bool(const SensorMapping&, const SensorMapping&)>& mapNudge)
          {
             bool success = true;
             success &= mapNudge(SensorMapping::Create(deviceId, 0x0200, SensorMapping::Type::Acceleration), SensorMapping::Create(deviceId, 0x0201, SensorMapping::Type::Acceleration));

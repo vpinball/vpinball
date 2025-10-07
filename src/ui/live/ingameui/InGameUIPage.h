@@ -58,7 +58,7 @@ private:
    float m_adjustedValue = 0.f;
    uint32_t m_lastUpdateMs = 0;
    uint32_t m_pressStartMs = 0;
-   string m_pressedItemLabel = ""s;
+   string m_pressedItemLabel;
    float m_pressedItemScroll = 0.f;
    vector<std::unique_ptr<InGameUIItem>> m_items;
    int m_selectedItem = 0;

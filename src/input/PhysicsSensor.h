@@ -17,7 +17,7 @@ public:
    const string& GetLabel() const { return m_label; }
 
    void ClearMapping();
-   void LoadMapping(const Settings& settings) { SetMapping(settings.LoadValueWithDefault(Settings::Section::Input, "Mapping."s + m_settingId, m_defaultMappings)); }
+   void LoadMapping(const Settings& settings) { SetMapping(settings.LoadValueWithDefault(Settings::Section::Input, "Mapping." + m_settingId, m_defaultMappings)); }
    void SetMapping(const string& mappingString);
    void SetMapping(const SensorMapping& mapping);
    void SaveMapping(Settings& settings) const;

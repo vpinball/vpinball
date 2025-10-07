@@ -13,7 +13,7 @@ PlungerSettingsPage::PlungerSettingsPage()
 {
    const InputManager& input = GetInput();
 
-   auto keyboardPlunger = std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Keyboard emulated plunger");
+   auto keyboardPlunger = std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Keyboard emulated plunger"s);
    AddItem(keyboardPlunger);
 
    auto oneSecRetract = std::make_unique<InGameUIItem>(
@@ -22,7 +22,7 @@ PlungerSettingsPage::PlungerSettingsPage()
       InGameUIItem::SaveSettingBool(Settings::Player, "PlungerRetract"s));
    AddItem(oneSecRetract);
 
-   auto hardwarePlunger = std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Hardware sensor plunger");
+   auto hardwarePlunger = std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Hardware sensor plunger"s);
    AddItem(hardwarePlunger);
 
    const auto& plungerPosSensor = input.GetPlungerPositionSensor();
@@ -58,7 +58,7 @@ void PlungerSettingsPage::Close()
 
 void PlungerSettingsPage::AppendPlot()
 {
-   const float t = static_cast<float>(msec()) / 1000.f;
+   const float t = static_cast<float>(msec() / 1000.);
    m_positionPlot.AddPoint(t, m_player->m_pininput.GetPlungerPos());
    m_velocityPlot.AddPoint(t, m_player->m_pininput.GetPlungerSpeed());
 }
@@ -67,7 +67,6 @@ void PlungerSettingsPage::Render()
 {
    InGameUIPage::Render();
 
-   const ImGuiIO& io = ImGui::GetIO();
    const ImGuiStyle& style = ImGui::GetStyle();
 
    const ImVec2 winSize = ImVec2(GetWindowSize().x, 200.f);
@@ -78,7 +77,7 @@ void PlungerSettingsPage::Render()
    ImGui::SetNextWindowSize(winSize);
    ImGui::Begin("PlungerOverlay", nullptr, window_flags);
    ImPlot::PushStyleColor(ImPlotCol_LegendBg, ImVec4(0.11f, 0.11f, 0.14f, 0.03f));
-   ImGui::PushFont(nullptr, style.FontSizeBase * 0.5f); // Smaller font to keep grtaphics readable
+   ImGui::PushFont(nullptr, style.FontSizeBase * 0.5f); // Smaller font to keep graphics readable
 
    AppendPlot();
 

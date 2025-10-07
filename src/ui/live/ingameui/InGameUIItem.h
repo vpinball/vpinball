@@ -18,7 +18,7 @@ public:
       : m_type(Type::Label) // Common
       , m_labelType(type)
       , m_label(std::move(label))
-      , m_path(""s) // Unused
+      , m_path() // Unused
       , m_minValue(0.f)
       , m_maxValue(0.f)
       , m_step(0.f)
@@ -36,7 +36,7 @@ public:
       , m_inputAction(inputAction)
       , m_initialStringValue(inputAction->GetMappingString())
       , m_defStringValue(inputAction->GetDefaultMappingString())
-      , m_path(""s) // Unused
+      , m_path() // Unused
       , m_minValue(0.f)
       , m_maxValue(0.f)
       , m_step(0.f)
@@ -53,7 +53,7 @@ public:
       , m_physicsSensor(physicsSensor)
       , m_physicsSensorTypeMask(typeMask)
       , m_initialStringValue(physicsSensor->GetMappingString())
-      , m_path(""s) // Unused
+      , m_path() // Unused
       , m_minValue(0.f)
       , m_maxValue(0.f)
       , m_step(0.f)
@@ -94,7 +94,7 @@ public:
       , m_onChangeInt(onChange)
       , m_onResetSave(onResetSave)
       , m_onSaveInt(onSave)
-      , m_path(""s) // Unused
+      , m_path() // Unused
       , m_enum()
    {
       Validate();
@@ -115,7 +115,7 @@ public:
       , m_onChangeFloat(onChange)
       , m_onResetSave(onResetSave)
       , m_onSaveFloat(onSave)
-      , m_path(""s) // Unused
+      , m_path() // Unused
       , m_enum()
    {
       Validate();
@@ -136,8 +136,8 @@ public:
       , m_onChangeInt(onChange)
       , m_onResetSave(onResetSave)
       , m_onSaveInt(onSave)
-      , m_path(""s) // Unused
-      , m_format(""s)
+      , m_path() // Unused
+      , m_format()
    {
       Validate();
    }
@@ -156,7 +156,7 @@ public:
       , m_onChangeBool(onChange)
       , m_onResetSave(onResetSave)
       , m_onSaveBool(onSave)
-      , m_path(""s) // Unused
+      , m_path() // Unused
       , m_enum()
    {
       Validate();
@@ -182,8 +182,8 @@ public:
 
    explicit InGameUIItem(Type type)
       : m_type(type) // Common
-      , m_label(""s)
-      , m_path(""s) // Unused
+      , m_label()
+      , m_path() // Unused
       , m_minValue(0.f)
       , m_maxValue(0.f)
       , m_step(0.f)
@@ -226,7 +226,7 @@ public:
    void SetInitialValue(bool v);
    void SetInitialValue(int v);
    void SetInitialValue(float v);
-   void SetInitialValue(const string& s);
+   void SetInitialValue(const string& v);
    bool IsModified() const;
    void ResetSave(Settings& settings) const;
    void Save(Settings& settings, bool isTableOverride);
@@ -235,7 +235,7 @@ public:
    void SetDefaultValue(bool v);
    void SetDefaultValue(int v);
    void SetDefaultValue(float v);
-   void SetDefaultValue(const string& s);
+   void SetDefaultValue(const string& v);
    bool IsDefaultValue() const;
    void ResetToDefault();
 

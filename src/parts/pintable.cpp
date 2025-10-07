@@ -1109,7 +1109,7 @@ void PinTable::AutoSave()
       const HANDLE hEvent = m_vpinball->PostWorkToWorkerThread(COMPLETE_AUTOSAVE, (LPARAM)pasp);
       m_vAsyncHandles.push_back(hEvent);
 
-      m_vpinball->SetActionCur("Completing AutoSave");
+      m_vpinball->SetActionCur("Completing AutoSave"s);
    }
    else
    {
@@ -1589,7 +1589,9 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
 
    string numTimesSaved;
    ReadInfoValue(pstg, L"TableSaveRev"s, numTimesSaved, NULL);
-   m_numTimesSaved = !numTimesSaved.empty() ? atoi(numTimesSaved.c_str()) : 0;
+   m_numTimesSaved = 0;
+   if (!numTimesSaved.empty())
+      std::from_chars(numTimesSaved.c_str(), numTimesSaved.c_str() + numTimesSaved.length(), m_numTimesSaved);
 
    // Write the version to the registry.  This will be read later by the front end.
    g_pvp->m_settings.SaveValue(Settings::Version, m_tableName, m_version);
@@ -3838,11 +3840,11 @@ LRESULT PinTable::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             if (lParam == S_OK)
             {
-                m_vpinball->SetActionCur("");
+                m_vpinball->SetActionCur(""s);
             }
             else
             {
-                m_vpinball->SetActionCur("Autosave Failed");
+                m_vpinball->SetActionCur("Autosave Failed"s);
             }
             BeginAutoSaveCounter();
             const HANDLE hEvent = (HANDLE)wParam;
@@ -6235,9 +6237,9 @@ float PinTable::GetSurfaceHeight(const string& name, float x, float y) const
          if (wname == item->GetScriptable()->m_wzName)
          {
             if (item->GetItemType() == eItemSurface)
-               return ((Surface *)item)->m_d.m_heighttop;
+               return ((const Surface *)item)->m_d.m_heighttop;
             else //if (item->GetItemType() == eItemRamp)
-               return ((Ramp *)item)->GetSurfaceHeight(x, y);
+               return ((const Ramp *)item)->GetSurfaceHeight(x, y);
          }
       }
    }
@@ -6259,9 +6261,9 @@ Material* PinTable::GetSurfaceMaterial(const string& name) const
          if (wname == item->GetScriptable()->m_wzName)
          {
             if (item->GetItemType() == eItemSurface)
-               return GetMaterial(((Surface *)item)->m_d.m_szTopMaterial);
+               return GetMaterial(((const Surface *)item)->m_d.m_szTopMaterial);
             else //if (item->GetItemType() == eItemRamp)
-               return GetMaterial(((Ramp *)item)->m_d.m_szMaterial);
+               return GetMaterial(((const Ramp *)item)->m_d.m_szMaterial);
          }
       }
    }
@@ -6283,9 +6285,9 @@ Texture* PinTable::GetSurfaceImage(const string& name) const
          if (wname == item->GetScriptable()->m_wzName)
          {
             if (item->GetItemType() == eItemSurface)
-               return GetImage(((Surface *)item)->m_d.m_szImage);
+               return GetImage(((const Surface *)item)->m_d.m_szImage);
             else //if (item->GetItemType() == eItemRamp)
-               return GetImage(((Ramp *)item)->m_d.m_szImage);
+               return GetImage(((const Ramp *)item)->m_d.m_szImage);
          }
       }
    }

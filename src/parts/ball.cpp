@@ -79,8 +79,8 @@ void Ball::SetDefaults(const bool fromMouseClick)
    m_hitBall.m_d.m_radius = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Radius"s, 25.f) : 25.f;
    m_d.m_forceReflection = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ForceReflection"s, false) : false;
    m_d.m_decalMode = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "DecalMode"s, false) : false;
-   m_d.m_szImage = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Image"s, ""s) : "";
-   m_d.m_imageDecal = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "DecalImage"s, ""s) : "";
+   m_d.m_szImage = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Image"s, ""s) : ""s;
+   m_d.m_imageDecal = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "DecalImage"s, ""s) : ""s;
    m_d.m_bulb_intensity_scale = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "BulbIntensityScale"s, 1.f) : 1.f;
    m_d.m_playfieldReflectionStrength = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "PFReflStrength"s, 1.f) : 1.f;
    m_d.m_color = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Color"s, (int) RGB(255, 255, 255)) : RGB(255, 255, 255);

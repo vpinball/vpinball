@@ -89,14 +89,14 @@ void PhysicsSensor::SetMapping(const SensorMapping& mapping)
       m_integrator = std::make_shared<VelocityToAccelerationFilter>();
    else if (mapping.GetType() == SensorMapping::Type::Acceleration && m_sensorType == SensorMapping::Type::Position)
    {
-      // Not supported but is it usefull ?
+      // Not supported but is it useful ?
       assert(false);
       m_integrator = std::make_shared<NoOpStoreSensorFilter>();
    }
    else if ((mapping.GetType() == SensorMapping::Type::Velocity && m_sensorType == SensorMapping::Type::Position)
       || (mapping.GetType() == SensorMapping::Type::Acceleration && m_sensorType == SensorMapping::Type::Velocity))
    {
-      // Not supported but is it usefull ?
+      // Not supported but is it useful ?
       assert(false);
       m_integrator = std::make_shared<NoOpStoreSensorFilter>();
    }
@@ -111,16 +111,16 @@ void PhysicsSensor::SetMapping(const SensorMapping& mapping)
 void PhysicsSensor::SaveMapping(Settings& settings) const
 {
    if (m_inputMapping == nullptr)
-      settings.DeleteValue(Settings::Section::Input, "Mapping."s + m_settingId);
+      settings.DeleteValue(Settings::Section::Input, "Mapping." + m_settingId);
    else
-      settings.SaveValue(Settings::Section::Input, "Mapping."s + m_settingId, GetMappingString());
+      settings.SaveValue(Settings::Section::Input, "Mapping." + m_settingId, GetMappingString());
 }
 
 string PhysicsSensor::GetMappingString() const
 {
    if (m_inputMapping == nullptr)
-      return "";
-   
+      return ""s;
+
    std::stringstream result;
    result << m_eventManager->GetDeviceSettingId(m_inputMapping->GetDeviceId());
    result << ';';
@@ -131,7 +131,7 @@ string PhysicsSensor::GetMappingString() const
    case SensorMapping::Type::Position: result << 'P'; break;
    case SensorMapping::Type::Velocity: result << 'V'; break;
    case SensorMapping::Type::Acceleration: result << 'A'; break;
-   default: return "";
+   default: return ""s;
    }
    result << ';';
    result << std::to_string(m_inputMapping->GetDeadZone());
@@ -172,4 +172,3 @@ void PhysicsSensor::Override(float value)
    }
    m_integrator->Push(0, value);
 }
-

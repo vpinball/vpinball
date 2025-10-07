@@ -584,7 +584,7 @@ void InGameUIPage::Render()
          if (item->m_inputAction->IsMapped())
          {
             ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
-            if (ImGui::Button((""s + ICON_FK_TIMES + "##" + item->m_label).c_str(), ImVec2(closeButtonWidth, 0)))
+            if (ImGui::Button((ICON_FK_TIMES + "##"s + item->m_label).c_str(), ImVec2(closeButtonWidth, 0)))
             {
                item->m_inputAction->ClearMapping();
                if (item->m_inputAction->IsNavigationAction())
@@ -629,7 +629,7 @@ void InGameUIPage::Render()
          else
          {
             ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
-            if (ImGui::Button((""s + ICON_FK_TIMES + "##" + item->m_label).c_str(), ImVec2(closeButtonWidth, 0)))
+            if (ImGui::Button((ICON_FK_TIMES + "##"s + item->m_label).c_str(), ImVec2(closeButtonWidth, 0)))
                item->m_physicsSensor->ClearMapping();
             ImGui::SameLine();
          }
@@ -744,13 +744,14 @@ void InGameUIPage::RenderSensorPopup()
    }
    if (m_defineSensorItem && ImGui::BeginPopupModal((m_defineSensorItem->m_label + " input binding").c_str(), &m_defineSensorPopup, ImGuiWindowFlags_AlwaysAutoResize))
    {
-      ImGui::Text(("Select the hardware sensor you want to use for "s + m_defineSensorItem->m_label).c_str(), m_defineSensorItem->m_label.c_str());
+      ImGui::Text(("Select the hardware sensor you want to use for " + m_defineSensorItem->m_label).c_str(), m_defineSensorItem->m_label.c_str());
       ImGui::Spacing();
 
       const vector<uint32_t> sensors = m_player->m_pininput.GetAllAxis();
 
       int selectedAxis = -1;
       vector<string> axisNames;
+      {
       int i = 0;
       for (uint32_t id : sensors)
       {
@@ -760,6 +761,7 @@ void InGameUIPage::RenderSensorPopup()
          if (deviceId == m_defineSensorItem->m_physicsSensor->GetMapping().GetDeviceId() && axisId == m_defineSensorItem->m_physicsSensor->GetMapping().GetAxisId())
             selectedAxis = i;
          i++;
+      }
       }
       if (ImGui::Combo("Hardware Sensor", &selectedAxis, [](void* user_data, int idx) { return static_cast<vector<string>*>(user_data)->at(idx).c_str(); }, &axisNames, static_cast<int>(axisNames.size())))
       {
