@@ -157,7 +157,7 @@ void Settings::Validate(const bool addDefaults)
    SettingBool(Section::Player, "PlungerLinearSensor"s, false, "Symmetric or assymetric plunger position sensor."s);
    
    SettingBool(Section::Player, "SimulatedPlumb"s, true, "Enable plumb simulation"s);
-   SettingFloat(Section::Player, "PlumbMassFactor"s, 0.1f, 0.f, 1.f, "Plumb inertia factor"s);
+   SettingFloat(Section::Player, "PlumbInertia"s, 0.1f, 0.f, 1.f, "Plumb inertia factor"s);
    SettingFloat(Section::Player, "PlumbThresholdAngle"s, 35.f, 5.f, 60.f, "Angle that causes tilt"s);
 
    SettingBool(Section::Player, "EnableLegacyNudge"s, false, ""s);

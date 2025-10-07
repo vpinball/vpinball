@@ -56,7 +56,10 @@ public:
          break;
 
       case SDL_EVENT_MOUSE_BUTTON_DOWN:
-      case SDL_EVENT_MOUSE_BUTTON_UP: m_pininput.PushButtonEvent(m_pininput.GetMouseDeviceId(), e.button.button, e.button.timestamp, e.button.down); break;
+      case SDL_EVENT_MOUSE_BUTTON_UP:
+         if (e.button.which != SDL_TOUCH_MOUSEID && e.button.which != SDL_PEN_MOUSEID)
+            m_pininput.PushButtonEvent(m_pininput.GetMouseDeviceId(), e.button.button, e.button.timestamp, e.button.down);
+         break;
 
       case SDL_EVENT_JOYSTICK_ADDED: OnJoystickAdded(e.jdevice.which); break;
 
