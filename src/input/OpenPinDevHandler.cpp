@@ -473,7 +473,6 @@ void OpenPinDevHandler::Update()
    OpenPinballDeviceReport cr = {};
 
    // read input from each device
-   //bool isNewReport = false;
    for (auto &p : m_OpenPinDevContext->m_openPinDevs)
       p->ReadReport();
 }
