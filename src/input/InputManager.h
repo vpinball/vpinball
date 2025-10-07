@@ -235,7 +235,7 @@ private:
    ankerl::unordered_dense::map<uint32_t, vector<SensorMapping*>> m_sensorMappings;
    vector<std::function<void()>> m_axisListeners;
 
-   class DeviceDef
+   class DeviceDef final
    {
    public:
       DeviceDef(uint16_t id, const string& name, const string& settingsId)

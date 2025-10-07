@@ -511,7 +511,7 @@ void Renderer::SwapAORenderTargets()
    m_pAORenderTarget2 = tmpAO;
 }
 
-std::shared_ptr<BaseTexture> Renderer::EnvmapPrecalc(std::shared_ptr<const BaseTexture> envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres)
+std::shared_ptr<BaseTexture> Renderer::EnvmapPrecalc(const std::shared_ptr<const BaseTexture>& envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres)
 {
    const void* __restrict envmap = envTex->datac();
    const unsigned int env_xres = envTex->width();
@@ -1354,7 +1354,7 @@ void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const ve
    m_renderDevice->m_DMDShader->SetTechnique(isBackdrop ? SHADER_TECHNIQUE_display_Seg : SHADER_TECHNIQUE_display_Seg_world);
 }
 
-void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, std::shared_ptr<BaseTexture> dmd, const float alpha, const ColorSpace colorSpace, Vertex3D_NoTex2* vertices,
+void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, const std::shared_ptr<BaseTexture>& dmd, const float alpha, const ColorSpace colorSpace, Vertex3D_NoTex2* vertices,
    const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex, const vec4& glassArea, const vec3& glassAmbient)
 {
    // Legacy DMD renderer
@@ -1523,7 +1523,7 @@ void Renderer::DrawDynamics(bool onlyBalls)
    m_render_mask = mask;
 }
 
-void Renderer::DrawSprite(const float posx, const float posy, const float width, const float height, const COLORREF color, std::shared_ptr<const Sampler> tex, const float intensity, const bool backdrop)
+void Renderer::DrawSprite(const float posx, const float posy, const float width, const float height, const COLORREF color, const std::shared_ptr<const Sampler>& tex, const float intensity, const bool backdrop)
 {
    Vertex3D_NoTex2 vertices[4] =
    {

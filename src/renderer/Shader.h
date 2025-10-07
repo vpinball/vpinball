@@ -522,10 +522,10 @@ public:
    void SetVector(const ShaderUniforms uniformName, const vec4* const pVector);
    void SetVector(const ShaderUniforms uniformName, const float x, const float y, const float z, const float w);
    void SetFloat4v(const ShaderUniforms uniformName, const vec4* const pData, const unsigned int count);
-   void SetTexture(const ShaderUniforms uniformName, const std::shared_ptr<const Sampler> sampler, const SamplerFilter filter = SF_UNDEFINED, const SamplerAddressMode clampU = SA_UNDEFINED, const SamplerAddressMode clampV = SA_UNDEFINED);
+   void SetTexture(const ShaderUniforms uniformName, const std::shared_ptr<const Sampler>& sampler, const SamplerFilter filter = SF_UNDEFINED, const SamplerAddressMode clampU = SA_UNDEFINED, const SamplerAddressMode clampV = SA_UNDEFINED);
    void SetTextureNull(const ShaderUniforms uniformName);
    void SetTexture(const ShaderUniforms uniformName, ITexManCacheable* const texel, const bool force_linear_rgb = false, const SamplerFilter filter = SF_UNDEFINED, const SamplerAddressMode clampU = SA_UNDEFINED, const SamplerAddressMode clampV = SA_UNDEFINED);
-   
+
    class ShaderState* m_state = nullptr; // State that will be applied for the next begin/end pair
 
 private:

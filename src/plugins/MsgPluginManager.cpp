@@ -92,7 +92,7 @@ MsgPluginManager::~MsgPluginManager()
 unsigned int MsgPluginManager::GetPluginEndpoint(const char* id)
 {
    MsgPluginManager& pm = GetInstance();
-   auto item = std::ranges::find_if(pm.m_plugins, [id](std::shared_ptr<MsgPlugin>& plg) { return plg->IsLoaded() && plg->m_id == id; });
+   auto item = std::ranges::find_if(pm.m_plugins, [id](const std::shared_ptr<MsgPlugin>& plg) { return plg->IsLoaded() && plg->m_id == id; });
    if (item == pm.m_plugins.end())
       return 0;
    return item->get()->m_endpointId;
@@ -102,7 +102,7 @@ void MsgPluginManager::GetEndpointInfo(const uint32_t endpointId, MsgEndpointInf
 {
    MsgPluginManager& pm = GetInstance();
    assert(std::this_thread::get_id() == pm.m_apiThread);
-   auto item = std::ranges::find_if(pm.m_plugins, [endpointId](std::shared_ptr<MsgPlugin>& plg) { return plg->IsLoaded() && plg->m_endpointId == endpointId; });
+   auto item = std::ranges::find_if(pm.m_plugins, [endpointId](const std::shared_ptr<MsgPlugin>& plg) { return plg->IsLoaded() && plg->m_endpointId == endpointId; });
    if (item == pm.m_plugins.end())
       return;
    info->id = (*item)->m_id.c_str();
@@ -195,7 +195,7 @@ void MsgPluginManager::BroadcastMsg(const uint32_t endpointId, const unsigned in
    pm.m_broadcastInProgress--;
    if (pm.m_broadcastInProgress == 0 && !pm.m_deferredAfterBroadCastRunnables.empty())
    {
-      for (auto fn : pm.m_deferredAfterBroadCastRunnables)
+      for (const auto& fn : pm.m_deferredAfterBroadCastRunnables)
          fn();
       pm.m_deferredAfterBroadCastRunnables.clear();
    }
@@ -392,7 +392,7 @@ void MsgPluginManager::ScanPluginFolder(const std::string& pluginDir, const std:
 
 void MsgPluginManager::UnloadPlugins()
 {
-   for (auto plugin : m_plugins)
+   for (const auto& plugin : m_plugins)
       if (!plugin->m_library.empty() && plugin->IsLoaded())
          plugin->Unload();
 }

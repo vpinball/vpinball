@@ -1015,7 +1015,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as
    SafeArrayAccessData(psa, (void **)&p);
    if (g_pplayer->m_scaleFX_DMD)
    {
-      uint32_t *const __restrict rgba = new uint32_t[size * scale * scale];
+      uint32_t *const __restrict rgba = new uint32_t[size * (size_t)(scale * scale)];
       for (int ofs = 0; ofs < size; ++ofs)
          rgba[ofs] = V_UI4(&p[ofs]); 
       upscale(rgba, g_pplayer->m_dmdSize, true);

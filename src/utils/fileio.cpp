@@ -448,7 +448,7 @@ HRESULT BiffReader::GetVector3Padded(Vertex3Ds& vec)
    return hr;
 }
 
-HRESULT BiffReader::Load(std::function<bool(const int id, BiffReader *const pbr)> processToken)
+HRESULT BiffReader::Load(const std::function<bool(const int id, BiffReader *const pbr)>& processToken)
 {
    int tag = 0;
    while (tag != FID(ENDB))

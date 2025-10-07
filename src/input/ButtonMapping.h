@@ -3,7 +3,7 @@
 #pragma once
 
 
-class ButtonMapping
+class ButtonMapping final
 {
 public:
    // Input event manager that manages button event sources and dispatch events to mappings
@@ -78,7 +78,7 @@ public:
          m_eventManager->Unregister(this);
    }
 
-   bool operator==(const ButtonMapping& other)
+   bool operator==(const ButtonMapping& other) const
    {
       return m_eventManager == other.m_eventManager
          && m_mappingHandler == other.m_mappingHandler

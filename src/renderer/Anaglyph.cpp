@@ -280,7 +280,7 @@ void Anaglyph::Update()
    // Identify the bichromatic eye with its color from the luminance calibration.
    //vec3 eyeL(m_rgb2Yl), eyeR(m_rgb2Yr); // Both will work. I'm not sure which one is the correct approach here
    vec3 eyeL(m_leftEyeColor), eyeR(m_rightEyeColor);
-   #define vecChannel(v, c) (c == 0 ? v.x : c == 1 ? v.y : v.z)
+   #define vecChannel(v, c) ((c) == 0 ? (v).x : (c) == 1 ? (v).y : (v).z)
    float maxLeft = 0.f, maxRight = 0.f;
    int mainLeft = -1, mainRight = -1;
    for (int i = 0; i < 3; i++)

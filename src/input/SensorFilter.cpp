@@ -287,7 +287,7 @@ float NudgeAccelerationFilter::Get(uint64_t timestampNs)
          m_tCorr = frameTime - 40000;
       }
 
-      IF_DEBUG_NUDGE(if (a != 0.f || aIn != 0.f) { PLOGD << " NudgeFilter: " << aIn << " => " << a << " " << notes.c_str(); })
+      IF_DEBUG_NUDGE(if (a != 0.f || aIn != 0.f) { PLOGD << " NudgeFilter: " << aIn << " => " << a << ' ' << notes.c_str(); })
 
       m_filterTimestampMs += 1;
       m_value = a;

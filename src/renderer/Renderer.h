@@ -57,11 +57,11 @@ public:
    };
    void SetupSegmentRenderer(int profile, const bool isBackdrop, const vec3& color, const float brightness, const SegmentFamily family, const SegElementType type, const float* segs, const ColorSpace colorSpace, Vertex3D_NoTex2* vertices,
       const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex, const vec4& glassArea, const vec3& glassAmbient);
-   void SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, std::shared_ptr<BaseTexture> dmd, const float alpha, const ColorSpace colorSpace, Vertex3D_NoTex2 *vertices,
+   void SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, const std::shared_ptr<BaseTexture>& dmd, const float alpha, const ColorSpace colorSpace, Vertex3D_NoTex2 *vertices,
       const vec4& emitterPad, const vec3& glassTint, const float glassRougness, ITexManCacheable* const glassTex, const vec4& glassArea, const vec3& glassAmbient);
    void DrawStatics();
    void DrawDynamics(bool onlyBalls);
-   void DrawSprite(const float posx, const float posy, const float width, const float height, const COLORREF color, std::shared_ptr<const Sampler> tex, const float intensity, const bool backdrop = false);
+   void DrawSprite(const float posx, const float posy, const float width, const float height, const COLORREF color, const std::shared_ptr<const Sampler>& tex, const float intensity, const bool backdrop = false);
 
    void ReinitRenderable(Renderable* part) { m_renderableToInit.push_back(part); }
 
@@ -117,7 +117,7 @@ public:
       DYNAMIC_ONLY = 1 << 1,      // Disable static part rendering
       LIGHT_BUFFER = 1 << 2,      // Transmitted light rendering
       REFLECTION_PASS = 1 << 3,   // Reflection pass, only render reflected elements
-      DISABLE_LIGHTMAPS = 1 << 4, // Disable lightmaps, usefull for reflection probe parallel to lightmap ot avoid doubling them
+      DISABLE_LIGHTMAPS = 1 << 4, // Disable lightmaps, useful for reflection probe parallel to lightmap ot avoid doubling them
    };
    unsigned int m_render_mask = DEFAULT; // Active pass render bit mask
    bool IsRenderPass(const RenderMask pass_mask) const { return (m_render_mask & pass_mask) != 0; }
@@ -153,7 +153,7 @@ private:
    bool IsBloomEnabled() const;
    void Bloom();
    void SSRefl();
-   std::shared_ptr<BaseTexture> EnvmapPrecalc(std::shared_ptr<const BaseTexture> envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres);
+   std::shared_ptr<BaseTexture> EnvmapPrecalc(const std::shared_ptr<const BaseTexture>& envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres);
 
    bool m_shaderDirty = true;
    void SetupShaders();

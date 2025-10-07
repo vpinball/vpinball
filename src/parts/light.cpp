@@ -334,7 +334,7 @@ void Light::UpdateAnimation(const float diff_time_msec)
 
    const float m_previousIntensity = m_currentIntensity;
 
-   const float lightState = (m_inPlayState == (float)LightStateBlinking) ? (m_d.m_rgblinkpattern[m_iblinkframe] == '1') : m_inPlayState;
+   const float lightState = (m_inPlayState == (float)LightStateBlinking) ? (float)(m_d.m_rgblinkpattern[m_iblinkframe] == '1') : m_inPlayState;
    const float targetIntensity = m_d.m_intensity * m_d.m_intensity_scale * lightState;
    if (m_currentIntensity != targetIntensity)
    {
@@ -403,7 +403,7 @@ void Light::RenderSetup(RenderDevice *device)
    else if (m_duration > 0 && m_inPlayState != 0.f)
       m_timerDurationEndTime = g_pplayer->m_time_msec + m_duration;
 
-   const float state = (m_inPlayState == (float)LightStateBlinking) ? (m_d.m_rgblinkpattern[m_iblinkframe] == '1') : m_inPlayState;
+   const float state = (m_inPlayState == (float)LightStateBlinking) ? (float)(m_d.m_rgblinkpattern[m_iblinkframe] == '1') : m_inPlayState;
    m_currentFilamentTemperature = (state < 0.5f) ? 293.0 : 2700.0;
    m_currentIntensity = m_d.m_intensity * m_d.m_intensity_scale * state;
 
@@ -1353,7 +1353,7 @@ STDMETHODIMP Light::get_Intensity(float *pVal)
 STDMETHODIMP Light::put_Intensity(float newVal)
 {
    m_d.m_intensity = max(0.f, newVal);
-   m_currentIntensity = m_d.m_intensity * m_d.m_intensity_scale * ((m_inPlayState == (float)LightStateBlinking) ? (m_d.m_rgblinkpattern[m_iblinkframe] == '1') : m_inPlayState);
+   m_currentIntensity = m_d.m_intensity * m_d.m_intensity_scale * ((m_inPlayState == (float)LightStateBlinking) ? (float)(m_d.m_rgblinkpattern[m_iblinkframe] == '1') : m_inPlayState);
 
    return S_OK;
 }
@@ -1379,7 +1379,7 @@ STDMETHODIMP Light::get_IntensityScale(float *pVal)
 STDMETHODIMP Light::put_IntensityScale(float newVal)
 {
    m_d.m_intensity_scale = max(newVal,0.f);
-   m_currentIntensity = m_d.m_intensity * m_d.m_intensity_scale * ((m_inPlayState == (float)LightStateBlinking) ? (m_d.m_rgblinkpattern[m_iblinkframe] == '1') : m_inPlayState);
+   m_currentIntensity = m_d.m_intensity * m_d.m_intensity_scale * ((m_inPlayState == (float)LightStateBlinking) ? (float)(m_d.m_rgblinkpattern[m_iblinkframe] == '1') : m_inPlayState);
 
    return S_OK;
 }

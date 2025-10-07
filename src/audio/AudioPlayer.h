@@ -74,9 +74,9 @@ public:
    // Audio stream, directly forwarded to audio device, respecting channel assignment, applying backglass global volume
    using AudioStreamID = std::shared_ptr<class AudioStreamPlayer>; // opaque pointer as objects are always owned by AudioPlayer without any public API
    AudioStreamID OpenAudioStream(const string& name, int frequency, int channels, bool isFloat);
-   void EnqueueStream(AudioStreamID stream, uint8_t* buffer, int length) const;
-   void SetStreamVolume(AudioStreamID stream, const float volume) const;
-   void CloseAudioStream(AudioStreamID stream, bool afterEndOfStream);
+   void EnqueueStream(const AudioStreamID& stream, uint8_t* buffer, int length) const;
+   void SetStreamVolume(const AudioStreamID& stream, const float volume) const;
+   void CloseAudioStream(const AudioStreamID& stream, bool afterEndOfStream);
 
    // Music streamed from a file to audio device, respecting channel assignment, applying backglass global volume
    bool PlayMusic(const string& filename);

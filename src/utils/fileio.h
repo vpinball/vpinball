@@ -88,7 +88,7 @@ public:
 
    HRESULT ReadBytes(void * const pv, const uint32_t count);
 
-   HRESULT Load(std::function<bool(const int id, BiffReader *const pbr)> processToken = nullptr);
+   HRESULT Load(const std::function<bool(const int id, BiffReader *const pbr)>& processToken = nullptr);
 
    IStream *m_pistream;
    int m_version;

@@ -97,8 +97,8 @@ void AudioStreamPlayer::SetMainVolume(const float volume)
 void AudioStreamPlayer::AudioStreamCallback(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount)
 {
    auto const me = static_cast<AudioStreamPlayer*>(userdata);
-   const int nQueueSize = max(0, SDL_GetAudioStreamQueued(stream) - total_amount);
-   const uint64_t nBytePerSec = me->m_audioSpec.freq * SDL_AUDIO_FRAMESIZE(me->m_audioSpec);
+   const unsigned int nQueueSize = max(0, SDL_GetAudioStreamQueued(stream) - total_amount);
+   const uint64_t nBytePerSec = me->m_audioSpec.freq * (uint64_t)SDL_AUDIO_FRAMESIZE(me->m_audioSpec);
    const uint64_t sourceTS = (1000 * me->m_streamedTotal) / nBytePerSec; // Total amount of music streamed (ms)
    const uint64_t playedTS = (1000 * (me->m_streamedTotal - nQueueSize)) / nBytePerSec; // Playing position (ms)
    #ifdef ENABLE_DX9

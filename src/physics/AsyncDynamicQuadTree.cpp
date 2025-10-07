@@ -102,7 +102,7 @@ void AsyncDynamicQuadTree::SetDynamic(IEditable* editable)
       // Instead of PhysicRelease/PhysicSetup, we could move the hitobjects from the place we remove it (quadtree or update thread) but the benefit seems slight as the aim of making the part dynamic is to update it
       // 'Release' it (this does not delete the editable's hit objects but allow the editable to adjust its internal state)
       editable->GetIHitable()->PhysicRelease(m_physics, m_isUI);
-      if (std::ranges::find_if(m_updatedEditables, [editable](std::shared_ptr<DynamicEditable> dynEd) { return dynEd->editable == editable; }) != m_updatedEditables.end())
+      if (std::ranges::find_if(m_updatedEditables, [editable](const std::shared_ptr<DynamicEditable>& dynEd) { return dynEd->editable == editable; }) != m_updatedEditables.end())
       {
          // The updated editable is being updated by the update thread, and not yet part of the dynamic data
          // Don't delete its hit objects as they are in use by the update thread (they will be deleted after the update process)

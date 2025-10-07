@@ -383,17 +383,17 @@ AudioPlayer::AudioStreamID AudioPlayer::OpenAudioStream(const string& name, int 
    return stream;
 }
 
-void AudioPlayer::EnqueueStream(AudioStreamID stream, uint8_t* buffer, int length) const {
+void AudioPlayer::EnqueueStream(const AudioStreamID& stream, uint8_t* buffer, int length) const {
    stream->Enqueue(buffer, length);
 }
 
-void AudioPlayer::SetStreamVolume(AudioStreamID stream, const float volume) const {
+void AudioPlayer::SetStreamVolume(const AudioStreamID& stream, const float volume) const {
    stream->SetStreamVolume(volume);
 }
 
-void AudioPlayer::CloseAudioStream(AudioStreamID stream, bool afterEndOfStream)
+void AudioPlayer::CloseAudioStream(const AudioStreamID& stream, bool afterEndOfStream)
 {
-   auto item = std::ranges::find_if(m_audioStreams, [stream](std::shared_ptr<AudioStreamPlayer> player) { return player == stream; });
+   auto item = std::ranges::find_if(m_audioStreams, [stream](const std::shared_ptr<AudioStreamPlayer>& player) { return player == stream; });
    if (item != m_audioStreams.end())
    {
       // Keep a reference until enqueued data has been played

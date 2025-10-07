@@ -507,7 +507,6 @@ bool BaseTexture::Save(const string& filepath) const
       uint8_t* __restrict bits = (uint8_t*)FreeImage_GetBits(bitmap);
       memcpy(bits, m_data, pitch() * m_height);
       FreeImage_FlipVertical(bitmap);
-      bool success = false;
       if (ext == "png")
          success = FreeImage_Save(FIF_PNG, bitmap, filepath.c_str(), 0);
       else if (ext == "jpg" || ext == "jpeg")

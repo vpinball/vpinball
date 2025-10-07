@@ -61,7 +61,7 @@ public:
       return false;
    }
 
-   bool computeProjBounds(std::function<Vertex2D(Vertex3Ds)> project, const float x, const float y, const float z, const float radius, float &xMin, float &xMax, float &yMin, float &yMax) const
+   bool computeProjBounds(const std::function<Vertex2D(Vertex3Ds)>& project, const float x, const float y, const float z, const float radius, float &xMin, float &xMax, float &yMin, float &yMax) const
    {
       for (int i = 0; i < AntiStretchHelper::npts * 3; i += 3)
       {

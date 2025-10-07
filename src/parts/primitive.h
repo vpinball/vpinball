@@ -360,8 +360,8 @@ private:
    void CalculateBuiltinOriginal();
    static void WaitForMeshDecompression();
 
-   PropertyPane *m_propVisual = nullptr;
-   PropertyPane *m_propPosition = nullptr;
+   //PropertyPane *m_propVisual = nullptr;
+   //PropertyPane *m_propPosition = nullptr;
 
    vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 

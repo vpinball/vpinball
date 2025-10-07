@@ -325,8 +325,8 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    bool hasExplicitPlayfield = false;
    for (size_t i = 0; i < m_ptable->m_vedit.size(); i++)
    {
-      IEditable *const pedit = m_ptable->m_vedit[i];
-      if (pedit->GetItemType() == ItemTypeEnum::eItemPrimitive && ((Primitive *)pedit)->IsPlayfield())
+      const IEditable *const pedit = m_ptable->m_vedit[i];
+      if (pedit->GetItemType() == ItemTypeEnum::eItemPrimitive && ((const Primitive *)pedit)->IsPlayfield())
       {
          hasExplicitPlayfield = true;
          break;
@@ -377,7 +377,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    RenderProbe *pf_reflection_probe = m_ptable->GetRenderProbe(PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
    if (pf_reflection_probe)
    {
-      vec4 plane = vec4(0.f, 0.f, 1.f, 0.f);
+      constexpr vec4 plane{0.f, 0.f, 1.f, 0.f};
       pf_reflection_probe->SetReflectionPlane(plane);
    }
 
@@ -519,7 +519,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
                         {
                            #ifdef ENABLE_OPENGL
                            // Uploading texture in OpenGL uses the state machine which will be wrong if done concurrently
-                           const std::lock_guard<std::mutex> lock(mutex);
+                           const std::lock_guard<std::mutex> lock2(mutex);
                            #endif
                            m_renderer->m_renderDevice->UploadTexture(image, linearRGB);
                            uploaded = true;
@@ -1485,9 +1485,9 @@ void Player::ProcessOSMessages()
                {
                   int x, y;
                   wnd->GetPos(x, y);
-                  Vertex2D click(x + e.motion.x, y + e.motion.y);
+                  Vertex2D click((float)x + e.motion.x, (float)y + e.motion.y);
                   if (dragging > 1)
-                     wnd->SetPos(static_cast<int>(x + click.x - dragStart.x), static_cast<int>(y + click.y - dragStart.y));
+                     wnd->SetPos(static_cast<int>((float)x + click.x - dragStart.x), static_cast<int>((float)y + click.y - dragStart.y));
                   dragStart = click;
                   dragging = 2;
                   break;
@@ -2119,10 +2119,10 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
       int wndY;
       output.GetEmbeddedWindow()->GetPos(wndX, wndY);
 
-      m_outputW = static_cast<int>(wndW * displayScaleX);
-      m_outputH = static_cast<int>(wndH * displayScaleY);
-      m_outputX = static_cast<int>(wndX * displayScaleX);
-      m_outputY = static_cast<int>(wndY * displayScaleY);
+      m_outputW = static_cast<int>((float)wndW * displayScaleX);
+      m_outputH = static_cast<int>((float)wndH * displayScaleY);
+      m_outputX = static_cast<int>((float)wndX * displayScaleX);
+      m_outputY = static_cast<int>((float)wndY * displayScaleY);
    }
    #ifdef ENABLE_BGFX
    else if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
@@ -2141,9 +2141,9 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
    Matrix3D matWorldViewProj[2];
    matWorldViewProj[0] = Matrix3D::MatrixIdentity();
    matWorldViewProj[0]._11 = 2.f * static_cast<float>(m_outputW) / static_cast<float>(outputRT->GetWidth());
-   matWorldViewProj[0]._41 = -1.f + 2.f * m_outputX / static_cast<float>(outputRT->GetWidth());
+   matWorldViewProj[0]._41 = -1.f + 2.f * static_cast<float>(m_outputX) / static_cast<float>(outputRT->GetWidth());
    matWorldViewProj[0]._22 = -2.f * static_cast<float>(m_outputH) / static_cast<float>(outputRT->GetHeight());
-   matWorldViewProj[0]._42 = 1.f - 2.f * m_outputY / static_cast<float>(outputRT->GetHeight());
+   matWorldViewProj[0]._42 = 1.f - 2.f * static_cast<float>(m_outputY) / static_cast<float>(outputRT->GetHeight());
    const int eyes = rd->GetCurrentRenderTarget()->m_nLayers;
    if (eyes > 1)
       matWorldViewProj[1] = matWorldViewProj[0];
@@ -2234,11 +2234,11 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
                   { vx1, vy1, 0.f, 0.f, 0.f, 1.f, tx1, ty2 },
                   { vx2, vy2, 0.f, 0.f, 0.f, 1.f, tx2, ty1 },
                   { vx1, vy2, 0.f, 0.f, 0.f, 1.f, tx1, ty1 } };
-               if (rotation)
+               if (rotation != 0.f)
                {
                   const float px = lerp(vx1, vx2, (pivotX - texX) / (float)tex->width());
                   const float py = lerp(vy1, vy2, (pivotY - texY) / (float)tex->height());
-                  Matrix3D matRot = 
+                  const Matrix3D matRot = 
                        Matrix3D::MatrixTranslate(-px, -py, 0.f)
                      * Matrix3D::MatrixRotateZ(rotation * (float)(M_PI / 180.0)) 
                      * Matrix3D::MatrixTranslate(px, py, 0.f);
@@ -2379,7 +2379,7 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
       default: assert(!"unknown tonemapper"); break;
       }
       rd->m_FBShader->SetTechnique(tonemapTechnique);
-      const float m_exposure = 1.f; // TODO implement exposure
+      constexpr float m_exposure = 1.f; // TODO implement exposure
       if (output.GetWindow()->IsWCGBackBuffer())
       {
          const float maxDisplayLuminance = output.GetWindow()->GetHDRHeadRoom() * (output.GetWindow()->GetSDRWhitePoint() * 80.f); // Maximum luminance of display in nits, note that GetSDRWhitePoint()*80 should usually be in the 200 nits range

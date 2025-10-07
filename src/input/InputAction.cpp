@@ -15,7 +15,7 @@ void InputAction::SetMapping(const string& mappingString)
 {
    ClearMapping();
 
-   // Split by '|' which corresponds to different key bindings (any of them triggere the action, so it is a 'or')
+   // Split by '|' which corresponds to different key bindings (any of them triggers the action, so it is a 'or')
    std::istringstream outerStream(mappingString);
    string outerToken;
    while (std::getline(outerStream, outerToken, '|'))
@@ -73,6 +73,7 @@ void InputAction::AddMapping(const vector<ButtonMapping>& mapping)
 
    // Recreate the mapping, tied to this InputAction and registered in the event manager
    vector<ButtonMapping> newMapping;
+   newMapping.reserve(mapping.size());
    for (const ButtonMapping& map : mapping)
       newMapping.push_back(map.With(m_eventManager, this));
    m_inputMappings.push_back(std::move(newMapping));
@@ -134,7 +135,7 @@ string InputAction::GetMappingString() const
 string InputAction::GetMappingLabel() const
 {
    if (m_inputMappings.empty())
-      return "Not Defined";
+      return "Not Defined"s;
    std::stringstream result;
    bool firstOr = true;
    bool withParenthesis = m_inputMappings.size() > 1;
@@ -143,10 +144,10 @@ string InputAction::GetMappingLabel() const
       if (!firstOr)
          result << " or ";
       if (withParenthesis && mappings.size() > 1)
-         result << "[";
+         result << '[';
       result << m_eventManager->GetMappingLabel(mappings);
       if (withParenthesis && mappings.size() > 1)
-         result << "]";
+         result << ']';
       firstOr = false;
    }
    return result.str();
@@ -216,7 +217,7 @@ void InputAction::OnUpdate()
 {
    if (m_isPressed)
    {
-      int now = msec();
+      unsigned int now = msec();
       if (now >= m_lastOnChangeMs + m_repeatPeriodMs)
       {
          m_lastOnChangeMs = now;

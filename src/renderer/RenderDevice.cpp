@@ -1146,7 +1146,7 @@ RenderDevice::RenderDevice(
    #if defined(ENABLE_OPENGL)
    int maxSamples;
    glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
-   nMSAASamples = min(maxSamples, nMSAASamples);
+   nMSAASamples = min(maxSamples, nMSAASamples); // unused
    #endif
 
    // create default vertex declarations for shaders
@@ -1479,7 +1479,7 @@ float RenderDevice::GetPredictedDisplayDelayInS() const
       return 1.f / g_pplayer->GetTargetRefreshRate();
 
    // User has measured his setup latency
-   return m_visualLatencyCorrection * 1e-3f;
+   return (float)m_visualLatencyCorrection * 1e-3f;
 }
 
 void RenderDevice::WaitForVSync(const bool asynchronous)

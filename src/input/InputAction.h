@@ -20,13 +20,13 @@ public:
    ~InputAction() override = default;
 
    void ClearMapping();
-   void LoadMapping(const Settings& settings) { SetMapping(settings.LoadValueWithDefault(Settings::Section::Input, "Mapping."s + m_settingId, m_defaultMappings)); }
+   void LoadMapping(const Settings& settings) { SetMapping(settings.LoadValueWithDefault(Settings::Section::Input, "Mapping." + m_settingId, m_defaultMappings)); }
    void SetMapping(const string& mappingString);
    void AddMapping(const vector<ButtonMapping>& mapping);
    bool HasMapping(const vector<ButtonMapping>& mapping) const;
-   void SaveMapping(Settings& settings) const { settings.SaveValue(Settings::Section::Input, "Mapping."s + m_settingId, GetMappingString()); }
+   void SaveMapping(Settings& settings) const { settings.SaveValue(Settings::Section::Input, "Mapping." + m_settingId, GetMappingString()); }
    bool IsMapped() const { return !m_inputMappings.empty(); }
-   string GetDefaultMappingString() const { return m_defaultMappings; }
+   const string& GetDefaultMappingString() const { return m_defaultMappings; }
    string GetMappingString() const;
    string GetMappingLabel() const;
    static bool IsSameMapping(const vector<ButtonMapping>& mappingA, const vector<ButtonMapping>& mappingB);
@@ -59,7 +59,7 @@ private:
    vector<vector<ButtonMapping>> m_inputMappings;
    vector<bool> m_directStates;
    bool m_isPressed = false;
-   int m_lastOnChangeMs = 0;
+   unsigned int m_lastOnChangeMs = 0;
    int m_repeatPeriodMs = -1;
    unsigned int m_actionId = 0xFFFFFFFF;
 };

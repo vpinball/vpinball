@@ -215,7 +215,7 @@ void HitTarget::WriteRegDefaults()
 // Ported at: VisualPinball.Engine/VPT/HitTarget/HitTargetHitGenerator.cs
 
 constexpr unsigned int num_dropTargetHitPlaneVertices = 16;
-static const Vertex3Ds dropTargetHitPlaneVertices[num_dropTargetHitPlaneVertices] =
+static constexpr Vertex3Ds dropTargetHitPlaneVertices[num_dropTargetHitPlaneVertices] =
 {
    Vertex3Ds(-0.300000f, 0.001737f, -0.160074f),
    Vertex3Ds(-0.300000f, 0.001738f, 0.439926f),

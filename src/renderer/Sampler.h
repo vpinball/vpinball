@@ -85,7 +85,7 @@ private:
 #elif defined(ENABLE_OPENGL)
    GLenum m_texTarget = 0;
    GLuint m_texture = 0;
-   GLuint CreateTexture(std::shared_ptr<const BaseTexture> surf, unsigned int Levels, colorFormat Format, int stereo);
+   GLuint CreateTexture(const std::shared_ptr<const BaseTexture>& surf, unsigned int Levels, colorFormat Format, int stereo);
 public:
    struct SamplerBinding
    {

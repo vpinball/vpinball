@@ -2,7 +2,7 @@
 
 #pragma once
 
-class SensorMapping
+class SensorMapping final
 {
 public:
    // Input event manager that manages analog event sources (usually reported as joystick axis) and dispatch events
@@ -86,7 +86,7 @@ public:
          m_eventManager->Unregister(this);
    }
 
-   bool operator==(const SensorMapping& other)
+   bool operator==(const SensorMapping& other) const
    {
       return m_eventManager == other.m_eventManager
          && m_mappingHandler == other.m_mappingHandler
@@ -98,7 +98,7 @@ public:
          && m_limit == other.m_limit;
    }
    
-   bool IsSame(const SensorMapping& other)
+   bool IsSame(const SensorMapping& other) const
    {
       return m_deviceId == other.m_deviceId 
          && m_axisId == other.m_axisId

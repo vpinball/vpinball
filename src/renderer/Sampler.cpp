@@ -505,7 +505,7 @@ void Sampler::UpdateTexture(std::shared_ptr<const BaseTexture> surf, const bool 
 #if defined(ENABLE_BGFX)
 
 #elif defined(ENABLE_OPENGL)
-GLuint Sampler::CreateTexture(std::shared_ptr<const BaseTexture> surf, unsigned int Levels, colorFormat Format, int stereo)
+GLuint Sampler::CreateTexture(const std::shared_ptr<const BaseTexture>& surf, unsigned int Levels, colorFormat Format, int stereo)
 {
    const unsigned int Width = surf->width();
    const unsigned int Height = surf->height();

@@ -410,7 +410,7 @@ void HitBall::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* dra
 {
    AntiStretchHelper ash;
    float xMin = FLT_MAX, yMin = FLT_MAX, xMax = -FLT_MAX, yMax = -FLT_MAX;
-   bool invalid = ash.computeProjBounds(project, m_d.m_pos.x, m_d.m_pos.y, m_d.m_pos.z, m_d.m_radius, xMin, xMax, yMin, yMax);
+   const bool invalid = ash.computeProjBounds(project, m_d.m_pos.x, m_d.m_pos.y, m_d.m_pos.z, m_d.m_radius, xMin, xMax, yMin, yMax);
    Vertex2D center = project(m_d.m_pos);
    const ImU32 lCol = ImGui::GetColorU32(ImGuiCol_PlotLines), fCol = ImGui::GetColorU32(ImGuiCol_PlotHistogram);
    Vertex2D p2;

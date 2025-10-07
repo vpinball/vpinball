@@ -79,7 +79,7 @@ VRSettingsPage::VRSettingsPage()
       "Color Key Red"s, ""s, 0, 255, 128, "%3d / 255"s,
       [this]() { return static_cast<int>(sRGB(m_player->m_renderer->m_vrColorKey.x) * 255.f); },
       [this](int, int v) { m_player->m_renderer->m_vrColorKey.x = InvsRGB(static_cast<float>(v) / 255.f); },
-      InGameUIItem::ResetSetting(Settings::PlayerVR, "PassthroughColor"s), // we reset the 3 channel at once
+      InGameUIItem::ResetSetting(Settings::PlayerVR, "PassthroughColor"s), // we reset the 3 channels at once
       [](int v, Settings& settings, bool isTableOverride)
       {
          int rgb = settings.LoadValueInt(Settings::PlayerVR, "PassthroughColor"s);

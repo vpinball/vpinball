@@ -729,7 +729,7 @@ void Shader::SetVector(const ShaderUniforms uniformName, const float x, const fl
    m_state->SetVector(uniformName, &v);
 }
 void Shader::SetFloat4v(const ShaderUniforms uniformName, const vec4* const pData, const unsigned int count) { m_state->SetVector(uniformName, pData, count); }
-void Shader::SetTexture(const ShaderUniforms uniformName, const std::shared_ptr<const Sampler> sampler, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV)
+void Shader::SetTexture(const ShaderUniforms uniformName, const std::shared_ptr<const Sampler>& sampler, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV)
 {
    m_state->SetTexture(uniformName, sampler, filter, clampU, clampV);
 }
@@ -1914,9 +1914,9 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
 #ifndef __OPENGLES__
    if (GLAD_GL_VERSION_4_3)
    {
-      string vs_name = shaderCodeName + ".VS";
-      string gs_name = shaderCodeName + ".GS";
-      string fs_name = shaderCodeName + ".FS";
+      const string vs_name = shaderCodeName + ".VS";
+      const string gs_name = shaderCodeName + ".GS";
+      const string fs_name = shaderCodeName + ".FS";
       if (shaderprogram > 0)
          glObjectLabel(GL_PROGRAM, shaderprogram, (GLsizei) shaderCodeName.length(), shaderCodeName.c_str());
       if (vertexShader > 0)
