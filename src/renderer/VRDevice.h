@@ -37,14 +37,14 @@ public:
 private:
    unsigned int m_eyeWidth = 1080;
    unsigned int m_eyeHeight = 1020;
-   
+
    float m_scale = 1.0f;
    float m_lockbarWidth = 57.0f; // Real world width of the lockbar in cm
-   float m_lockbarHeight = 85.0f; // Real world height (from ground) of the lockbar in cm
+   //float m_lockbarHeight = 85.0f; // Real world height (from ground) of the lockbar in cm
    float m_orientation = 0.0f;
    Vertex3Ds m_tablePos;
    float m_slope = 0.0f;
-   
+
    bool m_worldDirty = true;
    Matrix3D m_pfWorld;
    Matrix3D m_pfMatView;
@@ -64,7 +64,7 @@ public:
    static bool IsVRinstalled();
    static bool IsVRturnedOn();
    bool IsVRReady() const;
-   void SubmitFrame(std::shared_ptr<Sampler> leftEye, std::shared_ptr<Sampler> rightEye);
+   void SubmitFrame(const std::shared_ptr<Sampler>& leftEye, const std::shared_ptr<Sampler>& rightEye);
 
 private:
    static vr::IVRSystem* m_pHMD;

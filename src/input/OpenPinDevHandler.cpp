@@ -354,9 +354,9 @@ OpenPinDevHandler::OpenPinDevHandler(InputManager &pininput)
                            m_inputManager.RegisterElementName(deviceId, true, 0x0204, "Nudge X Speed");
                            m_inputManager.RegisterElementName(deviceId, true, 0x0205, "Nudge Y Speed");
                            auto defaultMapping = [this, deviceId](
-                              std::function<bool(const vector<ButtonMapping>&, unsigned int)> mapButton, //
-                              std::function<bool(const SensorMapping&, SensorMapping::Type type, bool isLinear)> mapPlunger, //
-                              std::function<bool(const SensorMapping&, const SensorMapping&)> mapNudge)
+                              const std::function<bool(const vector<ButtonMapping>&, unsigned int)>& mapButton, //
+                              const std::function<bool(const SensorMapping&, SensorMapping::Type type, bool isLinear)>& mapPlunger, //
+                              const std::function<bool(const SensorMapping&, const SensorMapping&)>& mapNudge)
                            {
                               bool success = true;
                               success &= mapButton(ButtonMapping::Create(deviceId, 0), m_inputManager.GetStartActionId()); // Start (start game)
@@ -473,7 +473,7 @@ void OpenPinDevHandler::Update()
    OpenPinballDeviceReport cr = {};
 
    // read input from each device
-   bool isNewReport = false;
+   //bool isNewReport = false;
    for (auto &p : m_OpenPinDevContext->m_openPinDevs)
       p->ReadReport();
 }

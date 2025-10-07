@@ -35,7 +35,7 @@ protected:
 class ZeroSensorFilter final : public SensorFilter
 {
 public:
-   ~ZeroSensorFilter() = default;
+   ~ZeroSensorFilter() override = default;
    float Get(uint64_t timestampNs) override { return 0.f; }
 };
 
@@ -52,7 +52,7 @@ public:
 class NoOpStoreSensorFilter final : public StoreSensorFilter
 {
 public:
-   ~NoOpStoreSensorFilter() = default;
+   ~NoOpStoreSensorFilter() override = default;
    void Push(uint64_t timestampNs, float value) override { m_value = value; }
    float Get(uint64_t timestampNs) override { return m_value; }
 
@@ -64,7 +64,7 @@ private:
 class VelocityToAccelerationFilter final : public StoreSensorFilter
 {
 public:
-   ~VelocityToAccelerationFilter() = default;
+   ~VelocityToAccelerationFilter() override = default;
    void Push(uint64_t timestampNs, float value) override;
    float Get(uint64_t timestampNs) override;
 
@@ -79,7 +79,7 @@ private:
 class PositionToAccelerationFilter final : public StoreSensorFilter
 {
 public:
-   ~PositionToAccelerationFilter() = default;
+   ~PositionToAccelerationFilter() override = default;
    void Push(uint64_t timestampNs, float value) override;
    float Get(uint64_t timestampNs) override;
 
@@ -123,7 +123,7 @@ public:
       : SourcedSensorFilter(source)
    {
    }
-   ~NoOpSensorFilter() = default;
+   ~NoOpSensorFilter() override = default;
    float Get(uint64_t timestampNs) override { return m_source->Get(timestampNs); }
 };
 
@@ -132,7 +132,7 @@ public:
 class PlungerPositionFilter final : public SourcedSensorFilter
 {
 public:
-   ~PlungerPositionFilter() = default;
+   ~PlungerPositionFilter() override = default;
    float Get(uint64_t timestampNs) override;
 
 private:
@@ -153,7 +153,7 @@ private:
       -1.0546654f,
       0.1873795f };
 
-   int m_init = IIR_Order;
+   //int m_init = IIR_Order;
    float m_x[IIR_Order + 1] = {};
    float m_y[IIR_Order + 1] = {};
 
@@ -165,7 +165,7 @@ private:
 class NudgeAccelerationFilter final : public SourcedSensorFilter
 {
 public:
-   ~NudgeAccelerationFilter() = default;
+   ~NudgeAccelerationFilter() override = default;
    float Get(uint64_t timestampNs) override;
 
 private:
