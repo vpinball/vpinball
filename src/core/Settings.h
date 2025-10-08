@@ -184,8 +184,8 @@ public:
    PropFloat(Player, NudgeOrientation1, "Sensor #1 - Orientation", "Define sensor orientation"s, 0.f, 360.f, 1.0f, 0.f);
    PropBool(Player, NudgeFilter0, "Sensor #0 - Use Filter", "Enable/Disable filtering acquired value to prevent noise"s, false);
    PropBool(Player, NudgeFilter1, "Sensor #1 - Use Filter", "Enable/Disable filtering acquired value to prevent noise"s, false);
-   PropBool(Player, SimulatedPlumb, "Plumb simulation"s, "Enable/Disable mechanical Tilt plumb simulation"s, false);
-   PropFloat(Player, PlumbInertia, "Plumb Inertia", ""s, 0.1f, 100.f, 0.01f, 35.f);
+   PropBool(Player, SimulatedPlumb, "Plumb simulation"s, "Enable/Disable mechanical Tilt plumb simulation"s, true);
+   PropFloat(Player, PlumbInertia, "Plumb Inertia", ""s, 0.001f, 1.f, 0.0001f, 0.35f);
    PropFloat(Player, PlumbThresholdAngle, "Plumb Threshold", "Define threshold angle at which a Tilt is caused"s, 5.0f, 60.f, 0.1f, 35.f);
    PropBool(Player, EnableLegacyNudge, "Legacy Keyboard nudge"s, "Enable/Disable legacy keyboard nudge mode"s, false);
    PropFloat(Player, LegacyNudgeStrength, "Legacy Nudge Strength"s, "Strength of nudge when using the legacy keyboard nudge mode"s, 0.f, 90.f, 0.1f, 1.f);

@@ -200,8 +200,8 @@ bool InGameUIItem::IsDefaultValue() const
       case PropertyDef::Type::Float: return GetFloatValue() == dynamic_cast<FloatPropertyDef*>(m_property.get())->m_def;
       default: assert(false); return true;
       }
-   case Type::ActionInputMapping: return m_inputAction->GetMappingString() == m_defMappingString; break;
-   case Type::PhysicsSensorMapping: return m_physicsSensor->GetMappingString() == m_defMappingString; break;
+   case Type::ActionInputMapping: return m_inputAction->GetMappingString() == m_defMappingString;
+   case Type::PhysicsSensorMapping: return true; // Physics sensor do not have defaults
    default: return true;
    }
 }
@@ -241,7 +241,7 @@ void InGameUIItem::ResetToDefault()
       }
       break;
    case Type::ActionInputMapping: m_inputAction->SetMapping(m_defMappingString); break;
-   case Type::PhysicsSensorMapping: m_physicsSensor->SetMapping(m_defMappingString); break;
+   case Type::PhysicsSensorMapping: break;
    default: break;
    }
 }

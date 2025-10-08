@@ -2,6 +2,11 @@
 
 #pragma once
 
+#include <future>
+#include <valarray>
+#include <complex>
+
+
 class SensorMapping final
 {
 public:
@@ -129,6 +134,8 @@ public:
          m_rawValue = value;
          UpdateValue();
       }
+      if (m_fftCaptureBuffer)
+         CaptureFFT();
       if (m_mappingHandler)
          m_mappingHandler->OnInputChanged(this);
    }
@@ -165,6 +172,10 @@ public:
    int GetShortestUpdateMs() const { return m_shortestUpdateMs; }
    void ResetShortestUpdateMs() { m_shortestUpdateMs = 0; }
 
+   // Returns the main frequency in Hz, 0 if not available
+   // The frequency is acquired asynchronously, so the first call will always return 0
+   float GetMainFrequency();
+
 private:
    void UpdateValue()
    {
@@ -194,4 +205,11 @@ private:
    float m_deadZone;
    float m_scale;
    float m_limit;
+
+   void CaptureFFT();
+   uint64_t m_fftCaptureHeadTimestampMs = 0;
+   int m_fftCapturePosition = 0;
+   std::unique_ptr<std::valarray<std::complex<double>>> m_fftCaptureBuffer;
+   std::future<float> m_fftFuture;
+   float m_lastMainFreq = 0.f;
 };

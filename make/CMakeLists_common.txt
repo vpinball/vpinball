@@ -62,6 +62,7 @@ set(VPX_SOURCES
    src/input/PhysicsSensor.cpp
    src/input/ScanCodes.h
    src/input/SensorMapping.h
+   src/input/SensorMapping.cpp
    src/input/SDLInputHandler.h
 
    src/math/bbox.h
