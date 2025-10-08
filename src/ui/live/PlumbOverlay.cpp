@@ -11,6 +11,8 @@ void PlumbOverlay::Update()
    if (!m_player->m_physics->IsPlumbSimulated())
       return;
 
+   const bool isInNudgeSettings = m_player->m_liveUI->m_inGameUI.IsOpened("settings/nudge"s);
+
    if (m_lastTiltIndex != m_player->m_physics->GetPlumbTiltIndex())
    {
       m_lastTiltIndex = m_player->m_physics->GetPlumbTiltIndex();
@@ -23,7 +25,7 @@ void PlumbOverlay::Update()
    }
 
    const float vel = m_player->m_physics->GetPlumbVel().Length();
-   if (vel > 0.025f)
+   if (isInNudgeSettings || vel > 0.025f)
       m_plumbFadeCounter = 0;
    else
       m_plumbFadeCounter++;
@@ -47,7 +49,7 @@ void PlumbOverlay::Update()
    const ImVec2 radius = fullSize * (0.5f * 0.8f);
    const ImVec2 scale = radius / sin(m_player->m_physics->GetPlumbTiltThreshold());
    // Background
-   ImU32 backCol = IM_COL32(m_tiltFade * 255.f, 0, 0, plumbFade * 64.f);
+   ImU32 backCol = IM_COL32(isInNudgeSettings ? 0.f : (m_tiltFade * 255.f), 0, 0, plumbFade * 64.f);
    ImGui::GetWindowDrawList()->AddEllipseFilled(pos + halfSize, radius * 1.1f, backCol);
    // Tilt circle
    ImU32 alphaCol = IM_COL32(255, 0, 0, plumbFade * 255.f);

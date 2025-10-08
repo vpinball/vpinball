@@ -829,6 +829,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/input/InputManager.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/input/OpenPinDevHandler.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/input/PhysicsSensor.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/input/SensorMapping.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/math/math.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/math/matrix.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/renderer/Backglass.cpp" />

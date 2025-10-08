@@ -28,7 +28,7 @@ private:
    PlotData m_nudgeYRawPlot[2];
 
    uint32_t m_resetTimestampMs = 0;
-   int m_sensorAcqPeriod[4] {};
+   int2 m_sensorAcqPeriod[2];
 };
 
 }
