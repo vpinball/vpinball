@@ -10,9 +10,9 @@ VPX 10.8.1 tries to be entirely backwards compatible and should not require any 
 
 ## Inputs
 
-As VPX used to be only available under Windows operating system, its input system was tied to it, using a combination of Direct Input and native Windows methods, but also allowing to select XInput and SDL input for which support was added along the years.
-This lead to some issues as these 3 input systems were not implemented the same way, mixing joystick and gamepads definition, allowing to select device or accumulating them, and making setup incompatible between them.
-In VPX 10.8.1, the input system has been entirely rewriten to solve this, also integrating new uses cases.
+As VPX used to be only available under Windows operating systems, its input system was tied to it, using a combination of Direct Input and native Windows methods, but also allowing to select XInput and SDL input for which support was added along the years.
+This lead to some issues as these 3 input systems were not implemented in the same way, mixing joystick and gamepad definitions, allowing to select devices or accumulating them, and making the setup incompatible between them.
+In VPX 10.8.1, the input system has been entirely rewritten to solve this issue, also integrating and allowing for new uses cases.
 
 ***As a consequence, input button/keys/joystick must be redefined when upgrading from an earlier release***
 

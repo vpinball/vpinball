@@ -27,7 +27,7 @@
 'COMMA		51		NUMPAD PERIOD	83
 'D			32		NUMPAD PLUS		78
 'DECIMAL	83		NUMPAD SLASH	181
-'DELETE		211		NUMPAD ASTERISK 55
+'DELETE		211		NUMPAD ASTERISK	55
 'DIVIDE		181		O				24
 'DOWN		208		P				25
 'DOWN ARROW 208		PAUSE			197
@@ -79,44 +79,44 @@ Const keyShowDips	= 64  '(F6)		Show Dip Switch / Options Menu
 Const keyVPMVolume	= 88  '(F12)	Show input box to set VPM Volume (no operation if not usig VPinMAME)
 
 ' Cabinet switches
-Dim keyAddBall:	    keyAddBall     = VPXActionKey(22) '(B) Add extra ball
-Dim keyBangBack:    keyBangBack    = VPXActionKey(13) '(T) Bang Back
-Dim keyInsertCoin1: keyInsertCoin1 = VPXActionKey( 9) '(3) Insert coin in slot 1
-Dim keyInsertCoin2: keyInsertCoin2 = VPXActionKey(10) '(4) Insert coin in slot 2
-Dim keyInsertCoin3: keyInsertCoin3 = VPXActionKey(11) '(5) Insert coin in slot 3
-Dim keyInsertCoin4: keyInsertCoin4 = VPXActionKey(12) '(6) Insert coin in slot 4
-Dim keySlamDoorHit: keySlamDoorHit = VPXActionKey(23) '(Home) Slam Tilt
-Dim keyCoinDoor:    keyCoinDoor    = VPXActionKey(24) '(End) Opening/Closing Coin Door
-Const toggleKeyCoinDoor	 = True '		If true then a key press/switch change will flip the state from on/off, if false then one will have the real coindoor behaviour (for cabinet setups with real coindoors)
-Const inverseKeyCoinDoor = False '		If false then the coindoor switch behaves like a original coindoor (key pressed = closed, key not pressed = open), otherwise the switch is inverted (key pressed = open, key not pressed = closed)
+Dim keyAddBall:		keyAddBall		= VPXActionKey(22) '(B)		Add extra ball
+Dim keyBangBack:	keyBangBack		= VPXActionKey(13) '(T)		Bang Back
+Dim keyInsertCoin1:	keyInsertCoin1	= VPXActionKey( 9) '(3)		Insert coin in slot 1
+Dim keyInsertCoin2:	keyInsertCoin2	= VPXActionKey(10) '(4)		Insert coin in slot 2
+Dim keyInsertCoin3:	keyInsertCoin3	= VPXActionKey(11) '(5)		Insert coin in slot 3
+Dim keyInsertCoin4:	keyInsertCoin4	= VPXActionKey(12) '(6)		Insert coin in slot 4
+Dim keySlamDoorHit:	keySlamDoorHit	= VPXActionKey(23) '(Home)	Slam Tilt
+Dim keyCoinDoor:	keyCoinDoor		= VPXActionKey(24) '(End)	Opening/Closing Coin Door
+Const toggleKeyCoinDoor	 = True		'If true then a key press/switch change will flip the state from on/off, if false then one will have the real coindoor behaviour (for cabinet setups with real coindoors)
+Const inverseKeyCoinDoor = False	'If false then the coindoor switch behaves like a original coindoor (key pressed = closed, key not pressed = open), otherwise the switch is inverted (key pressed = open, key not pressed = closed)
 
 ' Service switches
-Dim keyCancel:         keyCancel         = VPXActionKey(25) '(7)		Coin Door Cancel Button (WPC)
-Dim keyDown:           keyDown           = VPXActionKey(26) '(8)		Coin Door Down Button (WPC)
-Dim keyUp:             keyUp             = VPXActionKey(27) '(9)		Coin Door Up Button (WPC)
-Dim keyEnter:          keyEnter          = VPXActionKey(28) '(0)		Coin Door Enter Button (WPC)
-Dim keyAdvance:        keyAdvance        = VPXActionKey(26) '(8)		Coin Door Advance Button
-Dim keyUpDown:         keyUpDown         = VPXActionKey(25) '(7)		Coin Door Up/Down Button
-Dim keyCPUDiag:        keyCPUDiag        = VPXActionKey(27) '(9)		CPU Diagnostic Button
-Dim keySoundDiag:      keySoundDiag      = VPXActionKey(28) '(0)		Sound CPU Diagnostic Button
-Dim keyMasterEnter:    keyMasterEnter    = VPXActionKey(30) '(PgUp)		Master Enter
-Dim keyHiScoreReset:   keyHiScoreReset   = VPXActionKey(29) '(6)		Reset Hiscores
-Dim keySelfTest:       keySelfTest       = VPXActionKey(25) '(7)
-Dim keyBlack:          keyBlack          = VPXActionKey(25) '(7)		Sega/Data East/Stern
-Dim keyGreen:          keyGreen          = VPXActionKey(26) '(8)		Sega/Data East/Stern
-Dim keyRed:	           keyRed            = VPXActionKey(27) '(9)		Sega/Data East/Stern
-Dim keyConfigurations: keyConfigurations = VPXActionKey(31) '(-)		Taito
-Dim keyKPGame:         keyKPGame         = VPXActionKey(29) '(6)		Bally 6803
-Const keyKPEnter                         = 156              '(NumpadEnter) see 6803.vbs for complete keypad
+Dim keyCancel:			keyCancel			= VPXActionKey(25)	'(7)	Coin Door Cancel Button (WPC)
+Dim keyDown:			keyDown				= VPXActionKey(26)	'(8)	Coin Door Down Button (WPC)
+Dim keyUp:				keyUp				= VPXActionKey(27)	'(9)	Coin Door Up Button (WPC)
+Dim keyEnter:			keyEnter			= VPXActionKey(28)	'(0)	Coin Door Enter Button (WPC)
+Dim keyAdvance:			keyAdvance			= VPXActionKey(26)	'(8)	Coin Door Advance Button
+Dim keyUpDown:			keyUpDown			= VPXActionKey(25)	'(7)	Coin Door Up/Down Button
+Dim keyCPUDiag:			keyCPUDiag			= VPXActionKey(27)	'(9)	CPU Diagnostic Button
+Dim keySoundDiag:		keySoundDiag		= VPXActionKey(28)	'(0)	Sound CPU Diagnostic Button
+Dim keyMasterEnter:		keyMasterEnter		= VPXActionKey(30)	'(PgUp)	Master Enter
+Dim keyHiScoreReset:	keyHiScoreReset		= VPXActionKey(29)	'(6)	Reset Hiscores
+Dim keySelfTest:		keySelfTest			= VPXActionKey(25)	'(7)
+Dim keyBlack:			keyBlack			= VPXActionKey(25)	'(7)	Sega/Data East/Stern
+Dim keyGreen:			keyGreen			= VPXActionKey(26)	'(8)	Sega/Data East/Stern
+Dim keyRed:				keyRed				= VPXActionKey(27)	'(9)	Sega/Data East/Stern
+Dim keyConfigurations:	keyConfigurations	= VPXActionKey(31)	'(-)	Taito
+Dim keyKPGame:			keyKPGame			= VPXActionKey(29)	'(6)	Bally 6803
+Const keyKPEnter							= 156				'(NumpadEnter) see 6803.vbs for complete keypad
 
 ' Optional keys
 ' These are not used nor handled by the vbs files
 ' They are only here to provide consistent keys for the games.
 
-Const keyUpperLeft	   = 30  '(A)		Upper Left Flipper button
-Const keyUpperRight	   = 40  '(')		Upper Right Flipper button
-Const keyFront		   = 3   '(2)		Front button (e.g. buy-in)
-Const keyRules		   = 19  '(R)		Show rules
+Const keyUpperLeft	   = 30  '(A)	Upper Left Flipper button
+Const keyUpperRight	   = 40  '(')	Upper Right Flipper button
+Const keyFront		   = 3   '(2)	Front button (e.g. buy-in)
+Const keyRules		   = 19  '(R)	Show rules
 Const keyJoyUp		   = 200 '(Up arrow)
 Const keyJoyDown	   = 208 '(Down arrow)
 Const keyJoyLeft	   = 203 '(Left arrow)
