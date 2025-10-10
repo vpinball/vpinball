@@ -138,7 +138,7 @@ HRESULT PinSound::ReInitialize()
 	   }
 	   else {
 		   BASS_ChannelGetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, &m_freq);
-		   BASS_ChannelSetAttribute(pps->m_BASSstream, BASS_ATTRIB_SRC, 2);
+		   BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_SRC, 2);
 	   }
 
 	   return S_OK;
