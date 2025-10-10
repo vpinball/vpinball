@@ -89,6 +89,7 @@ bool AudioPlayer::MusicInit(const string& szFileName, const float volume)
       return false;
    }
 
+   BASS_ChannelSetAttribute(m_stream, BASS_ATTRIB_SRC, 2);
    BASS_ChannelSetAttribute(m_stream, BASS_ATTRIB_VOL, volume);
    BASS_ChannelPlay(m_stream, 0);
 
@@ -118,6 +119,8 @@ bool AudioPlayer::SetMusicFile(const string& szFileName)
       g_pvp->MessageBox(("BASS music/sound library cannot load \"" + szFileName + "\" (error " + std::to_string(code) + ": " + message + ')').c_str(), "Error", MB_ICONERROR);
       return false;
    }
+
+   BASS_ChannelSetAttribute(m_stream, BASS_ATTRIB_SRC, 2);
 
    return true;
 }

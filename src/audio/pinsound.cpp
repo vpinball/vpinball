@@ -44,6 +44,10 @@ void BASS_ErrorMapCode(const int code, string& text)
 	case BASS_ERROR_ENDED: text = "the channel/file has ended"; break;
 	case BASS_ERROR_BUSY: text = "the device is busy"; break;
 	case BASS_ERROR_UNSTREAMABLE: text = "unstreamable file"; break;
+	case BASS_ERROR_PROTOCOL: text = "unsupported protocol"; break;
+	case BASS_ERROR_DENIED: text = "access denied"; break;
+	case BASS_ERROR_FREEING: text = "being freed"; break;
+	case BASS_ERROR_CANCEL: text = "cancelled"; break;
 	case BASS_ERROR_UNKNOWN: text = "unknown error"; break;
 	default: text = "unmapped error"; break;
 	}
@@ -134,6 +138,7 @@ HRESULT PinSound::ReInitialize()
 	   }
 	   else {
 		   BASS_ChannelGetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, &m_freq);
+		   BASS_ChannelSetAttribute(pps->m_BASSstream, BASS_ATTRIB_SRC, 2);
 	   }
 
 	   return S_OK;
@@ -669,6 +674,7 @@ PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)
 	   }
 	   else {
 		   BASS_ChannelGetAttribute(pps->m_BASSstream, BASS_ATTRIB_FREQ, &pps->m_freq);
+		   BASS_ChannelSetAttribute(pps->m_BASSstream, BASS_ATTRIB_SRC, 2);
 	   }
    }
 
