@@ -312,9 +312,9 @@ void InGameUIPage::Render()
    }
    else
    {
-      if (io.DisplaySize.x > io.DisplaySize.y)
+      if (io.DisplaySize.x > io.DisplaySize.y) // Landscape mode
          ImGui::SetNextWindowSize(ImVec2(0.4f * io.DisplaySize.x, 0.4f * io.DisplaySize.y));
-      else
+      else // Portrait mode
          ImGui::SetNextWindowSize(ImVec2(0.8f * io.DisplaySize.x, 0.3f * io.DisplaySize.y));
       ImGui::SetNextWindowPos(ImVec2(0.5f * io.DisplaySize.x, 0.8f * io.DisplaySize.y), 0, ImVec2(0.5f, 1.f));
    }

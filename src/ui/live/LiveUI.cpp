@@ -364,9 +364,26 @@ void LiveUI::NewFrame()
    UpdateDPI();
    ImGui_ImplSDL3_NewFrame();
 
+   ImGuiIO &io = ImGui::GetIO();
+   switch (m_player->m_renderer->m_stereo3D)
+   {
+   // Render is a vertically squashed view which is stretched back by the display
+   case STEREO_TB:
+   case STEREO_INT:
+   case STEREO_FLIPPED_INT:
+      io.DisplayFramebufferScale.y *= 0.5f;
+      break;
+
+   // Render is a horizontally squashed view which is stretched back by the display
+   case STEREO_SBS:
+      io.DisplayFramebufferScale.x *= 0.5f;
+      break;
+
+   default:
+      break;
+   }
    const int width = m_rd->GetCurrentPass() ? m_rd->GetCurrentPass()->m_rt->GetWidth() : 1920;
    const int height = m_rd->GetCurrentPass() ? m_rd->GetCurrentPass()->m_rt->GetHeight() : 1080;
-   ImGuiIO &io = ImGui::GetIO();
    io.DisplaySize.x = static_cast<float>(width) / io.DisplayFramebufferScale.x;
    io.DisplaySize.y = static_cast<float>(height) / io.DisplayFramebufferScale.y;
    m_rotate = m_renderer->m_stereo3D == STEREO_VR
