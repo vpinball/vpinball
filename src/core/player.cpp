@@ -434,7 +434,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    if (m_ptable->m_tblMirrorEnabled)
    {
       m_audioPlayer->SetMirrored(true);
-      int rotation = (int)(m_ptable->mViewSetups[m_ptable->m_BG_current_set].GetRotation(m_playfieldWnd->GetWidth(), m_playfieldWnd->GetHeight())) / 90;
+      int rotation = (int)(m_ptable->mViewSetups[m_ptable->m_BG_current_set].GetRotation(m_renderer->m_stereo3D, m_playfieldWnd->GetWidth(), m_playfieldWnd->GetHeight())) / 90;
       m_renderer->GetMVP().SetFlip(rotation == 0 || rotation == 2 ? ModelViewProj::FLIPX : ModelViewProj::FLIPY);
    }
 

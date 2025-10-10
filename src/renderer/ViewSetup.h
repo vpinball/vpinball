@@ -31,7 +31,10 @@ public:
    float GetWindowTopZOffset(const PinTable* const table) const;
    float GetWindowBottomZOffset(const PinTable* const table) const;
    float GetRealToVirtualScale(const PinTable* const table) const;
+   float GetRotation(const StereoMode mode, const int viewportWidth, const int viewportHeight) const;
    float GetRotation(const int viewportWidth, const int viewportHeight) const;
+
+   static int2 GetUnsquashedViewport(const StereoMode mode, const int viewportWidth, const int viewportHeight);
 
    void ComputeMVP(const PinTable* const table, const float aspect, const bool stereo, ModelViewProj& mvp,
                    const vec3& cam = vec3(0.f, 0.f, 0.f), const float cam_inc = 0.f, const float xpixoff = 0.f, const float ypixoff = 0.f) const;

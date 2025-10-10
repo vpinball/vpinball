@@ -125,6 +125,45 @@ float ViewSetup::GetWindowBottomZOffset(const PinTable* const table) const
       return 0.f;
 }
 
+int2 ViewSetup::GetUnsquashedViewport(const StereoMode mode, const int viewportWidth, const int viewportHeight)
+{
+   switch (mode)
+   {
+   case STEREO_OFF:
+   case STEREO_ANAGLYPH_1:
+   case STEREO_ANAGLYPH_2:
+   case STEREO_ANAGLYPH_3:
+   case STEREO_ANAGLYPH_4:
+   case STEREO_ANAGLYPH_5:
+   case STEREO_ANAGLYPH_6:
+   case STEREO_ANAGLYPH_7:
+   case STEREO_ANAGLYPH_8:
+   case STEREO_ANAGLYPH_9:
+   case STEREO_ANAGLYPH_10:
+   case STEREO_VR:
+      return int2(viewportWidth, viewportHeight);
+
+   // Render is a vertically squashed view which is stretched back by the display
+   case STEREO_TB:
+   case STEREO_INT:
+   case STEREO_FLIPPED_INT:
+      return int2(viewportWidth, viewportHeight * 2);
+
+   // Render is a horizontally squashed view which is stretched back by the display
+   case STEREO_SBS:
+      return int2(viewportWidth * 2, viewportHeight);
+
+   default:
+      assert(false);
+      return int2();
+   }
+}
+
+float ViewSetup::GetRotation(const StereoMode mode, const int viewportWidth, const int viewportHeight) const
+{
+   const int2 size = GetUnsquashedViewport(mode, viewportWidth, viewportHeight);
+   return GetRotation(size.x, size.y);
+}
 
 float ViewSetup::GetRotation(const int viewportWidth, const int viewportHeight) const
 {
