@@ -155,6 +155,7 @@ bool AudioPlayer::MusicInit(const string& szFileName, const string& alt_szFileNa
       return false;
    }
 
+   BASS_ChannelSetAttribute(m_stream, BASS_ATTRIB_SRC, 2);
    BASS_ChannelSetAttribute(m_stream, BASS_ATTRIB_VOL, volume);
    BASS_ChannelPlay(m_stream, 0);
 

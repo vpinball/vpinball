@@ -48,6 +48,10 @@ void BASS_ErrorMapCode(const int code, string& text)
 	case BASS_ERROR_ENDED: text = "the channel/file has ended"; break;
 	case BASS_ERROR_BUSY: text = "the device is busy"; break;
 	case BASS_ERROR_UNSTREAMABLE: text = "unstreamable file"; break;
+	case BASS_ERROR_PROTOCOL: text = "unsupported protocol"; break;
+	case BASS_ERROR_DENIED: text = "access denied"; break;
+	case BASS_ERROR_FREEING: text = "being freed"; break;
+	case BASS_ERROR_CANCEL: text = "cancelled"; break;
 	case BASS_ERROR_UNKNOWN: text = "unknown error"; break;
 	default: text = "unmapped error"; break;
 	}
@@ -87,8 +91,7 @@ PinSound::~PinSound()
 {
    UnInitialize();
 
-   if (m_pdata)
-      delete [] m_pdata;
+   delete [] m_pdata;
 }
 
 void PinSound::UnInitialize()
@@ -144,6 +147,7 @@ HRESULT PinSound::ReInitialize()
 	   }
 	   else {
 		   BASS_ChannelGetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, &m_freq);
+		   BASS_ChannelSetAttribute(pps->m_BASSstream, BASS_ATTRIB_SRC, 2);
 	   }
 
 	   return S_OK;
@@ -220,8 +224,8 @@ HRESULT PinSound::ReInitialize()
    if ((DWORD)m_cdata < dsbd.dwBufferBytes) // if buffer was resized then duplicate channel
    {
 	   const unsigned int bps = wfx.wBitsPerSample / 8;
-	   char * __restrict s = m_pdata;
-	   char * __restrict d = (char*)pbData;
+	   const char * __restrict s = m_pdata;
+	         char * __restrict d = (char*)pbData;
 
 	   for (DWORD i = 0; i < dsbd.dwBufferBytes; i += wfx.nBlockAlign)
 	   {
@@ -381,7 +385,7 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
 
    DSAudioDevices DSads;
    int DSidx = 0;
-   if (!FAILED(DirectSoundEnumerate(DSEnumCallBack, &DSads)))
+   if (SUCCEEDED(DirectSoundEnumerate(DSEnumCallBack, &DSads)))
    {
       const HRESULT hr = LoadValue(regKey[RegName::Player], IsBackglass ? "SoundDeviceBG"s : "SoundDevice"s, DSidx);
       if ((hr != S_OK) || ((size_t)DSidx >= DSads.size()))
@@ -596,6 +600,7 @@ PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)
 	   }
 	   else {
 		   BASS_ChannelGetAttribute(pps->m_BASSstream, BASS_ATTRIB_FREQ, &pps->m_freq);
+		   BASS_ChannelSetAttribute(pps->m_BASSstream, BASS_ATTRIB_SRC, 2);
 	   }
    }
 
