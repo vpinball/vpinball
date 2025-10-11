@@ -9,7 +9,7 @@ namespace VPX::InGameUI
 {
 
 PlungerSettingsPage::PlungerSettingsPage()
-   : InGameUIPage("settings/plunger"s, "Plunger Settings"s, ""s, SaveMode::Global)
+   : InGameUIPage("Plunger Settings"s, ""s, SaveMode::Global)
 {
    const InputManager& input = GetInput();
 
@@ -63,9 +63,9 @@ void PlungerSettingsPage::AppendPlot()
    m_velocityPlot.AddPoint(t, m_player->m_pininput.GetPlungerSpeed());
 }
 
-void PlungerSettingsPage::Render()
+void PlungerSettingsPage::Render(float elapsed)
 {
-   InGameUIPage::Render();
+   InGameUIPage::Render(elapsed);
 
    const ImGuiStyle& style = ImGui::GetStyle();
 

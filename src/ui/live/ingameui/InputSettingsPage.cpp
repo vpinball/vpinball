@@ -8,7 +8,7 @@ namespace VPX::InGameUI
 {
 
 InputSettingsPage::InputSettingsPage()
-   : InGameUIPage("settings/input"s, "Input Settings"s, ""s, SaveMode::Global)
+   : InGameUIPage("Input Settings"s, ""s, SaveMode::Global)
 {
 }
 

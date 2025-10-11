@@ -8,7 +8,7 @@ namespace VPX::InGameUI
 {
 
 AudioSettingsPage::AudioSettingsPage()
-   : InGameUIPage("settings/audio"s, "Audio Settings"s, ""s, SaveMode::Both)
+   : InGameUIPage("Audio Settings"s, ""s, SaveMode::Both)
 {
    const Settings& settings = GetSettings();
 

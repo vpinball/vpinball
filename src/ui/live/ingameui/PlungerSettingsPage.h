@@ -13,7 +13,7 @@ public:
 
    void Open() override;
    void Close() override;
-   void Render() override;
+   void Render(float elapsed) override;
 
    bool IsPlayerPauseAllowed() const override { return false; }
 

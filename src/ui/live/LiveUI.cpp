@@ -443,6 +443,9 @@ void LiveUI::Update()
       UpdateDeviceLayoutPopup();
    }
 
+   // Tweak UI (aligned to playfield view, using custom flipper controls)
+   m_inGameUI.Update();
+
    if (m_escSplashModal.IsOpened())
    {
       m_escSplashModal.Update();
@@ -456,10 +459,6 @@ void LiveUI::Update()
    else if (m_editorUI.IsOpened())
    { // Editor UI (aligned to desktop, using traditional mouse interaction)
       m_editorUI.Update();
-   }
-   else if (m_inGameUI.IsOpened())
-   { // Tweak UI (aligned to playfield view, using custom flipper controls)
-      m_inGameUI.Update();
    }
    else
    { // No UI displayed: process ball control & throw balls

@@ -9,7 +9,7 @@ namespace VPX::InGameUI
 {
 
 VRSettingsPage::VRSettingsPage()
-   : InGameUIPage("settings/vr"s, "Virtual Reality Settings"s, ""s, SaveMode::Both)
+   : InGameUIPage("Virtual Reality Settings"s, ""s, SaveMode::Both)
 {
    auto orientation = std::make_unique<InGameUIItem>(
       "View orientation"s, ""s, -180.f, 180.f, 0.1f, 0.f, "%4.1f °"s,

@@ -9,7 +9,7 @@ namespace VPX::InGameUI
 {
 
 NudgeSettingsPage::NudgeSettingsPage()
-   : InGameUIPage("settings/nudge"s, "Nudge Settings"s, ""s, SaveMode::Global)
+   : InGameUIPage("Nudge Settings"s, ""s, SaveMode::Global)
 {
    InputManager& input = GetInput();
 
@@ -138,9 +138,9 @@ void NudgeSettingsPage::AppendPlot()
    }
 }
 
-void NudgeSettingsPage::Render()
+void NudgeSettingsPage::Render(float elapsed)
 {
-   InGameUIPage::Render();
+   InGameUIPage::Render(elapsed);
 
    const ImGuiStyle& style = ImGui::GetStyle();
 

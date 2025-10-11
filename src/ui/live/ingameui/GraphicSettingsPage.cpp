@@ -8,7 +8,7 @@ namespace VPX::InGameUI
 {
 
 GraphicSettingsPage::GraphicSettingsPage()
-   : InGameUIPage("settings/graphic"s, "Graphic Settings"s, ""s, SaveMode::Both)
+   : InGameUIPage("Graphic Settings"s, ""s, SaveMode::Both)
 {
    const Settings& settings = GetSettings();
 

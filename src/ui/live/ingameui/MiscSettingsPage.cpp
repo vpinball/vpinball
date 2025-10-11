@@ -8,7 +8,7 @@ namespace VPX::InGameUI
 {
 
 MiscSettingsPage::MiscSettingsPage()
-   : InGameUIPage("settings/misc"s, "Miscellaneous Settings"s, ""s, SaveMode::Table)
+   : InGameUIPage("Miscellaneous Settings"s, ""s, SaveMode::Table)
 {
    // Global emission scale, if not overriden on commandline nor as an automatic day/night based on lat/lon, defined as a table override against the table original value
    const bool isDayNightOverriden = m_player->m_ptable->m_settings.LoadValueBool(Settings::Player, "OverrideTableEmissionScale"s);

@@ -9,7 +9,7 @@ namespace VPX::InGameUI
 {
 
 PointOfViewSettingsPage::PointOfViewSettingsPage()
-   : InGameUIPage("settings/pov"s, "Point of View"s, "Point of view's settings page:\nOptions to define rendering's point of view"s, SaveMode::Table)
+   : InGameUIPage("Point of View"s, "Point of view's settings page:\nOptions to define rendering's point of view"s, SaveMode::Table)
 {
 }
 
@@ -33,6 +33,7 @@ void PointOfViewSettingsPage::Open()
 void PointOfViewSettingsPage::Close()
 {
    assert(m_opened);
+   InGameUIPage::Close();
    m_opened = false;
    if (m_staticPrepassDisabled)
       m_player->m_renderer->DisableStaticPrePass(false);
