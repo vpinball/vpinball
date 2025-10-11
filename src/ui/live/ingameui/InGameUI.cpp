@@ -42,12 +42,11 @@ void InGameUI::AddPage(const string &path, std::function<std::unique_ptr<InGameU
    m_pages[path] = pageFactory;
 }
 
-void InGameUI::Navigate(const string &path)
+void InGameUI::Navigate(const string &path, bool isBack)
 {
-   assert(IsOpened());
    if (!m_activePages.empty() && m_activePages.back()->IsActive())
    {
-      m_activePages.back()->Close();
+      m_activePages.back()->Close(isBack);
    }
    auto it = m_pages.find(path);
    if (it == m_pages.end())
@@ -60,11 +59,12 @@ void InGameUI::Navigate(const string &path)
    if (m_activePages.back())
    {
       m_navigationHistory.push_back(path);
-      m_activePages.back()->Open();
+      m_activePages.back()->Open(isBack);
    }
    else
    {
       PLOGE << "InGameUI: Failed to create page '" << path << "'";
+      m_activePages.pop_back();
       Close();
    }
 }
@@ -83,27 +83,24 @@ void InGameUI::NavigateBack()
    {
       const string path = m_navigationHistory.back();
       m_navigationHistory.pop_back();
-      Navigate(path);
+      Navigate(path, true);
    }
 }
 
 void InGameUI::Open(const string& page)
 {
    assert(!IsOpened());
-   m_isOpened = true;
    Navigate(page);
    m_useFlipperNav = m_player->m_vrDevice || m_player->m_ptable->m_BG_current_set == ViewSetupID::BG_FULLSCREEN;
 }
 
 void InGameUI::Close()
 {
-   assert(IsOpened());
-   m_isOpened = false;
+   if (GetActivePage())
+      GetActivePage()->Close(false);
    if (!m_player->IsPlaying(false))
       m_player->SetPlayState(true);
    m_player->m_ptable->FireOptionEvent(3); // Tweak mode closed event
-   if (GetActivePage())
-      GetActivePage()->Close();
 }
 
 void InGameUI::Update()

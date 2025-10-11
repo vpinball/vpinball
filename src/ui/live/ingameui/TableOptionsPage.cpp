@@ -20,8 +20,9 @@ int TableOptionsPage::GetOptionIndex(const string& id) const
    return -1;
 }
 
-void TableOptionsPage::Open()
+void TableOptionsPage::Open(bool isBackwardAnimation)
 {
+   InGameUIPage::Open(isBackwardAnimation);
    ClearItems();
 
    for (auto& opt : m_player->m_ptable->m_settings.GetTableSettings())

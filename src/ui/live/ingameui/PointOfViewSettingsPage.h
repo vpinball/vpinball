@@ -12,8 +12,8 @@ class PointOfViewSettingsPage final : public InGameUIPage
 public:
    PointOfViewSettingsPage();
    
-   void Open() override;
-   void Close() override;
+   void Open(bool isBackwardAnimation) override;
+   void Close(bool isBackwardAnimation) override;
    void Save() override;
    void ResetToInitialValues() override;
    void ResetToDefaults() override;

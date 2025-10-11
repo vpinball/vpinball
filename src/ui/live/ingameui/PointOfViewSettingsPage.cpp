@@ -13,10 +13,10 @@ PointOfViewSettingsPage::PointOfViewSettingsPage()
 {
 }
 
-void PointOfViewSettingsPage::Open()
+void PointOfViewSettingsPage::Open(bool isBackwardAnimation)
 {
    assert(!m_opened);
-   InGameUIPage::Open();
+   InGameUIPage::Open(isBackwardAnimation);
    m_opened = true;
    m_staticPrepassDisabled = false;
    const PinTable* const table = m_player->m_ptable;
@@ -30,10 +30,10 @@ void PointOfViewSettingsPage::Open()
    BuildPage();
 }
 
-void PointOfViewSettingsPage::Close()
+void PointOfViewSettingsPage::Close(bool isBackwardAnimation)
 {
    assert(m_opened);
-   InGameUIPage::Close();
+   InGameUIPage::Close(isBackwardAnimation);
    m_opened = false;
    if (m_staticPrepassDisabled)
       m_player->m_renderer->DisableStaticPrePass(false);

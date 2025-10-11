@@ -12,7 +12,7 @@ class HomePage final : public InGameUIPage
 public:
    HomePage();
 
-   void Open() override;
+   void Open(bool isBackwardAnimation) override;
 };
 
 }

@@ -44,15 +44,15 @@ PlungerSettingsPage::PlungerSettingsPage()
    m_velocityPlot.m_timeSpan = 5.f;
 }
 
-void PlungerSettingsPage::Open()
+void PlungerSettingsPage::Open(bool isBackwardAnimation)
 {
-   InGameUIPage::Open();
+   InGameUIPage::Open(isBackwardAnimation);
    m_player->m_pininput.AddAxisListener([this]() { AppendPlot(); });
 }
 
-void PlungerSettingsPage::Close()
+void PlungerSettingsPage::Close(bool isBackwardAnimation)
 {
-   InGameUIPage::Close();
+   InGameUIPage::Close(isBackwardAnimation);
    m_player->m_pininput.ClearAxisListeners();
 }
 
