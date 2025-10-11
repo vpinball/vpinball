@@ -13,6 +13,11 @@ struct SettingsPluginsView: View {
             }
             .tint(Color.vpxRed)
 
+            Toggle(isOn: $settingsModel.pluginAltSound) {
+                Text("AltSound")
+            }
+            .tint(Color.vpxRed)
+
             Toggle(isOn: $settingsModel.pluginB2S) {
                 Text("B2S")
             }
@@ -83,6 +88,9 @@ struct SettingsPluginsView: View {
         .onChange(of: settingsModel.pluginDMDUtil) {
             handlePluginDMDUtil()
         }
+        .onChange(of: settingsModel.pluginAltSound) {
+            handlePluginAltSound()
+        }
         .onChange(of: settingsModel.pluginDOF) {
             handlePluginDOF()
         }
@@ -107,6 +115,10 @@ struct SettingsPluginsView: View {
         .onChange(of: settingsModel.pluginWMP) {
             handlePluginWMP()
         }
+    }
+
+    func handlePluginAltSound() {
+        vpinballManager.saveValue(.pluginAltSound, "Enable", settingsModel.pluginAltSound)
     }
 
     func handlePluginAlphaDMD() {
