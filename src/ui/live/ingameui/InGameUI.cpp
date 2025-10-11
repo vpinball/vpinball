@@ -24,48 +24,66 @@ namespace VPX::InGameUI
 InGameUI::InGameUI(LiveUI &liveUI)
    : m_player(g_pplayer)
 {
-   AddPage(std::make_unique<HomePage>());
-   AddPage(std::make_unique<AudioSettingsPage>());
-   AddPage(std::make_unique<GraphicSettingsPage>());
-   AddPage(std::make_unique<InputSettingsPage>());
-   AddPage(std::make_unique<MiscSettingsPage>());
-   AddPage(std::make_unique<NudgeSettingsPage>());
-   AddPage(std::make_unique<PlungerSettingsPage>());
-   AddPage(std::make_unique<PointOfViewSettingsPage>());
-   AddPage(std::make_unique<TableOptionsPage>());
-   AddPage(std::make_unique<TableRulesPage>());
-   if (m_player->m_vrDevice)
-      AddPage(std::make_unique<VRSettingsPage>());
+   AddPage("homepage"s, []() { return std::make_unique<HomePage>(); });
+   AddPage("settings/audio"s, []() { return std::make_unique<AudioSettingsPage>(); });
+   AddPage("settings/graphic"s, []() { return std::make_unique<GraphicSettingsPage>(); });
+   AddPage("settings/input"s, []() { return std::make_unique<InputSettingsPage>(); });
+   AddPage("settings/misc"s, []() { return std::make_unique<MiscSettingsPage>(); });
+   AddPage("settings/nudge"s, []() { return std::make_unique<NudgeSettingsPage>(); });
+   AddPage("settings/plunger"s, []() { return std::make_unique<PlungerSettingsPage>(); });
+   AddPage("settings/pov"s, []() { return std::make_unique<PointOfViewSettingsPage>(); });
+   AddPage("table/options"s, []() { return std::make_unique<TableOptionsPage>(); });
+   AddPage("table/rules"s, []() { return std::make_unique<TableRulesPage>(); });
+   AddPage("settings/vr"s, []() { return std::make_unique<VRSettingsPage>(); });
 }
 
-void InGameUI::AddPage(std::unique_ptr<InGameUIPage> page) { m_pages[page->GetPath()] = std::move(page); }
+void InGameUI::AddPage(const string &path, std::function<std::unique_ptr<InGameUIPage>()> pageFactory)
+{
+   m_pages[path] = pageFactory;
+}
 
 void InGameUI::Navigate(const string &path)
 {
    assert(IsOpened());
-   if (m_activePage)
+   if (!m_activePages.empty() && m_activePages.back()->IsActive())
    {
-      m_navigationHistory.push_back(m_activePage->GetPath());
-      m_activePage->Close();
+      m_activePages.back()->Close();
    }
-   m_activePage = m_pages[path].get();
-   if (m_activePage)
-      m_activePage->Open();
-   else
+   auto it = m_pages.find(path);
+   if (it == m_pages.end())
+   {
+      PLOGE << "InGameUI: unknown page '" << path << "'";
       Close();
+      return;
+   }
+   m_activePages.push_back(std::move(it->second()));
+   if (m_activePages.back())
+   {
+      m_navigationHistory.push_back(path);
+      m_activePages.back()->Open();
+   }
+   else
+   {
+      PLOGE << "InGameUI: Failed to create page '" << path << "'";
+      Close();
+   }
 }
 
 void InGameUI::NavigateBack()
 {
    assert(IsOpened());
+   assert(!m_navigationHistory.empty());
+
+   m_navigationHistory.pop_back();
    if (m_navigationHistory.empty())
+   {
       Close();
+   }
    else
    {
       const string path = m_navigationHistory.back();
+      m_navigationHistory.pop_back();
       Navigate(path);
-      m_navigationHistory.pop_back();
-      m_navigationHistory.pop_back();
    }
 }
 
@@ -84,52 +102,67 @@ void InGameUI::Close()
    if (!m_player->IsPlaying(false))
       m_player->SetPlayState(true);
    m_player->m_ptable->FireOptionEvent(3); // Tweak mode closed event
-   if (m_activePage)
-      m_activePage->Close();
+   if (GetActivePage())
+      GetActivePage()->Close();
 }
 
 void InGameUI::Update()
 {
-   if (!m_isOpened)
+   if (m_activePages.empty())
       return;
 
-   // Only pause player if balls are moving to keep attract mode if possible
-   if (m_player->IsPlaying(false))
+   // Remove closed pages (after closing animation)
+   for (auto it = m_activePages.begin(); it != m_activePages.end();)
    {
-      if (m_activePage->IsPlayerPauseAllowed())
+      if ((*it)->IsClosed())
+         it = m_activePages.erase(it);
+      else
+         ++it;
+   }
+
+   if (const InGameUIPage * const activePage = GetActivePage(); activePage)
+   {
+      // Only pause player if balls are moving to keep attract mode if possible
+      if (m_player->IsPlaying(false))
       {
-         bool ballMoving = false;
-         for (const auto &ball : m_player->m_vball)
+         if (activePage->IsPlayerPauseAllowed())
          {
-            if (ball->m_d.m_vel.LengthSquared() > 0.25f)
+            bool ballMoving = false;
+            for (const auto &ball : m_player->m_vball)
             {
-               ballMoving = true;
-               break;
+               if (ball->m_d.m_vel.LengthSquared() > 0.25f)
+               {
+                  ballMoving = true;
+                  break;
+               }
+            }
+            if (ballMoving)
+            {
+               m_player->SetPlayState(false);
             }
          }
-         if (ballMoving)
-         {
-            m_player->SetPlayState(false);
-         }
       }
-   }
-   else if (!m_activePage->IsPlayerPauseAllowed())
-   {
-      m_player->SetPlayState(true);
+      else if (!activePage->IsPlayerPauseAllowed())
+      {
+         m_player->SetPlayState(true);
+      }
+
+      const InputManager::ActionState state = m_player->m_pininput.GetActionState();
+      HandlePageInput(state);
+      HandleLegacyFlyOver(state);
+      m_prevActionState = state;
    }
 
-   const InputManager::ActionState state = m_player->m_pininput.GetActionState();
-   HandlePageInput(state);
-   HandleLegacyFlyOver(state);
-   m_prevActionState = state;
-
-   m_activePage->Render();
+   const uint32_t now = msec();
+   const float elapsed = static_cast<float>(now - m_lastRenderMs) / 1000.f;
+   m_lastRenderMs = now;
+   for (const auto& page : m_activePages)
+      page->Render(elapsed);
 }
 
 void InGameUI::HandlePageInput(const InputManager::ActionState &state)
 {
    // Disable keyboard shortcut if no control editing is in progress
-   // TODO: we should only continue to process gamepad & VR controller
    if (ImGui::IsAnyItemActive())
       return;
 
@@ -166,43 +199,43 @@ void InGameUI::HandlePageInput(const InputManager::ActionState &state)
    {
       const bool wasFlipperNav = m_useFlipperNav;
       m_useFlipperNav = true;
-      m_activePage->SelectPrevItem();
+      GetActivePage()->SelectPrevItem();
       if (!wasFlipperNav)
-         m_activePage->SelectNextItem();
+         GetActivePage()->SelectNextItem();
    }
 
    if (state.IsKeyPressed(m_player->m_pininput.GetRightMagnaActionId(), m_prevActionState))
    {
       const bool wasFlipperNav = m_useFlipperNav;
       m_useFlipperNav = true;
-      m_activePage->SelectNextItem();
+      GetActivePage()->SelectNextItem();
       if (!wasFlipperNav)
-         m_activePage->SelectPrevItem();
+         GetActivePage()->SelectPrevItem();
    }
 
    if (m_useFlipperNav && state.IsKeyPressed(m_player->m_pininput.GetLeftFlipperActionId(), m_prevActionState))
-      m_activePage->AdjustItem(-1, true);
+      GetActivePage()->AdjustItem(-1, true);
    else if (m_useFlipperNav && state.IsKeyDown(m_player->m_pininput.GetLeftFlipperActionId()))
-      m_activePage->AdjustItem(-1, false);
+      GetActivePage()->AdjustItem(-1, false);
 
    if (m_useFlipperNav && state.IsKeyPressed(m_player->m_pininput.GetRightFlipperActionId(), m_prevActionState))
-      m_activePage->AdjustItem(1, true);
+      GetActivePage()->AdjustItem(1, true);
    else if (m_useFlipperNav && state.IsKeyDown(m_player->m_pininput.GetRightFlipperActionId()))
-      m_activePage->AdjustItem(1, false);
+      GetActivePage()->AdjustItem(1, false);
 
    if (state.IsKeyPressed(m_player->m_pininput.GetLaunchBallActionId(), m_prevActionState))
-      m_activePage->ResetToDefaults();
+      GetActivePage()->ResetToDefaults();
 
    if (state.IsKeyPressed(m_player->m_pininput.GetAddCreditActionId(0), m_prevActionState))
    {
       if (g_pvp->m_povEdit)
          g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
       else
-         m_activePage->ResetToInitialValues();
+         GetActivePage()->ResetToInitialValues();
    }
 
    if (state.IsKeyPressed(m_player->m_pininput.GetStartActionId(), m_prevActionState))
-      m_activePage->Save();
+      GetActivePage()->Save();
 
    if (state.IsKeyReleased(m_player->m_pininput.GetExitInteractiveActionId(), m_prevActionState))
       Close(); // FIXME should a navigate back, up to InGameUI close, applied on key release as this is the way it is handled for the main splash (to be changed ?)

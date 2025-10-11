@@ -8,7 +8,7 @@ namespace VPX::InGameUI
 {
 
 TableOptionsPage::TableOptionsPage()
-   : InGameUIPage("table/options"s, "Table Options"s, ""s, SaveMode::Table)
+   : InGameUIPage("Table Options"s, ""s, SaveMode::Table)
 {
 }
 

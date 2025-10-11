@@ -18,11 +18,11 @@ public:
 
    void Open(const string& page);
    bool IsOpened() const { return m_isOpened; }
-   bool IsOpened(const string& page) const { return m_isOpened && m_activePage->GetPath() == page; }
+   bool IsOpened(const string &page) const { return m_isOpened && !m_navigationHistory.empty() && m_navigationHistory.back() == page; }
    void Update();
    void Close();
 
-   void AddPage(std::unique_ptr<InGameUIPage> page);
+   void AddPage(const string &path, std::function<std::unique_ptr<InGameUIPage>()> pageFactory);
    void Navigate(const string &path);
    void NavigateBack();
 
@@ -31,15 +31,17 @@ public:
 private:
    void HandlePageInput(const InputManager::ActionState &state);
    void HandleLegacyFlyOver(const InputManager::ActionState &state);
+   InGameUIPage* GetActivePage() const { return m_activePages.empty() ? nullptr : m_activePages.back().get(); }
 
    Player *m_player;
    ImVec2 m_prevMousePos;
    bool m_isOpened = false;
    bool m_useFlipperNav = false;
    InputManager::ActionState m_prevActionState { };
-   ankerl::unordered_dense::map<string, std::unique_ptr<InGameUIPage>> m_pages;
+   ankerl::unordered_dense::map<string, std::function<std::unique_ptr<InGameUIPage>()>> m_pages;
    vector<string> m_navigationHistory;
-   InGameUIPage* m_activePage = nullptr;
+   vector<std::unique_ptr<InGameUIPage>> m_activePages;
+   uint32_t m_lastRenderMs = 0;
 };
 
 }

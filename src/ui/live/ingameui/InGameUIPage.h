@@ -12,7 +12,7 @@ class InGameUIPage
 public:
    enum class SaveMode { None, Global, Table, Both };
 
-   InGameUIPage(const string& path, const string& title, const string& info, SaveMode saveMode);
+   InGameUIPage(const string& title, const string& info, SaveMode saveMode);
 
    Settings& GetSettings();
 
@@ -22,6 +22,8 @@ public:
    virtual void Open();
    virtual void Close();
    virtual void Save();
+   bool IsActive() const { return m_openAnimTarget == 0.f; }
+   bool IsClosed() const { return m_openAnimPos == -1.f; }
    void SaveGlobally();
    void SaveTableOverride();
    virtual void ResetToInitialValues();
@@ -29,7 +31,7 @@ public:
    bool IsResettingToDefaults() const { return m_resettingToDefaults; }
    bool IsResettingToInitialValues() const { return m_resettingToInitialValues; }
    bool IsResetting() const { return m_resettingToDefaults || m_resettingToInitialValues; }
-   virtual void Render();
+   virtual void Render(float elapsedMs);
    void SelectNextItem();
    void SelectPrevItem();
    void AdjustItem(float direction, bool isInitialPress);
@@ -39,8 +41,6 @@ public:
 
    InGameUIItem* GetItem(const string& label) const;
 
-   const string &GetPath() const { return m_path; }
-
    virtual bool IsPlayerPauseAllowed() const { return true; }
 
    ImVec2 GetWindowPos() const { return m_windowPos; }
@@ -49,10 +49,15 @@ public:
    Player* const m_player;
 
 private:
-   const string m_path;
    const string m_title;
    const string m_info;
    const SaveMode m_saveMode;
+
+   // Open/Close animations
+   // -1.f = closed, 0.f = opened, 1.f = appearing
+   float m_openAnimPos = -1.f;
+   float m_openAnimTarget = -1.f;
+
    ImVec2 m_windowPos = ImVec2(0.f, 0.f);
    ImVec2 m_windowSize = ImVec2(0.f, 0.f);
    float m_adjustedValue = 0.f;
