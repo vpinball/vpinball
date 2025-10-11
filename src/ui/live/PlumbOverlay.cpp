@@ -36,7 +36,7 @@ void PlumbOverlay::Update()
    else 
       plumbFade = static_cast<float>(120 - m_plumbFadeCounter) / 100.f;
 
-   const ImVec2 fullSize = ImVec2(100.f * m_dpi, 100.f * m_dpi);
+   const ImVec2 fullSize = ImVec2(200.f * m_uiScale, 200.f * m_uiScale);
    const ImVec2 halfSize = fullSize * 0.5f;
    constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground| ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings
       | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
@@ -51,11 +51,11 @@ void PlumbOverlay::Update()
    ImGui::GetWindowDrawList()->AddEllipseFilled(pos + halfSize, radius * 1.1f, backCol);
    // Tilt circle
    ImU32 alphaCol = IM_COL32(255, 0, 0, plumbFade * 255.f);
-   ImGui::GetWindowDrawList()->AddEllipse(pos + halfSize, radius, alphaCol);
+   ImGui::GetWindowDrawList()->AddEllipse(pos + halfSize, radius, alphaCol, 0.0f, 0, 2.f * m_uiScale);
    // Plumb position
    const Vertex3Ds &plumb = m_player->m_physics->GetPlumbPos();
    const ImVec2 plumbPos = pos + halfSize + scale * ImVec2(plumb.x, plumb.y) / m_player->m_physics->GetPlumbPoleLength() + ImVec2(0.5f, 0.5f);
-   ImGui::GetWindowDrawList()->AddLine(pos + halfSize, plumbPos, alphaCol);
-   ImGui::GetWindowDrawList()->AddCircleFilled(plumbPos, 2.5f * m_dpi, alphaCol);
+   ImGui::GetWindowDrawList()->AddLine(pos + halfSize, plumbPos, alphaCol, 2.f * m_uiScale);
+   ImGui::GetWindowDrawList()->AddCircleFilled(plumbPos, 5.f * m_uiScale, alphaCol);
    ImGui::End();
 }

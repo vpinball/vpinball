@@ -169,21 +169,18 @@ LiveUI::LiveUI(RenderDevice *const rd)
 
    SetupImGuiStyle(1.0f);
 
-   UpdateDPI();
-   m_perfUI.SetDPI(m_dpi);
-   m_plumbOverlay.SetDPI(m_dpi);
-   ImGui::GetStyle().ScaleAllSizes(m_dpi);
+   UpdateScale();
 
    // UI fonts
-   m_baseFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 13.0f * m_dpi);
+   m_baseFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, 13.0f * m_uiScale);
    ImFontConfig icons_config;
    icons_config.MergeMode = true;
    icons_config.PixelSnapH = true;
-   icons_config.GlyphMinAdvanceX = 13.0f * m_dpi;
+   icons_config.GlyphMinAdvanceX = 13.0f * m_uiScale;
    static constexpr ImWchar icons_ranges[] = { ICON_MIN_FK, ICON_MAX_16_FK, 0 };
-   io.Fonts->AddFontFromMemoryCompressedTTF(fork_awesome_compressed_data, fork_awesome_compressed_size, 13.0f * m_dpi, &icons_config, icons_ranges);
+   io.Fonts->AddFontFromMemoryCompressedTTF(fork_awesome_compressed_data, fork_awesome_compressed_size, 13.0f * m_uiScale, &icons_config, icons_ranges);
 
-   const float overlaySize = 13.0f * m_dpi;
+   const float overlaySize = 13.0f * m_uiScale;
    m_overlayFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, overlaySize);
    m_overlayBoldFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsansbold_compressed_data, droidsansbold_compressed_size, overlaySize);
    ImFont *H1 = io.Fonts->AddFontFromMemoryCompressedTTF(droidsansbold_compressed_data, droidsansbold_compressed_size, overlaySize * 20.0f / 13.f);
@@ -318,40 +315,46 @@ ImGui::MarkdownImageData LiveUI::MarkdownImageCallback(ImGui::MarkdownLinkCallba
    return imageData;
 }
 
-void LiveUI::UpdateDPI()
+void LiveUI::UpdateScale()
 {
-   float prevDPI = m_dpi;
+   float prevDPI = m_uiScale;
+   float overlayScale;
    if (m_player->m_vrDevice)
    {
       // VR headset cover full view range, so use a relative part of the full range for the DPI
-      m_dpi = static_cast<float>(min(m_player->m_vrDevice->GetEyeWidth(), m_player->m_vrDevice->GetEyeHeight())) / 2000.f;
+      m_uiScale = static_cast<float>(min(m_player->m_vrDevice->GetEyeWidth(), m_player->m_vrDevice->GetEyeHeight())) / 2000.f;
+      overlayScale = m_uiScale;
    }
    else
    {
       // Use display DPI setting
-      // On macOS/iOS, keep m_dpi at 1.0f. ImGui_ImplSDL3_NewFrame applies a 2.0f DisplayFramebufferScale
-      // for SDL_WINDOW_HIGH_PIXEL_DENSITY windows. A m_dpi of 2.0 would cause the UI to scale at 400%.
+      // On macOS/iOS, keep m_uiScale at 1.0f. ImGui_ImplSDL3_NewFrame applies a 2.0f DisplayFramebufferScale
+      // for SDL_WINDOW_HIGH_PIXEL_DENSITY windows. A m_uiScale of 2.0 would cause the UI to scale at 400%.
       // See: https://wiki.libsdl.org/SDL3/README/highdpi
-      m_dpi = SDL_GetWindowDisplayScale(m_player->m_playfieldWnd->GetCore()) / SDL_GetWindowPixelDensity(m_player->m_playfieldWnd->GetCore());
+      m_uiScale = SDL_GetWindowDisplayScale(m_player->m_playfieldWnd->GetCore()) / SDL_GetWindowPixelDensity(m_player->m_playfieldWnd->GetCore());
+      overlayScale = m_uiScale;
 
       // For cabinet mode, the user is not standing in front of screen, so scale out the UI based on display size to be more readable (more "game like")
       if (m_player->m_ptable->m_BG_current_set == ViewSetupID::BG_FULLSCREEN)
       {
-         m_dpi = max(m_dpi, static_cast<float>(m_player->m_playfieldWnd->GetWidth()) / 750.f);
+         m_uiScale = max(m_uiScale, static_cast<float>(m_player->m_playfieldWnd->GetWidth()) / 750.f);
       }
    }
-   m_dpi = min(m_dpi, 10.f); // To avoid texture size overflows
-   if (m_dpi != prevDPI && prevDPI > 0)
+   m_uiScale = min(m_uiScale, 10.f); // To avoid texture size overflows
+   if (m_uiScale != prevDPI)
    {
-      m_perfUI.SetDPI(m_dpi);
-      m_plumbOverlay.SetDPI(m_dpi);
-      ImGui::GetStyle().ScaleAllSizes(m_dpi / prevDPI);
+      m_perfUI.SetUIScale(overlayScale);
+      m_plumbOverlay.SetUIScale(overlayScale);
+      if (prevDPI == 0.f)
+         ImGui::GetStyle().ScaleAllSizes(m_uiScale);
+      else
+         ImGui::GetStyle().ScaleAllSizes(m_uiScale / prevDPI);
    }
 }
 
 void LiveUI::NewFrame()
 {
-   UpdateDPI();
+   UpdateScale();
    ImGui_ImplSDL3_NewFrame();
 
    ImGuiIO &io = ImGui::GetIO();
@@ -667,7 +670,7 @@ void LiveUI::UpdateDeviceLayoutPopup()
 {
    if (!m_deviceLayoutName.empty())
       ImGui::OpenPopup("Apply Device Layout ?");
-   ImGui::SetNextWindowSize(ImVec2(350.f * m_dpi, 0.f));
+   ImGui::SetNextWindowSize(ImVec2(350.f * m_uiScale, 0.f));
    if (ImGui::BeginPopupModal("Apply Device Layout ?"))
    {
       ImGui::TextWrapped("Device '%s' was detected. Would you like the default input layout to be applied ?", m_deviceLayoutName.c_str());

@@ -39,15 +39,29 @@ void PerfUI::Update()
    if (m_showPerf == PerfMode::PM_DISABLED)
       return;
 
+   ImGui::PushFont(nullptr, 13.0f * m_uiScale);
+
+   RenderFPS();
+
+   if (m_showPerf == PerfMode::PM_STATS)
+      RenderStats();
+
+   ImGui::PopFont();
+}
+
+void PerfUI::RenderFPS()
+{
    const ImGuiIO &io = ImGui::GetIO();
-   constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+   constexpr ImGuiWindowFlags window_flags
+      = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
    ImGui::SetNextWindowBgAlpha(0.5f);
    if (m_player->m_vrDevice == nullptr)
-      ImGui::SetNextWindowPos(ImVec2(8.f * m_dpi, io.DisplaySize.y - 8.f * m_dpi), 0, ImVec2(0.f, 1.f));
+      ImGui::SetNextWindowPos(ImVec2(8.f * m_uiScale, io.DisplaySize.y - 8.f * m_uiScale), 0, ImVec2(0.f, 1.f));
    else if (m_showPerf == PerfMode::PM_STATS) // VR with stats
       ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.25f, io.DisplaySize.y * 0.35f), 0, ImVec2(0.f, 0.f));
    else // VR without stats
       ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.35f), 0, ImVec2(0.5f, 0.f));
+
 
    ImGui::Begin("FPS", nullptr, window_flags);
 
@@ -276,85 +290,87 @@ void PerfUI::Update()
    #endif
 
    ImGui::End();
+}
 
-   // Display plots
-   if (m_showPerf == PerfMode::PM_STATS)
+void PerfUI::RenderStats()
+{
+   const ImGuiIO &io = ImGui::GetIO();
+   constexpr ImGuiWindowFlags window_flags_plots
+      = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+   ImGui::SetNextWindowSize(ImVec2(530, 500));
+   if (m_player->m_vrDevice)
+      ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.80f, io.DisplaySize.y * 0.35f), 0, ImVec2(1.f, 0.f));
+   else
+      ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x - 8.f * m_uiScale, io.DisplaySize.y - 8.f * m_uiScale), 0, ImVec2(1.f, 1.f));
+   ImGui::Begin("Plots", nullptr, window_flags_plots);
+
+   const float t = static_cast<float>(m_player->m_time_sec);
+   constexpr int rt_axis = ImPlotAxisFlags_NoTickLabels;
+
+   ImPlot::GetStyle().Colors[ImPlotCol_FrameBg] = ImVec4(0.11f, 0.11f, 0.14f, 0.5f);
+   ImPlot::GetStyle().Colors[ImPlotCol_PlotBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.15f);
+   ImPlot::GetStyle().Colors[ImPlotCol_LegendBg] = ImVec4(0.11f, 0.11f, 0.14f, 0.15f);
+
+   m_plotFPS.SetRolling(m_showRollingFPS);
+   m_plotFPSSmoothed.SetRolling(m_showRollingFPS);
+   m_plotFPSSmoothed.AddPoint(t, 1e-3f * (float)m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME)); // Frame time in ms
+   m_plotFPS.AddPoint(t, m_plotFPS.GetLast().y * 0.95f + m_plotFPSSmoothed.GetLast().y * 0.05f);
+   if (m_plotFPS.HasData() && m_plotFPSSmoothed.HasData() && ImPlot::BeginPlot("##FPS", ImVec2(-1, 150), ImPlotFlags_None))
    {
-      constexpr ImGuiWindowFlags window_flags_plots = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-      ImGui::SetNextWindowSize(ImVec2(530, 500));
-      if (m_player->m_vrDevice)
-         ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.80f, io.DisplaySize.y * 0.35f), 0, ImVec2(1.f, 0.f));
+      ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
+      ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_LockMin);
+      const float targetRefreshRate = clamp(m_player->m_vrDevice ? 60.f : m_player->GetTargetRefreshRate(), 24.f, 200.f);
+      ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 2000.f / targetRefreshRate, ImGuiCond_Always); // range is twice the target frame rate
+      if (m_plotFPS.m_rolling)
+         ImPlot::SetupAxisLimits(ImAxis_X1, 0, m_plotFPS.m_timeSpan, ImGuiCond_Always);
       else
-         ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x - 8.f * m_dpi, io.DisplaySize.y - 8.f * m_dpi), 0, ImVec2(1.f, 1.f));
-      ImGui::Begin("Plots", nullptr, window_flags_plots);
-
-      const float t = static_cast<float>(m_player->m_time_sec);
-      constexpr int rt_axis = ImPlotAxisFlags_NoTickLabels;
-
-      ImPlot::GetStyle().Colors[ImPlotCol_FrameBg] = ImVec4(0.11f, 0.11f, 0.14f, 0.5f);
-      ImPlot::GetStyle().Colors[ImPlotCol_PlotBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.15f);
-      ImPlot::GetStyle().Colors[ImPlotCol_LegendBg] = ImVec4(0.11f, 0.11f, 0.14f, 0.15f);
-
-      m_plotFPS.SetRolling(m_showRollingFPS);
-      m_plotFPSSmoothed.SetRolling(m_showRollingFPS);
-      m_plotFPSSmoothed.AddPoint(t, 1e-3f * (float)m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME)); // Frame time in ms
-      m_plotFPS.AddPoint(t, m_plotFPS.GetLast().y * 0.95f + m_plotFPSSmoothed.GetLast().y * 0.05f);
-      if (m_plotFPS.HasData() && m_plotFPSSmoothed.HasData() && ImPlot::BeginPlot("##FPS", ImVec2(-1, 150), ImPlotFlags_None))
-      {
-         ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
-         ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_LockMin);
-         const float targetRefreshRate = clamp(m_player->m_vrDevice ? 60.f : m_player->GetTargetRefreshRate(), 24.f, 200.f);
-         ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 2000.f / targetRefreshRate, ImGuiCond_Always); // range is twice the target frame rate
-         if (m_plotFPS.m_rolling)
-            ImPlot::SetupAxisLimits(ImAxis_X1, 0, m_plotFPS.m_timeSpan, ImGuiCond_Always);
-         else
-            ImPlot::SetupAxisLimits(ImAxis_X1, static_cast<double>(t) - m_plotFPS.m_timeSpan, static_cast<double>(t), ImGuiCond_Always);
-         ImPlot::PlotLine("ms Frame", &m_plotFPSSmoothed.m_data[0].x, &m_plotFPSSmoothed.m_data[0].y, m_plotFPSSmoothed.m_data.size(), 0, m_plotFPSSmoothed.m_offset, 2 * sizeof(float));
-         ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
-         ImPlot::PlotLine("Smoothed ms Frame", &m_plotFPS.m_data[0].x, &m_plotFPS.m_data[0].y, m_plotFPS.m_data.size(), 0, m_plotFPS.m_offset, 2 * sizeof(float));
-         ImPlot::PopStyleColor();
-         ImPlot::EndPlot();
-      }
-
-      m_plotPhysx.SetRolling(m_showRollingFPS);
-      m_plotPhysxSmoothed.SetRolling(m_showRollingFPS);
-      m_plotPhysxSmoothed.AddPoint(t, 1e-3f * (float)m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_PHYSICS)); // Script in ms
-      m_plotPhysx.AddPoint(t, m_plotPhysx.GetLast().y * 0.95f + m_plotPhysxSmoothed.GetLast().y * 0.05f);
-      if (m_plotPhysx.HasData() && m_plotPhysxSmoothed.HasData() && ImPlot::BeginPlot("##Physics", ImVec2(-1, 150), ImPlotFlags_None))
-      {
-         ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
-         ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_LockMin);
-         ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 2.f * max(1.f, m_plotPhysx.GetMovingMax()), ImGuiCond_Always);
-         if (m_plotPhysx.m_rolling)
-            ImPlot::SetupAxisLimits(ImAxis_X1, 0, m_plotPhysx.m_timeSpan, ImGuiCond_Always);
-         else
-            ImPlot::SetupAxisLimits(ImAxis_X1, static_cast<double>(t) - m_plotPhysx.m_timeSpan, static_cast<double>(t), ImGuiCond_Always);
-         ImPlot::PlotLine("ms Physics", &m_plotPhysxSmoothed.m_data[0].x, &m_plotPhysxSmoothed.m_data[0].y, m_plotPhysxSmoothed.m_data.size(), 0, m_plotPhysxSmoothed.m_offset, 2 * sizeof(float));
-         ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
-         ImPlot::PlotLine("Smoothed ms Physics", &m_plotPhysx.m_data[0].x, &m_plotPhysx.m_data[0].y, m_plotPhysx.m_data.size(), 0, m_plotPhysx.m_offset, 2 * sizeof(float));
-         ImPlot::PopStyleColor();
-         ImPlot::EndPlot();
-      }
-
-      m_plotScript.SetRolling(m_showRollingFPS);
-      m_plotScriptSmoothed.SetRolling(m_showRollingFPS);
-      m_plotScriptSmoothed.AddPoint(t, 1e-3f * (float)m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_SCRIPT)); // Physics in ms
-      m_plotScript.AddPoint(t, m_plotScript.GetLast().y * 0.95f + m_plotScriptSmoothed.GetLast().y * 0.05f);
-      if (m_plotScript.HasData() && m_plotScriptSmoothed.HasData() && ImPlot::BeginPlot("##Script", ImVec2(-1, 150), ImPlotFlags_None))
-      {
-         ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
-         ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_LockMin);
-         ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 2.f * max(1.f, m_plotScript.GetMovingMax()), ImGuiCond_Always);
-         if (m_plotScript.m_rolling)
-            ImPlot::SetupAxisLimits(ImAxis_X1, 0, m_plotScript.m_timeSpan, ImGuiCond_Always);
-         else
-            ImPlot::SetupAxisLimits(ImAxis_X1, static_cast<double>(t) - m_plotScript.m_timeSpan, static_cast<double>(t), ImGuiCond_Always);
-         ImPlot::PlotLine("ms Script", &m_plotScriptSmoothed.m_data[0].x, &m_plotScriptSmoothed.m_data[0].y, m_plotScriptSmoothed.m_data.size(), 0, m_plotScriptSmoothed.m_offset, 2 * sizeof(float));
-         ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
-         ImPlot::PlotLine("Smoothed ms Script", &m_plotScript.m_data[0].x, &m_plotScript.m_data[0].y, m_plotScript.m_data.size(), 0, m_plotScript.m_offset, 2 * sizeof(float));
-         ImPlot::PopStyleColor();
-         ImPlot::EndPlot();
-      }
-      ImGui::End();
+         ImPlot::SetupAxisLimits(ImAxis_X1, static_cast<double>(t) - m_plotFPS.m_timeSpan, static_cast<double>(t), ImGuiCond_Always);
+      ImPlot::PlotLine("ms Frame", &m_plotFPSSmoothed.m_data[0].x, &m_plotFPSSmoothed.m_data[0].y, m_plotFPSSmoothed.m_data.size(), 0, m_plotFPSSmoothed.m_offset, 2 * sizeof(float));
+      ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
+      ImPlot::PlotLine("Smoothed ms Frame", &m_plotFPS.m_data[0].x, &m_plotFPS.m_data[0].y, m_plotFPS.m_data.size(), 0, m_plotFPS.m_offset, 2 * sizeof(float));
+      ImPlot::PopStyleColor();
+      ImPlot::EndPlot();
    }
+
+   m_plotPhysx.SetRolling(m_showRollingFPS);
+   m_plotPhysxSmoothed.SetRolling(m_showRollingFPS);
+   m_plotPhysxSmoothed.AddPoint(t, 1e-3f * (float)m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_PHYSICS)); // Script in ms
+   m_plotPhysx.AddPoint(t, m_plotPhysx.GetLast().y * 0.95f + m_plotPhysxSmoothed.GetLast().y * 0.05f);
+   if (m_plotPhysx.HasData() && m_plotPhysxSmoothed.HasData() && ImPlot::BeginPlot("##Physics", ImVec2(-1, 150), ImPlotFlags_None))
+   {
+      ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
+      ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_LockMin);
+      ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 2.f * max(1.f, m_plotPhysx.GetMovingMax()), ImGuiCond_Always);
+      if (m_plotPhysx.m_rolling)
+         ImPlot::SetupAxisLimits(ImAxis_X1, 0, m_plotPhysx.m_timeSpan, ImGuiCond_Always);
+      else
+         ImPlot::SetupAxisLimits(ImAxis_X1, static_cast<double>(t) - m_plotPhysx.m_timeSpan, static_cast<double>(t), ImGuiCond_Always);
+      ImPlot::PlotLine("ms Physics", &m_plotPhysxSmoothed.m_data[0].x, &m_plotPhysxSmoothed.m_data[0].y, m_plotPhysxSmoothed.m_data.size(), 0, m_plotPhysxSmoothed.m_offset, 2 * sizeof(float));
+      ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
+      ImPlot::PlotLine("Smoothed ms Physics", &m_plotPhysx.m_data[0].x, &m_plotPhysx.m_data[0].y, m_plotPhysx.m_data.size(), 0, m_plotPhysx.m_offset, 2 * sizeof(float));
+      ImPlot::PopStyleColor();
+      ImPlot::EndPlot();
+   }
+
+   m_plotScript.SetRolling(m_showRollingFPS);
+   m_plotScriptSmoothed.SetRolling(m_showRollingFPS);
+   m_plotScriptSmoothed.AddPoint(t, 1e-3f * (float)m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_SCRIPT)); // Physics in ms
+   m_plotScript.AddPoint(t, m_plotScript.GetLast().y * 0.95f + m_plotScriptSmoothed.GetLast().y * 0.05f);
+   if (m_plotScript.HasData() && m_plotScriptSmoothed.HasData() && ImPlot::BeginPlot("##Script", ImVec2(-1, 150), ImPlotFlags_None))
+   {
+      ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
+      ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_LockMin);
+      ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 2.f * max(1.f, m_plotScript.GetMovingMax()), ImGuiCond_Always);
+      if (m_plotScript.m_rolling)
+         ImPlot::SetupAxisLimits(ImAxis_X1, 0, m_plotScript.m_timeSpan, ImGuiCond_Always);
+      else
+         ImPlot::SetupAxisLimits(ImAxis_X1, static_cast<double>(t) - m_plotScript.m_timeSpan, static_cast<double>(t), ImGuiCond_Always);
+      ImPlot::PlotLine("ms Script", &m_plotScriptSmoothed.m_data[0].x, &m_plotScriptSmoothed.m_data[0].y, m_plotScriptSmoothed.m_data.size(), 0, m_plotScriptSmoothed.m_offset, 2 * sizeof(float));
+      ImPlot::PushStyleColor(ImPlotCol_Fill, ImVec4(1, 0, 0, 0.25f));
+      ImPlot::PlotLine("Smoothed ms Script", &m_plotScript.m_data[0].x, &m_plotScript.m_data[0].y, m_plotScript.m_data.size(), 0, m_plotScript.m_offset, 2 * sizeof(float));
+      ImPlot::PopStyleColor();
+      ImPlot::EndPlot();
+   }
+
+   ImGui::End();
 }

@@ -55,14 +55,14 @@ public:
    void SetMarkdownStartId(const unsigned int startId) { markdown_start_id = startId; }
    const ImGui::MarkdownConfig &GetMarkdownConfig() const { return markdown_config; }
    ImFont *GetOverlayFont() const { return m_overlayFont; }
-   float GetDPI() const { return m_dpi; }
+   float GetDPI() const { return m_uiScale; }
    int GetUIOrientation() const { return m_rotate; }
    static ImGuiKey GetImGuiKeyFromSDLScancode(const SDL_Scancode sdlk);
    static void CenteredText(const string &text);
 
 private:
    void NewFrame();
-   void UpdateDPI();
+   void UpdateScale();
 
    vector<std::unique_ptr<MeshBuffer>> m_meshBuffers;
 
@@ -106,7 +106,7 @@ private:
    // Rendering
    RenderDevice* const m_rd;
    int m_rotate = 0;
-   float m_dpi = 0.f;
+   float m_uiScale = 0.f;
    ImFont *m_baseFont = nullptr;
    ImFont *m_overlayBoldFont = nullptr;
    ImFont *m_overlayFont = nullptr;
