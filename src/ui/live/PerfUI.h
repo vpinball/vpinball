@@ -11,7 +11,7 @@ public:
    PerfUI(Player* const player);
    ~PerfUI();
 
-   void SetDPI(float dpi) { m_dpi = dpi; }
+   void SetUIScale(float scale) { m_uiScale = scale; }
 
    enum PerfMode
    {
@@ -26,8 +26,11 @@ public:
    void Update();
 
 private:
+   void RenderFPS();
+   void RenderStats();
+
    Player* const m_player;
-   float m_dpi = 1.0f;
+   float m_uiScale = 1.0f;
 
    PerfMode m_showPerf = PerfMode::PM_DISABLED;
    bool m_showAvgFPS = true;
