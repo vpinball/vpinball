@@ -12,8 +12,8 @@ class NudgeSettingsPage final : public InGameUIPage
 public:
    NudgeSettingsPage();
 
-   void Open() override;
-   void Close() override;
+   void Open(bool isBackwardAnimation) override;
+   void Close(bool isBackwardAnimation) override;
    void Render(float elapsed) override;
 
    bool IsPlayerPauseAllowed() const override { return false; }

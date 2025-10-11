@@ -21,18 +21,20 @@ InGameUIPage::InGameUIPage(const string& title, const string& info, SaveMode sav
    assert(m_player);
 }
 
-void InGameUIPage::Open()
+void InGameUIPage::Open(bool isBackwardAnimation)
 {
    m_openAnimTarget = 0.f;
+   m_isBackwardAnimation = isBackwardAnimation;
    if (m_openAnimPos == -1.f)
       m_openAnimPos = 1.f;
    m_selectedItem = 0;
    m_pressedItemLabel = ""s;
 }
 
-void InGameUIPage::Close()
+void InGameUIPage::Close(bool isBackwardAnimation)
 {
-   m_openAnimTarget = -1.f;
+   m_openAnimTarget = - 1.f;
+   m_isBackwardAnimation = isBackwardAnimation;
 }
 
 void InGameUIPage::ClearItems() { m_items.clear(); }
@@ -311,13 +313,14 @@ void InGameUIPage::Render(float elapsedMs)
    m_openAnimPos = m_openAnimPos + (m_openAnimTarget - m_openAnimPos) * clamp(elapsedMs * 4.f, -1.f, 1.f);
    if (fabsf(m_openAnimTarget - m_openAnimPos) < 0.001f)
       m_openAnimPos = m_openAnimTarget;
+   const float animPos = m_isBackwardAnimation ? -m_openAnimPos : m_openAnimPos;
 
    ImGui::SetNextWindowBgAlpha(0.5f);
    if (m_player->m_vrDevice)
    {
       const float size = min(0.25f * io.DisplaySize.x, 0.25f * io.DisplaySize.y);
       ImGui::SetNextWindowSize(ImVec2(size, size));
-      ImGui::SetNextWindowPos(ImVec2((m_openAnimPos + 0.5f) * io.DisplaySize.x, 0.5f * io.DisplaySize.y), 0, ImVec2(0.5f, 0.5f));
+      ImGui::SetNextWindowPos(ImVec2((animPos + 0.5f) * io.DisplaySize.x, 0.5f * io.DisplaySize.y), 0, ImVec2(0.5f, 0.5f));
    }
    else
    {
@@ -325,7 +328,7 @@ void InGameUIPage::Render(float elapsedMs)
          ImGui::SetNextWindowSize(ImVec2(0.4f * io.DisplaySize.x, 0.4f * io.DisplaySize.y));
       else // Portrait mode
          ImGui::SetNextWindowSize(ImVec2(0.8f * io.DisplaySize.x, 0.3f * io.DisplaySize.y));
-      ImGui::SetNextWindowPos(ImVec2((m_openAnimPos + 0.5f) * io.DisplaySize.x, 0.8f * io.DisplaySize.y), 0, ImVec2(0.5f, 1.f));
+      ImGui::SetNextWindowPos(ImVec2((animPos + 0.5f) * io.DisplaySize.x, 0.8f * io.DisplaySize.y), 0, ImVec2(0.5f, 1.f));
    }
    ;
    ImGui::Begin(std::to_string(reinterpret_cast<uint64_t>(this)).c_str(), nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings);

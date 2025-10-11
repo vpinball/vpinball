@@ -111,15 +111,15 @@ NudgeSettingsPage::NudgeSettingsPage()
    }
 }
 
-void NudgeSettingsPage::Open()
+void NudgeSettingsPage::Open(bool isBackwardAnimation)
 {
-   InGameUIPage::Open();
+   InGameUIPage::Open(isBackwardAnimation);
    m_player->m_pininput.AddAxisListener([this]() { AppendPlot(); });
 }
 
-void NudgeSettingsPage::Close()
+void NudgeSettingsPage::Close(bool isBackwardAnimation)
 {
-   InGameUIPage::Close();
+   InGameUIPage::Close(isBackwardAnimation);
    m_player->m_pininput.ClearAxisListeners();
 }
 

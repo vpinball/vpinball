@@ -11,7 +11,7 @@ class TableOptionsPage final : public InGameUIPage
 public:
    TableOptionsPage();
 
-   void Open() override;
+   void Open(bool isBackwardAnimation) override;
 
 private:
    int GetOptionIndex(const string& id) const;

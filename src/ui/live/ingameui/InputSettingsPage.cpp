@@ -12,9 +12,9 @@ InputSettingsPage::InputSettingsPage()
 {
 }
 
-void InputSettingsPage::Open()
+void InputSettingsPage::Open(bool isBackwardAnimation)
 {
-   InGameUIPage::Open();
+   InGameUIPage::Open(isBackwardAnimation);
    InputManager& input = GetInput();
 
    ClearItems();

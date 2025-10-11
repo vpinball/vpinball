@@ -12,7 +12,7 @@ HomePage::HomePage()
 {
 }
 
-void HomePage::Open()
+void HomePage::Open(bool isBackwardAnimation)
 {
    ClearItems();
 
@@ -65,7 +65,7 @@ void HomePage::Open()
 
    // TODO implement Plugin option system to new UI (note that, for the time being, plugin setting system is just an unused draft so far, see GetOption in VPXPlugin.h)
 
-   InGameUIPage::Open();
+   InGameUIPage::Open(isBackwardAnimation);
 }
 
 }

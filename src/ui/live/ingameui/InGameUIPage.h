@@ -19,8 +19,8 @@ public:
    void ClearItems();
    void AddItem(std::unique_ptr<InGameUIItem>& item);
 
-   virtual void Open();
-   virtual void Close();
+   virtual void Open(bool isBackwardAnimation);
+   virtual void Close(bool isBackwardAnimation);
    virtual void Save();
    bool IsActive() const { return m_openAnimTarget == 0.f; }
    bool IsClosed() const { return m_openAnimPos == -1.f; }
@@ -57,6 +57,7 @@ private:
    // -1.f = closed, 0.f = opened, 1.f = appearing
    float m_openAnimPos = -1.f;
    float m_openAnimTarget = -1.f;
+   bool m_isBackwardAnimation = false;
 
    ImVec2 m_windowPos = ImVec2(0.f, 0.f);
    ImVec2 m_windowSize = ImVec2(0.f, 0.f);
