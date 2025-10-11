@@ -25,8 +25,6 @@ public:
 
    void Update();
 
-   bool HasKeyboardCapture() const;
-   bool HasMouseCapture() const;
    bool IsOpened() const { return m_editorUI.IsOpened() || m_escSplashModal.IsOpened() || m_inGameUI.IsOpened(); }
    void OpenMainSplash() { m_escSplashModal.Open(); }
    void OpenEditorUI() { m_editorUI.Open(); }

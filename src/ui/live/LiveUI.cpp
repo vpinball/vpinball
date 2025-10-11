@@ -318,16 +318,6 @@ ImGui::MarkdownImageData LiveUI::MarkdownImageCallback(ImGui::MarkdownLinkCallba
    return imageData;
 }
 
-bool LiveUI::HasKeyboardCapture() const
-{
-   return ImGui::GetIO().WantCaptureKeyboard;
-}
-
-bool LiveUI::HasMouseCapture() const
-{
-   return ImGui::GetIO().WantCaptureMouse || m_ballControl.GetMode() != BallControl::Mode::Disabled;
-}
-
 void LiveUI::UpdateDPI()
 {
    float prevDPI = m_dpi;
@@ -429,7 +419,7 @@ void LiveUI::NewFrame()
    ImGui::NewFrame();
 
    // Only enable keyboard navigation for main splash popup as it interfer with UI keyboard shortcuts
-   if (m_escSplashModal.IsOpened() || m_inGameUI.IsOpened())
+   if (m_escSplashModal.IsOpened())
       io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
    else
       io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard;
