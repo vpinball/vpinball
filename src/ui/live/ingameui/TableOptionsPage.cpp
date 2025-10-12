@@ -33,7 +33,7 @@ void TableOptionsPage::Open(bool isBackwardAnimation)
       if (!opt.literals.empty())
       {
          // TODO detect & implement On/Off or True/False as a toggle ?
-         auto item = std::make_unique<InGameUIItem>(
+         AddItem(std::make_unique<InGameUIItem>(
             opt.name, ""s, opt.literals, static_cast<int>(opt.defaultValue),
             [this, optId]()
             {
@@ -67,12 +67,11 @@ void TableOptionsPage::Open(bool isBackwardAnimation)
                   return;
                const Settings::OptionDef& opt = settings.GetTableSettings()[index];
                settings.SaveValue(Settings::TableOption, opt.name, v, isTableOverride);
-            });
-         AddItem(item);
+            }));
       }
       else if (round(opt.step) == 1.f && round(opt.minValue) == opt.minValue)
       {
-         auto item = std::make_unique<InGameUIItem>(
+         AddItem(std::make_unique<InGameUIItem>(
             opt.name, ""s, static_cast<int>(opt.minValue * scale), static_cast<int>(opt.maxValue * scale), static_cast<int>(opt.defaultValue * scale), format,
             [this, optId]()
             {
@@ -106,12 +105,11 @@ void TableOptionsPage::Open(bool isBackwardAnimation)
                   return;
                const Settings::OptionDef& opt = settings.GetTableSettings()[index];
                settings.SaveValue(Settings::TableOption, opt.name, v, isTableOverride);
-            });
-         AddItem(item);
+            }));
       }
       else
       {
-         auto item = std::make_unique<InGameUIItem>(
+         AddItem(std::make_unique<InGameUIItem>(
             opt.name, ""s, opt.minValue * scale, opt.maxValue * scale, opt.step * scale, opt.defaultValue * scale, format,
             [this, optId, scale]()
             {
@@ -145,8 +143,7 @@ void TableOptionsPage::Open(bool isBackwardAnimation)
                   return;
                const Settings::OptionDef& opt = settings.GetTableSettings()[index];
                settings.SaveValue(Settings::TableOption, opt.name, v / scale, isTableOverride);
-            });
-         AddItem(item);
+            }));
       }
    }
 }

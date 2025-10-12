@@ -13,30 +13,24 @@ PlungerSettingsPage::PlungerSettingsPage()
 {
    const InputManager& input = GetInput();
 
-   auto keyboardPlunger = std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Keyboard emulated plunger"s);
-   AddItem(keyboardPlunger);
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Keyboard emulated plunger"s));
 
-   auto oneSecRetract = std::make_unique<InGameUIItem>(
+   AddItem(std::make_unique<InGameUIItem>(
       "One Second Retract"s, "Enable retracting the plunger after a 1 second press when using the digital plunger emulation through keyboard or joystick button"s, false,
       [this]() { return GetInput().m_plunger_retract; }, [this](bool v) { GetInput().m_plunger_retract = v; }, InGameUIItem::ResetSetting(Settings::Player, "PlungerRetract"s),
-      InGameUIItem::SaveSettingBool(Settings::Player, "PlungerRetract"s));
-   AddItem(oneSecRetract);
+      InGameUIItem::SaveSettingBool(Settings::Player, "PlungerRetract"s)));
 
-   auto hardwarePlunger = std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Hardware sensor plunger"s);
-   AddItem(hardwarePlunger);
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Hardware sensor plunger"s));
 
    const auto& plungerPosSensor = input.GetPlungerPositionSensor();
-   auto plungerPosItem = std::make_unique<InGameUIItem>(plungerPosSensor->GetLabel(), "Select to define which analog input to use for plunger position."s, plungerPosSensor.get(), 0x1);
-   AddItem(plungerPosItem);
+   AddItem(std::make_unique<InGameUIItem>(plungerPosSensor->GetLabel(), "Select to define which analog input to use for plunger position."s, plungerPosSensor.get(), 0x1));
 
    const auto& plungerVelSensor = input.GetPlungerVelocitySensor();
-   auto plungerVelItem = std::make_unique<InGameUIItem>(plungerVelSensor->GetLabel(), "Select to define which analog input to use for plunger velocity."s, plungerVelSensor.get(), 0x2);
-   AddItem(plungerVelItem);
+   AddItem(std::make_unique<InGameUIItem>(plungerVelSensor->GetLabel(), "Select to define which analog input to use for plunger velocity."s, plungerVelSensor.get(), 0x2));
 
-   auto linearAcquisition = std::make_unique<InGameUIItem>(
+   AddItem(std::make_unique<InGameUIItem>(
       "Linear Sensor"s, "Select between symmetric (linear) and assymetric sensor"s, false, [this]() { return GetInput().m_linearPlunger; }, [this](bool v)
-      { GetInput().m_linearPlunger = v; }, InGameUIItem::ResetSetting(Settings::Player, "PlungerLinearSensor"s), InGameUIItem::SaveSettingBool(Settings::Player, "PlungerLinearSensor"s));
-   AddItem(linearAcquisition);
+      { GetInput().m_linearPlunger = v; }, InGameUIItem::ResetSetting(Settings::Player, "PlungerLinearSensor"s), InGameUIItem::SaveSettingBool(Settings::Player, "PlungerLinearSensor"s)));
 
    m_positionPlot.m_rolling = true;
    m_positionPlot.m_timeSpan = 5.f;

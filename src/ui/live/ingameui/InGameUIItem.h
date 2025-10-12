@@ -18,13 +18,24 @@ public:
       : m_type(Type::Label) // Common
       , m_labelType(type)
       , m_label(std::move(label))
-      , m_path() // Unused
-      , m_minValue(0.f)
+      , m_minValue(0.f) // Unused
       , m_maxValue(0.f)
       , m_step(0.f)
       , m_defValue(0.f)
       , m_initialValue(0.f)
-      , m_enum()
+   {
+      Validate();
+   }
+
+   explicit InGameUIItem(const string& label, const string& tooltip, std::function<void(void)> runnable)
+      : m_type(Type::Runnable) // Common
+      , m_label(label)
+      , m_tooltip(tooltip)
+      , m_runnable(runnable)
+      , m_minValue(0.f) // Unused
+      , m_maxValue(0.f)
+      , m_step(0.f)
+      , m_defValue(0.f)
    {
       Validate();
    }
@@ -36,12 +47,10 @@ public:
       , m_inputAction(inputAction)
       , m_initialStringValue(inputAction->GetMappingString())
       , m_defStringValue(inputAction->GetDefaultMappingString())
-      , m_path() // Unused
-      , m_minValue(0.f)
+      , m_minValue(0.f) // Unused
       , m_maxValue(0.f)
       , m_step(0.f)
       , m_defValue(0.f)
-      , m_enum()
    {
       Validate();
    }
@@ -53,13 +62,11 @@ public:
       , m_physicsSensor(physicsSensor)
       , m_physicsSensorTypeMask(typeMask)
       , m_initialStringValue(physicsSensor->GetMappingString())
-      , m_path() // Unused
-      , m_minValue(0.f)
+      , m_minValue(0.f) // Unused
       , m_maxValue(0.f)
       , m_step(0.f)
       , m_defValue(0.f)
       , m_initialValue(0.f)
-      , m_enum()
    {
       Validate();
    }
@@ -74,7 +81,6 @@ public:
       , m_step(0.f)
       , m_defValue(0.f)
       , m_initialValue(0.f)
-      , m_enum()
    {
       Validate();
    }
@@ -94,8 +100,6 @@ public:
       , m_onChangeInt(onChange)
       , m_onResetSave(onResetSave)
       , m_onSaveInt(onSave)
-      , m_path() // Unused
-      , m_enum()
    {
       Validate();
    }
@@ -115,8 +119,6 @@ public:
       , m_onChangeFloat(onChange)
       , m_onResetSave(onResetSave)
       , m_onSaveFloat(onSave)
-      , m_path() // Unused
-      , m_enum()
    {
       Validate();
    }
@@ -136,8 +138,6 @@ public:
       , m_onChangeInt(onChange)
       , m_onResetSave(onResetSave)
       , m_onSaveInt(onSave)
-      , m_path() // Unused
-      , m_format()
    {
       Validate();
    }
@@ -156,8 +156,6 @@ public:
       , m_onChangeBool(onChange)
       , m_onResetSave(onResetSave)
       , m_onSaveBool(onSave)
-      , m_path() // Unused
-      , m_enum()
    {
       Validate();
    }
@@ -166,6 +164,7 @@ public:
    {
       // Generic items
       Label,
+      Runnable,
       Navigation,
       FloatValue,
       IntValue,
@@ -253,6 +252,9 @@ public:
 
    // Navigation item
    const string m_path;
+
+   // Generic runnable item
+   const std::function<void(void)> m_runnable;
 
    // Ranged value item
    const float m_minValue;

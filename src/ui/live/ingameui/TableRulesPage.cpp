@@ -10,8 +10,7 @@ namespace VPX::InGameUI
 TableRulesPage::TableRulesPage()
    : InGameUIPage("Table Rules"s, ""s, SaveMode::None)
 {
-   auto rules = std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Markdown, m_player->m_ptable->m_rules);
-   AddItem(rules);
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Markdown, m_player->m_ptable->m_rules));
 }
 
 }

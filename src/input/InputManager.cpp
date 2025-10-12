@@ -674,28 +674,26 @@ void InputManager::CreateInputActions()
    auto exitAction = AddAction(std::make_unique<InputAction>(this, "ExitInteractive"s, "Interactive Exit"s, keyMapping(SDL_SCANCODE_ESCAPE),
       [this](const InputAction&, bool wasPressed, bool isPressed)
       {
-         if (!g_pplayer->m_playfieldWnd->IsFocused() // Focus lost
-            || g_pplayer->m_liveUI->IsOpened()) // Inside LiveUI ?
+         if (!isPressed)
          {
-            // Discard long/short press
-            m_exitPressTimestamp = 0;
+            m_exitPressTimestamp = 0; // Discard long press exit
+            return;
          }
-         else if (wasPressed != isPressed)
-         {
-            // Open UI on key up (instead of key down) since a long press should not trigger the UI but directly exit from the app
-            m_gameStartedOnce = true; // Disable autostart as player has requested close
-            if (isPressed)
-               m_exitPressTimestamp = msec();
-            else
-               g_pplayer->SetCloseState(Player::CS_USER_INPUT);
-         }
-         else if (isPressed // Exit button is pressed
+         else if (wasPressed // Is this a repeat event (long press)?
             && m_exitPressTimestamp // Exit has not been discarded
             && (g_pplayer->m_time_msec > 1000) // Game has been played at least 1 second
             && ((msec() - m_exitPressTimestamp) > m_exitAppPressLengthMs)) // Exit button has been pressed continuously long enough
-         {
-            // Directly exit on long press (without showing UI)
+         { // Close app if pressed long enough
             g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
+         }
+         else if (g_pplayer->m_liveUI->IsInGameUIOpened())
+         {
+            // Discard event as the UI is already opened and will process it
+         }
+         else if (!wasPressed)
+         { // Open interactive UI
+            m_exitPressTimestamp = msec();
+            g_pplayer->SetCloseState(Player::CS_USER_INPUT);
          }
       }));
    exitAction->SetRepeatPeriod(0);

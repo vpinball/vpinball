@@ -39,7 +39,7 @@ void InGameUIPage::Close(bool isBackwardAnimation)
 
 void InGameUIPage::ClearItems() { m_items.clear(); }
 
-void InGameUIPage::AddItem(std::unique_ptr<InGameUIItem>& item) { m_items.push_back(std::move(item)); }
+void InGameUIPage::AddItem(std::unique_ptr<InGameUIItem> item) { m_items.push_back(std::move(item)); }
 
 Settings& InGameUIPage::GetSettings() { return m_player->m_ptable->m_settings; }
 
@@ -217,6 +217,8 @@ void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
 
    case InGameUIItem::Type::Navigation: m_player->m_liveUI->m_inGameUI.Navigate(item->m_path); break;
 
+   case InGameUIItem::Type::Runnable: item->m_runnable(); break;
+
    case InGameUIItem::Type::ResetToDefaults: // Defaults (allow continuously applying as defaults may be dynamic, for example for VR, headtracking, dynamic room exposure,...)
       ResetToDefaults();
       break;
@@ -315,6 +317,7 @@ void InGameUIPage::Render(float elapsedMs)
       m_openAnimPos = m_openAnimTarget;
    const float animPos = m_isBackwardAnimation ? -m_openAnimPos : m_openAnimPos;
 
+   ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 1.f - fabs(GetOpenCloseAnimPos()));
    ImGui::SetNextWindowBgAlpha(0.5f);
    if (m_player->m_vrDevice)
    {
@@ -540,6 +543,7 @@ void InGameUIPage::Render(float elapsedMs)
       }
 
       case Navigation:
+      case Runnable:
          ImGui::SetCursorScreenPos(ImGui::GetCursorScreenPos() + ImVec2(0.f, itemPadding.y));
          ImGui::Text(ICON_FK_ANGLE_DOUBLE_RIGHT);
          ImGui::SameLine(0.f, 10.f);
@@ -723,6 +727,7 @@ void InGameUIPage::Render(float elapsedMs)
    m_windowSize = ImGui::GetWindowSize();
    
    ImGui::End();
+   ImGui::PopStyleVar();
    
    RenderSensorPopup();
    RenderInputActionPopup();

@@ -127,8 +127,7 @@ void PointOfViewSettingsPage::BuildPage()
       if (screenWidth <= 1.f || screenHeight <= 1.f)
       {
          // TODO include a link to the cabinet setting page with screen size setup
-         auto info = std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "You must setup your screen size before using Window mode"s);
-         AddItem(info);
+         AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "You must setup your screen size before using Window mode"s));
          return;
       }
       else
@@ -454,50 +453,50 @@ void PointOfViewSettingsPage::BuildPage()
       [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "Rotation", v, isTableOverride); });
    vpRotation->SetInitialValue(m_initialViewSetup.mViewportRotation);
 
-   AddItem(viewMode);
+   AddItem(std::move(viewMode));
    switch (viewSetup.mMode)
    {
    case VLM_LEGACY:
-      AddItem(inclination);
-      AddItem(fov);
-      AddItem(layback);
-      AddItem(lockScale);
-      AddItem(xScale);
-      AddItem(yScale);
-      AddItem(zScale);
-      AddItem(viewX);
-      AddItem(viewY);
-      AddItem(viewZ);
-      AddItem(vpRotation);
+      AddItem(std::move(inclination));
+      AddItem(std::move(fov));
+      AddItem(std::move(layback));
+      AddItem(std::move(lockScale));
+      AddItem(std::move(xScale));
+      AddItem(std::move(yScale));
+      AddItem(std::move(zScale));
+      AddItem(std::move(viewX));
+      AddItem(std::move(viewY));
+      AddItem(std::move(viewZ));
+      AddItem(std::move(vpRotation));
       break;
 
    case VLM_CAMERA:
-      AddItem(fov);
-      AddItem(hOfs);
-      AddItem(vOfs);
-      AddItem(lockScale);
-      AddItem(xScale);
-      AddItem(yScale);
-      AddItem(zScale);
-      AddItem(lookAt);
-      AddItem(viewX);
-      AddItem(viewY);
-      AddItem(viewZ);
-      AddItem(vpRotation);
+      AddItem(std::move(fov));
+      AddItem(std::move(hOfs));
+      AddItem(std::move(vOfs));
+      AddItem(std::move(lockScale));
+      AddItem(std::move(xScale));
+      AddItem(std::move(yScale));
+      AddItem(std::move(zScale));
+      AddItem(std::move(lookAt));
+      AddItem(std::move(viewX));
+      AddItem(std::move(viewY));
+      AddItem(std::move(viewZ));
+      AddItem(std::move(vpRotation));
       break;
 
    case VLM_WINDOW:
-      AddItem(hOfs);
-      AddItem(vOfs);
-      AddItem(lockScale);
-      AddItem(xScale);
-      AddItem(yScale);
-      AddItem(wndTopZ);
-      AddItem(wndBotZ);
-      AddItem(playerX);
-      AddItem(playerY);
-      AddItem(playerZ);
-      AddItem(vpRotation);
+      AddItem(std::move(hOfs));
+      AddItem(std::move(vOfs));
+      AddItem(std::move(lockScale));
+      AddItem(std::move(xScale));
+      AddItem(std::move(yScale));
+      AddItem(std::move(wndTopZ));
+      AddItem(std::move(wndBotZ));
+      AddItem(std::move(playerX));
+      AddItem(std::move(playerY));
+      AddItem(std::move(playerZ));
+      AddItem(std::move(vpRotation));
       break;
    }
 }

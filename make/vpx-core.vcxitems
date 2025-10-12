@@ -890,7 +890,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/renderer/Window.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/BallControl.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/EditorUI.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/ui/live/EscSplashModal.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/LiveUI.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/NotificationOverlay.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/PerfUI.cpp" />
@@ -898,6 +897,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/PlumbOverlay.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUI.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/AudioSettingsPage.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/ExitSplashPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/GraphicSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/HomePage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIItem.cpp" />
@@ -1645,7 +1645,6 @@
     <ClInclude Include="$(SolutionDir)/../../src/renderer/typedefs3D.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/BallControl.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/EditorUI.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/ui/live/EscSplashModal.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/LiveUI.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/NotificationOverlay.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/PerfUI.h" />
@@ -1653,6 +1652,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/PlumbOverlay.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUI.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/AudioSettingsPage.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/ExitSplashPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/GraphicSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/HomePage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIItem.h" />

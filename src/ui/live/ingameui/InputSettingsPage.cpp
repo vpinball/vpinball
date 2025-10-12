@@ -19,11 +19,7 @@ void InputSettingsPage::Open(bool isBackwardAnimation)
 
    ClearItems();
    for (auto& action : input.GetInputActions())
-   {
-      auto actionItem = std::make_unique<InGameUIItem>(
-         action->GetLabel(), "Select to add a new input binding which can be composed of multiple pressed button."s, action.get());
-      AddItem(actionItem);
-   }
+      AddItem(std::make_unique<InGameUIItem>(action->GetLabel(), "Select to add a new input binding which can be composed of multiple pressed button."s, action.get()));
 }
 
 }

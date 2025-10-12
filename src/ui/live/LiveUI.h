@@ -10,7 +10,6 @@
 #include "PerfUI.h"
 #include "ingameui/InGameUI.h"
 #include "EditorUI.h"
-#include "EscSplashModal.h"
 #include "NotificationOverlay.h"
 #include "PlumbOverlay.h"
 #include "BallControl.h"
@@ -25,12 +24,12 @@ public:
 
    void Update();
 
-   bool IsOpened() const { return m_editorUI.IsOpened() || m_escSplashModal.IsOpened() || m_inGameUI.IsOpened(); }
-   void OpenMainSplash() { m_escSplashModal.Open(); }
+   bool IsOpened() const { return m_editorUI.IsOpened() || m_inGameUI.IsOpened(); }
    void OpenEditorUI() { m_editorUI.Open(); }
    void HideUI();
 
    void OpenInGameUI(const string& page = "homepage"s);
+   void OpenMainSplash() { OpenInGameUI("exit"); }
    bool IsInGameUIOpened() const { return m_inGameUI.IsOpened(); }
 
    void ToggleFPS() { m_perfUI.NextPerfMode(); }
@@ -65,9 +64,6 @@ private:
    void UpdateScale();
 
    vector<std::unique_ptr<MeshBuffer>> m_meshBuffers;
-
-   // Splash modal when user press exit key
-   EscSplashModal m_escSplashModal;
 
    // Editor UI
    EditorUI m_editorUI;

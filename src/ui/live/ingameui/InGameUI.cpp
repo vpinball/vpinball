@@ -5,6 +5,7 @@
 #include "InGameUI.h"
 #include "ui/live/LiveUI.h"
 
+#include "ExitSplashPage.h"
 #include "HomePage.h"
 #include "TableOptionsPage.h"
 #include "TableRulesPage.h"
@@ -24,6 +25,7 @@ namespace VPX::InGameUI
 InGameUI::InGameUI(LiveUI &liveUI)
    : m_player(g_pplayer)
 {
+   AddPage("exit"s, []() { return std::make_unique<ExitSplashPage>(); });
    AddPage("homepage"s, []() { return std::make_unique<HomePage>(); });
    AddPage("settings/audio"s, []() { return std::make_unique<AudioSettingsPage>(); });
    AddPage("settings/graphic"s, []() { return std::make_unique<GraphicSettingsPage>(); });
@@ -92,6 +94,7 @@ void InGameUI::Open(const string& page)
    assert(!IsOpened());
    Navigate(page);
    m_useFlipperNav = m_player->m_vrDevice || m_player->m_ptable->m_BG_current_set == ViewSetupID::BG_FULLSCREEN;
+   m_prevActionState = m_player->m_pininput.GetActionState();
 }
 
 void InGameUI::Close()
@@ -105,6 +108,9 @@ void InGameUI::Close()
 
 void InGameUI::Update()
 {
+   const uint32_t now = msec();
+   const float elapsed = static_cast<float>(now - m_lastRenderMs) / 1000.f;
+   m_lastRenderMs = now;
    if (m_activePages.empty())
       return;
 
@@ -150,9 +156,6 @@ void InGameUI::Update()
       m_prevActionState = state;
    }
 
-   const uint32_t now = msec();
-   const float elapsed = static_cast<float>(now - m_lastRenderMs) / 1000.f;
-   m_lastRenderMs = now;
    for (const auto& page : m_activePages)
       page->Render(elapsed);
 }
@@ -168,28 +171,6 @@ void InGameUI::HandlePageInput(const InputManager::ActionState &state)
    {
       m_prevMousePos = ImGui::GetMousePos();
       m_useFlipperNav = false;
-   }
-
-   // For popups, we use ImGui navigation by forwarding events
-   if (ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopupId))
-   {
-      if (state.IsKeyPressed(m_player->m_pininput.GetLeftMagnaActionId(), m_prevActionState))
-         ImGui::GetIO().AddKeyEvent(ImGuiKey_UpArrow, true);
-      else if (state.IsKeyReleased(m_player->m_pininput.GetLeftMagnaActionId(), m_prevActionState))
-         ImGui::GetIO().AddKeyEvent(ImGuiKey_UpArrow, false);
-      if (state.IsKeyPressed(m_player->m_pininput.GetRightMagnaActionId(), m_prevActionState))
-         ImGui::GetIO().AddKeyEvent(ImGuiKey_DownArrow, true);
-      else if (state.IsKeyReleased(m_player->m_pininput.GetRightMagnaActionId(), m_prevActionState))
-         ImGui::GetIO().AddKeyEvent(ImGuiKey_DownArrow, false);
-      if (state.IsKeyPressed(m_player->m_pininput.GetLeftFlipperActionId(), m_prevActionState))
-         ImGui::GetIO().AddKeyEvent(ImGuiKey_Enter, true);
-      else if (state.IsKeyReleased(m_player->m_pininput.GetLeftFlipperActionId(), m_prevActionState))
-         ImGui::GetIO().AddKeyEvent(ImGuiKey_Enter, false);
-      if (state.IsKeyPressed(m_player->m_pininput.GetRightFlipperActionId(), m_prevActionState))
-         ImGui::GetIO().AddKeyEvent(ImGuiKey_Enter, true);
-      else if (state.IsKeyReleased(m_player->m_pininput.GetRightFlipperActionId(), m_prevActionState))
-         ImGui::GetIO().AddKeyEvent(ImGuiKey_Enter, false);
-      return;
    }
 
    if (state.IsKeyPressed(m_player->m_pininput.GetLeftMagnaActionId(), m_prevActionState))
@@ -234,8 +215,8 @@ void InGameUI::HandlePageInput(const InputManager::ActionState &state)
    if (state.IsKeyPressed(m_player->m_pininput.GetStartActionId(), m_prevActionState))
       GetActivePage()->Save();
 
-   if (state.IsKeyReleased(m_player->m_pininput.GetExitInteractiveActionId(), m_prevActionState))
-      Close(); // FIXME should a navigate back, up to InGameUI close, applied on key release as this is the way it is handled for the main splash (to be changed ?)
+   if (state.IsKeyPressed(m_player->m_pininput.GetExitInteractiveActionId(), m_prevActionState))
+      NavigateBack();
 }
 
 // Legacy keyboard fly camera when in ingame option. Remove ?

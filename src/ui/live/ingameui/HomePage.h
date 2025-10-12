@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "InGameUIItem.h"
+#include "InGameUIPage.h"
 
 namespace VPX::InGameUI
 {
@@ -11,8 +11,6 @@ class HomePage final : public InGameUIPage
 {
 public:
    HomePage();
-
-   void Open(bool isBackwardAnimation) override;
 };
 
 }

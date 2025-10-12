@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "InGameUIItem.h"
+#include "InGameUIPage.h"
 
 namespace VPX::InGameUI
 {
