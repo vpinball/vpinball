@@ -74,7 +74,7 @@ MiscSettingsPage::MiscSettingsPage()
       [this](float v, Settings& settings, bool isTableOverride)
       {
          if (abs(v - 100.f * m_player->m_ptable->GetExposure()) >= 0.1f)
-            settings.SaveValue(Settings::TableOverride, "Exposure"s, v, isTableOverride);
+            settings.SaveValue(Settings::TableOverride, "Exposure"s, v / 100.f, isTableOverride);
       }));
 
    // Difficulty, always saved as a table override setting if different from table embedded value
