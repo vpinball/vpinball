@@ -130,7 +130,6 @@ public:
    };
    OptionDef& RegisterSetting(const Section section, const string &id, const unsigned int showMask, const string &name, float minValue, float maxValue, float step, float defaultValue,
       OptionUnit unit, const vector<string> &literals);
-   vector<OptionDef>& GetTableSettings() { return m_tableOptions; }
    static const vector<OptionDef>& GetPluginSettings() { return m_pluginOptions; }
 
 private:
@@ -149,7 +148,6 @@ private:
    string m_iniPath;
    mINI::INIStructure m_ini;
    const Settings * m_parent;
-   vector<OptionDef> m_tableOptions;
    #ifdef DEBUG
       ankerl::unordered_dense::map<Section, ankerl::unordered_dense::set<string>> m_validatedKeys;
    #endif

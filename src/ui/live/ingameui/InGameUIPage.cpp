@@ -593,7 +593,7 @@ void InGameUIPage::Render(float elapsedMs)
       {
          ImGui::Text("%s", item->m_label.c_str());
          ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
-         int v = item->GetIntValue();
+         int v = item->GetIntValue() - static_cast<int>(item->m_minValue);
          ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
          ImGui::Combo(("##" + item->m_label).c_str(), &v,
             [](void* data, int idx)
@@ -604,7 +604,7 @@ void InGameUIPage::Render(float elapsedMs)
                return vec->at(idx).c_str();
             },
             (void*)&item->m_enum, (int)item->m_enum.size());
-         item->SetValue(v);
+         item->SetValue(static_cast<int>(item->m_minValue) + v);
          if (item->IsModified())
          {
             ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);

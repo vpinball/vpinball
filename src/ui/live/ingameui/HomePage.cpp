@@ -13,7 +13,7 @@ HomePage::HomePage()
    if (!m_player->m_ptable->m_rules.empty())
       AddItem(std::make_unique<InGameUIItem>("Table Rules"s, ""s, "table/rules"s));
 
-   if (!m_player->m_ptable->m_settings.GetTableSettings().empty())
+   if (!m_player->m_ptable->GetOptions().empty())
       AddItem(std::make_unique<InGameUIItem>("Table Options"s, ""s, "table/options"s));
 
    if (m_player->m_vrDevice)
