@@ -146,7 +146,6 @@ LiveUI::LiveUI(RenderDevice *const rd)
    : m_inGameUI(*this) 
    , m_editorUI(*this)
    , m_ballControl(*this)
-   , m_escSplashModal(*this)
    , m_rd(rd)
    , m_perfUI(g_pplayer)
 {
@@ -419,13 +418,10 @@ void LiveUI::NewFrame()
       }
    }
 
-   ImGui::NewFrame();
+   // We implement our own keyboard navigation using flipper keys
+   io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard;
 
-   // Only enable keyboard navigation for main splash popup as it interfer with UI keyboard shortcuts
-   if (m_escSplashModal.IsOpened())
-      io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-   else
-      io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard;
+   ImGui::NewFrame();
 }
 
 void LiveUI::Update()
@@ -449,11 +445,7 @@ void LiveUI::Update()
    // Tweak UI (aligned to playfield view, using custom flipper controls)
    m_inGameUI.Update();
 
-   if (m_escSplashModal.IsOpened())
-   {
-      m_escSplashModal.Update();
-   }
-   else if (ImGui::IsPopupOpen(ID_BAM_SETTINGS))
+   if (ImGui::IsPopupOpen(ID_BAM_SETTINGS))
    { // BAM headtracking UI (aligned to desktop, using traditional mouse interaction) => hacky, remove and use plugin + plugin settings instead
       #ifndef __STANDALONE__
          BAMView::drawMenu();

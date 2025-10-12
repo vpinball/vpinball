@@ -17,7 +17,7 @@ public:
    Settings& GetSettings();
 
    void ClearItems();
-   void AddItem(std::unique_ptr<InGameUIItem>& item);
+   void AddItem(std::unique_ptr<InGameUIItem> item);
 
    virtual void Open(bool isBackwardAnimation);
    virtual void Close(bool isBackwardAnimation);
@@ -45,6 +45,7 @@ public:
 
    ImVec2 GetWindowPos() const { return m_windowPos; }
    ImVec2 GetWindowSize() const { return m_windowSize; }
+   float GetOpenCloseAnimPos() const { return m_openAnimPos; }
 
    Player* const m_player;
 

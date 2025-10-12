@@ -235,8 +235,6 @@ set(VPX_SOURCES
 
    src/ui/live/BallControl.cpp
    src/ui/live/BallControl.h
-   src/ui/live/EscSplashModal.cpp
-   src/ui/live/EscSplashModal.h
    src/ui/live/LiveUI.cpp
    src/ui/live/LiveUI.h
    src/ui/live/EditorUI.cpp
@@ -253,6 +251,8 @@ set(VPX_SOURCES
    src/ui/live/ingameui/InGameUI.h
    src/ui/live/ingameui/AudioSettingsPage.h
    src/ui/live/ingameui/AudioSettingsPage.cpp
+   src/ui/live/ingameui/ExitSplashPage.cpp
+   src/ui/live/ingameui/ExitSplashPage.h
    src/ui/live/ingameui/GraphicSettingsPage.h
    src/ui/live/ingameui/GraphicSettingsPage.cpp
    src/ui/live/ingameui/HomePage.h

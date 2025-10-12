@@ -15,88 +15,75 @@ NudgeSettingsPage::NudgeSettingsPage()
 
    ////////////////////////////////////////////////////////////////////////////////////////////////
 
-   auto hardwareNudge = std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Hardware sensor based emulated nudge"s);
-   AddItem(hardwareNudge);
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Hardware sensor based emulated nudge"s));
 
    for (int i = 0; i < 2; i++)
    {
-      auto label = std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "Hardware sensor #" + std::to_string(i + 1));
-      AddItem(label);
+      AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "Hardware sensor #" + std::to_string(i + 1)));
 
       const auto& nudgeXSensor = input.GetNudgeXSensor(i);
-      auto nudgeXItem = std::make_unique<InGameUIItem>(nudgeXSensor->GetLabel(), "Select to define which analog input to use for side nudge."s, nudgeXSensor.get(), 0x7);
-      AddItem(nudgeXItem);
+      AddItem(std::make_unique<InGameUIItem>(nudgeXSensor->GetLabel(), "Select to define which analog input to use for side nudge."s, nudgeXSensor.get(), 0x7));
 
       const auto& nudgeYSensor = input.GetNudgeYSensor(i);
-      auto nudgeYItem = std::make_unique<InGameUIItem>(nudgeYSensor->GetLabel(), "Select to define which analog input to use for front nudge."s, nudgeYSensor.get(), 0x7);
-      AddItem(nudgeYItem);
+      AddItem(std::make_unique<InGameUIItem>(nudgeYSensor->GetLabel(), "Select to define which analog input to use for front nudge."s, nudgeYSensor.get(), 0x7));
 
-      auto sensorOrientation = std::make_unique<InGameUIItem>(
+      AddItem(std::make_unique<InGameUIItem>(
          "Sensor " + std::to_string(i + 1) + " - Orientation", "Define sensor orientation"s, 0.f, 360.f, 1.0f, 0.f, "%4.1f deg"s,
          [this, i]() { return RADTOANG(GetInput().GetNudgeOrientation(i)); }, //
          [this, i](float prev, float v) { GetInput().SetNudgeOrientation(i, ANGTORAD(v)); }, //
          [i](Settings& settings) { settings.DeleteValue(Settings::Player, "NudgeOrientation" + std::to_string(i + 1)); }, //
-         [i](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::Player, "NudgeOrientation" + std::to_string(i + 1), v, isTableOverride); });
-      AddItem(sensorOrientation);
+         [i](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::Player, "NudgeOrientation" + std::to_string(i + 1), v, isTableOverride); }));
 
-      auto accFilter = std::make_unique<InGameUIItem>(
+      AddItem(std::make_unique<InGameUIItem>(
          "Sensor " + std::to_string(i + 1) + " - Use Filter", "Enable/Disable filtering acquired value to prevent noise"s, false,
          [this, i]() { return GetInput().IsNudgeFiltered(i); }, //
          [this, i](bool v) { GetInput().SetNudgeFiltered(i, v); }, //
          InGameUIItem::ResetSetting(Settings::Player, "NudgeFilter" + std::to_string(i + 1)), //
-         InGameUIItem::SaveSettingBool(Settings::Player, "NudgeFilter" + std::to_string(i + 1)));
-      AddItem(accFilter);
+         InGameUIItem::SaveSettingBool(Settings::Player, "NudgeFilter" + std::to_string(i + 1))));
    }
 
    ////////////////////////////////////////////////////////////////////////////////////////////////
 
-   auto plumb = std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Emulated tilt plumb"s);
-   AddItem(plumb);
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Emulated tilt plumb"s));
 
-   auto enablePlumb = std::make_unique<InGameUIItem>(
+   AddItem(std::make_unique<InGameUIItem>(
       "Plumb simulation"s, "Enable/Disable mechanical Tilt plumb simulation"s, false,
       [this]() { return m_player->m_physics->IsPlumbSimulated(); }, //
       [this](bool v) { m_player->m_physics->EnablePlumbSimulation(v); }, //
       InGameUIItem::ResetSetting(Settings::Player, "SimulatedPlumb"s), //
-      InGameUIItem::SaveSettingBool(Settings::Player, "SimulatedPlumb"s));
-   AddItem(enablePlumb);
+      InGameUIItem::SaveSettingBool(Settings::Player, "SimulatedPlumb"s)));
 
-   auto plumbInertia = std::make_unique<InGameUIItem>(
+   AddItem(std::make_unique<InGameUIItem>(
       "Plumb Inertia", ""s, 0.1f, 100.f, 0.01f, 35.f, "%4.1f %%"s,
       [this]() { return m_player->m_physics->GetPlumbInertia() * 100.f; }, //
       [this](float prev, float v) { m_player->m_physics->SetPlumbInertia(v / 100.f); }, //
       [](Settings& settings) { settings.DeleteValue(Settings::Player, "PlumbInertia"s); }, //
-      [](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::Player, "PlumbInertia"s, v / 100.f, isTableOverride); });
-   AddItem(plumbInertia);
+      [](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::Player, "PlumbInertia"s, v / 100.f, isTableOverride); }));
 
-   auto plumbThreshold = std::make_unique<InGameUIItem>(
+   AddItem(std::make_unique<InGameUIItem>(
       "Plumb Threshold", "Define threshold angle at which a Tilt is caused"s, 5.0f, 60.f, 0.1f, 35.f, "%4.2f deg"s, //
       [this]() { return RADTOANG(m_player->m_physics->GetPlumbTiltThreshold()); }, //
       [this](float prev, float v) { m_player->m_physics->SetPlumbTiltThreshold(ANGTORAD(v)); }, //
       [](Settings& settings) { settings.DeleteValue(Settings::Player, "PlumbThresholdAngle"s); }, //
-      [](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::Player, "PlumbThresholdAngle"s, v, isTableOverride); });
-   AddItem(plumbThreshold);
+      [](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::Player, "PlumbThresholdAngle"s, v, isTableOverride); }));
 
    ////////////////////////////////////////////////////////////////////////////////////////////////
 
-   auto keyboardNudge = std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Keyboard emulated nudge"s);
-   AddItem(keyboardNudge);
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Keyboard emulated nudge"s));
 
-   auto legacyNudge = std::make_unique<InGameUIItem>(
+   AddItem(std::make_unique<InGameUIItem>(
       "Legacy Keyboard nudge"s, "Enable/Disable legacy keyboard nudge mode"s, false, //
       [this]() { return m_player->m_physics->IsLegacyKeyboardNudge(); }, //
       [this](bool v) { m_player->m_physics->SetLegacyKeyboardNudge(v); }, //
       InGameUIItem::ResetSetting(Settings::Player, "EnableLegacyNudge"s), //
-      InGameUIItem::SaveSettingBool(Settings::Player, "EnableLegacyNudge"s));
-   AddItem(legacyNudge);
+      InGameUIItem::SaveSettingBool(Settings::Player, "EnableLegacyNudge"s)));
 
-   auto legacyNudgeStrength = std::make_unique<InGameUIItem>(
+   AddItem(std::make_unique<InGameUIItem>(
       "Legacy Nudge Strength"s, "Strength of nudge when using the legacy keyboard nudge mode"s, 0.f, 90.f, 0.1f, 1.f, "%4.1f"s,
       [this]() { return m_player->m_physics->GetLegacyKeyboardNudgeStrength(); }, //
       [this](float prev, float v) { m_player->m_physics->SetLegacyKeyboardNudgeStrength(v); }, //
       [](Settings& settings) { settings.DeleteValue(Settings::Player, "LegacyNudgeStrength"s); }, //
-      [](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::Player, "LegacyNudgeStrength"s, v, isTableOverride); });
-   AddItem(legacyNudgeStrength);
+      [](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::Player, "LegacyNudgeStrength"s, v, isTableOverride); }));
 
    m_nudgeXPlot.m_rolling = true;
    m_nudgeXPlot.m_timeSpan = 5.f;
