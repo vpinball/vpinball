@@ -438,12 +438,19 @@ void LiveUI::Update()
    ImGui::PushFont(m_baseFont, m_baseFont->LegacySize);
 
    if (!m_deviceLayoutName.empty())
-   {
       UpdateDeviceLayoutPopup();
-   }
 
    // Tweak UI (aligned to playfield view, using custom flipper controls)
    m_inGameUI.Update();
+
+   if (!m_player->IsPlaying() && !m_editorUI.IsOpened())
+   {
+      ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 24 * m_uiScale, 4 * m_uiScale));
+      ImGui::Begin("PauseOverlay", nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus // Prevent focus issues
+            | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings);
+      ImGui::Text(ICON_FK_PAUSE);
+      ImGui::End();
+   }
 
    if (ImGui::IsPopupOpen(ID_BAM_SETTINGS))
    { // BAM headtracking UI (aligned to desktop, using traditional mouse interaction) => hacky, remove and use plugin + plugin settings instead

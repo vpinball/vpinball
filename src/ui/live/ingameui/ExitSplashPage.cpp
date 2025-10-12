@@ -145,8 +145,8 @@ void ExitSplashPage::Render(float elapsedMs)
          info << "Version: " << m_player->m_ptable->m_version;
       info << " (" << (!m_player->m_ptable->m_dateSaved.empty() ? m_player->m_ptable->m_dateSaved : "N.A."s) << " Revision " << m_player->m_ptable->m_numTimesSaved << ")\n";
 
-      constexpr ImGuiWindowFlags window_flags
-         = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+      constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus // Prevent focus issues
+         | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
       ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 1.f - fabs(GetOpenCloseAnimPos()));
       ImGui::SetNextWindowBgAlpha(0.5f * (1.f - fabs(GetOpenCloseAnimPos())));
       ImGui::SetNextWindowPos(ImVec2(0, 0));

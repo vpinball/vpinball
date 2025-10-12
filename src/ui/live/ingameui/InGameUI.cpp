@@ -123,7 +123,7 @@ void InGameUI::Update()
          ++it;
    }
 
-   if (const InGameUIPage * const activePage = GetActivePage(); activePage)
+   if (const InGameUIPage *const activePage = GetActivePage(); activePage && activePage->IsActive())
    {
       // Only pause player if balls are moving to keep attract mode if possible
       if (m_player->IsPlaying(false))
