@@ -726,22 +726,6 @@ bool Settings::SaveValue(const Section section, const string &key, const string 
       const bool isDefinedInParent = m_parent->LoadValue(section, key, parentValue);
       if (isDefinedInParent && parentValue == val)
          return true;
-
-      // If it has the default value and parent is missing it, remove and rely on default
-      if (!isDefinedInParent && (section == Section::TableOption || section >= Section::Plugin00))
-      {
-         for (const OptionDef &opt : section == Section::TableOption ? m_tableOptions : m_pluginOptions)
-         {
-            if (opt.section == section && opt.id == key)
-            {
-               const bool isInt = !opt.literals.empty() || (round(opt.step) == 1.f && round(opt.minValue) == opt.minValue);
-               const string def = isInt ? std::to_string(static_cast<int>(opt.defaultValue)) : f2sz(opt.defaultValue, false);
-               if (def == val)
-                  return true;
-               break;
-            }
-         }
-      }
    }
    m_ini[m_settingKeys[section]][key] = val;
    return true;
@@ -804,9 +788,9 @@ Settings::OptionDef &Settings::RegisterSetting(const Section section, const stri
    float defaultValue,
    OptionUnit unit, const vector<string> &literals)
 {
-   assert(section == TableOption || section >= Plugin00); // For the time being, this system is only used for custom table and plugin options (could be extend for all options to get the benefit of validation, fast access, and remove unneeded copied states...)
+   assert(section >= Plugin00); // For the time being, this system is only used for custom table and plugin options (could be extend for all options to get the benefit of validation, fast access, and remove unneeded copied states...)
 
-   vector<OptionDef> &options = section == TableOption ? m_tableOptions : m_pluginOptions;
+   vector<OptionDef> &options = m_pluginOptions;
    OptionDef *opt = nullptr;
    bool isNew = false;
    for (auto &option : options)

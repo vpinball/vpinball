@@ -12,9 +12,6 @@ public:
    TableOptionsPage();
 
    void Open(bool isBackwardAnimation) override;
-
-private:
-   int GetOptionIndex(const string& id) const;
 };
 
 }

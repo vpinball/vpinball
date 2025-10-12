@@ -160,6 +160,41 @@ public:
       Validate();
    }
 
+   // Delegate
+   InGameUIItem(InGameUIItem* item)
+      : m_type(item->m_type)
+      , m_label(item->m_label)
+      , m_tooltip(item->m_tooltip)
+      , m_labelType(item->m_labelType)
+      , m_inputAction(item->m_inputAction)
+      , m_physicsSensor(item->m_physicsSensor)
+      , m_physicsSensorTypeMask(item->m_physicsSensorTypeMask)
+      , m_path(item->m_path)
+      , m_runnable(item->m_runnable)
+      , m_minValue(item->m_minValue)
+      , m_maxValue(item->m_maxValue)
+      , m_step(item->m_step)
+      , m_enum(item->m_enum)
+      , m_format(item->m_format)
+
+      , m_defValue(item->m_defValue)
+      , m_initialValue(item->m_initialValue)
+      , m_defStringValue(item->m_defStringValue)
+      , m_initialStringValue(item->m_initialStringValue)
+      , m_getBoolValue(item->m_getBoolValue)
+      , m_onChangeBool(item->m_onChangeBool)
+      , m_getIntValue(item->m_getIntValue)
+      , m_onChangeInt(item->m_onChangeInt)
+      , m_getFloatValue(item->m_getFloatValue)
+      , m_onChangeFloat(item->m_onChangeFloat)
+      , m_onResetSave(item->m_onResetSave)
+      , m_onSaveInt(item->m_onSaveInt)
+      , m_onSaveBool(item->m_onSaveBool)
+      , m_onSaveFloat(item->m_onSaveFloat)
+   {
+      Validate();
+   }
+
    enum class Type
    {
       // Generic items
