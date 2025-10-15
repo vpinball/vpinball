@@ -82,7 +82,7 @@ extern marker_series series;
 Player::Player(PinTable *const editor_table, PinTable *const live_table, const int playMode)
    : m_pEditorTable(editor_table)
    , m_ptable(live_table)
-   , m_scoreviewOutput("Visual Pinball - Score"s, live_table->m_settings, Settings::ScoreView, "ScoreView"s)
+   , m_scoreViewOutput("Visual Pinball - Score View"s, live_table->m_settings, Settings::ScoreView, "ScoreView"s)
    , m_backglassOutput("Visual Pinball - Backglass"s, live_table->m_settings, Settings::Backglass, "Backglass"s)
    , m_topperOutput("Visual Pinball - Topper"s, live_table->m_settings, Settings::Topper, "Topper"s)
    , m_audioPlayer(std::make_unique<VPX::AudioPlayer>(live_table->m_settings))
@@ -302,8 +302,8 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    #if defined(ENABLE_BGFX)
    if (m_vrDevice == nullptr) // Anciliary windows are not yet supported while in VR mode
    {
-      if (m_scoreviewOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
-         m_renderer->m_renderDevice->AddWindow(m_scoreviewOutput.GetWindow());
+      if (m_scoreViewOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
+         m_renderer->m_renderDevice->AddWindow(m_scoreViewOutput.GetWindow());
       if (m_backglassOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
          m_renderer->m_renderDevice->AddWindow(m_backglassOutput.GetWindow());
       if (m_topperOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
@@ -1475,7 +1475,7 @@ void Player::ProcessOSMessages()
             // Handle dragging of auxiliary windows
             const SDL_Window *const sdlWnd = SDL_GetWindowFromID(e.motion.windowID);
             std::vector<VPX::Window *> windows = {
-               m_scoreviewOutput.GetWindow(),
+               m_scoreViewOutput.GetWindow(),
                m_backglassOutput.GetWindow(),
                m_topperOutput.GetWindow(),
             };
@@ -2087,7 +2087,7 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
    int m_outputX, m_outputY, m_outputW, m_outputH;
 
    VPX::RenderOutput &output = window == VPXAnciliaryWindow::VPXWINDOW_Backglass ? m_backglassOutput :
-                               window == VPXAnciliaryWindow::VPXWINDOW_ScoreView ? m_scoreviewOutput :
+                               window == VPXAnciliaryWindow::VPXWINDOW_ScoreView ? m_scoreViewOutput :
                                /*window == VPXAnciliaryWindow::VPXWINDOW_Topper ? */ m_topperOutput;
    const string renderPassName = window == VPXAnciliaryWindow::VPXWINDOW_Backglass ? "Backglass Render"s :
                                  window == VPXAnciliaryWindow::VPXWINDOW_ScoreView ? "ScoreView Render"s :

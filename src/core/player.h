@@ -217,7 +217,7 @@ public:
 #pragma region Rendering
 public:
    VPX::Window *m_playfieldWnd = nullptr;
-   VPX::RenderOutput m_scoreviewOutput;
+   VPX::RenderOutput m_scoreViewOutput;
    VPX::RenderOutput m_backglassOutput;
    VPX::RenderOutput m_topperOutput;
    Renderer *m_renderer = nullptr;

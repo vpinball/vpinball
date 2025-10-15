@@ -40,7 +40,7 @@ public:
       DMD, /* DMD Rendering */
       Alpha, /* Alpha segment Rendering */
       Backglass, /* Backglass Display */
-      ScoreView, /* Scoreview Display */
+      ScoreView, /* ScoreView Display */
       Topper, /* Topper Display */
       PlayerVR,
       RecentDir,

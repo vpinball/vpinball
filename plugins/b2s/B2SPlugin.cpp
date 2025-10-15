@@ -16,7 +16,7 @@ LPI_IMPLEMENT // Implement shared login support
 
 ///////////////////////////////////////////////////////////////////////////////
 // B2S plugin
-// - implement rendering of directb2s backglass and scoreview
+// - implement rendering of directb2s backglass and score view
 // - implement COM B2S Server which can be used as a game controller,
 //   in turn, eventually using PinMAME plugin if requested
 
@@ -224,7 +224,7 @@ int OnRender(VPXRenderContext2D* ctx, void*)
          renderer = std::make_unique<B2SRenderer>(msgApi, endpointId, loadedB2S.get());
          renderer->Render(ctx);
       }
-      return true; // Until loaded, we suppose that the file will succeeded load with the expected backglass/scoreview
+      return true; // Until loaded, we suppose that the file will succeeded load with the expected backglass/score view
    }
    else
    {
