@@ -2,7 +2,7 @@
 
 ## Table of Contents
 1. General usage
-   1. [Building](make/README.md)
+   1. [Building](../make/README.md)
    2. [Command Line](<Command Line.md>)
    3. [VPX flavors (DirectX, OpenGL, bgfx, ...)](<Build Differences.md>)
    4. [Live User Interface](LiveUI.md)
