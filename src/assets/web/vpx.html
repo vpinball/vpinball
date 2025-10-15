@@ -68,16 +68,14 @@
                 </span>
                 Upload File
               </a>
-              <a href="#" onclick="event.preventDefault(); importTable(); hideMainActionsDropdown(); return false;">
+              <a href="#" onclick="event.preventDefault(); refreshTables(); hideMainActionsDropdown(); return false;">
                 <span class="dropdown-icon">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <polyline points="16 13 12 17 8 13"></polyline>
-                    <line x1="12" y1="17" x2="12" y2="9"></line>
+                    <path d="M1 4v6h6"></path>
+                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
                   </svg>
                 </span>
-                Import
+                Refresh Tables
               </a>
               <a href="#" id="log-stream-menu-item" onclick="event.preventDefault(); toggleLogViewer(); hideMainActionsDropdown(); return false;">
                 <span class="dropdown-icon">
@@ -215,7 +213,7 @@
             <line x1="12" y1="3" x2="12" y2="15"></line>
           </svg>
         </div>
-        <h3>Drop files here to upload</h3>
+        <h3>Drop files or folders here to upload</h3>
       </div>
     </div>
 

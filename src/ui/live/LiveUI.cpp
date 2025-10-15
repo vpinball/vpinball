@@ -340,6 +340,9 @@ void LiveUI::UpdateScale()
       }
    }
    m_uiScale = min(m_uiScale, 10.f); // To avoid texture size overflows
+#ifdef __LIBVPINBALL__
+   m_uiScale *= 1.35f;
+#endif
    if (m_uiScale != prevDPI)
    {
       m_perfUI.SetUIScale(overlayScale);
@@ -571,11 +574,13 @@ void LiveUI::Update()
             vb[i].tv = cmd_list->VtxBuffer[i].uv.y;
          }
          m_meshBuffers[n]->m_vb->Unlock();
+         m_meshBuffers[n]->m_vb->Upload();
 
-         WORD *ib;
+         uint32_t *ib;
          m_meshBuffers[n]->m_ib->Lock(ib);
          memcpy(ib, cmd_list->IdxBuffer.begin(), numIndices * sizeof(ImDrawIdx));
          m_meshBuffers[n]->m_ib->Unlock();
+         m_meshBuffers[n]->m_ib->Upload();
       }
 
       for (const ImDrawCmd *cmd = cmd_list->CmdBuffer.begin(), *cmdEnd = cmd_list->CmdBuffer.end(); cmd != cmdEnd; cmd++)
@@ -596,11 +601,6 @@ void LiveUI::UpdateTouchUI()
 {
    if (!m_player->m_pininput.HasTouchInput())
       return;
-
-#ifdef __LIBVPINBALL__
-   if (m_player->m_liveUIOverride)
-      return;
-#endif
 
    if (!m_showTouchOverlay)
       return;

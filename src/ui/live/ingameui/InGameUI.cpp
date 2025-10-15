@@ -17,6 +17,8 @@
 #include "PlungerSettingsPage.h"
 #include "PointOfViewSettingsPage.h"
 #include "VRSettingsPage.h"
+#include "BackglassPage.h"
+#include "ScoreViewPage.h"
 
 
 namespace VPX::InGameUI
@@ -37,6 +39,8 @@ InGameUI::InGameUI(LiveUI &liveUI)
    AddPage("table/options"s, []() { return std::make_unique<TableOptionsPage>(); });
    AddPage("table/rules"s, []() { return std::make_unique<TableRulesPage>(); });
    AddPage("settings/vr"s, []() { return std::make_unique<VRSettingsPage>(); });
+   AddPage("settings/backglass", []() { return std::make_unique<BackglassPage>(); });
+   AddPage("settings/scoreview", []() { return std::make_unique<ScoreViewPage>(); });
 }
 
 void InGameUI::AddPage(const string &path, std::function<std::unique_ptr<InGameUIPage>()> pageFactory)

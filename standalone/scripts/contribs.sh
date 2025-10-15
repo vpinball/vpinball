@@ -47,8 +47,8 @@ generate_commit_report() {
 
 generate_commit_report "vpinball/libaltsound" "master"
 generate_commit_report "jsm174/libdof" "master"
-generate_commit_report "zesinger/libserum" "main"
+generate_commit_report "ppuc/libserum_concentrate" "main"
 generate_commit_report "ppuc/libzedmd" "main"
 generate_commit_report "vpinball/libdmdutil" "master"
-generate_commit_report "vpinball/vpinball" "10.8.1"
+generate_commit_report "vpinball/vpinball" "master"
 generate_commit_report "vpinball/pinmame" "master"

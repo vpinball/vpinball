@@ -1,25 +1,5 @@
 import SwiftUI
 
-struct OnTouchDownGesture: ViewModifier {
-    @State var tapped = false
-
-    var callback: (() -> Void)? = nil
-
-    func body(content: Content) -> some View {
-        content
-            .simultaneousGesture(DragGesture(minimumDistance: 0)
-                .onChanged { _ in
-                    if !self.tapped {
-                        self.tapped = true
-                        self.callback?()
-                    }
-                }
-                .onEnded { _ in
-                    self.tapped = false
-                })
-    }
-}
-
 struct BlinkEffect: ViewModifier {
     @State var isVisible = true
     @State var loopCount = 0

@@ -4,16 +4,15 @@ import android.content.Context
 import android.content.res.AssetManager
 import android.net.Uri
 import android.provider.OpenableColumns
-import android.util.Log
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
+import org.vpinball.app.VPinballManager
+import org.vpinball.app.jni.VPinballLogLevel
 
 object FileUtils {
-    private const val TAG = "FileUtils"
-
     private const val MAX_BUF_SIZE = 8192
 
     @Throws(IOException::class)
@@ -23,19 +22,13 @@ object FileUtils {
             val srcPath = if (srcDir.isNotEmpty()) "$srcDir/$file" else file
             val dstFile = File(dstDir, file)
 
-            // if (dstFile.exists() && !dstFile.isDirectory) continue
-
             try {
-                assetManager.open(srcPath).use { inputStream ->
-                    Log.v(TAG, "Copying $srcPath to $dstFile")
-                    copyFile(inputStream, dstFile)
-                }
+                assetManager.open(srcPath).use { inputStream -> copyFile(inputStream, dstFile) }
             } catch (e: FileNotFoundException) {
                 dstFile.mkdirs()
                 copyAssets(assetManager, srcPath, dstFile)
-                Log.v(TAG, "File not found. Making directories and copying assets.", e)
             } catch (e: IOException) {
-                Log.e(TAG, "Unable to copy $srcPath to $dstFile", e)
+                VPinballManager.log(VPinballLogLevel.ERROR, "Unable to copy $srcPath to $dstFile - ${e.message}")
             }
         }
     }
@@ -64,35 +57,14 @@ object FileUtils {
         }
     }
 
-    @Throws(IOException::class)
-    fun copyFile(context: Context, uri: Uri, dstFile: File, onProgress: (progress: Int) -> Unit = {}) {
-        context.contentResolver.openInputStream(uri)?.use { inputStream -> copyFile(inputStream, dstFile, onProgress) }
-            ?: throw IOException("Unable to open InputStream for URI: $uri")
-    }
-
-    @Throws(IOException::class)
-    fun copyDirectoryContents(srcDir: File, dstDir: File, overwrite: Boolean = true) {
-        if (!dstDir.exists() && !dstDir.mkdirs()) {
-            throw IOException("Failed to create destination directory: ${dstDir.absolutePath}")
-        }
-
-        srcDir.listFiles()?.forEach { file ->
-            val targetFile = File(dstDir, file.name)
-            if (file.isDirectory) {
-                file.copyRecursively(targetFile, overwrite)
-            } else {
-                file.copyTo(targetFile, overwrite)
-            }
-        }
-    }
-
     fun findFileByExtension(directory: File, extension: String): File? {
         directory.listFiles()?.forEach { file ->
             when {
-                file.isDirectory ->
+                file.isDirectory -> {
                     findFileByExtension(file, extension)?.let {
                         return it
                     }
+                }
 
                 file.extension.equals(extension, ignoreCase = true) -> return file
             }

@@ -2,6 +2,8 @@ import MessageUI
 import SwiftUI
 
 struct SettingsView: View {
+    @ObservedObject var settingsModel: SettingsModel
+
     enum ExportFile: Identifiable {
         case log
         case ini
@@ -38,9 +40,7 @@ struct SettingsView: View {
         }
     }
 
-    @EnvironmentObject var vpinballViewModel: VPinballViewModel
-    @EnvironmentObject var settingsModel: SettingsModel
-
+    @ObservedObject var vpinballViewModel = VPinballViewModel.shared
     @Environment(\.presentationMode) var presentationMode
 
     @State var inputTitle: String = ""
@@ -84,20 +84,7 @@ struct SettingsView: View {
                                 .font(.footnote)
                                 .foregroundStyle(Color.secondary)
                         }
-
-                        VStack(alignment: .leading) {
-                            Toggle(isOn: $settingsModel.liveUIOverride) {
-                                Text("Mobile LiveUI")
-                            }
-                            .tint(Color.vpxRed)
-
-                            Text("If disabled, use Visual Pinball's built in LiveUI.")
-                                .font(.footnote)
-                                .foregroundStyle(Color.secondary)
-                        }
                     }
-
-                    SettingsExternalDMDView(showInput: handleShowInput)
 
                     Picker("Display", selection: $settingsModel.viewMode) {
                         ForEach(VPinballViewMode.all,
@@ -108,25 +95,12 @@ struct SettingsView: View {
                         }
                     }
 
-                    SettingsEnvironmentLightingView()
-
-                    SettingsBallRenderingView()
-
-                    SettingsPerformanceView()
+                    SettingsPerformanceView(settingsModel: settingsModel)
                         .id("performance")
 
-                    SettingsAntiAliasingView()
+                    SettingsExternalDMDView(settingsModel: settingsModel, showInput: handleShowInput)
 
-                    Section("Miscellaneous Features") {
-                        Toggle(isOn: $settingsModel.ssreflection) {
-                            Text("Additional Screen Space Reflections")
-                        }
-                        .tint(Color.vpxRed)
-                    }
-
-                    SettingsWebServerView(showInput: handleShowInput)
-
-                    SettingsPluginsView()
+                    SettingsWebServerView(settingsModel: settingsModel, showInput: handleShowInput)
 
                     Section("Advanced") {
                         Toggle(isOn: $settingsModel.resetLogOnPlay) {
@@ -331,10 +305,6 @@ struct SettingsView: View {
                             isPresented: $showReset,
                             titleVisibility: .hidden)
         {
-            Button("Reset Touch Instructions") {
-                handleResetTouchInstructions()
-            }
-
             Button("Reset All Settings",
                    role: .destructive)
             {
@@ -347,14 +317,8 @@ struct SettingsView: View {
         .onChange(of: settingsModel.renderingModeOverride) {
             handleRenderingModeOverride()
         }
-        .onChange(of: settingsModel.liveUIOverride) {
-            handleLiveUIOverride()
-        }
         .onChange(of: settingsModel.viewMode) {
             handleViewMode()
-        }
-        .onChange(of: settingsModel.ssreflection) {
-            handleSSReflection()
         }
         .onChange(of: settingsModel.resetLogOnPlay) {
             handleResetLogOnPlay()
@@ -369,16 +333,8 @@ struct SettingsView: View {
         vpinballManager.saveValue(.standalone, "RenderingModeOverride", settingsModel.renderingModeOverride ? 2 : -1)
     }
 
-    func handleLiveUIOverride() {
-        vpinballManager.saveValue(.standalone, "LiveUIOverride", settingsModel.liveUIOverride)
-    }
-
     func handleViewMode() {
         vpinballManager.saveValue(.player, "BGSet", settingsModel.viewMode.rawValue)
-    }
-
-    func handleSSReflection() {
-        vpinballManager.saveValue(.player, "SSRefl", settingsModel.ssreflection)
     }
 
     func handleResetLogOnPlay() {
@@ -413,10 +369,6 @@ struct SettingsView: View {
         showReset = true
     }
 
-    func handleResetTouchInstructions() {
-        vpinballManager.saveValue(.standalone, "TouchInstructions", true)
-    }
-
     func handleResetAllSettings() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
             vpinballManager.resetIni()
@@ -434,7 +386,5 @@ struct SettingsView: View {
 }
 
 #Preview {
-    SettingsView()
-        .environmentObject(VPinballViewModel.shared)
-        .environmentObject(SettingsModel())
+    SettingsView(settingsModel: SettingsModel())
 }

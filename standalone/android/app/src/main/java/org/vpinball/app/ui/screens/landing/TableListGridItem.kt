@@ -43,41 +43,37 @@ import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.vpinball.app.ArtworkState
 import org.vpinball.app.R
+import org.vpinball.app.Table
+import org.vpinball.app.TableImageState
 import org.vpinball.app.VPinballManager
-import org.vpinball.app.data.entity.PinTable
 import org.vpinball.app.util.drawWithGradient
-import org.vpinball.app.util.hasImage
 import org.vpinball.app.util.loadImage
 
 @Composable
 fun TableListGridItem(
-    table: PinTable,
-    onPlay: (table: PinTable) -> Unit,
-    onRename: (table: PinTable) -> Unit,
-    onChangeArtwork: (table: PinTable) -> Unit,
-    onViewScript: (table: PinTable) -> Unit,
-    onShare: (table: PinTable) -> Unit,
-    onReset: (table: PinTable) -> Unit,
-    onDelete: (table: PinTable) -> Unit,
+    table: Table,
+    onPlay: (table: Table) -> Unit,
+    onRename: (table: Table) -> Unit,
+    onTableImage: (table: Table) -> Unit,
+    onViewScript: (table: Table) -> Unit,
+    onShare: (table: Table) -> Unit,
+    onReset: (table: Table) -> Unit,
+    onDelete: (table: Table) -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
 
     val contextMenuExpanded = remember { mutableStateOf(false) }
     var globalTouchOffset by remember { mutableStateOf(Offset.Zero) }
-    val bitmap by produceState<ImageBitmap?>(null, table) { value = withContext(Dispatchers.IO) { table.loadImage() } }
+    val bitmap by
+        produceState<ImageBitmap?>(null, table.uuid, table.image, table.modifiedAt) { value = withContext(Dispatchers.IO) { table.loadImage() } }
 
-    val artworkState by remember {
+    val imageState by remember {
         derivedStateOf {
             if (bitmap != null) {
-                ArtworkState.IMAGE_LOADED
+                TableImageState.IMAGE_LOADED
             } else {
-                if (table.hasImage()) {
-                    ArtworkState.LOADING_IMAGE
-                } else {
-                    ArtworkState.NO_IMAGE
-                }
+                TableImageState.NO_IMAGE
             }
         }
     }
@@ -109,15 +105,15 @@ fun TableListGridItem(
                     }
         ) {
             Column(modifier = Modifier.haze(state = hazeState)) {
-                Crossfade(artworkState, label = "table_grid_item_cross_fade") { artworkState ->
-                    when (artworkState) {
-                        ArtworkState.IMAGE_LOADED -> {
+                Crossfade(imageState, label = "table_grid_item_cross_fade") { imageState ->
+                    when (imageState) {
+                        TableImageState.IMAGE_LOADED -> {
                             bitmap?.let { bitmap ->
                                 Image(bitmap, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
                             }
                         }
 
-                        ArtworkState.LOADING_IMAGE -> {
+                        TableImageState.LOADING_IMAGE -> {
                             Box(modifier = Modifier.background(Color.Black))
                         }
 
@@ -158,7 +154,7 @@ fun TableListGridItem(
             table = table,
             expanded = contextMenuExpanded,
             onRename = { onRename(table) },
-            onChangeArtwork = { onChangeArtwork(table) },
+            onTableImage = { onTableImage(table) },
             onViewScript = { onViewScript(table) },
             onShare = { onShare(table) },
             onReset = { onReset(table) },

@@ -24,8 +24,8 @@ public:
    virtual void Save();
    bool IsActive() const { return m_openAnimTarget == 0.f; }
    bool IsClosed() const { return m_openAnimPos == -1.f; }
-   void SaveGlobally();
-   void SaveTableOverride();
+   virtual void SaveGlobally();
+   virtual void SaveTableOverride();
    virtual void ResetToInitialValues();
    virtual void ResetToDefaults();
    bool IsResettingToDefaults() const { return m_resettingToDefaults; }
@@ -37,7 +37,7 @@ public:
    void AdjustItem(float direction, bool isInitialPress);
    bool IsAdjustable() const;
    virtual bool IsDefaults() const;
-   bool IsModified() const;
+   virtual bool IsModified() const;
 
    InGameUIItem* GetItem(const string& label) const;
 

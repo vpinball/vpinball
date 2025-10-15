@@ -15,7 +15,7 @@
 #else
 #include <plog/Appenders/AndroidAppender.h>
 #endif
-#include "standalone/inc/webserver/WebServer.h"
+#include "lib/src/WebServer.h"
 #endif
 
 class DebugAppender final : public plog::IAppender

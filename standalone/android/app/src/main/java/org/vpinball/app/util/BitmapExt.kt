@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import androidx.core.graphics.createBitmap
 
 fun Bitmap.resizeWithAspectFit(newWidth: Int, newHeight: Int): Bitmap {
     val widthRatio = newWidth.toFloat() / this.width
@@ -13,7 +14,7 @@ fun Bitmap.resizeWithAspectFit(newWidth: Int, newHeight: Int): Bitmap {
     val aspectFitWidth = (this.width * aspectFitRatio).toInt()
     val aspectFitHeight = (this.height * aspectFitRatio).toInt()
 
-    val resizedBitmap = Bitmap.createBitmap(newWidth, newHeight, Bitmap.Config.ARGB_8888)
+    val resizedBitmap = createBitmap(newWidth, newHeight)
     val canvas = Canvas(resizedBitmap)
 
     val paint = Paint().apply { color = Color.BLACK }

@@ -9,6 +9,13 @@
 
 #include <thread>
 
+#ifdef __LIBVPINBALL__
+#ifdef __APPLE__
+#include <pthread.h>
+#include <sys/qos.h>
+#endif
+#endif
+
 #if !defined(DISABLE_FORCE_NVIDIA_OPTIMUS) && defined(ENABLE_DX9)
 #include "nvapi/nvapi.h"
 #endif
@@ -45,7 +52,7 @@
 #endif
 
 #ifdef __LIBVPINBALL__
-#include "standalone/VPinballLib.h"
+#include "lib/src/VPinballLib.h"
 #endif
 
 
@@ -342,6 +349,14 @@ marker_series series;
 void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
 {
    SetThreadName("RenderThread"s);
+
+#ifdef __LIBVPINBALL__
+#ifdef __APPLE__
+   // Set render thread to User-interactive QoS to match main thread and prevent priority inversion
+   pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0);
+#endif
+#endif
+
    bgfx::Init init = initReq;
 
    // If using OpenGl on a WCG display, then create the OpenGL WCG context through SDL since BGFX does not support HDR10 under OpenGl
@@ -498,6 +513,14 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
 
             // Submit frame to BGFX (which contains all rendering commands, for VR headset but also other windows like preview,...)
             {
+#if defined(__ANDROID__)
+               void* nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(rd->m_outputWnd[1]->GetCore()), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
+               if (nwh == nullptr)
+               {
+                  rd->m_framePending = true;
+                  return;
+               }
+#endif
                #ifdef MSVC_CONCURRENCY_VIEWER
                span *tagSpan = new span(series, 1, _T("VPX->BGFX"));
                #endif
@@ -550,8 +573,26 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
          if (!rd->m_framePending)
             continue;
          const bool noSync = rd->m_frameNoSync;
-         const bool needsVSync = useVSync && !noSync; // User has activated VSync, and we are not processing an unsynced frame (offline rendering for example)   
+         const bool needsVSync = useVSync && !noSync; // User has activated VSync, and we are not processing an unsynced frame (offline rendering for example)
          g_pplayer->m_curFrameSyncOnVBlank = needsVSync;
+
+#if defined(__ANDROID__)
+         void* nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(rd->m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
+         static void* prevNwh = nwh;
+         if (nwh != prevNwh)
+         {
+            prevNwh = nwh;
+            if (nwh == nullptr)
+               continue;
+
+            bgfx::PlatformData pd = {};
+            pd.nwh = nwh;
+            bgfx::setPlatformData(pd);
+            gpuVSync = !gpuVSync; // Force reset by making VSync state appear changed
+         }
+         if (nwh == nullptr)
+            continue;
+#endif
 
          // lock prepared frame and submit it
          {
@@ -757,7 +798,7 @@ RenderDevice::RenderDevice(
    #elif BX_PLATFORM_OSX
    init.platformData.nwh = SDL_GetRenderMetalLayer(SDL_CreateRenderer(m_outputWnd[0]->GetCore(), "Metal"));
    #elif BX_PLATFORM_IOS
-   init.platformData.nwh = SDL_GetRenderMetalLayer(SDL_CreateRenderer(m_outputWnd[0]->GetCore(), "Metal"));
+   init.platformData.nwh = VPinballLib::VPinballLib::Instance().GetMetalLayer();
    #elif BX_PLATFORM_ANDROID
    init.platformData.nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
    #elif BX_PLATFORM_WINDOWS
@@ -1438,7 +1479,7 @@ void RenderDevice::AddWindow(VPX::Window* wnd)
 #elif BX_PLATFORM_OSX
    nwh = SDL_GetRenderMetalLayer(SDL_CreateRenderer(sdlWnd, "Metal"));
 #elif BX_PLATFORM_IOS
-   nwh = SDL_GetRenderMetalLayer(SDL_CreateRenderer(sdlWnd, "Metal"));
+   nwh = VPinballLib::VPinballLib::Instance().GetMetalLayer();
 #elif BX_PLATFORM_ANDROID
    nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWnd), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
 #elif BX_PLATFORM_WINDOWS

@@ -3,41 +3,53 @@ package org.vpinball.app
 import android.os.Bundle
 import android.view.ViewGroup
 import android.widget.RelativeLayout
-import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.libsdl.app.SDLActivity
 import org.vpinball.app.ui.VPinballContent
-import org.vpinball.app.util.FileUtils
 
 class VPinballActivity : SDLActivity() {
     val viewModel: VPinballViewModel by viewModel<VPinballViewModel>()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
+    private var isAppInit by mutableStateOf(false)
+    private var composeView: ComposeView? = null
 
+    companion object {
+        const val COMMAND_APP_INIT_COMPLETED = 0x8001
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        runCatching { FileUtils.copyAssets(this.assets, "", this.filesDir) }
+        window.decorView.windowInsetsController?.show(android.view.WindowInsets.Type.statusBars() or android.view.WindowInsets.Type.navigationBars())
+
+        window.decorView.windowInsetsController?.setSystemBarsAppearance(0, android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS)
+
+        VPinballManager.initialize(this)
 
         initCompose()
     }
 
-    private fun initCompose() {
-        val layoutParams =
-            RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                addRule(RelativeLayout.CENTER_IN_PARENT)
-            }
+    override fun onUnhandledMessage(command: Int, param: Any?): Boolean {
+        if (command == COMMAND_APP_INIT_COMPLETED) {
+            isAppInit = true
+            return true
+        }
 
-        val composeView = ComposeView(this).apply { setContent { VPinballContent() } }
+        return super.onUnhandledMessage(command, param)
+    }
+
+    private fun initCompose() {
+        val layoutParams = RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+
+        composeView = ComposeView(this).apply { setContent { VPinballContent(isAppInit = isAppInit) } }
 
         val relativeLayout = getContentView() as? RelativeLayout
         relativeLayout?.apply {
@@ -45,11 +57,6 @@ class VPinballActivity : SDLActivity() {
             setViewTreeLifecycleOwner(this@VPinballActivity)
             setViewTreeSavedStateRegistryOwner(this@VPinballActivity)
             addView(composeView, layoutParams)
-        }
-
-        CoroutineScope(Dispatchers.IO).launch {
-            delay(1000)
-            VPinballManager.initialize(this@VPinballActivity)
         }
     }
 

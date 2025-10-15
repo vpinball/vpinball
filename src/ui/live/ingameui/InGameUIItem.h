@@ -176,7 +176,8 @@ public:
       Back,
       ResetToDefaults,
       ResetToInitialValues,
-      SaveChanges
+      SaveChanges,
+      CustomRender
    };
 
    explicit InGameUIItem(Type type)
@@ -189,6 +190,22 @@ public:
       , m_defValue(0.f)
       , m_initialValue(0.f)
       , m_enum()
+   {
+      Validate();
+   }
+
+   InGameUIItem(string label, string tooltip, std::function<void(int, const InGameUIItem*)> customRender)
+      : m_type(Type::CustomRender)
+      , m_label(std::move(label))
+      , m_tooltip(std::move(tooltip))
+      , m_path(""s) // Unused
+      , m_minValue(0.f)
+      , m_maxValue(0.f)
+      , m_step(0.f)
+      , m_defValue(0.f)
+      , m_initialValue(0.f)
+      , m_enum()
+      , m_customRender(customRender)
    {
       Validate();
    }
@@ -266,6 +283,9 @@ public:
 
    // Properties shared by value items
    const string m_format;
+
+   // Custom render callback for CustomRender items
+   const std::function<void(int, const InGameUIItem*)> m_customRender;
 
    static std::function<void(Settings&)> ResetSetting(const Settings::Section section, const string& key)
    {

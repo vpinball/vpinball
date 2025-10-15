@@ -327,11 +327,19 @@ void InGameUIPage::Render(float elapsedMs)
    }
    else
    {
+#ifndef __LIBVPINBALL__
       if (io.DisplaySize.x > io.DisplaySize.y) // Landscape mode
          ImGui::SetNextWindowSize(ImVec2(0.4f * io.DisplaySize.x, 0.4f * io.DisplaySize.y));
       else // Portrait mode
          ImGui::SetNextWindowSize(ImVec2(0.8f * io.DisplaySize.x, 0.3f * io.DisplaySize.y));
       ImGui::SetNextWindowPos(ImVec2((animPos + 0.5f) * io.DisplaySize.x, 0.8f * io.DisplaySize.y), 0, ImVec2(0.5f, 1.f));
+#else
+      if (io.DisplaySize.x > io.DisplaySize.y) // Landscape mode
+         ImGui::SetNextWindowSize(ImVec2(0.75f * io.DisplaySize.x, 0.8f * io.DisplaySize.y));
+      else // Portrait mode
+         ImGui::SetNextWindowSize(ImVec2(0.9f * io.DisplaySize.x, 0.8f * io.DisplaySize.y));
+      ImGui::SetNextWindowPos(ImVec2((animPos + 0.5f) * io.DisplaySize.x, 0.5f * io.DisplaySize.y), 0, ImVec2(0.5f, 0.5f));
+#endif
    }
    ;
    ImGui::Begin(std::to_string(reinterpret_cast<uint64_t>(this)).c_str(), nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings);
@@ -555,6 +563,16 @@ void InGameUIPage::Render(float elapsedMs)
             AdjustItem(1.f, true);
          }
          break;
+
+      case CustomRender:
+      {
+         ImGui::SetCursorScreenPos(ImGui::GetCursorScreenPos() + ImVec2(0.f, itemPadding.y));
+         if (item->m_customRender) {
+            item->m_customRender(i, item.get());
+         }
+         ImGui::SetCursorScreenPos(ImGui::GetCursorScreenPos() + ImVec2(0.f, itemPadding.y));
+         break;
+      }
 
       case Toggle:
       {

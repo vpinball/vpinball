@@ -65,7 +65,7 @@ void ExitSplashPage::BuildPage()
             : "Enable Touch Overlay"s, ""s,
          [this]()
          {
-            bool showTouchOverlay = g_pvp->m_settings.LoadValueBool(Settings::Player, "TouchOverlay"s);
+            bool showTouchOverlay = !g_pvp->m_settings.LoadValueBool(Settings::Player, "TouchOverlay"s);
             g_pvp->m_settings.SaveValue(Settings::Player, "TouchOverlay"s, showTouchOverlay);
             m_player->m_liveUI->ShowTouchOverlay(showTouchOverlay);
             ImGui::GetIO().MousePos.x = 0;
@@ -76,7 +76,12 @@ void ExitSplashPage::BuildPage()
    if (!hasKeyboard)
       AddItem(std::make_unique<InGameUIItem>(m_player->m_liveUI->m_perfUI.GetPerfMode() != PerfUI::PerfMode::PM_DISABLED ? "Disable FPS"s : "Enable FPS"s, ""s,
          [this]() {
-            m_player->m_liveUI->m_perfUI.SetPerfMode(m_player->m_liveUI->m_perfUI.GetPerfMode() != PerfUI::PerfMode::PM_DISABLED ? PerfUI::PerfMode::PM_FPS : PerfUI::PerfMode::PM_DISABLED);
+            bool wasDisabled = m_player->m_liveUI->m_perfUI.GetPerfMode() == PerfUI::PerfMode::PM_DISABLED;
+            m_player->m_liveUI->m_perfUI.SetPerfMode(wasDisabled ? PerfUI::PerfMode::PM_FPS : PerfUI::PerfMode::PM_DISABLED);
+            if (wasDisabled) {
+               m_player->InitFPS();
+               m_player->m_logicProfiler.EnableWorstFrameLogging(true);
+            }
             ImGui::GetIO().MousePos.x = 0;
             ImGui::GetIO().MousePos.y = 0;
             BuildPage();
@@ -85,7 +90,13 @@ void ExitSplashPage::BuildPage()
    if (!isStandalone)
       AddItem(std::make_unique<InGameUIItem>("Quit to Editor"s, ""s, [this]() { m_player->m_ptable->QuitPlayer(Player::CS_STOP_PLAY); }));
    else
-      AddItem(std::make_unique<InGameUIItem>("Quit"s, ""s, [this]() { m_player->m_ptable->QuitPlayer(Player::CS_CLOSE_APP); }));
+      AddItem(std::make_unique<InGameUIItem>("Quit"s, ""s, [this]() {
+#ifndef __LIBVPINBALL__
+         m_player->m_ptable->QuitPlayer(Player::CS_CLOSE_APP);
+#else
+         m_player->m_ptable->QuitPlayer(Player::CS_CLOSE_CAPTURE_SCREENSHOT);
+#endif
+      }));
 }
 
 

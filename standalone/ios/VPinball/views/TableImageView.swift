@@ -2,7 +2,7 @@
 import SwiftUI
 
 struct TableImageView: View {
-    var table: PinTable
+    var table: Table
     var selected: Bool = false
 
     var body: some View {
@@ -17,6 +17,7 @@ struct TableImageView: View {
                 TablePlaceholderImage()
             }
         }
+        .id("\(table.uuid)_\(table.image)_\(table.modifiedAt)")
         .clipShape(RoundedRectangle(cornerRadius: 6))
         .padding(2)
         .background(Color.black)

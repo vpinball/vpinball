@@ -15,7 +15,7 @@
 #endif
 
 #ifdef __LIBVPINBALL__
-#include "standalone/VPinballLib.h"
+#include "lib/src/VPinballLib.h"
 #endif
 
 namespace VPX
@@ -47,6 +47,7 @@ Window::Window(const string &title, const Settings& settings, const Settings::Se
    , m_settingsPrefix(settingsPrefix)
    , m_isVR(false)
 {
+#ifndef __LIBVPINBALL__
    m_fullscreen = settings.LoadValueBool(m_settingsSection, m_settingsPrefix + "FullScreen");
    // FIXME remove command line override => this is hacky and not needed anymore (use INI override instead)
    if (m_settingsSection == Settings::Player)
@@ -56,6 +57,9 @@ Window::Window(const string &title, const Settings& settings, const Settings::Se
       else if (g_pvp->m_disEnableTrueFullscreen == 1)
          m_fullscreen = true;
    }
+#else
+   m_fullscreen = true;
+#endif
    int w = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Width", m_fullscreen ? -1 : 1024);
    int h = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Height", w * 9 / 16);
    const bool video10bit = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Render10Bit", false);
@@ -156,6 +160,9 @@ Window::Window(const string &title, const Settings& settings, const Settings::Se
       }
    }
 
+   SDL_PropertiesID props;
+
+#ifndef __LIBVPINBALL__
    uint32_t wnd_flags = 0;
    #if defined(ENABLE_OPENGL)
       wnd_flags |= SDL_WINDOW_OPENGL; // Leads to read OpenGL context hint (swapchain backbuffer format, ...)
@@ -181,18 +188,19 @@ Window::Window(const string &title, const Settings& settings, const Settings::Se
 
    // Prevent full screen window from minimizing when re-arranging external windows
    SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
-   SDL_PropertiesID props = SDL_CreateProperties();
+
+   props = SDL_CreateProperties();
    SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, title.c_str());
    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, wnd_x);
    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, wnd_y);
    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, m_width);
    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, m_height);
-   #if defined(ENABLE_BGFX) && defined(__ANDROID__)
-      SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_EXTERNAL_GRAPHICS_CONTEXT_BOOLEAN, true);
-   #endif
    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, wnd_flags);
    m_nwnd = SDL_CreateWindowWithProperties(props);
    SDL_DestroyProperties(props);
+#else
+   m_nwnd = VPinballLib::VPinballLib::Instance().GetWindow();
+#endif
 
    props = SDL_GetWindowProperties(m_nwnd);
    m_wcgDisplay = SDL_GetBooleanProperty(props, SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN, false);
@@ -268,7 +276,10 @@ Window::~Window()
 {
    if (m_isVR)
       return;
+
+#ifndef __LIBVPINBALL__
    SDL_DestroyWindow(m_nwnd);
+#endif
 }
 
 Window::DisplayConfig Window::GetDisplayConfig(const Settings& settings) const

@@ -1,8 +1,15 @@
 #import <Cocoa/Cocoa.h>
+#include <csignal>
 
 extern "C" char** g_argv;
 extern "C" int g_argc;
 extern "C" int WinMain(void*, void*, void*, int);
+
+void OnSignalHandler(int signum)
+{
+   printf("Exiting from signal: %d\n", signum);
+   exit(-9999);
+}
 
 @interface VPXAppDelegate : NSObject <NSApplicationDelegate>
 - (void)makeWindowExit;
@@ -86,6 +93,12 @@ extern "C" int WinMain(void*, void*, void*, int);
 int main(int argc, const char* argv[])
 {
   @autoreleasepool {
+    struct sigaction sigIntHandler;
+    sigIntHandler.sa_handler = OnSignalHandler;
+    sigemptyset(&sigIntHandler.sa_mask);
+    sigIntHandler.sa_flags = 0;
+    sigaction(SIGINT, &sigIntHandler, nullptr);
+
     g_argc = argc;
     g_argv = (char**)argv;
 

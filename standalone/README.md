@@ -362,7 +362,7 @@ In Visual Studio Code:
   - Update `settings.json` with:
   ```
       "cmake.debugConfig": {
-         "args": [ "-DisableTrueFullscreen", "-Play", "assets/exampleTable.vpx" ],
+         "args": [ "-DisableTrueFullscreen", "-play", "assets/exampleTable.vpx" ],
       }
   ```
   - Click the bug button (to the left of the play button) in the bottom bar
@@ -389,7 +389,7 @@ On the host computer, in Visual Studio Code:
     "cmake.parallelJobs": 1,
     "cmake.generator": "Unix Makefiles",
     "cmake.debugConfig": {
-        "args": [ "-Play", "assets/exampleTable.vpx" ],
+        "args": [ "-play", "assets/exampleTable.vpx" ],
     }
   ```
   - Click the bug button (to the left of the play button) in the bottom bar

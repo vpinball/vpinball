@@ -24,7 +24,6 @@
 #include "ui/paintsur.h"
 
 #ifdef __STANDALONE__
-#include "standalone/Standalone.h"
 #include "mINI/ini.h"
 #endif
 

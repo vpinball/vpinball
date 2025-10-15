@@ -18,6 +18,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import java.io.File
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,12 +29,16 @@ fun SettingsModalBottomSheet(
     onViewFile: (file: File) -> Unit,
     modifier: Modifier = Modifier,
     sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+    viewModel: SettingsViewModel = koinViewModel(),
 ) {
     if (show) {
         val coroutineScope = rememberCoroutineScope()
 
         ModalBottomSheet(
-            onDismissRequest = onDismissRequest,
+            onDismissRequest = {
+                viewModel.triggerTableReloadIfNeeded()
+                onDismissRequest()
+            },
             modifier =
                 modifier
                     .windowInsetsPadding(WindowInsets.statusBars)
@@ -45,11 +50,12 @@ fun SettingsModalBottomSheet(
             val onDone: () -> Unit = {
                 coroutineScope.launch {
                     sheetState.hide()
+                    viewModel.triggerTableReloadIfNeeded()
                     onDismissRequest()
                 }
             }
 
-            SettingsScreen(webServerURL = webServerURL, onDone = onDone, onViewFile = onViewFile)
+            SettingsScreen(webServerURL = webServerURL, onDone = onDone, onViewFile = onViewFile, viewModel = viewModel)
         }
     }
 }

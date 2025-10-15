@@ -10,12 +10,11 @@
 #endif
 
 #ifdef __STANDALONE__
-#include "standalone/Standalone.h"
 #include <iostream>
 #endif
 
 #ifdef __LIBVPINBALL__
-#include "standalone/VPinballLib.h"
+#include "lib/src/VPinballLib.h"
 #endif
 
 #include <filesystem>
@@ -1005,10 +1004,6 @@ void VPinball::DoPlay(const int playMode)
    if (table == nullptr)
       return;
 
-#ifdef __LIBVPINBALL__
-   VPinballLib::VPinball::SendEvent(VPinballLib::Event::Play, nullptr);
-#endif
-
    PLOGI << "Starting Play mode [table: " << table->m_tableName << ", play mode: " << playMode << ']';
    ShowWindow(SW_HIDE);
    bool initError = false;
@@ -1035,8 +1030,8 @@ void VPinball::DoPlay(const int playMode)
    {
       g_pplayer->GameLoop();
 
-      #if (defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS))
-         // iOS has its own game loop so that it can handle OS events (screenshots, etc)
+      #ifdef __LIBVPINBALL__
+         // Android and iOS use SDL main callbacks and use SDL_AppIterate
          return;
       #endif
 
@@ -1050,10 +1045,6 @@ void VPinball::DoPlay(const int playMode)
    {
       m_table_played_via_SelectTableOnStart = false;
    }
-
-   #ifdef __LIBVPINBALL__
-      VPinballLib::VPinball::SendEvent(VPinballLib::Event::Stopped, nullptr);
-   #endif
 }
 
 bool VPinball::LoadFile(const bool updateEditor, VPXFileFeedback* feedback)
@@ -1242,14 +1233,12 @@ void VPinball::CloseTable(const PinTable * const ppt)
          m_notesDialog->Disable();
    }
 #else
-    auto it = std::find_if(m_vtable.begin(), m_vtable.end(),
-      [ppt](CComObject<PinTable>* obj) { return obj == ppt; });
+    PinTableMDI* mdiTable = ppt->GetMDITable();
+    if (mdiTable)
+        RemoveMDIChild(mdiTable);
 
-    if (it != m_vtable.end()) {
-       CComObject<PinTable>* obj = *it;
-       m_vtable.erase(it);
-       obj->Release();
-    }
+    RemoveFromVectorSingle(m_vtable, (CComObject<PinTable>*)ppt);
+    ((CComObject<PinTable>*)ppt)->Release();
 #endif
 }
 

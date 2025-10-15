@@ -1,4 +1,3 @@
-import SwiftData
 import SwiftUI
 
 enum TableListMode: Int, Hashable {
@@ -8,28 +7,25 @@ enum TableListMode: Int, Hashable {
 }
 
 struct TableListView: View {
-    @EnvironmentObject var vpinballViewModel: VPinballViewModel
+    @ObservedObject var vpinballViewModel = VPinballViewModel.shared
+    @ObservedObject var tableManager = TableManager.shared
 
     var mode: TableListMode
+    var sortOrder: SortOrder
     var searchText: String
-    @Binding var scrollToTableId: UUID?
+    @Binding var scrollToTable: Table?
 
-    @State var selectedTable: PinTable?
+    @State var selectedTable: Table?
 
-    @Query var tables: [PinTable]
-
-    init(mode: TableListMode = .column2, sortOrder: SortOrder = .reverse, searchText: String = "", scrollToTableId: Binding<UUID?> = .constant(nil)) {
+    init(mode: TableListMode = .column2, sortOrder: SortOrder = .reverse, searchText: String = "", scrollToTable: Binding<Table?> = .constant(nil)) {
         self.mode = mode
+        self.sortOrder = sortOrder
         self.searchText = searchText
+        _scrollToTable = scrollToTable
+    }
 
-        _tables = Query(filter: PinTable.predicate(searchText: searchText),
-                        sort: [SortDescriptor(\.name,
-                                              comparator: .localizedStandard,
-                                              order: sortOrder),
-                               SortDescriptor(\.createdAt,
-                                              order: .reverse)])
-
-        _scrollToTableId = scrollToTableId
+    var filteredTables: [Table] {
+        return tableManager.filteredTables(searchText: searchText, sortOrder: sortOrder)
     }
 
     var body: some View {
@@ -40,12 +36,12 @@ struct TableListView: View {
                                                                  alignment: .top),
                                              count: mode == .column2 ? 2 : 3))
                     {
-                        ForEach(tables) { table in
+                        ForEach(filteredTables) { table in
                             EmptyView()
-                                .id(table.tableId)
+                                .id(table.uuid)
 
                             TableListButton(table: table)
-                                .opacity(selectedTable?.tableId == table.tableId ? 0.5 : 1)
+                                .opacity(selectedTable?.uuid == table.uuid ? 0.5 : 1)
                                 .onTapGesture {
                                     handlePlay(table)
                                 }
@@ -54,12 +50,14 @@ struct TableListView: View {
                     .scrollTargetLayout()
                     .padding(10)
                 }
-                .scrollPosition(id: $scrollToTableId,
-                                anchor: .top)
+                .scrollPosition(id: Binding(
+                    get: { scrollToTable?.uuid },
+                    set: { _ in scrollToTable = nil }
+                ), anchor: .top)
             } else {
                 ScrollViewReader { proxy in
                     List {
-                        ForEach(tables) { table in
+                        ForEach(filteredTables) { table in
                             Button {
                                 handlePlay(table)
                             }
@@ -76,7 +74,7 @@ struct TableListView: View {
                                         .foregroundStyle(Color.white)
                                 }
                             }
-                            .id(table.tableId)
+                            .id(table.uuid)
                             .swipeActions(edge: .trailing,
                                           allowsFullSwipe: false)
                             {
@@ -96,21 +94,22 @@ struct TableListView: View {
                                                  bottom: 10,
                                                  trailing: 10))
                             .listRowSeparatorTint(Color.darkGray)
-                            .listRowBackground(selectedTable?.tableId == table.tableId ? Color.darkGray : Color.lightBlack)
+                            .listRowBackground(selectedTable?.uuid == table.uuid ? Color.darkGray : Color.lightBlack)
                             .alignmentGuide(.listRowSeparatorLeading) { _ in
                                 0
                             }
                         }
                     }
                     .listStyle(.plain)
-                    .onChange(of: scrollToTableId) {
-                        proxy.scrollTo(scrollToTableId,
-                                       anchor: .top)
+                    .onChange(of: scrollToTable) {
+                        if let table = scrollToTable {
+                            proxy.scrollTo(table.uuid, anchor: .top)
+                        }
                     }
                 }
             }
 
-            if tables.isEmpty && !searchText.isEmpty {
+            if filteredTables.isEmpty && !searchText.isEmpty {
                 GeometryReader { geometry in
                     VStack {
                         Spacer()
@@ -142,14 +141,14 @@ struct TableListView: View {
         }
     }
 
-    func handleDelete(table: PinTable) {
+    func handleDelete(table: Table) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             vpinballViewModel.setAction(action: .delete,
                                         table: table)
         }
     }
 
-    func handlePlay(_ table: PinTable) {
+    func handlePlay(_ table: Table) {
         selectedTable = table
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {

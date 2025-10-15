@@ -1,45 +1,42 @@
 import PhotosUI
-import SwiftData
 import SwiftUI
 
 struct MainView: View {
-    @EnvironmentObject var vpinballViewModel: VPinballViewModel
-
-    @Environment(\.modelContext) var modelContext
     @Environment(\.dismissSearch) var dismissSearch
 
     @State var settingsSection: String?
     @State var showSettings = false
 
-    @State var confirmImportFileURL: URL?
-    @State var showConfirmImportFile = false
+    @State var confirmImportTableURL: URL?
+    @State var showConfirmImportTable = false
 
-    @State var importFileURL: URL?
-    @State var showImport = false
+    @State var importTableURL: URL?
+    @State var showImportTable = false
 
     @State var tableListMode: TableListMode = .column2
     @State var tableListSortOrder: SortOrder = .forward
     @State var tableListSearchText = ""
-    @State var tableListScrollToTableId: UUID?
+    @State var tableListScrollToTable: Table?
 
-    @State var selectedTable: PinTable? = nil
+    @State var selectedTable: Table? = nil
 
     @State var shareItems: [Any] = []
     @State var showShare = false
 
     @State var renameTableName = ""
-    @State var showRename = false
+    @State var showRenameTable = false
 
-    @State var showChangeArtwork = false
-    @State var changeArtworkPhotoItem: PhotosPickerItem?
-    @State var showChangeArtworkPhotoPicker = false
+    @State var showTableImage = false
+    @State var tableImagePhotoItem: PhotosPickerItem?
+    @State var showTableImagePhotoPicker = false
 
     @State var showScript = false
 
     @State var errorMessage = ""
     @State var showError = false
 
-    @Query var tables: [PinTable]
+    @ObservedObject var tableManager = TableManager.shared
+    @ObservedObject var vpinballViewModel = VPinballViewModel.shared
 
     let vpinballManager = VPinballManager.shared
     let settingsModel = SettingsModel()
@@ -53,11 +50,11 @@ struct MainView: View {
                     TableListView(mode: tableListMode,
                                   sortOrder: tableListSortOrder,
                                   searchText: tableListSearchText,
-                                  scrollToTableId: $tableListScrollToTableId)
+                                  scrollToTable: $tableListScrollToTable)
                         .searchable(text: $tableListSearchText)
-                        .disabled(tables.isEmpty)
+                        .disabled(tableManager.tables.isEmpty)
 
-                    if tables.isEmpty {
+                    if tableManager.tables.isEmpty {
                         GeometryReader { geometry in
                             VStack {
                                 Spacer()
@@ -146,7 +143,7 @@ struct MainView: View {
                         Menu(content: {
                             Section("Import From...") {
                                 Button(action: {
-                                    handleShowImport()
+                                    handleShowImportTable()
                                 }) {
                                     Label("Files",
                                           systemImage: "doc")
@@ -155,7 +152,13 @@ struct MainView: View {
 
                             Section("Built in...") {
                                 Button(action: {
-                                    handleImportExampleTable()
+                                    handleImportTableFromAssets("blankTable")
+                                }) {
+                                    Text("blankTable.vpx")
+                                }
+
+                                Button(action: {
+                                    handleImportTableFromAssets("exampleTable")
                                 }) {
                                     Text("exampleTable.vpx")
                                 }
@@ -185,21 +188,20 @@ struct MainView: View {
             }
 
             if vpinballViewModel.showHUD {
-                HUDOverlayView(type: vpinballViewModel.hudType!)
+                HUDOverlayView()
             }
         }
         .ignoresSafeArea()
         .sheet(isPresented: $showSettings,
                content: {
-                   SettingsView(focusSection: settingsSection)
+                   SettingsView(settingsModel: settingsModel, focusSection: settingsSection)
                        .presentationDetents([.custom(CustomDetent.self)])
                        .presentationDragIndicator(.hidden)
                        .ignoresSafeArea()
-                       .environmentObject(settingsModel)
                })
-        .sheet(isPresented: $showImport,
+        .sheet(isPresented: $showImportTable,
                content: {
-                   DocumentPickerView(importFileURL: $importFileURL)
+                   DocumentPickerView(importFileURL: $importTableURL)
                        .presentationDetents([.custom(CustomDetent.self)])
                        .presentationDragIndicator(.hidden)
                        .ignoresSafeArea()
@@ -215,23 +217,23 @@ struct MainView: View {
                        .ignoresSafeArea()
                })
         .confirmationDialog("",
-                            isPresented: $showChangeArtwork,
+                            isPresented: $showTableImage,
                             titleVisibility: .hidden)
         {
             Button("Photo Library") {
-                handleShowChangeArtworkPhotoPicker()
+                handleShowTableImagePhotoPicker()
             }
 
             Button("Reset",
                    role: .destructive)
             {
-                handleChangeArtworkReset()
+                handleTableImageReset()
             }
 
             Button("Cancel", role: .cancel) {}
         }
-        .photosPicker(isPresented: $showChangeArtworkPhotoPicker,
-                      selection: $changeArtworkPhotoItem,
+        .photosPicker(isPresented: $showTableImagePhotoPicker,
+                      selection: $tableImagePhotoItem,
                       matching: .any(of: [.images,
                                           .screenshots,
                                           .livePhotos]))
@@ -241,38 +243,24 @@ struct MainView: View {
                          language: .vbscript)
             }
         })
-        .alert("Warning!",
-               isPresented: $vpinballViewModel.showLowMemoryNotice)
-        {
-            Button("Settings", role: .cancel) {
-                handleLowMemoryNotice(showSettings: true)
-            }
-
+        .alert("Confirm Import Table", isPresented: $showConfirmImportTable) {
             Button("OK") {
-                handleLowMemoryNotice()
-            }
-        }
-        message: {
-            Text("Low memory conditions were detected. To prevent crashes, consider reducing Max Texture Dimensions.")
-        }
-        .alert("Confirm Import Table", isPresented: $showConfirmImportFile) {
-            Button("OK") {
-                handleConfirmImportFile()
+                handleConfirmImportTable()
             }
             Button("Cancel", role: .cancel) {
-                handleConfirmImportFileCancel()
+                handleConfirmImportTableCancel()
             }
         }
         message: {
-            if let filename = confirmImportFileURL?.lastPathComponent.removingPercentEncoding {
+            if let filename = confirmImportTableURL?.lastPathComponent.removingPercentEncoding {
                 Text("\nImport \"\(filename)\"?")
             }
         }
-        .alert("Rename Table", isPresented: $showRename) {
+        .alert("Rename Table", isPresented: $showRenameTable) {
             TextField("", text: $renameTableName)
                 .textInputAutocapitalization(.never)
             Button("Rename") {
-                handleRename()
+                handleRenameTable()
             }
             Button("Cancel", role: .cancel) {}
         }
@@ -290,35 +278,36 @@ struct MainView: View {
         .onAppear {
             handleAppear()
         }
-        .onOpenURL { url in
-            if url.scheme == "file" {
-                handleShowConfirmImportFile(url: url)
-            }
-        }
+        // .onOpenURL { url in
+        //     if url.scheme == "file" {
+        //         handleShowConfirmImportFile(url: url)
+        //     }
+        // }
         .onChange(of: tableListMode) {
             handleTableListMode()
         }
         .onChange(of: tableListSortOrder) {
             handleTableListSortOrder()
         }
-        .onChange(of: importFileURL) {
-            handleShowConfirmImportFile(url: importFileURL)
+        .onChange(of: importTableURL) {
+            handleShowConfirmImportTable(url: importTableURL)
         }
-        .onChange(of: tables) {
+        .onChange(of: tableManager.tables) {
             handleTables()
         }
         .onChange(of: vpinballViewModel.didSetAction) {
             handleAction()
         }
-        .onChange(of: changeArtworkPhotoItem) {
-            handleChangeArtworkPhotoItem()
+        .onChange(of: vpinballViewModel.scrollToTable) {
+            tableListScrollToTable = vpinballViewModel.scrollToTable
+        }
+        .onChange(of: tableImagePhotoItem) {
+            handleTableImagePhotoItem()
         }
         .onChange(of: selectedTable) {}
     }
 
     func handleAppear() {
-        vpinballManager.modelContext = modelContext
-
         tableListMode = TableListMode(rawValue: vpinballManager.loadValue(.standalone,
                                                                           "TableListMode",
                                                                           TableListMode.column2.rawValue)) ?? .column2
@@ -327,28 +316,28 @@ struct MainView: View {
                                                        "TableListSort",
                                                        1) == 1 ? .forward : .reverse
 
-        for table in tables where !table.exists() {
-            PinTable.delete(table: table)
+        Task {
+            tableManager.loadTables()
         }
     }
 
-    func handleShowConfirmImportFile(url: URL?) {
+    func handleShowConfirmImportTable(url: URL?) {
         if let url = url {
-            importFileURL = nil
-            confirmImportFileURL = url
-            showConfirmImportFile = true
+            importTableURL = nil
+            confirmImportTableURL = url
+            showConfirmImportTable = true
         }
     }
 
-    func handleConfirmImportFile() {
-        if let url = confirmImportFileURL {
-            handleImport(url: url)
+    func handleConfirmImportTable() {
+        if let url = confirmImportTableURL {
+            handleImportTable(url: url)
         }
-        confirmImportFileURL = nil
+        confirmImportTableURL = nil
     }
 
-    func handleConfirmImportFileCancel() {
-        confirmImportFileURL = nil
+    func handleConfirmImportTableCancel() {
+        confirmImportTableURL = nil
     }
 
     func handleShowSettings(section: String? = nil) {
@@ -365,28 +354,21 @@ struct MainView: View {
         vpinballManager.saveValue(.standalone, "TableListSort", tableListSortOrder == .forward ? 1 : 0)
     }
 
-    func handleShowImport() {
-        showImport = true
+    func handleShowImportTable() {
+        showImportTable = true
     }
 
-    func handleImportExampleTable() {
-        handleShowConfirmImportFile(url: Bundle.main.url(forResource: "assets/exampleTable",
-                                                         withExtension: "vpx"))
+    func handleImportTableFromAssets(_ name: String) {
+        handleShowConfirmImportTable(url: Bundle.main.url(forResource: "assets/\(name)",
+                                                          withExtension: "vpx"))
     }
 
-    func handleImport(url: URL?) {
+    func handleImportTable(url: URL?) {
         if let url = url {
             Task {
                 let scopedResource = url.startAccessingSecurityScopedResource()
 
-                if let table = await vpinballManager.import(url: url) {
-                    PinTable.create(table: table)
-                    tableListScrollToTableId = table.tableId
-
-                    VPinballSetWebServerUpdated()
-                } else {
-                    handleShowError(message: "Unable to import table.")
-                }
+                _ = await tableManager.importTable(from: url)
 
                 if scopedResource {
                     url.stopAccessingSecurityScopedResource()
@@ -400,7 +382,7 @@ struct MainView: View {
     }
 
     func handleTables() {
-        if tables.isEmpty {
+        if tableManager.tables.isEmpty {
             tableListSearchText = ""
             dismissSearch()
         }
@@ -416,74 +398,75 @@ struct MainView: View {
 
         switch vpinballViewModel.action {
         case .play:
-            handlePlay()
+            handlePlayTable()
         case .rename:
-            handleShowRename()
-        case .changeArtwork:
-            handleShowChangeArtwork()
+            handleShowRenameTable()
+        case .tableImage:
+            handleShowTableImage()
         case .viewScript:
-            handleViewScript()
+            handleViewTableScript()
         case .share:
-            handleShare()
+            handleShareTable()
         case .reset:
-            handleReset()
+            handleResetTable()
         case .delete:
-            handleDelete()
+            handleDeleteTable()
         case .stopped:
-            handleStopped()
+            handleTableStopped()
+        case .showError:
+            if let scriptError = vpinballViewModel.scriptError {
+                handleShowError(message: scriptError)
+            }
         default:
             break
         }
     }
 
-    func handleLowMemoryNotice(showSettings: Bool = false) {
-        vpinballManager.saveValue(.standalone, "LowMemoryNotice", 0)
-
-        if showSettings {
-            handleShowSettings(section: "performance")
-        }
-    }
-
-    func handleShowRename() {
+    func handleShowRenameTable() {
         if let selectedTable = selectedTable {
             renameTableName = selectedTable.name
-            showRename = true
-            tableListScrollToTableId = nil
+            showRenameTable = true
+            tableListScrollToTable = nil
         }
     }
 
-    func handleRename() {
+    func handleRenameTable() {
         if let selectedTable = selectedTable {
-            PinTable.updateName(table: selectedTable,
-                                name: renameTableName)
-            tableListScrollToTableId = selectedTable.tableId
+            Task {
+                _ = await tableManager.renameTable(table: selectedTable,
+                                                   newName: renameTableName)
+                tableListScrollToTable = selectedTable
+            }
         }
     }
 
-    func handleShowChangeArtwork() {
-        changeArtworkPhotoItem = nil
-        showChangeArtwork = true
+    func handleShowTableImage() {
+        tableImagePhotoItem = nil
+        showTableImage = true
     }
 
-    func handleShowChangeArtworkPhotoPicker() {
-        showChangeArtworkPhotoPicker = true
+    func handleShowTableImagePhotoPicker() {
+        showTableImagePhotoPicker = true
     }
 
-    func handleChangeArtworkPhotoItem() {
+    func handleTableImagePhotoItem() {
         if let selectedTable = selectedTable {
-            if let item = changeArtworkPhotoItem {
+            if let item = tableImagePhotoItem {
                 item.loadTransferable(type: Data.self) { result in
                     switch result {
                     case let .success(data?):
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                             if let image = UIImage(data: data),
-                               let resizedImageData = image.resizeWithAspectFit(newSize: CGSize(width: 1179,
-                                                                                                height: 2556))?.jpegData(compressionQuality: 0.75)
+                               let resizedImage = image.resizeWithAspectFit(newSize: CGSize(width: 1179,
+                                                                                            height: 2556))
                             {
-                                PinTable.updateImage(table: selectedTable,
-                                                     data: resizedImageData)
+                                Task {
+                                    await tableManager.setTableImage(table: selectedTable, image: resizedImage)
+                                }
                             } else {
-                                PinTable.resetImage(table: selectedTable)
+                                Task {
+                                    await tableManager.setTableImage(table: selectedTable, imagePath: "")
+                                }
                             }
                         }
                     default:
@@ -494,22 +477,23 @@ struct MainView: View {
         }
     }
 
-    func handleChangeArtworkReset() {
+    func handleTableImageReset() {
         if let selectedTable = selectedTable {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                PinTable.resetImage(table: selectedTable)
+                Task {
+                    await tableManager.setTableImage(table: selectedTable, imagePath: "")
+                }
             }
         }
     }
 
-    func handleViewScript() {
+    func handleViewTableScript() {
         if let selectedTable = selectedTable {
-            if selectedTable.hasScript() {
+            if selectedTable.hasScriptFile() {
                 showScript = true
             } else {
                 Task {
-                    if await vpinballManager.extractScript(table: selectedTable) == true {
-                        PinTable.update(table: selectedTable)
+                    if await tableManager.extractTableScript(table: selectedTable) {
                         showScript = true
                     } else {
                         handleShowError(message: "Unable to extract script")
@@ -519,10 +503,10 @@ struct MainView: View {
         }
     }
 
-    func handleShare() {
+    func handleShareTable() {
         if let selectedTable = selectedTable {
             Task {
-                if let url = await vpinballManager.share(table: selectedTable) {
+                if let url = await tableManager.exportTable(table: selectedTable) {
                     shareItems = [url]
                     showShare = true
                 }
@@ -530,23 +514,24 @@ struct MainView: View {
         }
     }
 
-    func handleReset() {
+    func handleResetTable() {
         if let selectedTable = selectedTable {
-            try? FileManager.default.removeItem(at: selectedTable.iniURL)
-            PinTable.update(table: selectedTable)
+            _ = tableManager.resetTableIni(table: selectedTable)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                tableListScrollToTableId = selectedTable.tableId
+                tableListScrollToTable = selectedTable
             }
         }
     }
 
-    func handleDelete() {
+    func handleDeleteTable() {
         if let selectedTable = selectedTable {
-            PinTable.delete(table: selectedTable)
+            Task {
+                await tableManager.deleteTable(table: selectedTable)
+            }
         }
     }
 
-    func handlePlay() {
+    func handlePlayTable() {
         if vpinballManager.activeTable != nil {
             return
         }
@@ -560,7 +545,7 @@ struct MainView: View {
         }
     }
 
-    func handleStopped() {
+    func handleTableStopped() {
         if let scriptError = vpinballViewModel.scriptError {
             handleShowError(message: scriptError)
         }
@@ -582,5 +567,4 @@ struct CustomDetent: CustomPresentationDetent {
 
 #Preview {
     MainView()
-        .environmentObject(VPinballViewModel.shared)
 }

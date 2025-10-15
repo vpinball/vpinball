@@ -17,24 +17,6 @@ enum VPinballStatus: CInt {
 enum VPinballSettingsSection: String {
     case standalone = "Standalone"
     case player = "Player"
-    case alpha = "Alpha"
-    case backglass = "Backglass"
-    case scoreView = "ScoreView"
-    case topper = "Topper"
-    case tableOverride = "TableOverride"
-    case tableOption = "TableOption"
-    case pluginAlphaDMD = "Plugin.AlphaDMD"
-    case pluginB2S = "Plugin.B2S"
-    case pluginB2SLegacy = "Plugin.B2SLegacy"
-    case pluginDMDUtil = "Plugin.DMDUtil"
-    case pluginDOF = "Plugin.DOF"
-    case pluginFlexDMD = "Plugin.FlexDMD"
-    case pluginPinMAME = "Plugin.PinMAME"
-    case pluginPUP = "Plugin.PUP"
-    case pluginRemoteControl = "Plugin.RemoteControl"
-    case pluginScoreView = "Plugin.ScoreView"
-    case pluginSerum = "Plugin.Serum"
-    case pluginWMP = "Plugin.WMP"
 }
 
 enum VPinballViewMode: CInt {
@@ -54,60 +36,6 @@ enum VPinballViewMode: CInt {
             return "Cabinet"
         case .desktopNoFSS:
             return "Desktop (no FSS)"
-        }
-    }
-}
-
-enum VPinballAO: CInt {
-    case aoDisable
-    case aoStatic
-    case aoDynamic
-
-    static let all: [VPinballAO] = [.aoDisable,
-                                    .aoStatic,
-                                    .aoDynamic]
-
-    var name: String {
-        switch self {
-        case .aoDisable:
-            return "Disable AO"
-        case .aoStatic:
-            return "Static AO"
-        case .aoDynamic:
-            return "Dynamic AO"
-        }
-    }
-}
-
-enum VPinballReflectionMode: CInt {
-    case reflNone
-    case reflBalls
-    case reflStatic
-    case reflStaticNBalls
-    case reflStaticNDynamic
-    case reflDynamic
-
-    static let all: [VPinballReflectionMode] = [.reflNone,
-                                                .reflBalls,
-                                                .reflStatic,
-                                                .reflStaticNBalls,
-                                                .reflStaticNDynamic,
-                                                .reflDynamic]
-
-    var name: String {
-        switch self {
-        case .reflNone:
-            return "Disable Reflections"
-        case .reflBalls:
-            return "Balls Only"
-        case .reflStatic:
-            return "Static Only"
-        case .reflStaticNBalls:
-            return "Static & Balls"
-        case .reflStaticNDynamic:
-            return "Static & Unsynced Dynamic"
-        case .reflDynamic:
-            return "Dynamic"
         }
     }
 }
@@ -144,162 +72,6 @@ enum VPinballMaxTexDimension: CInt {
     }
 }
 
-enum VPinballMSAASamples: CInt {
-    case disabled = 1
-    case samples4 = 4
-    case samples6 = 6
-    case samples8 = 8
-
-    static let all: [VPinballMSAASamples] = [.disabled,
-                                             .samples4,
-                                             .samples6,
-                                             .samples8]
-
-    var name: String {
-        return self == .disabled ? "Disabled" : "\(rawValue) Samples"
-    }
-}
-
-enum VPinballAAFactor: CInt {
-    case pct50 = 50
-    case pct75 = 75
-    case disabled = 100
-    case pct125 = 125
-    case pct133 = 133
-    case pct150 = 150
-    case pct175 = 175
-    case pct200 = 200
-
-    static let all: [VPinballAAFactor] = [.pct50,
-                                          .pct75,
-                                          .disabled,
-                                          .pct125,
-                                          .pct133,
-                                          .pct150,
-                                          .pct175,
-                                          .pct200]
-
-    var name: String {
-        return self == .disabled ? "Disabled" : "\(rawValue)%"
-    }
-
-    var floatValue: Float {
-        return Float(rawValue) / 100.0
-    }
-
-    static func fromFloat(_ value: Float) -> VPinballAAFactor? {
-        return VPinballAAFactor(rawValue: CInt(value * 100))
-    }
-}
-
-enum VPinballFXAA: CInt {
-    case disabled
-    case fastFXAA
-    case standardFXAA
-    case qualityFXAA
-    case fastNFAA
-    case standardDLAA
-    case qualitySMAA
-
-    static let all: [VPinballFXAA] = [.disabled,
-                                      .fastFXAA,
-                                      .standardFXAA,
-                                      .qualityFXAA,
-                                      .fastNFAA,
-                                      .standardDLAA,
-                                      .qualitySMAA]
-
-    var name: String {
-        switch self {
-        case .disabled:
-            return "Disabled"
-        case .fastFXAA:
-            return "Fast FXAA"
-        case .standardFXAA:
-            return "Standard FXAA"
-        case .qualityFXAA:
-            return "Quality FXAA"
-        case .fastNFAA:
-            return "Fast NFAA"
-        case .standardDLAA:
-            return "Standard DLAA"
-        case .qualitySMAA:
-            return "Quality SMAA"
-        }
-    }
-}
-
-enum VPinballSharpen: CInt {
-    case disabled
-    case cas
-    case bilateralCAS
-
-    static let all: [VPinballSharpen] = [.disabled,
-                                         .cas,
-                                         .bilateralCAS]
-
-    var name: String {
-        switch self {
-        case .disabled:
-            return "Disabled"
-        case .cas:
-            return "CAS"
-        case .bilateralCAS:
-            return "Bilateral CAS"
-        }
-    }
-}
-
-enum VPinballToneMapper: CInt {
-    case reinhard
-    case agx
-    case filmic
-    case neutral
-    case agxPunchy
-
-    static let all: [VPinballToneMapper] = [.reinhard,
-                                            .agx,
-                                            .filmic,
-                                            .neutral,
-                                            .agxPunchy]
-
-    var name: String {
-        switch self {
-        case .reinhard:
-            return "Reinhard"
-        case .agx:
-            return "AgX"
-        case .filmic:
-            return "Filmic"
-        case .neutral:
-            return "Neutral"
-        case .agxPunchy:
-            return "AgX Punchy"
-        }
-    }
-}
-
-enum VPinballViewLayoutMode: CInt {
-    case legacy
-    case camera
-    case window
-
-    static let all: [VPinballViewLayoutMode] = [.legacy,
-                                                .camera,
-                                                .window]
-
-    var name: String {
-        switch self {
-        case .legacy:
-            return "Legacy"
-        case .camera:
-            return "Camera"
-        case .window:
-            return "Window"
-        }
-    }
-}
-
 enum VPinballExternalDMD: CInt {
     case none
     case dmdServer
@@ -324,38 +96,21 @@ enum VPinballExternalDMD: CInt {
 // VPinball Event Enums
 
 enum VPinballEvent: CInt {
-    case archiveUncompressing
-    case archiveCompressing
     case loadingItems
     case loadingSounds
     case loadingImages
     case loadingFonts
     case loadingCollections
-    case play
-    case creatingPlayer
-    case windowCreated
     case prerendering
     case playerStarted
     case rumble
     case scriptError
-    case liveUIToggle
-    case liveUIUpdate
-    case playerClosing
     case playerClosed
-    case stopped
     case webServer
-    case captureScreenshot
-    case tableList
-    case tableImport
-    case tableRename
-    case tableDelete
+    case command
 
     var name: String? {
         switch self {
-        case .archiveUncompressing:
-            return "Uncompressing"
-        case .archiveCompressing:
-            return "Compressing"
         case .loadingItems:
             return "Loading Items"
         case .loadingSounds:
@@ -388,196 +143,42 @@ enum VPinballScriptErrorType: CInt {
     }
 }
 
-enum VPinballOptionUnit: CInt {
-    case noUnit
-    case percent
+// Event Data Structures
 
-    func formatValue(_ value: Float) -> String {
-        switch self {
-        case .noUnit:
-            return String(format: "%.1f", value)
-        case .percent:
-            return String(format: "%.1f %%", value * 100.0)
-        }
-    }
+struct ProgressEventData: Codable {
+    let progress: Int
 }
 
-// VPinball Touch Areas
-
-struct VPinballTouchArea {
-    let left: CGFloat
-    let top: CGFloat
-    let right: CGFloat
-    let bottom: CGFloat
-    let label: String
+struct RumbleData: Codable {
+    let lowFrequencyRumble: UInt16
+    let highFrequencyRumble: UInt16
+    let durationMs: UInt32
 }
 
-let VPinballTouchAreas: [[VPinballTouchArea]] = [
-    [VPinballTouchArea(left: 50,
-                       top: 0,
-                       right: 100,
-                       bottom: 10,
-                       label: "Menu")],
-    [VPinballTouchArea(left: 0,
-                       top: 0,
-                       right: 50,
-                       bottom: 10,
-                       label: "Coin")],
-    [VPinballTouchArea(left: 0,
-                       top: 10,
-                       right: 50,
-                       bottom: 30,
-                       label: "Left\nMagna-Save"),
-     VPinballTouchArea(left: 50,
-                       top: 10,
-                       right: 100,
-                       bottom: 30,
-                       label: "Right\nMagna-Save")],
-    [VPinballTouchArea(left: 0,
-                       top: 30,
-                       right: 50,
-                       bottom: 60,
-                       label: "Left\nNudge"),
-     VPinballTouchArea(left: 50,
-                       top: 30,
-                       right: 100,
-                       bottom: 60,
-                       label: "Right\nNudge"),
-     VPinballTouchArea(left: 30,
-                       top: 60,
-                       right: 70,
-                       bottom: 100,
-                       label: "Center\nNudge")],
-    [VPinballTouchArea(left: 0,
-                       top: 60,
-                       right: 30,
-                       bottom: 90,
-                       label: "Left\nFlipper"),
-     VPinballTouchArea(left: 70,
-                       top: 60,
-                       right: 100,
-                       bottom: 90,
-                       label: "Right\nFlipper")],
-    [VPinballTouchArea(left: 70,
-                       top: 90,
-                       right: 100,
-                       bottom: 100,
-                       label: "Plunger")],
-    [VPinballTouchArea(left: 0,
-                       top: 90,
-                       right: 30,
-                       bottom: 100,
-                       label: "Start")],
-]
-
-// VPinball Unit Converter
-
-enum VPinballUnitConverter {
-    static func cmToVPU(_ cm: Float) -> Float {
-        return cm * (50.0 / (2.54 * 1.0625))
-    }
-
-    static func vpuToCM(_ vpu: Float) -> Float {
-        return vpu * (2.54 * 1.0625 / 50.0)
-    }
+struct ScriptErrorData: Codable {
+    let error: Int
+    let line: Int
+    let position: Int
+    let description: String
 }
 
-// VPinball Objects
-
-struct VPinballProgressData {
-    var progress: CInt
+struct WebServerData: Codable {
+    let url: String
 }
 
-struct VPinballWindowCreatedData {
-    var window: Unmanaged<UIWindow>?
-    var title: UnsafePointer<CChar>?
+struct CommandData: Codable {
+    let command: String
+    let data: String?
 }
 
-struct VPinballScriptErrorData {
-    var error: CInt
-    var line: CInt
-    var position: CInt
-    var description: UnsafePointer<CChar>?
-}
+// VPinball Callbacks (hybrid approach: JSON)
 
-struct VPinballRumbleData {
-    var low_frequency_rumble: UInt16
-    var high_frequency_rumble: UInt16
-    var duration_ms: UInt32
-}
-
-struct VPinballWebServerData {
-    var url: UnsafePointer<CChar>?
-}
-
-struct VPinballCaptureScreenshotData {
-    var success: CBool
-}
-
-struct VPinballTableInfo {
-    var tableId: UnsafeMutablePointer<CChar>?
-    var name: UnsafeMutablePointer<CChar>?
-}
-
-struct VPinballTablesData {
-    var tables: UnsafeMutablePointer<VPinballTableInfo>?
-    var tableCount: CInt
-    var success: CBool
-}
-
-struct VPinballTableEventData {
-    var tableId: UnsafePointer<CChar>?
-    var newName: UnsafePointer<CChar>?
-    var path: UnsafePointer<CChar>?
-    var success: CBool
-}
-
-struct VPinballTableOptions {
-    var globalEmissionScale: Float = 0.0
-    var globalDifficulty: Float = 0.0
-    var exposure: Float = 0.0
-    var toneMapper: CInt = 0
-    var musicVolume: CInt = 0
-    var soundVolume: CInt = 0
-}
-
-struct VPinballCustomTableOption {
-    var sectionName: UnsafePointer<CChar>?
-    var id: UnsafePointer<CChar>?
-    var name: UnsafePointer<CChar>?
-    var showMask: CInt = 0
-    var minValue: Float = 0.0
-    var maxValue: Float = 0.0
-    var step: Float = 0.0
-    var defaultValue: Float = 0.0
-    var unit: CInt = 0
-    var literals: UnsafePointer<CChar>?
-    var value: Float = 0.0
-}
-
-struct VPinballViewSetup {
-    var viewMode: CInt = 0
-    var sceneScaleX: Float = 0.0
-    var sceneScaleY: Float = 0.0
-    var sceneScaleZ: Float = 0.0
-    var viewX: Float = 0.0
-    var viewY: Float = 0.0
-    var viewZ: Float = 0.0
-    var lookAt: Float = 0.0
-    var viewportRotation: Float = 0.0
-    var fov: Float = 0.0
-    var layback: Float = 0.0
-    var viewHOfs: Float = 0.0
-    var viewVOfs: Float = 0.0
-    var windowTopZOfs: Float = 0.0
-    var windowBottomZOfs: Float = 0.0
-}
-
-// VPinball Callbacks
-
-typealias VPinballEventCallback = @convention(c) (CInt, UnsafeRawPointer?) -> UnsafeRawPointer?
+typealias VPinballEventCallback = @convention(c) (CInt, UnsafePointer<CChar>?) -> Void
 
 // VPinball C Definitions
+
+@_silgen_name("VPinballGetVersionStringFull")
+func VPinballGetVersionStringFull() -> UnsafePointer<CChar>
 
 @_silgen_name("VPinballInit")
 func VPinballInit(_ callback: VPinballEventCallback)
@@ -587,9 +188,6 @@ func VPinballLog(_ level: CInt, _ pMessage: UnsafePointer<CChar>)
 
 @_silgen_name("VPinballResetLog")
 func VPinballResetLog()
-
-@_silgen_name("VPinballSetWebServerUpdated")
-func VPinballSetWebServerUpdated()
 
 @_silgen_name("VPinballLoadValueInt")
 func VPinballLoadValueInt(_ section: UnsafePointer<CChar>, _ pKey: UnsafePointer<CChar>, _ defaultValue: CInt) -> CInt
@@ -609,86 +207,20 @@ func VPinballSaveValueFloat(_ section: UnsafePointer<CChar>, _ pKey: UnsafePoint
 @_silgen_name("VPinballSaveValueString")
 func VPinballSaveValueString(_ section: UnsafePointer<CChar>, _ pKey: UnsafePointer<CChar>, _ value: UnsafePointer<CChar>)
 
-@_silgen_name("VPinballGetVersionStringFull")
-func VPinballGetVersionStringFull() -> UnsafePointer<CChar>
-
-@_silgen_name("VPinballUncompress")
-func VPinballUncompress(_ pSource: UnsafePointer<CChar>) -> CInt
-
-@_silgen_name("VPinballCompress")
-func VPinballCompress(_ pSource: UnsafePointer<CChar>, _ pDestination: UnsafePointer<CChar>) -> CInt
+@_silgen_name("VPinballResetIni")
+func VPinballResetIni() -> CInt
 
 @_silgen_name("VPinballUpdateWebServer")
 func VPinballUpdateWebServer()
 
-@_silgen_name("VPinballResetIni")
-func VPinballResetIni() -> CInt
+@_silgen_name("VPinballLoadTable")
+func VPinballLoadTable(_ pPath: UnsafePointer<CChar>) -> CInt
 
-@_silgen_name("VPinballLoad")
-func VPinballLoad(_ pSource: UnsafePointer<CChar>) -> CInt
-
-@_silgen_name("VPinballExtractScript")
-func VPinballExtractScript(_ pSource: UnsafePointer<CChar>) -> CInt
+@_silgen_name("VPinballExtractTableScript")
+func VPinballExtractTableScript() -> CInt
 
 @_silgen_name("VPinballPlay")
 func VPinballPlay() -> CInt
 
 @_silgen_name("VPinballStop")
 func VPinballStop()
-
-@_silgen_name("VPinballSetPlayState")
-func VPinballSetPlayState(_ enable: CInt) -> CInt
-
-@_silgen_name("VPinballGetTableOptions")
-func VPinballGetTableOptions(_ viewSetup: UnsafePointer<VPinballTableOptions>)
-
-@_silgen_name("VPinballSetTableOptions")
-func VPinballSetTableOptions(_ viewSetup: UnsafePointer<VPinballTableOptions>)
-
-@_silgen_name("VPinballSetDefaultTableOptions")
-func VPinballSetDefaultTableOptions()
-
-@_silgen_name("VPinballResetTableOptions")
-func VPinballResetTableOptions()
-
-@_silgen_name("VPinballSaveTableOptions")
-func VPinballSaveTableOptions()
-
-@_silgen_name("VPinballGetCustomTableOptionsCount")
-func VPinballGetCustomTableOptionsCount() -> CInt
-
-@_silgen_name("VPinballGetCustomTableOption")
-func VPinballGetCustomTableOption(_ index: CInt, _ customTableOption: UnsafePointer<VPinballCustomTableOption>)
-
-@_silgen_name("VPinballSetCustomTableOption")
-func VPinballSetCustomTableOption(_ customTableOption: UnsafePointer<VPinballCustomTableOption>)
-
-@_silgen_name("VPinballSetDefaultCustomTableOptions")
-func VPinballSetDefaultCustomTableOptions()
-
-@_silgen_name("VPinballResetCustomTableOptions")
-func VPinballResetCustomTableOptions()
-
-@_silgen_name("VPinballSaveCustomTableOptions")
-func VPinballSaveCustomTableOptions()
-
-@_silgen_name("VPinballGetViewSetup")
-func VPinballGetViewSetup(_ viewSetup: UnsafePointer<VPinballViewSetup>)
-
-@_silgen_name("VPinballSetViewSetup")
-func VPinballSetViewSetup(_ viewSetup: UnsafePointer<VPinballViewSetup>)
-
-@_silgen_name("VPinballSetDefaultViewSetup")
-func VPinballSetDefaultViewSetup()
-
-@_silgen_name("VPinballResetViewSetup")
-func VPinballResetViewSetup()
-
-@_silgen_name("VPinballSaveViewSetup")
-func VPinballSaveViewSetup()
-
-@_silgen_name("VPinballToggleFPS")
-func VPinballToggleFPS()
-
-@_silgen_name("VPinballCaptureScreenshot")
-func VPinballCaptureScreenshot(_ filename: UnsafePointer<CChar>)

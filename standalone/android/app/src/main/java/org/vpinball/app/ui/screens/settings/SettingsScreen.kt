@@ -2,6 +2,9 @@ package org.vpinball.app.ui.screens.settings
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -73,16 +76,11 @@ import org.vpinball.app.Credit
 import org.vpinball.app.Link
 import org.vpinball.app.R
 import org.vpinball.app.VPinballManager
-import org.vpinball.app.jni.VPinballAAFactor
-import org.vpinball.app.jni.VPinballAO
 import org.vpinball.app.jni.VPinballDisplayText
 import org.vpinball.app.jni.VPinballExternalDMD
-import org.vpinball.app.jni.VPinballFXAA
 import org.vpinball.app.jni.VPinballGfxBackend
-import org.vpinball.app.jni.VPinballMSAASamples
 import org.vpinball.app.jni.VPinballMaxTexDimension
-import org.vpinball.app.jni.VPinballReflectionMode
-import org.vpinball.app.jni.VPinballSharpen
+import org.vpinball.app.jni.VPinballStorageMode
 import org.vpinball.app.jni.VPinballViewMode
 import org.vpinball.app.ui.screens.common.RoundedCard
 import org.vpinball.app.ui.theme.VPinballTheme
@@ -101,6 +99,11 @@ fun SettingsScreen(
 
     var showResetDialog by remember { mutableStateOf(false) }
     val sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    val folderPickerLauncher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.OpenDocumentTree()) { uri: Uri? ->
+            uri?.let { viewModel.handleCustomStorageUri(it) }
+        }
 
     LaunchedEffect(Unit) { viewModel.loadSettings() }
 
@@ -141,20 +144,82 @@ fun SettingsScreen(
 
                         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
-                        SwitchRow(
-                            label = "Mobile LiveUI",
-                            isChecked = viewModel.liveUIOverride,
-                            onCheckedChange = { viewModel.handleLiveUIOverride(value = it) },
-                            description = "If disabled, use Visual Pinball's built-in LiveUI",
-                        )
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
                         EnumMenuRow(
                             label = "Graphics Backend",
                             options = VPinballGfxBackend.entries.toList(),
                             option = viewModel.gfxBackend,
                             onOptionChanged = { viewModel.handleGfxBackend(value = it) },
+                        )
+                    }
+                }
+
+                item {
+                    RoundedCard {
+                        Column {
+                            EnumMenuRow(
+                                label = "Storage",
+                                options = VPinballStorageMode.entries.toList(),
+                                option = viewModel.storageMode,
+                                onOptionChanged = { mode ->
+                                    when (mode) {
+                                        VPinballStorageMode.INTERNAL -> {
+                                            viewModel.handleStorageMode(mode)
+                                        }
+                                        VPinballStorageMode.CUSTOM -> {
+                                            if (viewModel.storageMode == VPinballStorageMode.CUSTOM) {
+                                                folderPickerLauncher.launch(null)
+                                            } else {
+                                                folderPickerLauncher.launch(null)
+                                            }
+                                        }
+                                    }
+                                },
+                            )
+
+                            if (viewModel.storageMode == VPinballStorageMode.CUSTOM) {
+                                Text(
+                                    text = viewModel.currentTablesPath,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(top = 8.dp, bottom = 8.dp).clickable { folderPickerLauncher.launch(null) },
+                                )
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    RoundedCard {
+                        EnumMenuRow(
+                            label = "Display",
+                            options = VPinballViewMode.entries.toList(),
+                            option = viewModel.bgSet,
+                            onOptionChanged = { viewModel.handleBGSet(value = it) },
+                        )
+                    }
+                }
+
+                item {
+                    SectionHeader(title = "Performance")
+
+                    RoundedCard {
+                        EnumSliderRow(
+                            label = "Max Texture Dimensions",
+                            options = VPinballMaxTexDimension.entries.toList(),
+                            value = viewModel.maxTexDimension,
+                            onValueChange = { viewModel.handleMaxTexDimension(value = it) },
+                            description = "Reduce this value if you experience crashes while loading tables.",
+                        )
+
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+                        SliderRow(
+                            label = "Elements Detail Level",
+                            value = viewModel.alphaRampAccuracy.toFloat(),
+                            onValueChange = { viewModel.handleAlphaRampAccuracy(value = it.toInt()) },
+                            minValue = 0f,
+                            maxValue = 10f,
+                            description = "Decrease to increase performance.",
                         )
                     }
                 }
@@ -219,203 +284,6 @@ fun SettingsScreen(
                 }
 
                 item {
-                    RoundedCard {
-                        EnumMenuRow(
-                            label = "Display",
-                            options = VPinballViewMode.entries.toList(),
-                            option = viewModel.bgSet,
-                            onOptionChanged = { viewModel.handleBGSet(value = it) },
-                        )
-                    }
-                }
-
-                item {
-                    SectionHeader(title = "Environment Lighting")
-
-                    RoundedCard {
-                        SwitchRow(
-                            label = "Override Table Global Lighting",
-                            isChecked = viewModel.overrideEmissionScale,
-                            onCheckedChange = { viewModel.handleOverrideEmissionScale(value = it) },
-                        )
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        SliderRow(
-                            label = "Night/Day",
-                            value = viewModel.emissionScale.toFloat(),
-                            onValueChange = { viewModel.handleEmissionScale(value = it.toInt()) },
-                            minValue = 0f,
-                            maxValue = 100f,
-                            enabled = viewModel.overrideEmissionScale,
-                        )
-                    }
-                }
-
-                item {
-                    SectionHeader(title = "Ball Rendering")
-
-                    RoundedCard {
-                        SwitchRow(label = "Ball Trails", isChecked = viewModel.ballTrail, onCheckedChange = { viewModel.handleBallTrail(value = it) })
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        SliderRow(
-                            label = "Strength",
-                            value = viewModel.ballTrailStrength,
-                            onValueChange = { viewModel.handleBallTrailStrength(value = it) },
-                            minValue = 0f,
-                            maxValue = 2f,
-                        )
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        SwitchRow(
-                            label = "Force Round Ball",
-                            isChecked = viewModel.ballAntiStretch,
-                            onCheckedChange = { viewModel.handleBallAntiStretch(value = it) },
-                            description = "Compensate perspective stretch",
-                        )
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        SwitchRow(
-                            label = "Disable Lighting",
-                            isChecked = viewModel.disableLightingForBalls,
-                            onCheckedChange = { viewModel.handleDisableLightingForBalls(value = it) },
-                        )
-                    }
-                }
-
-                item {
-                    SectionHeader(title = "Performance")
-
-                    RoundedCard {
-                        EnumMenuRow(
-                            label = "Max Ambient Occlusion",
-                            options = VPinballAO.entries.toList(),
-                            option = viewModel.maxAO,
-                            onOptionChanged = { viewModel.handleMaxAO(value = it) },
-                        )
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        EnumMenuRow(
-                            label = "Max Reflection Mode",
-                            options = VPinballReflectionMode.entries.toList(),
-                            option = viewModel.pfReflection,
-                            onOptionChanged = { viewModel.handlePFReflection(value = it) },
-                            sameLine = false,
-                        )
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        EnumSliderRow(
-                            label = "Max Texture Dimensions",
-                            options = VPinballMaxTexDimension.entries.toList(),
-                            value = viewModel.maxTexDimension,
-                            onValueChange = { viewModel.handleMaxTexDimension(value = it) },
-                            description = "Reduce this value if you experience crashes while loading tables.",
-                        )
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        SwitchRow(
-                            label = "Force Anisotropic Texture Filtering",
-                            isChecked = viewModel.forceAnisotropicFiltering,
-                            onCheckedChange = { viewModel.handleForceAnisotropicFiltering(value = it) },
-                        )
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        SwitchRow(
-                            label = "Force Bloom Off",
-                            isChecked = viewModel.forceBloomOff,
-                            onCheckedChange = { viewModel.handleForceBloomOff(value = it) },
-                        )
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        SwitchRow(
-                            label = "Disable Motion Blur",
-                            isChecked = viewModel.forceMotionBlurOff,
-                            onCheckedChange = { viewModel.handleForceMotionBlurOff(value = it) },
-                        )
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        SliderRow(
-                            label = "Elements Detail Level",
-                            value = viewModel.alphaRampAccuracy.toFloat(),
-                            onValueChange = { viewModel.handleAlphaRampAccuracy(value = it.toInt()) },
-                            minValue = 0f,
-                            maxValue = 10f,
-                            description = "Decrease to increase performance.",
-                        )
-                    }
-                }
-
-                item {
-                    SectionHeader(title = "Anti-Aliasing")
-
-                    RoundedCard {
-                        EnumSliderRow(
-                            label = "MSAA Samples",
-                            options = VPinballMSAASamples.entries.toList(),
-                            value = viewModel.msaaSamples,
-                            onValueChange = { viewModel.handleMSAASamples(value = it) },
-                        )
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        EnumSliderRow(
-                            label = "Supersampling",
-                            options = VPinballAAFactor.entries.toList(),
-                            value = viewModel.aaFactor,
-                            onValueChange = { viewModel.handleAAFactor(value = it) },
-                        )
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        EnumMenuRow(
-                            label = "Post-processed AA",
-                            options = VPinballFXAA.entries.toList(),
-                            option = viewModel.fxaa,
-                            onOptionChanged = { viewModel.handleFXAA(value = it) },
-                        )
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        EnumMenuRow(
-                            label = "Sharpen",
-                            options = VPinballSharpen.entries.toList(),
-                            option = viewModel.sharpen,
-                            onOptionChanged = { viewModel.handleSharpen(value = it) },
-                        )
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        SwitchRow(
-                            label = "Enable ScaleFX for internal DMD",
-                            isChecked = viewModel.scaleFXDMD,
-                            onCheckedChange = { viewModel.handleScaleFXDMD(value = it) },
-                        )
-                    }
-                }
-
-                item {
-                    SectionHeader(title = "Miscellaneous Features")
-
-                    RoundedCard {
-                        SwitchRow(
-                            label = "Advanced Screen Space Reflections",
-                            isChecked = viewModel.ssRefl,
-                            onCheckedChange = { viewModel.handleSSRefl(value = it) },
-                        )
-                    }
-                }
-
-                item {
                     SectionHeader(title = "Web Server")
 
                     RoundedCard {
@@ -451,82 +319,6 @@ fun SettingsScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 8.dp),
                         )
-                    }
-                }
-
-                item {
-                    SectionHeader(title = "Plugins (Experimental)")
-
-                    RoundedCard {
-                        SwitchRow(
-                            label = "AlphaDMD",
-                            isChecked = viewModel.pluginAlphaDMD,
-                            onCheckedChange = { viewModel.handlePluginAlphaDMD(value = it) },
-                        )
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        SwitchRow(label = "B2S", isChecked = viewModel.pluginB2S, onCheckedChange = { viewModel.handlePluginB2S(value = it) })
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        SwitchRow(label = "B2SLegacy", isChecked = viewModel.pluginB2SLegacy, onCheckedChange = { viewModel.handlePluginB2SLegacy(value = it) })
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        SwitchRow(
-                            label = "DMDUtil",
-                            isChecked = viewModel.pluginDMDUtil,
-                            onCheckedChange = { viewModel.handlePluginDMDUtil(value = it) },
-                        )
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        SwitchRow(label = "DOF", isChecked = viewModel.pluginDOF, onCheckedChange = { viewModel.handlePluginDOF(value = it) })
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        SwitchRow(
-                            label = "FlexDMD",
-                            isChecked = viewModel.pluginFlexDMD,
-                            onCheckedChange = { viewModel.handlePluginFlexDMD(value = it) },
-                        )
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        SwitchRow(
-                            label = "PinMAME",
-                            isChecked = viewModel.pluginPinMAME,
-                            onCheckedChange = { viewModel.handlePluginPinMAME(value = it) },
-                        )
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        SwitchRow(label = "PUP", isChecked = viewModel.pluginPUP, onCheckedChange = { viewModel.handlePluginPUP(value = it) })
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        SwitchRow(
-                            label = "RemoteControl",
-                            isChecked = viewModel.pluginRemoteControl,
-                            onCheckedChange = { viewModel.handlePluginRemoteControl(value = it) },
-                        )
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        SwitchRow(
-                            label = "ScoreView",
-                            isChecked = viewModel.pluginScoreView,
-                            onCheckedChange = { viewModel.handlePluginScoreView(value = it) },
-                        )
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        SwitchRow(label = "Serum", isChecked = viewModel.pluginSerum, onCheckedChange = { viewModel.handlePluginSerum(value = it) })
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        SwitchRow(label = "WMP", isChecked = viewModel.pluginWMP, onCheckedChange = { viewModel.handlePluginWMP(value = it) })
                     }
                 }
 
@@ -634,23 +426,6 @@ fun SettingsScreen(
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 RoundedCard {
-                    TextButton(
-                        onClick = {
-                            viewModel.handleResetTouchInstructions()
-                            showResetDialog = false
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(
-                            text = "Reset Touch Instructions",
-                            color = Color.VpxRed,
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Normal,
-                        )
-                    }
-
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
                     TextButton(
                         onClick = {
                             viewModel.handleResetAllSettings()
