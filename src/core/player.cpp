@@ -302,10 +302,10 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    #if defined(ENABLE_BGFX)
    if (m_vrDevice == nullptr) // Anciliary windows are not yet supported while in VR mode
    {
-      if (m_scoreViewOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
-         m_renderer->m_renderDevice->AddWindow(m_scoreViewOutput.GetWindow());
       if (m_backglassOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
          m_renderer->m_renderDevice->AddWindow(m_backglassOutput.GetWindow());
+      if (m_scoreViewOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
+         m_renderer->m_renderDevice->AddWindow(m_scoreViewOutput.GetWindow());
       if (m_topperOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
          m_renderer->m_renderDevice->AddWindow(m_topperOutput.GetWindow());
    }
@@ -1475,8 +1475,8 @@ void Player::ProcessOSMessages()
             // Handle dragging of auxiliary windows
             const SDL_Window *const sdlWnd = SDL_GetWindowFromID(e.motion.windowID);
             std::vector<VPX::Window *> windows = {
-               m_scoreViewOutput.GetWindow(),
                m_backglassOutput.GetWindow(),
+               m_scoreViewOutput.GetWindow(),
                m_topperOutput.GetWindow(),
             };
             for (VPX::Window *wnd : windows)
@@ -1880,8 +1880,8 @@ void Player::PrepareFrame(const std::function<void()>& sync)
    RenderTarget *playfieldRT = rd->GetCurrentRenderTarget();
 
    // Prepare anciliary windows (for the time being always embedded in playfield anciliary windows)
-   RenderTarget *scoreViewRT = RenderAnciliaryWindow(VPXAnciliaryWindow::VPXWINDOW_ScoreView, playfieldRT);
    RenderTarget *backglassRT = RenderAnciliaryWindow(VPXAnciliaryWindow::VPXWINDOW_Backglass, playfieldRT);
+   RenderTarget *scoreViewRT = RenderAnciliaryWindow(VPXAnciliaryWindow::VPXWINDOW_ScoreView, playfieldRT);
    RenderTarget *topperRT = RenderAnciliaryWindow(VPXAnciliaryWindow::VPXWINDOW_Topper, playfieldRT);
    
    // Apply screenspace transforms (MSAA, AO, AA, stereo, ball motion blur, tonemapping, dithering, bloom,...)
