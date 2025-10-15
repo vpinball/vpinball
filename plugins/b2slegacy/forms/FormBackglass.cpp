@@ -1571,7 +1571,12 @@ VPXTexture FormBackglass::ResizeTexture(VPXTexture original, int newWidth, int n
 
 SDL_Rect FormBackglass::GetBoundingRectangle(VPXTexture pImage)
 {
-   SDL_Surface* surface = VPXGraphics::VPXTextureToSDLSurface(m_vpxApi, pImage);
+   SDL_Surface* sourceSurface = VPXGraphics::VPXTextureToSDLSurface(m_vpxApi, pImage);
+   if (!sourceSurface)
+      return { 0, 0, 0, 0 };
+
+   SDL_Surface* surface = SDL_ConvertSurface(sourceSurface, SDL_PIXELFORMAT_RGBA32);
+   SDL_DestroySurface(sourceSurface);
    if (!surface)
       return { 0, 0, 0, 0 };
 
