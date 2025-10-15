@@ -1458,10 +1458,6 @@ void Player::ProcessOSMessages()
          isPFWnd = SDL_GetWindowFromID(e.motion.windowID) == m_playfieldWnd->GetCore();
          if (isPFWnd)
          {
-            // We scale motion data since SDL expects DPI scaled points coordinates on Apple device, while it uses pixel coordinates on other devices (see SDL_WINDOWS_DPI_SCALING)
-            // For the time being, VPX always uses pixel coordinates, using setup obtained at window creation time.
-            e.motion.x *= SDL_GetWindowPixelDensity(m_playfieldWnd->GetCore());
-            e.motion.y *= SDL_GetWindowPixelDensity(m_playfieldWnd->GetCore());
             static float m_lastcursorx = FLT_MAX, m_lastcursory = FLT_MAX;
             if (m_lastcursorx != e.motion.x || m_lastcursory != e.motion.y)
             {
