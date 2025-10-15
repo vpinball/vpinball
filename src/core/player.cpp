@@ -2176,11 +2176,31 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
       rd->SetRenderTarget(renderPassName, outputRT, true, true);
    }
 
-   // TODO Also handle clear for embedded window and 3D render
    if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
    {
       rd->ResetRenderState();
       rd->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
+   }
+   else if (output.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
+   {
+      rd->ResetRenderState();
+      rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+      rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+      rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+      rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+
+      rd->m_basicShader->SetVector(SHADER_cBase_Alpha, 0.0f, 0.0f, 0.0f, 1.0f);
+      rd->m_basicShader->SetTextureNull(SHADER_tex_base_color);
+      rd->m_basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
+
+      Vertex3D_NoTex2 vertices[4] = {
+         { 1.0f, 0.0f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f },
+         { 0.0f, 0.0f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f },
+         { 1.0f, 1.0f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f },
+         { 0.0f, 1.0f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f }
+      };
+
+      rd->DrawTexturedQuad(rd->m_basicShader, vertices, true, 0.f);
    }
 
    struct PlayerRenderContext2D
