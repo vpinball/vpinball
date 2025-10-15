@@ -26,7 +26,7 @@ public:
 private:
    std::function<void()> ResolveRomPropUpdater(float* value, const B2SRomIDType romIdType, const int romId, const bool romInverted = false) const;
    bool RenderBackglass(VPXRenderContext2D* context);
-   bool RenderScoreview(VPXRenderContext2D* context);
+   bool RenderScoreView(VPXRenderContext2D* context);
 
    std::shared_ptr<B2STable> m_b2s;
 
@@ -46,7 +46,7 @@ private:
 
    ResURIResolver m_resURIResolver;
    VPXTexture m_dmdTex = nullptr;
-   B2SDMDOverlay m_scoreviewDmdOverlay;
+   B2SDMDOverlay m_scoreViewDmdOverlay;
    B2SDMDOverlay m_backglassDmdOverlay;
 
    std::chrono::time_point<std::chrono::high_resolution_clock> m_lastBackglassRenderTick;

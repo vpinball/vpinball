@@ -12,7 +12,7 @@ B2SRenderer::B2SRenderer(const MsgPluginAPI* const msgApi, const unsigned int en
    , m_msgApi(msgApi)
    , m_endpointId(endpointId)
    , m_resURIResolver(*msgApi, endpointId, true, false, false, false)
-   , m_scoreviewDmdOverlay(m_resURIResolver, m_dmdTex, m_b2s->m_dmdImage.m_image)
+   , m_scoreViewDmdOverlay(m_resURIResolver, m_dmdTex, m_b2s->m_dmdImage.m_image)
    , m_backglassDmdOverlay(m_resURIResolver, m_dmdTex,
         m_b2s->m_backglassImage.m_image         ? m_b2s->m_backglassImage.m_image
            : m_b2s->m_backglassOffImage.m_image ? m_b2s->m_backglassOffImage.m_image
@@ -21,7 +21,7 @@ B2SRenderer::B2SRenderer(const MsgPluginAPI* const msgApi, const unsigned int en
    bool m_showGrill = false;
    m_grillCut = m_showGrill ? 0.f : static_cast<float>(m_b2s->m_grillHeight);
 
-   m_scoreviewDmdOverlay.LoadSettings(msgApi, "B2S"s, "Scoreview"s);
+   m_scoreViewDmdOverlay.LoadSettings(msgApi, "B2S"s, "ScoreView"s);
    m_backglassDmdOverlay.LoadSettings(msgApi, "B2S"s, "Backglass"s);
 
    const VPXTextureInfo* bgTexInfo = nullptr;
@@ -208,7 +208,7 @@ bool B2SRenderer::Render(VPXRenderContext2D* ctx)
    switch (ctx->window)
    {
    case VPXAnciliaryWindow::VPXWINDOW_Backglass: return RenderBackglass(ctx);
-   case VPXAnciliaryWindow::VPXWINDOW_ScoreView: return RenderScoreview(ctx);
+   case VPXAnciliaryWindow::VPXWINDOW_ScoreView: return RenderScoreView(ctx);
    case VPXAnciliaryWindow::VPXWINDOW_Topper: return false;
    }
    return false;
@@ -266,7 +266,7 @@ bool B2SRenderer::RenderBackglass(VPXRenderContext2D* ctx)
    return true;
 }
 
-bool B2SRenderer::RenderScoreview(VPXRenderContext2D* ctx)
+bool B2SRenderer::RenderScoreView(VPXRenderContext2D* ctx)
 {
    if (m_b2s->m_dmdImage.m_image == nullptr && m_b2s->m_dmdIlluminations.empty())
       return false;
@@ -293,7 +293,7 @@ bool B2SRenderer::RenderScoreview(VPXRenderContext2D* ctx)
       bulb.Render(ctx);
 
    // Draw DMD overlay if enabled and available
-   m_scoreviewDmdOverlay.Render(ctx);
+   m_scoreViewDmdOverlay.Render(ctx);
 
    return true;
 }

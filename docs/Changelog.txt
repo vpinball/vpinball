@@ -61,7 +61,7 @@ FEATURES:
   The new input setup is stored along the old one to allow keeping older versions of VPX together with newers.
   This change requires users to redefine their input settings in the new UI.
 
-- add a new 'ScoreView' which renders the segment displays or DMD to a dedicated window (BGFX variant only). The scoreview uses a layout defined in a 'scv' file placed along the table file
+- add a new 'ScoreView' which renders the segment displays or DMD to a dedicated window (BGFX variant only). The score view uses a layout defined in a 'scv' file placed along the table file
   matching its name, or by automatically selecting one of the default layouts matching the available displays at runtime. Default layout files in the asset folder show the syntax used to
   define the layout.
 
@@ -122,7 +122,7 @@ FEATURES:
   . PinMAME: a direct interface to PinMAME with some exclusive bonus features like full alphanumeric segment fading
   . PinUp: a preliminary port of PinUp Player that renders and animates video backglass, topper and fullDMD display
   . Remote Control: a plugin that allows to control an instance of VPX from another running instance. For example running VPX on a little controller PC that communicates with a more powerful computer that runs VPX driving a VR headset
-  . Scoreview: a tool to provide default score rendering (for example DMD, but also supporting alphanumeric segment displays, including dimmed segments)
+  . Score View: a tool to provide default score rendering (for example DMD, but also supporting alphanumeric segment displays, including dimmed segments)
   . Serum: a DMD colorizer
   . WMP: the window media player, but as a portable plugin, running on any of the supported platforms
 

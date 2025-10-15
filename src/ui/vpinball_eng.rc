@@ -615,7 +615,7 @@ BEGIN
     EDITTEXT        IDC_Y_OFFSET_EDIT,66,136,75,11,ES_RIGHT | ES_AUTOHSCROLL
     LISTBOX         IDC_SIZELIST,12,107,129,99,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "Reset Window Position",IDC_RESET_WINDOW,13,211,127,14
-    LTEXT           "Score view, also known as 'full DMD', is an additional view that usually shows game status informations through DMD && alphanumeric displays.\n\nIt can be setup to render from 'scv' files, 'B2S' full DMD, 'PinUp DMD' or from a 3D render.",IDC_STATIC,155,10,283,35
+    LTEXT           "Score View, also known as 'full DMD', is an additional view that usually shows game status informations through DMD && alphanumeric displays.\n\nIt can be setup to render from 'scv' files, 'B2S' full DMD, 'PinUp DMD' or from a 3D render.",IDC_STATIC,155,10,283,35
 END
 
 IDD_BACKGLASS_OPT DIALOGEX 0, 0, 352, 237
