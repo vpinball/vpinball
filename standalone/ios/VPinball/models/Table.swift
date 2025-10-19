@@ -19,8 +19,11 @@ struct Table: Codable, Identifiable, Hashable {
     }
 
     var uiImage: UIImage? {
-        guard !image.isEmpty else { return nil }
-        return UIImage(contentsOfFile: imagePath)
+        if !image.isEmpty {
+            return UIImage(contentsOfFile: imagePath)
+        } else {
+            return nil
+        }
     }
 
     var imagePath: String {

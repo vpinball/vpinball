@@ -509,34 +509,93 @@ class TableManager: ObservableObject {
     }
 
     private func performRename(table: Table, newName: String) -> Bool {
-        guard let index = tables.firstIndex(where: { $0.uuid == table.uuid }) else {
+        if let index = tables.firstIndex(where: { $0.uuid == table.uuid }) {
+            let now = Int64(Date().timeIntervalSince1970)
+            tables[index] = Table(
+                uuid: tables[index].uuid,
+                name: newName,
+                path: tables[index].path,
+                image: tables[index].image,
+                createdAt: tables[index].createdAt,
+                modifiedAt: now
+            )
+
+            saveTables()
+            return true
+        } else {
             return false
         }
-
-        let now = Int64(Date().timeIntervalSince1970)
-        tables[index] = Table(
-            uuid: tables[index].uuid,
-            name: newName,
-            path: tables[index].path,
-            image: tables[index].image,
-            createdAt: tables[index].createdAt,
-            modifiedAt: now
-        )
-
-        saveTables()
-        return true
     }
 
     private func performSetImage(table: Table, imagePath: String) -> Bool {
-        guard let index = tables.firstIndex(where: { $0.uuid == table.uuid }) else {
-            return false
-        }
+        if let index = tables.firstIndex(where: { $0.uuid == table.uuid }) {
+            if imagePath.isEmpty {
+                if !table.image.isEmpty {
+                    let currentImagePath = (tablesPath as NSString).appendingPathComponent(table.image)
+                    if TableFileOperations.exists(currentImagePath) {
+                        _ = TableFileOperations.delete(currentImagePath)
+                    }
+                }
 
-        if imagePath.isEmpty {
-            if !table.image.isEmpty {
-                let currentImagePath = (tablesPath as NSString).appendingPathComponent(table.image)
-                if TableFileOperations.exists(currentImagePath) {
-                    _ = TableFileOperations.delete(currentImagePath)
+                let now = Int64(Date().timeIntervalSince1970)
+                tables[index] = Table(
+                    uuid: table.uuid,
+                    name: table.name,
+                    path: table.path,
+                    image: "",
+                    createdAt: table.createdAt,
+                    modifiedAt: now
+                )
+
+                saveTables()
+                return true
+            }
+
+            if imagePath.hasPrefix("/") {
+                if let sourceImage = UIImage(contentsOfFile: imagePath) {
+                    if let jpegData = sourceImage.jpegData(compressionQuality: 0.8) {
+                        let fullPath = (tablesPath as NSString).appendingPathComponent(table.path)
+                        let baseName = (fullPath as NSString).deletingPathExtension.components(separatedBy: "/").last ?? ""
+
+                        let workingDir: String
+                        if let loadedTable = loadedTable, loadedTable.uuid == table.uuid {
+                            let loadedPath = (tablesPath as NSString).appendingPathComponent(loadedTable.path)
+                            workingDir = (loadedPath as NSString).deletingLastPathComponent
+                        } else {
+                            workingDir = (fullPath as NSString).deletingLastPathComponent
+                        }
+
+                        let destPath = (workingDir as NSString).appendingPathComponent(baseName + ".jpg")
+
+                        do {
+                            try jpegData.write(to: URL(fileURLWithPath: destPath))
+                        } catch {
+                            return false
+                        }
+
+                        if imagePath != destPath && (imagePath as NSString).pathExtension.lowercased() == "png" {
+                            _ = TableFileOperations.delete(imagePath)
+                        }
+
+                        let relPath = relativePath(fullPath: destPath, basePath: tablesPath)
+                        let now = Int64(Date().timeIntervalSince1970)
+
+                        tables[index] = Table(
+                            uuid: table.uuid,
+                            name: table.name,
+                            path: table.path,
+                            image: relPath,
+                            createdAt: table.createdAt,
+                            modifiedAt: now
+                        )
+
+                        saveTables()
+                        return true
+                    } else {
+                        return false
+                    }
+                } else {
+                    return false
                 }
             }
 
@@ -545,119 +604,60 @@ class TableManager: ObservableObject {
                 uuid: table.uuid,
                 name: table.name,
                 path: table.path,
-                image: "",
+                image: imagePath,
                 createdAt: table.createdAt,
                 modifiedAt: now
             )
 
             saveTables()
             return true
+        } else {
+            return false
         }
-
-        if imagePath.hasPrefix("/") {
-            guard let sourceImage = UIImage(contentsOfFile: imagePath) else {
-                return false
-            }
-
-            guard let jpegData = sourceImage.jpegData(compressionQuality: 0.8) else {
-                return false
-            }
-
-            let fullPath = (tablesPath as NSString).appendingPathComponent(table.path)
-            let baseName = (fullPath as NSString).deletingPathExtension.components(separatedBy: "/").last ?? ""
-
-            let workingDir: String
-            if let loadedTable = loadedTable, loadedTable.uuid == table.uuid {
-                let loadedPath = (tablesPath as NSString).appendingPathComponent(loadedTable.path)
-                workingDir = (loadedPath as NSString).deletingLastPathComponent
-            } else {
-                workingDir = (fullPath as NSString).deletingLastPathComponent
-            }
-
-            let destPath = (workingDir as NSString).appendingPathComponent(baseName + ".jpg")
-
-            do {
-                try jpegData.write(to: URL(fileURLWithPath: destPath))
-            } catch {
-                return false
-            }
-
-            if imagePath != destPath && (imagePath as NSString).pathExtension.lowercased() == "png" {
-                _ = TableFileOperations.delete(imagePath)
-            }
-
-            let relPath = relativePath(fullPath: destPath, basePath: tablesPath)
-            let now = Int64(Date().timeIntervalSince1970)
-
-            tables[index] = Table(
-                uuid: table.uuid,
-                name: table.name,
-                path: table.path,
-                image: relPath,
-                createdAt: table.createdAt,
-                modifiedAt: now
-            )
-
-            saveTables()
-            return true
-        }
-
-        let now = Int64(Date().timeIntervalSince1970)
-        tables[index] = Table(
-            uuid: table.uuid,
-            name: table.name,
-            path: table.path,
-            image: imagePath,
-            createdAt: table.createdAt,
-            modifiedAt: now
-        )
-
-        saveTables()
-        return true
     }
 
     private func performSetImageFromUIImage(table: Table, image: UIImage) -> Bool {
-        guard let index = tables.firstIndex(where: { $0.uuid == table.uuid }) else {
-            return false
-        }
+        if let index = tables.firstIndex(where: { $0.uuid == table.uuid }) {
+            if let jpegData = image.jpegData(compressionQuality: 0.8) {
+                let fullPath = (tablesPath as NSString).appendingPathComponent(table.path)
+                let baseName = (fullPath as NSString).deletingPathExtension.components(separatedBy: "/").last ?? ""
 
-        guard let jpegData = image.jpegData(compressionQuality: 0.8) else {
-            return false
-        }
+                let workingDir: String
+                if let loadedTable = loadedTable, loadedTable.uuid == table.uuid {
+                    let loadedPath = (tablesPath as NSString).appendingPathComponent(loadedTable.path)
+                    workingDir = (loadedPath as NSString).deletingLastPathComponent
+                } else {
+                    workingDir = (fullPath as NSString).deletingLastPathComponent
+                }
 
-        let fullPath = (tablesPath as NSString).appendingPathComponent(table.path)
-        let baseName = (fullPath as NSString).deletingPathExtension.components(separatedBy: "/").last ?? ""
+                let destPath = (workingDir as NSString).appendingPathComponent(baseName + ".jpg")
 
-        let workingDir: String
-        if let loadedTable = loadedTable, loadedTable.uuid == table.uuid {
-            let loadedPath = (tablesPath as NSString).appendingPathComponent(loadedTable.path)
-            workingDir = (loadedPath as NSString).deletingLastPathComponent
+                do {
+                    try jpegData.write(to: URL(fileURLWithPath: destPath))
+                } catch {
+                    return false
+                }
+
+                let relPath = relativePath(fullPath: destPath, basePath: tablesPath)
+                let now = Int64(Date().timeIntervalSince1970)
+
+                tables[index] = Table(
+                    uuid: table.uuid,
+                    name: table.name,
+                    path: table.path,
+                    image: relPath,
+                    createdAt: table.createdAt,
+                    modifiedAt: now
+                )
+
+                saveTables()
+                return true
+            } else {
+                return false
+            }
         } else {
-            workingDir = (fullPath as NSString).deletingLastPathComponent
-        }
-
-        let destPath = (workingDir as NSString).appendingPathComponent(baseName + ".jpg")
-
-        do {
-            try jpegData.write(to: URL(fileURLWithPath: destPath))
-        } catch {
             return false
         }
-
-        let relPath = relativePath(fullPath: destPath, basePath: tablesPath)
-        let now = Int64(Date().timeIntervalSince1970)
-
-        tables[index] = Table(
-            uuid: table.uuid,
-            name: table.name,
-            path: table.path,
-            image: relPath,
-            createdAt: table.createdAt,
-            modifiedAt: now
-        )
-
-        saveTables()
-        return true
     }
 
     private func performExport(table: Table, onProgress: ((Int, String) async -> Void)? = nil) async -> String? {
@@ -677,7 +677,8 @@ class TableManager: ObservableObject {
             let archive = try Archive(url: URL(fileURLWithPath: tempFile), accessMode: .create)
             try await TableFileOperations.addDirectoryToArchive(archive: archive,
                                                                 directoryPath: tableDirToCompress,
-                                                                basePath: tableDirToCompress) { progress in
+                                                                basePath: tableDirToCompress)
+            { progress in
                 let adjustedProgress = 60 + (progress * 39 / 100)
                 await onProgress?(adjustedProgress, "Compressing")
             }

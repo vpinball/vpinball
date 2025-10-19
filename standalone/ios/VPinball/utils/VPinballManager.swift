@@ -222,7 +222,38 @@ class VPinballManager {
 
         var success = true
 
-        guard let tablePath = await TableManager.shared.getLoadedTablePath(table: table) else {
+        if let tablePath = await TableManager.shared.getLoadedTablePath(table: table) {
+            if await Task.detached(
+                priority: .userInitiated,
+                operation: { [tablePath] in
+                    VPinballStatus(rawValue: VPinballLoadTable(tablePath.cstring))
+                }
+            ).value == .success {
+                if await MainActor.run(body: { VPinballStatus(rawValue: VPinballPlay()) }) != .success {
+                    try? await Task.sleep(nanoseconds: 500_000_000)
+
+                    activeTable = nil
+
+                    success = false
+
+                    VPinballManager.log(.error, "unable to start table")
+                }
+            } else {
+                try? await Task.sleep(nanoseconds: 500_000_000)
+
+                activeTable = nil
+
+                success = false
+
+                VPinballManager.log(.error, "unable to load table")
+            }
+
+            await MainActor.run {
+                vpinballViewModel.hideHUD()
+            }
+
+            return success
+        } else {
             try? await Task.sleep(nanoseconds: 500_000_000)
             activeTable = nil
             await MainActor.run {
@@ -231,37 +262,6 @@ class VPinballManager {
             VPinballManager.log(.error, "unable to stage table")
             return false
         }
-
-        if await Task.detached(
-            priority: .userInitiated,
-            operation: { [tablePath] in
-                VPinballStatus(rawValue: VPinballLoadTable(tablePath.cstring))
-            }
-        ).value == .success {
-            if await MainActor.run(body: { VPinballStatus(rawValue: VPinballPlay()) }) != .success {
-                try? await Task.sleep(nanoseconds: 500_000_000)
-
-                activeTable = nil
-
-                success = false
-
-                VPinballManager.log(.error, "unable to start table")
-            }
-        } else {
-            try? await Task.sleep(nanoseconds: 500_000_000)
-
-            activeTable = nil
-
-            success = false
-
-            VPinballManager.log(.error, "unable to load table")
-        }
-
-        await MainActor.run {
-            vpinballViewModel.hideHUD()
-        }
-
-        return success
     }
 
     func stop() {

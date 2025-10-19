@@ -66,22 +66,20 @@ enum TableFileOperations {
     static func listFiles(_ path: String, ext: String) -> [String] {
         var files: [String] = []
 
-        guard let enumerator = FileManager.default.enumerator(atPath: path) else {
-            return files
-        }
+        if let enumerator = FileManager.default.enumerator(atPath: path) {
+            while let file = enumerator.nextObject() as? String {
+                let fullPath = (path as NSString).appendingPathComponent(file)
+                var isDirectory: ObjCBool = false
 
-        while let file = enumerator.nextObject() as? String {
-            let fullPath = (path as NSString).appendingPathComponent(file)
-            var isDirectory: ObjCBool = false
-
-            if FileManager.default.fileExists(atPath: fullPath,
-                                              isDirectory: &isDirectory)
-            {
-                if !isDirectory.boolValue {
-                    if ext.isEmpty || (fullPath as NSString).pathExtension.lowercased() == ext.lowercased().replacingOccurrences(of: ".",
-                                                                                                                                 with: "")
-                    {
-                        files.append(fullPath)
+                if FileManager.default.fileExists(atPath: fullPath,
+                                                  isDirectory: &isDirectory)
+                {
+                    if !isDirectory.boolValue {
+                        if ext.isEmpty || (fullPath as NSString).pathExtension.lowercased() == ext.lowercased().replacingOccurrences(of: ".",
+                                                                                                                                     with: "")
+                        {
+                            files.append(fullPath)
+                        }
                     }
                 }
             }
