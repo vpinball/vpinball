@@ -16,7 +16,7 @@ The version used for these libraries is defined by the SHA of the head commit in
 
 ### FreeImage
 
-- Upstream: https://freeimage.sourceforge.io/
+- Upstream: https://freeimage.sourceforge.io
 - License: FreeImage Public License or GPL
 
 ### LibAltSound
@@ -82,13 +82,13 @@ Liberation Sans
 
 ### glad
 
-- Upstream: https://glad.dav1d.de/
+- Upstream: https://glad.dav1d.de
 - Version: ?
 - License: CC0-1.0 and Apache-2.0
 
 ### GPUProfiler
 
-- Upstream: Derived from https://www.reedbeta.com/blog/gpu-profiling-101/ blog post
+- Upstream: Derived from https://www.reedbeta.com/blog/gpu-profiling-101 blog post
 - Version: ?
 - License: Original code is BSD, adapted by VPX team
 
@@ -127,6 +127,18 @@ Liberation Sans
 - Upstream: https://github.com/epezent/implot
 - Version: head at ? (0.17 dev cycle)
 - License: MIT
+
+### json
+
+- Upstream: https://github.com/nlohmann/json
+- Version: ?
+- License: MIT
+
+### libzip
+
+- Upstream: https://github.com/nih-at/libzip
+- Version: 1.11.4
+- License: ?
 
 ### mINI
 
@@ -196,7 +208,7 @@ Liberation Sans
 
 ### Scintilla
 
-- Upstream: https://www.scintilla.org/
+- Upstream: https://www.scintilla.org
 - Version: ?
 - License: Custom permissive license
 
@@ -238,7 +250,7 @@ Liberation Sans
 
 ### win32xx
 
-- Upstream: https://sourceforge.net/projects/win32-framework/
+- Upstream: https://sourceforge.net/projects/win32-framework
 - Version: 9.4
 - License: custom permissive (see copyright.txt)
 
@@ -247,3 +259,9 @@ Liberation Sans
 - Upstream: ?
 - Version: ?
 - License: unclear state
+
+### ZIPFoundation
+
+- Upstream: https://github.com/weichsel/ZIPFoundation
+- Version: 0.9.20
+- License: MIT
