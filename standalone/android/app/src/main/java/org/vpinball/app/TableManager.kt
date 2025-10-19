@@ -10,6 +10,7 @@ import java.util.UUID
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -89,6 +90,8 @@ class TableManager(private val context: Context) {
             try {
                 withContext(Dispatchers.Main) { onProgress(20, "Copying file") }
 
+                delay(100)
+
                 val copyResult = fileOps.copy(context, uri, tempFile)
                 if (!copyResult) {
                     VPinballManager.log(VPinballLogLevel.ERROR, "Failed to copy file")
@@ -96,9 +99,16 @@ class TableManager(private val context: Context) {
                     return@withContext false
                 }
 
-                withContext(Dispatchers.Main) { onProgress(60, "Importing table") }
+                val ext = tempFile.extension.lowercase()
+                val isArchive = ext == "vpxz" || ext == "zip"
+                val importMessage = if (isArchive) "Importing archive" else "Importing table"
 
-                val newTables = importTableSync(tempFile.absolutePath)
+                withContext(Dispatchers.Main) { onProgress(60, importMessage) }
+
+                delay(100)
+
+                val newTables =
+                    performImport(tempFile.absolutePath) { progress -> withContext(Dispatchers.Main) { onProgress(progress, importMessage) } }
                 tempFile.delete()
 
                 if (newTables.isEmpty()) {
@@ -115,6 +125,8 @@ class TableManager(private val context: Context) {
                     LandingScreenViewModel.triggerAddTables(newTables)
                 }
 
+                delay(500)
+
                 true
             } catch (e: Exception) {
                 VPinballManager.log(VPinballLogLevel.ERROR, "Import error: ${e.message}")
@@ -127,7 +139,7 @@ class TableManager(private val context: Context) {
 
     suspend fun deleteTable(table: Table, onProgress: ((Int, String) -> Unit)? = null): Boolean {
         return withContext(Dispatchers.IO) {
-            val result = deleteTableSync(table, onProgress)
+            val result = performDelete(table, onProgress)
             if (result) {
                 withContext(Dispatchers.Main) { LandingScreenViewModel.triggerRemoveTable(table) }
             }
@@ -137,7 +149,7 @@ class TableManager(private val context: Context) {
 
     suspend fun renameTable(table: Table, newName: String): Boolean {
         return withContext(Dispatchers.IO) {
-            val updatedTable = renameTableSync(table, newName)
+            val updatedTable = performRename(table, newName)
             withContext(Dispatchers.Main) { LandingScreenViewModel.triggerUpdateTable(updatedTable) }
             true
         }
@@ -145,7 +157,7 @@ class TableManager(private val context: Context) {
 
     suspend fun setTableImage(table: Table, imagePath: String): Boolean {
         return withContext(Dispatchers.IO) {
-            val updatedTable = setTableImageSync(table, imagePath)
+            val updatedTable = performSetImage(table, imagePath)
             if (updatedTable != null) {
                 withContext(Dispatchers.Main) { LandingScreenViewModel.triggerUpdateTable(updatedTable) }
                 true
@@ -155,23 +167,20 @@ class TableManager(private val context: Context) {
         }
     }
 
-    suspend fun exportTable(table: Table, onProgress: ((Int, String) -> Unit)? = null): File? {
-        return withContext(Dispatchers.IO) {
-            val path = exportTableSync(table, onProgress)
-            path?.let { File(it) }
-        }
+    suspend fun exportTable(table: Table, onProgress: ((Int, String) -> Unit)? = null): String? {
+        return withContext(Dispatchers.IO) { performExport(table, onProgress) }
     }
 
     suspend fun stageTable(table: Table, onProgress: ((Int, String) -> Unit)? = null): String? {
-        return withContext(Dispatchers.IO) { stageTableSync(table, onProgress) }
+        return withContext(Dispatchers.IO) { performStage(table, onProgress) }
     }
 
     suspend fun cleanupLoadedTable(table: Table, onProgress: ((Int, String) -> Unit)? = null) {
-        withContext(Dispatchers.IO) { cleanupLoadedTableSync(table, onProgress) }
+        withContext(Dispatchers.IO) { performCleanup(table, onProgress) }
     }
 
     suspend fun extractTableScript(table: Table, onProgress: ((Int, String) -> Unit)? = null): Boolean {
-        return withContext(Dispatchers.IO) { extractTableScriptSync(table, onProgress) }
+        return withContext(Dispatchers.IO) { performExtractScript(table, onProgress) }
     }
 
     fun resetTableIni(table: Table): Boolean {
@@ -369,7 +378,7 @@ class TableManager(private val context: Context) {
         return fullPath.drop(basePath.length).removePrefix("/")
     }
 
-    private fun importTableSync(path: String): List<Table> {
+    private suspend fun performImport(path: String, onProgress: (suspend (Int) -> Unit)? = null): List<Table> {
         if (!fileOps.exists(path)) {
             VPinballManager.log(VPinballLogLevel.ERROR, "File does not exist")
             return emptyList()
@@ -378,7 +387,8 @@ class TableManager(private val context: Context) {
         val ext = File(path).extension.lowercase()
 
         return when (ext) {
-            "vpxz" -> importVPXZ(path)
+            "vpxz",
+            "zip" -> importArchive(path, onProgress)
             "vpx" -> {
                 val table = importVPX(path)
                 if (table != null) listOf(table) else emptyList()
@@ -413,7 +423,7 @@ class TableManager(private val context: Context) {
         return createTable(destFile)
     }
 
-    private fun importVPXZ(path: String): List<Table> {
+    private suspend fun importArchive(path: String, onProgress: (suspend (Int) -> Unit)? = null): List<Table> {
         val tempDir = File(context.cacheDir, "vpinball_import_${System.currentTimeMillis()}").absolutePath
 
         if (!fileOps.createDirectory(tempDir)) {
@@ -421,6 +431,17 @@ class TableManager(private val context: Context) {
         }
 
         try {
+            val totalEntries =
+                ZipInputStream(FileInputStream(path)).use { zip ->
+                    var count = 0
+                    while (zip.nextEntry != null) {
+                        count++
+                    }
+                    count
+                }
+
+            VPinballManager.log(VPinballLogLevel.INFO, "Archive has $totalEntries total entries")
+            var processedEntries = 0
             ZipInputStream(FileInputStream(path)).use { zip ->
                 var entry = zip.nextEntry
                 while (entry != null) {
@@ -437,9 +458,17 @@ class TableManager(private val context: Context) {
                         FileOutputStream(entryPath).use { output -> zip.copyTo(output) }
                     }
 
+                    processedEntries++
+                    if (totalEntries > 0) {
+                        val extractProgress = 60 + ((processedEntries.toDouble() / totalEntries) * 35).toInt()
+                        onProgress?.invoke(extractProgress)
+                    }
+
                     entry = zip.nextEntry
                 }
             }
+
+            VPinballManager.log(VPinballLogLevel.INFO, "Archive extraction complete, extracted $processedEntries entries")
 
             val vpxFiles = fileOps.listFiles(tempDir, ".vpx")
 
@@ -471,13 +500,13 @@ class TableManager(private val context: Context) {
             fileOps.deleteDirectory(tempDir)
             return importedTables
         } catch (e: Exception) {
-            VPinballManager.log(VPinballLogLevel.ERROR, "Failed to import VPXZ: ${e.message}")
+            VPinballManager.log(VPinballLogLevel.ERROR, "Failed to import archive: ${e.message}")
             fileOps.deleteDirectory(tempDir)
             return emptyList()
         }
     }
 
-    private fun deleteTableSync(table: Table, onProgress: ((Int, String) -> Unit)? = null): Boolean {
+    private fun performDelete(table: Table, onProgress: ((Int, String) -> Unit)? = null): Boolean {
         val tablePath = buildPath(table.path)
         val tableDir = File(table.path).parent?.let { buildPath(it) } ?: return false
 
@@ -505,11 +534,11 @@ class TableManager(private val context: Context) {
         return true
     }
 
-    private fun renameTableSync(table: Table, newName: String): Table {
+    private fun performRename(table: Table, newName: String): Table {
         return updateTable(table) { it.copy(name = newName, modifiedAt = System.currentTimeMillis() / 1000) }
     }
 
-    private fun setTableImageSync(table: Table, imagePath: String): Table? {
+    private fun performSetImage(table: Table, imagePath: String): Table? {
         if (imagePath.isEmpty()) {
             if (table.image.isNotEmpty()) {
                 val currentImagePath = buildPath(table.image)
@@ -566,7 +595,7 @@ class TableManager(private val context: Context) {
         return updatedTable
     }
 
-    private suspend fun exportTableSync(table: Table, onProgress: ((Int, String) -> Unit)? = null): String? {
+    private suspend fun performExport(table: Table, onProgress: ((Int, String) -> Unit)? = null): String? {
         val sanitizedName = sanitizeName(table.name)
         val tempFile = File(context.cacheDir, "$sanitizedName.vpxz")
 
@@ -606,13 +635,18 @@ class TableManager(private val context: Context) {
 
             withContext(Dispatchers.Main) { onProgress?.invoke(60, "Compressing") }
 
+            delay(100) // Give UI time to render
+
             ZipOutputStream(FileOutputStream(tempFile)).use { zip ->
                 fileOps.addDirectoryToZip(zip, tableDirToCompressFinal, tableDirToCompressFinal) { progress ->
-                    runBlocking(Dispatchers.Main) { onProgress?.invoke(60 + (progress * 39 / 100), "Compressing ($progress%)") }
+                    runBlocking(Dispatchers.Main) { onProgress?.invoke(60 + (progress * 39 / 100), "Compressing") }
                 }
             }
 
             withContext(Dispatchers.Main) { onProgress?.invoke(100, "Complete") }
+
+            delay(500)
+
             return tempFile.absolutePath
         } catch (e: Exception) {
             VPinballManager.log(VPinballLogLevel.ERROR, "Failed to export table: ${e.message}")
@@ -620,11 +654,11 @@ class TableManager(private val context: Context) {
         }
     }
 
-    private fun stageTableSync(table: Table, onProgress: ((Int, String) -> Unit)? = null): String? {
+    private fun performStage(table: Table, onProgress: ((Int, String) -> Unit)? = null): String? {
         if (table.path.isEmpty()) return null
 
         if (requiresStaging) {
-            return stageTableToCache(table, onProgress)
+            return performStageToCache(table, onProgress)
         }
 
         val fullPath = buildPath(table.path)
@@ -633,7 +667,7 @@ class TableManager(private val context: Context) {
         return fullPath
     }
 
-    private fun stageTableToCache(table: Table, onProgress: ((Int, String) -> Unit)?): String? {
+    private fun performStageToCache(table: Table, onProgress: ((Int, String) -> Unit)?): String? {
         val tableDir = File(table.path).parent ?: ""
         val fileName = File(table.path).name
 
@@ -657,7 +691,7 @@ class TableManager(private val context: Context) {
         return File(cachePath, fileName).absolutePath
     }
 
-    private fun cleanupLoadedTableSync(table: Table, onProgress: ((Int, String) -> Unit)? = null) {
+    private fun performCleanup(table: Table, onProgress: ((Int, String) -> Unit)? = null) {
         if (loadedTable?.uuid != table.uuid) {
             return
         }
@@ -705,7 +739,7 @@ class TableManager(private val context: Context) {
         loadedTableWorkingDir = ""
     }
 
-    private fun extractTableScriptSync(table: Table, onProgress: ((Int, String) -> Unit)? = null): Boolean {
+    private fun performExtractScript(table: Table, onProgress: ((Int, String) -> Unit)? = null): Boolean {
         val tableDir = File(table.path).parent ?: return false
         val baseName = File(table.path).nameWithoutExtension
         val scriptPath = buildPath("$tableDir/$baseName.vbs")
@@ -807,11 +841,11 @@ class TableManager(private val context: Context) {
             }
         }
 
-        suspend fun shareTable(table: Table, onProgress: ((Int, String) -> Unit)? = null, onComplete: (File) -> Unit, onError: () -> Unit) {
+        suspend fun shareTable(table: Table, onProgress: ((Int, String) -> Unit)? = null, onComplete: (String) -> Unit, onError: () -> Unit) {
             val instance = getInstance()
-            val file = instance.exportTable(table, onProgress)
-            if (file != null) {
-                onComplete(file)
+            val path = instance.exportTable(table, onProgress)
+            if (path != null) {
+                onComplete(path)
             } else {
                 onError()
             }

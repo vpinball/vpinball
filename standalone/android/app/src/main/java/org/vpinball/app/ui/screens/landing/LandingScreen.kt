@@ -400,10 +400,11 @@ fun LandingScreen(
                                     progress.value = inProgress
                                     status.value = inStatus
                                 },
-                                onComplete = {
+                                onComplete = { path ->
                                     showProgress = false
 
-                                    val fileUri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", it)
+                                    val file = File(path)
+                                    val fileUri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
                                     val shareIntent =
                                         Intent(Intent.ACTION_SEND).apply {
                                             type = "application/octet-stream"
@@ -411,7 +412,7 @@ fun LandingScreen(
                                             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                         }
 
-                                    context.startActivity(Intent.createChooser(shareIntent, "Share File: $it"))
+                                    context.startActivity(Intent.createChooser(shareIntent, "Share File: ${file.name}"))
                                 },
                                 onError = { showProgress = false },
                             )
