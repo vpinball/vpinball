@@ -299,7 +299,7 @@ fun SettingsScreen(
                         )
                     }
 
-                    if (viewModel.webServer) {
+                    if (webServerURL.isNotEmpty()) {
                         Text(
                             text =
                                 buildAnnotatedString {
