@@ -19,8 +19,10 @@ class TableManager: ObservableObject {
         loadTables()
     }
 
-    func refresh() {
-        loadTables()
+    func refresh() async {
+        await Task {
+            loadTables()
+        }.value
     }
 
     func getTable(uuid: String) -> Table? {
@@ -28,10 +30,15 @@ class TableManager: ObservableObject {
     }
 
     func importTable(from url: URL) async -> Bool {
+        let ext = url.pathExtension.lowercased()
+        let fileName = url.lastPathComponent.removingPercentEncoding!
+
         vpinballViewModel.showProgressHUD(
-            title: url.lastPathComponent.removingPercentEncoding!,
-            status: url.pathExtension.lowercased() == "vpx" ? "Importing" : "Importing Archive"
+            title: fileName,
+            status: "Copying file"
         )
+
+        try? await Task.sleep(nanoseconds: 100_000_000)
 
         let isSecurityScoped = url.startAccessingSecurityScopedResource()
         defer {
@@ -40,7 +47,30 @@ class TableManager: ObservableObject {
             }
         }
 
-        let importedTables = importTableSync(path: url.path)
+        await MainActor.run {
+            self.vpinballViewModel.updateProgressHUD(
+                progress: 60,
+                status: ext == "vpx" ? "Importing table" : "Importing archive"
+            )
+        }
+
+        try? await Task.sleep(nanoseconds: 100_000_000)
+
+        let importedTables = await performImport(path: url.path) { progress in
+            await MainActor.run {
+                self.vpinballViewModel.updateProgressHUD(
+                    progress: progress,
+                    status: ext == "vpx" ? "Importing table" : "Importing archive"
+                )
+            }
+        }
+
+        await MainActor.run {
+            self.vpinballViewModel.updateProgressHUD(
+                progress: 100,
+                status: "Import complete"
+            )
+        }
 
         try? await Task.sleep(nanoseconds: 500_000_000)
 
@@ -54,33 +84,45 @@ class TableManager: ObservableObject {
     }
 
     func deleteTable(table: Table) async -> Bool {
-        return deleteTableSync(table: table)
+        return await Task {
+            performDelete(table: table)
+        }.value
     }
 
     func renameTable(table: Table, newName: String) async -> Bool {
-        return renameTableSync(table: table, newName: newName)
+        return await Task {
+            performRename(table: table, newName: newName)
+        }.value
     }
 
     func setTableImage(table: Table, imagePath: String) async -> Bool {
-        return setTableImageSync(table: table, imagePath: imagePath)
+        return await Task {
+            performSetImage(table: table, imagePath: imagePath)
+        }.value
     }
 
     func setTableImage(table: Table, image: UIImage) async -> Bool {
-        return setTableImageFromUIImage(table: table, image: image)
+        return await Task {
+            performSetImageFromUIImage(table: table, image: image)
+        }.value
     }
 
-    func exportTable(table: Table) async -> URL? {
+    func exportTable(table: Table) async -> String? {
         vpinballViewModel.showProgressHUD(title: table.name, status: "Compressing")
 
-        let exportPath = exportTableSync(table: table)
+        try? await Task.sleep(nanoseconds: 100_000_000)
+
+        let exportPath = await performExport(table: table) { progress, status in
+            await MainActor.run {
+                self.vpinballViewModel.updateProgressHUD(progress: progress, status: status)
+            }
+        }
+
+        try? await Task.sleep(nanoseconds: 500_000_000)
 
         vpinballViewModel.hideHUD()
 
-        if let exportPath = exportPath {
-            return URL(fileURLWithPath: exportPath)
-        }
-
-        return nil
+        return exportPath
     }
 
     func getLoadedTablePath(table: Table) -> String? {
@@ -94,7 +136,13 @@ class TableManager: ObservableObject {
     func extractTableScript(table: Table) async -> Bool {
         vpinballViewModel.showProgressHUD(title: table.name, status: "Extracting Script")
 
-        let result = extractTableScriptSync(table: table)
+        try? await Task.sleep(nanoseconds: 100_000_000)
+
+        let result = await Task {
+            performExtractScript(table: table)
+        }.value
+
+        try? await Task.sleep(nanoseconds: 500_000_000)
 
         vpinballViewModel.hideHUD()
 
@@ -186,9 +234,8 @@ class TableManager: ObservableObject {
         let vpxFiles = TableFileOperations.listFiles(tablesPath, ext: ".vpx")
         for filePath in vpxFiles {
             if !loadedTables.contains(where: { (tablesPath as NSString).appendingPathComponent($0.path) == filePath }) {
-                if let newTable = createTable(path: filePath) {
-                    loadedTables.append(newTable)
-                }
+                let newTable = createTable(path: filePath)
+                loadedTables.append(newTable)
             }
         }
 
@@ -210,7 +257,7 @@ class TableManager: ObservableObject {
         }
     }
 
-    private func createTable(path: String) -> Table? {
+    private func createTable(path: String) -> Table {
         let uuid = generateUUID()
         let relativePath = self.relativePath(fullPath: path, basePath: tablesPath)
 
@@ -305,15 +352,15 @@ class TableManager: ObservableObject {
         return result
     }
 
-    private func importTableSync(path: String) -> [Table] {
+    private func performImport(path: String, onProgress: ((Int) async -> Void)? = nil) async -> [Table] {
         if !TableFileOperations.exists(path) {
             return []
         }
 
         let ext = (path as NSString).pathExtension.lowercased()
 
-        if ext == "vpxz" {
-            return importVPXZ(path: path)
+        if ext == "vpxz" || ext == "zip" {
+            return await importArchive(path: path, onProgress: onProgress)
         } else if ext == "vpx" {
             if let table = importVPX(path: path) {
                 return [table]
@@ -341,17 +388,14 @@ class TableManager: ObservableObject {
             return nil
         }
 
-        if let newTable = createTable(path: destFile) {
-            tables.append(newTable)
-            saveTables()
-            VPinballManager.log(.info, "Successfully imported table: \(name)")
-            return newTable
-        }
-
-        return nil
+        let newTable = createTable(path: destFile)
+        tables.append(newTable)
+        saveTables()
+        VPinballManager.log(.info, "Successfully imported table: \(name)")
+        return newTable
     }
 
-    private func importVPXZ(path: String) -> [Table] {
+    private func importArchive(path: String, onProgress: ((Int) async -> Void)? = nil) async -> [Table] {
         let tempDir = (NSTemporaryDirectory() as NSString).appendingPathComponent("vpinball_import_\(Int(Date().timeIntervalSince1970))")
 
         if !TableFileOperations.createDirectory(tempDir) {
@@ -363,19 +407,38 @@ class TableManager: ObservableObject {
         }
 
         do {
-            let archive = try Archive(url: URL(fileURLWithPath: path), accessMode: .read)
-            for entry in archive {
+            let archive = try Archive(url: URL(fileURLWithPath: path),
+                                      accessMode: .read)
+
+            let entries = Array(archive)
+            let totalEntries = entries.count
+            var processedEntries = 0
+
+            VPinballManager.log(.info, "Archive has \(totalEntries) total entries")
+
+            for entry in entries {
                 let entryPath = (tempDir as NSString).appendingPathComponent(entry.path)
 
                 if entry.type == .directory {
-                    try FileManager.default.createDirectory(atPath: entryPath, withIntermediateDirectories: true)
+                    try FileManager.default.createDirectory(atPath: entryPath,
+                                                            withIntermediateDirectories: true)
                 } else {
                     let parentDir = (entryPath as NSString).deletingLastPathComponent
-                    try FileManager.default.createDirectory(atPath: parentDir, withIntermediateDirectories: true)
+                    try FileManager.default.createDirectory(atPath: parentDir,
+                                                            withIntermediateDirectories: true)
                     _ = try archive.extract(entry, to: URL(fileURLWithPath: entryPath))
                 }
+
+                processedEntries += 1
+                if totalEntries > 0 {
+                    let extractProgress = 60 + Int((Double(processedEntries) / Double(totalEntries)) * 35)
+                    await onProgress?(extractProgress)
+                }
             }
+
+            VPinballManager.log(.info, "Archive extraction complete, extracted \(processedEntries) entries")
         } catch {
+            VPinballManager.log(.error, "Archive extraction failed: \(error)")
             return []
         }
 
@@ -404,10 +467,9 @@ class TableManager: ObservableObject {
             }
 
             let destVpxFile = (destFolder as NSString).appendingPathComponent(fileName)
-            if let newTable = createTable(path: destVpxFile) {
-                newTables.append(newTable)
-                VPinballManager.log(.info, "Successfully imported VPX from archive: \(vpxName)")
-            }
+            let newTable = createTable(path: destVpxFile)
+            newTables.append(newTable)
+            VPinballManager.log(.info, "Successfully imported table from archive: \(vpxName)")
         }
 
         if !newTables.isEmpty {
@@ -418,7 +480,7 @@ class TableManager: ObservableObject {
         return newTables
     }
 
-    private func deleteTableSync(table: Table) -> Bool {
+    private func performDelete(table: Table) -> Bool {
         let tablePath = (tablesPath as NSString).appendingPathComponent(table.path)
         let tableDir = (tablePath as NSString).deletingLastPathComponent
 
@@ -446,7 +508,7 @@ class TableManager: ObservableObject {
         return true
     }
 
-    private func renameTableSync(table: Table, newName: String) -> Bool {
+    private func performRename(table: Table, newName: String) -> Bool {
         guard let index = tables.firstIndex(where: { $0.uuid == table.uuid }) else {
             return false
         }
@@ -465,7 +527,7 @@ class TableManager: ObservableObject {
         return true
     }
 
-    private func setTableImageSync(table: Table, imagePath: String) -> Bool {
+    private func performSetImage(table: Table, imagePath: String) -> Bool {
         guard let index = tables.firstIndex(where: { $0.uuid == table.uuid }) else {
             return false
         }
@@ -554,7 +616,7 @@ class TableManager: ObservableObject {
         return true
     }
 
-    private func setTableImageFromUIImage(table: Table, image: UIImage) -> Bool {
+    private func performSetImageFromUIImage(table: Table, image: UIImage) -> Bool {
         guard let index = tables.firstIndex(where: { $0.uuid == table.uuid }) else {
             return false
         }
@@ -598,7 +660,7 @@ class TableManager: ObservableObject {
         return true
     }
 
-    private func exportTableSync(table: Table) -> String? {
+    private func performExport(table: Table, onProgress: ((Int, String) async -> Void)? = nil) async -> String? {
         let sanitizedName = sanitizeName(table.name)
         let tempFile = (NSTemporaryDirectory() as NSString).appendingPathComponent(sanitizedName + ".vpxz")
 
@@ -609,13 +671,21 @@ class TableManager: ObservableObject {
         let fullPath = (tablesPath as NSString).appendingPathComponent(table.path)
         let tableDirToCompress = (fullPath as NSString).deletingLastPathComponent
 
+        await onProgress?(60, "Compressing")
+
         do {
             let archive = try Archive(url: URL(fileURLWithPath: tempFile), accessMode: .create)
-            try TableFileOperations.addDirectoryToArchive(archive: archive, directoryPath: tableDirToCompress, basePath: tableDirToCompress)
+            try await TableFileOperations.addDirectoryToArchive(archive: archive,
+                                                                directoryPath: tableDirToCompress,
+                                                                basePath: tableDirToCompress) { progress in
+                let adjustedProgress = 60 + (progress * 39 / 100)
+                await onProgress?(adjustedProgress, "Compressing")
+            }
         } catch {
             return nil
         }
 
+        await onProgress?(100, "Complete")
         return tempFile
     }
 
@@ -637,7 +707,7 @@ class TableManager: ObservableObject {
         loadedTable = nil
     }
 
-    private func extractTableScriptSync(table: Table) -> Bool {
+    private func performExtractScript(table: Table) -> Bool {
         let fullPath = (tablesPath as NSString).appendingPathComponent(table.path)
         let tableDir = (fullPath as NSString).deletingLastPathComponent
         let baseName = (fullPath as NSString).deletingPathExtension.components(separatedBy: "/").last ?? ""

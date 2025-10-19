@@ -317,7 +317,7 @@ struct MainView: View {
                                                        1) == 1 ? .forward : .reverse
 
         Task {
-            tableManager.loadTables()
+            await tableManager.refresh()
         }
     }
 
@@ -506,8 +506,8 @@ struct MainView: View {
     func handleShareTable() {
         if let selectedTable = selectedTable {
             Task {
-                if let url = await tableManager.exportTable(table: selectedTable) {
-                    shareItems = [url]
+                if let path = await tableManager.exportTable(table: selectedTable) {
+                    shareItems = [URL(fileURLWithPath: path)]
                     showShare = true
                 }
             }
