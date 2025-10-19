@@ -4,10 +4,9 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.util.UUID
-import java.util.zip.ZipInputStream
+import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -431,20 +430,13 @@ class TableManager(private val context: Context) {
         }
 
         try {
-            val totalEntries =
-                ZipInputStream(FileInputStream(path)).use { zip ->
-                    var count = 0
-                    while (zip.nextEntry != null) {
-                        count++
-                    }
-                    count
-                }
-
-            VPinballManager.log(VPinballLogLevel.INFO, "Archive has $totalEntries total entries")
             var processedEntries = 0
-            ZipInputStream(FileInputStream(path)).use { zip ->
-                var entry = zip.nextEntry
-                while (entry != null) {
+            ZipFile(path).use { zipFile ->
+                val totalEntries = zipFile.size()
+
+                val entries = zipFile.entries()
+                while (entries.hasMoreElements()) {
+                    val entry = entries.nextElement()
                     val entryPath = File(tempDir, entry.name).absolutePath
 
                     if (entry.isDirectory) {
@@ -455,7 +447,7 @@ class TableManager(private val context: Context) {
                             fileOps.createDirectory(parentDir)
                         }
 
-                        FileOutputStream(entryPath).use { output -> zip.copyTo(output) }
+                        zipFile.getInputStream(entry).use { input -> FileOutputStream(entryPath).use { output -> input.copyTo(output) } }
                     }
 
                     processedEntries++
@@ -463,12 +455,8 @@ class TableManager(private val context: Context) {
                         val extractProgress = 60 + ((processedEntries.toDouble() / totalEntries) * 35).toInt()
                         onProgress?.invoke(extractProgress)
                     }
-
-                    entry = zip.nextEntry
                 }
             }
-
-            VPinballManager.log(VPinballLogLevel.INFO, "Archive extraction complete, extracted $processedEntries entries")
 
             val vpxFiles = fileOps.listFiles(tempDir, ".vpx")
 
