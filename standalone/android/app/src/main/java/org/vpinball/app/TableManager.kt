@@ -307,7 +307,11 @@ class TableManager(private val context: Context) {
         val response = TablesResponse(tableCount = sorted.size, tables = sorted)
 
         try {
-            val json = Json { prettyPrint = true }
+            val json = Json {
+                prettyPrint = true
+                encodeDefaults = true
+                prettyPrintIndent = "  "
+            }
             val jsonString = json.encodeToString(TablesResponse.serializer(), response)
             fileOps.write(tablesJSONPath, jsonString)
         } catch (e: Exception) {
