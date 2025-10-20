@@ -283,16 +283,6 @@ body {
   user-select: none;
 }
 
-.actions-bar {
-  margin-bottom: 1rem;
-}
-
-.left-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
 .status-message {
   margin-left: 0.75rem;
   font-size: 0.875rem;
@@ -505,17 +495,6 @@ body {
   color: var(--primary-color);
 }
 
-.game-name {
-  font-size: 0.75rem;
-  color: var(--text-tertiary);
-  font-style: italic;
-  margin-left: 1.5rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  width: calc(100% - 1.5rem);
-}
-
 .file-date {
   color: var(--text-secondary);
   font-size: 0.875rem;
@@ -652,13 +631,6 @@ body {
   padding: 1rem 0;
 }
 
-.image-viewer-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
 .image-viewer-actions {
   display: flex;
   gap: 0.75rem;
@@ -685,11 +657,68 @@ body {
   box-shadow: var(--shadow);
 }
 
-.editor-header {
+.video-viewer-container {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 1rem 0;
+}
+
+.video-viewer-actions {
   display: flex;
-  justify-content: space-between;
+  gap: 0.75rem;
   align-items: center;
-  margin-bottom: 1rem;
+}
+
+.video-viewer-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  background-color: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 1rem;
+}
+
+.video-viewer-content video {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.audio-viewer-container {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 1rem 0;
+}
+
+.audio-viewer-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.audio-viewer-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  background-color: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 1rem;
+}
+
+.audio-viewer-content audio {
+  width: 100%;
+  max-width: 600px;
 }
 
 .editor-actions {
@@ -965,12 +994,5 @@ body {
   .file-item div:nth-child(2),
   .file-item div:nth-child(3) {
     display: none;
-  }
-
-  .game-name {
-    display: block !important;
-    font-size: 0.7rem;
-    margin-left: 1.5rem;
-    margin-top: 0.25rem;
   }
 }

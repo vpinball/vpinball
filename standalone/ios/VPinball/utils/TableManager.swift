@@ -248,7 +248,7 @@ class TableManager: ObservableObject {
         let response = TablesResponse(tableCount: sorted.count, tables: sorted)
 
         let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        encoder.outputFormatting = [.prettyPrinted, .withoutEscapingSlashes]
 
         if let jsonData = try? encoder.encode(response),
            let jsonString = String(data: jsonData, encoding: .utf8)

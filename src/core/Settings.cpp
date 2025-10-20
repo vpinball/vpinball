@@ -209,7 +209,7 @@ void Settings::Validate(const bool addDefaults)
    // Plugin.AlphaDMD
 
 #ifdef __LIBVPINBALL__
-   SettingBool(GetSection("Plugin.AlphaDMD"s), "Enable"s, true, ""s);
+   SettingBool(GetSection("Plugin.AlphaDMD"s), "Enable"s, false, ""s);
 #endif
 
    //////////////////////////////////////////////////////////////////////////

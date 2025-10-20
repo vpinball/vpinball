@@ -303,6 +303,7 @@ void VPinballLib::LoadPlugins()
       void (*load)(uint32_t, const MsgPluginAPI*);
       void (*unload)();
    } plugins[] = {
+      { "ScoreView",     &ScoreViewPluginLoad,     &ScoreViewPluginUnload     },
       { "PinMAME",       &PinMAMEPluginLoad,       &PinMAMEPluginUnload       },
       { "AlphaDMD",      &AlphaDMDPluginLoad,      &AlphaDMDPluginUnload      },
       { "B2S",           &B2SPluginLoad,           &B2SPluginUnload           },
@@ -312,7 +313,6 @@ void VPinballLib::LoadPlugins()
       { "FlexDMD",       &FlexDMDPluginLoad,       &FlexDMDPluginUnload       },
       { "PUP",           &PUPPluginLoad,           &PUPPluginUnload           },
       { "RemoteControl", &RemoteControlPluginLoad, &RemoteControlPluginUnload },
-      { "ScoreView",     &ScoreViewPluginLoad,     &ScoreViewPluginUnload     },
       { "Serum",         &SerumPluginLoad,         &SerumPluginUnload         },
       { "WMP",           &WMPPluginLoad,           &WMPPluginUnload           }
    };
