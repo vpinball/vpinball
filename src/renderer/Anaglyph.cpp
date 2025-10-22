@@ -103,6 +103,9 @@ vec3 Anaglyph::LinearRGBtoXYZ(const vec3& linearRGB)
    return xyz;
 }
 
+#define powd(a, b) pow(static_cast<double>(a), static_cast<double>(b))
+#define logd(a)    log(static_cast<double>(a))
+
 void Anaglyph::SetLuminanceCalibration(const vec3& leftLum, const vec3& rightLum)
 {
    // Use calibration data to fit the luminance model proposed in https://www.visus.uni-stuttgart.de/en/research/computer-graphics/anaglyph-stereo/anaglyph-stereo-without-ghosting/
@@ -116,16 +119,16 @@ void Anaglyph::SetLuminanceCalibration(const vec3& leftLum, const vec3& rightLum
    // We solve this for the 2 eyes at once by resolving the sum function (the right way would be to use the generalized jacobian, but...)
    if (!m_sRGBDisplay)
    {
-      float gamma = 2.4f;
+      double gamma = 2.4;
       for (int i = 0; i < 100; i++)
       {
-         float f = powf(leftLum.x, gamma) + powf(leftLum.y, gamma) + powf(leftLum.z, gamma) - 1.f
-                 + powf(rightLum.x, gamma) + powf(rightLum.y, gamma) + powf(rightLum.z, gamma) - 1.f;
-         float fp = powf(leftLum.x, gamma) / logf(leftLum.x) + powf(leftLum.y, gamma) / logf(leftLum.y) + powf(leftLum.z, gamma) / logf(leftLum.z)
-                  + powf(rightLum.x, gamma) / logf(rightLum.x) + powf(rightLum.y, gamma) / logf(rightLum.y) + powf(rightLum.z, gamma) / logf(rightLum.z);
+         const double f = powd(leftLum.x, gamma)  + powd(leftLum.y, gamma)  + powd(leftLum.z, gamma)  - 1.
+                        + powd(rightLum.x, gamma) + powd(rightLum.y, gamma) + powd(rightLum.z, gamma) - 1.;
+         const double fp = powd(leftLum.x, gamma)  / logd(leftLum.x)  + powd(leftLum.y, gamma)  / logd(leftLum.y)  + powd(leftLum.z, gamma)  / logd(leftLum.z)
+                         + powd(rightLum.x, gamma) / logd(rightLum.x) + powd(rightLum.y, gamma) / logd(rightLum.y) + powd(rightLum.z, gamma) / logd(rightLum.z);
          gamma -= f / fp;
       }
-      m_displayGamma = gamma;
+      m_displayGamma = (float)gamma;
    }
 
    // Evaluate relative luminance of each color channel through eye filters (needed for dynamic desaturation and luminance filter)
@@ -141,7 +144,7 @@ void Anaglyph::SetLuminanceCalibration(const vec3& leftLum, const vec3& rightLum
 void Anaglyph::SetPhotoCalibration(const Matrix3& display, const Matrix3& leftFilter, const Matrix3& rightFilter)
 {
    // Use a complete calibration made of matrices transforming an input linear RGB color to its perceived CIE 
-   // XYZ color thourhg the display/filter pairs or directly through the display. These matrices can be obtained 
+   // XYZ color through the display/filter pairs or directly through the display. These matrices can be obtained 
    // using dedicated hardware or simply using a digital camera, taking a photo of RGB stripes (directly and 
    // through the filters) and getting the linear RGB from this photo. If using a digital camera, the camera 
    // processing will modify the result leading to an incorrect calibration. Therefore, a single shot for all 
@@ -386,36 +389,36 @@ void Anaglyph::Update()
    {
       // Compose anaglyph by applying John Einselen's contrast and deghosting method
       // see http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com
-      constexpr float contrast = 1.f; 
+      constexpr double contrast = 1.; 
       if (m_colorPair == RED_CYAN)
       {
-         const float a = 0.45f * contrast, b = 0.5f * (1.f - a);
-         m_rgb2AnaglyphLeft = Matrix3D(a, b, b, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
-         const float c = 1.00f * contrast, d = 1.f - c;
-         m_rgb2AnaglyphRight = Matrix3D(0.f, 0.f, 0.f, 0.f, /**/ d, c, 0.f, 0.f, /**/ d, 0.f, c, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
-         constexpr float e = 0.06f * 0.1f;
-         m_deghostGamma = vec3(1.00f, 1.15f, 1.15f);
-         m_deghostFilter = Matrix3D(1.f + e, -0.5f*e, -0.5f*e, 0.f, /**/ -0.25f*e, 1.f + 0.5f*e, -0.25f*e, 0.f, /**/ -0.25f*e, -0.25f*e, 1.f + 0.5f*e, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+         constexpr double a = 0.45 * contrast, b = 0.5 * (1. - a);
+         m_rgb2AnaglyphLeft = Matrix3D{a, b, b, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f};
+         constexpr double c = 1.00 * contrast, d = 1. - c;
+         m_rgb2AnaglyphRight = Matrix3D{0.f, 0.f, 0.f, 0.f, /**/ d, c, 0.f, 0.f, /**/ d, 0.f, c, 0.f, /**/ 0.f, 0.f, 0.f, 1.f};
+         constexpr double e = 0.06 * 0.1;
+         m_deghostGamma = vec3{1.00f, 1.15f, 1.15f};
+         m_deghostFilter = Matrix3D{1. + e, -0.5*e, -0.5*e, 0.f, /**/ -0.25*e, 1. + 0.5*e, -0.25*e, 0.f, /**/ -0.25*e, -0.25*e, 1. + 0.5*e, 0.f, /**/ 0.f, 0.f, 0.f, 1.f};
       }
       else if (m_colorPair == GREEN_MAGENTA)
       {
-         const float a = 1.00f * contrast, b = 0.5f * (1.f - a);
-         m_rgb2AnaglyphLeft = Matrix3D(0.f, 0.f, 0.f, 0.f, /**/ b, a, b, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
-         const float c = 0.80f * contrast, d = 1.f - c;
-         m_rgb2AnaglyphRight = Matrix3D(c, d, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, d, c, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
-         constexpr float e = 0.06f * 0.275f;
-         m_deghostGamma = vec3(1.15f, 1.05f, 1.15f);
-         m_deghostFilter = Matrix3D(1.f + 0.5f*e, -0.25f*e, -0.25f*e, 0.f, /**/ -0.5f*e, 1.f + 0.25f*e, -0.5f*e, 0.f, /**/ -0.25f*e, -0.25f*e, 1.f + 0.5f*e, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+         constexpr double a = 1.00 * contrast, b = 0.5 * (1. - a);
+         m_rgb2AnaglyphLeft = Matrix3D{0.f, 0.f, 0.f, 0.f, /**/ b, a, b, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f};
+         constexpr double c = 0.80 * contrast, d = 1. - c;
+         m_rgb2AnaglyphRight = Matrix3D{c, d, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, d, c, 0.f, /**/ 0.f, 0.f, 0.f, 1.f};
+         constexpr double e = 0.06 * 0.275;
+         m_deghostGamma = vec3{1.15f, 1.05f, 1.15f};
+         m_deghostFilter = Matrix3D{1. + 0.5*e, -0.25*e, -0.25*e, 0.f, /**/ -0.5*e, 1. + 0.25*e, -0.5*e, 0.f, /**/ -0.25*e, -0.25*e, 1. + 0.5*e, 0.f, /**/ 0.f, 0.f, 0.f, 1.f};
       }
       else if (m_colorPair == BLUE_AMBER)
       {
-         const float a = 0.45f * contrast, b = 0.5f * (1.f - a);
-         m_rgb2AnaglyphLeft = Matrix3D(0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ b, b, a, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
-         const float c = 1.00f * contrast, d = 1.f - c;
-         m_rgb2AnaglyphRight = Matrix3D(c, 0.f, d, 0.f, /**/ 0.f, c, d, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
-         constexpr float e = 0.06f * 0.275f;
-         m_deghostGamma = vec3(1.05f, 1.10f, 1.00f);
-         m_deghostFilter = Matrix3D(1.f + 1.5f*e, -0.75f*e, -0.75f*e, 0.f, /**/ -0.75f*e, 1.f + 1.5f*e, -0.75f*e, 0.f, /**/ -1.5f*e, -1.5f*e, 1.f + 3.f*e, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+         constexpr double a = 0.45 * contrast, b = 0.5 * (1. - a);
+         m_rgb2AnaglyphLeft = Matrix3D{0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ b, b, a, 0.f, /**/ 0.f, 0.f, 0.f, 1.f};
+         constexpr double c = 1.00 * contrast, d = 1. - c;
+         m_rgb2AnaglyphRight = Matrix3D{c, 0.f, d, 0.f, /**/ 0.f, c, d, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f};
+         constexpr double e = 0.06 * 0.275;
+         m_deghostGamma = vec3{1.05f, 1.10f, 1.00f};
+         m_deghostFilter = Matrix3D{1. + 1.5*e, -0.75*e, -0.75*e, 0.f, /**/ -0.75*e, 1. + 1.5*e, -0.75*e, 0.f, /**/ -1.5*e, -1.5*e, 1. + 3.*e, 0.f, /**/ 0.f, 0.f, 0.f, 1.f};
       }
       m_deghostFilter.Transpose();
       break;
