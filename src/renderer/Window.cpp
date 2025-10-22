@@ -94,25 +94,39 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
 
    // Search for the request fullscreen exclusive display mode, eventually fallback to windowed mode if we fail
    const SDL_DisplayMode* fullscreenDisplayMode = nullptr;
-   if (m_fullscreen)
+
+   const bool isExtCreatedWindow = g_isMobile && g_isIOS;
+   if (m_fullscreen && !isExtCreatedWindow)
    {
-      for (int mode = 0; mode < nDisplayModes; mode++)
-      {
-         const SDL_DisplayMode* const sdlMode = displayModes[mode];
-         const int bitdepth = GetPixelFormatDepth((sdlMode->format));
-         if ((sdlMode->w == settings.GetWindow_FSWidth(m_windowId)) && (sdlMode->h == settings.GetWindow_FSHeight(m_windowId)) //
-            && (settings.GetWindow_FSRefreshRate(m_windowId) == 0) || (sdlMode->refresh_rate == settings.GetWindow_FSRefreshRate(m_windowId)) //
-            && (settings.GetWindow_FSColorDepth(m_windowId) == 0) || (bitdepth == settings.GetWindow_FSColorDepth(m_windowId)))
-         {
-            fullscreenDisplayMode = sdlMode;
-            m_screenwidth = sdlMode->w;
-            m_screenheight = sdlMode->h;
-            m_width = sdlMode->w;
-            m_height = sdlMode->h;
-            m_refreshrate = sdlMode->refresh_rate;
-            m_bitdepth = bitdepth;
-            break;
-         }
+      if (g_isAndroid) {
+        const SDL_DisplayMode* currentMode = SDL_GetCurrentDisplayMode(selectedDisplay.display);
+        if (currentMode) {
+            fullscreenDisplayMode = currentMode;
+            m_screenwidth = currentMode->w;
+            m_screenheight = currentMode->h;
+            m_width = currentMode->w;
+            m_height = currentMode->h;
+            m_refreshrate = currentMode->refresh_rate;
+            m_bitdepth = GetPixelFormatDepth(currentMode->format);
+        }
+      }
+      else {
+          for (int mode = 0; mode < nDisplayModes; mode++) {
+              const SDL_DisplayMode *const sdlMode = displayModes[mode];
+              const int bitdepth = GetPixelFormatDepth((sdlMode->format));
+              if ((sdlMode->w == settings.GetWindow_FSWidth(m_windowId)) && (sdlMode->h == settings.GetWindow_FSHeight(m_windowId)) //
+                      && (settings.GetWindow_FSRefreshRate(m_windowId) == 0) || (sdlMode->refresh_rate == settings.GetWindow_FSRefreshRate(m_windowId)) //
+                      && (settings.GetWindow_FSColorDepth(m_windowId) == 0) || (bitdepth == settings.GetWindow_FSColorDepth(m_windowId))) {
+                  fullscreenDisplayMode = sdlMode;
+                  m_screenwidth = sdlMode->w;
+                  m_screenheight = sdlMode->h;
+                  m_width = sdlMode->w;
+                  m_height = sdlMode->h;
+                  m_refreshrate = sdlMode->refresh_rate;
+                  m_bitdepth = bitdepth;
+                  break;
+              }
+          }
       }
       if (fullscreenDisplayMode == nullptr)
       {
@@ -174,11 +188,11 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
       m_refreshrate = 60;
    }
    SDL_PropertiesID props;
-   if (g_isMobile)
+   if (isExtCreatedWindow)
    {
-#ifdef __LIBVPINBALL__
-      m_nwnd = VPinballLib::VPinballLib::Instance().GetWindow();
-#endif
+      #ifdef __LIBVPINBALL__
+         m_nwnd = VPinballLib::VPinballLib::Instance().GetWindow();
+      #endif
    }
    else
    {
@@ -215,6 +229,8 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
       SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, m_width);
       SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, m_height);
       SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, wnd_flags);
+      if (g_isAndroid)
+         SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_EXTERNAL_GRAPHICS_CONTEXT_BOOLEAN, true);
       m_nwnd = SDL_CreateWindowWithProperties(props);
       SDL_DestroyProperties(props);
    }
@@ -256,9 +272,8 @@ Window::~Window()
    if (m_isVR)
       return;
 
-#ifndef __LIBVPINBALL__
-   SDL_RunOnMainThread([](void* userdata) { SDL_DestroyWindow(static_cast<SDL_Window*>(userdata)); }, m_nwnd, true);
-#endif
+   if (!g_isIOS)
+      SDL_RunOnMainThread([](void* userdata) { SDL_DestroyWindow(static_cast<SDL_Window*>(userdata)); }, m_nwnd, true);
 }
 
 void Window::Show(const bool show)

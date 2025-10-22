@@ -1,7 +1,6 @@
 package org.vpinball.app.ui
 
 import android.content.Intent
-import android.view.WindowInsets
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.AlertDialog
@@ -29,21 +28,17 @@ import org.vpinball.app.VPinballViewModel
 import org.vpinball.app.jni.VPinballLogLevel
 import org.vpinball.app.ui.screens.common.CodeWebViewDialog
 import org.vpinball.app.ui.screens.landing.LandingScreen
-import org.vpinball.app.ui.screens.landing.LandingScreenViewModel
 import org.vpinball.app.ui.screens.loading.LoadingScreen
 import org.vpinball.app.ui.screens.splash.SplashScreen
 import org.vpinball.app.ui.theme.VPinballTheme
 import org.vpinball.app.ui.theme.VpxRed
 import org.vpinball.app.ui.util.koinActivityViewModel
-import org.vpinball.app.util.getActivity
 
 @Composable
-fun VPinballContent(isAppInit: Boolean = false, viewModel: VPinballViewModel = koinActivityViewModel()) {
+fun VPinballContent(viewModel: VPinballViewModel = koinActivityViewModel()) {
     val context = LocalContext.current
-    val activity = context.getActivity()
     val state by viewModel.state.collectAsStateWithLifecycle()
     var codeFile by remember { mutableStateOf<File?>(null) }
-    var showSplash by remember { mutableStateOf(false) }
 
     val progress = remember { mutableStateOf(0) }
     val status = remember { mutableStateOf("") }
@@ -53,56 +48,25 @@ fun VPinballContent(isAppInit: Boolean = false, viewModel: VPinballViewModel = k
         status.value = state.status ?: ""
     }
 
-    LaunchedEffect(state.playing, isAppInit) {
-        activity?.window?.decorView?.windowInsetsController?.let { controller ->
-            if (state.playing) {
-                controller.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-            } else {
-                controller.show(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-                controller.setSystemBarsAppearance(0, android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS)
-
-                state.table?.let { table ->
-                    kotlinx.coroutines.delay(300)
-                    LandingScreenViewModel.triggerScrollToTable(table)
-                }
-            }
-        }
-    }
-
-    LaunchedEffect(isAppInit) {
-        if (isAppInit && state.splash) {
-            kotlinx.coroutines.delay(150)
-            showSplash = true
-            VPinballManager.startup()
-            TableManager.initialize(context.applicationContext)
-            viewModel.startSplashTimer()
-        }
-    }
-
     VPinballTheme {
-        if (!isAppInit || !showSplash) {
-            // Wait for SDL initialization and status bar to settle
-        } else if (state.splash) {
+        if (state.splash) {
             SplashScreen()
         } else {
             Box(modifier = Modifier.fillMaxSize()) {
-                if (!state.playing && !state.loading) {
-                    LandingScreen(
-                        webServerURL = viewModel.webServerURL,
-                        progress = progress,
-                        status = status,
-                        onTableImported = { uuid, path -> },
-                        onRenameTable = { table, name -> viewModel.launchInViewModelScope { TableManager.getInstance().renameTable(table, name) } },
-                        onTableImage = { table -> },
-                        onDeleteTable = { table -> VPinballManager.log(VPinballLogLevel.INFO, "Deleted table: ${table.uuid}") },
-                        onViewFile = { file -> codeFile = file },
-                    )
-                }
+                LandingScreen(
+                    webServerURL = viewModel.webServerURL,
+                    progress = progress,
+                    status = status,
+                    onTableImported = { uuid, path -> },
+                    onRenameTable = { table, name -> viewModel.launchInViewModelScope { TableManager.getInstance().renameTable(table, name) } },
+                    onTableImage = { table -> },
+                    onDeleteTable = { table -> VPinballManager.log(VPinballLogLevel.INFO, "Deleted table: ${table.uuid}") },
+                    onViewFile = { file -> codeFile = file },
+                    onPlayTable = { table -> viewModel.loading(true, table) },
+                )
 
-                state.table?.let { table ->
-                    if (state.loading) {
-                        LoadingScreen(table, state.progress, state.status)
-                    }
+                if (state.loading) {
+                    state.table?.let { table -> LoadingScreen(table, state.progress, state.status) }
                 }
             }
 

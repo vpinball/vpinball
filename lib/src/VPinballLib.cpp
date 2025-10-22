@@ -19,10 +19,6 @@
 #include <mutex>
 #include <nlohmann/json.hpp>
 
-#if defined(__ANDROID__)
-#define COMMAND_APP_INIT_COMPLETED 0x8001
-#endif
-
 MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
 MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginUnload();
 MSGPI_EXPORT void MSGPIAPI B2SPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
@@ -64,29 +60,30 @@ VPinballLib::~VPinballLib()
 
 int VPinballLib::AppInit(int argc, char** argv)
 {
+   if (g_isAndroid)
+      SDL_SetHint(SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY, "1");
+
    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS))
       return 0;
 
-   SDL_PropertiesID props = SDL_CreateProperties();
-   SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, "Visual Pinball Player");
-   #if defined(__ANDROID__)
-      SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_EXTERNAL_GRAPHICS_CONTEXT_BOOLEAN, true);
-   #endif
-   SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_HIGH_PIXEL_DENSITY);
-   m_pWindow = SDL_CreateWindowWithProperties(props);
-   SDL_DestroyProperties(props);
+   if (g_isIOS) {
+      SDL_PropertiesID props = SDL_CreateProperties();
+      SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, "Visual Pinball Player");
+      SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+      m_pWindow = SDL_CreateWindowWithProperties(props);
+      SDL_DestroyProperties(props);
 
-   if (!m_pWindow)
-      return 0;
+      if (!m_pWindow)
+         return 0;
 
-#ifdef __APPLE__
-   if (!InitIOS(m_pWindow))
-      return 0;
-#endif
+      #ifdef __APPLE__
+         if (!InitIOS(m_pWindow))
+            return 0;
+      #endif
+   }
 
-#ifdef __ANDROID__
-   SDL_SendAndroidMessage(COMMAND_APP_INIT_COMPLETED, 0);
-#endif
+   if (g_isAndroid)
+      MsgPI::MsgPluginManager::GetInstance().UpdateAPIThread();
 
    return 1;
 }
@@ -222,7 +219,6 @@ void VPinballLib::Init(VPinballEventCallback callback)
       VPXPluginAPIImpl::GetInstance();
 
       VPinballLib& lib = VPinballLib::Instance();
-      lib.LoadPlugins();
       lib.UpdateWebServer();
    }, nullptr, true);
 }
@@ -539,6 +535,9 @@ VPINBALL_STATUS VPinballLib::Play()
       return VPINBALL_STATUS_FAILURE;
 
    if (!SDL_RunOnMainThread([](void*) {
+      VPinballLib& lib = VPinballLib::Instance();
+      lib.LoadPlugins();
+
       g_pvp->DoPlay(0);
    }, nullptr, true))
       return VPINBALL_STATUS_FAILURE;

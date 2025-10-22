@@ -1,5 +1,6 @@
 package org.vpinball.app
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.DocumentsContract
@@ -14,13 +15,12 @@ import org.vpinball.app.jni.VPinballLogLevel
 import org.vpinball.app.jni.VPinballSettingsSection
 
 object SAFFileSystem {
-    internal lateinit var activity: VPinballActivity
-        private set
+    private lateinit var context: Context
 
     private val uriCache = mutableMapOf<String, Uri?>()
 
-    fun initialize(activity: VPinballActivity) {
-        this.activity = activity
+    fun initialize(context: Context) {
+        this.context = context.applicationContext
     }
 
     fun isSAFPath(path: String): Boolean {
@@ -29,10 +29,7 @@ object SAFFileSystem {
 
     fun setExternalStorageUri(uri: Uri) {
         try {
-            activity.contentResolver.takePersistableUriPermission(
-                uri,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
-            )
+            context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
         } catch (e: Exception) {
             VPinballManager.log(VPinballLogLevel.ERROR, "Failed to take persistent permission: ${e.message}")
             return
@@ -97,7 +94,7 @@ object SAFFileSystem {
                 return false
             }
 
-            activity.contentResolver.openOutputStream(docUri, "wt")?.use { output ->
+            context.contentResolver.openOutputStream(docUri, "wt")?.use { output ->
                 output.write(content.toByteArray())
                 output.flush()
             }
@@ -118,7 +115,7 @@ object SAFFileSystem {
 
         return try {
             val docUri = buildDocumentUri(uri, relativePath) ?: return null
-            activity.contentResolver.openInputStream(docUri)?.use { input -> input.bufferedReader().readText() }
+            context.contentResolver.openInputStream(docUri)?.use { input -> input.bufferedReader().readText() }
         } catch (e: Exception) {
             VPinballManager.log(VPinballLogLevel.ERROR, "Exception: ${e.message}")
             null
@@ -134,7 +131,7 @@ object SAFFileSystem {
 
         return try {
             val docUri = buildDocumentUri(uri, relativePath) ?: return null
-            activity.contentResolver.openInputStream(docUri)
+            context.contentResolver.openInputStream(docUri)
         } catch (e: Exception) {
             VPinballManager.log(VPinballLogLevel.ERROR, "Exception: ${e.message}")
             null
@@ -150,7 +147,7 @@ object SAFFileSystem {
 
         return try {
             val docUri = buildDocumentUri(uri, relativePath, createIfMissing = true) ?: return null
-            activity.contentResolver.openOutputStream(docUri, "wt")
+            context.contentResolver.openOutputStream(docUri, "wt")
         } catch (e: Exception) {
             VPinballManager.log(VPinballLogLevel.ERROR, "Exception: ${e.message}")
             null
@@ -176,7 +173,7 @@ object SAFFileSystem {
             try {
                 val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(uri, DocumentsContract.getDocumentId(docUri))
 
-                activity.contentResolver
+                context.contentResolver
                     .query(
                         childrenUri,
                         arrayOf(
@@ -239,7 +236,7 @@ object SAFFileSystem {
 
                 var foundUri: Uri? = null
 
-                activity.contentResolver
+                context.contentResolver
                     .query(
                         childrenUri,
                         arrayOf(
@@ -275,7 +272,7 @@ object SAFFileSystem {
                             DocumentsContract.Document.MIME_TYPE_DIR
                         }
 
-                    val newUri = DocumentsContract.createDocument(activity.contentResolver, currentUri, mimeType, segment)
+                    val newUri = DocumentsContract.createDocument(context.contentResolver, currentUri, mimeType, segment)
 
                     if (newUri != null) {
                         currentUri = newUri
@@ -319,7 +316,7 @@ object SAFFileSystem {
             var count = 0
 
             try {
-                activity.contentResolver.query(srcUri, arrayOf(DocumentsContract.Document.COLUMN_MIME_TYPE), null, null, null)?.use { cursor ->
+                context.contentResolver.query(srcUri, arrayOf(DocumentsContract.Document.COLUMN_MIME_TYPE), null, null, null)?.use { cursor ->
                     if (cursor.moveToFirst()) {
                         val mimeIndex = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_MIME_TYPE)
                         val mimeType = cursor.getString(mimeIndex)
@@ -327,7 +324,7 @@ object SAFFileSystem {
                         if (mimeType == DocumentsContract.Document.MIME_TYPE_DIR) {
                             val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(uri, DocumentsContract.getDocumentId(srcUri))
 
-                            activity.contentResolver
+                            context.contentResolver
                                 .query(childrenUri, arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME), null, null, null)
                                 ?.use { childCursor ->
                                     val nameIndex = childCursor.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
@@ -361,7 +358,7 @@ object SAFFileSystem {
             }
 
             try {
-                activity.contentResolver.query(srcUri, arrayOf(DocumentsContract.Document.COLUMN_MIME_TYPE), null, null, null)?.use { cursor ->
+                context.contentResolver.query(srcUri, arrayOf(DocumentsContract.Document.COLUMN_MIME_TYPE), null, null, null)?.use { cursor ->
                     if (cursor.moveToFirst()) {
                         val mimeIndex = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_MIME_TYPE)
                         val mimeType = cursor.getString(mimeIndex)
@@ -371,7 +368,7 @@ object SAFFileSystem {
 
                             val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(uri, DocumentsContract.getDocumentId(srcUri))
 
-                            activity.contentResolver
+                            context.contentResolver
                                 .query(childrenUri, arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME), null, null, null)
                                 ?.use { childCursor ->
                                     val nameIndex = childCursor.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
@@ -389,7 +386,7 @@ object SAFFileSystem {
 
                             return true
                         } else {
-                            activity.contentResolver.openInputStream(srcUri)?.use { input ->
+                            context.contentResolver.openInputStream(srcUri)?.use { input ->
                                 FileOutputStream(dstPath).use { output -> input.copyTo(output) }
                             }
                             copiedFiles++
@@ -440,7 +437,7 @@ object SAFFileSystem {
                 try {
                     val fileSize = sourceFile.length()
                     FileInputStream(sourceFile).use { input ->
-                        activity.contentResolver.openOutputStream(destUri, "w")?.use { output ->
+                        context.contentResolver.openOutputStream(destUri, "w")?.use { output ->
                             val bytesCopied = input.copyTo(output)
                             output.flush()
                             if (bytesCopied != fileSize) {
@@ -495,7 +492,7 @@ object SAFFileSystem {
 
                     try {
                         FileInputStream(srcFile).use { input ->
-                            activity.contentResolver.openOutputStream(destUri, "wt")?.use { output -> input.copyTo(output) } ?: return false
+                            context.contentResolver.openOutputStream(destUri, "wt")?.use { output -> input.copyTo(output) } ?: return false
                         }
                         return true
                     } catch (e: Exception) {
@@ -549,7 +546,7 @@ object SAFFileSystem {
                 }
             }
 
-            val deleted = DocumentsContract.deleteDocument(activity.contentResolver, docUri)
+            val deleted = DocumentsContract.deleteDocument(context.contentResolver, docUri)
             if (deleted) {
                 val cacheKey = "$uri:$relativePath"
                 uriCache.remove(cacheKey)
@@ -565,14 +562,14 @@ object SAFFileSystem {
     private fun countFilesRecursive(docUri: Uri, treeUri: Uri): Int {
         var count = 0
         try {
-            activity.contentResolver.query(docUri, arrayOf(DocumentsContract.Document.COLUMN_MIME_TYPE), null, null, null)?.use { cursor ->
+            context.contentResolver.query(docUri, arrayOf(DocumentsContract.Document.COLUMN_MIME_TYPE), null, null, null)?.use { cursor ->
                 if (cursor.moveToFirst()) {
                     val mimeIndex = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_MIME_TYPE)
                     val mimeType = cursor.getString(mimeIndex)
 
                     if (mimeType == DocumentsContract.Document.MIME_TYPE_DIR) {
                         val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, DocumentsContract.getDocumentId(docUri))
-                        activity.contentResolver
+                        context.contentResolver
                             .query(
                                 childrenUri,
                                 arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID, DocumentsContract.Document.COLUMN_MIME_TYPE),
@@ -606,7 +603,7 @@ object SAFFileSystem {
 
     private fun deleteRecursive(docUri: Uri, treeUri: Uri, totalFiles: Int, deletedCount: IntArray, onProgress: (Int, String) -> Unit): Boolean {
         try {
-            activity.contentResolver.query(docUri, arrayOf(DocumentsContract.Document.COLUMN_MIME_TYPE), null, null, null)?.use { cursor ->
+            context.contentResolver.query(docUri, arrayOf(DocumentsContract.Document.COLUMN_MIME_TYPE), null, null, null)?.use { cursor ->
                 if (cursor.moveToFirst()) {
                     val mimeIndex = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_MIME_TYPE)
                     val mimeType = cursor.getString(mimeIndex)
@@ -615,7 +612,7 @@ object SAFFileSystem {
                         val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, DocumentsContract.getDocumentId(docUri))
                         val childUris = mutableListOf<Uri>()
 
-                        activity.contentResolver.query(childrenUri, arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID), null, null, null)?.use {
+                        context.contentResolver.query(childrenUri, arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID), null, null, null)?.use {
                             childCursor ->
                             while (childCursor.moveToNext()) {
                                 val childId = childCursor.getString(0)
@@ -637,7 +634,7 @@ object SAFFileSystem {
                 }
             }
 
-            return DocumentsContract.deleteDocument(activity.contentResolver, docUri)
+            return DocumentsContract.deleteDocument(context.contentResolver, docUri)
         } catch (e: Exception) {
             VPinballManager.log(VPinballLogLevel.ERROR, "Exception: ${e.message}")
             return false

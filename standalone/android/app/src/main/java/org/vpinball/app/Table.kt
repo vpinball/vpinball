@@ -26,14 +26,6 @@ data class Table(val uuid: String, val name: String, val path: String, val image
                 File(fullPath).parentFile ?: File("")
             }
 
-    val basePath: String
-        get() =
-            if (SAFFileSystem.isUsingSAF()) {
-                fullPath.substringBeforeLast('/')
-            } else {
-                baseURL.absolutePath
-            }
-
     val scriptURL: File
         get() = File(fullPath.substringBeforeLast('.') + ".vbs")
 
