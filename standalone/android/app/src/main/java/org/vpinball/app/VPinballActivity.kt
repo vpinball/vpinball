@@ -1,83 +1,56 @@
 package org.vpinball.app
 
+import android.content.Intent
 import android.os.Bundle
-import android.view.ViewGroup
-import android.widget.RelativeLayout
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.ComposeView
-import androidx.lifecycle.setViewTreeLifecycleOwner
-import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import org.koin.androidx.viewmodel.ext.android.viewModel
-import org.libsdl.app.SDLActivity
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import org.koin.android.ext.android.inject
 import org.vpinball.app.ui.VPinballContent
 
-class VPinballActivity : SDLActivity() {
-    val viewModel: VPinballViewModel by viewModel<VPinballViewModel>()
-
-    private var isAppInit by mutableStateOf(false)
-    private var composeView: ComposeView? = null
-
-    companion object {
-        const val COMMAND_APP_INIT_COMPLETED = 0x8001
-    }
+class VPinballActivity : ComponentActivity() {
+    val viewModel: VPinballViewModel by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        window.decorView.windowInsetsController?.show(android.view.WindowInsets.Type.statusBars() or android.view.WindowInsets.Type.navigationBars())
+        VPinballManager.setMainActivity(this)
 
-        window.decorView.windowInsetsController?.setSystemBarsAppearance(0, android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS)
+        setContent {
+            val state by viewModel.state.collectAsStateWithLifecycle()
 
-        VPinballManager.initialize(this)
+            LaunchedEffect(Unit) { viewModel.startSplashTimer() }
 
-        initCompose()
-    }
+            LaunchedEffect(state.loading, state.table) {
+                if (state.loading && state.table != null) {
+                    val table = state.table!!
 
-    override fun onUnhandledMessage(command: Int, param: Any?): Boolean {
-        if (command == COMMAND_APP_INIT_COMPLETED) {
-            isAppInit = true
-            return true
+                    val success =
+                        VPinballManager.load(table) { progress, status ->
+                            lifecycleScope.launch {
+                                viewModel.progress(progress)
+                                viewModel.status(status)
+                            }
+                        }
+
+                    if (success) {
+                        val intent = Intent(this@VPinballActivity, VPinballPlayerActivity::class.java)
+                        startActivity(intent)
+                        @Suppress("DEPRECATION") overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    }
+                }
+            }
+
+            VPinballContent(viewModel = viewModel)
         }
-
-        return super.onUnhandledMessage(command, param)
     }
 
-    private fun initCompose() {
-        val layoutParams = RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-
-        composeView = ComposeView(this).apply { setContent { VPinballContent(isAppInit = isAppInit) } }
-
-        val relativeLayout = getContentView() as? RelativeLayout
-        relativeLayout?.apply {
-            setBackgroundColor(Color.Transparent.toArgb())
-            setViewTreeLifecycleOwner(this@VPinballActivity)
-            setViewTreeSavedStateRegistryOwner(this@VPinballActivity)
-            addView(composeView, layoutParams)
-        }
+    override fun onDestroy() {
+        VPinballManager.setMainActivity(null)
+        super.onDestroy()
     }
-
-    override fun getLibraries(): Array<String> =
-        arrayOf(
-            "SDL3",
-            "SDL3_image",
-            "SDL3_ttf",
-            "freeimage",
-            "pinmame",
-            "altsound",
-            "dmdutil",
-            "dof",
-            "pupdmd",
-            "avcodec",
-            "avdevice",
-            "avfilter",
-            "avformat",
-            "avutil",
-            "swresample",
-            "swscale",
-            "vpinball",
-        )
 }

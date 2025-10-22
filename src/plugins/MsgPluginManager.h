@@ -94,6 +94,7 @@ public:
    void ProcessAsyncCallbacks();
    void UnloadPlugins();
    void SetSettingsHandler(const std::function<void(const char*, const char*, char*, unsigned int)>& handler) { m_settingHandler = handler; }
+   void UpdateAPIThread() { m_apiThread = std::this_thread::get_id(); }
 
 private:
    MsgPluginManager();

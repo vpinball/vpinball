@@ -16,23 +16,8 @@ ExitSplashPage::ExitSplashPage()
 
 void ExitSplashPage::BuildPage()
 {
-#ifdef __STANDALONE__
-   constexpr bool isStandalone = true;
-#else
-   constexpr bool isStandalone = false;
-#endif
-
-#if ((defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__))
-   constexpr bool hasKeyboard = false;
-#else
-   constexpr bool hasKeyboard = true;
-#endif
-
-#if ((defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS)) || defined(__ANDROID__))
-   constexpr bool isTouch = true;
-#else
-   constexpr bool isTouch = false;
-#endif
+   constexpr bool hasKeyboard = !(g_isAndroid || g_isIOS);
+   constexpr bool isTouch = g_isAndroid || g_isIOS;
 
    ClearItems();
 
@@ -87,7 +72,7 @@ void ExitSplashPage::BuildPage()
             BuildPage();
          }));
 
-   if (!isStandalone)
+   if (!g_isStandalone)
       AddItem(std::make_unique<InGameUIItem>("Quit to Editor"s, ""s, [this]() { m_player->m_ptable->QuitPlayer(Player::CS_STOP_PLAY); }));
    else
       AddItem(std::make_unique<InGameUIItem>("Quit"s, ""s, [this]() {

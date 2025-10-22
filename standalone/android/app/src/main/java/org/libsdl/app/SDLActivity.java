@@ -53,14 +53,11 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Locale;
 
-import android.annotation.SuppressLint;
-import androidx.activity.ComponentActivity;
 
 /**
     SDL Activity
 */
-@SuppressLint("RestrictedApi")
-public class SDLActivity extends ComponentActivity implements View.OnSystemUiVisibilityChangeListener {
+public class SDLActivity extends Activity implements View.OnSystemUiVisibilityChangeListener {
     private static final String TAG = "SDL";
     private static final int SDL_MAJOR_VERSION = 3;
     private static final int SDL_MINOR_VERSION = 2;
@@ -1131,6 +1128,11 @@ public class SDLActivity extends ComponentActivity implements View.OnSystemUiVis
         int orientation_landscape = -1;
         int orientation_portrait = -1;
 
+        if (w <= 1 || h <= 1) {
+            // Invalid width/height, ignore this request
+            return;
+        }
+
         /* If set, hint "explicitly controls which UI orientations are allowed". */
         if (hint.contains("LandscapeRight") && hint.contains("LandscapeLeft")) {
             orientation_landscape = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE;
@@ -1959,11 +1961,11 @@ public class SDLActivity extends ComponentActivity implements View.OnSystemUiVis
         }
     }
 
-    //@Override
-    //public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-    //    boolean result = (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED);
-    //    nativePermissionResult(requestCode, result);
-    //}
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        boolean result = (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED);
+        nativePermissionResult(requestCode, result);
+    }
 
     /**
      * This method is called by SDL using JNI.

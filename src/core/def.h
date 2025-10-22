@@ -66,6 +66,16 @@ using std::wstring;
    #else
       #define g_isMobile false
    #endif
+   #if defined(__APPLE__) && defined(TARGET_OS_IOS) && TARGET_OS_IOS
+      #define g_isIOS true
+   #else
+      #define g_isIOS false
+   #endif
+   #if defined(__ANDROID__)
+      #define g_isAndroid true
+   #else
+      #define g_isAndroid false
+   #endif
 #else
    #ifdef __STANDALONE__
       constexpr bool g_isStandalone = true;
@@ -77,8 +87,18 @@ using std::wstring;
    #else
       constexpr bool g_isMobile = false;
    #endif
-#endif
+   #if defined(__APPLE__) && defined(TARGET_OS_IOS) && TARGET_OS_IOS
+      constexpr bool g_isIOS = true;
+   #else
+      constexpr bool g_isIOS = false;
+   #endif
 
+   #if defined(__ANDROID__)
+      constexpr bool g_isAndroid = true;
+   #else
+      constexpr bool g_isAndroid = false;
+   #endif
+#endif
 
 template <typename T>
 constexpr __forceinline T min(const T x, const T y)
