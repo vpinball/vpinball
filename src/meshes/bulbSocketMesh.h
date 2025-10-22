@@ -3,7 +3,7 @@
 
 constexpr unsigned int bulbSocketNumVertices=592;
 constexpr unsigned int bulbSocketNumFaces=3384;
-constexpr Vertex3D_NoTex2 bulbSocket[592]=
+static constexpr Vertex3D_NoTex2 bulbSocket[592]=
 {
 { 0.000000f,0.000000f,-0.758774f, 0.000000f,0.000000f,-1.000000f, 0.371246f,1.000000f},
 { 0.000000f,0.314660f,-0.758774f, 0.000000f,0.734200f,-0.678900f, 0.250000f,0.874869f},
@@ -599,7 +599,7 @@ constexpr Vertex3D_NoTex2 bulbSocket[592]=
 { 0.011041f,0.083194f,0.717502f, 0.590800f,0.800900f,0.097200f, 0.270999f,0.037063f}
 };
 
-constexpr WORD bulbSocketIndices[3384]=
+static constexpr WORD bulbSocketIndices[3384]=
 {
 176, 177, 178,
 178, 177, 131,

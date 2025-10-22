@@ -259,7 +259,7 @@ MSGPI_EXPORT void MSGPIAPI PinUpEventsPluginLoad(const uint32_t sessionId, const
    msgApi->SubscribeMsg(sessionId, onGameEndId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_GAME_END), onGameEnd, nullptr);
    msgApi->SubscribeMsg(sessionId, onSerumTriggerId = msgApi->GetMsgID("Serum", "OnDmdTrigger"), onSerumTrigger, nullptr);
    dmdDevicePupDll = nullptr;
-   constexpr unsigned int mapping4[] = { 0, 1, 4, 15 };
+   static constexpr unsigned int mapping4[] = { 0, 1, 4, 15 };
    for (int i = 0; i < 4; i++)
    {
       palette4[i * 3 + 0] = (mapping4[i] * 0xFF) / 0xF; // R

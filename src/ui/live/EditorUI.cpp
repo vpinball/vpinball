@@ -464,7 +464,7 @@ void EditorUI::Update()
       memcpy(camViewLH, &m_camView.m[0][0], sizeof(float) * 4 * 4);
       for (int i = 8; i < 12; i++)
          camViewLH[i] = -camViewLH[i];
-      Matrix3D prevTransform(transform);
+      const Matrix3D prevTransform(transform);
       ImGuizmo::Manipulate(camViewLH, (float *)(m_camProj.m), m_gizmoOperation, m_gizmoMode, (float *)(transform.m));
       if (memcmp(transform.m, prevTransform.m, 16 * sizeof(float)) != 0)
          SetSelectionTransform(transform);
@@ -474,7 +474,7 @@ void EditorUI::Update()
    {
       const float rClipWidth = (float)m_player->m_playfieldWnd->GetWidth() * 0.5f;
       const float rClipHeight = (float)m_player->m_playfieldWnd->GetHeight() * 0.5f;
-      Matrix3D mvp = m_renderer->GetMVP().GetModelViewProj(0);
+      const Matrix3D mvp = m_renderer->GetMVP().GetModelViewProj(0);
       auto project = [mvp, rClipWidth, rClipHeight](Vertex3Ds v)
       {
          const float xp = mvp._11 * v.x + mvp._21 * v.y + mvp._31 * v.z + mvp._41;
@@ -541,7 +541,7 @@ void EditorUI::Update()
             Matrix3D viewInverse(m_camView);
             viewInverse.Invert();
             vec3 up = viewInverse.GetOrthoNormalUp(), dir = viewInverse.GetOrthoNormalDir();
-            vec3 pos = viewInverse.GetOrthoNormalPos(), right = viewInverse.GetOrthoNormalRight();
+            const vec3 pos = viewInverse.GetOrthoNormalPos(), right = viewInverse.GetOrthoNormalRight();
             vec3 camTarget = pos - dir * m_camDistance;
             if (ImGui::GetIO().KeyShift)
             {
@@ -599,11 +599,11 @@ void EditorUI::Update()
          m_player->m_physics->RayCast(v3d, v3d2, true, vhoUnfilteredHit);
 
          vector<HitTestResult> vhoHit;
-         bool visibleOnly = m_selectionFilter & SelectionFilter::SF_VisibleOnly;
-         bool noPF = !(m_selectionFilter & SelectionFilter::SF_Playfield);
-         bool noPrims = !(m_selectionFilter & SelectionFilter::SF_Primitives);
-         bool noLights = !(m_selectionFilter & SelectionFilter::SF_Lights);
-         bool noFlashers = !(m_selectionFilter & SelectionFilter::SF_Flashers);
+         const bool visibleOnly = m_selectionFilter & SelectionFilter::SF_VisibleOnly;
+         const bool noPF = !(m_selectionFilter & SelectionFilter::SF_Playfield);
+         const bool noPrims = !(m_selectionFilter & SelectionFilter::SF_Primitives);
+         const bool noLights = !(m_selectionFilter & SelectionFilter::SF_Lights);
+         const bool noFlashers = !(m_selectionFilter & SelectionFilter::SF_Flashers);
          for (const auto& hr : vhoUnfilteredHit)
          {
             const auto type = hr.m_obj->m_editable->GetItemType();
@@ -1318,7 +1318,7 @@ void EditorUI::UpdateVideoOptionsModal()
          {
             m_renderer->UpdateStereoShaderState();
             bool modeChanged = false;
-            const char *stereo_output_items[] = { "Disabled", "3D TV", "Anaglyph" };
+            static const char *stereo_output_items[] = { "Disabled", "3D TV", "Anaglyph" };
             int stereo_mode = m_renderer->m_stereo3D == STEREO_OFF ? 0 : Is3DTVStereoMode(m_renderer->m_stereo3D) ? 1 : 2;
             int tv_mode = Is3DTVStereoMode(m_renderer->m_stereo3D) ? (int)m_renderer->m_stereo3D - STEREO_TB : 0;
             int glassesIndex = IsAnaglyphStereoMode(m_renderer->m_stereo3D) ? (m_renderer->m_stereo3D - STEREO_ANAGLYPH_1) : 0;
@@ -1353,7 +1353,7 @@ void EditorUI::UpdateVideoOptionsModal()
             }
             if (stereo_mode == 1) // 3D TV
             {
-               const char *tv_mode_items[] = { "Top / Bottom", "Interlaced", "Flipped Interlaced", "Side by Side" };
+               static const char *tv_mode_items[] = { "Top / Bottom", "Interlaced", "Flipped Interlaced", "Side by Side" };
                if (ImGui::Combo("TV type", &tv_mode, tv_mode_items, IM_ARRAYSIZE(tv_mode_items)))
                   modeChanged = true;
             }
@@ -1382,7 +1382,7 @@ void EditorUI::UpdateVideoOptionsModal()
                for (size_t i = 0; i < std::size(defaultNames); i++)
                   if (!g_pvp->m_settings.LoadValue(Settings::Player, "Anaglyph"s.append(std::to_string(i + 1)).append("Name"s), name[i]))
                      name[i] = defaultNames[i];
-               const char *glasses_items[] = { name[0].c_str(),name[1].c_str(),name[2].c_str(),name[3].c_str(),name[4].c_str(),name[5].c_str(),name[6].c_str(),name[7].c_str(),name[8].c_str(),name[9].c_str(), };
+               static const char *glasses_items[] = { name[0].c_str(),name[1].c_str(),name[2].c_str(),name[3].c_str(),name[4].c_str(),name[5].c_str(),name[6].c_str(),name[7].c_str(),name[8].c_str(),name[9].c_str(), };
                if (ImGui::Combo("Glasses", &glassesIndex, glasses_items, IM_ARRAYSIZE(glasses_items)))
                   modeChanged = true;
                const string prefKey = "Anaglyph" + std::to_string(glassesIndex + 1);
@@ -1454,7 +1454,7 @@ void EditorUI::UpdateVideoOptionsModal()
 
 void EditorUI::UpdateAnaglyphCalibrationModal()
 {
-   int glassesIndex = m_renderer->m_stereo3D - STEREO_ANAGLYPH_1;
+   const int glassesIndex = m_renderer->m_stereo3D - STEREO_ANAGLYPH_1;
    if (glassesIndex < 0 || glassesIndex > 9)
       return;
    static float backgroundOpacity = 1.f;
@@ -1560,7 +1560,7 @@ void EditorUI::UpdateAnaglyphCalibrationModal()
       {
          ImVec2 faceTrans[10], faceOffset(win_size.x * 0.5f - 0.5f * t + (float)v * t, win_size.y * 0.5f);
          draw_list->AddRectFilled(ImVec2(0.5f * win_size.x - t + (float)v * t, 0.5f * win_size.y - t), ImVec2(0.5f * win_size.x + (float)v * t, 0.5f * win_size.y + t), v == 0 ? backCol : calCol);
-         ImU32 col = ImGui::GetColorU32(v == 1 ? backCol.Value : calCol.Value);
+         const ImU32 col = ImGui::GetColorU32(v == 1 ? backCol.Value : calCol.Value);
          for (int i = 0, p = 0; i < 13; p += faceLength[i], i++)
          {
             ImVec2 pos(0.f, 0.f);
@@ -2327,7 +2327,7 @@ void EditorUI::TriggerProperties(bool is_live, Trigger *startup_obj, Trigger *li
       return;                                                                                                                                                                                \
    }                                                                                                                                                                                         \
    ImGui::PushID(label); \
-   type prev_v = *v;
+   const type prev_v = *v;
 
 #define PROP_HELPER_SYNC(type)                                                                                                                                                               \
    /* Sync button(also show if there are difference between live and startup through the enable state) */                                                                                    \
@@ -2337,7 +2337,7 @@ void EditorUI::TriggerProperties(bool is_live, Trigger *startup_obj, Trigger *li
       const bool synced = ((*ov) == (*v));                                                                                                                                                   \
       if (synced)                                                                                                                                                                            \
          ImGui::BeginDisabled(); \
-      type prev_ov = *ov; \
+      const type prev_ov = *ov; \
       if (ImGui::Button(ICON_SAVE)) \
       { \
          *ov = *v; \

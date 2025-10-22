@@ -3,7 +3,7 @@
 
 constexpr unsigned int hitTargetT2Vertices=88;
 constexpr unsigned int hitTargetT2NumIndices=192;
-constexpr Vertex3D_NoTex2 hitTargetT2Mesh[88]=
+static constexpr Vertex3D_NoTex2 hitTargetT2Mesh[88]=
 {
 { 0.525000f,0.150000f,0.487250f, -0.000000f,1.000000f,-0.000000f, 0.827887f,0.728546f},
 { -0.525000f,0.150000f,0.487250f, -0.000000f,1.000000f,-0.000000f, 0.000105f,0.728546f},
@@ -95,7 +95,7 @@ constexpr Vertex3D_NoTex2 hitTargetT2Mesh[88]=
 { -0.200000f,-0.050000f,-0.112750f, -0.965900f,0.258800f,-0.000000f, 0.256292f,0.980526f}
 };
 
-constexpr WORD hitTargetT2Indices[192]=
+static constexpr WORD hitTargetT2Indices[192]=
 {
 	12, 13, 14,
 	0, 1, 2,

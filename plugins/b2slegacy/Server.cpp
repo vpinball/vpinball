@@ -1428,9 +1428,9 @@ void Server::MyB2SSetScore(int digit, int value, bool animateReelChange)
 {
    if (m_pB2SData->IsBackglassRunning()) {
       if (digit > 0) {
-         bool useLEDs = (m_pB2SData->GetLEDs()->contains(string("LEDBox" + std::to_string(digit))) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered);
+         bool useLEDs = (m_pB2SData->GetLEDs()->contains("LEDBox" + std::to_string(digit)) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered);
          bool useLEDDisplays = (m_pB2SData->GetLEDDisplayDigits()->contains(digit - 1) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Dream7);
-         bool useReels = m_pB2SData->GetReels()->contains(string("ReelBox" + std::to_string(digit)));
+         bool useReels = m_pB2SData->GetReels()->contains("ReelBox" + std::to_string(digit));
 
          if (useLEDs) {
             // Rendered LEDs are used
@@ -1455,9 +1455,9 @@ void Server::MyB2SSetScore(int digit, int score)
 {
    if (m_pB2SData->IsBackglassRunning()) {
       if (digit > 0) {
-         const bool useLEDs = (m_pB2SData->GetLEDs()->contains(string("LEDBox" + std::to_string(digit))) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered);
+         const bool useLEDs = (m_pB2SData->GetLEDs()->contains("LEDBox" + std::to_string(digit)) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered);
          const bool useLEDDisplays = (m_pB2SData->GetLEDDisplayDigits()->contains(digit - 1) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Dream7);
-         const bool useReels = m_pB2SData->GetReels()->contains(string("ReelBox" + std::to_string(digit)));
+         const bool useReels = m_pB2SData->GetReels()->contains("ReelBox" + std::to_string(digit));
 
          if (useLEDs) {
             // Check the passed digit

@@ -1669,7 +1669,7 @@ void VPinball::OnInitialUpdate()
 
    m_hwndStatusBar = CreateStatusWindow(WS_CHILD | WS_VISIBLE, "", GetHwnd(), 1); // Create Status Line at the bottom
 
-   constexpr int foo[6] = { 120, 240, 400, 600, 800, 1400 };
+   static constexpr int foo[6] = { 120, 240, 400, 600, 800, 1400 };
    ::SendMessage(m_hwndStatusBar, SB_SETPARTS, 6, (size_t)foo); // Initialize Status bar with 6 empty cells
 
    SendMessage(WM_SIZE, 0, 0);         // Make our window relay itself out

@@ -6,7 +6,7 @@
 #include "Shader.h"
 #include "math/bluenoise.h"
 
-const string PLAYFIELD_REFLECTION_RENDERPROBE_NAME = "Playfield Reflections"s;
+static const string PLAYFIELD_REFLECTION_RENDERPROBE_NAME = "Playfield Reflections"s;
 
 RenderProbe::~RenderProbe()
 {
@@ -216,12 +216,12 @@ void RenderProbe::ApplyRoughness(RenderTarget* probe, const int roughness)
       if (m_type == SCREEN_SPACE_TRANSPARENCY)
       {
          // FIXME adjust the kernels to have as many as there are roughness levels
-         constexpr float kernel[] = { 0.f, 7.f, 9.f, 11.f, 13.f, 15.f, 19.f, 23.f, 27.f, 39.f, 39.f, 39.f, 39.f };
+         static constexpr float kernel[] = { 0.f, 7.f, 9.f, 11.f, 13.f, 15.f, 19.f, 23.f, 27.f, 39.f, 39.f, 39.f, 39.f };
          m_rd->DrawGaussianBlur(probe, m_blurRT, probe, kernel[roughness]);
       }
       else
       {
-         constexpr float kernel[] = { 0.f, 7.f, 9.f, 13.f, 15.f, 19.f, 23.f, 13.f, 15.f, 19.f, 23.f, 27.f, 39.f };
+         static constexpr float kernel[] = { 0.f, 7.f, 9.f, 13.f, 15.f, 19.f, 23.f, 13.f, 15.f, 19.f, 23.f, 27.f, 39.f };
          m_rd->DrawGaussianBlur(probe, m_blurRT, probe, kernel[roughness]);
       }
    }
@@ -303,8 +303,8 @@ void RenderProbe::PreRenderStaticReflectionProbe()
    //#define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the (commented out) lattice-based QMC oversampling, 'magic factor', depending on the the number of iterations!
    // loop for X times and accumulate/average these renderings
    // NOTE: iter == 0 MUST ALWAYS PRODUCE an offset of 0,0!
-   unsigned int nTris = m_rd->m_curDrawnTriangles;
-   int n_iter = STATIC_PRERENDER_ITERATIONS - 1;
+   const unsigned int nTris = m_rd->m_curDrawnTriangles;
+   const int n_iter = STATIC_PRERENDER_ITERATIONS - 1;
    for (int iter = n_iter; iter >= 0; --iter) // just do one iteration if in dynamic camera/light/material tweaking mode
    {
       m_rd->m_curDrawnTriangles = 0;
@@ -418,7 +418,7 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    // Set the clip plane to only render objects above the reflection plane (do not reflect what is under or the plane itself)
    Vertex3Ds n(m_reflection_plane.x, m_reflection_plane.y, m_reflection_plane.z);
    n.Normalize();
-   vec4 clip_plane(n.x, n.y, n.z, m_reflection_plane.w);
+   const vec4 clip_plane(n.x, n.y, n.z, m_reflection_plane.w);
    m_rd->SetClipPlane(clip_plane);
    m_rd->SetRenderState(RenderState::CLIPPLANEENABLE, RenderState::RS_TRUE);
    // Reverse cull mode since we multiply by a reversing matrix (mirror also has a reversing matrix)
@@ -427,8 +427,8 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    m_rd->m_basicShader->SetTextureNull(SHADER_tex_reflection);
 
    // Flip camera
-   Matrix3D viewMat, initialViewMat;
-   viewMat = g_pplayer->m_renderer->GetMVP().GetView();
+   Matrix3D viewMat = g_pplayer->m_renderer->GetMVP().GetView();
+   Matrix3D initialViewMat;
    memcpy(&initialViewMat.m[0][0], &viewMat.m[0][0], 4 * 4 * sizeof(float));
    viewMat = Matrix3D::MatrixPlaneReflection(n, m_reflection_plane.w) * viewMat;
    g_pplayer->m_renderer->GetMVP().SetView(viewMat);

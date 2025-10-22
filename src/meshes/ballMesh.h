@@ -2,7 +2,7 @@
 
 constexpr unsigned int basicBallMidNumVertices=181;
 constexpr unsigned int basicBallMidNumFaces=320*3;
-constexpr Vertex3D_NoTex2 basicBallMid[181]=
+static constexpr Vertex3D_NoTex2 basicBallMid[181]=
 {
     { 0.000000f, 0.000000f, 1.000000f, -0.000000f, -0.000000f, 1.000000f, 0.677600f, 0.920600f },
     { 0.273267f, 0.000000f, 0.961938f, 0.271300f, 0.000000f, 0.962500f, 0.593500f, 0.846500f },
@@ -186,7 +186,7 @@ constexpr Vertex3D_NoTex2 basicBallMid[181]=
     { 0.655436f, 0.149044f, -0.740398f, 0.658900f, 0.147400f, -0.737600f, 0.623400f, 0.276800f },
     { 0.655436f, -0.149044f, -0.740398f, 0.658900f, -0.147400f, -0.737600f, 0.563500f, 0.276800f }
 };
-constexpr WORD basicBallMidIndices[320*3]=
+static constexpr WORD basicBallMidIndices[320*3]=
 {
 153, 154, 155,
 154, 157, 155,
@@ -512,7 +512,7 @@ constexpr WORD basicBallMidIndices[320*3]=
 // Icosa lowest
 constexpr unsigned int basicBallLoNumVertices=108;
 constexpr unsigned int basicBallLoNumFaces=180*3;
-constexpr Vertex3D_NoTex2 basicBallLo[108]=
+static constexpr Vertex3D_NoTex2 basicBallLo[108]=
 {
     { 0.000000f, -0.000000f, -1.000000f, 0.000000f, 0.000000f, -1.000000f, 0.092900f, 0.080000f },
     { -0.360729f, -0.000000f, -0.932671f, -0.358500f, -0.000000f, -0.933500f, 0.176900f, 0.178700f },
@@ -623,7 +623,7 @@ constexpr Vertex3D_NoTex2 basicBallLo[108]=
     { -0.083904f, 0.851981f, 0.516806f, -0.086200f, 0.851600f, 0.517000f, 0.820000f, 0.645200f },
     { 0.096461f, 0.983023f, 0.156077f, 0.095100f, 0.982600f, 0.159400f, 0.793800f, 0.541900f }
 };
-constexpr WORD basicBallLoIndices[180*3]=
+static constexpr WORD basicBallLoIndices[180*3]=
 {
 0, 1, 2,
 1, 3, 2,

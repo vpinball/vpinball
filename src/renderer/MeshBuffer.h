@@ -16,7 +16,7 @@ public:
    void bind();
    unsigned int GetSortKey() const;
 
-   const string m_name;
+   const wstring m_wname;
    VertexBuffer* const m_vb;
    IndexBuffer* const m_ib;
    const bool m_isVBOffsetApplied; // True if vertex buffer offset is already applied to index buffer

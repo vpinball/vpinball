@@ -134,10 +134,10 @@ static inline const char* GetXRErrorString(XrInstance xrInstance, XrResult resul
 
 #define OPENXR_CHECK(x, y)                                                                                                                                                                   \
    {                                                                                                                                                                                         \
-      const XrResult result = (x);                                                                                                                                                           \
-      if (!XR_SUCCEEDED(result) && g_pplayer->m_vrDevice)                                                                                                                                    \
+      const XrResult res = (x);                                                                                                                                                           \
+      if (!XR_SUCCEEDED(res) && g_pplayer->m_vrDevice)                                                                                                                                    \
       {                                                                                                                                                                                      \
-         PLOGE << "ERROR: OPENXR: " << int(result) << '(' << (m_xrInstance ? GetXRErrorString(m_xrInstance, result) : "") << ") " << (y);        \
+         PLOGE << "ERROR: OPENXR: " << int(res) << '(' << (m_xrInstance ? GetXRErrorString(m_xrInstance, res) : "") << ") " << (y);        \
       }                                                                                                                                                                                      \
    }
 
@@ -177,11 +177,11 @@ inline static void XrQuaternionf_Lerp(XrQuaternionf* const result, const XrQuate
 
 inline static void XrPosef_ToMatrix3D(Matrix3D* result, const XrPosef* pose)
 {
-   bx::Quaternion orientation(pose->orientation.x, pose->orientation.y, pose->orientation.z, pose->orientation.w);
-   bx::Quaternion invertOrientation = bx::invert(orientation);
+   const bx::Quaternion orientation(pose->orientation.x, pose->orientation.y, pose->orientation.z, pose->orientation.w);
+   const bx::Quaternion invertOrientation = bx::invert(orientation);
    bx::mtxFromQuaternion(&result->m[0][0], invertOrientation);
    result->Transpose();
-   bx::Quaternion position(pose->position.x, pose->position.y, pose->position.z, 0.f);
+   const bx::Quaternion position(pose->position.x, pose->position.y, pose->position.z, 0.f);
    bx::Quaternion invertPosition = bx::invert(position);
    invertPosition = bx::mul(invertPosition, orientation);
    invertPosition = bx::mul(invertOrientation, invertPosition);
@@ -871,7 +871,7 @@ void VRDevice::SetupHMD()
    assert(m_viewConfigurationViews[0].recommendedSwapchainSampleCount == m_viewConfigurationViews[1].recommendedSwapchainSampleCount);
 
    // Let the user choose the down/super sampling
-   float resFactor = g_pplayer ? g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ResFactor", -1.f) : -1.f;
+   const float resFactor = g_pplayer ? g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ResFactor", -1.f) : -1.f;
    if (resFactor <= 0.1f || resFactor > 10.f)
    {
       m_eyeWidth = m_viewConfigurationViews[0].recommendedImageRectWidth;
@@ -1227,7 +1227,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
    #endif
    g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
    XrFrameState frameState { XR_TYPE_FRAME_STATE };
-   XrFrameWaitInfo frameWaitInfo { XR_TYPE_FRAME_WAIT_INFO };
+   constexpr XrFrameWaitInfo frameWaitInfo { XR_TYPE_FRAME_WAIT_INFO, nullptr };
    OPENXR_CHECK(xrWaitFrame(m_session, &frameWaitInfo, &frameState), "Failed to wait for XR Frame.");
    g_pplayer->m_renderProfiler->ExitProfileSection();
    #ifdef MSVC_CONCURRENCY_VIEWER
@@ -1235,7 +1235,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
    #endif
 
    // Tell the OpenXR compositor that the application is beginning the frame.
-   XrFrameBeginInfo frameBeginInfo { XR_TYPE_FRAME_BEGIN_INFO };
+   constexpr XrFrameBeginInfo frameBeginInfo { XR_TYPE_FRAME_BEGIN_INFO, nullptr };
    OPENXR_CHECK(xrBeginFrame(m_session, &frameBeginInfo), "Failed to begin the XR Frame.");
 
    // Variables for rendering and layer composition.
@@ -1273,7 +1273,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
       viewLocateInfo.displayTime = renderLayerInfo.predictedDisplayTime;
       viewLocateInfo.space = m_referenceSpace;
       uint32_t viewCount = 0;
-      XrResult result = xrLocateViews(m_session, &viewLocateInfo, &viewState, static_cast<uint32_t>(views.size()), &viewCount, views.data());
+      const XrResult result = xrLocateViews(m_session, &viewLocateInfo, &viewState, static_cast<uint32_t>(views.size()), &viewCount, views.data());
       if (result != XR_SUCCESS)
       {
          PLOGE << "Failed to locate Views.";
@@ -1447,7 +1447,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
          // Acquire and wait for an image from the swapchains (the timeout is infinite)
          uint32_t colorImageIndex = 0;
          uint32_t depthImageIndex = 0;
-         XrSwapchainImageAcquireInfo acquireInfo { XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO };
+         constexpr XrSwapchainImageAcquireInfo acquireInfo { XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO, nullptr };
          OPENXR_CHECK(xrAcquireSwapchainImage(m_colorSwapchainInfo.swapchain, &acquireInfo, &colorImageIndex), "Failed to acquire Image from the Color Swapchian");
          OPENXR_CHECK(xrAcquireSwapchainImage(m_depthSwapchainInfo.swapchain, &acquireInfo, &depthImageIndex), "Failed to acquire Image from the Depth Swapchian");
 
@@ -1490,12 +1490,12 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
          RenderTarget* vrRenderTarget = m_swapchainRenderTargets[colorImageIndex + depthImageIndex * m_colorSwapchainInfo.imageViews.size()];
          if (vrRenderTarget == nullptr)
          {
-            uint16_t nViews = static_cast<uint16_t>(m_viewConfigurationViews.size());
+            const uint16_t nViews = static_cast<uint16_t>(m_viewConfigurationViews.size());
             bgfx::Attachment colorAttachment, depthAttachment;
             colorAttachment.init(m_colorSwapchainInfo.imageViews[colorImageIndex], bgfx::Access::Write, 0, nViews, 0, BGFX_RESOLVE_NONE);
             depthAttachment.init(m_depthSwapchainInfo.imageViews[depthImageIndex], bgfx::Access::Write, 0, nViews, 0, BGFX_RESOLVE_NONE);
             const bgfx::Attachment attachments[] = { colorAttachment, depthAttachment };
-            bgfx::FrameBufferHandle fbh = bgfx::createFrameBuffer(2, attachments);
+            const bgfx::FrameBufferHandle fbh = bgfx::createFrameBuffer(2, attachments);
             vrRenderTarget = new RenderTarget(rd, SurfaceType::RT_STEREO, 
                fbh, colorAttachment.handle, m_colorSwapchainInfo.format, depthAttachment.handle, m_depthSwapchainInfo.format,
                "VRSwapchain [" + std::to_string(colorImageIndex) + '/' + std::to_string(depthImageIndex) + ']',
@@ -1511,7 +1511,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
          renderLayerInfo.layerProjection.views = renderLayerInfo.layerProjectionViews.data();
 
          // Give the swapchain image back to OpenXR, allowing the compositor to use the image.
-         XrSwapchainImageReleaseInfo releaseInfo { XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO };
+         constexpr XrSwapchainImageReleaseInfo releaseInfo { XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO, nullptr };
          OPENXR_CHECK(xrReleaseSwapchainImage(m_colorSwapchainInfo.swapchain, &releaseInfo), "Failed to release Image back to the Color Swapchain");
          OPENXR_CHECK(xrReleaseSwapchainImage(m_depthSwapchainInfo.swapchain, &releaseInfo), "Failed to release Image back to the Depth Swapchain");
 

@@ -769,7 +769,7 @@ void InputManager::CreateInputActions()
    m_slamTiltActionId = addKeyAction("SlamTilt"s, "Slam Tilt"s, SDL_SCANCODE_HOME);
    m_coinDoorActionId = addKeyAction("CoinDoor"s, "Coin Door"s, SDL_SCANCODE_END);
    m_resetActionId = addKeyAction("Reset"s, "Reset"s, SDL_SCANCODE_F3);
-   constexpr SDL_Scancode serviceKeys[8] = { SDL_SCANCODE_7, SDL_SCANCODE_8, SDL_SCANCODE_9, SDL_SCANCODE_0, SDL_SCANCODE_6, SDL_SCANCODE_PAGEUP, SDL_SCANCODE_MINUS, SDL_SCANCODE_UNKNOWN };
+   static constexpr SDL_Scancode serviceKeys[8] = { SDL_SCANCODE_7, SDL_SCANCODE_8, SDL_SCANCODE_9, SDL_SCANCODE_0, SDL_SCANCODE_6, SDL_SCANCODE_PAGEUP, SDL_SCANCODE_MINUS, SDL_SCANCODE_UNKNOWN };
    for (int i = 0; i < 8; ++i)
       m_serviceActionId[i] = addKeyAction("Service" + std::to_string(i + 1), "Service Button #" + std::to_string(i + 1), serviceKeys[i]);
 

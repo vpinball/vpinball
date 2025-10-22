@@ -3,7 +3,7 @@
 
 constexpr unsigned int gateWireNumVertices=186;
 constexpr unsigned int gateWireNumIndices=1008;
-constexpr Vertex3D_NoTex2 gateWire[186]=
+static constexpr Vertex3D_NoTex2 gateWire[186]=
 {
 { -0.384004f,0.000002f,0.001804f, -1.000000f,0.000000f,-0.000000f, 0.500000f,0.500000f},
 { -0.384004f,-0.004240f,0.006047f, -1.000000f,0.000000f,-0.000000f, 0.500000f,0.500000f},
@@ -193,7 +193,7 @@ constexpr Vertex3D_NoTex2 gateWire[186]=
 { 0.383997f,-0.004241f,-0.002437f, 1.000000f,-0.000000f,-0.000000f, 0.500000f,0.500000f}
 };
 
-constexpr WORD gateWireIndices[1008]=
+static constexpr WORD gateWireIndices[1008]=
 {
 	0, 1, 2,
 	0, 3, 1,

@@ -236,7 +236,7 @@ static constexpr Vertex3Ds dropTargetHitPlaneVertices[num_dropTargetHitPlaneVert
 };
 
 constexpr unsigned int num_dropTargetHitPlaneIndices = 42;
-constexpr WORD dropTargetHitPlaneIndices[num_dropTargetHitPlaneIndices] =
+static constexpr WORD dropTargetHitPlaneIndices[num_dropTargetHitPlaneIndices] =
 {
    0, 1, 2, 2, 3, 0, 1, 4, 5, 6, 7, 2, 5, 6, 1,
    2, 1, 6, 4, 8, 9, 9, 5, 4, 8, 10, 11, 11, 9, 8,

@@ -39,8 +39,8 @@ InGameUI::InGameUI(LiveUI &liveUI)
    AddPage("table/options"s, []() { return std::make_unique<TableOptionsPage>(); });
    AddPage("table/rules"s, []() { return std::make_unique<TableRulesPage>(); });
    AddPage("settings/vr"s, []() { return std::make_unique<VRSettingsPage>(); });
-   AddPage("settings/backglass", []() { return std::make_unique<BackglassPage>(); });
-   AddPage("settings/scoreview", []() { return std::make_unique<ScoreViewPage>(); });
+   AddPage("settings/backglass"s, []() { return std::make_unique<BackglassPage>(); });
+   AddPage("settings/scoreview"s, []() { return std::make_unique<ScoreViewPage>(); });
 }
 
 void InGameUI::AddPage(const string &path, std::function<std::unique_ptr<InGameUIPage>()> pageFactory)

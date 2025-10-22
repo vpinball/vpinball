@@ -338,7 +338,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
       glObjectLabel(GL_FRAMEBUFFER, m_framebuffer, (GLsizei) name.length(), name.c_str());
 #endif
 
-   constexpr GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+   static constexpr GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
    glDrawBuffers(1, DrawBuffers);
 
    // Create anciliary FBOs to be able to blit (especially resolve MSAA) from/to the other layers
@@ -554,11 +554,11 @@ void RenderTarget::CopyTo(RenderTarget* const dest, const bool copyColor, const 
    const int x2, const int y2, const int w2, const int h2, 
    const int srcLayer, const int dstLayer)
 {
-   int px1 = x1 == -1 ? 0 : x1, py1 = y1 == -1 ? 0 : y1, pz1 = srcLayer == -1 ? 0 : srcLayer;
-   int pw1 = w1 == -1 ? GetWidth() : w1, ph1 = h1 == -1 ? GetHeight() : h1;
-   int px2 = x2 == -1 ? 0 : x2, py2 = y2 == -1 ? 0 : y2, pz2 = dstLayer == -1 ? 0 : dstLayer;
-   int pw2 = w2 == -1 ? dest->GetWidth() : w2, ph2 = h2 == -1 ? dest->GetHeight() : h2;
-   int nLayers = srcLayer == -1 ? m_nLayers : 1;
+   const int px1 = x1 == -1 ? 0 : x1, py1 = y1 == -1 ? 0 : y1, pz1 = srcLayer == -1 ? 0 : srcLayer;
+   const int pw1 = w1 == -1 ? GetWidth() : w1, ph1 = h1 == -1 ? GetHeight() : h1;
+   const int px2 = x2 == -1 ? 0 : x2, py2 = y2 == -1 ? 0 : y2, pz2 = dstLayer == -1 ? 0 : dstLayer;
+   const int pw2 = w2 == -1 ? dest->GetWidth() : w2, ph2 = h2 == -1 ? dest->GetHeight() : h2;
+   const int nLayers = srcLayer == -1 ? m_nLayers : 1;
    assert(srcLayer != -1 || dstLayer != -1 || m_nLayers == dest->m_nLayers); // Either we copy a single layer or the full set in which case they must match
 
 #if defined(ENABLE_BGFX)

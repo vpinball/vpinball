@@ -3,7 +3,7 @@
 
 constexpr unsigned int gateBracketNumVertices=184;
 constexpr unsigned int gateBracketNumIndices=516;
-constexpr Vertex3D_NoTex2 gateBracket[184]=
+static constexpr Vertex3D_NoTex2 gateBracket[184]=
 {
 { 0.348931f,0.027390f,-0.001910f, 0.000000f,0.000000f,-1.000000f, 0.500000f,0.500000f},
 { 0.336931f,0.111390f,-0.001910f, 0.000000f,0.000000f,-1.000000f, 0.500000f,0.500000f},
@@ -191,7 +191,7 @@ constexpr Vertex3D_NoTex2 gateBracket[184]=
 { -0.347069f,0.027392f,-0.001909f, 0.000000f,0.000000f,-1.000000f, 0.500000f,0.500000f}
 };
 
-constexpr WORD gateBracketIndices[516]=
+static constexpr WORD gateBracketIndices[516]=
 {
 	0, 1, 2,
 	1, 0, 3,

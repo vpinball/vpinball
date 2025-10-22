@@ -423,7 +423,7 @@ void LoadXML()
          g_TableSettings = LoadXML(ts);
          return;
       }
-      if (szName && std::string("Default") == szName)
+      if (szName && "Default"s == szName)
       {
          g_DefaultSettings = LoadXML(ts);
       }

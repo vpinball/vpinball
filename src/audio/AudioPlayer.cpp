@@ -244,7 +244,7 @@ AudioPlayer::AudioPlayer(const Settings& settings)
    contextConfig.custom.onContextInit = ma_context_init__sdl;
 
    m_maContext = std::make_unique<ma_context>();
-   constexpr ma_backend backends[] = { ma_backend_custom };
+   static constexpr ma_backend backends[] = { ma_backend_custom };
    ma_context_init(backends, std::size(backends), &contextConfig, m_maContext.get());
    m_maContext->pUserData = this;
 

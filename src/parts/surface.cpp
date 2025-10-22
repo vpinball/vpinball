@@ -19,7 +19,7 @@ Surface::Surface()
 
 Surface::~Surface()
 {
-   assert(m_rd == nullptr); // RenderRelease must be explicitely called before deleting this object
+   assert(m_rd == nullptr); // RenderRelease must be explicitly called before deleting this object
 }
 
 Surface *Surface::CopyForPlay(PinTable *live_table) const

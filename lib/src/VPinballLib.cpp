@@ -431,7 +431,7 @@ VPINBALL_STATUS VPinballLib::ExtractTableScript()
    if (!pActiveTable)
       return VPINBALL_STATUS_FAILURE;
 
-   string tempPath = string(g_pvp->m_myPrefPath) + "temp_script.vbs";
+   string tempPath = g_pvp->m_myPrefPath + "temp_script.vbs";
    pActiveTable->m_pcv->SaveToFile(tempPath);
 
    std::filesystem::path tablePath(pActiveTable->m_filename);

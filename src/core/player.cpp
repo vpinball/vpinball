@@ -210,7 +210,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       const Settings* settings = &(g_pvp->m_settings); // Always use main application settings (not overridable per table)
       m_playfieldWnd = new VPX::Window(WIN32_WND_TITLE, settings, stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, stereo3D == STEREO_VR ? "Preview" : "Playfield");
 
-      float pfRefreshRate = m_playfieldWnd->GetRefreshRate(); 
+      const float pfRefreshRate = m_playfieldWnd->GetRefreshRate(); 
       m_maxFramerate = m_ptable->m_settings.LoadValueFloat(Settings::Player, "MaxFramerate"s);
       if(m_maxFramerate > 0.f && m_maxFramerate < 24.f) // at least 24 fps
          m_maxFramerate = 24.f;
@@ -454,7 +454,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       std::mutex mutex;
       int nLoadInProgress = 0;
       vector<Texture *> failedPreloads;
-      unsigned int maxTexDim = static_cast<unsigned int>(m_ptable->m_settings.LoadValueInt(Settings::Player, "MaxTexDimension"s));
+      const unsigned int maxTexDim = static_cast<unsigned int>(m_ptable->m_settings.LoadValueInt(Settings::Player, "MaxTexDimension"s));
       auto loadImage = [maxTexDim, &mutex, &nLoadInProgress, preloadCache, this, &failedPreloads](Texture *image, bool resizeOnLowMem)
       {
          bool readyToLoad = false;
@@ -617,7 +617,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
          if (ph->GetIHitable()->GetEventProxyBase())
          {
             ph->GetIHitable()->GetEventProxyBase()->FireVoidEvent(DISPID_GameEvents_Init);
-            ItemTypeEnum type = ph->GetItemType();
+            const ItemTypeEnum type = ph->GetItemType();
             if (type == ItemTypeEnum::eItemBumper || type == ItemTypeEnum::eItemDispReel || type == ItemTypeEnum::eItemFlipper || type == ItemTypeEnum::eItemGate
                || type == ItemTypeEnum::eItemHitTarget || type == ItemTypeEnum::eItemLight || type == ItemTypeEnum::eItemSpinner || type == ItemTypeEnum::eItemTrigger)
                ph->GetIHitable()->GetEventProxyBase()->FireVoidEvent(DISPID_AnimateEvents_Animate);
@@ -716,7 +716,7 @@ Player::~Player()
    assert(g_pplayer == this && g_pplayer->m_closing != CS_CLOSED);
 
    // note if application exit was requested, and set the new closing state to CLOSED
-   bool appExitRequested = (m_closing == CS_CLOSE_APP);
+   const bool appExitRequested = (m_closing == CS_CLOSE_APP);
    m_closing = CS_CLOSED;
    PLOGI << "Closing player...";
 
@@ -1017,11 +1017,11 @@ bool Player::ShowStats() const
 
 void Player::SetPlayState(const bool isPlaying, const uint32_t delayBeforePauseMs)
 {
-   bool wasPlaying = IsPlaying();
+   const bool wasPlaying = IsPlaying();
    if (isPlaying || delayBeforePauseMs == 0)
    {
       m_pauseTimeTarget = 0;
-      bool willPlay = isPlaying && m_playfieldWnd->IsFocused();
+      const bool willPlay = isPlaying && m_playfieldWnd->IsFocused();
       if (wasPlaying != willPlay)
       {
          ApplyPlayingState(willPlay);
@@ -1049,7 +1049,7 @@ void Player::OnFocusChanged()
          {
             string focusedWnd = "undefined"s;
             DWORD foregroundProcessId;
-            DWORD foregroundThreadId = GetWindowThreadProcessId(foregroundWnd, &foregroundProcessId);
+            const DWORD foregroundThreadId = GetWindowThreadProcessId(foregroundWnd, &foregroundProcessId);
             char tmp[MAXSTRING];
             if (foregroundProcessId)
             {
@@ -1282,7 +1282,7 @@ string Player::GetPerfInfo()
    // Make it more or less readable by updating only once per second
    static string txt;
    static uint32_t lastUpdate = 0;
-   uint32_t now = msec();
+   const uint32_t now = msec();
    if (lastUpdate != 0 && now - lastUpdate < 1000)
       return txt;
 
@@ -2035,12 +2035,12 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
    RenderDevice *const rd = m_renderer->m_renderDevice;
    int m_outputX, m_outputY, m_outputW, m_outputH;
 
-   VPX::RenderOutput &output = window == VPXAnciliaryWindow::VPXWINDOW_Backglass ? m_backglassOutput :
-                               window == VPXAnciliaryWindow::VPXWINDOW_ScoreView ? m_scoreViewOutput :
-                               /*window == VPXAnciliaryWindow::VPXWINDOW_Topper ? */ m_topperOutput;
+   const VPX::RenderOutput &output = window == VPXAnciliaryWindow::VPXWINDOW_Backglass ? m_backglassOutput :
+                                     window == VPXAnciliaryWindow::VPXWINDOW_ScoreView ? m_scoreViewOutput :
+                                   /*window == VPXAnciliaryWindow::VPXWINDOW_Topper ? */ m_topperOutput;
    const string renderPassName = window == VPXAnciliaryWindow::VPXWINDOW_Backglass ? "Backglass Render"s :
                                  window == VPXAnciliaryWindow::VPXWINDOW_ScoreView ? "ScoreView Render"s :
-                                /*window == VPXAnciliaryWindow::VPXWINDOW_Topper ? */ "Topper Render"s;
+                               /*window == VPXAnciliaryWindow::VPXWINDOW_Topper ? */ "Topper Render"s;
    const string tonemapPassName = window == VPXAnciliaryWindow::VPXWINDOW_Backglass ? "Backglass Tonemap"s :
                                   window == VPXAnciliaryWindow::VPXWINDOW_ScoreView ? "ScoreView Tonemap"s :
                                 /*window == VPXAnciliaryWindow::VPXWINDOW_Topper ? */ "Topper Tonemap"s;
@@ -2142,7 +2142,7 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
       rd->m_basicShader->SetTextureNull(SHADER_tex_base_color);
       rd->m_basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
 
-      Vertex3D_NoTex2 vertices[4] = {
+      static constexpr Vertex3D_NoTex2 vertices[4] = {
          { 1.0f, 0.0f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f },
          { 0.0f, 0.0f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f },
          { 1.0f, 1.0f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f },

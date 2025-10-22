@@ -16,7 +16,7 @@ MeshBuffer::MeshBuffer(VertexBuffer* vb, IndexBuffer* ib, const bool applyVertex
 }
 
 MeshBuffer::MeshBuffer(const wstring& name, VertexBuffer* vb, IndexBuffer* ib, const bool applyVertexBufferOffsetToIndexBuffer)
-   : m_name(MakeString(name))
+   : m_wname(name)
    , m_vb(vb)
    , m_ib(ib)
    , m_isVBOffsetApplied(applyVertexBufferOffsetToIndexBuffer)

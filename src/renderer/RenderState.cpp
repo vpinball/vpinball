@@ -126,19 +126,19 @@ void RenderState::Apply(RenderDevice* device)
 
    if (m_state & RENDER_STATE_MASK_ALPHABLENDENABLE)
    {
-      int op = (m_state & RENDER_STATE_MASK_BLENDOP) >> RENDER_STATE_SHIFT_BLENDOP;
-      int src = (m_state & RENDER_STATE_MASK_SRCBLEND) >> RENDER_STATE_SHIFT_SRCBLEND;
-      int dst = (m_state & RENDER_STATE_MASK_DESTBLEND) >> RENDER_STATE_SHIFT_DESTBLEND;
-      constexpr uint64_t blend_functions[]
+      const int op = (m_state & RENDER_STATE_MASK_BLENDOP) >> RENDER_STATE_SHIFT_BLENDOP;
+      const int src = (m_state & RENDER_STATE_MASK_SRCBLEND) >> RENDER_STATE_SHIFT_SRCBLEND;
+      const int dst = (m_state & RENDER_STATE_MASK_DESTBLEND) >> RENDER_STATE_SHIFT_DESTBLEND;
+      static constexpr uint64_t blend_functions[]
          = { BGFX_STATE_BLEND_ZERO, BGFX_STATE_BLEND_ONE, BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_DST_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_COLOR };
       bgfx_state |= BGFX_STATE_BLEND_FUNC(blend_functions[src], blend_functions[dst]);
-      constexpr uint64_t blend_modes[] = { BGFX_STATE_BLEND_EQUATION_MAX, BGFX_STATE_BLEND_EQUATION_ADD, BGFX_STATE_BLEND_EQUATION_REVSUB };
+      static constexpr uint64_t blend_modes[] = { BGFX_STATE_BLEND_EQUATION_MAX, BGFX_STATE_BLEND_EQUATION_ADD, BGFX_STATE_BLEND_EQUATION_REVSUB };
       bgfx_state |= blend_modes[op];
    }
 
    if (m_state & RENDER_STATE_MASK_ZENABLE)
    {
-      constexpr uint64_t depth_functions[]
+      static constexpr uint64_t depth_functions[]
          = { BGFX_STATE_DEPTH_TEST_ALWAYS, BGFX_STATE_DEPTH_TEST_LESS, BGFX_STATE_DEPTH_TEST_LEQUAL, BGFX_STATE_DEPTH_TEST_GREATER, BGFX_STATE_DEPTH_TEST_GEQUAL };
       unsigned int zmode = (m_state & RENDER_STATE_MASK_ZFUNC) >> RENDER_STATE_SHIFT_ZFUNC;
       bgfx_state |= depth_functions[zmode];
@@ -147,11 +147,11 @@ void RenderState::Apply(RenderDevice* device)
    if (m_state & RENDER_STATE_MASK_ZWRITEENABLE)
       bgfx_state |= BGFX_STATE_WRITE_Z;
 
-   unsigned int cull = (m_state & RENDER_STATE_MASK_CULLMODE) >> RENDER_STATE_SHIFT_CULLMODE;
-   constexpr uint64_t cull_modes[] = { 0, BGFX_STATE_CULL_CW, BGFX_STATE_CULL_CCW };
+   const unsigned int cull = (m_state & RENDER_STATE_MASK_CULLMODE) >> RENDER_STATE_SHIFT_CULLMODE;
+   static constexpr uint64_t cull_modes[] = { 0, BGFX_STATE_CULL_CW, BGFX_STATE_CULL_CCW };
    bgfx_state |= cull_modes[cull];
 
-   unsigned int rgba = (m_state & RENDER_STATE_MASK_COLORWRITEENABLE) >> RENDER_STATE_SHIFT_COLORWRITEENABLE;
+   const unsigned int rgba = (m_state & RENDER_STATE_MASK_COLORWRITEENABLE) >> RENDER_STATE_SHIFT_COLORWRITEENABLE;
    if (rgba & 1)
       bgfx_state |= BGFX_STATE_WRITE_R;
    if (rgba & 2)
@@ -164,17 +164,17 @@ void RenderState::Apply(RenderDevice* device)
    device->m_bgfxState = bgfx_state;
 
 #elif defined(ENABLE_OPENGL)
-   constexpr int cull_modes[] = { 0, GL_CW, GL_CCW };
-   constexpr int functions[] = { GL_ALWAYS, GL_LESS, GL_LEQUAL, GL_GREATER, GL_GEQUAL };
-   constexpr int blend_modes[] = { GL_MAX, GL_FUNC_ADD, GL_FUNC_REVERSE_SUBTRACT };
-   constexpr int blend_functions[] = { GL_ZERO, GL_ONE, GL_SRC_ALPHA, GL_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR };
+   static constexpr int cull_modes[] = { 0, GL_CW, GL_CCW };
+   static constexpr int functions[] = { GL_ALWAYS, GL_LESS, GL_LEQUAL, GL_GREATER, GL_GEQUAL };
+   static constexpr int blend_modes[] = { GL_MAX, GL_FUNC_ADD, GL_FUNC_REVERSE_SUBTRACT };
+   static constexpr int blend_functions[] = { GL_ZERO, GL_ONE, GL_SRC_ALPHA, GL_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR };
    int val;
 
 #elif defined(ENABLE_DX9)
-   constexpr int cull_modes[] = { D3DCULL_NONE, D3DCULL_CW, D3DCULL_CCW };
-   constexpr int functions[] = { D3DCMP_ALWAYS, D3DCMP_LESS, D3DCMP_LESSEQUAL, D3DCMP_GREATER, D3DCMP_GREATEREQUAL };
-   constexpr int blend_modes[] = { D3DBLENDOP_MAX, D3DBLENDOP_ADD, D3DBLENDOP_REVSUBTRACT };
-   constexpr int blend_functions[] = { D3DBLEND_ZERO, D3DBLEND_ONE, D3DBLEND_SRCALPHA, D3DBLEND_DESTALPHA, D3DBLEND_INVSRCALPHA, D3DBLEND_INVSRCCOLOR };
+   static constexpr int cull_modes[] = { D3DCULL_NONE, D3DCULL_CW, D3DCULL_CCW };
+   static constexpr int functions[] = { D3DCMP_ALWAYS, D3DCMP_LESS, D3DCMP_LESSEQUAL, D3DCMP_GREATER, D3DCMP_GREATEREQUAL };
+   static constexpr int blend_modes[] = { D3DBLENDOP_MAX, D3DBLENDOP_ADD, D3DBLENDOP_REVSUBTRACT };
+   static constexpr int blend_functions[] = { D3DBLEND_ZERO, D3DBLEND_ONE, D3DBLEND_SRCALPHA, D3DBLEND_DESTALPHA, D3DBLEND_INVSRCALPHA, D3DBLEND_INVSRCCOLOR };
    IDirect3DDevice9* const d3dDevice = device->GetCoreDevice();
    int val;
 #endif

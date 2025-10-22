@@ -3,7 +3,7 @@
 
 constexpr unsigned int hitTargetT1SlimVertices=145;
 constexpr unsigned int hitTargetT1SlimNumIndices=306;
-constexpr Vertex3D_NoTex2 hitTargetT1SlimMesh[145]=
+static constexpr Vertex3D_NoTex2 hitTargetT1SlimMesh[145]=
 {
 { 0.219287f,0.085466f,0.706049f, 0.413000f,0.000000f,-0.910700f, 0.075225f,0.598375f},
 { 0.310148f,0.085466f,0.762633f, 0.528600f,0.000000f,-0.848900f, 0.112623f,0.598375f},
@@ -152,7 +152,7 @@ constexpr Vertex3D_NoTex2 hitTargetT1SlimMesh[145]=
 { 0.259963f,-0.319543f,-0.103244f, -0.000000f,-1.000000f,-0.000000f, 0.995664f,0.829507f}
 };
 
-constexpr WORD hitTargetT1SlimIndices[306]=
+static constexpr WORD hitTargetT1SlimIndices[306]=
 {
 	60, 61, 62,
 	63, 62, 61,

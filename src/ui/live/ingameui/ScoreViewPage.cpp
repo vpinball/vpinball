@@ -43,15 +43,15 @@ ScoreViewPage::ScoreViewPage()
    auto presetButtons = std::make_unique<InGameUIItem>(
       ""s, "Aspect ratio and position preset buttons"s,
       [this](int itemIndex, const InGameUIItem* item) {
-         const float buttonSize = 32.0f;
-         const float buttonSpacing = 5.0f;
-         const float sectionSpacing = 15.0f;
+         constexpr float buttonSize = 32.0f;
+         constexpr float buttonSpacing = 5.0f;
+         //constexpr float sectionSpacing = 15.0f;
 
-         int currentW = m_player->m_scoreViewOutput.GetEmbeddedWindow()->GetWidth();
-         int currentH = m_player->m_scoreViewOutput.GetEmbeddedWindow()->GetHeight();
+         const int currentW = m_player->m_scoreViewOutput.GetEmbeddedWindow()->GetWidth();
+         const int currentH = m_player->m_scoreViewOutput.GetEmbeddedWindow()->GetHeight();
          const bool sizeZero = (currentW == 0 || currentH == 0);
 
-         const float aspectButtonWidth = 60.0f;
+         constexpr float aspectButtonWidth = 60.0f;
 
          ImGui::BeginGroup();
          {
@@ -150,7 +150,7 @@ ScoreViewPage::ScoreViewPage()
             if (isZeroSize) {
                ImGui::BeginDisabled();
             }
-            ImGui::SliderInt(("##" + string(label)).c_str(), &value, min_val, max_val);
+            ImGui::SliderInt(("##"s + label).c_str(), &value, min_val, max_val);
             if (isZeroSize) {
                ImGui::EndDisabled();
             }
@@ -159,7 +159,7 @@ ScoreViewPage::ScoreViewPage()
             if (isZeroSize) {
                ImGui::BeginDisabled();
             }
-            if (ImGui::Button(("-##" + string(label)).c_str(), ImVec2(30, 0))) {
+            if (ImGui::Button(("-##"s + label).c_str(), ImVec2(30, 0))) {
                value = max(min_val, value - 1);
             }
             if (isZeroSize) {
@@ -170,7 +170,7 @@ ScoreViewPage::ScoreViewPage()
             if (isZeroSize) {
                ImGui::BeginDisabled();
             }
-            if (ImGui::Button(("+##" + string(label)).c_str(), ImVec2(30, 0))) {
+            if (ImGui::Button(("+##"s + label).c_str(), ImVec2(30, 0))) {
                value = min(max_val, value + 1);
             }
             if (isZeroSize) {
@@ -229,7 +229,7 @@ ScoreViewPage::ScoreViewPage()
 
             ImGui::Text("%s", label);
 
-            const string controlId = string(label);
+            const string controlId(label);
             const bool isActiveControl = (m_activeControl == controlId);
 
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - 85);
@@ -256,8 +256,8 @@ ScoreViewPage::ScoreViewPage()
          int newW = w;
          int newH = h;
 
-         bool widthChanged = renderEnhancedSizeSlider("Width", newW, 0, x, y, true);
-         bool heightChanged = renderEnhancedSizeSlider("Height", newH, 0, x, y, false);
+         const bool widthChanged = renderEnhancedSizeSlider("Width", newW, 0, x, y, true);
+         const bool heightChanged = renderEnhancedSizeSlider("Height", newH, 0, x, y, false);
 
          if (m_lockAspectRatio && (widthChanged || heightChanged)) {
             const float ar = GetSafeAspectRatio();
@@ -275,8 +275,8 @@ ScoreViewPage::ScoreViewPage()
             m_aspectRatio = static_cast<float>(newW) / static_cast<float>(newH);
          }
 
-         int newX = clamp(x, 0, max(0, screenWidth - newW));
-         int newY = clamp(y, 0, max(0, screenHeight - newH));
+         const int newX = clamp(x, 0, max(0, screenWidth - newW));
+         const int newY = clamp(y, 0, max(0, screenHeight - newH));
 
          if (newX != x || newY != y || newW != w || newH != h) {
             m_player->m_ptable->m_settings.SaveValue(Settings::ScoreView, "ScoreViewWndX"s, newX);
@@ -306,12 +306,12 @@ float ScoreViewPage::GetSafeAspectRatio() const
 
 int ScoreViewPage::GetAllowedMaxWidth(float ar, int screenWidth, int screenHeight, int x, int y) const
 {
-   return std::max(0, std::min(screenWidth - x, static_cast<int>((screenHeight - y) * ar)));
+   return std::max(0, std::min(screenWidth - x, static_cast<int>((float)(screenHeight - y) * ar)));
 }
 
 int ScoreViewPage::GetAllowedMaxHeight(float ar, int screenWidth, int screenHeight, int x, int y) const
 {
-   return std::max(0, std::min(screenHeight - y, static_cast<int>((screenWidth - x) / ar)));
+   return std::max(0, std::min(screenHeight - y, static_cast<int>((float)(screenWidth - x) / ar)));
 }
 
 void ScoreViewPage::ApplyFromWidth(int desiredW, float ar, int screenWidth, int screenHeight, int& w, int& h) const
@@ -322,7 +322,7 @@ void ScoreViewPage::ApplyFromWidth(int desiredW, float ar, int screenWidth, int 
    const int maxW = GetAllowedMaxWidth(ar, screenWidth, screenHeight, x, y);
    const int newW = clamp(desiredW, 0, maxW);
    w = newW;
-   h = static_cast<int>(std::round(newW / ar));
+   h = static_cast<int>(std::round((float)newW / ar));
 }
 
 void ScoreViewPage::ApplyFromHeight(int desiredH, float ar, int screenWidth, int screenHeight, int& w, int& h) const
@@ -333,7 +333,7 @@ void ScoreViewPage::ApplyFromHeight(int desiredH, float ar, int screenWidth, int
    const int maxH = GetAllowedMaxHeight(ar, screenWidth, screenHeight, x, y);
    const int newH = clamp(desiredH, 0, maxH);
    h = newH;
-   w = static_cast<int>(std::round(newH * ar));
+   w = static_cast<int>(std::round((float)newH * ar));
 }
 
 void ScoreViewPage::ApplySize(int width, int height)
@@ -350,12 +350,12 @@ void ScoreViewPage::ApplySize(int width, int height)
    const int widthLimit = screenWidth - x;
    const int heightLimit = screenHeight - y;
 
-   int newW = std::min(widthLimit, static_cast<int>(std::max(0.0f, screenWidth * 0.5f)));
-   int newH = static_cast<int>(newW / aspect);
+   int newW = std::min(widthLimit, static_cast<int>(std::max(0.0f, (float)screenWidth * 0.5f)));
+   int newH = static_cast<int>((float)newW / aspect);
 
    if (newH > heightLimit) {
       newH = heightLimit;
-      newW = static_cast<int>(newH * aspect);
+      newW = static_cast<int>((float)newH * aspect);
    }
 
    m_aspectRatio = aspect;

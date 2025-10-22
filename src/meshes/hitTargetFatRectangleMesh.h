@@ -3,7 +3,7 @@
 
 constexpr unsigned int hitFatTargetRectangleVertices=302;
 constexpr unsigned int hitFatTargetRectangleNumIndices=942;
-constexpr Vertex3D_NoTex2 hitFatTargetRectangleMesh[302]=
+static constexpr Vertex3D_NoTex2 hitFatTargetRectangleMesh[302]=
 {
 { 0.237689f,-0.012651f,1.644746f, 1.000000f,0.000000f,-0.000000f, 0.854545f,0.220128f},
 { 0.237689f,-0.162646f,0.707246f, 1.000000f,0.000000f,-0.000000f, 0.882924f,0.525892f},
@@ -309,7 +309,7 @@ constexpr Vertex3D_NoTex2 hitFatTargetRectangleMesh[302]=
 { -0.287311f,0.162344f,0.608143f, 0.000000f,-1.000000f,0.000000f, 0.218618f,0.962866f}
 };
 
-constexpr WORD hitFatTargetRectangleIndices[942]=
+static constexpr WORD hitFatTargetRectangleIndices[942]=
 {
 	0, 1, 2,
 	0, 3, 1,

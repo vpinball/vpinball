@@ -1134,7 +1134,7 @@ void FormBackglass::LoadB2SData()
          int interval = innerNode->IntAttribute("Interval");
          int loops = innerNode->IntAttribute("Loops");
          string idJoins = innerNode->Attribute("IDJoin");
-         bool startAnimationAtBackglassStartup = (string(innerNode->Attribute("StartAnimationAtBackglassStartup")) == "1");
+         bool startAnimationAtBackglassStartup = (innerNode->Attribute("StartAnimationAtBackglassStartup") == "1"s);
          eLightsStateAtAnimationStart lightsStateAtAnimationStart = eLightsStateAtAnimationStart_NoChange;
          eLightsStateAtAnimationEnd lightsStateAtAnimationEnd = eLightsStateAtAnimationEnd_InvolvedLightsOff;
          eAnimationStopBehaviour animationstopbehaviour = eAnimationStopBehaviour_StopImmediatelly;
@@ -1146,22 +1146,22 @@ void FormBackglass::LoadB2SData()
          if (innerNode->FindAttribute("LightsStateAtAnimationStart"))
             lightsStateAtAnimationStart = (eLightsStateAtAnimationStart)innerNode->IntAttribute("LightsStateAtAnimationStart");
          else if (innerNode->FindAttribute("AllLightsOffAtAnimationStart"))
-            lightsStateAtAnimationStart = (string(innerNode->Attribute("AllLightsOffAtAnimationStart")) == "1") ? eLightsStateAtAnimationStart_LightsOff : eLightsStateAtAnimationStart_NoChange;
+            lightsStateAtAnimationStart = (innerNode->Attribute("AllLightsOffAtAnimationStart") == "1"s) ? eLightsStateAtAnimationStart_LightsOff : eLightsStateAtAnimationStart_NoChange;
          if (innerNode->FindAttribute("LightsStateAtAnimationEnd"))
             lightsStateAtAnimationEnd = (eLightsStateAtAnimationEnd)innerNode->IntAttribute("LightsStateAtAnimationEnd");
          else if (innerNode->FindAttribute("ResetLightsAtAnimationEnd"))
-            lightsStateAtAnimationEnd = (string(innerNode->Attribute("ResetLightsAtAnimationEnd")) == "1") ? eLightsStateAtAnimationEnd_LightsReseted : eLightsStateAtAnimationEnd_Undefined;
+            lightsStateAtAnimationEnd = (innerNode->Attribute("ResetLightsAtAnimationEnd") == "1"s) ? eLightsStateAtAnimationEnd_LightsReseted : eLightsStateAtAnimationEnd_Undefined;
          if (innerNode->FindAttribute("AnimationStopBehaviour"))
             animationstopbehaviour = (eAnimationStopBehaviour)innerNode->IntAttribute("AnimationStopBehaviour");
          else if (innerNode->FindAttribute("RunAnimationTilEnd"))
-            animationstopbehaviour = (string(innerNode->Attribute("RunAnimationTilEnd")) == "1") ? eAnimationStopBehaviour_RunAnimationTillEnd : eAnimationStopBehaviour_StopImmediatelly;
-         lockInvolvedLamps = (string(innerNode->Attribute("LockInvolvedLamps")) == "1");
+            animationstopbehaviour = (innerNode->Attribute("RunAnimationTilEnd") == "1"s) ? eAnimationStopBehaviour_RunAnimationTillEnd : eAnimationStopBehaviour_StopImmediatelly;
+         lockInvolvedLamps = (innerNode->Attribute("LockInvolvedLamps") == "1"s);
          if (innerNode->FindAttribute("HideScoreDisplays"))
-            hidescoredisplays = (string(innerNode->Attribute("HideScoreDisplays")) == "1");
+            hidescoredisplays = (innerNode->Attribute("HideScoreDisplays") == "1"s);
          if (innerNode->FindAttribute("BringToFront"))
-            bringtofront = (string(innerNode->Attribute("BringToFront")) == "1");
+            bringtofront = (innerNode->Attribute("BringToFront") == "1"s);
          if (innerNode->FindAttribute("RandomStart"))
-            randomstart = (string(innerNode->Attribute("RandomStart")) == "1");
+            randomstart = (innerNode->Attribute("RandomStart") == "1"s);
          if (randomstart && innerNode->FindAttribute("RandomQuality"))
             randomquality = innerNode->IntAttribute("RandomQuality");
          if (lightsStateAtAnimationStart == eLightsStateAtAnimationStart_Undefined)

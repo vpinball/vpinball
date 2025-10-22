@@ -209,7 +209,7 @@ void Plunger::SetDefaultPhysics(const bool fromMouseClick)
 // Ported at: VisualPinball.Engine/VPT/Plunger/PlungerCoord.cs
 
 // Modern Plunger - added by rascal
-constexpr static PlungerCoord modernCoords[] =
+static constexpr PlungerCoord modernCoords[] =
 {
    { 0.20f, 0.0f, 0.00f, 1.0f, 0.0f },  // tip
    { 0.30f, 3.0f, 0.11f, 1.0f, 0.0f },  // tip
@@ -219,7 +219,7 @@ constexpr static PlungerCoord modernCoords[] =
    { 0.25f, 24.0f, 0.25f, 0.3f, 0.0f }, // shaft
    { 0.25f, 100.0f, 1.00f, 0.3f, 0.0f } // shaft
 };
-const static PlungerDesc modernDesc = {
+static const PlungerDesc modernDesc = {
    std::size(modernCoords), (PlungerCoord*)modernCoords
 };
 
@@ -702,7 +702,7 @@ void Plunger::RenderSetup(RenderDevice *device)
 
    for (int f = 0; f < m_cframes; f++)
    {
-      int f_offset = f * m_vtsPerFrame;
+      const int f_offset = f * m_vtsPerFrame;
 
       // if applicable, set up the vertex list for the flat plunger
       if (m_d.m_type == PlungerTypeFlat)

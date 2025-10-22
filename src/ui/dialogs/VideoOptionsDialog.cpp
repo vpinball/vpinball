@@ -846,12 +846,12 @@ RenderOptPage::RenderOptPage(Settings& appSettings, Settings& tableSettings)
 }
 
 // factor is applied to width and to height, so 2.0f increases pixel count by 4. Additional values can be added.
-constexpr float AAfactors[] = { 0.5f, 0.75f, 1.0f, 1.25f, (float)(4.0 / 3.0), 1.5f, 1.75f, 2.0f };
-constexpr LPCSTR AAfactorNames[] = { "50%", "75%", "Disabled", "125%", "133%", "150%", "175%", "200%" };
+static constexpr float AAfactors[] = { 0.5f, 0.75f, 1.0f, 1.25f, (float)(4.0 / 3.0), 1.5f, 1.75f, 2.0f };
+static constexpr LPCSTR AAfactorNames[] = { "50%", "75%", "Disabled", "125%", "133%", "150%", "175%", "200%" };
 constexpr int AAfactorCount = 8;
 
-constexpr int MSAASamplesOpts[] = { 1, 4, 6, 8 };
-constexpr LPCSTR MSAASampleNames[] = { "Disabled", "4 Samples", "6 Samples", "8 Samples" };
+static constexpr int MSAASamplesOpts[] = { 1, 4, 6, 8 };
+static constexpr LPCSTR MSAASampleNames[] = { "Disabled", "4 Samples", "6 Samples", "8 Samples" };
 constexpr int MSAASampleCount = 4;
 
 

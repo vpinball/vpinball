@@ -3,7 +3,7 @@
 
 constexpr unsigned int bulbLightNumVertices=67;
 constexpr unsigned int bulbLightNumFaces=360;
-constexpr Vertex3D_NoTex2 bulbLight[67]=
+static constexpr Vertex3D_NoTex2 bulbLight[67]=
 {
 { 0.220295f,-0.381570f,0.984870f, 0.496400f,-0.859800f,0.119300f, 0.698812f,0.614784f},
 { 0.000000f,-0.407060f,1.148565f, 0.000000f,-0.924900f,0.380300f, 0.688975f,0.500000f},
@@ -74,7 +74,7 @@ constexpr Vertex3D_NoTex2 bulbLight[67]=
 { -0.220295f,-0.381570f,-0.012635f, -0.486000f,-0.841800f,-0.234800f, 0.926171f,0.253950f}
 };
 
-constexpr WORD bulbLightIndices[360]=
+static constexpr WORD bulbLightIndices[360]=
 {
 44, 56, 55,
 56, 44, 66,

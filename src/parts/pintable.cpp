@@ -259,13 +259,13 @@ POINT PinTable::GetScreenPoint() const
 }
 
 #define CLEAN_MATERIAL(pEditMaterial) \
-{ankerl::unordered_dense::map<string, Material*, StringHashFunctor, StringComparator>::const_iterator \
+{const ankerl::unordered_dense::map<string, Material*, StringHashFunctor, StringComparator>::const_iterator \
    it = m_materialMap.find(pEditMaterial); \
 if (it == m_materialMap.end()) \
    pEditMaterial.clear();}
 
 #define CLEAN_IMAGE(pEditImage) \
-{ankerl::unordered_dense::map<string, Texture*, StringHashFunctor, StringComparator>::const_iterator \
+{const ankerl::unordered_dense::map<string, Texture*, StringHashFunctor, StringComparator>::const_iterator \
    it = m_textureMap.find(pEditImage); \
 if (it == m_textureMap.end()) \
    pEditImage.clear();}
@@ -2153,13 +2153,13 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                BYTE hashval[256];
                DWORD hashlen = 256;
                #ifndef __STANDALONE__
-                  int foo = CryptGetHashParam(hch, HP_HASHSIZE, hashval, &hashlen, 0);
+                  int foo2 = CryptGetHashParam(hch, HP_HASHSIZE, hashval, &hashlen, 0);
                   hashlen = 256;
-                  foo = CryptGetHashParam(hch, HP_HASHVAL, hashval, &hashlen, 0);
-                  foo = CryptDestroyHash(hch);
-                  foo = CryptDestroyHash(hchkey);
-                  foo = CryptDestroyKey(hkey);
-                  foo = CryptReleaseContext(hcp, 0);
+                  foo2 = CryptGetHashParam(hch, HP_HASHVAL, hashval, &hashlen, 0);
+                  foo2 = CryptDestroyHash(hch);
+                  foo2 = CryptDestroyHash(hchkey);
+                  foo2 = CryptDestroyKey(hkey);
+                  foo2 = CryptReleaseContext(hcp, 0);
                #endif
                pstmVersion->Release();
 
@@ -2203,7 +2203,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
             pf_reflection_probe->SetReflectionMode(RenderProbe::ReflectionMode::REFL_DYNAMIC);
             m_vrenderprobe.push_back(pf_reflection_probe);
          }
-         vec4 plane = vec4(0.f, 0.f, 1.f, 0.f);
+         constexpr vec4 plane{0.f, 0.f, 1.f, 0.f};
          pf_reflection_probe->SetType(RenderProbe::PLANE_REFLECTION);
          pf_reflection_probe->SetReflectionPlane(plane);
          pf_reflection_probe->SetReflectionNoLightmaps(true);
@@ -4135,7 +4135,7 @@ void PinTable::ExportMesh(ObjLoader& loader)
       rgv[i].tu = (i == 1 || i == 2) ? 1.0f : 0.f;
    }
 
-   constexpr WORD playfieldPolyIndices[10] = { 0, 1, 3, 0, 3, 2, 2, 3, 5, 6 };
+   static constexpr WORD playfieldPolyIndices[10] = { 0, 1, 3, 0, 3, 2, 2, 3, 5, 6 };
 
    Vertex3D_NoTex2 buffer[4 + 7];
    unsigned int offs = 0;
@@ -4391,11 +4391,11 @@ void PinTable::ImportBackdropPOV(const string &filename)
                }
                }
                {
-               const auto node = section->FirstChildElement("OverwriteNightDay");
-               if (node)
+               const auto node2 = section->FirstChildElement("OverwriteNightDay");
+               if (node2)
                {
                   int val;
-                  sscanf_s(node->GetText(), "%i", &val);
+                  sscanf_s(node2->GetText(), "%i", &val);
                   //m_overwriteGlobalDayNight = (val == 1);
                   if (val == 1)
                   {

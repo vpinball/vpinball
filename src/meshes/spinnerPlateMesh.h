@@ -3,7 +3,7 @@
 
 constexpr unsigned int spinnerPlateNumVertices=228;
 constexpr unsigned int spinnerPlateNumFaces=912;
-constexpr Vertex3D_NoTex2 spinnerPlate[228]=
+static constexpr Vertex3D_NoTex2 spinnerPlate[228]=
 {
 { 0.362518f,0.027512f,0.212508f, 0.995100f,0.000000f,0.098400f, 0.954375f,0.540387f},
 { 0.362518f,-0.027511f,0.212508f, 0.995100f,0.000000f,0.098400f, 0.985625f,0.540387f},
@@ -235,7 +235,7 @@ constexpr Vertex3D_NoTex2 spinnerPlate[228]=
 { 0.698483f,-0.008905f,0.008908f, 1.000000f,-0.000000f,-0.000000f, 0.029806f,0.106694f}
 };
 
-constexpr WORD spinnerPlateIndices[912]=
+static constexpr WORD spinnerPlateIndices[912]=
 {
 10, 9, 11,
 8, 9, 10,

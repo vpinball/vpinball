@@ -91,7 +91,7 @@ void Dream7Display::SetText(const string& szText)
       if (sChar == '.' && nIndex > 0 && !m_segmentNumbers[nIndex - 1]->GetCharacter().ends_with('.'))
          m_segmentNumbers[nIndex - 1]->SetCharacter(m_segmentNumbers[nIndex - 1]->GetCharacter() + '.');
       else {
-         m_segmentNumbers[nIndex]->SetCharacter(string() + sChar);
+         m_segmentNumbers[nIndex]->SetCharacter(string(1,sChar));
          nIndex++;
       }
    }

@@ -3,7 +3,7 @@
 
 constexpr unsigned int bumperSocketNumVertices=482;
 constexpr unsigned int bumperSocketNumIndices=2232;
-constexpr Vertex3D_NoTex2 bumperSocket[482]=
+static constexpr Vertex3D_NoTex2 bumperSocket[482]=
 {
 { -1.240720f,0.016772f,-0.000981f, -0.816400f,0.011400f,-0.577400f, 0.149940f,0.076168f},
 { -1.227809f,0.178769f,-0.000981f, -0.816400f,0.011400f,-0.577400f, 0.149942f,0.085237f},
@@ -489,7 +489,7 @@ constexpr Vertex3D_NoTex2 bumperSocket[482]=
 { -0.066932f,-0.314491f,0.056648f, 0.783600f,-0.008300f,0.621200f, 0.494335f,0.623497f}
 };
 
-constexpr WORD bumperSocketIndices[2232]=
+static constexpr WORD bumperSocketIndices[2232]=
 {
 	0, 1, 2,
 	2, 1, 3,

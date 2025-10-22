@@ -267,7 +267,7 @@ void Settings::Validate(const bool addDefaults)
    // Standalone section
 
 #ifdef __LIBVPINBALL__
-   SettingBool(Section::Standalone, "Haptics", true, ""s);
+   SettingBool(Section::Standalone, "Haptics"s, true, ""s);
    SettingInt(Section::Standalone, "RenderingModeOverride"s, 2, 0, 2, ""s);
 #endif
 

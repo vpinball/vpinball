@@ -14,8 +14,8 @@
 
 namespace
 {
-   string s_miniDumpFileName = "crash.dmp"s;
-   string s_reportFileName = "crash.txt"s;
+   static string s_miniDumpFileName = "crash.dmp"s;
+   static string s_reportFileName = "crash.txt"s;
 
    void WriteProcessName(FILE* f)
    {

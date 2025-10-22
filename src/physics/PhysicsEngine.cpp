@@ -332,7 +332,7 @@ void PhysicsEngine::UpdateNudge(float dtime)
       const Vertex3Ds nudge = GetNudgeAcceleration();
       Vertex3Ds poleAxis(m_plumbPos);
       poleAxis.Normalize();
-      Vertex3Ds gravity(0.f, 0.f, -9.81f);
+      constexpr Vertex3Ds gravity{0.f, 0.f, -9.81f};
       Vertex3Ds plumbAcc = gravity;
       plumbAcc += nudge * 2.f / m_plumbMassFactor; // This is absolutely not physically correct
       plumbAcc -= plumbAcc.Dot(poleAxis) * poleAxis; // Keep acceleration orthogonal to pole
@@ -858,11 +858,11 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
             if (pball->m_coll.m_hitdistance >= (float)PHYS_TOUCH)
                continue;
 
-            Vertex3Ds oldPos0 = pball->GetOldPosition(g_pplayer->m_time_msec - 90); // Position 90ms ago
+            const Vertex3Ds oldPos0 = pball->GetOldPosition(g_pplayer->m_time_msec - 90); // Position 90ms ago
             if (oldPos0.x == FLT_MAX)
                continue;
 
-            Vertex3Ds oldPos1 = pball->GetOldPosition(g_pplayer->m_time_msec - 80); // Position 80ms ago
+            const Vertex3Ds oldPos1 = pball->GetOldPosition(g_pplayer->m_time_msec - 80); // Position 80ms ago
             if (oldPos1.x == FLT_MAX)
                continue;
 

@@ -3,7 +3,7 @@
 
 constexpr unsigned int hitFatTargetSquareVertices=302;
 constexpr unsigned int hitFatTargetSquareNumIndices=942;
-constexpr Vertex3D_NoTex2 hitFatTargetSquareMesh[302]=
+static constexpr Vertex3D_NoTex2 hitFatTargetSquareMesh[302]=
 {
 { 0.232901f,-0.011557f,1.647248f, 1.000000f,0.000000f,-0.000000f, 0.878684f,0.235616f},
 { 0.232901f,-0.161552f,0.709748f, 1.000000f,0.000000f,-0.000000f, 0.910751f,0.540358f},
@@ -309,7 +309,7 @@ constexpr Vertex3D_NoTex2 hitFatTargetSquareMesh[302]=
 { -0.292099f,0.163437f,0.610645f, 0.000000f,-1.000000f,0.000000f, 0.214811f,0.969658f}
 };
 
-constexpr WORD hitFatTargetSquareIndices[942]=
+static constexpr WORD hitFatTargetSquareIndices[942]=
 {
 	0, 1, 2,
 	0, 3, 1,

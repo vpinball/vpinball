@@ -13,7 +13,7 @@ PUPManager::PUPManager(const MsgPluginAPI* msgApi, uint32_t endpointId, const st
    , m_msgApi(msgApi)
    , m_endpointId(endpointId)
 {
-   constexpr unsigned int mapping4[] = { 0, 1, 4, 15 };
+   static constexpr unsigned int mapping4[] = { 0, 1, 4, 15 };
    for (int i = 0; i < 4; i++)
    {
       m_palette4[i * 3 + 0] = (mapping4[i] * 0xFF) / 0xF; // R

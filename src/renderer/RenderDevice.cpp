@@ -192,13 +192,13 @@ void RenderDevice::CaptureGLScreenshot()
 #elif defined(ENABLE_DX9)
 #include <DxErr.h>
 #pragma comment(lib, "legacy_stdio_definitions.lib") //dxerr.lib needs this
-constexpr D3DVERTEXELEMENT9 VertexTexelElement[] =
+static constexpr D3DVERTEXELEMENT9 VertexTexelElement[] =
 {
    { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
    { 0, 3 * sizeof(float), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
    D3DDECL_END()
 };
-constexpr D3DVERTEXELEMENT9 VertexNormalTexelElement[] =
+static constexpr D3DVERTEXELEMENT9 VertexNormalTexelElement[] =
 {
    { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
    { 0, 3 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL,   0 },  // normal
@@ -281,7 +281,7 @@ static unsigned int ComputePrimitiveCount(const RenderDevice::PrimitiveTypes typ
 
 void ReportFatalError(const HRESULT hr, const char *file, const int line)
 {
-   char msg[2176];
+   char msg[MAXSTRING*2];
    #if defined(ENABLE_BGFX)
       sprintf_s(msg, sizeof(msg), "Fatal Error 0x%08X in %s:%d", hr, file, line);
    #elif defined(ENABLE_OPENGL)
@@ -296,15 +296,17 @@ void ReportFatalError(const HRESULT hr, const char *file, const int line)
 
 void ReportError(const char *errorText, const HRESULT hr, const char *file, const int line)
 {
-   char msg[16384];
+   const size_t maxlen = MAXSTRING*2 + strlen(errorText);
+   char* const msg = new char[maxlen];
    #if defined(ENABLE_BGFX)
-      sprintf_s(msg, sizeof(msg), "Error 0x%08X in %s:%d\n%s", hr, file, line, errorText);
+      sprintf_s(msg, maxlen, "Error 0x%08X in %s:%d\n%s", hr, file, line, errorText);
    #elif defined(ENABLE_OPENGL)
-      sprintf_s(msg, sizeof(msg), "Error 0x%08X %s in %s:%d\n%s", hr, glErrorToString(hr), file, line, errorText);
+      sprintf_s(msg, maxlen, "Error 0x%08X %s in %s:%d\n%s", hr, glErrorToString(hr), file, line, errorText);
    #elif defined(ENABLE_DX9)
-      sprintf_s(msg, sizeof(msg), "%s %s (0x%x: %s) at %s:%d", errorText, DXGetErrorString(hr), hr, DXGetErrorDescription(hr), file, line);
+      sprintf_s(msg, maxlen, "%s %s (0x%x: %s) at %s:%d", errorText, DXGetErrorString(hr), hr, DXGetErrorDescription(hr), file, line);
    #endif
    ShowError(msg);
+   delete [] msg;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1741,7 +1743,7 @@ void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddres
       m_curStateChanges += 5;
       glGenSamplers(1, &sampler_state);
       m_samplerStateCache[samplerStateId] = sampler_state;
-      constexpr int glAddress[] = { GL_REPEAT, GL_CLAMP_TO_EDGE, GL_MIRRORED_REPEAT, GL_REPEAT };
+      static constexpr int glAddress[] = { GL_REPEAT, GL_CLAMP_TO_EDGE, GL_MIRRORED_REPEAT, GL_REPEAT };
       glSamplerParameteri(sampler_state, GL_TEXTURE_WRAP_S, glAddress[clamp_u]);
       glSamplerParameteri(sampler_state, GL_TEXTURE_WRAP_T, glAddress[clamp_v]);
       switch (filter)
