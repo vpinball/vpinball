@@ -332,7 +332,7 @@ private:
    Light * m_lightmap = nullptr;
 
    bool m_useAsPlayfield = false;
-   bool m_isBackGlassImage;
+   bool m_isBackGlassImage = false;
 
    Matrix3D m_fullMatrix;
    bool m_skipRendering = false;
