@@ -8209,7 +8209,8 @@ STDMETHODIMP PinTable::get_Option(BSTR optionName, float minValue, float maxValu
    const string optId = RegisterOption(optionName, minValue, maxValue, step, defaultValue, unit, values);
    if (const auto& item = m_tableOptions.find(optId); item != m_tableOptions.end())
    {
-      *param = item->second.second;
+      const float scale = unit == Settings::OT_PERCENT ? 100.f : 1.f;
+      *param = item->second.second / scale;
       return S_OK;
    }
    return E_FAIL;
@@ -8220,7 +8221,8 @@ STDMETHODIMP PinTable::put_Option(BSTR optionName, float minValue, float maxValu
    const string optId = RegisterOption(optionName, minValue, maxValue, step, defaultValue, unit, values);
    if (const auto& item = m_tableOptions.find(optId); item != m_tableOptions.end())
    {
-      item->second.second = val;
+      const float scale = unit == Settings::OT_PERCENT ? 100.f : 1.f;
+      item->second.second = val * scale;
       m_settings.SaveValue(Settings::TableOption, optId, val);
       return S_OK;
    }
