@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 
 #include "../../../include/vpinball/VPinballLib_C.h"
