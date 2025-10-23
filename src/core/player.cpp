@@ -2105,7 +2105,7 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
 
    // Performing linear rendering + tonemapping is overkill when used for LDR rendering (Pup pack, B2S,...)
    // TODO we should allow plugins to decide if they want linear colorspace + tonemapping or simple sRGB composition
-   constexpr bool enableHDR = false;
+   const bool enableHDR = output.GetMode() == VPX::RenderOutput::OM_EMBEDDED;
 
    if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
    {
@@ -2374,13 +2374,11 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
       rd->DrawFullscreenTexturedQuad(rd->m_FBShader);
    }
 
-   #ifdef ENABLE_BGFX
    if (output.GetMode() == VPX::RenderOutput::OM_WINDOW && !output.GetWindow()->IsVisible())
    {
       output.GetWindow()->Show();
       m_playfieldWnd->RaiseAndFocus(); // Keep focus on playfield when showing an anciliary window
    }
-   #endif
 
    return rd->GetCurrentRenderTarget();
 }
