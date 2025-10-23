@@ -108,13 +108,18 @@ jobs:
           path: tmp
 
   build-android:
-    name: Build VPinballX_BGFX-android-${{ matrix.config }}
+    name: Build VPinballX_BGFX-android-${{ matrix.flavor }}-${{ matrix.config }}
     runs-on: ubuntu-24.04
     needs: [ version ]
     strategy:
       fail-fast: false
       matrix:
         config: [ Release ]
+        flavor: [ quest, mobile ]
+    env:
+      ANDROID_NDK: /usr/local/lib/android/sdk/ndk/28.2.13676358
+      ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/28.2.13676358
+      ANDROID_NDK_ROOT: /usr/local/lib/android/sdk/ndk/28.2.13676358
     steps:
       - run: |
           sudo apt install bison
@@ -130,9 +135,9 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: external
-          key: BGFX-android-arm64-v8a-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+          key: BGFX-android-arm64-v8a-${{ matrix.flavor }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
           restore-keys: |
-            BGFX-android-arm64-v8a-${{ matrix.config }}-external-
+            BGFX-android-arm64-v8a-${{ matrix.flavor }}-${{ matrix.config }}-external-
       - name: Build external cache
         run: |
           BUILD_TYPE=${{ matrix.config }} ./platforms/android-arm64-v8a/external.sh
@@ -141,7 +146,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: external
-          key: BGFX-android-arm64-v8a-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+          key: BGFX-android-arm64-v8a-${{ matrix.flavor }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
       - name: Set version
         run: |
           perl -i -pe"s/9999/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
@@ -149,11 +154,20 @@ jobs:
       - name: Build libvpinball
         run: |
           cp make/CMakeLists_bgfx_lib.txt CMakeLists.txt
-          cmake \
-                -DPLATFORM=android \
-                -DARCH=arm64-v8a \
-                -DCMAKE_BUILD_TYPE=${{ matrix.config }} \
-                -B build/android-arm64-v8a
+          if [[ "${{ matrix.flavor }}" == "quest" ]]; then
+            cmake \
+                  -DPLATFORM=android \
+                  -DARCH=arm64-v8a \
+                  -DCMAKE_BUILD_TYPE=${{ matrix.config }} \
+                  -DENABLE_XR=ON \
+                  -B build/android-arm64-v8a
+          else
+            cmake \
+                  -DPLATFORM=android \
+                  -DARCH=arm64-v8a \
+                  -DCMAKE_BUILD_TYPE=${{ matrix.config }} \
+                  -B build/android-arm64-v8a
+          fi
           cmake --build build/android-arm64-v8a -- -j$(nproc)
       - if: github.repository == 'vpinball/vpinball'
         name: Build app
@@ -164,9 +178,11 @@ jobs:
         run: |
           cd standalone/android
           echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > app/vpinball.jks
+          FLAVOR="${{ matrix.flavor }}"
+          FLAVOR_CAPITALIZED="$(echo "${FLAVOR:0:1}" | tr '[:lower:]' '[:upper:]')${FLAVOR:1}"
           ./gradlew \
-            assemble${{ matrix.config }} \
-            bundle${{ matrix.config }} \
+            assemble${FLAVOR_CAPITALIZED}${{ matrix.config }} \
+            bundle${FLAVOR_CAPITALIZED}${{ matrix.config }} \
             -PversionName="${{ needs.version.outputs.version_full }}" \
             -Psha7="${{ needs.version.outputs.sha7 }}"
       - if: github.repository != 'vpinball/vpinball'
@@ -182,21 +198,24 @@ jobs:
                 -keypass "$ANDROID_KEY_PASSWORD" \
                 -alias "$ANDROID_KEY_ALIAS" \
                 -dname "CN=VPinball Android, O=VPinball, C=XX"
+          FLAVOR="${{ matrix.flavor }}"
+          FLAVOR_CAPITALIZED="$(echo "${FLAVOR:0:1}" | tr '[:lower:]' '[:upper:]')${FLAVOR:1}"
           ./gradlew \
-            assemble${{ matrix.config }} \
-            bundle${{ matrix.config }} \
+            assemble${FLAVOR_CAPITALIZED}${{ matrix.config }} \
+            bundle${FLAVOR_CAPITALIZED}${{ matrix.config }} \
             -PversionName="${{ needs.version.outputs.version_full }}" \
             -Psha7="${{ needs.version.outputs.sha7 }}"
       - name: Stage apk/aab artifacts
         run: |
           CONFIG_LC=$(echo "${{ matrix.config }}" | tr '[:upper:]' '[:lower:]')
+          FLAVOR_LC=$(echo "${{ matrix.flavor }}" | tr '[:upper:]' '[:lower:]')
           mkdir tmp
-          cp standalone/android/app/build/outputs/apk/${CONFIG_LC}/*.apk tmp
+          cp standalone/android/app/build/outputs/apk/${FLAVOR_LC}/${CONFIG_LC}/*.apk tmp
           if [[ "${{ github.repository }}" == "vpinball/vpinball" ]]; then
-             cp standalone/android/app/build/outputs/bundle/${CONFIG_LC}/*.aab tmp
+             cp standalone/android/app/build/outputs/bundle/${FLAVOR_LC}${{ matrix.config }}/*.aab tmp
           fi
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: VPinballX_BGFX-${{ needs.version.outputs.tag }}-${{ matrix.config }}-android
+          name: VPinballX_BGFX-${{ needs.version.outputs.tag }}-${{ matrix.flavor }}-${{ matrix.config }}-android
           path: tmp

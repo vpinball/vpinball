@@ -6,10 +6,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.libsdl.app.SDLActivity
+import org.vpinball.app.jni.VPinballLogLevel
 
 class VPinballPlayerActivity : SDLActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (BuildConfig.IS_QUEST) {
+            VPinballManager.vpinballJNI.VPinballInitOpenXR(this)
+        }
 
         VPinballManager.setPlayerActivity(this)
 
@@ -26,8 +31,18 @@ class VPinballPlayerActivity : SDLActivity() {
         }
     }
 
+    override fun onStop() {
+        VPinballManager.log(VPinballLogLevel.INFO, "VPinballPlayerActivity: onStop: isFinishing=$isFinishing")
+
+        if (!isFinishing) {
+            VPinballManager.log(VPinballLogLevel.INFO, "VPinballPlayerActivity: force quit detected, exiting")
+            System.exit(0)
+        }
+
+        super.onStop()
+    }
+
     override fun onDestroy() {
-        VPinballManager.stop()
         VPinballManager.setPlayerActivity(null)
         super.onDestroy()
     }

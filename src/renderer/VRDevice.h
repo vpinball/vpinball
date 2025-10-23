@@ -148,6 +148,7 @@ private:
       XrCompositionLayerProjection layerProjection = { XR_TYPE_COMPOSITION_LAYER_PROJECTION };
       std::vector<XrCompositionLayerProjectionView> layerProjectionViews;
       std::vector<XrCompositionLayerDepthInfoKHR> depthInfoViews;
+      XrCompositionLayerPassthroughFB layerPassthrough = { XR_TYPE_COMPOSITION_LAYER_PASSTHROUGH_FB };
    };
 
    bool m_depthExtensionSupported = false;
@@ -168,6 +169,11 @@ private:
    PFN_xrGetVisibilityMaskKHR xrGetVisibilityMaskKHR;
    bool m_visibilityMaskDirty = true;
    MeshBuffer* m_visibilityMask = nullptr;
+
+   bool m_passthroughExtensionSupported = false;
+   XrPassthroughFB m_passthrough = XR_NULL_HANDLE;
+   XrPassthroughLayerFB m_passthroughLayer = XR_NULL_HANDLE;
+   bool m_passthroughEnabled = false;
 
    class XRGraphicBackend* m_backend = nullptr;
 
