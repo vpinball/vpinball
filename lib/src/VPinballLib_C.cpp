@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include <core/stdafx.h>
 
 #define SDL_MAIN_USE_CALLBACKS

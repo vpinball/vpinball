@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "VPXProgress.h"
 
 #include "VPinballLib.h"

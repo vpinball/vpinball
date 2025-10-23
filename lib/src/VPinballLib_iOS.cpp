@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "VPinballLib_iOS.h"
 #include "VPinballLib.h"
