@@ -23,7 +23,7 @@ public:
    virtual void Close(bool isBackwardAnimation);
    virtual void Save();
    bool IsActive() const { return m_openAnimTarget == 0.f; }
-   bool IsClosed() const { return m_openAnimPos == -1.f; }
+   bool IsClosed() const { return (m_openAnimPos == m_openAnimTarget) && (m_openAnimPos == -1.f || m_openAnimPos == 1.f); }
    virtual void SaveGlobally();
    virtual void SaveTableOverride();
    virtual void ResetToInitialValues();
@@ -31,7 +31,7 @@ public:
    bool IsResettingToDefaults() const { return m_resettingToDefaults; }
    bool IsResettingToInitialValues() const { return m_resettingToInitialValues; }
    bool IsResetting() const { return m_resettingToDefaults || m_resettingToInitialValues; }
-   virtual void Render(float elapsedMs);
+   virtual void Render(float elapsedS);
    void SelectNextItem();
    void SelectPrevItem();
    void AdjustItem(float direction, bool isInitialPress);
@@ -57,8 +57,9 @@ private:
    // Open/Close animations
    // -1.f = closed, 0.f = opened, 1.f = appearing
    float m_openAnimPos = -1.f;
+   float m_openAnimStart = -1.f;
    float m_openAnimTarget = -1.f;
-   bool m_isBackwardAnimation = false;
+   float m_openAnimElapsed = 0.f;
 
    ImVec2 m_windowPos = ImVec2(0.f, 0.f);
    ImVec2 m_windowSize = ImVec2(0.f, 0.f);
