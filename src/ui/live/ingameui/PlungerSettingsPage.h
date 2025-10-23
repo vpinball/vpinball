@@ -2,7 +2,6 @@
 
 #pragma once
 
-
 namespace VPX::InGameUI
 {
 

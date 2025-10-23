@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 #define FID(A) (int)((unsigned int)(#A[0])|((unsigned int)(#A[1])<<8)|((unsigned int)(#A[2])<<16)|((unsigned int)(#A[3])<<24))
 
@@ -109,25 +111,25 @@ public:
    FastIStorage();
    virtual ~FastIStorage();
 
-   HRESULT __stdcall QueryInterface(const struct _GUID &, void **) override;
+   HRESULT __stdcall QueryInterface(const struct _GUID &, void **) override { return S_OK; }
    ULONG __stdcall AddRef() override;
    ULONG __stdcall Release() override;
 
    HRESULT __stdcall CreateStream(const WCHAR *, ULONG, ULONG, ULONG, struct IStream **) override;
-   HRESULT __stdcall OpenStream(const WCHAR *, void *, ULONG, ULONG, struct IStream **) override;
+   HRESULT __stdcall OpenStream(const WCHAR *, void *, ULONG, ULONG, struct IStream **) override { return S_OK; }
    HRESULT __stdcall CreateStorage(const WCHAR *, ULONG, ULONG, ULONG, struct IStorage **) override;
-   HRESULT __stdcall OpenStorage(const WCHAR *, struct IStorage *, ULONG, WCHAR **, ULONG, struct IStorage **) override;
+   HRESULT __stdcall OpenStorage(const WCHAR *, struct IStorage *, ULONG, WCHAR **, ULONG, struct IStorage **) override { return S_OK; }
    HRESULT __stdcall CopyTo(ULONG, const struct _GUID *, WCHAR **, struct IStorage *) override;
-   HRESULT __stdcall MoveElementTo(const WCHAR *, struct IStorage *, const WCHAR *, ULONG) override;
-   HRESULT __stdcall Commit(ULONG) override;
-   HRESULT __stdcall Revert() override;
-   HRESULT __stdcall EnumElements(ULONG, void *, ULONG, struct IEnumSTATSTG **) override;
-   HRESULT __stdcall DestroyElement(const WCHAR *) override;
-   HRESULT __stdcall RenameElement(const WCHAR *, const WCHAR *) override;
-   HRESULT __stdcall SetElementTimes(const WCHAR *, const struct _FILETIME *, const struct _FILETIME *, const struct _FILETIME *) override;
-   HRESULT __stdcall SetClass(const struct _GUID &) override;
-   HRESULT __stdcall SetStateBits(ULONG, ULONG) override;
-   HRESULT __stdcall Stat(struct tagSTATSTG *, ULONG) override;
+   HRESULT __stdcall MoveElementTo(const WCHAR *, struct IStorage *, const WCHAR *, ULONG) override { return S_OK; }
+   HRESULT __stdcall Commit(ULONG) override { return S_OK; }
+   HRESULT __stdcall Revert() override { return S_OK; }
+   HRESULT __stdcall EnumElements(ULONG, void *, ULONG, struct IEnumSTATSTG **) override { return S_OK; }
+   HRESULT __stdcall DestroyElement(const WCHAR *) override { return S_OK; }
+   HRESULT __stdcall RenameElement(const WCHAR *, const WCHAR *) override { return S_OK; }
+   HRESULT __stdcall SetElementTimes(const WCHAR *, const struct _FILETIME *, const struct _FILETIME *, const struct _FILETIME *) override { return S_OK; }
+   HRESULT __stdcall SetClass(const struct _GUID &) override { return S_OK; }
+   HRESULT __stdcall SetStateBits(ULONG, ULONG) override { return S_OK; }
+   HRESULT __stdcall Stat(struct tagSTATSTG *, ULONG) override { return S_OK; }
 
 private:
    int m_cref;
@@ -144,21 +146,21 @@ public:
    FastIStream();
    virtual ~FastIStream();
 
-   HRESULT __stdcall QueryInterface(const struct _GUID &, void **) override;
+   HRESULT __stdcall QueryInterface(const struct _GUID &, void **) override { return S_OK; }
    ULONG __stdcall AddRef() override;
    ULONG __stdcall Release() override;
    HRESULT __stdcall Read(void *pv, ULONG count, ULONG *foo) override;
    HRESULT __stdcall Write(const void *pv, ULONG count, ULONG *foo) override;
    HRESULT __stdcall Seek(union _LARGE_INTEGER, ULONG, union _ULARGE_INTEGER *) override;
-   HRESULT __stdcall SetSize(union _ULARGE_INTEGER) override;
-   HRESULT __stdcall CopyTo(struct IStream *, union _ULARGE_INTEGER, union _ULARGE_INTEGER *, union _ULARGE_INTEGER *) override;
-   HRESULT __stdcall Commit(ULONG) override;
-   HRESULT __stdcall Revert() override;
+   HRESULT __stdcall SetSize(union _ULARGE_INTEGER) override { return S_OK; }
+   HRESULT __stdcall CopyTo(struct IStream *, union _ULARGE_INTEGER, union _ULARGE_INTEGER *, union _ULARGE_INTEGER *) override { return S_OK; }
+   HRESULT __stdcall Commit(ULONG) override { return S_OK; }
+   HRESULT __stdcall Revert() override { return S_OK; }
 
-   HRESULT __stdcall LockRegion(union _ULARGE_INTEGER, union _ULARGE_INTEGER, ULONG) override;
-   HRESULT __stdcall UnlockRegion(union _ULARGE_INTEGER, union _ULARGE_INTEGER, ULONG) override;
-   HRESULT __stdcall Stat(struct tagSTATSTG *, ULONG) override;
-   HRESULT __stdcall Clone(struct IStream **) override;
+   HRESULT __stdcall LockRegion(union _ULARGE_INTEGER, union _ULARGE_INTEGER, ULONG) override { return S_OK; }
+   HRESULT __stdcall UnlockRegion(union _ULARGE_INTEGER, union _ULARGE_INTEGER, ULONG) override { return S_OK; }
+   HRESULT __stdcall Stat(struct tagSTATSTG *, ULONG) override { return S_OK; }
+   HRESULT __stdcall Clone(struct IStream **) override { return S_OK; }
 
    char  *m_rg;          // Data buffer
    WCHAR *m_wzName;

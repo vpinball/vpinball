@@ -1,7 +1,8 @@
 // license:GPLv3+
-// Ported at: VisualPinball.Engine/Math/CatmullCurve.cs
 
 #pragma once
+
+// Ported at: VisualPinball.Engine/Math/CatmullCurve.cs
 
 /*
  * Compute coefficients for a cubic polynomial

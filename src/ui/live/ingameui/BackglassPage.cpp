@@ -42,15 +42,15 @@ BackglassPage::BackglassPage()
    auto presetButtons = std::make_unique<InGameUIItem>(
       ""s, "Aspect ratio and position preset buttons"s,
       [this](int itemIndex, const InGameUIItem* item) {
-         const float buttonSize = 32.0f;
-         const float buttonSpacing = 5.0f;
-         const float sectionSpacing = 15.0f;
+         constexpr float buttonSize = 32.0f;
+         constexpr float buttonSpacing = 5.0f;
+         //constexpr float sectionSpacing = 15.0f;
 
-         int currentW = m_player->m_backglassOutput.GetEmbeddedWindow()->GetWidth();
-         int currentH = m_player->m_backglassOutput.GetEmbeddedWindow()->GetHeight();
+         const int currentW = m_player->m_backglassOutput.GetEmbeddedWindow()->GetWidth();
+         const int currentH = m_player->m_backglassOutput.GetEmbeddedWindow()->GetHeight();
          const bool sizeZero = (currentW == 0 || currentH == 0);
 
-         const float aspectButtonWidth = 60.0f;
+         constexpr float aspectButtonWidth = 60.0f;
 
          ImGui::BeginGroup();
          {
@@ -144,7 +144,7 @@ BackglassPage::BackglassPage()
             if (isZeroSize) {
                ImGui::BeginDisabled();
             }
-            ImGui::SliderInt(("##" + string(label)).c_str(), &value, min_val, max_val);
+            ImGui::SliderInt(("##"s + label).c_str(), &value, min_val, max_val);
             if (isZeroSize) {
                ImGui::EndDisabled();
             }
@@ -153,7 +153,7 @@ BackglassPage::BackglassPage()
             if (isZeroSize) {
                ImGui::BeginDisabled();
             }
-            if (ImGui::Button(("-##" + string(label)).c_str(), ImVec2(30, 0))) {
+            if (ImGui::Button(("-##"s + label).c_str(), ImVec2(30, 0))) {
                value = max(min_val, value - 1);
             }
             if (isZeroSize) {
@@ -164,7 +164,7 @@ BackglassPage::BackglassPage()
             if (isZeroSize) {
                ImGui::BeginDisabled();
             }
-            if (ImGui::Button(("+##" + string(label)).c_str(), ImVec2(30, 0))) {
+            if (ImGui::Button(("+##"s + label).c_str(), ImVec2(30, 0))) {
                value = min(max_val, value + 1);
             }
             if (isZeroSize) {

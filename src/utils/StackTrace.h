@@ -1,5 +1,4 @@
-#ifndef DEBUG_STACK_TRACE_H
-#define DEBUG_STACK_TRACE_H
+#pragma once
 
 namespace rde
 {
@@ -14,8 +13,7 @@ namespace StackTrace
 	bool InitSymbols();
 
 	int GetCallStack(Address* callStack, int maxDepth, int entriesToSkip = 0);
-	int GetCallStack(void* context, Address* callStack, int maxDepth, 
-		int entriesToSkip = 0);
+	int GetCallStack(void* context, Address* callStack, int maxDepth, int entriesToSkip = 0);
 	// Faster than other versions, but may be less reliable (no FPO).
 	int GetCallStack_Fast(Address* callStack, int maxDepth, int entriesToSkip = 0);
 
@@ -28,5 +26,3 @@ namespace StackTrace
 }
 
 }
-
-#endif

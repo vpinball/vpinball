@@ -1,4 +1,4 @@
-
+// license:BSD-3-Clause
 
 #if defined(LIBPINMAME) || defined(VPINMAME)
   // Encode frame with a UINT8 per dot (0..3 value)

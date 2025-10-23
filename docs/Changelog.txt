@@ -177,6 +177,7 @@ FIXES:
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes
 - see Scripts.txt for the actual usage and "documentation" of the scripts that come with VPX
 
+- note that the vast majority of the code base is now available under GPLv3+ (see license.txt for all details)
 
 VP 10.8.0 Changelog
 ------------------------

@@ -196,7 +196,7 @@ bgfx::TextureHandle Sampler::GetCoreTexture(bool genMipmaps)
    const bool hasComputeMipMapGen = (bgfx::getCaps()->supported & BGFX_CAPS_COMPUTE) != 0
       && (bgfx::getCaps()->formats[m_bgfx_format] & (BGFX_CAPS_FORMAT_TEXTURE_IMAGE_READ | BGFX_CAPS_FORMAT_TEXTURE_IMAGE_WRITE)) != 0
       && (m_bgfx_format == bgfx::TextureFormat::Enum::RGBA8 || m_bgfx_format == bgfx::TextureFormat::Enum::RGBA16F || m_bgfx_format == bgfx::TextureFormat::Enum::RGBA32F)
-      && (bgfx::getRendererType() != bgfx::RendererType::Enum::Vulkan) // FIXME rtemove as soon as BGFX is fixed: BGFX's Vulkan driver has a bug as of 2025/10/23 (it used to work before)
+      && (bgfx::getRendererType() != bgfx::RendererType::Enum::Vulkan) // FIXME remove as soon as BGFX is fixed: BGFX's Vulkan driver has a bug as of 2025/10/23 (it used to work before)
       && (bgfx::getRendererType() != bgfx::RendererType::Enum::OpenGL) // BGFX's OpenGL driver will not apply uniform, breaking this implementation for OpenGL
       && (bgfx::getRendererType() != bgfx::RendererType::Enum::OpenGLES); // OpenGL ES does not support compute shaders
 

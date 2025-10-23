@@ -2,14 +2,6 @@
 
 #include "core/stdafx.h"
 
-LightSeq::LightSeq()
-{
-}
-
-LightSeq::~LightSeq()
-{
-}
-
 LightSeq *LightSeq::CopyForPlay(PinTable *live_table) const
 {
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(LightSeq, live_table)
@@ -144,12 +136,6 @@ void LightSeq::RenderOutline(Sur * const psur)
    psur->SetFillColor(RGB(255, 0, 0));
    psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y - 2.5f, 2.0f);
 }
-
-// Renders the image onto the Blueprint, but we don't want light seqs on the blue print as it is non-essensial
-void LightSeq::RenderBlueprint(Sur *psur, const bool solid)
-{
-}
-
 
 void LightSeq::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {

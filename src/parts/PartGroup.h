@@ -57,8 +57,8 @@ public:
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
-   PartGroup();
-   virtual ~PartGroup();
+   PartGroup() { }
+   virtual ~PartGroup() { }
 
    BEGIN_COM_MAP(PartGroup)
       COM_INTERFACE_ENTRY(IDispatch)

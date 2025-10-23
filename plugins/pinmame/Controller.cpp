@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "Controller.h"
 #include "Game.h"
 #include <thread>

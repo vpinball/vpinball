@@ -1,5 +1,5 @@
 // license:GPLv3+
-//
+
 // Open Pinball Device support in VP
 //
 // This is essentially a sub-module of pininput.cpp that breaks out the
@@ -142,7 +142,7 @@ public:
          // try reading - we're in non-blocking mode, so this will return
          // immediately with a length of zero if no reports are available
          buf[0] = reportID;
-         int readResult = hid_read(hDevice, buf.data(), buf.size());
+         const int readResult = hid_read(hDevice, buf.data(), buf.size());
 
          // If we're out of data, or an error occurred, stop looping.  We
          // treat errors the same as no data available, since the error might
@@ -273,7 +273,7 @@ OpenPinDevHandler::OpenPinDevHandler(InputManager &pininput)
             // read the report descriptor
             std::unique_ptr<unsigned char[]> reportDescBuf(new unsigned char[HID_API_MAX_REPORT_DESCRIPTOR_SIZE]);
             unsigned char *rp = reportDescBuf.get();
-            int rdSize = hid_get_report_descriptor(hDevice.get(), rp, HID_API_MAX_REPORT_DESCRIPTOR_SIZE);
+            const int rdSize = hid_get_report_descriptor(hDevice.get(), rp, HID_API_MAX_REPORT_DESCRIPTOR_SIZE);
             if (rdSize > 0)
             {
                // parse the usages
@@ -314,10 +314,10 @@ OpenPinDevHandler::OpenPinDevHandler(InputManager &pininput)
                            // the device sends.
                            hidrp::ReportSizeScanner sizeScanner;
                            parser.Parse(rp, rdSize, &sizeScanner);
-                           size_t reportSize = (sizeScanner.ReportSize(hidrp::ReportType::input, f.reportID) + 7) / 8 + 1;
+                           const size_t reportSize = (sizeScanner.ReportSize(hidrp::ReportType::input, f.reportID) + 7) / 8 + 1;
 
                            // Register device to the input manager
-                           uint16_t deviceId = m_inputManager.RegisterDevice("OpenPinDev"s, InputManager::DeviceType::OpenPinDev, "OpenPinDev"s);
+                           const uint16_t deviceId = m_inputManager.RegisterDevice("OpenPinDev"s, InputManager::DeviceType::OpenPinDev, "OpenPinDev"s);
                            m_inputManager.RegisterElementName(deviceId, false, 0, "Start Game"s);
                            m_inputManager.RegisterElementName(deviceId, false, 1, "Quit Game"s);
                            m_inputManager.RegisterElementName(deviceId, false, 2, "Coin"s);
@@ -398,7 +398,7 @@ OpenPinDevHandler::OpenPinDevHandler(InputManager &pininput)
                            pinDev->SetOnNewReportHandler(
                               [this](const OpenPinDev *const pindev, const OpenPinballDeviceReport &prevReport, const OpenPinballDeviceReport &report)
                            {
-                              uint64_t timestampNs = report.timestamp * 1000ULL;
+                              const uint64_t timestampNs = report.timestamp * 1000ULL;
                               for (unsigned int buttonNum = 1, bit = 1; buttonNum <= 27; ++buttonNum, bit <<= 1)
                               {
                                  const bool isDown = (report.pinballButtons & bit) != 0;

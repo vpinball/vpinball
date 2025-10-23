@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 $input a_position, a_normal, a_texcoord0
 $output v_color0, v_texcoord0, v_texcoord1
 

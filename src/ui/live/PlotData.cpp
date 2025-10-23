@@ -65,11 +65,6 @@ void PlotData::AddPoint(const float x, const float y)
       m_movingMin = lerp(m_movingMin, y, 0.01f);
 }
 
-bool PlotData::HasData() const
-{
-   return !m_data.empty();
-}
-
 ImVec2 PlotData::GetLast() const
 {
    if (m_data.empty())
@@ -78,14 +73,4 @@ ImVec2 PlotData::GetLast() const
       return m_data.back();
    else
       return m_data[m_offset - 1];
-}
-
-float PlotData::GetMovingMin() const
-{
-   return m_movingMin;
-}
-
-float PlotData::GetMovingMax() const
-{
-   return m_movingMax;
 }

@@ -1,5 +1,4 @@
-#ifndef DEBUG_BLACKBOX_H
-#define DEBUG_BLACKBOX_H
+#pragma once
 
 namespace rde
 {
@@ -11,5 +10,3 @@ namespace rde
       const char* GetBoxMessage(long index, int& threadId);
    }
 }
-
-#endif

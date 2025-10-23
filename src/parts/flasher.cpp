@@ -16,7 +16,7 @@ Flasher::Flasher()
 
 Flasher::~Flasher()
 {
-   assert(m_rd == nullptr); // RenderRelease must be explicitely called before deleting this object
+   assert(m_rd == nullptr); // RenderRelease must be explicitly called before deleting this object
 }
 
 Flasher *Flasher::CopyForPlay(PinTable *live_table) const
@@ -1348,7 +1348,7 @@ void Flasher::Render(const unsigned int renderMask)
 
       case FlasherData::DISPLAY:
       {
-         ResURIResolver::DisplayState display = g_pplayer->m_resURIResolver.GetDisplayState(m_d.m_imageSrcLink);
+         const ResURIResolver::DisplayState display = g_pplayer->m_resURIResolver.GetDisplayState(m_d.m_imageSrcLink);
          if (display.state.frame == nullptr)
          {
             if (m_backglass)
@@ -1408,7 +1408,7 @@ void Flasher::Render(const unsigned int renderMask)
 
       case FlasherData::ALPHASEG:
       {
-         ResURIResolver::SegDisplayState segs = g_pplayer->m_resURIResolver.GetSegDisplayState(m_d.m_imageSrcLink);
+         const ResURIResolver::SegDisplayState segs = g_pplayer->m_resURIResolver.GetSegDisplayState(m_d.m_imageSrcLink);
          if (segs.state.frame == nullptr || segs.source->nElements == 0)
             return;
          Texture *const glass = m_ptable->GetImage(m_d.m_szImageA);

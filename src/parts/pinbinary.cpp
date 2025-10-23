@@ -2,14 +2,6 @@
 
 #include "core/stdafx.h"
 
-PinBinary::PinBinary()
-{
-}
-
-PinBinary::~PinBinary()
-{
-}
-
 bool PinBinary::ReadFromFile(const string& filename)
 {
    m_buffer = read_file(filename);

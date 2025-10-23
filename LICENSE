@@ -1,20 +1,29 @@
 IMPORTANT NOTE:
 ---------------
 
-As of October 2020, we, the Visual Pinball team, are working on replacing
+Since October 2020, we, the Visual Pinball team, were working on replacing
 the inherited 'old MAME'-like license (listed directly below) by
 the GPLv3+ License (listed at the very end of this file).
+By now (October 2025), the vast majority of files have been made sure to
+comply with the GPLv3+ License (by contacting the original authors, or
+otherwise code re-writes).
 
-So note that all new contributions (e.g. via pull requests) being made will
-automatically be considered as GPLv3+ based.
+Note that all new contributions (e.g. via pull requests) being made by any
+contributor were and will automatically be considered as GPLv3+ based (unless
+it includes thirdparty code, which must be pointed out accordingly).
 
-Each source file/snippet that is already under GPLv3+ will have its
+In addition, each source file/snippet that is under GPLv3+ will have its
 very first line marked with
 // license:GPLv3+
-Every file/snippet that doesn't, will stay (for now) under the 'old MAME'-like license.
+Every file/snippet that doesn't feature any explicit license mentioning,
+will stay (for now) under the 'old MAME'-like license.
 
+Note that some files feature their own respective license(s) that come listed
+directly within that specific file.
 
-For thirdparty licenses, see txt\license.txt
+Also note that all external libraries (stored in the "third-party" folder)
+come as-is, under their own respective license models, listed there, or
+in "docs\license.txt".
 
 
 ===============================================================================
@@ -22,8 +31,8 @@ For thirdparty licenses, see txt\license.txt
 ===============================================================================
 
 
-Unless otherwise explicitly stated (e.g. external libraries/code),
-all code in Visual Pinball is released under the following license
+Unless otherwise explicitly stated (e.g. external libraries/code, or GPLv3+'ed
+code), all code in Visual Pinball is released under the following license
 (derived from the MAME license):
 
 Copyright Randy Davis and the Visual Pinball development team and contributors

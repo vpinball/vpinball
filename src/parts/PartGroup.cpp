@@ -3,14 +3,6 @@
 #include "core/stdafx.h"
 
 
-PartGroup::PartGroup()
-{
-}
-
-PartGroup::~PartGroup()
-{
-}
-
 PartGroup *PartGroup::CopyForPlay(PinTable *live_table) const
 {
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(PartGroup, live_table)

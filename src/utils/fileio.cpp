@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 
 #include <mutex>
@@ -500,11 +502,6 @@ FastIStorage::~FastIStorage()
    SAFE_VECTOR_DELETE(m_wzName);
 }
 
-HRESULT __stdcall FastIStorage::QueryInterface(const struct _GUID &, void **)
-{
-   return S_OK;
-}
-
 ULONG __stdcall FastIStorage::AddRef()
 {
    m_cref++;
@@ -540,11 +537,6 @@ HRESULT __stdcall FastIStorage::CreateStream(const WCHAR *wzName, ULONG, ULONG, 
    return S_OK;
 }
 
-HRESULT __stdcall FastIStorage::OpenStream(const WCHAR *, void *, ULONG, ULONG, struct IStream **)
-{
-   return S_OK;
-}
-
 HRESULT __stdcall FastIStorage::CreateStorage(const WCHAR *wzName, ULONG, ULONG, ULONG, struct IStorage **ppstg)
 {
    FastIStorage * const pfs = new FastIStorage();
@@ -558,11 +550,6 @@ HRESULT __stdcall FastIStorage::CreateStorage(const WCHAR *wzName, ULONG, ULONG,
 
    m_vstg.push_back(pfs);
 
-   return S_OK;
-}
-
-HRESULT __stdcall FastIStorage::OpenStorage(const WCHAR *, struct IStorage *, ULONG, WCHAR **, ULONG, struct IStorage **)
-{
    return S_OK;
 }
 
@@ -597,56 +584,6 @@ HRESULT __stdcall FastIStorage::CopyTo(ULONG, const struct _GUID *, WCHAR **, st
    return S_OK;
 }
 
-HRESULT __stdcall FastIStorage::MoveElementTo(const WCHAR *, struct IStorage *, const WCHAR *, ULONG)
-{
-   return S_OK;
-}
-
-HRESULT __stdcall FastIStorage::Commit(ULONG)
-{
-   return S_OK;
-}
-
-HRESULT __stdcall FastIStorage::Revert()
-{
-   return S_OK;
-}
-
-HRESULT __stdcall FastIStorage::EnumElements(ULONG, void *, ULONG, struct IEnumSTATSTG **)
-{
-   return S_OK;
-}
-
-HRESULT __stdcall FastIStorage::DestroyElement(const WCHAR *)
-{
-   return S_OK;
-}
-
-HRESULT __stdcall FastIStorage::RenameElement(const WCHAR *, const WCHAR *)
-{
-   return S_OK;
-}
-
-HRESULT __stdcall FastIStorage::SetElementTimes(const WCHAR *, const struct _FILETIME *, const struct _FILETIME *, const struct _FILETIME *)
-{
-   return S_OK;
-}
-
-HRESULT __stdcall FastIStorage::SetClass(const struct _GUID &)
-{
-   return S_OK;
-}
-
-HRESULT __stdcall FastIStorage::SetStateBits(ULONG, ULONG)
-{
-   return S_OK;
-}
-
-HRESULT __stdcall FastIStorage::Stat(struct tagSTATSTG *, ULONG)
-{
-   return S_OK;
-}
-
 FastIStream::FastIStream()
    : m_rg(nullptr)
    , m_wzName(nullptr)
@@ -677,11 +614,6 @@ void FastIStream::SetSize(const unsigned int i)
       m_rg = (char *)m_rgNew;
       m_cMax = i;
    }
-}
-
-HRESULT __stdcall FastIStream::QueryInterface(const struct _GUID &, void **)
-{
-   return S_OK;
 }
 
 ULONG __stdcall FastIStream::AddRef()
@@ -746,45 +678,5 @@ HRESULT __stdcall FastIStream::Seek(union _LARGE_INTEGER li, const ULONG origin,
    if (puiOut)
       puiOut->QuadPart = m_cSeek;
 
-   return S_OK;
-}
-
-HRESULT __stdcall FastIStream::SetSize(union _ULARGE_INTEGER)
-{
-   return S_OK;
-}
-
-HRESULT __stdcall FastIStream::CopyTo(struct IStream *, union _ULARGE_INTEGER, union _ULARGE_INTEGER *, union _ULARGE_INTEGER *)
-{
-   return S_OK;
-}
-
-HRESULT __stdcall FastIStream::Commit(ULONG)
-{
-   return S_OK;
-}
-
-HRESULT __stdcall FastIStream::Revert()
-{
-   return S_OK;
-}
-
-HRESULT __stdcall FastIStream::LockRegion(union _ULARGE_INTEGER, union _ULARGE_INTEGER, ULONG)
-{
-   return S_OK;
-}
-
-HRESULT __stdcall FastIStream::UnlockRegion(union _ULARGE_INTEGER, union _ULARGE_INTEGER, ULONG)
-{
-   return S_OK;
-}
-
-HRESULT __stdcall FastIStream::Stat(struct tagSTATSTG *, ULONG)
-{
-   return S_OK;
-}
-
-HRESULT __stdcall FastIStream::Clone(struct IStream **)
-{
    return S_OK;
 }

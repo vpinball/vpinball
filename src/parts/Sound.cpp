@@ -189,9 +189,9 @@ bool Sound::SaveToFile(const string& filename) const
 void Sound::SaveToStream(IStream* pstm) const
 {
    ULONG writ = 0;
-   int32_t nameLen = static_cast<int32_t>(m_name.length());
-   int32_t pathLen = static_cast<int32_t>(m_path.length());
-   int32_t dummyLen = 1;
+   const int32_t nameLen = static_cast<int32_t>(m_name.length());
+   const int32_t pathLen = static_cast<int32_t>(m_path.length());
+   constexpr int32_t dummyLen = 1;
    constexpr char dummyPath = '\0';
    pstm->Write(&nameLen, sizeof(int32_t), &writ);
    pstm->Write(m_name.c_str(), nameLen, &writ);

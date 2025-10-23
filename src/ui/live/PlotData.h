@@ -10,10 +10,10 @@ public:
 
    void SetRolling(bool rolling);
    void AddPoint(const float x, const float y);
-   bool HasData() const;
+   bool HasData() const { return !m_data.empty(); }
    ImVec2 GetLast() const;
-   float GetMovingMax() const;
-   float GetMovingMin() const;
+   float GetMovingMax() const { return m_movingMax; }
+   float GetMovingMin() const { return m_movingMin; }
 
 public:
    int m_offset = 0;

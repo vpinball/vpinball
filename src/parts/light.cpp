@@ -35,7 +35,7 @@ Light::Light() : m_lightcenter(this)
 
 Light::~Light()
 {
-   assert(m_rd == nullptr); // RenderRelease must be explicitely called before deleting this object
+   assert(m_rd == nullptr); // RenderRelease must be explicitly called before deleting this object
 }
 
 Light *Light::CopyForPlay(PinTable *live_table) const
@@ -623,7 +623,7 @@ void Light::Render(const unsigned int renderMask)
          mat.m_cClearcoat = 0xFFFFFF;
          m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
          m_rd->m_basicShader->SetMaterial(&mat, false);
-         Vertex3Ds bulbPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_boundingSphereCenter.z + m_d.m_height);
+         const Vertex3Ds bulbPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_boundingSphereCenter.z + m_d.m_height);
          m_rd->DrawMesh(m_rd->m_basicShader, true, bulbPos, m_d.m_depthBias, m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
       }
    }
@@ -708,7 +708,7 @@ void Light::Render(const unsigned int renderMask)
          m_rd->m_lightShader->SetLightColorIntensity(lightColor_intensity);
          m_rd->m_lightShader->SetFloat(SHADER_blend_modulate_vs_add, 0.0001f); // additive, but avoid full 0, as it disables the blend
 
-         Vertex3Ds bulbPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_boundingSphereCenter.z + m_d.m_height);
+         const Vertex3Ds bulbPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_boundingSphereCenter.z + m_d.m_height);
          if (m_bulbLightMeshBuffer) // FIXME will be null if started without a bulb, then activated from the LiveUI. Prevent the crash. WOuld be nicer to actually build the buffer if needed
             m_rd->DrawMesh(m_rd->m_lightShader, m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive), bulbPos, m_d.m_depthBias, m_bulbLightMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbLightNumFaces);
 

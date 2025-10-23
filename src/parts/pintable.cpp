@@ -1,4 +1,5 @@
 // license:GPLv3+
+
 #include "core/stdafx.h"
 #include "core/vpversion.h"
 #include "parts/Sound.h"

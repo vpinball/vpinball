@@ -7,8 +7,8 @@
 class PinBinary : public ILoadable
 {
 public:
-   PinBinary();
-   virtual ~PinBinary();
+   PinBinary() { }
+   virtual ~PinBinary() { }
 
    bool ReadFromFile(const string& filename);
    bool WriteToFile(const string& filename);

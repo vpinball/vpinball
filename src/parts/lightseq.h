@@ -85,8 +85,8 @@ public:
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
-   LightSeq();
-   ~LightSeq();
+   LightSeq() { }
+   ~LightSeq() { }
 
    //HRESULT Init(PinTable * const ptable, const float x, const float y);
 
@@ -112,7 +112,7 @@ public:
    Vertex2D GetCenter() const final;
    void PutCenter(const Vertex2D& pv) final;
 
-   void RenderBlueprint(Sur *psur, const bool solid) final;
+   void RenderBlueprint(Sur *psur, const bool solid) final { } // Renders the image onto the Blueprint, but we don't want light seqs on the blue print as it is non-essensial
    ItemTypeEnum HitableGetItemType() const final { return eItemLightSeq; }
 
    void WriteRegDefaults() final;

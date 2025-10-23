@@ -1,8 +1,8 @@
-#ifndef DEBUG_CRASH_HANDLER_H
-#define DEBUG_CRASH_HANDLER_H
+#pragma once
 
 namespace rde
 {
+
 namespace CrashHandler
 {
 void Init();
@@ -11,6 +11,5 @@ void SetCrashReportFileName(const string& name);
 // crash.dmp by default
 void SetMiniDumpFileName(const string& name);
 }
-}
 
-#endif
+}
