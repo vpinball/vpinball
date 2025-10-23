@@ -91,7 +91,7 @@ MiscSettingsPage::MiscSettingsPage()
       {
          m_player->m_liveUI->PushNotification("You have changed the difficulty level\nThis change will only be applied after restart."s, 10000);
          if (abs(v - 100.f * m_player->m_ptable->m_difficulty) >= 0.1f)
-            settings.SaveValue(Settings::TableOverride, "Difficulty"s, v, isTableOverride);
+            settings.SaveValue(Settings::TableOverride, "Difficulty"s, v / 100.f, isTableOverride);
       }));
 }
 
