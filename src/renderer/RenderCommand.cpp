@@ -344,7 +344,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
          {
             ss << " MB:" << std::setw(4) << std::hex << m_mb->GetSortKey() << std::dec;
             ss << " IndCount: " << std::setw(8) << m_indicesCount << ' ';
-            PLOGI << ss.str() << m_mb->m_wname;
+            PLOGI << ss.str() << MakeString(m_mb->m_wname);
          }
          else
          {
