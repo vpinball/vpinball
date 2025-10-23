@@ -1,9 +1,11 @@
+// license:GPLv3+
+
 #pragma once
 
 #include "common.h"
 
 namespace PUP {
-   
+
 class PUPImage
 {
 public:

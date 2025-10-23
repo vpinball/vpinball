@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "PUPTrigger.h"
 #include "PUPScreen.h"
 #include "PUPPlaylist.h"

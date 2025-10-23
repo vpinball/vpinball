@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "WMPCore.h"
 #include "WMPControls.h"
 #include "WMPSettings.h"

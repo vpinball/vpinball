@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "common.h"
 
 #include <sstream>
@@ -5,7 +7,7 @@
 #include <filesystem>
 
 namespace PinMAME {
-   
+
 static inline char cLower(char c)
 {
    if (c >= 'A' && c <= 'Z')

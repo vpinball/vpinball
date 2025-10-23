@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "PUPMediaManager.h"
 #include "PUPScreen.h"
 

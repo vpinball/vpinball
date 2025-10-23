@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "WMPAudioPlayer.h"
 #include "WMPCore.h"
 #include <algorithm>

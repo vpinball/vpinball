@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 #include "common.h"
@@ -117,7 +119,7 @@ private:
             m_pAnimation = other.m_pAnimation;
             m_width = other.m_width;
             m_height = other.m_height;
-  
+
             other.m_pTexture = nullptr;
             other.m_pAnimation = nullptr;
          }
@@ -138,14 +140,14 @@ private:
    public:
       Animation(PUPLabel* label, int lengthMs, int foregroundColor, int flashingFreq);
       Animation(PUPLabel* label, int lengthMs, int foregroundColor, int xps, int xpe, int yps, int ype, int motionLen, int motionTween, int motionColor);
-   
+
       bool Update(const SDL_Rect& screenRect, const SDL_FRect& labelRect);
-      
+
       bool m_visible = true;
       float m_xOffset = 0.f;
       float m_yOffset = 0.f;
       int m_color;
-      
+
    private:
       const PUPLabel* m_label;
       const int m_lengthMs;
@@ -153,7 +155,7 @@ private:
       const uint64_t m_startTimestamp;
 
       int m_flashingPeriod = 0;
-      
+
       int m_xps = 0;
       int m_xpe = 0;
       int m_yps = 0;

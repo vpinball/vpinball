@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "PUPImage.h"
 
 #include <SDL3_image/SDL_image.h>

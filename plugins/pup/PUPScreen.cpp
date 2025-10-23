@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "PUPScreen.h"
 #include "PUPCustomPos.h"
 #include "PUPTrigger.h"

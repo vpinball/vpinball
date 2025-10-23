@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 /*
  * This code was derived from notes at:
  *

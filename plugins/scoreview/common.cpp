@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "common.h"
 
 #include <sstream>
