@@ -686,7 +686,7 @@ void InputManager::CreateInputActions()
          { // Close app if pressed long enough
             g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
          }
-         else if (g_pplayer->m_liveUI->IsInGameUIOpened())
+         else if (g_pplayer->m_liveUI->IsOpened())
          {
             // Discard event as the UI is already opened and will process it
          }
@@ -703,7 +703,8 @@ void InputManager::CreateInputActions()
       std::make_unique<InputAction>(this, "ExitGame"s, "Exit Game"s, keyMapping(SDL_SCANCODE_Q),
          [](const InputAction& action, bool, bool isPressed)
          {
-            if (g_pplayer->m_liveUI->IsInGameUIOpened())
+            // Discard event as the UI is already opened and will process it, except while on the Exit splash where this action is still sensible
+            if (g_pplayer->m_liveUI->IsOpened() && !g_pplayer->m_liveUI->m_inGameUI.IsOpened("exit"s))
                return;
             CComVariant rgvar[1] = { CComVariant(0x10000 | static_cast<int>(action.GetActionId())) };
             DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
