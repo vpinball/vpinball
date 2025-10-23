@@ -23,18 +23,21 @@ InGameUIPage::InGameUIPage(const string& title, const string& info, SaveMode sav
 
 void InGameUIPage::Open(bool isBackwardAnimation)
 {
+   m_openAnimElapsed = 0.f;
    m_openAnimTarget = 0.f;
-   m_isBackwardAnimation = isBackwardAnimation;
-   if (m_openAnimPos == -1.f)
-      m_openAnimPos = 1.f;
+   // Only apply if page is no more on screen (otherwise it would jump)
+   if (m_openAnimPos == -1.f || m_openAnimPos == 1.f)
+      m_openAnimPos = isBackwardAnimation ? -1.f : 1.f;
+   m_openAnimStart = m_openAnimPos;
    m_selectedItem = 0;
    m_pressedItemLabel = ""s;
 }
 
 void InGameUIPage::Close(bool isBackwardAnimation)
 {
-   m_openAnimTarget = - 1.f;
-   m_isBackwardAnimation = isBackwardAnimation;
+   m_openAnimElapsed = 0.f;
+   m_openAnimTarget = isBackwardAnimation ? 1.f : -1.f;
+   m_openAnimStart = m_openAnimPos;
 }
 
 void InGameUIPage::ClearItems() { m_items.clear(); }
@@ -307,15 +310,19 @@ void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
    }
 }
 
-void InGameUIPage::Render(float elapsedMs)
+void InGameUIPage::Render(float elapsedS)
 {
    const ImGuiIO& io = ImGui::GetIO();
    const ImGuiStyle& style = ImGui::GetStyle();
 
-   m_openAnimPos = m_openAnimPos + (m_openAnimTarget - m_openAnimPos) * clamp(elapsedMs * 4.f, -1.f, 1.f);
-   if (fabsf(m_openAnimTarget - m_openAnimPos) < 0.001f)
-      m_openAnimPos = m_openAnimTarget;
-   const float animPos = m_isBackwardAnimation ? -m_openAnimPos : m_openAnimPos;
+   if (m_openAnimTarget != m_openAnimPos)
+   {
+      m_openAnimElapsed += elapsedS;
+      m_openAnimPos = lerp(m_openAnimStart, m_openAnimTarget, smoothstep(0.f, 0.5f, m_openAnimElapsed));
+      if (fabsf(m_openAnimTarget - m_openAnimPos) < 0.001f)
+         m_openAnimPos = m_openAnimTarget;
+   }
+   const float animPos = m_openAnimPos;
 
    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 1.f - fabs(GetOpenCloseAnimPos()));
    ImGui::SetNextWindowBgAlpha(0.5f);

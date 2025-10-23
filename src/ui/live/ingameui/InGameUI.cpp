@@ -61,7 +61,7 @@ void InGameUI::Navigate(const string &path, bool isBack)
       Close();
       return;
    }
-   m_activePages.push_back(std::move(it->second()));
+   m_activePages.push_back(it->second());
    if (m_activePages.back())
    {
       m_navigationHistory.push_back(path);
@@ -160,7 +160,11 @@ void InGameUI::Update()
       m_prevActionState = state;
    }
 
-   for (const auto& page : m_activePages)
+   // Copy list as it may be modified when the page is updated (for example when a navigation event is triggered)
+   vector<InGameUIPage*> pages;
+   for (const auto &page : m_activePages)
+      pages.push_back(page.get());
+   for (const auto &page : pages)
       page->Render(elapsed);
 }
 
