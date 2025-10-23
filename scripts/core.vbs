@@ -1286,7 +1286,12 @@ Class cvpmDropTarget
 	Public Sub SolUnhit(aNo, aEnabled)
 		Dim mSwcopy
 		Dim ii : If Not aEnabled Then Exit Sub
-		If TypeName(mDropObj(aNo-1)) = "HitTarget" Then CorePlaySoundAt mRaiseSnd, mDropObj(aNo-1) Else PlaySound mRaiseSnd
+		If TypeName(mDropObj(aNo-1)) = "HitTarget" Then
+			CorePlaySoundAt mRaiseSnd, mDropObj(aNo-1)
+			vpmSolWall mDropObj(aNo-1), False, False
+		Else
+			PlaySound mRaiseSnd
+		End If
 		mSwcopy = mDropSw(aNo-1)
 		Controller.Switch(mSwcopy) = False
 		mAllDn = False : CheckAllDn False
