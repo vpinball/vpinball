@@ -35,7 +35,7 @@ public:
    void SetProjectFolder(const string& basePath) { m_pFlexDMD->SetProjectFolder(basePath); }
    void SetVideoStretchMode(int mode) { m_stretchMode = mode; }
    void SetScoreboardBackgroundImage(const string& filename, int selectedBrightness, int unselectedBrightness);
-   int CreateAnimationFromImages(int fps, bool loop, const string& imagelist);
+   int CreateAnimationFromImages(int fps, bool loop, const string& imageList);
    int RegisterVideo(int videoStretchMode, bool loop, const string& videoFilename);
    int RegisterFont(const string& file) { /* Unimplemented */ return 0; }
    void UnregisterFont(int registeredFont) { /* Unimplemented */ }

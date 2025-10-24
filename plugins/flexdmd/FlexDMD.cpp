@@ -20,7 +20,7 @@ FlexDMD::FlexDMD(VPXPluginAPI* vpxApi) :
    m_vpxApi(vpxApi)
 {
    m_pStage = new Group(this, "Stage"s);
-   m_pStage->SetSize(static_cast<float>(m_width), static_cast<float>(m_height));
+   m_pStage->SetSize(m_width, m_height);
    m_pAssetManager = new AssetManager(m_vpxApi);
 }
 
@@ -66,7 +66,7 @@ void FlexDMD::Render()
       m_frameId++;
       m_lum8FrameDirty = m_lumFrameDirty = m_rgbFrameDirty = m_rgbaFrameDirty = true;
       m_lastRenderTick = tick;
-      m_pStage->Update((float)(elapsedMs / 1000.0));
+      m_pStage->Update((float)((double)elapsedMs / 1000.0));
       if (m_pSurface == nullptr)
       {
          SDL_Surface* pSurface = SDL_CreateSurface(m_width, m_height, SDL_PIXELFORMAT_RGB24);

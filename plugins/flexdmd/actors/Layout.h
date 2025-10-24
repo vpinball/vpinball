@@ -30,64 +30,64 @@ enum Scaling
 class Layout final
 {
 public:
-   static void Scale(Scaling mode, float sourceWidth, float sourceHeight, float targetWidth, float targetHeight, float& width, float& height)
+   static void Scale(Scaling mode, int sourceWidth, int sourceHeight, int targetWidth, int targetHeight, float& width, float& height)
    {
       switch (mode) {
          case Scaling_Fit: {
-            float targetRatio = targetHeight / targetWidth;
-            float sourceRatio = sourceHeight / sourceWidth;
+            float targetRatio = (float)targetHeight / (float)targetWidth;
+            float sourceRatio = (float)sourceHeight / (float)sourceWidth;
             if (targetRatio > sourceRatio)
             {
-               width = targetWidth;
-               height = (sourceHeight * targetWidth) / sourceWidth;
+               width = (float)targetWidth;
+               height = (float)(sourceHeight * targetWidth) / (float)sourceWidth;
             }
             else
             {
-               width = (sourceWidth * targetHeight) / sourceHeight;
-               height = targetHeight;
+               width = (float)(sourceWidth * targetHeight) / (float)sourceHeight;
+               height = (float)targetHeight;
             }
             break;
          }
          case Scaling_Fill: {
-            float targetRatio = targetHeight / targetWidth;
-            float sourceRatio = sourceHeight / sourceWidth;
+            float targetRatio = (float)targetHeight / (float)targetWidth;
+            float sourceRatio = (float)sourceHeight / (float)sourceWidth;
             if (targetRatio < sourceRatio)
             {
-               width = targetWidth;
-               height = (sourceHeight * targetWidth) / sourceWidth;
+               width = (float)targetWidth;
+               height = (float)(sourceHeight * targetWidth) / (float)sourceWidth;
             }
             else
             {
-               width = (sourceWidth * targetHeight) / sourceHeight;
-               height = targetHeight;
+               width = (float)(sourceWidth * targetHeight) / (float)sourceHeight;
+               height = (float)targetHeight;
             }
             break;
          }
          case Scaling_FillX: {
-            width = targetWidth;
-            height = (sourceHeight * targetWidth) / sourceWidth;
+            width = (float)targetWidth;
+            height = (float)(sourceHeight * targetWidth) / (float)sourceWidth;
             break;
          }
          case Scaling_FillY: {
-            width = (sourceWidth * targetHeight) / sourceHeight;
-            height = targetHeight;
+            width = (float)(sourceWidth * targetHeight) / (float)sourceHeight;
+            height = (float)targetHeight;
             break;
          }
          case Scaling_Stretch:
-            width = targetWidth;
-            height = targetHeight;
+            width = (float)targetWidth;
+            height = (float)targetHeight;
             break;
          case Scaling_StretchX:
-            width = targetWidth;
-            height = sourceHeight;
+            width = (float)targetWidth;
+            height = (float)sourceHeight;
             break;
          case Scaling_StretchY:
-            width = sourceWidth;
-            height = targetHeight;
+            width = (float)sourceWidth;
+            height = (float)targetHeight;
             break;
          case Scaling_None:
-            width = sourceWidth;
-            height = sourceHeight;
+            width = (float)sourceWidth;
+            height = (float)sourceHeight;
             break;
          default:
             width = 0.f;
@@ -96,7 +96,7 @@ public:
       }
    }
 
-   static void Align(Alignment mode, float width, float height, float containerWidth, float containerHeight, float& x, float& y)
+   static void Align(Alignment mode, float width, float height, int containerWidth, int containerHeight, float& x, float& y)
    {
       switch (mode) {
          default:
@@ -108,12 +108,12 @@ public:
          case Alignment_Top:
          case Alignment_Center:
          case Alignment_Bottom:
-            x = (containerWidth - width) * 0.5f;
+            x = ((float)containerWidth - width) * 0.5f;
             break;
          case Alignment_TopRight:
          case Alignment_Right:
          case Alignment_BottomRight:
-            x = containerWidth - width;
+            x = (float)containerWidth - width;
             break;
       }
       switch (mode) {
@@ -126,17 +126,17 @@ public:
          case Alignment_Left:
          case Alignment_Center:
          case Alignment_Right:
-            y = (containerHeight - height) * 0.5f;
+            y = ((float)containerHeight - height) * 0.5f;
             break;
          case Alignment_BottomLeft:
          case Alignment_Bottom:
          case Alignment_BottomRight:
-            y = containerHeight - height;
+            y = (float)containerHeight - height;
             break;
       }
    }
 
-   static void ApplyAlign(Alignment mode, float width, float height, float& x, float& y)
+   static void ApplyAlign(Alignment mode, int width, int height, float& x, float& y)
    {
       switch (mode)
       {
@@ -145,19 +145,19 @@ public:
       case Alignment_TopLeft: break;
       case Alignment_Bottom:
       case Alignment_Center:
-      case Alignment_Top: x -= width * 0.5f; break;
+      case Alignment_Top: x -= (float)width * 0.5f; break;
       case Alignment_BottomRight:
       case Alignment_Right:
-      case Alignment_TopRight: x -= width; break;
+      case Alignment_TopRight: x -= (float)width; break;
       }
       switch (mode)
       {
       case Alignment_BottomLeft:
       case Alignment_Bottom:
-      case Alignment_BottomRight: y -= height; break;
+      case Alignment_BottomRight: y -= (float)height; break;
       case Alignment_Left:
       case Alignment_Center:
-      case Alignment_Right: y -= height * 0.5f; break;
+      case Alignment_Right: y -= (float)height * 0.5f; break;
       case Alignment_TopLeft:
       case Alignment_Top:
       case Alignment_TopRight: break;

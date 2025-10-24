@@ -31,12 +31,12 @@ void DotFilter::Filter(Bitmap* pBitmap)
                a += ca;
             }
          }
-         float bright = 1.0f + m_dotSize * m_dotSize / 1.8f;
+         float bright = 1.0f + (float)(m_dotSize * m_dotSize) / 1.8f;
          pixels[(y * dst->w) + x] = SDL_MapSurfaceRGBA(dst,
-            (uint8_t)min((r / bright), 255.f),
-            (uint8_t)min((g / bright), 255.f),
-            (uint8_t)min((b / bright), 255.f),
-            (uint8_t)min((a / bright), 255.f));
+            (uint8_t)min(((float)r / bright), 255.f),
+            (uint8_t)min(((float)g / bright), 255.f),
+            (uint8_t)min(((float)b / bright), 255.f),
+            (uint8_t)min(((float)a / bright), 255.f));
       }
    }
 

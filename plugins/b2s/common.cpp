@@ -29,7 +29,7 @@ bool GetSettingBool(const MsgPluginAPI* pMsgApi, const string& section, const st
    return (s.empty() || (std::from_chars(s.c_str(), s.c_str() + s.length(), result).ec != std::errc {})) ? def : (result != 0);
 }
 
-static inline char cLower(char c)
+constexpr inline char cLower(char c)
 {
    if (c >= 'A' && c <= 'Z')
       c ^= 32; //ASCII convention

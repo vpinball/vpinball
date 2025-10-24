@@ -11,14 +11,14 @@ ScrollingCreditsScene::ScrollingCreditsScene(FlexDMD* pFlexDMD, Actor* pBackgrou
 
    m_length = 3.0f + (float)text.size() * 0.4f;
 
-   float y = 0.0f;
+   int y = 0;
 
    for (const auto& line : text) {
       string txt = trim_string(line);
       if (txt.empty())
          txt = " "s;
       Label* const pLabel = new Label(pFlexDMD, pFont, txt, string());
-      pLabel->SetY(y);
+      pLabel->SetY((float)y);
       y += pLabel->GetHeight();
       m_pContainer->AddActor(pLabel);
    }
@@ -33,8 +33,8 @@ ScrollingCreditsScene::~ScrollingCreditsScene()
 void ScrollingCreditsScene::Begin()
 {
    BackgroundScene::Begin();
-   m_pContainer->SetY(GetHeight());
-   AddTween(GetY(), -m_pContainer->GetHeight(), m_length, ([this](float newValue) {
+   m_pContainer->SetY((float)GetHeight());
+   AddTween(GetY(), (float)-m_pContainer->GetHeight(), m_length, ([this](float newValue) {
       this->SetY(newValue);
       return false;
    }));
@@ -47,7 +47,7 @@ void ScrollingCreditsScene::Update(float delta)
       m_pContainer->SetWidth(GetWidth());
       for (const auto& line : m_pContainer->GetChildren()) {
          Label* label = dynamic_cast<Label*>(line);
-         label->SetX((GetWidth() - line->GetWidth()) / 2.0f);
+         label->SetX((float)(GetWidth() - line->GetWidth()) / 2.0f);
          line->Release();
       }
    }

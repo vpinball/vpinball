@@ -62,8 +62,8 @@ void Label::UpdateBounds()
       return;
 
    SDL_Rect size = m_pFont->MeasureFont(m_text);
-   m_textWidth = static_cast<float>(size.w);
-   m_textHeight = static_cast<float>(size.h);
+   m_textWidth = size.w;
+   m_textHeight = size.h;
 
    if (m_autopack)
       Pack();
@@ -76,27 +76,27 @@ void Label::Draw(Flex::SurfaceGraphics* pGraphics)
       if (m_lines.size() > 1 && m_alignment != Alignment_Left && m_alignment != Alignment_BottomLeft && m_alignment != Alignment_TopLeft) {
          float x = 0;
          float y = 0;
-         Layout::Align(m_alignment, GetPrefWidth(), GetPrefHeight(), GetWidth(), GetHeight(), x, y);
+         Layout::Align(m_alignment, (float)GetPrefWidth(), (float)GetPrefHeight(), GetWidth(), GetHeight(), x, y);
 
          for (const string& line : m_lines) {
             float lx = 0;
             float ly = 0;
             Layout::Align(m_alignment, static_cast<float>(m_pFont->MeasureFont(line).w), static_cast<float>(GetPrefHeight()), GetWidth(), GetHeight(), lx, ly);
             if (GetFlexDMD()->GetRuntimeVersion() <= 1008) // FIXME check this against original code. Is it a cast or a rounding ?
-               m_pFont->DrawText_(pGraphics, roundf(GetX() + lx), roundf(GetY() + y), line);
+               m_pFont->DrawText_(pGraphics, (int)roundf(GetX() + lx), (int)roundf(GetY() + y), line);
             else
-               m_pFont->DrawText_(pGraphics, floor(GetX() + lx), floor(GetY() + y), line);
+               m_pFont->DrawText_(pGraphics, (int)floorf(GetX() + lx), (int)floorf(GetY() + y), line);
             y += (float)m_pFont->GetBitmapFont()->GetLineHeight();
          }
       }
       else {
          float x = 0;
          float y = 0;
-         Layout::Align(m_alignment, GetPrefWidth(), GetPrefHeight(), GetWidth(), GetHeight(), x, y);
+         Layout::Align(m_alignment, (float)GetPrefWidth(), (float)GetPrefHeight(), GetWidth(), GetHeight(), x, y);
          if (GetFlexDMD()->GetRuntimeVersion() <= 1008) // FIXME check this against original code. Is it a cast or a rounding ?
-            m_pFont->DrawText_(pGraphics, roundf(GetX() + x), roundf(GetY() + y), m_text);
+            m_pFont->DrawText_(pGraphics, (int)roundf(GetX() + x), (int)roundf(GetY() + y), m_text);
          else
-            m_pFont->DrawText_(pGraphics, floor(GetX() + x), floor(GetY() + y), m_text);
+            m_pFont->DrawText_(pGraphics, (int)floorf(GetX() + x), (int)floorf(GetY() + y), m_text);
       }
    }
 }

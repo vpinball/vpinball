@@ -26,8 +26,8 @@ void TwoLineScene::SetText(const string& topText, const string& bottomText)
 void TwoLineScene::Update(float delta)
 {
    BackgroundScene::Update(delta);
-   m_pTopText->SetPosition((GetWidth() - m_pTopText->GetWidth()) / 2.0f, 4.0f);
-   m_pBottomText->SetPosition((GetWidth() - m_pBottomText->GetWidth()) / 2.0f, 15.0f);
+   m_pTopText->SetPosition((float)(GetWidth() - m_pTopText->GetWidth()) / 2.0f, 4.0f);
+   m_pBottomText->SetPosition((float)(GetWidth() - m_pBottomText->GetWidth()) / 2.0f, 15.0f);
 }
 
 }

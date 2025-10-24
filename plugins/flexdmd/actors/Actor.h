@@ -38,24 +38,24 @@ public:
    void SetName(const string &szName) { m_name = szName; }
    const string &GetName() const { return m_name; }
 
-   void SetBounds(float x, float y, float Width, float Height) { m_x = x; m_y = y; m_width = Width; m_height = Height; }
+   void SetBounds(float x, float y, int Width, int Height) { m_x = x; m_y = y; m_width = Width; m_height = Height; }
    void SetPosition(float x, float y) { m_x = x; m_y = y; }
    void SetAlignedPosition(float x, float y, Alignment alignment) { m_x = x; m_y = y; Layout::ApplyAlign(alignment, m_width, m_height, m_x, m_y); }
 
-   void SetSize(float Width, float Height) { m_width = Width; m_height = Height; }
+   void SetSize(int Width, int Height) { m_width = Width; m_height = Height; }
    void Pack() { m_width = GetPrefWidth(); m_height = GetPrefHeight(); }
    float GetX() const { return m_x; }
    void SetX(float x) { m_x = x; }
    float GetY() const { return m_y; }
    void SetY(float y) { m_y = y; }
-   float GetWidth() const { return m_width; }
-   void SetWidth(float width) { m_width = width; }
-   float GetHeight() const { return m_height; }
-   void SetHeight(float height) { m_height = height; }
-   virtual float GetPrefWidth() const { return m_prefWidth; }
-   void SetPrefWidth(float prefWidth) { m_prefWidth = prefWidth; }
-   virtual float GetPrefHeight() const { return m_prefHeight; }
-   void SetPrefHeight(float prefHeight) { m_prefHeight = prefHeight; }
+   int GetWidth() const { return m_width; }
+   void SetWidth(int width) { m_width = width; }
+   int GetHeight() const { return m_height; }
+   void SetHeight(int height) { m_height = height; }
+   virtual int GetPrefWidth() const { return m_prefWidth; }
+   void SetPrefWidth(int prefWidth) { m_prefWidth = prefWidth; }
+   virtual int GetPrefHeight() const { return m_prefHeight; }
+   void SetPrefHeight(int prefHeight) { m_prefHeight = prefHeight; }
 
    ActionFactory* GetActionFactory() const;
    void AddAction(Action *action);
@@ -94,12 +94,12 @@ private:
    bool m_onStage = false;
    float m_x = 0.f;
    float m_y = 0.f;
-   float m_width = 0.f;
-   float m_height = 0.f;
+   int m_width = 0;
+   int m_height = 0;
    bool m_fillParent = false;
    bool m_clearBackground = false;
-   float m_prefWidth = 0.f;
-   float m_prefHeight = 0.f;
+   int m_prefWidth = 0;
+   int m_prefHeight = 0;
    bool m_visible = true;
 };
 

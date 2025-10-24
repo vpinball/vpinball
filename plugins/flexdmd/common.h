@@ -69,6 +69,12 @@ typedef uint32_t ColorRGBA32;
 template <typename T> __forceinline T min(const T x, const T y) { return x < y ? x : y; }
 template <typename T> __forceinline T max(const T x, const T y) { return x < y ? y : x; }
 
+constexpr inline char cUpper(char c)
+{
+   if (c >= 'a' && c <= 'z')
+      c ^= 32; //ASCII convention
+   return c;
+}
 string string_to_lower(string str);
 string trim_string(const string& str);
 // trims leading whitespace or similar

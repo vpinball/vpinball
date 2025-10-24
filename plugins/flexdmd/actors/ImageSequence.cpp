@@ -58,7 +58,7 @@ void ImageSequence::ReadNextFrame()
        SetEndOfAnimation(true);
     else {
        m_frame++;
-       SetFrameTime(m_frame * GetFrameDuration());
+       SetFrameTime((float)m_frame * GetFrameDuration());
     }
 }
 

@@ -14,8 +14,8 @@ public:
    static ImageSequence* Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const string& paths, const string& name, int fps, bool loop);
 
    void SetFPS(int fps) { m_fps = fps; }
-   float GetPrefWidth() const override { return m_frames[0]->GetWidth(); }
-   float GetPrefHeight() const override { return m_frames[0]->GetHeight(); }
+   int GetPrefWidth() const override { return m_frames[0]->GetWidth(); }
+   int GetPrefHeight() const override { return m_frames[0]->GetHeight(); }
    float GetLength() const override { return (float)m_frames.size() * GetFrameDuration(); }
    void Rewind() override;
    void ReadNextFrame() override;

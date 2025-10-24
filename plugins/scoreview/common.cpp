@@ -9,7 +9,7 @@
 
 namespace ScoreView {
 
-static inline char cLower(char c)
+constexpr inline char cLower(char c)
 {
    if (c >= 'A' && c <= 'Z')
       c ^= 32; //ASCII convention

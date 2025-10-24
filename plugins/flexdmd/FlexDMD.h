@@ -61,8 +61,8 @@ public:
 
    int GetWidth() const { return m_width; }
    int GetHeight() const { return m_height; }
-   void SetWidth(int w) { if (m_width == w) return; m_width = w; m_pStage->SetSize(static_cast<float>(m_width), static_cast<float>(m_height)); DiscardFrames(); if (m_run && m_show) OnDMDChanged(); }
-   void SetHeight(int h) { if (m_height == h) return; m_height = h; m_pStage->SetSize(static_cast<float>(m_width), static_cast<float>(m_height)); DiscardFrames(); if (m_run && m_show) OnDMDChanged(); }
+   void SetWidth(int w) { if (m_width == w) return; m_width = w; m_pStage->SetSize(m_width, m_height); DiscardFrames(); if (m_run && m_show) OnDMDChanged(); }
+   void SetHeight(int h) { if (m_height == h) return; m_height = h; m_pStage->SetSize(m_width, m_height); DiscardFrames(); if (m_run && m_show) OnDMDChanged(); }
 
    RenderMode GetRenderMode() const { return m_renderMode; }
    void SetRenderMode(RenderMode renderMode) { m_renderMode = renderMode; DiscardFrames(); if (m_run && m_show) OnDMDChanged(); }

@@ -151,7 +151,7 @@ Font::~Font()
    }
 }
 
-void Font::DrawCharacter(Flex::SurfaceGraphics* pGraphics, char character, char previousCharacter, float& x, float& y)
+void Font::DrawCharacter(Flex::SurfaceGraphics* pGraphics, char character, char previousCharacter, int& x, int& y)
 {
    if (character == '\n') {
       x = 0;
@@ -166,14 +166,14 @@ void Font::DrawCharacter(Flex::SurfaceGraphics* pGraphics, char character, char 
             if (pSource) {
                SDL_Rect bounds = pCharacter->GetBounds();
                SDL_Point offset = pCharacter->GetOffset();
-               SDL_Rect rect = { (int)(x + offset.x + kerning), (int)(y + offset.y), bounds.w, bounds.h };
+               SDL_Rect rect = { x + offset.x + kerning, y + offset.y, bounds.w, bounds.h };
                pGraphics->DrawImage(pSource, &bounds, &rect);
             }
          }
          x += pCharacter->GetXAdvance() + kerning;
       }
-      else if ('a' <= character && character <= 'z' && m_pBitmapFont->GetCharacter(toupper(character))) {
-         m_pBitmapFont->SetCharacter(character, m_pBitmapFont->GetCharacter(toupper(character)));
+      else if ('a' <= character && character <= 'z' && m_pBitmapFont->GetCharacter(cUpper(character))) {
+         m_pBitmapFont->SetCharacter(character, m_pBitmapFont->GetCharacter(cUpper(character)));
          DrawCharacter(pGraphics, character, previousCharacter, x, y);
       }
       else if (m_pBitmapFont->GetCharacter(' ')) {
@@ -190,7 +190,7 @@ SDL_Rect Font::MeasureFont(const string& text)
    return m_pBitmapFont->MeasureFont(text);
 }
 
-void Font::DrawText_(Flex::SurfaceGraphics* pGraphics, float x, float y, const string& text)
+void Font::DrawText_(Flex::SurfaceGraphics* pGraphics, int x, int y, const string& text)
 {
    char previousCharacter = ' ';
    for (size_t i = 0; i < text.length(); i++) {

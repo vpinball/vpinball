@@ -95,25 +95,25 @@ void ScoreBoard::SetScore(int score1, int score2, int score3, int score4)
 
 void ScoreBoard::Update(float delta)
 {
-    Group::Update(delta);
-    SetBounds(0, 0, GetParent()->GetWidth(), GetParent()->GetHeight());
-    float yText = GetHeight() - m_pTextFont->GetBitmapFont()->GetBaseHeight() - 1.f;
-    // float yLine2 = 1 + m_pHighlightFont->m_pBitmapFont->m_baseHeight + (GetHeight() - 2 -  m_pTextFont->m_pBitmapFont->m_baseHeight - 2 * m_pHighlightFont->m_pBitmapFont->m_baseHeight ) / 2;
-    float yLine2 = (GetHeight() - m_pTextFont->GetBitmapFont()->GetBaseHeight()) / 2.0f;
-    float dec = (float)(m_pHighlightFont->GetBitmapFont()->GetBaseHeight() - m_pScoreFont->GetBitmapFont()->GetBaseHeight()) / 2.0f;
-    // float yLine2 = (1.f + yText) * 0.5f;
-    m_pScores[0]->Pack();
-    m_pScores[1]->Pack();
-    m_pScores[2]->Pack();
-    m_pScores[3]->Pack();
-    m_pLowerLeft->Pack();
-    m_pLowerRight->Pack();
-    m_pScores[0]->SetAlignedPosition(1, 1 + (m_highlightedPlayer == 1 ? 0 : dec), Alignment_TopLeft);
-    m_pScores[1]->SetAlignedPosition(GetWidth() - 1, 1 + (m_highlightedPlayer == 2 ? 0 : dec), Alignment_TopRight);
-    m_pScores[2]->SetAlignedPosition(1, yLine2 + (m_highlightedPlayer == 3 ? 0 : dec), Alignment_TopLeft);
-    m_pScores[3]->SetAlignedPosition(GetWidth() - 1, yLine2 + (m_highlightedPlayer == 4 ? 0 : dec), Alignment_TopRight);
-    m_pLowerLeft->SetAlignedPosition(1, yText, Alignment_TopLeft);
-    m_pLowerRight->SetAlignedPosition(GetWidth() - 1, yText, Alignment_TopRight);
+   Group::Update(delta);
+   SetBounds(0, 0, GetParent()->GetWidth(), GetParent()->GetHeight());
+   float yText = (float)(GetHeight() - m_pTextFont->GetBitmapFont()->GetBaseHeight() - 1);
+   // float yLine2 = 1 + m_pHighlightFont->m_pBitmapFont->m_baseHeight + (GetHeight() - 2 -  m_pTextFont->m_pBitmapFont->m_baseHeight - 2 * m_pHighlightFont->m_pBitmapFont->m_baseHeight ) / 2;
+   float yLine2 = (float)(GetHeight() - m_pTextFont->GetBitmapFont()->GetBaseHeight()) / 2.0f;
+   float dec = (float)(m_pHighlightFont->GetBitmapFont()->GetBaseHeight() - m_pScoreFont->GetBitmapFont()->GetBaseHeight()) / 2.0f;
+   // float yLine2 = (1.f + yText) * 0.5f;
+   m_pScores[0]->Pack();
+   m_pScores[1]->Pack();
+   m_pScores[2]->Pack();
+   m_pScores[3]->Pack();
+   m_pLowerLeft->Pack();
+   m_pLowerRight->Pack();
+   m_pScores[0]->SetAlignedPosition(1.f, 1.f + (m_highlightedPlayer == 1 ? 0.f : dec), Alignment_TopLeft);
+   m_pScores[1]->SetAlignedPosition((float)(GetWidth() - 1), 1.f + (m_highlightedPlayer == 2 ? 0.f : dec), Alignment_TopRight);
+   m_pScores[2]->SetAlignedPosition(1.f, yLine2 + (m_highlightedPlayer == 3 ? 0.f : dec), Alignment_TopLeft);
+   m_pScores[3]->SetAlignedPosition((float)(GetWidth() - 1), yLine2 + (m_highlightedPlayer == 4 ? 0.f : dec), Alignment_TopRight);
+   m_pLowerLeft->SetAlignedPosition(1.f, yText, Alignment_TopLeft);
+   m_pLowerRight->SetAlignedPosition((float)(GetWidth() - 1), yText, Alignment_TopRight);
 }
 
 void ScoreBoard::Draw(Flex::SurfaceGraphics* pGraphics)

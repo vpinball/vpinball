@@ -21,8 +21,8 @@ public:
    void SetText(const string& szText);
    bool GetAutoPack() const { return m_autopack; }
    void SetAutoPack(bool autopack) { m_autopack = autopack; }
-   float GetPrefWidth() const override { return m_textWidth; }
-   float GetPrefHeight() const override { return m_textHeight; }
+   int GetPrefWidth() const override { return m_textWidth; }
+   int GetPrefHeight() const override { return m_textHeight; }
    void Draw(Flex::SurfaceGraphics* pGraphics) override;
 
 private:
@@ -31,8 +31,8 @@ private:
    Font* m_pFont;
    string m_text;
    bool m_autopack;
-   float m_textWidth;
-   float m_textHeight;
+   int m_textWidth;
+   int m_textHeight;
    Alignment m_alignment;
    vector<string> m_lines;
 };

@@ -47,7 +47,7 @@ float Scene::StartAnimation(AnimationType animation)
 {
    float alphaLength = 0.5f;
    float scrollWLength = 0.5f;
-   float scrollHLength = scrollWLength * GetHeight() / GetWidth();
+   float scrollHLength = scrollWLength * (float)GetHeight() / (float)GetWidth();
    // TODO Missing animations: ZoomIn = 2, ZoomOut = 3
    switch (animation) {
       case AnimationType_FadeIn:
@@ -77,7 +77,7 @@ float Scene::StartAnimation(AnimationType animation)
       case AnimationType_ScrollOffLeft:
       {
          SetX(0);
-         AddTween(GetX(), -GetWidth(), scrollWLength, ([this](float newValue) {
+         AddTween(GetX(), (float)-GetWidth(), scrollWLength, ([this](float newValue) {
             this->SetX(newValue);
             return false;
          }));
@@ -86,7 +86,7 @@ float Scene::StartAnimation(AnimationType animation)
       case AnimationType_ScrollOffRight:
       {
          SetX(0);
-         AddTween(GetX(), GetWidth(), scrollWLength, ([this](float newValue) {
+         AddTween(GetX(), (float)GetWidth(), scrollWLength, ([this](float newValue) {
             this->SetX(newValue);
             return false;
          }));
@@ -94,7 +94,7 @@ float Scene::StartAnimation(AnimationType animation)
       }
       case AnimationType_ScrollOnLeft:
       {
-         SetX(GetWidth());
+         SetX((float)GetWidth());
          AddTween(GetX(), 0.0f, scrollWLength, ([this](float newValue) {
             this->SetX(newValue);
             return false;
@@ -103,7 +103,7 @@ float Scene::StartAnimation(AnimationType animation)
       }
       case AnimationType_ScrollOnRight:
       {
-         SetX(-GetWidth());
+         SetX((float)-GetWidth());
          AddTween(GetX(), 0.0f, scrollWLength, ([this](float newValue) {
             this->SetX(newValue);
             return false;
@@ -113,7 +113,7 @@ float Scene::StartAnimation(AnimationType animation)
       case AnimationType_ScrollOffUp:
       {
          SetY(0);
-         AddTween(GetY(), -GetHeight(), scrollHLength, ([this](float newValue) {
+         AddTween(GetY(), (float)-GetHeight(), scrollHLength, ([this](float newValue) {
             this->SetY(newValue);
             return false;
          }));
@@ -122,7 +122,7 @@ float Scene::StartAnimation(AnimationType animation)
       case AnimationType_ScrollOffDown:
       {
          SetY(0);
-         AddTween(GetY(), GetHeight(), scrollHLength, ([this](float newValue) {
+         AddTween(GetY(), (float)GetHeight(), scrollHLength, ([this](float newValue) {
             this->SetY(newValue);
             return false;
          }));
@@ -130,7 +130,7 @@ float Scene::StartAnimation(AnimationType animation)
       }
       case AnimationType_ScrollOnUp:
       {
-         SetY(GetHeight());
+         SetY((float)GetHeight());
          AddTween(GetY(), 0.0f, scrollHLength, ([this](float newValue) {
             this->SetY(newValue);
             return false;
@@ -139,7 +139,7 @@ float Scene::StartAnimation(AnimationType animation)
       }
       case AnimationType_ScrollOnDown:
       {
-         SetY(-GetHeight());
+         SetY((float)-GetHeight());
          AddTween(GetY(), 0.0f, scrollHLength, ([this](float newValue) {
             this->SetY(newValue);
             return false;

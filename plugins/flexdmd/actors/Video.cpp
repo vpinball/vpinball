@@ -94,7 +94,7 @@ Video* Video::Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const strin
 
    pVideo->SetPrefWidth(w);
    pVideo->SetPrefHeight(h);
-   pVideo->m_length = pVideo->m_frames.size() * pVideo->m_frameDuration;
+   pVideo->m_length = (float)pVideo->m_frames.size() * pVideo->m_frameDuration;
    pVideo->Rewind();
    pVideo->Pack();
 

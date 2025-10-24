@@ -64,17 +64,17 @@ PSC_CLASS_START(Actor)
    PSC_PROP_RW(Actor, string, Name)
    PSC_PROP_RW(Actor, float, X)
    PSC_PROP_RW(Actor, float, Y)
-   PSC_PROP_RW(Actor, float, Width)
-   PSC_PROP_RW(Actor, float, Height)
+   PSC_PROP_RW(Actor, int, Width)
+   PSC_PROP_RW(Actor, int, Height)
    PSC_PROP_RW(Actor, bool, Visible)
    PSC_PROP_RW(Actor, bool, FillParent)
    PSC_PROP_RW(Actor, bool, ClearBackground)
-   PSC_FUNCTION4(Actor, void, SetBounds, float, float, float, float)
+   PSC_FUNCTION4(Actor, void, SetBounds, float, float, int, int)
    PSC_FUNCTION2(Actor, void, SetPosition, float, float)
    PSC_FUNCTION3(Actor, void, SetAlignedPosition, float, float, Alignment)
-   PSC_FUNCTION2(Actor, void, SetSize, float, float)
-   PSC_PROP_RW(Actor, float, PrefWidth)
-   PSC_PROP_RW(Actor, float, PrefHeight)
+   PSC_FUNCTION2(Actor, void, SetSize, int, int)
+   PSC_PROP_RW(Actor, int, PrefWidth)
+   PSC_PROP_RW(Actor, int, PrefHeight)
    PSC_FUNCTION0(Actor, void, Pack)
    PSC_FUNCTION0(Actor, void, Remove)
    PSC_PROP_R(Actor, ActionFactory, ActionFactory)
@@ -568,7 +568,7 @@ PSC_ERROR_IMPLEMENT(scriptApi); // Implement script error
 
 LPI_IMPLEMENT // Implement shared login support
 
-static void OnShowChanged(FlexDMD* pFlex)
+static void OnShowChanged(FlexDMD* pFlexI)
 {
    bool hadDMD = hasDMD;
    bool hadAlpha = hasAlpha;
