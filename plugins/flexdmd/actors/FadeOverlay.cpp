@@ -13,7 +13,7 @@ void FadeOverlay::Draw(Flex::SurfaceGraphics* pGraphics)
       SetWidth(GetParent()->GetWidth());
       SetHeight(GetParent()->GetHeight());
       pGraphics->SetColor(m_color, static_cast<uint8_t>(min(m_alpha * 255.f, 255.f)));
-      pGraphics->FillRectangle({ (int)GetX(), (int)GetY(), (int)GetWidth(), (int)GetHeight() });
+      pGraphics->FillRectangle({ (int)GetX(), (int)GetY(), GetWidth(), GetHeight() });
    }
 }
 

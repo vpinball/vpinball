@@ -18,8 +18,6 @@ Video::~Video()
 Video* Video::Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const string& path, const string& name, bool loop)
 {
    AssetSrc* pSrc = pAssetManager->ResolveSrc(path, NULL);
-   Video* pVideo = new Video(pFlexDMD, name);
-   pVideo->SetLoop(loop);
 
    const LibAV::LibAV& m_libAv = LibAV::LibAV::GetInstance();
    assert(m_libAv.isLoaded);
@@ -42,6 +40,9 @@ Video* Video::Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const strin
 
    if (m_videoStreamIndex < 0)
       return nullptr;
+
+   Video* pVideo = new Video(pFlexDMD, name);
+   pVideo->SetLoop(loop);
 
    AVStream* pStream = m_pFormatContext->streams[m_videoStreamIndex];
    pVideo->m_frameDuration = static_cast<float>(1.0 / av_q2d(pStream->avg_frame_rate));

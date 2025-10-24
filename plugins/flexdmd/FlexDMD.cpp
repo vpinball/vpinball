@@ -123,11 +123,13 @@ void FlexDMD::UpdateLumFrame()
    uint8_t* __restrict dst = m_lumFrame.data();
    static constexpr uint8_t lum4[] = { 0, 85, 170, 255 };
    static constexpr uint8_t lum16[] = { 0, 17, 34, 51, 68, 85, 102, 119, 136, 153, 170, 187, 204, 221, 238, 255 };
-   for (int o = 0; o < m_height*m_width; o++)
-         if (m_renderMode == RenderMode_DMD_GRAY_2)
-            *dst++ = lum4[(*src++) >> 6];
-         else if (m_renderMode == RenderMode_DMD_GRAY_4)
-            *dst++ = lum16[(*src++) >> 4];
+   if (m_renderMode == RenderMode_DMD_GRAY_2)
+      for (int o = 0; o < m_height*m_width; o++)
+         *dst++ = lum4[(*src++) >> 6];
+
+   if (m_renderMode == RenderMode_DMD_GRAY_4)
+      for (int o = 0; o < m_height*m_width; o++)
+         *dst++ = lum16[(*src++) >> 4];
 }
 
 uint8_t* FlexDMD::UpdateRGBFrame()
