@@ -2014,7 +2014,42 @@ static HRESULT var_cmp(exec_ctx_t *ctx, VARIANT *l, VARIANT *r)
 {
     TRACE("%s %s\n", debugstr_variant(l), debugstr_variant(r));
 
+#ifndef __STANDALONE__
     /* FIXME: Fix comparing string to number */
+#else
+    VARTYPE lvt, rvt;
+    VARIANT left, right;
+    HRESULT hres;
+
+    lvt = V_VT(l) & VT_TYPEMASK;
+    rvt = V_VT(r) & VT_TYPEMASK;
+
+    if((lvt == VT_BSTR && (rvt == VT_I1 || rvt == VT_I2 || rvt == VT_I4 || rvt == VT_I8 ||
+                           rvt == VT_UI1 || rvt == VT_UI2 || rvt == VT_UI4 || rvt == VT_UI8 ||
+                           rvt == VT_R4 || rvt == VT_R8 || rvt == VT_CY || rvt == VT_DECIMAL ||
+                           rvt == VT_BOOL || rvt == VT_DATE || rvt == VT_INT || rvt == VT_UINT)) ||
+       (rvt == VT_BSTR && (lvt == VT_I1 || lvt == VT_I2 || lvt == VT_I4 || lvt == VT_I8 ||
+                           lvt == VT_UI1 || lvt == VT_UI2 || lvt == VT_UI4 || lvt == VT_UI8 ||
+                           lvt == VT_R4 || lvt == VT_R8 || lvt == VT_CY || lvt == VT_DECIMAL ||
+                           lvt == VT_BOOL || lvt == VT_DATE || lvt == VT_INT || lvt == VT_UINT))) {
+        V_VT(&left) = VT_EMPTY;
+        hres = VariantChangeType(&left, l, 0, VT_R8);
+        if(FAILED(hres))
+            return hres;
+
+        V_VT(&right) = VT_EMPTY;
+        hres = VariantChangeType(&right, r, 0, VT_R8);
+        if(FAILED(hres)) {
+            VariantClear(&left);
+            return hres;
+        }
+
+        hres = VarCmp(&left, &right, ctx->script->lcid, 0);
+        VariantClear(&left);
+        VariantClear(&right);
+        return hres;
+    }
+#endif
 
     return VarCmp(l, r, ctx->script->lcid, 0);
  }
