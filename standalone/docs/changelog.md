@@ -4,6 +4,9 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 10/24/25
+    * Fix incomplete var_cmp to support avoid needing CInt
+
 * 07/26/25
     * Replaced standalone WMP player with new WMP Plugin (bloodm, ag)
     * Removed standalone PUP player in favor of PUP Plugin
