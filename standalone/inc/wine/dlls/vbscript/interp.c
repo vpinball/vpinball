@@ -2033,16 +2033,26 @@ static HRESULT var_cmp(exec_ctx_t *ctx, VARIANT *l, VARIANT *r)
                            lvt == VT_R4 || lvt == VT_R8 || lvt == VT_CY || lvt == VT_DECIMAL ||
                            lvt == VT_BOOL || lvt == VT_DATE || lvt == VT_INT || lvt == VT_UINT))) {
         V_VT(&left) = VT_EMPTY;
-        hres = VariantChangeType(&left, l, 0, VT_R8);
+        hres = VariantCopy(&left, l);
         if(FAILED(hres))
             return hres;
 
         V_VT(&right) = VT_EMPTY;
-        hres = VariantChangeType(&right, r, 0, VT_R8);
+        hres = VariantCopy(&right, r);
         if(FAILED(hres)) {
             VariantClear(&left);
             return hres;
         }
+
+        /* By setting VT_RESERVED on only the numeric operand when comparing string-to-number,
+           trigger VarCmp's path that attempts to convert the string to a number for numeric comparison,
+           which succeeds for valid numeric strings like "123" but fails with a type mismatch error
+           for empty "" or invalid strings like "abc". */
+
+        if(lvt == VT_BSTR)
+            V_VT(&right) |= VT_RESERVED;
+        else
+            V_VT(&left) |= VT_RESERVED;
 
         hres = VarCmp(&left, &right, ctx->script->lcid, 0);
         VariantClear(&left);
