@@ -6,6 +6,13 @@
 #include <cstdio>
 #include <filesystem>
 
+
+VPX::Properties::PropertyRegistry &Settings::GetRegistry()
+{
+   static VPX::Properties::PropertyRegistry registry;
+   return registry;
+}
+
 static const string regKey[Settings::Plugin00] = { "Controller"s, "Editor"s, "Standalone"s, "Player"s, "Input"s, "DMD"s, "Alpha"s, 
       "Backglass"s, "ScoreView"s, "Topper"s, "PlayerVR"s, "RecentDir"s, "Version"s, "CVEdit"s, "TableOverride"s, "TableOption"s, "ControllerDevices"s,
       "DefaultProps\\Ball"s, "DefaultProps\\Bumper"s, "DefaultProps\\Decal"s, "DefaultProps\\EMReel"s, "DefaultProps\\Flasher"s, "DefaultProps\\Flipper"s,
@@ -37,6 +44,7 @@ const string &Settings::GetSectionName(const Section section)
 
 Settings::Settings(const Settings* parent)
    : m_parent(parent)
+   , m_store(GetRegistry())
 {
 }
 
@@ -427,6 +435,10 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
 {
    m_modified = false;
    m_iniPath = path;
+
+   // Not yet activated as the 2 saves (Settings & Store) would conflict
+   // m_store.Load(path);
+
    mINI::INIFile file(path);
    if (file.read(m_ini))
    {
@@ -549,6 +561,9 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
 
 void Settings::SaveToFile(const string &path)
 {
+   // Not yet activated as the 2 saves (Settings & Store) would conflict
+   // m_store.Save();
+
    m_iniPath = path;
    if (!m_modified || m_iniPath.empty())
       return;
