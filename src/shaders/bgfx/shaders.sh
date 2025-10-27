@@ -4,16 +4,22 @@ set -e
 
 gen_ball=true
 gen_basic=true
-gen_blur=true
 gen_dmd=true
 gen_flasher=true
 gen_light=true
+
+# Postprocess shaders
+gen_blur=true
 gen_motionblur=true
 gen_postprocess=true
 gen_stereo=true
 gen_tonemap=true
-gen_antialiasing=false
+gen_antialiasing=true
+
 gen_imgui=true
+gen_mipmap=true
+
+debug=false
 
 process_shader() {
     local source="$1"
@@ -24,16 +30,16 @@ process_shader() {
     local defines=("$@")
 
     local outputs=(
-        'mtl ' 
-        'essl' 
-        'glsl' 
-        'dx11' 
+        'mtl '
+        'essl'
+        'glsl'
+        'dx11'
         'spv '
     )
 
     local targets=(
         '--platform osx     -p metal -O 3'
-        '--platform windows -p 310_es    '
+        '--platform windows -p 320_es    '
         '--platform windows -p 440       '
         '--platform windows -p s_5_0 -O 3'
         '--platform windows -p spirv     '
@@ -49,12 +55,17 @@ process_shader() {
     
     for i in "${!targets[@]}"; do
         local cmdline="-f ${source} ${targets[$i]} --bin2c ${header}${outputs[$i]} --type ${type}"
+        local define_str="TARGET_${outputs[$i]}"
         if [ ${#defines[@]} -ne 0 ]; then
-            cmdline+=" --define $(IFS=';'; echo "${defines[*]}")"
+            define_str+=";$(IFS=';'; echo "${defines[*]}")"
+        fi
+        cmdline+=" --define '${define_str}'"
+        if [ "$debug" = true ]; then
+            cmdline+=" --debug -O 0"
         fi
         cmdline+=" -o tmp.h"
         echo "$shaderc $cmdline"
-        $shaderc $cmdline
+        eval "$shaderc $cmdline"
         cat tmp.h >> "$output_path"
         rm tmp.h
     done
@@ -66,10 +77,12 @@ stereo=("NOSTEREO" "STEREO")
 st_output=("_" "_st_")
 
 ################################
-# Basic material shaders
+# Basic material shaders (also 'classic' light, decals, kickers and unshaded variants)
 if [ "$gen_basic" = true ]; then
     echo -e "\n>>>>>>>>>>>>>>>> Base material shader"
     echo "// Base material Shaders" > "../bgfx_basic.h"
+    # VR mask
+    process_shader "vs_vr_mask.sc" "basic.h" "vs_vr_mask_" "vertex"
     for variant2 in "CLIP" "NOCLIP"; do
         for k in 0 1; do
             variant2_lower=$(echo "$variant2" | tr '[:upper:]' '[:lower:]')
@@ -119,14 +132,15 @@ if [ "$gen_dmd" = true ]; then
     echo -e "\n>>>>>>>>>>>>>>>> DMD & sprite shaders"
     echo "// DMD Shaders" > "../bgfx_dmd.h"
     process_shader "vs_dmd.sc" "dmd.h" "vs_dmd_noworld_" "vertex"
+    process_shader "vs_dmd.sc" "dmd.h" "vs_dmd_noworld_st_" "vertex" "STEREO"
     for variant3 in "CLIP" "NOCLIP"; do
         variant3_lower=$(echo "$variant3" | tr '[:upper:]' '[:lower:]')
         process_shader "vs_dmd.sc" "dmd.h" "vs_dmd_world_${variant3_lower}_" "vertex" "WORLD" "$variant3"
         process_shader "vs_dmd.sc" "dmd.h" "vs_dmd_world_${variant3_lower}_st_" "vertex" "WORLD" "STEREO" "$variant3"
         process_shader "fs_dmd.sc" "dmd.h" "fs_dmd_${variant3_lower}_" "fragment" "DMD" "$variant3"
-        for variant2 in "RGB" "SRGB"; do
+        for variant2 in "DMD" "SEG" "CRT"; do
             variant2_lower=$(echo "$variant2" | tr '[:upper:]' '[:lower:]')
-            process_shader "fs_dmd2.sc" "dmd.h" "fs_dmd2_${variant2_lower}_${variant3_lower}_" "fragment" "$variant2" "$variant3"
+            process_shader "fs_display.sc" "dmd.h" "fs_display_${variant2_lower}_${variant3_lower}_" "fragment" "$variant2" "$variant3"
         done
         for variant2 in "TEX" "NOTEX"; do
             variant2_lower=$(echo "$variant2" | tr '[:upper:]' '[:lower:]')
@@ -216,10 +230,6 @@ if [ "$gen_antialiasing" = true ]; then
         process_shader "fs_pp_nfaa.sc" "antialiasing.h" "fs_pp_nfaa${st_output[$k]}" "fragment" "${stereo[$k]}"
         process_shader "fs_pp_dlaa_edge.sc" "antialiasing.h" "fs_pp_dlaa_edge${st_output[$k]}" "fragment" "${stereo[$k]}"
         process_shader "fs_pp_dlaa.sc" "antialiasing.h" "fs_pp_dlaa${st_output[$k]}" "fragment" "${stereo[$k]}"
-        for variant in "FILTER" "NOFILTER"; do
-            variant_lower=$(echo "$variant" | tr '[:upper:]' '[:lower:]')
-            process_shader "fs_pp_ao.sc" "postprocess.h" "fs_pp_ao_${variant_lower}${st_output[$k]}" "fragment" "${stereo[$k]}" "$variant"
-        done
         for variant in "FXAA1" "FXAA2" "FXAA3"; do
             variant_lower=$(echo "$variant" | tr '[:upper:]' '[:lower:]')
             process_shader "fs_pp_fxaa.sc" "antialiasing.h" "fs_pp_${variant_lower}${st_output[$k]}" "fragment" "${stereo[$k]}" "$variant"
@@ -298,5 +308,19 @@ fi
 if [ "$gen_imgui" = true ]; then
     echo -e "\n>>>>>>>>>>>>>>>> ImgUI shaders"
     echo "// ImgUI Shaders" > "../bgfx_imgui.h"
-    process_shader "vs_imgui.sc" "imgui.h" "vs_imgui_" "vertex"
+    for k in 0 1; do
+        process_shader "vs_imgui.sc" "imgui.h" "vs_imgui${st_output[$k]}" "vertex" "${stereo[$k]}"
+        process_shader "fs_imgui.sc" "imgui.h" "fs_imgui${st_output[$k]}" "fragment" "${stereo[$k]}"
+    done
+fi
+
+################################
+# MipMap compute shader
+if [ "$gen_mipmap" = true ]; then
+    echo -e "\n>>>>>>>>>>>>>>>> MipMap shaders"
+    echo "// MipMap Shaders" > "../bgfx_mipmap.h"
+    fmts=("srgba8" "rgba8" "rgba16f" "rgba32f")
+    for fmt in "${fmts[@]}"; do
+        process_shader "cs_mipmap.sc" "mipmap.h" "cs_mipmap_${fmt}_" "compute" "FMT_${fmt}"
+    done
 fi
