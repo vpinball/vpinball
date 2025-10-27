@@ -816,6 +816,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/core/vpinball.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/VPApp.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/player.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/core/LayeredINIPropertyStore.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/ScriptGlobalTable.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/Settings.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/TableDB.cpp" />
@@ -1526,6 +1527,10 @@
     <ClInclude Include="$(SolutionDir)/../../src/core/vpinball_h.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/vpversion.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/player.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/PropertyDef.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/PropertyRegistry.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/PropertyStore.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/LayeredINIPropertyStore.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/ScriptGlobalTable.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/Settings.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/TableDB.h" />
