@@ -45,6 +45,42 @@ jobs:
     needs: [ version ]
     steps:
       - uses: actions/checkout@v4
+      - name: Build custom shaderc
+        run: |
+          source ./platforms/config.sh
+
+          curl -sL https://github.com/bkaradzic/bgfx.cmake/releases/download/v${BGFX_CMAKE_VERSION}/bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz \
+             -o bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
+          tar xzf bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
+
+          curl -sL https://github.com/vbousquet/bgfx/archive/${BGFX_PATCH_SHA}.tar.gz \
+             -o bgfx-${BGFX_PATCH_SHA}.tar.gz
+          tar xzf bgfx-${BGFX_PATCH_SHA}.tar.gz
+
+          cd bgfx.cmake
+          rm -rf bgfx
+          mv ../bgfx-${BGFX_PATCH_SHA} bgfx
+
+          cmake \
+             -G "Visual Studio 17 2022" \
+             -S. \
+             -DBGFX_BUILD_TOOLS=ON \
+             -DBGFX_BUILD_TOOLS_SHADER=ON \
+             -DBGFX_BUILD_TOOLS_BIN2C=OFF \
+             -DBGFX_BUILD_TOOLS_GEOMETRY=OFF \
+             -DBGFX_BUILD_TOOLS_TEXTURE=OFF \
+             -DBGFX_BUILD_EXAMPLES=OFF \
+             -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded \
+             -B build
+          cmake \
+            --build build \
+            --config Release \
+            --target shaderc
+
+          cd ..
+
+          cp bgfx.cmake/build/cmake/bgfx/Release/shaderc.exe src/shaders/bgfx
+
       - name: generate shaders
         run: |
           cd src/shaders/bgfx
@@ -52,6 +88,7 @@ jobs:
       - name: copy headers
         run: |
           mkdir tmp
+          cp src/shaders/bgfx/shaderc.exe tmp
           cp src/shaders/bgfx*.h tmp
       - uses: actions/upload-artifact@v4
         with:
