@@ -15,7 +15,7 @@ public:
    void Open(bool isBackwardAnimation) override;
    void Close(bool isBackwardAnimation) override;
    void Save() override;
-   void ResetToInitialValues() override;
+   void ResetToStoredValues() override;
    void ResetToDefaults() override;
 
 private:

@@ -217,7 +217,7 @@ void InGameUI::HandlePageInput(const InputManager::ActionState &state)
       if (g_pvp->m_povEdit)
          g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
       else
-         GetActivePage()->ResetToInitialValues();
+         GetActivePage()->ResetToStoredValues();
    }
 
    if (state.IsKeyPressed(m_player->m_pininput.GetStartActionId(), m_prevActionState))

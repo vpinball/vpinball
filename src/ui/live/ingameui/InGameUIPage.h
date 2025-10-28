@@ -26,7 +26,7 @@ public:
    bool IsClosed() const { return (m_openAnimPos == m_openAnimTarget) && (m_openAnimPos == -1.f || m_openAnimPos == 1.f); }
    virtual void SaveGlobally();
    virtual void SaveTableOverride();
-   virtual void ResetToInitialValues();
+   virtual void ResetToStoredValues();
    virtual void ResetToDefaults();
    bool IsResettingToDefaults() const { return m_resettingToDefaults; }
    bool IsResettingToInitialValues() const { return m_resettingToInitialValues; }

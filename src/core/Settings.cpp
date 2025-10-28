@@ -42,17 +42,90 @@ const string &Settings::GetSectionName(const Section section)
    return m_settingKeys[section];
 }
 
-Settings::Settings(const Settings* parent)
-   : m_parent(parent)
-   , m_store(GetRegistry())
+Settings::Settings(Settings* parent)
+   : m_store(this) 
+   , m_parent(parent)
 {
+}
+
+void Settings::Set(VPX::Properties::PropertyRegistry::PropId propId, float v, bool asTableOverride)
+{
+   assert(GetRegistry().GetProperty(propId)->m_type == VPX::Properties::PropertyDef::Type::Float);
+   if (asTableOverride)
+   {
+      assert(m_parent != nullptr);
+      m_store.Set(propId, v);
+   }
+   else if (m_parent)
+   {
+      m_store.Reset(propId);
+      m_parent->Set(propId, v, false);
+   }
+   else
+   {
+      m_store.Set(propId, v);
+   }
+}
+
+void Settings::Set(VPX::Properties::PropertyRegistry::PropId propId, int v, bool asTableOverride)
+{
+   assert(GetRegistry().GetProperty(propId)->m_type == VPX::Properties::PropertyDef::Type::Int || GetRegistry().GetProperty(propId)->m_type == VPX::Properties::PropertyDef::Type::Enum);
+   if (asTableOverride)
+   {
+      assert(m_parent != nullptr);
+      m_store.Set(propId, v);
+   }
+   else if (m_parent)
+   {
+      m_store.Reset(propId);
+      m_parent->Set(propId, v, false);
+   }
+   else
+   {
+      m_store.Set(propId, v);
+   }
+}
+
+void Settings::Set(VPX::Properties::PropertyRegistry::PropId propId, bool v, bool asTableOverride)
+{
+   assert(GetRegistry().GetProperty(propId)->m_type == VPX::Properties::PropertyDef::Type::Bool);
+   if (asTableOverride)
+   {
+      assert(m_parent != nullptr);
+      m_store.Set(propId, v);
+   }
+   else if (m_parent)
+   {
+      m_store.Reset(propId);
+      m_parent->Set(propId, v, false);
+   }
+   else
+   {
+      m_store.Set(propId, v);
+   }
+}
+
+void Settings::Set(VPX::Properties::PropertyRegistry::PropId propId, const string &v, bool asTableOverride)
+{
+   assert(GetRegistry().GetProperty(propId)->m_type == VPX::Properties::PropertyDef::Type::String);
+   if (asTableOverride)
+   {
+      assert(m_parent != nullptr);
+      m_store.Set(propId, v);
+   }
+   else if (m_parent)
+   {
+      m_store.Reset(propId);
+      m_parent->Set(propId, v, false);
+   }
+   else
+   {
+      m_store.Set(propId, v);
+   }
 }
 
 void Settings::RegisterStringSetting(const Section section, const string &key, const string &defVal, const bool addDefaults, const string &comments)
 {
-   #ifdef DEBUG
-      m_validatedKeys[section].insert(key);
-   #endif
    string val;
    bool present = LoadValue(section, key, val);
    if (!present && addDefaults)
@@ -61,9 +134,6 @@ void Settings::RegisterStringSetting(const Section section, const string &key, c
 
 void Settings::RegisterBoolSetting(const Section section, const string &key, const bool defVal, const bool addDefaults, const string &comments)
 {
-   #ifdef DEBUG
-      m_validatedKeys[section].insert(key);
-   #endif
    int val;
    bool present = LoadValue(section, key, val);
    if (present && !((val == 0) || (val == 1)))
@@ -78,9 +148,6 @@ void Settings::RegisterBoolSetting(const Section section, const string &key, con
 void Settings::RegisterIntSetting(const Section section, const string &key, const int defVal, const int minVal, const int maxVal, const bool addDefaults, const string &comments)
 {
    assert((minVal <= defVal) && (defVal <= maxVal));
-   #ifdef DEBUG
-      m_validatedKeys[section].insert(key);
-   #endif
    int val;
    bool present = LoadValue(section, key, val);
    if (present && ((val < minVal) || (val > maxVal)))
@@ -95,9 +162,6 @@ void Settings::RegisterIntSetting(const Section section, const string &key, cons
 void Settings::RegisterUIntSetting(const Section section, const string &key, const unsigned int defVal, const unsigned int minVal, const unsigned int maxVal, const bool addDefaults, const string &comments)
 {
    assert((minVal <= defVal) && (defVal <= maxVal));
-   #ifdef DEBUG
-      m_validatedKeys[section].insert(key);
-   #endif
    unsigned int val;
    bool present = LoadValue(section, key, val);
    if (present && ((val < minVal) || (val > maxVal)))
@@ -112,9 +176,6 @@ void Settings::RegisterUIntSetting(const Section section, const string &key, con
 void Settings::RegisterFloatSetting(const Section section, const string &key, const float defVal, const float minVal, const float maxVal, const bool addDefaults, const string &comments)
 {
    assert((minVal <= defVal) && (defVal <= maxVal));
-   #ifdef DEBUG
-      m_validatedKeys[section].insert(key);
-   #endif
    float val;
    bool present = LoadValue(section, key, val);
    if (present && ((val < minVal) || (val > maxVal)))
@@ -436,9 +497,6 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
    m_modified = false;
    m_iniPath = path;
 
-   // Not yet activated as the 2 saves (Settings & Store) would conflict
-   // m_store.Load(path);
-
    mINI::INIFile file(path);
    if (file.read(m_ini))
    {
@@ -561,12 +619,42 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
 
 void Settings::SaveToFile(const string &path)
 {
-   // Not yet activated as the 2 saves (Settings & Store) would conflict
-   // m_store.Save();
-
    m_iniPath = path;
    if (!m_modified || m_iniPath.empty())
       return;
+
+   // Discard overrides that match parent value or the property default's value
+   if (m_parent)
+   {
+      vector<std::pair<string, string>> discardList;
+      for (const auto &[section, values] : m_ini)
+      {
+         const bool parentHasSection = m_parent->m_ini.has(section);
+         for (const auto &[key, value] : values)
+         {
+            if (parentHasSection && m_parent->m_ini[section].has(key) && m_parent->m_ini[section][key] == value)
+               discardList.emplace_back(section, key);
+            else if (auto prop = Settings::GetRegistry().GetPropertyId(section, key); prop.has_value())
+            {
+               bool isDefault = false;
+               int intVal;
+               switch (GetRegistry().GetProperty(prop.value())->m_type)
+               {
+               case VPX::Properties::PropertyDef::Type::Float: isDefault = GetRegistry().GetFloatProperty(prop.value())->m_def == sz2f(value); break;
+               case VPX::Properties::PropertyDef::Type::Int: isDefault = !try_parse_int(value, intVal) || GetRegistry().GetIntProperty(prop.value())->m_def == intVal; break;
+               case VPX::Properties::PropertyDef::Type::Enum: isDefault = !try_parse_int(value, intVal) || GetRegistry().GetEnumProperty(prop.value())->m_def == intVal; break;
+               case VPX::Properties::PropertyDef::Type::Bool: isDefault = !try_parse_int(value, intVal) || GetRegistry().GetBoolProperty(prop.value())->m_def == (intVal != 0); break;
+               case VPX::Properties::PropertyDef::Type::String: isDefault = GetRegistry().GetStringProperty(prop.value())->m_def == value; break;
+               }
+               if (isDefault)
+                  discardList.emplace_back(section, key);
+            }
+         }
+      }
+      for (const auto& [section, key] : discardList)
+         m_ini[section].remove(key);
+   }
+
    m_modified = false;
    size_t size = 0;
    for (const auto& section : m_ini)
@@ -695,18 +783,12 @@ bool Settings::LoadValue(const Section section, const string &key, unsigned int 
 
 int Settings::LoadValueWithDefault(const Section section, const string &key, const int def) const
 {
-   #ifdef DEBUG
-      assert(!m_validatedKeys.contains(section) || !m_validatedKeys.at(section).contains(key)); // Redefinition
-   #endif
    int val;
    return LoadValue(section, key, val) ? val : def;
 }
 
 float Settings::LoadValueWithDefault(const Section section, const string &key, const float def) const
 {
-   #ifdef DEBUG
-      assert(!m_validatedKeys.contains(section) || !m_validatedKeys.at(section).contains(key)); // Redefinition
-   #endif
    float val;
    return LoadValue(section, key, val) ? val : def;
 }
@@ -718,9 +800,6 @@ bool Settings::LoadValueWithDefault(const Section section, const string &key, co
 
 string Settings::LoadValueWithDefault(const Section section, const string &key, const string &def) const
 {
-   #ifdef DEBUG
-      assert(!m_validatedKeys.contains(section) || !m_validatedKeys.at(section).contains(key)); // Redefinition
-   #endif
    string val;
    return LoadValue(section, key, val) ? val : def;
 }

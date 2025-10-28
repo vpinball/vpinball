@@ -201,11 +201,12 @@ ScoreViewPage::ScoreViewPage()
    AddItem(std::move(customControls));
 
    auto lockAspectRatio = std::make_unique<InGameUIItem>(
-      "Lock Aspect Ratio"s, "Keep width and height proportional when resizing"s, true,
-      [this]() { return m_lockAspectRatio; },
-      [this](bool v) { m_lockAspectRatio = v; },
-      [](Settings&) { },
-      [](bool, const Settings&, bool) { });
+      VPX::Properties::BoolPropertyDef(""s, ""s, "Lock Aspect Ratio"s, "Keep width and height proportional when resizing"s, true), //
+      [this]() { return m_lockAspectRatio; },  //
+      [this]() { return m_lockAspectRatio; }, //
+      [this](bool v) { m_lockAspectRatio = v; }, //
+      [](Settings&) { /* UI state, not persisted */ }, //
+      [](bool, const Settings&, bool) { /* UI state, not persisted */ }); //
    AddItem(std::move(lockAspectRatio));
 
    auto sizeControls = std::make_unique<InGameUIItem>(
@@ -479,7 +480,7 @@ void ScoreViewPage::ResetToDefaults()
    m_aspectRatio = 128.0f / 32.0f;
 }
 
-void ScoreViewPage::ResetToInitialValues()
+void ScoreViewPage::ResetToStoredValues()
 {
    m_player->m_ptable->m_settings.SaveValue(Settings::ScoreView, "ScoreViewWndX"s, m_initialX);
    m_player->m_ptable->m_settings.SaveValue(Settings::ScoreView, "ScoreViewWndY"s, m_initialY);

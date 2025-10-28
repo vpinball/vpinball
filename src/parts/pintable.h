@@ -292,7 +292,15 @@ public:
    STDMETHOD(get_VersionMinor)(/*[out, retval]*/ int *pVal);
    STDMETHOD(get_VersionRevision)(/*[out, retval]*/ int *pVal);
 
-   vector<VPX::InGameUI::InGameUIItem*> GetOptions() const;
+   struct TableOption
+   {
+      const VPX::Properties::PropertyRegistry::PropId id;
+      const float displayScale;
+      const string format;
+      float value;
+   };
+   const vector<TableOption>& GetOptions() const;
+   void SetOptionLiveValue(VPX::Properties::PropertyRegistry::PropId id, float value); // Live value (not persisted unlike the script API put_Option which directly persist the option value)
    STDMETHOD(get_Option)(BSTR optionName, float minValue, float maxValue, float step, float defaultValue, int unit, /*[optional][in]*/ VARIANT values, /*[out, retval]*/ float *param);
    STDMETHOD(put_Option)(BSTR optionName, float minValue, float maxValue, float step, float defaultValue, int unit, /*[optional][in]*/ VARIANT values, /*[in]*/ float val);
 
@@ -854,6 +862,6 @@ private:
    ToneMapper m_toneMapper = ToneMapper::TM_AGX;
    float m_exposure = 1.f;
 
-   string RegisterOption(BSTR optionName, float minValue, float maxValue, float step, float defaultValue, int unit, /*[optional][in]*/ VARIANT values);
-   ankerl::unordered_dense::map<string, std::pair<std::unique_ptr<VPX::InGameUI::InGameUIItem>, float>> m_tableOptions;
+   std::optional<VPX::Properties::PropertyRegistry::PropId> RegisterOption(BSTR optionName, float minValue, float maxValue, float step, float defaultValue, int unit, /*[optional][in]*/ VARIANT values);
+   vector<TableOption> m_tableOptions;
 };

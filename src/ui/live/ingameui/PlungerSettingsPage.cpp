@@ -15,10 +15,10 @@ PlungerSettingsPage::PlungerSettingsPage()
 
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Keyboard emulated plunger"s));
 
-   AddItem(std::make_unique<InGameUIItem>(
-      "One Second Retract"s, "Enable retracting the plunger after a 1 second press when using the digital plunger emulation through keyboard or joystick button"s, false,
-      [this]() { return GetInput().m_plunger_retract; }, [this](bool v) { GetInput().m_plunger_retract = v; }, InGameUIItem::ResetSetting(Settings::Player, "PlungerRetract"s),
-      InGameUIItem::SaveSettingBool(Settings::Player, "PlungerRetract"s)));
+   AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayer_PlungerRetract, //
+      [this]() { return GetInput().m_plunger_retract; }, //
+      [this](bool v) { GetInput().m_plunger_retract = v; }));
 
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Hardware sensor plunger"s));
 
@@ -28,9 +28,10 @@ PlungerSettingsPage::PlungerSettingsPage()
    const auto& plungerVelSensor = input.GetPlungerVelocitySensor();
    AddItem(std::make_unique<InGameUIItem>(plungerVelSensor->GetLabel(), "Select to define which analog input to use for plunger velocity."s, plungerVelSensor.get(), 0x2));
 
-   AddItem(std::make_unique<InGameUIItem>(
-      "Linear Sensor"s, "Select between symmetric (linear) and assymetric sensor"s, false, [this]() { return GetInput().m_linearPlunger; }, [this](bool v)
-      { GetInput().m_linearPlunger = v; }, InGameUIItem::ResetSetting(Settings::Player, "PlungerLinearSensor"s), InGameUIItem::SaveSettingBool(Settings::Player, "PlungerLinearSensor"s)));
+   AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayer_PlungerLinearSensor, //
+      [this]() { return GetInput().m_linearPlunger; }, //
+      [this](bool v) { GetInput().m_linearPlunger = v; }));
 
    m_positionPlot.m_rolling = true;
    m_positionPlot.m_timeSpan = 5.f;

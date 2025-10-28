@@ -45,10 +45,11 @@ public:
       PropId propId;
       if (it != m_idToIndexMap.end())
       {
-         // Redefining a property is allowed as long as nothing but the default value change
+         // Redefining a property is allowed as long as nothing but the default value change, or if it is a TableOption
+         // (somewhat hacky, but ok as only a single table can be played at a time and table option are only persisted as override in the table store)
          propId = it->second;
          const PropertyDef* existing = GetProperty(propId);
-         assert(existing->IsEqualButDefaultValue(prop.get()));
+         assert(prop->m_groupId == "TableOption"s || existing->IsEqualButDefaultValue(prop.get()));
          switch (propId.type)
          {
          case StoreType::Float: m_floatProperties[propId.index] = std::move(prop); break;
@@ -105,6 +106,20 @@ public:
    const EnumPropertyDef* GetEnumProperty(PropId propId) const { return dynamic_cast<const EnumPropertyDef*>(GetProperty(propId)); }
    const BoolPropertyDef* GetBoolProperty(PropId propId) const { return dynamic_cast<const BoolPropertyDef*>(GetProperty(propId)); }
    const StringPropertyDef* GetStringProperty(PropId propId) const { return dynamic_cast<const StringPropertyDef*>(GetProperty(propId)); }
+
+   std::optional<PropId> GetPropertyId(const string& groupId, const string& propId) const
+   {
+      for (size_t i = 0; i < m_floatProperties.size(); i++)
+         if (m_floatProperties[i]->m_groupId == groupId && m_floatProperties[i]->m_propId == propId)
+            return std::optional<PropId> { PropId(StoreType::Float, static_cast<uint16_t>(i)) };
+      for (size_t i = 0; i < m_intProperties.size(); i++)
+         if (m_intProperties[i]->m_groupId == groupId && m_intProperties[i]->m_propId == propId)
+            return std::optional<PropId> { PropId(StoreType::Int, static_cast<uint16_t>(i)) };
+      for (size_t i = 0; i < m_stringProperties.size(); i++)
+         if (m_stringProperties[i]->m_groupId == groupId && m_stringProperties[i]->m_propId == propId)
+            return std::optional<PropId> { PropId(StoreType::String, static_cast<uint16_t>(i)) };
+      return std::nullopt;
+   }
 
    vector<PropId> GetPropertyIds() const
    {
