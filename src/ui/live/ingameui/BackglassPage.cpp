@@ -195,11 +195,12 @@ BackglassPage::BackglassPage()
    AddItem(std::move(customControls));
 
    auto lockAspectRatio = std::make_unique<InGameUIItem>(
-      "Lock Aspect Ratio"s, "Keep width and height proportional when resizing"s, true,
-      [this]() { return m_lockAspectRatio; },
-      [this](bool v) { m_lockAspectRatio = v; },
-      [](Settings&) { },
-      [](bool, const Settings&, bool) { });
+      VPX::Properties::BoolPropertyDef(""s, ""s, "Lock Aspect Ratio"s, "Keep width and height proportional when resizing"s, true),
+      [this]() { return m_lockAspectRatio; }, //
+      [this]() { return m_lockAspectRatio; }, //
+      [this](bool v) { m_lockAspectRatio = v; }, //
+      [](Settings&) { /* UI state, not persisted */ }, //
+      [](bool, const Settings&, bool) { /* UI state is not persisted */ });
    AddItem(std::move(lockAspectRatio));
 
    auto sizeControls = std::make_unique<InGameUIItem>(
@@ -480,7 +481,7 @@ void BackglassPage::ResetToDefaults()
    m_aspectRatio = 16.0f / 9.0f;
 }
 
-void BackglassPage::ResetToInitialValues()
+void BackglassPage::ResetToStoredValues()
 {
    m_player->m_ptable->m_settings.SaveValue(Settings::Backglass, "BackglassWndX"s, m_initialX);
    m_player->m_ptable->m_settings.SaveValue(Settings::Backglass, "BackglassWndY"s, m_initialY);

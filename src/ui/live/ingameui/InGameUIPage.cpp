@@ -78,7 +78,7 @@ InGameUIItem* InGameUIPage::GetItem(const string& label) const
    return nullptr;
 }
 
-void InGameUIPage::ResetToInitialValues()
+void InGameUIPage::ResetToStoredValues()
 {
    if (!IsModified())
       return;
@@ -86,7 +86,7 @@ void InGameUIPage::ResetToInitialValues()
    assert(!m_resettingToInitialValues);
    m_resettingToInitialValues = true;
    for (size_t i = 0; i < m_items.size(); i++)
-      m_items[i]->ResetToInitialValue();
+      m_items[i]->ResetToStoredValue();
    g_pplayer->m_liveUI->PushNotification("Changes were undone"s, 5000);
    if (!IsModified())
       m_selectedItem = 0;
@@ -226,8 +226,8 @@ void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
       ResetToDefaults();
       break;
 
-   case InGameUIItem::Type::ResetToInitialValues: // Undo (allow continuously applying, if something else if modifying the values, as we do not forbid it)
-      ResetToInitialValues();
+   case InGameUIItem::Type::ResetToStoredValues: // Undo (allow continuously applying, if something else if modifying the values, as we do not forbid it)
+      ResetToStoredValues();
       break;
 
    case InGameUIItem::Type::SaveChanges:
@@ -238,16 +238,6 @@ void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
    case InGameUIItem::Type::Back:
       if (isInitialPress)
          m_player->m_liveUI->m_inGameUI.NavigateBack();
-      break;
-
-   case InGameUIItem::Type::EnumValue:
-      if (isInitialPress)
-      {
-         if (direction < 0.f)
-            item->SetValue((item->GetIntValue() + static_cast<int>(item->m_enum.size()) - 1) % static_cast<int>(item->m_enum.size()));
-         else
-            item->SetValue((item->GetIntValue() + 1) % static_cast<int>(item->m_enum.size()));
-      }
       break;
 
    case InGameUIItem::Type::ActionInputMapping:
@@ -286,24 +276,46 @@ void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
       }
       break;
 
-   case InGameUIItem::Type::FloatValue:
-      if (isInitialPress)
-         m_adjustedValue = item->GetFloatValue();
-      m_adjustedValue += direction * speedFactor * elapsed * (item->m_maxValue - item->m_minValue) / 32.f;
-      item->SetValue(m_adjustedValue);
-      break;
+   case InGameUIItem::Type::Property:
+      switch (item->m_property->m_type)
+      {
+      case VPX::Properties::PropertyDef::Type::Enum:
+         if (isInitialPress)
+         {
+            const int nValues = static_cast<int>(dynamic_cast<VPX::Properties::EnumPropertyDef*>(item->m_property.get())->m_values.size());
+            if (direction < 0.f)
+               item->SetValue((item->GetIntValue() + nValues - 1) % nValues);
+            else
+               item->SetValue((item->GetIntValue() + 1) % nValues);
+         }
+         break;
 
-   case InGameUIItem::Type::IntValue:
-      if (isInitialPress)
-         m_adjustedValue = static_cast<float>(item->GetIntValue()) + direction;
-      else
-         m_adjustedValue += direction * speedFactor * elapsed * (item->m_maxValue - item->m_minValue) / 32.f;
-      item->SetValue(static_cast<int>(round(m_adjustedValue)));
-      break;
+      case VPX::Properties::PropertyDef::Type::Float:
+      {
+         auto prop = dynamic_cast<const VPX::Properties::FloatPropertyDef*>(item->m_property.get());
+         if (isInitialPress)
+            m_adjustedValue = item->GetFloatValue();
+         m_adjustedValue += direction * speedFactor * elapsed * (prop->m_max - prop->m_min) / 32.f;
+         item->SetValue(m_adjustedValue);
+         break;
+      }
 
-   case InGameUIItem::Type::Toggle:
-      if (isInitialPress)
-         item->SetValue(!item->GetBoolValue());
+      case VPX::Properties::PropertyDef::Type::Int:
+      {
+         auto prop = dynamic_cast<const VPX::Properties::IntPropertyDef*>(item->m_property.get());
+         if (isInitialPress)
+            m_adjustedValue = static_cast<float>(item->GetIntValue()) + direction;
+         else
+            m_adjustedValue += direction * speedFactor * elapsed * (prop->m_max - prop->m_min) / 32.f;
+         item->SetValue(static_cast<int>(round(m_adjustedValue)));
+         break;
+      }
+
+      case VPX::Properties::PropertyDef::Type::Bool:
+         if (isInitialPress)
+            item->SetValue(!item->GetBoolValue());
+         break;
+      }
       break;
 
    default: break;
@@ -360,7 +372,7 @@ void InGameUIPage::Render(float elapsedS)
       [](auto& item)
       {
          using enum InGameUIItem::Type;
-         return item->m_type == SaveChanges || item->m_type == ResetToDefaults || item->m_type == ResetToInitialValues || item->m_type == Back;
+         return item->m_type == SaveChanges || item->m_type == ResetToDefaults || item->m_type == ResetToStoredValues || item->m_type == Back;
       });
    ImGui::SeparatorText(m_title.c_str());
    bool undoHovered = false;
@@ -408,7 +420,7 @@ void InGameUIPage::Render(float elapsedS)
       ImGui::SameLine();
       if (IsModified())
       {
-         m_items.push_back(std::make_unique<InGameUIItem>(InGameUIItem::Type::ResetToInitialValues));
+         m_items.push_back(std::make_unique<InGameUIItem>(InGameUIItem::Type::ResetToStoredValues));
          ImGui::BeginDisabled(false);
          highlighted = m_player->m_liveUI->m_inGameUI.IsFlipperNav() && (m_selectedItem == m_items.size() - 1);
       }
@@ -493,7 +505,7 @@ void InGameUIPage::Render(float elapsedS)
       const auto& item = m_items[i];
 
       // Skip as these items are rendered in the header
-      if (item->m_type == Back || item->m_type == SaveChanges || item->m_type == ResetToDefaults || item->m_type == ResetToInitialValues)
+      if (item->m_type == Back || item->m_type == SaveChanges || item->m_type == ResetToDefaults || item->m_type == ResetToStoredValues)
          continue;
 
       const float itemHeight = ImGui::GetTextLineHeight() + itemPadding.y * 2.f;
@@ -581,45 +593,6 @@ void InGameUIPage::Render(float elapsedS)
          break;
       }
 
-      case Toggle:
-      {
-         ImGui::Text("%s", item->m_label.c_str());
-         ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
-         bool v = item->GetBoolValue();
-         RenderToggle(item->m_label, ImVec2(itemEndScreenX - ImGui::GetCursorScreenPos().x, ImGui::GetFrameHeight()), v);
-         item->SetValue(v);
-         if (item->IsModified())
-         {
-            ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
-            ImGui::Text(ICON_FK_PENCIL);
-         }
-         break;
-      }
-
-      case EnumValue:
-      {
-         ImGui::Text("%s", item->m_label.c_str());
-         ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
-         int v = item->GetIntValue() - static_cast<int>(item->m_minValue);
-         ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
-         ImGui::Combo(("##" + item->m_label).c_str(), &v,
-            [](void* data, int idx)
-            {
-               const auto* vec = static_cast<const vector<string>*>(data);
-               if (idx < 0 || idx >= (int)vec->size())
-                  return "";
-               return vec->at(idx).c_str();
-            },
-            (void*)&item->m_enum, (int)item->m_enum.size());
-         item->SetValue(static_cast<int>(item->m_minValue) + v);
-         if (item->IsModified())
-         {
-            ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
-            ImGui::Text(ICON_FK_PENCIL);
-         }
-         break;
-      }
-
       case ActionInputMapping:
       {
          ImGui::Text("%s", item->m_label.c_str());
@@ -687,38 +660,112 @@ void InGameUIPage::Render(float elapsedS)
          break;
       }
 
-      case FloatValue:
-      {
-         ImGui::Text("%s", item->m_label.c_str());
-         ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
-         float v = item->GetFloatValue();
-         ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
-         ImGui::SliderFloat(("##" + item->m_label).c_str(), &v, item->m_minValue, item->m_maxValue, item->m_format.c_str(), ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat);
-         item->SetValue(v);
-         if (item->IsModified())
+      case Property:
+         switch (item->m_property->m_type)
          {
-            ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
-            ImGui::Text(ICON_FK_PENCIL);
+         case VPX::Properties::PropertyDef::Type::Float:
+         {
+            auto prop = dynamic_cast<VPX::Properties::FloatPropertyDef*>(item->m_property.get());
+            ImGui::Text("%s", prop->m_label.c_str());
+            ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
+            float v = item->GetFloatValue() * item->m_floatValueDisplayScale;
+            ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
+            ImGui::SliderFloat(("##" + prop->m_label).c_str(), &v, prop->m_min * item->m_floatValueDisplayScale, prop->m_max * item->m_floatValueDisplayScale, item->m_format.c_str(),
+               ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat);
+            if (item->IsModified())
+            {
+               ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
+               ImGui::Text(ICON_FK_PENCIL);
+            }
+            else if (auto id = Settings::GetRegistry().GetPropertyId(item->m_property->m_groupId, item->m_property->m_propId);
+               id.has_value() && g_pvp->m_settings.GetFloat(id.value()) != m_player->m_ptable->m_settings.GetFloat(id.value()))
+            {
+               ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
+               ImGui::Text(ICON_FK_DOT_CIRCLE_O);
+            }
+            item->SetValue(v / item->m_floatValueDisplayScale);
+            break;
          }
-         break;
-      }
 
-      case IntValue:
-      {
-         ImGui::Text("%s", item->m_label.c_str());
-         ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
-         int v = item->GetIntValue();
-         ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
-         ImGui::SliderInt(("##" + item->m_label).c_str(), &v, static_cast<int>(item->m_minValue), static_cast<int>(item->m_maxValue), item->m_format.c_str(),
-            ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat);
-         item->SetValue(v);
-         if (item->IsModified())
+         case VPX::Properties::PropertyDef::Type::Int:
          {
-            ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
-            ImGui::Text(ICON_FK_PENCIL);
+            auto prop = dynamic_cast<VPX::Properties::IntPropertyDef*>(item->m_property.get());
+            ImGui::Text("%s", prop->m_label.c_str());
+            ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
+            int v = item->GetIntValue();
+            ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
+            ImGui::SliderInt(("##" + prop->m_label).c_str(), &v, prop->m_min, prop->m_max, item->m_format.c_str(), ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat);
+            if (item->IsModified())
+            {
+               ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
+               ImGui::Text(ICON_FK_PENCIL);
+            }
+            else if (auto id = Settings::GetRegistry().GetPropertyId(item->m_property->m_groupId, item->m_property->m_propId);
+               id.has_value() && g_pvp->m_settings.GetInt(id.value()) != m_player->m_ptable->m_settings.GetInt(id.value()))
+            {
+               ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
+               ImGui::Text(ICON_FK_DOT_CIRCLE_O);
+            }
+            item->SetValue(v);
+            break;
+         }
+
+         case VPX::Properties::PropertyDef::Type::Enum:
+         {
+            auto prop = dynamic_cast<VPX::Properties::EnumPropertyDef*>(item->m_property.get());
+            ImGui::Text("%s", prop->m_label.c_str());
+            ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
+            int v = item->GetIntValue() - prop->m_min;
+            ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
+            ImGui::Combo(("##" + prop->m_label).c_str(), &v,
+               [](void* data, int idx)
+               {
+                  const auto* vec = static_cast<const vector<string>*>(data);
+                  if (idx < 0 || idx >= (int)vec->size())
+                     return "";
+                  return vec->at(idx).c_str();
+               },
+               (void*)&prop->m_values, (int)prop->m_values.size());
+            if (item->IsModified())
+            {
+               ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
+               ImGui::Text(ICON_FK_PENCIL);
+            }
+            else if (auto id = Settings::GetRegistry().GetPropertyId(item->m_property->m_groupId, item->m_property->m_propId);
+               id.has_value() && g_pvp->m_settings.GetInt(id.value()) != m_player->m_ptable->m_settings.GetInt(id.value()))
+            {
+               ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
+               ImGui::Text(ICON_FK_DOT_CIRCLE_O);
+            }
+            item->SetValue(prop->m_min + v);
+            break;
+         }
+
+         case VPX::Properties::PropertyDef::Type::Bool:
+         {
+            auto prop = dynamic_cast<VPX::Properties::BoolPropertyDef*>(item->m_property.get());
+            ImGui::Text("%s", prop->m_label.c_str());
+            ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
+            bool v = item->GetBoolValue();
+            RenderToggle(prop->m_label, ImVec2(itemEndScreenX - ImGui::GetCursorScreenPos().x, ImGui::GetFrameHeight()), v);
+            if (item->IsModified())
+            {
+               ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
+               ImGui::Text(ICON_FK_PENCIL);
+            }
+            else if (auto id = Settings::GetRegistry().GetPropertyId(item->m_property->m_groupId, item->m_property->m_propId);
+               id.has_value() && g_pvp->m_settings.GetBool(id.value()) != m_player->m_ptable->m_settings.GetBool(id.value()))
+            {
+               ImGui::SameLine(itemEndScreenX - ImGui::GetCursorScreenPos().x);
+               ImGui::Text(ICON_FK_DOT_CIRCLE_O);
+            }
+            item->SetValue(v);
+            break;
+         }
+
+         default: assert(false); break;
          }
          break;
-      }
 
       default: assert(false); break;
       }

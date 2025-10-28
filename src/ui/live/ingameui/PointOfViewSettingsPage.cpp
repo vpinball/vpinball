@@ -23,9 +23,9 @@ void PointOfViewSettingsPage::Open(bool isBackwardAnimation)
    ViewSetupID vsId = table->m_BG_current_set;
    m_initialViewSetup = table->mViewSetups[vsId];
    const Settings& settings = GetSettings();
-   m_playerPos.x = settings.LoadValueFloat(Settings::Player, "ScreenPlayerX"s);
-   m_playerPos.y = settings.LoadValueFloat(Settings::Player, "ScreenPlayerY"s);
-   m_playerPos.z = settings.LoadValueFloat(Settings::Player, "ScreenPlayerZ"s);
+   m_playerPos.x = settings.GetPlayer_ScreenPlayerX();
+   m_playerPos.y = settings.GetPlayer_ScreenPlayerY();
+   m_playerPos.z = settings.GetPlayer_ScreenPlayerZ();
    m_initialPlayerPos = m_playerPos;
    BuildPage();
 }
@@ -42,14 +42,15 @@ void PointOfViewSettingsPage::Close(bool isBackwardAnimation)
 void PointOfViewSettingsPage::Save()
 {
    InGameUIPage::Save();
+
    // FIXME this should be part of the action, not of the ingameui
    if (g_pvp->m_povEdit)
       g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
 }
 
-void PointOfViewSettingsPage::ResetToInitialValues()
+void PointOfViewSettingsPage::ResetToStoredValues()
 {
-   InGameUIPage::ResetToInitialValues();
+   InGameUIPage::ResetToStoredValues();
 
    // FIXME this should be part of the action, not of the ingameui
    if (g_pvp->m_povEdit)
@@ -59,10 +60,13 @@ void PointOfViewSettingsPage::ResetToInitialValues()
 void PointOfViewSettingsPage::ResetToDefaults()
 {
    InGameUIPage::ResetToDefaults();
-   PinTable* table = m_player->m_ptable;
    ViewSetup& viewSetup = GetCurrentViewSetup();
-   const float screenInclination = table->m_settings.LoadValueFloat(Settings::Player, "ScreenInclination"s);
-   viewSetup.SetViewPosFromPlayerPosition(table, m_playerPos, screenInclination);
+   if (viewSetup.mMode == VLM_WINDOW)
+   {
+      const PinTable* table = m_player->m_ptable;
+      const float screenInclination = table->m_settings.GetPlayer_ScreenInclination();
+      viewSetup.SetViewPosFromPlayerPosition(table, m_playerPos, screenInclination);
+   }
    OnPointOfViewChanged();
 }
 
@@ -80,7 +84,7 @@ void PointOfViewSettingsPage::OnPointOfViewChanged()
 void PointOfViewSettingsPage::BuildPage()
 {
    assert(m_opened);
-   PinTable* table = m_player->m_ptable;
+   const PinTable* table = m_player->m_ptable;
 
    ClearItems();
 
@@ -89,375 +93,318 @@ void PointOfViewSettingsPage::BuildPage()
    const bool isLegacy = viewSetup.mMode == VLM_LEGACY;
    const string keyPrefix = vsId == BG_DESKTOP ? "ViewDT"s : vsId == BG_FSS ? "ViewFSS"s : "ViewCab"s;
 
-   // Evaluate a suitable default depending on overall view mode
-   ViewSetup defViewSetup;
-   if (const bool portrait = m_player->m_playfieldWnd->GetWidth() < m_player->m_playfieldWnd->GetHeight(); vsId == BG_DESKTOP && !portrait)
-   { // Desktop
-      Settings& settings = GetSettings();
-      defViewSetup.mMode = (ViewLayoutMode)settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopMode"s, VLM_CAMERA);
-      defViewSetup.mViewX = CMTOVPU(settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopCamX"s, 0.f));
-      defViewSetup.mViewY = CMTOVPU(settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopCamY"s, 20.f));
-      defViewSetup.mViewZ = CMTOVPU(settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopCamZ"s, 70.f));
-      defViewSetup.mSceneScaleX = settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopScaleX"s, 1.f);
-      defViewSetup.mSceneScaleY = settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopScaleY"s, 1.f);
-      defViewSetup.mSceneScaleZ = settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopScaleZ"s, 1.f);
-      defViewSetup.mFOV = settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopFov"s, 50.f);
-      defViewSetup.mLookAt = settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopLookAt"s, 25.0f);
-      defViewSetup.mViewVOfs = settings.LoadValueWithDefault(Settings::DefaultCamera, "DesktopViewVOfs"s, 14.f);
-   }
-   else if (vsId == BG_DESKTOP || vsId == BG_FSS)
-   { // FSS
-      Settings& settings = GetSettings();
-      defViewSetup.mMode = (ViewLayoutMode)settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSMode"s, VLM_CAMERA);
-      defViewSetup.mViewX = CMTOVPU(settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSCamX"s, 0.f));
-      defViewSetup.mViewY = CMTOVPU(settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSCamY"s, 20.f));
-      defViewSetup.mViewZ = CMTOVPU(settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSCamZ"s, 70.f));
-      defViewSetup.mSceneScaleX = settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSScaleX"s, 1.f);
-      defViewSetup.mSceneScaleY = settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSScaleY"s, 1.f);
-      defViewSetup.mSceneScaleZ = settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSScaleZ"s, 1.f);
-      defViewSetup.mFOV = settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSFov"s, 77.f);
-      defViewSetup.mLookAt = settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSLookAt"s, 50.0f);
-      defViewSetup.mViewVOfs = settings.LoadValueWithDefault(Settings::DefaultCamera, "FSSViewVOfs"s, 22.f);
-   }
-   else if (vsId == BG_FULLSCREEN)
-   { // Cabinet mode
-      Settings& settings = GetSettings();
-      const float screenWidth = settings.LoadValueFloat(Settings::Player, "ScreenWidth"s);
-      const float screenHeight = settings.LoadValueFloat(Settings::Player, "ScreenHeight"s);
-      if (screenWidth <= 1.f || screenHeight <= 1.f)
+   auto selectProp = [vsId](VPX::Properties::PropertyRegistry::PropId dt, VPX::Properties::PropertyRegistry::PropId fss, VPX::Properties::PropertyRegistry::PropId cab)
+   {
+      switch (vsId)
       {
-         // TODO include a link to the cabinet setting page with screen size setup
-         AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "You must setup your screen size before using Window mode"s));
-         return;
+      case BG_DESKTOP: return dt;
+      case BG_FSS: return fss;
+      case BG_FULLSCREEN: return cab;
+      default: assert(false); return dt;
       }
-      else
-      {
-         float topHeight = table->m_glassTopHeight;
-         float bottomHeight = table->m_glassBottomHeight;
-         if (bottomHeight == topHeight)
-         { // If table does not define the glass position (for table without it, when loading we set the glass as horizontal)
-            TableDB db;
-            db.Load();
-            int bestSizeMatch = db.GetBestSizeMatch(table->GetTableWidth(), table->GetHeight(), topHeight);
-            if (bestSizeMatch >= 0)
-            {
-               bottomHeight = INCHESTOVPU(db.m_data[bestSizeMatch].glassBottom);
-               topHeight = INCHESTOVPU(db.m_data[bestSizeMatch].glassTop);
-               /* FIXME m_liveUI.PushNotification("Missing glass position guessed to be " + std::to_string(db.m_data[bestSizeMatch].glassBottom) + "\" / "
+   };
+
+   // Update properties defaults, with a suitable default wiew depending on overall view mode
+   float zoomDisplayScale;
+   {
+      ViewSetup defViewSetup;
+      if (vsId == BG_FULLSCREEN)
+      { // Cabinet mode
+         const Settings& settings = GetSettings();
+         const float screenWidth = settings.GetPlayer_ScreenWidth();
+         const float screenHeight = settings.GetPlayer_ScreenHeight();
+         if (screenWidth <= 1.f || screenHeight <= 1.f)
+         {
+            // TODO include a link to the cabinet setting page with screen size setup
+            AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "You must setup your screen size before using Window mode"s));
+            return;
+         }
+         else
+         {
+            float topHeight = table->m_glassTopHeight;
+            float bottomHeight = table->m_glassBottomHeight;
+            if (bottomHeight == topHeight)
+            { // If table does not define the glass position (for table without it, when loading we set the glass as horizontal)
+               TableDB db;
+               db.Load();
+               int bestSizeMatch = db.GetBestSizeMatch(table->GetTableWidth(), table->GetHeight(), topHeight);
+               if (bestSizeMatch >= 0)
+               {
+                  bottomHeight = INCHESTOVPU(db.m_data[bestSizeMatch].glassBottom);
+                  topHeight = INCHESTOVPU(db.m_data[bestSizeMatch].glassTop);
+                  /* FIXME m_liveUI.PushNotification("Missing glass position guessed to be " + std::to_string(db.m_data[bestSizeMatch].glassBottom) + "\" / "
                      + std::to_string(db.m_data[bestSizeMatch].glassTop) + "\" (" + db.m_data[bestSizeMatch].name + ')',
                   5000); */
+               }
+               else
+               {
+                  // FIXME m_liveUI.PushNotification("The table is missing glass position and no good guess was found."s, 5000);
+               }
             }
-            else
-            {
-               // FIXME m_liveUI.PushNotification("The table is missing glass position and no good guess was found."s, 5000);
-            }
+            const float scale = (screenHeight / table->GetTableWidth()) * (table->GetHeight() / screenWidth);
+            const bool isFitted = (viewSetup.mViewHOfs == 0.f) && (viewSetup.mViewVOfs == -2.8f) && (viewSetup.mSceneScaleY == scale) && (viewSetup.mSceneScaleX == scale);
+            defViewSetup.mMode = VLM_WINDOW;
+            defViewSetup.mViewHOfs = 0.f;
+            defViewSetup.mViewVOfs = isFitted ? 0.f : -2.8f;
+            defViewSetup.mSceneScaleX = scale;
+            defViewSetup.mSceneScaleY = isFitted ? 1.f : scale;
+            defViewSetup.mWindowBottomZOfs = bottomHeight;
+            defViewSetup.mWindowTopZOfs = topHeight;
          }
-         const float scale = (screenHeight / table->GetTableWidth()) * (table->GetHeight() / screenWidth);
-         const bool isFitted = (viewSetup.mViewHOfs == 0.f) && (viewSetup.mViewVOfs == -2.8f) && (viewSetup.mSceneScaleY == scale) && (viewSetup.mSceneScaleX == scale);
-         defViewSetup.mMode = VLM_WINDOW;
-         defViewSetup.mViewHOfs = 0.f;
-         defViewSetup.mViewVOfs = isFitted ? 0.f : -2.8f;
-         defViewSetup.mSceneScaleX = scale;
-         defViewSetup.mSceneScaleY = isFitted ? 1.f : scale;
-         defViewSetup.mWindowBottomZOfs = bottomHeight;
-         defViewSetup.mWindowTopZOfs = topHeight;
       }
+      else if (const bool portrait = m_player->m_playfieldWnd->GetWidth() < m_player->m_playfieldWnd->GetHeight(); vsId == BG_DESKTOP && !portrait)
+      { // Desktop
+         const Settings& settings = GetSettings();
+         defViewSetup.mMode = (ViewLayoutMode)settings.GetDefaultCamera_DesktopMode();
+         defViewSetup.mViewX = CMTOVPU(settings.GetDefaultCamera_DesktopCamX());
+         defViewSetup.mViewY = CMTOVPU(settings.GetDefaultCamera_DesktopCamY());
+         defViewSetup.mViewZ = CMTOVPU(settings.GetDefaultCamera_DesktopCamZ());
+         defViewSetup.mSceneScaleX = settings.GetDefaultCamera_DesktopScaleX();
+         defViewSetup.mSceneScaleY = settings.GetDefaultCamera_DesktopScaleY();
+         defViewSetup.mSceneScaleZ = settings.GetDefaultCamera_DesktopScaleZ();
+         defViewSetup.mFOV = settings.GetDefaultCamera_DesktopFov();
+         defViewSetup.mLookAt = settings.GetDefaultCamera_DesktopLookAt();
+         defViewSetup.mViewVOfs = settings.GetDefaultCamera_DesktopViewVOfs();
+      }
+      else if (vsId == BG_DESKTOP || vsId == BG_FSS)
+      { // FSS
+         const Settings& settings = GetSettings();
+         defViewSetup.mMode = (ViewLayoutMode)settings.GetDefaultCamera_FSSMode();
+         defViewSetup.mViewX = CMTOVPU(settings.GetDefaultCamera_FSSCamX());
+         defViewSetup.mViewY = CMTOVPU(settings.GetDefaultCamera_FSSCamY());
+         defViewSetup.mViewZ = CMTOVPU(settings.GetDefaultCamera_FSSCamZ());
+         defViewSetup.mSceneScaleX = settings.GetDefaultCamera_FSSScaleX();
+         defViewSetup.mSceneScaleY = settings.GetDefaultCamera_FSSScaleY();
+         defViewSetup.mSceneScaleZ = settings.GetDefaultCamera_FSSScaleZ();
+         defViewSetup.mFOV = settings.GetDefaultCamera_FSSFov();
+         defViewSetup.mLookAt = settings.GetDefaultCamera_FSSLookAt();
+         defViewSetup.mViewVOfs = settings.GetDefaultCamera_FSSViewVOfs();
+      }
+
+      // Update defaults
+      auto setEnumDef = [selectProp](VPX::Properties::PropertyRegistry::PropId dt, VPX::Properties::PropertyRegistry::PropId fss, VPX::Properties::PropertyRegistry::PropId cab, int def)
+      { Settings::GetRegistry().Register(Settings::GetRegistry().GetEnumProperty(selectProp(dt, fss, cab))->WithDefault(def)); };
+      auto setFloatDef = [selectProp](VPX::Properties::PropertyRegistry::PropId dt, VPX::Properties::PropertyRegistry::PropId fss, VPX::Properties::PropertyRegistry::PropId cab, float def)
+      { Settings::GetRegistry().Register(Settings::GetRegistry().GetFloatProperty(selectProp(dt, fss, cab))->WithDefault(def)); };
+      setEnumDef(Settings::m_propTableOverride_ViewDTMode, Settings::m_propTableOverride_ViewFSSMode, Settings::m_propTableOverride_ViewCabMode, defViewSetup.mMode);
+      setFloatDef(Settings::m_propTableOverride_ViewDTLookAt, Settings::m_propTableOverride_ViewFSSLookAt, Settings::m_propTableOverride_ViewCabLookAt, defViewSetup.mLookAt);
+      setFloatDef(Settings::m_propTableOverride_ViewDTFOV, Settings::m_propTableOverride_ViewFSSFOV, Settings::m_propTableOverride_ViewCabFOV, defViewSetup.mFOV);
+      setFloatDef(Settings::m_propTableOverride_ViewDTLayback, Settings::m_propTableOverride_ViewFSSLayback, Settings::m_propTableOverride_ViewCabLayback, defViewSetup.mLayback);
+      setFloatDef(Settings::m_propTableOverride_ViewDTScaleX, Settings::m_propTableOverride_ViewFSSScaleX, Settings::m_propTableOverride_ViewCabScaleX, defViewSetup.mSceneScaleX);
+      setFloatDef(Settings::m_propTableOverride_ViewDTScaleY, Settings::m_propTableOverride_ViewFSSScaleY, Settings::m_propTableOverride_ViewCabScaleY, defViewSetup.mSceneScaleY);
+      setFloatDef(Settings::m_propTableOverride_ViewDTScaleZ, Settings::m_propTableOverride_ViewFSSScaleZ, Settings::m_propTableOverride_ViewCabScaleZ, defViewSetup.mSceneScaleZ);
+      setFloatDef(Settings::m_propTableOverride_ViewDTPlayerX, Settings::m_propTableOverride_ViewFSSPlayerX, Settings::m_propTableOverride_ViewCabPlayerX, defViewSetup.mViewX);
+      setFloatDef(Settings::m_propTableOverride_ViewDTPlayerY, Settings::m_propTableOverride_ViewFSSPlayerY, Settings::m_propTableOverride_ViewCabPlayerY, defViewSetup.mViewY);
+      setFloatDef(Settings::m_propTableOverride_ViewDTPlayerZ, Settings::m_propTableOverride_ViewFSSPlayerZ, Settings::m_propTableOverride_ViewCabPlayerZ, defViewSetup.mViewZ);
+      setFloatDef(Settings::m_propTableOverride_ViewDTHOfs, Settings::m_propTableOverride_ViewFSSHOfs, Settings::m_propTableOverride_ViewCabHOfs, defViewSetup.mViewHOfs);
+      setFloatDef(Settings::m_propTableOverride_ViewDTVOfs, Settings::m_propTableOverride_ViewFSSVOfs, Settings::m_propTableOverride_ViewCabVOfs, defViewSetup.mViewVOfs);
+      setFloatDef(Settings::m_propTableOverride_ViewDTWindowBot, Settings::m_propTableOverride_ViewFSSWindowBot, Settings::m_propTableOverride_ViewCabWindowBot, defViewSetup.mWindowBottomZOfs);
+      setFloatDef(Settings::m_propTableOverride_ViewDTWindowTop, Settings::m_propTableOverride_ViewFSSWindowTop, Settings::m_propTableOverride_ViewCabWindowTop, defViewSetup.mWindowTopZOfs);
+      setFloatDef(Settings::m_propTableOverride_ViewDTRotation, Settings::m_propTableOverride_ViewFSSRotation, Settings::m_propTableOverride_ViewCabRotation, defViewSetup.mViewportRotation);
+      zoomDisplayScale = 100.f / defViewSetup.GetRealToVirtualScale(table);
    }
 
    auto viewMode = std::make_unique<InGameUIItem>(
-      "View mode"s,
-      "Select between 'Legacy' (old rendering mode with visually incorrect stretchs), 'Camera' (classic camera, for desktop) and 'Window' (custom projection designed for cabinet users) rendering mode"s,
-      vector({ "Legacy"s, "Camera"s, "Window"s }), static_cast<int>(defViewSetup.mMode), [this]() { return static_cast<int>(GetCurrentViewSetup().mMode); },
-      [this](int prev, int v)
+      selectProp(Settings::m_propTableOverride_ViewDTMode, Settings::m_propTableOverride_ViewFSSMode, Settings::m_propTableOverride_ViewCabMode),
+      [this]() { return static_cast<int>(GetCurrentViewSetup().mMode); },
+      [this](int, int v)
       {
          GetCurrentViewSetup().mMode = static_cast<ViewLayoutMode>(v);
          OnPointOfViewChanged();
          BuildPage();
-      },
-      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "Mode"); },
-      [keyPrefix](int v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "Mode", v, isTableOverride); });
-   viewMode->SetInitialValue(m_initialViewSetup.mMode);
+      });
 
    auto lookAt = std::make_unique<InGameUIItem>(
-      "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 0.1f, defViewSetup.mLookAt, "%4.1f %%"s, [this]() { return GetCurrentViewSetup().mLookAt; },
-      [this](float prev, float v)
+      selectProp(Settings::m_propTableOverride_ViewDTLookAt, Settings::m_propTableOverride_ViewFSSLookAt, Settings::m_propTableOverride_ViewCabLookAt), 1.f, "%4.1f %%"s,
+      [this]() { return GetCurrentViewSetup().mLookAt; },
+      [this](float, float v)
       {
          GetCurrentViewSetup().mLookAt = v;
          OnPointOfViewChanged();
-      },
-      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "LookAt"); },
-      [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "LookAt", v, isTableOverride); });
-   lookAt->SetInitialValue(m_initialViewSetup.mLookAt);
-
-   auto inclination = std::make_unique<InGameUIItem>(
-      "Inclination"s, "View inclination"s, 0.f, 90.f, 0.1f, defViewSetup.mLookAt, "%4.1f °"s, [this]() { return GetCurrentViewSetup().mLookAt; },
-      [this](float prev, float v)
-      {
-         GetCurrentViewSetup().mLookAt = v;
-         OnPointOfViewChanged();
-      },
-      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "LookAt"); },
-      [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "LookAt", v, isTableOverride); });
-   inclination->SetInitialValue(m_initialViewSetup.mLookAt);
+      });
 
    auto fov = std::make_unique<InGameUIItem>(
-      "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 0.1f, defViewSetup.mFOV, "%4.1f °"s, [this]() { return GetCurrentViewSetup().mFOV; },
-      [this](float prev, float v)
+      selectProp(Settings::m_propTableOverride_ViewDTFOV, Settings::m_propTableOverride_ViewFSSFOV, Settings::m_propTableOverride_ViewCabFOV), 1.f, "%4.1f °"s, //
+      [this]() { return GetCurrentViewSetup().mFOV; }, //
+      [this](float, float v)
       {
          GetCurrentViewSetup().mFOV = v;
          OnPointOfViewChanged();
-      },
-      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "FOV"); },
-      [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "FOV", v, isTableOverride); });
-   fov->SetInitialValue(m_initialViewSetup.mFOV);
+      });
 
    auto layback = std::make_unique<InGameUIItem>(
-      "Layback"s, "Fake visual stretch of the table to give more depth"s, 0.f, 90.f, 0.1f, defViewSetup.mLayback, "%4.1f  "s, [this]() { return GetCurrentViewSetup().mLayback; },
-      [this](float prev, float v)
+      selectProp(Settings::m_propTableOverride_ViewDTLayback, Settings::m_propTableOverride_ViewFSSLayback, Settings::m_propTableOverride_ViewCabLayback), 1.f, "%4.1f  "s,
+      [this]() { return GetCurrentViewSetup().mLayback; },
+      [this](float, float v)
       {
          GetCurrentViewSetup().mLayback = v;
          OnPointOfViewChanged();
-      },
-      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "Layback"); },
-      [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "Layback", v, isTableOverride); });
-   layback->SetInitialValue(m_initialViewSetup.mLayback);
+      });
 
    auto lockScale = std::make_unique<InGameUIItem>(
-      "Lock XYZ Scale"s, "Scale all axis homogeneously (recommended)"s, true, 
-      [this]() { return m_lockScale; },
-      [this](bool v) { m_lockScale = v; },
-      [](Settings&) { /* UI state is not persisted */ },
-      [](bool, const Settings&, bool) { /* UI state is not persisted */ });
+      VPX::Properties::BoolPropertyDef(""s, ""s, "Lock XYZ Scale"s, "Scale all axis homogeneously (recommended)"s, true), //
+      [this]() { return m_lockScale; }, //
+      [this]() { return m_lockScale; }, //
+      [this](bool v) { m_lockScale = v; }, [](Settings&) { /* UI state, not persisted */ }, //
+      [](bool, const Settings&, bool) { /* UI state, not persisted */ });
 
    auto xScale = std::make_unique<InGameUIItem>(
-      "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 50.f, 150.f, 0.1f, 100.f * defViewSetup.mSceneScaleX / defViewSetup.GetRealToVirtualScale(table), "%4.1f %%"s,
-      [this]()
-      {
-         const ViewSetup& viewSetup = GetCurrentViewSetup();
-         const float realToVirtual = viewSetup.GetRealToVirtualScale(m_player->m_ptable);
-         return 100.f * viewSetup.mSceneScaleX / realToVirtual;
-      },
+      selectProp(Settings::m_propTableOverride_ViewDTScaleX, Settings::m_propTableOverride_ViewFSSScaleX, Settings::m_propTableOverride_ViewCabScaleX), zoomDisplayScale, "%4.1f %%"s,
+      [this]() { return GetCurrentViewSetup().mSceneScaleX; },
       [this](float prev, float v)
       {
-         ViewSetup& viewSetup = GetCurrentViewSetup();
-         const float realToVirtual = viewSetup.GetRealToVirtualScale(m_player->m_ptable);
-         viewSetup.mSceneScaleX = v * realToVirtual / 100.f;
+         ViewSetup& vs = GetCurrentViewSetup();
+         vs.mSceneScaleX = v;
          if (m_lockScale && !IsResetting())
          {
-            viewSetup.mSceneScaleY = clamp(viewSetup.mSceneScaleY + (v - prev) * realToVirtual / 100.f, 0.5f * realToVirtual, 1.5f * realToVirtual);
-            viewSetup.mSceneScaleZ = clamp(viewSetup.mSceneScaleZ + (v - prev) * realToVirtual / 100.f, 0.5f * realToVirtual, 1.5f * realToVirtual);
+            vs.mSceneScaleY = clamp(vs.mSceneScaleY + (v - prev), 0.5f, 1.5f);
+            vs.mSceneScaleZ = clamp(vs.mSceneScaleZ + (v - prev), 0.5f, 1.5f);
          }
          OnPointOfViewChanged();
-      },
-      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "ScaleX"); },
-      [this, keyPrefix](float v, Settings& settings, bool isTableOverride) {
-         const ViewSetup& viewSetup = GetCurrentViewSetup();
-         const float realToVirtual = viewSetup.GetRealToVirtualScale(m_player->m_ptable);
-         settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleX", v * realToVirtual / 100.f, isTableOverride);
       });
-   xScale->SetInitialValue(100.f * m_initialViewSetup.mSceneScaleX / m_initialViewSetup.GetRealToVirtualScale(table));
 
    auto yScale = std::make_unique<InGameUIItem>(
-      "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 50.f, 150.f, 0.1f, 100.f * defViewSetup.mSceneScaleY / defViewSetup.GetRealToVirtualScale(table), "%4.1f %%"s,
-      [this]()
-      {
-         const ViewSetup& viewSetup = GetCurrentViewSetup();
-         const float realToVirtual = viewSetup.GetRealToVirtualScale(m_player->m_ptable);
-         return 100.f * viewSetup.mSceneScaleY / realToVirtual;
-      },
+      selectProp(Settings::m_propTableOverride_ViewDTScaleY, Settings::m_propTableOverride_ViewFSSScaleY, Settings::m_propTableOverride_ViewCabScaleY), zoomDisplayScale, "%4.1f %%"s,
+      [this]() { return GetCurrentViewSetup().mSceneScaleY; },
       [this](float prev, float v)
       {
-         ViewSetup& viewSetup = GetCurrentViewSetup();
-         const float realToVirtual = viewSetup.GetRealToVirtualScale(m_player->m_ptable);
-         viewSetup.mSceneScaleY = v * realToVirtual / 100.f;
+         ViewSetup& vs = GetCurrentViewSetup();
+         vs.mSceneScaleY = v;
          if (m_lockScale && !IsResetting())
          {
-            viewSetup.mSceneScaleX = clamp(viewSetup.mSceneScaleX + (v - prev) * realToVirtual / 100.f, 0.5f * realToVirtual, 1.5f * realToVirtual);
-            viewSetup.mSceneScaleZ = clamp(viewSetup.mSceneScaleZ + (v - prev) * realToVirtual / 100.f, 0.5f * realToVirtual, 1.5f * realToVirtual);
+            vs.mSceneScaleX = clamp(vs.mSceneScaleX + (v - prev), 0.5f, 1.5f);
+            vs.mSceneScaleZ = clamp(vs.mSceneScaleZ + (v - prev), 0.5f, 1.5f);
          }
          OnPointOfViewChanged();
-      },
-      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "ScaleY"); },
-      [this, keyPrefix](float v, Settings& settings, bool isTableOverride) {
-         const ViewSetup& viewSetup = GetCurrentViewSetup();
-         const float realToVirtual = viewSetup.GetRealToVirtualScale(m_player->m_ptable);
-         settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleY", v * realToVirtual / 100.f, isTableOverride);
       });
-   yScale->SetInitialValue(100.f * m_initialViewSetup.mSceneScaleY / m_initialViewSetup.GetRealToVirtualScale(table));
 
    auto zScale = std::make_unique<InGameUIItem>(
-      "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 50.f, 150.f, 0.1f,
-      100.f * defViewSetup.mSceneScaleZ / defViewSetup.GetRealToVirtualScale(table), "%4.1f %%"s,
-      [this]()
-      {
-         const ViewSetup& viewSetup = GetCurrentViewSetup();
-         const float realToVirtual = viewSetup.GetRealToVirtualScale(m_player->m_ptable);
-         return 100.f * viewSetup.mSceneScaleZ / realToVirtual;
-      },
+      selectProp(Settings::m_propTableOverride_ViewDTScaleZ, Settings::m_propTableOverride_ViewFSSScaleZ, Settings::m_propTableOverride_ViewCabScaleZ), zoomDisplayScale, "%4.1f %%"s,
+      [this]() { return GetCurrentViewSetup().mSceneScaleZ; },
       [this](float prev, float v)
       {
-         ViewSetup& viewSetup = GetCurrentViewSetup();
-         const float realToVirtual = viewSetup.GetRealToVirtualScale(m_player->m_ptable);
-         viewSetup.mSceneScaleZ = v * realToVirtual / 100.f;
+         ViewSetup& vs = GetCurrentViewSetup();
+         vs.mSceneScaleZ = v;
          if (m_lockScale && !IsResetting())
          {
-            viewSetup.mSceneScaleX = clamp(viewSetup.mSceneScaleX + (v - prev) * realToVirtual / 100.f, 0.5f * realToVirtual, 1.5f * realToVirtual);
-            viewSetup.mSceneScaleY = clamp(viewSetup.mSceneScaleY + (v - prev) * realToVirtual / 100.f, 0.5f * realToVirtual, 1.5f * realToVirtual);
+            vs.mSceneScaleX = clamp(vs.mSceneScaleX + (v - prev), 0.5f, 1.5f);
+            vs.mSceneScaleY = clamp(vs.mSceneScaleY + (v - prev), 0.5f, 1.5f);
          }
          OnPointOfViewChanged();
-      },
-      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "ScaleZ"); },
-      [this, keyPrefix](float v, Settings& settings, bool isTableOverride) {
-         const ViewSetup& viewSetup = GetCurrentViewSetup();
-         const float realToVirtual = viewSetup.GetRealToVirtualScale(m_player->m_ptable);
-         settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleZ", v * realToVirtual / 100.f, isTableOverride);
       });
-   zScale->SetInitialValue(100.f * m_initialViewSetup.mSceneScaleZ / m_initialViewSetup.GetRealToVirtualScale(table));
 
    auto playerX = std::make_unique<InGameUIItem>(
-      "Player X"s, "Player position in real world, expressed from the bottom center of the playfield, in centimeters"s, -30.f, 30.f, 0.1f, m_initialPlayerPos.x, "%4.1f cm"s,
+      Settings::m_propPlayer_ScreenPlayerX, 1.f, "%4.1f cm"s, //
       [this]() { return m_playerPos.x; },
-      [this](float prev, float v)
+      [this](float, float v)
       {
-         PinTable* table = m_player->m_ptable;
-         ViewSetup& viewSetup = GetCurrentViewSetup();
          m_playerPos.x = v;
-         const float screenInclination = table->m_settings.LoadValueFloat(Settings::Player, "ScreenInclination"s);
-         viewSetup.SetViewPosFromPlayerPosition(table, m_playerPos, screenInclination);
+         const float screenInclination = m_player->m_ptable->m_settings.GetPlayer_ScreenInclination();
+         GetCurrentViewSetup().SetViewPosFromPlayerPosition(m_player->m_ptable, m_playerPos, screenInclination);
          OnPointOfViewChanged();
-      },
-      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::Player, keyPrefix + "ScreenPlayerX"); },
-      [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::Player, "ScreenPlayerX"s, v, isTableOverride); });
-   playerX->SetInitialValue(m_initialPlayerPos.x);
+      });
+
    auto playerY = std::make_unique<InGameUIItem>(
-      "Player Y"s, "Player position in real world, expressed from the bottom center of the playfield, in centimeters"s, -70.f, 30.f, 0.1f, m_initialPlayerPos.y, "%4.1f cm"s,
+      Settings::m_propPlayer_ScreenPlayerY, 1.f, "%4.1f cm"s, //
       [this]() { return m_playerPos.y; },
-      [this](float prev, float v)
+      [this](float, float v)
       {
-         PinTable* table = m_player->m_ptable;
-         ViewSetup& viewSetup = GetCurrentViewSetup();
          m_playerPos.y = v;
-         const float screenInclination = table->m_settings.LoadValueFloat(Settings::Player, "ScreenInclination"s);
-         viewSetup.SetViewPosFromPlayerPosition(table, m_playerPos, screenInclination);
+         const float screenInclination = m_player->m_ptable->m_settings.GetPlayer_ScreenInclination();
+         GetCurrentViewSetup().SetViewPosFromPlayerPosition(m_player->m_ptable, m_playerPos, screenInclination);
          OnPointOfViewChanged();
-      },
-      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::Player, keyPrefix + "ScreenPlayerY"); },
-      [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::Player, "ScreenPlayerY"s, v, isTableOverride); });
-   playerY->SetInitialValue(m_initialPlayerPos.y);
+      });
+
    auto playerZ = std::make_unique<InGameUIItem>(
-      "Player Z"s, "Player position in real world, expressed from the bottom center of the playfield, in centimeters"s, 30.f, 100.f, 0.1f, m_initialPlayerPos.z, "%4.1f cm"s,
+      Settings::m_propPlayer_ScreenPlayerZ, 1.f, "%4.1f cm"s, //
       [this]() { return m_playerPos.z; },
-      [this](float prev, float v)
+      [this](float, float v)
       {
-         PinTable* table = m_player->m_ptable;
-         ViewSetup& viewSetup = GetCurrentViewSetup();
          m_playerPos.z = v;
-         const float screenInclination = table->m_settings.LoadValueFloat(Settings::Player, "ScreenInclination"s);
-         viewSetup.SetViewPosFromPlayerPosition(table, m_playerPos, screenInclination);
+         const float screenInclination = m_player->m_ptable->m_settings.GetPlayer_ScreenInclination();
+         GetCurrentViewSetup().SetViewPosFromPlayerPosition(m_player->m_ptable, m_playerPos, screenInclination);
          OnPointOfViewChanged();
-      },
-      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::Player, keyPrefix + "ScreenPlayerZ"); },
-      [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::Player, "ScreenPlayerZ"s, v, isTableOverride); });
-   playerZ->SetInitialValue(m_initialPlayerPos.z);
+      });
 
    auto viewX = std::make_unique<InGameUIItem>(
-      isLegacy ? "X Offset"s : "Camera X"s, "View point width offset, in centimeters"s, -30.f, 30.f, 0.1f, VPUTOCM(defViewSetup.mViewX), "%4.1f cm"s,
-      [this]() { return VPUTOCM(GetCurrentViewSetup().mViewX); },
-      [this](float prev, float v)
+      selectProp(Settings::m_propTableOverride_ViewDTPlayerX, Settings::m_propTableOverride_ViewFSSPlayerX, Settings::m_propTableOverride_ViewCabPlayerX), VPUTOCM(1.f), "%4.1f cm"s, //
+      [this]() { return GetCurrentViewSetup().mViewX; },
+      [this](float, float v)
       {
-         GetCurrentViewSetup().mViewX = CMTOVPU(v);
+         GetCurrentViewSetup().mViewX = v;
          OnPointOfViewChanged();
-      },
-      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "PlayerX"); },
-      [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerX", CMTOVPU(v), isTableOverride); });
-   viewX->SetInitialValue(VPUTOCM(m_initialViewSetup.mViewX));
+      });
+
    auto viewY = std::make_unique<InGameUIItem>(
-      isLegacy ? "Y Offset"s : "Camera Y"s, "View point height offset, in centimeters"s, -30.f, 100.f, 0.1f, VPUTOCM(defViewSetup.mViewY), "%4.1f cm"s,
-      [this]() { return VPUTOCM(GetCurrentViewSetup().mViewY); },
-      [this](float prev, float v)
+      selectProp(Settings::m_propTableOverride_ViewDTPlayerY, Settings::m_propTableOverride_ViewFSSPlayerY, Settings::m_propTableOverride_ViewCabPlayerY), VPUTOCM(1.f), "%4.1f cm"s, //
+      [this]() { return GetCurrentViewSetup().mViewY; },
+      [this](float, float v)
       {
-         GetCurrentViewSetup().mViewY = CMTOVPU(v);
+         GetCurrentViewSetup().mViewY = v;
          OnPointOfViewChanged();
-      },
-      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "PlayerY"); },
-      [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerY", CMTOVPU(v), isTableOverride); });
-   viewY->SetInitialValue(VPUTOCM(m_initialViewSetup.mViewY));
+      });
+
    auto viewZ = std::make_unique<InGameUIItem>(
-      isLegacy ? "Z Offset"s : "Camera Z"s, "View point vertical offset, in centimeters"s, 10.f, 100.f, 0.1f, VPUTOCM(defViewSetup.mViewZ), "%4.1f cm"s,
-      [this]() { return VPUTOCM(GetCurrentViewSetup().mViewZ); },
-      [this](float prev, float v)
+      selectProp(Settings::m_propTableOverride_ViewDTPlayerZ, Settings::m_propTableOverride_ViewFSSPlayerZ, Settings::m_propTableOverride_ViewCabPlayerZ), VPUTOCM(1.f), "%4.1f cm"s, //
+      [this]() { return GetCurrentViewSetup().mViewZ; },
+      [this](float, float v)
       {
-         GetCurrentViewSetup().mViewZ = CMTOVPU(v);
+         GetCurrentViewSetup().mViewZ = v;
          OnPointOfViewChanged();
-      },
-      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "PlayerZ"); },
-      [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerZ", CMTOVPU(v), isTableOverride); });
-   viewZ->SetInitialValue(VPUTOCM(m_initialViewSetup.mViewZ));
+      });
 
    auto hOfs = std::make_unique<InGameUIItem>(
-      "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window' in centimeters"s, -30.f, 30.f, 0.1f, defViewSetup.mViewHOfs, "%4.1f cm"s,
+      selectProp(Settings::m_propTableOverride_ViewDTHOfs, Settings::m_propTableOverride_ViewFSSHOfs, Settings::m_propTableOverride_ViewCabHOfs), 1.f, "%4.1f cm"s, //
       [this]() { return GetCurrentViewSetup().mViewHOfs; },
-      [this](float prev, float v)
+      [this](float, float v)
       {
          GetCurrentViewSetup().mViewHOfs = v;
          OnPointOfViewChanged();
-      },
-      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "HOfs"); },
-      [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "HOfs", v, isTableOverride); });
-   hOfs->SetInitialValue(m_initialViewSetup.mViewHOfs);
+      });
+
    auto vOfs = std::make_unique<InGameUIItem>(
-      "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window' in centimeters"s, -30.f, 30.f, 0.1f, defViewSetup.mViewVOfs, "%4.1f cm"s,
+      selectProp(Settings::m_propTableOverride_ViewDTVOfs, Settings::m_propTableOverride_ViewFSSVOfs, Settings::m_propTableOverride_ViewCabVOfs), 1.f, "%4.1f cm"s, //
       [this]() { return GetCurrentViewSetup().mViewVOfs; },
-      [this](float prev, float v)
+      [this](float, float v)
       {
          GetCurrentViewSetup().mViewVOfs = v;
          OnPointOfViewChanged();
-      },
-      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "VOfs"); },
-      [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "VOfs", v, isTableOverride); });
-   vOfs->SetInitialValue(m_initialViewSetup.mViewVOfs);
+      });
 
    auto wndTopZ = std::make_unique<InGameUIItem>(
-      "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield, in centimeters"s, 0.f, 50.f, 0.1f, VPUTOCM(defViewSetup.mWindowTopZOfs), "%4.1f cm"s,
-      [this]() { return VPUTOCM(GetCurrentViewSetup().mWindowTopZOfs); },
-      [this](float prev, float v)
+      selectProp(Settings::m_propTableOverride_ViewDTWindowTop, Settings::m_propTableOverride_ViewFSSWindowTop, Settings::m_propTableOverride_ViewCabWindowTop), VPUTOCM(1.f), "%4.1f cm"s, //
+      [this]() { return GetCurrentViewSetup().mWindowTopZOfs; },
+      [this](float, float v)
       {
-         GetCurrentViewSetup().mWindowTopZOfs = CMTOVPU(v);
+         GetCurrentViewSetup().mWindowTopZOfs = v;
          OnPointOfViewChanged();
-      },
-      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "WindowTop"); },
-      [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "WindowTop", CMTOVPU(v), isTableOverride); });
-   wndTopZ->SetInitialValue(VPUTOCM(m_initialViewSetup.mWindowTopZOfs));
-   auto wndBotZ = std::make_unique<InGameUIItem>(
-      "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield, in centimeters"s, 0.f, 50.f, 0.1f, VPUTOCM(defViewSetup.mWindowBottomZOfs),
-      "%4.1f cm"s, [this]() { return VPUTOCM(GetCurrentViewSetup().mWindowBottomZOfs); },
-      [this](float prev, float v)
-      {
-         GetCurrentViewSetup().mWindowBottomZOfs = CMTOVPU(v);
-         OnPointOfViewChanged();
-      },
-      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "WindowBot"); },
-      [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "WindowBot", CMTOVPU(v), isTableOverride); });
-   wndBotZ->SetInitialValue(VPUTOCM(m_initialViewSetup.mWindowBottomZOfs));
+         BuildPage(); // As it changes the real to virtual world scale
+      });
 
+   auto wndBotZ = std::make_unique<InGameUIItem>(
+      selectProp(Settings::m_propTableOverride_ViewDTWindowBot, Settings::m_propTableOverride_ViewFSSWindowBot, Settings::m_propTableOverride_ViewCabWindowBot), VPUTOCM(1.f), "%4.1f cm"s, //
+      [this]() { return GetCurrentViewSetup().mWindowBottomZOfs; },
+      [this](float, float v)
+      {
+         GetCurrentViewSetup().mWindowBottomZOfs = v;
+         OnPointOfViewChanged();
+         BuildPage(); // As it changes the real to virtual world scale
+      });
 
    auto vpRotation = std::make_unique<InGameUIItem>(
-      "Viewport Rotation"s, ""s, 0.f, 360.f, 90.0f, defViewSetup.mViewportRotation, "%3.0f deg"s, //
+      selectProp(Settings::m_propTableOverride_ViewDTRotation, Settings::m_propTableOverride_ViewFSSRotation, Settings::m_propTableOverride_ViewCabRotation), 1.f, "%3.0f deg"s, //
       [this]() { return GetCurrentViewSetup().mViewportRotation; }, //
-      [this](float prev, float v)
+      [this](float, float v)
       {
          GetCurrentViewSetup().mViewportRotation = v;
          OnPointOfViewChanged();
-      },
-      [keyPrefix](Settings& settings) { settings.DeleteValue(Settings::TableOverride, keyPrefix + "Rotation"); },
-      [keyPrefix](float v, Settings& settings, bool isTableOverride) { settings.SaveValue(Settings::TableOverride, keyPrefix + "Rotation", v, isTableOverride); });
-   vpRotation->SetInitialValue(m_initialViewSetup.mViewportRotation);
+      });
 
    AddItem(std::move(viewMode));
    switch (viewSetup.mMode)
    {
    case VLM_LEGACY:
-      AddItem(std::move(inclination));
+      AddItem(std::move(lookAt)); // Actually inclination
       AddItem(std::move(fov));
       AddItem(std::move(layback));
       AddItem(std::move(lockScale));

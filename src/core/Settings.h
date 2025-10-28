@@ -9,6 +9,7 @@
 #include "PropertyRegistry.h"
 #include "LayeredINIPropertyStore.h"
 
+
 // This class holds the settings registry.
 // A setting registry can have a parent, in which case, missing settings will be looked for in the parent.
 // This is used to allow overriding part of the settings for a specific table while still using the base application value for others.
@@ -19,20 +20,96 @@ class Settings final
    // As changing this API will impact a large part of the codebase, it is planned to be be performed in 3 steps:
    // 1. Create property API [done]
    // 2. Populate shared property registry, and use it where applicable using PropertyDef/Registry [in progress]
-   // 3. Persist settings state using PropertyStore [to be done]
-   // Note that Get/Set/Reset will only be functionnal when step 3 is done
+   // 3. Split store implementation from Settings class [to be done]
 private:
-   VPX::Properties::LayeredINIPropertyStore m_store;
+   // Custom store that delegates to existing implementation while migrating
+   class MigrationStore : public VPX::Properties::PropertyStore
+   {
+   public:
+      explicit MigrationStore(Settings* settings)
+         : PropertyStore(Settings::GetRegistry())
+         , m_settings(settings)
+      {
+      }
+      ~MigrationStore() override = default;
+
+      void Reset(VPX::Properties::PropertyRegistry::PropId propId) override
+      {
+         const auto &prop = Settings::GetRegistry().GetProperty(propId);
+         const Settings::Section section = Settings::GetSection(prop->m_groupId);
+         m_settings->DeleteValue(section, prop->m_propId);
+      }
+
+      int GetInt(VPX::Properties::PropertyRegistry::PropId propId) const override
+      {
+         const auto &prop = Settings::GetRegistry().GetProperty(propId);
+         const Settings::Section section = Settings::GetSection(prop->m_groupId);
+         switch (prop->m_type)
+         {
+         case VPX::Properties::PropertyDef::Type::Int: return m_settings->LoadValueWithDefault(section, prop->m_propId, Settings::GetRegistry().GetIntProperty(propId)->m_def);
+         case VPX::Properties::PropertyDef::Type::Bool: return m_settings->LoadValueWithDefault(section, prop->m_propId, Settings::GetRegistry().GetBoolProperty(propId)->m_def);
+         case VPX::Properties::PropertyDef::Type::Enum: return m_settings->LoadValueWithDefault(section, prop->m_propId, Settings::GetRegistry().GetEnumProperty(propId)->m_def);
+         default: assert(false); return 0;
+         }
+      }
+      void Set(VPX::Properties::PropertyRegistry::PropId propId, int value) override
+      {
+         const auto &prop = Settings::GetRegistry().GetProperty(propId);
+         const Settings::Section section = Settings::GetSection(prop->m_groupId);
+         m_settings->SaveValue(section, prop->m_propId, value);
+      }
+
+      float GetFloat(VPX::Properties::PropertyRegistry::PropId propId) const override
+      {
+         const auto prop = Settings::GetRegistry().GetFloatProperty(propId);
+         const Settings::Section section = Settings::GetSection(prop->m_groupId);
+         return m_settings->LoadValueWithDefault(section, prop->m_propId, prop->m_def);
+      }
+      void Set(VPX::Properties::PropertyRegistry::PropId propId, float value) override
+      {
+         const auto &prop = Settings::GetRegistry().GetProperty(propId);
+         const Settings::Section section = Settings::GetSection(prop->m_groupId);
+         m_settings->SaveValue(section, prop->m_propId, value);
+      }
+
+      const string& GetString(VPX::Properties::PropertyRegistry::PropId propId) const override
+      {
+         const auto prop = Settings::GetRegistry().GetStringProperty(propId);
+         const Settings::Section section = Settings::GetSection(prop->m_groupId);
+         static string value;
+         value = m_settings->LoadValueWithDefault(section, prop->m_propId, prop->m_def);
+         return value;
+      }
+      void Set(VPX::Properties::PropertyRegistry::PropId propId, const string& value) override
+      {
+         const auto &prop = Settings::GetRegistry().GetProperty(propId);
+         const Settings::Section section = Settings::GetSection(prop->m_groupId);
+         m_settings->SaveValue(section, prop->m_propId, value);
+      }
+
+   private:
+      Settings* m_settings;
+   } m_store;
 
 public:
    static VPX::Properties::PropertyRegistry &GetRegistry();
+
+   inline float GetFloat(VPX::Properties::PropertyRegistry::PropId propId) const { return m_store.GetFloat(propId); }
+   inline int GetInt(VPX::Properties::PropertyRegistry::PropId propId) const { return m_store.GetInt(propId); }
+   inline bool GetBool(VPX::Properties::PropertyRegistry::PropId propId) const { return m_store.GetInt(propId) != 0; }
+   inline const string &GetString(VPX::Properties::PropertyRegistry::PropId propId) const { return m_store.GetString(propId); }
+   void Set(VPX::Properties::PropertyRegistry::PropId propId, float v, bool asTableOverride);
+   void Set(VPX::Properties::PropertyRegistry::PropId propId, int v, bool asTableOverride);
+   void Set(VPX::Properties::PropertyRegistry::PropId propId, bool v, bool asTableOverride);
+   void Set(VPX::Properties::PropertyRegistry::PropId propId, const string &v, bool asTableOverride);
+   inline void Reset(VPX::Properties::PropertyRegistry::PropId propId) { m_store.Reset(propId); }
 
 #define PropBool(groupId, propId, label, comment, defVal) \
    static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId \
       = GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>(#groupId, #propId, label, comment, defVal)); \
    static inline const VPX::Properties::BoolPropertyDef* Get##groupId##_##propId##_Property() { return GetRegistry().GetBoolProperty(m_prop##groupId##_##propId); } \
    inline bool Get##groupId##_##propId() const { return m_store.GetInt(m_prop##groupId##_##propId); } \
-   inline void Set##groupId##_##propId(bool v) { m_store.Set(m_prop##groupId##_##propId, v); } \
+   inline void Set##groupId##_##propId(bool v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); } \
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
 
 #define PropInt(groupId, propId, label, comment, minVal, maxVal, defVal) \
@@ -40,7 +117,7 @@ public:
       = GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>(#groupId, #propId, label, comment, minVal, maxVal, defVal)); \
    static inline const VPX::Properties::IntPropertyDef* Get##groupId##_##propId##_Property() { return GetRegistry().GetIntProperty(m_prop##groupId##_##propId); } \
    inline int Get##groupId##_##propId() const { return m_store.GetInt(m_prop##groupId##_##propId); } \
-   inline void Set##groupId##_##propId(int v) { m_store.Set(m_prop##groupId##_##propId, v); } \
+   inline void Set##groupId##_##propId(int v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); } \
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
 
 #define PropEnum(groupId, propId, label, comment, type, defVal, ...) \
@@ -48,7 +125,7 @@ public:
       = GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>(#groupId, #propId, label, comment, 0, defVal, vector<string> { __VA_ARGS__ })); \
    static inline const VPX::Properties::EnumPropertyDef* Get##groupId##_##propId##_Property() { return GetRegistry().GetEnumProperty(m_prop##groupId##_##propId); } \
    inline type Get##groupId##_##propId() const { return (type)(m_store.GetInt(m_prop##groupId##_##propId)); } \
-   inline void Set##groupId##_##propId(type v) { m_store.Set(m_prop##groupId##_##propId, (int)v); } \
+   inline void Set##groupId##_##propId(type v, bool asTableOverride) { Set(m_prop##groupId##_##propId, (int)v, asTableOverride); } \
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
 
 #define PropFloat(groupId, propId, label, comment, minVal, maxVal, step, defVal) \
@@ -56,7 +133,7 @@ public:
       = GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(#groupId, #propId, label, comment, minVal, maxVal, step, defVal)); \
    static inline const VPX::Properties::FloatPropertyDef* Get##groupId##_##propId##_Property() { return GetRegistry().GetFloatProperty(m_prop##groupId##_##propId); } \
    inline float Get##groupId##_##propId() const { return m_store.GetFloat(m_prop##groupId##_##propId); } \
-   inline void Set##groupId##_##propId(float v) { m_store.Set(m_prop##groupId##_##propId, v); } \
+   inline void Set##groupId##_##propId(float v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); } \
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
 
    // Audio settings
@@ -66,7 +143,7 @@ public:
    PropInt(Player, PlayfieldVolume, "Playfield Volume"s, "Main volume for mechanical sounds coming from the playfield"s, 0, 100, 100);
 
    // Graphics settings
-   PropEnum(Player, ShowFPS, "Show FPS"s, "Performance overlay display mode"s, int, 0, "Disable"s, "FPS"s, "Full"s);
+   PropEnum(Player, ShowFPS, "Show FPS"s, "Performance overlay display mode"s, int /* PerfUI::PerfMode */, 0, "Disable"s, "FPS"s, "Full"s);
    PropEnum(Player, FXAA, "Post processed antialiasing"s, "Select between different antialiasing techniques that offer different quality vs performance balances"s, int, 1, "Disabled"s,
       "Fast FXAA"s, "Standard FXAA"s, "Quality FXAA"s, "Fast NFAA"s, "Standard DLAA"s, "Quality SMAA"s);
    PropEnum(Player, Sharpen, "Post processed sharpening"s, "Select between different sharpening techniques that offer different quality vs performance balances"s, int, 0, "Disabled"s,
@@ -95,7 +172,8 @@ public:
    PropFloat(PlayerVR, TableX, "View Offset X"s, ""s, -100.f, 100.f, 0.1f, 0.f);
    PropFloat(PlayerVR, TableY, "View Offset Y"s, ""s, -100.f, 100.f, 0.1f, 0.f);
    PropFloat(PlayerVR, TableZ, "View Offset Z"s, ""s, -100.f, 100.f, 0.1f, 0.f);
-   PropBool(PlayerVR, UsePassthroughColor, "Color Keyed Passthrough"s, ""s, false);
+   PropBool(PlayerVR, UsePassthroughColor, "Color Keyed Passthrough"s, "Replace VR background by a user defined color, to allow color keyed passthrough (for example using Virtual Desktop)"s, false);
+   PropInt(PlayerVR, PassthroughColor, "Color Keyed Passthrough color"s, "Color that will replace the background"s, 0x000000, 0xFFFFFF, 0xBB4700);
    PropEnum(Player, VRPreview, "Preview mode"s, "Select preview mode"s, int, 1, "Disabled"s, "Left Eye"s, "Right Eye"s, "Both Eyes"s);
    PropBool(PlayerVR, ShrinkPreview, "Shrink preview"s, ""s, false);
 
@@ -116,6 +194,44 @@ public:
    PropFloat(Player, Latitude, "Latitude"s, "Latitude used to compute sun's position"s, -90.f, 90.f, 0.01f, 52.52f);
    PropFloat(Player, Longitude, "Longitude"s, "Longitude used to compute sun's position"s, -180.f, 180.f, 0.01f, 13.37f);
 
+   // Backglass anciliary window settings
+   PropInt(Backglass, BackglassWndX, "Backglass X"s, "X position of the backglass window"s, -INT_MAX, INT_MAX, 0);
+   PropInt(Backglass, BackglassWndY, "Backglass Y"s, "Y position of the backglass window"s, -INT_MAX, INT_MAX, 0);
+   PropInt(Backglass, BackglassWndWidth, "Backglass Width"s, "Width of the backglass window"s, -INT_MAX, INT_MAX, 0);
+   PropInt(Backglass, BackglassWndHeight, "Backglass Height"s, "Height of the backglass window"s, -INT_MAX, INT_MAX, 0);
+
+   // ScoreView anciliary window settings
+   PropInt(ScoreView, ScoreViewWndX, "ScoreView X"s, "X position of the 'Score View' window"s, -INT_MAX, INT_MAX, 0);
+   PropInt(ScoreView, ScoreViewWndY, "ScoreView Y"s, "Y position of the 'Score View' window"s, -INT_MAX, INT_MAX, 0);
+   PropInt(ScoreView, ScoreViewWndWidth, "ScoreView Width"s, "Width of the 'Score View' window"s, -INT_MAX, INT_MAX, 0);
+   PropInt(ScoreView, ScoreViewWndHeight, "ScoreView Height"s, "Height of the 'Score View' window"s, -INT_MAX, INT_MAX, 0);
+
+   // Default camera setup
+   PropEnum(DefaultCamera, DesktopMode, "View mode"s,
+      "Select between 'Legacy' (old rendering mode with visually incorrect stretchs), 'Camera' (classic camera, for desktop) and 'Window' (custom projection designed for cabinet users) rendering mode"s,
+      int, 1, "Legacy"s, "Camera"s, "Window"s);
+   PropFloat(DefaultCamera, DesktopLookAt, "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 0.1f, 25.f);
+   PropFloat(DefaultCamera, DesktopFov, "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 0.1f, 50.f);
+   PropFloat(DefaultCamera, DesktopScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 0.5f, 1.5f, 0.001f, 1.f);
+   PropFloat(DefaultCamera, DesktopScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 0.001f, 1.f);
+   PropFloat(DefaultCamera, DesktopScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 0.001f, 1.f);
+   PropFloat(DefaultCamera, DesktopCamX, "Camera X"s, "View point width offset, in centimeters"s, -30.f, 30.f, 0.1f, 0.f);
+   PropFloat(DefaultCamera, DesktopCamY, "Camera Y"s, "View point height offset, in centimeters"s, -30.f, 100.f, 0.1f, 20.f);
+   PropFloat(DefaultCamera, DesktopCamZ, "Camera Z"s, "View point vertical offset, in centimeters"s, 10.f, 100.f, 0.1f, 70.f);
+   PropFloat(DefaultCamera, DesktopViewVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window' in centimeters"s, -20.f, 50.f, 0.1f, 14.f);
+   PropEnum(DefaultCamera, FSSMode, "View mode"s,
+      "Select between 'Legacy' (old rendering mode with visually incorrect stretchs), 'Camera' (classic camera, for desktop) and 'Window' (custom projection designed for cabinet users) rendering mode"s,
+      int, 1, "Legacy"s, "Camera"s, "Window"s);
+   PropFloat(DefaultCamera, FSSLookAt, "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 0.1f, 50.f);
+   PropFloat(DefaultCamera, FSSFov, "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 0.1f, 77.f);
+   PropFloat(DefaultCamera, FSSScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 0.5f, 1.5f, 0.001f, 1.f);
+   PropFloat(DefaultCamera, FSSScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 0.001f, 1.f);
+   PropFloat(DefaultCamera, FSSScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 0.001f, 1.f);
+   PropFloat(DefaultCamera, FSSCamX, "Camera X"s, "View point width offset, in centimeters"s, -30.f, 30.f, 0.1f, 0.f);
+   PropFloat(DefaultCamera, FSSCamY, "Camera Y"s, "View point height offset, in centimeters"s, -30.f, 100.f, 0.1f, 20.f);
+   PropFloat(DefaultCamera, FSSCamZ, "Camera Z"s, "View point vertical offset, in centimeters"s, 10.f, 100.f, 0.1f, 70.f);
+   PropFloat(DefaultCamera, FSSViewVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window' in centimeters"s, -20.f, 50.f, 0.1f, 22.f);
+   
    // Table override settings
    // These properties are specials as they are meant to override table data at play time. They are not meant to be saved to the application setting file, but
    // only to table override settings. Also, their defaults are redefined when a table is played, depending on the table data and UI options.
@@ -125,14 +241,14 @@ public:
    PropFloat(TableOverride, ViewDTLookAt, "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 0.1f, 0.f);
    PropFloat(TableOverride, ViewDTFOV, "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 0.1f, 25.f);
    PropFloat(TableOverride, ViewDTLayback, "Layback"s, "Fake visual stretch of the table to give more depth"s, 0.f, 90.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewDTScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 50.f, 150.f, 0.1f, 100.f);
-   PropFloat(TableOverride, ViewDTScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 50.f, 150.f, 0.1f, 100.f);
-   PropFloat(TableOverride, ViewDTScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 50.f, 150.f, 0.1f, 100.f);
+   PropFloat(TableOverride, ViewDTScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 0.5f, 1.5f, 0.001f, 1.f);
+   PropFloat(TableOverride, ViewDTScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 0.001f, 1.f);
+   PropFloat(TableOverride, ViewDTScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 0.001f, 1.f);
    PropFloat(TableOverride, ViewDTPlayerX, "Camera X"s, "View point width offset, in centimeters"s, -30.f, 30.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewDTPlayerY, "Camera Y"s, "View point height offset, in centimeters"s, -30.f, 100.f, 0.1f, 0.f);
+   PropFloat(TableOverride, ViewDTPlayerY, "Camera Y"s, "View point height offset, in centimeters"s, -30.f, 100.f, 0.1f, 20.f);
    PropFloat(TableOverride, ViewDTPlayerZ, "Camera Z"s, "View point vertical offset, in centimeters"s, 10.f, 100.f, 0.1f, 70.f);
    PropFloat(TableOverride, ViewDTHOfs, "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window' in centimeters"s, -30.f, 30.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewDTVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window' in centimeters"s, -30.f, 30.f, 0.1f, 0.f);
+   PropFloat(TableOverride, ViewDTVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window' in centimeters"s, -20.f, 50.f, 0.1f, 0.f);
    PropFloat(TableOverride, ViewDTWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield, in centimeters"s, 0.f, 50.f, 0.1f, 0.f);
    PropFloat(TableOverride, ViewDTWindowBot, "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield, in centimeters"s, 0.f, 50.f, 0.1f, 0.f);
    PropFloat(TableOverride, ViewDTRotation, "Viewport Rotation"s, ""s, 0.f, 360.f, 90.0f, 0.f);
@@ -150,7 +266,7 @@ public:
    PropFloat(TableOverride, ViewFSSPlayerY, "Camera Y"s, "View point height offset, in centimeters"s, -30.f, 100.f, 0.1f, 0.f);
    PropFloat(TableOverride, ViewFSSPlayerZ, "Camera Z"s, "View point vertical offset, in centimeters"s, 10.f, 100.f, 0.1f, 70.f);
    PropFloat(TableOverride, ViewFSSHOfs, "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window' in centimeters"s, -30.f, 30.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewFSSVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window' in centimeters"s, -30.f, 30.f, 0.1f, 0.f);
+   PropFloat(TableOverride, ViewFSSVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window' in centimeters"s, -20.f, 50.f, 0.1f, 0.f);
    PropFloat(TableOverride, ViewFSSWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield, in centimeters"s, 0.f, 50.f, 0.1f, 0.f);
    PropFloat(TableOverride, ViewFSSWindowBot, "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield, in centimeters"s, 0.f, 50.f, 0.1f, 0.f);
    PropFloat(TableOverride, ViewFSSRotation, "Viewport Rotation"s, ""s, 0.f, 360.f, 90.0f, 0.f);
@@ -168,13 +284,13 @@ public:
    PropFloat(TableOverride, ViewCabPlayerY, "Camera Y"s, "View point height offset, in centimeters"s, -30.f, 100.f, 0.1f, 0.f);
    PropFloat(TableOverride, ViewCabPlayerZ, "Camera Z"s, "View point vertical offset, in centimeters"s, 10.f, 100.f, 0.1f, 70.f);
    PropFloat(TableOverride, ViewCabHOfs, "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window' in centimeters"s, -30.f, 30.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewCabVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window' in centimeters"s, -30.f, 30.f, 0.1f, 0.f);
+   PropFloat(TableOverride, ViewCabVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window' in centimeters"s, -20.f, 50.f, 0.1f, 0.f);
    PropFloat(TableOverride, ViewCabWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield, in centimeters"s, 0.f, 50.f, 0.1f, 0.f);
    PropFloat(TableOverride, ViewCabWindowBot, "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield, in centimeters"s, 0.f, 50.f, 0.1f, 0.f);
    PropFloat(TableOverride, ViewCabRotation, "Viewport Rotation"s, ""s, 0.f, 360.f, 90.0f, 0.f);
 
    PropFloat(TableOverride, Difficulty, "Difficulty"s, "Overall difficulty (slope, flipper size, trajectories scattering,...)"s, 0.f, 100.f, 0.1f, 100.f);
-   PropFloat(TableOverride, Exposure, "Camera Exposure"s, "Overall brightness of the rendered scene"s, 0.f, 200.f, 0.1f, 100.f);
+   PropFloat(TableOverride, Exposure, "Camera Exposure"s, "Overall brightness of the rendered scene"s, 0.f, 2.f, 0.1f, 1.f);
 #ifdef ENABLE_BGFX
    PropEnum(TableOverride, ToneMapper, "Tonemapper"s, "Select the way colors that are too bright to be rendered by the display are handled"s, int, 0, "Reinhard"s, "AgX"s, "Filmic"s,
       "Neutral"s, "AgX Punchy"s);
@@ -190,9 +306,9 @@ public:
 
 
 public:
-   Settings(const Settings* parent = nullptr);
+   Settings(Settings* parent = nullptr);
 
-   void SetParent(const Settings *parent) { m_parent = parent; }
+   void SetParent(Settings *parent) { m_parent = parent; }
 
    void SetIniPath(const string &path) { m_iniPath = path; }
    bool LoadFromFile(const string &path, const bool createDefault);
@@ -324,10 +440,7 @@ private:
    bool m_modified = false;
    string m_iniPath;
    mINI::INIStructure m_ini;
-   const Settings * m_parent;
-   #ifdef DEBUG
-      ankerl::unordered_dense::map<Section, ankerl::unordered_dense::set<string>> m_validatedKeys;
-   #endif
+   Settings * m_parent;
 
    // Shared across all settings
    static vector<OptionDef> m_pluginOptions;

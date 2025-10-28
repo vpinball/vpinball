@@ -13,7 +13,7 @@ public:
    bool IsDefaults() const override;
    bool IsModified() const override;
    void ResetToDefaults() override;
-   void ResetToInitialValues() override;
+   void ResetToStoredValues() override;
    void SaveGlobally() override;
    void SaveTableOverride() override;
 

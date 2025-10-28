@@ -113,7 +113,7 @@ public:
    {
    }
    IntPropertyDef(const IntPropertyDef& other, int def)
-      : PropertyDef(Type::Float, other.m_groupId, other.m_propId, other.m_label, other.m_description)
+      : PropertyDef(Type::Int, other.m_groupId, other.m_propId, other.m_label, other.m_description)
       , m_min(other.m_min)
       , m_def(def)
       , m_max(other.m_max)
@@ -154,7 +154,7 @@ public:
    {
    }
    EnumPropertyDef(const EnumPropertyDef& other, int def)
-      : PropertyDef(Type::Float, other.m_groupId, other.m_propId, other.m_label, other.m_description)
+      : PropertyDef(Type::Enum, other.m_groupId, other.m_propId, other.m_label, other.m_description)
       , m_min(other.m_min)
       , m_def(def)
       , m_values(other.m_values)

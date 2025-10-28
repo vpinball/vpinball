@@ -207,7 +207,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
          SDL_RegisterApp(WIN32_PLAYER_WND_CLASSNAME, 0, g_pvp->theInstance);
       #endif
       
-      const Settings* settings = &(g_pvp->m_settings); // Always use main application settings (not overridable per table)
+      const Settings& settings = g_pvp->m_settings; // Always use main application settings (not overridable per table)
       m_playfieldWnd = new VPX::Window(WIN32_WND_TITLE, settings, stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, stereo3D == STEREO_VR ? "Preview" : "Playfield");
 
       const float pfRefreshRate = m_playfieldWnd->GetRefreshRate(); 

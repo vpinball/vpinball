@@ -8067,23 +8067,40 @@ STDMETHODIMP PinTable::get_VersionRevision(int *pVal)
    return S_OK;
 }
 
-string PinTable::RegisterOption(BSTR optionName, float minValue, float maxValue, float step, float defaultValue, int unit, /*[optional][in]*/ VARIANT values)
+std::optional<VPX::Properties::PropertyRegistry::PropId> PinTable::RegisterOption(
+   BSTR optionName, float minValue, float maxValue, float step, float defaultValue, int unit, /*[optional][in]*/ VARIANT values)
 {
    if (V_VT(&values) != VT_ERROR && V_VT(&values) != VT_EMPTY && V_VT(&values) != (VT_ARRAY | VT_VARIANT))
-      return ""s;
+      return std::nullopt;
    if (minValue >= maxValue || step <= 0.f || defaultValue < minValue || defaultValue > maxValue)
-      return ""s;
+      return std::nullopt;
+
+   const string name = MakeString(optionName);
+
+   // Prevent invalid characters in the option id
+   string optId = trim_string(name);
+   std::replace_if(optId.begin(), optId.end(), [](char c) { return !isalnum(c) || c == '.' || c == '-'; }, '_');
+
+   for (const auto& option : m_tableOptions)
+   {
+      const VPX::Properties::PropertyDef *prop = Settings::GetRegistry().GetProperty(option.id);
+      if (prop->m_propId == optId)
+      {
+         // Update or validate item (re)definition ?
+         return option.id;
+      }
+   }
 
    vector<string> literals;
    if (V_VT(&values) == (VT_ARRAY | VT_VARIANT))
    {
       if (V_VT(&values) != (VT_ARRAY | VT_VARIANT) || step != 1.f || (minValue - (float)(int)minValue) != 0.f || (maxValue - (float)(int)maxValue) != 0.f)
-         return ""s;
+         return std::nullopt;
       const int nValues = 1 + (int)maxValue - (int)minValue;
       SAFEARRAY *psa = V_ARRAY(&values);
       LONG lbound, ubound;
       if (SafeArrayGetLBound(psa, 1, &lbound) != S_OK || SafeArrayGetUBound(psa, 1, &ubound) != S_OK || ubound != lbound + nValues - 1)
-         return ""s;
+         return std::nullopt;
       VARIANT *p;
       SafeArrayAccessData(psa, (void **)&p);
       literals.reserve(nValues);
@@ -8091,141 +8108,98 @@ string PinTable::RegisterOption(BSTR optionName, float minValue, float maxValue,
          literals.push_back(MakeString(V_BSTR(&p[i])));
       SafeArrayUnaccessData(psa);
    }
-   string name = MakeString(optionName);
 
-   // FIXME we use the name literal as the option id which is not a good idea (risk of invalid INI, ...)
-   const string optId = name;
-
-   if (auto item = m_tableOptions.find(optId); item != m_tableOptions.end())
+   const string format = unit == Settings::OT_PERCENT ? "%4.1f %%" : "%4.1f";
+   if (!literals.empty())
    {
-      // Update or validate item (re)definition ?
+      // Detect & implement On/Off, True/False, Hide/Show as a toggle
+      if (literals.size() == 2)
+      {
+         string first = lowerCase(trim_string(literals[0]));
+         string second = lowerCase(trim_string(literals[1]));
+         if ((first == "off" && second == "on") || (first == "hide" && second == "show") || (first == "false" && second == "true"))
+         {
+            const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("TableOption"s, optId, name, ""s, defaultValue != minValue));
+            m_tableOptions.emplace_back(propId, 1.f, ""s, m_settings.GetBool(propId) ? 1.f : 0.f);
+            return propId;
+         }
+         else if ((first == "on" && second == "off") || (first == "show" && second == "hide") || (first == "true" && second == "false"))
+         {
+            const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("TableOption"s, optId, name, ""s, defaultValue != minValue));
+            m_tableOptions.emplace_back(propId, -1.f, ""s, m_settings.GetBool(propId) ? 1.f : 0.f);
+            return propId;
+         }
+      }
+      auto prop = std::make_unique<VPX::Properties::EnumPropertyDef>("TableOption"s, optId, name, ""s, static_cast<int>(minValue), static_cast<int>(defaultValue), literals);
+      const auto propId = Settings::GetRegistry().Register(std::move(prop));
+      m_tableOptions.emplace_back(propId, 1.f, ""s, static_cast<float>(m_settings.GetInt(propId)));
+      return propId;
+   }
+   else if (round(step) == 1.f && round(minValue) == minValue)
+   {
+      auto prop = std::make_unique<VPX::Properties::IntPropertyDef>("TableOption"s, optId, name, ""s, static_cast<int>(minValue), static_cast<int>(maxValue), static_cast<int>(defaultValue));
+      const auto propId = Settings::GetRegistry().Register(std::move(prop));
+      m_tableOptions.emplace_back(propId, Settings::OT_PERCENT ? 100.f : 1.f, Settings::OT_PERCENT ? "%3d %%"s : "%d"s, static_cast<float>(m_settings.GetInt(propId)));
+      return propId;
    }
    else
    {
-      const float scale = unit == Settings::OT_PERCENT ? 100.f : 1.f;
-      float savedValue = m_settings.LoadValueWithDefault(Settings::TableOption, name, defaultValue) * scale;
-
-      const string format = unit == Settings::OT_PERCENT ? "%4.1f %%" : "%4.1f";
-      if (!literals.empty())
-      {
-         // Enum option
-         // TODO detect & implement On/Off or True/False as a toggle ?
-         // Note that in earlier version, moinValue was (partially) implemented for enum, therefore we simply apply to defaultValue
-         auto opt = std::make_unique<VPX::InGameUI::InGameUIItem>(
-            name, ""s, literals, static_cast<int>(defaultValue - minValue),
-            [this, optId]() // Get Value
-            {
-               if (const auto it = m_tableOptions.find(optId); it != m_tableOptions.end())
-                  return static_cast<int>(it->second.second);
-               return 0;
-            },
-            [this, optId](int prev, int v) // Set Value
-            {
-               if (const auto it = m_tableOptions.find(optId); it != m_tableOptions.end())
-                  it->second.second = static_cast<float>(v);
-               FireOptionEvent(1); // Table option changed event
-            },
-            [optId](Settings &settings) // Reset setting
-            {
-               settings.DeleteValue(Settings::TableOption, optId);
-            },
-            [this, optId](int v, Settings &settings, bool isTableOverride) // Save to setting
-            {
-               settings.SaveValue(Settings::TableOption, optId, v, isTableOverride);
-            });
-         opt->SetInitialValue(savedValue);
-         m_tableOptions[optId] = { std::move(opt), savedValue };
-      }
-      else if (round(step) == 1.f && round(minValue) == minValue)
-      {
-         // Int option
-         auto opt = std::make_unique<VPX::InGameUI::InGameUIItem>(
-            name, ""s, static_cast<int>(minValue * scale), static_cast<int>(maxValue * scale), static_cast<int>(defaultValue * scale), format,
-            [this, optId]() // Get Value
-            {
-               if (const auto it = m_tableOptions.find(optId); it != m_tableOptions.end())
-                  return static_cast<int>(it->second.second);
-               return 0;
-            },
-            [this, optId](int prev, int v) // Set Value
-            {
-               if (const auto it = m_tableOptions.find(optId); it != m_tableOptions.end())
-                  it->second.second = static_cast<float>(v);
-               FireOptionEvent(1); // Table option changed event
-            },
-            [optId](Settings &settings) // Reset setting
-            {
-               settings.DeleteValue(Settings::TableOption, optId);
-            },
-            [this, optId, scale](int v, Settings &settings, bool isTableOverride) // Save to setting
-            {
-               settings.SaveValue(Settings::TableOption, optId, static_cast<int>(v / scale), isTableOverride);
-            });
-         opt->SetInitialValue(savedValue);
-         m_tableOptions[optId] = { std::move(opt), savedValue };
-      }
-      else
-      {
-         // Float option
-         auto opt = std::make_unique<VPX::InGameUI::InGameUIItem>(
-            name, ""s, minValue * scale, maxValue * scale, step * scale, defaultValue * scale, format,
-            [this, optId]() // Get Value
-            {
-               if (const auto it = m_tableOptions.find(optId); it != m_tableOptions.end())
-                  return it->second.second;
-               return 0.f;
-            },
-            [this, optId](float prev, float v) // Set Value
-            {
-               if (const auto it = m_tableOptions.find(optId); it != m_tableOptions.end())
-                  it->second.second = v;
-               FireOptionEvent(1); // Table option changed event
-            },
-            [optId](Settings &settings) // Reset setting
-            {
-               settings.DeleteValue(Settings::TableOption, optId);
-            },
-            [this, optId, scale](float v, Settings &settings, bool isTableOverride) // Save to setting
-            {
-               settings.SaveValue(Settings::TableOption, optId, v / scale, isTableOverride);
-            });
-         opt->SetInitialValue(savedValue);
-         m_tableOptions[optId] = { std::move(opt), savedValue };
-      }
+      auto prop = std::make_unique<VPX::Properties::FloatPropertyDef>("TableOption"s, optId, name, ""s, minValue, maxValue, step, defaultValue);
+      const auto propId = Settings::GetRegistry().Register(std::move(prop));
+      m_tableOptions.emplace_back(propId, Settings::OT_PERCENT ? 100.f : 1.f, Settings::OT_PERCENT ? "%4.1f %%"s : "%4.1f"s, m_settings.GetFloat(propId));
+      return propId;
    }
 
-   return optId;
+   return std::nullopt;
 }
 
-vector<VPX::InGameUI::InGameUIItem*> PinTable::GetOptions() const
+const vector<PinTable::TableOption>& PinTable::GetOptions() const
 {
-   vector<VPX::InGameUI::InGameUIItem *> list;
-   for (auto const &[k, v] : m_tableOptions)
-      list.push_back(v.first.get());
-   return list;
+   return m_tableOptions;
+}
+
+void PinTable::SetOptionLiveValue(VPX::Properties::PropertyRegistry::PropId prop, float value)
+{
+   for (auto &option : m_tableOptions)
+   {
+      if ((option.id.type == prop.type) && (option.id.index == prop.index))
+      {
+         option.value = value;
+         FireOptionEvent(1); // Table option changed event
+         return;
+      }
+   }
 }
 
 STDMETHODIMP PinTable::get_Option(BSTR optionName, float minValue, float maxValue, float step, float defaultValue, int unit, /*[optional][in]*/ VARIANT values, /*[out, retval]*/ float* param)
 {
-   const string optId = RegisterOption(optionName, minValue, maxValue, step, defaultValue, unit, values);
-   if (const auto& item = m_tableOptions.find(optId); item != m_tableOptions.end())
+   auto prop = RegisterOption(optionName, minValue, maxValue, step, defaultValue, unit, values);
+   if (!prop.has_value())
+      return E_FAIL;
+   for (const auto& option : m_tableOptions)
    {
-      const float scale = unit == Settings::OT_PERCENT ? 100.f : 1.f;
-      *param = item->second.second / scale;
-      return S_OK;
+      if ((option.id.type == prop.value().type) && (option.id.index == prop.value().index))
+      {
+         *param = option.value;
+         return S_OK;
+      }
    }
    return E_FAIL;
 }
 
 STDMETHODIMP PinTable::put_Option(BSTR optionName, float minValue, float maxValue, float step, float defaultValue, int unit, /*[optional][in]*/ VARIANT values, /*[in]*/ float val)
 {
-   const string optId = RegisterOption(optionName, minValue, maxValue, step, defaultValue, unit, values);
-   if (const auto& item = m_tableOptions.find(optId); item != m_tableOptions.end())
+   auto prop = RegisterOption(optionName, minValue, maxValue, step, defaultValue, unit, values);
+   if (!prop.has_value())
+      return E_FAIL;
+   for (auto &option : m_tableOptions)
    {
-      const float scale = unit == Settings::OT_PERCENT ? 100.f : 1.f;
-      item->second.second = val * scale;
-      m_settings.SaveValue(Settings::TableOption, optId, val);
-      return S_OK;
+      if ((option.id.type == prop.value().type) && (option.id.index == prop.value().index))
+      {
+         option.value = val;
+         m_settings.SaveValue(Settings::TableOption, Settings::GetRegistry().GetProperty(prop.value())->m_propId, val);
+         return S_OK;
+      }
    }
    return E_FAIL;
 }
