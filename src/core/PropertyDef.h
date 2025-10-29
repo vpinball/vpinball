@@ -54,10 +54,13 @@ public:
    FloatPropertyDef(const string& groupId, const string& propId, const string& label, const string& description, float min, float max, float step, float def)
       : PropertyDef(Type::Float, groupId, propId, label, description)
       , m_min(min)
-      , m_def(def)
       , m_max(max)
       , m_step(step)
+      , m_def(GetSteppedInRange(def))
    {
+      assert(m_min <= m_max);
+      assert(m_step != 0.f);
+      assert(m_def == GetSteppedInRange(m_def));
    }
    FloatPropertyDef(const FloatPropertyDef& other)
       : FloatPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_min, other.m_max, other.m_step, other.m_def)
@@ -71,9 +74,9 @@ public:
    ~FloatPropertyDef() override = default;
 
    const float m_min;
-   const float m_def;
    const float m_max;
    const float m_step;
+   const float m_def;
 
    float GetStepped(float v) const { return m_min + roundf((v - m_min) / m_step) * m_step; }
    float GetSteppedInRange(float v) const { return clamp(GetStepped(v), m_min, m_max); }
@@ -93,9 +96,10 @@ public:
    IntPropertyDef(const string& groupId, const string& propId, const string& label, const string& description, int min, int max, int def)
       : PropertyDef(Type::Int, groupId, propId, label, description)
       , m_min(min)
-      , m_def(def)
       , m_max(max)
+      , m_def(def)
    {
+      assert(m_min <= m_max);
    }
    IntPropertyDef(const IntPropertyDef& other)
       : IntPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_min, other.m_max, other.m_def)
@@ -109,8 +113,8 @@ public:
    ~IntPropertyDef() override = default;
 
    const int m_min;
-   const int m_def;
    const int m_max;
+   const int m_def;
 
    int GetValid(int v) const { return (v < m_min || v > m_max) ? m_def : v; }
 
@@ -128,9 +132,10 @@ public:
    EnumPropertyDef(const string& groupId, const string& propId, const string& label, const string& description, int min, int def, vector<string> values)
       : PropertyDef(Type::Enum, groupId, propId, label, description)
       , m_min(min)
-      , m_def(def)
       , m_values(values)
+      , m_def(def)
    {
+      assert(!m_values.empty());
    }
    EnumPropertyDef(const EnumPropertyDef& other)
       : EnumPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_min, other.m_def, other.m_values)
@@ -144,8 +149,8 @@ public:
    ~EnumPropertyDef() override = default;
 
    int m_min;
-   int m_def;
    const vector<string> m_values;
+   int m_def;
 
    bool IsValid(int v) const { return m_min <= v && v < m_min + m_values.size(); }
    bool IsValid(const string& v) const { return GetEnum(v) >= m_min; }
