@@ -1079,7 +1079,7 @@ void RenderOptPage::LoadSettings(Settings& settings)
 #endif
       m_forceTMscale.SetWindowText(f2sz(settings.LoadValueWithDefault(Settings::Player, "HDRGlobalExposure"s, 1.0f)).c_str());
 
-      m_forceBloomOff.SetCheck(settings.LoadValueBool(Settings::Player, "ForceBloomOff"s) ? BST_CHECKED : BST_UNCHECKED);
+      m_forceBloomOff.SetCheck(settings.GetPlayer_ForceBloomOff() ? BST_CHECKED : BST_UNCHECKED);
       m_forceAnisoMax.SetCheck(settings.LoadValueBool(Settings::Player, "ForceAnisotropicFiltering"s) ? BST_CHECKED : BST_UNCHECKED);
       m_forceMotionBlurOff.SetCheck(settings.LoadValueBool(Settings::Player, "ForceMotionBlurOff"s) ? BST_CHECKED : BST_UNCHECKED);
       m_compressTexture.SetCheck(settings.LoadValueWithDefault(Settings::Player, "CompressTextures"s, false) ? BST_CHECKED : BST_UNCHECKED);

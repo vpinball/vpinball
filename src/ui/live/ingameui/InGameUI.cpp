@@ -230,7 +230,7 @@ void InGameUI::HandlePageInput(const InputManager::ActionState &state)
 // Legacy keyboard fly camera when in ingame option. Remove ?
 void InGameUI::HandleLegacyFlyOver(const InputManager::ActionState &state)
 {
-   if (!m_player->m_ptable->m_settings.LoadValueBool(Settings::Player, "EnableCameraModeFlyAround"s))
+   if (!m_player->m_ptable->m_settings.GetPlayer_EnableCameraModeFlyAround())
       return;
 
    if (!ImGui::IsKeyDown(ImGuiKey_LeftAlt) && !ImGui::IsKeyDown(ImGuiKey_RightAlt))

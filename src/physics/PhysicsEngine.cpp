@@ -390,12 +390,12 @@ void PhysicsEngine::UpdateNudge(float dtime)
 
 void PhysicsEngine::ReadNudgeSettings(const Settings& settings)
 {
-   m_enablePlumbTilt = settings.LoadValueBool(Settings::Player, "SimulatedPlumb"s);
-   m_plumbMassFactor = settings.LoadValueFloat(Settings::Player, "PlumbInertia"s);
-   m_plumbTiltThreshold = ANGTORAD(settings.LoadValueFloat(Settings::Player, "PlumbThresholdAngle"s));
+   m_enablePlumbTilt = settings.GetPlayer_SimulatedPlumb();
+   m_plumbMassFactor = settings.GetPlayer_PlumbInertia();
+   m_plumbTiltThreshold = ANGTORAD(settings.GetPlayer_PlumbThresholdAngle());
 
-   m_legacyNudge = settings.LoadValueBool(Settings::Player, "EnableLegacyNudge"s);
-   m_legacyNudgeStrength = settings.LoadValueFloat(Settings::Player, "LegacyNudgeStrength"s);
+   m_legacyNudge = settings.GetPlayer_EnableLegacyNudge();
+   m_legacyNudgeStrength = settings.GetPlayer_LegacyNudgeStrength();
 }
 
 Vertex2D PhysicsEngine::GetScreenNudge() const

@@ -212,26 +212,10 @@ void Settings::Validate(const bool addDefaults)
    #define SettingUInt(section, name, defVal, minVal, maxVal, comment) RegisterUIntSetting(section, name, defVal, minVal, maxVal, addDefaults, comment)
    
    //////////////////////////////////////////////////////////////////////////
-   // LiveUI section
-
-   SettingInt(Section::Player, "ShowFPS"s, 0, 0, 2, "Performance overlay display mode (0=disable, 1=FPS, 2=Full)"s);
-
-
-   //////////////////////////////////////////////////////////////////////////
    // Input, plunger, nudge and plumb section
 
    SettingInt(Section::Player, "Exitconfirm"s, 120, 0, 30*60, "Length of a long ESC press that directly closes the app, (sadly) expressed in seconds * 60."s);
    
-   SettingBool(Section::Player, "PlungerRetract"s, false, "Enable 1 second retract."s);
-   SettingBool(Section::Player, "PlungerLinearSensor"s, false, "Symmetric or assymetric plunger position sensor."s);
-   
-   SettingBool(Section::Player, "SimulatedPlumb"s, true, "Enable plumb simulation"s);
-   SettingFloat(Section::Player, "PlumbInertia"s, 0.1f, 0.f, 1.f, "Plumb inertia factor"s);
-   SettingFloat(Section::Player, "PlumbThresholdAngle"s, 35.f, 5.f, 60.f, "Angle that causes tilt"s);
-
-   SettingBool(Section::Player, "EnableLegacyNudge"s, false, ""s);
-   SettingFloat(Section::Player, "LegacyNudgeStrength"s, 1.f, 0.01f, 5.f, ""s);
-
    //////////////////////////////////////////////////////////////////////////
    // GfxBackend section
 
@@ -257,7 +241,6 @@ void Settings::Validate(const bool addDefaults)
    SettingBool(Section::Player, "OverrideTableEmissionScale"s, false, ""s);
    SettingBool(Section::Player, "DynamicDayNight"s, false, ""s);
    SettingBool(Section::Player, "ForceAnisotropicFiltering"s, true, "Force anisotropic filtering for better rendering quality at the cost of a bit of performance"s);
-   SettingBool(Section::Player, "ForceBloomOff"s, false, "Disable bloom for better performance"s);
    SettingBool(Section::Player, "ForceMotionBlurOff"s, false, "Disable ball motion blur for better performance"s);
    SettingBool(Section::Player, "HDRDisableToneMapper"s, true, "Do not perform tonemapping when rendering on a HDR display"s);
 
@@ -399,8 +382,6 @@ void Settings::Validate(const bool addDefaults)
    SettingFloat(Section::Player, "MaxFramerate"s, -1.f, -1.f, 1000.f, "Maximum FPS of playfield view (minimum: 24FPS), 0 is unlimited, < 0 is limited to the display refresh rate."s);
    SettingInt(Section::Player, "SyncMode"s, VSM_NONE, VSM_NONE, VSM_FRAME_PACING, "Hardware video sync mode to use: None / Vertical Sync / Adaptative Sync / Frame Pacing."s);
 
-   SettingBool(Section::Player, "TouchOverlay"s, false, "Display an overlay showing touch regions"s);
-
    //////////////////////////////////////////////////////////////////////////
    // DMD section
 
@@ -466,12 +447,6 @@ void Settings::Validate(const bool addDefaults)
    SettingBool(Settings::Player, "PlaySound"s, true, ""s);
    SettingInt(Section::Player, "SoundVolume"s, 100, 0, 100, ""s);
    SettingInt(Section::Player, "MusicVolume"s, 100, 0, 100, ""s);
-
-
-   //////////////////////////////////////////////////////////////////////////
-   // Player misc. section
-
-   SettingBool(Settings::Player, "EnableCameraModeFlyAround"s, false, "Enable moving camera when using Tweak menu (legacy, replaced by LiveUI fly mode)."s);
 
 
    //////////////////////////////////////////////////////////////////////////

@@ -90,8 +90,8 @@ InputManager::InputManager()
          m_nudgeOrientation[i] = ANGTORAD(settings.LoadValueWithDefault(Settings::Player, "NudgeOrientation" + std::to_string(i + 1), 0.f));
       }
 
-      m_linearPlunger = settings.LoadValueBool(Settings::Player, "PlungerLinearSensor"s);
-      m_plunger_retract = settings.LoadValueBool(Settings::Player, "PlungerRetract"s);
+      m_linearPlunger = settings.GetPlayer_PlungerLinearSensor();
+      m_plunger_retract = settings.GetPlayer_PlungerRetract();
    }
 
    // Initialize device handlers
