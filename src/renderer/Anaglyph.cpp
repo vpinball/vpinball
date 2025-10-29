@@ -389,36 +389,81 @@ void Anaglyph::Update()
    {
       // Compose anaglyph by applying John Einselen's contrast and deghosting method
       // see http://iaian7.com/quartz/AnaglyphCompositing & vectorform.com
-      constexpr double contrast = 1.; 
+      constexpr double contrast = 1.;
       if (m_colorPair == RED_CYAN)
       {
          constexpr double a = 0.45 * contrast, b = 0.5 * (1. - a);
-         m_rgb2AnaglyphLeft = Matrix3D{a, b, b, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f};
+         m_rgb2AnaglyphLeft = Matrix3D { //
+            (float)a, (float)b, (float)b, 0.f, //
+            0.f, 0.f, 0.f, 0.f, //
+            0.f, 0.f, 0.f, 0.f, //
+            0.f, 0.f, 0.f, 1.f
+         };
          constexpr double c = 1.00 * contrast, d = 1. - c;
-         m_rgb2AnaglyphRight = Matrix3D{0.f, 0.f, 0.f, 0.f, /**/ d, c, 0.f, 0.f, /**/ d, 0.f, c, 0.f, /**/ 0.f, 0.f, 0.f, 1.f};
+         m_rgb2AnaglyphRight = Matrix3D { //
+            0.f, 0.f, 0.f, 0.f, //
+            (float)d, (float)c, 0.f, 0.f, //
+            (float)d, 0.f, (float)c, 0.f, //
+            0.f, 0.f, 0.f, 1.f
+         };
          constexpr double e = 0.06 * 0.1;
-         m_deghostGamma = vec3{1.00f, 1.15f, 1.15f};
-         m_deghostFilter = Matrix3D{1. + e, -0.5*e, -0.5*e, 0.f, /**/ -0.25*e, 1. + 0.5*e, -0.25*e, 0.f, /**/ -0.25*e, -0.25*e, 1. + 0.5*e, 0.f, /**/ 0.f, 0.f, 0.f, 1.f};
+         m_deghostGamma = vec3 { 1.00f, 1.15f, 1.15f };
+         m_deghostFilter = Matrix3D { //
+            (float)(1. + e), (float)(-0.5 * e), (float)(-0.5 * e), 0.f, //
+            (float)(-0.25 * e), (float)(1. + 0.5 * e), (float)(-0.25 * e), 0.f, //
+            (float)(-0.25 * e), (float)(-0.25 * e), (float)(1. + 0.5 * e), 0.f, //
+            0.f, 0.f, 0.f, 1.f
+         };
       }
       else if (m_colorPair == GREEN_MAGENTA)
       {
          constexpr double a = 1.00 * contrast, b = 0.5 * (1. - a);
-         m_rgb2AnaglyphLeft = Matrix3D{0.f, 0.f, 0.f, 0.f, /**/ b, a, b, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f};
+         m_rgb2AnaglyphLeft = Matrix3D { //
+            0.f, 0.f, 0.f, 0.f, //
+            (float)b, (float)a, (float)b, 0.f, //
+            0.f, 0.f, 0.f, 0.f, //
+            0.f, 0.f, 0.f, 1.f
+         };
          constexpr double c = 0.80 * contrast, d = 1. - c;
-         m_rgb2AnaglyphRight = Matrix3D{c, d, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, d, c, 0.f, /**/ 0.f, 0.f, 0.f, 1.f};
+         m_rgb2AnaglyphRight = Matrix3D { //
+            (float)c, (float)d, 0.f, 0.f, //
+            0.f, 0.f, 0.f, 0.f, //
+            0.f, (float)d, (float)c, 0.f, //
+            0.f, 0.f, 0.f, 1.f
+         };
          constexpr double e = 0.06 * 0.275;
-         m_deghostGamma = vec3{1.15f, 1.05f, 1.15f};
-         m_deghostFilter = Matrix3D{1. + 0.5*e, -0.25*e, -0.25*e, 0.f, /**/ -0.5*e, 1. + 0.25*e, -0.5*e, 0.f, /**/ -0.25*e, -0.25*e, 1. + 0.5*e, 0.f, /**/ 0.f, 0.f, 0.f, 1.f};
+         m_deghostGamma = vec3 { 1.15f, 1.05f, 1.15f };
+         m_deghostFilter = Matrix3D { //
+            (float)(1. + 0.5 * e), (float)(-0.25 * e), (float)(-0.25 * e), 0.f, //
+            (float)(-0.5 * e), (float)(1. + 0.25 * e), (float)(-0.5 * e), 0.f, //
+            (float)(-0.25 * e), (float)(-0.25 * e), (float)(1. + 0.5 * e), 0.f, //
+            0.f, 0.f, 0.f, 1.f
+         };
       }
       else if (m_colorPair == BLUE_AMBER)
       {
          constexpr double a = 0.45 * contrast, b = 0.5 * (1. - a);
-         m_rgb2AnaglyphLeft = Matrix3D{0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ b, b, a, 0.f, /**/ 0.f, 0.f, 0.f, 1.f};
+         m_rgb2AnaglyphLeft = Matrix3D { //
+            0.f, 0.f, 0.f, 0.f, //
+            0.f, 0.f, 0.f, 0.f, //
+            (float)b, (float)b, (float)a, 0.f, //
+            0.f, 0.f, 0.f, 1.f
+         };
          constexpr double c = 1.00 * contrast, d = 1. - c;
-         m_rgb2AnaglyphRight = Matrix3D{c, 0.f, d, 0.f, /**/ 0.f, c, d, 0.f, /**/ 0.f, 0.f, 0.f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f};
+         m_rgb2AnaglyphRight = Matrix3D { //
+            (float)c, 0.f, (float)d, 0.f, //
+            0.f, (float)c, (float)d, 0.f, //
+            0.f, 0.f, 0.f, 0.f, //
+            0.f, 0.f, 0.f, 1.f
+         };
          constexpr double e = 0.06 * 0.275;
-         m_deghostGamma = vec3{1.05f, 1.10f, 1.00f};
-         m_deghostFilter = Matrix3D{1. + 1.5*e, -0.75*e, -0.75*e, 0.f, /**/ -0.75*e, 1. + 1.5*e, -0.75*e, 0.f, /**/ -1.5*e, -1.5*e, 1. + 3.*e, 0.f, /**/ 0.f, 0.f, 0.f, 1.f};
+         m_deghostGamma = vec3 { 1.05f, 1.10f, 1.00f };
+         m_deghostFilter = Matrix3D { //
+            (float)(1. + 1.5 * e), (float)(-0.75 * e), (float)(-0.75 * e), 0.f, //
+            (float)(-0.75 * e), (float)(1. + 1.5 * e), (float)(-0.75 * e), 0.f, //
+            (float)(-1.5 * e), (float)(-1.5 * e), (float)(1. + 3. * e), 0.f, //
+            0.f, 0.f, 0.f, 1.f
+         };
       }
       m_deghostFilter.Transpose();
       break;
