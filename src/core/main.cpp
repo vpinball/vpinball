@@ -196,18 +196,18 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
       MsgPI::MsgPluginManager::GetInstance().ScanPluginFolder(g_pvp->m_myPath + "plugins",
          [](MsgPI::MsgPlugin& plugin)
          {
-         static const char *enableDisable[] = { "Disabled", "Enabled" };
-         int enabled = (int)VPXPluginAPIImpl::GetInstance().getAPI().GetOption(plugin.m_id.c_str(), 
-            "Enable", VPX_OPT_SHOW_UI, "Enable plugin", 0.f, 1.f, 1.f, 0.f, VPXPluginAPI::NONE, enableDisable);
-         if (enabled)
-         {
-            plugin.Load(&MsgPI::MsgPluginManager::GetInstance().GetMsgAPI());
-         }
-         else
-         {
-            PLOGI << "Plugin " << plugin.m_id << " was found but is disabled (" << plugin.m_library << ')';
-         }
-      });
+            auto id = Settings::GetRegistry().Register(
+               std::make_unique<VPX::Properties::BoolPropertyDef>("Plugin." + plugin.m_id, "Enable"s, "Enable"s, "Enable/Disable plugin '"s + plugin.m_name + "'"s, false));
+            bool enabled = g_pvp->m_settings.GetBool(id);
+            if (enabled)
+            {
+               plugin.Load(&MsgPI::MsgPluginManager::GetInstance().GetMsgAPI());
+            }
+            else
+            {
+               PLOGI << "Plugin " << plugin.m_id << " was found but is disabled (" << plugin.m_library << ')';
+            }
+         });
 
       // Run the application
       retval = theApp.Run();
