@@ -152,11 +152,11 @@ void AudioOptionsDialog::LoadSettings()
       SaveSettings(m_editedSettings == &m_appSettings);
    m_editedSettings = &settings;
 
-   bool fsound = settings.LoadValueBool(Settings::Player, "PlayMusic"s);
+   bool fsound = settings.GetPlayer_PlayMusic();
    SendDlgItemMessage(IDC_PLAY_MUSIC, BM_SETCHECK, fsound ? BST_CHECKED : BST_UNCHECKED, 0);
    OnCommand(IDC_PLAY_MUSIC, 0L);
 
-   fsound = settings.LoadValueBool(Settings::Player, "PlaySound"s);
+   fsound = settings.GetPlayer_PlaySound();
    SendDlgItemMessage(IDC_PLAY_SOUND, BM_SETCHECK, fsound ? BST_CHECKED : BST_UNCHECKED, 0);
    OnCommand(IDC_PLAY_SOUND, 0L);
    
@@ -214,10 +214,10 @@ void AudioOptionsDialog::SaveSettings(const bool saveAll)
    Settings& settings = *m_editedSettings;
 
    size_t checked = IsDlgButtonChecked(IDC_PLAY_MUSIC);
-   settings.SaveValue(Settings::Player, "PlayMusic"s, checked == BST_CHECKED, !saveAll);
+   settings.SetPlayer_PlayMusic(checked == BST_CHECKED, !saveAll);
 
    checked = IsDlgButtonChecked(IDC_PLAY_SOUND);
-   settings.SaveValue(Settings::Player, "PlaySound"s, (checked == BST_CHECKED), !saveAll);
+   settings.SetPlayer_PlaySound(checked == BST_CHECKED, !saveAll);
 
    if (m_editedSettings == &m_appSettings)
    {
@@ -236,10 +236,10 @@ void AudioOptionsDialog::SaveSettings(const bool saveAll)
    }
 
    size_t volume = SendDlgItemMessage(IDC_MUSIC_SLIDER, TBM_GETPOS, 0, 0);
-   settings.SaveValue(Settings::Player, "MusicVolume"s, (int)volume, !saveAll);
+   settings.SetPlayer_MusicVolume((int)volume, !saveAll);
 
    volume = SendDlgItemMessage(IDC_SOUND_SLIDER, TBM_GETPOS, 0, 0);
-   settings.SaveValue(Settings::Player, "SoundVolume"s, (int)volume, !saveAll);
+   settings.SetPlayer_SoundVolume((int)volume, !saveAll);
 
    if (m_editedSettings == &m_appSettings)
    {

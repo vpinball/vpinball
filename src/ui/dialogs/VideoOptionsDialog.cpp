@@ -1044,12 +1044,12 @@ void RenderOptPage::LoadSettings(Settings& settings)
    BeginLoad();
 
    { // Performance
-      m_initialMaxTexDim = settings.LoadValueInt(Settings::Player, "MaxTexDimension"s);
+      m_initialMaxTexDim = settings.GetPlayer_MaxTexDimension();
       const int maxTexDim = ((1023 + m_initialMaxTexDim) / 1024) - 1;
       m_maxTexSize.SetCurSel(maxTexDim < 0 ? 7 : maxTexDim);
       
-      const bool disableAO = settings.LoadValueWithDefault(Settings::Player, "DisableAO"s, false);
-      const bool dynAO = settings.LoadValueWithDefault(Settings::Player, "DynamicAO"s, true);
+      const bool disableAO = settings.GetPlayer_DisableAO();
+      const bool dynAO = settings.GetPlayer_DynamicAO();
       m_maxAO.SetCurSel(disableAO ? 0 : dynAO ? 2 : 1);
       
       int pfr = settings.LoadValueWithDefault(Settings::Player, "PFReflection"s, -1);
@@ -1113,17 +1113,17 @@ void RenderOptPage::LoadSettings(Settings& settings)
    const int MSAASamples = settings.LoadValueWithDefault(Settings::Player, "MSAASamples"s, 1);
    const int CurrMSAAPos = static_cast<const int>(std::find(MSAASamplesOpts, MSAASamplesOpts + std::size(MSAASamplesOpts), MSAASamples) - MSAASamplesOpts);
    m_msaaSamples.SetCurSel(CurrMSAAPos);
-   const int fxaa = settings.LoadValueWithDefault(Settings::Player, "FXAA"s, (int)Standard_FXAA);
+   const int fxaa = settings.GetPlayer_FXAA();
    m_postprocAA.SetCurSel(fxaa);
-   const int sharpen = settings.LoadValueWithDefault(Settings::Player, "Sharpen"s, 0);
+   const int sharpen = settings.GetPlayer_Sharpen();
    m_sharpen.SetCurSel(sharpen);
 
    m_visualNudge.SetWindowText(f2sz(settings.LoadValueWithDefault(Settings::Player, "NudgeStrength"s, 2e-2f)).c_str());
-   m_useAdditionalSSR.SetCheck(settings.LoadValueWithDefault(Settings::Player, "SSRefl"s, false) ? BST_CHECKED : BST_UNCHECKED);
+   m_useAdditionalSSR.SetCheck(settings.GetPlayer_SSRefl() ? BST_CHECKED : BST_UNCHECKED);
 
    m_ballTrails.SetCheck(settings.LoadValueWithDefault(Settings::Player, "BallTrail"s, true) ? BST_CHECKED : BST_UNCHECKED);
    m_ballTrailStrength.SetWindowText(f2sz(settings.LoadValueWithDefault(Settings::Player, "BallTrailStrength"s, 0.5f)).c_str());
-   m_ballForceRound.SetCheck(settings.LoadValueWithDefault(Settings::Player, "BallAntiStretch"s, false) ? BST_CHECKED : BST_UNCHECKED);
+   m_ballForceRound.SetCheck(settings.GetPlayer_BallAntiStretch() ? BST_CHECKED : BST_UNCHECKED);
    m_ballDisableLighting.SetCheck(settings.LoadValueWithDefault(Settings::Player, "DisableLightingForBalls"s, false) ? BST_CHECKED : BST_UNCHECKED);
    const bool overwiteBallImage = settings.LoadValueWithDefault(Settings::Player, "OverwriteBallImage"s, false);
    m_ballOverrideImages.SetCheck(overwiteBallImage ? BST_CHECKED : BST_UNCHECKED);
@@ -1248,22 +1248,22 @@ void RenderOptPage::SaveSettings(Settings& settings, bool saveAll)
    if (maxTexDim == CB_ERR)
       maxTexDim = 7;
    maxTexDim = maxTexDim == 7 ? 0 : (1024 * (maxTexDim + 1));
-   settings.SaveValue(Settings::Player, "MaxTexDimension"s, (int)maxTexDim, !saveAll);
+   settings.SetPlayer_MaxTexDimension((int)maxTexDim, !saveAll);
    if (m_initialMaxTexDim != maxTexDim)
       MessageBox("You have changed the maximum texture size.\n\nThis change will only take effect after reloading the tables.", "Reload tables", MB_ICONWARNING);
-   settings.SaveValue(Settings::Player, "ForceAnisotropicFiltering"s, m_forceAnisoMax.GetCheck() == BST_CHECKED, !saveAll);
+   settings.SetPlayer_ForceAnisotropicFiltering(m_forceAnisoMax.GetCheck() == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "CompressTextures"s, m_compressTexture.GetCheck() == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "SoftwareVertexProcessing"s, m_softwareVertex.GetCheck() == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "AlphaRampAccuracy"s, (int)SendDlgItemMessage(IDC_ARASlider, TBM_GETPOS, 0, 0), !saveAll);
    settings.SaveValue(Settings::Player, "UseNVidiaAPI"s, m_useAltDepth.GetCheck() == BST_CHECKED, !saveAll);
-   settings.SaveValue(Settings::Player, "HDRDisableToneMapper"s, m_forceTMOff.GetCheck() == BST_CHECKED, !saveAll);
+   settings.SetPlayer_HDRDisableToneMapper(m_forceTMOff.GetCheck() == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "HDRGlobalExposure"s, sz2f(GetDlgItemText(IDC_TM_HDR_SCALE).GetString()), !saveAll);
-   settings.SaveValue(Settings::Player, "ForceBloomOff"s, m_forceBloomOff.GetCheck() == BST_CHECKED, !saveAll);
-   settings.SaveValue(Settings::Player, "ForceMotionBlurOff"s, m_forceMotionBlurOff.GetCheck() == BST_CHECKED, !saveAll);
+   settings.SetPlayer_ForceBloomOff(m_forceBloomOff.GetCheck() == BST_CHECKED, !saveAll);
+   settings.SetPlayer_ForceMotionBlurOff(m_forceMotionBlurOff.GetCheck() == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "AlphaRampAccuracy"s, m_rampDetail.GetPos(), !saveAll);
 
    settings.SaveValue(Settings::Player, "NudgeStrength"s, sz2f(GetDlgItemText(IDC_NUDGE_STRENGTH).GetString()), !saveAll);
-   settings.SaveValue(Settings::Player, "SSRefl"s, m_useAdditionalSSR.GetCheck() == BST_CHECKED, !saveAll);
+   settings.SetPlayer_SSRefl(m_useAdditionalSSR.GetCheck() == BST_CHECKED, !saveAll);
 
    int stereo3D = m_stereoMode.GetCurSel();
    if (stereo3D < 0)
@@ -1292,7 +1292,7 @@ void RenderOptPage::SaveSettings(Settings& settings, bool saveAll)
    settings.SaveValue(Settings::Player, "BallTrail"s, m_ballTrails.GetCheck() == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "BallTrailStrength"s, sz2f(GetDlgItemText(IDC_BALL_TRAIL_STRENGTH).GetString()), !saveAll);
    settings.SaveValue(Settings::Player, "DisableLightingForBalls"s, m_ballDisableLighting.GetCheck() == BST_CHECKED, !saveAll);
-   settings.SaveValue(Settings::Player, "BallAntiStretch"s, m_ballForceRound.GetCheck() == BST_CHECKED, !saveAll);
+   settings.SetPlayer_BallAntiStretch(m_ballForceRound.GetCheck() == BST_CHECKED, !saveAll);
    const bool overwriteEnabled = m_ballOverrideImages.GetCheck() == BST_CHECKED;
    settings.SaveValue(Settings::Player, "OverwriteBallImage"s, overwriteEnabled, !saveAll);
    if (overwriteEnabled)

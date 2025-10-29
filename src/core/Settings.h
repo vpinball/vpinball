@@ -136,11 +136,19 @@ public:
    inline void Set##groupId##_##propId(float v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); } \
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
 
+#define PropString(groupId, propId, label, comment, defVal) \
+   static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId \
+      = GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>(#groupId, #propId, label, comment, defVal)); \
+   static inline const VPX::Properties::StringPropertyDef* Get##groupId##_##propId##_Property() { return GetRegistry().GetStringProperty(m_prop##groupId##_##propId); } \
+   inline const string& Get##groupId##_##propId() const { return m_store.GetString(m_prop##groupId##_##propId); } \
+   inline void Set##groupId##_##propId(const string& v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); } \
+   inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
+
    // Audio settings
    PropBool(Player, PlayMusic, "Enable Backglass"s, "Enable/Disable backglass game sound & music"s, true);
    PropBool(Player, PlaySound, "Enable Playfield"s, "Enable/Disable playfield mechanical sounds"s, true);
-   PropInt(Player, BackglassVolume, "Backglass Volume"s, "Main volume for music and sound played in the backglass speakers"s, 0, 100, 100);
-   PropInt(Player, PlayfieldVolume, "Playfield Volume"s, "Main volume for mechanical sounds coming from the playfield"s, 0, 100, 100);
+   PropInt(Player, MusicVolume, "Backglass Volume"s, "Main volume for music and sound played in the backglass speakers"s, 0, 100, 100);
+   PropInt(Player, SoundVolume, "Playfield Volume"s, "Main volume for mechanical sounds coming from the playfield"s, 0, 100, 100);
 
    // Graphics settings
    PropEnum(Player, ShowFPS, "Show FPS"s, "Performance overlay display mode"s, int /* PerfUI::PerfMode */, 0, "Disable"s, "FPS"s, "Full"s);
@@ -148,9 +156,19 @@ public:
       "Fast FXAA"s, "Standard FXAA"s, "Quality FXAA"s, "Fast NFAA"s, "Standard DLAA"s, "Quality SMAA"s);
    PropEnum(Player, Sharpen, "Post processed sharpening"s, "Select between different sharpening techniques that offer different quality vs performance balances"s, int, 0, "Disabled"s,
       "CAS"s, "Bilateral CAS"s);
+   PropBool(Player, SSRefl, "Additive Screen Space Reflection"s, "Add global reflection to the entire scene"s, false);
    PropBool(Player, HDRDisableToneMapper, "Disable tonemapping on HDR display"s, "Do not perform tonemapping when rendering on a HDR display"s, true);
    PropBool(Player, ForceBloomOff, "Disable Bloom"s, "Disable postprocessed bloom filter"s, false);
    PropBool(Player, ForceMotionBlurOff, "Disable Motion Blur"s, "Disable postprocessed ball motion blur"s, false);
+   PropBool(Player, ForceAnisotropicFiltering, "Force Anisotropic Filtering"s, "Force anisotropic filtering for better rendering quality at the cost of a bit of performance"s, true);
+   PropBool(Player, DisableAO, "Disable Ambient Occlusion"s, ""s, false);
+   PropBool(Player, DynamicAO, "Dynamic Ambient Occlusion"s, ""s, true);
+#ifndef __LIBVPINBALL__
+   PropInt(Player, MaxTexDimension, "Maximum texture dimension"s, "Images sized above this limit will be automatically scaled down on load."s, 0, 16384, 0);
+#else
+   PropInt(Player, MaxTexDimension, "Maximum texture dimension"s, "Images sized above this limit will be automatically scaled down on load."s, 0, 16384, 1536);
+#endif
+   PropBool(Player, BallAntiStretch, "Unstretch Ball"s, "Compensate ball stretching"s, false);
 
    // Misc player settings
    PropBool(Player, TouchOverlay, "Touch Overlay"s, "Display an overlay showing touch regions"s, false);
@@ -194,7 +212,7 @@ public:
    // Overall scene lighting settings
    PropBool(Player, OverrideTableEmissionScale, "Override Table Light Level"s, "Replace table light level by a custom one"s, false);
    PropFloat(Player, EmissionScale, "Day/Night"s, "Select a custom level between daylight or night time lighting"s, 0.f, 1.f, 0.001f, 1.f);
-   PropBool(Player, DynamicDayNight, "Use Automatic Light Level"s, "Auytomatically compute scene lighting based on sun's position"s, false);
+   PropBool(Player, DynamicDayNight, "Use Automatic Light Level"s, "Automatically compute scene lighting based on sun's position"s, false);
    PropFloat(Player, Latitude, "Latitude"s, "Latitude used to compute sun's position"s, -90.f, 90.f, 0.01f, 52.52f);
    PropFloat(Player, Longitude, "Longitude"s, "Longitude used to compute sun's position"s, -180.f, 180.f, 0.01f, 13.37f);
 
@@ -209,6 +227,10 @@ public:
    PropInt(ScoreView, ScoreViewWndY, "ScoreView Y"s, "Y position of the 'Score View' window"s, -INT_MAX, INT_MAX, 0);
    PropInt(ScoreView, ScoreViewWndWidth, "ScoreView Width"s, "Width of the 'Score View' window"s, -INT_MAX, INT_MAX, 0);
    PropInt(ScoreView, ScoreViewWndHeight, "ScoreView Height"s, "Height of the 'Score View' window"s, -INT_MAX, INT_MAX, 0);
+
+   // Debugging & Live editing settings
+   PropBool(Editor, ThrowBallsAlwaysOn, "Throw Balls Always On"s, "Permanently enable 'throw ball' debugging mode"s, false);
+   PropBool(Editor, BallControlAlwaysOn, "Ball COntrol Always On"s, "Permanently enable 'ball control' debugging mode"s, false);
 
    // Default camera setup
    PropEnum(DefaultCamera, DesktopMode, "View mode"s,
@@ -303,10 +325,26 @@ public:
       TableOverride, ToneMapper, "Tonemapper"s, "Select the way colors that are too bright to be rendered by the display are handled"s, int, 0, "Reinhard"s, "AgX"s, "Filmic"s, "Neutral"s);
 #endif
 
+   // Parts Defaults: Balls
+   PropFloat(DefaultPropsBall, Mass, "Ball Mass"s, ""s, 0.1f, 2.f, 0.001f, 1.f);
+   PropFloat(DefaultPropsBall, Radius, "Ball Radius"s, ""s, 0.1f, 50.f, 0.001f, 25.f);
+   PropBool(DefaultPropsBall, ForceReflection, "Force Reflection"s, ""s, false);
+   PropBool(DefaultPropsBall, DecalMode, "Decal Mode"s, ""s, false);
+   PropString(DefaultPropsBall, Image, "Ball Image"s, ""s, ""s);
+   PropString(DefaultPropsBall, DecalImage, "Decal Image"s, ""s, ""s);
+   PropFloat(DefaultPropsBall, BulbIntensityScale, "Bulb Reflection Intensity Scale"s, ""s, 0.f, 10.f, 0.001f, 1.f);
+   PropFloat(DefaultPropsBall, PFReflStrength, "Playfield Reflection Strength"s, ""s, 0.f, 10.f, 0.001f, 1.f);
+   PropInt(DefaultPropsBall, Color, "Color"s, ""s, 0x000000, 0xFFFFFF, 0xFFFFFF);
+   PropBool(DefaultPropsBall, SphereMap, "Use Sphere Mapping"s, "Use sphere mapped 3D texturing"s, true);
+   PropBool(DefaultPropsBall, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
+   PropBool(DefaultPropsBall, TimerEnabled, "Timer Enabled"s, ""s, false);
+   PropInt(DefaultPropsBall, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+
 #undef PropBool
 #undef PropInt
 #undef PropEnum
 #undef PropFloat
+#undef PropString
 
 
 public:

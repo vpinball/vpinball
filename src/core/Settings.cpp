@@ -235,23 +235,6 @@ void Settings::Validate(const bool addDefaults)
 #endif
 
    //////////////////////////////////////////////////////////////////////////
-   // Rendering section
-
-   SettingFloat(Section::Player, "EmissionScale"s, 0.5f, 0.f, 1.f, ""s);
-   SettingBool(Section::Player, "OverrideTableEmissionScale"s, false, ""s);
-   SettingBool(Section::Player, "DynamicDayNight"s, false, ""s);
-   SettingBool(Section::Player, "ForceAnisotropicFiltering"s, true, "Force anisotropic filtering for better rendering quality at the cost of a bit of performance"s);
-   SettingBool(Section::Player, "ForceMotionBlurOff"s, false, "Disable ball motion blur for better performance"s);
-   SettingBool(Section::Player, "HDRDisableToneMapper"s, true, "Do not perform tonemapping when rendering on a HDR display"s);
-
-#ifndef __LIBVPINBALL__
-   SettingInt(Section::Player, "MaxTexDimension"s, 0, 0, 16384, "Maximum texture dimension. Images sized above this limit will be automatically scaled down on load."s);
-#else
-   SettingInt(Section::Player, "MaxTexDimension"s, 1536, 0, 16384, "Maximum texture dimension. Images sized above this limit will be automatically scaled down on load."s);
-#endif
-
-
-   //////////////////////////////////////////////////////////////////////////
    // Stereo 3D section
 
    SettingBool(Section::Player, "Stereo3DEnabled"s, true, "Allow to temporarily disable stereo rendering"s);
