@@ -52,7 +52,7 @@ void KeysConfigDialog::AddStringAxis(const string &name, const int idc, const in
 
 BOOL KeysConfigDialog::OnInitDialog()
 {
-    bool on = g_pvp->m_settings.LoadValueBool(Settings::Player, "EnableCameraModeFlyAround"s);
+    bool on = g_pvp->m_settings.GetPlayer_EnableCameraModeFlyAround();
     SendDlgItemMessage(IDC_ENABLE_CAMERA_FLY_AROUND, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
     //
@@ -97,7 +97,7 @@ void KeysConfigDialog::OnOK()
     SetValue(IDC_DOF_DROPTARGETS, Settings::Controller, "DOFDropTargets"s);
 
     selected = IsDlgButtonChecked(IDC_ENABLE_CAMERA_FLY_AROUND);
-    g_pvp->m_settings.SaveValue(Settings::Player, "EnableCameraModeFlyAround"s, selected != 0);
+    g_pvp->m_settings.SetPlayer_EnableCameraModeFlyAround(selected != 0, false);
 
     selected = IsDlgButtonChecked(IDC_DOF_FORCEDISABLE);
     g_pvp->m_settings.SaveValue(Settings::Controller, "ForceDisableB2S"s, selected != 0);

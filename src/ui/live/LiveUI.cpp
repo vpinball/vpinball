@@ -199,7 +199,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
 
    NewFrame();
 
-   m_showTouchOverlay = g_pvp->m_settings.LoadValueBool(Settings::Player, "TouchOverlay"s);
+   m_showTouchOverlay = g_pvp->m_settings.GetPlayer_TouchOverlay();
 }
 
 LiveUI::~LiveUI()

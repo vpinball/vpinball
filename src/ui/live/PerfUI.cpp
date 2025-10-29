@@ -13,12 +13,12 @@ PerfUI::PerfUI(Player *const player)
    : m_player(player)
 {
    ImPlot::CreateContext();
-   m_showPerf = (PerfMode)g_pvp->m_settings.LoadValueInt(Settings::Player, "ShowFPS"s);
+   m_showPerf = (PerfMode)g_pvp->m_settings.GetPlayer_ShowFPS();
 }
 
 PerfUI::~PerfUI()
 {
-   g_pvp->m_settings.SaveValue(Settings::Player, "ShowFPS"s, m_showPerf);
+   g_pvp->m_settings.SetPlayer_ShowFPS(m_showPerf, false);
    ImPlot::DestroyContext();
 }
 
