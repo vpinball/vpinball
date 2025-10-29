@@ -276,6 +276,8 @@ set(VPX_SOURCES
    src/ui/live/ingameui/NudgeSettingsPage.cpp
    src/ui/live/ingameui/PlungerSettingsPage.h
    src/ui/live/ingameui/PlungerSettingsPage.cpp
+   src/ui/live/ingameui/PluginSettingsPage.h
+   src/ui/live/ingameui/PluginSettingsPage.cpp
    src/ui/live/ingameui/PointOfViewSettingsPage.h
    src/ui/live/ingameui/PointOfViewSettingsPage.cpp
    src/ui/live/ingameui/ScoreViewPage.h

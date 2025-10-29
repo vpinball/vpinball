@@ -60,19 +60,11 @@ public:
    {
    }
    FloatPropertyDef(const FloatPropertyDef& other)
-      : PropertyDef(Type::Float, other.m_groupId, other.m_propId, other.m_label, other.m_description)
-      , m_min(other.m_min)
-      , m_def(other.m_def)
-      , m_max(other.m_max)
-      , m_step(other.m_step)
+      : FloatPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_min, other.m_max, other.m_step, other.m_def)
    {
    }
    FloatPropertyDef(const FloatPropertyDef& other, float def)
-      : PropertyDef(Type::Float, other.m_groupId, other.m_propId, other.m_label, other.m_description)
-      , m_min(other.m_min)
-      , m_def(def)
-      , m_max(other.m_max)
-      , m_step(other.m_step)
+      : FloatPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_min, other.m_max, other.m_step, def)
    {
    }
    std::unique_ptr<FloatPropertyDef> WithDefault(float def) const { return std::make_unique<FloatPropertyDef>(*this, def); }
@@ -106,17 +98,11 @@ public:
    {
    }
    IntPropertyDef(const IntPropertyDef& other)
-      : PropertyDef(Type::Int, other.m_groupId, other.m_propId, other.m_label, other.m_description)
-      , m_min(other.m_min)
-      , m_def(other.m_def)
-      , m_max(other.m_max)
+      : IntPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_min, other.m_max, other.m_def)
    {
    }
    IntPropertyDef(const IntPropertyDef& other, int def)
-      : PropertyDef(Type::Int, other.m_groupId, other.m_propId, other.m_label, other.m_description)
-      , m_min(other.m_min)
-      , m_def(def)
-      , m_max(other.m_max)
+      : IntPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_min, other.m_max, def)
    {
    }
    std::unique_ptr<IntPropertyDef> WithDefault(int def) const { return std::make_unique<IntPropertyDef>(*this, def); }
@@ -147,17 +133,11 @@ public:
    {
    }
    EnumPropertyDef(const EnumPropertyDef& other)
-      : PropertyDef(Type::Enum, other.m_groupId, other.m_propId, other.m_label, other.m_description)
-      , m_min(other.m_min)
-      , m_def(other.m_def)
-      , m_values(other.m_values)
+      : EnumPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_min, other.m_def, other.m_values)
    {
    }
    EnumPropertyDef(const EnumPropertyDef& other, int def)
-      : PropertyDef(Type::Enum, other.m_groupId, other.m_propId, other.m_label, other.m_description)
-      , m_min(other.m_min)
-      , m_def(def)
-      , m_values(other.m_values)
+      : EnumPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_min, def, other.m_values)
    {
    }
    std::unique_ptr<EnumPropertyDef> WithDefault(int def) const { return std::make_unique<EnumPropertyDef>(*this, def); }
@@ -202,6 +182,11 @@ public:
       , m_def(def)
    {
    }
+   BoolPropertyDef(const BoolPropertyDef& other, bool def)
+      : BoolPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, def)
+   {
+   }
+   std::unique_ptr<BoolPropertyDef> WithDefault(int def) const { return std::make_unique<BoolPropertyDef>(*this, def); }
    ~BoolPropertyDef() override = default;
 
    const bool m_def;

@@ -52,7 +52,7 @@ HomePage::HomePage()
 
    AddItem(std::make_unique<InGameUIItem>("Nudge & Tilt Settings"s, ""s, "settings/nudge"s));
 
-   // TODO implement Plugin option system to new UI (note that, for the time being, plugin setting system is just an unused draft so far, see GetOption in VPXPlugin.h)
+   AddItem(std::make_unique<InGameUIItem>("Plugin Settings"s, ""s, "plugins/homepage"s));
 }
 
 }
