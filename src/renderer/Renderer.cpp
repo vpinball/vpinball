@@ -1215,7 +1215,7 @@ void Renderer::RenderFrame()
          MeshBuffer* mask = g_pplayer->m_vrDevice->GetVisibilityMask();
          if (mask)
          {
-            Vertex3Ds pos;
+            Vertex3Ds pos(0.f, 0.f, 200000.0f); // Very high depth bias to ensure being rendered before other opaque parts (which are sorted front to back)
             m_renderDevice->ResetRenderState();
             m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
             m_renderDevice->SetRenderState(RenderState::COLORWRITEENABLE, RenderState::RS_FALSE);
