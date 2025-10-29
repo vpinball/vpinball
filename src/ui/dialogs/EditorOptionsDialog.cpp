@@ -64,10 +64,10 @@ BOOL EditorOptionsDialog::OnInitDialog()
     const int gridsize = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "GridSize"s, 50);
     SetDlgItemInt(IDC_GRID_SIZE, gridsize, FALSE);
 
-    const bool throwBallsAlwaysOn = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "ThrowBallsAlwaysOn"s, false);
+    const bool throwBallsAlwaysOn = g_pvp->m_settings.GetEditor_ThrowBallsAlwaysOn();
     SendDlgItemMessage(IDC_THROW_BALLS_ALWAYS_ON_CHECK, BM_SETCHECK, throwBallsAlwaysOn ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const bool ballControlAlwaysOn = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "BallControlAlwaysOn"s, false);
+    const bool ballControlAlwaysOn = g_pvp->m_settings.GetEditor_BallControlAlwaysOn();
     SendDlgItemMessage(IDC_BALL_CONTROL_ALWAYS_ON_CHECK, BM_SETCHECK, ballControlAlwaysOn ? BST_CHECKED : BST_UNCHECKED, 0);
 
     const bool groupElementsCollection = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "GroupElementsInCollection"s, true);
@@ -295,10 +295,10 @@ void EditorOptionsDialog::OnOK()
     g_pvp->m_settings.SaveValue(Settings::Editor, "GridSize"s, gridsize);
 
     checked = (IsDlgButtonChecked(IDC_THROW_BALLS_ALWAYS_ON_CHECK) == BST_CHECKED);
-    g_pvp->m_settings.SaveValue(Settings::Editor, "ThrowBallsAlwaysOn"s, checked);
+    g_pvp->m_settings.SetEditor_ThrowBallsAlwaysOn(checked, false);
 
     checked = (IsDlgButtonChecked(IDC_BALL_CONTROL_ALWAYS_ON_CHECK) == BST_CHECKED);
-    g_pvp->m_settings.SaveValue(Settings::Editor, "BallControlAlwaysOn"s, checked);
+    g_pvp->m_settings.SetEditor_BallControlAlwaysOn(checked, false);
 
     const int ballSize = GetDlgItemInt(IDC_THROW_BALLS_SIZE_EDIT, nothing, FALSE);
     g_pvp->m_settings.SaveValue(Settings::Editor, "ThrowBallSize"s, ballSize);

@@ -2628,7 +2628,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
          int fxaa;
          pbr->GetInt(fxaa);
          if (fxaa != -1)
-            m_settings.SaveValue(Settings::Player, "FXAA"s, fxaa);
+            m_settings.SetPlayer_FXAA(fxaa, false);
       }
       break;
    case FID(BLST): pbr->GetFloat(m_bloom_strength); break;
@@ -4343,9 +4343,9 @@ void PinTable::ImportBackdropPOV(const string &filename)
                }
 
                POV_FIELD("postprocAA", int, if(value > -1) m_settings.SaveValue(Settings::Player, "AAFactor"s, value == 0 ? 1.f : 2.f)); // remap to new AA
-               POV_FIELD("postprocAA", int, if(value > -1) m_settings.SaveValue(Settings::Player, "FXAA"s, value == 1 ? Standard_FXAA : Disabled));
-               POV_FIELD("ingameAO", int, if(value != -1) m_settings.SaveValue(Settings::Player, "DisableAO"s, value == 0));
-               POV_FIELD("ScSpReflect", int, if(value != -1) m_settings.SaveValue(Settings::Player, "SSRefl"s, value != 0));
+               POV_FIELD("postprocAA", int, if(value > -1) m_settings.SetPlayer_FXAA(value == 1 ? Standard_FXAA : Disabled, false));
+               POV_FIELD("ingameAO", int, if(value != -1) m_settings.SetPlayer_DisableAO(value == 0, false));
+               POV_FIELD("ScSpReflect", int, if(value != -1) m_settings.SetPlayer_SSRefl(value != 0, false));
                //POV_FIELD("FPSLimiter", int, tableAdaptiveVSync, );
                {
                const auto node = section->FirstChildElement("FPSLimiter");

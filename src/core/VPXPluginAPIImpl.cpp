@@ -109,9 +109,9 @@ void VPXPluginAPIImpl::GetActiveViewSetup(VPXViewSetupDef* view)
    view->viewVOfs = viewSetup.mViewVOfs;
    view->windowTopZOfs = viewSetup.mWindowTopZOfs;
    view->windowBottomZOfs = viewSetup.mWindowBottomZOfs;
-   view->screenWidth = g_pplayer->m_ptable->m_settings.LoadValueFloat(Settings::Player, "ScreenWidth"s);
-   view->screenHeight = g_pplayer->m_ptable->m_settings.LoadValueFloat(Settings::Player, "ScreenHeight"s);
-   view->screenInclination = g_pplayer->m_ptable->m_settings.LoadValueFloat(Settings::Player, "ScreenInclination"s);
+   view->screenWidth = g_pplayer->m_ptable->m_settings.GetPlayer_ScreenWidth();
+   view->screenHeight = g_pplayer->m_ptable->m_settings.GetPlayer_ScreenHeight();
+   view->screenInclination = g_pplayer->m_ptable->m_settings.GetPlayer_ScreenInclination();
    view->realToVirtualScale = viewSetup.GetRealToVirtualScale(g_pplayer->m_ptable);
 }
 

@@ -22,7 +22,7 @@ AudioSettingsPage::AudioSettingsPage()
       [](bool, const Settings&, bool) { /* UI state, not persisted */ }));
 
    AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayer_BackglassVolume, "%3d %%"s, //
+      Settings::m_propPlayer_MusicVolume, "%3d %%"s, //
       [this]() { return m_player->m_MusicVolume; },
       [this](int prev, int v)
       {
@@ -33,7 +33,7 @@ AudioSettingsPage::AudioSettingsPage()
       }));
 
    AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayer_PlayfieldVolume, "%3d %%"s, //
+      Settings::m_propPlayer_SoundVolume, "%3d %%"s, //
       [this]() { return m_player->m_SoundVolume; },
       [this](int prev, int v)
       {

@@ -256,10 +256,10 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    m_progressDialog.SetProgress("Initializing Visuals..."s, 10);
 
-   m_PlayMusic = m_ptable->m_settings.LoadValueBool(Settings::Player, "PlayMusic"s);
-   m_PlaySound = m_ptable->m_settings.LoadValueBool(Settings::Player, "PlaySound"s);
-   m_MusicVolume = m_ptable->m_settings.LoadValueUInt(Settings::Player, "MusicVolume"s);
-   m_SoundVolume = m_ptable->m_settings.LoadValueUInt(Settings::Player, "SoundVolume"s);
+   m_PlayMusic = m_ptable->m_settings.GetPlayer_PlayMusic();
+   m_PlaySound = m_ptable->m_settings.GetPlayer_PlaySound();
+   m_MusicVolume = m_ptable->m_settings.GetPlayer_MusicVolume();
+   m_SoundVolume = m_ptable->m_settings.GetPlayer_SoundVolume();
    UpdateVolume();
 
    //
@@ -454,7 +454,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       std::mutex mutex;
       int nLoadInProgress = 0;
       vector<Texture *> failedPreloads;
-      const unsigned int maxTexDim = static_cast<unsigned int>(m_ptable->m_settings.LoadValueInt(Settings::Player, "MaxTexDimension"s));
+      const unsigned int maxTexDim = static_cast<unsigned int>(m_ptable->m_settings.GetPlayer_MaxTexDimension());
       auto loadImage = [maxTexDim, &mutex, &nLoadInProgress, preloadCache, this, &failedPreloads](Texture *image, bool resizeOnLowMem)
       {
          bool readyToLoad = false;

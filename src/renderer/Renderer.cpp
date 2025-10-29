@@ -66,13 +66,13 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       string imageName;
       bool hr = m_table->m_settings.LoadValue(Settings::Player, "BallImage"s, imageName);
       if (hr)
-         m_ballImage = BaseTexture::CreateFromFile(imageName, m_table->m_settings.LoadValueInt(Settings::Player, "MaxTexDimension"s));
+         m_ballImage = BaseTexture::CreateFromFile(imageName, m_table->m_settings.GetPlayer_MaxTexDimension());
       hr = m_table->m_settings.LoadValue(Settings::Player, "DecalImage"s, imageName);
       if (hr)
-         m_decalImage = BaseTexture::CreateFromFile(imageName, m_table->m_settings.LoadValueInt(Settings::Player, "MaxTexDimension"s));
+         m_decalImage = BaseTexture::CreateFromFile(imageName, m_table->m_settings.GetPlayer_MaxTexDimension());
    }
-   m_vrApplyColorKey = m_table->m_settings.LoadValueWithDefault(Settings::PlayerVR, "UsePassthroughColor"s, false);
-   m_vrColorKey = convertColor(m_table->m_settings.LoadValueInt(Settings::PlayerVR, "PassthroughColor"s), 1.f);
+   m_vrApplyColorKey = m_table->m_settings.GetPlayerVR_UsePassthroughColor();
+   m_vrColorKey = convertColor(m_table->m_settings.GetPlayerVR_PassthroughColor(), 1.f);
    m_vrColorKey.x = InvsRGB(m_vrColorKey.x);
    m_vrColorKey.y = InvsRGB(m_vrColorKey.y);
    m_vrColorKey.z = InvsRGB(m_vrColorKey.z);

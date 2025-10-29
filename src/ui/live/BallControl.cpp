@@ -7,8 +7,8 @@
 
 void BallControl::LoadSettings(const Settings& settings)
 {
-   const bool throwBalls = settings.LoadValueWithDefault(Settings::Editor, "ThrowBallsAlwaysOn"s, false);
-   const bool ballControl = settings.LoadValueWithDefault(Settings::Editor, "BallControlAlwaysOn"s, false);
+   const bool throwBalls = settings.GetEditor_ThrowBallsAlwaysOn();
+   const bool ballControl = settings.GetEditor_BallControlAlwaysOn();
    SetMode(ballControl, throwBalls);
 }
 

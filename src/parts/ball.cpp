@@ -74,40 +74,40 @@ void Ball::PutCenter(const Vertex2D& pv)
 
 void Ball::SetDefaults(const bool fromMouseClick)
 {
-#define regKey Settings::DefaultPropsBall
-   m_hitBall.m_d.m_mass = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Mass"s, 1.f) : 1.f;
-   m_hitBall.m_d.m_radius = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Radius"s, 25.f) : 25.f;
-   m_d.m_forceReflection = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ForceReflection"s, false) : false;
-   m_d.m_decalMode = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "DecalMode"s, false) : false;
-   m_d.m_szImage = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Image"s, ""s) : ""s;
-   m_d.m_imageDecal = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "DecalImage"s, ""s) : ""s;
-   m_d.m_bulb_intensity_scale = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "BulbIntensityScale"s, 1.f) : 1.f;
-   m_d.m_playfieldReflectionStrength = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "PFReflStrength"s, 1.f) : 1.f;
-   m_d.m_color = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Color"s, (int) RGB(255, 255, 255)) : RGB(255, 255, 255);
-   m_d.m_pinballEnvSphericalMapping = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "SphereMap"s, true) : true;
-   m_d.m_reflectionEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ReflectionEnabled"s, true) : true;
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
-#undef regKey
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsBall_##prop() : Settings::GetDefaultPropsBall_##prop##_Property()->m_def
+   LinkProp(m_hitBall.m_d.m_mass, Mass);
+   LinkProp(m_hitBall.m_d.m_radius, Radius);
+   LinkProp(m_d.m_forceReflection, ForceReflection);
+   LinkProp(m_d.m_decalMode, DecalMode);
+   LinkProp(m_d.m_szImage, Image);
+   LinkProp(m_d.m_imageDecal, DecalImage);
+   LinkProp(m_d.m_bulb_intensity_scale, BulbIntensityScale);
+   LinkProp(m_d.m_playfieldReflectionStrength, PFReflStrength);
+   LinkProp(m_d.m_color, Color);
+   LinkProp(m_d.m_pinballEnvSphericalMapping, SphereMap);
+   LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 void Ball::WriteRegDefaults()
 {
-#define regKey Settings::DefaultPropsBall
-   g_pvp->m_settings.SaveValue(regKey, "Mass"s, m_hitBall.m_d.m_mass);
-   g_pvp->m_settings.SaveValue(regKey, "Radius"s, m_hitBall.m_d.m_radius);
-   g_pvp->m_settings.SaveValue(regKey, "ForceReflection"s, m_d.m_forceReflection);
-   g_pvp->m_settings.SaveValue(regKey, "DecalMode"s, m_d.m_decalMode);
-   g_pvp->m_settings.SaveValue(regKey, "Image"s, m_d.m_szImage);
-   g_pvp->m_settings.SaveValue(regKey, "DecalImage"s, m_d.m_imageDecal);
-   g_pvp->m_settings.SaveValue(regKey, "BulbIntensityScale"s, m_d.m_bulb_intensity_scale);
-   g_pvp->m_settings.SaveValue(regKey, "PFReflStrength"s, m_d.m_playfieldReflectionStrength);
-   g_pvp->m_settings.SaveValue(regKey, "Color"s, (int) m_d.m_color);
-   g_pvp->m_settings.SaveValue(regKey, "SphereMap"s, m_d.m_pinballEnvSphericalMapping);
-   g_pvp->m_settings.SaveValue(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
-   g_pvp->m_settings.SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   g_pvp->m_settings.SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
-#undef regKey
+#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsBall_##prop(field, false)
+   LinkProp(m_hitBall.m_d.m_mass, Mass);
+   LinkProp(m_hitBall.m_d.m_radius, Radius);
+   LinkProp(m_d.m_forceReflection, ForceReflection);
+   LinkProp(m_d.m_decalMode, DecalMode);
+   LinkProp(m_d.m_szImage, Image);
+   LinkProp(m_d.m_imageDecal, DecalImage);
+   LinkProp(m_d.m_bulb_intensity_scale, BulbIntensityScale);
+   LinkProp(m_d.m_playfieldReflectionStrength, PFReflStrength);
+   LinkProp(m_d.m_color, Color);
+   LinkProp(m_d.m_pinballEnvSphericalMapping, SphereMap);
+   LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 HRESULT Ball::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
@@ -224,7 +224,7 @@ void Ball::RenderSetup(RenderDevice *device)
    assert(m_rd == nullptr);
    m_rd = device;
 
-   m_antiStretch = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BallAntiStretch"s, false);
+   m_antiStretch = m_ptable->m_settings.GetPlayer_BallAntiStretch();
 
    if (m_d.m_useTableRenderSettings)
    {
