@@ -74,10 +74,6 @@ private:
    bool m_resettingToDefaults = false;
    bool m_resettingToInitialValues = false;
 
-   void RenderSaveOptionPopup();
-   bool m_selectGlobalOrTablePopup = false;
-   bool m_selectGlobalOrDiscardPopup = false;
-
    void RenderInputActionPopup();
    bool m_defineActionPopup = false;
    InGameUIItem* m_defineActionItem = nullptr;

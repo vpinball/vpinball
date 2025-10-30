@@ -120,13 +120,16 @@ void InGameUI::Update()
    if (m_activePages.empty())
       return;
 
-   // Remove closed pages (after closing animation)
-   for (auto it = m_activePages.begin(); it != m_activePages.end();)
+   // Remove closed pages (after closing animation), except during popup (that will get back to previous page)
+   if (m_navigationHistory.empty() || !m_navigationHistory.back().starts_with("popup/"))
    {
-      if ((*it)->IsClosed())
-         it = m_activePages.erase(it);
-      else
-         ++it;
+      for (auto it = m_activePages.begin(); it != m_activePages.end();)
+      {
+         if ((*it)->IsClosed())
+            it = m_activePages.erase(it);
+         else
+            ++it;
+      }
    }
 
    if (const InGameUIPage *const activePage = GetActivePage(); activePage && activePage->IsActive())
