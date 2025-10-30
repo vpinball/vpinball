@@ -27,19 +27,18 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    , m_table(table)
 {
    m_stereo3Denabled = m_table->m_settings.GetPlayer_Stereo3DEnabled();
-   m_toneMapper = (ToneMapper)m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "ToneMapper"s, m_table->GetToneMapper());
-   m_toneMapper = clamp(m_toneMapper, TM_REINHARD, TM_AGX_PUNCHY);
-   m_HDRforceDisableToneMapper = m_table->m_settings.LoadValueBool(Settings::Player, "HDRDisableToneMapper"s);
+   m_toneMapper = (ToneMapper)m_table->m_settings.GetTableOverride_ToneMapper();
+   m_HDRforceDisableToneMapper = m_table->m_settings.GetPlayer_HDRDisableToneMapper();
    m_exposure = m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "Exposure"s, m_table->GetExposure());
    m_dynamicAO = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DynamicAO"s, true);
    m_disableAO = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DisableAO"s, false);
    m_vrPreview = (VRPreviewMode)m_table->m_settings.LoadValueInt(Settings::PlayerVR, "VRPreview"s);
-   m_vrPreviewShrink = m_table->m_settings.LoadValueBool(Settings::PlayerVR, "ShrinkPreview"s);
-   m_FXAA = m_table->m_settings.LoadValueWithDefault(Settings::Player, "FXAA"s, (int)Disabled);
-   m_sharpen = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Sharpen"s, 0);
-   m_ss_refl = m_table->m_settings.LoadValueWithDefault(Settings::Player, "SSRefl"s, false);
+   m_vrPreviewShrink = m_table->m_settings.GetPlayerVR_ShrinkPreview();
+   m_FXAA = m_table->m_settings.GetPlayer_FXAA();
+   m_sharpen = m_table->m_settings.GetPlayer_Sharpen();
+   m_ss_refl = m_table->m_settings.GetPlayer_SSRefl();
    m_bloomOff = m_table->m_settings.GetPlayer_ForceBloomOff();
-   m_motionBlurOff = m_table->m_settings.LoadValueBool(Settings::Player, "ForceMotionBlurOff"s);
+   m_motionBlurOff = m_table->m_settings.GetPlayer_ForceMotionBlurOff();
    const int maxReflection = m_table->m_settings.LoadValueWithDefault(Settings::Player, "PFReflection"s, -1);
    if (maxReflection != -1)
       m_maxReflectionMode = (RenderProbe::ReflectionMode)maxReflection;
@@ -51,8 +50,9 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       if (m_table->m_settings.LoadValueWithDefault(Settings::Player, "PFRefl"s, true))
          m_maxReflectionMode = RenderProbe::REFL_STATIC_N_DYNAMIC;
    }
-   m_trailForBalls = m_table->m_settings.LoadValueWithDefault(Settings::Player, "BallTrail"s, true);
-   m_ballTrailStrength = m_table->m_settings.LoadValueWithDefault(Settings::Player, "BallTrailStrength"s, 0.5f);
+   m_trailForBalls = m_table->m_settings.GetPlayer_BallTrail();
+   m_ballTrailStrength = m_table->m_settings.GetPlayer_BallTrailStrength();
+   m_ballAntiStretch = m_table->m_settings.GetPlayer_BallAntiStretch();
    m_ballImage = nullptr;
    m_decalImage = nullptr;
    m_overwriteBallImages = m_table->m_settings.LoadValueWithDefault(Settings::Player, "OverwriteBallImage"s, false);
@@ -114,14 +114,15 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_mvp = new ModelViewProj(m_stereo3D == STEREO_OFF ? 1 : 2);
 
    #if defined(ENABLE_OPENGL)
-   const int nMSAASamples = m_table->m_settings.LoadValueWithDefault(Settings::Player, "MSAASamples"s, 1);
+   constexpr int MSAASamples[] = { 1, 4, 6, 8 };
+   const int nMSAASamples = MSAASamples[m_table->m_settings.GetPlayer_MSAASamples()];
    #elif defined(ENABLE_DX9) || defined(ENABLE_BGFX)
    // Sadly DX9 does not support resolving an MSAA depth buffer, making MSAA implementation complex for it. So just disable for now
    // BGFX MSAA is likely possible but not yet implemented
    constexpr int nMSAASamples = 1;
    #endif
-   const bool useNvidiaApi = m_table->m_settings.LoadValueWithDefault(Settings::Player, "UseNVidiaAPI"s, false);
-   const bool compressTextures = m_table->m_settings.LoadValueWithDefault(Settings::Player, "CompressTextures"s, false);
+   const bool useNvidiaApi = m_table->m_settings.GetPlayer_UseNVidiaAPI();
+   const bool compressTextures = m_table->m_settings.GetPlayer_CompressTextures();
    const int nEyes = (m_stereo3D == STEREO_VR || m_stereo3D != STEREO_OFF) ? 2 : 1;
    try {
       m_renderDevice = new RenderDevice(wnd, m_stereo3D == STEREO_VR, nEyes, useNvidiaApi, compressTextures, nMSAASamples, syncMode);
@@ -134,7 +135,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    const bool isHdr2020 = (g_pplayer->m_vrDevice == nullptr) && m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer();
    if (isHdr2020)
    {
-      m_exposure *= g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "HDRGlobalExposure"s, 1.0f);
+      m_exposure *= g_pvp->m_settings.GetPlayer_HDRGlobalExposure();
       m_bloomOff = true;
    }
 
@@ -194,11 +195,11 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
 
    // Initialize shaders
    m_renderDevice->m_basicShader->SetVector(SHADER_w_h_height, (float)(1.0 / (double)GetMSAABackBufferTexture()->GetWidth()), (float)(1.0 / (double)GetMSAABackBufferTexture()->GetHeight()), 0.0f, 0.0f);
-   bool disableLightingForBalls = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DisableLightingForBalls"s, false);
    m_renderDevice->m_ballShader->SetVector(SHADER_w_h_disableLighting,
       1.5f / (float)GetPreviousBackBufferTexture()->GetWidth(), // UV Offset for sampling reflections
       1.5f / (float)GetPreviousBackBufferTexture()->GetHeight(),
-      disableLightingForBalls ? 1.f : 0.f, 0.f);
+      0.f, 0.f);
+   DisableBallLighting(m_table->m_settings.GetPlayer_DisableLightingForBalls());
 
    #ifndef __STANDALONE__
       BAMView::init();
@@ -414,6 +415,27 @@ Renderer::~Renderer()
    m_envSampler = nullptr;
    m_aoDitherSampler = nullptr;
    delete m_renderDevice;
+}
+
+bool Renderer::UseAnisoFiltering() const { return Shader::GetDefaultSamplerFilter(SHADER_tex_base_color) == SF_ANISOTROPIC; }
+
+void Renderer::SetAnisoFiltering(bool enable) {
+   Shader::SetDefaultSamplerFilter(SHADER_tex_sprite, enable ? SF_ANISOTROPIC : SF_TRILINEAR);
+   Shader::SetDefaultSamplerFilter(SHADER_tex_base_color, enable ? SF_ANISOTROPIC : SF_TRILINEAR);
+   Shader::SetDefaultSamplerFilter(SHADER_tex_base_normalmap, enable ? SF_ANISOTROPIC : SF_TRILINEAR);
+   Shader::SetDefaultSamplerFilter(SHADER_tex_flasher_A, enable ? SF_ANISOTROPIC : SF_TRILINEAR);
+   Shader::SetDefaultSamplerFilter(SHADER_tex_flasher_B, enable ? SF_ANISOTROPIC : SF_TRILINEAR);
+}
+
+bool Renderer::IsBallLightingDisabled() const
+{
+   return m_renderDevice->m_ballShader->GetVector(SHADER_w_h_disableLighting).z != 0.f;
+}
+
+void Renderer::DisableBallLighting(bool disableLightingForBalls)
+{
+   vec4 prev = m_renderDevice->m_ballShader->GetVector(SHADER_w_h_disableLighting);
+   m_renderDevice->m_ballShader->SetVector(SHADER_w_h_disableLighting, prev.x, prev.y, disableLightingForBalls ? 1.f : 0.f, prev.w);
 }
 
 void Renderer::SwapBackBufferRenderTargets()
@@ -1097,7 +1119,7 @@ void Renderer::UpdateStereoShaderState()
       anaglyph.LoadSetupFromRegistry(clamp(m_stereo3D - STEREO_ANAGLYPH_1, 0, 9));
       anaglyph.SetupShader(m_renderDevice->m_stereoShader);
       // The defocus kernel size should depend on the render resolution but since this is a user tweak, this doesn't matter that much
-      m_stereo3DDefocus = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DDefocus"s, 0.f);
+      m_stereo3DDefocus = m_table->m_settings.GetPlayer_Stereo3DDefocus();
       // TODO I'm not 100% sure about this. I think the right way would be to select based on the transmitted luminance of the filter, the defocus 
       // being done on the lowest of the 2. Here we do on the single color channel, which is the same most of the time but not always (f.e. green/magenta)
       if (anaglyph.IsReversedColorPair())
@@ -2087,20 +2109,14 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
    #else
       const bool PostProcStereo = stereo;
    #endif
-   // Postprocess stereo disables AA and sharpening except for top/bottom & side by side modes
-   const bool PostProcAA = !PostProcStereo || (m_stereo3D == STEREO_TB) || (m_stereo3D == STEREO_SBS);
-   #ifndef __OPENGLES__
-      const bool SMAA  = PostProcAA && m_FXAA == Quality_SMAA;
-   #else
-      const bool SMAA = false;
-   #endif
-   const bool DLAA  = PostProcAA && m_FXAA == Standard_DLAA;
-   const bool NFAA  = PostProcAA && m_FXAA == Fast_NFAA;
-   const bool FXAA1 = PostProcAA && m_FXAA == Fast_FXAA;
-   const bool FXAA2 = PostProcAA && m_FXAA == Standard_FXAA;
-   const bool FXAA3 = PostProcAA && m_FXAA == Quality_FXAA;
+   const bool SMAA  = m_FXAA == Quality_SMAA;
+   const bool DLAA  = m_FXAA == Standard_DLAA;
+   const bool NFAA  = m_FXAA == Fast_NFAA;
+   const bool FXAA1 = m_FXAA == Fast_FXAA;
+   const bool FXAA2 = m_FXAA == Standard_FXAA;
+   const bool FXAA3 = m_FXAA == Quality_FXAA;
    const bool ss_refl = m_ss_refl && m_table->m_enableSSR && m_renderDevice->DepthBufferReadBackAvailable() && m_table->m_SSRScale > 0.f;
-   const unsigned int sharpen = PostProcAA ? m_sharpen : 0;
+   const unsigned int sharpen = m_sharpen;
    const bool useAO = GetAOMode() == 2;
    const bool useUpscaler = (m_renderWidth < GetBackBufferTexture()->GetWidth()) && !PostProcStereo && (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen);
    const InfoMode infoMode = g_pplayer->GetInfoMode();
@@ -2536,7 +2552,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
    }
 
    // Upscale: When using downscaled backbuffer (for performance reason), upscaling is done after postprocessing
-   // FIXME Why don't we support stereo rendering here ?
+   // We do not support stereo here as it outputs to main backbuffer while stereo needs a pass from layered render to the output backbuffer
    // TODO add AMD FidelityFX Super Resolution (FSR) support
    if (useUpscaler && !stereo)
    {
@@ -2721,7 +2737,8 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
    else
    {
       // 3D stereo rendering, but display mono (first eye)
-      // Nothing to do: last pass will just output to the backbuffer first layer
+      // Nothing to do: last pass will just output to the backbuffer first layer (not fully clean as we are still pushing an instance draw, but driver will discard missing layers)
+      assert(renderedRT == outputBackBuffer);
    }
 
    if (g_pplayer->GetProfilingMode() == PF_ENABLED)

@@ -24,9 +24,11 @@ public:
 
    void Update();
 
-   bool IsOpened() const { return m_editorUI.IsOpened() || m_inGameUI.IsOpened(); }
-   void OpenEditorUI() { m_editorUI.Open(); }
+   bool IsOpened() const { return IsEditorUIOpened() || IsInGameUIOpened(); }
    void HideUI();
+
+   void OpenEditorUI() { m_editorUI.Open(); }
+   bool IsEditorUIOpened() const { return m_editorUI.IsOpened(); }
 
    void OpenInGameUI(const string& page = "homepage"s);
    void OpenMainSplash() { OpenInGameUI("exit"); }

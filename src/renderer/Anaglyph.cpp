@@ -12,10 +12,10 @@ void Anaglyph::LoadSetupFromRegistry(const int glassesSet)
    const PinTable* table = g_pplayer->m_ptable;
 
    // Common settings for all anaglyph sets
-   m_brightness = table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DBrightness"s, 1.0f);
-   m_saturation = table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DSaturation"s, 1.0f);
-   m_leftEyeContrast = table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DLeftContrast"s, 1.0f);
-   m_rightEyeContrast = table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DRightContrast"s, 1.0f);
+   m_brightness = table->m_settings.GetPlayer_Stereo3DBrightness();
+   m_saturation = table->m_settings.GetPlayer_Stereo3DSaturation();
+   m_leftEyeContrast = table->m_settings.GetPlayer_Stereo3DLeftContrast();
+   m_rightEyeContrast = table->m_settings.GetPlayer_Stereo3DRightContrast();
 
    // Default (partial) calibration
    static constexpr std::array<vec3, 20> defaultColors = {

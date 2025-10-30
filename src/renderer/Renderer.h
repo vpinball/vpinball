@@ -82,12 +82,16 @@ public:
       return IsUsingStaticPrepass() ? 1 : 0; // If AO is static prepass only and we are running without it, disable AO
    }
 
+   bool UseAnisoFiltering() const;
+   void SetAnisoFiltering(bool enable);
+
    std::shared_ptr<Sampler> GetBallEnvironment() const { return m_ballEnvSampler; }
 
    BackGlass* m_backGlass = nullptr;
 
    float m_globalEmissionScale;
 
+   // Ball rendering
    vector<Light*> m_ballReflectedLights;
    MeshBuffer* m_ballMeshBuffer = nullptr;
    MeshBuffer* m_ballTrailMeshBuffer = nullptr;
@@ -100,6 +104,9 @@ public:
    bool m_overwriteBallImages = false;
    std::shared_ptr<BaseTexture> m_ballImage = nullptr;
    std::shared_ptr<BaseTexture> m_decalImage = nullptr;
+   bool m_ballAntiStretch = false;
+   bool IsBallLightingDisabled() const;
+   void DisableBallLighting(bool v);
 
    // Post processing
    void SetScreenOffset(const float x, const float y); // set render offset in screen coordinates, e.g., for the nudge shake
@@ -107,7 +114,9 @@ public:
    bool m_motionBlurOff = false;
    int m_FXAA; // =FXAASettings
    int m_sharpen; // 0=off, 1=CAS, 2=bilateral CAS
-   
+   bool HasAdditiveScreenSpaceReflection() const { return m_ss_refl; }
+   void EnableAdditiveScreenSpaceReflection(bool ssr) { m_ss_refl = ssr; }
+
    VRPreviewMode m_vrPreview;
 
    enum RenderMask : unsigned int

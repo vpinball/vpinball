@@ -217,24 +217,6 @@ void Settings::Validate(const bool addDefaults)
    SettingInt(Section::Player, "Exitconfirm"s, 120, 0, 30*60, "Length of a long ESC press that directly closes the app, (sadly) expressed in seconds * 60."s);
    
    //////////////////////////////////////////////////////////////////////////
-   // GfxBackend section
-
-   #ifdef __ANDROID__
-      SettingString(Settings::Player, "GfxBackend"s, "OpenGLES"s, ""s);
-   #elif defined(__APPLE__)
-      SettingString(Settings::Player, "GfxBackend"s, "Metal"s, ""s);
-   #else
-      SettingString(Settings::Player, "GfxBackend"s, "Default"s, ""s);
-   #endif
-
-   //////////////////////////////////////////////////////////////////////////
-   // Ball Rendering section
-
-#ifdef __STANDALONE__
-   SettingBool(Section::Player, "BallTrail"s, false, ""s);
-#endif
-
-   //////////////////////////////////////////////////////////////////////////
    // Plugin.AlphaDMD
 
 #ifdef __LIBVPINBALL__

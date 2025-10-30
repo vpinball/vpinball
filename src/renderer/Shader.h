@@ -498,6 +498,7 @@ public:
    void SetBasic(const Material * const mat, Texture * const pin);
    ShaderTechniques GetCurrentTechnique() const { return m_technique; }
    static void SetDefaultSamplerFilter(const ShaderUniforms sampler, const SamplerFilter sf);
+   static SamplerFilter GetDefaultSamplerFilter(const ShaderUniforms sampler);
 
    void SetMaterial(const Material * const mat, const bool has_alpha = true);
    void SetAlphaTestValue(const float value);
@@ -521,6 +522,7 @@ public:
    void SetMatrix(const ShaderUniforms uniformName, const Matrix3D* const pMatrix, const unsigned int count = 1);
    void SetVector(const ShaderUniforms uniformName, const vec4* const pVector);
    void SetVector(const ShaderUniforms uniformName, const float x, const float y, const float z, const float w);
+   vec4 GetVector(const ShaderUniforms uniformName) const;
    void SetFloat4v(const ShaderUniforms uniformName, const vec4* const pData, const unsigned int count);
    void SetTexture(const ShaderUniforms uniformName, const std::shared_ptr<const Sampler>& sampler, const SamplerFilter filter = SF_UNDEFINED, const SamplerAddressMode clampU = SA_UNDEFINED, const SamplerAddressMode clampV = SA_UNDEFINED);
    void SetTextureNull(const ShaderUniforms uniformName);
