@@ -338,29 +338,41 @@ void InGameUIPage::Render(float elapsedS)
 
    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 1.f - fabs(GetOpenCloseAnimPos()));
    ImGui::SetNextWindowBgAlpha(0.5f);
+   // Size is selected to match pinball instruction cards format which have an aspect ratio of roughly 6" x 3.25" (WPC, other varies), except for mobile where we favor size
+   constexpr float pinballCardAR = 6.f / 3.5f;
+   ImVec2 winSize;
    if (m_player->m_vrDevice)
    {
-      const float size = min(0.25f * io.DisplaySize.x, 0.25f * io.DisplaySize.y);
-      ImGui::SetNextWindowSize(ImVec2(size, size));
+      winSize.x = min(0.25f * io.DisplaySize.x, 0.25f * io.DisplaySize.y);
+      winSize.y = (1 / pinballCardAR) * winSize.x + 5.f * ImGui::GetTextLineHeightWithSpacing();
+      ImGui::SetNextWindowPos(ImVec2((animPos + 0.5f) * io.DisplaySize.x, 0.5f * io.DisplaySize.y), 0, ImVec2(0.5f, 0.5f));
+   }
+   #ifdef __LIBVPINBALL__
+   else if (io.DisplaySize.x > io.DisplaySize.y)
+   { // Landscape mode
+      winSize = ImVec2(0.75f * io.DisplaySize.x, 0.8f * io.DisplaySize.y);
       ImGui::SetNextWindowPos(ImVec2((animPos + 0.5f) * io.DisplaySize.x, 0.5f * io.DisplaySize.y), 0, ImVec2(0.5f, 0.5f));
    }
    else
-   {
-#ifndef __LIBVPINBALL__
-      if (io.DisplaySize.x > io.DisplaySize.y) // Landscape mode
-         ImGui::SetNextWindowSize(ImVec2(0.4f * io.DisplaySize.x, 0.4f * io.DisplaySize.y));
-      else // Portrait mode
-         ImGui::SetNextWindowSize(ImVec2(0.8f * io.DisplaySize.x, 0.3f * io.DisplaySize.y));
-      ImGui::SetNextWindowPos(ImVec2((animPos + 0.5f) * io.DisplaySize.x, 0.8f * io.DisplaySize.y), 0, ImVec2(0.5f, 1.f));
-#else
-      if (io.DisplaySize.x > io.DisplaySize.y) // Landscape mode
-         ImGui::SetNextWindowSize(ImVec2(0.75f * io.DisplaySize.x, 0.8f * io.DisplaySize.y));
-      else // Portrait mode
-         ImGui::SetNextWindowSize(ImVec2(0.9f * io.DisplaySize.x, 0.8f * io.DisplaySize.y));
+   { // Portrait mode
+      winSize = ImVec2(0.9f * io.DisplaySize.x, 0.8f * io.DisplaySize.y);
       ImGui::SetNextWindowPos(ImVec2((animPos + 0.5f) * io.DisplaySize.x, 0.5f * io.DisplaySize.y), 0, ImVec2(0.5f, 0.5f));
-#endif
    }
-   ;
+   #else
+   else if (io.DisplaySize.x > io.DisplaySize.y)
+   { // Landscape mode, fit on height
+      winSize.y = 0.5f * io.DisplaySize.y;
+      winSize.x = pinballCardAR * (winSize.y - 5.f * ImGui::GetTextLineHeightWithSpacing());
+      ImGui::SetNextWindowPos(ImVec2((animPos + 0.5f) * io.DisplaySize.x, 0.9f * io.DisplaySize.y), 0, ImVec2(0.5f, 1.f));
+   }
+   else
+   { // Portrait mode, fit on width
+      winSize.x = 0.8f * io.DisplaySize.x;
+      winSize.y = (1.f / pinballCardAR) * winSize.x + 5.f * ImGui::GetTextLineHeightWithSpacing();
+      ImGui::SetNextWindowPos(ImVec2((animPos + 0.5f) * io.DisplaySize.x, 0.8f * io.DisplaySize.y), 0, ImVec2(0.5f, 1.f));
+   }
+   #endif
+   ImGui::SetNextWindowSize(winSize);
    ImGui::Begin(std::to_string(reinterpret_cast<uint64_t>(this)).c_str(), nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings);
 
    ImGui::PushStyleColor(ImGuiCol_Separator, style.Colors[ImGuiCol_Text]);
