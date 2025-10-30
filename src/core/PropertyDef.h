@@ -191,7 +191,7 @@ public:
       : BoolPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, def)
    {
    }
-   std::unique_ptr<BoolPropertyDef> WithDefault(int def) const { return std::make_unique<BoolPropertyDef>(*this, def); }
+   std::unique_ptr<BoolPropertyDef> WithDefault(bool def) const { return std::make_unique<BoolPropertyDef>(*this, def); }
    ~BoolPropertyDef() override = default;
 
    const bool m_def;
@@ -212,6 +212,11 @@ public:
       , m_def(def)
    {
    }
+   StringPropertyDef(const StringPropertyDef& other, const string& def)
+      : StringPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, def)
+   {
+   }
+   std::unique_ptr<StringPropertyDef> WithDefault(const string& def) const { return std::make_unique<StringPropertyDef>(*this, def); }
    ~StringPropertyDef() override = default;
 
    const string m_def;

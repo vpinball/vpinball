@@ -203,40 +203,33 @@ static ma_result ma_context_init__sdl(ma_context* pContext, const ma_context_con
 namespace VPX
 {
 
-AudioPlayer::AudioPlayer(const Settings& settings)
-   : m_music(nullptr)
+AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldDevice, SoundConfigTypes playfieldSoundMode)
+   : m_soundMode3D(playfieldSoundMode)
 {
    if (!SDL_InitSubSystem(SDL_INIT_AUDIO))
       return;
 
-   string soundDeviceName, soundDeviceBGName;
-   const bool hasTableSoundDevice = settings.LoadValue(Settings::Player, "SoundDevice"s, soundDeviceName);
-   const bool hasBackglassSOundDevice = settings.LoadValue(Settings::Player, "SoundDeviceBG"s, soundDeviceBGName);
    {
       int count;
-      const SDL_AudioDeviceID* const pAudioList = SDL_GetAudioPlaybackDevices(&count);
+      SDL_AudioDeviceID* pAudioList = SDL_GetAudioPlaybackDevices(&count);
       for (int i = 0; i < count; ++i)
       { // We identify by name as this is the only stable property (see https://github.com/libsdl-org/SDL/issues/12278)
          string name = SDL_GetAudioDeviceName(pAudioList[i]);
-         if (hasTableSoundDevice && name == soundDeviceName)
+         if (!playfieldDevice.empty() && name == playfieldDevice)
             m_playfieldAudioDevice = pAudioList[i];
-         if (hasBackglassSOundDevice && name == soundDeviceBGName)
+         if (!backglassDevice.empty() && name == backglassDevice)
             m_backglassAudioDevice = pAudioList[i];
       }
+      SDL_free(pAudioList);
       if (m_playfieldAudioDevice == SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK)
       {
-         PLOGE << "Table sound device was not found (" << soundDeviceName << "), using default.";
-         m_playfieldAudioDevice = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
+         PLOGI << "Table sound device was not found (" << playfieldDevice << "), using default: " << GetPlayfieldDeviceName().c_str();
       }
       if (m_backglassAudioDevice == SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK)
       {
-         PLOGE << "Backglass sound device was not found (" << soundDeviceBGName << "), using default.";
-         m_backglassAudioDevice = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
+         PLOGI << "Backglass sound device was not found (" << backglassDevice << "), using default: " << GetBackglassDeviceName().c_str();
       }
-      SDL_free(const_cast<SDL_AudioDeviceID*>(pAudioList));
    }
-
-   m_soundMode3D = static_cast<SoundConfigTypes>(settings.LoadValueUInt(Settings::Player, "Sound3D"s));
 
    ma_result result;
    ma_context_config contextConfig;
@@ -381,6 +374,12 @@ AudioPlayer::AudioStreamID AudioPlayer::OpenAudioStream(const string& name, int 
    stream->SetName(name);
    m_audioStreams.push_back(stream);
    return stream;
+}
+
+bool AudioPlayer::IsOpened(const AudioStreamID& stream) const
+{
+   auto item = std::ranges::find_if(m_audioStreams, [stream](const std::shared_ptr<AudioStreamPlayer>& player) { return player == stream; });
+   return item != m_audioStreams.end();
 }
 
 void AudioPlayer::EnqueueStream(const AudioStreamID& stream, uint8_t* buffer, int length) const {

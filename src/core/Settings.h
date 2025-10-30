@@ -145,10 +145,15 @@ public:
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
 
    // Audio settings
-   PropBool(Player, PlayMusic, "Enable Backglass"s, "Enable/Disable backglass game sound & music"s, true);
-   PropBool(Player, PlaySound, "Enable Playfield"s, "Enable/Disable playfield mechanical sounds"s, true);
    PropInt(Player, MusicVolume, "Backglass Volume"s, "Main volume for music and sound played in the backglass speakers"s, 0, 100, 100);
    PropInt(Player, SoundVolume, "Playfield Volume"s, "Main volume for mechanical sounds coming from the playfield"s, 0, 100, 100);
+   PropBool(Player, PlayMusic, "Enable Backglass"s, "Enable/Disable backglass game sound & music"s, true);
+   PropBool(Player, PlaySound, "Enable Playfield"s, "Enable/Disable playfield mechanical sounds"s, true);
+   PropString(Player, SoundDeviceBG, "Backglass Sound Device"s, "Select backglass sound device"s, ""s);
+   PropString(Player, SoundDevice, "Playfield Sound Device"s, "Select playfield sound device"s, ""s);
+   PropEnum(Player, Sound3D, "Playfield Output Mode"s, "Select how playfield sound is outputed"s, int /* VPX::SoundConfigTypes*/, 0 /* VPX::SoundConfigTypes::SNDCFG_SND3D2CH */,
+      "2 front channels"s, "2 rear channels"s, "Up to 6 channels. Rear at lockbar"s, "Up to 6 channels. Front at lockbar"s, "Up to 4 channels. Front at lockbar"s,
+      "Side & rear channels. Rear at lockbar. Legacy mixing"s, "Side & rear channels. Rear at lockbar. New mixing"s);
 
    // Graphics settings
    PropEnum(Player, ShowFPS, "Show FPS"s, "Performance overlay display mode"s, int /* PerfUI::PerfMode */, 0, "Disable"s, "FPS"s, "Full"s);
@@ -257,7 +262,7 @@ public:
    PropFloat(DefaultCamera, FSSCamY, "Camera Y"s, "View point height offset, in centimeters"s, -30.f, 100.f, 0.1f, 20.f);
    PropFloat(DefaultCamera, FSSCamZ, "Camera Z"s, "View point vertical offset, in centimeters"s, 10.f, 100.f, 0.1f, 70.f);
    PropFloat(DefaultCamera, FSSViewVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window' in centimeters"s, -20.f, 50.f, 0.1f, 22.f);
-   
+
    // Table override settings
    // These properties are specials as they are meant to override table data at play time. They are not meant to be saved to the application setting file, but
    // only to table override settings. Also, their defaults are redefined when a table is played, depending on the table data and UI options.
@@ -278,7 +283,7 @@ public:
    PropFloat(TableOverride, ViewDTWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield, in centimeters"s, 0.f, 50.f, 0.1f, 0.f);
    PropFloat(TableOverride, ViewDTWindowBot, "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield, in centimeters"s, 0.f, 50.f, 0.1f, 0.f);
    PropFloat(TableOverride, ViewDTRotation, "Viewport Rotation"s, ""s, 0.f, 360.f, 90.0f, 0.f);
-   
+
    PropEnum(TableOverride, ViewFSSMode, "View mode"s,
       "Select between 'Legacy' (old rendering mode with visually incorrect stretchs), 'Camera' (classic camera, for desktop) and 'Window' (custom projection designed for cabinet users) rendering mode"s,
       int, 1, "Legacy"s, "Camera"s, "Window"s);
@@ -444,7 +449,7 @@ public:
    bool SaveValue(const Section section, const string &key, const int val, const bool overrideMode = false);
    bool SaveValue(const Section section, const string &key, const unsigned int val, const bool overrideMode = false);
    bool SaveValue(const Section section, const string &key, const bool val, const bool overrideMode = false);
-    
+
    bool DeleteValue(const Section section, const string &key, const bool deleteFromParent = false);
    bool DeleteSubKey(const Section section, const bool deleteFromParent = false);
 

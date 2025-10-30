@@ -65,7 +65,7 @@ struct SoundSpec
 class AudioPlayer
 {
 public:
-   explicit AudioPlayer(const Settings& settings);
+   explicit AudioPlayer(const string& backglassDevice, const string& playfieldDevice, SoundConfigTypes playfieldSoundMode);
    ~AudioPlayer();
 
    void SetMainVolume(float backglassVolume, float playfieldVolume); // Overall gain, directly applied to all sounds, including the ones being played
@@ -74,6 +74,7 @@ public:
    // Audio stream, directly forwarded to audio device, respecting channel assignment, applying backglass global volume
    using AudioStreamID = std::shared_ptr<class AudioStreamPlayer>; // opaque pointer as objects are always owned by AudioPlayer without any public API
    AudioStreamID OpenAudioStream(const string& name, int frequency, int channels, bool isFloat);
+   bool IsOpened(const AudioStreamID& stream) const;
    void EnqueueStream(const AudioStreamID& stream, uint8_t* buffer, int length) const;
    void SetStreamVolume(const AudioStreamID& stream, const float volume) const;
    void CloseAudioStream(const AudioStreamID& stream, bool afterEndOfStream);
@@ -92,6 +93,8 @@ public:
    void StopSound(Sound* sound);
    SoundSpec GetSoundInformations(const Sound* const sound) const;
 
+   string GetBackglassDeviceName() const { const char * name = SDL_GetAudioDeviceName(m_backglassAudioDevice); return name ? string(name) : "Error"s; }
+   string GetPlayfieldDeviceName() const { const char * name = SDL_GetAudioDeviceName(m_playfieldAudioDevice); return name ? string(name) : "Error"s; }
    SoundConfigTypes GetSoundMode3D() const { return m_soundMode3D; }
 
    struct AudioDevice
@@ -112,16 +115,15 @@ private:
 
    int m_playfieldAudioDevice = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
    int m_backglassAudioDevice = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
-   SDL_AudioDeviceID m_backglassSDLDevice = 0;
+   const SoundConfigTypes m_soundMode3D;
 
    mutable ankerl::unordered_dense::map<Sound*, vector<std::unique_ptr<class SoundPlayer>>> m_soundPlayers;
 
    vector<AudioStreamID> m_audioStreams;
    vector<AudioStreamID> m_pendingDeleteAudioStreams;
+   SDL_AudioDeviceID m_backglassSDLDevice = 0;
 
    std::unique_ptr<class SoundPlayer> m_music;
-
-   SoundConfigTypes m_soundMode3D = SNDCFG_SND3D2CH; // What 3Dsound Mode are we in from VPinball.ini "Sound3D" key.
 
    std::unique_ptr<ma_context> m_maContext;
    std::unique_ptr<ma_device_ex> m_backglassDevice;

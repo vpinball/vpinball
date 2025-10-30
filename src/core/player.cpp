@@ -86,7 +86,8 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    , m_scoreViewOutput("Visual Pinball - Score View"s, live_table->m_settings, Settings::ScoreView, "ScoreView"s)
    , m_backglassOutput("Visual Pinball - Backglass"s, live_table->m_settings, Settings::Backglass, "Backglass"s)
    , m_topperOutput("Visual Pinball - Topper"s, live_table->m_settings, Settings::Topper, "Topper"s)
-   , m_audioPlayer(std::make_unique<VPX::AudioPlayer>(live_table->m_settings))
+   , m_audioPlayer(std::make_unique<VPX::AudioPlayer>(
+        live_table->m_settings.GetPlayer_SoundDeviceBG(), live_table->m_settings.GetPlayer_SoundDevice(), static_cast<VPX::SoundConfigTypes>(live_table->m_settings.GetPlayer_Sound3D())))
    , m_resURIResolver(MsgPI::MsgPluginManager::GetInstance().GetMsgAPI(), VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), true, true, true, true)
 {
    // For the time being, lots of access are made through the global singleton, so ensure we are unique, and define it as soon as needed
@@ -2385,7 +2386,7 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
 
 void Player::UpdateVolume()
 {
-   m_audioPlayer->SetMainVolume(dequantizeSignedPercent(m_MusicVolume), dequantizeSignedPercent(m_SoundVolume));
+   m_audioPlayer->SetMainVolume(m_PlayMusic ? dequantizeSignedPercent(m_MusicVolume) : 0.f, m_PlaySound ? dequantizeSignedPercent(m_SoundVolume) : 0.f);
 }
 
 void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgData)
@@ -2393,25 +2394,9 @@ void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgD
    Player *me = static_cast<Player *>(userData);
    AudioUpdateMsg &msg = *static_cast<AudioUpdateMsg *>(msgData);
    const auto &entry = me->m_audioStreams.find(msg.id.id);
-   if (entry == me->m_audioStreams.end())
+   if (entry != me->m_audioStreams.end() && me->m_audioPlayer->IsOpened(entry->second))
    {
-      if (msg.buffer != nullptr)
-      {
-         MsgEndpointInfo info;
-         MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().GetEndpointInfo(msg.id.endpointId, &info);
-         const int nChannels = (msg.type == CTLPI_AUDIO_SRC_BACKGLASS_MONO) ? 1 : 2;
-         VPX::AudioPlayer::AudioStreamID const stream = me->m_audioPlayer->OpenAudioStream("Plugin."s + info.name + '.' + std::to_string(msg.id.resId), static_cast<int>(msg.sampleRate), nChannels, msg.format == CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT);
-         if (stream)
-         {
-            me->m_audioStreams[msg.id.id] = stream;
-            me->m_audioPlayer->SetStreamVolume(stream, msg.volume);
-            me->m_audioPlayer->EnqueueStream(stream, msg.buffer, msg.bufferSize);
-         }
-      }
-   }
-   else
-   {
-      VPX::AudioPlayer::AudioStreamID const stream = entry->second; 
+      VPX::AudioPlayer::AudioStreamID const stream = entry->second;
       if (msg.buffer != nullptr && msg.bufferSize != 0)
       {
          me->m_audioPlayer->SetStreamVolume(stream, msg.volume);
@@ -2421,6 +2406,19 @@ void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgD
       {
          me->m_audioPlayer->CloseAudioStream(stream, false);
          me->m_audioStreams.erase(entry);
+      }
+   }
+   else if (msg.buffer != nullptr)
+   {
+      MsgEndpointInfo info;
+      MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().GetEndpointInfo(msg.id.endpointId, &info);
+      const int nChannels = (msg.type == CTLPI_AUDIO_SRC_BACKGLASS_MONO) ? 1 : 2;
+      VPX::AudioPlayer::AudioStreamID const stream = me->m_audioPlayer->OpenAudioStream("Plugin."s + info.name + '.' + std::to_string(msg.id.resId), static_cast<int>(msg.sampleRate), nChannels, msg.format == CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT);
+      if (stream)
+      {
+         me->m_audioStreams[msg.id.id] = stream;
+         me->m_audioPlayer->SetStreamVolume(stream, msg.volume);
+         me->m_audioPlayer->EnqueueStream(stream, msg.buffer, msg.bufferSize);
       }
    }
 }

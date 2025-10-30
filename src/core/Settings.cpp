@@ -423,16 +423,6 @@ void Settings::Validate(const bool addDefaults)
 
 
    //////////////////////////////////////////////////////////////////////////
-   // Sound section
-
-   SettingInt(Settings::Player, "Sound3D"s, VPX::SoundConfigTypes::SNDCFG_SND3D2CH, VPX::SoundConfigTypes::SNDCFG_SND3D2CH, VPX::SoundConfigTypes::SNDCFG_SND3DSSF, ""s);
-   SettingBool(Settings::Player, "PlayMusic"s, true, ""s);
-   SettingBool(Settings::Player, "PlaySound"s, true, ""s);
-   SettingInt(Section::Player, "SoundVolume"s, 100, 0, 100, ""s);
-   SettingInt(Section::Player, "MusicVolume"s, 100, 0, 100, ""s);
-
-
-   //////////////////////////////////////////////////////////////////////////
    // Editor section
 
    SettingBool(Settings::Editor, "DisableHash"s, false, "Disable file integrity validation."s);
