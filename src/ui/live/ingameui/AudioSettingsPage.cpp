@@ -10,16 +10,13 @@ namespace VPX::InGameUI
 AudioSettingsPage::AudioSettingsPage()
    : InGameUIPage("Audio Settings"s, ""s, SaveMode::Both)
 {
-   const Settings& settings = GetSettings();
-
-   // Volume can either be adjusted globally or individually between backglass/playfield.
    AddItem(std::make_unique<InGameUIItem>(
-      VPX::Properties::BoolPropertyDef(""s, ""s, "Lock Volumes"s, "Adjust backlglass and playfield volume simultaneaously"s, true), //
+      VPX::Properties::BoolPropertyDef(""s, ""s, "Lock Volumes"s, "Adjust backglass and playfield volume simultaneaously"s, true), //
       [this]() { return m_lockVolume; }, //
       [this]() { return m_lockVolume; }, //
       [this](bool v) { m_lockVolume = v; }, //
-      [](Settings&) { /* UI state, not persisted */ },
-      [](bool, const Settings&, bool) { /* UI state, not persisted */ }));
+      [](Settings&) { /* UI state, not persisted */ }, //
+      [](bool, Settings&, bool) { /* UI state, not persisted */ }));
 
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_MusicVolume, "%3d %%"s, //
@@ -43,7 +40,6 @@ AudioSettingsPage::AudioSettingsPage()
          m_player->UpdateVolume();
       }));
 
-   // FIXME play music is not really dynamic at the moment => switch to a clean mute/unmute implementation
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_PlayMusic, //
       [this]() { return m_player->m_PlayMusic; }, //
@@ -52,9 +48,7 @@ AudioSettingsPage::AudioSettingsPage()
          m_player->m_PlayMusic = v;
          m_player->UpdateVolume();
       }));
-   // if (settings.LoadValue(Settings::Player, "SoundDeviceBG"s, soundDeviceBGName))
 
-   // FIXME play sound is not really dynamic at the moment => switch to a clean mute/unmute implementation
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_PlaySound, //
       [this]() { return m_player->m_PlaySound; }, //
@@ -63,8 +57,63 @@ AudioSettingsPage::AudioSettingsPage()
          m_player->m_PlaySound = v;
          m_player->UpdateVolume();
       }));
-   // if (settings.LoadValue(Settings::Player, "SoundDevice"s, soundDeviceName))
-   // int fmusic = settings.LoadValueUInt(Settings::Player, "Sound3D"s);
-}
 
+   for (const auto& device : VPX::AudioPlayer::EnumerateAudioDevices())
+      m_devices.push_back(device.name);
+
+   Settings::GetRegistry().Register(Settings::GetPlayer_SoundDeviceBG_Property()->WithDefault(m_player->m_audioPlayer->GetBackglassDeviceName()));
+   AddItem(std::make_unique<InGameUIItem>(
+      VPX::Properties::EnumPropertyDef(""s, ""s, "Backglass Sound Device"s, "Select backglass sound device"s, 0, 0, m_devices), //
+      [this]()
+      {
+         auto it = std::ranges::find(m_devices, m_player->m_audioPlayer->GetBackglassDeviceName());
+         return it == m_devices.end() ? 0 : (int)std::distance(m_devices.begin(), it);
+      }, // Live
+      [this]()
+      {
+         auto it = std::ranges::find(m_devices, m_player->m_ptable->m_settings.GetPlayer_SoundDeviceBG());
+         return it == m_devices.end() ? 0 : (int)std::distance(m_devices.begin(), it);
+      }, // Stored
+      [this](int, int v) {
+         m_player->m_audioPlayer = std::make_unique<VPX::AudioPlayer>( //
+            m_devices[v], //
+            m_player->m_ptable->m_settings.GetPlayer_SoundDevice(), //
+            static_cast<VPX::SoundConfigTypes>(m_player->m_ptable->m_settings.GetPlayer_Sound3D()));
+      }, //
+      [](Settings& settings) { settings.ResetPlayer_SoundDeviceBG(); }, //
+      [this](int v, Settings& settings, bool isTableOverride) { settings.SetPlayer_SoundDeviceBG(m_devices[v], isTableOverride); }));
+
+   Settings::GetRegistry().Register(Settings::GetPlayer_SoundDevice_Property()->WithDefault(m_player->m_audioPlayer->GetPlayfieldDeviceName()));
+   AddItem(std::make_unique<InGameUIItem>(
+      VPX::Properties::EnumPropertyDef(""s, ""s, "Playfield Sound Device"s, "Select playfield sound device"s, 0, 0, m_devices), //
+      [this]()
+      {
+         auto it = std::ranges::find(m_devices, m_player->m_audioPlayer->GetPlayfieldDeviceName());
+         return it == m_devices.end() ? 0 : (int)std::distance(m_devices.begin(), it);
+      }, // Live
+      [this]()
+      {
+         auto it = std::ranges::find(m_devices, m_player->m_ptable->m_settings.GetPlayer_SoundDevice());
+         return it == m_devices.end() ? 0 : (int)std::distance(m_devices.begin(), it);
+      }, // Stored
+      [this](int, int v)
+      {
+         m_player->m_audioPlayer = std::make_unique<VPX::AudioPlayer>( //
+            m_player->m_ptable->m_settings.GetPlayer_SoundDeviceBG(), //
+            m_devices[v], //
+            static_cast<VPX::SoundConfigTypes>(m_player->m_ptable->m_settings.GetPlayer_Sound3D()));
+      }, //
+      [](Settings& settings) { settings.ResetPlayer_SoundDevice(); }, //
+      [this](int v, Settings& settings, bool isTableOverride) { settings.SetPlayer_SoundDevice(m_devices[v], isTableOverride); }));
+
+   AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayer_Sound3D, //
+      [this]() { return m_player->m_audioPlayer->GetSoundMode3D(); }, //
+      [this](int, int v) {
+         m_player->m_audioPlayer = std::make_unique<VPX::AudioPlayer>( //
+            m_player->m_ptable->m_settings.GetPlayer_SoundDeviceBG(), //
+            m_player->m_ptable->m_settings.GetPlayer_SoundDevice(), //
+            static_cast<VPX::SoundConfigTypes>(v));
+      }));
+}
 }

@@ -14,6 +14,7 @@ public:
 
 private:
    bool m_lockVolume = true;
+   vector<string> m_devices;
 };
 
 }
