@@ -14,7 +14,6 @@
    #include "ui/dialogs/SoundDialog.h"
    #include "ui/dialogs/EditorOptionsDialog.h"
    #include "ui/dialogs/VideoOptionsDialog.h"
-   #include "ui/dialogs/AudioOptionsDialog.h"
    #include "ui/dialogs/CollectionManagerDialog.h"
    #include "ui/dialogs/PhysicsOptionsDialog.h"
    #include "ui/dialogs/RenderProbeDialog.h"
@@ -292,7 +291,6 @@ private:
 
    ImageDialog m_imageMngDlg;
    SoundDialog m_soundMngDlg;
-   AudioOptionsDialog m_audioOptDialog;
    EditorOptionsDialog m_editorOptDialog;
    CollectionManagerDialog m_collectionMngDlg;
    PhysicsOptionsDialog m_physicsOptDialog;

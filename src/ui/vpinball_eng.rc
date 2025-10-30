@@ -738,42 +738,6 @@ BEGIN
     LTEXT           "Y",IDC_STATIC,37,28,8,10
 END
 
-IDD_AUDIO_OPTIONS DIALOGEX 0, 0, 464, 160
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Audio Options"
-FONT 8, "MS Sans Serif", 0, 0, 0x0
-BEGIN
-    GROUPBOX        "Edited settings",IDC_STATIC,5,5,163,34
-    CONTROL         "Global application settings",IDC_APPLICATION_SETTINGS,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,12,15,131,10
-    CONTROL         "Specific table overrides",IDC_TABLE_OVERRIDE,"Button",BS_AUTORADIOBUTTON,12,26,131,10
-    GROUPBOX        "Multi-channel output",IDC_STATIC,5,45,163,104,BS_LEFT
-    CONTROL         "Standard 2 channel",IDC_RADIO_SND3D2CH,"Button",BS_AUTORADIOBUTTON | WS_GROUP,12,58,125,10
-    CONTROL         "Surround (All effects to rear channels)",IDC_RADIO_SND3DALLREAR,
-                    "Button",BS_AUTORADIOBUTTON,12,71,137,10
-    CONTROL         "Surround (Front is front of cab)",IDC_RADIO_SND3DFRONTISFRONT,
-                    "Button",BS_AUTORADIOBUTTON,12,84,123,10
-    CONTROL         "Surround (Front is rear of cab)",IDC_RADIO_SND3DFRONTISREAR,
-                    "Button",BS_AUTORADIOBUTTON,12,97,114,10
-    CONTROL         "7.1 Surround (Front is rear,",IDC_RADIO_SND3D6CH,"Button",BS_AUTORADIOBUTTON,12,110,120,10
-    LTEXT           "back is side, backbox is front)",IDC_STATIC,23,120,101,8,NOT WS_GROUP
-    CONTROL         "7.1 Surround Sound Feedback (enhanced)",IDC_RADIO_SND3DSSF,
-                    "Button",BS_AUTORADIOBUTTON,12,133,150,10
-    CONTROL         "Enable Playfield Sounds",IDC_PLAY_SOUND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,172,11,100,10
-    LTEXT           "&Playfield Volume",IDC_STATIC_SOUND,179,29,87,8
-    CONTROL         "Slider1",IDC_SOUND_SLIDER,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,174,39,110,18
-    CONTROL         "Enable Backglass Sounds",IDC_PLAY_MUSIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,172,73,100,10
-    LTEXT           "&Backglass Volume",IDC_STATIC_MUSIC,179,91,87,8
-    CONTROL         "Slider1",IDC_MUSIC_SLIDER,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,174,102,110,18
-    LTEXT           "Playfield Sound Device",IDC_STATIC_SOUNDDEVICE,289,11,170,10
-    LISTBOX         IDC_SoundList,289,24,170,40,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Backglass Sound Device",IDC_STATIC_SOUNDDEVICE2,288,73,170,10
-    LISTBOX         IDC_SoundListBG,288,86,171,40,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Save Overrides",IDC_SAVE_OVERRIDES,273,141,60,14
-    PUSHBUTTON      "Save Changes",IDC_SAVE_ALL,336,141,60,14
-    DEFPUSHBUTTON   "&OK",IDOK,399,141,60,14
-END
-
 IDD_PHYSICS_OPTIONS DIALOGEX 0, 0, 199, 378
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Configure (Optional) Global Physics Sets"
@@ -3139,7 +3103,6 @@ BEGIN
     END
     POPUP "&Preferences"
     BEGIN
-        MENUITEM "&Audio Options...",           ID_EDIT_AUDIOOPTIONS
         MENUITEM "&Video/Graphics Options...",  ID_EDIT_VIDEOOPTIONS
 #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
         MENUITEM "V&R Settings...",             ID_EDIT_VROPTIONS

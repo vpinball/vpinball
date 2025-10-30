@@ -120,8 +120,6 @@ add_executable(vpinball WIN32
    src/ui/Debugger.h
    src/ui/dialogs/AboutDialog.cpp
    src/ui/dialogs/AboutDialog.h
-   src/ui/dialogs/AudioOptionsDialog.cpp
-   src/ui/dialogs/AudioOptionsDialog.h
    src/ui/dialogs/CollectionManagerDialog.cpp
    src/ui/dialogs/CollectionManagerDialog.h
    src/ui/dialogs/DimensionDialog.cpp

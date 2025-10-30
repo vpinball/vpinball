@@ -925,7 +925,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/VPXLoadFileProgressBar.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/VPXSaveFileProgressBar.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/AboutDialog.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/AudioOptionsDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/CollectionManagerDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/DimensionDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/DrawingOrderDialog.cpp" />
@@ -1690,7 +1689,6 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/VPXLoadFileProgressBar.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/VPXSaveFileProgressBar.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/AboutDialog.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/AudioOptionsDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/CollectionManagerDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/DimensionDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/DrawingOrderDialog.h" />
