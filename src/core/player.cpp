@@ -168,8 +168,12 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
          m_vrDevice = useVR ? new VRDevice() : nullptr;
       #endif
    #endif
-   const StereoMode stereo3D = useVR ? STEREO_VR : (StereoMode)m_ptable->m_settings.LoadValueInt(Settings::Player, "Stereo3D"s);
-   assert(useVR == (stereo3D == STEREO_VR));
+
+   #ifdef ENABLE_DX9
+   const StereoMode stereo3D = STEREO_OFF;
+   #else
+   const StereoMode stereo3D = useVR ? STEREO_VR : m_ptable->m_settings.GetPlayer_Stereo3D();
+   #endif
 
    m_capExtDMD = (stereo3D == STEREO_VR) && m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CaptureExternalDMD"s, false);
    m_capPUP = (stereo3D == STEREO_VR) && m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CapturePUP"s, false);
@@ -702,7 +706,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    // Popup notification on startup
    if (m_renderer->m_stereo3D != STEREO_OFF && m_renderer->m_stereo3D != STEREO_VR && !m_renderer->m_stereo3Denabled)
-      m_liveUI->PushNotification("3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on"s, 4000);
+      m_liveUI->PushNotification("3D Stereo is enabled but currently toggled off"s, 4000);
    const int numberOfTimesToShowTouchMessage = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "NumberOfTimesToShowTouchMessage"s, 10);
    if (m_pininput.HasTouchInput() && numberOfTimesToShowTouchMessage != 0) //!! visualize with real buttons or at least the areas?? Add extra buttons?
    {
@@ -869,7 +873,6 @@ Player::~Player()
       m_renderer->m_renderDevice->m_FBShader->UnbindSamplers();
       m_renderer->m_renderDevice->m_flasherShader->UnbindSamplers();
       m_renderer->m_renderDevice->m_lightShader->UnbindSamplers();
-      m_renderer->m_renderDevice->m_stereoShader->UnbindSamplers();
       m_renderer->m_renderDevice->m_ballShader->UnbindSamplers();
    #endif
 

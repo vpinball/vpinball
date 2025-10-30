@@ -1312,8 +1312,7 @@ void EditorUI::UpdateVideoOptionsModal()
 
       if (m_renderer->m_stereo3D != STEREO_VR && ImGui::CollapsingHeader("3D Stereo Output", ImGuiTreeNodeFlags_DefaultOpen))
       {
-         if (ImGui::Checkbox("Enable stereo rendering", &m_renderer->m_stereo3Denabled))
-            g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DEnabled"s, m_renderer->m_stereo3Denabled);
+         ImGui::Checkbox("Enable stereo rendering", &m_renderer->m_stereo3Denabled);
          if (m_renderer->m_stereo3Denabled)
          {
             m_renderer->UpdateStereoShaderState();
@@ -1330,26 +1329,9 @@ void EditorUI::UpdateVideoOptionsModal()
                ImGui::PopItemFlag();
             if (stereo_mode != 0) // Stereo settings
             {
-               // The renderer does not support switching between fake/real stereo 
-               // ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-               // ImGui::Checkbox("Use Fake Stereo", &m_renderer->m_stereo3DfakeStereo);
-               // ImGui::PopItemFlag();
-               ImGui::TextUnformatted(m_renderer->m_stereo3DfakeStereo ? "Renderer uses 'fake' stereo from single render" : "Renderer performs real stereo rendering");
-               if (m_renderer->m_stereo3DfakeStereo)
-               {
-                  float stereo3DEyeSep = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DMaxSeparation"s, 0.03f);
-                  if (ImGui::InputFloat("Max Separation", &stereo3DEyeSep, 0.001f, 0.01f, "%.3f"))
-                     g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DMaxSeparation"s, stereo3DEyeSep);
-                  bool stereo3DY = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DYAxis"s, false);
-                  if (ImGui::Checkbox("Use Y axis", &stereo3DY))
-                     g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DYAxis"s, stereo3DY);
-               }
-               else
-               {
-                  int stereo3DEyeSep = (int)g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DEyeSeparation"s, 63.0f);
-                  if (ImGui::InputInt("Eye Separation (mm)", &stereo3DEyeSep, 1, 5))
-                     g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DEyeSeparation"s, (float)stereo3DEyeSep);
-               }
+               int stereo3DEyeSep = (int)g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DEyeSeparation"s, 63.0f);
+               if (ImGui::InputInt("Eye Separation (mm)", &stereo3DEyeSep, 1, 5))
+                  g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DEyeSeparation"s, (float)stereo3DEyeSep);
             }
             if (stereo_mode == 1) // 3D TV
             {

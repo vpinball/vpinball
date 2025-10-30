@@ -24,14 +24,9 @@
 
 Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncMode, const StereoMode stereo3D)
    : m_stereo3D(stereo3D)
-   #if defined(ENABLE_DX9) // DirectX 9 does not support stereo rendering
-   , m_stereo3DfakeStereo(true)
-   #else
-   , m_stereo3DfakeStereo(stereo3D == STEREO_VR ? false : table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DFake"s, false))
-   #endif
    , m_table(table)
 {
-   m_stereo3Denabled = m_table->m_settings.LoadValueBool(Settings::Player, "Stereo3DEnabled"s);
+   m_stereo3Denabled = m_table->m_settings.GetPlayer_Stereo3DEnabled();
    m_toneMapper = (ToneMapper)m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "ToneMapper"s, m_table->GetToneMapper());
    m_toneMapper = clamp(m_toneMapper, TM_REINHARD, TM_AGX_PUNCHY);
    m_HDRforceDisableToneMapper = m_table->m_settings.LoadValueBool(Settings::Player, "HDRDisableToneMapper"s);
@@ -127,7 +122,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    #endif
    const bool useNvidiaApi = m_table->m_settings.LoadValueWithDefault(Settings::Player, "UseNVidiaAPI"s, false);
    const bool compressTextures = m_table->m_settings.LoadValueWithDefault(Settings::Player, "CompressTextures"s, false);
-   const int nEyes = (m_stereo3D == STEREO_VR || (m_stereo3D != STEREO_OFF && !m_stereo3DfakeStereo)) ? 2 : 1;
+   const int nEyes = (m_stereo3D == STEREO_VR || m_stereo3D != STEREO_OFF) ? 2 : 1;
    try {
       m_renderDevice = new RenderDevice(wnd, m_stereo3D == STEREO_VR, nEyes, useNvidiaApi, compressTextures, nMSAASamples, syncMode);
    }
@@ -185,10 +180,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    #elif defined(ENABLE_DX9)
       constexpr colorFormat renderFormat = colorFormat::RGBA16F;
    #endif
-   SurfaceType rtType = m_stereo3D == STEREO_OFF 
-                     || (m_stereo3D != STEREO_VR && m_stereo3DfakeStereo)
-                     || !m_renderDevice->SupportLayeredRendering() 
-                      ? SurfaceType::RT_DEFAULT : SurfaceType::RT_STEREO;
+   SurfaceType rtType = m_stereo3D == STEREO_OFF || !m_renderDevice->SupportLayeredRendering() ? SurfaceType::RT_DEFAULT : SurfaceType::RT_STEREO;
 
    // MSAA render target which is resolved to the non MSAA render target
    if (nMSAASamples > 1) 
@@ -929,9 +921,9 @@ void Renderer::DrawBackground()
 void Renderer::InitLayout(const float xpixoff, const float ypixoff)
 {
    TRACE_FUNCTION();
-   ViewSetup& viewSetup = m_table->mViewSetups[m_table->m_BG_current_set];
+   const ViewSetup& viewSetup = m_table->mViewSetups[m_table->m_BG_current_set];
    #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
-   bool stereo = m_stereo3D != STEREO_OFF && m_stereo3D != STEREO_VR && m_stereo3Denabled;
+   bool stereo = m_stereo3Denabled && (m_stereo3D != STEREO_OFF) && (m_stereo3D != STEREO_VR);
    #elif defined(ENABLE_DX9)
    bool stereo = false;
    #endif
@@ -1093,30 +1085,10 @@ void Renderer::UpdateBallShaderMatrix()
 
 void Renderer::UpdateStereoShaderState()
 {
-   if (m_stereo3DfakeStereo)
-   {
-      // FIXME compute max separation and zero point depth for fake stereo corresponding to the ones of the real stereo, remove these from settings and table properties
-      // The problem with the legacy parameter is that both depends on the camera and do not match any physicaly correct measure. Authors tweak it but it will break at the
-      // next depth buffer change (due to difference between rendering API or for example if we switch to reversed or infinite buffer for better precision, ...)
-      // The idea would be (to be checked against shader implementation and ViewSetup projection maths):
-      // - Max separation is the separation of a point with a very high depth (compute it from eye separation which is physically measures, and near/far planes)
-      // - ZPD is the depth at which separation is 0 (compute it from the zNullSeparation in ViewSetup)
-      /*ModelViewProj stereoMVP;
-      m_table->mViewSetups[m_table->m_BG_current_set].ComputeMVP(m_ptable, Width, Height, true, stereoMVP);
-      RECT viewport { 0, 0, (LONG)Width, (LONG)Height };
-      vec3 deepPt(0.f, 0.f, 0.f); // = 5000.f * stereoMVP.GetModelViewInverse().GetOrthoNormalDir();
-      Vertex2D projLeft, projRight;
-      stereoMVP.GetModelViewProj(0).TransformVertices(&deepPt, nullptr, 1, &projLeft, viewport);
-      stereoMVP.GetModelViewProj(1).TransformVertices(&deepPt, nullptr, 1, &projRight, viewport);*/
-      const float eyeSeparation = m_table->GetMaxSeparation();
-      const float zpd = m_table->GetZPD();
-      const bool swapAxis = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DYAxis"s, false); // Swap X/Y axis
-      m_renderDevice->m_stereoShader->SetVector(SHADER_Stereo_MS_ZPD_YAxis, eyeSeparation, zpd, swapAxis ? 1.0f : 0.0f, 0.0f);
-   }
-   
+   #ifdef ENABLE_DX9
+   return;
+   #endif
    RenderTarget *renderedRT = GetPostProcessRenderTarget1();
-   if (m_stereo3DfakeStereo)
-      m_renderDevice->m_stereoShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetHeight(), m_table->Get3DOffset());
 
    m_stereo3DDefocus = 0.f;
    if (IsAnaglyphStereoMode(m_stereo3D))
@@ -2108,7 +2080,7 @@ void PrecompSplineTonemap(const float displayMaxLum, float out[6])
 void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
 {
    const bool useAA = m_renderWidth > GetBackBufferTexture()->GetWidth();
-   const bool stereo = m_stereo3D == STEREO_VR || ((m_stereo3D != STEREO_OFF) && m_stereo3Denabled && (!m_stereo3DfakeStereo || m_renderDevice->DepthBufferReadBackAvailable()));
+   const bool stereo = m_stereo3Denabled && (m_stereo3D != STEREO_OFF);
    #ifdef ENABLE_XR
       // OpenXR directly renders to the XR render target view without any postprocess needs
       const bool PostProcStereo = stereo && (m_stereo3D != STEREO_VR);
@@ -2587,7 +2559,12 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
    }
 
    // Apply stereo
-   if (m_stereo3D == STEREO_VR)
+   if (m_stereo3D == STEREO_OFF)
+   {
+      // STEREO_OFF: nothing to do
+      assert(renderedRT == outputBackBuffer);
+   }
+   else if (m_stereo3D == STEREO_VR)
    {
    #if defined(ENABLE_XR) || defined(ENABLE_VR)
       int w = renderedRT->GetWidth(), h = renderedRT->GetHeight();
@@ -2722,12 +2699,12 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
       #endif
    #endif
    }
-   else if (IsAnaglyphStereoMode(m_stereo3D) || Is3DTVStereoMode(m_stereo3D))
+   else if (m_stereo3Denabled)
    {
       // Anaglyph and 3DTV
       assert(renderedRT != outputBackBuffer);
       // For anaglyph, defocus the "lesser" eye (the one with a darker color, which should be the non dominant eye of the player)
-      if (m_stereo3DDefocus != 0.f)
+      if (IsAnaglyphStereoMode(m_stereo3D) && m_stereo3DDefocus != 0.f)
       {
          RenderTarget *tmpRT = GetPostProcessRenderTarget(renderedRT);
          outputRT = GetPostProcessRenderTarget(tmpRT);
@@ -2737,19 +2714,14 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
       // Stereo composition
       m_renderDevice->SetRenderTarget("Stereo Anaglyph"s, outputBackBuffer, false);
       m_renderDevice->AddRenderTargetDependency(renderedRT);
-      if (m_stereo3DfakeStereo)
-      {
-         m_renderDevice->AddRenderTargetDependency(GetBackBufferTexture(), true);
-         m_renderDevice->m_stereoShader->SetTexture(SHADER_tex_stereo_depth, GetBackBufferTexture()->GetDepthSampler());
-      }
       m_renderDevice->m_stereoShader->SetTexture(SHADER_tex_stereo_fb, renderedRT->GetColorSampler());
       m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), 1.0f, 1.0f);
       m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_stereoShader);
    }
    else
    {
-      // STEREO_OFF: nothing to do
-      assert(renderedRT == outputBackBuffer);
+      // 3D stereo rendering, but display mono (first eye)
+      // Nothing to do: last pass will just output to the backbuffer first layer
    }
 
    if (g_pplayer->GetProfilingMode() == PF_ENABLED)

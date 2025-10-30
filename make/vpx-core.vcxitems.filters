@@ -780,9 +780,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/input/SensorFilter.cpp">
       <Filter>input</Filter>
     </ClCompile>
-    <ClInclude Include="$(SolutionDir)/../../src/input/SensorMapping.cpp">
+    <ClCompile Include="$(SolutionDir)/../../src/input/SensorMapping.cpp">
       <Filter>input</Filter>
-    </ClInclude>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/parts/PartGroup.cpp">
       <Filter>parts</Filter>
     </ClCompile>
@@ -2824,9 +2824,6 @@
       <Filter>shaders\hlsl_glsl</Filter>
     </FxCompile>
     <FxCompile Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/LightShader.hlsl">
-      <Filter>shaders\hlsl_glsl</Filter>
-    </FxCompile>
-    <FxCompile Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/StereoShader.hlsl">
       <Filter>shaders\hlsl_glsl</Filter>
     </FxCompile>
     <FxCompile Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/UIShader.hlsl">

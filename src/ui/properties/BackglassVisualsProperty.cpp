@@ -5,9 +5,6 @@
 
 BackglassVisualsProperty::BackglassVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPBACKGLASS_VISUALS, pvsel)
 {
-    m_3dStereoOffsetEdit.SetDialog(this);
-    m_3dStereoSeparationEdit.SetDialog(this);
-    m_3dSteroZPDEdit.SetDialog(this);
     m_dtImageCombo.SetDialog(this);
     m_fsImageCombo.SetDialog(this);
     m_fssImageCombo.SetDialog(this);
@@ -34,14 +31,6 @@ void BackglassVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         PropertyDialog::SetCheckboxState(m_hEnableDecal, table->m_renderDecals);
     if (dispid == IDC_ENABLE_EMREEL_CHECK || dispid == -1)
         PropertyDialog::SetCheckboxState(m_hEnableEMReelCheck, table->m_renderEMReels);
-    if (dispid == IDC_GLOBAL_3DSTEREO || dispid == -1)
-        PropertyDialog::SetCheckboxState(m_hOverwriteGlobalStereoSettingsCheck, table->m_overwriteGlobalStereo3D);
-    if (dispid == IDC_3D_STEREO_OFFSET_EDIT || dispid == -1)
-        PropertyDialog::SetFloatTextbox(m_3dStereoOffsetEdit, table->Get3DOffset());
-    if (dispid == IDC_3D_STEREO_SEPARATION_EDIT || dispid == -1)
-        PropertyDialog::SetFloatTextbox(m_3dStereoSeparationEdit, table->GetMaxSeparation());
-    if (dispid == IDC_3D_STEREO_ZPD_EDIT || dispid == -1)
-        PropertyDialog::SetFloatTextbox(m_3dSteroZPDEdit, table->GetZPD());
     if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
         m_colorButton1.SetColor(table->m_colorbackdrop);
 }
@@ -75,18 +64,6 @@ void BackglassVisualsProperty::UpdateProperties(const int dispid)
         case IDC_ENABLE_DECAL_CHECK:
             CHECK_UPDATE_ITEM(table->m_renderDecals, PropertyDialog::GetCheckboxState(m_hEnableDecal), table);
             break;
-        case IDC_GLOBAL_3DSTEREO:
-            CHECK_UPDATE_ITEM(table->m_overwriteGlobalStereo3D, PropertyDialog::GetCheckboxState(m_hOverwriteGlobalStereoSettingsCheck), table);
-            break;
-        case IDC_3D_STEREO_OFFSET_EDIT:
-            CHECK_UPDATE_VALUE_SETTER(table->Set3DOffset, table->Get3DOffset, PropertyDialog::GetFloatTextbox, m_3dStereoOffsetEdit, table);
-            break;
-        case IDC_3D_STEREO_SEPARATION_EDIT:
-            CHECK_UPDATE_VALUE_SETTER(table->SetMaxSeparation, table->GetMaxSeparation, PropertyDialog::GetFloatTextbox, m_3dStereoSeparationEdit, table);
-            break;
-        case IDC_3D_STEREO_ZPD_EDIT:
-            CHECK_UPDATE_VALUE_SETTER(table->SetZPD, table->GetZPD, PropertyDialog::GetFloatTextbox, m_3dSteroZPDEdit, table);
-            break;
         case IDC_COLOR_BUTTON1:
         {
             CHOOSECOLOR cc = m_colorDialog.GetParameters();
@@ -117,10 +94,6 @@ BOOL BackglassVisualsProperty::OnInitDialog()
     m_colorGradingCombo.AttachItem(DISPID_Image5);
     m_hEnableEMReelCheck = GetDlgItem(IDC_ENABLE_EMREEL_CHECK);
     m_hEnableDecal = GetDlgItem(IDC_ENABLE_DECAL_CHECK);
-    m_hOverwriteGlobalStereoSettingsCheck = GetDlgItem(IDC_GLOBAL_3DSTEREO);
-    m_3dStereoOffsetEdit.AttachItem(IDC_3D_STEREO_OFFSET_EDIT);
-    m_3dStereoSeparationEdit.AttachItem(IDC_3D_STEREO_SEPARATION_EDIT);
-    m_3dSteroZPDEdit.AttachItem(IDC_3D_STEREO_ZPD_EDIT);
     AttachItem(IDC_COLOR_BUTTON1, m_colorButton1);
     UpdateVisuals();
 
@@ -130,9 +103,6 @@ BOOL BackglassVisualsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC3).GetHwnd(), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC4).GetHwnd(), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC5).GetHwnd(), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC6).GetHwnd(), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC7).GetHwnd(), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC8).GetHwnd(), CResizer::topleft, 0);
     m_resizer.AddChild(m_hApplyNightDayCheck, CResizer::topleft, 0);
     m_resizer.AddChild(m_dtImageCombo.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_fsImageCombo.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
@@ -140,10 +110,6 @@ BOOL BackglassVisualsProperty::OnInitDialog()
     m_resizer.AddChild(m_colorGradingCombo.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hEnableEMReelCheck, CResizer::topleft, 0);
     m_resizer.AddChild(m_hEnableDecal, CResizer::topleft, 0);
-    m_resizer.AddChild(m_hOverwriteGlobalStereoSettingsCheck, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_3dStereoOffsetEdit.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_3dStereoSeparationEdit.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_3dSteroZPDEdit.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_colorButton1.GetHwnd(), CResizer::topleft, 0);
 
     return TRUE;

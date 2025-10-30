@@ -864,65 +864,12 @@ void InputManager::CreateInputActions()
       {
          if (g_pplayer->m_liveUI->IsInGameUIOpened() || !isPressed)
             return;
-         if (IsAnaglyphStereoMode(g_pplayer->m_renderer->m_stereo3D))
-         {
-            // Select next glasses or toggle stereo on/off
-            int glassesIndex = g_pplayer->m_renderer->m_stereo3D - STEREO_ANAGLYPH_1;
-            if (!g_pplayer->m_renderer->m_stereo3Denabled && glassesIndex != 0)
-            {
-               g_pplayer->m_liveUI->PushNotification("Stereo enabled"s, 2000);
-               g_pplayer->m_renderer->m_stereo3Denabled = true;
-            }
-            else
-            {
-               const int dir
-                  = (m_inputActionstate.IsKeyDown(g_pplayer->m_pininput.GetLeftFlipperActionId()) || m_inputActionstate.IsKeyDown(g_pplayer->m_pininput.GetRightFlipperActionId())) ? -1 : 1;
-               // Loop back with shift pressed
-               if (!g_pplayer->m_renderer->m_stereo3Denabled && glassesIndex <= 0 && dir == -1)
-               {
-                  g_pplayer->m_renderer->m_stereo3Denabled = true;
-                  glassesIndex = 9;
-               }
-               else if (g_pplayer->m_renderer->m_stereo3Denabled && glassesIndex <= 0 && dir == -1)
-               {
-                  g_pplayer->m_liveUI->PushNotification("Stereo disabled"s, 2000);
-                  g_pplayer->m_renderer->m_stereo3Denabled = false;
-               }
-               // Loop forward
-               else if (!g_pplayer->m_renderer->m_stereo3Denabled)
-               {
-                  g_pplayer->m_liveUI->PushNotification("Stereo enabled"s, 2000);
-                  g_pplayer->m_renderer->m_stereo3Denabled = true;
-               }
-               else if (glassesIndex >= 9 && dir == 1)
-               {
-                  g_pplayer->m_liveUI->PushNotification("Stereo disabled"s, 2000);
-                  glassesIndex = 0;
-                  g_pplayer->m_renderer->m_stereo3Denabled = false;
-               }
-               else
-               {
-                  glassesIndex += dir;
-               }
-               g_pplayer->m_renderer->m_stereo3D = (StereoMode)(STEREO_ANAGLYPH_1 + glassesIndex);
-               if (g_pplayer->m_renderer->m_stereo3Denabled)
-               {
-                  string name;
-                  static const string defaultNames[]
-                     = { "Red/Cyan"s, "Green/Magenta"s, "Blue/Amber"s, "Cyan/Red"s, "Magenta/Green"s, "Amber/Blue"s, "Custom 1"s, "Custom 2"s, "Custom 3"s, "Custom 4"s };
-                  if (!g_pvp->m_settings.LoadValue(Settings::Player, "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("Name"s), name))
-                     name = defaultNames[glassesIndex];
-                  g_pplayer->m_liveUI->PushNotification("Profile #"s.append(std::to_string(glassesIndex + 1)).append(" '"s).append(name).append("' activated"s), 2000);
-               }
-            }
-         }
-         else if (Is3DTVStereoMode(g_pplayer->m_renderer->m_stereo3D))
-         {
-            // Toggle stereo on/off
+         if (Is3DTVStereoMode(g_pplayer->m_renderer->m_stereo3D) || IsAnaglyphStereoMode(g_pplayer->m_renderer->m_stereo3D))
+         { // Toggle stereo on/off
             g_pplayer->m_renderer->m_stereo3Denabled = !g_pplayer->m_renderer->m_stereo3Denabled;
          }
          else if (g_pplayer->m_renderer->m_stereo3D == STEREO_VR)
-         {
+         { // Toggle preview mode
             g_pplayer->m_renderer->m_vrPreview = (VRPreviewMode)((g_pplayer->m_renderer->m_vrPreview + 1) % (VRPREVIEW_BOTH + 1));
             g_pplayer->m_liveUI->PushNotification(g_pplayer->m_renderer->m_vrPreview == VRPREVIEW_DISABLED ? "Preview disabled"s // Will only display in headset
                   : g_pplayer->m_renderer->m_vrPreview == VRPREVIEW_LEFT                                   ? "Preview switched to left eye"s
@@ -930,9 +877,13 @@ void InputManager::CreateInputActions()
                                                                                                            : "Preview switched to both eyes"s,
                2000);
          }
-         g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DEnabled"s, g_pplayer->m_renderer->m_stereo3Denabled);
          g_pplayer->m_renderer->InitLayout();
          g_pplayer->m_renderer->UpdateStereoShaderState();
+         if (g_pplayer->m_renderer->IsUsingStaticPrepass())
+         {
+            g_pplayer->m_renderer->DisableStaticPrePass(true);
+            g_pplayer->m_renderer->DisableStaticPrePass(false);
+         }
       }));
 
    auto addJoyCustomAction = [this](const string& settingId, const string& label)
