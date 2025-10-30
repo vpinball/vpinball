@@ -320,7 +320,11 @@ RenderDeviceState::RenderDeviceState(RenderDevice* rd)
    , m_flasherShaderState(new ShaderState(m_rd->m_flasherShader, m_rd->UseLowPrecision()))
    , m_lightShaderState(new ShaderState(m_rd->m_lightShader, m_rd->UseLowPrecision()))
    , m_ballShaderState(new ShaderState(m_rd->m_ballShader, m_rd->UseLowPrecision()))
+#ifndef ENABLE_DX9
    , m_stereoShaderState(new ShaderState(m_rd->m_stereoShader, m_rd->UseLowPrecision()))
+#else
+   , m_stereoShaderState(nullptr)
+#endif
 {
 }
 
@@ -1281,10 +1285,13 @@ RenderDevice::RenderDevice(
    m_DMDShader = new Shader(this, m_isVR ? Shader::DMD_VR_SHADER : Shader::DMD_SHADER, m_nEyes == 2);
    m_flasherShader = new Shader(this, Shader::FLASHER_SHADER, m_nEyes == 2);
    m_lightShader = new Shader(this, Shader::LIGHT_SHADER, m_nEyes == 2);
+   #ifndef ENABLE_DX9
    m_stereoShader = new Shader(this, Shader::STEREO_SHADER, m_nEyes == 2);
+   #endif
    m_FBShader = new Shader(this, Shader::POSTPROCESS_SHADER, m_nEyes == 2);
 
-   if (m_basicShader->HasError() || m_ballShader->HasError() || m_DMDShader->HasError() || m_FBShader->HasError() || m_flasherShader->HasError() || m_lightShader->HasError() || m_stereoShader->HasError())
+   if ((m_stereoShader != nullptr && m_stereoShader->HasError()) || m_basicShader->HasError() || m_ballShader->HasError() || m_DMDShader->HasError() || m_FBShader->HasError()
+      || m_flasherShader->HasError() || m_lightShader->HasError())
    {
       ReportError("Fatal Error: shader compilation failed!", -1, __FILE__, __LINE__);
       throw(-1);
@@ -1887,7 +1894,9 @@ void RenderDevice::CopyRenderStates(const bool copyTo, RenderDeviceState& state)
    m_flasherShader->m_state->CopyTo(copyTo, state.m_flasherShaderState);
    m_lightShader->m_state->CopyTo(copyTo, state.m_lightShaderState);
    m_ballShader->m_state->CopyTo(copyTo, state.m_ballShaderState);
+   #ifndef ENABLE_DX9
    m_stereoShader->m_state->CopyTo(copyTo, state.m_stereoShaderState);
+   #endif
 }
 
 void RenderDevice::SetClipPlane(const vec4 &plane)

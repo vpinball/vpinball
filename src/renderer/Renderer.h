@@ -135,7 +135,6 @@ public:
    float m_inc = 0.f;
 
    StereoMode m_stereo3D;
-   const bool m_stereo3DfakeStereo;
    bool m_stereo3Denabled;
    float m_stereo3DDefocus = 0.f;
 

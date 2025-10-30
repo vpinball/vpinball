@@ -86,10 +86,6 @@ PinTable::PinTable()
    m_tblAutoStartRetry = m_settings.LoadValueWithDefault(Settings::Player, "AutostartRetry"s, 0) * 10;
    m_tblAutoStartEnabled = m_settings.LoadValueWithDefault(Settings::Player, "asenable"s, false);
 
-   m_global3DZPD = m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DZPD"s, 0.5f);
-   m_global3DMaxSeparation = m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DMaxSeparation"s, 0.03f);
-   m_global3DOffset = m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DOffset"s, 0.f);
-
    m_tblNudgeRead = Vertex2D(0.f,0.f);
    m_tblNudgePlumb = Vertex2D(0.f,0.f);
 
@@ -807,9 +803,6 @@ PinTable* PinTable::CopyForPlay()
    dst->m_zoom = src->m_zoom;
    dst->m_angletiltMax = src->m_angletiltMax;
    dst->m_angletiltMin = src->m_angletiltMin;
-   dst->m_3DZPD = src->m_3DZPD;
-   dst->m_3DOffset = src->m_3DOffset;
-   dst->m_overwriteGlobalStereo3D = src->m_overwriteGlobalStereo3D;
    dst->m_image = src->m_image;
    dst->m_ImageBackdropNightDay = src->m_ImageBackdropNightDay;
    dst->m_imageColorGrade = src->m_imageColorGrade;
@@ -855,7 +848,6 @@ PinTable* PinTable::CopyForPlay()
    dst->m_BG_current_set = src->m_BG_current_set;
    dst->UpdateCurrentBGSet();
    dst->m_currentBackglassMode = src->m_currentBackglassMode;
-   dst->m_3DmaxSeparation = src->m_3DmaxSeparation;
    for (int i = 0; i < 3; i++)
    {
       dst->mViewSetups[i] = src->mViewSetups[i];
@@ -1695,11 +1687,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    bw.WriteFloat(FID(SLPX), m_angletiltMax);
    bw.WriteFloat(FID(SLOP), m_angletiltMin);
 
-   bw.WriteFloat(FID(MAXSEP), m_3DmaxSeparation);
-   bw.WriteFloat(FID(ZPD), m_3DZPD);
-   bw.WriteFloat(FID(STO), m_3DOffset);
-   bw.WriteBool(FID(OGST), m_overwriteGlobalStereo3D);
-
    bw.WriteString(FID(IMAG), m_image);
    bw.WriteString(FID(BIMG), m_BG_image[0]);
    bw.WriteString(FID(BIMF), m_BG_image[1]);
@@ -2529,10 +2516,6 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(OFFX): pbr->GetFloat(m_offset.x); break;
    case FID(OFFY): pbr->GetFloat(m_offset.y); break;
    case FID(ZOOM): pbr->GetFloat(m_zoom); break;
-   case FID(MAXSEP): pbr->GetFloat(m_3DmaxSeparation); break;
-   case FID(ZPD): pbr->GetFloat(m_3DZPD); break;
-   case FID(STO): pbr->GetFloat(m_3DOffset); break;
-   case FID(OGST): pbr->GetBool(m_overwriteGlobalStereo3D); break;
    case FID(SLPX): pbr->GetFloat(m_angletiltMax); break;
    case FID(SLOP): pbr->GetFloat(m_angletiltMin); break;
    case FID(GLAS): pbr->GetFloat(m_glassTopHeight); break;
@@ -3051,33 +3034,6 @@ void PinTable::MoveCollectionUp(CComObject<Collection> *pcol)
       m_vcollection.push_back(pcol);
    else
       m_vcollection.insert(pcol, idx - 1);
-}
-
-float PinTable::GetZPD() const
-{
-   return m_overwriteGlobalStereo3D ? m_3DZPD : m_global3DZPD;
-}
-
-void PinTable::SetZPD(const float value)
-{
-   if (m_overwriteGlobalStereo3D)
-      m_3DZPD = value;
-}
-
-float PinTable::GetMaxSeparation() const
-{
-   return m_overwriteGlobalStereo3D ? m_3DmaxSeparation : m_global3DMaxSeparation;
-}
-
-void PinTable::SetMaxSeparation(const float value)
-{
-   if (m_overwriteGlobalStereo3D)
-      m_3DmaxSeparation = value;
-}
-
-float PinTable::Get3DOffset() const
-{
-   return m_overwriteGlobalStereo3D ? m_3DOffset : m_global3DOffset;
 }
 
 FRect3D PinTable::GetBoundingBox() const
@@ -5145,58 +5101,6 @@ STDMETHODIMP PinTable::put_Name(BSTR newVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_MaxSeparation(float *pVal)
-{
-   *pVal = GetMaxSeparation();
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_MaxSeparation(float newVal)
-{
-   STARTUNDO
-   if (m_overwriteGlobalStereo3D)
-      m_3DmaxSeparation = newVal;
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_ZPD(float *pVal)
-{
-   *pVal = GetZPD();
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_ZPD(float newVal)
-{
-   STARTUNDO
-   SetZPD(newVal);
-   STOPUNDO
-
-   return S_OK;
-}
-
-void PinTable::Set3DOffset(const float value)
-{
-   if (m_overwriteGlobalStereo3D)
-      m_3DOffset = value;
-}
-
-STDMETHODIMP PinTable::get_Offset(float *pVal)
-{
-   *pVal = Get3DOffset();
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Offset(float newVal)
-{
-   STARTUNDO
-   Set3DOffset(newVal);
-   STOPUNDO
-
-   return S_OK;
-}
-
 VPX::Sound *PinTable::GetSound(const string &name) const
 {
    auto sound = std::ranges::find_if(m_vsound, [&](const VPX::Sound *const ps) { return StrCompareNoCase(ps->GetName(), name); });
@@ -6345,23 +6249,6 @@ STDMETHODIMP PinTable::put_GlassHeight(float newVal)
    return S_OK;
 }
 
-// FIXME deprecated
-STDMETHODIMP PinTable::get_TableHeight(float *pVal)
-{
-   *pVal = 0.f;
-   return S_OK;
-}
-
-// FIXME deprecated
-STDMETHODIMP PinTable::put_TableHeight(float newVal)
-{
-   /* STARTUNDO
-   m_tableheight = newVal;
-   STOPUNDO*/
-
-   return S_OK;
-}
-
 float PinTable::GetTableWidth() const
 {
    return m_right - m_left;
@@ -6749,64 +6636,6 @@ STDMETHODIMP PinTable::put_DetailLevel(int newVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_GlobalAlphaAcc(VARIANT_BOOL *pVal)
-{
-   // FIXME NOOP remove
-   //*pVal = FTOVB(m_overwriteGlobalDetailLevel);
-   *pVal = FTOVB(true);
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_GlobalAlphaAcc(VARIANT_BOOL newVal)
-{
-   // FIXME NOOP remove
-   /*STARTUNDO
-   m_overwriteGlobalDetailLevel = VBTOb(newVal);
-   if (!m_overwriteGlobalDetailLevel)
-      m_userDetailLevel = m_globalDetailLevel;
-   STOPUNDO*/
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_GlobalDayNight(VARIANT_BOOL *pVal)
-{
-   // FIXME deprecated
-   //*pVal = FTOVB(m_overwriteGlobalDayNight);
-   *pVal = FTOVB(m_settings.LoadValueBool(Settings::Player, "OverrideTableEmissionScale"s));
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_GlobalDayNight(VARIANT_BOOL newVal)
-{
-   // FIXME deprecated
-   //STARTUNDO
-   //m_overwriteGlobalDayNight = VBTOb(newVal);
-   //STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_GlobalStereo3D(VARIANT_BOOL *pVal)
-{
-   *pVal = FTOVB(m_overwriteGlobalStereo3D);
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_GlobalStereo3D(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-   m_overwriteGlobalStereo3D = VBTOb(newVal);
-   if (!m_overwriteGlobalStereo3D)
-   {
-      m_3DmaxSeparation = m_global3DMaxSeparation;
-      m_3DZPD = m_global3DZPD;
-      m_3DOffset = m_global3DOffset;
-   }
-   STOPUNDO
-
-   return S_OK;
-}
-
 STDMETHODIMP PinTable::get_BallDecalMode(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_BallDecalMode);
@@ -6844,23 +6673,6 @@ STDMETHODIMP PinTable::put_TableMusicVolume(int newVal)
    SetTableMusicVolume(newVal);
    STOPUNDO
 
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_TableAdaptiveVSync(int *pVal)
-{
-   // FIXME deprecated remove
-   //*pVal = m_TableAdaptiveVSync;
-   *pVal = -1;
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_TableAdaptiveVSync(int newVal)
-{
-   // FIXME deprecated remove
-   //STARTUNDO
-   //m_TableAdaptiveVSync = newVal;
-   //STOPUNDO
    return S_OK;
 }
 
@@ -7426,29 +7238,6 @@ STDMETHODIMP PinTable::put_EnvironmentImage(BSTR newVal)
    return S_OK;
 }
 
-// deprecated
-STDMETHODIMP PinTable::get_YieldTime(LONG *pVal)
-{
-   if (!g_pplayer)
-   {
-      *pVal = NULL;
-      return E_FAIL;
-   }
-   else
-      *pVal = 0;
-
-   return S_OK;
-}
-
-// deprecated
-STDMETHODIMP PinTable::put_YieldTime(LONG newVal)
-{
-   if (!g_pplayer)
-      return E_FAIL;
-
-   return S_OK;
-}
-
 STDMETHODIMP PinTable::get_EnableAntialiasing(UserDefaultOnOff *pVal)
 {
    // See put_EnableFXAA, not sure why we keep this
@@ -7821,23 +7610,6 @@ STDMETHODIMP PinTable::put_EnableDecals(VARIANT_BOOL newVal)
 STDMETHODIMP PinTable::get_ShowDT(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_BG_current_set == BG_DESKTOP || m_BG_current_set == BG_FSS); // DT & FSS
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_ReflectElementsOnPlayfield(VARIANT_BOOL *pVal)
-{
-   // FIXME Deprecated
-   *pVal = FTOVB(true);
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_ReflectElementsOnPlayfield(VARIANT_BOOL newVal)
-{
-   // FIXME deprecated
-   //STARTUNDO
-   //m_reflectElementsOnPlayfield = VBTOb(newVal);
-   //STOPUNDO
-
    return S_OK;
 }
 
@@ -8608,4 +8380,147 @@ void PinTable::ShowWhereMaterialUsed(vector<WhereUsedInfo> &vWhereUsed, Material
       }
       }
    }
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+// Deprecated properties exposed to scripting API
+
+STDMETHODIMP PinTable::get_ReflectElementsOnPlayfield(VARIANT_BOOL *pVal)
+{
+   PLOGE << "ReflectElementsOnPlayfield is deprecated";
+   *pVal = FTOVB(true);
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_ReflectElementsOnPlayfield(VARIANT_BOOL newVal)
+{
+   PLOGE << "ReflectElementsOnPlayfield is deprecated";
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_YieldTime(LONG *pVal)
+{
+   PLOGE << "YieldTime is deprecated";
+   if (!g_pplayer)
+   {
+      *pVal = NULL;
+      return E_FAIL;
+   }
+   else
+      *pVal = 0;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_YieldTime(LONG newVal)
+{
+   PLOGE << "YieldTime is deprecated";
+   if (!g_pplayer)
+      return E_FAIL;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_TableHeight(float *pVal)
+{
+   PLOGE << "TableHeight is deprecated";
+   *pVal = 0.f;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_TableHeight(float newVal)
+{
+   PLOGE << "TableHeight is deprecated";
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_TableAdaptiveVSync(int *pVal)
+{
+   PLOGE << "TableAdaptiveVSync is deprecated";
+   *pVal = -1;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_TableAdaptiveVSync(int newVal)
+{
+   PLOGE << "TableAdaptiveVSync is deprecated";
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_GlobalAlphaAcc(VARIANT_BOOL *pVal)
+{
+   PLOGE << "GlobalAlphaAcc is deprecated";
+   *pVal = (VARIANT_BOOL)-1;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_GlobalAlphaAcc(VARIANT_BOOL newVal)
+{
+   PLOGE << "GlobalAlphaAcc is deprecated";
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_GlobalDayNight(VARIANT_BOOL *pVal)
+{
+   PLOGE << "GlobalDayNight is deprecated";
+   *pVal = (VARIANT_BOOL)0;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_GlobalDayNight(VARIANT_BOOL newVal)
+{
+   PLOGE << "GlobalDayNight is deprecated";
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_GlobalStereo3D(VARIANT_BOOL *pVal)
+{
+   PLOGE << "GlobalStereo3D is deprecated";
+   *pVal = (VARIANT_BOOL)0;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_GlobalStereo3D(VARIANT_BOOL newVal)
+{
+   PLOGE << "GlobalStereo3D is deprecated";
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_MaxSeparation(float *pVal)
+{
+   PLOGE << "MaxSeparation is deprecated";
+   *pVal = 0.f;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_MaxSeparation(float newVal)
+{
+   PLOGE << "MaxSeparation is deprecated";
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_ZPD(float *pVal)
+{
+   PLOGE << "ZPD is deprecated";
+   *pVal = 0.f;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_ZPD(float newVal)
+{
+   PLOGE << "ZPD is deprecated";
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Offset(float *pVal)
+{
+   PLOGE << "3D Offset is deprecated";
+   *pVal = 0.f;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Offset(float newVal)
+{
+   PLOGE << "3D Offset is deprecated";
+   return S_OK;
 }

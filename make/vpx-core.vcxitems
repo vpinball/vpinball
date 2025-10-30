@@ -1992,19 +1992,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
       <FileType>Document</FileType>
     </FxCompile>
-    <FxCompile Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/StereoShader.hlsl">
-      <EntryPointName>stereoShaderCode</EntryPointName>
-      <HeaderFileOutput>$(SolutionDir)../gen/shaders/hlsl_stereo.h</HeaderFileOutput>
-      <ShaderType>Effect</ShaderType>
-      <ShaderModel>2.0</ShaderModel>
-      <ObjectFileOutput>
-      </ObjectFileOutput>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_GL'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_GL'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_BGFX'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)'=='Release_BGFX'">true</ExcludedFromBuild>
-      <FileType>Document</FileType>
-    </FxCompile>
     <FxCompile Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/UIShader.hlsl">
       <EntryPointName>uiShaderCode</EntryPointName>
       <HeaderFileOutput>$(SolutionDir)../gen/shaders/hlsl_ui.h</HeaderFileOutput>

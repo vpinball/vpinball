@@ -95,15 +95,10 @@ private:
    CEdit m_latencyCorrection;
 
    CComboBox m_stereoMode;
-   CButton m_stereoFake;
    CComboBox m_stereoFilter;
    CEdit   m_stereoBrightness;
    CEdit   m_stereoSaturation;
    CEdit   m_stereoEyeSeparation;
-   CEdit   m_stereoMaxSeparation;
-   CEdit   m_stereoZPD;
-   CEdit   m_stereoOffset;
-   CButton m_stereoYAxis;
 
    CComboBox m_maxAO;
    CComboBox m_maxReflection;
@@ -898,16 +893,10 @@ BOOL RenderOptPage::OnInitDialog()
 
    AttachItem(IDC_3D_STEREO, m_stereoMode);
    AddToolTip(m_stereoMode, "Activate this to enable 3D Stereo output using the requested format.\r\nSwitch on/off during play with the F10 key.\r\nThis requires that your TV can display 3D Stereo, and respective 3D glasses.");
-   AttachItem(IDC_FAKE_STEREO, m_stereoFake);
    AttachItem(IDC_3D_STEREO_ANAGLYPH_FILTER, m_stereoFilter);
    AttachItem(IDC_3D_STEREO_BRIGHTNESS, m_stereoBrightness);
    AttachItem(IDC_3D_STEREO_DESATURATION, m_stereoSaturation);
    AttachItem(IDC_3D_STEREO_ES, m_stereoEyeSeparation);
-   AttachItem(IDC_3D_STEREO_MS, m_stereoMaxSeparation);
-   AttachItem(IDC_3D_STEREO_ZPD, m_stereoZPD);
-   AttachItem(IDC_3D_STEREO_OFS, m_stereoOffset);
-   AttachItem(IDC_3D_STEREO_Y, m_stereoYAxis);
-   AddToolTip(m_stereoYAxis, "Switches 3D Stereo effect to use the Y Axis.\r\nThis should usually be selected for Cabinets/rotated displays.");
    SetupCombo(m_stereoFilter, 4, "None", "Dubois", "Luminance", "Deghost");
 
    AttachItem(IDC_MAX_AO_COMBO, m_maxAO);
@@ -1150,15 +1139,7 @@ void RenderOptPage::LoadSettings(Settings& settings)
    OnCommand(IDC_OVERRIDE_DN, 0L); // Force UI update
    
    { // Stereo
-      bool fakeStereo = true;
-      #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
-         fakeStereo = settings.LoadValueWithDefault(Settings::Player, "Stereo3DFake"s, false);
-      #elif defined(ENABLE_DX9)
-         m_stereoFake.EnableWindow(FALSE);
-      #endif
-         m_stereoFake.SetCheck(fakeStereo ? BST_CHECKED : BST_UNCHECKED);
-
-      const int stereo3D = settings.LoadValueInt(Settings::Player, "Stereo3D"s);
+      const int stereo3D = settings.GetPlayer_Stereo3D();
       SetupCombo(m_stereoMode, 5, "Disabled", "Top / Bottom", "Interlaced (e.g. LG TVs)", "Flipped Interlaced (e.g. LG TVs)", "Side by Side");
       static const string defaultNames[] = { "Red/Cyan"s, "Green/Magenta"s, "Blue/Amber"s, "Cyan/Red"s, "Magenta/Green"s, "Amber/Blue"s, "Custom 1"s, "Custom 2"s, "Custom 3"s, "Custom 4"s };
       string name[std::size(defaultNames)];
@@ -1171,16 +1152,11 @@ void RenderOptPage::LoadSettings(Settings& settings)
       m_stereoMode.SetCurSel(stereo3D);
       m_stereoMode.SetRedraw(true);
 
-      m_stereoYAxis.SetCheck(settings.LoadValueWithDefault(Settings::Player, "Stereo3DYAxis"s, false) ? BST_CHECKED : BST_UNCHECKED);
-
-      m_stereoOffset.SetWindowText(f2sz(settings.LoadValueWithDefault(Settings::Player, "Stereo3DOffset"s, 0.f)).c_str());
-      m_stereoMaxSeparation.SetWindowText(f2sz(settings.LoadValueWithDefault(Settings::Player, "Stereo3DMaxSeparation"s, 0.03f)).c_str());
       m_stereoEyeSeparation.SetWindowText(f2sz(settings.LoadValueWithDefault(Settings::Player, "Stereo3DEyeSeparation"s, 63.0f)).c_str());
-      m_stereoZPD.SetWindowText(f2sz(settings.LoadValueWithDefault(Settings::Player, "Stereo3DZPD"s, 0.5f)).c_str());
       m_stereoBrightness.SetWindowText(f2sz(settings.LoadValueWithDefault(Settings::Player, "Stereo3DBrightness"s, 1.0f)).c_str());
       m_stereoSaturation.SetWindowText(f2sz(settings.LoadValueWithDefault(Settings::Player, "Stereo3DSaturation"s, 1.0f)).c_str());
 
-      OnCommand(IDC_FAKE_STEREO, 0L); // Force UI update
+      OnCommand(IDC_3D_STEREO, 0L); // Force UI update
    }
 
    #if defined(ENABLE_BGFX)
@@ -1268,16 +1244,9 @@ void RenderOptPage::SaveSettings(Settings& settings, bool saveAll)
    int stereo3D = m_stereoMode.GetCurSel();
    if (stereo3D < 0)
       stereo3D = STEREO_OFF;
-   settings.SaveValue(Settings::Player, "Stereo3D"s, (int)stereo3D, !saveAll);
-   settings.SaveValue(Settings::Player, "Stereo3DEnabled"s, stereo3D != STEREO_OFF, !saveAll);
-   settings.SaveValue(Settings::Player, "Stereo3DYAxis"s, m_stereoYAxis.GetCheck() == BST_CHECKED, !saveAll);
-   settings.SaveValue(Settings::Player, "Stereo3DOffset"s, sz2f(GetDlgItemText(IDC_3D_STEREO_OFS).GetString()), !saveAll);
-   #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
-      settings.SaveValue(Settings::Player, "Stereo3DFake"s, m_stereoFake.GetCheck() == BST_CHECKED, !saveAll);
-   #endif
-   settings.SaveValue(Settings::Player, "Stereo3DMaxSeparation"s, sz2f(GetDlgItemText(IDC_3D_STEREO_MS).GetString()), !saveAll);
+   settings.SetPlayer_Stereo3D((StereoMode)stereo3D, !saveAll);
+   settings.SetPlayer_Stereo3DEnabled(stereo3D != STEREO_OFF, !saveAll);
    settings.SaveValue(Settings::Player, "Stereo3DEyeSeparation"s, sz2f(GetDlgItemText(IDC_3D_STEREO_ES).GetString()), !saveAll);
-   settings.SaveValue(Settings::Player, "Stereo3DZPD"s, sz2f(GetDlgItemText(IDC_3D_STEREO_ZPD).GetString()), !saveAll);
    settings.SaveValue(Settings::Player, "Stereo3DBrightness"s, sz2f(GetDlgItemText(IDC_3D_STEREO_BRIGHTNESS).GetString()), !saveAll);
    settings.SaveValue(Settings::Player, "Stereo3DSaturation"s, sz2f(GetDlgItemText(IDC_3D_STEREO_DESATURATION).GetString()), !saveAll);
    if (IsAnaglyphStereoMode(stereo3D))
@@ -1336,11 +1305,7 @@ void RenderOptPage::ResetVideoPreferences(int profile)
       m_visualNudge.SetWindowText("0.02");
 
       m_stereoMode.SetCurSel(0);
-      m_stereoYAxis.SetCheck(BST_UNCHECKED);
-      m_stereoOffset.SetWindowText("0");
       m_stereoEyeSeparation.SetWindowText("63");
-      m_stereoMaxSeparation.SetWindowText("0.003");
-      m_stereoZPD.SetWindowText("0.5");
       m_stereoBrightness.SetWindowText("1");
       m_stereoSaturation.SetWindowText("1");
 
@@ -1386,7 +1351,6 @@ BOOL RenderOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
 {
    switch (LOWORD(wParam))
    {
-   case IDC_3D_STEREO_Y:
    case IDC_TEX_COMPRESS:
    case IDC_FORCE_ANISO:
    case IDC_TM_OFF:
@@ -1404,9 +1368,6 @@ BOOL RenderOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
    case IDC_3D_STEREO_BRIGHTNESS:
    case IDC_3D_STEREO_DESATURATION:
    case IDC_3D_STEREO_ES:
-   case IDC_3D_STEREO_MS:
-   case IDC_3D_STEREO_ZPD:
-   case IDC_3D_STEREO_OFS:
    case IDC_MAX_FPS:
    case IDC_MAX_PRE_FRAMES:
    case IDC_LATENCY_CORRECTION:
@@ -1443,26 +1404,15 @@ BOOL RenderOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
       ResetVideoPreferences(2);
       break;
    case IDC_3D_STEREO:
-   case IDC_FAKE_STEREO:
-      if ((LOWORD(wParam) == IDC_3D_STEREO && HIWORD(wParam) == CBN_SELCHANGE)
-       || (LOWORD(wParam) == IDC_FAKE_STEREO && HIWORD(wParam) == BN_CLICKED))
+      if ((LOWORD(wParam) == IDC_3D_STEREO && HIWORD(wParam) == CBN_SELCHANGE))
          PropChanged();
       {
          int stereo3D = m_stereoMode.GetCurSel();
          if (stereo3D < 0)
             stereo3D = STEREO_OFF;
-         bool fakeStereo = true;
-         #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
-            fakeStereo = m_stereoFake.GetCheck() == BST_CHECKED;
-         #endif
-         SetDlgItemText(IDC_3D_STEREO_MS_LABEL, fakeStereo ? "Parallax Separation" : "Eye Separation (mm)");
+         SetDlgItemText(IDC_3D_STEREO_MS_LABEL, "Eye Separation (mm)");
          if (stereo3D == STEREO_OFF)
          {
-            m_stereoFake.EnableWindow(false);
-            m_stereoYAxis.EnableWindow(false);
-            m_stereoOffset.EnableWindow(false);
-            m_stereoZPD.EnableWindow(false);
-            m_stereoMaxSeparation.EnableWindow(false);
             m_stereoEyeSeparation.EnableWindow(false);
             m_stereoBrightness.EnableWindow(false);
             m_stereoSaturation.EnableWindow(false);
@@ -1470,32 +1420,14 @@ BOOL RenderOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
          }
          else if (Is3DTVStereoMode(stereo3D))
          {
-            #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
-               m_stereoFake.EnableWindow(true);
-            #endif
-            m_stereoYAxis.EnableWindow(fakeStereo);
-            m_stereoOffset.EnableWindow(fakeStereo);
-            m_stereoZPD.EnableWindow(fakeStereo);
-            m_stereoMaxSeparation.ShowWindow(fakeStereo);
-            m_stereoEyeSeparation.ShowWindow(!fakeStereo);
-            m_stereoMaxSeparation.EnableWindow(fakeStereo);
-            m_stereoEyeSeparation.EnableWindow(!fakeStereo);
+            m_stereoEyeSeparation.EnableWindow(true);
             m_stereoBrightness.EnableWindow(false);
             m_stereoSaturation.EnableWindow(false);
             m_stereoFilter.EnableWindow(false);
          }
          else if (IsAnaglyphStereoMode(stereo3D))
          {
-            #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
-               m_stereoFake.EnableWindow(true);
-            #endif
-            m_stereoYAxis.EnableWindow(fakeStereo);
-            m_stereoOffset.EnableWindow(fakeStereo);
-            m_stereoZPD.EnableWindow(fakeStereo);
-            m_stereoMaxSeparation.ShowWindow(fakeStereo);
-            m_stereoEyeSeparation.ShowWindow(!fakeStereo);
-            m_stereoMaxSeparation.EnableWindow(fakeStereo);
-            m_stereoEyeSeparation.EnableWindow(!fakeStereo);
+            m_stereoEyeSeparation.EnableWindow(true);
             m_stereoBrightness.EnableWindow(true);
             m_stereoSaturation.EnableWindow(true);
             m_stereoFilter.EnableWindow(true);

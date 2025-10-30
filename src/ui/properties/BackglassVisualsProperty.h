@@ -19,10 +19,6 @@ private:
     HWND            m_hApplyNightDayCheck;
     HWND            m_hEnableEMReelCheck;
     HWND            m_hEnableDecal;
-    HWND            m_hOverwriteGlobalStereoSettingsCheck;
-    EditBox         m_3dStereoOffsetEdit;
-    EditBox         m_3dStereoSeparationEdit;
-    EditBox         m_3dSteroZPDEdit;
     ComboBox        m_dtImageCombo;
     ComboBox        m_fsImageCombo;
     ComboBox        m_fssImageCombo;

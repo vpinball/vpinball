@@ -95,7 +95,7 @@ TEST_CASE("Stereo top/bottom render")
 {
    ResetVPX();
    Settings& settings = g_pvp->m_settings;
-   settings.SaveValue(Settings::Section::Player, "Stereo3D"s, STEREO_TB);
+   settings.SetPlayer_Stereo3D(STEREO_TB, false);
    TestRender("test000-default-table.vpx"s, "test000-stereo-tb"s, VPXBackends::ALL_BUT_DX9);
    ResetVPX();
 }
@@ -104,7 +104,7 @@ TEST_CASE("Stereo interleaved render")
 {
    ResetVPX();
    Settings& settings = g_pvp->m_settings;
-   settings.SaveValue(Settings::Section::Player, "Stereo3D"s, STEREO_INT);
+   settings.SetPlayer_Stereo3D(STEREO_INT, false);
    TestRender("test000-default-table.vpx"s, "test000-stereo-int"s, VPXBackends::ALL_BUT_DX9);
    ResetVPX();
 }
@@ -113,7 +113,7 @@ TEST_CASE("Stereo side by side render")
 {
    ResetVPX();
    Settings& settings = g_pvp->m_settings;
-   settings.SaveValue(Settings::Section::Player, "Stereo3D"s, STEREO_SBS);
+   settings.SetPlayer_Stereo3D(STEREO_SBS, false);
    TestRender("test000-default-table.vpx"s, "test000-stereo-sbs"s, VPXBackends::ALL_BUT_DX9);
    ResetVPX();
 }
@@ -122,7 +122,7 @@ TEST_CASE("Stereo anaglyph render")
 {
    ResetVPX();
    Settings& settings = g_pvp->m_settings;
-   settings.SaveValue(Settings::Section::Player, "Stereo3D"s, STEREO_ANAGLYPH_1);
+   settings.SetPlayer_Stereo3D(STEREO_ANAGLYPH_1, false);
    TestRender("test000-default-table.vpx"s, "test000-stereo-anaglyph"s, VPXBackends::ALL_BUT_DX9);
    ResetVPX();
 }

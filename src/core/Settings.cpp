@@ -235,12 +235,6 @@ void Settings::Validate(const bool addDefaults)
 #endif
 
    //////////////////////////////////////////////////////////////////////////
-   // Stereo 3D section
-
-   SettingBool(Section::Player, "Stereo3DEnabled"s, true, "Allow to temporarily disable stereo rendering"s);
-   SettingInt(Section::Player, "Stereo3D"s, STEREO_OFF, STEREO_OFF, STEREO_ANAGLYPH_10, "Stereo rendering mode"s);
-
-   //////////////////////////////////////////////////////////////////////////
    // Plugin.AlphaDMD
 
 #ifdef __LIBVPINBALL__

@@ -518,9 +518,6 @@ public:
    void UpdatePropertyImageList();
    void UpdatePropertyMaterialList();
    int GetDetailLevel() const { return m_settings.LoadValueWithDefault(Settings::Player, "AlphaRampAccuracy"s, 10); } // used for rubber, ramp and ball
-   float GetZPD() const;
-   float GetMaxSeparation() const;
-   float Get3DOffset() const;
 
    FRect3D GetBoundingBox() const;
    void ComputeNearFarPlane(const Matrix3D &matWorldView, const float scale, float &zNear, float &zFar) const;
@@ -603,12 +600,6 @@ public:
    float m_glassBottomHeight = 210.f; // Height of glass above playfield at bottom of playfield
    float m_glassTopHeight = 210.f; // Height of glass above playfield at top of playfield
 
-   float m_3DmaxSeparation = 0.03f;
-   float m_global3DMaxSeparation;
-   float m_3DZPD = 0.5f;
-   float m_global3DZPD;
-   float m_3DOffset = 0.f;
-   float m_global3DOffset;
    float m_defaultBulbIntensityScaleOnBall = 1.f;
 
    bool m_BG_enable_FSS = false; // Flag telling if this table supports Full Single Screen POV (defaults is to use it in desktop mode if available)
@@ -775,7 +766,6 @@ public:
    bool m_backdrop = true;
    bool m_renderDecals = true;
    bool m_renderEMReels = true;
-   bool m_overwriteGlobalStereo3D = false;
 
 #ifdef UNUSED_TILT //!! currently unused (see NudgeGetTilt())
    int m_jolt_amount;
@@ -792,9 +782,6 @@ public:
    void OnLeftButtonDown(const short x, const short y);
    void OnMouseWheel(const short x, const short y, const short zDelta);
    void OnSize();
-   void Set3DOffset(const float value);
-   void SetZPD(const float value);
-   void SetMaxSeparation(const float value);
    bool IsFSSEnabled() const;
    void EnableFSS(const bool enable);
    ViewSetupID GetViewSetupOverride() const { return m_BG_override; }

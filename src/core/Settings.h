@@ -204,6 +204,12 @@ public:
    PropEnum(Player, VRPreview, "Preview mode"s, "Select preview mode"s, int, 1, "Disabled"s, "Left Eye"s, "Right Eye"s, "Both Eyes"s);
    PropBool(PlayerVR, ShrinkPreview, "Shrink preview"s, ""s, false);
 
+   // Stereo settings
+   PropBool(Player, Stereo3DEnabled, "Suspend Stereo Rendering"s, "Allow to temporarily disable stereo rendering"s, false);
+   PropEnum(Player, Stereo3D, "Stereo rendering"s, "Stereo rendering mode"s, StereoMode, 0, "Disabled"s, "Top / Bottom"s, "Interlaced (e.g. LG TVs)"s,
+      "Flipped Interlaced (e.g. LG TVs)"s, "Side by Side"s, "Anaglyph Red/Cyan"s, "Anaglyph Green/Magenta"s, "Anaglyph Blue/Amber"s, "Anaglyph Cyan/Red"s, 
+      "Anaglyph Magenta/Green"s, "Anaglyph Amber/Blue"s, "Anaglyph Custom 1"s, "Anaglyph Custom 2"s, "Anaglyph Custom 3"s, "Anaglyph Custom 4"s);
+
    // Real world cabinet & player settings
    PropFloat(Player, ScreenWidth, "Screen Width"s, "Physical width (cm) of the display area of the playfield (main) screen."s, 5.f, 200.f, 0.1f, 95.89f);
    PropFloat(Player, ScreenHeight, "Screen Height"s, "Physical height (cm) of the display area of the playfield (main) screen."s, 5.f, 200.f, 0.1f, 53.94f);

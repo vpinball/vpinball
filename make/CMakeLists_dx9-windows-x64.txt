@@ -85,13 +85,6 @@ set_source_files_properties(src/shaders/hlsl_glsl/LightShader.hlsl PROPERTIES
    VS_SHADER_ENTRYPOINT lightShaderCode 
 )
 
-set_source_files_properties(src/shaders/hlsl_glsl/StereoShader.hlsl PROPERTIES
-   VS_SHADER_TYPE Effect
-   VS_SHADER_MODEL 2.0
-   VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/src/shaders/hlsl_stereo.h"
-   VS_SHADER_ENTRYPOINT stereoShaderCode 
-)
-
 set_source_files_properties(src/shaders/hlsl_glsl/UIShader.hlsl PROPERTIES
    VS_SHADER_TYPE Effect 
    VS_SHADER_MODEL 2.0
