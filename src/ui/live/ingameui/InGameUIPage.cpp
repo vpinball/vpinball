@@ -108,6 +108,41 @@ void InGameUIPage::ResetToDefaults()
    m_resettingToDefaults = false;
 }
 
+class SelectGlobalOrOverridePage final : public InGameUIPage
+{
+public:
+   explicit SelectGlobalOrOverridePage(InGameUIPage* page, bool canSaveTableOverrides)
+      : InGameUIPage(canSaveTableOverrides ? "Save globally or as a table override ?"s : "Save changes ?"s,
+           canSaveTableOverrides
+              ? "If saved globally, your changes will apply for all played tables.\nIf saved as an override, only the settings adjusted for this specific table will be saved."s
+              : "This table was not saved yet, therefore the changes can only be saved globally."s,
+           SaveMode::None)
+      , m_page(page)
+   {
+      AddItem(std::make_unique<InGameUIItem>("Save Globally"s, "Your changes will be saved as the new default for all tables."s,
+         [this]()
+         {
+            m_page->SaveGlobally();
+            m_player->m_liveUI->m_inGameUI.NavigateBack();
+         }));
+      if (canSaveTableOverrides)
+         AddItem(std::make_unique<InGameUIItem>("Save as Table Override"s, "The settings adjusted for this specific table will be persisted for the next time you play this table."s,
+            [this]()
+            {
+               m_page->SaveTableOverride();
+               m_player->m_liveUI->m_inGameUI.NavigateBack();
+            }));
+      else
+         AddItem(std::make_unique<InGameUIItem>("Cancel"s, "Get back"s,
+            [this]()
+            {
+               m_player->m_liveUI->m_inGameUI.NavigateBack();
+            }));
+   };
+
+   InGameUIPage* m_page;
+};
+
 void InGameUIPage::Save()
 {
    if (!IsModified())
@@ -115,14 +150,14 @@ void InGameUIPage::Save()
    const bool canSaveTableOverrides = FileExists(m_player->m_ptable->m_filename);
    switch (m_saveMode)
    {
+   case SaveMode::None: break;
+
    case SaveMode::Both:
-      m_selectGlobalOrTablePopup = canSaveTableOverrides;
-      m_selectGlobalOrDiscardPopup = !canSaveTableOverrides;
+      m_player->m_liveUI->m_inGameUI.AddPage("popup/save_select", [this, canSaveTableOverrides]() { return std::make_unique<SelectGlobalOrOverridePage>(this, canSaveTableOverrides); });
+      m_player->m_liveUI->m_inGameUI.Navigate("popup/save_select");
       break;
 
-   case SaveMode::Global:
-      SaveGlobally();
-      break;
+   case SaveMode::Global: SaveGlobally(); break;
 
    case SaveMode::Table:
       if (!canSaveTableOverrides)
@@ -347,7 +382,7 @@ void InGameUIPage::Render(float elapsedS)
       winSize.y = (1 / pinballCardAR) * winSize.x + 5.f * ImGui::GetTextLineHeightWithSpacing();
       ImGui::SetNextWindowPos(ImVec2((animPos + 0.5f) * io.DisplaySize.x, 0.5f * io.DisplaySize.y), 0, ImVec2(0.5f, 0.5f));
    }
-   #ifdef __LIBVPINBALL__
+#ifdef __LIBVPINBALL__
    else if (io.DisplaySize.x > io.DisplaySize.y)
    { // Landscape mode
       winSize = ImVec2(0.75f * io.DisplaySize.x, 0.8f * io.DisplaySize.y);
@@ -358,7 +393,7 @@ void InGameUIPage::Render(float elapsedS)
       winSize = ImVec2(0.9f * io.DisplaySize.x, 0.8f * io.DisplaySize.y);
       ImGui::SetNextWindowPos(ImVec2((animPos + 0.5f) * io.DisplaySize.x, 0.5f * io.DisplaySize.y), 0, ImVec2(0.5f, 0.5f));
    }
-   #else
+#else
    else if (io.DisplaySize.x > io.DisplaySize.y)
    { // Landscape mode, fit on height
       winSize.y = 0.5f * io.DisplaySize.y;
@@ -371,7 +406,7 @@ void InGameUIPage::Render(float elapsedS)
       winSize.y = (1.f / pinballCardAR) * winSize.x + 5.f * ImGui::GetTextLineHeightWithSpacing();
       ImGui::SetNextWindowPos(ImVec2((animPos + 0.5f) * io.DisplaySize.x, 0.8f * io.DisplaySize.y), 0, ImVec2(0.5f, 1.f));
    }
-   #endif
+#endif
    ImGui::SetNextWindowSize(winSize);
    ImGui::Begin(std::to_string(reinterpret_cast<uint64_t>(this)).c_str(), nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings);
 
@@ -598,7 +633,8 @@ void InGameUIPage::Render(float elapsedS)
       case CustomRender:
       {
          ImGui::SetCursorScreenPos(ImGui::GetCursorScreenPos() + ImVec2(0.f, itemPadding.y));
-         if (item->m_customRender) {
+         if (item->m_customRender)
+         {
             item->m_customRender(i, item.get());
          }
          ImGui::SetCursorScreenPos(ImGui::GetCursorScreenPos() + ImVec2(0.f, itemPadding.y));
@@ -809,13 +845,12 @@ void InGameUIPage::Render(float elapsedS)
 
    m_windowPos = ImGui::GetWindowPos();
    m_windowSize = ImGui::GetWindowSize();
-   
+
    ImGui::End();
    ImGui::PopStyleVar();
-   
+
    RenderSensorPopup();
    RenderInputActionPopup();
-   RenderSaveOptionPopup();
 }
 
 void InGameUIPage::RenderSensorPopup()
@@ -854,18 +889,20 @@ void InGameUIPage::RenderSensorPopup()
       int selectedAxis = -1;
       vector<string> axisNames;
       {
-      int i = 0;
-      for (uint32_t id : sensors)
-      {
-         const uint16_t deviceId = id >> 16;
-         const uint16_t axisId = id & 0xFFFF;
-         axisNames.emplace_back(m_player->m_pininput.GetDeviceElementName(deviceId, axisId) + " (" + m_player->m_pininput.GetDeviceName(deviceId) + ')');
-         if (deviceId == m_defineSensorItem->m_physicsSensor->GetMapping().GetDeviceId() && axisId == m_defineSensorItem->m_physicsSensor->GetMapping().GetAxisId())
-            selectedAxis = i;
-         i++;
+         int i = 0;
+         for (uint32_t id : sensors)
+         {
+            const uint16_t deviceId = id >> 16;
+            const uint16_t axisId = id & 0xFFFF;
+            axisNames.emplace_back(m_player->m_pininput.GetDeviceElementName(deviceId, axisId) + " (" + m_player->m_pininput.GetDeviceName(deviceId) + ')');
+            if (deviceId == m_defineSensorItem->m_physicsSensor->GetMapping().GetDeviceId() && axisId == m_defineSensorItem->m_physicsSensor->GetMapping().GetAxisId())
+               selectedAxis = i;
+            i++;
+         }
       }
-      }
-      if (ImGui::Combo("Hardware Sensor", &selectedAxis, [](void* user_data, int idx) { return static_cast<vector<string>*>(user_data)->at(idx).c_str(); }, &axisNames, static_cast<int>(axisNames.size())))
+      if (ImGui::Combo(
+             "Hardware Sensor", &selectedAxis, [](void* user_data, int idx) { return static_cast<vector<string>*>(user_data)->at(idx).c_str(); }, &axisNames,
+             static_cast<int>(axisNames.size())))
       {
          const uint16_t deviceId = sensors[selectedAxis] >> 16;
          const uint16_t axisId = sensors[selectedAxis] & 0xFFFF;
@@ -884,12 +921,22 @@ void InGameUIPage::RenderSensorPopup()
             if (m_defineSensorItem->m_physicsSensorTypeMask & (1 << i))
                switch (i)
                {
-               case 0: names.emplace_back("Position"); types.push_back(SensorMapping::Type::Position); break;
-               case 1: names.emplace_back("Velocity"); types.push_back(SensorMapping::Type::Velocity); break;
-               case 2: names.emplace_back("Acceleration"); types.push_back(SensorMapping::Type::Acceleration); break;
+               case 0:
+                  names.emplace_back("Position");
+                  types.push_back(SensorMapping::Type::Position);
+                  break;
+               case 1:
+                  names.emplace_back("Velocity");
+                  types.push_back(SensorMapping::Type::Velocity);
+                  break;
+               case 2:
+                  names.emplace_back("Acceleration");
+                  types.push_back(SensorMapping::Type::Acceleration);
+                  break;
                }
          int sensorType = FindIndexOf(types, m_defineSensorItem->m_physicsSensor->GetMapping().GetType());
-         if (ImGui::Combo("Sensor Type", &sensorType, [](void* user_data, int idx) { return static_cast<vector<string>*>(user_data)->at(idx).c_str(); }, &names, static_cast<int>(names.size())))
+         if (ImGui::Combo(
+                "Sensor Type", &sensorType, [](void* user_data, int idx) { return static_cast<vector<string>*>(user_data)->at(idx).c_str(); }, &names, static_cast<int>(names.size())))
          {
             const uint16_t deviceId = m_defineSensorItem->m_physicsSensor->GetMapping().GetDeviceId();
             const uint16_t axisId = m_defineSensorItem->m_physicsSensor->GetMapping().GetDeviceId();
@@ -962,48 +1009,6 @@ void InGameUIPage::RenderInputActionPopup()
             ImGui::CloseCurrentPopup();
             m_defineActionItem = nullptr;
          }
-      }
-      ImGui::EndPopup();
-   }
-}
-
-void InGameUIPage::RenderSaveOptionPopup()
-{
-   if (m_selectGlobalOrTablePopup)
-      ImGui::OpenPopup(SELECT_TABLE_OR_GLOBAL);
-   if (ImGui::BeginPopupModal(SELECT_TABLE_OR_GLOBAL, &m_selectGlobalOrTablePopup))
-   {
-      if (ImGui::Button("Save changes globally"))
-      {
-         SaveGlobally();
-         ImGui::CloseCurrentPopup();
-         m_selectGlobalOrTablePopup = false;
-      }
-      if (ImGui::Button("Save only for this table"))
-      {
-         SaveTableOverride();
-         ImGui::CloseCurrentPopup();
-         m_selectGlobalOrTablePopup = false;
-      }
-      ImGui::EndPopup();
-   }
-
-   if (m_selectGlobalOrDiscardPopup)
-      ImGui::OpenPopup(CONFIRM_GLOBAL_SAVE);
-   if (ImGui::BeginPopupModal(CONFIRM_GLOBAL_SAVE, &m_selectGlobalOrDiscardPopup))
-   {
-      ImGui::Text("This table has not been saved yet.\nChanges may only be saved to global settings.\n\nDo you want to save to global settings?\n");
-      if (ImGui::Button("Don't Save"))
-      {
-         ImGui::CloseCurrentPopup();
-         m_selectGlobalOrDiscardPopup = false;
-      }
-      ImGui::SameLine();
-      if (ImGui::Button("Save changes globally"))
-      {
-         SaveGlobally();
-         ImGui::CloseCurrentPopup();
-         m_selectGlobalOrDiscardPopup = false;
       }
       ImGui::EndPopup();
    }
