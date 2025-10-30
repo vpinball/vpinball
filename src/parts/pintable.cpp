@@ -2565,7 +2565,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
          int useTrailForBalls;
          pbr->GetInt(useTrailForBalls);
          if (useTrailForBalls != -1)
-             m_settings.SaveValue(Settings::Player, "BallTrail"s, useTrailForBalls == 1);
+             m_settings.SetPlayer_BallTrail(useTrailForBalls == 1, true);
       }
       break;
    case FID(BTST):
@@ -2573,7 +2573,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
       {
          int ballTrailStrength;
          pbr->GetInt(ballTrailStrength);
-         m_settings.SaveValue(Settings::Player, "BallTrailStrength"s, dequantizeUnsigned<8>(ballTrailStrength));
+         m_settings.SetPlayer_BallTrailStrength(dequantizeUnsigned<8>(ballTrailStrength), true);
       }
       break;
    case FID(BPRS): pbr->GetFloat(m_ballPlayfieldReflectionStrength); break;
@@ -4333,8 +4333,8 @@ void PinTable::ImportBackdropPOV(const string &filename)
                   }
                }
                }
-               POV_FIELD("BallTrail", int, if(value != -1) m_settings.SaveValue(Settings::Player, "BallTrail"s, value == 1));
-               POV_FIELD("BallTrailStrength", float, m_settings.SaveValue(Settings::Player, "BallTrailStrength"s, value));
+               POV_FIELD("BallTrail", int, if(value != -1) m_settings.SetPlayer_BallTrail(value == 1, true));
+               POV_FIELD("BallTrailStrength", float, m_settings.SetPlayer_BallTrailStrength(value, true));
                //int overwriteGlobalDetailLevel = (int)m_overwriteGlobalDetailLevel;
                //POV_FIELD("OverwriteDetailsLevel", "%i", overwriteGlobalDetailLevel);
                {
@@ -6520,34 +6520,25 @@ STDMETHODIMP PinTable::put_PlayfieldReflectionStrength(int newVal)
 
 STDMETHODIMP PinTable::get_BallTrail(UserDefaultOnOff *pVal)
 {
-   if (!m_settings.HasValue(Settings::Player, "BallTrail"s))
-      *pVal = UserDefaultOnOff::Default;
-   else
-      *pVal = m_settings.LoadValueWithDefault(Settings::Player, "BallTrail"s, true) ? UserDefaultOnOff::On : UserDefaultOnOff::Off;
+   *pVal = (g_pplayer && g_pplayer->m_renderer->m_trailForBalls) ? UserDefaultOnOff::On : UserDefaultOnOff::Off;
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_BallTrail(UserDefaultOnOff newVal)
 {
-   if (newVal == -1)
-      m_settings.DeleteValue(Settings::Player, "BallTrail"s);
-   else
-      m_settings.SaveValue(Settings::Player, "BallTrail"s, newVal == 1, true);
    if (g_pplayer)
-      g_pplayer->m_renderer->m_trailForBalls = (newVal == UserDefaultOnOff::On)
-         || ((newVal == UserDefaultOnOff::Default) && m_settings.LoadValueWithDefault(Settings::Player, "BallTrail"s, true));
+      g_pplayer->m_renderer->m_trailForBalls = (newVal == UserDefaultOnOff::On) || ((newVal == UserDefaultOnOff::Default) && m_settings.GetPlayer_BallTrail());
    return S_OK;
 }
 
 STDMETHODIMP PinTable::get_TrailStrength(int *pVal)
 {
-   *pVal = static_cast<int>(100.f * m_settings.LoadValueWithDefault(Settings::Player, "BallTrailStrength"s, 0.5f));
+   *pVal = static_cast<int>(100.f * (g_pplayer ? g_pplayer->m_renderer->m_ballTrailStrength : m_settings.GetPlayer_BallTrailStrength()));
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_TrailStrength(int newVal)
 {
-   m_settings.SaveValue(Settings::Player, "BallTrailStrength"s, static_cast<float>(newVal) / 100.f);
    if (g_pplayer)
       g_pplayer->m_renderer->m_ballTrailStrength = static_cast<float>(newVal) / 100.f;
    return S_OK;

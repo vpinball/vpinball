@@ -576,6 +576,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    state.SetRenderState(RenderState::CULLMODE, m_ptable->m_tblMirrorEnabled ? RenderState::CULL_CW : RenderState::CULL_CCW);
    m_renderer->m_renderDevice->CopyRenderStates(false, state);
    m_renderer->m_renderDevice->SetDefaultRenderState();
+   m_renderer->SetAnisoFiltering(m_ptable->m_settings.GetPlayer_ForceAnisotropicFiltering());
    m_renderer->InitLayout();
    for (RenderProbe *probe : m_ptable->m_vrenderprobe)
       probe->RenderSetup(m_renderer);
@@ -589,14 +590,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       if (hitable->GetItemType() == ItemTypeEnum::eItemBall)
          m_vball.push_back(&static_cast<Ball *>(hitable)->m_hitBall);
    }
-
-   // Setup anisotropic filtering
-   const bool forceAniso = m_ptable->m_settings.LoadValueBool(Settings::Player, "ForceAnisotropicFiltering"s);
-   Shader::SetDefaultSamplerFilter(SHADER_tex_sprite, forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
-   Shader::SetDefaultSamplerFilter(SHADER_tex_base_color, forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
-   Shader::SetDefaultSamplerFilter(SHADER_tex_base_normalmap, forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
-   Shader::SetDefaultSamplerFilter(SHADER_tex_flasher_A, forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
-   Shader::SetDefaultSamplerFilter(SHADER_tex_flasher_B, forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
 
    #if defined(EXT_CAPTURE)
    if (m_renderer->m_stereo3D == STEREO_VR)

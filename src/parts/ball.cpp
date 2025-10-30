@@ -224,8 +224,6 @@ void Ball::RenderSetup(RenderDevice *device)
    assert(m_rd == nullptr);
    m_rd = device;
 
-   m_antiStretch = m_ptable->m_settings.GetPlayer_BallAntiStretch();
-
    if (m_d.m_useTableRenderSettings)
    {
       m_d.m_bulb_intensity_scale = m_ptable->m_defaultBulbIntensityScaleOnBall;
@@ -380,7 +378,7 @@ void Ball::Render(const unsigned int renderMask)
 
    // ************************* draw the ball itself ****************************
    Vertex2D antiStretch(1.f, 1.f);
-   if (m_antiStretch)
+   if (g_pplayer->m_renderer->m_ballAntiStretch)
    {
       // To evaluate projection stretch, we project a few points and compute projected bounds then apply opposite stretching on YZ axis.
       // This is somewhat overkill but the maths to do it directly would be fairly complicated to accomodate for the 3 view setup projections

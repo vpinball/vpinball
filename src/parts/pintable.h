@@ -517,7 +517,7 @@ public:
    void MoveCollectionDown(CComObject<Collection> *pcol);
    void UpdatePropertyImageList();
    void UpdatePropertyMaterialList();
-   int GetDetailLevel() const { return m_settings.LoadValueWithDefault(Settings::Player, "AlphaRampAccuracy"s, 10); } // used for rubber, ramp and ball
+   int GetDetailLevel() const { return m_settings.GetPlayer_AlphaRampAccuracy(); } // used for rubber, ramp and ball
 
    FRect3D GetBoundingBox() const;
    void ComputeNearFarPlane(const Matrix3D &matWorldView, const float scale, float &zNear, float &zFar) const;

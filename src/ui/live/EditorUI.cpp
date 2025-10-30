@@ -1299,17 +1299,6 @@ void EditorUI::UpdateVideoOptionsModal()
    bool p_open = true;
    if (ImGui::BeginPopupModal(ID_VIDEO_SETTINGS, &p_open, ImGuiWindowFlags_AlwaysAutoResize))
    {
-      if (ImGui::CollapsingHeader("Ball Rendering", ImGuiTreeNodeFlags_DefaultOpen))
-      {
-         bool antiStretch = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "BallAntiStretch"s, false);
-         if (ImGui::Checkbox("Force round ball", &antiStretch))
-         {
-            g_pvp->m_settings.SaveValue(Settings::Player, "BallAntiStretch"s, antiStretch);
-            for (auto ball : m_player->m_vball)
-               m_renderer->ReinitRenderable(ball->m_pBall);
-         }
-      }
-
       if (m_renderer->m_stereo3D != STEREO_VR && ImGui::CollapsingHeader("3D Stereo Output", ImGuiTreeNodeFlags_DefaultOpen))
       {
          ImGui::Checkbox("Enable stereo rendering", &m_renderer->m_stereo3Denabled);
@@ -1327,37 +1316,8 @@ void EditorUI::UpdateVideoOptionsModal()
                modeChanged = true;
             if (stereo_mode == 0)
                ImGui::PopItemFlag();
-            if (stereo_mode != 0) // Stereo settings
+            if (stereo_mode == 2) // Anaglyph
             {
-               int stereo3DEyeSep = (int)g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DEyeSeparation"s, 63.0f);
-               if (ImGui::InputInt("Eye Separation (mm)", &stereo3DEyeSep, 1, 5))
-                  g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DEyeSeparation"s, (float)stereo3DEyeSep);
-            }
-            if (stereo_mode == 1) // 3D TV
-            {
-               static const char *tv_mode_items[] = { "Top / Bottom", "Interlaced", "Flipped Interlaced", "Side by Side" };
-               if (ImGui::Combo("TV type", &tv_mode, tv_mode_items, IM_ARRAYSIZE(tv_mode_items)))
-                  modeChanged = true;
-            }
-            else if (stereo_mode == 2) // Anaglyph
-            {
-               // Global anaglyph settings
-               float anaglyphSaturation = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DSaturation"s, 1.f);
-               if (ImGui::InputFloat("Saturation", &anaglyphSaturation, 0.01f, 0.1f))
-                  g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DSaturation"s, anaglyphSaturation);
-               float anaglyphBrightness = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DBrightness"s, 1.f);
-               if (ImGui::InputFloat("Brightness", &anaglyphBrightness, 0.01f, 0.1f))
-                  g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DBrightness"s, anaglyphBrightness);
-               float anaglyphLeftEyeContrast = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DLeftContrast"s, 1.f);
-               if (ImGui::InputFloat("Left Eye Contrast", &anaglyphLeftEyeContrast, 0.01f, 0.1f))
-                  g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DLeftContrast"s, anaglyphLeftEyeContrast);
-               float anaglyphRightEyeContrast = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DRightContrast"s, 1.f);
-               if (ImGui::InputFloat("Right Eye Contrast", &anaglyphRightEyeContrast, 0.01f, 0.1f))
-                  g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DRightContrast"s, anaglyphRightEyeContrast);
-               float anaglyphDefocus = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DDefocus"s, 0.f);
-               if (ImGui::InputFloat("Lesser Eye Defocus", &anaglyphDefocus, 0.01f, 0.1f))
-                  g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DDefocus"s, anaglyphDefocus);
-
                // Glasses settings
                static const string defaultNames[] = { "Red/Cyan"s, "Green/Magenta"s, "Blue/Amber"s, "Cyan/Red"s, "Magenta/Green"s, "Amber/Blue"s, "Custom 1"s, "Custom 2"s, "Custom 3"s, "Custom 4"s };
                string name[std::size(defaultNames)];

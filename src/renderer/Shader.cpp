@@ -478,6 +478,11 @@ void Shader::SetDefaultSamplerFilter(const ShaderUniforms sampler, const Sampler
    ShaderUniform::coreUniforms[sampler].default_filter = sf;
 }
 
+SamplerFilter Shader::GetDefaultSamplerFilter(const ShaderUniforms sampler)
+{ 
+   return ShaderUniform::coreUniforms[sampler].default_filter;
+}
+
 // When changed, this list must also be copied unchanged to Shader.cpp (for its implementation)
 #define SHADER_ATTRIBUTE(name, shader_name) #shader_name
 const string Shader::shaderAttributeNames[SHADER_ATTRIBUTE_COUNT]
@@ -728,6 +733,7 @@ void Shader::SetVector(const ShaderUniforms uniformName, const float x, const fl
    const vec4 v(x, y, z, w);
    m_state->SetVector(uniformName, &v);
 }
+vec4 Shader::GetVector(const ShaderUniforms uniformName) const { return m_state->GetVector(uniformName); }
 void Shader::SetFloat4v(const ShaderUniforms uniformName, const vec4* const pData, const unsigned int count) { m_state->SetVector(uniformName, pData, count); }
 void Shader::SetTexture(const ShaderUniforms uniformName, const std::shared_ptr<const Sampler>& sampler, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV)
 {

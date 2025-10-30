@@ -862,7 +862,7 @@ void InputManager::CreateInputActions()
    AddAction(std::make_unique<InputAction>(this, "ToggleStereo"s, "Select Stereo Mode"s, keyMapping(SDL_SCANCODE_F10),
       [this](const InputAction&, bool, bool isPressed)
       {
-         if (g_pplayer->m_liveUI->IsInGameUIOpened() || !isPressed)
+         if (g_pplayer->m_liveUI->IsEditorUIOpened() || !isPressed)
             return;
          if (Is3DTVStereoMode(g_pplayer->m_renderer->m_stereo3D) || IsAnaglyphStereoMode(g_pplayer->m_renderer->m_stereo3D))
          { // Toggle stereo on/off

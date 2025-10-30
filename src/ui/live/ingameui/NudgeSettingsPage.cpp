@@ -71,6 +71,21 @@ NudgeSettingsPage::NudgeSettingsPage()
       [this]() { return m_player->m_physics->GetLegacyKeyboardNudgeStrength(); }, //
       [this](float, float v) { m_player->m_physics->SetLegacyKeyboardNudgeStrength(v); }));
 
+   ////////////////////////////////////////////////////////////////////////////////////////////////
+
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Visual feedback"s));
+
+   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayer_NudgeStrength, 400.f, "%4.1f %%", //
+      [this]() { return m_player->m_ptable->m_settings.GetPlayer_NudgeStrength(); }, //
+      [this](float, float v)
+      {
+         m_player->m_ptable->m_settings.SetPlayer_NudgeStrength(v, false);
+         m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000);
+      }));
+
+
    m_nudgeXPlot.m_rolling = true;
    m_nudgeXPlot.m_timeSpan = 5.f;
    m_nudgeYPlot.m_rolling = true;

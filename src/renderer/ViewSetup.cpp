@@ -437,7 +437,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, cons
       // Since the table is scaled to 'real world units' (that is to say same scale as the user measures), we directly use the user settings for IPD,.. without any scaling
 
       // 63mm is the average distance between eyes (varies from 54 to 74mm between adults, 43 to 58mm for children)
-      const float eyeSeparation = MMTOVPU(table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DEyeSeparation"s, 63.0f));
+      const float eyeSeparation = MMTOVPU(table->m_settings.GetPlayer_Stereo3DEyeSeparation());
 
       // Z where the stereo separation is 0:
       // - for cabinet (window) mode, we use the orthogonal distance to the screen (window)

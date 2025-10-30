@@ -41,7 +41,7 @@ static void TestRender(const string& tableFile, const string& imageName, VPXBack
 
    if ((int)backends & (int)VPXBackends::BGFX_VULKAN) SUBCASE("BGFX-Vulkan")
    {
-      g_pvp->m_settings.SaveValue(Settings::Section::Player, "GfxBackend"s, "Vulkan"s);
+      g_pvp->m_settings.SetPlayer_GfxBackend(bgfx::RendererType::Vulkan, false);
       CaptureRender(tableFile, imageName + "-BGFX-Vulkan-Test.webp");
       CHECK(GetLastRenderer() == bgfx::RendererType::Vulkan);
       CHECK(CheckMatchingBitmaps(imageName + "-BGFX-Vulkan-Test.webp", imageName + "-Ref.webp"));
@@ -49,7 +49,7 @@ static void TestRender(const string& tableFile, const string& imageName, VPXBack
 
    if ((int)backends & (int)VPXBackends::BGFX_GL) SUBCASE("BGFX-OpenGL")
    {
-      g_pvp->m_settings.SaveValue(Settings::Section::Player, "GfxBackend"s, "OpenGL"s);
+      g_pvp->m_settings.SetPlayer_GfxBackend(bgfx::RendererType::OpenGL, false);
       CaptureRender(tableFile, imageName + "-BGFX-GL-Test.webp");
       CHECK(GetLastRenderer() == bgfx::RendererType::OpenGL);
       CHECK(CheckMatchingBitmaps(imageName + "-BGFX-GL-Test.webp", imageName + "-Ref.webp"));
@@ -58,7 +58,7 @@ static void TestRender(const string& tableFile, const string& imageName, VPXBack
    /* Not available on Windows desktop
    if ((int)backends & (int)VPXBackends::BGFX_GLES) SUBCASE("BGFX-OpenGLES")
    {
-      g_pvp->m_settings.SaveValue(Settings::Section::Player, "GfxBackend"s, "OpenGLES"s);
+      g_pvp->m_settings.SetPlayer_GfxBackend(bgfx::RendererType::OpenGLES, false);
       CaptureRender(tableFile, imageName + "-BGFX-GLES-Test.webp");
       CHECK(GetLastRenderer() == bgfx::RendererType::OpenGLES);
       CHECK(CheckMatchingBitmaps(imageName + "-BGFX-GLES-Test.webp", imageName + "-Ref.webp"));
@@ -66,7 +66,7 @@ static void TestRender(const string& tableFile, const string& imageName, VPXBack
 
    if ((int)backends & (int)VPXBackends::BGFX_DX11) SUBCASE("BGFX-Direct3D11")
    {
-      g_pvp->m_settings.SaveValue(Settings::Section::Player, "GfxBackend"s, "Direct3D11"s);
+      g_pvp->m_settings.SetPlayer_GfxBackend(bgfx::RendererType::Direct3D11, false);
       CaptureRender(tableFile, imageName + "-BGFX-DX11-Test.webp");
       CHECK(GetLastRenderer() == bgfx::RendererType::Direct3D11);
       CHECK(CheckMatchingBitmaps(imageName + "-BGFX-DX11-Test.webp", imageName + "-Ref.webp"));
@@ -75,7 +75,7 @@ static void TestRender(const string& tableFile, const string& imageName, VPXBack
    /* Not stable yet
    if ((int)backends & (int)VPXBackends::BGFX_DX12) SUBCASE("BGFX-Direct3D12")
    {
-      g_pvp->m_settings.SaveValue(Settings::Section::Player, "GfxBackend"s, "Direct3D12"s);
+      g_pvp->m_settings.SetPlayer_GfxBackend(bgfx::RendererType::Direct3D12, false);
       CaptureRender(tableFile, imageName + "-BGFX-DX12-Test.webp");
       CHECK(GetLastRenderer() == bgfx::RendererType::Direct3D12);
       CHECK(CheckMatchingBitmaps(imageName + "-BGFX-DX12-Test.webp", imageName + "-Ref.webp"));

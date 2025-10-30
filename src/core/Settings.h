@@ -155,26 +155,79 @@ public:
       "2 front channels"s, "2 rear channels"s, "Up to 6 channels. Rear at lockbar"s, "Up to 6 channels. Front at lockbar"s, "Up to 4 channels. Front at lockbar"s,
       "Side & rear channels. Rear at lockbar. Legacy mixing"s, "Side & rear channels. Rear at lockbar. New mixing"s);
 
+   // Graphics synchronisation and latency reduction
+#if defined(ENABLE_BGFX)
+   PropEnum(Player, SyncMode, "Synchronization"s,
+      "None: Use this if your display supports variable refresh rate or if you are experiencing stutters.\r\n\r\nVertical Sync: Synchronize on display sync."s,
+      int, 1, "No Sync", "Vertical Sync");
+#else
+   PropEnum(Player, SyncMode, "Synchronization"s,
+      "None: No synchronization.\r\nVertical Sync: Synchronize on video sync which avoids video tearing, but has higher input latency.\r\nAdaptive Sync: Synchronize on video sync, "
+      "except for late frames (below target FPS), also has higher input latency.\r\nFrame Pacing: Targets real time simulation with low input- and video-latency (also dynamically adjusts "
+      "framerate)."s,
+      int, 1, "No Sync", "Vertical Sync", "Adaptive Sync", "Frame Pacing");
+#endif
+   PropInt(Player, MaxFramerate, "Limit Framerate", "-1 will not limit FPS\r\n0 will limit to the display refresh rates\r\nOther values will limit the FPS to it (energy saving/less heat, framerate stability)"s, -1, 300, -1);
+   PropInt(Player, MaxPrerenderedFrames, "Max. Prerendered Frames"s, "Limit the FPS to the given value (energy saving/less heat, framerate stability), 0 will disable it"s, 0, 5, 0);
+   PropInt(Player, VisualLatencyCorrection, "Visual Latency Correction"s,
+      "Leave at -1 to get default latency correction based on display frequency.\r\nIf you measured your setup latency using tools like Intel's PresentMon, enter the average latency in ms."s,
+      -1, 200, -1);
+
    // Graphics settings
+#if defined(ENABLE_BGFX)
+#ifdef __ANDROID__
+   /* PropEnum(Player, GfxBackend, "Graphics Backend"s, "Graphics backend used for rendering"s, int, bgfx::RendererType::OpenGLES, "Noop"s, "Agc"s, "Direct3D11"s, "Direct3D12"s, "Gnm"s,
+      "Metal"s, "Nvn"s, "OpenGLES"s, "OpenGL"s, "Vulkan"s, "Default"s);*/
+   PropString(Player, GfxBackend, "Graphics Backend"s, "Graphics backend used for rendering"s, "OpenGLES"s);
+#elif defined(__APPLE__)
+   /* PropEnum(Player, GfxBackend, "Graphics Backend"s, "Graphics backend used for rendering"s, int, bgfx::RendererType::Metal, "Noop"s, "Agc"s, "Direct3D11"s, "Direct3D12"s, "Gnm"s,
+      "Metal"s,
+      "Nvn"s, "OpenGLES"s, "OpenGL"s, "Vulkan"s, "Default"s);*/
+   PropString(Player, GfxBackend, "Graphics Backend"s, "Graphics backend used for rendering"s, "Metal"s);
+#else
+   PropString(Player, GfxBackend, "Graphics Backend"s, "Graphics backend used for rendering"s, "Default"s);
+   /* PropEnum(Player, GfxBackend, "Graphics Backend"s, "Graphics backend used for rendering"s, int, bgfx::RendererType::Count, "Noop"s, "Agc"s, "Direct3D11"s, "Direct3D12"s, "Gnm"s,
+      "Metal"s,
+      "Nvn"s, "OpenGLES"s, "OpenGL"s, "Vulkan"s, "Default"s); */
+#endif
+#endif
    PropEnum(Player, ShowFPS, "Show FPS"s, "Performance overlay display mode"s, int /* PerfUI::PerfMode */, 0, "Disable"s, "FPS"s, "Full"s);
+   PropBool(Player, SSRefl, "Additive Screen Space Reflection"s, "Add global reflection to the entire scene"s, false);
+   PropBool(Player, HDRDisableToneMapper, "Disable tonemapping on HDR display"s, "Do not perform tonemapping when rendering on a HDR display"s, true);
+   PropFloat(Player, HDRGlobalExposure, "HDR Display Global Exposure", "Global exposure scale multiplier for HDR capable displays"s, 0.f, 5.f, 0.01f, 1.f);
+   PropBool(Player, ForceBloomOff, "Disable Bloom"s, "Disable postprocessed bloom filter"s, false);
+   PropBool(Player, ForceMotionBlurOff, "Disable Motion Blur"s, "Disable postprocessed ball motion blur"s, false);
+   PropBool(Player, ForceAnisotropicFiltering, "Force Anisotropic Filtering"s, "Force anisotropic filtering for better rendering quality at the cost of a bit of performance"s, true);
+   PropBool(Player, CompressTextures, "Compress Textures"s, "Automatically compress textures at game startup (slow) for better performance"s, false);
+   PropBool(Player, UseNVidiaAPI, "Alternative Depth Buffer"s, "Use NVidia API to manage Depth Buffer on DirectX 9 build. May solve some rendering issues"s, false);
+   PropBool(Player, SoftwareVertexProcessing, "Software Vertex Processing"s, "Activate this if you have issues using an Intel graphics chip"s, false);
+   PropBool(Player, DisableAO, "Disable Ambient Occlusion"s, ""s, false);
+   PropBool(Player, DynamicAO, "Dynamic Ambient Occlusion"s, ""s, true);
+   PropEnum(Player, PFReflection, "Reflection Quality"s, "Limit the quality of reflections for better performance.\r\n'Dynamic' is recommended and will give the best results, but may harm performance.\r\n'Static Only' has no performance cost (except for VR rendering).\r\nOther options feature different trade-offs between quality and performance."s, int, 0, "Disable Reflections"s, "Balls Only"s, "Static Only"s, "Static & Balls"s, "Static & Unsynced Dynamic"s, "Dynamic"s);
+#ifndef __LIBVPINBALL__
+   PropInt(Player, MaxTexDimension, "Maximum texture dimension"s, "Images sized above this limit will be automatically scaled down on load."s, 512, 16384, 0);
+#else
+   PropInt(Player, MaxTexDimension, "Maximum texture dimension"s, "Images sized above this limit will be automatically scaled down on load."s, 512, 16384, 1536);
+#endif
+   PropInt(Player, AlphaRampAccuracy, "Detail Level"s, "Images sized above this limit will be automatically scaled down on load."s, 1, 10, 10);
+
+   // Aliasing & sharpening
+   PropFloat(Player, AAFactor, "Full Scene Anti Aliasing"s, "Enables brute-force Up/Downsampling (similar to DSR).\r\nThis delivers very good quality but has a significant impact on performance.\r\n200% means twice the resolution to be handled while rendering"s, 0.5f, 2.f, 0.1f, 1.f);
+   PropEnum(Player, MSAASamples, "MSAA level"s,
+      "Set the amount of MSAA samples.\r\nMSAA can help reduce geometry aliasing at the cost of performance and GPU memory.\r\nThis can improve image quality if not using supersampling"s,
+      int, 0, "Disabled",
+      "4 Samples", "6 Samples", "8 Samples");
    PropEnum(Player, FXAA, "Post processed antialiasing"s, "Select between different antialiasing techniques that offer different quality vs performance balances"s, int, 1, "Disabled"s,
       "Fast FXAA"s, "Standard FXAA"s, "Quality FXAA"s, "Fast NFAA"s, "Standard DLAA"s, "Quality SMAA"s);
    PropEnum(Player, Sharpen, "Post processed sharpening"s, "Select between different sharpening techniques that offer different quality vs performance balances"s, int, 0, "Disabled"s,
       "CAS"s, "Bilateral CAS"s);
-   PropBool(Player, SSRefl, "Additive Screen Space Reflection"s, "Add global reflection to the entire scene"s, false);
-   PropBool(Player, HDRDisableToneMapper, "Disable tonemapping on HDR display"s, "Do not perform tonemapping when rendering on a HDR display"s, true);
-   PropBool(Player, ForceBloomOff, "Disable Bloom"s, "Disable postprocessed bloom filter"s, false);
-   PropBool(Player, ForceMotionBlurOff, "Disable Motion Blur"s, "Disable postprocessed ball motion blur"s, false);
-   PropBool(Player, ForceAnisotropicFiltering, "Force Anisotropic Filtering"s, "Force anisotropic filtering for better rendering quality at the cost of a bit of performance"s, true);
-   PropBool(Player, DisableAO, "Disable Ambient Occlusion"s, ""s, false);
-   PropBool(Player, DynamicAO, "Dynamic Ambient Occlusion"s, ""s, true);
-#ifndef __LIBVPINBALL__
-   PropInt(Player, MaxTexDimension, "Maximum texture dimension"s, "Images sized above this limit will be automatically scaled down on load."s, 0, 16384, 0);
-#else
-   PropInt(Player, MaxTexDimension, "Maximum texture dimension"s, "Images sized above this limit will be automatically scaled down on load."s, 0, 16384, 1536);
-#endif
-   PropBool(Player, BallAntiStretch, "Unstretch Ball"s, "Compensate ball stretching"s, false);
 
+   // Ball rendering
+   PropBool(Player, BallAntiStretch, "Unstretch Ball"s, "Compensate ball stretching"s, false);
+   PropBool(Player, DisableLightingForBalls, "Disable Ball Lighting"s, "Disable lighting and reflection effects on balls, e.g. to help the visually handicapped."s, false);
+   PropBool(Player, BallTrail, "Ball Trail"s, "Legacy ball trails"s, false);
+   PropFloat(Player, BallTrailStrength, "Ball Trail Strength", "Strength of the fake ball trail"s, 0.f, 5.f, 0.01f, 0.5f);
+   
    // Misc player settings
    PropBool(Player, TouchOverlay, "Touch Overlay"s, "Display an overlay showing touch regions"s, false);
    PropBool(Player, EnableCameraModeFlyAround, "Legacy Fly Over Mode"s, "Enable moving camera when using Tweak menu (legacy, replaced by LiveUI fly mode)."s, false);
@@ -189,6 +242,7 @@ public:
    PropFloat(Player, PlumbThresholdAngle, "Plumb Threshold", "Define threshold angle at which a Tilt is caused"s, 5.0f, 60.f, 0.1f, 35.f);
    PropBool(Player, EnableLegacyNudge, "Legacy Keyboard nudge"s, "Enable/Disable legacy keyboard nudge mode"s, false);
    PropFloat(Player, LegacyNudgeStrength, "Legacy Nudge Strength"s, "Strength of nudge when using the legacy keyboard nudge mode"s, 0.f, 90.f, 0.1f, 1.f);
+   PropFloat(Player, NudgeStrength, "Visual Nudge Strength"s, "Changes the visual effect/screen shaking when nudging the table."s, 0.f, 0.25f, 0.001f, 0.02f);
 
    // Plunger settings
    PropBool(Player, PlungerRetract, "One Second Retract"s, "Enable retracting the plunger after a 1 second press when using the digital plunger emulation through keyboard or joystick button"s, false);
@@ -205,10 +259,26 @@ public:
    PropBool(PlayerVR, ShrinkPreview, "Shrink preview"s, ""s, false);
 
    // Stereo settings
-   PropBool(Player, Stereo3DEnabled, "Suspend Stereo Rendering"s, "Allow to temporarily disable stereo rendering"s, false);
+   PropBool(Player, Stereo3DEnabled, "Enable Stereo Rendering"s, "Allow to temporarily disable stereo rendering"s, false);
    PropEnum(Player, Stereo3D, "Stereo rendering"s, "Stereo rendering mode"s, StereoMode, 0, "Disabled"s, "Top / Bottom"s, "Interlaced (e.g. LG TVs)"s,
       "Flipped Interlaced (e.g. LG TVs)"s, "Side by Side"s, "Anaglyph Red/Cyan"s, "Anaglyph Green/Magenta"s, "Anaglyph Blue/Amber"s, "Anaglyph Cyan/Red"s, 
       "Anaglyph Magenta/Green"s, "Anaglyph Amber/Blue"s, "Anaglyph Custom 1"s, "Anaglyph Custom 2"s, "Anaglyph Custom 3"s, "Anaglyph Custom 4"s);
+   PropFloat(Player, Stereo3DEyeSeparation, "Eye distance"s, "Physical distance (mm) between eyes"s, 5.f, 200.f, 0.1f, 63.f);
+   PropFloat(Player, Stereo3DBrightness, "Stereo Brightness"s, "Brightness adjustment applied to stereo rendering"s, 0.f, 2.f, 0.01f, 1.f);
+   PropFloat(Player, Stereo3DSaturation, "Stereo Saturation"s, "Saturation adjustment applied to stereo rendering"s, 0.f, 2.f, 0.01f, 1.f);
+   PropFloat(Player, Stereo3DDefocus, "Anaglyph Defocus"s, "Defocusing of the lesser eye to anaglyph stereo rendering"s, 0.f, 1.f, 0.01f, 0.f);
+   PropFloat(Player, Stereo3DLeftContrast, "Anaglyph Left Contrast"s, "Left eye contrast adjustment applied to anaglyph stereo rendering"s, 0.f, 2.f, 0.01f, 1.f);
+   PropFloat(Player, Stereo3DRightContrast, "Anaglyph Right Contrast"s, "Right eye contrast adjustment applied to anaglyph stereo rendering"s, 0.f, 2.f, 0.01f, 1.f);
+   PropEnum(Player, Anaglyph1Filter, "Anaglyph Filter #1"s, "Anaglyph filter applied to anaglyph profile #1"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
+   PropEnum(Player, Anaglyph2Filter, "Anaglyph Filter #2"s, "Anaglyph filter applied to anaglyph profile #2"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
+   PropEnum(Player, Anaglyph3Filter, "Anaglyph Filter #3"s, "Anaglyph filter applied to anaglyph profile #3"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
+   PropEnum(Player, Anaglyph4Filter, "Anaglyph Filter #4"s, "Anaglyph filter applied to anaglyph profile #4"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
+   PropEnum(Player, Anaglyph5Filter, "Anaglyph Filter #5"s, "Anaglyph filter applied to anaglyph profile #5"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
+   PropEnum(Player, Anaglyph6Filter, "Anaglyph Filter #6"s, "Anaglyph filter applied to anaglyph profile #6"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
+   PropEnum(Player, Anaglyph7Filter, "Anaglyph Filter #7"s, "Anaglyph filter applied to anaglyph profile #7"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
+   PropEnum(Player, Anaglyph8Filter, "Anaglyph Filter #7"s, "Anaglyph filter applied to anaglyph profile #8"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
+   PropEnum(Player, Anaglyph9Filter, "Anaglyph Filter #7"s, "Anaglyph filter applied to anaglyph profile #9"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
+   PropEnum(Player, Anaglyph10Filter, "Anaglyph Filter #7"s, "Anaglyph filter applied to anaglyph profile #10"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
 
    // Real world cabinet & player settings
    PropFloat(Player, ScreenWidth, "Screen Width"s, "Physical width (cm) of the display area of the playfield (main) screen."s, 5.f, 200.f, 0.1f, 95.89f);

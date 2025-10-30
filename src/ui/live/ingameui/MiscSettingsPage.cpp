@@ -28,6 +28,7 @@ void MiscSettingsPage::BuildPage()
    }
 
    // Exposure, always saved as a table override setting if different from table embedded value
+   // FIXME this conflicts with HDR adjusting exposure
    Settings::GetRegistry().Register(Settings::GetTableOverride_Exposure_Property()->WithDefault(m_player->m_ptable->GetExposure()));
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propTableOverride_Exposure, 100.f, "%4.1f %%"s, //
@@ -99,7 +100,22 @@ void MiscSettingsPage::BuildPage()
       }
       else if (m_dayTimeMode == 2)
       {
-         // TODO: Implement lat/lon properties
+         // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+         AddItem(std::make_unique<InGameUIItem>( //
+            Settings::m_propPlayer_Latitude, 1.f, "%4.1f °"s, //
+            [this]() { return m_player->m_ptable->m_settings.GetPlayer_Latitude(); }, //
+            [this](float, float v) {
+               m_player->m_ptable->m_settings.SetPlayer_Latitude(v, false);
+               // FIXME recompute light level
+            }));
+         // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+         AddItem(std::make_unique<InGameUIItem>( //
+            Settings::m_propPlayer_Longitude, 1.f, "%4.1f °"s, //
+            [this]() { return m_player->m_ptable->m_settings.GetPlayer_Longitude(); }, //
+            [this](float, float v) {
+               m_player->m_ptable->m_settings.SetPlayer_Longitude(v, false);
+               // FIXME recompute light level
+            }));
       }
    }
 }

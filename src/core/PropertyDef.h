@@ -169,7 +169,7 @@ public:
          return index;
       return m_min - 1;
    }
-   const string& GetEnum(int index) const { return m_values.at(index - m_min); }
+   const string& GetEnum(int index) const { return m_values[GetValid(index)]; }
 
    bool IsEqualButDefaultValue(PropertyDef* other) const override
    {

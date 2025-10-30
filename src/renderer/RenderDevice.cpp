@@ -730,16 +730,17 @@ RenderDevice::RenderDevice(
    ///////////////////////////////////
    // BGFX device initialization
    bgfx::Init init;
-   init.type = bgfx::RendererType::Count; // Tells BGFX to select the default backend for the running platform
 
    // Limit to VSYNC on/off
    syncMode = syncMode != VideoSyncMode::VSM_NONE ? VideoSyncMode::VSM_VSYNC : VideoSyncMode::VSM_NONE;
    
+   // Select backend
    static const string bgfxRendererNames[bgfx::RendererType::Count + 1] = { "Noop"s, "Agc"s, "Direct3D11"s, "Direct3D12"s, "Gnm"s, "Metal"s, "Nvn"s, "OpenGLES"s, "OpenGL"s, "Vulkan"s, "Default"s };
-   string gfxBackend = g_pplayer->m_ptable->m_settings.LoadValueString(Settings::Player, "GfxBackend"s);
+   const string gfxBackend = g_pplayer->m_ptable->m_settings.GetPlayer_GfxBackend();
    bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
    const int nRendererSupported = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers);
    string supportedRendererLog;
+   init.type = bgfx::RendererType::Count; // Tells BGFX to select the default backend for the running platform
    for (int i = 0; i < nRendererSupported; ++i)
    {
       supportedRendererLog += (i == 0 ? "" : ", ") + bgfxRendererNames[supportedRenderers[i]];
@@ -1126,7 +1127,7 @@ RenderDevice::RenderDevice(
    else
       params.MultiSampleQuality = min(params.MultiSampleQuality, MultiSampleQualityLevels);
 
-   const bool softwareVP = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "SoftwareVertexProcessing"s, false);
+   const bool softwareVP = g_pplayer->m_ptable->m_settings.GetPlayer_SoftwareVertexProcessing();
    const DWORD flags = softwareVP ? D3DCREATE_SOFTWARE_VERTEXPROCESSING : D3DCREATE_HARDWARE_VERTEXPROCESSING;
 
    // Create the D3Dex device. This optionally goes to the proper fullscreen mode.
