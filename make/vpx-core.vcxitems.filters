@@ -495,9 +495,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/EditorOptionsDialog.cpp">
       <Filter>ui\win\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/AudioOptionsDialog.cpp">
-      <Filter>ui\win\dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/VideoOptionsDialog.cpp">
       <Filter>ui\win\dialogs</Filter>
     </ClCompile>
@@ -1296,9 +1293,6 @@
       <Filter>ui\win\dialogs</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/EditorOptionsDialog.h">
-      <Filter>ui\win\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/AudioOptionsDialog.h">
       <Filter>ui\win\dialogs</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/VideoOptionsDialog.h">

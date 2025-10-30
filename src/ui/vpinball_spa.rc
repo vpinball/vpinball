@@ -176,7 +176,6 @@ BEGIN
     END
     POPUP "&Preferencias"
     BEGIN
-        MENUITEM "Opciones de &Audio...",       ID_EDIT_AUDIOOPTIONS
         MENUITEM "Opciones de &Video...",       ID_EDIT_VIDEOOPTIONS
         MENUITEM "Opciones de &Teclado...",     ID_EDIT_KEYS
     END
@@ -1049,25 +1048,6 @@ BEGIN
     LTEXT           "Offset",IDC_STATIC,7,14,24,11
     LTEXT           "X",IDC_STATIC,37,14,8,10
     LTEXT           "Y",IDC_STATIC,37,28,8,10
-END
-
-IDD_AUDIO_OPTIONS DIALOG  0, 0, 185, 149
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Opciones de Audio"
-FONT 8, "MS Sans Serif"
-BEGIN
-    CONTROL         "&Reproducir Música",IDC_PLAY_MUSIC,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,21,50,10
-    CONTROL         "Slider1",IDC_MUSIC_SLIDER,"msctls_trackbar32",TBS_BOTH | 
-                    TBS_NOTICKS | WS_TABSTOP,9,49,110,18
-    CONTROL         "Re&producir Sonidos",IDC_PLAY_SOUND,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,9,84,55,10
-    CONTROL         "Slider1",IDC_SOUND_SLIDER,"msctls_trackbar32",TBS_BOTH | 
-                    TBS_NOTICKS | WS_TABSTOP,7,113,110,18
-    DEFPUSHBUTTON   "Aceptar",IDOK,128,7,50,14
-    PUSHBUTTON      "Cancelar",IDCANCEL,128,24,50,14
-    LTEXT           "Volumen &Música",IDC_STATIC_MUSIC,42,36,44,8
-    LTEXT           "Volumen &Sonidos",IDC_STATIC_SOUND,39,99,46,8
 END
 
 IDD_PROPBACKGLASS DIALOG  0, 0, 151, 218

@@ -849,11 +849,6 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
       PostMessage(WM_CLOSE, 0, 0);
       return true;
    }
-   case ID_EDIT_AUDIOOPTIONS:
-   {
-      m_audioOptDialog.DoModal(GetHwnd());
-      return true;
-   }
    case ID_EDIT_PHYSICSOPTIONS:
    {
       m_physicsOptDialog.DoModal(GetHwnd());
@@ -2240,8 +2235,6 @@ void VPinball::CloseAllDialogs()
       m_imageMngDlg.Destroy();
    if (m_soundMngDlg.IsWindow())
       m_soundMngDlg.Destroy();
-   if (m_audioOptDialog.IsWindow())
-      m_audioOptDialog.Destroy();
    if (m_editorOptDialog.IsWindow())
       m_editorOptDialog.Destroy();
    if (m_collectionMngDlg.IsWindow())
