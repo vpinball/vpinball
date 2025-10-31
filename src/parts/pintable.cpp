@@ -1876,7 +1876,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
 
    #ifndef __STANDALONE__
    // Hashing (to ensure file integrity), can be disabled for slightly faster loading (and then also matches standalone which cannot feature this)
-   const bool hashValidation = !g_pvp->m_settings.LoadValueBool(Settings::Editor, "DisableHash"s);
+   const bool hashValidation = !g_pvp->m_settings.GetEditor_DisableHash();
    int foo = CryptAcquireContext(&hcp, nullptr, nullptr, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_NEWKEYSET /* | CRYPT_SILENT*/);
    foo = GetLastError();
    if (hashValidation)

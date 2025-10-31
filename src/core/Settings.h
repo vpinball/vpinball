@@ -144,6 +144,10 @@ public:
    inline void Set##groupId##_##propId(const string& v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); } \
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
 
+   // General Application settings
+   PropBool(Editor, EnableLog, "Enable Log"s, "Enable general logging to the vinball.log file"s, true);
+   PropBool(Editor, DisableHash, "Disable File Validation"s, "Disable file integrity validation"s, false);
+
    // Audio settings
    PropInt(Player, MusicVolume, "Backglass Volume"s, "Main volume for music and sound played in the backglass speakers"s, 0, 100, 100);
    PropInt(Player, SoundVolume, "Playfield Volume"s, "Main volume for mechanical sounds coming from the playfield"s, 0, 100, 100);
@@ -234,6 +238,9 @@ public:
    // Misc player settings
    PropBool(Player, TouchOverlay, "Touch Overlay"s, "Display an overlay showing touch regions"s, false);
    PropBool(Player, EnableCameraModeFlyAround, "Legacy Fly Over Mode"s, "Enable moving camera when using Tweak menu (legacy, replaced by LiveUI fly mode)."s, false);
+
+   // UI & input settings
+   PropInt(Player, Exitconfirm, "Direct Exit Length"s, "Length of a long ESC press that directly closes the app, (sadly) expressed in seconds * 60."s, 0, 30 * 60, 120);
 
    // Nudge & Plumb settings
    PropFloat(Player, NudgeOrientation0, "Sensor #0 - Orientation", "Define sensor orientation"s, 0.f, 360.f, 1.0f, 0.f);
@@ -520,7 +527,6 @@ public:
    string LoadValueString(const Section section, const string &key) const { string v; LoadValue(section, key, v); return v; }
    float LoadValueFloat(const Section section, const string &key) const { float v; bool ok = LoadValue(section, key, v); assert(ok); return v; }
    bool LoadValueBool(const Section section, const string &key) const { unsigned int v; bool ok = LoadValue(section, key, v); assert(ok); return !!v; }
-   int LoadValueInt(const Section section, const string &key) const { int v; bool ok = LoadValue(section, key, v); assert(ok); return v; }
    unsigned int LoadValueUInt(const Section section, const string &key) const { unsigned int v; bool ok = LoadValue(section, key, v); assert(ok); return v; }
 
    float LoadValueWithDefault(const Section section, const string &key, const float def) const;

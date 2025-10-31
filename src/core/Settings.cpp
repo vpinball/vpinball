@@ -212,11 +212,6 @@ void Settings::Validate(const bool addDefaults)
    #define SettingUInt(section, name, defVal, minVal, maxVal, comment) RegisterUIntSetting(section, name, defVal, minVal, maxVal, addDefaults, comment)
    
    //////////////////////////////////////////////////////////////////////////
-   // Input, plunger, nudge and plumb section
-
-   SettingInt(Section::Player, "Exitconfirm"s, 120, 0, 30*60, "Length of a long ESC press that directly closes the app, (sadly) expressed in seconds * 60."s);
-   
-   //////////////////////////////////////////////////////////////////////////
    // Plugin.AlphaDMD
 
 #ifdef __LIBVPINBALL__
@@ -372,12 +367,6 @@ void Settings::Validate(const bool addDefaults)
       SettingFloat(Section::Alpha, prefix + "DiffuseGlow", 1.0f, 0.f, 10.f, ""s);
    }
 
-
-   //////////////////////////////////////////////////////////////////////////
-   // Editor section
-
-   SettingBool(Settings::Editor, "DisableHash"s, false, "Disable file integrity validation."s);
-   SettingBool(Settings::Editor, "EnableLog"s, true, "Enable general logging to the vinball.log file."s);
 
    #undef SettingString
    #undef SettingBool
