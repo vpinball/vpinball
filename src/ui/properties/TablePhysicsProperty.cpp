@@ -59,8 +59,6 @@ void TablePhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
         PropertyDialog::SetIntTextbox(m_physicsLoopEdit, table->m_PhysicsMaxLoops);
     if (dispid == IDC_MECH_PLUNGER_ADJ_EDIT || dispid == -1)
         PropertyDialog::SetIntTextbox(m_mechPlungerAdjEdit, table->m_plungerNormalize);
-    if (dispid == IDC_FILTER_MECH_PLUNGER_CHECK || dispid == -1)
-        PropertyDialog::SetCheckboxState(m_hFilterMechanicalPlungerCheck, table->m_plungerFilter);
     if (dispid == IDC_TABLE_WIDTH_EDIT || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_tableWidthEdit, VPUTOINCHES(table->GetTableWidth()));
     if (dispid == IDC_TABLE_HEIGHT_EDIT || dispid == -1)
@@ -118,9 +116,6 @@ void TablePhysicsProperty::UpdateProperties(const int dispid)
         case IDC_MECH_PLUNGER_ADJ_EDIT:
             CHECK_UPDATE_ITEM(table->m_plungerNormalize, PropertyDialog::GetIntTextbox(m_mechPlungerAdjEdit), table);
             break;
-        case IDC_FILTER_MECH_PLUNGER_CHECK:
-            CHECK_UPDATE_ITEM(table->m_plungerFilter, PropertyDialog::GetCheckboxState(m_hFilterMechanicalPlungerCheck), table);
-            break;
         case IDC_TABLE_WIDTH_EDIT:
             CHECK_UPDATE_VALUE_SETTER(table->SetTableWidth, table->GetTableWidth, PropertyDialog::GetFloatTextboxInchesToVPU, m_tableWidthEdit, table);
             break;
@@ -159,7 +154,6 @@ void TablePhysicsProperty::UpdateProperties(const int dispid)
 
 BOOL TablePhysicsProperty::OnInitDialog()
 {
-    m_hFilterMechanicalPlungerCheck = GetDlgItem(IDC_FILTER_MECH_PLUNGER_CHECK);
     AttachItem(IDC_IMPORT_PHYSICS_BUTTON, m_importSetButton);
     AttachItem(IDC_EXPORT_PHYSICS_BUTTON, m_exportSetButton);
 
@@ -206,7 +200,6 @@ BOOL TablePhysicsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC19), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC20), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC23), CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hFilterMechanicalPlungerCheck, CResizer::topleft, 0);
     m_resizer.AddChild(m_importSetButton, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_exportSetButton, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_gravityConstantEdit, CResizer::topleft, RD_STRETCH_WIDTH);

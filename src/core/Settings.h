@@ -250,6 +250,7 @@ public:
    // Plunger settings
    PropBool(Player, PlungerRetract, "One Second Retract"s, "Enable retracting the plunger after a 1 second press when using the digital plunger emulation through keyboard or joystick button"s, false);
    PropBool(Player, PlungerLinearSensor, "Linear Sensor"s, "Select between symmetric (linear) and assymetric sensor"s, false);
+   PropInt(Player, PlungerNormalize, "Plunger normalize override"s, "This value may be defined to override the table's plunger normalization"s, 0, 100, 100); // Hacky: This should be a table override, not a player property as it overrides table data
 
    // VR settings
    PropFloat(PlayerVR, Orientation, "View orientation"s, ""s, -180.f, 180.f, 0.1f, 0.f);

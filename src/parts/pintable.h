@@ -633,7 +633,6 @@ public:
    float m_defaultScatter = 0.f;
 
    int m_plungerNormalize = 100;  // Mech-Plunger component adjustment or weak spring, aging
-   bool m_plungerFilter = false;
 
    float m_nudgeTime = 5.f;
    Vertex2D m_tblNudgeRead;

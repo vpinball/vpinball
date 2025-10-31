@@ -795,7 +795,6 @@ PinTable* PinTable::CopyForPlay()
    dst->m_defaultScatter = src->m_defaultScatter;
    dst->m_nudgeTime = src->m_nudgeTime;
    dst->m_plungerNormalize = src->m_plungerNormalize;
-   dst->m_plungerFilter = src->m_plungerFilter;
    dst->m_PhysicsMaxLoops = src->m_PhysicsMaxLoops;
    dst->m_renderEMReels = src->m_renderEMReels;
    dst->m_renderDecals = src->m_renderDecals;
@@ -1671,7 +1670,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    bw.WriteFloat(FID(SCAT), m_defaultScatter);
    bw.WriteFloat(FID(NDGT), m_nudgeTime);
    bw.WriteInt(FID(MPGC), m_plungerNormalize);
-   bw.WriteBool(FID(MPDF), m_plungerFilter);
    bw.WriteInt(FID(PHML), m_PhysicsMaxLoops);
 
    //bw.WriteFloat(FID(IMTCOL), m_transcolor);
@@ -2494,14 +2492,8 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    {
       int tmp;
       pbr->GetInt(tmp);
-      m_plungerNormalize = m_settings.LoadValueWithDefault(Settings::Player, "PlungerNormalize"s, tmp);
-      break;
-   }
-   case FID(MPDF):
-   {
-      bool tmp;
-      pbr->GetBool(tmp);
-      m_plungerFilter = m_settings.LoadValueWithDefault(Settings::Player, "PlungerFilter"s, tmp);
+      Settings::GetRegistry().Register(Settings::GetPlayer_PlungerNormalize_Property()->WithDefault(tmp));
+      m_plungerNormalize = m_settings.GetPlayer_PlungerNormalize();
       break;
    }
    case FID(PHML):
@@ -6940,28 +6932,15 @@ STDMETHODIMP PinTable::get_PlungerNormalize(int *pVal)
 
 void PinTable::SetPlungerNormalize(const int value)
 {
-   m_plungerNormalize = m_settings.LoadValueWithDefault(Settings::Player, "PlungerNormalize"s, value);
+   // Defines the value unless it is overriden in the settings
+   Settings::GetRegistry().Register(Settings::GetPlayer_PlungerNormalize_Property()->WithDefault(value));
+   m_plungerNormalize = m_settings.GetPlayer_PlungerNormalize();
 }
 
 STDMETHODIMP PinTable::put_PlungerNormalize(int newVal)
 {
    STARTUNDO
    SetPlungerNormalize(newVal);
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_PlungerFilter(VARIANT_BOOL *pVal)
-{
-   *pVal = FTOVB(m_plungerFilter);
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_PlungerFilter(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-   m_plungerFilter = m_settings.LoadValueWithDefault(Settings::Player, "PlungerFilter"s, VBTOb(newVal));
    STOPUNDO
 
    return S_OK;
@@ -8513,5 +8492,18 @@ STDMETHODIMP PinTable::get_Offset(float *pVal)
 STDMETHODIMP PinTable::put_Offset(float newVal)
 {
    PLOGE << "3D Offset is deprecated";
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_PlungerFilter(VARIANT_BOOL *pVal)
+{
+   PLOGE << "PlungerFilter is deprecated";
+   *pVal = (VARIANT_BOOL)0;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_PlungerFilter(VARIANT_BOOL newVal)
+{
+   PLOGE << "PlungerFilter is deprecated";
    return S_OK;
 }

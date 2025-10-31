@@ -19,7 +19,6 @@ protected:
 private:
     CButton m_importSetButton;
     CButton m_exportSetButton;
-    HWND    m_hFilterMechanicalPlungerCheck;
     EditBox m_gravityConstantEdit;
     EditBox m_playfieldFrictionEdit;
     EditBox m_playfieldElasticityEdit;
