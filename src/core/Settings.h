@@ -424,6 +424,10 @@ public:
    PropBool(DefaultPropsBall, TimerEnabled, "Timer Enabled"s, ""s, false);
    PropInt(DefaultPropsBall, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
+   // Parts Defaults: Timer
+   PropBool(DefaultPropsTimer, TimerEnabled, "Timer Enabled"s, ""s, false);
+   PropInt(DefaultPropsTimer, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+
 #undef PropBool
 #undef PropInt
 #undef PropEnum
