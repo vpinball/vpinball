@@ -316,9 +316,6 @@ void Settings::Validate(const bool addDefaults)
    SettingString(Section::Backglass, "BackglassDisplay"s, "Default"s, "Display used for the Backglass window"s);
    SettingBool(Section::Backglass, "BackglassFullScreen"s, false, "Use fullscreen exclusive mode (not recommended unless you need to change the display resolution)"s);
 
-   SettingFloat(Section::Player, "MaxFramerate"s, -1.f, -1.f, 1000.f, "Maximum FPS of playfield view (minimum: 24FPS), 0 is unlimited, < 0 is limited to the display refresh rate."s);
-   SettingInt(Section::Player, "SyncMode"s, VSM_NONE, VSM_NONE, VSM_FRAME_PACING, "Hardware video sync mode to use: None / Vertical Sync / Adaptative Sync / Frame Pacing."s);
-
    //////////////////////////////////////////////////////////////////////////
    // DMD section
 

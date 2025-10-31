@@ -62,7 +62,7 @@ InputManager::InputManager()
    {
       m_nudgeXSensor[i] = std::make_unique<PhysicsSensor>(this, "NudgeX" + std::to_string(i + 1), "Sensor " + std::to_string(i + 1) + " - Nudge Side", SensorMapping::Type::Acceleration, ""s);
       m_nudgeYSensor[i] = std::make_unique<PhysicsSensor>(this, "NudgeY" + std::to_string(i + 1), "Sensor " + std::to_string(i + 1) + " - Nudge Front", SensorMapping::Type::Acceleration, ""s);
-      m_nudgeFilter[i] = !settings.LoadValueWithDefault(Settings::Player, "NudgeOrientation" + std::to_string(i + 1), true);
+      m_nudgeFilter[i] = !(i == 0 ? settings.GetPlayer_NudgeOrientation0() : settings.GetPlayer_NudgeOrientation1());
       SetNudgeFiltered(i, !m_nudgeFilter[i]);
    }
    m_plungerPositionSensor = std::make_unique<PhysicsSensor>(this, "PlungerPos"s, "Plunger Position"s, SensorMapping::Type::Position, ""s);
@@ -87,7 +87,7 @@ InputManager::InputManager()
       {
          m_nudgeXSensor[i]->LoadMapping(settings);
          m_nudgeYSensor[i]->LoadMapping(settings);
-         m_nudgeOrientation[i] = ANGTORAD(settings.LoadValueWithDefault(Settings::Player, "NudgeOrientation" + std::to_string(i + 1), 0.f));
+         m_nudgeOrientation[i] = ANGTORAD(i == 0 ? settings.GetPlayer_NudgeOrientation0() : settings.GetPlayer_NudgeOrientation1());
       }
 
       m_linearPlunger = settings.GetPlayer_PlungerLinearSensor();

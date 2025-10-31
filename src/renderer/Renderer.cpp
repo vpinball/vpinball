@@ -29,42 +29,27 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_stereo3Denabled = m_table->m_settings.GetPlayer_Stereo3DEnabled();
    m_toneMapper = (ToneMapper)m_table->m_settings.GetTableOverride_ToneMapper();
    m_HDRforceDisableToneMapper = m_table->m_settings.GetPlayer_HDRDisableToneMapper();
-   m_exposure = m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "Exposure"s, m_table->GetExposure());
-   m_dynamicAO = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DynamicAO"s, true);
-   m_disableAO = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DisableAO"s, false);
-   m_vrPreview = (VRPreviewMode)m_table->m_settings.LoadValueInt(Settings::PlayerVR, "VRPreview"s);
+   m_exposure = m_table->m_settings.GetTableOverride_Exposure();
+   m_dynamicAO = m_table->m_settings.GetPlayer_DynamicAO();
+   m_disableAO = m_table->m_settings.GetPlayer_DisableAO();
+   m_vrPreview = (VRPreviewMode)m_table->m_settings.GetPlayer_VRPreview();
    m_vrPreviewShrink = m_table->m_settings.GetPlayerVR_ShrinkPreview();
    m_FXAA = m_table->m_settings.GetPlayer_FXAA();
    m_sharpen = m_table->m_settings.GetPlayer_Sharpen();
    m_ss_refl = m_table->m_settings.GetPlayer_SSRefl();
    m_bloomOff = m_table->m_settings.GetPlayer_ForceBloomOff();
    m_motionBlurOff = m_table->m_settings.GetPlayer_ForceMotionBlurOff();
-   const int maxReflection = m_table->m_settings.LoadValueWithDefault(Settings::Player, "PFReflection"s, -1);
-   if (maxReflection != -1)
-      m_maxReflectionMode = (RenderProbe::ReflectionMode)maxReflection;
-   else
-   {
-      m_maxReflectionMode = RenderProbe::REFL_STATIC;
-      if (m_table->m_settings.LoadValueWithDefault(Settings::Player, "BallReflection"s, true))
-         m_maxReflectionMode = RenderProbe::REFL_STATIC_N_BALLS;
-      if (m_table->m_settings.LoadValueWithDefault(Settings::Player, "PFRefl"s, true))
-         m_maxReflectionMode = RenderProbe::REFL_STATIC_N_DYNAMIC;
-   }
+   m_maxReflectionMode = (RenderProbe::ReflectionMode)m_table->m_settings.GetPlayer_PFReflection();
    m_trailForBalls = m_table->m_settings.GetPlayer_BallTrail();
    m_ballTrailStrength = m_table->m_settings.GetPlayer_BallTrailStrength();
    m_ballAntiStretch = m_table->m_settings.GetPlayer_BallAntiStretch();
    m_ballImage = nullptr;
    m_decalImage = nullptr;
-   m_overwriteBallImages = m_table->m_settings.LoadValueWithDefault(Settings::Player, "OverwriteBallImage"s, false);
+   m_overwriteBallImages = m_table->m_settings.GetPlayer_OverwriteBallImage();
    if (m_overwriteBallImages)
    {
-      string imageName;
-      bool hr = m_table->m_settings.LoadValue(Settings::Player, "BallImage"s, imageName);
-      if (hr)
-         m_ballImage = BaseTexture::CreateFromFile(imageName, m_table->m_settings.GetPlayer_MaxTexDimension());
-      hr = m_table->m_settings.LoadValue(Settings::Player, "DecalImage"s, imageName);
-      if (hr)
-         m_decalImage = BaseTexture::CreateFromFile(imageName, m_table->m_settings.GetPlayer_MaxTexDimension());
+      m_ballImage = BaseTexture::CreateFromFile(m_table->m_settings.GetPlayer_BallImage(), m_table->m_settings.GetPlayer_MaxTexDimension());
+      m_decalImage = BaseTexture::CreateFromFile(m_table->m_settings.GetPlayer_DecalImage(), m_table->m_settings.GetPlayer_MaxTexDimension());
    }
    m_vrApplyColorKey = m_table->m_settings.GetPlayerVR_UsePassthroughColor();
    m_vrColorKey = convertColor(m_table->m_settings.GetPlayerVR_PassthroughColor(), 1.f);
@@ -74,17 +59,17 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
 
    // Global emission scale
    m_globalEmissionScale = m_table->m_globalEmissionScale;
-   if (m_table->m_settings.LoadValueBool(Settings::Player, "OverrideTableEmissionScale"s))
+   if (m_table->m_settings.GetPlayer_OverrideTableEmissionScale())
    { // Overriden from settings
-      if (m_table->m_settings.LoadValueBool(Settings::Player, "DynamicDayNight"s))
+      if (m_table->m_settings.GetPlayer_DynamicDayNight())
       {
          time_t hour_machine;
          time(&hour_machine);
          tm local_hour;
          localtime_s(&local_hour, &hour_machine);
 
-         const float lat = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Latitude"s, 52.52f);
-         const float lon = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Longitude"s, 13.37f);
+         const float lat = m_table->m_settings.GetPlayer_Latitude();
+         const float lon = m_table->m_settings.GetPlayer_Longitude();
 
          const double rlat = lat * (M_PI / 180.);
          const double rlong = lon * (M_PI / 180.);
@@ -103,7 +88,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       }
       else
       {
-         m_globalEmissionScale = m_table->m_settings.LoadValueFloat(Settings::Player, "EmissionScale"s);
+         m_globalEmissionScale = m_table->m_settings.GetPlayer_EmissionScale();
       }
    }
    if (g_pvp->m_bgles)
@@ -163,7 +148,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       m_renderWidth = wnd->GetPixelWidth();
       m_renderHeight = wnd->GetPixelHeight();
    }
-   const float AAfactor = m_table->m_settings.LoadValueWithDefault(Settings::Player, "AAFactor"s, m_table->m_settings.LoadValueWithDefault(Settings::Player, "USEAA"s, false) ? 2.0f : 1.0f);
+   const float AAfactor = m_table->m_settings.GetPlayer_AAFactor();
    const int renderWidthAA = (int)((float)m_renderWidth * AAfactor);
    const int renderHeightAA = (int)((float)m_renderHeight * AAfactor);
 
