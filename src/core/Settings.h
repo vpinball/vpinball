@@ -363,8 +363,8 @@ public:
    PropFloat(TableOverride, ViewDTScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 0.001f, 1.f);
    PropFloat(TableOverride, ViewDTScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 0.001f, 1.f);
    PropFloat(TableOverride, ViewDTPlayerX, "Camera X"s, "View point width offset"s, CMTOVPU(-30.f), CMTOVPU(30.f), CMTOVPU(0.1f), CMTOVPU(0.f));
-   PropFloat(TableOverride, ViewDTPlayerY, "Camera Y"s, "View point height offset"s, CMTOVPU(-30.f), CMTOVPU(100.f), CMTOVPU(0.1f), CMTOVPU(20.f));
-   PropFloat(TableOverride, ViewDTPlayerZ, "Camera Z"s, "View point vertical offset"s, CMTOVPU(10.f), CMTOVPU(100.f), CMTOVPU(0.1f), CMTOVPU(70.f));
+   PropFloat(TableOverride, ViewDTPlayerY, "Camera Y"s, "View point height offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(0.1f), CMTOVPU(20.f));
+   PropFloat(TableOverride, ViewDTPlayerZ, "Camera Z"s, "View point vertical offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(0.1f), CMTOVPU(70.f));
    PropFloat(TableOverride, ViewDTHOfs, "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window'"s, -30.f, 30.f, 0.1f, 0.f);
    PropFloat(TableOverride, ViewDTVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window'"s, -20.f, 50.f, 0.1f, 0.f);
    PropFloat(TableOverride, ViewDTWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.1f), CMTOVPU(0.f));
@@ -377,16 +377,16 @@ public:
    PropFloat(TableOverride, ViewFSSLookAt, "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 0.1f, 0.f);
    PropFloat(TableOverride, ViewFSSFOV, "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 0.1f, 25.f);
    PropFloat(TableOverride, ViewFSSLayback, "Layback"s, "Fake visual stretch of the table to give more depth"s, -90.f, 90.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewFSSScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 50.f, 150.f, 0.1f, 100.f);
-   PropFloat(TableOverride, ViewFSSScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 50.f, 150.f, 0.1f, 100.f);
-   PropFloat(TableOverride, ViewFSSScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 50.f, 150.f, 0.1f, 100.f);
-   PropFloat(TableOverride, ViewFSSPlayerX, "Camera X"s, "View point width offset, in centimeters"s, -30.f, 30.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewFSSPlayerY, "Camera Y"s, "View point height offset, in centimeters"s, -30.f, 100.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewFSSPlayerZ, "Camera Z"s, "View point vertical offset, in centimeters"s, 10.f, 100.f, 0.1f, 70.f);
-   PropFloat(TableOverride, ViewFSSHOfs, "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window' in centimeters"s, -30.f, 30.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewFSSVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window' in centimeters"s, -20.f, 50.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewFSSWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield, in centimeters"s, 0.f, 50.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewFSSWindowBot, "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield, in centimeters"s, 0.f, 50.f, 0.1f, 0.f);
+   PropFloat(TableOverride, ViewFSSScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 0.5f, 1.5f, 0.001f, 1.f);
+   PropFloat(TableOverride, ViewFSSScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 0.001f, 1.f);
+   PropFloat(TableOverride, ViewFSSScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 0.001f, 1.f);
+   PropFloat(TableOverride, ViewFSSPlayerX, "Camera X"s, "View point width offset"s, CMTOVPU(-30.f), CMTOVPU(30.f), CMTOVPU(0.1f), CMTOVPU(0.f));
+   PropFloat(TableOverride, ViewFSSPlayerY, "Camera Y"s, "View point height offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(0.1f), CMTOVPU(0.f));
+   PropFloat(TableOverride, ViewFSSPlayerZ, "Camera Z"s, "View point vertical offsets"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(0.1f), CMTOVPU(70.f));
+   PropFloat(TableOverride, ViewFSSHOfs, "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window'"s, -30.f, 30.f, 0.1f, 0.f);
+   PropFloat(TableOverride, ViewFSSVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window'"s, -20.f, 50.f, 0.1f, 0.f);
+   PropFloat(TableOverride, ViewFSSWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.1f), CMTOVPU(0.f));
+   PropFloat(TableOverride, ViewFSSWindowBot, "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.1f), CMTOVPU(0.f));
    PropFloat(TableOverride, ViewFSSRotation, "Viewport Rotation"s, ""s, 0.f, 360.f, 90.0f, 0.f);
 
    PropEnum(TableOverride, ViewCabMode, "View mode"s,
@@ -395,16 +395,16 @@ public:
    PropFloat(TableOverride, ViewCabLookAt, "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 0.1f, 0.f);
    PropFloat(TableOverride, ViewCabFOV, "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 0.1f, 25.f);
    PropFloat(TableOverride, ViewCabLayback, "Layback"s, "Fake visual stretch of the table to give more depth"s, 0.f, 90.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewCabScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 50.f, 150.f, 0.1f, 100.f);
-   PropFloat(TableOverride, ViewCabScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 50.f, 150.f, 0.1f, 100.f);
-   PropFloat(TableOverride, ViewCabScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 50.f, 150.f, 0.1f, 100.f);
-   PropFloat(TableOverride, ViewCabPlayerX, "Camera X"s, "View point width offset, in centimeters"s, -30.f, 30.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewCabPlayerY, "Camera Y"s, "View point height offset, in centimeters"s, -30.f, 100.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewCabPlayerZ, "Camera Z"s, "View point vertical offset, in centimeters"s, 10.f, 100.f, 0.1f, 70.f);
-   PropFloat(TableOverride, ViewCabHOfs, "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window' in centimeters"s, -30.f, 30.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewCabVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window' in centimeters"s, -20.f, 50.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewCabWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield, in centimeters"s, 0.f, 50.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewCabWindowBot, "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield, in centimeters"s, 0.f, 50.f, 0.1f, 0.f);
+   PropFloat(TableOverride, ViewCabScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 0.5f, 1.5f, 0.001f, 1.f);
+   PropFloat(TableOverride, ViewCabScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 0.001f, 1.f);
+   PropFloat(TableOverride, ViewCabScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 0.001f, 1.f);
+   PropFloat(TableOverride, ViewCabPlayerX, "Camera X"s, "View point width offset"s, CMTOVPU(-30.f), CMTOVPU(30.f), CMTOVPU(0.1f), CMTOVPU(0.f));
+   PropFloat(TableOverride, ViewCabPlayerY, "Camera Y"s, "View point height offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(0.1f), CMTOVPU(0.f));
+   PropFloat(TableOverride, ViewCabPlayerZ, "Camera Z"s, "View point vertical offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(0.1f), CMTOVPU(70.f));
+   PropFloat(TableOverride, ViewCabHOfs, "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window'"s, -30.f, 30.f, 0.1f, 0.f);
+   PropFloat(TableOverride, ViewCabVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window'"s, -20.f, 50.f, 0.1f, 0.f);
+   PropFloat(TableOverride, ViewCabWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.1f), CMTOVPU(0.f));
+   PropFloat(TableOverride, ViewCabWindowBot, "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.1f), CMTOVPU(0.f));
    PropFloat(TableOverride, ViewCabRotation, "Viewport Rotation"s, ""s, 0.f, 360.f, 90.0f, 0.f);
 
    PropFloat(TableOverride, Difficulty, "Difficulty"s, "Overall difficulty (slope, flipper size, trajectories scattering,...)"s, 0.f, 100.f, 0.1f, 100.f);
