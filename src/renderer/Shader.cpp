@@ -2228,7 +2228,6 @@ void Shader::Load(const std::string& name)
 #include "shaders/hlsl_postprocess.h"
 #include "shaders/hlsl_flasher.h"
 #include "shaders/hlsl_light.h"
-#include "shaders/hlsl_stereo.h"
 #include "shaders/hlsl_ball.h"
 #include "shaders/hlsl_ui.h"
 
@@ -2245,7 +2244,6 @@ void Shader::Load()
    case DMD_VR_SHADER: assert(false); break;
    case FLASHER_SHADER: m_shaderCodeName = "FlasherShader.hlsl"s; code = g_flasherShaderCode; codeSize = sizeof(g_flasherShaderCode); break;
    case LIGHT_SHADER: m_shaderCodeName = "LightShader.hlsl"s; code = g_lightShaderCode; codeSize = sizeof(g_lightShaderCode); break;
-   case STEREO_SHADER: m_shaderCodeName = "StereoShader.hlsl"s; code = g_stereoShaderCode; codeSize = sizeof(g_stereoShaderCode); break;
    case POSTPROCESS_SHADER: m_shaderCodeName = "FBShader.hlsl"s; code = g_FBShaderCode; codeSize = sizeof(g_FBShaderCode); break;
    }
    LPD3DXBUFFER pBufferErrors;
