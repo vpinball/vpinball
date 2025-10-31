@@ -206,6 +206,8 @@ PSC_CLASS_START(Controller)
    PSC_PROP_RW(Controller, bool, IgnoreRomCrc)
    PSC_PROP_RW(Controller, bool, CabinetMode)
    PSC_PROP_RW(Controller, int, SoundMode)
+   PSC_FUNCTION0(Controller, void, ShowOptsDialog)
+   PSC_FUNCTION1(Controller, void, ShowOptsDialog, int32)
    // Custom property to allow host to identify the object as the plugin version
    members.push_back({ { "IsPlugin" }, { "bool" }, 0, {}, [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { pRet->vBool = true; } });
 PSC_CLASS_END(Controller)
