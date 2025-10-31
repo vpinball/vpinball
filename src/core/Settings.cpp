@@ -43,8 +43,8 @@ const string &Settings::GetSectionName(const Section section)
 }
 
 Settings::Settings(Settings* parent)
-   : m_store(this) 
-   , m_parent(parent)
+   : m_parent(parent)
+   , m_store(this)
 {
 }
 
@@ -577,6 +577,7 @@ void Settings::CopyOverrides(const Settings& settings)
             {
                m_ini[section.first][item.first] = item.second;
                m_modified = true;
+               m_modificationIndex++;
             }
             else
             {
@@ -697,6 +698,7 @@ bool Settings::SaveValue(const Section section, const string &key, const string 
    if (key.empty())
       return false;
    m_modified = true;
+   m_modificationIndex++;
    if (m_parent && overrideMode)
    {
       // Handle overriding parent's settings
@@ -744,10 +746,11 @@ bool Settings::DeleteValue(const Section section, const string &key, const bool 
 {
    bool success = true;
    if (m_parent && deleteFromParent)
-      success &= DeleteValue(section, key, deleteFromParent);
+      success &= m_parent->DeleteValue(section, key, deleteFromParent);
    if (m_ini.get(m_settingKeys[section]).has(key))
    {
       m_modified = true;
+      m_modificationIndex++;
       success &= m_ini[m_settingKeys[section]].remove(key);
    }
    return success;
@@ -761,6 +764,7 @@ bool Settings::DeleteSubKey(const Section section, const bool deleteFromParent)
    if (m_ini.has(m_settingKeys[section]))
    {
       m_modified = true;
+      m_modificationIndex++;
       success &= m_ini.remove(m_settingKeys[section]);
    }
    return success;

@@ -30,6 +30,7 @@ public:
    ~LayeredINIPropertyStore() override = default;
 
    bool Load(const string& path);
+   void Load(const mINI::INIStructure& ini);
    void Save();
    bool IsModified() const { return m_modified; }
 
