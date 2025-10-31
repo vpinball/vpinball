@@ -394,12 +394,12 @@ VRDevice::VRDevice()
    const Settings& settings = g_pvp->GetActiveTable()->m_settings;
    #if defined(ENABLE_VR) || defined(ENABLE_XR)
       // Scene offset (vertical rotation and horizontal shift)
-      m_orientation = settings.LoadValueWithDefault(Settings::PlayerVR, "Orientation"s, 0.0f);
-      m_tablePos.x = settings.LoadValueFloat(Settings::PlayerVR, "TableX"s);
-      m_tablePos.y = settings.LoadValueFloat(Settings::PlayerVR, "TableY"s);
+      m_orientation = settings.GetPlayerVR_Orientation();
+      m_tablePos.x = settings.GetPlayerVR_TableX();
+      m_tablePos.y = settings.GetPlayerVR_TableY();
       // Offset of the playfield from the room ground is defined as an offset from the lockbar, minus bottom glass height and custom adjustment
       // (Note that for OpenVR offset is defined from the ground)
-      m_tablePos.z = settings.LoadValueFloat(Settings::PlayerVR, "TableZ"s);
+      m_tablePos.z = settings.GetPlayerVR_TableZ();
    #endif
    #if defined(ENABLE_VR)
       m_slope = settings.LoadValueWithDefault(Settings::PlayerVR, "Slope"s, 6.5f);
@@ -408,8 +408,8 @@ VRDevice::VRDevice()
 
    #if defined(ENABLE_XR)
       // Relative scale factor and positioning
-      m_lockbarWidth = settings.LoadValueFloat(Settings::Player, "LockbarWidth"s);
-      m_lockbarHeight = g_pvp->m_settings.LoadValueFloat(Settings::Player, "LockbarHeight");
+      m_lockbarWidth = settings.GetPlayer_LockbarWidth();
+      m_lockbarHeight = g_pvp->m_settings.GetPlayer_LockbarHeight();
 
       // Fill out an XrApplicationInfo structure detailing the names and OpenXR version.
       // The application/engine name and version are user-defined. These may help IHVs or runtimes.
@@ -1731,10 +1731,8 @@ void VRDevice::RecenterTable()
 
 void VRDevice::SaveVRSettings(Settings& settings) const
 {
-#if defined(ENABLE_VR) || defined(ENABLE_XR)
-   settings.SaveValue(Settings::PlayerVR, "Orientation"s, m_orientation);
-   settings.SaveValue(Settings::PlayerVR, "TableX"s, m_tablePos.x);
-   settings.SaveValue(Settings::PlayerVR, "TableY"s, m_tablePos.y);
-   settings.SaveValue(Settings::PlayerVR, "TableZ"s, m_tablePos.z);
-#endif
+   settings.SetPlayerVR_Orientation(m_orientation, false);
+   settings.SetPlayerVR_TableX(m_tablePos.x, false);
+   settings.SetPlayerVR_TableY(m_tablePos.y, false);
+   settings.SetPlayerVR_TableZ(m_tablePos.z, false);
 }

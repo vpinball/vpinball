@@ -283,28 +283,6 @@ void Settings::Validate(const bool addDefaults)
 #endif
 
    //////////////////////////////////////////////////////////////////////////
-   // VR Player section
-
-   SettingFloat(Settings::PlayerVR, "TableX"s, 0.f, -300.f, 300.f, "VR scene horizontal X offset (cm)."s);
-   SettingFloat(Settings::PlayerVR, "TableY"s, 0.f, -300.f, 300.f, "VR scene horizontal Y offset (cm)."s);
-   SettingFloat(Settings::PlayerVR, "TableZ"s, 0.f, -300.f, 300.f, "VR scene vertical offset (cm)."s);
-   SettingBool(Settings::PlayerVR, "ShrinkPreview"s, false, ""s);
-   SettingInt(Section::PlayerVR, "VRPreview"s, 1, 0, 3, ""s);
-   SettingInt(Section::PlayerVR, "PassthroughColor"s, 0xBB4700, 0x000000, 0xFFFFFF, ""s);
-
-   //////////////////////////////////////////////////////////////////////////
-   // Cabinet section
-
-   SettingFloat(Section::Player, "ScreenPlayerX"s, 0.f, -100.f, 100.f, ""s);
-   SettingFloat(Section::Player, "ScreenPlayerY"s, 0.f, -100.f, 100.f, ""s);
-   SettingFloat(Section::Player, "ScreenPlayerZ"s, 70.f, -100.f, 200.f, ""s);
-   SettingFloat(Section::Player, "ScreenWidth"s, 95.89f, 1.f, 500.f, "Physical width (cm) of the display area of the playfield (main) screen."s);
-   SettingFloat(Section::Player, "ScreenHeight"s, 53.94f, 1.f, 500.f, "Physical height (cm) of the display area of the playfield (main) screen."s);
-   SettingFloat(Section::Player, "ScreenInclination"s, 0.0f, -30.f, 30.f, "Inclination (degree) of the playfield (main) screen. 0 is horizontal."s);
-   SettingFloat(Section::Player, "LockbarWidth"s, 70.f, 10.f, 150.f, "Lockbar width in centimeters (measured on the cabinet)."s);
-   SettingFloat(Section::Player, "LockbarHeight"s, 85.f, 0.f, 250.f, "Lockbar height in centimeters (measured on the cabinet, from ground to top of lockbar)."s);
-
-   //////////////////////////////////////////////////////////////////////////
    // Backglass section
 
 #ifdef __LIBVPINBALL__

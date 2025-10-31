@@ -12,7 +12,7 @@ VRSettingsPage::VRSettingsPage()
    : InGameUIPage("Virtual Reality Settings"s, ""s, SaveMode::Both)
 {
    AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayerVR_Orientation, 1.f, "%4.1f °"s, //
+      Settings::m_propPlayerVR_Orientation, 1.f, "%4.1f deg"s, //
       [this]() { return m_player->m_vrDevice->GetSceneOrientation(); }, //
       [this](float, float v) { m_player->m_vrDevice->SetSceneOrientation(v); }));
 

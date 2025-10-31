@@ -13,10 +13,10 @@ ViewSetup::ViewSetup()
 void ViewSetup::SetWindowModeFromSettings(const PinTable* const table)
 {
    assert(mMode == VLM_WINDOW);
-   vec3 playerPos(table->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerX"s),
-                  table->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerY"s),
-                  table->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerZ"s));
-   float screenInclination = table->m_settings.LoadValueFloat(Settings::Player, "ScreenInclination"s);
+   vec3 playerPos(table->m_settings.GetPlayer_ScreenPlayerX(),
+                  table->m_settings.GetPlayer_ScreenPlayerY(),
+                  table->m_settings.GetPlayer_ScreenPlayerZ());
+   float screenInclination = table->m_settings.GetPlayer_ScreenInclination();
    SetViewPosFromPlayerPosition(table, playerPos, screenInclination);
 }
 
@@ -184,7 +184,7 @@ float ViewSetup::GetRealToVirtualScale(const PinTable* const table) const
    if (mMode == VLM_WINDOW)
    {
       float windowBotZ = GetWindowBottomZOffset(table), windowTopZ = GetWindowTopZOffset(table);
-      const float screenHeight = table->m_settings.LoadValueFloat(Settings::Player, "ScreenWidth"s); // Physical width (always measured in landscape orientation) is the height in window mode
+      const float screenHeight = table->m_settings.GetPlayer_ScreenWidth(); // Physical width (always measured in landscape orientation) is the height in window mode
       // const float inc = atan2f(mSceneScaleZ * (windowTopZ - windowBotZ), mSceneScaleY * table->m_bottom);
       const float inc = atan2f(windowTopZ - windowBotZ, table->m_bottom);
       return screenHeight <= 1.f ? 1.f : (VPUTOCM(table->m_bottom) / cosf(inc)) / screenHeight; // Ratio between screen height in virtual world to real world screen height
@@ -401,7 +401,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, cons
       const Vertex3Ds bottom = fit * Vertex3Ds{centerAxis, table->m_bottom, windowBotZ};
       const float xmin = zNear * min(bottom.x, top.x), xmax = zNear * max(bottom.x, top.x);
       const float ymin = zNear * min(bottom.y, top.y), ymax = zNear * max(bottom.y, top.y);
-      const float screenHeight = table->m_settings.LoadValueFloat(Settings::Player, "ScreenWidth"s); // Physical width (always measured in landscape orientation) is the height in window mode
+      const float screenHeight = table->m_settings.GetPlayer_ScreenWidth(); // Physical width (always measured in landscape orientation) is the height in window mode
       float offsetScale;
       if ((quadrant & 1) == 0) // 0 & 180
       {

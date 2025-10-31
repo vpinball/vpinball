@@ -102,7 +102,7 @@ void MiscSettingsPage::BuildPage()
       {
          // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
          AddItem(std::make_unique<InGameUIItem>( //
-            Settings::m_propPlayer_Latitude, 1.f, "%4.1f °"s, //
+            Settings::m_propPlayer_Latitude, 1.f, "%4.1f deg"s, //
             [this]() { return m_player->m_ptable->m_settings.GetPlayer_Latitude(); }, //
             [this](float, float v) {
                m_player->m_ptable->m_settings.SetPlayer_Latitude(v, false);
@@ -110,7 +110,7 @@ void MiscSettingsPage::BuildPage()
             }));
          // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
          AddItem(std::make_unique<InGameUIItem>( //
-            Settings::m_propPlayer_Longitude, 1.f, "%4.1f °"s, //
+            Settings::m_propPlayer_Longitude, 1.f, "%4.1f deg"s, //
             [this]() { return m_player->m_ptable->m_settings.GetPlayer_Longitude(); }, //
             [this](float, float v) {
                m_player->m_ptable->m_settings.SetPlayer_Longitude(v, false);

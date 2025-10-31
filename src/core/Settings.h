@@ -281,8 +281,8 @@ public:
    PropEnum(Player, Anaglyph10Filter, "Anaglyph Filter #7"s, "Anaglyph filter applied to anaglyph profile #10"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
 
    // Real world cabinet & player settings
-   PropFloat(Player, ScreenWidth, "Screen Width"s, "Physical width (cm) of the display area of the playfield (main) screen."s, 5.f, 200.f, 0.1f, 95.89f);
-   PropFloat(Player, ScreenHeight, "Screen Height"s, "Physical height (cm) of the display area of the playfield (main) screen."s, 5.f, 200.f, 0.1f, 53.94f);
+   PropFloat(Player, ScreenWidth, "Screen Width"s, "Physical width (cm) of the display area of the playfield (main) screen (width > height)"s, 5.f, 200.f, 0.1f, 95.89f);
+   PropFloat(Player, ScreenHeight, "Screen Height"s, "Physical height (cm) of the display area of the playfield (main) screen (width > height)"s, 5.f, 200.f, 0.1f, 53.94f);
    PropFloat(Player, ScreenInclination, "Screen Inclination"s, "Inclination (degree) of the playfield (main) screen. 0 is horizontal."s, -30.f, 30.f, 0.1f, 0.f);
    PropFloat(Player, LockbarWidth, "Lockbar Width"s, "Lockbar width in centimeters (measured on the cabinet)."s, 10.f, 150.f, 0.1f, 70.f);
    PropFloat(Player, LockbarHeight, "Lockbar Height"s, "Lockbar height in centimeters (measured on the cabinet, from ground to top of lockbar)."s, 0.f, 250.f, 0.1f, 85.f);

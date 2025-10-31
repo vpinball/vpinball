@@ -24,6 +24,8 @@ void PluginHomePage::Open(bool isBackwardAnimation)
    for (const auto& plugin : manager.GetPlugins())
    {
       const string id = plugin->m_id;
+      if (id == "vpx"s) // Do not expose core VPX plugin (disabling it would crash the app)
+         continue;
       m_player->m_liveUI->m_inGameUI.AddPage("plugin/"s + plugin->m_id, [id]() { return std::make_unique<PluginSettingsPage>(id); });
       AddItem(std::make_unique<InGameUIItem>(plugin->m_name, plugin->m_description, "plugin/"s + plugin->m_id));
    }
