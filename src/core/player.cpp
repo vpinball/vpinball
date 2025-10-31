@@ -1835,16 +1835,15 @@ void Player::PrepareFrame(const std::function<void()>& sync)
    RenderDevice *const rd = m_renderer->m_renderDevice;
 
    // Prepare main 3D scene frame
-   m_renderer->RenderFrame();
-   RenderTarget *playfieldRT = rd->GetCurrentRenderTarget();
+   RenderTarget *playfieldRT = m_renderer->RenderFrame();
 
-   // Prepare anciliary windows (for the time being always embedded in playfield anciliary windows)
-   RenderTarget *backglassRT = RenderAnciliaryWindow(VPXAnciliaryWindow::VPXWINDOW_Backglass, playfieldRT);
-   RenderTarget *scoreViewRT = RenderAnciliaryWindow(VPXAnciliaryWindow::VPXWINDOW_ScoreView, playfieldRT);
-   RenderTarget *topperRT = RenderAnciliaryWindow(VPXAnciliaryWindow::VPXWINDOW_Topper, playfieldRT);
+   // Render anciliary windows (eventually embedded in the main window, so must be done after rendering it and before post process)
+   const RenderTarget * const backglassRT = RenderAnciliaryWindow(VPXAnciliaryWindow::VPXWINDOW_Backglass, playfieldRT);
+   const RenderTarget * const scoreViewRT = RenderAnciliaryWindow(VPXAnciliaryWindow::VPXWINDOW_ScoreView, playfieldRT);
+   const RenderTarget * const topperRT = RenderAnciliaryWindow(VPXAnciliaryWindow::VPXWINDOW_Topper, playfieldRT);
    
    // Apply screenspace transforms (MSAA, AO, AA, stereo, ball motion blur, tonemapping, dithering, bloom,...)
-   m_renderer->PrepareVideoBuffers(m_renderer->m_renderDevice->GetOutputBackBuffer());
+   m_renderer->RenderPostProcess();
 
    m_physics->ResetPerFrameStats();
 
@@ -2049,7 +2048,8 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
    if (m_vrDevice != nullptr)
       return nullptr;
 
-   if (m_renderer->m_stereo3D != StereoMode::STEREO_OFF)
+   // Stereo Postprocessing is not yet implemented for embedded window
+   if (m_renderer->m_stereo3D != StereoMode::STEREO_OFF && output.GetMode() != VPX::RenderOutput::OM_WINDOW)
       return nullptr;
 
    RenderTarget *outputRT;
@@ -2094,7 +2094,21 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
    const int eyes = rd->GetCurrentRenderTarget()->m_nLayers;
    if (eyes > 1)
       matWorldViewProj[1] = matWorldViewProj[0];
+   #if defined(ENABLE_OPENGL)
+   struct
+   {
+      Matrix3D matWorld;
+      Matrix3D matView;
+      Matrix3D matWorldView;
+      Matrix3D matWorldViewInverseTranspose;
+      Matrix3D matWorldViewProj[2];
+   } matrices;
+   memcpy(&matrices.matWorldViewProj[0].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
+   memcpy(&matrices.matWorldViewProj[1].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
+   rd->m_basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
+   #else 
    rd->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
+   #endif
    rd->m_basicShader->SetFloat(SHADER_alphaTestValue, -1.0f);
    rd->m_basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
    rd->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
