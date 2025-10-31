@@ -32,9 +32,9 @@ public:
    bool IsResettingToInitialValues() const { return m_resettingToInitialValues; }
    bool IsResetting() const { return m_resettingToDefaults || m_resettingToInitialValues; }
    virtual void Render(float elapsedS);
-   void SelectNextItem();
-   void SelectPrevItem();
-   void AdjustItem(float direction, bool isInitialPress);
+   virtual void SelectNextItem();
+   virtual void SelectPrevItem();
+   virtual void AdjustItem(float direction, bool isInitialPress);
    bool IsAdjustable() const;
    virtual bool IsDefaults() const;
    virtual bool IsModified() const;

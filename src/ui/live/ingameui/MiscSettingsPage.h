@@ -9,6 +9,8 @@ class MiscSettingsPage final : public InGameUIPage
 {
 public:
    MiscSettingsPage();
+   void Open(bool isBackwardAnimation) override;
+   void Close(bool isBackwardAnimation) override;
 
 private:
    void BuildPage();

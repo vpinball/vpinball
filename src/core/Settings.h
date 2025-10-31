@@ -74,6 +74,12 @@ public:
    inline void Set##groupId##_##propId(const string& v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); } \
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
 
+#define PropArray(groupId, propId, type, getType, ...) \
+   static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId[] = { __VA_ARGS__ }; \
+   inline type Get##groupId##_##propId(int index) const { return (type)(m_store.Get##getType(m_prop##groupId##_##propId[index])); } \
+   inline void Set##groupId##_##propId(int index, type v, bool asTableOverride) { Set(m_prop##groupId##_##propId[index], (type)v, asTableOverride); }
+
+
    // General Application settings
    PropBool(Editor, EnableLog, "Enable Log"s, "Enable general logging to the vinball.log file"s, true);
    PropBool(Editor, DisableHash, "Disable File Validation"s, "Disable file integrity validation"s, false);
@@ -210,16 +216,145 @@ public:
    PropFloat(Player, Stereo3DDefocus, "Anaglyph Defocus"s, "Defocusing of the lesser eye to anaglyph stereo rendering"s, 0.f, 1.f, 0.01f, 0.f);
    PropFloat(Player, Stereo3DLeftContrast, "Anaglyph Left Contrast"s, "Left eye contrast adjustment applied to anaglyph stereo rendering"s, 0.f, 2.f, 0.01f, 1.f);
    PropFloat(Player, Stereo3DRightContrast, "Anaglyph Right Contrast"s, "Right eye contrast adjustment applied to anaglyph stereo rendering"s, 0.f, 2.f, 0.01f, 1.f);
-   PropEnum(Player, Anaglyph1Filter, "Anaglyph Filter #1"s, "Anaglyph filter applied to anaglyph profile #1"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
-   PropEnum(Player, Anaglyph2Filter, "Anaglyph Filter #2"s, "Anaglyph filter applied to anaglyph profile #2"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
-   PropEnum(Player, Anaglyph3Filter, "Anaglyph Filter #3"s, "Anaglyph filter applied to anaglyph profile #3"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
-   PropEnum(Player, Anaglyph4Filter, "Anaglyph Filter #4"s, "Anaglyph filter applied to anaglyph profile #4"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
-   PropEnum(Player, Anaglyph5Filter, "Anaglyph Filter #5"s, "Anaglyph filter applied to anaglyph profile #5"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
-   PropEnum(Player, Anaglyph6Filter, "Anaglyph Filter #6"s, "Anaglyph filter applied to anaglyph profile #6"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
-   PropEnum(Player, Anaglyph7Filter, "Anaglyph Filter #7"s, "Anaglyph filter applied to anaglyph profile #7"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
-   PropEnum(Player, Anaglyph8Filter, "Anaglyph Filter #7"s, "Anaglyph filter applied to anaglyph profile #8"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
-   PropEnum(Player, Anaglyph9Filter, "Anaglyph Filter #7"s, "Anaglyph filter applied to anaglyph profile #9"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
-   PropEnum(Player, Anaglyph10Filter, "Anaglyph Filter #7"s, "Anaglyph filter applied to anaglyph profile #10"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
+   PropEnum(Player, Anaglyph1Filter, "Anaglyph Filter"s, "Anaglyph filter"s, int, 2, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
+   PropEnum(Player, Anaglyph2Filter, "Anaglyph Filter"s, "Anaglyph filter"s, int, 2, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
+   PropEnum(Player, Anaglyph3Filter, "Anaglyph Filter"s, "Anaglyph filter"s, int, 2, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
+   PropEnum(Player, Anaglyph4Filter, "Anaglyph Filter"s, "Anaglyph filter"s, int, 2, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
+   PropEnum(Player, Anaglyph5Filter, "Anaglyph Filter"s, "Anaglyph filter"s, int, 2, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
+   PropEnum(Player, Anaglyph6Filter, "Anaglyph Filter"s, "Anaglyph filter"s, int, 2, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
+   PropEnum(Player, Anaglyph7Filter, "Anaglyph Filter"s, "Anaglyph filter"s, int, 2, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
+   PropEnum(Player, Anaglyph8Filter, "Anaglyph Filter"s, "Anaglyph filter"s, int, 2, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
+   PropEnum(Player, Anaglyph9Filter, "Anaglyph Filter"s, "Anaglyph filter"s, int, 2, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
+   PropEnum(Player, Anaglyph10Filter, "Anaglyph Filter"s, "Anaglyph filter applied to anaglyph profile #10"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
+   PropArray(Player, AnaglyphFilter, int, Int, m_propPlayer_Anaglyph1Filter, m_propPlayer_Anaglyph2Filter, m_propPlayer_Anaglyph3Filter, m_propPlayer_Anaglyph4Filter,
+      m_propPlayer_Anaglyph5Filter, m_propPlayer_Anaglyph6Filter, m_propPlayer_Anaglyph7Filter, m_propPlayer_Anaglyph8Filter, m_propPlayer_Anaglyph9Filter, m_propPlayer_Anaglyph10Filter);
+   PropFloat(Player, Anaglyph1DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 0.01f, 1.f);
+   PropFloat(Player, Anaglyph2DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 0.01f, 1.f);
+   PropFloat(Player, Anaglyph3DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 0.01f, 1.f);
+   PropFloat(Player, Anaglyph4DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 0.01f, 1.f);
+   PropFloat(Player, Anaglyph5DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 0.01f, 1.f);
+   PropFloat(Player, Anaglyph6DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 0.01f, 1.f);
+   PropFloat(Player, Anaglyph7DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 0.01f, 1.f);
+   PropFloat(Player, Anaglyph8DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 0.01f, 1.f);
+   PropFloat(Player, Anaglyph9DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 0.01f, 1.f);
+   PropFloat(Player, Anaglyph10DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 0.01f, 1.f);
+   PropArray(Player, AnaglyphDynDesat, float, Float, m_propPlayer_Anaglyph1DynDesat, m_propPlayer_Anaglyph2DynDesat, m_propPlayer_Anaglyph3DynDesat, m_propPlayer_Anaglyph4DynDesat,
+      m_propPlayer_Anaglyph5DynDesat, m_propPlayer_Anaglyph6DynDesat, m_propPlayer_Anaglyph7DynDesat, m_propPlayer_Anaglyph8DynDesat, m_propPlayer_Anaglyph9DynDesat,
+      m_propPlayer_Anaglyph10DynDesat);
+   PropFloat(Player, Anaglyph1Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.01f, 0.f);
+   PropFloat(Player, Anaglyph2Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.01f, 0.f);
+   PropFloat(Player, Anaglyph3Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.01f, 0.f);
+   PropFloat(Player, Anaglyph4Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.01f, 0.f);
+   PropFloat(Player, Anaglyph5Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.01f, 0.f);
+   PropFloat(Player, Anaglyph6Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.01f, 0.f);
+   PropFloat(Player, Anaglyph7Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.01f, 0.f);
+   PropFloat(Player, Anaglyph8Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.01f, 0.f);
+   PropFloat(Player, Anaglyph9Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.01f, 0.f);
+   PropFloat(Player, Anaglyph10Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.01f, 0.f);
+   PropArray(Player, AnaglyphDeghost, float, Float, m_propPlayer_Anaglyph1Deghost, m_propPlayer_Anaglyph2Deghost, m_propPlayer_Anaglyph3Deghost, m_propPlayer_Anaglyph4Deghost,
+      m_propPlayer_Anaglyph5Deghost, m_propPlayer_Anaglyph6Deghost, m_propPlayer_Anaglyph7Deghost, m_propPlayer_Anaglyph8Deghost, m_propPlayer_Anaglyph9Deghost,
+      m_propPlayer_Anaglyph10Deghost);
+   PropBool(Player, Anaglyph1sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
+   PropBool(Player, Anaglyph2sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
+   PropBool(Player, Anaglyph3sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
+   PropBool(Player, Anaglyph4sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
+   PropBool(Player, Anaglyph5sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
+   PropBool(Player, Anaglyph6sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
+   PropBool(Player, Anaglyph7sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
+   PropBool(Player, Anaglyph8sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
+   PropBool(Player, Anaglyph9sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
+   PropBool(Player, Anaglyph10sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
+   PropArray(Player, AnaglyphsRGB, bool, Int, m_propPlayer_Anaglyph1sRGB, m_propPlayer_Anaglyph2sRGB, m_propPlayer_Anaglyph3sRGB, m_propPlayer_Anaglyph4sRGB, m_propPlayer_Anaglyph5sRGB,
+      m_propPlayer_Anaglyph6sRGB, m_propPlayer_Anaglyph7sRGB, m_propPlayer_Anaglyph8sRGB, m_propPlayer_Anaglyph9sRGB, m_propPlayer_Anaglyph10sRGB);
+   // Red Cyan
+   PropFloat(Player, Anaglyph1LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.001f, 0.95f);
+   PropFloat(Player, Anaglyph1LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.001f, 0.19f);
+   PropFloat(Player, Anaglyph1LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.07f);
+   PropFloat(Player, Anaglyph1RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.001f, 0.06f);
+   PropFloat(Player, Anaglyph1RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.001f, 0.92f);
+   PropFloat(Player, Anaglyph1RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.28f);
+   // Green Magenta
+   PropFloat(Player, Anaglyph2LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.001f, 0.06f);
+   PropFloat(Player, Anaglyph2LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.001f, 0.96f);
+   PropFloat(Player, Anaglyph2LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.09f);
+   PropFloat(Player, Anaglyph2RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.001f, 0.61f);
+   PropFloat(Player, Anaglyph2RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.001f, 0.16f);
+   PropFloat(Player, Anaglyph2RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.66f);
+   // Blue Amber
+   PropFloat(Player, Anaglyph3LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.001f, 0.05f);
+   PropFloat(Player, Anaglyph3LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.001f, 0.16f);
+   PropFloat(Player, Anaglyph3LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.96f);
+   PropFloat(Player, Anaglyph3RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.001f, 0.61f);
+   PropFloat(Player, Anaglyph3RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.001f, 0.66f);
+   PropFloat(Player, Anaglyph3RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.09f);
+   // Cyan Red
+   PropFloat(Player, Anaglyph4LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.001f, 0.06f);
+   PropFloat(Player, Anaglyph4LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.001f, 0.92f);
+   PropFloat(Player, Anaglyph4LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.28f);
+   PropFloat(Player, Anaglyph4RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.001f, 0.95f);
+   PropFloat(Player, Anaglyph4RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.001f, 0.19f);
+   PropFloat(Player, Anaglyph4RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.07f);
+   // Magenta Green
+   PropFloat(Player, Anaglyph5LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.001f, 0.61f);
+   PropFloat(Player, Anaglyph5LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.001f, 0.16f);
+   PropFloat(Player, Anaglyph5LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.66f);
+   PropFloat(Player, Anaglyph5RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.001f, 0.06f);
+   PropFloat(Player, Anaglyph5RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.001f, 0.96f);
+   PropFloat(Player, Anaglyph5RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.09f);
+   // Amber Blue
+   PropFloat(Player, Anaglyph6LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.001f, 0.61f);
+   PropFloat(Player, Anaglyph6LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.001f, 0.66f);
+   PropFloat(Player, Anaglyph6LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.09f);
+   PropFloat(Player, Anaglyph6RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.001f, 0.05f);
+   PropFloat(Player, Anaglyph6RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.001f, 0.16f);
+   PropFloat(Player, Anaglyph6RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.96f);
+   // Red Cyan
+   PropFloat(Player, Anaglyph7LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.001f, 0.95f);
+   PropFloat(Player, Anaglyph7LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.001f, 0.19f);
+   PropFloat(Player, Anaglyph7LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.07f);
+   PropFloat(Player, Anaglyph7RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.001f, 0.06f);
+   PropFloat(Player, Anaglyph7RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.001f, 0.92f);
+   PropFloat(Player, Anaglyph7RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.28f);
+   // Red Cyan
+   PropFloat(Player, Anaglyph8LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.001f, 0.95f);
+   PropFloat(Player, Anaglyph8LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.001f, 0.19f);
+   PropFloat(Player, Anaglyph8LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.07f);
+   PropFloat(Player, Anaglyph8RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.001f, 0.06f);
+   PropFloat(Player, Anaglyph8RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.001f, 0.92f);
+   PropFloat(Player, Anaglyph8RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.28f);
+   // Red Cyan
+   PropFloat(Player, Anaglyph9LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.001f, 0.95f);
+   PropFloat(Player, Anaglyph9LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.001f, 0.19f);
+   PropFloat(Player, Anaglyph9LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.07f);
+   PropFloat(Player, Anaglyph9RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.001f, 0.06f);
+   PropFloat(Player, Anaglyph9RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.001f, 0.92f);
+   PropFloat(Player, Anaglyph9RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.28f);
+   // Red Cyan
+   PropFloat(Player, Anaglyph10LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.001f, 0.95f);
+   PropFloat(Player, Anaglyph10LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.001f, 0.19f);
+   PropFloat(Player, Anaglyph10LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.07f);
+   PropFloat(Player, Anaglyph10RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.001f, 0.06f);
+   PropFloat(Player, Anaglyph10RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.001f, 0.92f);
+   PropFloat(Player, Anaglyph10RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.28f);
+
+   PropArray(Player, AnaglyphLeftRed, float, Float, m_propPlayer_Anaglyph1LeftRed, m_propPlayer_Anaglyph2LeftRed, m_propPlayer_Anaglyph3LeftRed, m_propPlayer_Anaglyph4LeftRed,
+      m_propPlayer_Anaglyph5LeftRed, m_propPlayer_Anaglyph6LeftRed, m_propPlayer_Anaglyph7LeftRed, m_propPlayer_Anaglyph8LeftRed, m_propPlayer_Anaglyph9LeftRed,
+      m_propPlayer_Anaglyph10LeftRed);
+   PropArray(Player, AnaglyphLeftGreen, float, Float, m_propPlayer_Anaglyph1LeftGreen, m_propPlayer_Anaglyph2LeftGreen, m_propPlayer_Anaglyph3LeftGreen, m_propPlayer_Anaglyph4LeftGreen,
+      m_propPlayer_Anaglyph5LeftGreen, m_propPlayer_Anaglyph6LeftGreen, m_propPlayer_Anaglyph7LeftGreen, m_propPlayer_Anaglyph8LeftGreen, m_propPlayer_Anaglyph9LeftGreen,
+      m_propPlayer_Anaglyph10LeftGreen);
+   PropArray(Player, AnaglyphLeftBlue, float, Float, m_propPlayer_Anaglyph1LeftBlue, m_propPlayer_Anaglyph2LeftBlue, m_propPlayer_Anaglyph3LeftBlue, m_propPlayer_Anaglyph4LeftBlue,
+      m_propPlayer_Anaglyph5LeftBlue, m_propPlayer_Anaglyph6LeftBlue, m_propPlayer_Anaglyph7LeftBlue, m_propPlayer_Anaglyph8LeftBlue, m_propPlayer_Anaglyph9LeftBlue,
+      m_propPlayer_Anaglyph10LeftBlue);
+   PropArray(Player, AnaglyphRightRed, float, Float, m_propPlayer_Anaglyph1RightRed, m_propPlayer_Anaglyph2RightRed, m_propPlayer_Anaglyph3RightRed, m_propPlayer_Anaglyph4RightRed,
+      m_propPlayer_Anaglyph5RightRed, m_propPlayer_Anaglyph6RightRed, m_propPlayer_Anaglyph7RightRed, m_propPlayer_Anaglyph8RightRed, m_propPlayer_Anaglyph9RightRed,
+      m_propPlayer_Anaglyph10RightRed);
+   PropArray(Player, AnaglyphRightGreen, float, Float, m_propPlayer_Anaglyph1RightGreen, m_propPlayer_Anaglyph2RightGreen, m_propPlayer_Anaglyph3RightGreen, m_propPlayer_Anaglyph4RightGreen,
+      m_propPlayer_Anaglyph5RightGreen, m_propPlayer_Anaglyph6RightGreen, m_propPlayer_Anaglyph7RightGreen, m_propPlayer_Anaglyph8RightGreen, m_propPlayer_Anaglyph9RightGreen,
+      m_propPlayer_Anaglyph10RightGreen);
+   PropArray(Player, AnaglyphRightBlue, float, Float, m_propPlayer_Anaglyph1RightBlue, m_propPlayer_Anaglyph2RightBlue, m_propPlayer_Anaglyph3RightBlue, m_propPlayer_Anaglyph4RightBlue,
+      m_propPlayer_Anaglyph5RightBlue, m_propPlayer_Anaglyph6RightBlue, m_propPlayer_Anaglyph7RightBlue, m_propPlayer_Anaglyph8RightBlue, m_propPlayer_Anaglyph9RightBlue,
+      m_propPlayer_Anaglyph10RightBlue)
 
    // Real world cabinet & player settings
    PropFloat(Player, ScreenWidth, "Screen Width"s, "Physical width (cm) of the display area of the playfield (main) screen (width > height)"s, 5.f, 200.f, 0.1f, 95.89f);
@@ -472,6 +607,7 @@ public:
 #undef PropEnum
 #undef PropFloat
 #undef PropString
+#undef PropArray
 
 
 public:

@@ -2091,7 +2091,7 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTar
    matWorldViewProj[0]._41 = -1.f + 2.f * static_cast<float>(m_outputX) / static_cast<float>(outputRT->GetWidth());
    matWorldViewProj[0]._22 = -2.f * static_cast<float>(m_outputH) / static_cast<float>(outputRT->GetHeight());
    matWorldViewProj[0]._42 = 1.f - 2.f * static_cast<float>(m_outputY) / static_cast<float>(outputRT->GetHeight());
-   const int eyes = rd->GetCurrentRenderTarget()->m_nLayers;
+   const int eyes = m_renderer->m_stereo3D != StereoMode::STEREO_OFF ? 2 : 1;
    if (eyes > 1)
       matWorldViewProj[1] = matWorldViewProj[0];
    #if defined(ENABLE_OPENGL)
