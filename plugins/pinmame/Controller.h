@@ -138,6 +138,7 @@ public:
    void SetCabinetMode(bool v) const { LOGE("CabinetMode is deprecated"); }
    int GetSoundMode() const { LOGE("SoundMode is deprecated"); return 0; }
    void SetSoundMode(int v) const { LOGE("SoundMode is deprecated"); }
+   void ShowOptsDialog(long hParentWnd = 0L) const { LOGE("ShowOptsDialog is deprecated"); }
    //STDMETHOD(ShowPathesDialog)(/*[in,defaultvalue(0)]*/ LONG_PTR hParentWnd);
    //STDMETHOD(SetDisplayPosition)(/*[in]*/ int x, /*[in]*/ int y, /*[in]*/ LONG_PTR hParentWindow);
    //STDMETHOD(CheckROMS)(/*[in,defaultvalue(0)]*/ int nShowOptions, /*[in,defaultvalue(0)]*/ LONG_PTR hParentWnd, /*[out, retval]*/ VARIANT_BOOL *pVal);
