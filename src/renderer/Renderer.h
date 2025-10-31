@@ -38,8 +38,8 @@ public:
    bool IsUsingStaticPrepass() const { return (m_disableStaticPrepass <= 0) && (m_stereo3D != STEREO_VR); }
    unsigned int GetNPrerenderTris() const { return m_statsDrawnStaticTriangles; }
 
-   void RenderFrame();
-   void PrepareVideoBuffers(RenderTarget* outputBackBuffer);
+   RenderTarget* RenderFrame();
+   void RenderPostProcess();
 
    enum ColorSpace
    {
@@ -159,9 +159,18 @@ private:
    void DrawBackground();
    void DrawBulbLightBuffer();
    bool IsBloomEnabled() const;
-   void Bloom();
-   void SSRefl();
    std::shared_ptr<BaseTexture> EnvmapPrecalc(const std::shared_ptr<const BaseTexture>& envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres);
+
+   // Postprocess passes
+   void UpdateAmbientOcclusion();
+   void UpdateBloom();
+   RenderTarget* ApplyAdditiveScreenSpaceReflection(RenderTarget* renderedRT);
+   ShaderTechniques ApplyTonemapping(RenderTarget* renderedRT, RenderTarget* tonemapRT);
+   RenderTarget* ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, RenderTarget* afterTonemapRT, ShaderTechniques tonemapTechnique);
+   RenderTarget* ApplyPostProcessedAntialiasing(RenderTarget* renderedRT, RenderTarget* outputBackBuffer);
+   RenderTarget* ApplySharpening(RenderTarget* renderedRT, RenderTarget* outputBackBuffer);
+   RenderTarget* ApplyUpscaling(RenderTarget* renderedRT, RenderTarget* outputBackBuffer);
+   RenderTarget* ApplyStereo(RenderTarget* renderedRT, RenderTarget* outputBackBuffer);
 
    bool m_shaderDirty = true;
    void SetupShaders();

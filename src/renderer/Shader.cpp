@@ -1790,13 +1790,10 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
       ReportError(e.c_str(), -1, __FILE__, __LINE__);
       success = false;
 
-#ifdef __STANDALONE__
       PLOGE << "vertex:";
       for (const auto& line : add_line_numbers(vertexSource)) {
          PLOGE << line;
       }
-#endif
-
    }
 #ifndef __OPENGLES__
    //Geometry Shader
@@ -1823,12 +1820,10 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
          free(errorText);
          success = false;
 
-#ifdef __STANDALONE__
          PLOGE << "geometry:";
          for (const auto& line : add_line_numbers(geometrySource)) {
             PLOGE << line;
          }
-#endif
       }
    }
 #endif
@@ -1856,13 +1851,10 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
          free(errorText);
          success = false;
 
-#ifdef __STANDALONE__
          PLOGE << "fragment:";
          for (const auto& line : add_line_numbers(fragmentSource)) {
             PLOGE << line;
          }
-#endif
-
       }
    }
 
