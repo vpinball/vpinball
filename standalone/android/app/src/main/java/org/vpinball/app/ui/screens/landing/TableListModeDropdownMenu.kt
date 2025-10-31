@@ -33,49 +33,14 @@ fun TableListModeDropdownMenu(expanded: Boolean, onDismissRequest: () -> Unit, v
         DropdownMenuItem(
             text = {
                 Text(
-                    text = "2 Column",
+                    text = "Small",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f),
                 )
             },
             leadingIcon = {
-                if (tableListMode == TableListMode.TWO_COLUMN) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.img_sf_checkmark),
-                        contentDescription = "Selected",
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(14.dp),
-                    )
-                }
-            },
-            trailingIcon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.img_sf_rectangle_split_2x1),
-                    contentDescription = "2 Column",
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(20.dp),
-                )
-            },
-            onClick = {
-                viewModel.setTableListMode(TableListMode.TWO_COLUMN)
-                onDismissRequest()
-            },
-        )
-
-        HorizontalDivider()
-
-        DropdownMenuItem(
-            text = {
-                Text(
-                    text = "3 Column",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.weight(1f),
-                )
-            },
-            leadingIcon = {
-                if (tableListMode == TableListMode.THREE_COLUMN) {
+                if (tableListMode == TableListMode.SMALL) {
                     Icon(
                         painter = painterResource(id = R.drawable.img_sf_checkmark),
                         contentDescription = "Selected",
@@ -87,13 +52,83 @@ fun TableListModeDropdownMenu(expanded: Boolean, onDismissRequest: () -> Unit, v
             trailingIcon = {
                 Icon(
                     painter = painterResource(id = R.drawable.img_sf_rectangle_split_3x1),
-                    contentDescription = "3 Column",
+                    contentDescription = "Small",
                     tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(20.dp),
                 )
             },
             onClick = {
-                viewModel.setTableListMode(TableListMode.THREE_COLUMN)
+                viewModel.setTableListMode(TableListMode.SMALL)
+                onDismissRequest()
+            },
+        )
+
+        HorizontalDivider()
+
+        DropdownMenuItem(
+            text = {
+                Text(
+                    text = "Medium",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f),
+                )
+            },
+            leadingIcon = {
+                if (tableListMode == TableListMode.MEDIUM) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.img_sf_checkmark),
+                        contentDescription = "Selected",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(14.dp),
+                    )
+                }
+            },
+            trailingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.img_sf_rectangle_split_2x1),
+                    contentDescription = "Medium",
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(20.dp),
+                )
+            },
+            onClick = {
+                viewModel.setTableListMode(TableListMode.MEDIUM)
+                onDismissRequest()
+            },
+        )
+
+        HorizontalDivider()
+
+        DropdownMenuItem(
+            text = {
+                Text(
+                    text = "Large",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f),
+                )
+            },
+            leadingIcon = {
+                if (tableListMode == TableListMode.LARGE) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.img_sf_checkmark),
+                        contentDescription = "Selected",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(14.dp),
+                    )
+                }
+            },
+            trailingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.img_sf_rectangle_portrait),
+                    contentDescription = "Large",
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(20.dp),
+                )
+            },
+            onClick = {
+                viewModel.setTableListMode(TableListMode.LARGE)
                 onDismissRequest()
             },
         )

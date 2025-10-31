@@ -2,8 +2,6 @@ package org.vpinball.app.ui.screens.landing
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,7 +44,6 @@ import kotlinx.coroutines.withContext
 import org.vpinball.app.R
 import org.vpinball.app.Table
 import org.vpinball.app.TableImageState
-import org.vpinball.app.VPinballManager
 import org.vpinball.app.util.drawWithGradient
 import org.vpinball.app.util.loadImage
 
@@ -80,14 +77,11 @@ fun TableListGridItem(
 
     val hazeState = remember { HazeState() }
 
-    val ratio = VPinballManager.getDisplaySize().width.toFloat() / VPinballManager.getDisplaySize().height.toFloat()
-
     Box {
         Box(
             modifier =
                 Modifier.fillMaxSize()
-                    .aspectRatio(ratio)
-                    .border(width = 2.dp, color = Color.Yellow, shape = RoundedCornerShape(8.dp))
+                    .aspectRatio(2f / 3f)
                     .clip(RoundedCornerShape(8.dp))
                     .padding(all = 4.dp)
                     .pointerInput(Unit) {
@@ -109,21 +103,32 @@ fun TableListGridItem(
                     when (imageState) {
                         TableImageState.IMAGE_LOADED -> {
                             bitmap?.let { bitmap ->
-                                Image(bitmap, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                                Box(modifier = Modifier.fillMaxSize()) {
+                                    Image(
+                                        bitmap = bitmap,
+                                        contentDescription = null,
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Fit,
+                                        alignment = Alignment.Center,
+                                    )
+                                }
                             }
                         }
 
                         TableImageState.LOADING_IMAGE -> {
-                            Box(modifier = Modifier.background(Color.Black))
+                            Box {}
                         }
 
                         else -> {
-                            Image(
-                                painter = painterResource(R.drawable.img_table_placeholder),
-                                contentDescription = null,
-                                modifier = Modifier.fillMaxSize().drawWithGradient(),
-                                contentScale = ContentScale.Crop,
-                            )
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                Image(
+                                    painter = painterResource(R.drawable.img_table_placeholder),
+                                    contentDescription = null,
+                                    modifier = Modifier.fillMaxSize().drawWithGradient(),
+                                    contentScale = ContentScale.Fit,
+                                    alignment = Alignment.Center,
+                                )
+                            }
                         }
                     }
                 }
@@ -131,9 +136,7 @@ fun TableListGridItem(
 
             Box(
                 modifier =
-                    Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(all = 2.dp).clip(RoundedCornerShape(6.dp)).hazeChild(
-                        state = hazeState
-                    ) {
+                    Modifier.align(Alignment.BottomCenter).fillMaxWidth().clip(RoundedCornerShape(6.dp)).hazeChild(state = hazeState) {
                         backgroundColor = Color.Black
                         tints = listOf(HazeTint(Color.White.copy(alpha = 0.1f)))
                         blurRadius = 40.dp
@@ -141,7 +144,7 @@ fun TableListGridItem(
                     }
             ) {
                 Column(
-                    modifier = Modifier.fillMaxWidth().padding(2.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 7.dp, vertical = 5.dp),
                     verticalArrangement = Arrangement.spacedBy(2.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {

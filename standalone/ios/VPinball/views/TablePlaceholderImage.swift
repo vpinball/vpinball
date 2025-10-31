@@ -7,11 +7,8 @@ struct TablePlaceholderImage: View {
     var body: some View {
         Image("table-placeholder")
             .resizable()
-            .aspectRatio(1179 / 2556,
-                         contentMode: contentMode)
-            .background(Color.lightBlack)
+            .aspectRatio(contentMode: contentMode)
             .gradientEffect(icon: "table-placeholder",
-                            aspectRatio: 1179 / 2556,
                             contentMode: contentMode)
     }
 }

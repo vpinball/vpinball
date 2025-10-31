@@ -65,7 +65,7 @@ class LandingScreenViewModel : ViewModel() {
     private val _filteredTables = MutableStateFlow(emptyList<Table>())
     val filteredTables: StateFlow<List<Table>> = _filteredTables
 
-    private val _tableListMode = MutableStateFlow(TableListMode.TWO_COLUMN)
+    private val _tableListMode = MutableStateFlow(TableListMode.MEDIUM)
     val tableListMode: StateFlow<TableListMode> = _tableListMode
 
     private val _tableListSortOrder = MutableStateFlow(TableListSortOrder.A_Z)
@@ -198,7 +198,7 @@ class LandingScreenViewModel : ViewModel() {
     }
 
     private fun loadSettings() {
-        _tableListMode.value = TableListMode.fromInt(VPinballManager.loadValue(STANDALONE, "TableListMode", TableListMode.TWO_COLUMN.value))
+        _tableListMode.value = TableListMode.fromInt(VPinballManager.loadValue(STANDALONE, "TableListMode", TableListMode.MEDIUM.value))
         _tableListSortOrder.value = TableListSortOrder.fromInt(VPinballManager.loadValue(STANDALONE, "TableListSort", TableListSortOrder.A_Z.value))
     }
 }

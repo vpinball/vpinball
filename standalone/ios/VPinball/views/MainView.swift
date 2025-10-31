@@ -13,7 +13,7 @@ struct MainView: View {
     @State var importTableURL: URL?
     @State var showImportTable = false
 
-    @State var tableListMode: TableListMode = .column2
+    @State var tableListMode: TableListMode = .medium
     @State var tableListSortOrder: SortOrder = .forward
     @State var tableListSearchText = ""
     @State var tableListScrollToTable: Table?
@@ -115,12 +115,15 @@ struct MainView: View {
                     ToolbarItem(placement: .topBarTrailing) {
                         Menu(content: {
                             Picker("Table List", selection: $tableListMode) {
-                                Label("2 Column",
-                                      systemImage: "rectangle.split.2x1")
-                                    .tag(TableListMode.column2)
-                                Label("3 Column",
+                                Label("Small",
                                       systemImage: "rectangle.split.3x1")
-                                    .tag(TableListMode.column3)
+                                    .tag(TableListMode.small)
+                                Label("Medium",
+                                      systemImage: "rectangle.split.2x1")
+                                    .tag(TableListMode.medium)
+                                Label("Large",
+                                      systemImage: "rectangle.portrait")
+                                    .tag(TableListMode.large)
                                 Label("List",
                                       systemImage: "list.bullet")
                                     .tag(TableListMode.list)
@@ -310,7 +313,7 @@ struct MainView: View {
     func handleAppear() {
         tableListMode = TableListMode(rawValue: vpinballManager.loadValue(.standalone,
                                                                           "TableListMode",
-                                                                          TableListMode.column2.rawValue)) ?? .column2
+                                                                          TableListMode.medium.rawValue)) ?? .medium
 
         tableListSortOrder = vpinballManager.loadValue(.standalone,
                                                        "TableListSort",
@@ -456,16 +459,15 @@ struct MainView: View {
                     switch result {
                     case let .success(data?):
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            if let image = UIImage(data: data),
-                               let resizedImage = image.resizeWithAspectFit(newSize: CGSize(width: 1179,
-                                                                                            height: 2556))
-                            {
+                            if let image = UIImage(data: data) {
                                 Task {
-                                    await tableManager.setTableImage(table: selectedTable, image: resizedImage)
+                                    await tableManager.setTableImage(table: selectedTable,
+                                                                     image: image)
                                 }
                             } else {
                                 Task {
-                                    await tableManager.setTableImage(table: selectedTable, imagePath: "")
+                                    await tableManager.setTableImage(table: selectedTable,
+                                                                     imagePath: "")
                                 }
                             }
                         }
@@ -481,7 +483,8 @@ struct MainView: View {
         if let selectedTable = selectedTable {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 Task {
-                    await tableManager.setTableImage(table: selectedTable, imagePath: "")
+                    await tableManager.setTableImage(table: selectedTable,
+                                                     imagePath: "")
                 }
             }
         }

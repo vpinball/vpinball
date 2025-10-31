@@ -73,16 +73,9 @@ extension View {
                              maxLoop: maxLoop))
     }
 
-    func gradientEffect(icon: String, size: CGSize, contentMode: ContentMode) -> some View {
+    func gradientEffect(icon: String, contentMode: ContentMode) -> some View {
         modifier(GradientEffect(icon: icon,
-                                size: size,
                                 contentMode: contentMode))
-    }
-
-    func gradientEffect(icon: String, aspectRatio: CGFloat, contentMode: ContentMode) -> some View {
-        modifier(GradientEffectWithAspectRatio(icon: icon,
-                                               aspectRatio: aspectRatio,
-                                               contentMode: contentMode))
     }
 
     func statusBarHidden(_ hidden: Bool,
