@@ -287,7 +287,6 @@ add_executable(vpinball WIN32
    src/shaders/hlsl_glsl/FBShader.hlsl
    src/shaders/hlsl_glsl/FlasherShader.hlsl
    src/shaders/hlsl_glsl/LightShader.hlsl
-   src/shaders/hlsl_glsl/StereoShader.hlsl
    src/shaders/hlsl_glsl/UIShader.hlsl
 
    third-party/include/BAM/BAMView.cpp

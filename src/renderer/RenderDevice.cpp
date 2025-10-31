@@ -721,10 +721,10 @@ RenderDevice::RenderDevice(
    assert(g_pplayer != nullptr); // Player must be created to give access to the output window
 
    // 0 means disable limiting of draw-ahead queue
-   int maxPrerenderedFrames = isVR ? 0 : g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxPrerenderedFrames"s, 0);
+   int maxPrerenderedFrames = isVR ? 0 : g_pplayer->m_ptable->m_settings.GetPlayer_MaxPrerenderedFrames();
 
    // Visual latency reduction
-   m_visualLatencyCorrection = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "VisualLatencyCorrection"s, -1);
+   m_visualLatencyCorrection = g_pplayer->m_ptable->m_settings.GetPlayer_VisualLatencyCorrection();
 
 #if defined(ENABLE_BGFX)
    ///////////////////////////////////

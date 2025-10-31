@@ -180,7 +180,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_headTracking = (stereo3D == STEREO_VR) ? false : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BAMHeadTracking"s, false);
    m_detectScriptHang = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DetectHang"s, false);
 
-   m_NudgeShake = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "NudgeStrength"s, 2e-2f);
+   m_NudgeShake = m_ptable->m_settings.GetPlayer_NudgeStrength();
 
    //!! TODO for now parse all dmd settings and assign scaleFX setting to internal dmd rendering
    m_scaleFX_DMD = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ScaleFXDMD"s, false);
@@ -216,14 +216,14 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       m_playfieldWnd = new VPX::Window(WIN32_WND_TITLE, settings, stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, stereo3D == STEREO_VR ? "Preview" : "Playfield");
 
       const float pfRefreshRate = m_playfieldWnd->GetRefreshRate(); 
-      m_maxFramerate = m_ptable->m_settings.LoadValueFloat(Settings::Player, "MaxFramerate"s);
+      m_maxFramerate = static_cast<float>(m_ptable->m_settings.GetPlayer_MaxFramerate());
       if(m_maxFramerate > 0.f && m_maxFramerate < 24.f) // at least 24 fps
          m_maxFramerate = 24.f;
       if (m_maxFramerate < 0.f) // Negative is display refresh rate
          m_maxFramerate = pfRefreshRate;
       if (m_maxFramerate == 0.f) // 0 is unbound refresh rate
          m_maxFramerate = 10000.f;
-      m_videoSyncMode = static_cast<VideoSyncMode>(m_ptable->m_settings.LoadValueUInt(Settings::Player, "SyncMode"s));
+      m_videoSyncMode = static_cast<VideoSyncMode>(m_ptable->m_settings.GetPlayer_SyncMode());
       if (m_videoSyncMode != VideoSyncMode::VSM_NONE)
       {
          if (m_maxFramerate > pfRefreshRate)

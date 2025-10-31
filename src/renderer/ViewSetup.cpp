@@ -36,76 +36,97 @@ void ViewSetup::SetViewPosFromPlayerPosition(const PinTable* const table, const 
 
 void ViewSetup::ApplyTableOverrideSettings(const Settings& settings, const ViewSetupID id)
 {
-   const string keyPrefix = id == BG_DESKTOP ? "ViewDT"s : id == BG_FSS ? "ViewFSS"s : "ViewCab"s;
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "Mode", (int&)mMode);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "ScaleX", mSceneScaleX);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "ScaleY", mSceneScaleY);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "ScaleZ", mSceneScaleZ);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "Rotation", mViewportRotation);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "PlayerX", mViewX);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "PlayerY", mViewY);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "PlayerZ", mViewZ);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "LookAt", mLookAt);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "FOV", mFOV);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "HOfs", mViewHOfs);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "VOfs", mViewVOfs);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "WindowTop", mWindowTopZOfs);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "WindowBot", mWindowBottomZOfs);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "Layback", mLayback);
+   auto selectProp = [id](VPX::Properties::PropertyRegistry::PropId dt, VPX::Properties::PropertyRegistry::PropId fss, VPX::Properties::PropertyRegistry::PropId cab)
+   {
+      return id == BG_DESKTOP ? dt : id == BG_FSS ? fss : cab;
+   };
+   auto getEnum = [settings, selectProp](int v, VPX::Properties::PropertyRegistry::PropId dt, VPX::Properties::PropertyRegistry::PropId fss, VPX::Properties::PropertyRegistry::PropId cab)
+   {
+      VPX::Properties::PropertyRegistry::PropId prop = selectProp(dt, fss, cab);
+      Settings::GetRegistry().Register(Settings::GetRegistry().GetEnumProperty(prop)->WithDefault(v));
+      return settings.GetInt(selectProp(dt, fss, cab));
+   };
+   auto getFloat = [settings, selectProp](float v, VPX::Properties::PropertyRegistry::PropId dt, VPX::Properties::PropertyRegistry::PropId fss, VPX::Properties::PropertyRegistry::PropId cab)
+   {
+      VPX::Properties::PropertyRegistry::PropId prop = selectProp(dt, fss, cab);
+      Settings::GetRegistry().Register(Settings::GetRegistry().GetFloatProperty(prop)->WithDefault(v));
+      return settings.GetFloat(prop);
+   };
+   
+   mMode = (ViewLayoutMode)getEnum(mMode, Settings::m_propTableOverride_ViewDTMode, Settings::m_propTableOverride_ViewFSSMode, Settings::m_propTableOverride_ViewCabMode);
+   mSceneScaleX = getFloat(mSceneScaleX, Settings::m_propTableOverride_ViewDTScaleX, Settings::m_propTableOverride_ViewFSSScaleX, Settings::m_propTableOverride_ViewCabScaleX);
+   mSceneScaleY = getFloat(mSceneScaleY, Settings::m_propTableOverride_ViewDTScaleY, Settings::m_propTableOverride_ViewFSSScaleY, Settings::m_propTableOverride_ViewCabScaleY);
+   mSceneScaleZ = getFloat(mSceneScaleZ, Settings::m_propTableOverride_ViewDTScaleZ, Settings::m_propTableOverride_ViewFSSScaleZ, Settings::m_propTableOverride_ViewCabScaleZ);
+   mViewportRotation = getFloat(mViewportRotation, Settings::m_propTableOverride_ViewDTRotation, Settings::m_propTableOverride_ViewFSSRotation, Settings::m_propTableOverride_ViewCabRotation);
+   mViewX = getFloat(mViewX, Settings::m_propTableOverride_ViewDTPlayerX, Settings::m_propTableOverride_ViewFSSPlayerX, Settings::m_propTableOverride_ViewCabPlayerX);
+   mViewY = getFloat(mViewY, Settings::m_propTableOverride_ViewDTPlayerY, Settings::m_propTableOverride_ViewFSSPlayerY, Settings::m_propTableOverride_ViewCabPlayerY);
+   mViewZ = getFloat(mViewZ, Settings::m_propTableOverride_ViewDTPlayerZ, Settings::m_propTableOverride_ViewFSSPlayerZ, Settings::m_propTableOverride_ViewCabPlayerZ);
+   mLookAt = getFloat(mLookAt, Settings::m_propTableOverride_ViewDTLookAt, Settings::m_propTableOverride_ViewFSSLookAt, Settings::m_propTableOverride_ViewCabLookAt);
+   mFOV = getFloat(mFOV, Settings::m_propTableOverride_ViewDTFOV, Settings::m_propTableOverride_ViewFSSFOV, Settings::m_propTableOverride_ViewCabFOV);
+   mViewHOfs = getFloat(mViewHOfs, Settings::m_propTableOverride_ViewDTHOfs, Settings::m_propTableOverride_ViewFSSHOfs, Settings::m_propTableOverride_ViewCabHOfs);
+   mViewVOfs = getFloat(mViewVOfs, Settings::m_propTableOverride_ViewDTVOfs, Settings::m_propTableOverride_ViewFSSVOfs, Settings::m_propTableOverride_ViewCabVOfs);
+   mWindowTopZOfs = getFloat(mWindowTopZOfs, Settings::m_propTableOverride_ViewDTWindowTop, Settings::m_propTableOverride_ViewFSSWindowTop, Settings::m_propTableOverride_ViewCabWindowTop);
+   mWindowBottomZOfs = getFloat(mWindowBottomZOfs, Settings::m_propTableOverride_ViewDTWindowBot, Settings::m_propTableOverride_ViewFSSWindowBot, Settings::m_propTableOverride_ViewCabWindowBot);
+   mLayback = getFloat(mLayback, Settings::m_propTableOverride_ViewDTLayback, Settings::m_propTableOverride_ViewFSSLayback, Settings::m_propTableOverride_ViewCabLayback);
 }
 
 void ViewSetup::SaveToTableOverrideSettings(Settings& settings, const ViewSetupID id) const
 {
-   const string keyPrefix = id == BG_DESKTOP ? "ViewDT"s : id == BG_FSS ? "ViewFSS"s : "ViewCab"s;
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "Mode", mMode, false);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleX", mSceneScaleX, false);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleY", mSceneScaleY, false);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleZ", mSceneScaleZ, false);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "Rotation", mViewportRotation, false);
+   auto selectProp = [id](VPX::Properties::PropertyRegistry::PropId dt, VPX::Properties::PropertyRegistry::PropId fss, VPX::Properties::PropertyRegistry::PropId cab)
+   {
+      return id == BG_DESKTOP ? dt : id == BG_FSS ? fss : cab;
+   };
+   auto setEnum = [&settings, selectProp](int v, VPX::Properties::PropertyRegistry::PropId dt, VPX::Properties::PropertyRegistry::PropId fss, VPX::Properties::PropertyRegistry::PropId cab)
+   { return settings.Set(selectProp(dt, fss, cab), v, true); };
+   auto setFloat = [&settings, selectProp](float v, VPX::Properties::PropertyRegistry::PropId dt, VPX::Properties::PropertyRegistry::PropId fss, VPX::Properties::PropertyRegistry::PropId cab)
+   { return settings.Set(selectProp(dt, fss, cab), v, true); };
+   auto reset = [&settings](VPX::Properties::PropertyRegistry::PropId dt, VPX::Properties::PropertyRegistry::PropId fss, VPX::Properties::PropertyRegistry::PropId cab)
+   {
+      settings.Reset(dt);
+      settings.Reset(fss);
+      settings.Reset(cab);
+   };
+   reset(Settings::m_propTableOverride_ViewDTMode, Settings::m_propTableOverride_ViewFSSMode, Settings::m_propTableOverride_ViewCabMode);
+   reset(Settings::m_propTableOverride_ViewDTScaleX, Settings::m_propTableOverride_ViewFSSScaleX, Settings::m_propTableOverride_ViewCabScaleX);
+   reset(Settings::m_propTableOverride_ViewDTScaleY, Settings::m_propTableOverride_ViewFSSScaleY, Settings::m_propTableOverride_ViewCabScaleY);
+   reset(Settings::m_propTableOverride_ViewDTScaleZ, Settings::m_propTableOverride_ViewFSSScaleZ, Settings::m_propTableOverride_ViewCabScaleZ);
+   reset(Settings::m_propTableOverride_ViewDTRotation, Settings::m_propTableOverride_ViewFSSRotation, Settings::m_propTableOverride_ViewCabRotation);
+   reset(Settings::m_propTableOverride_ViewDTPlayerX, Settings::m_propTableOverride_ViewFSSPlayerX, Settings::m_propTableOverride_ViewCabPlayerX);
+   reset(Settings::m_propTableOverride_ViewDTPlayerY, Settings::m_propTableOverride_ViewFSSPlayerY, Settings::m_propTableOverride_ViewCabPlayerY);
+   reset(Settings::m_propTableOverride_ViewDTPlayerZ, Settings::m_propTableOverride_ViewFSSPlayerZ, Settings::m_propTableOverride_ViewCabPlayerZ);
+   reset(Settings::m_propTableOverride_ViewDTLookAt, Settings::m_propTableOverride_ViewFSSLookAt, Settings::m_propTableOverride_ViewCabLookAt);
+   reset(Settings::m_propTableOverride_ViewDTFOV, Settings::m_propTableOverride_ViewFSSFOV, Settings::m_propTableOverride_ViewCabFOV);
+   reset(Settings::m_propTableOverride_ViewDTHOfs, Settings::m_propTableOverride_ViewFSSHOfs, Settings::m_propTableOverride_ViewCabHOfs);
+   reset(Settings::m_propTableOverride_ViewDTVOfs, Settings::m_propTableOverride_ViewFSSVOfs, Settings::m_propTableOverride_ViewCabVOfs);
+   reset(Settings::m_propTableOverride_ViewDTWindowTop, Settings::m_propTableOverride_ViewFSSWindowTop, Settings::m_propTableOverride_ViewCabWindowTop);
+   reset(Settings::m_propTableOverride_ViewDTWindowBot, Settings::m_propTableOverride_ViewFSSWindowBot, Settings::m_propTableOverride_ViewCabWindowBot);
+   reset(Settings::m_propTableOverride_ViewDTLayback, Settings::m_propTableOverride_ViewFSSLayback, Settings::m_propTableOverride_ViewCabLayback);
+
+   setEnum(mMode, Settings::m_propTableOverride_ViewDTMode, Settings::m_propTableOverride_ViewFSSMode, Settings::m_propTableOverride_ViewCabMode);
+   setFloat(mSceneScaleX, Settings::m_propTableOverride_ViewDTScaleX, Settings::m_propTableOverride_ViewFSSScaleX, Settings::m_propTableOverride_ViewCabScaleX);
+   setFloat(mSceneScaleY, Settings::m_propTableOverride_ViewDTScaleY, Settings::m_propTableOverride_ViewFSSScaleY, Settings::m_propTableOverride_ViewCabScaleY);
+   setFloat(mSceneScaleZ, Settings::m_propTableOverride_ViewDTScaleZ, Settings::m_propTableOverride_ViewFSSScaleZ, Settings::m_propTableOverride_ViewCabScaleZ);
+   setFloat(mViewportRotation, Settings::m_propTableOverride_ViewDTRotation, Settings::m_propTableOverride_ViewFSSRotation, Settings::m_propTableOverride_ViewCabRotation);
    if (mMode == VLM_LEGACY || mMode == VLM_CAMERA)
-   {
-      settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerX", mViewX, false);
-      settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerY", mViewY, false);
-      settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerZ", mViewZ, false);
-      settings.SaveValue(Settings::TableOverride, keyPrefix + "LookAt", mLookAt, false);
-      settings.SaveValue(Settings::TableOverride, keyPrefix + "FOV", mFOV, false);
-   }
-   else
-   {
-      settings.DeleteValue(Settings::TableOverride, keyPrefix + "PlayerX");
-      settings.DeleteValue(Settings::TableOverride, keyPrefix + "PlayerY");
-      settings.DeleteValue(Settings::TableOverride, keyPrefix + "PlayerZ");
-      settings.DeleteValue(Settings::TableOverride, keyPrefix + "LookAt");
-      settings.DeleteValue(Settings::TableOverride, keyPrefix + "FOV");
-   }
+      setFloat(mViewX, Settings::m_propTableOverride_ViewDTPlayerX, Settings::m_propTableOverride_ViewFSSPlayerX, Settings::m_propTableOverride_ViewCabPlayerX);
+   if (mMode == VLM_LEGACY || mMode == VLM_CAMERA)
+      setFloat(mViewY, Settings::m_propTableOverride_ViewDTPlayerY, Settings::m_propTableOverride_ViewFSSPlayerY, Settings::m_propTableOverride_ViewCabPlayerY);
+   if (mMode == VLM_LEGACY || mMode == VLM_CAMERA)
+      setFloat(mViewZ, Settings::m_propTableOverride_ViewDTPlayerZ, Settings::m_propTableOverride_ViewFSSPlayerZ, Settings::m_propTableOverride_ViewCabPlayerZ);
+   if (mMode == VLM_LEGACY || mMode == VLM_CAMERA)
+      setFloat(mLookAt, Settings::m_propTableOverride_ViewDTLookAt, Settings::m_propTableOverride_ViewFSSLookAt, Settings::m_propTableOverride_ViewCabLookAt);
+   if (mMode == VLM_LEGACY || mMode == VLM_CAMERA)
+      setFloat(mFOV, Settings::m_propTableOverride_ViewDTFOV, Settings::m_propTableOverride_ViewFSSFOV, Settings::m_propTableOverride_ViewCabFOV);
    if (mMode == VLM_CAMERA || mMode == VLM_WINDOW)
-   {
-      settings.SaveValue(Settings::TableOverride, keyPrefix + "HOfs", mViewHOfs, false);
-      settings.SaveValue(Settings::TableOverride, keyPrefix + "VOfs", mViewVOfs, false);
-   }
-   else
-   {
-      settings.DeleteValue(Settings::TableOverride, keyPrefix + "HOfs");
-      settings.DeleteValue(Settings::TableOverride, keyPrefix + "VOfs");
-   }
+      setFloat(mViewHOfs, Settings::m_propTableOverride_ViewDTHOfs, Settings::m_propTableOverride_ViewFSSHOfs, Settings::m_propTableOverride_ViewCabHOfs);
+   if (mMode == VLM_CAMERA || mMode == VLM_WINDOW)
+      setFloat(mViewVOfs, Settings::m_propTableOverride_ViewDTVOfs, Settings::m_propTableOverride_ViewFSSVOfs, Settings::m_propTableOverride_ViewCabVOfs);
    if (mMode == VLM_WINDOW)
-   {
-      settings.SaveValue(Settings::TableOverride, keyPrefix + "WindowTop", mWindowTopZOfs, false);
-      settings.SaveValue(Settings::TableOverride, keyPrefix + "WindowBot", mWindowBottomZOfs, false);
-   }
-   else
-   {
-      settings.DeleteValue(Settings::TableOverride, keyPrefix + "WindowTop");
-      settings.DeleteValue(Settings::TableOverride, keyPrefix + "WindowBot");
-   }
+      setFloat(mWindowTopZOfs, Settings::m_propTableOverride_ViewDTWindowTop, Settings::m_propTableOverride_ViewFSSWindowTop, Settings::m_propTableOverride_ViewCabWindowTop);
+   if (mMode == VLM_WINDOW)
+      setFloat(mWindowBottomZOfs, Settings::m_propTableOverride_ViewDTWindowBot, Settings::m_propTableOverride_ViewFSSWindowBot, Settings::m_propTableOverride_ViewCabWindowBot);
    if (mMode == VLM_LEGACY)
-   {
-      settings.SaveValue(Settings::TableOverride, keyPrefix + "Layback", mLayback, false);
-   }
-   else
-   {
-      settings.DeleteValue(Settings::TableOverride, keyPrefix + "Layback");
-   }
+      setFloat(mLayback, Settings::m_propTableOverride_ViewDTLayback, Settings::m_propTableOverride_ViewFSSLayback, Settings::m_propTableOverride_ViewCabLayback);
 }
 
 float ViewSetup::GetWindowTopZOffset(const PinTable* const table) const
