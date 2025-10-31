@@ -10,7 +10,20 @@ namespace VPX::InGameUI
 MiscSettingsPage::MiscSettingsPage()
    : InGameUIPage("Miscellaneous Settings"s, ""s, SaveMode::Table)
 {
+}
+
+void MiscSettingsPage::Open(bool isBackwardAnimation)
+{
+   InGameUIPage::Open(isBackwardAnimation);
+   m_staticPrepassDisabled = false;
    BuildPage();
+}
+
+void MiscSettingsPage::Close(bool isBackwardAnimation)
+{
+   InGameUIPage::Close(isBackwardAnimation);
+   if (m_staticPrepassDisabled)
+      m_player->m_renderer->DisableStaticPrePass(false);
 }
 
 void MiscSettingsPage::BuildPage()

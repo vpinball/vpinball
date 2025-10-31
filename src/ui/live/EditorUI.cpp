@@ -30,9 +30,7 @@
 #include "imgui_markdown/imgui_markdown.h"
 
 // Titles (used as Ids) of modal dialogs
-#define ID_VIDEO_SETTINGS "Video Options"
 #define ID_RENDERER_INSPECTION "Renderer Inspection"
-#define ID_ANAGLYPH_CALIBRATION "Anaglyph Calibration"
 
 #define PROP_WIDTH (125.f * m_liveUI.GetDPI())
 #define PROP_TIMER(is_live, startup_obj, live_obj) \
@@ -279,14 +277,11 @@ void EditorUI::Update()
 
    bool showFullUI = true;
    showFullUI &= !m_showRendererInspection;
-   showFullUI &= !ImGui::IsPopupOpen(ID_VIDEO_SETTINGS);
-   showFullUI &= !ImGui::IsPopupOpen(ID_ANAGLYPH_CALIBRATION);
    showFullUI &= !m_flyMode;
 
    if (showFullUI)
    {
       // Main menubar
-      bool openVideoSettings = false;
       if (ImGui::BeginMainMenuBar())
       {
          if (!m_table->IsLocked() && ImGui::BeginMenu("Debug"))
@@ -297,13 +292,6 @@ void EditorUI::Update()
                m_showRendererInspection = true;
             if (ImGui::MenuItem(m_player->m_debugWindowActive ? "Play" : "Pause"))
                m_player->SetPlayState(!m_player->IsPlaying());
-            ImGui::EndMenu();
-         }
-         // TODO move to in game ui
-         if (ImGui::BeginMenu("Preferences"))
-         {
-            if (ImGui::MenuItem("Video Options"))
-               openVideoSettings = true;
             ImGui::EndMenu();
          }
          float buttonWidth = ImGui::CalcTextSize(ICON_FK_REPLY, nullptr, true).x + ImGui::GetStyle().FramePadding.x * 2.0f
@@ -322,8 +310,6 @@ void EditorUI::Update()
          m_menubar_height = ImGui::GetWindowSize().y;
          ImGui::EndMainMenuBar();
       }
-      if (openVideoSettings)
-         ImGui::OpenPopup(ID_VIDEO_SETTINGS, ImGuiPopupFlags_NoReopen);
 
       // Main toolbar
       m_toolbar_height = 20.f * m_liveUI.GetDPI();
@@ -406,10 +392,6 @@ void EditorUI::Update()
       UpdateOutlinerUI();
       UpdatePropertyUI();
    }
-
-   // Popups & Modal dialogs
-   UpdateVideoOptionsModal();
-   UpdateAnaglyphCalibrationModal();
 
    if (m_showRendererInspection)
       UpdateRendererInspectionModal();
@@ -1291,254 +1273,6 @@ void EditorUI::UpdatePropertyUI()
    m_properties_width = ImGui::GetWindowWidth();
    ImGui::End();
    ImGui::PopStyleVar(3);
-}
-
-void EditorUI::UpdateVideoOptionsModal()
-{
-   bool popup_anaglyph_calibration = false;
-   bool p_open = true;
-   if (ImGui::BeginPopupModal(ID_VIDEO_SETTINGS, &p_open, ImGuiWindowFlags_AlwaysAutoResize))
-   {
-      if (m_renderer->m_stereo3D != STEREO_VR && ImGui::CollapsingHeader("3D Stereo Output", ImGuiTreeNodeFlags_DefaultOpen))
-      {
-         ImGui::Checkbox("Enable stereo rendering", &m_renderer->m_stereo3Denabled);
-         if (m_renderer->m_stereo3Denabled)
-         {
-            m_renderer->UpdateStereoShaderState();
-            bool modeChanged = false;
-            static const char *stereo_output_items[] = { "Disabled", "3D TV", "Anaglyph" };
-            int stereo_mode = m_renderer->m_stereo3D == STEREO_OFF ? 0 : Is3DTVStereoMode(m_renderer->m_stereo3D) ? 1 : 2;
-            int tv_mode = Is3DTVStereoMode(m_renderer->m_stereo3D) ? (int)m_renderer->m_stereo3D - STEREO_TB : 0;
-            int glassesIndex = IsAnaglyphStereoMode(m_renderer->m_stereo3D) ? (m_renderer->m_stereo3D - STEREO_ANAGLYPH_1) : 0;
-            if (stereo_mode == 0) // Stereo mode may not be activated if the player was started without it (wen can only change between the stereo modes)
-               ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-            if (ImGui::Combo("Stereo Output", &stereo_mode, stereo_output_items, IM_ARRAYSIZE(stereo_output_items)))
-               modeChanged = true;
-            if (stereo_mode == 0)
-               ImGui::PopItemFlag();
-            if (stereo_mode == 2) // Anaglyph
-            {
-               // Glasses settings
-               static const string defaultNames[] = { "Red/Cyan"s, "Green/Magenta"s, "Blue/Amber"s, "Cyan/Red"s, "Magenta/Green"s, "Amber/Blue"s, "Custom 1"s, "Custom 2"s, "Custom 3"s, "Custom 4"s };
-               string name[std::size(defaultNames)];
-               for (size_t i = 0; i < std::size(defaultNames); i++)
-                  if (!g_pvp->m_settings.LoadValue(Settings::Player, "Anaglyph"s.append(std::to_string(i + 1)).append("Name"s), name[i]))
-                     name[i] = defaultNames[i];
-               static const char *glasses_items[] = { name[0].c_str(),name[1].c_str(),name[2].c_str(),name[3].c_str(),name[4].c_str(),name[5].c_str(),name[6].c_str(),name[7].c_str(),name[8].c_str(),name[9].c_str(), };
-               if (ImGui::Combo("Glasses", &glassesIndex, glasses_items, IM_ARRAYSIZE(glasses_items)))
-                  modeChanged = true;
-               const string prefKey = "Anaglyph" + std::to_string(glassesIndex + 1);
-
-               if (ImGui::InputText("Name", &name[glassesIndex]))
-                  g_pvp->m_settings.SaveValue(Settings::Player, prefKey + "Name", name[glassesIndex]);
-               static const char *filter_items[] = { "None", "Dubois", "Luminance", "Deghost" };
-               int anaglyphFilter = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "Filter", 4);
-               if (ImGui::Combo("Filter", &anaglyphFilter, filter_items, IM_ARRAYSIZE(filter_items)))
-                  g_pvp->m_settings.SaveValue(Settings::Player, prefKey + "Filter", anaglyphFilter);
-               float anaglyphDynDesat = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "DynDesat", 1.f);
-               if (ImGui::InputFloat("Dyn. Desaturation", &anaglyphDynDesat, 0.01f, 0.1f))
-                  g_pvp->m_settings.SaveValue(Settings::Player, prefKey + "DynDesat", anaglyphDynDesat);
-               float anaglyphDeghost = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "Deghost", 0.f);
-               if (ImGui::InputFloat("Deghost", &anaglyphDeghost, 0.01f, 0.1f))
-                  g_pvp->m_settings.SaveValue(Settings::Player, prefKey + "Deghost", anaglyphDeghost);
-               bool srgbDisplay = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "sRGB", true);
-               if (ImGui::Checkbox("Calibrated sRGB Display", &srgbDisplay))
-                  g_pvp->m_settings.SaveValue(Settings::Player, prefKey + "sRGB", srgbDisplay);
-
-               Anaglyph anaglyph;
-               anaglyph.LoadSetupFromRegistry(glassesIndex);
-               const vec3 eyeL = anaglyph.GetLeftEyeColor(false), eyeR = anaglyph.GetRightEyeColor(false);
-               Anaglyph::AnaglyphPair colors = anaglyph.GetColorPair();
-               ImGui::ColorButton("LeftFilter", ImVec4(eyeL.x, eyeL.y, eyeL.z, 1.f), ImGuiColorEditFlags_NoAlpha);
-               ImGui::SameLine();
-               ImGui::ColorButton("RightFilter", ImVec4(eyeR.x, eyeR.y, eyeR.z, 1.f), ImGuiColorEditFlags_NoAlpha);
-               ImGui::SameLine();
-               ImGui::TextUnformatted(anaglyph.IsReversedColorPair() ? colors == Anaglyph::RED_CYAN ? "Cyan/Red" : colors == Anaglyph::GREEN_MAGENTA ? "Magenta/Green" : "Amber/Blue"
-                                                                     : colors == Anaglyph::RED_CYAN ? "Red/Cyan" : colors == Anaglyph::GREEN_MAGENTA ? "Green/Magenta" : "Blue/Amber");
-               ImGui::SameLine();
-               ImGui::Text("Gamma %3.2f", anaglyph.GetDisplayGamma());
-               ImGui::SameLine();
-               vec3 anaglyphRatio = anaglyph.GetAnaglyphRatio();
-               ImGui::Text(" Ratios R: %2d%% G: %2d%% B: %2d%%", (int)(100.f * anaglyphRatio.x), (int)(100.f * anaglyphRatio.y), (int)(100.f * anaglyphRatio.z));
-
-               if (ImGui::Button("Calibrate Glasses"))
-                  popup_anaglyph_calibration = true;
-               ImGui::SameLine();
-               if (ImGui::Button("Reset to default"))
-               {
-                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "Name");
-                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "LeftRed");
-                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "LeftGreen");
-                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "LeftBlue");
-                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "RightRed");
-                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "RightGreen");
-                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "RightBlue");
-               }
-            }
-            if (modeChanged)
-            {
-               StereoMode mode = STEREO_OFF;
-               if (stereo_mode == 1)
-                  mode = (StereoMode)(STEREO_TB + tv_mode);
-               if (stereo_mode == 2)
-                  mode = (StereoMode)(STEREO_ANAGLYPH_1 + glassesIndex);
-               g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3D"s, (int)mode);
-               if (m_renderer->m_stereo3D != STEREO_OFF && mode != STEREO_OFF) // TODO allow live switching stereo on/off
-                  m_renderer->m_stereo3D = mode;
-            }
-         }
-      }
-      ImGui::EndPopup();
-   }
-   if (popup_anaglyph_calibration && IsAnaglyphStereoMode(g_pvp->m_settings.GetPlayer_Stereo3D()))
-      ImGui::OpenPopup(ID_ANAGLYPH_CALIBRATION);
-}
-
-void EditorUI::UpdateAnaglyphCalibrationModal()
-{
-   const int glassesIndex = m_renderer->m_stereo3D - STEREO_ANAGLYPH_1;
-   if (glassesIndex < 0 || glassesIndex > 9)
-      return;
-   static float backgroundOpacity = 1.f;
-   const ImGuiIO& io = ImGui::GetIO();
-   ImGui::SetNextWindowSize(io.DisplaySize);
-   ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0.f, 0.f, 0.f, backgroundOpacity));
-   if (ImGui::BeginPopupModal(ID_ANAGLYPH_CALIBRATION, nullptr, (ImGuiWindowFlags_)((int)ImGuiWindowFlags_NoTitleBar | (int)ImGuiNextWindowDataFlags_HasBgAlpha)))
-   {
-      m_renderer->UpdateStereoShaderState();
-      const string prefKey = "Anaglyph" + std::to_string(glassesIndex + 1);
-      static int calibrationStep = -1;
-      static float calibrationBrightness = 0.5f;
-      static const string fields[] = { "LeftRed"s, "LeftGreen"s, "LeftBlue"s, "RightRed"s, "RightGreen"s, "RightBlue"s, };
-      // use the right setting for the selected glasses (corresponding to their name)
-      if (calibrationStep == -1)
-      {
-         calibrationStep = 0; 
-         calibrationBrightness = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, prefKey + fields[calibrationStep], 0.f);
-      }
-      if (ImGui::IsKeyPressed(ImGuiKey::ImGuiKey_LeftCtrl))
-      {
-         if (calibrationStep == 0)
-         {
-            calibrationStep = -1;
-            ImGui::CloseCurrentPopup();
-            ImGui::EndPopup();
-            ImGui::OpenPopup(ID_VIDEO_SETTINGS);
-            ImGui::PopStyleColor();
-            return;
-         }
-         else
-         {
-            calibrationStep--;
-            calibrationBrightness = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, prefKey + fields[calibrationStep], 0.f);
-         }
-      }
-      else if (ImGui::IsKeyPressed(ImGuiKey::ImGuiKey_RightCtrl))
-      {
-         if (calibrationStep >= 5)
-         {
-            calibrationStep = -1;
-            ImGui::CloseCurrentPopup();
-            ImGui::EndPopup();
-            ImGui::OpenPopup(ID_VIDEO_SETTINGS);
-            ImGui::PopStyleColor();
-            return;
-         }
-         else
-         {
-            calibrationStep++;
-            calibrationBrightness = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, prefKey + fields[calibrationStep], 0.f);
-         }
-      }
-      else if (ImGui::IsKeyPressed(ImGuiKey::ImGuiKey_LeftShift))
-      {
-         calibrationBrightness = clamp(calibrationBrightness - 0.01f, 0.f, 1.f);
-         g_pvp->m_settings.SaveValue(Settings::Player, prefKey + fields[calibrationStep], calibrationBrightness);
-      }
-      else if (ImGui::IsKeyPressed(ImGuiKey::ImGuiKey_RightShift))
-      {
-         calibrationBrightness = clamp(calibrationBrightness + 0.01f, 0.f, 1.f);
-         g_pvp->m_settings.SaveValue(Settings::Player, prefKey + fields[calibrationStep], calibrationBrightness);
-      }
-
-      ImGui::PushFont(m_liveUI.GetOverlayFont(), m_liveUI.GetOverlayFont()->LegacySize);
-      const ImVec2 win_size = ImGui::GetWindowSize();
-      ImDrawList *draw_list = ImGui::GetWindowDrawList();
-      const float s = min(win_size.x, win_size.y) / 5.f, t = 1.f * s;
-      /* Initial implementation based on MBD calibration
-      draw_list->AddRectFilled(ImVec2(0.5f * win_size.x - t, 0.5f * win_size.y - t), ImVec2(0.5f * win_size.x + t, 0.5f * win_size.y + t),
-         ImColor(calibrationBrightness, calibrationBrightness, calibrationBrightness));
-      for (int x = 0; x < 2; x++)
-      {
-         for (int y = 0; y < 2; y++)
-         {
-            if ((x & 1) != (y & 1))
-            {
-               ImVec2 pos(0.5f * win_size.x - t + s * x, 0.5f * win_size.y - t + s * y);
-               draw_list->AddRectFilled(pos, pos + ImVec2(s, s),ImColor((calibrationStep % 3) == 0 ? 1.f : 0.f, (calibrationStep % 3) == 1 ? 1.f : 0.f, (calibrationStep % 3) == 2 ? 1.f : 0.f));
-            }
-         }
-      }*/
-      // Perform calibration using a human face, see https://people.cs.uchicago.edu/~glk/pubs/pdf/Kindlmann-FaceBasedLuminanceMatching-VIS-2002.pdf
-      static constexpr int faceLength[] = {9, 4, 7, 5, 5, 4, 4, 5, 4, 4, 4, 5, 4};
-      static constexpr ImVec2 face[] = {
-         ImVec2( 96.5f, 86.9f), ImVec2( 17.6f,-48.1f), ImVec2(  7.5f, -1.3f), ImVec2( 13.1f, -0.8f), ImVec2( 19.8f,  0.3f), ImVec2(22.5f,  1.6f), ImVec2(-14.2f,51.9f), ImVec2(-25.7f,14.2f), ImVec2(-16.8f,1.1f),
-         ImVec2(176.9f, 38.5f), ImVec2( 37.7f, 25.7f), ImVec2( -7.8f, 33.7f), ImVec2(-44.1f, -7.5f),
-         ImVec2(120.3f,105.6f), ImVec2(-14.7f, 39.8f), ImVec2( -1.3f, 13.6f), ImVec2( 16.6f,  1.3f), ImVec2( 24.6f,-35.0f), ImVec2( 0.8f,-15.5f), ImVec2( -9.1f,-5.3f),
-         ImVec2(120.8f,160.4f), ImVec2( 20.8f, 11.5f), ImVec2( 68.7f,-10.4f), ImVec2(-19.2f,-27.3f), ImVec2(-45.7f, -8.8f),
-         ImVec2(116.8f,171.1f), ImVec2( -3.2f, 16.0f), ImVec2(-24.9f, -0.5f), ImVec2( -2.3f,-12.5f), ImVec2(  9.7f, -6.0f),
-         ImVec2(116.8f,171.1f), ImVec2( 24.9f,  0.8f), ImVec2( 12.8f, 22.2f), ImVec2(-40.9f, -6.9f),
-         ImVec2(141.6f,171.9f), ImVec2( 68.7f,-10.4f), ImVec2(-20.3f, 40.6f), ImVec2(-35.5f, -8.0f),
-         ImVec2(154.5f,194.0f), ImVec2( -3.5f,  8.8f), ImVec2(  3.7f, 30.2f), ImVec2( 25.1f,-10.2f), ImVec2( 10.2f,-20.8f),
-         ImVec2(151.0f,202.9f), ImVec2(-23.3f, -2.4f), ImVec2(  2.9f, 43.0f), ImVec2( 24.0f,-10.4f),
-         ImVec2( 89.0f,194.8f), ImVec2( 38.8f,  5.6f), ImVec2(  2.9f, 43.0f), ImVec2(-38.0f, -5.3f),
-         ImVec2(191.1f,134.2f), ImVec2(  5.3f,-19.0f), ImVec2( 17.1f, -1.1f), ImVec2( -3.2f, 47.3f),
-         ImVec2( 74.6f,151.9f), ImVec2(  7.9f,-23.8f), ImVec2( 26.5f, -3.0f), ImVec2(-12.9f, 42.9f), ImVec2( -9.7f,  6.0f),
-         ImVec2(65.5f, 148.9f), ImVec2(  6.8f,-38.6f), ImVec2( 10.6f, -0.8f), ImVec2( -0.4f, 18.5f),
-      };
-      ImColor backCol(calibrationBrightness, calibrationBrightness, calibrationBrightness);
-      ImColor calCol((calibrationStep % 3) == 0 ? 1.f : 0.f, (calibrationStep % 3) == 1 ? 1.f : 0.f, (calibrationStep % 3) == 2 ? 1.f : 0.f);
-      for (int v = 0; v < 2; v++)
-      {
-         ImVec2 faceTrans[10], faceOffset(win_size.x * 0.5f - 0.5f * t + (float)v * t, win_size.y * 0.5f);
-         draw_list->AddRectFilled(ImVec2(0.5f * win_size.x - t + (float)v * t, 0.5f * win_size.y - t), ImVec2(0.5f * win_size.x + (float)v * t, 0.5f * win_size.y + t), v == 0 ? backCol : calCol);
-         const ImU32 col = ImGui::GetColorU32(v == 1 ? backCol.Value : calCol.Value);
-         for (int i = 0, p = 0; i < 13; p += faceLength[i], i++)
-         {
-            ImVec2 pos(0.f, 0.f);
-            for (int j = 0; j < faceLength[i]; j++)
-            {
-               pos = pos + face[p + j];
-               PLOGD << pos.x << ", " << pos.y;
-               faceTrans[j] = faceOffset + (pos + ImVec2(-140.f, -140.f)) * 2.f * t / 320.f;
-            }
-            draw_list->AddConvexPolyFilled(faceTrans, faceLength[i], col);
-         }
-      }
-
-      float line_height = ImGui::CalcTextSize("A").y * 1.2f;
-      #define CENTERED_TEXT(y, t) ImGui::SetCursorPos(ImVec2((win_size.x - ImGui::CalcTextSize(t).x) * 0.5f, y));ImGui::TextUnformatted(t);
-      float y = win_size.y * 0.5f + t + line_height;
-      string step_info = "Anaglyph glasses calibration step #"s.append(std::to_string(calibrationStep + 1)).append("/6");
-      CENTERED_TEXT(y + 0 * line_height, step_info.c_str());
-      step_info = (calibrationStep < 3 ? "Left eye's "s : "Right eye's "s).append((calibrationStep % 3) == 0 ? "red"s : (calibrationStep % 3) == 1 ? "green"s : "blue"s).append(" perceived luminance: "s).append(std::to_string((int)(calibrationBrightness * 100.f))).append(1,'%');
-      CENTERED_TEXT(y + 1 * line_height, step_info.c_str());
-      CENTERED_TEXT(y + 3 * line_height, calibrationStep < 3 ? "Close your right eye" : "Close your left eye");
-      CENTERED_TEXT(y + 5 * line_height, calibrationStep == 0 ? "Use Left Control to exit calibration" : "Use Left Control to move to previous step");
-      CENTERED_TEXT(y + 6 * line_height, calibrationStep == 5 ? "Use Right Control to exit calibration" : "Use Right Control to move to next step");
-      CENTERED_TEXT(y + 7 * line_height, "Use Left/Right Shift to adjust face brightness until");
-      CENTERED_TEXT(y + 8 * line_height, "your eye does not favor or focus one face over the other.");
-      ImGui::PopFont();
-      line_height = ImGui::CalcTextSize("A").y * 1.2f;
-      y = win_size.y * 0.5f - t - 3.f * line_height;
-      CENTERED_TEXT(y - line_height, "Background Opacity");
-      ImGui::SetCursorPos(ImVec2((win_size.x - 1.5f * t) * 0.5f, y));
-      ImGui::SetNextItemWidth(1.5f * t);
-      ImGui::SliderFloat("##Background Opacity", &backgroundOpacity, 0.f, 1.f);
-      ImGui::EndPopup();
-      #undef CENTERED_TEXT
-   }
-   ImGui::PopStyleColor();
 }
 
 void EditorUI::UpdateRendererInspectionModal()
