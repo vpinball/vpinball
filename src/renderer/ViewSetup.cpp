@@ -40,13 +40,13 @@ void ViewSetup::ApplyTableOverrideSettings(const Settings& settings, const ViewS
    {
       return id == BG_DESKTOP ? dt : id == BG_FSS ? fss : cab;
    };
-   auto getEnum = [settings, selectProp](int v, VPX::Properties::PropertyRegistry::PropId dt, VPX::Properties::PropertyRegistry::PropId fss, VPX::Properties::PropertyRegistry::PropId cab)
+   auto getEnum = [&settings, selectProp](int v, VPX::Properties::PropertyRegistry::PropId dt, VPX::Properties::PropertyRegistry::PropId fss, VPX::Properties::PropertyRegistry::PropId cab)
    {
       VPX::Properties::PropertyRegistry::PropId prop = selectProp(dt, fss, cab);
       Settings::GetRegistry().Register(Settings::GetRegistry().GetEnumProperty(prop)->WithDefault(v));
       return settings.GetInt(selectProp(dt, fss, cab));
    };
-   auto getFloat = [settings, selectProp](float v, VPX::Properties::PropertyRegistry::PropId dt, VPX::Properties::PropertyRegistry::PropId fss, VPX::Properties::PropertyRegistry::PropId cab)
+   auto getFloat = [&settings, selectProp](float v, VPX::Properties::PropertyRegistry::PropId dt, VPX::Properties::PropertyRegistry::PropId fss, VPX::Properties::PropertyRegistry::PropId cab)
    {
       VPX::Properties::PropertyRegistry::PropId prop = selectProp(dt, fss, cab);
       Settings::GetRegistry().Register(Settings::GetRegistry().GetFloatProperty(prop)->WithDefault(v));

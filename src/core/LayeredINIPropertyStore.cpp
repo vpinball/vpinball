@@ -46,26 +46,41 @@ bool LayeredINIPropertyStore::Load(const string& path)
    }
 }
 
+void LayeredINIPropertyStore::Load(const mINI::INIStructure& ini)
+{
+   m_modified = false;
+   m_intValues.clear();
+   m_floatValues.clear();
+   m_stringValues.clear();
+   m_ini = ini;
+   for (PropertyRegistry::PropId id : m_registry.get().GetPropertyIds())
+      LoadFromINI(id);
+}
+
 bool LayeredINIPropertyStore::LoadFromINI(PropertyRegistry::PropId id)
 {
    const PropertyDef* prop = m_registry.get().GetProperty(id);
    if (!m_ini.has(prop->m_groupId) || !m_ini[prop->m_groupId].has(prop->m_propId))
       return false;
-   int intValue;
    const string value = m_ini[prop->m_groupId][prop->m_propId];
    switch (prop->m_type)
    {
-   case PropertyDef::Type::Float: assert(false); break;
+   case PropertyDef::Type::Float:
+      if (float floatValue; try_parse_float(value, floatValue))
+         Set(id, floatValue);
+      else
+         return false;
+      break;
 
    case PropertyDef::Type::Int:
-      if (try_parse_int(value, intValue))
+      if (int intValue; try_parse_int(value, intValue))
          Set(id, intValue);
       else
          return false;
       break;
 
    case PropertyDef::Type::Bool:
-      if (try_parse_int(value, intValue))
+      if (int intValue; try_parse_int(value, intValue))
          Set(id, intValue != 0 ? 1 : 0);
       else if (StrCompareNoCase(value, "true") || StrCompareNoCase(value, "on") || StrCompareNoCase(value, "enable"))
          Set(id, 1);
@@ -77,16 +92,18 @@ bool LayeredINIPropertyStore::LoadFromINI(PropertyRegistry::PropId id)
 
    case PropertyDef::Type::Enum:
    {
-      const EnumPropertyDef* enumProp = dynamic_cast<const EnumPropertyDef*>(prop);
-      intValue = enumProp->ParseEnum(value);
-      if (enumProp->IsValid(intValue))
+      auto enumProp = dynamic_cast<const EnumPropertyDef*>(prop);
+      if (const int intValue = enumProp->ParseEnum(value); enumProp->IsValid(intValue))
          Set(id, intValue);
       else
          return false;
       break;
    }
 
-   case PropertyDef::Type::String: assert(false); break;
+   case PropertyDef::Type::String:
+      Set(id, value);
+      break;
+
    default: assert(false); break;
    }
    return true;

@@ -21,76 +21,6 @@ class Settings final
    // 1. Create property API [done]
    // 2. Populate shared property registry, and use it where applicable using PropertyDef/Registry [in progress]
    // 3. Split store implementation from Settings class [to be done]
-private:
-   // Custom store that delegates to existing implementation while migrating
-   class MigrationStore : public VPX::Properties::PropertyStore
-   {
-   public:
-      explicit MigrationStore(Settings* settings)
-         : PropertyStore(Settings::GetRegistry())
-         , m_settings(settings)
-      {
-      }
-      ~MigrationStore() override = default;
-
-      void Reset(VPX::Properties::PropertyRegistry::PropId propId) override
-      {
-         const auto &prop = Settings::GetRegistry().GetProperty(propId);
-         const Settings::Section section = Settings::GetSection(prop->m_groupId);
-         m_settings->DeleteValue(section, prop->m_propId);
-      }
-
-      int GetInt(VPX::Properties::PropertyRegistry::PropId propId) const override
-      {
-         const auto &prop = Settings::GetRegistry().GetProperty(propId);
-         const Settings::Section section = Settings::GetSection(prop->m_groupId);
-         switch (prop->m_type)
-         {
-         case VPX::Properties::PropertyDef::Type::Int: return m_settings->LoadValueWithDefault(section, prop->m_propId, Settings::GetRegistry().GetIntProperty(propId)->m_def);
-         case VPX::Properties::PropertyDef::Type::Bool: return m_settings->LoadValueWithDefault(section, prop->m_propId, Settings::GetRegistry().GetBoolProperty(propId)->m_def);
-         case VPX::Properties::PropertyDef::Type::Enum: return m_settings->LoadValueWithDefault(section, prop->m_propId, Settings::GetRegistry().GetEnumProperty(propId)->m_def);
-         default: assert(false); return 0;
-         }
-      }
-      void Set(VPX::Properties::PropertyRegistry::PropId propId, int value) override
-      {
-         const auto &prop = Settings::GetRegistry().GetProperty(propId);
-         const Settings::Section section = Settings::GetSection(prop->m_groupId);
-         m_settings->SaveValue(section, prop->m_propId, value);
-      }
-
-      float GetFloat(VPX::Properties::PropertyRegistry::PropId propId) const override
-      {
-         const auto prop = Settings::GetRegistry().GetFloatProperty(propId);
-         const Settings::Section section = Settings::GetSection(prop->m_groupId);
-         return m_settings->LoadValueWithDefault(section, prop->m_propId, prop->m_def);
-      }
-      void Set(VPX::Properties::PropertyRegistry::PropId propId, float value) override
-      {
-         const auto &prop = Settings::GetRegistry().GetProperty(propId);
-         const Settings::Section section = Settings::GetSection(prop->m_groupId);
-         m_settings->SaveValue(section, prop->m_propId, value);
-      }
-
-      const string& GetString(VPX::Properties::PropertyRegistry::PropId propId) const override
-      {
-         const auto prop = Settings::GetRegistry().GetStringProperty(propId);
-         const Settings::Section section = Settings::GetSection(prop->m_groupId);
-         static string value;
-         value = m_settings->LoadValueWithDefault(section, prop->m_propId, prop->m_def);
-         return value;
-      }
-      void Set(VPX::Properties::PropertyRegistry::PropId propId, const string& value) override
-      {
-         const auto &prop = Settings::GetRegistry().GetProperty(propId);
-         const Settings::Section section = Settings::GetSection(prop->m_groupId);
-         m_settings->SaveValue(section, prop->m_propId, value);
-      }
-
-   private:
-      Settings* m_settings;
-   } m_store;
-
 public:
    static VPX::Properties::PropertyRegistry &GetRegistry();
 
@@ -446,7 +376,11 @@ public:
 public:
    Settings(Settings* parent = nullptr);
 
-   void SetParent(Settings *parent) { m_parent = parent; }
+   void SetParent(Settings *parent)
+   {
+      m_parent = parent;
+      m_store.UpdateParent();
+   }
 
    void SetIniPath(const string &path) { m_iniPath = path; }
    bool LoadFromFile(const string &path, const bool createDefault);
@@ -575,11 +509,118 @@ private:
    void RegisterFloatSetting(const Section section, const string &key, const float defVal, const float minVal, const float maxVal, const bool addDefaults, const string &comments = string());
 
    bool m_modified = false;
+   unsigned int m_modificationIndex = 0;
    string m_iniPath;
    mINI::INIStructure m_ini;
-   Settings * m_parent;
+   Settings *m_parent;
 
    // Shared across all settings
    static vector<OptionDef> m_pluginOptions;
    static vector<string> m_settingKeys;
+
+   // Custom store that delegates to existing implementation while migrating
+   class MigrationStore : public VPX::Properties::PropertyStore
+   {
+   public:
+      explicit MigrationStore(Settings *settings)
+         : PropertyStore(Settings::GetRegistry())
+         , m_settings(settings)
+         , m_cache(Settings::GetRegistry())
+         , m_cacheModificationIndex(settings->m_modificationIndex - 1)
+      {
+         if (m_settings->m_parent)
+            m_cache = VPX::Properties::LayeredINIPropertyStore(m_settings->m_parent->m_store.m_cache);
+      }
+      ~MigrationStore() override = default;
+
+      void UpdateParent()
+      {
+         if (m_settings->m_parent)
+            m_cache = VPX::Properties::LayeredINIPropertyStore(m_settings->m_parent->m_store.m_cache);
+         else
+            m_cache = VPX::Properties::LayeredINIPropertyStore(Settings::GetRegistry());
+         m_cacheModificationIndex = m_settings->m_modificationIndex - 1;
+      }
+
+      void Reset(VPX::Properties::PropertyRegistry::PropId propId) override
+      {
+         const auto &prop = Settings::GetRegistry().GetProperty(propId);
+         const Settings::Section section = Settings::GetSection(prop->m_groupId);
+         m_settings->DeleteValue(section, prop->m_propId, true);
+      }
+
+      void UpdateCache() const
+      {
+         if (m_settings->m_parent)
+            m_settings->m_parent->m_store.UpdateCache();
+         if (m_cacheModificationIndex != m_settings->m_modificationIndex)
+         {
+            m_cache.Load(m_settings->m_ini);
+            m_cacheModificationIndex = m_settings->m_modificationIndex;
+         }
+      }
+
+      int GetInt(VPX::Properties::PropertyRegistry::PropId propId) const override
+      {
+         UpdateCache();
+         const int cachedValue = m_cache.GetInt(propId);
+         /* const auto &prop = Settings::GetRegistry().GetProperty(propId);
+         const Settings::Section section = Settings::GetSection(prop->m_groupId);
+         int value;
+         switch (prop->m_type)
+         {
+         case VPX::Properties::PropertyDef::Type::Int: value = m_settings->LoadValueWithDefault(section, prop->m_propId, Settings::GetRegistry().GetIntProperty(propId)->m_def); break;
+         case VPX::Properties::PropertyDef::Type::Bool: value = m_settings->LoadValueWithDefault(section, prop->m_propId, Settings::GetRegistry().GetBoolProperty(propId)->m_def); break;
+         case VPX::Properties::PropertyDef::Type::Enum: value = m_settings->LoadValueWithDefault(section, prop->m_propId, Settings::GetRegistry().GetEnumProperty(propId)->m_def); break;
+         default: assert(false); return 0;
+         }
+         assert(cachedValue == value); */
+         return cachedValue;
+      }
+      void Set(VPX::Properties::PropertyRegistry::PropId propId, int value) override
+      {
+         const auto &prop = Settings::GetRegistry().GetProperty(propId);
+         const Settings::Section section = Settings::GetSection(prop->m_groupId);
+         m_settings->SaveValue(section, prop->m_propId, value);
+      }
+
+      float GetFloat(VPX::Properties::PropertyRegistry::PropId propId) const override
+      {
+         UpdateCache();
+         const float cachedValue = m_cache.GetFloat(propId);
+         /* const auto prop = Settings::GetRegistry().GetFloatProperty(propId);
+         const Settings::Section section = Settings::GetSection(prop->m_groupId);
+         const float value = m_settings->LoadValueWithDefault(section, prop->m_propId, prop->m_def);
+         assert(cachedValue == value); */
+         return cachedValue;
+      }
+      void Set(VPX::Properties::PropertyRegistry::PropId propId, float value) override
+      {
+         const auto &prop = Settings::GetRegistry().GetProperty(propId);
+         const Settings::Section section = Settings::GetSection(prop->m_groupId);
+         m_settings->SaveValue(section, prop->m_propId, value);
+      }
+
+      const string &GetString(VPX::Properties::PropertyRegistry::PropId propId) const override
+      {
+         UpdateCache();
+         const string &cachedValue = m_cache.GetString(propId);
+         /* const auto prop = Settings::GetRegistry().GetStringProperty(propId);
+         const Settings::Section section = Settings::GetSection(prop->m_groupId);
+         const string value = m_settings->LoadValueWithDefault(section, prop->m_propId, prop->m_def);
+         assert(cachedValue == value); */
+         return cachedValue;
+      }
+      void Set(VPX::Properties::PropertyRegistry::PropId propId, const string &value) override
+      {
+         const auto &prop = Settings::GetRegistry().GetProperty(propId);
+         const Settings::Section section = Settings::GetSection(prop->m_groupId);
+         m_settings->SaveValue(section, prop->m_propId, value);
+      }
+
+   private:
+      Settings *m_settings;
+      mutable VPX::Properties::LayeredINIPropertyStore m_cache;
+      mutable unsigned int m_cacheModificationIndex;
+   } m_store;
 };
