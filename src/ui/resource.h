@@ -1149,7 +1149,6 @@
 #define IDC_NUDGE_TIME_EDIT             1103
 #define IDC_MECH_PLUNGER_ADJ_EDIT       1104
 #define IDC_PHYSICS_MAX_LOOPS_EDIT      1105
-#define IDC_FILTER_MECH_PLUNGER_CHECK   1107
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define DISPID_Image2                   1501
