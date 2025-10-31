@@ -70,7 +70,7 @@ InputManager::InputManager()
    m_plungerPositionSensor->SetFilter(std::make_unique<PlungerPositionFilter>());
 
    m_exitPressTimestamp = 0;
-   m_exitAppPressLengthMs = settings.LoadValueInt(Settings::Player, "Exitconfirm"s) * 1000 / 60;
+   m_exitAppPressLengthMs = settings.GetPlayer_Exitconfirm() * 1000 / 60;
 
    m_rumbleMode = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "RumbleMode"s, 3);
 

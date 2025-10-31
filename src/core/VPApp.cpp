@@ -965,7 +965,7 @@ BOOL VPApp::InitInstance()
    m_vpinball.m_settings.SaveValue(Settings::Version, "VPinball"s, string(VP_VERSION_STRING_DIGITS));
    m_vpinball.LoadEditorSetupFromSettings();
 
-   Logger::SetupLogger(m_vpinball.m_settings.LoadValueBool(Settings::Editor, "EnableLog"s));
+   Logger::SetupLogger(m_vpinball.m_settings.GetEditor_EnableLog());
 
    PLOGI << "Starting VPX - " << VP_VERSION_STRING_FULL_LITERAL;
    PLOGI << "Settings file was loaded from " << m_iniFileName;

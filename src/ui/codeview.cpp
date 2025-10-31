@@ -4040,7 +4040,7 @@ STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
    if (g_pplayer->m_ptable->IsLocked())
       return S_OK;
 
-   const bool enableLog = g_pvp->m_settings.LoadValueBool(Settings::Editor, "EnableLog"s);
+   const bool enableLog = g_pvp->m_settings.GetEditor_EnableLog();
    const bool logScript = enableLog && g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "LogScriptOutput"s, true);
 
    if (V_VT(pvar) == VT_EMPTY || V_VT(pvar) == VT_NULL || V_VT(pvar) == VT_ERROR)
