@@ -711,21 +711,14 @@
 #define IDC_ASPECT_RATIO_EDIT           461
 #define IDC_ABOUT_VERSION               463
 #define IDC_GLOBAL_PF_REFLECTION        463
-#define IDC_SCREEN_WIDTH                463
 #define DISPID_PluFrames                464
 #define IDC_VIDEO_SYNC_MODE             464
 #define DISPID_Width                    465
-#define IDC_SCREEN_HEIGHT               465
 #define DISPID_ZAdjust                  466
-#define IDC_SCREEN_INCLINATION          466
 #define DISPID_RodDiam                  467
-#define IDC_SCREEN_PLAYERX              467
 #define DISPID_RingDiam                 468
-#define IDC_SCREEN_PLAYERY              468
 #define DISPID_RingThickness            469
-#define IDC_SCREEN_PLAYERZ              469
 #define DISPID_SpringDiam               470
-#define IDC_LOCKBAR_WIDTH               471
 #define DISPID_TipShape                 471
 #define DISPID_SpringGauge              472
 #define DISPID_SpringLoops              473
@@ -1109,7 +1102,6 @@
 #define IDC_EXPOSURE                    927
 #define IDC_SYNC                        928
 #define IDD_RENDER_OPT                  929
-#define IDD_CABINET_OPT                 930
 #define IDC_WHERE_DESCR                 930
 #define IDD_PFVIEW_OPT                  931
 #define IDD_SCOREVIEW_OPT               933
@@ -1144,7 +1136,6 @@
 #define IDC_MASK_VIRTUAL_REALITY        964
 #define IDC_SPACE_REFERENCE             965
 #define IDD_PROPPARTGROUP_VISUALS       966
-#define IDC_LOCKBAR_HEIGHT_FROM_GROUND  967
 #define IDS_IMAGE_FILE_SIZE             968
 #define IDC_MASK_DESKTOP                969
 #define IDC_MASK_FSS                    970

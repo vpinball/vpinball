@@ -17,6 +17,7 @@
 #include "PlungerSettingsPage.h"
 #include "PointOfViewSettingsPage.h"
 #include "VRSettingsPage.h"
+#include "CabinetSettingsPage.h"
 #include "BackglassPage.h"
 #include "ScoreViewPage.h"
 #include "StereoSettingsPage.h"
@@ -44,6 +45,7 @@ InGameUI::InGameUI(LiveUI &liveUI)
    AddPage("settings/backglass"s, []() { return std::make_unique<BackglassPage>(); });
    AddPage("settings/scoreview"s, []() { return std::make_unique<ScoreViewPage>(); });
    AddPage("settings/stereo"s, []() { return std::make_unique<StereoSettingsPage>(); });
+   AddPage("settings/cabinet"s, []() { return std::make_unique<CabinetSettingsPage>(); });
    AddPage("plugins/homepage"s, []() { return std::make_unique<PluginHomePage>(); });
 }
 

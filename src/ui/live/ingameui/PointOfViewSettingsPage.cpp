@@ -115,8 +115,8 @@ void PointOfViewSettingsPage::BuildPage()
          const float screenHeight = settings.GetPlayer_ScreenHeight();
          if (screenWidth <= 1.f || screenHeight <= 1.f)
          {
-            // TODO include a link to the cabinet setting page with screen size setup
             AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "You must setup your screen size before using Window mode"s));
+            AddItem(std::make_unique<InGameUIItem>("Cabinet Settings"s, ""s, "settings/cabinet"s));
             return;
          }
          else
@@ -224,7 +224,7 @@ void PointOfViewSettingsPage::BuildPage()
       });
 
    auto fov = std::make_unique<InGameUIItem>(
-      selectProp(Settings::m_propTableOverride_ViewDTFOV, Settings::m_propTableOverride_ViewFSSFOV, Settings::m_propTableOverride_ViewCabFOV), 1.f, "%4.1f °"s, //
+      selectProp(Settings::m_propTableOverride_ViewDTFOV, Settings::m_propTableOverride_ViewFSSFOV, Settings::m_propTableOverride_ViewCabFOV), 1.f, "%4.1f deg"s, //
       [this]() { return GetCurrentViewSetup().mFOV; }, //
       [this](float, float v)
       {

@@ -259,6 +259,8 @@ set(VPX_SOURCES
    src/ui/live/ingameui/AudioSettingsPage.cpp
    src/ui/live/ingameui/BackglassPage.h
    src/ui/live/ingameui/BackglassPage.cpp
+   src/ui/live/ingameui/CabinetSettingsPage.h
+   src/ui/live/ingameui/CabinetSettingsPage.cpp
    src/ui/live/ingameui/ExitSplashPage.cpp
    src/ui/live/ingameui/ExitSplashPage.h
    src/ui/live/ingameui/GraphicSettingsPage.h

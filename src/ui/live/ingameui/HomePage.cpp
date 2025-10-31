@@ -47,6 +47,8 @@ HomePage::HomePage()
 
    AddItem(std::make_unique<InGameUIItem>("Nudge & Tilt Settings"s, ""s, "settings/nudge"s));
 
+   AddItem(std::make_unique<InGameUIItem>("Cabinet Settings"s, ""s, "settings/cabinet"s));
+
    AddItem(std::make_unique<InGameUIItem>("Miscellaneous Settings"s, ""s, "settings/misc"s));
 
    AddItem(std::make_unique<InGameUIItem>("Plugin Settings"s, ""s, "plugins/homepage"s));

@@ -78,12 +78,14 @@ public:
 
 protected:
    BOOL OnInitDialog() override;
+   BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
    BOOL OnApply() override;
 
    void LoadSettings(Settings& settings) override;
    void SaveSettings(Settings& settings, bool saveAll) override;
 
 private:
+   CButton m_bamHeadtracking; // TODO move to plugin
    CButton m_ballOverrideImages;
    CEdit   m_ballImage;
    CEdit   m_ballDecal;
@@ -127,37 +129,6 @@ private:
    CEdit m_diffuseGlow;
 
    CColorDialog m_colorDialog;
-};
-
-class CabinetOptPage final : public VideoOptionPropPage
-{
-public:
-   CabinetOptPage(Settings& appSettings, Settings& tableSettings);
-   ~CabinetOptPage() override { }
-
-   CabinetOptPage(const RenderOptPage&) = delete;
-   CabinetOptPage& operator=(const CabinetOptPage&) = delete;
-
-protected:
-   BOOL OnInitDialog() override;
-   BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
-   BOOL OnApply() override;
-
-   void LoadSettings(Settings& settings) override;
-   void SaveSettings(Settings& settings, bool saveAll) override;
-
-private:
-   CEdit m_playerX;
-   CEdit m_playerY;
-   CEdit m_playerZ;
-   CButton m_bamHeadtracking; // TODO move to plugin
-
-   CEdit m_lockbarWidth;
-   CEdit m_lockbarHeight;
-
-   CEdit m_playfieldScreenWidth;
-   CEdit m_playfieldScreenHeight;
-   CEdit m_playfieldScreenInclination;
 };
 
 class PFViewOptPage final : public VideoOptionPropPage
@@ -249,9 +220,6 @@ VideoOptionProperties::VideoOptionProperties(HWND hParent /* = nullptr*/)
       m_tableSettings = g_pvp->m_ptableActive->m_settings;
       m_tableSettings.SetParent(&m_appSettings);
    }
-   AddPage(new RenderOptPage(m_appSettings, m_tableSettings));
-   AddPage(new DisplayStyleOptPage(m_appSettings, m_tableSettings));
-   AddPage(new CabinetOptPage(m_appSettings, m_tableSettings));
    AddPage(new PFViewOptPage(m_appSettings, m_tableSettings));
    #if defined(ENABLE_BGFX)
       AddPage(new ScoreViewOptPage(m_appSettings, m_tableSettings));
@@ -260,6 +228,8 @@ VideoOptionProperties::VideoOptionProperties(HWND hParent /* = nullptr*/)
    #if defined(ENABLE_XR) || defined(ENABLE_VR)
       AddPage(new VRPreviewOptPage(m_appSettings, m_tableSettings));
    #endif
+   AddPage(new RenderOptPage(m_appSettings, m_tableSettings));
+   AddPage(new DisplayStyleOptPage(m_appSettings, m_tableSettings));
 }
 
 
@@ -790,6 +760,8 @@ RenderOptPage::RenderOptPage(Settings& appSettings, Settings& tableSettings)
 BOOL RenderOptPage::OnInitDialog()
 {
    VideoOptionPropPage::OnInitDialog();
+   AttachItem(IDC_HEADTRACKING, m_bamHeadtracking);
+   AddToolTip(m_bamHeadtracking, "Enables BAM Headtracking. See https://www.ravarcade.pl for details.");
    AttachItem(IDC_OVERWRITE_BALL_IMAGE_CHECK, m_ballOverrideImages);
    AddToolTip(m_ballOverrideImages, "When checked, it overwrites the ball image/decal image(s) for every table.");
    AttachItem(IDC_BALL_IMAGE_EDIT, m_ballImage);
@@ -801,6 +773,8 @@ BOOL RenderOptPage::OnInitDialog()
 void RenderOptPage::LoadSettings(Settings& settings)
 {
    BeginLoad();
+
+   m_bamHeadtracking.SetCheck(settings.LoadValueWithDefault(Settings::Player, "BAMHeadTracking"s, false) ? BST_CHECKED : BST_UNCHECKED);
 
    const bool overwiteBallImage = settings.LoadValueWithDefault(Settings::Player, "OverwriteBallImage"s, false);
    m_ballOverrideImages.SetCheck(overwiteBallImage ? BST_CHECKED : BST_UNCHECKED);
@@ -825,6 +799,8 @@ void RenderOptPage::SaveSettings(Settings& settings, bool saveAll)
 {
    BOOL nothing = 0;
 
+   settings.SaveValue(Settings::Player, "BAMheadTracking"s, m_bamHeadtracking.GetCheck() == BST_CHECKED, !saveAll);
+
    const bool overwriteEnabled = m_ballOverrideImages.GetCheck() == BST_CHECKED;
    settings.SaveValue(Settings::Player, "OverwriteBallImage"s, overwriteEnabled, !saveAll);
    if (overwriteEnabled)
@@ -845,100 +821,10 @@ BOOL RenderOptPage::OnApply()
    return TRUE;
 }
 
-#pragma endregion
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Cabinet Settings
-
-#pragma region CabinetOptPage
-
-CabinetOptPage::CabinetOptPage(Settings& appSettings, Settings& tableSettings)
-   : VideoOptionPropPage(IDD_CABINET_OPT, _T("Cabinet Options"), appSettings, tableSettings)
-{
-}
-
-BOOL CabinetOptPage::OnInitDialog()
-{
-   VideoOptionPropPage::OnInitDialog();
-
-   AttachItem(IDC_SCREEN_PLAYERX, m_playerX);
-   AttachItem(IDC_SCREEN_PLAYERY, m_playerY);
-   AttachItem(IDC_SCREEN_PLAYERZ, m_playerZ);
-   AttachItem(IDC_HEADTRACKING, m_bamHeadtracking);
-   AddToolTip(m_bamHeadtracking, "Enables BAM Headtracking. See https://www.ravarcade.pl for details.");
-
-   AttachItem(IDC_SCREEN_WIDTH, m_playfieldScreenWidth);
-   AddToolTip(m_playfieldScreenWidth, "Physical width of the display area of the playfield screen in centimeters, in landscape orientation (width > height).\r\n\r\nThis is needed to get the correct size when using 'Window' mode for the camera.");
-   AttachItem(IDC_SCREEN_HEIGHT, m_playfieldScreenHeight);
-   AddToolTip(m_playfieldScreenHeight, "Physical height of the display area of the playfield screen in centimeters, in landscape orientation (width > height).\r\n\r\nThis is needed to get the correct size when using 'Window' mode for the camera.");
-   AttachItem(IDC_SCREEN_INCLINATION, m_playfieldScreenInclination);
-
-   AttachItem(IDC_LOCKBAR_WIDTH, m_lockbarWidth);
-   AddToolTip(m_lockbarWidth, "Physical width of the lockbar in centimeters.\r\n\r\nThis is needed for Virtual Reality automatic scaling mode.");
-   AttachItem(IDC_LOCKBAR_HEIGHT_FROM_GROUND, m_lockbarHeight);
-   AddToolTip(m_lockbarHeight, "Physical height of the lockbar in centimeters measured from ground.\r\n\r\nThis is used for Virtual Reality positioning.");
-
-   LoadSettings(GetEditedSettings());
-   return TRUE;
-}
-
-void CabinetOptPage::LoadSettings(Settings& settings)
-{
-   BeginLoad();
-
-   m_playerX.SetWindowText(f2sz(settings.LoadValueFloat(Settings::Player, "ScreenPlayerX"s)).c_str());
-   m_playerY.SetWindowText(f2sz(settings.LoadValueFloat(Settings::Player, "ScreenPlayerY"s)).c_str());
-   m_playerZ.SetWindowText(f2sz(settings.LoadValueFloat(Settings::Player, "ScreenPlayerZ"s)).c_str());
-   m_bamHeadtracking.SetCheck(settings.LoadValueWithDefault(Settings::Player, "BAMHeadTracking"s, false) ? BST_CHECKED : BST_UNCHECKED);
-
-   m_playfieldScreenWidth.SetWindowText(f2sz(settings.LoadValueFloat(Settings::Player, "ScreenWidth"s)).c_str());
-   m_playfieldScreenHeight.SetWindowText(f2sz(settings.LoadValueFloat(Settings::Player, "ScreenHeight"s)).c_str());
-   m_playfieldScreenInclination.SetWindowText(f2sz(settings.LoadValueFloat(Settings::Player, "ScreenInclination"s)).c_str());
-
-   m_lockbarWidth.SetWindowText(f2sz(settings.LoadValueFloat(Settings::Player, "LockbarWidth"s)).c_str());
-   m_lockbarHeight.SetWindowText(f2sz(settings.LoadValueFloat(Settings::Player, "LockbarHeight"s)).c_str());
-
-   EndLoad();
-}
-
-void CabinetOptPage::SaveSettings(Settings& settings, bool saveAll)
-{
-   settings.SaveValue(Settings::Player, "ScreenPlayerX"s, sz2f(GetDlgItemText(IDC_SCREEN_PLAYERX).GetString()), !saveAll);
-   settings.SaveValue(Settings::Player, "ScreenPlayerY"s, sz2f(GetDlgItemText(IDC_SCREEN_PLAYERY).GetString()), !saveAll);
-   settings.SaveValue(Settings::Player, "ScreenPlayerZ"s, sz2f(GetDlgItemText(IDC_SCREEN_PLAYERZ).GetString()), !saveAll);
-   settings.SaveValue(Settings::Player, "BAMheadTracking"s, m_bamHeadtracking.GetCheck() == BST_CHECKED, !saveAll);
-
-   settings.SaveValue(Settings::Player, "ScreenWidth"s, sz2f(GetDlgItemText(IDC_SCREEN_WIDTH).GetString()), !saveAll);
-   settings.SaveValue(Settings::Player, "ScreenHeight"s, sz2f(GetDlgItemText(IDC_SCREEN_HEIGHT).GetString()), !saveAll);
-   settings.SaveValue(Settings::Player, "ScreenInclination"s, sz2f(GetDlgItemText(IDC_SCREEN_INCLINATION).GetString()), !saveAll);
-
-   settings.SaveValue(Settings::Player, "LockbarWidth"s, sz2f(GetDlgItemText(IDC_LOCKBAR_WIDTH).GetString()), !saveAll);
-   settings.SaveValue(Settings::Player, "LockbarHeight"s, sz2f(GetDlgItemText(IDC_LOCKBAR_HEIGHT_FROM_GROUND).GetString()), !saveAll);
-}
-
-BOOL CabinetOptPage::OnApply()
-{
-   ApplyChanges();
-   return TRUE;
-}
-
-BOOL CabinetOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
+BOOL RenderOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
 {
    switch (LOWORD(wParam))
    {
-   case IDC_SCREEN_PLAYERX:
-   case IDC_SCREEN_PLAYERY:
-   case IDC_SCREEN_PLAYERZ:
-   case IDC_SCREEN_WIDTH:
-   case IDC_SCREEN_HEIGHT:
-   case IDC_SCREEN_INCLINATION:
-   case IDC_LOCKBAR_WIDTH:
-   case IDC_LOCKBAR_HEIGHT_FROM_GROUND:
-      if (HIWORD(wParam) == EN_CHANGE)
-         PropChanged();
-      break;
    case IDC_HEADTRACKING:
       if (HIWORD(wParam) == BN_CLICKED)
          PropChanged();
@@ -949,7 +835,6 @@ BOOL CabinetOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
 }
 
 #pragma endregion
-
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
