@@ -220,6 +220,7 @@ static const MsgPluginAPI* msgApi = nullptr;
 static ScriptablePluginAPI* scriptApi = nullptr;
 
 static uint32_t endpointId;
+static unsigned int onSoundCommandId;
 
 static Controller* controller = nullptr;
 
@@ -246,6 +247,20 @@ void PINMAMECALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format
       }
       free(buffer);
    }
+}
+
+void PINMAMECALLBACK OnSoundCommand(int boardNo, int cmd, void* const pUserData)
+{
+   LOGI("altsound OnSoundCommand: ");
+   CtlOnSoundCommandMsg* msg = new CtlOnSoundCommandMsg();
+   msg->boardNo = boardNo;
+   msg->cmd = cmd;
+  
+   msgApi->RunOnMainThread(0, [](void* userData) {
+         CtlOnSoundCommandMsg* msg = static_cast<CtlOnSoundCommandMsg*>(userData);
+         msgApi->BroadcastMsg(endpointId, onSoundCommandId, msg);
+         delete msg;
+      }, msg);
 }
 
 
@@ -355,6 +370,7 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
 
    // Setup our contribution to the controller messages
    onAudioUpdateId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_UPDATE_MSG);
+   onSoundCommandId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_EVT_ON_SOUND_COMMAND);
 
    // Contribute our API to the script engine
    const unsigned int getScriptApiId = msgApi->GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API);
@@ -395,7 +411,7 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
          NULL, // Console updated => TODO implement (for Stern SAM)
          NULL, // Is key pressed => TODO implement ?
          &OnLogMessage,
-         NULL, // &OnSoundCommand, => see https://github.com/vpinball/libaltsound (implement inside this plugin or as another plugin ?)
+         &OnSoundCommand, // Enable sound command callback for AltSound integration
       };
 
       // Define pinmame directory (for ROM, NVRAM, ... eventually using VPX API if available)
@@ -460,6 +476,7 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginUnload()
    PinmameSetMsgAPI(nullptr, 0);
 
    msgApi->ReleaseMsgID(onAudioUpdateId);
+   msgApi->ReleaseMsgID(onSoundCommandId);
    scriptApi->SetCOMObjectOverride("VPinMAME.Controller", nullptr);
    // TODO we should unregister the script API contribution
    msgApi = nullptr;

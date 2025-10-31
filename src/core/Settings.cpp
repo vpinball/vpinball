@@ -219,6 +219,13 @@ void Settings::Validate(const bool addDefaults)
 #endif
 
    //////////////////////////////////////////////////////////////////////////
+   // Plugin.AltSound
+
+#ifdef __STANDALONE__
+   SettingBool(GetSection("Plugin.AltSound"), "Enable"s, true, ""s);
+#endif
+
+   //////////////////////////////////////////////////////////////////////////
    // Plugin.B2SLegacy
 
 #ifdef __STANDALONE__
