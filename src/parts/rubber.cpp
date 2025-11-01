@@ -63,13 +63,11 @@ HRESULT Rubber::Init(PinTable *const ptable, const float x, const float y, const
 
 void Rubber::SetDefaults(const bool fromMouseClick)
 {
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsRubber_##prop() : Settings::GetDefaultPropsRubber_##prop##_Property()->m_def
 #define strKeyName Settings::DefaultPropsRubber
 
    m_d.m_height = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Height"s, 25.0f) : 25.0f;
    m_d.m_thickness = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Thickness"s, 8) : 8;
-
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "TimerInterval"s, 100) : 100;
 
    const bool hr = g_pvp->m_settings.LoadValue(strKeyName, "Image"s, m_d.m_szImage);
    if (!hr || !fromMouseClick)
@@ -89,21 +87,22 @@ void Rubber::SetDefaults(const bool fromMouseClick)
    m_d.m_rotY = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "RotY"s, 0.0f) : 0.0f;
    m_d.m_rotZ = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "RotZ"s, 0.0f) : 0.0f;
 
-   m_d.m_reflectionEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "ReflectionEnabled"s, true) : true;
-
 #undef strKeyName
+   LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 void Rubber::WriteRegDefaults()
 {
+#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsRubber_##prop(field, false)
 #define strKeyName Settings::DefaultPropsRubber
 
    g_pvp->m_settings.SaveValue(strKeyName, "Height"s, m_d.m_height);
    g_pvp->m_settings.SaveValue(strKeyName, "HitHeight"s, m_d.m_hitHeight);
    g_pvp->m_settings.SaveValue(strKeyName, "Thickness"s, m_d.m_thickness);
    g_pvp->m_settings.SaveValue(strKeyName, "HitEvent"s, m_d.m_hitEvent);
-   g_pvp->m_settings.SaveValue(strKeyName, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   g_pvp->m_settings.SaveValue(strKeyName, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
    g_pvp->m_settings.SaveValue(strKeyName, "Image"s, m_d.m_szImage);
    g_pvp->m_settings.SaveValue(strKeyName, "Elasticity"s, m_d.m_elasticity);
    g_pvp->m_settings.SaveValue(strKeyName, "ElasticityFalloff"s, m_d.m_elasticityFalloff);
@@ -116,9 +115,12 @@ void Rubber::WriteRegDefaults()
    g_pvp->m_settings.SaveValue(strKeyName, "RotX"s, m_d.m_rotX);
    g_pvp->m_settings.SaveValue(strKeyName, "RotY"s, m_d.m_rotY);
    g_pvp->m_settings.SaveValue(strKeyName, "RotZ"s, m_d.m_rotZ);
-   g_pvp->m_settings.SaveValue(strKeyName, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
 
 #undef strKeyName
+   LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 void Rubber::DrawRubberMesh(Sur * const psur)

@@ -73,6 +73,7 @@ HRESULT Light::Init(PinTable *const ptable, const float x, const float y, const 
 
 void Light::SetDefaults(const bool fromMouseClick)
 {
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsLight_##prop() : Settings::GetDefaultPropsLight_##prop##_Property()->m_def
 #define regKey Settings::DefaultPropsLight
 
    m_duration = 0;
@@ -84,8 +85,6 @@ void Light::SetDefaults(const bool fromMouseClick)
 
    m_d.m_shape = ShapeCustom;
 
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
    m_d.m_color = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Color"s, (int)RGB(255,169,87)) : RGB(255,169,87); // Default to 2700K incandescent bulb
    m_d.m_color2 = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ColorFull"s, (int)RGB(255,169,87)) : RGB(255,169,87); // Default to 2700K incandescent bulb (burst is useless since VPX is HDR)
 
@@ -119,13 +118,17 @@ void Light::SetDefaults(const bool fromMouseClick)
    m_d.m_meshRadius = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ScaleBulbMesh"s, 20.0f) : 20.0f;
    m_d.m_modulate_vs_add = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "BulbModulateVsAdd"s, 0.9f) : 0.9f;
    m_d.m_bulbHaloHeight = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "BulbHaloHeight"s, 28.0f) : 28.0f;
-   m_d.m_reflectionEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ReflectionEnabled"s, true) : true;
 
 #undef regKey
+   LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 void Light::WriteRegDefaults()
 {
+#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsLight_##prop(field, false)
 #define regKey Settings::DefaultPropsLight
 
    g_pvp->m_settings.SaveValue(regKey, "Falloff"s, m_d.m_falloff);
@@ -154,6 +157,7 @@ void Light::WriteRegDefaults()
    g_pvp->m_settings.SaveValue(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
 
 #undef regKey
+#undef LinkProp
 }
 
 void Light::UIRenderPass1(Sur * const psur)

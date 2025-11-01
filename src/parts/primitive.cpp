@@ -219,6 +219,7 @@ HRESULT Primitive::Init(PinTable *const ptable, const float x, const float y, co
 
 void Primitive::SetDefaults(const bool fromMouseClick)
 {
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsPrimitive_##prop() : Settings::GetDefaultPropsPrimitive_##prop##_Property()->m_def
 #define strKeyName Settings::DefaultPropsPrimitive
 
    m_d.m_use3DMesh = false;
@@ -280,16 +281,20 @@ void Primitive::SetDefaults(const bool fromMouseClick)
    m_d.m_toy = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "IsToy"s, false) : false;
    m_d.m_disableLightingTop = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "DisableLighting"s, 0.f) : 0.f;
    m_d.m_disableLightingBelow = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "DisableLightingBelow"s, 1.f) : 1.f;
-   m_d.m_reflectionEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "ReflectionEnabled"s, true) : true;
    m_d.m_backfacesEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "BackfacesEnabled"s, false) : false;
    m_d.m_displayTexture = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "DisplayTexture"s, false) : false;
    m_d.m_objectSpaceNormalMap = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "ObjectSpaceNormalMap"s, false) : false;
 
 #undef strKeyName
+   LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 void Primitive::WriteRegDefaults()
 {
+#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsPrimitive_##prop(field, false)
 #define strKeyName Settings::DefaultPropsPrimitive
 
    g_pvp->m_settings.SaveValue(strKeyName, "SideColor"s, (int)m_d.m_SideColor);
@@ -334,12 +339,15 @@ void Primitive::WriteRegDefaults()
    g_pvp->m_settings.SaveValue(strKeyName, "IsToy"s, m_d.m_toy);
    g_pvp->m_settings.SaveValue(strKeyName, "DisableLighting"s, m_d.m_disableLightingTop);
    g_pvp->m_settings.SaveValue(strKeyName, "DisableLightingBelow"s, m_d.m_disableLightingBelow);
-   g_pvp->m_settings.SaveValue(strKeyName, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
    g_pvp->m_settings.SaveValue(strKeyName, "BackfacesEnabled"s, m_d.m_backfacesEnabled);
    g_pvp->m_settings.SaveValue(strKeyName, "DisplayTexture"s, m_d.m_displayTexture);
    g_pvp->m_settings.SaveValue(strKeyName, "ObjectSpaceNormalMap"s, m_d.m_objectSpaceNormalMap);
 
 #undef strKeyName
+   LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 

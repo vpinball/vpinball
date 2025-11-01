@@ -30,6 +30,7 @@ HRESULT Plunger::Init(PinTable *const ptable, const float x, const float y, cons
 
 void Plunger::SetDefaults(const bool fromMouseClick)
 {
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsPlunger_##prop() : Settings::GetDefaultPropsPlunger_##prop##_Property()->m_def
 #define regKey Settings::DefaultPropsPlunger
 
    SetDefaultPhysics(fromMouseClick);
@@ -47,8 +48,6 @@ void Plunger::SetDefaults(const bool fromMouseClick)
       m_d.m_szImage.clear();
 
    m_d.m_animFrames = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "AnimFrames"s, 1) : 1;
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
 
    hr = g_pvp->m_settings.LoadValue(regKey, "Surface"s, m_d.m_szSurface);
    if (!hr || !fromMouseClick)
@@ -70,13 +69,17 @@ void Plunger::SetDefaults(const bool fromMouseClick)
    m_d.m_springGauge = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "CustomSpringGauge"s, 1.38f) : 1.38f;
    m_d.m_springLoops = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "CustomSpringLoops"s, 8.0f) : 8.0f;
    m_d.m_springEndLoops = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "CustomSpringEndLoops"s, 2.5f) : 2.5f;
-   m_d.m_reflectionEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ReflectionEnabled"s, true) : true;
 
 #undef regKey
+   LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 void Plunger::WriteRegDefaults()
 {
+#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsPlunger_##prop(field, false)
 #define regKey Settings::DefaultPropsPlunger
 
    g_pvp->m_settings.SaveValue(regKey, "Height"s, m_d.m_height);
@@ -89,8 +92,6 @@ void Plunger::WriteRegDefaults()
    g_pvp->m_settings.SaveValue(regKey, "AnimFrames"s, m_d.m_animFrames);
    g_pvp->m_settings.SaveValue(regKey, "Color"s, (int)m_d.m_color);
    g_pvp->m_settings.SaveValue(regKey, "Image"s, m_d.m_szImage);
-   g_pvp->m_settings.SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   g_pvp->m_settings.SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
    g_pvp->m_settings.SaveValue(regKey, "Surface"s, m_d.m_szSurface);
    g_pvp->m_settings.SaveValue(regKey, "MechPlunger"s, m_d.m_mechPlunger);
    g_pvp->m_settings.SaveValue(regKey, "AutoPlunger"s, m_d.m_autoPlunger);
@@ -108,9 +109,12 @@ void Plunger::WriteRegDefaults()
    g_pvp->m_settings.SaveValue(regKey, "CustomSpringGauge"s, m_d.m_springGauge);
    g_pvp->m_settings.SaveValue(regKey, "CustomSpringLoops"s, m_d.m_springLoops);
    g_pvp->m_settings.SaveValue(regKey, "CustomSpringEndLoops"s, m_d.m_springEndLoops);
-   g_pvp->m_settings.SaveValue(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
 
 #undef regKey
+   LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 void Plunger::UIRenderPass1(Sur * const psur)

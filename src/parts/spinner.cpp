@@ -99,6 +99,7 @@ HRESULT Spinner::Init(PinTable *const ptable, const float x, const float y, cons
 
 void Spinner::WriteRegDefaults()
 {
+#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsSpinner_##prop(field, false)
 #define regKey Settings::DefaultPropsSpinner
 
    g_pvp->m_settings.SaveValue(regKey, "Length"s, m_d.m_length);
@@ -111,17 +112,19 @@ void Spinner::WriteRegDefaults()
    g_pvp->m_settings.SaveValue(regKey, "AntiFriction"s, m_d.m_damping);
    g_pvp->m_settings.SaveValue(regKey, "Scatter"s, m_d.m_scatter);
    g_pvp->m_settings.SaveValue(regKey, "Visible"s, m_d.m_visible);
-   g_pvp->m_settings.SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   g_pvp->m_settings.SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
    g_pvp->m_settings.SaveValue(regKey, "Image"s, m_d.m_szImage);
    g_pvp->m_settings.SaveValue(regKey, "Surface"s, m_d.m_szSurface);
-   g_pvp->m_settings.SaveValue(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
 
 #undef regKey
+   LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 void Spinner::SetDefaults(const bool fromMouseClick)
 {
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsSpinner_##prop() : Settings::GetDefaultPropsSpinner_##prop##_Property()->m_def
 #define regKey Settings::DefaultPropsSpinner
 
    m_d.m_length = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Length"s, 80.f) : 80.f;
@@ -134,9 +137,6 @@ void Spinner::SetDefaults(const bool fromMouseClick)
    m_d.m_angleMax = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "AngleMax"s, 0.f) : 0.f;
    m_d.m_angleMin = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "AngleMin"s, 0.f) : 0.f;
    m_d.m_visible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Visible"s, true) : true;
-   m_d.m_reflectionEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ReflectionEnabled"s, true) : true;
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
 
    bool hr = g_pvp->m_settings.LoadValue(regKey, "Image"s, m_d.m_szImage);
    if (!hr || !fromMouseClick)
@@ -147,6 +147,10 @@ void Spinner::SetDefaults(const bool fromMouseClick)
       m_d.m_szSurface.clear();
 
 #undef regKey
+   LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 void Spinner::UIRenderPass1(Sur * const psur)
