@@ -29,38 +29,14 @@ struct SettingsPerformanceView: View {
                     .font(.footnote)
                     .foregroundStyle(Color.secondary)
             }
-
-            VStack(alignment: .leading) {
-                Text("Elements Detail Level")
-
-                Slider(
-                    value: Binding(
-                        get: { Double(settingsModel.alphaRampAccuracy) },
-                        set: { settingsModel.alphaRampAccuracy = Int($0.rounded()) }
-                    ),
-                    in: 0 ... 10,
-                    step: 1
-                )
-
-                Text("Decrease to increase performance")
-                    .font(.footnote)
-                    .foregroundStyle(Color.secondary)
-            }
         }
         .onChange(of: settingsModel.maxTexDimensionIndex) {
             handleMaxTexDimension()
-        }
-        .onChange(of: settingsModel.alphaRampAccuracy) {
-            handleAlphaRampAccuracy()
         }
     }
 
     func handleMaxTexDimension() {
         vpinballManager.saveValue(.player, "MaxTexDimension", VPinballMaxTexDimension.all[settingsModel.maxTexDimensionIndex].rawValue)
-    }
-
-    func handleAlphaRampAccuracy() {
-        vpinballManager.saveValue(.player, "AlphaRampAccuracy", settingsModel.alphaRampAccuracy)
     }
 }
 

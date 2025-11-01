@@ -210,17 +210,6 @@ fun SettingsScreen(
                             onValueChange = { viewModel.handleMaxTexDimension(value = it) },
                             description = "Reduce this value if you experience crashes while loading tables.",
                         )
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        SliderRow(
-                            label = "Elements Detail Level",
-                            value = viewModel.alphaRampAccuracy.toFloat(),
-                            onValueChange = { viewModel.handleAlphaRampAccuracy(value = it.toInt()) },
-                            minValue = 0f,
-                            maxValue = 10f,
-                            description = "Decrease to increase performance.",
-                        )
                     }
                 }
 
