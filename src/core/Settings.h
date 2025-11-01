@@ -347,6 +347,88 @@ public:
       TableOverride, ToneMapper, "Tonemapper"s, "Select the way colors that are too bright to be rendered by the display are handled"s, int, 0, "Reinhard"s, "AgX"s, "Filmic"s, "Neutral"s);
 #endif
 
+   // DMD Display profiles
+   // Legacy
+   PropBool(DMD, Profile1Legacy, "Legacy Renderer"s, "Use legacy DMD renderer"s, true);
+   PropBool(DMD, Profile1ScaleFX, "Use ScaleFX"s, "Upscale DMD using ScaleFX"s, false);
+   PropInt(DMD, Profile1DotTint, "Dot Tint"s, "Color of lit dots"s, 0x000000, 0xFFFFFF, 0x2D52FF);
+   PropInt(DMD, Profile1UnlitDotColor, "Unlit Dot Tint"s, "Color of unlit dots"s, 0x000000, 0xFFFFFF, 0x404040);
+   PropFloat(DMD, Profile1DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 0.001f, 25.f);
+   PropFloat(DMD, Profile1DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.001f, 0.75f);
+   PropFloat(DMD, Profile1DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.01f, 0.90f);
+   PropFloat(DMD, Profile1DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.01f, 0.1f);
+   // Classic Neon plasma DMD
+   PropBool(DMD, Profile2Legacy, "Legacy Renderer"s, "Use legacy DMD renderer"s, false);
+   PropBool(DMD, Profile2ScaleFX, "Use ScaleFX"s, "Upscale DMD using ScaleFX"s, false);
+   PropInt(DMD, Profile2DotTint, "Dot Tint"s, "Color of lit dots"s, 0x000000, 0xFFFFFF, 0x2D52FF);
+   PropInt(DMD, Profile2UnlitDotColor, "Unlit Dot Tint"s, "Color of unlit dots"s, 0x000000, 0xFFFFFF, 0x404040);
+   PropFloat(DMD, Profile2DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 0.001f, 25.f);
+   PropFloat(DMD, Profile2DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.001f, 0.6f);
+   PropFloat(DMD, Profile2DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.01f, 0.90f);
+   PropFloat(DMD, Profile2DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.01f, 0.1f);
+   // Red Led DMD (used after RoHS regulation entry into force)
+   PropBool(DMD, Profile3Legacy, "Legacy Renderer"s, "Use legacy DMD renderer"s, false);
+   PropBool(DMD, Profile3ScaleFX, "Use ScaleFX"s, "Upscale DMD using ScaleFX"s, false);
+   PropInt(DMD, Profile3DotTint, "Dot Tint"s, "Color of lit dots"s, 0x000000, 0xFFFFFF, 0x1523FF);
+   PropInt(DMD, Profile3UnlitDotColor, "Unlit Dot Tint"s, "Color of unlit dots"s, 0x000000, 0xFFFFFF, 0x404040);
+   PropFloat(DMD, Profile3DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 0.001f, 25.f);
+   PropFloat(DMD, Profile3DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.001f, 0.75f);
+   PropFloat(DMD, Profile3DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.01f, 0.90f);
+   PropFloat(DMD, Profile3DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.01f, 0.1f);
+   // Green Led
+   PropBool(DMD, Profile4Legacy, "Legacy Renderer"s, "Use legacy DMD renderer"s, false);
+   PropBool(DMD, Profile4ScaleFX, "Use ScaleFX"s, "Upscale DMD using ScaleFX"s, false);
+   PropInt(DMD, Profile4DotTint, "Dot Tint"s, "Color of lit dots"s, 0x000000, 0xFFFFFF, 0x23FF15);
+   PropInt(DMD, Profile4UnlitDotColor, "Unlit Dot Tint"s, "Color of unlit dots"s, 0x000000, 0xFFFFFF, 0x404040);
+   PropFloat(DMD, Profile4DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 0.001f, 25.f);
+   PropFloat(DMD, Profile4DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.001f, 0.75f);
+   PropFloat(DMD, Profile4DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.01f, 0.90f);
+   PropFloat(DMD, Profile4DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.01f, 0.1f);
+   // Yellow Led
+   PropBool(DMD, Profile5Legacy, "Legacy Renderer"s, "Use legacy DMD renderer"s, false);
+   PropBool(DMD, Profile5ScaleFX, "Use ScaleFX"s, "Upscale DMD using ScaleFX"s, false);
+   PropInt(DMD, Profile5DotTint, "Dot Tint"s, "Color of lit dots"s, 0x000000, 0xFFFFFF, 0x23FFFF);
+   PropInt(DMD, Profile5UnlitDotColor, "Unlit Dot Tint"s, "Color of unlit dots"s, 0x000000, 0xFFFFFF, 0x404040);
+   PropFloat(DMD, Profile5DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 0.001f, 25.f);
+   PropFloat(DMD, Profile5DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.001f, 0.75f);
+   PropFloat(DMD, Profile5DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.01f, 0.90f);
+   PropFloat(DMD, Profile5DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.01f, 0.1f);
+   // Generic Plasma
+   PropBool(DMD, Profile6Legacy, "Legacy Renderer"s, "Use legacy DMD renderer"s, false);
+   PropBool(DMD, Profile6ScaleFX, "Use ScaleFX"s, "Upscale DMD using ScaleFX"s, false);
+   PropInt(DMD, Profile6DotTint, "Dot Tint"s, "Color of lit dots"s, 0x000000, 0xFFFFFF, 0xFFFFFF);
+   PropInt(DMD, Profile6UnlitDotColor, "Unlit Dot Tint"s, "Color of unlit dots"s, 0x000000, 0xFFFFFF, 0x404040);
+   PropFloat(DMD, Profile6DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 0.001f, 25.f);
+   PropFloat(DMD, Profile6DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.001f, 0.6f);
+   PropFloat(DMD, Profile6DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.01f, 0.90f);
+   PropFloat(DMD, Profile6DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.01f, 0.1f);
+   // Generic Led
+   PropBool(DMD, Profile7Legacy, "Legacy Renderer"s, "Use legacy DMD renderer"s, false);
+   PropBool(DMD, Profile7ScaleFX, "Use ScaleFX"s, "Upscale DMD using ScaleFX"s, false);
+   PropInt(DMD, Profile7DotTint, "Dot Tint"s, "Color of lit dots"s, 0x000000, 0xFFFFFF, 0xFFFFFF);
+   PropInt(DMD, Profile7UnlitDotColor, "Unlit Dot Tint"s, "Color of unlit dots"s, 0x000000, 0xFFFFFF, 0x404040);
+   PropFloat(DMD, Profile7DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 0.001f, 25.f);
+   PropFloat(DMD, Profile7DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.001f, 0.75f);
+   PropFloat(DMD, Profile7DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.01f, 0.90f);
+   PropFloat(DMD, Profile7DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.01f, 0.1f);
+
+   PropArray(DMD, ProfileLegacy, bool, Int, m_propDMD_Profile1Legacy, m_propDMD_Profile2Legacy, m_propDMD_Profile3Legacy, m_propDMD_Profile4Legacy, m_propDMD_Profile5Legacy,
+      m_propDMD_Profile6Legacy, m_propDMD_Profile7Legacy);
+   PropArray(DMD, ProfileScaleFX, bool, Int, m_propDMD_Profile1ScaleFX, m_propDMD_Profile2ScaleFX, m_propDMD_Profile3ScaleFX, m_propDMD_Profile4ScaleFX, m_propDMD_Profile5ScaleFX,
+      m_propDMD_Profile6ScaleFX, m_propDMD_Profile7ScaleFX);
+   PropArray(DMD, ProfileDotTint, int, Int, m_propDMD_Profile1DotTint, m_propDMD_Profile2DotTint, m_propDMD_Profile3DotTint, m_propDMD_Profile4DotTint, m_propDMD_Profile5DotTint,
+      m_propDMD_Profile6DotTint, m_propDMD_Profile7DotTint);
+   PropArray(DMD, ProfileUnlitDotColor, int, Int, m_propDMD_Profile1UnlitDotColor, m_propDMD_Profile2UnlitDotColor, m_propDMD_Profile3UnlitDotColor, m_propDMD_Profile4UnlitDotColor, m_propDMD_Profile5UnlitDotColor,
+      m_propDMD_Profile6UnlitDotColor, m_propDMD_Profile7UnlitDotColor);
+   PropArray(DMD, ProfileDotBrightness, float, Float, m_propDMD_Profile1DotBrightness, m_propDMD_Profile2DotBrightness, m_propDMD_Profile3DotBrightness, m_propDMD_Profile4DotBrightness, m_propDMD_Profile5DotBrightness,
+      m_propDMD_Profile6DotBrightness, m_propDMD_Profile7DotBrightness);
+   PropArray(DMD, ProfileDotSize, float, Float, m_propDMD_Profile1DotSize, m_propDMD_Profile2DotSize, m_propDMD_Profile3DotSize, m_propDMD_Profile4DotSize, m_propDMD_Profile5DotSize,
+      m_propDMD_Profile6DotSize, m_propDMD_Profile7DotSize);
+   PropArray(DMD, ProfileDotSharpness, float, Float, m_propDMD_Profile1DotSharpness, m_propDMD_Profile2DotSharpness, m_propDMD_Profile3DotSharpness, m_propDMD_Profile4DotSharpness, m_propDMD_Profile5DotSharpness,
+      m_propDMD_Profile6DotSharpness, m_propDMD_Profile7DotSharpness);
+   PropArray(DMD, ProfileDiffuseGlow, float, Float, m_propDMD_Profile1DiffuseGlow, m_propDMD_Profile2DiffuseGlow, m_propDMD_Profile3DiffuseGlow, m_propDMD_Profile4DiffuseGlow, m_propDMD_Profile5DiffuseGlow,
+      m_propDMD_Profile6DiffuseGlow, m_propDMD_Profile7DiffuseGlow);
+
    // Parts Defaults: Balls
    PropFloat(DefaultPropsBall, Mass, "Ball Mass"s, ""s, 0.1f, 2.f, 0.001f, 1.f);
    PropFloat(DefaultPropsBall, Radius, "Ball Radius"s, ""s, 0.1f, 50.f, 0.001f, 25.f);

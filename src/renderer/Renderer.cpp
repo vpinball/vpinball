@@ -306,18 +306,17 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    // Cache DMD renderer properties
    for (int profile = 0; profile < (int)std::size(m_dmdUseNewRenderer); profile++)
    {
-      const string prefix = "Profile." + std::to_string(profile + 1) + '.';
-      m_dmdUseNewRenderer[profile] = m_table->m_settings.LoadValueBool(Settings::DMD, prefix + "Legacy");
+      m_dmdUseNewRenderer[profile] = m_table->m_settings.GetDMD_ProfileLegacy(profile);
       #if !defined(ENABLE_BGFX)
          m_dmdUseNewRenderer[profile] = false; // Only available for BGFX
       #endif
       m_dmdDotColor[profile] = convertColor(
-         m_table->m_settings.LoadValueUInt(Settings::DMD, prefix + "DotTint"),
-         m_table->m_settings.LoadValueFloat(Settings::DMD, prefix + "DotBrightness"));
-      m_dmdDotProperties[profile].x = m_table->m_settings.LoadValueFloat(Settings::DMD, prefix + "DotSize");
-      m_dmdDotProperties[profile].y = m_table->m_settings.LoadValueFloat(Settings::DMD, prefix + "DotSharpness");
-      m_dmdDotProperties[profile].w = m_table->m_settings.LoadValueFloat(Settings::DMD, prefix + "DiffuseGlow");
-      m_dmdUnlitDotColor[profile] = convertColor(m_table->m_settings.LoadValueUInt(Settings::DMD, prefix + "UnlitDotColor"), 1.f);
+         m_table->m_settings.GetDMD_ProfileDotTint(profile),
+         m_table->m_settings.GetDMD_ProfileDotBrightness(profile));
+      m_dmdDotProperties[profile].x = m_table->m_settings.GetDMD_ProfileDotSize(profile);
+      m_dmdDotProperties[profile].y = m_table->m_settings.GetDMD_ProfileDotSharpness(profile);
+      m_dmdDotProperties[profile].w = m_table->m_settings.GetDMD_ProfileDiffuseGlow(profile);
+      m_dmdUnlitDotColor[profile] = convertColor(m_table->m_settings.GetDMD_ProfileUnlitDotColor(profile), 1.f);
       // Convert color as settings are sRGB color while shader needs linear RGB color
       m_dmdDotColor[profile].x = InvsRGB(m_dmdDotColor[profile].x);
       m_dmdDotColor[profile].y = InvsRGB(m_dmdDotColor[profile].y);
