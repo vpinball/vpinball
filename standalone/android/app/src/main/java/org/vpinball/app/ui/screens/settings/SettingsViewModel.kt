@@ -47,9 +47,6 @@ class SettingsViewModel : ViewModel() {
     var maxTexDimension by mutableStateOf(VPinballMaxTexDimension.MAX_768)
         private set
 
-    var alphaRampAccuracy by mutableIntStateOf(0)
-        private set
-
     // External DMD
 
     var externalDMD by mutableStateOf(VPinballExternalDMD.NONE)
@@ -111,7 +108,6 @@ class SettingsViewModel : ViewModel() {
 
         maxTexDimension =
             VPinballMaxTexDimension.fromInt(VPinballManager.loadValue(PLAYER, "MaxTexDimension", VPinballMaxTexDimension.MAX_1024.value))
-        alphaRampAccuracy = VPinballManager.loadValue(PLAYER, "AlphaRampAccuracy", 10)
 
         // External DMD
 
@@ -198,11 +194,6 @@ class SettingsViewModel : ViewModel() {
     fun handleMaxTexDimension(value: VPinballMaxTexDimension) {
         maxTexDimension = value
         VPinballManager.saveValue(PLAYER, "MaxTexDimension", value.value)
-    }
-
-    fun handleAlphaRampAccuracy(value: Int) {
-        alphaRampAccuracy = value
-        VPinballManager.saveValue(PLAYER, "AlphaRampAccuracy", alphaRampAccuracy)
     }
 
     // External DMD

@@ -18,7 +18,6 @@ class SettingsModel: ObservableObject {
     // Performance
 
     @Published var maxTexDimensionIndex: Int = 0
-    @Published var alphaRampAccuracy: Int = 0
 
     // Web Server
 
@@ -61,8 +60,6 @@ class SettingsModel: ObservableObject {
                                                                                            "MaxTexDimension",
                                                                                            1024))
             .flatMap { VPinballMaxTexDimension.all.firstIndex(of: $0) } ?? 0
-
-        alphaRampAccuracy = vpinballManager.loadValue(.player, "AlphaRampAccuracy", 10)
 
         // Web Server
 
