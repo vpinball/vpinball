@@ -35,6 +35,7 @@ HRESULT DispReel::Init(PinTable *const ptable, const float x, const float y, con
 // or there is a backwards compatibility issue (e.g. old version of object doesn't contain all the needed fields)
 void DispReel::SetDefaults(const bool fromMouseClick)
 {
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsDispReel_##prop() : Settings::GetDefaultPropsDispReel_##prop##_Property()->m_def
 #define regKey Settings::DefaultPropsEMReel
    // set all the Data defaults
    bool hr;
@@ -58,16 +59,17 @@ void DispReel::SetDefaults(const bool fromMouseClick)
    m_d.m_digitrange = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "DigitRange"s, 9) : 9;
    m_d.m_updateinterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "UpdateInterval"s, 50) : 50;
    m_d.m_backcolor = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "BackColor"s, (int)RGB(64, 64, 64)) : RGB(64, 64, 64);
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
-
 #undef regKey
+
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 void DispReel::WriteRegDefaults()
 {
+#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsDispReel_##prop(field, false)
 #define regKey Settings::DefaultPropsEMReel
-
    g_pvp->m_settings.SaveValue(regKey, "Image"s, m_d.m_szImage);
    g_pvp->m_settings.SaveValue(regKey, "Sound"s, m_d.m_szSound);
    g_pvp->m_settings.SaveValue(regKey, "UseImageGrid"s, m_d.m_useImageGrid);
@@ -82,10 +84,11 @@ void DispReel::WriteRegDefaults()
    g_pvp->m_settings.SaveValue(regKey, "DigitRange"s, m_d.m_digitrange);
    g_pvp->m_settings.SaveValue(regKey, "UpdateInterval"s, m_d.m_updateinterval);
    g_pvp->m_settings.SaveValue(regKey, "BackColor"s, (int)m_d.m_backcolor);
-   g_pvp->m_settings.SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   g_pvp->m_settings.SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
-
 #undef regKey
+
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 STDMETHODIMP DispReel::InterfaceSupportsErrorInfo(REFIID riid)

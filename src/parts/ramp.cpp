@@ -72,6 +72,7 @@ HRESULT Ramp::Init(PinTable *const ptable, const float x, const float y, const b
 
 void Ramp::SetDefaults(const bool fromMouseClick)
 {
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsRamp_##prop() : Settings::GetDefaultPropsRamp_##prop##_Property()->m_def
 #define strKeyName Settings::DefaultPropsRamp
 
    m_d.m_heightbottom = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "HeightBottom"s, 0.0f) : 0.0f;
@@ -79,9 +80,6 @@ void Ramp::SetDefaults(const bool fromMouseClick)
    m_d.m_widthbottom = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "WidthBottom"s, 75.0f) : 75.0f;
    m_d.m_widthtop = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "WidthTop"s, 60.0f) : 60.0f;
    m_d.m_type = fromMouseClick ? (RampType)g_pvp->m_settings.LoadValueWithDefault(strKeyName, "RampType"s, (int)RampTypeFlat) : RampTypeFlat;
-
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "TimerInterval"s, 100) : 100;
 
    const bool hr = g_pvp->m_settings.LoadValue(strKeyName, "Image"s, m_d.m_szImage);
    if (!hr || !fromMouseClick)
@@ -101,17 +99,21 @@ void Ramp::SetDefaults(const bool fromMouseClick)
 
    m_d.m_visible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Visible"s, true) : true;
    m_d.m_collidable = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Collidable"s, true) : true;
-   m_d.m_reflectionEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "ReflectionEnabled"s, true) : true;
 
    m_d.m_wireDiameter = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "WireDiameter"s, 8.0f) : 8.0f;
    m_d.m_wireDistanceX = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "WireDistanceX"s, 38.0f) : 38.0f;
    m_d.m_wireDistanceY = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "WireDistanceY"s, 88.0f) : 88.0f;
 
 #undef strKeyName
+   LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 void Ramp::WriteRegDefaults()
 {
+#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsRamp_##prop(field, false)
 #define strKeyName Settings::DefaultPropsRamp
 
    g_pvp->m_settings.SaveValue(strKeyName, "HeightBottom"s, m_d.m_heightbottom);
@@ -119,8 +121,6 @@ void Ramp::WriteRegDefaults()
    g_pvp->m_settings.SaveValue(strKeyName, "WidthBottom"s, m_d.m_widthbottom);
    g_pvp->m_settings.SaveValue(strKeyName, "WidthTop"s, m_d.m_widthtop);
    g_pvp->m_settings.SaveValue(strKeyName, "RampType"s, m_d.m_type);
-   g_pvp->m_settings.SaveValue(strKeyName, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   g_pvp->m_settings.SaveValue(strKeyName, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
    g_pvp->m_settings.SaveValue(strKeyName, "Image"s, m_d.m_szImage);
    g_pvp->m_settings.SaveValue(strKeyName, "ImageMode"s, m_d.m_imagealignment);
    g_pvp->m_settings.SaveValue(strKeyName, "ImageWalls"s, m_d.m_imageWalls);
@@ -135,12 +135,15 @@ void Ramp::WriteRegDefaults()
    g_pvp->m_settings.SaveValue(strKeyName, "Scatter"s, m_d.m_scatter);
    g_pvp->m_settings.SaveValue(strKeyName, "Collidable"s, m_d.m_collidable);
    g_pvp->m_settings.SaveValue(strKeyName, "Visible"s, m_d.m_visible);
-   g_pvp->m_settings.SaveValue(strKeyName, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
    g_pvp->m_settings.SaveValue(strKeyName, "WireDiameter"s, m_d.m_wireDiameter);
    g_pvp->m_settings.SaveValue(strKeyName, "WireDistanceX"s, m_d.m_wireDistanceX);
    g_pvp->m_settings.SaveValue(strKeyName, "WireDistanceY"s, m_d.m_wireDistanceY);
 
 #undef strKeyName
+   LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 void Ramp::UIRenderPass1(Sur * const psur)

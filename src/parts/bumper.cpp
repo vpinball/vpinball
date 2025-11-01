@@ -37,6 +37,7 @@ HRESULT Bumper::Init(PinTable * const ptable, const float x, const float y, cons
 
 void Bumper::SetDefaults(const bool fromMouseClick)
 {
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsBumper_##prop() : Settings::GetDefaultPropsBumper_##prop##_Property()->m_def
 #define regKey Settings::DefaultPropsBumper
 
    m_d.m_radius = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Radius"s, 45.f) : 45.f;
@@ -52,26 +53,27 @@ void Bumper::SetDefaults(const bool fromMouseClick)
    if (!hr || !fromMouseClick)
       m_d.m_szSurface.clear();
 
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
    m_d.m_capVisible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "CapVisible"s, true) : true;
    m_d.m_baseVisible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "BaseVisible"s, true) : true;
    m_d.m_ringVisible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "RingVisible"s, true) : true;
    m_d.m_skirtVisible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "SkirtVisible"s, true) : true;
-   m_d.m_reflectionEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ReflectionEnabled"s, true) : true;
    m_d.m_hitEvent = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "HasHitEvent"s, true) : true;
    m_d.m_collidable = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Collidable"s, true) : true;
 
+   LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
+#undef regKey
+
    m_ringAnimate = false;
    m_d.m_ringDropOffset = 0.0f;
-
-#undef regKey
 }
 
 void Bumper::WriteRegDefaults()
 {
+#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsBumper_##prop(field, false)
 #define regKey Settings::DefaultPropsBumper
-
    g_pvp->m_settings.SaveValue(regKey, "Radius"s, m_d.m_radius);
    g_pvp->m_settings.SaveValue(regKey, "Force"s, m_d.m_force);
    g_pvp->m_settings.SaveValue(regKey, "Scatter"s, m_d.m_scatter);
@@ -79,16 +81,17 @@ void Bumper::WriteRegDefaults()
    g_pvp->m_settings.SaveValue(regKey, "RingSpeed"s, m_d.m_ringSpeed);
    g_pvp->m_settings.SaveValue(regKey, "Orientation"s, m_d.m_orientation);
    g_pvp->m_settings.SaveValue(regKey, "Threshold"s, m_d.m_threshold);
-   g_pvp->m_settings.SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   g_pvp->m_settings.SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
    g_pvp->m_settings.SaveValue(regKey, "CapVisible"s, m_d.m_capVisible);
    g_pvp->m_settings.SaveValue(regKey, "BaseVisible"s, m_d.m_baseVisible);
    g_pvp->m_settings.SaveValue(regKey, "HasHitEvent"s, m_d.m_hitEvent);
    g_pvp->m_settings.SaveValue(regKey, "Collidable"s, m_d.m_collidable);
-   g_pvp->m_settings.SaveValue(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
    g_pvp->m_settings.SaveValue(regKey, "Surface"s, m_d.m_szSurface);
-
 #undef regKey
+
+   LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 STDMETHODIMP Bumper::InterfaceSupportsErrorInfo(REFIID riid)

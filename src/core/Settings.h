@@ -579,9 +579,95 @@ public:
    PropBool(DefaultPropsBall, TimerEnabled, "Timer Enabled"s, ""s, false);
    PropInt(DefaultPropsBall, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
+   // Parts Defaults: Bumper
+   PropBool(DefaultPropsBumper, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
+   PropBool(DefaultPropsBumper, TimerEnabled, "Timer Enabled"s, ""s, false);
+   PropInt(DefaultPropsBumper, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+
+   // Parts Defaults: Decal
+
+   // Parts Defaults: DispReel
+   PropBool(DefaultPropsDispReel, TimerEnabled, "Timer Enabled"s, ""s, false);
+   PropInt(DefaultPropsDispReel, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+
+   // Parts Defaults: Flasher
+   PropBool(DefaultPropsFlasher, TimerEnabled, "Timer Enabled"s, ""s, false);
+   PropInt(DefaultPropsFlasher, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+
+   // Parts Defaults: Flipper
+   PropBool(DefaultPropsFlipper, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
+   PropBool(DefaultPropsFlipper, TimerEnabled, "Timer Enabled"s, ""s, false);
+   PropInt(DefaultPropsFlipper, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+
+   // Parts Defaults: Gate
+   PropBool(DefaultPropsGate, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
+   PropBool(DefaultPropsGate, TimerEnabled, "Timer Enabled"s, ""s, false);
+   PropInt(DefaultPropsGate, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+
+   // Parts Defaults: HitTarget
+   PropBool(DefaultPropsHitTarget, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
+   PropBool(DefaultPropsHitTarget, TimerEnabled, "Timer Enabled"s, ""s, false);
+   PropInt(DefaultPropsHitTarget, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+
+   // Parts Defaults: Kicker
+   PropBool(DefaultPropsKicker, TimerEnabled, "Timer Enabled"s, ""s, false);
+   PropInt(DefaultPropsKicker, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+
+   // Parts Defaults: Light
+   PropBool(DefaultPropsLight, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
+   PropBool(DefaultPropsLight, TimerEnabled, "Timer Enabled"s, ""s, false);
+   PropInt(DefaultPropsLight, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+
+   // Parts Defaults: LightSeq
+   PropBool(DefaultPropsLightSeq, TimerEnabled, "Timer Enabled"s, ""s, false);
+   PropInt(DefaultPropsLightSeq, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+
+   // Parts Defaults: PartGroup
+   PropBool(DefaultPropsPartGroup, TimerEnabled, "Timer Enabled"s, ""s, false);
+   PropInt(DefaultPropsPartGroup, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+
+   // Parts Defaults: Plunger
+   PropBool(DefaultPropsPlunger, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
+   PropBool(DefaultPropsPlunger, TimerEnabled, "Timer Enabled"s, ""s, false);
+   PropInt(DefaultPropsPlunger, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+
+   // Parts Defaults: Primitive
+   PropBool(DefaultPropsPrimitive, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
+   PropBool(DefaultPropsPrimitive, TimerEnabled, "Timer Enabled"s, ""s, false);
+   PropInt(DefaultPropsPrimitive, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+
+   // Parts Defaults: Ramp
+   PropBool(DefaultPropsRamp, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
+   PropBool(DefaultPropsRamp, TimerEnabled, "Timer Enabled"s, ""s, false);
+   PropInt(DefaultPropsRamp, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+
+   // Parts Defaults: Rubber
+   PropBool(DefaultPropsRubber, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
+   PropBool(DefaultPropsRubber, TimerEnabled, "Timer Enabled"s, ""s, false);
+   PropInt(DefaultPropsRubber, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+
+   // Parts Defaults: Spinner
+   PropBool(DefaultPropsSpinner, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
+   PropBool(DefaultPropsSpinner, TimerEnabled, "Timer Enabled"s, ""s, false);
+   PropInt(DefaultPropsSpinner, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+
+   // Parts Defaults: Surface
+   PropBool(DefaultPropsSurface, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
+   PropBool(DefaultPropsSurface, TimerEnabled, "Timer Enabled"s, ""s, false);
+   PropInt(DefaultPropsSurface, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+
+   // Parts Defaults: Textbox
+   PropBool(DefaultPropsTextbox, TimerEnabled, "Timer Enabled"s, ""s, false);
+   PropInt(DefaultPropsTextbox, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+
    // Parts Defaults: Timer
    PropBool(DefaultPropsTimer, TimerEnabled, "Timer Enabled"s, ""s, false);
    PropInt(DefaultPropsTimer, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+
+   // Parts Defaults: Trigger
+   PropBool(DefaultPropsTrigger, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
+   PropBool(DefaultPropsTrigger, TimerEnabled, "Timer Enabled"s, ""s, false);
+   PropInt(DefaultPropsTrigger, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
    // Core plugins
 #ifdef __LIBVPINBALL__

@@ -168,6 +168,7 @@ HRESULT Trigger::Init(PinTable *const ptable, const float x, const float y, cons
 
 void Trigger::SetDefaults(const bool fromMouseClick)
 {
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsTrigger_##prop() : Settings::GetDefaultPropsTrigger_##prop##_Property()->m_def
 #define regKey Settings::DefaultPropsTrigger
 
    m_d.m_radius = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Radius"s, 25.0f) : 25.0f;
@@ -175,8 +176,6 @@ void Trigger::SetDefaults(const bool fromMouseClick)
    m_d.m_wireThickness = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "WireThickness"s, 0.f) : 0.f;
    m_d.m_scaleX = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ScaleX"s, 1.f) : 1.f;
    m_d.m_scaleY = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ScaleY"s, 1.f) : 1.f;
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
    m_d.m_enabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Enabled"s, true) : true;
    m_d.m_visible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Visible"s, true) : true;
    m_d.m_hit_height = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "HitHeight"s, 50.f) : 50.f;
@@ -187,9 +186,12 @@ void Trigger::SetDefaults(const bool fromMouseClick)
       m_d.m_szSurface.clear();
 
    m_d.m_animSpeed = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "AnimSpeed"s, 1.f) : 1.f;
-   m_d.m_reflectionEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ReflectionEnabled"s, true) : true;
 
 #undef regKey
+   LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 void Trigger::UIRenderPass1(Sur * const psur)
@@ -940,10 +942,9 @@ void Trigger::ClearForOverwrite()
 
 void Trigger::WriteRegDefaults()
 {
+#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsTrigger_##prop(field, false)
 #define regKey Settings::DefaultPropsTrigger
 
-   g_pvp->m_settings.SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   g_pvp->m_settings.SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
    g_pvp->m_settings.SaveValue(regKey, "Enabled"s, m_d.m_enabled);
    g_pvp->m_settings.SaveValue(regKey, "Visible"s, m_d.m_visible);
    g_pvp->m_settings.SaveValue(regKey, "HitHeight"s, m_d.m_hit_height);
@@ -955,9 +956,12 @@ void Trigger::WriteRegDefaults()
    g_pvp->m_settings.SaveValue(regKey, "Shape"s, m_d.m_shape);
    g_pvp->m_settings.SaveValue(regKey, "Surface"s, m_d.m_szSurface);
    g_pvp->m_settings.SaveValue(regKey, "AnimSpeed"s, m_d.m_animSpeed);
-   g_pvp->m_settings.SaveValue(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
 
 #undef regKey
+   LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 HRESULT Trigger::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)

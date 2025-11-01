@@ -111,8 +111,9 @@ HRESULT Flipper::Init(PinTable *const ptable, const float x, const float y, cons
 
 void Flipper::SetDefaults(const bool fromMouseClick)
 {
-#define regKey Settings::DefaultPropsFlipper
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsFlipper_##prop() : Settings::GetDefaultPropsFlipper_##prop##_Property()->m_def
 
+#define regKey Settings::DefaultPropsFlipper
    SetDefaultPhysics(fromMouseClick);
 
    m_d.m_StartAngle = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "StartAngle"s, 121.f) : 121.f;
@@ -124,8 +125,6 @@ void Flipper::SetDefaults(const bool fromMouseClick)
 
    m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
    m_d.m_color = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Color"s, (int)RGB(255,255,255)) : RGB(255,255,255);
    m_d.m_rubbercolor = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "RubberColor"s, (int)RGB(128,50,50)) : RGB(128,50,50);
 
@@ -139,15 +138,18 @@ void Flipper::SetDefaults(const bool fromMouseClick)
    m_d.m_rubberwidth = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "RubberWidth"s, 24.f) : 24.f;
    m_d.m_visible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Visible"s, true) : true;
    m_d.m_enabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Enabled"s, true) : true;
-   m_d.m_reflectionEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ReflectionEnabled"s, true) : true;
-
 #undef regKey
+
+   LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 void Flipper::WriteRegDefaults()
 {
+#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsFlipper_##prop(field, false)
 #define regKey Settings::DefaultPropsFlipper
-
    g_pvp->m_settings.SaveValue(regKey, "Scatter"s, m_d.m_scatter);
    g_pvp->m_settings.SaveValue(regKey, "Strength"s, m_d.m_strength);
    g_pvp->m_settings.SaveValue(regKey, "EOSTorque"s, m_d.m_torqueDamping);
@@ -164,8 +166,6 @@ void Flipper::WriteRegDefaults()
    g_pvp->m_settings.SaveValue(regKey, "ElasticityFalloff"s, m_d.m_elasticityFalloff);
    g_pvp->m_settings.SaveValue(regKey, "Friction"s, m_d.m_friction);
    g_pvp->m_settings.SaveValue(regKey, "RampUp"s, m_d.m_rampUp);
-   g_pvp->m_settings.SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   g_pvp->m_settings.SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
    g_pvp->m_settings.SaveValue(regKey, "Color"s, (int)m_d.m_color);
    g_pvp->m_settings.SaveValue(regKey, "RubberColor"s, (int)m_d.m_rubbercolor);
    g_pvp->m_settings.SaveValue(regKey, "Surface"s, m_d.m_szSurface);
@@ -175,9 +175,12 @@ void Flipper::WriteRegDefaults()
    g_pvp->m_settings.SaveValue(regKey, "RubberWidth"s, m_d.m_rubberwidth);
    g_pvp->m_settings.SaveValue(regKey, "Visible"s, m_d.m_visible);
    g_pvp->m_settings.SaveValue(regKey, "Enabled"s, m_d.m_enabled);
-   g_pvp->m_settings.SaveValue(regKey, "ReflectionEnabled"s, m_d.m_reflectionEnabled);
-
 #undef regKey
+
+   LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 

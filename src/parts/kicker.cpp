@@ -47,11 +47,10 @@ HRESULT Kicker::Init(PinTable *const ptable, const float x, const float y, const
 
 void Kicker::SetDefaults(const bool fromMouseClick)
 {
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsKicker_##prop() : Settings::GetDefaultPropsKicker_##prop##_Property()->m_def
 #define regKey Settings::DefaultPropsKicker
 
    m_d.m_radius = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Radius"s, 25.f) : 25.f;
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
    m_d.m_enabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Enabled"s, true) : true;
    m_d.m_hitAccuracy = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "HitAccuracy"s, 0.5f) : 0.5f;
    m_d.m_hit_height = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "HitHeight"s, 35.0f) : 35.0f;
@@ -72,12 +71,14 @@ void Kicker::SetDefaults(const bool fromMouseClick)
    m_d.m_legacyMode = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Legacy"s, true) : true;
 
 #undef regKey
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 void Kicker::WriteRegDefaults()
 {
-   g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsKicker_##prop(field, false)
    g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "Enabled"s, m_d.m_enabled);
    g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "HitAccuracy"s, m_d.m_hitAccuracy);
    g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "HitHeight"s, m_d.m_hit_height);
@@ -88,6 +89,9 @@ void Kicker::WriteRegDefaults()
    g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "Surface"s, m_d.m_szSurface);
    g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "FallThrough"s, m_d.m_fallThrough);
    g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "Legacy"s, m_d.m_legacyMode);
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 void Kicker::UIRenderPass1(Sur * const psur)

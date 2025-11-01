@@ -19,6 +19,7 @@ HRESULT LightSeq::Init(PinTable *const ptable, const float x, const float y, con
 
 void LightSeq::SetDefaults(const bool fromMouseClick)
 {
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsLightSeq_##prop() : Settings::GetDefaultPropsLightSeq_##prop##_Property()->m_def
 #define regKey Settings::DefaultPropsLightSequence
 
    m_d.m_updateinterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "UpdateInterval"s, 25) : 25;
@@ -32,24 +33,27 @@ void LightSeq::SetDefaults(const bool fromMouseClick)
 
    m_d.m_vCenter.x = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "CenterX"s, (float)(EDITOR_BG_WIDTH / 2)) : (EDITOR_BG_WIDTH / 2);
    m_d.m_vCenter.y = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "CenterY"s, (float)((2 * EDITOR_BG_WIDTH) / 2)) : ((2 * EDITOR_BG_WIDTH) / 2);
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerInterval"s, 100) : 100;
 
 #undef regKey
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 void LightSeq::WriteRegDefaults()
 {
+#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsLightSeq_##prop(field, false)
 #define regKey Settings::DefaultPropsLightSequence
 
    g_pvp->m_settings.SaveValue(regKey, "UpdateInterval"s, m_d.m_updateinterval);
    g_pvp->m_settings.SaveValue(regKey, "Collection"s, MakeString(m_d.m_wzCollection));
    g_pvp->m_settings.SaveValue(regKey, "CenterX"s, m_d.m_vCenter.x);
    g_pvp->m_settings.SaveValue(regKey, "CenterY"s, m_d.m_vCenter.y);
-   g_pvp->m_settings.SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   g_pvp->m_settings.SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
 
 #undef regKey
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 void LightSeq::SetObjectPos()

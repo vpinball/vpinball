@@ -37,14 +37,18 @@ STDMETHODIMP PartGroup::InterfaceSupportsErrorInfo(REFIID riid)
 
 void PartGroup::SetDefaults(const bool fromMouseClick)
 {
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultPropsPartGroup, "TimerEnabled"s, true) : true;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultPropsPartGroup, "TimerInterval"s, 100) : 100;
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsPartGroup_##prop() : Settings::GetDefaultPropsPartGroup_##prop##_Property()->m_def
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 void PartGroup::WriteRegDefaults()
 {
-   g_pvp->m_settings.SaveValue(Settings::DefaultPropsPartGroup, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   g_pvp->m_settings.SaveValue(Settings::DefaultPropsPartGroup, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
+#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsPartGroup_##prop(field, false)
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 void PartGroup::SetObjectPos()

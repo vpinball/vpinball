@@ -49,6 +49,7 @@ HRESULT Textbox::Init(PinTable *const ptable, const float x, const float y, cons
 
 void Textbox::SetDefaults(const bool fromMouseClick)
 {
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsTextbox_##prop() : Settings::GetDefaultPropsTextbox_##prop##_Property()->m_def
 #define regKey Settings::DefaultPropsTextBox
 
    m_d.m_visible = true;
@@ -86,8 +87,6 @@ void Textbox::SetDefaults(const bool fromMouseClick)
       m_d.m_backcolor = g_pvp->m_settings.LoadValueWithDefault(regKey, "BackColor"s, (int)RGB(0, 0, 0));
       m_d.m_fontcolor = g_pvp->m_settings.LoadValueWithDefault(regKey, "FontColor"s, (int)RGB(255, 255, 255));
       m_d.m_intensity_scale = g_pvp->m_settings.LoadValueWithDefault(regKey, "IntensityScale"s, 1.0f);
-      m_d.m_tdr.m_TimerEnabled = g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerEnabled"s, false);
-      m_d.m_tdr.m_TimerInterval = g_pvp->m_settings.LoadValueWithDefault(regKey, "TimerInterval"s, 100);
       m_d.m_talign = (TextAlignment)g_pvp->m_settings.LoadValueWithDefault(regKey, "TextAlignment"s, (int)TextAlignRight);
       m_d.m_transparent = g_pvp->m_settings.LoadValueWithDefault(regKey, "Transparent"s, false);
       m_d.m_isDMD = g_pvp->m_settings.LoadValueWithDefault(regKey, "DMD"s, false);
@@ -126,16 +125,18 @@ void Textbox::SetDefaults(const bool fromMouseClick)
       delete [] fd.lpstrName;
 #endif
 #undef regKey
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 void Textbox::WriteRegDefaults()
 {
+#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsTextbox_##prop(field, false)
 #define regKey Settings::DefaultPropsTextBox
 
    g_pvp->m_settings.SaveValue(regKey, "BackColor"s, (int)m_d.m_backcolor);
    g_pvp->m_settings.SaveValue(regKey, "FontColor"s, (int)m_d.m_fontcolor);
-   g_pvp->m_settings.SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);
-   g_pvp->m_settings.SaveValue(regKey, "TimerInterval"s, m_d.m_tdr.m_TimerInterval);
    g_pvp->m_settings.SaveValue(regKey, "Transparent"s, m_d.m_transparent);
    g_pvp->m_settings.SaveValue(regKey, "DMD"s, m_d.m_isDMD);
 
@@ -163,6 +164,9 @@ void Textbox::WriteRegDefaults()
 
 #undef regKey
 #endif
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
 }
 
 
