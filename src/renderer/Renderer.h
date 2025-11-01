@@ -255,12 +255,12 @@ private:
 
    // Segment display rendering
    std::unique_ptr<Texture> m_segDisplaySDF[4][9];
+public:
    vec4 m_segColor[8]; // Base seg color and brightness
    vec4 m_segUnlitColor[8]; // unlit color and back glow
 
    // DMD rendering
-   vec4 m_dmdDefaultDotTint; // Table's default Dmd tint
-   bool m_dmdUseNewRenderer[7];
+   bool m_dmdUseLegacyRenderer[7];
    vec4 m_dmdDotColor[7]; // Base dot color and brightness
    vec4 m_dmdDotProperties[7]; // size, sharpness, rounding, back glow
    vec4 m_dmdUnlitDotColor[7]; // unlit color

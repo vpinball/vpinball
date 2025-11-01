@@ -5,23 +5,24 @@
 #include "InGameUI.h"
 #include "ui/live/LiveUI.h"
 
-#include "ExitSplashPage.h"
-#include "HomePage.h"
-#include "TableOptionsPage.h"
-#include "TableRulesPage.h"
 #include "AudioSettingsPage.h"
+#include "BackglassPage.h"
+#include "CabinetSettingsPage.h"
+#include "DisplayProfileSettingsPage.h"
+#include "ExitSplashPage.h"
 #include "GraphicSettingsPage.h"
+#include "HomePage.h"
 #include "InputSettingsPage.h"
 #include "MiscSettingsPage.h"
 #include "NudgeSettingsPage.h"
+#include "PluginSettingsPage.h"
 #include "PlungerSettingsPage.h"
 #include "PointOfViewSettingsPage.h"
-#include "VRSettingsPage.h"
-#include "CabinetSettingsPage.h"
-#include "BackglassPage.h"
 #include "ScoreViewPage.h"
 #include "StereoSettingsPage.h"
-#include "PluginSettingsPage.h"
+#include "TableOptionsPage.h"
+#include "TableRulesPage.h"
+#include "VRSettingsPage.h"
 
 
 namespace VPX::InGameUI
@@ -33,19 +34,20 @@ InGameUI::InGameUI(LiveUI &liveUI)
    AddPage("exit"s, []() { return std::make_unique<ExitSplashPage>(); });
    AddPage("homepage"s, []() { return std::make_unique<HomePage>(); });
    AddPage("settings/audio"s, []() { return std::make_unique<AudioSettingsPage>(); });
+   AddPage("settings/backglass"s, []() { return std::make_unique<BackglassPage>(); });
+   AddPage("settings/cabinet"s, []() { return std::make_unique<CabinetSettingsPage>(); });
+   AddPage("settings/display_profiles"s, []() { return std::make_unique<DisplayProfileSettingsPage>(); });
    AddPage("settings/graphic"s, []() { return std::make_unique<GraphicSettingsPage>(); });
    AddPage("settings/input"s, []() { return std::make_unique<InputSettingsPage>(); });
    AddPage("settings/misc"s, []() { return std::make_unique<MiscSettingsPage>(); });
    AddPage("settings/nudge"s, []() { return std::make_unique<NudgeSettingsPage>(); });
    AddPage("settings/plunger"s, []() { return std::make_unique<PlungerSettingsPage>(); });
    AddPage("settings/pov"s, []() { return std::make_unique<PointOfViewSettingsPage>(); });
-   AddPage("table/options"s, []() { return std::make_unique<TableOptionsPage>(); });
-   AddPage("table/rules"s, []() { return std::make_unique<TableRulesPage>(); });
-   AddPage("settings/vr"s, []() { return std::make_unique<VRSettingsPage>(); });
-   AddPage("settings/backglass"s, []() { return std::make_unique<BackglassPage>(); });
    AddPage("settings/scoreview"s, []() { return std::make_unique<ScoreViewPage>(); });
    AddPage("settings/stereo"s, []() { return std::make_unique<StereoSettingsPage>(); });
-   AddPage("settings/cabinet"s, []() { return std::make_unique<CabinetSettingsPage>(); });
+   AddPage("settings/vr"s, []() { return std::make_unique<VRSettingsPage>(); });
+   AddPage("table/options"s, []() { return std::make_unique<TableOptionsPage>(); });
+   AddPage("table/rules"s, []() { return std::make_unique<TableRulesPage>(); });
    AddPage("plugins/homepage"s, []() { return std::make_unique<PluginHomePage>(); });
 }
 

@@ -207,9 +207,7 @@ void Settings::Validate(const bool addDefaults)
 {
    #define SettingString(section, name, defVal, comment) RegisterStringSetting(section, name, defVal, addDefaults, comment)
    #define SettingBool(section, name, defVal, comment) RegisterBoolSetting(section, name, defVal, addDefaults, comment)
-   #define SettingFloat(section, name, defVal, minVal, maxVal, comment) RegisterFloatSetting(section, name, defVal, minVal, maxVal, addDefaults, comment)
    #define SettingInt(section, name, defVal, minVal, maxVal, comment) RegisterIntSetting(section, name, defVal, minVal, maxVal, addDefaults, comment)
-   #define SettingUInt(section, name, defVal, minVal, maxVal, comment) RegisterUIntSetting(section, name, defVal, minVal, maxVal, addDefaults, comment)
    
    //////////////////////////////////////////////////////////////////////////
    // Plugin.B2SLegacy
@@ -261,39 +259,9 @@ void Settings::Validate(const bool addDefaults)
    SettingString(Section::Backglass, "BackglassDisplay"s, "Default"s, "Display used for the Backglass window"s);
    SettingBool(Section::Backglass, "BackglassFullScreen"s, false, "Use fullscreen exclusive mode (not recommended unless you need to change the display resolution)"s);
 
-   //////////////////////////////////////////////////////////////////////////
-   // Alpha segment section
-
-   for (int i = 1; i <= 8; i++)
-   {
-      const string prefix = "Profile." + std::to_string(i) + '.';
-      int color;
-      switch (i)
-      {
-      //case 1: color = 0x002D52FF; break; // Neon plasma
-      case 1: color = 0x001E96FF; break; // Neon plasma
-      //case 2: color = 0x00FFEFBF; break; // VFD Blueish
-      case 2: color = 0x00FFEF3F; break; // VFD Blueish
-      case 3: color = 0x00ECFF48; break; // VFD Greenish
-      case 4: color = 0x001523FF; break; // Red Led
-      case 5: color = 0x0023FF15; break; // Green Led
-      case 6: color = 0x0023FFFF; break; // Yellow Led
-      case 7: color = 0x00FFFFFF; break; // Generic Plasma
-      case 8: color = 0x00FFFFFF; break; // Generic Led
-      default: color = 0; assert(false);
-      }
-      SettingInt(Section::Alpha, prefix + "Color", color, 0x00000000, 0x00FFFFFF, ""s);
-      SettingInt(Section::Alpha, prefix + "Unlit", 0x00404040, 0x00000000, 0x00FFFFFF, ""s);
-      SettingFloat(Section::Alpha, prefix + "Brightness", 5.0f, 0.001f, 100.f, ""s);
-      SettingFloat(Section::Alpha, prefix + "DiffuseGlow", 1.0f, 0.f, 10.f, ""s);
-   }
-
-
    #undef SettingString
    #undef SettingBool
-   #undef SettingFloat
    #undef SettingInt
-   #undef SettingUInt
 }
 
 void Settings::ResetValue(const Section section, const string& key)

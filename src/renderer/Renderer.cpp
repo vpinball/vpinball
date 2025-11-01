@@ -304,11 +304,11 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_ballTrailMeshBuffer = new MeshBuffer(L"Ball.Trail"s, ballTrailVertexBuffer);
 
    // Cache DMD renderer properties
-   for (int profile = 0; profile < (int)std::size(m_dmdUseNewRenderer); profile++)
+   for (int profile = 0; profile < (int)std::size(m_dmdUseLegacyRenderer); profile++)
    {
-      m_dmdUseNewRenderer[profile] = m_table->m_settings.GetDMD_ProfileLegacy(profile);
+      m_dmdUseLegacyRenderer[profile] = m_table->m_settings.GetDMD_ProfileLegacy(profile);
       #if !defined(ENABLE_BGFX)
-         m_dmdUseNewRenderer[profile] = false; // Only available for BGFX
+         m_dmdUseLegacyRenderer[profile] = false; // Only available for BGFX
       #endif
       m_dmdDotColor[profile] = convertColor(
          m_table->m_settings.GetDMD_ProfileDotTint(profile),
@@ -1324,7 +1324,7 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& co
 {
    // Legacy DMD renderer
    #ifdef ENABLE_BGFX
-   if (m_dmdUseNewRenderer[profile])
+   if (m_dmdUseLegacyRenderer[profile])
    #else
    if (true)
    #endif
