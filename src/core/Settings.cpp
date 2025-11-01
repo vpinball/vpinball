@@ -159,34 +159,6 @@ void Settings::RegisterIntSetting(const Section section, const string &key, cons
       SaveValue(section, key, defVal);
 }
 
-void Settings::RegisterUIntSetting(const Section section, const string &key, const unsigned int defVal, const unsigned int minVal, const unsigned int maxVal, const bool addDefaults, const string &comments)
-{
-   assert((minVal <= defVal) && (defVal <= maxVal));
-   unsigned int val;
-   bool present = LoadValue(section, key, val);
-   if (present && ((val < minVal) || (val > maxVal)))
-   {
-      DeleteValue(section, key);
-      present = false;
-   }
-   if (!present && addDefaults)
-      SaveValue(section, key, defVal);
-}
-
-void Settings::RegisterFloatSetting(const Section section, const string &key, const float defVal, const float minVal, const float maxVal, const bool addDefaults, const string &comments)
-{
-   assert((minVal <= defVal) && (defVal <= maxVal));
-   float val;
-   bool present = LoadValue(section, key, val);
-   if (present && ((val < minVal) || (val > maxVal)))
-   {
-      DeleteValue(section, key);
-      present = false;
-   }
-   if (!present && addDefaults)
-      SaveValue(section, key, defVal);
-}
-
 
 // This method declares the static settings supported by VPX.
 //
@@ -262,11 +234,6 @@ void Settings::Validate(const bool addDefaults)
    #undef SettingString
    #undef SettingBool
    #undef SettingInt
-}
-
-void Settings::ResetValue(const Section section, const string& key)
-{
-   // FIXME implement
 }
 
 bool Settings::LoadFromFile(const string& path, const bool createDefault)
@@ -490,23 +457,6 @@ bool Settings::HasValue(const Section section, const string& key, const bool sea
    return hasInIni;
 }
 
-#if 0
-bool Settings::LoadValue(const Section section, const string &key, void *const szbuffer, const size_t size) const
-{
-   if (size == 0)
-      return false;
-
-   string val;
-   const bool success = LoadValue(section, key, val);
-   if (success)
-      strncpy_s((char *)szbuffer, size, val.c_str());
-   else
-      ((char *)szbuffer)[0] = '\0';
-
-   return success;
-}
-#endif
-
 bool Settings::LoadValue(const Section section, const string &key, float &pfloat) const
 {
    string val;
@@ -623,13 +573,6 @@ bool Settings::SaveValue(const Section section, const string &key, const float v
 {
    return SaveValue(section, key, f2sz(val,false), overrideMode);
 }
-
-#if 0
-bool Settings::SaveValue(const Section section, const string &key, const char *val, const bool overrideMode)
-{
-   return SaveValue(section, key, string(val), overrideMode);
-}
-#endif
 
 bool Settings::DeleteValue(const Section section, const string &key, const bool deleteFromParent)
 {
