@@ -77,7 +77,8 @@ public:
 #define PropArray(groupId, propId, type, getType, ...) \
    static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId[] = { __VA_ARGS__ }; \
    inline type Get##groupId##_##propId(int index) const { return (type)(m_store.Get##getType(m_prop##groupId##_##propId[index])); } \
-   inline void Set##groupId##_##propId(int index, type v, bool asTableOverride) { Set(m_prop##groupId##_##propId[index], (type)v, asTableOverride); }
+   inline void Set##groupId##_##propId(int index, type v, bool asTableOverride) { Set(m_prop##groupId##_##propId[index], (type)v, asTableOverride); } \
+   inline void Reset##groupId##_##propId(int index) { Reset(m_prop##groupId##_##propId[index]); }
 
 
    // General Application settings
@@ -546,7 +547,7 @@ public:
    PropFloat(DMD, Profile7DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.001f, 0.75f);
    PropFloat(DMD, Profile7DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.01f, 0.90f);
    PropFloat(DMD, Profile7DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.01f, 0.1f);
-
+   // Array access
    PropArray(DMD, ProfileLegacy, bool, Int, m_propDMD_Profile1Legacy, m_propDMD_Profile2Legacy, m_propDMD_Profile3Legacy, m_propDMD_Profile4Legacy, m_propDMD_Profile5Legacy,
       m_propDMD_Profile6Legacy, m_propDMD_Profile7Legacy);
    PropArray(DMD, ProfileScaleFX, bool, Int, m_propDMD_Profile1ScaleFX, m_propDMD_Profile2ScaleFX, m_propDMD_Profile3ScaleFX, m_propDMD_Profile4ScaleFX, m_propDMD_Profile5ScaleFX,
@@ -563,6 +564,57 @@ public:
       m_propDMD_Profile6DotSharpness, m_propDMD_Profile7DotSharpness);
    PropArray(DMD, ProfileDiffuseGlow, float, Float, m_propDMD_Profile1DiffuseGlow, m_propDMD_Profile2DiffuseGlow, m_propDMD_Profile3DiffuseGlow, m_propDMD_Profile4DiffuseGlow, m_propDMD_Profile5DiffuseGlow,
       m_propDMD_Profile6DiffuseGlow, m_propDMD_Profile7DiffuseGlow);
+
+   // Alphanumeric Segment Display profiles
+   // Neon Plasma
+   PropInt(Alpha, Profile1Color, "Color"s, "Color of lit segments"s, 0x000000, 0xFFFFFF, 0x001E96FF); // 0x002D52FF
+   PropInt(Alpha, Profile1Unlit, "Unlit Color"s, "Color of unlit segments"s, 0x000000, 0xFFFFFF, 0x404040);
+   PropFloat(Alpha, Profile1Brightness, "Brightness"s, "Brightness level"s, 0.001f, 100.f, 0.001f, 5.f);
+   PropFloat(Alpha, Profile1DiffuseGlow, "Diffuse Glow"s, "Glow of segments on the back of the display (between segments, against glass)"s, 0.f, 10.f, 0.01f, 1.f);
+   // VFD Blueish
+   PropInt(Alpha, Profile2Color, "Color"s, "Color of lit segments"s, 0x000000, 0xFFFFFF, 0x00FFEF3F); // 0x00FFEFBF
+   PropInt(Alpha, Profile2Unlit, "Unlit Color"s, "Color of unlit segments"s, 0x000000, 0xFFFFFF, 0x404040);
+   PropFloat(Alpha, Profile2Brightness, "Brightness"s, "Brightness level"s, 0.001f, 100.f, 0.001f, 5.f);
+   PropFloat(Alpha, Profile2DiffuseGlow, "Diffuse Glow"s, "Glow of segments on the back of the display (between segments, against glass)"s, 0.f, 10.f, 0.01f, 1.f);
+   // VFD Greenish
+   PropInt(Alpha, Profile3Color, "Color"s, "Color of lit segments"s, 0x000000, 0xFFFFFF, 0x00ECFF48);
+   PropInt(Alpha, Profile3Unlit, "Unlit Color"s, "Color of unlit segments"s, 0x000000, 0xFFFFFF, 0x404040);
+   PropFloat(Alpha, Profile3Brightness, "Brightness"s, "Brightness level"s, 0.001f, 100.f, 0.001f, 5.f);
+   PropFloat(Alpha, Profile3DiffuseGlow, "Diffuse Glow"s, "Glow of segments on the back of the display (between segments, against glass)"s, 0.f, 10.f, 0.01f, 1.f);
+   // Red Led
+   PropInt(Alpha, Profile4Color, "Color"s, "Color of lit segments"s, 0x000000, 0xFFFFFF, 0x001523FF);
+   PropInt(Alpha, Profile4Unlit, "Unlit Color"s, "Color of unlit segments"s, 0x000000, 0xFFFFFF, 0x404040);
+   PropFloat(Alpha, Profile4Brightness, "Brightness"s, "Brightness level"s, 0.001f, 100.f, 0.001f, 5.f);
+   PropFloat(Alpha, Profile4DiffuseGlow, "Diffuse Glow"s, "Glow of segments on the back of the display (between segments, against glass)"s, 0.f, 10.f, 0.01f, 1.f);
+   // Green Led
+   PropInt(Alpha, Profile5Color, "Color"s, "Color of lit segments"s, 0x000000, 0xFFFFFF, 0x0023FF15);
+   PropInt(Alpha, Profile5Unlit, "Unlit Color"s, "Color of unlit segments"s, 0x000000, 0xFFFFFF, 0x404040);
+   PropFloat(Alpha, Profile5Brightness, "Brightness"s, "Brightness level"s, 0.001f, 100.f, 0.001f, 5.f);
+   PropFloat(Alpha, Profile5DiffuseGlow, "Diffuse Glow"s, "Glow of segments on the back of the display (between segments, against glass)"s, 0.f, 10.f, 0.01f, 1.f);
+   // Yellow Led
+   PropInt(Alpha, Profile6Color, "Color"s, "Color of lit segments"s, 0x000000, 0xFFFFFF, 0x0023FFFF);
+   PropInt(Alpha, Profile6Unlit, "Unlit Color"s, "Color of unlit segments"s, 0x000000, 0xFFFFFF, 0x404040);
+   PropFloat(Alpha, Profile6Brightness, "Brightness"s, "Brightness level"s, 0.001f, 100.f, 0.001f, 5.f);
+   PropFloat(Alpha, Profile6DiffuseGlow, "Diffuse Glow"s, "Glow of segments on the back of the display (between segments, against glass)"s, 0.f, 10.f, 0.01f, 1.f);
+   // Generic Plasma
+   PropInt(Alpha, Profile7Color, "Color"s, "Color of lit segments"s, 0x000000, 0xFFFFFF, 0x00FFFFFF);
+   PropInt(Alpha, Profile7Unlit, "Unlit Color"s, "Color of unlit segments"s, 0x000000, 0xFFFFFF, 0x404040);
+   PropFloat(Alpha, Profile7Brightness, "Brightness"s, "Brightness level"s, 0.001f, 100.f, 0.001f, 5.f);
+   PropFloat(Alpha, Profile7DiffuseGlow, "Diffuse Glow"s, "Glow of segments on the back of the display (between segments, against glass)"s, 0.f, 10.f, 0.01f, 1.f);
+   // Generic Led
+   PropInt(Alpha, Profile8Color, "Color"s, "Color of lit segments"s, 0x000000, 0xFFFFFF, 0x00FFFFFF);
+   PropInt(Alpha, Profile8Unlit, "Unlit Color"s, "Color of unlit segments"s, 0x000000, 0xFFFFFF, 0x404040);
+   PropFloat(Alpha, Profile8Brightness, "Brightness"s, "Brightness level"s, 0.001f, 100.f, 0.001f, 5.f);
+   PropFloat(Alpha, Profile8DiffuseGlow, "Diffuse Glow"s, "Glow of segments on the back of the display (between segments, against glass)"s, 0.f, 10.f, 0.01f, 1.f);
+   // Array access
+   PropArray(Alpha, ProfileColor, int, Int, m_propAlpha_Profile1Color, m_propAlpha_Profile2Color, m_propAlpha_Profile3Color, m_propAlpha_Profile4Color, m_propAlpha_Profile5Color,
+      m_propAlpha_Profile6Color, m_propAlpha_Profile7Color, m_propAlpha_Profile8Color);
+   PropArray(Alpha, ProfileUnlit, int, Int, m_propAlpha_Profile1Unlit, m_propAlpha_Profile2Unlit, m_propAlpha_Profile3Unlit, m_propAlpha_Profile4Unlit, m_propAlpha_Profile5Unlit,
+      m_propAlpha_Profile6Unlit, m_propAlpha_Profile7Unlit, m_propAlpha_Profile8Unlit);
+   PropArray(Alpha, ProfileBrightness, int, Int, m_propAlpha_Profile1Brightness, m_propAlpha_Profile2Brightness, m_propAlpha_Profile3Brightness, m_propAlpha_Profile4Brightness, m_propAlpha_Profile5Brightness,
+      m_propAlpha_Profile6Brightness, m_propAlpha_Profile7Brightness, m_propAlpha_Profile8Brightness);
+   PropArray(Alpha, ProfileDiffuseGlow, int, Int, m_propAlpha_Profile1DiffuseGlow, m_propAlpha_Profile2DiffuseGlow, m_propAlpha_Profile3DiffuseGlow, m_propAlpha_Profile4DiffuseGlow, m_propAlpha_Profile5DiffuseGlow,
+      m_propAlpha_Profile6DiffuseGlow, m_propAlpha_Profile7DiffuseGlow, m_propAlpha_Profile8DiffuseGlow);
 
    // Parts Defaults: Balls
    PropFloat(DefaultPropsBall, Mass, "Ball Mass"s, ""s, 0.1f, 2.f, 0.001f, 1.f);
