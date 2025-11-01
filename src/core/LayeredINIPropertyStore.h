@@ -33,6 +33,7 @@ public:
    void Load(const mINI::INIStructure& ini);
    void Save();
    bool IsModified() const { return m_modified; }
+   void GenerateTemplate(const string& path) const;
 
    void Reset(PropertyRegistry::PropId propId) override;
 

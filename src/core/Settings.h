@@ -98,7 +98,7 @@ public:
    // Graphics synchronisation and latency reduction
 #if defined(ENABLE_BGFX)
    PropEnum(Player, SyncMode, "Synchronization"s,
-      "None: Use this if your display supports variable refresh rate or if you are experiencing stutters.\r\n\r\nVertical Sync: Synchronize on display sync."s,
+      "None: Use this if your display supports variable refresh rate or if you are experiencing stutters.\r\nVertical Sync: Synchronize on display sync."s,
       int, 1, "No Sync", "Vertical Sync");
 #else
    PropEnum(Player, SyncMode, "Synchronization"s,

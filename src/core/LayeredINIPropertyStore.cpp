@@ -172,6 +172,75 @@ void LayeredINIPropertyStore::Save()
    m_modified = false;
 }
 
+void LayeredINIPropertyStore::GenerateTemplate(const string& path) const
+{
+   std::ofstream file(path);
+   if (!file.is_open())
+      return;
+
+   file << "; #######################################################\n";
+   file << "; #  Visual Pinball X settings file\n";
+   file << "; #\n";
+   file << "; # This file holds all visual pinball settings.\n";
+   file << "; # If you need to reset all settings to their default,\n";
+   file << "; # just delete this file and it will be recreated on\n";
+   file << "; # next application start.\n";
+   file << "; #\n";
+   file << "; # When a property is not defined (nothing after the\n";
+   file << "; # equal '=' sign), VPX will use a default value for it.\n";
+   file << "; #\n";
+   file << "; #######################################################\n";
+
+   vector<string> groups;
+   for (auto propId : m_registry.get().GetPropertyIds())
+      if (const string group = m_registry.get().GetProperty(propId)->m_groupId; FindIndexOf(groups, group) == -1)
+         groups.push_back(group);
+
+   for (const string& group : groups)
+   {
+      file << "\n";
+      file << "\n";
+      file << "[" << group << "]\n";
+      for (auto propId : m_registry.get().GetPropertyIds())
+      {
+         const PropertyDef* prop = m_registry.get().GetProperty(propId);
+         if (prop->m_groupId == group)
+         {
+            file << "; " << prop->m_label;
+            if (prop->m_description.find('\n') == std::string::npos)
+               file << ": " << prop->m_description;
+            switch (prop->m_type)
+            {
+            case PropertyDef::Type::Float: file << " [Default: " << f2sz(dynamic_cast<const FloatPropertyDef*>(prop)->m_def, false) << ']'; break;
+            case PropertyDef::Type::Int: file << " [Default: " << std::to_string(dynamic_cast<const IntPropertyDef*>(prop)->m_def) << ']'; break;
+            case PropertyDef::Type::Bool: file << " [Default: " << (dynamic_cast<const BoolPropertyDef*>(prop)->m_def ? '1' : '0') << ']'; break;
+            case PropertyDef::Type::Enum:
+            {
+               auto enumProp = dynamic_cast<const EnumPropertyDef*>(prop);
+               file << " [Default: '" << enumProp->m_values[enumProp->m_def] << "'";
+               for (size_t i = 0; i < enumProp->m_values.size(); i++)
+                  file << ", " << i << "='" << enumProp->m_values[i] << "'";
+               file << ']';
+               break;
+            }
+            case PropertyDef::Type::String: file << " [Default: '" << dynamic_cast<const StringPropertyDef*>(prop)->m_def << "']"; break;
+            }
+            if (prop->m_description.find('\n') != std::string::npos)
+            {
+               std::string token;
+               std::istringstream tokenStream(prop->m_description);
+               file << ":\n";
+               while (std::getline(tokenStream, token, '\n'))
+                  file << ";   " << token;
+            }
+            file << '\n' << prop->m_propId << " =\n\n";
+         }
+      }
+   }
+
+   file.close();
+}
+
 void LayeredINIPropertyStore::UpdateLiveStore()
 {
    for (PropertyRegistry::PropId propId : m_registry.get().GetPropertyIds())
