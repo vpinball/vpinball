@@ -34,52 +34,56 @@ public:
    void Set(VPX::Properties::PropertyRegistry::PropId propId, const string &v, bool asTableOverride);
    inline void Reset(VPX::Properties::PropertyRegistry::PropId propId) { m_store.Reset(propId); }
 
-#define PropBool(groupId, propId, label, comment, defVal) \
-   static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId \
-      = GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>(#groupId, #propId, label, comment, defVal)); \
-   static inline const VPX::Properties::BoolPropertyDef* Get##groupId##_##propId##_Property() { return GetRegistry().GetBoolProperty(m_prop##groupId##_##propId); } \
-   inline bool Get##groupId##_##propId() const { return m_store.GetInt(m_prop##groupId##_##propId); } \
-   inline void Set##groupId##_##propId(bool v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); } \
+#define PropBool(groupId, propId, label, comment, defVal)                                                                                                                                    \
+   static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId                                                                                                  \
+      = GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>(#groupId, #propId, label, comment, defVal));                                                               \
+   static inline const VPX::Properties::BoolPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetBoolProperty(m_prop##groupId##_##propId); }                          \
+   inline bool Get##groupId##_##propId() const { return m_store.GetInt(m_prop##groupId##_##propId); }                                                                                        \
+   inline void Set##groupId##_##propId(bool v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                                \
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
 
-#define PropInt(groupId, propId, label, comment, minVal, maxVal, defVal) \
-   static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId \
-      = GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>(#groupId, #propId, label, comment, minVal, maxVal, defVal)); \
-   static inline const VPX::Properties::IntPropertyDef* Get##groupId##_##propId##_Property() { return GetRegistry().GetIntProperty(m_prop##groupId##_##propId); } \
-   inline int Get##groupId##_##propId() const { return m_store.GetInt(m_prop##groupId##_##propId); } \
-   inline void Set##groupId##_##propId(int v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); } \
+#define PropInt(groupId, propId, label, comment, minVal, maxVal, defVal)                                                                                                                     \
+   static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId                                                                                                  \
+      = GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>(#groupId, #propId, label, comment, minVal, maxVal, defVal));                                                \
+   static inline const VPX::Properties::IntPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetIntProperty(m_prop##groupId##_##propId); }                            \
+   inline int Get##groupId##_##propId() const { return m_store.GetInt(m_prop##groupId##_##propId); }                                                                                         \
+   inline void Set##groupId##_##propId(int v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                                 \
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
 
-#define PropEnum(groupId, propId, label, comment, type, defVal, ...) \
-   static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId \
-      = GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>(#groupId, #propId, label, comment, 0, defVal, vector<string> { __VA_ARGS__ })); \
-   static inline const VPX::Properties::EnumPropertyDef* Get##groupId##_##propId##_Property() { return GetRegistry().GetEnumProperty(m_prop##groupId##_##propId); } \
-   inline type Get##groupId##_##propId() const { return (type)(m_store.GetInt(m_prop##groupId##_##propId)); } \
-   inline void Set##groupId##_##propId(type v, bool asTableOverride) { Set(m_prop##groupId##_##propId, (int)v, asTableOverride); } \
+#define PropEnum(groupId, propId, label, comment, type, defVal, ...)                                                                                                                         \
+   static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId                                                                                                  \
+      = GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>(#groupId, #propId, label, comment, 0, defVal, vector<string> { __VA_ARGS__ }));                            \
+   static inline const VPX::Properties::EnumPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetEnumProperty(m_prop##groupId##_##propId); }                          \
+   inline type Get##groupId##_##propId() const { return (type)(m_store.GetInt(m_prop##groupId##_##propId)); }                                                                                \
+   inline void Set##groupId##_##propId(type v, bool asTableOverride) { Set(m_prop##groupId##_##propId, (int)v, asTableOverride); }                                                           \
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
 
-#define PropFloatStepped(groupId, propId, label, comment, minVal, maxVal, step, defVal) \
-   static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId \
-      = GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(#groupId, #propId, label, comment, minVal, maxVal, step, defVal)); \
-   static inline const VPX::Properties::FloatPropertyDef* Get##groupId##_##propId##_Property() { return GetRegistry().GetFloatProperty(m_prop##groupId##_##propId); } \
-   inline float Get##groupId##_##propId() const { return m_store.GetFloat(m_prop##groupId##_##propId); } \
-   inline void Set##groupId##_##propId(float v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); } \
+#define PropFloatStepped(groupId, propId, label, comment, minVal, maxVal, step, defVal)                                                                                                      \
+   static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId                                                                                                  \
+      = GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(#groupId, #propId, label, comment, minVal, maxVal, step, defVal));                                        \
+   static inline const VPX::Properties::FloatPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetFloatProperty(m_prop##groupId##_##propId); }                        \
+   inline float Get##groupId##_##propId() const { return m_store.GetFloat(m_prop##groupId##_##propId); }                                                                                     \
+   inline void Set##groupId##_##propId(float v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                               \
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
 
 #define PropFloat(groupId, propId, label, comment, minVal, maxVal, defVal) PropFloatStepped(groupId, propId, label, comment, minVal, maxVal, 0.f, defVal)
 
-#define PropString(groupId, propId, label, comment, defVal) \
-   static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId \
-      = GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>(#groupId, #propId, label, comment, defVal)); \
-   static inline const VPX::Properties::StringPropertyDef* Get##groupId##_##propId##_Property() { return GetRegistry().GetStringProperty(m_prop##groupId##_##propId); } \
-   inline const string& Get##groupId##_##propId() const { return m_store.GetString(m_prop##groupId##_##propId); } \
-   inline void Set##groupId##_##propId(const string& v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); } \
+#define PropString(groupId, propId, label, comment, defVal)                                                                                                                                  \
+   static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId                                                                                                  \
+      = GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>(#groupId, #propId, label, comment, defVal));                                                             \
+   static inline const VPX::Properties::StringPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetStringProperty(m_prop##groupId##_##propId); }                      \
+   inline const string &Get##groupId##_##propId() const { return m_store.GetString(m_prop##groupId##_##propId); }                                                                            \
+   inline void Set##groupId##_##propId(const string &v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                       \
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
 
-#define PropArray(groupId, propId, type, getType, ...) \
-   static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId[] = { __VA_ARGS__ }; \
-   inline type Get##groupId##_##propId(int index) const { return (type)(m_store.Get##getType(m_prop##groupId##_##propId[index])); } \
-   inline void Set##groupId##_##propId(int index, type v, bool asTableOverride) { Set(m_prop##groupId##_##propId[index], (type)v, asTableOverride); } \
+#define PropArray(groupId, propId, type, propType, getType, ...)                                                                                                                             \
+   static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId[] = { __VA_ARGS__ };                                                                             \
+   static inline const VPX::Properties::propType##PropertyDef *Get##groupId##_##propId##_Property(int index)                                                                                 \
+   {                                                                                                                                                                                         \
+      return GetRegistry().Get##propType##Property(m_prop##groupId##_##propId[index]);                                                                                                       \
+   }                                                                                                                                                                                         \
+   inline type Get##groupId##_##propId(int index) const { return (type)(m_store.Get##getType(m_prop##groupId##_##propId[index])); }                                                          \
+   inline void Set##groupId##_##propId(int index, type v, bool asTableOverride) { Set(m_prop##groupId##_##propId[index], (type)v, asTableOverride); }                                        \
    inline void Reset##groupId##_##propId(int index) { Reset(m_prop##groupId##_##propId[index]); }
 
 
@@ -98,11 +102,92 @@ public:
       "2 front channels"s, "2 rear channels"s, "Up to 6 channels. Rear at lockbar"s, "Up to 6 channels. Front at lockbar"s, "Up to 4 channels. Front at lockbar"s,
       "Side & rear channels. Rear at lockbar. Legacy mixing"s, "Side & rear channels. Rear at lockbar. New mixing"s);
 
+   // Output (windows) settings
+   // Main window (a.k.a. playfield)
+   PropEnum(Player, PlayfieldOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s,
+      "Floating"s, "Embedded in playfield"s); // Not meaningful. Remove ?
+   PropString(Player, PlayfieldDisplay, "Display"s, "Display used for the main Playfield window"s, ""s);
+   PropInt(Player, PlayfieldWndX, "X Position", "Horizontal position of the window on the selected display"s, 0, 3000, 0);
+   PropInt(Player, PlayfieldWndY, "Y Position", "Vertical position of the window on the selected display"s, 0, 3000, 0);
+   PropInt(Player, PlayfieldWidth, "Width", "Width of the window"s, 0, 3000, 0);
+   PropInt(Player, PlayfieldHeight, "Height", "Height of the window"s, 0, 3000, 0);
+   PropBool(Player, PlayfieldFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution)"s, false);
+   PropFloat(Player, PlayfieldRefreshRate, "Fullscreen Refresh Rate", "Refresh rate to use, when using exclusive fullscreen"s, 0.f, 1000.f, 0.f);
+   PropInt(Player, PlayfieldColorDepth, "Color Depth"s, "Color depth to use, when using exclusive fullscreen"s, 0, 64, 32);
+   PropBool(Player, PlayfieldRender10Bit, "Use 10Bit backbuffer"s, "Use a 10 bits backbuffer to limit color banding."s, false);
+   // Backglass Window
+   PropEnum(Backglass, BackglassOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s,
+      "Floating"s, "Embedded in playfield"s);
+   PropString(Backglass, BackglassDisplay, "Display"s, "Display used for the main Backglass window"s, ""s);
+   PropInt(Backglass, BackglassWndX, "X Position", "Horizontal position of the window on the selected display"s, 0, 3000, 0);
+   PropInt(Backglass, BackglassWndY, "Y Position", "Vertical position of the window on the selected display"s, 0, 3000, 0);
+   PropInt(Backglass, BackglassWidth, "Width", "Width of the window"s, 0, 3000, 0);
+   PropInt(Backglass, BackglassHeight, "Height", "Height of the window"s, 0, 3000, 0);
+   PropBool(Backglass, BackglassFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution)"s, false);
+   PropFloat(Backglass, BackglassRefreshRate, "Fullscreen Refresh Rate", "Refresh rate to use, when using exclusive fullscreen"s, 0.f, 1000.f, 0.f);
+   PropInt(Backglass, BackglassColorDepth, "Color Depth"s, "Color depth to use, when using exclusive fullscreen"s, 0, 64, 32);
+   PropBool(Backglass, BackglassRender10Bit, "Use 10Bit backbuffer"s, "Use a 10 bits backbuffer to limit color banding."s, false);
+   // ScoreView Window
+   PropEnum(ScoreView, ScoreViewOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s,
+      "Floating"s, "Embedded in playfield"s);
+   PropString(ScoreView, ScoreViewDisplay, "Display"s, "Display used for the main ScoreView window"s, ""s);
+   PropInt(ScoreView, ScoreViewWndX, "X Position", "Horizontal position of the window on the selected display"s, 0, 3000, 0);
+   PropInt(ScoreView, ScoreViewWndY, "Y Position", "Vertical position of the window on the selected display"s, 0, 3000, 0);
+   PropInt(ScoreView, ScoreViewWidth, "Width", "Width of the window"s, 0, 3000, 0);
+   PropInt(ScoreView, ScoreViewHeight, "Height", "Height of the window"s, 0, 3000, 0);
+   PropBool(ScoreView, ScoreViewFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution)"s, false);
+   PropFloat(ScoreView, ScoreViewRefreshRate, "Fullscreen Refresh Rate", "Refresh rate to use, when using exclusive fullscreen"s, 0.f, 1000.f, 0.f);
+   PropInt(ScoreView, ScoreViewColorDepth, "Color Depth"s, "Color depth to use, when using exclusive fullscreen"s, 0, 64, 32);
+   PropBool(ScoreView, ScoreViewRender10Bit, "Use 10Bit backbuffer"s, "Use a 10 bits backbuffer to limit color banding."s, false);
+   // Topper Window
+   PropEnum(Topper, TopperOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s,
+      "Floating"s, "Embedded in playfield"s);
+   PropString(Topper, TopperDisplay, "Display"s, "Display used for the Topper window"s, ""s);
+   PropInt(Topper, TopperWndX, "X Position", "Horizontal position of the window on the selected display"s, 0, 3000, 0);
+   PropInt(Topper, TopperWndY, "Y Position", "Vertical position of the window on the selected display"s, 0, 3000, 0);
+   PropInt(Topper, TopperWidth, "Width", "Width of the window"s, 0, 3000, 0);
+   PropInt(Topper, TopperHeight, "Height", "Height of the window"s, 0, 3000, 0);
+   PropBool(Topper, TopperFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution)"s, false);
+   PropFloat(Topper, TopperRefreshRate, "Fullscreen Refresh Rate", "Refresh rate to use, when using exclusive fullscreen"s, 0.f, 1000.f, 0.f);
+   PropInt(Topper, TopperColorDepth, "Color Depth"s, "Color depth to use, when using exclusive fullscreen"s, 0, 64, 32);
+   PropBool(Topper, TopperRender10Bit, "Use 10Bit backbuffer"s, "Use a 10 bits backbuffer to limit color banding."s, false);
+   // VR Preview Window
+   PropEnum(PlayerVR, PreviewOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s,
+      "Floating"s, "Embedded in playfield"s); // Not meaningful. Remove ?
+   PropString(PlayerVR, PreviewDisplay, "Display"s, "Display used for the VR Preview window"s, ""s);
+   PropInt(PlayerVR, PreviewWndX, "X Position", "Horizontal position of the window on the selected display"s, 0, 3000, 0);
+   PropInt(PlayerVR, PreviewWndY, "Y Position", "Vertical position of the window on the selected display"s, 0, 3000, 0);
+   PropInt(PlayerVR, PreviewWidth, "Width", "Width of the window"s, 0, 3000, 0);
+   PropInt(PlayerVR, PreviewHeight, "Height", "Height of the window"s, 0, 3000, 0);
+   PropBool(PlayerVR, PreviewFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution)"s, false);
+   PropFloat(PlayerVR, PreviewRefreshRate, "Fullscreen Refresh Rate", "Refresh rate to use, when using exclusive fullscreen"s, 0.f, 1000.f, 0.f);
+   PropInt(PlayerVR, PreviewColorDepth, "Color Depth"s, "Color depth to use, when using exclusive fullscreen"s, 0, 64, 32);
+   PropBool(PlayerVR, PreviewRender10Bit, "Use 10Bit backbuffer"s, "Use a 10 bits backbuffer to limit color banding."s, false);
+   // Array access (using VPXWindowId)
+   PropArray(Window, Display, string, String, String, m_propPlayer_PlayfieldDisplay, m_propBackglass_BackglassDisplay, m_propScoreView_ScoreViewDisplay, m_propTopper_TopperDisplay,
+      m_propPlayerVR_PreviewDisplay);
+   PropArray(Window, Mode, int, Enum, Int, m_propPlayer_PlayfieldOutput, m_propBackglass_BackglassOutput, m_propScoreView_ScoreViewOutput, m_propTopper_TopperOutput,
+      m_propPlayerVR_PreviewOutput);
+   PropArray(Window, WndX, int, Int, Int, m_propPlayer_PlayfieldWndX, m_propBackglass_BackglassWndX, m_propScoreView_ScoreViewWndX, m_propTopper_TopperWndX, m_propPlayerVR_PreviewWndX);
+   PropArray(Window, WndY, int, Int, Int, m_propPlayer_PlayfieldWndY, m_propBackglass_BackglassWndY, m_propScoreView_ScoreViewWndY, m_propTopper_TopperWndY, m_propPlayerVR_PreviewWndY);
+   PropArray(
+      Window, Width, int, Int, Int, m_propPlayer_PlayfieldWidth, m_propBackglass_BackglassWidth, m_propScoreView_ScoreViewWidth, m_propTopper_TopperWidth, m_propPlayerVR_PreviewWidth);
+   PropArray(
+      Window, Height, int, Int, Int, m_propPlayer_PlayfieldHeight, m_propBackglass_BackglassHeight, m_propScoreView_ScoreViewHeight, m_propTopper_TopperHeight, m_propPlayerVR_PreviewHeight);
+   PropArray(Window, FullScreen, bool, Int, Int, m_propPlayer_PlayfieldFullScreen, m_propBackglass_BackglassFullScreen, m_propScoreView_ScoreViewFullScreen, m_propTopper_TopperFullScreen,
+      m_propPlayerVR_PreviewFullScreen);
+   PropArray(Window, FSRefreshRate, float, Float, Float, m_propPlayer_PlayfieldRefreshRate, m_propBackglass_BackglassRefreshRate, m_propScoreView_ScoreViewRefreshRate,
+      m_propTopper_TopperRefreshRate, m_propPlayerVR_PreviewRefreshRate);
+   PropArray(Window, FSColorDepth, int, Int, Int, m_propPlayer_PlayfieldColorDepth, m_propBackglass_BackglassColorDepth, m_propScoreView_ScoreViewColorDepth, m_propTopper_TopperColorDepth,
+      m_propPlayerVR_PreviewColorDepth);
+   PropArray(Window, FSRender10Bit, bool, Int, Int, m_propPlayer_PlayfieldRender10Bit, m_propBackglass_BackglassRender10Bit, m_propScoreView_ScoreViewRender10Bit,
+      m_propTopper_TopperRender10Bit, m_propPlayerVR_PreviewRender10Bit);
+
    // Graphics synchronisation and latency reduction
 #if defined(ENABLE_BGFX)
    PropEnum(Player, SyncMode, "Synchronization"s,
-      "None: Use this if your display supports variable refresh rate or if you are experiencing stutters.\r\nVertical Sync: Synchronize on display sync."s,
-      int, 1, "No Sync", "Vertical Sync");
+      "None: Use this if your display supports variable refresh rate or if you are experiencing stutters.\r\nVertical Sync: Synchronize on display sync."s, int, 1, "No Sync",
+      "Vertical Sync");
 #else
    PropEnum(Player, SyncMode, "Synchronization"s,
       "None: No synchronization.\r\nVertical Sync: Synchronize on video sync which avoids video tearing, but has higher input latency.\r\nAdaptive Sync: Synchronize on video sync, "
@@ -110,7 +195,8 @@ public:
       "framerate)."s,
       int, 1, "No Sync", "Vertical Sync", "Adaptive Sync", "Frame Pacing");
 #endif
-   PropInt(Player, MaxFramerate, "Limit Framerate", "-1 will not limit FPS\r\n0 will limit to the display refresh rates\r\nOther values will limit the FPS to it (energy saving/less heat, framerate stability)"s, -1, 300, -1);
+   PropInt(Player, MaxFramerate, "Limit Framerate",
+      "-1 will not limit FPS\r\n0 will limit to the display refresh rates\r\nOther values will limit the FPS to it (energy saving/less heat, framerate stability)"s, -1, 300, -1);
    PropInt(Player, MaxPrerenderedFrames, "Max. Prerendered Frames"s, "Limit the FPS to the given value (energy saving/less heat, framerate stability), 0 will disable it"s, 0, 5, 0);
    PropInt(Player, VisualLatencyCorrection, "Visual Latency Correction"s,
       "Leave at -1 to get default latency correction based on display frequency.\r\nIf you measured your setup latency using tools like Intel's PresentMon, enter the average latency in ms."s,
@@ -146,7 +232,9 @@ public:
    PropBool(Player, SoftwareVertexProcessing, "Software Vertex Processing"s, "Activate this if you have issues using an Intel graphics chip"s, false);
    PropBool(Player, DisableAO, "Disable Ambient Occlusion"s, ""s, false);
    PropBool(Player, DynamicAO, "Dynamic Ambient Occlusion"s, ""s, true);
-   PropEnum(Player, PFReflection, "Reflection Quality"s, "Limit the quality of reflections for better performance.\r\n'Dynamic' is recommended and will give the best results, but may harm performance.\r\n'Static Only' has no performance cost (except for VR rendering).\r\nOther options feature different trade-offs between quality and performance."s, int, 0, "Disable Reflections"s, "Balls Only"s, "Static Only"s, "Static & Balls"s, "Static & Unsynced Dynamic"s, "Dynamic"s);
+   PropEnum(Player, PFReflection, "Reflection Quality"s,
+      "Limit the quality of reflections for better performance.\r\n'Dynamic' is recommended and will give the best results, but may harm performance.\r\n'Static Only' has no performance cost (except for VR rendering).\r\nOther options feature different trade-offs between quality and performance."s,
+      int, 0, "Disable Reflections"s, "Balls Only"s, "Static Only"s, "Static & Balls"s, "Static & Unsynced Dynamic"s, "Dynamic"s);
 #ifndef __LIBVPINBALL__
    PropInt(Player, MaxTexDimension, "Maximum texture dimension"s, "Images sized above this limit will be automatically scaled down on load."s, 512, 16384, 0);
 #else
@@ -155,11 +243,12 @@ public:
    PropInt(Player, AlphaRampAccuracy, "Detail Level"s, "Images sized above this limit will be automatically scaled down on load."s, 1, 10, 10);
 
    // Aliasing & sharpening
-   PropFloat(Player, AAFactor, "Full Scene Anti Aliasing"s, "Enables brute-force Up/Downsampling (similar to DSR).\r\nThis delivers very good quality but has a significant impact on performance.\r\n200% means twice the resolution to be handled while rendering"s, 0.5f, 2.f, 1.f);
+   PropFloat(Player, AAFactor, "Full Scene Anti Aliasing"s,
+      "Enables brute-force Up/Downsampling (similar to DSR).\r\nThis delivers very good quality but has a significant impact on performance.\r\n200% means twice the resolution to be handled while rendering"s,
+      0.5f, 2.f, 1.f);
    PropEnum(Player, MSAASamples, "MSAA level"s,
       "Set the amount of MSAA samples.\r\nMSAA can help reduce geometry aliasing at the cost of performance and GPU memory.\r\nThis can improve image quality if not using supersampling"s,
-      int, 0, "Disabled",
-      "4 Samples", "6 Samples", "8 Samples");
+      int, 0, "Disabled", "4 Samples", "6 Samples", "8 Samples");
    PropEnum(Player, FXAA, "Post processed antialiasing"s, "Select between different antialiasing techniques that offer different quality vs performance balances"s, int, 1, "Disabled"s,
       "Fast FXAA"s, "Standard FXAA"s, "Quality FXAA"s, "Fast NFAA"s, "Standard DLAA"s, "Quality SMAA"s);
    PropEnum(Player, Sharpen, "Post processed sharpening"s, "Select between different sharpening techniques that offer different quality vs performance balances"s, int, 0, "Disabled"s,
@@ -173,7 +262,7 @@ public:
    PropBool(Player, OverwriteBallImage, "Overwrite ball image"s, "Allow to define images that will be used instead of the table's provided one"s, false);
    PropString(Player, BallImage, "Ball image override"s, "Image to use for the ball instead of the table's provide one"s, ""s);
    PropString(Player, DecalImage, "Decal image override"s, "Image to use for the ball's decal instead of the table's provide one"s, ""s);
-   
+
    // Misc player settings
    PropBool(Player, TouchOverlay, "Touch Overlay"s, "Display an overlay showing touch regions"s, false);
    PropBool(Player, EnableCameraModeFlyAround, "Legacy Fly Over Mode"s, "Enable moving camera when using Tweak menu (legacy, replaced by LiveUI fly mode)."s, false);
@@ -194,25 +283,28 @@ public:
    PropFloat(Player, NudgeStrength, "Visual Nudge Strength"s, "Changes the visual effect/screen shaking when nudging the table."s, 0.f, 0.25f, 0.02f);
 
    // Plunger settings
-   PropBool(Player, PlungerRetract, "One Second Retract"s, "Enable retracting the plunger after a 1 second press when using the digital plunger emulation through keyboard or joystick button"s, false);
+   PropBool(Player, PlungerRetract, "One Second Retract"s,
+      "Enable retracting the plunger after a 1 second press when using the digital plunger emulation through keyboard or joystick button"s, false);
    PropBool(Player, PlungerLinearSensor, "Linear Sensor"s, "Select between symmetric (linear) and assymetric sensor"s, false);
-   PropInt(Player, PlungerNormalize, "Plunger normalize override"s, "This value may be defined to override the table's plunger normalization"s, 0, 100, 100); // Hacky: This should be a table override, not a player property as it overrides table data
+   PropInt(Player, PlungerNormalize, "Plunger normalize override"s, "This value may be defined to override the table's plunger normalization"s, 0, 100,
+      100); // Hacky: This should be a table override, not a player property as it overrides table data
 
    // VR settings
    PropFloat(PlayerVR, Orientation, "View orientation"s, ""s, -180.f, 180.f, 0.f);
    PropFloat(PlayerVR, TableX, "View Offset X"s, ""s, -100.f, 100.f, 0.f);
    PropFloat(PlayerVR, TableY, "View Offset Y"s, ""s, -100.f, 100.f, 0.f);
    PropFloat(PlayerVR, TableZ, "View Offset Z"s, ""s, -100.f, 100.f, 0.f);
-   PropBool(PlayerVR, UsePassthroughColor, "Color Keyed Passthrough"s, "Replace VR background by a user defined color, to allow color keyed passthrough (for example using Virtual Desktop)"s, false);
+   PropBool(PlayerVR, UsePassthroughColor, "Color Keyed Passthrough"s, "Replace VR background by a user defined color, to allow color keyed passthrough (for example using Virtual Desktop)"s,
+      false);
    PropInt(PlayerVR, PassthroughColor, "Color Keyed Passthrough color"s, "Color that will replace the background"s, 0x000000, 0xFFFFFF, 0xBB4700);
    PropEnum(Player, VRPreview, "Preview mode"s, "Select preview mode"s, int, 1, "Disabled"s, "Left Eye"s, "Right Eye"s, "Both Eyes"s);
    PropBool(PlayerVR, ShrinkPreview, "Shrink preview"s, ""s, false);
 
    // Stereo settings
    PropBool(Player, Stereo3DEnabled, "Enable Stereo Rendering"s, "Allow to temporarily disable stereo rendering"s, false);
-   PropEnum(Player, Stereo3D, "Stereo rendering"s, "Stereo rendering mode"s, StereoMode, 0, "Disabled"s, "Top / Bottom"s, "Interlaced (e.g. LG TVs)"s,
-      "Flipped Interlaced (e.g. LG TVs)"s, "Side by Side"s, "Anaglyph Red/Cyan"s, "Anaglyph Green/Magenta"s, "Anaglyph Blue/Amber"s, "Anaglyph Cyan/Red"s, 
-      "Anaglyph Magenta/Green"s, "Anaglyph Amber/Blue"s, "Anaglyph Custom 1"s, "Anaglyph Custom 2"s, "Anaglyph Custom 3"s, "Anaglyph Custom 4"s);
+   PropEnum(Player, Stereo3D, "Stereo rendering"s, "Stereo rendering mode"s, StereoMode, 0, "Disabled"s, "Top / Bottom"s, "Interlaced (e.g. LG TVs)"s, "Flipped Interlaced (e.g. LG TVs)"s,
+      "Side by Side"s, "Anaglyph Red/Cyan"s, "Anaglyph Green/Magenta"s, "Anaglyph Blue/Amber"s, "Anaglyph Cyan/Red"s, "Anaglyph Magenta/Green"s, "Anaglyph Amber/Blue"s, "Anaglyph Custom 1"s,
+      "Anaglyph Custom 2"s, "Anaglyph Custom 3"s, "Anaglyph Custom 4"s);
    PropFloat(Player, Stereo3DEyeSeparation, "Eye distance"s, "Physical distance (mm) between eyes"s, 5.f, 200.f, 63.f);
    PropFloat(Player, Stereo3DBrightness, "Stereo Brightness"s, "Brightness adjustment applied to stereo rendering"s, 0.f, 2.f, 1.f);
    PropFloat(Player, Stereo3DSaturation, "Stereo Saturation"s, "Saturation adjustment applied to stereo rendering"s, 0.f, 2.f, 1.f);
@@ -229,7 +321,7 @@ public:
    PropEnum(Player, Anaglyph8Filter, "Anaglyph Filter"s, "Anaglyph filter"s, int, 2, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
    PropEnum(Player, Anaglyph9Filter, "Anaglyph Filter"s, "Anaglyph filter"s, int, 2, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
    PropEnum(Player, Anaglyph10Filter, "Anaglyph Filter"s, "Anaglyph filter applied to anaglyph profile #10"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
-   PropArray(Player, AnaglyphFilter, int, Int, m_propPlayer_Anaglyph1Filter, m_propPlayer_Anaglyph2Filter, m_propPlayer_Anaglyph3Filter, m_propPlayer_Anaglyph4Filter,
+   PropArray(Player, AnaglyphFilter, int, Int, Int, m_propPlayer_Anaglyph1Filter, m_propPlayer_Anaglyph2Filter, m_propPlayer_Anaglyph3Filter, m_propPlayer_Anaglyph4Filter,
       m_propPlayer_Anaglyph5Filter, m_propPlayer_Anaglyph6Filter, m_propPlayer_Anaglyph7Filter, m_propPlayer_Anaglyph8Filter, m_propPlayer_Anaglyph9Filter, m_propPlayer_Anaglyph10Filter);
    PropFloat(Player, Anaglyph1DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
    PropFloat(Player, Anaglyph2DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
@@ -241,7 +333,7 @@ public:
    PropFloat(Player, Anaglyph8DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
    PropFloat(Player, Anaglyph9DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
    PropFloat(Player, Anaglyph10DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
-   PropArray(Player, AnaglyphDynDesat, float, Float, m_propPlayer_Anaglyph1DynDesat, m_propPlayer_Anaglyph2DynDesat, m_propPlayer_Anaglyph3DynDesat, m_propPlayer_Anaglyph4DynDesat,
+   PropArray(Player, AnaglyphDynDesat, float, Float, Float, m_propPlayer_Anaglyph1DynDesat, m_propPlayer_Anaglyph2DynDesat, m_propPlayer_Anaglyph3DynDesat, m_propPlayer_Anaglyph4DynDesat,
       m_propPlayer_Anaglyph5DynDesat, m_propPlayer_Anaglyph6DynDesat, m_propPlayer_Anaglyph7DynDesat, m_propPlayer_Anaglyph8DynDesat, m_propPlayer_Anaglyph9DynDesat,
       m_propPlayer_Anaglyph10DynDesat);
    PropFloat(Player, Anaglyph1Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
@@ -254,7 +346,7 @@ public:
    PropFloat(Player, Anaglyph8Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
    PropFloat(Player, Anaglyph9Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
    PropFloat(Player, Anaglyph10Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
-   PropArray(Player, AnaglyphDeghost, float, Float, m_propPlayer_Anaglyph1Deghost, m_propPlayer_Anaglyph2Deghost, m_propPlayer_Anaglyph3Deghost, m_propPlayer_Anaglyph4Deghost,
+   PropArray(Player, AnaglyphDeghost, float, Float, Float, m_propPlayer_Anaglyph1Deghost, m_propPlayer_Anaglyph2Deghost, m_propPlayer_Anaglyph3Deghost, m_propPlayer_Anaglyph4Deghost,
       m_propPlayer_Anaglyph5Deghost, m_propPlayer_Anaglyph6Deghost, m_propPlayer_Anaglyph7Deghost, m_propPlayer_Anaglyph8Deghost, m_propPlayer_Anaglyph9Deghost,
       m_propPlayer_Anaglyph10Deghost);
    PropBool(Player, Anaglyph1sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
@@ -267,7 +359,7 @@ public:
    PropBool(Player, Anaglyph8sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
    PropBool(Player, Anaglyph9sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
    PropBool(Player, Anaglyph10sRGB, "Calibrated sRGB Display"s, "Calibrated sRGB Display"s, true);
-   PropArray(Player, AnaglyphsRGB, bool, Int, m_propPlayer_Anaglyph1sRGB, m_propPlayer_Anaglyph2sRGB, m_propPlayer_Anaglyph3sRGB, m_propPlayer_Anaglyph4sRGB, m_propPlayer_Anaglyph5sRGB,
+   PropArray(Player, AnaglyphsRGB, bool, Int, Int, m_propPlayer_Anaglyph1sRGB, m_propPlayer_Anaglyph2sRGB, m_propPlayer_Anaglyph3sRGB, m_propPlayer_Anaglyph4sRGB, m_propPlayer_Anaglyph5sRGB,
       m_propPlayer_Anaglyph6sRGB, m_propPlayer_Anaglyph7sRGB, m_propPlayer_Anaglyph8sRGB, m_propPlayer_Anaglyph9sRGB, m_propPlayer_Anaglyph10sRGB);
    // Red Cyan
    PropFloat(Player, Anaglyph1LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.95f);
@@ -340,27 +432,27 @@ public:
    PropFloat(Player, Anaglyph10RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.92f);
    PropFloat(Player, Anaglyph10RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.28f);
 
-   PropArray(Player, AnaglyphLeftRed, float, Float, m_propPlayer_Anaglyph1LeftRed, m_propPlayer_Anaglyph2LeftRed, m_propPlayer_Anaglyph3LeftRed, m_propPlayer_Anaglyph4LeftRed,
+   PropArray(Player, AnaglyphLeftRed, float, Float, Float, m_propPlayer_Anaglyph1LeftRed, m_propPlayer_Anaglyph2LeftRed, m_propPlayer_Anaglyph3LeftRed, m_propPlayer_Anaglyph4LeftRed,
       m_propPlayer_Anaglyph5LeftRed, m_propPlayer_Anaglyph6LeftRed, m_propPlayer_Anaglyph7LeftRed, m_propPlayer_Anaglyph8LeftRed, m_propPlayer_Anaglyph9LeftRed,
       m_propPlayer_Anaglyph10LeftRed);
-   PropArray(Player, AnaglyphLeftGreen, float, Float, m_propPlayer_Anaglyph1LeftGreen, m_propPlayer_Anaglyph2LeftGreen, m_propPlayer_Anaglyph3LeftGreen, m_propPlayer_Anaglyph4LeftGreen,
-      m_propPlayer_Anaglyph5LeftGreen, m_propPlayer_Anaglyph6LeftGreen, m_propPlayer_Anaglyph7LeftGreen, m_propPlayer_Anaglyph8LeftGreen, m_propPlayer_Anaglyph9LeftGreen,
-      m_propPlayer_Anaglyph10LeftGreen);
-   PropArray(Player, AnaglyphLeftBlue, float, Float, m_propPlayer_Anaglyph1LeftBlue, m_propPlayer_Anaglyph2LeftBlue, m_propPlayer_Anaglyph3LeftBlue, m_propPlayer_Anaglyph4LeftBlue,
+   PropArray(Player, AnaglyphLeftGreen, float, Float, Float, m_propPlayer_Anaglyph1LeftGreen, m_propPlayer_Anaglyph2LeftGreen, m_propPlayer_Anaglyph3LeftGreen,
+      m_propPlayer_Anaglyph4LeftGreen, m_propPlayer_Anaglyph5LeftGreen, m_propPlayer_Anaglyph6LeftGreen, m_propPlayer_Anaglyph7LeftGreen, m_propPlayer_Anaglyph8LeftGreen,
+      m_propPlayer_Anaglyph9LeftGreen, m_propPlayer_Anaglyph10LeftGreen);
+   PropArray(Player, AnaglyphLeftBlue, float, Float, Float, m_propPlayer_Anaglyph1LeftBlue, m_propPlayer_Anaglyph2LeftBlue, m_propPlayer_Anaglyph3LeftBlue, m_propPlayer_Anaglyph4LeftBlue,
       m_propPlayer_Anaglyph5LeftBlue, m_propPlayer_Anaglyph6LeftBlue, m_propPlayer_Anaglyph7LeftBlue, m_propPlayer_Anaglyph8LeftBlue, m_propPlayer_Anaglyph9LeftBlue,
       m_propPlayer_Anaglyph10LeftBlue);
-   PropArray(Player, AnaglyphRightRed, float, Float, m_propPlayer_Anaglyph1RightRed, m_propPlayer_Anaglyph2RightRed, m_propPlayer_Anaglyph3RightRed, m_propPlayer_Anaglyph4RightRed,
+   PropArray(Player, AnaglyphRightRed, float, Float, Float, m_propPlayer_Anaglyph1RightRed, m_propPlayer_Anaglyph2RightRed, m_propPlayer_Anaglyph3RightRed, m_propPlayer_Anaglyph4RightRed,
       m_propPlayer_Anaglyph5RightRed, m_propPlayer_Anaglyph6RightRed, m_propPlayer_Anaglyph7RightRed, m_propPlayer_Anaglyph8RightRed, m_propPlayer_Anaglyph9RightRed,
       m_propPlayer_Anaglyph10RightRed);
-   PropArray(Player, AnaglyphRightGreen, float, Float, m_propPlayer_Anaglyph1RightGreen, m_propPlayer_Anaglyph2RightGreen, m_propPlayer_Anaglyph3RightGreen, m_propPlayer_Anaglyph4RightGreen,
-      m_propPlayer_Anaglyph5RightGreen, m_propPlayer_Anaglyph6RightGreen, m_propPlayer_Anaglyph7RightGreen, m_propPlayer_Anaglyph8RightGreen, m_propPlayer_Anaglyph9RightGreen,
-      m_propPlayer_Anaglyph10RightGreen);
-   PropArray(Player, AnaglyphRightBlue, float, Float, m_propPlayer_Anaglyph1RightBlue, m_propPlayer_Anaglyph2RightBlue, m_propPlayer_Anaglyph3RightBlue, m_propPlayer_Anaglyph4RightBlue,
-      m_propPlayer_Anaglyph5RightBlue, m_propPlayer_Anaglyph6RightBlue, m_propPlayer_Anaglyph7RightBlue, m_propPlayer_Anaglyph8RightBlue, m_propPlayer_Anaglyph9RightBlue,
-      m_propPlayer_Anaglyph10RightBlue)
+   PropArray(Player, AnaglyphRightGreen, float, Float, Float, m_propPlayer_Anaglyph1RightGreen, m_propPlayer_Anaglyph2RightGreen, m_propPlayer_Anaglyph3RightGreen,
+      m_propPlayer_Anaglyph4RightGreen, m_propPlayer_Anaglyph5RightGreen, m_propPlayer_Anaglyph6RightGreen, m_propPlayer_Anaglyph7RightGreen, m_propPlayer_Anaglyph8RightGreen,
+      m_propPlayer_Anaglyph9RightGreen, m_propPlayer_Anaglyph10RightGreen);
+   PropArray(Player, AnaglyphRightBlue, float, Float, Float, m_propPlayer_Anaglyph1RightBlue, m_propPlayer_Anaglyph2RightBlue, m_propPlayer_Anaglyph3RightBlue,
+      m_propPlayer_Anaglyph4RightBlue, m_propPlayer_Anaglyph5RightBlue, m_propPlayer_Anaglyph6RightBlue, m_propPlayer_Anaglyph7RightBlue, m_propPlayer_Anaglyph8RightBlue,
+      m_propPlayer_Anaglyph9RightBlue, m_propPlayer_Anaglyph10RightBlue)
 
-   // Real world cabinet & player settings
-   PropFloat(Player, ScreenWidth, "Screen Width"s, "Physical width (cm) of the display area of the playfield (main) screen (width > height)"s, 5.f, 200.f, 95.89f);
+      // Real world cabinet & player settings
+      PropFloat(Player, ScreenWidth, "Screen Width"s, "Physical width (cm) of the display area of the playfield (main) screen (width > height)"s, 5.f, 200.f, 95.89f);
    PropFloat(Player, ScreenHeight, "Screen Height"s, "Physical height (cm) of the display area of the playfield (main) screen (width > height)"s, 5.f, 200.f, 53.94f);
    PropFloat(Player, ScreenInclination, "Screen Inclination"s, "Inclination (degree) of the playfield (main) screen. 0 is horizontal."s, -30.f, 30.f, 0.f);
    PropFloat(Player, LockbarWidth, "Lockbar Width"s, "Lockbar width in centimeters (measured on the cabinet)."s, 10.f, 150.f, 70.f);
@@ -375,18 +467,6 @@ public:
    PropBool(Player, DynamicDayNight, "Use Automatic Light Level"s, "Automatically compute scene lighting based on sun's position"s, false);
    PropFloat(Player, Latitude, "Latitude"s, "Latitude used to compute sun's position"s, -90.f, 90.f, 52.52f);
    PropFloat(Player, Longitude, "Longitude"s, "Longitude used to compute sun's position"s, -180.f, 180.f, 13.37f);
-
-   // Backglass anciliary window settings
-   PropInt(Backglass, BackglassWndX, "Backglass X"s, "X position of the backglass window"s, -INT_MAX, INT_MAX, 0);
-   PropInt(Backglass, BackglassWndY, "Backglass Y"s, "Y position of the backglass window"s, -INT_MAX, INT_MAX, 0);
-   PropInt(Backglass, BackglassWndWidth, "Backglass Width"s, "Width of the backglass window"s, -INT_MAX, INT_MAX, 0);
-   PropInt(Backglass, BackglassWndHeight, "Backglass Height"s, "Height of the backglass window"s, -INT_MAX, INT_MAX, 0);
-
-   // ScoreView anciliary window settings
-   PropInt(ScoreView, ScoreViewWndX, "ScoreView X"s, "X position of the 'Score View' window"s, -INT_MAX, INT_MAX, 0);
-   PropInt(ScoreView, ScoreViewWndY, "ScoreView Y"s, "Y position of the 'Score View' window"s, -INT_MAX, INT_MAX, 0);
-   PropInt(ScoreView, ScoreViewWndWidth, "ScoreView Width"s, "Width of the 'Score View' window"s, -INT_MAX, INT_MAX, 0);
-   PropInt(ScoreView, ScoreViewWndHeight, "ScoreView Height"s, "Height of the 'Score View' window"s, -INT_MAX, INT_MAX, 0);
 
    // Debugging & Live editing settings
    PropBool(Editor, ThrowBallsAlwaysOn, "Throw Balls Always On"s, "Permanently enable 'throw ball' debugging mode"s, false);
@@ -436,7 +516,8 @@ public:
    PropFloat(TableOverride, ViewDTHOfs, "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window'"s, -30.f, 30.f, 0.f);
    PropFloat(TableOverride, ViewDTVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window'"s, -20.f, 50.f, 0.f);
    PropFloat(TableOverride, ViewDTWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
-   PropFloat(TableOverride, ViewDTWindowBot, "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
+   PropFloat(
+      TableOverride, ViewDTWindowBot, "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
    PropFloatStepped(TableOverride, ViewDTRotation, "Viewport Rotation"s, ""s, 0.f, 360.f, 90.0f, 0.f);
 
    PropEnum(TableOverride, ViewFSSMode, "View mode"s,
@@ -453,8 +534,10 @@ public:
    PropFloat(TableOverride, ViewFSSPlayerZ, "Camera Z"s, "View point vertical offsets"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(70.f));
    PropFloat(TableOverride, ViewFSSHOfs, "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window'"s, -30.f, 30.f, 0.f);
    PropFloat(TableOverride, ViewFSSVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window'"s, -20.f, 50.f, 0.f);
-   PropFloat(TableOverride, ViewFSSWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
-   PropFloat(TableOverride, ViewFSSWindowBot, "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
+   PropFloat(
+      TableOverride, ViewFSSWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
+   PropFloat(
+      TableOverride, ViewFSSWindowBot, "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
    PropFloatStepped(TableOverride, ViewFSSRotation, "Viewport Rotation"s, ""s, 0.f, 360.f, 90.0f, 0.f);
 
    PropEnum(TableOverride, ViewCabMode, "View mode"s,
@@ -471,8 +554,10 @@ public:
    PropFloat(TableOverride, ViewCabPlayerZ, "Camera Z"s, "View point vertical offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(70.f));
    PropFloat(TableOverride, ViewCabHOfs, "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window'"s, -30.f, 30.f, 0.f);
    PropFloat(TableOverride, ViewCabVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window'"s, -20.f, 50.f, 0.f);
-   PropFloat(TableOverride, ViewCabWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
-   PropFloat(TableOverride, ViewCabWindowBot, "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
+   PropFloat(
+      TableOverride, ViewCabWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
+   PropFloat(
+      TableOverride, ViewCabWindowBot, "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
    PropFloatStepped(TableOverride, ViewCabRotation, "Viewport Rotation"s, ""s, 0.f, 360.f, 90.0f, 0.f);
 
    PropFloat(TableOverride, Difficulty, "Difficulty"s, "Overall difficulty (slope, flipper size, trajectories scattering,...)"s, 0.f, 100.f, 100.f);
@@ -550,22 +635,22 @@ public:
    PropFloat(DMD, Profile7DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.90f);
    PropFloat(DMD, Profile7DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.1f);
    // Array access
-   PropArray(DMD, ProfileLegacy, bool, Int, m_propDMD_Profile1Legacy, m_propDMD_Profile2Legacy, m_propDMD_Profile3Legacy, m_propDMD_Profile4Legacy, m_propDMD_Profile5Legacy,
+   PropArray(DMD, ProfileLegacy, bool, Int, Int, m_propDMD_Profile1Legacy, m_propDMD_Profile2Legacy, m_propDMD_Profile3Legacy, m_propDMD_Profile4Legacy, m_propDMD_Profile5Legacy,
       m_propDMD_Profile6Legacy, m_propDMD_Profile7Legacy);
-   PropArray(DMD, ProfileScaleFX, bool, Int, m_propDMD_Profile1ScaleFX, m_propDMD_Profile2ScaleFX, m_propDMD_Profile3ScaleFX, m_propDMD_Profile4ScaleFX, m_propDMD_Profile5ScaleFX,
+   PropArray(DMD, ProfileScaleFX, bool, Int, Int, m_propDMD_Profile1ScaleFX, m_propDMD_Profile2ScaleFX, m_propDMD_Profile3ScaleFX, m_propDMD_Profile4ScaleFX, m_propDMD_Profile5ScaleFX,
       m_propDMD_Profile6ScaleFX, m_propDMD_Profile7ScaleFX);
-   PropArray(DMD, ProfileDotTint, int, Int, m_propDMD_Profile1DotTint, m_propDMD_Profile2DotTint, m_propDMD_Profile3DotTint, m_propDMD_Profile4DotTint, m_propDMD_Profile5DotTint,
+   PropArray(DMD, ProfileDotTint, int, Int, Int, m_propDMD_Profile1DotTint, m_propDMD_Profile2DotTint, m_propDMD_Profile3DotTint, m_propDMD_Profile4DotTint, m_propDMD_Profile5DotTint,
       m_propDMD_Profile6DotTint, m_propDMD_Profile7DotTint);
-   PropArray(DMD, ProfileUnlitDotColor, int, Int, m_propDMD_Profile1UnlitDotColor, m_propDMD_Profile2UnlitDotColor, m_propDMD_Profile3UnlitDotColor, m_propDMD_Profile4UnlitDotColor, m_propDMD_Profile5UnlitDotColor,
-      m_propDMD_Profile6UnlitDotColor, m_propDMD_Profile7UnlitDotColor);
-   PropArray(DMD, ProfileDotBrightness, float, Float, m_propDMD_Profile1DotBrightness, m_propDMD_Profile2DotBrightness, m_propDMD_Profile3DotBrightness, m_propDMD_Profile4DotBrightness, m_propDMD_Profile5DotBrightness,
-      m_propDMD_Profile6DotBrightness, m_propDMD_Profile7DotBrightness);
-   PropArray(DMD, ProfileDotSize, float, Float, m_propDMD_Profile1DotSize, m_propDMD_Profile2DotSize, m_propDMD_Profile3DotSize, m_propDMD_Profile4DotSize, m_propDMD_Profile5DotSize,
+   PropArray(DMD, ProfileUnlitDotColor, int, Int, Int, m_propDMD_Profile1UnlitDotColor, m_propDMD_Profile2UnlitDotColor, m_propDMD_Profile3UnlitDotColor, m_propDMD_Profile4UnlitDotColor,
+      m_propDMD_Profile5UnlitDotColor, m_propDMD_Profile6UnlitDotColor, m_propDMD_Profile7UnlitDotColor);
+   PropArray(DMD, ProfileDotBrightness, float, Float, Float, m_propDMD_Profile1DotBrightness, m_propDMD_Profile2DotBrightness, m_propDMD_Profile3DotBrightness,
+      m_propDMD_Profile4DotBrightness, m_propDMD_Profile5DotBrightness, m_propDMD_Profile6DotBrightness, m_propDMD_Profile7DotBrightness);
+   PropArray(DMD, ProfileDotSize, float, Float, Float, m_propDMD_Profile1DotSize, m_propDMD_Profile2DotSize, m_propDMD_Profile3DotSize, m_propDMD_Profile4DotSize, m_propDMD_Profile5DotSize,
       m_propDMD_Profile6DotSize, m_propDMD_Profile7DotSize);
-   PropArray(DMD, ProfileDotSharpness, float, Float, m_propDMD_Profile1DotSharpness, m_propDMD_Profile2DotSharpness, m_propDMD_Profile3DotSharpness, m_propDMD_Profile4DotSharpness, m_propDMD_Profile5DotSharpness,
-      m_propDMD_Profile6DotSharpness, m_propDMD_Profile7DotSharpness);
-   PropArray(DMD, ProfileDiffuseGlow, float, Float, m_propDMD_Profile1DiffuseGlow, m_propDMD_Profile2DiffuseGlow, m_propDMD_Profile3DiffuseGlow, m_propDMD_Profile4DiffuseGlow, m_propDMD_Profile5DiffuseGlow,
-      m_propDMD_Profile6DiffuseGlow, m_propDMD_Profile7DiffuseGlow);
+   PropArray(DMD, ProfileDotSharpness, float, Float, Float, m_propDMD_Profile1DotSharpness, m_propDMD_Profile2DotSharpness, m_propDMD_Profile3DotSharpness, m_propDMD_Profile4DotSharpness,
+      m_propDMD_Profile5DotSharpness, m_propDMD_Profile6DotSharpness, m_propDMD_Profile7DotSharpness);
+   PropArray(DMD, ProfileDiffuseGlow, float, Float, Float, m_propDMD_Profile1DiffuseGlow, m_propDMD_Profile2DiffuseGlow, m_propDMD_Profile3DiffuseGlow, m_propDMD_Profile4DiffuseGlow,
+      m_propDMD_Profile5DiffuseGlow, m_propDMD_Profile6DiffuseGlow, m_propDMD_Profile7DiffuseGlow);
 
    // Alphanumeric Segment Display profiles
    // Neon Plasma
@@ -609,14 +694,14 @@ public:
    PropFloat(Alpha, Profile8Brightness, "Brightness"s, "Brightness level"s, 0.001f, 100.f, 5.f);
    PropFloat(Alpha, Profile8DiffuseGlow, "Diffuse Glow"s, "Glow of segments on the back of the display (between segments, against glass)"s, 0.f, 10.f, 1.f);
    // Array access
-   PropArray(Alpha, ProfileColor, int, Int, m_propAlpha_Profile1Color, m_propAlpha_Profile2Color, m_propAlpha_Profile3Color, m_propAlpha_Profile4Color, m_propAlpha_Profile5Color,
+   PropArray(Alpha, ProfileColor, int, Int, Int, m_propAlpha_Profile1Color, m_propAlpha_Profile2Color, m_propAlpha_Profile3Color, m_propAlpha_Profile4Color, m_propAlpha_Profile5Color,
       m_propAlpha_Profile6Color, m_propAlpha_Profile7Color, m_propAlpha_Profile8Color);
-   PropArray(Alpha, ProfileUnlit, int, Int, m_propAlpha_Profile1Unlit, m_propAlpha_Profile2Unlit, m_propAlpha_Profile3Unlit, m_propAlpha_Profile4Unlit, m_propAlpha_Profile5Unlit,
+   PropArray(Alpha, ProfileUnlit, int, Int, Int, m_propAlpha_Profile1Unlit, m_propAlpha_Profile2Unlit, m_propAlpha_Profile3Unlit, m_propAlpha_Profile4Unlit, m_propAlpha_Profile5Unlit,
       m_propAlpha_Profile6Unlit, m_propAlpha_Profile7Unlit, m_propAlpha_Profile8Unlit);
-   PropArray(Alpha, ProfileBrightness, int, Int, m_propAlpha_Profile1Brightness, m_propAlpha_Profile2Brightness, m_propAlpha_Profile3Brightness, m_propAlpha_Profile4Brightness, m_propAlpha_Profile5Brightness,
-      m_propAlpha_Profile6Brightness, m_propAlpha_Profile7Brightness, m_propAlpha_Profile8Brightness);
-   PropArray(Alpha, ProfileDiffuseGlow, int, Int, m_propAlpha_Profile1DiffuseGlow, m_propAlpha_Profile2DiffuseGlow, m_propAlpha_Profile3DiffuseGlow, m_propAlpha_Profile4DiffuseGlow, m_propAlpha_Profile5DiffuseGlow,
-      m_propAlpha_Profile6DiffuseGlow, m_propAlpha_Profile7DiffuseGlow, m_propAlpha_Profile8DiffuseGlow);
+   PropArray(Alpha, ProfileBrightness, float, Float, Float, m_propAlpha_Profile1Brightness, m_propAlpha_Profile2Brightness, m_propAlpha_Profile3Brightness, m_propAlpha_Profile4Brightness,
+      m_propAlpha_Profile5Brightness, m_propAlpha_Profile6Brightness, m_propAlpha_Profile7Brightness, m_propAlpha_Profile8Brightness);
+   PropArray(Alpha, ProfileDiffuseGlow, float, Float, Float, m_propAlpha_Profile1DiffuseGlow, m_propAlpha_Profile2DiffuseGlow, m_propAlpha_Profile3DiffuseGlow, m_propAlpha_Profile4DiffuseGlow,
+      m_propAlpha_Profile5DiffuseGlow, m_propAlpha_Profile6DiffuseGlow, m_propAlpha_Profile7DiffuseGlow, m_propAlpha_Profile8DiffuseGlow);
 
    // Parts Defaults: Balls
    PropFloat(DefaultPropsBall, Mass, "Ball Mass"s, ""s, 0.1f, 2.f, 1.f);
@@ -751,7 +836,7 @@ public:
 
 
 public:
-   Settings(Settings* parent = nullptr);
+   Settings(Settings *parent = nullptr);
 
    void SetParent(Settings *parent)
    {
@@ -821,8 +906,8 @@ public:
       Plugin00
    };
 
-   static Section GetSection(const string& szName);
-   static const string& GetSectionName(const Section section);
+   static Section GetSection(const string &szName);
+   static const string &GetSectionName(const Section section);
    static int GetNPluginSections() { return (int)m_settingKeys.size() - Plugin00; }
 
    bool HasValue(const Section section, const string &key, const bool searchParent = false) const;
@@ -834,10 +919,33 @@ public:
 
    // The following method must only be used for settings previously validated to guarantee successfull loading
    void Validate(const bool addDefaults);
-   string LoadValueString(const Section section, const string &key) const { string v; LoadValue(section, key, v); return v; }
-   float LoadValueFloat(const Section section, const string &key) const { float v; bool ok = LoadValue(section, key, v); assert(ok); return v; }
-   bool LoadValueBool(const Section section, const string &key) const { unsigned int v; bool ok = LoadValue(section, key, v); assert(ok); return !!v; }
-   unsigned int LoadValueUInt(const Section section, const string &key) const { unsigned int v; bool ok = LoadValue(section, key, v); assert(ok); return v; }
+   string LoadValueString(const Section section, const string &key) const
+   {
+      string v;
+      LoadValue(section, key, v);
+      return v;
+   }
+   float LoadValueFloat(const Section section, const string &key) const
+   {
+      float v;
+      bool ok = LoadValue(section, key, v);
+      assert(ok);
+      return v;
+   }
+   bool LoadValueBool(const Section section, const string &key) const
+   {
+      unsigned int v;
+      bool ok = LoadValue(section, key, v);
+      assert(ok);
+      return !!v;
+   }
+   unsigned int LoadValueUInt(const Section section, const string &key) const
+   {
+      unsigned int v;
+      bool ok = LoadValue(section, key, v);
+      assert(ok);
+      return v;
+   }
 
    float LoadValueWithDefault(const Section section, const string &key, const float def) const;
    int LoadValueWithDefault(const Section section, const string &key, const int def) const;
@@ -868,12 +976,11 @@ public:
       vector<string> literals;
       string tokenizedLiterals;
    };
-   OptionDef& RegisterSetting(const Section section, const string &id, const unsigned int showMask, const string &name, float minValue, float maxValue, float step, float defaultValue,
+   OptionDef &RegisterSetting(const Section section, const string &id, const unsigned int showMask, const string &name, float minValue, float maxValue, float step, float defaultValue,
       OptionUnit unit, const vector<string> &literals);
-   static const vector<OptionDef>& GetPluginSettings() { return m_pluginOptions; }
+   static const vector<OptionDef> &GetPluginSettings() { return m_pluginOptions; }
 
 private:
-   void RegisterStringSetting(const Section section, const string &key, const string &defVal, const bool addDefaults, const string &comments = string());
    void RegisterBoolSetting(const Section section, const string &key, const bool defVal, const bool addDefaults, const string &comments = string());
    void RegisterIntSetting(const Section section, const string &key, const int defVal, const int minVal, const int maxVal, const bool addDefaults, const string &comments = string());
 

@@ -150,12 +150,12 @@ void OnGetRenderer(const unsigned int msgId, void* context, void* msgData)
    AnciliaryRendererDef backglassEntry = { "B2SLegacy", "B2S Legacy Backglass", "Renderer for B2S legacy backglass files", context, OnRender };
    AnciliaryRendererDef dmdEntry = { "B2SLegacyDMD", "B2S Legacy DMD", "Renderer for B2S legacy DMD files", context, OnRender };
 
-   if (msg->window == VPXAnciliaryWindow::VPXWINDOW_Backglass) {
+   if (msg->window == VPXWindowId::VPXWINDOW_Backglass) {
       if (msg->count < msg->maxEntryCount)
          msg->entries[msg->count] = backglassEntry;
       msg->count++;
    }
-   else if (msg->window == VPXAnciliaryWindow::VPXWINDOW_ScoreView) {
+   else if (msg->window == VPXWindowId::VPXWINDOW_ScoreView) {
       if (msg->count < msg->maxEntryCount)
          msg->entries[msg->count] = dmdEntry;
       msg->count++;

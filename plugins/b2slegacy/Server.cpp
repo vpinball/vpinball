@@ -89,7 +89,7 @@ int Server::OnRender(VPXRenderContext2D* const renderCtx, void* context)
       m_ready = true;
    }
 
-   if (renderCtx->window == VPXAnciliaryWindow::VPXWINDOW_Backglass) {
+   if (renderCtx->window == VPXWindowId::VPXWINDOW_Backglass) {
       if (!m_pB2SSettings->IsHideB2SBackglass()) {
          SDL_Rect& size = m_pFormBackglass->GetB2SScreen()->GetBackglassSize();
          renderCtx->srcWidth = static_cast<float>(size.w);
@@ -98,7 +98,7 @@ int Server::OnRender(VPXRenderContext2D* const renderCtx, void* context)
          return 1;
       }
    }
-   else if (renderCtx->window == VPXAnciliaryWindow::VPXWINDOW_ScoreView) {
+   else if (renderCtx->window == VPXWindowId::VPXWINDOW_ScoreView) {
       if (m_pFormBackglass->GetFormDMD()) {
          SDL_Rect& size = m_pFormBackglass->GetB2SScreen()->GetDMDSize();
          renderCtx->srcWidth = static_cast<float>(size.w);

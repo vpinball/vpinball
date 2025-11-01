@@ -83,9 +83,9 @@ extern marker_series series;
 Player::Player(PinTable *const editor_table, PinTable *const live_table, const int playMode)
    : m_pEditorTable(editor_table)
    , m_ptable(live_table)
-   , m_scoreViewOutput("Visual Pinball - Score View"s, live_table->m_settings, Settings::ScoreView, "ScoreView"s)
-   , m_backglassOutput("Visual Pinball - Backglass"s, live_table->m_settings, Settings::Backglass, "Backglass"s)
-   , m_topperOutput("Visual Pinball - Topper"s, live_table->m_settings, Settings::Topper, "Topper"s)
+   , m_backglassOutput("Visual Pinball - Backglass"s, live_table->m_settings, VPXWindowId::VPXWINDOW_Backglass)
+   , m_scoreViewOutput("Visual Pinball - Score View"s, live_table->m_settings, VPXWindowId::VPXWINDOW_ScoreView)
+   , m_topperOutput("Visual Pinball - Topper"s, live_table->m_settings, VPXWindowId::VPXWINDOW_Topper)
    , m_audioPlayer(std::make_unique<VPX::AudioPlayer>(
         live_table->m_settings.GetPlayer_SoundDeviceBG(), live_table->m_settings.GetPlayer_SoundDevice(), static_cast<VPX::SoundConfigTypes>(live_table->m_settings.GetPlayer_Sound3D())))
    , m_resURIResolver(MsgPI::MsgPluginManager::GetInstance().GetMsgAPI(), VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), true, true, true, true)
@@ -213,7 +213,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       #endif
       
       const Settings& settings = g_pvp->m_settings; // Always use main application settings (not overridable per table)
-      m_playfieldWnd = new VPX::Window(WIN32_WND_TITLE, settings, stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, stereo3D == STEREO_VR ? "Preview" : "Playfield");
+      m_playfieldWnd = new VPX::Window(WIN32_WND_TITLE, settings, stereo3D == STEREO_VR ? VPXWindowId::VPXWINDOW_VRPreview : VPXWindowId::VPXWINDOW_Playfield);
 
       const float pfRefreshRate = m_playfieldWnd->GetRefreshRate(); 
       m_maxFramerate = static_cast<float>(m_ptable->m_settings.GetPlayer_MaxFramerate());
@@ -875,7 +875,7 @@ Player::~Player()
       renderable->GetIHitable()->RenderRelease();
    for (auto hitable : m_vhitables)
       hitable->GetIHitable()->TimerRelease();
-   for (int window = 0; window <= VPXAnciliaryWindow::VPXWINDOW_Topper; window++)
+   for (int window = 0; window <= VPXWindowId::VPXWINDOW_Topper; window++)
       delete m_anciliaryWndHdrRT[window];
    assert(m_vballDelete.empty());
    m_vball.clear();
@@ -1838,9 +1838,9 @@ void Player::PrepareFrame(const std::function<void()>& sync)
    RenderTarget *playfieldRT = m_renderer->RenderFrame();
 
    // Render anciliary windows (eventually embedded in the main window, so must be done after rendering it and before post process)
-   const RenderTarget * const backglassRT = RenderAnciliaryWindow(VPXAnciliaryWindow::VPXWINDOW_Backglass, playfieldRT);
-   const RenderTarget * const scoreViewRT = RenderAnciliaryWindow(VPXAnciliaryWindow::VPXWINDOW_ScoreView, playfieldRT);
-   const RenderTarget * const topperRT = RenderAnciliaryWindow(VPXAnciliaryWindow::VPXWINDOW_Topper, playfieldRT);
+   const RenderTarget * const backglassRT = RenderAnciliaryWindow(VPXWindowId::VPXWINDOW_Backglass, playfieldRT);
+   const RenderTarget * const scoreViewRT = RenderAnciliaryWindow(VPXWindowId::VPXWINDOW_ScoreView, playfieldRT);
+   const RenderTarget * const topperRT = RenderAnciliaryWindow(VPXWindowId::VPXWINDOW_Topper, playfieldRT);
    
    // Apply screenspace transforms (MSAA, AO, AA, stereo, ball motion blur, tonemapping, dithering, bloom,...)
    m_renderer->RenderPostProcess();
@@ -2004,11 +2004,11 @@ void Player::OnAuxRendererChanged(const unsigned int msgId, void* userData, void
 {
    Player * const me = static_cast<Player *>(userData);
    const MsgPluginAPI *m_msgApi = &MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
-   for (int i = 0; i <= VPXAnciliaryWindow::VPXWINDOW_Topper; i++)
+   for (int i = 0; i <= VPXWindowId::VPXWINDOW_Topper; i++)
    {
-      const VPXAnciliaryWindow window = (VPXAnciliaryWindow) i;
-      const Settings::Section section = window == VPXAnciliaryWindow::VPXWINDOW_Backglass ? Settings::Backglass
-                                      : window == VPXAnciliaryWindow::VPXWINDOW_ScoreView ? Settings::ScoreView
+      const VPXWindowId window = (VPXWindowId) i;
+      const Settings::Section section = window == VPXWindowId::VPXWINDOW_Backglass ? Settings::Backglass
+                                      : window == VPXWindowId::VPXWINDOW_ScoreView ? Settings::ScoreView
                                                                                           : Settings::Topper;
       GetAnciliaryRendererMsg getAuxRendererMsg { window, 0, 0, nullptr };
       m_msgApi->BroadcastMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), me->m_getAuxRendererId, &getAuxRendererMsg);
@@ -2026,23 +2026,23 @@ void Player::OnAuxRendererChanged(const unsigned int msgId, void* userData, void
    }
 }
 
-RenderTarget *Player::RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTarget *embedRT)
+RenderTarget *Player::RenderAnciliaryWindow(VPXWindowId window, RenderTarget *embedRT)
 {
    RenderDevice *const rd = m_renderer->m_renderDevice;
    int m_outputX, m_outputY, m_outputW, m_outputH;
 
-   const VPX::RenderOutput &output = window == VPXAnciliaryWindow::VPXWINDOW_Backglass ? m_backglassOutput :
-                                     window == VPXAnciliaryWindow::VPXWINDOW_ScoreView ? m_scoreViewOutput :
-                                   /*window == VPXAnciliaryWindow::VPXWINDOW_Topper ? */ m_topperOutput;
-   const string renderPassName = window == VPXAnciliaryWindow::VPXWINDOW_Backglass ? "Backglass Render"s :
-                                 window == VPXAnciliaryWindow::VPXWINDOW_ScoreView ? "ScoreView Render"s :
-                               /*window == VPXAnciliaryWindow::VPXWINDOW_Topper ? */ "Topper Render"s;
-   const string tonemapPassName = window == VPXAnciliaryWindow::VPXWINDOW_Backglass ? "Backglass Tonemap"s :
-                                  window == VPXAnciliaryWindow::VPXWINDOW_ScoreView ? "ScoreView Tonemap"s :
-                                /*window == VPXAnciliaryWindow::VPXWINDOW_Topper ? */ "Topper Tonemap"s;
-   const string hdrRTName = window == VPXAnciliaryWindow::VPXWINDOW_Backglass ? "BackglassBackBuffer"s :
-                            window == VPXAnciliaryWindow::VPXWINDOW_ScoreView ? "ScoreViewBackBuffer"s :
-                          /*window == VPXAnciliaryWindow::VPXWINDOW_Topper ? */ "TopperBackBuffer"s;
+   const VPX::RenderOutput &output = window == VPXWindowId::VPXWINDOW_Backglass ? m_backglassOutput :
+                                     window == VPXWindowId::VPXWINDOW_ScoreView ? m_scoreViewOutput :
+                                   /*window == VPXWindowId::VPXWINDOW_Topper ? */ m_topperOutput;
+   const string renderPassName = window == VPXWindowId::VPXWINDOW_Backglass ? "Backglass Render"s :
+                                 window == VPXWindowId::VPXWINDOW_ScoreView ? "ScoreView Render"s :
+                               /*window == VPXWindowId::VPXWINDOW_Topper ? */ "Topper Render"s;
+   const string tonemapPassName = window == VPXWindowId::VPXWINDOW_Backglass ? "Backglass Tonemap"s :
+                                  window == VPXWindowId::VPXWINDOW_ScoreView ? "ScoreView Tonemap"s :
+                                /*window == VPXWindowId::VPXWINDOW_Topper ? */ "Topper Tonemap"s;
+   const string hdrRTName = window == VPXWindowId::VPXWINDOW_Backglass ? "BackglassBackBuffer"s :
+                            window == VPXWindowId::VPXWINDOW_ScoreView ? "ScoreViewBackBuffer"s :
+                          /*window == VPXWindowId::VPXWINDOW_Topper ? */ "TopperBackBuffer"s;
 
    // TODO implement rendering for VR (on a flasher)
    if (m_vrDevice != nullptr)

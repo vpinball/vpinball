@@ -211,8 +211,14 @@ void LayeredINIPropertyStore::GenerateTemplate(const string& path) const
                file << ": " << prop->m_description;
             switch (prop->m_type)
             {
-            case PropertyDef::Type::Float: file << " [Default: " << f2sz(dynamic_cast<const FloatPropertyDef*>(prop)->m_def, false) << ']'; break;
-            case PropertyDef::Type::Int: file << " [Default: " << std::to_string(dynamic_cast<const IntPropertyDef*>(prop)->m_def) << ']'; break;
+            case PropertyDef::Type::Float:
+               file << " [Default: " << f2sz(dynamic_cast<const FloatPropertyDef*>(prop)->m_def, false) << " in " << f2sz(dynamic_cast<const FloatPropertyDef*>(prop)->m_min, false) << " .. "
+                    << f2sz(dynamic_cast<const FloatPropertyDef*>(prop)->m_max, false) << ']';
+               break;
+            case PropertyDef::Type::Int:
+               file << " [Default: " << std::to_string(dynamic_cast<const IntPropertyDef*>(prop)->m_def) << " in " << std::to_string(dynamic_cast<const IntPropertyDef*>(prop)->m_min)
+                    << " .. " << std::to_string(dynamic_cast<const IntPropertyDef*>(prop)->m_max) << ']';
+               break;
             case PropertyDef::Type::Bool: file << " [Default: " << (dynamic_cast<const BoolPropertyDef*>(prop)->m_def ? '1' : '0') << ']'; break;
             case PropertyDef::Type::Enum:
             {
