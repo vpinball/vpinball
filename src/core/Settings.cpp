@@ -262,35 +262,6 @@ void Settings::Validate(const bool addDefaults)
    SettingBool(Section::Backglass, "BackglassFullScreen"s, false, "Use fullscreen exclusive mode (not recommended unless you need to change the display resolution)"s);
 
    //////////////////////////////////////////////////////////////////////////
-   // DMD section
-
-   for (int i = 1; i <= 7; i++)
-   {
-      const string prefix = "Profile." + std::to_string(i) + '.';
-      int dotColor;
-      switch (i)
-      {
-      case 1: dotColor = 0x002D52FF; break; // Legacy
-      case 2: dotColor = 0x002D52FF; break; // Classic Neon plasma DMD
-      case 3: dotColor = 0x001523FF; break; // Red Led DMD (used after RoHS regulation entry into force)
-      case 4: dotColor = 0x0023FF15; break; // Green Led
-      case 5: dotColor = 0x0023FFFF; break; // Yellow Led
-      case 6: dotColor = 0x00FFFFFF; break; // Generic Plasma
-      case 7: dotColor = 0x00FFFFFF; break; // Generic Led
-      default: dotColor = 0; assert(false);
-      }
-      SettingBool(Section::DMD,  prefix + "Legacy",        i == 1, ""s);
-      SettingBool(Section::DMD,  prefix + "ScaleFX",       false, ""s);
-      SettingInt(Section::DMD,   prefix + "DotTint",       dotColor,   0x00000000, 0x00FFFFFF, ""s);
-      SettingInt(Section::DMD,   prefix + "UnlitDotColor", 0x00404040, 0x00000000, 0x00FFFFFF, ""s);
-      SettingFloat(Section::DMD, prefix + "DotBrightness", 25.0f,  0.001f, 100.f, ""s);
-      SettingFloat(Section::DMD, prefix + "DotSize",       (i == 2 || i == 6) ? 0.6f : 0.75f,  0.001f, 1.f, ""s); // WPC & GTS3 Neon Plasma: 0.6, Stern Red LED: 0.75
-      SettingFloat(Section::DMD, prefix + "DotSharpness",  0.90f, 0.f, 1.f, ""s);
-      SettingFloat(Section::DMD, prefix + "DiffuseGlow",   0.10f, 0.f, 10.f, ""s);
-   }
-
-
-   //////////////////////////////////////////////////////////////////////////
    // Alpha segment section
 
    for (int i = 1; i <= 8; i++)
