@@ -269,10 +269,10 @@ protected:
    void OnInitialUpdate() override;
    BOOL OnCommand(WPARAM wparam, LPARAM lparam) override;
    LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
-   BOOL PreTranslateMessage(MSG& msg) override;
    LRESULT OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam) OVERRIDE;
    LRESULT OnMDIDestroyed(UINT msg, WPARAM wparam, LPARAM lparam) OVERRIDE;
 #ifndef __STANDALONE__
+   BOOL PreTranslateMessage(MSG& msg) override;
    DockPtr NewDockerFromID(int id) override;
 #endif
 
