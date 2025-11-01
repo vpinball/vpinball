@@ -226,11 +226,11 @@ private:
    void SubmitFrame();
    void FinishFrame();
 
-   RenderTarget *RenderAnciliaryWindow(VPXAnciliaryWindow window, RenderTarget *embedRT);
+   RenderTarget *RenderAnciliaryWindow(VPXWindowId window, RenderTarget *embedRT);
    static void OnAuxRendererChanged(const unsigned int msgId, void *userData, void *msgData);
-   RenderTarget *m_anciliaryWndHdrRT[VPXAnciliaryWindow::VPXWINDOW_Topper + 1] { nullptr };
+   RenderTarget *m_anciliaryWndHdrRT[VPXWindowId::VPXWINDOW_Topper + 1] { nullptr };
    unsigned int m_getAuxRendererId = 0, m_onAuxRendererChgId = 0;
-   vector<AnciliaryRendererDef> m_anciliaryWndRenderers[VPXAnciliaryWindow::VPXWINDOW_Topper + 1];
+   vector<AnciliaryRendererDef> m_anciliaryWndRenderers[VPXWindowId::VPXWINDOW_Topper + 1];
 #pragma endregion
 
 

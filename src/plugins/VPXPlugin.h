@@ -64,10 +64,12 @@ typedef struct VPXTextureInfo
 
 typedef enum
 {
+   VPXWINDOW_Playfield,
    VPXWINDOW_Backglass,
    VPXWINDOW_ScoreView,
    VPXWINDOW_Topper,
-} VPXAnciliaryWindow;
+   VPXWINDOW_VRPreview,
+} VPXWindowId;
 
 typedef enum
 {
@@ -103,7 +105,7 @@ typedef enum
 
 typedef struct VPXRenderContext2D
 {
-   VPXAnciliaryWindow window; // Target window
+   VPXWindowId window; // Target window
    float srcWidth;            // Source surface width, used in DrawImage call, default to target surface width
    float srcHeight;           // Source surface height, used in DrawImage call, default to target surface height
    int is2D;                  // If true, the rendering is done in 2D mode, otherwise in 3D mode
@@ -147,7 +149,7 @@ typedef struct AnciliaryRendererDef
 typedef struct GetAnciliaryRendererMsg
 {
    // Request
-   VPXAnciliaryWindow window; // Target window
+   VPXWindowId window; // Target window
    unsigned int maxEntryCount; // see below
    // Response
    unsigned int count; // Number of entries, also position to put next entry

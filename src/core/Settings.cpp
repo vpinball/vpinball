@@ -124,14 +124,6 @@ void Settings::Set(VPX::Properties::PropertyRegistry::PropId propId, const strin
    }
 }
 
-void Settings::RegisterStringSetting(const Section section, const string &key, const string &defVal, const bool addDefaults, const string &comments)
-{
-   string val;
-   bool present = LoadValue(section, key, val);
-   if (!present && addDefaults)
-      SaveValue(section, key, defVal);
-}
-
 void Settings::RegisterBoolSetting(const Section section, const string &key, const bool defVal, const bool addDefaults, const string &comments)
 {
    int val;
@@ -177,61 +169,21 @@ void Settings::RegisterIntSetting(const Section section, const string &key, cons
 // a static enum definition in Settings.h which will be used for array access.
 void Settings::Validate(const bool addDefaults)
 {
-   #define SettingString(section, name, defVal, comment) RegisterStringSetting(section, name, defVal, addDefaults, comment)
    #define SettingBool(section, name, defVal, comment) RegisterBoolSetting(section, name, defVal, addDefaults, comment)
    #define SettingInt(section, name, defVal, minVal, maxVal, comment) RegisterIntSetting(section, name, defVal, minVal, maxVal, addDefaults, comment)
    
-   //////////////////////////////////////////////////////////////////////////
-   // Plugin.B2SLegacy
-
 #ifdef __STANDALONE__
    SettingInt(GetSection("PluginB2SLegacy"s), "B2SBackglassWidth"s, 1024, 0, 5000, ""s);
    SettingInt(GetSection("PluginB2SLegacy"s), "B2SBackglassHeight"s, 768, 0, 5000, ""s);
 #endif
 
-   //////////////////////////////////////////////////////////////////////////
-   // Standalone section
-
 #ifdef __LIBVPINBALL__
    SettingBool(Section::Standalone, "Haptics"s, true, ""s);
    SettingInt(Section::Standalone, "RenderingModeOverride"s, 2, 0, 2, ""s);
-#endif
-
-   //////////////////////////////////////////////////////////////////////////
-   // Backglass section
-
-#ifdef __LIBVPINBALL__
    SettingInt(Section::Backglass, "BackglassOutput"s, 1, 1, 1, ""s);
-   SettingInt(Section::Backglass, "BackglassWndX"s, 0, 0, 3000, ""s);
-   SettingInt(Section::Backglass, "BackglassWndY"s, 0, 0, 3000, ""s);
-   SettingInt(Section::Backglass, "BackglassWidth"s, 0, 0, 3000, ""s);
-   SettingInt(Section::Backglass, "BackglassHeight"s, 0, 0, 3000, ""s);
-#endif
-
-   //////////////////////////////////////////////////////////////////////////
-   // ScoreView section
-
-#ifdef __LIBVPINBALL__
    SettingInt(Section::ScoreView, "ScoreViewOutput"s, 1, 1, 1, ""s);
-   SettingInt(Section::ScoreView, "ScoreViewWndX"s, 0, 0, 3000, ""s);
-   SettingInt(Section::ScoreView, "ScoreViewWndY"s, 0, 0, 3000, ""s);
-   SettingInt(Section::ScoreView, "ScoreViewWidth"s, 0, 0, 3000, ""s);
-   SettingInt(Section::ScoreView, "ScoreViewHeight"s, 0, 0, 3000, ""s);
 #endif
 
-   //////////////////////////////////////////////////////////////////////////
-   // Playfield view section
-
-   SettingString(Section::Player, "PlayfieldDisplay"s, "Default"s, "Display used for the main Playfield window"s);
-   SettingBool(Section::Player, "PlayfieldFullScreen"s, false, "Use fullscreen exclusive mode (not recommended unless you need to change the display resolution)"s);
-   SettingString(Section::Topper, "TopperDisplay"s, "Default"s, "Display used for the Topper window"s);
-   SettingBool(Section::Topper, "TopperFullScreen"s, false, "Use fullscreen exclusive mode (not recommended unless you need to change the display resolution)"s);
-   SettingString(Section::ScoreView, "ScoreViewDisplay"s, "Default"s, "Display used for the ScoreView window"s);
-   SettingBool(Section::ScoreView, "ScoreViewFullScreen"s, false, "Use fullscreen exclusive mode (not recommended unless you need to change the display resolution)"s);
-   SettingString(Section::Backglass, "BackglassDisplay"s, "Default"s, "Display used for the Backglass window"s);
-   SettingBool(Section::Backglass, "BackglassFullScreen"s, false, "Use fullscreen exclusive mode (not recommended unless you need to change the display resolution)"s);
-
-   #undef SettingString
    #undef SettingBool
    #undef SettingInt
 }

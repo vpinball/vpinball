@@ -22,8 +22,7 @@ namespace VPX
 {
 
 Window::Window(const int width, const int height)
-   : m_settingsSection(Settings::PlayerVR)
-   , m_settingsPrefix("Headset"s)
+   : m_windowId(VPXWindowId::VPXWINDOW_Playfield) // Dummy, not used
    , m_isVR(true)
 {
    m_width = width;
@@ -42,15 +41,14 @@ Window::Window(const int width, const int height)
    m_backBuffer = nullptr;
 }
 
-Window::Window(const string &title, const Settings& settings, const Settings::Section section, const string &settingsPrefix)
-   : m_settingsSection(section)
-   , m_settingsPrefix(settingsPrefix)
+Window::Window(const string& title, const Settings& settings, VPXWindowId windowId)
+   : m_windowId(windowId)
    , m_isVR(false)
 {
 #ifndef __LIBVPINBALL__
-   m_fullscreen = settings.LoadValueBool(m_settingsSection, m_settingsPrefix + "FullScreen");
+   m_fullscreen = settings.GetWindow_FullScreen(m_windowId);
    // FIXME remove command line override => this is hacky and not needed anymore (use INI override instead)
-   if (m_settingsSection == Settings::Player)
+   if (m_windowId == VPXWindowId::VPXWINDOW_Playfield)
    {
       if (g_pvp->m_disEnableTrueFullscreen == 0)
          m_fullscreen = false;
@@ -60,10 +58,12 @@ Window::Window(const string &title, const Settings& settings, const Settings::Se
 #else
    m_fullscreen = true;
 #endif
-   int w = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Width", m_fullscreen ? -1 : 1024);
-   int h = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Height", w * 9 / 16);
-   const bool video10bit = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Render10Bit", false);
-   const float fsRefreshRate = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "RefreshRate", 0.f);
+   Settings::GetRegistry().Register(Settings::GetWindow_Width_Property(m_windowId)->WithDefault(m_fullscreen ? -1 : 1024));
+   Settings::GetRegistry().Register(Settings::GetWindow_Height_Property(m_windowId)->WithDefault(m_fullscreen ? -1 : 576));
+   int w = settings.GetWindow_Width(m_windowId);
+   int h = settings.GetWindow_Height(m_windowId);
+   const bool video10bit = settings.GetWindow_FSRender10Bit(m_windowId);
+   const float fsRefreshRate = settings.GetWindow_FSRefreshRate(m_windowId);
    // FIXME FIXME FIXME
    const int fsBitDeth = (video10bit && m_fullscreen /* && stereo3D != STEREO_VR */) ? 30 : 32;
    if (video10bit && !m_fullscreen)
@@ -137,8 +137,10 @@ Window::Window(const string &title, const Settings& settings, const Settings::Se
       // Restore saved position of non fullscreen windows
       if ((m_height != m_screenheight) || (m_width != m_screenwidth))
       {
-         const int xn = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "WndX", wnd_x);
-         const int yn = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "WndY", wnd_y);
+         Settings::GetRegistry().Register(Settings::GetWindow_WndX_Property(m_windowId)->WithDefault(wnd_x));
+         Settings::GetRegistry().Register(Settings::GetWindow_WndX_Property(m_windowId)->WithDefault(wnd_y));
+         const int xn = settings.GetWindow_WndX(m_windowId);
+         const int yn = settings.GetWindow_WndY(m_windowId);
          // Only apply saved position if they fit inside a display
          int displayCount = 0;
          SDL_DisplayID* displayIDs = SDL_GetDisplays(&displayCount);
@@ -182,7 +184,7 @@ Window::Window(const string &title, const Settings& settings, const Settings::Se
 
    #if !defined(_MSC_VER) // Win32 (we use _MSC_VER since standalone also defines WIN32 for non Win32 builds)
    // On Windows, always on top is not always respected and if using SDL_WINDOW_UTILITY windows may end up being hidden with no way to select and move them
-   if (m_settingsSection != Settings::Player)
+   if (m_windowId != VPXWindowId::VPXWINDOW_Playfield)
       wnd_flags |= SDL_WINDOW_UTILITY | SDL_WINDOW_ALWAYS_ON_TOP;
    #endif
 
@@ -246,7 +248,7 @@ Window::Window(const string &title, const Settings& settings, const Settings::Se
       m_refreshrate = mode ? mode->refresh_rate : 0;
    }
    if (mode) {
-      PLOGI << "SDL display mode for " << m_width << 'x' << m_height << " window '" << m_settingsPrefix << "' : " << mode->w << 'x' << mode->h << ' ' << mode->refresh_rate << " Hz " << SDL_GetPixelFormatName(mode->format);
+      PLOGI << "SDL display mode for " << m_width << 'x' << m_height << " window #" << m_windowId << " : " << mode->w << 'x' << mode->h << ' ' << mode->refresh_rate << " Hz " << SDL_GetPixelFormatName(mode->format);
    }
 
    SDL_GetWindowSizeInPixels(m_nwnd, &m_pixelWidth, &m_pixelHeight);
@@ -284,7 +286,7 @@ Window::~Window()
 
 Window::DisplayConfig Window::GetDisplayConfig(const Settings& settings) const
 {
-   const string selectedDisplayName = settings.LoadValueString(m_settingsSection, m_settingsPrefix + "Display");
+   const string selectedDisplayName = settings.GetWindow_Display((int)m_windowId);
    return GetDisplayConfig(selectedDisplayName);
 }
 
@@ -334,9 +336,6 @@ void Window::SetPos(const int x, const int y)
    if (m_isVR)
       return;
    SDL_SetWindowPosition(m_nwnd, x, y);
-   Settings* settings = (m_settingsSection == Settings::Player) ? &(g_pvp->m_settings) : &(g_pvp->m_ptableActive->m_settings);
-   settings->SaveValue(m_settingsSection, m_settingsPrefix + "WndX", x);
-   settings->SaveValue(m_settingsSection, m_settingsPrefix + "WndY", y);
 }
 
 vector<Window::DisplayConfig> Window::GetDisplays()

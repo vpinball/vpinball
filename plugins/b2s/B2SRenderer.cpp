@@ -209,9 +209,9 @@ bool B2SRenderer::Render(VPXRenderContext2D* ctx)
 {
    switch (ctx->window)
    {
-   case VPXAnciliaryWindow::VPXWINDOW_Backglass: return RenderBackglass(ctx);
-   case VPXAnciliaryWindow::VPXWINDOW_ScoreView: return RenderScoreView(ctx);
-   case VPXAnciliaryWindow::VPXWINDOW_Topper: return false;
+   case VPXWindowId::VPXWINDOW_Backglass: return RenderBackglass(ctx);
+   case VPXWindowId::VPXWINDOW_ScoreView: return RenderScoreView(ctx);
+   case VPXWindowId::VPXWINDOW_Topper: return false;
    }
    return false;
 }

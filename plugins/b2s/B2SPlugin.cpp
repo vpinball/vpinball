@@ -211,7 +211,7 @@ void OnGameEnd(const unsigned int, void*, void*)
 
 int OnRender(VPXRenderContext2D* ctx, void*)
 {
-   if ((ctx->window != VPXAnciliaryWindow::VPXWINDOW_Backglass) && (ctx->window != VPXAnciliaryWindow::VPXWINDOW_ScoreView))
+   if ((ctx->window != VPXWindowId::VPXWINDOW_Backglass) && (ctx->window != VPXWindowId::VPXWINDOW_ScoreView))
       return false;
    if (renderer)
    {
@@ -236,7 +236,7 @@ void OnGetRenderer(const unsigned int, void*, void* msgData)
 {
    static AnciliaryRendererDef entry = { "B2S", "B2S Backglass & FullDMD", "Renderer for directb2s backglass files", nullptr, OnRender };
    GetAnciliaryRendererMsg* msg = static_cast<GetAnciliaryRendererMsg*>(msgData);
-   if ((msg->window == VPXAnciliaryWindow::VPXWINDOW_Backglass) || (msg->window == VPXAnciliaryWindow::VPXWINDOW_ScoreView))
+   if ((msg->window == VPXWindowId::VPXWINDOW_Backglass) || (msg->window == VPXWindowId::VPXWINDOW_ScoreView))
    {
       if (msg->count < msg->maxEntryCount)
          msg->entries[msg->count] = entry;

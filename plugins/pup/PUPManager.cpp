@@ -622,9 +622,9 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
    std::shared_ptr<PUPScreen> screen = nullptr;
    switch (renderCtx->window)
    {
-   case VPXAnciliaryWindow::VPXWINDOW_Topper: screen = me->GetScreen(0); break;
-   case VPXAnciliaryWindow::VPXWINDOW_Backglass: screen = me->GetScreen(2); break;
-   case VPXAnciliaryWindow::VPXWINDOW_ScoreView: screen = me->GetScreen(5); break; // TODO select 1 or 5 (user settings ?)
+   case VPXWindowId::VPXWINDOW_Topper: screen = me->GetScreen(0); break;
+   case VPXWindowId::VPXWINDOW_Backglass: screen = me->GetScreen(2); break;
+   case VPXWindowId::VPXWINDOW_ScoreView: screen = me->GetScreen(5); break; // TODO select 1 or 5 (user settings ?)
    }
    if (screen == nullptr || screen->GetCustomPos() != nullptr)
       return false;
@@ -644,7 +644,7 @@ void PUPManager::OnGetRenderer(const unsigned int eventId, void* context, void* 
    PUPManager* me = static_cast<PUPManager*>(context);
    GetAnciliaryRendererMsg* msg = static_cast<GetAnciliaryRendererMsg*>(msgData);
    static AnciliaryRendererDef entry = { "PUP", "PinUp Player", "Renderer for PinUp player backglass", nullptr, Render };
-   if (msg->window == VPXAnciliaryWindow::VPXWINDOW_Backglass || msg->window == VPXAnciliaryWindow::VPXWINDOW_ScoreView || msg->window == VPXAnciliaryWindow::VPXWINDOW_Topper)
+   if (msg->window == VPXWindowId::VPXWINDOW_Backglass || msg->window == VPXWindowId::VPXWINDOW_ScoreView || msg->window == VPXWindowId::VPXWINDOW_Topper)
    {
       if (msg->count < msg->maxEntryCount) 
       {

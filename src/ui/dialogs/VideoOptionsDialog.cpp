@@ -25,7 +25,7 @@ protected:
    void EndLoad() { m_loading--; }
    void ApplyChanges();
 
-   void InitDisplayControls(const Settings::Section wndSection, const string& wndSettingPrefix, const bool embeddable);
+   void InitDisplayControls(VPXWindowId wndId, const Settings::Section wndSection, const string& wndSettingPrefix, const bool embeddable);
    void LoadDisplaySettings();
    void SaveDisplaySettings();
 
@@ -53,6 +53,7 @@ private:
    vector<VPX::Window::VideoMode> m_allVideoModes;
    Settings::Section m_wndSection = Settings::Plugin00;
    string m_wndSettingPrefix;
+   VPXWindowId m_wndId;
    bool m_wndEmbeddable;
    vector<VPX::Window::DisplayConfig> m_displays;
    CComboBox m_wndDisplay;
@@ -281,8 +282,9 @@ void VideoOptionPropPage::BrowseImage(CEdit& editCtl)
 }
 
 
-void VideoOptionPropPage::InitDisplayControls(const Settings::Section wndSection, const string& wndSettingPrefix, const bool embeddable)
+void VideoOptionPropPage::InitDisplayControls(VPXWindowId wndId, const Settings::Section wndSection, const string& wndSettingPrefix, const bool embeddable)
 {
+   m_wndId = wndId;
    m_wndSection = wndSection;
    m_wndSettingPrefix = wndSettingPrefix;
    m_wndEmbeddable = embeddable;
@@ -386,10 +388,10 @@ void VideoOptionPropPage::UpdateFullscreenModesList()
    int screenwidth = m_displays[display].width;
    int screenheight = m_displays[display].height;
    
-   const int depthcur = GetEditedSettings().LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "ColorDepth", 32);
-   const float refreshrate = GetEditedSettings().LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "RefreshRate", 0.f);
-   const int widthcur = GetEditedSettings().LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "Width", -1);
-   const int heightcur = GetEditedSettings().LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "Height", -1);
+   const int depthcur = GetEditedSettings().GetWindow_FSColorDepth(m_wndId);
+   const float refreshrate = GetEditedSettings().GetWindow_FSRefreshRate(m_wndId);
+   const int widthcur = GetEditedSettings().GetWindow_Width(m_wndId);
+   const int heightcur = GetEditedSettings().GetWindow_Height(m_wndId);
    VPX::Window::VideoMode curSelMode;
    curSelMode.width = widthcur;
    curSelMode.height = heightcur;
@@ -445,7 +447,7 @@ void VideoOptionPropPage::UpdateFullscreenModesList()
 
 void VideoOptionPropPage::LoadDisplaySettings()
 {
-   Settings& settings = GetEditedSettings();
+   const Settings& settings = GetEditedSettings();
    BeginLoad();
 
    // FIXME remove or implement in SDL
@@ -464,7 +466,7 @@ void VideoOptionPropPage::LoadDisplaySettings()
    }
    m_displays.clear();
    m_displays = VPX::Window::GetDisplays();
-   const string selectedDisplay = settings.LoadValueString(m_wndSection, m_wndSettingPrefix + "Display");
+   const string selectedDisplay = settings.GetWindow_Display(m_wndId);
    bool displaySelected = false;
    for (const auto& dispConf : m_displays)
    {
@@ -480,24 +482,22 @@ void VideoOptionPropPage::LoadDisplaySettings()
    }
    m_wndDisplay.SetRedraw(true);
 
-   const bool fullscreen = settings.LoadValueBool(m_wndSection, m_wndSettingPrefix + "FullScreen"); // IsWindows10_1803orAbove());
+   const bool fullscreen = settings.GetWindow_FullScreen(m_wndId); // IsWindows10_1803orAbove());
    m_wndFullscreen.SetCheck(fullscreen ? BST_CHECKED : BST_UNCHECKED);
    m_wndWindowed.SetCheck(fullscreen ? BST_UNCHECKED : BST_CHECKED);
    OnCommand(IDC_EXCLUSIVE_FULLSCREEN, 0L); // Force UI update
 
-   const int x = settings.LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "WndX", -1);
-   const int y = settings.LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "WndY", -1);
+   const int x = settings.GetWindow_WndX(m_wndId);
+   const int y = settings.GetWindow_WndY(m_wndId);
    SetDlgItemInt(IDC_X_OFFSET_EDIT, x, TRUE);
    SetDlgItemInt(IDC_Y_OFFSET_EDIT, y, TRUE);
 
-   const int width = settings.LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "Width", -1);
-   const int height = settings.LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "Height", -1);
+   const int width = settings.GetWindow_Width(m_wndId);
+   const int height = settings.GetWindow_Height(m_wndId);
    SetDlgItemInt(IDC_WIDTH_EDIT, width, TRUE);
    SetDlgItemInt(IDC_HEIGHT_EDIT, height, TRUE);
 
    SelectAspectRatio(width, height);
-   if(settings.LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "AspectRatio", -1) == 0) // Free
-      m_wndAspectRatio.SetCurSel(0);
 
    UpdateDisplayHeightFromWidth();
    EndLoad();
@@ -523,7 +523,7 @@ void VideoOptionPropPage::SaveDisplaySettings()
    if (display < 0)
       embedded = true;
    else
-      settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Display", m_displays[display].displayName, !saveAll);
+      settings.SetWindow_Display(m_wndId, m_displays[display].displayName, !saveAll);
 
    if (embedded)
    {
@@ -531,10 +531,10 @@ void VideoOptionPropPage::SaveDisplaySettings()
       const int y = GetDlgItemInt(IDC_Y_OFFSET_EDIT, TRUE);
       const int width = GetDlgItemInt(IDC_WIDTH_EDIT, TRUE);
       const int height = GetDlgItemInt(IDC_HEIGHT_EDIT, TRUE);
-      settings.SaveValue(m_wndSection, m_wndSettingPrefix + "WndX", x, !saveAll);
-      settings.SaveValue(m_wndSection, m_wndSettingPrefix + "WndY", y, !saveAll);
-      settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Width", width, !saveAll);
-      settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Height", height, !saveAll);
+      settings.SetWindow_WndX(m_wndId, x, !saveAll);
+      settings.SetWindow_WndY(m_wndId, y, !saveAll);
+      settings.SetWindow_Width(m_wndId, width, !saveAll);
+      settings.SetWindow_Height(m_wndId, height, !saveAll);
    }
    else
    {
@@ -545,10 +545,10 @@ void VideoOptionPropPage::SaveDisplaySettings()
          if (index >= 0 && (size_t)index < m_allVideoModes.size())
          {
             const VPX::Window::VideoMode* const pvm = &m_allVideoModes[index];
-            settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Width", pvm->width, !saveAll);
-            settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Height", pvm->height, !saveAll);
-            settings.SaveValue(m_wndSection, m_wndSettingPrefix + "ColorDepth", pvm->depth, !saveAll);
-            settings.SaveValue(m_wndSection, m_wndSettingPrefix + "RefreshRate", pvm->refreshrate, !saveAll);
+            settings.SetWindow_Width(m_wndId, pvm->width, !saveAll);
+            settings.SetWindow_Height(m_wndId, pvm->height, !saveAll);
+            settings.SetWindow_FSColorDepth(m_wndId, pvm->depth, !saveAll);
+            settings.SetWindow_FSRefreshRate(m_wndId, pvm->refreshrate, !saveAll);
          }
       }
       else
@@ -562,25 +562,23 @@ void VideoOptionPropPage::SaveDisplaySettings()
             height = (int)(width * (double)aspectRatios[arMode].y / (double)aspectRatios[arMode].x);
          if (!saveAll)
          {
-            settings.DeleteValue(m_wndSection, m_wndSettingPrefix + "AspectRatio");
-            settings.DeleteValue(m_wndSection, m_wndSettingPrefix + "WndX");
-            settings.DeleteValue(m_wndSection, m_wndSettingPrefix + "WndY");
-            settings.DeleteValue(m_wndSection, m_wndSettingPrefix + "Width");
-            settings.DeleteValue(m_wndSection, m_wndSettingPrefix + "Height");
-            settings.DeleteValue(m_wndSection, m_wndSettingPrefix + "ColorDepth");
-            settings.DeleteValue(m_wndSection, m_wndSettingPrefix + "RefreshRate");
+            settings.ResetWindow_WndX(m_wndId);
+            settings.ResetWindow_WndY(m_wndId);
+            settings.ResetWindow_Width(m_wndId);
+            settings.ResetWindow_Height(m_wndId);
+            settings.ResetWindow_FSColorDepth(m_wndId);
+            settings.ResetWindow_FSRefreshRate(m_wndId);
          }
-         settings.SaveValue(m_wndSection, m_wndSettingPrefix + "WndX", x, !saveAll);
-         settings.SaveValue(m_wndSection, m_wndSettingPrefix + "WndY", y, !saveAll);
+         settings.SetWindow_WndX(m_wndId, x, !saveAll);
+         settings.SetWindow_WndY(m_wndId, y, !saveAll);
          if (width > 0 && height > 0)
          {
-            settings.SaveValue(m_wndSection, m_wndSettingPrefix + "AspectRatio", arMode, !saveAll);
-            settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Width", width, !saveAll);
-            settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Height", height, !saveAll);
+            settings.SetWindow_Width(m_wndId, width, !saveAll);
+            settings.SetWindow_Height(m_wndId, height, !saveAll);
          }
       }
-      settings.SaveValue(m_wndSection, m_wndSettingPrefix + "FullScreen", fullscreen, !saveAll);
-      settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Render10Bit", m_wndForce10bit.GetCheck() == BST_CHECKED, !saveAll);
+      settings.SetWindow_FullScreen(m_wndId, fullscreen, !saveAll);
+      settings.SetWindow_FSRender10Bit(m_wndId, m_wndForce10bit.GetCheck() == BST_CHECKED, !saveAll);
    }
    settings.Validate(false);
    settings.Save();
@@ -816,7 +814,7 @@ BOOL PFViewOptPage::OnInitDialog()
    m_viewMode.AddString("Desktop (no FSS)");
    m_viewMode.SetRedraw(true);
    AddToolTip(m_viewMode, "Defines the view mode used when running a table\n\nDesktop/FSS will use the FSS view for table with FSS enabled, desktop otherwise.\n\nCabinet uses the 'fullscreen' view\n\nDesktop always uses the desktop view (no FSS)");
-   InitDisplayControls(Settings::Player, "Playfield"s, false);
+   InitDisplayControls(VPXWindowId::VPXWINDOW_Playfield, Settings::Player, "Playfield"s, false);
    LoadSettings(GetEditedSettings());
    return TRUE;
 }
@@ -874,7 +872,7 @@ ScoreViewOptPage::ScoreViewOptPage(Settings& appSettings, Settings& tableSetting
 BOOL ScoreViewOptPage::OnInitDialog()
 {
    VideoOptionPropPage::OnInitDialog();
-   InitDisplayControls(Settings::ScoreView, "ScoreView"s, true);
+   InitDisplayControls(VPXWindowId::VPXWINDOW_ScoreView, Settings::ScoreView, "ScoreView"s, true);
    LoadSettings(GetEditedSettings());
    return TRUE;
 }
@@ -914,7 +912,7 @@ BackglassViewOptPage::BackglassViewOptPage(Settings& appSettings, Settings& tabl
 BOOL BackglassViewOptPage::OnInitDialog()
 {
    VideoOptionPropPage::OnInitDialog();
-   InitDisplayControls(Settings::Backglass, "Backglass"s, true);
+   InitDisplayControls(VPXWindowId::VPXWINDOW_Backglass, Settings::Backglass, "Backglass"s, true);
    LoadSettings(GetEditedSettings());
    return TRUE;
 }
@@ -952,7 +950,7 @@ VRPreviewOptPage::VRPreviewOptPage(Settings& appSettings, Settings& tableSetting
 BOOL VRPreviewOptPage::OnInitDialog()
 {
    VideoOptionPropPage::OnInitDialog();
-   InitDisplayControls(Settings::PlayerVR, "Preview"s, false);
+   InitDisplayControls(VPXWindowId::VPXWINDOW_VRPreview, Settings::PlayerVR, "Preview"s, false);
    LoadSettings(GetEditedSettings());
    return TRUE;
 }

@@ -5,6 +5,7 @@
 #include <SDL3/SDL.h>
 
 #include "core/Settings.h"
+#include "plugins/VPXPlugin.h"
 
 namespace VPX
 {
@@ -35,7 +36,7 @@ private:
 class Window final
 {
 public:
-   Window(const string &title, const Settings& settings, const Settings::Section section, const string &settingsPrefix); // OS Window
+   Window(const string& title, const Settings& settings, VPXWindowId windowId); // OS Window
    Window(const int width, const int height); // VR Output
    ~Window();
 
@@ -100,8 +101,7 @@ private:
    bool m_fullscreen;
    float m_refreshrate;
    int m_bitdepth;
-   const Settings::Section m_settingsSection;
-   const string m_settingsPrefix;
+   const VPXWindowId m_windowId;
    float m_sdrWhitePoint = 1.f;
    float m_hdrHeadRoom = 1.f;
    bool m_wcgDisplay = false;
@@ -116,21 +116,20 @@ private:
 class RenderOutput final
 {
 public:
-   RenderOutput(const string& title, const Settings& settings, const Settings::Section section, const string& settingsPrefix)
-      : m_settingsSection(section)
-      , m_settingsPrefix(settingsPrefix)
+   RenderOutput(const string& title, const Settings& settings, VPXWindowId windowId)
+      : m_windowId(windowId)
    {
-      m_mode = static_cast<OutputMode>(settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Output", OM_DISABLED));
+      m_mode = static_cast<OutputMode>(settings.GetWindow_Mode(windowId));
       if (m_mode == OM_EMBEDDED)
       {
-         const int x = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "WndX", 0);
-         const int y = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "WndY", 0);
-         const int width = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Width", 640);
-         const int height = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Height", 480);
+         const int x = settings.GetWindow_WndX(windowId);
+         const int y = settings.GetWindow_WndY(windowId);
+         const int width = settings.GetWindow_Width(windowId);
+         const int height = settings.GetWindow_Height(windowId);
          m_embeddedWindow = new EmbeddedWindow(x, y, width, height);
       }
       else if (m_mode == OM_WINDOW)
-         m_window = new Window(title, settings, section, settingsPrefix);
+         m_window = new Window(title, settings, windowId);
    }
 
    ~RenderOutput()
@@ -183,8 +182,7 @@ public:
    }
 
 private:
-   const Settings::Section m_settingsSection;
-   const string m_settingsPrefix;
+   const VPXWindowId m_windowId;
    OutputMode m_mode = OutputMode::OM_DISABLED;
    Window* m_window = nullptr;
    EmbeddedWindow* m_embeddedWindow = nullptr;

@@ -31,7 +31,7 @@ static std::unique_ptr<ScoreView> scoreView;
 
 int OnRender(VPXRenderContext2D* ctx, void*)
 {
-   if ((ctx->window != VPXAnciliaryWindow::VPXWINDOW_Backglass) && (ctx->window != VPXAnciliaryWindow::VPXWINDOW_ScoreView))
+   if ((ctx->window != VPXWindowId::VPXWINDOW_Backglass) && (ctx->window != VPXWindowId::VPXWINDOW_ScoreView))
       return false;
    if (scoreView == nullptr)
    {
@@ -62,7 +62,7 @@ void OnGetRenderer(const unsigned int msgId, void* context, void* msgData)
 {
    static AnciliaryRendererDef entry = { "ScoreView", "ScoreView", "Renderer for generic score displays", nullptr, OnRender };
    GetAnciliaryRendererMsg* msg = static_cast<GetAnciliaryRendererMsg*>(msgData);
-   if (msg->window == VPXAnciliaryWindow::VPXWINDOW_ScoreView)
+   if (msg->window == VPXWindowId::VPXWINDOW_ScoreView)
    {
       if (msg->count < msg->maxEntryCount)
          msg->entries[msg->count] = entry;

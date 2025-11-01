@@ -329,13 +329,8 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    // Cache Seg display renderer properties
    for (int profile = 0; profile < (int)std::size(m_segColor); profile++)
    {
-      const string prefix = "Profile." + std::to_string(profile + 1) + '.';
-      m_segColor[profile] = convertColor(
-         m_table->m_settings.LoadValueUInt(Settings::Alpha, prefix + "Color"),
-         m_table->m_settings.LoadValueFloat(Settings::Alpha, prefix + "Brightness"));
-      m_segUnlitColor[profile] = convertColor(
-         m_table->m_settings.LoadValueUInt(Settings::Alpha, prefix + "Unlit"),
-         m_table->m_settings.LoadValueFloat(Settings::Alpha, prefix + "DiffuseGlow"));
+      m_segColor[profile] = convertColor(m_table->m_settings.GetAlpha_ProfileColor(profile), m_table->m_settings.GetAlpha_ProfileBrightness(profile));
+      m_segUnlitColor[profile] = convertColor(m_table->m_settings.GetAlpha_ProfileUnlit(profile), m_table->m_settings.GetAlpha_ProfileDiffuseGlow(profile));
       // Convert color as settings are sRGB color while shader needs linear RGB color
       m_segColor[profile].x = InvsRGB(m_segColor[profile].x);
       m_segColor[profile].y = InvsRGB(m_segColor[profile].y);
