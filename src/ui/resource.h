@@ -365,7 +365,6 @@
 #define IDR_CODEVIEWACCEL               271
 #define IDD_COLLECTDIALOG               271
 #define IDD_COLLECTION                  272
-#define IDR_LAYERLISTACCEL              272
 #define IDD_PROPDISPREEL                273
 #define IDD_PROPMULTI                   274
 #define IDR_DISP_REEL                   277

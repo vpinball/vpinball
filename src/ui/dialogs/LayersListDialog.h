@@ -5,8 +5,8 @@
 class LayerTreeView final : public CTreeView
 {
 public:
-   LayerTreeView();
-   ~LayerTreeView();
+   LayerTreeView() = default;
+   ~LayerTreeView() override = default;
 
    void SetActiveTable(PinTable* ptable);
    void SetFilter(const string& filter, bool isCaseSensitive);
@@ -18,10 +18,10 @@ public:
 
 protected:
    void OnAttach() override;
-   BOOL OnCommand(WPARAM wparam, LPARAM lparam) override;
    void PreCreate(CREATESTRUCT& cs) override;
    LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
    LRESULT OnNotifyReflect(WPARAM wparam, LPARAM lparam) override;
+   BOOL PreTranslateMessage(MSG& msg) override;
 
    LRESULT OnNMClick(LPNMHDR lpnmh);
    LRESULT OnNMDBClick(LPNMHDR lpnmh);
@@ -34,7 +34,6 @@ private:
    CImageList  m_stateImages;
    bool        m_dragging = false;
    PinTable*   m_activeTable = nullptr;
-   HACCEL      m_accel;
    vector<HTREEITEM> m_DragItems;
 
    string m_filter;
@@ -55,7 +54,7 @@ class LayersListDialog final : public CDialog
 {
 public:
    LayersListDialog();
-   ~LayersListDialog() override;
+   ~LayersListDialog() override = default;
 
    void SetActiveTable(PinTable* ptable);
    void Update();
@@ -70,6 +69,7 @@ protected:
    BOOL OnInitDialog() override;
    INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
    BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
+   BOOL PreTranslateMessage(MSG& msg) override;
 
 private:
    void UpdateCommands();

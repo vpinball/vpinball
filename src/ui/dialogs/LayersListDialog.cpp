@@ -10,8 +10,6 @@ LayersListDialog::LayersListDialog()
 {
 }
 
-LayersListDialog::~LayersListDialog() { }
-
 PartGroup* LayersListDialog::GetSelectedPartGroup() const
 {
    IEditable* selection = m_layerTreeView.GetSelection();
@@ -106,6 +104,11 @@ INT_PTR LayersListDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
 
    // Pass unhandled messages on to parent DialogProc
    return DialogProcDefault(msg, wparam, lparam);
+}
+
+BOOL LayersListDialog::PreTranslateMessage(MSG& msg)
+{
+   return IsDialogMessage(msg);
 }
 
 BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
@@ -271,16 +274,6 @@ void CDockLayers::OnClose()
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-LayerTreeView::LayerTreeView()
-   : m_accel(LoadAccelerators(g_pvp->theInstance, MAKEINTRESOURCE(IDR_LAYERLISTACCEL)))
-{
-}
-
-LayerTreeView::~LayerTreeView()
-{
-   DestroyAcceleratorTable(m_accel);
-}
 
 void LayerTreeView::SetActiveTable(PinTable* ptable)
 {
@@ -526,24 +519,10 @@ void LayerTreeView::PreCreate(CREATESTRUCT& cs)
 #define MAKEPOINTS(l) (*((POINTS FAR*)&(l)))
 #endif
 
-BOOL LayerTreeView::OnCommand(WPARAM wparam, LPARAM lparam)
-{
-   UNREFERENCED_PARAMETER(lparam);
-
-   switch (LOWORD(wparam))
-   {
-   case IDC_RENAME: EditLabel(CTreeView::GetSelection()); return FALSE;
-   }
-   return TRUE;
-}
-
-
 LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
 {
    switch (msg)
    {
-   case WM_SETFOCUS: GetApp()->SetAccelerators(m_accel, GetHwnd()); break;
-   case WM_KILLFOCUS: GetApp()->SetAccelerators(g_pvp->GetFrameAccel(), g_pvp->GetHwnd()); break;
    case WM_MOUSEACTIVATE: SetFocus(); break;
 
    case WM_MOUSEMOVE:
@@ -599,6 +578,24 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
    return WndProcDefault(msg, wparam, lparam);
 }
 
+BOOL LayerTreeView::PreTranslateMessage(MSG& msg)
+{
+   if (msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST)
+   {
+      if ((msg.message == WM_KEYDOWN || msg.message == WM_KEYUP) && (msg.wParam == VK_RETURN || msg.wParam == VK_ESCAPE) && GetEditControl())
+      { // Forward label edit validation/discard to edit control
+         SendMessage(GetEditControl(), msg.message, msg.wParam, msg.lParam);
+         return true;
+      }
+      else if (msg.message == WM_KEYDOWN && msg.wParam == VK_F2 && GetEditControl() == nullptr)
+      { // Override F2 accelerator to start label edition
+         EditLabel(CTreeView::GetSelection());
+         return true;
+      }
+   }
+   return false;
+}
+
 LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
 {
    if (m_activeTable == nullptr)
@@ -620,10 +617,9 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
       return TRUE;
    }
    case TVN_SELCHANGED:
-   {
       GetParent().SendMessage(WM_TREE_SEL_CHANGED);
       return FALSE;
-   }
+
    case TVN_ENDLABELEDIT:
    {
       const LPNMTVDISPINFO pinfo = reinterpret_cast<LPNMTVDISPINFO>(lpnmh);
