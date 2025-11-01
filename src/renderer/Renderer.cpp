@@ -2659,6 +2659,7 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
       #endif
    #endif
 
+      return outputBackBuffer;
    }
 
    if (m_stereo3Denabled)
@@ -2674,7 +2675,7 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
       }
       // Stereo composition
       RenderTarget* outputRT = outputBackBuffer;
-      m_renderDevice->SetRenderTarget("Stereo Anaglyph"s, outputRT, false);
+      m_renderDevice->SetRenderTarget("Stereo"s, outputRT, false);
       m_renderDevice->AddRenderTargetDependency(renderedRT);
       m_renderDevice->m_stereoShader->SetTexture(SHADER_tex_stereo_fb, renderedRT->GetColorSampler());
       m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), 1.0f, 1.0f);
@@ -2733,12 +2734,26 @@ void Renderer::RenderPostProcess()
    // Upscale: When using downscaled backbuffer (for performance reason), upscaling is done after postprocessing
    renderedRT = ApplyUpscaling(renderedRT, hasStereoPass ? nullptr : m_renderDevice->GetOutputBackBuffer());
 
-   // Render LiveUI after tonemapping (otherwise it would break the calibration process for stereo anaglyph)
-   m_renderDevice->SetRenderTarget("LiveUI"s, renderedRT, true, true);
-   g_pplayer->m_liveUI->Update();
+   // If using OpenVR, render LiveUI before pushing eyes to headset
+   #ifdef ENABLE_VR
+   if (m_stereo3D == STEREO_VR)
+   {
+      m_renderDevice->SetRenderTarget("LiveUI"s, renderedRT, true, true);
+      g_pplayer->m_liveUI->Update();
+   }
+   #endif
 
    // Apply stereo
    renderedRT = ApplyStereo(renderedRT, m_renderDevice->GetOutputBackBuffer());
+
+   // Render LiveUI after all other steps (otherwise it would break the calibration process for stereo anaglyph, breaks XR passthrough color keying)
+   #ifdef ENABLE_VR
+   if (m_stereo3D != STEREO_VR)
+   #endif
+   {
+      m_renderDevice->SetRenderTarget("LiveUI"s, renderedRT, true, true);
+      g_pplayer->m_liveUI->Update();
+   }
 
    // The last rendered render target must be the output back buffer
    assert(renderedRT == m_renderDevice->GetOutputBackBuffer());
