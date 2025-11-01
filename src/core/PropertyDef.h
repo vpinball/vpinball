@@ -59,7 +59,6 @@ public:
       , m_def(GetSteppedInRange(def))
    {
       assert(m_min <= m_max);
-      assert(m_step != 0.f);
       assert(m_def == GetSteppedInRange(m_def));
    }
    FloatPropertyDef(const FloatPropertyDef& other)
@@ -78,7 +77,7 @@ public:
    const float m_step;
    const float m_def;
 
-   float GetStepped(float v) const { return m_min + roundf((v - m_min) / m_step) * m_step; }
+   float GetStepped(float v) const { return (m_step != 0.f) ? (m_min + roundf((v - m_min) / m_step) * m_step) : v; }
    float GetSteppedInRange(float v) const { return clamp(GetStepped(v), m_min, m_max); }
    float GetValid(float v) const { return (v < m_min || v > m_max) ? m_def : GetSteppedInRange(v); }
 

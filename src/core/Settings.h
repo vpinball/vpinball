@@ -58,13 +58,15 @@ public:
    inline void Set##groupId##_##propId(type v, bool asTableOverride) { Set(m_prop##groupId##_##propId, (int)v, asTableOverride); } \
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
 
-#define PropFloat(groupId, propId, label, comment, minVal, maxVal, step, defVal) \
+#define PropFloatStepped(groupId, propId, label, comment, minVal, maxVal, step, defVal) \
    static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId \
       = GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(#groupId, #propId, label, comment, minVal, maxVal, step, defVal)); \
    static inline const VPX::Properties::FloatPropertyDef* Get##groupId##_##propId##_Property() { return GetRegistry().GetFloatProperty(m_prop##groupId##_##propId); } \
    inline float Get##groupId##_##propId() const { return m_store.GetFloat(m_prop##groupId##_##propId); } \
    inline void Set##groupId##_##propId(float v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); } \
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
+
+#define PropFloat(groupId, propId, label, comment, minVal, maxVal, defVal) PropFloatStepped(groupId, propId, label, comment, minVal, maxVal, 0.f, defVal)
 
 #define PropString(groupId, propId, label, comment, defVal) \
    static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId \
@@ -135,7 +137,7 @@ public:
    PropEnum(Player, ShowFPS, "Show FPS"s, "Performance overlay display mode"s, int /* PerfUI::PerfMode */, 0, "Disable"s, "FPS"s, "Full"s);
    PropBool(Player, SSRefl, "Additive Screen Space Reflection"s, "Add global reflection to the entire scene"s, false);
    PropBool(Player, HDRDisableToneMapper, "Disable tonemapping on HDR display"s, "Do not perform tonemapping when rendering on a HDR display"s, true);
-   PropFloat(Player, HDRGlobalExposure, "HDR Display Global Exposure", "Global exposure scale multiplier for HDR capable displays"s, 0.f, 5.f, 0.01f, 1.f);
+   PropFloat(Player, HDRGlobalExposure, "HDR Display Global Exposure", "Global exposure scale multiplier for HDR capable displays"s, 0.f, 5.f, 1.f);
    PropBool(Player, ForceBloomOff, "Disable Bloom"s, "Disable postprocessed bloom filter"s, false);
    PropBool(Player, ForceMotionBlurOff, "Disable Motion Blur"s, "Disable postprocessed ball motion blur"s, false);
    PropBool(Player, ForceAnisotropicFiltering, "Force Anisotropic Filtering"s, "Force anisotropic filtering for better rendering quality at the cost of a bit of performance"s, true);
@@ -153,7 +155,7 @@ public:
    PropInt(Player, AlphaRampAccuracy, "Detail Level"s, "Images sized above this limit will be automatically scaled down on load."s, 1, 10, 10);
 
    // Aliasing & sharpening
-   PropFloat(Player, AAFactor, "Full Scene Anti Aliasing"s, "Enables brute-force Up/Downsampling (similar to DSR).\r\nThis delivers very good quality but has a significant impact on performance.\r\n200% means twice the resolution to be handled while rendering"s, 0.5f, 2.f, 0.1f, 1.f);
+   PropFloat(Player, AAFactor, "Full Scene Anti Aliasing"s, "Enables brute-force Up/Downsampling (similar to DSR).\r\nThis delivers very good quality but has a significant impact on performance.\r\n200% means twice the resolution to be handled while rendering"s, 0.5f, 2.f, 1.f);
    PropEnum(Player, MSAASamples, "MSAA level"s,
       "Set the amount of MSAA samples.\r\nMSAA can help reduce geometry aliasing at the cost of performance and GPU memory.\r\nThis can improve image quality if not using supersampling"s,
       int, 0, "Disabled",
@@ -167,7 +169,7 @@ public:
    PropBool(Player, BallAntiStretch, "Unstretch Ball"s, "Compensate ball stretching"s, false);
    PropBool(Player, DisableLightingForBalls, "Disable Ball Lighting"s, "Disable lighting and reflection effects on balls, e.g. to help the visually handicapped."s, false);
    PropBool(Player, BallTrail, "Ball Trail"s, "Legacy ball trails"s, false);
-   PropFloat(Player, BallTrailStrength, "Ball Trail Strength", "Strength of the fake ball trail"s, 0.f, 5.f, 0.01f, 0.5f);
+   PropFloat(Player, BallTrailStrength, "Ball Trail Strength", "Strength of the fake ball trail"s, 0.f, 5.f, 0.5f);
    PropBool(Player, OverwriteBallImage, "Overwrite ball image"s, "Allow to define images that will be used instead of the table's provided one"s, false);
    PropString(Player, BallImage, "Ball image override"s, "Image to use for the ball instead of the table's provide one"s, ""s);
    PropString(Player, DecalImage, "Decal image override"s, "Image to use for the ball's decal instead of the table's provide one"s, ""s);
@@ -180,16 +182,16 @@ public:
    PropInt(Player, Exitconfirm, "Direct Exit Length"s, "Length of a long ESC press that directly closes the app, (sadly) expressed in seconds * 60."s, 0, 30 * 60, 120);
 
    // Nudge & Plumb settings
-   PropFloat(Player, NudgeOrientation0, "Sensor #0 - Orientation", "Define sensor orientation"s, 0.f, 360.f, 1.0f, 0.f);
-   PropFloat(Player, NudgeOrientation1, "Sensor #1 - Orientation", "Define sensor orientation"s, 0.f, 360.f, 1.0f, 0.f);
+   PropFloat(Player, NudgeOrientation0, "Sensor #0 - Orientation", "Define sensor orientation"s, 0.f, 360.f, 0.f);
+   PropFloat(Player, NudgeOrientation1, "Sensor #1 - Orientation", "Define sensor orientation"s, 0.f, 360.f, 0.f);
    PropBool(Player, NudgeFilter0, "Sensor #0 - Use Filter", "Enable/Disable filtering acquired value to prevent noise"s, false);
    PropBool(Player, NudgeFilter1, "Sensor #1 - Use Filter", "Enable/Disable filtering acquired value to prevent noise"s, false);
    PropBool(Player, SimulatedPlumb, "Plumb simulation"s, "Enable/Disable mechanical Tilt plumb simulation"s, true);
-   PropFloat(Player, PlumbInertia, "Plumb Inertia", ""s, 0.001f, 1.f, 0.0001f, 0.35f);
-   PropFloat(Player, PlumbThresholdAngle, "Plumb Threshold", "Define threshold angle at which a Tilt is caused"s, 5.0f, 60.f, 0.1f, 35.f);
+   PropFloat(Player, PlumbInertia, "Plumb Inertia", ""s, 0.001f, 1.f, 0.35f);
+   PropFloat(Player, PlumbThresholdAngle, "Plumb Threshold", "Define threshold angle at which a Tilt is caused"s, 5.0f, 60.f, 35.f);
    PropBool(Player, EnableLegacyNudge, "Legacy Keyboard nudge"s, "Enable/Disable legacy keyboard nudge mode"s, false);
-   PropFloat(Player, LegacyNudgeStrength, "Legacy Nudge Strength"s, "Strength of nudge when using the legacy keyboard nudge mode"s, 0.f, 90.f, 0.1f, 1.f);
-   PropFloat(Player, NudgeStrength, "Visual Nudge Strength"s, "Changes the visual effect/screen shaking when nudging the table."s, 0.f, 0.25f, 0.001f, 0.02f);
+   PropFloat(Player, LegacyNudgeStrength, "Legacy Nudge Strength"s, "Strength of nudge when using the legacy keyboard nudge mode"s, 0.f, 90.f, 1.f);
+   PropFloat(Player, NudgeStrength, "Visual Nudge Strength"s, "Changes the visual effect/screen shaking when nudging the table."s, 0.f, 0.25f, 0.02f);
 
    // Plunger settings
    PropBool(Player, PlungerRetract, "One Second Retract"s, "Enable retracting the plunger after a 1 second press when using the digital plunger emulation through keyboard or joystick button"s, false);
@@ -197,10 +199,10 @@ public:
    PropInt(Player, PlungerNormalize, "Plunger normalize override"s, "This value may be defined to override the table's plunger normalization"s, 0, 100, 100); // Hacky: This should be a table override, not a player property as it overrides table data
 
    // VR settings
-   PropFloat(PlayerVR, Orientation, "View orientation"s, ""s, -180.f, 180.f, 0.1f, 0.f);
-   PropFloat(PlayerVR, TableX, "View Offset X"s, ""s, -100.f, 100.f, 0.1f, 0.f);
-   PropFloat(PlayerVR, TableY, "View Offset Y"s, ""s, -100.f, 100.f, 0.1f, 0.f);
-   PropFloat(PlayerVR, TableZ, "View Offset Z"s, ""s, -100.f, 100.f, 0.1f, 0.f);
+   PropFloat(PlayerVR, Orientation, "View orientation"s, ""s, -180.f, 180.f, 0.f);
+   PropFloat(PlayerVR, TableX, "View Offset X"s, ""s, -100.f, 100.f, 0.f);
+   PropFloat(PlayerVR, TableY, "View Offset Y"s, ""s, -100.f, 100.f, 0.f);
+   PropFloat(PlayerVR, TableZ, "View Offset Z"s, ""s, -100.f, 100.f, 0.f);
    PropBool(PlayerVR, UsePassthroughColor, "Color Keyed Passthrough"s, "Replace VR background by a user defined color, to allow color keyed passthrough (for example using Virtual Desktop)"s, false);
    PropInt(PlayerVR, PassthroughColor, "Color Keyed Passthrough color"s, "Color that will replace the background"s, 0x000000, 0xFFFFFF, 0xBB4700);
    PropEnum(Player, VRPreview, "Preview mode"s, "Select preview mode"s, int, 1, "Disabled"s, "Left Eye"s, "Right Eye"s, "Both Eyes"s);
@@ -211,12 +213,12 @@ public:
    PropEnum(Player, Stereo3D, "Stereo rendering"s, "Stereo rendering mode"s, StereoMode, 0, "Disabled"s, "Top / Bottom"s, "Interlaced (e.g. LG TVs)"s,
       "Flipped Interlaced (e.g. LG TVs)"s, "Side by Side"s, "Anaglyph Red/Cyan"s, "Anaglyph Green/Magenta"s, "Anaglyph Blue/Amber"s, "Anaglyph Cyan/Red"s, 
       "Anaglyph Magenta/Green"s, "Anaglyph Amber/Blue"s, "Anaglyph Custom 1"s, "Anaglyph Custom 2"s, "Anaglyph Custom 3"s, "Anaglyph Custom 4"s);
-   PropFloat(Player, Stereo3DEyeSeparation, "Eye distance"s, "Physical distance (mm) between eyes"s, 5.f, 200.f, 0.1f, 63.f);
-   PropFloat(Player, Stereo3DBrightness, "Stereo Brightness"s, "Brightness adjustment applied to stereo rendering"s, 0.f, 2.f, 0.01f, 1.f);
-   PropFloat(Player, Stereo3DSaturation, "Stereo Saturation"s, "Saturation adjustment applied to stereo rendering"s, 0.f, 2.f, 0.01f, 1.f);
-   PropFloat(Player, Stereo3DDefocus, "Anaglyph Defocus"s, "Defocusing of the lesser eye to anaglyph stereo rendering"s, 0.f, 1.f, 0.01f, 0.f);
-   PropFloat(Player, Stereo3DLeftContrast, "Anaglyph Left Contrast"s, "Left eye contrast adjustment applied to anaglyph stereo rendering"s, 0.f, 2.f, 0.01f, 1.f);
-   PropFloat(Player, Stereo3DRightContrast, "Anaglyph Right Contrast"s, "Right eye contrast adjustment applied to anaglyph stereo rendering"s, 0.f, 2.f, 0.01f, 1.f);
+   PropFloat(Player, Stereo3DEyeSeparation, "Eye distance"s, "Physical distance (mm) between eyes"s, 5.f, 200.f, 63.f);
+   PropFloat(Player, Stereo3DBrightness, "Stereo Brightness"s, "Brightness adjustment applied to stereo rendering"s, 0.f, 2.f, 1.f);
+   PropFloat(Player, Stereo3DSaturation, "Stereo Saturation"s, "Saturation adjustment applied to stereo rendering"s, 0.f, 2.f, 1.f);
+   PropFloat(Player, Stereo3DDefocus, "Anaglyph Defocus"s, "Defocusing of the lesser eye to anaglyph stereo rendering"s, 0.f, 1.f, 0.f);
+   PropFloat(Player, Stereo3DLeftContrast, "Anaglyph Left Contrast"s, "Left eye contrast adjustment applied to anaglyph stereo rendering"s, 0.f, 2.f, 1.f);
+   PropFloat(Player, Stereo3DRightContrast, "Anaglyph Right Contrast"s, "Right eye contrast adjustment applied to anaglyph stereo rendering"s, 0.f, 2.f, 1.f);
    PropEnum(Player, Anaglyph1Filter, "Anaglyph Filter"s, "Anaglyph filter"s, int, 2, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
    PropEnum(Player, Anaglyph2Filter, "Anaglyph Filter"s, "Anaglyph filter"s, int, 2, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
    PropEnum(Player, Anaglyph3Filter, "Anaglyph Filter"s, "Anaglyph filter"s, int, 2, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
@@ -229,29 +231,29 @@ public:
    PropEnum(Player, Anaglyph10Filter, "Anaglyph Filter"s, "Anaglyph filter applied to anaglyph profile #10"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
    PropArray(Player, AnaglyphFilter, int, Int, m_propPlayer_Anaglyph1Filter, m_propPlayer_Anaglyph2Filter, m_propPlayer_Anaglyph3Filter, m_propPlayer_Anaglyph4Filter,
       m_propPlayer_Anaglyph5Filter, m_propPlayer_Anaglyph6Filter, m_propPlayer_Anaglyph7Filter, m_propPlayer_Anaglyph8Filter, m_propPlayer_Anaglyph9Filter, m_propPlayer_Anaglyph10Filter);
-   PropFloat(Player, Anaglyph1DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 0.01f, 1.f);
-   PropFloat(Player, Anaglyph2DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 0.01f, 1.f);
-   PropFloat(Player, Anaglyph3DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 0.01f, 1.f);
-   PropFloat(Player, Anaglyph4DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 0.01f, 1.f);
-   PropFloat(Player, Anaglyph5DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 0.01f, 1.f);
-   PropFloat(Player, Anaglyph6DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 0.01f, 1.f);
-   PropFloat(Player, Anaglyph7DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 0.01f, 1.f);
-   PropFloat(Player, Anaglyph8DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 0.01f, 1.f);
-   PropFloat(Player, Anaglyph9DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 0.01f, 1.f);
-   PropFloat(Player, Anaglyph10DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 0.01f, 1.f);
+   PropFloat(Player, Anaglyph1DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
+   PropFloat(Player, Anaglyph2DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
+   PropFloat(Player, Anaglyph3DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
+   PropFloat(Player, Anaglyph4DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
+   PropFloat(Player, Anaglyph5DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
+   PropFloat(Player, Anaglyph6DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
+   PropFloat(Player, Anaglyph7DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
+   PropFloat(Player, Anaglyph8DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
+   PropFloat(Player, Anaglyph9DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
+   PropFloat(Player, Anaglyph10DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation"s, 0.f, 1.f, 1.f);
    PropArray(Player, AnaglyphDynDesat, float, Float, m_propPlayer_Anaglyph1DynDesat, m_propPlayer_Anaglyph2DynDesat, m_propPlayer_Anaglyph3DynDesat, m_propPlayer_Anaglyph4DynDesat,
       m_propPlayer_Anaglyph5DynDesat, m_propPlayer_Anaglyph6DynDesat, m_propPlayer_Anaglyph7DynDesat, m_propPlayer_Anaglyph8DynDesat, m_propPlayer_Anaglyph9DynDesat,
       m_propPlayer_Anaglyph10DynDesat);
-   PropFloat(Player, Anaglyph1Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.01f, 0.f);
-   PropFloat(Player, Anaglyph2Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.01f, 0.f);
-   PropFloat(Player, Anaglyph3Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.01f, 0.f);
-   PropFloat(Player, Anaglyph4Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.01f, 0.f);
-   PropFloat(Player, Anaglyph5Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.01f, 0.f);
-   PropFloat(Player, Anaglyph6Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.01f, 0.f);
-   PropFloat(Player, Anaglyph7Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.01f, 0.f);
-   PropFloat(Player, Anaglyph8Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.01f, 0.f);
-   PropFloat(Player, Anaglyph9Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.01f, 0.f);
-   PropFloat(Player, Anaglyph10Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.01f, 0.f);
+   PropFloat(Player, Anaglyph1Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
+   PropFloat(Player, Anaglyph2Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
+   PropFloat(Player, Anaglyph3Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
+   PropFloat(Player, Anaglyph4Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
+   PropFloat(Player, Anaglyph5Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
+   PropFloat(Player, Anaglyph6Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
+   PropFloat(Player, Anaglyph7Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
+   PropFloat(Player, Anaglyph8Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
+   PropFloat(Player, Anaglyph9Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
+   PropFloat(Player, Anaglyph10Deghost, "Anaglyph Deghosting"s, "Deghosting level"s, 0.f, 1.f, 0.f);
    PropArray(Player, AnaglyphDeghost, float, Float, m_propPlayer_Anaglyph1Deghost, m_propPlayer_Anaglyph2Deghost, m_propPlayer_Anaglyph3Deghost, m_propPlayer_Anaglyph4Deghost,
       m_propPlayer_Anaglyph5Deghost, m_propPlayer_Anaglyph6Deghost, m_propPlayer_Anaglyph7Deghost, m_propPlayer_Anaglyph8Deghost, m_propPlayer_Anaglyph9Deghost,
       m_propPlayer_Anaglyph10Deghost);
@@ -268,75 +270,75 @@ public:
    PropArray(Player, AnaglyphsRGB, bool, Int, m_propPlayer_Anaglyph1sRGB, m_propPlayer_Anaglyph2sRGB, m_propPlayer_Anaglyph3sRGB, m_propPlayer_Anaglyph4sRGB, m_propPlayer_Anaglyph5sRGB,
       m_propPlayer_Anaglyph6sRGB, m_propPlayer_Anaglyph7sRGB, m_propPlayer_Anaglyph8sRGB, m_propPlayer_Anaglyph9sRGB, m_propPlayer_Anaglyph10sRGB);
    // Red Cyan
-   PropFloat(Player, Anaglyph1LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.001f, 0.95f);
-   PropFloat(Player, Anaglyph1LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.001f, 0.19f);
-   PropFloat(Player, Anaglyph1LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.07f);
-   PropFloat(Player, Anaglyph1RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.001f, 0.06f);
-   PropFloat(Player, Anaglyph1RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.001f, 0.92f);
-   PropFloat(Player, Anaglyph1RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.28f);
+   PropFloat(Player, Anaglyph1LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.95f);
+   PropFloat(Player, Anaglyph1LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.19f);
+   PropFloat(Player, Anaglyph1LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.07f);
+   PropFloat(Player, Anaglyph1RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.06f);
+   PropFloat(Player, Anaglyph1RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.92f);
+   PropFloat(Player, Anaglyph1RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.28f);
    // Green Magenta
-   PropFloat(Player, Anaglyph2LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.001f, 0.06f);
-   PropFloat(Player, Anaglyph2LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.001f, 0.96f);
-   PropFloat(Player, Anaglyph2LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.09f);
-   PropFloat(Player, Anaglyph2RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.001f, 0.61f);
-   PropFloat(Player, Anaglyph2RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.001f, 0.16f);
-   PropFloat(Player, Anaglyph2RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.66f);
+   PropFloat(Player, Anaglyph2LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.06f);
+   PropFloat(Player, Anaglyph2LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.96f);
+   PropFloat(Player, Anaglyph2LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.09f);
+   PropFloat(Player, Anaglyph2RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.61f);
+   PropFloat(Player, Anaglyph2RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.16f);
+   PropFloat(Player, Anaglyph2RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.66f);
    // Blue Amber
-   PropFloat(Player, Anaglyph3LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.001f, 0.05f);
-   PropFloat(Player, Anaglyph3LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.001f, 0.16f);
-   PropFloat(Player, Anaglyph3LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.96f);
-   PropFloat(Player, Anaglyph3RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.001f, 0.61f);
-   PropFloat(Player, Anaglyph3RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.001f, 0.66f);
-   PropFloat(Player, Anaglyph3RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.09f);
+   PropFloat(Player, Anaglyph3LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.05f);
+   PropFloat(Player, Anaglyph3LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.16f);
+   PropFloat(Player, Anaglyph3LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.96f);
+   PropFloat(Player, Anaglyph3RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.61f);
+   PropFloat(Player, Anaglyph3RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.66f);
+   PropFloat(Player, Anaglyph3RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.09f);
    // Cyan Red
-   PropFloat(Player, Anaglyph4LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.001f, 0.06f);
-   PropFloat(Player, Anaglyph4LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.001f, 0.92f);
-   PropFloat(Player, Anaglyph4LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.28f);
-   PropFloat(Player, Anaglyph4RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.001f, 0.95f);
-   PropFloat(Player, Anaglyph4RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.001f, 0.19f);
-   PropFloat(Player, Anaglyph4RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.07f);
+   PropFloat(Player, Anaglyph4LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.06f);
+   PropFloat(Player, Anaglyph4LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.92f);
+   PropFloat(Player, Anaglyph4LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.28f);
+   PropFloat(Player, Anaglyph4RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.95f);
+   PropFloat(Player, Anaglyph4RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.19f);
+   PropFloat(Player, Anaglyph4RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.07f);
    // Magenta Green
-   PropFloat(Player, Anaglyph5LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.001f, 0.61f);
-   PropFloat(Player, Anaglyph5LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.001f, 0.16f);
-   PropFloat(Player, Anaglyph5LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.66f);
-   PropFloat(Player, Anaglyph5RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.001f, 0.06f);
-   PropFloat(Player, Anaglyph5RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.001f, 0.96f);
-   PropFloat(Player, Anaglyph5RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.09f);
+   PropFloat(Player, Anaglyph5LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.61f);
+   PropFloat(Player, Anaglyph5LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.16f);
+   PropFloat(Player, Anaglyph5LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.66f);
+   PropFloat(Player, Anaglyph5RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.06f);
+   PropFloat(Player, Anaglyph5RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.96f);
+   PropFloat(Player, Anaglyph5RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.09f);
    // Amber Blue
-   PropFloat(Player, Anaglyph6LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.001f, 0.61f);
-   PropFloat(Player, Anaglyph6LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.001f, 0.66f);
-   PropFloat(Player, Anaglyph6LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.09f);
-   PropFloat(Player, Anaglyph6RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.001f, 0.05f);
-   PropFloat(Player, Anaglyph6RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.001f, 0.16f);
-   PropFloat(Player, Anaglyph6RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.96f);
+   PropFloat(Player, Anaglyph6LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.61f);
+   PropFloat(Player, Anaglyph6LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.66f);
+   PropFloat(Player, Anaglyph6LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.09f);
+   PropFloat(Player, Anaglyph6RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.05f);
+   PropFloat(Player, Anaglyph6RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.16f);
+   PropFloat(Player, Anaglyph6RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.96f);
    // Red Cyan
-   PropFloat(Player, Anaglyph7LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.001f, 0.95f);
-   PropFloat(Player, Anaglyph7LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.001f, 0.19f);
-   PropFloat(Player, Anaglyph7LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.07f);
-   PropFloat(Player, Anaglyph7RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.001f, 0.06f);
-   PropFloat(Player, Anaglyph7RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.001f, 0.92f);
-   PropFloat(Player, Anaglyph7RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.28f);
+   PropFloat(Player, Anaglyph7LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.95f);
+   PropFloat(Player, Anaglyph7LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.19f);
+   PropFloat(Player, Anaglyph7LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.07f);
+   PropFloat(Player, Anaglyph7RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.06f);
+   PropFloat(Player, Anaglyph7RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.92f);
+   PropFloat(Player, Anaglyph7RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.28f);
    // Red Cyan
-   PropFloat(Player, Anaglyph8LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.001f, 0.95f);
-   PropFloat(Player, Anaglyph8LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.001f, 0.19f);
-   PropFloat(Player, Anaglyph8LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.07f);
-   PropFloat(Player, Anaglyph8RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.001f, 0.06f);
-   PropFloat(Player, Anaglyph8RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.001f, 0.92f);
-   PropFloat(Player, Anaglyph8RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.28f);
+   PropFloat(Player, Anaglyph8LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.95f);
+   PropFloat(Player, Anaglyph8LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.19f);
+   PropFloat(Player, Anaglyph8LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.07f);
+   PropFloat(Player, Anaglyph8RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.06f);
+   PropFloat(Player, Anaglyph8RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.92f);
+   PropFloat(Player, Anaglyph8RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.28f);
    // Red Cyan
-   PropFloat(Player, Anaglyph9LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.001f, 0.95f);
-   PropFloat(Player, Anaglyph9LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.001f, 0.19f);
-   PropFloat(Player, Anaglyph9LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.07f);
-   PropFloat(Player, Anaglyph9RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.001f, 0.06f);
-   PropFloat(Player, Anaglyph9RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.001f, 0.92f);
-   PropFloat(Player, Anaglyph9RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.28f);
+   PropFloat(Player, Anaglyph9LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.95f);
+   PropFloat(Player, Anaglyph9LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.19f);
+   PropFloat(Player, Anaglyph9LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.07f);
+   PropFloat(Player, Anaglyph9RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.06f);
+   PropFloat(Player, Anaglyph9RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.92f);
+   PropFloat(Player, Anaglyph9RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.28f);
    // Red Cyan
-   PropFloat(Player, Anaglyph10LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.001f, 0.95f);
-   PropFloat(Player, Anaglyph10LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.001f, 0.19f);
-   PropFloat(Player, Anaglyph10LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.07f);
-   PropFloat(Player, Anaglyph10RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.001f, 0.06f);
-   PropFloat(Player, Anaglyph10RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.001f, 0.92f);
-   PropFloat(Player, Anaglyph10RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.001f, 0.28f);
+   PropFloat(Player, Anaglyph10LeftRed, "Anaglyph Left Red"s, "Anaglyph Left Eye Red Component"s, 0.f, 1.f, 0.95f);
+   PropFloat(Player, Anaglyph10LeftGreen, "Anaglyph Left Green"s, "Anaglyph Left Eye Green Component"s, 0.f, 1.f, 0.19f);
+   PropFloat(Player, Anaglyph10LeftBlue, "Anaglyph Left Blue"s, "Anaglyph Left Eye Blue Component"s, 0.f, 1.f, 0.07f);
+   PropFloat(Player, Anaglyph10RightRed, "Anaglyph Right Red"s, "Anaglyph Right Eye Red Component"s, 0.f, 1.f, 0.06f);
+   PropFloat(Player, Anaglyph10RightGreen, "Anaglyph Right Green"s, "Anaglyph Right Eye Green Component"s, 0.f, 1.f, 0.92f);
+   PropFloat(Player, Anaglyph10RightBlue, "Anaglyph Right Blue"s, "Anaglyph Right Eye Blue Component"s, 0.f, 1.f, 0.28f);
 
    PropArray(Player, AnaglyphLeftRed, float, Float, m_propPlayer_Anaglyph1LeftRed, m_propPlayer_Anaglyph2LeftRed, m_propPlayer_Anaglyph3LeftRed, m_propPlayer_Anaglyph4LeftRed,
       m_propPlayer_Anaglyph5LeftRed, m_propPlayer_Anaglyph6LeftRed, m_propPlayer_Anaglyph7LeftRed, m_propPlayer_Anaglyph8LeftRed, m_propPlayer_Anaglyph9LeftRed,
@@ -358,21 +360,21 @@ public:
       m_propPlayer_Anaglyph10RightBlue)
 
    // Real world cabinet & player settings
-   PropFloat(Player, ScreenWidth, "Screen Width"s, "Physical width (cm) of the display area of the playfield (main) screen (width > height)"s, 5.f, 200.f, 0.1f, 95.89f);
-   PropFloat(Player, ScreenHeight, "Screen Height"s, "Physical height (cm) of the display area of the playfield (main) screen (width > height)"s, 5.f, 200.f, 0.1f, 53.94f);
-   PropFloat(Player, ScreenInclination, "Screen Inclination"s, "Inclination (degree) of the playfield (main) screen. 0 is horizontal."s, -30.f, 30.f, 0.1f, 0.f);
-   PropFloat(Player, LockbarWidth, "Lockbar Width"s, "Lockbar width in centimeters (measured on the cabinet)."s, 10.f, 150.f, 0.1f, 70.f);
-   PropFloat(Player, LockbarHeight, "Lockbar Height"s, "Lockbar height in centimeters (measured on the cabinet, from ground to top of lockbar)."s, 0.f, 250.f, 0.1f, 85.f);
-   PropFloat(Player, ScreenPlayerX, "Player X"s, "Player position in real world, expressed from the bottom center of the playfield, in centimeters"s, -30.f, 30.f, 0.1f, 0.f);
-   PropFloat(Player, ScreenPlayerY, "Player Y"s, "Player position in real world, expressed from the bottom center of the playfield, in centimeters"s, -70.f, 30.f, 0.1f, -10.f);
-   PropFloat(Player, ScreenPlayerZ, "Player Z"s, "Player position in real world, expressed from the bottom center of the playfield, in centimeters"s, 30.f, 100.f, 0.1f, 70.f);
+   PropFloat(Player, ScreenWidth, "Screen Width"s, "Physical width (cm) of the display area of the playfield (main) screen (width > height)"s, 5.f, 200.f, 95.89f);
+   PropFloat(Player, ScreenHeight, "Screen Height"s, "Physical height (cm) of the display area of the playfield (main) screen (width > height)"s, 5.f, 200.f, 53.94f);
+   PropFloat(Player, ScreenInclination, "Screen Inclination"s, "Inclination (degree) of the playfield (main) screen. 0 is horizontal."s, -30.f, 30.f, 0.f);
+   PropFloat(Player, LockbarWidth, "Lockbar Width"s, "Lockbar width in centimeters (measured on the cabinet)."s, 10.f, 150.f, 70.f);
+   PropFloat(Player, LockbarHeight, "Lockbar Height"s, "Lockbar height in centimeters (measured on the cabinet, from ground to top of lockbar)."s, 0.f, 250.f, 85.f);
+   PropFloat(Player, ScreenPlayerX, "Player X"s, "Player position in real world, expressed from the bottom center of the playfield, in centimeters"s, -30.f, 30.f, 0.f);
+   PropFloat(Player, ScreenPlayerY, "Player Y"s, "Player position in real world, expressed from the bottom center of the playfield, in centimeters"s, -70.f, 30.f, -10.f);
+   PropFloat(Player, ScreenPlayerZ, "Player Z"s, "Player position in real world, expressed from the bottom center of the playfield, in centimeters"s, 30.f, 100.f, 70.f);
 
    // Overall scene lighting settings
    PropBool(Player, OverrideTableEmissionScale, "Override Table Light Level"s, "Replace table light level by a custom one"s, false);
-   PropFloat(Player, EmissionScale, "Day/Night"s, "Select a custom level between daylight or night time lighting"s, 0.f, 1.f, 0.001f, 1.f);
+   PropFloat(Player, EmissionScale, "Day/Night"s, "Select a custom level between daylight or night time lighting"s, 0.f, 1.f, 1.f);
    PropBool(Player, DynamicDayNight, "Use Automatic Light Level"s, "Automatically compute scene lighting based on sun's position"s, false);
-   PropFloat(Player, Latitude, "Latitude"s, "Latitude used to compute sun's position"s, -90.f, 90.f, 0.01f, 52.52f);
-   PropFloat(Player, Longitude, "Longitude"s, "Longitude used to compute sun's position"s, -180.f, 180.f, 0.01f, 13.37f);
+   PropFloat(Player, Latitude, "Latitude"s, "Latitude used to compute sun's position"s, -90.f, 90.f, 52.52f);
+   PropFloat(Player, Longitude, "Longitude"s, "Longitude used to compute sun's position"s, -180.f, 180.f, 13.37f);
 
    // Backglass anciliary window settings
    PropInt(Backglass, BackglassWndX, "Backglass X"s, "X position of the backglass window"s, -INT_MAX, INT_MAX, 0);
@@ -394,27 +396,27 @@ public:
    PropEnum(DefaultCamera, DesktopMode, "View mode"s,
       "Select between 'Legacy' (old rendering mode with visually incorrect stretchs), 'Camera' (classic camera, for desktop) and 'Window' (custom projection designed for cabinet users) rendering mode"s,
       int, 1, "Legacy"s, "Camera"s, "Window"s);
-   PropFloat(DefaultCamera, DesktopLookAt, "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 0.1f, 25.f);
-   PropFloat(DefaultCamera, DesktopFov, "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 0.1f, 50.f);
-   PropFloat(DefaultCamera, DesktopScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 0.5f, 1.5f, 0.001f, 1.f);
-   PropFloat(DefaultCamera, DesktopScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 0.001f, 1.f);
-   PropFloat(DefaultCamera, DesktopScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 0.001f, 1.f);
-   PropFloat(DefaultCamera, DesktopCamX, "Camera X"s, "View point width offset, in centimeters"s, -30.f, 30.f, 0.1f, 0.f);
-   PropFloat(DefaultCamera, DesktopCamY, "Camera Y"s, "View point height offset, in centimeters"s, -30.f, 100.f, 0.1f, 20.f);
-   PropFloat(DefaultCamera, DesktopCamZ, "Camera Z"s, "View point vertical offset, in centimeters"s, 10.f, 100.f, 0.1f, 70.f);
-   PropFloat(DefaultCamera, DesktopViewVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window' in centimeters"s, -20.f, 50.f, 0.1f, 14.f);
+   PropFloat(DefaultCamera, DesktopLookAt, "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 25.f);
+   PropFloat(DefaultCamera, DesktopFov, "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 50.f);
+   PropFloat(DefaultCamera, DesktopScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 0.5f, 1.5f, 1.f);
+   PropFloat(DefaultCamera, DesktopScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 1.f);
+   PropFloat(DefaultCamera, DesktopScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 1.f);
+   PropFloat(DefaultCamera, DesktopCamX, "Camera X"s, "View point width offset, in centimeters"s, -30.f, 30.f, 0.f);
+   PropFloat(DefaultCamera, DesktopCamY, "Camera Y"s, "View point height offset, in centimeters"s, -30.f, 100.f, 20.f);
+   PropFloat(DefaultCamera, DesktopCamZ, "Camera Z"s, "View point vertical offset, in centimeters"s, 10.f, 100.f, 70.f);
+   PropFloat(DefaultCamera, DesktopViewVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window' in centimeters"s, -20.f, 50.f, 14.f);
    PropEnum(DefaultCamera, FSSMode, "View mode"s,
       "Select between 'Legacy' (old rendering mode with visually incorrect stretchs), 'Camera' (classic camera, for desktop) and 'Window' (custom projection designed for cabinet users) rendering mode"s,
       int, 1, "Legacy"s, "Camera"s, "Window"s);
-   PropFloat(DefaultCamera, FSSLookAt, "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 0.1f, 50.f);
-   PropFloat(DefaultCamera, FSSFov, "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 0.1f, 77.f);
-   PropFloat(DefaultCamera, FSSScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 0.5f, 1.5f, 0.001f, 1.f);
-   PropFloat(DefaultCamera, FSSScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 0.001f, 1.f);
-   PropFloat(DefaultCamera, FSSScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 0.001f, 1.f);
-   PropFloat(DefaultCamera, FSSCamX, "Camera X"s, "View point width offset, in centimeters"s, -30.f, 30.f, 0.1f, 0.f);
-   PropFloat(DefaultCamera, FSSCamY, "Camera Y"s, "View point height offset, in centimeters"s, -30.f, 100.f, 0.1f, 20.f);
-   PropFloat(DefaultCamera, FSSCamZ, "Camera Z"s, "View point vertical offset, in centimeters"s, 10.f, 100.f, 0.1f, 70.f);
-   PropFloat(DefaultCamera, FSSViewVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window' in centimeters"s, -20.f, 50.f, 0.1f, 22.f);
+   PropFloat(DefaultCamera, FSSLookAt, "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 50.f);
+   PropFloat(DefaultCamera, FSSFov, "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 77.f);
+   PropFloat(DefaultCamera, FSSScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 0.5f, 1.5f, 1.f);
+   PropFloat(DefaultCamera, FSSScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 1.f);
+   PropFloat(DefaultCamera, FSSScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 1.f);
+   PropFloat(DefaultCamera, FSSCamX, "Camera X"s, "View point width offset, in centimeters"s, -30.f, 30.f, 0.f);
+   PropFloat(DefaultCamera, FSSCamY, "Camera Y"s, "View point height offset, in centimeters"s, -30.f, 100.f, 20.f);
+   PropFloat(DefaultCamera, FSSCamZ, "Camera Z"s, "View point vertical offset, in centimeters"s, 10.f, 100.f, 70.f);
+   PropFloat(DefaultCamera, FSSViewVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window' in centimeters"s, -20.f, 50.f, 22.f);
 
    // Table override settings
    // These properties are specials as they are meant to override table data at play time. They are not meant to be saved to the application setting file, but
@@ -422,59 +424,59 @@ public:
    PropEnum(TableOverride, ViewDTMode, "View mode"s,
       "Select between 'Legacy' (old rendering mode with visually incorrect stretchs), 'Camera' (classic camera, for desktop) and 'Window' (custom projection designed for cabinet users) rendering mode"s,
       int, 1, "Legacy"s, "Camera"s, "Window"s);
-   PropFloat(TableOverride, ViewDTLookAt, "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 0.1f, 25.f);
-   PropFloat(TableOverride, ViewDTFOV, "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 0.1f, 50.f);
-   PropFloat(TableOverride, ViewDTLayback, "Layback"s, "Fake visual stretch of the table to give more depth"s, -90.f, 90.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewDTScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 0.5f, 1.5f, 0.001f, 1.f);
-   PropFloat(TableOverride, ViewDTScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 0.001f, 1.f);
-   PropFloat(TableOverride, ViewDTScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 0.001f, 1.f);
-   PropFloat(TableOverride, ViewDTPlayerX, "Camera X"s, "View point width offset"s, CMTOVPU(-30.f), CMTOVPU(30.f), CMTOVPU(0.1f), CMTOVPU(0.f));
-   PropFloat(TableOverride, ViewDTPlayerY, "Camera Y"s, "View point height offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(0.1f), CMTOVPU(20.f));
-   PropFloat(TableOverride, ViewDTPlayerZ, "Camera Z"s, "View point vertical offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(0.1f), CMTOVPU(70.f));
-   PropFloat(TableOverride, ViewDTHOfs, "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window'"s, -30.f, 30.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewDTVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window'"s, -20.f, 50.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewDTWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.1f), CMTOVPU(0.f));
-   PropFloat(TableOverride, ViewDTWindowBot, "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.1f), CMTOVPU(0.f));
-   PropFloat(TableOverride, ViewDTRotation, "Viewport Rotation"s, ""s, 0.f, 360.f, 90.0f, 0.f);
+   PropFloat(TableOverride, ViewDTLookAt, "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 25.f);
+   PropFloat(TableOverride, ViewDTFOV, "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 50.f);
+   PropFloat(TableOverride, ViewDTLayback, "Layback"s, "Fake visual stretch of the table to give more depth"s, -90.f, 90.f, 0.f);
+   PropFloat(TableOverride, ViewDTScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 0.5f, 1.5f, 1.f);
+   PropFloat(TableOverride, ViewDTScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 1.f);
+   PropFloat(TableOverride, ViewDTScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 1.f);
+   PropFloat(TableOverride, ViewDTPlayerX, "Camera X"s, "View point width offset"s, CMTOVPU(-30.f), CMTOVPU(30.f), CMTOVPU(0.f));
+   PropFloat(TableOverride, ViewDTPlayerY, "Camera Y"s, "View point height offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(20.f));
+   PropFloat(TableOverride, ViewDTPlayerZ, "Camera Z"s, "View point vertical offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(70.f));
+   PropFloat(TableOverride, ViewDTHOfs, "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window'"s, -30.f, 30.f, 0.f);
+   PropFloat(TableOverride, ViewDTVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window'"s, -20.f, 50.f, 0.f);
+   PropFloat(TableOverride, ViewDTWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
+   PropFloat(TableOverride, ViewDTWindowBot, "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
+   PropFloatStepped(TableOverride, ViewDTRotation, "Viewport Rotation"s, ""s, 0.f, 360.f, 90.0f, 0.f);
 
    PropEnum(TableOverride, ViewFSSMode, "View mode"s,
       "Select between 'Legacy' (old rendering mode with visually incorrect stretchs), 'Camera' (classic camera, for desktop) and 'Window' (custom projection designed for cabinet users) rendering mode"s,
       int, 1, "Legacy"s, "Camera"s, "Window"s);
-   PropFloat(TableOverride, ViewFSSLookAt, "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewFSSFOV, "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 0.1f, 25.f);
-   PropFloat(TableOverride, ViewFSSLayback, "Layback"s, "Fake visual stretch of the table to give more depth"s, -90.f, 90.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewFSSScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 0.5f, 1.5f, 0.001f, 1.f);
-   PropFloat(TableOverride, ViewFSSScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 0.001f, 1.f);
-   PropFloat(TableOverride, ViewFSSScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 0.001f, 1.f);
-   PropFloat(TableOverride, ViewFSSPlayerX, "Camera X"s, "View point width offset"s, CMTOVPU(-30.f), CMTOVPU(30.f), CMTOVPU(0.1f), CMTOVPU(0.f));
-   PropFloat(TableOverride, ViewFSSPlayerY, "Camera Y"s, "View point height offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(0.1f), CMTOVPU(0.f));
-   PropFloat(TableOverride, ViewFSSPlayerZ, "Camera Z"s, "View point vertical offsets"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(0.1f), CMTOVPU(70.f));
-   PropFloat(TableOverride, ViewFSSHOfs, "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window'"s, -30.f, 30.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewFSSVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window'"s, -20.f, 50.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewFSSWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.1f), CMTOVPU(0.f));
-   PropFloat(TableOverride, ViewFSSWindowBot, "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.1f), CMTOVPU(0.f));
-   PropFloat(TableOverride, ViewFSSRotation, "Viewport Rotation"s, ""s, 0.f, 360.f, 90.0f, 0.f);
+   PropFloat(TableOverride, ViewFSSLookAt, "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 0.f);
+   PropFloat(TableOverride, ViewFSSFOV, "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 25.f);
+   PropFloat(TableOverride, ViewFSSLayback, "Layback"s, "Fake visual stretch of the table to give more depth"s, -90.f, 90.f, 0.f);
+   PropFloat(TableOverride, ViewFSSScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 0.5f, 1.5f, 1.f);
+   PropFloat(TableOverride, ViewFSSScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 1.f);
+   PropFloat(TableOverride, ViewFSSScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 1.f);
+   PropFloat(TableOverride, ViewFSSPlayerX, "Camera X"s, "View point width offset"s, CMTOVPU(-30.f), CMTOVPU(30.f), CMTOVPU(0.f));
+   PropFloat(TableOverride, ViewFSSPlayerY, "Camera Y"s, "View point height offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(0.f));
+   PropFloat(TableOverride, ViewFSSPlayerZ, "Camera Z"s, "View point vertical offsets"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(70.f));
+   PropFloat(TableOverride, ViewFSSHOfs, "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window'"s, -30.f, 30.f, 0.f);
+   PropFloat(TableOverride, ViewFSSVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window'"s, -20.f, 50.f, 0.f);
+   PropFloat(TableOverride, ViewFSSWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
+   PropFloat(TableOverride, ViewFSSWindowBot, "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
+   PropFloatStepped(TableOverride, ViewFSSRotation, "Viewport Rotation"s, ""s, 0.f, 360.f, 90.0f, 0.f);
 
    PropEnum(TableOverride, ViewCabMode, "View mode"s,
       "Select between 'Legacy' (old rendering mode with visually incorrect stretchs), 'Camera' (classic camera, for desktop) and 'Window' (custom projection designed for cabinet users) rendering mode"s,
       int, 2, "Legacy"s, "Camera"s, "Window"s);
-   PropFloat(TableOverride, ViewCabLookAt, "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewCabFOV, "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 0.1f, 25.f);
-   PropFloat(TableOverride, ViewCabLayback, "Layback"s, "Fake visual stretch of the table to give more depth"s, 0.f, 90.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewCabScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 0.5f, 1.5f, 0.001f, 1.f);
-   PropFloat(TableOverride, ViewCabScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 0.001f, 1.f);
-   PropFloat(TableOverride, ViewCabScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 0.001f, 1.f);
-   PropFloat(TableOverride, ViewCabPlayerX, "Camera X"s, "View point width offset"s, CMTOVPU(-30.f), CMTOVPU(30.f), CMTOVPU(0.1f), CMTOVPU(0.f));
-   PropFloat(TableOverride, ViewCabPlayerY, "Camera Y"s, "View point height offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(0.1f), CMTOVPU(0.f));
-   PropFloat(TableOverride, ViewCabPlayerZ, "Camera Z"s, "View point vertical offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(0.1f), CMTOVPU(70.f));
-   PropFloat(TableOverride, ViewCabHOfs, "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window'"s, -30.f, 30.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewCabVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window'"s, -20.f, 50.f, 0.1f, 0.f);
-   PropFloat(TableOverride, ViewCabWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.1f), CMTOVPU(0.f));
-   PropFloat(TableOverride, ViewCabWindowBot, "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.1f), CMTOVPU(0.f));
-   PropFloat(TableOverride, ViewCabRotation, "Viewport Rotation"s, ""s, 0.f, 360.f, 90.0f, 0.f);
+   PropFloat(TableOverride, ViewCabLookAt, "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 0.f);
+   PropFloat(TableOverride, ViewCabFOV, "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 25.f);
+   PropFloat(TableOverride, ViewCabLayback, "Layback"s, "Fake visual stretch of the table to give more depth"s, 0.f, 90.f, 0.f);
+   PropFloat(TableOverride, ViewCabScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 0.5f, 1.5f, 1.f);
+   PropFloat(TableOverride, ViewCabScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 1.f);
+   PropFloat(TableOverride, ViewCabScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 1.f);
+   PropFloat(TableOverride, ViewCabPlayerX, "Camera X"s, "View point width offset"s, CMTOVPU(-30.f), CMTOVPU(30.f), CMTOVPU(0.f));
+   PropFloat(TableOverride, ViewCabPlayerY, "Camera Y"s, "View point height offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(0.f));
+   PropFloat(TableOverride, ViewCabPlayerZ, "Camera Z"s, "View point vertical offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(70.f));
+   PropFloat(TableOverride, ViewCabHOfs, "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window'"s, -30.f, 30.f, 0.f);
+   PropFloat(TableOverride, ViewCabVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window'"s, -20.f, 50.f, 0.f);
+   PropFloat(TableOverride, ViewCabWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
+   PropFloat(TableOverride, ViewCabWindowBot, "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
+   PropFloatStepped(TableOverride, ViewCabRotation, "Viewport Rotation"s, ""s, 0.f, 360.f, 90.0f, 0.f);
 
-   PropFloat(TableOverride, Difficulty, "Difficulty"s, "Overall difficulty (slope, flipper size, trajectories scattering,...)"s, 0.f, 100.f, 0.1f, 100.f);
-   PropFloat(TableOverride, Exposure, "Camera Exposure"s, "Overall brightness of the rendered scene"s, 0.f, 2.f, 0.1f, 1.f);
+   PropFloat(TableOverride, Difficulty, "Difficulty"s, "Overall difficulty (slope, flipper size, trajectories scattering,...)"s, 0.f, 100.f, 100.f);
+   PropFloat(TableOverride, Exposure, "Camera Exposure"s, "Overall brightness of the rendered scene"s, 0.f, 2.f, 1.f);
 #ifdef ENABLE_BGFX
    PropEnum(TableOverride, ToneMapper, "Tonemapper"s, "Select the way colors that are too bright to be rendered by the display are handled"s, int, 0, "Reinhard"s, "AgX"s, "Filmic"s,
       "Neutral"s, "AgX Punchy"s);
@@ -489,64 +491,64 @@ public:
    PropBool(DMD, Profile1ScaleFX, "Use ScaleFX"s, "Upscale DMD using ScaleFX"s, false);
    PropInt(DMD, Profile1DotTint, "Dot Tint"s, "Color of lit dots"s, 0x000000, 0xFFFFFF, 0x2D52FF);
    PropInt(DMD, Profile1UnlitDotColor, "Unlit Dot Tint"s, "Color of unlit dots"s, 0x000000, 0xFFFFFF, 0x404040);
-   PropFloat(DMD, Profile1DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 0.001f, 25.f);
-   PropFloat(DMD, Profile1DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.001f, 0.75f);
-   PropFloat(DMD, Profile1DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.01f, 0.90f);
-   PropFloat(DMD, Profile1DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.01f, 0.1f);
+   PropFloat(DMD, Profile1DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 25.f);
+   PropFloat(DMD, Profile1DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.75f);
+   PropFloat(DMD, Profile1DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.90f);
+   PropFloat(DMD, Profile1DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.1f);
    // Classic Neon plasma DMD
    PropBool(DMD, Profile2Legacy, "Legacy Renderer"s, "Use legacy DMD renderer"s, false);
    PropBool(DMD, Profile2ScaleFX, "Use ScaleFX"s, "Upscale DMD using ScaleFX"s, false);
    PropInt(DMD, Profile2DotTint, "Dot Tint"s, "Color of lit dots"s, 0x000000, 0xFFFFFF, 0x2D52FF);
    PropInt(DMD, Profile2UnlitDotColor, "Unlit Dot Tint"s, "Color of unlit dots"s, 0x000000, 0xFFFFFF, 0x404040);
-   PropFloat(DMD, Profile2DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 0.001f, 25.f);
-   PropFloat(DMD, Profile2DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.001f, 0.6f);
-   PropFloat(DMD, Profile2DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.01f, 0.90f);
-   PropFloat(DMD, Profile2DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.01f, 0.1f);
+   PropFloat(DMD, Profile2DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 25.f);
+   PropFloat(DMD, Profile2DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.6f);
+   PropFloat(DMD, Profile2DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.90f);
+   PropFloat(DMD, Profile2DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.1f);
    // Red Led DMD (used after RoHS regulation entry into force)
    PropBool(DMD, Profile3Legacy, "Legacy Renderer"s, "Use legacy DMD renderer"s, false);
    PropBool(DMD, Profile3ScaleFX, "Use ScaleFX"s, "Upscale DMD using ScaleFX"s, false);
    PropInt(DMD, Profile3DotTint, "Dot Tint"s, "Color of lit dots"s, 0x000000, 0xFFFFFF, 0x1523FF);
    PropInt(DMD, Profile3UnlitDotColor, "Unlit Dot Tint"s, "Color of unlit dots"s, 0x000000, 0xFFFFFF, 0x404040);
-   PropFloat(DMD, Profile3DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 0.001f, 25.f);
-   PropFloat(DMD, Profile3DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.001f, 0.75f);
-   PropFloat(DMD, Profile3DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.01f, 0.90f);
-   PropFloat(DMD, Profile3DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.01f, 0.1f);
+   PropFloat(DMD, Profile3DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 25.f);
+   PropFloat(DMD, Profile3DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.75f);
+   PropFloat(DMD, Profile3DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.90f);
+   PropFloat(DMD, Profile3DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.1f);
    // Green Led
    PropBool(DMD, Profile4Legacy, "Legacy Renderer"s, "Use legacy DMD renderer"s, false);
    PropBool(DMD, Profile4ScaleFX, "Use ScaleFX"s, "Upscale DMD using ScaleFX"s, false);
    PropInt(DMD, Profile4DotTint, "Dot Tint"s, "Color of lit dots"s, 0x000000, 0xFFFFFF, 0x23FF15);
    PropInt(DMD, Profile4UnlitDotColor, "Unlit Dot Tint"s, "Color of unlit dots"s, 0x000000, 0xFFFFFF, 0x404040);
-   PropFloat(DMD, Profile4DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 0.001f, 25.f);
-   PropFloat(DMD, Profile4DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.001f, 0.75f);
-   PropFloat(DMD, Profile4DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.01f, 0.90f);
-   PropFloat(DMD, Profile4DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.01f, 0.1f);
+   PropFloat(DMD, Profile4DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 25.f);
+   PropFloat(DMD, Profile4DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.75f);
+   PropFloat(DMD, Profile4DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.90f);
+   PropFloat(DMD, Profile4DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.1f);
    // Yellow Led
    PropBool(DMD, Profile5Legacy, "Legacy Renderer"s, "Use legacy DMD renderer"s, false);
    PropBool(DMD, Profile5ScaleFX, "Use ScaleFX"s, "Upscale DMD using ScaleFX"s, false);
    PropInt(DMD, Profile5DotTint, "Dot Tint"s, "Color of lit dots"s, 0x000000, 0xFFFFFF, 0x23FFFF);
    PropInt(DMD, Profile5UnlitDotColor, "Unlit Dot Tint"s, "Color of unlit dots"s, 0x000000, 0xFFFFFF, 0x404040);
-   PropFloat(DMD, Profile5DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 0.001f, 25.f);
-   PropFloat(DMD, Profile5DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.001f, 0.75f);
-   PropFloat(DMD, Profile5DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.01f, 0.90f);
-   PropFloat(DMD, Profile5DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.01f, 0.1f);
+   PropFloat(DMD, Profile5DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 25.f);
+   PropFloat(DMD, Profile5DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.75f);
+   PropFloat(DMD, Profile5DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.90f);
+   PropFloat(DMD, Profile5DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.1f);
    // Generic Plasma
    PropBool(DMD, Profile6Legacy, "Legacy Renderer"s, "Use legacy DMD renderer"s, false);
    PropBool(DMD, Profile6ScaleFX, "Use ScaleFX"s, "Upscale DMD using ScaleFX"s, false);
    PropInt(DMD, Profile6DotTint, "Dot Tint"s, "Color of lit dots"s, 0x000000, 0xFFFFFF, 0xFFFFFF);
    PropInt(DMD, Profile6UnlitDotColor, "Unlit Dot Tint"s, "Color of unlit dots"s, 0x000000, 0xFFFFFF, 0x404040);
-   PropFloat(DMD, Profile6DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 0.001f, 25.f);
-   PropFloat(DMD, Profile6DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.001f, 0.6f);
-   PropFloat(DMD, Profile6DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.01f, 0.90f);
-   PropFloat(DMD, Profile6DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.01f, 0.1f);
+   PropFloat(DMD, Profile6DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 25.f);
+   PropFloat(DMD, Profile6DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.6f);
+   PropFloat(DMD, Profile6DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.90f);
+   PropFloat(DMD, Profile6DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.1f);
    // Generic Led
    PropBool(DMD, Profile7Legacy, "Legacy Renderer"s, "Use legacy DMD renderer"s, false);
    PropBool(DMD, Profile7ScaleFX, "Use ScaleFX"s, "Upscale DMD using ScaleFX"s, false);
    PropInt(DMD, Profile7DotTint, "Dot Tint"s, "Color of lit dots"s, 0x000000, 0xFFFFFF, 0xFFFFFF);
    PropInt(DMD, Profile7UnlitDotColor, "Unlit Dot Tint"s, "Color of unlit dots"s, 0x000000, 0xFFFFFF, 0x404040);
-   PropFloat(DMD, Profile7DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 0.001f, 25.f);
-   PropFloat(DMD, Profile7DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.001f, 0.75f);
-   PropFloat(DMD, Profile7DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.01f, 0.90f);
-   PropFloat(DMD, Profile7DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.01f, 0.1f);
+   PropFloat(DMD, Profile7DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 25.f);
+   PropFloat(DMD, Profile7DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.75f);
+   PropFloat(DMD, Profile7DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.90f);
+   PropFloat(DMD, Profile7DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.1f);
    // Array access
    PropArray(DMD, ProfileLegacy, bool, Int, m_propDMD_Profile1Legacy, m_propDMD_Profile2Legacy, m_propDMD_Profile3Legacy, m_propDMD_Profile4Legacy, m_propDMD_Profile5Legacy,
       m_propDMD_Profile6Legacy, m_propDMD_Profile7Legacy);
@@ -569,43 +571,43 @@ public:
    // Neon Plasma
    PropInt(Alpha, Profile1Color, "Color"s, "Color of lit segments"s, 0x000000, 0xFFFFFF, 0x001E96FF); // 0x002D52FF
    PropInt(Alpha, Profile1Unlit, "Unlit Color"s, "Color of unlit segments"s, 0x000000, 0xFFFFFF, 0x404040);
-   PropFloat(Alpha, Profile1Brightness, "Brightness"s, "Brightness level"s, 0.001f, 100.f, 0.001f, 5.f);
-   PropFloat(Alpha, Profile1DiffuseGlow, "Diffuse Glow"s, "Glow of segments on the back of the display (between segments, against glass)"s, 0.f, 10.f, 0.01f, 1.f);
+   PropFloat(Alpha, Profile1Brightness, "Brightness"s, "Brightness level"s, 0.001f, 100.f, 5.f);
+   PropFloat(Alpha, Profile1DiffuseGlow, "Diffuse Glow"s, "Glow of segments on the back of the display (between segments, against glass)"s, 0.f, 10.f, 1.f);
    // VFD Blueish
    PropInt(Alpha, Profile2Color, "Color"s, "Color of lit segments"s, 0x000000, 0xFFFFFF, 0x00FFEF3F); // 0x00FFEFBF
    PropInt(Alpha, Profile2Unlit, "Unlit Color"s, "Color of unlit segments"s, 0x000000, 0xFFFFFF, 0x404040);
-   PropFloat(Alpha, Profile2Brightness, "Brightness"s, "Brightness level"s, 0.001f, 100.f, 0.001f, 5.f);
-   PropFloat(Alpha, Profile2DiffuseGlow, "Diffuse Glow"s, "Glow of segments on the back of the display (between segments, against glass)"s, 0.f, 10.f, 0.01f, 1.f);
+   PropFloat(Alpha, Profile2Brightness, "Brightness"s, "Brightness level"s, 0.001f, 100.f, 5.f);
+   PropFloat(Alpha, Profile2DiffuseGlow, "Diffuse Glow"s, "Glow of segments on the back of the display (between segments, against glass)"s, 0.f, 10.f, 1.f);
    // VFD Greenish
    PropInt(Alpha, Profile3Color, "Color"s, "Color of lit segments"s, 0x000000, 0xFFFFFF, 0x00ECFF48);
    PropInt(Alpha, Profile3Unlit, "Unlit Color"s, "Color of unlit segments"s, 0x000000, 0xFFFFFF, 0x404040);
-   PropFloat(Alpha, Profile3Brightness, "Brightness"s, "Brightness level"s, 0.001f, 100.f, 0.001f, 5.f);
-   PropFloat(Alpha, Profile3DiffuseGlow, "Diffuse Glow"s, "Glow of segments on the back of the display (between segments, against glass)"s, 0.f, 10.f, 0.01f, 1.f);
+   PropFloat(Alpha, Profile3Brightness, "Brightness"s, "Brightness level"s, 0.001f, 100.f, 5.f);
+   PropFloat(Alpha, Profile3DiffuseGlow, "Diffuse Glow"s, "Glow of segments on the back of the display (between segments, against glass)"s, 0.f, 10.f, 1.f);
    // Red Led
    PropInt(Alpha, Profile4Color, "Color"s, "Color of lit segments"s, 0x000000, 0xFFFFFF, 0x001523FF);
    PropInt(Alpha, Profile4Unlit, "Unlit Color"s, "Color of unlit segments"s, 0x000000, 0xFFFFFF, 0x404040);
-   PropFloat(Alpha, Profile4Brightness, "Brightness"s, "Brightness level"s, 0.001f, 100.f, 0.001f, 5.f);
-   PropFloat(Alpha, Profile4DiffuseGlow, "Diffuse Glow"s, "Glow of segments on the back of the display (between segments, against glass)"s, 0.f, 10.f, 0.01f, 1.f);
+   PropFloat(Alpha, Profile4Brightness, "Brightness"s, "Brightness level"s, 0.001f, 100.f, 5.f);
+   PropFloat(Alpha, Profile4DiffuseGlow, "Diffuse Glow"s, "Glow of segments on the back of the display (between segments, against glass)"s, 0.f, 10.f, 1.f);
    // Green Led
    PropInt(Alpha, Profile5Color, "Color"s, "Color of lit segments"s, 0x000000, 0xFFFFFF, 0x0023FF15);
    PropInt(Alpha, Profile5Unlit, "Unlit Color"s, "Color of unlit segments"s, 0x000000, 0xFFFFFF, 0x404040);
-   PropFloat(Alpha, Profile5Brightness, "Brightness"s, "Brightness level"s, 0.001f, 100.f, 0.001f, 5.f);
-   PropFloat(Alpha, Profile5DiffuseGlow, "Diffuse Glow"s, "Glow of segments on the back of the display (between segments, against glass)"s, 0.f, 10.f, 0.01f, 1.f);
+   PropFloat(Alpha, Profile5Brightness, "Brightness"s, "Brightness level"s, 0.001f, 100.f, 5.f);
+   PropFloat(Alpha, Profile5DiffuseGlow, "Diffuse Glow"s, "Glow of segments on the back of the display (between segments, against glass)"s, 0.f, 10.f, 1.f);
    // Yellow Led
    PropInt(Alpha, Profile6Color, "Color"s, "Color of lit segments"s, 0x000000, 0xFFFFFF, 0x0023FFFF);
    PropInt(Alpha, Profile6Unlit, "Unlit Color"s, "Color of unlit segments"s, 0x000000, 0xFFFFFF, 0x404040);
-   PropFloat(Alpha, Profile6Brightness, "Brightness"s, "Brightness level"s, 0.001f, 100.f, 0.001f, 5.f);
-   PropFloat(Alpha, Profile6DiffuseGlow, "Diffuse Glow"s, "Glow of segments on the back of the display (between segments, against glass)"s, 0.f, 10.f, 0.01f, 1.f);
+   PropFloat(Alpha, Profile6Brightness, "Brightness"s, "Brightness level"s, 0.001f, 100.f, 5.f);
+   PropFloat(Alpha, Profile6DiffuseGlow, "Diffuse Glow"s, "Glow of segments on the back of the display (between segments, against glass)"s, 0.f, 10.f, 1.f);
    // Generic Plasma
    PropInt(Alpha, Profile7Color, "Color"s, "Color of lit segments"s, 0x000000, 0xFFFFFF, 0x00FFFFFF);
    PropInt(Alpha, Profile7Unlit, "Unlit Color"s, "Color of unlit segments"s, 0x000000, 0xFFFFFF, 0x404040);
-   PropFloat(Alpha, Profile7Brightness, "Brightness"s, "Brightness level"s, 0.001f, 100.f, 0.001f, 5.f);
-   PropFloat(Alpha, Profile7DiffuseGlow, "Diffuse Glow"s, "Glow of segments on the back of the display (between segments, against glass)"s, 0.f, 10.f, 0.01f, 1.f);
+   PropFloat(Alpha, Profile7Brightness, "Brightness"s, "Brightness level"s, 0.001f, 100.f, 5.f);
+   PropFloat(Alpha, Profile7DiffuseGlow, "Diffuse Glow"s, "Glow of segments on the back of the display (between segments, against glass)"s, 0.f, 10.f, 1.f);
    // Generic Led
    PropInt(Alpha, Profile8Color, "Color"s, "Color of lit segments"s, 0x000000, 0xFFFFFF, 0x00FFFFFF);
    PropInt(Alpha, Profile8Unlit, "Unlit Color"s, "Color of unlit segments"s, 0x000000, 0xFFFFFF, 0x404040);
-   PropFloat(Alpha, Profile8Brightness, "Brightness"s, "Brightness level"s, 0.001f, 100.f, 0.001f, 5.f);
-   PropFloat(Alpha, Profile8DiffuseGlow, "Diffuse Glow"s, "Glow of segments on the back of the display (between segments, against glass)"s, 0.f, 10.f, 0.01f, 1.f);
+   PropFloat(Alpha, Profile8Brightness, "Brightness"s, "Brightness level"s, 0.001f, 100.f, 5.f);
+   PropFloat(Alpha, Profile8DiffuseGlow, "Diffuse Glow"s, "Glow of segments on the back of the display (between segments, against glass)"s, 0.f, 10.f, 1.f);
    // Array access
    PropArray(Alpha, ProfileColor, int, Int, m_propAlpha_Profile1Color, m_propAlpha_Profile2Color, m_propAlpha_Profile3Color, m_propAlpha_Profile4Color, m_propAlpha_Profile5Color,
       m_propAlpha_Profile6Color, m_propAlpha_Profile7Color, m_propAlpha_Profile8Color);
@@ -617,14 +619,14 @@ public:
       m_propAlpha_Profile6DiffuseGlow, m_propAlpha_Profile7DiffuseGlow, m_propAlpha_Profile8DiffuseGlow);
 
    // Parts Defaults: Balls
-   PropFloat(DefaultPropsBall, Mass, "Ball Mass"s, ""s, 0.1f, 2.f, 0.001f, 1.f);
-   PropFloat(DefaultPropsBall, Radius, "Ball Radius"s, ""s, 0.1f, 50.f, 0.001f, 25.f);
+   PropFloat(DefaultPropsBall, Mass, "Ball Mass"s, ""s, 0.1f, 2.f, 1.f);
+   PropFloat(DefaultPropsBall, Radius, "Ball Radius"s, ""s, 0.1f, 50.f, 25.f);
    PropBool(DefaultPropsBall, ForceReflection, "Force Reflection"s, ""s, false);
    PropBool(DefaultPropsBall, DecalMode, "Decal Mode"s, ""s, false);
    PropString(DefaultPropsBall, Image, "Ball Image"s, ""s, ""s);
    PropString(DefaultPropsBall, DecalImage, "Decal Image"s, ""s, ""s);
-   PropFloat(DefaultPropsBall, BulbIntensityScale, "Bulb Reflection Intensity Scale"s, ""s, 0.f, 10.f, 0.001f, 1.f);
-   PropFloat(DefaultPropsBall, PFReflStrength, "Playfield Reflection Strength"s, ""s, 0.f, 10.f, 0.001f, 1.f);
+   PropFloat(DefaultPropsBall, BulbIntensityScale, "Bulb Reflection Intensity Scale"s, ""s, 0.f, 10.f, 1.f);
+   PropFloat(DefaultPropsBall, PFReflStrength, "Playfield Reflection Strength"s, ""s, 0.f, 10.f, 1.f);
    PropInt(DefaultPropsBall, Color, "Color"s, ""s, 0x000000, 0xFFFFFF, 0xFFFFFF);
    PropBool(DefaultPropsBall, SphereMap, "Use Sphere Mapping"s, "Use sphere mapped 3D texturing"s, true);
    PropBool(DefaultPropsBall, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
@@ -832,7 +834,6 @@ public:
 
    // The following method must only be used for settings previously validated to guarantee successfull loading
    void Validate(const bool addDefaults);
-   void ResetValue(const Section section, const string &key);
    string LoadValueString(const Section section, const string &key) const { string v; LoadValue(section, key, v); return v; }
    float LoadValueFloat(const Section section, const string &key) const { float v; bool ok = LoadValue(section, key, v); assert(ok); return v; }
    bool LoadValueBool(const Section section, const string &key) const { unsigned int v; bool ok = LoadValue(section, key, v); assert(ok); return !!v; }
@@ -872,16 +873,9 @@ public:
    static const vector<OptionDef>& GetPluginSettings() { return m_pluginOptions; }
 
 private:
-#if 0
-   bool LoadValue(const Section section, const string &key, void *const szbuffer, const size_t size) const;
-   bool SaveValue(const Section section, const string &key, const char *val, const bool overrideMode = false);
-#endif
-
    void RegisterStringSetting(const Section section, const string &key, const string &defVal, const bool addDefaults, const string &comments = string());
    void RegisterBoolSetting(const Section section, const string &key, const bool defVal, const bool addDefaults, const string &comments = string());
    void RegisterIntSetting(const Section section, const string &key, const int defVal, const int minVal, const int maxVal, const bool addDefaults, const string &comments = string());
-   void RegisterUIntSetting(const Section section, const string &key, const unsigned int defVal, const unsigned int minVal, const unsigned int maxVal, const bool addDefaults, const string &comments = string());
-   void RegisterFloatSetting(const Section section, const string &key, const float defVal, const float minVal, const float maxVal, const bool addDefaults, const string &comments = string());
 
    bool m_modified = false;
    unsigned int m_modificationIndex = 0;
