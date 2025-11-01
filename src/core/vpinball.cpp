@@ -1728,6 +1728,7 @@ BOOL VPinball::OnCommand(WPARAM wparam, LPARAM lparam)
    return TRUE;
 }
 
+#ifndef __STANDALONE__
 BOOL VPinball::PreTranslateMessage(MSG& msg)
 {
    if (msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST)
@@ -1740,6 +1741,7 @@ BOOL VPinball::PreTranslateMessage(MSG& msg)
    }
    return false;
 }
+#endif
 
 LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
