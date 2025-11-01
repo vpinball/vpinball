@@ -366,6 +366,25 @@ public:
    PropBool(DefaultPropsTimer, TimerEnabled, "Timer Enabled"s, ""s, false);
    PropInt(DefaultPropsTimer, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
+   // Core plugins
+#ifdef __LIBVPINBALL__
+   static inline constexpr bool isLibVPX = true;
+#else
+   static inline constexpr bool isLibVPX = false;
+#endif
+#ifdef __STANDALONE__
+   static inline constexpr bool isStandalone = true;
+#else
+   static inline constexpr bool isStandalone = false;
+#endif
+   PropBool(PluginAlphaDMD, Enable, "Enable"s, "Enable AlphaDMD plugin"s, false);
+   PropBool(PluginB2SLegacy, Enable, "Enable"s, "Enable legacy B2S plugin plugin"s, isStandalone);
+   PropBool(PluginFlexDMD, Enable, "Enable"s, "Enable FlexDMD plugin"s, isStandalone);
+   PropBool(PluginPinMAME, Enable, "Enable"s, "Enable PinMAME plugin"s, isStandalone);
+   PropBool(PluginPUP, Enable, "Enable"s, "Enable PinUp player plugin"s, isLibVPX);
+   PropBool(PluginScoreView, Enable, "Enable"s, "Enable ScoreView player plugin"s, isStandalone);
+   PropBool(PluginWMP, Enable, "Enable"s, "Enable WMP plugin"s, isStandalone);
+
 #undef PropBool
 #undef PropInt
 #undef PropEnum

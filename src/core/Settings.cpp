@@ -212,61 +212,11 @@ void Settings::Validate(const bool addDefaults)
    #define SettingUInt(section, name, defVal, minVal, maxVal, comment) RegisterUIntSetting(section, name, defVal, minVal, maxVal, addDefaults, comment)
    
    //////////////////////////////////////////////////////////////////////////
-   // Plugin.AlphaDMD
-
-#ifdef __LIBVPINBALL__
-   SettingBool(GetSection("Plugin.AlphaDMD"s), "Enable"s, false, ""s);
-#endif
-
-   //////////////////////////////////////////////////////////////////////////
    // Plugin.B2SLegacy
 
 #ifdef __STANDALONE__
-   SettingBool(GetSection("Plugin.B2SLegacy"s), "Enable"s, true, ""s);
-   SettingInt(GetSection("Plugin.B2SLegacy"s), "B2SBackglassWidth"s, 1024, 0, 5000, ""s);
-   SettingInt(GetSection("Plugin.B2SLegacy"s), "B2SBackglassHeight"s, 768, 0, 5000, ""s);
-#endif
-
-   //////////////////////////////////////////////////////////////////////////
-   // Plugin.FlexDMD
-
-#ifdef __STANDALONE__
-   SettingBool(GetSection("Plugin.FlexDMD"s), "Enable"s, true, ""s);
-#endif
-
-   //////////////////////////////////////////////////////////////////////////
-   // Plugin.PinMAME
-
-#ifdef __STANDALONE__
-   SettingBool(GetSection("Plugin.PinMAME"s), "Enable"s, true, ""s);
-#endif
-
-   //////////////////////////////////////////////////////////////////////////
-   // Plugin.PUP
-
-#ifdef __LIBVPINBALL__
-   SettingBool(GetSection("Plugin.PUP"s), "Enable"s, true, ""s);
-#endif
-
-   //////////////////////////////////////////////////////////////////////////
-   // Plugin.ScoreView
-
-#ifdef __STANDALONE__
-   SettingBool(GetSection("Plugin.ScoreView"s), "Enable"s, true, ""s);
-#endif
-
-   //////////////////////////////////////////////////////////////////////////
-   // Plugin.Serum
-
-#ifdef __STANDALONE__
-   SettingBool(GetSection("Plugin.Serum"s), "Enable"s, true, ""s);
-#endif
-
-   //////////////////////////////////////////////////////////////////////////
-   // Plugin.WMP
-
-#ifdef __STANDALONE__
-   SettingBool(GetSection("Plugin.WMP"s), "Enable"s, true, ""s);
+   SettingInt(GetSection("PluginB2SLegacy"s), "B2SBackglassWidth"s, 1024, 0, 5000, ""s);
+   SettingInt(GetSection("PluginB2SLegacy"s), "B2SBackglassHeight"s, 768, 0, 5000, ""s);
 #endif
 
    //////////////////////////////////////////////////////////////////////////

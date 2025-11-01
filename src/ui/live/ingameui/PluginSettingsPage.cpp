@@ -49,7 +49,7 @@ void PluginSettingsPage::Open(bool isBackwardAnimation)
 void PluginSettingsPage::BuildPage()
 {
    ClearItems();
-   const auto enablePropId = Settings::GetRegistry().GetPropertyId("Plugin."s + m_pluginId, "Enable"s).value();
+   const auto enablePropId = Settings::GetRegistry().GetPropertyId("Plugin"s + m_pluginId, "Enable"s).value();
    const MsgPluginManager& manager = MsgPluginManager::GetInstance();
    if (auto plugin = manager.GetPlugin(m_pluginId); plugin == nullptr)
    {

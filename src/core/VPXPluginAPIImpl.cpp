@@ -54,7 +54,7 @@ float VPXPluginAPIImpl::GetOption(const char* pageId, const char* optionId, cons
    else
    {
       Settings& settings = g_pplayer ? g_pplayer->m_ptable->m_settings : g_pvp->m_settings;
-      const std::string sectionName = "Plugin."s + pageId;
+      const std::string sectionName = "Plugin"s + pageId;
       Settings::Section section = Settings::GetSection(sectionName);
       std::vector<std::string> literals;
       if (values != nullptr)
@@ -554,7 +554,7 @@ VPXPluginAPIImpl::VPXPluginAPIImpl() : m_apiThread(std::this_thread::get_id())
    MsgPI::MsgPluginManager::GetInstance().SetSettingsHandler([](const char* name_space, const char* name, char* valueBuf, unsigned int valueBufSize)
       {
          const Settings& settings = g_pplayer ? g_pplayer->m_ptable->m_settings : g_pvp->m_settings;
-         const std::string sectionName = "Plugin."s + name_space;
+         const std::string sectionName = "Plugin"s + name_space;
          Settings::Section section = Settings::GetSection(sectionName);
          std::string buffer;
          if (settings.LoadValue(section, name, buffer))
