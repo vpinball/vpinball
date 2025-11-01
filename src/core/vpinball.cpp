@@ -1728,6 +1728,19 @@ BOOL VPinball::OnCommand(WPARAM wparam, LPARAM lparam)
    return TRUE;
 }
 
+BOOL VPinball::PreTranslateMessage(MSG& msg)
+{
+   if (msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST)
+   {
+      if (msg.message == WM_KEYDOWN && msg.wParam == VK_F2)
+      { // Hardcoded F2 accelerator to avoid bypassing F2 as a label edit in layer list tree view (as win32xx processes accelerators first, then PreTranslateMessage following window hierarchy)
+         ParseCommand(IDM_SOUND_EDITOR, false);
+         return true;
+      }
+   }
+   return false;
+}
+
 LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 #ifndef __STANDALONE__
