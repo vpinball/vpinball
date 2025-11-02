@@ -1014,18 +1014,6 @@ RenderDevice::RenderDevice(
    m_pD3DEx->QueryInterface(__uuidof(IDirect3D9), reinterpret_cast<void**>(&m_pD3D));
 
    UINT adapterId = D3DADAPTER_DEFAULT;
-   UINT selectedDeviceId = m_outputWnd[0]->GetDisplayConfig(g_pplayer->m_ptable->m_settings).adapter;
-   for (UINT i = 0; i < m_pD3D->GetAdapterCount(); i++)
-   {
-      D3DADAPTER_IDENTIFIER9 adapterIdentifier;
-      m_pD3D->GetAdapterIdentifier(i, 0, &adapterIdentifier);
-      if (adapterIdentifier.DeviceId == selectedDeviceId)
-      {
-         adapterId = i;
-         break;
-      }
-   }
-
    const D3DDEVTYPE devtype = D3DDEVTYPE_HAL;
    D3DCAPS9 caps;
    m_pD3D->GetDeviceCaps(adapterId, devtype, &caps);
@@ -1503,7 +1491,7 @@ void RenderDevice::AddWindow(VPX::Window* wnd)
 void RenderDevice::RemoveWindow(VPX::Window* wnd)
 {
    bool found = false;
-   for (int i = 0; i < m_nOutputWnd; i++)
+   for (unsigned int i = 0; i < m_nOutputWnd; i++)
    {
       if (found)
          m_outputWnd[i] = m_outputWnd[i + 1];
