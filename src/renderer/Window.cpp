@@ -313,6 +313,16 @@ void Window::SetPos(const int x, const int y)
    SDL_SetWindowPosition(m_nwnd, x, y);
 }
 
+void Window::SetSize(const int x, const int y)
+{
+   if (m_isVR)
+      return;
+   SDL_SetWindowSize(m_nwnd, x, y);
+   SDL_GetWindowSizeInPixels(m_nwnd, &m_pixelWidth, &m_pixelHeight);
+   m_width = x;
+   m_height = y;
+}
+
 vector<Window::DisplayConfig> Window::GetDisplays()
 {
    vector<Window::DisplayConfig> displays;

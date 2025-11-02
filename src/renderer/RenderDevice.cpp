@@ -1501,7 +1501,7 @@ void RenderDevice::RemoveWindow(VPX::Window* wnd)
    RenderTarget* backbuffer = wnd->GetBackBuffer();
    assert(found && backbuffer != nullptr);
    wnd->SetBackBuffer(nullptr);
-   delete backbuffer;
+   AddEndOfFrameCmd([backbuffer]() { delete backbuffer; });
    m_nOutputWnd--;
 }
 

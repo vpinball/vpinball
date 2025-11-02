@@ -67,6 +67,7 @@ public:
    float GetHDRHeadRoom() const { return m_hdrHeadRoom; } // Maximum luminance of display expressed in multiple of SDRWhitePoint (so 6 means 6 times the SDR whitepoint)
 
    void SetPos(const int x, const int y);
+   void SetSize(const int w, const int h); // This only changes the window size, without adjusting its backbuffer
    void Show(const bool show = true);
    bool IsVisible() const;
    void RaiseAndFocus();
