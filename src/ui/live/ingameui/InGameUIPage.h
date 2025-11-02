@@ -45,6 +45,7 @@ public:
 
    ImVec2 GetWindowPos() const { return m_windowPos; }
    ImVec2 GetWindowSize() const { return m_windowSize; }
+   bool IsWindowHovered() const { return m_windowHovered; }
    float GetOpenCloseAnimPos() const { return m_openAnimPos; }
 
    Player* const m_player;
@@ -63,6 +64,7 @@ private:
 
    ImVec2 m_windowPos = ImVec2(0.f, 0.f);
    ImVec2 m_windowSize = ImVec2(0.f, 0.f);
+   bool m_windowHovered = false;
    float m_adjustedValue = 0.f;
    uint32_t m_lastUpdateMs = 0;
    uint32_t m_pressStartMs = 0;

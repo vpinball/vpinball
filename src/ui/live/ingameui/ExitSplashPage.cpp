@@ -99,35 +99,6 @@ void ExitSplashPage::BuildPage()
       }));
 }
 
-
-/*
-   // Handle dragging mouse to allow dragging windows
-   if (m_player && !m_player->m_playfieldWnd->IsFullScreen())
-   {
-      if (ImGui::IsMouseDragging(ImGuiMouseButton_Left))
-      {
-         if (!hovered && !(pos.x <= m_initialDragPos.x && m_initialDragPos.x <= max.x && pos.y <= m_initialDragPos.y && m_initialDragPos.y <= max.y)) // Don't drag if mouse is over UI components
-         {
-            const ImVec2 drag = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left);
-            int x, y;
-            m_player->m_playfieldWnd->GetPos(x, y);
-            switch (m_liveUI.GetUIOrientation())
-            {
-            case 0: m_player->m_playfieldWnd->SetPos(x + (int)drag.x, y + (int)drag.y); break;
-            case 1: m_player->m_playfieldWnd->SetPos(x - (int)drag.y, y + (int)drag.x); break;
-            case 2: m_player->m_playfieldWnd->SetPos(x + (int)drag.x, y - (int)drag.y); break;
-            case 3: m_player->m_playfieldWnd->SetPos(x + (int)drag.y, y - (int)drag.x); break;
-            default: assert(false);
-            }
-         }
-      }
-      else
-      {
-         m_initialDragPos = ImGui::GetMousePos();
-      }
-   }
-*/
-
 void ExitSplashPage::Render(float elapsedMs)
 {
    // Display table name, author, version, blurb and description => Move to a dedicated page ?
