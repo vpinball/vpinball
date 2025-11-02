@@ -854,7 +854,7 @@ public:
    void SaveToFile(const string &path);
    void Save();
 
-   void CopyOverrides(const Settings &settings);
+   void Copy(const Settings &settings);
 
    // Only actually save the settings if they have been modified. If you want to force a save (for example if filepath has changed), you need to explicitly set the modified flag
    bool IsModified() const { return m_modified; }

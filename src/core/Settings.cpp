@@ -372,33 +372,13 @@ void Settings::Save()
    SaveToFile(m_iniPath);
 }
 
-void Settings::CopyOverrides(const Settings& settings)
+void Settings::Copy(const Settings& settings)
 {
-   assert(m_parent != nullptr); // Overrides are defined relatively to a parent
-   for (const auto& section : settings.m_ini)
-   {
-      for (const auto& item : section.second)
-      {
-         if (m_parent->m_ini.get(section.first).has(item.first))
-         { // Value stored in parent setting block
-            if (m_parent->m_ini.get(section.first).get(item.first) != item.second)
-            {
-               m_ini[section.first][item.first] = item.second;
-               m_modified = true;
-               m_modificationIndex++;
-            }
-            else
-            {
-               m_modified |= m_ini[section.first].remove(item.first);
-            }
-         }
-         else
-         { // Value missing from parent (so an override)
-            m_modified |= (m_ini[section.first][item.first] != item.second);
-            m_ini[section.first][item.first] = item.second;
-         }
-      }
-   }
+   m_ini = settings.m_ini;
+   m_iniPath = settings.m_iniPath;
+   m_modified = settings.m_modified;
+   m_modificationIndex = settings.m_modificationIndex;
+   m_store.UpdateParent();
 }
 
 bool Settings::HasValue(const Section section, const string& key, const bool searchParent) const
