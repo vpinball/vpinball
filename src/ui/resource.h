@@ -352,9 +352,7 @@
 #define IDC_CHANGELOG                   254
 #define IDC_FULLSCREEN                  256
 #define IDD_FONTDIALOG                  256
-#define IDC_SIZELIST                    257
 #define IDC_PhysicsList                 259
-#define IDC_10BIT_VIDEO                 260
 #define IDD_KEYS                        261
 #define IDD_TRANSLATE                   262
 #define IDC_RIGHTFLIPPERBUTTON          264
@@ -746,7 +744,6 @@
 #define IDC_TILT_INERTIA                543
 #define IDC_ADAPTIVE_VSYNC              545
 #define IDC_GLASS_PAD_RIGHT             545
-#define IDC_DISPLAY_ID                  546
 #define IDD_PROPTABLE_PHYSICS2          547
 #define IDD_PROPTABLE_PHYSICS           547
 #define IDC_GLASS_PAD_BOTTOM            548
@@ -1084,13 +1081,9 @@
 #define IDC_IMAGE_LABEL                 908
 #define IDC_DEPTHBIAS_LABEL             909
 #define IDC_REFLECT_ENABLED_CHECK       910
-#define IDC_WINDOWED                    911
-#define IDC_EXCLUSIVE_FULLSCREEN        912
-#define IDC_AR_COMBO                    913
 #define IDC_AR_LABEL                    914
 #define IDC_WIDTH_LABEL                 915
 #define IDC_HEIGHT_LABEL                916
-#define IDC_WIDTH_EDIT                  917
 #define IDC_APPLICATION_SETTINGS        921
 #define IDC_TABLE_OVERRIDE              922
 #define IDC_TONEMAPPER                  923

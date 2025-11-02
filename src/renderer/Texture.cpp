@@ -490,7 +490,7 @@ bool BaseTexture::Save(const string& filepath) const
    bool success = false;
 
 #ifdef __STANDALONE__
-   SDL_Surface* pSurface = SDL_CreateSurfaceFrom(m_width, m_height, m_format == SRGB ? SDL_PIXELFORMAT_RGB24 : SDL_PIXELFORMAT_ARGB8888, const_cast<uint8_t*>(datac()), pitch());
+   SDL_Surface* pSurface = ToSDLSurface();
    if (pSurface)
    {
       if (ext == "png")
@@ -822,6 +822,26 @@ std::shared_ptr<BaseTexture> BaseTexture::ToBGRA() const
       assert(!"unknown format");
 
    return tex;
+}
+
+SDL_Surface* BaseTexture::ToSDLSurface() const
+{
+   SDL_PixelFormat format;
+   switch (m_format)
+   {
+   case BW: format = SDL_PIXELFORMAT_INDEX8; break;
+   case RGB: format = SDL_PIXELFORMAT_RGB24; break;
+   case RGBA: format = SDL_PIXELFORMAT_ARGB8888; break;
+   case SRGB: format = SDL_PIXELFORMAT_RGB24; break;
+   case SRGBA: format = SDL_PIXELFORMAT_ARGB8888; break;
+   case SRGB565: format = SDL_PIXELFORMAT_RGB565; break;
+   case RGB_FP16: format = SDL_PIXELFORMAT_RGB48_FLOAT; break;
+   case RGBA_FP16: format = SDL_PIXELFORMAT_RGBA64_FLOAT; break;
+   case RGB_FP32: format = SDL_PIXELFORMAT_RGB96_FLOAT; break;
+   case RGBA_FP32: format = SDL_PIXELFORMAT_RGBA128_FLOAT; break;
+   default: format = SDL_PIXELFORMAT_UNKNOWN; break;
+   }
+   return format == SDL_PIXELFORMAT_UNKNOWN ? nullptr : SDL_CreateSurfaceFrom(m_width, m_height, format, const_cast<uint8_t*>(datac()), pitch());
 }
 
 void BaseTexture::UpdateMD5() const

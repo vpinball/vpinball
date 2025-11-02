@@ -11,7 +11,7 @@ GraphicSettingsPage::GraphicSettingsPage()
    : InGameUIPage("Graphic Settings"s, ""s, SaveMode::Both)
 {
    #ifdef ENABLE_BGFX
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
    if (const int nRendererSupported = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers); nRendererSupported > 1)
    {
@@ -41,7 +41,7 @@ GraphicSettingsPage::GraphicSettingsPage()
 
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Display synchronization"));
 
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_SyncMode, //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_SyncMode(); }, //
@@ -51,7 +51,7 @@ GraphicSettingsPage::GraphicSettingsPage()
          m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000);
       }));
 
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_MaxFramerate, "%3d FPS", //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_MaxFramerate(); }, //
@@ -62,7 +62,7 @@ GraphicSettingsPage::GraphicSettingsPage()
       }));
 
    #ifndef ENABLE_OPENGL
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_MaxPrerenderedFrames, "%4d Frames", //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_MaxPrerenderedFrames(); }, //
@@ -73,7 +73,7 @@ GraphicSettingsPage::GraphicSettingsPage()
       }));
    #endif
 
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_VisualLatencyCorrection, "%4d ms", //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_VisualLatencyCorrection(); }, //
@@ -88,7 +88,7 @@ GraphicSettingsPage::GraphicSettingsPage()
 
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Antialiasing quality"));
 
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_AAFactor, 100.f, "%4.1f %%", //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_AAFactor(); }, //
@@ -99,7 +99,7 @@ GraphicSettingsPage::GraphicSettingsPage()
       }));
 
    #ifdef ENABLE_OPENGL
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_MSAASamples, //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_MSAASamples(); }, //
@@ -134,7 +134,7 @@ GraphicSettingsPage::GraphicSettingsPage()
 
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Performance & Troubleshooting"));
 
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::EnumPropertyDef(""s, ""s, "Ambient Occlusion"s, "Limit the quality of ambient occlusion for better performance.\r\nDynamic is the better with contact shadows for dynamic objects but higher performance requirements"s, 0, 0, vector { "Disabled"s, "Static"s, "Dynamic"s }),
       [this]() {
@@ -162,7 +162,7 @@ GraphicSettingsPage::GraphicSettingsPage()
       [](Settings&) { /* Nothing to do as this is directly persisted for the time being */ },
       [](int, Settings&, bool) { /* Nothing to do as this is directly persisted for the time being */ }));
 
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    // Maybe setup a combo with a few preset values ?
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_MaxTexDimension, "%4d", //
@@ -173,7 +173,7 @@ GraphicSettingsPage::GraphicSettingsPage()
          m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000);
       }));
 
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>(
       Settings::m_propPlayer_PFReflection, //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_PFReflection(); }, //
@@ -183,7 +183,7 @@ GraphicSettingsPage::GraphicSettingsPage()
          m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000);
       }));
 
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    // Maybe setup a combo with a few preset values ?
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_AlphaRampAccuracy, "%4d", //
@@ -199,7 +199,7 @@ GraphicSettingsPage::GraphicSettingsPage()
       [this]() { return m_player->m_renderer->m_HDRforceDisableToneMapper; }, //
       [this](bool v) { m_player->m_renderer->m_HDRforceDisableToneMapper = v; }));
 
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_HDRGlobalExposure, 1.f, "%4.2f", //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_HDRGlobalExposure(); }, //
@@ -208,7 +208,7 @@ GraphicSettingsPage::GraphicSettingsPage()
          m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000);
       }));
 
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_CompressTextures, //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_CompressTextures(); }, //
@@ -218,7 +218,7 @@ GraphicSettingsPage::GraphicSettingsPage()
          m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000);
       }));
 
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_UseNVidiaAPI, //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_UseNVidiaAPI(); }, //
@@ -245,7 +245,7 @@ GraphicSettingsPage::GraphicSettingsPage()
       [this](bool v) { m_player->m_renderer->m_motionBlurOff = v; }));
 
    #ifdef ENABLE_DX9
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_SoftwareVertexProcessing, //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_SoftwareVertexProcessing(); }, //

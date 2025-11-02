@@ -806,7 +806,6 @@ RenderDevice::RenderDevice(
    init.platformData.nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
    #elif BX_PLATFORM_WINDOWS
    init.platformData.nwh = m_outputWnd[0]->GetNativeHWND();
-   init.deviceId = static_cast<uint16_t>(m_outputWnd[0]->GetDisplayConfig(g_pplayer->m_ptable->m_settings).adapter);
    #elif BX_PLATFORM_STEAMLINK
    init.platformData.ndt = wmInfo.info.vivante.display;
    init.platformData.nwh = wmInfo.info.vivante.window;
@@ -1499,6 +1498,23 @@ void RenderDevice::AddWindow(VPX::Window* wnd)
    wnd->SetBackBuffer(new RenderTarget(this, SurfaceType::RT_DEFAULT, fbh, BGFX_INVALID_HANDLE, bgfx::TextureFormat::Count, BGFX_INVALID_HANDLE, bgfx::TextureFormat::Count,
       "BackBuffer #" + std::to_string(m_nOutputWnd), wnd->GetPixelWidth(), wnd->GetPixelHeight(), fmt));
 #endif
+}
+
+void RenderDevice::RemoveWindow(VPX::Window* wnd)
+{
+   bool found = false;
+   for (int i = 0; i < m_nOutputWnd; i++)
+   {
+      if (found)
+         m_outputWnd[i] = m_outputWnd[i + 1];
+      else
+         found = true;
+   }
+   RenderTarget* backbuffer = wnd->GetBackBuffer();
+   assert(found && backbuffer != nullptr);
+   wnd->SetBackBuffer(nullptr);
+   delete backbuffer;
+   m_nOutputWnd--;
 }
 
 bool RenderDevice::DepthBufferReadBackAvailable() const

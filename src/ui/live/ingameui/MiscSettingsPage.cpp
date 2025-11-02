@@ -113,7 +113,7 @@ void MiscSettingsPage::BuildPage()
       }
       else if (m_dayTimeMode == 2)
       {
-         // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+         // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
          AddItem(std::make_unique<InGameUIItem>( //
             Settings::m_propPlayer_Latitude, 1.f, "%4.1f deg"s, //
             [this]() { return m_player->m_ptable->m_settings.GetPlayer_Latitude(); }, //
@@ -121,7 +121,7 @@ void MiscSettingsPage::BuildPage()
                m_player->m_ptable->m_settings.SetPlayer_Latitude(v, false);
                // FIXME recompute light level
             }));
-         // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+         // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
          AddItem(std::make_unique<InGameUIItem>( //
             Settings::m_propPlayer_Longitude, 1.f, "%4.1f deg"s, //
             [this]() { return m_player->m_ptable->m_settings.GetPlayer_Longitude(); }, //
