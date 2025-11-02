@@ -143,23 +143,36 @@ void DisplaySettingsPage::BuildPage()
 
 void DisplaySettingsPage::BuildWindowPage()
 {
-   const string name = m_player->m_ptable->m_settings.GetWindow_Display(m_wndId);
-   auto it = std::ranges::find_if(m_displays, [&name](const Window::DisplayConfig& display) { return display.displayName == name; });
-   const int editedDisplay = it == m_displays.end() ? 0 : (int)std::distance(m_displays.begin(), it);
+   int editedDisplay;
+   {
+      const Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
+      SDL_Point wndPos;
+      wnd->GetPos(wndPos.x, wndPos.y);
+      wndPos.x += wnd->GetWidth() / 2;
+      wndPos.y += wnd->GetHeight() / 2;
+      SDL_DisplayID displayId = SDL_GetDisplayForPoint(&wndPos);
+      auto it = std::ranges::find_if(m_displays, [&displayId](const Window::DisplayConfig& display) { return display.display == displayId; });
+      editedDisplay = it == m_displays.end() ? 0 : (int)std::distance(m_displays.begin(), it);
+   }
 
-   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::EnumPropertyDef(""s, ""s, "Display"s, "Select the display output"s, 0, 0, m_displayNames), //
       [editedDisplay]() { return editedDisplay; }, // Live
-      [editedDisplay]() { return editedDisplay; }, // Stored
+      [this]() {
+         const string name = m_player->m_ptable->m_settings.GetWindow_Display(m_wndId);
+         auto it = std::ranges::find_if(m_displays, [&name](const Window::DisplayConfig& display) { return display.displayName == name; });
+         const int storedDisplay = it == m_displays.end() ? 0 : (int)std::distance(m_displays.begin(), it);
+         return storedDisplay;
+      }, // Stored
       [this](int, int v)
       {
-         m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game", 5000, m_delayApplyNotifId);
-         m_player->m_ptable->m_settings.SetWindow_Display(m_wndId, m_displays[v].displayName, false);
+         // FIXME adjust window size if it does not fit in the new display
+         Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
+         wnd->SetPos(m_displays[v].left + (m_displays[v].width - wnd->GetWidth()) / 2, m_displays[v].top + (m_displays[v].height - wnd->GetHeight()) / 2);
          BuildPage();
       }, //
-      [](Settings&) { /* Directly stored on change, nothing to do */ }, //
-      [](int, Settings&, bool) { /* Directly stored on change, nothing to do */ }));
+      [this](Settings& settings) { settings.ResetWindow_Display(m_wndId); }, //
+      [this](int v, Settings& settings, bool asTableOverride) { settings.SetWindow_Display(m_wndId, m_displays[v].displayName, asTableOverride); }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    Settings::GetRegistry().Register(Settings::GetWindow_FullScreen_Property(m_wndId)->WithDefault(m_player->m_ptable->m_settings.GetWindow_FullScreen(m_wndId)));
@@ -246,53 +259,112 @@ void DisplaySettingsPage::BuildWindowPage()
          [](Settings&) { /* UI state, not persisted */ }, //
          [](int, Settings&, bool) { /* UI state, not persisted */ }));
 
-      // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
-      Settings::GetRegistry().Register(Settings::GetWindow_Width_Property(m_wndId)
-            ->WithRange(0, maxWidth - m_player->m_ptable->m_settings.GetWindow_WndX(m_wndId))
-            ->WithDefault(m_player->m_ptable->m_settings.GetWindow_Width(m_wndId)));
-      AddItem(std::make_unique<InGameUIItem>(
-         Settings::m_propWindow_Width[m_wndId], "%d", //
-         [this]() { return m_player->m_ptable->m_settings.GetWindow_Width(m_wndId); }, //
-         [this](int, int v)
-         {
-            m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game", 5000, m_delayApplyNotifId);
-            if (m_arLock != 0)
+      if (m_isMainWindow)
+      { // For main window, we do not dynamically change size as it is not supported and the UI breaks (would require to resetup  everything)
+         // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
+         Settings::GetRegistry().Register(Settings::GetWindow_Width_Property(m_wndId)
+               ->WithRange(0, maxWidth - m_player->m_ptable->m_settings.GetWindow_WndX(m_wndId))
+               ->WithDefault(m_player->m_ptable->m_settings.GetWindow_Width(m_wndId)));
+         AddItem(std::make_unique<InGameUIItem>(
+            Settings::m_propWindow_Width[m_wndId], "%d", //
+            [this]() { return m_player->m_ptable->m_settings.GetWindow_Width(m_wndId); }, //
+            [this](int, int v)
             {
-               int h = (v * aspectRatios[m_arLock].y) / aspectRatios[m_arLock].x;
-               if (h > Settings::GetWindow_Height_Property(m_wndId)->m_max)
+               m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game", 5000, m_delayApplyNotifId);
+               if (m_arLock != 0)
                {
-                  h = Settings::GetWindow_Height_Property(m_wndId)->m_max;
-                  v = (h * aspectRatios[m_arLock].x) / aspectRatios[m_arLock].y;
+                  int h = (v * aspectRatios[m_arLock].y) / aspectRatios[m_arLock].x;
+                  if (h > Settings::GetWindow_Height_Property(m_wndId)->m_max)
+                  {
+                     h = Settings::GetWindow_Height_Property(m_wndId)->m_max;
+                     v = (h * aspectRatios[m_arLock].x) / aspectRatios[m_arLock].y;
+                  }
+                  m_player->m_ptable->m_settings.SetWindow_Height(m_wndId, h, false);
                }
-               m_player->m_ptable->m_settings.SetWindow_Height(m_wndId, h, false);
-            }
-            m_player->m_ptable->m_settings.SetWindow_Width(m_wndId, v, false);
-            BuildPage();
-         }));
+               m_player->m_ptable->m_settings.SetWindow_Width(m_wndId, v, false);
+               BuildPage();
+            }));
 
-      // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
-      Settings::GetRegistry().Register(Settings::GetWindow_Height_Property(m_wndId)
-            ->WithRange(0, maxHeight - m_player->m_ptable->m_settings.GetWindow_WndY(m_wndId))
-            ->WithDefault(m_player->m_ptable->m_settings.GetWindow_Height(m_wndId)));
-      AddItem(std::make_unique<InGameUIItem>(
-         Settings::m_propWindow_Height[m_wndId], "%d"s, //
-         [this]() { return m_player->m_ptable->m_settings.GetWindow_Height(m_wndId); }, //
-         [this](int, int v)
-         {
-            m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game", 5000, m_delayApplyNotifId);
-            if (m_arLock != 0)
+         // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
+         Settings::GetRegistry().Register(Settings::GetWindow_Height_Property(m_wndId)
+               ->WithRange(0, maxHeight - m_player->m_ptable->m_settings.GetWindow_WndY(m_wndId))
+               ->WithDefault(m_player->m_ptable->m_settings.GetWindow_Height(m_wndId)));
+         AddItem(std::make_unique<InGameUIItem>(
+            Settings::m_propWindow_Height[m_wndId], "%d"s, //
+            [this]() { return m_player->m_ptable->m_settings.GetWindow_Height(m_wndId); }, //
+            [this](int, int v)
             {
-               int w = (v * aspectRatios[m_arLock].x) / aspectRatios[m_arLock].y;
-               if (w > Settings::GetWindow_Width_Property(m_wndId)->m_max)
+               m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game", 5000, m_delayApplyNotifId);
+               if (m_arLock != 0)
                {
-                  w = Settings::GetWindow_Width_Property(m_wndId)->m_max;
-                  v = (w * aspectRatios[m_arLock].y) / aspectRatios[m_arLock].x;
+                  int w = (v * aspectRatios[m_arLock].x) / aspectRatios[m_arLock].y;
+                  if (w > Settings::GetWindow_Width_Property(m_wndId)->m_max)
+                  {
+                     w = Settings::GetWindow_Width_Property(m_wndId)->m_max;
+                     v = (w * aspectRatios[m_arLock].y) / aspectRatios[m_arLock].x;
+                  }
+                  m_player->m_ptable->m_settings.SetWindow_Width(m_wndId, w, false);
                }
-               m_player->m_ptable->m_settings.SetWindow_Width(m_wndId, w, false);
-            }
-            m_player->m_ptable->m_settings.SetWindow_Height(m_wndId, v, false);
-            BuildPage();
-         }));
+               m_player->m_ptable->m_settings.SetWindow_Height(m_wndId, v, false);
+               BuildPage();
+            }));
+      }
+      else
+      {
+         Settings::GetRegistry().Register(Settings::GetWindow_Width_Property(m_wndId)
+               ->WithRange(0, maxWidth - m_player->m_ptable->m_settings.GetWindow_WndX(m_wndId))
+               ->WithDefault((m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow())->GetWidth()));
+         AddItem(std::make_unique<InGameUIItem>(
+            Settings::m_propWindow_Width[m_wndId], "%d", //
+            [this]() { return (m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow())->GetWidth(); }, //
+            [this](int, int v)
+            {
+               Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
+               SDL_Point size { v, wnd->GetHeight() };
+               if (m_arLock != 0)
+               {
+                  int h = (v * aspectRatios[m_arLock].y) / aspectRatios[m_arLock].x;
+                  if (h > Settings::GetWindow_Height_Property(m_wndId)->m_max)
+                  {
+                     h = Settings::GetWindow_Height_Property(m_wndId)->m_max;
+                     v = (h * aspectRatios[m_arLock].x) / aspectRatios[m_arLock].y;
+                  }
+                  size.y = h;
+               }
+               size.x = v;
+               m_player->m_renderer->m_renderDevice->RemoveWindow(wnd);
+               wnd->SetSize(size.x, size.y);
+               m_player->m_renderer->m_renderDevice->AddWindow(wnd);
+               BuildPage();
+            }));
+
+         Settings::GetRegistry().Register(Settings::GetWindow_Height_Property(m_wndId)
+               ->WithRange(0, maxHeight - m_player->m_ptable->m_settings.GetWindow_WndY(m_wndId))
+               ->WithDefault((m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow())->GetHeight()));
+         AddItem(std::make_unique<InGameUIItem>(
+            Settings::m_propWindow_Height[m_wndId], "%d"s, //
+            [this]() { return (m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow())->GetHeight(); }, //
+            [this](int, int v)
+            {
+               Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
+               SDL_Point size { wnd->GetWidth(), v };
+               if (m_arLock != 0)
+               {
+                  int w = (v * aspectRatios[m_arLock].x) / aspectRatios[m_arLock].y;
+                  if (w > Settings::GetWindow_Width_Property(m_wndId)->m_max)
+                  {
+                     w = Settings::GetWindow_Width_Property(m_wndId)->m_max;
+                     v = (w * aspectRatios[m_arLock].y) / aspectRatios[m_arLock].x;
+                  }
+                  size.x = w;
+               }
+               size.y = v;
+               m_player->m_renderer->m_renderDevice->RemoveWindow(wnd);
+               wnd->SetSize(size.x, size.y);
+               m_player->m_renderer->m_renderDevice->AddWindow(wnd);
+               BuildPage();
+            }));
+      }
 
       Settings::GetRegistry().Register(Settings::GetWindow_WndX_Property(m_wndId)
             ->WithRange(0, maxWidth - m_player->m_ptable->m_settings.GetWindow_Width(m_wndId))
@@ -316,7 +388,7 @@ void DisplaySettingsPage::BuildWindowPage()
             { // Warp mouse as if clicked, we would click on the opposite direction, if flipper nav, we would disable flipper nav (due to relative mouse move)
                SDL_FPoint mousePos;
                SDL_GetGlobalMouseState(&mousePos.x, &mousePos.y);
-               SDL_WarpMouseGlobal(mousePos.x + v - prev, mousePos.y);
+               SDL_WarpMouseGlobal(mousePos.x + static_cast<float>(v - prev), mousePos.y);
             }
             BuildPage();
          }));
@@ -343,7 +415,7 @@ void DisplaySettingsPage::BuildWindowPage()
             { // Warp mouse as if clicked, we would click on the opposite direction, if flipper nav, we would disable flipper nav (due to relative mouse move)
                SDL_FPoint mousePos;
                SDL_GetGlobalMouseState(&mousePos.x, &mousePos.y);
-               SDL_WarpMouseGlobal(mousePos.x, mousePos.y + v - prev);
+               SDL_WarpMouseGlobal(mousePos.x, mousePos.y + static_cast<float>(v - prev));
             }
             BuildPage();
          }));
@@ -472,7 +544,7 @@ void DisplaySettingsPage::Render(float elapsedS)
    // Drag main window (disabled if mouse is over UI components)
    // Only main window is handled here as ImGui only receive input events for the main window
    // Anciliary window are directly handled in the main event dispatch handler
-   if (m_isMainWindow && SDL_GetMouseFocus() == m_player->m_playfieldWnd->GetCore() && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+   if (m_isMainWindow && !IsWindowHovered() && SDL_GetMouseFocus() == m_player->m_playfieldWnd->GetCore() && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
    {
       SDL_Point pos;
       m_player->m_playfieldWnd->GetPos(pos.x, pos.y);
@@ -498,7 +570,7 @@ void DisplaySettingsPage::Render(float elapsedS)
       default: assert(false);
       }
       const string name = m_player->m_ptable->m_settings.GetWindow_Display(m_wndId);
-      auto display = std::ranges::find_if(m_displays, [&name](const Window::DisplayConfig& display) { return display.displayName == name; });
+      const auto display = std::ranges::find_if(m_displays, [&name](const Window::DisplayConfig& display) { return display.displayName == name; });
       if (display != m_displays.end())
       {
          pos.x = clamp(pos.x, 0, display->width - m_player->m_playfieldWnd->GetWidth());
