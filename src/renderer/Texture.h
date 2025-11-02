@@ -85,6 +85,7 @@ public:
    std::shared_ptr<BaseTexture> Convert(Format format) const; // Always create a new instance, even if target format is source format are matching
    std::shared_ptr<BaseTexture> ToBGRA() const; // swap R and B channels, also tonemaps floating point buffers during conversion and adds an opaque alpha channel (if format with missing alpha)
    std::shared_ptr<BaseTexture> NewWithAlpha() const { return Convert(GetFormatWithAlpha(m_format)); }
+   struct SDL_Surface* ToSDLSurface() const; // Create a new SDL_Surface initialized with this texture content
 
    unsigned int m_realWidth, m_realHeight;
    const Format m_format;

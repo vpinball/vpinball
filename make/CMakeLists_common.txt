@@ -263,6 +263,8 @@ set(VPX_SOURCES
    src/ui/live/ingameui/CabinetSettingsPage.cpp
    src/ui/live/ingameui/DisplayProfileSettingsPage.h
    src/ui/live/ingameui/DisplayProfileSettingsPage.cpp
+   src/ui/live/ingameui/DisplaySettingsPage.h
+   src/ui/live/ingameui/DisplaySettingsPage.cpp
    src/ui/live/ingameui/ExitSplashPage.cpp
    src/ui/live/ingameui/ExitSplashPage.h
    src/ui/live/ingameui/GraphicSettingsPage.h

@@ -9,6 +9,7 @@
 #include "BackglassPage.h"
 #include "CabinetSettingsPage.h"
 #include "DisplayProfileSettingsPage.h"
+#include "DisplaySettingsPage.h"
 #include "ExitSplashPage.h"
 #include "GraphicSettingsPage.h"
 #include "HomePage.h"
@@ -37,6 +38,7 @@ InGameUI::InGameUI(LiveUI &liveUI)
    AddPage("settings/backglass"s, []() { return std::make_unique<BackglassPage>(); });
    AddPage("settings/cabinet"s, []() { return std::make_unique<CabinetSettingsPage>(); });
    AddPage("settings/display_profiles"s, []() { return std::make_unique<DisplayProfileSettingsPage>(); });
+   AddPage("settings/displays"s, []() { return std::make_unique<DisplayHomePage>(); });
    AddPage("settings/graphic"s, []() { return std::make_unique<GraphicSettingsPage>(); });
    AddPage("settings/input"s, []() { return std::make_unique<InputSettingsPage>(); });
    AddPage("settings/misc"s, []() { return std::make_unique<MiscSettingsPage>(); });

@@ -75,7 +75,7 @@ NudgeSettingsPage::NudgeSettingsPage()
 
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Visual feedback"s));
 
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_NudgeStrength, 400.f, "%4.1f %%", //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_NudgeStrength(); }, //

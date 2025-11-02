@@ -31,6 +31,7 @@ void PluginHomePage::Open(bool isBackwardAnimation)
    }
 }
 
+
 PluginSettingsPage::PluginSettingsPage(const string& pluginId)
    : InGameUIPage(MsgPluginManager::GetInstance().GetPlugin(pluginId)->m_name,
         MsgPluginManager::GetInstance().GetPlugin(pluginId)->m_description + "\nBy " + MsgPluginManager::GetInstance().GetPlugin(pluginId)->m_author + "\nVersion "

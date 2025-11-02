@@ -104,11 +104,16 @@ public:
       : IntPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_min, other.m_max, other.m_def)
    {
    }
+   IntPropertyDef(const IntPropertyDef& other, int min, int max)
+      : IntPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, min, max, other.m_def)
+   {
+   }
    IntPropertyDef(const IntPropertyDef& other, int def)
       : IntPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_min, other.m_max, def)
    {
    }
    std::unique_ptr<IntPropertyDef> WithDefault(int def) const { return std::make_unique<IntPropertyDef>(*this, def); }
+   std::unique_ptr<IntPropertyDef> WithRange(int min, int max) const { return std::make_unique<IntPropertyDef>(*this, min, max); }
    ~IntPropertyDef() override = default;
 
    const int m_min;

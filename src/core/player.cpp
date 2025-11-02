@@ -31,6 +31,7 @@
 #include "renderer/Anaglyph.h"
 #include "renderer/VRDevice.h"
 #include "renderer/typedefs3D.h"
+#include "renderer/RenderCommand.h"
 #ifdef EXT_CAPTURE
 #include "renderer/captureExt.h"
 #endif
@@ -77,15 +78,14 @@ extern marker_series series;
 
 // leave as-is as e.g. VPM relies on this
 #define WIN32_PLAYER_WND_CLASSNAME _T("VPPlayer")
-#define WIN32_WND_TITLE _T("Visual Pinball Player")
 
 
 Player::Player(PinTable *const editor_table, PinTable *const live_table, const int playMode)
    : m_pEditorTable(editor_table)
    , m_ptable(live_table)
-   , m_backglassOutput("Visual Pinball - Backglass"s, live_table->m_settings, VPXWindowId::VPXWINDOW_Backglass)
-   , m_scoreViewOutput("Visual Pinball - Score View"s, live_table->m_settings, VPXWindowId::VPXWINDOW_ScoreView)
-   , m_topperOutput("Visual Pinball - Topper"s, live_table->m_settings, VPXWindowId::VPXWINDOW_Topper)
+   , m_backglassOutput(live_table->m_settings, VPXWindowId::VPXWINDOW_Backglass)
+   , m_scoreViewOutput(live_table->m_settings, VPXWindowId::VPXWINDOW_ScoreView)
+   , m_topperOutput(live_table->m_settings, VPXWindowId::VPXWINDOW_Topper)
    , m_audioPlayer(std::make_unique<VPX::AudioPlayer>(
         live_table->m_settings.GetPlayer_SoundDeviceBG(), live_table->m_settings.GetPlayer_SoundDevice(), static_cast<VPX::SoundConfigTypes>(live_table->m_settings.GetPlayer_Sound3D())))
    , m_resURIResolver(MsgPI::MsgPluginManager::GetInstance().GetMsgAPI(), VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), true, true, true, true)
@@ -213,7 +213,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       #endif
       
       const Settings& settings = g_pvp->m_settings; // Always use main application settings (not overridable per table)
-      m_playfieldWnd = new VPX::Window(WIN32_WND_TITLE, settings, stereo3D == STEREO_VR ? VPXWindowId::VPXWINDOW_VRPreview : VPXWindowId::VPXWINDOW_Playfield);
+      m_playfieldWnd = new VPX::Window("Visual Pinball Player"s, settings, stereo3D == STEREO_VR ? VPXWindowId::VPXWINDOW_VRPreview : VPXWindowId::VPXWINDOW_Playfield);
 
       const float pfRefreshRate = m_playfieldWnd->GetRefreshRate(); 
       m_maxFramerate = static_cast<float>(m_ptable->m_settings.GetPlayer_MaxFramerate());
@@ -2130,37 +2130,33 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXWindowId window, RenderTarget *em
       {
          rd->SetRenderTarget(renderPassName, outputRT, false, true);
       }
-   }
-   else
-   {
-      rd->SetRenderTarget(renderPassName, outputRT, true, true);
-   }
-
-   if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
-   {
       rd->ResetRenderState();
       rd->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
    }
    else if (output.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
    {
-      rd->ResetRenderState();
-      rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-      rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-      rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-      rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-
-      rd->m_basicShader->SetVector(SHADER_cBase_Alpha, 0.0f, 0.0f, 0.0f, 1.0f);
-      rd->m_basicShader->SetTextureNull(SHADER_tex_base_color);
-      rd->m_basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
-
-      static constexpr Vertex3D_NoTex2 vertices[4] = {
-         { 1.0f, 0.0f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f },
-         { 0.0f, 0.0f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f },
-         { 1.0f, 1.0f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f },
-         { 0.0f, 1.0f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f }
+      rd->SetRenderTarget(renderPassName, outputRT, true, true);
+      Vertex3D_NoTex2 vertices[4] =
+      {
+         { 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f }, //
+         { 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f }, //
+         { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f }, //
+         { 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f }
       };
-
-      rd->DrawTexturedQuad(rd->m_basicShader, vertices, true, 0.f);
+      const float sx = 1.f / static_cast<float>(outputRT->GetWidth());
+      const float sy = 1.f / static_cast<float>(outputRT->GetHeight());
+      for (unsigned int i = 0; i < 4; ++i)
+      {
+         vertices[i].x =        sx * (vertices[i].x * static_cast<float>(m_outputW) + m_outputX)*2.0f - 1.0f;
+         vertices[i].y = 1.0f - sy * (vertices[i].y * m_outputH + m_outputY) * 2.0f;
+      }
+      rd->m_DMDShader->SetVector(SHADER_vColor_Intensity, 0.f, 0.f, 0.f, 1.f);
+      rd->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_noDMD_notex);
+      rd->m_DMDShader->SetVector(SHADER_glassArea, 0.f, 0.f, 1.f, 1.f);
+      rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+      rd->DrawTexturedQuad(rd->m_DMDShader, vertices);
+      rd->GetCurrentPass()->m_commands.back()->SetTransparent(true);
+      rd->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
    }
 
    struct PlayerRenderContext2D
@@ -2321,13 +2317,7 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXWindowId window, RenderTarget *em
 
    m_renderer->UpdateBasicShaderMatrix();
 
-   if (!rendered)
-   {
-      rd->GetCurrentPass()->ClearCommands();
-      return nullptr;
-   }
-
-   if (enableHDR && (output.GetMode() == VPX::RenderOutput::OM_WINDOW))
+   if (rendered && enableHDR && (output.GetMode() == VPX::RenderOutput::OM_WINDOW))
    {
       const float jitter = (float)((msec() & 2047) / 1000.0);
       rd->ResetRenderState();
@@ -2385,7 +2375,7 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXWindowId window, RenderTarget *em
       rd->DrawFullscreenTexturedQuad(rd->m_FBShader);
    }
 
-   if (output.GetMode() == VPX::RenderOutput::OM_WINDOW && !output.GetWindow()->IsVisible())
+   if (rendered && output.GetMode() == VPX::RenderOutput::OM_WINDOW && !output.GetWindow()->IsVisible())
    {
       output.GetWindow()->Show();
       m_playfieldWnd->RaiseAndFocus(); // Keep focus on playfield when showing an anciliary window

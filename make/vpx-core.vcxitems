@@ -902,6 +902,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/BackglassPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/CabinetSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/DisplayProfileSettingsPage.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/DisplaySettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/ExitSplashPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/GraphicSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/HomePage.cpp" />
@@ -1666,6 +1667,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/BackglassPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/CabinetSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/DisplayProfileSettingsPage.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/DisplaySettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/ExitSplashPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/GraphicSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/HomePage.h" />

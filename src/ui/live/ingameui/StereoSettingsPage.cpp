@@ -102,7 +102,7 @@ void StereoSettingsPage::BuildPage()
    const bool stereoSel = m_player->m_ptable->m_settings.GetPlayer_Stereo3D() != STEREO_OFF;
    m_editedStereoMode = (stereoRT != stereoSel) ? m_player->m_ptable->m_settings.GetPlayer_Stereo3D() : m_player->m_renderer->m_stereo3D;
 
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    // This is a bit hacky as we can change the stereo mode at runtime if already doing stereo, but not switch it on/off
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_Stereo3D, //
@@ -142,7 +142,7 @@ void StereoSettingsPage::BuildPage()
          }
       })); */
 
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_Stereo3DEyeSeparation, 1.f, "%4.1f mm"s, //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_Stereo3DEyeSeparation(); }, //
@@ -152,7 +152,7 @@ void StereoSettingsPage::BuildPage()
          OnPointOfViewChanged();
       }));
 
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_Stereo3DBrightness, 100.f, "%4.1f %%"s, //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_Stereo3DBrightness(); }, //
@@ -162,7 +162,7 @@ void StereoSettingsPage::BuildPage()
          m_player->m_renderer->UpdateStereoShaderState();
       }));
 
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_Stereo3DSaturation, 100.f, "%4.1f %%"s, //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_Stereo3DSaturation(); }, //
@@ -175,7 +175,7 @@ void StereoSettingsPage::BuildPage()
    if (!IsAnaglyphStereoMode(m_editedStereoMode))
       return;
 
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_Stereo3DDefocus, 100.f, "%4.1f %%"s, //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_Stereo3DDefocus(); }, //
@@ -185,7 +185,7 @@ void StereoSettingsPage::BuildPage()
          m_player->m_renderer->UpdateStereoShaderState();
       }));
 
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_Stereo3DLeftContrast, 100.f, "%4.1f %%"s, //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_Stereo3DLeftContrast(); }, //
@@ -195,7 +195,7 @@ void StereoSettingsPage::BuildPage()
          m_player->m_renderer->UpdateStereoShaderState();
       }));
 
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_Stereo3DRightContrast, 100.f, "%4.1f %%"s, //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_Stereo3DRightContrast(); }, //
@@ -207,7 +207,7 @@ void StereoSettingsPage::BuildPage()
 
    const int glassesIndex = m_editedStereoMode - STEREO_ANAGLYPH_1;
    
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_AnaglyphFilter[glassesIndex], //
       [this, glassesIndex]() { return m_player->m_ptable->m_settings.GetPlayer_AnaglyphFilter(glassesIndex); }, //
@@ -217,7 +217,7 @@ void StereoSettingsPage::BuildPage()
          m_player->m_renderer->UpdateStereoShaderState();
       }));
 
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_AnaglyphDynDesat[glassesIndex], 100.f, "%4.1f %%"s, //
       [this, glassesIndex]() { return m_player->m_ptable->m_settings.GetPlayer_AnaglyphDynDesat(glassesIndex); }, //
@@ -227,7 +227,7 @@ void StereoSettingsPage::BuildPage()
          m_player->m_renderer->UpdateStereoShaderState();
       }));
 
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_AnaglyphDeghost[glassesIndex], 100.f, "%4.1f %%"s, //
       [this, glassesIndex]() { return m_player->m_ptable->m_settings.GetPlayer_AnaglyphDeghost(glassesIndex); }, //
@@ -237,7 +237,7 @@ void StereoSettingsPage::BuildPage()
          m_player->m_renderer->UpdateStereoShaderState();
       }));
 
-   // TODO this property does not the follow the overall UI design: App/Table/Live state and is directly persisted => Implement live state (will also enable table override)
+   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>(
       Settings::m_propPlayer_AnaglyphsRGB[glassesIndex], //
       [this, glassesIndex]() { return m_player->m_ptable->m_settings.GetPlayer_AnaglyphsRGB(glassesIndex); }, //

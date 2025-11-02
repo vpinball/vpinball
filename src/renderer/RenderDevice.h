@@ -72,6 +72,7 @@ public:
    ~RenderDevice();
 
    void AddWindow(VPX::Window* wnd);
+   void RemoveWindow(VPX::Window* wnd);
 
    #if defined(ENABLE_BGFX)
       enum PrimitiveTypes

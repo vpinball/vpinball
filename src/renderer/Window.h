@@ -21,11 +21,25 @@ public:
    {
    }
 
-   void GetPos(int& x, int& y) const { x = m_x; y = m_y; }
+   void GetPos(int& x, int& y) const
+   {
+      x = m_x;
+      y = m_y;
+   }
    int GetWidth() const { return m_width; }
    int GetHeight() const { return m_height; }
-   void SetPos(int x, int y) { m_x = x; m_y = y; }
-   void SetSize(int width, int height) { m_width = width; m_height = height; }
+   void SetPos(int x, int y)
+   {
+      m_x = x;
+      m_y = y;
+   }
+   void SetWidth(int v) { m_width = v; }
+   void SetHeight(int v) { m_height = v; }
+   void SetSize(int width, int height)
+   {
+      m_width = width;
+      m_height = height;
+   }
 
 private:
    int m_x, m_y;
@@ -58,15 +72,20 @@ public:
    void RaiseAndFocus();
    bool IsFocused() const;
 
-   void SetBackBuffer(RenderTarget* rt, const bool wcgBackbuffer = false) { assert(rt == nullptr || (rt->GetWidth() == m_pixelWidth && rt->GetHeight() == m_pixelHeight)); m_backBuffer = rt; m_wcgBackbuffer = wcgBackbuffer; }
+   void SetBackBuffer(RenderTarget* rt, const bool wcgBackbuffer = false)
+   {
+      assert(rt == nullptr || (rt->GetWidth() == m_pixelWidth && rt->GetHeight() == m_pixelHeight));
+      m_backBuffer = rt;
+      m_wcgBackbuffer = wcgBackbuffer;
+   }
    RenderTarget* GetBackBuffer() const { return m_backBuffer; }
    bool IsWCGBackBuffer() const { return m_wcgBackbuffer; } // Return true for HDR10/BT.2100 colorspace, otherwise Rec 709 colorspace
 
-   SDL_Window * GetCore() const { return m_nwnd; }
+   SDL_Window* GetCore() const { return m_nwnd; }
 
-   #ifdef _WIN32
-      HWND GetNativeHWND() const;
-   #endif
+#ifdef _WIN32
+   HWND GetNativeHWND() const;
+#endif
 
    struct VideoMode
    {
@@ -82,10 +101,11 @@ public:
       int left;
       int width;
       int height;
+      int depth;
+      float refreshrate;
       bool isPrimary; // Default display (used when no display is selected in the settings)
       string displayName; // User friendly display name, should be stable accross runs, therefore used for settings
       SDL_DisplayID display; // SDL display identifier (only valid for the lifetime of the SDL session)
-      UINT adapter; // Adapter identifier (only valid for the lifetime of the SDL session)
    };
 
    DisplayConfig GetDisplayConfig(const Settings& settings) const;
@@ -110,44 +130,57 @@ private:
 
    class RenderTarget* m_backBuffer = nullptr;
 
-   SDL_Window *m_nwnd = nullptr;
+   SDL_Window* m_nwnd = nullptr;
 };
 
 class RenderOutput final
 {
 public:
-   RenderOutput(const string& title, const Settings& settings, VPXWindowId windowId)
+   RenderOutput(const Settings& settings, VPXWindowId windowId)
       : m_windowId(windowId)
    {
-      m_mode = static_cast<OutputMode>(settings.GetWindow_Mode(windowId));
-      if (m_mode == OM_EMBEDDED)
-      {
-         const int x = settings.GetWindow_WndX(windowId);
-         const int y = settings.GetWindow_WndY(windowId);
-         const int width = settings.GetWindow_Width(windowId);
-         const int height = settings.GetWindow_Height(windowId);
-         m_embeddedWindow = new EmbeddedWindow(x, y, width, height);
-      }
-      else if (m_mode == OM_WINDOW)
-         m_window = new Window(title, settings, windowId);
+      m_mode = OM_DISABLED;
+      SetMode(settings, static_cast<OutputMode>(settings.GetWindow_Mode(m_windowId)));
    }
 
-   ~RenderOutput()
-   {
-      delete m_embeddedWindow;
-      delete m_window;
-   }
+   ~RenderOutput() = default;
 
    enum OutputMode
    {
       OM_DISABLED, // Output is disabled
-      OM_EMBEDDED, // Output is embedded in another output
-      OM_WINDOW // Output is a native system window (maybe a window, exclusive fullscreen, VR headset,...)
+      OM_WINDOW, // Output is a native system window (maybe a window, exclusive fullscreen, VR headset,...)
+      OM_EMBEDDED, // Output is embedded in the playfield window
    };
 
    OutputMode GetMode() const { return m_mode; }
-   Window* GetWindow() const { return m_window; }
-   EmbeddedWindow* GetEmbeddedWindow() const { return m_embeddedWindow; }
+
+   void SetMode(const Settings& settings, OutputMode mode)
+   {
+      m_mode = mode;
+      if (m_mode == OM_EMBEDDED && m_embeddedWindow == nullptr)
+      {
+         const int x = settings.GetWindow_WndX(m_windowId);
+         const int y = settings.GetWindow_WndY(m_windowId);
+         const int width = settings.GetWindow_Width(m_windowId);
+         const int height = settings.GetWindow_Height(m_windowId);
+         m_embeddedWindow = std::make_unique<EmbeddedWindow>(x, y, width, height);
+         m_window = nullptr;
+      }
+      else if (m_mode == OM_WINDOW && m_window == nullptr)
+      {
+         m_embeddedWindow = nullptr;
+         m_window = std::make_unique<Window>(m_windowId == VPXWindowId::VPXWINDOW_Playfield ? "Visual Pinball Player"s
+               : m_windowId == VPXWindowId::VPXWINDOW_Backglass                             ? "Visual Pinball Backglass"s
+               : m_windowId == VPXWindowId::VPXWINDOW_ScoreView                             ? "Visual Pinball Score View"s
+               : m_windowId == VPXWindowId::VPXWINDOW_Topper                                ? "Visual Pinball Topper"s
+                                                                                            : "Visual Pinball VR Preview"s,
+            settings, m_windowId);
+      }
+   }
+
+   Window* GetWindow() const { return m_window.get(); }
+
+   EmbeddedWindow* GetEmbeddedWindow() const { return m_embeddedWindow.get(); }
 
    int GetWidth() const
    {
@@ -157,6 +190,14 @@ public:
          return m_window->GetPixelWidth();
       else
          return 0;
+   }
+
+   void SetWidth(int v) const
+   {
+      if (m_mode == OM_EMBEDDED)
+         m_embeddedWindow->SetWidth(v);
+      else
+         assert(false);
    }
 
    int GetHeight() const
@@ -169,23 +210,40 @@ public:
          return 0;
    }
 
+   void SetHeight(int v) const
+   {
+      if (m_mode == OM_EMBEDDED)
+         m_embeddedWindow->SetHeight(v);
+      else
+         assert(false);
+   }
+
    void GetPos(int& x, int& y) const
    {
       if (m_mode == OM_EMBEDDED)
          m_embeddedWindow->GetPos(x, y);
       else if (m_mode == OM_WINDOW)
          m_window->GetPos(x, y);
-      else {
+      else
+      {
          x = 0;
          y = 0;
       }
    }
 
+   void SetPos(int x, int y) const
+   {
+      if (m_mode == OM_EMBEDDED)
+         m_embeddedWindow->SetPos(x, y);
+      else if (m_mode == OM_WINDOW)
+         m_window->SetPos(x, y);
+   }
+
 private:
    const VPXWindowId m_windowId;
    OutputMode m_mode = OutputMode::OM_DISABLED;
-   Window* m_window = nullptr;
-   EmbeddedWindow* m_embeddedWindow = nullptr;
+   std::unique_ptr<Window> m_window = nullptr;
+   std::unique_ptr<EmbeddedWindow> m_embeddedWindow = nullptr;
 };
 
 }

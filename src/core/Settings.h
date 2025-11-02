@@ -21,6 +21,9 @@ class Settings final
    // 1. Create property API [done]
    // 2. Populate shared property registry, and use it where applicable using PropertyDef/Registry [in progress]
    // 3. Split store implementation from Settings class [to be done]
+private:
+   static inline const VPX::Properties::PropertyRegistry::PropId m_propInvalid { };
+
 public:
    static VPX::Properties::PropertyRegistry &GetRegistry();
 
@@ -104,84 +107,86 @@ public:
 
    // Output (windows) settings
    // Main window (a.k.a. playfield)
-   PropEnum(Player, PlayfieldOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s,
-      "Floating"s, "Embedded in playfield"s); // Not meaningful. Remove ?
    PropString(Player, PlayfieldDisplay, "Display"s, "Display used for the main Playfield window"s, ""s);
-   PropInt(Player, PlayfieldWndX, "X Position", "Horizontal position of the window on the selected display"s, 0, 3000, 0);
-   PropInt(Player, PlayfieldWndY, "Y Position", "Vertical position of the window on the selected display"s, 0, 3000, 0);
-   PropInt(Player, PlayfieldWidth, "Width", "Width of the window"s, 0, 3000, 0);
-   PropInt(Player, PlayfieldHeight, "Height", "Height of the window"s, 0, 3000, 0);
+   PropInt(Player, PlayfieldWndX, "X Position", "Horizontal position of the window on the selected display"s, 0, 16384, 0);
+   PropInt(Player, PlayfieldWndY, "Y Position", "Vertical position of the window on the selected display"s, 0, 16384, 0);
+   PropInt(Player, PlayfieldWidth, "Width", "Width of the window"s, 0, 16384, 0);
+   PropInt(Player, PlayfieldHeight, "Height", "Height of the window"s, 0, 16384, 0);
    PropBool(Player, PlayfieldFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution)"s, false);
-   PropFloat(Player, PlayfieldRefreshRate, "Fullscreen Refresh Rate", "Refresh rate to use, when using exclusive fullscreen"s, 0.f, 1000.f, 0.f);
-   PropInt(Player, PlayfieldColorDepth, "Color Depth"s, "Color depth to use, when using exclusive fullscreen"s, 0, 64, 32);
-   PropBool(Player, PlayfieldRender10Bit, "Use 10Bit backbuffer"s, "Use a 10 bits backbuffer to limit color banding."s, false);
+   PropInt(Player, PlayfieldFSWidth, "Width", "Fullscreen display mode width"s, 0, 16384, 0);
+   PropInt(Player, PlayfieldFSHeight, "Height", "Fullscreen display mode height"s, 0, 16384, 0);
+   PropFloat(Player, PlayfieldRefreshRate, "Refresh Rate", "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
+   PropInt(Player, PlayfieldColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
    // Backglass Window
    PropEnum(Backglass, BackglassOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s,
       "Floating"s, "Embedded in playfield"s);
    PropString(Backglass, BackglassDisplay, "Display"s, "Display used for the main Backglass window"s, ""s);
-   PropInt(Backglass, BackglassWndX, "X Position", "Horizontal position of the window on the selected display"s, 0, 3000, 0);
-   PropInt(Backglass, BackglassWndY, "Y Position", "Vertical position of the window on the selected display"s, 0, 3000, 0);
-   PropInt(Backglass, BackglassWidth, "Width", "Width of the window"s, 0, 3000, 0);
-   PropInt(Backglass, BackglassHeight, "Height", "Height of the window"s, 0, 3000, 0);
+   PropInt(Backglass, BackglassWndX, "X Position", "Horizontal position of the window on the selected display"s, 0, 16384, 0);
+   PropInt(Backglass, BackglassWndY, "Y Position", "Vertical position of the window on the selected display"s, 0, 16384, 0);
+   PropInt(Backglass, BackglassWidth, "Width", "Width of the window"s, 0, 16384, 0);
+   PropInt(Backglass, BackglassHeight, "Height", "Height of the window"s, 0, 16384, 0);
    PropBool(Backglass, BackglassFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution)"s, false);
-   PropFloat(Backglass, BackglassRefreshRate, "Fullscreen Refresh Rate", "Refresh rate to use, when using exclusive fullscreen"s, 0.f, 1000.f, 0.f);
-   PropInt(Backglass, BackglassColorDepth, "Color Depth"s, "Color depth to use, when using exclusive fullscreen"s, 0, 64, 32);
-   PropBool(Backglass, BackglassRender10Bit, "Use 10Bit backbuffer"s, "Use a 10 bits backbuffer to limit color banding."s, false);
+   PropInt(Backglass, BackglassFSWidth, "Width", "Fullscreen display mode width"s, 0, 16384, 0);
+   PropInt(Backglass, BackglassFSHeight, "Height", "Fullscreen display mode height"s, 0, 16384, 0);
+   PropFloat(Backglass, BackglassRefreshRate, "Fullscreen Refresh Rate", "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
+   PropInt(Backglass, BackglassColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
    // ScoreView Window
    PropEnum(ScoreView, ScoreViewOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s,
       "Floating"s, "Embedded in playfield"s);
    PropString(ScoreView, ScoreViewDisplay, "Display"s, "Display used for the main ScoreView window"s, ""s);
-   PropInt(ScoreView, ScoreViewWndX, "X Position", "Horizontal position of the window on the selected display"s, 0, 3000, 0);
-   PropInt(ScoreView, ScoreViewWndY, "Y Position", "Vertical position of the window on the selected display"s, 0, 3000, 0);
-   PropInt(ScoreView, ScoreViewWidth, "Width", "Width of the window"s, 0, 3000, 0);
-   PropInt(ScoreView, ScoreViewHeight, "Height", "Height of the window"s, 0, 3000, 0);
+   PropInt(ScoreView, ScoreViewWndX, "X Position", "Horizontal position of the window on the selected display"s, 0, 16384, 0);
+   PropInt(ScoreView, ScoreViewWndY, "Y Position", "Vertical position of the window on the selected display"s, 0, 16384, 0);
+   PropInt(ScoreView, ScoreViewWidth, "Width", "Width of the window"s, 0, 16384, 0);
+   PropInt(ScoreView, ScoreViewHeight, "Height", "Height of the window"s, 0, 16384, 0);
    PropBool(ScoreView, ScoreViewFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution)"s, false);
-   PropFloat(ScoreView, ScoreViewRefreshRate, "Fullscreen Refresh Rate", "Refresh rate to use, when using exclusive fullscreen"s, 0.f, 1000.f, 0.f);
-   PropInt(ScoreView, ScoreViewColorDepth, "Color Depth"s, "Color depth to use, when using exclusive fullscreen"s, 0, 64, 32);
-   PropBool(ScoreView, ScoreViewRender10Bit, "Use 10Bit backbuffer"s, "Use a 10 bits backbuffer to limit color banding."s, false);
+   PropInt(ScoreView, ScoreViewFSWidth, "Width", "Fullscreen display mode width"s, 0, 16384, 0);
+   PropInt(ScoreView, ScoreViewFSHeight, "Height", "Fullscreen display mode height"s, 0, 16384, 0);
+   PropFloat(ScoreView, ScoreViewRefreshRate, "Fullscreen Refresh Rate", "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
+   PropInt(ScoreView, ScoreViewColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
    // Topper Window
    PropEnum(Topper, TopperOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s,
       "Floating"s, "Embedded in playfield"s);
    PropString(Topper, TopperDisplay, "Display"s, "Display used for the Topper window"s, ""s);
-   PropInt(Topper, TopperWndX, "X Position", "Horizontal position of the window on the selected display"s, 0, 3000, 0);
-   PropInt(Topper, TopperWndY, "Y Position", "Vertical position of the window on the selected display"s, 0, 3000, 0);
-   PropInt(Topper, TopperWidth, "Width", "Width of the window"s, 0, 3000, 0);
-   PropInt(Topper, TopperHeight, "Height", "Height of the window"s, 0, 3000, 0);
+   PropInt(Topper, TopperWndX, "X Position", "Horizontal position of the window on the selected display"s, 0, 16384, 0);
+   PropInt(Topper, TopperWndY, "Y Position", "Vertical position of the window on the selected display"s, 0, 16384, 0);
+   PropInt(Topper, TopperWidth, "Width", "Width of the window"s, 0, 16384, 0);
+   PropInt(Topper, TopperHeight, "Height", "Height of the window"s, 0, 16384, 0);
    PropBool(Topper, TopperFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution)"s, false);
-   PropFloat(Topper, TopperRefreshRate, "Fullscreen Refresh Rate", "Refresh rate to use, when using exclusive fullscreen"s, 0.f, 1000.f, 0.f);
-   PropInt(Topper, TopperColorDepth, "Color Depth"s, "Color depth to use, when using exclusive fullscreen"s, 0, 64, 32);
-   PropBool(Topper, TopperRender10Bit, "Use 10Bit backbuffer"s, "Use a 10 bits backbuffer to limit color banding."s, false);
+   PropInt(Topper, TopperFSWidth, "Width", "Fullscreen display mode width"s, 0, 16384, 0);
+   PropInt(Topper, TopperFSHeight, "Height", "Fullscreen display mode height"s, 0, 16384, 0);
+   PropFloat(Topper, TopperRefreshRate, "Fullscreen Refresh Rate", "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
+   PropInt(Topper, TopperColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
    // VR Preview Window
-   PropEnum(PlayerVR, PreviewOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s,
-      "Floating"s, "Embedded in playfield"s); // Not meaningful. Remove ?
    PropString(PlayerVR, PreviewDisplay, "Display"s, "Display used for the VR Preview window"s, ""s);
-   PropInt(PlayerVR, PreviewWndX, "X Position", "Horizontal position of the window on the selected display"s, 0, 3000, 0);
-   PropInt(PlayerVR, PreviewWndY, "Y Position", "Vertical position of the window on the selected display"s, 0, 3000, 0);
-   PropInt(PlayerVR, PreviewWidth, "Width", "Width of the window"s, 0, 3000, 0);
-   PropInt(PlayerVR, PreviewHeight, "Height", "Height of the window"s, 0, 3000, 0);
+   PropInt(PlayerVR, PreviewWndX, "X Position", "Horizontal position of the window on the selected display"s, 0, 16384, 0);
+   PropInt(PlayerVR, PreviewWndY, "Y Position", "Vertical position of the window on the selected display"s, 0, 16384, 0);
+   PropInt(PlayerVR, PreviewWidth, "Width", "Width of the window"s, 0, 16384, 0);
+   PropInt(PlayerVR, PreviewHeight, "Height", "Height of the window"s, 0, 16384, 0);
    PropBool(PlayerVR, PreviewFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution)"s, false);
-   PropFloat(PlayerVR, PreviewRefreshRate, "Fullscreen Refresh Rate", "Refresh rate to use, when using exclusive fullscreen"s, 0.f, 1000.f, 0.f);
-   PropInt(PlayerVR, PreviewColorDepth, "Color Depth"s, "Color depth to use, when using exclusive fullscreen"s, 0, 64, 32);
-   PropBool(PlayerVR, PreviewRender10Bit, "Use 10Bit backbuffer"s, "Use a 10 bits backbuffer to limit color banding."s, false);
+   PropInt(PlayerVR, PreviewFSWidth, "Width", "Fullscreen display mode width"s, 0, 16384, 0);
+   PropInt(PlayerVR, PreviewFSHeight, "Height", "Fullscreen display mode height"s, 0, 16384, 0);
+   PropFloat(PlayerVR, PreviewRefreshRate, "Fullscreen Refresh Rate", "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
+   PropInt(PlayerVR, PreviewColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
    // Array access (using VPXWindowId)
+   PropArray(Window, Mode, int, Enum, Int, m_propInvalid, m_propBackglass_BackglassOutput, m_propScoreView_ScoreViewOutput, m_propTopper_TopperOutput, m_propInvalid);
    PropArray(Window, Display, string, String, String, m_propPlayer_PlayfieldDisplay, m_propBackglass_BackglassDisplay, m_propScoreView_ScoreViewDisplay, m_propTopper_TopperDisplay,
       m_propPlayerVR_PreviewDisplay);
-   PropArray(Window, Mode, int, Enum, Int, m_propPlayer_PlayfieldOutput, m_propBackglass_BackglassOutput, m_propScoreView_ScoreViewOutput, m_propTopper_TopperOutput,
-      m_propPlayerVR_PreviewOutput);
    PropArray(Window, WndX, int, Int, Int, m_propPlayer_PlayfieldWndX, m_propBackglass_BackglassWndX, m_propScoreView_ScoreViewWndX, m_propTopper_TopperWndX, m_propPlayerVR_PreviewWndX);
    PropArray(Window, WndY, int, Int, Int, m_propPlayer_PlayfieldWndY, m_propBackglass_BackglassWndY, m_propScoreView_ScoreViewWndY, m_propTopper_TopperWndY, m_propPlayerVR_PreviewWndY);
    PropArray(
       Window, Width, int, Int, Int, m_propPlayer_PlayfieldWidth, m_propBackglass_BackglassWidth, m_propScoreView_ScoreViewWidth, m_propTopper_TopperWidth, m_propPlayerVR_PreviewWidth);
    PropArray(
       Window, Height, int, Int, Int, m_propPlayer_PlayfieldHeight, m_propBackglass_BackglassHeight, m_propScoreView_ScoreViewHeight, m_propTopper_TopperHeight, m_propPlayerVR_PreviewHeight);
-   PropArray(Window, FullScreen, bool, Int, Int, m_propPlayer_PlayfieldFullScreen, m_propBackglass_BackglassFullScreen, m_propScoreView_ScoreViewFullScreen, m_propTopper_TopperFullScreen,
+   PropArray(Window, FullScreen, bool, Bool, Int, m_propPlayer_PlayfieldFullScreen, m_propBackglass_BackglassFullScreen, m_propScoreView_ScoreViewFullScreen, m_propTopper_TopperFullScreen,
       m_propPlayerVR_PreviewFullScreen);
+   PropArray(
+      Window, FSWidth, int, Int, Int, m_propPlayer_PlayfieldFSWidth, m_propBackglass_BackglassFSWidth, m_propScoreView_ScoreViewFSWidth, m_propTopper_TopperFSWidth, m_propPlayerVR_PreviewFSWidth);
+   PropArray(
+      Window, FSHeight, int, Int, Int, m_propPlayer_PlayfieldFSHeight, m_propBackglass_BackglassFSHeight, m_propScoreView_ScoreViewFSHeight, m_propTopper_TopperFSHeight, m_propPlayerVR_PreviewFSHeight);
    PropArray(Window, FSRefreshRate, float, Float, Float, m_propPlayer_PlayfieldRefreshRate, m_propBackglass_BackglassRefreshRate, m_propScoreView_ScoreViewRefreshRate,
       m_propTopper_TopperRefreshRate, m_propPlayerVR_PreviewRefreshRate);
    PropArray(Window, FSColorDepth, int, Int, Int, m_propPlayer_PlayfieldColorDepth, m_propBackglass_BackglassColorDepth, m_propScoreView_ScoreViewColorDepth, m_propTopper_TopperColorDepth,
       m_propPlayerVR_PreviewColorDepth);
-   PropArray(Window, FSRender10Bit, bool, Int, Int, m_propPlayer_PlayfieldRender10Bit, m_propBackglass_BackglassRender10Bit, m_propScoreView_ScoreViewRender10Bit,
-      m_propTopper_TopperRender10Bit, m_propPlayerVR_PreviewRender10Bit);
 
    // Graphics synchronisation and latency reduction
 #if defined(ENABLE_BGFX)
