@@ -765,7 +765,7 @@ PinTable* PinTable::CopyForPlay()
       dst->m_pcv->m_script_text = VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(src->m_pcv->m_script_text);
    #endif
 
-   dst->m_settings = src->m_settings;
+   dst->m_settings.Copy(src->m_settings);
 
    dst->m_title = src->m_title;
    dst->m_filename = src->m_filename;
