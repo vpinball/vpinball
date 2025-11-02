@@ -20,6 +20,7 @@ class DisplaySettingsPage final : public InGameUIPage
 {
 public:
    explicit DisplaySettingsPage(VPXWindowId wndId);
+   void Render(float elapsedS) override;
 
 private:
    void BuildPage();
@@ -28,6 +29,7 @@ private:
    VPX::RenderOutput& GetOutput(VPXWindowId wndId);
 
    const VPXWindowId m_wndId;
+   const bool m_isMainWindow;
    vector<Window::DisplayConfig> m_displays;
    vector<string> m_displayNames;
    int m_arLock = 0;

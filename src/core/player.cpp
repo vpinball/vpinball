@@ -60,6 +60,8 @@ using namespace Concurrency::diagnostic;
 extern marker_series series;
 #endif
 
+using namespace VPX;
+
 //
 
 #define RECOMPUTEBUTTONCHECK (WM_USER+100)
@@ -1430,21 +1432,37 @@ void Player::ProcessOSMessages()
          else if (dragging)
          {
             // Handle dragging of auxiliary windows
+            std::vector<string> settingPages = {
+               "settings/display_backglass"s,
+               "settings/display_scoreview"s,
+               "settings/display_topper"s,
+            };
             const SDL_Window *const sdlWnd = SDL_GetWindowFromID(e.motion.windowID);
             std::vector<VPX::Window *> windows = {
                m_backglassOutput.GetWindow(),
                m_scoreViewOutput.GetWindow(),
                m_topperOutput.GetWindow(),
             };
-            for (VPX::Window *wnd : windows)
+            for (int i = 0; i <3; i++)
             {
-               if (wnd && sdlWnd == wnd->GetCore())
+               VPX::Window *wnd = windows[i];
+               if (wnd && (sdlWnd == wnd->GetCore()) && m_liveUI->m_inGameUI.IsOpened(settingPages[i]))
                {
-                  int x, y;
-                  wnd->GetPos(x, y);
-                  Vertex2D click((float)x + e.motion.x, (float)y + e.motion.y);
+                  SDL_Point point;
+                  wnd->GetPos(point.x, point.y);
+                  SDL_DisplayID display = SDL_GetDisplayForPoint(&point);
+                  Vertex2D click((float)point.x + e.motion.x, (float)point.y + e.motion.y);
+                  point.x = static_cast<int>(static_cast<float>(point.x) + click.x - dragStart.x);
+                  point.y = static_cast<int>(static_cast<float>(point.y) + click.y - dragStart.y);
+                  if (display)
+                  {
+                     SDL_Rect bounds;
+                     SDL_GetDisplayBounds(display, &bounds);
+                     point.x = clamp(point.x, bounds.x, bounds.x + bounds.w - wnd->GetWidth());
+                     point.y = clamp(point.y, bounds.y, bounds.y + bounds.h - wnd->GetHeight());
+                  }
                   if (dragging > 1)
-                     wnd->SetPos(static_cast<int>((float)x + click.x - dragStart.x), static_cast<int>((float)y + click.y - dragStart.y));
+                     wnd->SetPos(point.x, point.y);
                   dragStart = click;
                   dragging = 2;
                   break;
@@ -1457,9 +1475,10 @@ void Player::ProcessOSMessages()
       if (isPFWnd)
       {
          // Forward events to ImGui, including touch/pen events which are forwarded as mouse events
-         auto applyPFRotation = [this](const float x, const float y, float& rx, float& ry)
+         const int orientation = m_liveUI->GetUIOrientation();
+         auto applyPFRotation = [orientation](const float x, const float y, float& rx, float& ry)
          {
-            switch (m_liveUI->GetUIOrientation())
+            switch (orientation)
             {
             case 0:
                rx = x;

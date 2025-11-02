@@ -110,11 +110,11 @@ public:
    PropString(Player, PlayfieldDisplay, "Display"s, "Display used for the main Playfield window"s, ""s);
    PropInt(Player, PlayfieldWndX, "X Position", "Horizontal position of the window on the selected display"s, 0, 16384, 0);
    PropInt(Player, PlayfieldWndY, "Y Position", "Vertical position of the window on the selected display"s, 0, 16384, 0);
-   PropInt(Player, PlayfieldWidth, "Width", "Width of the window"s, 0, 16384, 0);
-   PropInt(Player, PlayfieldHeight, "Height", "Height of the window"s, 0, 16384, 0);
+   PropInt(Player, PlayfieldWidth, "Width", "Width of the window"s, 0, 16384, 16384);
+   PropInt(Player, PlayfieldHeight, "Height", "Height of the window"s, 0, 16384, 16384);
    PropBool(Player, PlayfieldFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution)"s, false);
-   PropInt(Player, PlayfieldFSWidth, "Width", "Fullscreen display mode width"s, 0, 16384, 0);
-   PropInt(Player, PlayfieldFSHeight, "Height", "Fullscreen display mode height"s, 0, 16384, 0);
+   PropInt(Player, PlayfieldFSWidth, "Width", "Fullscreen display mode width"s, 0, 16384, 16384);
+   PropInt(Player, PlayfieldFSHeight, "Height", "Fullscreen display mode height"s, 0, 16384, 16384);
    PropFloat(Player, PlayfieldRefreshRate, "Refresh Rate", "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
    PropInt(Player, PlayfieldColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
    // Backglass Window
@@ -123,11 +123,11 @@ public:
    PropString(Backglass, BackglassDisplay, "Display"s, "Display used for the main Backglass window"s, ""s);
    PropInt(Backglass, BackglassWndX, "X Position", "Horizontal position of the window on the selected display"s, 0, 16384, 0);
    PropInt(Backglass, BackglassWndY, "Y Position", "Vertical position of the window on the selected display"s, 0, 16384, 0);
-   PropInt(Backglass, BackglassWidth, "Width", "Width of the window"s, 0, 16384, 0);
-   PropInt(Backglass, BackglassHeight, "Height", "Height of the window"s, 0, 16384, 0);
+   PropInt(Backglass, BackglassWidth, "Width", "Width of the window"s, 0, 16384, 16384);
+   PropInt(Backglass, BackglassHeight, "Height", "Height of the window"s, 0, 16384, 16384);
    PropBool(Backglass, BackglassFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution)"s, false);
-   PropInt(Backglass, BackglassFSWidth, "Width", "Fullscreen display mode width"s, 0, 16384, 0);
-   PropInt(Backglass, BackglassFSHeight, "Height", "Fullscreen display mode height"s, 0, 16384, 0);
+   PropInt(Backglass, BackglassFSWidth, "Width", "Fullscreen display mode width"s, 0, 16384, 16384);
+   PropInt(Backglass, BackglassFSHeight, "Height", "Fullscreen display mode height"s, 0, 16384, 16384);
    PropFloat(Backglass, BackglassRefreshRate, "Fullscreen Refresh Rate", "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
    PropInt(Backglass, BackglassColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
    // ScoreView Window
@@ -136,11 +136,11 @@ public:
    PropString(ScoreView, ScoreViewDisplay, "Display"s, "Display used for the main ScoreView window"s, ""s);
    PropInt(ScoreView, ScoreViewWndX, "X Position", "Horizontal position of the window on the selected display"s, 0, 16384, 0);
    PropInt(ScoreView, ScoreViewWndY, "Y Position", "Vertical position of the window on the selected display"s, 0, 16384, 0);
-   PropInt(ScoreView, ScoreViewWidth, "Width", "Width of the window"s, 0, 16384, 0);
-   PropInt(ScoreView, ScoreViewHeight, "Height", "Height of the window"s, 0, 16384, 0);
+   PropInt(ScoreView, ScoreViewWidth, "Width", "Width of the window"s, 0, 16384, 16384);
+   PropInt(ScoreView, ScoreViewHeight, "Height", "Height of the window"s, 0, 16384, 16384);
    PropBool(ScoreView, ScoreViewFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution)"s, false);
-   PropInt(ScoreView, ScoreViewFSWidth, "Width", "Fullscreen display mode width"s, 0, 16384, 0);
-   PropInt(ScoreView, ScoreViewFSHeight, "Height", "Fullscreen display mode height"s, 0, 16384, 0);
+   PropInt(ScoreView, ScoreViewFSWidth, "Width", "Fullscreen display mode width"s, 0, 16384, 16384);
+   PropInt(ScoreView, ScoreViewFSHeight, "Height", "Fullscreen display mode height"s, 0, 16384, 16384);
    PropFloat(ScoreView, ScoreViewRefreshRate, "Fullscreen Refresh Rate", "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
    PropInt(ScoreView, ScoreViewColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
    // Topper Window
@@ -149,22 +149,22 @@ public:
    PropString(Topper, TopperDisplay, "Display"s, "Display used for the Topper window"s, ""s);
    PropInt(Topper, TopperWndX, "X Position", "Horizontal position of the window on the selected display"s, 0, 16384, 0);
    PropInt(Topper, TopperWndY, "Y Position", "Vertical position of the window on the selected display"s, 0, 16384, 0);
-   PropInt(Topper, TopperWidth, "Width", "Width of the window"s, 0, 16384, 0);
-   PropInt(Topper, TopperHeight, "Height", "Height of the window"s, 0, 16384, 0);
+   PropInt(Topper, TopperWidth, "Width", "Width of the window"s, 0, 16384, 16384);
+   PropInt(Topper, TopperHeight, "Height", "Height of the window"s, 0, 16384, 16384);
    PropBool(Topper, TopperFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution)"s, false);
-   PropInt(Topper, TopperFSWidth, "Width", "Fullscreen display mode width"s, 0, 16384, 0);
-   PropInt(Topper, TopperFSHeight, "Height", "Fullscreen display mode height"s, 0, 16384, 0);
+   PropInt(Topper, TopperFSWidth, "Width", "Fullscreen display mode width"s, 0, 16384, 16384);
+   PropInt(Topper, TopperFSHeight, "Height", "Fullscreen display mode height"s, 0, 16384, 16384);
    PropFloat(Topper, TopperRefreshRate, "Fullscreen Refresh Rate", "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
    PropInt(Topper, TopperColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
    // VR Preview Window
    PropString(PlayerVR, PreviewDisplay, "Display"s, "Display used for the VR Preview window"s, ""s);
    PropInt(PlayerVR, PreviewWndX, "X Position", "Horizontal position of the window on the selected display"s, 0, 16384, 0);
    PropInt(PlayerVR, PreviewWndY, "Y Position", "Vertical position of the window on the selected display"s, 0, 16384, 0);
-   PropInt(PlayerVR, PreviewWidth, "Width", "Width of the window"s, 0, 16384, 0);
-   PropInt(PlayerVR, PreviewHeight, "Height", "Height of the window"s, 0, 16384, 0);
+   PropInt(PlayerVR, PreviewWidth, "Width", "Width of the window"s, 0, 16384, 16384);
+   PropInt(PlayerVR, PreviewHeight, "Height", "Height of the window"s, 0, 16384, 16384);
    PropBool(PlayerVR, PreviewFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution)"s, false);
-   PropInt(PlayerVR, PreviewFSWidth, "Width", "Fullscreen display mode width"s, 0, 16384, 0);
-   PropInt(PlayerVR, PreviewFSHeight, "Height", "Fullscreen display mode height"s, 0, 16384, 0);
+   PropInt(PlayerVR, PreviewFSWidth, "Width", "Fullscreen display mode width"s, 0, 16384, 16384);
+   PropInt(PlayerVR, PreviewFSHeight, "Height", "Fullscreen display mode height"s, 0, 16384, 16384);
    PropFloat(PlayerVR, PreviewRefreshRate, "Fullscreen Refresh Rate", "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
    PropInt(PlayerVR, PreviewColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
    // Array access (using VPXWindowId)
