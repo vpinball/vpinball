@@ -1496,7 +1496,7 @@ void RenderDevice::RemoveWindow(VPX::Window* wnd)
       if (found)
          m_outputWnd[i] = m_outputWnd[i + 1];
       else
-         found = true;
+         found = m_outputWnd[i] == wnd;
    }
    RenderTarget* backbuffer = wnd->GetBackBuffer();
    assert(found && backbuffer != nullptr);
