@@ -541,42 +541,53 @@ void DisplaySettingsPage::Render(float elapsedS)
 {
    InGameUIPage::Render(elapsedS);
 
-   // Drag main window (disabled if mouse is over UI components)
-   // Only main window is handled here as ImGui only receive input events for the main window
-   // Anciliary window are directly handled in the main event dispatch handler
-   if (m_isMainWindow && !IsWindowHovered() && SDL_GetMouseFocus() == m_player->m_playfieldWnd->GetCore() && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+   if (!IsWindowHovered() && SDL_GetMouseFocus() == m_player->m_playfieldWnd->GetCore() && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
    {
-      SDL_Point pos;
-      m_player->m_playfieldWnd->GetPos(pos.x, pos.y);
-      const ImVec2 drag = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left);
-      switch (m_player->m_liveUI->GetUIOrientation())
-      {
-      case 0:
-         pos.x = pos.x + (int)drag.x;
-         pos.y = pos.y + (int)drag.y;
-         break;
-      case 1:
-         pos.x = pos.x - (int)drag.y;
-         pos.y = pos.y + (int)drag.x;
-         break;
-      case 2:
-         pos.x = pos.x + (int)drag.x;
-         pos.y = pos.y - (int)drag.y;
-         break;
-      case 3:
-         pos.x = pos.x + (int)drag.y;
-         pos.y = pos.y - (int)drag.x;
-         break;
-      default: assert(false);
+      if (m_isMainWindow)
+      { // Drag main window
+         SDL_Point pos;
+         m_player->m_playfieldWnd->GetPos(pos.x, pos.y);
+         const ImVec2 drag = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left);
+         switch (m_player->m_liveUI->GetUIOrientation())
+         {
+         case 0:
+            pos.x = pos.x + (int)drag.x;
+            pos.y = pos.y + (int)drag.y;
+            break;
+         case 1:
+            pos.x = pos.x - (int)drag.y;
+            pos.y = pos.y + (int)drag.x;
+            break;
+         case 2:
+            pos.x = pos.x + (int)drag.x;
+            pos.y = pos.y - (int)drag.y;
+            break;
+         case 3:
+            pos.x = pos.x + (int)drag.y;
+            pos.y = pos.y - (int)drag.x;
+            break;
+         default: assert(false);
+         }
+         const string name = m_player->m_ptable->m_settings.GetWindow_Display(m_wndId);
+         const auto display = std::ranges::find_if(m_displays, [&name](const Window::DisplayConfig& display) { return display.displayName == name; });
+         if (display != m_displays.end())
+         {
+            pos.x = clamp(pos.x, 0, display->width - m_player->m_playfieldWnd->GetWidth());
+            pos.y = clamp(pos.y, 0, display->height - m_player->m_playfieldWnd->GetHeight());
+         }
+         m_player->m_playfieldWnd->SetPos(pos.x, pos.y);
       }
-      const string name = m_player->m_ptable->m_settings.GetWindow_Display(m_wndId);
-      const auto display = std::ranges::find_if(m_displays, [&name](const Window::DisplayConfig& display) { return display.displayName == name; });
-      if (display != m_displays.end())
-      {
-         pos.x = clamp(pos.x, 0, display->width - m_player->m_playfieldWnd->GetWidth());
-         pos.y = clamp(pos.y, 0, display->height - m_player->m_playfieldWnd->GetHeight());
+      else if (GetOutput(m_wndId).GetMode() == RenderOutput::OM_EMBEDDED)
+      { // Drag anciliary embedded window
+         // Floating anciliary window are directly handled in the main event dispatch handler since input events are only broadcasted to ImGui for the main window
+         SDL_Point pos;
+         GetOutput(m_wndId).GetPos(pos.x, pos.y);
+         const ImVec2 drag = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left);
+         ImGui::ResetMouseDragDelta();
+         pos.x = clamp(pos.x + static_cast<int>(drag.x), 0, m_player->m_playfieldWnd->GetWidth() - GetOutput(m_wndId).GetWidth());
+         pos.y = clamp(pos.y + static_cast<int>(drag.y), 0, m_player->m_playfieldWnd->GetHeight() - GetOutput(m_wndId).GetHeight());
+         GetOutput(m_wndId).SetPos(pos.x, pos.y);
       }
-      m_player->m_playfieldWnd->SetPos(pos.x, pos.y);
    }
 }
 

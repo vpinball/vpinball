@@ -158,24 +158,37 @@ public:
    void SetMode(const Settings& settings, OutputMode mode)
    {
       m_mode = mode;
-      if (m_mode == OM_EMBEDDED && m_embeddedWindow == nullptr)
+      switch (m_mode)
       {
-         const int x = settings.GetWindow_WndX(m_windowId);
-         const int y = settings.GetWindow_WndY(m_windowId);
-         const int width = settings.GetWindow_Width(m_windowId);
-         const int height = settings.GetWindow_Height(m_windowId);
-         m_embeddedWindow = std::make_unique<EmbeddedWindow>(x, y, width, height);
-         m_window = nullptr;
-      }
-      else if (m_mode == OM_WINDOW && m_window == nullptr)
-      {
+      case OM_DISABLED:
          m_embeddedWindow = nullptr;
-         m_window = std::make_unique<Window>(m_windowId == VPXWindowId::VPXWINDOW_Playfield ? "Visual Pinball Player"s
-               : m_windowId == VPXWindowId::VPXWINDOW_Backglass                             ? "Visual Pinball Backglass"s
-               : m_windowId == VPXWindowId::VPXWINDOW_ScoreView                             ? "Visual Pinball Score View"s
-               : m_windowId == VPXWindowId::VPXWINDOW_Topper                                ? "Visual Pinball Topper"s
-                                                                                            : "Visual Pinball VR Preview"s,
-            settings, m_windowId);
+         m_window = nullptr;
+         break;
+
+      case OM_EMBEDDED:
+         m_window = nullptr;
+         if (m_embeddedWindow == nullptr)
+         {
+            const int x = settings.GetWindow_WndX(m_windowId);
+            const int y = settings.GetWindow_WndY(m_windowId);
+            const int width = settings.GetWindow_Width(m_windowId);
+            const int height = settings.GetWindow_Height(m_windowId);
+            m_embeddedWindow = std::make_unique<EmbeddedWindow>(x, y, width, height);
+         }
+         break;
+
+      case OM_WINDOW:
+         m_embeddedWindow = nullptr;
+         if (m_mode == OM_WINDOW && m_window == nullptr)
+         {
+            m_window = std::make_unique<Window>(m_windowId == VPXWindowId::VPXWINDOW_Playfield ? "Visual Pinball Player"s
+                  : m_windowId == VPXWindowId::VPXWINDOW_Backglass                             ? "Visual Pinball Backglass"s
+                  : m_windowId == VPXWindowId::VPXWINDOW_ScoreView                             ? "Visual Pinball Score View"s
+                  : m_windowId == VPXWindowId::VPXWINDOW_Topper                                ? "Visual Pinball Topper"s
+                                                                                               : "Visual Pinball VR Preview"s,
+               settings, m_windowId);
+         }
+         break;
       }
    }
 
