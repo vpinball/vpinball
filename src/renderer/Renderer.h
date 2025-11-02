@@ -162,8 +162,8 @@ private:
    std::shared_ptr<BaseTexture> EnvmapPrecalc(const std::shared_ptr<const BaseTexture>& envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres);
 
    // Postprocess passes
-   void UpdateAmbientOcclusion();
-   void UpdateBloom();
+   void UpdateAmbientOcclusion(RenderTarget* renderedRT);
+   void UpdateBloom(RenderTarget* renderedRT);
    RenderTarget* ApplyAdditiveScreenSpaceReflection(RenderTarget* renderedRT);
    ShaderTechniques ApplyTonemapping(RenderTarget* renderedRT, RenderTarget* tonemapRT);
    RenderTarget* ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, RenderTarget* afterTonemapRT, ShaderTechniques tonemapTechnique);

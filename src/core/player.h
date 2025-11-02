@@ -221,12 +221,15 @@ public:
    bool m_headTracking = false;
    bool m_scaleFX_DMD = false;
 
+   RenderTarget *ClearAnciliaryWindow(VPXWindowId window, RenderTarget *embedRT);
+   RenderTarget *RenderAnciliaryWindow(VPXWindowId window, RenderTarget *embedRT);
+
 private:
    void PrepareFrame(const std::function<void()>& sync);
    void SubmitFrame();
    void FinishFrame();
 
-   RenderTarget *RenderAnciliaryWindow(VPXWindowId window, RenderTarget *embedRT);
+   RenderTarget *SetupAnciliaryWindow(VPXWindowId window, RenderTarget *embedRT, int &outputX, int &outputY, int &outputW, int &outputH, bool &enableHDR);
    static void OnAuxRendererChanged(const unsigned int msgId, void *userData, void *msgData);
    RenderTarget *m_anciliaryWndHdrRT[VPXWindowId::VPXWINDOW_Topper + 1] { nullptr };
    unsigned int m_getAuxRendererId = 0, m_onAuxRendererChgId = 0;

@@ -1858,7 +1858,7 @@ void Renderer::SetScreenOffset(const float x, const float y)
    m_ScreenOffset.y = x * s + y * c;
 }
 
-void Renderer::UpdateAmbientOcclusion()
+void Renderer::UpdateAmbientOcclusion(RenderTarget* renderedRT)
 {
    if (GetAOMode() != 2) // Only process for dynamic AO
       return;
@@ -1899,7 +1899,7 @@ bool Renderer::IsBloomEnabled() const
    return !m_bloomOff && (m_table->m_bloom_strength > 0.0f) && (g_pplayer->GetInfoMode() <= IF_DYNAMIC_ONLY);
 }
 
-void Renderer::UpdateBloom()
+void Renderer::UpdateBloom(RenderTarget* renderedRT)
 {
    if (!IsBloomEnabled())
       return;
@@ -1910,8 +1910,8 @@ void Renderer::UpdateBloom()
    m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
    m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
 
-   const double w = static_cast<double>(GetBackBufferTexture()->GetWidth());
-   const double h = static_cast<double>(GetBackBufferTexture()->GetHeight());
+   const double w = static_cast<double>(renderedRT->GetWidth());
+   const double h = static_cast<double>(renderedRT->GetHeight());
    #if !defined(ENABLE_BGFX)
    const
    #endif
@@ -1927,9 +1927,9 @@ void Renderer::UpdateBloom()
 
       // switch to 'bloom' output buffer to collect clipped framebuffer values
       m_renderDevice->SetRenderTarget("Bloom Cut Off"s, GetBloomBufferTexture(), false);
-      m_renderDevice->AddRenderTargetDependency(GetBackBufferTexture());
+      m_renderDevice->AddRenderTargetDependency(renderedRT);
 
-      m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, GetBackBufferTexture()->GetColorSampler());
+      m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
       m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, (float) (1.0 / w), (float) (1.0 / h), m_table->m_bloom_strength, 1.0f);
       m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_bloom);
 
@@ -2126,6 +2126,12 @@ ShaderTechniques Renderer::ApplyTonemapping(RenderTarget* renderedRT, RenderTarg
    RenderTarget* outputRT = tonemapRT;
    assert(outputRT != renderedRT);
    m_renderDevice->SetRenderTarget("Tonemap/Dither/ColorGrade"s, outputRT, false);
+
+   m_renderDevice->ResetRenderState();
+   m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+   m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+   m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+   m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
 
    int render_w = renderedRT->GetWidth(), render_h = renderedRT->GetHeight();
    m_renderDevice->AddRenderTargetDependency(renderedRT);
@@ -2707,11 +2713,21 @@ void Renderer::RenderPostProcess()
    // Add screen space reflections
    renderedRT = ApplyAdditiveScreenSpaceReflection(renderedRT);
 
+   // Clear anciliary windows (eventually embedded in the main window, so must be done before updarting bloom...)
+   g_pplayer->ClearAnciliaryWindow(VPXWindowId::VPXWINDOW_Backglass, renderedRT);
+   g_pplayer->ClearAnciliaryWindow(VPXWindowId::VPXWINDOW_ScoreView, renderedRT);
+   g_pplayer->ClearAnciliaryWindow(VPXWindowId::VPXWINDOW_Topper, renderedRT);
+
    // Compute AO contribution (to be applied later, with tonemapping)
-   UpdateAmbientOcclusion();
+   UpdateAmbientOcclusion(renderedRT);
 
    // Compute bloom (to be applied later, with tonemapping)
-   UpdateBloom();
+   UpdateBloom(renderedRT);
+
+   // Render anciliary windows (eventually embedded in the main window, so must be done after main rendering but before post process)
+   g_pplayer->RenderAnciliaryWindow(VPXWindowId::VPXWINDOW_Backglass, renderedRT);
+   g_pplayer->RenderAnciliaryWindow(VPXWindowId::VPXWINDOW_ScoreView, renderedRT);
+   g_pplayer->RenderAnciliaryWindow(VPXWindowId::VPXWINDOW_Topper, renderedRT);
 
    // Perform color grade LUT / dither / tonemapping, also applying bloom and AO
    RenderTarget* const tonemapRT = (hasAntialiasPass || hasSharpenPass || hasStereoPass || hasUpscalerPass) ? GetPostProcessRenderTarget1() : m_renderDevice->GetOutputBackBuffer();
