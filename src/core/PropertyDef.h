@@ -96,7 +96,7 @@ public:
       : PropertyDef(Type::Int, groupId, propId, label, description)
       , m_min(min)
       , m_max(max)
-      , m_def(def)
+      , m_def(clamp(def, min, max))
    {
       assert(m_min <= m_max);
    }
@@ -113,7 +113,7 @@ public:
    {
    }
    std::unique_ptr<IntPropertyDef> WithDefault(int def) const { return std::make_unique<IntPropertyDef>(*this, def); }
-   std::unique_ptr<IntPropertyDef> WithRange(int min, int max) const { return std::make_unique<IntPropertyDef>(*this, min, max); }
+   std::unique_ptr<IntPropertyDef> WithRange(int minVal, int maxVal) const { return std::make_unique<IntPropertyDef>(*this, minVal, max(minVal, maxVal)); }
    ~IntPropertyDef() override = default;
 
    const int m_min;

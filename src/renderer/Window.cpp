@@ -148,17 +148,17 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
       wnd_x += (m_screenwidth - m_width) / 2;
       wnd_y += (m_screenheight - m_height) / 2;
 
-      // Restore saved position of non fullscreen windows
+      // Restore saved position of non fullscreen windows (saved as a relativ eposition inside the selected display)
       if ((m_height != m_screenheight) || (m_width != m_screenwidth))
       {
-         Settings::GetRegistry().Register(Settings::GetWindow_WndX_Property(m_windowId)->WithDefault(wnd_x));
-         Settings::GetRegistry().Register(Settings::GetWindow_WndX_Property(m_windowId)->WithDefault(wnd_y));
+         Settings::GetRegistry().Register(Settings::GetWindow_WndX_Property(m_windowId)->WithDefault(wnd_x - selectedDisplay.left));
+         Settings::GetRegistry().Register(Settings::GetWindow_WndX_Property(m_windowId)->WithDefault(wnd_y - selectedDisplay.top));
          const int xn = settings.GetWindow_WndX(m_windowId);
          const int yn = settings.GetWindow_WndY(m_windowId);
-         if (selectedDisplay.left <= xn && xn + m_width <= selectedDisplay.left + selectedDisplay.width)
-            wnd_x = xn;
-         if (selectedDisplay.top <= yn && yn + m_height <= selectedDisplay.top + selectedDisplay.height)
-            wnd_y = yn;
+         if (0 <= xn && xn + m_width <= selectedDisplay.width)
+            wnd_x = selectedDisplay.left + xn;
+         if (0 <= yn && yn + m_height <= selectedDisplay.height)
+            wnd_y = selectedDisplay.top + yn;
       }
    }
 
