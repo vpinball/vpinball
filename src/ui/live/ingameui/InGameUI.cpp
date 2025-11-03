@@ -67,7 +67,7 @@ void InGameUI::Navigate(const string &path, bool isBack)
    auto it = m_pages.find(path);
    if (it == m_pages.end())
    {
-      PLOGE << "InGameUI: unknown page '" << path << "'";
+      PLOGE << "InGameUI: unknown page '" << path << '\'';
       Close();
       return;
    }
@@ -79,7 +79,7 @@ void InGameUI::Navigate(const string &path, bool isBack)
    }
    else
    {
-      PLOGE << "InGameUI: Failed to create page '" << path << "'";
+      PLOGE << "InGameUI: Failed to create page '" << path << '\'';
       m_activePages.pop_back();
       Close();
    }
@@ -97,7 +97,7 @@ void InGameUI::NavigateBack()
    }
    else
    {
-      const string path = m_navigationHistory.back();
+      const string& path = m_navigationHistory.back();
       m_navigationHistory.pop_back();
       Navigate(path, true);
    }

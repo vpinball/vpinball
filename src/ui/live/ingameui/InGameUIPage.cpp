@@ -153,15 +153,15 @@ void InGameUIPage::Save()
    case SaveMode::None: break;
 
    case SaveMode::Both:
-      m_player->m_liveUI->m_inGameUI.AddPage("popup/save_select", [this, canSaveTableOverrides]() { return std::make_unique<SelectGlobalOrOverridePage>(this, canSaveTableOverrides); });
-      m_player->m_liveUI->m_inGameUI.Navigate("popup/save_select");
+      m_player->m_liveUI->m_inGameUI.AddPage("popup/save_select"s, [this, canSaveTableOverrides]() { return std::make_unique<SelectGlobalOrOverridePage>(this, canSaveTableOverrides); });
+      m_player->m_liveUI->m_inGameUI.Navigate("popup/save_select"s);
       break;
 
    case SaveMode::Global: SaveGlobally(); break;
 
    case SaveMode::Table:
       if (!canSaveTableOverrides)
-         m_player->m_liveUI->PushNotification("You need to save the table before saving table setting overrides", 5000);
+         m_player->m_liveUI->PushNotification("You need to save the table before saving table setting overrides"s, 5000);
       else
          SaveTableOverride();
       break;
@@ -341,7 +341,7 @@ void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
          if (isInitialPress)
             m_adjustedValue = static_cast<float>(item->GetIntValue()) + direction;
          else
-            m_adjustedValue += direction * speedFactor * elapsed * (prop->m_max - prop->m_min) / 32.f;
+            m_adjustedValue += direction * speedFactor * elapsed * static_cast<float>(prop->m_max - prop->m_min) / 32.f;
          item->SetValue(static_cast<int>(round(m_adjustedValue)));
          break;
       }
@@ -865,7 +865,7 @@ void InGameUIPage::RenderSensorPopup()
       {
          m_defineSensorItem = nullptr;
          m_defineSensorPopup = false;
-         m_player->m_liveUI->PushNotification("No physics sensor connected.", 5000);
+         m_player->m_liveUI->PushNotification("No physics sensor connected."s, 5000);
          return;
       }
       if (!m_defineSensorItem->m_physicsSensor->IsMapped())
@@ -923,15 +923,15 @@ void InGameUIPage::RenderSensorPopup()
                switch (i)
                {
                case 0:
-                  names.emplace_back("Position");
+                  names.emplace_back("Position"s);
                   types.push_back(SensorMapping::Type::Position);
                   break;
                case 1:
-                  names.emplace_back("Velocity");
+                  names.emplace_back("Velocity"s);
                   types.push_back(SensorMapping::Type::Velocity);
                   break;
                case 2:
-                  names.emplace_back("Acceleration");
+                  names.emplace_back("Acceleration"s);
                   types.push_back(SensorMapping::Type::Acceleration);
                   break;
                }
@@ -954,7 +954,7 @@ void InGameUIPage::RenderSensorPopup()
       float scale = mapping.GetScale();
       bool reversedAxis = scale < 0.f;
       float gain = 100.f * (reversedAxis ? -scale : scale);
-      RenderToggle("Reversed axis", ImVec2(300.f, ImGui::GetFrameHeight()), reversedAxis);
+      RenderToggle("Reversed axis"s, ImVec2(300.f, ImGui::GetFrameHeight()), reversedAxis);
       ImGui::SameLine();
       ImGui::Text("Reversed axis");
 

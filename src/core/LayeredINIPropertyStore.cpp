@@ -130,7 +130,7 @@ void LayeredINIPropertyStore::Save()
       else if (m_intValues[id.index].defined)
          m_ini[prop->m_groupId][prop->m_propId] = std::to_string(m_intValues[id.index].value);
       else
-         m_ini[prop->m_groupId][prop->m_propId] = ""s;
+         m_ini[prop->m_groupId][prop->m_propId].clear();
    }
    id = { PropertyRegistry::StoreType::Float, 0 };
    for (id.index = 0; id.index < m_floatValues.size(); id.index++)
@@ -141,7 +141,7 @@ void LayeredINIPropertyStore::Save()
       else if (m_floatValues[id.index].defined)
          m_ini[prop->m_groupId][prop->m_propId] = f2sz(m_floatValues[id.index].value);
       else
-         m_ini[prop->m_groupId][prop->m_propId] = ""s;
+         m_ini[prop->m_groupId][prop->m_propId].clear();
    }
    id = { PropertyRegistry::StoreType::String, 0 };
    for (id.index = 0; id.index < m_stringValues.size(); id.index++)
@@ -152,7 +152,7 @@ void LayeredINIPropertyStore::Save()
       else if (m_stringValues[id.index].defined)
          m_ini[prop->m_groupId][prop->m_propId] = m_stringValues[id.index].value;
       else
-         m_ini[prop->m_groupId][prop->m_propId] = ""s;
+         m_ini[prop->m_groupId][prop->m_propId].clear();
    }
 
    // Save to file
@@ -198,9 +198,9 @@ void LayeredINIPropertyStore::GenerateTemplate(const string& path) const
 
    for (const string& group : groups)
    {
-      file << "\n";
-      file << "\n";
-      file << "[" << group << "]\n";
+      file << '\n';
+      file << '\n';
+      file << '[' << group << "]\n";
       for (auto propId : m_registry.get().GetPropertyIds())
       {
          const PropertyDef* prop = m_registry.get().GetProperty(propId);
@@ -223,9 +223,9 @@ void LayeredINIPropertyStore::GenerateTemplate(const string& path) const
             case PropertyDef::Type::Enum:
             {
                auto enumProp = dynamic_cast<const EnumPropertyDef*>(prop);
-               file << " [Default: '" << enumProp->m_values[enumProp->m_def] << "'";
+               file << " [Default: '" << enumProp->m_values[enumProp->m_def] << '\'';
                for (size_t i = 0; i < enumProp->m_values.size(); i++)
-                  file << ", " << i << "='" << enumProp->m_values[i] << "'";
+                  file << ", " << i << "='" << enumProp->m_values[i] << '\'';
                file << ']';
                break;
             }
@@ -414,4 +414,4 @@ void LayeredINIPropertyStore::Set(PropertyRegistry::PropId propId, const string&
    stringValue.value = value;
 }
 
-};
+}

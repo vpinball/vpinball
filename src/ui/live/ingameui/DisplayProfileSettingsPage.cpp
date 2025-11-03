@@ -40,7 +40,7 @@ void DisplayProfileSettingsPage::BuildPage()
       BuildAlphaPage();
 
    AddItem(std::make_unique<InGameUIItem>(
-      VPX::Properties::FloatPropertyDef(""s, ""s, "Preview Brightness"s, "Adjust the brightness level of the preview."s, 0.1f, 5.f, 0.1f, 1.f), 1.f, "%4.1f", //
+      VPX::Properties::FloatPropertyDef(""s, ""s, "Preview Brightness"s, "Adjust the brightness level of the preview."s, 0.1f, 5.f, 0.1f, 1.f), 1.f, "%4.1f"s, //
       [this]() { return m_previewBrightness; }, // Live
       [this]() { return m_previewBrightness; }, // Stored
       [this](float, float v) { m_previewBrightness = v; },
@@ -58,22 +58,22 @@ void DisplayProfileSettingsPage::BuildDMDPage()
       [this, profile](bool v) { m_player->m_renderer->m_dmdUseLegacyRenderer[profile] = v; }));
 
    AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propDMD_ProfileDotBrightness[profile], 1.f, "%4.1f", //
+      Settings::m_propDMD_ProfileDotBrightness[profile], 1.f, "%4.1f"s, //
       [this, profile]() { return m_player->m_renderer->m_dmdDotColor[profile].w; }, //
       [this, profile](float, float v) { m_player->m_renderer->m_dmdDotColor[profile].w = v; }));
 
    AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propDMD_ProfileDotSize[profile], 1.f, "%4.2f", //
+      Settings::m_propDMD_ProfileDotSize[profile], 1.f, "%4.2f"s, //
       [this, profile]() { return m_player->m_renderer->m_dmdDotProperties[profile].x; }, //
       [this, profile](float, float v) { m_player->m_renderer->m_dmdDotProperties[profile].x = v; }));
 
    AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propDMD_ProfileDotSharpness[profile], 1.f, "%4.2f", //
+      Settings::m_propDMD_ProfileDotSharpness[profile], 1.f, "%4.2f"s, //
       [this, profile]() { return m_player->m_renderer->m_dmdDotProperties[profile].y; }, //
       [this, profile](float, float v) { m_player->m_renderer->m_dmdDotProperties[profile].y = v; }));
 
    AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propDMD_ProfileDiffuseGlow[profile], 1.f, "%4.1f", //
+      Settings::m_propDMD_ProfileDiffuseGlow[profile], 1.f, "%4.1f"s, //
       [this, profile]() { return m_player->m_renderer->m_dmdDotProperties[profile].z; }, //
       [this, profile](float, float v) { m_player->m_renderer->m_dmdDotProperties[profile].z = v; }));
 
@@ -146,12 +146,12 @@ void DisplayProfileSettingsPage::BuildAlphaPage()
    const int profile = m_selectedProfile - 7;
 
    AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propAlpha_ProfileBrightness[profile], 1.f, "%4.1f", //
+      Settings::m_propAlpha_ProfileBrightness[profile], 1.f, "%4.1f"s, //
       [this, profile]() { return m_player->m_renderer->m_segColor[profile].w; }, //
       [this, profile](float, float v) { m_player->m_renderer->m_segColor[profile].w = v; }));
 
    AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propAlpha_ProfileDiffuseGlow[profile], 1.f, "%4.1f", //
+      Settings::m_propAlpha_ProfileDiffuseGlow[profile], 1.f, "%4.1f"s, //
       [this, profile]() { return m_player->m_renderer->m_segUnlitColor[profile].w; }, //
       [this, profile](float, float v) { m_player->m_renderer->m_segUnlitColor[profile].w = v; }));
 
@@ -236,7 +236,7 @@ void DisplayProfileSettingsPage::Render(float elapsed)
          }
          else
          {
-            particle.pos = static_cast<int>(rand_mt_01() * 128 * 32);
+            particle.pos = static_cast<int>(rand_mt_01() * (float)(128 * 32));
             particle.lifespan = 0.5f + rand_mt_01() * 1.f;
             particle.life = 0.f;
          }
@@ -314,4 +314,4 @@ void DisplayProfileSettingsPage::Render(float elapsed)
    m_player->m_renderer->UpdateBasicShaderMatrix();
 }
 
-};
+}

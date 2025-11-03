@@ -197,7 +197,7 @@ void RenderProbeDialog::LoadProbeToUI(RenderProbe *const pb)
    GetDlgItem(IDC_REFLECTION_NO_LIGHTMAPS).EnableWindow(type == RenderProbe::PLANE_REFLECTION && !isPfReflections);
    CheckDlgButton(IDC_REFLECTION_NO_LIGHTMAPS, pb->GetReflectionNoLightmaps() ? 1 : 0);
    const HWND hwnd = GetDlgItem(IDC_ROUGHNESS).GetHwnd();
-   ::SendMessage(hwnd, TBM_SETRANGE, fTrue, MAKELONG(0, 13 - 1));
+   ::SendMessage(hwnd, TBM_SETRANGE, TRUE, MAKELONG(0, 13 - 1));
    ::SendMessage(hwnd, TBM_SETTICFREQ, 1, 0);
    ::SendMessage(hwnd, TBM_SETLINESIZE, 0, 1);
    ::SendMessage(hwnd, TBM_SETPAGESIZE, 0, 1);

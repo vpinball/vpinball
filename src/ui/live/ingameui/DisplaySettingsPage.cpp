@@ -6,33 +6,33 @@
 namespace VPX::InGameUI
 {
 
-template <typename... Args> static std::string string_format(const std::string& format, Args... args)
+template <typename... Args> static std::string string_format(const char* const format, Args... args)
 {
-   int size_s = std::snprintf(nullptr, 0, format.c_str(), args...) + 1; // Extra space for '\0'
+   int size_s = std::snprintf(nullptr, 0, format, args...) + 1; // Extra space for '\0'
    if (size_s <= 0)
    {
       throw std::runtime_error("Error during formatting.");
    }
    auto size = static_cast<size_t>(size_s);
    std::unique_ptr<char[]> buf(new char[size]);
-   std::snprintf(buf.get(), size, format.c_str(), args...);
+   std::snprintf(buf.get(), size, format, args...);
    return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
 }
 
-static const std::array<int2, 13> aspectRatios {
-   int2(0, 0), // Free
-   int2(4, 3), // [Landscape]
-   int2(16, 10), //
-   int2(16, 9), //
-   int2(21, 10), //
-   int2(21, 9), //
-   int2(4, 1), // For DMD
-   int2(3, 4), // [Portrait]
-   int2(10, 16), //
-   int2(9, 16), //
-   int2(10, 21), //
-   int2(9, 21), //
-   int2(1, 4), // For DMD
+static constexpr std::array<int2, 13> aspectRatios {
+   int2{0, 0}, // Free
+   int2{4, 3}, // [Landscape]
+   int2{16, 10}, //
+   int2{16, 9}, //
+   int2{21, 10}, //
+   int2{21, 9}, //
+   int2{4, 1}, // For DMD
+   int2{3, 4}, // [Portrait]
+   int2{10, 16}, //
+   int2{9, 16}, //
+   int2{10, 21}, //
+   int2{9, 21}, //
+   int2{1, 4}, // For DMD
 };
 
 
@@ -42,22 +42,22 @@ DisplayHomePage::DisplayHomePage()
    if (m_player->m_vrDevice)
    {
       m_player->m_liveUI->m_inGameUI.AddPage("settings/display_vr_preview"s, []() { return std::make_unique<DisplaySettingsPage>(VPXWindowId::VPXWINDOW_VRPreview); });
-      AddItem(std::make_unique<InGameUIItem>("VR PReview Display", "", "settings/display_vr_preview"s));
+      AddItem(std::make_unique<InGameUIItem>("VR PReview Display"s, ""s, "settings/display_vr_preview"s));
    }
    else
    {
       m_player->m_liveUI->m_inGameUI.AddPage("settings/display_playfield"s, []() { return std::make_unique<DisplaySettingsPage>(VPXWindowId::VPXWINDOW_Playfield); });
-      AddItem(std::make_unique<InGameUIItem>("Playfield Display", "", "settings/display_playfield"s));
+      AddItem(std::make_unique<InGameUIItem>("Playfield Display"s, ""s, "settings/display_playfield"s));
    }
 
    m_player->m_liveUI->m_inGameUI.AddPage("settings/display_backglass"s, []() { return std::make_unique<DisplaySettingsPage>(VPXWindowId::VPXWINDOW_Backglass); });
-   AddItem(std::make_unique<InGameUIItem>("Backglass Display", "", "settings/display_backglass"s));
+   AddItem(std::make_unique<InGameUIItem>("Backglass Display"s, ""s, "settings/display_backglass"s));
 
    m_player->m_liveUI->m_inGameUI.AddPage("settings/display_scoreview"s, []() { return std::make_unique<DisplaySettingsPage>(VPXWindowId::VPXWINDOW_ScoreView); });
-   AddItem(std::make_unique<InGameUIItem>("ScoreView Display", "", "settings/display_scoreview"s));
+   AddItem(std::make_unique<InGameUIItem>("ScoreView Display"s, ""s, "settings/display_scoreview"s));
 
    m_player->m_liveUI->m_inGameUI.AddPage("settings/display_topper"s, []() { return std::make_unique<DisplaySettingsPage>(VPXWindowId::VPXWINDOW_Topper); });
-   AddItem(std::make_unique<InGameUIItem>("Topper Display", "", "settings/display_topper"s));
+   AddItem(std::make_unique<InGameUIItem>("Topper Display"s, ""s, "settings/display_topper"s));
 }
 
 
@@ -181,7 +181,7 @@ void DisplaySettingsPage::BuildWindowPage()
       [this]() { return m_player->m_ptable->m_settings.GetWindow_FullScreen(m_wndId); }, //
       [this](bool v)
       {
-         m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game", 5000, m_delayApplyNotifId);
+         m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game"s, 5000, m_delayApplyNotifId);
          m_player->m_ptable->m_settings.SetWindow_FullScreen(m_wndId, v, false);
          BuildPage();
       }));
@@ -226,7 +226,7 @@ void DisplaySettingsPage::BuildWindowPage()
          [selectedMode]() { return selectedMode; }, // Stored
          [this, editedDisplay](int, int v)
          {
-            m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game", 5000, m_delayApplyNotifId);
+            m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game"s, 5000, m_delayApplyNotifId);
             vector<Window::VideoMode> modes = VPX::Window::GetDisplayModes(m_displays[editedDisplay]);
             m_player->m_ptable->m_settings.SetWindow_FSWidth(m_wndId, modes[v].width, false);
             m_player->m_ptable->m_settings.SetWindow_FSHeight(m_wndId, modes[v].height, false);
@@ -260,17 +260,17 @@ void DisplaySettingsPage::BuildWindowPage()
          [](int, Settings&, bool) { /* UI state, not persisted */ }));
 
       if (m_isMainWindow)
-      { // For main window, we do not dynamically change size as it is not supported and the UI breaks (would require to resetup  everything)
+      { // For main window, we do not dynamically change size as it is not supported and the UI breaks (would require to re-setup everything)
          // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
          Settings::GetRegistry().Register(Settings::GetWindow_Width_Property(m_wndId)
                ->WithRange(0, maxWidth - m_player->m_ptable->m_settings.GetWindow_WndX(m_wndId))
                ->WithDefault(m_player->m_ptable->m_settings.GetWindow_Width(m_wndId)));
          AddItem(std::make_unique<InGameUIItem>(
-            Settings::m_propWindow_Width[m_wndId], "%d", //
+            Settings::m_propWindow_Width[m_wndId], "%d"s, //
             [this]() { return m_player->m_ptable->m_settings.GetWindow_Width(m_wndId); }, //
             [this](int, int v)
             {
-               m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game", 5000, m_delayApplyNotifId);
+               m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game"s, 5000, m_delayApplyNotifId);
                if (m_arLock != 0)
                {
                   int h = (v * aspectRatios[m_arLock].y) / aspectRatios[m_arLock].x;
@@ -294,7 +294,7 @@ void DisplaySettingsPage::BuildWindowPage()
             [this]() { return m_player->m_ptable->m_settings.GetWindow_Height(m_wndId); }, //
             [this](int, int v)
             {
-               m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game", 5000, m_delayApplyNotifId);
+               m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game"s, 5000, m_delayApplyNotifId);
                if (m_arLock != 0)
                {
                   int w = (v * aspectRatios[m_arLock].x) / aspectRatios[m_arLock].y;
@@ -315,7 +315,7 @@ void DisplaySettingsPage::BuildWindowPage()
                ->WithRange(0, maxWidth - m_player->m_ptable->m_settings.GetWindow_WndX(m_wndId))
                ->WithDefault((m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow())->GetWidth()));
          AddItem(std::make_unique<InGameUIItem>(
-            Settings::m_propWindow_Width[m_wndId], "%d", //
+            Settings::m_propWindow_Width[m_wndId], "%d"s, //
             [this]() { return (m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow())->GetWidth(); }, //
             [this](int, int v)
             {
@@ -456,7 +456,7 @@ void DisplaySettingsPage::BuildEmbeddedPage()
          ->WithRange(0, maxWidth - wndX) // Constrained to container
          ->WithDefault(GetOutput(m_wndId).GetWidth())); // No default
    AddItem(std::make_unique<InGameUIItem>(
-      Settings::m_propWindow_Width[m_wndId], "%d", //
+      Settings::m_propWindow_Width[m_wndId], "%d"s, //
       [this]() { return GetOutput(m_wndId).GetWidth(); }, //
       [this](int, int v)
       {

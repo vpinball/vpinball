@@ -796,7 +796,7 @@ void CodeViewer::SetVisible(const bool visible)
          const int y = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosY"s, 0);
          const int w = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosWidth"s, 640);
          const int h = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosHeight"s, 490);
-         POINT p { x, y };
+         const POINT p { x, y };
          if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
             SetWindowPos(HWND_TOP, x, y, w, h, SWP_NOMOVE | SWP_NOSIZE);
       }
@@ -937,7 +937,7 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
 
    m_hwndStatus = CreateStatusWindow(WS_CHILD | WS_VISIBLE, "", m_hwndMain, 1);
 
-   constexpr int foo[4] = { 220, 420, 450, 500 };
+   static constexpr int foo[4] = { 220, 420, 450, 500 };
    ::SendMessage(m_hwndStatus, SB_SETPARTS, 4, (size_t)foo);
 
    //////////////////////// Last error widget
@@ -1749,7 +1749,7 @@ void CodeViewer::Replace(const FINDREPLACE * const pfr)
          if (cszReplaced == 0)
             ::SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)(string(LocalString(IDS_FINDFAILED).m_szbuffer) + ft.lpstrText + LocalString(IDS_FINDFAILED2).m_szbuffer).c_str());
          else
-            ::SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)(string(LocalString(IDS_REPLACEALL).m_szbuffer) + ' ' + std::to_string(cszReplaced) + ' ' + LocalString(IDS_REPLACEALL2).m_szbuffer).c_str());
+            ::SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)(       LocalString(IDS_REPLACEALL).m_szbuffer + (' ' + std::to_string(cszReplaced)) + ' ' + LocalString(IDS_REPLACEALL2).m_szbuffer).c_str());
       }
       else
       {
@@ -2034,16 +2034,15 @@ string CodeViewer::GetParamsFromEvent(const UINT iEvent)
                unsigned int cnames;
                /*const HRESULT hr =*/ ptiChild->GetNames(pfd->memid, rgstr, std::size(rgstr), &cnames);
 
+               SysFreeString(rgstr[0]);
                // Add enum string to combo control
                for (unsigned int l = 1; l < cnames; ++l)
                {
                   if (l > 1)
                      szParams += ", ";
                   szParams += MakeString(rgstr[l]);
-               }
-
-               for (unsigned int l = 0; l < cnames; l++)
                   SysFreeString(rgstr[l]);
+               }
             }
 
             ptiChild->ReleaseFuncDesc(pfd);

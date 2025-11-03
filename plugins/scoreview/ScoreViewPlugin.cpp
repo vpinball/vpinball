@@ -29,7 +29,7 @@ static uint32_t endpointId;
 static unsigned int onGameStartId, onGameEndId, onGetAuxRendererId, onAuxRendererChgId;
 static std::unique_ptr<ScoreView> scoreView;
 
-int OnRender(VPXRenderContext2D* ctx, void*)
+static int OnRender(VPXRenderContext2D* ctx, void*)
 {
    if ((ctx->window != VPXWindowId::VPXWINDOW_Backglass) && (ctx->window != VPXWindowId::VPXWINDOW_ScoreView))
       return false;
@@ -58,9 +58,9 @@ int OnRender(VPXRenderContext2D* ctx, void*)
    return scoreView->Render(ctx) ? 1 : 0;
 }
 
-void OnGetRenderer(const unsigned int msgId, void* context, void* msgData)
+static void OnGetRenderer(const unsigned int msgId, void* context, void* msgData)
 {
-   static AnciliaryRendererDef entry = { "ScoreView", "ScoreView", "Renderer for generic score displays", nullptr, OnRender };
+   static constexpr AnciliaryRendererDef entry = { "ScoreView", "ScoreView", "Renderer for generic score displays", nullptr, OnRender };
    GetAnciliaryRendererMsg* msg = static_cast<GetAnciliaryRendererMsg*>(msgData);
    if (msg->window == VPXWindowId::VPXWINDOW_ScoreView)
    {
@@ -70,11 +70,11 @@ void OnGetRenderer(const unsigned int msgId, void* context, void* msgData)
    }
 }
 
-void OnGameStart(const unsigned int eventId, void* userData, void* eventData)
+static void OnGameStart(const unsigned int eventId, void* userData, void* eventData)
 {
 }
 
-void OnGameEnd(const unsigned int eventId, void* userData, void* eventData)
+static void OnGameEnd(const unsigned int eventId, void* userData, void* eventData)
 {
    scoreView = nullptr;
 }

@@ -266,7 +266,7 @@ INT_PTR SoundDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                     GetDlgItem(IDC_REIMPORTFROM).EnableWindow( enable );
                     GetDlgItem(IDC_RENAME).EnableWindow( enable );
                     GetDlgItem(IDC_PLAY).EnableWindow( enable );
-                    GetDlgItem(IDC_STOP).EnableWindow( fFalse );
+                    GetDlgItem(IDC_STOP).EnableWindow( false );
                 }
                 break;
             }
@@ -301,7 +301,7 @@ BOOL SoundDialog::OnCommand( WPARAM wParam, LPARAM lParam )
                 lvitem.iSubItem = 0;
                 ListView_GetItem( hSoundList, &lvitem );
                 m_audioPlayer->StopSound((VPX::Sound *)lvitem.lParam);
-                GetDlgItem(IDC_STOP).EnableWindow(fFalse);
+                GetDlgItem(IDC_STOP).EnableWindow(false);
             }
             break;
         }

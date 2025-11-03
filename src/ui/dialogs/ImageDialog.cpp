@@ -225,7 +225,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                      GetDlgItem(IDC_STATIC_ALPHA).ShowWindow(!ppi->IsOpaque());
                   }
                }
-               GetDlgItem(IDC_PICTUREPREVIEW).InvalidateRect(fTrue);
+               GetDlgItem(IDC_PICTUREPREVIEW).InvalidateRect(true);
             }
          }
          break;
@@ -701,7 +701,7 @@ void ImageDialog::Reimport()
          }
       }
       // Display new image
-      GetDlgItem(IDC_PICTUREPREVIEW).InvalidateRect(fTrue);
+      GetDlgItem(IDC_PICTUREPREVIEW).InvalidateRect(true);
    }
    SetFocus();
 }
@@ -741,7 +741,7 @@ void ImageDialog::UpdateAll()
             errorOccurred = true;
       }
       // Display new image
-      GetDlgItem(IDC_PICTUREPREVIEW).InvalidateRect(fTrue);
+      GetDlgItem(IDC_PICTUREPREVIEW).InvalidateRect(true);
    }
 
    if (errorOccurred)
@@ -798,7 +798,7 @@ void ImageDialog::ReimportFrom()
                pt->SetNonUndoableDirty(eSaveDirty);
                pt->UpdatePropertyImageList();
                // Display new image
-               GetDlgItem(IDC_PICTUREPREVIEW).InvalidateRect(fTrue);
+               GetDlgItem(IDC_PICTUREPREVIEW).InvalidateRect(true);
             }
          }
       }

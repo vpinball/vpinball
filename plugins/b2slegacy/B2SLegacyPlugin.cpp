@@ -15,9 +15,9 @@ namespace B2SLegacy {
 
 LPI_IMPLEMENT
 
-int OnRender(VPXRenderContext2D* const renderCtx, void* context);
-void OnGetRenderer(const unsigned int msgId, void* context, void* msgData);
-void OnDevSrcChanged(const unsigned int msgId, void* userData, void* msgData);
+static int OnRender(VPXRenderContext2D* const renderCtx, void* context);
+static void OnGetRenderer(const unsigned int msgId, void* context, void* msgData);
+static void OnDevSrcChanged(const unsigned int msgId, void* userData, void* msgData);
 
 ///////////////////////////////////////////////////////////////////////////////
 // B2S Legacy plugin
@@ -137,18 +137,18 @@ PSC_CLASS_START(Server)
    }
 PSC_CLASS_END(Server)
 
-int OnRender(VPXRenderContext2D* const renderCtx, void* context)
+static int OnRender(VPXRenderContext2D* const renderCtx, void* context)
 {
    Server* server = static_cast<Server*>(context);
    return server ? server->OnRender(renderCtx, context) : 0;
 }
 
-void OnGetRenderer(const unsigned int msgId, void* context, void* msgData)
+static void OnGetRenderer(const unsigned int msgId, void* context, void* msgData)
 {
    GetAnciliaryRendererMsg* msg = static_cast<GetAnciliaryRendererMsg*>(msgData);
 
-   AnciliaryRendererDef backglassEntry = { "B2SLegacy", "B2S Legacy Backglass", "Renderer for B2S legacy backglass files", context, OnRender };
-   AnciliaryRendererDef dmdEntry = { "B2SLegacyDMD", "B2S Legacy DMD", "Renderer for B2S legacy DMD files", context, OnRender };
+   const AnciliaryRendererDef backglassEntry = { "B2SLegacy", "B2S Legacy Backglass", "Renderer for B2S legacy backglass files", context, OnRender };
+   const AnciliaryRendererDef dmdEntry = { "B2SLegacyDMD", "B2S Legacy DMD", "Renderer for B2S legacy DMD files", context, OnRender };
 
    if (msg->window == VPXWindowId::VPXWINDOW_Backglass) {
       if (msg->count < msg->maxEntryCount)
@@ -162,14 +162,14 @@ void OnGetRenderer(const unsigned int msgId, void* context, void* msgData)
    }
 }
 
-void OnDevSrcChanged(const unsigned int msgId, void* userData, void* msgData)
+static void OnDevSrcChanged(const unsigned int msgId, void* userData, void* msgData)
 {
    Server* server = static_cast<Server*>(userData);
    if (server)
       server->OnDevSrcChanged(msgId, userData, msgData);
 }
 
-void RegisterServerObject(void*)
+static void RegisterServerObject(void*)
 {
    pinmameClassDef = scriptApi->GetClassDef("Controller");
    if (pinmameClassDef) {

@@ -48,10 +48,10 @@ public:
          propId = it->second;
          const PropertyDef* existing = GetProperty(propId);
          assert( //
-            prop->m_groupId == "TableOption"s  // TableOption may be redefined (somewhat hacky, but ok as only a single table can be played at a time and table option are only persisted as override in the table store)
+            prop->m_groupId == "TableOption" // TableOption may be redefined (somewhat hacky, but ok as only a single table can be played at a time and table option are only persisted as override in the table store)
             || existing->IsEqualButDefaultValue(prop.get()) // Redefining the default value is allowed
-            || (prop->m_propId.ends_with("WndX"s) || prop->m_propId.ends_with("WndY"s)) // Redefining display output position and size range is allowed too
-            || (prop->m_propId.ends_with("Width"s) || prop->m_propId.ends_with("Height"s)) // Redefining display output position and size range is allowed too
+            || (prop->m_propId.ends_with("WndX") || prop->m_propId.ends_with("WndY")) // Redefining display output position and size range is allowed too
+            || (prop->m_propId.ends_with("Width") || prop->m_propId.ends_with("Height")) // Redefining display output position and size range is allowed too
          );
          switch (propId.type)
          {

@@ -40,7 +40,7 @@ void DMDOverlay::Render(VPXRenderContext2D* ctx)
    if (!m_enable)
       return;
 
-   ResURIResolver::DisplayState dmd = m_resURIResolver.GetDisplayState("ctrl://default/display");
+   ResURIResolver::DisplayState dmd = m_resURIResolver.GetDisplayState("ctrl://default/display"s);
    if (dmd.state.frame == nullptr)
       return;
 

@@ -77,7 +77,7 @@ NudgeSettingsPage::NudgeSettingsPage()
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayer_NudgeStrength, 400.f, "%4.1f %%", //
+      Settings::m_propPlayer_NudgeStrength, 400.f, "%4.1f %%"s, //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_NudgeStrength(); }, //
       [this](float, float v)
       {
@@ -160,7 +160,7 @@ void NudgeSettingsPage::Render(float elapsed)
 
    auto renderSensorInfo = [this, plumbSize](int sensor)
    {
-      ImGui::BeginChild(("SensorInfo"s + std::to_string(sensor)).c_str(), ImVec2(plumbSize, plumbSize));
+      ImGui::BeginChild(("SensorInfo" + std::to_string(sensor)).c_str(), ImVec2(plumbSize, plumbSize));
       ImGui::SetCursorPos(ImGui::GetCursorPos() + ImVec2(2.f, 2.f));
       ImGui::BeginGroup();
       ImGui::SameLine(0.5f * (plumbSize - ImGui::CalcTextSize("Sensor #1").x));

@@ -10,9 +10,9 @@
 namespace B2SLegacy {
 
 FormDMD::FormDMD(VPXPluginAPI* vpxApi, MsgPluginAPI* msgApi, uint32_t endpointId, B2SData* pB2SData)
-   : Form(vpxApi, msgApi, endpointId, pB2SData, "ScoreView")
+   : Form(vpxApi, msgApi, endpointId, pB2SData, "ScoreView"s)
 {
-   SetName("formDMD");
+   SetName("formDMD"s);
 }
 
 FormDMD::~FormDMD()

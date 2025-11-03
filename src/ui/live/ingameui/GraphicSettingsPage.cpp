@@ -39,7 +39,7 @@ GraphicSettingsPage::GraphicSettingsPage()
 
    //////////////////////////////////////////////////////////////////////////////////////////////////
 
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Display synchronization"));
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Display synchronization"s));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
@@ -53,7 +53,7 @@ GraphicSettingsPage::GraphicSettingsPage()
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayer_MaxFramerate, "%3d FPS", //
+      Settings::m_propPlayer_MaxFramerate, "%3d FPS"s, //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_MaxFramerate(); }, //
       [this](int, int v)
       {
@@ -64,7 +64,7 @@ GraphicSettingsPage::GraphicSettingsPage()
    #ifndef ENABLE_OPENGL
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayer_MaxPrerenderedFrames, "%4d Frames", //
+      Settings::m_propPlayer_MaxPrerenderedFrames, "%4d Frames"s, //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_MaxPrerenderedFrames(); }, //
       [this](int, int v)
       {
@@ -75,7 +75,7 @@ GraphicSettingsPage::GraphicSettingsPage()
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayer_VisualLatencyCorrection, "%4d ms", //
+      Settings::m_propPlayer_VisualLatencyCorrection, "%4d ms"s, //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_VisualLatencyCorrection(); }, //
       [this](int, int v)
       {
@@ -86,11 +86,11 @@ GraphicSettingsPage::GraphicSettingsPage()
 
    //////////////////////////////////////////////////////////////////////////////////////////////////
 
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Antialiasing quality"));
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Antialiasing quality"s));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayer_AAFactor, 100.f, "%4.1f %%", //
+      Settings::m_propPlayer_AAFactor, 100.f, "%4.1f %%"s, //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_AAFactor(); }, //
       [this](float, float v)
       {
@@ -122,7 +122,7 @@ GraphicSettingsPage::GraphicSettingsPage()
 
    //////////////////////////////////////////////////////////////////////////////////////////////////
 
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Miscellaneous features"));
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Miscellaneous features"s));
 
    if (m_player->m_ptable->m_enableSSR && m_player->m_ptable->m_SSRScale > 0.f && m_player->m_renderer->m_renderDevice->DepthBufferReadBackAvailable())
       AddItem(std::make_unique<InGameUIItem>( //
@@ -132,7 +132,7 @@ GraphicSettingsPage::GraphicSettingsPage()
 
    //////////////////////////////////////////////////////////////////////////////////////////////////
 
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Performance & Troubleshooting"));
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Performance & Troubleshooting"s));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>(
@@ -165,7 +165,7 @@ GraphicSettingsPage::GraphicSettingsPage()
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    // Maybe setup a combo with a few preset values ?
    AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayer_MaxTexDimension, "%4d", //
+      Settings::m_propPlayer_MaxTexDimension, "%4d"s, //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_MaxTexDimension(); }, //
       [this](int, int v)
       {
@@ -186,7 +186,7 @@ GraphicSettingsPage::GraphicSettingsPage()
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    // Maybe setup a combo with a few preset values ?
    AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayer_AlphaRampAccuracy, "%4d", //
+      Settings::m_propPlayer_AlphaRampAccuracy, "%4d"s, //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_AlphaRampAccuracy(); }, //
       [this](int, int v)
       {
@@ -201,7 +201,7 @@ GraphicSettingsPage::GraphicSettingsPage()
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayer_HDRGlobalExposure, 1.f, "%4.2f", //
+      Settings::m_propPlayer_HDRGlobalExposure, 1.f, "%4.2f"s, //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_HDRGlobalExposure(); }, //
       [this](float, float v) {
          m_player->m_ptable->m_settings.SetPlayer_HDRGlobalExposure(v, false); 
@@ -258,7 +258,7 @@ GraphicSettingsPage::GraphicSettingsPage()
 
    //////////////////////////////////////////////////////////////////////////////////////////////////
 
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Ball Rendering"));
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Ball Rendering"s));
 
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_BallAntiStretch, //

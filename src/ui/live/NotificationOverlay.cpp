@@ -2,7 +2,7 @@
 
 #include "core/stdafx.h"
 
-#include "imgui/imgui_internal.h" // Needed for FindRenderedTextEnd (should be adapted when this function will refactored in ImGui)
+#include "imgui/imgui_internal.h" // Needed for FindRenderedTextEnd (should be adapted when this function will be refactored in ImGui)
 
 #include "NotificationOverlay.h"
 
@@ -92,10 +92,10 @@ float NotificationOverlay::RenderNotification(int index, float posY) const {
    ImGui::SetNextWindowBgAlpha(0.666f);
    ImGui::SetNextWindowPos(ImVec2((ImGui::GetIO().DisplaySize.x - text_size.x) / 2, posY));
    ImGui::SetNextWindowSize(text_size);
-   ImGui::Begin(std::format("Notification{}", index).c_str(), nullptr, window_flags);
+   ImGui::Begin(std::format("Notification{}"s, index).c_str(), nullptr, window_flags);
    for (const string &lline : lines)
    {
-      ImVec2 lineSize = font->CalcTextSizeA(fontBaked->Size, FLT_MAX, 0.0f, lline.c_str());
+      const ImVec2 lineSize = font->CalcTextSizeA(fontBaked->Size, FLT_MAX, 0.0f, lline.c_str());
       ImGui::SetCursorPosX((text_size.x - lineSize.x) / 2);
       ImGui::TextUnformatted(lline.c_str());
    }

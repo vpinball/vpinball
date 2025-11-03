@@ -53,13 +53,13 @@ void PinUndo::MarkForUndo(IEditable * const pie, const bool saveForUndo)
 
    if (m_vur.empty())
    {
-      _ASSERTE(fFalse);
+      _ASSERTE(false);
       return;
    }
 
    if (m_cUndoLayer <= 0)
    {
-      _ASSERTE(fFalse);
+      _ASSERTE(false);
       BeginUndo();
    }
 
@@ -72,13 +72,13 @@ void PinUndo::MarkForCreate(IEditable * const pie)
 {
    if (m_vur.empty())
    {
-      _ASSERTE(fFalse);
+      _ASSERTE(false);
       return;
    }
 
    if (m_cUndoLayer <= 0)
    {
-      _ASSERTE(fFalse);
+      _ASSERTE(false);
       BeginUndo();
    }
 
@@ -91,13 +91,13 @@ void PinUndo::MarkForDelete(IEditable * const pie)
 {
    if (m_vur.empty())
    {
-      _ASSERTE(fFalse);
+      _ASSERTE(false);
       return;
    }
 
    if (m_cUndoLayer <= 0)
    {
-      _ASSERTE(fFalse);
+      _ASSERTE(false);
       BeginUndo();
    }
 
@@ -110,13 +110,13 @@ void PinUndo::Undo()
 {
    if (m_vur.empty())
    {
-      //_ASSERTE(fFalse);
+      //_ASSERTE(false);
       return;
    }
 
    if (m_cUndoLayer > 0)
    {
-      _ASSERTE(fFalse);
+      _ASSERTE(false);
       m_cUndoLayer = 0;
    }
 
@@ -237,7 +237,7 @@ void UndoRecord::MarkForCreate(IEditable * const pie)
 #ifdef _DEBUG
    if (FindIndexOf(m_vieCreate, pie) != -1) // Created twice?
    {
-      _ASSERTE(fFalse);
+      _ASSERTE(false);
       return;
    }
 #endif
@@ -250,7 +250,7 @@ void UndoRecord::MarkForDelete(IEditable * const pie)
 #ifdef _DEBUG
    if (FindIndexOf(m_vieDelete, pie) != -1) // Already deleted - bad thing
    {
-      _ASSERTE(fFalse);
+      _ASSERTE(false);
       return;
    }
 #endif

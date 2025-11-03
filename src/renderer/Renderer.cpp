@@ -166,7 +166,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    #elif defined(ENABLE_DX9)
       constexpr colorFormat renderFormat = colorFormat::RGBA16F;
    #endif
-   SurfaceType rtType = m_stereo3D == STEREO_OFF || !m_renderDevice->SupportLayeredRendering() ? SurfaceType::RT_DEFAULT : SurfaceType::RT_STEREO;
+   const SurfaceType rtType = m_stereo3D == STEREO_OFF || !m_renderDevice->SupportLayeredRendering() ? SurfaceType::RT_DEFAULT : SurfaceType::RT_STEREO;
 
    // MSAA render target which is resolved to the non MSAA render target
    if (nMSAASamples > 1) 
@@ -924,9 +924,9 @@ void Renderer::InitLayout(const float xpixoff, const float ypixoff)
    TRACE_FUNCTION();
    const ViewSetup& viewSetup = m_table->mViewSetups[m_table->m_BG_current_set];
    #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
-   bool stereo = m_stereo3Denabled && (m_stereo3D != STEREO_OFF) && (m_stereo3D != STEREO_VR);
+   const bool stereo = m_stereo3Denabled && (m_stereo3D != STEREO_OFF) && (m_stereo3D != STEREO_VR);
    #elif defined(ENABLE_DX9)
-   bool stereo = false;
+   constexpr bool stereo = false;
    #endif
    const int bbWidth = m_stereo3D == STEREO_SBS ? (GetBackBufferTexture()->GetWidth() * 2) : GetBackBufferTexture()->GetWidth();
    const int bbHeight = (m_stereo3D == STEREO_TB || m_stereo3D == STEREO_INT || m_stereo3D == STEREO_FLIPPED_INT) ? (GetBackBufferTexture()->GetHeight() * 2) : GetBackBufferTexture()->GetHeight();
@@ -975,7 +975,7 @@ void Renderer::SetupShaders()
 
    constexpr float Roughness = 0.8f;
    m_renderDevice->m_ballShader->SetVector(SHADER_Roughness_WrapL_Edge_Thickness, exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.05f);
-   vec4 amb_lr = convertColor(m_table->m_lightAmbient, m_table->m_lightRange);
+   const vec4 amb_lr = convertColor(m_table->m_lightAmbient, m_table->m_lightRange);
    m_renderDevice->m_ballShader->SetVector(SHADER_cAmbient_LightRange, 
       amb_lr.x * m_globalEmissionScale, amb_lr.y * m_globalEmissionScale, amb_lr.z * m_globalEmissionScale, m_table->m_lightRange);
 
@@ -1145,7 +1145,7 @@ RenderTarget* Renderer::RenderFrame()
    for (size_t i = 0; i < m_table->m_vedit.size(); i++)
    {
       IEditable* const item = m_table->m_vedit[i];
-      if (item && item->GetItemType() == eItemLight && static_cast<Light*>(item)->m_d.m_showReflectionOnBall && !static_cast<Light*>(item)->m_backglass)
+      if (item && item->GetItemType() == eItemLight && static_cast<Light*>(item)->m_d.m_showReflectionOnBall && !item->m_backglass)
          m_ballReflectedLights.push_back(static_cast<Light*>(item));
    }
    // We don't need to set the dependency on the previous frame render as this would be a cross frame dependency which does not have any meaning since dependencies are resolved per frame
@@ -1188,7 +1188,7 @@ RenderTarget* Renderer::RenderFrame()
          MeshBuffer* mask = g_pplayer->m_vrDevice->GetVisibilityMask();
          if (mask)
          {
-            Vertex3Ds pos(0.f, 0.f, 200000.0f); // Very high depth bias to ensure being rendered before other opaque parts (which are sorted front to back)
+            constexpr Vertex3Ds pos{0.f, 0.f, 200000.0f}; // Very high depth bias to ensure being rendered before other opaque parts (which are sorted front to back)
             m_renderDevice->ResetRenderState();
             m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
             m_renderDevice->SetRenderState(RenderState::COLORWRITEENABLE, RenderState::RS_FALSE);
@@ -1282,17 +1282,17 @@ void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const ve
    float parallaxU = 0.f, parallaxV = 0.f;
    if (!isBackdrop && (vertices != nullptr))
    { // (fake) depth by applying some parallax mapping
-      Vertex3Ds v0(vertices[0].x, vertices[0].y, vertices[0].z);
-      Vertex3Ds v1(vertices[1].x, vertices[1].y, vertices[1].z);
-      Vertex3Ds v2(vertices[2].x, vertices[2].y, vertices[2].z);
-      Vertex2D u0(vertices[0].tu, vertices[0].tv);
-      Vertex2D u1(vertices[1].tu, vertices[1].tv);
-      Vertex2D u2(vertices[2].tu, vertices[2].tv);
-      Vertex3Ds dv1 = v1 - v0;
-      Vertex3Ds dv2 = v2 - v0;
-      Vertex2D duv1 = u1 - u0;
-      Vertex2D duv2 = u2 - u0;
-      float r = 1.0f / (duv1.x * duv2.y - duv1.y * duv2.x);
+      const Vertex3Ds v0(vertices[0].x, vertices[0].y, vertices[0].z);
+      const Vertex3Ds v1(vertices[1].x, vertices[1].y, vertices[1].z);
+      const Vertex3Ds v2(vertices[2].x, vertices[2].y, vertices[2].z);
+      const Vertex2D u0(vertices[0].tu, vertices[0].tv);
+      const Vertex2D u1(vertices[1].tu, vertices[1].tv);
+      const Vertex2D u2(vertices[2].tu, vertices[2].tv);
+      const Vertex3Ds dv1 = v1 - v0;
+      const Vertex3Ds dv2 = v2 - v0;
+      const Vertex2D duv1 = u1 - u0;
+      const Vertex2D duv2 = u2 - u0;
+      const float r = 1.0f / (duv1.x * duv2.y - duv1.y * duv2.x);
       Vertex3Ds tangent = (dv1 * duv2.y - dv2 * duv1.y) * r;
       Vertex3Ds bitangent = (dv2 * duv1.x - dv1 * duv2.x) * r;
       const Matrix3D& mv = GetMVP().GetModelView();
@@ -1301,9 +1301,9 @@ void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const ve
       Vertex3Ds eye = (v0 + v2) * 0.5f; // Suppose a rectangle shape, use opposite corners to get its center
       eye = mv.MultiplyVectorNoPerspective(eye);
       eye.Normalize();
-      float tN = tangent.Length();
-      float btN = bitangent.Length();
-      float depth = CMTOVPU(0.5f); // depth between glass and display
+      const float tN = tangent.Length();
+      const float btN = bitangent.Length();
+      const float depth = CMTOVPU(0.5f); // depth between glass and display
       parallaxU = (depth / tN) * tangent.Dot(eye) / tN;
       parallaxV = (depth / btN) * bitangent.Dot(eye) / btN;
    }
@@ -1365,17 +1365,17 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& co
       float parallaxU = 0.f, parallaxV = 0.f;
       if (!isBackdrop && (vertices != nullptr))
       { // (fake) depth by applying some parallax mapping
-         Vertex3Ds v0(vertices[0].x, vertices[0].y, vertices[0].z);
-         Vertex3Ds v1(vertices[1].x, vertices[1].y, vertices[1].z);
-         Vertex3Ds v2(vertices[3].x, vertices[3].y, vertices[3].z);
-         Vertex2D u0(vertices[0].tu, vertices[0].tv);
-         Vertex2D u1(vertices[1].tu, vertices[1].tv);
-         Vertex2D u2(vertices[3].tu, vertices[3].tv);
-         Vertex3Ds dv1 = v1 - v0;
-         Vertex3Ds dv2 = v2 - v0;
-         Vertex2D duv1 = u1 - u0;
-         Vertex2D duv2 = u2 - u0;
-         float r = 1.0f / (duv1.x * duv2.y - duv1.y * duv2.x);
+         const Vertex3Ds v0(vertices[0].x, vertices[0].y, vertices[0].z);
+         const Vertex3Ds v1(vertices[1].x, vertices[1].y, vertices[1].z);
+         const Vertex3Ds v2(vertices[3].x, vertices[3].y, vertices[3].z);
+         const Vertex2D u0(vertices[0].tu, vertices[0].tv);
+         const Vertex2D u1(vertices[1].tu, vertices[1].tv);
+         const Vertex2D u2(vertices[3].tu, vertices[3].tv);
+         const Vertex3Ds dv1 = v1 - v0;
+         const Vertex3Ds dv2 = v2 - v0;
+         const Vertex2D duv1 = u1 - u0;
+         const Vertex2D duv2 = u2 - u0;
+         const float r = 1.0f / (duv1.x * duv2.y - duv1.y * duv2.x);
          Vertex3Ds tangent = (dv1 * duv2.y - dv2 * duv1.y) * r;
          Vertex3Ds bitangent = (dv2 * duv1.x - dv1 * duv2.x) * r;
          const Matrix3D& mv = GetMVP().GetModelView();
@@ -1384,9 +1384,9 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& co
          Vertex3Ds eye = (v1 + v2) * 0.5f; // Suppose a rectangle shape, use opposite corners to get its center
          eye = mv.MultiplyVectorNoPerspective(eye);
          eye.Normalize();
-         float tN = tangent.Length();
-         float btN = bitangent.Length();
-         float depth = CMTOVPU(0.5f); // depth between glass and display
+         const float tN = tangent.Length();
+         const float btN = bitangent.Length();
+         const float depth = CMTOVPU(0.5f); // depth between glass and display
          parallaxU = (depth / tN) * tangent.Dot(eye) / tN;
          parallaxV = (depth / btN) * bitangent.Dot(eye) / btN;
       }
@@ -1411,7 +1411,7 @@ void Renderer::DrawBulbLightBuffer()
    m_render_mask |= Renderer::LIGHT_BUFFER;
    m_renderDevice->SetRenderTarget("Transmitted Light " + std::to_string(id), GetBloomBufferTexture(), true, true);
    m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE); // disable all z-tests as zbuffer is in different resolution
-   for (IEditable *renderable : g_pplayer->m_vhitables)
+   for (IEditable * const renderable : g_pplayer->m_vhitables)
       if (renderable->GetItemType() == eItemLight)
          RenderItem(renderable, true);
    m_render_mask &= ~Renderer::LIGHT_BUFFER;
@@ -1424,8 +1424,8 @@ void Renderer::DrawBulbLightBuffer()
          GetBloomBufferTexture(), 
          GetBloomTmpBufferTexture(), 
          GetBloomBufferTexture(), 19.f); // FIXME kernel size should depend on buffer resolution
-      RenderPass *blurPass2 = m_renderDevice->GetCurrentPass();
-      RenderPass *blurPass1 = blurPass2->m_dependencies[0];
+      RenderPass * const blurPass2 = m_renderDevice->GetCurrentPass();
+      RenderPass * const blurPass1 = blurPass2->m_dependencies[0];
       constexpr float margin = 0.05f; // margin for the blur
       blurPass1->m_areaOfInterest.x = renderPass->m_areaOfInterest.x - margin;
       blurPass1->m_areaOfInterest.y = renderPass->m_areaOfInterest.y - margin;
@@ -1912,10 +1912,7 @@ void Renderer::UpdateBloom(RenderTarget* renderedRT)
 
    const double w = static_cast<double>(renderedRT->GetWidth());
    const double h = static_cast<double>(renderedRT->GetHeight());
-   #if !defined(ENABLE_BGFX)
-   const
-   #endif
-   Vertex3D_TexelOnly shiftedVerts[4] =
+   const Vertex3D_TexelOnly shiftedVerts[4] =
    {
       {  1.0f,  1.0f, 0.0f, 1.0f + (float)(2.25 / w), 0.0f + (float)(2.25 / h) },
       { -1.0f,  1.0f, 0.0f, 0.0f + (float)(2.25 / w), 0.0f + (float)(2.25 / h) },
@@ -2255,10 +2252,7 @@ ShaderTechniques Renderer::ApplyTonemapping(RenderTarget* renderedRT, RenderTarg
    else
       assert(!"unknown tonemapper");
 
-   #if !defined(ENABLE_BGFX)
-   const
-   #endif
-   Vertex3D_TexelOnly shiftedVerts[4] =
+   const Vertex3D_TexelOnly shiftedVerts[4] =
    {
       {  1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 0.0f },
       { -1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 0.0f },
@@ -2571,7 +2565,7 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
       #endif
       m_renderDevice->AddRenderTargetDependency(renderedRT);
       const int previewW = m_vrPreview == VRPREVIEW_BOTH ? previewRT->GetWidth() / 2 : previewRT->GetWidth(), previewH = previewRT->GetHeight();
-      float ar = (float)w / (float)h, previewAr = (float)previewW / (float)previewH;
+      const float ar = (float)w / (float)h, previewAr = (float)previewW / (float)previewH;
       int x = 0, y = 0;
       int fw = w, fh = h;
       if ((m_vrPreviewShrink && ar < previewAr) || (!m_vrPreviewShrink && ar > previewAr))

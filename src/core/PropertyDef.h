@@ -136,7 +136,7 @@ public:
    EnumPropertyDef(const string& groupId, const string& propId, const string& label, const string& description, int min, int def, vector<string> values)
       : PropertyDef(Type::Enum, groupId, propId, label, description)
       , m_min(min)
-      , m_values(values)
+      , m_values(std::move(values))
       , m_def(def)
    {
       assert(!m_values.empty());
@@ -156,7 +156,7 @@ public:
    const vector<string> m_values;
    int m_def;
 
-   bool IsValid(int v) const { return m_min <= v && v < m_min + m_values.size(); }
+   bool IsValid(int v) const { return m_min <= v && v < (m_min + (int)m_values.size()); }
    bool IsValid(const string& v) const { return GetEnum(v) >= m_min; }
    int GetValid(int v) const { return IsValid(v) ? v : m_def; }
    int GetEnum(const string& v) const
@@ -169,7 +169,7 @@ public:
       int index = GetEnum(v);
       if (index >= m_min)
          return index;
-      if (try_parse_int(v, index) && m_min <= index && index < (m_min + m_values.size()))
+      if (try_parse_int(v, index) && m_min <= index && index < (m_min + (int)m_values.size()))
          return index;
       return m_min - 1;
    }
@@ -232,4 +232,4 @@ public:
    }
 };
 
-};
+}

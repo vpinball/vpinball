@@ -23,11 +23,11 @@ void PluginHomePage::Open(bool isBackwardAnimation)
    const MsgPluginManager& manager = MsgPluginManager::GetInstance();
    for (const auto& plugin : manager.GetPlugins())
    {
-      const string id = plugin->m_id;
-      if (id == "vpx"s) // Do not expose core VPX plugin (disabling it would crash the app)
+      const string& id = plugin->m_id;
+      if (id == "vpx") // Do not expose core VPX plugin (disabling it would crash the app)
          continue;
-      m_player->m_liveUI->m_inGameUI.AddPage("plugin/"s + plugin->m_id, [id]() { return std::make_unique<PluginSettingsPage>(id); });
-      AddItem(std::make_unique<InGameUIItem>(plugin->m_name, plugin->m_description, "plugin/"s + plugin->m_id));
+      m_player->m_liveUI->m_inGameUI.AddPage("plugin/" + plugin->m_id, [id]() { return std::make_unique<PluginSettingsPage>(id); });
+      AddItem(std::make_unique<InGameUIItem>(plugin->m_name, plugin->m_description, "plugin/" + plugin->m_id));
    }
 }
 
@@ -50,11 +50,11 @@ void PluginSettingsPage::Open(bool isBackwardAnimation)
 void PluginSettingsPage::BuildPage()
 {
    ClearItems();
-   const auto enablePropId = Settings::GetRegistry().GetPropertyId("Plugin"s + m_pluginId, "Enable"s).value();
+   const auto enablePropId = Settings::GetRegistry().GetPropertyId("Plugin" + m_pluginId, "Enable"s).value();
    const MsgPluginManager& manager = MsgPluginManager::GetInstance();
    if (auto plugin = manager.GetPlugin(m_pluginId); plugin == nullptr)
    {
-      AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "Internal error..."));
+      AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "Internal error..."s));
       return;
    }
 

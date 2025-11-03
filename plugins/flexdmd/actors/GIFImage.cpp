@@ -65,7 +65,7 @@ void GIFImage::ReadNextFrame()
       m_pos++;
       SetFrameTime(0);
       for (int i = 0; i < m_pos; i++)
-         SetFrameTime((float)(GetFrameTime() + (m_pBitmap->GetFrameDelay(i) / 1000.0)));
+         SetFrameTime((float)(GetFrameTime() + m_pBitmap->GetFrameDelay(i) / 1000.0));
 
       SetFrameDuration((float)(m_pBitmap->GetFrameDelay(m_pos) / 1000.0));
       UpdateFrame();

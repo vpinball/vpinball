@@ -286,9 +286,9 @@ void Ball::Render(const unsigned int renderMask)
       return;
 
    // Adapt z position of ball
-   float zheight = m_hitBall.m_d.m_lockedInKicker ? (m_hitBall.m_d.m_pos.z - m_hitBall.m_d.m_radius) : m_hitBall.m_d.m_pos.z;
+   const float zheight = m_hitBall.m_d.m_lockedInKicker ? (m_hitBall.m_d.m_pos.z - m_hitBall.m_d.m_radius) : m_hitBall.m_d.m_pos.z;
 
-   // Don't draw reflection if the ball is not on the playfield (e.g. on a ramp/kicker), except if explicitely asked too
+   // Don't draw reflection if the ball is not on the playfield (e.g. on a ramp/kicker), except if explicitly asked too
    if (isReflectionPass && !m_d.m_forceReflection 
       && ((zheight > m_hitBall.m_d.m_radius + 3.0f) || m_hitBall.m_d.m_lockedInKicker || (m_hitBall.m_d.m_pos.z < m_hitBall.m_d.m_radius - 0.1f)))
       return;
@@ -425,9 +425,9 @@ void Ball::Render(const unsigned int renderMask)
                 m_hitBall.m_orientation.m_d[0][1], m_hitBall.m_orientation.m_d[1][1], m_hitBall.m_orientation.m_d[2][1], 0.0f,
                 m_hitBall.m_orientation.m_d[0][2], m_hitBall.m_orientation.m_d[1][2], m_hitBall.m_orientation.m_d[2][2], 0.0f,
                 0.f, 0.f, 0.f, 1.f);
-   Matrix3D scale = Matrix3D::MatrixScale(m_hitBall.m_d.m_radius * antiStretch.x, m_hitBall.m_d.m_radius * antiStretch.y, m_hitBall.m_d.m_radius * antiStretch.y);
-   Matrix3D trans = Matrix3D::MatrixTranslate(m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y, zheight);
-   Matrix3D m3D_full = rot * scale * trans;
+   const Matrix3D scale = Matrix3D::MatrixScale(m_hitBall.m_d.m_radius * antiStretch.x, m_hitBall.m_d.m_radius * antiStretch.y, m_hitBall.m_d.m_radius * antiStretch.y);
+   const Matrix3D trans = Matrix3D::MatrixTranslate(m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y, zheight);
+   const Matrix3D m3D_full = rot * scale * trans;
    m_rd->m_ballShader->SetMatrix(SHADER_orientation, &m3D_full);
 
    m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);

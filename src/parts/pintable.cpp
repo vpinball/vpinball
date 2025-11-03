@@ -3151,14 +3151,14 @@ void PinTable::SetMyScrollInfo()
    si.nPage = (int)(rgv[1].x - rgv[0].x);
    si.nPos = (int)(rgv[0].x);
 
-   SetScrollInfo(SB_HORZ, si, fTrue);
+   SetScrollInfo(SB_HORZ, si, true);
 
    si.nMin = (int)min(frect.top, rgv[0].y);
    si.nMax = (int)max(frect.bottom, rgv[1].y);
    si.nPage = (int)(rgv[1].y - rgv[0].y);
    si.nPos = (int)(rgv[0].y);
 
-   SetScrollInfo(SB_VERT, si, fTrue);
+   SetScrollInfo(SB_VERT, si, true);
 #endif
 }
 

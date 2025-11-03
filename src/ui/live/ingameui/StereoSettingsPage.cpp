@@ -116,7 +116,7 @@ void StereoSettingsPage::BuildPage()
          const bool stereoRT = m_player->m_renderer->m_stereo3D != STEREO_OFF;
          const bool stereoSel = v != STEREO_OFF;
          if (stereoRT != stereoSel)
-            m_player->m_liveUI->PushNotification("Toggling stereo rendering will be applied after restarting the game", 5000);
+            m_player->m_liveUI->PushNotification("Toggling stereo rendering will be applied after restarting the game"s, 5000);
          else
             m_player->m_renderer->m_stereo3D = (StereoMode)v;
          m_player->m_ptable->m_settings.SetPlayer_Stereo3D((StereoMode)v, false);
@@ -265,7 +265,7 @@ void StereoSettingsPage::BuildPage()
    infoText << " - Gamma " << anaglyph.GetDisplayGamma();
    vec3 anaglyphRatio = anaglyph.GetAnaglyphRatio();
    infoText << " - Ratios R: " << (int)(100.f * anaglyphRatio.x) << "% G: " << (int)(100.f * anaglyphRatio.y) << "% B: " << (int)(100.f * anaglyphRatio.z) << '%';
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, infoText.str().c_str()));
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, infoText.str()));
 
    /* ImGui::ColorButton("LeftFilter", ImVec4(eyeL.x, eyeL.y, eyeL.z, 1.f), ImGuiColorEditFlags_NoAlpha);
    ImGui::ColorButton("RightFilter", ImVec4(eyeR.x, eyeR.y, eyeR.z, 1.f), ImGuiColorEditFlags_NoAlpha);*/

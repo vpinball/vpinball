@@ -139,9 +139,6 @@ inline int FindIndexOf(const vector<T>& v, const T& val)
       return -1;
 }
 
-#define fTrue 1
-#define fFalse 0
-
 #ifndef __STANDALONE__
 #define BOOL int
 #endif
@@ -243,7 +240,7 @@ public:
 #define ANGTORAD(x) ((x) * (float)(M_PI/180.0))
 #define RADTOANG(x) ((x) * (float)(180.0/M_PI))
 
-#define VBTOF(x) ((x) ? fTrue : fFalse)
+#define VBTOF(x) ((x) ? 1 : 0)
 #define VBTOb(x) (!!(x))
 #define FTOVB(x) ((x) ? (VARIANT_BOOL)-1 : (VARIANT_BOOL)0)
 

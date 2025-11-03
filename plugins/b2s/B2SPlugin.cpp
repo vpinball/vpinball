@@ -167,7 +167,7 @@ void DeleteTexture(VPXTexture texture)
       vpxApi->DeleteTexture(texture);
 }
 
-void OnGameStart(const unsigned int, void*, void*)
+static void OnGameStart(const unsigned int, void*, void*)
 {
    VPXTableInfo tableInfo;
    vpxApi->GetTableInfo(&tableInfo);
@@ -199,7 +199,7 @@ void OnGameStart(const unsigned int, void*, void*)
    }
 }
 
-void OnGameEnd(const unsigned int, void*, void*)
+static void OnGameEnd(const unsigned int, void*, void*)
 {
    if (loadedB2S.valid())
       loadedB2S.get();
@@ -209,7 +209,7 @@ void OnGameEnd(const unsigned int, void*, void*)
    pinmameInstance = nullptr;
 }
 
-int OnRender(VPXRenderContext2D* ctx, void*)
+static int OnRender(VPXRenderContext2D* ctx, void*)
 {
    if ((ctx->window != VPXWindowId::VPXWINDOW_Backglass) && (ctx->window != VPXWindowId::VPXWINDOW_ScoreView))
       return false;
@@ -232,7 +232,7 @@ int OnRender(VPXRenderContext2D* ctx, void*)
    }
 }
 
-void OnGetRenderer(const unsigned int, void*, void* msgData)
+static void OnGetRenderer(const unsigned int, void*, void* msgData)
 {
    static AnciliaryRendererDef entry = { "B2S", "B2S Backglass & FullDMD", "Renderer for directb2s backglass files", nullptr, OnRender };
    GetAnciliaryRendererMsg* msg = static_cast<GetAnciliaryRendererMsg*>(msgData);
@@ -245,7 +245,7 @@ void OnGetRenderer(const unsigned int, void*, void* msgData)
 }
 
 // Only register if PinMAME is available
-void RegisterServerObject(void*)
+static void RegisterServerObject(void*)
 {
    pinmameClassDef = scriptApi->GetClassDef("Controller");
    if (pinmameClassDef != nullptr)
