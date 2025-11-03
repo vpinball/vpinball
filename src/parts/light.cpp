@@ -73,7 +73,7 @@ HRESULT Light::Init(PinTable *const ptable, const float x, const float y, const 
 
 void Light::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsLight_##prop() : Settings::GetDefaultPropsLight_##prop##_Property()->m_def
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsLight_##prop() : Settings::GetDefaultPropsLight_##prop##_Default()
 #define regKey Settings::DefaultPropsLight
 
    m_duration = 0;

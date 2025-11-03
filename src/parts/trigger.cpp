@@ -168,26 +168,38 @@ HRESULT Trigger::Init(PinTable *const ptable, const float x, const float y, cons
 
 void Trigger::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsTrigger_##prop() : Settings::GetDefaultPropsTrigger_##prop##_Property()->m_def
-#define regKey Settings::DefaultPropsTrigger
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsTrigger_##prop() : Settings::GetDefaultPropsTrigger_##prop##_Default()
+   LinkProp(m_d.m_radius, Radius);
+   LinkProp(m_d.m_rotation, Rotation);
+   LinkProp(m_d.m_wireThickness, WireThickness);
+   LinkProp(m_d.m_scaleX, ScaleX);
+   LinkProp(m_d.m_scaleY, ScaleY);
+   LinkProp(m_d.m_enabled, Enabled);
+   LinkProp(m_d.m_visible, Visible);
+   LinkProp(m_d.m_hit_height, HitHeight);
+   LinkProp(m_d.m_shape, Shape);
+   LinkProp(m_d.m_szSurface, Surface);
+   LinkProp(m_d.m_animSpeed, AnimSpeed);
+   LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#undef LinkProp
+}
 
-   m_d.m_radius = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Radius"s, 25.0f) : 25.0f;
-   m_d.m_rotation = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Rotation"s, 0.f) : 0.f;
-   m_d.m_wireThickness = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "WireThickness"s, 0.f) : 0.f;
-   m_d.m_scaleX = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ScaleX"s, 1.f) : 1.f;
-   m_d.m_scaleY = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ScaleY"s, 1.f) : 1.f;
-   m_d.m_enabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Enabled"s, true) : true;
-   m_d.m_visible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Visible"s, true) : true;
-   m_d.m_hit_height = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "HitHeight"s, 50.f) : 50.f;
-   m_d.m_shape = fromMouseClick ? (TriggerShape)g_pvp->m_settings.LoadValueWithDefault(regKey, "Shape"s, (int)TriggerWireA) : TriggerWireA;
-
-   const bool hr = g_pvp->m_settings.LoadValue(regKey, "Surface"s, m_d.m_szSurface);
-   if (!hr || !fromMouseClick)
-      m_d.m_szSurface.clear();
-
-   m_d.m_animSpeed = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "AnimSpeed"s, 1.f) : 1.f;
-
-#undef regKey
+void Trigger::WriteRegDefaults()
+{
+#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsTrigger_##prop(field, false)
+   LinkProp(m_d.m_radius, Radius);
+   LinkProp(m_d.m_rotation, Rotation);
+   LinkProp(m_d.m_wireThickness, WireThickness);
+   LinkProp(m_d.m_scaleX, ScaleX);
+   LinkProp(m_d.m_scaleY, ScaleY);
+   LinkProp(m_d.m_enabled, Enabled);
+   LinkProp(m_d.m_visible, Visible);
+   LinkProp(m_d.m_hit_height, HitHeight);
+   LinkProp(m_d.m_shape, Shape);
+   LinkProp(m_d.m_szSurface, Surface);
+   LinkProp(m_d.m_animSpeed, AnimSpeed);
    LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
@@ -938,30 +950,6 @@ HRESULT Trigger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveF
 void Trigger::ClearForOverwrite()
 {
    ClearPointsForOverwrite();
-}
-
-void Trigger::WriteRegDefaults()
-{
-#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsTrigger_##prop(field, false)
-#define regKey Settings::DefaultPropsTrigger
-
-   g_pvp->m_settings.SaveValue(regKey, "Enabled"s, m_d.m_enabled);
-   g_pvp->m_settings.SaveValue(regKey, "Visible"s, m_d.m_visible);
-   g_pvp->m_settings.SaveValue(regKey, "HitHeight"s, m_d.m_hit_height);
-   g_pvp->m_settings.SaveValue(regKey, "Radius"s, m_d.m_radius);
-   g_pvp->m_settings.SaveValue(regKey, "Rotation"s, m_d.m_rotation);
-   g_pvp->m_settings.SaveValue(regKey, "WireThickness"s, m_d.m_wireThickness);
-   g_pvp->m_settings.SaveValue(regKey, "ScaleX"s, m_d.m_scaleX);
-   g_pvp->m_settings.SaveValue(regKey, "ScaleY"s, m_d.m_scaleY);
-   g_pvp->m_settings.SaveValue(regKey, "Shape"s, m_d.m_shape);
-   g_pvp->m_settings.SaveValue(regKey, "Surface"s, m_d.m_szSurface);
-   g_pvp->m_settings.SaveValue(regKey, "AnimSpeed"s, m_d.m_animSpeed);
-
-#undef regKey
-   LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
-   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
-   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
-#undef LinkProp
 }
 
 HRESULT Trigger::InitLoad(IStream *pstm, PinTable *ptable, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)

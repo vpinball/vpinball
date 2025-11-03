@@ -19,7 +19,7 @@ HRESULT LightSeq::Init(PinTable *const ptable, const float x, const float y, con
 
 void LightSeq::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsLightSeq_##prop() : Settings::GetDefaultPropsLightSeq_##prop##_Property()->m_def
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsLightSeq_##prop() : Settings::GetDefaultPropsLightSeq_##prop##_Default()
 #define regKey Settings::DefaultPropsLightSequence
 
    m_d.m_updateinterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "UpdateInterval"s, 25) : 25;

@@ -22,7 +22,7 @@ class Settings final
    // 2. Populate shared property registry, and use it where applicable using PropertyDef/Registry [in progress]
    // 3. Split store implementation from Settings class [to be done]
 private:
-   static inline const VPX::Properties::PropertyRegistry::PropId m_propInvalid { };
+   static inline const VPX::Properties::PropertyRegistry::PropId m_propInvalid {};
 
 public:
    static VPX::Properties::PropertyRegistry &GetRegistry();
@@ -41,6 +41,7 @@ public:
    static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId                                                                                                  \
       = GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>(#groupId, #propId, label, comment, defVal));                                                               \
    static inline const VPX::Properties::BoolPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetBoolProperty(m_prop##groupId##_##propId); }                          \
+   static inline const bool Get##groupId##_##propId##_Default() { return GetRegistry().GetBoolProperty(m_prop##groupId##_##propId)->m_def; }                                                 \
    inline bool Get##groupId##_##propId() const { return m_store.GetInt(m_prop##groupId##_##propId); }                                                                                        \
    inline void Set##groupId##_##propId(bool v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                                \
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
@@ -49,14 +50,17 @@ public:
    static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId                                                                                                  \
       = GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>(#groupId, #propId, label, comment, minVal, maxVal, defVal));                                                \
    static inline const VPX::Properties::IntPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetIntProperty(m_prop##groupId##_##propId); }                            \
+   static inline const int Get##groupId##_##propId##_Default() { return GetRegistry().GetIntProperty(m_prop##groupId##_##propId)->m_def; }                                                   \
    inline int Get##groupId##_##propId() const { return m_store.GetInt(m_prop##groupId##_##propId); }                                                                                         \
    inline void Set##groupId##_##propId(int v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                                 \
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
+#define PropIntUnbounded(groupId, propId, label, comment, defVal) PropInt(groupId, propId, label, comment, INT_MIN, INT_MAX, defVal)
 
 #define PropEnum(groupId, propId, label, comment, type, defVal, ...)                                                                                                                         \
    static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId                                                                                                  \
       = GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>(#groupId, #propId, label, comment, 0, defVal, vector<string> { __VA_ARGS__ }));                            \
    static inline const VPX::Properties::EnumPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetEnumProperty(m_prop##groupId##_##propId); }                          \
+   static inline const type Get##groupId##_##propId##_Default() { return (type)(GetRegistry().GetEnumProperty(m_prop##groupId##_##propId)->m_def); }                                         \
    inline type Get##groupId##_##propId() const { return (type)(m_store.GetInt(m_prop##groupId##_##propId)); }                                                                                \
    inline void Set##groupId##_##propId(type v, bool asTableOverride) { Set(m_prop##groupId##_##propId, (int)v, asTableOverride); }                                                           \
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
@@ -65,16 +69,18 @@ public:
    static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId                                                                                                  \
       = GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(#groupId, #propId, label, comment, minVal, maxVal, step, defVal));                                        \
    static inline const VPX::Properties::FloatPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetFloatProperty(m_prop##groupId##_##propId); }                        \
+   static inline const float Get##groupId##_##propId##_Default() { return GetRegistry().GetFloatProperty(m_prop##groupId##_##propId)->m_def; }                                               \
    inline float Get##groupId##_##propId() const { return m_store.GetFloat(m_prop##groupId##_##propId); }                                                                                     \
    inline void Set##groupId##_##propId(float v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                               \
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
-
+#define PropFloatUnbounded(groupId, propId, label, comment, defVal) PropFloatStepped(groupId, propId, label, comment, FLT_MIN, FLT_MAX, 0.f, defVal)
 #define PropFloat(groupId, propId, label, comment, minVal, maxVal, defVal) PropFloatStepped(groupId, propId, label, comment, minVal, maxVal, 0.f, defVal)
 
 #define PropString(groupId, propId, label, comment, defVal)                                                                                                                                  \
    static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId                                                                                                  \
       = GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>(#groupId, #propId, label, comment, defVal));                                                             \
    static inline const VPX::Properties::StringPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetStringProperty(m_prop##groupId##_##propId); }                      \
+   static inline const string &Get##groupId##_##propId##_Default() { return GetRegistry().GetStringProperty(m_prop##groupId##_##propId)->m_def; }                                            \
    inline const string &Get##groupId##_##propId() const { return m_store.GetString(m_prop##groupId##_##propId); }                                                                            \
    inline void Set##groupId##_##propId(const string &v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                       \
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
@@ -179,10 +185,10 @@ public:
       Window, Height, int, Int, Int, m_propPlayer_PlayfieldHeight, m_propBackglass_BackglassHeight, m_propScoreView_ScoreViewHeight, m_propTopper_TopperHeight, m_propPlayerVR_PreviewHeight);
    PropArray(Window, FullScreen, bool, Bool, Int, m_propPlayer_PlayfieldFullScreen, m_propBackglass_BackglassFullScreen, m_propScoreView_ScoreViewFullScreen, m_propTopper_TopperFullScreen,
       m_propPlayerVR_PreviewFullScreen);
-   PropArray(
-      Window, FSWidth, int, Int, Int, m_propPlayer_PlayfieldFSWidth, m_propBackglass_BackglassFSWidth, m_propScoreView_ScoreViewFSWidth, m_propTopper_TopperFSWidth, m_propPlayerVR_PreviewFSWidth);
-   PropArray(
-      Window, FSHeight, int, Int, Int, m_propPlayer_PlayfieldFSHeight, m_propBackglass_BackglassFSHeight, m_propScoreView_ScoreViewFSHeight, m_propTopper_TopperFSHeight, m_propPlayerVR_PreviewFSHeight);
+   PropArray(Window, FSWidth, int, Int, Int, m_propPlayer_PlayfieldFSWidth, m_propBackglass_BackglassFSWidth, m_propScoreView_ScoreViewFSWidth, m_propTopper_TopperFSWidth,
+      m_propPlayerVR_PreviewFSWidth);
+   PropArray(Window, FSHeight, int, Int, Int, m_propPlayer_PlayfieldFSHeight, m_propBackglass_BackglassFSHeight, m_propScoreView_ScoreViewFSHeight, m_propTopper_TopperFSHeight,
+      m_propPlayerVR_PreviewFSHeight);
    PropArray(Window, FSRefreshRate, float, Float, Float, m_propPlayer_PlayfieldRefreshRate, m_propBackglass_BackglassRefreshRate, m_propScoreView_ScoreViewRefreshRate,
       m_propTopper_TopperRefreshRate, m_propPlayerVR_PreviewRefreshRate);
    PropArray(Window, FSColorDepth, int, Int, Int, m_propPlayer_PlayfieldColorDepth, m_propBackglass_BackglassColorDepth, m_propScoreView_ScoreViewColorDepth, m_propTopper_TopperColorDepth,
@@ -705,8 +711,8 @@ public:
       m_propAlpha_Profile6Unlit, m_propAlpha_Profile7Unlit, m_propAlpha_Profile8Unlit);
    PropArray(Alpha, ProfileBrightness, float, Float, Float, m_propAlpha_Profile1Brightness, m_propAlpha_Profile2Brightness, m_propAlpha_Profile3Brightness, m_propAlpha_Profile4Brightness,
       m_propAlpha_Profile5Brightness, m_propAlpha_Profile6Brightness, m_propAlpha_Profile7Brightness, m_propAlpha_Profile8Brightness);
-   PropArray(Alpha, ProfileDiffuseGlow, float, Float, Float, m_propAlpha_Profile1DiffuseGlow, m_propAlpha_Profile2DiffuseGlow, m_propAlpha_Profile3DiffuseGlow, m_propAlpha_Profile4DiffuseGlow,
-      m_propAlpha_Profile5DiffuseGlow, m_propAlpha_Profile6DiffuseGlow, m_propAlpha_Profile7DiffuseGlow, m_propAlpha_Profile8DiffuseGlow);
+   PropArray(Alpha, ProfileDiffuseGlow, float, Float, Float, m_propAlpha_Profile1DiffuseGlow, m_propAlpha_Profile2DiffuseGlow, m_propAlpha_Profile3DiffuseGlow,
+      m_propAlpha_Profile4DiffuseGlow, m_propAlpha_Profile5DiffuseGlow, m_propAlpha_Profile6DiffuseGlow, m_propAlpha_Profile7DiffuseGlow, m_propAlpha_Profile8DiffuseGlow);
 
    // Parts Defaults: Balls
    PropFloat(DefaultPropsBall, Mass, "Ball Mass"s, ""s, 0.1f, 2.f, 1.f);
@@ -724,6 +730,20 @@ public:
    PropInt(DefaultPropsBall, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
    // Parts Defaults: Bumper
+   PropFloatUnbounded(DefaultPropsBumper, Radius, "Radius"s, ""s, 45.f);
+   PropFloatUnbounded(DefaultPropsBumper, HeightScale, "HeightScale"s, ""s, 90.f);
+   PropFloatUnbounded(DefaultPropsBumper, RingSpeed, "RingSpeed"s, ""s, 0.5f);
+   PropFloatUnbounded(DefaultPropsBumper, Orientation, "Orientation"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsBumper, Threshold, "Threshold"s, ""s, 1.f);
+   PropString(DefaultPropsBumper, Surface, "Surface"s, ""s, ""s);
+   PropBool(DefaultPropsBumper, CapVisible, "CapVisible"s, ""s, true);
+   PropBool(DefaultPropsBumper, BaseVisible, "BaseVisible"s, ""s, true);
+   PropBool(DefaultPropsBumper, RingVisible, "RingVisible"s, ""s, true);
+   PropBool(DefaultPropsBumper, SkirtVisible, "SkirtVisible"s, ""s, true);
+   PropBool(DefaultPropsBumper, HasHitEvent, "HasHitEvent"s, ""s, true);
+   PropBool(DefaultPropsBumper, Collidable, "Collidable"s, ""s, true);
+   PropFloatUnbounded(DefaultPropsBumper, Force, "Force"s, ""s, 15.f);
+   PropFloatUnbounded(DefaultPropsBumper, Scatter, "Scatter"s, ""s, 0.f);
    PropBool(DefaultPropsBumper, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
    PropBool(DefaultPropsBumper, TimerEnabled, "Timer Enabled"s, ""s, false);
    PropInt(DefaultPropsBumper, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
@@ -739,6 +759,31 @@ public:
    PropInt(DefaultPropsFlasher, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
    // Parts Defaults: Flipper
+   PropFloatUnbounded(DefaultPropsFlipper, StartAngle, "StartAngle"s, ""s, 121.f);
+   PropFloatUnbounded(DefaultPropsFlipper, EndAngle, "EndAngle"s, ""s, 70.f);
+   PropFloatUnbounded(DefaultPropsFlipper, BaseRadius, "BaseRadius"s, ""s, 21.5f); // 15
+   PropFloatUnbounded(DefaultPropsFlipper, EndRadius, "EndRadius"s, ""s, 13.f); // 6
+   PropFloatUnbounded(DefaultPropsFlipper, Length, "Length"s, ""s, 130.f); // 80
+   PropFloatUnbounded(DefaultPropsFlipper, MaxDifLength, "MaxDifLength"s, ""s, 0.f);
+   PropIntUnbounded(DefaultPropsFlipper, Color, "Color"s, ""s, (int)RGB(255, 255, 255));
+   PropIntUnbounded(DefaultPropsFlipper, RubberColor, "RubberColor"s, ""s, (int)RGB(128, 50, 50));
+   PropString(DefaultPropsFlipper, Surface, "Surface"s, ""s, ""s);
+   PropFloatUnbounded(DefaultPropsFlipper, Height, "Height"s, ""s, 50.f);
+   PropFloatUnbounded(DefaultPropsFlipper, RubberThickness, "RubberThickness"s, ""s, 7.f);
+   PropFloatUnbounded(DefaultPropsFlipper, RubberHeight, "RubberHeight"s, ""s, 19.f);
+   PropFloatUnbounded(DefaultPropsFlipper, RubberWidth, "RubberWidth"s, ""s, 24.f);
+   PropBool(DefaultPropsFlipper, Visible, "Visible"s, ""s, true);
+   PropBool(DefaultPropsFlipper, Enabled, "Enabled"s, ""s, true);
+   PropFloatUnbounded(DefaultPropsFlipper, Scatter, "Scatter"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsFlipper, Strength, "Strength"s, ""s, 2200.f);
+   PropFloatUnbounded(DefaultPropsFlipper, EOSTorque, "EOSTorque"s, ""s, 0.75f);
+   PropFloatUnbounded(DefaultPropsFlipper, EOSTorqueAngle, "EOSTorqueAngle"s, ""s, 6.f);
+   PropFloatUnbounded(DefaultPropsFlipper, ReturnStrength, "ReturnStrength"s, ""s, 0.058f);
+   PropFloatUnbounded(DefaultPropsFlipper, Mass, "Mass"s, ""s, 1.f); // previously Mass was called Speed
+   PropFloatUnbounded(DefaultPropsFlipper, Elasticity, "Elasticity"s, ""s, 0.8f);
+   PropFloatUnbounded(DefaultPropsFlipper, ElasticityFalloff, "ElasticityFalloff"s, ""s, 0.43f);
+   PropFloatUnbounded(DefaultPropsFlipper, Friction, "Friction"s, ""s, 0.6f);
+   PropFloatUnbounded(DefaultPropsFlipper, RampUp, "RampUp"s, ""s, 3.0f);
    PropBool(DefaultPropsFlipper, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
    PropBool(DefaultPropsFlipper, TimerEnabled, "Timer Enabled"s, ""s, false);
    PropInt(DefaultPropsFlipper, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
@@ -786,16 +831,65 @@ public:
    PropInt(DefaultPropsRamp, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
    // Parts Defaults: Rubber
+   PropFloatUnbounded(DefaultPropsRubber, HitHeight, "HitHeight"s, ""s, 25.f);
+   PropFloatUnbounded(DefaultPropsRubber, Height, "Height"s, ""s, 25.f);
+   PropIntUnbounded(DefaultPropsRubber, Thickness, "Thickness"s, ""s, 8);
+   PropString(DefaultPropsRubber, Image, "Image"s, ""s, ""s);
+   PropBool(DefaultPropsRubber, HitEvent, "HitEvent"s, ""s, false);
+   PropBool(DefaultPropsRubber, Visible, "Visible"s, ""s, true);
+   PropBool(DefaultPropsRubber, Collidable, "Collidable"s, ""s, true);
+   PropBool(DefaultPropsRubber, EnableStaticRendering, "EnableStaticRendering"s, ""s, true);
+   PropBool(DefaultPropsRubber, EnableShowInEditor, "EnableShowInEditor"s, ""s, false);
+   PropFloatUnbounded(DefaultPropsRubber, RotX, "RotX"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsRubber, RotY, "RotY"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsRubber, RotZ, "RotZ"s, ""s, 0.f);
    PropBool(DefaultPropsRubber, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
+   PropFloatUnbounded(DefaultPropsRubber, Elasticity, "Elasticity"s, ""s, 0.8f);
+   PropFloatUnbounded(DefaultPropsRubber, ElasticityFalloff, "ElasticityFalloff"s, ""s, 0.3f);
+   PropFloatUnbounded(DefaultPropsRubber, Friction, "Friction"s, ""s, 0.6f);
+   PropFloatUnbounded(DefaultPropsRubber, Scatter, "Scatter"s, ""s, 5.f);
    PropBool(DefaultPropsRubber, TimerEnabled, "Timer Enabled"s, ""s, false);
    PropInt(DefaultPropsRubber, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
    // Parts Defaults: Spinner
+   PropFloatUnbounded(DefaultPropsSpinner, Length, "Length"s, ""s, 80.f);
+   PropFloatUnbounded(DefaultPropsSpinner, Rotation, "Rotation"s, ""s, 0.f);
+   PropBool(DefaultPropsSpinner, ShowBracket, "ShowBracket"s, ""s, true);
+   PropFloatUnbounded(DefaultPropsSpinner, Height, "Height"s, ""s, 60.f); // Note: this property used to be a int (scaled by 1000)
+   PropFloatUnbounded(DefaultPropsSpinner, AngleMax, "AngleMax"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsSpinner, AngleMin, "AngleMin"s, ""s, 0.3f);
+   PropBool(DefaultPropsSpinner, Visible, "Visible"s, ""s, true);
+   PropString(DefaultPropsSpinner, Image, "Image"s, ""s, ""s);
+   PropString(DefaultPropsSpinner, Surface, "Surface"s, ""s, ""s);
+   PropFloatUnbounded(DefaultPropsSpinner, Elasticity, "Elasticity"s, ""s, 0.3f);
+   PropFloatUnbounded(DefaultPropsSpinner, AntiFriction, "AntiFriction"s, ""s, 0.9879f);
    PropBool(DefaultPropsSpinner, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
    PropBool(DefaultPropsSpinner, TimerEnabled, "Timer Enabled"s, ""s, false);
    PropInt(DefaultPropsSpinner, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
    // Parts Defaults: Surface
+   PropFloatUnbounded(DefaultPropsSurface, Elasticity, "Elasticity"s, ""s, 0.3f);
+   PropFloatUnbounded(DefaultPropsSurface, ElasticityFallOff, "ElasticityFallOff"s, ""s, 0.0f);
+   PropFloatUnbounded(DefaultPropsSurface, Friction, "Friction"s, ""s, 0.3f);
+   PropFloatUnbounded(DefaultPropsSurface, Scatter, "Scatter"s, ""s, 0.f);
+   PropBool(DefaultPropsSurface, HitEvent, "HitEvent"s, ""s, false);
+   PropFloatUnbounded(DefaultPropsSurface, HitThreshold, "HitThreshold"s, ""s, 2.0f);
+   PropFloatUnbounded(DefaultPropsSurface, SlingshotThreshold, "SlingshotThreshold"s, ""s, 0.0f);
+   PropString(DefaultPropsSurface, TopImage, "TopImage"s, ""s, ""s);
+   PropString(DefaultPropsSurface, SideImage, "SideImage"s, ""s, ""s);
+   PropBool(DefaultPropsSurface, Droppable, "Droppable"s, ""s, false);
+   PropBool(DefaultPropsSurface, Flipbook, "Flipbook"s, ""s, false);
+   PropBool(DefaultPropsSurface, IsBottomSolid, "IsBottomSolid"s, ""s, false);
+   PropFloatUnbounded(DefaultPropsSurface, HeightBottom, "HeightBottom"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsSurface, HeightTop, "HeightTop"s, ""s, 50.f);
+   PropBool(DefaultPropsSurface, DisplayTexture, "DisplayTexture"s, ""s, true);
+   PropFloatUnbounded(DefaultPropsSurface, SlingshotForce, "SlingshotForce"s, ""s, 80.f);
+   PropBool(DefaultPropsSurface, SlingshotAnimation, "SlingshotAnimation"s, ""s, true);
+   PropBool(DefaultPropsSurface, Visible, "Visible"s, ""s, true);
+   PropBool(DefaultPropsSurface, SideVisible, "SideVisible"s, ""s, true);
+   PropBool(DefaultPropsSurface, Collidable, "Collidable"s, ""s, true);
+   PropFloatUnbounded(DefaultPropsSurface, DisableLighting, "DisableLighting"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsSurface, DisableLightingBelow, "DisableLightingBelow"s, ""s, 1.f);
    PropBool(DefaultPropsSurface, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
    PropBool(DefaultPropsSurface, TimerEnabled, "Timer Enabled"s, ""s, false);
    PropInt(DefaultPropsSurface, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
@@ -809,6 +903,17 @@ public:
    PropInt(DefaultPropsTimer, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
    // Parts Defaults: Trigger
+   PropFloatUnbounded(DefaultPropsTrigger, Radius, "Radius"s, ""s, 25.f);
+   PropFloatUnbounded(DefaultPropsTrigger, Rotation, "Rotation"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsTrigger, WireThickness, "WireThickness"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsTrigger, ScaleX, "ScaleX"s, ""s, 1.f);
+   PropFloatUnbounded(DefaultPropsTrigger, ScaleY, "ScaleY"s, ""s, 1.f);
+   PropBool(DefaultPropsTrigger, Enabled, "Enabled"s, ""s, true);
+   PropBool(DefaultPropsTrigger, Visible, "Visible"s, ""s, true);
+   PropFloatUnbounded(DefaultPropsTrigger, HitHeight, "HitHeight"s, ""s, 50.f);
+   PropEnum(DefaultPropsTrigger, Shape, "Shape"s, ""s, TriggerShape, TriggerWireA, "None"s, "Wire A"s, "Star"s, "Wire B"s, "Button"s, "Wire C"s, "Wire D"s, "Inder"s);
+   PropString(DefaultPropsTrigger, Surface, "Surface"s, ""s, ""s);
+   PropFloatUnbounded(DefaultPropsTrigger, AnimSpeed, "AnimSpeed"s, ""s, 1.f);
    PropBool(DefaultPropsTrigger, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
    PropBool(DefaultPropsTrigger, TimerEnabled, "Timer Enabled"s, ""s, false);
    PropInt(DefaultPropsTrigger, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);

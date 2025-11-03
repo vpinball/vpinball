@@ -219,7 +219,7 @@ HRESULT Primitive::Init(PinTable *const ptable, const float x, const float y, co
 
 void Primitive::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsPrimitive_##prop() : Settings::GetDefaultPropsPrimitive_##prop##_Property()->m_def
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsPrimitive_##prop() : Settings::GetDefaultPropsPrimitive_##prop##_Default()
 #define strKeyName Settings::DefaultPropsPrimitive
 
    m_d.m_use3DMesh = false;

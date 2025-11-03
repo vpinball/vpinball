@@ -27,7 +27,7 @@ HRESULT Timer::Init(PinTable *const ptable, const float x, const float y, const 
 
 void Timer::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsTimer_##prop() : Settings::GetDefaultPropsTimer_##prop##_Property()->m_def
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsTimer_##prop() : Settings::GetDefaultPropsTimer_##prop##_Default()
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
 #undef LinkProp

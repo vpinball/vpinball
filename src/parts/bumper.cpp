@@ -35,59 +35,49 @@ HRESULT Bumper::Init(PinTable * const ptable, const float x, const float y, cons
    return forPlay ? S_OK : InitVBA(true, nullptr);
 }
 
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsBumper_##prop() : Settings::GetDefaultPropsBumper_##prop##_Default()
 void Bumper::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsBumper_##prop() : Settings::GetDefaultPropsBumper_##prop##_Property()->m_def
-#define regKey Settings::DefaultPropsBumper
-
-   m_d.m_radius = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Radius"s, 45.f) : 45.f;
-
-   SetDefaultPhysics(fromMouseClick);
-
-   m_d.m_heightScale = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "HeightScale"s, 90.0f) : 90.0f;
-   m_d.m_ringSpeed = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "RingSpeed"s, 0.5f) : 0.5f;
-   m_d.m_orientation = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Orientation"s, 0.0f) : 0.0f;
-   m_d.m_threshold = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Threshold"s, 1.f) : 1.f;
-
-   const bool hr = g_pvp->m_settings.LoadValue(regKey, "Surface"s, m_d.m_szSurface);
-   if (!hr || !fromMouseClick)
-      m_d.m_szSurface.clear();
-
-   m_d.m_capVisible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "CapVisible"s, true) : true;
-   m_d.m_baseVisible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "BaseVisible"s, true) : true;
-   m_d.m_ringVisible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "RingVisible"s, true) : true;
-   m_d.m_skirtVisible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "SkirtVisible"s, true) : true;
-   m_d.m_hitEvent = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "HasHitEvent"s, true) : true;
-   m_d.m_collidable = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Collidable"s, true) : true;
-
+   LinkProp(m_d.m_radius, Radius);
+   LinkProp(m_d.m_heightScale, HeightScale);
+   LinkProp(m_d.m_ringSpeed, RingSpeed);
+   LinkProp(m_d.m_orientation, Orientation);
+   LinkProp(m_d.m_threshold, Threshold);
+   LinkProp(m_d.m_capVisible, CapVisible);
+   LinkProp(m_d.m_baseVisible, BaseVisible);
+   LinkProp(m_d.m_hitEvent, HasHitEvent);
+   LinkProp(m_d.m_collidable, Collidable);
+   LinkProp(m_d.m_szSurface, Surface);
    LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
-#undef LinkProp
-#undef regKey
-
    m_ringAnimate = false;
    m_d.m_ringDropOffset = 0.0f;
+   SetDefaultPhysics(fromMouseClick);
 }
+
+void Bumper::SetDefaultPhysics(const bool fromMouseClick)
+{
+   LinkProp(m_d.m_force, Force);
+   LinkProp(m_d.m_scatter, Scatter);
+}
+#undef LinkProp
 
 void Bumper::WriteRegDefaults()
 {
 #define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsBumper_##prop(field, false)
-#define regKey Settings::DefaultPropsBumper
-   g_pvp->m_settings.SaveValue(regKey, "Radius"s, m_d.m_radius);
-   g_pvp->m_settings.SaveValue(regKey, "Force"s, m_d.m_force);
-   g_pvp->m_settings.SaveValue(regKey, "Scatter"s, m_d.m_scatter);
-   g_pvp->m_settings.SaveValue(regKey, "HeightScale"s, m_d.m_heightScale);
-   g_pvp->m_settings.SaveValue(regKey, "RingSpeed"s, m_d.m_ringSpeed);
-   g_pvp->m_settings.SaveValue(regKey, "Orientation"s, m_d.m_orientation);
-   g_pvp->m_settings.SaveValue(regKey, "Threshold"s, m_d.m_threshold);
-   g_pvp->m_settings.SaveValue(regKey, "CapVisible"s, m_d.m_capVisible);
-   g_pvp->m_settings.SaveValue(regKey, "BaseVisible"s, m_d.m_baseVisible);
-   g_pvp->m_settings.SaveValue(regKey, "HasHitEvent"s, m_d.m_hitEvent);
-   g_pvp->m_settings.SaveValue(regKey, "Collidable"s, m_d.m_collidable);
-   g_pvp->m_settings.SaveValue(regKey, "Surface"s, m_d.m_szSurface);
-#undef regKey
-
+   LinkProp(m_d.m_radius, Radius);
+   LinkProp(m_d.m_heightScale, HeightScale);
+   LinkProp(m_d.m_ringSpeed, RingSpeed);
+   LinkProp(m_d.m_orientation, Orientation);
+   LinkProp(m_d.m_threshold, Threshold);
+   LinkProp(m_d.m_capVisible, CapVisible);
+   LinkProp(m_d.m_baseVisible, BaseVisible);
+   LinkProp(m_d.m_hitEvent, HasHitEvent);
+   LinkProp(m_d.m_collidable, Collidable);
+   LinkProp(m_d.m_szSurface, Surface);
+   LinkProp(m_d.m_force, Force);
+   LinkProp(m_d.m_scatter, Scatter);
    LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
@@ -1132,10 +1122,4 @@ STDMETHODIMP Bumper::get_RotY(float *pVal)
 {
    *pVal = m_roty;
    return S_OK;
-}
-
-void Bumper::SetDefaultPhysics(const bool fromMouseClick)
-{
-   m_d.m_force   = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultPropsBumper, "Force"s, 15.f) : 15.f;
-   m_d.m_scatter = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultPropsBumper, "Scatter"s, 0.f) : 0.f;
 }

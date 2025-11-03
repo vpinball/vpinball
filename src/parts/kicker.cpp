@@ -47,7 +47,7 @@ HRESULT Kicker::Init(PinTable *const ptable, const float x, const float y, const
 
 void Kicker::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsKicker_##prop() : Settings::GetDefaultPropsKicker_##prop##_Property()->m_def
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsKicker_##prop() : Settings::GetDefaultPropsKicker_##prop##_Default()
 #define regKey Settings::DefaultPropsKicker
 
    m_d.m_radius = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Radius"s, 25.f) : 25.f;

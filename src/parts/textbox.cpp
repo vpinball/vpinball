@@ -49,7 +49,7 @@ HRESULT Textbox::Init(PinTable *const ptable, const float x, const float y, cons
 
 void Textbox::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsTextbox_##prop() : Settings::GetDefaultPropsTextbox_##prop##_Property()->m_def
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsTextbox_##prop() : Settings::GetDefaultPropsTextbox_##prop##_Default()
 #define regKey Settings::DefaultPropsTextBox
 
    m_d.m_visible = true;
@@ -65,8 +65,6 @@ void Textbox::SetDefaults(const bool fromMouseClick)
       m_d.m_backcolor = RGB(0, 0, 0);
       m_d.m_fontcolor = RGB(255, 255, 255);
       m_d.m_intensity_scale = 1.0f;
-      m_d.m_tdr.m_TimerEnabled = false;
-      m_d.m_tdr.m_TimerInterval = 100;
       m_d.m_talign = TextAlignRight;
       m_d.m_transparent = false;
       m_d.m_isDMD = false;

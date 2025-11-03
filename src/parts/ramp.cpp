@@ -72,7 +72,7 @@ HRESULT Ramp::Init(PinTable *const ptable, const float x, const float y, const b
 
 void Ramp::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsRamp_##prop() : Settings::GetDefaultPropsRamp_##prop##_Property()->m_def
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsRamp_##prop() : Settings::GetDefaultPropsRamp_##prop##_Default()
 #define strKeyName Settings::DefaultPropsRamp
 
    m_d.m_heightbottom = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "HeightBottom"s, 0.0f) : 0.0f;

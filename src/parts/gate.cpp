@@ -86,7 +86,7 @@ HRESULT Gate::Init(PinTable *const ptable, const float x, const float y, const b
 
 void Gate::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsGate_##prop() : Settings::GetDefaultPropsGate_##prop##_Property()->m_def
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsGate_##prop() : Settings::GetDefaultPropsGate_##prop##_Default()
 
 #define regKey Settings::DefaultPropsGate
    m_d.m_length = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Length"s, 100.f) : 100.f;
