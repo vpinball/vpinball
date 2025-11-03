@@ -1855,7 +1855,6 @@ void Player::PrepareFrame(const std::function<void()>& sync)
 
    // Prepare main 3D scene frame, then apply screenspace transforms, including anciliary window rendering (MSAA, AO, AA, stereo, ball motion blur, tonemapping, dithering, bloom,...)
    m_renderer->RenderFrame();
-   m_renderer->RenderPostProcess();
 
    m_physics->ResetPerFrameStats();
 
@@ -2038,13 +2037,16 @@ void Player::OnAuxRendererChanged(const unsigned int msgId, void* userData, void
    }
 }
 
+VPX::RenderOutput& Player::GetOutput(VPXWindowId window)
+{
+   return window == VPXWindowId::VPXWINDOW_Backglass ? m_backglassOutput :
+          window == VPXWindowId::VPXWINDOW_ScoreView ? m_scoreViewOutput :
+           /*window == VPXWindowId::VPXWINDOW_Topper ? */ m_topperOutput;
+}
+
 RenderTarget *Player::SetupAnciliaryWindow(VPXWindowId window, RenderTarget *embedRT, int &outputX, int &outputY, int &outputW, int &outputH, bool &enableHDR)
 {
-   RenderDevice *const rd = m_renderer->m_renderDevice;
-
-   const VPX::RenderOutput &output = window == VPXWindowId::VPXWINDOW_Backglass ? m_backglassOutput :
-                                     window == VPXWindowId::VPXWINDOW_ScoreView ? m_scoreViewOutput :
-                                   /*window == VPXWindowId::VPXWINDOW_Topper ? */ m_topperOutput;
+   const VPX::RenderOutput &output = GetOutput(window);
    const string renderPassName = window == VPXWindowId::VPXWINDOW_Backglass ? "Backglass Render"s :
                                  window == VPXWindowId::VPXWINDOW_ScoreView ? "ScoreView Render"s :
                                /*window == VPXWindowId::VPXWINDOW_Topper ? */ "Topper Render"s;
@@ -2094,6 +2096,8 @@ RenderTarget *Player::SetupAnciliaryWindow(VPXWindowId window, RenderTarget *emb
       return nullptr;
    }
       
+   RenderDevice *const rd = m_renderer->m_renderDevice;
+
    Matrix3D matWorldViewProj[2];
    matWorldViewProj[0] = Matrix3D::MatrixIdentity();
    matWorldViewProj[0]._11 = 2.f * static_cast<float>(outputW) / static_cast<float>(outputRT->GetWidth());
@@ -2150,18 +2154,18 @@ RenderTarget *Player::SetupAnciliaryWindow(VPXWindowId window, RenderTarget *emb
    return rd->GetCurrentRenderTarget();
 }
 
-RenderTarget *Player::ClearAnciliaryWindow(VPXWindowId window, RenderTarget *embedRT)
+void Player::ClearEmbeddedAnciliaryWindow(VPXWindowId window, RenderTarget *embedRT)
 {
-   const VPX::RenderOutput &output = window == VPXWindowId::VPXWINDOW_Backglass ? m_backglassOutput :
-                                     window == VPXWindowId::VPXWINDOW_ScoreView ? m_scoreViewOutput :
-                                   /*window == VPXWindowId::VPXWINDOW_Topper ? */ m_topperOutput;
+   const VPX::RenderOutput &output = GetOutput(window);
    if (output.GetMode() != VPX::RenderOutput::OM_EMBEDDED)
-      return nullptr;
+      return;
    
-   RenderDevice *const rd = m_renderer->m_renderDevice;
    bool enableHDR;
    int m_outputX, m_outputY, m_outputW, m_outputH;
    RenderTarget *outputRT = SetupAnciliaryWindow(window, embedRT, m_outputX, m_outputY, m_outputW, m_outputH, enableHDR);
+   if (outputRT == nullptr)
+      return;
+   
    Vertex3D_NoTex2 vertices[4] =
    {
       { 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f }, //
@@ -2176,25 +2180,28 @@ RenderTarget *Player::ClearAnciliaryWindow(VPXWindowId window, RenderTarget *emb
       vertices[i].x =        sx * (vertices[i].x * static_cast<float>(m_outputW) + m_outputX)*2.0f - 1.0f;
       vertices[i].y = 1.0f - sy * (vertices[i].y * m_outputH + m_outputY) * 2.0f;
    }
+   RenderDevice *const rd = m_renderer->m_renderDevice;
+   rd->ResetRenderState();
+   rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+   rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE); // Also clear depth to avoid AO artefacts
    rd->m_DMDShader->SetVector(SHADER_vColor_Intensity, 0.f, 0.f, 0.f, 1.f);
    rd->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_noDMD_notex);
    rd->m_DMDShader->SetVector(SHADER_glassArea, 0.f, 0.f, 1.f, 1.f);
-   rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
    rd->DrawTexturedQuad(rd->m_DMDShader, vertices);
    rd->GetCurrentPass()->m_commands.back()->SetTransparent(true);
    rd->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
-   return rd->GetCurrentRenderTarget();
 }
 
-RenderTarget *Player::RenderAnciliaryWindow(VPXWindowId window, RenderTarget *embedRT)
+void Player::RenderAnciliaryWindow(VPXWindowId window, RenderTarget *embedRT)
 {
-   RenderDevice *const rd = m_renderer->m_renderDevice;
-   const VPX::RenderOutput &output = window == VPXWindowId::VPXWINDOW_Backglass ? m_backglassOutput :
-                                     window == VPXWindowId::VPXWINDOW_ScoreView ? m_scoreViewOutput :
-                                   /*window == VPXWindowId::VPXWINDOW_Topper ? */ m_topperOutput;
+   const VPX::RenderOutput &output = GetOutput(window);
    bool enableHDR;
    int m_outputX, m_outputY, m_outputW, m_outputH;
    RenderTarget *outputRT = SetupAnciliaryWindow(window, embedRT, m_outputX, m_outputY, m_outputW, m_outputH, enableHDR);
+   if (outputRT == nullptr)
+      return;
+
+   RenderDevice *const rd = m_renderer->m_renderDevice;
 
    struct PlayerRenderContext2D
    {
@@ -2420,8 +2427,6 @@ RenderTarget *Player::RenderAnciliaryWindow(VPXWindowId window, RenderTarget *em
       output.GetWindow()->Show();
       m_playfieldWnd->RaiseAndFocus(); // Keep focus on playfield when showing an anciliary window
    }
-
-   return rd->GetCurrentRenderTarget();
 }
 
 void Player::UpdateVolume()
