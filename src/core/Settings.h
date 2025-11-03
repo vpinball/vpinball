@@ -23,6 +23,7 @@ class Settings final
    // 3. Split store implementation from Settings class [to be done]
 private:
    static inline const VPX::Properties::PropertyRegistry::PropId m_propInvalid {};
+   static string GetBackwardCompatibleSection(const string &groupId);
 
 public:
    static VPX::Properties::PropertyRegistry &GetRegistry();
@@ -39,7 +40,7 @@ public:
 
 #define PropBool(groupId, propId, label, comment, defVal)                                                                                                                                    \
    static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId                                                                                                  \
-      = GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>(#groupId, #propId, label, comment, defVal));                                                               \
+      = GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, defVal));                                 \
    static inline const VPX::Properties::BoolPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetBoolProperty(m_prop##groupId##_##propId); }                          \
    static inline const bool Get##groupId##_##propId##_Default() { return GetRegistry().GetBoolProperty(m_prop##groupId##_##propId)->m_def; }                                                 \
    inline bool Get##groupId##_##propId() const { return m_store.GetInt(m_prop##groupId##_##propId); }                                                                                        \
@@ -48,7 +49,7 @@ public:
 
 #define PropInt(groupId, propId, label, comment, minVal, maxVal, defVal)                                                                                                                     \
    static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId                                                                                                  \
-      = GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>(#groupId, #propId, label, comment, minVal, maxVal, defVal));                                                \
+      = GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, minVal, maxVal, defVal));                  \
    static inline const VPX::Properties::IntPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetIntProperty(m_prop##groupId##_##propId); }                            \
    static inline const int Get##groupId##_##propId##_Default() { return GetRegistry().GetIntProperty(m_prop##groupId##_##propId)->m_def; }                                                   \
    inline int Get##groupId##_##propId() const { return m_store.GetInt(m_prop##groupId##_##propId); }                                                                                         \
@@ -57,8 +58,8 @@ public:
 #define PropIntUnbounded(groupId, propId, label, comment, defVal) PropInt(groupId, propId, label, comment, INT_MIN, INT_MAX, defVal)
 
 #define PropEnum(groupId, propId, label, comment, type, defVal, ...)                                                                                                                         \
-   static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId                                                                                                  \
-      = GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>(#groupId, #propId, label, comment, 0, defVal, vector<string> { __VA_ARGS__ }));                            \
+   static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId = GetRegistry().Register(                                                                        \
+      std::make_unique<VPX::Properties::EnumPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, 0, defVal, vector<string> { __VA_ARGS__ }));                       \
    static inline const VPX::Properties::EnumPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetEnumProperty(m_prop##groupId##_##propId); }                          \
    static inline const type Get##groupId##_##propId##_Default() { return (type)(GetRegistry().GetEnumProperty(m_prop##groupId##_##propId)->m_def); }                                         \
    inline type Get##groupId##_##propId() const { return (type)(m_store.GetInt(m_prop##groupId##_##propId)); }                                                                                \
@@ -67,7 +68,7 @@ public:
 
 #define PropFloatStepped(groupId, propId, label, comment, minVal, maxVal, step, defVal)                                                                                                      \
    static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId                                                                                                  \
-      = GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(#groupId, #propId, label, comment, minVal, maxVal, step, defVal));                                        \
+      = GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, minVal, maxVal, step, defVal));          \
    static inline const VPX::Properties::FloatPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetFloatProperty(m_prop##groupId##_##propId); }                        \
    static inline const float Get##groupId##_##propId##_Default() { return GetRegistry().GetFloatProperty(m_prop##groupId##_##propId)->m_def; }                                               \
    inline float Get##groupId##_##propId() const { return m_store.GetFloat(m_prop##groupId##_##propId); }                                                                                     \
@@ -78,7 +79,7 @@ public:
 
 #define PropString(groupId, propId, label, comment, defVal)                                                                                                                                  \
    static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId                                                                                                  \
-      = GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>(#groupId, #propId, label, comment, defVal));                                                             \
+      = GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, defVal));                               \
    static inline const VPX::Properties::StringPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetStringProperty(m_prop##groupId##_##propId); }                      \
    static inline const string &Get##groupId##_##propId##_Default() { return GetRegistry().GetStringProperty(m_prop##groupId##_##propId)->m_def; }                                            \
    inline const string &Get##groupId##_##propId() const { return m_store.GetString(m_prop##groupId##_##propId); }                                                                            \

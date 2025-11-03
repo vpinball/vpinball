@@ -13,6 +13,19 @@ VPX::Properties::PropertyRegistry &Settings::GetRegistry()
    return registry;
 }
 
+string Settings::GetBackwardCompatibleSection(const string &groupId)
+{
+   if (groupId.starts_with("Plugin"s))
+   {
+      return "Plugin."s + groupId.substr(6);
+   }
+   else if (groupId.starts_with("DefaultProps"s))
+   {
+      return "DefaultProps\\"s + groupId.substr(12);
+   }
+   return groupId;
+}
+
 static const string regKey[Settings::Plugin00] = { "Controller"s, "Editor"s, "Standalone"s, "Player"s, "Input"s, "DMD"s, "Alpha"s, 
       "Backglass"s, "ScoreView"s, "Topper"s, "PlayerVR"s, "RecentDir"s, "Version"s, "CVEdit"s, "TableOverride"s, "TableOption"s, "ControllerDevices"s,
       "DefaultProps\\Ball"s, "DefaultProps\\Bumper"s, "DefaultProps\\Decal"s, "DefaultProps\\EMReel"s, "DefaultProps\\Flasher"s, "DefaultProps\\Flipper"s,
