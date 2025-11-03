@@ -212,6 +212,7 @@ public:
 
 #pragma region Rendering
 public:
+   VPX::RenderOutput& GetOutput(VPXWindowId window);
    VPX::Window *m_playfieldWnd = nullptr;
    VPX::RenderOutput m_backglassOutput;
    VPX::RenderOutput m_scoreViewOutput;
@@ -221,8 +222,8 @@ public:
    bool m_headTracking = false;
    bool m_scaleFX_DMD = false;
 
-   RenderTarget *ClearAnciliaryWindow(VPXWindowId window, RenderTarget *embedRT);
-   RenderTarget *RenderAnciliaryWindow(VPXWindowId window, RenderTarget *embedRT);
+   void ClearEmbeddedAnciliaryWindow(VPXWindowId window, RenderTarget *embedRT);
+   void RenderAnciliaryWindow(VPXWindowId window, RenderTarget *embedRT);
 
 private:
    void PrepareFrame(const std::function<void()>& sync);

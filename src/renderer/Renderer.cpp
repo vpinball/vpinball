@@ -18,6 +18,15 @@
 #include "lib/src/VPinballLib.h"
 #endif
 
+// MSVC Concurrency Viewer support
+// This requires to add the MSVC Concurrency SDK to the project
+//#define MSVC_CONCURRENCY_VIEWER
+#ifdef MSVC_CONCURRENCY_VIEWER
+#include <cvmarkersobj.h>
+using namespace Concurrency::diagnostic;
+extern marker_series series;
+#endif
+
 #define MAX_BALL_SHADOW 8
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1113,120 +1122,6 @@ void Renderer::UpdateStereoShaderState()
    }
 }
 
-RenderTarget* Renderer::RenderFrame()
-{
-   // Keep previous render as a reflection probe for ball reflection and for hires motion blur
-   SwapBackBufferRenderTargets();
-
-   // Reinitialize parts that have been modified
-   SetupShaders();
-   for (auto renderable : m_renderableToInit)
-   {
-      renderable->RenderRelease();
-      renderable->RenderSetup(m_renderDevice);
-   }
-   m_renderableToInit.clear();
-
-   // Update backdrop visibility and visibility mask
-   // For the time being, the RenderFrame only support rendering one 3D view for main scene: dedicated 3D rendering for backglass, topper, apron are not yet implemented
-   m_noBackdrop = (g_pplayer->m_vrDevice != nullptr) || (m_table->m_BG_current_set == BG_FULLSCREEN);
-   if (g_pplayer->m_vrDevice)
-      m_visibilityMask = m_vrApplyColorKey ? PartGroupData::PlayerModeVisibilityMask::PMVM_MIXED_REALITY : PartGroupData::PlayerModeVisibilityMask::PMVM_VIRTUAL_REALITY;
-   else if (m_table->m_BG_current_set == BG_FULLSCREEN)
-      m_visibilityMask = PartGroupData::PlayerModeVisibilityMask::PMVM_CABINET;
-   else if (m_table->m_BG_current_set == BG_FSS)
-      m_visibilityMask = PartGroupData::PlayerModeVisibilityMask::PMVM_FSS;
-   else if (m_table->m_BG_current_set == BG_DESKTOP)
-      m_visibilityMask = PartGroupData::PlayerModeVisibilityMask::PMVM_DESKTOP;
-
-   // Setup ball rendering: collect all lights that can reflect on balls
-   m_ballTrailMeshBufferPos = 0;
-   m_ballReflectedLights.clear();
-   for (size_t i = 0; i < m_table->m_vedit.size(); i++)
-   {
-      IEditable* const item = m_table->m_vedit[i];
-      if (item && item->GetItemType() == eItemLight && static_cast<Light*>(item)->m_d.m_showReflectionOnBall && !item->m_backglass)
-         m_ballReflectedLights.push_back(static_cast<Light*>(item));
-   }
-   // We don't need to set the dependency on the previous frame render as this would be a cross frame dependency which does not have any meaning since dependencies are resolved per frame
-   // m_renderDevice->AddRenderTargetDependency(m_renderDevice->GetPreviousBackBufferTexture());
-   m_renderDevice->m_ballShader->SetTexture(SHADER_tex_ball_playfield, GetPreviousBackBufferTexture()->GetColorSampler());
-
-   // Update camera point of view
-   m_mvpSpaceReference = PartGroupData::SpaceReference::SR_PLAYFIELD;
-   #if defined(ENABLE_VR) || defined(ENABLE_XR)
-   if (m_stereo3D == STEREO_VR)
-   {
-      g_pplayer->m_vrDevice->UpdateVRPosition(m_mvpSpaceReference, GetMVP());
-      UpdateBasicShaderMatrix();
-      UpdateBallShaderMatrix();
-   }
-   else 
-   #endif
-   // Legacy headtracking (to be moved to a plugin, using plugin API to update camera)
-   if (g_pplayer->m_headTracking)
-   {
-      #ifndef __STANDALONE__
-      Matrix3D matView;
-      Matrix3D matProj[2];
-      BAMView::createProjectionAndViewMatrix(&matProj[0]._11, &matView._11);
-      m_mvp->SetView(matView);
-      for (unsigned int eye = 0; eye < m_mvp->m_nEyes; eye++)
-         m_mvp->SetProj(eye, matProj[eye]);
-      #endif
-   }
-   m_playfieldView = m_mvp->GetView();
-
-   // Start from the prerendered parts/background or a clear background for VR
-   if (m_stereo3D == STEREO_VR || g_pplayer->GetInfoMode() == IF_DYNAMIC_ONLY)
-   {
-      m_renderDevice->SetRenderTarget("Render Scene"s, GetMSAABackBufferTexture());
-      m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
-      #ifdef ENABLE_XR
-      if (g_pplayer->m_vrDevice && m_stereo3D == STEREO_VR)
-      {
-         MeshBuffer* mask = g_pplayer->m_vrDevice->GetVisibilityMask();
-         if (mask)
-         {
-            constexpr Vertex3Ds pos{0.f, 0.f, 200000.0f}; // Very high depth bias to ensure being rendered before other opaque parts (which are sorted front to back)
-            m_renderDevice->ResetRenderState();
-            m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-            m_renderDevice->SetRenderState(RenderState::COLORWRITEENABLE, RenderState::RS_FALSE);
-            m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
-            m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_TRUE);
-            m_renderDevice->SetRenderState(RenderState::ZFUNC, RenderState::Z_ALWAYS);
-            m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorldViewProj, g_pplayer->m_vrDevice->GetVisibilityMaskProjs(), 2);
-            m_renderDevice->m_basicShader->SetTechnique(SHADER_TECHNIQUE_vr_mask);
-            m_renderDevice->DrawMesh(m_renderDevice->m_basicShader, false, pos, 0, mask, RenderDevice::TRIANGLELIST, 0, mask->m_ib->m_count);
-            UpdateBasicShaderMatrix();
-         }
-      }
-      #endif
-   }
-   else
-   {
-      RenderStaticPrepass(); // Update statically prerendered parts if needed
-      m_renderDevice->SetRenderTarget("Render Scene"s, GetMSAABackBufferTexture());
-      m_renderDevice->AddRenderTargetDependency(m_staticPrepassRT);
-      m_renderDevice->BlitRenderTarget(m_staticPrepassRT, GetMSAABackBufferTexture());
-   }
-
-   if (g_pplayer->GetInfoMode() != IF_STATIC_ONLY)
-      RenderDynamics();
-
-   // Resolve MSAA buffer to a normal one (noop if not using MSAA), allowing sampling it for postprocessing
-   if (GetMSAABackBufferTexture() != GetBackBufferTexture())
-   {
-      RenderPass* const initial_rt = m_renderDevice->GetCurrentPass();
-      m_renderDevice->SetRenderTarget("Resolve MSAA"s, GetBackBufferTexture());
-      m_renderDevice->BlitRenderTarget(GetMSAABackBufferTexture(), GetBackBufferTexture(), true, true);
-      m_renderDevice->SetRenderTarget(initial_rt->m_name, initial_rt->m_rt);
-      initial_rt->m_name += '-';
-   }
-
-   return GetBackBufferTexture();
-}
-
 static Texture* GetSegSDF(std::unique_ptr<Texture>& tex, const string& path)
 {
    if (tex == nullptr)
@@ -1510,15 +1405,6 @@ void Renderer::DrawSprite(const float posx, const float posy, const float width,
    m_renderDevice->GetCurrentPass()->m_commands.back()->SetTransparent(true);
    m_renderDevice->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
 }
-
-// MSVC Concurrency Viewer support
-// This requires to add the MSVC Concurrency SDK to the project
-//#define MSVC_CONCURRENCY_VIEWER
-#ifdef MSVC_CONCURRENCY_VIEWER
-#include <cvmarkersobj.h>
-using namespace Concurrency::diagnostic;
-extern marker_series series;
-#endif
 
 void Renderer::RenderItem(IEditable* renderable, bool isNoBackdrop)
 {
@@ -2683,8 +2569,119 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
    return renderedRT;
 }
 
-void Renderer::RenderPostProcess()
+#pragma endregion
+
+void Renderer::RenderFrame()
 {
+   // Keep previous render as a reflection probe for ball reflection and for hires motion blur
+   SwapBackBufferRenderTargets();
+
+   // Reinitialize parts that have been modified
+   SetupShaders();
+   for (auto renderable : m_renderableToInit)
+   {
+      renderable->RenderRelease();
+      renderable->RenderSetup(m_renderDevice);
+   }
+   m_renderableToInit.clear();
+
+   // Update backdrop visibility and visibility mask
+   // For the time being, the RenderFrame only support rendering one 3D view for main scene: dedicated 3D rendering for backglass, topper, apron are not yet implemented
+   m_noBackdrop = (g_pplayer->m_vrDevice != nullptr) || (m_table->m_BG_current_set == BG_FULLSCREEN);
+   if (g_pplayer->m_vrDevice)
+      m_visibilityMask = m_vrApplyColorKey ? PartGroupData::PlayerModeVisibilityMask::PMVM_MIXED_REALITY : PartGroupData::PlayerModeVisibilityMask::PMVM_VIRTUAL_REALITY;
+   else if (m_table->m_BG_current_set == BG_FULLSCREEN)
+      m_visibilityMask = PartGroupData::PlayerModeVisibilityMask::PMVM_CABINET;
+   else if (m_table->m_BG_current_set == BG_FSS)
+      m_visibilityMask = PartGroupData::PlayerModeVisibilityMask::PMVM_FSS;
+   else if (m_table->m_BG_current_set == BG_DESKTOP)
+      m_visibilityMask = PartGroupData::PlayerModeVisibilityMask::PMVM_DESKTOP;
+
+   // Setup ball rendering: collect all lights that can reflect on balls
+   m_ballTrailMeshBufferPos = 0;
+   m_ballReflectedLights.clear();
+   for (size_t i = 0; i < m_table->m_vedit.size(); i++)
+   {
+      IEditable* const item = m_table->m_vedit[i];
+      if (item && item->GetItemType() == eItemLight && static_cast<Light*>(item)->m_d.m_showReflectionOnBall && !static_cast<Light*>(item)->m_backglass)
+         m_ballReflectedLights.push_back(static_cast<Light*>(item));
+   }
+   // We don't need to set the dependency on the previous frame render as this would be a cross frame dependency which does not have any meaning since dependencies are resolved per frame
+   // m_renderDevice->AddRenderTargetDependency(m_renderDevice->GetPreviousBackBufferTexture());
+   m_renderDevice->m_ballShader->SetTexture(SHADER_tex_ball_playfield, GetPreviousBackBufferTexture()->GetColorSampler());
+
+   // Update camera point of view
+   m_mvpSpaceReference = PartGroupData::SpaceReference::SR_PLAYFIELD;
+   #if defined(ENABLE_VR) || defined(ENABLE_XR)
+   if (m_stereo3D == STEREO_VR)
+   {
+      g_pplayer->m_vrDevice->UpdateVRPosition(m_mvpSpaceReference, GetMVP());
+      UpdateBasicShaderMatrix();
+      UpdateBallShaderMatrix();
+   }
+   else 
+   #endif
+   // Legacy headtracking (to be moved to a plugin, using plugin API to update camera)
+   if (g_pplayer->m_headTracking)
+   {
+      #ifndef __STANDALONE__
+      Matrix3D matView;
+      Matrix3D matProj[2];
+      BAMView::createProjectionAndViewMatrix(&matProj[0]._11, &matView._11);
+      m_mvp->SetView(matView);
+      for (unsigned int eye = 0; eye < m_mvp->m_nEyes; eye++)
+         m_mvp->SetProj(eye, matProj[eye]);
+      #endif
+   }
+   m_playfieldView = m_mvp->GetView();
+
+   // Start from the prerendered parts/background or a clear background for VR
+   if (m_stereo3D == STEREO_VR || g_pplayer->GetInfoMode() == IF_DYNAMIC_ONLY)
+   {
+      m_renderDevice->SetRenderTarget("Render Scene"s, GetMSAABackBufferTexture());
+      m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
+      #ifdef ENABLE_XR
+      if (g_pplayer->m_vrDevice && m_stereo3D == STEREO_VR)
+      {
+         MeshBuffer* mask = g_pplayer->m_vrDevice->GetVisibilityMask();
+         if (mask)
+         {
+            Vertex3Ds pos(0.f, 0.f, 200000.0f); // Very high depth bias to ensure being rendered before other opaque parts (which are sorted front to back)
+            m_renderDevice->ResetRenderState();
+            m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+            m_renderDevice->SetRenderState(RenderState::COLORWRITEENABLE, RenderState::RS_FALSE);
+            m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
+            m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_TRUE);
+            m_renderDevice->SetRenderState(RenderState::ZFUNC, RenderState::Z_ALWAYS);
+            m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorldViewProj, g_pplayer->m_vrDevice->GetVisibilityMaskProjs(), 2);
+            m_renderDevice->m_basicShader->SetTechnique(SHADER_TECHNIQUE_vr_mask);
+            m_renderDevice->DrawMesh(m_renderDevice->m_basicShader, false, pos, 0, mask, RenderDevice::TRIANGLELIST, 0, mask->m_ib->m_count);
+            UpdateBasicShaderMatrix();
+         }
+      }
+      #endif
+   }
+   else
+   {
+      RenderStaticPrepass(); // Update statically prerendered parts if needed
+      m_renderDevice->SetRenderTarget("Render Scene"s, GetMSAABackBufferTexture());
+      m_renderDevice->AddRenderTargetDependency(m_staticPrepassRT);
+      m_renderDevice->BlitRenderTarget(m_staticPrepassRT, GetMSAABackBufferTexture());
+   }
+
+   if (g_pplayer->GetInfoMode() != IF_STATIC_ONLY)
+      RenderDynamics();
+
+   // Resolve MSAA buffer to a normal one (noop if not using MSAA), allowing sampling it for postprocessing
+   if (GetMSAABackBufferTexture() != GetBackBufferTexture())
+   {
+      RenderPass* const initial_rt = m_renderDevice->GetCurrentPass();
+      m_renderDevice->SetRenderTarget("Resolve MSAA"s, GetBackBufferTexture());
+      m_renderDevice->BlitRenderTarget(GetMSAABackBufferTexture(), GetBackBufferTexture(), true, true);
+      m_renderDevice->SetRenderTarget(initial_rt->m_name, initial_rt->m_rt);
+      initial_rt->m_name += '-';
+   }
+
    const bool hasAntialiasPass = m_FXAA != Disabled;
    const bool hasSharpenPass = m_sharpen != 0;
    const bool hasUpscalerPass = m_renderWidth < GetBackBufferTexture()->GetWidth();
@@ -2707,10 +2704,10 @@ void Renderer::RenderPostProcess()
    // Add screen space reflections
    renderedRT = ApplyAdditiveScreenSpaceReflection(renderedRT);
 
-   // Clear anciliary windows (eventually embedded in the main window, so must be done before updarting bloom...)
-   g_pplayer->ClearAnciliaryWindow(VPXWindowId::VPXWINDOW_Backglass, renderedRT);
-   g_pplayer->ClearAnciliaryWindow(VPXWindowId::VPXWINDOW_ScoreView, renderedRT);
-   g_pplayer->ClearAnciliaryWindow(VPXWindowId::VPXWINDOW_Topper, renderedRT);
+   // Clear embedded anciliary windows before updarting bloom & AO
+   g_pplayer->ClearEmbeddedAnciliaryWindow(VPXWindowId::VPXWINDOW_Backglass, renderedRT);
+   g_pplayer->ClearEmbeddedAnciliaryWindow(VPXWindowId::VPXWINDOW_ScoreView, renderedRT);
+   g_pplayer->ClearEmbeddedAnciliaryWindow(VPXWindowId::VPXWINDOW_Topper, renderedRT);
 
    // Compute AO contribution (to be applied later, with tonemapping)
    UpdateAmbientOcclusion(renderedRT);
@@ -2766,5 +2763,3 @@ void Renderer::RenderPostProcess()
    if (g_pplayer->GetProfilingMode() == PF_ENABLED)
       m_gpu_profiler.Timestamp(GTS_PostProcess);
 }
-
-#pragma endregion

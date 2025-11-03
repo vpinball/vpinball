@@ -38,8 +38,7 @@ public:
    bool IsUsingStaticPrepass() const { return (m_disableStaticPrepass <= 0) && (m_stereo3D != STEREO_VR); }
    unsigned int GetNPrerenderTris() const { return m_statsDrawnStaticTriangles; }
 
-   RenderTarget* RenderFrame();
-   void RenderPostProcess();
+   void RenderFrame();
 
    enum ColorSpace
    {
