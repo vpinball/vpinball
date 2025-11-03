@@ -100,58 +100,47 @@ HRESULT Spinner::Init(PinTable *const ptable, const float x, const float y, cons
 void Spinner::WriteRegDefaults()
 {
 #define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsSpinner_##prop(field, false)
-#define regKey Settings::DefaultPropsSpinner
-
-   g_pvp->m_settings.SaveValue(regKey, "Length"s, m_d.m_length);
-   g_pvp->m_settings.SaveValue(regKey, "Rotation"s, m_d.m_rotation);
-   g_pvp->m_settings.SaveValue(regKey, "ShowBracket"s, m_d.m_showBracket);
-   g_pvp->m_settings.SaveValue(regKey, "Height"s, m_d.m_height);
-   g_pvp->m_settings.SaveValue(regKey, "AngleMax"s, m_d.m_angleMax);
-   g_pvp->m_settings.SaveValue(regKey, "AngleMin"s, m_d.m_angleMin);
-   g_pvp->m_settings.SaveValue(regKey, "Elasticity"s, m_d.m_elasticity);
-   g_pvp->m_settings.SaveValue(regKey, "AntiFriction"s, m_d.m_damping);
-   g_pvp->m_settings.SaveValue(regKey, "Scatter"s, m_d.m_scatter);
-   g_pvp->m_settings.SaveValue(regKey, "Visible"s, m_d.m_visible);
-   g_pvp->m_settings.SaveValue(regKey, "Image"s, m_d.m_szImage);
-   g_pvp->m_settings.SaveValue(regKey, "Surface"s, m_d.m_szSurface);
-
-#undef regKey
+   LinkProp(m_d.m_length, Length);
+   LinkProp(m_d.m_rotation, Rotation);
+   LinkProp(m_d.m_showBracket, ShowBracket);
+   LinkProp(m_d.m_height, Height);
+   LinkProp(m_d.m_angleMax, AngleMax);
+   LinkProp(m_d.m_angleMin, AngleMin);
+   LinkProp(m_d.m_elasticity, Elasticity);
+   LinkProp(m_d.m_damping, AntiFriction);
+   LinkProp(m_d.m_visible, Visible);
+   LinkProp(m_d.m_szImage, Image);
+   LinkProp(m_d.m_szSurface, Surface);
    LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
 #undef LinkProp
 }
 
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsSpinner_##prop() : Settings::GetDefaultPropsSpinner_##prop##_Default()
 void Spinner::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsSpinner_##prop() : Settings::GetDefaultPropsSpinner_##prop##_Property()->m_def
-#define regKey Settings::DefaultPropsSpinner
-
-   m_d.m_length = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Length"s, 80.f) : 80.f;
-   m_d.m_rotation = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Rotation"s, 0.f) : 0.f;
-   m_d.m_showBracket = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ShowBracket"s, true) : true;
-   m_d.m_height = (float)(fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Height"s, 60000) : 60000) / 1000.0f;
-
-   SetDefaultPhysics(fromMouseClick);
-
-   m_d.m_angleMax = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "AngleMax"s, 0.f) : 0.f;
-   m_d.m_angleMin = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "AngleMin"s, 0.f) : 0.f;
-   m_d.m_visible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Visible"s, true) : true;
-
-   bool hr = g_pvp->m_settings.LoadValue(regKey, "Image"s, m_d.m_szImage);
-   if (!hr || !fromMouseClick)
-      m_d.m_szImage.clear();
-
-   hr = g_pvp->m_settings.LoadValue(regKey, "Surface"s, m_d.m_szSurface);
-   if (!hr || !fromMouseClick)
-      m_d.m_szSurface.clear();
-
-#undef regKey
+   LinkProp(m_d.m_length, Length);
+   LinkProp(m_d.m_rotation, Rotation);
+   LinkProp(m_d.m_showBracket, ShowBracket);
+   LinkProp(m_d.m_height, Height);
+   LinkProp(m_d.m_angleMax, AngleMax);
+   LinkProp(m_d.m_angleMin, AngleMin);
+   LinkProp(m_d.m_visible, Visible);
+   LinkProp(m_d.m_szImage, Image);
+   LinkProp(m_d.m_szSurface, Surface);
    LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
-#undef LinkProp
+   SetDefaultPhysics(fromMouseClick);
 }
+
+void Spinner::SetDefaultPhysics(const bool fromMouseClick)
+{
+   LinkProp(m_d.m_elasticity, Elasticity);
+   LinkProp(m_d.m_damping, AntiFriction);
+}
+#undef LinkProp
 
 void Spinner::UIRenderPass1(Sur * const psur)
 {
@@ -468,12 +457,6 @@ Vertex2D Spinner::GetCenter() const
 void Spinner::PutCenter(const Vertex2D& pv)
 {
    m_d.m_vCenter = pv;
-}
-
-void Spinner::SetDefaultPhysics(const bool fromMouseClick)
-{
-   m_d.m_elasticity = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultPropsSpinner, "Elasticity"s, 0.3f) : 0.3f;
-   m_d.m_damping = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultPropsSpinner, "AntiFriction"s, 0.9879f) : 0.9879f;
 }
 
 HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)

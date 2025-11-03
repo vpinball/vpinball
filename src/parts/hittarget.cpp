@@ -132,7 +132,7 @@ HRESULT HitTarget::Init(PinTable *const ptable, const float x, const float y, co
 
 void HitTarget::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsHitTarget_##prop() : Settings::GetDefaultPropsHitTarget_##prop##_Property()->m_def
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsHitTarget_##prop() : Settings::GetDefaultPropsHitTarget_##prop##_Default()
 #define strKeyName Settings::DefaultPropsHitTarget
 
    m_d.m_legacy = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "LegacyMode"s, false) : false;

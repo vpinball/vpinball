@@ -35,7 +35,7 @@ HRESULT DispReel::Init(PinTable *const ptable, const float x, const float y, con
 // or there is a backwards compatibility issue (e.g. old version of object doesn't contain all the needed fields)
 void DispReel::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsDispReel_##prop() : Settings::GetDefaultPropsDispReel_##prop##_Property()->m_def
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsDispReel_##prop() : Settings::GetDefaultPropsDispReel_##prop##_Default()
 #define regKey Settings::DefaultPropsEMReel
    // set all the Data defaults
    bool hr;

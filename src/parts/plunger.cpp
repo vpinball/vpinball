@@ -30,7 +30,7 @@ HRESULT Plunger::Init(PinTable *const ptable, const float x, const float y, cons
 
 void Plunger::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsPlunger_##prop() : Settings::GetDefaultPropsPlunger_##prop##_Property()->m_def
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsPlunger_##prop() : Settings::GetDefaultPropsPlunger_##prop##_Default()
 #define regKey Settings::DefaultPropsPlunger
 
    SetDefaultPhysics(fromMouseClick);

@@ -74,7 +74,7 @@ void Ball::PutCenter(const Vertex2D& pv)
 
 void Ball::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsBall_##prop() : Settings::GetDefaultPropsBall_##prop##_Property()->m_def
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsBall_##prop() : Settings::GetDefaultPropsBall_##prop##_Default()
    LinkProp(m_hitBall.m_d.m_mass, Mass);
    LinkProp(m_hitBall.m_d.m_radius, Radius);
    LinkProp(m_d.m_forceReflection, ForceReflection);

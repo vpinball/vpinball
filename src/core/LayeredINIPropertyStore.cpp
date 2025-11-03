@@ -212,12 +212,18 @@ void LayeredINIPropertyStore::GenerateTemplate(const string& path) const
             switch (prop->m_type)
             {
             case PropertyDef::Type::Float:
-               file << " [Default: " << f2sz(dynamic_cast<const FloatPropertyDef*>(prop)->m_def, false) << " in " << f2sz(dynamic_cast<const FloatPropertyDef*>(prop)->m_min, false) << " .. "
-                    << f2sz(dynamic_cast<const FloatPropertyDef*>(prop)->m_max, false) << ']';
+               file << " [Default: " << f2sz(dynamic_cast<const FloatPropertyDef*>(prop)->m_def, false);
+               if (dynamic_cast<const FloatPropertyDef*>(prop)->m_min != FLT_MIN && dynamic_cast<const FloatPropertyDef*>(prop)->m_max != FLT_MAX)
+                  file << " in " << f2sz(dynamic_cast<const FloatPropertyDef*>(prop)->m_min, false) << " .. " << f2sz(dynamic_cast<const FloatPropertyDef*>(prop)->m_max, false);
+               if (dynamic_cast<const FloatPropertyDef*>(prop)->m_step != 0.f)
+                  file << " by " << f2sz(dynamic_cast<const FloatPropertyDef*>(prop)->m_step, false) << " steps";
+               file << ']';
                break;
             case PropertyDef::Type::Int:
-               file << " [Default: " << std::to_string(dynamic_cast<const IntPropertyDef*>(prop)->m_def) << " in " << std::to_string(dynamic_cast<const IntPropertyDef*>(prop)->m_min)
-                    << " .. " << std::to_string(dynamic_cast<const IntPropertyDef*>(prop)->m_max) << ']';
+               file << " [Default: " << std::to_string(dynamic_cast<const IntPropertyDef*>(prop)->m_def);
+               if (dynamic_cast<const IntPropertyDef*>(prop)->m_min != INT_MIN && dynamic_cast<const IntPropertyDef*>(prop)->m_max != INT_MAX)
+                  file << " in " << std::to_string(dynamic_cast<const IntPropertyDef*>(prop)->m_min) << " .. " << std::to_string(dynamic_cast<const IntPropertyDef*>(prop)->m_max);
+               file << ']';
                break;
             case PropertyDef::Type::Bool: file << " [Default: " << (dynamic_cast<const BoolPropertyDef*>(prop)->m_def ? '1' : '0') << ']'; break;
             case PropertyDef::Type::Enum:
