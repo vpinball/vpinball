@@ -344,7 +344,7 @@ Notes:
 
 - The command-line option `-PrefPath <path>` can be used to override `$HOME/.vpinball`
 - <sup>*</sup>The `VPRegPath` entry in the `[Standalone]` section of `VPinballX.ini` can be used to override the VPinball table settings. If set to `./`, the current table path will be used.
-- <sup>**</sup>The `PinMAMEPath` entry in the `[Plugin.PinMAME]` section of `VPinballX.ini` will only be used if no `pinmame` folder exists in the current table directory. If not set `$HOME/.pinmame` will be used.
+- <sup>**</sup>The `PinMAMEPath` entry in the `[PluginPinMAME]` section of `VPinballX.ini` will only be used if no `pinmame` folder exists in the current table directory. If not set `$HOME/.pinmame` will be used.
 
 ## Debugging
 
