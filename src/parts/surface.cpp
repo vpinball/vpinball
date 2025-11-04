@@ -30,14 +30,18 @@ Surface *Surface::CopyForPlay(PinTable *live_table) const
    return dst;
 }
 
+#define LinkProp(field, prop)                                                                                                                                                                \
+   field = m_isWall ? (fromMouseClick ? g_pvp->m_settings.GetDefaultPropsWall_##prop() : Settings::GetDefaultPropsWall_##prop##_Default()) \
+                    : (fromMouseClick ? g_pvp->m_settings.GetDefaultPropsTarget_##prop() : Settings::GetDefaultPropsTarget_##prop##_Default())
 HRESULT Surface::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    m_ptable = ptable;
    m_isWall = true;
    SetDefaults(fromMouseClick);
 
-   const float width  = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultPropsWall, "Width"s,  50.f) : 50.f;
-   const float length = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultPropsWall, "Length"s, 50.f) : 50.f;
+   float width, length;
+   LinkProp(width, Width);
+   LinkProp(length, Length);
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -75,13 +79,12 @@ HRESULT Surface::Init(PinTable *const ptable, const float x, const float y, cons
 #if 0
 HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float y, const bool fromMouseClick)
 {
-#define strKeyName Settings::DefaultPropsTarget
-
    m_ptable = ptable;
    m_isWall = false;
 
-   const float width = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Width"s, 30.f) : 30.f;
-   const float length = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Length"s, 6.f) : 6.f;
+   float width, length;
+   LinkProp(width, Width);
+   LinkProp(length, Length);
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -118,46 +121,33 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 
    //SetDefaults();
    //Set seperate defaults for targets (SetDefaults sets the Wall defaults)
-
-   m_d.m_tdr.m_TimerEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "TimerEnabled"s, false) : false;
-   m_d.m_tdr.m_TimerInterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "TimerInterval"s, 100) : 100;
-   m_d.m_hitEvent = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "HitEvent"s, true) : true;
-   m_d.m_threshold = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "HitThreshold"s, 2.0f) : 2.0f;
-   m_d.m_slingshot_threshold = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "SlingshotThreshold"s, 0.0f) : 0.0f;
+   LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
+   LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+   LinkProp(m_d.m_hitEvent, HitEvent);
+   LinkProp(m_d.m_threshold, HitThreshold);
+   LinkProp(m_d.m_slingshot_threshold, SlingshotThreshold);
    m_d.m_inner = true; //!! Deprecated, do not use anymore
-
-   bool hr = g_pvp->m_settings.LoadValue(strKeyName, "TopImage"s, m_d.m_szImage);
-   if (!hr || !fromMouseClick)
-      m_d.m_szImage.clear();
-
-   hr = g_pvp->m_settings.LoadValue(strKeyName, "SideImage"s, m_d.m_szSideImage);
-   if (!hr || !fromMouseClick)
-      m_d.m_szSideImage.clear();
-
-   m_d.m_droppable = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Droppable"s, false) : false;
-   m_d.m_flipbook = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Flipbook"s, false) : false;
-   m_d.m_isBottomSolid = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "IsBottomSolid"s, true) : false;
-
-   m_d.m_heightbottom = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "HeightBottom"s, 0.0f) : 0.0f;
-   m_d.m_heighttop = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "HeightTop"s, 50.0f) : 50.0f;
-
-   m_d.m_displayTexture = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "DisplayTexture"s, false) : false;
-   m_d.m_slingshotforce = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "SlingshotForce"s, 80.0f) : 80.0f;
-   m_d.m_slingshotAnimation = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "SlingshotAnimation"s, true) : true;
-
-   m_d.m_elasticity = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Elasticity"s, 0.3f) : 0.3f;
-   m_d.m_friction = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Friction"s, 0.3f) : 0.3f;
-   m_d.m_scatter = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Scatter"s, 0.f) : 0.f;
-
-   m_d.m_topBottomVisible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Visible"s, true) : true;
-   m_d.m_sideVisible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "SideVisible"s, true) : true;
-   m_d.m_collidable = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Collidable"s, true) : true;
-
+   LinkProp(m_d.m_szImage, TopImage);
+   LinkProp(m_d.m_szSideImage, SideImage);
+   LinkProp(m_d.m_droppable, Droppable);
+   LinkProp(m_d.m_flipbook, Flipbook);
+   LinkProp(m_d.m_isBottomSolid, IsBottomSolid);
+   LinkProp(m_d.m_heightbottom, HeightBottom);
+   LinkProp(m_d.m_heighttop, HeightTop);
+   LinkProp(m_d.m_displayTexture, DisplayTexture);
+   LinkProp(m_d.m_slingshotforce, SlingshotForce);
+   LinkProp(m_d.m_slingshotAnimation, SlingshotAnimation);
+   LinkProp(m_d.m_elasticity, Elasticity);
+   LinkProp(m_d.m_elasticityFalloff, ElasticityFallOff);
+   LinkProp(m_d.m_friction, Friction);
+   LinkProp(m_d.m_scatter, Scatter);
+   LinkProp(m_d.m_topBottomVisible, Visible);
+   LinkProp(m_d.m_sideVisible, SideVisible);
+   LinkProp(m_d.m_collidable, Collidable);
    return InitVBA(true, nullptr);
 }
 #endif
 
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsSurface_##prop() : Settings::GetDefaultPropsSurface_##prop##_Default()
 void Surface::SetDefaults(const bool fromMouseClick)
 {
    m_d.m_inner = true; //!! Deprecated, do not use anymore
@@ -196,7 +186,7 @@ void Surface::SetDefaultPhysics(const bool fromMouseClick)
 
 void Surface::WriteRegDefaults()
 {
-#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsSurface_##prop(field, false)
+#define LinkProp(field, prop) { if (m_isWall) g_pvp->m_settings.SetDefaultPropsWall_##prop(field, false); else g_pvp->m_settings.SetDefaultPropsTarget_##prop(field, false); }
    LinkProp(m_d.m_hitEvent, HitEvent);
    LinkProp(m_d.m_threshold, HitThreshold);
    LinkProp(m_d.m_slingshot_threshold, SlingshotThreshold);

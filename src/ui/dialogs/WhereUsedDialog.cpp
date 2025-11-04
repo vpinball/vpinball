@@ -267,10 +267,10 @@ void WhereUsedDialog::OnCancel() { }
 
 void WhereUsedDialog::LoadPosition()
 {
-   const int x = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "WhereUsedPosX"s, 0);
-   const int y = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "WhereUsedPosY"s, 0);
-   const int w = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "WhereUsedWidth"s, 1000);
-   const int h = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "WhereUsedHeight"s, 800);
+   const int x = g_pvp->m_settings.GetEditor_WhereUsedPosX();
+   const int y = g_pvp->m_settings.GetEditor_WhereUsedPosY();
+   const int w = g_pvp->m_settings.GetEditor_WhereUsedWidth();
+   const int h = g_pvp->m_settings.GetEditor_WhereUsedHeight();
    POINT p { x, y };
    if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
       SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
@@ -279,13 +279,10 @@ void WhereUsedDialog::LoadPosition()
 void WhereUsedDialog::SavePosition()
 {
    const CRect rect = GetWindowRect();
-
-   g_pvp->m_settings.SaveValue(Settings::Editor, "WhereUsedPosX"s, (int)rect.left);
-   g_pvp->m_settings.SaveValue(Settings::Editor, "WhereUsedPosY"s, (int)rect.top);
-   const int w = rect.right - rect.left;
-   g_pvp->m_settings.SaveValue(Settings::Editor, "WhereUsedWidth"s, w);
-   const int h = rect.bottom - rect.top;
-   g_pvp->m_settings.SaveValue(Settings::Editor, "WhereUsedHeight"s, h);
+   g_pvp->m_settings.SetEditor_WhereUsedPosX((int)rect.left, false);
+   g_pvp->m_settings.SetEditor_WhereUsedPosY((int)rect.top, false);
+   g_pvp->m_settings.SetEditor_WhereUsedWidth(rect.right - rect.left, false);
+   g_pvp->m_settings.SetEditor_WhereUsedHeight(rect.bottom - rect.top, false);
 }
 
 void WhereUsedDialog::RefreshList()

@@ -43,6 +43,7 @@ public:
       = GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, defVal));                                 \
    static inline const VPX::Properties::BoolPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetBoolProperty(m_prop##groupId##_##propId); }                          \
    static inline const bool Get##groupId##_##propId##_Default() { return GetRegistry().GetBoolProperty(m_prop##groupId##_##propId)->m_def; }                                                 \
+   static inline const void Set##groupId##_##propId##_Default(bool v) { GetRegistry().Register(GetRegistry().GetBoolProperty(m_prop##groupId##_##propId)->WithDefault(v)); }                 \
    inline bool Get##groupId##_##propId() const { return m_store.GetInt(m_prop##groupId##_##propId); }                                                                                        \
    inline void Set##groupId##_##propId(bool v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                                \
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
@@ -52,16 +53,18 @@ public:
       = GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, minVal, maxVal, defVal));                  \
    static inline const VPX::Properties::IntPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetIntProperty(m_prop##groupId##_##propId); }                            \
    static inline const int Get##groupId##_##propId##_Default() { return GetRegistry().GetIntProperty(m_prop##groupId##_##propId)->m_def; }                                                   \
+   static inline const void Set##groupId##_##propId##_Default(int v) { GetRegistry().Register(GetRegistry().GetIntProperty(m_prop##groupId##_##propId)->WithDefault(v)); }                   \
    inline int Get##groupId##_##propId() const { return m_store.GetInt(m_prop##groupId##_##propId); }                                                                                         \
    inline void Set##groupId##_##propId(int v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                                 \
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
 #define PropIntUnbounded(groupId, propId, label, comment, defVal) PropInt(groupId, propId, label, comment, INT_MIN, INT_MAX, defVal)
 
-#define PropEnumWithMin(groupId, propId, label, comment, type, minVal, defVal, ...)                                                                                                                         \
+#define PropEnumWithMin(groupId, propId, label, comment, type, minVal, defVal, ...)                                                                                                          \
    static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId = GetRegistry().Register(                                                                        \
-      std::make_unique<VPX::Properties::EnumPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, minVal, defVal, vector<string> { __VA_ARGS__ }));                       \
+      std::make_unique<VPX::Properties::EnumPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, minVal, defVal, vector<string> { __VA_ARGS__ }));                  \
    static inline const VPX::Properties::EnumPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetEnumProperty(m_prop##groupId##_##propId); }                          \
    static inline const type Get##groupId##_##propId##_Default() { return (type)(GetRegistry().GetEnumProperty(m_prop##groupId##_##propId)->m_def); }                                         \
+   static inline const void Set##groupId##_##propId##_Default(type v) { GetRegistry().Register(GetRegistry().GetEnumProperty(m_prop##groupId##_##propId)->WithDefault((int)v)); }            \
    inline type Get##groupId##_##propId() const { return (type)(m_store.GetInt(m_prop##groupId##_##propId)); }                                                                                \
    inline void Set##groupId##_##propId(type v, bool asTableOverride) { Set(m_prop##groupId##_##propId, (int)v, asTableOverride); }                                                           \
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
@@ -73,6 +76,7 @@ public:
       = GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, minVal, maxVal, step, defVal));          \
    static inline const VPX::Properties::FloatPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetFloatProperty(m_prop##groupId##_##propId); }                        \
    static inline const float Get##groupId##_##propId##_Default() { return GetRegistry().GetFloatProperty(m_prop##groupId##_##propId)->m_def; }                                               \
+   static inline const void Set##groupId##_##propId##_Default(float v) { GetRegistry().Register(GetRegistry().GetFloatProperty(m_prop##groupId##_##propId)->WithDefault(v)); }               \
    inline float Get##groupId##_##propId() const { return m_store.GetFloat(m_prop##groupId##_##propId); }                                                                                     \
    inline void Set##groupId##_##propId(float v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                               \
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
@@ -84,6 +88,7 @@ public:
       = GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, defVal));                               \
    static inline const VPX::Properties::StringPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetStringProperty(m_prop##groupId##_##propId); }                      \
    static inline const string &Get##groupId##_##propId##_Default() { return GetRegistry().GetStringProperty(m_prop##groupId##_##propId)->m_def; }                                            \
+   static inline const void Set##groupId##_##propId##_Default(const string &v) { GetRegistry().Register(GetRegistry().GetStringProperty(m_prop##groupId##_##propId)->WithDefault(v)); }      \
    inline const string &Get##groupId##_##propId() const { return m_store.GetString(m_prop##groupId##_##propId); }                                                                            \
    inline void Set##groupId##_##propId(const string &v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                       \
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
@@ -280,6 +285,9 @@ public:
    // Misc player settings
    PropBool(Player, TouchOverlay, "Touch Overlay"s, "Display an overlay showing touch regions"s, false);
    PropBool(Player, EnableCameraModeFlyAround, "Legacy Fly Over Mode"s, "Enable moving camera when using Tweak menu (legacy, replaced by LiveUI fly mode)."s, false);
+   PropBool(Player, DetectHang, "Detect Script Hang"s, ""s, false);
+   PropInt(Player, SecurityLevel, "Security Level"s, ""s, 0, 4, DEFAULT_SECURITY_LEVEL);
+   PropInt(Player, NumberOfTimesToShowTouchMessage, "NumberOfTimesToShowTouchMessage"s, ""s, 0, 100, 10);
 
    // UI & input settings
    PropInt(Player, Exitconfirm, "Direct Exit Length"s, "Length of a long ESC press that directly closes the app, (sadly) expressed in seconds * 60."s, 0, 30 * 60, 120);
@@ -316,7 +324,7 @@ public:
    PropBool(PlayerVR, ShrinkPreview, "Shrink preview"s, ""s, false);
    PropFloatUnbounded(PlayerVR, ResFactor, "ResFactor"s, ""s, -1.f);
    // Legacy OpenVR settings (to be removed)
-   PropInt(PlayerVR, EyeFBFormat, "EyeFBFormat"s, ""s, 0, 3, 1);
+   PropEnum(PlayerVR, EyeFBFormat, "EyeFBFormat"s, ""s, int, 1, "RGB 8"s, "RGBA 8 (Recommended)"s, "RGB 16F"s, "RGBA 16F"s);
    PropFloatUnbounded(PlayerVR, Slope, "Slope"s, ""s, 6.5f);
    PropBool(PlayerVR, ScaleToFixedWidth, "ScaleToFixedWidth"s, ""s, false);
    PropFloatUnbounded(PlayerVR, ScaleAbsolute, "ScaleAbsolute"s, ""s, 55.f);
@@ -728,6 +736,23 @@ public:
 
    // Recent directory
    PropString(RecentDir, ImportDir, "Import directory"s, ""s, ""s);
+   PropString(RecentDir, LoadDir, "Table directory"s, ""s, ""s);
+   PropString(RecentDir, FontDir, "Font directory"s, ""s, ""s);
+   PropString(RecentDir, PhysicsDir, "Physics directory"s, ""s, ""s);
+   PropString(RecentDir, ImageDir, "Image directory"s, ""s, ""s);
+   PropString(RecentDir, MaterialDir, "Material directory"s, ""s, ""s);
+   PropString(RecentDir, SoundDir, "Sound directory"s, ""s, ""s);
+   PropString(RecentDir, POVDir, "POV directory"s, ""s, ""s);
+   PropString(RecentDir, TableFileName0, ""s, ""s, ""s);
+   PropString(RecentDir, TableFileName1, ""s, ""s, ""s);
+   PropString(RecentDir, TableFileName2, ""s, ""s, ""s);
+   PropString(RecentDir, TableFileName3, ""s, ""s, ""s);
+   PropString(RecentDir, TableFileName4, ""s, ""s, ""s);
+   PropString(RecentDir, TableFileName5, ""s, ""s, ""s);
+   PropString(RecentDir, TableFileName6, ""s, ""s, ""s);
+   PropString(RecentDir, TableFileName7, ""s, ""s, ""s);
+   PropArray(RecentDir, TableFileName, string, String, String, m_propRecentDir_TableFileName0, m_propRecentDir_TableFileName1, m_propRecentDir_TableFileName2, m_propRecentDir_TableFileName3,
+      m_propRecentDir_TableFileName4, m_propRecentDir_TableFileName5, m_propRecentDir_TableFileName6, m_propRecentDir_TableFileName7);
 
    // Parts Defaults: Balls
    PropFloat(DefaultPropsBall, Mass, "Ball Mass"s, ""s, 0.1f, 2.f, 1.f);
@@ -882,7 +907,8 @@ public:
    PropFloatUnbounded(DefaultPropsHitTarget, ScaleZ, "ScaleZ"s, ""s, 32.f);
    PropFloatUnbounded(DefaultPropsHitTarget, Orientation, "Orientation"s, ""s, 0.f);
    PropString(DefaultPropsHitTarget, Image, "Image"s, ""s, ""s);
-   PropEnum1(DefaultPropsHitTarget, TargetType, "TargetType"s, ""s, TargetType, DropTargetSimple, "DropTargetBeveled"s, "DropTargetSimple"s, "HitTargetRound"s, "HitTargetRectangle"s, "HitFatTargetRectangle"s, "HitFatTargetSquare"s, "DropTargetFlatSimple"s, "HitFatTargetSlim"s, "HitTargetSlim"s);
+   PropEnum1(DefaultPropsHitTarget, TargetType, "TargetType"s, ""s, TargetType, DropTargetSimple, "DropTargetBeveled"s, "DropTargetSimple"s, "HitTargetRound"s, "HitTargetRectangle"s,
+      "HitFatTargetRectangle"s, "HitFatTargetSquare"s, "DropTargetFlatSimple"s, "HitFatTargetSlim"s, "HitTargetSlim"s);
    PropFloatUnbounded(DefaultPropsHitTarget, HitThreshold, "HitThreshold"s, ""s, 2.f);
    PropFloatUnbounded(DefaultPropsHitTarget, DropSpeed, "DropSpeed"s, ""s, 0.2f); // Default should depend on target type: 0.5 for beveled, simple & flat simple, 0.2 otherwise
    PropBool(DefaultPropsHitTarget, Collidable, "Collidable"s, ""s, true);
@@ -916,16 +942,16 @@ public:
    PropFloatUnbounded(DefaultPropsLight, Falloff, "Falloff"s, ""s, 50.f);
    PropFloatUnbounded(DefaultPropsLight, FalloffPower, "FalloffPower"s, ""s, 2.f);
    PropFloatUnbounded(DefaultPropsLight, LightState, "LightState"s, ""s, 0.f);
-   PropInt(DefaultPropsLight, Color, "Color"s, ""s, 0x000000, 0xFFFFFF, RGB(255,169,87)); // Default to 2700K incandescent bulb
-   PropInt(DefaultPropsLight, ColorFull, "ColorFull"s, ""s, 0x000000, 0xFFFFFF, RGB(255,169,87)); // Default to 2700K incandescent bulb (burst is useless since VPX is HDR)
+   PropInt(DefaultPropsLight, Color, "Color"s, ""s, 0x000000, 0xFFFFFF, RGB(255, 169, 87)); // Default to 2700K incandescent bulb
+   PropInt(DefaultPropsLight, ColorFull, "ColorFull"s, ""s, 0x000000, 0xFFFFFF, RGB(255, 169, 87)); // Default to 2700K incandescent bulb (burst is useless since VPX is HDR)
    PropString(DefaultPropsLight, OffImage, "OffImage"s, ""s, ""s);
    PropString(DefaultPropsLight, BlinkPattern, "BlinkPattern"s, ""s, "10"s);
    PropIntUnbounded(DefaultPropsLight, BlinkInterval, "BlinkInterval"s, ""s, 125);
    PropFloatUnbounded(DefaultPropsLight, Intensity, "Intensity"s, ""s, 10.f);
    PropFloatUnbounded(DefaultPropsLight, TransmissionScale, "TransmissionScale"s, ""s, 0.f); // FIXME used to be 0.5 as a default unless from click, then 0
    PropString(DefaultPropsLight, Surface, "Surface"s, ""s, ""s);
-   PropFloatUnbounded(DefaultPropsLight, FadeSpeedUp, "FadeSpeedUp"s, ""s, 10.f * (float)(1.0/200.0)); // Default: 200ms up (slow incandescent bulb)
-   PropFloatUnbounded(DefaultPropsLight, FadeSpeedDown, "FadeSpeedDown"s, ""s, 10.f * (float)(1.0/500.0)); // Default: 500ms down (slow incandescent bulb)
+   PropFloatUnbounded(DefaultPropsLight, FadeSpeedUp, "FadeSpeedUp"s, ""s, 10.f * (float)(1.0 / 200.0)); // Default: 200ms up (slow incandescent bulb)
+   PropFloatUnbounded(DefaultPropsLight, FadeSpeedDown, "FadeSpeedDown"s, ""s, 10.f * (float)(1.0 / 500.0)); // Default: 500ms down (slow incandescent bulb)
    PropBool(DefaultPropsLight, Bulb, "Bulb"s, ""s, false);
    PropBool(DefaultPropsLight, ImageMode, "ImageMode"s, ""s, false);
    PropBool(DefaultPropsLight, ShowBulbMesh, "ShowBulbMesh"s, ""s, false);
@@ -957,7 +983,7 @@ public:
    PropFloatUnbounded(DefaultPropsPlunger, Stroke, "Stroke"s, ""s, 80.f);
    PropFloatUnbounded(DefaultPropsPlunger, PullSpeed, "PullSpeed"s, ""s, 5.f);
    PropEnum1(DefaultPropsPlunger, PlungerType, "PlungerType"s, ""s, PlungerType, PlungerTypeModern, "PlungerTypeModern"s, "PlungerTypeFlat"s, "PlungerTypeCustom"s);
-   PropInt(DefaultPropsPlunger, Color, "Color"s, ""s, 0x000000, 0xFFFFFF, RGB(76,76,76));
+   PropInt(DefaultPropsPlunger, Color, "Color"s, ""s, 0x000000, 0xFFFFFF, RGB(76, 76, 76));
    PropString(DefaultPropsPlunger, Image, "Image"s, ""s, ""s);
    PropIntUnbounded(DefaultPropsPlunger, AnimFrames, "AnimFrames"s, ""s, 1);
    PropString(DefaultPropsPlunger, Surface, "Surface"s, ""s, ""s);
@@ -975,7 +1001,9 @@ public:
    PropFloatUnbounded(DefaultPropsPlunger, CustomSpringEndLoops, "CustomSpringEndLoops"s, ""s, 2.5f);
    PropFloatUnbounded(DefaultPropsPlunger, ReleaseSpeed, "ReleaseSpeed"s, ""s, 80.f);
    PropFloatUnbounded(DefaultPropsPlunger, MechStrength, "MechStrength"s, ""s, 85.f);
-   PropFloatUnbounded(DefaultPropsPlunger, ParkPosition, "ParkPosition"s, ""s, (float)(0.5/3.0)); // typical mechanical plunger has 3 inch stroke and 0.5 inch rest position //!! 0.01f better for some HW-plungers, but this seems to be rather a firmware/config issue
+   PropFloatUnbounded(DefaultPropsPlunger, ParkPosition, "ParkPosition"s, ""s,
+      (float)(0.5
+         / 3.0)); // typical mechanical plunger has 3 inch stroke and 0.5 inch rest position //!! 0.01f better for some HW-plungers, but this seems to be rather a firmware/config issue
    PropFloatUnbounded(DefaultPropsPlunger, ScatterVelocity, "ScatterVelocity"s, ""s, 0.f);
    PropFloatUnbounded(DefaultPropsPlunger, MomentumXfer, "MomentumXfer"s, ""s, 1.f);
    PropBool(DefaultPropsPlunger, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
@@ -1032,7 +1060,8 @@ public:
    PropFloatUnbounded(DefaultPropsRamp, HeightTop, "HeightTop"s, ""s, 50.f);
    PropFloatUnbounded(DefaultPropsRamp, WidthBottom, "WidthBottom"s, ""s, 75.f);
    PropFloatUnbounded(DefaultPropsRamp, WidthTop, "WidthTop"s, ""s, 60.f);
-   PropEnum(DefaultPropsRamp, RampType, "RampType"s, ""s, RampType, RampTypeFlat, "RampTypeFlat"s, "RampType4Wire"s, "RampType2Wire"s, "RampType3WireLeft"s, "RampType3WireRight"s, "RampType1Wire"s);
+   PropEnum(DefaultPropsRamp, RampType, "RampType"s, ""s, RampType, RampTypeFlat, "RampTypeFlat"s, "RampType4Wire"s, "RampType2Wire"s, "RampType3WireLeft"s, "RampType3WireRight"s,
+      "RampType1Wire"s);
    PropString(DefaultPropsRamp, Image, "Image"s, ""s, ""s);
    PropEnum(DefaultPropsRamp, ImageMode, "ImageMode"s, ""s, RampImageAlignment, ImageModeWorld, "ImageModeWorld"s, "ImageModeWrap"s);
    PropBool(DefaultPropsRamp, ImageWalls, "ImageWalls"s, ""s, true);
@@ -1091,32 +1120,62 @@ public:
    PropBool(DefaultPropsSpinner, TimerEnabled, "Timer Enabled"s, ""s, false);
    PropInt(DefaultPropsSpinner, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
-   // Parts Defaults: Surface
-   PropFloatUnbounded(DefaultPropsSurface, Elasticity, "Elasticity"s, ""s, 0.3f);
-   PropFloatUnbounded(DefaultPropsSurface, ElasticityFallOff, "ElasticityFallOff"s, ""s, 0.0f);
-   PropFloatUnbounded(DefaultPropsSurface, Friction, "Friction"s, ""s, 0.3f);
-   PropFloatUnbounded(DefaultPropsSurface, Scatter, "Scatter"s, ""s, 0.f);
-   PropBool(DefaultPropsSurface, HitEvent, "HitEvent"s, ""s, false);
-   PropFloatUnbounded(DefaultPropsSurface, HitThreshold, "HitThreshold"s, ""s, 2.0f);
-   PropFloatUnbounded(DefaultPropsSurface, SlingshotThreshold, "SlingshotThreshold"s, ""s, 0.0f);
-   PropString(DefaultPropsSurface, TopImage, "TopImage"s, ""s, ""s);
-   PropString(DefaultPropsSurface, SideImage, "SideImage"s, ""s, ""s);
-   PropBool(DefaultPropsSurface, Droppable, "Droppable"s, ""s, false);
-   PropBool(DefaultPropsSurface, Flipbook, "Flipbook"s, ""s, false);
-   PropBool(DefaultPropsSurface, IsBottomSolid, "IsBottomSolid"s, ""s, false);
-   PropFloatUnbounded(DefaultPropsSurface, HeightBottom, "HeightBottom"s, ""s, 0.f);
-   PropFloatUnbounded(DefaultPropsSurface, HeightTop, "HeightTop"s, ""s, 50.f);
-   PropBool(DefaultPropsSurface, DisplayTexture, "DisplayTexture"s, ""s, true);
-   PropFloatUnbounded(DefaultPropsSurface, SlingshotForce, "SlingshotForce"s, ""s, 80.f);
-   PropBool(DefaultPropsSurface, SlingshotAnimation, "SlingshotAnimation"s, ""s, true);
-   PropBool(DefaultPropsSurface, Visible, "Visible"s, ""s, true);
-   PropBool(DefaultPropsSurface, SideVisible, "SideVisible"s, ""s, true);
-   PropBool(DefaultPropsSurface, Collidable, "Collidable"s, ""s, true);
-   PropFloatUnbounded(DefaultPropsSurface, DisableLighting, "DisableLighting"s, ""s, 0.f);
-   PropFloatUnbounded(DefaultPropsSurface, DisableLightingBelow, "DisableLightingBelow"s, ""s, 1.f);
-   PropBool(DefaultPropsSurface, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
-   PropBool(DefaultPropsSurface, TimerEnabled, "Timer Enabled"s, ""s, false);
-   PropInt(DefaultPropsSurface, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+   // Parts Defaults: Surface => Wall or Target
+   PropFloatUnbounded(DefaultPropsWall, Width, "Width"s, ""s, 50.f);
+   PropFloatUnbounded(DefaultPropsWall, Length, "Length"s, ""s, 50.f);
+   PropFloatUnbounded(DefaultPropsWall, Elasticity, "Elasticity"s, ""s, 0.3f);
+   PropFloatUnbounded(DefaultPropsWall, ElasticityFallOff, "ElasticityFallOff"s, ""s, 0.0f);
+   PropFloatUnbounded(DefaultPropsWall, Friction, "Friction"s, ""s, 0.3f);
+   PropFloatUnbounded(DefaultPropsWall, Scatter, "Scatter"s, ""s, 0.f);
+   PropBool(DefaultPropsWall, HitEvent, "HitEvent"s, ""s, false);
+   PropFloatUnbounded(DefaultPropsWall, HitThreshold, "HitThreshold"s, ""s, 2.0f);
+   PropFloatUnbounded(DefaultPropsWall, SlingshotThreshold, "SlingshotThreshold"s, ""s, 0.0f);
+   PropString(DefaultPropsWall, TopImage, "TopImage"s, ""s, ""s);
+   PropString(DefaultPropsWall, SideImage, "SideImage"s, ""s, ""s);
+   PropBool(DefaultPropsWall, Droppable, "Droppable"s, ""s, false);
+   PropBool(DefaultPropsWall, Flipbook, "Flipbook"s, ""s, false);
+   PropBool(DefaultPropsWall, IsBottomSolid, "IsBottomSolid"s, ""s, false);
+   PropFloatUnbounded(DefaultPropsWall, HeightBottom, "HeightBottom"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsWall, HeightTop, "HeightTop"s, ""s, 50.f);
+   PropBool(DefaultPropsWall, DisplayTexture, "DisplayTexture"s, ""s, true);
+   PropFloatUnbounded(DefaultPropsWall, SlingshotForce, "SlingshotForce"s, ""s, 80.f);
+   PropBool(DefaultPropsWall, SlingshotAnimation, "SlingshotAnimation"s, ""s, true);
+   PropBool(DefaultPropsWall, Visible, "Visible"s, ""s, true);
+   PropBool(DefaultPropsWall, SideVisible, "SideVisible"s, ""s, true);
+   PropBool(DefaultPropsWall, Collidable, "Collidable"s, ""s, true);
+   PropFloatUnbounded(DefaultPropsWall, DisableLighting, "DisableLighting"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsWall, DisableLightingBelow, "DisableLightingBelow"s, ""s, 1.f);
+   PropBool(DefaultPropsWall, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
+   PropBool(DefaultPropsWall, TimerEnabled, "Timer Enabled"s, ""s, false);
+   PropInt(DefaultPropsWall, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+
+   PropFloatUnbounded(DefaultPropsTarget, Width, "Width"s, ""s, 50.f);
+   PropFloatUnbounded(DefaultPropsTarget, Length, "Length"s, ""s, 50.f);
+   PropFloatUnbounded(DefaultPropsTarget, Elasticity, "Elasticity"s, ""s, 0.3f);
+   PropFloatUnbounded(DefaultPropsTarget, ElasticityFallOff, "ElasticityFallOff"s, ""s, 0.0f);
+   PropFloatUnbounded(DefaultPropsTarget, Friction, "Friction"s, ""s, 0.3f);
+   PropFloatUnbounded(DefaultPropsTarget, Scatter, "Scatter"s, ""s, 0.f);
+   PropBool(DefaultPropsTarget, HitEvent, "HitEvent"s, ""s, false);
+   PropFloatUnbounded(DefaultPropsTarget, HitThreshold, "HitThreshold"s, ""s, 2.0f);
+   PropFloatUnbounded(DefaultPropsTarget, SlingshotThreshold, "SlingshotThreshold"s, ""s, 0.0f);
+   PropString(DefaultPropsTarget, TopImage, "TopImage"s, ""s, ""s);
+   PropString(DefaultPropsTarget, SideImage, "SideImage"s, ""s, ""s);
+   PropBool(DefaultPropsTarget, Droppable, "Droppable"s, ""s, false);
+   PropBool(DefaultPropsTarget, Flipbook, "Flipbook"s, ""s, false);
+   PropBool(DefaultPropsTarget, IsBottomSolid, "IsBottomSolid"s, ""s, false);
+   PropFloatUnbounded(DefaultPropsTarget, HeightBottom, "HeightBottom"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsTarget, HeightTop, "HeightTop"s, ""s, 50.f);
+   PropBool(DefaultPropsTarget, DisplayTexture, "DisplayTexture"s, ""s, true);
+   PropFloatUnbounded(DefaultPropsTarget, SlingshotForce, "SlingshotForce"s, ""s, 80.f);
+   PropBool(DefaultPropsTarget, SlingshotAnimation, "SlingshotAnimation"s, ""s, true);
+   PropBool(DefaultPropsTarget, Visible, "Visible"s, ""s, true);
+   PropBool(DefaultPropsTarget, SideVisible, "SideVisible"s, ""s, true);
+   PropBool(DefaultPropsTarget, Collidable, "Collidable"s, ""s, true);
+   PropFloatUnbounded(DefaultPropsTarget, DisableLighting, "DisableLighting"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsTarget, DisableLightingBelow, "DisableLightingBelow"s, ""s, 1.f);
+   PropBool(DefaultPropsTarget, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
+   PropBool(DefaultPropsTarget, TimerEnabled, "Timer Enabled"s, ""s, false);
+   PropInt(DefaultPropsTarget, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
    // Parts Defaults: Textbox
    PropFloatUnbounded(DefaultPropsTextbox, Width, "Width"s, ""s, 100.f);
@@ -1171,6 +1230,66 @@ public:
    // Standalone
    PropEnumWithMin(Standalone, RenderingModeOverride, "Override rendering mode"s, ""s, int, -1, g_isMobile ? 2 : -1, "Default"s, "2D"s, "Stereo 3D"s, "VR"s);
    PropBool(Standalone, Haptics, "Haptics"s, ""s, g_isMobile);
+
+   // Editor settings
+   PropIntUnbounded(Editor, ImageMngPosX, "ImageMngPosX"s, ""s, 0);
+   PropIntUnbounded(Editor, ImageMngPosY, "ImageMngPosY"s, ""s, 0);
+   PropIntUnbounded(Editor, ImageMngWidth, "ImageMngWidth"s, ""s, 1000);
+   PropIntUnbounded(Editor, ImageMngHeight, "ImageMngHeight"s, ""s, 800);
+   PropIntUnbounded(Editor, CodeViewPosX, "CodeViewPosX"s, ""s, 0);
+   PropIntUnbounded(Editor, CodeViewPosY, "CodeViewPosY"s, ""s, 0);
+   PropIntUnbounded(Editor, CodeViewPosWidth, "CodeViewPosWidth"s, ""s, 640);
+   PropIntUnbounded(Editor, CodeViewPosHeight, "CodeViewPosHeight"s, ""s, 490);
+   PropIntUnbounded(Editor, DebuggerPosX, "DebuggerPosX"s, ""s, 0);
+   PropIntUnbounded(Editor, DebuggerPosY, "DebuggerPosY"s, ""s, 0);
+   PropIntUnbounded(Editor, DebuggerWidth, "DebuggerWidth"s, ""s, 1000);
+   PropIntUnbounded(Editor, DebuggerHeight, "DebuggerHeight"s, ""s, 800);
+   PropIntUnbounded(Editor, MaterialMngPosX, "MaterialMngPosX"s, ""s, 0);
+   PropIntUnbounded(Editor, MaterialMngPosY, "MaterialMngPosY"s, ""s, 0);
+   PropIntUnbounded(Editor, MaterialMngWidth, "MaterialMngWidth"s, ""s, 1000);
+   PropIntUnbounded(Editor, MaterialMngHeight, "MaterialMngHeight"s, ""s, 800);
+   PropIntUnbounded(Editor, RenderProbePosX, "RenderProbePosX"s, ""s, 0);
+   PropIntUnbounded(Editor, RenderProbePosY, "RenderProbePosY"s, ""s, 0);
+   PropIntUnbounded(Editor, RenderProbeWidth, "RenderProbeWidth"s, ""s, 1000);
+   PropIntUnbounded(Editor, RenderProbeHeight, "RenderProbeHeight"s, ""s, 800);
+   PropIntUnbounded(Editor, SearchSelectPosX, "SearchSelectPosX"s, ""s, 0);
+   PropIntUnbounded(Editor, SearchSelectPosY, "SearchSelectPosY"s, ""s, 0);
+   PropIntUnbounded(Editor, SearchSelectWidth, "SearchSelectWidth"s, ""s, 640);
+   PropIntUnbounded(Editor, SearchSelectHeight, "SearchSelectHeight"s, ""s, 400);
+   PropIntUnbounded(Editor, SoundMngPosX, "SoundMngPosX"s, ""s, 0);
+   PropIntUnbounded(Editor, SoundMngPosY, "SoundMngPosY"s, ""s, 0);
+   PropIntUnbounded(Editor, SoundMngWidth, "SoundMngWidth"s, ""s, 1000);
+   PropIntUnbounded(Editor, SoundMngHeight, "SoundMngHeight"s, ""s, 800);
+   PropIntUnbounded(Editor, WhereUsedPosX, "WhereUsedPosX"s, ""s, 0);
+   PropIntUnbounded(Editor, WhereUsedPosY, "WhereUsedPosY"s, ""s, 0);
+   PropIntUnbounded(Editor, WhereUsedWidth, "WhereUsedWidth"s, ""s, 1000);
+   PropIntUnbounded(Editor, WhereUsedHeight, "WhereUsedHeight"s, ""s, 800);
+   PropIntUnbounded(Editor, CollectionMngPosX, "CollectionMngPosX"s, ""s, 0);
+   PropIntUnbounded(Editor, CollectionMngPosY, "CollectionMngPosY"s, ""s, 0);
+   PropBool(Editor, SelectTableOnStart, "SelectTableOnStart"s, ""s, true);
+   PropBool(Editor, ShowDragPoints, "ShowDragPoints"s, ""s, false);
+   PropBool(Editor, DrawLightCenters, "DrawLightCenters"s, ""s, false);
+   PropBool(Editor, AutoSaveOn, "AutoSaveOn"s, ""s, true);
+   PropIntUnbounded(Editor, GridSize, "GridSize"s, ""s, 50);
+   PropIntUnbounded(Editor, AutoSaveTime, "AutoSaveTime"s, ""s, 10);
+   PropBool(Editor, GroupElementsInCollection, "GroupElementsInCollection"s, ""s, true);
+   PropBool(Editor, LogScriptOutput, "LogScriptOutput"s, ""s, true);
+   PropInt(Editor, DefaultMaterialColor, "DefaultMaterialColor"s, ""s, 0x000000, 0xFFFFFF, 0xB469FF);
+   PropInt(Editor, ElementSelectColor, "ElementSelectColor"s, ""s, 0x000000, 0xFFFFFF, 0x00FF0000);
+   PropInt(Editor, ElementSelectLockedColor, "ElementSelectLockedColor"s, ""s, 0x000000, 0xFFFFFF, 0x00A7726D);
+   PropInt(Editor, BackGroundColor, "BackGroundColor"s, ""s, 0x000000, 0xFFFFFF, 0x008D8D8D);
+   PropInt(Editor, FillColor, "FillColor"s, ""s, 0x000000, 0xFFFFFF, 0x00B1CFB3);
+   PropEnum(Editor, Units, "Units"s, ""s, int, 0, "Inches"s, "Millimeters"s, "VP Units");
+   PropBool(Editor, AlwaysViewScript, "AlwaysViewScript"s, ""s, false);
+
+   // Code View settings
+   PropInt(CVEdit, BackGroundColor, "BackGroundColor"s, ""s, 0x000000, 0xFFFFFF, RGB(255, 255, 255));
+   PropInt(CVEdit, BackGroundSelectionColor, "BackGroundSelectionColor"s, ""s, 0x000000, 0xFFFFFF, RGB(192, 192, 192));
+   PropBool(CVEdit, DisplayAutoComplete, "DisplayAutoComplete"s, ""s, true);
+   PropIntUnbounded(CVEdit, DisplayAutoCompleteAfter, "DisplayAutoCompleteAfter"s, ""s, 1);
+   PropBool(CVEdit, DwellDisplay, "DwellDisplay"s, ""s, true);
+   PropBool(CVEdit, DwellHelp, "DwellHelp"s, ""s, true);
+   PropIntUnbounded(CVEdit, DwellDisplayTime, "DwellDisplayTime"s, ""s, 700);
 
 
 #undef PropBool

@@ -193,7 +193,7 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             ofn.lpstrDefExt = "vpp";
             ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-            string szInitialDir = g_pvp->m_settings.LoadValueWithDefault(Settings::RecentDir, "PhysicsDir"s, PATH_TABLES);
+            string szInitialDir = g_pvp->m_settings.GetRecentDir_PhysicsDir();
             ofn.lpstrInitialDir = szInitialDir.c_str();
 
             const int ret = GetSaveFileName(&ofn);
@@ -205,7 +205,7 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             if (index != string::npos)
             {
                 const string newInitDir(szFilename.substr(0, index));
-                g_pvp->m_settings.SaveValue(Settings::RecentDir, "PhysicsDir"s, newInitDir);
+                g_pvp->m_settings.SetRecentDir_PhysicsDir(newInitDir, false);
             }
 
             tinyxml2::XMLDocument xmlDoc;
@@ -320,7 +320,7 @@ void PhysicsOptionsDialog::OnOK()
 
 bool PhysicsOptionsDialog::LoadSetting()
 {
-    string szInitialDir = g_pvp->m_settings.LoadValueWithDefault(Settings::RecentDir, "PhysicsDir"s, PATH_TABLES);
+    string szInitialDir = g_pvp->m_settings.GetRecentDir_PhysicsDir();
 
     vector<string> szFileName;
     if (!g_pvp->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
@@ -328,7 +328,7 @@ bool PhysicsOptionsDialog::LoadSetting()
 
     const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
     if (index != string::npos)
-        g_pvp->m_settings.SaveValue(Settings::RecentDir, "PhysicsDir"s, szFileName[0].substr(0, index));
+        g_pvp->m_settings.SetRecentDir_PhysicsDir(szFileName[0].substr(0, index), false);
 
     tinyxml2::XMLDocument xmlDoc;
     try

@@ -296,8 +296,8 @@ void CollectionManagerDialog::OnCancel()
 
 void CollectionManagerDialog::LoadPosition()
 {
-   const int x = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CollectionMngPosX"s, 0);
-   const int y = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CollectionMngPosY"s, 0);
+   const int x = g_pvp->m_settings.GetEditor_CollectionMngPosX();
+   const int y = g_pvp->m_settings.GetEditor_CollectionMngPosY();
    POINT p { x, y };
    if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
       SetWindowPos(nullptr, x, y, 0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);

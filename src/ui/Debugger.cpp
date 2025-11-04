@@ -137,10 +137,12 @@ void DebuggerDialog::LoadPosition()
 {
    const CRect rcMain = GetParent().GetWindowRect();
    const CRect rcDialog = GetWindowRect();
-   const int x = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "DebuggerPosX"s, (int) ((rcMain.right + rcMain.left) / 2 - (rcDialog.right - rcDialog.left) / 2));
-   const int y = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "DebuggerPosY"s, (int) ((rcMain.bottom + rcMain.top) / 2 - (rcDialog.bottom - rcDialog.top) / 2));
-   const int w = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "DebuggerWidth"s, 1000);
-   const int h = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "DebuggerHeight"s, 800);
+   Settings::SetEditor_DebuggerPosX_Default((int)((rcMain.right + rcMain.left) / 2 - (rcDialog.right - rcDialog.left) / 2));
+   Settings::SetEditor_DebuggerPosY_Default((int) ((rcMain.bottom + rcMain.top) / 2 - (rcDialog.bottom - rcDialog.top) / 2));
+   const int x = g_pvp->m_settings.GetEditor_DebuggerPosX(); 
+   const int y = g_pvp->m_settings.GetEditor_DebuggerPosY();
+   const int w = g_pvp->m_settings.GetEditor_DebuggerWidth();
+   const int h = g_pvp->m_settings.GetEditor_DebuggerHeight();
    POINT p { x, y };
    if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
       SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
@@ -149,12 +151,10 @@ void DebuggerDialog::LoadPosition()
 void DebuggerDialog::SavePosition()
 {
    const CRect rect = GetWindowRect();
-   g_pvp->m_settings.SaveValue(Settings::Editor, "DebuggerPosX"s, (int)rect.left);
-   g_pvp->m_settings.SaveValue(Settings::Editor, "DebuggerPosY"s, (int)rect.top);
-   const int w = rect.right - rect.left;
-   g_pvp->m_settings.SaveValue(Settings::Editor, "DebuggerWidth"s, w);
-   const int h = rect.bottom - rect.top;
-   g_pvp->m_settings.SaveValue(Settings::Editor, "DebuggerHeight"s, h);
+   g_pvp->m_settings.SetEditor_DebuggerPosX((int)rect.left, false);
+   g_pvp->m_settings.SetEditor_DebuggerPosY((int)rect.top, false);
+   g_pvp->m_settings.SetEditor_DebuggerWidth(rect.right - rect.left, false);
+   g_pvp->m_settings.SetEditor_DebuggerHeight(rect.bottom - rect.top, false);
 }
 
 LRESULT DebuggerDialog::OnNotify(WPARAM wparam, LPARAM lparam)
