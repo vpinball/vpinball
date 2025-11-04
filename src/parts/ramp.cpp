@@ -46,7 +46,7 @@ HRESULT Ramp::Init(PinTable *const ptable, const float x, const float y, const b
    SetDefaults(fromMouseClick);
    m_d.m_visible = true;
 
-   const float length = 0.5f * g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultPropsRamp, "Length"s, 400.0f);
+   const float length = 0.5f * g_pvp->m_settings.GetDefaultPropsRamp_Length();
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -70,76 +70,63 @@ HRESULT Ramp::Init(PinTable *const ptable, const float x, const float y, const b
    return forPlay ? S_OK : InitVBA(true, nullptr);
 }
 
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsRamp_##prop() : Settings::GetDefaultPropsRamp_##prop##_Default()
 void Ramp::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsRamp_##prop() : Settings::GetDefaultPropsRamp_##prop##_Default()
-#define strKeyName Settings::DefaultPropsRamp
-
-   m_d.m_heightbottom = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "HeightBottom"s, 0.0f) : 0.0f;
-   m_d.m_heighttop = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "HeightTop"s, 50.0f) : 50.0f;
-   m_d.m_widthbottom = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "WidthBottom"s, 75.0f) : 75.0f;
-   m_d.m_widthtop = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "WidthTop"s, 60.0f) : 60.0f;
-   m_d.m_type = fromMouseClick ? (RampType)g_pvp->m_settings.LoadValueWithDefault(strKeyName, "RampType"s, (int)RampTypeFlat) : RampTypeFlat;
-
-   const bool hr = g_pvp->m_settings.LoadValue(strKeyName, "Image"s, m_d.m_szImage);
-   if (!hr || !fromMouseClick)
-      m_d.m_szImage.clear();
-
-   m_d.m_imagealignment = fromMouseClick ? (RampImageAlignment)g_pvp->m_settings.LoadValueWithDefault(strKeyName, "ImageMode"s, (int)ImageModeWorld) : ImageModeWorld;
-   m_d.m_imageWalls = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "ImageWalls"s, true) : true;
-
-   m_d.m_leftwallheight = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "LeftWallHeight"s, 62.0f) : 62.0f;
-   m_d.m_rightwallheight = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "RightWallHeight"s, 62.0f) : 62.0f;
-   m_d.m_leftwallheightvisible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "LeftWallHeightVisible"s, 30.0f) : 30.0f;
-   m_d.m_rightwallheightvisible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "RightWallHeightVisible"s, 30.0f) : 30.0f;
-
-   m_d.m_threshold = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "HitThreshold"s, 2.0f) : 2.0f;
-
-   SetDefaultPhysics(fromMouseClick);
-
-   m_d.m_visible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Visible"s, true) : true;
-   m_d.m_collidable = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Collidable"s, true) : true;
-
-   m_d.m_wireDiameter = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "WireDiameter"s, 8.0f) : 8.0f;
-   m_d.m_wireDistanceX = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "WireDistanceX"s, 38.0f) : 38.0f;
-   m_d.m_wireDistanceY = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "WireDistanceY"s, 88.0f) : 88.0f;
-
-#undef strKeyName
+   LinkProp(m_d.m_heightbottom, HeightBottom);
+   LinkProp(m_d.m_heighttop, HeightTop);
+   LinkProp(m_d.m_widthbottom, WidthBottom);
+   LinkProp(m_d.m_widthtop, WidthTop);
+   LinkProp(m_d.m_type, RampType);
+   LinkProp(m_d.m_szImage, Image);
+   LinkProp(m_d.m_imagealignment, ImageMode);
+   LinkProp(m_d.m_imageWalls, ImageWalls);
+   LinkProp(m_d.m_leftwallheight, LeftWallHeight);
+   LinkProp(m_d.m_rightwallheight, RightWallHeight);
+   LinkProp(m_d.m_hitEvent, HitEvent);
+   LinkProp(m_d.m_threshold, HitThreshold);
+   LinkProp(m_d.m_collidable, Collidable);
+   LinkProp(m_d.m_visible, Visible);
+   LinkProp(m_d.m_wireDiameter, WireDiameter);
+   LinkProp(m_d.m_wireDistanceX, WireDistanceX);
+   LinkProp(m_d.m_wireDistanceY, WireDistanceY);
    LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
-#undef LinkProp
+   SetDefaultPhysics(fromMouseClick);
 }
+
+void Ramp::SetDefaultPhysics(const bool fromMouseClick)
+{
+   LinkProp(m_d.m_elasticity, Elasticity);
+   LinkProp(m_d.m_friction, Friction);
+   LinkProp(m_d.m_scatter, Scatter);
+}
+#undef LinkProp
 
 void Ramp::WriteRegDefaults()
 {
 #define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsRamp_##prop(field, false)
-#define strKeyName Settings::DefaultPropsRamp
-
-   g_pvp->m_settings.SaveValue(strKeyName, "HeightBottom"s, m_d.m_heightbottom);
-   g_pvp->m_settings.SaveValue(strKeyName, "HeightTop"s, m_d.m_heighttop);
-   g_pvp->m_settings.SaveValue(strKeyName, "WidthBottom"s, m_d.m_widthbottom);
-   g_pvp->m_settings.SaveValue(strKeyName, "WidthTop"s, m_d.m_widthtop);
-   g_pvp->m_settings.SaveValue(strKeyName, "RampType"s, m_d.m_type);
-   g_pvp->m_settings.SaveValue(strKeyName, "Image"s, m_d.m_szImage);
-   g_pvp->m_settings.SaveValue(strKeyName, "ImageMode"s, m_d.m_imagealignment);
-   g_pvp->m_settings.SaveValue(strKeyName, "ImageWalls"s, m_d.m_imageWalls);
-   g_pvp->m_settings.SaveValue(strKeyName, "LeftWallHeight"s, m_d.m_leftwallheight);
-   g_pvp->m_settings.SaveValue(strKeyName, "RightWallHeight"s, m_d.m_rightwallheight);
-   g_pvp->m_settings.SaveValue(strKeyName, "LeftWallHeightVisible"s, m_d.m_leftwallheightvisible);
-   g_pvp->m_settings.SaveValue(strKeyName, "RightWallHeightVisible"s, m_d.m_rightwallheightvisible);
-   g_pvp->m_settings.SaveValue(strKeyName, "HitEvent"s, m_d.m_hitEvent);
-   g_pvp->m_settings.SaveValue(strKeyName, "HitThreshold"s, m_d.m_threshold);
-   g_pvp->m_settings.SaveValue(strKeyName, "Elasticity"s, m_d.m_elasticity);
-   g_pvp->m_settings.SaveValue(strKeyName, "Friction"s, m_d.m_friction);
-   g_pvp->m_settings.SaveValue(strKeyName, "Scatter"s, m_d.m_scatter);
-   g_pvp->m_settings.SaveValue(strKeyName, "Collidable"s, m_d.m_collidable);
-   g_pvp->m_settings.SaveValue(strKeyName, "Visible"s, m_d.m_visible);
-   g_pvp->m_settings.SaveValue(strKeyName, "WireDiameter"s, m_d.m_wireDiameter);
-   g_pvp->m_settings.SaveValue(strKeyName, "WireDistanceX"s, m_d.m_wireDistanceX);
-   g_pvp->m_settings.SaveValue(strKeyName, "WireDistanceY"s, m_d.m_wireDistanceY);
-
-#undef strKeyName
+   LinkProp(m_d.m_heightbottom, HeightBottom);
+   LinkProp(m_d.m_heighttop, HeightTop);
+   LinkProp(m_d.m_widthbottom, WidthBottom);
+   LinkProp(m_d.m_widthtop, WidthTop);
+   LinkProp(m_d.m_type, RampType);
+   LinkProp(m_d.m_szImage, Image);
+   LinkProp(m_d.m_imagealignment, ImageMode);
+   LinkProp(m_d.m_imageWalls, ImageWalls);
+   LinkProp(m_d.m_leftwallheight, LeftWallHeight);
+   LinkProp(m_d.m_rightwallheight, RightWallHeight);
+   LinkProp(m_d.m_hitEvent, HitEvent);
+   LinkProp(m_d.m_threshold, HitThreshold);
+   LinkProp(m_d.m_collidable, Collidable);
+   LinkProp(m_d.m_visible, Visible);
+   LinkProp(m_d.m_wireDiameter, WireDiameter);
+   LinkProp(m_d.m_wireDistanceX, WireDistanceX);
+   LinkProp(m_d.m_wireDistanceY, WireDistanceY);
+   LinkProp(m_d.m_elasticity, Elasticity);
+   LinkProp(m_d.m_friction, Friction);
+   LinkProp(m_d.m_scatter, Scatter);
    LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
@@ -2323,15 +2310,4 @@ void Ramp::GenerateVertexBuffer()
    IndexBuffer* dynamicIndexBuffer = new IndexBuffer(m_rd, m_meshIndices);
    m_meshBuffer = new MeshBuffer(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);
    delete[] tmpBuffer;
-}
-
-void Ramp::SetDefaultPhysics(const bool fromMouseClick)
-{
-#define strKeyName Settings::DefaultPropsRamp
-
-   m_d.m_elasticity = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Elasticity"s, 0.3f) : 0.3f;
-   m_d.m_friction = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Friction"s, 0.3f) : 0.3f;
-   m_d.m_scatter = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Scatter"s, 0.f) : 0.f;
-
-#undef strKeyName
 }

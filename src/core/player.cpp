@@ -138,7 +138,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    bool useVR = false;
    #if defined(ENABLE_VR) || defined(ENABLE_XR)
-      const int vrDetectionMode = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "AskToTurnOn"s, 1);
+      const int vrDetectionMode = m_ptable->m_settings.GetPlayerVR_AskToTurnOn();
       #if defined(ENABLE_XR)
          if (vrDetectionMode != 2) // 2 is VR off (0 is VR on, 1 is autodetect)
          {

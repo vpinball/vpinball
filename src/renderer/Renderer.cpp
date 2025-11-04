@@ -206,7 +206,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       m_backGlass = new BackGlass(m_renderDevice, m_table->GetDecalsEnabled() ? m_table->GetImage(m_table->m_BG_image[m_table->m_BG_current_set]) : nullptr);
       //AMD Debugging
       colorFormat renderBufferFormatVR;
-      const int textureModeVR = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "EyeFBFormat"s, 1);
+      const int textureModeVR = g_pplayer->m_ptable->m_settings.GetPlayerVR_EyeFBFormat();
       switch (textureModeVR) {
       case 0:
          renderBufferFormatVR = RGB8;

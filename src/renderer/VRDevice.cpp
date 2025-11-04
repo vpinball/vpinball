@@ -402,7 +402,7 @@ VRDevice::VRDevice()
       m_tablePos.z = settings.GetPlayerVR_TableZ();
    #endif
    #if defined(ENABLE_VR)
-      m_slope = settings.LoadValueWithDefault(Settings::PlayerVR, "Slope"s, 6.5f);
+      m_slope = settings.GetPlayerVR_Slope();
    #endif
    m_worldDirty = true;
 
@@ -545,14 +545,14 @@ VRDevice::VRDevice()
       m_pHMD = nullptr;
       m_rTrackedDevicePose = nullptr;
       m_scale = 1.0f; // Scale factor from scene (in VP units) to VR view (in meters)
-      if (settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleToFixedWidth"s, false))
+      if (settings.GetPlayerVR_ScaleToFixedWidth())
       {
          float width;
          g_pvp->GetActiveTable()->get_Width(&width);
-         m_scale = settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleAbsolute"s, 55.0f) * 0.01f / width;
+         m_scale = settings.GetPlayerVR_ScaleAbsolute() * 0.01f / width;
       }
       else
-         m_scale = VPUTOCM(0.01f) * g_pvp->GetActiveTable()->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleRelative"s, 1.0f);
+         m_scale = VPUTOCM(0.01f) * g_pvp->GetActiveTable()->m_settings.GetPlayerVR_ScaleRelative();
       if (m_scale < VPUTOCM(0.01f))
          m_scale = VPUTOCM(0.01f); // Scale factor for VPUnits to Meters
 
@@ -582,7 +582,7 @@ VRDevice::VRDevice()
 
       float zNear, zFar;
       g_pvp->GetActiveTable()->ComputeNearFarPlane(coords * sceneScale, m_scale, zNear, zFar);
-      zNear = g_pvp->GetActiveTable()->m_settings.LoadValueWithDefault(Settings::PlayerVR, "NearPlane"s, 5.0f) / 100.0f; // Replace near value to allow player to move near parts up to user defined value
+      zNear = g_pvp->GetActiveTable()->m_settings.GetPlayerVR_NearPlane() / 100.0f; // Replace near value to allow player to move near parts up to user defined value
       zFar *= 1.2f;
 
       if (m_pHMD == nullptr)
@@ -871,7 +871,7 @@ void VRDevice::SetupHMD()
    assert(m_viewConfigurationViews[0].recommendedSwapchainSampleCount == m_viewConfigurationViews[1].recommendedSwapchainSampleCount);
 
    // Let the user choose the down/super sampling
-   const float resFactor = g_pplayer ? g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ResFactor", -1.f) : -1.f;
+   const float resFactor = g_pplayer ? g_pplayer->m_ptable->m_settings.GetPlayerVR_ResFactor() : -1.f;
    if (resFactor <= 0.1f || resFactor > 10.f)
    {
       m_eyeWidth = m_viewConfigurationViews[0].recommendedImageRectWidth;

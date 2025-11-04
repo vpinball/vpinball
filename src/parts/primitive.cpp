@@ -217,133 +217,121 @@ HRESULT Primitive::Init(PinTable *const ptable, const float x, const float y, co
    return forPlay ? S_OK : InitVBA(true, nullptr);
 }
 
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsPrimitive_##prop() : Settings::GetDefaultPropsPrimitive_##prop##_Default()
 void Primitive::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsPrimitive_##prop() : Settings::GetDefaultPropsPrimitive_##prop##_Default()
-#define strKeyName Settings::DefaultPropsPrimitive
+   LinkProp(m_d.m_SideColor, SideColor);
+   LinkProp(m_d.m_visible, Visible);
+   LinkProp(m_d.m_staticRendering, StaticRendering);
+   LinkProp(m_d.m_drawTexturesInside, DrawTexturesInside);
 
-   m_d.m_use3DMesh = false;
+   LinkProp(m_d.m_vPosition.z, Position_Z);
 
-   m_d.m_meshFileName.clear();
-   // sides
-   m_d.m_Sides = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Sides"s, 4) : 4;
-   if (m_d.m_Sides > Max_Primitive_Sides)
-      m_d.m_Sides = Max_Primitive_Sides;
+   LinkProp(m_d.m_vSize.x, Size_X);
+   LinkProp(m_d.m_vSize.y, Size_Y);
+   LinkProp(m_d.m_vSize.z, Size_Z);
 
-   // colors
-   m_d.m_SideColor = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "SideColor"s, (int)RGB(150, 150, 150)) : RGB(150, 150, 150);
+   LinkProp(m_d.m_aRotAndTra[0], RotAndTra0);
+   LinkProp(m_d.m_aRotAndTra[1], RotAndTra1);
+   LinkProp(m_d.m_aRotAndTra[2], RotAndTra2);
+   LinkProp(m_d.m_aRotAndTra[3], RotAndTra3);
+   LinkProp(m_d.m_aRotAndTra[4], RotAndTra4);
+   LinkProp(m_d.m_aRotAndTra[5], RotAndTra5);
+   LinkProp(m_d.m_aRotAndTra[6], RotAndTra6);
+   LinkProp(m_d.m_aRotAndTra[7], RotAndTra7);
+   LinkProp(m_d.m_aRotAndTra[8], RotAndTra8);
 
-   m_d.m_visible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Visible"s, true) : true;
-   m_inPlayState = m_d.m_visible;
-   m_d.m_staticRendering = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "StaticRendering"s, true) : true;
-   m_d.m_drawTexturesInside = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "DrawTexturesInside"s, false) : false;
+   LinkProp(m_d.m_szImage, Image);
+   LinkProp(m_d.m_szNormalMap, NormalMap);
+   LinkProp(m_d.m_hitEvent, HitEvent);
+   LinkProp(m_d.m_threshold, HitThreshold);
 
-   // Position (X and Y is already set by the click of the user)
-   m_d.m_vPosition.z = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Position_Z"s, 0.0f) : 0.0f;
+   LinkProp(m_d.m_addBlend, AddBlend);
+   LinkProp(m_d.m_useDepthMask, DepthMask);
+   LinkProp(m_d.m_alpha, Opacity);
+   LinkProp(m_d.m_color, Color);
 
-   // Size
-   m_d.m_vSize.x = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Size_X"s, 100.0f) : 100.0f;
-   m_d.m_vSize.y = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Size_Y"s, 100.0f) : 100.0f;
-   m_d.m_vSize.z = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Size_Z"s, 100.0f) : 100.0f;
+   LinkProp(m_d.m_edgeFactorUI, EdgeFactorUI);
+   LinkProp(m_d.m_collision_reductionFactor, CollisionReductionFactor);
 
-   // Rotation and Transposition
-   m_d.m_aRotAndTra[0] = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "RotAndTra0"s, 0.0f) : 0.0f;
-   m_d.m_aRotAndTra[1] = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "RotAndTra1"s, 0.0f) : 0.0f;
-   m_d.m_aRotAndTra[2] = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "RotAndTra2"s, 0.0f) : 0.0f;
-   m_d.m_aRotAndTra[3] = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "RotAndTra3"s, 0.0f) : 0.0f;
-   m_d.m_aRotAndTra[4] = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "RotAndTra4"s, 0.0f) : 0.0f;
-   m_d.m_aRotAndTra[5] = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "RotAndTra5"s, 0.0f) : 0.0f;
-   m_d.m_aRotAndTra[6] = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "RotAndTra6"s, 0.0f) : 0.0f;
-   m_d.m_aRotAndTra[7] = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "RotAndTra7"s, 0.0f) : 0.0f;
-   m_d.m_aRotAndTra[8] = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "RotAndTra8"s, 0.0f) : 0.0f;
+   LinkProp(m_d.m_collidable, Collidable);
+   LinkProp(m_d.m_toy, IsToy);
+   LinkProp(m_d.m_disableLightingTop, DisableLighting);
+   LinkProp(m_d.m_disableLightingBelow, DisableLightingBelow);
+   LinkProp(m_d.m_backfacesEnabled, BackfacesEnabled);
+   LinkProp(m_d.m_displayTexture, DisplayTexture);
+   LinkProp(m_d.m_objectSpaceNormalMap, ObjectSpaceNormalMap);
 
-   bool hr = g_pvp->m_settings.LoadValue(strKeyName, "Image"s, m_d.m_szImage);
-   if (!hr && fromMouseClick)
-      m_d.m_szImage.clear();
-
-   hr = g_pvp->m_settings.LoadValue(strKeyName, "NormalMap"s, m_d.m_szNormalMap);
-   if (!hr  && fromMouseClick)
-       m_d.m_szNormalMap.clear();
-
-   m_d.m_threshold = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "HitThreshold"s, 2.0f) : 2.0f;
-
-   SetDefaultPhysics(fromMouseClick);
-
-   m_d.m_alpha = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Opacity"s, 100.0f) : 100.0f;
-   m_d.m_addBlend = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "AddBlend"s, false) : false;
-   m_d.m_useDepthMask = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "DepthMask"s, true) : true;
-   m_d.m_color = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Color"s, (int)RGB(255, 255, 255)) : RGB(255, 255, 255);
-
-   m_d.m_edgeFactorUI = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "EdgeFactorUI"s, 0.25f) : 0.25f;
-   m_d.m_collision_reductionFactor = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "CollisionReductionFactor"s, 0.f) : 0.f;
-
-   m_d.m_collidable = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Collidable"s, true) : true;
-   m_d.m_toy = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "IsToy"s, false) : false;
-   m_d.m_disableLightingTop = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "DisableLighting"s, 0.f) : 0.f;
-   m_d.m_disableLightingBelow = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "DisableLightingBelow"s, 1.f) : 1.f;
-   m_d.m_backfacesEnabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "BackfacesEnabled"s, false) : false;
-   m_d.m_displayTexture = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "DisplayTexture"s, false) : false;
-   m_d.m_objectSpaceNormalMap = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "ObjectSpaceNormalMap"s, false) : false;
-
-#undef strKeyName
    LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
-#undef LinkProp
+   
+   SetDefaultPhysics(fromMouseClick);
+
+   m_d.m_use3DMesh = false;
+   m_d.m_meshFileName.clear();
+   m_inPlayState = m_d.m_visible;
 }
+
+void Primitive::SetDefaultPhysics(const bool fromMouseClick)
+{
+   LinkProp(m_d.m_elasticity, Elasticity);
+   LinkProp(m_d.m_elasticityFalloff, ElasticityFalloff);
+   LinkProp(m_d.m_friction, Friction);
+   LinkProp(m_d.m_scatter, Scatter);
+}
+#undef LinkProp
 
 void Primitive::WriteRegDefaults()
 {
 #define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsPrimitive_##prop(field, false)
-#define strKeyName Settings::DefaultPropsPrimitive
+   LinkProp(m_d.m_SideColor, SideColor);
+   LinkProp(m_d.m_visible, Visible);
+   LinkProp(m_d.m_staticRendering, StaticRendering);
+   LinkProp(m_d.m_drawTexturesInside, DrawTexturesInside);
 
-   g_pvp->m_settings.SaveValue(strKeyName, "SideColor"s, (int)m_d.m_SideColor);
-   g_pvp->m_settings.SaveValue(strKeyName, "Visible"s, m_d.m_visible);
-   g_pvp->m_settings.SaveValue(strKeyName, "StaticRendering"s, m_d.m_staticRendering);
-   g_pvp->m_settings.SaveValue(strKeyName, "DrawTexturesInside"s, m_d.m_drawTexturesInside);
+   LinkProp(m_d.m_vPosition.z, Position_Z);
 
-   g_pvp->m_settings.SaveValue(strKeyName, "Position_Z"s, m_d.m_vPosition.z);
+   LinkProp(m_d.m_vSize.x, Size_X);
+   LinkProp(m_d.m_vSize.y, Size_Y);
+   LinkProp(m_d.m_vSize.z, Size_Z);
 
-   g_pvp->m_settings.SaveValue(strKeyName, "Size_X"s, m_d.m_vSize.x);
-   g_pvp->m_settings.SaveValue(strKeyName, "Size_Y"s, m_d.m_vSize.y);
-   g_pvp->m_settings.SaveValue(strKeyName, "Size_Z"s, m_d.m_vSize.z);
+   LinkProp(m_d.m_aRotAndTra[0], RotAndTra0);
+   LinkProp(m_d.m_aRotAndTra[1], RotAndTra1);
+   LinkProp(m_d.m_aRotAndTra[2], RotAndTra2);
+   LinkProp(m_d.m_aRotAndTra[3], RotAndTra3);
+   LinkProp(m_d.m_aRotAndTra[4], RotAndTra4);
+   LinkProp(m_d.m_aRotAndTra[5], RotAndTra5);
+   LinkProp(m_d.m_aRotAndTra[6], RotAndTra6);
+   LinkProp(m_d.m_aRotAndTra[7], RotAndTra7);
+   LinkProp(m_d.m_aRotAndTra[8], RotAndTra8);
 
-   g_pvp->m_settings.SaveValue(strKeyName, "RotAndTra0"s, m_d.m_aRotAndTra[0]);
-   g_pvp->m_settings.SaveValue(strKeyName, "RotAndTra1"s, m_d.m_aRotAndTra[1]);
-   g_pvp->m_settings.SaveValue(strKeyName, "RotAndTra2"s, m_d.m_aRotAndTra[2]);
-   g_pvp->m_settings.SaveValue(strKeyName, "RotAndTra3"s, m_d.m_aRotAndTra[3]);
-   g_pvp->m_settings.SaveValue(strKeyName, "RotAndTra4"s, m_d.m_aRotAndTra[4]);
-   g_pvp->m_settings.SaveValue(strKeyName, "RotAndTra5"s, m_d.m_aRotAndTra[5]);
-   g_pvp->m_settings.SaveValue(strKeyName, "RotAndTra6"s, m_d.m_aRotAndTra[6]);
-   g_pvp->m_settings.SaveValue(strKeyName, "RotAndTra7"s, m_d.m_aRotAndTra[7]);
-   g_pvp->m_settings.SaveValue(strKeyName, "RotAndTra8"s, m_d.m_aRotAndTra[8]);
+   LinkProp(m_d.m_szImage, Image);
+   LinkProp(m_d.m_szNormalMap, NormalMap);
+   LinkProp(m_d.m_hitEvent, HitEvent);
+   LinkProp(m_d.m_threshold, HitThreshold);
 
-   g_pvp->m_settings.SaveValue(strKeyName, "Image"s, m_d.m_szImage);
-   g_pvp->m_settings.SaveValue(strKeyName, "NormalMap"s, m_d.m_szNormalMap);
-   g_pvp->m_settings.SaveValue(strKeyName, "HitEvent"s, m_d.m_hitEvent);
-   g_pvp->m_settings.SaveValue(strKeyName, "HitThreshold"s, m_d.m_threshold);
-   g_pvp->m_settings.SaveValue(strKeyName, "Elasticity"s, m_d.m_elasticity);
-   g_pvp->m_settings.SaveValue(strKeyName, "ElasticityFalloff"s, m_d.m_elasticityFalloff);
-   g_pvp->m_settings.SaveValue(strKeyName, "Friction"s, m_d.m_friction);
-   g_pvp->m_settings.SaveValue(strKeyName, "Scatter"s, m_d.m_scatter);
+   LinkProp(m_d.m_addBlend, AddBlend);
+   LinkProp(m_d.m_useDepthMask, DepthMask);
+   LinkProp(m_d.m_alpha, Opacity);
+   LinkProp(m_d.m_color, Color);
 
-   g_pvp->m_settings.SaveValue(strKeyName, "AddBlend"s, m_d.m_addBlend);
-   g_pvp->m_settings.SaveValue(strKeyName, "DepthMask"s, m_d.m_useDepthMask);
-   g_pvp->m_settings.SaveValue(strKeyName, "Opacity"s, m_d.m_alpha);
-   g_pvp->m_settings.SaveValue(strKeyName, "Color"s, (int)m_d.m_color);
+   LinkProp(m_d.m_edgeFactorUI, EdgeFactorUI);
+   LinkProp(m_d.m_collision_reductionFactor, CollisionReductionFactor);
 
-   g_pvp->m_settings.SaveValue(strKeyName, "EdgeFactorUI"s, m_d.m_edgeFactorUI);
-   g_pvp->m_settings.SaveValue(strKeyName, "CollisionReductionFactor"s, m_d.m_collision_reductionFactor);
+   LinkProp(m_d.m_collidable, Collidable);
+   LinkProp(m_d.m_toy, IsToy);
+   LinkProp(m_d.m_disableLightingTop, DisableLighting);
+   LinkProp(m_d.m_disableLightingBelow, DisableLightingBelow);
+   LinkProp(m_d.m_backfacesEnabled, BackfacesEnabled);
+   LinkProp(m_d.m_displayTexture, DisplayTexture);
+   LinkProp(m_d.m_objectSpaceNormalMap, ObjectSpaceNormalMap);
 
-   g_pvp->m_settings.SaveValue(strKeyName, "Collidable"s, m_d.m_collidable);
-   g_pvp->m_settings.SaveValue(strKeyName, "IsToy"s, m_d.m_toy);
-   g_pvp->m_settings.SaveValue(strKeyName, "DisableLighting"s, m_d.m_disableLightingTop);
-   g_pvp->m_settings.SaveValue(strKeyName, "DisableLightingBelow"s, m_d.m_disableLightingBelow);
-   g_pvp->m_settings.SaveValue(strKeyName, "BackfacesEnabled"s, m_d.m_backfacesEnabled);
-   g_pvp->m_settings.SaveValue(strKeyName, "DisplayTexture"s, m_d.m_displayTexture);
-   g_pvp->m_settings.SaveValue(strKeyName, "ObjectSpaceNormalMap"s, m_d.m_objectSpaceNormalMap);
+   LinkProp(m_d.m_elasticity, Elasticity);
+   LinkProp(m_d.m_elasticityFalloff, ElasticityFalloff);
+   LinkProp(m_d.m_friction, Friction);
+   LinkProp(m_d.m_scatter, Scatter);
 
-#undef strKeyName
    LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
@@ -2004,7 +1992,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
 
             SetForegroundWindow(hwndDlg);
 
-            const string szInitialDir = g_pvp->m_settings.LoadValueWithDefault(Settings::RecentDir, "ImportDir"s, PATH_TABLES);
+            const string szInitialDir = g_pvp->m_settings.GetRecentDir_ImportDir();
 
             vector<string> szFileName;
             if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", 0))
@@ -2059,7 +2047,7 @@ bool Primitive::BrowseFor3DMeshFile()
    ofn.lpstrDefExt = "obj";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-   szInitialDir = g_pvp->m_settings.LoadValueWithDefault(Settings::RecentDir, "ImportDir"s, PATH_TABLES);
+   szInitialDir = g_pvp->m_settings.GetRecentDir_ImportDir();
 
    ofn.lpstrInitialDir = szInitialDir.c_str();
 
@@ -2173,7 +2161,7 @@ bool Primitive::LoadMeshDialog()
 void Primitive::ExportMeshDialog()
 {
 #ifndef __STANDALONE__
-   const string szInitialDir = g_pvp->m_settings.LoadValueWithDefault(Settings::RecentDir, "ImportDir"s, PATH_TABLES);
+   const string szInitialDir = g_pvp->m_settings.GetRecentDir_ImportDir();
 
    vector<string> szFileName;
    if (m_vpinball->SaveFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY))
@@ -2913,18 +2901,6 @@ STDMETHODIMP Primitive::ShowFrame(float frame)
    }
 
    return S_OK;
-}
-
-void Primitive::SetDefaultPhysics(const bool fromMouseClick)
-{
-#define strKeyName Settings::DefaultPropsPrimitive
-
-   m_d.m_elasticity = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Elasticity"s, 0.3f) : 0.3f;
-   m_d.m_elasticityFalloff = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "ElasticityFalloff"s, 0.5f) : 0.5f;
-   m_d.m_friction = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Friction"s, 0.3f) : 0.3f;
-   m_d.m_scatter = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(strKeyName, "Scatter"s, 0.f) : 0.f;
-
-#undef strKeyName
 }
 
 STDMETHODIMP Primitive::get_DepthBias(float *pVal)

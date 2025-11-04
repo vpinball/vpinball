@@ -83,63 +83,50 @@ HRESULT Flasher::Init(PinTable *const ptable, const float x, const float y, cons
 void Flasher::SetDefaults(const bool fromMouseClick)
 {
 #define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsFlasher_##prop() : Settings::GetDefaultPropsFlasher_##prop##_Default()
-#define regKey Settings::DefaultPropsFlasher
-   m_d.m_height = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Height"s, 50.f) : 50.f;
-   m_d.m_rotX = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "RotX"s, 0.f) : 0.f;
-   m_d.m_rotY = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "RotY"s, 0.f) : 0.f;
-   m_d.m_rotZ = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "RotZ"s, 0.f) : 0.f;
-   m_d.m_color = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Color"s, (int)RGB(50,200,50)) : RGB(50,200,50);
-
-   bool hr = g_pvp->m_settings.LoadValue(regKey, "ImageA"s, m_d.m_szImageA);
-   if (!hr || !fromMouseClick)
-      m_d.m_szImageA.clear();
-
-   hr = g_pvp->m_settings.LoadValue(regKey, "ImageB"s, m_d.m_szImageB);
-   if (!hr || !fromMouseClick)
-      m_d.m_szImageB.clear();
-
-   m_d.m_alpha = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Opacity"s, 100) : 100;
-
-   m_d.m_intensity_scale = 1.0f;
-
-   m_d.m_modulate_vs_add = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ModulateVsAdd"s, 0.9f) : 0.9f;
-   m_d.m_filterAmount = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "FilterAmount"s, 100) : 100;
-   m_d.m_isVisible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Visible"s, true) : true;
-   m_inPlayState = m_d.m_isVisible;
-   m_d.m_addBlend = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "AddBlend"s, false) : false;
-   m_d.m_renderMode = fromMouseClick ? static_cast<FlasherData::RenderMode>(g_pvp->m_settings.LoadValueWithDefault(regKey, "RenderMode"s, 0)) : FlasherData::FLASHER;
-   m_d.m_displayTexture = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "DisplayTexture"s, false) : false;
-   m_d.m_imagealignment = fromMouseClick ? (RampImageAlignment)g_pvp->m_settings.LoadValueWithDefault(regKey, "ImageMode"s, (int)ImageModeWrap) : ImageModeWrap;
-   m_d.m_filter = fromMouseClick ? (Filters)g_pvp->m_settings.LoadValueWithDefault(regKey, "Filter"s, (int)Filter_Overlay) : Filter_Overlay;
-#undef regKey
-
+   LinkProp(m_d.m_height, Height);
+   LinkProp(m_d.m_rotX, RotX);
+   LinkProp(m_d.m_rotY, RotY);
+   LinkProp(m_d.m_rotZ, RotZ);
+   LinkProp(m_d.m_color, Color);
+   LinkProp(m_d.m_szImageA, ImageA);
+   LinkProp(m_d.m_szImageB, ImageB);
+   LinkProp(m_d.m_alpha, Opacity);
+   LinkProp(m_d.m_modulate_vs_add, ModulateVsAdd);
+   LinkProp(m_d.m_filterAmount, FilterAmount);
+   LinkProp(m_d.m_isVisible, Visible);
+   LinkProp(m_d.m_addBlend, AddBlend);
+   int renderMode;
+   LinkProp(renderMode, RenderMode);
+   m_d.m_renderMode = (FlasherData::RenderMode)renderMode;
+   LinkProp(m_d.m_displayTexture, DisplayTexture);
+   LinkProp(m_d.m_imagealignment, ImageMode);
+   LinkProp(m_d.m_filter, Filter);
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+   m_d.m_intensity_scale = 1.0f;
+   m_inPlayState = m_d.m_isVisible;
 #undef LinkProp
 }
 
 void Flasher::WriteRegDefaults()
 {
 #define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsFlasher_##prop(field, false)
-
-#define regKey Settings::DefaultPropsFlasher
-   g_pvp->m_settings.SaveValue(regKey, "Height"s, m_d.m_height);
-   g_pvp->m_settings.SaveValue(regKey, "RotX"s, m_d.m_rotX);
-   g_pvp->m_settings.SaveValue(regKey, "RotY"s, m_d.m_rotY);
-   g_pvp->m_settings.SaveValue(regKey, "RotZ"s, m_d.m_rotZ);
-   g_pvp->m_settings.SaveValue(regKey, "Color"s, (int)m_d.m_color);
-   g_pvp->m_settings.SaveValue(regKey, "ImageA"s, m_d.m_szImageA);
-   g_pvp->m_settings.SaveValue(regKey, "ImageB"s, m_d.m_szImageB);
-   g_pvp->m_settings.SaveValue(regKey, "Alpha"s, m_d.m_alpha);
-   g_pvp->m_settings.SaveValue(regKey, "ModulateVsAdd"s, m_d.m_modulate_vs_add);
-   g_pvp->m_settings.SaveValue(regKey, "Visible"s, m_d.m_isVisible);
-   g_pvp->m_settings.SaveValue(regKey, "DisplayTexture"s, m_d.m_displayTexture);
-   g_pvp->m_settings.SaveValue(regKey, "AddBlend"s, m_d.m_addBlend);
-   g_pvp->m_settings.SaveValue(regKey, "RenderMode"s, m_d.m_renderMode);
-   g_pvp->m_settings.SaveValue(regKey, "ImageMode"s, (int)m_d.m_imagealignment);
-   g_pvp->m_settings.SaveValue(regKey, "Filter"s, m_d.m_filter);
-   g_pvp->m_settings.SaveValue(regKey, "FilterAmount"s, (int)m_d.m_filterAmount);
-#undef regKey
+   LinkProp(m_d.m_height, Height);
+   LinkProp(m_d.m_rotX, RotX);
+   LinkProp(m_d.m_rotY, RotY);
+   LinkProp(m_d.m_rotZ, RotZ);
+   LinkProp(m_d.m_color, Color);
+   LinkProp(m_d.m_szImageA, ImageA);
+   LinkProp(m_d.m_szImageB, ImageB);
+   LinkProp(m_d.m_alpha, Opacity);
+   LinkProp(m_d.m_modulate_vs_add, ModulateVsAdd);
+   LinkProp(m_d.m_filterAmount, FilterAmount);
+   LinkProp(m_d.m_isVisible, Visible);
+   LinkProp(m_d.m_addBlend, AddBlend);
+   LinkProp(m_d.m_renderMode, RenderMode);
+   LinkProp(m_d.m_displayTexture, DisplayTexture);
+   LinkProp(m_d.m_imagealignment, ImageMode);
+   LinkProp(m_d.m_filter, Filter);
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
 #undef LinkProp
