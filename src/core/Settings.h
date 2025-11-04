@@ -919,17 +919,13 @@ public:
    PropBool(DefaultPropsTrigger, TimerEnabled, "Timer Enabled"s, ""s, false);
    PropInt(DefaultPropsTrigger, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
-   // Enable default core plugins for mobile and standalone build
-#ifdef __STANDALONE__
-   PropBool(PluginB2SLegacy, Enable, "Enable"s, "Enable legacy B2S plugin plugin"s, true);
-   PropBool(PluginFlexDMD, Enable, "Enable"s, "Enable FlexDMD plugin"s, true);
-   PropBool(PluginPinMAME, Enable, "Enable"s, "Enable PinMAME plugin"s, true);
-   PropBool(PluginScoreView, Enable, "Enable"s, "Enable ScoreView player plugin"s, true);
-   PropBool(PluginWMP, Enable, "Enable"s, "Enable WMP plugin"s, true);
-#endif
-#ifdef __LIBVPINBALL__
-   PropBool(PluginPUP, Enable, "Enable"s, "Enable PinUp player plugin"s, true);
-#endif
+   // Default core plugins enable state
+   PropBool(PluginB2SLegacy, Enable, "Enable"s, "Enable legacy B2S plugin"s, g_isStandalone);
+   PropBool(PluginFlexDMD, Enable, "Enable"s, "Enable FlexDMD plugin"s, g_isStandalone);
+   PropBool(PluginPinMAME, Enable, "Enable"s, "Enable PinMAME plugin"s, g_isStandalone);
+   PropBool(PluginScoreView, Enable, "Enable"s, "Enable ScoreView player plugin"s, g_isStandalone);
+   PropBool(PluginWMP, Enable, "Enable"s, "Enable WMP plugin"s, g_isStandalone);
+   PropBool(PluginPUP, Enable, "Enable"s, "Enable PinUp player plugin"s, g_isMobile);
 
 #undef PropBool
 #undef PropInt

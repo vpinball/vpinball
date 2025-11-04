@@ -55,6 +55,31 @@ using std::wstring;
 #endif
 #endif
 
+#if defined(__GNUC__) && (__GNUC__ < 12)
+   #ifdef __STANDALONE__
+      #define g_isStandalone true;
+   #else
+      #define g_isStandalone false;
+   #endif
+   #ifdef __LIBVPINBALL__
+      #define g_isMobile true;
+   #else
+      #define g_isMobile false;
+   #endif
+#else
+   #ifdef __STANDALONE__
+      constexpr bool g_isStandalone = true;
+   #else
+      constexpr bool g_isStandalone = false;
+   #endif
+   #ifdef __LIBVPINBALL__
+      constexpr bool g_isMobile = true;
+   #else
+      constexpr bool g_isMobile = false;
+   #endif
+#endif
+
+
 template <typename T>
 constexpr __forceinline T min(const T x, const T y)
 {
