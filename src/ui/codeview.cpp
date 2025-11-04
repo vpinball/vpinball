@@ -792,10 +792,10 @@ void CodeViewer::SetVisible(const bool visible)
    {
       if (!m_visible)
       {
-         const int x = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosX"s, 0);
-         const int y = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosY"s, 0);
-         const int w = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosWidth"s, 640);
-         const int h = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosHeight"s, 490);
+         const int x = g_pvp->m_settings.GetEditor_CodeViewPosX();
+         const int y = g_pvp->m_settings.GetEditor_CodeViewPosY();
+         const int w = g_pvp->m_settings.GetEditor_CodeViewPosWidth();
+         const int h = g_pvp->m_settings.GetEditor_CodeViewPosHeight();
          const POINT p { x, y };
          if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
             SetWindowPos(HWND_TOP, x, y, w, h, SWP_NOMOVE | SWP_NOSIZE);
@@ -830,26 +830,26 @@ void CodeViewer::SetCaption(const string& szCaption)
 
 void CodeViewer::UpdatePrefsfromReg()
 {
-   m_bgColor = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, "BackGroundColor"s, (int)RGB(255,255,255));
-   m_bgSelColor = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, "BackGroundSelectionColor"s, (int)RGB(192,192,192));
-   m_displayAutoComplete = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, "DisplayAutoComplete"s, true);
-   m_displayAutoCompleteLength = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, "DisplayAutoCompleteAfter"s, 1);
-   m_dwellDisplay = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, "DwellDisplay"s, true);
-   m_dwellHelp = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, "DwellHelp"s, true);
-   m_dwellDisplayTime = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, "DwellDisplayTime"s, 700);
+   m_bgColor = g_pvp->m_settings.GetCVEdit_BackGroundColor();
+   m_bgSelColor = g_pvp->m_settings.GetCVEdit_BackGroundSelectionColor();
+   m_displayAutoComplete = g_pvp->m_settings.GetCVEdit_DisplayAutoComplete();
+   m_displayAutoCompleteLength = g_pvp->m_settings.GetCVEdit_DisplayAutoCompleteAfter();
+   m_dwellDisplay = g_pvp->m_settings.GetCVEdit_DwellDisplay();
+   m_dwellHelp = g_pvp->m_settings.GetCVEdit_DwellHelp();
+   m_dwellDisplayTime = g_pvp->m_settings.GetCVEdit_DwellDisplayTime();
    for (size_t i = 0; i < m_lPrefsList->size(); ++i)
       m_lPrefsList->at(i)->GetPrefsFromReg();
 }
 
 void CodeViewer::UpdateRegWithPrefs()
 {
-   g_pvp->m_settings.SaveValue(Settings::CVEdit, "BackGroundColor"s, (int)m_bgColor);
-   g_pvp->m_settings.SaveValue(Settings::CVEdit, "BackGroundSelectionColor"s, (int)m_bgSelColor);
-   g_pvp->m_settings.SaveValue(Settings::CVEdit, "DisplayAutoComplete"s, m_displayAutoComplete);
-   g_pvp->m_settings.SaveValue(Settings::CVEdit, "DisplayAutoCompleteAfter"s, m_displayAutoCompleteLength);
-   g_pvp->m_settings.SaveValue(Settings::CVEdit, "DwellDisplay"s, m_dwellDisplay);
-   g_pvp->m_settings.SaveValue(Settings::CVEdit, "DwellHelp"s, m_dwellHelp);
-   g_pvp->m_settings.SaveValue(Settings::CVEdit, "DwellDisplayTime"s, m_dwellDisplayTime);
+   g_pvp->m_settings.SetCVEdit_BackGroundColor((int)m_bgColor, false);
+   g_pvp->m_settings.SetCVEdit_BackGroundSelectionColor((int)m_bgSelColor, false);
+   g_pvp->m_settings.SetCVEdit_DisplayAutoComplete(m_displayAutoComplete, false);
+   g_pvp->m_settings.SetCVEdit_DisplayAutoCompleteAfter(m_displayAutoCompleteLength, false);
+   g_pvp->m_settings.SetCVEdit_DwellDisplay(m_dwellDisplay, false);
+   g_pvp->m_settings.SetCVEdit_DwellHelp(m_dwellHelp, false);
+   g_pvp->m_settings.SetCVEdit_DwellDisplayTime(m_dwellDisplayTime, false);
    for (size_t i = 0; i < m_lPrefsList->size(); i++)
       m_lPrefsList->at(i)->SetPrefsToReg();
 }
@@ -2712,10 +2712,10 @@ size_t CodeViewer::SureFind(const string &LineIn, const string &ToFind)
 
 void CodeViewer::PreCreate(CREATESTRUCT& cs)
 {
-   const int x = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosX"s, 0);
-   const int y = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosY"s, 0);
-   const int w = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosWidth"s, 640);
-   const int h = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosHeight"s, 490);
+   const int x = g_pvp->m_settings.GetEditor_CodeViewPosX();
+   const int y = g_pvp->m_settings.GetEditor_CodeViewPosY();
+   const int w = g_pvp->m_settings.GetEditor_CodeViewPosWidth();
+   const int h = g_pvp->m_settings.GetEditor_CodeViewPosHeight();
 
    cs.x = x;
    cs.y = y;
@@ -3542,8 +3542,8 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				pcv->m_lPrefsList->at(i)->GetPrefsFromReg();
 				pcv->m_lPrefsList->at(i)->SetCheckBox(hwndDlg);
 			}
-			pcv->m_bgColor = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, "BackGroundColor"s, (int)RGB(255, 255, 255));
-			pcv->m_bgSelColor = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, "BackGroundSelectionColor"s, (int)RGB(192, 192, 192));
+			pcv->m_bgColor = g_pvp->m_settings.GetCVEdit_BackGroundColor();
+			pcv->m_bgSelColor = g_pvp->m_settings.GetCVEdit_BackGroundSelectionColor();
 			pcv->UpdateScinFromPrefs();
 			SNDMSG(GetDlgItem(hwndDlg, IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE), BM_SETCHECK, pcv->m_displayAutoComplete ? BST_CHECKED : BST_UNCHECKED, 0L);
 			SNDMSG(GetDlgItem(hwndDlg, IDC_CVP_CHKBOX_DISPLAYDWELL), BM_SETCHECK, pcv->m_dwellDisplay ? BST_CHECKED : BST_UNCHECKED, 0L);
@@ -3844,7 +3844,7 @@ Collection::Collection()
    m_fireEvents = false;
    m_stopSingleEvents = false;
 
-   m_groupElements = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "GroupElementsInCollection"s, true);
+   m_groupElements = g_pvp->m_settings.GetEditor_GroupElementsInCollection();
 }
 
 HRESULT Collection::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
@@ -4040,7 +4040,7 @@ STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
       return S_OK;
 
    const bool enableLog = g_pvp->m_settings.GetEditor_EnableLog();
-   const bool logScript = enableLog && g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "LogScriptOutput"s, true);
+   const bool logScript = enableLog && g_pvp->m_settings.GetEditor_LogScriptOutput();
 
    if (V_VT(pvar) == VT_EMPTY || V_VT(pvar) == VT_NULL || V_VT(pvar) == VT_ERROR)
    {

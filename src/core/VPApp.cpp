@@ -1032,7 +1032,7 @@ int VPApp::Run()
 
    // Start VP with file dialog open and then also playing that one?
    bool loadFileResult = true;
-   const bool selectOnTableStart = m_vpinball.m_settings.LoadValueWithDefault(Settings::Editor, "SelectTableOnStart"s, true);
+   const bool selectOnTableStart = m_vpinball.m_settings.GetEditor_SelectTableOnStart();
    if (!m_tableFileName.empty() || selectOnTableStart)
    {
       if (!m_tableFileName.empty())

@@ -344,10 +344,10 @@ void RenderProbeDialog::OnClose()
 
 void RenderProbeDialog::LoadPosition()
 {
-   const int x = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "RenderProbeMngPosX"s, 0);
-   const int y = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "RenderProbeMngPosY"s, 0);
-   const int w = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "RenderProbeMngWidth"s, 1000);
-   const int h = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "RenderProbeMngHeight"s, 800);
+   const int x = g_pvp->m_settings.GetEditor_RenderProbePosX();
+   const int y = g_pvp->m_settings.GetEditor_RenderProbePosY();
+   const int w = g_pvp->m_settings.GetEditor_RenderProbeWidth();
+   const int h = g_pvp->m_settings.GetEditor_RenderProbeHeight();
    POINT p { x, y };
    if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
       SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
@@ -356,11 +356,8 @@ void RenderProbeDialog::LoadPosition()
 void RenderProbeDialog::SavePosition()
 {
    const CRect rect = GetWindowRect();
-
-   g_pvp->m_settings.SaveValue(Settings::Editor, "RenderProbeMngPosX"s, (int)rect.left);
-   g_pvp->m_settings.SaveValue(Settings::Editor, "RenderProbeMngPosY"s, (int)rect.top);
-   const int w = rect.right - rect.left;
-   g_pvp->m_settings.SaveValue(Settings::Editor, "RenderProbeMngWidth"s, w);
-   const int h = rect.bottom - rect.top;
-   g_pvp->m_settings.SaveValue(Settings::Editor, "RenderProbeMngHeight"s, h);
+   g_pvp->m_settings.SetEditor_RenderProbePosX((int)rect.left, false);
+   g_pvp->m_settings.SetEditor_RenderProbePosY((int)rect.top, false);
+   g_pvp->m_settings.SetEditor_RenderProbeWidth(rect.right - rect.left, false);
+   g_pvp->m_settings.SetEditor_RenderProbeHeight(rect.bottom - rect.top, false);
 }

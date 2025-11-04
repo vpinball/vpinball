@@ -233,7 +233,14 @@ void VPinball::SetPrefPath(const string& path) {
    bool gPVPVWasNull = g_pvp == nullptr;
    if (gPVPVWasNull)
       g_pvp = this;
-   Settings::GetRegistry().Register(Settings::GetRecentDir_ImportDir_Property()->WithDefault(PATH_TABLES));
+   Settings::SetRecentDir_ImportDir_Default(PATH_TABLES);
+   Settings::SetRecentDir_LoadDir_Default(PATH_TABLES);
+   Settings::SetRecentDir_FontDir_Default(PATH_TABLES);
+   Settings::SetRecentDir_PhysicsDir_Default(PATH_TABLES);
+   Settings::SetRecentDir_ImageDir_Default(PATH_TABLES);
+   Settings::SetRecentDir_MaterialDir_Default(PATH_TABLES);
+   Settings::SetRecentDir_SoundDir_Default(PATH_TABLES);
+   Settings::SetRecentDir_POVDir_Default(PATH_TABLES);
    if (gPVPVWasNull)
       g_pvp = nullptr;
 }
@@ -284,26 +291,26 @@ void VPinball::InitTools()
 // Load editor behavior options from the settings
 void VPinball::LoadEditorSetupFromSettings()
 {
-   m_alwaysDrawDragPoints = m_settings.LoadValueWithDefault(Settings::Editor, "ShowDragPoints"s, false);
-   m_alwaysDrawLightCenters = m_settings.LoadValueWithDefault(Settings::Editor, "DrawLightCenters"s, false);
-   m_gridSize = m_settings.LoadValueWithDefault(Settings::Editor, "GridSize"s, 50);
+   m_alwaysDrawDragPoints = m_settings.GetEditor_ShowDragPoints();
+   m_alwaysDrawLightCenters = m_settings.GetEditor_DrawLightCenters();
+   m_gridSize = m_settings.GetEditor_GridSize();
 
-   const bool autoSave = m_settings.LoadValueWithDefault(Settings::Editor, "AutoSaveOn"s, true);
+   const bool autoSave = m_settings.GetEditor_AutoSaveOn();
    if (autoSave)
    {
-      m_autosaveTime = m_settings.LoadValueWithDefault(Settings::Editor, "AutoSaveTime"s, AUTOSAVE_DEFAULT_TIME);
+      m_autosaveTime = m_settings.GetEditor_AutoSaveTime();
       SetAutoSaveMinutes(m_autosaveTime);
    }
    else
       m_autosaveTime = -1;
 
-   m_securitylevel = m_settings.LoadValueWithDefault(Settings::Player, "SecurityLevel"s, DEFAULT_SECURITY_LEVEL);
+   m_securitylevel = m_settings.GetPlayer_SecurityLevel();
 
-   m_dummyMaterial.m_cBase = m_settings.LoadValueWithDefault(Settings::Editor, "DefaultMaterialColor"s, 0xB469FF);
-   m_elemSelectColor = m_settings.LoadValueWithDefault(Settings::Editor, "ElementSelectColor"s, 0x00FF0000);
-   m_elemSelectLockedColor = m_settings.LoadValueWithDefault(Settings::Editor, "ElementSelectLockedColor"s, 0x00A7726D);
-   m_backgroundColor = m_settings.LoadValueWithDefault(Settings::Editor, "BackgroundColor"s, 0x008D8D8D);
-   m_fillColor = m_settings.LoadValueWithDefault(Settings::Editor, "FillColor"s, 0x00B1CFB3);
+   m_dummyMaterial.m_cBase = m_settings.GetEditor_DefaultMaterialColor();
+   m_elemSelectColor = m_settings.GetEditor_ElementSelectColor();
+   m_elemSelectLockedColor = m_settings.GetEditor_ElementSelectLockedColor();
+   m_backgroundColor = m_settings.GetEditor_BackGroundColor();
+   m_fillColor = m_settings.GetEditor_FillColor();
 
    if (m_securitylevel < eSecurityNone || m_securitylevel > eSecurityNoControls)
       m_securitylevel = eSecurityNoControls;
@@ -312,14 +319,12 @@ void VPinball::LoadEditorSetupFromSettings()
    // get the list of the last n loaded tables
    for (int i = 0; i < LAST_OPENED_TABLE_COUNT; i++)
    {
-      string szTableName;
-      if (m_settings.LoadValue(Settings::RecentDir, "TableFileName" + std::to_string(i), szTableName))
+      string szTableName = m_settings.GetRecentDir_TableFileName(i);
+      if (!szTableName.empty())
          m_recentTableList.push_back(szTableName);
-      else
-         break;
    }
 
-   m_convertToUnit = m_settings.LoadValueWithDefault(Settings::Editor, "Units"s, 0);
+   m_convertToUnit = m_settings.GetEditor_Units();
 }
 
 void VPinball::AddMDITable(PinTableMDI* mdiTable) 
@@ -1059,7 +1064,7 @@ void VPinball::DoPlay(const int playMode)
 
 bool VPinball::LoadFile(const bool updateEditor, VPXFileFeedback* feedback)
 {
-   string szInitialDir = m_settings.LoadValueWithDefault(Settings::RecentDir, "LoadDir"s, PATH_TABLES);
+   string szInitialDir = m_settings.GetRecentDir_LoadDir();
 
    vector<string> filename;
    if (!OpenFileDialog(szInitialDir, filename, "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0", "vpx", 0,
@@ -1068,7 +1073,7 @@ bool VPinball::LoadFile(const bool updateEditor, VPXFileFeedback* feedback)
 
    const size_t index = filename[0].find_last_of(PATH_SEPARATOR_CHAR);
    if (index != string::npos)
-      m_settings.SaveValue(Settings::RecentDir, "LoadDir"s, filename[0].substr(0, index));
+      m_settings.SetRecentDir_LoadDir(filename[0].substr(0, index), false);
 
    LoadFileName(filename[0], updateEditor, feedback);
 
@@ -1173,7 +1178,7 @@ void VPinball::LoadFileName(const string& filename, const bool updateEditor, VPX
       }
 
       // get the load path from the filename
-      m_settings.SaveValue(Settings::RecentDir, "LoadDir"s, m_currentTablePath);
+      m_settings.SetRecentDir_LoadDir(m_currentTablePath, false);
 
       // make sure the load directory is the active directory
       SetCurrentDirectory(m_currentTablePath.c_str());
@@ -1424,7 +1429,7 @@ void VPinball::UpdateRecentFileList(const string& filename)
       {
          m_recentTableList.push_back(tableName);
          // write entry to the registry
-         m_settings.SaveValue(Settings::RecentDir, "TableFileName" + std::to_string(i), tableName);
+         m_settings.SetRecentDir_TableFileName(i, tableName, false);
 
          if (++i == LAST_OPENED_TABLE_COUNT)
             break;
@@ -2087,7 +2092,7 @@ INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
          (rcMain.bottom + rcMain.top) / 2 - (rcDlg.bottom - rcDlg.top) / 2,
          0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
 
-      int security = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "SecurityLevel"s, DEFAULT_SECURITY_LEVEL);
+      int security = g_pvp->m_settings.GetPlayer_SecurityLevel();
       if (security < 0 || security > 4)
          security = 0;
 
@@ -2095,7 +2100,7 @@ INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
 
       SendMessage(GetDlgItem(hwndDlg, buttonid), BM_SETCHECK, BST_CHECKED, 0);
 
-      const bool hangdetect = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "DetectHang"s, false);
+      const bool hangdetect = g_pvp->m_settings.GetPlayer_DetectHang();
       SendMessage(GetDlgItem(hwndDlg, IDC_HANGDETECT), BM_SETCHECK, hangdetect ? BST_CHECKED : BST_UNCHECKED, 0);
 
       return TRUE;
@@ -2115,11 +2120,11 @@ INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
             {
                const size_t checked = SendMessage(GetDlgItem(hwndDlg, rgDlgIDFromSecurityLevel[i]), BM_GETCHECK, 0, 0);
                if (checked == BST_CHECKED)
-                  g_pvp->m_settings.SaveValue(Settings::Player, "SecurityLevel"s, i);
+                  g_pvp->m_settings.SetPlayer_SecurityLevel(i, false);
             }
 
             const bool hangdetect = (SendMessage(GetDlgItem(hwndDlg, IDC_HANGDETECT), BM_GETCHECK, 0, 0) != 0);
-            g_pvp->m_settings.SaveValue(Settings::Player, "DetectHang"s, hangdetect);
+            g_pvp->m_settings.SetPlayer_DetectHang(hangdetect, false);
 
             EndDialog(hwndDlg, TRUE);
          }
@@ -2193,14 +2198,14 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
          case IDC_IMPORT:
          {
-            string szInitialDir = g_pvp->m_settings.LoadValueWithDefault(Settings::RecentDir, "FontDir"s, PATH_TABLES);
+            string szInitialDir = g_pvp->m_settings.GetRecentDir_FontDir();
 
             vector<string> filename;
             if (g_pvp->OpenFileDialog(szInitialDir, filename, "Font Files (*.ttf)\0*.ttf\0", "ttf", 0))
             {
                const size_t index = filename[0].find_last_of(PATH_SEPARATOR_CHAR);
                if (index != string::npos)
-                  g_pvp->m_settings.SaveValue(Settings::RecentDir, "FontDir"s, filename[0].substr(0, index));
+                  g_pvp->m_settings.SetRecentDir_FontDir(filename[0].substr(0, index), false);
 
                pt->ImportFont(GetDlgItem(hwndDlg, IDC_SOUNDLIST), filename[0]);
             }
@@ -2314,7 +2319,7 @@ void VPinball::ToggleScriptEditor()
    CComObject<PinTable> * const ptCur = GetActiveTable();
    if (ptCur)
    {
-      const bool alwaysViewScript = m_settings.LoadValueWithDefault(Settings::Editor, "AlwaysViewScript"s, false);
+      const bool alwaysViewScript = m_settings.GetEditor_AlwaysViewScript();
 
       ptCur->m_pcv->SetVisible(alwaysViewScript || !(ptCur->m_pcv->m_visible && !ptCur->m_pcv->m_minimized));
 

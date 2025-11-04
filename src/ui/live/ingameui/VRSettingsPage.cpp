@@ -96,10 +96,10 @@ void VRSettingsPage::ResetToDefaults()
 {
 #ifdef ENABLE_XR
    // Recentering the table is asynchronous so define defaults as the last acquired values (not perfect but fine enough for user feedback)
-   Settings::GetRegistry().Register(Settings::GetPlayerVR_Orientation_Property()->WithDefault(m_player->m_vrDevice->GetSceneOrientation()));
-   Settings::GetRegistry().Register(Settings::GetPlayerVR_TableX_Property()->WithDefault(m_player->m_vrDevice->GetSceneOffset().x));
-   Settings::GetRegistry().Register(Settings::GetPlayerVR_TableY_Property()->WithDefault(m_player->m_vrDevice->GetSceneOffset().y));
-   Settings::GetRegistry().Register(Settings::GetPlayerVR_TableZ_Property()->WithDefault(m_player->m_vrDevice->GetSceneOffset().z));
+   Settings::SetPlayerVR_Orientation_Default(m_player->m_vrDevice->GetSceneOrientation());
+   Settings::SetPlayerVR_TableX_Default(m_player->m_vrDevice->GetSceneOffset().x);
+   Settings::SetPlayerVR_TableY_Default(m_player->m_vrDevice->GetSceneOffset().y);
+   Settings::SetPlayerVR_TableZ_Default(m_player->m_vrDevice->GetSceneOffset().z);
 #endif
    InGameUIPage::ResetToDefaults();
    m_player->m_vrDevice->RecenterTable();

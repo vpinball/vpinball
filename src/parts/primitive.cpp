@@ -2002,7 +2002,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
                if (index != string::npos)
                {
-                  g_pvp->m_settings.SaveValue(Settings::RecentDir, "ImportDir"s, szFileName[0].substr(0, index));
+                  g_pvp->m_settings.SetRecentDir_ImportDir(szFileName[0].substr(0, index), false);
                   index++;
                   prim->m_d.m_meshFileName = szFileName[0].substr(index, szFileName[0].length() - index);
                }
@@ -2060,7 +2060,7 @@ bool Primitive::BrowseFor3DMeshFile()
    if (index != string::npos)
    {
       const string newInitDir(szFilename.substr(0, index));
-      g_pvp->m_settings.SaveValue(Settings::RecentDir, "ImportDir"s, newInitDir);
+      g_pvp->m_settings.SetRecentDir_ImportDir(newInitDir, false);
       index++;
       m_d.m_meshFileName = filename.substr(index, filename.length() - index);
    }
@@ -2170,7 +2170,7 @@ void Primitive::ExportMeshDialog()
       if (index != string::npos)
       {
          const string newInitDir(szFileName[0].substr(0, index));
-         g_pvp->m_settings.SaveValue(Settings::RecentDir, "ImportDir"s, newInitDir);
+         g_pvp->m_settings.SetRecentDir_ImportDir(newInitDir, false);
       }
 
       m_mesh.SaveWavefrontObj(szFileName[0], m_d.m_use3DMesh ? MakeString(m_wzName) : "Primitive"s);

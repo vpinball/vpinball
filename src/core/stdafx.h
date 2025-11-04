@@ -88,8 +88,6 @@
 
 #define MAX_OPEN_TABLES         9
 
-#define AUTOSAVE_DEFAULT_TIME   10
-
 #define DEFAULT_SECURITY_LEVEL  0
 
 #define NUM_ASSIGN_LAYERS       20

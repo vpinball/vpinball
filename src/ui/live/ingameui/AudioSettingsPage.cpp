@@ -61,7 +61,7 @@ AudioSettingsPage::AudioSettingsPage()
    for (const auto& device : VPX::AudioPlayer::EnumerateAudioDevices())
       m_devices.push_back(device.name);
 
-   Settings::GetRegistry().Register(Settings::GetPlayer_SoundDeviceBG_Property()->WithDefault(m_player->m_audioPlayer->GetBackglassDeviceName()));
+   Settings::SetPlayer_SoundDeviceBG_Default(m_player->m_audioPlayer->GetBackglassDeviceName());
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::EnumPropertyDef(""s, ""s, "Backglass Sound Device"s, "Select backglass sound device"s, 0, 0, m_devices), //
       [this]()
@@ -83,7 +83,7 @@ AudioSettingsPage::AudioSettingsPage()
       [](Settings& settings) { settings.ResetPlayer_SoundDeviceBG(); }, //
       [this](int v, Settings& settings, bool isTableOverride) { settings.SetPlayer_SoundDeviceBG(m_devices[v], isTableOverride); }));
 
-   Settings::GetRegistry().Register(Settings::GetPlayer_SoundDevice_Property()->WithDefault(m_player->m_audioPlayer->GetPlayfieldDeviceName()));
+   Settings::SetPlayer_SoundDevice_Default(m_player->m_audioPlayer->GetPlayfieldDeviceName());
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::EnumPropertyDef(""s, ""s, "Playfield Sound Device"s, "Select playfield sound device"s, 0, 0, m_devices), //
       [this]()

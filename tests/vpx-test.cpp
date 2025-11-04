@@ -165,12 +165,11 @@ void ResetVPX()
    // Reset settings
    g_pvp->m_settings = Settings();
    Settings& settings = g_pvp->m_settings;
-   settings.Validate(true);
-   settings.SaveValue(Settings::Section::PlayerVR, "AskToTurnOn"s, 2);
-   settings.SaveValue(Settings::Section::Player, "PlayfieldFullScreen"s, 0);
-   settings.SaveValue(Settings::Section::Player, "PlayfieldWidth"s, 1920);
-   settings.SaveValue(Settings::Section::Player, "PlayfieldHeight"s, 1080);
-   settings.SaveValue(Settings::Section::Player, "NumberOfTimesToShowTouchMessage"s, 0);
+   settings.SetPlayerVR_AskToTurnOn(2, false);
+   settings.SetPlayer_PlayfieldFullScreen(0, false);
+   settings.SetPlayer_PlayfieldWidth(1920, false);
+   settings.SetPlayer_PlayfieldHeight(1080, false);
+   settings.SetPlayer_NumberOfTimesToShowTouchMessage(0, false);
    settings.SetPlayer_DisableAO(true, false);
 }
 

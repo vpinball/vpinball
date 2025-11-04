@@ -33,7 +33,7 @@ void MiscSettingsPage::BuildPage()
    // Tonemapper, as a table override, if not using WCG display tonemapper
    if (!m_player->m_renderer->m_HDRforceDisableToneMapper || !m_player->m_playfieldWnd->IsWCGBackBuffer())
    {
-      Settings::GetRegistry().Register(Settings::GetTableOverride_ToneMapper_Property()->WithDefault(m_player->m_ptable->GetToneMapper()));
+      Settings::SetTableOverride_ToneMapper_Default(m_player->m_ptable->GetToneMapper());
       AddItem(std::make_unique<InGameUIItem>( //
          Settings::m_propTableOverride_ToneMapper, //
          [this]() { return static_cast<int>(m_player->m_renderer->m_toneMapper); }, //
@@ -42,7 +42,7 @@ void MiscSettingsPage::BuildPage()
 
    // Exposure, always saved as a table override setting if different from table embedded value
    // FIXME this conflicts with HDR adjusting exposure
-   Settings::GetRegistry().Register(Settings::GetTableOverride_Exposure_Property()->WithDefault(m_player->m_ptable->GetExposure()));
+   Settings::SetTableOverride_Exposure_Default(m_player->m_ptable->GetExposure());
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propTableOverride_Exposure, 100.f, "%4.1f %%"s, //
       [this]() { return m_player->m_renderer->m_exposure; }, //
@@ -53,7 +53,7 @@ void MiscSettingsPage::BuildPage()
       }));
 
    // Difficulty, always saved as a table override setting if different from table embedded value
-   Settings::GetRegistry().Register(Settings::GetTableOverride_Difficulty_Property()->WithDefault(m_player->m_ptable->m_difficulty));
+   Settings::SetTableOverride_Difficulty_Default(m_player->m_ptable->m_difficulty);
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propTableOverride_Difficulty, 100.f, "%4.1f %%"s, //
       [this]() { return m_player->m_ptable->m_globalDifficulty; }, //
@@ -96,7 +96,7 @@ void MiscSettingsPage::BuildPage()
 
       if (m_dayTimeMode == 1)
       {
-         Settings::GetRegistry().Register(Settings::GetPlayer_EmissionScale_Property()->WithDefault(m_player->m_ptable->m_globalEmissionScale));
+         Settings::SetPlayer_EmissionScale_Default(m_player->m_ptable->m_globalEmissionScale);
          AddItem(std::make_unique<InGameUIItem>(
             Settings::m_propPlayer_EmissionScale, 100.f, "%4.1f %%"s, [this]() { return m_player->m_renderer->m_globalEmissionScale; },
             [this](float, float v)

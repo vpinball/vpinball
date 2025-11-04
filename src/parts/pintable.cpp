@@ -1149,8 +1149,8 @@ HRESULT PinTable::Save(const bool saveAs)
       // Or try with the standard last-used dir
       else
       {
-         if (!m_settings.LoadValue(Settings::RecentDir, "LoadDir"s, szInitialDir))
-            szInitialDir = m_vpinball->m_myPath + "tables" + PATH_SEPARATOR_CHAR;
+         Settings::SetRecentDir_LoadDir_Default(m_vpinball->m_myPath + "tables" + PATH_SEPARATOR_CHAR);
+         szInitialDir = m_settings.GetRecentDir_LoadDir();
       }
       ofn.lpstrInitialDir = szInitialDir.c_str();
 
@@ -1162,7 +1162,7 @@ HRESULT PinTable::Save(const bool saveAs)
 
       // assign user selected file name as new internal filename, and save as new default
       m_filename = fileName;
-      g_pvp->m_settings.SaveValue(Settings::RecentDir, "LoadDir"s, m_filename.substr(0, ofn.nFileOffset)); // truncate after folder(s)
+      g_pvp->m_settings.SetRecentDir_LoadDir(m_filename.substr(0, ofn.nFileOffset), false); // truncate after folder(s)
 
       {
          STGOPTIONS stg;
@@ -2492,7 +2492,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    {
       int tmp;
       pbr->GetInt(tmp);
-      Settings::GetRegistry().Register(Settings::GetPlayer_PlungerNormalize_Property()->WithDefault(tmp));
+      Settings::SetPlayer_PlungerNormalize_Default(tmp);
       m_plungerNormalize = m_settings.GetPlayer_PlungerNormalize();
       break;
    }
@@ -4167,7 +4167,7 @@ void PinTable::ImportBackdropPOV(const string &filename)
       if (IsLocked())
          return;
 #ifndef __STANDALONE__
-      const string initialDir = m_settings.LoadValueWithDefault(Settings::RecentDir, "POVDir"s, PATH_TABLES);
+      const string initialDir = m_settings.GetRecentDir_POVDir();
       vector<string> fileNames;
       if (!m_vpinball->OpenFileDialog(initialDir, fileNames, 
          "User settings file (*.ini)\0*.ini\0Old POV file (*.pov)\0*.pov\0Legacy POV file(*.xml)\0*.xml\0",
@@ -4176,7 +4176,7 @@ void PinTable::ImportBackdropPOV(const string &filename)
       file = fileNames[0];
       const size_t index = file.find_last_of(PATH_SEPARATOR_CHAR);
       if (index != string::npos)
-         g_pvp->m_settings.SaveValue(Settings::RecentDir, "POVDir"s, file.substr(0, index));
+         g_pvp->m_settings.SetRecentDir_POVDir(file.substr(0, index), false);
 #endif
    }
 
@@ -6609,13 +6609,13 @@ STDMETHODIMP PinTable::put_TableSoundVolume(int newVal)
 
 STDMETHODIMP PinTable::get_DetailLevel(int *pVal)
 {
-   *pVal = m_settings.LoadValueWithDefault(Settings::Player, "AlphaRampAccuracy"s, 10);
+   *pVal = m_settings.GetPlayer_AlphaRampAccuracy();
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_DetailLevel(int newVal)
 {
-   m_settings.SaveValue(Settings::Player, "AlphaRampAccuracy"s, newVal, true);
+   m_settings.SetPlayer_AlphaRampAccuracy(newVal, true);
    return S_OK;
 }
 
@@ -6933,7 +6933,7 @@ STDMETHODIMP PinTable::get_PlungerNormalize(int *pVal)
 void PinTable::SetPlungerNormalize(const int value)
 {
    // Defines the value unless it is overriden in the settings
-   Settings::GetRegistry().Register(Settings::GetPlayer_PlungerNormalize_Property()->WithDefault(value));
+   Settings::SetPlayer_PlungerNormalize_Default(value);
    m_plungerNormalize = m_settings.GetPlayer_PlungerNormalize();
 }
 
@@ -7322,9 +7322,7 @@ STDMETHODIMP PinTable::put_OverridePhysicsFlippers(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::ImportPhysics()
 {
-   string szInitialDir;
-   if (!m_settings.LoadValue(Settings::RecentDir, "PhysicsDir"s, szInitialDir))
-      szInitialDir = PATH_TABLES;
+   string szInitialDir = m_settings.GetRecentDir_PhysicsDir();
 
    vector<string> filename;
    if (!m_vpinball->OpenFileDialog(szInitialDir, filename, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
@@ -7332,7 +7330,7 @@ STDMETHODIMP PinTable::ImportPhysics()
 
    const size_t index = filename[0].find_last_of(PATH_SEPARATOR_CHAR);
    if (index != string::npos)
-      g_pvp->m_settings.SaveValue(Settings::RecentDir, "PhysicsDir"s, filename[0].substr(0, index));
+      g_pvp->m_settings.SetRecentDir_PhysicsDir(filename[0].substr(0, index), false);
 
    ImportVPP(filename[0]);
 
@@ -7496,9 +7494,7 @@ STDMETHODIMP PinTable::ExportPhysics()
    ofn.lpstrDefExt = "vpp";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-   string szInitialDir;
-   if (!m_settings.LoadValue(Settings::RecentDir, "PhysicsDir"s, szInitialDir))
-      szInitialDir = PATH_TABLES;
+   string szInitialDir = m_settings.GetRecentDir_PhysicsDir();
 
    ofn.lpstrInitialDir = szInitialDir.c_str();
 
@@ -7511,7 +7507,7 @@ STDMETHODIMP PinTable::ExportPhysics()
    if (index != string::npos)
    {
        const string newInitDir(filename.substr(0, index));
-       g_pvp->m_settings.SaveValue(Settings::RecentDir, "PhysicsDir"s, newInitDir);
+       g_pvp->m_settings.SetRecentDir_PhysicsDir(newInitDir, false);
    }
 
    tinyxml2::XMLDocument xmlDoc;
@@ -7606,7 +7602,8 @@ float PinTable::GetGlobalDifficulty() const
 void PinTable::SetGlobalDifficulty(const float value)
 {
    m_difficulty = value;
-   m_globalDifficulty = m_settings.LoadValueWithDefault(Settings::TableOverride, "Difficulty"s, m_difficulty);
+   Settings::SetTableOverride_Difficulty_Default(m_difficulty);
+   m_globalDifficulty = m_settings.GetTableOverride_Difficulty();
 }
 
 STDMETHODIMP PinTable::get_GlobalDifficulty(float *pVal)
@@ -7630,54 +7627,51 @@ STDMETHODIMP PinTable::put_GlobalDifficulty(float newVal)
 // FIXME deprecated
 STDMETHODIMP PinTable::get_Accelerometer(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_settings.LoadValueWithDefault(Settings::Player, "PBWEnabled"s, true));
+   *pVal = FTOVB(false); // Used to be setting Player/PBWEnabled
    return S_OK;
 }
 
 // FIXME deprecated
 STDMETHODIMP PinTable::put_Accelerometer(VARIANT_BOOL newVal)
 {
-   m_settings.SaveValue(Settings::Player, "PBWEnabled"s, VBTOb(newVal));
    return S_OK;
 }
 
 // FIXME deprecated
 STDMETHODIMP PinTable::get_AccelNormalMount(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_settings.LoadValueWithDefault(Settings::Player, "PBWNormalMount"s, true));
+   *pVal = FTOVB(true); // Used to be setting Player/PBWNormalMount
    return S_OK;
 }
 
 // FIXME deprecated
 STDMETHODIMP PinTable::put_AccelNormalMount(VARIANT_BOOL newVal)
 {
-   m_settings.SaveValue(Settings::Player, "PBWNormalMount"s, VBTOb(newVal));
    return S_OK;
 }
 
 // FIXME deprecated
 STDMETHODIMP PinTable::get_AccelerometerAngle(float *pVal)
 {
-   *pVal = (float) m_settings.LoadValueWithDefault(Settings::Player, "PBWRotationValue"s, 0);
+   *pVal = 0.f; // Used to be setting Player/PBWRotationValue
    return S_OK;
 }
 
 // FIXME deprecated
 STDMETHODIMP PinTable::put_AccelerometerAngle(float newVal)
 {
-   m_settings.SaveValue(Settings::Player, "PBWRotationValue"s, newVal);
    return S_OK;
 }
 
+// FIXME deprecated
 STDMETHODIMP PinTable::get_DeadZone(int *pVal)
 {
-   *pVal = m_settings.LoadValueWithDefault(Settings::Player, "DeadZone"s, 0);
+   *pVal = 0; // Used to be setting Player/DeadZone
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_DeadZone(int newVal)
 {
-   g_pvp->m_settings.SaveValue(Settings::Player, "DeadZone"s, clamp(newVal, 0,100));
    return S_OK;
 }
 
