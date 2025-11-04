@@ -35,16 +35,7 @@ HomePage::HomePage()
       AddItem(std::make_unique<InGameUIItem>("Stereo Settings"s, ""s, "settings/stereo"s));
    #endif
 
-   #ifdef __LIBVPINBALL__
-   if (m_player->m_backglassOutput.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
-      AddItem(std::make_unique<InGameUIItem>("Backglass"s, ""s, "settings/backglass"s));
-
-   if (m_player->m_scoreViewOutput.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
-      AddItem(std::make_unique<InGameUIItem>("Score View"s, ""s, "settings/scoreview"s));
-   #else
-
    AddItem(std::make_unique<InGameUIItem>("Display Settings"s, ""s, "settings/displays"s));
-   #endif
 
    AddItem(std::make_unique<InGameUIItem>("Input Settings"s, ""s, "settings/input"s));
 

@@ -39,15 +39,19 @@ static constexpr std::array<int2, 13> aspectRatios {
 DisplayHomePage::DisplayHomePage()
    : InGameUIPage("Display Settings"s, ""s, SaveMode::None)
 {
-   if (m_player->m_vrDevice)
+   // On Phone platform, the main display is always the device screen
+   if (!g_isMobile)
    {
-      m_player->m_liveUI->m_inGameUI.AddPage("settings/display_vr_preview"s, []() { return std::make_unique<DisplaySettingsPage>(VPXWindowId::VPXWINDOW_VRPreview); });
-      AddItem(std::make_unique<InGameUIItem>("VR PReview Display"s, ""s, "settings/display_vr_preview"s));
-   }
-   else
-   {
-      m_player->m_liveUI->m_inGameUI.AddPage("settings/display_playfield"s, []() { return std::make_unique<DisplaySettingsPage>(VPXWindowId::VPXWINDOW_Playfield); });
-      AddItem(std::make_unique<InGameUIItem>("Playfield Display"s, ""s, "settings/display_playfield"s));
+      if (m_player->m_vrDevice)
+      {
+         m_player->m_liveUI->m_inGameUI.AddPage("settings/display_vr_preview"s, []() { return std::make_unique<DisplaySettingsPage>(VPXWindowId::VPXWINDOW_VRPreview); });
+         AddItem(std::make_unique<InGameUIItem>("VR PReview Display"s, ""s, "settings/display_vr_preview"s));
+      }
+      else
+      {
+         m_player->m_liveUI->m_inGameUI.AddPage("settings/display_playfield"s, []() { return std::make_unique<DisplaySettingsPage>(VPXWindowId::VPXWINDOW_Playfield); });
+         AddItem(std::make_unique<InGameUIItem>("Playfield Display"s, ""s, "settings/display_playfield"s));
+      }
    }
 
    m_player->m_liveUI->m_inGameUI.AddPage("settings/display_backglass"s, []() { return std::make_unique<DisplaySettingsPage>(VPXWindowId::VPXWINDOW_Backglass); });
@@ -113,7 +117,7 @@ void DisplaySettingsPage::BuildPage()
    {
       BuildWindowPage();
    }
-   else
+   else if (!g_isMobile)
    {
       Settings::GetRegistry().Register(Settings::GetWindow_Mode_Property(m_wndId)->WithDefault(GetOutput(m_wndId).GetMode()));
       AddItem(std::make_unique<InGameUIItem>(
@@ -138,6 +142,23 @@ void DisplaySettingsPage::BuildPage()
       case VPX::RenderOutput::OM_EMBEDDED: BuildEmbeddedPage(); break;
       default: break;
       }
+   }
+   else
+   { // For mobile, only disabled/embedded mode are supported (as we don't have multiple windows)
+      AddItem(std::make_unique<InGameUIItem>(
+         VPX::Properties::BoolPropertyDef(""s, ""s, "Enable"s, "Enable rendering this display"s, false), //
+         [this]() { return GetOutput(m_wndId).GetMode() != VPX::RenderOutput::OM_DISABLED; }, // Live
+         [this]() { return m_player->m_ptable->m_settings.GetWindow_Mode(m_wndId) != VPX::RenderOutput::OM_DISABLED; }, // Stored
+         [this](bool v)
+         {
+            GetOutput(m_wndId).SetMode(m_player->m_ptable->m_settings, v ? VPX::RenderOutput::OM_EMBEDDED : VPX::RenderOutput::OM_DISABLED);
+            BuildPage();
+         }, //
+         [this](Settings& settings) { settings.ResetWindow_Mode(m_wndId); }, //
+         [this](bool v, Settings& settings, bool asTableOverride)
+         { settings.SetWindow_Mode(m_wndId, v ? VPX::RenderOutput::OM_EMBEDDED : VPX::RenderOutput::OM_DISABLED, asTableOverride); }));
+      if (GetOutput(m_wndId).GetMode() != VPX::RenderOutput::OM_DISABLED)
+         BuildEmbeddedPage();
    }
 }
 

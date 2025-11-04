@@ -6,7 +6,6 @@
 #include "ui/live/LiveUI.h"
 
 #include "AudioSettingsPage.h"
-#include "BackglassPage.h"
 #include "CabinetSettingsPage.h"
 #include "DisplayProfileSettingsPage.h"
 #include "DisplaySettingsPage.h"
@@ -19,7 +18,6 @@
 #include "PluginSettingsPage.h"
 #include "PlungerSettingsPage.h"
 #include "PointOfViewSettingsPage.h"
-#include "ScoreViewPage.h"
 #include "StereoSettingsPage.h"
 #include "TableOptionsPage.h"
 #include "TableRulesPage.h"
@@ -35,7 +33,6 @@ InGameUI::InGameUI(LiveUI &liveUI)
    AddPage("exit"s, []() { return std::make_unique<ExitSplashPage>(); });
    AddPage("homepage"s, []() { return std::make_unique<HomePage>(); });
    AddPage("settings/audio"s, []() { return std::make_unique<AudioSettingsPage>(); });
-   AddPage("settings/backglass"s, []() { return std::make_unique<BackglassPage>(); });
    AddPage("settings/cabinet"s, []() { return std::make_unique<CabinetSettingsPage>(); });
    AddPage("settings/display_profiles"s, []() { return std::make_unique<DisplayProfileSettingsPage>(); });
    AddPage("settings/displays"s, []() { return std::make_unique<DisplayHomePage>(); });
@@ -45,7 +42,6 @@ InGameUI::InGameUI(LiveUI &liveUI)
    AddPage("settings/nudge"s, []() { return std::make_unique<NudgeSettingsPage>(); });
    AddPage("settings/plunger"s, []() { return std::make_unique<PlungerSettingsPage>(); });
    AddPage("settings/pov"s, []() { return std::make_unique<PointOfViewSettingsPage>(); });
-   AddPage("settings/scoreview"s, []() { return std::make_unique<ScoreViewPage>(); });
    AddPage("settings/stereo"s, []() { return std::make_unique<StereoSettingsPage>(); });
    AddPage("settings/vr"s, []() { return std::make_unique<VRSettingsPage>(); });
    AddPage("table/options"s, []() { return std::make_unique<TableOptionsPage>(); });
