@@ -899,7 +899,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/PlumbOverlay.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUI.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/AudioSettingsPage.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/BackglassPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/CabinetSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/DisplayProfileSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/DisplaySettingsPage.cpp" />
@@ -914,7 +913,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/PlungerSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/PluginSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/PointOfViewSettingsPage.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/ScoreViewPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/StereoSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/TableOptionsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/TableRulesPage.cpp" />
@@ -1664,7 +1662,6 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/PlumbOverlay.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUI.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/AudioSettingsPage.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/BackglassPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/CabinetSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/DisplayProfileSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/DisplaySettingsPage.h" />
@@ -1679,7 +1676,6 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/PlungerSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/PluginSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/PointOfViewSettingsPage.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/ScoreViewPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/StereoSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/TableOptionsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/TableRulesPage.h" />
