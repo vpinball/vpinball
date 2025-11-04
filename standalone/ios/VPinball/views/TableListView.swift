@@ -1,8 +1,9 @@
 import SwiftUI
 
 enum TableListMode: Int, Hashable {
-    case column2
-    case column3
+    case small
+    case medium
+    case large
     case list
 }
 
@@ -17,7 +18,7 @@ struct TableListView: View {
 
     @State var selectedTable: Table?
 
-    init(mode: TableListMode = .column2, sortOrder: SortOrder = .reverse, searchText: String = "", scrollToTable: Binding<Table?> = .constant(nil)) {
+    init(mode: TableListMode = .medium, sortOrder: SortOrder = .reverse, searchText: String = "", scrollToTable: Binding<Table?> = .constant(nil)) {
         self.mode = mode
         self.sortOrder = sortOrder
         self.searchText = searchText
@@ -30,31 +31,7 @@ struct TableListView: View {
 
     var body: some View {
         ZStack {
-            if mode != .list {
-                ScrollView {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(),
-                                                                 alignment: .top),
-                                             count: mode == .column2 ? 2 : 3))
-                    {
-                        ForEach(filteredTables) { table in
-                            EmptyView()
-                                .id(table.uuid)
-
-                            TableListButton(table: table)
-                                .opacity(selectedTable?.uuid == table.uuid ? 0.5 : 1)
-                                .onTapGesture {
-                                    handlePlay(table)
-                                }
-                        }
-                    }
-                    .scrollTargetLayout()
-                    .padding(10)
-                }
-                .scrollPosition(id: Binding(
-                    get: { scrollToTable?.uuid },
-                    set: { _ in scrollToTable = nil }
-                ), anchor: .top)
-            } else {
+            if mode == .list {
                 ScrollViewReader { proxy in
                     List {
                         ForEach(filteredTables) { table in
@@ -62,7 +39,7 @@ struct TableListView: View {
                                 handlePlay(table)
                             }
                             label: {
-                                HStack(spacing: 10) {
+                                HStack(spacing: 15) {
                                     TableListButton(table: table,
                                                     showTitle: false)
                                         .frame(height: 120)
@@ -72,6 +49,8 @@ struct TableListView: View {
                                                alignment: .leading)
                                         .multilineTextAlignment(.leading)
                                         .foregroundStyle(Color.white)
+                                        .lineLimit(3)
+                                        .padding(.horizontal, 12)
                                 }
                             }
                             .id(table.uuid)
@@ -106,6 +85,31 @@ struct TableListView: View {
                             proxy.scrollTo(table.uuid, anchor: .top)
                         }
                     }
+                }
+            } else {
+                GeometryReader { geo in
+                    let size = geo.size
+                    let layout = computeColumns(containerWidth: size.width - 32,
+                                                availableHeight: size.height,
+                                                mode: mode)
+                    ScrollView {
+                        LazyVGrid(columns: Array(repeating: GridItem(.fixed(layout.cardWidth), spacing: layout.gap, alignment: .top), count: layout.columns), spacing: layout.gap) {
+                            ForEach(filteredTables) { table in
+                                EmptyView().id(table.uuid)
+                                TableListButton(table: table)
+                                    .opacity(selectedTable?.uuid == table.uuid ? 0.5 : 1)
+                                    .onTapGesture { handlePlay(table) }
+                                    .frame(width: layout.cardWidth, height: layout.cardWidth * 1.5)
+                            }
+                        }
+                        .scrollTargetLayout()
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 16)
+                    }
+                    .scrollPosition(id: Binding(
+                        get: { scrollToTable?.uuid },
+                        set: { _ in scrollToTable = nil }
+                    ), anchor: .top)
                 }
             }
 
@@ -159,5 +163,95 @@ struct TableListView: View {
                                             table: table)
             }
         }
+    }
+}
+
+extension TableListView {
+    private var baseGap: CGFloat { 12 }
+    private var ratio: CGFloat { 2 / 3 }
+    private var minReadableWidth: CGFloat { 120 }
+    private var minFloorRegular: CGFloat { 48 }
+    private var minFloorCompact: CGFloat { 40 }
+
+    private func heightFactor(_ mode: TableListMode) -> CGFloat {
+        switch mode {
+        case .small: return 0.72
+        case .medium: return 0.88
+        case .large: return 1.0
+        case .list: return 1.0
+        }
+    }
+
+    private func computeTiers(containerWidth: CGFloat, availableHeight: CGFloat, gap: CGFloat, minFloor: CGFloat) -> (small: Int, medium: Int, large: Int, maxWidthFromHeight: CGFloat) {
+        let baseCap = max(60, availableHeight) * ratio
+        func calculateColumns(capFactor: CGFloat) -> Int {
+            var minWidth = minReadableWidth
+            let effectiveCap = baseCap * capFactor
+            var effectiveMin = min(minWidth, effectiveCap)
+            var columns = Int(floor((containerWidth + gap) / (effectiveMin + gap)))
+            while columns < 3 && minWidth > minFloor {
+                minWidth -= 6
+                effectiveMin = min(minWidth, effectiveCap)
+                columns = Int(floor((containerWidth + gap) / (effectiveMin + gap)))
+            }
+            return max(1, columns)
+        }
+        let smallColumnsRaw = calculateColumns(capFactor: 0.72)
+        let mediumColumnsRaw = calculateColumns(capFactor: 0.88)
+        let largeColumnsRaw = calculateColumns(capFactor: 1.00)
+
+        let smallColumns = max(3, smallColumnsRaw)
+        var mediumColumns = min(mediumColumnsRaw, smallColumns - 1)
+        if mediumColumns < 2 { mediumColumns = max(2, smallColumns - 1) }
+        var largeColumns = min(largeColumnsRaw, mediumColumns - 1)
+        if largeColumns < 1 { largeColumns = 1 }
+
+        return (smallColumns, mediumColumns, largeColumns, baseCap)
+    }
+
+    private func cardWidthForColumns(_ columns: Int, containerWidth: CGFloat, heightCap: CGFloat, mode: TableListMode, gap: CGFloat) -> CGFloat {
+        let widthPerColumn = (containerWidth - gap * CGFloat(max(columns - 1, 0))) / CGFloat(max(columns, 1))
+        var width = min(widthPerColumn, heightCap)
+        if columns == 1 {
+            let factor: CGFloat = {
+                switch mode {
+                case .small: return 0.86
+                case .medium: return 0.94
+                case .large: return 1.00
+                case .list: return 0.94
+                }
+            }()
+            width = min(width, containerWidth * factor)
+        }
+        return floor(width)
+    }
+
+    private func computeColumns(containerWidth: CGFloat, availableHeight: CGFloat, mode: TableListMode) -> (columns: Int, cardWidth: CGFloat, gap: CGFloat) {
+        let layout: (gap: CGFloat, minFloor: CGFloat) = (availableHeight < 420) ? (8, minFloorCompact) : (baseGap, minFloorRegular)
+        let tiers = computeTiers(containerWidth: containerWidth,
+                                 availableHeight: availableHeight,
+                                 gap: layout.gap,
+                                 minFloor: layout.minFloor)
+
+        let effectiveSmall = min(tiers.small, 6)
+        var effectiveMedium = min(tiers.medium, effectiveSmall - 1)
+        if effectiveMedium < 2 { effectiveMedium = max(1, effectiveSmall - 1) }
+        var effectiveLarge = min(tiers.large, effectiveMedium - 1)
+        if effectiveLarge < 1 { effectiveLarge = 1 }
+        let columns: Int = {
+            switch mode {
+            case .small: return effectiveSmall
+            case .medium: return effectiveMedium
+            case .large: return effectiveLarge
+            case .list: return effectiveMedium
+            }
+        }()
+        let heightCap = max(60, availableHeight) * ratio * heightFactor(mode)
+        let cardWidth = cardWidthForColumns(columns,
+                                            containerWidth: containerWidth,
+                                            heightCap: heightCap,
+                                            mode: mode,
+                                            gap: layout.gap)
+        return (columns, cardWidth, layout.gap)
     }
 }

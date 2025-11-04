@@ -10,6 +10,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -320,127 +321,131 @@ fun LandingScreen(
             }
         },
     ) { padding ->
-        Column(modifier = Modifier.padding(padding).fillMaxWidth()) {
-            LandingScreenSearchBar(
-                searchTextFieldState = searchTextFieldState,
-                searchText = searchText,
-                searchBarHeight = searchBarHeight,
-                searchBarOpacity = searchBarOpacity,
-                isSearching = isSearching,
-                focusManager = focusManager,
-                onFocusChanged = { searchIsFocused = it },
-            )
+        BoxWithConstraints(modifier = Modifier.padding(padding).fillMaxWidth()) {
+            val searchBarAllowance = 24.dp
+            val stableAvailableHeight = (this.maxHeight - maxSearchBarHeight - searchBarAllowance).coerceAtLeast(60.dp)
+            Column(modifier = Modifier.fillMaxWidth()) {
+                LandingScreenSearchBar(
+                    searchTextFieldState = searchTextFieldState,
+                    searchText = searchText,
+                    searchBarHeight = searchBarHeight,
+                    searchBarOpacity = searchBarOpacity,
+                    isSearching = isSearching,
+                    focusManager = focusManager,
+                    onFocusChanged = { searchIsFocused = it },
+                )
 
-            if (unfilteredTables.isEmpty()) {
-                EmptyTablesList(modifier = Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.safeContent))
-            } else if (filteredTables.isEmpty()) {
-                NoResultsTableList(modifier = Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.safeContent).imePadding())
-            } else {
-                TablesList(
-                    tables = filteredTables,
-                    mode = tableListMode,
-                    onPlay = { table ->
-                        focusManager.clearFocus()
-
-                        VPinballManager.play(table)
-                    },
-                    onRename = onRenameTable,
-                    onViewScript = { table ->
-                        val viewScriptFile: () -> Unit = {
-                            val file =
-                                if (SAFFileSystem.isUsingSAF()) {
-                                    val tempFile = File(context.cacheDir, "view_script_${table.uuid}.vbs")
-                                    val inputStream = SAFFileSystem.openInputStream(table.scriptPath)
-                                    if (inputStream != null) {
-                                        FileOutputStream(tempFile).use { output -> inputStream.use { input -> input.copyTo(output) } }
-                                        tempFile
+                if (unfilteredTables.isEmpty()) {
+                    EmptyTablesList(modifier = Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.safeContent))
+                } else if (filteredTables.isEmpty()) {
+                    NoResultsTableList(modifier = Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.safeContent).imePadding())
+                } else {
+                    TablesList(
+                        tables = filteredTables,
+                        mode = tableListMode,
+                        onPlay = { table ->
+                            focusManager.clearFocus()
+                            VPinballManager.play(table)
+                        },
+                        onRename = onRenameTable,
+                        onViewScript = { table ->
+                            val viewScriptFile: () -> Unit = {
+                                val file =
+                                    if (SAFFileSystem.isUsingSAF()) {
+                                        val tempFile = File(context.cacheDir, "view_script_${table.uuid}.vbs")
+                                        val inputStream = SAFFileSystem.openInputStream(table.scriptPath)
+                                        if (inputStream != null) {
+                                            FileOutputStream(tempFile).use { output -> inputStream.use { input -> input.copyTo(output) } }
+                                            tempFile
+                                        } else {
+                                            null
+                                        }
                                     } else {
-                                        null
+                                        table.scriptURL
                                     }
-                                } else {
-                                    table.scriptURL
-                                }
-                            file?.let { onViewFile(it) }
-                        }
+                                file?.let { onViewFile(it) }
+                            }
 
-                        if (table.hasScriptFile()) {
-                            viewScriptFile()
-                        } else {
+                            if (table.hasScriptFile()) {
+                                viewScriptFile()
+                            } else {
+                                title = table.name
+                                progress.value = 0
+                                status.value = "Extracting script"
+                                showProgress = true
+
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    TableManager.extractTableScript(
+                                        table,
+                                        onProgress = { inProgress, inStatus ->
+                                            progress.value = inProgress
+                                            status.value = inStatus
+                                        },
+                                        onComplete = {
+                                            showProgress = false
+                                            viewScriptFile()
+                                        },
+                                        onError = { showProgress = false },
+                                    )
+                                }
+                            }
+                        },
+                        onShare = { table ->
                             title = table.name
                             progress.value = 0
-                            status.value = "Extracting script"
+                            status.value = "Exporting table"
                             showProgress = true
 
                             CoroutineScope(Dispatchers.Main).launch {
-                                TableManager.extractTableScript(
+                                TableManager.shareTable(
                                     table,
                                     onProgress = { inProgress, inStatus ->
                                         progress.value = inProgress
                                         status.value = inStatus
                                     },
-                                    onComplete = {
+                                    onComplete = { path ->
                                         showProgress = false
-                                        viewScriptFile()
+
+                                        val file = File(path)
+                                        val fileUri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+                                        val shareIntent =
+                                            Intent(Intent.ACTION_SEND).apply {
+                                                type = "application/octet-stream"
+                                                putExtra(Intent.EXTRA_STREAM, fileUri)
+                                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                            }
+
+                                        context.startActivity(Intent.createChooser(shareIntent, "Share File: ${file.name}"))
                                     },
                                     onError = { showProgress = false },
                                 )
                             }
-                        }
-                    },
-                    onShare = { table ->
-                        title = table.name
-                        progress.value = 0
-                        status.value = "Exporting table"
-                        showProgress = true
+                        },
+                        onDelete = { table ->
+                            title = table.name
+                            progress.value = 0
+                            status.value = "Deleting table"
+                            showProgress = true
 
-                        CoroutineScope(Dispatchers.Main).launch {
-                            TableManager.shareTable(
-                                table,
-                                onProgress = { inProgress, inStatus ->
-                                    progress.value = inProgress
-                                    status.value = inStatus
-                                },
-                                onComplete = { path ->
-                                    showProgress = false
-
-                                    val file = File(path)
-                                    val fileUri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
-                                    val shareIntent =
-                                        Intent(Intent.ACTION_SEND).apply {
-                                            type = "application/octet-stream"
-                                            putExtra(Intent.EXTRA_STREAM, fileUri)
-                                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                        }
-
-                                    context.startActivity(Intent.createChooser(shareIntent, "Share File: ${file.name}"))
-                                },
-                                onError = { showProgress = false },
-                            )
-                        }
-                    },
-                    onDelete = { table ->
-                        title = table.name
-                        progress.value = 0
-                        status.value = "Deleting table"
-                        showProgress = true
-
-                        CoroutineScope(Dispatchers.Main).launch {
-                            TableManager.getInstance()
-                                .deleteTable(
-                                    table = table,
-                                    onProgress = { inProgress, inStatus ->
-                                        progress.value = inProgress
-                                        status.value = inStatus
-                                    },
-                                )
-                            showProgress = false
-                            onDeleteTable(table)
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth().padding(all = 5.dp).imePadding(),
-                    lazyGridState = lazyGridState,
-                    lazyListState = lazyListState,
-                )
+                            CoroutineScope(Dispatchers.Main).launch {
+                                TableManager.getInstance()
+                                    .deleteTable(
+                                        table = table,
+                                        onProgress = { inProgress, inStatus ->
+                                            progress.value = inProgress
+                                            status.value = inStatus
+                                        },
+                                    )
+                                showProgress = false
+                                onDeleteTable(table)
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth().weight(1f).padding(all = 5.dp).imePadding(),
+                        lazyGridState = lazyGridState,
+                        lazyListState = lazyListState,
+                        availableHeightOverride = stableAvailableHeight,
+                    )
+                }
             }
         }
     }

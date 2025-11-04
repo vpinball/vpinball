@@ -47,14 +47,13 @@ enum class Credit(val displayName: String, val authors: String? = null, val link
 }
 
 enum class TableListMode(val value: Int) {
-    TWO_COLUMN(0),
-    THREE_COLUMN(1),
-    LIST(2);
+    SMALL(0),
+    MEDIUM(1),
+    LARGE(2),
+    LIST(3);
 
     companion object {
-        fun fromInt(value: Int): TableListMode {
-            return entries.firstOrNull { it.value == value } ?: TWO_COLUMN
-        }
+        fun fromInt(value: Int): TableListMode = entries.firstOrNull { it.value == value } ?: MEDIUM
     }
 }
 

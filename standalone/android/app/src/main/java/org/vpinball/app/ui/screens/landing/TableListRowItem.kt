@@ -2,8 +2,6 @@ package org.vpinball.app.ui.screens.landing
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,7 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -35,13 +33,13 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.vpinball.app.R
 import org.vpinball.app.Table
 import org.vpinball.app.TableImageState
-import org.vpinball.app.VPinballManager
 import org.vpinball.app.util.drawWithGradient
 import org.vpinball.app.util.loadImage
 
@@ -64,7 +62,8 @@ fun TableListRowItem(
     val bitmap by
         produceState<ImageBitmap?>(null, table.uuid, table.image, table.modifiedAt) { value = withContext(Dispatchers.IO) { table.loadImage() } }
 
-    val ratio = VPinballManager.getDisplaySize().width.toFloat() / VPinballManager.getDisplaySize().height.toFloat()
+    val ratio = 2f / 3f
+    val rowHeight = 120.dp
 
     val imageState by remember {
         derivedStateOf {
@@ -78,17 +77,15 @@ fun TableListRowItem(
 
     Row(
         modifier = Modifier.fillMaxWidth().padding(8.dp).pointerInput(Unit) { detectTapGestures(onTap = { onPlay(table) }) },
-        verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(15.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Box {
             Box(
                 modifier =
-                    Modifier.heightIn(max = 125.dp)
+                    Modifier.height(rowHeight)
                         .aspectRatio(ratio)
-                        .border(width = 2.dp, color = Color.Yellow, shape = RoundedCornerShape(8.dp))
                         .clip(RoundedCornerShape(8.dp))
-                        .padding(all = 4.dp)
                         .pointerInput(Unit) {
                             detectTapGestures(
                                 onTap = { onPlay(table) },
@@ -107,21 +104,32 @@ fun TableListRowItem(
                     when (imageState) {
                         TableImageState.IMAGE_LOADED -> {
                             bitmap?.let { bitmap ->
-                                Image(bitmap, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                                Box(modifier = Modifier.fillMaxSize()) {
+                                    Image(
+                                        bitmap = bitmap,
+                                        contentDescription = null,
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Fit,
+                                        alignment = Alignment.Center,
+                                    )
+                                }
                             }
                         }
 
                         TableImageState.LOADING_IMAGE -> {
-                            Box(modifier = Modifier.background(Color.Black))
+                            Box {}
                         }
 
                         else -> {
-                            Image(
-                                painter = painterResource(R.drawable.img_table_placeholder),
-                                contentDescription = null,
-                                modifier = Modifier.fillMaxSize().drawWithGradient(),
-                                contentScale = ContentScale.Crop,
-                            )
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                Image(
+                                    painter = painterResource(R.drawable.img_table_placeholder),
+                                    contentDescription = null,
+                                    modifier = Modifier.fillMaxSize().drawWithGradient(),
+                                    contentScale = ContentScale.Fit,
+                                    alignment = Alignment.Center,
+                                )
+                            }
                         }
                     }
                 }
@@ -140,6 +148,15 @@ fun TableListRowItem(
             )
         }
 
-        Text(text = table.name, style = MaterialTheme.typography.titleMedium, color = Color.White, modifier = Modifier.weight(1f))
+        Box(modifier = Modifier.weight(1f).height(rowHeight), contentAlignment = Alignment.CenterStart) {
+            Text(
+                text = table.name,
+                style = MaterialTheme.typography.titleMedium,
+                color = Color.White,
+                modifier = Modifier.padding(horizontal = 12.dp),
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
     }
 }
