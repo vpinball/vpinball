@@ -196,6 +196,13 @@ void LayeredINIPropertyStore::GenerateTemplate(const string& path) const
       if (const string group = m_registry.get().GetProperty(propId)->m_groupId; FindIndexOf(groups, group) == -1)
          groups.push_back(group);
 
+   auto toHex = [](int rgba) -> string
+   {
+      std::stringstream stream;
+      stream << std::setfill('0') << std::setw(8) << std::hex << rgba;
+      return stream.str();
+   };
+
    for (const string& group : groups)
    {
       file << '\n';
@@ -206,9 +213,11 @@ void LayeredINIPropertyStore::GenerateTemplate(const string& path) const
          const PropertyDef* prop = m_registry.get().GetProperty(propId);
          if (prop->m_groupId == group)
          {
-            file << "; " << prop->m_label;
-            if (prop->m_description.find('\n') == std::string::npos)
-               file << ": " << prop->m_description;
+            file << "; ";
+            if (!prop->m_label.empty())
+               file << prop->m_label << ": ";
+            if (!prop->m_description.empty() && prop->m_description.find('\n') == std::string::npos)
+               file << prop->m_description;
             switch (prop->m_type)
             {
             case PropertyDef::Type::Float:
@@ -219,33 +228,54 @@ void LayeredINIPropertyStore::GenerateTemplate(const string& path) const
                   file << " by " << f2sz(dynamic_cast<const FloatPropertyDef*>(prop)->m_step, false) << " steps";
                file << ']';
                break;
+
             case PropertyDef::Type::Int:
-               file << " [Default: " << std::to_string(dynamic_cast<const IntPropertyDef*>(prop)->m_def);
-               if (dynamic_cast<const IntPropertyDef*>(prop)->m_min != INT_MIN && dynamic_cast<const IntPropertyDef*>(prop)->m_max != INT_MAX)
-                  file << " in " << std::to_string(dynamic_cast<const IntPropertyDef*>(prop)->m_min) << " .. " << std::to_string(dynamic_cast<const IntPropertyDef*>(prop)->m_max);
-               file << ']';
+            {
+               if (dynamic_cast<const IntPropertyDef*>(prop)->m_max == 0xFFFFFF)
+               {
+                  file << " [Default: 0x" << toHex(dynamic_cast<const IntPropertyDef*>(prop)->m_def);
+                  if (dynamic_cast<const IntPropertyDef*>(prop)->m_min != INT_MIN && dynamic_cast<const IntPropertyDef*>(prop)->m_max != INT_MAX)
+                     file << " in 0x" << toHex(dynamic_cast<const IntPropertyDef*>(prop)->m_min) << " .. 0x" << toHex(dynamic_cast<const IntPropertyDef*>(prop)->m_max);
+                  file << ']';
+               }
+               else
+               {
+                  file << " [Default: " << std::to_string(dynamic_cast<const IntPropertyDef*>(prop)->m_def);
+                  if (dynamic_cast<const IntPropertyDef*>(prop)->m_min != INT_MIN && dynamic_cast<const IntPropertyDef*>(prop)->m_max != INT_MAX)
+                     file << " in " << std::to_string(dynamic_cast<const IntPropertyDef*>(prop)->m_min) << " .. " << std::to_string(dynamic_cast<const IntPropertyDef*>(prop)->m_max);
+                  file << ']';
+               }
+            }
                break;
-            case PropertyDef::Type::Bool: file << " [Default: " << (dynamic_cast<const BoolPropertyDef*>(prop)->m_def ? '1' : '0') << ']'; break;
+
+            case PropertyDef::Type::Bool:
+               file << " [Default: " << (dynamic_cast<const BoolPropertyDef*>(prop)->m_def ? '1' : '0') << ']';
+               break;
+
             case PropertyDef::Type::Enum:
             {
                auto enumProp = dynamic_cast<const EnumPropertyDef*>(prop);
-               file << " [Default: '" << enumProp->m_values[enumProp->m_def] << '\'';
+               file << " [Default: '" << enumProp->m_values[enumProp->m_def - enumProp->m_min] << '\'';
                for (size_t i = 0; i < enumProp->m_values.size(); i++)
                   file << ", " << i << "='" << enumProp->m_values[i] << '\'';
                file << ']';
                break;
             }
-            case PropertyDef::Type::String: file << " [Default: '" << dynamic_cast<const StringPropertyDef*>(prop)->m_def << "']"; break;
+            case PropertyDef::Type::String:
+               file << " [Default: '" << dynamic_cast<const StringPropertyDef*>(prop)->m_def << "']";
+               break;
             }
-            if (prop->m_description.find('\n') != std::string::npos)
+            if (!prop->m_description.empty() && prop->m_description.find('\n') != std::string::npos)
             {
                std::string token;
                std::istringstream tokenStream(prop->m_description);
                file << ":\n";
                while (std::getline(tokenStream, token, '\n'))
-                  file << ";   " << token;
+                  file << ";   " << token << '\n';
             }
-            file << '\n' << prop->m_propId << " =\n\n";
+            else
+               file << '\n';
+            file << prop->m_propId << " =\n\n";
          }
       }
    }

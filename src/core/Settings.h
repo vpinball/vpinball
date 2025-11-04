@@ -1453,6 +1453,8 @@ private:
          m_cacheModificationIndex = m_settings->m_modificationIndex - 1;
       }
 
+      void GenerateTemplate(const string& path) const { m_cache.GenerateTemplate(path); }
+
       void Reset(VPX::Properties::PropertyRegistry::PropId propId) override
       {
          const auto &prop = Settings::GetRegistry().GetProperty(propId);
