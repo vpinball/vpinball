@@ -28,89 +28,77 @@ HRESULT Plunger::Init(PinTable *const ptable, const float x, const float y, cons
    return forPlay ? S_OK : InitVBA(true, nullptr);
 }
 
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsPlunger_##prop() : Settings::GetDefaultPropsPlunger_##prop##_Default()
 void Plunger::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsPlunger_##prop() : Settings::GetDefaultPropsPlunger_##prop##_Default()
-#define regKey Settings::DefaultPropsPlunger
-
-   SetDefaultPhysics(fromMouseClick);
-
-   m_d.m_height = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Height"s, 20.f) : 20.f;
-   m_d.m_width = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Width"s, 25.f) : 25.f;
-   m_d.m_zAdjust = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ZAdjust"s, 0.f) : 0.f;
-   m_d.m_stroke = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Stroke"s, m_d.m_height*4.f) : (m_d.m_height*4.f);
-   m_d.m_speedPull = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "PullSpeed"s, 5.f) : 5.f;
-   m_d.m_type = fromMouseClick ? (PlungerType)g_pvp->m_settings.LoadValueWithDefault(regKey, "PlungerType"s, (int)PlungerTypeModern) : PlungerTypeModern;
-   m_d.m_color = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Color"s, (int)RGB(76,76,76)) : RGB(76,76,76);
-
-   bool hr = g_pvp->m_settings.LoadValue(regKey, "Image"s, m_d.m_szImage);
-   if (!hr || !fromMouseClick)
-      m_d.m_szImage.clear();
-
-   m_d.m_animFrames = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "AnimFrames"s, 1) : 1;
-
-   hr = g_pvp->m_settings.LoadValue(regKey, "Surface"s, m_d.m_szSurface);
-   if (!hr || !fromMouseClick)
-      m_d.m_szSurface.clear();
-
-   m_d.m_mechPlunger = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "MechPlunger"s, false) : false; // plungers require selection for mechanical input
-   m_d.m_autoPlunger = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "AutoPlunger"s, false) : false;
-   m_d.m_visible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Visible"s, true) : true;
-
-   hr = g_pvp->m_settings.LoadValue(regKey, "CustomTipShape"s, m_d.m_szTipShape);
-   if (!hr || !fromMouseClick)
-      m_d.m_szTipShape = "0 .34; 2 .6; 3 .64; 5 .7; 7 .84; 8 .88; 9 .9; 11 .92; 14 .92; 39 .84"s;
-
-   m_d.m_rodDiam = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "CustomRodDiam"s, 0.60f) : 0.60f;
-   m_d.m_ringGap = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "CustomRingGap"s, 2.0f) : 2.0f;
-   m_d.m_ringDiam = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "CustomRingDiam"s, 0.94f) : 0.94f;
-   m_d.m_ringWidth = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "CustomRingWidth"s, 3.0f) : 3.0f;
-   m_d.m_springDiam = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "CustomSpringDiam"s, 0.77f) : 0.77f;
-   m_d.m_springGauge = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "CustomSpringGauge"s, 1.38f) : 1.38f;
-   m_d.m_springLoops = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "CustomSpringLoops"s, 8.0f) : 8.0f;
-   m_d.m_springEndLoops = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "CustomSpringEndLoops"s, 2.5f) : 2.5f;
-
-#undef regKey
+   LinkProp(m_d.m_height, Height);
+   LinkProp(m_d.m_width, Width);
+   LinkProp(m_d.m_zAdjust, ZAdjust);
+   LinkProp(m_d.m_stroke, Stroke);
+   LinkProp(m_d.m_speedPull, PullSpeed);
+   LinkProp(m_d.m_type, PlungerType);
+   LinkProp(m_d.m_animFrames, AnimFrames);
+   LinkProp(m_d.m_color, Color);
+   LinkProp(m_d.m_szImage, Image);
+   LinkProp(m_d.m_szSurface, Surface);
+   LinkProp(m_d.m_mechPlunger, MechPlunger);
+   LinkProp(m_d.m_autoPlunger, AutoPlunger);
+   LinkProp(m_d.m_visible, Visible);
+   LinkProp(m_d.m_szTipShape, CustomTipShape);
+   LinkProp(m_d.m_rodDiam, CustomRodDiam);
+   LinkProp(m_d.m_ringGap, CustomRingGap);
+   LinkProp(m_d.m_ringDiam, CustomRingDiam);
+   LinkProp(m_d.m_ringWidth, CustomRingWidth);
+   LinkProp(m_d.m_springDiam, CustomSpringDiam);
+   LinkProp(m_d.m_springGauge, CustomSpringGauge);
+   LinkProp(m_d.m_springLoops, CustomSpringLoops);
+   LinkProp(m_d.m_springEndLoops, CustomSpringEndLoops);
    LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
-#undef LinkProp
+   SetDefaultPhysics(fromMouseClick);
 }
+
+void Plunger::SetDefaultPhysics(const bool fromMouseClick)
+{
+   LinkProp(m_d.m_speedFire, ReleaseSpeed);
+   LinkProp(m_d.m_mechStrength, MechStrength);
+   LinkProp(m_d.m_parkPosition, ParkPosition);
+   LinkProp(m_d.m_scatterVelocity, ScatterVelocity);
+   LinkProp(m_d.m_momentumXfer, MomentumXfer);
+}
+#undef LinkProp
 
 void Plunger::WriteRegDefaults()
 {
 #define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsPlunger_##prop(field, false)
-#define regKey Settings::DefaultPropsPlunger
-
-   g_pvp->m_settings.SaveValue(regKey, "Height"s, m_d.m_height);
-   g_pvp->m_settings.SaveValue(regKey, "Width"s, m_d.m_width);
-   g_pvp->m_settings.SaveValue(regKey, "ZAdjust"s, m_d.m_zAdjust);
-   g_pvp->m_settings.SaveValue(regKey, "Stroke"s, m_d.m_stroke);
-   g_pvp->m_settings.SaveValue(regKey, "PullSpeed"s, m_d.m_speedPull);
-   g_pvp->m_settings.SaveValue(regKey, "ReleaseSpeed"s, m_d.m_speedFire);
-   g_pvp->m_settings.SaveValue(regKey, "PlungerType"s, m_d.m_type);
-   g_pvp->m_settings.SaveValue(regKey, "AnimFrames"s, m_d.m_animFrames);
-   g_pvp->m_settings.SaveValue(regKey, "Color"s, (int)m_d.m_color);
-   g_pvp->m_settings.SaveValue(regKey, "Image"s, m_d.m_szImage);
-   g_pvp->m_settings.SaveValue(regKey, "Surface"s, m_d.m_szSurface);
-   g_pvp->m_settings.SaveValue(regKey, "MechPlunger"s, m_d.m_mechPlunger);
-   g_pvp->m_settings.SaveValue(regKey, "AutoPlunger"s, m_d.m_autoPlunger);
-   g_pvp->m_settings.SaveValue(regKey, "MechStrength"s, m_d.m_mechStrength);
-   g_pvp->m_settings.SaveValue(regKey, "ParkPosition"s, m_d.m_parkPosition);
-   g_pvp->m_settings.SaveValue(regKey, "Visible"s, m_d.m_visible);
-   g_pvp->m_settings.SaveValue(regKey, "ScatterVelocity"s, m_d.m_scatterVelocity);
-   g_pvp->m_settings.SaveValue(regKey, "MomentumXfer"s, m_d.m_momentumXfer);
-   g_pvp->m_settings.SaveValue(regKey, "CustomTipShape"s, m_d.m_szTipShape);
-   g_pvp->m_settings.SaveValue(regKey, "CustomRodDiam"s, m_d.m_rodDiam);
-   g_pvp->m_settings.SaveValue(regKey, "CustomRingGap"s, m_d.m_ringGap);
-   g_pvp->m_settings.SaveValue(regKey, "CustomRingDiam"s, m_d.m_ringDiam);
-   g_pvp->m_settings.SaveValue(regKey, "CustomRingWidth"s, m_d.m_ringWidth);
-   g_pvp->m_settings.SaveValue(regKey, "CustomSpringDiam"s, m_d.m_springDiam);
-   g_pvp->m_settings.SaveValue(regKey, "CustomSpringGauge"s, m_d.m_springGauge);
-   g_pvp->m_settings.SaveValue(regKey, "CustomSpringLoops"s, m_d.m_springLoops);
-   g_pvp->m_settings.SaveValue(regKey, "CustomSpringEndLoops"s, m_d.m_springEndLoops);
-
-#undef regKey
+   LinkProp(m_d.m_height, Height);
+   LinkProp(m_d.m_width, Width);
+   LinkProp(m_d.m_zAdjust, ZAdjust);
+   LinkProp(m_d.m_stroke, Stroke);
+   LinkProp(m_d.m_speedPull, PullSpeed);
+   LinkProp(m_d.m_type, PlungerType);
+   LinkProp(m_d.m_animFrames, AnimFrames);
+   LinkProp(m_d.m_color, Color);
+   LinkProp(m_d.m_szImage, Image);
+   LinkProp(m_d.m_szSurface, Surface);
+   LinkProp(m_d.m_mechPlunger, MechPlunger);
+   LinkProp(m_d.m_autoPlunger, AutoPlunger);
+   LinkProp(m_d.m_visible, Visible);
+   LinkProp(m_d.m_szTipShape, CustomTipShape);
+   LinkProp(m_d.m_rodDiam, CustomRodDiam);
+   LinkProp(m_d.m_ringGap, CustomRingGap);
+   LinkProp(m_d.m_ringDiam, CustomRingDiam);
+   LinkProp(m_d.m_ringWidth, CustomRingWidth);
+   LinkProp(m_d.m_springDiam, CustomSpringDiam);
+   LinkProp(m_d.m_springGauge, CustomSpringGauge);
+   LinkProp(m_d.m_springLoops, CustomSpringLoops);
+   LinkProp(m_d.m_springEndLoops, CustomSpringEndLoops);
+   LinkProp(m_d.m_speedFire, ReleaseSpeed);
+   LinkProp(m_d.m_mechStrength, MechStrength);
+   LinkProp(m_d.m_parkPosition, ParkPosition);
+   LinkProp(m_d.m_scatterVelocity, ScatterVelocity);
+   LinkProp(m_d.m_momentumXfer, MomentumXfer);
    LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
@@ -192,19 +180,6 @@ Vertex2D Plunger::GetCenter() const
 void Plunger::PutCenter(const Vertex2D& pv)
 {
    m_d.m_v = pv;
-}
-
-void Plunger::SetDefaultPhysics(const bool fromMouseClick)
-{
-#define regKey Settings::DefaultPropsPlunger
-
-   m_d.m_speedFire = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ReleaseSpeed"s, 80.f) : 80.f;
-   m_d.m_mechStrength = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "MechStrength"s, 85.f) : 85.f;
-   m_d.m_parkPosition = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ParkPosition"s, (float)(0.5/3.0)) : (float)(0.5/3.0); // typical mechanical plunger has 3 inch stroke and 0.5 inch rest position //!! 0.01f better for some HW-plungers, but this seems to be rather a firmware/config issue
-   m_d.m_scatterVelocity = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ScatterVelocity"s, 0.f) : 0.f;
-   m_d.m_momentumXfer = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "MomentumXfer"s, 1.f) : 1.f;
-
-#undef regKey
 }
 
 

@@ -45,50 +45,42 @@ HRESULT Kicker::Init(PinTable *const ptable, const float x, const float y, const
    return forPlay ? S_OK : InitVBA(true, nullptr);
 }
 
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsKicker_##prop() : Settings::GetDefaultPropsKicker_##prop##_Default()
 void Kicker::SetDefaults(const bool fromMouseClick)
 {
-#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsKicker_##prop() : Settings::GetDefaultPropsKicker_##prop##_Default()
-#define regKey Settings::DefaultPropsKicker
-
-   m_d.m_radius = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Radius"s, 25.f) : 25.f;
-   m_d.m_enabled = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Enabled"s, true) : true;
-   m_d.m_hitAccuracy = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "HitAccuracy"s, 0.5f) : 0.5f;
-   m_d.m_hit_height = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "HitHeight"s, 35.0f) : 35.0f;
-   m_d.m_orientation = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Orientation"s, 0.f) : 0.f;
-
-   SetDefaultPhysics(fromMouseClick);
-
-   const bool hr = g_pvp->m_settings.LoadValue(regKey, "Surface"s, m_d.m_szSurface);
-   if (!hr || !fromMouseClick)
-      m_d.m_szSurface.clear();
-
-   m_d.m_kickertype = fromMouseClick ? (KickerType)g_pvp->m_settings.LoadValueWithDefault(regKey, "KickerType"s, (int)KickerHole) : KickerHole;
-   //legacy handling:
-   if (m_d.m_kickertype > KickerCup2)
-      m_d.m_kickertype = KickerInvisible;
-
-   m_d.m_fallThrough = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "FallThrough"s, false) : false;
-   m_d.m_legacyMode = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Legacy"s, true) : true;
-
-#undef regKey
+   LinkProp(m_d.m_enabled, Enabled);
+   LinkProp(m_d.m_hitAccuracy, HitAccuracy);
+   LinkProp(m_d.m_hit_height, HitHeight);
+   LinkProp(m_d.m_orientation, Orientation);
+   LinkProp(m_d.m_radius, Radius);
+   LinkProp(m_d.m_kickertype, KickerType);
+   LinkProp(m_d.m_szSurface, Surface);
+   LinkProp(m_d.m_fallThrough, FallThrough);
+   LinkProp(m_d.m_legacyMode, Legacy);
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
-#undef LinkProp
+   SetDefaultPhysics(fromMouseClick);
 }
+
+void Kicker::SetDefaultPhysics(const bool fromMouseClick)
+{
+   LinkProp(m_d.m_scatter, Scatter);
+}
+#undef LinkProp
 
 void Kicker::WriteRegDefaults()
 {
 #define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsKicker_##prop(field, false)
-   g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "Enabled"s, m_d.m_enabled);
-   g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "HitAccuracy"s, m_d.m_hitAccuracy);
-   g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "HitHeight"s, m_d.m_hit_height);
-   g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "Orientation"s, m_d.m_orientation);
-   g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "Radius"s, m_d.m_radius);
-   g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "Scatter"s, m_d.m_scatter);
-   g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "KickerType"s, m_d.m_kickertype);
-   g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "Surface"s, m_d.m_szSurface);
-   g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "FallThrough"s, m_d.m_fallThrough);
-   g_pvp->m_settings.SaveValue(Settings::DefaultPropsKicker, "Legacy"s, m_d.m_legacyMode);
+   LinkProp(m_d.m_enabled, Enabled);
+   LinkProp(m_d.m_hitAccuracy, HitAccuracy);
+   LinkProp(m_d.m_hit_height, HitHeight);
+   LinkProp(m_d.m_orientation, Orientation);
+   LinkProp(m_d.m_radius, Radius);
+   LinkProp(m_d.m_kickertype, KickerType);
+   LinkProp(m_d.m_szSurface, Surface);
+   LinkProp(m_d.m_fallThrough, FallThrough);
+   LinkProp(m_d.m_legacyMode, Legacy);
+   LinkProp(m_d.m_scatter, Scatter);
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
 #undef LinkProp
@@ -508,11 +500,6 @@ void Kicker::GenerateMesh(Vertex3D_NoTex2 *const buf) const
       buf[i].tu = vertices[i].tu;
       buf[i].tv = vertices[i].tv;
    }
-}
-
-void Kicker::SetDefaultPhysics(const bool fromMouseClick)
-{
-   m_d.m_scatter = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultPropsKicker, "Scatter"s, 0.f) : 0.f;
 }
 
 void Kicker::SetObjectPos()

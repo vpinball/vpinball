@@ -1305,7 +1305,7 @@ STDMETHODIMP ScriptGlobalTable::get_RenderingMode(int *pVal)
 #ifndef __STANDALONE__
       *pVal = 0; // 2D
 #else
-      int val = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "RenderingModeOverride"s, -1);
+      int val = g_pplayer->m_ptable->m_settings.GetStandalone_RenderingModeOverride();
       *pVal = (val == -1) ? 0 : val;
 #endif
    }

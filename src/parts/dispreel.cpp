@@ -36,31 +36,20 @@ HRESULT DispReel::Init(PinTable *const ptable, const float x, const float y, con
 void DispReel::SetDefaults(const bool fromMouseClick)
 {
 #define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsDispReel_##prop() : Settings::GetDefaultPropsDispReel_##prop##_Default()
-#define regKey Settings::DefaultPropsEMReel
-   // set all the Data defaults
-   bool hr;
-   hr = g_pvp->m_settings.LoadValue(regKey, "Image"s, m_d.m_szImage);
-   if (!hr || !fromMouseClick)
-      m_d.m_szImage.clear();
-
-   hr = g_pvp->m_settings.LoadValue(regKey, "Sound"s, m_d.m_szSound);
-   if (!hr || !fromMouseClick)
-      m_d.m_szSound.clear();
-
-   m_d.m_useImageGrid = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "UseImageGrid"s, false) : false;
-   m_d.m_visible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Visible"s, true) : true;
-   m_d.m_imagesPerGridRow = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ImagesPerRow"s, 1) : 1;
-   m_d.m_transparent = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Transparent"s, false) : false;
-   m_d.m_reelcount = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ReelCount"s, 5) : 5;
-   m_d.m_width = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Width"s, 30.0f) : 30.0f;
-   m_d.m_height = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Height"s, 40.0f) : 40.0f;
-   m_d.m_reelspacing = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "ReelSpacing"s, 4.0f) : 4.0f;
-   m_d.m_motorsteps = fromMouseClick ? (int)g_pvp->m_settings.LoadValueWithDefault(regKey, "MotorSteps"s, 2.f) : 2;
-   m_d.m_digitrange = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "DigitRange"s, 9) : 9;
-   m_d.m_updateinterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "UpdateInterval"s, 50) : 50;
-   m_d.m_backcolor = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "BackColor"s, (int)RGB(64, 64, 64)) : RGB(64, 64, 64);
-#undef regKey
-
+   LinkProp(m_d.m_szImage, Image);
+   LinkProp(m_d.m_szSound, Sound);
+   LinkProp(m_d.m_useImageGrid, TimerEnabled);
+   LinkProp(m_d.m_visible, Visible);
+   LinkProp(m_d.m_imagesPerGridRow, UseImageGrid);
+   LinkProp(m_d.m_transparent, Transparent);
+   LinkProp(m_d.m_reelcount, ReelCount);
+   LinkProp(m_d.m_width, Width);
+   LinkProp(m_d.m_height, Height);
+   LinkProp(m_d.m_reelspacing, ReelSpacing);
+   LinkProp(m_d.m_motorsteps, MotorSteps);
+   LinkProp(m_d.m_digitrange, DigitRange);
+   LinkProp(m_d.m_updateinterval, UpdateInterval);
+   LinkProp(m_d.m_backcolor, BackColor);
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
 #undef LinkProp
@@ -69,23 +58,20 @@ void DispReel::SetDefaults(const bool fromMouseClick)
 void DispReel::WriteRegDefaults()
 {
 #define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsDispReel_##prop(field, false)
-#define regKey Settings::DefaultPropsEMReel
-   g_pvp->m_settings.SaveValue(regKey, "Image"s, m_d.m_szImage);
-   g_pvp->m_settings.SaveValue(regKey, "Sound"s, m_d.m_szSound);
-   g_pvp->m_settings.SaveValue(regKey, "UseImageGrid"s, m_d.m_useImageGrid);
-   g_pvp->m_settings.SaveValue(regKey, "Visible"s, m_d.m_visible);
-   g_pvp->m_settings.SaveValue(regKey, "ImagesPerRow"s, m_d.m_imagesPerGridRow);
-   g_pvp->m_settings.SaveValue(regKey, "Transparent"s, m_d.m_transparent);
-   g_pvp->m_settings.SaveValue(regKey, "ReelCount"s, m_d.m_reelcount);
-   g_pvp->m_settings.SaveValue(regKey, "Width"s, m_d.m_width);
-   g_pvp->m_settings.SaveValue(regKey, "Height"s, m_d.m_height);
-   g_pvp->m_settings.SaveValue(regKey, "ReelSpacing"s, m_d.m_reelspacing);
-   g_pvp->m_settings.SaveValue(regKey, "MotorSteps"s, (float)m_d.m_motorsteps);
-   g_pvp->m_settings.SaveValue(regKey, "DigitRange"s, m_d.m_digitrange);
-   g_pvp->m_settings.SaveValue(regKey, "UpdateInterval"s, m_d.m_updateinterval);
-   g_pvp->m_settings.SaveValue(regKey, "BackColor"s, (int)m_d.m_backcolor);
-#undef regKey
-
+   LinkProp(m_d.m_szImage, Image);
+   LinkProp(m_d.m_szSound, Sound);
+   LinkProp(m_d.m_useImageGrid, TimerEnabled);
+   LinkProp(m_d.m_visible, Visible);
+   LinkProp(m_d.m_imagesPerGridRow, UseImageGrid);
+   LinkProp(m_d.m_transparent, Transparent);
+   LinkProp(m_d.m_reelcount, ReelCount);
+   LinkProp(m_d.m_width, Width);
+   LinkProp(m_d.m_height, Height);
+   LinkProp(m_d.m_reelspacing, ReelSpacing);
+   LinkProp(m_d.m_motorsteps, MotorSteps);
+   LinkProp(m_d.m_digitrange, DigitRange);
+   LinkProp(m_d.m_updateinterval, UpdateInterval);
+   LinkProp(m_d.m_backcolor, BackColor);
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
 #undef LinkProp

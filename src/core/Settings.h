@@ -57,14 +57,16 @@ public:
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
 #define PropIntUnbounded(groupId, propId, label, comment, defVal) PropInt(groupId, propId, label, comment, INT_MIN, INT_MAX, defVal)
 
-#define PropEnum(groupId, propId, label, comment, type, defVal, ...)                                                                                                                         \
+#define PropEnumWithMin(groupId, propId, label, comment, type, minVal, defVal, ...)                                                                                                                         \
    static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId = GetRegistry().Register(                                                                        \
-      std::make_unique<VPX::Properties::EnumPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, 0, defVal, vector<string> { __VA_ARGS__ }));                       \
+      std::make_unique<VPX::Properties::EnumPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, minVal, defVal, vector<string> { __VA_ARGS__ }));                       \
    static inline const VPX::Properties::EnumPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetEnumProperty(m_prop##groupId##_##propId); }                          \
    static inline const type Get##groupId##_##propId##_Default() { return (type)(GetRegistry().GetEnumProperty(m_prop##groupId##_##propId)->m_def); }                                         \
    inline type Get##groupId##_##propId() const { return (type)(m_store.GetInt(m_prop##groupId##_##propId)); }                                                                                \
    inline void Set##groupId##_##propId(type v, bool asTableOverride) { Set(m_prop##groupId##_##propId, (int)v, asTableOverride); }                                                           \
    inline void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
+#define PropEnum1(groupId, propId, label, comment, type, defVal, ...) PropEnumWithMin(groupId, propId, label, comment, type, 1, defVal, __VA_ARGS__)
+#define PropEnum(groupId, propId, label, comment, type, defVal, ...) PropEnumWithMin(groupId, propId, label, comment, type, 0, defVal, __VA_ARGS__)
 
 #define PropFloatStepped(groupId, propId, label, comment, minVal, maxVal, step, defVal)                                                                                                      \
    static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId                                                                                                  \
@@ -125,8 +127,8 @@ public:
    PropFloat(Player, PlayfieldRefreshRate, "Refresh Rate"s, "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
    PropInt(Player, PlayfieldColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
    // Backglass Window
-   PropEnum(Backglass, BackglassOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s,
-      "Floating"s, "Embedded in playfield"s);
+   PropEnum(Backglass, BackglassOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */,
+      g_isMobile ? 2 /* OM_EMBEDDED */ : 0 /* OM_DISABLED */, "Disabled"s, "Floating"s, "Embedded in playfield"s);
    PropString(Backglass, BackglassDisplay, "Display"s, "Display used for the main Backglass window"s, ""s);
    PropInt(Backglass, BackglassWndX, "X Position"s, "Horizontal position of the window on the selected display"s, 0, 16384, 0);
    PropInt(Backglass, BackglassWndY, "Y Position"s, "Vertical position of the window on the selected display"s, 0, 16384, 0);
@@ -138,8 +140,8 @@ public:
    PropFloat(Backglass, BackglassRefreshRate, "Fullscreen Refresh Rate"s, "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
    PropInt(Backglass, BackglassColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
    // ScoreView Window
-   PropEnum(ScoreView, ScoreViewOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s,
-      "Floating"s, "Embedded in playfield"s);
+   PropEnum(ScoreView, ScoreViewOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */,
+      g_isMobile ? 2 /* OM_EMBEDDED */ : 0 /* OM_DISABLED */, "Disabled"s, "Floating"s, "Embedded in playfield"s);
    PropString(ScoreView, ScoreViewDisplay, "Display"s, "Display used for the main ScoreView window"s, ""s);
    PropInt(ScoreView, ScoreViewWndX, "X Position"s, "Horizontal position of the window on the selected display"s, 0, 16384, 0);
    PropInt(ScoreView, ScoreViewWndY, "Y Position"s, "Vertical position of the window on the selected display"s, 0, 16384, 0);
@@ -302,6 +304,7 @@ public:
       100); // Hacky: This should be a table override, not a player property as it overrides table data
 
    // VR settings
+   PropEnum(PlayerVR, AskToTurnOn, "Enable VR"s, ""s, int, 1, "Enabled"s, "Autodetect"s, "Disabled"s);
    PropFloat(PlayerVR, Orientation, "View orientation"s, ""s, -180.f, 180.f, 0.f);
    PropFloat(PlayerVR, TableX, "View Offset X"s, ""s, -100.f, 100.f, 0.f);
    PropFloat(PlayerVR, TableY, "View Offset Y"s, ""s, -100.f, 100.f, 0.f);
@@ -311,6 +314,14 @@ public:
    PropInt(PlayerVR, PassthroughColor, "Color Keyed Passthrough color"s, "Color that will replace the background"s, 0x000000, 0xFFFFFF, 0xBB4700);
    PropEnum(Player, VRPreview, "Preview mode"s, "Select preview mode"s, int, 1, "Disabled"s, "Left Eye"s, "Right Eye"s, "Both Eyes"s);
    PropBool(PlayerVR, ShrinkPreview, "Shrink preview"s, ""s, false);
+   PropFloatUnbounded(PlayerVR, ResFactor, "ResFactor"s, ""s, -1.f);
+   // Legacy OpenVR settings (to be removed)
+   PropInt(PlayerVR, EyeFBFormat, "EyeFBFormat"s, ""s, 0, 3, 1);
+   PropFloatUnbounded(PlayerVR, Slope, "Slope"s, ""s, 6.5f);
+   PropBool(PlayerVR, ScaleToFixedWidth, "ScaleToFixedWidth"s, ""s, false);
+   PropFloatUnbounded(PlayerVR, ScaleAbsolute, "ScaleAbsolute"s, ""s, 55.f);
+   PropFloatUnbounded(PlayerVR, ScaleRelative, "ScaleRelative"s, ""s, 1.f);
+   PropFloatUnbounded(PlayerVR, NearPlane, "NearPlane"s, ""s, 5.f);
 
    // Stereo settings
    PropBool(Player, Stereo3DEnabled, "Enable Stereo Rendering"s, "Allow to temporarily disable stereo rendering"s, false);
@@ -715,6 +726,9 @@ public:
    PropArray(Alpha, ProfileDiffuseGlow, float, Float, Float, m_propAlpha_Profile1DiffuseGlow, m_propAlpha_Profile2DiffuseGlow, m_propAlpha_Profile3DiffuseGlow,
       m_propAlpha_Profile4DiffuseGlow, m_propAlpha_Profile5DiffuseGlow, m_propAlpha_Profile6DiffuseGlow, m_propAlpha_Profile7DiffuseGlow, m_propAlpha_Profile8DiffuseGlow);
 
+   // Recent directory
+   PropString(RecentDir, ImportDir, "Import directory"s, ""s, ""s);
+
    // Parts Defaults: Balls
    PropFloat(DefaultPropsBall, Mass, "Ball Mass"s, ""s, 0.1f, 2.f, 1.f);
    PropFloat(DefaultPropsBall, Radius, "Ball Radius"s, ""s, 0.1f, 50.f, 25.f);
@@ -750,12 +764,59 @@ public:
    PropInt(DefaultPropsBumper, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
    // Parts Defaults: Decal
+   PropFloatUnbounded(DefaultPropsDecal, Width, "Width"s, ""s, 100.f);
+   PropFloatUnbounded(DefaultPropsDecal, Height, "Height"s, ""s, 100.f);
+   PropFloatUnbounded(DefaultPropsDecal, Rotation, "Rotation"s, ""s, 0.f);
+   PropString(DefaultPropsDecal, Image, "Image"s, ""s, ""s);
+   PropString(DefaultPropsDecal, Surface, "Surface"s, ""s, ""s);
+   PropEnum(DefaultPropsDecal, DecalType, "DecalType"s, ""s, DecalType, DecalImage, "DecalText"s, "DecalImage"s);
+   PropString(DefaultPropsDecal, Text, "Text"s, ""s, ""s);
+   PropEnum(DefaultPropsDecal, Sizing, "Sizing"s, ""s, SizingType, ManualSize, "AutoSize"s, "AutoWidth"s, "ManualSize"s);
+   PropIntUnbounded(DefaultPropsDecal, Color, "Color"s, ""s, 0x000000);
+   PropBool(DefaultPropsDecal, VerticalText, "VerticalText"s, ""s, false);
+   PropFloatUnbounded(DefaultPropsDecal, FontSize, "FontSize"s, ""s, 14.25f);
+   PropString(DefaultPropsDecal, FontName, "FontName"s, ""s, "Arial Black"s);
+   PropInt(DefaultPropsDecal, FontWeight, "FontWeight"s, ""s, 0, 900, 400); // FW_NORMAL
+   PropIntUnbounded(DefaultPropsDecal, FontCharSet, "FontCharSet"s, ""s, 0);
+   PropBool(DefaultPropsDecal, FontItalic, "FontItalic"s, ""s, false);
+   PropBool(DefaultPropsDecal, FontUnderline, "FontUnderline"s, ""s, false);
+   PropBool(DefaultPropsDecal, FontStrikeThrough, "FontStrikeThrough"s, ""s, false);
 
    // Parts Defaults: DispReel
+   PropString(DefaultPropsDispReel, Image, "Image"s, ""s, ""s);
+   PropString(DefaultPropsDispReel, Sound, "Sound"s, ""s, ""s);
+   PropBool(DefaultPropsDispReel, UseImageGrid, "UseImageGrid"s, ""s, false);
+   PropBool(DefaultPropsDispReel, Visible, "Visible"s, ""s, true);
+   PropIntUnbounded(DefaultPropsDispReel, ImagesPerRow, "ImagesPerRow"s, ""s, 1);
+   PropBool(DefaultPropsDispReel, Transparent, "Transparent"s, ""s, false);
+   PropIntUnbounded(DefaultPropsDispReel, ReelCount, "ReelCount"s, ""s, 5);
+   PropFloatUnbounded(DefaultPropsDispReel, Width, "Width"s, ""s, 30.f);
+   PropFloatUnbounded(DefaultPropsDispReel, Height, "Height"s, ""s, 40.f);
+   PropFloatUnbounded(DefaultPropsDispReel, ReelSpacing, "ReelSpacing"s, ""s, 4.f);
+   PropIntUnbounded(DefaultPropsDispReel, MotorSteps, "MotorSteps"s, ""s, 2);
+   PropIntUnbounded(DefaultPropsDispReel, DigitRange, "DigitRange"s, ""s, 9);
+   PropIntUnbounded(DefaultPropsDispReel, UpdateInterval, "UpdateInterval"s, ""s, 50);
+   PropInt(DefaultPropsDispReel, BackColor, "BackColor"s, ""s, 0x000000, 0xFFFFFF, RGB(64, 64, 64));
    PropBool(DefaultPropsDispReel, TimerEnabled, "Timer Enabled"s, ""s, false);
    PropInt(DefaultPropsDispReel, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
    // Parts Defaults: Flasher
+   PropFloatUnbounded(DefaultPropsFlasher, Height, "Height"s, ""s, 50.f);
+   PropFloatUnbounded(DefaultPropsFlasher, RotX, "RotX"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsFlasher, RotY, "RotY"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsFlasher, RotZ, "RotZ"s, ""s, 0.f);
+   PropInt(DefaultPropsFlasher, Color, "Color"s, ""s, 0x000000, 0xFFFFFF, RGB(50, 200, 50));
+   PropString(DefaultPropsFlasher, ImageA, "ImageA"s, ""s, ""s);
+   PropString(DefaultPropsFlasher, ImageB, "ImageB"s, ""s, ""s);
+   PropIntUnbounded(DefaultPropsFlasher, Opacity, "Opacity"s, ""s, 100);
+   PropFloatUnbounded(DefaultPropsFlasher, ModulateVsAdd, "ModulateVsAdd"s, ""s, 0.9f);
+   PropIntUnbounded(DefaultPropsFlasher, FilterAmount, "FilterAmount"s, ""s, 100);
+   PropBool(DefaultPropsFlasher, Visible, "Visible"s, ""s, true);
+   PropBool(DefaultPropsFlasher, AddBlend, "AddBlend"s, ""s, false);
+   PropEnum(DefaultPropsFlasher, RenderMode, "RenderMode"s, ""s, int, 0, "FLASHER"s, "DMD"s, "DISPLAY"s, "ALPHASEG"s);
+   PropBool(DefaultPropsFlasher, DisplayTexture, "DisplayTexture"s, ""s, false);
+   PropEnum(DefaultPropsFlasher, ImageMode, "ImageMode"s, ""s, RampImageAlignment, ImageModeWrap, "ImageModeWorld"s, "ImageModeWrap"s);
+   PropEnum(DefaultPropsFlasher, Filter, "Filter"s, ""s, Filters, Filter_Overlay, "Filter_None"s, "Filter_Additive"s, "Filter_Overlay"s, "Filter_Multiply"s, "Filter_Screen"s);
    PropBool(DefaultPropsFlasher, TimerEnabled, "Timer Enabled"s, ""s, false);
    PropInt(DefaultPropsFlasher, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
@@ -790,25 +851,98 @@ public:
    PropInt(DefaultPropsFlipper, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
    // Parts Defaults: Gate
+   PropFloatUnbounded(DefaultPropsGate, Length, "Length"s, ""s, 100.f);
+   PropFloatUnbounded(DefaultPropsGate, Height, "Height"s, ""s, 50.f);
+   PropFloatUnbounded(DefaultPropsGate, Rotation, "Rotation"s, ""s, -90.f);
+   PropBool(DefaultPropsGate, ShowBracket, "ShowBracket"s, ""s, true);
+   PropEnum1(DefaultPropsGate, GateType, "GateType"s, ""s, GateType, GateWireW, "GateWireW"s, "GateWireRectangle"s, "GatePlate"s, "GateLongPlate"s);
+   PropBool(DefaultPropsGate, Collidable, "Collidable"s, ""s, true);
+   PropFloatUnbounded(DefaultPropsGate, AngleMin, "AngleMin"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsGate, AngleMax, "AngleMax"s, ""s, (float)(M_PI / 2.0));
+   PropBool(DefaultPropsGate, Visible, "Visible"s, ""s, true);
+   PropString(DefaultPropsGate, Surface, "Surface"s, ""s, ""s);
+   PropBool(DefaultPropsGate, TwoWay, "TwoWay"s, ""s, true);
+   PropFloatUnbounded(DefaultPropsGate, Elasticity, "Elasticity"s, ""s, 0.3f);
+   PropFloatUnbounded(DefaultPropsGate, Friction, "Friction"s, ""s, 0.02f);
+   PropFloatUnbounded(DefaultPropsGate, AntiFriction, "AntiFriction"s, ""s, 0.985f);
+   PropFloatUnbounded(DefaultPropsGate, Scatter, "Scatter"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsGate, GravityFactor, "GravityFactor"s, ""s, 0.25f);
    PropBool(DefaultPropsGate, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
    PropBool(DefaultPropsGate, TimerEnabled, "Timer Enabled"s, ""s, false);
    PropInt(DefaultPropsGate, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
    // Parts Defaults: HitTarget
+   PropBool(DefaultPropsHitTarget, LegacyMode, "LegacyMode"s, ""s, false);
+   PropBool(DefaultPropsHitTarget, HitEvent, "HitEvent"s, ""s, true);
+   PropBool(DefaultPropsHitTarget, Visible, "Visible"s, ""s, true);
+   PropBool(DefaultPropsHitTarget, IsDropped, "IsDropped"s, ""s, false);
+   PropFloatUnbounded(DefaultPropsHitTarget, Position_Z, "Position_Z"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsHitTarget, ScaleX, "ScaleX"s, ""s, 32.f);
+   PropFloatUnbounded(DefaultPropsHitTarget, ScaleY, "ScaleY"s, ""s, 32.f);
+   PropFloatUnbounded(DefaultPropsHitTarget, ScaleZ, "ScaleZ"s, ""s, 32.f);
+   PropFloatUnbounded(DefaultPropsHitTarget, Orientation, "Orientation"s, ""s, 0.f);
+   PropString(DefaultPropsHitTarget, Image, "Image"s, ""s, ""s);
+   PropEnum1(DefaultPropsHitTarget, TargetType, "TargetType"s, ""s, TargetType, DropTargetSimple, "DropTargetBeveled"s, "DropTargetSimple"s, "HitTargetRound"s, "HitTargetRectangle"s, "HitFatTargetRectangle"s, "HitFatTargetSquare"s, "DropTargetFlatSimple"s, "HitFatTargetSlim"s, "HitTargetSlim"s);
+   PropFloatUnbounded(DefaultPropsHitTarget, HitThreshold, "HitThreshold"s, ""s, 2.f);
+   PropFloatUnbounded(DefaultPropsHitTarget, DropSpeed, "DropSpeed"s, ""s, 0.2f); // Default should depend on target type: 0.5 for beveled, simple & flat simple, 0.2 otherwise
+   PropBool(DefaultPropsHitTarget, Collidable, "Collidable"s, ""s, true);
+   PropFloatUnbounded(DefaultPropsHitTarget, DisableLighting, "DisableLighting"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsHitTarget, DisableLightingBelow, "DisableLightingBelow"s, ""s, 1.f);
+   PropIntUnbounded(DefaultPropsHitTarget, RaiseDelay, "RaiseDelay"s, ""s, 100);
+   PropFloatUnbounded(DefaultPropsHitTarget, Elasticity, "Elasticity"s, ""s, 0.35f);
+   PropFloatUnbounded(DefaultPropsHitTarget, ElasticityFalloff, "ElasticityFalloff"s, ""s, 0.5f);
+   PropFloatUnbounded(DefaultPropsHitTarget, Friction, "Friction"s, ""s, 0.2f);
+   PropFloatUnbounded(DefaultPropsHitTarget, Scatter, "Scatter"s, ""s, 5.f);
    PropBool(DefaultPropsHitTarget, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
    PropBool(DefaultPropsHitTarget, TimerEnabled, "Timer Enabled"s, ""s, false);
    PropInt(DefaultPropsHitTarget, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
    // Parts Defaults: Kicker
+   PropFloatUnbounded(DefaultPropsKicker, Radius, "Radius"s, ""s, 25.f);
+   PropBool(DefaultPropsKicker, Enabled, "Enabled"s, ""s, true);
+   PropFloatUnbounded(DefaultPropsKicker, HitAccuracy, "HitAccuracy"s, ""s, 0.5f);
+   PropFloatUnbounded(DefaultPropsKicker, HitHeight, "HitHeight"s, ""s, 35.f);
+   PropFloatUnbounded(DefaultPropsKicker, Orientation, "Orientation"s, ""s, 0.f);
+   PropString(DefaultPropsKicker, Surface, "Surface"s, ""s, ""s);
+   PropEnum(DefaultPropsKicker, KickerType, "KickerType"s, ""s, KickerType, KickerHole, "KickerInvisible"s, "KickerHole"s, "KickerCup"s, "KickerHoleSimple"s, "KickerWilliams"s,
+      "KickerGottlieb"s, "KickerCup2"s);
+   PropBool(DefaultPropsKicker, FallThrough, "FallThrough"s, ""s, false);
+   PropBool(DefaultPropsKicker, Legacy, "Legacy"s, ""s, true);
+   PropFloatUnbounded(DefaultPropsKicker, Scatter, "Scatter"s, ""s, 0.f);
    PropBool(DefaultPropsKicker, TimerEnabled, "Timer Enabled"s, ""s, false);
    PropInt(DefaultPropsKicker, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
    // Parts Defaults: Light
+   PropFloatUnbounded(DefaultPropsLight, Falloff, "Falloff"s, ""s, 50.f);
+   PropFloatUnbounded(DefaultPropsLight, FalloffPower, "FalloffPower"s, ""s, 2.f);
+   PropFloatUnbounded(DefaultPropsLight, LightState, "LightState"s, ""s, 0.f);
+   PropInt(DefaultPropsLight, Color, "Color"s, ""s, 0x000000, 0xFFFFFF, RGB(255,169,87)); // Default to 2700K incandescent bulb
+   PropInt(DefaultPropsLight, ColorFull, "ColorFull"s, ""s, 0x000000, 0xFFFFFF, RGB(255,169,87)); // Default to 2700K incandescent bulb (burst is useless since VPX is HDR)
+   PropString(DefaultPropsLight, OffImage, "OffImage"s, ""s, ""s);
+   PropString(DefaultPropsLight, BlinkPattern, "BlinkPattern"s, ""s, "10"s);
+   PropIntUnbounded(DefaultPropsLight, BlinkInterval, "BlinkInterval"s, ""s, 125);
+   PropFloatUnbounded(DefaultPropsLight, Intensity, "Intensity"s, ""s, 10.f);
+   PropFloatUnbounded(DefaultPropsLight, TransmissionScale, "TransmissionScale"s, ""s, 0.f); // FIXME used to be 0.5 as a default unless from click, then 0
+   PropString(DefaultPropsLight, Surface, "Surface"s, ""s, ""s);
+   PropFloatUnbounded(DefaultPropsLight, FadeSpeedUp, "FadeSpeedUp"s, ""s, 10.f * (float)(1.0/200.0)); // Default: 200ms up (slow incandescent bulb)
+   PropFloatUnbounded(DefaultPropsLight, FadeSpeedDown, "FadeSpeedDown"s, ""s, 10.f * (float)(1.0/500.0)); // Default: 500ms down (slow incandescent bulb)
+   PropBool(DefaultPropsLight, Bulb, "Bulb"s, ""s, false);
+   PropBool(DefaultPropsLight, ImageMode, "ImageMode"s, ""s, false);
+   PropBool(DefaultPropsLight, ShowBulbMesh, "ShowBulbMesh"s, ""s, false);
+   PropBool(DefaultPropsLight, StaticBulbMesh, "StaticBulbMesh"s, ""s, true);
+   PropBool(DefaultPropsLight, ShowReflectionOnBall, "ShowReflectionOnBall"s, ""s, true);
+   PropFloatUnbounded(DefaultPropsLight, ScaleBulbMesh, "ScaleBulbMesh"s, ""s, 20.f);
+   PropFloatUnbounded(DefaultPropsLight, BulbModulateVsAdd, "BulbModulateVsAdd"s, ""s, 0.9f);
+   PropFloatUnbounded(DefaultPropsLight, BulbHaloHeight, "BulbHaloHeight"s, ""s, 28.f);
    PropBool(DefaultPropsLight, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
    PropBool(DefaultPropsLight, TimerEnabled, "Timer Enabled"s, ""s, false);
    PropInt(DefaultPropsLight, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
    // Parts Defaults: LightSeq
+   PropIntUnbounded(DefaultPropsLightSeq, UpdateInterval, "UpdateInterval"s, ""s, 25);
+   PropString(DefaultPropsLightSeq, Collection, "Collection"s, ""s, ""s);
+   PropFloatUnbounded(DefaultPropsLightSeq, CenterX, "CenterX"s, ""s, (float)(EDITOR_BG_WIDTH / 2));
+   PropFloatUnbounded(DefaultPropsLightSeq, CenterY, "CenterY"s, ""s, (float)((2 * EDITOR_BG_WIDTH) / 2));
    PropBool(DefaultPropsLightSeq, TimerEnabled, "Timer Enabled"s, ""s, false);
    PropInt(DefaultPropsLightSeq, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
@@ -817,16 +951,105 @@ public:
    PropInt(DefaultPropsPartGroup, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
    // Parts Defaults: Plunger
+   PropFloatUnbounded(DefaultPropsPlunger, Height, "Height"s, ""s, 20.f);
+   PropFloatUnbounded(DefaultPropsPlunger, Width, "Width"s, ""s, 25.f);
+   PropFloatUnbounded(DefaultPropsPlunger, ZAdjust, "ZAdjust"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsPlunger, Stroke, "Stroke"s, ""s, 80.f);
+   PropFloatUnbounded(DefaultPropsPlunger, PullSpeed, "PullSpeed"s, ""s, 5.f);
+   PropEnum1(DefaultPropsPlunger, PlungerType, "PlungerType"s, ""s, PlungerType, PlungerTypeModern, "PlungerTypeModern"s, "PlungerTypeFlat"s, "PlungerTypeCustom"s);
+   PropInt(DefaultPropsPlunger, Color, "Color"s, ""s, 0x000000, 0xFFFFFF, RGB(76,76,76));
+   PropString(DefaultPropsPlunger, Image, "Image"s, ""s, ""s);
+   PropIntUnbounded(DefaultPropsPlunger, AnimFrames, "AnimFrames"s, ""s, 1);
+   PropString(DefaultPropsPlunger, Surface, "Surface"s, ""s, ""s);
+   PropBool(DefaultPropsPlunger, MechPlunger, "MechPlunger"s, ""s, false); // plungers require selection for mechanical input
+   PropBool(DefaultPropsPlunger, AutoPlunger, "AutoPlunger"s, ""s, false);
+   PropBool(DefaultPropsPlunger, Visible, "Visible"s, ""s, true);
+   PropString(DefaultPropsPlunger, CustomTipShape, "CustomTipShape"s, ""s, "0 .34; 2 .6; 3 .64; 5 .7; 7 .84; 8 .88; 9 .9; 11 .92; 14 .92; 39 .84"s);
+   PropFloatUnbounded(DefaultPropsPlunger, CustomRodDiam, "CustomRodDiam"s, ""s, 0.60f);
+   PropFloatUnbounded(DefaultPropsPlunger, CustomRingGap, "CustomRingGap"s, ""s, 2.0f);
+   PropFloatUnbounded(DefaultPropsPlunger, CustomRingDiam, "CustomRingDiam"s, ""s, 0.94f);
+   PropFloatUnbounded(DefaultPropsPlunger, CustomRingWidth, "CustomRingWidth"s, ""s, 3.0f);
+   PropFloatUnbounded(DefaultPropsPlunger, CustomSpringDiam, "CustomSpringDiam"s, ""s, 0.77f);
+   PropFloatUnbounded(DefaultPropsPlunger, CustomSpringGauge, "CustomSpringGauge"s, ""s, 1.38f);
+   PropFloatUnbounded(DefaultPropsPlunger, CustomSpringLoops, "CustomSpringLoops"s, ""s, 8.0f);
+   PropFloatUnbounded(DefaultPropsPlunger, CustomSpringEndLoops, "CustomSpringEndLoops"s, ""s, 2.5f);
+   PropFloatUnbounded(DefaultPropsPlunger, ReleaseSpeed, "ReleaseSpeed"s, ""s, 80.f);
+   PropFloatUnbounded(DefaultPropsPlunger, MechStrength, "MechStrength"s, ""s, 85.f);
+   PropFloatUnbounded(DefaultPropsPlunger, ParkPosition, "ParkPosition"s, ""s, (float)(0.5/3.0)); // typical mechanical plunger has 3 inch stroke and 0.5 inch rest position //!! 0.01f better for some HW-plungers, but this seems to be rather a firmware/config issue
+   PropFloatUnbounded(DefaultPropsPlunger, ScatterVelocity, "ScatterVelocity"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsPlunger, MomentumXfer, "MomentumXfer"s, ""s, 1.f);
    PropBool(DefaultPropsPlunger, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
    PropBool(DefaultPropsPlunger, TimerEnabled, "Timer Enabled"s, ""s, false);
    PropInt(DefaultPropsPlunger, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
    // Parts Defaults: Primitive
+   PropInt(DefaultPropsPrimitive, Sides, "Sides"s, ""s, 0, 100 /* Max_Primitive_Sides */, 4);
+   PropInt(DefaultPropsPrimitive, SideColor, "SideColor"s, ""s, 0x000000, 0xFFFFFF, RGB(150, 150, 150));
+   PropBool(DefaultPropsPrimitive, Visible, "Visible"s, ""s, true);
+   PropBool(DefaultPropsPrimitive, StaticRendering, "StaticRendering"s, ""s, true);
+   PropBool(DefaultPropsPrimitive, DrawTexturesInside, "DrawTexturesInside"s, ""s, false);
+   PropFloatUnbounded(DefaultPropsPrimitive, Position_Z, "Position_Z"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsPrimitive, Size_X, "Size_X"s, ""s, 100.f);
+   PropFloatUnbounded(DefaultPropsPrimitive, Size_Y, "Size_Y"s, ""s, 100.f);
+   PropFloatUnbounded(DefaultPropsPrimitive, Size_Z, "Size_Z"s, ""s, 100.f);
+   PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra0, "RotAndTra0"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra1, "RotAndTra1"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra2, "RotAndTra2"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra3, "RotAndTra3"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra4, "RotAndTra4"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra5, "RotAndTra5"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra6, "RotAndTra6"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra7, "RotAndTra7"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra8, "RotAndTra8"s, ""s, 0.f);
+   PropString(DefaultPropsPrimitive, Image, "Image"s, ""s, ""s);
+   PropString(DefaultPropsPrimitive, NormalMap, "NormalMap"s, ""s, ""s);
+   PropBool(DefaultPropsPrimitive, HitEvent, "HitEvent"s, ""s, false);
+   PropFloatUnbounded(DefaultPropsPrimitive, HitThreshold, "HitThreshold"s, ""s, 2.f);
+   PropFloatUnbounded(DefaultPropsPrimitive, Opacity, "Opacity"s, ""s, 100.f);
+   PropBool(DefaultPropsPrimitive, AddBlend, "AddBlend"s, ""s, false);
+   PropBool(DefaultPropsPrimitive, DepthMask, "DepthMask"s, ""s, true);
+   PropInt(DefaultPropsPrimitive, Color, "Color"s, ""s, 0x000000, 0xFFFFFF, 0xFFFFFF);
+   PropFloatUnbounded(DefaultPropsPrimitive, EdgeFactorUI, "EdgeFactorUI"s, ""s, 0.25f);
+   PropFloatUnbounded(DefaultPropsPrimitive, CollisionReductionFactor, "CollisionReductionFactor"s, ""s, 0.f);
+   PropBool(DefaultPropsPrimitive, Collidable, "Collidable"s, ""s, true);
+   PropBool(DefaultPropsPrimitive, IsToy, "IsToy"s, ""s, false);
+   PropFloatUnbounded(DefaultPropsPrimitive, DisableLighting, "DisableLighting"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsPrimitive, DisableLightingBelow, "DisableLightingBelow"s, ""s, 1.f);
+   PropBool(DefaultPropsPrimitive, BackfacesEnabled, "BackfacesEnabled"s, ""s, false);
+   PropBool(DefaultPropsPrimitive, DisplayTexture, "DisplayTexture"s, ""s, false);
+   PropBool(DefaultPropsPrimitive, ObjectSpaceNormalMap, "ObjectSpaceNormalMap"s, ""s, false);
+   PropFloatUnbounded(DefaultPropsPrimitive, Elasticity, "Elasticity"s, ""s, 0.3f);
+   PropFloatUnbounded(DefaultPropsPrimitive, ElasticityFalloff, "ElasticityFalloff"s, ""s, 0.5f);
+   PropFloatUnbounded(DefaultPropsPrimitive, Friction, "Friction"s, ""s, 0.3f);
+   PropFloatUnbounded(DefaultPropsPrimitive, Scatter, "Scatter"s, ""s, 0.f);
    PropBool(DefaultPropsPrimitive, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
    PropBool(DefaultPropsPrimitive, TimerEnabled, "Timer Enabled"s, ""s, false);
    PropInt(DefaultPropsPrimitive, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
    // Parts Defaults: Ramp
+   PropFloatUnbounded(DefaultPropsRamp, Length, "Length"s, ""s, 400.f);
+   PropFloatUnbounded(DefaultPropsRamp, HeightBottom, "HeightBottom"s, ""s, 0.f);
+   PropFloatUnbounded(DefaultPropsRamp, HeightTop, "HeightTop"s, ""s, 50.f);
+   PropFloatUnbounded(DefaultPropsRamp, WidthBottom, "WidthBottom"s, ""s, 75.f);
+   PropFloatUnbounded(DefaultPropsRamp, WidthTop, "WidthTop"s, ""s, 60.f);
+   PropEnum(DefaultPropsRamp, RampType, "RampType"s, ""s, RampType, RampTypeFlat, "RampTypeFlat"s, "RampType4Wire"s, "RampType2Wire"s, "RampType3WireLeft"s, "RampType3WireRight"s, "RampType1Wire"s);
+   PropString(DefaultPropsRamp, Image, "Image"s, ""s, ""s);
+   PropEnum(DefaultPropsRamp, ImageMode, "ImageMode"s, ""s, RampImageAlignment, ImageModeWorld, "ImageModeWorld"s, "ImageModeWrap"s);
+   PropBool(DefaultPropsRamp, ImageWalls, "ImageWalls"s, ""s, true);
+   PropFloatUnbounded(DefaultPropsRamp, LeftWallHeight, "LeftWallHeight"s, ""s, 62.f);
+   PropFloatUnbounded(DefaultPropsRamp, RightWallHeight, "RightWallHeight"s, ""s, 62.f);
+   PropFloatUnbounded(DefaultPropsRamp, LeftWallHeightVisible, "LeftWallHeightVisible"s, ""s, 30.f);
+   PropFloatUnbounded(DefaultPropsRamp, RightWallHeightVisible, "RightWallHeightVisible"s, ""s, 30.f);
+   PropBool(DefaultPropsRamp, HitEvent, "HitEvent"s, ""s, false);
+   PropFloatUnbounded(DefaultPropsRamp, HitThreshold, "HitThreshold"s, ""s, 2.f);
+   PropBool(DefaultPropsRamp, Visible, "Visible"s, ""s, true);
+   PropBool(DefaultPropsRamp, Collidable, "Collidable"s, ""s, true);
+   PropFloatUnbounded(DefaultPropsRamp, WireDiameter, "WireDiameter"s, ""s, 8.f);
+   PropFloatUnbounded(DefaultPropsRamp, WireDistanceX, "WireDistanceX"s, ""s, 38.f);
+   PropFloatUnbounded(DefaultPropsRamp, WireDistanceY, "WireDistanceY"s, ""s, 88.f);
+   PropFloatUnbounded(DefaultPropsRamp, Elasticity, "Elasticity"s, ""s, 0.3f);
+   PropFloatUnbounded(DefaultPropsRamp, Friction, "Friction"s, ""s, 0.3f);
+   PropFloatUnbounded(DefaultPropsRamp, Scatter, "Scatter"s, ""s, 0.f);
    PropBool(DefaultPropsRamp, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
    PropBool(DefaultPropsRamp, TimerEnabled, "Timer Enabled"s, ""s, false);
    PropInt(DefaultPropsRamp, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
@@ -896,6 +1119,22 @@ public:
    PropInt(DefaultPropsSurface, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
    // Parts Defaults: Textbox
+   PropFloatUnbounded(DefaultPropsTextbox, Width, "Width"s, ""s, 100.f);
+   PropFloatUnbounded(DefaultPropsTextbox, Height, "Height"s, ""s, 50.f);
+   PropIntUnbounded(DefaultPropsTextbox, BackColor, "BackColor"s, ""s, 0x000000);
+   PropIntUnbounded(DefaultPropsTextbox, FontColor, "FontColor"s, ""s, 0xFFFFFF);
+   PropFloatUnbounded(DefaultPropsTextbox, IntensityScale, "IntensityScale"s, ""s, 1.f);
+   PropEnum(DefaultPropsTextbox, TextAlignment, "TextAlignment"s, ""s, TextAlignment, TextAlignRight, "TextAlignLeft"s, "TextAlignCenter"s, "TextAlignRight"s);
+   PropBool(DefaultPropsTextbox, Transparent, "Transparent"s, ""s, false);
+   PropBool(DefaultPropsTextbox, DMD, "DMD"s, ""s, false);
+   PropString(DefaultPropsTextbox, Text, "Text"s, ""s, ""s);
+   PropFloatUnbounded(DefaultPropsTextbox, FontSize, "FontSize"s, ""s, 14.25f);
+   PropString(DefaultPropsTextbox, FontName, "FontName"s, ""s, "Arial Black"s);
+   PropInt(DefaultPropsTextbox, FontWeight, "FontWeight"s, ""s, 0, 900, 400); // FW_NORMAL
+   PropIntUnbounded(DefaultPropsTextbox, FontCharSet, "FontCharSet"s, ""s, 0);
+   PropBool(DefaultPropsTextbox, FontItalic, "FontItalic"s, ""s, false);
+   PropBool(DefaultPropsTextbox, FontUnderline, "FontUnderline"s, ""s, false);
+   PropBool(DefaultPropsTextbox, FontStrikeThrough, "FontStrikeThrough"s, ""s, false);
    PropBool(DefaultPropsTextbox, TimerEnabled, "Timer Enabled"s, ""s, false);
    PropInt(DefaultPropsTextbox, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
@@ -921,11 +1160,18 @@ public:
 
    // Default core plugins enable state
    PropBool(PluginB2SLegacy, Enable, "Enable"s, "Enable legacy B2S plugin"s, g_isStandalone);
+   PropIntUnbounded(PluginB2SLegacy, B2SBackglassWidth, "B2SBackglassWidth"s, ""s, 1024);
+   PropIntUnbounded(PluginB2SLegacy, B2SBackglassHeight, "B2SBackglassHeight"s, ""s, 768);
    PropBool(PluginFlexDMD, Enable, "Enable"s, "Enable FlexDMD plugin"s, g_isStandalone);
    PropBool(PluginPinMAME, Enable, "Enable"s, "Enable PinMAME plugin"s, g_isStandalone);
    PropBool(PluginScoreView, Enable, "Enable"s, "Enable ScoreView player plugin"s, g_isStandalone);
    PropBool(PluginWMP, Enable, "Enable"s, "Enable WMP plugin"s, g_isStandalone);
    PropBool(PluginPUP, Enable, "Enable"s, "Enable PinUp player plugin"s, g_isMobile);
+
+   // Standalone
+   PropEnumWithMin(Standalone, RenderingModeOverride, "Override rendering mode"s, ""s, int, -1, g_isMobile ? 2 : -1, "Default"s, "2D"s, "Stereo 3D"s, "VR"s);
+   PropBool(Standalone, Haptics, "Haptics"s, ""s, g_isMobile);
+
 
 #undef PropBool
 #undef PropInt
@@ -1016,36 +1262,6 @@ public:
    bool LoadValue(const Section section, const string &key, float &pfloat) const;
    bool LoadValue(const Section section, const string &key, int &pint) const;
    bool LoadValue(const Section section, const string &key, unsigned int &val) const;
-
-   // The following method must only be used for settings previously validated to guarantee successfull loading
-   void Validate(const bool addDefaults);
-   string LoadValueString(const Section section, const string &key) const
-   {
-      string v;
-      LoadValue(section, key, v);
-      return v;
-   }
-   float LoadValueFloat(const Section section, const string &key) const
-   {
-      float v;
-      bool ok = LoadValue(section, key, v);
-      assert(ok);
-      return v;
-   }
-   bool LoadValueBool(const Section section, const string &key) const
-   {
-      unsigned int v;
-      bool ok = LoadValue(section, key, v);
-      assert(ok);
-      return !!v;
-   }
-   unsigned int LoadValueUInt(const Section section, const string &key) const
-   {
-      unsigned int v;
-      bool ok = LoadValue(section, key, v);
-      assert(ok);
-      return v;
-   }
 
    float LoadValueWithDefault(const Section section, const string &key, const float def) const;
    int LoadValueWithDefault(const Section section, const string &key, const int def) const;

@@ -38,8 +38,8 @@ HRESULT Textbox::Init(PinTable *const ptable, const float x, const float y, cons
 {
    m_ptable = ptable;
    SetDefaults(fromMouseClick);
-   const float width  = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultPropsTextBox, "Width"s, 100.0f);
-   const float height = g_pvp->m_settings.LoadValueWithDefault(Settings::DefaultPropsTextBox, "Height"s, 50.0f);
+   const float width  = g_pvp->m_settings.GetDefaultPropsTextbox_Width();
+   const float height = g_pvp->m_settings.GetDefaultPropsTextbox_Height();
    m_d.m_v1.x = x;
    m_d.m_v1.y = y;
    m_d.m_v2.x = x + width;
@@ -50,120 +50,77 @@ HRESULT Textbox::Init(PinTable *const ptable, const float x, const float y, cons
 void Textbox::SetDefaults(const bool fromMouseClick)
 {
 #define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsTextbox_##prop() : Settings::GetDefaultPropsTextbox_##prop##_Default()
-#define regKey Settings::DefaultPropsTextBox
-
    m_d.m_visible = true;
-
-#ifndef __STANDALONE__
-   FONTDESC fd;
-   fd.cbSizeofstruct = sizeof(FONTDESC);
-   bool free_lpstrName = false;
-#endif
-
-   if (!fromMouseClick)
-   {
-      m_d.m_backcolor = RGB(0, 0, 0);
-      m_d.m_fontcolor = RGB(255, 255, 255);
-      m_d.m_intensity_scale = 1.0f;
-      m_d.m_talign = TextAlignRight;
-      m_d.m_transparent = false;
-      m_d.m_isDMD = false;
-      m_d.m_text.clear();
-
-#ifndef __STANDALONE__
-      fd.cySize.int64 = (LONGLONG)(14.25f * 10000.0f);
-      fd.lpstrName = (LPOLESTR)(L"Arial");
-      fd.sWeight = FW_NORMAL;
-      fd.sCharset = 0;
-      fd.fItalic = 0;
-      fd.fUnderline = 0;
-      fd.fStrikethrough = 0;
-#endif
-   }
-   else
-   {
-      m_d.m_backcolor = g_pvp->m_settings.LoadValueWithDefault(regKey, "BackColor"s, (int)RGB(0, 0, 0));
-      m_d.m_fontcolor = g_pvp->m_settings.LoadValueWithDefault(regKey, "FontColor"s, (int)RGB(255, 255, 255));
-      m_d.m_intensity_scale = g_pvp->m_settings.LoadValueWithDefault(regKey, "IntensityScale"s, 1.0f);
-      m_d.m_talign = (TextAlignment)g_pvp->m_settings.LoadValueWithDefault(regKey, "TextAlignment"s, (int)TextAlignRight);
-      m_d.m_transparent = g_pvp->m_settings.LoadValueWithDefault(regKey, "Transparent"s, false);
-      m_d.m_isDMD = g_pvp->m_settings.LoadValueWithDefault(regKey, "DMD"s, false);
-
-#ifndef __STANDALONE__
-      float fontsize = g_pvp->m_settings.LoadValueWithDefault(regKey, "FontSize"s, 14.25f);
-      fd.cySize.int64 = (LONGLONG)(fontsize * 10000.0f);
-
-      string tmp;
-      bool hr;
-      hr = g_pvp->m_settings.LoadValue(regKey, "FontName"s, tmp);
-      if (!hr)
-         fd.lpstrName = (LPOLESTR)(L"Arial");
-      else
-      {
-         fd.lpstrName = (LPOLESTR)MakeWide(tmp);
-         free_lpstrName = true;
-      }
-
-      fd.sWeight = g_pvp->m_settings.LoadValueWithDefault(regKey, "FontWeight"s, (int)FW_NORMAL);
-      fd.sCharset = g_pvp->m_settings.LoadValueWithDefault(regKey, "FontCharSet"s, 0);
-      fd.fItalic = g_pvp->m_settings.LoadValueWithDefault(regKey, "FontItalic"s, 0);
-      fd.fUnderline = g_pvp->m_settings.LoadValueWithDefault(regKey, "FontUnderline"s, 0);
-      fd.fStrikethrough = g_pvp->m_settings.LoadValueWithDefault(regKey, "FontStrikeThrough"s, 0);
-
-      hr = g_pvp->m_settings.LoadValue(regKey, "Text"s, m_d.m_text);
-      if (!hr)
-         m_d.m_text.clear();
-#endif
-   }
-
-#ifndef __STANDALONE__
-   SAFE_RELEASE(m_pIFont);
-   OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
-   if (free_lpstrName)
-      delete [] fd.lpstrName;
-#endif
-#undef regKey
+   LinkProp(m_d.m_backcolor, BackColor);
+   LinkProp(m_d.m_fontcolor, FontColor);
+   LinkProp(m_d.m_transparent, Transparent);
+   LinkProp(m_d.m_isDMD, DMD);
+   LinkProp(m_d.m_backcolor, BackColor);
+   LinkProp(m_d.m_intensity_scale, IntensityScale);
+   LinkProp(m_d.m_text, Text);
+   LinkProp(m_d.m_talign, TextAlignment);
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#ifndef __STANDALONE__
+   SAFE_RELEASE(m_pIFont);
+   FONTDESC fd;
+   fd.cbSizeofstruct = sizeof(FONTDESC);
+   float fontSize;
+   string fontName;
+   LinkProp(fontSize, FontSize);
+   LinkProp(fontName, FontName);
+   LinkProp(fd.sWeight, FontWeight);
+   LinkProp(fd.sCharset, FontCharSet);
+   LinkProp(fd.fItalic, FontItalic);
+   LinkProp(fd.fUnderline, FontUnderline);
+   LinkProp(fd.fStrikethrough, FontStrikeThrough);
+   fd.cySize.int64 = (LONGLONG)(fontSize * 10000.0f);
+   fd.lpstrName = (LPOLESTR)MakeWide(fontName);
+   OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
+   delete [] fd.lpstrName;
+#endif
+
 #undef LinkProp
 }
 
 void Textbox::WriteRegDefaults()
 {
 #define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsTextbox_##prop(field, false)
-#define regKey Settings::DefaultPropsTextBox
-
-   g_pvp->m_settings.SaveValue(regKey, "BackColor"s, (int)m_d.m_backcolor);
-   g_pvp->m_settings.SaveValue(regKey, "FontColor"s, (int)m_d.m_fontcolor);
-   g_pvp->m_settings.SaveValue(regKey, "Transparent"s, m_d.m_transparent);
-   g_pvp->m_settings.SaveValue(regKey, "DMD"s, m_d.m_isDMD);
-
-#ifndef __STANDALONE__
-   FONTDESC fd;
-   fd.cbSizeofstruct = sizeof(FONTDESC);
-   m_pIFont->get_Size(&fd.cySize);
-   m_pIFont->get_Name((BSTR*)&fd.lpstrName); // actually returns a BSTR, so we need to treat it like that
-   m_pIFont->get_Weight(&fd.sWeight);
-   m_pIFont->get_Charset(&fd.sCharset);
-   m_pIFont->get_Italic(&fd.fItalic);
-   m_pIFont->get_Underline(&fd.fUnderline);
-   m_pIFont->get_Strikethrough(&fd.fStrikethrough);
-
-   g_pvp->m_settings.SaveValue(regKey, "FontSize"s, (float)(fd.cySize.int64 / 10000.0));
-   g_pvp->m_settings.SaveValue(regKey, "FontName"s, MakeString((BSTR)fd.lpstrName));
-   SysFreeString((BSTR)fd.lpstrName); // see above
-   g_pvp->m_settings.SaveValue(regKey, "FontWeight"s, (int)fd.sWeight);
-   g_pvp->m_settings.SaveValue(regKey, "FontCharSet"s, (int)fd.sCharset);
-   g_pvp->m_settings.SaveValue(regKey, "FontItalic"s, fd.fItalic);
-   g_pvp->m_settings.SaveValue(regKey, "FontUnderline"s, fd.fUnderline);
-   g_pvp->m_settings.SaveValue(regKey, "FontStrikeThrough"s, fd.fStrikethrough);
-
-   g_pvp->m_settings.SaveValue(regKey, "Text"s, m_d.m_text);
-
-#undef regKey
-#endif
+   LinkProp(m_d.m_backcolor, BackColor);
+   LinkProp(m_d.m_fontcolor, FontColor);
+   LinkProp(m_d.m_transparent, Transparent);
+   LinkProp(m_d.m_isDMD, DMD);
+   LinkProp(m_d.m_backcolor, BackColor);
+   LinkProp(m_d.m_intensity_scale, IntensityScale);
+   LinkProp(m_d.m_text, Text);
+   LinkProp(m_d.m_talign, TextAlignment);
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
+#ifndef __STANDALONE__
+   if (m_pIFont)
+   {
+      FONTDESC fd;
+      fd.cbSizeofstruct = sizeof(FONTDESC);
+      m_pIFont->get_Size(&fd.cySize);
+      m_pIFont->get_Name((BSTR*)&fd.lpstrName);
+      m_pIFont->get_Weight(&fd.sWeight);
+      m_pIFont->get_Charset(&fd.sCharset);
+      m_pIFont->get_Italic(&fd.fItalic);
+      m_pIFont->get_Underline(&fd.fUnderline);
+      m_pIFont->get_Strikethrough(&fd.fStrikethrough);
+      const float fontSize = (float)(fd.cySize.int64 / 10000.0);
+      const string fontName = MakeString((BSTR)fd.lpstrName);
+      SysFreeString((BSTR)fd.lpstrName);
+
+      LinkProp(fontSize, FontSize);
+      LinkProp(fontName, FontName);
+      LinkProp(fd.sWeight, FontWeight);
+      LinkProp(fd.sCharset, FontCharSet);
+      LinkProp(fd.fItalic, FontItalic);
+      LinkProp(fd.fUnderline, FontUnderline);
+      LinkProp(fd.fStrikethrough, FontStrikeThrough);
+   }
+#endif
 #undef LinkProp
 }
 

@@ -165,42 +165,6 @@ void Settings::RegisterIntSetting(const Section section, const string &key, cons
 }
 
 
-// This method declares the static settings supported by VPX.
-//
-// All static (known at compile time) settings should be declared here with their corresponding properties, allowing 
-// to improve setting management by:
-// - adding the ability to validate all settings against a validity range, and therefore guarantee a valid value for any setting
-// - adding the ability to generate a friendly up-to-date default setting file with usage comments
-// - adding static, explicit typîng to avoid unexpected data conversions
-// - remove duplicated default values spread all over the codebase which happens to not always be equals
-// - allow to move to a simple array based access, improving performance and lowering the need to cache settings into local unsynced fields
-//
-// To allow a slow and smooth transition, settings are declared here little by little. Once registered here, settings may not be accessed
-// using LoadWithDefaultValue (it is asserted in Debug builds).
-//
-// We use macro definition instead of directly calling Validate function in order to be able to duplicate this definition list into 
-// a static enum definition in Settings.h which will be used for array access.
-void Settings::Validate(const bool addDefaults)
-{
-   #define SettingBool(section, name, defVal, comment) RegisterBoolSetting(section, name, defVal, addDefaults, comment)
-   #define SettingInt(section, name, defVal, minVal, maxVal, comment) RegisterIntSetting(section, name, defVal, minVal, maxVal, addDefaults, comment)
-   
-#ifdef __STANDALONE__
-   SettingInt(GetSection("PluginB2SLegacy"s), "B2SBackglassWidth"s, 1024, 0, 5000, ""s);
-   SettingInt(GetSection("PluginB2SLegacy"s), "B2SBackglassHeight"s, 768, 0, 5000, ""s);
-#endif
-
-#ifdef __LIBVPINBALL__
-   SettingBool(Section::Standalone, "Haptics"s, true, ""s);
-   SettingInt(Section::Standalone, "RenderingModeOverride"s, 2, 0, 2, ""s);
-   SettingInt(Section::Backglass, "BackglassOutput"s, 1, 1, 1, ""s);
-   SettingInt(Section::ScoreView, "ScoreViewOutput"s, 1, 1, 1, ""s);
-#endif
-
-   #undef SettingBool
-   #undef SettingInt
-}
-
 bool Settings::LoadFromFile(const string& path, const bool createDefault)
 {
    m_modified = false;
@@ -210,7 +174,6 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
    if (file.read(m_ini))
    {
       PLOGI << "Settings file was loaded from '" << path << '\'';
-      Validate(createDefault);
       for (const auto &[key, value] : m_ini)
       {
          if (FindIndexOf(m_settingKeys, key) < 0)
@@ -315,13 +278,11 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
          RegCloseKey(hk);
       }
       #endif
-      Validate(true); // Guarantee a valid setting setup with defaults defined
       return true;
    }
    else
    {
       PLOGI << "Settings file was not found at '" << path << '\'';
-      Validate(false); // Still guarantee a valid setting setup
       return false;
    }
 }

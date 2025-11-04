@@ -20,21 +20,12 @@ HRESULT LightSeq::Init(PinTable *const ptable, const float x, const float y, con
 void LightSeq::SetDefaults(const bool fromMouseClick)
 {
 #define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsLightSeq_##prop() : Settings::GetDefaultPropsLightSeq_##prop##_Default()
-#define regKey Settings::DefaultPropsLightSequence
-
-   m_d.m_updateinterval = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "UpdateInterval"s, 25) : 25;
-
    string tmp;
-   const bool hr = g_pvp->m_settings.LoadValue(regKey, "Collection"s, tmp);
-   if (!hr || !fromMouseClick)
-      m_d.m_wzCollection.clear();
-   else
-      m_d.m_wzCollection = MakeWString(tmp);
-
-   m_d.m_vCenter.x = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "CenterX"s, (float)(EDITOR_BG_WIDTH / 2)) : (EDITOR_BG_WIDTH / 2);
-   m_d.m_vCenter.y = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "CenterY"s, (float)((2 * EDITOR_BG_WIDTH) / 2)) : ((2 * EDITOR_BG_WIDTH) / 2);
-
-#undef regKey
+   LinkProp(m_d.m_updateinterval, UpdateInterval);
+   LinkProp(tmp, Collection); 
+   m_d.m_wzCollection = MakeWString(tmp);
+   LinkProp(m_d.m_vCenter.x, CenterX);
+   LinkProp(m_d.m_vCenter.y, CenterY);
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
 #undef LinkProp
@@ -43,14 +34,11 @@ void LightSeq::SetDefaults(const bool fromMouseClick)
 void LightSeq::WriteRegDefaults()
 {
 #define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsLightSeq_##prop(field, false)
-#define regKey Settings::DefaultPropsLightSequence
-
-   g_pvp->m_settings.SaveValue(regKey, "UpdateInterval"s, m_d.m_updateinterval);
-   g_pvp->m_settings.SaveValue(regKey, "Collection"s, MakeString(m_d.m_wzCollection));
-   g_pvp->m_settings.SaveValue(regKey, "CenterX"s, m_d.m_vCenter.x);
-   g_pvp->m_settings.SaveValue(regKey, "CenterY"s, m_d.m_vCenter.y);
-
-#undef regKey
+   LinkProp(m_d.m_updateinterval, UpdateInterval);
+   string tmp = MakeString(m_d.m_wzCollection);
+   LinkProp(tmp, Collection);
+   LinkProp(m_d.m_vCenter.x, CenterX);
+   LinkProp(m_d.m_vCenter.y, CenterY);
    LinkProp(m_d.m_tdr.m_TimerEnabled, TimerEnabled);
    LinkProp(m_d.m_tdr.m_TimerInterval, TimerInterval);
 #undef LinkProp

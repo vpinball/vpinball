@@ -44,114 +44,75 @@ HRESULT Decal::Init(PinTable * const ptable, const float x, const float y, const
 
 void Decal::SetDefaults(const bool fromMouseClick)
 {
-#define regKey Settings::DefaultPropsDecal
-
-   m_d.m_width = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Width"s, 100.0f) : 100.0f;
-   m_d.m_height = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Height"s, 100.0f) : 100.0f;
-   m_d.m_rotation = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Rotation"s, 0.f) : 0.f;
-
-   bool hr = g_pvp->m_settings.LoadValue(regKey, "Image"s, m_d.m_szImage);
-   if (!hr || !fromMouseClick)
-      m_d.m_szImage.clear();
-
-   hr = g_pvp->m_settings.LoadValue(regKey, "Surface"s, m_d.m_szSurface);
-   if (!hr || !fromMouseClick)
-      m_d.m_szSurface.clear();
-
-   m_d.m_decaltype = fromMouseClick ? (enum DecalType)g_pvp->m_settings.LoadValueWithDefault(regKey, "DecalType"s, (int)DecalImage) : DecalImage;
-   hr = g_pvp->m_settings.LoadValue(regKey, "Text"s, m_d.m_text);
-   if (!hr || !fromMouseClick)
-      m_d.m_text.clear();
-
-   m_d.m_sizingtype = fromMouseClick ? (enum SizingType)g_pvp->m_settings.LoadValueWithDefault(regKey, "Sizing"s, (int)ManualSize) : ManualSize;
-   m_d.m_color = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Color"s, (int)RGB(0,0,0)) : RGB(0,0,0);
-   m_d.m_verticalText = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "VerticalText"s, false) : false;
-
+#define LinkProp(field, prop) field = fromMouseClick ? g_pvp->m_settings.GetDefaultPropsDecal_##prop() : Settings::GetDefaultPropsDecal_##prop##_Default()
+   LinkProp(m_d.m_width, Width);
+   LinkProp(m_d.m_height, Height);
+   LinkProp(m_d.m_rotation, Rotation);
+   LinkProp(m_d.m_szImage, Image);
+   LinkProp(m_d.m_szSurface, Surface);
+   LinkProp(m_d.m_decaltype, DecalType);
+   LinkProp(m_d.m_text, Text);
+   LinkProp(m_d.m_color, Color);
+   LinkProp(m_d.m_verticalText, VerticalText);
 #ifndef __STANDALONE__
-   if (!m_pIFont)
-   {
-      FONTDESC fd;
-      fd.cbSizeofstruct = sizeof(FONTDESC);
-
-      float fTmp;
-      hr = g_pvp->m_settings.LoadValue(regKey, "FontSize"s, fTmp);
-      fd.cySize.int64 = hr && fromMouseClick ? (LONGLONG)(fTmp * 10000.0f) : 142500;
-
-      string tmp;
-      hr = g_pvp->m_settings.LoadValue(regKey, "FontName"s, tmp);
-      if (!hr || !fromMouseClick)
-         fd.lpstrName = (LPOLESTR)(L"Arial Black");
-      else
-         fd.lpstrName = (LPOLESTR)MakeWide(tmp);
-
-      fd.sWeight = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "FontWeight"s, FW_NORMAL) : FW_NORMAL;
-      fd.sCharset = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "FontCharSet"s, 0) : 0;
-      fd.fItalic = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "FontItalic"s, false) : false;
-      fd.fUnderline = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "FontUnderline"s, false) : false;
-      fd.fStrikethrough = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "FontStrikeThrough"s, false) : false;
-
-      OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
-      if (hr && fromMouseClick)
-         delete [] fd.lpstrName;
-   }
+   SAFE_RELEASE(m_pIFont);
+   FONTDESC fd;
+   fd.cbSizeofstruct = sizeof(FONTDESC);
+   float fontSize;
+   string fontName;
+   LinkProp(fontSize, FontSize);
+   LinkProp(fontName, FontName);
+   LinkProp(fd.sWeight, FontWeight);
+   LinkProp(fd.sCharset, FontCharSet);
+   LinkProp(fd.fItalic, FontItalic);
+   LinkProp(fd.fUnderline, FontUnderline);
+   LinkProp(fd.fStrikethrough, FontStrikeThrough);
+   fd.cySize.int64 = (LONGLONG)(fontSize * 10000.0f);
+   fd.lpstrName = (LPOLESTR)MakeWide(fontName);
+   OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
+   delete [] fd.lpstrName;
 #endif
-
-#undef regKey
-}
-
-string Decal::GetFontName()
-{
-   if(m_pIFont)
-   {
-      BSTR bstr;
-      /*HRESULT hr =*/ m_pIFont->get_Name(&bstr);
-      const string fontName = MakeString(bstr);
-      SysFreeString(bstr);
-      return fontName;
-   }
-   return string();
+#undef LinkProp
 }
 
 void Decal::WriteRegDefaults()
 {
-#define regKey Settings::DefaultPropsDecal
-
-   g_pvp->m_settings.SaveValue(regKey, "Width"s, m_d.m_width);
-   g_pvp->m_settings.SaveValue(regKey, "Height"s, m_d.m_height);
-   g_pvp->m_settings.SaveValue(regKey, "Rotation"s, m_d.m_rotation);
-   g_pvp->m_settings.SaveValue(regKey, "Image"s, m_d.m_szImage);
-   g_pvp->m_settings.SaveValue(regKey, "DecalType"s, m_d.m_decaltype);
-   g_pvp->m_settings.SaveValue(regKey, "Text"s, m_d.m_text);
-   g_pvp->m_settings.SaveValue(regKey, "Sizing"s, m_d.m_sizingtype);
-   g_pvp->m_settings.SaveValue(regKey, "Color"s, (int)m_d.m_color);
-   g_pvp->m_settings.SaveValue(regKey, "VerticalText"s, m_d.m_verticalText);
-   g_pvp->m_settings.SaveValue(regKey, "Surface"s, m_d.m_szSurface);
-
+#define LinkProp(field, prop) g_pvp->m_settings.SetDefaultPropsDecal_##prop(field, false)
+   LinkProp(m_d.m_width, Width);
+   LinkProp(m_d.m_height, Height);
+   LinkProp(m_d.m_rotation, Rotation);
+   LinkProp(m_d.m_szImage, Image);
+   LinkProp(m_d.m_szSurface, Surface);
+   LinkProp(m_d.m_decaltype, DecalType);
+   LinkProp(m_d.m_text, Text);
+   LinkProp(m_d.m_color, Color);
+   LinkProp(m_d.m_verticalText, VerticalText);
 #ifndef __STANDALONE__
    if (m_pIFont)
    {
       FONTDESC fd;
       fd.cbSizeofstruct = sizeof(FONTDESC);
       m_pIFont->get_Size(&fd.cySize);
-      m_pIFont->get_Name((BSTR*)&fd.lpstrName); // returns a BSTR, thus we must free this specifically
+      m_pIFont->get_Name((BSTR*)&fd.lpstrName);
       m_pIFont->get_Weight(&fd.sWeight);
       m_pIFont->get_Charset(&fd.sCharset);
       m_pIFont->get_Italic(&fd.fItalic);
       m_pIFont->get_Underline(&fd.fUnderline);
       m_pIFont->get_Strikethrough(&fd.fStrikethrough);
+      const float fontSize = (float)(fd.cySize.int64 / 10000.0);
+      const string fontName = MakeString((BSTR)fd.lpstrName);
+      SysFreeString((BSTR)fd.lpstrName);
 
-      g_pvp->m_settings.SaveValue(regKey, "FontSize"s, (float)(fd.cySize.int64 / 10000.0));
-      g_pvp->m_settings.SaveValue(regKey, "FontName"s, MakeString((BSTR)fd.lpstrName));
-      SysFreeString((BSTR)fd.lpstrName); // see above
-      g_pvp->m_settings.SaveValue(regKey, "FontWeight"s, (int)fd.sWeight);
-      g_pvp->m_settings.SaveValue(regKey, "FontCharSet"s, (int)fd.sCharset);
-      g_pvp->m_settings.SaveValue(regKey, "FontItalic"s, fd.fItalic);
-      g_pvp->m_settings.SaveValue(regKey, "FontUnderline"s, fd.fUnderline);
-      g_pvp->m_settings.SaveValue(regKey, "FontStrikeThrough"s, fd.fStrikethrough);
+      LinkProp(fontSize, FontSize);
+      LinkProp(fontName, FontName);
+      LinkProp(fd.sWeight, FontWeight);
+      LinkProp(fd.sCharset, FontCharSet);
+      LinkProp(fd.fItalic, FontItalic);
+      LinkProp(fd.fUnderline, FontUnderline);
+      LinkProp(fd.fStrikethrough, FontStrikeThrough);
    }
 #endif
-
-#undef regKey
+#undef LinkProp
 }
 
 
@@ -218,6 +179,19 @@ void Decal::UIRenderPass2(Sur * const psur)
 
       psur->Polygon(rgv, 4);
    }
+}
+
+string Decal::GetFontName()
+{
+   if(m_pIFont)
+   {
+      BSTR bstr;
+      /*HRESULT hr =*/ m_pIFont->get_Name(&bstr);
+      const string fontName = MakeString(bstr);
+      SysFreeString(bstr);
+      return fontName;
+   }
+   return string();
 }
 
 void Decal::GetTextSize(int * const px, int * const py)

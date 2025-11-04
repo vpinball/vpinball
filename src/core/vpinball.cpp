@@ -145,6 +145,8 @@ VPinball::VPinball()
    m_pinSimFrontEndControlsMsg = RegisterWindowMessageA("PinSim::FrontEndControls");
 #endif
 
+   Settings::GetRegistry().Register(Settings::GetRecentDir_ImportDir_Property()->WithDefault(PATH_TABLES));
+
    LoadEditorSetupFromSettings();
 
    wintimer_init();
