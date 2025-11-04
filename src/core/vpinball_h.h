@@ -83,7 +83,6 @@ private:
    void UpdateRecentFileList(const string& filename);
 
 public:
-   void GetMyPrefPath();
    void AddMDITable(PinTableMDI* mdiTable);
    CMenu GetMainMenu(int id);
    void CloseAllDialogs();
@@ -230,8 +229,16 @@ public:
 
    string m_myPath;
    wstring m_wMyPath;
-   string m_myPrefPath;
    string m_currentTablePath;
+
+   string GetDefaultPrefPath();
+   void SetPrefPath(const string& path);
+   const string& GetPrefPath() const { return m_myPrefPath; }
+
+private:
+   string m_myPrefPath;
+
+public:
 
    int m_autosaveTime;
 

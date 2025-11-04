@@ -686,7 +686,7 @@ bool WebServer::ValidatePathParameter(struct mg_connection *c, struct mg_http_me
 
 std::filesystem::path WebServer::BuildPrefPath(const char* relativePath)
 {
-   return std::filesystem::path(g_pvp->m_myPrefPath) / relativePath;
+   return std::filesystem::path(g_pvp->GetPrefPath()) / relativePath;
 }
 
 bool WebServer::Unzip(const char* pSource)

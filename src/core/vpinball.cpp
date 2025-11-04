@@ -116,8 +116,8 @@ VPinball::VPinball()
 
    m_hbmInPlayMode = nullptr;
 
-   GetMyPath();				//Store path of vpinball.exe in m_myPath and m_wMyPath
-   GetMyPrefPath();			//Store preference path of vpinball.exe in m_myPrefPath
+   GetMyPath(); //Store path of vpinball.exe in m_myPath and m_wMyPath
+   SetPrefPath(GetDefaultPrefPath()); //Store preference path of vpinball.exe in GetPrefPath()
 
 #ifndef __STANDALONE__
 #ifdef _WIN64
@@ -144,8 +144,6 @@ VPinball::VPinball()
    // register the PinSim::FrontEndControls name window message
    m_pinSimFrontEndControlsMsg = RegisterWindowMessageA("PinSim::FrontEndControls");
 #endif
-
-   Settings::GetRegistry().Register(Settings::GetRecentDir_ImportDir_Property()->WithDefault(PATH_TABLES));
 
    LoadEditorSetupFromSettings();
 
@@ -193,36 +191,51 @@ void VPinball::GetMyPath()
    m_wMyPath = MakeWString(m_myPath);
 }
 
-void VPinball::GetMyPrefPath()
+string VPinball::GetDefaultPrefPath()
 {
+   string path;
 #ifdef _WIN32
    // Use standard Windows AppData directory (to avoid requesting write permissions, and behave correctly for Windows restore,...)
    // That would look something like: "C:\Users\bob\AppData\Roaming\VPinballX\"
-   m_myPrefPath = string(GetAppDataPath()) + PATH_SEPARATOR_CHAR + "VPinballX" + PATH_SEPARATOR_CHAR;
+   path = string(GetAppDataPath()) + PATH_SEPARATOR_CHAR + "VPinballX" + PATH_SEPARATOR_CHAR;
 #elif defined(__ANDROID__)
    char *szPrefPath = SDL_GetPrefPath(NULL, NULL);
-   m_myPrefPath = szPrefPath;
+   path = szPrefPath;
    SDL_free(szPrefPath);
 #elif defined(__APPLE__) && defined(TARGET_OS_IOS) && TARGET_OS_IOS
    char *szPrefPath = SDL_GetPrefPath("../..", "Documents");
-   m_myPrefPath = szPrefPath;
+   path = szPrefPath;
    SDL_free(szPrefPath);
 #elif defined(__APPLE__) && defined(TARGET_OS_TV) && TARGET_OS_TV
    char *szPrefPath = SDL_GetPrefPath(NULL, "Documents");
-   m_myPrefPath = szPrefPath;
+   path = szPrefPath;
    SDL_free(szPrefPath);
 #else
-   m_myPrefPath = string(getenv("HOME")) + PATH_SEPARATOR_CHAR + ".vpinball" + PATH_SEPARATOR_CHAR;
+   path = string(getenv("HOME")) + PATH_SEPARATOR_CHAR + ".vpinball" + PATH_SEPARATOR_CHAR;
 #endif
-   if (!DirExists(m_myPrefPath)) {
+   return path;
+}
+
+void VPinball::SetPrefPath(const string& path) {
+   m_myPrefPath = path;
+   if (!DirExists(m_myPrefPath))
+   {
       std::error_code ec;
-      if (std::filesystem::create_directory(m_myPrefPath, ec)) {
+      if (std::filesystem::create_directory(m_myPrefPath, ec))
+      {
          PLOGI << "Pref path created: " << m_myPrefPath;
       }
-      else {
+      else
+      {
          PLOGE << "Unable to create pref path: " << m_myPrefPath;
       }
    }
+   bool gPVPVWasNull = g_pvp == nullptr;
+   if (gPVPVWasNull)
+      g_pvp = this;
+   Settings::GetRegistry().Register(Settings::GetRecentDir_ImportDir_Property()->WithDefault(PATH_TABLES));
+   if (gPVPVWasNull)
+      g_pvp = nullptr;
 }
 
 //Post Work to the worker Thread
