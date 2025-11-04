@@ -137,13 +137,7 @@ private:
 class RenderOutput final
 {
 public:
-   RenderOutput(const Settings& settings, VPXWindowId windowId)
-      : m_windowId(windowId)
-   {
-      m_mode = OM_DISABLED;
-      SetMode(settings, static_cast<OutputMode>(settings.GetWindow_Mode(m_windowId)));
-   }
-
+   RenderOutput(const Settings& settings, VPXWindowId windowId);
    ~RenderOutput() = default;
 
    enum OutputMode
@@ -152,106 +146,19 @@ public:
       OM_WINDOW, // Output is a native system window (maybe a window, exclusive fullscreen, VR headset,...)
       OM_EMBEDDED, // Output is embedded in the playfield window
    };
+   OutputMode GetMode() const;
+   void SetMode(const Settings& settings, OutputMode mode);
 
-   OutputMode GetMode() const { return m_mode; }
+   Window* GetWindow() const;
+   EmbeddedWindow* GetEmbeddedWindow() const;
 
-   void SetMode(const Settings& settings, OutputMode mode)
-   {
-      m_mode = mode;
-      switch (m_mode)
-      {
-      case OM_DISABLED:
-         m_embeddedWindow = nullptr;
-         m_window = nullptr;
-         break;
+   int GetWidth() const;
+   void SetWidth(int v) const;
+   int GetHeight() const;
+   void SetHeight(int v) const;
 
-      case OM_EMBEDDED:
-         m_window = nullptr;
-         if (m_embeddedWindow == nullptr)
-         {
-            const int x = settings.GetWindow_WndX(m_windowId);
-            const int y = settings.GetWindow_WndY(m_windowId);
-            const int width = settings.GetWindow_Width(m_windowId);
-            const int height = settings.GetWindow_Height(m_windowId);
-            m_embeddedWindow = std::make_unique<EmbeddedWindow>(x, y, width, height);
-         }
-         break;
-
-      case OM_WINDOW:
-         m_embeddedWindow = nullptr;
-         if (m_mode == OM_WINDOW && m_window == nullptr)
-         {
-            m_window = std::make_unique<Window>(m_windowId == VPXWindowId::VPXWINDOW_Playfield ? "Visual Pinball Player"s
-                  : m_windowId == VPXWindowId::VPXWINDOW_Backglass                             ? "Visual Pinball Backglass"s
-                  : m_windowId == VPXWindowId::VPXWINDOW_ScoreView                             ? "Visual Pinball Score View"s
-                  : m_windowId == VPXWindowId::VPXWINDOW_Topper                                ? "Visual Pinball Topper"s
-                                                                                               : "Visual Pinball VR Preview"s,
-               settings, m_windowId);
-         }
-         break;
-      }
-   }
-
-   Window* GetWindow() const { return m_window.get(); }
-
-   EmbeddedWindow* GetEmbeddedWindow() const { return m_embeddedWindow.get(); }
-
-   int GetWidth() const
-   {
-      if (m_mode == OM_EMBEDDED)
-         return m_embeddedWindow->GetWidth();
-      else if (m_mode == OM_WINDOW)
-         return m_window->GetPixelWidth();
-      else
-         return 0;
-   }
-
-   void SetWidth(int v) const
-   {
-      if (m_mode == OM_EMBEDDED)
-         m_embeddedWindow->SetWidth(v);
-      else
-         assert(false);
-   }
-
-   int GetHeight() const
-   {
-      if (m_mode == OM_EMBEDDED)
-         return m_embeddedWindow->GetHeight();
-      else if (m_mode == OM_WINDOW)
-         return m_window->GetPixelHeight();
-      else
-         return 0;
-   }
-
-   void SetHeight(int v) const
-   {
-      if (m_mode == OM_EMBEDDED)
-         m_embeddedWindow->SetHeight(v);
-      else
-         assert(false);
-   }
-
-   void GetPos(int& x, int& y) const
-   {
-      if (m_mode == OM_EMBEDDED)
-         m_embeddedWindow->GetPos(x, y);
-      else if (m_mode == OM_WINDOW)
-         m_window->GetPos(x, y);
-      else
-      {
-         x = 0;
-         y = 0;
-      }
-   }
-
-   void SetPos(int x, int y) const
-   {
-      if (m_mode == OM_EMBEDDED)
-         m_embeddedWindow->SetPos(x, y);
-      else if (m_mode == OM_WINDOW)
-         m_window->SetPos(x, y);
-   }
+   void GetPos(int& x, int& y) const;
+   void SetPos(int x, int y) const;
 
 private:
    const VPXWindowId m_windowId;

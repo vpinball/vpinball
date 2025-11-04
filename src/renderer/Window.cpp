@@ -70,14 +70,8 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    : m_windowId(windowId)
    , m_isVR(false)
 {
-   #ifndef __LIBVPINBALL__
-   constexpr bool isMobile = false;
-   #else
-   constexpr bool isMobile = true;
-   #endif
-
-   m_fullscreen = isMobile || settings.GetWindow_FullScreen(m_windowId);
-   if (!isMobile && m_windowId == VPXWindowId::VPXWINDOW_Playfield)
+   m_fullscreen = g_isMobile || settings.GetWindow_FullScreen(m_windowId);
+   if (!g_isMobile && m_windowId == VPXWindowId::VPXWINDOW_Playfield)
    {
       // FIXME remove command line override => this is hacky and not needed anymore (use INI override instead)
       if (g_pvp->m_disEnableTrueFullscreen == 0)
@@ -173,7 +167,7 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
       m_refreshrate = 60;
    }
    SDL_PropertiesID props;
-   if (isMobile)
+   if (g_isMobile)
    {
 #ifdef __LIBVPINBALL__
       m_nwnd = VPinballLib::VPinballLib::Instance().GetWindow();
@@ -398,5 +392,125 @@ HWND Window::GetNativeHWND() const
    return (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(GetCore()), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
 }
 #endif
+
+
+
+RenderOutput::RenderOutput(const Settings& settings, VPXWindowId windowId)
+   : m_windowId(windowId)
+{
+   m_mode = OM_DISABLED;
+   SetMode(settings, static_cast<OutputMode>(settings.GetWindow_Mode(m_windowId)));
+}
+
+RenderOutput::OutputMode RenderOutput::GetMode() const { return m_mode; }
+
+void RenderOutput::SetMode(const Settings& settings, OutputMode mode)
+{
+#ifdef ENABLE_BGFX
+   constexpr bool isSingleView = g_isMobile;
+#else
+   constexpr bool isSingleView = true;
+#endif
+   if (mode == OM_WINDOW && isSingleView)
+      m_mode = OM_EMBEDDED;
+   m_mode = mode;
+   switch (m_mode)
+   {
+   case OM_DISABLED:
+      m_embeddedWindow = nullptr;
+      m_window = nullptr;
+      break;
+
+   case OM_EMBEDDED:
+      m_window = nullptr;
+      if (m_embeddedWindow == nullptr)
+      {
+         int x = settings.GetWindow_WndX(m_windowId);
+         int y = settings.GetWindow_WndY(m_windowId);
+         int width = settings.GetWindow_Width(m_windowId);
+         int height = settings.GetWindow_Height(m_windowId);
+         width = min(width, g_pplayer->m_playfieldWnd->GetWidth());
+         height = min(height, g_pplayer->m_playfieldWnd->GetHeight());
+         x = min(x, g_pplayer->m_playfieldWnd->GetWidth() - width);
+         y = min(y, g_pplayer->m_playfieldWnd->GetHeight() - height);
+         m_embeddedWindow = std::make_unique<EmbeddedWindow>(x, y, width, height);
+      }
+      break;
+
+   case OM_WINDOW:
+      m_embeddedWindow = nullptr;
+      if (m_mode == OM_WINDOW && m_window == nullptr)
+      {
+         m_window = std::make_unique<Window>(m_windowId == VPXWindowId::VPXWINDOW_Playfield ? "Visual Pinball Player"s
+               : m_windowId == VPXWindowId::VPXWINDOW_Backglass                             ? "Visual Pinball Backglass"s
+               : m_windowId == VPXWindowId::VPXWINDOW_ScoreView                             ? "Visual Pinball Score View"s
+               : m_windowId == VPXWindowId::VPXWINDOW_Topper                                ? "Visual Pinball Topper"s
+                                                                                            : "Visual Pinball VR Preview"s,
+            settings, m_windowId);
+      }
+      break;
+   }
+}
+
+Window* RenderOutput::GetWindow() const { return m_window.get(); }
+
+EmbeddedWindow* RenderOutput::GetEmbeddedWindow() const { return m_embeddedWindow.get(); }
+
+int RenderOutput::GetWidth() const
+{
+   if (m_mode == OM_EMBEDDED)
+      return m_embeddedWindow->GetWidth();
+   else if (m_mode == OM_WINDOW)
+      return m_window->GetPixelWidth();
+   else
+      return 0;
+}
+
+void RenderOutput::SetWidth(int v) const
+{
+   if (m_mode == OM_EMBEDDED)
+      m_embeddedWindow->SetWidth(v);
+   else
+      assert(false);
+}
+
+int RenderOutput::GetHeight() const
+{
+   if (m_mode == OM_EMBEDDED)
+      return m_embeddedWindow->GetHeight();
+   else if (m_mode == OM_WINDOW)
+      return m_window->GetPixelHeight();
+   else
+      return 0;
+}
+
+void RenderOutput::SetHeight(int v) const
+{
+   if (m_mode == OM_EMBEDDED)
+      m_embeddedWindow->SetHeight(v);
+   else
+      assert(false);
+}
+
+void RenderOutput::GetPos(int& x, int& y) const
+{
+   if (m_mode == OM_EMBEDDED)
+      m_embeddedWindow->GetPos(x, y);
+   else if (m_mode == OM_WINDOW)
+      m_window->GetPos(x, y);
+   else
+   {
+      x = 0;
+      y = 0;
+   }
+}
+
+void RenderOutput::SetPos(int x, int y) const
+{
+   if (m_mode == OM_EMBEDDED)
+      m_embeddedWindow->SetPos(x, y);
+   else if (m_mode == OM_WINDOW)
+      m_window->SetPos(x, y);
+}
 
 } // namespace VPX
