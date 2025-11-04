@@ -45,10 +45,10 @@ extern "C" {
 #define PATH_SEPARATOR_CHAR '/'
 #define PATH_SEPARATOR_WCHAR L'/'
 #endif
-#define PATH_TABLES  (g_pvp->m_myPrefPath + "tables"  + PATH_SEPARATOR_CHAR)
-#define PATH_SCRIPTS (g_pvp->m_myPrefPath + "scripts" + PATH_SEPARATOR_CHAR)
-#define PATH_MUSIC   (g_pvp->m_myPrefPath + "music"   + PATH_SEPARATOR_CHAR)
-#define PATH_USER    (g_pvp->m_myPrefPath + "user"    + PATH_SEPARATOR_CHAR)
+#define PATH_TABLES  (g_pvp->GetPrefPath() + "tables"  + PATH_SEPARATOR_CHAR)
+#define PATH_SCRIPTS (g_pvp->GetPrefPath() + "scripts" + PATH_SEPARATOR_CHAR)
+#define PATH_MUSIC   (g_pvp->GetPrefPath() + "music"   + PATH_SEPARATOR_CHAR)
+#define PATH_USER    (g_pvp->GetPrefPath() + "user"    + PATH_SEPARATOR_CHAR)
 
 #include <oleauto.h>
 

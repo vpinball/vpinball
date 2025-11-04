@@ -629,7 +629,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
          szIniPath += PATH_SEPARATOR_CHAR;
    }
    else
-      szIniPath = m_vpinball->m_myPrefPath;
+      szIniPath = m_vpinball->GetPrefPath();
 
    mINI::INIStructure ini;
    mINI::INIFile file(szIniPath + "VPReg.ini");
@@ -717,7 +717,7 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
          szIniPath += PATH_SEPARATOR_CHAR;
    }
    else
-      szIniPath = m_vpinball->m_myPrefPath;
+      szIniPath = m_vpinball->GetPrefPath();
 
    mINI::INIStructure ini;
    mINI::INIFile file(szIniPath + "VPReg.ini");

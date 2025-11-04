@@ -11,7 +11,7 @@ void VPXPluginAPIImpl::GetVpxInfo(VPXInfo* info)
    if (g_pvp != nullptr)
    {
       info->path = g_pvp->m_myPath.c_str();
-      info->prefPath = g_pvp->m_myPrefPath.c_str();
+      info->prefPath = g_pvp->GetPrefPath().c_str();
    }
    else
    {

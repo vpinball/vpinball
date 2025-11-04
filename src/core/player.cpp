@@ -437,7 +437,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       {
          try
          {
-            string dir = g_pvp->m_myPrefPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_title + PATH_SEPARATOR_CHAR;
+            string dir = g_pvp->GetPrefPath() + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_title + PATH_SEPARATOR_CHAR;
             std::filesystem::create_directories(std::filesystem::path(dir));
             string path = dir + "used_textures.xml";
             if (FileExists(path))
@@ -748,7 +748,7 @@ Player::~Player()
    {
       try
       {
-         string dir = g_pvp->m_myPrefPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_title + PATH_SEPARATOR_CHAR;
+         string dir = g_pvp->GetPrefPath() + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_title + PATH_SEPARATOR_CHAR;
          std::filesystem::create_directories(std::filesystem::path(dir));
 
          tinyxml2::XMLDocument xmlDoc;

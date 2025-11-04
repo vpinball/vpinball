@@ -195,7 +195,7 @@ void VPinballLib::Init(VPinballEventCallback callback)
    SDL_RunOnMainThread([](void*) {
       g_pvp = new ::VPinball();
       g_pvp->SetLogicalNumberOfProcessors(SDL_GetNumLogicalCPUCores());
-      g_pvp->m_settings.LoadFromFile(g_pvp->m_myPrefPath + "VPinballX.ini", true);
+      g_pvp->m_settings.LoadFromFile(g_pvp->GetPrefPath() + "VPinballX.ini", true);
       g_pvp->m_settings.Save();
 
       Logger::GetInstance()->Init();
@@ -204,7 +204,7 @@ void VPinballLib::Init(VPinballEventCallback callback)
       PLOGI << "VPX - " << VP_VERSION_STRING_FULL_LITERAL;
       PLOGI << "m_logicalNumberOfProcessors=" << g_pvp->GetLogicalNumberOfProcessors();
       PLOGI << "m_myPath=" << g_pvp->m_myPath;
-      PLOGI << "m_myPrefPath=" << g_pvp->m_myPrefPath;
+      PLOGI << "m_myPrefPath=" << g_pvp->GetPrefPath();
 
       if (!DirExists(PATH_USER)) {
          std::error_code ec;
@@ -404,7 +404,7 @@ void VPinballLib::SaveValueString(const string& sectionName, const string& key, 
 
 VPINBALL_STATUS VPinballLib::ResetIni()
 {
-   string iniFilePath = g_pvp->m_myPrefPath + "VPinballX.ini";
+   string iniFilePath = g_pvp->GetPrefPath() + "VPinballX.ini";
    if (!std::filesystem::remove(iniFilePath))
     return VPINBALL_STATUS_FAILURE;
 
@@ -433,7 +433,7 @@ VPINBALL_STATUS VPinballLib::ExtractTableScript()
    if (!pActiveTable)
       return VPINBALL_STATUS_FAILURE;
 
-   string tempPath = g_pvp->m_myPrefPath + "temp_script.vbs";
+   string tempPath = g_pvp->GetPrefPath() + "temp_script.vbs";
    pActiveTable->m_pcv->SaveToFile(tempPath);
 
    std::filesystem::path tablePath(pActiveTable->m_filename);

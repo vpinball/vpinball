@@ -920,7 +920,7 @@ void VPApp::ProcessCommandLine(int nArgs, char* szArglist[])
                exit(1);
             }
          }
-         m_vpinball.m_myPrefPath = m_prefPath;
+         m_vpinball.SetPrefPath(m_prefPath);
          break;
 
       #endif
@@ -944,7 +944,7 @@ BOOL VPApp::InitInstance()
 
    #ifdef __STANDALONE__
       #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV)))
-         copy_folder("assets"s, m_vpinball.m_myPrefPath);
+         copy_folder("assets"s, m_vpinball.GetPrefPath());
       #endif
    #endif
 
@@ -957,8 +957,8 @@ BOOL VPApp::InitInstance()
    {
       // first check if there is a .ini next to the .exe, otherwise use the default location
       if (FileExists(m_vpinball.m_myPath + "VPinballX.ini"))
-         m_vpinball.m_myPrefPath = m_vpinball.m_myPath;
-      m_iniFileName = m_vpinball.m_myPrefPath + "VPinballX.ini";
+         m_vpinball.SetPrefPath(m_vpinball.m_myPath);
+      m_iniFileName = m_vpinball.GetPrefPath() + "VPinballX.ini";
    }
 
    m_vpinball.m_settings.LoadFromFile(m_iniFileName, true);
@@ -979,7 +979,7 @@ BOOL VPApp::InitInstance()
 
    PLOGI << "m_logicalNumberOfProcessors=" << m_vpinball.GetLogicalNumberOfProcessors();
    PLOGI << "m_myPath=" << m_vpinball.m_myPath;
-   PLOGI << "m_myPrefPath=" << m_vpinball.m_myPrefPath;
+   PLOGI << "GetPrefPath()=" << m_vpinball.GetPrefPath();
 
    #ifdef __STANDALONE__
       TTF_Init();
