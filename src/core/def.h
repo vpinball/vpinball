@@ -57,14 +57,14 @@ using std::wstring;
 
 #if defined(__GNUC__) && (__GNUC__ < 12)
    #ifdef __STANDALONE__
-      #define g_isStandalone true;
+      #define g_isStandalone true
    #else
-      #define g_isStandalone false;
+      #define g_isStandalone false
    #endif
    #ifdef __LIBVPINBALL__
-      #define g_isMobile true;
+      #define g_isMobile true
    #else
-      #define g_isMobile false;
+      #define g_isMobile false
    #endif
 #else
    #ifdef __STANDALONE__
