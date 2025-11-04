@@ -1493,16 +1493,18 @@ void RenderDevice::RemoveWindow(VPX::Window* wnd)
    bool found = false;
    for (unsigned int i = 0; i < m_nOutputWnd; i++)
    {
+      found |= m_outputWnd[i] == wnd;
       if (found)
          m_outputWnd[i] = m_outputWnd[i + 1];
-      else
-         found = m_outputWnd[i] == wnd;
    }
-   RenderTarget* backbuffer = wnd->GetBackBuffer();
-   assert(found && backbuffer != nullptr);
-   wnd->SetBackBuffer(nullptr);
-   AddEndOfFrameCmd([backbuffer]() { delete backbuffer; });
-   m_nOutputWnd--;
+   if (found)
+   {
+      RenderTarget* backbuffer = wnd->GetBackBuffer();
+      assert(found && backbuffer != nullptr);
+      wnd->SetBackBuffer(nullptr);
+      AddEndOfFrameCmd([backbuffer]() { delete backbuffer; });
+      m_nOutputWnd--;
+   }
 }
 
 bool RenderDevice::DepthBufferReadBackAvailable() const
