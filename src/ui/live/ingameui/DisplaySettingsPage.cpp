@@ -112,12 +112,35 @@ VPX::RenderOutput& DisplaySettingsPage::GetOutput(VPXWindowId wndId)
 
 void DisplaySettingsPage::BuildPage()
 {
+#ifdef ENABLE_BGFX
+   constexpr bool isSingleView = g_isMobile;
+#else
+   constexpr bool isSingleView = true;
+#endif
+
    ClearItems();
    if (m_wndId == VPXWindowId::VPXWINDOW_Playfield || m_wndId == VPXWindowId::VPXWINDOW_VRPreview)
    {
       BuildWindowPage();
    }
-   else if (!g_isMobile)
+   else if (isSingleView)
+   { // For mobile and builds without multiple viewport support, only disabled/embedded mode are supported
+      AddItem(std::make_unique<InGameUIItem>(
+         VPX::Properties::BoolPropertyDef(""s, ""s, "Enable"s, "Enable rendering this display"s, false), //
+         [this]() { return GetOutput(m_wndId).GetMode() != VPX::RenderOutput::OM_DISABLED; }, // Live
+         [this]() { return m_player->m_ptable->m_settings.GetWindow_Mode(m_wndId) != VPX::RenderOutput::OM_DISABLED; }, // Stored
+         [this](bool v)
+         {
+            GetOutput(m_wndId).SetMode(m_player->m_ptable->m_settings, v ? VPX::RenderOutput::OM_EMBEDDED : VPX::RenderOutput::OM_DISABLED);
+            BuildPage();
+         }, //
+         [this](Settings& settings) { settings.ResetWindow_Mode(m_wndId); }, //
+         [this](bool v, Settings& settings, bool asTableOverride)
+         { settings.SetWindow_Mode(m_wndId, v ? VPX::RenderOutput::OM_EMBEDDED : VPX::RenderOutput::OM_DISABLED, asTableOverride); }));
+      if (GetOutput(m_wndId).GetMode() != VPX::RenderOutput::OM_DISABLED)
+         BuildEmbeddedPage();
+   }
+   else
    {
       Settings::GetRegistry().Register(Settings::GetWindow_Mode_Property(m_wndId)->WithDefault(GetOutput(m_wndId).GetMode()));
       AddItem(std::make_unique<InGameUIItem>(
@@ -142,23 +165,6 @@ void DisplaySettingsPage::BuildPage()
       case VPX::RenderOutput::OM_EMBEDDED: BuildEmbeddedPage(); break;
       default: break;
       }
-   }
-   else
-   { // For mobile, only disabled/embedded mode are supported (as we don't have multiple windows)
-      AddItem(std::make_unique<InGameUIItem>(
-         VPX::Properties::BoolPropertyDef(""s, ""s, "Enable"s, "Enable rendering this display"s, false), //
-         [this]() { return GetOutput(m_wndId).GetMode() != VPX::RenderOutput::OM_DISABLED; }, // Live
-         [this]() { return m_player->m_ptable->m_settings.GetWindow_Mode(m_wndId) != VPX::RenderOutput::OM_DISABLED; }, // Stored
-         [this](bool v)
-         {
-            GetOutput(m_wndId).SetMode(m_player->m_ptable->m_settings, v ? VPX::RenderOutput::OM_EMBEDDED : VPX::RenderOutput::OM_DISABLED);
-            BuildPage();
-         }, //
-         [this](Settings& settings) { settings.ResetWindow_Mode(m_wndId); }, //
-         [this](bool v, Settings& settings, bool asTableOverride)
-         { settings.SetWindow_Mode(m_wndId, v ? VPX::RenderOutput::OM_EMBEDDED : VPX::RenderOutput::OM_DISABLED, asTableOverride); }));
-      if (GetOutput(m_wndId).GetMode() != VPX::RenderOutput::OM_DISABLED)
-         BuildEmbeddedPage();
    }
 }
 
