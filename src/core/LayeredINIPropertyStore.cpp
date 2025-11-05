@@ -257,7 +257,7 @@ void LayeredINIPropertyStore::GenerateTemplate(const string& path) const
                auto enumProp = dynamic_cast<const EnumPropertyDef*>(prop);
                file << " [Default: '" << enumProp->m_values[enumProp->m_def - enumProp->m_min] << '\'';
                for (size_t i = 0; i < enumProp->m_values.size(); i++)
-                  file << ", " << i << "='" << enumProp->m_values[i] << '\'';
+                  file << ", " << (enumProp->m_min + i) << "='" << enumProp->m_values[i] << '\'';
                file << ']';
                break;
             }
