@@ -412,11 +412,10 @@ HWND Window::GetNativeHWND() const
 
 
 
-RenderOutput::RenderOutput(const Settings& settings, VPXWindowId windowId)
+RenderOutput::RenderOutput(VPXWindowId windowId)
    : m_windowId(windowId)
+   , m_mode(OM_DISABLED)
 {
-   m_mode = OM_DISABLED;
-   SetMode(settings, static_cast<OutputMode>(settings.GetWindow_Mode(m_windowId)));
 }
 
 RenderOutput::OutputMode RenderOutput::GetMode() const { return m_mode; }

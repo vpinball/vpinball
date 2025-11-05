@@ -137,7 +137,7 @@ private:
 class RenderOutput final
 {
 public:
-   RenderOutput(const Settings& settings, VPXWindowId windowId);
+   RenderOutput(VPXWindowId windowId);
    ~RenderOutput() = default;
 
    enum OutputMode
