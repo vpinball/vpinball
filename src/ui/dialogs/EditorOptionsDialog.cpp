@@ -74,16 +74,16 @@ BOOL EditorOptionsDialog::OnInitDialog()
     const bool alwaysViewScript = g_pvp->m_settings.GetEditor_AlwaysViewScript();
     SendDlgItemMessage(IDC_ALWAYSVIEWSCRIPT, BM_SETCHECK, alwaysViewScript ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const int throwBallSize = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "ThrowBallSize"s, 50);
+    const int throwBallSize = g_pvp->m_settings.GetEditor_ThrowBallSize();
     SetDlgItemInt( IDC_THROW_BALLS_SIZE_EDIT, throwBallSize, FALSE);
 
     const bool startVPfileDialog = g_pvp->m_settings.GetEditor_SelectTableOnStart();
     SendDlgItemMessage(IDC_START_VP_FILE_DIALOG, BM_SETCHECK, startVPfileDialog ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const bool startVPfileDialogPlayerClose = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "SelectTableOnPlayerClose"s, true);
+    const bool startVPfileDialogPlayerClose = g_pvp->m_settings.GetEditor_SelectTableOnPlayerClose();
     SendDlgItemMessage(IDC_START_VP_FILE_DIALOG2, BM_SETCHECK, startVPfileDialogPlayerClose ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    const float throwBallMass = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "ThrowBallMass"s, 1.0f);
+    const float throwBallMass = g_pvp->m_settings.GetEditor_ThrowBallMass();
     SetDlgItemText(IDC_THROW_BALLS_MASS_EDIT, f2sz(throwBallMass).c_str());
 
     const bool enableLog = g_pvp->m_settings.GetEditor_EnableLog();
@@ -299,10 +299,10 @@ void EditorOptionsDialog::OnOK()
     g_pvp->m_settings.SetEditor_BallControlAlwaysOn(checked, false);
 
     const int ballSize = GetDlgItemInt(IDC_THROW_BALLS_SIZE_EDIT, nothing, FALSE);
-    g_pvp->m_settings.SaveValue(Settings::Editor, "ThrowBallSize"s, ballSize);
+    g_pvp->m_settings.SetEditor_ThrowBallSize(ballSize, false);
 
     const float fv = sz2f(GetDlgItemText(IDC_THROW_BALLS_MASS_EDIT).GetString());
-    g_pvp->m_settings.SaveValue(Settings::Editor, "ThrowBallMass"s, fv);
+    g_pvp->m_settings.SetEditor_ThrowBallMass(fv, false);
 
     checked = (IsDlgButtonChecked(IDC_DEFAULT_GROUP_COLLECTION_CHECK) == BST_CHECKED);
     g_pvp->m_settings.SetEditor_GroupElementsInCollection(checked, false);
@@ -351,7 +351,7 @@ void EditorOptionsDialog::OnOK()
     g_pvp->m_settings.SetEditor_SelectTableOnStart(checked, false);
 
     checked = (IsDlgButtonChecked(IDC_START_VP_FILE_DIALOG2) == BST_CHECKED);
-    g_pvp->m_settings.SaveValue(Settings::Editor, "SelectTableOnPlayerClose"s, checked);
+    g_pvp->m_settings.SetEditor_SelectTableOnPlayerClose(checked, false);
 
     LRESULT units = SendDlgItemMessage(IDC_UNIT_LIST_COMBO, CB_GETCURSEL, 0, 0);
     if (units == LB_ERR)

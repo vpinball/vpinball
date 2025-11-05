@@ -72,7 +72,7 @@ InputManager::InputManager()
    m_exitPressTimestamp = 0;
    m_exitAppPressLengthMs = settings.GetPlayer_Exitconfirm() * 1000 / 60;
 
-   m_rumbleMode = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "RumbleMode"s, 3);
+   m_rumbleMode = g_pvp->m_settings.GetPlayer_RumbleMode();
 
    // Load settings
    {
@@ -1117,7 +1117,7 @@ void InputManager::PlayRumble(const float lowFrequencySpeed, const float highFre
       handler->PlayRumble(lowFrequencySpeed, highFrequencySpeed, ms_duration);
 
    #ifdef __LIBVPINBALL__
-      if (!g_pvp->m_settings.LoadValueWithDefault(Settings::Standalone, "Haptics"s, true))
+      if (!g_pvp->m_settings.GetStandalone_Haptics())
          return;
 
       VPinballLib::RumbleData rumbleData = {

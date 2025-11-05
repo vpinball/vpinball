@@ -10,20 +10,9 @@ KeysConfigDialog::KeysConfigDialog() : CDialog(IDD_KEYS)
 {
 }
 
-void KeysConfigDialog::AddToolTip(char *text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd) const
-{
-   TOOLINFO toolInfo = {};
-   toolInfo.cbSize = sizeof(toolInfo);
-   toolInfo.hwnd = parentHwnd;
-   toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
-   toolInfo.uId = (UINT_PTR)controlHwnd;
-   toolInfo.lpszText = text;
-   ::SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
-}
-
 void KeysConfigDialog::AddStringDOF(const string &name, const int idc) const
 {
-   const int selected = g_pvp->m_settings.LoadValueWithDefault(Settings::Controller, name, 2); // assume both as standard
+   const int selected = g_pvp->m_settings.GetInt(Settings::GetRegistry().GetPropertyId("Controller"s, name).value());
    const HWND hwnd = GetDlgItem(idc).GetHwnd();
    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Sound FX");
    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"DOF");
@@ -31,23 +20,12 @@ void KeysConfigDialog::AddStringDOF(const string &name, const int idc) const
    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
 }
 
-void KeysConfigDialog::AddStringAxis(const string &name, const int idc, const int def) const
+void KeysConfigDialog::SetValue(int nID, const string& name)
 {
-   const int selected = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, name, def);
-   const HWND hwnd = GetDlgItem(idc).GetHwnd();
-   ::SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
-   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"(disabled)");
-   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"X Axis");
-   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Y Axis");
-   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Z Axis");
-   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rX Axis");
-   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rY Axis");
-   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rZ Axis");
-   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 1");
-   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 2");
-   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"OpenPinDev");
-   ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
-   ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+    LRESULT selected = SendDlgItemMessage(nID, CB_GETCURSEL, 0, 0);
+    if (selected == LB_ERR)
+        selected = 2; // assume both as standard
+    g_pvp->m_settings.Set(Settings::GetRegistry().GetPropertyId("Controller"s, name).value(), (int)selected, false);
 }
 
 BOOL KeysConfigDialog::OnInitDialog()
@@ -55,9 +33,7 @@ BOOL KeysConfigDialog::OnInitDialog()
     bool on = g_pvp->m_settings.GetPlayer_EnableCameraModeFlyAround();
     SendDlgItemMessage(IDC_ENABLE_CAMERA_FLY_AROUND, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    //
-
-    on = g_pvp->m_settings.LoadValueWithDefault(Settings::Controller, "ForceDisableB2S"s, false);
+    on = g_pvp->m_settings.GetController_ForceDisableB2S();
     SendDlgItemMessage(IDC_DOF_FORCEDISABLE, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
     AddStringDOF("DOFContactors"s, IDC_DOF_CONTACTORS);
@@ -70,8 +46,7 @@ BOOL KeysConfigDialog::OnInitDialog()
     AddStringDOF("DOFTargets"s, IDC_DOF_TARGETS);
     AddStringDOF("DOFDropTargets"s, IDC_DOF_DROPTARGETS);
 
-    //
-    const int rumbleMode = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "RumbleMode"s, 3);
+    const int rumbleMode = g_pvp->m_settings.GetPlayer_RumbleMode();
     const HWND hwndRumble = GetDlgItem(IDC_COMBO_RUMBLE).GetHwnd();
     ::SendMessage(hwndRumble, CB_ADDSTRING, 0, (LPARAM)"Off");
     ::SendMessage(hwndRumble, CB_ADDSTRING, 0, (LPARAM)"Table only (N/A yet)"); //!! not supported yet
@@ -84,42 +59,26 @@ BOOL KeysConfigDialog::OnInitDialog()
 
 void KeysConfigDialog::OnOK()
 {
-    size_t selected;
+    SetValue(IDC_DOF_CONTACTORS, "DOFContactors"s);
+    SetValue(IDC_DOF_KNOCKER, "DOFKnocker"s);
+    SetValue(IDC_DOF_CHIMES, "DOFChimes"s);
+    SetValue(IDC_DOF_BELL, "DOFBell"s);
+    SetValue(IDC_DOF_GEAR, "DOFGear"s);
+    SetValue(IDC_DOF_SHAKER, "DOFShaker"s);
+    SetValue(IDC_DOF_FLIPPERS, "DOFFlippers"s);
+    SetValue(IDC_DOF_TARGETS, "DOFTargets"s);
+    SetValue(IDC_DOF_DROPTARGETS, "DOFDropTargets"s);
 
-    SetValue(IDC_DOF_CONTACTORS, Settings::Controller, "DOFContactors"s);
-    SetValue(IDC_DOF_KNOCKER, Settings::Controller, "DOFKnocker"s);
-    SetValue(IDC_DOF_CHIMES, Settings::Controller, "DOFChimes"s);
-    SetValue(IDC_DOF_BELL, Settings::Controller, "DOFBell"s);
-    SetValue(IDC_DOF_GEAR, Settings::Controller, "DOFGear"s);
-    SetValue(IDC_DOF_SHAKER, Settings::Controller, "DOFShaker"s);
-    SetValue(IDC_DOF_FLIPPERS, Settings::Controller, "DOFFlippers"s);
-    SetValue(IDC_DOF_TARGETS, Settings::Controller, "DOFTargets"s);
-    SetValue(IDC_DOF_DROPTARGETS, Settings::Controller, "DOFDropTargets"s);
-
-    selected = IsDlgButtonChecked(IDC_ENABLE_CAMERA_FLY_AROUND);
+    size_t selected = IsDlgButtonChecked(IDC_ENABLE_CAMERA_FLY_AROUND);
     g_pvp->m_settings.SetPlayer_EnableCameraModeFlyAround(selected != 0, false);
 
     selected = IsDlgButtonChecked(IDC_DOF_FORCEDISABLE);
-    g_pvp->m_settings.SaveValue(Settings::Controller, "ForceDisableB2S"s, selected != 0);
+    g_pvp->m_settings.SetController_ForceDisableB2S(selected != 0, false);
 
     const int rumble = (int)SendDlgItemMessage(IDC_COMBO_RUMBLE, CB_GETCURSEL, 0, 0);
-    g_pvp->m_settings.SaveValue(Settings::Player, "RumbleMode"s, rumble);
+    g_pvp->m_settings.SetPlayer_RumbleMode(rumble, false);
 
     g_pvp->m_settings.Save();
 
     CDialog::OnOK();
 }
-
-HWND KeysConfigDialog::GetItemHwnd(int nID)
-{
-    return GetDlgItem(nID).GetHwnd();
-}
-
-void KeysConfigDialog::SetValue(int nID, const Settings::Section& section, const string& key)
-{
-    LRESULT selected = SendDlgItemMessage(nID, CB_GETCURSEL, 0, 0);
-    if (selected == LB_ERR)
-        selected = 2; // assume both as standard
-    g_pvp->m_settings.SaveValue(section, key, (int)selected);
-}
-

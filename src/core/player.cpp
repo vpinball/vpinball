@@ -177,10 +177,10 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    const StereoMode stereo3D = useVR ? STEREO_VR : m_ptable->m_settings.GetPlayer_Stereo3D();
    #endif
 
-   m_capExtDMD = (stereo3D == STEREO_VR) && m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CaptureExternalDMD"s, false);
-   m_capPUP = (stereo3D == STEREO_VR) && m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CapturePUP"s, false);
-   m_headTracking = (stereo3D == STEREO_VR) ? false : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BAMHeadTracking"s, false);
-   m_detectScriptHang = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DetectHang"s, false);
+   m_capExtDMD = (stereo3D == STEREO_VR) && m_ptable->m_settings.GetPlayer_CaptureExternalDMD();
+   m_capPUP = (stereo3D == STEREO_VR) && m_ptable->m_settings.GetPlayer_CapturePUP();
+   m_headTracking = (stereo3D == STEREO_VR) ? false : m_ptable->m_settings.GetPlayer_BAMHeadTracking();
+   m_detectScriptHang = m_ptable->m_settings.GetPlayer_DetectHang();
 
    m_NudgeShake = m_ptable->m_settings.GetPlayer_NudgeStrength();
 
@@ -192,10 +192,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       m_scaleFX_DMD |= m_ptable->m_settings.LoadValueWithDefault(Settings::DMD, prefix + "ScaleFX", false);
    }
 
-   m_minphyslooptime = min(m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MinPhysLoopTime"s, 0), 1000);
-
-   m_debugBallSize = m_ptable->m_settings.LoadValueWithDefault(Settings::Editor, "ThrowBallSize"s, 50);
-   m_debugBallMass = m_ptable->m_settings.LoadValueWithDefault(Settings::Editor, "ThrowBallMass"s, 1.0f);
+   m_minphyslooptime = m_ptable->m_settings.GetPlayer_MinPhysLoopTime();
 
    PLOGI << "Creating main window"; // For profiling
    {
@@ -391,7 +388,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_liveUI = new LiveUI(m_renderer->m_renderDevice);
    m_liveUI->m_ballControl.LoadSettings(m_ptable->m_settings);
 
-   m_ptable->m_tblMirrorEnabled = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "mirror"s, false);
+   m_ptable->m_tblMirrorEnabled = m_ptable->m_settings.GetPlayer_Mirror();
    #ifndef __STANDALONE__
    {
       const int vkLeftFlip = m_pininput.GetWindowVirtualKeyForAction(m_pininput.GetLeftFlipperActionId());
@@ -433,7 +430,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    {
       tinyxml2::XMLDocument xmlDoc;
       tinyxml2::XMLElement *preloadCache = nullptr;
-      if ((m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0) && FileExists(m_ptable->m_filename))
+      if ((m_ptable->m_settings.GetPlayer_CacheMode() > 0) && FileExists(m_ptable->m_filename))
       {
          try
          {
@@ -744,7 +741,7 @@ Player::~Player()
    msgApi->ReleaseMsgID(m_onAuxRendererChgId);
 
    // Save list of used textures to avoid stuttering in next play
-   if ((m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0) && FileExists(m_ptable->m_filename))
+   if ((m_ptable->m_settings.GetPlayer_CacheMode() > 0) && FileExists(m_ptable->m_filename))
    {
       try
       {

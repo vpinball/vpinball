@@ -1581,12 +1581,11 @@ void VPinball::OnClose()
 
       if (GetWindowPlacement(winpl))
       {
-         m_settings.SaveValue(Settings::Editor, "WindowLeft"s, (int)winpl.rcNormalPosition.left);
-         m_settings.SaveValue(Settings::Editor, "WindowTop"s, (int)winpl.rcNormalPosition.top);
-         m_settings.SaveValue(Settings::Editor, "WindowRight"s, (int)winpl.rcNormalPosition.right);
-         m_settings.SaveValue(Settings::Editor, "WindowBottom"s, (int)winpl.rcNormalPosition.bottom);
-
-         m_settings.SaveValue(Settings::Editor, "WindowMaximized"s, !!IsZoomed());
+         m_settings.SetEditor_WindowLeft((int)winpl.rcNormalPosition.left, false);
+         m_settings.SetEditor_WindowTop((int)winpl.rcNormalPosition.top, false);
+         m_settings.SetEditor_WindowRight((int)winpl.rcNormalPosition.right, false);
+         m_settings.SetEditor_WindowBottom((int)winpl.rcNormalPosition.bottom, false);
+         m_settings.SetEditor_WindowMaximized(!!IsZoomed(), false);
       }
       if (!m_open_minimized) // otherwise the window/dock settings are screwed up and have to be manually restored each time
          SaveDockRegistrySettings(DOCKER_REGISTRY_KEY);
@@ -1689,17 +1688,12 @@ void VPinball::OnInitialUpdate()
 
    SendMessage(WM_SIZE, 0, 0);         // Make our window relay itself out
 
-   int left, top, right, bottom;
-   BOOL maximized;
-
-   const bool hrleft = m_settings.LoadValue(Settings::Editor, "WindowLeft"s, left);
-   const bool hrtop = m_settings.LoadValue(Settings::Editor, "WindowTop"s, top);
-   const bool hrright = m_settings.LoadValue(Settings::Editor, "WindowRight"s, right);
-   const bool hrbottom = m_settings.LoadValue(Settings::Editor, "WindowBottom"s, bottom);
-
-   const bool hrmax = m_settings.LoadValue(Settings::Editor, "WindowMaximized"s, maximized);
-
-   if (hrleft && hrtop && hrright && hrbottom)
+   const int left = m_settings.GetEditor_WindowLeft();
+   const int top = m_settings.GetEditor_WindowTop();
+   const int right = m_settings.GetEditor_WindowRight();
+   const int bottom = m_settings.GetEditor_WindowBottom();
+   const bool maximized = m_settings.GetEditor_WindowMaximized();
+   if (right > left && bottom > top)
    {
       WINDOWPLACEMENT winpl = {};
       winpl.length = sizeof(WINDOWPLACEMENT);
@@ -1713,7 +1707,7 @@ void VPinball::OnInitialUpdate()
 
       if (m_open_minimized)
          winpl.showCmd |= SW_MINIMIZE;
-      else if (hrmax == S_OK && maximized)
+      else if (maximized)
          winpl.showCmd |= SW_MAXIMIZE;
       else
          winpl.showCmd |= SW_SHOWNORMAL;
