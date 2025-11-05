@@ -456,12 +456,12 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    case bgfx::TextureFormat::RGBA8: back_buffer_format = colorFormat::RGBA8; break;
    default: assert(false); back_buffer_format = colorFormat::RGBA8;
    }
+   assert(rd->m_outputWnd.size() == 1);
    if (g_pplayer->m_vrDevice)
    {
-      rd->m_outputWnd[1] = rd->m_outputWnd[0]; // OS window is the preview window (first window is supposed to be main rendered window, as it is directly accessed by other objects, expecting a single render window)
+      rd->m_outputWnd.push_back(rd->m_outputWnd[0]); // OS window is the preview window (first window is supposed to be main rendered window, as it is directly accessed by other objects, expecting a single render window)
       rd->m_outputWnd[1]->SetBackBuffer(new RenderTarget(rd, SurfaceType::RT_DEFAULT, initReq.resolution.width, initReq.resolution.height, back_buffer_format), isWcg);
       rd->m_outputWnd[0] = new VPX::Window(g_pplayer->m_vrDevice->GetEyeWidth(), g_pplayer->m_vrDevice->GetEyeHeight());
-      rd->m_nOutputWnd = 2;
       rd->m_framePending = true; // Delay first frame preparation
    }
    else
@@ -557,7 +557,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
       g_pplayer->m_vrDevice->ReleaseSession();
       delete rd->m_outputWnd[0];
       rd->m_outputWnd[0] = rd->m_outputWnd[1];
-      rd->m_nOutputWnd = 1;
+      rd->m_outputWnd.pop_back();
    }
    else
    #endif
@@ -698,7 +698,7 @@ RenderDevice::RenderDevice(
    , m_bgfxCallback(*this)
    #endif
 {
-   m_outputWnd[0] = wnd;
+   m_outputWnd.push_back(wnd);
 
    assert(!isVR || m_nEyes == 2);
 
@@ -1344,10 +1344,10 @@ RenderDevice::~RenderDevice()
 
    m_renderFrame = nullptr;
 
-   for (unsigned int i = 0; i < m_nOutputWnd; i++)
+   for (auto wnd : m_outputWnd)
    {
-      delete m_outputWnd[i]->GetBackBuffer();
-      m_outputWnd[i]->SetBackBuffer(nullptr);
+      delete wnd->GetBackBuffer();
+      wnd->SetBackBuffer(nullptr);
    }
 
 #if defined(ENABLE_BGFX)
@@ -1441,8 +1441,6 @@ RenderDevice::~RenderDevice()
 void RenderDevice::AddWindow(VPX::Window* wnd)
 {
    assert(wnd->GetBackBuffer() == nullptr);
-   if (m_nOutputWnd >= 8)
-      return;
 
 #if defined(ENABLE_BGFX)
    if ((bgfx::getCaps()->supported & BGFX_CAPS_SWAP_CHAIN) == 0)
@@ -1481,30 +1479,15 @@ void RenderDevice::AddWindow(VPX::Window* wnd)
    return nullptr;
 #endif // BX_PLATFORM_
    bgfx::FrameBufferHandle fbh = bgfx::createFrameBuffer(nwh, uint16_t(wnd->GetPixelWidth()), uint16_t(wnd->GetPixelHeight()));
-   m_outputWnd[m_nOutputWnd] = wnd;
-   m_nOutputWnd++;
+   m_outputWnd.push_back(wnd);
    wnd->SetBackBuffer(new RenderTarget(this, SurfaceType::RT_DEFAULT, fbh, BGFX_INVALID_HANDLE, bgfx::TextureFormat::Count, BGFX_INVALID_HANDLE, bgfx::TextureFormat::Count,
-      "BackBuffer #" + std::to_string(m_nOutputWnd), wnd->GetPixelWidth(), wnd->GetPixelHeight(), fmt));
+      "BackBuffer #" + std::to_string(m_outputWnd.size()), wnd->GetPixelWidth(), wnd->GetPixelHeight(), fmt));
 #endif
 }
 
 void RenderDevice::RemoveWindow(VPX::Window* wnd)
 {
-   bool found = false;
-   for (unsigned int i = 0; i < m_nOutputWnd; i++)
-   {
-      found |= m_outputWnd[i] == wnd;
-      if (found)
-         m_outputWnd[i] = m_outputWnd[i + 1];
-   }
-   if (found)
-   {
-      RenderTarget* backbuffer = wnd->GetBackBuffer();
-      assert(found && backbuffer != nullptr);
-      wnd->SetBackBuffer(nullptr);
-      AddEndOfFrameCmd([backbuffer]() { delete backbuffer; });
-      m_nOutputWnd--;
-   }
+   m_outputWnd.erase(std::remove(m_outputWnd.begin(), m_outputWnd.end(), wnd), m_outputWnd.end());
 }
 
 bool RenderDevice::DepthBufferReadBackAvailable() const

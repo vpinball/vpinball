@@ -215,8 +215,8 @@ public:
 
    uint64_t m_lastPresentFrameTick = 0;
 
-   unsigned int m_nOutputWnd = 1; // Swap chain always has at least one output window (OpenGL & DX9 only supports one, DX10+/Metal/Vulkan support multiple)
-   VPX::Window* m_outputWnd[8];
+   // Swap chain always has at least one output window (OpenGL & DX9 only supports one, DX10+/Metal/Vulkan support multiple)
+   vector<VPX::Window*> m_outputWnd;
 
    void CaptureScreenshot(const string& filename, std::function<void(bool)> callback);
 
