@@ -24,50 +24,48 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     ::SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
     for (unsigned int i = 0; i < num_physicsoptions; i++)
     {
-        string tmp = "PhysicsSetName" + std::to_string(i);
-        if (!g_pvp->m_settings.LoadValue(Settings::Player, tmp, physicsoptions[i]))
-            physicsoptions[i] = "Set " + std::to_string(i + 1);
-        tmp = std::to_string(i + 1) + ": " + physicsoptions[i];
+        physicsoptions[i] = g_pvp->m_settings.GetPlayer_PhysicsSetName(i);
+        string tmp = std::to_string(i + 1) + ": " + physicsoptions[i];
         const size_t index = ::SendMessage(hwndList, LB_ADDSTRING, 0, (size_t)tmp.c_str());
     }
     ::SendMessage(hwndList, LB_SETCURSEL, physicsselection, 0);
     ::SendMessage(hwndList, WM_SETREDRAW, TRUE, 0);
 
-    const float FlipperPhysicsMass = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "FlipperPhysicsMass" + std::to_string(physicsselection), 1.f);
+    const float FlipperPhysicsMass = g_pvp->m_settings.GetPlayer_FlipperPhysicsMass(physicsselection);
     SetItemText(DISPID_Flipper_Speed, FlipperPhysicsMass);
-    const float FlipperPhysicsStrength = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "FlipperPhysicsStrength" + std::to_string(physicsselection), 2200.f);
+    const float FlipperPhysicsStrength = g_pvp->m_settings.GetPlayer_FlipperPhysicsStrength(physicsselection);
     SetItemText(19, FlipperPhysicsStrength);
-    const float FlipperPhysicsElasticity = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "FlipperPhysicsElasticity" + std::to_string(physicsselection), 0.8f);
+    const float FlipperPhysicsElasticity = g_pvp->m_settings.GetPlayer_FlipperPhysicsElasticity(physicsselection);
     SetItemText(21, FlipperPhysicsElasticity);
-    const float FlipperPhysicsScatter = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "FlipperPhysicsScatter" + std::to_string(physicsselection), 0.f);
+    const float FlipperPhysicsScatter = g_pvp->m_settings.GetPlayer_FlipperPhysicsScatter(physicsselection);
     SetItemText(112, FlipperPhysicsScatter);
-    const float FlipperPhysicsTorqueDamping = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "FlipperPhysicsEOSTorque" + std::to_string(physicsselection), 0.75f);
+    const float FlipperPhysicsTorqueDamping = g_pvp->m_settings.GetPlayer_FlipperPhysicsEOSTorque(physicsselection);
     SetItemText(113, FlipperPhysicsTorqueDamping);
-    const float FlipperPhysicsTorqueDampingAngle = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "FlipperPhysicsEOSTorqueAngle" + std::to_string(physicsselection), 6.f);
+    const float FlipperPhysicsTorqueDampingAngle = g_pvp->m_settings.GetPlayer_FlipperPhysicsEOSTorqueAngle(physicsselection);
     SetItemText(189, FlipperPhysicsTorqueDampingAngle);
-    const float FlipperPhysicsReturnStrength = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "FlipperPhysicsReturnStrength" + std::to_string(physicsselection), 0.058f);
+    const float FlipperPhysicsReturnStrength = g_pvp->m_settings.GetPlayer_FlipperPhysicsReturnStrength(physicsselection);
     SetItemText(23, FlipperPhysicsReturnStrength);
-    const float FlipperPhysicsElasticityFalloff = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "FlipperPhysicsElasticityFalloff" + std::to_string(physicsselection), 0.43f);
+    const float FlipperPhysicsElasticityFalloff = g_pvp->m_settings.GetPlayer_FlipperPhysicsElasticityFalloff(physicsselection);
     SetItemText(22, FlipperPhysicsElasticityFalloff);
-    const float FlipperPhysicsFriction = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "FlipperPhysicsFriction" + std::to_string(physicsselection), 0.6f);
+    const float FlipperPhysicsFriction = g_pvp->m_settings.GetPlayer_FlipperPhysicsFriction(physicsselection);
     SetItemText(109, FlipperPhysicsFriction);
-    const float FlipperPhysicsCoilRampUp = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "FlipperPhysicsCoilRampUp" + std::to_string(physicsselection), 3.f);
+    const float FlipperPhysicsCoilRampUp = g_pvp->m_settings.GetPlayer_FlipperPhysicsCoilRampUp(physicsselection);
     SetItemText(110, FlipperPhysicsCoilRampUp);
-    const float TablePhysicsGravityConstant = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsGravityConstant" + std::to_string(physicsselection), DEFAULT_TABLE_GRAVITY);
+    const float TablePhysicsGravityConstant = g_pvp->m_settings.GetPlayer_TablePhysicsGravityConstant(physicsselection);
     SetItemText(1100, TablePhysicsGravityConstant);
-    const float TablePhysicsContactFriction = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsContactFriction"+std::to_string(physicsselection), DEFAULT_TABLE_CONTACTFRICTION);
+    const float TablePhysicsContactFriction = g_pvp->m_settings.GetPlayer_TablePhysicsContactFriction(physicsselection);
     SetItemText(1101, TablePhysicsContactFriction);
-    const float TablePhysicsElasticity = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsElasticity" + std::to_string(physicsselection), DEFAULT_TABLE_ELASTICITY);
+    const float TablePhysicsElasticity = g_pvp->m_settings.GetPlayer_TablePhysicsElasticity(physicsselection);
     SetItemText(1708, TablePhysicsElasticity);
-    const float TablePhysicsElasticityFalloff = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsElasticityFalloff"+std::to_string(physicsselection), DEFAULT_TABLE_ELASTICITY_FALLOFF);
+    const float TablePhysicsElasticityFalloff = g_pvp->m_settings.GetPlayer_TablePhysicsElasticityFalloff(physicsselection);
     SetItemText(1709, TablePhysicsElasticityFalloff);
-    const float TablePhysicsScatterAngle = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsScatterAngle" + std::to_string(physicsselection), DEFAULT_TABLE_PFSCATTERANGLE);
+    const float TablePhysicsScatterAngle = g_pvp->m_settings.GetPlayer_TablePhysicsScatterAngle(physicsselection);
     SetItemText(1710, TablePhysicsScatterAngle);
-    const float TablePhysicsContactScatterAngle = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsContactScatterAngle"+std::to_string(physicsselection), DEFAULT_TABLE_SCATTERANGLE);
+    const float TablePhysicsContactScatterAngle = g_pvp->m_settings.GetPlayer_TablePhysicsContactScatterAngle(physicsselection);
     SetItemText(1102, TablePhysicsContactScatterAngle);
-    const float TablePhysicsMinSlope = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsMinSlope" + std::to_string(physicsselection), DEFAULT_TABLE_MIN_SLOPE);
+    const float TablePhysicsMinSlope = g_pvp->m_settings.GetPlayer_TablePhysicsMinSlope(physicsselection);
     SetItemText(1103, TablePhysicsMinSlope);
-    const float TablePhysicsMaxSlope = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsMaxSlope" + std::to_string(physicsselection), DEFAULT_TABLE_MAX_SLOPE);
+    const float TablePhysicsMaxSlope = g_pvp->m_settings.GetPlayer_TablePhysicsMaxSlope(physicsselection);
     SetItemText(1104, TablePhysicsMaxSlope);
 
     SetDlgItemText(1110, physicsoptions[physicsselection].c_str());
@@ -401,23 +399,23 @@ void PhysicsOptionsDialog::SetItemText(int id, float value)
 
 void PhysicsOptionsDialog::SaveCurrentPhysicsSetting()
 {
-    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsMass" + std::to_string(physicsselection), sz2f(GetItemText(DISPID_Flipper_Speed)));
-    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsStrength" + std::to_string(physicsselection), sz2f(GetItemText(19)));
-    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsElasticity" + std::to_string(physicsselection), sz2f(GetItemText(21)));
-    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsScatter" + std::to_string(physicsselection), sz2f(GetItemText(112)));
-    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsEOSTorque" + std::to_string(physicsselection), sz2f(GetItemText(113)));
-    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsEOSTorqueAngle" + std::to_string(physicsselection), sz2f(GetItemText(189)));
-    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsReturnStrength" + std::to_string(physicsselection), sz2f(GetItemText(23)));
-    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsElasticityFalloff" + std::to_string(physicsselection), sz2f(GetItemText(22)));
-    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsFriction" + std::to_string(physicsselection), sz2f(GetItemText(109)));
-    g_pvp->m_settings.SaveValue(Settings::Player, "FlipperPhysicsCoilRampUp" + std::to_string(physicsselection), sz2f(GetItemText(110)));
-    g_pvp->m_settings.SaveValue(Settings::Player, "TablePhysicsGravityConstant" + std::to_string(physicsselection), sz2f(GetItemText(1100)));
-    g_pvp->m_settings.SaveValue(Settings::Player, "TablePhysicsContactFriction" + std::to_string(physicsselection), sz2f(GetItemText(1101)));
-    g_pvp->m_settings.SaveValue(Settings::Player, "TablePhysicsElasticity" + std::to_string(physicsselection), sz2f(GetItemText(1708)));
-    g_pvp->m_settings.SaveValue(Settings::Player, "TablePhysicsElasticityFalloff" + std::to_string(physicsselection), sz2f(GetItemText(1709)));
-    g_pvp->m_settings.SaveValue(Settings::Player, "TablePhysicsScatterAngle" + std::to_string(physicsselection), sz2f(GetItemText(1710)));
-    g_pvp->m_settings.SaveValue(Settings::Player, "TablePhysicsContactScatterAngle" + std::to_string(physicsselection), sz2f(GetItemText(1102)));
-    g_pvp->m_settings.SaveValue(Settings::Player, "TablePhysicsMinSlope" + std::to_string(physicsselection), sz2f(GetItemText(1103)));
-    g_pvp->m_settings.SaveValue(Settings::Player, "TablePhysicsMaxSlope" + std::to_string(physicsselection), sz2f(GetItemText(1104)));
-    g_pvp->m_settings.SaveValue(Settings::Player, "PhysicsSetName" + std::to_string(physicsselection), GetItemText(1110));
+    g_pvp->m_settings.SetPlayer_FlipperPhysicsMass(physicsselection, sz2f(GetItemText(DISPID_Flipper_Speed)), false);
+    g_pvp->m_settings.SetPlayer_FlipperPhysicsStrength(physicsselection, sz2f(GetItemText(19)), false);
+    g_pvp->m_settings.SetPlayer_FlipperPhysicsElasticity(physicsselection, sz2f(GetItemText(21)), false);
+    g_pvp->m_settings.SetPlayer_FlipperPhysicsScatter(physicsselection, sz2f(GetItemText(112)), false);
+    g_pvp->m_settings.SetPlayer_FlipperPhysicsEOSTorque(physicsselection, sz2f(GetItemText(113)), false);
+    g_pvp->m_settings.SetPlayer_FlipperPhysicsEOSTorqueAngle(physicsselection, sz2f(GetItemText(189)), false);
+    g_pvp->m_settings.SetPlayer_FlipperPhysicsReturnStrength(physicsselection, sz2f(GetItemText(23)), false);
+    g_pvp->m_settings.SetPlayer_FlipperPhysicsElasticityFalloff(physicsselection, sz2f(GetItemText(22)), false);
+    g_pvp->m_settings.SetPlayer_FlipperPhysicsFriction(physicsselection, sz2f(GetItemText(109)), false);
+    g_pvp->m_settings.SetPlayer_FlipperPhysicsCoilRampUp(physicsselection, sz2f(GetItemText(110)), false);
+    g_pvp->m_settings.SetPlayer_TablePhysicsGravityConstant(physicsselection, sz2f(GetItemText(1100)), false);
+    g_pvp->m_settings.SetPlayer_TablePhysicsContactFriction(physicsselection, sz2f(GetItemText(1101)), false);
+    g_pvp->m_settings.SetPlayer_TablePhysicsElasticity(physicsselection, sz2f(GetItemText(1708)), false);
+    g_pvp->m_settings.SetPlayer_TablePhysicsElasticityFalloff(physicsselection, sz2f(GetItemText(1709)), false);
+    g_pvp->m_settings.SetPlayer_TablePhysicsScatterAngle(physicsselection, sz2f(GetItemText(1710)), false);
+    g_pvp->m_settings.SetPlayer_TablePhysicsContactScatterAngle(physicsselection, sz2f(GetItemText(1102)), false);
+    g_pvp->m_settings.SetPlayer_TablePhysicsMinSlope(physicsselection, sz2f(GetItemText(1103)), false);
+    g_pvp->m_settings.SetPlayer_TablePhysicsMaxSlope(physicsselection, sz2f(GetItemText(1104)), false);
+    g_pvp->m_settings.SetPlayer_PhysicsSetName(physicsselection, GetItemText(1110), false);
 }

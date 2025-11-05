@@ -500,6 +500,7 @@ void PhysicsEngine::UpdatePhysics()
 
    // DJRobX's crazy latency-reduction code
    uint64_t delta_frame = 0;
+   #if !defined(ENABLE_BGFX)
    if (g_pplayer->m_minphyslooptime > 0 && m_lastFlipTime > 0)
    {
       // We want the physics loops to sync up to the frames, not
@@ -507,6 +508,7 @@ void PhysicsEngine::UpdatePhysics()
       delta_frame = initial_time_usec - m_lastFlipTime;
       initial_time_usec -= delta_frame;
    }
+   #endif
 
    // When paused or after debugging, shift whole game forward in time
    // TODO not sure why we would need noTimeCorrect, as pause should already have shifted the timings

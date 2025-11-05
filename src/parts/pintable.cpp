@@ -80,7 +80,8 @@ PinTable::PinTable()
    m_psgt->AddRef();
    m_psgt->Init(m_vpinball, this);
 
-   m_globalDifficulty = m_settings.LoadValueWithDefault(Settings::TableOverride, "Difficulty"s, m_difficulty);
+   Settings::SetTableOverride_Difficulty_Default(m_difficulty);
+   m_globalDifficulty = m_settings.GetTableOverride_Difficulty();
 
    m_tblAutoStart = m_settings.LoadValueWithDefault(Settings::Player, "Autostart"s, 0) * 10;
    m_tblAutoStartRetry = m_settings.LoadValueWithDefault(Settings::Player, "AutostartRetry"s, 0) * 10;
@@ -301,7 +302,8 @@ void PinTable::InitTablePostLoad()
             m_BG_image[i] = m_BG_image[BG_DESKTOP];
       }
 
-   m_globalDifficulty = m_settings.LoadValueWithDefault(Settings::TableOverride, "Difficulty"s, m_difficulty);
+   Settings::SetTableOverride_Difficulty_Default(m_difficulty);
+   m_globalDifficulty = m_settings.GetTableOverride_Difficulty();
 
    m_currentBackglassMode = m_BG_current_set;
    if (m_BG_enable_FSS)
@@ -817,7 +819,8 @@ PinTable* PinTable::CopyForPlay()
    dst->m_playfieldMaterial = src->m_playfieldMaterial;
    dst->m_colorbackdrop = src->m_colorbackdrop;
    dst->m_difficulty = src->m_difficulty;
-   dst->m_globalDifficulty = m_settings.LoadValueWithDefault(Settings::TableOverride, "Difficulty"s, dst->m_difficulty);
+   Settings::SetTableOverride_Difficulty_Default(dst->m_difficulty);
+   dst->m_globalDifficulty = m_settings.GetTableOverride_Difficulty();
    dst->m_lightAmbient = src->m_lightAmbient;
    dst->m_lightHeight = src->m_lightHeight;
    dst->m_lightRange = src->m_lightRange;
@@ -1034,14 +1037,14 @@ PinTable* PinTable::CopyForPlay()
       live_table->m_renderprobeMap[live_table->m_vrenderprobe[i]->GetName()] = live_table->m_vrenderprobe[i];
 
    // parse the (optional) override-physics-sets that can be set globally
-   live_table->m_fOverrideGravityConstant = GRAVITYCONST * m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsGravityConstant" + std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_GRAVITY);
-   live_table->m_fOverrideContactFriction = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsContactFriction"+std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_CONTACTFRICTION);
-   live_table->m_fOverrideElasticity = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsElasticity" + std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_ELASTICITY);
-   live_table->m_fOverrideElasticityFalloff = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsElasticityFalloff"+std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_ELASTICITY_FALLOFF);
-   live_table->m_fOverrideScatterAngle = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsScatterAngle" + std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_PFSCATTERANGLE);
-   live_table->m_fOverrideMinSlope = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsMinSlope" + std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_MIN_SLOPE);
-   live_table->m_fOverrideMaxSlope = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsMaxSlope" + std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_MAX_SLOPE);
-   const float fOverrideContactScatterAngle = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsContactScatterAngle"+std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_SCATTERANGLE);
+   live_table->m_fOverrideGravityConstant = GRAVITYCONST * m_settings.GetPlayer_TablePhysicsGravityConstant(live_table->m_overridePhysics - 1);
+   live_table->m_fOverrideContactFriction = m_settings.GetPlayer_TablePhysicsContactFriction(live_table->m_overridePhysics - 1);
+   live_table->m_fOverrideElasticity = m_settings.GetPlayer_TablePhysicsElasticity(live_table->m_overridePhysics - 1);
+   live_table->m_fOverrideElasticityFalloff = m_settings.GetPlayer_TablePhysicsElasticityFalloff(live_table->m_overridePhysics - 1);
+   live_table->m_fOverrideScatterAngle = m_settings.GetPlayer_TablePhysicsScatterAngle(live_table->m_overridePhysics - 1);
+   live_table->m_fOverrideMinSlope = m_settings.GetPlayer_TablePhysicsMinSlope(live_table->m_overridePhysics - 1);
+   live_table->m_fOverrideMaxSlope = m_settings.GetPlayer_TablePhysicsMaxSlope(live_table->m_overridePhysics - 1);
+   const float fOverrideContactScatterAngle = m_settings.GetPlayer_TablePhysicsContactScatterAngle(live_table->m_overridePhysics - 1);
    c_hardScatter = ANGTORAD(live_table->m_overridePhysics ? fOverrideContactScatterAngle : live_table->m_defaultScatter);
 
    return live_table;
@@ -6706,8 +6709,7 @@ void PinTable::UpdateCurrentBGSet()
       m_BG_current_set = m_BG_override;
    else
    {
-      const int setup = m_settings.LoadValueWithDefault(Settings::Player, "BGSet"s, 0);
-      switch (setup)
+      switch (m_settings.GetPlayer_BGSet())
       {
       case 0: m_BG_current_set = m_BG_enable_FSS ? BG_FSS : BG_DESKTOP; break; // Desktop mode (FSS if table supports it, usual dekstop otherwise)
       case 1: m_BG_current_set = BG_FULLSCREEN; break; // Cabinet mode
@@ -7208,30 +7210,6 @@ STDMETHODIMP PinTable::put_EnvironmentImage(BSTR newVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_EnableAntialiasing(UserDefaultOnOff *pVal)
-{
-   // See put_EnableFXAA, not sure why we keep this
-   if (m_settings.HasValue(Settings::Player, "AAFactor"s))
-      *pVal = m_settings.LoadValueWithDefault(Settings::Player, "AAFactor"s, 1.f) > 1.f ? UserDefaultOnOff::On : UserDefaultOnOff::Off;
-   else
-      *pVal = UserDefaultOnOff::Default;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_EnableAntialiasing(UserDefaultOnOff newVal)
-{
-   // See put_EnableFXAA, not sure why we keep this
-   STARTUNDO
-   if (newVal == UserDefaultOnOff::Default)
-      m_settings.DeleteValue(Settings::Player, "AAFactor"s);
-   else
-      m_settings.SaveValue(Settings::Player, "AAFactor"s, newVal == UserDefaultOnOff::On ? 2.f : 1.f);
-   STOPUNDO
-
-   return S_OK;
-}
-
 STDMETHODIMP PinTable::get_EnableSSR(UserDefaultOnOff *pVal)
 {
    *pVal = m_enableSSR ? UserDefaultOnOff::On : UserDefaultOnOff::Off;
@@ -7261,30 +7239,6 @@ STDMETHODIMP PinTable::put_EnableAO(UserDefaultOnOff newVal)
    STARTUNDO
    m_enableAO = (int)newVal;
    STOPUNDO
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_EnableFXAA(FXAASettings *pVal)
-{
-   // See put_EnableFXAA, not sure why we keep this
-   if (m_settings.HasValue(Settings::Player, "FXAA"s))
-      *pVal = (FXAASettings)m_settings.LoadValueWithDefault(Settings::Player, "FXAA"s, (int)Standard_FXAA);
-   else
-      *pVal = FXAASettings::Defaults;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_EnableFXAA(FXAASettings newVal)
-{
-   // TODO I don't really get why we would expose the FXAA to script, undo is wrong too, it also may create an unwanted ini (did the caller wanted to change the app or the table setting ? is this used by someone ?)
-   STARTUNDO
-   if (newVal == FXAASettings::Defaults)
-      m_settings.DeleteValue(Settings::Player, "FXAA"s);
-   else
-      m_settings.SaveValue(Settings::Player, "FXAA"s, (int)newVal);
-   STOPUNDO
-
    return S_OK;
 }
 
@@ -8501,3 +8455,30 @@ STDMETHODIMP PinTable::put_PlungerFilter(VARIANT_BOOL newVal)
    PLOGE << "PlungerFilter is deprecated";
    return S_OK;
 }
+
+// Changing AA & FXAA is somewhat wrong as it changes the setting for all time, and is not implemented while playing, so this is just a No-Op
+STDMETHODIMP PinTable::get_EnableAntialiasing(UserDefaultOnOff *pVal)
+{
+   *pVal = UserDefaultOnOff::Default;
+   return S_OK;
+}
+
+// Changing AA & FXAA is somewhat wrong as it changes the setting for all time, and is not implemented while playing, so this is just a No-Op
+STDMETHODIMP PinTable::put_EnableAntialiasing(UserDefaultOnOff newVal)
+{
+   return S_OK;
+}
+
+// Changing AA & FXAA is somewhat wrong as it changes the setting for all time, and is not implemented while playing, so this is just a No-Op
+STDMETHODIMP PinTable::get_EnableFXAA(FXAASettings *pVal)
+{
+   *pVal = FXAASettings::Defaults;
+   return S_OK;
+}
+
+// Changing AA & FXAA is somewhat wrong as it changes the setting for all time, and is not implemented while playing, so this is just a No-Op
+STDMETHODIMP PinTable::put_EnableFXAA(FXAASettings newVal)
+{
+   return S_OK;
+}
+

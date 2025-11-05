@@ -301,8 +301,6 @@ public:
    DebuggerDialog m_debuggerDialog;
 #endif
 
-   int  m_debugBallSize;
-   float m_debugBallMass;
    bool m_debugBalls = false;           // Draw balls in the foreground via 'O' key
 
    bool m_noTimeCorrect = false;        // Used so the frame after debugging does not do normal time correction

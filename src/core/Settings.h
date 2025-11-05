@@ -256,6 +256,8 @@ public:
       int, 0, "Disable Reflections"s, "Balls Only"s, "Static Only"s, "Static & Balls"s, "Static & Unsynced Dynamic"s, "Dynamic"s);
    PropInt(Player, MaxTexDimension, "Maximum texture dimension"s, "Images sized above this limit will be automatically scaled down on load."s, 512, 16384, g_isMobile ? 1536 : 16384);
    PropInt(Player, AlphaRampAccuracy, "Detail Level"s, "Images sized above this limit will be automatically scaled down on load."s, 1, 10, 10);
+   PropEnum(
+      Player, BGSet, "Display Mode"s, "Select between desktop, cabinet or 'full single screen' display mode"s, int, 0, "Desktop / Full Single Screen"s, "Full Single Screen"s, "Cabinet"s);
 
    // Aliasing & sharpening
    PropFloat(Player, AAFactor, "Full Scene Anti Aliasing"s,
@@ -284,6 +286,11 @@ public:
    PropBool(Player, DetectHang, "Detect Script Hang"s, ""s, false);
    PropInt(Player, SecurityLevel, "Security Level"s, ""s, 0, 4, DEFAULT_SECURITY_LEVEL);
    PropInt(Player, NumberOfTimesToShowTouchMessage, "NumberOfTimesToShowTouchMessage"s, ""s, 0, 100, 10);
+   PropBool(Player, BAMHeadTracking, "BAM Headtracking"s, "Enable headtracking using the external BAM application.\nThis feature is experimental and unsupported."s, false);
+   PropBool(Player, Mirror, "Mirror"s, "Mirror the table (left <-> right)."s, false);
+   PropEnum(Player, CacheMode, "Cache Mode"s, ""s, int, 1, "Disabled"s, "Preload Textures"s);
+   PropEnum(Player, RumbleMode, "RumbleMode"s, ""s, int, 3, "Off"s, "Table only (N/A yet)"s, "Generic only (N/A yet)"s, "Table with generic fallback"s);
+   PropInt(Player, MinPhysLoopTime, "MinPhysLoopTime"s, ""s, 0, 1000, 0); // Legacy lag reduction hack. Not uspported by BGFX variant (due to its multithreaded loop)
 
    // UI & input settings
    PropInt(Player, Exitconfirm, "Direct Exit Length"s, "Length of a long ESC press that directly closes the app, (sadly) expressed in seconds * 60."s, 0, 30 * 60, 120);
@@ -319,6 +326,8 @@ public:
    PropEnum(Player, VRPreview, "Preview mode"s, "Select preview mode"s, int, 1, "Disabled"s, "Left Eye"s, "Right Eye"s, "Both Eyes"s);
    PropBool(PlayerVR, ShrinkPreview, "Shrink preview"s, ""s, false);
    PropFloatUnbounded(PlayerVR, ResFactor, "ResFactor"s, ""s, -1.f);
+   PropBool(Player, CaptureExternalDMD, "Capture External DMD"s, "Capture an external DMD Window and render it in the VR viewport.\nThis feature is deprecated and unsupported."s, false);
+   PropBool(Player, CapturePUP, "Capture PinUp Player"s, "Capture PinUp Player Window and render it in the VR viewport.\nThis feature is deprecated and unsupported."s, false);
    // Legacy OpenVR settings (to be removed)
    PropEnum(PlayerVR, EyeFBFormat, "EyeFBFormat"s, ""s, int, 1, "RGB 8"s, "RGBA 8 (Recommended)"s, "RGB 16F"s, "RGBA 16F"s);
    PropFloatUnbounded(PlayerVR, Slope, "Slope"s, ""s, 6.5f);
@@ -326,6 +335,216 @@ public:
    PropFloatUnbounded(PlayerVR, ScaleAbsolute, "ScaleAbsolute"s, ""s, 55.f);
    PropFloatUnbounded(PlayerVR, ScaleRelative, "ScaleRelative"s, ""s, 1.f);
    PropFloatUnbounded(PlayerVR, NearPlane, "NearPlane"s, ""s, 5.f);
+
+   // Physics override profiles
+   PropFloatUnbounded(Player, FlipperPhysicsMass0, "FlipperPhysicsMass0"s, ""s, 1.f);
+   PropFloatUnbounded(Player, FlipperPhysicsStrength0, "FlipperPhysicsStrength0"s, ""s, 2200.f);
+   PropFloatUnbounded(Player, FlipperPhysicsElasticity0, "FlipperPhysicsElasticity0"s, ""s, 0.8f);
+   PropFloatUnbounded(Player, FlipperPhysicsScatter0, "FlipperPhysicsScatter0"s, ""s, 0.f);
+   PropFloatUnbounded(Player, FlipperPhysicsReturnStrength0, "FlipperPhysicsReturnStrength0"s, ""s, 0.058f);
+   PropFloatUnbounded(Player, FlipperPhysicsElasticityFalloff0, "FlipperPhysicsElasticityFalloff0"s, ""s, 0.43f);
+   PropFloatUnbounded(Player, FlipperPhysicsFriction0, "FlipperPhysicsFriction0"s, ""s, 0.6f);
+   PropFloatUnbounded(Player, FlipperPhysicsCoilRampUp0, "FlipperPhysicsCoilRampUp0"s, ""s, 3.f);
+   PropFloatUnbounded(Player, FlipperPhysicsEOSTorque0, "FlipperPhysicsEOSTorque0"s, ""s, 0.75f);
+   PropFloatUnbounded(Player, FlipperPhysicsEOSTorqueAngle0, "FlipperPhysicsEOSTorqueAngle0"s, ""s, 6.f);
+   PropFloatUnbounded(Player, TablePhysicsGravityConstant0, "TablePhysicsGravityConstant0"s, ""s, DEFAULT_TABLE_GRAVITY);
+   PropFloatUnbounded(Player, TablePhysicsContactFriction0, "TablePhysicsContactFriction0"s, ""s, DEFAULT_TABLE_CONTACTFRICTION);
+   PropFloatUnbounded(Player, TablePhysicsElasticity0, "TablePhysicsElasticity0"s, ""s, DEFAULT_TABLE_ELASTICITY);
+   PropFloatUnbounded(Player, TablePhysicsElasticityFalloff0, "TablePhysicsElasticityFalloff0"s, ""s, DEFAULT_TABLE_ELASTICITY_FALLOFF);
+   PropFloatUnbounded(Player, TablePhysicsScatterAngle0, "TablePhysicsScatterAngle0"s, ""s, DEFAULT_TABLE_PFSCATTERANGLE);
+   PropFloatUnbounded(Player, TablePhysicsContactScatterAngle0, "TablePhysicsContactScatterAngle0"s, ""s, DEFAULT_TABLE_SCATTERANGLE);
+   PropFloatUnbounded(Player, TablePhysicsMinSlope0, "TablePhysicsMinSlope0"s, ""s, DEFAULT_TABLE_MIN_SLOPE);
+   PropFloatUnbounded(Player, TablePhysicsMaxSlope0, "TablePhysicsMaxSlope0"s, ""s, DEFAULT_TABLE_MAX_SLOPE);
+   PropString(Player, PhysicsSetName0, "PhysicsSetName0"s, ""s, "Set 1"s);
+
+   PropFloatUnbounded(Player, FlipperPhysicsMass1, "FlipperPhysicsMass1"s, ""s, 1.f);
+   PropFloatUnbounded(Player, FlipperPhysicsStrength1, "FlipperPhysicsStrength1"s, ""s, 2200.f);
+   PropFloatUnbounded(Player, FlipperPhysicsElasticity1, "FlipperPhysicsElasticity1"s, ""s, 0.8f);
+   PropFloatUnbounded(Player, FlipperPhysicsScatter1, "FlipperPhysicsScatter1"s, ""s, 0.f);
+   PropFloatUnbounded(Player, FlipperPhysicsReturnStrength1, "FlipperPhysicsReturnStrength1"s, ""s, 0.058f);
+   PropFloatUnbounded(Player, FlipperPhysicsElasticityFalloff1, "FlipperPhysicsElasticityFalloff1"s, ""s, 0.43f);
+   PropFloatUnbounded(Player, FlipperPhysicsFriction1, "FlipperPhysicsFriction1"s, ""s, 0.6f);
+   PropFloatUnbounded(Player, FlipperPhysicsCoilRampUp1, "FlipperPhysicsCoilRampUp1"s, ""s, 3.f);
+   PropFloatUnbounded(Player, FlipperPhysicsEOSTorque1, "FlipperPhysicsEOSTorque1"s, ""s, 0.75f);
+   PropFloatUnbounded(Player, FlipperPhysicsEOSTorqueAngle1, "FlipperPhysicsEOSTorqueAngle1"s, ""s, 6.f);
+   PropFloatUnbounded(Player, TablePhysicsGravityConstant1, "TablePhysicsGravityConstant1"s, ""s, DEFAULT_TABLE_GRAVITY);
+   PropFloatUnbounded(Player, TablePhysicsContactFriction1, "TablePhysicsContactFriction1"s, ""s, DEFAULT_TABLE_CONTACTFRICTION);
+   PropFloatUnbounded(Player, TablePhysicsElasticity1, "TablePhysicsElasticity1"s, ""s, DEFAULT_TABLE_ELASTICITY);
+   PropFloatUnbounded(Player, TablePhysicsElasticityFalloff1, "TablePhysicsElasticityFalloff1"s, ""s, DEFAULT_TABLE_ELASTICITY_FALLOFF);
+   PropFloatUnbounded(Player, TablePhysicsScatterAngle1, "TablePhysicsScatterAngle1"s, ""s, DEFAULT_TABLE_PFSCATTERANGLE);
+   PropFloatUnbounded(Player, TablePhysicsContactScatterAngle1, "TablePhysicsContactScatterAngle1"s, ""s, DEFAULT_TABLE_SCATTERANGLE);
+   PropFloatUnbounded(Player, TablePhysicsMinSlope1, "TablePhysicsMinSlope1"s, ""s, DEFAULT_TABLE_MIN_SLOPE);
+   PropFloatUnbounded(Player, TablePhysicsMaxSlope1, "TablePhysicsMaxSlope1"s, ""s, DEFAULT_TABLE_MAX_SLOPE);
+   PropString(Player, PhysicsSetName1, "PhysicsSetName1"s, ""s, "Set 2"s);
+
+   PropFloatUnbounded(Player, FlipperPhysicsMass2, "FlipperPhysicsMass2"s, ""s, 1.f);
+   PropFloatUnbounded(Player, FlipperPhysicsStrength2, "FlipperPhysicsStrength2"s, ""s, 2200.f);
+   PropFloatUnbounded(Player, FlipperPhysicsElasticity2, "FlipperPhysicsElasticity2"s, ""s, 0.8f);
+   PropFloatUnbounded(Player, FlipperPhysicsScatter2, "FlipperPhysicsScatter2"s, ""s, 0.f);
+   PropFloatUnbounded(Player, FlipperPhysicsReturnStrength2, "FlipperPhysicsReturnStrength2"s, ""s, 0.058f);
+   PropFloatUnbounded(Player, FlipperPhysicsElasticityFalloff2, "FlipperPhysicsElasticityFalloff2"s, ""s, 0.43f);
+   PropFloatUnbounded(Player, FlipperPhysicsFriction2, "FlipperPhysicsFriction2"s, ""s, 0.6f);
+   PropFloatUnbounded(Player, FlipperPhysicsCoilRampUp2, "FlipperPhysicsCoilRampUp2"s, ""s, 3.f);
+   PropFloatUnbounded(Player, FlipperPhysicsEOSTorque2, "FlipperPhysicsEOSTorque2"s, ""s, 0.75f);
+   PropFloatUnbounded(Player, FlipperPhysicsEOSTorqueAngle2, "FlipperPhysicsEOSTorqueAngle2"s, ""s, 6.f);
+   PropFloatUnbounded(Player, TablePhysicsGravityConstant2, "TablePhysicsGravityConstant2"s, ""s, DEFAULT_TABLE_GRAVITY);
+   PropFloatUnbounded(Player, TablePhysicsContactFriction2, "TablePhysicsContactFriction2"s, ""s, DEFAULT_TABLE_CONTACTFRICTION);
+   PropFloatUnbounded(Player, TablePhysicsElasticity2, "TablePhysicsElasticity2"s, ""s, DEFAULT_TABLE_ELASTICITY);
+   PropFloatUnbounded(Player, TablePhysicsElasticityFalloff2, "TablePhysicsElasticityFalloff2"s, ""s, DEFAULT_TABLE_ELASTICITY_FALLOFF);
+   PropFloatUnbounded(Player, TablePhysicsScatterAngle2, "TablePhysicsScatterAngle2"s, ""s, DEFAULT_TABLE_PFSCATTERANGLE);
+   PropFloatUnbounded(Player, TablePhysicsContactScatterAngle2, "TablePhysicsContactScatterAngle2"s, ""s, DEFAULT_TABLE_SCATTERANGLE);
+   PropFloatUnbounded(Player, TablePhysicsMinSlope2, "TablePhysicsMinSlope2"s, ""s, DEFAULT_TABLE_MIN_SLOPE);
+   PropFloatUnbounded(Player, TablePhysicsMaxSlope2, "TablePhysicsMaxSlope2"s, ""s, DEFAULT_TABLE_MAX_SLOPE);
+   PropString(Player, PhysicsSetName2, "PhysicsSetName2"s, ""s, "Set 3"s);
+
+   PropFloatUnbounded(Player, FlipperPhysicsMass3, "FlipperPhysicsMass3"s, ""s, 1.f);
+   PropFloatUnbounded(Player, FlipperPhysicsStrength3, "FlipperPhysicsStrength3"s, ""s, 2200.f);
+   PropFloatUnbounded(Player, FlipperPhysicsElasticity3, "FlipperPhysicsElasticity3"s, ""s, 0.8f);
+   PropFloatUnbounded(Player, FlipperPhysicsScatter3, "FlipperPhysicsScatter3"s, ""s, 0.f);
+   PropFloatUnbounded(Player, FlipperPhysicsReturnStrength3, "FlipperPhysicsReturnStrength3"s, ""s, 0.058f);
+   PropFloatUnbounded(Player, FlipperPhysicsElasticityFalloff3, "FlipperPhysicsElasticityFalloff3"s, ""s, 0.43f);
+   PropFloatUnbounded(Player, FlipperPhysicsFriction3, "FlipperPhysicsFriction3"s, ""s, 0.6f);
+   PropFloatUnbounded(Player, FlipperPhysicsCoilRampUp3, "FlipperPhysicsCoilRampUp3"s, ""s, 3.f);
+   PropFloatUnbounded(Player, FlipperPhysicsEOSTorque3, "FlipperPhysicsEOSTorque3"s, ""s, 0.75f);
+   PropFloatUnbounded(Player, FlipperPhysicsEOSTorqueAngle3, "FlipperPhysicsEOSTorqueAngle3"s, ""s, 6.f);
+   PropFloatUnbounded(Player, TablePhysicsGravityConstant3, "TablePhysicsGravityConstant3"s, ""s, DEFAULT_TABLE_GRAVITY);
+   PropFloatUnbounded(Player, TablePhysicsContactFriction3, "TablePhysicsContactFriction3"s, ""s, DEFAULT_TABLE_CONTACTFRICTION);
+   PropFloatUnbounded(Player, TablePhysicsElasticity3, "TablePhysicsElasticity3"s, ""s, DEFAULT_TABLE_ELASTICITY);
+   PropFloatUnbounded(Player, TablePhysicsElasticityFalloff3, "TablePhysicsElasticityFalloff3"s, ""s, DEFAULT_TABLE_ELASTICITY_FALLOFF);
+   PropFloatUnbounded(Player, TablePhysicsScatterAngle3, "TablePhysicsScatterAngle3"s, ""s, DEFAULT_TABLE_PFSCATTERANGLE);
+   PropFloatUnbounded(Player, TablePhysicsContactScatterAngle3, "TablePhysicsContactScatterAngle3"s, ""s, DEFAULT_TABLE_SCATTERANGLE);
+   PropFloatUnbounded(Player, TablePhysicsMinSlope3, "TablePhysicsMinSlope3"s, ""s, DEFAULT_TABLE_MIN_SLOPE);
+   PropFloatUnbounded(Player, TablePhysicsMaxSlope3, "TablePhysicsMaxSlope3"s, ""s, DEFAULT_TABLE_MAX_SLOPE);
+   PropString(Player, PhysicsSetName3, "PhysicsSetName3"s, ""s, "Set 4"s);
+
+   PropFloatUnbounded(Player, FlipperPhysicsMass4, "FlipperPhysicsMass4"s, ""s, 1.f);
+   PropFloatUnbounded(Player, FlipperPhysicsStrength4, "FlipperPhysicsStrength4"s, ""s, 2200.f);
+   PropFloatUnbounded(Player, FlipperPhysicsElasticity4, "FlipperPhysicsElasticity4"s, ""s, 0.8f);
+   PropFloatUnbounded(Player, FlipperPhysicsScatter4, "FlipperPhysicsScatter4"s, ""s, 0.f);
+   PropFloatUnbounded(Player, FlipperPhysicsReturnStrength4, "FlipperPhysicsReturnStrength4"s, ""s, 0.058f);
+   PropFloatUnbounded(Player, FlipperPhysicsElasticityFalloff4, "FlipperPhysicsElasticityFalloff4"s, ""s, 0.43f);
+   PropFloatUnbounded(Player, FlipperPhysicsFriction4, "FlipperPhysicsFriction4"s, ""s, 0.6f);
+   PropFloatUnbounded(Player, FlipperPhysicsCoilRampUp4, "FlipperPhysicsCoilRampUp4"s, ""s, 3.f);
+   PropFloatUnbounded(Player, FlipperPhysicsEOSTorque4, "FlipperPhysicsEOSTorque4"s, ""s, 0.75f);
+   PropFloatUnbounded(Player, FlipperPhysicsEOSTorqueAngle4, "FlipperPhysicsEOSTorqueAngle4"s, ""s, 6.f);
+   PropFloatUnbounded(Player, TablePhysicsGravityConstant4, "TablePhysicsGravityConstant4"s, ""s, DEFAULT_TABLE_GRAVITY);
+   PropFloatUnbounded(Player, TablePhysicsContactFriction4, "TablePhysicsContactFriction4"s, ""s, DEFAULT_TABLE_CONTACTFRICTION);
+   PropFloatUnbounded(Player, TablePhysicsElasticity4, "TablePhysicsElasticity4"s, ""s, DEFAULT_TABLE_ELASTICITY);
+   PropFloatUnbounded(Player, TablePhysicsElasticityFalloff4, "TablePhysicsElasticityFalloff4"s, ""s, DEFAULT_TABLE_ELASTICITY_FALLOFF);
+   PropFloatUnbounded(Player, TablePhysicsScatterAngle4, "TablePhysicsScatterAngle4"s, ""s, DEFAULT_TABLE_PFSCATTERANGLE);
+   PropFloatUnbounded(Player, TablePhysicsContactScatterAngle4, "TablePhysicsContactScatterAngle4"s, ""s, DEFAULT_TABLE_SCATTERANGLE);
+   PropFloatUnbounded(Player, TablePhysicsMinSlope4, "TablePhysicsMinSlope4"s, ""s, DEFAULT_TABLE_MIN_SLOPE);
+   PropFloatUnbounded(Player, TablePhysicsMaxSlope4, "TablePhysicsMaxSlope4"s, ""s, DEFAULT_TABLE_MAX_SLOPE);
+   PropString(Player, PhysicsSetName4, "PhysicsSetName4"s, ""s, "Set 5"s);
+
+   PropFloatUnbounded(Player, FlipperPhysicsMass5, "FlipperPhysicsMass5"s, ""s, 1.f);
+   PropFloatUnbounded(Player, FlipperPhysicsStrength5, "FlipperPhysicsStrength5"s, ""s, 2200.f);
+   PropFloatUnbounded(Player, FlipperPhysicsElasticity5, "FlipperPhysicsElasticity5"s, ""s, 0.8f);
+   PropFloatUnbounded(Player, FlipperPhysicsScatter5, "FlipperPhysicsScatter5"s, ""s, 0.f);
+   PropFloatUnbounded(Player, FlipperPhysicsReturnStrength5, "FlipperPhysicsReturnStrength5"s, ""s, 0.058f);
+   PropFloatUnbounded(Player, FlipperPhysicsElasticityFalloff5, "FlipperPhysicsElasticityFalloff5"s, ""s, 0.43f);
+   PropFloatUnbounded(Player, FlipperPhysicsFriction5, "FlipperPhysicsFriction5"s, ""s, 0.6f);
+   PropFloatUnbounded(Player, FlipperPhysicsCoilRampUp5, "FlipperPhysicsCoilRampUp5"s, ""s, 3.f);
+   PropFloatUnbounded(Player, FlipperPhysicsEOSTorque5, "FlipperPhysicsEOSTorque5"s, ""s, 0.75f);
+   PropFloatUnbounded(Player, FlipperPhysicsEOSTorqueAngle5, "FlipperPhysicsEOSTorqueAngle5"s, ""s, 6.f);
+   PropFloatUnbounded(Player, TablePhysicsGravityConstant5, "TablePhysicsGravityConstant5"s, ""s, DEFAULT_TABLE_GRAVITY);
+   PropFloatUnbounded(Player, TablePhysicsContactFriction5, "TablePhysicsContactFriction5"s, ""s, DEFAULT_TABLE_CONTACTFRICTION);
+   PropFloatUnbounded(Player, TablePhysicsElasticity5, "TablePhysicsElasticity5"s, ""s, DEFAULT_TABLE_ELASTICITY);
+   PropFloatUnbounded(Player, TablePhysicsElasticityFalloff5, "TablePhysicsElasticityFalloff5"s, ""s, DEFAULT_TABLE_ELASTICITY_FALLOFF);
+   PropFloatUnbounded(Player, TablePhysicsScatterAngle5, "TablePhysicsScatterAngle5"s, ""s, DEFAULT_TABLE_PFSCATTERANGLE);
+   PropFloatUnbounded(Player, TablePhysicsContactScatterAngle5, "TablePhysicsContactScatterAngle5"s, ""s, DEFAULT_TABLE_SCATTERANGLE);
+   PropFloatUnbounded(Player, TablePhysicsMinSlope5, "TablePhysicsMinSlope5"s, ""s, DEFAULT_TABLE_MIN_SLOPE);
+   PropFloatUnbounded(Player, TablePhysicsMaxSlope5, "TablePhysicsMaxSlope5"s, ""s, DEFAULT_TABLE_MAX_SLOPE);
+   PropString(Player, PhysicsSetName5, "PhysicsSetName5"s, ""s, "Set 6"s);
+
+   PropFloatUnbounded(Player, FlipperPhysicsMass6, "FlipperPhysicsMass6"s, ""s, 1.f);
+   PropFloatUnbounded(Player, FlipperPhysicsStrength6, "FlipperPhysicsStrength6"s, ""s, 2200.f);
+   PropFloatUnbounded(Player, FlipperPhysicsElasticity6, "FlipperPhysicsElasticity6"s, ""s, 0.8f);
+   PropFloatUnbounded(Player, FlipperPhysicsScatter6, "FlipperPhysicsScatter6"s, ""s, 0.f);
+   PropFloatUnbounded(Player, FlipperPhysicsReturnStrength6, "FlipperPhysicsReturnStrength6"s, ""s, 0.058f);
+   PropFloatUnbounded(Player, FlipperPhysicsElasticityFalloff6, "FlipperPhysicsElasticityFalloff6"s, ""s, 0.43f);
+   PropFloatUnbounded(Player, FlipperPhysicsFriction6, "FlipperPhysicsFriction6"s, ""s, 0.6f);
+   PropFloatUnbounded(Player, FlipperPhysicsCoilRampUp6, "FlipperPhysicsCoilRampUp6"s, ""s, 3.f);
+   PropFloatUnbounded(Player, FlipperPhysicsEOSTorque6, "FlipperPhysicsEOSTorque6"s, ""s, 0.75f);
+   PropFloatUnbounded(Player, FlipperPhysicsEOSTorqueAngle6, "FlipperPhysicsEOSTorqueAngle6"s, ""s, 6.f);
+   PropFloatUnbounded(Player, TablePhysicsGravityConstant6, "TablePhysicsGravityConstant6"s, ""s, DEFAULT_TABLE_GRAVITY);
+   PropFloatUnbounded(Player, TablePhysicsContactFriction6, "TablePhysicsContactFriction6"s, ""s, DEFAULT_TABLE_CONTACTFRICTION);
+   PropFloatUnbounded(Player, TablePhysicsElasticity6, "TablePhysicsElasticity6"s, ""s, DEFAULT_TABLE_ELASTICITY);
+   PropFloatUnbounded(Player, TablePhysicsElasticityFalloff6, "TablePhysicsElasticityFalloff6"s, ""s, DEFAULT_TABLE_ELASTICITY_FALLOFF);
+   PropFloatUnbounded(Player, TablePhysicsScatterAngle6, "TablePhysicsScatterAngle6"s, ""s, DEFAULT_TABLE_PFSCATTERANGLE);
+   PropFloatUnbounded(Player, TablePhysicsContactScatterAngle6, "TablePhysicsContactScatterAngle6"s, ""s, DEFAULT_TABLE_SCATTERANGLE);
+   PropFloatUnbounded(Player, TablePhysicsMinSlope6, "TablePhysicsMinSlope6"s, ""s, DEFAULT_TABLE_MIN_SLOPE);
+   PropFloatUnbounded(Player, TablePhysicsMaxSlope6, "TablePhysicsMaxSlope6"s, ""s, DEFAULT_TABLE_MAX_SLOPE);
+   PropString(Player, PhysicsSetName6, "PhysicsSetName6"s, ""s, "Set 7"s);
+
+   PropFloatUnbounded(Player, FlipperPhysicsMass7, "FlipperPhysicsMass7"s, ""s, 1.f);
+   PropFloatUnbounded(Player, FlipperPhysicsStrength7, "FlipperPhysicsStrength7"s, ""s, 2200.f);
+   PropFloatUnbounded(Player, FlipperPhysicsElasticity7, "FlipperPhysicsElasticity7"s, ""s, 0.8f);
+   PropFloatUnbounded(Player, FlipperPhysicsScatter7, "FlipperPhysicsScatter7"s, ""s, 0.f);
+   PropFloatUnbounded(Player, FlipperPhysicsReturnStrength7, "FlipperPhysicsReturnStrength7"s, ""s, 0.058f);
+   PropFloatUnbounded(Player, FlipperPhysicsElasticityFalloff7, "FlipperPhysicsElasticityFalloff7"s, ""s, 0.43f);
+   PropFloatUnbounded(Player, FlipperPhysicsFriction7, "FlipperPhysicsFriction7"s, ""s, 0.6f);
+   PropFloatUnbounded(Player, FlipperPhysicsCoilRampUp7, "FlipperPhysicsCoilRampUp7"s, ""s, 3.f);
+   PropFloatUnbounded(Player, FlipperPhysicsEOSTorque7, "FlipperPhysicsEOSTorque7"s, ""s, 0.75f);
+   PropFloatUnbounded(Player, FlipperPhysicsEOSTorqueAngle7, "FlipperPhysicsEOSTorqueAngle7"s, ""s, 6.f);
+   PropFloatUnbounded(Player, TablePhysicsGravityConstant7, "TablePhysicsGravityConstant7"s, ""s, DEFAULT_TABLE_GRAVITY);
+   PropFloatUnbounded(Player, TablePhysicsContactFriction7, "TablePhysicsContactFriction7"s, ""s, DEFAULT_TABLE_CONTACTFRICTION);
+   PropFloatUnbounded(Player, TablePhysicsElasticity7, "TablePhysicsElasticity7"s, ""s, DEFAULT_TABLE_ELASTICITY);
+   PropFloatUnbounded(Player, TablePhysicsElasticityFalloff7, "TablePhysicsElasticityFalloff7"s, ""s, DEFAULT_TABLE_ELASTICITY_FALLOFF);
+   PropFloatUnbounded(Player, TablePhysicsScatterAngle7, "TablePhysicsScatterAngle7"s, ""s, DEFAULT_TABLE_PFSCATTERANGLE);
+   PropFloatUnbounded(Player, TablePhysicsContactScatterAngle7, "TablePhysicsContactScatterAngle7"s, ""s, DEFAULT_TABLE_SCATTERANGLE);
+   PropFloatUnbounded(Player, TablePhysicsMinSlope7, "TablePhysicsMinSlope7"s, ""s, DEFAULT_TABLE_MIN_SLOPE);
+   PropFloatUnbounded(Player, TablePhysicsMaxSlope7, "TablePhysicsMaxSlope7"s, ""s, DEFAULT_TABLE_MAX_SLOPE);
+   PropString(Player, PhysicsSetName7, "PhysicsSetName7"s, ""s, "Set 8"s);
+
+   PropArray(Player, FlipperPhysicsMass, float, Float, Float, m_propPlayer_FlipperPhysicsMass0, m_propPlayer_FlipperPhysicsMass1, m_propPlayer_FlipperPhysicsMass2,
+      m_propPlayer_FlipperPhysicsMass3, m_propPlayer_FlipperPhysicsMass4, m_propPlayer_FlipperPhysicsMass5, m_propPlayer_FlipperPhysicsMass6, m_propPlayer_FlipperPhysicsMass7);
+   PropArray(Player, FlipperPhysicsStrength, float, Float, Float, m_propPlayer_FlipperPhysicsStrength0, m_propPlayer_FlipperPhysicsStrength1, m_propPlayer_FlipperPhysicsStrength2,
+      m_propPlayer_FlipperPhysicsStrength3, m_propPlayer_FlipperPhysicsStrength4, m_propPlayer_FlipperPhysicsStrength5, m_propPlayer_FlipperPhysicsStrength6,
+      m_propPlayer_FlipperPhysicsStrength7);
+   PropArray(Player, FlipperPhysicsElasticity, float, Float, Float, m_propPlayer_FlipperPhysicsElasticity0, m_propPlayer_FlipperPhysicsElasticity1, m_propPlayer_FlipperPhysicsElasticity2,
+      m_propPlayer_FlipperPhysicsElasticity3, m_propPlayer_FlipperPhysicsElasticity4, m_propPlayer_FlipperPhysicsElasticity5, m_propPlayer_FlipperPhysicsElasticity6,
+      m_propPlayer_FlipperPhysicsElasticity7);
+   PropArray(Player, FlipperPhysicsScatter, float, Float, Float, m_propPlayer_FlipperPhysicsScatter0, m_propPlayer_FlipperPhysicsScatter1, m_propPlayer_FlipperPhysicsScatter2,
+      m_propPlayer_FlipperPhysicsScatter3, m_propPlayer_FlipperPhysicsScatter4, m_propPlayer_FlipperPhysicsScatter5, m_propPlayer_FlipperPhysicsScatter6,
+      m_propPlayer_FlipperPhysicsScatter7);
+   PropArray(Player, FlipperPhysicsReturnStrength, float, Float, Float, m_propPlayer_FlipperPhysicsReturnStrength0, m_propPlayer_FlipperPhysicsReturnStrength1,
+      m_propPlayer_FlipperPhysicsReturnStrength2, m_propPlayer_FlipperPhysicsReturnStrength3, m_propPlayer_FlipperPhysicsReturnStrength4, m_propPlayer_FlipperPhysicsReturnStrength5,
+      m_propPlayer_FlipperPhysicsReturnStrength6, m_propPlayer_FlipperPhysicsReturnStrength7);
+   PropArray(Player, FlipperPhysicsElasticityFalloff, float, Float, Float, m_propPlayer_FlipperPhysicsElasticityFalloff0, m_propPlayer_FlipperPhysicsElasticityFalloff1,
+      m_propPlayer_FlipperPhysicsElasticityFalloff2, m_propPlayer_FlipperPhysicsElasticityFalloff3, m_propPlayer_FlipperPhysicsElasticityFalloff4,
+      m_propPlayer_FlipperPhysicsElasticityFalloff5, m_propPlayer_FlipperPhysicsElasticityFalloff6, m_propPlayer_FlipperPhysicsElasticityFalloff7);
+   PropArray(Player, FlipperPhysicsFriction, float, Float, Float, m_propPlayer_FlipperPhysicsFriction0, m_propPlayer_FlipperPhysicsFriction1, m_propPlayer_FlipperPhysicsFriction2,
+      m_propPlayer_FlipperPhysicsFriction3, m_propPlayer_FlipperPhysicsFriction4, m_propPlayer_FlipperPhysicsFriction5, m_propPlayer_FlipperPhysicsFriction6,
+      m_propPlayer_FlipperPhysicsFriction7);
+   PropArray(Player, FlipperPhysicsCoilRampUp, float, Float, Float, m_propPlayer_FlipperPhysicsCoilRampUp0, m_propPlayer_FlipperPhysicsCoilRampUp1, m_propPlayer_FlipperPhysicsCoilRampUp2,
+      m_propPlayer_FlipperPhysicsCoilRampUp3, m_propPlayer_FlipperPhysicsCoilRampUp4, m_propPlayer_FlipperPhysicsCoilRampUp5, m_propPlayer_FlipperPhysicsCoilRampUp6,
+      m_propPlayer_FlipperPhysicsCoilRampUp7);
+   PropArray(Player, FlipperPhysicsEOSTorque, float, Float, Float, m_propPlayer_FlipperPhysicsEOSTorque0, m_propPlayer_FlipperPhysicsEOSTorque1, m_propPlayer_FlipperPhysicsEOSTorque2,
+      m_propPlayer_FlipperPhysicsEOSTorque3, m_propPlayer_FlipperPhysicsEOSTorque4, m_propPlayer_FlipperPhysicsEOSTorque5, m_propPlayer_FlipperPhysicsEOSTorque6,
+      m_propPlayer_FlipperPhysicsEOSTorque7);
+   PropArray(Player, FlipperPhysicsEOSTorqueAngle, float, Float, Float, m_propPlayer_FlipperPhysicsEOSTorqueAngle0, m_propPlayer_FlipperPhysicsEOSTorqueAngle1,
+      m_propPlayer_FlipperPhysicsEOSTorqueAngle2, m_propPlayer_FlipperPhysicsEOSTorqueAngle3, m_propPlayer_FlipperPhysicsEOSTorqueAngle4, m_propPlayer_FlipperPhysicsEOSTorqueAngle5,
+      m_propPlayer_FlipperPhysicsEOSTorqueAngle6, m_propPlayer_FlipperPhysicsEOSTorqueAngle7);
+
+   PropArray(Player, TablePhysicsGravityConstant, float, Float, Float, m_propPlayer_TablePhysicsGravityConstant0, m_propPlayer_TablePhysicsGravityConstant1, m_propPlayer_TablePhysicsGravityConstant2,
+      m_propPlayer_TablePhysicsGravityConstant3, m_propPlayer_TablePhysicsGravityConstant4, m_propPlayer_TablePhysicsGravityConstant5, m_propPlayer_TablePhysicsGravityConstant6, m_propPlayer_TablePhysicsGravityConstant7);
+   PropArray(Player, TablePhysicsContactFriction, float, Float, Float, m_propPlayer_TablePhysicsContactFriction0, m_propPlayer_TablePhysicsContactFriction1, m_propPlayer_TablePhysicsContactFriction2,
+      m_propPlayer_TablePhysicsContactFriction3, m_propPlayer_TablePhysicsContactFriction4, m_propPlayer_TablePhysicsContactFriction5, m_propPlayer_TablePhysicsContactFriction6, m_propPlayer_TablePhysicsContactFriction7);
+   PropArray(Player, TablePhysicsElasticity, float, Float, Float, m_propPlayer_TablePhysicsElasticity0, m_propPlayer_TablePhysicsElasticity1, m_propPlayer_TablePhysicsElasticity2,
+      m_propPlayer_TablePhysicsElasticity3, m_propPlayer_TablePhysicsElasticity4, m_propPlayer_TablePhysicsElasticity5, m_propPlayer_TablePhysicsElasticity6, m_propPlayer_TablePhysicsElasticity7);
+   PropArray(Player, TablePhysicsElasticityFalloff, float, Float, Float, m_propPlayer_TablePhysicsElasticityFalloff0, m_propPlayer_TablePhysicsElasticityFalloff1, m_propPlayer_TablePhysicsElasticityFalloff2,
+      m_propPlayer_TablePhysicsElasticityFalloff3, m_propPlayer_TablePhysicsElasticityFalloff4, m_propPlayer_TablePhysicsElasticityFalloff5, m_propPlayer_TablePhysicsElasticityFalloff6, m_propPlayer_TablePhysicsElasticityFalloff7);
+   PropArray(Player, TablePhysicsScatterAngle, float, Float, Float, m_propPlayer_TablePhysicsScatterAngle0, m_propPlayer_TablePhysicsScatterAngle1, m_propPlayer_TablePhysicsScatterAngle2,
+      m_propPlayer_TablePhysicsScatterAngle3, m_propPlayer_TablePhysicsScatterAngle4, m_propPlayer_TablePhysicsScatterAngle5, m_propPlayer_TablePhysicsScatterAngle6, m_propPlayer_TablePhysicsScatterAngle7);
+   PropArray(Player, TablePhysicsContactScatterAngle, float, Float, Float, m_propPlayer_TablePhysicsContactScatterAngle0, m_propPlayer_TablePhysicsContactScatterAngle1, m_propPlayer_TablePhysicsContactScatterAngle2,
+      m_propPlayer_TablePhysicsContactScatterAngle3, m_propPlayer_TablePhysicsContactScatterAngle4, m_propPlayer_TablePhysicsContactScatterAngle5, m_propPlayer_TablePhysicsContactScatterAngle6, m_propPlayer_TablePhysicsContactScatterAngle7);
+   PropArray(Player, TablePhysicsMinSlope, float, Float, Float, m_propPlayer_TablePhysicsMinSlope0, m_propPlayer_TablePhysicsMinSlope1, m_propPlayer_TablePhysicsMinSlope2,
+      m_propPlayer_TablePhysicsMinSlope3, m_propPlayer_TablePhysicsMinSlope4, m_propPlayer_TablePhysicsMinSlope5, m_propPlayer_TablePhysicsMinSlope6, m_propPlayer_TablePhysicsMinSlope7);
+   PropArray(Player, TablePhysicsMaxSlope, float, Float, Float, m_propPlayer_TablePhysicsMaxSlope0, m_propPlayer_TablePhysicsMaxSlope1, m_propPlayer_TablePhysicsMaxSlope2,
+      m_propPlayer_TablePhysicsMaxSlope3, m_propPlayer_TablePhysicsMaxSlope4, m_propPlayer_TablePhysicsMaxSlope5, m_propPlayer_TablePhysicsMaxSlope6, m_propPlayer_TablePhysicsMaxSlope7);
+   PropArray(Player, PhysicsSetName, string, String, String, m_propPlayer_PhysicsSetName0, m_propPlayer_PhysicsSetName1, m_propPlayer_PhysicsSetName2,
+      m_propPlayer_PhysicsSetName3, m_propPlayer_PhysicsSetName4, m_propPlayer_PhysicsSetName5, m_propPlayer_PhysicsSetName6, m_propPlayer_PhysicsSetName7);
 
    // Stereo settings
    PropBool(Player, Stereo3DEnabled, "Enable Stereo Rendering"s, "Allow to temporarily disable stereo rendering"s, false);
@@ -749,6 +968,18 @@ public:
    PropString(RecentDir, TableFileName7, ""s, ""s, ""s);
    PropArray(RecentDir, TableFileName, string, String, String, m_propRecentDir_TableFileName0, m_propRecentDir_TableFileName1, m_propRecentDir_TableFileName2, m_propRecentDir_TableFileName3,
       m_propRecentDir_TableFileName4, m_propRecentDir_TableFileName5, m_propRecentDir_TableFileName6, m_propRecentDir_TableFileName7);
+
+   // Controller: legacy VPinMAME settings, exposed in VPX then provided through Windows registry (replaced by plugin settings)
+   PropEnum(Controller, DOFContactors, "DOFContactors"s, ""s, int, 0, "Sound FX"s, "DOF"s, "Both"s);
+   PropEnum(Controller, DOFKnocker, "DOFKnocker"s, ""s, int, 0, "Sound FX"s, "DOF"s, "Both"s);
+   PropEnum(Controller, DOFChimes, "DOFChimes"s, ""s, int, 0, "Sound FX"s, "DOF"s, "Both"s);
+   PropEnum(Controller, DOFBell, "DOFBell"s, ""s, int, 0, "Sound FX"s, "DOF"s, "Both"s);
+   PropEnum(Controller, DOFGear, "DOFGear"s, ""s, int, 0, "Sound FX"s, "DOF"s, "Both"s);
+   PropEnum(Controller, DOFShaker, "DOFShaker"s, ""s, int, 0, "Sound FX"s, "DOF"s, "Both"s);
+   PropEnum(Controller, DOFFlippers, "DOFFlippers"s, ""s, int, 0, "Sound FX"s, "DOF"s, "Both"s);
+   PropEnum(Controller, DOFTargets, "DOFTargets"s, ""s, int, 0, "Sound FX"s, "DOF"s, "Both"s);
+   PropEnum(Controller, DOFDropTargets, "DOFDropTargets"s, ""s, int, 0, "Sound FX"s, "DOF"s, "Both"s);
+   PropBool(Controller, ForceDisableB2S, "ForceDisableB2S"s, ""s, false);
 
    // Parts Defaults: Balls
    PropFloat(DefaultPropsBall, Mass, "Ball Mass"s, ""s, 0.1f, 2.f, 1.f);
@@ -1228,6 +1459,11 @@ public:
    PropBool(Standalone, Haptics, "Haptics"s, ""s, g_isMobile);
 
    // Editor settings
+   PropIntUnbounded(Editor, WindowLeft, "WindowLeft"s, ""s, -1);
+   PropIntUnbounded(Editor, WindowTop, "WindowTop"s, ""s, -1);
+   PropIntUnbounded(Editor, WindowRight, "WindowRight"s, ""s, -1);
+   PropIntUnbounded(Editor, WindowBottom, "WindowBottom"s, ""s, -1);
+   PropBool(Editor, WindowMaximized, "WindowMaximized"s, ""s, false);
    PropIntUnbounded(Editor, ImageMngPosX, "ImageMngPosX"s, ""s, 0);
    PropIntUnbounded(Editor, ImageMngPosY, "ImageMngPosY"s, ""s, 0);
    PropIntUnbounded(Editor, ImageMngWidth, "ImageMngWidth"s, ""s, 1000);
@@ -1277,6 +1513,9 @@ public:
    PropInt(Editor, FillColor, "FillColor"s, ""s, 0x000000, 0xFFFFFF, 0x00B1CFB3);
    PropEnum(Editor, Units, "Units"s, ""s, int, 0, "Inches"s, "Millimeters"s, "VP Units");
    PropBool(Editor, AlwaysViewScript, "AlwaysViewScript"s, ""s, false);
+   PropFloatUnbounded(Editor, ThrowBallMass, "ThrowBallMass"s, ""s, 1.f);
+   PropIntUnbounded(Editor, ThrowBallSize, "ThrowBallSize"s, ""s, 50);
+   PropBool(Editor, SelectTableOnPlayerClose, "SelectTableOnPlayerClose"s, ""s, true); // FIXME does not seem to be used anywhere
 
    // Code View settings
    PropInt(CVEdit, BackGroundColor, "BackGroundColor"s, ""s, 0x000000, 0xFFFFFF, RGB(255, 255, 255));
@@ -1449,7 +1688,7 @@ private:
          m_cacheModificationIndex = m_settings->m_modificationIndex - 1;
       }
 
-      void GenerateTemplate(const string& path) const { m_cache.GenerateTemplate(path); }
+      void GenerateTemplate(const string &path) const { m_cache.GenerateTemplate(path); }
 
       void Reset(VPX::Properties::PropertyRegistry::PropId propId) override
       {

@@ -73,9 +73,9 @@ BOOL DebuggerDialog::OnInitDialog()
        break;
     }
 
-    m_ballSizeEdit.SetWindowText(std::to_string(g_pplayer->m_debugBallSize).c_str());
+    m_ballSizeEdit.SetWindowText(std::to_string(g_pvp->m_settings.GetEditor_ThrowBallSize()).c_str());
 
-    m_ballMassEdit.SetWindowText(f2sz(g_pplayer->m_debugBallMass).c_str());
+    m_ballMassEdit.SetWindowText(f2sz(g_pvp->m_settings.GetEditor_ThrowBallMass()).c_str());
 
     m_resizer.Initialize(GetHwnd(), GetWindowRect());
     m_resizer.AddChild(m_notesEdit.GetHwnd(), CResizer::bottomright, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
@@ -125,8 +125,8 @@ BOOL DebuggerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
 void DebuggerDialog::OnClose()
 {
-    g_pplayer->m_debugBallSize = GetDlgItemInt(IDC_THROW_BALL_SIZE_EDIT2, FALSE);
-    g_pplayer->m_debugBallMass = sz2f(GetDlgItemText(IDC_THROW_BALL_MASS_EDIT2).GetString());
+    g_pvp->m_settings.SetEditor_ThrowBallSize(GetDlgItemInt(IDC_THROW_BALL_SIZE_EDIT2, FALSE), false);
+    g_pvp->m_settings.SetEditor_ThrowBallMass(sz2f(GetDlgItemText(IDC_THROW_BALL_MASS_EDIT2).GetString()), false);
     g_pplayer->m_debugMode = false;
     g_pplayer->m_showDebugger = false;
     ShowWindow(SW_HIDE);

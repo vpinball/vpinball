@@ -76,10 +76,10 @@ BOOL VROptionsDialog::OnInitDialog()
    ::SendMessage(hwnd, CB_SETCURSEL, askToTurnOn, 0);
    ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
-   bool on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "CaptureExternalDMD"s, false);
+   bool on = g_pvp->m_settings.GetPlayer_CaptureExternalDMD();
    SendDlgItemMessage(IDC_CAP_EXTDMD, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "CapturePUP"s, false);
+   on = g_pvp->m_settings.GetPlayer_CapturePUP();
    SendDlgItemMessage(IDC_CAP_PUP, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
    //AMD Debugging

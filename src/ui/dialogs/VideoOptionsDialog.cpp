@@ -246,17 +246,12 @@ void RenderOptPage::LoadSettings(Settings& settings)
 {
    BeginLoad();
 
-   m_bamHeadtracking.SetCheck(settings.LoadValueWithDefault(Settings::Player, "BAMHeadTracking"s, false) ? BST_CHECKED : BST_UNCHECKED);
+   m_bamHeadtracking.SetCheck(settings.GetPlayer_BAMHeadTracking() ? BST_CHECKED : BST_UNCHECKED);
 
-   const bool overwiteBallImage = settings.LoadValueWithDefault(Settings::Player, "OverwriteBallImage"s, false);
+   const bool overwiteBallImage = settings.GetPlayer_OverwriteBallImage();
    m_ballOverrideImages.SetCheck(overwiteBallImage ? BST_CHECKED : BST_UNCHECKED);
-   string imageName;
-   if (!settings.LoadValue(Settings::Player, "BallImage"s, imageName))
-      imageName.clear();
-   m_ballImage.SetWindowText(imageName.c_str());
-   if (!settings.LoadValue(Settings::Player, "DecalImage"s, imageName))
-      imageName.clear();
-   m_ballDecal.SetWindowText(imageName.c_str());
+   m_ballImage.SetWindowText(settings.GetPlayer_BallImage().c_str());
+   m_ballDecal.SetWindowText(settings.GetPlayer_DecalImage().c_str());
    if (!overwiteBallImage)
    {
       GetDlgItem(IDC_BROWSE_BALL_IMAGE).EnableWindow(FALSE);
@@ -269,20 +264,12 @@ void RenderOptPage::LoadSettings(Settings& settings)
 
 void RenderOptPage::SaveSettings(Settings& settings, bool saveAll)
 {
-   settings.SaveValue(Settings::Player, "BAMheadTracking"s, m_bamHeadtracking.GetCheck() == BST_CHECKED, !saveAll);
+   settings.SetPlayer_BAMHeadTracking(m_bamHeadtracking.GetCheck() == BST_CHECKED, !saveAll);
 
    const bool overwriteEnabled = m_ballOverrideImages.GetCheck() == BST_CHECKED;
-   settings.SaveValue(Settings::Player, "OverwriteBallImage"s, overwriteEnabled, !saveAll);
-   if (overwriteEnabled)
-   {
-      settings.SaveValue(Settings::Player, "BallImage"s, m_ballImage.GetWindowText().GetString(), !saveAll);
-      settings.SaveValue(Settings::Player, "DecalImage"s, m_ballDecal.GetWindowText().GetString(), !saveAll);
-   }
-   else if (!saveAll)
-   {
-      settings.DeleteValue(Settings::Player, "BallImage"s);
-      settings.DeleteValue(Settings::Player, "DecalImage"s);
-   }
+   settings.SetPlayer_OverwriteBallImage(overwriteEnabled, !saveAll);
+   settings.SetPlayer_BallImage(overwriteEnabled ? m_ballImage.GetWindowText().GetString() : ""s, !saveAll);
+   settings.SetPlayer_DecalImage(overwriteEnabled ? m_ballDecal.GetWindowText().GetString() : ""s, !saveAll);
 }
 
 BOOL RenderOptPage::OnApply()
@@ -334,13 +321,13 @@ BOOL PFViewOptPage::OnInitDialog()
 void PFViewOptPage::LoadSettings(Settings& settings)
 {
    BeginLoad();
-   m_viewMode.SetCurSel(settings.LoadValueWithDefault(Settings::Player, "BGSet"s, 0));
+   m_viewMode.SetCurSel(settings.GetPlayer_BGSet());
    EndLoad();
 }
 
 void PFViewOptPage::SaveSettings(Settings& settings, bool saveAll)
 {
-   settings.SaveValue(Settings::Player, "BGSet"s, max(m_viewMode.GetCurSel(), 0), !saveAll);
+   settings.SetPlayer_BGSet(max(m_viewMode.GetCurSel(), 0), !saveAll);
    // update the cached current view setup of all loaded tables since it also depends on this setting
    for (auto table : g_pvp->m_vtable)
       table->UpdateCurrentBGSet();
