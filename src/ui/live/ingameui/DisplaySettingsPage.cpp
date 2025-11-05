@@ -217,12 +217,7 @@ void DisplaySettingsPage::BuildWindowPage()
                size.x = (size.x * m_displays[v].height) / size.y;
                size.y = m_displays[v].height;
             }
-            if (size.x != wnd->GetWidth() || size.y != wnd->GetHeight())
-            {
-               m_player->m_renderer->m_renderDevice->RemoveWindow(wnd);
-               wnd->SetSize(size.x, size.y);
-               m_player->m_renderer->m_renderDevice->AddWindow(wnd);
-            }
+            wnd->SetSize(size.x, size.y);
          }
          wnd->SetPos(m_displays[v].left + (m_displays[v].width - size.x) / 2, m_displays[v].top + (m_displays[v].height - size.y) / 2);
          BuildPage();
@@ -388,9 +383,7 @@ void DisplaySettingsPage::BuildWindowPage()
                   size.y = h;
                }
                size.x = v;
-               m_player->m_renderer->m_renderDevice->RemoveWindow(wnd);
                wnd->SetSize(size.x, size.y);
-               m_player->m_renderer->m_renderDevice->AddWindow(wnd);
                BuildPage();
             }));
 
@@ -415,9 +408,7 @@ void DisplaySettingsPage::BuildWindowPage()
                   size.x = w;
                }
                size.y = v;
-               m_player->m_renderer->m_renderDevice->RemoveWindow(wnd);
                wnd->SetSize(size.x, size.y);
-               m_player->m_renderer->m_renderDevice->AddWindow(wnd);
                BuildPage();
             }));
       }

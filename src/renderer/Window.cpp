@@ -311,8 +311,25 @@ void Window::SetSize(const int x, const int y)
 {
    if (m_isVR)
       return;
+   if (x == GetWidth() && y == GetHeight())
+      return;
    SDL_SetWindowSize(m_nwnd, x, y);
    SDL_GetWindowSizeInPixels(m_nwnd, &m_pixelWidth, &m_pixelHeight);
+   #ifdef ENABLE_BGFX
+   if (m_backBuffer && g_pplayer)
+   {
+      g_pplayer->m_renderer->m_renderDevice->AddEndOfFrameCmd(
+         [this]()
+         {
+            g_pplayer->m_renderer->m_renderDevice->RemoveWindow(this);
+            delete m_backBuffer;
+            m_backBuffer = nullptr;
+            // We must destroy the swapchain before attaching a new swapchain, so flush and flip now
+            g_pplayer->m_renderer->m_renderDevice->SubmitAndFlipFrame();
+            g_pplayer->m_renderer->m_renderDevice->AddWindow(this);
+         });
+   }
+   #endif
    m_width = x;
    m_height = y;
 }
@@ -411,6 +428,7 @@ void RenderOutput::SetMode(const Settings& settings, OutputMode mode)
 #else
    constexpr bool isSingleView = true;
 #endif
+   std::unique_ptr<Window> prevWindow;
    if (mode == OM_WINDOW && isSingleView)
       m_mode = OM_EMBEDDED;
    m_mode = mode;
@@ -418,10 +436,12 @@ void RenderOutput::SetMode(const Settings& settings, OutputMode mode)
    {
    case OM_DISABLED:
       m_embeddedWindow = nullptr;
+      prevWindow = std::move(m_window);
       m_window = nullptr;
       break;
 
    case OM_EMBEDDED:
+      prevWindow = std::move(m_window);
       m_window = nullptr;
       if (m_embeddedWindow == nullptr)
       {
@@ -449,6 +469,16 @@ void RenderOutput::SetMode(const Settings& settings, OutputMode mode)
             settings, m_windowId);
       }
       break;
+   }
+   if (prevWindow && g_pplayer)
+   {
+      // Delete window's backbuffer and window at the end of the frame to avoid issues if they are still in use
+      g_pplayer->m_renderer->m_renderDevice->AddEndOfFrameCmd(
+         [wnd = prevWindow.release()]() mutable
+         {
+            delete wnd->GetBackBuffer();
+            delete wnd;
+         });
    }
 }
 

@@ -2439,7 +2439,7 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
 
       // Blit preview
       #if defined(ENABLE_XR)
-         assert(m_renderDevice->m_nOutputWnd == 2); // For the time being, we rely on the fact that the First output is the VR Headset, and the second is the VR preview OS window
+         assert(m_renderDevice->m_outputWnd.size() == 2); // For the time being, we rely on the fact that the First output is the VR Headset, and the second is the VR preview OS window
          RenderTarget* previewRT = m_renderDevice->m_outputWnd[1]->GetBackBuffer();
          m_renderDevice->SetRenderTarget("VR Preview"s, previewRT, false, true);
 
