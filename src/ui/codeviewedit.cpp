@@ -46,30 +46,27 @@ void CVPreference::ReadCheckBox(const HWND hwndDlg)
 
 void CVPreference::GetPrefsFromReg()
 {
-	m_highlight = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, m_regName, m_highlight);
-	m_rgb = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, m_regName + "_color", (int)m_rgb);
-	m_pointSize = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, m_regName + "_FontPointSize", m_pointSize);
-
-	string tmp;
-	if (g_pvp->m_settings.LoadValue(Settings::CVEdit, m_regName + "_Font", tmp))
-		strncpy_s(m_logFont.lfFaceName, sizeof(m_logFont.lfFaceName), tmp.c_str());
-
-	m_logFont.lfWeight = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, m_regName + "_FontWeight", (int)m_logFont.lfWeight);
-	m_logFont.lfItalic = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, m_regName + "_FontItalic", m_logFont.lfItalic);
-	m_logFont.lfUnderline = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, m_regName + "_FontUnderline", m_logFont.lfUnderline);
-	m_logFont.lfStrikeOut = g_pvp->m_settings.LoadValueWithDefault(Settings::CVEdit, m_regName + "_FontStrike", m_logFont.lfStrikeOut);
+	m_highlight = g_pvp->m_settings.GetBool(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName).value());
+   m_rgb = g_pvp->m_settings.GetInt(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_color").value());
+   m_pointSize = g_pvp->m_settings.GetInt(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontPointSize").value());
+   string tmp = g_pvp->m_settings.GetString(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_Font").value());
+   strncpy_s(m_logFont.lfFaceName, sizeof(m_logFont.lfFaceName), tmp.c_str());
+   m_logFont.lfWeight = g_pvp->m_settings.GetInt(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontWeight").value());
+   m_logFont.lfItalic = g_pvp->m_settings.GetBool(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontItalic").value());
+   m_logFont.lfUnderline = g_pvp->m_settings.GetBool(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontUnderline").value());
+   m_logFont.lfStrikeOut = g_pvp->m_settings.GetBool(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontStrike").value());
 }
 
 void CVPreference::SetPrefsToReg()
 {
-	g_pvp->m_settings.SaveValue(Settings::CVEdit, m_regName, m_highlight);
-	g_pvp->m_settings.SaveValue(Settings::CVEdit, m_regName + "_color", (int)m_rgb);
-	g_pvp->m_settings.SaveValue(Settings::CVEdit, m_regName + "_FontPointSize", m_pointSize);
-	g_pvp->m_settings.SaveValue(Settings::CVEdit, m_regName + "_Font", string(m_logFont.lfFaceName));
-	g_pvp->m_settings.SaveValue(Settings::CVEdit, m_regName + "_FontWeight", (int)m_logFont.lfWeight);
-	g_pvp->m_settings.SaveValue(Settings::CVEdit, m_regName + "_FontItalic", m_logFont.lfItalic);
-	g_pvp->m_settings.SaveValue(Settings::CVEdit, m_regName + "_FontUnderline", m_logFont.lfUnderline);
-	g_pvp->m_settings.SaveValue(Settings::CVEdit, m_regName + "_FontStrike", m_logFont.lfStrikeOut);
+   g_pvp->m_settings.Set(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName).value(), m_highlight, false);
+   g_pvp->m_settings.Set(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_color").value(), (int)m_rgb, false);
+   g_pvp->m_settings.Set(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontPointSize").value(), m_pointSize, false);
+   g_pvp->m_settings.Set(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_Font").value(), string(m_logFont.lfFaceName), false);
+   g_pvp->m_settings.Set(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontWeight").value(), (int)m_logFont.lfWeight, false);
+   g_pvp->m_settings.Set(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontItalic").value(), m_logFont.lfItalic, false);
+   g_pvp->m_settings.Set(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontUnderline").value(), m_logFont.lfUnderline, false);
+   g_pvp->m_settings.Set(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontStrike").value(), m_logFont.lfStrikeOut, false);
 }
 
 void CVPreference::SetDefaultFont(const HWND hwndDlg)

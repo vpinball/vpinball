@@ -306,8 +306,8 @@ void CollectionManagerDialog::LoadPosition()
 void CollectionManagerDialog::SavePosition()
 {
     const CRect rect = GetWindowRect();
-    g_pvp->m_settings.SaveValue(Settings::Editor, "CollectionMngPosX"s, (int)rect.left);
-    g_pvp->m_settings.SaveValue(Settings::Editor, "CollectionMngPosY"s, (int)rect.top);
+    g_pvp->m_settings.SetEditor_CollectionMngPosX((int)rect.left, false);
+    g_pvp->m_settings.SetEditor_CollectionMngPosY((int)rect.top, false);
 }
 
 //######################################## Collection Dialog ########################################

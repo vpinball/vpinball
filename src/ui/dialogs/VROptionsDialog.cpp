@@ -151,10 +151,10 @@ void VROptionsDialog::OnOK()
    g_pvp->m_settings.SetPlayerVR_AskToTurnOn((int)askToTurnOn, false);
 
    bool selected = IsDlgButtonChecked(IDC_CAP_EXTDMD)!= 0;
-   g_pvp->m_settings.SaveValue(Settings::Player, "CaptureExternalDMD"s, selected);
+   g_pvp->m_settings.SetPlayer_CaptureExternalDMD(selected, false);
 
    selected = IsDlgButtonChecked(IDC_CAP_PUP)!= 0;
-   g_pvp->m_settings.SaveValue(Settings::Player, "CapturePUP"s, selected);
+   g_pvp->m_settings.SetPlayer_CapturePUP(selected, false);
 
    CDialog::OnOK();
 }

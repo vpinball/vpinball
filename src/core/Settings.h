@@ -9,6 +9,8 @@
 #include "PropertyRegistry.h"
 #include "LayeredINIPropertyStore.h"
 
+#include "vpversion.h"
+
 
 // This class holds the settings registry.
 // A setting registry can have a parent, in which case, missing settings will be looked for in the parent.
@@ -103,6 +105,8 @@ public:
    inline void Set##groupId##_##propId(int index, type v, bool asTableOverride) { Set(m_prop##groupId##_##propId[index], (type)v, asTableOverride); }                                        \
    inline void Reset##groupId##_##propId(int index) { Reset(m_prop##groupId##_##propId[index]); }
 
+   // Versions
+   PropString(Version, VPinball, "VPX Version"s, "VPX version that saved this file"s, string(VP_VERSION_STRING_DIGITS));
 
    // General Application settings
    PropBool(Editor, EnableLog, "Enable Log"s, "Enable general logging to the vinball.log file"s, true);
@@ -291,9 +295,22 @@ public:
    PropEnum(Player, CacheMode, "Cache Mode"s, ""s, int, 1, "Disabled"s, "Preload Textures"s);
    PropEnum(Player, RumbleMode, "RumbleMode"s, ""s, int, 3, "Off"s, "Table only (N/A yet)"s, "Generic only (N/A yet)"s, "Table with generic fallback"s);
    PropInt(Player, MinPhysLoopTime, "MinPhysLoopTime"s, ""s, 0, 1000, 0); // Legacy lag reduction hack. Not uspported by BGFX variant (due to its multithreaded loop)
+   PropIntUnbounded(Player, PhysicsMaxLoops, "Physics Max Loops"s, "Maximum number of physics iteration above which physics engine just skip to stay playable.\nThis is somewhat hacky, override table setup, and may cause gameplay issues. This should not be used anymore."s, (int)0xFFFFFFFFu);
+   PropIntUnbounded(Player, Autostart, "Autostart"s, ""s, 0);
+   PropIntUnbounded(Player, AutostartRetry, "AutostartRetry"s, ""s, 0);
+   PropBool(Player, asenable, "AutostartEnable"s, ""s, false);
+
+   // Deprecated Tilt fature (remove ?)
+#ifdef UNUSED_TILT
+   PropIntUnbounded(Player, JoltAmount, "JoltAmount"s, ""s, 500);
+   PropIntUnbounded(Player, TiltAmount, "TiltAmount"s, ""s, 950);
+   PropIntUnbounded(Player, JoltTriggerTime, "JoltTriggerTime"s, ""s, 1000);
+   PropIntUnbounded(Player, TiltTriggerTime, "TiltTriggerTime"s, ""s, 10000);
+#endif
 
    // UI & input settings
    PropInt(Player, Exitconfirm, "Direct Exit Length"s, "Length of a long ESC press that directly closes the app, (sadly) expressed in seconds * 60."s, 0, 30 * 60, 120);
+   PropString(Input, Devices, "Devices"s, "List of known devices"s, ""s);
 
    // Nudge & Plumb settings
    PropFloat(Player, NudgeOrientation0, "Sensor #0 - Orientation"s, "Define sensor orientation"s, 0.f, 360.f, 0.f);
@@ -306,6 +323,8 @@ public:
    PropBool(Player, EnableLegacyNudge, "Legacy Keyboard nudge"s, "Enable/Disable legacy keyboard nudge mode"s, false);
    PropFloat(Player, LegacyNudgeStrength, "Legacy Nudge Strength"s, "Strength of nudge when using the legacy keyboard nudge mode"s, 0.f, 90.f, 1.f);
    PropFloat(Player, NudgeStrength, "Visual Nudge Strength"s, "Changes the visual effect/screen shaking when nudging the table"s, 0.f, 0.25f, 0.02f);
+   PropArray(Player, NudgeOrientation, float, Float, Float, m_propPlayer_NudgeOrientation0, m_propPlayer_NudgeOrientation1);
+   PropArray(Player, NudgeFilter, bool, Bool, Int, m_propPlayer_NudgeFilter0, m_propPlayer_NudgeFilter1);
 
    // Plunger settings
    PropBool(Player, PlungerRetract, "One Second Retract"s,
@@ -1516,6 +1535,7 @@ public:
    PropFloatUnbounded(Editor, ThrowBallMass, "ThrowBallMass"s, ""s, 1.f);
    PropIntUnbounded(Editor, ThrowBallSize, "ThrowBallSize"s, ""s, 50);
    PropBool(Editor, SelectTableOnPlayerClose, "SelectTableOnPlayerClose"s, ""s, true); // FIXME does not seem to be used anywhere
+   PropBool(Editor, RenderSolid, "RenderSolid"s, ""s, true);
 
    // Code View settings
    PropInt(CVEdit, BackGroundColor, "BackGroundColor"s, ""s, 0x000000, 0xFFFFFF, RGB(255, 255, 255));
@@ -1525,6 +1545,79 @@ public:
    PropBool(CVEdit, DwellDisplay, "DwellDisplay"s, ""s, true);
    PropBool(CVEdit, DwellHelp, "DwellHelp"s, ""s, true);
    PropIntUnbounded(CVEdit, DwellDisplayTime, "DwellDisplayTime"s, ""s, 700);
+
+   PropBool(CVEdit, EverythingElse, "EverythingElse"s, ""s, true);
+   PropInt(CVEdit, EverythingElse_color, "EverythingElse_color"s, ""s, 0x000000, 0xFFFFFF, RGB(0,0,0));
+   PropIntUnbounded(CVEdit, EverythingElse_FontPointSize, "EverythingElse_FontPointSize"s, ""s, 10);
+   PropString(CVEdit, EverythingElse_Font, "EverythingElse_Font"s, ""s, ""s);
+   PropInt(CVEdit, EverythingElse_FontWeight, "EverythingElse_FontWeight"s, ""s, 0, 1000, 400);
+   PropBool(CVEdit, EverythingElse_FontItalic, "EverythingElse_FontItalic"s, ""s, false);
+   PropBool(CVEdit, EverythingElse_FontUnderline, "EverythingElse_FontUnderline"s, ""s, false);
+   PropBool(CVEdit, EverythingElse_FontStrike, "EverythingElse"s, ""s, false);
+
+   PropBool(CVEdit, Default, "Default"s, ""s, true);
+   PropInt(CVEdit, Default_color, "Default_color"s, ""s, 0x000000, 0xFFFFFF, RGB(0,0,0));
+   PropIntUnbounded(CVEdit, Default_FontPointSize, "Default_FontPointSize"s, ""s, 10);
+   PropString(CVEdit, Default_Font, "Default_Font"s, ""s, ""s);
+   PropInt(CVEdit, Default_FontWeight, "Default_FontWeight"s, ""s, 0, 1000, 400);
+   PropBool(CVEdit, Default_FontItalic, "Default_FontItalic"s, ""s, false);
+   PropBool(CVEdit, Default_FontUnderline, "Default_FontUnderline"s, ""s, false);
+   PropBool(CVEdit, Default_FontStrike, "Default"s, ""s, false);
+
+   PropBool(CVEdit, ShowVBS, "ShowVBS"s, ""s, true);
+   PropInt(CVEdit, ShowVBS_color, "ShowVBS_color"s, ""s, 0x000000, 0xFFFFFF, RGB(0,0,0));
+   PropIntUnbounded(CVEdit, ShowVBS_FontPointSize, "ShowVBS_FontPointSize"s, ""s, 10);
+   PropString(CVEdit, ShowVBS_Font, "ShowVBS_Font"s, ""s, ""s);
+   PropInt(CVEdit, ShowVBS_FontWeight, "ShowVBS_FontWeight"s, ""s, 0, 1000, 400);
+   PropBool(CVEdit, ShowVBS_FontItalic, "ShowVBS_FontItalic"s, ""s, false);
+   PropBool(CVEdit, ShowVBS_FontUnderline, "ShowVBS_FontUnderline"s, ""s, false);
+   PropBool(CVEdit, ShowVBS_FontStrike, "ShowVBS"s, ""s, false);
+
+   PropBool(CVEdit, ShowComponents, "ShowComponents"s, ""s, true);
+   PropInt(CVEdit, ShowComponents_color, "ShowComponents_color"s, ""s, 0x000000, 0xFFFFFF, RGB(0,0,0));
+   PropIntUnbounded(CVEdit, ShowComponents_FontPointSize, "ShowComponents_FontPointSize"s, ""s, 10);
+   PropString(CVEdit, ShowComponents_Font, "ShowComponents_Font"s, ""s, ""s);
+   PropInt(CVEdit, ShowComponents_FontWeight, "ShowComponents_FontWeight"s, ""s, 0, 1000, 400);
+   PropBool(CVEdit, ShowComponents_FontItalic, "ShowComponents_FontItalic"s, ""s, false);
+   PropBool(CVEdit, ShowComponents_FontUnderline, "ShowComponents_FontUnderline"s, ""s, false);
+   PropBool(CVEdit, ShowComponents_FontStrike, "ShowComponents"s, ""s, false);
+
+   PropBool(CVEdit, ShowSubs, "ShowSubs"s, ""s, true);
+   PropInt(CVEdit, ShowSubs_color, "ShowSubs_color"s, ""s, 0x000000, 0xFFFFFF, RGB(120,0,120));
+   PropIntUnbounded(CVEdit, ShowSubs_FontPointSize, "ShowSubs_FontPointSize"s, ""s, 10);
+   PropString(CVEdit, ShowSubs_Font, "ShowSubs_Font"s, ""s, ""s);
+   PropInt(CVEdit, ShowSubs_FontWeight, "ShowSubs_FontWeight"s, ""s, 0, 1000, 400);
+   PropBool(CVEdit, ShowSubs_FontItalic, "ShowSubs_FontItalic"s, ""s, false);
+   PropBool(CVEdit, ShowSubs_FontUnderline, "ShowSubs_FontUnderline"s, ""s, false);
+   PropBool(CVEdit, ShowSubs_FontStrike, "ShowSubs"s, ""s, false);
+
+   PropBool(CVEdit, ShowRemarks, "ShowRemarks"s, ""s, true);
+   PropInt(CVEdit, ShowRemarks_color, "ShowRemarks_color"s, ""s, 0x000000, 0xFFFFFF, RGB(0,120,0));
+   PropIntUnbounded(CVEdit, ShowRemarks_FontPointSize, "ShowRemarks_FontPointSize"s, ""s, 10);
+   PropString(CVEdit, ShowRemarks_Font, "ShowRemarks_Font"s, ""s, ""s);
+   PropInt(CVEdit, ShowRemarks_FontWeight, "ShowRemarks_FontWeight"s, ""s, 0, 1000, 400);
+   PropBool(CVEdit, ShowRemarks_FontItalic, "ShowRemarks_FontItalic"s, ""s, false);
+   PropBool(CVEdit, ShowRemarks_FontUnderline, "ShowRemarks_FontUnderline"s, ""s, false);
+   PropBool(CVEdit, ShowRemarks_FontStrike, "ShowRemarks"s, ""s, false);
+
+   PropBool(CVEdit, ShowLiterals, "ShowLiterals"s, ""s, true);
+   PropInt(CVEdit, ShowLiterals_color, "ShowLiterals_color"s, ""s, 0x000000, 0xFFFFFF, RGB(0,120,160));
+   PropIntUnbounded(CVEdit, ShowLiterals_FontPointSize, "ShowLiterals_FontPointSize"s, ""s, 10);
+   PropString(CVEdit, ShowLiterals_Font, "ShowLiterals_Font"s, ""s, ""s);
+   PropInt(CVEdit, ShowLiterals_FontWeight, "ShowLiterals_FontWeight"s, ""s, 0, 1000, 400);
+   PropBool(CVEdit, ShowLiterals_FontItalic, "ShowLiterals_FontItalic"s, ""s, false);
+   PropBool(CVEdit, ShowLiterals_FontUnderline, "ShowLiterals_FontUnderline"s, ""s, false);
+   PropBool(CVEdit, ShowLiterals_FontStrike, "ShowLiterals"s, ""s, false);
+
+   PropBool(CVEdit, ShowVPcore, "ShowVPcore"s, ""s, true);
+   PropInt(CVEdit, ShowVPcore_color, "ShowVPcore_color"s, ""s, 0x000000, 0xFFFFFF, RGB(200,50,60));
+   PropIntUnbounded(CVEdit, ShowVPcore_FontPointSize, "ShowVPcore_FontPointSize"s, ""s, 10);
+   PropString(CVEdit, ShowVPcore_Font, "ShowVPcore_Font"s, ""s, ""s);
+   PropInt(CVEdit, ShowVPcore_FontWeight, "ShowVPcore_FontWeight"s, ""s, 0, 1000, 400);
+   PropBool(CVEdit, ShowVPcore_FontItalic, "ShowVPcore_FontItalic"s, ""s, false);
+   PropBool(CVEdit, ShowVPcore_FontUnderline, "ShowVPcore_FontUnderline"s, ""s, false);
+   PropBool(CVEdit, ShowVPcore_FontStrike, "ShowVPcore"s, ""s, false);
+
 
 
 #undef PropBool

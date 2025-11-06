@@ -763,12 +763,10 @@ void CodeViewer::SetVisible(const bool visible)
    if (!visible && !m_minimized)
    {
       const CRect rc = GetWindowRect();
-      g_pvp->m_settings.SaveValue(Settings::Editor, "CodeViewPosX"s, (int)rc.left);
-      g_pvp->m_settings.SaveValue(Settings::Editor, "CodeViewPosY"s, (int)rc.top);
-      const int w = rc.right - rc.left;
-      g_pvp->m_settings.SaveValue(Settings::Editor, "CodeViewPosWidth"s, w);
-      const int h = rc.bottom - rc.top;
-      g_pvp->m_settings.SaveValue(Settings::Editor, "CodeViewPosHeight"s, h);
+      g_pvp->m_settings.SetEditor_CodeViewPosX((int)rc.left, false);
+      g_pvp->m_settings.SetEditor_CodeViewPosY((int)rc.top, false);
+      g_pvp->m_settings.SetEditor_CodeViewPosWidth(rc.right - rc.left, false);
+      g_pvp->m_settings.SetEditor_CodeViewPosHeight(rc.bottom - rc.top, false);
    }
 
    if (m_hwndFind && !visible)
@@ -3595,19 +3593,19 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				case IDC_CVP_CHKBOX_DISPLAYDWELL:
 				{
 					pcv->m_dwellDisplay = !!IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_DISPLAYDWELL);
-					g_pvp->m_settings.SaveValue(Settings::CVEdit, "DwellDisplay"s, pcv->m_dwellDisplay);
+					g_pvp->m_settings.SetCVEdit_DwellDisplay(pcv->m_dwellDisplay, false);
 				}
 				break;
 				case IDC_CVP_CHKBOX_HELPWITHDWELL:
 				{
 					pcv->m_dwellHelp = !!IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_HELPWITHDWELL);
-					g_pvp->m_settings.SaveValue(Settings::CVEdit, "DwellHelp"s, pcv->m_dwellHelp);
+					g_pvp->m_settings.SetCVEdit_DwellHelp(pcv->m_dwellHelp, false);
 				}
 				break;
 				case IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE:
 				{
 					pcv->m_displayAutoComplete = !!IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE);
-					g_pvp->m_settings.SaveValue(Settings::CVEdit, "DisplayAutoComplete"s, pcv->m_displayAutoComplete);
+					g_pvp->m_settings.SetCVEdit_DisplayAutoComplete(pcv->m_displayAutoComplete, false);
 				}
 				break;
 				case IDC_CVP_BUT_COL_BACKGROUND:

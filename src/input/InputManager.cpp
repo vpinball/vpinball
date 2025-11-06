@@ -62,7 +62,7 @@ InputManager::InputManager()
    {
       m_nudgeXSensor[i] = std::make_unique<PhysicsSensor>(this, "NudgeX" + std::to_string(i + 1), "Sensor " + std::to_string(i + 1) + " - Nudge Side", SensorMapping::Type::Acceleration, ""s);
       m_nudgeYSensor[i] = std::make_unique<PhysicsSensor>(this, "NudgeY" + std::to_string(i + 1), "Sensor " + std::to_string(i + 1) + " - Nudge Front", SensorMapping::Type::Acceleration, ""s);
-      m_nudgeFilter[i] = !(i == 0 ? settings.GetPlayer_NudgeOrientation0() : settings.GetPlayer_NudgeOrientation1());
+      m_nudgeFilter[i] = !settings.GetPlayer_NudgeFilter(i);
       SetNudgeFiltered(i, !m_nudgeFilter[i]);
    }
    m_plungerPositionSensor = std::make_unique<PhysicsSensor>(this, "PlungerPos"s, "Plunger Position"s, SensorMapping::Type::Position, ""s);
@@ -87,7 +87,7 @@ InputManager::InputManager()
       {
          m_nudgeXSensor[i]->LoadMapping(settings);
          m_nudgeYSensor[i]->LoadMapping(settings);
-         m_nudgeOrientation[i] = ANGTORAD(i == 0 ? settings.GetPlayer_NudgeOrientation0() : settings.GetPlayer_NudgeOrientation1());
+         m_nudgeOrientation[i] = ANGTORAD(settings.GetPlayer_NudgeOrientation(i));
       }
 
       m_linearPlunger = settings.GetPlayer_PlungerLinearSensor();
@@ -162,6 +162,9 @@ uint16_t InputManager::RegisterDevice(const string& settingsId, InputManager::De
    m_inputDevices[deviceId].m_name = name;
    m_inputDevices[deviceId].m_type = type;
    m_inputDevices[deviceId].m_connected = true;
+   Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Device." + settingsId + ".Name", "Device Name", ""s, name));
+   Settings::GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>("Input"s, "Device." + settingsId + ".Type", "Device Type", ""s, 0, (int) type, vector { "Unknown"s, "Keyboard"s, "Joystick"s, "Mouse"s, "VRController"s, "OpenPinDev"s }));
+   Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("Input"s, "Device." + settingsId + ".NoAutoLayout", "Disable Automatic Layout", ""s, false));
    return deviceId;
 }
 
@@ -263,14 +266,14 @@ void InputManager::ApplyDefaultDeviceMapping(uint16_t deviceId)
    {
       m_nudgeXSensor[i]->SaveMapping(settings);
       m_nudgeYSensor[i]->SaveMapping(settings);
-      settings.SaveValue(Settings::Player, "NudgeOrientation" + std::to_string(i + 1), RADTOANG(m_nudgeOrientation[i]));
+      settings.SetPlayer_NudgeOrientation(i, RADTOANG(m_nudgeOrientation[i]), false);
    }
 }
 
 void InputManager::LoadDevicesFromSettings()
 {
    const Settings& settings = g_pvp->m_settings;
-   std::istringstream deviceStream(settings.LoadValueWithDefault(Settings::Input, "Devices"s, ""s));
+   std::istringstream deviceStream(settings.GetInput_Devices());
    std::string deviceSettingId;
    while (std::getline(deviceStream, deviceSettingId, ';'))
    {
@@ -281,15 +284,19 @@ void InputManager::LoadDevicesFromSettings()
       m_inputDevices.emplace_back(static_cast<uint16_t>(m_inputDevices.size()), "Unknown Device", deviceSettingId);
       m_inputDevices.back().m_connected = false;
       DeviceDef& device = m_inputDevices.back();
-      if (string name; settings.LoadValue(Settings::Input, "Device." + deviceSettingId + ".Name", name))
-         device.m_name = name;
-      if (int type; settings.LoadValue(Settings::Input, "Device." + deviceSettingId + ".Type", type))
-         device.m_type = static_cast<InputManager::DeviceType>(type);
+      const auto namePropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Device." + deviceSettingId + ".Name", "Device Name", ""s, ""s));
+      const auto typePropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>("Input"s, "Device." + deviceSettingId + ".Type", "Device Type", ""s, 0, 0, vector { "Unknown"s, "Keyboard"s, "Joystick"s, "Mouse"s, "VRController"s, "OpenPinDev"s }));
+      Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("Input"s, "Device." + deviceSettingId + ".NoAutoLayout", "Disable Automatic Layout", ""s, false));
+      device.m_name = settings.GetString(namePropId);
+      device.m_type = static_cast<InputManager::DeviceType>(settings.GetInt(typePropId));
 
-      string inputName;
       int index = 0;
-      while (settings.LoadValue(Settings::Input, "Device." + deviceSettingId + ".Element" + std::to_string(index), inputName))
+      while (true)
       {
+         const auto elementPropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Device." + deviceSettingId + ".Element" + std::to_string(index), ""s, ""s, ""s));
+         string inputName = settings.GetString(elementPropId);
+         if (inputName.empty())
+            break;
          if (size_t pos = inputName.find(';'); pos != std::string::npos)
             if (int button; try_parse_int(inputName.substr(0, pos), button) && inputName.length() > pos + 3)
             {
@@ -313,16 +320,20 @@ void InputManager::SaveDevicesToSettings() const
          deviceList << ';';
       deviceList << m_inputDevices[i].m_settingsId;
    }
-   settings.SaveValue(Settings::Input, "Devices"s, deviceList.str());
+   settings.SetInput_Devices(deviceList.str(), false);
 
    for (const auto& device : m_inputDevices)
    {
-      settings.SaveValue(Settings::Input, "Device." + device.m_settingsId + ".Name", device.m_name);
-      settings.SaveValue(Settings::Input, "Device." + device.m_settingsId + ".Type", static_cast<int>(device.m_type));
+      const auto namePropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Device." + device.m_settingsId + ".Name", "Device Name", ""s, ""s));
+      const auto typePropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>("Input"s, "Device." + device.m_settingsId + ".Type", "Device Type", ""s, 0, 0,
+         vector { "Unknown"s, "Keyboard"s, "Joystick"s, "Mouse"s, "VRController"s, "OpenPinDev"s }));
+      settings.Set(namePropId, device.m_name, false);
+      settings.Set(typePropId, static_cast<int>(device.m_type), false);
       int index = 0;
       for (auto& [button, def] : device.m_buttonOrAxisNames)
       {
-         settings.SaveValue(Settings::Input, "Device." + device.m_settingsId + ".Element" + std::to_string(index), std::to_string(button) + ';' + (def.isAxis ? 'A' : 'B') + ';' + def.name);
+         const auto elementPropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Device." + device.m_settingsId + ".Element" + std::to_string(index), ""s, ""s, ""s));
+         settings.Set(elementPropId, std::to_string(button) + ';' + (def.isAxis ? 'A' : 'B') + ';' + def.name, false);
          index++;
       }
    }
@@ -451,19 +462,20 @@ void InputManager::ProcessInput()
       {
          if (device.m_hasPendingLayoutApply)
          {
-            if (g_pvp->m_settings.LoadValueWithDefault(Settings::Input, "Device." + device.m_settingsId + ".NoAutoLayout", false))
+            const auto noAutoLayoutId = Settings::GetRegistry().GetPropertyId("Input"s, "Device." + device.m_settingsId + ".NoAutoLayout").value();
+            if (g_pvp->m_settings.GetBool(noAutoLayoutId))
             {
                device.m_hasPendingLayoutApply = false;
                continue;
             }
             const uint16_t deviceId = device.m_id;
             if (g_pplayer->m_liveUI->ProposeInputLayout(device.m_name,
-                   [this, deviceId](bool isOk, bool isDontAskAnymore)
+                   [this, deviceId, noAutoLayoutId](bool isOk, bool isDontAskAnymore)
                    {
                       if (isOk)
                          ApplyDefaultDeviceMapping(deviceId);
                       if (isDontAskAnymore)
-                         g_pvp->m_settings.SaveValue(Settings::Input, "Device." + m_inputDevices[deviceId].m_settingsId + ".NoAutoLayout", true);
+                         g_pvp->m_settings.Set(noAutoLayoutId, true, false);
                    }))
             {
                device.m_hasPendingLayoutApply = false;

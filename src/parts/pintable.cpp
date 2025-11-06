@@ -59,14 +59,14 @@ static inline std::from_chars_result my_from_chars(const char* first, const char
 PinTable::PinTable()
    : m_settings(&(g_pvp->m_settings))
 {
-   m_renderSolid = m_settings.LoadValueWithDefault(Settings::Editor, "RenderSolid"s, true);
+   m_renderSolid = m_settings.GetEditor_RenderSolid();
    ClearMultiSel();
 
    m_undo.m_ptable = this;
 
    SetDefaultPhysics(false);
 
-   m_PhysicsMaxLoops = m_settings.LoadValueWithDefault(Settings::Player, "PhysicsMaxLoops"s, (int)0xFFFFFFFFu);
+   m_PhysicsMaxLoops = m_settings.GetPlayer_PhysicsMaxLoops();
 
    UpdateCurrentBGSet();
    m_currentBackglassMode = m_BG_current_set;
@@ -83,18 +83,18 @@ PinTable::PinTable()
    Settings::SetTableOverride_Difficulty_Default(m_difficulty);
    m_globalDifficulty = m_settings.GetTableOverride_Difficulty();
 
-   m_tblAutoStart = m_settings.LoadValueWithDefault(Settings::Player, "Autostart"s, 0) * 10;
-   m_tblAutoStartRetry = m_settings.LoadValueWithDefault(Settings::Player, "AutostartRetry"s, 0) * 10;
-   m_tblAutoStartEnabled = m_settings.LoadValueWithDefault(Settings::Player, "asenable"s, false);
+   m_tblAutoStart = m_settings.GetPlayer_Autostart() * 10;
+   m_tblAutoStartRetry = m_settings.GetPlayer_AutostartRetry() * 10;
+   m_tblAutoStartEnabled = m_settings.GetPlayer_asenable();
 
    m_tblNudgeRead = Vertex2D(0.f,0.f);
    m_tblNudgePlumb = Vertex2D(0.f,0.f);
 
 #ifdef UNUSED_TILT
-   m_jolt_amount = m_settings.LoadValueWithDefault(Settings::Player, "JoltAmount"s, 500);
-   m_tilt_amount = m_settings.LoadValueWithDefault(Settings::Player, "TiltAmount"s, 950);
-   m_jolt_trigger_time = m_settings.LoadValueWithDefault(Settings::Player, "JoltTriggerTime"s, 1000);
-   m_tilt_trigger_time = m_settings.LoadValueWithDefault(Settings::Player, "TiltTriggerTime"s, 10000);
+   m_jolt_amount = m_settings.GetPlayer_JoltAmount();
+   m_tilt_amount = m_settings.GetPlayer_TiltAmount();
+   m_jolt_trigger_time = m_settings.GetPlayer_JoltTriggerTime();
+   m_tilt_trigger_time = m_settings.GetPlayer_TiltTriggerTime();
 #endif
 }
 
@@ -1590,7 +1590,12 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
       std::from_chars(numTimesSaved.c_str(), numTimesSaved.c_str() + numTimesSaved.length(), m_numTimesSaved);
 
    // Write the version to the registry.  This will be read later by the front end.
-   g_pvp->m_settings.SaveValue(Settings::Version, m_tableName, m_version);
+   {
+      string optId = trim_string(m_tableName);
+      std::replace_if(optId.begin(), optId.end(), [](char c) { return !isalnum(c) || c == '.' || c == '-'; }, '_');
+      const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Version"s, optId, "Table Version"s, "Last played version"s, m_version));
+      g_pvp->m_settings.Set(propId, m_version, false);
+   }
 
    HRESULT hr;
    IStream *pstm;
@@ -2503,7 +2508,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    {
       pbr->GetInt(m_PhysicsMaxLoops);
       if (m_PhysicsMaxLoops == 0xFFFFFFFF)
-         m_settings.LoadValue(Settings::Player, "PhysicsMaxLoops"s, m_PhysicsMaxLoops);
+         m_PhysicsMaxLoops = m_settings.GetPlayer_PhysicsMaxLoops();
       break;
    }
    case FID(DECL): pbr->GetBool(m_renderDecals); break;
@@ -2579,7 +2584,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
          int useAA;
          pbr->GetInt(useAA);
          if (useAA != -1)
-             m_settings.SaveValue(Settings::Player, "AAFactor"s, useAA == 0 ? 1.f : 2.f);
+             m_settings.SetPlayer_AAFactor(useAA == 0 ? 1.f : 2.f, true);
       }
       break;
    case FID(UAOC):
@@ -2655,20 +2660,20 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
             switch (tableAdaptiveVSync)
             {
             case 0:
-               m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0.f);
-               m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_NONE);
+               m_settings.SetPlayer_MaxFramerate(0, true);
+               m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_NONE, true);
                break;
             case 1:
-               m_settings.SaveValue(Settings::Player, "MaxFramerate"s, -1.f);
-               m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_VSYNC);
+               m_settings.SetPlayer_MaxFramerate(-1, true);
+               m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_VSYNC, true);
                break;
             case 2:
-               m_settings.SaveValue(Settings::Player, "MaxFramerate"s, -1.f);
-               m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_ADAPTIVE_VSYNC);
+               m_settings.SetPlayer_MaxFramerate(-1, true);
+               m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_ADAPTIVE_VSYNC, true);
                break;
             default:
-               m_settings.SaveValue(Settings::Player, "MaxFramerate"s, tableAdaptiveVSync);
-               m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_ADAPTIVE_VSYNC);
+               m_settings.SetPlayer_MaxFramerate(tableAdaptiveVSync, true);
+               m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_ADAPTIVE_VSYNC, true);
                break;
             }
          }
@@ -2696,7 +2701,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
          bool overwriteGlobalDayNight;
          pbr->GetBool(overwriteGlobalDayNight);
          if (overwriteGlobalDayNight)
-            m_settings.SaveValue(Settings::Player, "OverrideTableEmissionScale"s, false);
+            m_settings.SetPlayer_OverrideTableEmissionScale(false, true);
       }
       break;
    case FID(GDAC): pbr->GetBool(m_grid); break;
@@ -2707,7 +2712,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
       {
          int userDetailLevel; // The detail level was always saved **before** the override flag so we always load to settings, eventually deleting afterward
          pbr->GetInt(userDetailLevel);
-         m_settings.SaveValue(Settings::Player, "AlphaRampAccuracy"s, userDetailLevel);
+         m_settings.SetPlayer_AlphaRampAccuracy(userDetailLevel, true);
       }
       break;
    case FID(MASI): pbr->GetInt(m_numMaterials); break;
@@ -4196,9 +4201,9 @@ void PinTable::ImportBackdropPOV(const string &filename)
          const string &keyPrefix = vsPrefix[id];
          if (toUserSettings)
          {
-            for (int j = 0; j < 15; j++)
-               if (settings.HasValue(Settings::TableOverride, keyPrefix + vsFields[j]))
-                  m_settings.SaveValue(Settings::TableOverride, keyPrefix + vsFields[j], settings.LoadValueWithDefault(Settings::TableOverride, keyPrefix + vsFields[j], 0.f));
+            ViewSetup vs;
+            vs.ApplyTableOverrideSettings(settings, (ViewSetupID)id);
+            vs.SaveToTableOverrideSettings(settings, (ViewSetupID)id);
          }
          else
             mViewSetups[id].ApplyTableOverrideSettings(settings, (ViewSetupID)id);
@@ -4238,7 +4243,7 @@ void PinTable::ImportBackdropPOV(const string &filename)
                if(my_from_chars(t,t+strlen(t),value).ec == std::errc{}) \
                { \
                if (toUserSettings) \
-                  m_settings.SaveValue(Settings::TableOverride, keyPrefix + (settingField), value); \
+                  m_settings.Set(Settings::GetRegistry().GetPropertyId("TableOverride"s, keyPrefix + (settingField)).value(), value, true); \
                else \
                   field = (fieldtype)value; \
                } \
@@ -4293,10 +4298,10 @@ void PinTable::ImportBackdropPOV(const string &filename)
                   } \
                }
 
-               POV_FIELD("postprocAA", int, if(value > -1) m_settings.SaveValue(Settings::Player, "AAFactor"s, value == 0 ? 1.f : 2.f)); // remap to new AA
-               POV_FIELD("postprocAA", int, if(value > -1) m_settings.SetPlayer_FXAA(value == 1 ? Standard_FXAA : Disabled, false));
-               POV_FIELD("ingameAO", int, if(value != -1) m_settings.SetPlayer_DisableAO(value == 0, false));
-               POV_FIELD("ScSpReflect", int, if(value != -1) m_settings.SetPlayer_SSRefl(value != 0, false));
+               POV_FIELD("postprocAA", int, if (value > -1) m_settings.SetPlayer_AAFactor(value == 0 ? 1.f : 2.f, true)); // remap to new AA
+               POV_FIELD("postprocAA", int, if(value > -1) m_settings.SetPlayer_FXAA(value == 1 ? Standard_FXAA : Disabled, true));
+               POV_FIELD("ingameAO", int, if(value != -1) m_settings.SetPlayer_DisableAO(value == 0, true));
+               POV_FIELD("ScSpReflect", int, if(value != -1) m_settings.SetPlayer_SSRefl(value != 0, true));
                //POV_FIELD("FPSLimiter", int, tableAdaptiveVSync, );
                {
                const auto node = section->FirstChildElement("FPSLimiter");
@@ -4309,20 +4314,20 @@ void PinTable::ImportBackdropPOV(const string &filename)
                      switch (tableAdaptiveVSync)
                      {
                      case 0:
-                        m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0.f);
-                        m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_NONE);
+                        m_settings.SetPlayer_MaxFramerate(0, true);
+                        m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_NONE, true);
                         break;
                      case 1:
-                        m_settings.SaveValue(Settings::Player, "MaxFramerate"s, -1.f);
-                        m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_VSYNC);
+                        m_settings.SetPlayer_MaxFramerate(-1, true);
+                        m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_VSYNC, true);
                         break;
                      case 2:
-                        m_settings.SaveValue(Settings::Player, "MaxFramerate"s, -1.f);
-                        m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_ADAPTIVE_VSYNC);
+                        m_settings.SetPlayer_MaxFramerate(-1, true);
+                        m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_ADAPTIVE_VSYNC, true);
                         break;
                      default:
-                        m_settings.SaveValue(Settings::Player, "MaxFramerate"s, tableAdaptiveVSync);
-                        m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_ADAPTIVE_VSYNC);
+                        m_settings.SetPlayer_MaxFramerate(tableAdaptiveVSync, true);
+                        m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_ADAPTIVE_VSYNC, true);
                         break;
                      }
                   }
@@ -4339,7 +4344,7 @@ void PinTable::ImportBackdropPOV(const string &filename)
                   int val;
                   sscanf_s(node->GetText(), "%i", &val);
                   if (val == 1)
-                     POV_FIELD("DetailsLevel", int, m_settings.SaveValue(Settings::Player, "AlphaRampAccuracy"s, value));
+                     POV_FIELD("DetailsLevel", int, m_settings.SetPlayer_AlphaRampAccuracy(value, true));
                }
                }
                {
@@ -4351,14 +4356,14 @@ void PinTable::ImportBackdropPOV(const string &filename)
                   //m_overwriteGlobalDayNight = (val == 1);
                   if (val == 1)
                   {
-                     m_settings.SaveValue(Settings::Player, "OverrideTableEmissionScale"s, true);
-                     POV_FIELD("NightDayLevel", float, m_settings.SaveValue(Settings::Player, "EmissionScale"s, value / 100.f));
+                     m_settings.SetPlayer_OverrideTableEmissionScale(true, true);
+                     POV_FIELD("NightDayLevel", float, m_settings.SetPlayer_EmissionScale(value / 100.f, true));
                   }
                }
                }
-               POV_FIELD("GameplayDifficulty", float, m_settings.SaveValue(Settings::TableOverride, "Difficulty"s, value / 100.f));
-               POV_FIELD("SoundVolume", int, m_settings.SaveValue(Settings::Player, "SoundVolume"s, value));
-               POV_FIELD("MusicVolume", int, m_settings.SaveValue(Settings::Player, "MusicVolume"s, value));
+               POV_FIELD("GameplayDifficulty", float, m_settings.SetTableOverride_Difficulty(value / 100.f, true));
+               POV_FIELD("SoundVolume", int, m_settings.SetPlayer_SoundVolume(value, true));
+               POV_FIELD("MusicVolume", int, m_settings.SetPlayer_MusicVolume(value, true));
                // FIXME these are the last 3 settings which were not ported to the setting API
                // - for physics set, since they can be applied at the part level, for each flipper
                // - for ball reflection, since I don't think that matters and there is no obvious way
@@ -7882,16 +7887,8 @@ STDMETHODIMP PinTable::put_Option(BSTR optionName, float minValue, float maxValu
    auto prop = RegisterOption(optionName, minValue, maxValue, step, defaultValue, unit, values);
    if (!prop.has_value())
       return E_FAIL;
-   for (auto &option : m_tableOptions)
-   {
-      if ((option.id.type == prop.value().type) && (option.id.index == prop.value().index))
-      {
-         option.value = val;
-         m_settings.SaveValue(Settings::TableOption, Settings::GetRegistry().GetProperty(prop.value())->m_propId, val);
-         return S_OK;
-      }
-   }
-   return E_FAIL;
+   m_settings.Set(prop.value(), val, true);
+   return S_OK;
 }
 
 void PinTable::InvokeBallBallCollisionCallback(const HitBall *b1, const HitBall *b2, float hitVelocity)
