@@ -226,6 +226,19 @@ if "%vsv%" == "2026" (
 
 
 REM ***************************************************************************************************
+copy /V /Y "plugin-upscaledmd.vcxproj" "../.build/vsproject/plugin-upscaledmd.vcxproj"
+copy /V /Y "plugin-upscaledmd.vcxproj.filters" "../.build/vsproject/plugin-upscaledmd.vcxproj.filters"
+
+if "%vsv%" == "2019" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-upscaledmd.vcxproj" /out:"../.build/vsproject/plugin-upscaledmd.vcxproj"
+)
+
+if "%vsv%" == "2026" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/plugin-upscaledmd.vcxproj" /out:"../.build/vsproject/plugin-upscaledmd.vcxproj"
+)
+
+
+REM ***************************************************************************************************
 copy /V /Y "plugin-wmp.vcxproj" "../.build/vsproject/plugin-wmp.vcxproj"
 copy /V /Y "plugin-wmp.vcxproj.filters" "../.build/vsproject/plugin-wmp.vcxproj.filters"
 
