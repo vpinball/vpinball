@@ -845,7 +845,7 @@ void InGameUIPage::Render(float elapsedS)
 
    m_windowPos = ImGui::GetWindowPos();
    m_windowSize = ImGui::GetWindowSize();
-   m_windowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
+   m_windowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
 
    ImGui::End();
    ImGui::PopStyleVar();
