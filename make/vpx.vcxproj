@@ -74,17 +74,11 @@
     <ProjectReference Include="plugin-alphadmd.vcxproj">
       <Project>{2bf90d88-9139-4e66-a778-4327311af7a7}</Project>
     </ProjectReference>
-    <ProjectReference Include="plugin-scoreview.vcxproj">
-      <Project>{91425C91-FDB2-4170-A5C9-A068357E59E3}</Project>
-    </ProjectReference>
     <ProjectReference Include="plugin-b2s.vcxproj">
       <Project>{7D58C20E-53F4-4AD6-9004-CA6148082491}</Project>
     </ProjectReference>
     <ProjectReference Include="plugin-b2slegacy.vcxproj">
       <Project>{06C52E8F-573C-4F2B-A007-7588147D30E4}</Project>
-    </ProjectReference>
-    <ProjectReference Include="plugin-pup.vcxproj" Condition="'$(Platform)'=='x64'">
-      <Project>{5DFB5344-B339-49BC-B93C-B3B8D307199B}</Project>
     </ProjectReference>
     <ProjectReference Include="plugin-dmdutil.vcxproj" Condition="'$(Platform)'=='x64'">
       <Project>{DAFBE049-4233-430B-9A04-63223C3972E3}</Project>
@@ -92,14 +86,14 @@
     <ProjectReference Include="plugin-dof.vcxproj" Condition="'$(Platform)'=='x64'">
       <Project>{14FEAF4C-1835-497B-AD3D-DC4CC7DCD136}</Project>
     </ProjectReference>
+    <ProjectReference Include="plugin-flexdmd.vcxproj">
+      <Project>{2bf90d88-9139-4e66-a778-4327311af77B}</Project>
+    </ProjectReference>
     <ProjectReference Include="plugin-helloscript.vcxproj">
       <Project>{bd05ba74-3676-42d7-ad6a-79c2de31100e}</Project>
     </ProjectReference>
     <ProjectReference Include="plugin-helloworld.vcxproj">
       <Project>{2bf90d88-9139-4e66-a778-4327311af777}</Project>
-    </ProjectReference>
-    <ProjectReference Include="plugin-flexdmd.vcxproj">
-      <Project>{2bf90d88-9139-4e66-a778-4327311af77B}</Project>
     </ProjectReference>
     <ProjectReference Include="plugin-pinmame.vcxproj">
       <Project>{2bf90d88-9139-4e66-a778-4327311af77c}</Project>
@@ -107,11 +101,20 @@
     <ProjectReference Include="plugin-pinup-events.vcxproj" Condition="'$(Platform)'=='x64'">
       <Project>{2bf90d88-9139-4e66-a778-4327311af779}</Project>
     </ProjectReference>
+    <ProjectReference Include="plugin-pup.vcxproj" Condition="'$(Platform)'=='x64'">
+      <Project>{5DFB5344-B339-49BC-B93C-B3B8D307199B}</Project>
+    </ProjectReference>
     <ProjectReference Include="plugin-remote-control.vcxproj">
       <Project>{57516b53-6e7e-4618-93b3-4f5222f28807}</Project>
     </ProjectReference>
+    <ProjectReference Include="plugin-scoreview.vcxproj">
+      <Project>{91425C91-FDB2-4170-A5C9-A068357E59E3}</Project>
+    </ProjectReference>
     <ProjectReference Include="plugin-serum.vcxproj">
       <Project>{2bf90d88-9139-4e66-a778-4327311af778}</Project>
+    </ProjectReference>
+    <ProjectReference Include="plugin-upscaledmd.vcxproj">
+      <Project>{b48b0595-952b-4529-a387-61011d406d42}</Project>
     </ProjectReference>
     <ProjectReference Include="plugin-wmp.vcxproj">
       <Project>{A5155099-A29F-46B1-9D8A-75BCC9F6616C}</Project>
