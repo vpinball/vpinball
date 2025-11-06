@@ -316,7 +316,8 @@ void Window::SetSize(const int x, const int y)
    SDL_SetWindowSize(m_nwnd, x, y);
    SDL_GetWindowSizeInPixels(m_nwnd, &m_pixelWidth, &m_pixelHeight);
    #ifdef ENABLE_BGFX
-   if (m_backBuffer && g_pplayer)
+   // The RenderDevice automatically manages the backbuffer resize. For anciliary windows (BGFX only), we need to recreate the swapchain
+   if (m_backBuffer && g_pplayer && g_pplayer->m_playfieldWnd != this)
    {
       g_pplayer->m_renderer->m_renderDevice->AddEndOfFrameCmd(
          [this]()
