@@ -442,6 +442,8 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
       init.resolution.reset |= BGFX_RESET_HDR10;
       bgfx::reset(init.resolution.width, init.resolution.height, init.resolution.reset, init.resolution.format);
    }
+   int backBufferWidth = static_cast<int>(init.resolution.width);
+   int backBufferHeight = static_cast<int>(init.resolution.height);
    
    //bgfx::setDebug(BGFX_DEBUG_STATS);
 
@@ -606,10 +608,15 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SUBMIT);
             rd->m_framePending = false; // Request next frame to be prepared as soon as possible
             rd->m_frameNoSync = false;
-            if (gpuVSync != needsVSync)
+            const int windowWidth = rd->m_outputWnd[0]->GetWidth();
+            const int windowHeight = rd->m_outputWnd[0]->GetHeight();
+            if ((gpuVSync != needsVSync) || (windowWidth != backBufferWidth) || (windowHeight != backBufferHeight))
             {
                gpuVSync = needsVSync;
-               bgfx::reset(init.resolution.width, init.resolution.height, init.resolution.reset | (gpuVSync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE), init.resolution.format);
+               backBufferWidth = windowWidth;
+               backBufferHeight = windowHeight;
+               bgfx::reset(backBufferWidth, backBufferHeight, init.resolution.reset | (gpuVSync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE), init.resolution.format);
+               rd->m_outputWnd[0]->GetBackBuffer()->SetSize(backBufferWidth, backBufferHeight);
             }
             rd->SubmitRenderFrame();
             #ifdef MSVC_CONCURRENCY_VIEWER

@@ -1037,15 +1037,18 @@ PinTable* PinTable::CopyForPlay()
       live_table->m_renderprobeMap[live_table->m_vrenderprobe[i]->GetName()] = live_table->m_vrenderprobe[i];
 
    // parse the (optional) override-physics-sets that can be set globally
-   live_table->m_fOverrideGravityConstant = GRAVITYCONST * m_settings.GetPlayer_TablePhysicsGravityConstant(live_table->m_overridePhysics - 1);
-   live_table->m_fOverrideContactFriction = m_settings.GetPlayer_TablePhysicsContactFriction(live_table->m_overridePhysics - 1);
-   live_table->m_fOverrideElasticity = m_settings.GetPlayer_TablePhysicsElasticity(live_table->m_overridePhysics - 1);
-   live_table->m_fOverrideElasticityFalloff = m_settings.GetPlayer_TablePhysicsElasticityFalloff(live_table->m_overridePhysics - 1);
-   live_table->m_fOverrideScatterAngle = m_settings.GetPlayer_TablePhysicsScatterAngle(live_table->m_overridePhysics - 1);
-   live_table->m_fOverrideMinSlope = m_settings.GetPlayer_TablePhysicsMinSlope(live_table->m_overridePhysics - 1);
-   live_table->m_fOverrideMaxSlope = m_settings.GetPlayer_TablePhysicsMaxSlope(live_table->m_overridePhysics - 1);
-   const float fOverrideContactScatterAngle = m_settings.GetPlayer_TablePhysicsContactScatterAngle(live_table->m_overridePhysics - 1);
-   c_hardScatter = ANGTORAD(live_table->m_overridePhysics ? fOverrideContactScatterAngle : live_table->m_defaultScatter);
+   if (live_table->m_overridePhysics)
+   {
+      live_table->m_fOverrideGravityConstant = GRAVITYCONST * m_settings.GetPlayer_TablePhysicsGravityConstant(live_table->m_overridePhysics - 1);
+      live_table->m_fOverrideContactFriction = m_settings.GetPlayer_TablePhysicsContactFriction(live_table->m_overridePhysics - 1);
+      live_table->m_fOverrideElasticity = m_settings.GetPlayer_TablePhysicsElasticity(live_table->m_overridePhysics - 1);
+      live_table->m_fOverrideElasticityFalloff = m_settings.GetPlayer_TablePhysicsElasticityFalloff(live_table->m_overridePhysics - 1);
+      live_table->m_fOverrideScatterAngle = m_settings.GetPlayer_TablePhysicsScatterAngle(live_table->m_overridePhysics - 1);
+      live_table->m_fOverrideMinSlope = m_settings.GetPlayer_TablePhysicsMinSlope(live_table->m_overridePhysics - 1);
+      live_table->m_fOverrideMaxSlope = m_settings.GetPlayer_TablePhysicsMaxSlope(live_table->m_overridePhysics - 1);
+      const float fOverrideContactScatterAngle = m_settings.GetPlayer_TablePhysicsContactScatterAngle(live_table->m_overridePhysics - 1);
+      c_hardScatter = ANGTORAD(live_table->m_overridePhysics ? fOverrideContactScatterAngle : live_table->m_defaultScatter);
+   }
 
    return live_table;
 }

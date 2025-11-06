@@ -310,6 +310,8 @@ void DisplaySettingsPage::BuildWindowPage()
          [](Settings&) { /* UI state, not persisted */ }, //
          [](int, Settings&, bool) { /* UI state, not persisted */ }));
 
+      // OpenGL and DirectX9 backends do not support dynamic resizing of the main window
+      #if !defined(ENABLE_BGFX)
       if (m_isMainWindow)
       { // For main window, we do not dynamically change size as it is not supported and the UI breaks (would require to re-setup everything)
          // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
@@ -361,6 +363,7 @@ void DisplaySettingsPage::BuildWindowPage()
             }));
       }
       else
+      #endif
       {
          Settings::GetRegistry().Register(Settings::GetWindow_Width_Property(m_wndId) //
                ->WithRange(0, maxWidth - wndPos.x) //
