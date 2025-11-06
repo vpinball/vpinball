@@ -962,7 +962,7 @@ BOOL VPApp::InitInstance()
    }
 
    m_vpinball.m_settings.LoadFromFile(m_iniFileName, true);
-   m_vpinball.m_settings.SaveValue(Settings::Version, "VPinball"s, string(VP_VERSION_STRING_DIGITS));
+   m_vpinball.m_settings.SetVersion_VPinball(string(VP_VERSION_STRING_DIGITS), false);
    m_vpinball.LoadEditorSetupFromSettings();
 
    Logger::SetupLogger(m_vpinball.m_settings.GetEditor_EnableLog());

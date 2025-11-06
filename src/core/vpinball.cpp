@@ -2373,7 +2373,7 @@ void VPinball::SetViewSolidOutline(size_t viewId)
       GetMenu().CheckMenuItem(ID_VIEW_OUTLINE, MF_BYCOMMAND | (ptCur->RenderSolid() ? MF_UNCHECKED : MF_CHECKED));
 
       ptCur->SetDirtyDraw();
-      m_settings.SaveValue(Settings::Editor, "RenderSolid"s, ptCur->m_renderSolid);
+      m_settings.SetEditor_RenderSolid(ptCur->m_renderSolid, false);
    }
 #endif
 }

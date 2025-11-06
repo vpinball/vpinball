@@ -2018,22 +2018,25 @@ void Player::OnAuxRendererChanged(const unsigned int msgId, void* userData, void
    for (int i = 0; i <= VPXWindowId::VPXWINDOW_Topper; i++)
    {
       const VPXWindowId window = (VPXWindowId) i;
-      const Settings::Section section = window == VPXWindowId::VPXWINDOW_Backglass ? Settings::Backglass
-                                      : window == VPXWindowId::VPXWINDOW_ScoreView ? Settings::ScoreView
-                                                                                          : Settings::Topper;
+      const string section = window == VPXWindowId::VPXWINDOW_Backglass ? "Backglass"s
+                           : window == VPXWindowId::VPXWINDOW_ScoreView ? "ScoreView"s
+                                                                        : "Topper"s;
       GetAnciliaryRendererMsg getAuxRendererMsg { window, 0, 0, nullptr };
       m_msgApi->BroadcastMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), me->m_getAuxRendererId, &getAuxRendererMsg);
       me->m_anciliaryWndRenderers[window].resize(getAuxRendererMsg.count);
       getAuxRendererMsg = { window, getAuxRendererMsg.count, 0, me->m_anciliaryWndRenderers[window].data() };
       m_msgApi->BroadcastMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), me->m_getAuxRendererId, &getAuxRendererMsg);
+      for (const auto& renderer : me->m_anciliaryWndRenderers[window])
+         Settings::GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>(section, "Priority."s.append(renderer.id), ""s, ""s, 0, 1000, 0));
       std::ranges::sort(me->m_anciliaryWndRenderers[window],
          [&](const AnciliaryRendererDef &a, const AnciliaryRendererDef &b)
          {
-            int pa = me->m_ptable->m_settings.LoadValueWithDefault(section, "Priority."s.append(a.id), 0);
-            int pb = me->m_ptable->m_settings.LoadValueWithDefault(section, "Priority."s.append(b.id), 0);
+            int pa = me->m_ptable->m_settings.GetInt(Settings::GetRegistry().GetPropertyId(section, "Priority."s.append(a.id)).value());
+            int pb = me->m_ptable->m_settings.GetInt(Settings::GetRegistry().GetPropertyId(section, "Priority."s.append(b.id)).value());
             return pa > pb; // Sort in descending order (first is the most wanted)
          });
-      std::erase_if(me->m_anciliaryWndRenderers[window], [section, me](const AnciliaryRendererDef &a) { return me->m_ptable->m_settings.LoadValueWithDefault(section, "Priority."s.append(a.id), 0) < 0; });
+      std::erase_if(me->m_anciliaryWndRenderers[window],
+         [section, me](const AnciliaryRendererDef &a) { return me->m_ptable->m_settings.GetInt(Settings::GetRegistry().GetPropertyId(section, "Priority."s.append(a.id)).value()) < 0; });
    }
 }
 
