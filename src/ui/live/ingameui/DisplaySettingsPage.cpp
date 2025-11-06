@@ -3,6 +3,8 @@
 #include "core/stdafx.h"
 #include "DisplaySettingsPage.h"
 
+#include "imgui/imgui_internal.h"
+
 namespace VPX::InGameUI
 {
 
@@ -366,7 +368,7 @@ void DisplaySettingsPage::BuildWindowPage()
       #endif
       {
          Settings::GetRegistry().Register(Settings::GetWindow_Width_Property(m_wndId) //
-               ->WithRange(0, maxWidth - wndPos.x) //
+               ->WithRange(m_isMainWindow ? 320 : 0, maxWidth - wndPos.x) //
                ->WithDefault((m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow())->GetWidth()));
          AddItem(std::make_unique<InGameUIItem>(
             Settings::m_propWindow_Width[m_wndId], "%d"s, //
@@ -387,11 +389,13 @@ void DisplaySettingsPage::BuildWindowPage()
                }
                size.x = v;
                wnd->SetSize(size.x, size.y);
+               if (m_isMainWindow) // Avoid buggy resizing when changing main window size
+                  ImGui::ClearActiveID();
                BuildPage();
             }));
 
          Settings::GetRegistry().Register(Settings::GetWindow_Height_Property(m_wndId) //
-               ->WithRange(0, maxHeight - wndPos.y) //
+               ->WithRange(m_isMainWindow ? 320 : 0, maxHeight - wndPos.y) //
                ->WithDefault((m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow())->GetHeight()));
          AddItem(std::make_unique<InGameUIItem>(
             Settings::m_propWindow_Height[m_wndId], "%d"s, //
@@ -412,6 +416,8 @@ void DisplaySettingsPage::BuildWindowPage()
                }
                size.y = v;
                wnd->SetSize(size.x, size.y);
+               if (m_isMainWindow) // Avoid buggy resizing when changing main window size
+                  ImGui::ClearActiveID();
                BuildPage();
             }));
       }

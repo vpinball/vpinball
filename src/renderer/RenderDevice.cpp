@@ -608,8 +608,8 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SUBMIT);
             rd->m_framePending = false; // Request next frame to be prepared as soon as possible
             rd->m_frameNoSync = false;
-            const int windowWidth = rd->m_outputWnd[0]->GetWidth();
-            const int windowHeight = rd->m_outputWnd[0]->GetHeight();
+            const int windowWidth = rd->m_outputWnd[0]->GetPixelWidth();
+            const int windowHeight = rd->m_outputWnd[0]->GetPixelWidth();
             if ((gpuVSync != needsVSync) || (windowWidth != backBufferWidth) || (windowHeight != backBufferHeight))
             {
                gpuVSync = needsVSync;
