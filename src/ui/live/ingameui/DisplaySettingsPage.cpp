@@ -594,6 +594,15 @@ void DisplaySettingsPage::Render(float elapsedS)
       { // Drag main window
          SDL_Point pos;
          m_player->m_playfieldWnd->GetPos(pos.x, pos.y);
+         const Window* const wnd = m_isMainWindow ? m_player->m_playfieldWnd : GetOutput(m_wndId).GetWindow();
+         wnd->GetPos(pos.x, pos.y);
+         pos.x += wnd->GetWidth() / 2;
+         pos.y += wnd->GetHeight() / 2;
+         SDL_DisplayID displayId = SDL_GetDisplayForPoint(&pos);
+         SDL_Rect displayBounds;
+         SDL_GetDisplayBounds(displayId, &displayBounds);
+
+         wnd->GetPos(pos.x, pos.y);
          const ImVec2 drag = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left);
          switch (m_player->m_liveUI->GetUIOrientation())
          {
@@ -615,13 +624,9 @@ void DisplaySettingsPage::Render(float elapsedS)
             break;
          default: assert(false);
          }
-         const string name = m_player->m_ptable->m_settings.GetWindow_Display(m_wndId);
-         const auto display = std::ranges::find_if(m_displays, [&name](const Window::DisplayConfig& display) { return display.displayName == name; });
-         if (display != m_displays.end())
-         {
-            pos.x = clamp(pos.x, 0, display->width - m_player->m_playfieldWnd->GetWidth());
-            pos.y = clamp(pos.y, 0, display->height - m_player->m_playfieldWnd->GetHeight());
-         }
+
+         pos.x = clamp(pos.x, displayBounds.x, displayBounds.x + displayBounds.w - m_player->m_playfieldWnd->GetWidth());
+         pos.y = clamp(pos.y, displayBounds.y, displayBounds.y + displayBounds.h - m_player->m_playfieldWnd->GetHeight());
          m_player->m_playfieldWnd->SetPos(pos.x, pos.y);
       }
       else if (GetOutput(m_wndId).GetMode() == RenderOutput::OM_EMBEDDED)
