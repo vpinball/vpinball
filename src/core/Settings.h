@@ -226,7 +226,7 @@ public:
       int, 1, "No Sync"s, "Vertical Sync"s, "Adaptive Sync"s, "Frame Pacing"s);
 #endif
    PropInt(Player, MaxFramerate, "Limit Framerate"s,
-      "-1 will not limit FPS\r\n0 will limit to the display refresh rates\r\nOther values will limit the FPS to it (energy saving/less heat, framerate stability)"s, -1, 300, -1);
+      "-1 will limit FPS to display refresh rate\r\n0 will not limit display refresh rate\r\nOther values will limit the FPS to it (energy saving/less heat, framerate stability)"s, -1, 300, -1);
    PropInt(Player, MaxPrerenderedFrames, "Max. Prerendered Frames"s, "Limit the FPS to the given value (energy saving/less heat, framerate stability), 0 will disable it"s, 0, 5, 0);
    PropInt(Player, VisualLatencyCorrection, "Visual Latency Correction"s,
       "Leave at -1 to get default latency correction based on display frequency.\r\nIf you measured your setup latency using tools like Intel's PresentMon, enter the average latency in ms."s,
