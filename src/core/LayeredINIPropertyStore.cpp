@@ -55,6 +55,15 @@ void LayeredINIPropertyStore::Load(const mINI::INIStructure& ini)
       LoadFromINI(id);
 }
 
+void LayeredINIPropertyStore::Load(const LayeredINIPropertyStore& store)
+{
+   m_modified = store.m_modified;
+   m_intValues = store.m_intValues;
+   m_floatValues = store.m_floatValues;
+   m_stringValues = store.m_stringValues;
+   m_ini = m_ini;
+}
+
 bool LayeredINIPropertyStore::LoadFromINI(PropertyRegistry::PropId id)
 {
    const PropertyDef* prop = m_registry.get().GetProperty(id);
@@ -99,7 +108,10 @@ bool LayeredINIPropertyStore::LoadFromINI(PropertyRegistry::PropId id)
    }
 
    case PropertyDef::Type::String:
-      Set(id, value);
+      if (value.empty()) // INI file does not gives us a way to know if the value is undefined or set to empty string, so we consider empty string as undefined
+         Reset(id);
+      else
+         Set(id, value);
       break;
 
    default: assert(false); break;
@@ -273,7 +285,7 @@ void LayeredINIPropertyStore::GenerateTemplate(const string& path) const
             }
             else
                file << '\n';
-            file << prop->m_propId << " =\n\n";
+            file << prop->m_propId << " = \n\n";
          }
       }
    }

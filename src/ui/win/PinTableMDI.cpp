@@ -107,9 +107,8 @@ LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
    {
       if (!m_table->m_filename.empty())
       {
-         const string INIFilename = m_table->GetSettingsFileName();
-         if (!INIFilename.empty())
-            m_table->m_settings.SaveToFile(INIFilename);
+         m_table->m_settings.SetIniPath(m_table->GetSettingsFileName());
+         m_table->m_settings.Save();
       }
       if (g_pvp->m_ptableActive == m_table)
          g_pvp->m_ptableActive = nullptr;

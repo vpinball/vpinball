@@ -566,7 +566,8 @@ public:
    void SetSettingsFileName(const string &path)
    {
       m_iniFileName = FileExists(path) ? path : string();
-      m_settings.LoadFromFile(GetSettingsFileName(), false);
+      m_settings.SetIniPath(GetSettingsFileName());
+      m_settings.Load(false);
    }
 
    string GetSettingsFileName() const

@@ -395,7 +395,8 @@ void WebServer::Upload(struct mg_connection *c, struct mg_http_message* hm)
 
    if (mg_http_upload(c, hm, &mg_fs_posix, path.c_str(), 1024 * 1024 * 500) == length) {
       if (*q == '\0' && file == "VPinballX.ini") {
-         g_pvp->m_settings.LoadFromFile(path, true);
+         g_pvp->m_settings.SetIniPath(path);
+         g_pvp->m_settings.Load(true);
          g_pvp->m_settings.Save();
       }
       SetLastUpdate();

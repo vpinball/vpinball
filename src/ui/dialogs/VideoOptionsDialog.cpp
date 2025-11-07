@@ -92,13 +92,12 @@ private:
 
 VideoOptionProperties::VideoOptionProperties(HWND hParent /* = nullptr*/)
    : CPropertySheet(_T("Video Options"), hParent)
+   , m_appSettings()
+   , m_tableSettings(&m_appSettings)
 {
-   m_appSettings = g_pvp->m_settings;
+   m_appSettings.Load(g_pvp->m_settings);
    if (g_pvp->m_ptableActive)
-   {
-      m_tableSettings = g_pvp->m_ptableActive->m_settings;
-      m_tableSettings.SetParent(&m_appSettings);
-   }
+      m_tableSettings.Load(g_pvp->m_ptableActive->m_settings);
    AddPage(new PFViewOptPage(m_appSettings, m_tableSettings));
    AddPage(new RenderOptPage(m_appSettings, m_tableSettings));
 }
@@ -204,15 +203,12 @@ void VideoOptionPropPage::ApplyChanges()
 {
    if (m_editedSettings != nullptr)
       SaveSettings(*m_editedSettings, m_editedSettings == &m_appSettings);
-   g_pvp->m_settings = m_appSettings;
+   g_pvp->m_settings.Load(m_appSettings);
    if (g_pvp->m_ptableActive)
-   {
-      g_pvp->m_ptableActive->m_settings = m_tableSettings;
-      g_pvp->m_ptableActive->m_settings.SetParent(&g_pvp->m_settings);
-   }
+      g_pvp->m_ptableActive->m_settings.Load(m_tableSettings);
    g_pvp->m_settings.Save();
    if (g_pvp->m_ptableActive && !g_pvp->m_ptableActive->GetSettingsFileName().empty())
-      g_pvp->m_ptableActive->m_settings.SaveToFile(g_pvp->m_ptableActive->GetSettingsFileName());
+      g_pvp->m_ptableActive->m_settings.Save();
 }
 
 #pragma endregion

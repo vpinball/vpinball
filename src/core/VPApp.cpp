@@ -961,7 +961,8 @@ BOOL VPApp::InitInstance()
       m_iniFileName = m_vpinball.GetPrefPath() + "VPinballX.ini";
    }
 
-   m_vpinball.m_settings.LoadFromFile(m_iniFileName, true);
+   m_vpinball.m_settings.SetIniPath(m_iniFileName);
+   m_vpinball.m_settings.Load(true);
    m_vpinball.m_settings.SetVersion_VPinball(string(VP_VERSION_STRING_DIGITS), false);
    m_vpinball.LoadEditorSetupFromSettings();
 

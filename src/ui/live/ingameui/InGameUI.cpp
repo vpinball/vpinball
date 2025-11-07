@@ -93,7 +93,7 @@ void InGameUI::NavigateBack()
    }
    else
    {
-      const string& path = m_navigationHistory.back();
+      const string path = m_navigationHistory.back();
       m_navigationHistory.pop_back();
       Navigate(path, true);
    }

@@ -10,5 +10,6 @@ public:
    VideoOptionProperties(HWND hParent /* = nullptr*/);
 
 private:
-   Settings m_appSettings, m_tableSettings;
+   Settings m_appSettings;
+   Settings m_tableSettings;
 };

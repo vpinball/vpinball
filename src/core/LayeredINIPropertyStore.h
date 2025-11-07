@@ -31,8 +31,10 @@ public:
 
    bool Load(const string& path);
    void Load(const mINI::INIStructure& ini);
+   void Load(const LayeredINIPropertyStore& store);
    void Save();
    bool IsModified() const { return m_modified; }
+   void SetModified(bool modified) { m_modified = modified; }
    void GenerateTemplate(const string& path) const;
 
    void Reset(PropertyRegistry::PropId propId) override;
