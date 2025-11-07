@@ -408,8 +408,8 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    #endif
 
    // Store the user requested VSync setting, but always initialize with VSync disabled as we will enable it when needed
-   const bool useVSync = init.resolution.reset & BGFX_RESET_VSYNC;
-   assert(!(useVSync && (g_pplayer->GetTargetRefreshRate() > rd->m_outputWnd[0]->GetRefreshRate()))); // VSync must be disabled if targeting a refresh rate higher than the display's one
+   //const bool useVSync = init.resolution.reset & BGFX_RESET_VSYNC;
+   //assert(!(useVSync && (g_pplayer->GetTargetRefreshRate() > rd->m_outputWnd[0]->GetRefreshRate()))); // VSync must be disabled if targeting a refresh rate higher than the display's one
    init.resolution.reset &= ~BGFX_RESET_VSYNC;
 
    g_pplayer->m_renderProfiler->SetThreadLock();
@@ -576,6 +576,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
          g_pplayer->m_renderProfiler->ExitProfileSection();
          if (!rd->m_framePending)
             continue;
+         const bool useVSync = g_pplayer->GetVideoSyncMode() == VideoSyncMode::VSM_VSYNC;
          const bool noSync = rd->m_frameNoSync;
          const bool needsVSync = useVSync && !noSync; // User has activated VSync, and we are not processing an unsynced frame (offline rendering for example)
          g_pplayer->m_curFrameSyncOnVBlank = needsVSync;

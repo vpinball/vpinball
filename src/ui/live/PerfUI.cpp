@@ -261,15 +261,15 @@ void PerfUI::RenderFPS()
    // Display simple FPS window
    #if defined(ENABLE_BGFX)
    // TODO We are missing a way to evaluate properly if we are syncing on display or not
-   bool pop = (m_player->m_videoSyncMode != VideoSyncMode::VSM_NONE)
+   bool pop = (m_player->GetVideoSyncMode() != VideoSyncMode::VSM_NONE)
       && ((m_player->m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME) - 100) * m_player->m_playfieldWnd->GetRefreshRate() < 1000000);
       // && (abs(static_cast<float>(m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME)) - (1000000.f / m_player->m_playfieldWnd->GetRefreshRate())) < 100.f);
    if (pop)
       ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.f, 0.5f, 0.2f, 1.f)); // Rendering at target framerate => green background
    #else
-   if (m_player->m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && m_player->m_lastFrameSyncOnFPS)
+   if (m_player->GetVideoSyncMode() == VideoSyncMode::VSM_FRAME_PACING && m_player->m_lastFrameSyncOnFPS)
       ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.f, 0.f, 0.75f, 1.f)); // Running at app regulated speed (not hardware)
-   else if (m_player->m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && !m_player->m_lastFrameSyncOnVBlank)
+   else if (m_player->GetVideoSyncMode() == VideoSyncMode::VSM_FRAME_PACING && !m_player->m_lastFrameSyncOnVBlank)
       ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.75f, 0.f, 0.f, 1.f)); // Running slower than expected
    #endif
    ImGui::SetNextWindowBgAlpha(0.5f);
@@ -283,9 +283,9 @@ void PerfUI::RenderFPS()
    if (pop)
       ImGui::PopStyleColor();
    #else
-   if (m_player->m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && m_player->m_lastFrameSyncOnFPS)
+   if (m_player->GetVideoSyncMode() == VideoSyncMode::VSM_FRAME_PACING && m_player->m_lastFrameSyncOnFPS)
       ImGui::PopStyleColor();
-   else if (m_player->m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && !m_player->m_lastFrameSyncOnVBlank)
+   else if (m_player->GetVideoSyncMode() == VideoSyncMode::VSM_FRAME_PACING && !m_player->m_lastFrameSyncOnVBlank)
       ImGui::PopStyleColor();
    #endif
 
