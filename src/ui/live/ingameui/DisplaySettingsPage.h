@@ -20,6 +20,7 @@ class DisplaySettingsPage final : public InGameUIPage
 {
 public:
    explicit DisplaySettingsPage(VPXWindowId wndId);
+   void Close(bool isBackwardAnimation) override;
    void Render(float elapsedS) override;
 
 private:
@@ -30,6 +31,7 @@ private:
 
    const VPXWindowId m_wndId;
    const bool m_isMainWindow;
+   bool m_staticPrepassDisabled = false;
    vector<Window::DisplayConfig> m_displays;
    vector<string> m_displayNames;
    int m_arLock = 0;
