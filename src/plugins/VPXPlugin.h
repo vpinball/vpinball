@@ -157,14 +157,6 @@ typedef struct GetAnciliaryRendererMsg
 } GetAnciliaryRendererMsg;
 
 
-// Core VPX settings pages
-// GetOption 'pageId' parameter is either the id of a loaded plugin or the id of one of the core VPX pages defined below
-#define VPX_TWEAK_VIEW           "VPX.tweak.view"
-#define VPX_TWEAK_TABLE          "VPX.tweak.table"
-// GetOption bitmask flags defining where the setting should be displayed
-#define VPX_OPT_SHOW_UI          1
-#define VPX_OPT_SHOW_TWEAK       2
-
 // Helper defines
 
 // Conversions to/from VP units (50 VPU = 1.0625 inches which is 1"1/16, the default size of a ball, 1 inch is 2.54cm)
@@ -251,8 +243,6 @@ typedef struct VPXPluginAPI
    void (MSGPIAPI *GetTableInfo)(VPXTableInfo* info);
 
    // User Interface
-   enum OptionUnit { NONE, PERCENT };
-   float (MSGPIAPI *GetOption)(const char* pageId, const char* optionId, const unsigned int showMask, const char* optionName, const float minValue, const float maxValue, const float step, const float defaultValue, const enum OptionUnit unit, const char** values);
    unsigned int (MSGPIAPI *PushNotification)(const char* msg, const int lengthMs);
    void (MSGPIAPI *UpdateNotification)(const unsigned int handle, const char* msg, const int lengthMs);
 

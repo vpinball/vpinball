@@ -17,10 +17,10 @@ public:
    const string& GetLabel() const { return m_label; }
 
    void ClearMapping();
-   void LoadMapping(const Settings& settings) { SetMapping(settings.LoadValueWithDefault(Settings::Section::Input, "Mapping." + m_settingId, m_defaultMappings)); }
+   void LoadMapping(const Settings& settings);
+   void SaveMapping(Settings& settings) const;
    void SetMapping(const string& mappingString);
    void SetMapping(const SensorMapping& mapping);
-   void SaveMapping(Settings& settings) const;
    string GetMappingLabel() const;
    string GetMappingString() const;
    bool IsMapped() const { return m_inputMapping != nullptr; }

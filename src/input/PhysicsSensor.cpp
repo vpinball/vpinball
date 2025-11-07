@@ -21,6 +21,21 @@ void PhysicsSensor::ClearMapping()
    m_inputMapping = nullptr;
 }
 
+void PhysicsSensor::LoadMapping(const Settings& settings)
+{
+   const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Mapping." + m_settingId, "Mapping." + m_settingId, ""s, m_defaultMappings));
+   SetMapping(settings.GetString(propId));
+}
+
+void PhysicsSensor::SaveMapping(Settings& settings) const
+{
+   const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Mapping." + m_settingId, "Mapping." + m_settingId, ""s, m_defaultMappings));
+   if (m_inputMapping == nullptr)
+      settings.Reset(propId);
+   else
+      settings.Set(propId, GetMappingString(), false);
+}
+
 void PhysicsSensor::SetMapping(const string& mappingString)
 {
    ClearMapping();
@@ -106,14 +121,6 @@ void PhysicsSensor::SetMapping(const SensorMapping& mapping)
    m_filter->SetSource(m_integrator);
 
    m_integrator->SetName(m_label);
-}
-
-void PhysicsSensor::SaveMapping(Settings& settings) const
-{
-   if (m_inputMapping == nullptr)
-      settings.DeleteValue(Settings::Section::Input, "Mapping." + m_settingId);
-   else
-      settings.SaveValue(Settings::Section::Input, "Mapping." + m_settingId, GetMappingString());
 }
 
 string PhysicsSensor::GetMappingString() const

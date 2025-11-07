@@ -1129,53 +1129,24 @@ void VPinball::LoadFileName(const string& filename, const bool updateEditor, VPX
 
       AddMDITable(mdiTable);
 
-      // auto-import POV settings, if it exists. This is kept for backward compatibility as POV settings 
-      // are now normal settings stored with others in app/table ini file. It will be only imported if no ini settings are defined
-      bool hasTablePovSettings = false, hasAppPovSettings = false;
-      static const string vsPrefix[3] = { "ViewDT"s, "ViewCab"s, "ViewFSS"s };
-      static const char *vsFields[15] = { "Mode", "ScaleX", "ScaleY", "ScaleZ", "PlayerX", "PlayerY", "PlayerZ", "LookAt", "Rotation", "FOV", "Layback", "HOfs", "VOfs", "WindowTop", "WindowBot" };
-      for (int i = 0; i < 3; i++)
-         for (int j = 0; j < 15; j++)
-         {
-            hasTablePovSettings |= ppt->m_settings.HasValue(Settings::TableOverride, vsPrefix[i] + vsFields[j], false);
-            hasAppPovSettings |= m_settings.HasValue(Settings::TableOverride, vsPrefix[i] + vsFields[j], false);
-         }
-      if (!hasTablePovSettings)
-      {
-         string filenameAuto = m_currentTablePath + ppt->m_title + ".pov";
-         if (FileExists(filenameAuto)) // We check if there is a matching table pov settings file first
-         {
-            ppt->ImportBackdropPOV(filenameAuto);
-         }
-         else if (!hasAppPovSettings) // Otherwise, we seek for autopov settings (only if we do not already have settings in the app settings)
-         {
-            filenameAuto = m_currentTablePath + "autopov.pov";
-            if (FileExists(filenameAuto))
-               ppt->ImportBackdropPOV(filenameAuto);
-         }
-      }
+      // Auto-import POV settings, if it exists. This is kept for backward compatibility as POV settings 
+      // are now normal settings stored with others in app/table ini file. It will be only imported if there is no table ini file
+      if (const string filenameAuto = m_currentTablePath + ppt->m_title + ".pov"; !FileExists(ppt->GetSettingsFileName()) && FileExists(filenameAuto))
+         ppt->ImportBackdropPOV(filenameAuto);
+      else if (const string filenameAuto2 = m_currentTablePath + "autopov.pov"; FileExists(filenameAuto2))
+         ppt->ImportBackdropPOV(filenameAuto2);
 
       // auto-import VBS table script, if it exists...
-      string filenameAuto = m_currentTablePath + ppt->m_title + ".vbs";
-      if (FileExists(filenameAuto)) // We check if there is a matching table vbs first
+      if (const string filenameAuto = m_currentTablePath + ppt->m_title + ".vbs"; FileExists(filenameAuto)) // We check if there is a matching table vbs first
          ppt->m_pcv->LoadFromFile(filenameAuto);
-      else // Otherwise we seek in the Scripts folder
-      {
-         filenameAuto = m_myPath + "scripts" + PATH_SEPARATOR_CHAR + ppt->m_title + ".vbs";
-         if (FileExists(filenameAuto))
-            ppt->m_pcv->LoadFromFile(filenameAuto);
-      }
+      else if (const string filenameAuto2 = m_myPath + "scripts" + PATH_SEPARATOR_CHAR + ppt->m_title + ".vbs"; FileExists(filenameAuto2))  // Otherwise we seek in the Scripts folder
+         ppt->m_pcv->LoadFromFile(filenameAuto2);
 
       // auto-import VPP settings, if it exists...
-      filenameAuto = m_currentTablePath + ppt->m_title + ".vpp";
-      if (FileExists(filenameAuto)) // We check if there is a matching table vpp settings file first
+      if (const string filenameAuto = m_currentTablePath + ppt->m_title + ".vpp"; FileExists(filenameAuto)) // We check if there is a matching table vpp settings file first
          ppt->ImportVPP(filenameAuto);
-      else // Otherwise, we seek for autovpp settings
-      {
-         filenameAuto = m_currentTablePath + "autovpp.vpp";
-         if (FileExists(filenameAuto))
-            ppt->ImportVPP(filenameAuto);
-      }
+      else if (const string filenameAuto2 = m_currentTablePath + "autovpp.vpp"; FileExists(filenameAuto2)) // Otherwise, we seek for autovpp settings
+         ppt->ImportVPP(filenameAuto2);
 
       // get the load path from the filename
       m_settings.SetRecentDir_LoadDir(m_currentTablePath, false);

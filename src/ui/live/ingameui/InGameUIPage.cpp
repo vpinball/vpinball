@@ -314,6 +314,11 @@ void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
    case InGameUIItem::Type::Property:
       switch (item->m_property->m_type)
       {
+      case VPX::Properties::PropertyDef::Type::String:
+         // Unsupported for now
+         assert(false);
+         break;
+
       case VPX::Properties::PropertyDef::Type::Enum:
          if (isInitialPress)
          {

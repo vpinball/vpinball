@@ -2688,7 +2688,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
          bool overwriteGlobalDetailLevel;
          pbr->GetBool(overwriteGlobalDetailLevel);
          if (!overwriteGlobalDetailLevel)
-            m_settings.DeleteValue(Settings::Player, "AlphaRampAccuracy"s);
+            m_settings.ResetPlayer_AlphaRampAccuracy();
       }
       break;
    case FID(OGDN):
@@ -7807,7 +7807,7 @@ std::optional<VPX::Properties::PropertyRegistry::PropId> PinTable::RegisterOptio
       SafeArrayUnaccessData(psa);
    }
 
-   const string format = unit == Settings::OT_PERCENT ? "%4.1f %%" : "%4.1f";
+   const bool isPercent = unit == 1;
    if (!literals.empty())
    {
       // Detect & implement On/Off, True/False, Hide/Show as a toggle
@@ -7837,14 +7837,14 @@ std::optional<VPX::Properties::PropertyRegistry::PropId> PinTable::RegisterOptio
    {
       auto prop = std::make_unique<VPX::Properties::IntPropertyDef>("TableOption"s, optId, name, ""s, static_cast<int>(minValue), static_cast<int>(maxValue), static_cast<int>(defaultValue));
       const auto propId = Settings::GetRegistry().Register(std::move(prop));
-      m_tableOptions.emplace_back(propId, Settings::OT_PERCENT ? 100.f : 1.f, Settings::OT_PERCENT ? "%3d %%"s : "%d"s, static_cast<float>(m_settings.GetInt(propId)));
+      m_tableOptions.emplace_back(propId, isPercent ? 100.f : 1.f, isPercent ? "%3d %%"s : "%d"s, static_cast<float>(m_settings.GetInt(propId)));
       return propId;
    }
    else
    {
       auto prop = std::make_unique<VPX::Properties::FloatPropertyDef>("TableOption"s, optId, name, ""s, minValue, maxValue, step, defaultValue);
       const auto propId = Settings::GetRegistry().Register(std::move(prop));
-      m_tableOptions.emplace_back(propId, Settings::OT_PERCENT ? 100.f : 1.f, Settings::OT_PERCENT ? "%4.1f %%"s : "%4.1f"s, m_settings.GetFloat(propId));
+      m_tableOptions.emplace_back(propId, isPercent ? 100.f : 1.f, isPercent ? "%4.1f %%"s : "%4.1f"s, m_settings.GetFloat(propId));
       return propId;
    }
 

@@ -26,7 +26,7 @@ string Settings::GetBackwardCompatibleSection(const string &groupId)
    return groupId;
 }
 
-static const string regKey[Settings::Plugin00] = { "Controller"s, "Editor"s, "Standalone"s, "Player"s, "Input"s, "DMD"s, "Alpha"s, 
+const string Settings::regKey[Settings::Plugin00] = { "Controller"s, "Editor"s, "Standalone"s, "Player"s, "Input"s, "DMD"s, "Alpha"s, 
       "Backglass"s, "ScoreView"s, "Topper"s, "PlayerVR"s, "RecentDir"s, "Version"s, "CVEdit"s, "TableOverride"s, "TableOption"s, "ControllerDevices"s,
       "DefaultProps\\Ball"s, "DefaultProps\\Bumper"s, "DefaultProps\\Decal"s, "DefaultProps\\EMReel"s, "DefaultProps\\Flasher"s, "DefaultProps\\Flipper"s,
       "DefaultProps\\Gate"s, "DefaultProps\\HitTarget"s, "DefaultProps\\Kicker"s, "DefaultProps\\Light"s, "DefaultProps\\LightSequence"s,
@@ -35,7 +35,6 @@ static const string regKey[Settings::Plugin00] = { "Controller"s, "Editor"s, "St
       "Defaults\\Camera"s, "Defaults\\PartGroup"s
    };
 vector<string> Settings::m_settingKeys = vector<string>(regKey, regKey + Settings::Section::Plugin00);
-vector<Settings::OptionDef> Settings::m_pluginOptions;
 
 Settings::Section Settings::GetSection(const string& name)
 {
@@ -47,12 +46,6 @@ Settings::Section Settings::GetSection(const string& name)
       m_settingKeys.push_back(name);
    }
    return (Settings::Section)index;
-}
-
-const string &Settings::GetSectionName(const Section section)
-{
-   assert(0 <= section && section < (int)m_settingKeys.size());
-   return m_settingKeys[section];
 }
 
 Settings::Settings(Settings* parent)
@@ -137,32 +130,6 @@ void Settings::Set(VPX::Properties::PropertyRegistry::PropId propId, const strin
    }
 }
 
-void Settings::RegisterBoolSetting(const Section section, const string &key, const bool defVal, const bool addDefaults, const string &comments)
-{
-   int val;
-   bool present = LoadValue(section, key, val);
-   if (present && !((val == 0) || (val == 1)))
-   {
-      DeleteValue(section, key);
-      present = false;
-   }
-   if (!present && addDefaults)
-      SaveValue(section, key, defVal);
-}
-
-void Settings::RegisterIntSetting(const Section section, const string &key, const int defVal, const int minVal, const int maxVal, const bool addDefaults, const string &comments)
-{
-   assert((minVal <= defVal) && (defVal <= maxVal));
-   int val;
-   bool present = LoadValue(section, key, val);
-   if (present && ((val < minVal) || (val > maxVal)))
-   {
-      DeleteValue(section, key);
-      present = false;
-   }
-   if (!present && addDefaults)
-      SaveValue(section, key, defVal);
-}
 
 
 bool Settings::LoadFromFile(const string& path, const bool createDefault)
@@ -355,14 +322,6 @@ void Settings::Copy(const Settings& settings)
    m_store.UpdateParent();
 }
 
-bool Settings::HasValue(const Section section, const string& key, const bool searchParent) const
-{
-   bool hasInIni = m_ini.get(m_settingKeys[section]).has(key);
-   if (!hasInIni && m_parent && searchParent)
-      hasInIni = m_parent->HasValue(section, key, searchParent);
-   return hasInIni;
-}
-
 bool Settings::LoadValue(const Section section, const string &key, float &pfloat) const
 {
    string val;
@@ -506,53 +465,4 @@ bool Settings::DeleteSubKey(const Section section, const bool deleteFromParent)
       success &= m_ini.remove(m_settingKeys[section]);
    }
    return success;
-}
-
-Settings::OptionDef &Settings::RegisterSetting(const Section section, const string &id, const unsigned int showMask, const string &name, float minValue, float maxValue, float step,
-   float defaultValue,
-   OptionUnit unit, const vector<string> &literals)
-{
-   assert(section >= Plugin00); // For the time being, this system is only used for custom table and plugin options (could be extend for all options to get the benefit of validation, fast access, and remove unneeded copied states...)
-
-   vector<OptionDef> &options = m_pluginOptions;
-   OptionDef *opt = nullptr;
-   bool isNew = false;
-   for (auto &option : options)
-   {
-      if (option.section == section && option.id == id)
-      {
-         opt = &option;
-         break;
-      }
-   }
-   if (opt == nullptr)
-   {
-      isNew = true;
-      options.push_back(OptionDef());
-      opt = &options.back();
-   }
-
-   opt->section = section;
-   opt->id = id;
-   opt->showMask = showMask;
-   opt->name = name;
-   opt->minValue = minValue;
-   opt->maxValue = maxValue;
-   opt->step = step;
-   opt->defaultValue = defaultValue;
-   opt->literals = literals;
-   opt->tokenizedLiterals.clear();
-   for (size_t i = 0; i < literals.size(); ++i) {
-      if (i > 0)
-         opt->tokenizedLiterals += "||";
-      opt->tokenizedLiterals += literals[i];
-   }
-   opt->unit = unit;
-
-   if (isNew)
-      opt->value = LoadValueWithDefault(section, id, defaultValue);
-
-   opt->value = clamp(minValue + step * roundf((opt->value - minValue) / step), minValue, maxValue);
-
-   return *opt;
 }

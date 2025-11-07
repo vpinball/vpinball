@@ -1,7 +1,5 @@
 // license:GPLv3+
 
-#pragma once
-
 #include "core/stdafx.h"
 #include "LayeredINIPropertyStore.h"
 

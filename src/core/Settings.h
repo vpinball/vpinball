@@ -1476,6 +1476,7 @@ public:
    // Standalone
    PropEnumWithMin(Standalone, RenderingModeOverride, "Override rendering mode"s, ""s, int, -1, g_isMobile ? 2 : -1, "Default"s, "2D"s, "Stereo 3D"s, "VR"s);
    PropBool(Standalone, Haptics, "Haptics"s, ""s, g_isMobile);
+   PropString(Standalone, VPRegPath, "VPRegPath"s, ""s, ""s);
 
    // Editor settings
    PropIntUnbounded(Editor, WindowLeft, "WindowLeft"s, ""s, -1);
@@ -1648,6 +1649,7 @@ public:
    bool IsModified() const { return m_modified; }
    void SetModified(const bool modified) { m_modified = modified; }
 
+private:
    enum Section
    {
       Controller,
@@ -1700,10 +1702,6 @@ public:
    };
 
    static Section GetSection(const string &szName);
-   static const string &GetSectionName(const Section section);
-   static int GetNPluginSections() { return (int)m_settingKeys.size() - Plugin00; }
-
-   bool HasValue(const Section section, const string &key, const bool searchParent = false) const;
 
    bool LoadValue(const Section section, const string &key, string &val) const;
    bool LoadValue(const Section section, const string &key, float &pfloat) const;
@@ -1724,37 +1722,15 @@ public:
    bool DeleteValue(const Section section, const string &key, const bool deleteFromParent = false);
    bool DeleteSubKey(const Section section, const bool deleteFromParent = false);
 
-   enum OptionUnit
-   {
-      OT_NONE, // Display without a unit
-      OT_PERCENT, // Shows valut multiplied by 100, with % as the unit
-   };
-   struct OptionDef
-   {
-      Section section;
-      string id, name;
-      int showMask;
-      float minValue, maxValue, step, defaultValue, value;
-      OptionUnit unit;
-      vector<string> literals;
-      string tokenizedLiterals;
-   };
-   OptionDef &RegisterSetting(const Section section, const string &id, const unsigned int showMask, const string &name, float minValue, float maxValue, float step, float defaultValue,
-      OptionUnit unit, const vector<string> &literals);
-   static const vector<OptionDef> &GetPluginSettings() { return m_pluginOptions; }
-
-private:
-   void RegisterBoolSetting(const Section section, const string &key, const bool defVal, const bool addDefaults, const string &comments = string());
-   void RegisterIntSetting(const Section section, const string &key, const int defVal, const int minVal, const int maxVal, const bool addDefaults, const string &comments = string());
-
    bool m_modified = false;
    unsigned int m_modificationIndex = 0;
    string m_iniPath;
    mINI::INIStructure m_ini;
    Settings *m_parent;
 
+   static const string regKey[Settings::Plugin00];
+
    // Shared across all settings
-   static vector<OptionDef> m_pluginOptions;
    static vector<string> m_settingKeys;
 
    // Custom store that delegates to existing implementation while migrating
