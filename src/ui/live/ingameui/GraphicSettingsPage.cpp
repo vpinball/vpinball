@@ -54,12 +54,16 @@ GraphicSettingsPage::GraphicSettingsPage()
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_MaxFramerate, "%3d FPS"s, //
-      [this]() { return m_player->m_ptable->m_settings.GetPlayer_MaxFramerate(); }, //
-      [this](int, int v)
+      [this]()
       {
-         m_player->m_ptable->m_settings.SetPlayer_MaxFramerate(v, false);
-         m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000);
-      }));
+         float target = m_player->GetTargetRefreshRate();
+         if (target == m_player->m_playfieldWnd->GetRefreshRate())
+            return -1; // Main display refresh rate
+         if (target == 10000.f)
+            return 0; // Unlimited
+         return static_cast<int>(target);
+      }, //
+      [this](int, int v) { m_player->SetTargetRefreshRate(v); }));
 
    #ifndef ENABLE_OPENGL
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)

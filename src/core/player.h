@@ -132,6 +132,7 @@ public:
    bool m_lastFrameSyncOnFPS = false;
 
    float GetTargetRefreshRate() const { return m_maxFramerate; }
+   void SetTargetRefreshRate(float v) { m_maxFramerate = v < 0.f ? m_playfieldWnd->GetRefreshRate() : v == 0.f ? 10000.f : v < 24.f ? 24.f : v; }
    bool m_curFrameSyncOnFPS = false;
    bool m_curFrameSyncOnVBlank = false;
    
