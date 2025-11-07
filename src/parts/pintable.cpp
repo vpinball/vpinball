@@ -767,7 +767,7 @@ PinTable* PinTable::CopyForPlay()
       dst->m_pcv->m_script_text = VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(src->m_pcv->m_script_text);
    #endif
 
-   dst->m_settings.Copy(src->m_settings);
+   dst->m_settings.Load(src->m_settings);
 
    dst->m_title = src->m_title;
    dst->m_filename = src->m_filename;
@@ -1230,13 +1230,10 @@ HRESULT PinTable::Save(const bool saveAs)
 #endif
 
    // Save user custom settings file (if any) along the table file
-   const string INIFilename = GetSettingsFileName();
-   if (!INIFilename.empty())
-   {
-      // Force saving as we may have upgraded the table version (from pre 10.8 to 10.8) or changed the file path
-      m_settings.SetModified(true);
-      m_settings.SaveToFile(INIFilename);
-   }
+   // Force saving as we may have upgraded the table version (from pre 10.8 to 10.8) or changed the file path
+   m_settings.SetModified(true);
+   m_settings.SetIniPath(GetSettingsFileName());
+   m_settings.Save();
 
    return S_OK;
 }
@@ -1863,9 +1860,8 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
    m_filename = filename;
 
    // Load user custom settings before actually loading the table for settings applying during load
-   const string INIFilename = GetSettingsFileName();
-   if (!INIFilename.empty())
-      m_settings.LoadFromFile(INIFilename, false);
+   m_settings.SetIniPath(GetSettingsFileName());
+   m_settings.Load(false);
 
    HRESULT hr;
    IStorage* pstgRoot;
@@ -4198,7 +4194,8 @@ void PinTable::ImportBackdropPOV(const string &filename)
    if (ext == "ini")
    {
       Settings settings;
-      settings.LoadFromFile(file, false);
+      settings.SetIniPath(file);
+      settings.Load(false);
       for (int id = 0; id < 3; id++)
       {
          const string &keyPrefix = vsPrefix[id];
@@ -4433,11 +4430,10 @@ void PinTable::ExportBackdropPOV() const
    Settings settings;
    for (int i = 0; i < 3; i++)
       mViewSetups[i].SaveToTableOverrideSettings(settings, (ViewSetupID)i);
-   settings.SaveToFile(iniFileName);
-
    if (settings.IsModified())
    {
-      settings.SaveToFile(iniFileName);
+      settings.SetIniPath(iniFileName);
+      settings.Save();
       if (g_pplayer)
          g_pplayer->m_liveUI->PushNotification("POV exported to "s.append(iniFileName), 5000);
    }
