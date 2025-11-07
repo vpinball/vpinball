@@ -127,19 +127,20 @@ private:
 public:
    void GameLoop();
 
-   VideoSyncMode m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING;
-   bool m_lastFrameSyncOnVBlank = false;
-   bool m_lastFrameSyncOnFPS = false;
-
+   VideoSyncMode GetVideoSyncMode() const { return m_videoSyncMode; }
+   void SetVideoSyncMode(VideoSyncMode mode) { m_videoSyncMode = mode; }
    float GetTargetRefreshRate() const { return m_maxFramerate; }
    void SetTargetRefreshRate(float v) { m_maxFramerate = v < 0.f ? m_playfieldWnd->GetRefreshRate() : v == 0.f ? 10000.f : v < 24.f ? 24.f : v; }
    bool m_curFrameSyncOnFPS = false;
    bool m_curFrameSyncOnVBlank = false;
+   bool m_lastFrameSyncOnVBlank = false;
+   bool m_lastFrameSyncOnFPS = false;
    
    FrameProfiler m_logicProfiler; // Frame timing profiler to be used when measuring timings from the game logic thread
    FrameProfiler* m_renderProfiler = nullptr; // Frame timing profiler to be used when measuring timings from the render thread (same as game logic profiler for single threaded mode)
 
 private:
+   VideoSyncMode m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING;
    float m_maxFramerate = 0.f; // targeted refresh rate in Hz, if larger refresh rate it will limit FPS by uSleep() //!! currently does not work adaptively as it would require IDirect3DDevice9Ex which is not supported on WinXP
    uint64_t m_startFrameTick;  // System time in us when render frame was started (beginning of frame animation then collect,...)
    unsigned int m_onPrepareFrameMsgId;

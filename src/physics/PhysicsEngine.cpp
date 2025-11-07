@@ -619,7 +619,8 @@ void PhysicsEngine::UpdatePhysics()
       #ifdef ACCURATETIMERS
       g_pplayer->ApplyDeferredTimerChanges();
       #if !defined(ENABLE_BGFX)
-      if (g_pplayer->m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING || g_pplayer->m_logicProfiler.Get(FrameProfiler::PROFILE_SCRIPT) <= 1000 * MAX_TIMERS_MSEC_OVERALL) // if overall script time per frame exceeded, skip
+      if (g_pplayer->GetVideoSyncMode() == VideoSyncMode::VSM_FRAME_PACING
+         || g_pplayer->m_logicProfiler.Get(FrameProfiler::PROFILE_SCRIPT) <= 1000 * MAX_TIMERS_MSEC_OVERALL) // if overall script time per frame exceeded, skip
       #endif
          g_pplayer->FireTimers(g_pplayer->m_time_msec);
       #endif

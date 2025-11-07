@@ -11,6 +11,10 @@ class GraphicSettingsPage final : public InGameUIPage
 {
 public:
    GraphicSettingsPage();
+
+private:
+   void BuildPage();
+   unsigned int m_notificationId = 0;
 };
 
 }

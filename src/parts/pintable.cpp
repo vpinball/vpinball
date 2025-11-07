@@ -2671,7 +2671,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
                m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_ADAPTIVE_VSYNC, true);
                break;
             default:
-               m_settings.SetPlayer_MaxFramerate(tableAdaptiveVSync, true);
+               m_settings.SetPlayer_MaxFramerate(static_cast<float>(tableAdaptiveVSync), true);
                m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_ADAPTIVE_VSYNC, true);
                break;
             }
@@ -4326,7 +4326,7 @@ void PinTable::ImportBackdropPOV(const string &filename)
                         m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_ADAPTIVE_VSYNC, true);
                         break;
                      default:
-                        m_settings.SetPlayer_MaxFramerate(tableAdaptiveVSync, true);
+                        m_settings.SetPlayer_MaxFramerate(static_cast<float>(tableAdaptiveVSync), true);
                         m_settings.SetPlayer_SyncMode(VideoSyncMode::VSM_ADAPTIVE_VSYNC, true);
                         break;
                      }
