@@ -20,11 +20,11 @@ public:
    ~InputAction() override = default;
 
    void ClearMapping();
-   void LoadMapping(const Settings& settings) { SetMapping(settings.LoadValueWithDefault(Settings::Section::Input, "Mapping." + m_settingId, m_defaultMappings)); }
+   void LoadMapping(const Settings& settings);
+   void SaveMapping(Settings& settings) const;
    void SetMapping(const string& mappingString);
    void AddMapping(const vector<ButtonMapping>& mapping);
    bool HasMapping(const vector<ButtonMapping>& mapping) const;
-   void SaveMapping(Settings& settings) const { settings.SaveValue(Settings::Section::Input, "Mapping." + m_settingId, GetMappingString()); }
    bool IsMapped() const { return !m_inputMappings.empty(); }
    const string& GetDefaultMappingString() const { return m_defaultMappings; }
    string GetMappingString() const;

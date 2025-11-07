@@ -383,6 +383,7 @@ void ScoreView::Parse(const std::filesystem::path& path, std::istream& content)
             return;
          }
          break;
+
       case VisualType::SegDisplay:
          if (visual.nElements == -1)
             visual.nElements = (int)visual.xOffsets.size();
@@ -397,6 +398,9 @@ void ScoreView::Parse(const std::filesystem::path& path, std::istream& content)
             for (int i = 0; i < visual.nElements; i++)
                visual.xOffsets.push_back(visual.w * static_cast<float>(i) / static_cast<float>(visual.nElements));
          }
+         break;
+
+      case VisualType::Image:
          break;
       }
    }

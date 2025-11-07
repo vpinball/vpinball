@@ -50,7 +50,6 @@ private:
    static void GetVpxInfo(VPXInfo* info);
    static void GetTableInfo(VPXTableInfo* info);
 
-   static float GetOption(const char* pageId, const char* optionId, const unsigned int showMask, const char* optionName, const float minValue, const float maxValue, const float step, const float defaultValue, const VPXPluginAPI::OptionUnit unit, const char** values);
    static unsigned int PushNotification(const char* msg, const int lengthMs);
    static void UpdateNotification(const unsigned int handle, const char* msg, const int lengthMs);
 

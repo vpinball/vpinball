@@ -147,10 +147,10 @@ private:
          case SDL_GAMEPAD_BUTTON_MISC4: return "Misc #4"s;
          case SDL_GAMEPAD_BUTTON_MISC5: return "Misc #5"s;
          case SDL_GAMEPAD_BUTTON_MISC6: return "Misc #6"s;
+         default: return ""s;
          }
          break;
       }
-      return ""s;
    }
 
    static string GetGamepadAxisName(SDL_Gamepad* gamepad, SDL_GamepadAxis axis)
@@ -163,8 +163,8 @@ private:
       case SDL_GAMEPAD_AXIS_RIGHTY: return "Right Stick Y"s;
       case SDL_GAMEPAD_AXIS_LEFT_TRIGGER: return "Left Trigger"s;
       case SDL_GAMEPAD_AXIS_RIGHT_TRIGGER: return "Right Trigger"s;
+      default: return ""s;
       }
-      return ""s;
    }
 
    static uint16_t GetGamepadButton(SDL_GamepadButton button, SDL_GamepadBinding** bindings, int nBindings)

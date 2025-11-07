@@ -368,11 +368,21 @@ STDMETHODIMP ScriptGlobalTable::GetCustomParam(LONG index, BSTR *param)
 STDMETHODIMP ScriptGlobalTable::get_Setting(BSTR Section, BSTR SettingName, BSTR *param)
 {
    const string sectionSz = MakeString(Section);
-   const Settings::Section sectionId = Settings::GetSection(sectionSz);
    const string settingSz = MakeString(SettingName);
-   string value;
-   if (g_pvp->m_settings.LoadValue(sectionId, settingSz, value))
+   Settings &settings = g_pplayer ? g_pplayer->m_ptable->m_settings : g_pvp->m_settings;
+   const auto propId = Settings::GetRegistry().GetPropertyId(sectionSz, settingSz);
+   if (propId.has_value())
    {
+      string value;
+      switch (Settings::GetRegistry().GetProperty(propId.value())->m_type)
+      {
+      case VPX::Properties::PropertyDef::Type::Float: value = f2sz(settings.GetBool(propId.value()), false); break;
+      case VPX::Properties::PropertyDef::Type::Int: value = std::to_string(settings.GetInt(propId.value())); break;
+      case VPX::Properties::PropertyDef::Type::Bool: value = settings.GetBool(propId.value()) ? "1"s : "0"s; break;
+      case VPX::Properties::PropertyDef::Type::Enum: value = std::to_string(settings.GetInt(propId.value())); break;
+      case VPX::Properties::PropertyDef::Type::String: value = settings.GetString(propId.value()); break;
+      default: return E_FAIL;
+      }
       *param = MakeWideBSTR(value);
       return S_OK;
    }
@@ -621,7 +631,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
 #else
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
 
-   string szIniPath = pSettings->LoadValueWithDefault(Settings::Standalone, "VPRegPath"s, string());
+   string szIniPath = pSettings->GetStandalone_VPRegPath();
    if (!szIniPath.empty()) {
       if (szIniPath == "."s + PATH_SEPARATOR_CHAR)
          szIniPath = m_vpinball->m_currentTablePath;
@@ -709,7 +719,7 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
 #else
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
 
-   string szIniPath = pSettings->LoadValueWithDefault(Settings::Standalone, "VPRegPath"s, string());
+   string szIniPath = pSettings->GetStandalone_VPRegPath();
    if (!szIniPath.empty()) {
       if (szIniPath == "."s + PATH_SEPARATOR_CHAR)
          szIniPath = m_vpinball->m_currentTablePath;

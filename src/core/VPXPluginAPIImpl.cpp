@@ -38,36 +38,6 @@ void VPXPluginAPIImpl::GetTableInfo(VPXTableInfo* info)
 ///////////////////////////////////////////////////////////////////////////////
 // User Input API
 
-float VPXPluginAPIImpl::GetOption(const char* pageId, const char* optionId, const unsigned int showMask, const char* optionName, const float minValue, const float maxValue, const float step,
-   const float defaultValue, const VPXPluginAPI::OptionUnit unit, const char** values)
-{
-   // TODO handle showMask flag
-   // TODO handle core VPX setting pages
-   if (strcmp(pageId, VPX_TWEAK_VIEW) == 0)
-   {
-      return 0.f;
-   }
-   if (strcmp(pageId, VPX_TWEAK_TABLE) == 0)
-   {
-      return 0.f;
-   }
-   else
-   {
-      Settings& settings = g_pplayer ? g_pplayer->m_ptable->m_settings : g_pvp->m_settings;
-      const std::string sectionName = "Plugin."s + pageId;
-      Settings::Section section = Settings::GetSection(sectionName);
-      std::vector<std::string> literals;
-      if (values != nullptr)
-      {
-         const int nSteps = 1 + (int)(roundf((maxValue - minValue) / step));
-         literals.reserve(nSteps);
-         for (int i = 0; i < nSteps; i++)
-            literals.emplace_back(values[i]);
-      }
-      return settings.RegisterSetting(section, optionId, showMask, optionName, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals).value;
-   }
-}
-
 unsigned int VPXPluginAPIImpl::PushNotification(const char* msg, const int lengthMs)
 {
    assert(g_pplayer); // Only allowed in game
@@ -555,19 +525,55 @@ VPXPluginAPIImpl::VPXPluginAPIImpl() : m_apiThread(std::this_thread::get_id())
       {
          const Settings& settings = g_pplayer ? g_pplayer->m_ptable->m_settings : g_pvp->m_settings;
          const std::string sectionName = "Plugin."s + name_space;
-         Settings::Section section = Settings::GetSection(sectionName);
-         std::string buffer;
-         if (settings.LoadValue(section, name, buffer))
-            strncpy_s(valueBuf, valueBufSize, buffer.c_str());
+         if (const auto propId = Settings::GetRegistry().GetPropertyId(sectionName, name); propId.has_value())
+         {
+            const auto propDef = Settings::GetRegistry().GetProperty(propId.value());
+            switch (propDef->m_type)
+            {
+            case VPX::Properties::PropertyDef::Type::Float:
+            {
+               const float value = settings.GetFloat(propId.value());
+               strncpy_s(valueBuf, valueBufSize, f2sz(value, false).c_str());
+               break;
+            }
+            case VPX::Properties::PropertyDef::Type::Int:
+            {
+               const int value = settings.GetInt(propId.value());
+               strncpy_s(valueBuf, valueBufSize, std::to_string(value).c_str());
+               break;
+            }
+            case VPX::Properties::PropertyDef::Type::Bool:
+            {
+               const bool value = settings.GetBool(propId.value());
+               strncpy_s(valueBuf, valueBufSize, value ? "1" : "0");
+               break;
+            }
+            case VPX::Properties::PropertyDef::Type::Enum:
+            {
+               const int value = settings.GetInt(propId.value());
+               strncpy_s(valueBuf, valueBufSize, std::to_string(value).c_str());
+               break;
+            }
+            case VPX::Properties::PropertyDef::Type::String:
+            {
+               const string value = settings.GetString(propId.value());
+               strncpy_s(valueBuf, valueBufSize, value.c_str());
+               break;
+            }
+            }
+         }
          else
-            valueBuf[0] = '\0';
+         {
+            const auto newId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>(sectionName, name, ""s, ""s, ""s));
+            string value = settings.GetString(newId);
+            strncpy_s(valueBuf, valueBufSize, value.c_str());
+         }
       });
 
    // VPX API
    m_api.GetVpxInfo = GetVpxInfo;
    m_api.GetTableInfo = GetTableInfo;
 
-   m_api.GetOption = GetOption;
    m_api.PushNotification = PushNotification;
    m_api.UpdateNotification = UpdateNotification;
 
