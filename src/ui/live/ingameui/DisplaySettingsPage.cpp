@@ -101,6 +101,13 @@ DisplaySettingsPage::DisplaySettingsPage(VPXWindowId wndId)
    BuildPage();
 }
 
+void DisplaySettingsPage::Close(bool isBackwardAnimation)
+{
+   InGameUIPage::Close(isBackwardAnimation);
+   if (m_staticPrepassDisabled)
+      m_player->m_renderer->DisableStaticPrePass(false);
+}
+
 VPX::RenderOutput& DisplaySettingsPage::GetOutput(VPXWindowId wndId)
 {
    switch (wndId)
@@ -391,6 +398,12 @@ void DisplaySettingsPage::BuildWindowPage()
                wnd->SetSize(size.x, size.y);
                if (m_isMainWindow) // Avoid buggy resizing when changing main window size
                   ImGui::ClearActiveID();
+               if (!m_staticPrepassDisabled)
+               {
+                  m_player->m_renderer->DisableStaticPrePass(true);
+                  m_staticPrepassDisabled = true;
+               }
+               m_player->m_renderer->InitLayout();
                BuildPage();
             }));
 
@@ -418,6 +431,12 @@ void DisplaySettingsPage::BuildWindowPage()
                wnd->SetSize(size.x, size.y);
                if (m_isMainWindow) // Avoid buggy resizing when changing main window size
                   ImGui::ClearActiveID();
+               if (!m_staticPrepassDisabled)
+               {
+                  m_player->m_renderer->DisableStaticPrePass(true);
+                  m_staticPrepassDisabled = true;
+               }
+               m_player->m_renderer->InitLayout();
                BuildPage();
             }));
       }
