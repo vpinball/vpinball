@@ -186,15 +186,10 @@ void GraphicSettingsPage::BuildPage()
       }));
 #endif
 
-   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_VisualLatencyCorrection, "%4d ms"s, //
-      [this]() { return m_player->m_ptable->m_settings.GetPlayer_VisualLatencyCorrection(); }, //
-      [this](int, int v)
-      {
-         m_player->m_ptable->m_settings.SetPlayer_VisualLatencyCorrection(v, false);
-         m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
-      }));
+      [this]() { return m_player->m_renderer->m_renderDevice->GetVisualLatencyCorrection(); }, //
+      [this](int, int v) { m_player->m_renderer->m_renderDevice->SetVisualLatencyCorrection(v); }));
 
 
    //////////////////////////////////////////////////////////////////////////////////////////////////

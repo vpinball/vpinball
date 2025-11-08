@@ -220,6 +220,9 @@ public:
 
    void CaptureScreenshot(const string& filename, std::function<void(bool)> callback);
 
+   int GetVisualLatencyCorrection() const { return m_visualLatencyCorrection; }
+   void SetVisualLatencyCorrection(int latencyMs) { m_visualLatencyCorrection = latencyMs; }
+
 private:
    const bool m_isVR;
 
