@@ -204,10 +204,10 @@ PropInt(Player, Exitconfirm, "Direct Exit Length"s, "Length of a long ESC press 
 PropString(Input, Devices, "Devices"s, "List of known devices"s, ""s);
 
 // Nudge & Plumb settings
-PropFloat(Player, NudgeOrientation0, "Sensor #0 - Orientation"s, "Define sensor orientation"s, 0.f, 360.f, 0.f);
-PropFloat(Player, NudgeOrientation1, "Sensor #1 - Orientation"s, "Define sensor orientation"s, 0.f, 360.f, 0.f);
-PropBool(Player, NudgeFilter0, "Sensor #0 - Use Filter"s, "Enable/Disable filtering acquired value to prevent noise"s, false);
-PropBool(Player, NudgeFilter1, "Sensor #1 - Use Filter"s, "Enable/Disable filtering acquired value to prevent noise"s, false);
+PropFloat(Player, NudgeOrientation0, "Sensor 1 - Orientation"s, "Define sensor orientation"s, 0.f, 360.f, 0.f);
+PropFloat(Player, NudgeOrientation1, "Sensor 2 - Orientation"s, "Define sensor orientation"s, 0.f, 360.f, 0.f);
+PropBool(Player, NudgeFilter0, "Sensor 1 - Use Filter"s, "Enable/Disable filtering acquired value to prevent noise"s, false);
+PropBool(Player, NudgeFilter1, "Sensor 2 - Use Filter"s, "Enable/Disable filtering acquired value to prevent noise"s, false);
 PropBool(Player, SimulatedPlumb, "Plumb simulation"s, "Enable/Disable mechanical Tilt plumb simulation"s, true);
 PropFloat(Player, PlumbInertia, "Plumb Inertia"s, ""s, 0.001f, 1.f, 0.35f);
 PropFloat(Player, PlumbThresholdAngle, "Plumb Threshold"s, "Define threshold angle at which a Tilt is caused"s, 5.0f, 60.f, 35.f);

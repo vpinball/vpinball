@@ -80,10 +80,6 @@ private:
    bool m_defineActionPopup = false;
    InGameUIItem* m_defineActionItem = nullptr;
 
-   void RenderSensorPopup();
-   bool m_defineSensorPopup = false;
-   InGameUIItem* m_defineSensorItem = nullptr;
-
    void RenderToggle(const string& label, const ImVec2& size, bool& v) const;
 };
 
