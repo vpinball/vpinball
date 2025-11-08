@@ -146,6 +146,7 @@ void SegmentNumber::InitSegments(const SegmentNumberType type, const float thick
          m_segments.push_back(new Segment("i"s, 72.f - T2, T2 + 2.f, TH, 110.f - T2, 0, SegmentCap_Standard, SegmentCap_Standard));
          m_segments.push_back(new Segment("l"s, 72.f - T2, 116, TH, 110.f - T2, 0, SegmentCap_Standard, SegmentCap_Standard));
          break;
+      default: break;
    }
    for (auto& pSegment : m_segments)
       pSegment->SetStyle(m_pStyle);
@@ -301,6 +302,7 @@ void SegmentNumber::DisplayCharacter(const string& szCharacter)
                 case 'z': szSegments = "adjk"s; break;
              }
              break;
+         default: break;
       }
       if (szCharacter.ends_with('.'))
          szSegments += '.';
