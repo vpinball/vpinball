@@ -92,7 +92,7 @@ INT_PTR RenderProbeDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          ListView_GetItem(hListHwnd, &lvitem);
          RenderProbe *const pb = (RenderProbe *)lvitem.lParam;
          // prohibit editing core playfield reflection probe name (or creating a duplicate)
-         if (pb->GetName() == PLAYFIELD_REFLECTION_RENDERPROBE_NAME || new_name == PLAYFIELD_REFLECTION_RENDERPROBE_NAME)
+         if (pb->GetName() == RenderProbe::PLAYFIELD_REFLECTION_RENDERPROBE_NAME || new_name == RenderProbe::PLAYFIELD_REFLECTION_RENDERPROBE_NAME)
             return FALSE;
          pb->SetName(new_name);
          lvitem.mask = LVIF_TEXT;
@@ -174,7 +174,7 @@ INT_PTR RenderProbeDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void RenderProbeDialog::LoadProbeToUI(RenderProbe *const pb)
 {
-   const bool isPfReflections = pb->GetName() == PLAYFIELD_REFLECTION_RENDERPROBE_NAME;
+   const bool isPfReflections = pb->GetName() == RenderProbe::PLAYFIELD_REFLECTION_RENDERPROBE_NAME;
    GetDlgItem(IDC_RENDER_PROBE_NAME_LABEL).SetWindowText(pb->GetName().c_str());
    SendDlgItemMessage(IDC_REFLECTION_MAX_LEVEL, CB_SETCURSEL, pb->GetReflectionMode(), 0);
    RenderProbe::ProbeType type = pb->GetType();
@@ -275,7 +275,7 @@ BOOL RenderProbeDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          ListView_GetItem(hListHwnd, &lvitem);
          RenderProbe *const pcol = (RenderProbe *)lvitem.lParam;
          // prohibit deleting core playfield reflection probe
-         if (pcol->GetName() != PLAYFIELD_REFLECTION_RENDERPROBE_NAME)
+         if (pcol->GetName() != RenderProbe::PLAYFIELD_REFLECTION_RENDERPROBE_NAME)
          {
             // TEXT
             const int ans = MessageBox("Are you sure you want to remove this render probe?", "Confirm Deletion", MB_YESNO | MB_DEFBUTTON2);

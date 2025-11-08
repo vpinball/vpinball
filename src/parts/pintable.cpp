@@ -2188,11 +2188,11 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                }
 
          // reflections were hardcoded without render probe before 10.8.0
-         RenderProbe *pf_reflection_probe = GetRenderProbe(PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
+         RenderProbe *pf_reflection_probe = GetRenderProbe(RenderProbe::PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
          if (pf_reflection_probe == nullptr)
          {
             pf_reflection_probe = new RenderProbe();
-            pf_reflection_probe->SetName(PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
+            pf_reflection_probe->SetName(RenderProbe::PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
             pf_reflection_probe->SetReflectionMode(RenderProbe::ReflectionMode::REFL_DYNAMIC);
             m_vrenderprobe.push_back(pf_reflection_probe);
          }

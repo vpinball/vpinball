@@ -2,8 +2,6 @@
 
 #pragma once
 
-extern const string PLAYFIELD_REFLECTION_RENDERPROBE_NAME;
-
 // A render probe is a render of the scene to an offscreen render target which is later used for shading scene parts, for example for reflections
 class RenderProbe final : ILoadable
 {
@@ -58,6 +56,8 @@ public:
    void PreRenderStatic(); // Allows to precompute static parts
    RenderTarget* Render(const unsigned int renderMask); // Lazily update render probe and returns it
    void RenderRelease();
+
+   static const string PLAYFIELD_REFLECTION_RENDERPROBE_NAME;
 
 private:
    int GetRoughnessDownscale(const int roughness) const;
