@@ -274,6 +274,7 @@ void onPrepareFrame(const unsigned int eventId, void* userData, void* eventData)
       else if (runMode == RunMode::RunModePlayer)
          vpxApi->PushNotification("Remote controller disconnected", 1000);
       break;
+   default: break;
    }
 }
 

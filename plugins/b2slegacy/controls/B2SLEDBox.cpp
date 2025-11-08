@@ -140,6 +140,7 @@ void B2SLEDBox::SetText(const string& text)
          case eLEDType_LED16:
             // not implemented right now
             break;
+         default: break;
       }
       Refresh();
    }

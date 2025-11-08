@@ -72,7 +72,7 @@ public:
    typedef void(CDECL* fn_av_free)(void* ptr);
    typedef int(CDECL* fn_av_image_fill_arrays)(uint8_t* dst_data[4], int dst_linesize[4], const uint8_t* src, enum AVPixelFormat pix_fmt, int width, int height, int align);
    typedef int(CDECL* fn_av_image_get_buffer_size)(enum AVPixelFormat pix_fmt, int width, int height, int align);
-   typedef void*(CDECL* fn_av_malloc)(size_t size)av_malloc_attrib av_alloc_size(1);
+   typedef void*(CDECL* fn_av_malloc)(size_t size) av_alloc_size(1);
    typedef int(CDECL* fn_av_samples_get_buffer_size)(int* linesize, int nb_channels, int nb_samples, enum AVSampleFormat sample_fmt, int align);
 
    typedef void(CDECL* fn_swr_free)(struct SwrContext** s);

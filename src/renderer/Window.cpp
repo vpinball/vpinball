@@ -238,9 +238,10 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    }
 
    const SDL_DisplayMode* const displayMode = SDL_GetDesktopDisplayMode(selectedDisplay.display);
-   if (displayMode)
+   if (displayMode) {
       PLOGI << "Window #" << m_windowId << " (" << m_width << "x" << m_height << ") was created on display " << selectedDisplay.displayName 
-      << "[" << displayMode->w << 'x' << displayMode->h << ' ' << displayMode->refresh_rate << "Hz " << SDL_GetPixelFormatName(displayMode->format) << ']';
+         << "[" << displayMode->w << 'x' << displayMode->h << ' ' << displayMode->refresh_rate << "Hz " << SDL_GetPixelFormatName(displayMode->format) << ']';
+   }
 }
 
 Window::~Window()
