@@ -495,29 +495,37 @@ void InGameUIPage::Render(float elapsedS)
 
       // Save changes
       ImGui::SameLine();
-      if (IsModified())
+      if (m_saveMode == SaveMode::None)
       {
-         m_items.push_back(std::make_unique<InGameUIItem>(InGameUIItem::Type::SaveChanges));
-         ImGui::BeginDisabled(false);
-         highlighted = m_player->m_liveUI->m_inGameUI.IsFlipperNav() && (m_selectedItem == m_items.size() - 1);
+         ImGui::Dummy(ImGui::CalcTextSize(ICON_FK_FLOPPY_O, nullptr, true) + style.FramePadding * 2.0f);
+         ImGui::SameLine();
       }
       else
       {
-         ImGui::BeginDisabled(true);
-         highlighted = false;
+         if (IsModified())
+         {
+            m_items.push_back(std::make_unique<InGameUIItem>(InGameUIItem::Type::SaveChanges));
+            ImGui::BeginDisabled(false);
+            highlighted = m_player->m_liveUI->m_inGameUI.IsFlipperNav() && (m_selectedItem == m_items.size() - 1);
+         }
+         else
+         {
+            ImGui::BeginDisabled(true);
+            highlighted = false;
+         }
+         if (highlighted)
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+         if (ImGui::Button(ICON_FK_FLOPPY_O))
+         {
+            m_selectedItem = static_cast<int>(m_items.size()) - 1;
+            AdjustItem(1.f, true);
+         }
+         if (highlighted)
+            ImGui::PopStyleColor();
+         saveHovered = ImGui::IsItemHovered();
+         ImGui::EndDisabled();
+         ImGui::SameLine();
       }
-      if (highlighted)
-         ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-      if (ImGui::Button(ICON_FK_FLOPPY_O))
-      {
-         m_selectedItem = static_cast<int>(m_items.size()) - 1;
-         AdjustItem(1.f, true);
-      }
-      if (highlighted)
-         ImGui::PopStyleColor();
-      saveHovered = ImGui::IsItemHovered();
-      ImGui::EndDisabled();
-      ImGui::SameLine();
    }
 
    // Get back to previous page or to game
