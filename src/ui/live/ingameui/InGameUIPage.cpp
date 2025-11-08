@@ -880,6 +880,8 @@ void InGameUIPage::RenderInputActionPopup()
    if (m_defineActionItem && m_defineActionPopup && !ImGui::IsPopupOpen((m_defineActionItem->m_label + " input binding").c_str()))
    {
       ImGui::OpenPopup((m_defineActionItem->m_label + " input binding").c_str());
+      ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse;
+      ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoKeyboard;
       m_player->m_pininput.StartButtonCapture();
    }
    if (m_defineActionItem && ImGui::BeginPopupModal((m_defineActionItem->m_label + " input binding").c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize))
@@ -893,6 +895,8 @@ void InGameUIPage::RenderInputActionPopup()
       ImGui::Separator();
       if (m_player->m_pininput.IsButtonCaptureDone())
       {
+         ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
+         ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoKeyboard;
          m_defineActionItem->m_inputAction->AddMapping(m_player->m_pininput.GetButtonCapture());
          if (!(m_defineActionItem->m_inputAction->IsNavigationAction() && !m_defineActionItem->m_inputAction->IsMapped()))
          {
