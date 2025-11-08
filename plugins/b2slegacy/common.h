@@ -223,6 +223,13 @@ PSC_USE_ERROR();
 #define GetBValue(rgb) ((uint8_t)((rgb)>>16))
 #endif
 
+constexpr inline char cLower(char c)
+{
+   if (c >= 'A' && c <= 'Z')
+      c ^= 32; // ASCII convention
+   return c;
+}
+
 string find_case_insensitive_file_path(const string &szPath);
 vector<unsigned char> base64_decode(const string &encoded_string);
 bool string_starts_with_case_insensitive(const string& str, const string& prefix);

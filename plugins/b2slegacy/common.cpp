@@ -26,13 +26,6 @@ static bool try_parse_int(const string& str, int& value)
    return (std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), value).ec == std::errc{});
 }
 
-constexpr inline char cLower(char c)
-{
-   if (c >= 'A' && c <= 'Z')
-      c ^= 32; // ASCII convention
-   return c;
-}
-
 bool StrCompareNoCase(const string& strA, const string& strB)
 {
    return strA.length() == strB.length()

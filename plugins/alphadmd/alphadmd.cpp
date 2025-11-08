@@ -40,12 +40,12 @@ using namespace std::string_literals;
 // - Generate DMD frame for rendering on DMD hardware
 // - Provide identification frames for alphanumeric to DMD colorizations
 //
-// This plugin only rely on the generic messaging plugin API and the generic
-// controller display and segment API. It listen for alphanumeric source and, 
+// This plugin only relies on the generic messaging plugin API and the generic
+// controller display and segment API. It listens for alphanumeric source and, 
 // when found, provide corresponding DMD sources (128x32 and 256x64 variants)
 // with identify capabilities for the 128x32 variant.
 //
-// All rendering is done by an anciliary thread, causing a one frame delay, but
+// All rendering is done by an ancillary thread, causing a one frame delay, but
 // avoiding CPU load on the main thread.
 
 namespace AlphaDMD {

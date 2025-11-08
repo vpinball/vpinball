@@ -38,36 +38,36 @@ void B2SReelBox::OnPaint(VPXRenderContext2D* const ctx)
       if (!m_szReelIndex.empty()) {
          GenericDictionaryIgnoreCase<VPXTexture>* pImages = (m_illuminated ? m_pB2SData->GetReelIlluImages() : m_pB2SData->GetReelImages());
          GenericDictionaryIgnoreCase<VPXTexture>* pIntImages = (m_illuminated ? m_pB2SData->GetReelIntermediateIlluImages() : m_pB2SData->GetReelIntermediateImages());
-         string name;
          SDL_Rect rect = GetRect();
 
          if (m_intermediates == -1 && m_pTimer->IsEnabled()) {
-            name = m_szReelType + '_' + m_szReelIndex + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string()) + '_' + std::to_string(m_firstintermediatecount);
-            if (pIntImages->contains(name)) {
-               VPXGraphics::DrawImage(m_vpxApi, ctx, (*pIntImages)[name], nullptr, &rect);
+            const auto& img = pIntImages->find(m_szReelType + '_' + m_szReelIndex + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string()) + '_' + std::to_string(m_firstintermediatecount));
+            if (img != pIntImages->end()) {
+               VPXGraphics::DrawImage(m_vpxApi, ctx, img->second, nullptr, &rect);
                m_firstintermediatecount++;
                m_intermediates2go = 2;
             }
             else {
-               name = m_szReelType + '_' + ConvertText(m_currentText + 1) + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string());
-               if (pImages->contains(name))
-                  VPXGraphics::DrawImage(m_vpxApi, ctx, (*pImages)[name], nullptr, &rect);
+               const auto& img = pImages->find(m_szReelType + '_' + ConvertText(m_currentText + 1) + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string()));
+               if (img != pImages->end())
+                  VPXGraphics::DrawImage(m_vpxApi, ctx, img->second, nullptr, &rect);
                m_intermediates = m_firstintermediatecount - 1;
                m_intermediates2go = 1;
             }
          }
          else if (m_intermediates2go > 0) {
-            name = m_szReelType + '_' + m_szReelIndex + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string()) + '_' + std::to_string(m_intermediates - m_intermediates2go + 1);
-            if (pIntImages->contains(name))
-               VPXGraphics::DrawImage(m_vpxApi, ctx, (*pIntImages)[name], nullptr, &rect);
+            const auto& img = pIntImages->find(m_szReelType + '_' + m_szReelIndex + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string()) + '_' + std::to_string(m_intermediates - m_intermediates2go + 1));
+            if (img != pIntImages->end())
+               VPXGraphics::DrawImage(m_vpxApi, ctx, img->second, nullptr, &rect);
          }
          else {
+            GenericDictionaryIgnoreCase<VPXTexture>::iterator img;
             if (m_intermediates2go == 0 && m_intermediates > 0)
-               name = m_szReelType + '_' + ConvertText(m_currentText + 1) + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string());
+               img = pImages->find(m_szReelType + '_' + ConvertText(m_currentText + 1) + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string()));
             else
-               name = m_szReelType + '_' + m_szReelIndex + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string());
-            if (pImages->contains(name))
-               VPXGraphics::DrawImage(m_vpxApi, ctx, (*pImages)[name], nullptr, &rect);
+               img = pImages->find(m_szReelType + '_' + m_szReelIndex + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string()));
+            if (img != pImages->end())
+               VPXGraphics::DrawImage(m_vpxApi, ctx, img->second, nullptr, &rect);
          }
       }
    }

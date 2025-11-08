@@ -321,7 +321,7 @@ void VPinballLib::LoadPlugins()
    };
 
    for (size_t i = 0; i < std::size(plugins); ++i) {
-      char buf[256];	   
+      char buf[256];
       MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().GetSetting(plugins[i].id, "Enable", buf, 256);
       if (buf[0] == '1') {
          auto& p = plugins[i];

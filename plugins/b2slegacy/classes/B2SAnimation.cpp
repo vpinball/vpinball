@@ -49,9 +49,10 @@ void B2SAnimation::AutoStart()
 
 void B2SAnimation::StartAnimation(const string& szName, bool playReverse)
 {
-   if (m_pictureBoxAnimations.contains(szName) && !m_pictureBoxAnimations[szName]->IsEnabled()) {
-      m_pictureBoxAnimations[szName]->SetPlayReverse(playReverse);
-      m_pictureBoxAnimations[szName]->Start();
+   const auto& it = m_pictureBoxAnimations.find(szName);
+   if (it != m_pictureBoxAnimations.end() && !it->second->IsEnabled()) {
+      it->second->SetPlayReverse(playReverse);
+      it->second->Start();
     }
 }
 
@@ -69,8 +70,9 @@ void B2SAnimation::RestartAnimations()
 
 void B2SAnimation::StopAnimation(const string& szName)
 {
-   if (m_pictureBoxAnimations.contains(szName))
-      m_pictureBoxAnimations[szName]->Stop();
+   const auto& it = m_pictureBoxAnimations.find(szName);
+   if (it != m_pictureBoxAnimations.end())
+      it->second->Stop();
 }
 
 void B2SAnimation::StopAllAnimations()
@@ -81,21 +83,24 @@ void B2SAnimation::StopAllAnimations()
 
 int B2SAnimation::GetAnimationSlowDown(const string& szName)
 {
-   if (m_pictureBoxAnimations.contains(szName))
-      return m_pictureBoxAnimations[szName]->GetSlowDown();
+   const auto& it = m_pictureBoxAnimations.find(szName);
+   if (it != m_pictureBoxAnimations.end())
+      return it->second->GetSlowDown();
    return 1;
 }
 
 void B2SAnimation::SetAnimationSlowDown(const string& szName, int value)
 {
-   if (m_pictureBoxAnimations.contains(szName))
-      m_pictureBoxAnimations[szName]->SetSlowDown(value);
+   const auto& it = m_pictureBoxAnimations.find(szName);
+   if (it != m_pictureBoxAnimations.end())
+      it->second->SetSlowDown(value);
 }
 
 bool B2SAnimation::IsAnimationRunning(const string& szName)
 {
-   if (m_pictureBoxAnimations.contains(szName))
-      return m_pictureBoxAnimations[szName]->IsEnabled();
+   const auto& it = m_pictureBoxAnimations.find(szName);
+   if (it != m_pictureBoxAnimations.end())
+      return it->second->IsEnabled();
    return false;
 }
 

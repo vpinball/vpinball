@@ -204,7 +204,13 @@ void Dream7Display::SetExtraSpacing(int segment, float value)
 {
    auto itr = m_extraSpacings.find(segment);
    if (itr != m_extraSpacings.end())
-      m_extraSpacings.erase(itr);
+   {
+      if (value <= 0)
+         m_extraSpacings.erase(itr);
+      else
+         itr->second = value;
+   }
+   else
    if (value > 0)
       m_extraSpacings[segment] = value;
    InitSegmentsStyle();

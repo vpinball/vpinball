@@ -322,7 +322,7 @@ void PictureBoxAnimation::LightBulb(const string& szBulb, bool visible)
 {
    // only do the lighting stuff if the bulb has a name
    if (!szBulb.empty()) {
-      Form* pCurrentForm = NULL;
+      Form* pCurrentForm = nullptr;
       if (m_pForm->GetControl(szBulb))
          pCurrentForm = m_pForm;
       else if (m_pFormDMD->GetControl(szBulb))

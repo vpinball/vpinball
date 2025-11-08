@@ -61,12 +61,12 @@ void B2SReelDisplay::SetScore_(int score, int startAtIndex)
 
       int j = 1;
       for (int i = m_startDigit + m_digits - startAtIndex - 1; i >= m_startDigit; i--) {
-         if (m_reels.contains(i)) {
-            const B2SReelBox* const pReelbox = m_reels[i];
-            const int value = pReelbox->GetCurrentText();
+         const auto& it = m_reels.find(i);
+         if (it != m_reels.end()) {
+            const int value = it->second->GetCurrentText();
             const int newvalue = scoreAsStringX[i - m_startDigit] - '0'; // convert char to int
             const bool nextReelShouldWait = (value > newvalue && score > 0);
-            m_reels[i]->SetText(scoreAsStringX[i - m_startDigit] - '0', true);
+            it->second->SetText(scoreAsStringX[i - m_startDigit] - '0', true);
             // maybe get out here since the current reel is rolling over '9'
             if (nextReelShouldWait) {
                StartTimer(i, newvalue, score, j);
