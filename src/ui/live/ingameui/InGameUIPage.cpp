@@ -4,6 +4,7 @@
 
 #include "InGameUIPage.h"
 
+#include "SensorSetupPage.h"
 #include "fonts/IconsForkAwesome.h"
 
 namespace VPX::InGameUI
@@ -305,8 +306,8 @@ void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
          }
          else
          {
-            m_defineSensorPopup = true;
-            m_defineSensorItem = item.get();
+            m_player->m_liveUI->m_inGameUI.AddPage("popup/sensor_setup"s, [this, ptr = item.get()]() { return std::make_unique<SensorSetupPage>(*ptr); });
+            m_player->m_liveUI->m_inGameUI.Navigate("popup/sensor_setup"s);
          }
       }
       break;
@@ -713,8 +714,8 @@ void InGameUIPage::Render(float elapsedS)
          const float mapButtonWidth = itemEndScreenX - ImGui::GetCursorScreenPos().x - closeButtonWidth;
          if (ImGui::Button((mappingLabel + "##" + item->m_label).c_str(), ImVec2(mapButtonWidth, 0)))
          {
-            m_defineSensorPopup = true;
-            m_defineSensorItem = item.get();
+            m_selectedItem = i;
+            AdjustItem(1.f, true);
          }
          if (ImGui::CalcTextSize(mappingLabel.c_str()).x >= mapButtonWidth - style.ItemSpacing.x * 2.f)
             ImGui::SetItemTooltip("%s", mappingLabel.c_str());
@@ -863,132 +864,7 @@ void InGameUIPage::Render(float elapsedS)
    ImGui::End();
    ImGui::PopStyleVar();
 
-   RenderSensorPopup();
    RenderInputActionPopup();
-}
-
-void InGameUIPage::RenderSensorPopup()
-{
-   if (!m_defineSensorPopup && m_defineSensorItem)
-      m_defineSensorItem = nullptr;
-   if (m_defineSensorItem && m_defineSensorPopup && !ImGui::IsPopupOpen((m_defineSensorItem->m_label + " input binding").c_str()))
-   {
-      vector<uint32_t> sensors = m_player->m_pininput.GetAllAxis();
-      if (sensors.empty())
-      {
-         m_defineSensorItem = nullptr;
-         m_defineSensorPopup = false;
-         m_player->m_liveUI->PushNotification("No physics sensor connected."s, 5000);
-         return;
-      }
-      if (!m_defineSensorItem->m_physicsSensor->IsMapped())
-      {
-         uint32_t id = sensors[0];
-         uint16_t deviceId = id >> 16;
-         uint16_t axisId = id & 0xFFFF;
-         SensorMapping::Type type = (m_defineSensorItem->m_physicsSensorTypeMask & 1) ? SensorMapping::Type::Position
-            : (m_defineSensorItem->m_physicsSensorTypeMask & 2)                       ? SensorMapping::Type::Velocity
-                                                                                      : SensorMapping::Type::Acceleration;
-         m_defineSensorItem->m_physicsSensor->SetMapping(SensorMapping(nullptr, nullptr, deviceId, axisId, type));
-      }
-      ImGui::OpenPopup((m_defineSensorItem->m_label + " input binding").c_str());
-   }
-   if (m_defineSensorItem && ImGui::BeginPopupModal((m_defineSensorItem->m_label + " input binding").c_str(), &m_defineSensorPopup, ImGuiWindowFlags_AlwaysAutoResize))
-   {
-      ImGui::Text(("Select the hardware sensor you want to use for " + m_defineSensorItem->m_label).c_str(), m_defineSensorItem->m_label.c_str());
-      ImGui::Spacing();
-
-      const vector<uint32_t> sensors = m_player->m_pininput.GetAllAxis();
-
-      int selectedAxis = -1;
-      vector<string> axisNames;
-      {
-         int i = 0;
-         for (uint32_t id : sensors)
-         {
-            const uint16_t deviceId = id >> 16;
-            const uint16_t axisId = id & 0xFFFF;
-            axisNames.emplace_back(m_player->m_pininput.GetDeviceElementName(deviceId, axisId) + " (" + m_player->m_pininput.GetDeviceName(deviceId) + ')');
-            if (deviceId == m_defineSensorItem->m_physicsSensor->GetMapping().GetDeviceId() && axisId == m_defineSensorItem->m_physicsSensor->GetMapping().GetAxisId())
-               selectedAxis = i;
-            i++;
-         }
-      }
-      if (ImGui::Combo(
-             "Hardware Sensor", &selectedAxis, [](void* user_data, int idx) { return static_cast<vector<string>*>(user_data)->at(idx).c_str(); }, &axisNames,
-             static_cast<int>(axisNames.size())))
-      {
-         const uint16_t deviceId = sensors[selectedAxis] >> 16;
-         const uint16_t axisId = sensors[selectedAxis] & 0xFFFF;
-         SensorMapping mapping(nullptr, nullptr, deviceId, axisId, SensorMapping::Type::Velocity);
-         mapping.SetDeadZone(m_defineSensorItem->m_physicsSensor->GetMapping().GetDeadZone());
-         mapping.SetScale(m_defineSensorItem->m_physicsSensor->GetMapping().GetScale());
-         mapping.SetLimit(m_defineSensorItem->m_physicsSensor->GetMapping().GetLimit());
-         m_defineSensorItem->m_physicsSensor->SetMapping(mapping);
-      }
-
-      if (m_defineSensorItem->m_physicsSensorTypeMask != 1 && m_defineSensorItem->m_physicsSensorTypeMask != 2 && m_defineSensorItem->m_physicsSensorTypeMask != 4)
-      {
-         vector<SensorMapping::Type> types;
-         vector<string> names;
-         for (int i = 0; i < 3; i++)
-            if (m_defineSensorItem->m_physicsSensorTypeMask & (1 << i))
-               switch (i)
-               {
-               case 0:
-                  names.emplace_back("Position"s);
-                  types.push_back(SensorMapping::Type::Position);
-                  break;
-               case 1:
-                  names.emplace_back("Velocity"s);
-                  types.push_back(SensorMapping::Type::Velocity);
-                  break;
-               case 2:
-                  names.emplace_back("Acceleration"s);
-                  types.push_back(SensorMapping::Type::Acceleration);
-                  break;
-               }
-         int sensorType = FindIndexOf(types, m_defineSensorItem->m_physicsSensor->GetMapping().GetType());
-         if (ImGui::Combo(
-                "Sensor Type", &sensorType, [](void* user_data, int idx) { return static_cast<vector<string>*>(user_data)->at(idx).c_str(); }, &names, static_cast<int>(names.size())))
-         {
-            const uint16_t deviceId = m_defineSensorItem->m_physicsSensor->GetMapping().GetDeviceId();
-            const uint16_t axisId = m_defineSensorItem->m_physicsSensor->GetMapping().GetDeviceId();
-            SensorMapping mapping(nullptr, nullptr, deviceId, axisId, types[sensorType]);
-            mapping.SetDeadZone(m_defineSensorItem->m_physicsSensor->GetMapping().GetDeadZone());
-            mapping.SetScale(m_defineSensorItem->m_physicsSensor->GetMapping().GetScale());
-            mapping.SetLimit(m_defineSensorItem->m_physicsSensor->GetMapping().GetLimit());
-            m_defineSensorItem->m_physicsSensor->SetMapping(mapping);
-         }
-      }
-
-      SensorMapping& mapping = m_defineSensorItem->m_physicsSensor->GetMapping();
-
-      float scale = mapping.GetScale();
-      bool reversedAxis = scale < 0.f;
-      float gain = 100.f * (reversedAxis ? -scale : scale);
-      RenderToggle("Reversed axis"s, ImVec2(300.f, ImGui::GetFrameHeight()), reversedAxis);
-      ImGui::SameLine();
-      ImGui::Text("Reversed axis");
-
-      if (float deadZone = mapping.GetDeadZone() * 100.f; ImGui::SliderFloat("Dead Zone", &deadZone, 0.f, 30.f, "%4.1f %%"))
-         mapping.SetDeadZone(deadZone / 100.f);
-
-      ImGui::SliderFloat("Gain", &gain, 0.f, 500.f, "%4.1f %%");
-      mapping.SetScale((reversedAxis ? -gain : gain) / 100.f);
-
-      if (float limit = mapping.GetLimit(); ImGui::SliderFloat("Limit", &limit, 0.f, 10.f, "%4.2f"))
-         mapping.SetLimit(limit);
-
-      ImGui::Spacing();
-      if (ImGui::Button("Done"))
-      {
-         ImGui::CloseCurrentPopup();
-         m_defineSensorItem = nullptr;
-      }
-
-      ImGui::EndPopup();
-   }
 }
 
 void InGameUIPage::RenderInputActionPopup()
