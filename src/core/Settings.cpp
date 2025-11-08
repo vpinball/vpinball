@@ -245,3 +245,51 @@ void Settings::Load(const Settings &settings)
    m_iniPath = settings.m_iniPath;
    m_store.Load(settings.m_store);
 }
+
+#ifdef __GNUC__
+#undef PropBool
+#define PropBool(groupId, propId, label, comment, defVal) \
+   const VPX::Properties::PropertyRegistry::PropId Settings::m_prop##groupId##_##propId = \
+      GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, defVal));
+
+#undef PropInt
+#define PropInt(groupId, propId, label, comment, minVal, maxVal, defVal) \
+   const VPX::Properties::PropertyRegistry::PropId Settings::m_prop##groupId##_##propId = \
+      GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, minVal, maxVal, defVal));
+
+#undef PropIntUnbounded
+#define PropIntUnbounded(groupId, propId, label, comment, defVal) PropInt(groupId, propId, label, comment, INT_MIN, INT_MAX, defVal)
+
+#undef PropEnumWithMin
+#define PropEnumWithMin(groupId, propId, label, comment, type, minVal, defVal, ...) \
+   const VPX::Properties::PropertyRegistry::PropId Settings::m_prop##groupId##_##propId = \
+      GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, minVal, defVal, vector<string>{__VA_ARGS__}));
+
+#undef PropEnum1
+#define PropEnum1(groupId, propId, label, comment, type, defVal, ...) PropEnumWithMin(groupId, propId, label, comment, type, 1, defVal, __VA_ARGS__)
+
+#undef PropEnum
+#define PropEnum(groupId, propId, label, comment, type, defVal, ...) PropEnumWithMin(groupId, propId, label, comment, type, 0, defVal, __VA_ARGS__)
+
+#undef PropFloatStepped
+#define PropFloatStepped(groupId, propId, label, comment, minVal, maxVal, step, defVal) \
+   const VPX::Properties::PropertyRegistry::PropId Settings::m_prop##groupId##_##propId = \
+      GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, minVal, maxVal, step, defVal));
+
+#undef PropFloatUnbounded
+#define PropFloatUnbounded(groupId, propId, label, comment, defVal) PropFloatStepped(groupId, propId, label, comment, FLT_MIN, FLT_MAX, 0.f, defVal)
+
+#undef PropFloat
+#define PropFloat(groupId, propId, label, comment, minVal, maxVal, defVal) PropFloatStepped(groupId, propId, label, comment, minVal, maxVal, 0.f, defVal)
+
+#undef PropString
+#define PropString(groupId, propId, label, comment, defVal) \
+   const VPX::Properties::PropertyRegistry::PropId Settings::m_prop##groupId##_##propId = \
+      GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, defVal));
+
+#undef PropArray
+#define PropArray(groupId, propId, type, propType, getType, ...) \
+   const VPX::Properties::PropertyRegistry::PropId Settings::m_prop##groupId##_##propId[] = { __VA_ARGS__ };
+
+#include "Settings_properties.inl"
+#endif
