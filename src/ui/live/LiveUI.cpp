@@ -574,13 +574,11 @@ void LiveUI::Update()
             vb[i].tv = cmd_list->VtxBuffer[i].uv.y;
          }
          m_meshBuffers[n]->m_vb->Unlock();
-         m_meshBuffers[n]->m_vb->Upload();
 
          uint32_t *ib;
          m_meshBuffers[n]->m_ib->Lock(ib);
          memcpy(ib, cmd_list->IdxBuffer.begin(), numIndices * sizeof(ImDrawIdx));
          m_meshBuffers[n]->m_ib->Unlock();
-         m_meshBuffers[n]->m_ib->Upload();
       }
 
       for (const ImDrawCmd *cmd = cmd_list->CmdBuffer.begin(), *cmdEnd = cmd_list->CmdBuffer.end(); cmd != cmdEnd; cmd++)
