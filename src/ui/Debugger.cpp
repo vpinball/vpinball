@@ -143,7 +143,7 @@ void DebuggerDialog::LoadPosition()
    const int y = g_pvp->m_settings.GetEditor_DebuggerPosY();
    const int w = g_pvp->m_settings.GetEditor_DebuggerWidth();
    const int h = g_pvp->m_settings.GetEditor_DebuggerHeight();
-   POINT p { x, y };
+   const POINT p { x, y };
    if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
       SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
 }

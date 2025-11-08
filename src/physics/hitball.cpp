@@ -408,15 +408,15 @@ void HitBall::CalcHitBBox()
 
 void HitBall::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList, bool fill) const
 {
-   AntiStretchHelper ash;
+   const AntiStretchHelper ash;
    float xMin = FLT_MAX, yMin = FLT_MAX, xMax = -FLT_MAX, yMax = -FLT_MAX;
    const bool invalid = ash.computeProjBounds(project, m_d.m_pos.x, m_d.m_pos.y, m_d.m_pos.z, m_d.m_radius, xMin, xMax, yMin, yMax);
-   Vertex2D center = project(m_d.m_pos);
+   const Vertex2D center = project(m_d.m_pos);
    const ImU32 lCol = ImGui::GetColorU32(ImGuiCol_PlotLines), fCol = ImGui::GetColorU32(ImGuiCol_PlotHistogram);
    Vertex2D p2;
    for (int i = 0; i <= 32; i++)
    {
-      float a = static_cast<float>(i) * static_cast<float>(2. * M_PI / 32.);
+      const float a = static_cast<float>(i) * static_cast<float>(2. * M_PI / 32.);
       const Vertex2D p1 = p2;
       p2.x = cosf(a);
       p2.y = sinf(a);

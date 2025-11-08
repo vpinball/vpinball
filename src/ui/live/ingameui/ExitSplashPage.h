@@ -17,7 +17,7 @@ public:
 private:
    void BuildPage();
 
-   uint32_t m_openTimestamp = 0; // Used to delay keyboard shortcut
+   //uint32_t m_openTimestamp = 0; // Used to delay keyboard shortcut
 };
 
-};
+}

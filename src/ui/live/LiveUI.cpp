@@ -316,7 +316,7 @@ ImGui::MarkdownImageData LiveUI::MarkdownImageCallback(ImGui::MarkdownLinkCallba
 
 void LiveUI::UpdateScale()
 {
-   float prevDPI = m_uiScale;
+   const float prevDPI = m_uiScale;
    float overlayScale;
    if (m_player->m_vrDevice)
    {
@@ -520,7 +520,7 @@ void LiveUI::Update()
    }
    const float right = (m_rotate == 1 || m_rotate == 3) ? io.DisplaySize.y : io.DisplaySize.x;
    const float bottom = (m_rotate == 1 || m_rotate == 3) ? io.DisplaySize.x : io.DisplaySize.y;
-   Matrix3D matProj = matRotate * matTranslate * Matrix3D::MatrixOrthoOffCenterRH(0.f, right, bottom, 0.f, 0.f, 1.f);
+   const Matrix3D matProj = matRotate * matTranslate * Matrix3D::MatrixOrthoOffCenterRH(0.f, right, bottom, 0.f, 0.f, 1.f);
    m_rd->m_uiShader->SetMatrix(SHADER_matWorldView, &matProj);
    m_rd->m_uiShader->SetVector(SHADER_staticColor_Alpha, 
       // Stereo offset for VR (fake depth)
@@ -607,8 +607,8 @@ void LiveUI::UpdateTouchUI()
 
    const ImGuiIO &io = ImGui::GetIO();
 
-   float screenWidth = io.DisplaySize.x;
-   float screenHeight = io.DisplaySize.y;
+   const float screenWidth = io.DisplaySize.x;
+   const float screenHeight = io.DisplaySize.y;
 
    constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
 
@@ -624,13 +624,13 @@ void LiveUI::UpdateTouchUI()
    {
       const RECT& rect = region.region;
 
-      ImVec2 topLeft((float)rect.left * screenWidth / 100.0f, (float)rect.top * screenHeight / 100.0f);
-      ImVec2 bottomRight((float)rect.right * screenWidth / 100.0f, (float)rect.bottom * screenHeight / 100.0f);
+      const ImVec2 topLeft((float)rect.left * screenWidth / 100.0f, (float)rect.top * screenHeight / 100.0f);
+      const ImVec2 bottomRight((float)rect.right * screenWidth / 100.0f, (float)rect.bottom * screenHeight / 100.0f);
 
-      ImColor fillColor(255, 255, 255, 5);
+      constexpr ImColor fillColor(255, 255, 255, 5);
       drawList->AddRectFilled(topLeft, bottomRight, fillColor);
 
-      ImColor borderColor(255, 255, 255, 20);
+      constexpr ImColor borderColor(255, 255, 255, 20);
       drawList->AddRect(topLeft, bottomRight, borderColor, 0.0f, ImDrawFlags_RoundCornersAll, 2.0f);
    }
    ImGui::End();
@@ -698,5 +698,4 @@ ImGuiKey LiveUI::GetImGuiKeyFromSDLScancode(const SDL_Scancode sdlk)
 {
    return ImGui_ImplSDL3_KeyEventToImGuiKey(SDL_GetKeyFromScancode(sdlk, SDL_KMOD_NONE, false), sdlk);
 }
-
 

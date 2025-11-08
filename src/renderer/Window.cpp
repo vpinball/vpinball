@@ -239,8 +239,8 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
 
    const SDL_DisplayMode* const displayMode = SDL_GetDesktopDisplayMode(selectedDisplay.display);
    if (displayMode) {
-      PLOGI << "Window #" << m_windowId << " (" << m_width << "x" << m_height << ") was created on display " << selectedDisplay.displayName 
-         << "[" << displayMode->w << 'x' << displayMode->h << ' ' << displayMode->refresh_rate << "Hz " << SDL_GetPixelFormatName(displayMode->format) << ']';
+      PLOGI << "Window #" << m_windowId << " (" << m_width << 'x' << m_height << ") was created on display " << selectedDisplay.displayName 
+         << '[' << displayMode->w << 'x' << displayMode->h << ' ' << displayMode->refresh_rate << "Hz " << SDL_GetPixelFormatName(displayMode->format) << ']';
    }
 }
 
@@ -317,7 +317,7 @@ void Window::SetSize(const int x, const int y)
    SDL_SetWindowSize(m_nwnd, x, y);
    SDL_GetWindowSizeInPixels(m_nwnd, &m_pixelWidth, &m_pixelHeight);
    #ifdef ENABLE_BGFX
-   // The RenderDevice automatically manages the backbuffer resize. For anciliary windows (BGFX only), we need to recreate the swapchain
+   // The RenderDevice automatically manages the backbuffer resize. For ancillary windows (BGFX only), we need to recreate the swapchain
    if (m_backBuffer && g_pplayer && g_pplayer->m_playfieldWnd != this)
    {
       g_pplayer->m_renderer->m_renderDevice->AddEndOfFrameCmd(
@@ -339,7 +339,7 @@ void Window::SetSize(const int x, const int y)
 vector<Window::DisplayConfig> Window::GetDisplays()
 {
    vector<Window::DisplayConfig> displays;
-   SDL_DisplayID primaryID = SDL_GetPrimaryDisplay();
+   const SDL_DisplayID primaryID = SDL_GetPrimaryDisplay();
 
    int i = 0;
    int displayCount = 0;

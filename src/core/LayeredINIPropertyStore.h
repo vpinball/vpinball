@@ -20,7 +20,7 @@ namespace VPX::Properties
 // When parented to a base property store:
 // - the value returned by the parent property store is used as the default value for each property.
 // - only property with value that are not equal to parent's value are persisted in the INI (they override the parent)
-// - reseting a property of a child store will turn it to an undefined state (returning parent's value), but does not affect the parent
+// - resetting a property of a child store will turn it to an undefined state (returning parent's value), but does not affect the parent
 // - saving will also save the parent
 class LayeredINIPropertyStore final : public PropertyStore
 {
@@ -85,4 +85,4 @@ private:
    bool LoadFromINI(PropertyRegistry::PropId id);
 };
 
-};
+}

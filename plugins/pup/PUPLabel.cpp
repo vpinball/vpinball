@@ -402,7 +402,7 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, SDL_Rect& rect, int pagenum
       if (expectedFrame != m_animationFrame)
       {
          m_animationFrame = expectedFrame;
-         // TODO perform conversion on the anciliary thread and not at render time
+         // TODO perform conversion on the ancillary thread and not at render time
          SDL_Surface* surf = m_renderState.m_pAnimation->frames[m_animationFrame];
          if (surf->format != SDL_PIXELFORMAT_RGBA32)
             surf = SDL_ConvertSurface(surf, SDL_PIXELFORMAT_RGBA32);

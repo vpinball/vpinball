@@ -24,12 +24,12 @@
 // - https://github.com/francisdb/pup-research/tree/main
 //
 // This port comes with the following changes & enhancements:
-// - it is open sourced and portable
+// - it is open source and portable
 // - it does not come with additional dependencies (no need for B2S, nor DMDExt)
 // - it renders through the provided 2D image drawing hooks, allowing to
 //   render PinUp videos directly in 3D, especially for VR play.
 //
-// The plugin renders the PinUp screens inside 'standard' plugin anciliary windows
+// The plugin renders the PinUp screens inside 'standard' plugin ancillary windows
 // with the following mapping:
 //  0. Topper         => Topper
 //  1. DMD (4:1 slim) => ScoreView (selected through user settings)
@@ -45,7 +45,7 @@
 //
 
 namespace PUP {
-  
+
 static const MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
 static ScriptablePluginAPI* scriptApi = nullptr;

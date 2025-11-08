@@ -541,7 +541,7 @@ Shader::Shader(RenderDevice* renderDevice, const ShaderId id, const bool isStere
       {
          ShaderUniform u = ShaderUniform::coreUniforms[i];
          bgfx::UniformType::Enum type;
-         uint16_t n = u.count;
+         const uint16_t n = u.count;
          switch (u.type)
          {
          case SUT_DataBlock: m_uniformHandles[i] = BGFX_INVALID_HANDLE; continue;
@@ -1141,10 +1141,10 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          const int pos = v & 0x0FF;
          std::shared_ptr<const Sampler> texel = pos > 0 ? m_state->m_samplers[pos - 1] : m_renderDevice->m_nullTexture;
          assert(texel != nullptr);
-         SamplerAddressMode clampu = (SamplerAddressMode)((v >> 8) & 0x0F);
-         SamplerAddressMode clampv = (SamplerAddressMode)((v >> 12) & 0x0F);
-         SamplerFilter filter = texel == m_renderDevice->m_nullTexture ? SamplerFilter::SF_NONE: (SamplerFilter)((v >> 20) & 0x0F);
-         
+         const SamplerAddressMode clampu = (SamplerAddressMode)((v >> 8) & 0x0F);
+         const SamplerAddressMode clampv = (SamplerAddressMode)((v >> 12) & 0x0F);
+         const SamplerFilter filter = texel == m_renderDevice->m_nullTexture ? SamplerFilter::SF_NONE: (SamplerFilter)((v >> 20) & 0x0F);
+
          #if defined(ENABLE_BGFX)
          if (m_renderDevice->GetUniformState().GetTexture(uniformName) == texel)
             return;
@@ -1289,9 +1289,9 @@ bgfx::ProgramHandle Shader::GetCore() const
 void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTechniques technique, const char* vsName, const char* fsName, const bool isClipVariant)
 {
    assert(!bgfx::isValid(isClipVariant ? m_clipPlaneTechniques[technique] : m_techniques[technique]));
-   bgfx::RendererType::Enum type = bgfx::getRendererType();
-   bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(embeddedShaders, type, vsName);
-   bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(embeddedShaders, type, fsName);
+   const bgfx::RendererType::Enum type = bgfx::getRendererType();
+   const bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(embeddedShaders, type, vsName);
+   const bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(embeddedShaders, type, fsName);
    if (!bgfx::isValid(vsh) || !bgfx::isValid(fsh))
    {
       PLOGE << "Failed to setup shader from " << vsName << " / " << fsName;
@@ -1321,12 +1321,12 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
       for (int j = 0; j < 2; j++)
       {
          bgfx::UniformHandle uniforms[SHADER_UNIFORM_COUNT];
-         uint16_t n_uniforms = bgfx::getShaderUniforms(j == 0 ? vsh : fsh, uniforms, SHADER_UNIFORM_COUNT);
+         const uint16_t n_uniforms = bgfx::getShaderUniforms(j == 0 ? vsh : fsh, uniforms, SHADER_UNIFORM_COUNT);
          for (int i = 0; i < n_uniforms; i++)
          {
             bgfx::UniformInfo info;
             bgfx::getUniformInfo(uniforms[i], info);
-            auto uniformIndex = getUniformByName(info.name);
+            const auto uniformIndex = getUniformByName(info.name);
             if (uniformIndex == SHADER_UNIFORM_INVALID)
             {
                PLOGE << "Invalid uniform defined in shader " << (j == 0 ? vsName : fsName) << ": " << info.name;

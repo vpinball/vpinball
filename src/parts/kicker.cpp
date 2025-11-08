@@ -347,7 +347,7 @@ void Kicker::Render(const unsigned int renderMask)
    m_rd->m_basicShader->SetMaterial(mat);
    m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_kickerBoolean, *mat);
    m_rd->SetRenderState(RenderState::ZFUNC, RenderState::Z_ALWAYS);
-   Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
+   const Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
    m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_plateMeshBuffer, RenderDevice::TRIANGLELIST, 0, kickerPlateNumIndices);
 
    m_rd->SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
@@ -699,7 +699,7 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
 {
    if (g_pplayer && m_phitkickercircle && m_phitkickercircle->m_pHitBall)
    {
-      HitBall* draggedBall = g_pplayer->m_liveUI->m_ballControl.GetDraggedBall();
+      HitBall* const draggedBall = g_pplayer->m_liveUI->m_ballControl.GetDraggedBall();
 	   if (draggedBall == nullptr)
 	   {
 		   // Ball control most recently kicked if none currently.

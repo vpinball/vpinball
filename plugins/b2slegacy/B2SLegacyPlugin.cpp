@@ -145,10 +145,10 @@ static int OnRender(VPXRenderContext2D* const renderCtx, void* context)
 
 static void OnGetRenderer(const unsigned int msgId, void* context, void* msgData)
 {
-   GetAnciliaryRendererMsg* msg = static_cast<GetAnciliaryRendererMsg*>(msgData);
+   GetAncillaryRendererMsg* msg = static_cast<GetAncillaryRendererMsg*>(msgData);
 
-   const AnciliaryRendererDef backglassEntry = { "B2SLegacy", "B2S Legacy Backglass", "Renderer for B2S legacy backglass files", context, OnRender };
-   const AnciliaryRendererDef dmdEntry = { "B2SLegacyDMD", "B2S Legacy DMD", "Renderer for B2S legacy DMD files", context, OnRender };
+   const AncillaryRendererDef backglassEntry = { "B2SLegacy", "B2S Legacy Backglass", "Renderer for B2S legacy backglass files", context, OnRender };
+   const AncillaryRendererDef dmdEntry = { "B2SLegacyDMD", "B2S Legacy DMD", "Renderer for B2S legacy DMD files", context, OnRender };
 
    if (msg->window == VPXWindowId::VPXWINDOW_Backglass) {
       if (msg->count < msg->maxEntryCount)

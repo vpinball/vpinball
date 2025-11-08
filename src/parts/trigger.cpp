@@ -1131,7 +1131,7 @@ STDMETHODIMP Trigger::DestroyBall(int *pVal)
    {
       if (ball->m_d.m_vpVolObjs)
       {
-         auto it = std::ranges::find(*(ball->m_d.m_vpVolObjs), (IFireEvents *)this); // cast to IFireEvents necessary, as it is stored like this in HitObject.m_obj
+         const auto it = std::ranges::find(*(ball->m_d.m_vpVolObjs), (IFireEvents *)this); // cast to IFireEvents necessary, as it is stored like this in HitObject.m_obj
          if (it != ball->m_d.m_vpVolObjs->end())
          {
             if (pVal)

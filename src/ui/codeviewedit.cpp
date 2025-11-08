@@ -33,20 +33,20 @@ CVPreference::CVPreference(const COLORREF crTextColor, const bool bDisplay, cons
 void CVPreference::SetCheckBox(const HWND hwndDlg)
 {
 #ifndef __STANDALONE__
-	SNDMSG(GetDlgItem(hwndDlg, IDC_ChkBox_code), BM_SETCHECK, m_highlight ? BST_CHECKED : BST_UNCHECKED, 0L);
+   SNDMSG(GetDlgItem(hwndDlg, IDC_ChkBox_code), BM_SETCHECK, m_highlight ? BST_CHECKED : BST_UNCHECKED, 0L);
 #endif
 }
 
 void CVPreference::ReadCheckBox(const HWND hwndDlg)
 {
 #ifndef __STANDALONE__
-	m_highlight = !!IsDlgButtonChecked(hwndDlg, IDC_ChkBox_code);
+   m_highlight = !!IsDlgButtonChecked(hwndDlg, IDC_ChkBox_code);
 #endif
 }
 
 void CVPreference::GetPrefsFromReg()
 {
-	m_highlight = g_pvp->m_settings.GetBool(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName).value());
+   m_highlight = g_pvp->m_settings.GetBool(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName).value());
    m_rgb = g_pvp->m_settings.GetInt(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_color").value());
    m_pointSize = g_pvp->m_settings.GetInt(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_FontPointSize").value());
    string tmp = g_pvp->m_settings.GetString(Settings::GetRegistry().GetPropertyId("CVEdit"s, m_regName + "_Font").value());

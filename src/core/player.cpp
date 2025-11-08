@@ -292,7 +292,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_scoreViewOutput.SetMode(live_table->m_settings, static_cast<RenderOutput::OutputMode>(live_table->m_settings.GetWindow_Mode(VPXWindowId::VPXWINDOW_ScoreView)));
    m_topperOutput.SetMode(live_table->m_settings, static_cast<RenderOutput::OutputMode>(live_table->m_settings.GetWindow_Mode(VPXWindowId::VPXWINDOW_Topper)));
    #if defined(ENABLE_BGFX)
-   if (m_vrDevice == nullptr) // Anciliary windows are not yet supported while in VR mode
+   if (m_vrDevice == nullptr) // Ancillary windows are not yet supported while in VR mode
    {
       if (m_backglassOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
          m_renderer->m_renderDevice->AddWindow(m_backglassOutput.GetWindow());
@@ -880,7 +880,7 @@ Player::~Player()
    for (auto hitable : m_vhitables)
       hitable->GetIHitable()->TimerRelease();
    for (int window = 0; window <= VPXWindowId::VPXWINDOW_Topper; window++)
-      delete m_anciliaryWndHdrRT[window];
+      delete m_ancillaryWndHdrRT[window];
    assert(m_vballDelete.empty());
    m_vball.clear();
 
@@ -1699,7 +1699,7 @@ void Player::FramePacingGameLoop(const std::function<void()>& sync)
    // GPU     ..RRRRRRRRRrrrrrrrrrRRRRRRRRRrrrrrrrrRRRRRRRRRrrrrrrrrRRRRRRRRRrrrr
    // It shows that after the first few frames, the CPU will hit a blocking call when submitting to the GPU render queue (longer submit phase).
    // This would defeat the design since during the blocking call, the CPU is stalled and VPX's input/physics will lag behind PinMAME.
-   // It also shows that since frames arrive late, they are pushed to the display out of sync. Wether they will wait for the next VBlank or 
+   // It also shows that since frames arrive late, they are pushed to the display out of sync. Whether they will wait for the next VBlank or 
    // not (causing tearing) depends on the user setup (DWM, fullscreen,...).
    //
    // What we do is adjust the target frame length based on averaged previous frame length (sliding average searching to get back to 
@@ -1776,7 +1776,7 @@ extern void PrecompSplineTonemap(const float displayMaxLum, float out[6]);
 
 void Player::PrepareFrame(const std::function<void()>& sync)
 {
-   // Rendering outputs to m_renderDevice->GetBackBufferTexture(). If MSAA is used, it is resolved as part of the rendering (i.e. this surface is NOT the MSAA rneder surface but its resolved copy)
+   // Rendering outputs to m_renderDevice->GetBackBufferTexture(). If MSAA is used, it is resolved as part of the rendering (i.e. this surface is NOT the MSAA render surface but its resolved copy)
    // Then it is tonemapped/bloom/dither/... to m_renderDevice->GetPostProcessRenderTarget1() if needed for postprocessing (sharpen, FXAA,...), or directly to the main output framebuffer otherwise
    // The optional postprocessing is done from m_renderDevice->GetPostProcessRenderTarget1() to the main output framebuffer
    #ifdef MSVC_CONCURRENCY_VIEWER
@@ -1853,9 +1853,7 @@ void Player::PrepareFrame(const std::function<void()>& sync)
    tagSpan = new span(series, 1, _T("Build.RF"));
    #endif
 
-   RenderDevice *const rd = m_renderer->m_renderDevice;
-
-   // Prepare main 3D scene frame, then apply screenspace transforms, including anciliary window rendering (MSAA, AO, AA, stereo, ball motion blur, tonemapping, dithering, bloom,...)
+   // Prepare main 3D scene frame, then apply screenspace transforms, including ancillary window rendering (MSAA, AO, AA, stereo, ball motion blur, tonemapping, dithering, bloom,...)
    m_renderer->RenderFrame();
 
    m_physics->ResetPerFrameStats();
@@ -1971,12 +1969,12 @@ void Player::FinishFrame()
    }
 
    #ifdef _MSC_VER
-      // Legacy hacky Win32 focus management: keep VPX focused & overlayed by the anciliary COM created window
+      // Legacy hacky Win32 focus management: keep VPX focused & overlayed by the ancillary COM created window
       // This is very hacky and does not seem to always work (we are requesting focus but also ask these window to stay on top of us as an overlay)
-      // This also means that user interaction with these anciliary windows is disabled during the first seconds after starting a table which is nothing but intuitive
+      // This also means that user interaction with these ancillary windows is disabled during the first seconds after starting a table which is nothing but intuitive
       // Finally, this means that we are doing the z ordering of these windows in between themselves (for example B2S DMD vs Freezy's DMD) which is not clean too...
       // Window priority order is defined by the order of names in the overlaylist array below
-      // The clean way of handling this is by using windows managed by VPX through plugins & anciliary window rendering support (overlays are rendered inside the containing window)
+      // The clean way of handling this is by using windows managed by VPX through plugins & ancillary window rendering support (overlays are rendered inside the containing window)
       if (m_time_msec < 3000)
       {
          static const std::array<string, 15> overlaylist {
@@ -2001,10 +1999,10 @@ void Player::FinishFrame()
                // Make sure the window is always on top of us, but does not take focus away from us (no activation flag, and not using BringWindowToTop which request focus)
                SetWindowPos(hVPMWnd, HWND_TOPMOST, 0, 0, 0, 0, (SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE));
                // Keep input focus on the VPX playfield window
-               // TODO With the latest changes (early hiding of editor window, cleaner focus management), do we really need this anymore ? Not doing it would allow user interaction with anciliary windows
+               // TODO With the latest changes (early hiding of editor window, cleaner focus management), do we really need this anymore ? Not doing it would allow user interaction with ancillary windows
                if (GetForegroundWindow() == hVPMWnd)
                {
-                  PLOGI << "Anciliary overlay window '" << windowtext << "' has taken input focus, keeping focus on playfield.";
+                  PLOGI << "Ancillary overlay window '" << windowtext << "' has taken input focus, keeping focus on playfield.";
                   m_playfieldWnd->RaiseAndFocus();
                }
             }
@@ -2023,22 +2021,22 @@ void Player::OnAuxRendererChanged(const unsigned int msgId, void* userData, void
       const string section = window == VPXWindowId::VPXWINDOW_Backglass ? "Backglass"s
                            : window == VPXWindowId::VPXWINDOW_ScoreView ? "ScoreView"s
                                                                         : "Topper"s;
-      GetAnciliaryRendererMsg getAuxRendererMsg { window, 0, 0, nullptr };
+      GetAncillaryRendererMsg getAuxRendererMsg { window, 0, 0, nullptr };
       m_msgApi->BroadcastMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), me->m_getAuxRendererId, &getAuxRendererMsg);
-      me->m_anciliaryWndRenderers[window].resize(getAuxRendererMsg.count);
-      getAuxRendererMsg = { window, getAuxRendererMsg.count, 0, me->m_anciliaryWndRenderers[window].data() };
+      me->m_ancillaryWndRenderers[window].resize(getAuxRendererMsg.count);
+      getAuxRendererMsg = { window, getAuxRendererMsg.count, 0, me->m_ancillaryWndRenderers[window].data() };
       m_msgApi->BroadcastMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), me->m_getAuxRendererId, &getAuxRendererMsg);
-      for (const auto& renderer : me->m_anciliaryWndRenderers[window])
+      for (const auto& renderer : me->m_ancillaryWndRenderers[window])
          Settings::GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>(section, "Priority."s.append(renderer.id), ""s, ""s, 0, 1000, 0));
-      std::ranges::sort(me->m_anciliaryWndRenderers[window],
-         [&](const AnciliaryRendererDef &a, const AnciliaryRendererDef &b)
+      std::ranges::sort(me->m_ancillaryWndRenderers[window],
+         [&](const AncillaryRendererDef &a, const AncillaryRendererDef &b)
          {
             int pa = me->m_ptable->m_settings.GetInt(Settings::GetRegistry().GetPropertyId(section, "Priority."s.append(a.id)).value());
             int pb = me->m_ptable->m_settings.GetInt(Settings::GetRegistry().GetPropertyId(section, "Priority."s.append(b.id)).value());
             return pa > pb; // Sort in descending order (first is the most wanted)
          });
-      std::erase_if(me->m_anciliaryWndRenderers[window],
-         [section, me](const AnciliaryRendererDef &a) { return me->m_ptable->m_settings.GetInt(Settings::GetRegistry().GetPropertyId(section, "Priority."s.append(a.id)).value()) < 0; });
+      std::erase_if(me->m_ancillaryWndRenderers[window],
+         [section, me](const AncillaryRendererDef &a) { return me->m_ptable->m_settings.GetInt(Settings::GetRegistry().GetPropertyId(section, "Priority."s.append(a.id)).value()) < 0; });
    }
 }
 
@@ -2049,7 +2047,7 @@ VPX::RenderOutput& Player::GetOutput(VPXWindowId window)
            /*window == VPXWindowId::VPXWINDOW_Topper ? */ m_topperOutput;
 }
 
-RenderTarget *Player::SetupAnciliaryWindow(VPXWindowId window, RenderTarget *embedRT, int &outputX, int &outputY, int &outputW, int &outputH, bool &enableHDR)
+RenderTarget *Player::SetupAncillaryWindow(VPXWindowId window, RenderTarget *embedRT, int &outputX, int &outputY, int &outputW, int &outputH, bool &enableHDR)
 {
    const VPX::RenderOutput &output = GetOutput(window);
    const string renderPassName = window == VPXWindowId::VPXWINDOW_Backglass ? "Backglass Render"s :
@@ -2140,9 +2138,9 @@ RenderTarget *Player::SetupAnciliaryWindow(VPXWindowId window, RenderTarget *emb
    {
       if (enableHDR)
       {
-         if (m_anciliaryWndHdrRT[window] == nullptr)
-            m_anciliaryWndHdrRT[window] = new RenderTarget(rd, SurfaceType::RT_DEFAULT, hdrRTName, outputW, outputH, colorFormat::RGBA16F, false, 1, "Fatal Error: unable to create anciliary window back buffer");
-         rd->SetRenderTarget(renderPassName, m_anciliaryWndHdrRT[window], false, true);
+         if (m_ancillaryWndHdrRT[window] == nullptr)
+            m_ancillaryWndHdrRT[window] = new RenderTarget(rd, SurfaceType::RT_DEFAULT, hdrRTName, outputW, outputH, colorFormat::RGBA16F, false, 1, "Fatal Error: unable to create ancillary window back buffer");
+         rd->SetRenderTarget(renderPassName, m_ancillaryWndHdrRT[window], false, true);
       }
       else
       {
@@ -2159,7 +2157,7 @@ RenderTarget *Player::SetupAnciliaryWindow(VPXWindowId window, RenderTarget *emb
    return rd->GetCurrentRenderTarget();
 }
 
-void Player::ClearEmbeddedAnciliaryWindow(VPXWindowId window, RenderTarget *embedRT)
+void Player::ClearEmbeddedAncillaryWindow(VPXWindowId window, RenderTarget *embedRT)
 {
    const VPX::RenderOutput &output = GetOutput(window);
    if (output.GetMode() != VPX::RenderOutput::OM_EMBEDDED)
@@ -2167,7 +2165,7 @@ void Player::ClearEmbeddedAnciliaryWindow(VPXWindowId window, RenderTarget *embe
    
    bool enableHDR;
    int m_outputX, m_outputY, m_outputW, m_outputH;
-   RenderTarget *outputRT = SetupAnciliaryWindow(window, embedRT, m_outputX, m_outputY, m_outputW, m_outputH, enableHDR);
+   RenderTarget *outputRT = SetupAncillaryWindow(window, embedRT, m_outputX, m_outputY, m_outputW, m_outputH, enableHDR);
    if (outputRT == nullptr)
       return;
    
@@ -2182,8 +2180,8 @@ void Player::ClearEmbeddedAnciliaryWindow(VPXWindowId window, RenderTarget *embe
    const float sy = 1.f / static_cast<float>(outputRT->GetHeight());
    for (unsigned int i = 0; i < 4; ++i)
    {
-      vertices[i].x =        sx * (vertices[i].x * static_cast<float>(m_outputW) + m_outputX)*2.0f - 1.0f;
-      vertices[i].y = 1.0f - sy * (vertices[i].y * m_outputH + m_outputY) * 2.0f;
+      vertices[i].x =        sx * (vertices[i].x * static_cast<float>(m_outputW) + static_cast<float>(m_outputX))*2.0f - 1.0f;
+      vertices[i].y = 1.0f - sy * (vertices[i].y * static_cast<float>(m_outputH) + static_cast<float>(m_outputY))*2.0f;
    }
    RenderDevice *const rd = m_renderer->m_renderDevice;
    rd->ResetRenderState();
@@ -2197,12 +2195,12 @@ void Player::ClearEmbeddedAnciliaryWindow(VPXWindowId window, RenderTarget *embe
    rd->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
 }
 
-void Player::RenderAnciliaryWindow(VPXWindowId window, RenderTarget *embedRT)
+void Player::RenderAncillaryWindow(VPXWindowId window, RenderTarget *embedRT)
 {
    const VPX::RenderOutput &output = GetOutput(window);
    bool enableHDR;
    int m_outputX, m_outputY, m_outputW, m_outputH;
-   RenderTarget *outputRT = SetupAnciliaryWindow(window, embedRT, m_outputX, m_outputY, m_outputW, m_outputH, enableHDR);
+   RenderTarget *outputRT = SetupAncillaryWindow(window, embedRT, m_outputX, m_outputY, m_outputW, m_outputH, enableHDR);
    if (outputRT == nullptr)
       return;
 
@@ -2357,7 +2355,7 @@ void Player::RenderAnciliaryWindow(VPXWindowId window, RenderTarget *embedRT)
    };
 
    bool rendered = false;
-   for (auto& renderer : m_anciliaryWndRenderers[window])
+   for (auto& renderer : m_ancillaryWndRenderers[window])
    {
       rendered = renderer.Render(&context.ctx, renderer.context);
       if (rendered)
@@ -2376,11 +2374,11 @@ void Player::RenderAnciliaryWindow(VPXWindowId window, RenderTarget *embedRT)
       rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
       rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
       rd->SetRenderTarget(tonemapPassName, outputRT, true, true);
-      rd->AddRenderTargetDependency(m_anciliaryWndHdrRT[window], false);
+      rd->AddRenderTargetDependency(m_ancillaryWndHdrRT[window], false);
       rd->m_FBShader->SetTextureNull(SHADER_tex_depth);
-      rd->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_anciliaryWndHdrRT[window]->GetColorSampler());
-      rd->m_FBShader->SetTexture(SHADER_tex_fb_filtered, m_anciliaryWndHdrRT[window]->GetColorSampler());
-      rd->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / m_anciliaryWndHdrRT[window]->GetWidth()), (float)(1.0 / m_anciliaryWndHdrRT[window]->GetHeight()), 1.0f, 1.0f);
+      rd->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_ancillaryWndHdrRT[window]->GetColorSampler());
+      rd->m_FBShader->SetTexture(SHADER_tex_fb_filtered, m_ancillaryWndHdrRT[window]->GetColorSampler());
+      rd->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / m_ancillaryWndHdrRT[window]->GetWidth()), (float)(1.0 / m_ancillaryWndHdrRT[window]->GetHeight()), 1.0f, 1.0f);
       rd->m_FBShader->SetVector(SHADER_bloom_dither_colorgrade,
          0.f, // Bloom
          output.GetWindow()->IsWCGBackBuffer() ? 0.f : 1.f, // Dither
@@ -2430,7 +2428,7 @@ void Player::RenderAnciliaryWindow(VPXWindowId window, RenderTarget *embedRT)
    if (rendered && output.GetMode() == VPX::RenderOutput::OM_WINDOW && !output.GetWindow()->IsVisible())
    {
       output.GetWindow()->Show();
-      m_playfieldWnd->RaiseAndFocus(); // Keep focus on playfield when showing an anciliary window
+      m_playfieldWnd->RaiseAndFocus(); // Keep focus on playfield when showing an ancillary window
    }
 }
 

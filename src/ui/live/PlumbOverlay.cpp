@@ -49,10 +49,10 @@ void PlumbOverlay::Update()
    const ImVec2 radius = fullSize * (0.5f * 0.8f);
    const ImVec2 scale = radius / sin(m_player->m_physics->GetPlumbTiltThreshold());
    // Background
-   ImU32 backCol = IM_COL32(isInNudgeSettings ? 0.f : (m_tiltFade * 255.f), 0, 0, plumbFade * 64.f);
+   const ImU32 backCol = IM_COL32(isInNudgeSettings ? 0.f : (m_tiltFade * 255.f), 0, 0, plumbFade * 64.f);
    ImGui::GetWindowDrawList()->AddEllipseFilled(pos + halfSize, radius * 1.1f, backCol);
    // Tilt circle
-   ImU32 alphaCol = IM_COL32(255, 0, 0, plumbFade * 255.f);
+   const ImU32 alphaCol = IM_COL32(255, 0, 0, plumbFade * 255.f);
    ImGui::GetWindowDrawList()->AddEllipse(pos + halfSize, radius, alphaCol, 0.0f, 0, 2.f * m_uiScale);
    // Plumb position
    const Vertex3Ds &plumb = m_player->m_physics->GetPlumbPos();

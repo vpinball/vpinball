@@ -234,8 +234,8 @@ static int OnRender(VPXRenderContext2D* ctx, void*)
 
 static void OnGetRenderer(const unsigned int, void*, void* msgData)
 {
-   static AnciliaryRendererDef entry = { "B2S", "B2S Backglass & FullDMD", "Renderer for directb2s backglass files", nullptr, OnRender };
-   GetAnciliaryRendererMsg* msg = static_cast<GetAnciliaryRendererMsg*>(msgData);
+   static AncillaryRendererDef entry = { "B2S", "B2S Backglass & FullDMD", "Renderer for directb2s backglass files", nullptr, OnRender };
+   GetAncillaryRendererMsg* msg = static_cast<GetAncillaryRendererMsg*>(msgData);
    if ((msg->window == VPXWindowId::VPXWINDOW_Backglass) || (msg->window == VPXWindowId::VPXWINDOW_ScoreView))
    {
       if (msg->count < msg->maxEntryCount)

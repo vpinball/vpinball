@@ -171,6 +171,7 @@ void InGameUI::Update()
 
    // Copy list as it may be modified when the page is updated (for example when a navigation event is triggered)
    vector<InGameUIPage*> pages;
+   pages.reserve(m_activePages.size());
    for (const auto &page : m_activePages)
       pages.push_back(page.get());
    for (const auto &page : pages)

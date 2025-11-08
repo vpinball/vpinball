@@ -59,7 +59,7 @@ void SharedIndexBuffer::Upload()
 {
    if (!IsCreated())
    {
-      unsigned int size = m_count * m_bytePerElement;
+      const unsigned int size = m_count * m_bytePerElement;
 
       // Create data block
       #if defined(ENABLE_BGFX)

@@ -643,8 +643,8 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
 void PUPManager::OnGetRenderer(const unsigned int eventId, void* context, void* msgData)
 {
    PUPManager* me = static_cast<PUPManager*>(context);
-   GetAnciliaryRendererMsg* msg = static_cast<GetAnciliaryRendererMsg*>(msgData);
-   static constexpr AnciliaryRendererDef entry = { "PUP", "PinUp Player", "Renderer for PinUp player backglass", nullptr, Render };
+   GetAncillaryRendererMsg* msg = static_cast<GetAncillaryRendererMsg*>(msgData);
+   static constexpr AncillaryRendererDef entry = { "PUP", "PinUp Player", "Renderer for PinUp player backglass", nullptr, Render };
    if (msg->window == VPXWindowId::VPXWINDOW_Backglass || msg->window == VPXWindowId::VPXWINDOW_ScoreView || msg->window == VPXWindowId::VPXWINDOW_Topper)
    {
       if (msg->count < msg->maxEntryCount) 

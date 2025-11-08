@@ -475,8 +475,8 @@ void Gate::ExportMesh(ObjLoader& loader)
 
 void Gate::GenerateBracketMesh(Vertex3D_NoTex2 *buf) const
 {
-   Matrix3D rotMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation));
-   Matrix3D vertMatrix = rotMatrix * Matrix3D::MatrixScale(m_d.m_length) * Matrix3D::MatrixTranslate(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height + m_baseHeight);
+   const Matrix3D rotMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation));
+   const Matrix3D vertMatrix = rotMatrix * Matrix3D::MatrixScale(m_d.m_length) * Matrix3D::MatrixTranslate(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height + m_baseHeight);
    vertMatrix.TransformPositions(gateBracket, buf, gateBracketNumVertices);
    rotMatrix.TransformNormals(gateBracket, buf, gateBracketNumVertices);
 }

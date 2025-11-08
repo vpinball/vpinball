@@ -658,8 +658,8 @@ void DisplaySettingsPage::Render(float elapsedS)
          m_player->m_playfieldWnd->SetPos(pos.x, pos.y);
       }
       else if (GetOutput(m_wndId).GetMode() == RenderOutput::OM_EMBEDDED)
-      { // Drag anciliary embedded window
-         // Floating anciliary window are directly handled in the main event dispatch handler since input events are only broadcasted to ImGui for the main window
+      {  // Drag ancillary embedded window
+         // Floating ancillary window are directly handled in the main event dispatch handler since input events are only broadcasted to ImGui for the main window
          SDL_Point pos;
          GetOutput(m_wndId).GetPos(pos.x, pos.y);
          const ImVec2 drag = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left);
@@ -671,4 +671,4 @@ void DisplaySettingsPage::Render(float elapsedS)
    }
 }
 
-};
+}

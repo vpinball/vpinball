@@ -41,7 +41,7 @@ using namespace std::string_literals;
 namespace MsgPI
 {
 
-constexpr inline char cLower(char c)
+static constexpr inline char cLower(char c)
 {
    if (c >= 'A' && c <= 'Z')
       c ^= 32; //ASCII convention
@@ -92,7 +92,7 @@ MsgPluginManager::~MsgPluginManager()
 unsigned int MsgPluginManager::GetPluginEndpoint(const char* id)
 {
    MsgPluginManager& pm = GetInstance();
-   auto item = std::ranges::find_if(pm.m_plugins, [id](const std::shared_ptr<MsgPlugin>& plg) { return plg->IsLoaded() && plg->m_id == id; });
+   const auto item = std::ranges::find_if(pm.m_plugins, [id](const std::shared_ptr<MsgPlugin>& plg) { return plg->IsLoaded() && plg->m_id == id; });
    if (item == pm.m_plugins.end())
       return 0;
    return item->get()->m_endpointId;
@@ -102,7 +102,7 @@ void MsgPluginManager::GetEndpointInfo(const uint32_t endpointId, MsgEndpointInf
 {
    MsgPluginManager& pm = GetInstance();
    assert(std::this_thread::get_id() == pm.m_apiThread);
-   auto item = std::ranges::find_if(pm.m_plugins, [endpointId](const std::shared_ptr<MsgPlugin>& plg) { return plg->IsLoaded() && plg->m_endpointId == endpointId; });
+   const auto item = std::ranges::find_if(pm.m_plugins, [endpointId](const std::shared_ptr<MsgPlugin>& plg) { return plg->IsLoaded() && plg->m_endpointId == endpointId; });
    if (item == pm.m_plugins.end())
       return;
    info->id = (*item)->m_id.c_str();
@@ -277,7 +277,7 @@ void MsgPluginManager::ProcessAsyncCallbacks()
    std::vector<TimerEntry> timers;
    {
       const std::lock_guard<std::mutex> lock(m_timerListMutex);
-      std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+      const std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
       for (std::vector<TimerEntry>::iterator it = m_timers.begin(); it < m_timers.end();)
       {
          if (it->time > now)

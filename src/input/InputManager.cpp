@@ -17,8 +17,6 @@
 #endif
 
 
-
-
 InputManager::InputManager()
    : m_onActionEventMsgId(VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_ACTION_CHANGED))
    , m_keyboardDeviceId(RegisterDevice("Key"s, InputManager::DeviceType::Keyboard, "Keyboards"s)) // Base device: merge inputs from all connected keyboards
@@ -162,9 +160,9 @@ uint16_t InputManager::RegisterDevice(const string& settingsId, InputManager::De
    m_inputDevices[deviceId].m_name = name;
    m_inputDevices[deviceId].m_type = type;
    m_inputDevices[deviceId].m_connected = true;
-   Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Device." + settingsId + ".Name", "Device Name", ""s, name));
-   Settings::GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>("Input"s, "Device." + settingsId + ".Type", "Device Type", ""s, 0, (int) type, vector { "Unknown"s, "Keyboard"s, "Joystick"s, "Mouse"s, "VRController"s, "OpenPinDev"s }));
-   Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("Input"s, "Device." + settingsId + ".NoAutoLayout", "Disable Automatic Layout", ""s, false));
+   Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Device." + settingsId + ".Name", "Device Name"s, ""s, name));
+   Settings::GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>("Input"s, "Device." + settingsId + ".Type", "Device Type"s, ""s, 0, (int)type, vector { "Unknown"s, "Keyboard"s, "Joystick"s, "Mouse"s, "VRController"s, "OpenPinDev"s }));
+   Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("Input"s, "Device." + settingsId + ".NoAutoLayout", "Disable Automatic Layout"s, ""s, false));
    return deviceId;
 }
 
@@ -281,12 +279,12 @@ void InputManager::LoadDevicesFromSettings()
       if (const auto it = std::ranges::find_if(m_inputDevices, [&deviceSettingId](auto& deviceDef) { return deviceDef.m_settingsId == deviceSettingId; }); it != m_inputDevices.end())
          continue;
 
-      m_inputDevices.emplace_back(static_cast<uint16_t>(m_inputDevices.size()), "Unknown Device", deviceSettingId);
+      m_inputDevices.emplace_back(static_cast<uint16_t>(m_inputDevices.size()), "Unknown Device"s, deviceSettingId);
       m_inputDevices.back().m_connected = false;
       DeviceDef& device = m_inputDevices.back();
-      const auto namePropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Device." + deviceSettingId + ".Name", "Device Name", ""s, ""s));
-      const auto typePropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>("Input"s, "Device." + deviceSettingId + ".Type", "Device Type", ""s, 0, 0, vector { "Unknown"s, "Keyboard"s, "Joystick"s, "Mouse"s, "VRController"s, "OpenPinDev"s }));
-      Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("Input"s, "Device." + deviceSettingId + ".NoAutoLayout", "Disable Automatic Layout", ""s, false));
+      const auto namePropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Device." + deviceSettingId + ".Name", "Device Name"s, ""s, ""s));
+      const auto typePropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>("Input"s, "Device." + deviceSettingId + ".Type", "Device Type"s, ""s, 0, 0, vector { "Unknown"s, "Keyboard"s, "Joystick"s, "Mouse"s, "VRController"s, "OpenPinDev"s }));
+      Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("Input"s, "Device." + deviceSettingId + ".NoAutoLayout", "Disable Automatic Layout"s, ""s, false));
       device.m_name = settings.GetString(namePropId);
       device.m_type = static_cast<InputManager::DeviceType>(settings.GetInt(typePropId));
 
@@ -324,8 +322,8 @@ void InputManager::SaveDevicesToSettings() const
 
    for (const auto& device : m_inputDevices)
    {
-      const auto namePropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Device." + device.m_settingsId + ".Name", "Device Name", ""s, ""s));
-      const auto typePropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>("Input"s, "Device." + device.m_settingsId + ".Type", "Device Type", ""s, 0, 0,
+      const auto namePropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Device." + device.m_settingsId + ".Name", "Device Name"s, ""s, ""s));
+      const auto typePropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>("Input"s, "Device." + device.m_settingsId + ".Type", "Device Type"s, ""s, 0, 0,
          vector { "Unknown"s, "Keyboard"s, "Joystick"s, "Mouse"s, "VRController"s, "OpenPinDev"s }));
       settings.Set(namePropId, device.m_name, false);
       settings.Set(typePropId, static_cast<int>(device.m_type), false);
@@ -343,7 +341,7 @@ uint16_t InputManager::GetDeviceId(const string& settingsId)
 {
    if (const auto it = std::ranges::find_if(m_inputDevices, [&settingsId](auto& deviceDef) { return deviceDef.m_settingsId == settingsId; }); it != m_inputDevices.end())
       return it->m_id;
-   m_inputDevices.emplace_back(static_cast<uint16_t>(m_inputDevices.size()), "Unknown Device", settingsId);
+   m_inputDevices.emplace_back(static_cast<uint16_t>(m_inputDevices.size()), "Unknown Device"s, settingsId);
    m_inputDevices.back().m_connected = false;
    return m_inputDevices.back().m_id;
 }

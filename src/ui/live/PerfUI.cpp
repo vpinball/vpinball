@@ -261,7 +261,7 @@ void PerfUI::RenderFPS()
    // Display simple FPS window
    #if defined(ENABLE_BGFX)
    // TODO We are missing a way to evaluate properly if we are syncing on display or not
-   bool pop = (m_player->GetVideoSyncMode() != VideoSyncMode::VSM_NONE)
+   const bool pop = (m_player->GetVideoSyncMode() != VideoSyncMode::VSM_NONE)
       && ((m_player->m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME) - 100) * m_player->m_playfieldWnd->GetRefreshRate() < 1000000);
       // && (abs(static_cast<float>(m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME)) - (1000000.f / m_player->m_playfieldWnd->GetRefreshRate())) < 100.f);
    if (pop)

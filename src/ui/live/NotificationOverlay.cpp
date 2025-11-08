@@ -92,7 +92,7 @@ float NotificationOverlay::RenderNotification(int index, float posY) const {
    ImGui::SetNextWindowBgAlpha(0.666f);
    ImGui::SetNextWindowPos(ImVec2((ImGui::GetIO().DisplaySize.x - text_size.x) / 2, posY));
    ImGui::SetNextWindowSize(text_size);
-   ImGui::Begin(("Notification"s + std::to_string(index)).c_str(), nullptr, window_flags);
+   ImGui::Begin(("Notification" + std::to_string(index)).c_str(), nullptr, window_flags);
    for (const string &lline : lines)
    {
       const ImVec2 lineSize = font->CalcTextSizeA(fontBaked->Size, FLT_MAX, 0.0f, lline.c_str());

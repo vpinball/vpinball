@@ -14,7 +14,7 @@
 #include "PlumbOverlay.h"
 #include "BallControl.h"
 
-inline constexpr const char *ID_BAM_SETTINGS = "Headtracking Settings";
+constexpr const char * const ID_BAM_SETTINGS = "Headtracking Settings";
 
 class LiveUI final
 {
@@ -80,7 +80,7 @@ private:
    // Notifications
    NotificationOverlay m_notificationOverlay;
 
-   // Autodected Input Device popup
+   // Autodetected Input Device popup
    string m_deviceLayoutName;
    bool m_deviceLayoutDontAskAgain;
    std::function<void(bool, bool)> m_deviceLayoutHandler;

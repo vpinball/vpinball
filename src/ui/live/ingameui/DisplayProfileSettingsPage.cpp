@@ -315,3 +315,4 @@ void DisplayProfileSettingsPage::Render(float elapsed)
 }
 
 }
+

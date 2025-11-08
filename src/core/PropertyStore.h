@@ -29,9 +29,6 @@ public:
    virtual void Set(PropertyRegistry::PropId propId, const string& value) = 0;
 
    std::reference_wrapper<PropertyRegistry> m_registry;
-
-private:
-
 };
 
-};
+}

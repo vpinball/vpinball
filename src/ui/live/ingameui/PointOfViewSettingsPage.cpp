@@ -90,7 +90,7 @@ void PointOfViewSettingsPage::BuildPage()
 
    ViewSetupID vsId = table->m_BG_current_set;
    const ViewSetup& viewSetup = table->mViewSetups[vsId];
-   const bool isLegacy = viewSetup.mMode == VLM_LEGACY;
+   //const bool isLegacy = viewSetup.mMode == VLM_LEGACY;
    const string keyPrefix = vsId == BG_DESKTOP ? "ViewDT"s : vsId == BG_FSS ? "ViewFSS"s : "ViewCab"s;
 
    auto selectProp = [vsId](VPX::Properties::PropertyRegistry::PropId dt, VPX::Properties::PropertyRegistry::PropId fss, VPX::Properties::PropertyRegistry::PropId cab)

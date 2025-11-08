@@ -273,7 +273,7 @@ void StereoSettingsPage::BuildPage()
 
 void StereoSettingsPage::UpdateAnaglyphCalibrationModal()
 {
-   const int glassesIndex = m_editedStereoMode - STEREO_ANAGLYPH_1;
+   //const int glassesIndex = m_editedStereoMode - STEREO_ANAGLYPH_1;
    const ImGuiIO& io = ImGui::GetIO();
    ImGui::SetNextWindowPos(ImVec2(0.f, 0.f));
    ImGui::SetNextWindowSize(io.DisplaySize);

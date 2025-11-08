@@ -100,19 +100,19 @@ PropArray(Window, FSColorDepth, int, Int, Int, m_propPlayer_PlayfieldColorDepth,
 
 // Graphics synchronisation and latency reduction
 #if defined(ENABLE_BGFX)
-PropEnum(Player, SyncMode, "Synchronization"s, "None: No synchronization.\r\nVertical Sync: Synchronize on hardware display sync."s, int, 1, "No Sync"s, "Vertical Sync");
+PropEnum(Player, SyncMode, "Synchronization"s, "None: No synchronization.\nVertical Sync: Synchronize on hardware display sync."s, int, 1, "No Sync"s, "Vertical Sync"s);
 #else
 PropEnum(Player, SyncMode, "Synchronization"s,
-   "None: No synchronization.\r\nVertical Sync: Synchronize on video sync which avoids video tearing, but has higher input latency.\r\nAdaptive Sync: Synchronize on video sync, "
-   "except for late frames (below target FPS), also has higher input latency.\r\nFrame Pacing: same as adaptive synce, but with lower latency at the cost of a risk of more stutters when the computer is not powerful enough."s,
+   "None: No synchronization.\nVertical Sync: Synchronize on video sync which avoids video tearing, but has higher input latency.\nAdaptive Sync: Synchronize on video sync, "
+   "except for late frames (below target FPS), also has higher input latency.\nFrame Pacing: same as adaptive synce, but with lower latency at the cost of a risk of more stutters when the computer is not powerful enough."s,
    int, 1, "No Sync"s, "Vertical Sync"s, "Adaptive Sync"s, "Frame Pacing"s);
 #endif
 PropFloat(Player, MaxFramerate, "Limit Framerate"s,
-   "-1 will limit FPS to display refresh rate\r\n0 will not limit display refresh rate\r\nOther values will limit the FPS to it (energy saving/less heat, framerate stability)"s, -1.f,
+   "-1 will limit FPS to display refresh rate\n0 will not limit display refresh rate\nOther values will limit the FPS to it (energy saving/less heat, framerate stability)"s, -1.f,
    1000.f, -1.f);
 PropInt(Player, MaxPrerenderedFrames, "Max. Prerendered Frames"s, "Limit the FPS to the given value (energy saving/less heat, framerate stability), 0 will disable it"s, 0, 5, 0);
 PropInt(Player, VisualLatencyCorrection, "Visual Latency Correction"s,
-   "Leave at -1 to get default latency correction based on display frequency.\r\nIf you measured your setup latency using tools like Intel's PresentMon, enter the average latency in ms."s,
+   "Leave at -1 to get default latency correction based on display frequency.\nIf you measured your setup latency using tools like Intel's PresentMon, enter the average latency in ms."s,
    -1, 200, -1);
 
 // Graphics settings
@@ -146,18 +146,18 @@ PropBool(Player, SoftwareVertexProcessing, "Software Vertex Processing"s, "Activ
 PropBool(Player, DisableAO, "Disable Ambient Occlusion"s, ""s, false);
 PropBool(Player, DynamicAO, "Dynamic Ambient Occlusion"s, ""s, true);
 PropEnum(Player, PFReflection, "Reflection Quality"s,
-   "Limit the quality of reflections for better performance.\r\n'Dynamic' is recommended and will give the best results, but may harm performance.\r\n'Static Only' has no performance cost (except for VR rendering).\r\nOther options feature different trade-offs between quality and performance."s,
+   "Limit the quality of reflections for better performance.\n'Dynamic' is recommended and will give the best results, but may harm performance.\n'Static Only' has no performance cost (except for VR rendering).\nOther options feature different trade-offs between quality and performance."s,
    int, 0, "Disable Reflections"s, "Balls Only"s, "Static Only"s, "Static & Balls"s, "Static & Unsynced Dynamic"s, "Dynamic"s);
-PropInt(Player, MaxTexDimension, "Maximum texture dimension"s, "Images sized above this limit will be automatically scaled down on load."s, 512, 16384, g_isMobile ? 1536 : 16384);
-PropInt(Player, AlphaRampAccuracy, "Detail Level"s, "Images sized above this limit will be automatically scaled down on load."s, 1, 10, 10);
+PropInt(Player, MaxTexDimension, "Maximum texture dimension"s, "Images sized above this limit will be automatically scaled down on load"s, 512, 16384, g_isMobile ? 1536 : 16384);
+PropInt(Player, AlphaRampAccuracy, "Detail Level"s, "Images sized above this limit will be automatically scaled down on load"s, 1, 10, 10);
 PropEnum(Player, BGSet, "Display Mode"s, "Select between desktop, cabinet or 'full single screen' display mode"s, int, 0, "Desktop / Full Single Screen"s, "Full Single Screen"s, "Cabinet"s);
 
 // Aliasing & sharpening
 PropFloat(Player, AAFactor, "Full Scene Anti Aliasing"s,
-   "Enables brute-force Up/Downsampling (similar to DSR).\r\nThis delivers very good quality but has a significant impact on performance.\r\n200% means twice the resolution to be handled while rendering"s,
+   "Enables brute-force Up/Downsampling (similar to DSR).\nThis delivers very good quality but has a significant impact on performance.\n200% means twice the resolution to be handled while rendering"s,
    0.5f, 2.f, 1.f);
 PropEnum(Player, MSAASamples, "MSAA level"s,
-   "Set the amount of MSAA samples.\r\nMSAA can help reduce geometry aliasing at the cost of performance and GPU memory.\r\nThis can improve image quality if not using supersampling"s, int,
+   "Set the amount of MSAA samples.\nMSAA can help reduce geometry aliasing at the cost of performance and GPU memory.\nThis can improve image quality if not using supersampling"s, int,
    0, "Disabled"s, "4 Samples"s, "6 Samples"s, "8 Samples"s);
 PropEnum(Player, FXAA, "Post processed antialiasing"s, "Select between different antialiasing techniques that offer different quality vs performance balances"s, int, 1, "Disabled"s,
    "Fast FXAA"s, "Standard FXAA"s, "Quality FXAA"s, "Fast NFAA"s, "Standard DLAA"s, "Quality SMAA"s);
@@ -166,7 +166,7 @@ PropEnum(Player, Sharpen, "Post processed sharpening"s, "Select between differen
 
 // Ball rendering
 PropBool(Player, BallAntiStretch, "Unstretch Ball"s, "Compensate ball stretching"s, false);
-PropBool(Player, DisableLightingForBalls, "Disable Ball Lighting"s, "Disable lighting and reflection effects on balls, e.g. to help the visually handicapped."s, false);
+PropBool(Player, DisableLightingForBalls, "Disable Ball Lighting"s, "Disable lighting and reflection effects on balls, e.g. to help the visually handicapped"s, false);
 PropBool(Player, BallTrail, "Ball Trail"s, "Legacy ball trails"s, false);
 PropFloat(Player, BallTrailStrength, "Ball Trail Strength"s, "Strength of the fake ball trail"s, 0.f, 5.f, 0.5f);
 PropBool(Player, OverwriteBallImage, "Overwrite ball image"s, "Allow to define images that will be used instead of the table's provided one"s, false);
@@ -175,15 +175,15 @@ PropString(Player, DecalImage, "Decal image override"s, "Image to use for the ba
 
 // Misc player settings
 PropBool(Player, TouchOverlay, "Touch Overlay"s, "Display an overlay showing touch regions"s, false);
-PropBool(Player, EnableCameraModeFlyAround, "Legacy Fly Over Mode"s, "Enable moving camera when using Tweak menu (legacy, replaced by LiveUI fly mode)."s, false);
+PropBool(Player, EnableCameraModeFlyAround, "Legacy Fly Over Mode"s, "Enable moving camera when using Tweak menu (legacy, replaced by LiveUI fly mode)"s, false);
 PropBool(Player, DetectHang, "Detect Script Hang"s, ""s, false);
 PropInt(Player, SecurityLevel, "Security Level"s, ""s, 0, 4, DEFAULT_SECURITY_LEVEL);
 PropInt(Player, NumberOfTimesToShowTouchMessage, "NumberOfTimesToShowTouchMessage"s, ""s, 0, 100, 10);
-PropBool(Player, BAMHeadTracking, "BAM Headtracking"s, "Enable headtracking using the external BAM application.\nThis feature is experimental and unsupported."s, false);
-PropBool(Player, Mirror, "Mirror"s, "Mirror the table (left <-> right)."s, false);
+PropBool(Player, BAMHeadTracking, "BAM Headtracking"s, "Enable headtracking using the external BAM application.\nThis feature is experimental and unsupported"s, false);
+PropBool(Player, Mirror, "Mirror"s, "Mirror the table (left <-> right)"s, false);
 PropEnum(Player, CacheMode, "Cache Mode"s, ""s, int, 1, "Disabled"s, "Preload Textures"s);
 PropEnum(Player, RumbleMode, "RumbleMode"s, ""s, int, 3, "Off"s, "Table only (N/A yet)"s, "Generic only (N/A yet)"s, "Table with generic fallback"s);
-PropInt(Player, MinPhysLoopTime, "MinPhysLoopTime"s, ""s, 0, 1000, 0); // Legacy lag reduction hack. Not uspported by BGFX variant (due to its multithreaded loop)
+PropInt(Player, MinPhysLoopTime, "MinPhysLoopTime"s, ""s, 0, 1000, 0); // Legacy lag reduction hack (e.g. if script execution or physics takes very long, comes at the price of "slower" gameplay). Not supported by BGFX variant (due to its multithreaded loop)
 PropIntUnbounded(Player, PhysicsMaxLoops, "Physics Max Loops"s,
    "Maximum number of physics iteration above which physics engine just skip to stay playable.\nThis is somewhat hacky, override table setup, and may cause gameplay issues. This should not be used anymore."s,
    (int)0xFFFFFFFFu);
@@ -200,7 +200,7 @@ PropIntUnbounded(Player, TiltTriggerTime, "TiltTriggerTime"s, ""s, 10000);
 #endif
 
 // UI & input settings
-PropInt(Player, Exitconfirm, "Direct Exit Length"s, "Length of a long ESC press that directly closes the app, (sadly) expressed in seconds * 60."s, 0, 30 * 60, 120);
+PropInt(Player, Exitconfirm, "Direct Exit Length"s, "Length of a long ESC press that directly closes the app, (sadly) expressed in seconds * 60"s, 0, 30 * 60, 120);
 PropString(Input, Devices, "Devices"s, "List of known devices"s, ""s);
 
 // Nudge & Plumb settings
@@ -614,7 +614,7 @@ PropArray(Player, AnaglyphRightBlue, float, Float, Float, m_propPlayer_Anaglyph1
    PropFloat(Player, ScreenWidth, "Screen Width"s, "Physical width (cm) of the display area of the playfield (main) screen (width > height)"s, 5.f, 200.f, 95.89f);
 PropFloat(Player, ScreenHeight, "Screen Height"s, "Physical height (cm) of the display area of the playfield (main) screen (width > height)"s, 5.f, 200.f, 53.94f);
 PropFloat(Player, ScreenInclination, "Screen Inclination"s, "Inclination (degree) of the playfield (main) screen, 0 is horizontal"s, -30.f, 30.f, 0.f);
-PropFloat(Player, LockbarWidth, "Lockbar Width"s, "Lockbar width in centimeters (measured on the cabinet)."s, 10.f, 150.f, 70.f);
+PropFloat(Player, LockbarWidth, "Lockbar Width"s, "Lockbar width in centimeters (measured on the cabinet)"s, 10.f, 150.f, 70.f);
 PropFloat(Player, LockbarHeight, "Lockbar Height"s, "Lockbar height in centimeters (measured on the cabinet, from ground to top of lockbar)"s, 0.f, 250.f, 85.f);
 PropFloat(Player, ScreenPlayerX, "Player X"s, "Player position in real world, expressed from the bottom center of the playfield, in centimeters"s, -30.f, 30.f, 0.f);
 PropFloat(Player, ScreenPlayerY, "Player Y"s, "Player position in real world, expressed from the bottom center of the playfield, in centimeters"s, -70.f, 30.f, -10.f);
@@ -1245,7 +1245,7 @@ PropInt(DefaultPropsRubber, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 10
 PropFloatUnbounded(DefaultPropsSpinner, Length, "Length"s, ""s, 80.f);
 PropFloatUnbounded(DefaultPropsSpinner, Rotation, "Rotation"s, ""s, 0.f);
 PropBool(DefaultPropsSpinner, ShowBracket, "ShowBracket"s, ""s, true);
-PropFloatUnbounded(DefaultPropsSpinner, Height, "Height"s, ""s, 60.f); // Note: this property used to be a int (scaled by 1000)
+PropFloatUnbounded(DefaultPropsSpinner, Height, "Height"s, ""s, 60.f); // Note: this property used to be an int (scaled by 1000)
 PropFloatUnbounded(DefaultPropsSpinner, AngleMax, "AngleMax"s, ""s, 0.f);
 PropFloatUnbounded(DefaultPropsSpinner, AngleMin, "AngleMin"s, ""s, 0.3f);
 PropBool(DefaultPropsSpinner, Visible, "Visible"s, ""s, true);
@@ -1422,7 +1422,7 @@ PropInt(Editor, ElementSelectColor, "ElementSelectColor"s, ""s, 0x000000, 0xFFFF
 PropInt(Editor, ElementSelectLockedColor, "ElementSelectLockedColor"s, ""s, 0x000000, 0xFFFFFF, 0x00A7726D);
 PropInt(Editor, BackGroundColor, "BackGroundColor"s, ""s, 0x000000, 0xFFFFFF, 0x008D8D8D);
 PropInt(Editor, FillColor, "FillColor"s, ""s, 0x000000, 0xFFFFFF, 0x00B1CFB3);
-PropEnum(Editor, Units, "Units"s, ""s, int, 0, "Inches"s, "Millimeters"s, "VP Units");
+PropEnum(Editor, Units, "Units"s, ""s, int, 0, "Inches"s, "Millimeters"s, "VP Units"s);
 PropBool(Editor, AlwaysViewScript, "AlwaysViewScript"s, ""s, false);
 PropFloatUnbounded(Editor, ThrowBallMass, "ThrowBallMass"s, ""s, 1.f);
 PropIntUnbounded(Editor, ThrowBallSize, "ThrowBallSize"s, ""s, 50);

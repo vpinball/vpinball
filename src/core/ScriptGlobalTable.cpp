@@ -699,7 +699,7 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
    STATSTG statstg;
    pstmValue->Stat(&statstg, STATFLAG_NONAME);
 
-   const int size = statstg.cbSize.LowPart / sizeof(WCHAR);
+   const unsigned int size = statstg.cbSize.LowPart / sizeof(WCHAR);
 
    BSTR wzT = SysAllocStringLen(nullptr,size);
 

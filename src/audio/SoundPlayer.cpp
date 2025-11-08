@@ -195,13 +195,13 @@ namespace VPX
 
 SoundPlayer* SoundPlayer::Create(const AudioPlayer* audioPlayer, Sound* sound)
 {
-   // Decode and resample the sound on the anciliary thread as this is fairly heavy
+   // Decode and resample the sound on the ancillary thread as this is fairly heavy
    return new SoundPlayer(audioPlayer, sound);
 }
 
 SoundPlayer* SoundPlayer::Create(const AudioPlayer* audioPlayer, const string& filename)
 {
-   // Decode and resample the sound on the anciliary thread as this is fairly heavy
+   // Decode and resample the sound on the ancillary thread as this is fairly heavy
    return new SoundPlayer(audioPlayer, filename);
 }
 

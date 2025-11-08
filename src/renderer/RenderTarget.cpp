@@ -341,7 +341,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
    static constexpr GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
    glDrawBuffers(1, DrawBuffers);
 
-   // Create anciliary FBOs to be able to blit (especially resolve MSAA) from/to the other layers
+   // Create ancillary FBOs to be able to blit (especially resolve MSAA) from/to the other layers
    if (m_nLayers > 1)
    {
       glGenFramebuffers(m_nLayers, m_framebuffer_layers);
@@ -620,8 +620,8 @@ void RenderTarget::CopyTo(RenderTarget* const dest, const bool copyColor, const 
    else
    #endif
    {
-      // OpenGl ES or MSAA resolve => We need glBlitFramebuffer. It will perform MSAA resolution but it will only copy the first layer
-      // Therefore we need to use anciliary FBOs with only the wanted layer bound to them to perform all of the wanted blit
+      // OpenGl ES or MSAA resolve => We need glBlitFramebuffer. It will perform MSAA resolution, but it will only copy the first layer
+      // Therefore we need to use ancillary FBOs with only the wanted layer bound to them to perform all of the wanted blits
       int bitmask = (copyColor ? GL_COLOR_BUFFER_BIT : 0) | (m_has_depth && dest->m_has_depth && copyDepth ? GL_DEPTH_BUFFER_BIT : 0);
       for (int i = 0; i < nLayers; i++)
       {

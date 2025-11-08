@@ -229,7 +229,7 @@ void InputAction::OnUpdate()
 {
    if (m_isPressed)
    {
-      unsigned int now = msec();
+      const unsigned int now = msec();
       if (now >= m_lastOnChangeMs + m_repeatPeriodMs)
       {
          m_lastOnChangeMs = now;

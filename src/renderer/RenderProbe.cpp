@@ -6,7 +6,7 @@
 #include "Shader.h"
 #include "math/bluenoise.h"
 
-const string PLAYFIELD_REFLECTION_RENDERPROBE_NAME = "Playfield Reflections"s;
+static const string PLAYFIELD_REFLECTION_RENDERPROBE_NAME = "Playfield Reflections"s;
 
 RenderProbe::~RenderProbe()
 {

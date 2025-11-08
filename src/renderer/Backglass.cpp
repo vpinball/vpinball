@@ -141,8 +141,8 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
             while (illuminationNode) { // Iterate all Nodes within Illumination
                auto attrib = illuminationNode->FindAttribute("Image");
                if (attrib) {
-                  auto val = attrib->Value();
-                  auto val_size = strlen(val);
+                  const auto val = attrib->Value();
+                  const size_t val_size = strlen(val);
                   if (data_len < val_size * 3 / 4 + 1)
                   {
                      delete [] data;
@@ -174,15 +174,15 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
             while (imagesNode) { // Iterate all Nodes within Images
                auto attrib = imagesNode->FindAttribute("Value");
                if (attrib) {
-                  auto val = attrib->Value();
-                  auto val_size = strlen(val);
+                  const auto val = attrib->Value();
+                  const size_t val_size = strlen(val);
                   if (data_len < val_size * 3 / 4 + 1)
                   {
                      delete [] data;
                      data_len = val_size * 3 / 4 + 1;
                      data = new char[data_len];
                   }
-                  size_t size = decode_base64(val, data, val_size, data_len);
+                  const size_t size = decode_base64(val, data, val_size, data_len);
                   if ((size > 0) && (imagesNode->Name() == "BackglassImage"s)) {
                      m_loaded_image = BaseTexture::CreateFromData(data, size, true, g_pplayer->m_ptable->m_settings.GetPlayer_MaxTexDimension());
                      m_backgroundTexture = m_pd3dDevice->m_texMan.LoadTexture(m_loaded_image.get(), false);

@@ -40,9 +40,9 @@
 #define VPXPI_EVT_ON_SETTINGS_CHANGED   "OnSettingsChanged"   // Broadcasted when settings have been changed
 #define VPXPI_EVT_ON_ACTION_CHANGED     "OnActionChanged"     // Broadcasted when an action state change, event data is an VPXActionEvent whose isPressed field can be modified by plugins
 
-// Anciliary window rendering
-#define VPXPI_MSG_GET_AUX_RENDERER      "GetAuxRenderer"      // Broadcasted with a GetAnciliaryRendererMsg to discover anciliary window renderer implemented in plugins
-#define VPXPI_EVT_AUX_RENDERER_CHG      "AuxRendererChanged"  // Broadcasted when an anciliray renderer is added or removed
+// Ancillary window rendering
+#define VPXPI_MSG_GET_AUX_RENDERER      "GetAuxRenderer"      // Broadcasted with a GetAncillaryRendererMsg to discover ancillary window renderer implemented in plugins
+#define VPXPI_EVT_AUX_RENDERER_CHG      "AuxRendererChanged"  // Broadcasted when an ancillary renderer is added or removed
 
 typedef void* VPXTexture;
 
@@ -137,24 +137,24 @@ typedef struct VPXRenderContext2D
       const float srcX, const float srcY, const float srcW, const float srcH); // coordinates in source surface (0..srcWidth, 0..srcHeight)
 } VPXRenderContext2D;
 
-typedef struct AnciliaryRendererDef
+typedef struct AncillaryRendererDef
 {
    const char* id;            // Unique id of the renderer (only alphanumeric characters, dots and underscore. Can be used for storing settings)
    const char* name;          // Human readable name of the renderer
    const char* description;   // Human readable description of the renderer
    void* context;             // Custom context to be passed when requesting rendering
    int(MSGPIAPI* Render)(VPXRenderContext2D* renderCtx, void* context);
-} AnciliaryRendererDef;
+} AncillaryRendererDef;
 
-typedef struct GetAnciliaryRendererMsg
+typedef struct GetAncillaryRendererMsg
 {
    // Request
    VPXWindowId window; // Target window
    unsigned int maxEntryCount; // see below
    // Response
    unsigned int count; // Number of entries, also position to put next entry
-   AnciliaryRendererDef* entries; // Pointer to an array of maxEntryCount entries to be filled
-} GetAnciliaryRendererMsg;
+   AncillaryRendererDef* entries; // Pointer to an array of maxEntryCount entries to be filled
+} GetAncillaryRendererMsg;
 
 
 // Helper defines

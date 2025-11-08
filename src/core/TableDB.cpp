@@ -23,7 +23,7 @@ void TableDB::Load()
       std::vector<std::string> fields;
       while (dbFile.good())
       {
-         char c = (char)dbFile.get();
+         const char c = (char)dbFile.get();
          if (!inQuotes && c == '"')
             inQuotes = true;
          else if (inQuotes && c == '"')

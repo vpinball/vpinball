@@ -2704,10 +2704,10 @@ void Renderer::RenderFrame()
    // Add screen space reflections
    renderedRT = ApplyAdditiveScreenSpaceReflection(renderedRT);
 
-   // Clear embedded anciliary windows before updarting bloom & AO
-   g_pplayer->ClearEmbeddedAnciliaryWindow(VPXWindowId::VPXWINDOW_Backglass, renderedRT);
-   g_pplayer->ClearEmbeddedAnciliaryWindow(VPXWindowId::VPXWINDOW_ScoreView, renderedRT);
-   g_pplayer->ClearEmbeddedAnciliaryWindow(VPXWindowId::VPXWINDOW_Topper, renderedRT);
+   // Clear embedded ancillary windows before updarting bloom & AO
+   g_pplayer->ClearEmbeddedAncillaryWindow(VPXWindowId::VPXWINDOW_Backglass, renderedRT);
+   g_pplayer->ClearEmbeddedAncillaryWindow(VPXWindowId::VPXWINDOW_ScoreView, renderedRT);
+   g_pplayer->ClearEmbeddedAncillaryWindow(VPXWindowId::VPXWINDOW_Topper, renderedRT);
 
    // Compute AO contribution (to be applied later, with tonemapping)
    UpdateAmbientOcclusion(renderedRT);
@@ -2715,10 +2715,10 @@ void Renderer::RenderFrame()
    // Compute bloom (to be applied later, with tonemapping)
    UpdateBloom(renderedRT);
 
-   // Render anciliary windows (eventually embedded in the main window, so must be done after main rendering but before post process)
-   g_pplayer->RenderAnciliaryWindow(VPXWindowId::VPXWINDOW_Backglass, renderedRT);
-   g_pplayer->RenderAnciliaryWindow(VPXWindowId::VPXWINDOW_ScoreView, renderedRT);
-   g_pplayer->RenderAnciliaryWindow(VPXWindowId::VPXWINDOW_Topper, renderedRT);
+   // Render ancillary windows (eventually embedded in the main window, so must be done after main rendering but before post process)
+   g_pplayer->RenderAncillaryWindow(VPXWindowId::VPXWINDOW_Backglass, renderedRT);
+   g_pplayer->RenderAncillaryWindow(VPXWindowId::VPXWINDOW_ScoreView, renderedRT);
+   g_pplayer->RenderAncillaryWindow(VPXWindowId::VPXWINDOW_Topper, renderedRT);
 
    // Perform color grade LUT / dither / tonemapping, also applying bloom and AO
    RenderTarget* const tonemapRT = (hasAntialiasPass || hasSharpenPass || hasStereoPass || hasUpscalerPass) ? GetPostProcessRenderTarget1() : m_renderDevice->GetOutputBackBuffer();

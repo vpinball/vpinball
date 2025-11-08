@@ -488,7 +488,7 @@ void VPXPluginAPIImpl::ControllerOnGetDMDSrc(const unsigned int msgId, void* use
       msg.count++;
    }
 
-   // Ancilliary DMDs defined on flasher objects from script
+   // Ancillary DMDs defined on flasher objects from script
    for (size_t i = 0; i < me.m_dmdSources.size(); i++)
    {
       const auto& dmdSrc = me.m_dmdSources[i];

@@ -23,9 +23,9 @@ void ViewSetup::SetWindowModeFromSettings(const PinTable* const table)
 void ViewSetup::SetViewPosFromPlayerPosition(const PinTable* const table, const vec3& playerPos, const float screenInclination)
 {
    assert(mMode == VLM_WINDOW);
-   float realToVirtual = GetRealToVirtualScale(table);
-   float screenBotZ = GetWindowBottomZOffset(table);
-   float screenTopZ = GetWindowTopZOffset(table);
+   const float realToVirtual = GetRealToVirtualScale(table);
+   const float screenBotZ = GetWindowBottomZOffset(table);
+   const float screenTopZ = GetWindowTopZOffset(table);
    // Rotate by the angle between playfield and real world horizontal (scale on Y and Z axis are equal and can be ignored)
    const Matrix3D rotx = Matrix3D::MatrixRotateX(atan2f(screenTopZ - screenBotZ, table->m_bottom) - ANGTORAD(screenInclination));
    const vec3 pos = rotx.MultiplyVectorNoPerspective(CMTOVPU(playerPos));
@@ -204,7 +204,7 @@ float ViewSetup::GetRealToVirtualScale(const PinTable* const table) const
 {
    if (mMode == VLM_WINDOW)
    {
-      float windowBotZ = GetWindowBottomZOffset(table), windowTopZ = GetWindowTopZOffset(table);
+      const float windowBotZ = GetWindowBottomZOffset(table), windowTopZ = GetWindowTopZOffset(table);
       const float screenHeight = table->m_settings.GetPlayer_ScreenWidth(); // Physical width (always measured in landscape orientation) is the height in window mode
       // const float inc = atan2f(mSceneScaleZ * (windowTopZ - windowBotZ), mSceneScaleY * table->m_bottom);
       const float inc = atan2f(windowTopZ - windowBotZ, table->m_bottom);
@@ -220,10 +220,10 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, cons
    const bool isLegacy = mMode == VLM_LEGACY;
    const bool isWindow = mMode == VLM_WINDOW;
    float camx = cam.x, camy = cam.y, camz = cam.z;
-   float windowBotZ = GetWindowBottomZOffset(table), windowTopZ = GetWindowTopZOffset(table);
+   const float windowBotZ = GetWindowBottomZOffset(table), windowTopZ = GetWindowTopZOffset(table);
 
    // Scale to convert a value expressed in the player 'real' world to our virtual world (where the geometry is defined)
-   float realToVirtual = GetRealToVirtualScale(table);
+   const float realToVirtual = GetRealToVirtualScale(table);
 
    // Viewport rotation. Window mode does not support free rotation (since we fit the table to the screen)
    float rotation;
@@ -359,8 +359,8 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, cons
             * Matrix3D::MatrixScale(mSceneScaleX / realToVirtual, mSceneScaleY / realToVirtual, isWindow ? mSceneScaleY / realToVirtual : mSceneScaleZ)
             * Matrix3D::MatrixTranslate(0.5f * table->m_right, 0.5f * table->m_bottom, windowBotZ); // Global scene scale (using bottom center of the playfield as origin)
       // mView is in real world scale (like the actual display size), it is applied after scale which scale the table to the user's real world scale
-      Matrix3D trans = Matrix3D::MatrixTranslate(-mViewX + cam.x - 0.5f * table->m_right, -mViewY + cam.y - table->m_bottom, -mViewZ + cam.z);
-      Matrix3D rotx = Matrix3D::MatrixRotateX(inc); // Player head inclination (0 is looking straight to playfield)
+      const Matrix3D trans = Matrix3D::MatrixTranslate(-mViewX + cam.x - 0.5f * table->m_right, -mViewY + cam.y - table->m_bottom, -mViewZ + cam.z);
+      const Matrix3D rotx = Matrix3D::MatrixRotateX(inc); // Player head inclination (0 is looking straight to playfield)
       coords = Matrix3D::MatrixScale(1.f, -1.f, -1.f); // Revert Y and Z axis to convert to D3D coordinate system
       lookat = trans * rotx;
       matView = scale * trans * rotx * rotz * coords;
