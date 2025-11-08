@@ -366,7 +366,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    }
 
    // Adjust the implicit playfield reflection probe
-   RenderProbe *pf_reflection_probe = m_ptable->GetRenderProbe(PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
+   RenderProbe *pf_reflection_probe = m_ptable->GetRenderProbe(RenderProbe::PLAYFIELD_REFLECTION_RENDERPROBE_NAME);
    if (pf_reflection_probe)
    {
       constexpr vec4 plane{0.f, 0.f, 1.f, 0.f};

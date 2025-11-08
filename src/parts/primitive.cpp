@@ -1203,7 +1203,7 @@ void Primitive::Render(const unsigned int renderMask)
    {
       m_d.m_szMaterial = g_pplayer->m_ptable->m_playfieldMaterial;
       m_d.m_szImage = g_pplayer->m_ptable->m_image;
-      m_d.m_szReflectionProbe = PLAYFIELD_REFLECTION_RENDERPROBE_NAME;
+      m_d.m_szReflectionProbe = RenderProbe::PLAYFIELD_REFLECTION_RENDERPROBE_NAME;
       m_d.m_reflectionStrength = m_ptable->m_playfieldReflectionStrength;
       pinf = SF_ANISOTROPIC;
    }
