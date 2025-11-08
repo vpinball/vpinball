@@ -250,7 +250,7 @@ Window::~Window()
       return;
 
 #ifndef __LIBVPINBALL__
-   SDL_DestroyWindow(m_nwnd);
+   SDL_RunOnMainThread([](void* userdata) { SDL_DestroyWindow(static_cast<SDL_Window*>(userdata)); }, m_nwnd, true);
 #endif
 }
 
