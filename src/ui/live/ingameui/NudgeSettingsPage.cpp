@@ -67,7 +67,7 @@ NudgeSettingsPage::NudgeSettingsPage()
       [this](bool v) { m_player->m_physics->SetLegacyKeyboardNudge(v); }));
 
    AddItem(std::make_unique<InGameUIItem>(
-      Settings::m_propPlayer_LegacyNudgeStrength, 1.f, "4.1f"s, //
+      Settings::m_propPlayer_LegacyNudgeStrength, 1.f, "%4.1f"s, //
       [this]() { return m_player->m_physics->GetLegacyKeyboardNudgeStrength(); }, //
       [this](float, float v) { m_player->m_physics->SetLegacyKeyboardNudgeStrength(v); }));
 
