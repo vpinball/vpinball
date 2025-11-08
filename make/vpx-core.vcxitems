@@ -1536,6 +1536,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/core/LayeredINIPropertyStore.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/ScriptGlobalTable.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/Settings.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/Settings_properties.inl" />
     <ClInclude Include="$(SolutionDir)/../../src/core/TableDB.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/VPXPluginAPIImpl.h" />
     <ClInclude Include="$(SolutionDir)/../../src/input/ButtonMapping.h" />

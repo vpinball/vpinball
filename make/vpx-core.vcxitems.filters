@@ -860,6 +860,9 @@
     <ClInclude Include="$(SolutionDir)/../../src/core/Settings.h">
       <Filter>core</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/core/Settings_properties.inl">
+      <Filter>core</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/core/TableDB.h">
       <Filter>core</Filter>
     </ClInclude>
