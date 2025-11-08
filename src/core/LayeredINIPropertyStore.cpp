@@ -61,7 +61,7 @@ void LayeredINIPropertyStore::Load(const LayeredINIPropertyStore& store)
    m_intValues = store.m_intValues;
    m_floatValues = store.m_floatValues;
    m_stringValues = store.m_stringValues;
-   m_ini = m_ini;
+   m_ini = store.m_ini;
 }
 
 bool LayeredINIPropertyStore::LoadFromINI(PropertyRegistry::PropId id)
