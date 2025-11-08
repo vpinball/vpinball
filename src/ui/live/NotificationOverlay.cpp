@@ -55,7 +55,7 @@ float NotificationOverlay::RenderNotification(int index, float posY) const {
    {
       if (line.empty())
       {
-         lines.push_back(line);
+         lines.emplace_back(""s);
          continue;
       }
       const char *textEnd = line.c_str();
@@ -72,8 +72,7 @@ float NotificationOverlay::RenderNotification(int index, float posY) const {
             lineSize = font->CalcTextSizeA(fontBaked->Size, FLT_MAX, 0.0f, textEnd, wrapPoint);
          }
 
-         string newLine(textEnd, nextLineTextEnd);
-         lines.push_back(newLine);
+         lines.emplace_back(textEnd, nextLineTextEnd);
 
          if (lineSize.x > text_size.x)
             text_size.x = lineSize.x;

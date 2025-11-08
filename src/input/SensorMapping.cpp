@@ -83,7 +83,7 @@ void SensorMapping::CaptureFFT()
    if (m_fftCapturePosition == m_fftCaptureBuffer->size())
    {
       //for (int i = 0; i < m_fftCaptureBuffer->size(); i++)
-      //   (*m_fftCaptureBuffer)[i] = sin(16.f * 2.f * M_PI * i / static_cast<float>(m_fftCaptureBuffer->size()));
+      //   (*m_fftCaptureBuffer)[i] = sin(float(16. * 2. * M_PI) * i / static_cast<float>(m_fftCaptureBuffer->size()));
       auto processFFT = [](std::unique_ptr<std::valarray<std::complex<double>>> samples)
       {
          fft(*samples.get());
@@ -95,7 +95,7 @@ void SensorMapping::CaptureFFT()
             if (val > maxVal)
             {
                maxVal = val;
-               maxFreq = (static_cast<float>(i) * 1000.f) / static_cast<float>(samples->size());
+               maxFreq = static_cast<float>(i) * static_cast<float>(1000. / static_cast<double>(samples->size()));
             }
          }
          //PLOGD << "FFT main frequency: " << maxFreq << " Hz";

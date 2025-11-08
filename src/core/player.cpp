@@ -404,14 +404,14 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       // if both flippers are hold, then mirror table
       if (leftFlipPressed && rightFlipPressed)
       {
-         PLOGI << "Both flippers detected as held down during load, enabling table mirroring";
+         PLOGI << "Both flipper buttons detected as pressed during load, enabling table mirroring";
          m_ptable->m_tblMirrorEnabled = true;
       }
 
       // if left flipper is hold during load, then swap DT/FS view (for quick testing)
       if (m_ptable->m_BG_current_set != BG_FSS && !m_ptable->m_tblMirrorEnabled && leftFlipPressed)
       {
-         PLOGI << "Left flipper detected as held down during load, swapping playfield/backglass view";
+         PLOGI << "Left flipper button detected as pressed during load, swapping playfield/backglass view";
          switch (m_ptable->m_BG_current_set)
          {
          case BG_DESKTOP: m_ptable->m_BG_override = BG_FSS; break;
@@ -1434,7 +1434,7 @@ void Player::ProcessOSMessages()
          else if (dragging)
          {
             // Handle dragging of auxiliary windows
-            std::vector<string> settingPages = {
+            static const std::vector<string> settingPages = {
                "settings/display_backglass"s,
                "settings/display_scoreview"s,
                "settings/display_topper"s,

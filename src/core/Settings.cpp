@@ -15,13 +15,13 @@ VPX::Properties::PropertyRegistry &Settings::GetRegistry()
 
 string Settings::GetBackwardCompatibleSection(const string &groupId)
 {
-   if (groupId.starts_with("Plugin"s))
+   if (groupId.starts_with("Plugin"))
    {
-      return "Plugin."s + groupId.substr(6);
+      return "Plugin." + groupId.substr(6);
    }
-   else if (groupId.starts_with("DefaultProps"s))
+   else if (groupId.starts_with("DefaultProps"))
    {
-      return "DefaultProps\\"s + groupId.substr(12);
+      return "DefaultProps\\" + groupId.substr(12);
    }
    return groupId;
 }

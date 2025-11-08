@@ -89,9 +89,9 @@ bool LayeredINIPropertyStore::LoadFromINI(PropertyRegistry::PropId id)
    case PropertyDef::Type::Bool:
       if (int intValue; try_parse_int(value, intValue))
          Set(id, intValue != 0 ? 1 : 0);
-      else if (StrCompareNoCase(value, "true") || StrCompareNoCase(value, "on") || StrCompareNoCase(value, "enable"))
+      else if (StrCompareNoCase(value, "true"s) || StrCompareNoCase(value, "on"s) || StrCompareNoCase(value, "enable"s))
          Set(id, 1);
-      else if (StrCompareNoCase(value, "false") || StrCompareNoCase(value, "off") || StrCompareNoCase(value, "disable"))
+      else if (StrCompareNoCase(value, "false"s) || StrCompareNoCase(value, "off"s) || StrCompareNoCase(value, "disable"s))
          Set(id, 0);
       else
          return false;

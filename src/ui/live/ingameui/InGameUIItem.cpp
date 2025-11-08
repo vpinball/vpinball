@@ -162,7 +162,7 @@ InGameUIItem::InGameUIItem(string label, string tooltip, std::function<void(int,
    : m_type(Type::CustomRender)
    , m_label(std::move(label))
    , m_tooltip(std::move(tooltip))
-   , m_path(""s) // Unused
+   //, m_path(""s) // Unused
    , m_floatValueDisplayScale(1.f)
    , m_customRender(customRender)
 {

@@ -167,7 +167,7 @@ PropEnum(Player, Sharpen, "Post processed sharpening"s, "Select between differen
 // Ball rendering
 PropBool(Player, BallAntiStretch, "Unstretch Ball"s, "Compensate ball stretching"s, false);
 PropBool(Player, DisableLightingForBalls, "Disable Ball Lighting"s, "Disable lighting and reflection effects on balls, e.g. to help the visually handicapped"s, false);
-PropBool(Player, BallTrail, "Ball Trail"s, "Legacy ball trails"s, false);
+PropBool(Player, BallTrail, "Ball Trail"s, "Legacy Ball Trails"s, false);
 PropFloat(Player, BallTrailStrength, "Ball Trail Strength"s, "Strength of the fake ball trail"s, 0.f, 5.f, 0.5f);
 PropBool(Player, OverwriteBallImage, "Overwrite ball image"s, "Allow to define images that will be used instead of the table's provided one"s, false);
 PropString(Player, BallImage, "Ball image override"s, "Image to use for the ball instead of the table's provide one"s, ""s);
@@ -610,8 +610,8 @@ PropArray(Player, AnaglyphRightBlue, float, Float, Float, m_propPlayer_Anaglyph1
    m_propPlayer_Anaglyph5RightBlue, m_propPlayer_Anaglyph6RightBlue, m_propPlayer_Anaglyph7RightBlue, m_propPlayer_Anaglyph8RightBlue, m_propPlayer_Anaglyph9RightBlue,
    m_propPlayer_Anaglyph10RightBlue)
 
-   // Real world cabinet & player settings
-   PropFloat(Player, ScreenWidth, "Screen Width"s, "Physical width (cm) of the display area of the playfield (main) screen (width > height)"s, 5.f, 200.f, 95.89f);
+// Real world cabinet & player settings
+PropFloat(Player, ScreenWidth, "Screen Width"s, "Physical width (cm) of the display area of the playfield (main) screen (width > height)"s, 5.f, 200.f, 95.89f);
 PropFloat(Player, ScreenHeight, "Screen Height"s, "Physical height (cm) of the display area of the playfield (main) screen (width > height)"s, 5.f, 200.f, 53.94f);
 PropFloat(Player, ScreenInclination, "Screen Inclination"s, "Inclination (degree) of the playfield (main) screen, 0 is horizontal"s, -30.f, 30.f, 0.f);
 PropFloat(Player, LockbarWidth, "Lockbar Width"s, "Lockbar width in centimeters (measured on the cabinet)"s, 10.f, 150.f, 70.f);
