@@ -5,7 +5,7 @@
 class TableDB final
 {
 public:
-   TableDB();
+   TableDB() { }
 
    void Load();
    int GetBestSizeMatch(float width, float height, float topGlassHeight, float bottomGlassHeight = -1.f) const;

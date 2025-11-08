@@ -7,8 +7,6 @@
 #include "core/vpversion.h"
 #include "core/VPXPluginAPIImpl.h"
 
-#include "input/ScanCodes.h"
-
 #ifdef EXT_CAPTURE
 #include "renderer/captureExt.h"
 #endif
@@ -1022,7 +1020,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as
 
    BaseTexture::Update(g_pplayer->m_dmdFrame, g_pplayer->m_dmdSize.x * scale, g_pplayer->m_dmdSize.y * scale, BaseTexture::BW, nullptr);
    const int size = g_pplayer->m_dmdSize.x * g_pplayer->m_dmdSize.y;
-   // Convert from gamma compressed [0..100] luminance to linear [0..255] luminance, eventually applying ScaleFX upscaling
+   // Convert from gamma compressed [0..100] luminance to linear [0..255] luminance, optionally applying ScaleFX upscaling
    VARIANT *p;
    SafeArrayAccessData(psa, (void **)&p);
    if (g_pplayer->m_scaleFX_DMD)

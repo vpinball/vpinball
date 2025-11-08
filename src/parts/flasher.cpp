@@ -817,7 +817,7 @@ STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!
 
    BaseTexture::Update(m_dmdFrame, m_dmdSize.x * scale, m_dmdSize.y * scale, BaseTexture::BW, nullptr);
    const int size = m_dmdSize.x * m_dmdSize.y;
-   // Convert from gamma compressed [0..100] luminance to linear [0..255] luminance, eventually applying ScaleFX upscaling
+   // Convert from gamma compressed [0..100] luminance to linear [0..255] luminance, optionally applying ScaleFX upscaling
    VARIANT *p;
    SafeArrayAccessData(psa, (void **)&p);
    if (g_pplayer->m_scaleFX_DMD)

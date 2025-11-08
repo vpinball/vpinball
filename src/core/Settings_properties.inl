@@ -168,7 +168,7 @@ PropEnum(Player, Sharpen, "Post processed sharpening"s, "Select between differen
 PropBool(Player, BallAntiStretch, "Unstretch Ball"s, "Compensate ball stretching"s, false);
 PropBool(Player, DisableLightingForBalls, "Disable Ball Lighting"s, "Disable lighting and reflection effects on balls, e.g. to help the visually handicapped"s, false);
 PropBool(Player, BallTrail, "Ball Trail"s, "Legacy Ball Trails"s, false);
-PropFloat(Player, BallTrailStrength, "Ball Trail Strength"s, "Strength of the fake ball trail"s, 0.f, 5.f, 0.5f);
+PropFloat(Player, BallTrailStrength, "Ball Trail Strength"s, "Strength of the fake Ball Trail"s, 0.f, 5.f, 0.5f);
 PropBool(Player, OverwriteBallImage, "Overwrite ball image"s, "Allow to define images that will be used instead of the table's provided one"s, false);
 PropString(Player, BallImage, "Ball image override"s, "Image to use for the ball instead of the table's provide one"s, ""s);
 PropString(Player, DecalImage, "Decal image override"s, "Image to use for the ball's decal instead of the table's provide one"s, ""s);

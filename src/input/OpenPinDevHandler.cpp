@@ -279,12 +279,12 @@ OpenPinDevHandler::OpenPinDevHandler(InputManager &pininput)
                // parse the usages
                hidrp::DescriptorParser parser;
                hidrp::UsageExtractor usageExtractor;
-               hidrp::UsageExtractor::Report report;
-               usageExtractor.ScanDescriptor(rp, rdSize, report);
+               hidrp::UsageExtractor::Report reporth;
+               usageExtractor.ScanDescriptor(rp, rdSize, reporth);
 
                // scan the collections
                bool found = false;
-               for (const auto &col : report.collections)
+               for (const auto &col : reporth.collections)
                {
                   // check for the generic USB "Pinball Device CA" type (Application Collection, usage page 5, usage 2)
                   if (col.type == hidrp::COLLECTION_TYPE_APPLICATION

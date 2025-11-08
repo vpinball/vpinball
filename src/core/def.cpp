@@ -341,7 +341,7 @@ HRESULT OpenURL(const string& szURL)
    ivci.pcszVerb = "open";
    hres = pURL->InvokeCommand(&ivci);
    pURL->Release();
-   return (hres);
+   return hres;
 #else
    return 0L;
 #endif

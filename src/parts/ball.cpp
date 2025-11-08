@@ -458,13 +458,12 @@ void Ball::Render(const unsigned int renderMask)
    // may be modified while the update command is executed.
    ShaderState* ss = m_rd->GetCurrentPass()->m_commands.back()->GetShaderState();
    m_rd->AddBeginOfFrameCmd([this, rot, scale, ss](){
-      vec3 pos(m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y, m_hitBall.m_d.m_lockedInKicker ? (m_hitBall.m_d.m_pos.z - m_hitBall.m_d.m_radius) : m_hitBall.m_d.m_pos.z);
+      vec3 posl(m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y, m_hitBall.m_d.m_lockedInKicker ? (m_hitBall.m_d.m_pos.z - m_hitBall.m_d.m_radius) : m_hitBall.m_d.m_pos.z);
       float delay = m_rd->GetPredictedDisplayDelayInS();
-      pos += delay * m_hitBall.m_d.m_vel;
+      posl += delay * m_hitBall.m_d.m_vel;
       //PLOGD << "Ball position advanced to display predicted time by " << delay << "s > " << m_hitBall.m_d.m_vel;
-      Matrix3D trans = Matrix3D::MatrixTranslate(pos.x, pos.y, pos.z);
-      Matrix3D m3D_full = rot * scale * trans;
-      ss->SetMatrix(SHADER_orientation, &m3D_full.m[0][0]);
+      Matrix3D m3D_fulll = rot * scale * Matrix3D::MatrixTranslate(posl.x, posl.y, posl.z);
+      ss->SetMatrix(SHADER_orientation, &m3D_fulll.m[0][0]);
    });
 
    // draw debug points for visualizing ball rotation (this uses point rendering which is a deprecated feature, not available in OpenGL ES)

@@ -2098,7 +2098,7 @@ RenderTarget *Player::SetupAncillaryWindow(VPXWindowId window, RenderTarget *emb
    {
       return nullptr;
    }
-      
+
    RenderDevice *const rd = m_renderer->m_renderDevice;
 
    Matrix3D matWorldViewProj[2];
@@ -2228,23 +2228,23 @@ void Player::RenderAncillaryWindow(VPXWindowId window, RenderTarget *embedRT)
             {
                if (alpha <= 0.f) // Alpha blended, so alpha = 0 means not visible
                   return;
-               PlayerRenderContext2D *context = reinterpret_cast<PlayerRenderContext2D *>(ctx);
+               PlayerRenderContext2D *pcontext = reinterpret_cast<PlayerRenderContext2D *>(ctx);
                std::shared_ptr<BaseTexture> const tex = VPXPluginAPIImpl::GetInstance().GetTexture(texture);
-               RenderDevice * const rd = g_pplayer->m_renderer->m_renderDevice;
-               rd->ResetRenderState();
-               rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-               rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-               rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-               rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
-               rd->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
-               rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
-               rd->SetRenderState(RenderState::ALPHABLENDENABLE, (alpha != 1.f || !tex->IsOpaque()) ? RenderState::RS_TRUE : RenderState::RS_FALSE);
-               rd->m_basicShader->SetVector(SHADER_cBase_Alpha, tintR, tintG, tintB, alpha);
-               // We force to linear (no sRGB decoding) when rendering in sRGB colorspace, this suppose that the texture is in sRGB colorspace to get correct gamma (other situations would need dedicated shaders to handle them efficiently)
+               RenderDevice * const rdl = g_pplayer->m_renderer->m_renderDevice;
+               rdl->ResetRenderState();
+               rdl->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+               rdl->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+               rdl->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+               rdl->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
+               rdl->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
+               rdl->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
+               rdl->SetRenderState(RenderState::ALPHABLENDENABLE, (alpha != 1.f || !tex->IsOpaque()) ? RenderState::RS_TRUE : RenderState::RS_FALSE);
+               rdl->m_basicShader->SetVector(SHADER_cBase_Alpha, tintR, tintG, tintB, alpha);
+               // We force to linear (no sRGB decoding) when rendering in sRGB colorspace, this assumes that the texture is in sRGB colorspace to get correct gamma (other situations would need dedicated shaders to handle them efficiently)
                assert(tex->m_format == BaseTexture::SRGB || tex->m_format == BaseTexture::SRGBA || tex->m_format == BaseTexture::SRGB565);
                // Disable filtering and mipmap generation if they are not needed
                const SamplerFilter sf = (ctx->is2D && (srcW * ctx->outWidth == ctx->srcWidth * (float)tex->width()) && (srcH * ctx->outHeight == ctx->srcHeight * (float)tex->height())) ? SamplerFilter::SF_NONE : SamplerFilter::SF_UNDEFINED;
-               rd->m_basicShader->SetTexture(SHADER_tex_base_color, tex.get(), !context->isLinearOutput, sf);
+               rdl->m_basicShader->SetTexture(SHADER_tex_base_color, tex.get(), !pcontext->isLinearOutput, sf);
                const float vx1 = srcX / ctx->srcWidth;
                const float vy1 = srcY / ctx->srcHeight;
                const float vx2 = vx1 + srcW / ctx->srcWidth;
@@ -2268,7 +2268,7 @@ void Player::RenderAncillaryWindow(VPXWindowId window, RenderTarget *embedRT)
                      * Matrix3D::MatrixTranslate(px, py, 0.f);
                   matRot.TransformPositions(vertices, vertices, 4);
                }
-               rd->DrawTexturedQuad(rd->m_basicShader, vertices, true, 0.f);
+               rdl->DrawTexturedQuad(rdl->m_basicShader, vertices, true, 0.f);
             },
          // Draw a display (DMD, CRT, ...)
          [](VPXRenderContext2D* ctx, VPXDisplayRenderStyle style,
@@ -2279,19 +2279,19 @@ void Player::RenderAncillaryWindow(VPXWindowId window, RenderTarget *embedRT)
             const float dispPadL, const float dispPadT, const float dispPadR, const float dispPadB,
             const float srcX, const float srcY, const float srcW, const float srcH)
             {
-               PlayerRenderContext2D *context = reinterpret_cast<PlayerRenderContext2D *>(ctx);
+               PlayerRenderContext2D *pcontext = reinterpret_cast<PlayerRenderContext2D *>(ctx);
                VPXPluginAPIImpl &vxpApi = VPXPluginAPIImpl::GetInstance();
                std::shared_ptr<BaseTexture> const gTex = glassTex ? vxpApi.GetTexture(glassTex) : nullptr;
                std::shared_ptr<BaseTexture> const dTex = vxpApi.GetTexture(dispTex);
-               RenderDevice *const rd = g_pplayer->m_renderer->m_renderDevice;
-               rd->ResetRenderState();
-               rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-               rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-               rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-               rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+               RenderDevice *const rdl = g_pplayer->m_renderer->m_renderDevice;
+               rdl->ResetRenderState();
+               rdl->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+               rdl->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+               rdl->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+               rdl->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
                g_pplayer->m_renderer->SetupDMDRender(style, false, 
                   vec3(dispTintR, dispTintG, dispTintB), brightness, dTex, alpha,
-                  context->isLinearOutput ? Renderer::ColorSpace::Linear : Renderer::ColorSpace::Reinhard_sRGB,
+                  pcontext->isLinearOutput ? Renderer::ColorSpace::Linear : Renderer::ColorSpace::Reinhard_sRGB,
                   nullptr, // No parallax
                   vec4(dispPadL, dispPadT, dispPadR, dispPadB),
                   vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex.get(),
@@ -2306,7 +2306,7 @@ void Player::RenderAncillaryWindow(VPXWindowId window, RenderTarget *embedRT)
                   { vx1, vy1, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f },
                   { vx2, vy2, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
                   { vx1, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f } };
-               rd->DrawTexturedQuad(rd->m_DMDShader, vertices, true, 0.f);
+               rdl->DrawTexturedQuad(rdl->m_DMDShader, vertices, true, 0.f);
             },
          // Draw a segment display element (just one digit, using max blending to allow building a complete display)
          [](VPXRenderContext2D* ctx, VPXSegDisplayRenderStyle style, VPXSegDisplayHint shapeHint,
@@ -2317,23 +2317,23 @@ void Player::RenderAncillaryWindow(VPXWindowId window, RenderTarget *embedRT)
             const float dispPadL, const float dispPadT, const float dispPadR, const float dispPadB,
             const float srcX, const float srcY, const float srcW, const float srcH)
             {
-               PlayerRenderContext2D *context = reinterpret_cast<PlayerRenderContext2D *>(ctx);
+               PlayerRenderContext2D *pcontext = reinterpret_cast<PlayerRenderContext2D *>(ctx);
                VPXPluginAPIImpl &vxpApi = VPXPluginAPIImpl::GetInstance();
                std::shared_ptr<BaseTexture> const gTex = vxpApi.GetTexture(glassTex);
-               RenderDevice *const rd = g_pplayer->m_renderer->m_renderDevice;
+               RenderDevice *const rdl = g_pplayer->m_renderer->m_renderDevice;
                // Use max blending as segment may overlap in the glass diffuse: we retain the most lighted one which is wrong but looks ok (otherwise we would have to deal with colorspace conversions and layering between glass and emitter)
-               rd->ResetRenderState();
-               rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_MAX);
-               rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
-               rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
-               rd->SetRenderState(RenderState::DESTBLEND, RenderState::ONE);
-               rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-               rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-               rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+               rdl->ResetRenderState();
+               rdl->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_MAX);
+               rdl->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+               rdl->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
+               rdl->SetRenderState(RenderState::DESTBLEND, RenderState::ONE);
+               rdl->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+               rdl->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+               rdl->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
                g_pplayer->m_renderer->SetupSegmentRenderer(style, false,
                   vec3(dispTintR, dispTintG, dispTintB), brightness, (Renderer::SegmentFamily)shapeHint,
                   type, state,
-                  context->isLinearOutput ? Renderer::ColorSpace::Linear : Renderer::ColorSpace::Reinhard_sRGB, 
+                  pcontext->isLinearOutput ? Renderer::ColorSpace::Linear : Renderer::ColorSpace::Reinhard_sRGB, 
                   nullptr, // No parallax
                   vec4(dispPadL, dispPadT, dispPadR, dispPadB),
                   vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex.get(),
@@ -2348,7 +2348,7 @@ void Player::RenderAncillaryWindow(VPXWindowId window, RenderTarget *embedRT)
                   { vx1, vy1, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f },
                   { vx2, vy2, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
                   { vx1, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f } };
-               rd->DrawTexturedQuad(rd->m_DMDShader, vertices, true, 0.f);
+               rdl->DrawTexturedQuad(rdl->m_DMDShader, vertices, true, 0.f);
             }
       },
       enableHDR

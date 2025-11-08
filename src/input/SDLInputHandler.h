@@ -100,7 +100,7 @@ private:
       SDL_GUID guid = SDL_GetJoystickGUID(joy); // Stable class of the device. Always available but not unique to a single device.
       uint16_t vendor, product, version, crc16;
       SDL_GetJoystickGUIDInfo(guid, &vendor, &product, &version, &crc16);
-      PLOGD << "Joystick '" << SDL_GetJoystickName(joy) << "' does not provide a serial number but a generic GUID. This may eventually results in input conflicts.";
+      PLOGD << "Joystick '" << SDL_GetJoystickName(joy) << "' does not provide a serial number but a generic GUID. This may result in input conflicts.";
       char strGuid[33];
       SDL_GUIDToString(guid, strGuid, 33);
       return "SDLJoy_"s + strGuid;
@@ -252,7 +252,7 @@ private:
       uint16_t deviceId = m_pininput.RegisterDevice(settingId, InputManager::DeviceType::Joystick, joyName);
       m_joystickIds[id] = deviceId;
 
-      // Register all axis to allow selection in the UI (they will eventually be overriden if identified below)
+      // Register all axis to allow selection in the UI (they will optionally be overriden if identified below)
       const int nAxis = SDL_GetNumJoystickAxes(joystick);
       for (int axis = 0; axis < nAxis; axis++)
          m_pininput.RegisterElementName(deviceId, true, 0x0200 | static_cast<uint16_t>(axis), "Axis #" + std::to_string(axis));
@@ -297,7 +297,7 @@ private:
                   }
                }
                
-               // Uses these mappings to eventually identify a suitable gamepad layout
+               // Uses these mappings to optionally identify a suitable gamepad layout
                const uint16_t leftTrigger = GetGamepadAxis(SDL_GAMEPAD_AXIS_LEFT_TRIGGER, bindings, nBindings);
                const uint16_t rightTrigger = GetGamepadAxis(SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, bindings, nBindings);
                const uint16_t leftStickX = GetGamepadAxis(SDL_GAMEPAD_AXIS_LEFTX, bindings, nBindings);
@@ -315,7 +315,7 @@ private:
                const uint16_t dpadUpButton = GetGamepadButton(SDL_GAMEPAD_BUTTON_DPAD_UP, bindings, nBindings);
                const uint16_t dpadDownButton = GetGamepadButton(SDL_GAMEPAD_BUTTON_DPAD_DOWN, bindings, nBindings);
             
-               // Generic gamepade layout:
+               // Generic gamepad layout:
                // . Flippers: Left/Right Triggers (axis mapped as buttons with thresholds for flipper/staged flipper)
                // . Magnas: Left/Right Shoulders
                // . Coin: Y (north)

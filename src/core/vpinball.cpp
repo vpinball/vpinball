@@ -887,9 +887,8 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
    }
    case ID_EDIT_VIDEOOPTIONS:
    {
-      VideoOptionProperties * videoOptProperties = new VideoOptionProperties(GetHwnd());
-      videoOptProperties->DoModal();
-      delete videoOptProperties;
+      VideoOptionProperties videoOptProperties(GetHwnd());
+      videoOptProperties.DoModal();
       return true;
    }
    #if defined(ENABLE_VR) || defined(ENABLE_XR)
@@ -972,9 +971,8 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
    }
    case ID_EDIT_KEYS:
    {
-      KeysConfigDialog * const keysConfigDlg = new KeysConfigDialog();
-      keysConfigDlg->DoModal();
-      delete keysConfigDlg;
+      KeysConfigDialog keysConfigDlg;
+      keysConfigDlg.DoModal();
       return true;
    }
    case ID_HELP_ABOUT:

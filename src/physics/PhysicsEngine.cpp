@@ -269,7 +269,7 @@ void PhysicsEngine::Nudge(float angle, float force)
 //    - No hardware nudging support
 // 2. New acceleration based nudge:
 //    - Perform keyboard nudge by applying an impulse to a physic model of the cabinet (spring-mass model, see below)
-//    - Acquire cabinet acceleration from hardware sensor (eventually deriving it from position or velocity sensor) and apply it directly to balls
+//    - Acquire cabinet acceleration from hardware sensor (optionally deriving it from position or velocity sensor) and apply it directly to balls
 void PhysicsEngine::UpdateNudge(float dtime)
 {
    // Since we are deriving forces/accelerations from velocities by doing a simple substract without scaling by delta time, we need dtime to be constant
@@ -287,7 +287,7 @@ void PhysicsEngine::UpdateNudge(float dtime)
       m_tableAcceleration = (m_tableVel - m_tableVelOld) * (float)(1.0/PHYS_FACTOR);
       m_tableVelOld = m_tableVel;
 
-      // Simulate hardware nudge by getting the cabinet acceleration (eventually through velocity sensor) and applying it directly to the ball
+      // Simulate hardware nudge by getting the cabinet acceleration (optionally through velocity sensor) and applying it directly to the ball
       Vertex2D sensor = g_pplayer->m_pininput.GetNudge(); // Acquire from sensor input
       m_nudgeAcceleration.Set(sensor.x, sensor.y, 0.f);
    }

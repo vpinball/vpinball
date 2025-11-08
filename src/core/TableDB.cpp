@@ -6,10 +6,6 @@
 #include <iostream>
 #include <fstream>
 
-TableDB::TableDB()
-{
-}
-
 // Loads database file
 void TableDB::Load()
 {

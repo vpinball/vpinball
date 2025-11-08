@@ -2288,7 +2288,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
                      return;
                   const string shortName = name.substr(6);
                   const string shortNameLCase = lowerCase(shortName);
-                  auto v = std::ranges::find_if(m_vedit, [shortNameLCase](const IEditable *const e) { return lowerCase(e->GetName()) == shortNameLCase; });
+                  auto v = std::ranges::find_if(m_vedit, [&shortNameLCase](const IEditable *const e) { return lowerCase(e->GetName()) == shortNameLCase; });
                   if (v != m_vedit.end())
                      return; // Conflict with another part name
                   if ((shortName.find_first_not_of("0123456789") != std::string::npos) && script.find(shortNameLCase) != std::string::npos)
@@ -5970,8 +5970,8 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
    {
       cvar = 5;
 
-      rgstr = (WCHAR **)CoTaskMemAlloc((cvar)* sizeof(WCHAR *));
-      rgdw = (uint32_t *)CoTaskMemAlloc((cvar) * sizeof(uint32_t));
+      rgstr = (WCHAR **)CoTaskMemAlloc(cvar* sizeof(WCHAR *));
+      rgdw = (uint32_t *)CoTaskMemAlloc(cvar * sizeof(uint32_t));
 
       rgstr[0] = (WCHAR *)CoTaskMemAlloc(5 * sizeof(WCHAR));
       wcsncpy_s(rgstr[0], 5, L"None");
@@ -8020,7 +8020,7 @@ void PinTable::OnMouseWheel(const short x, const short y, const short zDelta)
 {
 #ifndef __STANDALONE__
     const int ksctrl = GetKeyState(VK_CONTROL);
-    if ((ksctrl & 0x80000000))
+    if (ksctrl & 0x80000000)
     {
         POINT curpt;
         curpt.x = x;

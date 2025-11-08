@@ -41,7 +41,7 @@ uniform vec4 glassTint_Roughness;
 #define glassRoughness    (glassTint_Roughness.w)
 
 // Textured glass
-SAMPLER2D(displayGlass, 1); // Glass over display texture (usually dirt and scratches, eventually tinting)
+SAMPLER2D(displayGlass, 1); // Glass over display texture (usually dirt and scratches, optionally tinting)
 uniform vec4 w_h_height;
 #define glassAmbient      (w_h_height.rgb)
 #define hasGlass          (w_h_height.w != 0.0)
@@ -171,7 +171,7 @@ void main()
 					float diffuse = diffuseStrength * sdf * sdf; // Magic formula to evaluate light dispersion at maximum glass roughness
 					float light = mix(sharp, diffuse, roughness);
 					unlitLum += light;
-					if (coloredDMD) // RGB data (eventually sRGB but this is handled by the hardware sampler)
+					if (coloredDMD) // RGB data (maybe sRGB, but this is handled by the hardware sampler)
 						litLum += light * texelFetch(displayTex, dotUv, 0).rgb * lit;
 					else // linear brightness data
 						litLum += light * texelFetch(displayTex, dotUv, 0).r * lit;

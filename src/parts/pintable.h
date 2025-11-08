@@ -649,7 +649,7 @@ public:
    bool m_script_protected = false; // To be able to decrypt old tables with protected script
 
    float m_difficulty = 0.2f; // table difficulty Level
-   float m_globalDifficulty; // global difficulty, that is to say table difficulty eventually overriden from settings
+   float m_globalDifficulty;  // global difficulty, i.e. table difficulty optionally overriden by settings
 
    short2 m_oldMousePos;
 
