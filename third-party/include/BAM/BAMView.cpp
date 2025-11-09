@@ -114,7 +114,7 @@ static void _createProjectionAndViewMatrix(float* const __restrict P, float* con
    const PinTable* const t = g_pplayer->m_ptable;
    int resolutionWidth = g_pplayer->m_playfieldWnd->GetWidth();
    int resolutionHeight = g_pplayer->m_playfieldWnd->GetHeight();
-   int rotation = static_cast<int>(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].GetRotation(resolutionWidth, resolutionHeight) / 90.0f);
+   int rotation = static_cast<int>(g_pplayer->m_ptable->GetViewSetup().GetRotation(resolutionWidth, resolutionHeight) / 90.0f);
    const float tableLength = t->m_bottom;
    const float tableWidth = t->m_right;
    const float tableGlass = t->m_glassTopHeight;

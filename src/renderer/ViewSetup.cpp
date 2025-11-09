@@ -249,7 +249,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, cons
    case VLM_WINDOW: inc = atan2f(windowTopZ - windowBotZ, table->m_bottom); break;
    }
 
-   if (isLegacy && table->m_BG_enable_FSS)
+   if (isLegacy && table->IsFSSEnabled())
    {
       // for FSS, force an offset to camy which drops the table down 1/3 of the way.
       // some values to camy have been commented out because I found the default value

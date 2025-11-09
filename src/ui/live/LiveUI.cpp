@@ -334,7 +334,7 @@ void LiveUI::UpdateScale()
       overlayScale = m_uiScale;
 
       // For cabinet mode, the user is not standing in front of screen, so scale out the UI based on display size to be more readable (more "game like")
-      if (m_player->m_ptable->m_BG_current_set == ViewSetupID::BG_FULLSCREEN)
+      if (m_player->m_ptable->GetViewMode() == ViewSetupID::BG_FULLSCREEN)
       {
          m_uiScale = max(m_uiScale, static_cast<float>(m_player->m_playfieldWnd->GetWidth()) / 750.f);
       }
@@ -382,8 +382,7 @@ void LiveUI::NewFrame()
    io.DisplaySize.x = static_cast<float>(width) / io.DisplayFramebufferScale.x;
    io.DisplaySize.y = static_cast<float>(height) / io.DisplayFramebufferScale.y;
    m_rotate = m_renderer->m_stereo3D == STEREO_VR
-      ? 0
-      : ((int)(m_player->m_ptable->mViewSetups[m_player->m_ptable->m_BG_current_set].GetRotation((int)io.DisplaySize.x, (int)io.DisplaySize.y) / 90.0f));
+      ? 0 : ((int)(m_player->m_ptable->GetViewSetup().GetRotation((int)io.DisplaySize.x, (int)io.DisplaySize.y) / 90.0f));
    if (m_rotate == 1 || m_rotate == 3)
    {
       const float size = io.DisplaySize.x;

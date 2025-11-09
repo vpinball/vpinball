@@ -272,8 +272,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    PLOGI << "Initializing renderer (global states & resources)"; // For profiling
 
-   ViewSetup &viewSetup = m_ptable->mViewSetups[m_ptable->m_BG_current_set];
-   if (viewSetup.mMode == VLM_WINDOW)
+   if (ViewSetup &viewSetup = m_ptable->GetViewSetup(); viewSetup.mMode == VLM_WINDOW)
       viewSetup.SetWindowModeFromSettings(m_ptable);
 
    try
@@ -409,16 +408,15 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       }
 
       // if left flipper is hold during load, then swap DT/FS view (for quick testing)
-      if (m_ptable->m_BG_current_set != BG_FSS && !m_ptable->m_tblMirrorEnabled && leftFlipPressed)
+      if (m_ptable->GetViewMode() != BG_FSS && !m_ptable->m_tblMirrorEnabled && leftFlipPressed)
       {
          PLOGI << "Left flipper button detected as pressed during load, swapping playfield/backglass view";
-         switch (m_ptable->m_BG_current_set)
+         switch (m_ptable->GetViewMode())
          {
-         case BG_DESKTOP: m_ptable->m_BG_override = BG_FSS; break;
-         case BG_FSS: m_ptable->m_BG_override = BG_DESKTOP; break;
+         case BG_DESKTOP: m_ptable->SetViewSetupOverride(BG_FSS); break;
+         case BG_FSS: m_ptable->SetViewSetupOverride(BG_DESKTOP); break;
          default: break;
          }
-         m_ptable->UpdateCurrentBGSet();
       }
    }
    #endif
@@ -426,7 +424,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    if (m_ptable->m_tblMirrorEnabled)
    {
       m_audioPlayer->SetMirrored(true);
-      int rotation = (int)(m_ptable->mViewSetups[m_ptable->m_BG_current_set].GetRotation(m_renderer->m_stereo3D, m_playfieldWnd->GetWidth(), m_playfieldWnd->GetHeight())) / 90;
+      int rotation = (int)(m_ptable->GetViewSetup().GetRotation(m_renderer->m_stereo3D, m_playfieldWnd->GetWidth(), m_playfieldWnd->GetHeight())) / 90;
       m_renderer->GetMVP().SetFlip(rotation == 0 || rotation == 2 ? ModelViewProj::FLIPX : ModelViewProj::FLIPY);
    }
 

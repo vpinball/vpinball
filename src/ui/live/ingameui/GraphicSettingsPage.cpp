@@ -13,6 +13,16 @@ GraphicSettingsPage::GraphicSettingsPage()
    BuildPage();
 }
 
+void GraphicSettingsPage::OnStaticRenderDirty()
+{
+   if (!m_staticPrepassDisabled)
+   {
+      m_player->m_renderer->DisableStaticPrePass(true);
+      m_staticPrepassDisabled = true;
+   }
+   m_player->m_renderer->InitLayout();
+}
+
 void GraphicSettingsPage::BuildPage()
 {
    ClearItems();
@@ -32,7 +42,29 @@ void GraphicSettingsPage::BuildPage()
 #endif
 
    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "View mode"s));
+
+   AddItem(std::make_unique<InGameUIItem>( //
+      VPX::Properties::EnumPropertyDef(*Settings::GetPlayer_BGSet_Property(), m_player->m_ptable->GetViewMode()), //
+      [this]() { return (int)m_player->m_ptable->GetViewMode(); }, // Live
+      [this]() { return (int)m_player->m_ptable->m_settings.GetPlayer_BGSet(); }, // Stored
+      [this](int, int v)
+      {
+         m_player->m_ptable->SetViewSetupOverride((ViewSetupID)v);
+         OnStaticRenderDirty();
+      },
+      [](Settings& settings) { settings.ResetPlayer_BGSet(); }, //
+      [this](int v, Settings& settings, bool asTableOverride)
+      {
+         settings.SetPlayer_BGSet(v, asTableOverride);
+         m_player->m_ptable->SetViewSetupOverride(ViewSetupID::BG_INVALID);
+      }));
+
+   //////////////////////////////////////////////////////////////////////////////////////////////////
+
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Graphics backend"s));
+
 #ifdef ENABLE_BGFX
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];

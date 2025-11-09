@@ -603,12 +603,24 @@ public:
 
    float m_defaultBulbIntensityScaleOnBall = 1.f;
 
-   bool m_BG_enable_FSS = false; // Flag telling if this table supports Full Single Screen POV (defaults is to use it in desktop mode if available)
-   ViewSetupID m_BG_override = BG_INVALID; // Allow to easily override the POV for testing (not persisted)
-   ViewSetupID m_BG_current_set; // Cache of the active view setup ID (depends on table but also on application settings and user overriding it)
+   // View mode selection
+   ViewSetupID GetViewMode() const { return m_viewMode; }
+   bool IsFSSEnabled() const;
+   void EnableFSS(const bool enable);
+   ViewSetupID GetViewSetupOverride() const { return m_viewModeOverride; }
+   void SetViewSetupOverride(const ViewSetupID v) { m_viewModeOverride = v; UpdateCurrentBGSet(); }
+   ViewSetup& GetViewSetup() { return mViewSetups[GetViewMode()]; }
+   const ViewSetup& GetViewSetup() const { return mViewSetups[GetViewMode()]; }
    ViewSetup mViewSetups[NUM_BG_SETS];
    string m_BG_image[NUM_BG_SETS];
    ViewSetupID m_currentBackglassMode; // POV shown in the UI (not persisted)
+private:
+   void UpdateCurrentBGSet();
+   bool m_isFSSViewModeEnabled = false; // Flag telling if this table supports Full Single Screen POV (defaults is to use it in desktop mode if available)
+   ViewSetupID m_viewMode; // Cache of the active view setup ID (depends on table but also on application settings and user overriding it)
+   ViewSetupID m_viewModeOverride = BG_INVALID; // Allow to easily override the POV for testing (not persisted)
+
+public:
 
    float m_angletiltMax;
    float m_angletiltMin;
@@ -782,11 +794,6 @@ public:
    void OnLeftButtonDown(const short x, const short y);
    void OnMouseWheel(const short x, const short y, const short zDelta);
    void OnSize();
-   bool IsFSSEnabled() const;
-   void EnableFSS(const bool enable);
-   ViewSetupID GetViewSetupOverride() const { return m_BG_override; }
-   void SetViewSetupOverride(const ViewSetupID v) { m_BG_override = v; UpdateCurrentBGSet(); }
-   void UpdateCurrentBGSet();
    int GetGlobalEmissionScale() const;
    void SetGlobalEmissionScale(const int value);
    float GetGlobalDifficulty() const;

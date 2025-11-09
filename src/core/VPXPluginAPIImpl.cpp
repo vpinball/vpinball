@@ -63,7 +63,7 @@ void VPXPluginAPIImpl::DisableStaticPrerendering(const BOOL disable)
 void VPXPluginAPIImpl::GetActiveViewSetup(VPXViewSetupDef* view)
 {
    assert(g_pplayer); // Only allowed in game
-   const ViewSetup& viewSetup = g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set];
+   const ViewSetup& viewSetup = g_pplayer->m_ptable->GetViewSetup();
    view->viewMode = viewSetup.mMode;
    view->sceneScaleX = viewSetup.mSceneScaleX;
    view->sceneScaleY = viewSetup.mSceneScaleY;
@@ -88,7 +88,7 @@ void VPXPluginAPIImpl::GetActiveViewSetup(VPXViewSetupDef* view)
 void VPXPluginAPIImpl::SetActiveViewSetup(VPXViewSetupDef* view)
 {
    assert(g_pplayer); // Only allowed in game
-   ViewSetup& viewSetup = g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set];
+   ViewSetup& viewSetup = g_pplayer->m_ptable->GetViewSetup();
    viewSetup.mViewX = view->viewX;
    viewSetup.mViewY = view->viewY;
    viewSetup.mViewZ = view->viewZ;

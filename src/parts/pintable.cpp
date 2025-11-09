@@ -69,7 +69,7 @@ PinTable::PinTable()
    m_PhysicsMaxLoops = m_settings.GetPlayer_PhysicsMaxLoops();
 
    UpdateCurrentBGSet();
-   m_currentBackglassMode = m_BG_current_set;
+   m_currentBackglassMode = m_viewMode;
 
    CComObject<CodeViewer>::CreateInstance(&m_pcv);
    m_pcv->AddRef();
@@ -305,8 +305,8 @@ void PinTable::InitTablePostLoad()
    Settings::SetTableOverride_Difficulty_Default(m_difficulty);
    m_globalDifficulty = m_settings.GetTableOverride_Difficulty();
 
-   m_currentBackglassMode = m_BG_current_set;
-   if (m_BG_enable_FSS)
+   m_currentBackglassMode = m_viewMode;
+   if (m_isFSSViewModeEnabled)
       m_currentBackglassMode = BG_FSS;
 
    m_hbmOffScreen = nullptr;
@@ -528,7 +528,7 @@ void PinTable::UIRenderPass2(Sur * const psur)
 
    if (m_backdrop)
    {
-      Texture * const ppi = GetImage((!m_vpinball->m_backglassView) ? m_image : m_BG_image[m_BG_current_set]);
+      Texture * const ppi = GetImage((!m_vpinball->m_backglassView) ? m_image : m_BG_image[m_viewMode]);
 
       if (ppi && ppi->GetGDIBitmap())
       {
@@ -845,9 +845,9 @@ PinTable* PinTable::CopyForPlay()
 
    dst->m_Light[0].emission = src->m_Light[0].emission;
 
-   dst->m_BG_enable_FSS = src->m_BG_enable_FSS;
-   dst->m_BG_override = src->m_BG_override;
-   dst->m_BG_current_set = src->m_BG_current_set;
+   dst->m_isFSSViewModeEnabled = src->m_isFSSViewModeEnabled;
+   dst->m_viewModeOverride = src->m_viewModeOverride;
+   dst->m_viewMode = src->m_viewMode;
    dst->UpdateCurrentBGSet();
    dst->m_currentBackglassMode = src->m_currentBackglassMode;
    for (int i = 0; i < 3; i++)
@@ -1643,7 +1643,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    bw.WriteFloat(FID(RGHT), m_right);
    bw.WriteFloat(FID(BOTM), m_bottom);
 
-   bw.WriteBool(FID(EFSS), m_BG_enable_FSS);
+   bw.WriteBool(FID(EFSS), m_isFSSViewModeEnabled);
    static constexpr int vsFields[NUM_BG_SETS][19] = { 
       { FID(VSM0), FID(ROTA), FID(INCL), FID(LAYB), FID(FOVX), FID(XLTX), FID(XLTY), FID(XLTZ), FID(SCLX), FID(SCLY), FID(SCLZ), FID(HOF0), FID(VOF0), FID(WTX0), FID(WTY0), FID(WTZ0), FID(WBX0), FID(WBY0), FID(WBZ0) },
       { FID(VSM1), FID(ROTF), FID(INCF), FID(LAYF), FID(FOVF), FID(XLFX), FID(XLFY), FID(XLFZ), FID(SCFX), FID(SCFY), FID(SCFZ), FID(HOF1), FID(VOF1), FID(WTX1), FID(WTY1), FID(WTZ1), FID(WBX1), FID(WBY1), FID(WBZ1) },
@@ -2484,7 +2484,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(VOF2): pbr->GetFloat(mViewSetups[BG_FSS].mViewVOfs); break;
    case FID(WTZ2): pbr->GetFloat(mViewSetups[BG_FSS].mWindowTopZOfs); break;
    case FID(WBZ2): pbr->GetFloat(mViewSetups[BG_FSS].mWindowBottomZOfs); break;
-   case FID(EFSS): { pbr->GetBool(m_BG_enable_FSS); UpdateCurrentBGSet(); break; }
+   case FID(EFSS): { pbr->GetBool(m_isFSSViewModeEnabled); UpdateCurrentBGSet(); break; }
    //case FID(VERS): pbr->GetString(szVersion); break;
    case FID(ORRP): pbr->GetInt(m_overridePhysics); break;
    case FID(ORPF): pbr->GetBool(m_overridePhysicsFlipper); break;
@@ -6698,26 +6698,26 @@ STDMETHODIMP PinTable::put_BackdropImageApplyNightDay(VARIANT_BOOL newVal)
 
 bool PinTable::IsFSSEnabled() const
 {
-   return m_BG_enable_FSS;
+   return m_isFSSViewModeEnabled;
 }
 
 void PinTable::EnableFSS(const bool enable)
 {
-   m_BG_enable_FSS = enable;
+   m_isFSSViewModeEnabled = enable;
    UpdateCurrentBGSet();
 }
 
 void PinTable::UpdateCurrentBGSet()
 {
-   if (m_BG_override != BG_INVALID)
-      m_BG_current_set = m_BG_override;
+   if (m_viewModeOverride != BG_INVALID)
+      m_viewMode = m_viewModeOverride;
    else
    {
       switch (m_settings.GetPlayer_BGSet())
       {
-      case 0: m_BG_current_set = m_BG_enable_FSS ? BG_FSS : BG_DESKTOP; break; // Desktop mode (FSS if table supports it, usual dekstop otherwise)
-      case 1: m_BG_current_set = BG_FULLSCREEN; break; // Cabinet mode
-      case 2: m_BG_current_set = BG_DESKTOP; break; // Desktop mode with FSS disabled (forced desktop)
+      case 0: m_viewMode = m_isFSSViewModeEnabled ? BG_FSS : BG_DESKTOP; break; // Desktop mode (FSS if table supports it, usual dekstop otherwise)
+      case 1: m_viewMode = BG_FULLSCREEN; break; // Cabinet mode
+      case 2: m_viewMode = BG_DESKTOP; break; // Desktop mode with FSS disabled (forced desktop)
       }
    }
 }
@@ -7533,7 +7533,7 @@ STDMETHODIMP PinTable::put_EnableDecals(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::get_ShowDT(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_BG_current_set == BG_DESKTOP || m_BG_current_set == BG_FSS); // DT & FSS
+   *pVal = FTOVB(m_viewMode == BG_DESKTOP || m_viewMode == BG_FSS); // DT & FSS
    return S_OK;
 }
 

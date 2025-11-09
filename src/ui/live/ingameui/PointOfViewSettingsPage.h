@@ -22,7 +22,7 @@ private:
    void BuildPage();
    void OnPointOfViewChanged();
 
-   ViewSetup& GetCurrentViewSetup() const { return m_player->m_ptable->mViewSetups[m_player->m_ptable->m_BG_current_set]; }
+   ViewSetup& GetCurrentViewSetup() const { return m_player->m_ptable->GetViewSetup(); }
 
    bool m_opened = false;
    bool m_lockScale = true;

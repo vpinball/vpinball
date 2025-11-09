@@ -20,8 +20,8 @@ void PointOfViewSettingsPage::Open(bool isBackwardAnimation)
    m_opened = true;
    m_staticPrepassDisabled = false;
    const PinTable* const table = m_player->m_ptable;
-   ViewSetupID vsId = table->m_BG_current_set;
-   m_initialViewSetup = table->mViewSetups[vsId];
+   ViewSetupID vsId = table->GetViewMode();
+   m_initialViewSetup = table->GetViewSetup();
    const Settings& settings = GetSettings();
    m_playerPos.x = settings.GetPlayer_ScreenPlayerX();
    m_playerPos.y = settings.GetPlayer_ScreenPlayerY();
@@ -88,8 +88,8 @@ void PointOfViewSettingsPage::BuildPage()
 
    ClearItems();
 
-   ViewSetupID vsId = table->m_BG_current_set;
-   const ViewSetup& viewSetup = table->mViewSetups[vsId];
+   ViewSetupID vsId = table->GetViewMode();
+   const ViewSetup& viewSetup = table->GetViewSetup();
    //const bool isLegacy = viewSetup.mMode == VLM_LEGACY;
    const string keyPrefix = vsId == BG_DESKTOP ? "ViewDT"s : vsId == BG_FSS ? "ViewFSS"s : "ViewCab"s;
 

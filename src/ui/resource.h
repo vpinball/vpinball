@@ -688,7 +688,6 @@
 #define IDC_FS_XT                       446
 #define IDC_FS_YT                       447
 #define IDC_FS_ZT                       448
-#define IDC_BG_SET                      449
 #define IDC_BLOOM_STRENGTH              450
 #define IDC_BULB_INTENSITY_SCALE        451
 #define IDC_IMAGE_MODE                  453
@@ -1094,10 +1093,6 @@
 #define IDC_SYNC                        928
 #define IDD_RENDER_OPT                  929
 #define IDC_WHERE_DESCR                 930
-#define IDD_PFVIEW_OPT                  931
-#define IDD_SCOREVIEW_OPT               933
-#define IDD_BACKGLASS_OPT               934
-#define IDD_VRPREVIEW_OPT               935
 #define IDC_GLASS_IMAGE                 942
 #define IDC_X_LABEL                     948
 #define IDC_Y_LABEL                     949

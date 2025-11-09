@@ -68,28 +68,6 @@ private:
    CEdit   m_ballDecal;
 };
 
-class PFViewOptPage final : public VideoOptionPropPage
-{
-public:
-   PFViewOptPage(Settings& appSettings, Settings& tableSettings);
-   ~PFViewOptPage() override { }
-
-   PFViewOptPage(const PFViewOptPage&) = delete;
-   PFViewOptPage& operator=(const PFViewOptPage&) = delete;
-
-protected:
-   BOOL OnInitDialog() override;
-   BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
-   BOOL OnApply() override;
-
-   void LoadSettings(Settings& settings) override;
-   void SaveSettings(Settings& settings, bool saveAll) override;
-
-private:
-   CComboBox m_viewMode;
-};
-
-
 VideoOptionProperties::VideoOptionProperties(HWND hParent /* = nullptr*/)
    : CPropertySheet(_T("Video Options"), hParent)
    , m_appSettings()
@@ -98,7 +76,6 @@ VideoOptionProperties::VideoOptionProperties(HWND hParent /* = nullptr*/)
    m_appSettings.Load(g_pvp->m_settings);
    if (g_pvp->m_ptableActive)
       m_tableSettings.Load(g_pvp->m_ptableActive->m_settings);
-   AddPage(new PFViewOptPage(m_appSettings, m_tableSettings));
    AddPage(new RenderOptPage(m_appSettings, m_tableSettings));
 }
 
@@ -280,67 +257,6 @@ BOOL RenderOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
    {
    case IDC_HEADTRACKING:
       if (HIWORD(wParam) == BN_CLICKED)
-         PropChanged();
-      break;
-   default: return VideoOptionPropPage::OnCommand(wParam, lParam);
-   }
-   return TRUE;
-}
-
-#pragma endregion
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Main Playfield View Options
-
-#pragma region PFViewOptPage
-
-PFViewOptPage::PFViewOptPage(Settings& appSettings, Settings& tableSettings)
-   : VideoOptionPropPage(IDD_PFVIEW_OPT, _T("Playfield View"), appSettings, tableSettings)
-{
-}
-
-BOOL PFViewOptPage::OnInitDialog()
-{
-   VideoOptionPropPage::OnInitDialog();
-   AttachItem(IDC_BG_SET, m_viewMode);
-   m_viewMode.SetRedraw(false);
-   m_viewMode.AddString("Desktop & FSS");
-   m_viewMode.AddString("Cabinet");
-   m_viewMode.AddString("Desktop (no FSS)");
-   m_viewMode.SetRedraw(true);
-   AddToolTip(m_viewMode, "Defines the view mode used when running a table\n\nDesktop/FSS will use the FSS view for table with FSS enabled, desktop otherwise.\n\nCabinet uses the 'fullscreen' view\n\nDesktop always uses the desktop view (no FSS)");
-   LoadSettings(GetEditedSettings());
-   return TRUE;
-}
-
-void PFViewOptPage::LoadSettings(Settings& settings)
-{
-   BeginLoad();
-   m_viewMode.SetCurSel(settings.GetPlayer_BGSet());
-   EndLoad();
-}
-
-void PFViewOptPage::SaveSettings(Settings& settings, bool saveAll)
-{
-   settings.SetPlayer_BGSet(max(m_viewMode.GetCurSel(), 0), !saveAll);
-   // update the cached current view setup of all loaded tables since it also depends on this setting
-   for (auto table : g_pvp->m_vtable)
-      table->UpdateCurrentBGSet();
-}
-
-BOOL PFViewOptPage::OnApply()
-{
-   ApplyChanges();
-   return TRUE;
-}
-
-BOOL PFViewOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
-{
-   switch (LOWORD(wParam))
-   {
-   case IDC_BG_SET:
-      if (HIWORD(wParam) == CBN_SELCHANGE)
          PropChanged();
       break;
    default: return VideoOptionPropPage::OnCommand(wParam, lParam);

@@ -203,7 +203,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
 
    #ifdef ENABLE_VR
    if (m_stereo3D == STEREO_VR) {
-      m_backGlass = new BackGlass(m_renderDevice, m_table->GetDecalsEnabled() ? m_table->GetImage(m_table->m_BG_image[m_table->m_BG_current_set]) : nullptr);
+      m_backGlass = new BackGlass(m_renderDevice, m_table->GetDecalsEnabled() ? m_table->GetImage(m_table->m_BG_image[m_table->GetViewMode()]) : nullptr);
       //AMD Debugging
       colorFormat renderBufferFormatVR;
       const int textureModeVR = g_pplayer->m_ptable->m_settings.GetPlayerVR_EyeFBFormat();
@@ -898,7 +898,7 @@ std::shared_ptr<BaseTexture> Renderer::EnvmapPrecalc(const std::shared_ptr<const
 void Renderer::DrawBackground()
 {
    const PinTable * const ptable = g_pplayer->m_ptable;
-   Texture * const pin = ptable->GetDecalsEnabled() ? ptable->GetImage(ptable->m_BG_image[ptable->m_BG_current_set]) : nullptr;
+   Texture * const pin = ptable->GetDecalsEnabled() ? ptable->GetImage(ptable->m_BG_image[ptable->GetViewMode()]) : nullptr;
    m_renderDevice->ResetRenderState();
    m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_CCW);
    if (pin)
@@ -931,7 +931,7 @@ void Renderer::DrawBackground()
 void Renderer::InitLayout(const float xpixoff, const float ypixoff)
 {
    TRACE_FUNCTION();
-   const ViewSetup& viewSetup = m_table->mViewSetups[m_table->m_BG_current_set];
+   const ViewSetup& viewSetup = m_table->GetViewSetup();
    #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
    const bool stereo = m_stereo3Denabled && (m_stereo3D != STEREO_OFF) && (m_stereo3D != STEREO_VR);
    #elif defined(ENABLE_DX9)
@@ -1738,7 +1738,7 @@ void Renderer::RenderDynamics()
 
 void Renderer::SetScreenOffset(const float x, const float y)
 {
-   const float rotation = ANGTORAD(m_table->mViewSetups[m_table->m_BG_current_set].GetRotation(m_stereo3D, m_renderDevice->GetOutputBackBuffer()->GetWidth(), m_renderDevice->GetOutputBackBuffer()->GetHeight()));
+   const float rotation = ANGTORAD(m_table->GetViewSetup().GetRotation(m_stereo3D, m_renderDevice->GetOutputBackBuffer()->GetWidth(), m_renderDevice->GetOutputBackBuffer()->GetHeight()));
    const float c = cosf(-rotation), s = sinf(-rotation);
    m_ScreenOffset.x = x * c - y * s;
    m_ScreenOffset.y = x * s + y * c;
@@ -1843,7 +1843,7 @@ RenderTarget* Renderer::ApplyAdditiveScreenSpaceReflection(RenderTarget* rendere
    m_renderDevice->m_FBShader->SetTexture(SHADER_tex_ao_dither, m_aoDitherSampler);
    // FIXME check if size should not be taken from renderdevice to account for stereo (double width/height) or supersampling
    m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), 1.0f /*radical_inverse(m_overall_frames%2048)*/, 1.0f);
-   const float rotation = m_table->mViewSetups[m_table->m_BG_current_set].GetRotation(m_stereo3D, m_renderDevice->GetOutputBackBuffer()->GetWidth(), m_renderDevice->GetOutputBackBuffer()->GetHeight());
+   const float rotation = m_table->GetViewSetup().GetRotation(m_stereo3D, m_renderDevice->GetOutputBackBuffer()->GetWidth(), m_renderDevice->GetOutputBackBuffer()->GetHeight());
    m_renderDevice->m_FBShader->SetVector(SHADER_SSR_bumpHeight_fresnelRefl_scale_FS, 0.3f, 0.3f, m_table->m_SSRScale, rotation);
    m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_SSReflection);
    m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
@@ -2587,14 +2587,14 @@ void Renderer::RenderFrame()
 
    // Update backdrop visibility and visibility mask
    // For the time being, the RenderFrame only support rendering one 3D view for main scene: dedicated 3D rendering for backglass, topper, apron are not yet implemented
-   m_noBackdrop = (g_pplayer->m_vrDevice != nullptr) || (m_table->m_BG_current_set == BG_FULLSCREEN);
+   m_noBackdrop = (g_pplayer->m_vrDevice != nullptr) || (m_table->GetViewMode() == BG_FULLSCREEN);
    if (g_pplayer->m_vrDevice)
       m_visibilityMask = m_vrApplyColorKey ? PartGroupData::PlayerModeVisibilityMask::PMVM_MIXED_REALITY : PartGroupData::PlayerModeVisibilityMask::PMVM_VIRTUAL_REALITY;
-   else if (m_table->m_BG_current_set == BG_FULLSCREEN)
+   else if (m_table->GetViewMode() == BG_FULLSCREEN)
       m_visibilityMask = PartGroupData::PlayerModeVisibilityMask::PMVM_CABINET;
-   else if (m_table->m_BG_current_set == BG_FSS)
+   else if (m_table->GetViewMode() == BG_FSS)
       m_visibilityMask = PartGroupData::PlayerModeVisibilityMask::PMVM_FSS;
-   else if (m_table->m_BG_current_set == BG_DESKTOP)
+   else if (m_table->GetViewMode() == BG_DESKTOP)
       m_visibilityMask = PartGroupData::PlayerModeVisibilityMask::PMVM_DESKTOP;
 
    // Setup ball rendering: collect all lights that can reflect on balls
