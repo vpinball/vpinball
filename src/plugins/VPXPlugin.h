@@ -105,7 +105,7 @@ typedef enum
 
 typedef struct VPXRenderContext2D
 {
-   VPXWindowId window; // Target window
+   VPXWindowId window;        // Target window
    float srcWidth;            // Source surface width, used in DrawImage call, default to target surface width
    float srcHeight;           // Source surface height, used in DrawImage call, default to target surface height
    int is2D;                  // If true, the rendering is done in 2D mode, otherwise in 3D mode
@@ -135,6 +135,7 @@ typedef struct VPXRenderContext2D
       const float dispPadL, const float dispPadT, const float dispPadR, const float dispPadB, // Display padding from glass bounds
       //
       const float srcX, const float srcY, const float srcW, const float srcH); // coordinates in source surface (0..srcWidth, 0..srcHeight)
+   void* rendererData; // Custom renderer data pointer to be used by the rendering functions
 } VPXRenderContext2D;
 
 typedef struct AncillaryRendererDef

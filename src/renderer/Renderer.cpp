@@ -13,6 +13,7 @@
 #include "renderer/RenderCommand.h"
 #include "renderer/RenderDevice.h"
 #include "renderer/VRDevice.h"
+#include "core/VPXPluginAPIImpl.h"
 
 #ifdef __LIBVPINBALL__
 #include "lib/src/VPinballLib.h"
@@ -393,6 +394,8 @@ Renderer::~Renderer()
    delete m_pMotionBlurBufferTexture;
    delete m_pOffscreenVRLeft;
    delete m_pOffscreenVRRight;
+   for (int window = 0; window <= VPXWindowId::VPXWINDOW_Topper; window++)
+      m_ancillaryWndHdrRT[window] = nullptr;
    #if defined(ENABLE_DX9) || defined(__OPENGLES__) || defined(__APPLE__)
    m_envRadianceTexture.reset();
    #else
@@ -2557,7 +2560,7 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
       m_renderDevice->SetRenderTarget("Stereo"s, outputRT, false);
       m_renderDevice->AddRenderTargetDependency(renderedRT);
       m_renderDevice->m_stereoShader->SetTexture(SHADER_tex_stereo_fb, renderedRT->GetColorSampler());
-      m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), 1.0f, 1.0f);
+      m_renderDevice->m_stereoShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), 1.0f, 1.0f);
       m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_stereoShader);
       return outputRT;
    }
@@ -2703,9 +2706,9 @@ void Renderer::RenderFrame()
    renderedRT = ApplyAdditiveScreenSpaceReflection(renderedRT);
 
    // Clear embedded ancillary windows before updarting bloom & AO
-   g_pplayer->ClearEmbeddedAncillaryWindow(VPXWindowId::VPXWINDOW_Backglass, renderedRT);
-   g_pplayer->ClearEmbeddedAncillaryWindow(VPXWindowId::VPXWINDOW_ScoreView, renderedRT);
-   g_pplayer->ClearEmbeddedAncillaryWindow(VPXWindowId::VPXWINDOW_Topper, renderedRT);
+   ClearEmbeddedAncillaryWindow(VPXWindowId::VPXWINDOW_Backglass, g_pplayer->m_backglassOutput, renderedRT);
+   ClearEmbeddedAncillaryWindow(VPXWindowId::VPXWINDOW_ScoreView, g_pplayer->m_scoreViewOutput, renderedRT);
+   ClearEmbeddedAncillaryWindow(VPXWindowId::VPXWINDOW_Topper, g_pplayer->m_topperOutput, renderedRT);
 
    // Compute AO contribution (to be applied later, with tonemapping)
    UpdateAmbientOcclusion(renderedRT);
@@ -2714,9 +2717,9 @@ void Renderer::RenderFrame()
    UpdateBloom(renderedRT);
 
    // Render ancillary windows (eventually embedded in the main window, so must be done after main rendering but before post process)
-   g_pplayer->RenderAncillaryWindow(VPXWindowId::VPXWINDOW_Backglass, renderedRT);
-   g_pplayer->RenderAncillaryWindow(VPXWindowId::VPXWINDOW_ScoreView, renderedRT);
-   g_pplayer->RenderAncillaryWindow(VPXWindowId::VPXWINDOW_Topper, renderedRT);
+   RenderAncillaryWindow(VPXWindowId::VPXWINDOW_Backglass, g_pplayer->m_backglassOutput, renderedRT, g_pplayer->m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_Backglass]);
+   RenderAncillaryWindow(VPXWindowId::VPXWINDOW_ScoreView, g_pplayer->m_scoreViewOutput, renderedRT, g_pplayer->m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_ScoreView]);
+   RenderAncillaryWindow(VPXWindowId::VPXWINDOW_Topper, g_pplayer->m_topperOutput, renderedRT, g_pplayer->m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_Topper]);
 
    // Perform color grade LUT / dither / tonemapping, also applying bloom and AO
    RenderTarget* const tonemapRT = (hasAntialiasPass || hasSharpenPass || hasStereoPass || hasUpscalerPass) ? GetPostProcessRenderTarget1() : m_renderDevice->GetOutputBackBuffer();
@@ -2760,4 +2763,370 @@ void Renderer::RenderFrame()
 
    if (g_pplayer->GetProfilingMode() == PF_ENABLED)
       m_gpu_profiler.Timestamp(GTS_PostProcess);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+void Renderer::DrawImage(VPXRenderContext2D* ctx, VPXTexture texture, const float tintR, const float tintG, const float tintB, const float alpha, const float texX, const float texY,
+   const float texW, const float texH, const float pivotX, const float pivotY, const float rotation, const float srcX, const float srcY, const float srcW, const float srcH)
+{
+   if (alpha <= 0.f) // Alpha blended, so alpha = 0 means not visible
+      return;
+   const bool isLinearOutput = *((bool*)ctx->rendererData);
+   std::shared_ptr<BaseTexture> const tex = VPXPluginAPIImpl::GetInstance().GetTexture(texture);
+   RenderDevice* const rdl = g_pplayer->m_renderer->m_renderDevice;
+   rdl->ResetRenderState();
+   rdl->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+   rdl->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+   rdl->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+   rdl->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
+   rdl->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
+   rdl->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
+   rdl->SetRenderState(RenderState::ALPHABLENDENABLE, (alpha != 1.f || !tex->IsOpaque()) ? RenderState::RS_TRUE : RenderState::RS_FALSE);
+   rdl->m_basicShader->SetVector(SHADER_cBase_Alpha, tintR, tintG, tintB, alpha);
+   // We force to linear (no sRGB decoding) when rendering in sRGB colorspace, this assumes that the texture is in sRGB colorspace to get correct gamma (other situations would need dedicated shaders to handle them efficiently)
+   assert(tex->m_format == BaseTexture::SRGB || tex->m_format == BaseTexture::SRGBA || tex->m_format == BaseTexture::SRGB565);
+   // Disable filtering and mipmap generation if they are not needed
+   const SamplerFilter sf = (ctx->is2D && (srcW * ctx->outWidth == ctx->srcWidth * (float)tex->width()) && (srcH * ctx->outHeight == ctx->srcHeight * (float)tex->height()))
+      ? SamplerFilter::SF_NONE
+      : SamplerFilter::SF_UNDEFINED;
+   rdl->m_basicShader->SetTexture(SHADER_tex_base_color, tex.get(), !isLinearOutput, sf);
+   const float vx1 = srcX / ctx->srcWidth;
+   const float vy1 = srcY / ctx->srcHeight;
+   const float vx2 = vx1 + srcW / ctx->srcWidth;
+   const float vy2 = vy1 + srcH / ctx->srcHeight;
+   const float tx1 = texX / (float)tex->width();
+   const float ty1 = 1.f - texY / (float)tex->height();
+   const float tx2 = (texX + texW) / (float)tex->width();
+   const float ty2 = 1.f - (texY + texH) / (float)tex->height();
+   Vertex3D_NoTex2 vertices[4]
+      = { { vx2, vy1, 0.f, 0.f, 0.f, 1.f, tx2, ty2 }, { vx1, vy1, 0.f, 0.f, 0.f, 1.f, tx1, ty2 }, { vx2, vy2, 0.f, 0.f, 0.f, 1.f, tx2, ty1 }, { vx1, vy2, 0.f, 0.f, 0.f, 1.f, tx1, ty1 } };
+   if (rotation != 0.f)
+   {
+      const float px = lerp(vx1, vx2, (pivotX - texX) / (float)tex->width());
+      const float py = lerp(vy1, vy2, (pivotY - texY) / (float)tex->height());
+      const Matrix3D matRot = Matrix3D::MatrixTranslate(-px, -py, 0.f) * Matrix3D::MatrixRotateZ(rotation * (float)(M_PI / 180.0)) * Matrix3D::MatrixTranslate(px, py, 0.f);
+      matRot.TransformPositions(vertices, vertices, 4);
+   }
+   rdl->DrawTexturedQuad(rdl->m_basicShader, vertices, true, 0.f);
+}
+
+void Renderer::DrawMatrixDisplay(VPXRenderContext2D* ctx, VPXDisplayRenderStyle style, VPXTexture glassTex, const float glassTintR, const float glassTintG, const float glassTintB,
+   const float glassRoughness, const float glassAreaX, const float glassAreaY, const float glassAreaW, const float glassAreaH, const float glassAmbientR, const float glassAmbientG,
+   const float glassAmbientB, VPXTexture dispTex, const float dispTintR, const float dispTintG, const float dispTintB, const float brightness, const float alpha, const float dispPadL,
+   const float dispPadT, const float dispPadR, const float dispPadB, const float srcX, const float srcY, const float srcW, const float srcH)
+{
+   const bool isLinearOutput = *((bool*)ctx->rendererData);
+   VPXPluginAPIImpl& vxpApi = VPXPluginAPIImpl::GetInstance();
+   std::shared_ptr<BaseTexture> const gTex = glassTex ? vxpApi.GetTexture(glassTex) : nullptr;
+   std::shared_ptr<BaseTexture> const dTex = vxpApi.GetTexture(dispTex);
+   RenderDevice* const rdl = g_pplayer->m_renderer->m_renderDevice;
+   rdl->ResetRenderState();
+   rdl->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+   rdl->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+   rdl->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+   rdl->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+   g_pplayer->m_renderer->SetupDMDRender(style, false, vec3(dispTintR, dispTintG, dispTintB), brightness, dTex, alpha,
+      isLinearOutput ? Renderer::ColorSpace::Linear : Renderer::ColorSpace::Reinhard_sRGB,
+      nullptr, // No parallax
+      vec4(dispPadL, dispPadT, dispPadR, dispPadB), vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex.get(), vec4(glassAreaX, glassAreaY, glassAreaW, glassAreaH),
+      vec3(glassAmbientR, glassAmbientG, glassAmbientB));
+   const float vx1 = srcX / ctx->srcWidth;
+   const float vy1 = 1.f - srcY / ctx->srcHeight;
+   const float vx2 = (srcX + srcW) / ctx->srcWidth;
+   const float vy2 = 1.f - (srcY + srcH) / ctx->srcHeight;
+   const Vertex3D_NoTex2 vertices[4] = { //
+      { vx2, vy1, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f }, // 
+      { vx1, vy1, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f }, //
+      { vx2, vy2, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },  //
+      { vx1, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f } };
+   rdl->DrawTexturedQuad(rdl->m_DMDShader, vertices, true, 0.f);
+}
+
+void Renderer::DrawSegmentDisplay(VPXRenderContext2D* ctx, VPXSegDisplayRenderStyle style, VPXSegDisplayHint shapeHint, VPXTexture glassTex, const float glassTintR, const float glassTintG,
+   const float glassTintB, const float glassRoughness, const float glassAreaX, const float glassAreaY, const float glassAreaW, const float glassAreaH, const float glassAmbientR,
+   const float glassAmbientG, const float glassAmbientB, SegElementType type, const float* state, const float dispTintR, const float dispTintG, const float dispTintB, const float brightness,
+   const float alpha, const float dispPadL, const float dispPadT, const float dispPadR, const float dispPadB, const float srcX, const float srcY, const float srcW, const float srcH)
+{
+   const bool isLinearOutput = *((bool*)ctx->rendererData);
+   VPXPluginAPIImpl& vxpApi = VPXPluginAPIImpl::GetInstance();
+   std::shared_ptr<BaseTexture> const gTex = vxpApi.GetTexture(glassTex);
+   RenderDevice* const rdl = g_pplayer->m_renderer->m_renderDevice;
+   // Use max blending as segment may overlap in the glass diffuse: we retain the most lighted one which is wrong but looks ok (otherwise we would have to deal with colorspace conversions and layering between glass and emitter)
+   rdl->ResetRenderState();
+   rdl->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_MAX);
+   rdl->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+   rdl->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
+   rdl->SetRenderState(RenderState::DESTBLEND, RenderState::ONE);
+   rdl->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+   rdl->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+   rdl->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+   g_pplayer->m_renderer->SetupSegmentRenderer(style, false, vec3(dispTintR, dispTintG, dispTintB), brightness, (Renderer::SegmentFamily)shapeHint, type, state,
+      isLinearOutput ? Renderer::ColorSpace::Linear : Renderer::ColorSpace::Reinhard_sRGB,
+      nullptr, // No parallax
+      vec4(dispPadL, dispPadT, dispPadR, dispPadB), vec3(glassTintR, glassTintG, glassTintB), glassRoughness, gTex.get(), vec4(glassAreaX, glassAreaY, glassAreaW, glassAreaH),
+      vec3(glassAmbientR, glassAmbientG, glassAmbientB));
+   const float vx1 = srcX / ctx->srcWidth;
+   const float vy1 = 1.f - srcY / ctx->srcHeight;
+   const float vx2 = (srcX + srcW) / ctx->srcWidth;
+   const float vy2 = 1.f - (srcY + srcH) / ctx->srcHeight;
+   const Vertex3D_NoTex2 vertices[4] = { // 
+      { vx2, vy1, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f }, //
+      { vx1, vy1, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f }, //
+      { vx2, vy2, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f }, //
+      { vx1, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f } };
+   rdl->DrawTexturedQuad(rdl->m_DMDShader, vertices, true, 0.f);
+}
+
+RenderTarget* Renderer::SetupAncillaryRenderTarget(VPXWindowId window, VPX::RenderOutput& output, RenderTarget* embedRT, int& outputX, int& outputY, int& outputW, int& outputH, bool& isOutputLinear)
+{
+   assert(VPXWindowId::VPXWINDOW_Backglass <= window && window <= VPXWindowId::VPXWINDOW_Topper);
+   static std::array<string, 3> renderPassNames = { "Backglass Render"s, "ScoreView Render"s, "Topper Render"s };
+   static std::array<string, 3> hdrRTNames = { "BackglassBackBuffer"s, "ScoreViewBackBuffer"s, "TopperBackBuffer"s };
+   const string renderPassName = renderPassNames[window];
+   const string hdrRTName = hdrRTNames[window];
+
+   // TODO implement rendering for VR (on a flasher)
+   if (g_pplayer->m_vrDevice != nullptr)
+      return nullptr;
+
+   // Stereo Postprocessing is not yet implemented for embedded window
+   if (m_stereo3D != StereoMode::STEREO_OFF && output.GetMode() != VPX::RenderOutput::OM_WINDOW)
+      return nullptr;
+
+   RenderTarget* outputRT;
+   if (output.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
+   {
+      outputRT = embedRT;
+      VPX::Window* containerWnd = m_renderDevice->m_outputWnd[0];
+
+      const float displayScaleX = static_cast<float>(containerWnd->GetPixelWidth()) / static_cast<float>(containerWnd->GetWidth());
+      const float displayScaleY = static_cast<float>(containerWnd->GetPixelHeight()) / static_cast<float>(containerWnd->GetHeight());
+
+      const int wndW = output.GetEmbeddedWindow()->GetWidth();
+      const int wndH = output.GetEmbeddedWindow()->GetHeight();
+      int wndX;
+      int wndY;
+      output.GetEmbeddedWindow()->GetPos(wndX, wndY);
+
+      outputW = static_cast<int>((float)wndW * displayScaleX);
+      outputH = static_cast<int>((float)wndH * displayScaleY);
+      outputX = static_cast<int>((float)wndX * displayScaleX);
+      outputY = static_cast<int>((float)wndY * displayScaleY);
+   }
+#ifdef ENABLE_BGFX
+   else if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
+   {
+      outputRT = output.GetWindow()->GetBackBuffer();
+      outputW = outputRT->GetWidth();
+      outputH = outputRT->GetHeight();
+      outputX = 0;
+      outputY = 0;
+   }
+#endif
+   else
+   {
+      return nullptr;
+   }
+
+   RenderDevice* const rd = m_renderDevice;
+
+   Matrix3D matWorldViewProj[2];
+   matWorldViewProj[0] = Matrix3D::MatrixIdentity();
+   matWorldViewProj[0]._11 = 2.f * static_cast<float>(outputW) / static_cast<float>(outputRT->GetWidth());
+   matWorldViewProj[0]._41 = -1.f + 2.f * static_cast<float>(outputX) / static_cast<float>(outputRT->GetWidth());
+   matWorldViewProj[0]._22 = -2.f * static_cast<float>(outputH) / static_cast<float>(outputRT->GetHeight());
+   matWorldViewProj[0]._42 = 1.f - 2.f * static_cast<float>(outputY) / static_cast<float>(outputRT->GetHeight());
+   const int eyes = m_stereo3D != StereoMode::STEREO_OFF ? 2 : 1;
+   if (eyes > 1)
+      matWorldViewProj[1] = matWorldViewProj[0];
+#if defined(ENABLE_OPENGL)
+   struct
+   {
+      Matrix3D matWorld;
+      Matrix3D matView;
+      Matrix3D matWorldView;
+      Matrix3D matWorldViewInverseTranspose;
+      Matrix3D matWorldViewProj[2];
+   } matrices;
+   memcpy(&matrices.matWorldViewProj[0].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
+   memcpy(&matrices.matWorldViewProj[1].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
+   rd->m_basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
+#else
+   rd->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
+#endif
+   rd->m_basicShader->SetFloat(SHADER_alphaTestValue, -1.0f);
+   rd->m_basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
+   rd->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
+   rd->m_DMDShader->SetFloat(SHADER_alphaTestValue, -1.0f);
+
+   // Performing linear rendering + tonemapping is overkill when used for LDR rendering (Pup pack, B2S,...)
+   // TODO we should allow plugins to decide if they want linear colorspace + tonemapping or simple sRGB composition
+   isOutputLinear = output.GetMode() == VPX::RenderOutput::OM_EMBEDDED;
+
+   if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
+   {
+      if (isOutputLinear)
+      {
+         assert(false); // This is disabled for the time being
+         if (m_ancillaryWndHdrRT[window] == nullptr)
+            m_ancillaryWndHdrRT[window] = std::unique_ptr<RenderTarget>(new RenderTarget(rd, SurfaceType::RT_DEFAULT, hdrRTName, outputW, outputH, colorFormat::RGBA16F, false, 1, "Fatal Error: unable to create ancillary window back buffer"));
+         rd->SetRenderTarget(renderPassName, m_ancillaryWndHdrRT[window].get(), false, true);
+      }
+      else
+      {
+         rd->SetRenderTarget(renderPassName, outputRT, false, true);
+      }
+   }
+   else if (output.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
+   {
+      rd->SetRenderTarget(renderPassName, outputRT, true, true);
+   }
+   return rd->GetCurrentRenderTarget();
+}
+
+void Renderer::ClearEmbeddedAncillaryWindow(VPXWindowId window, VPX::RenderOutput& output, RenderTarget* embedRT)
+{
+   if (output.GetMode() != VPX::RenderOutput::OM_EMBEDDED)
+      return;
+
+   bool isOutputLinear;
+   int m_outputX, m_outputY, m_outputW, m_outputH;
+   RenderTarget* outputRT = SetupAncillaryRenderTarget(window, output, embedRT, m_outputX, m_outputY, m_outputW, m_outputH, isOutputLinear);
+   if (outputRT == nullptr)
+      return;
+
+   Vertex3D_NoTex2 vertices[4] = { { 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f }, //
+      { 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f }, //
+      { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f }, //
+      { 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f } };
+   const float sx = 1.f / static_cast<float>(outputRT->GetWidth());
+   const float sy = 1.f / static_cast<float>(outputRT->GetHeight());
+   for (unsigned int i = 0; i < 4; ++i)
+   {
+      vertices[i].x = sx * (vertices[i].x * static_cast<float>(m_outputW) + static_cast<float>(m_outputX)) * 2.0f - 1.0f;
+      vertices[i].y = 1.0f - sy * (vertices[i].y * static_cast<float>(m_outputH) + static_cast<float>(m_outputY)) * 2.0f;
+   }
+   RenderDevice* const rd = m_renderDevice;
+   rd->ResetRenderState();
+   rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+   rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE); // Also clear depth to avoid AO artefacts
+   rd->m_DMDShader->SetVector(SHADER_vColor_Intensity, 0.f, 0.f, 0.f, 1.f);
+   rd->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_noDMD_notex);
+   rd->m_DMDShader->SetVector(SHADER_glassArea, 0.f, 0.f, 1.f, 1.f);
+   rd->DrawTexturedQuad(rd->m_DMDShader, vertices);
+   rd->GetCurrentPass()->m_commands.back()->SetTransparent(true);
+   rd->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
+
+   UpdateBasicShaderMatrix();
+}
+
+void Renderer::RenderAncillaryWindow(VPXWindowId window, VPX::RenderOutput& output, RenderTarget* embedRT, const vector<AncillaryRendererDef>& anciliaryWndRenderers)
+{
+   bool isOutputLinear;
+   int m_outputX, m_outputY, m_outputW, m_outputH;
+   RenderDevice* const rd = m_renderDevice;
+   RenderTarget* outputRT = SetupAncillaryRenderTarget(window, output, embedRT, m_outputX, m_outputY, m_outputW, m_outputH, isOutputLinear);
+   if (outputRT == nullptr)
+      return;
+
+   VPXRenderContext2D context
+   {
+      window, static_cast<float>(m_outputW), static_cast<float>(m_outputH),
+      1, // 2D render
+      static_cast<float>(m_outputW), static_cast<float>(m_outputH),
+      DrawImage, // Draw an image
+      DrawMatrixDisplay, // Draw a display (DMD, CRT, ...)
+      DrawSegmentDisplay,  // Draw a segment display element (just one digit, using max blending to allow building a complete display)
+      &isOutputLinear // Custom rendering data (for the time being, just the HDR flag)
+   };
+
+   rd->ResetRenderState();
+   if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
+      rd->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
+
+   bool rendered = false;
+   for (auto& renderer : anciliaryWndRenderers)
+   {
+      rendered = renderer.Render(&context, renderer.context);
+      if (rendered)
+         break;
+   }
+
+   if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
+   {
+      if (!rendered)
+      {
+         m_renderDevice->GetCurrentPass()->ClearCommands(); // No rendering done, clear the pass (avoids a useless clear)
+      }
+      else
+      {
+         if (!output.GetWindow()->IsVisible())
+         {
+            output.GetWindow()->Show();
+            m_renderDevice->m_outputWnd[0]->RaiseAndFocus(); // Keep focus on playfield when showing an ancillary window
+         }
+
+         if (isOutputLinear)
+         {
+            assert(false); // This is disabled for the time being
+            static std::array<string, 3> tonemapPassNames = { "Backglass Tonemap"s, "ScoreView Tonemap"s, "Topper Tonemap"s };
+            const string tonemapPassName = tonemapPassNames[window];
+            const float jitter = (float)((msec() & 2047) / 1000.0);
+            rd->ResetRenderState();
+            rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+            rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+            rd->SetRenderTarget(tonemapPassName, outputRT, true, true);
+            rd->AddRenderTargetDependency(m_ancillaryWndHdrRT[window].get(), false);
+            rd->m_FBShader->SetTextureNull(SHADER_tex_depth);
+            rd->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_ancillaryWndHdrRT[window]->GetColorSampler());
+            rd->m_FBShader->SetTexture(SHADER_tex_fb_filtered, m_ancillaryWndHdrRT[window]->GetColorSampler());
+            rd->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / m_ancillaryWndHdrRT[window]->GetWidth()), (float)(1.0 / m_ancillaryWndHdrRT[window]->GetHeight()), 1.0f, 1.0f);
+            rd->m_FBShader->SetVector(SHADER_bloom_dither_colorgrade,
+               0.f, // Bloom
+               output.GetWindow()->IsWCGBackBuffer() ? 0.f : 1.f, // Dither
+               0.f, // LUT colorgrade
+               0.f);
+            rd->m_FBShader->SetVector(SHADER_w_h_height, static_cast<float>(1.0 / static_cast<double>(m_outputW)), static_cast<float>(1.0 / static_cast<double>(m_outputH)),
+               jitter, // radical_inverse(jittertime) * 11.0f,
+               jitter); // sobol(jittertime) * 13.0f); // jitter for dither pattern}
+            ShaderTechniques tonemapTechnique; // FIXME use a tonemapping corresponding to the output, handling situations where playfield is on a HDR display but backglass is not
+            switch (m_toneMapper)
+            {
+            case TM_REINHARD: tonemapTechnique = SHADER_TECHNIQUE_fb_rhtonemap_no_filter; break;
+            case TM_FILMIC: tonemapTechnique = SHADER_TECHNIQUE_fb_fmtonemap_no_filter; break;
+            case TM_NEUTRAL: tonemapTechnique = SHADER_TECHNIQUE_fb_nttonemap_no_filter; break;
+            case TM_AGX: tonemapTechnique = SHADER_TECHNIQUE_fb_agxtonemap_no_filter; break;
+            case TM_AGX_PUNCHY: tonemapTechnique = SHADER_TECHNIQUE_fb_agxptonemap_no_filter; break;
+            default: assert(!"unknown tonemapper"); break;
+            }
+            rd->m_FBShader->SetTechnique(tonemapTechnique);
+            constexpr float m_exposure = 1.f; // TODO implement exposure
+            if (output.GetWindow()->IsWCGBackBuffer())
+            {
+               const float maxDisplayLuminance = output.GetWindow()->GetHDRHeadRoom()
+                  * (output.GetWindow()->GetSDRWhitePoint() * 80.f); // Maximum luminance of display in nits, note that GetSDRWhitePoint()*80 should usually be in the 200 nits range
+               rd->m_FBShader->SetVector(SHADER_exposure_wcg, m_exposure,
+                  (output.GetWindow()->GetSDRWhitePoint() * 80.f)
+                     / maxDisplayLuminance, // Apply SDR whitepoint (1.0 -> white point in nits), then scale down by maximum luminance (in nits) of display to get a relative value before before tonemapping, equal to 1/GetHDRHeadRoom()
+                  maxDisplayLuminance / 10000.f, // Apply back maximum luminance in nits of display after tonemapping, scaled down to PQ limits (1.0 is 10000 nits)
+                  1.f);
+               float spline_params[6];
+               PrecompSplineTonemap(maxDisplayLuminance, spline_params);
+               rd->m_FBShader->SetVector(SHADER_spline1, spline_params[0], spline_params[1], spline_params[2], spline_params[3]);
+               rd->m_FBShader->SetVector(SHADER_spline2, spline_params[4], spline_params[5], 0.f, 0.f);
+            }
+            else
+            {
+               rd->m_FBShader->SetVector(SHADER_exposure_wcg, m_exposure, 1.f,
+                  0.f, // Unused for SDR
+                  0.f); // Tonemapping mode: 0 = SDR
+            }
+            rd->DrawFullscreenTexturedQuad(rd->m_FBShader);
+         }
+      }
+   }
+
+   UpdateBasicShaderMatrix();
 }

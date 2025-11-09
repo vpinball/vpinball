@@ -315,6 +315,7 @@ void Window::SetSize(const int x, const int y)
    if (x == GetWidth() && y == GetHeight())
       return;
    SDL_SetWindowSize(m_nwnd, x, y);
+   SDL_GetWindowSize(m_nwnd, &m_width, &m_height);
    SDL_GetWindowSizeInPixels(m_nwnd, &m_pixelWidth, &m_pixelHeight);
    #ifdef ENABLE_BGFX
    // The RenderDevice automatically manages the backbuffer resize. For ancillary windows (BGFX only), we need to recreate the swapchain
@@ -332,8 +333,6 @@ void Window::SetSize(const int x, const int y)
          });
    }
    #endif
-   m_width = x;
-   m_height = y;
 }
 
 vector<Window::DisplayConfig> Window::GetDisplays()

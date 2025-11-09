@@ -27,7 +27,7 @@ void RenderPass::Reset(const string& name, RenderTarget* const rt)
    m_depthReadback = false;
    m_sortKey = 0;
    m_mergeable = true;
-   m_commands.clear();
+   ClearCommands();
    m_dependencies.clear();
    m_referencedRT.clear();
 }
