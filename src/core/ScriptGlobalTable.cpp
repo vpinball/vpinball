@@ -815,13 +815,13 @@ STDMETHODIMP ScriptGlobalTable::get_NightDay(int *pVal)
 
 STDMETHODIMP ScriptGlobalTable::get_ShowDT(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_pt->m_BG_current_set == BG_DESKTOP || m_pt->m_BG_current_set == BG_FSS); // DT & FSS
+   *pVal = FTOVB(m_pt->GetViewMode() == BG_DESKTOP || m_pt->GetViewMode() == BG_FSS); // DT & FSS
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_ShowFSS(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_pt->m_BG_current_set == BG_FSS);
+   *pVal = FTOVB(m_pt->GetViewMode() == BG_FSS);
    return S_OK;
 }
 

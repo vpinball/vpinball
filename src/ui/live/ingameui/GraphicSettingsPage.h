@@ -14,7 +14,10 @@ public:
 
 private:
    void BuildPage();
+   void OnStaticRenderDirty();
+
    unsigned int m_notificationId = 0;
+   bool m_staticPrepassDisabled = false;
 };
 
 }

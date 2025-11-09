@@ -595,7 +595,7 @@ void InputManager::PushTouchEvent(float relativeX, float relativeY, uint64_t tim
       if (const bool wasPressed = m_inputActions[region.actionId]->GetDirectState(region.directStateSlot); wasPressed == isPressed)
          continue;
       if (!Intersect(region.region, g_pplayer->m_playfieldWnd->GetWidth(), g_pplayer->m_playfieldWnd->GetHeight(), point,
-             fmodf(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation, 360.0f) != 0.f))
+             fmodf(g_pplayer->m_ptable->GetViewSetup().mViewportRotation, 360.0f) != 0.f))
          continue;
       m_inputActions[region.actionId]->SetDirectState(region.directStateSlot, isPressed);
    }

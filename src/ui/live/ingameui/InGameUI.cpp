@@ -103,7 +103,7 @@ void InGameUI::Open(const string& page)
 {
    assert(!IsOpened());
    Navigate(page);
-   m_useFlipperNav = m_player->m_vrDevice || m_player->m_ptable->m_BG_current_set == ViewSetupID::BG_FULLSCREEN;
+   m_useFlipperNav = m_player->m_vrDevice || m_player->m_ptable->GetViewMode() == ViewSetupID::BG_FULLSCREEN;
    m_prevActionState = m_player->m_pininput.GetActionState();
 }
 
@@ -267,10 +267,10 @@ void InGameUI::HandleLegacyFlyOver(const InputManager::ActionState &state)
    }
 
    if (state.IsKeyDown(m_player->m_pininput.GetLeftNudgeActionId()))
-      m_player->m_ptable->mViewSetups[m_player->m_ptable->m_BG_current_set].mViewportRotation -= 1.0f;
+      m_player->m_ptable->GetViewSetup().mViewportRotation -= 1.0f;
 
    if (state.IsKeyDown(m_player->m_pininput.GetRightNudgeActionId()))
-      m_player->m_ptable->mViewSetups[m_player->m_ptable->m_BG_current_set].mViewportRotation += 1.0f;
+      m_player->m_ptable->GetViewSetup().mViewportRotation += 1.0f;
 }
 
 }
