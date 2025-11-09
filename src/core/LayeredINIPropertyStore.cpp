@@ -149,7 +149,7 @@ void LayeredINIPropertyStore::Save()
       if (m_parent && (!m_floatValues[id.index].defined || m_floatValues[id.index].value == m_parent->get().GetFloat(id)))
          m_ini[prop->m_groupId].remove(prop->m_propId);
       else if (m_floatValues[id.index].defined)
-         m_ini[prop->m_groupId][prop->m_propId] = f2sz(m_floatValues[id.index].value);
+         m_ini[prop->m_groupId][prop->m_propId] = f2sz(m_floatValues[id.index].value, false);
       else
          m_ini[prop->m_groupId][prop->m_propId].clear();
    }
