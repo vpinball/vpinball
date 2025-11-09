@@ -516,7 +516,6 @@ Shader::Shader(RenderDevice* renderDevice, const ShaderId id, const bool isStere
    #else
       , m_isStereo(false)
    #endif
-   , m_technique(SHADER_TECHNIQUE_INVALID)
 {
    const int nEyes = m_isStereo ? 2 : 1;
    ShaderUniform::coreUniforms[SHADER_matProj].count = nEyes;
@@ -671,21 +670,21 @@ Shader::~Shader()
 void Shader::Begin()
 {
    assert(current_shader == nullptr);
-   assert(m_technique != SHADER_TECHNIQUE_INVALID);
+   assert(m_state->m_technique != SHADER_TECHNIQUE_INVALID);
    current_shader = this;
 
    #if defined(ENABLE_BGFX)
 
    #else
-   if (m_boundTechnique != m_technique)
+   if (m_boundTechnique != m_state->m_technique)
    {
       m_renderDevice->m_curTechniqueChanges++;
-      m_boundTechnique = m_technique;
+      m_boundTechnique = m_state->m_technique;
       #if defined(ENABLE_OPENGL)
-      glUseProgram(m_techniques[m_technique]->program);
+      glUseProgram(m_techniques[m_state->m_technique]->program);
       #elif defined(ENABLE_DX9)
-      //CHECKD3D(m_shader->SetTechnique((D3DXHANDLE)shaderTechniqueNames[m_technique].name.c_str()));
-      const char* const stn = shaderTechniqueNames[m_technique].name.c_str();
+      //CHECKD3D(m_shader->SetTechnique((D3DXHANDLE)shaderTechniqueNames[m_state->m_technique].name.c_str()));
+      const char* const stn = shaderTechniqueNames[m_state->m_technique].name.c_str();
       const HRESULT hrTmp = m_shader->SetTechnique((D3DXHANDLE)stn);
       if (FAILED(hrTmp))
       {
@@ -696,7 +695,7 @@ void Shader::Begin()
    }
    #endif
 
-   for (const auto& uniformName : m_uniforms[m_technique])
+   for (const auto& uniformName : m_uniforms[m_state->m_technique])
       ApplyUniform(uniformName);
 
    #if defined(ENABLE_DX9)
@@ -938,9 +937,9 @@ void Shader::SetTechnique(ShaderTechniques technique)
    assert(current_shader != this); // Changing the technique of a used shader is not allowed (between Begin/End)
    assert(0 <= technique && technique < SHADER_TECHNIQUE_COUNT);
    #if defined(ENABLE_OPENGL)
-   if (m_techniques[technique] == nullptr)
+   if (m_techniques[m_state->technique] == nullptr)
    {
-      m_technique = SHADER_TECHNIQUE_INVALID;
+      m_state->m_technique = SHADER_TECHNIQUE_INVALID;
       ShowError("Fatal Error: Could not find shader technique " + shaderTechniqueNames[technique].name);
       exit(-1);
    }
@@ -948,12 +947,12 @@ void Shader::SetTechnique(ShaderTechniques technique)
    if (!bgfx::isValid(m_techniques[technique]))
    {
       assert(0);
-      m_technique = SHADER_TECHNIQUE_INVALID;
+      m_state->m_technique = SHADER_TECHNIQUE_INVALID;
       ShowError("Fatal Error: Could not find shader technique " + shaderTechniqueNames[technique].name);
       exit(-1);
    }
    #endif
-   m_technique = technique;
+   m_state->m_technique = technique;
 }
 
 void Shader::SetBasic(const Material * const mat, Texture * const pin)
@@ -1281,9 +1280,10 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
 
 bgfx::ProgramHandle Shader::GetCore() const
 {
-   return (m_renderDevice->GetActiveRenderState().GetRenderState(RenderState::CLIPPLANEENABLE) == RenderState::RS_TRUE) && bgfx::isValid(m_clipPlaneTechniques[m_technique])
-      ? m_clipPlaneTechniques[m_technique]
-      : m_techniques[m_technique];
+   assert(current_shader != nullptr);
+   return (m_renderDevice->GetActiveRenderState().GetRenderState(RenderState::CLIPPLANEENABLE) == RenderState::RS_TRUE) && bgfx::isValid(m_clipPlaneTechniques[m_state->m_technique])
+      ? m_clipPlaneTechniques[m_state->m_technique]
+      : m_techniques[m_state->m_technique];
 }
 
 void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTechniques technique, const char* vsName, const char* fsName, const bool isClipVariant)

@@ -102,8 +102,8 @@ void RenderPass::SortCommands()
          // Move kickers before other draw calls.
          // Kickers disable depth test to be visible through playfield. This would make them to be rendered after opaques, but since they hack depth, they need to be rendered before balls
          // > The right fix would be to remove the kicker hack (use stencil masking, alpha punch or CSG on playfield), this would also solve rendering kicker in VR
-         const bool isKicker1 = r1->GetShaderTechnique() == SHADER_TECHNIQUE_kickerBoolean || r1->GetShaderTechnique() == SHADER_TECHNIQUE_kickerBoolean_isMetal;
-         const bool isKicker2 = r2->GetShaderTechnique() == SHADER_TECHNIQUE_kickerBoolean || r2->GetShaderTechnique() == SHADER_TECHNIQUE_kickerBoolean_isMetal;
+         const bool isKicker1 = r1->GetShaderState()->GetTechnique() == SHADER_TECHNIQUE_kickerBoolean || r1->GetShaderState()->GetTechnique() == SHADER_TECHNIQUE_kickerBoolean_isMetal;
+         const bool isKicker2 = r2->GetShaderState()->GetTechnique() == SHADER_TECHNIQUE_kickerBoolean || r2->GetShaderState()->GetTechnique() == SHADER_TECHNIQUE_kickerBoolean_isMetal;
          if (isKicker1)
             return isKicker2 ? r1->GetDepth() > r2->GetDepth() : true;
          else if (isKicker2)
@@ -134,14 +134,14 @@ void RenderPass::SortCommands()
             return r1->GetDepth() > r2->GetDepth(); // Back to front
 
          // Sort by shader to limit the number of shader changes
-         if (r1->GetShaderTechnique() != r2->GetShaderTechnique())
+         if (r1->GetShaderState()->GetTechnique() != r2->GetShaderState()->GetTechnique())
          {
             // TODO sort by minimum depth of the technique
             /* if (m_min_depth[r1->technique] == m_min_depth[r2->technique])
                return r1->technique < r2->technique;
             else
                return m_min_depth[r1->technique] < m_min_depth[r2->technique];*/
-            return r1->GetShaderTechnique() > r2->GetShaderTechnique();
+            return r1->GetShaderState()->GetTechnique() > r2->GetShaderState()->GetTechnique();
          }
 
          // Sort front to back to limit overdraw, limiting the number of processed fragment thanks to early depth test

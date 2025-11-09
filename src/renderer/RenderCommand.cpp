@@ -125,9 +125,8 @@ void RenderCommand::Execute(const int nInstances, const bool log)
    case RC_DRAW_MESH:
    {
       m_renderState.Apply(m_rd);
-      m_shader->SetTechnique(m_shaderTechnique);
       m_shaderState->SetInt(SHADER_layer, RenderTarget::GetCurrentRenderLayer() < 0 ? 0 : RenderTarget::GetCurrentRenderLayer());
-      m_shader->m_state->CopyTo(false, m_shaderState, m_shaderTechnique);
+      m_shader->m_state->CopyTo(false, m_shaderState);
       m_shader->Begin();
       m_rd->m_curDrawCalls++;
       switch (m_command)
@@ -338,7 +337,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
          else if (m_command == RC_DRAW_MESH)
             ss << "> Draw Mesh     ";
          ss << (m_isTransparent ? "T "s : "O "s);
-         ss << std::setw(40) << Shader::GetTechniqueName(m_shaderTechnique) << std::setw(0) << ' ' << m_renderState.GetLog();
+         ss << std::setw(40) << Shader::GetTechniqueName(m_shaderState->GetTechnique()) << std::setw(0) << ' ' << m_renderState.GetLog();
          ss << " Depth: " << std::fixed << std::setw(8) << std::setprecision(2) << m_depth;
          if (m_command == RC_DRAW_MESH)
          {
@@ -407,13 +406,11 @@ void RenderCommand::SetDrawMesh(
    m_depth = depth;
    m_isTransparent = isTransparent;
    m_shader = shader;
-   m_shaderTechnique = m_shader->GetCurrentTechnique();
-   assert(m_shaderTechnique < SHADER_TECHNIQUE_INVALID);
    if (m_shaderState)
       m_shaderState->SetShader(m_shader);
    else
       m_shaderState = new ShaderState(m_shader, m_rd->UseLowPrecision());
-   m_shader->m_state->CopyTo(true, m_shaderState, m_shaderTechnique);
+   m_shader->m_state->CopyTo(true, m_shaderState);
 }
 
 void RenderCommand::SetDrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices, const bool isTransparent, const float depth)
@@ -424,12 +421,11 @@ void RenderCommand::SetDrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly
    m_depth = depth;
    m_isTransparent = isTransparent;
    m_shader = shader;
-   m_shaderTechnique = m_shader->GetCurrentTechnique();
    if (m_shaderState)
       m_shaderState->SetShader(m_shader);
    else
       m_shaderState = new ShaderState(m_shader, m_rd->UseLowPrecision());
-   m_shader->m_state->CopyTo(true, m_shaderState, m_shaderTechnique);
+   m_shader->m_state->CopyTo(true, m_shaderState);
 }
 
 void RenderCommand::SetDrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices, const bool isTransparent, const float depth)
@@ -440,10 +436,9 @@ void RenderCommand::SetDrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* v
    m_depth = depth;
    m_isTransparent = isTransparent;
    m_shader = shader;
-   m_shaderTechnique = m_shader->GetCurrentTechnique();
    if (m_shaderState)
       m_shaderState->SetShader(m_shader);
    else
       m_shaderState = new ShaderState(m_shader, m_rd->UseLowPrecision());
-   m_shader->m_state->CopyTo(true, m_shaderState, m_shaderTechnique);
+   m_shader->m_state->CopyTo(true, m_shaderState);
 }
