@@ -109,8 +109,6 @@ public:
       SDL_DisplayID display; // SDL display identifier (only valid for the lifetime of the SDL session)
    };
 
-   DisplayConfig GetDisplayConfig(const Settings& settings) const;
-
    static vector<DisplayConfig> GetDisplays();
    static vector<VideoMode> GetDisplayModes(const DisplayConfig& display);
    static DisplayConfig GetDisplayConfig(const string& displayName);
