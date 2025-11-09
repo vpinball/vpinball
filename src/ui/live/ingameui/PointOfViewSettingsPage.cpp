@@ -137,9 +137,6 @@ void PointOfViewSettingsPage::UpdateDefaults()
          const float scale = (screenHeight / m_player->m_ptable->GetTableWidth()) * (m_player->m_ptable->GetHeight() / screenWidth);
          const bool isFitted = (m_player->m_ptable->GetViewSetup().mViewHOfs == 0.f) && (m_player->m_ptable->GetViewSetup().mViewVOfs == -2.8f)
             && (m_player->m_ptable->GetViewSetup().mSceneScaleY == scale) && (m_player->m_ptable->GetViewSetup().mSceneScaleX == scale);
-         PLOGI << isFitted << " / " << m_player->m_ptable->GetViewSetup().mViewHOfs << " / " << m_player->m_ptable->GetViewSetup().mViewVOfs << " / "
-               << m_player->m_ptable->GetViewSetup().mSceneScaleX << " / " << m_player->m_ptable->GetViewSetup().mSceneScaleY
-               << " / " << scale;
          defViewSetup.mMode = VLM_WINDOW;
          defViewSetup.mViewHOfs = 0.f;
          defViewSetup.mViewVOfs = isFitted ? 0.f : -2.8f;
