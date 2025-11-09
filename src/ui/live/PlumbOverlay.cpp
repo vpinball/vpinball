@@ -46,8 +46,8 @@ void PlumbOverlay::Update()
    ImGui::SetNextWindowSize(fullSize);
    ImGui::Begin("PlumbOverlay", nullptr, window_flags);
    const ImVec2 &pos = ImGui::GetWindowPos();
-   const ImVec2 radius = fullSize * (0.5f * 0.8f);
-   const ImVec2 scale = radius / sin(m_player->m_physics->GetPlumbTiltThreshold());
+   const ImVec2 radius = fullSize * (float)(0.5 * 0.8);
+   const ImVec2 scale = radius / sinf(m_player->m_physics->GetPlumbTiltThreshold());
    // Background
    const ImU32 backCol = IM_COL32(isInNudgeSettings ? 0.f : (m_tiltFade * 255.f), 0, 0, plumbFade * 64.f);
    ImGui::GetWindowDrawList()->AddEllipseFilled(pos + halfSize, radius * 1.1f, backCol);

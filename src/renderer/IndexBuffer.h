@@ -13,7 +13,7 @@ protected:
 public:
    unsigned int GetCount() const { return m_count; }
    bool IsShared() const { return m_buffers.size() > 1; }
-   bool IsEmpty() const { return m_buffers.size() == 0; }
+   bool IsEmpty() const { return m_buffers.empty(); }
 
    unsigned int Add(Buf* buffer)
    {

@@ -171,7 +171,7 @@ void LayeredINIPropertyStore::Save()
    {
       changed = false;
       for (auto& [k, v] : m_ini)
-         if (v.size() == 0)
+         if (v.empty())
          {
             changed = true;
             m_ini.remove(k);

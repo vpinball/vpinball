@@ -259,6 +259,10 @@ namespace mINI
 		{
 			return data.size();
 		}
+		[[nodiscard]] bool empty() const
+		{
+			return data.empty();
+		}
 		[[nodiscard]] const_iterator begin() const { return data.begin(); }
 		[[nodiscard]] const_iterator end() const { return data.end(); }
 	};
