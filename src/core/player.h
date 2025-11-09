@@ -223,20 +223,15 @@ public:
    VRDevice *m_vrDevice = nullptr;
    bool m_headTracking = false;
    bool m_scaleFX_DMD = false;
-
-   void ClearEmbeddedAncillaryWindow(VPXWindowId window, RenderTarget *embedRT);
-   void RenderAncillaryWindow(VPXWindowId window, RenderTarget *embedRT);
+   vector<AncillaryRendererDef> m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_Topper + 1];
 
 private:
    void PrepareFrame(const std::function<void()>& sync);
    void SubmitFrame();
    void FinishFrame();
 
-   RenderTarget *SetupAncillaryWindow(VPXWindowId window, RenderTarget *embedRT, int &outputX, int &outputY, int &outputW, int &outputH, bool &enableHDR);
    static void OnAuxRendererChanged(const unsigned int msgId, void *userData, void *msgData);
-   RenderTarget *m_ancillaryWndHdrRT[VPXWindowId::VPXWINDOW_Topper + 1] { nullptr };
    unsigned int m_getAuxRendererId = 0, m_onAuxRendererChgId = 0;
-   vector<AncillaryRendererDef> m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_Topper + 1];
 #pragma endregion
 
 
