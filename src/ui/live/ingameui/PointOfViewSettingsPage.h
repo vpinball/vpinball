@@ -11,7 +11,7 @@ class PointOfViewSettingsPage final : public InGameUIPage
 {
 public:
    PointOfViewSettingsPage();
-   
+
    void Open(bool isBackwardAnimation) override;
    void Close(bool isBackwardAnimation) override;
    void Save() override;
@@ -19,8 +19,11 @@ public:
    void ResetToDefaults() override;
 
 private:
-   void BuildPage();
+   VPX::Properties::PropertyRegistry::PropId SelectProp(
+      VPX::Properties::PropertyRegistry::PropId dt, VPX::Properties::PropertyRegistry::PropId fss, VPX::Properties::PropertyRegistry::PropId cab) const;
    void OnPointOfViewChanged();
+   void UpdateDefaults();
+   void BuildPage();
 
    ViewSetup& GetCurrentViewSetup() const { return m_player->m_ptable->GetViewSetup(); }
 
@@ -28,8 +31,9 @@ private:
    bool m_lockScale = true;
    ViewSetup m_initialViewSetup;
    vec3 m_playerPos;
-   vec3 m_initialPlayerPos;
    bool m_staticPrepassDisabled = false;
+
+   unsigned int m_glassNotifId = 0;
 };
 
 }
