@@ -1010,7 +1010,7 @@ void Surface::AddPoint(int x, int y, const bool smooth)
    vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
 
-   Vertex2D vOut;
+   Vertex2D vOut(0.f, 0.f);
    int iSeg;
    ClosestPointOnPolygon(vvertex, v, vOut, iSeg, true);
 
