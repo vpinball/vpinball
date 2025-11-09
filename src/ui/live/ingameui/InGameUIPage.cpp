@@ -337,7 +337,7 @@ void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
          if (isInitialPress)
             m_adjustedValue = item->GetFloatValue();
          m_adjustedValue += direction * speedFactor * elapsed * (prop->m_max - prop->m_min) / 32.f;
-         item->SetValue(m_adjustedValue);
+         item->SetValue(prop->GetSteppedClamped(m_adjustedValue));
          break;
       }
 
@@ -348,7 +348,7 @@ void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
             m_adjustedValue = static_cast<float>(item->GetIntValue()) + direction;
          else
             m_adjustedValue += direction * speedFactor * elapsed * static_cast<float>(prop->m_max - prop->m_min) / 32.f;
-         item->SetValue(static_cast<int>(round(m_adjustedValue)));
+         item->SetValue(prop->GetClamped(static_cast<int>(round(m_adjustedValue))));
          break;
       }
 

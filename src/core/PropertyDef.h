@@ -56,10 +56,10 @@ public:
       , m_min(min)
       , m_max(max)
       , m_step(step)
-      , m_def(GetSteppedInRange(def))
+      , m_def(GetSteppedClamped(def))
    {
       assert(m_min <= m_max);
-      assert(m_def == GetSteppedInRange(m_def));
+      assert(m_def == GetSteppedClamped(m_def));
    }
    FloatPropertyDef(const FloatPropertyDef& other)
       : FloatPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_min, other.m_max, other.m_step, other.m_def)
@@ -78,8 +78,9 @@ public:
    const float m_def;
 
    float GetStepped(float v) const { return (m_step != 0.f) ? (m_min + roundf((v - m_min) / m_step) * m_step) : v; }
-   float GetSteppedInRange(float v) const { return clamp(GetStepped(v), m_min, m_max); }
-   float GetValid(float v) const { return (v < m_min || v > m_max) ? m_def : GetSteppedInRange(v); }
+   float GetClamped(float v) const { return clamp(v, m_min, m_max); }
+   float GetSteppedClamped(float v) const { return GetClamped(GetStepped(v)); }
+   float GetValid(float v) const { return (v < m_min || v > m_max) ? m_def : GetSteppedClamped(v); }
 
    bool IsEqualButDefaultValue(PropertyDef* other) const override
    {
@@ -119,6 +120,8 @@ public:
    const int m_min;
    const int m_max;
    const int m_def;
+
+   int GetClamped(int v) const { return clamp(v, m_min, m_max); }
 
    int GetValid(int v) const { return (v < m_min || v > m_max) ? m_def : v; }
 
