@@ -2884,8 +2884,8 @@ RenderTarget* Renderer::SetupAncillaryRenderTarget(VPXWindowId window, VPX::Rend
    assert(VPXWindowId::VPXWINDOW_Backglass <= window && window <= VPXWindowId::VPXWINDOW_Topper);
    static std::array<string, 3> renderPassNames = { "Backglass Render"s, "ScoreView Render"s, "Topper Render"s };
    static std::array<string, 3> hdrRTNames = { "BackglassBackBuffer"s, "ScoreViewBackBuffer"s, "TopperBackBuffer"s };
-   const string renderPassName = renderPassNames[window];
-   const string hdrRTName = hdrRTNames[window];
+   const string renderPassName = renderPassNames[window - VPXWindowId::VPXWINDOW_Backglass];
+   const string hdrRTName = hdrRTNames[window - VPXWindowId::VPXWINDOW_Backglass];
 
    // TODO implement rendering for VR (on a flasher)
    if (g_pplayer->m_vrDevice != nullptr)
@@ -3072,7 +3072,7 @@ void Renderer::RenderAncillaryWindow(VPXWindowId window, VPX::RenderOutput& outp
          {
             assert(false); // This is disabled for the time being
             static std::array<string, 3> tonemapPassNames = { "Backglass Tonemap"s, "ScoreView Tonemap"s, "Topper Tonemap"s };
-            const string tonemapPassName = tonemapPassNames[window];
+            const string tonemapPassName = tonemapPassNames[window - VPXWindowId::VPXWINDOW_Backglass];
             const float jitter = (float)((msec() & 2047) / 1000.0);
             rd->ResetRenderState();
             rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
