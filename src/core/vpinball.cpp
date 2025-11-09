@@ -1048,6 +1048,10 @@ void VPinball::DoPlay(const int playMode)
          return;
       #endif
 
+      // The table settings may have been edited during play (camera, rendering, ...), so copy them back to the editor table's settings
+      table->m_settings.Load(g_pplayer->m_ptable->m_settings);
+      table->m_settings.Save();
+
       delete g_pplayer;
       g_pplayer = nullptr;
    }
