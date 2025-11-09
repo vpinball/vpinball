@@ -22,6 +22,7 @@ public:
    Settings(Settings *parent);
 
    void SetIniPath(const string &path);
+   const string& GetIniPath() const;
    bool Load(const bool createDefault);
    void Load(const Settings &settings);
    void Save();
@@ -42,7 +43,6 @@ public:
 private:
    static inline const VPX::Properties::PropertyRegistry::PropId m_propInvalid {};
    static string GetBackwardCompatibleSection(const string &groupId);
-   string m_iniPath;
    Settings *const m_parent;
    VPX::Properties::LayeredINIPropertyStore m_store;
 

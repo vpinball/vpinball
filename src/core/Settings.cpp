@@ -117,34 +117,35 @@ void Settings::Set(VPX::Properties::PropertyRegistry::PropId propId, const strin
 
 void Settings::SetIniPath(const string &path)
 {
-   if (m_iniPath != path)
-   {
-      m_iniPath = path;
-      m_store.SetModified(true);
-   }
+   m_store.SetIniPath(path);
+}
+
+const string& Settings::GetIniPath() const
+{
+   return m_store.GetIniPath();
 }
 
 bool Settings::Load(const bool createDefault)
 {
-   if (m_store.Load(m_iniPath))
+   if (m_store.Load())
    {
-      PLOGI << "Settings file was loaded from '" << m_iniPath << '\'';
+      PLOGI << "Settings file was loaded from '" << m_store.GetIniPath() << '\'';
       return true;
    }
    else if (createDefault)
    {
-      PLOGI << "Settings file was not found at '" << m_iniPath << "', creating a default one";
+      PLOGI << "Settings file was not found at '" << m_store.GetIniPath() << "', creating a default one";
 
       // Load failed: generate a default setting file
       try
       {
-         m_store.GenerateTemplate(m_iniPath);
+         m_store.GenerateTemplate(m_store.GetIniPath());
       }
       catch (const std::exception&)
       {
          ShowError("Failed to generate the default setting file");
       }
-      if (!m_store.Load(m_iniPath))
+      if (!m_store.Load())
       {
          PLOGE << "Loading of default settings file failed";
       }
@@ -230,7 +231,7 @@ bool Settings::Load(const bool createDefault)
    }
    else
    {
-      PLOGI << "Settings file was not found at '" << m_iniPath << '\'';
+      PLOGI << "Settings file was not found at '" << m_store.GetIniPath() << '\'';
       return false;
    }
 }
@@ -242,7 +243,6 @@ void Settings::Save()
 
 void Settings::Load(const Settings &settings)
 {
-   m_iniPath = settings.m_iniPath;
    m_store.Load(settings.m_store);
 }
 
