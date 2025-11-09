@@ -1455,12 +1455,23 @@ void RenderDevice::AddWindow(VPX::Window* wnd)
       return;
 
    colorFormat fmt;
+   bgfx::TextureFormat::Enum fbFmt;
    switch (wnd->GetBitDepth())
    {
-   case 32: fmt = colorFormat::RGBA8; break;
-   case 30: fmt = colorFormat::RGBA10; break;
-   default: fmt = colorFormat::RGB5; break;
+   case 32:
+      fmt = colorFormat::RGBA8;
+      fbFmt = bgfx::TextureFormat::RGBA8;
+      break;
+   case 30:
+      fmt = colorFormat::RGBA10;
+      fbFmt = bgfx::TextureFormat::RGB10A2;
+      break;
+   default:
+      fmt = colorFormat::RGB5;
+      fbFmt = bgfx::TextureFormat::R5G6B5;
+      break;
    }
+   PLOGD << "Creating BGFX swap chain for window with bit depth " << wnd->GetBitDepth() << " / " << SDL_GetWindowTitle(wnd->GetCore());
    SDL_Window* sdlWnd = wnd->GetCore();
    void* nwh;
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
@@ -1486,7 +1497,7 @@ void RenderDevice::AddWindow(VPX::Window* wnd)
 #else
    return nullptr;
 #endif // BX_PLATFORM_
-   bgfx::FrameBufferHandle fbh = bgfx::createFrameBuffer(nwh, uint16_t(wnd->GetPixelWidth()), uint16_t(wnd->GetPixelHeight()));
+   bgfx::FrameBufferHandle fbh = bgfx::createFrameBuffer(nwh, uint16_t(wnd->GetPixelWidth()), uint16_t(wnd->GetPixelHeight()), fbFmt);
    m_outputWnd.push_back(wnd);
    wnd->SetBackBuffer(new RenderTarget(this, SurfaceType::RT_DEFAULT, fbh, BGFX_INVALID_HANDLE, bgfx::TextureFormat::Count, BGFX_INVALID_HANDLE, bgfx::TextureFormat::Count,
       "BackBuffer #" + std::to_string(m_outputWnd.size()), wnd->GetPixelWidth(), wnd->GetPixelHeight(), fmt));

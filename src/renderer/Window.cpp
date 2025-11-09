@@ -81,7 +81,12 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    }
 
    // Both fullscreen and windowed modes are anchored to a user selected display
-   const DisplayConfig selectedDisplay = GetDisplayConfig(settings);
+   const DisplayConfig selectedDisplay = GetDisplayConfig(settings.GetWindow_Display((int)m_windowId));
+   if (selectedDisplay.displayName != settings.GetWindow_Display((int)m_windowId))
+   {
+      PLOGW << "The selected display \"" << settings.GetWindow_Display((int)m_windowId)
+            << "\" is not available. Using display \"" << selectedDisplay.displayName << "\" instead.";
+   }
    int wnd_x = selectedDisplay.left;
    int wnd_y = selectedDisplay.top;
    int nDisplayModes;
@@ -242,7 +247,7 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    const SDL_DisplayMode* const displayMode = SDL_GetDesktopDisplayMode(selectedDisplay.display);
    if (displayMode) {
       PLOGI << "Window #" << m_windowId << " (" << m_width << 'x' << m_height << ") was created on display " << selectedDisplay.displayName 
-         << '[' << displayMode->w << 'x' << displayMode->h << ' ' << displayMode->refresh_rate << "Hz " << SDL_GetPixelFormatName(displayMode->format) << ']';
+         << " [" << displayMode->w << ' x ' << displayMode->h << ' ' << displayMode->refresh_rate << "Hz " << SDL_GetPixelFormatName(displayMode->format) << ']';
    }
 }
 
@@ -254,12 +259,6 @@ Window::~Window()
 #ifndef __LIBVPINBALL__
    SDL_RunOnMainThread([](void* userdata) { SDL_DestroyWindow(static_cast<SDL_Window*>(userdata)); }, m_nwnd, true);
 #endif
-}
-
-Window::DisplayConfig Window::GetDisplayConfig(const Settings& settings) const
-{
-   const string selectedDisplayName = settings.GetWindow_Display((int)m_windowId);
-   return GetDisplayConfig(selectedDisplayName);
 }
 
 void Window::Show(const bool show)
@@ -390,17 +389,18 @@ vector<Window::VideoMode> Window::GetDisplayModes(const DisplayConfig& display)
 
 Window::DisplayConfig Window::GetDisplayConfig(const string& display)
 {
-   bool displayFound = false;
    DisplayConfig selectedDisplay {};
    vector<DisplayConfig> displays = GetDisplays();
    for (const DisplayConfig& dispConf : displays)
    {
-      if ((!displayFound && dispConf.isPrimary) // Defaults to the primary display
-         || (!displayFound && dispConf.displayName == display)) // or the display selected in the settings
+      if (dispConf.displayName == display) // or the display selected in the settings
       {
          selectedDisplay = dispConf;
-         displayFound |= dispConf.displayName == display;
+         if (dispConf.displayName == display)
+            break;
       }
+      if (dispConf.isPrimary) // Defaults to the primary display
+         selectedDisplay = dispConf;
    }
    assert(selectedDisplay.width > 0); // We should at least have selected the default display
    return selectedDisplay;
