@@ -496,7 +496,6 @@ public:
    void SetTechnique(const ShaderTechniques technique);
    void SetTechniqueMaterial(ShaderTechniques technique, const Material& mat, const bool doAlphaTest = false, const bool doNormalMapping = false, const bool doReflection = false, const bool doRefraction = false);
    void SetBasic(const Material * const mat, Texture * const pin);
-   ShaderTechniques GetCurrentTechnique() const { return m_technique; }
    static void SetDefaultSamplerFilter(const ShaderUniforms sampler, const SamplerFilter sf);
    static SamplerFilter GetDefaultSamplerFilter(const ShaderUniforms sampler);
 
@@ -534,7 +533,6 @@ private:
    RenderDevice* const m_renderDevice;
    const ShaderId m_shaderId;
    const bool m_isStereo;
-   ShaderTechniques m_technique;
    string m_shaderCodeName;
 
    static Shader* current_shader;
@@ -677,18 +675,20 @@ public:
       return m_state.data() + m_stateOffsets[uniformName];
    }
 
-   void CopyTo(const bool copyTo, ShaderState* const other, const ShaderTechniques technique = SHADER_TECHNIQUE_INVALID)
+   void CopyTo(const bool copyTo, ShaderState* const other)
    {
       assert(other->m_stateOffsets == m_stateOffsets);
       if (copyTo)
       {
          other->m_state = m_state;
          other->m_samplers = m_samplers;
+         other->m_technique = m_technique;
       }
       else
       {
          m_state = other->m_state;
          m_samplers = other->m_samplers;
+         m_technique = other->m_technique;
       }
    }
 
@@ -920,7 +920,19 @@ public:
       return pos > 0 ? m_samplers[pos - 1] : nullptr;
    }
 
+   void SetTechnique(ShaderTechniques technique)
+   {
+      assert(Shader::GetCurrentShader() == nullptr);
+      m_technique = technique;
+   }
+
+   ShaderTechniques GetTechnique() const
+   {
+      return m_technique;
+   }
+
    vector<uint8_t> m_state;
+   ShaderTechniques m_technique;
    vector<std::shared_ptr<const Sampler>> m_samplers;
    static bool m_disableMipmaps;
 

@@ -21,7 +21,6 @@ public:
    bool IsDrawMeshCommand() const { return m_command == RC_DRAW_MESH; }
    RenderState GetRenderState() const { return m_renderState; }
    ShaderState* GetShaderState() const { return m_shaderState; }
-   ShaderTechniques GetShaderTechnique() const { return m_shaderTechnique; }
    MeshBuffer* GetMeshBuffer() const { return m_mb; }
    float GetDepth() const { return m_depth; }
    void SetTransparent(bool t) { m_isTransparent = t; }
@@ -56,7 +55,6 @@ private:
 
    Command m_command;
    Shader* m_shader = nullptr;
-   ShaderTechniques m_shaderTechnique = ShaderTechniques::SHADER_TECHNIQUE_INVALID;
    ShaderState* m_shaderState = nullptr;
    RenderState m_renderState;
    bool m_isTransparent;

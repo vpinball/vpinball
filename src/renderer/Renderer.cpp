@@ -1098,8 +1098,6 @@ void Renderer::UpdateStereoShaderState()
    if (m_renderDevice->m_stereoShader == nullptr)
       return;
 
-   RenderTarget *renderedRT = GetPostProcessRenderTarget1();
-
    m_stereo3DDefocus = 0.f;
    if (IsAnaglyphStereoMode(m_stereo3D))
    {
