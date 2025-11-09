@@ -1,25 +1,31 @@
 import SwiftUI
 
-enum TableListMode: Int, Hashable {
-    case small
-    case medium
-    case large
-    case list
+enum TableViewMode: Int, Hashable {
+    case grid = 0
+    case list = 1
+}
+
+enum TableGridSize: Int, Hashable {
+    case small = 0
+    case medium = 1
+    case large = 2
 }
 
 struct TableListView: View {
     @ObservedObject var vpinballViewModel = VPinballViewModel.shared
     @ObservedObject var tableManager = TableManager.shared
 
-    var mode: TableListMode
+    var viewMode: TableViewMode
+    var gridSize: TableGridSize
     var sortOrder: SortOrder
     var searchText: String
     @Binding var scrollToTable: Table?
 
     @State var selectedTable: Table?
 
-    init(mode: TableListMode = .medium, sortOrder: SortOrder = .reverse, searchText: String = "", scrollToTable: Binding<Table?> = .constant(nil)) {
-        self.mode = mode
+    init(viewMode: TableViewMode = .grid, gridSize: TableGridSize = .medium, sortOrder: SortOrder = .reverse, searchText: String = "", scrollToTable: Binding<Table?> = .constant(nil)) {
+        self.viewMode = viewMode
+        self.gridSize = gridSize
         self.sortOrder = sortOrder
         self.searchText = searchText
         _scrollToTable = scrollToTable
@@ -31,7 +37,7 @@ struct TableListView: View {
 
     var body: some View {
         ZStack {
-            if mode == .list {
+            if viewMode == .list {
                 ScrollViewReader { proxy in
                     List {
                         ForEach(filteredTables) { table in
@@ -91,7 +97,7 @@ struct TableListView: View {
                     let size = geo.size
                     let layout = computeColumns(containerWidth: size.width - 32,
                                                 availableHeight: size.height,
-                                                mode: mode)
+                                                gridSize: gridSize)
                     ScrollView {
                         LazyVGrid(columns: Array(repeating: GridItem(.fixed(layout.cardWidth), spacing: layout.gap, alignment: .top), count: layout.columns), spacing: layout.gap) {
                             ForEach(filteredTables) { table in
@@ -173,12 +179,11 @@ extension TableListView {
     private var minFloorRegular: CGFloat { 48 }
     private var minFloorCompact: CGFloat { 40 }
 
-    private func heightFactor(_ mode: TableListMode) -> CGFloat {
-        switch mode {
+    private func heightFactor(_ gridSize: TableGridSize) -> CGFloat {
+        switch gridSize {
         case .small: return 0.72
         case .medium: return 0.88
         case .large: return 1.0
-        case .list: return 1.0
         }
     }
 
@@ -209,16 +214,15 @@ extension TableListView {
         return (smallColumns, mediumColumns, largeColumns, baseCap)
     }
 
-    private func cardWidthForColumns(_ columns: Int, containerWidth: CGFloat, heightCap: CGFloat, mode: TableListMode, gap: CGFloat) -> CGFloat {
+    private func cardWidthForColumns(_ columns: Int, containerWidth: CGFloat, heightCap: CGFloat, gridSize: TableGridSize, gap: CGFloat) -> CGFloat {
         let widthPerColumn = (containerWidth - gap * CGFloat(max(columns - 1, 0))) / CGFloat(max(columns, 1))
         var width = min(widthPerColumn, heightCap)
         if columns == 1 {
             let factor: CGFloat = {
-                switch mode {
+                switch gridSize {
                 case .small: return 0.86
                 case .medium: return 0.94
                 case .large: return 1.00
-                case .list: return 0.94
                 }
             }()
             width = min(width, containerWidth * factor)
@@ -226,7 +230,7 @@ extension TableListView {
         return floor(width)
     }
 
-    private func computeColumns(containerWidth: CGFloat, availableHeight: CGFloat, mode: TableListMode) -> (columns: Int, cardWidth: CGFloat, gap: CGFloat) {
+    private func computeColumns(containerWidth: CGFloat, availableHeight: CGFloat, gridSize: TableGridSize) -> (columns: Int, cardWidth: CGFloat, gap: CGFloat) {
         let layout: (gap: CGFloat, minFloor: CGFloat) = (availableHeight < 420) ? (8, minFloorCompact) : (baseGap, minFloorRegular)
         let tiers = computeTiers(containerWidth: containerWidth,
                                  availableHeight: availableHeight,
@@ -239,18 +243,17 @@ extension TableListView {
         var effectiveLarge = min(tiers.large, effectiveMedium - 1)
         if effectiveLarge < 1 { effectiveLarge = 1 }
         let columns: Int = {
-            switch mode {
+            switch gridSize {
             case .small: return effectiveSmall
             case .medium: return effectiveMedium
             case .large: return effectiveLarge
-            case .list: return effectiveMedium
             }
         }()
-        let heightCap = max(60, availableHeight) * ratio * heightFactor(mode)
+        let heightCap = max(60, availableHeight) * ratio * heightFactor(gridSize)
         let cardWidth = cardWidthForColumns(columns,
                                             containerWidth: containerWidth,
                                             heightCap: heightCap,
-                                            mode: mode,
+                                            gridSize: gridSize,
                                             gap: layout.gap)
         return (columns, cardWidth, layout.gap)
     }

@@ -92,6 +92,16 @@ JNIEXPORT jstring JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballLoadValu
    return env->NewStringUTF(pResult);
 }
 
+JNIEXPORT jboolean JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballLoadValueBool(JNIEnv* env, jobject obj, jstring sectionName, jstring key, jboolean defaultValue)
+{
+   const char* pSectionName = env->GetStringUTFChars(sectionName, nullptr);
+   const char* pKey = env->GetStringUTFChars(key, nullptr);
+   int result = VPinballLoadValueBool(pSectionName, pKey, defaultValue ? 1 : 0);
+   env->ReleaseStringUTFChars(key, pKey);
+   env->ReleaseStringUTFChars(sectionName, pSectionName);
+   return result != 0;
+}
+
 JNIEXPORT void JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballSaveValueInt(JNIEnv* env, jobject obj, jstring sectionName, jstring key, jint value)
 {
    const char* pSectionName = env->GetStringUTFChars(sectionName, nullptr);
@@ -117,6 +127,15 @@ JNIEXPORT void JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballSaveValueSt
    const char* pValue = env->GetStringUTFChars(value, nullptr);
    VPinballSaveValueString(pSectionName, pKey, pValue);
    env->ReleaseStringUTFChars(value, pValue);
+   env->ReleaseStringUTFChars(key, pKey);
+   env->ReleaseStringUTFChars(sectionName, pSectionName);
+}
+
+JNIEXPORT void JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballSaveValueBool(JNIEnv* env, jobject obj, jstring sectionName, jstring key, jboolean value)
+{
+   const char* pSectionName = env->GetStringUTFChars(sectionName, nullptr);
+   const char* pKey = env->GetStringUTFChars(key, nullptr);
+   VPinballSaveValueBool(pSectionName, pKey, value ? 1 : 0);
    env->ReleaseStringUTFChars(key, pKey);
    env->ReleaseStringUTFChars(sectionName, pSectionName);
 }

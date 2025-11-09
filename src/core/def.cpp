@@ -470,45 +470,6 @@ void write_file(const string& filename, const vector<uint8_t>& data, const bool 
    file.close();
 }
 
-void copy_folder(const string& srcPath, const string& dstPath)
-{
-   const std::filesystem::path src(srcPath);
-   const std::filesystem::path dst(dstPath);
-   if (!std::filesystem::exists(src) || !std::filesystem::is_directory(src))
-   {
-      PLOGE << "source path does not exist or is not a directory: " << srcPath;
-      return;
-   }
-
-   if (!std::filesystem::exists(dst)) {
-      std::error_code ec;
-      if (!std::filesystem::create_directory(dst, ec)) {
-         PLOGE << "failed to create destination path: " << dstPath;
-         return;
-      }
-   }
-
-   for (const auto& entry : std::filesystem::directory_iterator(src)) {
-      const string& sourceFilePath = entry.path().string();
-      const string& destinationFilePath = (dst / entry.path()).string();
-
-      if (std::filesystem::is_directory(entry.status()))
-         copy_folder(sourceFilePath, destinationFilePath);
-      else {
-         if (!std::filesystem::exists(destinationFilePath)) {
-            std::ifstream sourceFile(sourceFilePath, std::ios::binary);
-            std::ofstream destinationFile(destinationFilePath, std::ios::binary);
-            if (sourceFile && destinationFile) {
-               PLOGI << "copying " << sourceFilePath << " to " << destinationFilePath;
-               destinationFile << sourceFile.rdbuf();
-               destinationFile.close();
-               sourceFile.close();
-            }
-         }
-      }
-   }
-}
-
 string normalize_path_separators(const string& szPath)
 {
    string szResult = szPath;

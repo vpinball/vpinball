@@ -56,27 +56,6 @@ namespace VPinballLib {
 
 VPinballLib::VPinballLib()
 {
-   EditableRegistry::RegisterEditable<Ball>();
-   EditableRegistry::RegisterEditable<Bumper>();
-   EditableRegistry::RegisterEditable<Decal>();
-   EditableRegistry::RegisterEditable<DispReel>();
-   EditableRegistry::RegisterEditable<Flasher>();
-   EditableRegistry::RegisterEditable<Flipper>();
-   EditableRegistry::RegisterEditable<Gate>();
-   EditableRegistry::RegisterEditable<Kicker>();
-   EditableRegistry::RegisterEditable<Light>();
-   EditableRegistry::RegisterEditable<LightSeq>();
-   EditableRegistry::RegisterEditable<Plunger>();
-   EditableRegistry::RegisterEditable<Primitive>();
-   EditableRegistry::RegisterEditable<Ramp>();
-   EditableRegistry::RegisterEditable<Rubber>();
-   EditableRegistry::RegisterEditable<Spinner>();
-   EditableRegistry::RegisterEditable<Surface>();
-   EditableRegistry::RegisterEditable<Textbox>();
-   EditableRegistry::RegisterEditable<Timer>();
-   EditableRegistry::RegisterEditable<Trigger>();
-   EditableRegistry::RegisterEditable<HitTarget>();
-   EditableRegistry::RegisterEditable<PartGroup>();
 }
 
 VPinballLib::~VPinballLib()
@@ -197,6 +176,7 @@ void VPinballLib::Init(VPinballEventCallback callback)
       g_pvp->SetLogicalNumberOfProcessors(SDL_GetNumLogicalCPUCores());
       g_pvp->m_settings.SetIniPath(g_pvp->GetPrefPath() + "VPinballX.ini");
       g_pvp->m_settings.Load(true);
+      g_pvp->m_settings.SetVersion_VPinball(string(VP_VERSION_STRING_DIGITS), false);
       g_pvp->m_settings.Save();
 
       Logger::GetInstance()->Init();
@@ -216,6 +196,30 @@ void VPinballLib::Init(VPinballEventCallback callback)
             PLOGE.printf("Unable to create user path: %s", PATH_USER.c_str());
          }
       }
+
+      EditableRegistry::RegisterEditable<Ball>();
+      EditableRegistry::RegisterEditable<Bumper>();
+      EditableRegistry::RegisterEditable<Decal>();
+      EditableRegistry::RegisterEditable<DispReel>();
+      EditableRegistry::RegisterEditable<Flasher>();
+      EditableRegistry::RegisterEditable<Flipper>();
+      EditableRegistry::RegisterEditable<Gate>();
+      EditableRegistry::RegisterEditable<Kicker>();
+      EditableRegistry::RegisterEditable<Light>();
+      EditableRegistry::RegisterEditable<LightSeq>();
+      EditableRegistry::RegisterEditable<Plunger>();
+      EditableRegistry::RegisterEditable<Primitive>();
+      EditableRegistry::RegisterEditable<Ramp>();
+      EditableRegistry::RegisterEditable<Rubber>();
+      EditableRegistry::RegisterEditable<Spinner>();
+      EditableRegistry::RegisterEditable<Surface>();
+      EditableRegistry::RegisterEditable<Textbox>();
+      EditableRegistry::RegisterEditable<Timer>();
+      EditableRegistry::RegisterEditable<Trigger>();
+      EditableRegistry::RegisterEditable<HitTarget>();
+      EditableRegistry::RegisterEditable<PartGroup>();
+
+      VPXPluginAPIImpl::GetInstance();
 
       VPinballLib& lib = VPinballLib::Instance();
       lib.LoadPlugins();
@@ -368,20 +372,20 @@ void VPinballLib::ResetLog()
 
 int VPinballLib::LoadValueInt(const string& sectionName, const string& key, int defaultValue)
 {
+   if (const auto existingId = Settings::GetRegistry().GetPropertyId(sectionName, key); existingId.has_value())
+   {
+      const auto* existingProp = Settings::GetRegistry().GetProperty(existingId.value());
+      if (existingProp->m_type == VPX::Properties::PropertyDef::Type::Enum ||
+          existingProp->m_type == VPX::Properties::PropertyDef::Type::Int ||
+          existingProp->m_type == VPX::Properties::PropertyDef::Type::Bool)
+         return g_pvp->m_settings.GetInt(existingId.value());
+
+      PLOGW << "LoadValueInt: property " << sectionName << "." << key << " exists but is not int-compatible type";
+      return defaultValue;
+   }
+
    const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>(sectionName, key, ""s, ""s, INT_MIN, INT_MAX, defaultValue));
    return g_pvp->m_settings.GetInt(propId);
-}
-
-float VPinballLib::LoadValueFloat(const string& sectionName, const string& key, float defaultValue)
-{
-   const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(sectionName, key, ""s, ""s, FLT_MIN, FLT_MAX, 0.f, defaultValue));
-   return g_pvp->m_settings.GetFloat(propId);
-}
-
-string VPinballLib::LoadValueString(const string& sectionName, const string& key, const string& defaultValue)
-{
-   const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>(sectionName, key, ""s, ""s, defaultValue));
-   return g_pvp->m_settings.GetString(propId);
 }
 
 void VPinballLib::SaveValueInt(const string& sectionName, const string& key, int value)
@@ -393,6 +397,22 @@ void VPinballLib::SaveValueInt(const string& sectionName, const string& key, int
    g_pvp->m_settings.Save();
 }
 
+float VPinballLib::LoadValueFloat(const string& sectionName, const string& key, float defaultValue)
+{
+   if (const auto existingId = Settings::GetRegistry().GetPropertyId(sectionName, key); existingId.has_value())
+   {
+      const auto* existingProp = Settings::GetRegistry().GetProperty(existingId.value());
+      if (existingProp->m_type == VPX::Properties::PropertyDef::Type::Float)
+         return g_pvp->m_settings.GetFloat(existingId.value());
+
+      PLOGW << "LoadValueFloat: property " << sectionName << "." << key << " exists but is not float type";
+      return defaultValue;
+   }
+
+   const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(sectionName, key, ""s, ""s, FLT_MIN, FLT_MAX, 0.f, defaultValue));
+   return g_pvp->m_settings.GetFloat(propId);
+}
+
 void VPinballLib::SaveValueFloat(const string& sectionName, const string& key, float value)
 {
    if (const auto existingId = Settings::GetRegistry().GetPropertyId(sectionName, key); existingId.has_value())
@@ -402,12 +422,53 @@ void VPinballLib::SaveValueFloat(const string& sectionName, const string& key, f
    g_pvp->m_settings.Save();
 }
 
+string VPinballLib::LoadValueString(const string& sectionName, const string& key, const string& defaultValue)
+{
+   if (const auto existingId = Settings::GetRegistry().GetPropertyId(sectionName, key); existingId.has_value())
+   {
+      const auto* existingProp = Settings::GetRegistry().GetProperty(existingId.value());
+      if (existingProp->m_type == VPX::Properties::PropertyDef::Type::String)
+         return g_pvp->m_settings.GetString(existingId.value());
+
+      PLOGW << "LoadValueString: property " << sectionName << "." << key << " exists but is not string type";
+      return defaultValue;
+   }
+
+   const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>(sectionName, key, ""s, ""s, defaultValue));
+   return g_pvp->m_settings.GetString(propId);
+}
+
 void VPinballLib::SaveValueString(const string& sectionName, const string& key, const string& value)
 {
    if (const auto existingId = Settings::GetRegistry().GetPropertyId(sectionName, key); existingId.has_value())
       g_pvp->m_settings.Set(existingId.value(), value, false);
    else
       g_pvp->m_settings.Set(Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>(sectionName, key, ""s, ""s, value)), value, false);
+   g_pvp->m_settings.Save();
+}
+
+bool VPinballLib::LoadValueBool(const string& sectionName, const string& key, bool defaultValue)
+{
+   if (const auto existingId = Settings::GetRegistry().GetPropertyId(sectionName, key); existingId.has_value())
+   {
+      const auto* existingProp = Settings::GetRegistry().GetProperty(existingId.value());
+      if (existingProp->m_type == VPX::Properties::PropertyDef::Type::Bool)
+         return g_pvp->m_settings.GetBool(existingId.value());
+
+      PLOGW << "LoadValueBool: property " << sectionName << "." << key << " exists but is not bool type";
+      return defaultValue;
+   }
+
+   const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>(sectionName, key, ""s, ""s, defaultValue));
+   return g_pvp->m_settings.GetBool(propId);
+}
+
+void VPinballLib::SaveValueBool(const string& sectionName, const string& key, bool value)
+{
+   if (const auto existingId = Settings::GetRegistry().GetPropertyId(sectionName, key); existingId.has_value())
+      g_pvp->m_settings.Set(existingId.value(), value, false);
+   else
+      g_pvp->m_settings.Set(Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>(sectionName, key, ""s, ""s, value)), value, false);
    g_pvp->m_settings.Save();
 }
 

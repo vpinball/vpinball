@@ -58,11 +58,13 @@ VPINBALLAPI void VPinballResetLog();
 // Settings
 
 VPINBALLAPI int VPinballLoadValueInt(const char* pSectionName, const char* pKey, int defaultValue);
-VPINBALLAPI float VPinballLoadValueFloat(const char* pSectionName, const char* pKey, float defaultValue);
-VPINBALLAPI const char* VPinballLoadValueString(const char* pSectionName, const char* pKey, const char* pDefaultValue);
 VPINBALLAPI void VPinballSaveValueInt(const char* pSectionName, const char* pKey, int value);
+VPINBALLAPI float VPinballLoadValueFloat(const char* pSectionName, const char* pKey, float defaultValue);
 VPINBALLAPI void VPinballSaveValueFloat(const char* pSectionName, const char* pKey, float value);
+VPINBALLAPI const char* VPinballLoadValueString(const char* pSectionName, const char* pKey, const char* pDefaultValue);
 VPINBALLAPI void VPinballSaveValueString(const char* pSectionName, const char* pKey, const char* pValue);
+VPINBALLAPI int VPinballLoadValueBool(const char* pSectionName, const char* pKey, int defaultValue);
+VPINBALLAPI void VPinballSaveValueBool(const char* pSectionName, const char* pKey, int value);
 VPINBALLAPI VPINBALL_STATUS VPinballResetIni();
 
 // Web Server

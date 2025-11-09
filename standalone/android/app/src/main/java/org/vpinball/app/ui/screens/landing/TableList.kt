@@ -55,7 +55,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.vpinball.app.Table
-import org.vpinball.app.TableListMode
+import org.vpinball.app.TableGridSize
+import org.vpinball.app.TableViewMode
 import org.vpinball.app.VPinballManager
 import org.vpinball.app.jni.VPinballLogLevel
 import org.vpinball.app.ui.screens.common.RoundedCard
@@ -69,7 +70,8 @@ import org.vpinball.app.util.updateImage
 @Composable
 fun TablesList(
     tables: List<Table>,
-    mode: TableListMode,
+    viewMode: TableViewMode,
+    gridSize: TableGridSize,
     onPlay: (table: Table) -> Unit,
     onRename: (table: Table, name: String) -> Unit,
     onViewScript: (table: Table) -> Unit,
@@ -115,8 +117,8 @@ fun TablesList(
             },
         )
 
-    when (mode) {
-        TableListMode.LIST -> {
+    when (viewMode) {
+        TableViewMode.LIST -> {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(0.dp), modifier = modifier, state = lazyListState) {
                 items(tables.size, key = { tables[it].uuid }) { index ->
                     val table = tables[index]
@@ -154,7 +156,7 @@ fun TablesList(
                 val maxHeight = availableHeightOverride ?: this.maxHeight
 
                 val layout =
-                    computeColumns(containerWidth = maxWidth - 32.dp, availableHeight = (maxHeight - 32.dp).coerceAtLeast(60.dp), mode = mode)
+                    computeColumns(containerWidth = maxWidth - 32.dp, availableHeight = (maxHeight - 32.dp).coerceAtLeast(60.dp), gridSize = gridSize)
 
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(layout.columns),
@@ -295,12 +297,11 @@ private const val MIN_READABLE_WIDTH = 120f
 private const val MIN_FLOOR_REGULAR = 48f
 private const val MIN_FLOOR_COMPACT = 40f
 
-fun heightFactor(mode: TableListMode): Float =
-    when (mode) {
-        TableListMode.SMALL -> 0.72f
-        TableListMode.MEDIUM -> 0.88f
-        TableListMode.LARGE -> 1.0f
-        TableListMode.LIST -> 1.0f
+fun heightFactor(gridSize: TableGridSize): Float =
+    when (gridSize) {
+        TableGridSize.SMALL -> 0.72f
+        TableGridSize.MEDIUM -> 0.88f
+        TableGridSize.LARGE -> 1.0f
     }
 
 data class TierResult(val small: Int, val medium: Int, val large: Int, val maxWidthFromHeight: Float)
@@ -334,16 +335,15 @@ fun computeTiers(containerWidth: Dp, availableHeight: Dp, gap: Dp, minFloor: Flo
     return TierResult(smallColumns, mediumColumns, largeColumns, baseCap)
 }
 
-fun cardWidthForColumns(columns: Int, containerWidth: Dp, heightCap: Dp, mode: TableListMode, gap: Dp): Dp {
+fun cardWidthForColumns(columns: Int, containerWidth: Dp, heightCap: Dp, gridSize: TableGridSize, gap: Dp): Dp {
     val widthPerColumn = (containerWidth - gap * max(columns - 1, 0)) / max(columns, 1)
     var width = if (widthPerColumn < heightCap) widthPerColumn else heightCap
     if (columns == 1) {
         val factor =
-            when (mode) {
-                TableListMode.SMALL -> 0.86f
-                TableListMode.MEDIUM -> 0.94f
-                TableListMode.LARGE -> 1.0f
-                TableListMode.LIST -> 0.94f
+            when (gridSize) {
+                TableGridSize.SMALL -> 0.86f
+                TableGridSize.MEDIUM -> 0.94f
+                TableGridSize.LARGE -> 1.0f
             }
         val maxWidth = containerWidth * factor
         width = if (width < maxWidth) width else maxWidth
@@ -351,7 +351,7 @@ fun cardWidthForColumns(columns: Int, containerWidth: Dp, heightCap: Dp, mode: T
     return width
 }
 
-fun computeColumns(containerWidth: Dp, availableHeight: Dp, mode: TableListMode): GridLayout {
+fun computeColumns(containerWidth: Dp, availableHeight: Dp, gridSize: TableGridSize): GridLayout {
     val baseGap = BASE_GAP.dp
     val gap = if (availableHeight < 420.dp) 8.dp else baseGap
     val minFloor = if (availableHeight < 420.dp) MIN_FLOOR_COMPACT else MIN_FLOOR_REGULAR
@@ -365,15 +365,14 @@ fun computeColumns(containerWidth: Dp, availableHeight: Dp, mode: TableListMode)
     if (effectiveLarge < 1) effectiveLarge = 1
 
     val columns =
-        when (mode) {
-            TableListMode.SMALL -> effectiveSmall
-            TableListMode.MEDIUM -> effectiveMedium
-            TableListMode.LARGE -> effectiveLarge
-            TableListMode.LIST -> effectiveMedium
+        when (gridSize) {
+            TableGridSize.SMALL -> effectiveSmall
+            TableGridSize.MEDIUM -> effectiveMedium
+            TableGridSize.LARGE -> effectiveLarge
         }
 
-    val heightCap = max(60f, availableHeight.value).dp * RATIO * heightFactor(mode)
-    val cardWidth = cardWidthForColumns(columns, containerWidth, heightCap, mode, gap)
+    val heightCap = max(60f, availableHeight.value).dp * RATIO * heightFactor(gridSize)
+    val cardWidth = cardWidthForColumns(columns, containerWidth, heightCap, gridSize, gap)
 
     return GridLayout(columns = columns, cardWidth = cardWidth, gap = gap)
 }

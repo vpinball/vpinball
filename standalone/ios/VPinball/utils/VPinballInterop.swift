@@ -17,6 +17,7 @@ enum VPinballStatus: CInt {
 enum VPinballSettingsSection: String {
     case standalone = "Standalone"
     case player = "Player"
+    case pluginDMDUtil = "Plugin.DMDUtil"
 }
 
 enum VPinballViewMode: CInt {
@@ -198,6 +199,9 @@ func VPinballLoadValueFloat(_ section: UnsafePointer<CChar>, _ pKey: UnsafePoint
 @_silgen_name("VPinballLoadValueString")
 func VPinballLoadValueString(_ section: UnsafePointer<CChar>, _ pKey: UnsafePointer<CChar>, _ defaultValue: UnsafePointer<CChar>) -> UnsafePointer<CChar>
 
+@_silgen_name("VPinballLoadValueBool")
+func VPinballLoadValueBool(_ section: UnsafePointer<CChar>, _ pKey: UnsafePointer<CChar>, _ defaultValue: CInt) -> CInt
+
 @_silgen_name("VPinballSaveValueInt")
 func VPinballSaveValueInt(_ section: UnsafePointer<CChar>, _ pKey: UnsafePointer<CChar>, _ value: CInt)
 
@@ -206,6 +210,9 @@ func VPinballSaveValueFloat(_ section: UnsafePointer<CChar>, _ pKey: UnsafePoint
 
 @_silgen_name("VPinballSaveValueString")
 func VPinballSaveValueString(_ section: UnsafePointer<CChar>, _ pKey: UnsafePointer<CChar>, _ value: UnsafePointer<CChar>)
+
+@_silgen_name("VPinballSaveValueBool")
+func VPinballSaveValueBool(_ section: UnsafePointer<CChar>, _ pKey: UnsafePointer<CChar>, _ value: CInt)
 
 @_silgen_name("VPinballResetIni")
 func VPinballResetIni() -> CInt

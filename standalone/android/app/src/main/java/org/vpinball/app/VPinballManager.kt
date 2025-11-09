@@ -267,7 +267,7 @@ object VPinballManager : KoinComponent {
         vpinballJNI.VPinballLoadValueFloat(section.value, key, defaultValue)
 
     fun loadValue(section: VPinballSettingsSection, key: String, defaultValue: Boolean): Boolean =
-        loadValue(section, key, if (defaultValue) 1 else 0) == 1
+        vpinballJNI.VPinballLoadValueBool(section.value, key, defaultValue)
 
     fun loadValue(section: VPinballSettingsSection, key: String, defaultValue: String): String =
         vpinballJNI.VPinballLoadValueString(section.value, key, defaultValue)
@@ -281,7 +281,7 @@ object VPinballManager : KoinComponent {
     }
 
     fun saveValue(section: VPinballSettingsSection, key: String, value: Boolean) {
-        saveValue(section, key, if (value) 1 else 0)
+        vpinballJNI.VPinballSaveValueBool(section.value, key, value)
     }
 
     fun saveValue(section: VPinballSettingsSection, key: String, value: String) {

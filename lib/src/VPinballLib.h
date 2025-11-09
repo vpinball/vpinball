@@ -65,11 +65,13 @@ public:
    void Log(VPINBALL_LOG_LEVEL level, const string& message);
    void ResetLog();
    int LoadValueInt(const string& sectionName, const string& key, int defaultValue);
-   float LoadValueFloat(const string& sectionName, const string& key, float defaultValue);
-   string LoadValueString(const string& sectionName, const string& key, const string& defaultValue);
    void SaveValueInt(const string& sectionName, const string& key, int value);
+   float LoadValueFloat(const string& sectionName, const string& key, float defaultValue);
    void SaveValueFloat(const string& sectionName, const string& key, float value);
+   string LoadValueString(const string& sectionName, const string& key, const string& defaultValue);
    void SaveValueString(const string& sectionName, const string& key, const string& value);
+   bool LoadValueBool(const string& sectionName, const string& key, bool defaultValue);
+   void SaveValueBool(const string& sectionName, const string& key, bool value);
    VPINBALL_STATUS ResetIni();
    void UpdateWebServer();
    VPINBALL_STATUS LoadTable(const string& tablePath);

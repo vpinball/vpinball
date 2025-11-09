@@ -13,7 +13,8 @@ struct MainView: View {
     @State var importTableURL: URL?
     @State var showImportTable = false
 
-    @State var tableListMode: TableListMode = .medium
+    @State var tableViewMode: TableViewMode = .grid
+    @State var tableGridSize: TableGridSize = .medium
     @State var tableListSortOrder: SortOrder = .forward
     @State var tableListSearchText = ""
     @State var tableListScrollToTable: Table?
@@ -47,7 +48,8 @@ struct MainView: View {
                 ZStack {
                     Color.lightBlack.ignoresSafeArea()
 
-                    TableListView(mode: tableListMode,
+                    TableListView(viewMode: tableViewMode,
+                                  gridSize: tableGridSize,
                                   sortOrder: tableListSortOrder,
                                   searchText: tableListSearchText,
                                   scrollToTable: $tableListScrollToTable)
@@ -114,19 +116,27 @@ struct MainView: View {
                     }
                     ToolbarItem(placement: .topBarTrailing) {
                         Menu(content: {
-                            Picker("Table List", selection: $tableListMode) {
-                                Label("Small",
-                                      systemImage: "rectangle.split.3x1")
-                                    .tag(TableListMode.small)
-                                Label("Medium",
-                                      systemImage: "rectangle.split.2x1")
-                                    .tag(TableListMode.medium)
-                                Label("Large",
-                                      systemImage: "rectangle.portrait")
-                                    .tag(TableListMode.large)
+                            Picker("View Mode", selection: $tableViewMode) {
+                                Label("Grid",
+                                      systemImage: "square.grid.3x3")
+                                    .tag(TableViewMode.grid)
                                 Label("List",
                                       systemImage: "list.bullet")
-                                    .tag(TableListMode.list)
+                                    .tag(TableViewMode.list)
+                            }
+
+                            if tableViewMode == .grid {
+                                Picker("Grid Size", selection: $tableGridSize) {
+                                    Label("Small",
+                                          systemImage: "rectangle.split.3x1")
+                                        .tag(TableGridSize.small)
+                                    Label("Medium",
+                                          systemImage: "rectangle.split.2x1")
+                                        .tag(TableGridSize.medium)
+                                    Label("Large",
+                                          systemImage: "rectangle.portrait")
+                                        .tag(TableGridSize.large)
+                                }
                             }
 
                             Picker("Sort Order", selection: $tableListSortOrder) {
@@ -286,8 +296,11 @@ struct MainView: View {
         //         handleShowConfirmImportFile(url: url)
         //     }
         // }
-        .onChange(of: tableListMode) {
-            handleTableListMode()
+        .onChange(of: tableViewMode) {
+            handleTableViewMode()
+        }
+        .onChange(of: tableGridSize) {
+            handleTableGridSize()
         }
         .onChange(of: tableListSortOrder) {
             handleTableListSortOrder()
@@ -311,9 +324,13 @@ struct MainView: View {
     }
 
     func handleAppear() {
-        tableListMode = TableListMode(rawValue: vpinballManager.loadValue(.standalone,
-                                                                          "TableListMode",
-                                                                          TableListMode.medium.rawValue)) ?? .medium
+        tableViewMode = TableViewMode(rawValue: vpinballManager.loadValue(.standalone,
+                                                                          "TableViewMode",
+                                                                          TableViewMode.grid.rawValue)) ?? .grid
+
+        tableGridSize = TableGridSize(rawValue: vpinballManager.loadValue(.standalone,
+                                                                          "TableGridSize",
+                                                                          TableGridSize.medium.rawValue)) ?? .medium
 
         tableListSortOrder = vpinballManager.loadValue(.standalone,
                                                        "TableListSort",
@@ -349,8 +366,12 @@ struct MainView: View {
         showSettings = true
     }
 
-    func handleTableListMode() {
-        vpinballManager.saveValue(.standalone, "TableListMode", tableListMode.rawValue)
+    func handleTableViewMode() {
+        vpinballManager.saveValue(.standalone, "TableViewMode", tableViewMode.rawValue)
+    }
+
+    func handleTableGridSize() {
+        vpinballManager.saveValue(.standalone, "TableGridSize", tableGridSize.rawValue)
     }
 
     func handleTableListSortOrder() {

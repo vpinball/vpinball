@@ -1363,10 +1363,16 @@ PropBool(PluginPinMAME, Enable, "Enable"s, "Enable PinMAME plugin"s, g_isStandal
 PropBool(PluginScoreView, Enable, "Enable"s, "Enable ScoreView player plugin"s, g_isStandalone);
 PropBool(PluginWMP, Enable, "Enable"s, "Enable WMP plugin"s, g_isStandalone);
 PropBool(PluginPUP, Enable, "Enable"s, "Enable PinUp player plugin"s, g_isMobile);
+PropBool(PluginDMDUtil, DMDServer, "DMD Server"s, ""s, false);
+PropString(PluginDMDUtil, DMDServerAddr, "DMD Server Address"s, ""s, "localhost"s);
+PropInt(PluginDMDUtil, DMDServerPort, "DMD Server Port"s, ""s, 0, 65535, 6789);
+PropBool(PluginDMDUtil, ZeDMDWiFi, "ZeDMD WiFi"s, ""s, false);
+PropString(PluginDMDUtil, ZeDMDWiFiAddr, "ZeDMD WiFi Address"s, ""s, "zedmd-wifi.local"s);
 
 // Standalone
 PropEnumWithMin(Standalone, RenderingModeOverride, "Override rendering mode"s, ""s, int, -1, g_isMobile ? 2 : -1, "Default"s, "2D"s, "Stereo 3D"s, "VR"s);
 PropBool(Standalone, Haptics, "Haptics"s, ""s, g_isMobile);
+PropBool(Standalone, ResetLogOnPlay, "Reset Log on Play"s, ""s, g_isMobile);
 PropString(Standalone, VPRegPath, "VPRegPath"s, ""s, ""s);
 
 // Editor settings

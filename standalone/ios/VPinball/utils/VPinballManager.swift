@@ -156,7 +156,7 @@ class VPinballManager {
     }
 
     func loadValue(_ section: VPinballSettingsSection, _ key: String, _ defaultValue: Bool) -> Bool {
-        return loadValue(section, key, defaultValue ? 1 : 0) == 1
+        return VPinballLoadValueBool(section.rawValue.cstring, key.cstring, defaultValue ? 1 : 0) != 0
     }
 
     func loadValue(_ section: VPinballSettingsSection, _ key: String, _ defaultValue: String) -> String {
@@ -176,7 +176,7 @@ class VPinballManager {
     }
 
     func saveValue(_ section: VPinballSettingsSection, _ key: String, _ value: Bool) {
-        saveValue(section, key, value ? 1 : 0)
+        VPinballSaveValueBool(section.rawValue.cstring, key.cstring, value ? 1 : 0)
     }
 
     func saveValue(_ section: VPinballSettingsSection, _ key: String, _ value: String) {
