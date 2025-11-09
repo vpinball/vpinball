@@ -60,15 +60,42 @@ void SensorSetupPage::BuildPage()
          i++;
       }
    }
+
+   vector<string> sensorTypeNames;
+   SensorMapping::Type defaultSensorType = SensorMapping::Type::Position;
+   for (int i = 0; i < 3; i++)
+      if (m_item.m_physicsSensorTypeMask & (1 << i))
+         switch (i)
+         {
+         case 0: sensorTypeNames.emplace_back("Position"s); defaultSensorType = SensorMapping::Type::Position; break;
+         case 1: sensorTypeNames.emplace_back("Velocity"s); defaultSensorType = SensorMapping::Type::Velocity; break;
+         case 2: sensorTypeNames.emplace_back("Acceleration"s); defaultSensorType = SensorMapping::Type::Acceleration; break;
+         }
+   auto findTypeIndex = [&](SensorMapping::Type type)
+   {
+      for (size_t i = 0; i < sensorTypeNames.size(); i++)
+      {
+         if ((type == SensorMapping::Type::Position && sensorTypeNames[i] == "Position"s) //
+            || (type == SensorMapping::Type::Velocity && sensorTypeNames[i] == "Velocity"s) //
+            || (type == SensorMapping::Type::Acceleration && sensorTypeNames[i] == "Acceleration"s))
+         {
+            return static_cast<int>(i);
+         }
+      }
+      return 0;
+   };
+   const int sensorType = findTypeIndex(liveMapping.GetType());
+   const int storedSensorType = storedMapping ? findTypeIndex(storedMapping->GetType()) : sensorType;
+
    AddItem(std::make_unique<InGameUIItem>(
-      VPX::Properties::EnumPropertyDef(""s, ""s, "Hardware Sensor"s, ""s, 0, liveAxis, axisNames), //
+      VPX::Properties::EnumPropertyDef(""s, ""s, sensorTypeNames.size() > 1 ? "Hardware Sensor"s : (sensorTypeNames[0] + " Sensor"s), ""s, 0, liveAxis, axisNames), //
       [liveAxis]() { return liveAxis; }, // Live
       [liveAxis, storedAxis]() { return storedAxis >= 0 ? storedAxis : liveAxis; }, // Stored
       [this](int, int v)
       {
          const uint16_t deviceId = m_sensors[v] >> 16;
          const uint16_t axisId = m_sensors[v] & 0xFFFF;
-         SensorMapping mapping(nullptr, nullptr, deviceId, axisId, SensorMapping::Type::Velocity);
+         SensorMapping mapping(nullptr, nullptr, deviceId, axisId, m_item.m_physicsSensor->GetMapping().GetType());
          mapping.SetDeadZone(m_item.m_physicsSensor->GetMapping().GetDeadZone());
          mapping.SetScale(m_item.m_physicsSensor->GetMapping().GetScale());
          mapping.SetLimit(m_item.m_physicsSensor->GetMapping().GetLimit());
@@ -78,31 +105,21 @@ void SensorSetupPage::BuildPage()
       [](Settings&) { /* Fully overwritten in save */ }, // Reset
       [this](int, Settings& settings, bool) { m_item.m_physicsSensor->SaveMapping(settings); })); // Save
 
-   if (m_item.m_physicsSensorTypeMask != 1 && m_item.m_physicsSensorTypeMask != 2 && m_item.m_physicsSensorTypeMask != 4)
+   // If the mapping allow more than one type, allow to change it, otherwise, wanr the user it's fixed
+   if (sensorTypeNames.size() > 1)
    {
-      vector<string> names;
-      for (int i = 0; i < 3; i++)
-         if (m_item.m_physicsSensorTypeMask & (1 << i))
-            switch (i)
-            {
-            case 0: names.emplace_back("Position"s); break;
-            case 1: names.emplace_back("Velocity"s); break;
-            case 2: names.emplace_back("Acceleration"s); break;
-            }
-      const int sensorType = liveMapping.GetType() == SensorMapping::Type::Position ? 0 : liveMapping.GetType() == SensorMapping::Type::Velocity ? 1 : 2;
-      const int storedSensorType = storedMapping ? storedMapping->GetType() == SensorMapping::Type::Position ? 0
-            : storedMapping->GetType() == SensorMapping::Type::Velocity                                      ? 1
-                                                                                                             : 2
-                                                 : sensorType;
       AddItem(std::make_unique<InGameUIItem>(
-         VPX::Properties::EnumPropertyDef(""s, ""s, "Sensor Type"s, ""s, 0, sensorType, names), //
+         VPX::Properties::EnumPropertyDef(""s, ""s, "Sensor Type"s, ""s, 0, sensorType, sensorTypeNames), //
          [sensorType]() { return sensorType; }, // Live
          [storedSensorType]() { return storedSensorType; }, // Stored
-         [this](int, int v)
+         [this, sensorTypeNames](int, int v)
          {
             const uint16_t deviceId = m_item.m_physicsSensor->GetMapping().GetDeviceId();
             const uint16_t axisId = m_item.m_physicsSensor->GetMapping().GetDeviceId();
-            SensorMapping mapping(nullptr, nullptr, deviceId, axisId, v == 0 ? SensorMapping::Type::Position : v == 1 ? SensorMapping::Type::Velocity : SensorMapping::Type::Acceleration);
+            SensorMapping mapping(nullptr, nullptr, deviceId, axisId,
+               sensorTypeNames[v] == "Position"s ? SensorMapping::Type::Position
+                  : sensorTypeNames[v] == "Velocity"s ? SensorMapping::Type::Velocity
+                                     : SensorMapping::Type::Acceleration);
             mapping.SetDeadZone(m_item.m_physicsSensor->GetMapping().GetDeadZone());
             mapping.SetScale(m_item.m_physicsSensor->GetMapping().GetScale());
             mapping.SetLimit(m_item.m_physicsSensor->GetMapping().GetLimit());
