@@ -553,6 +553,8 @@ void LiveUI::Update()
       {
          if (const std::unique_ptr<MeshBuffer> &meshBuffer = m_meshBuffers[n]; meshBuffer == nullptr || meshBuffer->m_ib->m_count < numIndices || meshBuffer->m_vb->m_count < numVertices)
          {
+            if (meshBuffer)
+               m_rd->AddEndOfFrameCmd([mb = m_meshBuffers[n].release()]() { delete mb; });
             IndexBuffer *ib = new IndexBuffer(m_rd, numIndices, true, IndexBuffer::Format::FMT_INDEX32);
             VertexBuffer *vb = new VertexBuffer(m_rd, numVertices, nullptr, true);
             m_meshBuffers[n] = std::make_unique<MeshBuffer>(vb, ib);
