@@ -159,8 +159,10 @@ Window::Window(const string& title, const Settings& settings, VPXWindowId window
    // Create the window
    assert(m_width > 0 && m_width <= m_screenwidth);
    assert(m_height > 0 && m_height <= m_screenheight);
-   assert(selectedDisplay.left <= wnd_x && wnd_x + m_width <= selectedDisplay.left + selectedDisplay.width);
-   assert(selectedDisplay.top <= wnd_y && wnd_y + m_height <= selectedDisplay.top + selectedDisplay.height);
+   assert(selectedDisplay.left <= wnd_x);
+   assert(selectedDisplay.top <= wnd_y);
+   assert((wnd_x + m_width) <= (selectedDisplay.left + (m_fullscreen ? fullscreenDisplayMode->w : selectedDisplay.width))); // The fullscreen mode may have a different orientation than the display on mobile devices
+   assert((wnd_y + m_height) <= (selectedDisplay.top + (m_fullscreen ? fullscreenDisplayMode->h : selectedDisplay.height)));
    if (m_refreshrate <= 0)
    {
       PLOGE << "Failed to get display refresh rate. VPX will use a 60Hz default which may be wrong and cause bad video synchronization.";
