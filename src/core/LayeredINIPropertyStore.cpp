@@ -23,23 +23,23 @@ LayeredINIPropertyStore::LayeredINIPropertyStore(LayeredINIPropertyStore& parent
 }
 
 
-bool LayeredINIPropertyStore::Load(const string& path)
+bool LayeredINIPropertyStore::Load()
 {
-   m_path = path;
    m_modified = false;
    m_intValues.clear();
    m_floatValues.clear();
    m_stringValues.clear();
-   mINI::INIFile file(path);
+   mINI::INIFile file(m_path);
    if (file.read(m_ini))
    {
-      PLOGI << "Settings file was loaded from '" << path << '\'';
+      PLOGI << "Settings file was loaded from '" << m_path << '\'';
       for (PropertyRegistry::PropId id : m_registry.get().GetPropertyIds())
          LoadFromINI(id);
       return true;
    }
    else
    {
+      PLOGE << "Failed to load settings from '" << m_path << '\'';
       return false;
    }
 }
@@ -165,6 +165,20 @@ void LayeredINIPropertyStore::Save()
          m_ini[prop->m_groupId][prop->m_propId].clear();
    }
 
+   // Remove empty sections
+   bool changed = true;
+   while (changed)
+   {
+      changed = false;
+      for (auto& [k, v] : m_ini)
+         if (v.size() == 0)
+         {
+            changed = true;
+            m_ini.remove(k);
+            break;
+         }
+   }
+
    // Save to file
    size_t size = 0;
    for (const auto& [key, value] : m_ini)
@@ -172,7 +186,10 @@ void LayeredINIPropertyStore::Save()
    if (size > 0)
    {
       mINI::INIFile file(m_path);
-      file.write(m_ini, true);
+      if (!file.write(m_ini, true))
+      {
+         PLOGE << "Failed to save settings file to '" << m_path.c_str() << '\'';
+      }
    }
    else if (FileExists(m_path))
    {

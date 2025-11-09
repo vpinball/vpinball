@@ -29,7 +29,9 @@ public:
    LayeredINIPropertyStore(LayeredINIPropertyStore& parent);
    ~LayeredINIPropertyStore() override = default;
 
-   bool Load(const string& path);
+   void SetIniPath(const string& path) { m_path = path; m_modified = true; }
+   const string& GetIniPath() const { return m_path; }
+   bool Load();
    void Load(const mINI::INIStructure& ini);
    void Load(const LayeredINIPropertyStore& store);
    void Save();
