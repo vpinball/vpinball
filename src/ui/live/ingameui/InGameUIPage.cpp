@@ -346,7 +346,7 @@ void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
          auto prop = dynamic_cast<const VPX::Properties::IntPropertyDef*>(item->m_property.get());
          if (isInitialPress)
             m_adjustedValue = static_cast<float>(item->GetIntValue()) + direction;
-         else
+         else if (elapsedSincePress > 100)
             m_adjustedValue += direction * speedFactor * elapsed * static_cast<float>(prop->m_max - prop->m_min) / 32.f;
          item->SetValue(prop->GetClamped(static_cast<int>(round(m_adjustedValue))));
          break;
