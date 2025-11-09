@@ -942,12 +942,6 @@ BOOL VPApp::InitInstance()
 {
    m_vpinball.Create(nullptr);
 
-   #ifdef __STANDALONE__
-      #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV)))
-         copy_folder("assets"s, m_vpinball.GetPrefPath());
-      #endif
-   #endif
-
    defaultFileNameSearch[4] = PATH_USER;
    defaultFileNameSearch[5] = PATH_SCRIPTS;
    defaultFileNameSearch[6] = PATH_TABLES;

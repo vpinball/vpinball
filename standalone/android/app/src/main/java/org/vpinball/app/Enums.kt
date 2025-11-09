@@ -46,14 +46,22 @@ enum class Credit(val displayName: String, val authors: String? = null, val link
     OTHER("Other third party libraries", link = Link.THIRDPARTY),
 }
 
-enum class TableListMode(val value: Int) {
-    SMALL(0),
-    MEDIUM(1),
-    LARGE(2),
-    LIST(3);
+enum class TableViewMode(val value: Int) {
+    GRID(0),
+    LIST(1);
 
     companion object {
-        fun fromInt(value: Int): TableListMode = entries.firstOrNull { it.value == value } ?: MEDIUM
+        fun fromInt(value: Int): TableViewMode = entries.firstOrNull { it.value == value } ?: GRID
+    }
+}
+
+enum class TableGridSize(val value: Int) {
+    SMALL(0),
+    MEDIUM(1),
+    LARGE(2);
+
+    companion object {
+        fun fromInt(value: Int): TableGridSize = entries.firstOrNull { it.value == value } ?: MEDIUM
     }
 }
 

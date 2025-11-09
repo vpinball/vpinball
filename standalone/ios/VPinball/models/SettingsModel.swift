@@ -38,17 +38,17 @@ class SettingsModel: ObservableObject {
 
         // External DMD
 
-        if vpinballManager.loadValue(.standalone, "DMDServer", false) {
+        if vpinballManager.loadValue(.pluginDMDUtil, "DMDServer", false) {
             externalDMD = .dmdServer
-        } else if vpinballManager.loadValue(.standalone, "ZeDMDWiFi", false) {
+        } else if vpinballManager.loadValue(.pluginDMDUtil, "ZeDMDWiFi", false) {
             externalDMD = .zedmdWiFi
         } else {
             externalDMD = .none
         }
 
-        dmdServerAddr = vpinballManager.loadValue(.standalone, "DMDServerAddr", "0.0.0.0")
-        dmdServerPort = vpinballManager.loadValue(.standalone, "DMDServerPort", 6789)
-        zedmdWiFiAddr = vpinballManager.loadValue(.standalone, "ZeDMDWiFiAddr", "zedmd-wifi.local")
+        dmdServerAddr = vpinballManager.loadValue(.pluginDMDUtil, "DMDServerAddr", "0.0.0.0")
+        dmdServerPort = vpinballManager.loadValue(.pluginDMDUtil, "DMDServerPort", 6789)
+        zedmdWiFiAddr = vpinballManager.loadValue(.pluginDMDUtil, "ZeDMDWiFiAddr", "zedmd-wifi.local")
 
         // Display
 

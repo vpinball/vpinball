@@ -22,7 +22,8 @@ enum class VPinballStatus(val value: Int) {
 
 enum class VPinballSettingsSection(val value: String) {
     STANDALONE("Standalone"),
-    PLAYER("Player");
+    PLAYER("Player"),
+    PLUGIN_DMDUTIL("Plugin.DMDUtil");
 
     companion object {
         @JvmStatic

@@ -14,6 +14,7 @@ import org.vpinball.app.jni.VPinballExternalDMD
 import org.vpinball.app.jni.VPinballGfxBackend
 import org.vpinball.app.jni.VPinballMaxTexDimension
 import org.vpinball.app.jni.VPinballSettingsSection.PLAYER
+import org.vpinball.app.jni.VPinballSettingsSection.PLUGIN_DMDUTIL
 import org.vpinball.app.jni.VPinballSettingsSection.STANDALONE
 import org.vpinball.app.jni.VPinballStorageMode
 import org.vpinball.app.jni.VPinballViewMode
@@ -113,16 +114,16 @@ class SettingsViewModel : ViewModel() {
 
         externalDMD =
             when {
-                VPinballManager.loadValue(STANDALONE, "DMDServer", false) -> VPinballExternalDMD.DMD_SERVER
+                VPinballManager.loadValue(PLUGIN_DMDUTIL, "DMDServer", false) -> VPinballExternalDMD.DMD_SERVER
 
-                VPinballManager.loadValue(STANDALONE, "ZeDMDWiFi", false) -> VPinballExternalDMD.ZEDMD_WIFI
+                VPinballManager.loadValue(PLUGIN_DMDUTIL, "ZeDMDWiFi", false) -> VPinballExternalDMD.ZEDMD_WIFI
 
                 else -> VPinballExternalDMD.NONE
             }
 
-        dmdServerAddr = VPinballManager.loadValue(STANDALONE, "DMDServerAddr", "0.0.0.0")
-        dmdServerPort = VPinballManager.loadValue(STANDALONE, "DMDServerPort", 6789)
-        zedmdWiFiAddr = VPinballManager.loadValue(STANDALONE, "ZeDMDWiFiAddr", "zedmd-wifi.local")
+        dmdServerAddr = VPinballManager.loadValue(PLUGIN_DMDUTIL, "DMDServerAddr", "0.0.0.0")
+        dmdServerPort = VPinballManager.loadValue(PLUGIN_DMDUTIL, "DMDServerPort", 6789)
+        zedmdWiFiAddr = VPinballManager.loadValue(PLUGIN_DMDUTIL, "ZeDMDWiFiAddr", "zedmd-wifi.local")
 
         // Web Server
 
@@ -200,23 +201,23 @@ class SettingsViewModel : ViewModel() {
 
     fun handleExternalDMD(value: VPinballExternalDMD) {
         externalDMD = value
-        VPinballManager.saveValue(STANDALONE, "DMDServer", externalDMD == VPinballExternalDMD.DMD_SERVER)
-        VPinballManager.saveValue(STANDALONE, "ZeDMDWiFi", externalDMD == VPinballExternalDMD.ZEDMD_WIFI)
+        VPinballManager.saveValue(PLUGIN_DMDUTIL, "DMDServer", externalDMD == VPinballExternalDMD.DMD_SERVER)
+        VPinballManager.saveValue(PLUGIN_DMDUTIL, "ZeDMDWiFi", externalDMD == VPinballExternalDMD.ZEDMD_WIFI)
     }
 
     fun handleDMDServerAddr(value: String) {
         dmdServerAddr = value
-        VPinballManager.saveValue(STANDALONE, "DMDServerAddr", dmdServerAddr)
+        VPinballManager.saveValue(PLUGIN_DMDUTIL, "DMDServerAddr", dmdServerAddr)
     }
 
     fun handleDMDServerPort(value: Int) {
         dmdServerPort = value
-        VPinballManager.saveValue(STANDALONE, "DMDServerPort", dmdServerPort)
+        VPinballManager.saveValue(PLUGIN_DMDUTIL, "DMDServerPort", dmdServerPort)
     }
 
     fun handleZeDMDWiFiAddr(value: String) {
         zedmdWiFiAddr = value
-        VPinballManager.saveValue(STANDALONE, "ZeDMDWiFiAddr", zedmdWiFiAddr)
+        VPinballManager.saveValue(PLUGIN_DMDUTIL, "ZeDMDWiFiAddr", zedmdWiFiAddr)
     }
 
     // Web Server

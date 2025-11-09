@@ -8,9 +8,11 @@ public class VPinballJNI {
     public native int VPinballLoadValueInt(String sectionName, String key, int defaultValue);
     public native float VPinballLoadValueFloat(String sectionName, String key, float defaultValue);
     public native String VPinballLoadValueString(String sectionName, String key, String defaultValue);
+    public native boolean VPinballLoadValueBool(String sectionName, String key, boolean defaultValue);
     public native void VPinballSaveValueInt(String sectionName, String key, int value);
     public native void VPinballSaveValueFloat(String sectionName, String key, float value);
     public native void VPinballSaveValueString(String sectionName, String key, String value);
+    public native void VPinballSaveValueBool(String sectionName, String key, boolean value);
     public native int VPinballResetIni();
     public native void VPinballUpdateWebServer();
     public native int VPinballLoadTable(String path);

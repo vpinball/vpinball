@@ -68,8 +68,8 @@ import org.koin.androidx.compose.koinViewModel
 import org.vpinball.app.R
 import org.vpinball.app.SAFFileSystem
 import org.vpinball.app.Table
-import org.vpinball.app.TableListMode
 import org.vpinball.app.TableManager
+import org.vpinball.app.TableViewMode
 import org.vpinball.app.VPinballManager
 import org.vpinball.app.ui.screens.common.ProgressOverlay
 import org.vpinball.app.ui.screens.settings.SettingsModalBottomSheet
@@ -99,7 +99,8 @@ fun LandingScreen(
 
     var showSettingsDialog by remember { mutableStateOf(false) }
 
-    val tableListMode by viewModel.tableListMode.collectAsStateWithLifecycle()
+    val tableViewMode by viewModel.tableViewMode.collectAsStateWithLifecycle()
+    val tableGridSize by viewModel.tableGridSize.collectAsStateWithLifecycle()
     var showTableListModeMenu by remember { mutableStateOf(false) }
 
     var showImportTableMenu by remember { mutableStateOf(false) }
@@ -128,8 +129,8 @@ fun LandingScreen(
 
     val totalOffset by remember {
         derivedStateOf {
-            when (tableListMode) {
-                TableListMode.LIST -> lazyListState.run { (firstVisibleItemIndex * 100) + firstVisibleItemScrollOffset }
+            when (tableViewMode) {
+                TableViewMode.LIST -> lazyListState.run { (firstVisibleItemIndex * 100) + firstVisibleItemScrollOffset }
                 else -> lazyGridState.run { (firstVisibleItemIndex * 100) + firstVisibleItemScrollOffset }
             }.toFloat()
         }
@@ -189,7 +190,7 @@ fun LandingScreen(
         if (table != null) {
             val idx = unfilteredTables.indexOfFirst { it.uuid == table.uuid }
             if (idx >= 0) {
-                if (tableListMode == TableListMode.LIST) {
+                if (tableViewMode == TableViewMode.LIST) {
                     lazyListState.animateScrollToItem(idx)
                 } else {
                     lazyGridState.animateScrollToItem(idx)
@@ -342,7 +343,8 @@ fun LandingScreen(
                 } else {
                     TablesList(
                         tables = filteredTables,
-                        mode = tableListMode,
+                        viewMode = tableViewMode,
+                        gridSize = tableGridSize,
                         onPlay = { table ->
                             focusManager.clearFocus()
                             VPinballManager.play(table)

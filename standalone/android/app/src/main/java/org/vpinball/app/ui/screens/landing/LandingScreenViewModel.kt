@@ -13,9 +13,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.vpinball.app.Table
-import org.vpinball.app.TableListMode
+import org.vpinball.app.TableGridSize
 import org.vpinball.app.TableListSortOrder
 import org.vpinball.app.TableManager
+import org.vpinball.app.TableViewMode
 import org.vpinball.app.VPinballManager
 import org.vpinball.app.jni.VPinballSettingsSection.STANDALONE
 
@@ -65,8 +66,11 @@ class LandingScreenViewModel : ViewModel() {
     private val _filteredTables = MutableStateFlow(emptyList<Table>())
     val filteredTables: StateFlow<List<Table>> = _filteredTables
 
-    private val _tableListMode = MutableStateFlow(TableListMode.MEDIUM)
-    val tableListMode: StateFlow<TableListMode> = _tableListMode
+    private val _tableViewMode = MutableStateFlow(TableViewMode.GRID)
+    val tableViewMode: StateFlow<TableViewMode> = _tableViewMode
+
+    private val _tableGridSize = MutableStateFlow(TableGridSize.MEDIUM)
+    val tableGridSize: StateFlow<TableGridSize> = _tableGridSize
 
     private val _tableListSortOrder = MutableStateFlow(TableListSortOrder.A_Z)
     val tableListSortOrder: StateFlow<TableListSortOrder> = _tableListSortOrder
@@ -99,9 +103,14 @@ class LandingScreenViewModel : ViewModel() {
         viewModelScope.launch { removeTableTrigger.collect { table -> removeTable(table) } }
     }
 
-    fun setTableListMode(mode: TableListMode) {
-        _tableListMode.update { mode }
-        VPinballManager.saveValue(STANDALONE, "TableListMode", mode.value)
+    fun setTableViewMode(mode: TableViewMode) {
+        _tableViewMode.update { mode }
+        VPinballManager.saveValue(STANDALONE, "TableViewMode", mode.value)
+    }
+
+    fun setTableGridSize(size: TableGridSize) {
+        _tableGridSize.update { size }
+        VPinballManager.saveValue(STANDALONE, "TableGridSize", size.value)
     }
 
     fun setTableSortOrder(order: TableListSortOrder) {
@@ -198,7 +207,8 @@ class LandingScreenViewModel : ViewModel() {
     }
 
     private fun loadSettings() {
-        _tableListMode.value = TableListMode.fromInt(VPinballManager.loadValue(STANDALONE, "TableListMode", TableListMode.MEDIUM.value))
+        _tableViewMode.value = TableViewMode.fromInt(VPinballManager.loadValue(STANDALONE, "TableViewMode", TableViewMode.GRID.value))
+        _tableGridSize.value = TableGridSize.fromInt(VPinballManager.loadValue(STANDALONE, "TableGridSize", TableGridSize.MEDIUM.value))
         _tableListSortOrder.value = TableListSortOrder.fromInt(VPinballManager.loadValue(STANDALONE, "TableListSort", TableListSortOrder.A_Z.value))
     }
 }

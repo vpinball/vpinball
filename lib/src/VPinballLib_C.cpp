@@ -61,12 +61,28 @@ VPINBALLAPI int VPinballLoadValueInt(const char* pSectionName, const char* pKey,
    return VPinballLib::VPinballLib::Instance().LoadValueInt(pSectionName, pKey, defaultValue);
 }
 
+VPINBALLAPI void VPinballSaveValueInt(const char* pSectionName, const char* pKey, int value)
+{
+   if (pSectionName == nullptr || pKey == nullptr)
+      return;
+
+   VPinballLib::VPinballLib::Instance().SaveValueInt(pSectionName, pKey, value);
+}
+
 VPINBALLAPI float VPinballLoadValueFloat(const char* pSectionName, const char* pKey, float defaultValue)
 {
    if (pSectionName == nullptr || pKey == nullptr)
       return defaultValue;
 
    return VPinballLib::VPinballLib::Instance().LoadValueFloat(pSectionName, pKey, defaultValue);
+}
+
+VPINBALLAPI void VPinballSaveValueFloat(const char* pSectionName, const char* pKey, float value)
+{
+   if (pSectionName == nullptr || pKey == nullptr)
+      return;
+
+   VPinballLib::VPinballLib::Instance().SaveValueFloat(pSectionName, pKey, value);
 }
 
 VPINBALLAPI const char* VPinballLoadValueString(const char* pSectionName, const char* pKey, const char* pDefaultValue)
@@ -79,28 +95,28 @@ VPINBALLAPI const char* VPinballLoadValueString(const char* pSectionName, const 
    return value.c_str();
 }
 
-VPINBALLAPI void VPinballSaveValueInt(const char* pSectionName, const char* pKey, int value)
-{
-   if (pSectionName == nullptr || pKey == nullptr)
-      return;
-
-   VPinballLib::VPinballLib::Instance().SaveValueInt(pSectionName, pKey, value);
-}
-
-VPINBALLAPI void VPinballSaveValueFloat(const char* pSectionName, const char* pKey, float value)
-{
-   if (pSectionName == nullptr || pKey == nullptr)
-      return;
-
-   VPinballLib::VPinballLib::Instance().SaveValueFloat(pSectionName, pKey, value);
-}
-
 VPINBALLAPI void VPinballSaveValueString(const char* pSectionName, const char* pKey, const char* pValue)
 {
    if (pSectionName == nullptr || pKey == nullptr || pValue == nullptr)
       return;
 
    VPinballLib::VPinballLib::Instance().SaveValueString(pSectionName, pKey, pValue);
+}
+
+VPINBALLAPI int VPinballLoadValueBool(const char* pSectionName, const char* pKey, int defaultValue)
+{
+   if (pSectionName == nullptr || pKey == nullptr)
+      return defaultValue;
+
+   return VPinballLib::VPinballLib::Instance().LoadValueBool(pSectionName, pKey, defaultValue != 0) ? 1 : 0;
+}
+
+VPINBALLAPI void VPinballSaveValueBool(const char* pSectionName, const char* pKey, int value)
+{
+   if (pSectionName == nullptr || pKey == nullptr)
+      return;
+
+   VPinballLib::VPinballLib::Instance().SaveValueBool(pSectionName, pKey, value != 0);
 }
 
 VPINBALLAPI VPINBALL_STATUS VPinballResetIni()

@@ -20,62 +20,29 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.vpinball.app.R
-import org.vpinball.app.TableListMode
+import org.vpinball.app.TableGridSize
 import org.vpinball.app.TableListSortOrder
+import org.vpinball.app.TableViewMode
 import org.vpinball.app.ui.theme.VPinballTheme
 
 @Composable
 fun TableListModeDropdownMenu(expanded: Boolean, onDismissRequest: () -> Unit, viewModel: LandingScreenViewModel) {
-    val tableListMode = viewModel.tableListMode.collectAsState().value
+    val tableViewMode = viewModel.tableViewMode.collectAsState().value
+    val tableGridSize = viewModel.tableGridSize.collectAsState().value
     val tableListSortOrder = viewModel.tableListSortOrder.collectAsState().value
 
     DropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest) {
         DropdownMenuItem(
             text = {
                 Text(
-                    text = "Small",
+                    text = "Grid",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f),
                 )
             },
             leadingIcon = {
-                if (tableListMode == TableListMode.SMALL) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.img_sf_checkmark),
-                        contentDescription = "Selected",
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(14.dp),
-                    )
-                }
-            },
-            trailingIcon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.img_sf_rectangle_split_3x1),
-                    contentDescription = "Small",
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(20.dp),
-                )
-            },
-            onClick = {
-                viewModel.setTableListMode(TableListMode.SMALL)
-                onDismissRequest()
-            },
-        )
-
-        HorizontalDivider()
-
-        DropdownMenuItem(
-            text = {
-                Text(
-                    text = "Medium",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.weight(1f),
-                )
-            },
-            leadingIcon = {
-                if (tableListMode == TableListMode.MEDIUM) {
+                if (tableViewMode == TableViewMode.GRID) {
                     Icon(
                         painter = painterResource(id = R.drawable.img_sf_checkmark),
                         contentDescription = "Selected",
@@ -87,48 +54,13 @@ fun TableListModeDropdownMenu(expanded: Boolean, onDismissRequest: () -> Unit, v
             trailingIcon = {
                 Icon(
                     painter = painterResource(id = R.drawable.img_sf_rectangle_split_2x1),
-                    contentDescription = "Medium",
+                    contentDescription = "Grid",
                     tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(20.dp),
                 )
             },
             onClick = {
-                viewModel.setTableListMode(TableListMode.MEDIUM)
-                onDismissRequest()
-            },
-        )
-
-        HorizontalDivider()
-
-        DropdownMenuItem(
-            text = {
-                Text(
-                    text = "Large",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.weight(1f),
-                )
-            },
-            leadingIcon = {
-                if (tableListMode == TableListMode.LARGE) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.img_sf_checkmark),
-                        contentDescription = "Selected",
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(14.dp),
-                    )
-                }
-            },
-            trailingIcon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.img_sf_rectangle_portrait),
-                    contentDescription = "Large",
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(20.dp),
-                )
-            },
-            onClick = {
-                viewModel.setTableListMode(TableListMode.LARGE)
+                viewModel.setTableViewMode(TableViewMode.GRID)
                 onDismissRequest()
             },
         )
@@ -145,7 +77,7 @@ fun TableListModeDropdownMenu(expanded: Boolean, onDismissRequest: () -> Unit, v
                 )
             },
             leadingIcon = {
-                if (tableListMode == TableListMode.LIST) {
+                if (tableViewMode == TableViewMode.LIST) {
                     Icon(
                         painter = painterResource(id = R.drawable.img_sf_checkmark),
                         contentDescription = "Selected",
@@ -163,10 +95,120 @@ fun TableListModeDropdownMenu(expanded: Boolean, onDismissRequest: () -> Unit, v
                 )
             },
             onClick = {
-                viewModel.setTableListMode(TableListMode.LIST)
+                viewModel.setTableViewMode(TableViewMode.LIST)
                 onDismissRequest()
             },
         )
+
+        if (tableViewMode == TableViewMode.GRID) {
+            HorizontalDivider()
+
+            Spacer(modifier = Modifier.padding(all = 4.dp))
+
+            HorizontalDivider()
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        text = "Small",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f),
+                    )
+                },
+                leadingIcon = {
+                    if (tableGridSize == TableGridSize.SMALL) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.img_sf_checkmark),
+                            contentDescription = "Selected",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(14.dp),
+                        )
+                    }
+                },
+                trailingIcon = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.img_sf_rectangle_split_3x1),
+                        contentDescription = "Small",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(20.dp),
+                    )
+                },
+                onClick = {
+                    viewModel.setTableGridSize(TableGridSize.SMALL)
+                    onDismissRequest()
+                },
+            )
+
+            HorizontalDivider()
+
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        text = "Medium",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f),
+                    )
+                },
+                leadingIcon = {
+                    if (tableGridSize == TableGridSize.MEDIUM) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.img_sf_checkmark),
+                            contentDescription = "Selected",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(14.dp),
+                        )
+                    }
+                },
+                trailingIcon = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.img_sf_rectangle_split_2x1),
+                        contentDescription = "Medium",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(20.dp),
+                    )
+                },
+                onClick = {
+                    viewModel.setTableGridSize(TableGridSize.MEDIUM)
+                    onDismissRequest()
+                },
+            )
+
+            HorizontalDivider()
+
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        text = "Large",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f),
+                    )
+                },
+                leadingIcon = {
+                    if (tableGridSize == TableGridSize.LARGE) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.img_sf_checkmark),
+                            contentDescription = "Selected",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(14.dp),
+                        )
+                    }
+                },
+                trailingIcon = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.img_sf_rectangle_portrait),
+                        contentDescription = "Large",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(20.dp),
+                    )
+                },
+                onClick = {
+                    viewModel.setTableGridSize(TableGridSize.LARGE)
+                    onDismissRequest()
+                },
+            )
+        }
 
         HorizontalDivider()
 

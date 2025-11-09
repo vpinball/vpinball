@@ -70,8 +70,8 @@ struct SettingsExternalDMDView: View {
     }
 
     func handleExternalDMD() {
-        vpinballManager.saveValue(.standalone, "DMDServer", settingsModel.externalDMD == .dmdServer)
-        vpinballManager.saveValue(.standalone, "ZeDMDWiFi", settingsModel.externalDMD == .zedmdWiFi)
+        vpinballManager.saveValue(.pluginDMDUtil, "DMDServer", settingsModel.externalDMD == .dmdServer)
+        vpinballManager.saveValue(.pluginDMDUtil, "ZeDMDWiFi", settingsModel.externalDMD == .zedmdWiFi)
     }
 
     func handleShowAddr() {
@@ -117,9 +117,9 @@ struct SettingsExternalDMDView: View {
     func handleAddr() {
         switch settingsModel.externalDMD {
         case .dmdServer:
-            vpinballManager.saveValue(.standalone, "DMDServerAddr", settingsModel.dmdServerAddr)
+            vpinballManager.saveValue(.pluginDMDUtil, "DMDServerAddr", settingsModel.dmdServerAddr)
         case .zedmdWiFi:
-            vpinballManager.saveValue(.standalone, "ZeDMDWiFiAddr", settingsModel.zedmdWiFiAddr)
+            vpinballManager.saveValue(.pluginDMDUtil, "ZeDMDWiFiAddr", settingsModel.zedmdWiFiAddr)
         default:
             break
         }
@@ -155,7 +155,7 @@ struct SettingsExternalDMDView: View {
     func handlePort() {
         switch settingsModel.externalDMD {
         case .dmdServer:
-            vpinballManager.saveValue(.standalone, "DMDServerPort", settingsModel.dmdServerPort)
+            vpinballManager.saveValue(.pluginDMDUtil, "DMDServerPort", settingsModel.dmdServerPort)
         default:
             break
         }
