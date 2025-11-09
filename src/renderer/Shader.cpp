@@ -937,7 +937,7 @@ void Shader::SetTechnique(ShaderTechniques technique)
    assert(current_shader != this); // Changing the technique of a used shader is not allowed (between Begin/End)
    assert(0 <= technique && technique < SHADER_TECHNIQUE_COUNT);
    #if defined(ENABLE_OPENGL)
-   if (m_techniques[m_state->technique] == nullptr)
+   if (m_techniques[m_state->m_technique] == nullptr)
    {
       m_state->m_technique = SHADER_TECHNIQUE_INVALID;
       ShowError("Fatal Error: Could not find shader technique " + shaderTechniqueNames[technique].name);
@@ -981,9 +981,9 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
    uint8_t* const __restrict dst = m_renderDevice->GetUniformState().GetUniformStatePtr(uniformName);
 
    #elif defined(ENABLE_OPENGL)
-   uint8_t* const __restrict dst = m_boundState[m_technique]->m_state.data() + m_stateOffsets[uniformName];
+   uint8_t* const __restrict dst = m_boundState[m_state->m_technique]->m_state.data() + m_stateOffsets[uniformName];
    // For OpenGL uniform binding state is per technique (i.e. program)
-   const UniformDesc& desc = m_techniques[m_technique]->uniform_desc[uniformName];
+   const UniformDesc& desc = m_techniques[m_state->m_technique]->uniform_desc[uniformName];
    assert(desc.location >= 0); // Do not apply to an unused uniform
    if (desc.location < 0) // FIXME remove
       return;
@@ -1002,7 +1002,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
       #elif defined(ENABLE_OPENGL)
       if (ShaderUniform::coreUniforms[uniformName].type == SUT_DataBlock)
       {
-         glUniformBlockBinding(m_techniques[m_technique]->program, desc.location, 0);
+         glUniformBlockBinding(m_techniques[m_state->m_technique]->program, desc.location, 0);
          glBindBufferRange(GL_UNIFORM_BUFFER, 0, desc.blockBuffer, 0, ShaderUniform::coreUniforms[uniformName].stateSize);
          return;
       }
@@ -1020,7 +1020,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
       #elif defined(ENABLE_OPENGL)
       glBindBuffer(GL_UNIFORM_BUFFER, desc.blockBuffer);
       glBufferData(GL_UNIFORM_BUFFER, ShaderUniform::coreUniforms[uniformName].stateSize, src, GL_STREAM_DRAW);
-      glUniformBlockBinding(m_techniques[m_technique]->program, desc.location, 0);
+      glUniformBlockBinding(m_techniques[m_state->m_technique]->program, desc.location, 0);
       glBindBufferRange(GL_UNIFORM_BUFFER, 0, desc.blockBuffer, 0, ShaderUniform::coreUniforms[uniformName].stateSize);
       #elif defined(ENABLE_DX9)
       assert(false); // Unsupported on DX9

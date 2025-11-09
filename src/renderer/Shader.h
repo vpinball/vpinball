@@ -932,7 +932,7 @@ public:
    }
 
    vector<uint8_t> m_state;
-   ShaderTechniques m_technique;
+   ShaderTechniques m_technique = ShaderTechniques::SHADER_TECHNIQUE_INVALID;
    vector<std::shared_ptr<const Sampler>> m_samplers;
    static bool m_disableMipmaps;
 
