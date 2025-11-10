@@ -344,7 +344,8 @@ public:
    static std::array<string, 18> VPPelementNames; // names of the fields in a .vpp file
    void ImportVPP(const string &filename);
 
-   void FireOptionEvent(int event);
+   enum class OptionEventType { Initialized, Changed, Reseted, EndOfEdit };
+   void FireOptionEvent(OptionEventType event);
 
    VPX::Sound *ImportSound(const string &filename);
    void ReImportSound(VPX::Sound *const pps, const string &filename);

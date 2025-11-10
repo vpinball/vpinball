@@ -3170,8 +3170,16 @@ void PinTable::SetMyScrollInfo()
 #endif
 }
 
-void PinTable::FireOptionEvent(int event)
+void PinTable::FireOptionEvent(OptionEventType eventType)
 {
+   int event;
+   switch (eventType)
+   {
+   case OptionEventType::Initialized: event = 0; break;
+   case OptionEventType::Changed: event = 1; break;
+   case OptionEventType::Reseted: event = 2; break; // Legacy, unused (reset is now dispatched as a change)
+   case OptionEventType::EndOfEdit: event = 3; break;
+   }
    CComVariant rgvar[1] = { CComVariant(event) };
    DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
    FireDispID(DISPID_GameEvents_OptionEvent, &dispparams);
@@ -7860,7 +7868,7 @@ void PinTable::SetOptionLiveValue(VPX::Properties::PropertyRegistry::PropId prop
       if ((option.id.type == prop.type) && (option.id.index == prop.index))
       {
          option.value = value;
-         FireOptionEvent(1); // Table option changed event
+         FireOptionEvent(OptionEventType::Changed);
          return;
       }
    }

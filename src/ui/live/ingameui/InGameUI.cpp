@@ -113,7 +113,7 @@ void InGameUI::Close()
       GetActivePage()->Close(false);
    if (!m_player->IsPlaying(false))
       m_player->SetPlayState(true);
-   m_player->m_ptable->FireOptionEvent(3); // Tweak mode closed event
+   m_player->m_ptable->FireOptionEvent(PinTable::OptionEventType::EndOfEdit);
 }
 
 void InGameUI::Update()
