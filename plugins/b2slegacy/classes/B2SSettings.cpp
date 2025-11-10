@@ -6,8 +6,16 @@
 
 namespace B2SLegacy {
 
-B2SSettings::B2SSettings(MsgPluginAPI* msgApi)
+// FIXME not sure why these are not bool ?
+MSGPI_INT_SETTING(hideGrillProp, "B2SHideDMD", "B2SHideDMD", "", true, B2SSettingsCheckedState_Unchecked, B2SSettingsCheckedState_Indeterminate, B2SSettingsCheckedState_Indeterminate);
+MSGPI_BOOL_SETTING(hideB2SProp, "B2SHideB2SDMD", "B2SHideB2SDMD", "", true, false);
+MSGPI_BOOL_SETTING(hideB2SBackglassProp, "B2SHideB2SBackglass", "B2SHideB2SBackglass", "", true, false);
+MSGPI_INT_SETTING(hideDMDProp, "B2SHideDMD", "B2SHideDMD", "", true, B2SSettingsCheckedState_Unchecked, B2SSettingsCheckedState_Indeterminate, B2SSettingsCheckedState_Indeterminate);
+MSGPI_INT_SETTING(dualModeProp, "B2SDualMode", "B2SDualMode", "", true, eDualMode_2_NotSet, eDualMode_2_Fantasy, eDualMode_2_NotSet);
+
+B2SSettings::B2SSettings(MsgPluginAPI* msgApi, unsigned int endpointId)
    : m_msgApi(msgApi)
+   , m_endpointId(endpointId)
 {
    m_gameNameFound = false;
 
@@ -21,12 +29,16 @@ B2SSettings::~B2SSettings()
 void B2SSettings::Load(bool resetLogs)
 {
    ClearAll();
-
-   m_hideGrill = (B2SSettingsCheckedState)GetSettingInt("B2SHideGrill", (int)B2SSettingsCheckedState_Indeterminate);
-   m_hideB2SDMD = GetSettingBool("B2SHideB2SDMD", false);
-   m_hideB2SBackglass = GetSettingBool("B2SHideB2SBackglass", false);
-   m_hideDMD = (B2SSettingsCheckedState)GetSettingInt("B2SHideDMD", (int)B2SSettingsCheckedState_Indeterminate);
-   m_currentDualMode = (eDualMode)GetSettingInt("B2SDualMode", (int)eDualMode_2_NotSet);
+   m_msgApi->RegisterSetting(m_endpointId, &hideGrillProp);
+   m_msgApi->RegisterSetting(m_endpointId, &hideB2SProp);
+   m_msgApi->RegisterSetting(m_endpointId, &hideB2SBackglassProp);
+   m_msgApi->RegisterSetting(m_endpointId, &hideDMDProp);
+   m_msgApi->RegisterSetting(m_endpointId, &dualModeProp);
+   m_hideGrill = (B2SSettingsCheckedState)hideGrillProp.intDef.val;
+   m_hideB2SDMD = hideB2SProp.boolDef.val;
+   m_hideB2SBackglass = hideB2SBackglassProp.boolDef.val;
+   m_hideDMD = (B2SSettingsCheckedState)hideDMDProp.intDef.val;
+   m_currentDualMode = (eDualMode)dualModeProp.intDef.val;
 }
 
 void B2SSettings::ClearAll()
@@ -57,28 +69,6 @@ void B2SSettings::ClearAll()
    m_formToFront = true;
    m_formToBack = false;
    m_formNoFocus = false;
-}
-
-int B2SSettings::GetSettingInt(const char* key, int def) const
-{
-   char buf[256];
-   m_msgApi->GetSetting("B2SLegacy", key, buf, sizeof(buf));
-   if (!buf[0]) return def;
-
-   int result;
-   auto [ptr, ec] = std::from_chars(buf, buf + strlen(buf), result);
-   return (ec == std::errc{}) ? result : def;
-}
-
-bool B2SSettings::GetSettingBool(const char* key, bool def) const
-{
-   char buf[256];
-   m_msgApi->GetSetting("B2SLegacy", key, buf, sizeof(buf));
-   if (!buf[0]) return def;
-
-   int result;
-   auto [ptr, ec] = std::from_chars(buf, buf + strlen(buf), result);
-   return (ec == std::errc{}) ? (result != 0) : def;
 }
 
 }

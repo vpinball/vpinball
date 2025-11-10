@@ -24,27 +24,6 @@ using namespace std::string_literals;
 
 namespace PinMAME {
 
-static string GetSettingString(const MsgPluginAPI* pMsgApi, const char* section, const char* key, const string& def = string())
-{
-   char buf[256];
-   pMsgApi->GetSetting(section, key, buf, sizeof(buf));
-   return buf[0] ? string(buf) : def;
-}
-
-static int GetSettingInt(const MsgPluginAPI* pMsgApi, const char* section, const char* key, int def = 0)
-{
-   const auto s = GetSettingString(pMsgApi, section, key, string());
-   int result;
-   return (s.empty() || (std::from_chars(s.c_str(), s.c_str() + s.length(), result).ec != std::errc{})) ? def : result;
-}
-
-static bool GetSettingBool(const MsgPluginAPI* pMsgApi, const char* section, const char* key, bool def = false)
-{
-   const auto s = GetSettingString(pMsgApi, section, key, string());
-   int result;
-   return (s.empty() || (std::from_chars(s.c_str(), s.c_str() + s.length(), result).ec != std::errc{})) ? def : (result != 0);
-}
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Scriptable object definitions
 
@@ -227,6 +206,10 @@ PSC_ERROR_IMPLEMENT(scriptApi); // Implement script error
 
 LPI_IMPLEMENT // Implement shared login support
 
+MSGPI_BOOL_SETTING(enableSoundProp, "Sound", "Enable Sound", "Enable sound emulation", true, true);
+MSGPI_STRING_SETTING(pinMAMEPathProp, "PinMAMEPath", "PinMAME Path", "Folder that contains PinMAME subfolders (roms, nvram, ...)", true, "", 1024);
+MSGPI_INT_SETTING(cheatProp, "Cheat", "Cheat Mode", "", true, 0, 0xFFFF, 0);
+
 void PINMAMECALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format, va_list args, void* const pUserData)
 {
    va_list args_copy;
@@ -353,6 +336,10 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
    // Request and setup shared login API
    LPISetup(endpointId, msgApi);
 
+   msgApi->RegisterSetting(endpointId, &enableSoundProp);
+   msgApi->RegisterSetting(endpointId, &pinMAMEPathProp);
+   msgApi->RegisterSetting(endpointId, &cheatProp);
+
    // Setup our contribution to the controller messages
    onAudioUpdateId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_UPDATE_MSG);
 
@@ -378,8 +365,6 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
    {
       assert(controller == nullptr); // We do not support having multiple instance running concurrently
 
-      bool enableSound = GetSettingBool(msgApi, "PinMAME", "Sound", true);
-
       PinmameConfig config = {
          PINMAME_AUDIO_FORMAT_INT16,
          44100,
@@ -387,8 +372,8 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
          NULL, // State update => prefer update on request
          NULL, // Display available => prefer state block
          NULL, // Display updated => prefer update on request
-         enableSound ? &OnAudioAvailable : NULL,
-         enableSound ? &OnAudioUpdated : NULL,
+         enableSoundProp.boolDef.val ? &OnAudioAvailable : NULL, //
+         enableSoundProp.boolDef.val ? &OnAudioUpdated : NULL, //
          NULL, // Mech available
          NULL, // Mech updated
          NULL, // Solenoid updated => prefer update on request
@@ -413,9 +398,7 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
       }
       if (pinmamePath.empty())
       {
-         char pinMameFolder[512];
-         msgApi->GetSetting("PinMAME", "PinMAMEPath", pinMameFolder, sizeof(pinMameFolder));
-         pinmamePath = pinMameFolder;
+         pinmamePath = pinMAMEPathProp.stringDef.val;
          if (!pinmamePath.empty() && !pinmamePath.ends_with(PATH_SEPARATOR_CHAR))
             pinmamePath += PATH_SEPARATOR_CHAR;
       }
@@ -444,7 +427,7 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
       pController->SetOnDestroyHandler(OnControllerDestroyed);
       pController->SetOnGameStartHandler(OnControllerGameStart);
       pController->SetOnGameEndHandler(OnControllerGameEnd);
-      pController->SetCheat(GetSettingInt(msgApi, "PinMAME", "Cheat", 0));
+      pController->SetCheat(cheatProp.intDef.val);
       controller = pController;
 
       return static_cast<void*>(pController);

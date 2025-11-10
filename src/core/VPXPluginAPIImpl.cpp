@@ -342,6 +342,117 @@ IDispatch* VPXPluginAPIImpl::CreateCOMPluginObject(const string& classId)
    return dd;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Settings API
+
+void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, bool isSave, MsgSettingDef* settingDef)
+{
+   const auto item = std::ranges::find_if(m_pluginSettings, [pluginId, settingDef](const PluginSetting& setting) { return setting.pluginId == pluginId && setting.setting->propId == settingDef->propId; });
+
+   // Register property and get or set value
+   Settings& settings = g_pplayer ? g_pplayer->m_ptable->m_settings : g_pvp->m_settings;
+   const bool asTableOverride = g_pplayer != nullptr;
+   const std::string sectionName = "Plugin."s + pluginId;
+   switch (settingDef->type)
+   {
+   case MSGPI_SETTING_TYPE_FLOAT:
+   {
+      const auto newId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(sectionName, settingDef->propId, settingDef->name, settingDef->description,
+         settingDef->floatDef.minVal, settingDef->floatDef.maxVal, settingDef->floatDef.step, settingDef->floatDef.defVal));
+      if (item == m_pluginSettings.end())
+         m_pluginSettings.emplace_back(pluginId, newId, settingDef);
+      else
+      {
+         item->propId = newId;
+         item->setting = settingDef;
+      }
+      if (isSave)
+         settings.Set(newId, settingDef->floatDef.val, asTableOverride);
+      else
+         settingDef->floatDef.val = settings.GetFloat(newId);
+      break;
+   }
+
+   case MSGPI_SETTING_TYPE_INT:
+      if (settingDef->intDef.values)
+      {
+         vector<string> values;
+         for (int i = settingDef->intDef.minVal; i <= settingDef->intDef.maxVal; i++)
+            values.emplace_back(settingDef->intDef.values[i - settingDef->intDef.minVal]);
+         const auto newId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>(
+            sectionName, settingDef->propId, settingDef->name, settingDef->description, settingDef->intDef.minVal, settingDef->intDef.defVal, values));
+         if (item == m_pluginSettings.end())
+            m_pluginSettings.emplace_back(pluginId, newId, settingDef);
+         else
+         {
+            item->propId = newId;
+            item->setting = settingDef;
+         }
+         if (isSave)
+            settings.Set(newId, settingDef->intDef.val, asTableOverride);
+         else
+            settingDef->intDef.val = settings.GetInt(newId);
+      }
+      else
+      {
+         const auto newId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>(
+            sectionName, settingDef->propId, settingDef->name, settingDef->description, settingDef->intDef.minVal, settingDef->intDef.maxVal, settingDef->intDef.defVal));
+         if (item == m_pluginSettings.end())
+            m_pluginSettings.emplace_back(pluginId, newId, settingDef);
+         else
+         {
+            item->propId = newId;
+            item->setting = settingDef;
+         }
+         if (isSave)
+            settings.Set(newId, settingDef->intDef.val, asTableOverride);
+         else
+            settingDef->intDef.val = settings.GetInt(newId);
+      }
+      break;
+
+   case MSGPI_SETTING_TYPE_BOOL:
+   {
+      const auto newId = Settings::GetRegistry().Register(
+         std::make_unique<VPX::Properties::BoolPropertyDef>(sectionName, settingDef->propId, settingDef->name, settingDef->description, settingDef->boolDef.defVal));
+      if (item == m_pluginSettings.end())
+         m_pluginSettings.emplace_back(pluginId, newId, settingDef);
+      else
+      {
+         item->propId = newId;
+         item->setting = settingDef;
+      }
+      if (isSave)
+         settings.Set(newId, settingDef->boolDef.val, asTableOverride);
+      else
+         settingDef->boolDef.val = settings.GetBool(newId);
+      break;
+   }
+
+   case MSGPI_SETTING_TYPE_STRING:
+   {
+      const auto newId = Settings::GetRegistry().Register(
+         std::make_unique<VPX::Properties::StringPropertyDef>(sectionName, settingDef->propId, settingDef->name, settingDef->description, settingDef->stringDef.defVal));
+      if (item == m_pluginSettings.end())
+         m_pluginSettings.emplace_back(pluginId, newId, settingDef);
+      else
+      {
+         item->propId = newId;
+         item->setting = settingDef;
+      }
+      if (isSave)
+         settings.Set(newId, settingDef->stringDef.val, asTableOverride);
+      else
+      {
+         const string& value = settings.GetString(newId);
+         strncpy_s(settingDef->stringDef.val, settingDef->stringDef.valBufferSize, value.c_str());
+      }
+      break;
+   }
+
+   }
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Expose VPX contributions through plugin API
@@ -521,54 +632,7 @@ VPXPluginAPIImpl::VPXPluginAPIImpl() : m_apiThread(std::this_thread::get_id())
 {
    // Message host
    const auto& msgApi = MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
-   MsgPI::MsgPluginManager::GetInstance().SetSettingsHandler([](const char* name_space, const char* name, char* valueBuf, unsigned int valueBufSize)
-      {
-         const Settings& settings = g_pplayer ? g_pplayer->m_ptable->m_settings : g_pvp->m_settings;
-         const std::string sectionName = "Plugin."s + name_space;
-         if (const auto propId = Settings::GetRegistry().GetPropertyId(sectionName, name); propId.has_value())
-         {
-            const auto propDef = Settings::GetRegistry().GetProperty(propId.value());
-            switch (propDef->m_type)
-            {
-            case VPX::Properties::PropertyDef::Type::Float:
-            {
-               const float value = settings.GetFloat(propId.value());
-               strncpy_s(valueBuf, valueBufSize, f2sz(value, false).c_str());
-               break;
-            }
-            case VPX::Properties::PropertyDef::Type::Int:
-            {
-               const int value = settings.GetInt(propId.value());
-               strncpy_s(valueBuf, valueBufSize, std::to_string(value).c_str());
-               break;
-            }
-            case VPX::Properties::PropertyDef::Type::Bool:
-            {
-               const bool value = settings.GetBool(propId.value());
-               strncpy_s(valueBuf, valueBufSize, value ? "1" : "0");
-               break;
-            }
-            case VPX::Properties::PropertyDef::Type::Enum:
-            {
-               const int value = settings.GetInt(propId.value());
-               strncpy_s(valueBuf, valueBufSize, std::to_string(value).c_str());
-               break;
-            }
-            case VPX::Properties::PropertyDef::Type::String:
-            {
-               const string value = settings.GetString(propId.value());
-               strncpy_s(valueBuf, valueBufSize, value.c_str());
-               break;
-            }
-            }
-         }
-         else
-         {
-            const auto newId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>(sectionName, name, ""s, ""s, ""s));
-            string value = settings.GetString(newId);
-            strncpy_s(valueBuf, valueBufSize, value.c_str());
-         }
-      });
+   MsgPI::MsgPluginManager::GetInstance().SetSettingsHandler([this](const std::string& pluginId, bool isSave, MsgSettingDef* settingDef) { UpdateSetting(pluginId, isSave, settingDef); });
 
    // VPX API
    m_api.GetVpxInfo = GetVpxInfo;
@@ -590,9 +654,9 @@ VPXPluginAPIImpl::VPXPluginAPIImpl() : m_apiThread(std::this_thread::get_id())
    m_api.GetTextureInfo = GetTextureInfo;
    m_api.DeleteTexture = DeleteTexture;
 
-   m_vpxPlugin = MsgPI::MsgPluginManager::GetInstance().RegisterPlugin("vpx"s, "VPX"s, "Visual Pinball X"s, ""s, ""s, "https://github.com/vpinball/vpinball"s, 
-         [](const uint32_t pluginId, const MsgPluginAPI* api) {},
-         []() {});
+   m_vpxPlugin = MsgPI::MsgPluginManager::GetInstance().RegisterPlugin("vpx"s, "VPX"s, "Visual Pinball X"s, ""s, ""s, "https://github.com/vpinball/vpinball"s,  //
+      [](const uint32_t, const MsgPluginAPI*) { /* Load: nothing to do */ }, //
+      []() { /* Load: nothing to do */ });
    m_vpxPlugin->Load(&MsgPI::MsgPluginManager::GetInstance().GetMsgAPI());
    msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API), &OnGetVPXPluginAPI, nullptr);
 

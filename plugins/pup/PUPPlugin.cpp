@@ -58,6 +58,8 @@ static std::unique_ptr<PUPManager> pupManager;
 
 LPI_IMPLEMENT // Implement shared login support
 
+MSGPI_STRING_SETTING(pupPathProp, "PUPFolder", "PinUp Player Folder", "", true, "", 1024);
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Script interface
@@ -268,8 +270,8 @@ MSGPI_EXPORT void MSGPIAPI PUPPluginLoad(const uint32_t sessionId, const MsgPlug
    scriptApi->SubmitTypeLibrary();
    scriptApi->SetCOMObjectOverride("PinUpPlayer.PinDisplay", PUPPinDisplay_SCD);
 
-   char pupFolder[512];
-   msgApi->GetSetting("PUP", "PUPFolder", pupFolder, sizeof(pupFolder));
+   msgApi->RegisterSetting(endpointId, &pupPathProp);
+   string pupFolder = pupPathProp.stringDef.val;
    string rootPath = normalize_path_separators(pupFolder);
    if (!rootPath.ends_with(PATH_SEPARATOR_CHAR))
       rootPath += PATH_SEPARATOR_CHAR;

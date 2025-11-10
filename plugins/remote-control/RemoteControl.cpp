@@ -255,6 +255,11 @@ enum class ConnectionState
 };
 ConnectionState connectionState = ConnectionState::Unconnected;
 
+const char* runModeLiterals[] = { "Controller", "Player" };
+MSGPI_ENUM_SETTING(runModeProp, "RunMode", "Mode", "Select between Controller and Player mode", true, 1, 2, runModeLiterals, 1);
+MSGPI_INT_SETTING(portProp, "Port", "Port", "", true, 0, 0xFFFF, 0);
+MSGPI_STRING_SETTING(hostProp, "Host", "Host", "", true, "", 1024);
+
 
 void onPrepareFrame(const unsigned int eventId, void* userData, void* eventData)
 {
@@ -329,21 +334,15 @@ void onPlayerUpdatePhysics(const unsigned int eventId, void* userData, void* eve
 void onGameStart(const unsigned int eventId, void* userData, void* eventData)
 {
    lastState.timestamp = 0;
-   char buf[32];
-   msgApi->GetSetting("RemoteControl", "RunMode", buf, sizeof(buf));
-   int opt = atoi(buf);
-   msgApi->GetSetting("RemoteControl", "Port", buf, sizeof(buf));
-   int port = atoi(buf);
-   msgApi->GetSetting("RemoteControl", "Host", buf, sizeof(buf));
-   if (opt == 1)
+   if (runModeProp.intDef.val == 1)
    {
       runMode = RunMode::RunModeController;
-      LOGI("RemoteControl plugin started as controller (client mode, server ip is %s:%d)", buf, port);
-      udpThread = std::thread([buf, port]()
+      LOGI("RemoteControl plugin started as controller (client mode, server ip is %s:%d)", hostProp.stringDef.val, portProp.intDef.val);
+      udpThread = std::thread([]()
          {
             using namespace std::literals;
             StateMsg stateMsg;
-            UdpClientSocket client(buf, port, 500);
+            UdpClientSocket client(hostProp.stringDef.val, portProp.intDef.val, 500);
             auto start = std::chrono::high_resolution_clock::now();
             while (runMode != RunMode::RunModeNone)
             {
@@ -390,14 +389,14 @@ void onGameStart(const unsigned int eventId, void* userData, void* eventData)
       float newNudgeX, newNudgeY, newPlunger;
       // FIXME vpxApi->GetInputState(&actionState, &newNudgeX, &newNudgeY, &newPlunger);
    }
-   else if (opt == 2)
+   else if (runModeProp.intDef.val == 2)
    {
       runMode = RunMode::RunModePlayer;
-      LOGI("RemoteControl plugin started as player (server mode, using port: %d)", port);
-      udpThread = std::thread([port]()
+      LOGI("RemoteControl plugin started as player (server mode, using port: %d)", portProp.intDef.val);
+      udpThread = std::thread([]()
          {
             StateMsg stateMsg;
-            UdpServerSocket server(port, 500);
+            UdpServerSocket server(portProp.intDef.val, 500);
             while (runMode != RunMode::RunModeNone)
             {
                int rcv = 0;
@@ -483,6 +482,9 @@ MSGPI_EXPORT void MSGPIAPI RemoteControlPluginLoad(const uint32_t sessionId, con
    endpointId = sessionId;
    runMode = RunMode::RunModeNone;
    LPISetup(endpointId, msgApi); // Request and setup shared login API
+   msgApi->RegisterSetting(endpointId, &runModeProp);
+   msgApi->RegisterSetting(endpointId, &portProp);
+   msgApi->RegisterSetting(endpointId, &hostProp);
    msgApi->BroadcastMsg(endpointId, getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API), &vpxApi);
    msgApi->SubscribeMsg(endpointId, onGameStartId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START), onGameStart, nullptr);
    msgApi->SubscribeMsg(endpointId, onGameEndId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END), onGameEnd, nullptr);

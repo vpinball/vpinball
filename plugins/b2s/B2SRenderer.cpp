@@ -23,8 +23,8 @@ B2SRenderer::B2SRenderer(const MsgPluginAPI* const msgApi, const unsigned int en
    bool m_showGrill = false;
    m_grillCut = m_showGrill ? 0.f : static_cast<float>(m_b2s->m_grillHeight);
 
-   m_scoreViewDmdOverlay.LoadSettings(msgApi, "B2S"s, "ScoreView"s);
-   m_backglassDmdOverlay.LoadSettings(msgApi, "B2S"s, "Backglass"s);
+   m_scoreViewDmdOverlay.LoadSettings(msgApi, m_endpointId, true);
+   m_backglassDmdOverlay.LoadSettings(msgApi, m_endpointId, false);
 
    const VPXTextureInfo* bgTexInfo = nullptr;
    if (m_b2s->m_backglassImage.m_image)

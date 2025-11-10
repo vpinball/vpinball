@@ -64,7 +64,7 @@ FormBackglass::FormBackglass(VPXPluginAPI* vpxApi, MsgPluginAPI* msgApi,uint32_t
    m_secondRomIDType4Fantasy = eRomIDType_NotDefined;
    m_secondRomInverted4Fantasy = false;
    m_pB2SAnimation = new B2SAnimation();
-   m_pB2SScreen = new B2SScreen(m_pB2SData, m_msgApi, m_vpxApi);
+   m_pB2SScreen = new B2SScreen(m_pB2SData, m_msgApi, m_vpxApi, endpointId);
 
    // load settings
    m_pB2SSettings->Load();

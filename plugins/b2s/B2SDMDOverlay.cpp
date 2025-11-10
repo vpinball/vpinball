@@ -18,14 +18,38 @@ B2SDMDOverlay::B2SDMDOverlay(ResURIResolver& resURIResolver, VPXTexture& dmdTex,
 {
 }
 
-void B2SDMDOverlay::LoadSettings(const MsgPluginAPI* const msgApi, const string& pluginId, const string& prefix)
+void B2SDMDOverlay::LoadSettings(const MsgPluginAPI* const msgApi, unsigned int endpointId, bool isScoreView)
 {
-   m_enable = GetSettingBool(msgApi, pluginId, prefix + "DMDOverlay", false);
-   m_detectDmdFrame = GetSettingBool(msgApi, pluginId, prefix + "DMDAutoPos", false);
-   m_frame.x = GetSettingInt(msgApi, pluginId, prefix + "DMDX", 0);
-   m_frame.y = GetSettingInt(msgApi, pluginId, prefix + "DMDY", 0);
-   m_frame.z = GetSettingInt(msgApi, pluginId, prefix + "DMDWidth", 0);
-   m_frame.w = GetSettingInt(msgApi, pluginId, prefix + "DMDHeight", 0);
+   if (isScoreView)
+   {
+      msgApi->RegisterSetting(endpointId, &m_scoreViewDMDOverlayProp);
+      msgApi->RegisterSetting(endpointId, &m_scoreViewDMDAutoPosProp);
+      msgApi->RegisterSetting(endpointId, &m_scoreViewDMDXProp);
+      msgApi->RegisterSetting(endpointId, &m_scoreViewDMDYProp);
+      msgApi->RegisterSetting(endpointId, &m_scoreViewDMDWProp);
+      msgApi->RegisterSetting(endpointId, &m_scoreViewDMDHProp);
+      m_enable = m_scoreViewDMDOverlayProp.boolDef.val != 0;
+      m_detectDmdFrame = m_scoreViewDMDAutoPosProp.boolDef.val != 0;
+      m_frame.x = m_scoreViewDMDXProp.intDef.val != 0;
+      m_frame.y = m_scoreViewDMDYProp.intDef.val != 0;
+      m_frame.z = m_scoreViewDMDWProp.intDef.val != 0;
+      m_frame.w = m_scoreViewDMDHProp.intDef.val != 0;
+   }
+   else
+   {
+      msgApi->RegisterSetting(endpointId, &m_backglassDMDOverlayProp);
+      msgApi->RegisterSetting(endpointId, &m_backglassDMDAutoPosProp);
+      msgApi->RegisterSetting(endpointId, &m_backglassDMDXProp);
+      msgApi->RegisterSetting(endpointId, &m_backglassDMDYProp);
+      msgApi->RegisterSetting(endpointId, &m_backglassDMDWProp);
+      msgApi->RegisterSetting(endpointId, &m_backglassDMDHProp);
+      m_enable = m_backglassDMDOverlayProp.boolDef.val != 0;
+      m_detectDmdFrame = m_backglassDMDAutoPosProp.boolDef.val != 0;
+      m_frame.x = m_backglassDMDXProp.intDef.val != 0;
+      m_frame.y = m_backglassDMDYProp.intDef.val != 0;
+      m_frame.z = m_backglassDMDWProp.intDef.val != 0;
+      m_frame.w = m_backglassDMDHProp.intDef.val != 0;
+   }
 }
 
 void B2SDMDOverlay::Render(VPXRenderContext2D* ctx)

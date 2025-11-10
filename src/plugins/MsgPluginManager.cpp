@@ -74,7 +74,8 @@ MsgPluginManager::MsgPluginManager()
    m_api.BroadcastMsg = BroadcastMsg;
    m_api.SendMsg = SendMsg;
    m_api.ReleaseMsgID = ReleaseMsgID;
-   m_api.GetSetting = GetSetting;
+   m_api.RegisterSetting = RegisterSetting;
+   m_api.SaveSetting = SaveSetting;
    m_api.RunOnMainThread = RunOnMainThread;
    m_apiThread = std::this_thread::get_id();
 }
@@ -227,14 +228,27 @@ void MsgPluginManager::ReleaseMsgID(const unsigned int msgId)
       pm.m_msgs.pop_back();
 }
 
-void MsgPluginManager::GetSetting(const char* name_space, const char* name, char* valueBuf, unsigned int valueBufSize)
+void MsgPluginManager::RegisterSetting(const uint32_t endpointId, MsgSettingDef* settingDef)
 {
    MsgPluginManager& pm = GetInstance();
-   assert(name_space != nullptr);
-   assert(name != nullptr);
-   assert(valueBuf != nullptr);
-   assert(valueBufSize > 0);
-   pm.m_settingHandler(name_space, name, valueBuf, valueBufSize);
+   assert(std::this_thread::get_id() == pm.m_apiThread);
+   if (pm.m_settingHandler == nullptr)
+      return;
+   const auto item = std::ranges::find_if(pm.m_plugins, [endpointId](const std::shared_ptr<MsgPlugin>& plg) { return plg->IsLoaded() && plg->m_endpointId == endpointId; });
+   if (item == pm.m_plugins.end())
+      return;
+   pm.m_settingHandler((*item)->m_id, false, settingDef);
+}
+
+void MsgPluginManager::SaveSetting(const uint32_t endpointId, MsgSettingDef* settingDef)
+{
+   MsgPluginManager& pm = GetInstance();
+   if (pm.m_settingHandler == nullptr)
+      return;
+   const auto item = std::ranges::find_if(pm.m_plugins, [endpointId](const std::shared_ptr<MsgPlugin>& plg) { return plg->IsLoaded() && plg->m_endpointId == endpointId; });
+   if (item == pm.m_plugins.end())
+      return;
+   pm.m_settingHandler((*item)->m_id, true, settingDef);
 }
 
 void MsgPluginManager::RunOnMainThread(const double delayInS, const msgpi_timer_callback callback, void* userData)

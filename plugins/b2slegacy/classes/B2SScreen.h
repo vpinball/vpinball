@@ -11,7 +11,7 @@ class Dream7Display;
 class B2SScreen
 {
 public:
-   B2SScreen(B2SData* pB2SData, MsgPluginAPI* msgApi, VPXPluginAPI* vpxApi);
+   B2SScreen(B2SData* pB2SData, MsgPluginAPI* msgApi, VPXPluginAPI* vpxApi, unsigned int endpointId);
    ~B2SScreen();
 
    SDL_Rect& GetPlayfieldSize() { return m_playfieldSize; }
@@ -67,6 +67,7 @@ private:
    B2SSettings* m_pB2SSettings;
    MsgPluginAPI* m_msgApi;
    VPXPluginAPI* m_vpxApi;
+   unsigned int m_endpointId;
    Form* m_pFormBackglass;
    Form* m_pFormDMD;
    SDL_Rect m_playfieldSize;

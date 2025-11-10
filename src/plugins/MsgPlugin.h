@@ -108,6 +108,62 @@ typedef struct MsgEndpointInfo
    const char* link;        // Web link to online information
 } MsgEndpointInfo;
 
+#define MSGPI_SETTING_TYPE_FLOAT  0
+#define MSGPI_SETTING_TYPE_INT    1
+#define MSGPI_SETTING_TYPE_BOOL   2
+#define MSGPI_SETTING_TYPE_STRING 3
+
+typedef struct MsgSettingDef
+{
+   const char* propId;       // Unique Id of the property within the plugin
+   const char* name;         // Human-readable name of the plugin
+   const char* description;  // Human-readable description of the plugin intent
+   const int isUserEditable; // If non zero, exposed to user for edition
+   const int type;           // See MSGPI_SETTING_TYPE_xxx
+   union 
+   {
+      struct
+      {
+         const float minVal;
+         const float maxVal;
+         const float step;   // If non zero, limit values to increments of step
+         const float defVal;
+         float val;
+      } floatDef;
+      struct
+      {
+         const int minVal;
+         const int maxVal;
+         const int defVal;
+         const char** values;
+         int val;
+      } intDef;
+      struct
+      {
+         const int defVal;
+         int val;
+      } boolDef;
+      struct
+      {
+         const char* defVal;
+         char* val;
+         int valBufferSize;
+      } stringDef;
+   };
+} MsgSettingDef;
+
+// C++ helpers to define settings
+#define MSGPI_FLOAT_SETTING(varName, id, propName, propDescription, propEditable, minValue, maxValue, stepVal, defValue) \
+   MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_FLOAT, .intDef = { minValue, maxValue, stepVal, defValue, defValue } }
+#define MSGPI_INT_SETTING(varName, id, propName, propDescription, propEditable, minValue, maxValue, defValue) \
+   MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_INT, .intDef = { minValue, maxValue, defValue, nullptr, defValue } }
+#define MSGPI_ENUM_SETTING(varName, id, propName, propDescription, propEditable, minValue, nValues, values, defValue) \
+   MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_INT, .intDef = { minValue, minValue + nValues - 1, defValue, values, defValue } }
+#define MSGPI_BOOL_SETTING(varName, id, propName, propDescription, propEditable, defValue) \
+   MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_BOOL, .boolDef = { defValue?1:0, defValue?1:0 } }
+#define MSGPI_STRING_SETTING(varName, id, propName, propDescription, propEditable, defValue, bufferSize) \
+   MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_STRING, .stringDef = { defValue, new char[bufferSize], bufferSize } }
+
 typedef struct MsgPluginAPI
 {
    // Messaging
@@ -120,7 +176,8 @@ typedef struct MsgPluginAPI
    void (MSGPIAPI* SendMsg)(const uint32_t endpointId, const unsigned int msgId, const uint32_t targetEndpointId, void* data);
    void (MSGPIAPI* ReleaseMsgID)(const unsigned int msgId);
    // Setting
-   void (MSGPIAPI *GetSetting)(const char* name_space, const char* name, char* valueBuf, unsigned int valueBufSize);
+   void(MSGPIAPI* RegisterSetting)(const uint32_t endpointId, MsgSettingDef* settingDef); // Register a setting that the host will initialize either from a previously persisted value or the default
+   void(MSGPIAPI* SaveSetting)(const uint32_t endpointId, MsgSettingDef* settingDef); // Request the host to persist a setting
    // Threading
    void (MSGPIAPI *RunOnMainThread)(const double delayInS, const msgpi_timer_callback callback, void* userData);
 } MsgPluginAPI;
