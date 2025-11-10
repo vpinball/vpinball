@@ -99,27 +99,6 @@ void LIBDOFCALLBACK OnDOFLog(DOF_LogLevel logLevel, const char* format, va_list 
    }
 }
 
-static string GetSettingString(MsgPluginAPI* pMsgApi, const char* section, const char* key, const string& def = string())
-{
-   char buf[256];
-   pMsgApi->GetSetting(section, key, buf, sizeof(buf));
-   return buf[0] ? string(buf) : def;
-}
-
-static int GetSettingInt(MsgPluginAPI* pMsgApi, const char* section, const char* key, int def = 0)
-{
-   const auto s = GetSettingString(pMsgApi, section, key, string());
-   int result;
-   return (s.empty() || (std::from_chars(s.c_str(), s.c_str() + s.length(), result).ec != std::errc{})) ? def : result;
-}
-
-static bool GetSettingBool(MsgPluginAPI* pMsgApi, const char* section, const char* key, bool def = false)
-{
-   const auto s = GetSettingString(pMsgApi, section, key, string());
-   int result;
-   return (s.empty() || (std::from_chars(s.c_str(), s.c_str() + s.length(), result).ec != std::errc{})) ? def : (result != 0);
-}
-
 #ifdef _WIN32
 void SetThreadName(const std::string& name)
 {

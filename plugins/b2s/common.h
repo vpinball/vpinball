@@ -79,9 +79,6 @@ extern VPXTextureInfo* GetTextureInfo(VPXTexture texture);
 extern void DeleteTexture(VPXTexture texture);
 extern void UpdateTexture(VPXTexture *texture, int width, int height, VPXTextureFormat format, const uint8_t *image);
 
-int GetSettingInt(const MsgPluginAPI* pMsgApi, const string& section, const string& key, int def = 0);
-bool GetSettingBool(const MsgPluginAPI* pMsgApi, const string& section, const string& key, bool def = false);
-
 // The following function are duplicates from the main VPX codebase
 string find_case_insensitive_file_path(const string &szPath);
 string TitleAndPathFromFilename(const string &filename);

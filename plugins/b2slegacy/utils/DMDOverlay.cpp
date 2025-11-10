@@ -18,21 +18,38 @@ DMDOverlay::DMDOverlay(ResURIResolver& resURIResolver, VPXTexture& dmdTex, VPXTe
 {
 }
 
-void DMDOverlay::LoadSettings(MsgPluginAPI* const msgApi, const string& pluginId, const string& prefix)
+void DMDOverlay::LoadSettings(const MsgPluginAPI* const msgApi, unsigned int endpointId, bool isScoreView)
 {
-   char buf[32];
-   msgApi->GetSetting(pluginId.c_str(), (prefix + "DMDOverlay").c_str(), buf, sizeof(buf));
-   m_enable = atoi(buf) != 0;
-   msgApi->GetSetting(pluginId.c_str(), (prefix + "DMDAutoPos").c_str(), buf, sizeof(buf));
-   m_detectDmdFrame = atoi(buf) != 0;
-   msgApi->GetSetting(pluginId.c_str(), (prefix + "DMDX").c_str(), buf, sizeof(buf));
-   m_frame.x = atoi(buf);
-   msgApi->GetSetting(pluginId.c_str(), (prefix + "DMDY").c_str(), buf, sizeof(buf));
-   m_frame.y = atoi(buf);
-   msgApi->GetSetting(pluginId.c_str(), (prefix + "DMDWidth").c_str(), buf, sizeof(buf));
-   m_frame.z = atoi(buf);
-   msgApi->GetSetting(pluginId.c_str(), (prefix + "DMDHeight").c_str(), buf, sizeof(buf));
-   m_frame.w = atoi(buf);
+   if (isScoreView)
+   {
+      msgApi->RegisterSetting(endpointId, &m_scoreViewDMDOverlayProp);
+      msgApi->RegisterSetting(endpointId, &m_scoreViewDMDAutoPosProp);
+      msgApi->RegisterSetting(endpointId, &m_scoreViewDMDXProp);
+      msgApi->RegisterSetting(endpointId, &m_scoreViewDMDYProp);
+      msgApi->RegisterSetting(endpointId, &m_scoreViewDMDWProp);
+      msgApi->RegisterSetting(endpointId, &m_scoreViewDMDHProp);
+      m_enable = m_scoreViewDMDOverlayProp.boolDef.val != 0;
+      m_detectDmdFrame = m_scoreViewDMDAutoPosProp.boolDef.val != 0;
+      m_frame.x = m_scoreViewDMDXProp.intDef.val != 0;
+      m_frame.y = m_scoreViewDMDYProp.intDef.val != 0;
+      m_frame.z = m_scoreViewDMDWProp.intDef.val != 0;
+      m_frame.w = m_scoreViewDMDHProp.intDef.val != 0;
+   }
+   else
+   {
+      msgApi->RegisterSetting(endpointId, &m_backglassDMDOverlayProp);
+      msgApi->RegisterSetting(endpointId, &m_backglassDMDAutoPosProp);
+      msgApi->RegisterSetting(endpointId, &m_backglassDMDXProp);
+      msgApi->RegisterSetting(endpointId, &m_backglassDMDYProp);
+      msgApi->RegisterSetting(endpointId, &m_backglassDMDWProp);
+      msgApi->RegisterSetting(endpointId, &m_backglassDMDHProp);
+      m_enable = m_backglassDMDOverlayProp.boolDef.val != 0;
+      m_detectDmdFrame = m_backglassDMDAutoPosProp.boolDef.val != 0;
+      m_frame.x = m_backglassDMDXProp.intDef.val != 0;
+      m_frame.y = m_backglassDMDYProp.intDef.val != 0;
+      m_frame.z = m_backglassDMDWProp.intDef.val != 0;
+      m_frame.w = m_backglassDMDHProp.intDef.val != 0;
+   }
 }
 
 void DMDOverlay::Render(VPXRenderContext2D* ctx)

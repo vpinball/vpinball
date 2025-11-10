@@ -30,7 +30,7 @@ Server::Server(MsgPluginAPI* msgApi, uint32_t endpointId, VPXPluginAPI* vpxApi)
      m_endpointId(endpointId),
      m_pinmameApi(nullptr)
 {
-   m_pB2SSettings = new B2SSettings(m_msgApi);
+   m_pB2SSettings = new B2SSettings(m_msgApi, endpointId);
    m_pB2SData = new B2SData(this, m_pB2SSettings, m_vpxApi);
    m_pFormBackglass = nullptr;
    m_isVisibleStateSet = false;

@@ -5,6 +5,7 @@
 #include "PluginSettingsPage.h"
 
 #include "plugins/MsgPluginManager.h"
+#include "core/VPXPluginAPIImpl.h"
 
 using namespace MsgPI;
 
@@ -83,40 +84,44 @@ void PluginSettingsPage::BuildPage()
    if (!isEnabled)
       return;
 
-   /* for (const PinTable::TableOption& option : m_player->m_ptable->GetOptions())
+   for (const auto& option : VPXPluginAPIImpl::GetInstance().GetPluginSettings())
    {
-      const VPX::Properties::PropertyRegistry::PropId id = option.id;
-      const bool isReversed = option.displayScale < 0.f;
-      switch (Settings::GetRegistry().GetProperty(option.id)->m_type)
+      if (option.pluginId != m_pluginId)
+         continue;
+
+      const bool isReversed = false; //option.displayScale < 0.f;
+      switch (Settings::GetRegistry().GetProperty(option.propId)->m_type)
       {
       case VPX::Properties::PropertyDef::Type::Float:
          AddItem(std::make_unique<InGameUIItem>(
-            option.id, option.displayScale, option.format, //
-            [this, id]() { return GetOption(id)->value; }, //
-            [this, id](float, float v) { m_player->m_ptable->SetOptionLiveValue(id, v); }));
+            option.propId, 1.f, "%4.1f", /* option.displayScale, option.format,*/ //
+            [option]() { return option.setting->floatDef.val; }, //
+            [option](float, float v) { option.setting->floatDef.val = v; }));
          break;
       case VPX::Properties::PropertyDef::Type::Int:
          AddItem(std::make_unique<InGameUIItem>(
-            option.id, option.format, //
-            [this, id]() { return static_cast<int>(GetOption(id)->value); }, //
-            [this, id](int, int v) { m_player->m_ptable->SetOptionLiveValue(id, static_cast<float>(v)); }));
+            option.propId, "%4d", /* option.format, */ //
+            [option]() { return option.setting->intDef.val; }, //
+            [option](int, int v) { option.setting->intDef.val = v; }));
          break;
       case VPX::Properties::PropertyDef::Type::Bool:
          AddItem(std::make_unique<InGameUIItem>(
-            option.id, //
-            [this, id]() { return GetOption(id)->value != 0.f; }, //
-            [this, id, isReversed](bool v) { m_player->m_ptable->SetOptionLiveValue(id, isReversed ? (v ? 0.f : 1.f) : (v ? 1.f : 0.f)); }));
+            option.propId, //
+            [option]() { return option.setting->boolDef.val != 0; }, //
+            [option, isReversed](bool v) { option.setting->boolDef.val = isReversed ? (v ? 0 : 1) : (v ? 1 : 0); }));
          break;
       case VPX::Properties::PropertyDef::Type::Enum:
          AddItem(std::make_unique<InGameUIItem>(
-            option.id, //
-            [this, id]() { return static_cast<int>(GetOption(id)->value); }, //
-            [this, id](int, int v) { m_player->m_ptable->SetOptionLiveValue(id, static_cast<float>(v)); }));
+            option.propId, //
+            [option]() { return option.setting->intDef.val; }, //
+            [option](int, int v) { option.setting->intDef.val = v; }));
          break;
-      case VPX::Properties::PropertyDef::Type::String: break;
+      case VPX::Properties::PropertyDef::Type::String:
+         AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, option.setting->name + ": "s + option.setting->stringDef.val));
+         break;
       default: assert(false); break;
       }
-   }*/
+   }
 }
 
 }

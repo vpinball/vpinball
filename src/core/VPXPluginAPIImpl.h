@@ -34,6 +34,14 @@ public:
 
    std::shared_ptr<BaseTexture> GetTexture(VPXTexture texture) const;
 
+   struct PluginSetting
+   {
+      const string pluginId;
+      VPX::Properties::PropertyRegistry::PropId propId;
+      MsgSettingDef* setting;
+   };
+   const vector<PluginSetting>& GetPluginSettings() const { return m_pluginSettings; }
+
    void OnGameStart();
    void UpdateDMDSource(Flasher* flasher, bool isAdd);
    void OnGameEnd();
@@ -66,6 +74,10 @@ private:
    static void UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const uint8_t* image);
    static VPXTextureInfo* GetTextureInfo(VPXTexture texture);
    static void DeleteTexture(VPXTexture texture);
+
+   // Plugin settings
+   void UpdateSetting(const std::string& pluginId, bool isSave, MsgSettingDef* settingDef);
+   vector<PluginSetting> m_pluginSettings;
 
    // Plugin logging API
    static void OnGetLoggingPluginAPI(const unsigned int msgId, void* userData, void* msgData);

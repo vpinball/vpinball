@@ -10,7 +10,7 @@ namespace B2SLegacy {
 class B2SSettings final
 {
 public:
-   B2SSettings(MsgPluginAPI* msgApi);
+   B2SSettings(MsgPluginAPI* msgApi, unsigned int endpointId);
    ~B2SSettings();
 
    static const string& GetMinimumDirectB2SVersion() { static const string ver = "1.0"s; return ver; }
@@ -58,8 +58,6 @@ public:
    void SetB2SName(const string& szB2SName) { m_szB2SName = szB2SName; Load(false); }
    void Load(bool resetLogs = true);
    void ClearAll();
-   int GetSettingInt(const char* key, int def = 0) const;
-   bool GetSettingBool(const char* key, bool def = false) const;
    B2SSettingsCheckedState GetHideGrill() const { return m_hideGrill; }
    B2SSettingsCheckedState GetHideDMD() const { return m_hideDMD; }
    bool IsFormToFront() const { return m_formToFront; }
@@ -98,6 +96,7 @@ private:
    bool m_formToBack;
    bool m_formNoFocus;
    MsgPluginAPI* m_msgApi;
+   unsigned int m_endpointId;
 };
 
 }

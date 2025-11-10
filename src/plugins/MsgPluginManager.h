@@ -93,7 +93,7 @@ public:
    const MsgPluginAPI& GetMsgAPI() const { return m_api; }
    void ProcessAsyncCallbacks();
    void UnloadPlugins();
-   void SetSettingsHandler(const std::function<void(const char*, const char*, char*, unsigned int)>& handler) { m_settingHandler = handler; }
+   void SetSettingsHandler(const std::function<void(const std::string& pluginId, bool isSave, MsgSettingDef* settingDef)>& handler) { m_settingHandler = handler; }
    void UpdateAPIThread() { m_apiThread = std::this_thread::get_id(); }
 
 private:
@@ -108,7 +108,8 @@ private:
    static void MSGPIAPI BroadcastMsg(const uint32_t endpointId, const unsigned int msgId, void* data);
    static void MSGPIAPI SendMsg(const uint32_t endpointId, const unsigned int msgId, const uint32_t targetEndpointId, void* data);
    static void MSGPIAPI ReleaseMsgID(const unsigned int msgId);
-   static void MSGPIAPI GetSetting(const char* name_space, const char* name, char* valueBuf, unsigned int valueBufSize);
+   static void MSGPIAPI RegisterSetting(const uint32_t endpointId, MsgSettingDef* settingDef);
+   static void MSGPIAPI SaveSetting(const uint32_t endpointId, MsgSettingDef* settingDef);
    static void MSGPIAPI RunOnMainThread(const double delayInS, const msgpi_timer_callback callback, void* userData);
 
    std::vector<std::shared_ptr<MsgPlugin>> m_plugins;
@@ -140,8 +141,7 @@ private:
    std::vector<TimerEntry> m_timers;
    std::mutex m_timerListMutex;
 
-   std::function<void(const char*, const char*, char*, unsigned int)> m_settingHandler = 
-      [](const char* name_space, const char* name, char* valueBuf, unsigned int valueBufSize) { valueBuf[0] = 0; };
+   std::function<void(const std::string& pluginId, bool isSave, MsgSettingDef* settingDef)> m_settingHandler;
 
    MsgPluginAPI m_api;
    

@@ -17,7 +17,7 @@ Form::Form(VPXPluginAPI* vpxApi, MsgPluginAPI* msgApi, uint32_t endpointId, B2SD
       m_dmdTex = nullptr;
 
       m_pDmdOverlay = new DMDOverlay(*m_pResURIResolver, m_dmdTex, nullptr, m_vpxApi);
-      m_pDmdOverlay->LoadSettings(msgApi, "B2SLegacy"s, overlayType);
+      m_pDmdOverlay->LoadSettings(msgApi, m_endpointId, overlayType == "ScoreView"s);
    }
 }
 
