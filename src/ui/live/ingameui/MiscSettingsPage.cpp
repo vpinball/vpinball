@@ -49,7 +49,7 @@ void MiscSettingsPage::BuildPage()
       [this](float, float v)
       {
          m_player->m_renderer->m_exposure = v;
-         m_player->m_ptable->FireOptionEvent(1); // Table option changed event
+         m_player->m_ptable->FireOptionEvent(PinTable::OptionEventType::Changed);
       }));
 
    // Difficulty, always saved as a table override setting if different from table embedded value
@@ -60,7 +60,7 @@ void MiscSettingsPage::BuildPage()
       [this](float, float v)
       {
          m_player->m_ptable->m_globalDifficulty = v;
-         m_player->m_ptable->FireOptionEvent(1); // Table option changed event
+         m_player->m_ptable->FireOptionEvent(PinTable::OptionEventType::Changed);
          m_difficultyNotification
             = m_player->m_liveUI->PushNotification("You have changed the difficulty level\nThis change will only be applied after restart."s, 5000, m_difficultyNotification);
       }));
@@ -108,7 +108,7 @@ void MiscSettingsPage::BuildPage()
                }
                m_player->m_renderer->m_globalEmissionScale = v;
                m_player->m_renderer->MarkShaderDirty();
-               m_player->m_ptable->FireOptionEvent(1); // Table option changed event
+               m_player->m_ptable->FireOptionEvent(PinTable::OptionEventType::Changed);
             }));
       }
       else if (m_dayTimeMode == 2)

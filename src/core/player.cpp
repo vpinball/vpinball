@@ -623,7 +623,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
                ph->GetIHitable()->GetEventProxyBase()->FireVoidEvent(DISPID_AnimateEvents_Animate);
          }
       }
-      m_ptable->FireOptionEvent(0); // Custom option init event
+      m_ptable->FireOptionEvent(PinTable::OptionEventType::Initialized);
       m_ptable->FireVoidEvent(DISPID_GameEvents_Paused);
    }
 

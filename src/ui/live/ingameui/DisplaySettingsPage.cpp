@@ -501,9 +501,8 @@ void DisplaySettingsPage::BuildWindowPage()
 
 void DisplaySettingsPage::BuildEmbeddedPage()
 {
-   const int maxWidth = m_player->m_ptable->m_settings.GetWindow_Width(VPXWINDOW_Playfield);
-   const int maxHeight = m_player->m_ptable->m_settings.GetWindow_Height(VPXWINDOW_Playfield);
-
+   const int maxWidth = m_player->m_playfieldWnd->GetWidth();
+   const int maxHeight = m_player->m_playfieldWnd->GetHeight();
    int wndX, wndY, wndW, wndH;
    GetOutput(m_wndId).GetPos(wndX, wndY);
    wndW = GetOutput(m_wndId).GetWidth();
