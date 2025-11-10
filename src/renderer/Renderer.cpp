@@ -61,7 +61,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       m_ballImage = BaseTexture::CreateFromFile(m_table->m_settings.GetPlayer_BallImage(), m_table->m_settings.GetPlayer_MaxTexDimension());
       m_decalImage = BaseTexture::CreateFromFile(m_table->m_settings.GetPlayer_DecalImage(), m_table->m_settings.GetPlayer_MaxTexDimension());
    }
-   m_vrApplyColorKey = m_table->m_settings.GetPlayerVR_UsePassthroughColor();
+   m_vrApplyColorKey = m_stereo3D == STEREO_VR && m_table->m_settings.GetPlayerVR_UsePassthroughColor();
    m_vrColorKey = convertColor(m_table->m_settings.GetPlayerVR_PassthroughColor(), 1.f);
    m_vrColorKey.x = InvsRGB(m_vrColorKey.x);
    m_vrColorKey.y = InvsRGB(m_vrColorKey.y);

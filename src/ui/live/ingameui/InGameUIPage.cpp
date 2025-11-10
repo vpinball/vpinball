@@ -378,7 +378,7 @@ void InGameUIPage::Render(float elapsedS)
    const float animPos = m_openAnimPos;
 
    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 1.f - fabs(GetOpenCloseAnimPos()));
-   ImGui::SetNextWindowBgAlpha(0.5f);
+   ImGui::SetNextWindowBgAlpha(m_player->m_renderer->m_vrApplyColorKey ? 1.f : 0.5f);
    // Size is selected to match pinball instruction cards format which have an aspect ratio of roughly 6" x 3.25" (WPC, other varies), except for mobile where we favor size
    constexpr float pinballCardAR = 6.f / 3.5f;
    ImVec2 winSize;
