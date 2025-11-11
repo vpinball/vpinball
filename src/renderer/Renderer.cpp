@@ -1679,6 +1679,9 @@ void Renderer::RenderStaticPrepass()
 
 void Renderer::RenderDynamics()
 {
+   if (g_pplayer->GetInfoMode() == IF_STATIC_ONLY)
+      return;
+      
    TRACE_FUNCTION();
 
    // Mark all probes to be re-rendered for this frame (only if needed, lazily rendered)
@@ -1749,6 +1752,12 @@ void Renderer::UpdateAmbientOcclusion(RenderTarget* renderedRT)
 {
    if (GetAOMode() != 2) // Only process for dynamic AO
       return;
+
+   m_renderDevice->ResetRenderState();
+   m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+   m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+   m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+   m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
 
    // separate normal generation pass, currently roughly same perf or even much worse
    /* m_renderDevice->SetRenderTarget(m_pd3dDevice->GetPostProcessRenderTarget1()); //!! expects stereo or FXAA enabled
@@ -1833,6 +1842,12 @@ RenderTarget* Renderer::ApplyAdditiveScreenSpaceReflection(RenderTarget* rendere
 {
    if (!m_ss_refl || !m_table->m_enableSSR || !m_renderDevice->DepthBufferReadBackAvailable() || m_table->m_SSRScale <= 0.f)
       return renderedRT;
+
+   m_renderDevice->ResetRenderState();
+   m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+   m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+   m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+   m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
 
    RenderTarget* outputRT = GetReflectionBufferTexture();
    m_renderDevice->SetRenderTarget("ScreenSpace Reflection"s, outputRT, true);
@@ -2161,6 +2176,12 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
    if (m_motionBlurOff)
       return afterTonemapRT;
 
+   m_renderDevice->ResetRenderState();
+   m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+   m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+   m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+   m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+
    // Draw motion blur to a temporary render target
    RenderTarget* tempRT = GetMotionBlurBufferTexture(); // Use a dedicated buffer since we need HDR (RGB16F) and we can't use the existing ones (Backbuffer 1 & 2 and SSR)
    m_renderDevice->SetRenderTarget("Ball Motion Blur - Compute"s, tempRT, false);
@@ -2271,6 +2292,13 @@ RenderTarget* Renderer::ApplyPostProcessedAntialiasing(RenderTarget* renderedRT,
    const bool FXAA1 = m_FXAA == Fast_FXAA;
    const bool FXAA2 = m_FXAA == Standard_FXAA;
    const bool FXAA3 = m_FXAA == Quality_FXAA;
+
+   m_renderDevice->ResetRenderState();
+   m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+   m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+   m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+   m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+
    if (NFAA || FXAA1 || FXAA2 || FXAA3)
    {
       assert(renderedRT == GetPostProcessRenderTarget1());
@@ -2364,6 +2392,12 @@ RenderTarget* Renderer::ApplySharpening(RenderTarget* renderedRT, RenderTarget* 
    if (!m_sharpen)
       return renderedRT;
 
+   m_renderDevice->ResetRenderState();
+   m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+   m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+   m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+   m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+
    assert(renderedRT != outputBackBuffer); // At this point, renderedRT may be PP1, PP2 or backbuffer
    RenderTarget* outputRT = outputBackBuffer ? outputBackBuffer : GetPostProcessRenderTarget(renderedRT);
    assert(outputRT != renderedRT);
@@ -2384,6 +2418,12 @@ RenderTarget* Renderer::ApplyUpscaling(RenderTarget* renderedRT, RenderTarget* o
       return renderedRT;
 
    // TODO add AMD FidelityFX Super Resolution (FSR) support
+
+   m_renderDevice->ResetRenderState();
+   m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+   m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+   m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+   m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
 
    assert(renderedRT != outputBackBuffer); // At this point, renderedRT may be PP1, PP2 or backbuffer
    RenderTarget* outputRT = outputBackBuffer ? outputBackBuffer : GetPostProcessRenderTarget(renderedRT);
@@ -2406,6 +2446,12 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
    if (m_stereo3D == STEREO_OFF)
       return renderedRT;
    
+   m_renderDevice->ResetRenderState();
+   m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+   m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+   m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+   m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+
    if (m_stereo3D == STEREO_VR)
    {
    #if defined(ENABLE_XR) || defined(ENABLE_VR)
@@ -2644,8 +2690,7 @@ void Renderer::RenderFrame()
       #ifdef ENABLE_XR
       if (g_pplayer->m_vrDevice && m_stereo3D == STEREO_VR)
       {
-         MeshBuffer* mask = g_pplayer->m_vrDevice->GetVisibilityMask();
-         if (mask)
+         if (MeshBuffer* mask = g_pplayer->m_vrDevice->GetVisibilityMask(); mask)
          {
             Vertex3Ds pos(0.f, 0.f, 200000.0f); // Very high depth bias to ensure being rendered before other opaque parts (which are sorted front to back)
             m_renderDevice->ResetRenderState();
@@ -2670,8 +2715,7 @@ void Renderer::RenderFrame()
       m_renderDevice->BlitRenderTarget(m_staticPrepassRT, GetMSAABackBufferTexture());
    }
 
-   if (g_pplayer->GetInfoMode() != IF_STATIC_ONLY)
-      RenderDynamics();
+   RenderDynamics();
 
    // Resolve MSAA buffer to a normal one (noop if not using MSAA), allowing sampling it for postprocessing
    if (GetMSAABackBufferTexture() != GetBackBufferTexture())
@@ -2682,22 +2726,6 @@ void Renderer::RenderFrame()
       m_renderDevice->SetRenderTarget(initial_rt->m_name, initial_rt->m_rt);
       initial_rt->m_name += '-';
    }
-
-   const bool hasAntialiasPass = m_FXAA != Disabled;
-   const bool hasSharpenPass = m_sharpen != 0;
-   const bool hasUpscalerPass = m_renderWidth < GetBackBufferTexture()->GetWidth();
-   // OpenXR directly renders to the XR render target view without any postprocess needs
-   #ifdef ENABLE_XR
-   const bool hasStereoPass = m_stereo3Denabled && (m_stereo3D != STEREO_OFF) && (m_stereo3D != STEREO_VR);
-   #else
-   const bool hasStereoPass = m_stereo3Denabled && (m_stereo3D != STEREO_OFF);
-   #endif
-
-   m_renderDevice->ResetRenderState();
-   m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-   m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-   m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-   m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
 
    // Starts from the output of the render passes
    RenderTarget* renderedRT = GetBackBufferTexture();
@@ -2720,6 +2748,16 @@ void Renderer::RenderFrame()
    RenderAncillaryWindow(VPXWindowId::VPXWINDOW_Backglass, g_pplayer->m_backglassOutput, renderedRT, g_pplayer->m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_Backglass]);
    RenderAncillaryWindow(VPXWindowId::VPXWINDOW_ScoreView, g_pplayer->m_scoreViewOutput, renderedRT, g_pplayer->m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_ScoreView]);
    RenderAncillaryWindow(VPXWindowId::VPXWINDOW_Topper, g_pplayer->m_topperOutput, renderedRT, g_pplayer->m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_Topper]);
+
+   const bool hasAntialiasPass = m_FXAA != Disabled;
+   const bool hasSharpenPass = m_sharpen != 0;
+   const bool hasUpscalerPass = m_renderWidth < GetBackBufferTexture()->GetWidth();
+   // OpenXR directly renders to the XR render target view without any postprocess needs
+   #ifdef ENABLE_XR
+   const bool hasStereoPass = m_stereo3Denabled && (m_stereo3D != STEREO_OFF) && (m_stereo3D != STEREO_VR);
+   #else
+   const bool hasStereoPass = m_stereo3Denabled && (m_stereo3D != STEREO_OFF);
+   #endif
 
    // Perform color grade LUT / dither / tonemapping, also applying bloom and AO
    RenderTarget* const tonemapRT = (hasAntialiasPass || hasSharpenPass || hasStereoPass || hasUpscalerPass) ? GetPostProcessRenderTarget1() : m_renderDevice->GetOutputBackBuffer();

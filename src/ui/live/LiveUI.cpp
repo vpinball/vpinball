@@ -531,7 +531,6 @@ void LiveUI::Update()
    m_rd->ResetRenderState();
    m_rd->SetRenderState(RenderState::COLORWRITEENABLE, RenderState::RGBMASK_RGBA);
    m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
-   m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
    m_rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
    m_rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
    m_rd->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
