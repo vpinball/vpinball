@@ -97,7 +97,7 @@ target_compile_options(vpinball PUBLIC
       -ffp-contract=off>
 )
 
-# Disable Tree PTA to avoid GCC slowdown
+# Disable Tree PTA to avoid GCC slowdown due to extreme inlining
 set_source_files_properties(src/core/Settings.cpp PROPERTIES
    COMPILE_FLAGS "$<$<CXX_COMPILER_ID:GNU>:-fno-tree-pta>"
 )
