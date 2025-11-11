@@ -85,6 +85,9 @@ void PUPManager::LoadConfig(const string& szRomName)
 {
    Unload();
 
+   if (m_szRootPath.empty())
+      return;
+
    SetGameDir(szRomName);
 
    // Load playlists
