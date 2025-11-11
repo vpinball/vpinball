@@ -1,8 +1,8 @@
-'Last Updated in VBS v3.56
+'Last Updated in VBS v3.62
 
-'As much as possible, using direct mappings (key number) should be avoided as they only works with US keyboards, 
-'they do not support mapping to other input system (joystick, VR controller, ...), they can't be redefined easily,
-'they may conflict with existing or future input defaults, they do not apply the user keyboard layout, and they 
+'Please avoid using direct mappings (key number) should be avoided, as these only work with US keyboards,
+'do not support mapping to other input systems (joystick, VR controller, ...), can't be redefined easily,
+'may conflict with existing or future input defaults, do not apply the user keyboard layout, and
 'only cover a subset of the keyboard.
 'Using the action mappings provided by VPX should always be favored (see VPXActionKey).
 
@@ -76,12 +76,12 @@ Option Explicit
 
 ' VBS based user interface
 ' (only for VPinMAME COM component, not needed for PinMAME plugin)
-Const keyShowOpts	= 59                  '(F1)	 Show options
-Const keyShowKeys	= 60                  '(F2)	 Show Keys
+Const keyShowOpts	= 59                  '(F1)  Show options
+Const keyShowKeys	= 60                  '(F2)  Show Keys
 Dim keyReset: keyReset = VPXActionKey(19) '(F3)  Reset Emulation
-Const keyFrame		= 62                  '(F4)	 Toggle Window Lock (no operation if not usig VPinMAME)
-Const keyDoubleSize	= 63                  '(F5)	 Toggle displaysize (no operation if not usig VPinMAME)
-Const keyShowDips	= 64                  '(F6)	 Show Dip Switch / Options Menu
+Const keyFrame		= 62                  '(F4)  Toggle Window Lock (no operation if not usig VPinMAME)
+Const keyDoubleSize	= 63                  '(F5)  Toggle displaysize (no operation if not usig VPinMAME)
+Const keyShowDips	= 64                  '(F6)  Show Dip Switch / Options Menu
 Const keyVPMVolume	= 88                  '(F12) Show input box to set VPM Volume (no operation if not usig VPinMAME)
 
 ' Cabinet switches
@@ -134,8 +134,8 @@ Const keyGameSpecific2 = 17  '(W)
 Const keyGameSpecific3 = 18  '(E)
 Const keyGameSpecific4 = 19  '(R)
 
-' Backward compatibility: Staged flipper used to need the user to edit script files, adapting the 2 following variables.
-' They are now managed in the application UI but some tables expects these 2 variables to be defined. We simply mirror the
-' application settings (but we do not dynamically update them: old tables will need to be restarted when user adjust them)
-Dim keyStagedFlipperL : keyStagedFlipperL = StagedLeftFlipperKey 
-Dim keyStagedFlipperR : keyStagedFlipperR = StagedRightFlipperKey 
+' Backward compatibility: Staged flippers needed the user to edit script files, adapting the 2 following variables.
+' These are now managed in the application UI but some tables still expect these 2 variables to be defined. VPX simply mirrors the
+' application settings (but does not dynamically update them: old tables will need to be restarted after adjusting)
+Dim keyStagedFlipperL : keyStagedFlipperL = StagedLeftFlipperKey
+Dim keyStagedFlipperR : keyStagedFlipperR = StagedRightFlipperKey
