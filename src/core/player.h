@@ -127,6 +127,8 @@ private:
 public:
    void GameLoop();
 
+   void UpdateGameLogic();
+
    VideoSyncMode GetVideoSyncMode() const { return m_videoSyncMode; }
    void SetVideoSyncMode(VideoSyncMode mode) { m_videoSyncMode = mode; }
    float GetTargetRefreshRate() const { return m_maxFramerate; }
@@ -146,9 +148,9 @@ private:
    unsigned int m_onPrepareFrameMsgId;
 
    void ProcessOSMessages();
-   void MultithreadedGameLoop(const std::function<void()>& sync);
-   void FramePacingGameLoop(const std::function<void()>& sync);
-   void GPUQueueStuffingGameLoop(const std::function<void()>& sync);
+   void MultithreadedGameLoop();
+   void FramePacingGameLoop();
+   void GPUQueueStuffingGameLoop();
 #pragma endregion
 
 
@@ -226,7 +228,7 @@ public:
    vector<AncillaryRendererDef> m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_Topper + 1];
 
 private:
-   void PrepareFrame(const std::function<void()>& sync);
+   void PrepareFrame();
    void SubmitFrame();
    void FinishFrame();
 
