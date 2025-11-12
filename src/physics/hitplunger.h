@@ -228,7 +228,14 @@ public:
    // slowly enough for our USB samples to keep up and give us an
    // accurate position reading; it's only on release that it starts
    // moving too fast.
-   float m_mech0, m_mech1, m_mech2;
+   struct MechSample
+   {
+      float pos;
+      uint64_t ts;
+   };
+   std::array<MechSample, 16> m_mech {};
+   int m_mechPos = 0;
+   float m_mechSpeed = 0.f;
 
    // scatter velocity (degree of randomness in the impulse when
    // the plunger strikes the ball, to simulate the mechanical

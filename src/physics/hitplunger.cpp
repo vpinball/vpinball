@@ -81,7 +81,6 @@ PlungerMoverObject::PlungerMoverObject(Plunger* const plunger)
    , m_jointEnd { HitLineZ(plunger), HitLineZ(plunger) }
 {
    // clear the mech plunger reading history
-   m_mech0 = m_mech1 = m_mech2 = 0.0f;
    m_addRetractMotion = false;
    m_retractMotion = false;
    m_retractWaitLoop = 0;
@@ -406,8 +405,30 @@ void PlungerMoverObject::UpdateVelocities()
    const bool isMech = m_plunger->m_d.m_mechPlunger;
    const float mech = isMech ? MechPlunger() : 0.0f;
 
-   // calculate the delta from the last reading
-   const float dmech = m_mech0 - mech;
+   constexpr uint64_t mechSampleIntegration = 10000UL; // We consider samples of the last 10ms (we always consider at least 2 samples, if the device update acquisition period is more than this)
+
+   // Compute the mech speed, taking in account the hardware device acquisition rate (which can vary greatly from 1ms for newer device to up to 25ms on older ones)
+   if (isMech)
+   {
+      const int nSamples = static_cast<int>(m_mech.size());
+      if (m_mech[m_mechPos].pos != mech)
+      {
+         m_mechPos = (m_mechPos + 1) % nSamples;
+         m_mech[m_mechPos].pos = mech;
+         m_mech[m_mechPos].ts = usec();
+      }
+      // Compute speed in meters per second, considering full range of travel of 3"
+      // We search for sample with up to the integration period to limit noise
+      const uint64_t now = m_mech[m_mechPos].ts;
+      int prevMechPos = (m_mechPos + (nSamples - 1)) % nSamples;
+      while (prevMechPos != m_mechPos)
+      {
+         if (now - m_mech[prevMechPos].ts > mechSampleIntegration)
+            break;
+         prevMechPos = (prevMechPos + (nSamples - 1)) % nSamples;
+      }
+      m_mechSpeed = (m_mech[m_mechPos].pos - m_mech[prevMechPos].pos) * 3.f * 2.54f * 0.01f * 1000000.f / static_cast<float>(m_mech[m_mechPos].ts - m_mech[prevMechPos].ts);
+   }
 
    // Frame-to-frame mech movement threshold for detecting a release
    // motion.  1.0 is the full range of travel, which corresponds
@@ -416,17 +437,15 @@ void PlungerMoverObject::UpdateVelocities()
    // to move the plunger manually, but slower than the plunger
    // typically moves under spring power when released.  It appears
    // from observation that a real plunger moves at something on the
-   // order of 3 m/s.  Figure the fastest USB update interval will
-   // be 10ms, typical is probably 25ms, and slowest is maybe 40ms;
-   // and figure the bracket speed range down to about 1 m/s.  This
-   // gives us a distance per USB interval of from 25mm to 100mm.
-   // 25mm translates to .32 of our distance units (0.0-1.0 scale).
+   // order of 3 m/s.
    // The lower we make this, the more sensitive we'll be at
    // detecting releases, but if we make it too low we might mistake
-   // manual movements for releases.  In practice, it seems safe to
-   // lower it to about 0.2 - this doesn't seem to cause false
-   // positives and seems reliable at identifying actual releases.
-   constexpr float ReleaseThreshold = 0.2f;
+   // manual movements for releases. In practice, it seems safe to
+   // lower it to about 1 m/s - this doesn't seem to cause false
+   // positives and seems reliable at identifying actual releases 
+   // from the release beginning (the speed reaches 3 to 5m/s at
+   // the end, but is around 1m/s at the start).
+   constexpr float ReleaseThreshold = -1.f; // 1m/s limit
 
    // note if we're acting as an auto plunger
    const bool autoPlunger = m_plunger->m_d.m_autoPlunger;
@@ -455,10 +474,11 @@ void PlungerMoverObject::UpdateVelocities()
       // mechanical plunger and we're operating as an auto plunger.
       // When the timer reaches zero, we'll send the corresponding
       // KeyUp event and cancel the timer.
-      if (g_pplayer && m_autoFireTimerInputStateSlot != -1 && (--m_autoFireTimer == 0) && (g_pplayer != nullptr))
+      m_autoFireTimer--;
+      if (g_pplayer && (m_autoFireTimerInputStateSlot != -1) && (m_autoFireTimer == 0) && (g_pplayer != nullptr))
          g_pplayer->m_pininput.GetInputActions()[g_pplayer->m_pininput.GetLaunchBallActionId()]->SetDirectState(m_autoFireTimerInputStateSlot, false);
    }
-   else if (autoPlunger && dmech > ReleaseThreshold)
+   else if (autoPlunger && m_mechSpeed < ReleaseThreshold)
    {
       // Release motion detected in Auto Plunger mode.
       //
@@ -587,7 +607,7 @@ void PlungerMoverObject::UpdateVelocities()
       // position in one physics frame.
       m_speed = (mech - pos) * m_frameLen;
    }
-   else if (dmech > ReleaseThreshold && !g_pplayer->m_pininput.HasMechPlungerSpeed())
+   else if (m_mechSpeed < ReleaseThreshold && !g_pplayer->m_pininput.HasMechPlungerSpeed())
    {
       // Normal mode, fast forward motion detected, external
       // device is NOT providing speed input data.  Consider this
@@ -651,13 +671,10 @@ void PlungerMoverObject::UpdateVelocities()
       // started.  Scan the history for monotonically ascending values,
       // and take the highest one we find.  That's probably where the
       // user actually released the plunger.
-      float apex = m_mech0;
-      if (m_mech1 > apex)
-      {
-         apex = m_mech1;
-         if (m_mech2 > apex)
-            apex = m_mech2;
-      }
+      float apex = 0.f;
+      for (const auto& sample : m_mech)
+         if (sample.pos > apex && (m_mech[0].ts - sample.ts < mechSampleIntegration)) // only consider the samples gathered in the last 3ms
+            apex = sample.pos;
 
       // trigger a release from the apex position
       Fire(apex);
@@ -726,17 +743,6 @@ void PlungerMoverObject::UpdateVelocities()
 
    // cancel any reverse impulse
    m_reverseImpulse = 0.0f;
-
-   // Shift the current mech reading into the history list, if it's
-   // different from the last reading.  Only keep distinct readings;
-   // the physics loop tends to run faster than the USB reporting
-   // rate, so we might see the same USB report several times here.
-   if (mech != m_mech0)
-   {
-      m_mech2 = m_mech1;
-      m_mech1 = m_mech0;
-      m_mech0 = mech;
-   }
 }
 
 float HitPlunger::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
