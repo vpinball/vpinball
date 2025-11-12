@@ -2717,6 +2717,9 @@ void Renderer::RenderFrame()
 
    RenderDynamics();
 
+   // Keep latency low by proceeding input, ... (as next passes are not affected by the game logic)
+   g_pplayer->UpdateGameLogic();
+   
    // Resolve MSAA buffer to a normal one (noop if not using MSAA), allowing sampling it for postprocessing
    if (GetMSAABackBufferTexture() != GetBackBufferTexture())
    {

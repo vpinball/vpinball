@@ -658,6 +658,8 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    // Pre-render all non-changing elements such as static walls, rails, backdrops, etc. and also static playfield reflections
    // This is done after starting the script and firing the Init event to allow script to adjust static parts on startup
    PLOGI << "Prerendering static parts"; // For profiling
+   wintimer_init();
+   m_physics->StartPhysics();
    m_renderer->RenderFrame();
 
    // Reset the perf counter to start time when physics starts
@@ -1515,32 +1517,34 @@ void Player::ProcessOSMessages()
    }
 };
 
+void Player::UpdateGameLogic()
+{
+   #ifdef MSVC_CONCURRENCY_VIEWER
+   //series.write_flag(_T("Sync"));
+   span *tagSpan = new span(series, 1, _T("Sync"));
+   #endif
+   
+   ProcessOSMessages();
+   
+   if (!IsEditorMode())
+   {
+      m_pininput.ProcessInput(); // Trigger key events to sync with controller
+      m_physics->UpdatePhysics(); // Update physics (also triggering events, syncing with controller)
+      // TODO These updates should also be done directly in the physics engine after collision events
+      FireSyncController(); // Trigger script sync event (to sync solenoids back)
+   }
+   
+   MsgPI::MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
+   
+   #ifdef MSVC_CONCURRENCY_VIEWER
+   delete tagSpan;
+   #endif
+}
 
 void Player::GameLoop()
 {
    // Stereo must be run unthrottled to let OpenVR set the frame pace according to the head set
    assert(!(m_renderer->m_stereo3D == STEREO_VR && (m_videoSyncMode != VideoSyncMode::VSM_NONE || m_maxFramerate < 1000.f)));
-
-   auto sync = [this]()
-   {
-      // Controller sync
-      #ifdef MSVC_CONCURRENCY_VIEWER
-      //series.write_flag(_T("Sync"));
-      span *tagSpan = new span(series, 1, _T("Sync"));
-      #endif
-      ProcessOSMessages();
-      if (!IsEditorMode())
-      {
-         m_pininput.ProcessInput(); // Trigger key events to sync with controller
-         m_physics->UpdatePhysics(); // Update physics (also triggering events, syncing with controller)
-         // TODO These updates should also be done directly in the physics engine after collision events
-         FireSyncController(); // Trigger script sync event (to sync solenoids back)
-      }
-      MsgPI::MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
-      #ifdef MSVC_CONCURRENCY_VIEWER
-      delete tagSpan;
-      #endif
-   };
 
    #ifdef ENABLE_BGFX
       // Flush any pending frame
@@ -1550,24 +1554,24 @@ void Player::GameLoop()
       m_logicProfiler.SetThreadLock();
 
       #ifdef __LIBVPINBALL__
-         auto gameLoop = [this, sync]() {
-            MultithreadedGameLoop(sync);
+         auto gameLoop = [this]() {
+            MultithreadedGameLoop();
          };
          VPinballLib::VPinballLib::Instance().SetGameLoop(gameLoop);
       #else
-         MultithreadedGameLoop(sync);
+         MultithreadedGameLoop();
       #endif
    #else
       delete m_renderProfiler;
       m_renderProfiler = &m_logicProfiler;
       if (m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING)
-         FramePacingGameLoop(sync);
+         FramePacingGameLoop();
       else
-         GPUQueueStuffingGameLoop(sync);
+         GPUQueueStuffingGameLoop();
    #endif
 }
 
-void Player::MultithreadedGameLoop(const std::function<void()>& sync)
+void Player::MultithreadedGameLoop()
 {
 #ifdef ENABLE_BGFX
    while (GetCloseState() == CS_PLAYING || GetCloseState() == CS_USER_INPUT
@@ -1577,14 +1581,14 @@ void Player::MultithreadedGameLoop(const std::function<void()>& sync)
    )
    {
       // Continuously process input, synchronize with emulation and step physics to keep latency low
-      sync();
+      UpdateGameLogic();
 
       // If rendering thread is ready, push a new frame as soon as possible
       if (!m_renderer->m_renderDevice->m_framePending && m_renderer->m_renderDevice->m_frameMutex.try_lock())
       {
          FinishFrame();
          m_lastFrameSyncOnFPS = (m_videoSyncMode != VideoSyncMode::VSM_NONE) && ((m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME) - 100) * m_playfieldWnd->GetRefreshRate() < 1000000);
-         PrepareFrame(sync);
+         PrepareFrame();
          m_renderer->m_renderDevice->m_framePending = true;
          m_renderer->m_renderDevice->m_frameReadySem.post();
          m_renderer->m_renderDevice->m_frameMutex.unlock();
@@ -1608,7 +1612,7 @@ void Player::MultithreadedGameLoop(const std::function<void()>& sync)
 #endif
 }
 
-void Player::GPUQueueStuffingGameLoop(const std::function<void()>& sync)
+void Player::GPUQueueStuffingGameLoop()
 {
    // Legacy main loop performs the frame as a single block. This leads to having the input <-> physics stall between frames increasing
    // the latency and causing syncing problems with PinMAME (which runs in real-time and expects real-time inputs, especially for video modes
@@ -1620,15 +1624,15 @@ void Player::GPUQueueStuffingGameLoop(const std::function<void()>& sync)
       series.write_flag(_T("Frame"));
       #endif
 
-      sync();
+      UpdateGameLogic();
 
-      PrepareFrame(sync);
+      PrepareFrame();
 
-      sync();
+      UpdateGameLogic();
 
       SubmitFrame();
 
-      sync();
+      UpdateGameLogic();
 
       // Present & VSync
       #ifdef MSVC_CONCURRENCY_VIEWER
@@ -1663,7 +1667,7 @@ void Player::GPUQueueStuffingGameLoop(const std::function<void()>& sync)
    }
 }
 
-void Player::FramePacingGameLoop(const std::function<void()>& sync)
+void Player::FramePacingGameLoop()
 {
    // The main loop tries to perform a constant input/physics cycle at a 1ms pace while feeding the GPU command queue at a stable rate, without multithreading.
    // These 2 tasks are designed as follows:
@@ -1712,12 +1716,12 @@ void Player::FramePacingGameLoop(const std::function<void()>& sync)
       series.write_flag(_T("Frame"));
       #endif
 
-      sync();
+      UpdateGameLogic();
 
       PLOGI_IF(debugLog) << "Frame Collect [Last frame length: " << ((double)m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME) / 1000.0) << "ms] at " << usec();
-      PrepareFrame(sync);
+      PrepareFrame();
 
-      sync();
+      UpdateGameLogic();
 
       PLOGI_IF(debugLog) << "Frame Submit at " << usec();
       SubmitFrame();
@@ -1728,7 +1732,7 @@ void Player::FramePacingGameLoop(const std::function<void()>& sync)
       {
          m_curFrameSyncOnVBlank = true;
          YieldProcessor();
-         sync();
+         UpdateGameLogic();
       }
 
       // If the user asked to sync on a lower frame rate than the refresh rate, then wait for it
@@ -1743,7 +1747,7 @@ void Player::FramePacingGameLoop(const std::function<void()>& sync)
          {
             m_curFrameSyncOnFPS = true;
             YieldProcessor();
-            sync();
+            UpdateGameLogic();
          }
       }
 
@@ -1770,7 +1774,7 @@ void Player::FramePacingGameLoop(const std::function<void()>& sync)
 
 extern void PrecompSplineTonemap(const float displayMaxLum, float out[6]);
 
-void Player::PrepareFrame(const std::function<void()>& sync)
+void Player::PrepareFrame()
 {
    // Rendering outputs to m_renderDevice->GetBackBufferTexture(). If MSAA is used, it is resolved as part of the rendering (i.e. this surface is NOT the MSAA render surface but its resolved copy)
    // Then it is tonemapped/bloom/dither/... to m_renderDevice->GetPostProcessRenderTarget1() if needed for postprocessing (sharpen, FXAA,...), or directly to the main output framebuffer otherwise
@@ -1838,7 +1842,7 @@ void Player::PrepareFrame(const std::function<void()>& sync)
    
    #if defined(ENABLE_BGFX)
    // Since the script can be somewhat lengthy, we do an additional sync here
-   sync();
+   UpdateGameLogic();
    #endif
 
    #ifdef MSVC_CONCURRENCY_VIEWER
