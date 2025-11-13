@@ -1,0 +1,30 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Debug_BGFX" />
+    <BuildType Name="Debug_GL" />
+    <BuildType Name="Release" />
+    <BuildType Name="Release_BGFX" />
+    <BuildType Name="Release_GL" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="plugin-alphadmd.vcxproj" Id="2bf90d88-9139-4e66-a778-4327311af7a7" />
+  <Project Path="plugin-b2s.vcxproj" Id="7d58c20e-53f4-4ad6-9004-ca6148082491" />
+  <Project Path="plugin-b2slegacy.vcxproj" Id="06c52e8f-573c-4f2b-a007-7588147d30e4" />
+  <Project Path="plugin-dmdutil.vcxproj" Id="dafbe049-4233-430b-9a04-63223c3972e3" />
+  <Project Path="plugin-dof.vcxproj" Id="14feaf4c-1835-497b-ad3d-dc4cc7dcd136" />
+  <Project Path="plugin-flexdmd.vcxproj" Id="2bf90d88-9139-4e66-a778-4327311af77b" />
+  <Project Path="plugin-helloscript.vcxproj" Id="bd05ba74-3676-42d7-ad6a-79c2de31100e" />
+  <Project Path="plugin-helloworld.vcxproj" Id="2bf90d88-9139-4e66-a778-4327311af777" />
+  <Project Path="plugin-pinmame.vcxproj" Id="2bf90d88-9139-4e66-a778-4327311af77c" />
+  <Project Path="plugin-pinup-events.vcxproj" Id="2bf90d88-9139-4e66-a778-4327311af779" />
+  <Project Path="plugin-pup.vcxproj" Id="5dfb5344-b339-49bc-b93c-b3b8d307199b" />
+  <Project Path="plugin-remote-control.vcxproj" Id="57516b53-6e7e-4618-93b3-4f5222f28807" />
+  <Project Path="plugin-scoreview.vcxproj" Id="91425c91-fdb2-4170-a5c9-a068357e59e3" />
+  <Project Path="plugin-serum.vcxproj" Id="2bf90d88-9139-4e66-a778-4327311af778" />
+  <Project Path="plugin-wmp.vcxproj" Id="a5155099-a29f-46b1-9d8a-75bcc9f6616c" />
+  <Project Path="vpx-core.vcxitems" Id="7d37bd17-02a7-4535-b660-24dc68828c1c" />
+  <Project Path="vpx-test.vcxproj" Id="414e597a-df8a-4080-ae42-472e0ec126f6" />
+  <Project Path="vpx.vcxproj" Id="11b81620-adf1-46fb-98b0-af83ab34caac" />
+</Solution>

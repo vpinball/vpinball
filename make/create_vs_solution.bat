@@ -20,7 +20,9 @@ exit 1
 :version_ok
 
 md "../.build/vsproject"
-copy /V /Y "VisualPinball.sln" "../.build/vsproject/VisualPinball.sln"
+if "%vsv%" == "2019" copy /V /Y "VisualPinball.sln" "../.build/vsproject/VisualPinball.sln"
+if "%vsv%" == "2022" copy /V /Y "VisualPinball.sln" "../.build/vsproject/VisualPinball.sln"
+if "%vsv%" == "2026" copy /V /Y "VisualPinball.slnx" "../.build/vsproject/VisualPinball.slnx"
 copy /V /Y "vpx.vcxproj" "../.build/vsproject/vpx.vcxproj"
 copy /V /Y "vpx.vcxproj.filters" "../.build/vsproject/vpx.vcxproj.filters"
 copy /V /Y "vpx-core.vcxitems" "../.build/vsproject/vpx-core.vcxitems"
@@ -30,13 +32,13 @@ copy /V /Y "vpx-test.vcxproj.filters" "../.build/vsproject/vpx-test.vcxproj.filt
 
 if "%vsv%" == "2019" (
 	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/vpx.vcxproj" /out:"../.build/vsproject/vpx.vcxproj"
-	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/vpx-core.vcxproj" /out:"../.build/vsproject/vpx-core.vcxproj"
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/vpx-core.vcxitems" /out:"../.build/vsproject/vpx-core.vcxitems"
 	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/vpx-test.vcxproj" /out:"../.build/vsproject/vpx-test.vcxproj"
 )
 
 if "%vsv%" == "2026" (
 	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/vpx.vcxproj" /out:"../.build/vsproject/vpx.vcxproj"
-	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/vpx-core.vcxproj" /out:"../.build/vsproject/vpx-core.vcxproj"
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/vpx-core.vcxitems" /out:"../.build/vsproject/vpx-core.vcxitems"
 	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/vpx-test.vcxproj" /out:"../.build/vsproject/vpx-test.vcxproj"
 )
 
@@ -202,11 +204,11 @@ copy /V /Y "plugin-scoreview.vcxproj" "../.build/vsproject/plugin-scoreview.vcxp
 copy /V /Y "plugin-scoreview.vcxproj.filters" "../.build/vsproject/plugin-scoreview.vcxproj.filters"
 
 if "%vsv%" == "2019" (
-	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-scoreview.vcxproj" /out:"../.build/vsproject/plugin-b2s.vcxproj"
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-scoreview.vcxproj" /out:"../.build/vsproject/plugin-scoreview.vcxproj"
 )
 
 if "%vsv%" == "2026" (
-	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/plugin-scoreview.vcxproj" /out:"../.build/vsproject/plugin-b2s.vcxproj"
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/plugin-scoreview.vcxproj" /out:"../.build/vsproject/plugin-scoreview.vcxproj"
 )
 
 
