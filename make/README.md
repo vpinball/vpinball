@@ -9,7 +9,8 @@ and extract the content to the `third-party` folder in the top directory, overwr
 
 Run the `create_vs_solution.bat` from this folder here and select the Visual Studio version that will be used. This will create `.sln`/`.proj` files in the `.build/vsproject` directory.
 
-If DirectX9 rendering / compilation is wanted, install the Microsoft DirectX SDK from 2021 (currently at [DX SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812)).
+If DirectX9 rendering / compilation is wanted, you may need to install the Microsoft DirectX SDK from 2021 (currently at [DX SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812)),
+but it should also work without it.
 
 
 Otherwise, using the full build system via [CMake](https://cmake.org/):
@@ -22,9 +23,9 @@ Depending on the platform you are on you will need to install additional build t
 
 * install Bash (e.g. [git-bash](https://gitforwindows.org/))
 * install [CMake](https://cmake.org/)
-* install [build tools v143 for Visual Studio](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022) or the full Visual Studio 2022 package ([Express/Community](https://visualstudio.microsoft.com/de/vs/express/) is enough)
+* install [build tools v145 for Visual Studio](https://aka.ms/vs/stable/vs_BuildTools.exe) or the full Visual Studio 2026 package ([Community](https://visualstudio.microsoft.com/de/vs/community/) version is enough)
 * install [MSYS2](https://www.msys2.org/)
-* install the Microsoft DirectX SDK from 2021 (currently at [DX SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812)) for DirectX9 rendering / compilation support.
+* optionally install the Microsoft DirectX SDK from 2021 (currently at [DX SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812)) for DirectX9 rendering / compilation support, should not be necessary.
 
 ## External dependencies
 

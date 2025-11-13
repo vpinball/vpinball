@@ -2,17 +2,18 @@
 goto :end_header
 **************************************************************************
 * This little batch script will create a Visual Studio solution & project
-* for your favorite flavor of the environment between 2019 and 2022.
+* for your favorite flavor of the environment between 2019, 2022 and 2026.
 *
 * Use: just run the script and enter the wanted environment. the solution
 * will be generated at the root of the project.
 **************************************************************************
 :end_header
 setlocal enabledelayedexpansion
-set /p vsv=Which version would you like [2019/2022]?
+set /p vsv=Which version would you like [2019/2022/2026]?
 
 if "%vsv%" == "2019" goto version_ok
 if "%vsv%" == "2022" goto version_ok
+if "%vsv%" == "2026" goto version_ok
 echo Invalid version requested: %vsv%
 endlocal
 exit 1
@@ -33,6 +34,12 @@ if "%vsv%" == "2019" (
 	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/vpx-test.vcxproj" /out:"../.build/vsproject/vpx-test.vcxproj"
 )
 
+if "%vsv%" == "2026" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/vpx.vcxproj" /out:"../.build/vsproject/vpx.vcxproj"
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/vpx-core.vcxproj" /out:"../.build/vsproject/vpx-core.vcxproj"
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/vpx-test.vcxproj" /out:"../.build/vsproject/vpx-test.vcxproj"
+)
+
 
 REM ***************************************************************************************************
 copy /V /Y "plugin-alphadmd.vcxproj" "../.build/vsproject/plugin-alphadmd.vcxproj"
@@ -40,6 +47,10 @@ copy /V /Y "plugin-alphadmd.vcxproj.filters" "../.build/vsproject/plugin-alphadm
 
 if "%vsv%" == "2019" (
 	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-alphadmd.vcxproj" /out:"../.build/vsproject/plugin-alphadmd.vcxproj"
+)
+
+if "%vsv%" == "2026" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/plugin-alphadmd.vcxproj" /out:"../.build/vsproject/plugin-alphadmd.vcxproj"
 )
 
 
@@ -51,6 +62,10 @@ if "%vsv%" == "2019" (
 	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-b2s.vcxproj" /out:"../.build/vsproject/plugin-b2s.vcxproj"
 )
 
+if "%vsv%" == "2026" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/plugin-b2s.vcxproj" /out:"../.build/vsproject/plugin-b2s.vcxproj"
+)
+
 
 REM ***************************************************************************************************
 copy /V /Y "plugin-b2slegacy.vcxproj" "../.build/vsproject/plugin-b2slegacy.vcxproj"
@@ -58,6 +73,10 @@ copy /V /Y "plugin-b2slegacy.vcxproj.filters" "../.build/vsproject/plugin-b2sleg
 
 if "%vsv%" == "2019" (
 	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-b2slegacy.vcxproj" /out:"../.build/vsproject/plugin-b2slegacy.vcxproj"
+)
+
+if "%vsv%" == "2026" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/plugin-b2slegacy.vcxproj" /out:"../.build/vsproject/plugin-b2slegacy.vcxproj"
 )
 
 
@@ -69,6 +88,10 @@ if "%vsv%" == "2019" (
 	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-dmdutil.vcxproj" /out:"../.build/vsproject/plugin-dmdutil.vcxproj"
 )
 
+if "%vsv%" == "2026" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/plugin-dmdutil.vcxproj" /out:"../.build/vsproject/plugin-dmdutil.vcxproj"
+)
+
 
 REM ***************************************************************************************************
 copy /V /Y "plugin-dof.vcxproj" "../.build/vsproject/plugin-dof.vcxproj"
@@ -76,6 +99,10 @@ copy /V /Y "plugin-dof.vcxproj.filters" "../.build/vsproject/plugin-dof.vcxproj.
 
 if "%vsv%" == "2019" (
 	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-dof.vcxproj" /out:"../.build/vsproject/plugin-dof.vcxproj"
+)
+
+if "%vsv%" == "2026" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/plugin-dof.vcxproj" /out:"../.build/vsproject/plugin-dof.vcxproj"
 )
 
 
@@ -87,6 +114,10 @@ if "%vsv%" == "2019" (
 	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-flexdmd.vcxproj" /out:"../.build/vsproject/plugin-flexdmd.vcxproj"
 )
 
+if "%vsv%" == "2026" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/plugin-flexdmd.vcxproj" /out:"../.build/vsproject/plugin-flexdmd.vcxproj"
+)
+
 
 REM ***************************************************************************************************
 copy /V /Y "plugin-helloworld.vcxproj" "../.build/vsproject/plugin-helloworld.vcxproj"
@@ -94,6 +125,10 @@ copy /V /Y "plugin-helloworld.vcxproj.filters" "../.build/vsproject/plugin-hello
 
 if "%vsv%" == "2019" (
 	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-helloworld.vcxproj" /out:"../.build/vsproject/plugin-helloworld.vcxproj"
+)
+
+if "%vsv%" == "2026" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/plugin-helloworld.vcxproj" /out:"../.build/vsproject/plugin-helloworld.vcxproj"
 )
 
 
@@ -105,6 +140,10 @@ if "%vsv%" == "2019" (
 	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-helloscript.vcxproj" /out:"../.build/vsproject/plugin-helloscript.vcxproj"
 )
 
+if "%vsv%" == "2026" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/plugin-helloscript.vcxproj" /out:"../.build/vsproject/plugin-helloscript.vcxproj"
+)
+
 
 REM ***************************************************************************************************
 copy /V /Y "plugin-pinmame.vcxproj" "../.build/vsproject/plugin-pinmame.vcxproj"
@@ -112,6 +151,10 @@ copy /V /Y "plugin-pinmame.vcxproj.filters" "../.build/vsproject/plugin-pinmame.
 
 if "%vsv%" == "2019" (
 	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-pinmame.vcxproj" /out:"../.build/vsproject/plugin-pinmame.vcxproj"
+)
+
+if "%vsv%" == "2026" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/plugin-pinmame.vcxproj" /out:"../.build/vsproject/plugin-pinmame.vcxproj"
 )
 
 
@@ -123,6 +166,10 @@ if "%vsv%" == "2019" (
 	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-pinup-events.vcxproj" /out:"../.build/vsproject/plugin-pinup-events.vcxproj"
 )
 
+if "%vsv%" == "2026" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/plugin-pinup-events.vcxproj" /out:"../.build/vsproject/plugin-pinup-events.vcxproj"
+)
+
 
 REM ***************************************************************************************************
 copy /V /Y "plugin-pup.vcxproj" "../.build/vsproject/plugin-pup.vcxproj"
@@ -130,6 +177,10 @@ copy /V /Y "plugin-pup.vcxproj.filters" "../.build/vsproject/plugin-pup.vcxproj.
 
 if "%vsv%" == "2019" (
 	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-pup.vcxproj" /out:"../.build/vsproject/plugin-pup.vcxproj"
+)
+
+if "%vsv%" == "2026" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/plugin-pup.vcxproj" /out:"../.build/vsproject/plugin-pup.vcxproj"
 )
 
 
@@ -141,6 +192,10 @@ if "%vsv%" == "2019" (
 	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-remote-control.vcxproj" /out:"../.build/vsproject/plugin-remote-control.vcxproj"
 )
 
+if "%vsv%" == "2026" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/plugin-remote-control.vcxproj" /out:"../.build/vsproject/plugin-remote-control.vcxproj"
+)
+
 
 REM ***************************************************************************************************
 copy /V /Y "plugin-scoreview.vcxproj" "../.build/vsproject/plugin-scoreview.vcxproj"
@@ -148,6 +203,10 @@ copy /V /Y "plugin-scoreview.vcxproj.filters" "../.build/vsproject/plugin-scorev
 
 if "%vsv%" == "2019" (
 	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-scoreview.vcxproj" /out:"../.build/vsproject/plugin-b2s.vcxproj"
+)
+
+if "%vsv%" == "2026" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/plugin-scoreview.vcxproj" /out:"../.build/vsproject/plugin-b2s.vcxproj"
 )
 
 
@@ -159,6 +218,10 @@ if "%vsv%" == "2019" (
 	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-serum.vcxproj" /out:"../.build/vsproject/plugin-serum.vcxproj"
 )
 
+if "%vsv%" == "2026" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/plugin-serum.vcxproj" /out:"../.build/vsproject/plugin-serum.vcxproj"
+)
+
 
 REM ***************************************************************************************************
 copy /V /Y "plugin-wmp.vcxproj" "../.build/vsproject/plugin-wmp.vcxproj"
@@ -166,6 +229,10 @@ copy /V /Y "plugin-wmp.vcxproj.filters" "../.build/vsproject/plugin-wmp.vcxproj.
 
 if "%vsv%" == "2019" (
 	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../.build/vsproject/plugin-wmp.vcxproj" /out:"../.build/vsproject/plugin-wmp.vcxproj"
+)
+
+if "%vsv%" == "2026" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v145" /in:"../.build/vsproject/plugin-wmp.vcxproj" /out:"../.build/vsproject/plugin-wmp.vcxproj"
 )
 
 endlocal

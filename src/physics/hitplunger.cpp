@@ -427,7 +427,7 @@ void PlungerMoverObject::UpdateVelocities()
             break;
          prevMechPos = (prevMechPos + (nSamples - 1)) % nSamples;
       }
-      m_mechSpeed = (m_mech[m_mechPos].pos - m_mech[prevMechPos].pos) * 3.f * 2.54f * 0.01f * 1000000.f / static_cast<float>(m_mech[m_mechPos].ts - m_mech[prevMechPos].ts);
+      m_mechSpeed = (m_mech[m_mechPos].pos - m_mech[prevMechPos].pos) * static_cast<float>(3. * 2.54 * 0.01 * 1000000.) / static_cast<float>(m_mech[m_mechPos].ts - m_mech[prevMechPos].ts);
    }
 
    // Frame-to-frame mech movement threshold for detecting a release
