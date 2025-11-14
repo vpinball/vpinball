@@ -33,8 +33,8 @@ PropEnum(Backglass, BackglassOutput, "Output Mode"s, "Select between disabled, f
 PropString(Backglass, BackglassDisplay, "Display"s, "Display used for the main Backglass window"s, ""s);
 PropInt(Backglass, BackglassWndX, "X Position"s, "Horizontal position of the window on the selected display"s, 0, 16384, 0);
 PropInt(Backglass, BackglassWndY, "Y Position"s, "Vertical position of the window on the selected display"s, 0, 16384, 0);
-PropInt(Backglass, BackglassWidth, "Width"s, "Width of the window"s, 0, 16384, 640);
-PropInt(Backglass, BackglassHeight, "Height"s, "Height of the window"s, 0, 16384, 480);
+PropInt(Backglass, BackglassWidth, "Width"s, "Width of the window"s, 0, 16384, 16384);
+PropInt(Backglass, BackglassHeight, "Height"s, "Height of the window"s, 0, 16384, 16384);
 PropBool(Backglass, BackglassFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution)"s, false);
 PropInt(Backglass, BackglassFSWidth, "Width"s, "Fullscreen display mode width"s, 0, 16384, 16384);
 PropInt(Backglass, BackglassFSHeight, "Height"s, "Fullscreen display mode height"s, 0, 16384, 16384);
@@ -46,8 +46,8 @@ PropEnum(ScoreView, ScoreViewOutput, "Output Mode"s, "Select between disabled, f
 PropString(ScoreView, ScoreViewDisplay, "Display"s, "Display used for the main ScoreView window"s, ""s);
 PropInt(ScoreView, ScoreViewWndX, "X Position"s, "Horizontal position of the window on the selected display"s, 0, 16384, 0);
 PropInt(ScoreView, ScoreViewWndY, "Y Position"s, "Vertical position of the window on the selected display"s, 0, 16384, 0);
-PropInt(ScoreView, ScoreViewWidth, "Width"s, "Width of the window"s, 0, 16384, 640);
-PropInt(ScoreView, ScoreViewHeight, "Height"s, "Height of the window"s, 0, 16384, 160);
+PropInt(ScoreView, ScoreViewWidth, "Width"s, "Width of the window"s, 0, 16384, 16384);
+PropInt(ScoreView, ScoreViewHeight, "Height"s, "Height of the window"s, 0, 16384, 16384);
 PropBool(ScoreView, ScoreViewFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution)"s, false);
 PropInt(ScoreView, ScoreViewFSWidth, "Width"s, "Fullscreen display mode width"s, 0, 16384, 16384);
 PropInt(ScoreView, ScoreViewFSHeight, "Height"s, "Fullscreen display mode height"s, 0, 16384, 16384);
@@ -59,8 +59,8 @@ PropEnum(Topper, TopperOutput, "Output Mode"s, "Select between disabled, floatin
 PropString(Topper, TopperDisplay, "Display"s, "Display used for the Topper window"s, ""s);
 PropInt(Topper, TopperWndX, "X Position"s, "Horizontal position of the Topper window on the selected display"s, 0, 16384, 0);
 PropInt(Topper, TopperWndY, "Y Position"s, "Vertical position of the Topper window on the selected display"s, 0, 16384, 0);
-PropInt(Topper, TopperWidth, "Width"s, "Width of the Topper window"s, 0, 16384, 640);
-PropInt(Topper, TopperHeight, "Height"s, "Height of the Topper window"s, 0, 16384, 160);
+PropInt(Topper, TopperWidth, "Width"s, "Width of the Topper window"s, 0, 16384, 16384);
+PropInt(Topper, TopperHeight, "Height"s, "Height of the Topper window"s, 0, 16384, 16384);
 PropBool(Topper, TopperFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution) for the Topper window"s, false);
 PropInt(Topper, TopperFSWidth, "Width"s, "Fullscreen display mode width for the Topper window"s, 0, 16384, 16384);
 PropInt(Topper, TopperFSHeight, "Height"s, "Fullscreen display mode height for the Topper window"s, 0, 16384, 16384);

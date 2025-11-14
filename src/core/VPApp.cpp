@@ -955,6 +955,13 @@ BOOL VPApp::InitInstance()
       m_iniFileName = m_vpinball.GetPrefPath() + "VPinballX.ini";
    }
 
+   SDL_SetHint(SDL_HINT_WINDOW_ALLOW_TOPMOST, "0");
+   if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
+   {
+      PLOGE << "SDL_InitSubSystem(SDL_INIT_VIDEO) failed: " << SDL_GetError();
+      exit(1);
+   }
+
    m_vpinball.m_settings.SetIniPath(m_iniFileName);
    m_vpinball.m_settings.Load(true);
    m_vpinball.m_settings.SetVersion_VPinball(string(VP_VERSION_STRING_DIGITS), false);
@@ -965,13 +972,7 @@ BOOL VPApp::InitInstance()
    PLOGI << "Starting VPX - " << VP_VERSION_STRING_FULL_LITERAL;
    PLOGI << "Settings file was loaded from " << m_iniFileName;
 
-   SDL_SetHint(SDL_HINT_WINDOW_ALLOW_TOPMOST, "0");
-   if (!SDL_InitSubSystem(SDL_INIT_VIDEO)) {
-      PLOGE << "SDL_InitSubSystem(SDL_INIT_VIDEO) failed: " << SDL_GetError();
-      exit(1);
-   }
    PLOGI << "SDL video driver: " << SDL_GetCurrentVideoDriver();
-
    PLOGI << "m_logicalNumberOfProcessors=" << m_vpinball.GetLogicalNumberOfProcessors();
    PLOGI << "m_myPath=" << m_vpinball.m_myPath;
    PLOGI << "GetPrefPath()=" << m_vpinball.GetPrefPath();
