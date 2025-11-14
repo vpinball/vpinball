@@ -125,11 +125,47 @@ const string& Settings::GetIniPath() const
    return m_store.GetIniPath();
 }
 
+void Settings::UpdateDefaults()
+{
+   // Update some settings defaults that depends either on other settings or on host machine
+   // If parented, we use the parent's value as our defaults, so no need to redefine anything
+   if (m_parent)
+      return;
+   auto& reg = GetRegistry();
+
+   // Windows default depends on the display device specs
+   for (int i = 0; i < 4; i++)
+   {
+      VPX::RenderOutput::OutputMode mode = i == VPXWindowId::VPXWINDOW_Playfield ? VPX::RenderOutput::OutputMode::OM_WINDOW : (VPX::RenderOutput::OutputMode)GetWindow_Mode(i);
+      switch (mode)
+      {
+      case VPX::RenderOutput::OutputMode::OM_WINDOW:
+      {
+         const auto& conf = VPX::Window::GetDisplayConfig(GetWindow_Display(i));
+         reg.Register(GetWindow_FSWidth_Property(i)->WithDefault(conf.width));
+         reg.Register(GetWindow_FSHeight_Property(i)->WithDefault(conf.height));
+         reg.Register(GetWindow_Width_Property(i)->WithDefault(i == 0 ? conf.width : (conf.width / 4)));
+         reg.Register(GetWindow_Height_Property(i)->WithDefault(i == 0 ? conf.height : min(conf.width * 4 / 9, conf.height)));
+         break;
+      }
+      case VPX::RenderOutput::OutputMode::OM_EMBEDDED:
+      {
+         const auto w = GetWindow_FullScreen(VPXWindowId::VPXWINDOW_Playfield) ? GetWindow_FSWidth(VPXWindowId::VPXWINDOW_Playfield) : GetWindow_Width(VPXWindowId::VPXWINDOW_Playfield);
+         const auto h = GetWindow_FullScreen(VPXWindowId::VPXWINDOW_Playfield) ? GetWindow_FSHeight(VPXWindowId::VPXWINDOW_Playfield) : GetWindow_Height(VPXWindowId::VPXWINDOW_Playfield);
+         reg.Register(GetWindow_Width_Property(i)->WithDefault(w / 4));
+         reg.Register(GetWindow_Height_Property(i)->WithDefault(min(w * 4 / 9, h)));
+         break;
+      }
+      }
+   }
+}
+
 bool Settings::Load(const bool createDefault)
 {
    if (m_store.Load())
    {
       PLOGI << "Settings file was loaded from '" << m_store.GetIniPath() << '\'';
+      UpdateDefaults();
       return true;
    }
    else if (createDefault)
@@ -227,6 +263,7 @@ bool Settings::Load(const bool createDefault)
          RegCloseKey(hk);
       }*/
       #endif
+      UpdateDefaults();
       return true;
    }
    else
@@ -244,6 +281,7 @@ void Settings::Save()
 void Settings::Load(const Settings &settings)
 {
    m_store.Load(settings.m_store);
+   UpdateDefaults();
 }
 
 #ifdef __GNUC__

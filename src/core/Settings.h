@@ -43,6 +43,7 @@ public:
 private:
    static inline const VPX::Properties::PropertyRegistry::PropId m_propInvalid {};
    static string GetBackwardCompatibleSection(const string &groupId);
+   void UpdateDefaults();
    Settings *const m_parent;
    VPX::Properties::LayeredINIPropertyStore m_store;
 
