@@ -28,8 +28,8 @@ PropInt(Player, PlayfieldFSHeight, "Height"s, "Fullscreen display mode height"s,
 PropFloat(Player, PlayfieldRefreshRate, "Refresh Rate"s, "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
 PropInt(Player, PlayfieldColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
 // Backglass Window
-PropEnum(Backglass, BackglassOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */,
-   g_isMobile ? 2 /* OM_EMBEDDED */ : 0 /* OM_DISABLED */, "Disabled"s, "Floating"s, "Embedded in playfield"s);
+PropEnum(Backglass, BackglassOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s, "Floating"s, 
+   "Embedded in playfield"s);
 PropString(Backglass, BackglassDisplay, "Display"s, "Display used for the main Backglass window"s, ""s);
 PropInt(Backglass, BackglassWndX, "X Position"s, "Horizontal position of the window on the selected display"s, 0, 16384, 0);
 PropInt(Backglass, BackglassWndY, "Y Position"s, "Vertical position of the window on the selected display"s, 0, 16384, 0);
@@ -41,8 +41,8 @@ PropInt(Backglass, BackglassFSHeight, "Height"s, "Fullscreen display mode height
 PropFloat(Backglass, BackglassRefreshRate, "Fullscreen Refresh Rate"s, "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
 PropInt(Backglass, BackglassColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
 // ScoreView Window
-PropEnum(ScoreView, ScoreViewOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */,
-   g_isMobile ? 2 /* OM_EMBEDDED */ : 0 /* OM_DISABLED */, "Disabled"s, "Floating"s, "Embedded in playfield"s);
+PropEnum(ScoreView, ScoreViewOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s, "Floating"s, 
+   "Embedded in playfield"s);
 PropString(ScoreView, ScoreViewDisplay, "Display"s, "Display used for the main ScoreView window"s, ""s);
 PropInt(ScoreView, ScoreViewWndX, "X Position"s, "Horizontal position of the window on the selected display"s, 0, 16384, 0);
 PropInt(ScoreView, ScoreViewWndY, "Y Position"s, "Vertical position of the window on the selected display"s, 0, 16384, 0);
@@ -1357,16 +1357,20 @@ PropInt(DefaultPropsTrigger, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 1
 PropBool(PluginB2SLegacy, Enable, "Enable"s, "Enable legacy B2S plugin"s, g_isStandalone);
 PropIntUnbounded(PluginB2SLegacy, B2SBackglassWidth, "B2SBackglassWidth"s, ""s, 1024);
 PropIntUnbounded(PluginB2SLegacy, B2SBackglassHeight, "B2SBackglassHeight"s, ""s, 768);
-PropBool(PluginFlexDMD, Enable, "Enable"s, "Enable FlexDMD plugin"s, g_isStandalone);
-PropBool(PluginPinMAME, Enable, "Enable"s, "Enable PinMAME plugin"s, g_isStandalone);
-PropBool(PluginScoreView, Enable, "Enable"s, "Enable ScoreView player plugin"s, g_isStandalone);
-PropBool(PluginWMP, Enable, "Enable"s, "Enable WMP plugin"s, g_isStandalone);
-PropBool(PluginPUP, Enable, "Enable"s, "Enable PinUp player plugin"s, g_isMobile);
+PropIntUnbounded(PluginB2SLegacy, B2SDMDWidth, "B2SDMDWidth"s, ""s, 512);
+PropIntUnbounded(PluginB2SLegacy, B2SDMDHeight, "B2SDMDHeight"s, ""s, 128);
+PropBool(PluginDMDUtil, Enable, "Enable"s, "Enable DMDUtil plugin"s, false);
 PropBool(PluginDMDUtil, DMDServer, "DMD Server"s, ""s, false);
 PropString(PluginDMDUtil, DMDServerAddr, "DMD Server Address"s, ""s, "localhost"s);
 PropInt(PluginDMDUtil, DMDServerPort, "DMD Server Port"s, ""s, 0, 65535, 6789);
 PropBool(PluginDMDUtil, ZeDMDWiFi, "ZeDMD WiFi"s, ""s, false);
 PropString(PluginDMDUtil, ZeDMDWiFiAddr, "ZeDMD WiFi Address"s, ""s, "zedmd-wifi.local"s);
+PropBool(PluginFlexDMD, Enable, "Enable"s, "Enable FlexDMD plugin"s, g_isStandalone);
+PropBool(PluginPinMAME, Enable, "Enable"s, "Enable PinMAME plugin"s, g_isStandalone);
+PropBool(PluginPUP, Enable, "Enable"s, "Enable PinUp player plugin"s, g_isMobile);
+PropBool(PluginScoreView, Enable, "Enable"s, "Enable ScoreView player plugin"s, g_isStandalone);
+PropBool(PluginSerum,  Enable, "Enable"s, "Enable Serum plugin"s, g_isStandalone);
+PropBool(PluginWMP, Enable, "Enable"s, "Enable WMP plugin"s, g_isStandalone);
 
 // Standalone
 PropEnumWithMin(Standalone, RenderingModeOverride, "Override rendering mode"s, ""s, int, -1, g_isMobile ? 2 : -1, "Default"s, "2D"s, "Stereo 3D"s, "VR"s);

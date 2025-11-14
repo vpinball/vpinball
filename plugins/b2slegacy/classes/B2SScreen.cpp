@@ -82,16 +82,16 @@ void B2SScreen::Start(Form* pFormBackglass, Form* pFormDMD, SDL_Point defaultDMD
 
 void B2SScreen::ReadB2SSettingsFromFile()
 {
-   int backglassWidth = m_pB2SData->GetB2SSettings()->GetSettingInt("B2SBackglassWidth", 512);
-   int backglassHeight = m_pB2SData->GetB2SSettings()->GetSettingInt("B2SBackglassHeight", 384);
+   int backglassWidth = m_pB2SData->GetB2SSettings()->GetSettingInt("B2SBackglassWidth", 1024);
+   int backglassHeight = m_pB2SData->GetB2SSettings()->GetSettingInt("B2SBackglassHeight", 768);
    int backglassX = m_pB2SData->GetB2SSettings()->GetSettingInt("BackglassX", 0);
    int backglassY = m_pB2SData->GetB2SSettings()->GetSettingInt("BackglassY", 0);
 
    m_backglassSize = { 0, 0, backglassWidth, backglassHeight };
    m_backglassLocation = { backglassX, backglassY };
 
-   int dmdWidth = m_pB2SData->GetB2SSettings()->GetSettingInt("B2SDMDWidth", 375);
-   int dmdHeight = m_pB2SData->GetB2SSettings()->GetSettingInt("B2SDMDHeight", 225);
+   int dmdWidth = m_pB2SData->GetB2SSettings()->GetSettingInt("B2SDMDWidth", 512);
+   int dmdHeight = m_pB2SData->GetB2SSettings()->GetSettingInt("B2SDMDHeight", 128);
    int dmdX = m_pB2SData->GetB2SSettings()->GetSettingInt("DMDX", 0);
    int dmdY = m_pB2SData->GetB2SSettings()->GetSettingInt("DMDY", 0);
 
