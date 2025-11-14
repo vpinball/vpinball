@@ -40,17 +40,10 @@ struct SettingsWebServerView: View {
             }
         }
         .onChange(of: settingsModel.webServer) {
-            handleWebServer()
+            settingsModel.handleWebServer()
         }
         .onChange(of: settingsModel.webServerPort) {
-            handleWebServerPort()
-        }
-    }
-
-    func handleWebServer() {
-        vpinballManager.saveValue(.standalone, "WebServer", settingsModel.webServer)
-        Task {
-            vpinballManager.updateWebServer()
+            settingsModel.handleWebServerPort()
         }
     }
 
@@ -68,13 +61,6 @@ struct SettingsWebServerView: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
                 handleShowWebServerPort()
             }
-        }
-    }
-
-    func handleWebServerPort() {
-        vpinballManager.saveValue(.standalone, "WebServerPort", Int(settingsModel.webServerPort))
-        Task {
-            vpinballManager.updateWebServer()
         }
     }
 }

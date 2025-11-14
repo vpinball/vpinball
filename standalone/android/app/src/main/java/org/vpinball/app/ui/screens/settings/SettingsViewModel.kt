@@ -203,6 +203,7 @@ class SettingsViewModel : ViewModel() {
         externalDMD = value
         VPinballManager.saveValue(PLUGIN_DMDUTIL, "DMDServer", externalDMD == VPinballExternalDMD.DMD_SERVER)
         VPinballManager.saveValue(PLUGIN_DMDUTIL, "ZeDMDWiFi", externalDMD == VPinballExternalDMD.ZEDMD_WIFI)
+        VPinballManager.saveValue(PLUGIN_DMDUTIL, "Enable", externalDMD != VPinballExternalDMD.NONE)
     }
 
     fun handleDMDServerAddr(value: String) {

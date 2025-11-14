@@ -312,33 +312,17 @@ struct SettingsView: View {
             }
         }
         .onChange(of: settingsModel.haptics) {
-            handleHaptics()
+            settingsModel.handleHaptics()
         }
         .onChange(of: settingsModel.renderingModeOverride) {
-            handleRenderingModeOverride()
+            settingsModel.handleRenderingModeOverride()
         }
         .onChange(of: settingsModel.viewMode) {
-            handleViewMode()
+            settingsModel.handleViewMode()
         }
         .onChange(of: settingsModel.resetLogOnPlay) {
-            handleResetLogOnPlay()
+            settingsModel.handleResetLogOnPlay()
         }
-    }
-
-    func handleHaptics() {
-        vpinballManager.saveValue(.standalone, "Haptics", settingsModel.haptics)
-    }
-
-    func handleRenderingModeOverride() {
-        vpinballManager.saveValue(.standalone, "RenderingModeOverride", settingsModel.renderingModeOverride ? 2 : -1)
-    }
-
-    func handleViewMode() {
-        vpinballManager.saveValue(.player, "BGSet", settingsModel.viewMode.rawValue)
-    }
-
-    func handleResetLogOnPlay() {
-        vpinballManager.saveValue(.standalone, "ResetLogOnPlay", settingsModel.resetLogOnPlay)
     }
 
     func handleShowInput(title: String, value: String, keyboardType: UIKeyboardType, confirmHandler: @escaping (String) -> Void) {
