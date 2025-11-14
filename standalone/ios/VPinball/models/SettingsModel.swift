@@ -74,4 +74,56 @@ class SettingsModel: ObservableObject {
     func reset() {
         load()
     }
+
+    func handleHaptics() {
+        vpinballManager.saveValue(.standalone, "Haptics", haptics)
+    }
+
+    func handleRenderingModeOverride() {
+        vpinballManager.saveValue(.standalone, "RenderingModeOverride", renderingModeOverride ? 2 : -1)
+    }
+
+    func handleViewMode() {
+        vpinballManager.saveValue(.player, "BGSet", viewMode.rawValue)
+    }
+
+    func handleResetLogOnPlay() {
+        vpinballManager.saveValue(.standalone, "ResetLogOnPlay", resetLogOnPlay)
+    }
+
+    func handleExternalDMD() {
+        vpinballManager.saveValue(.pluginDMDUtil, "DMDServer", externalDMD == .dmdServer)
+        vpinballManager.saveValue(.pluginDMDUtil, "ZeDMDWiFi", externalDMD == .zedmdWiFi)
+        vpinballManager.saveValue(.pluginDMDUtil, "Enable", externalDMD != .none)
+    }
+
+    func handleDMDServerAddr() {
+        vpinballManager.saveValue(.pluginDMDUtil, "DMDServerAddr", dmdServerAddr)
+    }
+
+    func handleDMDServerPort() {
+        vpinballManager.saveValue(.pluginDMDUtil, "DMDServerPort", dmdServerPort)
+    }
+
+    func handleZeDMDWiFiAddr() {
+        vpinballManager.saveValue(.pluginDMDUtil, "ZeDMDWiFiAddr", zedmdWiFiAddr)
+    }
+
+    func handleWebServer() {
+        vpinballManager.saveValue(.standalone, "WebServer", webServer)
+        Task {
+            vpinballManager.updateWebServer()
+        }
+    }
+
+    func handleWebServerPort() {
+        vpinballManager.saveValue(.standalone, "WebServerPort", Int(webServerPort))
+        Task {
+            vpinballManager.updateWebServer()
+        }
+    }
+
+    func handleMaxTexDimension() {
+        vpinballManager.saveValue(.player, "MaxTexDimension", VPinballMaxTexDimension.all[maxTexDimensionIndex].rawValue)
+    }
 }

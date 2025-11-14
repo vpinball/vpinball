@@ -31,12 +31,8 @@ struct SettingsPerformanceView: View {
             }
         }
         .onChange(of: settingsModel.maxTexDimensionIndex) {
-            handleMaxTexDimension()
+            settingsModel.handleMaxTexDimension()
         }
-    }
-
-    func handleMaxTexDimension() {
-        vpinballManager.saveValue(.player, "MaxTexDimension", VPinballMaxTexDimension.all[settingsModel.maxTexDimensionIndex].rawValue)
     }
 }
 

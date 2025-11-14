@@ -57,21 +57,17 @@ struct SettingsExternalDMDView: View {
             Text(.init("Send PinMAME and FlexDMD DMDs to ZeDMD and Pixelcade devices using [DMDServer](\(Link.libdmdutil.url.absoluteString)) and [ZeDMDOS](\(Link.zedmdos.url.absoluteString))."))
         }
         .onChange(of: settingsModel.externalDMD) {
-            handleExternalDMD()
+            settingsModel.handleExternalDMD()
         }
-        .onChange(of: [settingsModel.dmdServerAddr,
-                       settingsModel.zedmdWiFiAddr])
-        {
-            handleAddr()
+        .onChange(of: settingsModel.dmdServerAddr) {
+            settingsModel.handleDMDServerAddr()
+        }
+        .onChange(of: settingsModel.zedmdWiFiAddr) {
+            settingsModel.handleZeDMDWiFiAddr()
         }
         .onChange(of: settingsModel.dmdServerPort) {
-            handlePort()
+            settingsModel.handleDMDServerPort()
         }
-    }
-
-    func handleExternalDMD() {
-        vpinballManager.saveValue(.pluginDMDUtil, "DMDServer", settingsModel.externalDMD == .dmdServer)
-        vpinballManager.saveValue(.pluginDMDUtil, "ZeDMDWiFi", settingsModel.externalDMD == .zedmdWiFi)
     }
 
     func handleShowAddr() {
@@ -114,17 +110,6 @@ struct SettingsExternalDMDView: View {
         }
     }
 
-    func handleAddr() {
-        switch settingsModel.externalDMD {
-        case .dmdServer:
-            vpinballManager.saveValue(.pluginDMDUtil, "DMDServerAddr", settingsModel.dmdServerAddr)
-        case .zedmdWiFi:
-            vpinballManager.saveValue(.pluginDMDUtil, "ZeDMDWiFiAddr", settingsModel.zedmdWiFiAddr)
-        default:
-            break
-        }
-    }
-
     func handleShowPort() {
         switch settingsModel.externalDMD {
         case .dmdServer:
@@ -149,15 +134,6 @@ struct SettingsExternalDMDView: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
                 handleShowPort()
             }
-        }
-    }
-
-    func handlePort() {
-        switch settingsModel.externalDMD {
-        case .dmdServer:
-            vpinballManager.saveValue(.pluginDMDUtil, "DMDServerPort", settingsModel.dmdServerPort)
-        default:
-            break
         }
     }
 }
