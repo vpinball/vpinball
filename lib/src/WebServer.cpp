@@ -499,7 +499,8 @@ void WebServer::Extract(struct mg_connection *c, struct mg_http_message* hm)
    string path = BuildPrefPath(q);
 
    if (std::filesystem::is_regular_file(path)) {
-      if (extension_from_path(path) == "zip") {
+      const string ext = extension_from_path(path);
+      if (ext == "zip" || ext == "vpxz") {
          if (Unzip(path.c_str())) {
             PLOGI.printf("File unzipped: q=%s", path.c_str());
             SetLastUpdate();

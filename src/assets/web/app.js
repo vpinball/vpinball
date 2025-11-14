@@ -610,7 +610,7 @@ const FileTypeHelper = {
   IMAGE_EXTENSIONS: new Set(['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg']),
   VIDEO_EXTENSIONS: new Set(['mp4', 'webm', 'ogg']),
   AUDIO_EXTENSIONS: new Set(['mp3', 'wav', 'ogg', 'm4a']),
-  EXTRACTABLE_EXTENSIONS: new Set(['zip']),
+  EXTRACTABLE_EXTENSIONS: new Set(['zip', 'vpxz']),
 
   isImage: (ext) => FileTypeHelper.IMAGE_EXTENSIONS.has(ext),
   isVideo: (ext) => FileTypeHelper.VIDEO_EXTENSIONS.has(ext),
