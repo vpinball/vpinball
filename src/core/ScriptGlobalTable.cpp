@@ -14,8 +14,6 @@
 #include <atlsafe.h>
 #endif
 
-#include "scalefx.h"
-
 #include "serial.h"
 static serial Serial;
 
@@ -1012,34 +1010,14 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as
    if (psa == nullptr || g_pplayer ==nullptr || g_pplayer->m_dmdSize.x <= 0 || g_pplayer->m_dmdSize.y <= 0)
       return E_FAIL;
 
-   #ifdef DMD_UPSCALE
-      constexpr int scale = 3;
-   #else
-      constexpr int scale = 1;
-   #endif
-
-   BaseTexture::Update(g_pplayer->m_dmdFrame, g_pplayer->m_dmdSize.x * scale, g_pplayer->m_dmdSize.y * scale, BaseTexture::BW, nullptr);
+   BaseTexture::Update(g_pplayer->m_dmdFrame, g_pplayer->m_dmdSize.x, g_pplayer->m_dmdSize.y, BaseTexture::BW, nullptr);
    const int size = g_pplayer->m_dmdSize.x * g_pplayer->m_dmdSize.y;
    // Convert from gamma compressed [0..100] luminance to linear [0..255] luminance, optionally applying ScaleFX upscaling
    VARIANT *p;
    SafeArrayAccessData(psa, (void **)&p);
-   if (g_pplayer->m_scaleFX_DMD)
-   {
-      uint32_t *const __restrict rgba = new uint32_t[size * (size_t)(scale * scale)];
-      for (int ofs = 0; ofs < size; ++ofs)
-         rgba[ofs] = V_UI4(&p[ofs]); 
-      upscale(rgba, g_pplayer->m_dmdSize, true);
-      uint8_t *const __restrict data = g_pplayer->m_dmdFrame->data();
-      for (int ofs = 0; ofs < size; ++ofs)
-         data[ofs] = static_cast<uint8_t>(InvsRGB((float)(rgba[ofs] & 0xFF) * (float)(1.0 / 100.)) * 255.f);
-      delete[] rgba;
-   }
-   else
-   {
-      uint8_t *const __restrict data = g_pplayer->m_dmdFrame->data();
-      for (int ofs = 0; ofs < size; ++ofs)
-         data[ofs] = static_cast<uint8_t>(InvsRGB((float)V_UI4(&p[ofs]) * (float)(1.0 / 100.)) * 255.f);
-   }
+   uint8_t *const __restrict data = g_pplayer->m_dmdFrame->data();
+   for (int ofs = 0; ofs < size; ++ofs)
+      data[ofs] = static_cast<uint8_t>(InvsRGB((float)V_UI4(&p[ofs]) * (float)(1.0 / 100.)) * 255.f);
    SafeArrayUnaccessData(psa);
    g_pplayer->m_dmdFrameId++;
    VPXPluginAPIImpl::GetInstance().UpdateDMDSource(nullptr, true);
@@ -1057,13 +1035,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! assumes 
    if (psa == nullptr || g_pplayer ==nullptr || g_pplayer->m_dmdSize.x <= 0 || g_pplayer->m_dmdSize.y <= 0)
       return E_FAIL;
 
-   #ifdef DMD_UPSCALE
-      constexpr int scale = 3;
-   #else
-      constexpr int scale = 1;
-   #endif
-
-   BaseTexture::Update(g_pplayer->m_dmdFrame, g_pplayer->m_dmdSize.x * scale, g_pplayer->m_dmdSize.y * scale, BaseTexture::SRGBA, nullptr);
+   BaseTexture::Update(g_pplayer->m_dmdFrame, g_pplayer->m_dmdSize.x, g_pplayer->m_dmdSize.y, BaseTexture::SRGBA, nullptr);
    const int size = g_pplayer->m_dmdSize.x * g_pplayer->m_dmdSize.y;
    uint32_t *const __restrict data = reinterpret_cast<uint32_t *>(g_pplayer->m_dmdFrame->data());
    VARIANT *p;
@@ -1071,8 +1043,6 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! assumes 
    for (int ofs = 0; ofs < size; ++ofs)
       data[ofs] = V_UI4(&p[ofs]) | 0xFF000000u;
    SafeArrayUnaccessData(psa);
-   if (g_pplayer->m_scaleFX_DMD)
-      upscale(data, g_pplayer->m_dmdSize, false);
    g_pplayer->m_dmdFrameId++;
    VPXPluginAPIImpl::GetInstance().UpdateDMDSource(nullptr, true);
    return S_OK;

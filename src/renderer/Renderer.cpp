@@ -1221,11 +1221,7 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& co
    #endif
    {
       m_renderDevice->m_DMDShader->SetVector(SHADER_vColor_Intensity, color.x * brightness, color.y * brightness, color.z * brightness, dmd->m_format != BaseTexture::BW ? 1.f : 0.f);
-      #ifdef DMD_UPSCALE
-         m_renderDevice->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, (float)(dmd->width() * 3), (float)(dmd->height() * 3), alpha, (float)(g_pplayer->m_overall_frames % 2048));
-      #else
-         m_renderDevice->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, (float)dmd->width(), (float)dmd->height(), alpha, (float)(g_pplayer->m_overall_frames % 2048));
-      #endif
+      m_renderDevice->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, (float)dmd->width(), (float)dmd->height(), alpha, (float)(g_pplayer->m_overall_frames % 2048));
       m_renderDevice->m_DMDShader->SetVector(SHADER_glassArea, 0.f, 0.f, 1.f, 1.f);
       m_renderDevice->m_DMDShader->SetTechnique(isBackdrop ? SHADER_TECHNIQUE_basic_DMD : SHADER_TECHNIQUE_basic_DMD_world);
       m_renderDevice->m_DMDShader->SetTexture(SHADER_tex_dmd, dmd.get());

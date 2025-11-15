@@ -799,9 +799,6 @@ STDMETHODIMP Flasher::put_DMDHeight(int pVal)
    return S_OK;
 }
 
-// Implementation included in pintable.cpp
-void upscale(uint32_t *const data, const int2 &res, const bool is_brightness_data);
-
 STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!! use 64bit instead of 8bit to reduce overhead??
 {
 
@@ -809,34 +806,14 @@ STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!
    if (psa == nullptr || m_dmdSize.x <= 0 || m_dmdSize.y <= 0)
       return E_FAIL;
 
-   #ifdef DMD_UPSCALE
-      constexpr int scale = 3;
-   #else
-      constexpr int scale = 1;
-   #endif
-
-   BaseTexture::Update(m_dmdFrame, m_dmdSize.x * scale, m_dmdSize.y * scale, BaseTexture::BW, nullptr);
+   BaseTexture::Update(m_dmdFrame, m_dmdSize.x, m_dmdSize.y, BaseTexture::BW, nullptr);
    const int size = m_dmdSize.x * m_dmdSize.y;
    // Convert from gamma compressed [0..100] luminance to linear [0..255] luminance, optionally applying ScaleFX upscaling
    VARIANT *p;
    SafeArrayAccessData(psa, (void **)&p);
-   if (g_pplayer->m_scaleFX_DMD)
-   {
-      uint32_t * const __restrict rgba = new uint32_t[size * scale * scale];
-      for (int ofs = 0; ofs < size; ++ofs)
-         rgba[ofs] = V_UI4(&p[ofs]); 
-      upscale(rgba, m_dmdSize, true);
-      uint8_t * const __restrict data = m_dmdFrame->data();
-      for (int ofs = 0; ofs < size; ++ofs)
-         data[ofs] = static_cast<uint8_t>(InvsRGB((float)(rgba[ofs] & 0xFF) * (float)(1.0 / 100.)) * 255.f);
-      delete[] rgba;
-   }
-   else
-   {
-      uint8_t *const data = m_dmdFrame->data();
-      for (int ofs = 0; ofs < size; ++ofs)
-         data[ofs] = static_cast<uint8_t>(InvsRGB((float)V_UI4(&p[ofs]) * (float)(1.0 / 100.)) * 255.f);
-   }
+   uint8_t *const data = m_dmdFrame->data();
+   for (int ofs = 0; ofs < size; ++ofs)
+      data[ofs] = static_cast<uint8_t>(InvsRGB((float)V_UI4(&p[ofs]) * (float)(1.0 / 100.)) * 255.f);
    SafeArrayUnaccessData(psa);
    m_dmdFrameId++;
    VPXPluginAPIImpl::GetInstance().UpdateDMDSource(this, true);
@@ -849,13 +826,7 @@ STDMETHODIMP Flasher::put_DMDColoredPixels(VARIANT pVal) //!! assumes VT_UI4 as 
    if (psa == nullptr || m_dmdSize.x <= 0 || m_dmdSize.y <= 0)
       return E_FAIL;
 
-   #ifdef DMD_UPSCALE
-      constexpr int scale = 3;
-   #else
-      constexpr int scale = 1;
-   #endif
-
-   BaseTexture::Update(m_dmdFrame, m_dmdSize.x * scale, m_dmdSize.y * scale, BaseTexture::SRGBA, nullptr);
+   BaseTexture::Update(m_dmdFrame, m_dmdSize.x, m_dmdSize.y, BaseTexture::SRGBA, nullptr);
    const int size = m_dmdSize.x * m_dmdSize.y;
    uint32_t *const __restrict data = reinterpret_cast<uint32_t *>(m_dmdFrame->data());
    VARIANT *p;
@@ -863,8 +834,6 @@ STDMETHODIMP Flasher::put_DMDColoredPixels(VARIANT pVal) //!! assumes VT_UI4 as 
    for (int ofs = 0; ofs < size; ++ofs)
       data[ofs] = V_UI4(&p[ofs]) | 0xFF000000u;
    SafeArrayUnaccessData(psa);
-   if (g_pplayer->m_scaleFX_DMD)
-      upscale(data, m_dmdSize, false);
    m_dmdFrameId++;
    return S_OK;
 }
