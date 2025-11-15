@@ -437,10 +437,10 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    // Enable HDR10 rendering if supported (so far, only DirectX 11 & 12 through DXGI)
    if ((bgfx::getCaps()->supported & BGFX_CAPS_HDR10) && (g_pplayer->m_vrDevice == nullptr))
    {
-      init.resolution.format = bgfx::TextureFormat::RGB10A2;
-      //init.resolution.format = bgfx::TextureFormat::RGBA16F; // Also supported by BGFX, but less efficient and would need and adjusted tonemapper to output in DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709 colorspace (linear sRGB)
+      init.resolution.formatColor = bgfx::TextureFormat::RGB10A2;
+      //init.resolution.formatColor = bgfx::TextureFormat::RGBA16F; // Also supported by BGFX, but less efficient and would need and adjusted tonemapper to output in DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709 colorspace (linear sRGB)
       init.resolution.reset |= BGFX_RESET_HDR10;
-      bgfx::reset(init.resolution.width, init.resolution.height, init.resolution.reset, init.resolution.format);
+      bgfx::reset(init.resolution.width, init.resolution.height, init.resolution.reset, init.resolution.formatColor);
    }
    int backBufferWidth = static_cast<int>(init.resolution.width);
    int backBufferHeight = static_cast<int>(init.resolution.height);
@@ -450,7 +450,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    // Create the back buffer render target
    colorFormat back_buffer_format;
    bool isWcg = false;
-   switch (init.resolution.format)
+   switch (init.resolution.formatColor)
    {
    case bgfx::TextureFormat::RGBA16F: back_buffer_format = colorFormat::RGBA16F; isWcg = true; break;
    case bgfx::TextureFormat::RGB10A2: back_buffer_format = colorFormat::RGBA10; isWcg = true; break;
@@ -616,7 +616,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
                gpuVSync = needsVSync;
                backBufferWidth = windowWidth;
                backBufferHeight = windowHeight;
-               bgfx::reset(backBufferWidth, backBufferHeight, init.resolution.reset | (gpuVSync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE), init.resolution.format);
+               bgfx::reset(backBufferWidth, backBufferHeight, init.resolution.reset | (gpuVSync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE), init.resolution.formatColor);
                rd->m_outputWnd[0]->GetBackBuffer()->SetSize(backBufferWidth, backBufferHeight);
             }
             rd->SubmitRenderFrame();
@@ -788,9 +788,9 @@ RenderDevice::RenderDevice(
    init.resolution.height = wnd->GetPixelHeight();
    switch (wnd->GetBitDepth())
    {
-   case 32: init.resolution.format = bgfx::TextureFormat::RGBA8; break;
-   case 30: init.resolution.format = bgfx::TextureFormat::RGB10A2; break;
-   default: init.resolution.format = bgfx::TextureFormat::R5G6B5; break;
+   case 32: init.resolution.formatColor = bgfx::TextureFormat::RGBA8; break;
+   case 30: init.resolution.formatColor = bgfx::TextureFormat::RGB10A2; break;
+   default: init.resolution.formatColor = bgfx::TextureFormat::R5G6B5; break;
    }
 
    init.platformData.context = nullptr;
