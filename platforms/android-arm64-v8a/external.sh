@@ -156,7 +156,7 @@ if [ "${BGFX_EXPECTED_SHA}" != "${BGFX_FOUND_SHA}" ]; then
    mkdir bgfx
    cd bgfx
 
-   curl -sL https://github.com/bkaradzic/bgfx.cmake-archived/releases/download/v${BGFX_CMAKE_VERSION}/bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz -o bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
+   curl -sL https://github.com/jsm174/bgfx.cmake/releases/download/v${BGFX_CMAKE_VERSION}/bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz -o bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
    tar xzf bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
    curl -sL https://github.com/vbousquet/bgfx/archive/${BGFX_PATCH_SHA}.tar.gz -o bgfx-${BGFX_PATCH_SHA}.tar.gz
    tar xzf bgfx-${BGFX_PATCH_SHA}.tar.gz
@@ -465,6 +465,9 @@ cp -r bgfx/bgfx.cmake/bx/include/bx ../../../third-party/include/
 
 cp pinmame/pinmame/build/libpinmame.so ../../../third-party/runtime-libs/android-arm64-v8a
 cp pinmame/pinmame/src/libpinmame/libpinmame.h ../../../third-party/include
+
+cp openxr/openxr/build/src/loader/libopenxr_loader.so ../../../third-party/runtime-libs/android-arm64-v8a
+cp -r openxr/openxr/include/openxr ../../../third-party/include
 
 cp libdmdutil/libdmdutil/build/libdmdutil.so ../../../third-party/runtime-libs/android-arm64-v8a
 cp -r libdmdutil/libdmdutil/include/DMDUtil ../../../third-party/include/
