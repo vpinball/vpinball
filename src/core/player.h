@@ -224,7 +224,6 @@ public:
    Renderer *m_renderer = nullptr;
    VRDevice *m_vrDevice = nullptr;
    bool m_headTracking = false;
-   bool m_scaleFX_DMD = false;
    vector<AncillaryRendererDef> m_ancillaryWndRenderers[VPXWindowId::VPXWINDOW_Topper + 1];
 
 private:

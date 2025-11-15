@@ -184,16 +184,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    m_NudgeShake = m_ptable->m_settings.GetPlayer_NudgeStrength();
 
-   // FIXME ScaleFX is somewhat broken. Move the ability to render a DMD into a higher resolution display to a plugin and update DMD selection to select this rendered display
-   m_scaleFX_DMD = false;
-   //!! TODO for now parse all dmd settings and assign scaleFX setting to internal dmd rendering
-   /* m_scaleFX_DMD = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ScaleFXDMD"s, false);
-   for (unsigned int n = 0; n < 10; ++n)
-   {
-      const string prefix = "User." + std::to_string(n + 1) + '.';
-      m_scaleFX_DMD |= m_ptable->m_settings.LoadValueWithDefault(Settings::DMD, prefix + "ScaleFX", false);
-   }*/
-
    m_minphyslooptime = m_ptable->m_settings.GetPlayer_MinPhysLoopTime();
 
    PLOGI << "Creating main window"; // For profiling
