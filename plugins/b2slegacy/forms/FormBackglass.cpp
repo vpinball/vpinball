@@ -29,7 +29,7 @@ namespace B2SLegacy {
 #include <exception>
 
 FormBackglass::FormBackglass(VPXPluginAPI* vpxApi, MsgPluginAPI* msgApi,uint32_t endpointId, B2SData* pB2SData)
-   : Form(vpxApi, msgApi, endpointId, pB2SData, "Backglass"),
+   : Form(vpxApi, msgApi, endpointId, pB2SData, "Backglass"s),
      m_pB2SSettings(pB2SData->GetB2SSettings())
 {
    SetName("formBackglass"s);
@@ -1188,8 +1188,9 @@ void FormBackglass::LoadB2SData()
                lightsStateAtAnimationStart, lightsStateAtAnimationEnd, animationstopbehaviour, lockInvolvedLamps, hidescoredisplays,
                bringtofront, randomstart, randomquality, entries);
             // maybe set slowdown
-            if (m_pB2SSettings->GetAnimationSlowDowns()->contains(name))
-               m_pB2SAnimation->SetAnimationSlowDown(name, (*m_pB2SSettings->GetAnimationSlowDowns())[name]);
+            const auto& it = m_pB2SSettings->GetAnimationSlowDowns()->find(name);
+            if (it != m_pB2SSettings->GetAnimationSlowDowns()->end())
+               m_pB2SAnimation->SetAnimationSlowDown(name, it->second);
             // add join to ID
             if (!idJoins.empty()) {
                std::istringstream iss(idJoins);

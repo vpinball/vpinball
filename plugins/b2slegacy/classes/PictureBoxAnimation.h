@@ -33,7 +33,7 @@ public:
       bool randomStart,
       int randomQuality,
       const vector<PictureBoxAnimationEntry*>& entries);
-   ~PictureBoxAnimation();
+   ~PictureBoxAnimation() override;
 
    void Start() override;
    void Stop() override;

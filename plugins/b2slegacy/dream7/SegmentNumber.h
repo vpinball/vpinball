@@ -29,7 +29,7 @@ public:
    static bool SetSegmentState(Segment* pSegment, const bool isOn);
    void GetSegmentRegions();
    void DisplayCharacter(const string& szCharacter);
-   void DisplayBitCode(long value);
+   void DisplayBitCode(int value);
 
 private:
    Dream7Display* m_pDisplay;

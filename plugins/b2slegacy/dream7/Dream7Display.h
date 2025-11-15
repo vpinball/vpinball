@@ -66,7 +66,7 @@ public:
    float GetAngle() const { return m_angle; }
    void SetAngle(const float angle) { if (m_angle != angle) { m_angle = angle; InitSegmentsStyle(); } }
    void SetValue(int segment, const string& value);
-   void SetValue(int segment, long value);
+   void SetValue(int segment, int value);
    void SetExtraSpacing(int segment, float value);
    void SegmentNumberInvalidated(SegmentNumber* pNumber);
    void SegmentDisplayHandleCreated();

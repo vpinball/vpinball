@@ -23,10 +23,10 @@ public:
    void Dispose();
    static const string& GetB2SServerVersion();
    static double GetB2SBuildVersion();
-   string GetB2SServerDirectory() const;
-   string GetB2SName() const;
+   const string& GetB2SServerDirectory() const;
+   const string& GetB2SName() const;
    void SetB2SName(const string& b2sName);
-   string GetTableName() const;
+   const string& GetTableName() const;
    void SetTableName(const string& tableName);
    void SetWorkingDir(const string& workingDir);
    void SetPath(const string& path);

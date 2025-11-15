@@ -14,7 +14,7 @@ public:
 
     Timer();
     Timer(uint32_t interval, ElapsedListener listener, void* param = nullptr);
-    ~Timer();
+    virtual ~Timer();
 
     virtual void Start();
     virtual void Stop();

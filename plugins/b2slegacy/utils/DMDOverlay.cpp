@@ -72,8 +72,8 @@ void DMDOverlay::Render(VPXRenderContext2D* ctx)
    if (m_detectDmdFrame) {
       // Autodetection: Scale from background image space to source space
       const VPXTextureInfo* const texInfo = m_vpxApi->GetTextureInfo(m_backImage);
-      float scaleX = static_cast<float>(ctx->srcWidth) / static_cast<float>(texInfo->width);
-      float scaleY = static_cast<float>(ctx->srcHeight) / static_cast<float>(texInfo->height);
+      float scaleX = ctx->srcWidth  / static_cast<float>(texInfo->width);
+      float scaleY = ctx->srcHeight / static_cast<float>(texInfo->height);
 
       scaledX = static_cast<float>(m_frame.x) * scaleX;
       scaledY = static_cast<float>(m_frame.y) * scaleY;

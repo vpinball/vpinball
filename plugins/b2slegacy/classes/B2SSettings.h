@@ -13,8 +13,8 @@ public:
    B2SSettings(MsgPluginAPI* msgApi);
    ~B2SSettings();
 
-   string GetMinimumDirectB2SVersion() const { return "1.0"; }
-   string GetBackglassFileVersion() const { return m_szBackglassFileVersion; }
+   static const string& GetMinimumDirectB2SVersion() { static const string ver = "1.0"s; return ver; }
+   const string& GetBackglassFileVersion() const { return m_szBackglassFileVersion; }
    void SetBackglassFileVersion(const string& szBackglassFileVersion) { m_szBackglassFileVersion = szBackglassFileVersion; }
    bool IsAllOut() const { return m_allOut; }
    void SetAllOut(const bool allOut) { m_allOut = allOut; }
@@ -51,10 +51,10 @@ public:
    bool IsROMControlled() const { return !m_szGameName.empty(); }
    eDualMode GetCurrentDualMode() const { return m_currentDualMode; }
    void SetCurrentDualMode(const eDualMode currentDualMode) { m_currentDualMode = currentDualMode; }
-   string GetGameName() const { return m_szGameName; }
+   const string& GetGameName() const { return m_szGameName; }
    void SetGameName(const string& szGameName) { m_szGameName = szGameName; Load(false); }
    bool IsGameNameFound() const { return m_gameNameFound; }
-   string GetB2SName() const { return m_szB2SName; }
+   const string& GetB2SName() const { return m_szB2SName; }
    void SetB2SName(const string& szB2SName) { m_szB2SName = szB2SName; Load(false); }
    void Load(bool resetLogs = true);
    void ClearAll();

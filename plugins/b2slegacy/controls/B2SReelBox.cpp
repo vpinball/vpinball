@@ -10,7 +10,7 @@ B2SReelBox::B2SReelBox(VPXPluginAPI* vpxApi, B2SData* pB2SData)
 {
    m_led = false;
    m_length = 1;
-   m_initValue = "0";
+   m_initValue = "0"s;
    m_szReelIndex.clear();
    m_intermediates = -1;
    m_intermediates2go = 0;

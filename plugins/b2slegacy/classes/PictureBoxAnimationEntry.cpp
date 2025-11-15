@@ -12,8 +12,8 @@ PictureBoxAnimationEntry::PictureBoxAnimationEntry(const string& on1, int waitAf
    m_waitAfterOff1 = waitAfterOff1;
    m_pulseSwitch = pulseSwitch;
 
-   m_on2.emplace_back(string());
-   m_off2.emplace_back(string());
+   m_on2.emplace_back(""s);
+   m_off2.emplace_back(""s);
    m_waitAfterOn2 = 0;
    m_waitAfterOff2 = 0;
 }

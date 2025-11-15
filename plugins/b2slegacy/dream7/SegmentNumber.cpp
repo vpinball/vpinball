@@ -316,9 +316,9 @@ void SegmentNumber::DisplayCharacter(const string& szCharacter)
       OnInvalidated();
 }
 
-void SegmentNumber::DisplayBitCode(long value)
+void SegmentNumber::DisplayBitCode(int value)
 {
-   long segment = 0;
+   int segment = 0;
    bool anyChange = false;
    for (auto& pSegment : m_segments) {
       if (m_type == SegmentNumberType_TenSegment && pSegment->GetName() == "g2") {

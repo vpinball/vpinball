@@ -118,7 +118,7 @@ void Segment::DrawLight(VPXGraphics* pRenderer)
 
 void Segment::InitSegmentDot(float x, float y, float radius)
 {
-   m_szName = ".";
+   m_szName = "."s;
    m_points.push_back({ radius, radius });
    m_radius = radius;
 

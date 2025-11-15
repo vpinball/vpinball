@@ -192,7 +192,7 @@ void Dream7Display::SetValue(int segment, const string& value)
    m_segmentNumbers[segment]->DisplayCharacter(value);
 }
 
-void Dream7Display::SetValue(int segment, long value)
+void Dream7Display::SetValue(int segment, int value)
 {
    if ((int)m_segmentNumbers.size() <= segment)
       return;
@@ -240,8 +240,8 @@ void Dream7Display::InitMatrix(float shear, float scaleFactor, bool mirrored)
    if (IsHandleCreated()) {
       SDL_FRect bounds = GetBounds(&styleMatrix);
       if (m_scaleMode != ScaleMode_Manual) {
-         float scaleX = (float)(this->GetWidth() + 3 - m_offsetWidth) / bounds.w;
-         float scaleY = (float)(this->GetHeight() - 1) / bounds.h;
+         float scaleX = (float)(GetWidth() + 3 - m_offsetWidth) / bounds.w;
+         float scaleY = (float)(GetHeight() - 1) / bounds.h;
          if (m_scaleMode == ScaleMode_Zoom) {
             scaleY = std::min(scaleX, scaleY);
             scaleX = scaleY;

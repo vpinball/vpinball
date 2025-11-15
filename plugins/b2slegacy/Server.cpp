@@ -264,12 +264,12 @@ double Server::GetB2SBuildVersion()
       + B2S_VERSION_BUILD / 10000.0;
 }
 
-string Server::GetB2SServerDirectory() const
+const string& Server::GetB2SServerDirectory() const
 {
    return m_szPath;
 }
 
-string Server::GetB2SName() const
+const string& Server::GetB2SName() const
 {
    return m_pB2SSettings->GetB2SName();
 }
@@ -279,7 +279,7 @@ void Server::SetB2SName(const string& b2sName)
    m_pB2SSettings->SetB2SName(b2sName);
 }
 
-string Server::GetTableName() const
+const string& Server::GetTableName() const
 {
    return m_pB2SData->GetTableName();
 }
@@ -1276,9 +1276,9 @@ void Server::CheckLEDs(ScriptArray* psa)
 
    // maybe show the collected data
    if (m_pCollectLEDsData->ShowData()) {
-      bool useLEDs = m_pB2SData->IsUseLEDs() && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered;
-      bool useLEDDisplays = m_pB2SData->IsUseLEDDisplays() && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Dream7;
-      bool useReels = m_pB2SData->IsUseReels();
+      const bool useLEDs = m_pB2SData->IsUseLEDs() && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered;
+      const bool useLEDDisplays = m_pB2SData->IsUseLEDDisplays() && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Dream7;
+      const bool useReels = m_pB2SData->IsUseReels();
 
       m_pCollectLEDsData->Lock();
 
@@ -1320,9 +1320,9 @@ void Server::MyB2SSetLED(int digit, int value)
       return;
 
    const auto& led = m_pB2SData->GetLEDs()->find(string("LEDBox" + std::to_string(digit)));
-   bool useLEDs = led != m_pB2SData->GetLEDs()->end() && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered;
+   const bool useLEDs = led != m_pB2SData->GetLEDs()->end() && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered;
    const auto& dream7 = m_pB2SData->GetLEDDisplayDigits()->find(digit - 1);
-   bool useLEDDisplays = dream7 != m_pB2SData->GetLEDDisplayDigits()->end() && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Dream7;
+   const bool useLEDDisplays = dream7 != m_pB2SData->GetLEDDisplayDigits()->end() && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Dream7;
 
    if (useLEDs) {
       // Rendered LEDs are used
@@ -1339,9 +1339,9 @@ void Server::MyB2SSetLED(int digit, const string& value)
    if (!m_pB2SData->IsBackglassRunning())
       return;
 
-   bool useLEDs = m_pB2SData->GetLEDs()->contains(string("LEDBox" + std::to_string(digit))) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered;
+   const bool useLEDs = m_pB2SData->GetLEDs()->contains(string("LEDBox" + std::to_string(digit))) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered;
    const auto& dream7 = m_pB2SData->GetLEDDisplayDigits()->find(digit - 1);
-   bool useLEDDisplays = dream7 != m_pB2SData->GetLEDDisplayDigits()->end() && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Dream7;
+   const bool useLEDDisplays = dream7 != m_pB2SData->GetLEDDisplayDigits()->end() && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Dream7;
 
    if (useLEDs) {
       // Rendered LEDs do not support string values
@@ -1359,8 +1359,8 @@ void Server::MyB2SSetLEDDisplay(int display, const string& szText)
 
    int digit = GetFirstDigitOfDisplay(display);
 
-   bool useLEDs = m_pB2SData->GetLEDs()->contains(string("LEDBox" + std::to_string(digit))) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered;
-   //bool useLEDDisplays = m_pB2SData->GetLEDDisplayDigits()->contains(digit - 1) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Dream7;
+   const bool useLEDs = m_pB2SData->GetLEDs()->contains(string("LEDBox" + std::to_string(digit))) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered;
+   //const bool useLEDDisplays = m_pB2SData->GetLEDDisplayDigits()->contains(digit - 1) && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Dream7;
 
    if (useLEDs) {
       // Set text for each character position in the LED display
@@ -1422,11 +1422,11 @@ void Server::MyB2SSetScore(int digit, int value, bool animateReelChange)
    if (m_pB2SData->IsBackglassRunning()) {
       if (digit > 0) {
          const auto& led = m_pB2SData->GetLEDs()->find("LEDBox" + std::to_string(digit));
-         bool useLEDs = (led != m_pB2SData->GetLEDs()->end() && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered);
+         const bool useLEDs = (led != m_pB2SData->GetLEDs()->end() && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Rendered);
          const auto& dream7 = m_pB2SData->GetLEDDisplayDigits()->find(digit - 1);
-         bool useLEDDisplays = (dream7 != m_pB2SData->GetLEDDisplayDigits()->end() && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Dream7);
+         const bool useLEDDisplays = (dream7 != m_pB2SData->GetLEDDisplayDigits()->end() && m_pB2SSettings->GetUsedLEDType() == eLEDTypes_Dream7);
          const auto& reel = m_pB2SData->GetReels()->find("ReelBox" + std::to_string(digit));
-         bool useReels = reel != m_pB2SData->GetReels()->end();
+         const bool useReels = reel != m_pB2SData->GetReels()->end();
 
          if (useLEDs) {
             // Rendered LEDs are used

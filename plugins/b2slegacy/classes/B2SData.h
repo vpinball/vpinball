@@ -33,11 +33,11 @@ public:
    Server* GetServer() const { return m_pServer; }
    void Stop();
    void ClearAll(bool donotclearnames);
-   string GetTableName() const { return m_szTableName; }
+   const string& GetTableName() const { return m_szTableName; }
    void SetTableName(const string& szTableName) { m_szTableName = szTableName; }
-   string GetTableFileName() const { return m_szTableFileName; }
+   const string& GetTableFileName() const { return m_szTableFileName; }
    void SetTableFileName(const string& szTableFileName) { m_szTableFileName = szTableFileName; }
-   string GetBackglassFileName() const { return m_szBackglassFileName; }
+   const string& GetBackglassFileName() const { return m_szBackglassFileName; }
    void SetBackglassFileName(const string& szBackglassFileName) { m_szBackglassFileName = szBackglassFileName; }
    int GetTableType() const { return m_tableType; }
    void SetTableType(const int tableType) { m_tableType = tableType; }
