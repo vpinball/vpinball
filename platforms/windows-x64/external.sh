@@ -145,7 +145,7 @@ if [ "${BGFX_EXPECTED_SHA}" != "${BGFX_FOUND_SHA}" ]; then
    mkdir bgfx
    cd bgfx
 
-   curl -sL https://github.com/jsm174/bgfx.cmake/releases/download/v${BGFX_CMAKE_VERSION}/bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz -o bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
+   curl -sL https://github.com/bkaradzic/bgfx.cmake/releases/download/v${BGFX_CMAKE_VERSION}/bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz -o bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
    tar xzf bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
    curl -sL https://github.com/vbousquet/bgfx/archive/${BGFX_PATCH_SHA}.tar.gz -o bgfx-${BGFX_PATCH_SHA}.tar.gz
    tar xzf bgfx-${BGFX_PATCH_SHA}.tar.gz
@@ -164,11 +164,7 @@ if [ "${BGFX_EXPECTED_SHA}" != "${BGFX_FOUND_SHA}" ]; then
       -DBGFX_BUILD_EXAMPLES=OFF \
       -DBGFX_CONFIG_MULTITHREADED=ON \
       -DBGFX_CONFIG_MAX_FRAME_BUFFERS=256 \
-      -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded \
-      -DCMAKE_CXX_FLAGS_RELEASE="//MT" \
-      -DCMAKE_C_FLAGS_RELEASE="//MT" \
-      -DCMAKE_CXX_FLAGS_DEBUG="//MTd" \
-      -DCMAKE_C_FLAGS_DEBUG="//MTd" \
+      -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded\$<\$<CONFIG:Debug>:Debug>" \
       -B build
    cmake --build build --config ${BUILD_TYPE}
    cd ..

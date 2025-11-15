@@ -49,7 +49,7 @@ jobs:
         run: |
           source ./platforms/config.sh
 
-          curl -sL https://github.com/jsm174/bgfx.cmake/releases/download/v${BGFX_CMAKE_VERSION}/bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz \
+          curl -sL https://github.com/bkaradzic/bgfx.cmake/releases/download/v${BGFX_CMAKE_VERSION}/bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz \
              -o bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
           tar xzf bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
 
