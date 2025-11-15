@@ -1,19 +1,19 @@
 # plugin CMake file to be included in main project CMakelists
 
-# --- DisplayDMD plugin ---
+# --- UpscaleDMD plugin ---
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
 
 set(ALPHADMD_PLUGIN_SOURCES
-   plugins/displaydmd/displaydmd.cpp
+   plugins/upscaledmd/upscaledmd.cpp
 )
 
 if(BUILD_SHARED)
-   add_library(DisplayDMDPlugin MODULE ${ALPHADMD_PLUGIN_SOURCES})
+   add_library(UpscaleDMDPlugin MODULE ${ALPHADMD_PLUGIN_SOURCES})
 
-   target_include_directories(DisplayDMDPlugin PUBLIC
-      plugins/displaydmd
+   target_include_directories(UpscaleDMDPlugin PUBLIC
+      plugins/upscaledmd
       ${CMAKE_SOURCE_DIR}/third-party/include
       src/plugins
       src
@@ -36,61 +36,61 @@ if(BUILD_SHARED)
          $<$<CONFIG:RELEASE>:/GT>
          $<$<CONFIG:RELEASE>:/GL>
       )
-      set_target_properties(DisplayDMDPlugin PROPERTIES
+      set_target_properties(UpscaleDMDPlugin PROPERTIES
          MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
       )
-      target_compile_options(DisplayDMDPlugin PUBLIC
+      target_compile_options(UpscaleDMDPlugin PUBLIC
          $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
          $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
       )
-      target_link_options(DisplayDMDPlugin PUBLIC
+      target_link_options(UpscaleDMDPlugin PUBLIC
          $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
          $<$<CONFIG:RELEASE>:/OPT:REF>
          $<$<CONFIG:RELEASE>:/OPT:ICF>
          $<$<CONFIG:RELEASE>:/LTCG>
       )
       if(PluginArch STREQUAL "x64")
-         set_target_properties(DisplayDMDPlugin PROPERTIES
-            OUTPUT_NAME "plugin-displaydmd64"
+         set_target_properties(UpscaleDMDPlugin PROPERTIES
+            OUTPUT_NAME "plugin-upscaledmd64"
          )
       else()
-         set_target_properties(DisplayDMDPlugin PROPERTIES
-            OUTPUT_NAME "plugin-displaydmd"
+         set_target_properties(UpscaleDMDPlugin PROPERTIES
+            OUTPUT_NAME "plugin-upscaledmd"
          )
       endif()
    else()
-      set_target_properties(DisplayDMDPlugin PROPERTIES
+      set_target_properties(UpscaleDMDPlugin PROPERTIES
          PREFIX ""
-         OUTPUT_NAME "plugin-displaydmd"
+         OUTPUT_NAME "plugin-upscaledmd"
       )
       if(PluginPlatform STREQUAL "macos")
-         set_target_properties(DisplayDMDPlugin PROPERTIES
+         set_target_properties(UpscaleDMDPlugin PROPERTIES
             SUFFIX ".dylib"
          )
       endif()
    endif()
 
-   add_custom_command(TARGET DisplayDMDPlugin POST_BUILD
-      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/displaydmd/plugin.cfg" "${PLUGINS_DIR}/displaydmd/plugin.cfg"
-      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:DisplayDMDPlugin>" "${PLUGINS_DIR}/displaydmd"
-      COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:DisplayDMDPlugin>"
+   add_custom_command(TARGET UpscaleDMDPlugin POST_BUILD
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/upscaledmd/plugin.cfg" "${PLUGINS_DIR}/upscaledmd/plugin.cfg"
+      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:UpscaleDMDPlugin>" "${PLUGINS_DIR}/upscaledmd"
+      COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:UpscaleDMDPlugin>"
    )
 endif()
 
 if(BUILD_STATIC)
    add_compile_options(-fPIC)
 
-   add_library(DisplayDMDPlugin STATIC ${ALPHADMD_PLUGIN_SOURCES})
+   add_library(UpscaleDMDPlugin STATIC ${ALPHADMD_PLUGIN_SOURCES})
 
-   target_include_directories(DisplayDMDPlugin PUBLIC
-      plugins/displaydmd
+   target_include_directories(UpscaleDMDPlugin PUBLIC
+      plugins/upscaledmd
       ${CMAKE_SOURCE_DIR}/third-party/include
       src/plugins
       src
    )
 
-   set_target_properties(DisplayDMDPlugin PROPERTIES
+   set_target_properties(UpscaleDMDPlugin PROPERTIES
       PREFIX ""
-      OUTPUT_NAME "plugin-displaydmd"
+      OUTPUT_NAME "plugin-upscaledmd"
    )
 endif()

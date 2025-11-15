@@ -278,7 +278,7 @@ MSGPI_EXPORT void MSGPIAPI PUPPluginLoad(const uint32_t sessionId, const MsgPlug
    rootPath = find_case_insensitive_directory_path(rootPath + "pupvideos");
    if (rootPath.empty())
    {
-      LOGW("PUP folder was not found (settings is '%s')", pupFolder);
+      LOGW("PUP folder was not found (settings is '%s')", pupFolder.c_str());
    }
    pupManager = std::make_unique<PUPManager>(msgApi, endpointId, rootPath);
 }
