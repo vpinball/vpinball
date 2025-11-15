@@ -10,6 +10,9 @@ class SensorSetupPage final : public InGameUIPage
 public:
    SensorSetupPage(const InGameUIItem& item);
 
+   void SaveGlobally() override;
+   void SaveTableOverride() override;
+
 private:
    void BuildPage();
    InGameUIItem m_item;

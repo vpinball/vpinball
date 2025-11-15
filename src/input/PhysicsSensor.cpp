@@ -5,10 +5,9 @@
 
 #include <sstream>
 
-PhysicsSensor::PhysicsSensor(class InputManager* eventManager, const string& settingId, const string& label, SensorMapping::Type sensorType, const string& defaultMappings)
+PhysicsSensor::PhysicsSensor(class InputManager* eventManager, const string& settingId, const string& label, SensorMapping::Type sensorType)
    : m_settingId(settingId)
    , m_label(label)
-   , m_defaultMappings(defaultMappings)
    , m_sensorType(sensorType)
    , m_eventManager(eventManager)
    , m_integrator(std::make_shared<NoOpStoreSensorFilter>())
@@ -23,13 +22,13 @@ void PhysicsSensor::ClearMapping()
 
 void PhysicsSensor::LoadMapping(const Settings& settings)
 {
-   const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Mapping." + m_settingId, "Mapping." + m_settingId, ""s, m_defaultMappings));
+   const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Mapping." + m_settingId, "Mapping." + m_settingId, ""s, ""s));
    SetMapping(settings.GetString(propId));
 }
 
 void PhysicsSensor::SaveMapping(Settings& settings) const
 {
-   const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Mapping." + m_settingId, "Mapping." + m_settingId, ""s, m_defaultMappings));
+   const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Mapping." + m_settingId, "Mapping." + m_settingId, ""s, ""s));
    if (m_inputMapping == nullptr)
       settings.Reset(propId);
    else
