@@ -10,7 +10,7 @@
 class PhysicsSensor final : public SensorMapping::SensorMappingHandler
 {
 public:
-   PhysicsSensor(class InputManager* eventManager, const string& settingId, const string& label, SensorMapping::Type sensorType, const string& defaultMappings);
+   PhysicsSensor(class InputManager* eventManager, const string& settingId, const string& label, SensorMapping::Type sensorType);
    PhysicsSensor(PhysicsSensor&& other) = delete;
    ~PhysicsSensor() override = default;
 
@@ -36,7 +36,6 @@ public:
 private:
    const string m_settingId;
    const string m_label;
-   const string m_defaultMappings;
    const SensorMapping::Type m_sensorType;
    class InputManager* const m_eventManager;
    std::unique_ptr<SensorMapping> m_inputMapping;

@@ -15,6 +15,18 @@ SensorSetupPage::SensorSetupPage(const InGameUIItem& item)
    BuildPage();
 }
 
+void SensorSetupPage::SaveGlobally()
+{
+   InGameUIPage::SaveGlobally();
+   BuildPage();
+}
+
+void SensorSetupPage::SaveTableOverride()
+{
+   InGameUIPage::SaveTableOverride();
+   BuildPage();
+}
+
 void SensorSetupPage::BuildPage()
 {
    ClearItems();
@@ -132,7 +144,7 @@ void SensorSetupPage::BuildPage()
 
    const float storedScale = storedMapping ? storedMapping->GetScale() : m_item.m_physicsSensor->GetMapping().GetScale();
    AddItem(std::make_unique<InGameUIItem>(
-      VPX::Properties::BoolPropertyDef(""s, ""s, "Reversed axis"s, ""s, m_item.m_physicsSensor->GetMapping().GetScale() < 0.f), //
+      VPX::Properties::BoolPropertyDef(""s, ""s, "Reversed axis"s, ""s, false), //
       [this]() { return m_item.m_physicsSensor->GetMapping().GetScale() < 0.f; }, // Live
       [storedScale]() { return storedScale < 0.f; }, // Stored
       [this](bool v)
@@ -146,7 +158,7 @@ void SensorSetupPage::BuildPage()
 
    const float storedDeadZone = storedMapping ? storedMapping->GetDeadZone() : m_item.m_physicsSensor->GetMapping().GetDeadZone();
    AddItem(std::make_unique<InGameUIItem>(
-      VPX::Properties::FloatPropertyDef(""s, ""s, "Dead Zone"s, ""s, 0.f, 0.3f, 0.f, m_item.m_physicsSensor->GetMapping().GetDeadZone()), 100.f,
+      VPX::Properties::FloatPropertyDef(""s, ""s, "Dead Zone"s, ""s, 0.f, 0.3f, 0.f, 0.f), 100.f,
       "%4.1f %%", //
       [this]() { return m_item.m_physicsSensor->GetMapping().GetDeadZone(); }, // Live
       [storedDeadZone]() { return storedDeadZone; }, // Stored
@@ -158,8 +170,10 @@ void SensorSetupPage::BuildPage()
       [](Settings&) { /* Already performed in first page item */ }, // Reset
       [](float, Settings&, bool) { /* Already performed in first page item */ })); // Save
 
+   float s = fabs(m_item.m_physicsSensor->GetMapping().GetScale());
+   bool b = s == storedScale;
    AddItem(std::make_unique<InGameUIItem>(
-      VPX::Properties::FloatPropertyDef(""s, ""s, "Gain"s, ""s, 0.f, 5.f, 0.f, fabs(m_item.m_physicsSensor->GetMapping().GetScale())), 100.f,
+      VPX::Properties::FloatPropertyDef(""s, ""s, "Gain"s, ""s, 0.f, 5.f, 0.f, 1.f), 100.f,
       "%4.1f %%", //
       [this]() { return fabs(m_item.m_physicsSensor->GetMapping().GetScale()); }, // Live
       [storedScale]() { return fabs(storedScale); }, // Stored

@@ -3,6 +3,8 @@
 #include "../collections/RunningAnimationsCollection.h"
 #include "../utils/Timer.h"
 
+#include <map>
+
 namespace B2SLegacy {
 
 class B2SData;
