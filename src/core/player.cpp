@@ -1928,7 +1928,7 @@ void Player::FinishFrame()
    if (m_closing == CS_USER_INPUT)
    {
       m_closing = CS_PLAYING;
-      if (g_pvp->m_disable_pause_menu || m_renderer->m_stereo3D == STEREO_VR)
+      if (g_pvp->m_disable_pause_menu)
          m_closing = CS_STOP_PLAY;
       else {
          m_liveUI->OpenMainSplash();

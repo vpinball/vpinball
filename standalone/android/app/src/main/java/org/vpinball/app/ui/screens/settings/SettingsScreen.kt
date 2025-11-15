@@ -72,6 +72,7 @@ import androidx.compose.ui.unit.dp
 import java.io.File
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import org.vpinball.app.BuildConfig
 import org.vpinball.app.Credit
 import org.vpinball.app.Link
 import org.vpinball.app.R
@@ -142,14 +143,16 @@ fun SettingsScreen(
                                     "so backbox and cabinet are rendered. Useful for tables that do not provide FSS support.",
                         )
 
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                        if (!BuildConfig.IS_QUEST) {
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
-                        EnumMenuRow(
-                            label = "Graphics Backend",
-                            options = VPinballGfxBackend.entries.toList(),
-                            option = viewModel.gfxBackend,
-                            onOptionChanged = { viewModel.handleGfxBackend(value = it) },
-                        )
+                            EnumMenuRow(
+                                label = "Graphics Backend",
+                                options = VPinballGfxBackend.entries.toList(),
+                                option = viewModel.gfxBackend,
+                                onOptionChanged = { viewModel.handleGfxBackend(value = it) },
+                            )
+                        }
                     }
                 }
 

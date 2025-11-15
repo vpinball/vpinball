@@ -66,7 +66,7 @@ class VPinballViewModel : ViewModel() {
     }
 
     fun stopped() {
-        _state.update { it.copy(loading = false, playing = false, table = null) }
+        _state.update { it.copy(loading = false, playing = false, table = null, progress = 0, status = null) }
     }
 
     fun launchInViewModelScope(block: suspend () -> Unit) {

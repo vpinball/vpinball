@@ -120,7 +120,7 @@ void VPinballLib::AppIterate()
 
                if (success) {
                   PLOGI.printf("Screenshot saved: %s", imagePath.c_str());
-               } 
+               }
                else {
                   PLOGE.printf("Failed to save screenshot: %s", imagePath.c_str());
                }
@@ -301,6 +301,11 @@ void VPinballLib::SendEvent(VPINBALL_EVENT event, void* data)
 
 void VPinballLib::LoadPlugins()
 {
+   static bool pluginsLoaded = false;
+   if (pluginsLoaded)
+      return;
+   pluginsLoaded = true;
+
    static constexpr struct {
       const char* id;
       void (*load)(uint32_t, const MsgPluginAPI*);
@@ -321,10 +326,9 @@ void VPinballLib::LoadPlugins()
    };
 
    for (size_t i = 0; i < std::size(plugins); ++i) {
-      char buf[256];
-      MsgPI::MsgPluginManager::GetInstance().GetMsgAPI().GetSetting(plugins[i].id, "Enable", buf, 256);
-      if (buf[0] == '1') {
-         auto& p = plugins[i];
+      auto& p = plugins[i];
+      string sectionName = string("Plugin.") + p.id;
+      if (LoadValueBool(sectionName, "Enable", false)) {
          auto plugin = MsgPI::MsgPluginManager::GetInstance().RegisterPlugin(
             p.id, p.id, p.id,
             "", "", "",

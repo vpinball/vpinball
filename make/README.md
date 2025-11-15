@@ -142,7 +142,7 @@ open standalone/ios/VPinball.xcodeproj
 </details>
 
 <details>
-<summary>android-arm64-v8a</summary>
+<summary>android-arm64-v8a (Mobile)</summary>
 
 ```
 brew install cmake bison curl
@@ -156,7 +156,26 @@ cp make/CMakeLists_bgfx_lib.txt CMakeLists.txt
 cmake -DPLATFORM=android -DARCH=arm64-v8a -DCMAKE_BUILD_TYPE=Release -B build/android-arm64-v8a
 cmake --build build/android-arm64-v8a -- -j$(sysctl -n hw.ncpu)
 cd standalone/android
-./gradlew assembleDebug
+./gradlew assembleMobileDebug
+```
+</details>
+
+<details>
+<summary>android-arm64-v8a (Quest)</summary>
+
+```
+brew install cmake bison curl
+export PATH="$(brew --prefix bison)/bin:$PATH"
+export JAVA_HOME=$(/usr/libexec/java_home -v 21)
+export ANDROID_HOME=/Users/jmillard/Library/Android/sdk
+export ANDROID_NDK=/Users/jmillard/Library/Android/sdk/ndk/28.2.13676358
+export ANDROID_NDK_HOME=/Users/jmillard/Library/Android/sdk/ndk/28.2.13676358
+platforms/android-arm64-v8a/external.sh
+cp make/CMakeLists_bgfx_lib.txt CMakeLists.txt
+cmake -DPLATFORM=android -DARCH=arm64-v8a -DENABLE_XR=ON -DCMAKE_BUILD_TYPE=Release -B build/android-arm64-v8a
+cmake --build build/android-arm64-v8a -- -j$(sysctl -n hw.ncpu)
+cd standalone/android
+./gradlew assembleQuestDebug
 ```
 </details>
 

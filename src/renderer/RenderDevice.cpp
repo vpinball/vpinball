@@ -400,10 +400,15 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    if (g_pplayer->m_vrDevice)
    {
       assert((init.resolution.reset & BGFX_RESET_VSYNC) == 0); // Display VSync must be disabled as we are synced by OpenXR on the headset display
-      init.type = bgfx::RendererType::Direct3D11; // TODO support other backends
+      #if BX_PLATFORM_WINDOWS
+         init.type = bgfx::RendererType::Direct3D11;
+         init.platformData.context = g_pplayer->m_vrDevice->GetGraphicContext();
+      #elif BX_PLATFORM_ANDROID
+         init.type = bgfx::RendererType::Vulkan;
+         init.platformData.context = g_pplayer->m_vrDevice->GetGraphicContext();
+      #endif
       init.resolution.width = max(init.resolution.width, static_cast<uint32_t>(g_pplayer->m_vrDevice->GetEyeWidth())); // Needed for bgfx::clear to work
       init.resolution.height = max(init.resolution.height, static_cast<uint32_t>(g_pplayer->m_vrDevice->GetEyeHeight())); // Needed for bgfx::clear to work
-      init.platformData.context = g_pplayer->m_vrDevice->GetGraphicContext(); // Use the context selected by OpenXR
    }
    #endif
 
@@ -545,6 +550,10 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             #endif
             g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
             rd->Flip();
+            if (rd->m_screenshot) {
+               bgfx::requestScreenShot(BGFX_INVALID_HANDLE, rd->m_screenshotFilename.c_str());
+               rd->m_screenshot = false;
+            }
             const bgfx::Stats* stats = bgfx::getStats();
             const uint64_t bgfxSubmit = (stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000000ull / stats->cpuTimerFreq;
             g_pplayer->m_logicProfiler.OnPresented(usec() - bgfxSubmit);

@@ -24,7 +24,11 @@
 #endif
 #elif defined(ENABLE_BGFX)
 #define VP_FLAVOUR "BGFX"
+#if defined(ENABLE_XR) && defined(__ANDROID__)
+#define VP_FLAVOUR_SHORT "BGFX XR"
+#else
 #define VP_FLAVOUR_SHORT "BGFX"
+#endif
 #else
 #define VP_FLAVOUR "DirectX"
 #define VP_FLAVOUR_SHORT "DX"

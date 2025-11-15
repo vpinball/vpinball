@@ -186,6 +186,8 @@ object VPinballManager : KoinComponent {
                                     }
 
                                     viewModel.loading(false)
+                                    viewModel.progress(0)
+                                    viewModel.status(null)
                                 } else {
                                     withContext(Dispatchers.IO) { TableManager.getInstance().cleanupLoadedTable(table) }
                                 }

@@ -19,4 +19,5 @@ public class VPinballJNI {
     public native int VPinballExtractTableScript();
     public native int VPinballPlay();
     public native void VPinballStop();
+    public native boolean VPinballInitOpenXR(Object activity);
 }

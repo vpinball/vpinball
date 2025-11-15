@@ -75,7 +75,7 @@ android {
 
     defaultConfig {
         applicationId = "org.vpinball.vpinball_bgfx"
-        minSdk = 30
+        minSdk = 34
         targetSdk = 35
         versionCode = versionCodeValue
         versionName = versionNameValue
@@ -84,6 +84,18 @@ android {
         vectorDrawables { useSupportLibrary = true }
 
         ndk { abiFilters += "arm64-v8a" }
+    }
+
+    flavorDimensions += "platform"
+    productFlavors {
+        create("quest") {
+            dimension = "platform"
+            buildConfigField("boolean", "IS_QUEST", "true")
+        }
+        create("mobile") {
+            dimension = "platform"
+            buildConfigField("boolean", "IS_QUEST", "false")
+        }
     }
 
     signingConfigs {
@@ -111,7 +123,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
-    buildFeatures { compose = true }
+    buildFeatures {
+        buildConfig = true
+        compose = true
+    }
     packaging { resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" } }
 }
 
