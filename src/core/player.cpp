@@ -1219,53 +1219,6 @@ void Player::ApplyDeferredTimerChanges()
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// Physics engine
-// 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-#pragma region Physics
-
-#ifdef UNUSED_TILT
-int Player::NudgeGetTilt()
-{
-   static uint32_t last_tilt_time;
-   static uint32_t last_jolt_time;
-
-   if(!m_ptable->m_accelerometerEnabled || m_NudgeManual >= 0 ||               //disabled or in joystick test mode
-       m_ptable->m_tilt_amount == 0 || m_ptable->m_jolt_amount == 0) return 0; //disabled
-
-   const uint32_t ms = msec();
-
-   uint32_t tilt_2 = 0;
-   for (int j = 0; j < m_pininput.m_num_joy; ++j) //find largest value
-   {
-      tilt_2 = max(tilt_2, (uint32_t)(m_curAccel[j].x * m_curAccel[j].x + m_curAccel[j].y * m_curAccel[j].y)); //always positive numbers
-   }
-
-   if( ( ms - last_jolt_time > m_ptable->m_jolt_trigger_time ) &&
-      ( ms - last_tilt_time > (uint32_t)m_ptable->m_tilt_trigger_time ) &&
-      tilt_2 > ( (uint32_t)m_ptable->m_tilt_amount * (uint32_t)m_ptable->m_tilt_amount ) )
-   {
-      last_tilt_time = ms;
-
-      return 1;
-   }
-
-   if( ms - last_jolt_time > (uint32_t)m_ptable->m_jolt_trigger_time && 
-      tilt_2 > ((uint32_t)m_ptable->m_jolt_amount * (uint32_t)m_ptable->m_jolt_amount ) )
-   {
-      last_jolt_time = ms;
-   }
-
-   return 0;
-}
-#endif
-
-#pragma endregion
-
-
 string Player::GetPerfInfo()
 {
    // Make it more or less readable by updating only once per second

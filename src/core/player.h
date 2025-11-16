@@ -157,16 +157,11 @@ private:
 #pragma region MechPlunger
 public:
    uint32_t m_LastPlungerHit = 0; // the last time the plunger was in contact (at least the vicinity) of the ball
-
 #pragma endregion
 
 
 #pragma region Nudge
 public:
-   #ifdef UNUSED_TILT
-   int NudgeGetTilt(); // returns non-zero when appropriate to set the tilt switch
-   #endif
-
    float m_NudgeShake; // whether to shake the screen during nudges and how much
 #pragma endregion
 
