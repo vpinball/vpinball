@@ -23,6 +23,7 @@
   <Project Path="plugin-remote-control.vcxproj" Id="57516b53-6e7e-4618-93b3-4f5222f28807" />
   <Project Path="plugin-scoreview.vcxproj" Id="91425c91-fdb2-4170-a5c9-a068357e59e3" />
   <Project Path="plugin-serum.vcxproj" Id="2bf90d88-9139-4e66-a778-4327311af778" />
+  <Project Path="plugin-upscaledmd.vcxproj" Id="b48b0595-952b-4529-a387-61011d406d42" />
   <Project Path="plugin-wmp.vcxproj" Id="a5155099-a29f-46b1-9d8a-75bcc9f6616c" />
   <Project Path="vpx-core.vcxitems" Id="7d37bd17-02a7-4535-b660-24dc68828c1c" />
   <Project Path="vpx-test.vcxproj" Id="414e597a-df8a-4080-ae42-472e0ec126f6" />

@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{2BF90D88-9139-4E66-A778-4327311AF7A7}</ProjectGuid>
+    <ProjectGuid>{b48b0595-952b-4529-a387-61011d406d42}</ProjectGuid>
     <RootNamespace>plugin-upscaledmd</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
