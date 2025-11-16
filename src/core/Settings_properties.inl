@@ -190,14 +190,6 @@ PropIntUnbounded(Player, Autostart, "Autostart"s, ""s, 0);
 PropIntUnbounded(Player, AutostartRetry, "AutostartRetry"s, ""s, 0);
 PropBool(Player, asenable, "AutostartEnable"s, ""s, false);
 
-// Deprecated Tilt fature (remove ?)
-#ifdef UNUSED_TILT
-PropIntUnbounded(Player, JoltAmount, "JoltAmount"s, ""s, 500);
-PropIntUnbounded(Player, TiltAmount, "TiltAmount"s, ""s, 950);
-PropIntUnbounded(Player, JoltTriggerTime, "JoltTriggerTime"s, ""s, 1000);
-PropIntUnbounded(Player, TiltTriggerTime, "TiltTriggerTime"s, ""s, 10000);
-#endif
-
 // UI & input settings
 PropInt(Player, Exitconfirm, "Direct Exit Length"s, "Length of a long ESC press that directly closes the app, (sadly) expressed in seconds * 60"s, 0, 30 * 60, 120);
 PropString(Input, Devices, "Devices"s, "List of known devices"s, ""s);

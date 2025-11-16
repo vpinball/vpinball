@@ -249,17 +249,6 @@ public:
    STDMETHOD(get_DeadZone)(/*[out, retval]*/ int *pVal); //!! remove?!
    STDMETHOD(put_DeadZone)(/*[in]*/ int newVal); //!! remove?!
 
-#ifdef UNUSED_TILT
-   STDMETHOD(get_JoltAmount)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(put_JoltAmount)(/*[in]*/ int newVal);
-   STDMETHOD(get_TiltAmount)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(put_TiltAmount)(/*[in]*/ int newVal);
-   STDMETHOD(get_JoltTriggerTime)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(put_JoltTriggerTime)(/*[in]*/ int newVal);
-   STDMETHOD(get_TiltTriggerTime)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(put_TiltTriggerTime)(/*[in]*/ int newVal);
-#endif
-
    STDMETHOD(get_TableSoundVolume)(/*[out, retval]*/ int *pVal);
    STDMETHOD(put_TableSoundVolume)(/*[in]*/ int newVal);
    STDMETHOD(get_TableMusicVolume)(/*[out, retval]*/ int *pVal);
@@ -779,13 +768,6 @@ public:
    bool m_backdrop = true;
    bool m_renderDecals = true;
    bool m_renderEMReels = true;
-
-#ifdef UNUSED_TILT //!! currently unused (see NudgeGetTilt())
-   int m_jolt_amount;
-   int m_tilt_amount;
-   int m_jolt_trigger_time;
-   int m_tilt_trigger_time;
-#endif
 
    void OnInitialUpdate() final;
    LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) final;

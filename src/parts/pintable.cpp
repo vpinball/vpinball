@@ -89,13 +89,6 @@ PinTable::PinTable()
 
    m_tblNudgeRead = Vertex2D(0.f,0.f);
    m_tblNudgePlumb = Vertex2D(0.f,0.f);
-
-#ifdef UNUSED_TILT
-   m_jolt_amount = m_settings.GetPlayer_JoltAmount();
-   m_tilt_amount = m_settings.GetPlayer_TiltAmount();
-   m_jolt_trigger_time = m_settings.GetPlayer_JoltTriggerTime();
-   m_tilt_trigger_time = m_settings.GetPlayer_TiltTriggerTime();
-#endif
 }
 
 PinTable::~PinTable()
@@ -7641,68 +7634,6 @@ STDMETHODIMP PinTable::put_DeadZone(int newVal)
 {
    return S_OK;
 }
-
-#ifdef UNUSED_TILT
-STDMETHODIMP PinTable::get_JoltAmount(int *pVal)
-{
-   *pVal = m_jolt_amount;
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_JoltAmount(int newVal)
-{
-   STARTUNDO
-   m_jolt_amount = newVal;
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_TiltAmount(int *pVal)
-{
-   *pVal = m_tilt_amount; //VB Script or VP Editor
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_TiltAmount(int newVal)
-{
-   STARTUNDO
-   m_tilt_amount = newVal;
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_JoltTriggerTime(int *pVal)
-{
-   *pVal = m_jolt_trigger_time;
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_JoltTriggerTime(int newVal)
-{
-   STARTUNDO
-   m_jolt_trigger_time = newVal;
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_TiltTriggerTime(int *pVal)
-{
-   *pVal = m_tilt_trigger_time;
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_TiltTriggerTime(int newVal)
-{
-   STARTUNDO
-   m_tilt_trigger_time = newVal;
-   STOPUNDO
-
-   return S_OK;
-}
-#endif
 
 STDMETHODIMP PinTable::get_BallFrontDecal(BSTR *pVal)
 {
