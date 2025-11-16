@@ -82,6 +82,7 @@ public:
    void CreateSession();
    void ReleaseSession();
    void* GetGraphicContext() const;
+   bgfx::RendererType::Enum GetGraphicContextType() const;
    void PollEvents();
    void RenderFrame(class RenderDevice* rd, std::function<void(RenderTarget* vrRenderTarget)> submitFrame);
    void UpdateVisibilityMask(class RenderDevice* rd);
@@ -175,7 +176,8 @@ private:
    XrPassthroughLayerFB m_passthroughLayer = XR_NULL_HANDLE;
    bool m_passthroughEnabled = false;
 
-   class XRGraphicBackend* m_backend = nullptr;
+   bgfx::RendererType::Enum m_rendererType;
+   std::unique_ptr<class XRGraphicBackend> m_backend;
 
    bool m_recenterTable = false;
    float m_sceneSize = 0.f;
