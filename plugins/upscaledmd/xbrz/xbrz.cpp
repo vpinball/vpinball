@@ -388,7 +388,7 @@ template <> inline unsigned char rotateBlendInfo<ROT_180>(unsigned char b) { ret
 template <> inline unsigned char rotateBlendInfo<ROT_270>(unsigned char b) { return ((b << 6) | (b >> 2)) & 0xff; }
 
 
-#ifndef NDEBUG
+#if defined(_MSC_VER) && !defined(NDEBUG)
     int debugPixelX = -1;
     int debugPixelY = 12;
     __declspec(thread) bool breakIntoDebugger = false;
@@ -422,7 +422,7 @@ void blendPixel(const Kernel_3x3& ker,
 #define h get_h<rotDeg>(ker)
 #define i get_i<rotDeg>(ker)
 
-#ifndef NDEBUG
+#if defined(_MSC_VER) && !defined(NDEBUG)
     if (breakIntoDebugger)
         __debugbreak(); //__asm int 3;
 #endif
@@ -440,7 +440,7 @@ void blendPixel(const Kernel_3x3& ker,
                 return true;
 
             //make sure there is no second blending in an adjacent rotation for this pixel: handles insular pixels, mario eyes
-            if (getTopR(blend) != BLEND_NONE && !eq(e, g)) //but support double-blending for 90° corners
+            if (getTopR(blend) != BLEND_NONE && !eq(e, g)) //but support double-blending for 90 degree corners
                 return false;
             if (getBottomL(blend) != BLEND_NONE && !eq(e, c))
                 return false;
@@ -580,7 +580,7 @@ void scaleImage(const uint32_t* src, uint32_t* trg, int srcWidth, int srcHeight,
 
         for (int x = 0; x < srcWidth; ++x, out += Scaler::scale)
         {
-#ifndef NDEBUG
+#if defined(_MSC_VER) && !defined(NDEBUG)
             breakIntoDebugger = debugPixelX == x && debugPixelY == y;
 #endif
             //all those bounds checks have only insignificant impact on performance!

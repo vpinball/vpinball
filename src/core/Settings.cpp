@@ -141,6 +141,10 @@ void Settings::UpdateDefaults()
       {
       case VPX::RenderOutput::OutputMode::OM_WINDOW:
       {
+         // Android won't have window dimension until after we launch VPinballPlayerActivity
+         if (g_isAndroid)
+            break;
+
          const auto& conf = VPX::Window::GetDisplayConfig(GetWindow_Display(i));
          reg.Register(GetWindow_FSWidth_Property(i)->WithDefault(conf.width));
          reg.Register(GetWindow_FSHeight_Property(i)->WithDefault(conf.height));
