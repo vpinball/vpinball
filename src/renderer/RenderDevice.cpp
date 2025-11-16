@@ -400,15 +400,11 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    if (g_pplayer->m_vrDevice)
    {
       assert((init.resolution.reset & BGFX_RESET_VSYNC) == 0); // Display VSync must be disabled as we are synced by OpenXR on the headset display
-      #if BX_PLATFORM_WINDOWS
-         init.type = bgfx::RendererType::Direct3D11;
-         init.platformData.context = g_pplayer->m_vrDevice->GetGraphicContext();
-      #elif BX_PLATFORM_ANDROID
-         init.type = bgfx::RendererType::Vulkan;
-         init.platformData.context = g_pplayer->m_vrDevice->GetGraphicContext();
-      #endif
+      init.type = g_pplayer->m_vrDevice->GetGraphicContextType();
+      init.platformData.context = g_pplayer->m_vrDevice->GetGraphicContext();
       init.resolution.width = max(init.resolution.width, static_cast<uint32_t>(g_pplayer->m_vrDevice->GetEyeWidth())); // Needed for bgfx::clear to work
       init.resolution.height = max(init.resolution.height, static_cast<uint32_t>(g_pplayer->m_vrDevice->GetEyeHeight())); // Needed for bgfx::clear to work
+      assert(init.platformData.context != nullptr);
    }
    #endif
 

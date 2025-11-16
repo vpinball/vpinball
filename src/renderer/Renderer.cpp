@@ -1738,7 +1738,7 @@ void Renderer::RenderDynamics()
 
 void Renderer::SetScreenOffset(const float x, const float y)
 {
-   const float rotation = ANGTORAD(m_table->GetViewSetup().GetRotation(m_stereo3D, m_renderDevice->GetOutputBackBuffer()->GetWidth(), m_renderDevice->GetOutputBackBuffer()->GetHeight()));
+   const float rotation = m_stereo3D == STEREO_VR ? 0.f : ANGTORAD(m_table->GetViewSetup().GetRotation(m_stereo3D, m_renderDevice->GetOutputBackBuffer()->GetWidth(), m_renderDevice->GetOutputBackBuffer()->GetHeight()));
    const float c = cosf(-rotation), s = sinf(-rotation);
    m_ScreenOffset.x = x * c - y * s;
    m_ScreenOffset.y = x * s + y * c;
@@ -2464,7 +2464,9 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
             m_renderDevice->AddRenderTargetDependency(GetBackBufferTexture(), true);
             m_renderDevice->BlitRenderTarget(GetBackBufferTexture(), outputBackBuffer, false, true);
          }
-
+         // FIXME no preview for Vulkan (as we are not creating the desktop swapchain)
+         if (bgfx::getRendererType() == bgfx::RendererType::Vulkan)
+            return outputBackBuffer;
       #elif defined(ENABLE_VR)
          // Copy each eye to the HMD texture
          assert(renderedRT != outputBackBuffer);
