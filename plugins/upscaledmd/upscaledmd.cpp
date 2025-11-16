@@ -4,11 +4,6 @@
 #include "ControllerPlugin.h"
 #include "LoggingPlugin.h"
 
-#include <cmath>
-#include "xbrz/config.h"
-#include "xbrz/xbrz.h"
-#include "xbrz/xbrz.cpp"
-
 #include <vector>
 #include <thread>
 #include <mutex>
@@ -22,6 +17,23 @@
 #if defined(__APPLE__) || defined(__linux__) || defined(__ANDROID__)
 #include <pthread.h>
 #endif
+
+#include <cmath>
+#include "xbrz/config.h"
+#include "xbrz/xbrz.h"
+#include "xbrz/xbrz.cpp"
+
+#ifndef M_PI
+constexpr double M_PI = 3.14159265358979323846;
+#endif
+#ifndef min
+template <typename T> constexpr T min(const T x, const T y) { return x < y ? x : y; }
+#endif
+#ifndef max
+template <typename T> constexpr T max(const T x, const T y) { return x < y ? y : x; }
+#endif
+#include "vector.h" // Copied from VPX
+#include "scalefx/scalefx.h"
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -62,7 +74,19 @@ static std::vector<uint32_t> rgbaDstFrame;
 static std::vector<uint8_t> renderFrame;
 static unsigned int renderFrameId = 0;
 
-static int scaleFactor = 2; // TODO move this to a setting
+enum UpscalerMode {
+   UM_Disabled,
+   UM_xBRZ_2x,
+   UM_xBRZ_3x,
+   UM_xBRZ_4x,
+   UM_xBRZ_5x,
+   UM_xBRZ_6x,
+   UM_ScaleFX_AA,
+   UM_ScaleFX_3x,
+};
+const char* upscalerNames[] = { "Disabled", "xBRZ 2x", "xBRZ 3x", "xBRZ 4x", "xBRZ 5x", "xBRZ 6x" };
+const int scaleFactors[] = { 1, 2, 3, 4, 5, 6 };
+MSGPI_ENUM_SETTING(upscaleModeProp, "UpscaleMode", "Mode", "Select upscaler", true, 0, 6, upscalerNames, 0);
 
 LPI_USE();
 LPI_IMPLEMENT // Implement shared login support
@@ -143,8 +167,12 @@ static void RenderThread()
                rgbaSrcFrame[ofs] = 0xFF000000 | (lum32[rgb565 & 0x1F] << 16) | (lum64[(rgb565 >> 5) & 0x3F] << 8) | lum32[(rgb565 >> 11) & 0x1F];
             }
          }
-
-         xbrz::scale(scaleFactor, rgbaSrcFrame.data(), rgbaDstFrame.data(), dmdSrc.width, dmdSrc.height, xbrz::ColorFormat::RGB);
+         if (upscaleModeProp.intDef.val >= UpscalerMode::UM_xBRZ_2x && upscaleModeProp.intDef.val <= UpscalerMode::UM_xBRZ_6x)
+            xbrz::scale(scaleFactors[upscaleModeProp.intDef.val], rgbaSrcFrame.data(), rgbaDstFrame.data(), dmdSrc.width, dmdSrc.height, xbrz::ColorFormat::RGB);
+         else if (upscaleModeProp.intDef.val >= UpscalerMode::UM_ScaleFX_AA && upscaleModeProp.intDef.val <= UpscalerMode::UM_ScaleFX_3x)
+         {
+            // TODO implement ScaleFX
+         }
 
          for (unsigned int y = 0; y < displayId.height; y++)
          {
@@ -182,32 +210,35 @@ static void OnDmdSrcChanged(const unsigned int, void* userData, void* msgData)
 {
    bool wasRendering = IsSourceSelected();
    dmdSrc.GetRenderFrame = nullptr;
-
-   GetDisplaySrcMsg getSrcMsg = { 0, 0, nullptr };
-   msgApi->BroadcastMsg(endpointId, getDisplaySrcId, &getSrcMsg);
    DisplaySrcId selectedSrc {};
-   if (getSrcMsg.count > 0)
+
+   if (upscaleModeProp.intDef.val != UpscalerMode::UM_Disabled)
    {
-      getSrcMsg = { getSrcMsg.count, 0, new DisplaySrcId[getSrcMsg.count] };
+      GetDisplaySrcMsg getSrcMsg = { 0, 0, nullptr };
       msgApi->BroadcastMsg(endpointId, getDisplaySrcId, &getSrcMsg);
-      for (unsigned int i = 0; i < getSrcMsg.count; i++)
+      if (getSrcMsg.count > 0)
       {
-         if (getSrcMsg.entries[i].id.endpointId != endpointId)
+         getSrcMsg = { getSrcMsg.count, 0, new DisplaySrcId[getSrcMsg.count] };
+         msgApi->BroadcastMsg(endpointId, getDisplaySrcId, &getSrcMsg);
+         for (unsigned int i = 0; i < getSrcMsg.count; i++)
          {
-            const unsigned int sSize = getSrcMsg.entries[i].width * getSrcMsg.entries[i].height;
-            const unsigned int dsSize = selectedSrc.width * selectedSrc.height;
-            if (
-               // Priority 1: Find at least one display if any (size > 0)
-               selectedSrc.GetRenderFrame == nullptr
-               // Priority 2: Favor highest resolution display
-               || (dsSize < sSize)
-               // Priority 3: Favor color over monochrome
-               || (dsSize == sSize && selectedSrc.frameFormat != getSrcMsg.entries[i].frameFormat && selectedSrc.frameFormat == CTLPI_DISPLAY_FORMAT_LUM8)
-               // Priority 4: Favor RGB8 over other formats
-               || (dsSize == sSize && selectedSrc.frameFormat != getSrcMsg.entries[i].frameFormat && getSrcMsg.entries[i].frameFormat == CTLPI_DISPLAY_FORMAT_SRGB888)
-               // Priority 5: Favor the first source provided by an endpoint
-               || (dsSize == sSize && selectedSrc.frameFormat == getSrcMsg.entries[i].frameFormat && selectedSrc.id.resId > getSrcMsg.entries[i].id.resId))
-               selectedSrc = getSrcMsg.entries[i];
+            if (getSrcMsg.entries[i].id.endpointId != endpointId)
+            {
+               const unsigned int sSize = getSrcMsg.entries[i].width * getSrcMsg.entries[i].height;
+               const unsigned int dsSize = selectedSrc.width * selectedSrc.height;
+               if (
+                  // Priority 1: Find at least one display if any (size > 0)
+                  selectedSrc.GetRenderFrame == nullptr
+                  // Priority 2: Favor highest resolution display
+                  || (dsSize < sSize)
+                  // Priority 3: Favor color over monochrome
+                  || (dsSize == sSize && selectedSrc.frameFormat != getSrcMsg.entries[i].frameFormat && selectedSrc.frameFormat == CTLPI_DISPLAY_FORMAT_LUM8)
+                  // Priority 4: Favor RGB8 over other formats
+                  || (dsSize == sSize && selectedSrc.frameFormat != getSrcMsg.entries[i].frameFormat && getSrcMsg.entries[i].frameFormat == CTLPI_DISPLAY_FORMAT_SRGB888)
+                  // Priority 5: Favor the first source provided by an endpoint
+                  || (dsSize == sSize && selectedSrc.frameFormat == getSrcMsg.entries[i].frameFormat && selectedSrc.id.resId > getSrcMsg.entries[i].id.resId))
+                  selectedSrc = getSrcMsg.entries[i];
+            }
          }
       }
    }
@@ -218,12 +249,13 @@ static void OnDmdSrcChanged(const unsigned int, void* userData, void* msgData)
       dmdSrc = selectedSrc;
       if (IsSourceSelected())
       {
+
          displayId = {
             .id = { endpointId, 0 },
             .groupId = { endpointId, 0 },
             .overrideId = { 0, 0 },
-            .width = dmdSrc.width * scaleFactor,
-            .height = dmdSrc.height * scaleFactor,
+            .width = dmdSrc.width * scaleFactors[upscaleModeProp.intDef.val],
+            .height = dmdSrc.height * scaleFactors[upscaleModeProp.intDef.val],
             .hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN,
             .frameFormat = CTLPI_DISPLAY_FORMAT_SRGB888,
             .GetRenderFrame = &GetRenderFrame,
@@ -271,6 +303,7 @@ MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginLoad(const uint32_t sessionId, const 
    endpointId = sessionId;
    onDisplaySrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
    getDisplaySrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
+   msgApi->RegisterSetting(endpointId, &upscaleModeProp);
    msgApi->SubscribeMsg(endpointId, onDisplaySrcChangedId, OnDmdSrcChanged, nullptr);
    OnDmdSrcChanged(onDisplaySrcChangedId, nullptr, nullptr);
 }
