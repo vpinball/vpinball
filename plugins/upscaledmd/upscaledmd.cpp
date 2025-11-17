@@ -32,11 +32,11 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// UpscaleDMD plugin: upscale a DMD into a high res DMD or a LCD/CRT display
+// UpscaleDMD plugin: upscale DMD content to a high res DMD or a LCD/CRT display
 //
-// This plugin only rely on the generic messaging plugin API and the generic
-// controller display and segment API. It listen for DMD source and,
-// when found, provide a corresponding display source.
+// This plugin only relies on the generic messaging plugin API and the generic
+// controller display and segment API. It listens for DMD source and,
+// when found, provides a corresponding display source.
 //
 // All rendering is done by an ancillary thread, causing a one frame delay, but
 // avoiding CPU load on the main thread.
@@ -82,8 +82,7 @@ LPI_IMPLEMENT // Implement shared login support
 
 
 #ifdef _WIN32
-   void
-   SetThreadName(const std::string& name)
+static void SetThreadName(const std::string& name)
 {
    const int size_needed = MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, nullptr, 0);
    if (size_needed <= 1)
@@ -94,8 +93,7 @@ LPI_IMPLEMENT // Implement shared login support
    SetThreadDescription(GetCurrentThread(), wstr.c_str());
 }
 #else
-   void
-   SetThreadName(const std::string& name)
+static void SetThreadName(const std::string& name)
 {
 #ifdef __APPLE__
    pthread_setname_np(name.c_str());
@@ -126,22 +124,21 @@ static void RenderThread()
 
       if (srcFrame.frame && srcFrame.frameId != renderFrameId)
       {
+         const unsigned int dmdSrcSize = dmdSrc.width * dmdSrc.height;
          if (dmdSrc.frameFormat == CTLPI_DISPLAY_FORMAT_LUM8)
-            for (unsigned int y = 0; y < dmdSrc.height; y++)
-               for (unsigned int x = 0; x < dmdSrc.width; x++)
-               {
-                  uint8_t lum = srcFrame.frame[y * dmdSrc.width + x];
-                  rgbaSrcFrame[x + y * dmdSrc.width] = lum | (lum << 8) | (lum << 16) | 0xFF000000;
-               }
+            for (unsigned int ofs = 0; ofs < dmdSrcSize; ++ofs)
+            {
+               const uint32_t lum = srcFrame.frame[ofs];
+               rgbaSrcFrame[ofs] = lum | (lum << 8) | (lum << 16) | 0xFF000000u;
+            }
          else if (dmdSrc.frameFormat == CTLPI_DISPLAY_FORMAT_SRGB888)
-            for (unsigned int y = 0; y < dmdSrc.height; y++)
-               for (unsigned int x = 0; x < dmdSrc.width; x++)
-               {
-                  uint8_t r = srcFrame.frame[(y * dmdSrc.width + x) * 3 + 0];
-                  uint8_t g = srcFrame.frame[(y * dmdSrc.width + x) * 3 + 1];
-                  uint8_t b = srcFrame.frame[(y * dmdSrc.width + x) * 3 + 2];
-                  rgbaSrcFrame[x + y * dmdSrc.width] = r | (g << 8) | (b << 16) | 0xFF000000;
-               }
+            for (unsigned int ofs = 0; ofs < dmdSrcSize; ++ofs)
+            {
+               const uint32_t r = srcFrame.frame[ofs * 3 + 0];
+               const uint32_t g = srcFrame.frame[ofs * 3 + 1];
+               const uint32_t b = srcFrame.frame[ofs * 3 + 2];
+               rgbaSrcFrame[ofs] = r | (g << 8) | (b << 16) | 0xFF000000u;
+            }
          else if (dmdSrc.frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565)
          {
             static constexpr uint8_t lum32[]
@@ -149,11 +146,10 @@ static void RenderThread()
             static constexpr uint8_t lum64[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 45, 49, 53, 57, 61, 65, 69, 73, 77, 81, 85, 89, 93, 97, 101, 105, 109, 113, 117, 121, 125, 130, 134,
                138, 142, 146, 150, 154, 158, 162, 166, 170, 174, 178, 182, 186, 190, 194, 198, 202, 206, 210, 215, 219, 223, 227, 231, 235, 239, 243, 247, 251, 255 };
             const uint16_t* const __restrict frame = reinterpret_cast<const uint16_t*>(srcFrame.frame);
-            const size_t size = (size_t)dmdSrc.width * dmdSrc.height;
-            for (size_t ofs = 0; ofs < size; ++ofs)
+            for (unsigned int ofs = 0; ofs < dmdSrcSize; ++ofs)
             {
                const uint16_t rgb565 = frame[ofs];
-               rgbaSrcFrame[ofs] = 0xFF000000 | (lum32[rgb565 & 0x1F] << 16) | (lum64[(rgb565 >> 5) & 0x3F] << 8) | lum32[(rgb565 >> 11) & 0x1F];
+               rgbaSrcFrame[ofs] = 0xFF000000u | ((uint32_t)lum32[rgb565 & 0x1F] << 16) | ((uint32_t)lum64[(rgb565 >> 5) & 0x3F] << 8) | (uint32_t)lum32[(rgb565 >> 11) & 0x1F];
             }
          }
          if (upscaleModeProp.intDef.val >= UpscalerMode::UM_xBRZ_2x && upscaleModeProp.intDef.val <= UpscalerMode::UM_xBRZ_6x)
@@ -170,15 +166,13 @@ static void RenderThread()
             superxbr::scale<2,false>(rgbaSrcFrame.data(), rgbaDstFrame.data(), dmdSrc.width, dmdSrc.height);
          }
 
-         for (unsigned int y = 0; y < displayId.height; y++)
+         const unsigned int displaySize = displayId.width * displayId.height;
+         for (unsigned int ofs = 0; ofs < displaySize; ++ofs)
          {
-            for (unsigned int x = 0; x < displayId.width; x++)
-            {
-               uint32_t col = rgbaDstFrame[y * displayId.width + x];
-               renderFrame[(y * displayId.width + x) * 3 + 0] = col & 0xFF;
-               renderFrame[(y * displayId.width + x) * 3 + 1] = (col >> 8) & 0xFF;
-               renderFrame[(y * displayId.width + x) * 3 + 2] = (col >> 16) & 0xFF;
-            }
+            const uint32_t col = rgbaDstFrame[ofs];
+            renderFrame[ofs * 3 + 0] = col & 0xFFu;
+            renderFrame[ofs * 3 + 1] = (col >> 8) & 0xFFu;
+            renderFrame[ofs * 3 + 2] = (col >> 16) & 0xFFu;
          }
          renderFrameId = srcFrame.frameId;
       }
@@ -247,9 +241,9 @@ static void OnDmdSrcChanged(const unsigned int, void* userData, void* msgData)
       {
 
          displayId = {
-            .id = { endpointId, 0 },
-            .groupId = { endpointId, 0 },
-            .overrideId = { 0, 0 },
+            .id = { { endpointId, 0 } },
+            .groupId = { { endpointId, 0 } },
+            .overrideId = { { 0, 0 } },
             .width = dmdSrc.width * scaleFactors[upscaleModeProp.intDef.val],
             .height = dmdSrc.height * scaleFactors[upscaleModeProp.intDef.val],
             .hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN,

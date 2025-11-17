@@ -590,9 +590,9 @@ MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginLoad(const uint32_t sessionId, const Ms
    msgApi = api;
    endpointId = sessionId;
    dmd128Id = {
-      .id = { endpointId, 0 },
-      .groupId = { endpointId, 0 },
-      .overrideId = { 0, 0 },
+      .id = { { endpointId, 0 } },
+      .groupId = { { endpointId, 0 } },
+      .overrideId = { { 0, 0 } },
       .width = 128,
       .height = 32,
       .hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN,
@@ -602,9 +602,9 @@ MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginLoad(const uint32_t sessionId, const Ms
       .GetIdentifyFrame = &GetIdentifyFrame
    };
    dmd256Id = {
-      .id = { endpointId, 1 },
-      .groupId = { endpointId, 0 },
-      .overrideId = { 0, 0 },
+      .id = { { endpointId, 1 } },
+      .groupId = { { endpointId, 0 } },
+      .overrideId = { { 0, 0 } },
       .width = 256,
       .height = 64,
       .hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN,

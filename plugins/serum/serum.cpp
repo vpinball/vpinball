@@ -231,7 +231,7 @@ static void OnGetRenderDMDSrc(const unsigned int eventId, void* userData, void* 
       if (msg.count < msg.maxEntryCount)
       {
          msg.entries[msg.count] = {};
-         msg.entries[msg.count].id = { endpointId, 0 };
+         msg.entries[msg.count].id = { { endpointId, 0 } };
          msg.entries[msg.count].overrideId = dmdId.id;
          msg.entries[msg.count].width = state->m_width32;
          msg.entries[msg.count].height = 32;
@@ -245,7 +245,7 @@ static void OnGetRenderDMDSrc(const unsigned int eventId, void* userData, void* 
       if (msg.count < msg.maxEntryCount)
       {
          msg.entries[msg.count] = {};
-         msg.entries[msg.count].id = { endpointId, 0 };
+         msg.entries[msg.count].id = { { endpointId, 0 } };
          msg.entries[msg.count].overrideId = dmdId.id;
          msg.entries[msg.count].width = state->m_width;
          msg.entries[msg.count].height = state->m_height;
@@ -259,7 +259,7 @@ static void OnGetRenderDMDSrc(const unsigned int eventId, void* userData, void* 
       if (msg.count < msg.maxEntryCount)
       {
          msg.entries[msg.count] = {};
-         msg.entries[msg.count].id = { endpointId, 1 };
+         msg.entries[msg.count].id = { { endpointId, 1 } };
          msg.entries[msg.count].overrideId = dmdId.id;
          msg.entries[msg.count].width = state->m_width64;
          msg.entries[msg.count].height = 64;

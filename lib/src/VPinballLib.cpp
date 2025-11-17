@@ -327,7 +327,7 @@ void VPinballLib::LoadPlugins()
 
    for (size_t i = 0; i < std::size(plugins); ++i) {
       auto& p = plugins[i];
-      string sectionName = string("Plugin.") + p.id;
+      string sectionName = "Plugin."s + p.id;
       if (LoadValueBool(sectionName, "Enable", false)) {
          auto plugin = MsgPI::MsgPluginManager::GetInstance().RegisterPlugin(
             p.id, p.id, p.id,
@@ -380,7 +380,7 @@ int VPinballLib::LoadValueInt(const string& sectionName, const string& key, int 
           existingProp->m_type == VPX::Properties::PropertyDef::Type::Bool)
          return g_pvp->m_settings.GetInt(existingId.value());
 
-      PLOGW << "LoadValueInt: property " << sectionName << "." << key << " exists but is not int-compatible type";
+      PLOGW << "LoadValueInt: property " << sectionName << '.' << key << " exists but is not int-compatible type";
       return defaultValue;
    }
 
@@ -405,7 +405,7 @@ float VPinballLib::LoadValueFloat(const string& sectionName, const string& key, 
       if (existingProp->m_type == VPX::Properties::PropertyDef::Type::Float)
          return g_pvp->m_settings.GetFloat(existingId.value());
 
-      PLOGW << "LoadValueFloat: property " << sectionName << "." << key << " exists but is not float type";
+      PLOGW << "LoadValueFloat: property " << sectionName << '.' << key << " exists but is not float type";
       return defaultValue;
    }
 
@@ -430,7 +430,7 @@ string VPinballLib::LoadValueString(const string& sectionName, const string& key
       if (existingProp->m_type == VPX::Properties::PropertyDef::Type::String)
          return g_pvp->m_settings.GetString(existingId.value());
 
-      PLOGW << "LoadValueString: property " << sectionName << "." << key << " exists but is not string type";
+      PLOGW << "LoadValueString: property " << sectionName << '.' << key << " exists but is not string type";
       return defaultValue;
    }
 
@@ -455,7 +455,7 @@ bool VPinballLib::LoadValueBool(const string& sectionName, const string& key, bo
       if (existingProp->m_type == VPX::Properties::PropertyDef::Type::Bool)
          return g_pvp->m_settings.GetBool(existingId.value());
 
-      PLOGW << "LoadValueBool: property " << sectionName << "." << key << " exists but is not bool type";
+      PLOGW << "LoadValueBool: property " << sectionName << '.' << key << " exists but is not bool type";
       return defaultValue;
    }
 

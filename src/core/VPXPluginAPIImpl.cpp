@@ -590,7 +590,7 @@ void VPXPluginAPIImpl::ControllerOnGetDMDSrc(const unsigned int msgId, void* use
       if (msg.count < msg.maxEntryCount)
       {
          msg.entries[msg.count] = {};
-         msg.entries[msg.count].id = { me.m_vpxPlugin->m_endpointId, 0 };
+         msg.entries[msg.count].id = { { me.m_vpxPlugin->m_endpointId, 0 } };
          msg.entries[msg.count].width = g_pplayer->m_dmdFrame->width();
          msg.entries[msg.count].height = g_pplayer->m_dmdFrame->height();
          msg.entries[msg.count].frameFormat = g_pplayer->m_dmdFrame->m_format == BaseTexture::BW ? CTLPI_DISPLAY_FORMAT_LUM8 : CTLPI_DISPLAY_FORMAT_SRGB888;
@@ -608,7 +608,7 @@ void VPXPluginAPIImpl::ControllerOnGetDMDSrc(const unsigned int msgId, void* use
       if (msg.count < msg.maxEntryCount)
       {
          msg.entries[msg.count] = {};
-         msg.entries[msg.count].id = { me.m_vpxPlugin->m_endpointId, static_cast<uint32_t>(i + 1) };
+         msg.entries[msg.count].id = { { me.m_vpxPlugin->m_endpointId, static_cast<uint32_t>(i + 1) } };
          msg.entries[msg.count].width = dmdSrc->m_dmdFrame->width();
          msg.entries[msg.count].height = dmdSrc->m_dmdFrame->height();
          msg.entries[msg.count].frameFormat = dmdSrc->m_dmdFrame->m_format == BaseTexture::BW ? CTLPI_DISPLAY_FORMAT_LUM8 : CTLPI_DISPLAY_FORMAT_SRGB888;

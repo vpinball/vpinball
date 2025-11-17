@@ -208,13 +208,14 @@ void LayeredINIPropertyStore::GenerateTemplate(const string& path) const
    file << "; #######################################################\n";
    file << "; #  Visual Pinball X settings file\n";
    file << "; #\n";
-   file << "; # This file holds all visual pinball settings.\n";
-   file << "; # If you need to reset all settings to their default,\n";
-   file << "; # just delete this file and it will be recreated on\n";
+   file << "; # This file holds all Visual Pinball settings.\n";
+   file << "; # If you want to reset all settings to their default,\n";
+   file << "; # just delete this file and it will be recreated on the\n";
    file << "; # next application start.\n";
    file << "; #\n";
    file << "; # When a property is not defined (nothing after the\n";
-   file << "; # equal '=' sign), VPX will use a default value for it.\n";
+   file << "; # equal '=' sign), VPX will use the default value for it.\n";
+   file << "; # (can be used to reset single properties)\n";
    file << "; #\n";
    file << "; #######################################################\n";
 

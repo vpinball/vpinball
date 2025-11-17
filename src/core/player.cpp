@@ -1466,9 +1466,9 @@ void Player::UpdateGameLogic()
    //series.write_flag(_T("Sync"));
    span *tagSpan = new span(series, 1, _T("Sync"));
    #endif
-   
+
    ProcessOSMessages();
-   
+
    if (!IsEditorMode())
    {
       m_pininput.ProcessInput(); // Trigger key events to sync with controller
@@ -1476,9 +1476,9 @@ void Player::UpdateGameLogic()
       // TODO These updates should also be done directly in the physics engine after collision events
       FireSyncController(); // Trigger script sync event (to sync solenoids back)
    }
-   
+
    MsgPI::MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
-   
+
    #ifdef MSVC_CONCURRENCY_VIEWER
    delete tagSpan;
    #endif

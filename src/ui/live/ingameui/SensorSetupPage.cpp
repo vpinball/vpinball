@@ -9,7 +9,7 @@ namespace VPX::InGameUI
 {
 
 SensorSetupPage::SensorSetupPage(const InGameUIItem& item)
-   : InGameUIPage(item.m_label + " Sensor Setup"s, "Select the hardware sensor you want to use for "s + item.m_label, SaveMode::Global)
+   : InGameUIPage(item.m_label + " Sensor Setup", "Select the hardware sensor you want to use for " + item.m_label, SaveMode::Global)
    , m_item(item.m_label, item.m_tooltip, item.m_physicsSensor, item.m_physicsSensorTypeMask)
 {
    BuildPage();
@@ -87,9 +87,9 @@ void SensorSetupPage::BuildPage()
    {
       for (size_t i = 0; i < sensorTypeNames.size(); i++)
       {
-         if ((type == SensorMapping::Type::Position && sensorTypeNames[i] == "Position"s) //
-            || (type == SensorMapping::Type::Velocity && sensorTypeNames[i] == "Velocity"s) //
-            || (type == SensorMapping::Type::Acceleration && sensorTypeNames[i] == "Acceleration"s))
+         if ((type == SensorMapping::Type::Position && sensorTypeNames[i] == "Position")
+            || (type == SensorMapping::Type::Velocity && sensorTypeNames[i] == "Velocity")
+            || (type == SensorMapping::Type::Acceleration && sensorTypeNames[i] == "Acceleration"))
          {
             return static_cast<int>(i);
          }
@@ -100,7 +100,7 @@ void SensorSetupPage::BuildPage()
    const int storedSensorType = storedMapping ? findTypeIndex(storedMapping->GetType()) : sensorType;
 
    AddItem(std::make_unique<InGameUIItem>(
-      VPX::Properties::EnumPropertyDef(""s, ""s, sensorTypeNames.size() > 1 ? "Hardware Sensor"s : (sensorTypeNames[0] + " Sensor"s), ""s, 0, liveAxis, axisNames), //
+      VPX::Properties::EnumPropertyDef(""s, ""s, sensorTypeNames.size() > 1 ? "Hardware Sensor"s : (sensorTypeNames[0] + " Sensor"), ""s, 0, liveAxis, axisNames),
       [liveAxis]() { return liveAxis; }, // Live
       [liveAxis, storedAxis]() { return storedAxis >= 0 ? storedAxis : liveAxis; }, // Stored
       [this](int, int v)
@@ -129,8 +129,8 @@ void SensorSetupPage::BuildPage()
             const uint16_t deviceId = m_item.m_physicsSensor->GetMapping().GetDeviceId();
             const uint16_t axisId = m_item.m_physicsSensor->GetMapping().GetDeviceId();
             SensorMapping mapping(nullptr, nullptr, deviceId, axisId,
-               sensorTypeNames[v] == "Position"s ? SensorMapping::Type::Position
-                  : sensorTypeNames[v] == "Velocity"s ? SensorMapping::Type::Velocity
+               sensorTypeNames[v] == "Position" ? SensorMapping::Type::Position
+                  : sensorTypeNames[v] == "Velocity" ? SensorMapping::Type::Velocity
                                      : SensorMapping::Type::Acceleration);
             mapping.SetDeadZone(m_item.m_physicsSensor->GetMapping().GetDeadZone());
             mapping.SetScale(m_item.m_physicsSensor->GetMapping().GetScale());

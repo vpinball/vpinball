@@ -16,7 +16,7 @@ public:
 
    void SetObjects(const float len);
 
-   float MechPlunger() const; // Returns mechanical plunger position 0 at rest, +1 pulled (fully extended)
+   float MechPlunger() const;      // Returns mechanical plunger position 0 at rest, +1 pulled (fully extended)
    float MechPlungerSpeed() const; // Mechanical plunger speed from I/O controller, in plunger lengths per time step
 
    void PullBack(float speed);
@@ -238,7 +238,7 @@ public:
    float m_mechSpeed = 0.f;
 
    // scatter velocity (degree of randomness in the impulse when
-   // the plunger strikes the ball, to simulate the mechanical
+   // the plunger strikes the ball, to approximate the mechanical
    // randomness in a real plunger)
    float m_scatterVelocity;
 
