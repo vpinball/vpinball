@@ -367,9 +367,9 @@ void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, bool isSave, M
          item->setting = settingDef;
       }
       if (isSave)
-         settings.Set(newId, settingDef->floatDef.val, asTableOverride);
+         settings.Set(newId, settingDef->floatDef.Get(), asTableOverride);
       else
-         settingDef->floatDef.val = settings.GetFloat(newId);
+         settingDef->floatDef.Set(settings.GetFloat(newId));
       break;
    }
 
@@ -389,9 +389,9 @@ void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, bool isSave, M
             item->setting = settingDef;
          }
          if (isSave)
-            settings.Set(newId, settingDef->intDef.val, asTableOverride);
+            settings.Set(newId, settingDef->intDef.Get(), asTableOverride);
          else
-            settingDef->intDef.val = settings.GetInt(newId);
+            settingDef->intDef.Set(settings.GetInt(newId));
       }
       else
       {
@@ -405,9 +405,9 @@ void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, bool isSave, M
             item->setting = settingDef;
          }
          if (isSave)
-            settings.Set(newId, settingDef->intDef.val, asTableOverride);
+            settings.Set(newId, settingDef->intDef.Get(), asTableOverride);
          else
-            settingDef->intDef.val = settings.GetInt(newId);
+            settingDef->intDef.Set(settings.GetInt(newId));
       }
       break;
 
@@ -423,9 +423,9 @@ void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, bool isSave, M
          item->setting = settingDef;
       }
       if (isSave)
-         settings.Set(newId, settingDef->boolDef.val, asTableOverride);
+         settings.Set(newId, settingDef->boolDef.Get(), asTableOverride);
       else
-         settingDef->boolDef.val = settings.GetBool(newId);
+         settingDef->boolDef.Set(settings.GetBool(newId));
       break;
    }
 
@@ -441,11 +441,11 @@ void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, bool isSave, M
          item->setting = settingDef;
       }
       if (isSave)
-         settings.Set(newId, settingDef->stringDef.val, asTableOverride);
+         settings.Set(newId, settingDef->stringDef.Get(), asTableOverride);
       else
       {
          const string& value = settings.GetString(newId);
-         strncpy_s(settingDef->stringDef.val, settingDef->stringDef.valBufferSize, value.c_str());
+         settingDef->stringDef.Set(value.c_str());
       }
       break;
    }

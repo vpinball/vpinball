@@ -11,6 +11,20 @@
 
 namespace B2S {
 
+MSGPI_BOOL_VAL_SETTING(scoreViewDMDOverlayProp, "ScoreViewDMDOverlay", "ScoreView DMD Overlay", "Enable a DMD overlay on the Score View", true, false);
+MSGPI_BOOL_VAL_SETTING(scoreViewDMDAutoPosProp, "ScoreViewDMDAutoPos", "ScoreView DMD Automatic position", "Enable automatic DMD bounds detection", true, false);
+MSGPI_INT_VAL_SETTING(scoreViewDMDXProp, "ScoreViewDMDX", "ScoreView DMD X position", "DMD overlay X position", true, 0, 0xFFFF, 0);
+MSGPI_INT_VAL_SETTING(scoreViewDMDYProp, "ScoreViewDMDY", "ScoreView DMD Y position", "DMD overlay Y position", true, 0, 0xFFFF, 0);
+MSGPI_INT_VAL_SETTING(scoreViewDMDWProp, "ScoreViewDMDW", "ScoreView DMD width", "DMD overlay width", true, 0, 0xFFFF, 0);
+MSGPI_INT_VAL_SETTING(scoreViewDMDHProp, "ScoreViewDMDH", "ScoreView DMD height", "DMD overlay height", true, 0, 0xFFFF, 0);
+
+MSGPI_BOOL_VAL_SETTING(backglassDMDOverlayProp, "BackglassDMDOverlay", "Backglass DMD Overlay", "Enable a DMD overlay on the Backglass", true, false);
+MSGPI_BOOL_VAL_SETTING(backglassDMDAutoPosProp, "BackglassDMDAutoPos", "Backglass DMD Automatic position", "Enable automatic DMD bounds detection", true, false);
+MSGPI_INT_VAL_SETTING(backglassDMDXProp, "BackglassDMDX", "Backglass DMD X position", "DMD overlay X position", true, 0, 0xFFFF, 0);
+MSGPI_INT_VAL_SETTING(backglassDMDYProp, "BackglassDMDY", "Backglass DMD Y position", "DMD overlay Y position", true, 0, 0xFFFF, 0);
+MSGPI_INT_VAL_SETTING(backglassDMDWProp, "BackglassDMDW", "Backglass DMD width", "DMD overlay width", true, 0, 0xFFFF, 0);
+MSGPI_INT_VAL_SETTING(backglassDMDHProp, "BackglassDMDH", "Backglass DMD height", "DMD overlay height", true, 0, 0xFFFF, 0);
+
 B2SDMDOverlay::B2SDMDOverlay(ResURIResolver& resURIResolver, VPXTexture& dmdTex, VPXTexture backImage)
    : m_resURIResolver(resURIResolver)
    , m_dmdTex(dmdTex)
@@ -22,33 +36,33 @@ void B2SDMDOverlay::LoadSettings(const MsgPluginAPI* const msgApi, unsigned int 
 {
    if (isScoreView)
    {
-      msgApi->RegisterSetting(endpointId, &m_scoreViewDMDOverlayProp);
-      msgApi->RegisterSetting(endpointId, &m_scoreViewDMDAutoPosProp);
-      msgApi->RegisterSetting(endpointId, &m_scoreViewDMDXProp);
-      msgApi->RegisterSetting(endpointId, &m_scoreViewDMDYProp);
-      msgApi->RegisterSetting(endpointId, &m_scoreViewDMDWProp);
-      msgApi->RegisterSetting(endpointId, &m_scoreViewDMDHProp);
-      m_enable = m_scoreViewDMDOverlayProp.boolDef.val != 0;
-      m_detectDmdFrame = m_scoreViewDMDAutoPosProp.boolDef.val != 0;
-      m_frame.x = m_scoreViewDMDXProp.intDef.val != 0;
-      m_frame.y = m_scoreViewDMDYProp.intDef.val != 0;
-      m_frame.z = m_scoreViewDMDWProp.intDef.val != 0;
-      m_frame.w = m_scoreViewDMDHProp.intDef.val != 0;
+      msgApi->RegisterSetting(endpointId, &scoreViewDMDOverlayProp);
+      msgApi->RegisterSetting(endpointId, &scoreViewDMDAutoPosProp);
+      msgApi->RegisterSetting(endpointId, &scoreViewDMDXProp);
+      msgApi->RegisterSetting(endpointId, &scoreViewDMDYProp);
+      msgApi->RegisterSetting(endpointId, &scoreViewDMDWProp);
+      msgApi->RegisterSetting(endpointId, &scoreViewDMDHProp);
+      m_enable = scoreViewDMDOverlayProp_Val != 0;
+      m_detectDmdFrame = scoreViewDMDAutoPosProp_Val != 0;
+      m_frame.x = scoreViewDMDXProp_Val;
+      m_frame.y = scoreViewDMDYProp_Val;
+      m_frame.z = scoreViewDMDWProp_Val;
+      m_frame.w = scoreViewDMDHProp_Val;
    }
    else
    {
-      msgApi->RegisterSetting(endpointId, &m_backglassDMDOverlayProp);
-      msgApi->RegisterSetting(endpointId, &m_backglassDMDAutoPosProp);
-      msgApi->RegisterSetting(endpointId, &m_backglassDMDXProp);
-      msgApi->RegisterSetting(endpointId, &m_backglassDMDYProp);
-      msgApi->RegisterSetting(endpointId, &m_backglassDMDWProp);
-      msgApi->RegisterSetting(endpointId, &m_backglassDMDHProp);
-      m_enable = m_backglassDMDOverlayProp.boolDef.val != 0;
-      m_detectDmdFrame = m_backglassDMDAutoPosProp.boolDef.val != 0;
-      m_frame.x = m_backglassDMDXProp.intDef.val != 0;
-      m_frame.y = m_backglassDMDYProp.intDef.val != 0;
-      m_frame.z = m_backglassDMDWProp.intDef.val != 0;
-      m_frame.w = m_backglassDMDHProp.intDef.val != 0;
+      msgApi->RegisterSetting(endpointId, &backglassDMDOverlayProp);
+      msgApi->RegisterSetting(endpointId, &backglassDMDAutoPosProp);
+      msgApi->RegisterSetting(endpointId, &backglassDMDXProp);
+      msgApi->RegisterSetting(endpointId, &backglassDMDYProp);
+      msgApi->RegisterSetting(endpointId, &backglassDMDWProp);
+      msgApi->RegisterSetting(endpointId, &backglassDMDHProp);
+      m_enable = backglassDMDOverlayProp_Val != 0;
+      m_detectDmdFrame = backglassDMDAutoPosProp_Val != 0;
+      m_frame.x = backglassDMDXProp_Val;
+      m_frame.y = backglassDMDYProp_Val;
+      m_frame.z = backglassDMDWProp_Val;
+      m_frame.w = backglassDMDHProp_Val;
    }
 }
 

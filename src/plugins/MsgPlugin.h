@@ -128,7 +128,8 @@ typedef struct MsgSettingDef
          const float maxVal;
          const float step;   // If non zero, limit values to increments of step
          const float defVal;
-         float val;
+         float (MSGPIAPI* Get)();
+         void (MSGPIAPI* Set)(float val);
       } floatDef;
       struct
       {
@@ -136,33 +137,60 @@ typedef struct MsgSettingDef
          const int maxVal;
          const int defVal;
          const char** values;
-         int val;
+         int (MSGPIAPI* Get)();
+         void (MSGPIAPI* Set)(int val);
       } intDef;
       struct
       {
          const int defVal;
-         int val;
+         int (MSGPIAPI* Get)();
+         void (MSGPIAPI* Set)(int val);
       } boolDef;
       struct
       {
          const char* defVal;
-         char* val;
-         int valBufferSize;
+         const char* (MSGPIAPI* Get)();
+         void (MSGPIAPI* Set)(const char* val);
       } stringDef;
    };
 } MsgSettingDef;
 
 // C++ helpers to define settings
-#define MSGPI_FLOAT_SETTING(varName, id, propName, propDescription, propEditable, minValue, maxValue, stepVal, defValue) \
-   MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_FLOAT, .intDef = { minValue, maxValue, stepVal, defValue, defValue } }
-#define MSGPI_INT_SETTING(varName, id, propName, propDescription, propEditable, minValue, maxValue, defValue) \
-   MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_INT, .intDef = { minValue, maxValue, defValue, nullptr, defValue } }
-#define MSGPI_ENUM_SETTING(varName, id, propName, propDescription, propEditable, minValue, nValues, values, defValue) \
-   MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_INT, .intDef = { minValue, minValue + nValues - 1, defValue, values, defValue } }
-#define MSGPI_BOOL_SETTING(varName, id, propName, propDescription, propEditable, defValue) \
-   MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_BOOL, .boolDef = { defValue?1:0, defValue?1:0 } }
-#define MSGPI_STRING_SETTING(varName, id, propName, propDescription, propEditable, defValue, bufferSize) \
-   MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_STRING, .stringDef = { defValue, new char[bufferSize], bufferSize } }
+#define MSGPI_FLOAT_SETTING(varName, id, propName, propDescription, propEditable, minValue, maxValue, stepVal, defValue, getter, setter) \
+   static MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_FLOAT, .intDef = { minValue, maxValue, stepVal, defValue, getter, setter } }
+#define MSGPI_INT_SETTING(varName, id, propName, propDescription, propEditable, minValue, maxValue, defValue, getter, setter) \
+   static MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_INT, .intDef = { minValue, maxValue, defValue, nullptr, getter, setter } }
+#define MSGPI_ENUM_SETTING(varName, id, propName, propDescription, propEditable, minValue, nValues, values, defValue, getter, setter) \
+   static MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_INT, .intDef = { minValue, minValue + nValues - 1, defValue, values, getter, setter } }
+#define MSGPI_BOOL_SETTING(varName, id, propName, propDescription, propEditable, defValue, getter, setter) \
+   static MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_BOOL, .boolDef = { defValue?1:0, getter, setter } }
+#define MSGPI_STRING_SETTING(varName, id, propName, propDescription, propEditable, defValue, bufferSize, getter, setter) \
+   static MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_STRING, .stringDef = { defValue, getter, setter } }
+#define MSGPI_FLOAT_VAL_SETTING(varName, id, propName, propDescription, propEditable, minValue, maxValue, stepVal, defValue) \
+   static float varName##_Val; \
+   static float varName##_Get() { return varName##_Val; } \
+   static void varName##_Set(float v) { varName##_Val = v; } \
+   static MsgSettingDef varName { .propId = id, .name = propName, .description = propDescription, .isUserEditable = propEditable ? 1 : 0, .type = MSGPI_SETTING_TYPE_FLOAT, .intDef = { minValue, maxValue, stepVal, defValue, &varName##_Get, &varName##_Set } }
+#define MSGPI_INT_VAL_SETTING(varName, id, propName, propDescription, propEditable, minValue, maxValue, defValue) \
+   static int varName##_Val; \
+   static int varName##_Get() { return varName##_Val; } \
+   static void varName##_Set(int v) { varName##_Val = v; } \
+   static MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_INT, .intDef = { minValue, maxValue, defValue, nullptr, &varName##_Get, &varName##_Set } }
+#define MSGPI_ENUM_VAL_SETTING(varName, id, propName, propDescription, propEditable, minValue, nValues, values, defValue) \
+   static int varName##_Val; \
+   static int varName##_Get() { return varName##_Val; } \
+   static void varName##_Set(int v) { varName##_Val = v; } \
+   static MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_INT, .intDef = { minValue, minValue + nValues - 1, defValue, values, &varName##_Get, &varName##_Set } }
+#define MSGPI_BOOL_VAL_SETTING(varName, id, propName, propDescription, propEditable, defValue) \
+   static int varName##_Val; \
+   static int varName##_Get() { return varName##_Val; } \
+   static void varName##_Set(int v) { varName##_Val = v; } \
+   static MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_BOOL, .boolDef = { defValue?1:0, &varName##_Get, &varName##_Set } }
+#define MSGPI_STRING_VAL_SETTING(varName, id, propName, propDescription, propEditable, defValue, bufferSize) \
+   static char* varName##_Val = new char[bufferSize]; \
+   static const char* varName##_Get() { return varName##_Val; } \
+   static void varName##_Set(const char* v) { snprintf(varName##_Val, bufferSize, "%s", v); } \
+   static MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_STRING, .stringDef = { defValue, &varName##_Get, &varName##_Set } }
 
 typedef struct MsgPluginAPI
 {

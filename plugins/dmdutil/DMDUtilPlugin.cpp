@@ -40,24 +40,24 @@ static uint8_t tintR;
 static uint8_t tintG;
 static uint8_t tintB;
 
-MSGPI_BOOL_SETTING(zeDMDProp, "ZeDMD", "ZeDMD", "", true, true);
-MSGPI_STRING_SETTING(zeDMDDeviceFolderProp, "ZeDMDDevice", "ZeDMDDevice", "", true, "", 1024);
-MSGPI_BOOL_SETTING(zeDMDDebugFolderProp, "ZeDMDDebug", "ZeDMDDebug", "", true, false);
-MSGPI_INT_SETTING(zeDMDBrightnessFolderProp, "ZeDMDBrightness", "ZeDMDBrightness", "", true, -1, 1000, -1);
-MSGPI_BOOL_SETTING(zeDMDWifiProp, "ZeDMDDebug", "ZeDMDWiFi", "", true, false);
-MSGPI_STRING_SETTING(zeDMDWiFiAddrFolderProp, "ZeDMDWiFiAddr", "ZeDMDWiFiAddr", "", true, "zedmd-wifi.local", 1024);
-MSGPI_BOOL_SETTING(pixelcadeProp, "Pixelcade", "Pixelcade", "", true, true);
-MSGPI_STRING_SETTING(pixelcadeDeviceProp, "PixelcadeDevice", "PixelcadeDevice", "", true, "", 1024);
-MSGPI_BOOL_SETTING(dmdServerFolderProp, "DMDServer", "DMDServer", "", true, false);
-MSGPI_STRING_SETTING(dmdServerAddrFolderProp, "DMDServerAddr", "DMDServerAddr", "", true, "localhost", 1024);
-MSGPI_INT_SETTING(dmdServerPortFolderProp, "DMDServerPort", "DMDServerPort", "", true, 0, 1000, 6789);
+MSGPI_BOOL_VAL_SETTING(zeDMDProp, "ZeDMD", "ZeDMD", "", true, true);
+MSGPI_STRING_VAL_SETTING(zeDMDDeviceFolderProp, "ZeDMDDevice", "ZeDMDDevice", "", true, "", 1024);
+MSGPI_BOOL_VAL_SETTING(zeDMDDebugFolderProp, "ZeDMDDebug", "ZeDMDDebug", "", true, false);
+MSGPI_INT_VAL_SETTING(zeDMDBrightnessFolderProp, "ZeDMDBrightness", "ZeDMDBrightness", "", true, -1, 1000, -1);
+MSGPI_BOOL_VAL_SETTING(zeDMDWifiProp, "ZeDMDDebug", "ZeDMDWiFi", "", true, false);
+MSGPI_STRING_VAL_SETTING(zeDMDWiFiAddrFolderProp, "ZeDMDWiFiAddr", "ZeDMDWiFiAddr", "", true, "zedmd-wifi.local", 1024);
+MSGPI_BOOL_VAL_SETTING(pixelcadeProp, "Pixelcade", "Pixelcade", "", true, true);
+MSGPI_STRING_VAL_SETTING(pixelcadeDeviceProp, "PixelcadeDevice", "PixelcadeDevice", "", true, "", 1024);
+MSGPI_BOOL_VAL_SETTING(dmdServerFolderProp, "DMDServer", "DMDServer", "", true, false);
+MSGPI_STRING_VAL_SETTING(dmdServerAddrFolderProp, "DMDServerAddr", "DMDServerAddr", "", true, "localhost", 1024);
+MSGPI_INT_VAL_SETTING(dmdServerPortFolderProp, "DMDServerPort", "DMDServerPort", "", true, 0, 1000, 6789);
 
-MSGPI_BOOL_SETTING(findDisplaysProp, "FindDisplays", "FindDisplays", "", true, true);
-MSGPI_BOOL_SETTING(dumpDMDTxtProp, "DumpDMDTxt", "DumpDMDTxt", "", true, false);
-MSGPI_BOOL_SETTING(dumpDMDRawProp, "DumpDMDRaw", "DumpDMDRaw", "", true, false);
-MSGPI_INT_SETTING(lumTintRProp, "LumTintR", "LumTintR", "", true, 0, 255, DMDUTIL_TINT_R);
-MSGPI_INT_SETTING(lumTintGProp, "LumTintG", "LumTintG", "", true, 0, 255, DMDUTIL_TINT_G);
-MSGPI_INT_SETTING(lumTintBProp, "LumTintB", "LumTintB", "", true, 0, 255, DMDUTIL_TINT_B);
+MSGPI_BOOL_VAL_SETTING(findDisplaysProp, "FindDisplays", "FindDisplays", "", true, true);
+MSGPI_BOOL_VAL_SETTING(dumpDMDTxtProp, "DumpDMDTxt", "DumpDMDTxt", "", true, false);
+MSGPI_BOOL_VAL_SETTING(dumpDMDRawProp, "DumpDMDRaw", "DumpDMDRaw", "", true, false);
+MSGPI_INT_VAL_SETTING(lumTintRProp, "LumTintR", "LumTintR", "", true, 0, 255, DMDUTIL_TINT_R);
+MSGPI_INT_VAL_SETTING(lumTintGProp, "LumTintG", "LumTintG", "", true, 0, 255, DMDUTIL_TINT_G);
+MSGPI_INT_VAL_SETTING(lumTintBProp, "LumTintB", "LumTintB", "", true, 0, 255, DMDUTIL_TINT_B);
 
 
 LPI_USE();
@@ -180,18 +180,18 @@ static void onDmdSrcChanged(const unsigned int msgId, void* userData, void* msgD
       if (!pDmd) {
          pDmd = new DMDUtil::DMD();
 
-         if (findDisplaysProp.boolDef.val)
+         if (findDisplaysProp_Val)
              pDmd->FindDisplays();
 
-         if (dumpDMDTxtProp.boolDef.val)
+         if (dumpDMDTxtProp_Val)
              pDmd->DumpDMDTxt();
 
-         if (dumpDMDRawProp.boolDef.val)
+         if (dumpDMDRawProp_Val)
              pDmd->DumpDMDRaw();
 
-         tintR = static_cast<uint8_t>(lumTintRProp.intDef.val);
-         tintG = static_cast<uint8_t>(lumTintGProp.intDef.val);
-         tintB = static_cast<uint8_t>(lumTintBProp.intDef.val);
+         tintR = static_cast<uint8_t>(lumTintRProp_Val);
+         tintG = static_cast<uint8_t>(lumTintGProp_Val);
+         tintB = static_cast<uint8_t>(lumTintBProp_Val);
       }
       isRunning = true;
       if (!updateThread.joinable())
@@ -245,17 +245,17 @@ MSGPI_EXPORT void MSGPIAPI DMDUtilPluginLoad(const uint32_t sessionId, const Msg
 
    DMDUtil::Config* pConfig = DMDUtil::Config::GetInstance();
    pConfig->SetLogCallback(OnDMDUtilLog);
-   pConfig->SetZeDMD(zeDMDProp.boolDef.val);
-   pConfig->SetZeDMDDevice(zeDMDDeviceFolderProp.stringDef.val);
-   pConfig->SetZeDMDDebug(zeDMDDebugFolderProp.boolDef.val);
-   pConfig->SetZeDMDBrightness(zeDMDBrightnessFolderProp.intDef.val);
-   pConfig->SetZeDMDWiFiEnabled(zeDMDWifiProp.boolDef.val);
-   pConfig->SetZeDMDWiFiAddr(zeDMDWiFiAddrFolderProp.stringDef.val);
-   pConfig->SetPixelcade(pixelcadeProp.boolDef.val);
-   pConfig->SetPixelcadeDevice(pixelcadeDeviceProp.stringDef.val);
-   pConfig->SetDMDServer(dmdServerFolderProp.boolDef.val);
-   pConfig->SetDMDServerAddr(dmdServerAddrFolderProp.stringDef.val);
-   pConfig->SetDMDServerPort(dmdServerPortFolderProp.intDef.val);
+   pConfig->SetZeDMD(zeDMDProp_Val);
+   pConfig->SetZeDMDDevice(zeDMDDeviceFolderProp_Get());
+   pConfig->SetZeDMDDebug(zeDMDDebugFolderProp_Get());
+   pConfig->SetZeDMDBrightness(zeDMDBrightnessFolderProp_Val);
+   pConfig->SetZeDMDWiFiEnabled(zeDMDWifiProp_Val);
+   pConfig->SetZeDMDWiFiAddr(zeDMDWiFiAddrFolderProp_Get());
+   pConfig->SetPixelcade(pixelcadeProp_Val);
+   pConfig->SetPixelcadeDevice(pixelcadeDeviceProp_Get());
+   pConfig->SetDMDServer(dmdServerFolderProp_Val);
+   pConfig->SetDMDServerAddr(dmdServerAddrFolderProp_Get());
+   pConfig->SetDMDServerPort(dmdServerPortFolderProp_Val);
 }
 
 MSGPI_EXPORT void MSGPIAPI DMDUtilPluginUnload()

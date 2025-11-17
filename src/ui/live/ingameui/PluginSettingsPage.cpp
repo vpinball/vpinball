@@ -95,29 +95,32 @@ void PluginSettingsPage::BuildPage()
       case VPX::Properties::PropertyDef::Type::Float:
          AddItem(std::make_unique<InGameUIItem>(
             option.propId, 1.f, "%4.1f", /* option.displayScale, option.format,*/ //
-            [option]() { return option.setting->floatDef.val; }, //
-            [option](float, float v) { option.setting->floatDef.val = v; }));
+            [option]() { return option.setting->floatDef.Get(); }, //
+            [option](float, float v) { option.setting->floatDef.Set(v); }));
          break;
       case VPX::Properties::PropertyDef::Type::Int:
          AddItem(std::make_unique<InGameUIItem>(
             option.propId, "%4d", /* option.format, */ //
-            [option]() { return option.setting->intDef.val; }, //
-            [option](int, int v) { option.setting->intDef.val = v; }));
+            [option]() { return option.setting->intDef.Get(); }, //
+            [option](int, int v) { option.setting->intDef.Set(v); }));
          break;
       case VPX::Properties::PropertyDef::Type::Bool:
          AddItem(std::make_unique<InGameUIItem>(
             option.propId, //
-            [option]() { return option.setting->boolDef.val != 0; }, //
-            [option, isReversed](bool v) { option.setting->boolDef.val = isReversed ? (v ? 0 : 1) : (v ? 1 : 0); }));
+            [option]() { return option.setting->boolDef.Get() != 0; }, //
+            [option, isReversed](bool v) { option.setting->boolDef.Set(isReversed ? (v ? 0 : 1) : (v ? 1 : 0)); }));
          break;
       case VPX::Properties::PropertyDef::Type::Enum:
          AddItem(std::make_unique<InGameUIItem>(
             option.propId, //
-            [option]() { return option.setting->intDef.val; }, //
-            [option](int, int v) { option.setting->intDef.val = v; }));
+            [option]() { return option.setting->intDef.Get(); }, //
+            [option](int, int v) { option.setting->intDef.Set(v); }));
          break;
       case VPX::Properties::PropertyDef::Type::String:
-         AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, option.setting->name + ": "s + option.setting->stringDef.val));
+      {
+         string path = option.setting->stringDef.Get();
+         AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, option.setting->name + ": "s + option.setting->stringDef.Get()));
+      }
          break;
       default: assert(false); break;
       }

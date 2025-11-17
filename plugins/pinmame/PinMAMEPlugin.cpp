@@ -206,9 +206,9 @@ PSC_ERROR_IMPLEMENT(scriptApi); // Implement script error
 
 LPI_IMPLEMENT // Implement shared login support
 
-MSGPI_BOOL_SETTING(enableSoundProp, "Sound", "Enable Sound", "Enable sound emulation", true, true);
-MSGPI_STRING_SETTING(pinMAMEPathProp, "PinMAMEPath", "PinMAME Path", "Folder that contains PinMAME subfolders (roms, nvram, ...)", true, "", 1024);
-MSGPI_INT_SETTING(cheatProp, "Cheat", "Cheat Mode", "", true, 0, 0xFFFF, 0);
+MSGPI_BOOL_VAL_SETTING(enableSoundProp, "Sound", "Enable Sound", "Enable sound emulation", true, true);
+MSGPI_STRING_VAL_SETTING(pinMAMEPathProp, "PinMAMEPath", "PinMAME Path", "Folder that contains PinMAME subfolders (roms, nvram, ...)", true, "", 1024);
+MSGPI_INT_VAL_SETTING(cheatProp, "Cheat", "Cheat Mode", "", true, 0, 0xFFFF, 0);
 
 void PINMAMECALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format, va_list args, void* const pUserData)
 {
@@ -372,8 +372,8 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
          NULL, // State update => prefer update on request
          NULL, // Display available => prefer state block
          NULL, // Display updated => prefer update on request
-         enableSoundProp.boolDef.val ? &OnAudioAvailable : NULL, //
-         enableSoundProp.boolDef.val ? &OnAudioUpdated : NULL, //
+         enableSoundProp_Val ? &OnAudioAvailable : NULL, //
+         enableSoundProp_Val ? &OnAudioUpdated : NULL, //
          NULL, // Mech available
          NULL, // Mech updated
          NULL, // Solenoid updated => prefer update on request
@@ -398,7 +398,7 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
       }
       if (pinmamePath.empty())
       {
-         pinmamePath = pinMAMEPathProp.stringDef.val;
+         pinmamePath = pinMAMEPathProp_Get();
          if (!pinmamePath.empty() && !pinmamePath.ends_with(PATH_SEPARATOR_CHAR))
             pinmamePath += PATH_SEPARATOR_CHAR;
       }
@@ -427,7 +427,7 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
       pController->SetOnDestroyHandler(OnControllerDestroyed);
       pController->SetOnGameStartHandler(OnControllerGameStart);
       pController->SetOnGameEndHandler(OnControllerGameEnd);
-      pController->SetCheat(cheatProp.intDef.val);
+      pController->SetCheat(cheatProp_Val);
       controller = pController;
 
       return static_cast<void*>(pController);
