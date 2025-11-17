@@ -27,7 +27,6 @@ private:
     EditBox m_defaultScatterEdit;
     EditBox m_nudgeTimeEdit;
     EditBox m_physicsLoopEdit;
-    EditBox m_mechPlungerAdjEdit;
     EditBox m_tableWidthEdit;
     EditBox m_tableHeightEdit;
     EditBox m_bottomGlassHeightEdit;
