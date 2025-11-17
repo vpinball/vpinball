@@ -89,7 +89,7 @@ inline const uint32_t* byteAdvance(const uint32_t* ptr, int bytes) { return rein
 
 //fill block  with the given color
 inline
-void fillBlock(uint32_t* const trg, const int pitch, const uint32_t col, const int blockWidth, const int blockHeight)
+void fillBlock(uint32_t* trg, const int pitch, const uint32_t col, const int blockWidth, const int blockHeight)
 {
     //for (int y = 0; y < blockHeight; ++y, trg = byteAdvance(trg, pitch))
     //    std::fill(trg, trg + blockWidth, col);
