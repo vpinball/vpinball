@@ -233,7 +233,7 @@ public:
       float pos;
       uint64_t ts;
    };
-   std::array<MechSample, 16> m_mech {};
+   std::array<MechSample, 32> m_mech {};
    int m_mechPos = 0;
    float m_mechSpeed = 0.f;
 

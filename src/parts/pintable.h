@@ -635,8 +635,6 @@ public:
    float m_scatter;
    float m_defaultScatter = 0.f;
 
-   int m_plungerNormalize = 100;  // Mech-Plunger component adjustment or weak spring, aging
-
    float m_nudgeTime = 5.f;
    Vertex2D m_tblNudgeRead;
    float m_tblNudgeReadTilt = 0.f;
@@ -790,7 +788,6 @@ public:
    float GetGravity() const;
    void SetGravity(const float value);
    void SetFriction(const float value);
-   void SetPlungerNormalize(const int value);
    float GetTableWidth() const;
    void SetTableWidth(const float value);
    float GetHeight() const;

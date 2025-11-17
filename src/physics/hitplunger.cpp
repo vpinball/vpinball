@@ -228,7 +228,7 @@ float PlungerMoverObject::MechPlungerSpeed() const
    // simulated plunger length.
    v *= m_frameLen;
 
-   // Now apply the "mechanical strength" scaling.  This lets
+   // Now apply the "fire strength" scaling.  This lets
    // the game set the relative strength of the plunger to be
    // higher or lower than "standard" (which is an arbitrary
    // reference point).  The strength is relative to the mass.
@@ -237,7 +237,7 @@ float PlungerMoverObject::MechPlungerSpeed() const
    // the scale of the user-adjustable unit conversion factor
    // above, but we'll include it for consistency with other
    // places in the code where the mech strength is used.)
-   v *= m_plunger->m_d.m_mechStrength / m_mass;
+   v *= m_plunger->m_d.m_speedFire / m_mass;
 
    // Return the result
    return v;
@@ -368,10 +368,7 @@ void PlungerMoverObject::Fire(float startPos)
    // starting distance.  Note that the release motion
    // is upwards, so the speed is negative.
    const float dx = startPos - m_restPos;
-   const float normalize = (float)g_pplayer->m_ptable->m_plungerNormalize / 13.0f / 100.0f;
-   m_fireSpeed = -m_plunger->m_d.m_speedFire
-      * dx * m_frameLen / m_mass
-      * normalize;
+   m_fireSpeed = -m_plunger->m_d.m_speedFire * dx * m_frameLen / m_mass / 13.0f ;
 
    // Figure the target stopping position for the
    // bounce off of the barrel spring.  Treat this
@@ -405,8 +402,6 @@ void PlungerMoverObject::UpdateVelocities()
    const bool isMech = m_plunger->m_d.m_mechPlunger;
    const float mech = isMech ? MechPlunger() : 0.0f;
 
-   constexpr uint64_t mechSampleIntegration = 10000UL; // We consider samples of the last 10ms (we always consider at least 2 samples, if the device update acquisition period is more than this)
-
    // Compute the mech speed, taking in account the hardware device acquisition rate (which can vary greatly from 1ms for newer device to up to 25ms on older ones)
    if (isMech)
    {
@@ -417,15 +412,16 @@ void PlungerMoverObject::UpdateVelocities()
          m_mech[m_mechPos].pos = mech;
          m_mech[m_mechPos].ts = usec();
       }
-      // Compute speed in meters per second, considering full range of travel of 3"
-      // We search for sample with up to the integration period to limit noise
+      // Compute speed in meters per second, considering a standard full range of travel of 3" (as we are comparing gainst a standard threshold)
       const uint64_t now = m_mech[m_mechPos].ts;
       int prevMechPos = (m_mechPos + (nSamples - 1)) % nSamples;
       while (prevMechPos != m_mechPos)
       {
-         if (now - m_mech[prevMechPos].ts > mechSampleIntegration)
+         const int nextPos = (prevMechPos + (nSamples - 1)) % nSamples;
+         // We limit to the last 10ms to limit noise (always taking at least 2 samples, if the device update acquisition period is too high)
+         if (now - m_mech[nextPos].ts > 10000UL)
             break;
-         prevMechPos = (prevMechPos + (nSamples - 1)) % nSamples;
+         prevMechPos = nextPos;
       }
       m_mechSpeed = (m_mech[m_mechPos].pos - m_mech[prevMechPos].pos) * static_cast<float>(3. * 2.54 * 0.01 * 1000000.) / static_cast<float>(m_mech[m_mechPos].ts - m_mech[prevMechPos].ts);
    }
@@ -443,8 +439,8 @@ void PlungerMoverObject::UpdateVelocities()
    // manual movements for releases. In practice, it seems safe to
    // lower it to about 1 m/s - this doesn't seem to cause false
    // positives and seems reliable at identifying actual releases 
-   // from the release beginning (the speed reaches 3 to 5m/s at
-   // the end, but is around 1m/s at the start).
+   // from the release beginning (the speed reaches 3 to 4m/s on
+   // impact, but starts at 0m/s on release and ramps up quickly).
    constexpr float ReleaseThreshold = -1.f; // 1m/s limit
 
    // note if we're acting as an auto plunger
@@ -656,14 +652,11 @@ void PlungerMoverObject::UpdateVelocities()
       // physically accurate than our synthetic event estimate.
 
       // Go back through the recent history to find the apex of the
-      // release.  Our "threshold" calculation is basically attempting
-      // to measure the instantaneous speed of the plunger as the
-      // difference in position divided by the time interval.  But
-      // the time interval is extremely imprecise, because joystick
-      // reports aren't synchronized to our clock.  In practice the
-      // time between USB reports is in the 10-30ms range, which gives
-      // us a considerable range of error in calculating an instantaneous
-      // speed.
+      // release as we are detecting the release after the plunger has
+      // reached a high enough velocity (but was released before) and
+      // we may have a very imprecise measure on old USB devices with
+      // a 10 to 30ms acquisition/transfer period (newer devices may 
+      // have an acquisition/transfer period as low as 1ms).
       //
       // So instead of relying on the instantaneous speed alone, now
       // that we're pretty sure a release motion is under way, go back
@@ -673,7 +666,7 @@ void PlungerMoverObject::UpdateVelocities()
       // user actually released the plunger.
       float apex = 0.f;
       for (const auto& sample : m_mech)
-         if (sample.pos > apex && (m_mech[0].ts - sample.ts < mechSampleIntegration)) // only consider the samples gathered in the last 3ms
+         if (sample.pos > apex && (m_mech[0].ts - sample.ts < 30000UL)) // only consider the recent enough samples
             apex = sample.pos;
 
       // trigger a release from the apex position
@@ -702,7 +695,7 @@ void PlungerMoverObject::UpdateVelocities()
       const float target = autoPlunger ? m_restPos : mech;
 
       // figure the current difference in positions
-      const float error = target - pos;
+      const float dx = target - pos;
 
       // Model the software plunger as though it were connected to the
       // mechanical plunger by a spring with spring constant 'mech
@@ -715,12 +708,9 @@ void PlungerMoverObject::UpdateVelocities()
       // at it, apply some damping to the current speed to simulate
       // friction.
       //
-      // The 'normalize' factor is the table's normalization constant
-      // divided by 1300, for historical reasons.  Old versions applied
-      // a 1/13 adjustment factor, which appears to have been empirically
-      // chosen to get the speed in the right range.  The m_plungerNormalize
-      // factor has default value 100 in this version, so we need to
-      // divide it by 100 to get a multiplier value.
+      // Old versions applied a 1/13 adjustment factor, which appears 
+      // to have been empirically chosen to get the speed in the right
+      // range.
       //
       // The 'dt' factor represents the amount of time that we're applying
       // this acceleration.  This is in "VP 9 physics frame" units, where
@@ -730,13 +720,10 @@ void PlungerMoverObject::UpdateVelocities()
       // runs physics frames at roughly 10x the rate of VP 9, so the time
       // per frame is about 1/10 the VP 9 time.
       constexpr float plungerFriction = 0.95f;
-      const float normalize = (float)g_pplayer->m_ptable->m_plungerNormalize / 13.0f / 100.0f;
-      constexpr float dt = 0.1f;
+      constexpr float dt = 0.1f; // 1ms
       m_speed *= plungerFriction;
-      m_speed += error * m_frameLen
-         * m_plunger->m_d.m_mechStrength / m_mass
-         * normalize * dt;
-
+      m_speed += dt * m_plunger->m_d.m_mechStrength * dx * m_frameLen / m_mass / 13.0f;
+      
       // add any reverse impulse to the result
       m_speed += m_reverseImpulse;
    }

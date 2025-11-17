@@ -13,7 +13,6 @@ TablePhysicsProperty::TablePhysicsProperty(const VectorProtected<ISelect> *pvsel
     m_defaultScatterEdit.SetDialog(this);
     m_nudgeTimeEdit.SetDialog(this);
     m_physicsLoopEdit.SetDialog(this);
-    m_mechPlungerAdjEdit.SetDialog(this);
     m_tableWidthEdit.SetDialog(this);
     m_tableHeightEdit.SetDialog(this);
     m_bottomGlassHeightEdit.SetDialog(this);
@@ -57,8 +56,6 @@ void TablePhysicsProperty::UpdateVisuals(const int dispid/*=-1*/)
         PropertyDialog::SetFloatTextbox(m_nudgeTimeEdit, table->m_nudgeTime);
     if (dispid == IDC_PHYSICS_MAX_LOOPS_EDIT || dispid == -1)
         PropertyDialog::SetIntTextbox(m_physicsLoopEdit, table->m_PhysicsMaxLoops);
-    if (dispid == IDC_MECH_PLUNGER_ADJ_EDIT || dispid == -1)
-        PropertyDialog::SetIntTextbox(m_mechPlungerAdjEdit, table->m_plungerNormalize);
     if (dispid == IDC_TABLE_WIDTH_EDIT || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_tableWidthEdit, VPUTOINCHES(table->GetTableWidth()));
     if (dispid == IDC_TABLE_HEIGHT_EDIT || dispid == -1)
@@ -113,9 +110,6 @@ void TablePhysicsProperty::UpdateProperties(const int dispid)
         case IDC_PHYSICS_MAX_LOOPS_EDIT:
             CHECK_UPDATE_ITEM(table->m_PhysicsMaxLoops, PropertyDialog::GetIntTextbox(m_physicsLoopEdit), table);
             break;
-        case IDC_MECH_PLUNGER_ADJ_EDIT:
-            CHECK_UPDATE_ITEM(table->m_plungerNormalize, PropertyDialog::GetIntTextbox(m_mechPlungerAdjEdit), table);
-            break;
         case IDC_TABLE_WIDTH_EDIT:
             CHECK_UPDATE_VALUE_SETTER(table->SetTableWidth, table->GetTableWidth, PropertyDialog::GetFloatTextboxInchesToVPU, m_tableWidthEdit, table);
             break;
@@ -165,7 +159,6 @@ BOOL TablePhysicsProperty::OnInitDialog()
     m_defaultScatterEdit.AttachItem(IDC_DEFAULT_SCATTER_EDIT);
     m_nudgeTimeEdit.AttachItem(IDC_NUDGE_TIME_EDIT);
     m_physicsLoopEdit.AttachItem(IDC_PHYSICS_MAX_LOOPS_EDIT);
-    m_mechPlungerAdjEdit.AttachItem(IDC_MECH_PLUNGER_ADJ_EDIT);
     m_tableWidthEdit.AttachItem(IDC_TABLE_WIDTH_EDIT);
     m_tableHeightEdit.AttachItem(IDC_TABLE_HEIGHT_EDIT);
     m_bottomGlassHeightEdit.AttachItem(IDC_TABLE_GLASS_BOTTOM_HEIGHT_EDIT);
@@ -188,11 +181,11 @@ BOOL TablePhysicsProperty::OnInitDialog()
     m_resizer.AddChild(GetDlgItem(IDC_STATIC6), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC7), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC10), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC11), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC12), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC13), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC14), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC15), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC16), CResizer::topleft, 0);
     m_resizer.AddChild(GetDlgItem(IDC_STATIC17), CResizer::topleft, 0);
@@ -209,7 +202,6 @@ BOOL TablePhysicsProperty::OnInitDialog()
     m_resizer.AddChild(m_defaultScatterEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_nudgeTimeEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_physicsLoopEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_mechPlungerAdjEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_tableWidthEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_tableHeightEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_bottomGlassHeightEdit, CResizer::topleft, RD_STRETCH_WIDTH);

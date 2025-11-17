@@ -790,7 +790,6 @@ PinTable* PinTable::CopyForPlay()
    dst->m_scatter = src->m_scatter;
    dst->m_defaultScatter = src->m_defaultScatter;
    dst->m_nudgeTime = src->m_nudgeTime;
-   dst->m_plungerNormalize = src->m_plungerNormalize;
    dst->m_PhysicsMaxLoops = src->m_PhysicsMaxLoops;
    dst->m_renderEMReels = src->m_renderEMReels;
    dst->m_renderDecals = src->m_renderDecals;
@@ -1671,7 +1670,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    bw.WriteFloat(FID(PFSC), m_scatter);
    bw.WriteFloat(FID(SCAT), m_defaultScatter);
    bw.WriteFloat(FID(NDGT), m_nudgeTime);
-   bw.WriteInt(FID(MPGC), m_plungerNormalize);
    bw.WriteInt(FID(PHML), m_PhysicsMaxLoops);
 
    //bw.WriteFloat(FID(IMTCOL), m_transcolor);
@@ -2489,14 +2487,6 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(PFSC): pbr->GetFloat(m_scatter); break;
    case FID(SCAT): pbr->GetFloat(m_defaultScatter); break;
    case FID(NDGT): pbr->GetFloat(m_nudgeTime); break;
-   case FID(MPGC):
-   {
-      int tmp;
-      pbr->GetInt(tmp);
-      Settings::SetPlayer_PlungerNormalize_Default(tmp);
-      m_plungerNormalize = m_settings.GetPlayer_PlungerNormalize();
-      break;
-   }
    case FID(PHML):
    {
       pbr->GetInt(m_PhysicsMaxLoops);
@@ -6932,28 +6922,6 @@ STDMETHODIMP PinTable::put_NudgeTime(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_PlungerNormalize(int *pVal)
-{
-   *pVal = m_plungerNormalize;
-   return S_OK;
-}
-
-void PinTable::SetPlungerNormalize(const int value)
-{
-   // Defines the value unless it is overriden in the settings
-   Settings::SetPlayer_PlungerNormalize_Default(value);
-   m_plungerNormalize = m_settings.GetPlayer_PlungerNormalize();
-}
-
-STDMETHODIMP PinTable::put_PlungerNormalize(int newVal)
-{
-   STARTUNDO
-   SetPlungerNormalize(newVal);
-   STOPUNDO
-
-   return S_OK;
-}
-
 STDMETHODIMP PinTable::get_PhysicsLoopTime(int *pVal)
 {
    *pVal = m_PhysicsMaxLoops;
@@ -8414,6 +8382,17 @@ STDMETHODIMP PinTable::get_EnableFXAA(FXAASettings *pVal)
 
 // Changing AA & FXAA is somewhat wrong as it changes the setting for all time, and is not implemented while playing, so this is just a No-Op
 STDMETHODIMP PinTable::put_EnableFXAA(FXAASettings newVal)
+{
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_PlungerNormalize(int *pVal)
+{
+   *pVal = 100;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_PlungerNormalize(int newVal)
 {
    return S_OK;
 }
