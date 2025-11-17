@@ -125,6 +125,7 @@ FEATURES:
   . Remote Control: a plugin that allows to control an instance of VPX from another running instance. For example running VPX on a little controller PC that communicates with a more powerful computer that runs VPX driving a VR headset
   . Score View: a tool to provide default score rendering (for example DMD, but also supporting alphanumeric segment displays, including dimmed segments)
   . Serum: a DMD colorizer
+  . UpscaleDMD: upscale or anti-alias DMD content (modes: xBRZ 2x/3x/4x/5x/6x, ScaleFX AA 1x, ScaleFX 3x and Super-XBR 2x)
   . WMP: the window media player, but as a portable plugin, running on any of the supported platforms
 
 - LiveEditor (used to be called LiveUI, now split between LiveEditor for editing and InGameUI for all settings):
