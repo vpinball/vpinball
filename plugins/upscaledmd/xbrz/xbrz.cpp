@@ -14,6 +14,7 @@
 // ****************************************************************************
 
 #include "xbrz.h"
+#include <cmath>
 #include <cassert>
 #include <algorithm>
 #include <vector>
@@ -554,7 +555,7 @@ void scaleImage(const uint32_t* src, uint32_t* trg, int srcWidth, int srcHeight,
             /*
             preprocessing blend result:
             ---------
-            | F | G |   //evalute corner between F, G, J, K
+            | F | G |   //evaluate corner between F, G, J, K
             ----|---|   //input pixel is at position F
             | J | K |
             ---------
@@ -617,7 +618,7 @@ void scaleImage(const uint32_t* src, uint32_t* trg, int srcWidth, int srcHeight,
                 /*
                 preprocessing blend result:
                 ---------
-                | F | G |   //evalute corner between F, G, J, K
+                | F | G |   //evaluate corner between F, G, J, K
                 ----|---|   //current input pixel is at position F
                 | J | K |
                 ---------
@@ -636,7 +637,7 @@ void scaleImage(const uint32_t* src, uint32_t* trg, int srcWidth, int srcHeight,
             }
 
             //fill block of size scale * scale with the given color
-            fillBlock(out, trgWidth * sizeof(uint32_t), ker4.f, Scaler::scale); //place *after* preprocessing step, to not overwrite the results while processing the the last pixel!
+            fillBlock(out, trgWidth * sizeof(uint32_t), ker4.f, Scaler::scale); //place *after* preprocessing step, to not overwrite the results while processing the last pixel!
 
             //blend four corners of current pixel
             if (blendingNeeded(blend_xy)) //good 5% perf-improvement

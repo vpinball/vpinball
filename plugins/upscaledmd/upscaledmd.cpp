@@ -12,27 +12,15 @@
 #include <cstring>
 #include <cstdint>
 #include <sstream>
-#include <cassert>
 #include <cstdarg>
 #if defined(__APPLE__) || defined(__linux__) || defined(__ANDROID__)
 #include <pthread.h>
 #endif
 
-#include <cmath>
-#include "xbrz/config.h"
-#include "xbrz/xbrz.h"
 #include "xbrz/xbrz.cpp"
 
-#ifndef M_PI
-constexpr double M_PI = 3.14159265358979323846;
-#endif
-#ifndef min
-template <typename T> constexpr T min(const T x, const T y) { return x < y ? x : y; }
-#endif
-#ifndef max
-template <typename T> constexpr T max(const T x, const T y) { return x < y ? y : x; }
-#endif
-#include "vector.h" // Copied from VPX
+#include "super-xbr/super-xbr.h"
+
 #include "scalefx/scalefx.h"
 
 #ifdef _WIN32
@@ -50,7 +38,7 @@ template <typename T> constexpr T max(const T x, const T y) { return x < y ? y :
 // controller display and segment API. It listen for DMD source and,
 // when found, provide a corresponding display source.
 //
-// All rendering is done by an anciliary thread, causing a one frame delay, but
+// All rendering is done by an ancillary thread, causing a one frame delay, but
 // avoiding CPU load on the main thread.
 
 namespace UpscaleDMD
@@ -83,10 +71,11 @@ enum UpscalerMode {
    UM_xBRZ_6x,
    UM_ScaleFX_AA,
    UM_ScaleFX_3x,
+   UM_SuperXBR_2x
 };
-const char* upscalerNames[] = { "Disabled", "xBRZ 2x", "xBRZ 3x", "xBRZ 4x", "xBRZ 5x", "xBRZ 6x" };
-const int scaleFactors[] = { 1, 2, 3, 4, 5, 6 };
-MSGPI_ENUM_SETTING(upscaleModeProp, "UpscaleMode", "Mode", "Select upscaler", true, 0, 6, upscalerNames, 0);
+static const char* upscalerNames[] = { "Disabled", "xBRZ 2x", "xBRZ 3x", "xBRZ 4x", "xBRZ 5x", "xBRZ 6x", "ScaleFX AA 1x", "ScaleFX 3x", "Super-XBR 2x" };
+static constexpr int scaleFactors[] = { 1, 2, 3, 4, 5, 6, 1, 3, 2 };
+MSGPI_ENUM_SETTING(upscaleModeProp, "UpscaleMode", "Mode", "Select upscaler", true, 0, std::size(scaleFactors), upscalerNames, 0);
 
 LPI_USE();
 LPI_IMPLEMENT // Implement shared login support
@@ -171,7 +160,14 @@ static void RenderThread()
             xbrz::scale(scaleFactors[upscaleModeProp.intDef.val], rgbaSrcFrame.data(), rgbaDstFrame.data(), dmdSrc.width, dmdSrc.height, xbrz::ColorFormat::RGB);
          else if (upscaleModeProp.intDef.val >= UpscalerMode::UM_ScaleFX_AA && upscaleModeProp.intDef.val <= UpscalerMode::UM_ScaleFX_3x)
          {
-            // TODO implement ScaleFX
+            if (upscaleModeProp.intDef.val == UpscalerMode::UM_ScaleFX_3x)
+               scalefx::upscale<true>(rgbaSrcFrame.data(), rgbaDstFrame.data(), dmdSrc.width, dmdSrc.height, false);
+            else
+               scalefx::upscale<false>(rgbaSrcFrame.data(), rgbaDstFrame.data(), dmdSrc.width, dmdSrc.height, false);
+         }
+         else if (upscaleModeProp.intDef.val == UpscalerMode::UM_SuperXBR_2x)
+         {
+            superxbr::scale<2,false>(rgbaSrcFrame.data(), rgbaDstFrame.data(), dmdSrc.width, dmdSrc.height);
          }
 
          for (unsigned int y = 0; y < displayId.height; y++)
@@ -229,7 +225,7 @@ static void OnDmdSrcChanged(const unsigned int, void* userData, void* msgData)
                if (
                   // Priority 1: Find at least one display if any (size > 0)
                   selectedSrc.GetRenderFrame == nullptr
-                  // Priority 2: Favor highest resolution display
+                  // Priority 2: Favor the highest resolution display
                   || (dsSize < sSize)
                   // Priority 3: Favor color over monochrome
                   || (dsSize == sSize && selectedSrc.frameFormat != getSrcMsg.entries[i].frameFormat && selectedSrc.frameFormat == CTLPI_DISPLAY_FORMAT_LUM8)

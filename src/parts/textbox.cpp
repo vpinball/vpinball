@@ -475,7 +475,7 @@ void Textbox::Render(const unsigned int renderMask)
          vertices[i].y = 1.0f - (vertices[i].y * h + y) * 2.0f;
       }
 
-      ResURIResolver::DisplayState dmd = g_pplayer->m_resURIResolver.GetDisplayState("ctrl://default/display");
+      ResURIResolver::DisplayState dmd = g_pplayer->m_resURIResolver.GetDisplayState("ctrl://default/display"s);
       if (dmd.state.frame == nullptr)
          return;
       BaseTexture::Update(m_texture, dmd.source->width, dmd.source->height, 

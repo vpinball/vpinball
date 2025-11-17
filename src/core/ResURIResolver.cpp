@@ -327,7 +327,7 @@ ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
             if (
                // Priority 1: Find at least one display if any (size > 0)
                displaySource == nullptr
-               // Priority 2: Favor highest resolution display
+               // Priority 2: Favor the highest resolution display
                || (dsSize < sSize)
                // Priority 3: Favor color over monochrome
                || (dsSize == sSize && displaySource->frameFormat != source.frameFormat && displaySource->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8)

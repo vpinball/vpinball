@@ -1273,7 +1273,7 @@ void Flasher::Render(const unsigned int renderMask)
             if (!m_d.m_imageSrcLink.empty())
                dmd = g_pplayer->m_resURIResolver.GetDisplayState(m_d.m_imageSrcLink);
             if (dmd.state.frame == nullptr)
-               dmd = g_pplayer->m_resURIResolver.GetDisplayState("ctrl://default/display");
+               dmd = g_pplayer->m_resURIResolver.GetDisplayState("ctrl://default/display"s);
             if (dmd.state.frame != nullptr)
                BaseTexture::Update(m_renderFrame, dmd.source->width, dmd.source->height,
                               dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8    ? BaseTexture::BW

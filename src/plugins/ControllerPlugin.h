@@ -189,7 +189,7 @@ typedef struct DisplaySrcId
 {
    CtlResId id;                                                             // Unique Id of the display
    CtlResId groupId;                                                        // Unique Id of the display group
-   CtlResId overrideId;                                                     // If this source override another source, id of the overriden source, 0 otherwise
+   CtlResId overrideId;                                                     // If this source overrides another source, id of the overriden source, 0 otherwise
    unsigned int width;                                                      // 
    unsigned int height;                                                     // 
    union {
