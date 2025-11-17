@@ -13,6 +13,8 @@
 // * do so, delete this exception statement from your version.                *
 // ****************************************************************************
 
+// minor additional tweaks for VPX plugin: replace all doubles by float, constexpr's
+
 #include "xbrz.h"
 #include <cmath>
 #include <cassert>
@@ -81,13 +83,13 @@ uint32_t gradientARGB(uint32_t pixFront, uint32_t pixBack) //find intermediate c
 //
 
 
-uint32_t*       byteAdvance(      uint32_t* ptr, int bytes) { return reinterpret_cast<      uint32_t*>(reinterpret_cast<      char*>(ptr) + bytes); }
-const uint32_t* byteAdvance(const uint32_t* ptr, int bytes) { return reinterpret_cast<const uint32_t*>(reinterpret_cast<const char*>(ptr) + bytes); }
+inline uint32_t*       byteAdvance(      uint32_t* ptr, int bytes) { return reinterpret_cast<      uint32_t*>(reinterpret_cast<      char*>(ptr) + bytes); }
+inline const uint32_t* byteAdvance(const uint32_t* ptr, int bytes) { return reinterpret_cast<const uint32_t*>(reinterpret_cast<const char*>(ptr) + bytes); }
 
 
 //fill block  with the given color
 inline
-void fillBlock(uint32_t* trg, int pitch, uint32_t col, int blockWidth, int blockHeight)
+void fillBlock(uint32_t* const trg, const int pitch, const uint32_t col, const int blockWidth, const int blockHeight)
 {
     //for (int y = 0; y < blockHeight; ++y, trg = byteAdvance(trg, pitch))
     //    std::fill(trg, trg + blockWidth, col);
@@ -98,7 +100,7 @@ void fillBlock(uint32_t* trg, int pitch, uint32_t col, int blockWidth, int block
 }
 
 inline
-void fillBlock(uint32_t* trg, int pitch, uint32_t col, int n) { fillBlock(trg, pitch, col, n, n); }
+void fillBlock(uint32_t* const trg, int pitch, uint32_t col, int n) { fillBlock(trg, pitch, col, n, n); }
 
 
 #ifdef _MSC_VER
@@ -125,15 +127,15 @@ struct MatrixRotation;
 template <size_t I, size_t J, size_t N>
 struct MatrixRotation<ROT_0, I, J, N>
 {
-    static const size_t I_old = I;
-    static const size_t J_old = J;
+    static constexpr size_t I_old = I;
+    static constexpr size_t J_old = J;
 };
 
 template <RotationDegree rotDeg, size_t I, size_t J, size_t N> //(i, j) = (row, col) indices, N = size of (square) matrix
 struct MatrixRotation
 {
-    static const size_t I_old = N - 1 - MatrixRotation<static_cast<RotationDegree>(rotDeg - 1), I, J, N>::J_old; //old coordinates before rotation!
-    static const size_t J_old =         MatrixRotation<static_cast<RotationDegree>(rotDeg - 1), I, J, N>::I_old; //
+    static constexpr size_t I_old = N - 1 - MatrixRotation<static_cast<RotationDegree>(rotDeg - 1), I, J, N>::J_old; //old coordinates before rotation!
+    static constexpr size_t J_old =         MatrixRotation<static_cast<RotationDegree>(rotDeg - 1), I, J, N>::I_old; //
 };
 
 
@@ -148,13 +150,13 @@ public:
     template <size_t I, size_t J>
     uint32_t& ref() const
     {
-        static const size_t I_old = MatrixRotation<rotDeg, I, J, N>::I_old;
-        static const size_t J_old = MatrixRotation<rotDeg, I, J, N>::J_old;
+        static constexpr size_t I_old = MatrixRotation<rotDeg, I, J, N>::I_old;
+        static constexpr size_t J_old = MatrixRotation<rotDeg, I, J, N>::J_old;
         return *(out_ + J_old + I_old * outWidth_);
     }
 
 private:
-    uint32_t* out_;
+    uint32_t* const out_;
     const int outWidth_;
 };
 
@@ -163,50 +165,50 @@ template <class T> inline
 T square(T value) { return value * value; }
 
 
-
+#if 0
 inline
-double distRGB(uint32_t pix1, uint32_t pix2)
+float distRGB(uint32_t pix1, uint32_t pix2)
 {
-    const double r_diff = static_cast<int>(getRed  (pix1)) - getRed  (pix2);
-    const double g_diff = static_cast<int>(getGreen(pix1)) - getGreen(pix2);
-    const double b_diff = static_cast<int>(getBlue (pix1)) - getBlue (pix2);
+    const float r_diff = static_cast<int>(getRed  (pix1)) - getRed  (pix2);
+    const float g_diff = static_cast<int>(getGreen(pix1)) - getGreen(pix2);
+    const float b_diff = static_cast<int>(getBlue (pix1)) - getBlue (pix2);
 
     //euklidean RGB distance
-    return std::sqrt(square(r_diff) + square(g_diff) + square(b_diff));
+    return std::sqrtf(square(r_diff) + square(g_diff) + square(b_diff));
 }
-
+#endif
 
 inline
-double distYCbCr(uint32_t pix1, uint32_t pix2, double lumaWeight)
+float distYCbCr(uint32_t pix1, uint32_t pix2, float lumaWeight)
 {
     //http://en.wikipedia.org/wiki/YCbCr#ITU-R_BT.601_conversion
     //YCbCr conversion is a matrix multiplication => take advantage of linearity by subtracting first!
-    const int r_diff = static_cast<int>(getRed  (pix1)) - getRed  (pix2); //we may delay division by 255 to after matrix multiplication
-    const int g_diff = static_cast<int>(getGreen(pix1)) - getGreen(pix2); //
-    const int b_diff = static_cast<int>(getBlue (pix1)) - getBlue (pix2); //substraction for int is noticeable faster than for double!
+    const float r_diff = static_cast<int>(getRed  (pix1)) - getRed  (pix2); //we may delay division by 255 to after matrix multiplication
+    const float g_diff = static_cast<int>(getGreen(pix1)) - getGreen(pix2); //
+    const float b_diff = static_cast<int>(getBlue (pix1)) - getBlue (pix2); //substraction for int is noticeable faster than for double!
 
-    //const double k_b = 0.0722; //ITU-R BT.709 conversion
-    //const double k_r = 0.2126; //
-    const double k_b = 0.0593; //ITU-R BT.2020 conversion
-    const double k_r = 0.2627; //
-    const double k_g = 1 - k_b - k_r;
+    //constexpr double k_b = 0.0722; //ITU-R BT.709 conversion
+    //constexpr double k_r = 0.2126; //
+    constexpr double k_b = 0.0593; //ITU-R BT.2020 conversion
+    constexpr double k_r = 0.2627; //
+    constexpr double k_g = 1 - k_b - k_r;
 
-    const double scale_b = 0.5 / (1 - k_b);
-    const double scale_r = 0.5 / (1 - k_r);
+    constexpr float scale_b = 0.5 / (1 - k_b);
+    constexpr float scale_r = 0.5 / (1 - k_r);
 
-    const double y   = k_r * r_diff + k_g * g_diff + k_b * b_diff; //[!], analog YCbCr!
-    const double c_b = scale_b * (b_diff - y);
-    const double c_r = scale_r * (r_diff - y);
+    const float y   = (float)k_r * r_diff + (float)k_g * g_diff + (float)k_b * b_diff; //[!], analog YCbCr!
+    const float c_b = scale_b * (b_diff - y);
+    const float c_r = scale_r * (r_diff - y);
 
     //we skip division by 255 to have similar range like other distance functions
-    return std::sqrt(square(lumaWeight * y) + square(c_b) + square(c_r));
+    return std::sqrtf(square(lumaWeight * y) + square(c_b) + square(c_r));
 }
 
 
 struct DistYCbCrBuffer //30% perf boost compared to distYCbCr()!
 {
 public:
-    static double dist(uint32_t pix1, uint32_t pix2)
+    static float dist(uint32_t pix1, uint32_t pix2)
     {
 #if defined _MSC_VER && _MSC_VER < 1900
 #error function scope static initialization is not yet thread-safe!
@@ -220,26 +222,26 @@ private:
     {
         for (uint32_t i = 0; i < 256 * 256 * 256; ++i) //startup time: 114 ms on Intel Core i5 (four cores)
         {
-            const int r_diff = getByte<2>(i) * 2 - 255;
-            const int g_diff = getByte<1>(i) * 2 - 255;
-            const int b_diff = getByte<0>(i) * 2 - 255;
+            const float r_diff = getByte<2>(i) * 2 - 255;
+            const float g_diff = getByte<1>(i) * 2 - 255;
+            const float b_diff = getByte<0>(i) * 2 - 255;
 
-            const double k_b = 0.0593; //ITU-R BT.2020 conversion
-            const double k_r = 0.2627; //
-            const double k_g = 1 - k_b - k_r;
+            constexpr double k_b = 0.0593; //ITU-R BT.2020 conversion
+            constexpr double k_r = 0.2627; //
+            constexpr double k_g = 1 - k_b - k_r;
 
-            const double scale_b = 0.5 / (1 - k_b);
-            const double scale_r = 0.5 / (1 - k_r);
+            constexpr float scale_b = 0.5 / (1 - k_b);
+            constexpr float scale_r = 0.5 / (1 - k_r);
 
-            const double y   = k_r * r_diff + k_g * g_diff + k_b * b_diff; //[!], analog YCbCr!
-            const double c_b = scale_b * (b_diff - y);
-            const double c_r = scale_r * (r_diff - y);
+            const float y   = (float)k_r * r_diff + (float)k_g * g_diff + (float)k_b * b_diff; //[!], analog YCbCr!
+            const float c_b = scale_b * (b_diff - y);
+            const float c_r = scale_r * (r_diff - y);
 
-            buffer[i] = static_cast<float>(std::sqrt(square(y) + square(c_b) + square(c_r)));
+            buffer[i] = std::sqrtf(square(y) + square(c_b) + square(c_r));
         }
     }
 
-    double distImpl(uint32_t pix1, uint32_t pix2) const
+    float distImpl(uint32_t pix1, uint32_t pix2) const
     {
         //if (pix1 == pix2) -> 8% perf degradation!
         //    return 0;
@@ -310,9 +312,9 @@ BlendResult preProcessCorners(const Kernel_4x4& ker, const xbrz::ScalerCfg& cfg)
 
     auto dist = [&](uint32_t pix1, uint32_t pix2) { return ColorDistance::dist(pix1, pix2, cfg.luminanceWeight); };
 
-    const int weight = 4;
-    double jg = dist(ker.i, ker.f) + dist(ker.f, ker.c) + dist(ker.n, ker.k) + dist(ker.k, ker.h) + weight * dist(ker.j, ker.g);
-    double fk = dist(ker.e, ker.j) + dist(ker.j, ker.o) + dist(ker.b, ker.g) + dist(ker.g, ker.l) + weight * dist(ker.f, ker.k);
+    constexpr float weight = 4;
+    float jg = dist(ker.i, ker.f) + dist(ker.f, ker.c) + dist(ker.n, ker.k) + dist(ker.k, ker.h) + weight * dist(ker.j, ker.g);
+    float fk = dist(ker.e, ker.j) + dist(ker.j, ker.o) + dist(ker.b, ker.g) + dist(ker.g, ker.l) + weight * dist(ker.f, ker.k);
 
     if (jg < fk) //test sample: 70% of values max(jg, fk) / min(jg, fk) are between 1.1 and 3.7 with median being 1.8
     {
@@ -459,8 +461,8 @@ void blendPixel(const Kernel_3x3& ker,
 
         if (doLineBlend)
         {
-            const double fg = dist(f, g); //test sample: 70% of values max(fg, hc) / min(fg, hc) are between 1.1 and 3.7 with median being 1.9
-            const double hc = dist(h, c); //
+            const float fg = dist(f, g); //test sample: 70% of values max(fg, hc) / min(fg, hc) are between 1.1 and 3.7 with median being 1.9
+            const float hc = dist(h, c); //
 
             const bool haveShallowLine = cfg.steepDirectionThreshold * fg <= hc && e != g && d != g;
             const bool haveSteepLine   = cfg.steepDirectionThreshold * hc <= fg && e != c && b != c;
@@ -670,7 +672,7 @@ void scaleImage(const uint32_t* src, uint32_t* trg, int srcWidth, int srcHeight,
 template <class ColorGradient>
 struct Scaler2x : public ColorGradient
 {
-    static const int scale = 2;
+    static constexpr int scale = 2;
 
     template <unsigned int M, unsigned int N> //bring template function into scope for GCC
     static void alphaGrad(uint32_t& pixBack, uint32_t pixFront) { ColorGradient::template alphaGrad<M, N>(pixBack, pixFront); }
@@ -716,7 +718,7 @@ struct Scaler2x : public ColorGradient
 template <class ColorGradient>
 struct Scaler3x : public ColorGradient
 {
-    static const int scale = 3;
+    static constexpr int scale = 3;
 
     template <unsigned int M, unsigned int N> //bring template function into scope for GCC
     static void alphaGrad(uint32_t& pixBack, uint32_t pixFront) { ColorGradient::template alphaGrad<M, N>(pixBack, pixFront); }
@@ -774,7 +776,7 @@ struct Scaler3x : public ColorGradient
 template <class ColorGradient>
 struct Scaler4x : public ColorGradient
 {
-    static const int scale = 4;
+    static constexpr int scale = 4;
 
     template <unsigned int M, unsigned int N> //bring template function into scope for GCC
     static void alphaGrad(uint32_t& pixBack, uint32_t pixFront) { ColorGradient::template alphaGrad<M, N>(pixBack, pixFront); }
@@ -843,7 +845,7 @@ struct Scaler4x : public ColorGradient
 template <class ColorGradient>
 struct Scaler5x : public ColorGradient
 {
-    static const int scale = 5;
+    static constexpr int scale = 5;
 
     template <unsigned int M, unsigned int N> //bring template function into scope for GCC
     static void alphaGrad(uint32_t& pixBack, uint32_t pixFront) { ColorGradient::template alphaGrad<M, N>(pixBack, pixFront); }
@@ -931,7 +933,7 @@ struct Scaler5x : public ColorGradient
 template <class ColorGradient>
 struct Scaler6x : public ColorGradient
 {
-    static const int scale = 6;
+    static constexpr int scale = 6;
 
     template <unsigned int M, unsigned int N> //bring template function into scope for GCC
     static void alphaGrad(uint32_t& pixBack, uint32_t pixFront) { ColorGradient::template alphaGrad<M, N>(pixBack, pixFront); }
@@ -1030,7 +1032,7 @@ struct Scaler6x : public ColorGradient
 
 struct ColorDistanceRGB
 {
-    static double dist(uint32_t pix1, uint32_t pix2, double luminanceWeight)
+    static float dist(uint32_t pix1, uint32_t pix2, float luminanceWeight)
     {
         return DistYCbCrBuffer::dist(pix1, pix2);
 
@@ -1042,10 +1044,10 @@ struct ColorDistanceRGB
 
 struct ColorDistanceARGB
 {
-    static double dist(uint32_t pix1, uint32_t pix2, double luminanceWeight)
+    static float dist(uint32_t pix1, uint32_t pix2, float luminanceWeight)
     {
-        const double a1 = getAlpha(pix1) / 255.0 ;
-        const double a2 = getAlpha(pix2) / 255.0 ;
+        const float a1 = getAlpha(pix1) / 255.0f ;
+        const float a2 = getAlpha(pix2) / 255.0f ;
         /*
         Requirements for a color distance handling alpha channel: with a1, a2 in [0, 1]
 
@@ -1054,15 +1056,15 @@ struct ColorDistanceARGB
         	3. if a1 = 1,  ??? maybe: 255 * (1 - a2) + a2 * distYCbCr()
         */
 
-        //return std::min(a1, a2) * DistYCbCrBuffer::dist(pix1, pix2) + 255 * abs(a1 - a2);
+        //return std::min(a1, a2) * DistYCbCrBuffer::dist(pix1, pix2) + 255.f * abs(a1 - a2);
         //=> following code is 15% faster:
-        const double d = DistYCbCrBuffer::dist(pix1, pix2);
+        const float d = DistYCbCrBuffer::dist(pix1, pix2);
         if (a1 < a2)
-            return a1 * d + 255 * (a2 - a1);
+            return a1 * d + 255.f * (a2 - a1);
         else
-            return a2 * d + 255 * (a1 - a2);
+            return a2 * d + 255.f * (a1 - a2);
 
-        //alternative? return std::sqrt(a1 * a2 * square(DistYCbCrBuffer::dist(pix1, pix2)) + square(255 * (a1 - a2)));
+        //alternative? return std::sqrtf(a1 * a2 * square(DistYCbCrBuffer::dist(pix1, pix2)) + square(255.f * (a1 - a2)));
     }
 };
 
@@ -1127,7 +1129,7 @@ void xbrz::scale(size_t factor, const uint32_t* src, uint32_t* trg, int srcWidth
 }
 
 
-bool xbrz::equalColorTest(uint32_t col1, uint32_t col2, ColorFormat colFmt, double luminanceWeight, double equalColorTolerance)
+bool xbrz::equalColorTest(uint32_t col1, uint32_t col2, ColorFormat colFmt, float luminanceWeight, float equalColorTolerance)
 {
     switch (colFmt)
     {
