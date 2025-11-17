@@ -174,7 +174,7 @@ float distRGB(uint32_t pix1, uint32_t pix2)
     const float b_diff = static_cast<int>(getBlue (pix1)) - getBlue (pix2);
 
     //euklidean RGB distance
-    return std::sqrtf(square(r_diff) + square(g_diff) + square(b_diff));
+    return sqrtf(square(r_diff) + square(g_diff) + square(b_diff));
 }
 #endif
 
@@ -201,7 +201,7 @@ float distYCbCr(uint32_t pix1, uint32_t pix2, float lumaWeight)
     const float c_r = scale_r * (r_diff - y);
 
     //we skip division by 255 to have similar range like other distance functions
-    return std::sqrtf(square(lumaWeight * y) + square(c_b) + square(c_r));
+    return sqrtf(square(lumaWeight * y) + square(c_b) + square(c_r));
 }
 
 
@@ -237,7 +237,7 @@ private:
             const float c_b = scale_b * (b_diff - y);
             const float c_r = scale_r * (r_diff - y);
 
-            buffer[i] = std::sqrtf(square(y) + square(c_b) + square(c_r));
+            buffer[i] = sqrtf(square(y) + square(c_b) + square(c_r));
         }
     }
 
@@ -1064,7 +1064,7 @@ struct ColorDistanceARGB
         else
             return a2 * d + 255.f * (a1 - a2);
 
-        //alternative? return std::sqrtf(a1 * a2 * square(DistYCbCrBuffer::dist(pix1, pix2)) + square(255.f * (a1 - a2)));
+        //alternative? return sqrtf(a1 * a2 * square(DistYCbCrBuffer::dist(pix1, pix2)) + square(255.f * (a1 - a2)));
     }
 };
 
