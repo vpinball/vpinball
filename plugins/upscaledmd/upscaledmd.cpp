@@ -75,7 +75,16 @@ enum UpscalerMode {
 };
 static const char* upscalerNames[] = { "Disabled", "xBRZ 2x", "xBRZ 3x", "xBRZ 4x", "xBRZ 5x", "xBRZ 6x", "ScaleFX AA 1x", "ScaleFX 3x", "Super-XBR 2x" };
 static constexpr int scaleFactors[] = { 1, 2, 3, 4, 5, 6, 1, 3, 2 };
-MSGPI_ENUM_SETTING(upscaleModeProp, "UpscaleMode", "Mode", "Select upscaler", true, 0, std::size(scaleFactors), upscalerNames, 0);
+static UpscalerMode upscalerMode = UM_Disabled;
+static UpscalerMode nextUpscalerMode = UM_Disabled;
+static int GetUpscalerMode() { return (int)upscalerMode; }
+static void OnDmdSrcChanged(const unsigned int, void*, void*);
+static void SetUpscalerMode(int v)
+{
+   nextUpscalerMode = (UpscalerMode) v;
+   OnDmdSrcChanged(endpointId, nullptr, nullptr);
+}
+MSGPI_ENUM_SETTING(upscaleModeProp, "UpscaleMode", "Mode", "Select upscaler", true, 0, std::size(scaleFactors), upscalerNames, 0, GetUpscalerMode, SetUpscalerMode);
 
 LPI_USE();
 LPI_IMPLEMENT // Implement shared login support
@@ -152,16 +161,16 @@ static void RenderThread()
                rgbaSrcFrame[ofs] = 0xFF000000u | ((uint32_t)lum32[rgb565 & 0x1F] << 16) | ((uint32_t)lum64[(rgb565 >> 5) & 0x3F] << 8) | (uint32_t)lum32[(rgb565 >> 11) & 0x1F];
             }
          }
-         if (upscaleModeProp.intDef.val >= UpscalerMode::UM_xBRZ_2x && upscaleModeProp.intDef.val <= UpscalerMode::UM_xBRZ_6x)
-            xbrz::scale(scaleFactors[upscaleModeProp.intDef.val], rgbaSrcFrame.data(), rgbaDstFrame.data(), dmdSrc.width, dmdSrc.height, xbrz::ColorFormat::RGB);
-         else if (upscaleModeProp.intDef.val >= UpscalerMode::UM_ScaleFX_AA && upscaleModeProp.intDef.val <= UpscalerMode::UM_ScaleFX_3x)
+         if (upscalerMode >= UpscalerMode::UM_xBRZ_2x && upscalerMode <= UpscalerMode::UM_xBRZ_6x)
+            xbrz::scale(scaleFactors[upscalerMode], rgbaSrcFrame.data(), rgbaDstFrame.data(), dmdSrc.width, dmdSrc.height, xbrz::ColorFormat::RGB);
+         else if (upscalerMode >= UpscalerMode::UM_ScaleFX_AA && upscalerMode <= UpscalerMode::UM_ScaleFX_3x)
          {
-            if (upscaleModeProp.intDef.val == UpscalerMode::UM_ScaleFX_3x)
+            if (upscalerMode == UpscalerMode::UM_ScaleFX_3x)
                scalefx::upscale<true>(rgbaSrcFrame.data(), rgbaDstFrame.data(), dmdSrc.width, dmdSrc.height, false);
             else
                scalefx::upscale<false>(rgbaSrcFrame.data(), rgbaDstFrame.data(), dmdSrc.width, dmdSrc.height, false);
          }
-         else if (upscaleModeProp.intDef.val == UpscalerMode::UM_SuperXBR_2x)
+         else if (upscalerMode == UpscalerMode::UM_SuperXBR_2x)
          {
             superxbr::scale<2,false>(rgbaSrcFrame.data(), rgbaDstFrame.data(), dmdSrc.width, dmdSrc.height);
          }
@@ -186,7 +195,7 @@ static DisplayFrame GetRenderFrame(const CtlResId id)
    return { renderFrameId, renderFrame.data() };
 }
 
-static void OnGetDisplaySrc(const unsigned int eventId, void* userData, void* msgData)
+static void OnGetDisplaySrc(const unsigned int, void*, void* msgData)
 {
    if (!IsSourceSelected())
       return;
@@ -196,19 +205,20 @@ static void OnGetDisplaySrc(const unsigned int eventId, void* userData, void* ms
    msg.count++;
 }
 
-static void OnDmdSrcChanged(const unsigned int, void* userData, void* msgData)
+static void OnDmdSrcChanged(const unsigned int, void*, void*)
 {
    bool wasRendering = IsSourceSelected();
-   dmdSrc.GetRenderFrame = nullptr;
+   bool modeChanged = upscalerMode != nextUpscalerMode;
    DisplaySrcId selectedSrc {};
 
-   if (upscaleModeProp.intDef.val != UpscalerMode::UM_Disabled)
+   if (nextUpscalerMode != UpscalerMode::UM_Disabled)
    {
       GetDisplaySrcMsg getSrcMsg = { 0, 0, nullptr };
       msgApi->BroadcastMsg(endpointId, getDisplaySrcId, &getSrcMsg);
       if (getSrcMsg.count > 0)
       {
-         getSrcMsg = { getSrcMsg.count, 0, new DisplaySrcId[getSrcMsg.count] };
+         std::vector<DisplaySrcId> sources(getSrcMsg.count);
+         getSrcMsg = { (unsigned int)sources.size(), 0, sources.data() };
          msgApi->BroadcastMsg(endpointId, getDisplaySrcId, &getSrcMsg);
          for (unsigned int i = 0; i < getSrcMsg.count; i++)
          {
@@ -237,15 +247,15 @@ static void OnDmdSrcChanged(const unsigned int, void* userData, void* msgData)
    {
       std::unique_lock lock(sourceMutex);
       dmdSrc = selectedSrc;
+      upscalerMode = nextUpscalerMode;
       if (IsSourceSelected())
       {
-
          displayId = {
             .id = { { endpointId, 0 } },
             .groupId = { { endpointId, 0 } },
-            .overrideId = { { 0, 0 } },
-            .width = dmdSrc.width * scaleFactors[upscaleModeProp.intDef.val],
-            .height = dmdSrc.height * scaleFactors[upscaleModeProp.intDef.val],
+            .overrideId = selectedSrc.overrideId.id == 0 ? selectedSrc.id : selectedSrc.overrideId,
+            .width = dmdSrc.width * scaleFactors[upscalerMode],
+            .height = dmdSrc.height * scaleFactors[upscalerMode],
             .hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN,
             .frameFormat = CTLPI_DISPLAY_FORMAT_SRGB888,
             .GetRenderFrame = &GetRenderFrame,
@@ -278,8 +288,8 @@ static void OnDmdSrcChanged(const unsigned int, void* userData, void* msgData)
       }
    }
 
-   // If we are starting or stopping rendering, report it
-   if (wasRendering != IsSourceSelected())
+   // If we are starting or stopping rendering, or changed our display, report it
+   if (modeChanged || wasRendering != IsSourceSelected())
       msgApi->BroadcastMsg(endpointId, onDisplaySrcChangedId, nullptr);
 }
 

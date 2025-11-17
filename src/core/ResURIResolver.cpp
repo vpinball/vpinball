@@ -335,8 +335,10 @@ ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
                || (dsSize == sSize && displaySource->frameFormat != source.frameFormat && source.frameFormat == CTLPI_DISPLAY_FORMAT_SRGB888)
                // Priority 5: Favor the first source provided by an endpoint
                || (dsSize == sSize && displaySource->frameFormat == source.frameFormat && displaySource->id.resId > source.id.resId))
+            {
                displaySource = &source;
-            dsSize = sSize;
+               dsSize = sSize;
+            }
          }
       }
       else
@@ -350,7 +352,7 @@ ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
                try_parse_int(resIdPart->second, resId);
 
             auto source = std::ranges::find_if(m_displaySources.begin(), m_displaySources.end(), 
-               [plugin, resId](const DisplaySrcId &cd) { return cd.id.endpointId == plugin && cd.id.resId == resId; });
+               [plugin, resId](const DisplaySrcId &cd) { return cd.id.endpointId == plugin && (cd.id.resId == resId || cd.overrideId.resId == resId); });
             if (source != m_displaySources.end())
                displaySource = &*source;
          }

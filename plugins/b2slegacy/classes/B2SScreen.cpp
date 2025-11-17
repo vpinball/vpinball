@@ -14,16 +14,16 @@
 
 namespace B2SLegacy {
 
-MSGPI_INT_SETTING(backglassWidthProp, "B2SBackglassWidth", "B2SBackglassWidth", "", true, 0, 16384, 1024);
-MSGPI_INT_SETTING(backglassHeightProp, "B2SBackglassHeight", "B2SBackglassHeight", "", true, 0, 16384, 768);
-MSGPI_INT_SETTING(backglassXProp, "BackglassX", "BackglassX", "", true, 0, 16384, 0);
-MSGPI_INT_SETTING(backglassYProp, "BackglassY", "BackglassY", "", true, 0, 16384, 0);
+MSGPI_INT_VAL_SETTING(backglassWidthProp, "B2SBackglassWidth", "B2SBackglassWidth", "", true, 0, 16384, 1024);
+MSGPI_INT_VAL_SETTING(backglassHeightProp, "B2SBackglassHeight", "B2SBackglassHeight", "", true, 0, 16384, 768);
+MSGPI_INT_VAL_SETTING(backglassXProp, "BackglassX", "BackglassX", "", true, 0, 16384, 0);
+MSGPI_INT_VAL_SETTING(backglassYProp, "BackglassY", "BackglassY", "", true, 0, 16384, 0);
 
-MSGPI_INT_SETTING(dmdWidthProp, "B2SDMDWidth", "B2SDMDWidth", "", true, 0, 16384, 512);
-MSGPI_INT_SETTING(dmdHeightProp, "B2SDMDHeight", "B2SDMDHeight", "", true, 0, 16384, 128);
-MSGPI_INT_SETTING(dmdXProp, "DMDX", "DMDX", "", true, 0, 16384, 0);
-MSGPI_INT_SETTING(dmdYProp, "DMDY", "DMDY", "", true, 0, 16384, 0);
-MSGPI_BOOL_SETTING(dmdFlipYProp, "B2SDMDFlipY", "B2SDMDFlipY", "", true, false);
+MSGPI_INT_VAL_SETTING(dmdWidthProp, "B2SDMDWidth", "B2SDMDWidth", "", true, 0, 16384, 512);
+MSGPI_INT_VAL_SETTING(dmdHeightProp, "B2SDMDHeight", "B2SDMDHeight", "", true, 0, 16384, 128);
+MSGPI_INT_VAL_SETTING(dmdXProp, "DMDX", "DMDX", "", true, 0, 16384, 0);
+MSGPI_INT_VAL_SETTING(dmdYProp, "DMDY", "DMDY", "", true, 0, 16384, 0);
+MSGPI_BOOL_VAL_SETTING(dmdFlipYProp, "B2SDMDFlipY", "B2SDMDFlipY", "", true, false);
 
 B2SScreen::B2SScreen(B2SData* pB2SData, MsgPluginAPI* msgApi, VPXPluginAPI* vpxApi, unsigned int endpointId)
    : m_pB2SData(pB2SData),
@@ -99,8 +99,8 @@ void B2SScreen::ReadB2SSettingsFromFile()
    m_msgApi->RegisterSetting(m_endpointId, &backglassXProp);
    m_msgApi->RegisterSetting(m_endpointId, &backglassYProp);
 
-   m_backglassSize = { 0, 0, backglassWidthProp.intDef.val, backglassHeightProp.intDef.val };
-   m_backglassLocation = { backglassXProp.intDef.val, backglassYProp.intDef.val };
+   m_backglassSize = { 0, 0, backglassWidthProp_Val, backglassHeightProp_Val };
+   m_backglassLocation = { backglassXProp_Val, backglassYProp_Val };
 
    m_msgApi->RegisterSetting(m_endpointId, &dmdWidthProp);
    m_msgApi->RegisterSetting(m_endpointId, &dmdHeightProp);
@@ -108,10 +108,10 @@ void B2SScreen::ReadB2SSettingsFromFile()
    m_msgApi->RegisterSetting(m_endpointId, &dmdYProp);
    m_msgApi->RegisterSetting(m_endpointId, &dmdFlipYProp);
 
-   m_dmdSize = { 0, 0, dmdWidthProp.intDef.val, dmdHeightProp.intDef.val };
-   m_dmdLocation = { dmdXProp.intDef.val, dmdYProp.intDef.val };
+   m_dmdSize = { 0, 0, dmdWidthProp_Val, dmdHeightProp_Val };
+   m_dmdLocation = { dmdXProp_Val, dmdYProp_Val };
 
-   m_dmdFlipY = dmdFlipYProp.boolDef.val;
+   m_dmdFlipY = dmdFlipYProp_Val;
 }
 
 void B2SScreen::GetB2SSettings(SDL_Point defaultDMDLocation, eDMDViewMode dmdViewMode, int backglassGrillHeight, int backglassSmallGrillHeight)

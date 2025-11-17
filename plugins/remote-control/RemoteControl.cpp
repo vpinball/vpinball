@@ -256,9 +256,9 @@ enum class ConnectionState
 ConnectionState connectionState = ConnectionState::Unconnected;
 
 const char* runModeLiterals[] = { "Controller", "Player" };
-MSGPI_ENUM_SETTING(runModeProp, "RunMode", "Mode", "Select between Controller and Player mode", true, 1, 2, runModeLiterals, 1);
-MSGPI_INT_SETTING(portProp, "Port", "Port", "", true, 0, 0xFFFF, 0);
-MSGPI_STRING_SETTING(hostProp, "Host", "Host", "", true, "", 1024);
+MSGPI_ENUM_VAL_SETTING(runModeProp, "RunMode", "Mode", "Select between Controller and Player mode", true, 1, 2, runModeLiterals, 1);
+MSGPI_INT_VAL_SETTING(portProp, "Port", "Port", "", true, 0, 0xFFFF, 0);
+MSGPI_STRING_VAL_SETTING(hostProp, "Host", "Host", "", true, "", 1024);
 
 
 void onPrepareFrame(const unsigned int eventId, void* userData, void* eventData)
@@ -334,15 +334,15 @@ void onPlayerUpdatePhysics(const unsigned int eventId, void* userData, void* eve
 void onGameStart(const unsigned int eventId, void* userData, void* eventData)
 {
    lastState.timestamp = 0;
-   if (runModeProp.intDef.val == 1)
+   if (runModeProp_Val == 1)
    {
       runMode = RunMode::RunModeController;
-      LOGI("RemoteControl plugin started as controller (client mode, server ip is %s:%d)", hostProp.stringDef.val, portProp.intDef.val);
+      LOGI("RemoteControl plugin started as controller (client mode, server ip is %s:%d)", hostProp_Get(), portProp_Val);
       udpThread = std::thread([]()
          {
             using namespace std::literals;
             StateMsg stateMsg;
-            UdpClientSocket client(hostProp.stringDef.val, portProp.intDef.val, 500);
+            UdpClientSocket client(hostProp_Get(), portProp_Val, 500);
             auto start = std::chrono::high_resolution_clock::now();
             while (runMode != RunMode::RunModeNone)
             {
@@ -389,14 +389,14 @@ void onGameStart(const unsigned int eventId, void* userData, void* eventData)
       float newNudgeX, newNudgeY, newPlunger;
       // FIXME vpxApi->GetInputState(&actionState, &newNudgeX, &newNudgeY, &newPlunger);
    }
-   else if (runModeProp.intDef.val == 2)
+   else if (runModeProp_Val == 2)
    {
       runMode = RunMode::RunModePlayer;
-      LOGI("RemoteControl plugin started as player (server mode, using port: %d)", portProp.intDef.val);
+      LOGI("RemoteControl plugin started as player (server mode, using port: %d)", portProp_Val);
       udpThread = std::thread([]()
          {
             StateMsg stateMsg;
-            UdpServerSocket server(portProp.intDef.val, 500);
+            UdpServerSocket server(portProp_Val, 500);
             while (runMode != RunMode::RunModeNone)
             {
                int rcv = 0;
