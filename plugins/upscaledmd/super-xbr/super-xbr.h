@@ -28,6 +28,8 @@ THE SOFTWARE.
 
 #pragma once
 
+#include <cmath>
+
 namespace superxbr
 {
 

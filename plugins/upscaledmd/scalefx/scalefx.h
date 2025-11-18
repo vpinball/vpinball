@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <cmath>
+
 namespace scalefx
 {
 
