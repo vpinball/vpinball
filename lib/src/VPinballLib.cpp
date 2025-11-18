@@ -43,6 +43,8 @@ MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, const MsgPl
 MSGPI_EXPORT void MSGPIAPI SerumPluginUnload();
 MSGPI_EXPORT void MSGPIAPI WMPPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
 MSGPI_EXPORT void MSGPIAPI WMPPluginUnload();
+MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginUnload();
 
 #ifdef __APPLE__
 #include "VPinballLib_iOS.h"
@@ -322,7 +324,8 @@ void VPinballLib::LoadPlugins()
       { "PUP",           &PUPPluginLoad,           &PUPPluginUnload           },
       { "RemoteControl", &RemoteControlPluginLoad, &RemoteControlPluginUnload },
       { "Serum",         &SerumPluginLoad,         &SerumPluginUnload         },
-      { "WMP",           &WMPPluginLoad,           &WMPPluginUnload           }
+      { "WMP",           &WMPPluginLoad,           &WMPPluginUnload           },
+      { "UpscaleDMD",    &UpscaleDMDPluginLoad,    &UpscaleDMDPluginUnload    }
    };
 
    for (size_t i = 0; i < std::size(plugins); ++i) {
