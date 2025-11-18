@@ -1,6 +1,6 @@
 --- /Users/jmillard/vpx/wine/include/winternl.h
 +++ /Users/jmillard/vpx/vpinball/standalone/inc/wine/include/winternl.h
-@@ -21,7 +21,16 @@
+@@ -21,7 +21,22 @@
  #ifndef __WINE_WINTERNL_H
  #define __WINE_WINTERNL_H
  
@@ -9,6 +9,12 @@
 +typedef void* RTL_RB_TREE;
 +typedef void* RTL_BALANCED_NODE;
 +typedef void* TIMER_TYPE;
++
++typedef enum _WAIT_TYPE {
++    WaitAll,
++    WaitAny,
++    WaitNotification
++} WAIT_TYPE;
 +#endif
 +
 +#ifndef __STANDALONE__
@@ -19,12 +25,14 @@
  #ifdef __cplusplus
 --- /Users/jmillard/vpx/wine/include/winnt.h
 +++ /Users/jmillard/vpx/vpinball/standalone/inc/wine/include/winnt.h
-@@ -401,10 +401,14 @@
+@@ -401,12 +401,16 @@
  
  /* Compile time assertion */
  
 +#ifndef __STANDALONE__
- #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
+ #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 202311L)
+ #define C_ASSERT(e) static_assert(e, #e)
+ #elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
  #define C_ASSERT(e) _Static_assert(e, #e)
  #else
  #define C_ASSERT(e) extern void __C_ASSERT__(int [(e)?1:-1])
@@ -34,7 +42,7 @@
  #endif
  
  /* Eliminate Microsoft C/C++ compiler warning 4715 */
-@@ -2444,6 +2448,7 @@
+@@ -2475,6 +2479,7 @@
  
  struct _TEB;
  
@@ -42,7 +50,7 @@
  #ifdef WINE_UNIX_LIB
  # ifdef __GNUC__
  NTSYSAPI struct _TEB * WINAPI NtCurrentTeb(void) __attribute__((pure));
-@@ -2504,6 +2509,13 @@
+@@ -2535,6 +2540,13 @@
  }
  #elif !defined(RC_INVOKED)
  # error You must define NtCurrentTeb() for your architecture
@@ -385,7 +393,7 @@
 \ No newline at end of file
 --- /Users/jmillard/vpx/wine/dlls/scrrun/filesystem.c
 +++ /Users/jmillard/vpx/vpinball/standalone/inc/wine/dlls/scrrun/filesystem.c
-@@ -349,8 +349,13 @@
+@@ -350,8 +350,13 @@
      return get_typeinfo(ITextStream_tid, ppTInfo);
  }
  
@@ -399,7 +407,7 @@
                                          LCID lcid, DISPID *rgDispId)
  {
      ITypeInfo *typeinfo;
-@@ -367,7 +372,14 @@
+@@ -368,7 +373,14 @@
  
      return hr;
  }
@@ -414,7 +422,7 @@
  static HRESULT WINAPI textstream_Invoke(ITextStream *iface, DISPID dispIdMember,
                                        REFIID riid, LCID lcid, WORD wFlags,
                                        DISPPARAMS *pDispParams, VARIANT *pVarResult,
-@@ -389,6 +401,7 @@
+@@ -390,6 +402,7 @@
  
      return hr;
  }
@@ -422,7 +430,7 @@
  
  static HRESULT WINAPI textstream_get_Line(ITextStream *iface, LONG *line)
  {
-@@ -1052,8 +1065,13 @@
+@@ -1053,8 +1066,13 @@
      return get_typeinfo(IDrive_tid, ppTInfo);
  }
  
@@ -436,7 +444,7 @@
                                          LCID lcid, DISPID *rgDispId)
  {
      ITypeInfo *typeinfo;
-@@ -1070,10 +1088,17 @@
+@@ -1071,10 +1089,17 @@
  
      return hr;
  }
@@ -454,7 +462,7 @@
                                        EXCEPINFO *pExcepInfo, UINT *puArgErr)
  {
      ITypeInfo *typeinfo;
-@@ -1092,6 +1117,7 @@
+@@ -1093,6 +1118,7 @@
  
      return hr;
  }
@@ -462,7 +470,7 @@
  
  static HRESULT WINAPI drive_get_Path(IDrive *iface, BSTR *path)
  {
-@@ -1885,8 +1911,13 @@
+@@ -1886,8 +1912,13 @@
      return get_typeinfo(IFolderCollection_tid, ppTInfo);
  }
  
@@ -476,7 +484,7 @@
                                          LCID lcid, DISPID *rgDispId)
  {
      ITypeInfo *typeinfo;
-@@ -1903,10 +1934,17 @@
+@@ -1904,10 +1935,17 @@
  
      return hr;
  }
@@ -494,7 +502,7 @@
                                        EXCEPINFO *pExcepInfo, UINT *puArgErr)
  {
      ITypeInfo *typeinfo;
-@@ -1925,6 +1963,7 @@
+@@ -1926,6 +1964,7 @@
  
      return hr;
  }
@@ -502,7 +510,7 @@
  
  static HRESULT WINAPI foldercoll_Add(IFolderCollection *iface, BSTR name, IFolder **folder)
  {
-@@ -2087,6 +2126,11 @@
+@@ -2088,6 +2127,11 @@
      return get_typeinfo(IFileCollection_tid, ppTInfo);
  }
  
@@ -514,7 +522,7 @@
  static HRESULT WINAPI filecoll_GetIDsOfNames(IFileCollection *iface, REFIID riid,
                                          LPOLESTR *rgszNames, UINT cNames,
                                          LCID lcid, DISPID *rgDispId)
-@@ -2105,10 +2149,17 @@
+@@ -2106,10 +2150,17 @@
  
      return hr;
  }
@@ -532,7 +540,7 @@
                                        EXCEPINFO *pExcepInfo, UINT *puArgErr)
  {
      ITypeInfo *typeinfo;
-@@ -2127,6 +2178,7 @@
+@@ -2128,6 +2179,7 @@
  
      return hr;
  }
@@ -540,7 +548,7 @@
  
  static HRESULT WINAPI filecoll_get_Item(IFileCollection *iface, VARIANT Key, IFile **file)
  {
-@@ -2277,8 +2329,13 @@
+@@ -2278,8 +2330,13 @@
      return get_typeinfo(IDriveCollection_tid, ppTInfo);
  }
  
@@ -554,7 +562,7 @@
                                          LCID lcid, DISPID *rgDispId)
  {
      ITypeInfo *typeinfo;
-@@ -2295,10 +2352,17 @@
+@@ -2296,10 +2353,17 @@
  
      return hr;
  }
@@ -572,7 +580,7 @@
                                        EXCEPINFO *pExcepInfo, UINT *puArgErr)
  {
      ITypeInfo *typeinfo;
-@@ -2317,6 +2381,7 @@
+@@ -2318,6 +2382,7 @@
  
      return hr;
  }
@@ -580,7 +588,7 @@
  
  static HRESULT WINAPI drivecoll_get_Item(IDriveCollection *iface, VARIANT key, IDrive **drive)
  {
-@@ -2451,6 +2516,11 @@
+@@ -2452,6 +2517,11 @@
      return get_typeinfo(IFolder_tid, ppTInfo);
  }
  
@@ -592,7 +600,7 @@
  static HRESULT WINAPI folder_GetIDsOfNames(IFolder *iface, REFIID riid,
                                          LPOLESTR *rgszNames, UINT cNames,
                                          LCID lcid, DISPID *rgDispId)
-@@ -2469,7 +2539,14 @@
+@@ -2470,7 +2540,14 @@
  
      return hr;
  }
@@ -607,7 +615,7 @@
  static HRESULT WINAPI folder_Invoke(IFolder *iface, DISPID dispIdMember,
                                        REFIID riid, LCID lcid, WORD wFlags,
                                        DISPPARAMS *pDispParams, VARIANT *pVarResult,
-@@ -2491,6 +2568,7 @@
+@@ -2492,6 +2569,7 @@
  
      return hr;
  }
@@ -615,7 +623,7 @@
  
  static HRESULT WINAPI folder_get_Path(IFolder *iface, BSTR *path)
  {
-@@ -2828,6 +2906,10 @@
+@@ -2829,6 +2907,10 @@
      return get_typeinfo(IFile_tid, ppTInfo);
  }
  
@@ -626,7 +634,7 @@
  static HRESULT WINAPI file_GetIDsOfNames(IFile *iface, REFIID riid,
          LPOLESTR *rgszNames, UINT cNames, LCID lcid, DISPID *rgDispId)
  {
-@@ -2844,8 +2926,13 @@
+@@ -2845,8 +2927,13 @@
      }
      return hr;
  }
@@ -640,7 +648,7 @@
          DISPPARAMS *pDispParams, VARIANT *pVarResult, EXCEPINFO *pExcepInfo, UINT *puArgErr)
  {
      ITypeInfo *typeinfo;
-@@ -2863,6 +2950,7 @@
+@@ -2864,6 +2951,7 @@
      }
      return hr;
  }
@@ -648,7 +656,7 @@
  
  static HRESULT WINAPI file_get_Path(IFile *iface, BSTR *path)
  {
-@@ -3223,6 +3311,11 @@
+@@ -3224,6 +3312,11 @@
      return get_typeinfo(IFileSystem3_tid, ppTInfo);
  }
  
@@ -660,7 +668,7 @@
  static HRESULT WINAPI filesys_GetIDsOfNames(IFileSystem3 *iface, REFIID riid,
                                          LPOLESTR *rgszNames, UINT cNames,
                                          LCID lcid, DISPID *rgDispId)
-@@ -3241,7 +3334,14 @@
+@@ -3242,7 +3335,14 @@
  
      return hr;
  }
@@ -675,7 +683,7 @@
  static HRESULT WINAPI filesys_Invoke(IFileSystem3 *iface, DISPID dispIdMember,
                                        REFIID riid, LCID lcid, WORD wFlags,
                                        DISPPARAMS *pDispParams, VARIANT *pVarResult,
-@@ -3263,6 +3363,7 @@
+@@ -3264,6 +3364,7 @@
  
      return hr;
  }
@@ -683,7 +691,7 @@
  
  static HRESULT WINAPI filesys_get_Drives(IFileSystem3 *iface, IDriveCollection **ppdrives)
  {
-@@ -4187,3 +4288,7 @@
+@@ -4262,3 +4363,7 @@
      init_classinfo(&CLSID_FileSystemObject, (IUnknown *)&filesystem.IFileSystem3_iface, &filesystem.classinfo);
      return IFileSystem3_QueryInterface(&filesystem.IFileSystem3_iface, riid, ppv);
  }
@@ -721,25 +729,26 @@
          member_expr = (member_expression_t*)call_expr->call_expr;
          break;
      default:
-@@ -1898,14 +1900,22 @@
+@@ -1897,15 +1899,23 @@
+ 
      for(i = 0; i < var_cnt; i++) {
          if(lookup_script_identifier(ctx, script, vars[i].name)) {
-             FIXME("%s: redefined\n", debugstr_w(vars[i].name));
 +#ifndef __STANDALONE__
+             FIXME("%s: redefined\n", debugstr_w(vars[i].name));
              return E_FAIL;
 +#else
-+        external_log_info("%s redefined", debugstr_w(vars[i].name));
++            external_log_info("%s redefined", debugstr_w(vars[i].name));
 +#endif
          }
      }
  
      for(class = ctx->code->classes; class; class = class->next) {
          if(lookup_script_identifier(ctx, script, class->name)) {
-             FIXME("%s: redefined\n", debugstr_w(class->name));
 +#ifndef __STANDALONE__
+             FIXME("%s: redefined\n", debugstr_w(class->name));
              return E_FAIL;
 +#else
-+        external_log_info("%s redefined", debugstr_w(class->name));
++            external_log_info("%s redefined", debugstr_w(class->name));
 +#endif
          }
      }
@@ -1162,10 +1171,12 @@
              IDispatch_AddRef(ref.u.obj);
              V_VT(res) = VT_DISPATCH;
              V_DISPATCH(res) = ref.u.obj;
-@@ -809,6 +833,34 @@
-     return stack_push(ctx, &v);
- }
+@@ -807,8 +831,36 @@
+         return hres;
  
+     return stack_push(ctx, &v);
++}
++
 +#ifdef __STANDALONE__
 +HRESULT assign_value_script_ctx(script_ctx_t *ctx, VARIANT *dst, VARIANT *src, WORD flags)
 +{
@@ -1186,8 +1197,8 @@
 +            IDispatch_Release(disp);
 +        if(FAILED(hres))
 +            return hres;
-+    }
-+
+ }
+ 
 +    VariantClear(dst);
 +    *dst = value;
 +    return S_OK;
@@ -1197,21 +1208,7 @@
  static HRESULT assign_value(exec_ctx_t *ctx, VARIANT *dst, VARIANT *src, WORD flags)
  {
      VARIANT value;
-@@ -1317,8 +1369,13 @@
-     }
- 
-     if(ref.type != REF_VAR) {
-+#ifndef __STANDALONE__
-         FIXME("got ref.type = %d\n", ref.type);
-         return E_FAIL;
-+#else
-+        ref.type = REF_VAR;
-+        hres = add_dynamic_var(ctx, identifier, FALSE, &ref.u.v);
-+#endif
-     }
- 
-     v = ref.u.v;
-@@ -1327,11 +1384,13 @@
+@@ -1331,11 +1383,13 @@
          v = V_VARIANTREF(v);
      }
  
@@ -1225,7 +1222,7 @@
  
      hres = array_bounds_from_stack(ctx, dim_cnt, &bounds);
      if(FAILED(hres))
-@@ -1664,6 +1723,20 @@
+@@ -1668,6 +1722,20 @@
      }else {
          named_item_t *item;
          disp = NULL;
@@ -1246,6 +1243,60 @@
          LIST_FOR_EACH_ENTRY(item, &ctx->script->named_items, named_item_t, entry) {
              if(!(item->flags & SCRIPTITEM_GLOBALMEMBERS)) continue;
              disp = item->disp;
+@@ -1945,8 +2013,53 @@
+ {
+     TRACE("%s %s\n", debugstr_variant(l), debugstr_variant(r));
+ 
++#ifndef __STANDALONE__
+     /* FIXME: Fix comparing string to number */
++#else
++    VARTYPE lvt, rvt;
++    VARIANT left, right;
++    HRESULT hres;
++
++    lvt = V_VT(l) & VT_TYPEMASK;
++    rvt = V_VT(r) & VT_TYPEMASK;
++
++    if((lvt == VT_BSTR && (rvt == VT_I1 || rvt == VT_I2 || rvt == VT_I4 || rvt == VT_I8 ||
++                           rvt == VT_UI1 || rvt == VT_UI2 || rvt == VT_UI4 || rvt == VT_UI8 ||
++                           rvt == VT_R4 || rvt == VT_R8 || rvt == VT_CY || rvt == VT_DECIMAL ||
++                           rvt == VT_BOOL || rvt == VT_DATE || rvt == VT_INT || rvt == VT_UINT)) ||
++       (rvt == VT_BSTR && (lvt == VT_I1 || lvt == VT_I2 || lvt == VT_I4 || lvt == VT_I8 ||
++                           lvt == VT_UI1 || lvt == VT_UI2 || lvt == VT_UI4 || lvt == VT_UI8 ||
++                           lvt == VT_R4 || lvt == VT_R8 || lvt == VT_CY || lvt == VT_DECIMAL ||
++                           lvt == VT_BOOL || lvt == VT_DATE || lvt == VT_INT || lvt == VT_UINT))) {
++        V_VT(&left) = VT_EMPTY;
++        hres = VariantCopy(&left, l);
++        if(FAILED(hres))
++            return hres;
+ 
++        V_VT(&right) = VT_EMPTY;
++        hres = VariantCopy(&right, r);
++        if(FAILED(hres)) {
++            VariantClear(&left);
++            return hres;
++        }
++
++        /* By setting VT_RESERVED on only the numeric operand when comparing string-to-number,
++           trigger VarCmp's path that attempts to convert the string to a number for numeric comparison,
++           which succeeds for valid numeric strings like "123" but fails with a type mismatch error
++           for empty "" or invalid strings like "abc". */
++
++        if(lvt == VT_BSTR)
++            V_VT(&right) |= VT_RESERVED;
++        else
++            V_VT(&left) |= VT_RESERVED;
++
++        hres = VarCmp(&left, &right, ctx->script->lcid, 0);
++        VariantClear(&left);
++        VariantClear(&right);
++        return hres;
++    }
++#endif
++
+     return VarCmp(l, r, ctx->script->lcid, 0);
+  }
+ 
 --- /Users/jmillard/vpx/wine/dlls/vbscript/vbscript.h
 +++ /Users/jmillard/vpx/vpinball/standalone/inc/wine/dlls/vbscript/vbscript.h
 @@ -32,6 +32,12 @@

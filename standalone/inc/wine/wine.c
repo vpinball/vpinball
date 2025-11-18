@@ -291,6 +291,11 @@ BOOL WINAPI HeapFree(HANDLE heap, ULONG flags, void *ptr)
    return TRUE;
 }
 
+HLOCAL WINAPI LocalFree(HLOCAL handle)
+{
+   return 0;
+}
+
 LPVOID WINAPI CoTaskMemAlloc(SIZE_T size)
 {
    return malloc(size);
@@ -1382,6 +1387,11 @@ BOOL WINAPI IsTextUnicode(const void *lpv, int iSize, LPINT lpiResult)
 }
 
 BOOL WINAPI MoveFileW(LPCWSTR lpExistingFileName, LPCWSTR lpNewFileName)
+{
+   return 0;
+}
+
+HRESULT WINAPI PathAllocCombine(const WCHAR *path1, const WCHAR *path2, DWORD flags, WCHAR **out)
 {
    return 0;
 }
