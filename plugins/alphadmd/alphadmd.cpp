@@ -73,7 +73,7 @@ static uint8_t identifyFrame[128*32] = {};
 static unsigned int identifyFrameId = 0;
 
 LPI_USE();
-LPI_IMPLEMENT // Implement shared login support
+LPI_IMPLEMENT // Implement shared log support
 
 typedef enum {
    Undefined,

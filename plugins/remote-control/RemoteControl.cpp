@@ -470,7 +470,7 @@ void onGameEnd(const unsigned int eventId, void* userData, void* eventData)
    stopThread();
 }
 
-LPI_IMPLEMENT // Implement shared login support
+LPI_IMPLEMENT // Implement shared log support
 
 }
 

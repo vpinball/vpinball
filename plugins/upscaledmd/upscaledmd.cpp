@@ -87,7 +87,7 @@ static void SetUpscalerMode(int v)
 MSGPI_ENUM_SETTING(upscaleModeProp, "UpscaleMode", "Mode", "Select upscaler", true, 0, std::size(scaleFactors), upscalerNames, 0, GetUpscalerMode, SetUpscalerMode);
 
 LPI_USE();
-LPI_IMPLEMENT // Implement shared login support
+LPI_IMPLEMENT // Implement shared log support
 
 
 #ifdef _WIN32
