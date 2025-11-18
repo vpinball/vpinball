@@ -166,7 +166,7 @@
       </Command>
     </PostBuildEvent>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)../../src/plugins</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../../src/plugins;$(SolutionDir)../../src;$(SolutionDir)../../third-party/include</AdditionalIncludeDirectories>
       <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Speed</FavorSizeOrSpeed>
       <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AnySuitable</InlineFunctionExpansion>
@@ -182,6 +182,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="../../plugins/upscaledmd/upscaledmd.cpp" />
+    <ClCompile Include="../../src/core/ResURIResolver.cpp" />
+    <ClCompile Include="../../plugins/upscaledmd/xbrz/xbrz.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="../../src/core/ResURIResolver.h" />
+    <ClInclude Include="../../plugins/upscaledmd/xbrz/xbrz.h" />
+    <ClInclude Include="../../plugins/upscaledmd/super-xbr/super-xbr.h" />
+    <ClInclude Include="../../plugins/upscaledmd/scalefx/scalefx.h" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="../../plugins/upscaledmd/plugin.cfg">

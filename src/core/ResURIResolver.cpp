@@ -4,6 +4,7 @@
 
 #include "simple-uri-parser/uri_parser.h"
 
+#include <assert.h>
 #include <sstream>
 #include <charconv>
 using std::string;
@@ -303,6 +304,12 @@ ResURIResolver::SegDisplayState ResURIResolver::GetSegDisplayState(const string 
    return lambda(link);
 }
 
+void ResURIResolver::SetDisplayFilter(std::function<bool(const DisplaySrcId& src)> filter)
+{
+   m_displayFilter = filter;
+   m_displayCache.clear();
+}
+
 ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
 {
    const auto &cache = m_displayCache.find(link);
@@ -318,11 +325,37 @@ ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
    else if ((uri.scheme == "ctrl") && (uri.path == "/display"))
    {
       DisplaySrcId* displaySource = nullptr;
+      bool walkDownOverrides = true;
       if (uri.authority.host == "default")
       {
          unsigned int dsSize = 0; 
          for (auto& source : m_displaySources)
          {
+            if (m_displayFilter)
+            {
+               // If this source is filtered out or override a filtered out source, then do not select it
+               bool filteredOut = !m_displayFilter(source);
+               uint64_t parentId = source.overrideId.id;
+               while (!filteredOut && parentId != 0)
+               {
+                  auto parentSource = std::ranges::find_if(m_displaySources.begin(), m_displaySources.end(), 
+                     [parentId](const DisplaySrcId &src) { return src.id.id == parentId; });
+                  if (parentSource != m_displaySources.end())
+                  {
+                     if (!m_displayFilter(*parentSource))
+                        filteredOut = true;
+                     else
+                        parentId = parentSource->overrideId.id;
+                  }
+                  else
+                  {
+                     assert(false); // Override is pointing to a missing parent, there is something wrong if we end up here
+                     parentId = 0;
+                  }
+               }
+               if (filteredOut)
+                  continue;
+            }
             const unsigned int sSize = source.width * source.height;
             if (
                // Priority 1: Find at least one display if any (size > 0)
@@ -343,6 +376,7 @@ ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
       }
       else
       {
+         // TODO allow to enable/disable overrides
          const unsigned int plugin = m_msgAPI.GetPluginEndpoint(uri.authority.host.c_str());
          if (plugin)
          {
@@ -352,11 +386,30 @@ ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
                try_parse_int(resIdPart->second, resId);
 
             auto source = std::ranges::find_if(m_displaySources.begin(), m_displaySources.end(), 
-               [plugin, resId](const DisplaySrcId &cd) { return cd.id.endpointId == plugin && (cd.id.resId == resId || cd.overrideId.resId == resId); });
+               [plugin, resId](const DisplaySrcId &cd) { return cd.id.endpointId == plugin && cd.id.resId == resId; });
             if (source != m_displaySources.end())
                displaySource = &*source;
          }
       }
+
+      // Select the tail of the override chain if any
+      while (walkDownOverrides && displaySource != nullptr)
+      {
+         walkDownOverrides = false;
+         // TODO handle situations where a source has multiple overrides (add a selection heuristic)
+         for (auto& source : m_displaySources)
+         {
+            if (m_displayFilter && !m_displayFilter(source))
+               continue;
+            if (source.overrideId.id == displaySource->id.id)
+            {
+               displaySource = &source;
+               walkDownOverrides = true;
+               break;
+            }
+         }
+      }
+
       if (displaySource != nullptr)
          lambda = [displaySource](const string &) -> DisplayState { return { displaySource, displaySource->GetRenderFrame(displaySource->id)}; };
    }
