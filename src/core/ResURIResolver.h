@@ -67,6 +67,7 @@ public:
       DisplayFrame state;
    };
    DisplayState GetDisplayState(const std::string &link);
+   void SetDisplayFilter(std::function<bool(const DisplaySrcId& src)> filter);
    
    struct SegDisplayState
    {
@@ -100,6 +101,7 @@ private:
    const unsigned int m_getDisplaySrcMsgId, m_onDisplayChangedMsgId;
    static void OnDisplaySrcChanged(const unsigned int msgId, void *userData, void *msgData);
    std::vector<DisplaySrcId> m_displaySources;
+   std::function<bool(const DisplaySrcId& src)> m_displayFilter;
 
    typedef std::function<DisplayState(const std::string &)> displayCacheLambda;
    ankerl::unordered_dense::map<std::string, displayCacheLambda> m_displayCache;

@@ -42,7 +42,7 @@ static inline float eq_col2(const uint32_t e1, const uint32_t e2) //!! test vs a
 
 static inline float eq_brightness(const uint32_t AD, const uint32_t BD)
 {
-    return 1.f - (float)abs((int)AD - (int)BD) * (float)(1.0 / 100.);
+    return 1.f - (float)abs((int)AD - (int)BD) * (float)(1.0 / 255.);
 }
 
 constexpr double SFX_CLR = 0.35;

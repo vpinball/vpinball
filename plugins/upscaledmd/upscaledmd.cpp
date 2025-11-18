@@ -17,11 +17,13 @@
 #include <pthread.h>
 #endif
 
-#include "xbrz/xbrz.cpp"
+#include "xbrz/xbrz.h"
 
 #include "super-xbr/super-xbr.h"
 
 #include "scalefx/scalefx.h"
+
+#include "core/ResURIResolver.h"
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -52,6 +54,7 @@ static unsigned int onDisplaySrcChangedId, getDisplaySrcId;
 
 static DisplaySrcId dmdSrc, displayId;
 
+static std::unique_ptr<ResURIResolver> resURIResolver;
 static std::mutex sourceMutex;
 static std::thread renderThread;
 static std::condition_variable updateCondVar;
@@ -135,11 +138,24 @@ static void RenderThread()
       {
          const unsigned int dmdSrcSize = dmdSrc.width * dmdSrc.height;
          if (dmdSrc.frameFormat == CTLPI_DISPLAY_FORMAT_LUM8)
-            for (unsigned int ofs = 0; ofs < dmdSrcSize; ++ofs)
+         {
+            if (displayId.frameFormat == CTLPI_DISPLAY_FORMAT_LUM8 && (upscalerMode == UpscalerMode::UM_ScaleFX_AA || upscalerMode == UpscalerMode::UM_ScaleFX_3x))
             {
-               const uint32_t lum = srcFrame.frame[ofs];
-               rgbaSrcFrame[ofs] = lum | (lum << 8) | (lum << 16) | 0xFF000000u;
+               for (unsigned int ofs = 0; ofs < dmdSrcSize; ++ofs)
+               {
+                  const uint32_t lum = srcFrame.frame[ofs];
+                  rgbaSrcFrame[ofs] = lum;
+               }
             }
+            else
+            {
+               for (unsigned int ofs = 0; ofs < dmdSrcSize; ++ofs)
+               {
+                  const uint32_t lum = srcFrame.frame[ofs];
+                  rgbaSrcFrame[ofs] = lum | (lum << 8) | (lum << 16) | 0xFF000000u;
+               }
+            }
+         }
          else if (dmdSrc.frameFormat == CTLPI_DISPLAY_FORMAT_SRGB888)
             for (unsigned int ofs = 0; ofs < dmdSrcSize; ++ofs)
             {
@@ -161,27 +177,45 @@ static void RenderThread()
                rgbaSrcFrame[ofs] = 0xFF000000u | ((uint32_t)lum32[rgb565 & 0x1F] << 16) | ((uint32_t)lum64[(rgb565 >> 5) & 0x3F] << 8) | (uint32_t)lum32[(rgb565 >> 11) & 0x1F];
             }
          }
-         if (upscalerMode >= UpscalerMode::UM_xBRZ_2x && upscalerMode <= UpscalerMode::UM_xBRZ_6x)
+         
+         switch (upscalerMode)
+         {
+         case UpscalerMode::UM_ScaleFX_AA:
+            scalefx::upscale<false>(rgbaSrcFrame.data(), rgbaDstFrame.data(), dmdSrc.width, dmdSrc.height, displayId.frameFormat == CTLPI_DISPLAY_FORMAT_LUM8);
+            break;
+            
+         case UpscalerMode::UM_ScaleFX_3x:
+            scalefx::upscale<true>(rgbaSrcFrame.data(), rgbaDstFrame.data(), dmdSrc.width, dmdSrc.height, displayId.frameFormat == CTLPI_DISPLAY_FORMAT_LUM8);
+            break;
+            
+         case UpscalerMode::UM_SuperXBR_2x:
+            superxbr::scale<2, false>(rgbaSrcFrame.data(), rgbaDstFrame.data(), dmdSrc.width, dmdSrc.height);
+            break;
+            
+         case UpscalerMode::UM_xBRZ_2x:
+         case UpscalerMode::UM_xBRZ_3x:
+         case UpscalerMode::UM_xBRZ_4x:
+         case UpscalerMode::UM_xBRZ_5x:
+         case UpscalerMode::UM_xBRZ_6x:
             xbrz::scale(scaleFactors[upscalerMode], rgbaSrcFrame.data(), rgbaDstFrame.data(), dmdSrc.width, dmdSrc.height, xbrz::ColorFormat::RGB);
-         else if (upscalerMode >= UpscalerMode::UM_ScaleFX_AA && upscalerMode <= UpscalerMode::UM_ScaleFX_3x)
-         {
-            if (upscalerMode == UpscalerMode::UM_ScaleFX_3x)
-               scalefx::upscale<true>(rgbaSrcFrame.data(), rgbaDstFrame.data(), dmdSrc.width, dmdSrc.height, false);
-            else
-               scalefx::upscale<false>(rgbaSrcFrame.data(), rgbaDstFrame.data(), dmdSrc.width, dmdSrc.height, false);
-         }
-         else if (upscalerMode == UpscalerMode::UM_SuperXBR_2x)
-         {
-            superxbr::scale<2,false>(rgbaSrcFrame.data(), rgbaDstFrame.data(), dmdSrc.width, dmdSrc.height);
+            break;
          }
 
          const unsigned int displaySize = displayId.width * displayId.height;
-         for (unsigned int ofs = 0; ofs < displaySize; ++ofs)
-         {
-            const uint32_t col = rgbaDstFrame[ofs];
-            renderFrame[ofs * 3 + 0] = col & 0xFFu;
-            renderFrame[ofs * 3 + 1] = (col >> 8) & 0xFFu;
-            renderFrame[ofs * 3 + 2] = (col >> 16) & 0xFFu;
+         if (displayId.frameFormat == CTLPI_DISPLAY_FORMAT_LUM8)
+         { // Lum8 in uint32_t -> Lum8 in uint8_t
+            for (unsigned int ofs = 0; ofs < displaySize; ++ofs)
+               renderFrame[ofs] = rgbaDstFrame[ofs] & 0xFFu;
+         }
+         else
+         { // RGBx -> RGB
+            for (unsigned int ofs = 0, dst = 0; ofs < displaySize; ++ofs, dst += 3)
+            {
+               const uint32_t col = rgbaDstFrame[ofs];
+               renderFrame[dst    ] =  col        & 0xFFu;
+               renderFrame[dst + 1] = (col >>  8) & 0xFFu;
+               renderFrame[dst + 2] = (col >> 16) & 0xFFu;
+            }
          }
          renderFrameId = srcFrame.frameId;
       }
@@ -211,36 +245,12 @@ static void OnDmdSrcChanged(const unsigned int, void*, void*)
    bool modeChanged = upscalerMode != nextUpscalerMode;
    DisplaySrcId selectedSrc {};
 
+   // Request new source (without locking the render thread)
    if (nextUpscalerMode != UpscalerMode::UM_Disabled)
    {
-      GetDisplaySrcMsg getSrcMsg = { 0, 0, nullptr };
-      msgApi->BroadcastMsg(endpointId, getDisplaySrcId, &getSrcMsg);
-      if (getSrcMsg.count > 0)
-      {
-         std::vector<DisplaySrcId> sources(getSrcMsg.count);
-         getSrcMsg = { (unsigned int)sources.size(), 0, sources.data() };
-         msgApi->BroadcastMsg(endpointId, getDisplaySrcId, &getSrcMsg);
-         for (unsigned int i = 0; i < getSrcMsg.count; i++)
-         {
-            if (getSrcMsg.entries[i].id.endpointId != endpointId)
-            {
-               const unsigned int sSize = getSrcMsg.entries[i].width * getSrcMsg.entries[i].height;
-               const unsigned int dsSize = selectedSrc.width * selectedSrc.height;
-               if (
-                  // Priority 1: Find at least one display if any (size > 0)
-                  selectedSrc.GetRenderFrame == nullptr
-                  // Priority 2: Favor the highest resolution display
-                  || (dsSize < sSize)
-                  // Priority 3: Favor color over monochrome
-                  || (dsSize == sSize && selectedSrc.frameFormat != getSrcMsg.entries[i].frameFormat && selectedSrc.frameFormat == CTLPI_DISPLAY_FORMAT_LUM8)
-                  // Priority 4: Favor RGB8 over other formats
-                  || (dsSize == sSize && selectedSrc.frameFormat != getSrcMsg.entries[i].frameFormat && getSrcMsg.entries[i].frameFormat == CTLPI_DISPLAY_FORMAT_SRGB888)
-                  // Priority 5: Favor the first source provided by an endpoint
-                  || (dsSize == sSize && selectedSrc.frameFormat == getSrcMsg.entries[i].frameFormat && selectedSrc.id.resId > getSrcMsg.entries[i].id.resId))
-                  selectedSrc = getSrcMsg.entries[i];
-            }
-         }
-      }
+      auto frame = resURIResolver->GetDisplayState("ctrl://default/display"s);
+      if (frame.source != nullptr)
+         selectedSrc = *frame.source;
    }
 
    // Setup new source and rendering
@@ -250,14 +260,15 @@ static void OnDmdSrcChanged(const unsigned int, void*, void*)
       upscalerMode = nextUpscalerMode;
       if (IsSourceSelected())
       {
+         // LPI_LOGI("DMD Upscaler source selected [endpointId=%d, %dx%d]", selectedSrc.id.endpointId, selectedSrc.width, selectedSrc.height);
          displayId = {
             .id = { { endpointId, 0 } },
             .groupId = { { endpointId, 0 } },
-            .overrideId = selectedSrc.overrideId.id == 0 ? selectedSrc.id : selectedSrc.overrideId,
+            .overrideId = selectedSrc.id,
             .width = dmdSrc.width * scaleFactors[upscalerMode],
             .height = dmdSrc.height * scaleFactors[upscalerMode],
             .hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN,
-            .frameFormat = CTLPI_DISPLAY_FORMAT_SRGB888,
+            .frameFormat = selectedSrc.frameFormat == CTLPI_DISPLAY_FORMAT_LUM8 ? CTLPI_DISPLAY_FORMAT_LUM8 : CTLPI_DISPLAY_FORMAT_SRGB888,
             .GetRenderFrame = &GetRenderFrame,
             .identifyFormat = CTLPI_DISPLAY_ID_FORMAT_BITPLANE2,
             .GetIdentifyFrame = nullptr //
@@ -265,7 +276,7 @@ static void OnDmdSrcChanged(const unsigned int, void*, void*)
          renderFrameId = 0;
          rgbaSrcFrame.resize(dmdSrc.width * dmdSrc.height);
          rgbaDstFrame.resize(displayId.width * displayId.height);
-         renderFrame.resize(displayId.width * displayId.height * 3);
+         renderFrame.resize(displayId.width * displayId.height * (selectedSrc.frameFormat == CTLPI_DISPLAY_FORMAT_LUM8 ? 1 : 3));
          memset(renderFrame.data(), 0, renderFrame.size());
       }
       if (wasRendering != IsSourceSelected())
@@ -301,6 +312,9 @@ MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginLoad(const uint32_t sessionId, const 
 {
    msgApi = api;
    endpointId = sessionId;
+   LPISetup(endpointId, api);
+   resURIResolver = std::make_unique<ResURIResolver>(*api, endpointId, true, false, false, false);
+   resURIResolver->SetDisplayFilter([](const DisplaySrcId& src){ return src.id.endpointId != endpointId; });
    onDisplaySrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
    getDisplaySrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
    msgApi->RegisterSetting(endpointId, &upscaleModeProp);
@@ -318,5 +332,6 @@ MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginUnload()
       renderThread.join();
    msgApi->ReleaseMsgID(onDisplaySrcChangedId);
    msgApi->ReleaseMsgID(getDisplaySrcId);
+   resURIResolver = nullptr;
    msgApi = nullptr;
 }

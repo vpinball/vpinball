@@ -160,13 +160,13 @@ typedef struct GetDevSrcMsg
 #define CTLPI_DISPLAY_GET_SRC_MSG                 "GetDisplays"
 
 // Render frame formats
-#define CTLPI_DISPLAY_FORMAT_LUM8                 1
-#define CTLPI_DISPLAY_FORMAT_SRGB888              2
-#define CTLPI_DISPLAY_FORMAT_SRGB565              3
+#define CTLPI_DISPLAY_FORMAT_LUM8                 1u
+#define CTLPI_DISPLAY_FORMAT_SRGB888              2u
+#define CTLPI_DISPLAY_FORMAT_SRGB565              3u
 
 // Identify frame formats
-#define CTLPI_DISPLAY_ID_FORMAT_BITPLANE2         1
-#define CTLPI_DISPLAY_ID_FORMAT_BITPLANE4         2
+#define CTLPI_DISPLAY_ID_FORMAT_BITPLANE2         1u
+#define CTLPI_DISPLAY_ID_FORMAT_BITPLANE4         2u
 
 // Hardware families & models
 #define CTLPI_DISPLAY_HARDWARE_FAMILY_MASK        0xFFFF0000

@@ -5,12 +5,18 @@
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
 
-set(ALPHADMD_PLUGIN_SOURCES
+set(UPSCALEDMD_PLUGIN_SOURCES
    plugins/upscaledmd/upscaledmd.cpp
+   plugins/upscaledmd/xbrz/xbrz.cpp
+   plugins/upscaledmd/xbrz/xbrz.h
+   plugins/upscaledmd/super-xbr/super-xbr.h
+   plugins/upscaledmd/scalefx/scalefx.h
+   src/core/ResURIResolver.h
+   src/core/ResURIResolver.cpp
 )
 
 if(BUILD_SHARED)
-   add_library(UpscaleDMDPlugin MODULE ${ALPHADMD_PLUGIN_SOURCES})
+   add_library(UpscaleDMDPlugin MODULE ${UPSCALEDMD_PLUGIN_SOURCES})
 
    target_include_directories(UpscaleDMDPlugin PUBLIC
       plugins/upscaledmd
@@ -80,7 +86,7 @@ endif()
 if(BUILD_STATIC)
    add_compile_options(-fPIC)
 
-   add_library(UpscaleDMDPlugin STATIC ${ALPHADMD_PLUGIN_SOURCES})
+   add_library(UpscaleDMDPlugin STATIC ${UPSCALEDMD_PLUGIN_SOURCES})
 
    target_include_directories(UpscaleDMDPlugin PUBLIC
       plugins/upscaledmd
