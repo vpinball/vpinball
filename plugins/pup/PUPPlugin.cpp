@@ -56,7 +56,7 @@ static unsigned int onPinMAMEGameStartId, onGameEndId;
 // through script interface. The script interface gives access to this context even when it has been created due to PinMAME.
 static std::unique_ptr<PUPManager> pupManager;
 
-LPI_IMPLEMENT // Implement shared login support
+LPI_IMPLEMENT // Implement shared log support
 
 MSGPI_STRING_VAL_SETTING(pupPathProp, "PUPFolder", "PinUp Player Folder", "", true, "", 1024);
 

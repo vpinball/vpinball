@@ -12,7 +12,7 @@
 
 namespace B2S {
    
-LPI_IMPLEMENT // Implement shared login support
+LPI_IMPLEMENT // Implement shared log support
 
 ///////////////////////////////////////////////////////////////////////////////
 // B2S plugin

@@ -566,7 +566,7 @@ static void onGetRenderDMDSrc(const unsigned int eventId, void* userData, void* 
 
 PSC_ERROR_IMPLEMENT(scriptApi); // Implement script error
 
-LPI_IMPLEMENT // Implement shared login support
+LPI_IMPLEMENT // Implement shared log support
 
 static void OnShowChanged(FlexDMD* pFlexI)
 {
