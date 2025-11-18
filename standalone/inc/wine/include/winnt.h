@@ -402,7 +402,9 @@ extern "C" {
 /* Compile time assertion */
 
 #ifndef __STANDALONE__
-#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
+#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 202311L)
+#define C_ASSERT(e) static_assert(e, #e)
+#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
 #define C_ASSERT(e) _Static_assert(e, #e)
 #else
 #define C_ASSERT(e) extern void __C_ASSERT__(int [(e)?1:-1])
@@ -736,10 +738,11 @@ typedef DWORD FLONG;
 #define PROCESSOR_OPTIL          18767
 
 #ifdef _WIN64
-#define MAXIMUM_PROCESSORS       64
+#define MAXIMUM_PROC_PER_GROUP   64
 #else
-#define MAXIMUM_PROCESSORS       32
+#define MAXIMUM_PROC_PER_GROUP   32
 #endif
+#define MAXIMUM_PROCESSORS       MAXIMUM_PROC_PER_GROUP
 
 typedef struct _MEMORY_BASIC_INFORMATION
 {
@@ -1054,67 +1057,95 @@ typedef enum _HEAP_INFORMATION_CLASS {
 } HEAP_INFORMATION_CLASS;
 
 /* Processor feature flags.  */
-#define PF_FLOATING_POINT_PRECISION_ERRATA	0
-#define PF_FLOATING_POINT_EMULATED		1
-#define PF_COMPARE_EXCHANGE_DOUBLE		2
-#define PF_MMX_INSTRUCTIONS_AVAILABLE		3
-#define PF_PPC_MOVEMEM_64BIT_OK			4
-#define PF_ALPHA_BYTE_INSTRUCTIONS		5
-#define PF_XMMI_INSTRUCTIONS_AVAILABLE		6
-#define PF_3DNOW_INSTRUCTIONS_AVAILABLE		7
-#define PF_RDTSC_INSTRUCTION_AVAILABLE		8
-#define PF_PAE_ENABLED				9
-#define PF_XMMI64_INSTRUCTIONS_AVAILABLE	10
-#define PF_SSE_DAZ_MODE_AVAILABLE		11
-#define PF_NX_ENABLED				12
-#define PF_SSE3_INSTRUCTIONS_AVAILABLE		13
-#define PF_COMPARE_EXCHANGE128			14
-#define PF_COMPARE64_EXCHANGE128		15
-#define PF_CHANNELS_ENABLED			16
-#define PF_XSAVE_ENABLED			17
-#define PF_ARM_VFP_32_REGISTERS_AVAILABLE       18
-#define PF_ARM_NEON_INSTRUCTIONS_AVAILABLE      19
-#define PF_SECOND_LEVEL_ADDRESS_TRANSLATION     20
-#define PF_VIRT_FIRMWARE_ENABLED                21
-#define PF_RDWRFSGSBASE_AVAILABLE               22
-#define PF_FASTFAIL_AVAILABLE                   23
-#define PF_ARM_DIVIDE_INSTRUCTION_AVAILABLE     24
-#define PF_ARM_64BIT_LOADSTORE_ATOMIC           25
-#define PF_ARM_EXTERNAL_CACHE_AVAILABLE         26
-#define PF_ARM_FMAC_INSTRUCTIONS_AVAILABLE      27
-#define PF_RDRAND_INSTRUCTION_AVAILABLE         28
-#define PF_ARM_V8_INSTRUCTIONS_AVAILABLE        29
-#define PF_ARM_V8_CRYPTO_INSTRUCTIONS_AVAILABLE 30
-#define PF_ARM_V8_CRC32_INSTRUCTIONS_AVAILABLE  31
-#define PF_RDTSCP_INSTRUCTION_AVAILABLE         32
-#define PF_RDPID_INSTRUCTION_AVAILABLE          33
-#define PF_ARM_V81_ATOMIC_INSTRUCTIONS_AVAILABLE 34
-#define PF_MONITORX_INSTRUCTION_AVAILABLE       35
-#define PF_SSSE3_INSTRUCTIONS_AVAILABLE         36
-#define PF_SSE4_1_INSTRUCTIONS_AVAILABLE        37
-#define PF_SSE4_2_INSTRUCTIONS_AVAILABLE        38
-#define PF_AVX_INSTRUCTIONS_AVAILABLE           39
-#define PF_AVX2_INSTRUCTIONS_AVAILABLE          40
-#define PF_AVX512F_INSTRUCTIONS_AVAILABLE       41
-#define PF_ERMS_AVAILABLE                       42
-#define PF_ARM_V82_DP_INSTRUCTIONS_AVAILABLE    43
-#define PF_ARM_V83_JSCVT_INSTRUCTIONS_AVAILABLE 44
-#define PF_ARM_V83_LRCPC_INSTRUCTIONS_AVAILABLE 45
-#define PF_ARM_SVE_INSTRUCTIONS_AVAILABLE       46
-#define PF_ARM_SVE2_INSTRUCTIONS_AVAILABLE      47
-#define PF_ARM_SVE2_1_INSTRUCTIONS_AVAILABLE    48
-#define PF_ARM_SVE_AES_INSTRUCTIONS_AVAILABLE   49
-#define PF_ARM_SVE_PMULL128_INSTRUCTIONS_AVAILABLE 50
-#define PF_ARM_SVE_BITPERM_INSTRUCTIONS_AVAILABLE 51
-#define PF_ARM_SVE_BF16_INSTRUCTIONS_AVAILABLE  52
-#define PF_ARM_SVE_EBF16_INSTRUCTIONS_AVAILABLE 53
-#define PF_ARM_SVE_B16B16_INSTRUCTIONS_AVAILABLE 54
-#define PF_ARM_SVE_SHA3_INSTRUCTIONS_AVAILABLE  55
-#define PF_ARM_SVE_SM4_INSTRUCTIONS_AVAILABLE   56
-#define PF_ARM_SVE_I8MM_INSTRUCTIONS_AVAILABLE  57
-#define PF_ARM_SVE_F32MM_INSTRUCTIONS_AVAILABLE 58
-#define PF_ARM_SVE_F64MM_INSTRUCTIONS_AVAILABLE 59
-#define PF_BMI2_INSTRUCTIONS_AVAILABLE          60
+#define PF_FLOATING_POINT_PRECISION_ERRATA          0
+#define PF_FLOATING_POINT_EMULATED                  1
+#define PF_COMPARE_EXCHANGE_DOUBLE                  2
+#define PF_MMX_INSTRUCTIONS_AVAILABLE               3
+#define PF_PPC_MOVEMEM_64BIT_OK                     4
+#define PF_ALPHA_BYTE_INSTRUCTIONS                  5
+#define PF_XMMI_INSTRUCTIONS_AVAILABLE              6
+#define PF_3DNOW_INSTRUCTIONS_AVAILABLE             7
+#define PF_RDTSC_INSTRUCTION_AVAILABLE              8
+#define PF_PAE_ENABLED                              9
+#define PF_XMMI64_INSTRUCTIONS_AVAILABLE            10
+#define PF_SSE_DAZ_MODE_AVAILABLE                   11
+#define PF_NX_ENABLED                               12
+#define PF_SSE3_INSTRUCTIONS_AVAILABLE              13
+#define PF_COMPARE_EXCHANGE128                      14
+#define PF_COMPARE64_EXCHANGE128                    15
+#define PF_CHANNELS_ENABLED                         16
+#define PF_XSAVE_ENABLED                            17
+#define PF_ARM_VFP_32_REGISTERS_AVAILABLE           18
+#define PF_ARM_NEON_INSTRUCTIONS_AVAILABLE          19
+#define PF_SECOND_LEVEL_ADDRESS_TRANSLATION         20
+#define PF_VIRT_FIRMWARE_ENABLED                    21
+#define PF_RDWRFSGSBASE_AVAILABLE                   22
+#define PF_FASTFAIL_AVAILABLE                       23
+#define PF_ARM_DIVIDE_INSTRUCTION_AVAILABLE         24
+#define PF_ARM_64BIT_LOADSTORE_ATOMIC               25
+#define PF_ARM_EXTERNAL_CACHE_AVAILABLE             26
+#define PF_ARM_FMAC_INSTRUCTIONS_AVAILABLE          27
+#define PF_RDRAND_INSTRUCTION_AVAILABLE             28
+#define PF_ARM_V8_INSTRUCTIONS_AVAILABLE            29
+#define PF_ARM_V8_CRYPTO_INSTRUCTIONS_AVAILABLE     30
+#define PF_ARM_V8_CRC32_INSTRUCTIONS_AVAILABLE      31
+#define PF_RDTSCP_INSTRUCTION_AVAILABLE             32
+#define PF_RDPID_INSTRUCTION_AVAILABLE              33
+#define PF_ARM_V81_ATOMIC_INSTRUCTIONS_AVAILABLE    34
+#define PF_MONITORX_INSTRUCTION_AVAILABLE           35
+#define PF_SSSE3_INSTRUCTIONS_AVAILABLE             36
+#define PF_SSE4_1_INSTRUCTIONS_AVAILABLE            37
+#define PF_SSE4_2_INSTRUCTIONS_AVAILABLE            38
+#define PF_AVX_INSTRUCTIONS_AVAILABLE               39
+#define PF_AVX2_INSTRUCTIONS_AVAILABLE              40
+#define PF_AVX512F_INSTRUCTIONS_AVAILABLE           41
+#define PF_ERMS_AVAILABLE                           42
+#define PF_ARM_V82_DP_INSTRUCTIONS_AVAILABLE        43
+#define PF_ARM_V83_JSCVT_INSTRUCTIONS_AVAILABLE     44
+#define PF_ARM_V83_LRCPC_INSTRUCTIONS_AVAILABLE     45
+#define PF_ARM_SVE_INSTRUCTIONS_AVAILABLE           46
+#define PF_ARM_SVE2_INSTRUCTIONS_AVAILABLE          47
+#define PF_ARM_SVE2_1_INSTRUCTIONS_AVAILABLE        48
+#define PF_ARM_SVE_AES_INSTRUCTIONS_AVAILABLE       49
+#define PF_ARM_SVE_PMULL128_INSTRUCTIONS_AVAILABLE  50
+#define PF_ARM_SVE_BITPERM_INSTRUCTIONS_AVAILABLE   51
+#define PF_ARM_SVE_BF16_INSTRUCTIONS_AVAILABLE      52
+#define PF_ARM_SVE_EBF16_INSTRUCTIONS_AVAILABLE     53
+#define PF_ARM_SVE_B16B16_INSTRUCTIONS_AVAILABLE    54
+#define PF_ARM_SVE_SHA3_INSTRUCTIONS_AVAILABLE      55
+#define PF_ARM_SVE_SM4_INSTRUCTIONS_AVAILABLE       56
+#define PF_ARM_SVE_I8MM_INSTRUCTIONS_AVAILABLE      57
+#define PF_ARM_SVE_F32MM_INSTRUCTIONS_AVAILABLE     58
+#define PF_ARM_SVE_F64MM_INSTRUCTIONS_AVAILABLE     59
+#define PF_BMI2_INSTRUCTIONS_AVAILABLE              60
+#define PF_MOVDIR64B_INSTRUCTION_AVAILABLE          61
+#define PF_ARM_LSE2_AVAILABLE                       62
+#define PF_RESERVED_FEATURE                         63
+#define PF_ARM_SHA3_INSTRUCTIONS_AVAILABLE          64
+#define PF_ARM_SHA512_INSTRUCTIONS_AVAILABLE        65
+#define PF_ARM_V82_I8MM_INSTRUCTIONS_AVAILABLE      66
+#define PF_ARM_V82_FP16_INSTRUCTIONS_AVAILABLE      67
+#define PF_ARM_V86_BF16_INSTRUCTIONS_AVAILABLE      68
+#define PF_ARM_V86_EBF16_INSTRUCTIONS_AVAILABLE     69
+#define PF_ARM_SME_INSTRUCTIONS_AVAILABLE           70
+#define PF_ARM_SME2_INSTRUCTIONS_AVAILABLE          71
+#define PF_ARM_SME2_1_INSTRUCTIONS_AVAILABLE        72
+#define PF_ARM_SME2_2_INSTRUCTIONS_AVAILABLE        73
+#define PF_ARM_SME_AES_INSTRUCTIONS_AVAILABLE       74
+#define PF_ARM_SME_SBITPERM_INSTRUCTIONS_AVAILABLE  75
+#define PF_ARM_SME_SF8MM4_INSTRUCTIONS_AVAILABLE    76
+#define PF_ARM_SME_SF8MM8_INSTRUCTIONS_AVAILABLE    77
+#define PF_ARM_SME_SF8DP2_INSTRUCTIONS_AVAILABLE    78
+#define PF_ARM_SME_SF8DP4_INSTRUCTIONS_AVAILABLE    79
+#define PF_ARM_SME_SF8FMA_INSTRUCTIONS_AVAILABLE    80
+#define PF_ARM_SME_F8F32_INSTRUCTIONS_AVAILABLE     81
+#define PF_ARM_SME_F8F16_INSTRUCTIONS_AVAILABLE     82
+#define PF_ARM_SME_F16F16_INSTRUCTIONS_AVAILABLE    83
+#define PF_ARM_SME_B16B16_INSTRUCTIONS_AVAILABLE    84
+#define PF_ARM_SME_F64F64_INSTRUCTIONS_AVAILABLE    85
+#define PF_ARM_SME_I16I64_INSTRUCTIONS_AVAILABLE    86
+#define PF_ARM_SME_LUTv2_INSTRUCTIONS_AVAILABLE     87
+#define PF_ARM_SME_FA64_INSTRUCTIONS_AVAILABLE      88
 
 
 /* Execution state flags */
@@ -2572,14 +2603,20 @@ static FORCEINLINE struct _TEB * WINAPI NtCurrentTeb(void)
 #define IO_REPARSE_TAG_CLOUD_F          __MSABI_LONG(0x9000F01A)
 #define IO_REPARSE_TAG_CLOUD_MASK       __MSABI_LONG(0x0000F000)
 #define IO_REPARSE_TAG_APPEXECLINK      __MSABI_LONG(0x8000001B)
-#define IO_REPARSE_TAG_GVFS             __MSABI_LONG(0x9000001C)
+#define IO_REPARSE_TAG_PROJFS           __MSABI_LONG(0x9000001C)
 #define IO_REPARSE_TAG_STORAGE_SYNC     __MSABI_LONG(0x8000001E)
 #define IO_REPARSE_TAG_WCI_TOMBSTONE    __MSABI_LONG(0xA000001F)
 #define IO_REPARSE_TAG_UNHANDLED        __MSABI_LONG(0x80000020)
 #define IO_REPARSE_TAG_ONEDRIVE         __MSABI_LONG(0x80000021)
-#define IO_REPARSE_TAG_GVFS_TOMBSTONE   __MSABI_LONG(0xA0000022)
+#define IO_REPARSE_TAG_PROJFS_TOMBSTONE __MSABI_LONG(0xA0000022)
+#define IO_REPARSE_TAG_AF_UNIX          __MSABI_LONG(0x80000023)
+#define IO_REPARSE_TAG_WCI_LINK         __MSABI_LONG(0xA0000027)
+#define IO_REPARSE_TAG_WCI_LINK_1       __MSABI_LONG(0xA0001027)
+#define IO_REPARSE_TAG_DATALESS_CIM     __MSABI_LONG(0xA0000028)
 
+#define IsReparseTagDirectory(x)        ((x) & 0x10000000)
 #define IsReparseTagNameSurrogate(x)    ((x) & 0x20000000)
+#define IsReparseTagMicrosoft(x)        ((x) & 0x80000000)
 
 /*
  * File formats definitions
@@ -4346,7 +4383,7 @@ typedef struct _ACL {
 
 typedef enum _ACL_INFORMATION_CLASS
 {
-  AclRevisionInformation = 1, 
+  AclRevisionInformation = 1,
   AclSizeInformation
 } ACL_INFORMATION_CLASS;
 
@@ -6247,6 +6284,14 @@ NTSYSAPI DWORD WINAPI RtlRunOnceBeginInitialize(PRTL_RUN_ONCE, DWORD, PVOID*);
 NTSYSAPI DWORD WINAPI RtlRunOnceComplete(PRTL_RUN_ONCE, DWORD, PVOID);
 NTSYSAPI WORD WINAPI RtlCaptureStackBackTrace(DWORD,DWORD,void**,DWORD*);
 
+typedef struct _RTL_BARRIER {
+    DWORD Reserved1;
+    DWORD Reserved2;
+    ULONG_PTR Reserved3[2];
+    DWORD Reserved4;
+    DWORD Reserved5;
+} RTL_BARRIER, *PRTL_BARRIER;
+
 #pragma pack(push,8)
 typedef struct _IO_COUNTERS {
     ULONGLONG ReadOperationCount;
@@ -6676,8 +6721,13 @@ typedef struct _PROCESSOR_RELATIONSHIP
 typedef struct _NUMA_NODE_RELATIONSHIP
 {
     DWORD NodeNumber;
-    BYTE Reserved[20];
-    GROUP_AFFINITY GroupMask;
+    BYTE Reserved[18];
+    WORD GroupCount;
+    union
+    {
+        GROUP_AFFINITY GroupMask;
+        GROUP_AFFINITY GroupMasks[ANYSIZE_ARRAY];
+    };
 } NUMA_NODE_RELATIONSHIP, *PNUMA_NODE_RELATIONSHIP;
 
 typedef struct _CACHE_RELATIONSHIP
@@ -6687,8 +6737,13 @@ typedef struct _CACHE_RELATIONSHIP
     WORD LineSize;
     DWORD CacheSize;
     PROCESSOR_CACHE_TYPE Type;
-    BYTE Reserved[20];
-    GROUP_AFFINITY GroupMask;
+    BYTE Reserved[18];
+    WORD GroupCount;
+    union
+    {
+        GROUP_AFFINITY GroupMask;
+        GROUP_AFFINITY GroupMasks[ANYSIZE_ARRAY];
+    };
 } CACHE_RELATIONSHIP, *PCACHE_RELATIONSHIP;
 
 typedef struct _GROUP_RELATIONSHIP
@@ -7207,6 +7262,11 @@ static FORCEINLINE void WriteNoFence( LONG volatile *dest, LONG value )
     __WINE_STORE32_NO_FENCE( (int volatile *)dest, value );
 }
 
+static FORCEINLINE void WriteNoFence64( LONG64 volatile *dest, LONG64 value )
+{
+    __WINE_STORE64_NO_FENCE( (__int64 volatile *)dest, value );
+}
+
 #elif defined(__GNUC__)
 
 static FORCEINLINE BOOLEAN WINAPI BitScanForward(DWORD *index, DWORD mask)
@@ -7423,6 +7483,15 @@ static FORCEINLINE void WriteNoFence( LONG volatile *dest, LONG value )
     __WINE_ATOMIC_STORE_RELAXED( dest, &value );
 }
 
+static FORCEINLINE void WriteNoFence64( LONG64 volatile *dest, LONG64 value )
+{
+#ifdef __i386__
+    __asm__ __volatile__( "fildq %1\n\tfistpq %0" : "=m" (*dest) : "m" (value) : "memory", "st" );
+#else
+    __WINE_ATOMIC_STORE_RELAXED( dest, &value );
+#endif
+}
+
 static FORCEINLINE DECLSPEC_NORETURN void __fastfail(unsigned int code)
 {
 #if defined(__x86_64__) || defined(__i386__)
@@ -7469,12 +7538,68 @@ static FORCEINLINE unsigned char InterlockedCompareExchange128( volatile __int64
 #define InterlockedDecrementSizeT(a) InterlockedDecrement64((LONGLONG *)(a))
 #define InterlockedExchangeAddSizeT(a, b) InterlockedExchangeAdd64((LONGLONG *)(a), (b))
 #define InterlockedIncrementSizeT(a) InterlockedIncrement64((LONGLONG *)(a))
+#define ReadLongPtrAcquire   ReadAcquire64
+#define ReadLongPtrNoFence   ReadNoFence64
+#define ReadULongPtrAcquire  ReadULong64Acquire
+#define ReadULongPtrNoFence  ReadULong64NoFence
+#define WriteLongPtrRelease  WriteRelease64
+#define WriteLongPtrNoFence  WriteNoFence64
+#define WriteULongPtrRelease WriteULong64Release
+#define WriteULongPtrNoFence WriteULong64NoFence
+
+static FORCEINLINE void *ReadPointerAcquire( void* const volatile *src )
+{
+    return (void *)ReadAcquire64( (const volatile LONG64 *)src );
+}
+
+static FORCEINLINE void *ReadPointerNoFence( void* const volatile *src )
+{
+    return (void *)ReadNoFence64( (const volatile LONG64 *)src );
+}
+
+static FORCEINLINE void WritePointerRelease( void* volatile *dest, void* value )
+{
+    WriteRelease64( (volatile LONG64 *)dest, (LONG64)value );
+}
+
+static FORCEINLINE void WritePointerNoFence( void* volatile *dest, void* value )
+{
+    WriteNoFence64( (volatile LONG64 *)dest, (LONG64)value );
+}
 
 #else /* _WIN64 */
 
 #define InterlockedDecrementSizeT(a) InterlockedDecrement((LONG *)(a))
 #define InterlockedExchangeAddSizeT(a, b) InterlockedExchangeAdd((LONG *)(a), (b))
 #define InterlockedIncrementSizeT(a) InterlockedIncrement((LONG *)(a))
+#define ReadLongPtrAcquire   ReadAcquire
+#define ReadLongPtrNoFence   ReadNoFence
+#define ReadULongPtrAcquire  ReadULongAcquire
+#define ReadULongPtrNoFence  ReadULongNoFence
+#define WriteLongPtrRelease  WriteRelease
+#define WriteLongPtrNoFence  WriteNoFence
+#define WriteULongPtrRelease WriteULongRelease
+#define WriteULongPtrNoFence WriteULongNoFence
+
+static FORCEINLINE void *ReadPointerAcquire( void* const volatile *src )
+{
+    return (void *)ReadAcquire( (const volatile LONG *)src );
+}
+
+static FORCEINLINE void *ReadPointerNoFence( void* const volatile *src )
+{
+    return (void *)ReadNoFence( (const volatile LONG *)src );
+}
+
+static FORCEINLINE void WritePointerRelease( void* volatile *dest, void* value )
+{
+    WriteRelease( (volatile LONG *)dest, (LONG)value );
+}
+
+static FORCEINLINE void WritePointerNoFence( void* volatile *dest, void* value )
+{
+    WriteNoFence( (volatile LONG *)dest, (LONG)value );
+}
 
 #endif /* _WIN64 */
 

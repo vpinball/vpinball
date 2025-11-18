@@ -1899,22 +1899,22 @@ static HRESULT check_script_collisions(compile_ctx_t *ctx, script_ctx_t *script)
 
     for(i = 0; i < var_cnt; i++) {
         if(lookup_script_identifier(ctx, script, vars[i].name)) {
-            FIXME("%s: redefined\n", debugstr_w(vars[i].name));
 #ifndef __STANDALONE__
+            FIXME("%s: redefined\n", debugstr_w(vars[i].name));
             return E_FAIL;
 #else
-        external_log_info("%s redefined", debugstr_w(vars[i].name));
+            external_log_info("%s redefined", debugstr_w(vars[i].name));
 #endif
         }
     }
 
     for(class = ctx->code->classes; class; class = class->next) {
         if(lookup_script_identifier(ctx, script, class->name)) {
-            FIXME("%s: redefined\n", debugstr_w(class->name));
 #ifndef __STANDALONE__
+            FIXME("%s: redefined\n", debugstr_w(class->name));
             return E_FAIL;
 #else
-        external_log_info("%s redefined", debugstr_w(class->name));
+            external_log_info("%s redefined", debugstr_w(class->name));
 #endif
         }
     }

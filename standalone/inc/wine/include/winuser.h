@@ -1251,6 +1251,7 @@ typedef struct tagSTYLESTRUCT {
 #define GW_HWNDPREV	3
 #define GW_OWNER	4
 #define GW_CHILD	5
+#define GW_ENABLEDPOPUP 6
 
 /* GetAncestor() constants */
 #define GA_PARENT       1
@@ -3488,6 +3489,8 @@ typedef struct tagTOUCHINPUT {
     DWORD     cyContact;
 } TOUCHINPUT, *PTOUCHINPUT;
 typedef TOUCHINPUT const * PCTOUCHINPUT;
+
+#define TOUCH_COORD_TO_PIXEL(l) ((l) / 100)
 
 #define TOUCHEVENTF_MOVE        0x0001
 #define TOUCHEVENTF_DOWN        0x0002

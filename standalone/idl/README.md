@@ -5,7 +5,6 @@ We provide two custom Java-based IDL parsers to generate code for Visual Pinball
 - **IDLParserToCpp.java**  
   Parses COM IDL files from Visual Pinball and related components, emitting C++ stubs that implement `IDispatch::GetIDsOfNames` and `IDispatch::Invoke`. Generates code for:  
   - `vpinball.idl`  
-  - `B2S.idl`  
 
 - **IDLParserToC.java**  
   Parses COM IDL files from Wine, emitting C stubs that implement `IDispatch::GetIDsOfNames` and `IDispatch::Invoke`. Generates code for:  
@@ -25,7 +24,6 @@ Both parsers reverse-engineer the name-to-DISPID mappings and invocation logic n
 ## Files Requiring **No** Changes
 
 - `standalone/vpinball_standalone_i_proxy.cpp`
-- `standalone/inc/b2s/b2s_i_proxy.cpp`
 - `standalone/inc/wine/dlls/scrrun/dictionary_proxy.c`
 - `standalone/inc/wine/dlls/vbscript/regexp_proxy.c`
 
@@ -73,7 +71,10 @@ static HRESULT WINAPI filesys_Invoke(IFileSystem3 *iface, DISPID dispIdMember,
 
 ---
 
-### Generate IDL for projects without IDL:
+### Generating IDL for projects without IDL:
+
+> [!NOTE]
+> This process isn’t required starting with version 10.8.1, as plugins now handle IDL proxying automatically. The steps below are kept only for reference.
 
 B2SServer does not supply IDL files.
 

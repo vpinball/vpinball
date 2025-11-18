@@ -4,6 +4,12 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 11/17/25
+    * Bump Wine source to wine-fe1175af410d04f806dda770502d0476a8ccbef6 (10.19)
+
+* 11/15/25
+    * Add support for Meta Quest builds
+
 * 10/24/25
     * Fix incomplete var_cmp to support avoid needing CInt
 
