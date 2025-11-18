@@ -47,7 +47,7 @@ static DisplaySrcId dmdId = {};
 static Serum_Frame_Struc* pSerum = nullptr;
 static unsigned int lastRawFrameId = 0;
 
-MSGPI_STRING_VAL_SETTING(crzFolderProp, "CRZFolder", "Serum Folder", "Folder that cotains Serum colorization files", true, "", 1024);
+MSGPI_STRING_VAL_SETTING(serumPathProp, "SerumPath", "Serum Path", "Folder that cotains Serum colorization files (cRZ, cROMc)", true, "", 1024);
 
 class ColorizationState final
 {
@@ -317,16 +317,16 @@ static void OnControllerGameStart(const unsigned int eventId, void* userData, vo
    // Setup Serum on the selected DMD
    const CtlOnGameStartMsg* msg = static_cast<const CtlOnGameStartMsg*>(msgData);
    assert(msg != nullptr && msg->gameId != nullptr);
-   if (crzFolderProp_Get()[0] == '\0')
+   if (serumPathProp_Get()[0] == '\0')
    {
       VPXTableInfo tableInfo;
       vpxApi->GetTableInfo(&tableInfo);
       std::filesystem::path tablePath = tableInfo.path;
       string path = find_case_insensitive_directory_path(tablePath.parent_path().string() + PATH_SEPARATOR_CHAR + "pinmame" + PATH_SEPARATOR_CHAR + "altcolor");
       if (!path.empty())
-         crzFolderProp_Set(path.c_str());
+         serumPathProp_Set(path.c_str());
    }
-   pSerum = Serum_Load(crzFolderProp_Get(), msg->gameId, FLAG_REQUEST_32P_FRAMES | FLAG_REQUEST_64P_FRAMES);
+   pSerum = Serum_Load(serumPathProp_Get(), msg->gameId, FLAG_REQUEST_32P_FRAMES | FLAG_REQUEST_64P_FRAMES);
    OnDmdSrcChanged(onDmdSrcChangedId, nullptr, nullptr);
    if (pSerum)
    {
@@ -352,7 +352,7 @@ MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, const MsgPl
    // Request and setup shared login API
    LPISetup(endpointId, msgApi);
 
-   msgApi->RegisterSetting(endpointId, &crzFolderProp);
+   msgApi->RegisterSetting(endpointId, &serumPathProp);
 
    unsigned int getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
