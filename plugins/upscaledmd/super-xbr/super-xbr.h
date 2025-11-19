@@ -40,18 +40,17 @@ template <typename T> constexpr T min(const T x, const T y) { return x < y ? x :
 template <typename T> constexpr T max(const T x, const T y) { return x < y ? y : x; }
 #endif
 
-#define R(_col) (((_col)>> 0)&0xFF)
-#define G(_col) (((_col)>> 8)&0xFF)
-#define B(_col) (((_col)>>16)&0xFF)
-#define A(_col) (((_col)>>24)&0xFF)
+static inline float R(uint32_t col) { return (float)( col      & 0xFFu); }
+static inline float G(uint32_t col) { return (float)((col>> 8) & 0xFFu); }
+static inline float B(uint32_t col) { return (float)((col>>16) & 0xFFu); }
+static inline float A(uint32_t col) { return (float)((col>>24) & 0xFFu); }
 
-
-#define wgt1 0.129633f
-#define wgt2 0.175068f
-#define w1  (-wgt1)
-#define w2  (wgt1+0.5f)
-#define w3  (-wgt2)
-#define w4  (wgt2+0.5f)
+static constexpr double wgt1 = 0.129633;
+static constexpr double wgt2 = 0.175068;
+static constexpr float w1    = -wgt1;
+static constexpr float w2    = wgt1+0.5;
+static constexpr float w3    = -wgt2;
+static constexpr float w4    = wgt2+0.5;
 
 
 static inline float df(float A, float B)
@@ -163,10 +162,10 @@ void scale(const uint32_t* const __restrict data, uint32_t* const __restrict out
 					const int csx = clamp(sx + cx, 0, w - 1);
 					// sample & add weighted components
 					const uint32_t sample = data[csy*w + csx];
-					r[sx + 1][sy + 1] = (float)R(sample);
-					g[sx + 1][sy + 1] = (float)G(sample);
-					b[sx + 1][sy + 1] = (float)B(sample);
-					if (alpha) a[sx + 1][sy + 1] = (float)A(sample);
+					r[sx + 1][sy + 1] = R(sample);
+					g[sx + 1][sy + 1] = G(sample);
+					b[sx + 1][sy + 1] = B(sample);
+					if (alpha) a[sx + 1][sy + 1] = A(sample);
 					Y[sx + 1][sy + 1] = 0.2126f*r[sx + 1][sy + 1] + 0.7152f*g[sx + 1][sy + 1] + 0.0722f*b[sx + 1][sy + 1];
 				}
 			}
@@ -222,10 +221,10 @@ void scale(const uint32_t* const __restrict data, uint32_t* const __restrict out
 					const int csx = clamp(sx + sy + x, 0, f*w - 1);
 					// sample & add weighted components
 					const uint32_t sample = out[csy*outw + csx];
-					r[sx + 1][sy + 1] = (float)R(sample);
-					g[sx + 1][sy + 1] = (float)G(sample);
-					b[sx + 1][sy + 1] = (float)B(sample);
-					if (alpha) a[sx + 1][sy + 1] = (float)A(sample);
+					r[sx + 1][sy + 1] = R(sample);
+					g[sx + 1][sy + 1] = G(sample);
+					b[sx + 1][sy + 1] = B(sample);
+					if (alpha) a[sx + 1][sy + 1] = A(sample);
 					Y[sx + 1][sy + 1] = 0.2126f*r[sx + 1][sy + 1] + 0.7152f*g[sx + 1][sy + 1] + 0.0722f*b[sx + 1][sy + 1];
 				}
 			}
@@ -270,10 +269,10 @@ void scale(const uint32_t* const __restrict data, uint32_t* const __restrict out
 					const int csx = clamp(sx + sy - 1 + x, 0, f*w - 1);
 					// sample & add weighted components
 					const uint32_t sample = out[csy*outw + csx];
-					r[sx + 1][sy + 1] = (float)R(sample);
-					g[sx + 1][sy + 1] = (float)G(sample);
-					b[sx + 1][sy + 1] = (float)B(sample);
-					if (alpha) a[sx + 1][sy + 1] = (float)A(sample);
+					r[sx + 1][sy + 1] = R(sample);
+					g[sx + 1][sy + 1] = G(sample);
+					b[sx + 1][sy + 1] = B(sample);
+					if (alpha) a[sx + 1][sy + 1] = A(sample);
 					Y[sx + 1][sy + 1] = 0.2126f*r[sx + 1][sy + 1] + 0.7152f*g[sx + 1][sy + 1] + 0.0722f*b[sx + 1][sy + 1];
 				}
 			}
@@ -317,10 +316,10 @@ void scale(const uint32_t* const __restrict data, uint32_t* const __restrict out
 					const int csx = clamp(sx + x, 0, f*w - 1);
 					// sample & add weighted components
 					const uint32_t sample = out[csy*outw + csx];
-					r[sx + 2][sy + 2] = (float)R(sample);
-					g[sx + 2][sy + 2] = (float)G(sample);
-					b[sx + 2][sy + 2] = (float)B(sample);
-					if (alpha) a[sx + 2][sy + 2] = (float)A(sample);
+					r[sx + 2][sy + 2] = R(sample);
+					g[sx + 2][sy + 2] = G(sample);
+					b[sx + 2][sy + 2] = B(sample);
+					if (alpha) a[sx + 2][sy + 2] = A(sample);
 					Y[sx + 2][sy + 2] = 0.2126f*r[sx + 2][sy + 2] + 0.7152f*g[sx + 2][sy + 2] + 0.0722f*b[sx + 2][sy + 2];
 				}
 			}
