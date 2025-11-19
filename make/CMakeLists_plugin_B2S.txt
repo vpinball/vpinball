@@ -17,8 +17,8 @@ set(B2S_PLUGIN_SOURCES
    plugins/b2s/B2SRenderer.cpp
    plugins/b2s/B2SServer.h
    plugins/b2s/B2SServer.cpp
-   src/core/ResURIResolver.h
-   src/core/ResURIResolver.cpp
+   plugins/plugins/ResURIResolver.h
+   plugins/plugins/ResURIResolver.cpp
    third-party/include/tinyxml2/tinyxml2.h
    third-party/include/tinyxml2/tinyxml2.cpp
 )
@@ -30,7 +30,6 @@ if(BUILD_SHARED)
       ${CMAKE_SOURCE_DIR}/third-party/include
       plugins
       plugins/b2s
-      src/core
    )
 
    if(PluginPlatform STREQUAL "windows")
@@ -100,7 +99,6 @@ if(BUILD_STATIC)
       ${CMAKE_SOURCE_DIR}/third-party/include
       plugins
       plugins/b2s
-      src/core
    )
 
    set_target_properties(B2SPlugin PROPERTIES

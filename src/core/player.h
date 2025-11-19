@@ -11,7 +11,7 @@
 #include "input/InputManager.h"
 #include "plugins/ControllerPlugin.h"
 #include "plugins/VPXPlugin.h"
-#include "core/ResURIResolver.h"
+#include "plugins/ResURIResolver.h"
 #include "audio/AudioPlayer.h"
 
 class VRDevice;

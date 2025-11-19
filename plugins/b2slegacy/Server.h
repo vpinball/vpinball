@@ -6,7 +6,7 @@
 #include <functional>
 #include "forms/FormBackglass.h"
 #include "classes/B2SCollectData.h"
-#include "ResURIResolver.h"
+#include "plugins/ResURIResolver.h"
 
 namespace B2SLegacy {
 

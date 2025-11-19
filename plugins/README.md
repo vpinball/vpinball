@@ -13,3 +13,4 @@ Each plugin only depends on the interfaces it imports from the `plugins` folder:
 
 The `plugins` folder also offers some implementation helpers:
 - MsgPluginManager: a generic plugin manager that implements the core feature a plugin host must provide
+- ResURIResolver: a unified resource resolver for the generic ControllerPlugin API

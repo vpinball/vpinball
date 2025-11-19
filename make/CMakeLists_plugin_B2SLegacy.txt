@@ -102,8 +102,8 @@ set(B2SLEGACY_PLUGIN_SOURCES
    plugins/b2slegacy/forms/FormBackglass.cpp
    plugins/b2slegacy/forms/FormDMD.h
    plugins/b2slegacy/forms/FormDMD.cpp
-   src/core/ResURIResolver.h
-   src/core/ResURIResolver.cpp
+   plugins/plugins/ResURIResolver.h
+   plugins/plugins/ResURIResolver.cpp
 
    third-party/include/tinyxml2/tinyxml2.h
    third-party/include/tinyxml2/tinyxml2.cpp
@@ -217,7 +217,7 @@ if(BUILD_STATIC)
       plugins
       plugins/b2slegacy
       src/core
-	  src
+      src
    )
 
    set_target_properties(B2SLegacyPlugin PROPERTIES

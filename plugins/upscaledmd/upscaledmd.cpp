@@ -23,7 +23,7 @@
 
 #include "scalefx/scalefx.h"
 
-#include "ResURIResolver.h"
+#include "plugins/ResURIResolver.h"
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN

@@ -783,8 +783,8 @@
     <ClCompile Include="$(SolutionDir)/../../src/core/DynamicScript.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/core/ResURIResolver.cpp">
-      <Filter>core</Filter>
+    <ClCompile Include="$(SolutionDir)/../../plugins/plugins/ResURIResolver.cpp">
+      <Filter>plugin</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/physics/AsyncDynamicQuadTree.cpp">
       <Filter>physics</Filter>
@@ -1979,8 +1979,8 @@
     <ClInclude Include="$(SolutionDir)/../../src/core/DynamicScript.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/core/ResURIResolver.h">
-      <Filter>core</Filter>
+    <ClInclude Include="$(SolutionDir)/../../plugins/plugins/ResURIResolver.h">
+      <Filter>plugin</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/physics/AsyncDynamicQuadTree.h">
       <Filter>physics</Filter>

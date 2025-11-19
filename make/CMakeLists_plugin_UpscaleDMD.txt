@@ -11,8 +11,8 @@ set(UPSCALEDMD_PLUGIN_SOURCES
    plugins/upscaledmd/xbrz/xbrz.h
    plugins/upscaledmd/super-xbr/super-xbr.h
    plugins/upscaledmd/scalefx/scalefx.h
-   src/core/ResURIResolver.h
-   src/core/ResURIResolver.cpp
+   plugins/plugins/ResURIResolver.h
+   plugins/plugins/ResURIResolver.cpp
 )
 
 if(BUILD_SHARED)
@@ -22,7 +22,6 @@ if(BUILD_SHARED)
       ${CMAKE_SOURCE_DIR}/third-party/include
       plugins
       plugins/upscaledmd
-      src/core
    )
 
    if(PluginPlatform STREQUAL "windows")
@@ -92,7 +91,6 @@ if(BUILD_STATIC)
       ${CMAKE_SOURCE_DIR}/third-party/include
       plugins
       plugins/upscaledmd
-      src/core
    )
 
    set_target_properties(UpscaleDMDPlugin PROPERTIES

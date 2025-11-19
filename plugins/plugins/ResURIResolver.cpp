@@ -1,6 +1,6 @@
 // license:GPLv3+
 
-#include "ResURIResolver.h"
+#include "plugins/ResURIResolver.h"
 
 #include "simple-uri-parser/uri_parser.h"
 

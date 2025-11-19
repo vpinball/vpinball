@@ -4,7 +4,7 @@
 
 #include "common.h"
 
-#include "ResURIResolver.h"
+#include "plugins/ResURIResolver.h"
 
 #include <filesystem>
 #include <unordered_dense.h>
