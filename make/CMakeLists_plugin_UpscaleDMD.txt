@@ -73,6 +73,11 @@ if(BUILD_SHARED)
             SUFFIX ".dylib"
          )
       endif()
+      if(PluginPlatform STREQUAL "linux")
+         target_compile_options(UpscaleDMDPlugin PUBLIC
+            -mssse3
+         )
+      endif()
    endif()
 
    add_custom_command(TARGET UpscaleDMDPlugin POST_BUILD
