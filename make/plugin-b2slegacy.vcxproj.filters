@@ -169,7 +169,7 @@
     <ClCompile Include="..\..\plugins\b2slegacy\Server.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="../../src/core/ResURIResolver.cpp">
+    <ClCompile Include="../../plugins/plugins/ResURIResolver.cpp">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="../../third-party/include/tinyxml2/tinyxml2.cpp">
@@ -321,7 +321,7 @@
     <ClInclude Include="..\..\plugins\b2slegacy\Server.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="../../src/core/ResURIResolver.h">
+    <ClInclude Include="../../plugins/plugins/ResURIResolver.h">
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="../../third-party/include/tinyxml2/tinyxml2.h">

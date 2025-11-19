@@ -10,7 +10,7 @@
 
 #include "common.h"
 
-#include "ResURIResolver.h"
+#include "plugins/ResURIResolver.h"
 
 #include "ScoreView.h"
 

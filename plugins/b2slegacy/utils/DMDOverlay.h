@@ -3,7 +3,7 @@
 #include <future>
 
 #include "../common.h"
-#include "ResURIResolver.h"
+#include "plugins/ResURIResolver.h"
 
 namespace B2SLegacy {
    

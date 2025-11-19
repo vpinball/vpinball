@@ -824,7 +824,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/core/Settings.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/TableDB.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/VPXPluginAPIImpl.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/core/ResURIResolver.cpp">
+    <ClCompile Include="$(SolutionDir)/../../plugins/plugins/ResURIResolver.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/input/InputAction.cpp" />
@@ -1522,7 +1522,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/audio/AudioPlayer.h" />
     <ClInclude Include="$(SolutionDir)/../../src/audio/AudioStreamPlayer.h" />
     <ClInclude Include="$(SolutionDir)/../../src/audio/SoundPlayer.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/core/ResURIResolver.h" />
+    <ClInclude Include="$(SolutionDir)/../../plugins/plugins/ResURIResolver.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/VPApp.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/def.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/dispid.h" />

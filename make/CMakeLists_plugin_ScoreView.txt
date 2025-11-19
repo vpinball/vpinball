@@ -11,8 +11,8 @@ set(SCOREVIEW_PLUGIN_SOURCES
    plugins/scoreview/ScoreViewPlugin.cpp
    plugins/scoreview/ScoreView.h
    plugins/scoreview/ScoreView.cpp
-   src/core/ResURIResolver.h
-   src/core/ResURIResolver.cpp
+   plugins/plugins/ResURIResolver.h
+   plugins/plugins/ResURIResolver.cpp
 )
 
 if(BUILD_SHARED)
@@ -29,7 +29,6 @@ if(BUILD_SHARED)
          ${CMAKE_SOURCE_DIR}/third-party/include
 		 plugins
          plugins/scoreview
-		 src/core
       )
       add_compile_options(
          $<$<CONFIG:RELEASE>:/Ob2>
@@ -74,7 +73,6 @@ if(BUILD_SHARED)
          ${CMAKE_SOURCE_DIR}/third-party/include
 		 plugins
          plugins/scoreview
-		 src/core
       )
       set_target_properties(ScoreViewPlugin PROPERTIES
          PREFIX ""
@@ -105,7 +103,6 @@ if(BUILD_STATIC)
          ${CMAKE_SOURCE_DIR}/third-party/include
 		 plugins
          plugins/scoreview
-		 src/core
       )
    else()
       target_include_directories(ScoreViewPlugin PUBLIC
@@ -113,7 +110,6 @@ if(BUILD_STATIC)
          ${CMAKE_SOURCE_DIR}/third-party/include
 		 plugins
          plugins/scoreview
-		 src/core
       )
    endif()
 

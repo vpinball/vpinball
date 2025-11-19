@@ -182,11 +182,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="../../plugins/upscaledmd/upscaledmd.cpp" />
-    <ClCompile Include="../../src/core/ResURIResolver.cpp" />
+    <ClCompile Include="../../plugins/plugins/ResURIResolver.cpp" />
     <ClCompile Include="../../plugins/upscaledmd/xbrz/xbrz.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="../../src/core/ResURIResolver.h" />
+    <ClInclude Include="../../plugins/plugins/ResURIResolver.h" />
     <ClInclude Include="../../plugins/upscaledmd/xbrz/xbrz.h" />
     <ClInclude Include="../../plugins/upscaledmd/super-xbr/super-xbr.h" />
     <ClInclude Include="../../plugins/upscaledmd/scalefx/scalefx.h" />

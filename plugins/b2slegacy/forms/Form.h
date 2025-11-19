@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../controls/Control.h"
-#include "ResURIResolver.h"
+#include "plugins/ResURIResolver.h"
 
 namespace B2SLegacy {
 

@@ -190,12 +190,12 @@
     <ClCompile Include="../../plugins/scoreview/common.cpp" />
     <ClCompile Include="../../plugins/scoreview/ScoreViewPlugin.cpp" />
     <ClCompile Include="../../plugins/scoreview/ScoreView.cpp" />
-    <ClCompile Include="../../src/core/ResURIResolver.cpp" />
+    <ClCompile Include="../../plugins/plugins/ResURIResolver.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../plugins/scoreview/common.h" />
     <ClInclude Include="../../plugins/scoreview/ScoreView.h" />
-    <ClInclude Include="../../src/core/ResURIResolver.h" />
+    <ClInclude Include="../../plugins/plugins/ResURIResolver.h" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="../../plugins/scoreview/plugin.cfg">
