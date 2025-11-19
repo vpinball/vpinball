@@ -33,6 +33,18 @@
 #include <locale>
 #endif
 
+#if defined(_M_IX86) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__)
+ #define ENABLE_SSE_OPTIMIZATIONS
+ #include <xmmintrin.h>
+#elif (defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) && (!defined(__ARM_ARCH) || __ARM_ARCH >= 7) && (!defined(_MSC_VER) || defined(__clang__)) //!! disable sse2neon if MSVC&non-clang
+ #define ENABLE_SSE_OPTIMIZATIONS
+ #include "sse2neon.h" // from https://github.com/DLTcollab/sse2neon
+#endif
+
+#ifdef __SSSE3__
+ #include <tmmintrin.h>
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // UpscaleDMD plugin: upscale DMD content to a high res DMD or a LCD/CRT display
@@ -121,6 +133,21 @@ static bool IsSourceSelected() { return dmdSrc.GetRenderFrame != nullptr; }
 static void RenderThread()
 {
    SetThreadName("UpscaleDMD.RenderThread"s);
+
+#ifdef ENABLE_SSE_OPTIMIZATIONS // actually uses SSSE3
+#if !(defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) && defined(_MSC_VER)
+   static int ssse3_supported = -1;
+   if (ssse3_supported == -1)
+   {
+      int cpuInfo[4];
+      __cpuid(cpuInfo, 1);
+      ssse3_supported = (cpuInfo[2] & (1 << 9));
+   }
+#else
+   constexpr bool ssse3_supported = true;
+#endif
+#endif
+
    while (isRunning)
    {
       std::unique_lock lock(sourceMutex);
@@ -133,7 +160,7 @@ static void RenderThread()
          continue;
 
       // Render display
-      DisplayFrame srcFrame = dmdSrc.GetRenderFrame(dmdSrc.id);
+      const DisplayFrame srcFrame = dmdSrc.GetRenderFrame(dmdSrc.id);
 
       if (srcFrame.frame && srcFrame.frameId != renderFrameId)
       {
@@ -143,10 +170,7 @@ static void RenderThread()
             if (displayId.frameFormat == CTLPI_DISPLAY_FORMAT_LUM8 && (upscalerMode == UpscalerMode::UM_ScaleFX_AA || upscalerMode == UpscalerMode::UM_ScaleFX_3x))
             {
                for (unsigned int ofs = 0; ofs < dmdSrcSize; ++ofs)
-               {
-                  const uint32_t lum = srcFrame.frame[ofs];
-                  rgbaSrcFrame[ofs] = lum;
-               }
+                  rgbaSrcFrame[ofs] = srcFrame.frame[ofs];
             }
             else
             {
@@ -209,17 +233,63 @@ static void RenderThread()
          const unsigned int displaySize = displayId.width * displayId.height;
          if (displayId.frameFormat == CTLPI_DISPLAY_FORMAT_LUM8)
          { // Lum8 in uint32_t -> Lum8 in uint8_t
-            for (unsigned int ofs = 0; ofs < displaySize; ++ofs)
+            unsigned int ofs = 0;
+         #ifdef ENABLE_SSE_OPTIMIZATIONS // actually uses SSSE3
+            if (ssse3_supported)
+            {
+            // Process 16 pixels at a time
+            const unsigned int simdCount = displaySize & ~15u;
+            const __m128i shuffle  = _mm_setr_epi8(0,4,8,12, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1);
+            const __m128i shuffle2 = _mm_setr_epi8(-1,-1,-1,-1, 0,4,8,12, -1,-1,-1,-1, -1,-1,-1,-1);
+            const __m128i shuffle3 = _mm_setr_epi8(-1,-1,-1,-1, -1,-1,-1,-1, 0,4,8,12, -1,-1,-1,-1);
+            const __m128i shuffle4 = _mm_setr_epi8(-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, 0,4,8,12);
+            for (; ofs < simdCount; ofs+=16)
+            {
+               const __m128i* const __restrict rdf = reinterpret_cast<const __m128i*>(&rgbaDstFrame[ofs]);
+               const __m128i lum[4] = {_mm_shuffle_epi8(_mm_loadu_si128(rdf  ), shuffle),
+                                       _mm_shuffle_epi8(_mm_loadu_si128(rdf+1), shuffle2),
+                                       _mm_shuffle_epi8(_mm_loadu_si128(rdf+2), shuffle3),
+                                       _mm_shuffle_epi8(_mm_loadu_si128(rdf+3), shuffle4)};
+               const __m128i lumc = _mm_or_si128(_mm_or_si128(lum[0], lum[1]), _mm_or_si128(lum[2], lum[3]));
+               _mm_storeu_si128(reinterpret_cast<__m128i*>(&renderFrame[ofs]), lumc);
+            }
+            }
+            // Handle remaining pixels
+         #endif
+            for (; ofs < displaySize; ++ofs)
                renderFrame[ofs] = rgbaDstFrame[ofs] & 0xFFu;
          }
          else
          { // RGBx -> RGB
-            for (unsigned int ofs = 0, dst = 0; ofs < displaySize; ++ofs, dst += 3)
+            unsigned int ofs = 0;
+         #ifdef ENABLE_SSE_OPTIMIZATIONS // actually uses SSSE3
+            if (ssse3_supported)
+            {
+            // Process 16 pixels at a time
+            const unsigned int simdCount = displaySize & ~15u;
+            const __m128i shuffle  = _mm_setr_epi8(0,1,2, 4,5,6, 8,9,10, 12,13,14, -1,-1,-1,-1);
+            const __m128i shuffle2 = _mm_setr_epi8(-1,-1,-1,-1, 0,1,2, 4,5,6, 8,9,10, 12,13,14);
+            for (; ofs < simdCount; ofs+=16)
+            {
+               const __m128i* const __restrict rdf = reinterpret_cast<const __m128i*>(&rgbaDstFrame[ofs]);
+               const __m128i col[4] = {_mm_shuffle_epi8(_mm_loadu_si128(rdf  ), shuffle),
+                                       _mm_shuffle_epi8(_mm_loadu_si128(rdf+1), shuffle),
+                                       _mm_shuffle_epi8(_mm_loadu_si128(rdf+2), shuffle),
+                                       _mm_shuffle_epi8(_mm_loadu_si128(rdf+3), shuffle2)};
+               __m128i* const __restrict rf = reinterpret_cast<__m128i*>(&renderFrame[ofs * 3]);
+               _mm_storeu_si128(rf  , _mm_or_si128(col[0],_mm_slli_si128(col[1],12)));
+               _mm_storeu_si128(rf+1, _mm_castps_si128(_mm_shuffle_ps(_mm_castsi128_ps(col[1]), _mm_castsi128_ps(col[2]), _MM_SHUFFLE(1,0,2,1))));
+               _mm_storeu_si128(rf+2, _mm_or_si128(_mm_srli_si128(col[2],8),col[3]));
+            }
+            }
+            // Handle remaining pixels
+         #endif
+            for (; ofs < displaySize; ++ofs)
             {
                const uint32_t col = rgbaDstFrame[ofs];
-               renderFrame[dst    ] =  col        & 0xFFu;
-               renderFrame[dst + 1] = (col >>  8) & 0xFFu;
-               renderFrame[dst + 2] = (col >> 16) & 0xFFu;
+               renderFrame[ofs * 3 + 0] =  col        & 0xFFu;
+               renderFrame[ofs * 3 + 1] = (col >>  8) & 0xFFu;
+               renderFrame[ofs * 3 + 2] = (col >> 16) & 0xFFu;
             }
          }
          renderFrameId = srcFrame.frameId;
