@@ -86,6 +86,7 @@ private:
    VPinballLib(const VPinballLib&) = delete;
    VPinballLib& operator=(const VPinballLib&) = delete;
    void SetEventCallback(VPinballEventCallback callback);
+   static void RegisterStaticPlugins();
 
    SDL_Window* m_pWindow = nullptr;
 #ifdef __APPLE__

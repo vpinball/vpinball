@@ -4,7 +4,10 @@
 
 // This file provides a default C++ implementation of a plugin manager for the 'Generic Message Plugin API'.
 // It includes SDL & Win32 implementations of plugin discovery, loading/unloading and messaging API.
-// It has 2 strong dependencies beside C++ standard libraries: mINI and PLOG
+// 
+// It has 2 strong dependencies beside C++ standard libraries:
+// - mINI from https://github.com/metayeti/mINI
+// - PLOG from https://github.com/SergiusTheBest/plog
 
 #include "MsgPlugin.h"
 
@@ -87,7 +90,6 @@ public:
    ~MsgPluginManager();
 
    std::shared_ptr<MsgPlugin> RegisterPlugin(const std::string& id, const std::string& name, const std::string& description, const std::string& author, const std::string& version, const std::string& link, msgpi_load_plugin loadPlugin, msgpi_unload_plugin unloadPlugin);
-   void RegisterStaticPlugins();
    void ScanPluginFolder(const std::string& pluginDir, const std::function<void(MsgPlugin&)>& callback);
    std::shared_ptr<MsgPlugin> GetPlugin(const std::string& pluginId) const;
    const std::vector<std::shared_ptr<MsgPlugin>> GetPlugins() const { return m_plugins; }

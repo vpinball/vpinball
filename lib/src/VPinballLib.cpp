@@ -23,6 +23,35 @@
 #include "VPinballLib_iOS.h"
 #endif
 
+
+MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginUnload();
+MSGPI_EXPORT void MSGPIAPI B2SPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI B2SPluginUnload();
+MSGPI_EXPORT void MSGPIAPI B2SLegacyPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI B2SLegacyPluginUnload();
+MSGPI_EXPORT void MSGPIAPI DOFPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI DOFPluginUnload();
+MSGPI_EXPORT void MSGPIAPI DMDUtilPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI DMDUtilPluginUnload();
+MSGPI_EXPORT void MSGPIAPI FlexDMDPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI FlexDMDPluginUnload();
+MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI PinMAMEPluginUnload();
+MSGPI_EXPORT void MSGPIAPI PUPPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI PUPPluginUnload();
+MSGPI_EXPORT void MSGPIAPI RemoteControlPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI RemoteControlPluginUnload();
+MSGPI_EXPORT void MSGPIAPI ScoreViewPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI ScoreViewPluginUnload();
+MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI SerumPluginUnload();
+MSGPI_EXPORT void MSGPIAPI WMPPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI WMPPluginUnload();
+MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
+MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginUnload();
+
+
 namespace VPinballLib {
 
 VPinballLib::VPinballLib()
@@ -199,7 +228,7 @@ void VPinballLib::Init(VPinballEventCallback callback)
 
       VPXPluginAPIImpl::GetInstance();
 
-      MsgPI::MsgPluginManager::GetInstance().RegisterStaticPlugins();
+      RegisterStaticPlugins();
 
       for (const auto& plugin : MsgPI::MsgPluginManager::GetInstance().GetPlugins()) {
          if (lib->LoadValueBool("Plugin."s + plugin->m_id, "Enable", false))
@@ -284,6 +313,34 @@ void VPinballLib::SendEvent(VPINBALL_EVENT event, void* data)
 
    if (event == VPINBALL_EVENT_PLAYER_STARTED || event == VPINBALL_EVENT_PLAYER_CLOSED)
       WebServer::BroadcastStatus();
+}
+
+void VPinballLib::RegisterStaticPlugins()
+{
+   static constexpr struct {
+      const char* id;
+      void (*load)(uint32_t, const MsgPluginAPI*);
+      void (*unload)();
+   } plugins[] = {
+      { "ScoreView",     &ScoreViewPluginLoad,     &ScoreViewPluginUnload     },
+      { "PinMAME",       &PinMAMEPluginLoad,       &PinMAMEPluginUnload       },
+      { "AlphaDMD",      &AlphaDMDPluginLoad,      &AlphaDMDPluginUnload      },
+      { "B2S",           &B2SPluginLoad,           &B2SPluginUnload           },
+      { "B2SLegacy",     &B2SLegacyPluginLoad,     &B2SLegacyPluginUnload     },
+      { "DOF",           &DOFPluginLoad,           &DOFPluginUnload           },
+      { "DMDUtil",       &DMDUtilPluginLoad,       &DMDUtilPluginUnload       },
+      { "FlexDMD",       &FlexDMDPluginLoad,       &FlexDMDPluginUnload       },
+      { "PUP",           &PUPPluginLoad,           &PUPPluginUnload           },
+      { "RemoteControl", &RemoteControlPluginLoad, &RemoteControlPluginUnload },
+      { "Serum",         &SerumPluginLoad,         &SerumPluginUnload         },
+      { "WMP",           &WMPPluginLoad,           &WMPPluginUnload           },
+      { "UpscaleDMD",    &UpscaleDMDPluginLoad,    &UpscaleDMDPluginUnload    }
+   };
+
+   for (size_t i = 0; i < std::size(plugins); ++i) {
+      auto& p = plugins[i];
+      MsgPI::MsgPluginManager::GetInstance().RegisterPlugin(p.id, p.id, p.id, "", "", "", p.load, p.unload);
+   }
 }
 
 void VPinballLib::Log(VPINBALL_LOG_LEVEL level, const string& message)
