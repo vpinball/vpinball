@@ -88,10 +88,9 @@ if(BUILD_SHARED)
    add_library(FlexDMDPlugin MODULE ${FLEXDMD_PLUGIN_SOURCES})
 
    target_include_directories(FlexDMDPlugin PUBLIC
-      plugins/flexdmd
       ${CMAKE_SOURCE_DIR}/third-party/include
-      src/plugins
-      src
+      plugins
+      plugins/flexdmd
    )
 
    if(NOT PluginPlatform STREQUAL "windows")
@@ -229,10 +228,9 @@ if(BUILD_STATIC)
    add_library(FlexDMDPlugin STATIC ${FLEXDMD_PLUGIN_SOURCES})
 
    target_include_directories(FlexDMDPlugin PUBLIC
-      plugins/flexdmd
       ${CMAKE_SOURCE_DIR}/third-party/include
-      src/plugins
-      src
+      plugins
+      plugins/flexdmd
    )
 
    target_compile_definitions(FlexDMDPlugin PRIVATE

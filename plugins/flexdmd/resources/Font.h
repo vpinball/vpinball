@@ -1,7 +1,7 @@
 #pragma once
 
 #include "AssetSrc.h"
-#include "VPXPlugin.h"
+#include "plugins/VPXPlugin.h"
 #include "bmfonts/BitmapFont.h"
 #include "SurfaceGraphics.h"
 

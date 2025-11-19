@@ -9,8 +9,8 @@
 #include <string>
 #include <chrono>
 
-#include "MsgPlugin.h"
-#include "ControllerPlugin.h"
+#include "plugins/MsgPlugin.h"
+#include "plugins/ControllerPlugin.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // PinUp Player DMD events plugin

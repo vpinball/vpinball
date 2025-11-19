@@ -4,7 +4,7 @@
 
 #include "common.h"
 
-#include "ControllerPlugin.h"
+#include "plugins/ControllerPlugin.h"
 
 #pragma warning(push)
 #pragma warning(disable : 4251) // In PupDMD: std::map<uint16_t,PUPDMD::Hash,std::less<uint16_t>,std::allocator<std::pair<const uint16_t,PUPDMD::Hash>>> needs dll-interface

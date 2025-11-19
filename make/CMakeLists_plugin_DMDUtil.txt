@@ -13,10 +13,9 @@ if(BUILD_SHARED)
    add_library(DMDUtilPlugin MODULE ${DMDUTIL_PLUGIN_SOURCES})
 
    target_include_directories(DMDUtilPlugin PUBLIC
-      plugins/dmdutil
       ${CMAKE_SOURCE_DIR}/third-party/include
-      src/plugins
-      src
+      plugins
+      plugins/dmdutil
    )
 
    if(PluginPlatform STREQUAL "windows")
@@ -119,10 +118,9 @@ if(BUILD_STATIC)
    add_library(DMDUtilPlugin STATIC ${DMDUTIL_PLUGIN_SOURCES})
 
    target_include_directories(DMDUtilPlugin PUBLIC
-      plugins/dmdutil
       ${CMAKE_SOURCE_DIR}/third-party/include
-      src/plugins
-      src
+      plugins
+      plugins/dmdutil
    )
 
    set_target_properties(DMDUtilPlugin PROPERTIES

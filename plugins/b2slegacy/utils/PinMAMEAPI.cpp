@@ -1,6 +1,6 @@
 #include "../common.h"
 #include "PinMAMEAPI.h"
-#include "LoggingPlugin.h"
+#include "plugins/LoggingPlugin.h"
 #include "../Server.h"
 
 namespace B2SLegacy {

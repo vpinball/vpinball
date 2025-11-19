@@ -21,13 +21,13 @@ using std::vector;
 #include <functional>
 
 // Shared logging
-#include "LoggingPlugin.h"
+#include "plugins/LoggingPlugin.h"
 
 // Scriptable API
-#include "ScriptablePlugin.h"
+#include "plugins/ScriptablePlugin.h"
 
 // VPX main API
-#include "VPXPlugin.h"
+#include "plugins/VPXPlugin.h"
 
 namespace B2S
 {

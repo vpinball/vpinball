@@ -113,9 +113,10 @@ if(BUILD_SHARED)
    add_library(B2SLegacyPlugin MODULE ${B2SLEGACY_PLUGIN_SOURCES})
 
    target_include_directories(B2SLegacyPlugin PUBLIC
-      plugins/b2slegacy
       ${CMAKE_SOURCE_DIR}/third-party/include
-      src/plugins
+      plugins
+      plugins/b2slegacy
+      src/core
       src
    )
 
@@ -212,10 +213,11 @@ if(BUILD_STATIC)
    add_library(B2SLegacyPlugin STATIC ${B2SLEGACY_PLUGIN_SOURCES})
 
    target_include_directories(B2SLegacyPlugin PUBLIC
-      plugins/b2slegacy
       ${CMAKE_SOURCE_DIR}/third-party/include
-      src/plugins
-      src
+      plugins
+      plugins/b2slegacy
+      src/core
+	  src
    )
 
    set_target_properties(B2SLegacyPlugin PROPERTIES

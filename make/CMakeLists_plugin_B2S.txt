@@ -27,10 +27,10 @@ if(BUILD_SHARED)
    add_library(B2SPlugin MODULE ${B2S_PLUGIN_SOURCES})
 
    target_include_directories(B2SPlugin PUBLIC
-      plugins/b2s
       ${CMAKE_SOURCE_DIR}/third-party/include
-      src/plugins
-      src
+      plugins
+      plugins/b2s
+      src/core
    )
 
    if(PluginPlatform STREQUAL "windows")
@@ -97,10 +97,10 @@ if(BUILD_STATIC)
    add_library(B2SPlugin STATIC ${B2S_PLUGIN_SOURCES})
 
    target_include_directories(B2SPlugin PUBLIC
-      plugins/b2s
       ${CMAKE_SOURCE_DIR}/third-party/include
-      src/plugins
-      src
+      plugins
+      plugins/b2s
+      src/core
    )
 
    set_target_properties(B2SPlugin PROPERTIES

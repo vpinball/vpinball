@@ -1,7 +1,7 @@
 // license:GPLv3+
 
-#include "MsgPlugin.h"
-#include "ControllerPlugin.h"
+#include "plugins/MsgPlugin.h"
+#include "plugins/ControllerPlugin.h"
 
 #include <functional>
 #include <cstring>
@@ -10,7 +10,7 @@
 
 #include "common.h"
 
-#include "core/ResURIResolver.h"
+#include "ResURIResolver.h"
 
 #include "ScoreView.h"
 

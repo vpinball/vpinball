@@ -1,8 +1,8 @@
 // license:GPLv3+
 
-#include "MsgPlugin.h"
-#include "VPXPlugin.h"
-#include "ScriptablePlugin.h"
+#include "plugins/MsgPlugin.h"
+#include "plugins/VPXPlugin.h"
+#include "plugins/ScriptablePlugin.h"
 #include <cstring>
 
 namespace HelloScript {

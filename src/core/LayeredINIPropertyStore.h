@@ -31,6 +31,7 @@ public:
 
    void SetIniPath(const string& path) { m_path = path; m_modified = true; }
    const string& GetIniPath() const { return m_path; }
+   void Reset();
    bool Load();
    void Load(const mINI::INIStructure& ini);
    void Load(const LayeredINIPropertyStore& store);

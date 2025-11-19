@@ -3,8 +3,8 @@
 #include "common.h"
 #include <future>
 
-#include "MsgPlugin.h"
-#include "ControllerPlugin.h"
+#include "plugins/MsgPlugin.h"
+#include "plugins/ControllerPlugin.h"
 
 #include "PUPManager.h"
 #include "PUPScreen.h"

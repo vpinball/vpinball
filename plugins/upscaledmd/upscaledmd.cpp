@@ -1,8 +1,8 @@
 // license:GPLv3+
 
-#include "MsgPlugin.h"
-#include "ControllerPlugin.h"
-#include "LoggingPlugin.h"
+#include "plugins/MsgPlugin.h"
+#include "plugins/ControllerPlugin.h"
+#include "plugins/LoggingPlugin.h"
 
 #include <vector>
 #include <thread>
@@ -23,7 +23,7 @@
 
 #include "scalefx/scalefx.h"
 
-#include "core/ResURIResolver.h"
+#include "ResURIResolver.h"
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN

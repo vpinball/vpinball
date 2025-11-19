@@ -1,7 +1,7 @@
 // license:GPLv3+
 
-#include "MsgPlugin.h"
-#include "ControllerPlugin.h"
+#include "plugins/MsgPlugin.h"
+#include "plugins/ControllerPlugin.h"
 
 #include <functional>
 #include <cassert>

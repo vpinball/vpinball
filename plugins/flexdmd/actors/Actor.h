@@ -2,7 +2,7 @@
 
 #include "common.h"
 #include "Layout.h"
-#include "ScriptablePlugin.h"
+#include "plugins/ScriptablePlugin.h"
 #include "SurfaceGraphics.h"
 
 #include <SDL3/SDL_surface.h>

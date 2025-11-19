@@ -14,10 +14,9 @@ if(BUILD_SHARED)
    add_library(SerumPlugin MODULE ${SERUM_PLUGIN_SOURCES})
 
    target_include_directories(SerumPlugin PUBLIC
-      plugins/serum
       ${CMAKE_SOURCE_DIR}/third-party/include
-      src/plugins
-      src
+      plugins
+      plugins/serum
    )
 
    if(PluginPlatform STREQUAL "windows")
@@ -109,10 +108,9 @@ if(BUILD_STATIC)
    add_library(SerumPlugin STATIC ${SERUM_PLUGIN_SOURCES})
 
    target_include_directories(SerumPlugin PUBLIC
-      plugins/serum
       ${CMAKE_SOURCE_DIR}/third-party/include
-      src/plugins
-      src
+      plugins
+      plugins/serum
    )
 
    set_target_properties(SerumPlugin PROPERTIES

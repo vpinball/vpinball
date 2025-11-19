@@ -15,10 +15,10 @@ using std::vector;
 #include "libpinmame.h"
 
 // Shared logging
-#include "LoggingPlugin.h"
+#include "plugins/LoggingPlugin.h"
 
 // Scriptable API
-#include "ScriptablePlugin.h"
+#include "plugins/ScriptablePlugin.h"
 
 namespace PinMAME {
 

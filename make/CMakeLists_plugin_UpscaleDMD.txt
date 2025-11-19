@@ -19,10 +19,10 @@ if(BUILD_SHARED)
    add_library(UpscaleDMDPlugin MODULE ${UPSCALEDMD_PLUGIN_SOURCES})
 
    target_include_directories(UpscaleDMDPlugin PUBLIC
-      plugins/upscaledmd
       ${CMAKE_SOURCE_DIR}/third-party/include
-      src/plugins
-      src
+      plugins
+      plugins/upscaledmd
+      src/core
    )
 
    if(PluginPlatform STREQUAL "windows")
@@ -89,10 +89,10 @@ if(BUILD_STATIC)
    add_library(UpscaleDMDPlugin STATIC ${UPSCALEDMD_PLUGIN_SOURCES})
 
    target_include_directories(UpscaleDMDPlugin PUBLIC
-      plugins/upscaledmd
       ${CMAKE_SOURCE_DIR}/third-party/include
-      src/plugins
-      src
+      plugins
+      plugins/upscaledmd
+      src/core
    )
 
    set_target_properties(UpscaleDMDPlugin PROPERTIES

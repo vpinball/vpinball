@@ -8,8 +8,8 @@
 // same local area network. The use case is to allow to play in VR on a cabinet,
 // while the cabinet computer is not powerful enough to feed the VR headset.
 
-#include "MsgPlugin.h"
-#include "VPXPlugin.h"
+#include "plugins/MsgPlugin.h"
+#include "plugins/VPXPlugin.h"
 #include <cassert>
 #include <cstdarg>
 #include <cstdio>
@@ -20,7 +20,7 @@
 #include <semaphore>
 
 // Shared logging
-#include "LoggingPlugin.h"
+#include "plugins/LoggingPlugin.h"
 
 namespace RemoteControl {
 

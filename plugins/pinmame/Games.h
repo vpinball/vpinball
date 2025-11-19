@@ -3,7 +3,7 @@
 #pragma once
 
 #include "common.h"
-#include "ScriptablePlugin.h"
+#include "plugins/ScriptablePlugin.h"
 
 namespace PinMAME {
 

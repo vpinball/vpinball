@@ -1,7 +1,7 @@
 // license:GPLv3+
 
-#include "MsgPlugin.h"
-#include "VPXPlugin.h"
+#include "plugins/MsgPlugin.h"
+#include "plugins/VPXPlugin.h"
 
 namespace HelloWorld {
 

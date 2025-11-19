@@ -11,10 +11,9 @@ if(PluginPlatform STREQUAL "windows")
       plugins/pinup-events/pinup-events.cpp
    )
    target_include_directories(PinupEventsPlugin PUBLIC
-      plugins/pinup-events
       ${CMAKE_SOURCE_DIR}/third-party/include
-      src/plugins
-      src
+      plugins
+      plugins/pinup-events
    )
    add_compile_options(
       $<$<CONFIG:RELEASE>:/Ob2>

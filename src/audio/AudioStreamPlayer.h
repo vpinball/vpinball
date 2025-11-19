@@ -3,7 +3,7 @@
 #pragma once
 
 #include <SDL3/SDL_audio.h>
-#include "../plugins/MsgPluginManager.h"
+#include "plugins/MsgPluginManager.h"
 
 namespace VPX
 {

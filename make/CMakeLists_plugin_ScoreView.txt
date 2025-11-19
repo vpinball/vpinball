@@ -26,10 +26,10 @@ if(BUILD_SHARED)
 
    if(PluginPlatform STREQUAL "windows")
       target_include_directories(ScoreViewPlugin PUBLIC
-         plugins/scoreview
          ${CMAKE_SOURCE_DIR}/third-party/include
-         src/plugins
-         src
+		 plugins
+         plugins/scoreview
+		 src/core
       )
       add_compile_options(
          $<$<CONFIG:RELEASE>:/Ob2>
@@ -71,11 +71,10 @@ if(BUILD_SHARED)
       endif()
    else()
       target_include_directories(ScoreViewPlugin PUBLIC
-         plugins/scoreview
          ${CMAKE_SOURCE_DIR}/third-party/include
-         standalone/inc/wine/include
-         src/plugins
-         src
+		 plugins
+         plugins/scoreview
+		 src/core
       )
       set_target_properties(ScoreViewPlugin PROPERTIES
          PREFIX ""
@@ -103,18 +102,18 @@ if(BUILD_STATIC)
 
    if(PluginPlatform STREQUAL "windows")
       target_include_directories(ScoreViewPlugin PUBLIC
-         plugins/scoreview
          ${CMAKE_SOURCE_DIR}/third-party/include
-         src/plugins
-         src
+		 plugins
+         plugins/scoreview
+		 src/core
       )
    else()
       target_include_directories(ScoreViewPlugin PUBLIC
-         plugins/scoreview
-         ${CMAKE_SOURCE_DIR}/third-party/include
          standalone/inc/wine/include
-         src/plugins
-         src
+         ${CMAKE_SOURCE_DIR}/third-party/include
+		 plugins
+         plugins/scoreview
+		 src/core
       )
    endif()
 

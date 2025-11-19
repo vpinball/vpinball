@@ -5,7 +5,7 @@
 #include <future>
 
 #include "common.h"
-#include "core/ResURIResolver.h"
+#include "ResURIResolver.h"
 
 namespace B2S {
 

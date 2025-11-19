@@ -164,6 +164,8 @@ void Settings::UpdateDefaults()
    }
 }
 
+void Settings::Reset() { m_store.Reset(); }
+
 bool Settings::Load(const bool createDefault)
 {
    if (m_store.Load())

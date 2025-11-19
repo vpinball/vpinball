@@ -31,10 +31,10 @@ using std::string;
 using std::vector;
 
 // Shared logging
-#include "LoggingPlugin.h"
+#include "plugins/LoggingPlugin.h"
 
 // VPX main API
-#include "VPXPlugin.h"
+#include "plugins/VPXPlugin.h"
 
 namespace ScoreView
 {

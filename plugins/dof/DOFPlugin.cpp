@@ -11,9 +11,9 @@
 #include <pthread.h>
 #endif
 
-#include "VPXPlugin.h"
-#include "ControllerPlugin.h"
-#include "LoggingPlugin.h"
+#include "plugins/VPXPlugin.h"
+#include "plugins/ControllerPlugin.h"
+#include "plugins/LoggingPlugin.h"
 
 #pragma warning(push)
 #pragma warning(disable : 4251) // xxx needs dll-interface

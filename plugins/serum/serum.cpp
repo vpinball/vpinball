@@ -7,15 +7,15 @@
 #include <mutex>
 #include <thread>
 
-#include "MsgPlugin.h"
-#include "VPXPlugin.h"
-#include "ControllerPlugin.h"
+#include "plugins/MsgPlugin.h"
+#include "plugins/VPXPlugin.h"
+#include "plugins/ControllerPlugin.h"
 #include "common.h"
 #include "serum-decode.h"
 
 #include <filesystem>
 
-#include "LoggingPlugin.h"
+#include "plugins/LoggingPlugin.h"
 
 using namespace std::string_literals;
 

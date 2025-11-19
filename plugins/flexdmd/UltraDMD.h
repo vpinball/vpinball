@@ -6,7 +6,7 @@
 #include "actors/ScoreBoard.h"
 #include "actors/Image.h"
 #include "resources/ResourceDef.h"
-#include "VPXPlugin.h"
+#include "plugins/VPXPlugin.h"
 
 #include <unordered_dense.h>
 

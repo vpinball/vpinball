@@ -1,10 +1,10 @@
 // license:GPLv3+
 
 #include "common.h"
-#include "ScriptablePlugin.h"
-#include "LoggingPlugin.h"
-#include "VPXPlugin.h"
-#include "ControllerPlugin.h"
+#include "plugins/ScriptablePlugin.h"
+#include "plugins/LoggingPlugin.h"
+#include "plugins/VPXPlugin.h"
+#include "plugins/ControllerPlugin.h"
 
 #include "Server.h"
 #include "forms/FormDMD.h"

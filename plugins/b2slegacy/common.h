@@ -14,9 +14,9 @@
 #include <memory>
 #include <algorithm>
 
-#include "LoggingPlugin.h"
-#include "ScriptablePlugin.h"
-#include "VPXPlugin.h"
+#include "plugins/LoggingPlugin.h"
+#include "plugins/ScriptablePlugin.h"
+#include "plugins/VPXPlugin.h"
 
 #include <SDL3/SDL.h>
 

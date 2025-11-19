@@ -13,10 +13,9 @@ if(BUILD_SHARED)
    add_library(RemoteControlPlugin MODULE ${REMOTE_CONTROL_PLUGIN_SOURCES})
 
    target_include_directories(RemoteControlPlugin PUBLIC
-      plugins/remote-control
       ${CMAKE_SOURCE_DIR}/third-party/include
-      src/plugins
-      src
+      plugins
+      plugins/remote-control
    )
 
    if(PluginPlatform STREQUAL "windows")
@@ -83,10 +82,9 @@ if(BUILD_STATIC)
    add_library(RemoteControlPlugin STATIC ${REMOTE_CONTROL_PLUGIN_SOURCES})
 
    target_include_directories(RemoteControlPlugin PUBLIC
-      plugins/remote-control
       ${CMAKE_SOURCE_DIR}/third-party/include
-      src/plugins
-      src
+      plugins
+      plugins/remote-control
    )
 
    set_target_properties(RemoteControlPlugin PROPERTIES
