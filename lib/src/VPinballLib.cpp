@@ -19,33 +19,6 @@
 #include <mutex>
 #include <nlohmann/json.hpp>
 
-MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
-MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginUnload();
-MSGPI_EXPORT void MSGPIAPI B2SPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
-MSGPI_EXPORT void MSGPIAPI B2SPluginUnload();
-MSGPI_EXPORT void MSGPIAPI B2SLegacyPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
-MSGPI_EXPORT void MSGPIAPI B2SLegacyPluginUnload();
-MSGPI_EXPORT void MSGPIAPI DOFPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
-MSGPI_EXPORT void MSGPIAPI DOFPluginUnload();
-MSGPI_EXPORT void MSGPIAPI DMDUtilPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
-MSGPI_EXPORT void MSGPIAPI DMDUtilPluginUnload();
-MSGPI_EXPORT void MSGPIAPI FlexDMDPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
-MSGPI_EXPORT void MSGPIAPI FlexDMDPluginUnload();
-MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
-MSGPI_EXPORT void MSGPIAPI PinMAMEPluginUnload();
-MSGPI_EXPORT void MSGPIAPI PUPPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
-MSGPI_EXPORT void MSGPIAPI PUPPluginUnload();
-MSGPI_EXPORT void MSGPIAPI RemoteControlPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
-MSGPI_EXPORT void MSGPIAPI RemoteControlPluginUnload();
-MSGPI_EXPORT void MSGPIAPI ScoreViewPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
-MSGPI_EXPORT void MSGPIAPI ScoreViewPluginUnload();
-MSGPI_EXPORT void MSGPIAPI SerumPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
-MSGPI_EXPORT void MSGPIAPI SerumPluginUnload();
-MSGPI_EXPORT void MSGPIAPI WMPPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
-MSGPI_EXPORT void MSGPIAPI WMPPluginUnload();
-MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginLoad(const uint32_t sessionId, const MsgPluginAPI* api);
-MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginUnload();
-
 #ifdef __APPLE__
 #include "VPinballLib_iOS.h"
 #endif
@@ -137,6 +110,10 @@ void VPinballLib::AppIterate()
 
       m_gameLoop = nullptr;
 
+      // The table settings may have been edited during play (camera, rendering, ...), so copy them back to the editor table's settings
+      pActiveTable->m_settings.Load(g_pplayer->m_ptable->m_settings);
+      pActiveTable->m_settings.Save();
+
       delete g_pplayer;
       g_pplayer = nullptr;
 
@@ -170,7 +147,9 @@ void VPinballLib::Init(VPinballEventCallback callback)
 {
    SetEventCallback(callback);
 
-   SDL_RunOnMainThread([](void*) {
+   SDL_RunOnMainThread([](void* userdata) {
+      auto* lib = static_cast<VPinballLib*>(userdata);
+
       g_pvp = new ::VPinball();
       g_pvp->SetLogicalNumberOfProcessors(SDL_GetNumLogicalCPUCores());
       g_pvp->m_settings.SetIniPath(g_pvp->GetPrefPath() + "VPinballX.ini");
@@ -220,9 +199,15 @@ void VPinballLib::Init(VPinballEventCallback callback)
 
       VPXPluginAPIImpl::GetInstance();
 
-      VPinballLib& lib = VPinballLib::Instance();
-      lib.UpdateWebServer();
-   }, nullptr, true);
+      MsgPI::MsgPluginManager::GetInstance().RegisterStaticPlugins();
+
+      for (const auto& plugin : MsgPI::MsgPluginManager::GetInstance().GetPlugins()) {
+         if (lib->LoadValueBool("Plugin."s + plugin->m_id, "Enable", false))
+            plugin->Load(&MsgPI::MsgPluginManager::GetInstance().GetMsgAPI());
+      }
+
+      lib->UpdateWebServer();
+   }, this, true);
 }
 
 void VPinballLib::SetEventCallback(VPinballEventCallback callback)
@@ -299,55 +284,6 @@ void VPinballLib::SendEvent(VPINBALL_EVENT event, void* data)
 
    if (event == VPINBALL_EVENT_PLAYER_STARTED || event == VPINBALL_EVENT_PLAYER_CLOSED)
       WebServer::BroadcastStatus();
-}
-
-void VPinballLib::LoadPlugins()
-{
-   static bool pluginsLoaded = false;
-   if (pluginsLoaded)
-      return;
-   pluginsLoaded = true;
-
-   static constexpr struct {
-      const char* id;
-      void (*load)(uint32_t, const MsgPluginAPI*);
-      void (*unload)();
-   } plugins[] = {
-      { "ScoreView",     &ScoreViewPluginLoad,     &ScoreViewPluginUnload     },
-      { "PinMAME",       &PinMAMEPluginLoad,       &PinMAMEPluginUnload       },
-      { "AlphaDMD",      &AlphaDMDPluginLoad,      &AlphaDMDPluginUnload      },
-      { "B2S",           &B2SPluginLoad,           &B2SPluginUnload           },
-      { "B2SLegacy",     &B2SLegacyPluginLoad,     &B2SLegacyPluginUnload     },
-      { "DOF",           &DOFPluginLoad,           &DOFPluginUnload           },
-      { "DMDUtil",       &DMDUtilPluginLoad,       &DMDUtilPluginUnload       },
-      { "FlexDMD",       &FlexDMDPluginLoad,       &FlexDMDPluginUnload       },
-      { "PUP",           &PUPPluginLoad,           &PUPPluginUnload           },
-      { "RemoteControl", &RemoteControlPluginLoad, &RemoteControlPluginUnload },
-      { "Serum",         &SerumPluginLoad,         &SerumPluginUnload         },
-      { "WMP",           &WMPPluginLoad,           &WMPPluginUnload           },
-      { "UpscaleDMD",    &UpscaleDMDPluginLoad,    &UpscaleDMDPluginUnload    }
-   };
-
-   for (size_t i = 0; i < std::size(plugins); ++i) {
-      auto& p = plugins[i];
-      string sectionName = "Plugin."s + p.id;
-      if (LoadValueBool(sectionName, "Enable", false)) {
-         auto plugin = MsgPI::MsgPluginManager::GetInstance().RegisterPlugin(
-            p.id, p.id, p.id,
-            "", "", "",
-            p.load, p.unload
-         );
-         plugin->Load(&MsgPI::MsgPluginManager::GetInstance().GetMsgAPI());
-         m_plugins.push_back(plugin);
-      }
-   }
-}
-
-void VPinballLib::UnloadPlugins()
-{
-   for (auto it = m_plugins.rbegin(); it != m_plugins.rend(); ++it)
-      (*it)->Unload();
-   m_plugins.clear();
 }
 
 void VPinballLib::Log(VPINBALL_LOG_LEVEL level, const string& message)
@@ -541,15 +477,8 @@ VPINBALL_STATUS VPinballLib::Play()
    if (!pActiveTable)
       return VPINBALL_STATUS_FAILURE;
 
-   if (!SDL_RunOnMainThread([](void*) {
-      VPinballLib& lib = VPinballLib::Instance();
-      lib.LoadPlugins();
-
-      g_pvp->DoPlay(0);
-   }, nullptr, true))
-      return VPINBALL_STATUS_FAILURE;
-
-   return VPINBALL_STATUS_SUCCESS;
+   return SDL_RunOnMainThread([](void*) { g_pvp->DoPlay(0); }, nullptr, true)
+       ? VPINBALL_STATUS_SUCCESS : VPINBALL_STATUS_FAILURE;
 }
 
 VPINBALL_STATUS VPinballLib::Stop()
