@@ -345,9 +345,18 @@ IDispatch* VPXPluginAPIImpl::CreateCOMPluginObject(const string& classId)
 ///////////////////////////////////////////////////////////////////////////////
 // Settings API
 
-void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, bool isSave, MsgSettingDef* settingDef)
+void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, MsgPI::MsgPluginManager::SettingAction action, MsgSettingDef* settingDef)
 {
-   const auto item = std::ranges::find_if(m_pluginSettings, [pluginId, settingDef](const PluginSetting& setting) { return setting.pluginId == pluginId && setting.setting->propId == settingDef->propId; });
+   if (action == MsgPI::MsgPluginManager::SettingAction::UnregisterAll)
+   {
+      // We keep the property definition in the settings, but we remove reference to the plugin owned memory block with live data
+      m_pluginSettings.erase(
+         std::remove_if(m_pluginSettings.begin(), m_pluginSettings.end(), [&pluginId](const PluginSetting& x) { return x.pluginId == pluginId; }), m_pluginSettings.end());
+      return;
+   }
+
+   const auto item = std::ranges::find_if(
+      m_pluginSettings, [&pluginId, &settingDef](const PluginSetting& setting) { return setting.pluginId == pluginId && setting.setting->propId == settingDef->propId; });
 
    // Register property and get or set value
    Settings& settings = g_pplayer ? g_pplayer->m_ptable->m_settings : g_pvp->m_settings;
@@ -366,9 +375,9 @@ void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, bool isSave, M
          item->propId = newId;
          item->setting = settingDef;
       }
-      if (isSave)
+      if (action == MsgPI::MsgPluginManager::SettingAction::Save)
          settings.Set(newId, settingDef->floatDef.Get(), asTableOverride);
-      else
+      else if (action == MsgPI::MsgPluginManager::SettingAction::Load)
          settingDef->floatDef.Set(settings.GetFloat(newId));
       break;
    }
@@ -388,9 +397,9 @@ void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, bool isSave, M
             item->propId = newId;
             item->setting = settingDef;
          }
-         if (isSave)
+         if (action == MsgPI::MsgPluginManager::SettingAction::Save)
             settings.Set(newId, settingDef->intDef.Get(), asTableOverride);
-         else
+         else if (action == MsgPI::MsgPluginManager::SettingAction::Load)
             settingDef->intDef.Set(settings.GetInt(newId));
       }
       else
@@ -404,9 +413,9 @@ void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, bool isSave, M
             item->propId = newId;
             item->setting = settingDef;
          }
-         if (isSave)
+         if (action == MsgPI::MsgPluginManager::SettingAction::Save)
             settings.Set(newId, settingDef->intDef.Get(), asTableOverride);
-         else
+         else if (action == MsgPI::MsgPluginManager::SettingAction::Load)
             settingDef->intDef.Set(settings.GetInt(newId));
       }
       break;
@@ -422,9 +431,9 @@ void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, bool isSave, M
          item->propId = newId;
          item->setting = settingDef;
       }
-      if (isSave)
+      if (action == MsgPI::MsgPluginManager::SettingAction::Save)
          settings.Set(newId, settingDef->boolDef.Get(), asTableOverride);
-      else
+      else if (action == MsgPI::MsgPluginManager::SettingAction::Load)
          settingDef->boolDef.Set(settings.GetBool(newId));
       break;
    }
@@ -440,9 +449,9 @@ void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, bool isSave, M
          item->propId = newId;
          item->setting = settingDef;
       }
-      if (isSave)
+      if (action == MsgPI::MsgPluginManager::SettingAction::Save)
          settings.Set(newId, settingDef->stringDef.Get(), asTableOverride);
-      else
+      else if (action == MsgPI::MsgPluginManager::SettingAction::Load)
       {
          const string& value = settings.GetString(newId);
          settingDef->stringDef.Set(value.c_str());
@@ -632,7 +641,8 @@ VPXPluginAPIImpl::VPXPluginAPIImpl() : m_apiThread(std::this_thread::get_id())
 {
    // Message host
    const auto& msgApi = MsgPI::MsgPluginManager::GetInstance().GetMsgAPI();
-   MsgPI::MsgPluginManager::GetInstance().SetSettingsHandler([this](const std::string& pluginId, bool isSave, MsgSettingDef* settingDef) { UpdateSetting(pluginId, isSave, settingDef); });
+   MsgPI::MsgPluginManager::GetInstance().SetSettingsHandler(
+      [this](const std::string& pluginId, MsgPI::MsgPluginManager::SettingAction action, MsgSettingDef* settingDef) { UpdateSetting(pluginId, action, settingDef); });
 
    // VPX API
    m_api.GetVpxInfo = GetVpxInfo;

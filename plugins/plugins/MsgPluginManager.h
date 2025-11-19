@@ -89,14 +89,27 @@ public:
    static MsgPluginManager& GetInstance();
    ~MsgPluginManager();
 
-   std::shared_ptr<MsgPlugin> RegisterPlugin(const std::string& id, const std::string& name, const std::string& description, const std::string& author, const std::string& version, const std::string& link, msgpi_load_plugin loadPlugin, msgpi_unload_plugin unloadPlugin);
+   const MsgPluginAPI& GetMsgAPI() const { return m_api; }
+
+   std::shared_ptr<MsgPlugin> RegisterPlugin(const std::string& id, const std::string& name, const std::string& description, const std::string& author, const std::string& version,
+   const std::string& link, msgpi_load_plugin loadPlugin, msgpi_unload_plugin unloadPlugin);
    void ScanPluginFolder(const std::string& pluginDir, const std::function<void(MsgPlugin&)>& callback);
    std::shared_ptr<MsgPlugin> GetPlugin(const std::string& pluginId) const;
    const std::vector<std::shared_ptr<MsgPlugin>> GetPlugins() const { return m_plugins; }
-   const MsgPluginAPI& GetMsgAPI() const { return m_api; }
-   void ProcessAsyncCallbacks();
+   void LoadPlugin(MsgPlugin& plugin);
+   void UnloadPlugin(MsgPlugin& plugin);
    void UnloadPlugins();
-   void SetSettingsHandler(const std::function<void(const std::string& pluginId, bool isSave, MsgSettingDef* settingDef)>& handler) { m_settingHandler = handler; }
+
+   enum class SettingAction
+   {
+      Load,
+      Save,
+      UnregisterAll
+   };
+   void SetSettingsHandler(const std::function<void(const std::string& pluginId, SettingAction action, MsgSettingDef* settingDef)>& handler) { m_settingHandler = handler; }
+
+   void ProcessAsyncCallbacks();
+
    void UpdateAPIThread() { m_apiThread = std::this_thread::get_id(); }
 
 private:
@@ -144,7 +157,7 @@ private:
    std::vector<TimerEntry> m_timers;
    std::mutex m_timerListMutex;
 
-   std::function<void(const std::string& pluginId, bool isSave, MsgSettingDef* settingDef)> m_settingHandler;
+   std::function<void(const std::string& pluginId, SettingAction action, MsgSettingDef* settingDef)> m_settingHandler;
 
    MsgPluginAPI m_api;
    

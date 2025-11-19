@@ -72,12 +72,12 @@ void PluginSettingsPage::BuildPage()
       }, //
       [this](bool v)
       {
-         const MsgPluginManager& manager = MsgPluginManager::GetInstance();
-         auto plugin = manager.GetPlugin(m_pluginId);
-         if (v && !plugin->IsLoaded())
-            plugin->Load(&manager.GetMsgAPI());
-         else if (!v && plugin->IsLoaded())
-            plugin->Unload();
+         MsgPluginManager& manager = MsgPluginManager::GetInstance();
+         auto& plugin = *manager.GetPlugin(m_pluginId);
+         if (v && !plugin.IsLoaded())
+            manager.LoadPlugin(plugin);
+         else if (!v && plugin.IsLoaded())
+            manager.UnloadPlugin(plugin);
          BuildPage();
       }));
 
