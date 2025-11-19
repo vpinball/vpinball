@@ -23,6 +23,7 @@ public:
 
    void SetIniPath(const string &path);
    const string& GetIniPath() const;
+   void Reset();
    bool Load(const bool createDefault);
    void Load(const Settings &settings);
    void Save();

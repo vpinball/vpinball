@@ -13,10 +13,9 @@ if(BUILD_SHARED)
    add_library(AlphaDMDPlugin MODULE ${ALPHADMD_PLUGIN_SOURCES})
 
    target_include_directories(AlphaDMDPlugin PUBLIC
-      plugins/alphadmd
       ${CMAKE_SOURCE_DIR}/third-party/include
-      src/plugins
-      src
+      plugins
+      plugins/alphadmd
    )
 
    if(PluginPlatform STREQUAL "windows")
@@ -83,10 +82,9 @@ if(BUILD_STATIC)
    add_library(AlphaDMDPlugin STATIC ${ALPHADMD_PLUGIN_SOURCES})
 
    target_include_directories(AlphaDMDPlugin PUBLIC
-      plugins/alphadmd
       ${CMAKE_SOURCE_DIR}/third-party/include
-      src/plugins
-      src
+      plugins
+      plugins/alphadmd
    )
 
    set_target_properties(AlphaDMDPlugin PROPERTIES

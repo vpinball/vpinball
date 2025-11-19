@@ -1,6 +1,6 @@
 #pragma once
 
-#include "VPXPlugin.h"
+#include "plugins/VPXPlugin.h"
 #include "AssetSrc.h"
 #include <SDL3/SDL_surface.h>
 

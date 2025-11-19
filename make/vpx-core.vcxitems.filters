@@ -147,6 +147,27 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="$(SolutionDir)/../../plugins/plugins/MsgPluginManager.cpp">
+      <Filter>plugin</Filter>
+    </ClCompile>
+    <ClInclude Include="$(SolutionDir)/../../plugins/plugins/MsgPluginManager.h">
+      <Filter>plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../plugins/plugins/MsgPlugin.h">
+      <Filter>plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../plugins/plugins/ControllerPlugin.h">
+      <Filter>plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../plugins/plugins/PinMAMEPlugin.h">
+      <Filter>plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../plugins/plugins/ScriptablePlugin.h">
+      <Filter>plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../plugins/plugins/VPXPlugin.h">
+      <Filter>plugin</Filter>
+    </ClInclude>
     <ClCompile Include="$(SolutionDir)/../../src/audio/AudioPlayer.cpp">
       <Filter>audio</Filter>
     </ClCompile>
@@ -303,12 +324,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/physics/quadtree.cpp">
       <Filter>physics</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/plugins/MsgPluginManager.cpp">
-      <Filter>plugin</Filter>
-    </ClCompile>
-    <ClInclude Include="$(SolutionDir)/../../src/plugins/MsgPluginManager.h">
-      <Filter>plugin</Filter>
-    </ClInclude>
     <ClCompile Include="$(SolutionDir)/../../src/renderer/Anaglyph.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
@@ -1093,18 +1108,6 @@
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/physics/quadtree.h">
       <Filter>physics</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/plugins/VPXPlugin.h">
-      <Filter>plugin</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/plugins/MsgPlugin.h">
-      <Filter>plugin</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/plugins/ControllerPlugin.h">
-      <Filter>plugin</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/plugins/PinMAMEPlugin.h">
-      <Filter>plugin</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/renderer/Anaglyph.h">
       <Filter>renderer</Filter>
@@ -1972,9 +1975,6 @@
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../third-party/include/simple-uri-parser/uri_parser.h">
       <Filter>third-party\simple-uri-parser</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/plugins/ScriptablePlugin.h">
-      <Filter>plugin</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/core/DynamicScript.h">
       <Filter>core</Filter>

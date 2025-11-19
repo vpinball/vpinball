@@ -13,10 +13,9 @@ if(BUILD_SHARED)
    add_library(DOFPlugin MODULE ${DOF_PLUGIN_SOURCES})
 
    target_include_directories(DOFPlugin PUBLIC
-      plugins/dof
       ${CMAKE_SOURCE_DIR}/third-party/include
-      src/plugins
-      src
+      plugins
+      plugins/dof
    )
 
    if(PluginPlatform STREQUAL "windows")
@@ -124,10 +123,9 @@ if(BUILD_STATIC)
    add_library(DOFPlugin STATIC ${DOF_PLUGIN_SOURCES})
 
    target_include_directories(DOFPlugin PUBLIC
-      plugins/dof
       ${CMAKE_SOURCE_DIR}/third-party/include
-      src/plugins
-      src
+      plugins
+      plugins/dof
    )
 
    set_target_properties(DOFPlugin PROPERTIES

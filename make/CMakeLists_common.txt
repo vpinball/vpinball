@@ -4,6 +4,13 @@
 add_compile_definitions($<$<CONFIG:Release>:IMGUI_DISABLE_DEBUG_TOOLS>)
 
 set(VPX_SOURCES
+   plugins/plugins/MsgPlugin.h
+   plugins/plugins/MsgPluginManager.h
+   plugins/plugins/MsgPluginManager.cpp
+   plugins/plugins/VPXPlugin.h
+   plugins/plugins/ControllerPlugin.h
+   plugins/plugins/ScriptablePlugin.h
+
    src/audio/AudioPlayer.cpp
    src/audio/AudioPlayer.h
    src/audio/AudioStreamPlayer.cpp
@@ -178,13 +185,6 @@ set(VPX_SOURCES
    src/physics/PhysicsEngine.h
    src/physics/quadtree.cpp
    src/physics/quadtree.h
-
-   src/plugins/MsgPlugin.h
-   src/plugins/MsgPluginManager.h
-   src/plugins/MsgPluginManager.cpp
-   src/plugins/VPXPlugin.h
-   src/plugins/ControllerPlugin.h
-   src/plugins/ScriptablePlugin.h
 
    src/renderer/trace.h
    src/renderer/Anaglyph.cpp

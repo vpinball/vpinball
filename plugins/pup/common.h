@@ -33,16 +33,16 @@ using std::vector;
 #include <SDL3/SDL_surface.h>
 
 // Shared logging
-#include "LoggingPlugin.h"
+#include "plugins/LoggingPlugin.h"
 
 // Scriptable API
-#include "ScriptablePlugin.h"
+#include "plugins/ScriptablePlugin.h"
 
 // Controller API
-#include "ControllerPlugin.h"
+#include "plugins/ControllerPlugin.h"
 
 // VPX main API
-#include "VPXPlugin.h"
+#include "plugins/VPXPlugin.h"
 
 namespace PUP
 {

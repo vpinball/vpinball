@@ -2,7 +2,7 @@
 
 #include "common.h"
 #include "Server.h"
-#include "LoggingPlugin.h"
+#include "plugins/LoggingPlugin.h"
 
 using namespace std::string_literals;
 

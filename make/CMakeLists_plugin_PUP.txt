@@ -37,10 +37,9 @@ if(BUILD_SHARED)
    add_library(PUPPlugin MODULE ${PUP_PLUGIN_SOURCES})
 
    target_include_directories(PUPPlugin PUBLIC
-      plugins/pup
       ${CMAKE_SOURCE_DIR}/third-party/include
-      src/plugins
-      src
+      plugins
+      plugins/pup
    )
 
    if(PluginPlatform STREQUAL "windows")
@@ -195,10 +194,9 @@ if(BUILD_STATIC)
    add_library(PUPPlugin STATIC ${PUP_PLUGIN_SOURCES})
 
    target_include_directories(PUPPlugin PUBLIC
-      plugins/pup
       ${CMAKE_SOURCE_DIR}/third-party/include
-      src/plugins
-      src
+      plugins
+      plugins/pup
    )
 
    set_target_properties(PUPPlugin PROPERTIES

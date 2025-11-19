@@ -1,8 +1,8 @@
 // license:GPLv3+
 
-#include "MsgPlugin.h"
-#include "ControllerPlugin.h"
-#include "LoggingPlugin.h"
+#include "plugins/MsgPlugin.h"
+#include "plugins/ControllerPlugin.h"
+#include "plugins/LoggingPlugin.h"
 
 #include <vector>
 #include <thread>

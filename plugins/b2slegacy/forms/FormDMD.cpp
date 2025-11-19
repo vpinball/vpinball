@@ -5,7 +5,7 @@
 #include "../controls/B2SPictureBox.h"
 #include "../utils/VPXGraphics.h"
 #include "../utils/DMDOverlay.h"
-#include "LoggingPlugin.h"
+#include "plugins/LoggingPlugin.h"
 
 namespace B2SLegacy {
 

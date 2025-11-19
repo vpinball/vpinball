@@ -1,9 +1,9 @@
 // license:GPLv3+
 
 #include "common.h"
-#include "ScriptablePlugin.h"
-#include "LoggingPlugin.h"
-#include "VPXPlugin.h"
+#include "plugins/ScriptablePlugin.h"
+#include "plugins/LoggingPlugin.h"
+#include "plugins/VPXPlugin.h"
 
 #include "WMPCore.h"
 #include "WMPControls.h"  

@@ -28,10 +28,10 @@ using std::string;
 using std::vector;
 
 // Shared logging
-#include "LoggingPlugin.h"
+#include "plugins/LoggingPlugin.h"
 
 // Scriptable API
-#include "ScriptablePlugin.h"
+#include "plugins/ScriptablePlugin.h"
 
 namespace Flex
 {

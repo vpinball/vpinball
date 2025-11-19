@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Actor.h"
-#include "VPXPlugin.h"
+#include "plugins/VPXPlugin.h"
 #include <cassert>
 
 namespace Flex {

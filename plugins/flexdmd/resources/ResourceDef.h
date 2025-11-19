@@ -1,7 +1,7 @@
 #pragma once
 
 #include "actors/Layout.h"
-#include "VPXPlugin.h"
+#include "plugins/VPXPlugin.h"
 
 #include <string>
 using std::string;

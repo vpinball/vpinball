@@ -22,13 +22,18 @@ LayeredINIPropertyStore::LayeredINIPropertyStore(LayeredINIPropertyStore& parent
    assert(!parent.m_parent.has_value());
 }
 
-
-bool LayeredINIPropertyStore::Load()
+void LayeredINIPropertyStore::Reset()
 {
    m_modified = false;
    m_intValues.clear();
    m_floatValues.clear();
    m_stringValues.clear();
+   m_ini.clear();
+}
+
+bool LayeredINIPropertyStore::Load()
+{
+   Reset();
    mINI::INIFile file(m_path);
    if (file.read(m_ini))
    {

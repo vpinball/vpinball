@@ -13,10 +13,9 @@ if(BUILD_SHARED)
    add_library(HelloWorldPlugin MODULE ${HELLOWORLD_PLUGIN_SOURCES})
 
    target_include_directories(HelloWorldPlugin PUBLIC
-      plugins/helloworld
       ${CMAKE_SOURCE_DIR}/third-party/include
-      src/plugins
-      src
+      plugins
+      plugins/helloworld
    )
 
    if(PluginPlatform STREQUAL "windows")
@@ -83,10 +82,9 @@ if(BUILD_STATIC)
    add_library(HelloWorldPlugin STATIC ${HELLOWORLD_PLUGIN_SOURCES})
 
    target_include_directories(HelloWorldPlugin PUBLIC
-      plugins/helloworld
       ${CMAKE_SOURCE_DIR}/third-party/include
-      src/plugins
-      src
+      plugins
+      plugins/helloworld
    )
 
    set_target_properties(HelloWorldPlugin PROPERTIES

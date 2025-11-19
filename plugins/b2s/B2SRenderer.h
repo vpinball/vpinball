@@ -9,9 +9,9 @@
 #include "B2SDataModel.h"
 #include "B2SDMDOverlay.h"
 
-#include "ControllerPlugin.h"
+#include "plugins/ControllerPlugin.h"
 
-#include "core/ResURIResolver.h"
+#include "ResURIResolver.h"
 
 namespace B2S {
    

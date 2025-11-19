@@ -10,10 +10,10 @@
 using std::string;
 
 // Shared logging
-#include "LoggingPlugin.h"
+#include "plugins/LoggingPlugin.h"
 
 // VPX main API
-#include "VPXPlugin.h"
+#include "plugins/VPXPlugin.h"
 
 #ifdef _MSC_VER
 #define PATH_SEPARATOR_CHAR '\\'

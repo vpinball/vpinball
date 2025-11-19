@@ -11,6 +11,10 @@
 
 #include "core/VPApp.h"
 
+#include "plugins/MsgPluginManager.h"
+
+using namespace MsgPI;
+
 static unsigned int onPrepareFrameMsgId = 0;
 
 void AddOnPrepareFrameHandler(msgpi_msg_callback onPrepareFrame, void* context)
@@ -163,7 +167,7 @@ void ResetVPX()
    }
 
    // Reset settings
-   g_pvp->m_settings = Settings();
+   g_pvp->m_settings.Reset();
    Settings& settings = g_pvp->m_settings;
    settings.SetPlayerVR_AskToTurnOn(2, false);
    settings.SetPlayer_PlayfieldFullScreen(0, false);

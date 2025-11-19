@@ -3,7 +3,7 @@
 #include "Actor.h"
 #include "AnimatedActor.h"
 #include "Group.h"
-#include "ScriptablePlugin.h"
+#include "plugins/ScriptablePlugin.h"
 
 #include "tweeny-3.2.0.h"
 

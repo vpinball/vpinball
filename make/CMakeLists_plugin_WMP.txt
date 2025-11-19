@@ -27,10 +27,9 @@ if(BUILD_SHARED)
    add_library(WMPPlugin MODULE ${WMP_PLUGIN_SOURCES})
 
    target_include_directories(WMPPlugin PUBLIC
-      plugins/wmp
       ${CMAKE_SOURCE_DIR}/third-party/include
-      src/plugins
-      src
+      plugins
+      plugins/wmp
    )
 
    if(PluginPlatform STREQUAL "windows")
@@ -97,10 +96,9 @@ if(BUILD_STATIC)
    add_library(WMPPlugin STATIC ${WMP_PLUGIN_SOURCES})
 
    target_include_directories(WMPPlugin PUBLIC
-      plugins/wmp
       ${CMAKE_SOURCE_DIR}/third-party/include
-      src/plugins
-      src
+      plugins
+      plugins/wmp
    )
 
    set_target_properties(WMPPlugin PROPERTIES

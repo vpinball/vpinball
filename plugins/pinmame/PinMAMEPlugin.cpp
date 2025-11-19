@@ -1,11 +1,11 @@
 // license:GPLv3+
 
 #include "common.h"
-#include "MsgPlugin.h"
-#include "LoggingPlugin.h"
-#include "ScriptablePlugin.h"
-#include "ControllerPlugin.h"
-#include "VPXPlugin.h" // Only used for optional feature (locating pinmame files along a VPX table)
+#include "plugins/MsgPlugin.h"
+#include "plugins/LoggingPlugin.h"
+#include "plugins/ScriptablePlugin.h"
+#include "plugins/ControllerPlugin.h"
+#include "plugins/VPXPlugin.h" // Only used for optional feature (locating pinmame files along a VPX table)
 
 #include <filesystem>
 #include <cassert>

@@ -2,7 +2,7 @@
 
 #include "common.h"
 #include "SurfaceGraphics.h"
-#include "VPXPlugin.h"
+#include "plugins/VPXPlugin.h"
 #include "resources/AssetManager.h"
 #include "actors/Group.h"
 

@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include "MsgPlugin.h"
-#include "LoggingPlugin.h" 
-#include "ScriptablePlugin.h"
-#include "VPXPlugin.h"
-#include "ControllerPlugin.h"
+#include "plugins/MsgPlugin.h"
+#include "plugins/LoggingPlugin.h" 
+#include "plugins/ScriptablePlugin.h"
+#include "plugins/VPXPlugin.h"
+#include "plugins/ControllerPlugin.h"
 
 #include <string>
 #include <memory>

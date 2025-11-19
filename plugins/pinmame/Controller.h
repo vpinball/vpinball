@@ -3,7 +3,7 @@
 #pragma once
 
 #include "common.h"
-#include "ControllerPlugin.h"
+#include "plugins/ControllerPlugin.h"
 
 namespace PinMAME {
 
