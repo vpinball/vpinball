@@ -1,13 +1,14 @@
 // ****************************************************************************
-// * This file is part of the HqMAME project. It is distributed under         *
-// * GNU General Public License: http://www.gnu.org/licenses/gpl-3.0          *
+// * This file is part of the xBRZ project. It is distributed under           *
+// * GNU General Public License: https://www.gnu.org/licenses/gpl-3.0         *
 // * Copyright (C) Zenju (zenju AT gmx DOT de) - All Rights Reserved          *
 // *                                                                          *
 // * Additionally and as a special exception, the author gives permission     *
-// * to link the code of this program with the MAME library (or with modified *
-// * versions of MAME that use the same license as MAME), and distribute      *
-// * linked combinations including the two. You must obey the GNU General     *
-// * Public License in all respects for all of the code used other than MAME. *
+// * to link the code of this program with the following libraries            *
+// * (or with modified versions that use the same licenses), and distribute   *
+// * linked combinations including the two: MAME, FreeFileSync, Snes9x, ePSXe *
+// * You must obey the GNU General Public License in all respects for all of  *
+// * the code used other than MAME, FreeFileSync, Snes9x, ePSXe.              *
 // * If you modify this file, you may extend this exception to your version   *
 // * of the file, but you are not obligated to do so. If you do not wish to   *
 // * do so, delete this exception statement from your version.                *
@@ -22,11 +23,12 @@ namespace xbrz
 {
 struct ScalerCfg
 {
-    float luminanceWeight            = 1.f;
-    float equalColorTolerance        = 30.f;
-    float dominantDirectionThreshold = 3.6f;
-    float steepDirectionThreshold    = 2.2f;
-    float newTestAttribute           = 0.f; //unused; test new parameters
+    static constexpr float luminanceWeight            = 1.f;
+    static constexpr float equalColorTolerance        = 30.f;
+    static constexpr float centerDirectionBias        = 4.f;
+    static constexpr float dominantDirectionThreshold = 3.6f;
+    static constexpr float steepDirectionThreshold    = 2.2f;
+    static constexpr float newTestAttribute           = 0.f; //unused; test new parameters
 };
 }
 
