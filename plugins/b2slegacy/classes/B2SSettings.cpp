@@ -7,7 +7,7 @@
 namespace B2SLegacy {
 
 // FIXME not sure why these are not bool ?
-MSGPI_INT_VAL_SETTING(hideGrillProp, "B2SHideDMD", "B2SHideDMD", "", true, B2SSettingsCheckedState_Unchecked, B2SSettingsCheckedState_Indeterminate, B2SSettingsCheckedState_Indeterminate);
+MSGPI_INT_VAL_SETTING(hideGrillProp, "B2SHideGrill", "B2SHideGrill", "", true, B2SSettingsCheckedState_Unchecked, B2SSettingsCheckedState_Indeterminate, B2SSettingsCheckedState_Indeterminate);
 MSGPI_BOOL_VAL_SETTING(hideB2SProp, "B2SHideB2SDMD", "B2SHideB2SDMD", "", true, false);
 MSGPI_BOOL_VAL_SETTING(hideB2SBackglassProp, "B2SHideB2SBackglass", "B2SHideB2SBackglass", "", true, false);
 MSGPI_INT_VAL_SETTING(hideDMDProp, "B2SHideDMD", "B2SHideDMD", "", true, B2SSettingsCheckedState_Unchecked, B2SSettingsCheckedState_Indeterminate, B2SSettingsCheckedState_Indeterminate);
