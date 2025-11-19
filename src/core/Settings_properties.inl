@@ -146,7 +146,7 @@ PropBool(Player, DisableAO, "Disable Ambient Occlusion"s, ""s, false);
 PropBool(Player, DynamicAO, "Dynamic Ambient Occlusion"s, ""s, true);
 PropEnum(Player, PFReflection, "Reflection Quality"s,
    "Limit the quality of reflections for better performance.\n'Dynamic' is recommended and will give the best results, but may harm performance.\n'Static Only' has no performance cost (except for VR rendering).\nOther options feature different trade-offs between quality and performance."s,
-   int, 0, "Disable Reflections"s, "Balls Only"s, "Static Only"s, "Static & Balls"s, "Static & Unsynced Dynamic"s, "Dynamic"s);
+   int, 5, "Disable Reflections"s, "Balls Only"s, "Static Only"s, "Static & Balls"s, "Static & Unsynced Dynamic"s, "Dynamic"s);
 PropInt(Player, MaxTexDimension, "Maximum texture dimension"s, "Images sized above this limit will be automatically scaled down on load"s, 512, 16384, g_isMobile ? 1536 : 16384);
 PropInt(Player, AlphaRampAccuracy, "Detail Level"s, "Level of detail for balls and ramps"s, 1, 10, 10);
 PropEnum(Player, BGSet, "View Mode"s, "Select between desktop, cabinet or 'full single screen' viewing mode configurations (if a table has set them up correctly)"s, int, 0, "Desktop / Full Single Screen"s, "Cabinet"s, "Full Single Screen"s);
@@ -158,7 +158,7 @@ PropFloat(Player, AAFactor, "Full Scene Anti Aliasing"s,
 PropEnum(Player, MSAASamples, "MSAA level"s,
    "Set the amount of MSAA samples.\nMSAA can help reduce geometry aliasing at the cost of performance and GPU memory.\nThis can improve image quality if not using supersampling"s, int,
    0, "Disabled"s, "4 Samples"s, "6 Samples"s, "8 Samples"s);
-PropEnum(Player, FXAA, "Post processed antialiasing"s, "Select between different antialiasing techniques that offer different quality vs performance balances"s, int, 1, "Disabled"s,
+PropEnum(Player, FXAA, "Post processed antialiasing"s, "Select between different antialiasing techniques that offer different quality vs performance balances"s, int, 0, "Disabled"s,
    "Fast FXAA"s, "Standard FXAA"s, "Quality FXAA"s, "Fast NFAA"s, "Standard DLAA"s, "Quality SMAA"s);
 PropEnum(Player, Sharpen, "Post processed sharpening"s, "Select between different sharpening techniques that offer different quality vs performance balances"s, int, 0, "Disabled"s, "CAS"s,
    "Bilateral CAS"s);
@@ -453,7 +453,7 @@ PropArray(Player, PhysicsSetName, string, String, String, m_propPlayer_PhysicsSe
    m_propPlayer_PhysicsSetName4, m_propPlayer_PhysicsSetName5, m_propPlayer_PhysicsSetName6, m_propPlayer_PhysicsSetName7);
 
 // Stereo settings
-PropBool(Player, Stereo3DEnabled, "Enable Stereo Rendering"s, "Allow to temporarily disable stereo rendering"s, false);
+PropBool(Player, Stereo3DEnabled, "Enable Stereo Rendering"s, "Allow to temporarily disable stereo rendering"s, true);
 PropEnum(Player, Stereo3D, "Stereo rendering"s, "Stereo rendering mode"s, StereoMode, 0, "Disabled"s, "Top / Bottom"s, "Interlaced (e.g. LG TVs)"s, "Flipped Interlaced (e.g. LG TVs)"s,
    "Side by Side"s, "Anaglyph Red/Cyan"s, "Anaglyph Green/Magenta"s, "Anaglyph Blue/Amber"s, "Anaglyph Cyan/Red"s, "Anaglyph Magenta/Green"s, "Anaglyph Amber/Blue"s, "Anaglyph Custom 1"s,
    "Anaglyph Custom 2"s, "Anaglyph Custom 3"s, "Anaglyph Custom 4"s);
