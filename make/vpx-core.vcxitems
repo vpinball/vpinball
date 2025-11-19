@@ -1514,7 +1514,6 @@
   <ItemGroup>
     <ClInclude Include="$(SolutionDir)/../../plugins/plugins/MsgPlugin.h" />
     <ClInclude Include="$(SolutionDir)/../../plugins/plugins/ControllerPlugin.h" />
-    <ClInclude Include="$(SolutionDir)/../../plugins/plugins/PinMAMEPlugin.h" />
     <ClInclude Include="$(SolutionDir)/../../plugins/plugins/ScriptablePlugin.h" />
     <ClInclude Include="$(SolutionDir)/../../plugins/plugins/MsgPluginManager.h" />
     <ClInclude Include="$(SolutionDir)/../../plugins/plugins/VPXPlugin.h" />
