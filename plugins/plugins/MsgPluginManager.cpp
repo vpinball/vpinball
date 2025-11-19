@@ -237,7 +237,7 @@ void MsgPluginManager::RegisterSetting(const uint32_t endpointId, MsgSettingDef*
    const auto item = std::ranges::find_if(pm.m_plugins, [endpointId](const std::shared_ptr<MsgPlugin>& plg) { return plg->IsLoaded() && plg->m_endpointId == endpointId; });
    if (item == pm.m_plugins.end())
       return;
-   pm.m_settingHandler((*item)->m_id, false, settingDef);
+   pm.m_settingHandler((*item)->m_id, SettingAction::Load, settingDef);
 }
 
 void MsgPluginManager::SaveSetting(const uint32_t endpointId, MsgSettingDef* settingDef)
@@ -248,7 +248,7 @@ void MsgPluginManager::SaveSetting(const uint32_t endpointId, MsgSettingDef* set
    const auto item = std::ranges::find_if(pm.m_plugins, [endpointId](const std::shared_ptr<MsgPlugin>& plg) { return plg->IsLoaded() && plg->m_endpointId == endpointId; });
    if (item == pm.m_plugins.end())
       return;
-   pm.m_settingHandler((*item)->m_id, true, settingDef);
+   pm.m_settingHandler((*item)->m_id, SettingAction::Save, settingDef);
 }
 
 void MsgPluginManager::RunOnMainThread(const double delayInS, const msgpi_timer_callback callback, void* userData)
@@ -402,6 +402,17 @@ void MsgPluginManager::ScanPluginFolder(const std::string& pluginDir, const std:
          }
       }
    }
+}
+
+void MsgPluginManager::LoadPlugin(MsgPlugin& plugin)
+{
+   plugin.Load(&m_api);
+}
+
+void MsgPluginManager::UnloadPlugin(MsgPlugin& plugin)
+{
+   m_settingHandler(plugin.m_id, SettingAction::UnregisterAll, nullptr);
+   plugin.Unload();
 }
 
 void MsgPluginManager::UnloadPlugins()

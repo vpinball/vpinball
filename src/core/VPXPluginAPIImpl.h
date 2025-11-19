@@ -36,7 +36,7 @@ public:
 
    struct PluginSetting
    {
-      const string pluginId;
+      string pluginId;
       VPX::Properties::PropertyRegistry::PropId propId;
       MsgSettingDef* setting;
    };
@@ -76,7 +76,7 @@ private:
    static void DeleteTexture(VPXTexture texture);
 
    // Plugin settings
-   void UpdateSetting(const std::string& pluginId, bool isSave, MsgSettingDef* settingDef);
+   void UpdateSetting(const std::string& pluginId, MsgPI::MsgPluginManager::SettingAction action, MsgSettingDef* settingDef);
    vector<PluginSetting> m_pluginSettings;
 
    // Plugin logging API
