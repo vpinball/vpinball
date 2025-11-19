@@ -16,6 +16,7 @@
 #if defined(__APPLE__) || defined(__linux__) || defined(__ANDROID__)
 #include <pthread.h>
 #endif
+#include <cassert>
 
 #include "xbrz/xbrz.h"
 
@@ -180,6 +181,10 @@ static void RenderThread()
          
          switch (upscalerMode)
          {
+         case UpscalerMode::UM_Disabled:
+            assert(false); // As this thread is supposed to be stopped when there is no upscaling to be done
+            break;
+
          case UpscalerMode::UM_ScaleFX_AA:
             scalefx::upscale<false>(rgbaSrcFrame.data(), rgbaDstFrame.data(), dmdSrc.width, dmdSrc.height, displayId.frameFormat == CTLPI_DISPLAY_FORMAT_LUM8);
             break;

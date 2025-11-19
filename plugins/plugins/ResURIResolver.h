@@ -6,7 +6,7 @@
 #include <vector>
 #include <unordered_dense.h>
 
-#include "plugins/ControllerPlugin.h"
+#include "ControllerPlugin.h"
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -14,7 +14,11 @@
 //////////////////////////////////////////////////////////////////////////////////////////
 
 //
-// General URI scheme for accessing shared states
+// General URI scheme for accessing shared states exposed through ControllerPlugin API
+// 
+// This class needs 2 third party dependencies:
+// - unordered_dense.h from https://github.com/martinus/unordered_dense
+// - simple-uri-parser.f from https://github.com/jholloc/simple-uri-parser
 // 
 // The syntax is: scheme://authority/path?query
 // 

@@ -159,9 +159,6 @@
     <ClInclude Include="$(SolutionDir)/../../plugins/plugins/ControllerPlugin.h">
       <Filter>plugin</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../plugins/plugins/PinMAMEPlugin.h">
-      <Filter>plugin</Filter>
-    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../plugins/plugins/ScriptablePlugin.h">
       <Filter>plugin</Filter>
     </ClInclude>

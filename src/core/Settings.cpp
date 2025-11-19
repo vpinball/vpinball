@@ -139,6 +139,8 @@ void Settings::UpdateDefaults()
       VPX::RenderOutput::OutputMode mode = i == VPXWindowId::VPXWINDOW_Playfield ? VPX::RenderOutput::OutputMode::OM_WINDOW : (VPX::RenderOutput::OutputMode)GetWindow_Mode(i);
       switch (mode)
       {
+      case VPX::RenderOutput::OutputMode::OM_DISABLED: break;
+
       case VPX::RenderOutput::OutputMode::OM_WINDOW:
       {
          // Android won't have window dimension until after we launch VPinballPlayerActivity
