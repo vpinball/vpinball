@@ -2604,7 +2604,6 @@ RenderTarget* Renderer::ApplyStereo(RenderTarget* renderedRT, RenderTarget* outp
       m_renderDevice->SetRenderTarget("Stereo"s, outputRT, false);
       m_renderDevice->AddRenderTargetDependency(renderedRT);
       m_renderDevice->m_stereoShader->SetTexture(SHADER_tex_stereo_fb, renderedRT->GetColorSampler());
-      m_renderDevice->m_stereoShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), 1.0f, 1.0f);
       m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_stereoShader);
       return outputRT;
    }

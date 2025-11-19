@@ -184,20 +184,17 @@ if ($gen_stereo)
 {
 	Write-Host "`n>>>>>>>>>>>>>>>> Stereo shaders"
 	New-Item -Path . -Name "../bgfx_stereo.h" -ItemType "File" -Force -Value "// Stereo Shaders`n"
-	for($k = 0; $k -lt 2; $k++)
+	Process-Shader "fs_pp_stereo.sc" "stereo.h" "fs_pp_stereo_sbs_" "fragment" @("SBS", "NOSTEREO")
+	Process-Shader "fs_pp_stereo.sc" "stereo.h" "fs_pp_stereo_tb_" "fragment" @("TB", "NOSTEREO")
+	Process-Shader "fs_pp_stereo.sc" "stereo.h" "fs_pp_stereo_int_" "fragment" @("INT", "NOSTEREO")
+	Process-Shader "fs_pp_stereo.sc" "stereo.h" "fs_pp_stereo_flipped_int_" "fragment" @("FLIPPED_INT", "NOSTEREO")
+	Process-Shader "fs_pp_stereo.sc" "stereo.h" "fs_pp_stereo_anaglyph_deghost_" "fragment" @("ANAGLYPH", "DEGHOST", "NOSTEREO")
+	foreach ($colors in @("SRGB", "GAMMA"))
 	{
-	   Process-Shader "fs_pp_stereo.sc" "stereo.h" ("fs_pp_stereo_sbs" + $stOutput[$k]) "fragment" @("SBS", $stereo[$k])
-	   Process-Shader "fs_pp_stereo.sc" "stereo.h" ("fs_pp_stereo_tb" + $stOutput[$k]) "fragment" @("TB", $stereo[$k])
-	   Process-Shader "fs_pp_stereo.sc" "stereo.h" ("fs_pp_stereo_int" + $stOutput[$k]) "fragment" @("INT", $stereo[$k])
-	   Process-Shader "fs_pp_stereo.sc" "stereo.h" ("fs_pp_stereo_flipped_int" + $stOutput[$k]) "fragment" @("FLIPPED_INT", $stereo[$k])
-	   Process-Shader "fs_pp_stereo.sc" "stereo.h" ("fs_pp_stereo_anaglyph_deghost" + $stOutput[$k]) "fragment" @("ANAGLYPH", "DEGHOST", $stereo[$k])
-	   foreach ($colors in @("SRGB", "GAMMA"))
-	   {
-		  foreach ($desat in @("NODESAT", "DYNDESAT"))
-		  {
-			 Process-Shader "fs_pp_stereo.sc" "stereo.h" ("fs_pp_stereo_anaglyph_lin_" + $colors.ToLower() + "_" + $desat.ToLower() + $stOutput[$k]) "fragment" @("ANAGLYPH", $desat, $colors, $stereo[$k])
-		  }
-	   }
+		foreach ($desat in @("NODESAT", "DYNDESAT"))
+		{
+			Process-Shader "fs_pp_stereo.sc" "stereo.h" ("fs_pp_stereo_anaglyph_lin_" + $colors.ToLower() + "_" + $desat.ToLower() + "_") "fragment" @("ANAGLYPH", $desat, $colors, "NOSTEREO")
+		}
 	}
 }
 
