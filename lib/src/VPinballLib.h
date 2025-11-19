@@ -86,15 +86,12 @@ private:
    VPinballLib(const VPinballLib&) = delete;
    VPinballLib& operator=(const VPinballLib&) = delete;
    void SetEventCallback(VPinballEventCallback callback);
-   void LoadPlugins();
-   void UnloadPlugins();
 
    SDL_Window* m_pWindow = nullptr;
 #ifdef __APPLE__
    void* m_pMetalLayer = nullptr;
 #endif
    WebServer m_webServer;
-   vector<std::shared_ptr<MsgPI::MsgPlugin>> m_plugins;
    std::function<void*(VPINBALL_EVENT, void*)> m_eventCallback = nullptr;
    std::function<void()> m_gameLoop = nullptr;
    std::queue<SDL_Event> m_eventQueue;

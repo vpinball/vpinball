@@ -1043,10 +1043,9 @@ void VPinball::DoPlay(const int playMode)
    {
       g_pplayer->GameLoop();
 
-      #ifdef __LIBVPINBALL__
-         // Android and iOS use SDL main callbacks and use SDL_AppIterate
+      // Android and iOS use SDL main callbacks and use SDL_AppIterate
+      if (g_isMobile)
          return;
-      #endif
 
       // The table settings may have been edited during play (camera, rendering, ...), so copy them back to the editor table's settings
       table->m_settings.Load(g_pplayer->m_ptable->m_settings);
