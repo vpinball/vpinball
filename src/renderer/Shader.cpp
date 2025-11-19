@@ -1420,15 +1420,15 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_CLIP(fs_flasher),
       // Stereo post-processes
       BGFX_EMBEDDED_SHADER_ST(vs_postprocess),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_stereo_tb),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_stereo_sbs),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_stereo_int),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_stereo_flipped_int),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_stereo_anaglyph_lin_srgb_nodesat),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_stereo_anaglyph_lin_gamma_nodesat),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_stereo_anaglyph_lin_srgb_dyndesat),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_stereo_anaglyph_lin_gamma_dyndesat),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_stereo_anaglyph_deghost),
+      BGFX_EMBEDDED_SHADER(fs_pp_stereo_tb),
+      BGFX_EMBEDDED_SHADER(fs_pp_stereo_sbs),
+      BGFX_EMBEDDED_SHADER(fs_pp_stereo_int),
+      BGFX_EMBEDDED_SHADER(fs_pp_stereo_flipped_int),
+      BGFX_EMBEDDED_SHADER(fs_pp_stereo_anaglyph_lin_srgb_nodesat),
+      BGFX_EMBEDDED_SHADER(fs_pp_stereo_anaglyph_lin_gamma_nodesat),
+      BGFX_EMBEDDED_SHADER(fs_pp_stereo_anaglyph_lin_srgb_dyndesat),
+      BGFX_EMBEDDED_SHADER(fs_pp_stereo_anaglyph_lin_gamma_dyndesat),
+      BGFX_EMBEDDED_SHADER(fs_pp_stereo_anaglyph_deghost),
       // Tonemappers
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_noao_filter_rgb),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_ao_filter_rgb),
@@ -1595,15 +1595,15 @@ void Shader::Load()
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_bulb_light_with_ball_shadows, STEREO(vs_light_clip), "fs_light_ballshadow_clip", true);
       break;
    case STEREO_SHADER:
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_stereo_SBS, STEREO(vs_postprocess), STEREO(fs_pp_stereo_sbs));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_stereo_TB, STEREO(vs_postprocess), STEREO(fs_pp_stereo_tb));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_stereo_Int, STEREO(vs_postprocess), STEREO(fs_pp_stereo_int));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_stereo_Flipped_Int, STEREO(vs_postprocess), STEREO(fs_pp_stereo_flipped_int));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_Stereo_sRGBAnaglyph, STEREO(vs_postprocess), STEREO(fs_pp_stereo_anaglyph_lin_srgb_nodesat));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_Stereo_GammaAnaglyph, STEREO(vs_postprocess), STEREO(fs_pp_stereo_anaglyph_lin_gamma_nodesat));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_Stereo_sRGBDynDesatAnaglyph, STEREO(vs_postprocess), STEREO(fs_pp_stereo_anaglyph_lin_srgb_dyndesat));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_Stereo_GammaDynDesatAnaglyph, STEREO(vs_postprocess), STEREO(fs_pp_stereo_anaglyph_lin_gamma_dyndesat));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_Stereo_DeghostAnaglyph, STEREO(vs_postprocess), STEREO(fs_pp_stereo_anaglyph_deghost));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_stereo_SBS, "vs_postprocess", "fs_pp_stereo_sbs");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_stereo_TB, "vs_postprocess", "fs_pp_stereo_tb");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_stereo_Int, "vs_postprocess", "fs_pp_stereo_int");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_stereo_Flipped_Int, "vs_postprocess", "fs_pp_stereo_flipped_int");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_Stereo_sRGBAnaglyph, "vs_postprocess", "fs_pp_stereo_anaglyph_lin_srgb_nodesat");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_Stereo_GammaAnaglyph, "vs_postprocess", "fs_pp_stereo_anaglyph_lin_gamma_nodesat");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_Stereo_sRGBDynDesatAnaglyph, "vs_postprocess", "fs_pp_stereo_anaglyph_lin_srgb_dyndesat");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_Stereo_GammaDynDesatAnaglyph, "vs_postprocess", "fs_pp_stereo_anaglyph_lin_gamma_dyndesat");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_Stereo_DeghostAnaglyph, "vs_postprocess", "fs_pp_stereo_anaglyph_deghost");
       break;
    case POSTPROCESS_SHADER:
       // Tonemapping / Dither / Apply AO / Color Grade
