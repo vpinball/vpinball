@@ -100,7 +100,7 @@ void LIBDOFCALLBACK OnDOFLog(DOF_LogLevel logLevel, const char* format, va_list 
 }
 
 #ifdef _WIN32
-void SetThreadName(const std::string& name)
+static void SetThreadName(const std::string& name)
 {
    const int size_needed = MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, nullptr, 0);
    if (size_needed <= 1)
@@ -111,7 +111,7 @@ void SetThreadName(const std::string& name)
    HRESULT hr = SetThreadDescription(GetCurrentThread(), wstr.c_str());
 }
 #else
-void SetThreadName(const std::string& name)
+static void SetThreadName(const std::string& name)
 {
 #ifdef __APPLE__
    pthread_setname_np(name.c_str());

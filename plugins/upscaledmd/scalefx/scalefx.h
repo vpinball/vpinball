@@ -83,6 +83,8 @@ static inline bool4 ambi_dom(const Vertex4D &jDx)
         jDx.w != 0.f && jDx.w + jDx.y > jDx.x + jDx.z};
 }
 
+// DMD_UPSCALE: select between 3x3 upscale, or 1x1 no-scale/anti-aliasing output
+// is_brightness_data: select between brightness-only (0..255 per uint32) or full color data (0..255 per R,G,B(,A)-uint32)
 template <bool DMD_UPSCALE>
 void upscale(const uint32_t * const __restrict data_in, uint32_t * const __restrict data_out, const uint32_t xres, const uint32_t yres, const bool is_brightness_data)
 {

@@ -83,7 +83,7 @@ PSC_ARRAY2(StructArray, int32, 0, 0)
       const unsigned int nDimensions = 2; \
       const std::vector<structType>& vec = (value); \
       const size_t size0 = vec.size(); \
-      ScriptArray* array = static_cast<ScriptArray*>(malloc(sizeof(ScriptArray) + nDimensions * sizeof(int) + size0 * 2 * sizeof(int32_t))); \
+      ScriptArray* array = static_cast<ScriptArray*>(malloc(sizeof(ScriptArray) + nDimensions * sizeof(int) + size0 * (2 * sizeof(int32_t)))); \
       array->Release = [](ScriptArray* me) { free(me); }; \
       array->lengths[0] = static_cast<unsigned int>(vec.size()); \
       array->lengths[1] = 2; \
@@ -98,7 +98,7 @@ PSC_ARRAY2(StructArray, int32, 0, 0)
       const unsigned int nDimensions = 3; \
       const std::vector<structType>& vec = (value); \
       const size_t size0 = vec.size(); \
-      ScriptArray* array = static_cast<ScriptArray*>(malloc(sizeof(ScriptArray) + nDimensions * sizeof(int) + size0 * 3 * sizeof(int32_t))); \
+      ScriptArray* array = static_cast<ScriptArray*>(malloc(sizeof(ScriptArray) + nDimensions * sizeof(int) + size0 * (3 * sizeof(int32_t)))); \
       array->Release = [](ScriptArray* me) { free(me); }; \
       array->lengths[0] = static_cast<unsigned int>(vec.size()); \
       array->lengths[1] = 3; \

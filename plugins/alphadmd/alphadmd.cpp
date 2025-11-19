@@ -95,7 +95,7 @@ static DmdLayouts dmdLayout = DmdLayouts::Undefined;
 // Number of segments corresponding to CTLPI_SEG_LAYOUT_xxx
 static constexpr int nSegments[] = { 7, 8, 8, 10, 10, 15, 15, 16, 16 };
 
-// Segment layouts, derived from PinMame, itself taking it from 'usbalphanumeric.h'
+// Segment layouts, derived from PinMAME, itself taking it from 'usbalphanumeric.h'
 
 typedef enum
 {
@@ -224,7 +224,7 @@ static constexpr segDisplay segDisplays[6] = {
       } },
 };
 
-static void DrawChar(const int x, const int y, const segDisplay& display, const float* const lum, const int nSeg)
+static void DrawChar(const int x, const int y, const segDisplay& display, const float* const __restrict lum, const int nSeg)
 {
    for (int seg = 0; seg < nSeg; seg++)
    {
@@ -233,7 +233,7 @@ static void DrawChar(const int x, const int y, const segDisplay& display, const 
       {
          const int px = x + display.segs[seg].dots[i][0];
          const int py = y + display.segs[seg].dots[i][1];
-         int w = renderFrame[py * 128 + px] + v;
+         uint32_t w = renderFrame[py * 128 + px] + v;
          renderFrame[py * 128 + px] = w < 255 ? w : 255;
       }
    }
@@ -266,7 +266,7 @@ static void DrawDisplay(int x, int y, float*& lum, int srcIndex, bool large)
 }
 
 #ifdef _WIN32
-void SetThreadName(const std::string& name)
+static void SetThreadName(const std::string& name)
 {
    const int size_needed = MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, nullptr, 0);
    if (size_needed <= 1)
@@ -277,7 +277,7 @@ void SetThreadName(const std::string& name)
    SetThreadDescription(GetCurrentThread(), wstr.c_str());
 }
 #else
-void SetThreadName(const std::string& name)
+static void SetThreadName(const std::string& name)
 {
 #ifdef __APPLE__
    pthread_setname_np(name.c_str());
@@ -315,7 +315,7 @@ static void RenderThread()
          {
             changed = true;
             lastFrameId[i] = seg.frameId;
-            memcpy(lum, seg.frame, selectedSources[i].nElements * 16 * sizeof(float));
+            memcpy(lum, seg.frame, selectedSources[i].nElements * (16 * sizeof(float)));
             for (unsigned int j = 0; j < selectedSources[i].nElements; j++)
             {
                const int nSegs = nSegments[selectedSources[i].elementType[j]];
@@ -421,10 +421,10 @@ static void RenderThread()
          break;
       default: break;
       }
-      if (memcmp(dmd128Frame, renderFrame, 128 * 32) != 0)
+      if (memcmp(dmd128Frame, renderFrame, sizeof(dmd128Frame)) != 0)
       {
          //std::lock_guard<std::mutex> lock(renderMutex);
-         memcpy(dmd128Frame, renderFrame, 128 * 32);
+         memcpy(dmd128Frame, renderFrame, sizeof(dmd128Frame));
          for (int y = 0; y < 64; y++)
             for (int x = 0; x < 256; x++)
                dmd256Frame[x + y * 256] = dmd128Frame[(x >> 1) + (y >> 1) * 128];
