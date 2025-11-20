@@ -14,8 +14,8 @@ public:
 
 private:
    void BuildPage();
+   void RequestDynamicRendererUpdate();
 
-   int m_dayTimeMode = 0;
    unsigned int m_difficultyNotification = 0; 
    bool m_staticPrepassDisabled = false;
 };

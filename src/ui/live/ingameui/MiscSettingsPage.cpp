@@ -26,6 +26,17 @@ void MiscSettingsPage::Close(bool isBackwardAnimation)
       m_player->m_renderer->DisableStaticPrePass(false);
 }
 
+void MiscSettingsPage::RequestDynamicRendererUpdate()
+{
+   if (!m_staticPrepassDisabled)
+   {
+      m_player->m_renderer->DisableStaticPrePass(true);
+      m_staticPrepassDisabled = true;
+   }
+   m_player->m_renderer->MarkShaderDirty();
+   m_player->m_ptable->FireOptionEvent(PinTable::OptionEventType::Changed);
+}
+
 void MiscSettingsPage::BuildPage()
 {
    ClearItems();
@@ -70,17 +81,18 @@ void MiscSettingsPage::BuildPage()
    {
       AddItem(std::make_unique<InGameUIItem>(
          VPX::Properties::EnumPropertyDef(""s, ""s, "Scene Lighting"s, "Select how scene lighting is evaluated"s, 0, 0, vector { "Table's default"s, "Custom fixed value"s, "Time of day"s }),
-         [this]() { return m_dayTimeMode; }, //
+         [this]() { return (int) m_player->m_renderer->m_sceneLighting.GetMode(); }, // Live
          [this]() { 
             if (!m_player->m_ptable->m_settings.GetPlayer_OverrideTableEmissionScale())
                return 0;
             if (!m_player->m_ptable->m_settings.GetPlayer_DynamicDayNight())
                return 1;
             return 2;
-         }, //
+         }, // Stored
          [this](int, int v)
          {
-            m_dayTimeMode = v;
+            m_player->m_renderer->m_sceneLighting.SetMode((Renderer::SceneLighting::Mode)v);
+            RequestDynamicRendererUpdate();
             BuildPage();
          },
          [](Settings& settings)
@@ -94,40 +106,33 @@ void MiscSettingsPage::BuildPage()
             settings.SetPlayer_DynamicDayNight(v == 2, isTableOverride);
          }));
 
-      if (m_dayTimeMode == 1)
+      if (m_player->m_renderer->m_sceneLighting.GetMode() == Renderer::SceneLighting::Mode::User)
       {
          Settings::SetPlayer_EmissionScale_Default(m_player->m_ptable->m_globalEmissionScale);
          AddItem(std::make_unique<InGameUIItem>(
-            Settings::m_propPlayer_EmissionScale, 100.f, "%4.1f %%"s, [this]() { return m_player->m_renderer->m_globalEmissionScale; },
+            Settings::m_propPlayer_EmissionScale, 100.f, "%4.1f %%"s,  //
+            [this]() { return m_player->m_renderer->m_sceneLighting.GetUserLightLevel(); },
             [this](float, float v)
             {
-               if (!m_staticPrepassDisabled)
-               {
-                  m_player->m_renderer->DisableStaticPrePass(true);
-                  m_staticPrepassDisabled = true;
-               }
-               m_player->m_renderer->m_globalEmissionScale = v;
-               m_player->m_renderer->MarkShaderDirty();
-               m_player->m_ptable->FireOptionEvent(PinTable::OptionEventType::Changed);
+               m_player->m_renderer->m_sceneLighting.SetUserLightLevel(v);
+               RequestDynamicRendererUpdate();
             }));
       }
-      else if (m_dayTimeMode == 2)
+      else if (m_player->m_renderer->m_sceneLighting.GetMode() == Renderer::SceneLighting::Mode::DayNight)
       {
-         // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
          AddItem(std::make_unique<InGameUIItem>( //
             Settings::m_propPlayer_Latitude, 1.f, "%4.1f deg"s, //
-            [this]() { return m_player->m_ptable->m_settings.GetPlayer_Latitude(); }, //
+            [this]() { return m_player->m_renderer->m_sceneLighting.GetLatitude(); }, //
             [this](float, float v) {
-               m_player->m_ptable->m_settings.SetPlayer_Latitude(v, false);
-               // FIXME recompute light level
+               m_player->m_renderer->m_sceneLighting.SetLatitude(v);
+               RequestDynamicRendererUpdate();
             }));
-         // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
          AddItem(std::make_unique<InGameUIItem>( //
             Settings::m_propPlayer_Longitude, 1.f, "%4.1f deg"s, //
-            [this]() { return m_player->m_ptable->m_settings.GetPlayer_Longitude(); }, //
+            [this]() { return m_player->m_renderer->m_sceneLighting.GetLongitude(); }, //
             [this](float, float v) {
-               m_player->m_ptable->m_settings.SetPlayer_Longitude(v, false);
-               // FIXME recompute light level
+               m_player->m_renderer->m_sceneLighting.SetLongitude(v);
+               RequestDynamicRendererUpdate();
             }));
       }
    }
