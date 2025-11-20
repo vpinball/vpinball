@@ -35,6 +35,7 @@ extern marker_series series;
 Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncMode, const StereoMode stereo3D)
    : m_stereo3D(stereo3D)
    , m_table(table)
+   , m_sceneLighting(table)
 {
    m_stereo3Denabled = m_table->m_settings.GetPlayer_Stereo3DEnabled();
    m_toneMapper = (ToneMapper)m_table->m_settings.GetTableOverride_ToneMapper();
@@ -66,45 +67,6 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_vrColorKey.x = InvsRGB(m_vrColorKey.x);
    m_vrColorKey.y = InvsRGB(m_vrColorKey.y);
    m_vrColorKey.z = InvsRGB(m_vrColorKey.z);
-
-   // Global emission scale
-   m_globalEmissionScale = m_table->m_globalEmissionScale;
-   if (m_table->m_settings.GetPlayer_OverrideTableEmissionScale())
-   { // Overriden from settings
-      if (m_table->m_settings.GetPlayer_DynamicDayNight())
-      {
-         time_t hour_machine;
-         time(&hour_machine);
-         tm local_hour;
-         localtime_s(&local_hour, &hour_machine);
-
-         const float lat = m_table->m_settings.GetPlayer_Latitude();
-         const float lon = m_table->m_settings.GetPlayer_Longitude();
-
-         const double rlat = lat * (M_PI / 180.);
-         const double rlong = lon * (M_PI / 180.);
-
-         const double tr = TheoreticRadiation(local_hour.tm_mday, local_hour.tm_mon + 1, local_hour.tm_year + 1900, rlat);
-         const double max_tr = MaxTheoreticRadiation(local_hour.tm_year + 1900, rlat);
-         const double sset = SunsetSunriseLocalTime(local_hour.tm_mday, local_hour.tm_mon + 1, local_hour.tm_year + 1900, rlong, rlat, false);
-         const double srise = SunsetSunriseLocalTime(local_hour.tm_mday, local_hour.tm_mon + 1, local_hour.tm_year + 1900, rlong, rlat, true);
-
-         const double cur = local_hour.tm_hour + local_hour.tm_min / 60.0;
-
-         const float factor = (float)(sin(M_PI * clamp((cur - srise) / (sset - srise), 0., 1.)) //!! leave space before sunrise and after sunset?
-            * sqrt(tr / max_tr)); //!! magic, "emulates" that shorter days are usually also "darker",cloudier,whatever in most regions
-
-         m_globalEmissionScale = clamp(factor, 0.15f, 1.f); //!! configurable clamp?
-      }
-      else
-      {
-         m_globalEmissionScale = m_table->m_settings.GetPlayer_EmissionScale();
-      }
-   }
-   if (g_pvp->m_bgles)
-   { // Overriden from command line
-      m_globalEmissionScale = g_pvp->m_fgles;
-   }
 
    m_mvp = new ModelViewProj(m_stereo3D == STEREO_OFF ? 1 : 2);
 
@@ -406,6 +368,62 @@ Renderer::~Renderer()
    m_envSampler = nullptr;
    m_aoDitherSampler = nullptr;
    delete m_renderDevice;
+}
+
+Renderer::SceneLighting::SceneLighting(PinTable* const table)
+   : m_table(table)
+{
+   m_mode = m_table->m_settings.GetPlayer_OverrideTableEmissionScale() ?
+      m_table->m_settings.GetPlayer_DynamicDayNight() ? Mode::DayNight : Mode::User
+      : Mode::Table;
+   m_latitude = m_table->m_settings.GetPlayer_Latitude();
+   m_longitude = m_table->m_settings.GetPlayer_Longitude();
+   m_userLightLevel = m_table->m_settings.GetPlayer_EmissionScale();
+   Update();
+}
+
+void Renderer::SceneLighting::Update()
+{
+   if (g_pvp->m_bgles) // Overriden from command line
+   {
+      m_emissionScale = g_pvp->m_fgles;
+      return;
+   }
+   switch (m_mode)
+   {
+   case Mode::Table:
+      m_emissionScale = m_table->m_globalEmissionScale;
+      break;
+      
+   case Mode::User:
+      m_emissionScale = m_userLightLevel;
+      break;
+   
+   case Mode::DayNight:
+   {
+      time_t hour_machine;
+      time(&hour_machine);
+      tm local_hour;
+      localtime_s(&local_hour, &hour_machine);
+
+      const double rlat = m_latitude * (M_PI / 180.);
+      const double rlong = m_longitude * (M_PI / 180.);
+
+      const double tr = TheoreticRadiation(local_hour.tm_mday, local_hour.tm_mon + 1, local_hour.tm_year + 1900, rlat);
+      const double max_tr = MaxTheoreticRadiation(local_hour.tm_year + 1900, rlat);
+      const double sset = SunsetSunriseLocalTime(local_hour.tm_mday, local_hour.tm_mon + 1, local_hour.tm_year + 1900, rlong, rlat, false);
+      const double srise = SunsetSunriseLocalTime(local_hour.tm_mday, local_hour.tm_mon + 1, local_hour.tm_year + 1900, rlong, rlat, true);
+
+      const double cur = local_hour.tm_hour + local_hour.tm_min / 60.0;
+
+      const float factor = (float)(sin(M_PI * clamp((cur - srise) / (sset - srise), 0., 1.)) //!! leave space before sunrise and after sunset?
+         * sqrt(tr / max_tr)); //!! magic, "emulates" that shorter days are usually also "darker",cloudier,whatever in most regions
+
+      m_emissionScale = clamp(factor, 0.15f, 1.f); //!! configurable clamp?
+      break;
+   }
+   
+   }
 }
 
 bool Renderer::UseAnisoFiltering() const { return Shader::GetDefaultSamplerFilter(SHADER_tex_base_color) == SF_ANISOTROPIC; }
@@ -910,7 +928,7 @@ void Renderer::DrawBackground()
       m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
       m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
       m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-      g_pplayer->m_renderer->DrawSprite(0.f, 0.f, 1.f, 1.f, 0xFFFFFFFF, m_renderDevice->m_texMan.LoadTexture(pin, false), ptable->m_ImageBackdropNightDay ? sqrtf(m_globalEmissionScale) : 1.0f, true);
+      g_pplayer->m_renderer->DrawSprite(0.f, 0.f, 1.f, 1.f, 0xFFFFFFFF, m_renderDevice->m_texMan.LoadTexture(pin, false), ptable->m_ImageBackdropNightDay ? sqrtf(m_sceneLighting.GetGlobalEmissionScale()) : 1.0f, true);
    }
    else
    {
@@ -975,7 +993,7 @@ void Renderer::SetupShaders()
       return;
    m_shaderDirty = false;
 
-   const vec4 envEmissionScale_TexWidth(m_table->m_envEmissionScale * m_globalEmissionScale,
+   const vec4 envEmissionScale_TexWidth(m_table->m_envEmissionScale * m_sceneLighting.GetGlobalEmissionScale(),
       static_cast<float>(m_envSampler->GetHeight()) /*+m_envSampler.m_width)*0.5f*/, 0.f, 0.f); //!! dto.
 
    UpdateBasicShaderMatrix();
@@ -989,7 +1007,9 @@ void Renderer::SetupShaders()
    m_renderDevice->m_ballShader->SetVector(SHADER_Roughness_WrapL_Edge_Thickness, exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.05f);
    const vec4 amb_lr = convertColor(m_table->m_lightAmbient, m_table->m_lightRange);
    m_renderDevice->m_ballShader->SetVector(SHADER_cAmbient_LightRange, 
-      amb_lr.x * m_globalEmissionScale, amb_lr.y * m_globalEmissionScale, amb_lr.z * m_globalEmissionScale, m_table->m_lightRange);
+      amb_lr.x * m_sceneLighting.GetGlobalEmissionScale(),
+      amb_lr.y * m_sceneLighting.GetGlobalEmissionScale(),
+      amb_lr.z * m_sceneLighting.GetGlobalEmissionScale(), m_table->m_lightRange);
 
    m_table->m_Light[0].pos.x = m_table->m_right * 0.5f;
    m_table->m_Light[1].pos.x = m_table->m_right * 0.5f;
@@ -999,9 +1019,9 @@ void Renderer::SetupShaders()
    m_table->m_Light[1].pos.z = m_table->m_lightHeight;
 
    vec4 emission = convertColor(m_table->m_Light[0].emission, 1.f);
-   emission.x *= m_table->m_lightEmissionScale * m_globalEmissionScale;
-   emission.y *= m_table->m_lightEmissionScale * m_globalEmissionScale;
-   emission.z *= m_table->m_lightEmissionScale * m_globalEmissionScale;
+   emission.x *= m_table->m_lightEmissionScale * m_sceneLighting.GetGlobalEmissionScale();
+   emission.y *= m_table->m_lightEmissionScale * m_sceneLighting.GetGlobalEmissionScale();
+   emission.z *= m_table->m_lightEmissionScale * m_sceneLighting.GetGlobalEmissionScale();
 
 #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
    float lightPos[MAX_LIGHT_SOURCES][4] = { };

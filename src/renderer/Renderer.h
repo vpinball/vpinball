@@ -88,7 +88,35 @@ public:
 
    BackGlass* m_backGlass = nullptr;
 
-   float m_globalEmissionScale;
+   class SceneLighting
+   {
+   public:
+      SceneLighting(PinTable* const table);
+      
+      enum class Mode { Table, User, DayNight };
+      
+      Mode GetMode() const { return m_mode; };
+      void SetMode(Mode mode) { if (m_mode == mode) return; m_mode = mode; Update(); };
+      float GetUserLightLevel() const { return m_userLightLevel; }
+      void SetUserLightLevel(float level) { if (m_userLightLevel == level) return; m_userLightLevel = level; if (m_mode == Mode::User) Update(); };
+      float GetLatitude() const { return m_latitude; }
+      void SetLatitude(float latitude) { if (m_latitude == latitude) return; m_latitude = latitude; if (m_mode == Mode::DayNight) Update(); };
+      float GetLongitude() const { return m_longitude; }
+      void SetLongitude(float longitude) { if (m_longitude == longitude) return; m_longitude = longitude; if (m_mode == Mode::DayNight) Update(); };
+      
+      float GetGlobalEmissionScale() const { return m_emissionScale; }
+      
+   private:
+      void Update();
+      
+      float m_emissionScale = 0.f;
+
+      PinTable* const m_table;
+      Mode m_mode = Mode::Table;
+      float m_userLightLevel = 1.f;
+      float m_latitude = 0.f;
+      float m_longitude = 0.f;
+   } m_sceneLighting;
 
    // Ball rendering
    vector<Light*> m_ballReflectedLights;
