@@ -464,7 +464,7 @@ void LiveUI::Update()
    { // Editor UI (aligned to desktop, using traditional mouse interaction)
       m_editorUI.Update();
    }
-   else
+   else if (!m_inGameUI.IsOpened())
    { // No UI displayed: process ball control & throw balls
       m_ballControl.Update(width, height);
    }
