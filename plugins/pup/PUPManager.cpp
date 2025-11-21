@@ -85,10 +85,11 @@ void PUPManager::LoadConfig(const string& szRomName)
 {
    Unload();
 
-   if (m_szRootPath.empty())
-      return;
-
    SetGameDir(szRomName);
+
+   // Set game dir will define the path to the pup files, or empty it if not found
+   if (m_szPath.empty())
+      return;
 
    // Load playlists
 
