@@ -2796,21 +2796,23 @@ void Renderer::RenderFrame()
    renderedRT = ApplyUpscaling(renderedRT, hasStereoPass ? nullptr : m_renderDevice->GetOutputBackBuffer());
 
    // If using OpenVR, render LiveUI before pushing eyes to headset
-   #ifdef ENABLE_VR
-   if (m_stereo3D == STEREO_VR)
+   // If using 3D TV stereo mode, render LiveUI before stereo as it must be duplicated per view to be correct
+   // For other modes, render UI after all other steps (otherwise it would break the calibration process for stereo anaglyph, and breaks XR passthrough color keying)
+   const bool uiBeforeStero = false
+#ifdef ENABLE_VR
+      || m_stereo3D == STEREO_VR
+#endif
+      || m_stereo3D == STEREO_SBS || m_stereo3D == STEREO_INT || m_stereo3D == STEREO_TB || m_stereo3D == STEREO_FLIPPED_INT;
+   if (uiBeforeStero)
    {
       m_renderDevice->SetRenderTarget("LiveUI"s, renderedRT, true, true);
       g_pplayer->m_liveUI->Update();
    }
-   #endif
 
    // Apply stereo
    renderedRT = ApplyStereo(renderedRT, m_renderDevice->GetOutputBackBuffer());
 
-   // Render LiveUI after all other steps (otherwise it would break the calibration process for stereo anaglyph, breaks XR passthrough color keying)
-   #ifdef ENABLE_VR
-   if (m_stereo3D != STEREO_VR)
-   #endif
+   if (!uiBeforeStero)
    {
       m_renderDevice->SetRenderTarget("LiveUI"s, renderedRT, true, true);
       g_pplayer->m_liveUI->Update();

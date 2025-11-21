@@ -360,7 +360,7 @@ void LiveUI::NewFrame()
    ImGui_ImplSDL3_NewFrame();
 
    ImGuiIO &io = ImGui::GetIO();
-   switch (m_player->m_renderer->m_stereo3D)
+   switch (m_player->m_renderer->m_stereo3Denabled ? m_player->m_renderer->m_stereo3D : STEREO_OFF)
    {
    // Render is a vertically squashed view which is stretched back by the display
    case STEREO_TB:
