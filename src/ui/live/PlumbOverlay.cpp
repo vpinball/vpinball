@@ -38,11 +38,14 @@ void PlumbOverlay::Update()
    else 
       plumbFade = static_cast<float>(120 - m_plumbFadeCounter) / 100.f;
 
-   const ImVec2 fullSize = ImVec2(200.f * m_uiScale, 200.f * m_uiScale);
+   const auto& io = ImGui::GetIO();
+   const float size = min(200.f * m_uiScale, 0.15f * min(io.DisplaySize.x, io.DisplaySize.y));
+   const float offset = 0.1f * size;
+   const ImVec2 fullSize = ImVec2(size, size);
    const ImVec2 halfSize = fullSize * 0.5f;
    constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground| ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings
       | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-   ImGui::SetNextWindowPos(ImVec2(0.f, ImGui::GetIO().DisplaySize.y - fullSize.y));
+   ImGui::SetNextWindowPos(ImVec2(offset, io.DisplaySize.y - fullSize.y - offset));
    ImGui::SetNextWindowSize(fullSize);
    ImGui::Begin("PlumbOverlay", nullptr, window_flags);
    const ImVec2 &pos = ImGui::GetWindowPos();

@@ -38,9 +38,9 @@ void PerfUI::Update()
 {
    if (m_showPerf == PerfMode::PM_DISABLED)
       return;
-
-   ImGui::PushFont(nullptr, 13.0f * m_uiScale);
-
+   
+   ImGui::PushFont(nullptr, min(13.0f * m_uiScale, ImGui::GetIO().DisplaySize.x / 60.f));
+   
    RenderFPS();
 
    if (m_showPerf == PerfMode::PM_STATS)
@@ -122,14 +122,11 @@ void PerfUI::RenderFPS()
       const ImGuiContext &g = *GImGui;
       const ImGuiStyle &style = g.Style;
       ImVec2 graph_size;
+      graph_size.x = ImGui::CalcItemWidth();
       const auto blockHeight = ImGui::GetTextLineHeight() + (style.FramePadding.y * 2);
-      if (graph_size.x == 0.0f)
-         graph_size.x = ImGui::CalcItemWidth();
-      if (graph_size.y == 0.0f)
+      graph_size.y = (style.FramePadding.y * 1) + blockHeight * 1;
       #ifdef ENABLE_BGFX
-         graph_size.y = (style.FramePadding.y * 1) + blockHeight * 2;
-      #else
-         graph_size.y = (style.FramePadding.y * 1) + blockHeight * 1;
+         graph_size.y += blockHeight;
       #endif
       const ImRect frame_bb(window->DC.CursorPos, window->DC.CursorPos + graph_size);
       const ImRect inner_bb(frame_bb.Min + style.FramePadding, frame_bb.Max - style.FramePadding);
@@ -297,7 +294,7 @@ void PerfUI::RenderStats()
    const ImGuiIO &io = ImGui::GetIO();
    constexpr ImGuiWindowFlags window_flags_plots
       = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-   ImGui::SetNextWindowSize(ImVec2(530, 500));
+   ImGui::SetNextWindowSize(ImVec2(5.f * ImGui::CalcTextSize("1234567890").x, 500.f));
    if (m_player->m_vrDevice)
       ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.80f, io.DisplaySize.y * 0.35f), 0, ImVec2(1.f, 0.f));
    else
