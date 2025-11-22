@@ -13,7 +13,7 @@ AudioSettingsPage::AudioSettingsPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::BoolPropertyDef(""s, ""s, "Lock Volumes"s, "Adjust backglass and playfield volume simultaneaously"s, false, true), //
       [this]() { return m_lockVolume; }, //
-      [this]() { return m_lockVolume; }, //
+      [this](Settings&) { return m_lockVolume; }, //
       [this](bool v) { m_lockVolume = v; }, //
       [](Settings&) { /* UI state, not persisted */ }, //
       [](bool, Settings&, bool) { /* UI state, not persisted */ }));
@@ -69,9 +69,9 @@ AudioSettingsPage::AudioSettingsPage()
          auto it = std::ranges::find(m_devices, m_player->m_audioPlayer->GetBackglassDeviceName());
          return it == m_devices.end() ? 0 : (int)std::distance(m_devices.begin(), it);
       }, // Live
-      [this]()
+      [this](Settings& settings)
       {
-         auto it = std::ranges::find(m_devices, m_player->m_ptable->m_settings.GetPlayer_SoundDeviceBG());
+         auto it = std::ranges::find(m_devices, settings.GetPlayer_SoundDeviceBG());
          return it == m_devices.end() ? 0 : (int)std::distance(m_devices.begin(), it);
       }, // Stored
       [this](int, int v) {
@@ -91,9 +91,9 @@ AudioSettingsPage::AudioSettingsPage()
          auto it = std::ranges::find(m_devices, m_player->m_audioPlayer->GetPlayfieldDeviceName());
          return it == m_devices.end() ? 0 : (int)std::distance(m_devices.begin(), it);
       }, // Live
-      [this]()
+      [this](Settings& settings)
       {
-         auto it = std::ranges::find(m_devices, m_player->m_ptable->m_settings.GetPlayer_SoundDevice());
+         auto it = std::ranges::find(m_devices, settings.GetPlayer_SoundDevice());
          return it == m_devices.end() ? 0 : (int)std::distance(m_devices.begin(), it);
       }, // Stored
       [this](int, int v)

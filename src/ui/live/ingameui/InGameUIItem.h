@@ -48,21 +48,21 @@ public:
    InGameUIItem(Type type); // Core actions
 
    // Properties stored in the table's settings property store
-   explicit InGameUIItem(
-      const VPX::Properties::PropertyRegistry::PropId propId, float displayScale, const string& format, const std::function<float()>& getValue, const std::function<void(float, float)>& onChange);
+   explicit InGameUIItem(const VPX::Properties::PropertyRegistry::PropId propId, float displayScale, const string& format, const std::function<float()>& getValue,
+      const std::function<void(float, float)>& onChange);
    explicit InGameUIItem(const VPX::Properties::PropertyRegistry::PropId propId, const string& format, const std::function<int()>& getValue, const std::function<void(int, int)>& onChange);
    explicit InGameUIItem(const VPX::Properties::PropertyRegistry::PropId propId, const std::function<int()>& getValue, const std::function<void(int, int)>& onChange);
    explicit InGameUIItem(const VPX::Properties::PropertyRegistry::PropId propId, const std::function<bool()>& getValue, const std::function<void(bool)>& onChange);
 
    // Properties with custom storage
    explicit InGameUIItem(const VPX::Properties::FloatPropertyDef& prop, float displayScale, const string& format, const std::function<float()>& getValue,
-      const std::function<float()>& getStoredValue, const std::function<void(float, float)>& onChange, const std::function<void(Settings&)>& onResetSave,
+      const std::function<float(Settings&)>& getStoredValue, const std::function<void(float, float)>& onChange, const std::function<void(Settings&)>& onResetSave,
       const std::function<void(float, Settings&, bool)>& onSave);
-   explicit InGameUIItem(const VPX::Properties::IntPropertyDef& prop, const string& format, const std::function<int()>& getValue, const std::function<int()>& getStoredValue,
+   explicit InGameUIItem(const VPX::Properties::IntPropertyDef& prop, const string& format, const std::function<int()>& getValue, const std::function<int(Settings&)>& getStoredValue,
       const std::function<void(int, int)>& onChange, const std::function<void(Settings&)>& onResetSave, const std::function<void(int, Settings&, bool)>& onSave);
-   explicit InGameUIItem(const VPX::Properties::EnumPropertyDef& prop, const std::function<int()>& getValue, const std::function<int()>& getStoredValue,
+   explicit InGameUIItem(const VPX::Properties::EnumPropertyDef& prop, const std::function<int()>& getValue, const std::function<int(Settings&)>& getStoredValue,
       const std::function<void(int, int)>& onChange, const std::function<void(Settings&)>& onResetSave, const std::function<void(int, Settings&, bool)>& onSave);
-   explicit InGameUIItem(const VPX::Properties::BoolPropertyDef& prop, const std::function<bool()>& getValue, const std::function<bool()>& getStoredValue,
+   explicit InGameUIItem(const VPX::Properties::BoolPropertyDef& prop, const std::function<bool()>& getValue, const std::function<bool(Settings&)>& getStoredValue,
       const std::function<void(bool)>& onChange, const std::function<void(Settings&)>& onResetSave, const std::function<void(float, Settings&, bool)>& onSave);
 
    bool IsSelectable() const { return m_type != Type::Label || m_labelType == LabelType::Markdown; }
@@ -115,13 +115,13 @@ private:
    string m_initialMappingString;
 
    const std::function<bool()> m_getBoolValue;
-   const std::function<bool()> m_getStoredBoolValue;
+   const std::function<bool(Settings&)> m_getStoredBoolValue;
    const std::function<void(bool)> m_onChangeBool;
    const std::function<int()> m_getIntValue;
-   const std::function<int()> m_getStoredIntValue;
+   const std::function<int(Settings&)> m_getStoredIntValue;
    const std::function<void(int, int)> m_onChangeInt;
    const std::function<float()> m_getFloatValue;
-   const std::function<float()> m_getStoredFloatValue;
+   const std::function<float(Settings&)> m_getStoredFloatValue;
    const std::function<void(float, float)> m_onChangeFloat;
    const std::function<void(Settings&)> m_onResetSave;
    const std::function<void(int, Settings&, bool)> m_onSaveInt;

@@ -252,7 +252,7 @@ void PointOfViewSettingsPage::BuildPage()
    auto lockScale = std::make_unique<InGameUIItem>(
       VPX::Properties::BoolPropertyDef(""s, ""s, "Lock XYZ Scale"s, "Scale all axis homogeneously (recommended)"s, false, true), //
       [this]() { return m_lockScale; }, //
-      [this]() { return m_lockScale; }, //
+      [this](Settings&) { return m_lockScale; }, //
       [this](bool v) { m_lockScale = v; }, [](Settings&) { /* UI state, not persisted */ }, //
       [](bool, const Settings&, bool) { /* UI state, not persisted */ });
 

@@ -48,7 +48,7 @@ void GraphicSettingsPage::BuildPage()
    AddItem(std::make_unique<InGameUIItem>( //
       VPX::Properties::EnumPropertyDef(*Settings::GetPlayer_BGSet_Property(), m_player->m_ptable->GetViewMode()), //
       [this]() { return (int)m_player->m_ptable->GetViewMode(); }, // Live
-      [this]() { return (int)m_player->m_ptable->m_settings.GetPlayer_BGSet(); }, // Stored
+      [this](Settings& settings) { return (int)settings.GetPlayer_BGSet(); }, // Stored
       [this](int, int v)
       {
          m_player->m_ptable->SetViewSetupOverride((ViewSetupID)v);
@@ -82,7 +82,7 @@ void GraphicSettingsPage::BuildPage()
       AddItem(std::make_unique<InGameUIItem>(
          VPX::Properties::EnumPropertyDef(""s, ""s, "Graphics Backend"s, ""s, false, 0, 0, renderers),
          [this, renderers]() { return max(0, FindIndexOf(renderers, m_player->m_ptable->m_settings.GetPlayer_GfxBackend())); }, // Live
-         [this, renderers]() { return max(0, FindIndexOf(renderers, m_player->m_ptable->m_settings.GetPlayer_GfxBackend())); }, // Stored (same)
+         [this, renderers](Settings& settings) { return max(0, FindIndexOf(renderers, settings.GetPlayer_GfxBackend())); }, // Stored (same)
          [this, renderers](int, int v)
          {
             m_player->m_ptable->m_settings.SetPlayer_GfxBackend(renderers[v], false);
@@ -131,17 +131,17 @@ void GraphicSettingsPage::BuildPage()
          default: assert(false); return 0;
          }
       }, // Live
-      [this]()
+      [this](Settings& settings)
       {
-         switch (m_player->m_ptable->m_settings.GetPlayer_SyncMode())
+         switch (settings.GetPlayer_SyncMode())
          {
          case VideoSyncMode::VSM_VSYNC: return 0;
          case VideoSyncMode::VSM_ADAPTIVE_VSYNC: return 1;
          case VideoSyncMode::VSM_FRAME_PACING: return 2;
          case VideoSyncMode::VSM_NONE:
-            if (m_player->m_ptable->m_settings.GetPlayer_MaxFramerate() == m_player->m_playfieldWnd->GetRefreshRate())
+            if (settings.GetPlayer_MaxFramerate() == m_player->m_playfieldWnd->GetRefreshRate())
                return adaptiveVSyncSupported ? 3 : 1; // Main display refresh rate => Software VSync
-            if (m_player->m_ptable->m_settings.GetPlayer_MaxFramerate() == 10000.f)
+            if (settings.GetPlayer_MaxFramerate() == 10000.f)
                return adaptiveVSyncSupported ? 5 : 3; // No synchronization
             return adaptiveVSyncSupported ? 4 : 2; // Custom FPS
          default: assert(false); return 0;
@@ -201,7 +201,7 @@ void GraphicSettingsPage::BuildPage()
             roundf(m_player->m_playfieldWnd->GetRefreshRate() - 1.f)),
          1.f, "%4.1f", //
          [this]() { return m_player->GetTargetRefreshRate(); }, // Live
-         [this]() { return m_player->m_ptable->m_settings.GetPlayer_MaxFramerate(); }, // Stored
+         [this](Settings& settings) { return settings.GetPlayer_MaxFramerate(); }, // Stored
          [this](float, float v) { m_player->SetTargetRefreshRate(v == m_player->m_playfieldWnd->GetRefreshRate() ? v - 0.1f : v); }, // The player would interpret this as software VSync
          [](Settings&) { /* Nothing to do, as save is handled by the main combo */ }, [](float, Settings&, bool) { /* Nothing to do, as save is handled by the main combo */ }));
    }
@@ -286,15 +286,15 @@ void GraphicSettingsPage::BuildPage()
          if (m_player->m_ptable->m_settings.GetPlayer_DynamicAO())
             return 2;
          return 1;
-      }, //
-      [this]()
+      }, // Live
+      [this](Settings& settings)
       {
-         if (m_player->m_ptable->m_settings.GetPlayer_DisableAO())
+         if (settings.GetPlayer_DisableAO())
             return 0;
-         if (m_player->m_ptable->m_settings.GetPlayer_DynamicAO())
+         if (settings.GetPlayer_DynamicAO())
             return 2;
          return 1;
-      }, //
+      }, // Stored
       [this](int, int v)
       {
          m_player->m_ptable->m_settings.ResetPlayer_DisableAO();

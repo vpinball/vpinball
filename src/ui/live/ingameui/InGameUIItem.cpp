@@ -53,8 +53,9 @@ InGameUIItem::InGameUIItem(string label, string tooltip, string path)
 {
 }
 
-InGameUIItem::InGameUIItem(const FloatPropertyDef& prop, float displayScale, const string& format, const std::function<float()>& getValue, const std::function<float()>& getStoredValue,
-   const std::function<void(float, float)>& onChange, const std::function<void(Settings&)>& onResetSave, const std::function<void(float, Settings&, bool)>& onSave)
+InGameUIItem::InGameUIItem(const FloatPropertyDef& prop, float displayScale, const string& format, const std::function<float()>& getValue,
+   const std::function<float(Settings&)>& getStoredValue, const std::function<void(float, float)>& onChange, const std::function<void(Settings&)>& onResetSave,
+   const std::function<void(float, Settings&, bool)>& onSave)
    : m_type(Type::Property)
    , m_label(prop.m_label)
    , m_tooltip(prop.m_description)
@@ -73,14 +74,14 @@ InGameUIItem::InGameUIItem(
    const PropertyRegistry::PropId propId, float displayScale, const string& format, const std::function<float()>& getValue, const std::function<void(float, float)>& onChange)
    : InGameUIItem(
         *Settings::GetRegistry().GetFloatProperty(propId), displayScale, format, getValue, //
-        [propId]() { return g_pplayer->m_ptable->m_settings.GetFloat(propId); }, // Get persisted value (to evaluate modified state and implement undo)
+        [propId](Settings& settings) { return settings.GetFloat(propId); }, // Get persisted value (to evaluate modified state and implement undo)
         onChange, //
         [propId](Settings& settings) { settings.Reset(propId); }, //
         [propId](float v, Settings& settings, bool isTableOverride) { settings.Set(propId, v, isTableOverride); })
 {
 }
 
-InGameUIItem::InGameUIItem(const IntPropertyDef& prop, const string& format, const std::function<int()>& getValue, const std::function<int()>& getStoredValue,
+InGameUIItem::InGameUIItem(const IntPropertyDef& prop, const string& format, const std::function<int()>& getValue, const std::function<int(Settings&)>& getStoredValue,
    const std::function<void(int, int)>& onChange, const std::function<void(Settings&)>& onResetSave, const std::function<void(int, Settings&, bool)>& onSave)
    : m_type(Type::Property)
    , m_label(prop.m_label)
@@ -98,15 +99,15 @@ InGameUIItem::InGameUIItem(const IntPropertyDef& prop, const string& format, con
 InGameUIItem::InGameUIItem(const PropertyRegistry::PropId propId, const string& format, const std::function<int()>& getValue, const std::function<void(int, int)>& onChange)
    : InGameUIItem(
         *Settings::GetRegistry().GetIntProperty(propId), format, getValue, //
-        [propId]() { return g_pplayer->m_ptable->m_settings.GetInt(propId); }, // Get persisted value (to evaluate modified state and implement undo)
+        [propId](Settings& settings) { return settings.GetInt(propId); }, // Get persisted value (to evaluate modified state and implement undo)
         onChange, //
         [propId](Settings& settings) { settings.Reset(propId); }, //
         [propId](int v, Settings& settings, bool isTableOverride) { settings.Set(propId, v, isTableOverride); })
 {
 }
 
-InGameUIItem::InGameUIItem(const EnumPropertyDef& prop, const std::function<int()>& getValue, const std::function<int()>& getStoredValue, const std::function<void(int, int)>& onChange,
-   const std::function<void(Settings&)>& onResetSave, const std::function<void(int, Settings&, bool)>& onSave)
+InGameUIItem::InGameUIItem(const EnumPropertyDef& prop, const std::function<int()>& getValue, const std::function<int(Settings&)>& getStoredValue,
+   const std::function<void(int, int)>& onChange, const std::function<void(Settings&)>& onResetSave, const std::function<void(int, Settings&, bool)>& onSave)
    : m_type(Type::Property)
    , m_label(prop.m_label)
    , m_tooltip(prop.m_description)
@@ -122,15 +123,15 @@ InGameUIItem::InGameUIItem(const EnumPropertyDef& prop, const std::function<int(
 InGameUIItem::InGameUIItem(const PropertyRegistry::PropId propId, const std::function<int()>& getValue, const std::function<void(int, int)>& onChange)
    : InGameUIItem(
         *Settings::GetRegistry().GetEnumProperty(propId), getValue, //
-        [propId]() { return g_pplayer->m_ptable->m_settings.GetInt(propId); }, // Get persisted value (to evaluate modified state and implement undo)
+        [propId](Settings& settings) { return settings.GetInt(propId); }, // Get persisted value (to evaluate modified state and implement undo)
         onChange, //
         [propId](Settings& settings) { settings.Reset(propId); }, //
         [propId](int v, Settings& settings, bool isTableOverride) { settings.Set(propId, v, isTableOverride); })
 {
 }
 
-InGameUIItem::InGameUIItem(const BoolPropertyDef& prop, const std::function<bool()>& getValue, const std::function<bool()>& getStoredValue, const std::function<void(bool)>& onChange,
-   const std::function<void(Settings&)>& onResetSave, const std::function<void(float, Settings&, bool)>& onSave)
+InGameUIItem::InGameUIItem(const BoolPropertyDef& prop, const std::function<bool()>& getValue, const std::function<bool(Settings&)>& getStoredValue,
+   const std::function<void(bool)>& onChange, const std::function<void(Settings&)>& onResetSave, const std::function<void(float, Settings&, bool)>& onSave)
    : m_type(Type::Property)
    , m_label(prop.m_label)
    , m_tooltip(prop.m_description)
@@ -146,7 +147,7 @@ InGameUIItem::InGameUIItem(const BoolPropertyDef& prop, const std::function<bool
 InGameUIItem::InGameUIItem(const PropertyRegistry::PropId propId, const std::function<bool()>& getValue, const std::function<void(bool)>& onChange)
    : InGameUIItem(
         *Settings::GetRegistry().GetBoolProperty(propId), getValue, //
-        [propId]() { return g_pplayer->m_ptable->m_settings.GetBool(propId); }, // Get persisted value (to evaluate modified state and implement undo)
+        [propId](Settings& settings) { return settings.GetBool(propId); }, // Get persisted value (to evaluate modified state and implement undo)
         onChange, //
         [propId](Settings& settings) { settings.Reset(propId); }, //
         [propId](bool v, Settings& settings, bool isTableOverride) { settings.Set(propId, v, isTableOverride); })
@@ -170,15 +171,16 @@ InGameUIItem::InGameUIItem(string label, string tooltip, std::function<void(int,
 
 bool InGameUIItem::IsModified() const
 {
+   Settings& settings = g_pplayer ? g_pplayer->m_ptable->m_settings : g_pvp->m_settings;
    switch (m_type)
    {
    case Type::Property:
       switch (m_property->m_type)
       {
-      case PropertyDef::Type::Int: return GetIntValue() != dynamic_cast<IntPropertyDef*>(m_property.get())->GetValid(m_getStoredIntValue());
-      case PropertyDef::Type::Enum: return GetIntValue() != dynamic_cast<EnumPropertyDef*>(m_property.get())->GetValid(m_getStoredIntValue());
-      case PropertyDef::Type::Bool: return GetBoolValue() != m_getStoredBoolValue();
-      case PropertyDef::Type::Float: return GetFloatValue() != dynamic_cast<FloatPropertyDef*>(m_property.get())->GetValid(m_getStoredFloatValue());
+      case PropertyDef::Type::Int: return GetIntValue() != dynamic_cast<IntPropertyDef*>(m_property.get())->GetValid(m_getStoredIntValue(settings));
+      case PropertyDef::Type::Enum: return GetIntValue() != dynamic_cast<EnumPropertyDef*>(m_property.get())->GetValid(m_getStoredIntValue(settings));
+      case PropertyDef::Type::Bool: return GetBoolValue() != m_getStoredBoolValue(settings);
+      case PropertyDef::Type::Float: return GetFloatValue() != dynamic_cast<FloatPropertyDef*>(m_property.get())->GetValid(m_getStoredFloatValue(settings));
       default: assert(false); return false;
       }
    case Type::ActionInputMapping: return m_inputAction->GetMappingString() != m_initialMappingString; break;
@@ -208,15 +210,16 @@ bool InGameUIItem::IsDefaultValue() const
 
 void InGameUIItem::ResetToStoredValue()
 {
+   Settings& settings = g_pplayer ? g_pplayer->m_ptable->m_settings : g_pvp->m_settings;
    switch (m_type)
    {
    case Type::Property:
       switch (m_property->m_type)
       {
       case PropertyDef::Type::Int:
-      case PropertyDef::Type::Enum: SetValue(m_getStoredIntValue()); break;
-      case PropertyDef::Type::Bool: SetValue(m_getStoredBoolValue()); break;
-      case PropertyDef::Type::Float: SetValue(m_getStoredFloatValue()); break;
+      case PropertyDef::Type::Enum: SetValue(m_getStoredIntValue(settings)); break;
+      case PropertyDef::Type::Bool: SetValue(m_getStoredBoolValue(settings)); break;
+      case PropertyDef::Type::Float: SetValue(m_getStoredFloatValue(settings)); break;
       default: assert(false); break;
       }
       break;
