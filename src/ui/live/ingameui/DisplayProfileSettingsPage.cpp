@@ -25,7 +25,7 @@ void DisplayProfileSettingsPage::BuildPage()
             "DMD: Legacy VPX"s, "DMD: Neon Plasma"s, "DMD: Red LED"s, "DMD: Green LED"s, "DMD: Yellow LED"s, "DMD: Generic Plasma"s, "DMD: Generic LED"s, //
             "Alpha: Neon Plasma"s, "Alpha: Blue VFD"s, "Alpha: Green VFD"s, "Alpha: Red LED"s, "Alpha: Green LED"s, "Alpha: Yellow LED"s, "Alpha: Generic Plasma"s, "Alpha: Generic LED"s }),
       [this]() { return m_selectedProfile; }, // Live
-      [this]() { return m_selectedProfile; }, // Stored
+      [this](Settings&) { return m_selectedProfile; }, // Stored
       [this](int, int v)
       {
          m_selectedProfile = v;
@@ -42,7 +42,7 @@ void DisplayProfileSettingsPage::BuildPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::FloatPropertyDef(""s, ""s, "Preview Brightness"s, "Adjust the brightness level of the preview."s, false, 0.1f, 5.f, 0.1f, 1.f), 1.f, "%4.1f"s, //
       [this]() { return m_previewBrightness; }, // Live
-      [this]() { return m_previewBrightness; }, // Stored
+      [this](Settings&) { return m_previewBrightness; }, // Stored
       [this](float, float v) { m_previewBrightness = v; },
       [](Settings&) { /* UI state, not persisted */ }, //
       [](float, Settings&, bool) { /* UI state, not persisted */ }));
@@ -81,7 +81,7 @@ void DisplayProfileSettingsPage::BuildDMDPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Dot Tint Red"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this, profile]() { return static_cast<int>(sRGB(m_player->m_renderer->m_dmdDotColor[profile].x) * 255.f); }, //
-      [this, profile]() { return m_player->m_ptable->m_settings.GetDMD_ProfileDotTint(profile) & 0xFF; }, //
+      [this, profile](Settings& settings) { return settings.GetDMD_ProfileDotTint(profile) & 0xFF; }, //
       [this, profile](int, int v) { m_player->m_renderer->m_dmdDotColor[profile].x = InvsRGB(static_cast<float>(v) / 255.f); }, //
       [profile](Settings& settings) { settings.ResetDMD_ProfileDotTint(profile); }, // we reset the 3 channels at once
       [profile](int v, Settings& settings, bool isTableOverride) { settings.SetDMD_ProfileDotTint(profile, (settings.GetDMD_ProfileDotTint(profile) & 0xFFFF00) | v, isTableOverride); }));
@@ -89,7 +89,7 @@ void DisplayProfileSettingsPage::BuildDMDPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Dot Tint Green"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this, profile]() { return static_cast<int>(sRGB(m_player->m_renderer->m_dmdDotColor[profile].y) * 255.f); }, //
-      [this, profile]() { return (m_player->m_ptable->m_settings.GetDMD_ProfileDotTint(profile) >> 8) & 0xFF; }, //
+      [this, profile](Settings& settings) { return (settings.GetDMD_ProfileDotTint(profile) >> 8) & 0xFF; }, //
       [this, profile](int, int v) { m_player->m_renderer->m_dmdDotColor[profile].y = InvsRGB(static_cast<float>(v) / 255.f); }, //
       [profile](Settings& settings) { settings.ResetDMD_ProfileDotTint(profile); }, // we reset the 3 channels at once
       [profile](int v, Settings& settings, bool isTableOverride)
@@ -98,7 +98,7 @@ void DisplayProfileSettingsPage::BuildDMDPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Dot Tint Blue"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this, profile]() { return static_cast<int>(sRGB(m_player->m_renderer->m_dmdDotColor[profile].z) * 255.f); }, //
-      [this, profile]() { return (m_player->m_ptable->m_settings.GetDMD_ProfileDotTint(profile) >> 16) & 0xFF; }, //
+      [this, profile](Settings& settings) { return (settings.GetDMD_ProfileDotTint(profile) >> 16) & 0xFF; }, //
       [this, profile](int, int v) { m_player->m_renderer->m_dmdDotColor[profile].z = InvsRGB(static_cast<float>(v) / 255.f); }, //
       [profile](Settings& settings) { settings.ResetDMD_ProfileDotTint(profile); }, // we reset the 3 channels at once
       [profile](int v, Settings& settings, bool isTableOverride)
@@ -109,7 +109,7 @@ void DisplayProfileSettingsPage::BuildDMDPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Unlit Dot Color Red"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this, profile]() { return static_cast<int>(sRGB(m_player->m_renderer->m_dmdUnlitDotColor[profile].x) * 255.f); }, //
-      [this, profile]() { return m_player->m_ptable->m_settings.GetDMD_ProfileUnlitDotColor(profile) & 0xFF; }, //
+      [this, profile](Settings& settings) { return settings.GetDMD_ProfileUnlitDotColor(profile) & 0xFF; }, //
       [this, profile](int, int v) { m_player->m_renderer->m_dmdUnlitDotColor[profile].x = InvsRGB(static_cast<float>(v) / 255.f); }, //
       [profile](Settings& settings) { settings.ResetDMD_ProfileUnlitDotColor(profile); }, // we reset the 3 channels at once
       [profile](int v, Settings& settings, bool isTableOverride)
@@ -118,7 +118,7 @@ void DisplayProfileSettingsPage::BuildDMDPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Unlit Dot Color Green"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this, profile]() { return static_cast<int>(sRGB(m_player->m_renderer->m_dmdUnlitDotColor[profile].y) * 255.f); }, //
-      [this, profile]() { return (m_player->m_ptable->m_settings.GetDMD_ProfileUnlitDotColor(profile) >> 8) & 0xFF; }, //
+      [this, profile](Settings& settings) { return (settings.GetDMD_ProfileUnlitDotColor(profile) >> 8) & 0xFF; }, //
       [this, profile](int, int v) { m_player->m_renderer->m_dmdUnlitDotColor[profile].y = InvsRGB(static_cast<float>(v) / 255.f); }, //
       [profile](Settings& settings) { settings.ResetDMD_ProfileUnlitDotColor(profile); }, // we reset the 3 channels at once
       [profile](int v, Settings& settings, bool isTableOverride)
@@ -127,7 +127,7 @@ void DisplayProfileSettingsPage::BuildDMDPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Unlit Dot Color Blue"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this, profile]() { return static_cast<int>(sRGB(m_player->m_renderer->m_dmdUnlitDotColor[profile].z) * 255.f); }, //
-      [this, profile]() { return (m_player->m_ptable->m_settings.GetDMD_ProfileUnlitDotColor(profile) >> 16) & 0xFF; }, //
+      [this, profile](Settings& settings) { return (settings.GetDMD_ProfileUnlitDotColor(profile) >> 16) & 0xFF; }, //
       [this, profile](int, int v) { m_player->m_renderer->m_dmdUnlitDotColor[profile].z = InvsRGB(static_cast<float>(v) / 255.f); }, //
       [profile](Settings& settings) { settings.ResetDMD_ProfileUnlitDotColor(profile); }, // we reset the 3 channels at once
       [profile](int v, Settings& settings, bool isTableOverride)
@@ -159,7 +159,7 @@ void DisplayProfileSettingsPage::BuildAlphaPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Segment Tint Red"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this, profile]() { return static_cast<int>(sRGB(m_player->m_renderer->m_segColor[profile].x) * 255.f); }, //
-      [this, profile]() { return m_player->m_ptable->m_settings.GetAlpha_ProfileColor(profile) & 0xFF; }, //
+      [this, profile](Settings& settings) { return settings.GetAlpha_ProfileColor(profile) & 0xFF; }, //
       [this, profile](int, int v) { m_player->m_renderer->m_segColor[profile].x = InvsRGB(static_cast<float>(v) / 255.f); }, //
       [profile](Settings& settings) { settings.ResetAlpha_ProfileColor(profile); }, // we reset the 3 channels at once
       [profile](int v, Settings& settings, bool isTableOverride) { settings.SetAlpha_ProfileColor(profile, (settings.GetAlpha_ProfileColor(profile) & 0xFFFF00) | v, isTableOverride); }));
@@ -167,7 +167,7 @@ void DisplayProfileSettingsPage::BuildAlphaPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Segment Tint Green"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this, profile]() { return static_cast<int>(sRGB(m_player->m_renderer->m_segColor[profile].y) * 255.f); }, //
-      [this, profile]() { return (m_player->m_ptable->m_settings.GetAlpha_ProfileColor(profile) >> 8) & 0xFF; }, //
+      [this, profile](Settings& settings) { return (settings.GetAlpha_ProfileColor(profile) >> 8) & 0xFF; }, //
       [this, profile](int, int v) { m_player->m_renderer->m_segColor[profile].y = InvsRGB(static_cast<float>(v) / 255.f); }, //
       [profile](Settings& settings) { settings.ResetAlpha_ProfileColor(profile); }, // we reset the 3 channels at once
       [profile](int v, Settings& settings, bool isTableOverride)
@@ -176,7 +176,7 @@ void DisplayProfileSettingsPage::BuildAlphaPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Segment Tint Blue"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this, profile]() { return static_cast<int>(sRGB(m_player->m_renderer->m_segColor[profile].z) * 255.f); }, //
-      [this, profile]() { return (m_player->m_ptable->m_settings.GetAlpha_ProfileColor(profile) >> 16) & 0xFF; }, //
+      [this, profile](Settings& settings) { return (settings.GetAlpha_ProfileColor(profile) >> 16) & 0xFF; }, //
       [this, profile](int, int v) { m_player->m_renderer->m_segColor[profile].z = InvsRGB(static_cast<float>(v) / 255.f); }, //
       [profile](Settings& settings) { settings.ResetAlpha_ProfileColor(profile); }, // we reset the 3 channels at once
       [profile](int v, Settings& settings, bool isTableOverride)
@@ -187,7 +187,7 @@ void DisplayProfileSettingsPage::BuildAlphaPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Unlit Segment Color Red"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this, profile]() { return static_cast<int>(sRGB(m_player->m_renderer->m_segUnlitColor[profile].x) * 255.f); }, //
-      [this, profile]() { return m_player->m_ptable->m_settings.GetAlpha_ProfileUnlit(profile) & 0xFF; }, //
+      [this, profile](Settings& settings) { return settings.GetAlpha_ProfileUnlit(profile) & 0xFF; }, //
       [this, profile](int, int v) { m_player->m_renderer->m_segUnlitColor[profile].x = InvsRGB(static_cast<float>(v) / 255.f); }, //
       [profile](Settings& settings) { settings.ResetAlpha_ProfileUnlit(profile); }, // we reset the 3 channels at once
       [profile](int v, Settings& settings, bool isTableOverride) { settings.SetAlpha_ProfileUnlit(profile, (settings.GetAlpha_ProfileUnlit(profile) & 0xFFFF00) | v, isTableOverride); }));
@@ -195,7 +195,7 @@ void DisplayProfileSettingsPage::BuildAlphaPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Unlit Segment Color Green"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this, profile]() { return static_cast<int>(sRGB(m_player->m_renderer->m_segUnlitColor[profile].y) * 255.f); }, //
-      [this, profile]() { return (m_player->m_ptable->m_settings.GetAlpha_ProfileUnlit(profile) >> 8) & 0xFF; }, //
+      [this, profile](Settings& settings) { return (settings.GetAlpha_ProfileUnlit(profile) >> 8) & 0xFF; }, //
       [this, profile](int, int v) { m_player->m_renderer->m_segUnlitColor[profile].y = InvsRGB(static_cast<float>(v) / 255.f); }, //
       [profile](Settings& settings) { settings.ResetAlpha_ProfileUnlit(profile); }, // we reset the 3 channels at once
       [profile](int v, Settings& settings, bool isTableOverride)
@@ -204,7 +204,7 @@ void DisplayProfileSettingsPage::BuildAlphaPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::IntPropertyDef(""s, ""s, "Unlit Segment Color Blue"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this, profile]() { return static_cast<int>(sRGB(m_player->m_renderer->m_segUnlitColor[profile].z) * 255.f); }, //
-      [this, profile]() { return (m_player->m_ptable->m_settings.GetAlpha_ProfileUnlit(profile) >> 16) & 0xFF; }, //
+      [this, profile](Settings& settings) { return (settings.GetAlpha_ProfileUnlit(profile) >> 16) & 0xFF; }, //
       [this, profile](int, int v) { m_player->m_renderer->m_segUnlitColor[profile].z = InvsRGB(static_cast<float>(v) / 255.f); }, //
       [profile](Settings& settings) { settings.ResetAlpha_ProfileUnlit(profile); }, // we reset the 3 channels at once
       [profile](int v, Settings& settings, bool isTableOverride)
