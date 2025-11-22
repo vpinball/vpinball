@@ -53,14 +53,15 @@ void PluginSettingsPage::BuildPage()
    ClearItems();
    const auto enablePropId = Settings::GetRegistry().GetPropertyId("Plugin." + m_pluginId, "Enable"s).value();
    const MsgPluginManager& manager = MsgPluginManager::GetInstance();
-   if (auto plugin = manager.GetPlugin(m_pluginId); plugin == nullptr)
+   auto plugin = manager.GetPlugin(m_pluginId); 
+   if (plugin == nullptr)
    {
       AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "Internal error..."s));
       return;
    }
 
    // Consider the current state of the plugin as the default to avoid always returning to off state
-   const bool isEnabled = m_player->m_ptable->m_settings.GetBool(enablePropId);
+   const bool isEnabled = plugin->IsLoaded();
    Settings::GetRegistry().Register(Settings::GetRegistry().GetBoolProperty(enablePropId)->WithDefault(isEnabled));
    AddItem(std::make_unique<InGameUIItem>( //
       enablePropId, //
