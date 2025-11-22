@@ -78,6 +78,9 @@ static std::vector<uint32_t> rgbaDstFrame;
 static std::vector<uint8_t> renderFrame;
 static unsigned int renderFrameId = 0;
 
+static uint8_t linearToGamma[256];
+static uint8_t gammaToLinear[256];
+
 enum UpscalerMode {
    UM_Disabled,
    UM_xBRZ_2x,
@@ -130,6 +133,10 @@ static void SetThreadName(const std::string& name)
 
 static bool IsSourceSelected() { return dmdSrc.GetRenderFrame != nullptr; }
 
+inline float sRGB(const float f) { return (f <= 0.0031308f) ? (12.92f * f) : (1.055f * powf(f, (float)(1.0 / 2.4)) - 0.055f); }
+
+inline float InvsRGB(const float x) { return (x <= 0.04045f) ? (x * (float)(1.0 / 12.92)) : (powf(x * (float)(1.0 / 1.055) + (float)(0.055 / 1.055), 2.4f)); }
+
 static void RenderThread()
 {
    SetThreadName("UpscaleDMD.RenderThread"s);
@@ -162,22 +169,47 @@ static void RenderThread()
       // Render display
       const DisplayFrame srcFrame = dmdSrc.GetRenderFrame(dmdSrc.id);
 
+      // Monochrome frame are provided as linearluminance while upscalers expects sRGB data. If this is defined,
+      // frames are converted from linear to sRGB for upscaling and back to linear luminance. This gives better
+      // results at some performance cost. The difference is really visible when upscaling is null (ScaleFX AA)
+      // or low. When the upscale factor goes up, this is less needed and the performance impact goes up.
+      const bool applySRGB = scaleFactors[upscalerMode] <= 3;
+
       if (srcFrame.frame && srcFrame.frameId != renderFrameId)
       {
          const unsigned int dmdSrcSize = dmdSrc.width * dmdSrc.height;
          if (dmdSrc.frameFormat == CTLPI_DISPLAY_FORMAT_LUM8)
          {
-            if (displayId.frameFormat == CTLPI_DISPLAY_FORMAT_LUM8 && (upscalerMode == UpscalerMode::UM_ScaleFX_AA || upscalerMode == UpscalerMode::UM_ScaleFX_3x))
+            if (applySRGB)
             {
-               for (unsigned int ofs = 0; ofs < dmdSrcSize; ++ofs)
-                  rgbaSrcFrame[ofs] = srcFrame.frame[ofs];
+               if (displayId.frameFormat == CTLPI_DISPLAY_FORMAT_LUM8 && (upscalerMode == UpscalerMode::UM_ScaleFX_AA || upscalerMode == UpscalerMode::UM_ScaleFX_3x))
+               {
+                  for (unsigned int ofs = 0; ofs < dmdSrcSize; ++ofs)
+                     rgbaSrcFrame[ofs] = linearToGamma[srcFrame.frame[ofs]];
+               }
+               else
+               {
+                  for (unsigned int ofs = 0; ofs < dmdSrcSize; ++ofs)
+                  {
+                     const uint32_t lum = (uint32_t)linearToGamma[srcFrame.frame[ofs]];
+                     rgbaSrcFrame[ofs] = lum | (lum << 8) | (lum << 16) | 0xFF000000u;
+                  }
+               }
             }
             else
             {
-               for (unsigned int ofs = 0; ofs < dmdSrcSize; ++ofs)
+               if (displayId.frameFormat == CTLPI_DISPLAY_FORMAT_LUM8 && (upscalerMode == UpscalerMode::UM_ScaleFX_AA || upscalerMode == UpscalerMode::UM_ScaleFX_3x))
                {
-                  const uint32_t lum = srcFrame.frame[ofs];
-                  rgbaSrcFrame[ofs] = lum | (lum << 8) | (lum << 16) | 0xFF000000u;
+                  for (unsigned int ofs = 0; ofs < dmdSrcSize; ++ofs)
+                     rgbaSrcFrame[ofs] = srcFrame.frame[ofs];
+               }
+               else
+               {
+                  for (unsigned int ofs = 0; ofs < dmdSrcSize; ++ofs)
+                  {
+                     const uint32_t lum = srcFrame.frame[ofs];
+                     rgbaSrcFrame[ofs] = lum | (lum << 8) | (lum << 16) | 0xFF000000u;
+                  }
                }
             }
          }
@@ -234,30 +266,38 @@ static void RenderThread()
          if (displayId.frameFormat == CTLPI_DISPLAY_FORMAT_LUM8)
          { // Lum8 in uint32_t -> Lum8 in uint8_t
             unsigned int ofs = 0;
-         #ifdef ENABLE_SSE_OPTIMIZATIONS // actually uses SSSE3
-            if (ssse3_supported)
+            if (applySRGB)
             {
-            // Process 16 pixels at a time
-            const unsigned int simdCount = displaySize & ~15u;
-            const __m128i shuffle  = _mm_setr_epi8(0,4,8,12, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1);
-            const __m128i shuffle2 = _mm_setr_epi8(-1,-1,-1,-1, 0,4,8,12, -1,-1,-1,-1, -1,-1,-1,-1);
-            const __m128i shuffle3 = _mm_setr_epi8(-1,-1,-1,-1, -1,-1,-1,-1, 0,4,8,12, -1,-1,-1,-1);
-            const __m128i shuffle4 = _mm_setr_epi8(-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, 0,4,8,12);
-            for (; ofs < simdCount; ofs+=16)
+               for (; ofs < displaySize; ++ofs)
+                  renderFrame[ofs] = gammaToLinear[rgbaDstFrame[ofs] & 0xFFu];
+            }
+            else
             {
-               const __m128i* const __restrict rdf = reinterpret_cast<const __m128i*>(&rgbaDstFrame[ofs]);
-               const __m128i lum[4] = {_mm_shuffle_epi8(_mm_loadu_si128(rdf  ), shuffle),
-                                       _mm_shuffle_epi8(_mm_loadu_si128(rdf+1), shuffle2),
-                                       _mm_shuffle_epi8(_mm_loadu_si128(rdf+2), shuffle3),
-                                       _mm_shuffle_epi8(_mm_loadu_si128(rdf+3), shuffle4)};
-               const __m128i lumc = _mm_or_si128(_mm_or_si128(lum[0], lum[1]), _mm_or_si128(lum[2], lum[3]));
-               _mm_storeu_si128(reinterpret_cast<__m128i*>(&renderFrame[ofs]), lumc);
+            #ifdef ENABLE_SSE_OPTIMIZATIONS // actually uses SSSE3
+               if (ssse3_supported)
+               {
+                  // Process 16 pixels at a time
+                  const unsigned int simdCount = displaySize & ~15u;
+                  const __m128i shuffle  = _mm_setr_epi8(0,4,8,12, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1);
+                  const __m128i shuffle2 = _mm_setr_epi8(-1,-1,-1,-1, 0,4,8,12, -1,-1,-1,-1, -1,-1,-1,-1);
+                  const __m128i shuffle3 = _mm_setr_epi8(-1,-1,-1,-1, -1,-1,-1,-1, 0,4,8,12, -1,-1,-1,-1);
+                  const __m128i shuffle4 = _mm_setr_epi8(-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, 0,4,8,12);
+                  for (; ofs < simdCount; ofs+=16)
+                  {
+                     const __m128i* const __restrict rdf = reinterpret_cast<const __m128i*>(&rgbaDstFrame[ofs]);
+                     const __m128i lum[4] = {_mm_shuffle_epi8(_mm_loadu_si128(rdf  ), shuffle),
+                                             _mm_shuffle_epi8(_mm_loadu_si128(rdf+1), shuffle2),
+                                             _mm_shuffle_epi8(_mm_loadu_si128(rdf+2), shuffle3),
+                                             _mm_shuffle_epi8(_mm_loadu_si128(rdf+3), shuffle4)};
+                     const __m128i lumc = _mm_or_si128(_mm_or_si128(lum[0], lum[1]), _mm_or_si128(lum[2], lum[3]));
+                     _mm_storeu_si128(reinterpret_cast<__m128i*>(&renderFrame[ofs]), lumc);
+                  }
+               }
+               // Handle remaining pixels
+            #endif
+               for (; ofs < displaySize; ++ofs)
+                  renderFrame[ofs] = rgbaDstFrame[ofs] & 0xFFu;
             }
-            }
-            // Handle remaining pixels
-         #endif
-            for (; ofs < displaySize; ++ofs)
-               renderFrame[ofs] = rgbaDstFrame[ofs] & 0xFFu;
          }
          else
          { // RGBx -> RGB
@@ -340,13 +380,13 @@ static void OnDmdSrcChanged(const unsigned int, void*, void*)
             .id = { { endpointId, 0 } },
             .groupId = { { endpointId, 0 } },
             .overrideId = selectedSrc.id,
-            .width = dmdSrc.width * scaleFactors[upscalerMode],
-            .height = dmdSrc.height * scaleFactors[upscalerMode],
-            .hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN,
+            .width = selectedSrc.width * scaleFactors[upscalerMode],
+            .height = selectedSrc.height * scaleFactors[upscalerMode],
+            .hardware = selectedSrc.hardware,
             .frameFormat = selectedSrc.frameFormat == CTLPI_DISPLAY_FORMAT_LUM8 ? CTLPI_DISPLAY_FORMAT_LUM8 : CTLPI_DISPLAY_FORMAT_SRGB888,
             .GetRenderFrame = &GetRenderFrame,
-            .identifyFormat = CTLPI_DISPLAY_ID_FORMAT_BITPLANE2,
-            .GetIdentifyFrame = nullptr //
+            .identifyFormat = selectedSrc.identifyFormat,
+            .GetIdentifyFrame = scaleFactors[upscalerMode] == 1 ? selectedSrc.GetIdentifyFrame : nullptr
          };
          renderFrameId = 0;
          rgbaSrcFrame.resize(dmdSrc.width * dmdSrc.height);
@@ -390,6 +430,11 @@ MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginLoad(const uint32_t sessionId, const 
    LPISetup(endpointId, api);
    resURIResolver = std::make_unique<ResURIResolver>(*api, endpointId, true, false, false, false);
    resURIResolver->SetDisplayFilter([](const DisplaySrcId& src){ return src.id.endpointId != endpointId; });
+   for (int i = 0; i < 256; i++)
+   {
+      linearToGamma[i] = (uint8_t)(255.f * sRGB(i / 255.f));
+      gammaToLinear[i] = (uint8_t)(255.f * InvsRGB(i / 255.f));
+   }
    onDisplaySrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
    getDisplaySrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
    msgApi->RegisterSetting(endpointId, &upscaleModeProp);
@@ -399,12 +444,15 @@ MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginLoad(const uint32_t sessionId, const 
 
 MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginUnload()
 {
+   msgApi->UnsubscribeMsg(onDisplaySrcChangedId, OnDmdSrcChanged);
    if (IsSourceSelected())
       msgApi->UnsubscribeMsg(getDisplaySrcId, OnGetDisplaySrc);
    isRunning = false;
    updateCondVar.notify_all();
    if (renderThread.joinable())
       renderThread.join();
+   dmdSrc = {};
+   msgApi->BroadcastMsg(endpointId, onDisplaySrcChangedId, nullptr);
    msgApi->ReleaseMsgID(onDisplaySrcChangedId);
    msgApi->ReleaseMsgID(getDisplaySrcId);
    resURIResolver = nullptr;
