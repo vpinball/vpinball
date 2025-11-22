@@ -1586,7 +1586,8 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
    {
       string optId = trim_string(m_tableName);
       std::replace_if(optId.begin(), optId.end(), [](char c) { return !isalnum(c) || c == '.' || c == '-'; }, '_');
-      const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Version"s, optId, "Table Version"s, "Last played version"s, m_version));
+      const auto propId
+         = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Version"s, optId, "Table Version"s, "Last played version"s, false, m_version));
       g_pvp->m_settings.Set(propId, m_version, false);
    }
 
@@ -7721,32 +7722,33 @@ std::optional<VPX::Properties::PropertyRegistry::PropId> PinTable::RegisterOptio
          string second = lowerCase(trim_string(literals[1]));
          if ((first == "off" && second == "on") || (first == "hide" && second == "show") || (first == "false" && second == "true"))
          {
-            const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("TableOption"s, optId, name, ""s, defaultValue != minValue));
+            const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("TableOption"s, optId, name, ""s, true, defaultValue != minValue));
             m_tableOptions.emplace_back(propId, 1.f, ""s, m_settings.GetBool(propId) ? 1.f : 0.f);
             return propId;
          }
          else if ((first == "on" && second == "off") || (first == "show" && second == "hide") || (first == "true" && second == "false"))
          {
-            const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("TableOption"s, optId, name, ""s, defaultValue != minValue));
+            const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("TableOption"s, optId, name, ""s, true, defaultValue != minValue));
             m_tableOptions.emplace_back(propId, -1.f, ""s, m_settings.GetBool(propId) ? 1.f : 0.f);
             return propId;
          }
       }
-      auto prop = std::make_unique<VPX::Properties::EnumPropertyDef>("TableOption"s, optId, name, ""s, static_cast<int>(minValue), static_cast<int>(defaultValue), literals);
+      auto prop = std::make_unique<VPX::Properties::EnumPropertyDef>("TableOption"s, optId, name, ""s, false, static_cast<int>(minValue), static_cast<int>(defaultValue), literals);
       const auto propId = Settings::GetRegistry().Register(std::move(prop));
       m_tableOptions.emplace_back(propId, 1.f, ""s, static_cast<float>(m_settings.GetInt(propId)));
       return propId;
    }
    else if (round(step) == 1.f && round(minValue) == minValue)
    {
-      auto prop = std::make_unique<VPX::Properties::IntPropertyDef>("TableOption"s, optId, name, ""s, static_cast<int>(minValue), static_cast<int>(maxValue), static_cast<int>(defaultValue));
+      auto prop
+         = std::make_unique<VPX::Properties::IntPropertyDef>("TableOption"s, optId, name, ""s, true, static_cast<int>(minValue), static_cast<int>(maxValue), static_cast<int>(defaultValue));
       const auto propId = Settings::GetRegistry().Register(std::move(prop));
       m_tableOptions.emplace_back(propId, isPercent ? 100.f : 1.f, isPercent ? "%3d %%"s : "%d"s, static_cast<float>(m_settings.GetInt(propId)));
       return propId;
    }
    else
    {
-      auto prop = std::make_unique<VPX::Properties::FloatPropertyDef>("TableOption"s, optId, name, ""s, minValue, maxValue, step, defaultValue);
+      auto prop = std::make_unique<VPX::Properties::FloatPropertyDef>("TableOption"s, optId, name, ""s, true, minValue, maxValue, step, defaultValue);
       const auto propId = Settings::GetRegistry().Register(std::move(prop));
       m_tableOptions.emplace_back(propId, isPercent ? 100.f : 1.f, isPercent ? "%4.1f %%"s : "%4.1f"s, m_settings.GetFloat(propId));
       return propId;

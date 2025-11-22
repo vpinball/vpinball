@@ -250,7 +250,7 @@ void PointOfViewSettingsPage::BuildPage()
       });
 
    auto lockScale = std::make_unique<InGameUIItem>(
-      VPX::Properties::BoolPropertyDef(""s, ""s, "Lock XYZ Scale"s, "Scale all axis homogeneously (recommended)"s, true), //
+      VPX::Properties::BoolPropertyDef(""s, ""s, "Lock XYZ Scale"s, "Scale all axis homogeneously (recommended)"s, false, true), //
       [this]() { return m_lockScale; }, //
       [this]() { return m_lockScale; }, //
       [this](bool v) { m_lockScale = v; }, [](Settings&) { /* UI state, not persisted */ }, //
@@ -303,7 +303,6 @@ void PointOfViewSettingsPage::BuildPage()
          BuildPage();
       });
 
-   Settings::SetPlayer_ScreenPlayerX_Default(m_playerPos.x);
    auto playerX = std::make_unique<InGameUIItem>(
       Settings::m_propPlayer_ScreenPlayerX, 1.f, "%4.1f cm"s, //
       [this]() { return m_playerPos.x; },
@@ -316,7 +315,6 @@ void PointOfViewSettingsPage::BuildPage()
          BuildPage();
       });
 
-   Settings::SetPlayer_ScreenPlayerY_Default(m_playerPos.y);
    auto playerY = std::make_unique<InGameUIItem>(
       Settings::m_propPlayer_ScreenPlayerY, 1.f, "%4.1f cm"s, //
       [this]() { return m_playerPos.y; },
@@ -329,7 +327,6 @@ void PointOfViewSettingsPage::BuildPage()
          BuildPage();
       });
 
-   Settings::SetPlayer_ScreenPlayerZ_Default(m_playerPos.z);
    auto playerZ = std::make_unique<InGameUIItem>(
       Settings::m_propPlayer_ScreenPlayerZ, 1.f, "%4.1f cm"s, //
       [this]() { return m_playerPos.z; },

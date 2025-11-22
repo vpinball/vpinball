@@ -293,49 +293,50 @@ void Settings::Load(const Settings &settings)
 }
 
 #ifdef __GNUC__
-#undef PropBool
-#define PropBool(groupId, propId, label, comment, defVal) \
+#define PropBoolBase(groupId, propId, label, comment, isContextual, defVal) \
    const VPX::Properties::PropertyRegistry::PropId Settings::m_prop##groupId##_##propId = \
-      GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, defVal));
+      GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, isContextual, defVal));
 
-#undef PropInt
-#define PropInt(groupId, propId, label, comment, minVal, maxVal, defVal) \
+#define PropIntBase(groupId, propId, label, comment, isContextual, minVal, maxVal, defVal) \
    const VPX::Properties::PropertyRegistry::PropId Settings::m_prop##groupId##_##propId = \
-      GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, minVal, maxVal, defVal));
+      GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, isContextual, minVal, maxVal, defVal));
 
-#undef PropIntUnbounded
-#define PropIntUnbounded(groupId, propId, label, comment, defVal) PropInt(groupId, propId, label, comment, INT_MIN, INT_MAX, defVal)
-
-#undef PropEnumWithMin
-#define PropEnumWithMin(groupId, propId, label, comment, type, minVal, defVal, ...) \
+#define PropEnumBase(groupId, propId, label, comment, isContextual, type, minVal, defVal, ...) \
    const VPX::Properties::PropertyRegistry::PropId Settings::m_prop##groupId##_##propId = \
-      GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, minVal, defVal, vector<string>{__VA_ARGS__}));
+      GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, isContextual, minVal, defVal, vector<string>{__VA_ARGS__}));
 
-#undef PropEnum1
-#define PropEnum1(groupId, propId, label, comment, type, defVal, ...) PropEnumWithMin(groupId, propId, label, comment, type, 1, defVal, __VA_ARGS__)
-
-#undef PropEnum
-#define PropEnum(groupId, propId, label, comment, type, defVal, ...) PropEnumWithMin(groupId, propId, label, comment, type, 0, defVal, __VA_ARGS__)
-
-#undef PropFloatStepped
-#define PropFloatStepped(groupId, propId, label, comment, minVal, maxVal, step, defVal) \
+#define PropFloatBase(groupId, propId, label, comment, isContextual, minVal, maxVal, step, defVal) \
    const VPX::Properties::PropertyRegistry::PropId Settings::m_prop##groupId##_##propId = \
-      GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, minVal, maxVal, step, defVal));
+      GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, isContextual, minVal, maxVal, step, defVal));
 
-#undef PropFloatUnbounded
-#define PropFloatUnbounded(groupId, propId, label, comment, defVal) PropFloatStepped(groupId, propId, label, comment, FLT_MIN, FLT_MAX, 0.f, defVal)
-
-#undef PropFloat
-#define PropFloat(groupId, propId, label, comment, minVal, maxVal, defVal) PropFloatStepped(groupId, propId, label, comment, minVal, maxVal, 0.f, defVal)
-
-#undef PropString
-#define PropString(groupId, propId, label, comment, defVal) \
+#define PropStringBase(groupId, propId, label, comment, isContextual, defVal) \
    const VPX::Properties::PropertyRegistry::PropId Settings::m_prop##groupId##_##propId = \
-      GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, defVal));
+      GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, isContextual, defVal));
 
-#undef PropArray
 #define PropArray(groupId, propId, type, propType, getType, ...) \
    const VPX::Properties::PropertyRegistry::PropId Settings::m_prop##groupId##_##propId[] = { __VA_ARGS__ };
 
+#define PropBool(groupId, propId, label, comment, defVal) PropBoolBase(groupId, propId, label, comment, false, defVal)
+#define PropBoolDyn(groupId, propId, label, comment, defVal) PropBoolBase(groupId, propId, label, comment, true, defVal)
+
+#define PropInt(groupId, propId, label, comment, minVal, maxVal, defVal) PropIntBase(groupId, propId, label, comment, false, minVal, maxVal, defVal)
+#define PropIntDyn(groupId, propId, label, comment, minVal, maxVal, defVal) PropIntBase(groupId, propId, label, comment, true, minVal, maxVal, defVal)
+#define PropIntUnbounded(groupId, propId, label, comment, defVal) PropIntBase(groupId, propId, label, comment, false, INT_MIN, INT_MAX, defVal)
+
+#define PropEnumWithMin(groupId, propId, label, comment, type, minVal, defVal, ...) PropEnumBase(groupId, propId, label, comment, false, type, minVal, defVal, __VA_ARGS__)
+#define PropEnum1(groupId, propId, label, comment, type, defVal, ...) PropEnumBase(groupId, propId, label, comment, false, type, 1, defVal, __VA_ARGS__)
+#define PropEnum(groupId, propId, label, comment, type, defVal, ...) PropEnumBase(groupId, propId, label, comment, false, type, 0, defVal, __VA_ARGS__)
+#define PropEnumDyn(groupId, propId, label, comment, type, defVal, ...) PropEnumBase(groupId, propId, label, comment, true, type, 0, defVal, __VA_ARGS__)
+
+#define PropFloatStepped(groupId, propId, label, comment, minVal, maxVal, step, defVal) PropFloatBase(groupId, propId, label, comment, false, minVal, maxVal, step, defVal)
+#define PropFloatSteppedDyn(groupId, propId, label, comment, minVal, maxVal, step, defVal) PropFloatBase(groupId, propId, label, comment, true, minVal, maxVal, step, defVal)
+#define PropFloatUnbounded(groupId, propId, label, comment, defVal) PropFloatBase(groupId, propId, label, comment, false, FLT_MIN, FLT_MAX, 0.f, defVal)
+#define PropFloat(groupId, propId, label, comment, minVal, maxVal, defVal) PropFloatBase(groupId, propId, label, comment, false, minVal, maxVal, 0.f, defVal)
+#define PropFloatDyn(groupId, propId, label, comment, minVal, maxVal, defVal) PropFloatBase(groupId, propId, label, comment, true, minVal, maxVal, 0.f, defVal)
+
+#define PropString(groupId, propId, label, comment, defVal) PropStringBase(groupId, propId, label, comment, false, defVal)
+#define PropStringDyn(groupId, propId, label, comment, defVal) PropStringBase(groupId, propId, label, comment, true, defVal)
+
 #include "Settings_properties.inl"
+
 #endif

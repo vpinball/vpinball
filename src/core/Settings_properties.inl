@@ -9,74 +9,74 @@ PropBool(Editor, DisableHash, "Disable File Validation"s, "Disable file integrit
 PropInt(Player, MusicVolume, "Backglass Volume"s, "Main volume for music and sound played from the backglass speakers"s, 0, 100, 100);
 PropInt(Player, SoundVolume, "Playfield Volume"s, "Main volume for mechanical sounds coming from the playfield"s, 0, 100, 100);
 PropBool(Player, PlayMusic, "Enable Backglass"s, "Enable/Disable backglass game sound & music"s, true);
-PropBool(Player, PlaySound, "Enable Playfield"s, "Enable/Disable playfield mechanical sounds"s, true);
-PropString(Player, SoundDeviceBG, "Backglass Sound Device"s, "Select backglass sound device"s, ""s);
-PropString(Player, SoundDevice, "Playfield Sound Device"s, "Select playfield sound device"s, ""s);
+PropBoolBase(Player, PlaySound, "Enable Playfield"s, "Enable/Disable playfield mechanical sounds"s, false, true); // We use the complete macro as Win32 global PlaySound would conflict otherwise
+PropStringDyn(Player, SoundDeviceBG, "Backglass Sound Device"s, "Select backglass sound device"s, ""s);
+PropStringDyn(Player, SoundDevice, "Playfield Sound Device"s, "Select playfield sound device"s, ""s);
 PropEnum(Player, Sound3D, "Playfield Output Mode"s, "Select how playfield sound is output to a speaker configuration"s, int /* VPX::SoundConfigTypes*/, 0 /* VPX::SoundConfigTypes::SNDCFG_SND3D2CH */,
    "2 front channels"s, "2 rear channels"s, "Up to 6 channels. Rear at lockbar"s, "Up to 6 channels. Front at lockbar"s, "Side & rear channels. Rear at lockbar. Legacy mixing"s, "Side & rear channels. Rear at lockbar. New mixing"s);
 
 // Output (windows) settings
 // Main window (a.k.a. playfield)
-PropString(Player, PlayfieldDisplay, "Display"s, "Display used for the main Playfield window"s, ""s);
-PropInt(Player, PlayfieldWndX, "X Position"s, "Horizontal position of the window on the selected display"s, 0, 16384, 0);
-PropInt(Player, PlayfieldWndY, "Y Position"s, "Vertical position of the window on the selected display"s, 0, 16384, 0);
-PropInt(Player, PlayfieldWidth, "Width"s, "Width of the window"s, 0, 16384, 16384);
-PropInt(Player, PlayfieldHeight, "Height"s, "Height of the window"s, 0, 16384, 16384);
-PropBool(Player, PlayfieldFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution)"s, false);
-PropInt(Player, PlayfieldFSWidth, "Width"s, "Fullscreen display mode width"s, 0, 16384, 16384);
-PropInt(Player, PlayfieldFSHeight, "Height"s, "Fullscreen display mode height"s, 0, 16384, 16384);
-PropFloat(Player, PlayfieldRefreshRate, "Refresh Rate"s, "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
-PropInt(Player, PlayfieldColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
+PropStringDyn(Player, PlayfieldDisplay, "Display"s, "Display used for the main Playfield window"s, ""s);
+PropIntDyn(Player, PlayfieldWndX, "X Position"s, "Horizontal position of the window on the selected display"s, 0, 16384, 0);
+PropIntDyn(Player, PlayfieldWndY, "Y Position"s, "Vertical position of the window on the selected display"s, 0, 16384, 0);
+PropIntDyn(Player, PlayfieldWidth, "Width"s, "Width of the window"s, 0, 16384, 16384);
+PropIntDyn(Player, PlayfieldHeight, "Height"s, "Height of the window"s, 0, 16384, 16384);
+PropBoolDyn(Player, PlayfieldFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution)"s, false);
+PropIntDyn(Player, PlayfieldFSWidth, "Width"s, "Fullscreen display mode width"s, 0, 16384, 16384);
+PropIntDyn(Player, PlayfieldFSHeight, "Height"s, "Fullscreen display mode height"s, 0, 16384, 16384);
+PropFloatDyn(Player, PlayfieldRefreshRate, "Refresh Rate"s, "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
+PropIntDyn(Player, PlayfieldColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
 // Backglass Window
-PropEnum(Backglass, BackglassOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s, "Floating"s, 
-   "Embedded in playfield"s);
-PropString(Backglass, BackglassDisplay, "Display"s, "Display used for the main Backglass window"s, ""s);
-PropInt(Backglass, BackglassWndX, "X Position"s, "Horizontal position of the window on the selected display"s, 0, 16384, 0);
-PropInt(Backglass, BackglassWndY, "Y Position"s, "Vertical position of the window on the selected display"s, 0, 16384, 0);
-PropInt(Backglass, BackglassWidth, "Width"s, "Width of the window"s, 0, 16384, 16384);
-PropInt(Backglass, BackglassHeight, "Height"s, "Height of the window"s, 0, 16384, 16384);
-PropBool(Backglass, BackglassFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution)"s, false);
-PropInt(Backglass, BackglassFSWidth, "Width"s, "Fullscreen display mode width"s, 0, 16384, 16384);
-PropInt(Backglass, BackglassFSHeight, "Height"s, "Fullscreen display mode height"s, 0, 16384, 16384);
-PropFloat(Backglass, BackglassRefreshRate, "Fullscreen Refresh Rate"s, "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
-PropInt(Backglass, BackglassColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
+PropEnumDyn(Backglass, BackglassOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s,
+   "Floating"s, "Embedded in playfield"s);
+PropStringDyn(Backglass, BackglassDisplay, "Display"s, "Display used for the main Backglass window"s, ""s);
+PropIntDyn(Backglass, BackglassWndX, "X Position"s, "Horizontal position of the window on the selected display"s, 0, 16384, 0);
+PropIntDyn(Backglass, BackglassWndY, "Y Position"s, "Vertical position of the window on the selected display"s, 0, 16384, 0);
+PropIntDyn(Backglass, BackglassWidth, "Width"s, "Width of the window"s, 0, 16384, 16384);
+PropIntDyn(Backglass, BackglassHeight, "Height"s, "Height of the window"s, 0, 16384, 16384);
+PropBoolDyn(Backglass, BackglassFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution)"s, false);
+PropIntDyn(Backglass, BackglassFSWidth, "Width"s, "Fullscreen display mode width"s, 0, 16384, 16384);
+PropIntDyn(Backglass, BackglassFSHeight, "Height"s, "Fullscreen display mode height"s, 0, 16384, 16384);
+PropFloatDyn(Backglass, BackglassRefreshRate, "Fullscreen Refresh Rate"s, "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
+PropIntDyn(Backglass, BackglassColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
 // ScoreView Window
-PropEnum(ScoreView, ScoreViewOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s, "Floating"s, 
-   "Embedded in playfield"s);
-PropString(ScoreView, ScoreViewDisplay, "Display"s, "Display used for the main ScoreView window"s, ""s);
-PropInt(ScoreView, ScoreViewWndX, "X Position"s, "Horizontal position of the window on the selected display"s, 0, 16384, 0);
-PropInt(ScoreView, ScoreViewWndY, "Y Position"s, "Vertical position of the window on the selected display"s, 0, 16384, 0);
-PropInt(ScoreView, ScoreViewWidth, "Width"s, "Width of the window"s, 0, 16384, 16384);
-PropInt(ScoreView, ScoreViewHeight, "Height"s, "Height of the window"s, 0, 16384, 16384);
-PropBool(ScoreView, ScoreViewFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution)"s, false);
-PropInt(ScoreView, ScoreViewFSWidth, "Width"s, "Fullscreen display mode width"s, 0, 16384, 16384);
-PropInt(ScoreView, ScoreViewFSHeight, "Height"s, "Fullscreen display mode height"s, 0, 16384, 16384);
-PropFloat(ScoreView, ScoreViewRefreshRate, "Fullscreen Refresh Rate"s, "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
-PropInt(ScoreView, ScoreViewColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
+PropEnumDyn(ScoreView, ScoreViewOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s,
+   "Floating"s, "Embedded in playfield"s);
+PropStringDyn(ScoreView, ScoreViewDisplay, "Display"s, "Display used for the main ScoreView window"s, ""s);
+PropIntDyn(ScoreView, ScoreViewWndX, "X Position"s, "Horizontal position of the window on the selected display"s, 0, 16384, 0);
+PropIntDyn(ScoreView, ScoreViewWndY, "Y Position"s, "Vertical position of the window on the selected display"s, 0, 16384, 0);
+PropIntDyn(ScoreView, ScoreViewWidth, "Width"s, "Width of the window"s, 0, 16384, 16384);
+PropIntDyn(ScoreView, ScoreViewHeight, "Height"s, "Height of the window"s, 0, 16384, 16384);
+PropBoolDyn(ScoreView, ScoreViewFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution)"s, false);
+PropIntDyn(ScoreView, ScoreViewFSWidth, "Width"s, "Fullscreen display mode width"s, 0, 16384, 16384);
+PropIntDyn(ScoreView, ScoreViewFSHeight, "Height"s, "Fullscreen display mode height"s, 0, 16384, 16384);
+PropFloatDyn(ScoreView, ScoreViewRefreshRate, "Fullscreen Refresh Rate"s, "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
+PropIntDyn(ScoreView, ScoreViewColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
 // Topper Window
-PropEnum(Topper, TopperOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s, "Floating"s,
+PropEnumDyn(Topper, TopperOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s, "Floating"s,
    "Embedded in playfield"s);
-PropString(Topper, TopperDisplay, "Display"s, "Display used for the Topper window"s, ""s);
-PropInt(Topper, TopperWndX, "X Position"s, "Horizontal position of the Topper window on the selected display"s, 0, 16384, 0);
-PropInt(Topper, TopperWndY, "Y Position"s, "Vertical position of the Topper window on the selected display"s, 0, 16384, 0);
-PropInt(Topper, TopperWidth, "Width"s, "Width of the Topper window"s, 0, 16384, 16384);
-PropInt(Topper, TopperHeight, "Height"s, "Height of the Topper window"s, 0, 16384, 16384);
-PropBool(Topper, TopperFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution) for the Topper window"s, false);
-PropInt(Topper, TopperFSWidth, "Width"s, "Fullscreen display mode width for the Topper window"s, 0, 16384, 16384);
-PropInt(Topper, TopperFSHeight, "Height"s, "Fullscreen display mode height for the Topper window"s, 0, 16384, 16384);
-PropFloat(Topper, TopperRefreshRate, "Fullscreen Refresh Rate"s, "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
-PropInt(Topper, TopperColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
+PropStringDyn(Topper, TopperDisplay, "Display"s, "Display used for the Topper window"s, ""s);
+PropIntDyn(Topper, TopperWndX, "X Position"s, "Horizontal position of the Topper window on the selected display"s, 0, 16384, 0);
+PropIntDyn(Topper, TopperWndY, "Y Position"s, "Vertical position of the Topper window on the selected display"s, 0, 16384, 0);
+PropIntDyn(Topper, TopperWidth, "Width"s, "Width of the Topper window"s, 0, 16384, 16384);
+PropIntDyn(Topper, TopperHeight, "Height"s, "Height of the Topper window"s, 0, 16384, 16384);
+PropBoolDyn(Topper, TopperFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution) for the Topper window"s, false);
+PropIntDyn(Topper, TopperFSWidth, "Width"s, "Fullscreen display mode width for the Topper window"s, 0, 16384, 16384);
+PropIntDyn(Topper, TopperFSHeight, "Height"s, "Fullscreen display mode height for the Topper window"s, 0, 16384, 16384);
+PropFloatDyn(Topper, TopperRefreshRate, "Fullscreen Refresh Rate"s, "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
+PropIntDyn(Topper, TopperColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
 // VR Preview Window
-PropString(PlayerVR, PreviewDisplay, "Display"s, "Display used for the VR Preview window"s, ""s);
-PropInt(PlayerVR, PreviewWndX, "X Position"s, "Horizontal position of the window on the selected display"s, 0, 16384, 0);
-PropInt(PlayerVR, PreviewWndY, "Y Position"s, "Vertical position of the window on the selected display"s, 0, 16384, 0);
-PropInt(PlayerVR, PreviewWidth, "Width"s, "Width of the window"s, 0, 16384, 16384);
-PropInt(PlayerVR, PreviewHeight, "Height"s, "Height of the window"s, 0, 16384, 16384);
-PropBool(PlayerVR, PreviewFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution)"s, false);
-PropInt(PlayerVR, PreviewFSWidth, "Width"s, "Fullscreen display mode width"s, 0, 16384, 16384);
-PropInt(PlayerVR, PreviewFSHeight, "Height"s, "Fullscreen display mode height"s, 0, 16384, 16384);
-PropFloat(PlayerVR, PreviewRefreshRate, "Fullscreen Refresh Rate"s, "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
-PropInt(PlayerVR, PreviewColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
+PropStringDyn(PlayerVR, PreviewDisplay, "Display"s, "Display used for the VR Preview window"s, ""s);
+PropIntDyn(PlayerVR, PreviewWndX, "X Position"s, "Horizontal position of the window on the selected display"s, 0, 16384, 0);
+PropIntDyn(PlayerVR, PreviewWndY, "Y Position"s, "Vertical position of the window on the selected display"s, 0, 16384, 0);
+PropIntDyn(PlayerVR, PreviewWidth, "Width"s, "Width of the window"s, 0, 16384, 16384);
+PropIntDyn(PlayerVR, PreviewHeight, "Height"s, "Height of the window"s, 0, 16384, 16384);
+PropBoolDyn(PlayerVR, PreviewFullScreen, "Fullscreen"s, "Use fullscreen exclusive mode (should be avoided unless you need to change the display resolution)"s, false);
+PropIntDyn(PlayerVR, PreviewFSWidth, "Width"s, "Fullscreen display mode width"s, 0, 16384, 16384);
+PropIntDyn(PlayerVR, PreviewFSHeight, "Height"s, "Fullscreen display mode height"s, 0, 16384, 16384);
+PropFloatDyn(PlayerVR, PreviewRefreshRate, "Fullscreen Refresh Rate"s, "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
+PropIntDyn(PlayerVR, PreviewColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
 // Array access (using VPXWindowId)
 PropArray(Window, Mode, int, Enum, Int, m_propInvalid, m_propBackglass_BackglassOutput, m_propScoreView_ScoreViewOutput, m_propTopper_TopperOutput, m_propInvalid);
 PropArray(Window, Display, string, String, String, m_propPlayer_PlayfieldDisplay, m_propBackglass_BackglassDisplay, m_propScoreView_ScoreViewDisplay, m_propTopper_TopperDisplay,
@@ -651,70 +651,73 @@ PropFloat(DefaultCamera, FSSViewVOfs, "Vertical Offset"s, "Vertical offset of th
 // Table override settings
 // These properties are specials as they are meant to override table data at play time. They are not meant to be saved to the application setting file, but
 // only to table override settings. Also, their defaults are redefined when a table is played, depending on the table data and UI options.
-PropEnum(TableOverride, ViewDTMode, "View mode"s,
+PropEnumDyn(TableOverride, ViewDTMode, "View mode"s,
    "Select between 'Legacy' (old rendering mode with visually incorrect stretchs), 'Camera' (classic camera, for desktop) and 'Window' (custom projection designed for cabinet users) rendering mode"s,
    int, 1, "Legacy"s, "Camera"s, "Window"s);
-PropFloat(TableOverride, ViewDTLookAt, "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 25.f);
-PropFloat(TableOverride, ViewDTFOV, "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 50.f);
-PropFloat(TableOverride, ViewDTLayback, "Layback"s, "Fake visual stretch of the table to give more depth"s, -90.f, 90.f, 0.f);
-PropFloat(TableOverride, ViewDTScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 0.5f, 1.5f, 1.f);
-PropFloat(TableOverride, ViewDTScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 1.f);
-PropFloat(TableOverride, ViewDTScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 1.f);
-PropFloat(TableOverride, ViewDTPlayerX, "Camera X"s, "View point width offset"s, CMTOVPU(-30.f), CMTOVPU(30.f), CMTOVPU(0.f));
-PropFloat(TableOverride, ViewDTPlayerY, "Camera Y"s, "View point height offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(20.f));
-PropFloat(TableOverride, ViewDTPlayerZ, "Camera Z"s, "View point vertical offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(70.f));
-PropFloat(TableOverride, ViewDTHOfs, "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window'"s, -30.f, 30.f, 0.f);
-PropFloat(TableOverride, ViewDTVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window'"s, -20.f, 50.f, 0.f);
-PropFloat(TableOverride, ViewDTWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
-PropFloat(
+PropFloatDyn(TableOverride, ViewDTLookAt, "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 25.f);
+PropFloatDyn(TableOverride, ViewDTFOV, "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 50.f);
+PropFloatDyn(TableOverride, ViewDTLayback, "Layback"s, "Fake visual stretch of the table to give more depth"s, -90.f, 90.f, 0.f);
+PropFloatDyn(TableOverride, ViewDTScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 0.5f, 1.5f, 1.f);
+PropFloatDyn(TableOverride, ViewDTScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 1.f);
+PropFloatDyn(TableOverride, ViewDTScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 1.f);
+PropFloatDyn(TableOverride, ViewDTPlayerX, "Camera X"s, "View point width offset"s, CMTOVPU(-30.f), CMTOVPU(30.f), CMTOVPU(0.f));
+PropFloatDyn(TableOverride, ViewDTPlayerY, "Camera Y"s, "View point height offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(20.f));
+PropFloatDyn(TableOverride, ViewDTPlayerZ, "Camera Z"s, "View point vertical offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(70.f));
+PropFloatDyn(TableOverride, ViewDTHOfs, "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window'"s, -30.f, 30.f, 0.f);
+PropFloatDyn(TableOverride, ViewDTVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window'"s, -20.f, 50.f, 0.f);
+PropFloatDyn(TableOverride, ViewDTWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
+PropFloatDyn(
    TableOverride, ViewDTWindowBot, "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
-PropFloatStepped(TableOverride, ViewDTRotation, "Viewport Rotation"s, ""s, 0.f, 360.f, 90.0f, 0.f);
+PropFloatSteppedDyn(TableOverride, ViewDTRotation, "Viewport Rotation"s, ""s, 0.f, 360.f, 90.0f, 0.f);
 
-PropEnum(TableOverride, ViewFSSMode, "View mode"s,
+PropEnumDyn(TableOverride, ViewFSSMode, "View mode"s,
    "Select between 'Legacy' (old rendering mode with visually incorrect stretchs), 'Camera' (classic camera, for desktop) and 'Window' (custom projection designed for cabinet users) rendering mode"s,
    int, 1, "Legacy"s, "Camera"s, "Window"s);
-PropFloat(TableOverride, ViewFSSLookAt, "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 0.f);
-PropFloat(TableOverride, ViewFSSFOV, "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 25.f);
-PropFloat(TableOverride, ViewFSSLayback, "Layback"s, "Fake visual stretch of the table to give more depth"s, -90.f, 90.f, 0.f);
-PropFloat(TableOverride, ViewFSSScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 0.5f, 1.5f, 1.f);
-PropFloat(TableOverride, ViewFSSScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 1.f);
-PropFloat(TableOverride, ViewFSSScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 1.f);
-PropFloat(TableOverride, ViewFSSPlayerX, "Camera X"s, "View point width offset"s, CMTOVPU(-30.f), CMTOVPU(30.f), CMTOVPU(0.f));
-PropFloat(TableOverride, ViewFSSPlayerY, "Camera Y"s, "View point height offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(0.f));
-PropFloat(TableOverride, ViewFSSPlayerZ, "Camera Z"s, "View point vertical offsets"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(70.f));
-PropFloat(TableOverride, ViewFSSHOfs, "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window'"s, -30.f, 30.f, 0.f);
-PropFloat(TableOverride, ViewFSSVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window'"s, -20.f, 50.f, 0.f);
-PropFloat(TableOverride, ViewFSSWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
-PropFloat(
+PropFloatDyn(TableOverride, ViewFSSLookAt, "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 0.f);
+PropFloatDyn(TableOverride, ViewFSSFOV, "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 25.f);
+PropFloatDyn(TableOverride, ViewFSSLayback, "Layback"s, "Fake visual stretch of the table to give more depth"s, -90.f, 90.f, 0.f);
+PropFloatDyn(TableOverride, ViewFSSScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 0.5f, 1.5f, 1.f);
+PropFloatDyn(TableOverride, ViewFSSScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 1.f);
+PropFloatDyn(TableOverride, ViewFSSScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 1.f);
+PropFloatDyn(TableOverride, ViewFSSPlayerX, "Camera X"s, "View point width offset"s, CMTOVPU(-30.f), CMTOVPU(30.f), CMTOVPU(0.f));
+PropFloatDyn(TableOverride, ViewFSSPlayerY, "Camera Y"s, "View point height offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(0.f));
+PropFloatDyn(TableOverride, ViewFSSPlayerZ, "Camera Z"s, "View point vertical offsets"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(70.f));
+PropFloatDyn(TableOverride, ViewFSSHOfs, "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window'"s, -30.f, 30.f, 0.f);
+PropFloatDyn(TableOverride, ViewFSSVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window'"s, -20.f, 50.f, 0.f);
+PropFloatDyn(
+   TableOverride, ViewFSSWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
+PropFloatDyn(
    TableOverride, ViewFSSWindowBot, "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
-PropFloatStepped(TableOverride, ViewFSSRotation, "Viewport Rotation"s, ""s, 0.f, 360.f, 90.0f, 0.f);
+PropFloatSteppedDyn(TableOverride, ViewFSSRotation, "Viewport Rotation"s, ""s, 0.f, 360.f, 90.0f, 0.f);
 
-PropEnum(TableOverride, ViewCabMode, "View mode"s,
+PropEnumDyn(TableOverride, ViewCabMode, "View mode"s,
    "Select between 'Legacy' (old rendering mode with visually incorrect stretchs), 'Camera' (classic camera, for desktop) and 'Window' (custom projection designed for cabinet users) rendering mode"s,
    int, 2, "Legacy"s, "Camera"s, "Window"s);
-PropFloat(TableOverride, ViewCabLookAt, "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 0.f);
-PropFloat(TableOverride, ViewCabFOV, "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 25.f);
-PropFloat(TableOverride, ViewCabLayback, "Layback"s, "Fake visual stretch of the table to give more depth"s, 0.f, 90.f, 0.f);
-PropFloat(TableOverride, ViewCabScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 0.5f, 1.5f, 1.f);
-PropFloat(TableOverride, ViewCabScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 1.f);
-PropFloat(TableOverride, ViewCabScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 1.f);
-PropFloat(TableOverride, ViewCabPlayerX, "Camera X"s, "View point width offset"s, CMTOVPU(-30.f), CMTOVPU(30.f), CMTOVPU(0.f));
-PropFloat(TableOverride, ViewCabPlayerY, "Camera Y"s, "View point height offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(0.f));
-PropFloat(TableOverride, ViewCabPlayerZ, "Camera Z"s, "View point vertical offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(70.f));
-PropFloat(TableOverride, ViewCabHOfs, "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window'"s, -30.f, 30.f, 0.f);
-PropFloat(TableOverride, ViewCabVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window'"s, -20.f, 50.f, 0.f);
-PropFloat(TableOverride, ViewCabWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
-PropFloat(
+PropFloatDyn(TableOverride, ViewCabLookAt, "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 0.f);
+PropFloatDyn(TableOverride, ViewCabFOV, "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 25.f);
+PropFloatDyn(TableOverride, ViewCabLayback, "Layback"s, "Fake visual stretch of the table to give more depth"s, 0.f, 90.f, 0.f);
+PropFloatDyn(TableOverride, ViewCabScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 0.5f, 1.5f, 1.f);
+PropFloatDyn(TableOverride, ViewCabScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 1.f);
+PropFloatDyn(TableOverride, ViewCabScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 1.f);
+PropFloatDyn(TableOverride, ViewCabPlayerX, "Camera X"s, "View point width offset"s, CMTOVPU(-30.f), CMTOVPU(30.f), CMTOVPU(0.f));
+PropFloatDyn(TableOverride, ViewCabPlayerY, "Camera Y"s, "View point height offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(0.f));
+PropFloatDyn(TableOverride, ViewCabPlayerZ, "Camera Z"s, "View point vertical offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(70.f));
+PropFloatDyn(TableOverride, ViewCabHOfs, "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window'"s, -30.f, 30.f, 0.f);
+PropFloatDyn(TableOverride, ViewCabVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window'"s, -20.f, 50.f, 0.f);
+PropFloatDyn(
+   TableOverride, ViewCabWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
+PropFloatDyn(
    TableOverride, ViewCabWindowBot, "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
-PropFloatStepped(TableOverride, ViewCabRotation, "Viewport Rotation"s, ""s, 0.f, 360.f, 90.0f, 0.f);
+PropFloatSteppedDyn(TableOverride, ViewCabRotation, "Viewport Rotation"s, ""s, 0.f, 360.f, 90.0f, 0.f);
 
-PropFloat(TableOverride, Difficulty, "Difficulty"s, "Overall difficulty (affects slope, flipper size, ball trajectories scattering,...)"s, 0.f, 1.f, 1.f);
-PropFloat(TableOverride, Exposure, "Camera Exposure"s, "Overall brightness scale for the rendered scene/table"s, 0.f, 2.f, 1.f);
+PropFloatDyn(TableOverride, Difficulty, "Difficulty"s, "Overall difficulty (affects slope, flipper size, ball trajectories scattering,...)"s, 0.f, 1.f, 1.f);
+PropFloatDyn(TableOverride, Exposure, "Camera Exposure"s, "Overall brightness scale for the rendered scene/table"s, 0.f, 2.f, 1.f);
+
 #ifdef ENABLE_BGFX
-PropEnum(TableOverride, ToneMapper, "Tonemapper"s, "Colors too bright to be displayed by low dynamic range monitors need to be mapped into a normalized range. Different mappers come at different tradeoffs, depending on each tables setup/lighting."s, int, 0, "Reinhard"s, "AgX"s, "Filmic"s, "Neutral"s,
+PropEnumDyn(TableOverride, ToneMapper, "Tonemapper"s, "Colors too bright to be displayed by low dynamic range monitors need to be mapped into a normalized range. Different mappers come at different tradeoffs, depending on each tables setup/lighting."s, int, 0, "Reinhard"s, "AgX"s, "Filmic"s, "Neutral"s,
    "AgX Punchy"s);
 #else
-PropEnum(
+PropEnumDyn(
    TableOverride, ToneMapper, "Tonemapper"s, "Colors too bright to be displayed by low dynamic range monitors need to be mapped into a normalized range. Different mappers come at different tradeoffs, depending on each tables setup/lighting."s, int, 0, "Reinhard"s, "AgX"s, "Filmic"s, "Neutral"s);
 #endif
 
@@ -843,14 +846,14 @@ PropArray(Alpha, ProfileDiffuseGlow, float, Float, Float, m_propAlpha_Profile1Di
    m_propAlpha_Profile5DiffuseGlow, m_propAlpha_Profile6DiffuseGlow, m_propAlpha_Profile7DiffuseGlow, m_propAlpha_Profile8DiffuseGlow);
 
 // Recent directory
-PropString(RecentDir, ImportDir, "Import directory"s, ""s, ""s);
-PropString(RecentDir, LoadDir, "Table directory"s, ""s, ""s);
-PropString(RecentDir, FontDir, "Font directory"s, ""s, ""s);
-PropString(RecentDir, PhysicsDir, "Physics directory"s, ""s, ""s);
-PropString(RecentDir, ImageDir, "Image directory"s, ""s, ""s);
-PropString(RecentDir, MaterialDir, "Material directory"s, ""s, ""s);
-PropString(RecentDir, SoundDir, "Sound directory"s, ""s, ""s);
-PropString(RecentDir, POVDir, "POV directory"s, ""s, ""s);
+PropStringDyn(RecentDir, ImportDir, "Import directory"s, ""s, ""s);
+PropStringDyn(RecentDir, LoadDir, "Table directory"s, ""s, ""s);
+PropStringDyn(RecentDir, FontDir, "Font directory"s, ""s, ""s);
+PropStringDyn(RecentDir, PhysicsDir, "Physics directory"s, ""s, ""s);
+PropStringDyn(RecentDir, ImageDir, "Image directory"s, ""s, ""s);
+PropStringDyn(RecentDir, MaterialDir, "Material directory"s, ""s, ""s);
+PropStringDyn(RecentDir, SoundDir, "Sound directory"s, ""s, ""s);
+PropStringDyn(RecentDir, POVDir, "POV directory"s, ""s, ""s);
 PropString(RecentDir, TableFileName0, ""s, ""s, ""s);
 PropString(RecentDir, TableFileName1, ""s, ""s, ""s);
 PropString(RecentDir, TableFileName2, ""s, ""s, ""s);
@@ -1337,14 +1340,14 @@ PropBool(DefaultPropsTrigger, TimerEnabled, "Timer Enabled"s, ""s, false);
 PropInt(DefaultPropsTrigger, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
 
 // Default core plugins enable state
-PropBool(PluginB2SLegacy, Enable, "Enable"s, "Enable legacy B2S plugin"s, g_isStandalone);
-PropBool(PluginDMDUtil, Enable, "Enable"s, "Enable DMDUtil plugin"s, false);
-PropBool(PluginFlexDMD, Enable, "Enable"s, "Enable FlexDMD plugin"s, g_isStandalone);
-PropBool(PluginPinMAME, Enable, "Enable"s, "Enable PinMAME plugin"s, g_isStandalone);
-PropBool(PluginPUP, Enable, "Enable"s, "Enable PinUp player plugin"s, g_isMobile);
-PropBool(PluginScoreView, Enable, "Enable"s, "Enable ScoreView player plugin"s, g_isStandalone);
-PropBool(PluginSerum, Enable, "Enable"s, "Enable Serum plugin"s, g_isStandalone);
-PropBool(PluginWMP, Enable, "Enable"s, "Enable WMP plugin"s, g_isStandalone);
+PropBoolDyn(PluginB2SLegacy, Enable, "Enable"s, "Enable legacy B2S plugin"s, g_isStandalone);
+PropBoolDyn(PluginDMDUtil, Enable, "Enable"s, "Enable DMDUtil plugin"s, false);
+PropBoolDyn(PluginFlexDMD, Enable, "Enable"s, "Enable FlexDMD plugin"s, g_isStandalone);
+PropBoolDyn(PluginPinMAME, Enable, "Enable"s, "Enable PinMAME plugin"s, g_isStandalone);
+PropBoolDyn(PluginPUP, Enable, "Enable"s, "Enable PinUp player plugin"s, g_isMobile);
+PropBoolDyn(PluginScoreView, Enable, "Enable"s, "Enable ScoreView player plugin"s, g_isStandalone);
+PropBoolDyn(PluginSerum, Enable, "Enable"s, "Enable Serum plugin"s, g_isStandalone);
+PropBoolDyn(PluginWMP, Enable, "Enable"s, "Enable WMP plugin"s, g_isStandalone);
 
 // Standalone
 PropEnumWithMin(Standalone, RenderingModeOverride, "Override rendering mode"s, ""s, int, -1, g_isMobile ? 2 : -1, "Default"s, "2D"s, "Stereo 3D"s, "VR"s);

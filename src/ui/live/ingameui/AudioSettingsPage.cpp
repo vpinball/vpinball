@@ -11,7 +11,7 @@ AudioSettingsPage::AudioSettingsPage()
    : InGameUIPage("Audio Settings"s, ""s, SaveMode::Both)
 {
    AddItem(std::make_unique<InGameUIItem>(
-      VPX::Properties::BoolPropertyDef(""s, ""s, "Lock Volumes"s, "Adjust backglass and playfield volume simultaneaously"s, true), //
+      VPX::Properties::BoolPropertyDef(""s, ""s, "Lock Volumes"s, "Adjust backglass and playfield volume simultaneaously"s, false, true), //
       [this]() { return m_lockVolume; }, //
       [this]() { return m_lockVolume; }, //
       [this](bool v) { m_lockVolume = v; }, //
@@ -63,7 +63,7 @@ AudioSettingsPage::AudioSettingsPage()
 
    Settings::SetPlayer_SoundDeviceBG_Default(m_player->m_audioPlayer->GetBackglassDeviceName());
    AddItem(std::make_unique<InGameUIItem>(
-      VPX::Properties::EnumPropertyDef(""s, ""s, "Backglass Sound Device"s, "Select backglass sound device"s, 0, 0, m_devices), //
+      VPX::Properties::EnumPropertyDef(""s, ""s, "Backglass Sound Device"s, "Select backglass sound device"s, false, 0, 0, m_devices), //
       [this]()
       {
          auto it = std::ranges::find(m_devices, m_player->m_audioPlayer->GetBackglassDeviceName());
@@ -85,7 +85,7 @@ AudioSettingsPage::AudioSettingsPage()
 
    Settings::SetPlayer_SoundDevice_Default(m_player->m_audioPlayer->GetPlayfieldDeviceName());
    AddItem(std::make_unique<InGameUIItem>(
-      VPX::Properties::EnumPropertyDef(""s, ""s, "Playfield Sound Device"s, "Select playfield sound device"s, 0, 0, m_devices), //
+      VPX::Properties::EnumPropertyDef(""s, ""s, "Playfield Sound Device"s, "Select playfield sound device"s, false, 0, 0, m_devices), //
       [this]()
       {
          auto it = std::ranges::find(m_devices, m_player->m_audioPlayer->GetPlayfieldDeviceName());

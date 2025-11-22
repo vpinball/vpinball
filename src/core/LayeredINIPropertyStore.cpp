@@ -140,34 +140,58 @@ void LayeredINIPropertyStore::Save()
    for (id.index = 0; id.index < m_intValues.size(); id.index++)
    {
       const auto& prop = m_registry.get().GetProperty(id);
-      if (m_parent && (!m_intValues[id.index].defined || m_intValues[id.index].value == m_parent->get().GetInt(id)))
-         m_ini[prop->m_groupId].remove(prop->m_propId);
-      else if (m_intValues[id.index].defined)
-         m_ini[prop->m_groupId][prop->m_propId] = std::to_string(m_intValues[id.index].value);
+      if (m_intValues[id.index].defined)
+      {
+         if (m_parent && !prop->m_contextualProperty && m_intValues[id.index].value == m_parent->get().GetInt(id))
+            m_ini[prop->m_groupId].remove(prop->m_propId);
+         else
+            m_ini[prop->m_groupId][prop->m_propId] = std::to_string(m_intValues[id.index].value);
+      }
       else
-         m_ini[prop->m_groupId][prop->m_propId].clear();
+      {
+         if (m_parent)
+            m_ini[prop->m_groupId].remove(prop->m_propId);
+         else
+            m_ini[prop->m_groupId][prop->m_propId].clear();
+      }
    }
    id = { PropertyRegistry::StoreType::Float, 0 };
    for (id.index = 0; id.index < m_floatValues.size(); id.index++)
    {
       const auto& prop = m_registry.get().GetProperty(id);
-      if (m_parent && (!m_floatValues[id.index].defined || m_floatValues[id.index].value == m_parent->get().GetFloat(id)))
-         m_ini[prop->m_groupId].remove(prop->m_propId);
-      else if (m_floatValues[id.index].defined)
-         m_ini[prop->m_groupId][prop->m_propId] = f2sz(m_floatValues[id.index].value, false);
+      if (m_floatValues[id.index].defined)
+      {
+         if (m_parent && !prop->m_contextualProperty && m_floatValues[id.index].value == m_parent->get().GetFloat(id))
+            m_ini[prop->m_groupId].remove(prop->m_propId);
+         else
+            m_ini[prop->m_groupId][prop->m_propId] = f2sz(m_floatValues[id.index].value, false);
+      }
       else
-         m_ini[prop->m_groupId][prop->m_propId].clear();
+      {
+         if (m_parent)
+            m_ini[prop->m_groupId].remove(prop->m_propId);
+         else
+            m_ini[prop->m_groupId][prop->m_propId].clear();
+      }
    }
    id = { PropertyRegistry::StoreType::String, 0 };
    for (id.index = 0; id.index < m_stringValues.size(); id.index++)
    {
       const auto& prop = m_registry.get().GetProperty(id);
-      if (m_parent && (!m_stringValues[id.index].defined || m_stringValues[id.index].value == m_parent->get().GetString(id)))
-         m_ini[prop->m_groupId].remove(prop->m_propId);
-      else if (m_stringValues[id.index].defined)
-         m_ini[prop->m_groupId][prop->m_propId] = m_stringValues[id.index].value;
+      if (m_stringValues[id.index].defined)
+      {
+         if (m_parent && !prop->m_contextualProperty && m_stringValues[id.index].value == m_parent->get().GetString(id))
+            m_ini[prop->m_groupId].remove(prop->m_propId);
+         else
+            m_ini[prop->m_groupId][prop->m_propId] = m_stringValues[id.index].value;
+      }
       else
-         m_ini[prop->m_groupId][prop->m_propId].clear();
+      {
+         if (m_parent)
+            m_ini[prop->m_groupId].remove(prop->m_propId);
+         else
+            m_ini[prop->m_groupId][prop->m_propId].clear();
+      }
    }
 
    // Remove empty sections

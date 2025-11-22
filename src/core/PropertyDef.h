@@ -32,17 +32,24 @@ public:
    const string m_label;
    const string m_description;
 
-   virtual ~PropertyDef() = default;
+   // The property definition depends on the live context, therefore it is allowed to change at runtime (range, default,...).
+   // Its value must be saved even if equal to the property's default as this default may change over sessions.
+   const bool m_contextualProperty;
 
-   virtual bool IsEqualButDefaultValue(PropertyDef* other) const = 0;
+   virtual ~PropertyDef() = default;
+   bool operator==(const PropertyDef& o) const
+   {
+      return m_type == o.m_type && m_groupId == o.m_groupId && m_propId == o.m_propId && m_label == o.m_label && m_description == o.m_description;
+   }
 
 protected:
-   PropertyDef(Type type, const string& groupId, const string& propId, const string& label, const string& description)
+   PropertyDef(Type type, const string& groupId, const string& propId, const string& label, const string& description, bool isContextual)
       : m_type(type)
       , m_groupId(groupId)
       , m_propId(propId)
       , m_label(label)
       , m_description(description)
+      , m_contextualProperty(isContextual)
    {
    }
 };
@@ -51,8 +58,8 @@ protected:
 class FloatPropertyDef final : public PropertyDef
 {
 public:
-   FloatPropertyDef(const string& groupId, const string& propId, const string& label, const string& description, float min, float max, float step, float def)
-      : PropertyDef(Type::Float, groupId, propId, label, description)
+   FloatPropertyDef(const string& groupId, const string& propId, const string& label, const string& description, bool isContextual, float min, float max, float step, float def)
+      : PropertyDef(Type::Float, groupId, propId, label, description, isContextual)
       , m_min(min)
       , m_max(max)
       , m_step(step)
@@ -62,11 +69,11 @@ public:
       assert(m_def == GetSteppedClamped(m_def));
    }
    FloatPropertyDef(const FloatPropertyDef& other)
-      : FloatPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_min, other.m_max, other.m_step, other.m_def)
+      : FloatPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_contextualProperty, other.m_min, other.m_max, other.m_step, other.m_def)
    {
    }
    FloatPropertyDef(const FloatPropertyDef& other, float def)
-      : FloatPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_min, other.m_max, other.m_step, def)
+      : FloatPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_contextualProperty, other.m_min, other.m_max, other.m_step, def)
    {
    }
    std::unique_ptr<FloatPropertyDef> WithDefault(float def) const { return std::make_unique<FloatPropertyDef>(*this, def); }
@@ -82,19 +89,15 @@ public:
    float GetSteppedClamped(float v) const { return GetClamped(GetStepped(v)); }
    float GetValid(float v) const { return (v < m_min || v > m_max) ? m_def : GetSteppedClamped(v); }
 
-   bool IsEqualButDefaultValue(PropertyDef* other) const override
-   {
-      FloatPropertyDef* o = dynamic_cast<FloatPropertyDef*>(other);
-      return (o != nullptr) && (m_min == o->m_min) && (m_max == o->m_max) && (m_step == o->m_step);
-   }
+   bool operator==(const FloatPropertyDef& o) const { return PropertyDef::operator==(o) && (m_min == o.m_min) && (m_max == o.m_max) && (m_step == o.m_def) && (m_def == o.m_def); }
 };
 
 
 class IntPropertyDef final : public PropertyDef
 {
 public:
-   IntPropertyDef(const string& groupId, const string& propId, const string& label, const string& description, int min, int max, int def)
-      : PropertyDef(Type::Int, groupId, propId, label, description)
+   IntPropertyDef(const string& groupId, const string& propId, const string& label, const string& description, bool isContextual, int min, int max, int def)
+      : PropertyDef(Type::Int, groupId, propId, label, description, isContextual)
       , m_min(min)
       , m_max(max)
       , m_def(clamp(def, min, max))
@@ -102,15 +105,15 @@ public:
       assert(m_min <= m_max);
    }
    IntPropertyDef(const IntPropertyDef& other)
-      : IntPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_min, other.m_max, other.m_def)
+      : IntPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_contextualProperty, other.m_min, other.m_max, other.m_def)
    {
    }
    IntPropertyDef(const IntPropertyDef& other, int min, int max)
-      : IntPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, min, max, other.m_def)
+      : IntPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_contextualProperty, min, max, other.m_def)
    {
    }
    IntPropertyDef(const IntPropertyDef& other, int def)
-      : IntPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_min, other.m_max, def)
+      : IntPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_contextualProperty, other.m_min, other.m_max, def)
    {
    }
    std::unique_ptr<IntPropertyDef> WithDefault(int def) const { return std::make_unique<IntPropertyDef>(*this, def); }
@@ -125,19 +128,15 @@ public:
 
    int GetValid(int v) const { return (v < m_min || v > m_max) ? m_def : v; }
 
-   bool IsEqualButDefaultValue(PropertyDef* other) const override
-   {
-      IntPropertyDef* o = dynamic_cast<IntPropertyDef*>(other);
-      return (o != nullptr) && (m_min == o->m_min) && (m_max == o->m_max);
-   }
+   bool operator==(const IntPropertyDef& o) const { return PropertyDef::operator==(o) && (m_min == o.m_min) && (m_max == o.m_max) && (m_def == o.m_def); }
 };
 
 
 class EnumPropertyDef final : public PropertyDef
 {
 public:
-   EnumPropertyDef(const string& groupId, const string& propId, const string& label, const string& description, int min, int def, vector<string> values)
-      : PropertyDef(Type::Enum, groupId, propId, label, description)
+   EnumPropertyDef(const string& groupId, const string& propId, const string& label, const string& description, bool isContextual, int min, int def, vector<string> values)
+      : PropertyDef(Type::Enum, groupId, propId, label, description, isContextual)
       , m_min(min)
       , m_values(std::move(values))
       , m_def(def)
@@ -145,11 +144,11 @@ public:
       assert(!m_values.empty());
    }
    EnumPropertyDef(const EnumPropertyDef& other)
-      : EnumPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_min, other.m_def, other.m_values)
+      : EnumPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_contextualProperty, other.m_min, other.m_def, other.m_values)
    {
    }
    EnumPropertyDef(const EnumPropertyDef& other, int def)
-      : EnumPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_min, def, other.m_values)
+      : EnumPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_contextualProperty, other.m_min, def, other.m_values)
    {
    }
    std::unique_ptr<EnumPropertyDef> WithDefault(int def) const { return std::make_unique<EnumPropertyDef>(*this, def); }
@@ -178,24 +177,20 @@ public:
    }
    const string& GetEnum(int index) const { return m_values[GetValid(index)]; }
 
-   bool IsEqualButDefaultValue(PropertyDef* other) const override
-   {
-      EnumPropertyDef* o = dynamic_cast<EnumPropertyDef*>(other);
-      return (o != nullptr) && (m_min == o->m_min) && (m_values == o->m_values);
-   }
+   bool operator==(const EnumPropertyDef& o) const { return PropertyDef::operator==(o) && (m_min == o.m_min) && (m_values == o.m_values) && (m_def == o.m_def); }
 };
 
 
 class BoolPropertyDef final : public PropertyDef
 {
 public:
-   BoolPropertyDef(const string& groupId, const string& propId, const string& label, const string& description, bool def)
-      : PropertyDef(Type::Bool, groupId, propId, label, description)
+   BoolPropertyDef(const string& groupId, const string& propId, const string& label, const string& description, bool isContextual, bool def)
+      : PropertyDef(Type::Bool, groupId, propId, label, description, isContextual)
       , m_def(def)
    {
    }
    BoolPropertyDef(const BoolPropertyDef& other, bool def)
-      : BoolPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, def)
+      : BoolPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_contextualProperty, def)
    {
    }
    std::unique_ptr<BoolPropertyDef> WithDefault(bool def) const { return std::make_unique<BoolPropertyDef>(*this, def); }
@@ -203,24 +198,20 @@ public:
 
    const bool m_def;
 
-   bool IsEqualButDefaultValue(PropertyDef* other) const override
-   {
-      BoolPropertyDef* o = dynamic_cast<BoolPropertyDef*>(other);
-      return (o != nullptr);
-   }
+   bool operator==(const BoolPropertyDef& o) const { return PropertyDef::operator==(o) && (m_def == o.m_def); }
 };
 
 
 class StringPropertyDef final : public PropertyDef
 {
 public:
-   StringPropertyDef(const string& groupId, const string& propId, const string& label, const string& description, const string& def)
-      : PropertyDef(Type::String, groupId, propId, label, description)
+   StringPropertyDef(const string& groupId, const string& propId, const string& label, const string& description, bool isContextual, const string& def)
+      : PropertyDef(Type::String, groupId, propId, label, description, isContextual)
       , m_def(def)
    {
    }
    StringPropertyDef(const StringPropertyDef& other, const string& def)
-      : StringPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, def)
+      : StringPropertyDef(other.m_groupId, other.m_propId, other.m_label, other.m_description, other.m_contextualProperty, def)
    {
    }
    std::unique_ptr<StringPropertyDef> WithDefault(const string& def) const { return std::make_unique<StringPropertyDef>(*this, def); }
@@ -228,11 +219,7 @@ public:
 
    const string m_def;
 
-   bool IsEqualButDefaultValue(PropertyDef* other) const override
-   {
-      StringPropertyDef* o = dynamic_cast<StringPropertyDef*>(other);
-      return (o != nullptr);
-   }
+   bool operator==(const StringPropertyDef& o) const { return PropertyDef::operator==(o) && (m_def == o.m_def); }
 };
 
 }

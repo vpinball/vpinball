@@ -13,13 +13,15 @@ void InputAction::ClearMapping()
 
 void InputAction::LoadMapping(const Settings& settings)
 {
-   const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Mapping." + m_settingId, "Mapping." + m_settingId, ""s, m_defaultMappings));
+   const auto propId
+      = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Mapping." + m_settingId, "Mapping." + m_settingId, ""s, false, m_defaultMappings));
    SetMapping(settings.GetString(propId));
 }
 
 void InputAction::SaveMapping(Settings& settings) const
 {
-   const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Mapping." + m_settingId, "Mapping." + m_settingId, ""s, m_defaultMappings));
+   const auto propId
+      = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Mapping." + m_settingId, "Mapping." + m_settingId, ""s, false, m_defaultMappings));
    settings.Set(propId, GetMappingString(), false);
 }
 

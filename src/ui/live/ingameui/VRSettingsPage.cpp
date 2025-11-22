@@ -58,7 +58,7 @@ VRSettingsPage::VRSettingsPage()
 
    // TODO it would be nice to implement a pincab friendly color picker
    AddItem(std::make_unique<InGameUIItem>(
-      VPX::Properties::IntPropertyDef(""s, ""s, "Color Key Red"s, ""s, 0, 255, 128), "%3d / 255"s, //
+      VPX::Properties::IntPropertyDef(""s, ""s, "Color Key Red"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this]() { return static_cast<int>(sRGB(m_player->m_renderer->m_vrColorKey.x) * 255.f); }, //
       [this]() { return m_player->m_ptable->m_settings.GetPlayerVR_PassthroughColor() & 0xFF; }, //
       [this](int, int v) { m_player->m_renderer->m_vrColorKey.x = InvsRGB(static_cast<float>(v) / 255.f); }, //
@@ -66,7 +66,7 @@ VRSettingsPage::VRSettingsPage()
       [](int v, Settings& settings, bool isTableOverride) { settings.SetPlayerVR_PassthroughColor((settings.GetPlayerVR_PassthroughColor() & 0xFFFF00) | v, isTableOverride); }));
 
    AddItem(std::make_unique<InGameUIItem>(
-      VPX::Properties::IntPropertyDef(""s, ""s, "Color Key Green"s, ""s, 0, 255, 128), "%3d / 255"s, //
+      VPX::Properties::IntPropertyDef(""s, ""s, "Color Key Green"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this]() { return static_cast<int>(sRGB(m_player->m_renderer->m_vrColorKey.y) * 255.f); }, //
       [this]() { return (m_player->m_ptable->m_settings.GetPlayerVR_PassthroughColor() >> 8) & 0xFF; }, //
       [this](int, int v) { m_player->m_renderer->m_vrColorKey.y = InvsRGB(static_cast<float>(v) / 255.f); }, //
@@ -74,7 +74,7 @@ VRSettingsPage::VRSettingsPage()
       [](int v, Settings& settings, bool isTableOverride) { settings.SetPlayerVR_PassthroughColor((settings.GetPlayerVR_PassthroughColor() & 0xFF00FF) | (v << 8), isTableOverride); }));
 
    AddItem(std::make_unique<InGameUIItem>(
-      VPX::Properties::IntPropertyDef(""s, ""s, "Color Key Blue"s, ""s, 0, 255, 128), "%3d / 255"s, //
+      VPX::Properties::IntPropertyDef(""s, ""s, "Color Key Blue"s, ""s, false, 0, 255, 128), "%3d / 255"s, //
       [this]() { return static_cast<int>(sRGB(m_player->m_renderer->m_vrColorKey.z) * 255.f); }, //
       [this]() { return (m_player->m_ptable->m_settings.GetPlayerVR_PassthroughColor() >> 16) & 0xFF; }, //
       [this](int, int v) { m_player->m_renderer->m_vrColorKey.z = InvsRGB(static_cast<float>(v) / 255.f); }, //

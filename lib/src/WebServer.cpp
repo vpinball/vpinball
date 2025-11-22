@@ -171,8 +171,8 @@ void WebServer::Start()
 
    // mg_log_set(MG_LL_DEBUG);
 
-   const auto addrPropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Standalone"s, "WebServerAddr"s, ""s, ""s, "0.0.0.0"s));
-   const auto portPropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>("Standalone"s, "WebServerPort"s, ""s, ""s, INT_MIN, INT_MAX, 2112));
+   const auto addrPropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Standalone"s, "WebServerAddr"s, ""s, ""s, false, "0.0.0.0"s));
+   const auto portPropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>("Standalone"s, "WebServerPort"s, ""s, ""s, false, INT_MIN, INT_MAX, 2112));
    const string addr = g_pvp->m_settings.GetString(addrPropId);
    const int port = g_pvp->m_settings.GetInt(portPropId);
 
@@ -236,7 +236,7 @@ void WebServer::Stop()
 
 void WebServer::Update()
 {
-   const auto serverPropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("Standalone"s, "WebServer"s, ""s, ""s, false));
+   const auto serverPropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("Standalone"s, "WebServer"s, ""s, ""s, false, false));
    bool enabled = g_pvp->m_settings.GetBool(serverPropId);
 
    if (enabled && !m_run)

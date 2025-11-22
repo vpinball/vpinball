@@ -22,13 +22,13 @@ void PhysicsSensor::ClearMapping()
 
 void PhysicsSensor::LoadMapping(const Settings& settings)
 {
-   const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Mapping." + m_settingId, "Mapping." + m_settingId, ""s, ""s));
+   const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Mapping." + m_settingId, "Mapping." + m_settingId, ""s, false, ""s));
    SetMapping(settings.GetString(propId));
 }
 
 void PhysicsSensor::SaveMapping(Settings& settings) const
 {
-   const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Mapping." + m_settingId, "Mapping." + m_settingId, ""s, ""s));
+   const auto propId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Mapping." + m_settingId, "Mapping." + m_settingId, ""s, false, ""s));
    if (m_inputMapping == nullptr)
       settings.Reset(propId);
    else

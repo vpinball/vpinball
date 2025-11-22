@@ -80,7 +80,8 @@ void MiscSettingsPage::BuildPage()
    if (!g_pvp->m_bgles)
    {
       AddItem(std::make_unique<InGameUIItem>(
-         VPX::Properties::EnumPropertyDef(""s, ""s, "Scene Lighting"s, "Select how scene lighting is evaluated"s, 0, 0, vector { "Table's default"s, "Custom fixed value"s, "Time of day"s }),
+         VPX::Properties::EnumPropertyDef(
+            ""s, ""s, "Scene Lighting"s, "Select how scene lighting is evaluated"s, false, 0, 0, vector { "Table's default"s, "Custom fixed value"s, "Time of day"s }),
          [this]() { return (int) m_player->m_renderer->m_sceneLighting.GetMode(); }, // Live
          [this]() { 
             if (!m_player->m_ptable->m_settings.GetPlayer_OverrideTableEmissionScale())
