@@ -200,7 +200,8 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
             if (auto existing = Settings::GetRegistry().GetPropertyId("Plugin." + plugin.m_id, "Enable"s); existing.has_value())
                enableId = existing.value();
             else
-               enableId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("Plugin." + plugin.m_id, "Enable"s, "Enable"s, "Enable/Disable plugin '" + plugin.m_name + '\'', false));
+               enableId = Settings::GetRegistry().Register(
+                  std::make_unique<VPX::Properties::BoolPropertyDef>("Plugin." + plugin.m_id, "Enable"s, "Enable"s, "Enable/Disable plugin '" + plugin.m_name + '\'', true, false));
             if (g_pvp->m_settings.GetBool(enableId))
             {
                plugin.Load(&MsgPI::MsgPluginManager::GetInstance().GetMsgAPI());

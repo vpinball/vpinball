@@ -41,8 +41,6 @@ HRESULT Rubber::Init(PinTable *const ptable, const float x, const float y, const
    SetDefaults(fromMouseClick);
    m_d.m_visible = true;
 
-   //float length = 0.5f * LoadValueWithDefault(Settings::DefaultPropsRubber, "Length"s, 400.0f);
-
    for (int i = 8; i > 0; i--)
    {
       const float angle = (float)(M_PI*2.0 / 8.0)*(float)i;

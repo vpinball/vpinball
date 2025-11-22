@@ -80,7 +80,7 @@ void GraphicSettingsPage::BuildPage()
 #endif
                renderers.push_back(bgfxRendererNames[supportedRenderers[i]]);
       AddItem(std::make_unique<InGameUIItem>(
-         VPX::Properties::EnumPropertyDef(""s, ""s, "Graphics Backend"s, ""s, 0, 0, renderers),
+         VPX::Properties::EnumPropertyDef(""s, ""s, "Graphics Backend"s, ""s, false, 0, 0, renderers),
          [this, renderers]() { return max(0, FindIndexOf(renderers, m_player->m_ptable->m_settings.GetPlayer_GfxBackend())); }, // Live
          [this, renderers]() { return max(0, FindIndexOf(renderers, m_player->m_ptable->m_settings.GetPlayer_GfxBackend())); }, // Stored (same)
          [this, renderers](int, int v)
@@ -109,7 +109,7 @@ void GraphicSettingsPage::BuildPage()
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::EnumPropertyDef(""s, ""s, "Display Synchronization"s,
          "Select how frame generation is synchronized to display refresh rate.\nHardware synchronization is recommended for smoother gameplay.\nVSync stands for 'Vertical Synchronization'."s,
-         0, 0,
+         false, 0, 0,
          vector { "Hardware VSync"s,
 #if defined(ENABLE_DX9) || defined(ENABLE_OPENGL)
             "Hardware Adaptive VSync"s, "Hardware Frame Paced VSync"s,
@@ -197,7 +197,7 @@ void GraphicSettingsPage::BuildPage()
    {
       AddItem(std::make_unique<InGameUIItem>(
          VPX::Properties::FloatPropertyDef(""s, ""s, "Custom FPS"s,
-            "Select a custom 'frame per second' rate.\nNote that this is not recommended and will result in a bad gameplay experience."s, 24.f, 1000.f, 1.f,
+            "Select a custom 'frame per second' rate.\nNote that this is not recommended and will result in a bad gameplay experience."s, false, 24.f, 1000.f, 1.f,
             roundf(m_player->m_playfieldWnd->GetRefreshRate() - 1.f)),
          1.f, "%4.1f", //
          [this]() { return m_player->GetTargetRefreshRate(); }, // Live
@@ -277,7 +277,7 @@ void GraphicSettingsPage::BuildPage()
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    AddItem(std::make_unique<InGameUIItem>(
       VPX::Properties::EnumPropertyDef(""s, ""s, "Ambient Occlusion"s,
-         "Limit the quality of ambient occlusion for better performance.\r\nDynamic is the better with contact shadows for dynamic objects but higher performance requirements"s, 0, 0,
+         "Limit the quality of ambient occlusion for better performance.\r\nDynamic is the better with contact shadows for dynamic objects but higher performance requirements"s, false, 0, 0,
          vector { "Disabled"s, "Static"s, "Dynamic"s }),
       [this]()
       {

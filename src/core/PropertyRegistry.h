@@ -47,12 +47,10 @@ public:
       {
          propId = it->second;
          const PropertyDef* existing = GetProperty(propId);
-         assert( //
-            prop->m_groupId == "TableOption" // TableOption may be redefined (somewhat hacky, but ok as only a single table can be played at a time and table option are only persisted as override in the table store)
-            || existing->IsEqualButDefaultValue(prop.get()) // Redefining the default value is allowed
-            || (prop->m_propId.ends_with("WndX") || prop->m_propId.ends_with("WndY")) // Redefining display output position and size range is allowed too
-            || (prop->m_propId.ends_with("Width") || prop->m_propId.ends_with("Height")) // Redefining display output position and size range is allowed too
-         );
+         if (*existing == *prop)
+            return propId;
+         // Dynamic properties must be epxlicitely defined to allow correct handling (saving without a stable default for example)
+         assert(prop->m_contextualProperty);
          switch (propId.type)
          {
          case StoreType::Float: m_floatProperties[propId.index] = std::move(prop); break;

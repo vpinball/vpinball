@@ -107,18 +107,6 @@ void Controller::Run(long hParentWnd, int nMinVersion)
       std::this_thread::sleep_for(std::chrono::milliseconds(75)); 
 
    if ((PinmameIsRunning() == 1) && status == PINMAME_STATUS_OK) {
-      /*Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
-      if (pSettings->LoadValueWithDefault(Settings::Standalone, "AltSound"s, true)) {
-          AltsoundSetLogger(g_pvp->m_szMyPrefPath, ALTSOUND_LOG_LEVEL_INFO, false);
-
-          if (AltsoundInit(m_szPath, string(m_pPinmameGame->name))) {
-             AltsoundSetHardwareGen((ALTSOUND_HARDWARE_GEN)PinmameGetHardwareGen());
-             PinmameSetSoundMode(PINMAME_SOUND_MODE_ALTSOUND);
-
-             LOGI("Altsound initialized successfully.");
-          }
-      }*/
-
       if (m_onGameStartHandler)
          m_onGameStartHandler(this);
    }

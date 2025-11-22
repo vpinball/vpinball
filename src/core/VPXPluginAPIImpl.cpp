@@ -367,6 +367,7 @@ void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, MsgPI::MsgPlug
    case MSGPI_SETTING_TYPE_FLOAT:
    {
       const auto newId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(sectionName, settingDef->propId, settingDef->name, settingDef->description,
+         false,
          settingDef->floatDef.minVal, settingDef->floatDef.maxVal, settingDef->floatDef.step, settingDef->floatDef.defVal));
       if (item == m_pluginSettings.end())
          m_pluginSettings.emplace_back(pluginId, newId, settingDef);
@@ -389,7 +390,7 @@ void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, MsgPI::MsgPlug
          for (int i = settingDef->intDef.minVal; i <= settingDef->intDef.maxVal; i++)
             values.emplace_back(settingDef->intDef.values[i - settingDef->intDef.minVal]);
          const auto newId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>(
-            sectionName, settingDef->propId, settingDef->name, settingDef->description, settingDef->intDef.minVal, settingDef->intDef.defVal, values));
+            sectionName, settingDef->propId, settingDef->name, settingDef->description, false, settingDef->intDef.minVal, settingDef->intDef.defVal, values));
          if (item == m_pluginSettings.end())
             m_pluginSettings.emplace_back(pluginId, newId, settingDef);
          else
@@ -405,7 +406,7 @@ void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, MsgPI::MsgPlug
       else
       {
          const auto newId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>(
-            sectionName, settingDef->propId, settingDef->name, settingDef->description, settingDef->intDef.minVal, settingDef->intDef.maxVal, settingDef->intDef.defVal));
+            sectionName, settingDef->propId, settingDef->name, settingDef->description, false, settingDef->intDef.minVal, settingDef->intDef.maxVal, settingDef->intDef.defVal));
          if (item == m_pluginSettings.end())
             m_pluginSettings.emplace_back(pluginId, newId, settingDef);
          else
@@ -423,7 +424,7 @@ void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, MsgPI::MsgPlug
    case MSGPI_SETTING_TYPE_BOOL:
    {
       const auto newId = Settings::GetRegistry().Register(
-         std::make_unique<VPX::Properties::BoolPropertyDef>(sectionName, settingDef->propId, settingDef->name, settingDef->description, settingDef->boolDef.defVal));
+         std::make_unique<VPX::Properties::BoolPropertyDef>(sectionName, settingDef->propId, settingDef->name, settingDef->description, false, settingDef->boolDef.defVal));
       if (item == m_pluginSettings.end())
          m_pluginSettings.emplace_back(pluginId, newId, settingDef);
       else
@@ -441,7 +442,7 @@ void VPXPluginAPIImpl::UpdateSetting(const std::string& pluginId, MsgPI::MsgPlug
    case MSGPI_SETTING_TYPE_STRING:
    {
       const auto newId = Settings::GetRegistry().Register(
-         std::make_unique<VPX::Properties::StringPropertyDef>(sectionName, settingDef->propId, settingDef->name, settingDef->description, settingDef->stringDef.defVal));
+         std::make_unique<VPX::Properties::StringPropertyDef>(sectionName, settingDef->propId, settingDef->name, settingDef->description, false, settingDef->stringDef.defVal));
       if (item == m_pluginSettings.end())
          m_pluginSettings.emplace_back(pluginId, newId, settingDef);
       else

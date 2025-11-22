@@ -135,7 +135,7 @@ void DisplaySettingsPage::BuildPage()
    else if (isSingleView)
    { // For mobile and builds without multiple viewport support, only disabled/embedded mode are supported
       AddItem(std::make_unique<InGameUIItem>(
-         VPX::Properties::BoolPropertyDef(""s, ""s, "Enable"s, "Enable rendering this display"s, false), //
+         VPX::Properties::BoolPropertyDef(""s, ""s, "Enable"s, "Enable rendering this display"s, false, false), //
          [this]() { return GetOutput(m_wndId).GetMode() != VPX::RenderOutput::OM_DISABLED; }, // Live
          [this]() { return m_player->m_ptable->m_settings.GetWindow_Mode(m_wndId) != VPX::RenderOutput::OM_DISABLED; }, // Stored
          [this](bool v)
@@ -198,7 +198,7 @@ void DisplaySettingsPage::BuildWindowPage()
    }
 
    AddItem(std::make_unique<InGameUIItem>(
-      VPX::Properties::EnumPropertyDef(""s, ""s, "Display"s, "Select the display output"s, 0, 0, m_displayNames), //
+      VPX::Properties::EnumPropertyDef(""s, ""s, "Display"s, "Select the display output"s, false, 0, 0, m_displayNames), //
       [wndDisplay]() { return wndDisplay; }, // Live
       [this]()
       {
@@ -281,7 +281,7 @@ void DisplaySettingsPage::BuildWindowPage()
 
       // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
       AddItem(std::make_unique<InGameUIItem>(
-         VPX::Properties::EnumPropertyDef(""s, ""s, "Video Mode"s, "Video mode"s, 0, defaultMode, modeNames), //
+         VPX::Properties::EnumPropertyDef(""s, ""s, "Video Mode"s, "Video mode"s, false, 0, defaultMode, modeNames), //
          [selectedMode]() { return selectedMode; }, // Live
          [selectedMode]() { return selectedMode; }, // Stored
          [this, wndDisplay](int, int v)
@@ -308,7 +308,7 @@ void DisplaySettingsPage::BuildWindowPage()
          else
             arNames.push_back((aspectRatio.x > aspectRatio.y ? "Landscape - "s : "Portrait  - "s) + std::to_string(aspectRatio.x) + ':' + std::to_string(aspectRatio.y));
       AddItem(std::make_unique<InGameUIItem>(
-         VPX::Properties::EnumPropertyDef(""s, ""s, "Lock aspect ratio"s, "Limit window size to a predefined aspect ratio"s, 0, m_arLock, arNames), //
+         VPX::Properties::EnumPropertyDef(""s, ""s, "Lock aspect ratio"s, "Limit window size to a predefined aspect ratio"s, false, 0, m_arLock, arNames), //
          [this]() { return m_arLock; }, // Live
          [this]() { return m_arLock; }, // Stored
          [this](int, int v)
@@ -515,7 +515,7 @@ void DisplaySettingsPage::BuildEmbeddedPage()
       else
          arNames.push_back((aspectRatio.x > aspectRatio.y ? "Landscape - "s : "Portrait  - "s) + std::to_string(aspectRatio.x) + ':' + std::to_string(aspectRatio.y));
    AddItem(std::make_unique<InGameUIItem>(
-      VPX::Properties::EnumPropertyDef(""s, ""s, "Lock aspect ratio"s, "Limit window size to a predefined aspect ratio"s, 0, m_arLock, arNames), //
+      VPX::Properties::EnumPropertyDef(""s, ""s, "Lock aspect ratio"s, "Limit window size to a predefined aspect ratio"s, false, 0, m_arLock, arNames), //
       [this]() { return m_arLock; }, // Live
       [this]() { return m_arLock; }, // Stored
       [this](int, int v)

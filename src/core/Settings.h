@@ -22,7 +22,7 @@ public:
    Settings(Settings *parent);
 
    void SetIniPath(const string &path);
-   const string& GetIniPath() const;
+   const string &GetIniPath() const;
    void Reset();
    bool Load(const bool createDefault);
    void Load(const Settings &settings);
@@ -50,112 +50,107 @@ private:
 
 public:
 #ifdef __GNUC__
-#define PropBool(groupId, propId, label, comment, defVal)                                                                                                                                    \
+#define PropBoolBase(groupId, propId, label, comment, isContextual, defVal)                                                                                                                  \
    static const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId;                                                                                                        \
    static inline const VPX::Properties::BoolPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetBoolProperty(m_prop##groupId##_##propId); }                          \
    static inline const bool Get##groupId##_##propId##_Default() { return GetRegistry().GetBoolProperty(m_prop##groupId##_##propId)->m_def; }                                                 \
    static inline const void Set##groupId##_##propId##_Default(bool v) { GetRegistry().Register(GetRegistry().GetBoolProperty(m_prop##groupId##_##propId)->WithDefault(v)); }                 \
-   bool Get##groupId##_##propId() const { return m_store.GetInt(m_prop##groupId##_##propId); }                                                                                        \
-   void Set##groupId##_##propId(bool v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                                \
+   bool Get##groupId##_##propId() const { return m_store.GetInt(m_prop##groupId##_##propId); }                                                                                               \
+   void Set##groupId##_##propId(bool v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                                       \
    void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
 #else
-#define PropBool(groupId, propId, label, comment, defVal)                                                                                                                                    \
+#define PropBoolBase(groupId, propId, label, comment, isContextual, defVal)                                                                                                                  \
    static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId                                                                                                  \
-      = GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, defVal));                                 \
+      = GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, isContextual, defVal));                   \
    static inline const VPX::Properties::BoolPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetBoolProperty(m_prop##groupId##_##propId); }                          \
    static inline const bool Get##groupId##_##propId##_Default() { return GetRegistry().GetBoolProperty(m_prop##groupId##_##propId)->m_def; }                                                 \
    static inline const void Set##groupId##_##propId##_Default(bool v) { GetRegistry().Register(GetRegistry().GetBoolProperty(m_prop##groupId##_##propId)->WithDefault(v)); }                 \
-   bool Get##groupId##_##propId() const { return m_store.GetInt(m_prop##groupId##_##propId); }                                                                                        \
-   void Set##groupId##_##propId(bool v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                                \
+   bool Get##groupId##_##propId() const { return m_store.GetInt(m_prop##groupId##_##propId); }                                                                                               \
+   void Set##groupId##_##propId(bool v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                                       \
    void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
 #endif
 
 #ifdef __GNUC__
-#define PropInt(groupId, propId, label, comment, minVal, maxVal, defVal)                                                                                                                     \
+#define PropIntBase(groupId, propId, label, comment, isContextual, minVal, maxVal, defVal)                                                                                                   \
    static const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId;                                                                                                        \
    static inline const VPX::Properties::IntPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetIntProperty(m_prop##groupId##_##propId); }                            \
    static inline const int Get##groupId##_##propId##_Default() { return GetRegistry().GetIntProperty(m_prop##groupId##_##propId)->m_def; }                                                   \
    static inline const void Set##groupId##_##propId##_Default(int v) { GetRegistry().Register(GetRegistry().GetIntProperty(m_prop##groupId##_##propId)->WithDefault(v)); }                   \
-   int Get##groupId##_##propId() const { return m_store.GetInt(m_prop##groupId##_##propId); }                                                                                         \
-   void Set##groupId##_##propId(int v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                                 \
+   int Get##groupId##_##propId() const { return m_store.GetInt(m_prop##groupId##_##propId); }                                                                                                \
+   void Set##groupId##_##propId(int v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                                        \
    void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
 #else
-#define PropInt(groupId, propId, label, comment, minVal, maxVal, defVal)                                                                                                                     \
+#define PropIntBase(groupId, propId, label, comment, isContextual, minVal, maxVal, defVal)                                                                                                   \
    static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId                                                                                                  \
-      = GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, minVal, maxVal, defVal));                  \
+      = GetRegistry().Register(std::make_unique<VPX::Properties::IntPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, isContextual, minVal, maxVal, defVal));    \
    static inline const VPX::Properties::IntPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetIntProperty(m_prop##groupId##_##propId); }                            \
    static inline const int Get##groupId##_##propId##_Default() { return GetRegistry().GetIntProperty(m_prop##groupId##_##propId)->m_def; }                                                   \
    static inline const void Set##groupId##_##propId##_Default(int v) { GetRegistry().Register(GetRegistry().GetIntProperty(m_prop##groupId##_##propId)->WithDefault(v)); }                   \
-   int Get##groupId##_##propId() const { return m_store.GetInt(m_prop##groupId##_##propId); }                                                                                         \
-   void Set##groupId##_##propId(int v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                                 \
+   int Get##groupId##_##propId() const { return m_store.GetInt(m_prop##groupId##_##propId); }                                                                                                \
+   void Set##groupId##_##propId(int v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                                        \
    void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
 #endif
-#define PropIntUnbounded(groupId, propId, label, comment, defVal) PropInt(groupId, propId, label, comment, INT_MIN, INT_MAX, defVal)
 
 #ifdef __GNUC__
-#define PropEnumWithMin(groupId, propId, label, comment, type, minVal, defVal, ...)                                                                                                          \
+#define PropEnumBase(groupId, propId, label, comment, isContextual, type, minVal, defVal, ...)                                                                                               \
    static const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId;                                                                                                        \
    static inline const VPX::Properties::EnumPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetEnumProperty(m_prop##groupId##_##propId); }                          \
    static inline const type Get##groupId##_##propId##_Default() { return (type)(GetRegistry().GetEnumProperty(m_prop##groupId##_##propId)->m_def); }                                         \
    static inline const void Set##groupId##_##propId##_Default(type v) { GetRegistry().Register(GetRegistry().GetEnumProperty(m_prop##groupId##_##propId)->WithDefault((int)v)); }            \
-   type Get##groupId##_##propId() const { return (type)(m_store.GetInt(m_prop##groupId##_##propId)); }                                                                                \
-   void Set##groupId##_##propId(type v, bool asTableOverride) { Set(m_prop##groupId##_##propId, (int)v, asTableOverride); }                                                           \
+   type Get##groupId##_##propId() const { return (type)(m_store.GetInt(m_prop##groupId##_##propId)); }                                                                                       \
+   void Set##groupId##_##propId(type v, bool asTableOverride) { Set(m_prop##groupId##_##propId, (int)v, asTableOverride); }                                                                  \
    void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
 #else
-#define PropEnumWithMin(groupId, propId, label, comment, type, minVal, defVal, ...)                                                                                                          \
+#define PropEnumBase(groupId, propId, label, comment, isContextual, type, minVal, defVal, ...)                                                                                               \
    static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId = GetRegistry().Register(                                                                        \
-      std::make_unique<VPX::Properties::EnumPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, minVal, defVal, vector<string> { __VA_ARGS__ }));                  \
+      std::make_unique<VPX::Properties::EnumPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, isContextual, minVal, defVal, vector<string> { __VA_ARGS__ }));    \
    static inline const VPX::Properties::EnumPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetEnumProperty(m_prop##groupId##_##propId); }                          \
    static inline const type Get##groupId##_##propId##_Default() { return (type)(GetRegistry().GetEnumProperty(m_prop##groupId##_##propId)->m_def); }                                         \
    static inline const void Set##groupId##_##propId##_Default(type v) { GetRegistry().Register(GetRegistry().GetEnumProperty(m_prop##groupId##_##propId)->WithDefault((int)v)); }            \
-   type Get##groupId##_##propId() const { return (type)(m_store.GetInt(m_prop##groupId##_##propId)); }                                                                                \
-   void Set##groupId##_##propId(type v, bool asTableOverride) { Set(m_prop##groupId##_##propId, (int)v, asTableOverride); }                                                           \
+   type Get##groupId##_##propId() const { return (type)(m_store.GetInt(m_prop##groupId##_##propId)); }                                                                                       \
+   void Set##groupId##_##propId(type v, bool asTableOverride) { Set(m_prop##groupId##_##propId, (int)v, asTableOverride); }                                                                  \
    void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
 #endif
-#define PropEnum1(groupId, propId, label, comment, type, defVal, ...) PropEnumWithMin(groupId, propId, label, comment, type, 1, defVal, __VA_ARGS__)
-#define PropEnum(groupId, propId, label, comment, type, defVal, ...) PropEnumWithMin(groupId, propId, label, comment, type, 0, defVal, __VA_ARGS__)
 
 #ifdef __GNUC__
-#define PropFloatStepped(groupId, propId, label, comment, minVal, maxVal, step, defVal)                                                                                                      \
+#define PropFloatBase(groupId, propId, label, comment, isContextual, minVal, maxVal, step, defVal)                                                                                           \
    static const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId;                                                                                                        \
    static inline const VPX::Properties::FloatPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetFloatProperty(m_prop##groupId##_##propId); }                        \
    static inline const float Get##groupId##_##propId##_Default() { return GetRegistry().GetFloatProperty(m_prop##groupId##_##propId)->m_def; }                                               \
    static inline const void Set##groupId##_##propId##_Default(float v) { GetRegistry().Register(GetRegistry().GetFloatProperty(m_prop##groupId##_##propId)->WithDefault(v)); }               \
-   float Get##groupId##_##propId() const { return m_store.GetFloat(m_prop##groupId##_##propId); }                                                                                     \
-   void Set##groupId##_##propId(float v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                               \
+   float Get##groupId##_##propId() const { return m_store.GetFloat(m_prop##groupId##_##propId); }                                                                                            \
+   void Set##groupId##_##propId(float v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                                      \
    void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
 #else
-#define PropFloatStepped(groupId, propId, label, comment, minVal, maxVal, step, defVal)                                                                                                      \
-   static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId                                                                                                  \
-      = GetRegistry().Register(std::make_unique<VPX::Properties::FloatPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, minVal, maxVal, step, defVal));          \
+#define PropFloatBase(groupId, propId, label, comment, isContextual, minVal, maxVal, step, defVal)                                                                                           \
+   static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId = GetRegistry().Register(                                                                        \
+      std::make_unique<VPX::Properties::FloatPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, isContextual, minVal, maxVal, step, defVal));                     \
    static inline const VPX::Properties::FloatPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetFloatProperty(m_prop##groupId##_##propId); }                        \
    static inline const float Get##groupId##_##propId##_Default() { return GetRegistry().GetFloatProperty(m_prop##groupId##_##propId)->m_def; }                                               \
    static inline const void Set##groupId##_##propId##_Default(float v) { GetRegistry().Register(GetRegistry().GetFloatProperty(m_prop##groupId##_##propId)->WithDefault(v)); }               \
-   float Get##groupId##_##propId() const { return m_store.GetFloat(m_prop##groupId##_##propId); }                                                                                     \
-   void Set##groupId##_##propId(float v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                               \
+   float Get##groupId##_##propId() const { return m_store.GetFloat(m_prop##groupId##_##propId); }                                                                                            \
+   void Set##groupId##_##propId(float v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                                      \
    void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
 #endif
-#define PropFloatUnbounded(groupId, propId, label, comment, defVal) PropFloatStepped(groupId, propId, label, comment, FLT_MIN, FLT_MAX, 0.f, defVal)
-#define PropFloat(groupId, propId, label, comment, minVal, maxVal, defVal) PropFloatStepped(groupId, propId, label, comment, minVal, maxVal, 0.f, defVal)
 
 #ifdef __GNUC__
-#define PropString(groupId, propId, label, comment, defVal)                                                                                                                                  \
+#define PropStringBase(groupId, propId, label, comment, isContextual, defVal)                                                                                                                \
    static const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId;                                                                                                        \
    static inline const VPX::Properties::StringPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetStringProperty(m_prop##groupId##_##propId); }                      \
    static inline const string &Get##groupId##_##propId##_Default() { return GetRegistry().GetStringProperty(m_prop##groupId##_##propId)->m_def; }                                            \
    static inline const void Set##groupId##_##propId##_Default(const string &v) { GetRegistry().Register(GetRegistry().GetStringProperty(m_prop##groupId##_##propId)->WithDefault(v)); }      \
-   const string &Get##groupId##_##propId() const { return m_store.GetString(m_prop##groupId##_##propId); }                                                                            \
-   void Set##groupId##_##propId(const string &v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                       \
+   const string &Get##groupId##_##propId() const { return m_store.GetString(m_prop##groupId##_##propId); }                                                                                   \
+   void Set##groupId##_##propId(const string &v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                              \
    void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
 #else
-#define PropString(groupId, propId, label, comment, defVal)                                                                                                                                  \
+#define PropStringBase(groupId, propId, label, comment, isContextual, defVal)                                                                                                                \
    static inline const VPX::Properties::PropertyRegistry::PropId m_prop##groupId##_##propId                                                                                                  \
-      = GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, defVal));                               \
+      = GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>(GetBackwardCompatibleSection(#groupId), #propId, label, comment, isContextual, defVal));                 \
    static inline const VPX::Properties::StringPropertyDef *Get##groupId##_##propId##_Property() { return GetRegistry().GetStringProperty(m_prop##groupId##_##propId); }                      \
    static inline const string &Get##groupId##_##propId##_Default() { return GetRegistry().GetStringProperty(m_prop##groupId##_##propId)->m_def; }                                            \
    static inline const void Set##groupId##_##propId##_Default(const string &v) { GetRegistry().Register(GetRegistry().GetStringProperty(m_prop##groupId##_##propId)->WithDefault(v)); }      \
-   const string &Get##groupId##_##propId() const { return m_store.GetString(m_prop##groupId##_##propId); }                                                                            \
-   void Set##groupId##_##propId(const string &v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                       \
+   const string &Get##groupId##_##propId() const { return m_store.GetString(m_prop##groupId##_##propId); }                                                                                   \
+   void Set##groupId##_##propId(const string &v, bool asTableOverride) { Set(m_prop##groupId##_##propId, v, asTableOverride); }                                                              \
    void Reset##groupId##_##propId() { m_store.Reset(m_prop##groupId##_##propId); }
 #endif
 
@@ -166,8 +161,8 @@ public:
    {                                                                                                                                                                                         \
       return GetRegistry().Get##propType##Property(m_prop##groupId##_##propId[index]);                                                                                                       \
    }                                                                                                                                                                                         \
-   type Get##groupId##_##propId(int index) const { return (type)(m_store.Get##getType(m_prop##groupId##_##propId[index])); }                                                          \
-   void Set##groupId##_##propId(int index, type v, bool asTableOverride) { Set(m_prop##groupId##_##propId[index], (type)v, asTableOverride); }                                        \
+   type Get##groupId##_##propId(int index) const { return (type)(m_store.Get##getType(m_prop##groupId##_##propId[index])); }                                                                 \
+   void Set##groupId##_##propId(int index, type v, bool asTableOverride) { Set(m_prop##groupId##_##propId[index], (type)v, asTableOverride); }                                               \
    void Reset##groupId##_##propId(int index) { Reset(m_prop##groupId##_##propId[index]); }
 #else
 #define PropArray(groupId, propId, type, propType, getType, ...)                                                                                                                             \
@@ -176,16 +171,59 @@ public:
    {                                                                                                                                                                                         \
       return GetRegistry().Get##propType##Property(m_prop##groupId##_##propId[index]);                                                                                                       \
    }                                                                                                                                                                                         \
-   type Get##groupId##_##propId(int index) const { return (type)(m_store.Get##getType(m_prop##groupId##_##propId[index])); }                                                          \
-   void Set##groupId##_##propId(int index, type v, bool asTableOverride) { Set(m_prop##groupId##_##propId[index], (type)v, asTableOverride); }                                        \
+   type Get##groupId##_##propId(int index) const { return (type)(m_store.Get##getType(m_prop##groupId##_##propId[index])); }                                                                 \
+   void Set##groupId##_##propId(int index, type v, bool asTableOverride) { Set(m_prop##groupId##_##propId[index], (type)v, asTableOverride); }                                               \
    void Reset##groupId##_##propId(int index) { Reset(m_prop##groupId##_##propId[index]); }
 #endif
-   #include "Settings_properties.inl"
 
+#define PropBool(groupId, propId, label, comment, defVal) PropBoolBase(groupId, propId, label, comment, false, defVal)
+#define PropBoolDyn(groupId, propId, label, comment, defVal) PropBoolBase(groupId, propId, label, comment, true, defVal)
+
+#define PropInt(groupId, propId, label, comment, minVal, maxVal, defVal) PropIntBase(groupId, propId, label, comment, false, minVal, maxVal, defVal)
+#define PropIntDyn(groupId, propId, label, comment, minVal, maxVal, defVal) PropIntBase(groupId, propId, label, comment, true, minVal, maxVal, defVal)
+#define PropIntUnbounded(groupId, propId, label, comment, defVal) PropIntBase(groupId, propId, label, comment, false, INT_MIN, INT_MAX, defVal)
+
+#define PropEnumWithMin(groupId, propId, label, comment, type, minVal, defVal, ...) PropEnumBase(groupId, propId, label, comment, false, type, minVal, defVal, __VA_ARGS__)
+#define PropEnum1(groupId, propId, label, comment, type, defVal, ...) PropEnumBase(groupId, propId, label, comment, false, type, 1, defVal, __VA_ARGS__)
+#define PropEnum(groupId, propId, label, comment, type, defVal, ...) PropEnumBase(groupId, propId, label, comment, false, type, 0, defVal, __VA_ARGS__)
+#define PropEnumDyn(groupId, propId, label, comment, type, defVal, ...) PropEnumBase(groupId, propId, label, comment, true, type, 0, defVal, __VA_ARGS__)
+
+#define PropFloatStepped(groupId, propId, label, comment, minVal, maxVal, step, defVal) PropFloatBase(groupId, propId, label, comment, false, minVal, maxVal, step, defVal)
+#define PropFloatSteppedDyn(groupId, propId, label, comment, minVal, maxVal, step, defVal) PropFloatBase(groupId, propId, label, comment, true, minVal, maxVal, step, defVal)
+#define PropFloatUnbounded(groupId, propId, label, comment, defVal) PropFloatBase(groupId, propId, label, comment, false, FLT_MIN, FLT_MAX, 0.f, defVal)
+#define PropFloat(groupId, propId, label, comment, minVal, maxVal, defVal) PropFloatBase(groupId, propId, label, comment, false, minVal, maxVal, 0.f, defVal)
+#define PropFloatDyn(groupId, propId, label, comment, minVal, maxVal, defVal) PropFloatBase(groupId, propId, label, comment, true, minVal, maxVal, 0.f, defVal)
+
+#define PropString(groupId, propId, label, comment, defVal) PropStringBase(groupId, propId, label, comment, false, defVal)
+#define PropStringDyn(groupId, propId, label, comment, defVal) PropStringBase(groupId, propId, label, comment, true, defVal)
+
+#include "Settings_properties.inl"
+
+#undef PropBoolDyn
 #undef PropBool
+#undef PropBoolBase
+
+#undef PropIntUnbounded
+#undef PropIntDyn
 #undef PropInt
+#undef PropIntBase
+
+#undef PropEnumDyn
 #undef PropEnum
+#undef PropEnum1
+#undef PropEnumWithMin
+#undef PropEnumBase
+
+#undef PropFloatDyn
 #undef PropFloat
+#undef PropFloatUnbounded
+#undef PropFloatSteppedDyn
+#undef PropFloatStepped
+#undef PropFloatBase
+
 #undef PropString
+#undef PropStringDyn
+#undef PropStringBase
+
 #undef PropArray
 };
