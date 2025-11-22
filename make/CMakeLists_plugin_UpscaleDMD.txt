@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
 
 set(UPSCALEDMD_PLUGIN_SOURCES
-   plugins/upscaledmd/upscaledmd.cpp
+   plugins/upscaledmd/UpscaleDMD.cpp
    plugins/upscaledmd/xbrz/xbrz.cpp
    plugins/upscaledmd/xbrz/xbrz.h
    plugins/upscaledmd/super-xbr/super-xbr.h

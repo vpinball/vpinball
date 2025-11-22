@@ -6,9 +6,27 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="../../plugins/upscaledmd/upscaledmd.cpp">
+    <ClCompile Include="../../plugins/upscaledmd/UpscaleDMD.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="../../plugins/plugins/ResURIResolver.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="../../plugins/upscaledmd/xbrz/xbrz.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClInclude Include="../../plugins/plugins/ResURIResolver.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="../../plugins/upscaledmd/xbrz/xbrz.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="../../plugins/upscaledmd/super-xbr/super-xbr.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="../../plugins/upscaledmd/scalefx/scalefx.h">
+      <Filter>source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="../../plugins/upscaledmd/plugin.cfg">

@@ -181,7 +181,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="../../plugins/upscaledmd/upscaledmd.cpp" />
+    <ClCompile Include="../../plugins/upscaledmd/UpscaleDMD.cpp" />
     <ClCompile Include="../../plugins/plugins/ResURIResolver.cpp" />
     <ClCompile Include="../../plugins/upscaledmd/xbrz/xbrz.cpp" />
   </ItemGroup>
