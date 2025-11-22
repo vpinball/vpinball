@@ -162,7 +162,7 @@ uint16_t InputManager::RegisterDevice(const string& settingsId, InputManager::De
    m_inputDevices[deviceId].m_connected = true;
    Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Device." + settingsId + ".Name", "Device Name"s, ""s, true, name));
    Settings::GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>(
-      "Input"s, "Device." + settingsId + ".Type", "Device Type"s, ""s, false, 0, (int)type, vector { "Unknown"s, "Keyboard"s, "Joystick"s, "Mouse"s, "VRController"s, "OpenPinDev"s }));
+      "Input"s, "Device." + settingsId + ".Type", "Device Type"s, ""s, true, 0, (int)type, vector { "Unknown"s, "Keyboard"s, "Joystick"s, "Mouse"s, "VRController"s, "OpenPinDev"s }));
    Settings::GetRegistry().Register(std::make_unique<VPX::Properties::BoolPropertyDef>("Input"s, "Device." + settingsId + ".NoAutoLayout", "Disable Automatic Layout"s, ""s, false, false));
    return deviceId;
 }
@@ -286,7 +286,7 @@ void InputManager::LoadDevicesFromSettings()
       const auto namePropId
          = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Device." + deviceSettingId + ".Name", "Device Name"s, ""s, true, ""s));
       const auto typePropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>(
-         "Input"s, "Device." + deviceSettingId + ".Type", "Device Type"s, ""s, false, 0, 0, vector { "Unknown"s, "Keyboard"s, "Joystick"s, "Mouse"s, "VRController"s, "OpenPinDev"s }));
+         "Input"s, "Device." + deviceSettingId + ".Type", "Device Type"s, ""s, true, 0, 0, vector { "Unknown"s, "Keyboard"s, "Joystick"s, "Mouse"s, "VRController"s, "OpenPinDev"s }));
       Settings::GetRegistry().Register(
          std::make_unique<VPX::Properties::BoolPropertyDef>("Input"s, "Device." + deviceSettingId + ".NoAutoLayout", "Disable Automatic Layout"s, ""s, false, false));
       device.m_name = settings.GetString(namePropId);
@@ -330,7 +330,7 @@ void InputManager::SaveDevicesToSettings() const
       const auto namePropId
          = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Device." + device.m_settingsId + ".Name", "Device Name"s, ""s, true, ""s));
       const auto typePropId = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::EnumPropertyDef>(
-         "Input"s, "Device." + device.m_settingsId + ".Type", "Device Type"s, ""s, false, 0, 0,
+         "Input"s, "Device." + device.m_settingsId + ".Type", "Device Type"s, ""s, true, 0, 0,
          vector { "Unknown"s, "Keyboard"s, "Joystick"s, "Mouse"s, "VRController"s, "OpenPinDev"s }));
       settings.Set(namePropId, device.m_name, false);
       settings.Set(typePropId, static_cast<int>(device.m_type), false);
