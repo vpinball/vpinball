@@ -235,6 +235,7 @@ static void OnGetRenderDMDSrc(const unsigned int eventId, void* userData, void* 
          msg.entries[msg.count].overrideId = dmdId.id;
          msg.entries[msg.count].width = state->m_width32;
          msg.entries[msg.count].height = 32;
+         msg.entries[msg.count].hardware = CTLPI_DISPLAY_HARDWARE_RGB_LED;
          msg.entries[msg.count].frameFormat = CTLPI_DISPLAY_FORMAT_SRGB565;
          msg.entries[msg.count].GetRenderFrame = &GetRenderFrame;
       }
@@ -249,6 +250,7 @@ static void OnGetRenderDMDSrc(const unsigned int eventId, void* userData, void* 
          msg.entries[msg.count].overrideId = dmdId.id;
          msg.entries[msg.count].width = state->m_width;
          msg.entries[msg.count].height = state->m_height;
+         msg.entries[msg.count].hardware = CTLPI_DISPLAY_HARDWARE_RGB_LED;
          msg.entries[msg.count].frameFormat = CTLPI_DISPLAY_FORMAT_SRGB888;
          msg.entries[msg.count].GetRenderFrame = &GetRenderFrame;
       }
@@ -263,6 +265,7 @@ static void OnGetRenderDMDSrc(const unsigned int eventId, void* userData, void* 
          msg.entries[msg.count].overrideId = dmdId.id;
          msg.entries[msg.count].width = state->m_width64;
          msg.entries[msg.count].height = 64;
+         msg.entries[msg.count].hardware = CTLPI_DISPLAY_HARDWARE_RGB_LED;
          msg.entries[msg.count].frameFormat = CTLPI_DISPLAY_FORMAT_SRGB565;
          msg.entries[msg.count].GetRenderFrame = &GetRenderFrame;
       }
@@ -271,7 +274,7 @@ static void OnGetRenderDMDSrc(const unsigned int eventId, void* userData, void* 
 }
 
 // Select the first DMD with a large enough size that supports frame identification
-static void OnDmdSrcChanged(const unsigned int eventId, void* userData, void* msgData)
+static void OnDmdSrcChanged(const unsigned int, void*, void*)
 {
    if (pSerum == nullptr)
       return;
