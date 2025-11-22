@@ -613,7 +613,7 @@ PropFloat(Player, ScreenPlayerZ, "Player Z"s, "Player Z position in real world, 
 
 // Overall scene lighting settings
 PropBool(Player, OverrideTableEmissionScale, "Override Table Light Level"s, "Replace default table light level by a fixed/custom one"s, false);
-PropFloat(Player, EmissionScale, "Day/Night"s, "Select a custom ambient lighting level, ranging from daylight to night time"s, 0.f, 1.f, 1.f);
+PropFloatDyn(Player, EmissionScale, "Day/Night"s, "Select a custom ambient lighting level, ranging from daylight to night time"s, 0.f, 1.f, 1.f);
 PropBool(Player, DynamicDayNight, "Use Automatic Light Level"s, "Automatically compute/match scene lighting based on geographic coordinates/localized sun position"s, false);
 PropFloat(Player, Latitude, "Latitude"s, "Local geographic latitude used to derive the sun position for automatically computed/matching scene lighting"s, -90.f, 90.f, 52.52f);
 PropFloat(Player, Longitude, "Longitude"s, "Local geographic longitude used to derive the sun position for automatically computed/matching scene lighting"s, -180.f, 180.f, 13.37f);
