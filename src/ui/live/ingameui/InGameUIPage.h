@@ -80,7 +80,8 @@ private:
    bool m_defineActionPopup = false;
    InGameUIItem* m_defineActionItem = nullptr;
 
-   void RenderToggle(const string& label, const ImVec2& size, bool& v) const;
+   static void RenderToggle(const string& label, const ImVec2& size, bool& v);
+   static void TextWithEllipsis(const string& text, float maxWidth);
 };
 
 }
