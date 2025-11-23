@@ -183,8 +183,6 @@ class SearchSelectDialog final { };
 class LayersListDialog final { };
 class ImageDialog final { };
 class SoundDialog final { };
-class VideoOptionsDialog final { };
-class VROptionsDialog final { };
 class EditorOptionsDialog final { };
 class CollectionManagerDialog final { };
 class PhysicsOptionsDialog final { };

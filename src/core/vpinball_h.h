@@ -13,7 +13,6 @@
    #include "ui/dialogs/ImageDialog.h"
    #include "ui/dialogs/SoundDialog.h"
    #include "ui/dialogs/EditorOptionsDialog.h"
-   #include "ui/dialogs/VideoOptionsDialog.h"
    #include "ui/dialogs/CollectionManagerDialog.h"
    #include "ui/dialogs/PhysicsOptionsDialog.h"
    #include "ui/dialogs/RenderProbeDialog.h"
@@ -27,9 +26,6 @@
    #include "ui/dialogs/LayersListDialog.h"
    #include "ui/dialogs/NotesDialog.h"
    #include "ui/properties/PropertyDialog.h"
-   #if defined(ENABLE_VR) || defined(ENABLE_XR)
-      #include "ui/dialogs/VROptionsDialog.h"
-   #endif
 
    #define OVERRIDE override
 #else
@@ -307,9 +303,6 @@ private:
    RenderProbeDialog m_renderProbeDialog;
    MaterialDialog m_materialDialog;
    AboutDialog m_aboutDialog;
-   #if defined(ENABLE_VR) || defined(ENABLE_XR)
-      VROptionsDialog m_vrOptDialog;
-   #endif
 
    ToolbarDialog *m_toolbarDialog = nullptr;
    PropertyDialog *m_propertyDialog = nullptr;

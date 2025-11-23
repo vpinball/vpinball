@@ -516,9 +516,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/EditorOptionsDialog.cpp">
       <Filter>ui\win\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/VideoOptionsDialog.cpp">
-      <Filter>ui\win\dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/CollectionManagerDialog.cpp">
       <Filter>ui\win\dialogs</Filter>
     </ClCompile>
@@ -528,7 +525,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/PhysicsOptionsDialog.cpp">
       <Filter>ui\win\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/KeysConfigDialog.cpp">
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/PlayerOptionsDialog.cpp">
       <Filter>ui\win\dialogs</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/ScriptErrorDialog.cpp">
@@ -676,9 +673,6 @@
       <Filter>ui\win\properties</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/LayersListDialog.cpp">
-      <Filter>ui\win\dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/VROptionsDialog.cpp">
       <Filter>ui\win\dialogs</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/WhereUsedDialog.cpp">
@@ -1319,9 +1313,6 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/EditorOptionsDialog.h">
       <Filter>ui\win\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/VideoOptionsDialog.h">
-      <Filter>ui\win\dialogs</Filter>
-    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/CollectionManagerDialog.h">
       <Filter>ui\win\dialogs</Filter>
     </ClInclude>
@@ -1331,10 +1322,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/MaterialDialog.h">
       <Filter>ui\win\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/KeysConfigDialog.h">
-      <Filter>ui\win\dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/VROptionsDialog.h">
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/PlayerOptionsDialog.h">
       <Filter>ui\win\dialogs</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/WhereUsedDialog.h">

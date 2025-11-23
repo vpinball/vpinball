@@ -353,7 +353,7 @@
 #define IDC_FULLSCREEN                  256
 #define IDD_FONTDIALOG                  256
 #define IDC_PhysicsList                 259
-#define IDD_KEYS                        261
+#define IDD_PLAYER_OPTS                        261
 #define IDD_TRANSLATE                   262
 #define IDC_RIGHTFLIPPERBUTTON          264
 #define IDB_LOGO                        264
@@ -1083,15 +1083,12 @@
 #define IDC_AR_LABEL                    914
 #define IDC_WIDTH_LABEL                 915
 #define IDC_HEIGHT_LABEL                916
-#define IDC_APPLICATION_SETTINGS        921
-#define IDC_TABLE_OVERRIDE              922
 #define IDC_TONEMAPPER                  923
 #define IDC_AR_LABEL2                   924
 #define IDC_SAVE_OVERRIDES              925
 #define IDC_INFOTEXT_EDIT               926
 #define IDC_EXPOSURE                    927
 #define IDC_SYNC                        928
-#define IDD_RENDER_OPT                  929
 #define IDC_WHERE_DESCR                 930
 #define IDC_GLASS_IMAGE                 942
 #define IDC_X_LABEL                     948
@@ -1183,7 +1180,6 @@
 #define ID_WINDOW_SHOWTOOLBAR           4022
 #define ID_PREFERENCES_VR               4022
 #define ID_EDIT_SHOWTOOLBAR             4023
-#define ID_EDIT_VROPTIONS               4023
 #define ID_TABLE_NOTES                  4024
 #define ID_NEW_STRIPPEDTABLE            4025
 #define ID_NEW_LIGHTSEQTABLE            4026
@@ -1222,9 +1218,8 @@
 #define ID_WALLMENU_ADDPOINT            32801
 #define ID_HELP_ABOUT                   32802
 #define ID_EDIT_SCRIPT                  32803
-#define ID_EDIT_VIDEOOPTIONS            32804
+#define ID_EDIT_PLAYEROPTIONS            32804
 #define ID_TABLE_FONTMANAGER            32805
-#define ID_EDIT_KEYS                    32806
 #define ID_WALLMENU_TRANSLATE           32807
 #define ID_EDIT_COPY                    32811
 #define ID_EDIT_CUT                     32813

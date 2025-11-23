@@ -6,7 +6,7 @@
 #include "ui/VPXFileFeedback.h"
 #include "ui/resource.h"
 #ifndef __STANDALONE__
-#include "ui/dialogs/KeysConfigDialog.h"
+#include "ui/dialogs/PlayerOptionsDialog.h"
 #endif
 
 #ifdef __STANDALONE__
@@ -885,19 +885,12 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
          ptCur->SetDirtyDraw();
       return true;
    }
-   case ID_EDIT_VIDEOOPTIONS:
+   case ID_EDIT_PLAYEROPTIONS:
    {
-      VideoOptionProperties videoOptProperties(GetHwnd());
-      videoOptProperties.DoModal();
+      PlayerOptionsDialog playerOptsgDlg;
+      playerOptsgDlg.DoModal();
       return true;
    }
-   #if defined(ENABLE_VR) || defined(ENABLE_XR)
-      case ID_EDIT_VROPTIONS:
-      {
-         m_vrOptDialog.DoModal(GetHwnd());
-         return true;
-      }
-   #endif
    case ID_TABLE_TABLEINFO:
    {
       CComObject<PinTable> * const ptCur = GetActiveTable();
@@ -967,12 +960,6 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
       DialogBoxParam(theInstance, MAKEINTRESOURCE(IDD_SECURITY_OPTIONS), GetHwnd(), SecurityOptionsProc, 0);
       // refresh editor options that we may have changed
       LoadEditorSetupFromSettings();
-      return true;
-   }
-   case ID_EDIT_KEYS:
-   {
-      KeysConfigDialog keysConfigDlg;
-      keysConfigDlg.DoModal();
       return true;
    }
    case ID_HELP_ABOUT:
@@ -2252,10 +2239,6 @@ void VPinball::CloseAllDialogs()
       m_materialDialog.Destroy();
    if (m_aboutDialog.IsWindow())
       m_aboutDialog.Destroy();
-   #if defined(ENABLE_VR) || defined(ENABLE_XR)
-      if (m_vrOptDialog.IsWindow())
-         m_vrOptDialog.Destroy();
-   #endif
 #endif
 }
 

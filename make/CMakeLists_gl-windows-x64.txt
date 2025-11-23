@@ -85,8 +85,8 @@ add_executable(vpinball WIN32
    src/ui/dialogs/EditorOptionsDialog.h
    src/ui/dialogs/ImageDialog.cpp
    src/ui/dialogs/ImageDialog.h
-   src/ui/dialogs/KeysConfigDialog.cpp
-   src/ui/dialogs/KeysConfigDialog.h
+   src/ui/dialogs/PlayerOptionsDialog.cpp
+   src/ui/dialogs/PlayerOptionsDialog.h
    src/ui/dialogs/LayersListDialog.cpp
    src/ui/dialogs/LayersListDialog.h
    src/ui/dialogs/MaterialDialog.cpp
@@ -99,8 +99,6 @@ add_executable(vpinball WIN32
    src/ui/dialogs/RenderProbeDialog.h
    src/ui/dialogs/PhysicsOptionsDialog.cpp
    src/ui/dialogs/PhysicsOptionsDialog.h
-   src/ui/dialogs/VROptionsDialog.cpp
-   src/ui/dialogs/VROptionsDialog.h
    src/ui/dialogs/WhereUsedDialog.cpp
    src/ui/dialogs/WhereUsedDialog.h
    src/ui/dialogs/SearchSelectDialog.cpp
@@ -111,8 +109,6 @@ add_executable(vpinball WIN32
    src/ui/dialogs/TableInfoDialog.h
    src/ui/dialogs/ToolbarDialog.cpp
    src/ui/dialogs/ToolbarDialog.h
-   src/ui/dialogs/VideoOptionsDialog.cpp
-   src/ui/dialogs/VideoOptionsDialog.h
    src/ui/dialogs/VPXLoadFileProgressBar.cpp
    src/ui/dialogs/VPXLoadFileProgressBar.h
    src/ui/dialogs/VPXSaveFileProgressBar.cpp
