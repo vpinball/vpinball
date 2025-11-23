@@ -552,11 +552,12 @@ void InGameUIPage::Render(float elapsedS)
    const ImVec2 itemPadding = style.ItemSpacing;
    ImGui::BeginChild("PageItems", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - ImGui::GetTextLineHeight() * 3.f - itemPadding.y * 2.f), ImGuiChildFlags_None,
       ImGuiWindowFlags_NoBackground);
-   float labelEndScreenX = 0.f;
+   float maxLabelWidth = 0.f;
    for (const auto& item : m_items)
       if (item->IsAdjustable())
-         labelEndScreenX = max(labelEndScreenX, ImGui::CalcTextSize(item->m_label.c_str()).x);
-   labelEndScreenX = ImGui::GetCursorScreenPos().x + labelEndScreenX + style.ItemSpacing.x * 2.0f + 30.f;
+         maxLabelWidth = max(maxLabelWidth, ImGui::CalcTextSize(item->m_label.c_str()).x);
+   maxLabelWidth = min(maxLabelWidth, ImGui::CalcTextSize("Maximum label length before ellipsis").x);
+   const float labelEndScreenX = ImGui::GetCursorScreenPos().x + maxLabelWidth + style.ItemSpacing.x * 2.0f + 30.f;
    const float itemEndScreenX = ImGui::GetCursorScreenPos().x + ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize("*", nullptr, true).x - itemPadding.x;
    const float closeButtonWidth = ImGui::CalcTextSize(ICON_FK_TIMES, nullptr, true).x + style.FramePadding.x * 2.0f;
    const float circleTextWidth = ImGui::CalcTextSize(ICON_FK_CIRCLE, nullptr, true).x + style.FramePadding.x * 2.0f;
@@ -752,7 +753,7 @@ void InGameUIPage::Render(float elapsedS)
          case VPX::Properties::PropertyDef::Type::Int:
          {
             auto prop = dynamic_cast<VPX::Properties::IntPropertyDef*>(item->m_property.get());
-            ImGui::Text("%s", prop->m_label.c_str());
+            TextWithEllipsis(prop->m_label, maxLabelWidth);
             ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
             int v = item->GetIntValue();
             ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
@@ -775,7 +776,7 @@ void InGameUIPage::Render(float elapsedS)
          case VPX::Properties::PropertyDef::Type::Enum:
          {
             auto prop = dynamic_cast<VPX::Properties::EnumPropertyDef*>(item->m_property.get());
-            ImGui::Text("%s", prop->m_label.c_str());
+            TextWithEllipsis(prop->m_label, maxLabelWidth);
             ImGui::SameLine(labelEndScreenX - ImGui::GetCursorScreenPos().x);
             int v = item->GetIntValue() - prop->m_min;
             ImGui::SetNextItemWidth(itemEndScreenX - ImGui::GetCursorScreenPos().x);
@@ -909,7 +910,7 @@ void InGameUIPage::RenderInputActionPopup()
 }
 
 // Basic Toggle button, based on https://github.com/ocornut/imgui/issues/1537#issuecomment-355562097
-void InGameUIPage::RenderToggle(const string& label, const ImVec2& size, bool& v) const
+void InGameUIPage::RenderToggle(const string& label, const ImVec2& size, bool& v)
 {
    ImVec2 p = ImGui::GetCursorScreenPos();
    ImDrawList* draw_list = ImGui::GetWindowDrawList();
@@ -931,6 +932,45 @@ void InGameUIPage::RenderToggle(const string& label, const ImVec2& size, bool& v
 
    draw_list->AddRectFilled(p, ImVec2(p.x + width, p.y + height), col_bg, height * 0.5f);
    draw_list->AddCircleFilled(ImVec2(v ? (p.x + width - radius) : (p.x + radius), p.y + radius), radius - 3.5f, IM_COL32(255, 255, 255, 255));
+}
+
+void InGameUIPage::TextWithEllipsis(const string& textStr, float maxWidth)
+{
+   float textWidth = ImGui::CalcTextSize(textStr.c_str()).x;
+   if (textWidth > maxWidth)
+   {
+      float ellipsisWidth = ImGui::CalcTextSize("...").x;
+      if (float availableWidth = maxWidth - ellipsisWidth; availableWidth <= 0)
+      {
+         ImGui::Text("...");
+         return;
+      }
+
+      // Binary search to find the right length
+      int left = 0;
+      int right = static_cast<int>(textStr.length());
+      while (left < right)
+      {
+         int mid = (left + right + 1) / 2;
+         std::string truncated = textStr.substr(0, mid) + "...";
+         float truncatedWidth = ImGui::CalcTextSize(truncated.c_str()).x;
+         if (truncatedWidth <= maxWidth)
+         {
+            left = mid;
+         }
+         else
+         {
+            right = mid - 1;
+         }
+      }
+
+      std::string truncated = textStr.substr(0, left) + "...";
+      ImGui::Text("%s", truncated.c_str());
+   }
+   else
+   {
+      ImGui::Text("%s", textStr.c_str());
+   }
 }
 
 }
