@@ -51,6 +51,11 @@ void PluginSettingsPage::Open(bool isBackwardAnimation)
 void PluginSettingsPage::BuildPage()
 {
    ClearItems();
+
+   #ifdef _WIN32
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Warning: Plugins are a beta experimental feature, not yet considered stable"s));
+   #endif
+
    const auto enablePropId = Settings::GetRegistry().GetPropertyId("Plugin." + m_pluginId, "Enable"s).value();
    const MsgPluginManager& manager = MsgPluginManager::GetInstance();
    auto plugin = manager.GetPlugin(m_pluginId); 
