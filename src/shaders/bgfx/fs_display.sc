@@ -145,11 +145,15 @@ void main()
 			vec4 sharp = smoothstep(vec4_splat(0.475), vec4_splat(0.525), sdf); // Resolve SDF after texture filtering
 			vec4 diffuse = diffuseStrength * sdf * sdf; // Magic formula to simulate light dispersion at maximum glass roughness
 			vec4 light = mix(sharp, diffuse, roughness);
-			unlitLum4 += light;
-			litLum4   += light * alphaSegState[i];
+			//unlitLum4 += light;
+			//litLum4   += light * alphaSegState[i];
+			unlitLum4 = max(light, unlitLum4); // Max gives slightly better results than additive, especially for corners between segs that are overlit otherwise
+			litLum4 = max(light * alphaSegState[i], litLum4);
 		}
-		vec3 litLum = dot(litLum4, vec4_splat(1.0)) * lit;
-		float unlitLum = dot(unlitLum4, vec4_splat(1.0));
+		//vec3 litLum = dot(litLum4, vec4_splat(1.0)) * lit;
+		//float unlitLum = dot(unlitLum4, vec4_splat(1.0));
+		vec3 litLum = max(max(litLum4.x, litLum4.y), max(litLum4.z, litLum4.w)) * lit;
+		float unlitLum = max(max(unlitLum4.x, unlitLum4.y), max(unlitLum4.z, unlitLum4.w));
 		
 	#elif defined(DMD)
 		float unlitLum = 0.0;
