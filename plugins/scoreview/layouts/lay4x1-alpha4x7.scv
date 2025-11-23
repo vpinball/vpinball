@@ -9,11 +9,9 @@ Visuals:
 	- SegDisplay:
 		Rect: [0,0,140,32]
 		Src: ctrl://default/seg?id=0
-		Type: Gottlieb
-		Style: Blue VFD
 		XPos: [0, 18, 36, 54, 72, 90, 108]
 		Glass:
-			Tint:      [0.030,0.250,0.500]
+			#Tint:      [0.030,0.250,0.500]
 			Roughness: 0.1
 			Image:     ./Glass-Dirty-1.webp
 			Area:      [0,0,560,128]
@@ -22,11 +20,9 @@ Visuals:
 	- SegDisplay:
 		Rect: [180,0,140,32]
 		Src: ctrl://default/seg?id=1
-		Type: Gottlieb
-		Style: Blue VFD
 		XPos: [0, 18, 36, 54, 72, 90, 108]
 		Glass:
-			Tint:      [0.030,0.250,0.500]
+			#Tint:      [0.030,0.250,0.500]
 			Roughness: 0.1
 			Image:    ./Glass-Dirty-1.webp
 			Area:     [0,0,560,128]
@@ -35,11 +31,9 @@ Visuals:
 	- SegDisplay:
 		Rect: [0,32,140,32]
 		Src: ctrl://default/seg?id=2
-		Type: Gottlieb
-		Style: Blue VFD
 		XPos: [0, 18, 36, 54, 72, 90, 108]
 		Glass:
-			Tint:      [0.030,0.250,0.500]
+			#Tint:      [0.030,0.250,0.500]
 			Roughness: 0.1
 			Image:     ./Glass-Dirty-1.webp
 			Area:      [0,0,560,128]
@@ -48,11 +42,9 @@ Visuals:
 	- SegDisplay:
 		Rect: [180,32,140,32]
 		Src: ctrl://default/seg?id=3
-		Type: Gottlieb
-		Style: Blue VFD
 		XPos: [0, 18, 36, 54, 72, 90, 108]
 		Glass:
-			Tint:      [0.030,0.250,0.500]
+			#Tint:      [0.030,0.250,0.500]
 			Roughness: 0.1
 			Image:     ./Glass-Dirty-1.webp
 			Area:      [0,0,560,128]
