@@ -176,8 +176,7 @@ BEGIN
     END
     POPUP "&Preferencias"
     BEGIN
-        MENUITEM "Opciones de &Video...",       ID_EDIT_VIDEOOPTIONS
-        MENUITEM "Opciones de &Teclado...",     ID_EDIT_KEYS
+        MENUITEM "Opciones de &Player...",       ID_EDIT_PLAYEROPTIONS
     END
     POPUP "&Ventana"
     BEGIN
@@ -897,7 +896,7 @@ BEGIN
     PUSHBUTTON      "Re&nombrar",IDC_RENAME,259,97,50,14,WS_DISABLED
 END
 
-IDD_KEYS DIALOGEX 0, 0, 502, 220
+IDD_PLAYER_OPTS DIALOGEX 0, 0, 502, 220
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Opciones de Teclado"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -1295,7 +1294,7 @@ BEGIN
         BOTTOMMARGIN, 160
     END
 
-    IDD_KEYS, DIALOG
+    IDD_PLAYER_OPTS, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 495

@@ -176,8 +176,7 @@ BEGIN
     END
     POPUP "&Preferences"
     BEGIN
-        MENUITEM "Options &Video…",             ID_EDIT_VIDEOOPTIONS
-        MENUITEM "&Touche…",                    ID_EDIT_KEYS
+        MENUITEM "Options &Player…",             ID_EDIT_PLAYEROPTIONS
     END
     POPUP "&Fenêtre"
     BEGIN
@@ -898,7 +897,7 @@ BEGIN
     PUSHBUTTON      "Re&nommer",IDC_RENAME,259,97,50,14,WS_DISABLED
 END
 
-IDD_KEYS DIALOGEX 0, 0, 502, 220
+IDD_PLAYER_OPTS DIALOGEX 0, 0, 502, 220
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Touche"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -1296,7 +1295,7 @@ BEGIN
         BOTTOMMARGIN, 160
     END
 
-    IDD_KEYS, DIALOG
+    IDD_PLAYER_OPTS, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 495

@@ -934,7 +934,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/DrawingOrderDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/EditorOptionsDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/ImageDialog.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/KeysConfigDialog.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/PlayerOptionsDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/LayersListDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/MaterialDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/NotesDialog.cpp" />
@@ -945,8 +945,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/SoundDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/TableInfoDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/ToolbarDialog.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/VideoOptionsDialog.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/VROptionsDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/dialogs/WhereUsedDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/properties/BackglassCameraProperty.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/properties/BackglassVisualsProperty.cpp" />
@@ -1701,7 +1699,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/DrawingOrderDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/EditorOptionsDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/ImageDialog.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/KeysConfigDialog.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/PlayerOptionsDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/LayersListDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/MaterialDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/NotesDialog.h" />
@@ -1712,8 +1710,6 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/SoundDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/TableInfoDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/ToolbarDialog.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/VideoOptionsDialog.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/VROptionsDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/dialogs/WhereUsedDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/properties/BackglassCameraProperty.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/properties/BackglassVisualsProperty.h" />
