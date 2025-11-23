@@ -11,9 +11,8 @@ Visuals:
 		Rect: [-4,-2,128,32]
 		Src: ctrl://default/seg?id=0
 		XPos: [0, 18, 36, 54, 72, 90, 108]
-		Style: Blue VFD
 		Glass:
-			Tint:      [0.030,0.250,0.500]
+			#Tint:      [0.030,0.250,0.500]
 			Roughness: 0.1
 			Image:     ./Glass-Dirty-1.webp
 			Ambient:   [0.125,0.125,0.125]
@@ -22,9 +21,8 @@ Visuals:
 		Rect: [152,-2,128,32]
 		Src: ctrl://default/seg?id=1
 		XPos: [0, 18, 36, 54, 72, 90, 108]
-		Style: Blue VFD
 		Glass:
-			Tint:      [0.030,0.250,0.500]
+			#Tint:      [0.030,0.250,0.500]
 			Roughness: 0.1
 			Image:     ./Glass-Dirty-1.webp
 			Ambient:   [0.125,0.125,0.125]
@@ -33,9 +31,8 @@ Visuals:
 		Rect: [-4,28,128,32]
 		Src: ctrl://default/seg?id=2
 		XPos: [0, 18, 36, 54, 72, 90, 108]
-		Style: Blue VFD
 		Glass:
-			Tint:      [0.030,0.250,0.500]
+			#Tint:      [0.030,0.250,0.500]
 			Roughness: 0.1
 			Image:     ./Glass-Dirty-1.webp
 			Ambient:   [0.125,0.125,0.125]
@@ -44,9 +41,8 @@ Visuals:
 		Rect: [152,28,128,32]
 		Src: ctrl://default/seg?id=3
 		XPos: [0, 18, 36, 54, 72, 90, 108]
-		Style: Blue VFD
 		Glass:
-			Tint:      [0.030,0.250,0.500]
+			#Tint:      [0.030,0.250,0.500]
 			Roughness: 0.1
 			Image:     ./Glass-Dirty-1.webp
 			Ambient:   [0.125,0.125,0.125]
@@ -55,9 +51,8 @@ Visuals:
 		Rect: [112.7,51.5,26.25,20]
 		Src: ctrl://default/seg?id=4
 		XPos: [0, 11.25]
-		Style: Blue VFD
 		Glass:
-			Tint:      [0.030,0.250,0.500]
+			#Tint:      [0.030,0.250,0.500]
 			Roughness: 0.1
 			Image:     ./Glass-Dirty-1.webp
 			Ambient:   [0.125,0.125,0.125]
@@ -66,9 +61,8 @@ Visuals:
 		Rect: [140.2,51.5,26.25,20]
 		Src: ctrl://default/seg?id=5
 		XPos: [0, 11.25]
-		Style: Blue VFD
 		Glass:
-			Tint:      [0.030,0.250,0.500]
+			#Tint:      [0.030,0.250,0.500]
 			Roughness: 0.1
 			Image:     ./Glass-Dirty-1.webp
 			Ambient:   [0.125,0.125,0.125]

@@ -195,7 +195,7 @@ void ScoreView::Parse(const std::filesystem::path& path, std::istream& content)
          layout.visuals.push_back({VisualType::SegDisplay});
          visual = &layout.visuals.back();
          visual->srcUri = string();
-         visual->liveStyle = 1;
+         visual->liveStyle = -1;
          visual->tint = vec3(1.f, 1.f, 1.f);
          visual->glassTint = vec3(1.f, 1.f, 1.f);
          visual->glassAmbient = vec3(1.f, 1.f, 1.f);
@@ -261,7 +261,9 @@ void ScoreView::Parse(const std::filesystem::path& path, std::istream& content)
          }
          else if (visual->type == VisualType::SegDisplay)
          {
-            if (value == "Neon Plasma")
+            if (value == "Auto")
+               visual->liveStyle = -1;
+            else if (value == "Neon Plasma")
                visual->liveStyle = 0;
             else if (value == "Blue VFD")
                visual->liveStyle = 1;
@@ -592,11 +594,33 @@ bool ScoreView::Render(VPXRenderContext2D* ctx)
          const float hGlassScale = glassArea.z / visual.w;
          vec4 segGlassArea = glassArea;
          segGlassArea.z = elementW * hGlassScale;
+         VPXSegDisplayHint hint = VPXSegDisplayHint::Generic;
+         VPXSegDisplayRenderStyle style = VPXSegDisplayRenderStyle::VPXSegStyle_Plasma;
+         if (visual.liveStyle == -1)
+         {
+            if ((frame.source->hardware & CTLPI_SEG_HARDWARE_FAMILY_MASK) == CTLPI_SEG_HARDWARE_NEON_PLASMA)
+               style = VPXSegDisplayRenderStyle::VPXSegStyle_Plasma;
+            else if ((frame.source->hardware & CTLPI_SEG_HARDWARE_FAMILY_MASK) == CTLPI_SEG_HARDWARE_VFD_GREEN)
+               style = VPXSegDisplayRenderStyle::VPXSegStyle_GreenVFD;
+            else if ((frame.source->hardware & CTLPI_SEG_HARDWARE_FAMILY_MASK) == CTLPI_SEG_HARDWARE_VFD_BLUE)
+            {
+               style = VPXSegDisplayRenderStyle::VPXSegStyle_BlueVFD;
+               if (frame.source->hardware == CTLPI_SEG_HARDWARE_GTS1_4DIGIT //
+                  || frame.source->hardware == CTLPI_SEG_HARDWARE_GTS1_6DIGIT //
+                  || frame.source->hardware == CTLPI_SEG_HARDWARE_GTS80A_7DIGIT //
+                  || frame.source->hardware == CTLPI_SEG_HARDWARE_GTS80B_20DIGIT //
+               )
+                  hint = VPXSegDisplayHint::Gottlieb;
+            }
+         }
+         else
+         {
+            style = static_cast<VPXSegDisplayRenderStyle>(visual.liveStyle);
+         }
          for (size_t i = 0; i < frame.source->nElements; i++)
          {
             segGlassArea.x = glassArea.x + visual.xOffsets[i] * hGlassScale;
-            // FIXME use hardware segment style
-            ctx->DrawSegDisplay(ctx, static_cast<VPXSegDisplayRenderStyle>(visual.liveStyle), VPXSegDisplayHint::Generic,
+            ctx->DrawSegDisplay(ctx, style, hint,
                // First layer: glass
                visual.glass, visual.glassTint.x, visual.glassTint.y, visual.glassTint.z, visual.glassRoughness, // Glass texture, tint and roughness
                segGlassArea.x, segGlassArea.y, segGlassArea.z, segGlassArea.w, // Glass texture coordinates (inside overall glass texture, cut for each element)
