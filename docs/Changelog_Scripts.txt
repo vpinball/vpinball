@@ -1,5 +1,7 @@
-New in 3.62 (Update by mfuegemann)
+New in 3.62 (Update by mfuegemann, JP)
 - Added wpc_ph.vbs (based on wpc.vbs)
+- Corrected 2 switches in nuova.vbs
+- Added playbar.vbs
 
 New in 3.61 (Update by vbousquet, wiesshund)
 - Setup PinMameTimer to be a controller sync timer (interval = -2)
@@ -16,7 +18,7 @@ New in 3.60 (Update by toxie, wiesshund)
 
 New in 3.59 (Update by toxie, JP)
 - NVOffset now uses the internal ROMName (needs VPM 3.5)
-- Change coin key mappings for Inder games
+- Changed coin key mappings for Inder games
 - Added inder_skateboard.vbs
 
 New in 3.58 (Update by mfuegemann, DJRobX, toxie, wiesshund)
@@ -33,7 +35,7 @@ New in 3.58 (Update by mfuegemann, DJRobX, toxie, wiesshund)
 - Added WIP LTD4a.vbs
 - Added constant (vpmFourStepSol) for new 4-solenoid stepper motor mech type used by High Roller Casino, Starship Troopers, and Playboy
 - Cleanup scripts and separate the major documentation part into Scripts.txt
-- Fix an old bug in controller.vbs that did uninitialized validity/version checks
+- Fixed an old bug in controller.vbs that did uninitialized validity/version checks
 - Fixed FPVPX.vbs (unsure how this was supposed to work before at all)
 
 New in 3.57 (Update by nFozzy, DJRobX, chepas, Gaston)
