@@ -80,7 +80,7 @@ void SensorSetupPage::BuildPage()
    int liveAxis = 0;
    int storedAxis = 0;
    vector<string> axisNames;
-   axisNames.emplace_back("Unmapped");
+   axisNames.emplace_back("Unmapped"s);
    {
       int i = 1;
       for (uint32_t id : m_sensors)

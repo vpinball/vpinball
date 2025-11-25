@@ -964,7 +964,7 @@ void Renderer::InitLayout(const float xpixoff, const float ypixoff)
    SetupShaders();
 }
 
-Vertex3Ds Renderer::Unproject(const int width, const int height, const Vertex3Ds& point)
+Vertex3Ds Renderer::Unproject(const int width, const int height, const Vertex3Ds& point) const
 {
    Matrix3D invMVP = m_mvp->GetModelViewProj(0);
    invMVP.Invert();
@@ -982,8 +982,8 @@ Vertex3Ds Renderer::Get3DPointFrom2D(const int width, const int height, const Ve
    const Vertex3Ds p1 = Unproject(width, height, pNear);
    const Vertex3Ds p2 = Unproject(width, height, pFar);
    const float wz = z;
-   const float wx = ((wz - p1.z)*(p2.x - p1.x)) / (p2.z - p1.z) + p1.x;
-   const float wy = ((wz - p1.z)*(p2.y - p1.y)) / (p2.z - p1.z) + p1.y;
+   const float wx = (wz - p1.z)*(p2.x - p1.x) / (p2.z - p1.z) + p1.x;
+   const float wy = (wz - p1.z)*(p2.y - p1.y) / (p2.z - p1.z) + p1.y;
    return {wx, wy, wz};
 }
 
@@ -3082,7 +3082,7 @@ void Renderer::ClearEmbeddedAncillaryWindow(VPXWindowId window, VPX::RenderOutpu
    UpdateBasicShaderMatrix();
 }
 
-void Renderer::RenderAncillaryWindow(VPXWindowId window, VPX::RenderOutput& output, RenderTarget* embedRT, const vector<AncillaryRendererDef>& anciliaryWndRenderers)
+void Renderer::RenderAncillaryWindow(VPXWindowId window, VPX::RenderOutput& output, RenderTarget* embedRT, const vector<AncillaryRendererDef>& ancillaryWndRenderers)
 {
    bool isOutputLinear;
    int m_outputX, m_outputY, m_outputW, m_outputH;
@@ -3107,7 +3107,7 @@ void Renderer::RenderAncillaryWindow(VPXWindowId window, VPX::RenderOutput& outp
       rd->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
 
    bool rendered = false;
-   for (auto& renderer : anciliaryWndRenderers)
+   for (auto& renderer : ancillaryWndRenderers)
    {
       rendered = renderer.Render(&context, renderer.context);
       if (rendered)

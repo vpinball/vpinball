@@ -26,7 +26,7 @@ public:
    void InitLayout(const float xpixoff = 0.f, const float ypixoff = 0.f);
    ModelViewProj& GetMVP() { return *m_mvp; }
    const ModelViewProj& GetMVP() const { return *m_mvp; }
-   Vertex3Ds Unproject(const int width, const int height, const Vertex3Ds& point);
+   Vertex3Ds Unproject(const int width, const int height, const Vertex3Ds& point) const;
    Vertex3Ds Get3DPointFrom2D(const int width, const int height, const Vertex2D& p, float z);
 
    void MarkShaderDirty() { m_shaderDirty = true; }
@@ -73,12 +73,12 @@ public:
       // We must evaluate this dynamically since AO scale and enabled/disable can be changed from script
       if (m_disableAO || !m_table->m_enableAO || !m_renderDevice->DepthBufferReadBackAvailable() || m_table->m_AOScale == 0.f)
          return 0;
-      // The existing implementation suffers for high temporal artefact that make it unsuitable for dynamic camera situation
+      // The existing implementation suffers from high temporal artefacts that make it unsuitable for dynamic camera situations
       if (m_stereo3D == STEREO_VR)
          return 0;
       if (m_dynamicAO)
          return 2;
-      return IsUsingStaticPrepass() ? 1 : 0; // If AO is static prepass only and we are running without it, disable AO
+      return IsUsingStaticPrepass() ? 1 : 0; // If AO is static prepass only, and we are running without it, disable AO
    }
 
    bool UseAnisoFiltering() const;
@@ -133,7 +133,7 @@ public:
    std::shared_ptr<BaseTexture> m_decalImage = nullptr;
    bool m_ballAntiStretch = false;
    bool IsBallLightingDisabled() const;
-   void DisableBallLighting(bool v);
+   void DisableBallLighting(bool disableLightingForBalls);
 
    // Post processing
    void SetScreenOffset(const float x, const float y); // set render offset in screen coordinates, e.g., for the nudge shake

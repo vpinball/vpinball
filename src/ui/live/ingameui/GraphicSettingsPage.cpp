@@ -100,7 +100,7 @@ void GraphicSettingsPage::BuildPage()
    // Sync modes:
    // - Hardware Synchronization (Hardware VSync)
    // - Hardware Synchronization (Adaptive Vsync)
-   // - Hardware Synchronization (Frame Pacing) => 'fake' multithreading where VSYNC is done on an anciliary thread while continuously syncing game logic/rendering
+   // - Hardware Synchronization (Frame Pacing) => 'fake' multithreading where VSYNC is done on an ancillary thread while continuously syncing game logic/rendering
    // - Synchronize to display FPS (Software VSync)
    // - Synchronize to user selected FPS
    // Sync: None / VSync / Adaptive VSync / Frame Paced VSync

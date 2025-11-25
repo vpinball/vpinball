@@ -353,7 +353,7 @@
 #define IDC_FULLSCREEN                  256
 #define IDD_FONTDIALOG                  256
 #define IDC_PhysicsList                 259
-#define IDD_PLAYER_OPTS                        261
+#define IDD_PLAYER_OPTS                 261
 #define IDD_TRANSLATE                   262
 #define IDC_RIGHTFLIPPERBUTTON          264
 #define IDB_LOGO                        264
@@ -1218,7 +1218,7 @@
 #define ID_WALLMENU_ADDPOINT            32801
 #define ID_HELP_ABOUT                   32802
 #define ID_EDIT_SCRIPT                  32803
-#define ID_EDIT_PLAYEROPTIONS            32804
+#define ID_EDIT_PLAYEROPTIONS           32804
 #define ID_TABLE_FONTMANAGER            32805
 #define ID_WALLMENU_TRANSLATE           32807
 #define ID_EDIT_COPY                    32811
