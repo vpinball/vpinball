@@ -95,6 +95,12 @@ void RenderDevice::tBGFXCallback::screenShot(const char* _filePath, uint32_t _wi
    if (tex)
    {
       memcpy(tex->data(), _data, _size);
+      if (bgfx::getCaps()->rendererType == bgfx::RendererType::Metal)
+      {
+         uint8_t* pixels = tex->data();
+         for (uint32_t i = 0; i < _width * _height; i++)
+            std::swap(pixels[i * 4], pixels[i * 4 + 2]);
+      }
       if (_yflip)
          tex->FlipY();
       success = tex->Save(_filePath);
@@ -169,7 +175,7 @@ void APIENTRY GLDebugMessageCallback(GLenum source, GLenum type, GLuint id, GLen
 
 void RenderDevice::CaptureGLScreenshot()
 {
-   m_screenshot = false;
+   m_screenshotFrameDelay = 0;
    bool success = false;
    // OpenGL ES does not have GL_BGRA
    #ifndef __OPENGLES__
@@ -209,7 +215,7 @@ static constexpr D3DVERTEXELEMENT9 VertexNormalTexelElement[] =
 void RenderDevice::CaptureDX9Screenshot()
 {
    bool success = false;
-   m_screenshot = false;
+   m_screenshotFrameDelay = 0;
    IDirect3DDevice9* pd3dDevice = GetCoreDevice();
    IDirect3DSurface9* pBackBuffer = NULL;
    if (FAILED(pd3dDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &pBackBuffer)))
@@ -546,9 +552,10 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             #endif
             g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
             rd->Flip();
-            if (rd->m_screenshot) {
-               bgfx::requestScreenShot(BGFX_INVALID_HANDLE, rd->m_screenshotFilename.c_str());
-               rd->m_screenshot = false;
+            if (rd->m_screenshotFrameDelay > 0) {
+               rd->m_screenshotFrameDelay--;
+               if (rd->m_screenshotFrameDelay == 0)
+                  bgfx::requestScreenShot(BGFX_INVALID_HANDLE, rd->m_screenshotFilename.c_str());
             }
             const bgfx::Stats* stats = bgfx::getStats();
             const uint64_t bgfxSubmit = (stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000000ull / stats->cpuTimerFreq;
@@ -662,9 +669,10 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             span* tagSpan = new span(series, 1, _T("BGFX->GPU"));
             #endif
             rd->Flip();
-            if (rd->m_screenshot) {
-               bgfx::requestScreenShot(BGFX_INVALID_HANDLE, rd->m_screenshotFilename.c_str());
-               rd->m_screenshot = false;
+            if (rd->m_screenshotFrameDelay > 0) {
+               rd->m_screenshotFrameDelay--;
+               if (rd->m_screenshotFrameDelay == 0)
+                  bgfx::requestScreenShot(BGFX_INVALID_HANDLE, rd->m_screenshotFilename.c_str());
             }
             #ifdef MSVC_CONCURRENCY_VIEWER
             delete tagSpan;
@@ -689,7 +697,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
 
 void RenderDevice::CaptureScreenshot(const string& filename, std::function<void(bool)> callback)
 {
-   if (m_screenshot)
+   if (m_screenshotFrameDelay > 0)
    {
       PLOGE << "Screenshot capture already in progress.";
       callback(false);
@@ -698,7 +706,7 @@ void RenderDevice::CaptureScreenshot(const string& filename, std::function<void(
 
    m_screenshotFilename = filename;
    m_screenshotCallback = callback;
-   m_screenshot = true;
+   m_screenshotFrameDelay = 3;
 }
 
 RenderDevice::RenderDevice(
@@ -1623,14 +1631,14 @@ void RenderDevice::Flip()
    SDL_GL_SwapWindow(m_outputWnd[0]->GetCore());
    if (!m_isVR)
       g_pplayer->m_logicProfiler.OnPresented(usec());
-   if (m_screenshot)
+   if (m_screenshotFrameDelay > 0)
       CaptureGLScreenshot();
 
    #elif defined(ENABLE_DX9)
    CHECKD3D(m_pD3DDevice->Present(nullptr, nullptr, nullptr, nullptr));
    if (!m_isVR)
       g_pplayer->m_logicProfiler.OnPresented(usec());
-   if (m_screenshot)
+   if (m_screenshotFrameDelay > 0)
       CaptureDX9Screenshot();
 
    #endif
