@@ -808,12 +808,12 @@ STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!
 
    BaseTexture::Update(m_dmdFrame, m_dmdSize.x, m_dmdSize.y, BaseTexture::BW, nullptr);
    const int size = m_dmdSize.x * m_dmdSize.y;
-   // Convert from gamma compressed [0..100] luminance to linear [0..255] luminance, optionally applying ScaleFX upscaling
+   // Convert from gamma compressed [0..100] luminance to linear [0..255] luminance (as internally it's assumed to be linear)
    VARIANT *p;
    SafeArrayAccessData(psa, (void **)&p);
    uint8_t *const data = m_dmdFrame->data();
    for (int ofs = 0; ofs < size; ++ofs)
-      data[ofs] = static_cast<uint8_t>(InvsRGB((float)V_UI4(&p[ofs]) * (float)(1.0 / 100.)) * 255.f);
+      data[ofs] = static_cast<uint8_t>(InvsRGB((float)V_UI4(&p[ofs]) * (float)(1.0 / 100.)) * 255.f + 0.5f);
    SafeArrayUnaccessData(psa);
    m_dmdFrameId++;
    VPXPluginAPIImpl::GetInstance().UpdateDMDSource(this, true);
@@ -829,6 +829,7 @@ STDMETHODIMP Flasher::put_DMDColoredPixels(VARIANT pVal) //!! assumes VT_UI4 as 
    BaseTexture::Update(m_dmdFrame, m_dmdSize.x, m_dmdSize.y, BaseTexture::SRGBA, nullptr);
    const int size = m_dmdSize.x * m_dmdSize.y;
    uint32_t *const __restrict data = reinterpret_cast<uint32_t *>(m_dmdFrame->data());
+   // gamma compressed [0..255] sRGB
    VARIANT *p;
    SafeArrayAccessData(psa, (void **)&p);
    for (int ofs = 0; ofs < size; ++ofs)

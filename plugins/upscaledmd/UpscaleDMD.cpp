@@ -169,7 +169,7 @@ static void RenderThread()
       // Render display
       const DisplayFrame srcFrame = dmdSrc.GetRenderFrame(dmdSrc.id);
 
-      // Monochrome frame are provided as linearluminance while upscalers expects sRGB data. If this is defined,
+      // Monochrome frames are provided as linear luminance while upscalers expect sRGB data. If this is defined,
       // frames are converted from linear to sRGB for upscaling and back to linear luminance. This gives better
       // results at some performance cost. The difference is really visible when upscaling is null (ScaleFX AA)
       // or low. When the upscale factor goes up, this is less needed and the performance impact goes up.
@@ -432,8 +432,8 @@ MSGPI_EXPORT void MSGPIAPI UpscaleDMDPluginLoad(const uint32_t sessionId, const 
    resURIResolver->SetDisplayFilter([](const DisplaySrcId& src){ return src.id.endpointId != endpointId; });
    for (int i = 0; i < 256; i++)
    {
-      linearToGamma[i] = (uint8_t)(255.f * sRGB(i / 255.f));
-      gammaToLinear[i] = (uint8_t)(255.f * InvsRGB(i / 255.f));
+      linearToGamma[i] = (uint8_t)(255.f *    sRGB((float)i * (float)(1.0/255.)) + 0.5f); // using both times +0.5f when quantizing shows best results for this usecase here
+      gammaToLinear[i] = (uint8_t)(255.f * InvsRGB((float)i * (float)(1.0/255.)) + 0.5f);
    }
    onDisplaySrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
    getDisplaySrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
