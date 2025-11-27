@@ -247,7 +247,7 @@ private:
 
    int m_visualLatencyCorrection = -1;
 
-   bool m_screenshot = false;
+   int m_screenshotFrameDelay = 0;
    string m_screenshotFilename;
    std::function<void(bool)> m_screenshotCallback = [](bool) { };
 
