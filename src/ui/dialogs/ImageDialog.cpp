@@ -90,6 +90,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          m_resizer.AddChild(GetDlgItem(IDC_ALPHA_MASK_EDIT).GetHwnd(), CResizer::topright, 0);
          m_resizer.AddChild(GetDlgItem(IDC_STATIC_ALPHA).GetHwnd(), CResizer::topright, 0);
          m_resizer.AddChild(GetDlgItem(IDC_CHECK_RENAME_ON_EXPORT).GetHwnd(), CResizer::topright, 0);
+         m_resizer.AddChild(GetDlgItem(IDC_STATIC_GPUMEM).GetHwnd(), CResizer::bottomleft, 0);
 
          LoadPosition();
 
@@ -128,7 +129,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          ListView_InsertColumn(hListView, 4, &lvcol);
 
          const LocalString ls6(IDS_IMAGE_GPU_SIZE);
-         lvcol.pszText = (LPSTR)ls6.m_szbuffer; // = "GPU Size";
+         lvcol.pszText = (LPSTR)ls6.m_szbuffer; // = "GPU Memory";
          lvcol.cx = 100;
          lvcol.fmt = LVCFMT_RIGHT;
          ListView_InsertColumn(hListView, 5, &lvcol);
@@ -139,6 +140,8 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          lvcol.fmt = LVCFMT_CENTER;
          ListView_InsertColumn(hListView, 6, &lvcol);
 
+         m_overallGPUsize = 0;
+         m_overallFilesize = 0;
          ListImages(hListView);
 
          SetDlgItemText(IDC_ALPHA_MASK_EDIT, f2sz(128.0f).c_str());
@@ -266,16 +269,16 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
       case WM_DRAWITEM:
       {
-         const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
+         const HWND hImageList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
          DRAWITEMSTRUCT * const pdis = (DRAWITEMSTRUCT *)lParam;
-         const int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
+         const int sel = ListView_GetNextItem(hImageList, -1, LVNI_SELECTED);
          if (sel != -1)
          {
             LVITEM lvitem;
             lvitem.mask = LVIF_PARAM;
             lvitem.iItem = sel;
             lvitem.iSubItem = 0;
-            ListView_GetItem(hSoundList, &lvitem);
+            ListView_GetItem(hImageList, &lvitem);
             Texture * const ppi = (Texture *)lvitem.lParam;
             if (ppi != nullptr)
             {
@@ -351,19 +354,19 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void ImageDialog::UpdateImages()
 {
-    const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-    const int count = ListView_GetSelectedCount(hSoundList);
+    const HWND hImageList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
+    const int count = ListView_GetSelectedCount(hImageList);
 
     if (count > 0)
     {
-        int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
+        int sel = ListView_GetNextItem(hImageList, -1, LVNI_SELECTED);
         while (sel != -1)
         {
             LVITEM lvitem;
             lvitem.mask = LVIF_PARAM;
             lvitem.iItem = sel;
             lvitem.iSubItem = 0;
-            ListView_GetItem(hSoundList, &lvitem);
+            ListView_GetItem(hImageList, &lvitem);
             Texture * const ppi = (Texture *)lvitem.lParam;
             if (ppi != nullptr)
             {
@@ -375,7 +378,7 @@ void ImageDialog::UpdateImages()
                     pt->SetNonUndoableDirty(eSaveDirty);
                 }
 
-                sel = ListView_GetNextItem(hSoundList, sel, LVNI_SELECTED);
+                sel = ListView_GetNextItem(hImageList, sel, LVNI_SELECTED);
             }
         }
         SetFocus();
@@ -385,7 +388,7 @@ void ImageDialog::UpdateImages()
 BOOL ImageDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
    UNREFERENCED_PARAMETER(lParam);
-   const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
+   const HWND hImageList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
 
    switch (LOWORD(wParam))
    {
@@ -398,11 +401,11 @@ BOOL ImageDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       case IDC_REIMPORTFROM: ReimportFrom(); break;
       case IDC_RENAME:
       {
-         const int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
+         const int sel = ListView_GetNextItem(hImageList, -1, LVNI_SELECTED);
          if (sel != -1)
          {
-            ::SetFocus(hSoundList);
-            ListView_EditLabel(hSoundList, sel);
+            ::SetFocus(hImageList);
+            ListView_EditLabel(hImageList, sel);
             CCO(PinTable) * const pt = g_pvp->GetActiveTable();
             pt->SetNonUndoableDirty(eSaveDirty);
          }
@@ -410,7 +413,7 @@ BOOL ImageDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       }
       case IDC_OK:
       {
-         const int count = ListView_GetSelectedCount(hSoundList);
+         const int count = ListView_GetSelectedCount(hImageList);
          if (count > 0)
          {
             UpdateImages();
@@ -438,7 +441,7 @@ void ImageDialog::OnCancel()
 
 void ImageDialog::Import()
 {
-   string szInitialDir = g_pvp->m_settings.GetRecentDir_ImageDir();
+   const string& szInitialDir = g_pvp->m_settings.GetRecentDir_ImageDir();
 
    vector<string> szFileName;
    if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0", "png", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
@@ -458,6 +461,8 @@ void ImageDialog::Import()
          }
       }
 
+      UpdateSizeText();
+
       const size_t index = szFileName[0].find_last_of(PATH_SEPARATOR_CHAR);
       if (index != string::npos)
          g_pvp->m_settings.SetRecentDir_ImageDir(szFileName[0].substr(0, index), false);
@@ -471,19 +476,19 @@ void ImageDialog::Import()
 void ImageDialog::Export()
 {
    CCO(PinTable) *const pt = g_pvp->GetActiveTable();
-   const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-   const int selectedItemsCount = ListView_GetSelectedCount(hSoundList);
+   const HWND hImageList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
+   const int selectedItemsCount = ListView_GetSelectedCount(hImageList);
 
    if (selectedItemsCount)	// if some items are selected???
    {
-      int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
+      int sel = ListView_GetNextItem(hImageList, -1, LVNI_SELECTED);
       if (sel != -1)
       {
          LVITEM lvitem;
          lvitem.mask = LVIF_PARAM;
          lvitem.iItem = sel;
          lvitem.iSubItem = 0;
-         ListView_GetItem(hSoundList, &lvitem);
+         ListView_GetItem(hImageList, &lvitem);
          Texture * ppi = (Texture*)lvitem.lParam;
          if (ppi != nullptr)
          {
@@ -593,10 +598,10 @@ void ImageDialog::Export()
 
                   if (!pt->ExportImage(ppi, (selectedItemsCount>1) ? filename : g_filename)) //!! this will always export the image in its original format, no matter what was actually selected by the user
                      ShowError("Could not export Image");
-                  sel = ListView_GetNextItem(hSoundList, sel, LVNI_SELECTED);
+                  sel = ListView_GetNextItem(hImageList, sel, LVNI_SELECTED);
                   lvitem.iItem = sel;
                   lvitem.iSubItem = 0;
-                  ListView_GetItem(hSoundList, &lvitem);
+                  ListView_GetItem(hImageList, &lvitem);
                   ppi = (Texture*)lvitem.lParam;
                }
 
@@ -611,8 +616,8 @@ void ImageDialog::Export()
 
 void ImageDialog::DeleteImage()
 {
-   const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-   const int count = ListView_GetSelectedCount(hSoundList);
+   const HWND hImageList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
+   const int count = ListView_GetSelectedCount(hImageList);
 
    if (count > 0)
    {
@@ -620,7 +625,7 @@ void ImageDialog::DeleteImage()
       if (ans == IDYES)
       {
          CCO(PinTable) * const pt = g_pvp->GetActiveTable();
-         int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
+         int sel = ListView_GetNextItem(hImageList, -1, LVNI_SELECTED);
          int lastsel = -1;
          while (sel != -1)
          {
@@ -628,23 +633,27 @@ void ImageDialog::DeleteImage()
             lvitem.mask = LVIF_PARAM;
             lvitem.iItem = sel;
             lvitem.iSubItem = 0;
-            ListView_GetItem(hSoundList, &lvitem);
+            ListView_GetItem(hImageList, &lvitem);
             Texture * const ppi = (Texture*)lvitem.lParam;
             if (ppi != nullptr)
             {
                m_doNotChange = true; // do not trigger LVN_ITEMCHANGING or LVN_ITEMCHANGED code!
-               ListView_DeleteItem(hSoundList, sel);
+               ListView_DeleteItem(hImageList, sel);
                m_doNotChange = false;
+               m_overallFilesize -= ppi->GetFileSize();
+               m_overallGPUsize -= ppi->GetEstimatedGPUSize();
                pt->RemoveImage(ppi);
 
                // The previous selection is now deleted, so look again from the top of the list
                lastsel = sel;
-               sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
+               sel = ListView_GetNextItem(hImageList, -1, LVNI_SELECTED);
             }
          }
          if (lastsel != -1)
-            ListView_SetItemState(hSoundList, lastsel, LVNI_SELECTED | LVNI_FOCUSED, LVNI_SELECTED | LVNI_FOCUSED);
+            ListView_SetItemState(hImageList, lastsel, LVNI_SELECTED | LVNI_FOCUSED, LVNI_SELECTED | LVNI_FOCUSED);
          pt->SetNonUndoableDirty(eSaveDirty);
+
+         UpdateSizeText();
       }
    }
 
@@ -653,22 +662,22 @@ void ImageDialog::DeleteImage()
 
 void ImageDialog::Reimport()
 {
-   const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-   const int count = ListView_GetSelectedCount(hSoundList);
+   const HWND hImageList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
+   const int count = ListView_GetSelectedCount(hImageList);
 
    if (count > 0)
    {
       const int ans = MessageBox(LocalString(IDS_REPLACEIMAGE).m_szbuffer /*"Are you sure you want to replace this image?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2);
       if (ans == IDYES)
       {
-         int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
+         int sel = ListView_GetNextItem(hImageList, -1, LVNI_SELECTED);
          while (sel != -1)
          {
             LVITEM lvitem;
             lvitem.mask = LVIF_PARAM;
             lvitem.iItem = sel;
             lvitem.iSubItem = 0;
-            ListView_GetItem(hSoundList, &lvitem);
+            ListView_GetItem(hImageList, &lvitem);
             Texture * const ppi = (Texture*)lvitem.lParam;
             if (ppi != nullptr)
             {
@@ -679,12 +688,16 @@ void ImageDialog::Reimport()
                {
                   CloseHandle(hFile);
                   CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+                  m_overallFilesize -= ppi->GetFileSize();
+                  m_overallGPUsize -= ppi->GetEstimatedGPUSize();
                   Texture *newImage = pt->ImportImage(ppi->GetFilePath(), ppi->m_name);
-                  if (newImage != ppi)
+                  if (newImage != ppi) // always true anyway nowadays?
                   {
-                     ListView_DeleteItem(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), sel);
-                     const int index = AddListImage(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), newImage);
-                     ListView_SetItemState(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), index, LVIS_SELECTED, LVIS_SELECTED);
+                     ListView_DeleteItem(hImageList, sel);
+                     const int index = AddListImage(hImageList, newImage);
+                     ListView_SetItemState(hImageList, index, LVIS_SELECTED, LVIS_SELECTED);
+
+                     UpdateSizeText();
                   }
                   pt->SetNonUndoableDirty(eSaveDirty);
                   pt->UpdatePropertyImageList();
@@ -692,7 +705,7 @@ void ImageDialog::Reimport()
                else
                   MessageBox(ppi->GetFilePath().c_str(), "FILE NOT FOUND!", MB_OK);
 
-               sel = ListView_GetNextItem(hSoundList, sel, LVNI_SELECTED);
+               sel = ListView_GetNextItem(hImageList, sel, LVNI_SELECTED);
             }
          }
       }
@@ -704,8 +717,8 @@ void ImageDialog::Reimport()
 
 void ImageDialog::UpdateAll()
 {
-   const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-   const int count = ListView_GetSelectedCount(hSoundList);
+   const HWND hImageList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
+   const int count = ListView_GetSelectedCount(hImageList);
    bool errorOccurred = false;
 
    for (int sel = 0; sel < count; sel++)
@@ -714,7 +727,7 @@ void ImageDialog::UpdateAll()
       lvitem.mask = LVIF_PARAM;
       lvitem.iItem = sel;
       lvitem.iSubItem = 0;
-      ListView_GetItem(hSoundList, &lvitem);
+      ListView_GetItem(hImageList, &lvitem);
       Texture * const ppi = (Texture*)lvitem.lParam;
       if (ppi != nullptr)
       {
@@ -723,12 +736,16 @@ void ImageDialog::UpdateAll()
          {
             CloseHandle(hFile);
             CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+            m_overallFilesize -= ppi->GetFileSize();
+            m_overallGPUsize -= ppi->GetEstimatedGPUSize();
             Texture *newImage = pt->ImportImage(ppi->GetFilePath(), ppi->m_name);
-            if (newImage != ppi)
+            if (newImage != ppi) // always true anyway nowadays?
             {
-               ListView_DeleteItem(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), sel);
-               const int index = AddListImage(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), newImage);
-               ListView_SetItemState(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), index, LVIS_SELECTED, LVIS_SELECTED);
+               ListView_DeleteItem(hImageList, sel);
+               const int index = AddListImage(hImageList, newImage);
+               ListView_SetItemState(hImageList, index, LVIS_SELECTED, LVIS_SELECTED);
+
+               UpdateSizeText();
             }
             pt->SetNonUndoableDirty(eSaveDirty);
             pt->UpdatePropertyImageList();
@@ -759,15 +776,15 @@ void ImageDialog::ShowWhereUsed()
 
 void ImageDialog::ReimportFrom()
 {
-   const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-   const int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
+   const HWND hImageList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
+   const int sel = ListView_GetNextItem(hImageList, -1, LVNI_SELECTED);
 
    if (sel != -1)
    {
       const int ans = MessageBox(LocalString(IDS_REPLACEIMAGE).m_szbuffer /*"Are you sure you want to replace this image with a new one?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2);
       if (ans == IDYES)
       {
-         string szInitialDir = g_pvp->m_settings.GetRecentDir_ImageDir();
+         const string& szInitialDir = g_pvp->m_settings.GetRecentDir_ImageDir();
          vector<string> szFileName;
          if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Bitmap, JPEG, PNG, TGA, WEBP, EXR, HDR Files (.bmp/.jpg/.png/.tga/.webp/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.tga;*.webp;*.exr;*.hdr\0","png",0))
          {
@@ -775,7 +792,7 @@ void ImageDialog::ReimportFrom()
             lvitem.mask = LVIF_PARAM;
             lvitem.iItem = sel;
             lvitem.iSubItem = 0;
-            ListView_GetItem(hSoundList, &lvitem);
+            ListView_GetItem(hImageList, &lvitem);
             Texture * const ppi = (Texture*)lvitem.lParam;
             if (ppi != nullptr)
             {
@@ -784,12 +801,16 @@ void ImageDialog::ReimportFrom()
                   g_pvp->m_settings.SetRecentDir_ImageDir(szFileName[0].substr(0, index), false);
 
                CCO(PinTable) * const pt = g_pvp->GetActiveTable();
+               m_overallFilesize -= ppi->GetFileSize();
+               m_overallGPUsize -= ppi->GetEstimatedGPUSize();
                Texture* newImage = pt->ImportImage(szFileName[0], ppi->m_name);
-               if (newImage != ppi)
+               if (newImage != ppi) // always true anyway nowadays?
                {
-                  ListView_DeleteItem(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), sel);
-                  const int indexl = AddListImage(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), newImage);
-                  ListView_SetItemState(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), indexl, LVIS_SELECTED, LVIS_SELECTED);
+                  ListView_DeleteItem(hImageList, sel);
+                  const int indexl = AddListImage(hImageList, newImage);
+                  ListView_SetItemState(hImageList, indexl, LVIS_SELECTED, LVIS_SELECTED);
+
+                  UpdateSizeText();
                }
                pt->SetNonUndoableDirty(eSaveDirty);
                pt->UpdatePropertyImageList();
@@ -823,12 +844,21 @@ void ImageDialog::SavePosition()
    g_pvp->m_settings.SetEditor_ImageMngHeight(rect.bottom - rect.top, false);
 }
 
+void ImageDialog::UpdateSizeText()
+{
+   GetDlgItem(IDC_STATIC_GPUMEM).SetWindowText(("Overall GPU Memory used (estimate/uncompressed): " + SizeToReadable(m_overallGPUsize) + " / Overall File Size: " + SizeToReadable(m_overallFilesize)).c_str());
+}
+
 void ImageDialog::ListImages(HWND hwndListView)
 {
    CCO(PinTable) *const pt = g_pvp->GetActiveTable();
    if (pt)
+   {
       for (const auto img : pt->m_vimage)
          AddListImage(hwndListView, img);
+
+      UpdateSizeText();
+   }
 }
 
 int ImageDialog::AddListImage(HWND hwndListView, const Texture *const ppi)
@@ -852,6 +882,9 @@ int ImageDialog::AddListImage(HWND hwndListView, const Texture *const ppi)
    ListView_SetItemText(hwndListView, index, 2, (LPSTR)sizeString.c_str());
    ListView_SetItemText(hwndListView, index, 3, (LPSTR)usedStringNo);
    }
+
+   m_overallFilesize += ppi->GetFileSize();
+   m_overallGPUsize += ppi->GetEstimatedGPUSize();
    ListView_SetItemText(hwndListView, index, 4, (LPSTR)SizeToReadable(ppi->GetFileSize()).c_str());
    ListView_SetItemText(hwndListView, index, 5, (LPSTR)SizeToReadable(ppi->GetEstimatedGPUSize()).c_str());
 

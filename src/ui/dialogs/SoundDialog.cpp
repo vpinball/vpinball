@@ -354,7 +354,7 @@ void SoundDialog::Import()
    if (pt == nullptr)
       return;
 
-   string szInitialDir = g_pvp->m_settings.GetRecentDir_SoundDir();
+   const string& szInitialDir = g_pvp->m_settings.GetRecentDir_SoundDir();
 
    vector<string> szFileName;
    if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", OFN_EXPLORER | OFN_ALLOWMULTISELECT))
@@ -425,7 +425,7 @@ void SoundDialog::ReImportFrom()
         const int ans = MessageBox(LocalString( IDS_REPLACESOUND ).m_szbuffer/*"Are you sure you want to replace this sound with a new one?"*/, "Confirm Reimport", MB_YESNO | MB_DEFBUTTON2);
         if (ans == IDYES)
         {
-            string szInitialDir = g_pvp->m_settings.GetRecentDir_SoundDir();
+            const string& szInitialDir = g_pvp->m_settings.GetRecentDir_SoundDir();
 
             vector<string> szFileName;
             if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Sound Files (.wav/.ogg/.mp3)\0*.wav;*.ogg;*.mp3\0", "mp3", 0))

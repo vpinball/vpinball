@@ -14,6 +14,7 @@ FEATURES:
 - add -v command line option to just output the version and quit
 
 - add "Surface" to the "Select Element" list
+- add overall GPU memory used, and overall file size to the image dialog
 
 - add additional tonemappers (the part of the rendering which handles how overly bright parts are displayed on non-HDR displays) 'Neutral' that keeps sRGB colors as authentic as possible,
   and 'AgX Punchy' which is a variation of AgX with more contrast/saturation

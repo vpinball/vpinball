@@ -318,7 +318,7 @@ void PhysicsOptionsDialog::OnOK()
 
 bool PhysicsOptionsDialog::LoadSetting()
 {
-    string szInitialDir = g_pvp->m_settings.GetRecentDir_PhysicsDir();
+    const string& szInitialDir = g_pvp->m_settings.GetRecentDir_PhysicsDir();
 
     vector<string> szFileName;
     if (!g_pvp->OpenFileDialog(szInitialDir, szFileName, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))

@@ -37,6 +37,11 @@ private:
    void ListImages(HWND hwndListView);
    int AddListImage(HWND hwndListView, const Texture *const ppi);
 
+   void UpdateSizeText();
+
+   size_t m_overallGPUsize = 0;
+   size_t m_overallFilesize = 0;
+
    static int m_columnSortOrder;
    static bool m_doNotChange;  // to avoid triggering LVN_ITEMCHANGING or LVN_ITEMCHANGED code on deletion
    static WhereUsedDialog m_whereUsedDlg_Images;

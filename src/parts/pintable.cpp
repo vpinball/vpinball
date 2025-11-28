@@ -4167,7 +4167,7 @@ void PinTable::ImportBackdropPOV(const string &filename)
       if (IsLocked())
          return;
 #ifndef __STANDALONE__
-      const string initialDir = m_settings.GetRecentDir_POVDir();
+      const string& initialDir = m_settings.GetRecentDir_POVDir();
       vector<string> fileNames;
       if (!m_vpinball->OpenFileDialog(initialDir, fileNames, 
          "User settings file (*.ini)\0*.ini\0Old POV file (*.pov)\0*.pov\0Legacy POV file(*.xml)\0*.xml\0",
@@ -7251,8 +7251,7 @@ STDMETHODIMP PinTable::put_OverridePhysicsFlippers(VARIANT_BOOL newVal)
 
 STDMETHODIMP PinTable::ImportPhysics()
 {
-   string szInitialDir = m_settings.GetRecentDir_PhysicsDir();
-
+   const string& szInitialDir = m_settings.GetRecentDir_PhysicsDir();
    vector<string> filename;
    if (!m_vpinball->OpenFileDialog(szInitialDir, filename, "Visual Pinball Physics (*.vpp)\0*.vpp\0", "vpp", 0))
       return S_OK;

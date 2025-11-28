@@ -936,6 +936,7 @@
 #define IDC_STATIC_ALPHA                771
 #define IDC_STATIC_BASE_COLOR           772
 #define IDC_COLOR_BUTTON6               772
+#define IDC_STATIC_GPUMEM               772
 #define IDC_STATIC_GLOSSY_LAYER         773
 #define IDC_STATIC_CLEARCOAR_LAYER      774
 #define IDC_STATIC_OPACITY              775
@@ -1298,7 +1299,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        681
+#define _APS_NEXT_RESOURCE_VALUE        680
 #define _APS_NEXT_COMMAND_VALUE         4030
 #define _APS_NEXT_CONTROL_VALUE         973
 #define _APS_NEXT_SYMED_VALUE           191

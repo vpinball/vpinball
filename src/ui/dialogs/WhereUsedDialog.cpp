@@ -88,7 +88,7 @@ INT_PTR WhereUsedDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          //Create a listview for the Where Used dialog
          const HWND hListView = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
          m_resizer.Initialize(GetHwnd(), CRect(0, 0, 720, 450));
-         m_resizer.AddChild(GetDlgItem(IDC_WHERE_DESCR), CResizer::topleft, RD_STRETCH_WIDTH);
+         m_resizer.AddChild(GetDlgItem(IDC_WHERE_DESCR).GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
          m_resizer.AddChild(hListView, CResizer::topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
          m_resizer.AddChild(GetDlgItem(IDC_EDIT_OBJECT).GetHwnd(), CResizer::topright, 0);
          m_resizer.AddChild(GetDlgItem(IDC_REFRESH_LIST).GetHwnd(), CResizer::topright, 0);
@@ -183,8 +183,8 @@ INT_PTR WhereUsedDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          break;
          case NM_DBLCLK:
          {
-            const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-            EditObject(hSoundList);
+            const HWND hListView = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
+            EditObject(hListView);
          }
          break;
          default:
@@ -229,13 +229,13 @@ INT_PTR WhereUsedDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 BOOL WhereUsedDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
    UNREFERENCED_PARAMETER(lParam);
-   const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
+   const HWND hListView = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
 
    switch (LOWORD(wParam))
    {
       case IDC_OK:
       {
-         const int count = ListView_GetSelectedCount(hSoundList);
+         const int count = ListView_GetSelectedCount(hListView);
          if (count > 0)
          {
             SetFocus();
@@ -246,7 +246,7 @@ BOOL WhereUsedDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       break;
       case IDC_EDIT_OBJECT:
       {
-         EditObject(hSoundList);
+         EditObject(hListView);
       }
       break;
       case IDC_REFRESH_LIST:

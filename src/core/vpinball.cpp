@@ -321,7 +321,7 @@ void VPinball::LoadEditorSetupFromSettings()
    {
       string szTableName = m_settings.GetRecentDir_TableFileName(i);
       if (!szTableName.empty())
-         m_recentTableList.push_back(szTableName);
+         m_recentTableList.emplace_back(szTableName);
    }
 
    m_convertToUnit = m_settings.GetEditor_Units();
@@ -1052,7 +1052,7 @@ void VPinball::DoPlay(const int playMode)
 
 bool VPinball::LoadFile(const bool updateEditor, VPXFileFeedback* feedback)
 {
-   string szInitialDir = m_settings.GetRecentDir_LoadDir();
+   const string& szInitialDir = m_settings.GetRecentDir_LoadDir();
 
    vector<string> filename;
    if (!OpenFileDialog(szInitialDir, filename, "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0", "vpx", 0,
@@ -2151,8 +2151,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
          case IDC_IMPORT:
          {
-            string szInitialDir = g_pvp->m_settings.GetRecentDir_FontDir();
-
+            const string& szInitialDir = g_pvp->m_settings.GetRecentDir_FontDir();
             vector<string> filename;
             if (g_pvp->OpenFileDialog(szInitialDir, filename, "Font Files (*.ttf)\0*.ttf\0", "ttf", 0))
             {

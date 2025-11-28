@@ -160,6 +160,7 @@ BEGIN
     PUSHBUTTON      "Where Used",IDC_SHOW_WHERE_USED,387,80,50,14
     CONTROL         "Use name on export",IDC_CHECK_RENAME_ON_EXPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,387,127,77,10
     DEFPUSHBUTTON   "&OK",IDC_OK,457,110,50,14
+    LTEXT           "",IDC_STATIC_GPUMEM,3,290,378,11
 END
 
 IDD_ROTATE DIALOGEX 0, 0, 186, 89
@@ -2215,7 +2216,6 @@ BEGIN
     IDD_IMAGEDIALOG, DIALOG
     BEGIN
         RIGHTMARGIN, 514
-        BOTTOMMARGIN, 298
     END
 
     IDD_ROTATE, DIALOG
@@ -3542,6 +3542,10 @@ BEGIN
     0
 END
 
+IDD_IMAGEDIALOG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -3672,7 +3676,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_IMAGE_GPU_SIZE      "GPU Size"
+    IDS_IMAGE_GPU_SIZE      "GPU Memory"
     IDS_IMAGE_FILE_SIZE     "File Size"
     IDS_SIZE                "Size"
     IDS_ASSIGN_TO_CURRENT_LAYER "&Assign to selected layer"

@@ -384,7 +384,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       }
       case IDC_IMPORT:
       {
-         string szInitialDir = g_pvp->m_settings.GetRecentDir_MaterialDir();
+         const string& szInitialDir = g_pvp->m_settings.GetRecentDir_MaterialDir();
 
          vector<string> szFilename;
          if (g_pvp->OpenFileDialog(szInitialDir, szFilename, "Material Files (.mat)\0*.mat\0", "mat", 0))

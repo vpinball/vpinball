@@ -1992,7 +1992,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
 
             SetForegroundWindow(hwndDlg);
 
-            const string szInitialDir = g_pvp->m_settings.GetRecentDir_ImportDir();
+            const string& szInitialDir = g_pvp->m_settings.GetRecentDir_ImportDir();
 
             vector<string> szFileName;
             if (g_pvp->OpenFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", 0))
@@ -2161,7 +2161,7 @@ bool Primitive::LoadMeshDialog()
 void Primitive::ExportMeshDialog()
 {
 #ifndef __STANDALONE__
-   const string szInitialDir = g_pvp->m_settings.GetRecentDir_ImportDir();
+   const string& szInitialDir = g_pvp->m_settings.GetRecentDir_ImportDir();
 
    vector<string> szFileName;
    if (m_vpinball->SaveFileDialog(szInitialDir, szFileName, "Wavefront obj file (*.obj)\0*.obj\0", "obj", OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY))
