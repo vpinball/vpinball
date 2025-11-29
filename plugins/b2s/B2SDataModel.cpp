@@ -316,7 +316,8 @@ void B2SAnimation::Update(float elapsedInS)
       return;
 
    m_timeUntilNextStep -= elapsedInS;
-   while (m_timeUntilNextStep < 0.f)
+   // FIXME this can lock up as m_timeUntilNextStep can have invalid values
+   /* while (m_timeUntilNextStep < 0.f)
    {
       if (m_reverse)
          m_currentStep = (m_currentStep - 1 + static_cast<int>(m_animationSteps.size())) % static_cast<int>(m_animationSteps.size());
@@ -326,7 +327,7 @@ void B2SAnimation::Update(float elapsedInS)
 
 
       m_timeUntilNextStep += static_cast<float>(m_interval) / 1000.f;
-   }
+   } */
 }
 
 B2STable::B2STable(const tinyxml2::XMLNode& root)
