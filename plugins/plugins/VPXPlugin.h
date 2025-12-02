@@ -47,7 +47,7 @@ typedef void* VPXTexture;
 
 typedef enum
 {
-   VPXTEXFMT_BW,
+   VPXTEXFMT_BW32F,
    VPXTEXFMT_sRGB8,
    VPXTEXFMT_sRGBA8,
    VPXTEXFMT_sRGB565,
@@ -58,7 +58,7 @@ typedef struct VPXTextureInfo
    unsigned int width;
    unsigned int height;
    VPXTextureFormat format;
-   uint8_t* data;
+   void* data;
 } VPXTextureInfo;
 
 typedef enum
@@ -268,7 +268,7 @@ typedef struct VPXPluginAPI
    //   to allow reuse of texture objects.
    // Texture must be destroyed by the caller using DeleteTexture.
    // NOT Thread safe
-   void(MSGPIAPI* UpdateTexture)(VPXTexture* texture, int width, int height, VPXTextureFormat format, const uint8_t* image);
+   void(MSGPIAPI* UpdateTexture)(VPXTexture* texture, int width, int height, VPXTextureFormat format, const void* image);
    // Give access to texture informations.
    // NOT Thread safe
    VPXTextureInfo*(MSGPIAPI* GetTextureInfo)(VPXTexture texture);

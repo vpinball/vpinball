@@ -92,7 +92,7 @@ void B2SDMDOverlay::Render(VPXRenderContext2D* ctx)
 
    switch (dmd.source->frameFormat)
    {
-   case CTLPI_DISPLAY_FORMAT_LUM8: UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_BW, dmd.state.frame); break;
+   case CTLPI_DISPLAY_FORMAT_LUM32F: UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_BW32F, dmd.state.frame); break;
    case CTLPI_DISPLAY_FORMAT_SRGB888: UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_sRGB8, dmd.state.frame); break;
    case CTLPI_DISPLAY_FORMAT_SRGB565: UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height, VPXTextureFormat::VPXTEXFMT_sRGB565, dmd.state.frame); break;
    default: return;
@@ -126,7 +126,7 @@ ivec4 B2SDMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio) c
    unsigned int pos_step;
    switch (texInfo->format)
    {
-   case VPXTEXFMT_BW: pos_step = 1; break;
+   case VPXTEXFMT_BW32F: pos_step = 1; break;
    case VPXTEXFMT_sRGB8: pos_step = 3; break;
    case VPXTEXFMT_sRGBA8: pos_step = 4; break;
    default: pos_step = 0;
@@ -144,9 +144,15 @@ ivec4 B2SDMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio) c
          uint8_t lum = 0;
          switch (texInfo->format)
          {
-         case VPXTEXFMT_BW: lum = texInfo->data[pos]; break;
-         case VPXTEXFMT_sRGB8: lum = static_cast<uint8_t>(0.299f * texInfo->data[pos] + 0.587f * texInfo->data[pos + 1] + 0.114f * texInfo->data[pos + 2]); break;
-         case VPXTEXFMT_sRGBA8: lum = static_cast<uint8_t>(0.299f * texInfo->data[pos] + 0.587f * texInfo->data[pos + 1] + 0.114f * texInfo->data[pos + 2]); break;
+         case VPXTEXFMT_BW32F: lum = static_cast<uint8_t>(255.f * static_cast<float*>(texInfo->data)[pos]); break;
+         case VPXTEXFMT_sRGB8:
+            lum = static_cast<uint8_t>(
+               0.299f * static_cast<uint8_t*>(texInfo->data)[pos] + 0.587f * static_cast<uint8_t*>(texInfo->data)[pos + 1] + 0.114f * static_cast<uint8_t*>(texInfo->data)[pos + 2]);
+            break;
+         case VPXTEXFMT_sRGBA8:
+            lum = static_cast<uint8_t>(
+               0.299f * static_cast<uint8_t*>(texInfo->data)[pos] + 0.587f * static_cast<uint8_t*>(texInfo->data)[pos + 1] + 0.114f * static_cast<uint8_t*>(texInfo->data)[pos + 2]);
+            break;
          default: return subFrame;
          }
          if (lum < 8)

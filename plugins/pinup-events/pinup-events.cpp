@@ -87,13 +87,13 @@ void onUpdateDMD(void* userData)
    if (dmdId.width == 128 && dmdId.height == 32)
    {
       for (unsigned int i = 0; i < 128 * 32; i++)
-         memcpy(&rgbFrame[i * 3], &palette[frame.frame[i] * 3], 3);
+         memcpy(&rgbFrame[i * 3], &palette[static_cast<const uint8_t*>(frame.frame)[i] * 3], 3);
    }
    else if (dmdId.width == 128 && dmdId.height < 32)
    {
       const unsigned int ofsY = ((32 - dmdId.height) / 2) * 128;
       for (unsigned int i = 0; i < 128 * 16; i++)
-         memcpy(&rgbFrame[(ofsY + i) * 3], &palette[frame.frame[i] * 3], 3);
+         memcpy(&rgbFrame[(ofsY + i) * 3], &palette[static_cast<const uint8_t*>(frame.frame)[i] * 3], 3);
    }
    else if (dmdId.width <= 256 && dmdId.height == 64)
    {
@@ -124,7 +124,7 @@ void onUpdateDMD(void* userData)
                   const float weight = radius * radius - fabsf(dx - 0.5f) * fabsf(dy - 0.5f);
                   if (/*px >= 0 &&*/ static_cast<unsigned int>(px) < dmdId.width
                      && /*py >= 0 &&*/ static_cast<unsigned int>(py) < dmdId.height) // unsigned int tests include the >= 0 ones
-                     lum += frame.frame[py * dmdId.width + px] * weight;
+                     lum += static_cast<const uint8_t*>(frame.frame)[py * dmdId.width + px] * weight;
                   sum += weight;
                }
             }

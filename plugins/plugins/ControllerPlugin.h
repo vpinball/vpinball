@@ -160,7 +160,7 @@ typedef struct GetDevSrcMsg
 #define CTLPI_DISPLAY_GET_SRC_MSG                 "GetDisplays"
 
 // Render frame formats
-#define CTLPI_DISPLAY_FORMAT_LUM8                 1u
+#define CTLPI_DISPLAY_FORMAT_LUM32F               1u
 #define CTLPI_DISPLAY_FORMAT_SRGB888              2u
 #define CTLPI_DISPLAY_FORMAT_SRGB565              3u
 
@@ -182,7 +182,7 @@ typedef struct GetDevSrcMsg
 typedef struct DisplayFrame
 {
    unsigned int frameId;
-   const uint8_t* frame;
+   const void* frame;
 } DisplayFrame;
 
 typedef struct DisplaySrcId

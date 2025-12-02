@@ -77,7 +77,7 @@ public:
 extern VPXTexture CreateTexture(uint8_t *rawData, int size);
 extern VPXTextureInfo* GetTextureInfo(VPXTexture texture);
 extern void DeleteTexture(VPXTexture texture);
-extern void UpdateTexture(VPXTexture *texture, int width, int height, VPXTextureFormat format, const uint8_t *image);
+extern void UpdateTexture(VPXTexture *texture, int width, int height, VPXTextureFormat format, const void *image);
 
 // The following function are duplicates from the main VPX codebase
 string find_case_insensitive_file_path(const string &szPath);

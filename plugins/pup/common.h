@@ -80,7 +80,7 @@ template <typename T> constexpr T lerp(const T x1, const T x2, const float alpha
 // Rendering provided through plugin messages
 extern VPXTexture CreateTexture(SDL_Surface* surf);
 extern VPXTextureInfo* GetTextureInfo(VPXTexture texture);
-extern void UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const uint8_t *image);
+extern void UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const void *image);
 extern void DeleteTexture(VPXTexture texture);
 
 extern CtlResId UpdateAudioStream(AudioUpdateMsg *msg);

@@ -1003,14 +1003,14 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as
    if (psa == nullptr || g_pplayer ==nullptr || g_pplayer->m_dmdSize.x <= 0 || g_pplayer->m_dmdSize.y <= 0)
       return E_FAIL;
 
-   BaseTexture::Update(g_pplayer->m_dmdFrame, g_pplayer->m_dmdSize.x, g_pplayer->m_dmdSize.y, BaseTexture::BW, nullptr);
+   BaseTexture::Update(g_pplayer->m_dmdFrame, g_pplayer->m_dmdSize.x, g_pplayer->m_dmdSize.y, BaseTexture::BW_FP32, nullptr);
    const int size = g_pplayer->m_dmdSize.x * g_pplayer->m_dmdSize.y;
-   // Convert from gamma compressed [0..100] luminance to linear [0..255] luminance (as internally it's assumed to be linear)
+   // Convert from linear [0..100] luminance
    VARIANT *p;
    SafeArrayAccessData(psa, (void **)&p);
-   uint8_t *const __restrict data = g_pplayer->m_dmdFrame->data();
+   float *const __restrict data = static_cast<float*>(g_pplayer->m_dmdFrame->data());
    for (int ofs = 0; ofs < size; ++ofs)
-      data[ofs] = static_cast<uint8_t>(InvsRGB((float)V_UI4(&p[ofs]) * (float)(1.0 / 100.)) * 255.f + 0.5f);
+      data[ofs] = (float)V_UI4(&p[ofs]) * (float)(1.0 / 100.);
    SafeArrayUnaccessData(psa);
    g_pplayer->m_dmdFrameId++;
    VPXPluginAPIImpl::GetInstance().UpdateDMDSource(nullptr, true);

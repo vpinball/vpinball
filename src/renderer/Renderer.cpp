@@ -542,7 +542,7 @@ std::shared_ptr<BaseTexture> Renderer::EnvmapPrecalc(const std::shared_ptr<const
    BaseTexture::Format env_format = envTex->m_format;
    const BaseTexture::Format rad_format = (env_format == BaseTexture::RGB_FP16 || env_format == BaseTexture::RGB_FP32) ? env_format : BaseTexture::SRGB;
    std::shared_ptr<BaseTexture> radTex = BaseTexture::Create(rad_env_xres, rad_env_yres, rad_format);
-   uint8_t* const __restrict rad_envmap = radTex->data();
+   uint8_t* const __restrict rad_envmap = static_cast<uint8_t*>(radTex->data());
    bool free_envmap = false;
 
 #define PREFILTER_ENVMAP_DIFFUSE
@@ -1240,7 +1240,7 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& co
    if (true)
    #endif
    {
-      m_renderDevice->m_DMDShader->SetVector(SHADER_vColor_Intensity, color.x * brightness, color.y * brightness, color.z * brightness, dmd->m_format != BaseTexture::BW ? 1.f : 0.f);
+      m_renderDevice->m_DMDShader->SetVector(SHADER_vColor_Intensity, color.x * brightness, color.y * brightness, color.z * brightness, dmd->m_format != BaseTexture::BW_FP32 ? 1.f : 0.f);
       m_renderDevice->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, (float)dmd->width(), (float)dmd->height(), alpha, (float)(g_pplayer->m_overall_frames % 2048));
       m_renderDevice->m_DMDShader->SetVector(SHADER_glassArea, 0.f, 0.f, 1.f, 1.f);
       m_renderDevice->m_DMDShader->SetTechnique(isBackdrop ? SHADER_TECHNIQUE_basic_DMD : SHADER_TECHNIQUE_basic_DMD_world);
@@ -1250,7 +1250,7 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& co
    else
    {
       const float fullBrightness = brightness * m_dmdDotColor[profile].w;
-      const vec4 dotColor = dmd->m_format == BaseTexture::BW ? vec4(color.x * m_dmdDotColor[profile].x, color.y * m_dmdDotColor[profile].y, color.z * m_dmdDotColor[profile].z, 0.f)
+      const vec4 dotColor = dmd->m_format == BaseTexture::BW_FP32 ? vec4(color.x * m_dmdDotColor[profile].x, color.y * m_dmdDotColor[profile].y, color.z * m_dmdDotColor[profile].z, 0.f)
                                                              : vec4(color.x, color.y, color.z, 0.f);
       m_renderDevice->m_DMDShader->SetVector(SHADER_vColor_Intensity, 
          dotColor.x * fullBrightness, dotColor.y * fullBrightness, dotColor.z * fullBrightness, // Dot color (applied for luminance as well as sRGB frames)
@@ -1265,7 +1265,7 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& co
          static_cast<float>(dmd->width()), static_cast<float>(dmd->height()), // DMD size in dots
          0.f, 0.f); // Unused
       m_renderDevice->m_DMDShader->SetVector(SHADER_displayProperties,
-         dmd->m_format != BaseTexture::BW ? 1.f : 0.f, // luminance or (s)RGB frame source
+         dmd->m_format != BaseTexture::BW_FP32 ? 1.f : 0.f, // luminance or (s)RGB frame source
          0.5f * (1.0f + (1.0f / (2.0f /*N_SAMPLES*/ + 0.5f)) * m_dmdDotProperties[profile].x / 2.0f), // Internal SDF offset to obtain 0.5 at dot border, increasing inside, decreasing outside
          0.5f + 0.5f * (m_dmdDotProperties[profile].x * (1.0f - m_dmdDotProperties[profile].y) /* Dot border darkening */), // Dot internal SDF threshold
          0.f); // Unused

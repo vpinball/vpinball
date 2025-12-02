@@ -149,7 +149,7 @@ static void UpdateVPXTextureInfo(VPXTextureBlock* tex)
    tex->info.height = tex->tex->height();
    switch (tex->tex->m_format)
    {
-   case BaseTexture::BW: tex->info.format = VPXTextureFormat::VPXTEXFMT_BW; break;
+   case BaseTexture::BW_FP32: tex->info.format = VPXTextureFormat::VPXTEXFMT_BW32F; break;
    case BaseTexture::SRGB: tex->info.format = VPXTextureFormat::VPXTEXFMT_sRGB8; break;
    case BaseTexture::SRGBA: tex->info.format = VPXTextureFormat::VPXTEXFMT_sRGBA8; break;
    case BaseTexture::SRGB565: tex->info.format = VPXTextureFormat::VPXTEXFMT_sRGB565; break;
@@ -164,14 +164,14 @@ std::shared_ptr<BaseTexture> VPXPluginAPIImpl::GetTexture(VPXTexture texture) co
    return tex->tex;
 }
 
-void VPXPluginAPIImpl::UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const uint8_t* image)
+void VPXPluginAPIImpl::UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const void* image)
 {
    VPXTextureBlock** tex = reinterpret_cast<VPXTextureBlock**>(texture);
    if (*tex == nullptr)
       *tex = new VPXTextureBlock();
    switch (format)
    {
-   case VPXTextureFormat::VPXTEXFMT_BW: BaseTexture::Update((*tex)->tex, width, height, BaseTexture::BW, image); break;
+   case VPXTextureFormat::VPXTEXFMT_BW32F: BaseTexture::Update((*tex)->tex, width, height, BaseTexture::BW_FP32, image); break;
    case VPXTextureFormat::VPXTEXFMT_sRGB8: BaseTexture::Update((*tex)->tex, width, height, BaseTexture::SRGB, image); break;
    case VPXTextureFormat::VPXTEXFMT_sRGBA8: BaseTexture::Update((*tex)->tex, width, height, BaseTexture::SRGBA, image); break;
    case VPXTextureFormat::VPXTEXFMT_sRGB565: BaseTexture::Update((*tex)->tex, width, height, BaseTexture::SRGB565, image); break;
@@ -580,7 +580,7 @@ DisplayFrame VPXPluginAPIImpl::ControllerOnGetRenderDMD(const CtlResId id)
 
    switch (dmdFrame->m_format)
    {
-   case BaseTexture::BW: result.frame = dmdFrame->data(); break;
+   case BaseTexture::BW_FP32: result.frame = dmdFrame->data(); break;
    case BaseTexture::SRGB: result.frame = dmdFrame->data(); break;
    case BaseTexture::SRGBA: result.frame = dmdFrame->GetAlias(BaseTexture::SRGB)->data(); break;
    default: assert(false); return { 0, nullptr };  // Not yet supported
@@ -603,7 +603,7 @@ void VPXPluginAPIImpl::ControllerOnGetDMDSrc(const unsigned int msgId, void* use
          msg.entries[msg.count].id = { { me.m_vpxPlugin->m_endpointId, 0 } };
          msg.entries[msg.count].width = g_pplayer->m_dmdFrame->width();
          msg.entries[msg.count].height = g_pplayer->m_dmdFrame->height();
-         msg.entries[msg.count].frameFormat = g_pplayer->m_dmdFrame->m_format == BaseTexture::BW ? CTLPI_DISPLAY_FORMAT_LUM8 : CTLPI_DISPLAY_FORMAT_SRGB888;
+         msg.entries[msg.count].frameFormat = g_pplayer->m_dmdFrame->m_format == BaseTexture::BW_FP32 ? CTLPI_DISPLAY_FORMAT_LUM32F : CTLPI_DISPLAY_FORMAT_SRGB888;
          msg.entries[msg.count].GetRenderFrame = ControllerOnGetRenderDMD;
       }
       msg.count++;
@@ -614,14 +614,14 @@ void VPXPluginAPIImpl::ControllerOnGetDMDSrc(const unsigned int msgId, void* use
    {
       const auto& dmdSrc = me.m_dmdSources[i];
       assert(dmdSrc->m_dmdFrame);
-      assert(dmdSrc->m_dmdFrame->m_format == BaseTexture::BW || dmdSrc->m_dmdFrame->m_format == BaseTexture::SRGB);
+      assert(dmdSrc->m_dmdFrame->m_format == BaseTexture::BW_FP32 || dmdSrc->m_dmdFrame->m_format == BaseTexture::SRGB);
       if (msg.count < msg.maxEntryCount)
       {
          msg.entries[msg.count] = {};
          msg.entries[msg.count].id = { { me.m_vpxPlugin->m_endpointId, static_cast<uint32_t>(i + 1) } };
          msg.entries[msg.count].width = dmdSrc->m_dmdFrame->width();
          msg.entries[msg.count].height = dmdSrc->m_dmdFrame->height();
-         msg.entries[msg.count].frameFormat = dmdSrc->m_dmdFrame->m_format == BaseTexture::BW ? CTLPI_DISPLAY_FORMAT_LUM8 : CTLPI_DISPLAY_FORMAT_SRGB888;
+         msg.entries[msg.count].frameFormat = dmdSrc->m_dmdFrame->m_format == BaseTexture::BW_FP32 ? CTLPI_DISPLAY_FORMAT_LUM32F : CTLPI_DISPLAY_FORMAT_SRGB888;
          msg.entries[msg.count].GetRenderFrame = ControllerOnGetRenderDMD;
       }
       msg.count++;

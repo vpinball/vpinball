@@ -551,7 +551,7 @@ static void onGetRenderDMDSrc(const unsigned int eventId, void* userData, void* 
             msg.entries[msg.count].groupId = { endpointId, pFlex->GetId() };
             msg.entries[msg.count].width = pFlex->GetWidth();
             msg.entries[msg.count].height = pFlex->GetHeight();
-            msg.entries[msg.count].frameFormat = (pFlex->GetRenderMode() == RenderMode_DMD_RGB) ? CTLPI_DISPLAY_FORMAT_SRGB888 : CTLPI_DISPLAY_FORMAT_LUM8;
+            msg.entries[msg.count].frameFormat = (pFlex->GetRenderMode() == RenderMode_DMD_RGB) ? CTLPI_DISPLAY_FORMAT_SRGB888 : CTLPI_DISPLAY_FORMAT_LUM32F;
             msg.entries[msg.count].GetRenderFrame = &GetRenderFrame;
             // TODO we should also provide identify frame to allow colorization/upscaling/pup events/...
          }

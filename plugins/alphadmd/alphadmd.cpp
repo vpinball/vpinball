@@ -64,9 +64,9 @@ static std::condition_variable updateCondVar;
 static bool isRunning = false;
 
 static DisplaySrcId dmd128Id, dmd256Id;
-static uint8_t renderFrame[128 * 32] = {};
-static uint8_t dmd128Frame[128 * 32] = {};
-static uint8_t dmd256Frame[256 * 64] = {};
+static float renderFrame[128 * 32] = {};
+static float dmd128Frame[128 * 32] = {};
+static float dmd256Frame[256 * 64] = {};
 static unsigned int renderFrameId = 0;
 
 static uint8_t identifyFrame[128*32] = {};
@@ -228,13 +228,13 @@ static void DrawChar(const int x, const int y, const segDisplay& display, const 
 {
    for (int seg = 0; seg < nSeg; seg++)
    {
-      const uint8_t v = static_cast<uint8_t>((lum[seg] < 0.01f ? 0.01f : lum[seg] > 1.f ? 1.f : lum[seg]) * 255.f);
+      const float v = (lum[seg] < 0.01f ? 0.01f : lum[seg] > 1.f ? 1.f : lum[seg]);
       for (int i = 0; i < display.segs[seg].nDots; i++)
       {
          const int px = x + display.segs[seg].dots[i][0];
          const int py = y + display.segs[seg].dots[i][1];
-         uint32_t w = renderFrame[py * 128 + px] + v;
-         renderFrame[py * 128 + px] = w < 255 ? w : 255;
+         float w = renderFrame[py * 128 + px] + v;
+         renderFrame[py * 128 + px] = w < 1.f ? w : 1.f;
       }
    }
 }
@@ -596,7 +596,7 @@ MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginLoad(const uint32_t sessionId, const Ms
       .width = 128,
       .height = 32,
       .hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN,
-      .frameFormat = CTLPI_DISPLAY_FORMAT_LUM8,
+      .frameFormat = CTLPI_DISPLAY_FORMAT_LUM32F,
       .GetRenderFrame = &GetRenderFrame,
       .identifyFormat = CTLPI_DISPLAY_ID_FORMAT_BITPLANE2,
       .GetIdentifyFrame = &GetIdentifyFrame
@@ -608,7 +608,7 @@ MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginLoad(const uint32_t sessionId, const Ms
       .width = 256,
       .height = 64,
       .hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN,
-      .frameFormat = CTLPI_DISPLAY_FORMAT_LUM8,
+      .frameFormat = CTLPI_DISPLAY_FORMAT_LUM32F,
       .GetRenderFrame = &GetRenderFrame
    };
    isRunning = true;

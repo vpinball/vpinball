@@ -526,7 +526,7 @@ void PUPMediaPlayer::HandleVideoFrame(AVFrame* frame, bool sync)
       // Precreate the texture and uses there backing buffer to avoid copying on each update
       assert(m_videoTextures[nextFrame] == nullptr);
       UpdateTexture(&m_videoTextures[nextFrame], targetWidth, targetHeight, VPXTextureFormat::VPXTEXFMT_sRGBA8, nullptr);
-      uint8_t* frameBuffer = GetTextureInfo(m_videoTextures[nextFrame])->data;
+      uint8_t* frameBuffer = static_cast<uint8_t*>(GetTextureInfo(m_videoTextures[nextFrame])->data);
       if (frameBuffer == nullptr)
       {
          LOGE("Failed to allocate RGB buffer");

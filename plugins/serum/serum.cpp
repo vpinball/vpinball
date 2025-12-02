@@ -138,7 +138,7 @@ static void ColorizeThread()
       {
          // We received a new identify frame to match & colorize
          lastFrameId = frame.frameId;
-         const uint32_t firstrot = Serum_Colorize(const_cast<uint8_t*>(frame.frame));
+         const uint32_t firstrot = Serum_Colorize(const_cast<uint8_t*>(static_cast<const uint8_t*>(frame.frame)));
          if (firstrot != IDENTIFY_NO_FRAME)
          {
             // New frame, eventually starting a new animation

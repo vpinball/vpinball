@@ -444,7 +444,7 @@ void VPXGraphics::FillRectangle(const SDL_Rect& rect)
    m_needsTextureUpdate = true;
 }
 
-void VPXGraphics::UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const uint8_t* image)
+void VPXGraphics::UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const void* image)
 {
    if (m_vpxApi)
       m_vpxApi->UpdateTexture(texture, width, height, format, image);
@@ -496,9 +496,6 @@ SDL_Surface* VPXGraphics::VPXTextureToSDLSurface(VPXPluginAPI* vpxApi, VPXTextur
       case VPXTEXFMT_sRGB565:
          sdlFormat = SDL_PIXELFORMAT_RGB565;
          break;
-      case VPXTEXFMT_BW:
-         sdlFormat = SDL_PIXELFORMAT_INDEX8;
-         break;
       default:
          return nullptr;
    }
@@ -508,7 +505,6 @@ SDL_Surface* VPXGraphics::VPXTextureToSDLSurface(VPXPluginAPI* vpxApi, VPXTextur
       case VPXTEXFMT_sRGBA8: bytesPerPixel = 4; break;
       case VPXTEXFMT_sRGB8: bytesPerPixel = 3; break;
       case VPXTEXFMT_sRGB565: bytesPerPixel = 2; break;
-      case VPXTEXFMT_BW: bytesPerPixel = 1; break;
       default: return nullptr;
    }
 

@@ -110,16 +110,16 @@ static void UpdateThread()
       lastFrameID = frame.frameId;
 
       switch(selectedDmdId.frameFormat) {
-         case CTLPI_DISPLAY_FORMAT_LUM8:
+         case CTLPI_DISPLAY_FORMAT_LUM32F:
          {
-            const uint8_t* const __restrict luminanceData = frame.frame;
+            const float* const __restrict luminanceData = static_cast<const float*>(frame.frame);
             uint8_t* const __restrict rgb24Data = (uint8_t*)malloc(selectedDmdId.width * selectedDmdId.height * 3);
 
             for (unsigned int i = 0; i < selectedDmdId.width * selectedDmdId.height; ++i) {
-                const uint32_t lum = luminanceData[i];
-                rgb24Data[i * 3    ] = (uint8_t)((lum * tintR) / 255u);
-                rgb24Data[i * 3 + 1] = (uint8_t)((lum * tintG) / 255u);
-                rgb24Data[i * 3 + 2] = (uint8_t)((lum * tintB) / 255u);
+                const float lum = luminanceData[i];
+                rgb24Data[i * 3    ] = (uint8_t)(lum * tintR);
+                rgb24Data[i * 3 + 1] = (uint8_t)(lum * tintG);
+                rgb24Data[i * 3 + 2] = (uint8_t)(lum * tintB);
             }
 
             pDmd->UpdateRGB24Data(rgb24Data, selectedDmdId.width, selectedDmdId.height);
@@ -128,7 +128,7 @@ static void UpdateThread()
          break;
 
          case CTLPI_DISPLAY_FORMAT_SRGB888:
-            pDmd->UpdateRGB24Data(frame.frame, selectedDmdId.width, selectedDmdId.height);
+            pDmd->UpdateRGB24Data(static_cast<const uint8_t*>(frame.frame), selectedDmdId.width, selectedDmdId.height);
             break;
 
          case CTLPI_DISPLAY_FORMAT_SRGB565:
@@ -150,7 +150,7 @@ static void onDmdSrcChanged(const unsigned int msgId, void* userData, void* msgD
 
    // Select the largest color display
    for (unsigned int i = 0; i < getSrcMsg.count; i++) {
-      if (getSrcMsg.entries[i].frameFormat != CTLPI_DISPLAY_FORMAT_LUM8) {
+      if (getSrcMsg.entries[i].frameFormat != CTLPI_DISPLAY_FORMAT_LUM32F) {
           if (getSrcMsg.entries[i].width > newDmdId.width) {
               newDmdId = getSrcMsg.entries[i];
               foundDMD = true;
@@ -161,7 +161,7 @@ static void onDmdSrcChanged(const unsigned int msgId, void* userData, void* msgD
    // Defaults to the largest monochrome display
    if (!foundDMD) {
       for (unsigned int i = 0; i < getSrcMsg.count; i++) {
-         if (getSrcMsg.entries[i].frameFormat == CTLPI_DISPLAY_FORMAT_LUM8) {
+         if (getSrcMsg.entries[i].frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F) {
              if (getSrcMsg.entries[i].width > newDmdId.width) {
                newDmdId = getSrcMsg.entries[i];
                foundDMD = true;

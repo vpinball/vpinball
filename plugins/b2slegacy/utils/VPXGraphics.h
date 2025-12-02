@@ -45,7 +45,7 @@ private:
    void DrawLine(int x1, int y1, int x2, int y2, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
    void SetPixel(int x, int y, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
    void SetPixelBlended(int x, int y, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
-   void UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const uint8_t* image);
+   void UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const void* image);
 
    VPXPluginAPI* m_vpxApi;
    VPXTexture m_texture;

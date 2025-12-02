@@ -71,7 +71,7 @@ private:
    ankerl::unordered_dense::map<VPXAction, std::pair<unsigned int, int>> m_actionMap;
 
    static VPXTexture CreateTexture(uint8_t* rawData, int size);
-   static void UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const uint8_t* image);
+   static void UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const void* image);
    static VPXTextureInfo* GetTextureInfo(VPXTexture texture);
    static void DeleteTexture(VPXTexture texture);
 
