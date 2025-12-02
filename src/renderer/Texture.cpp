@@ -31,6 +31,7 @@ static inline int GetPixelSize(const BaseTexture::Format format)
    switch (format)
    {
    case BaseTexture::BW: return 1;
+   case BaseTexture::BW_FP32: return 4;
    case BaseTexture::RGB: return 3;
    case BaseTexture::RGBA: return 4;
    case BaseTexture::SRGB: return 3;
@@ -121,7 +122,7 @@ std::shared_ptr<BaseTexture> BaseTexture::CreateFromData(const void* data, const
          tex = BaseTexture::Create(x, y, format);
          if (tex)
          {
-            uint8_t* const __restrict pdst = tex->data();
+            uint8_t* const __restrict pdst = static_cast<uint8_t*>(tex->data());
             const uint8_t* const __restrict psrc = (uint8_t*)stbi_data;
             memcpy(pdst, psrc, x * y * channels_in_file);
             stbi_image_free(stbi_data);
@@ -346,7 +347,7 @@ std::shared_ptr<BaseTexture> BaseTexture::CreateFromFreeImage(FIBITMAP* dib, con
    {
       const uint8_t* __restrict bits = (uint8_t*)FreeImage_GetBits(dibConv);
       const unsigned pitch = FreeImage_GetPitch(dibConv);
-      uint8_t* const __restrict pdst = tex->data();
+      uint8_t* const __restrict pdst = static_cast<uint8_t*>(tex->data());
       for (unsigned int y = 0; y < tex->m_height; ++y)
       {
          const size_t offs = (size_t)(tex->m_height - y - 1) * tex->m_width;
@@ -359,7 +360,7 @@ std::shared_ptr<BaseTexture> BaseTexture::CreateFromFreeImage(FIBITMAP* dib, con
    {
       const uint8_t* __restrict bits = (uint8_t*)FreeImage_GetBits(dibConv);
       const unsigned pitch = FreeImage_GetPitch(dibConv);
-      uint8_t* const __restrict pdst = tex->data();
+      uint8_t* const __restrict pdst = static_cast<uint8_t*>(tex->data());
       const bool has_alpha = tex->HasAlpha();
       const unsigned int stride = has_alpha ? 4 : 3;
       #if (!((FI_RGBA_RED == 2) && (FI_RGBA_GREEN == 1) && (FI_RGBA_BLUE == 0) && (FI_RGBA_ALPHA == 3)))
@@ -438,7 +439,7 @@ std::shared_ptr<BaseTexture> BaseTexture::CreateFromHBitmap(const HBITMAP hbmp, 
    #endif
 }
 
-void BaseTexture::Update(std::shared_ptr<BaseTexture>& tex, const unsigned int width, const unsigned int height, const Format texFormat, const uint8_t* image)
+void BaseTexture::Update(std::shared_ptr<BaseTexture>& tex, const unsigned int width, const unsigned int height, const Format texFormat, const void* image)
 {
    const int pixelSize = GetPixelSize(texFormat);
    string name;
@@ -554,7 +555,7 @@ std::shared_ptr<BaseTexture> BaseTexture::Convert(Format format) const
          tex = BaseTexture::Create(m_width, m_height, RGBA);
          if (tex == nullptr)
             return nullptr;
-         copy_rgb_rgba<false>((unsigned int*)tex->data(), datac(), (size_t)width() * height());
+         copy_rgb_rgba<false>((unsigned int*)tex->data(), static_cast<const uint8_t*>(datac()), (size_t)width() * height());
          break;
       default: break;
       }
@@ -567,7 +568,7 @@ std::shared_ptr<BaseTexture> BaseTexture::Convert(Format format) const
          tex = BaseTexture::Create(m_width, m_height, SRGBA);
          if (tex == nullptr)
             return nullptr;
-         copy_rgb_rgba<false>((unsigned int*)tex->data(), datac(), (size_t)width() * height());
+         copy_rgb_rgba<false>((unsigned int*)tex->data(), static_cast<const uint8_t*>(datac()), (size_t)width() * height());
          break;
       default: break;
       }
@@ -582,7 +583,7 @@ std::shared_ptr<BaseTexture> BaseTexture::Convert(Format format) const
             return nullptr;
          {
             const uint32_t* const __restrict src_data = reinterpret_cast<const uint32_t*>(datac());
-            uint8_t* const __restrict dest_data = tex->data();
+            uint8_t* const __restrict dest_data = static_cast<uint8_t*>(tex->data());
             for (size_t o = 0; o < (size_t)width() * height(); ++o)
             {
                const uint32_t rgba = src_data[o];
@@ -703,7 +704,7 @@ std::shared_ptr<BaseTexture> BaseTexture::ToBGRA() const
    tex->m_realHeight = m_realHeight;
    if (IsOpaqueComputed())
       tex->SetIsOpaque(IsOpaque());
-   uint8_t* const __restrict tmp = tex->data();
+   uint8_t* const __restrict tmp = static_cast<uint8_t*>(tex->data());
 
    if (m_format == BaseTexture::RGB_FP32) // Tonemap for 8bpc-Display
    {
@@ -774,7 +775,7 @@ std::shared_ptr<BaseTexture> BaseTexture::ToBGRA() const
    }
    else if (m_format == BaseTexture::BW)
    {
-      const uint8_t* const __restrict src = datac();
+      const uint8_t* const __restrict src = static_cast<const uint8_t*>(datac());
       const size_t e = (size_t)width() * height();
       for (size_t o = 0; o < e; ++o)
       {
@@ -786,11 +787,11 @@ std::shared_ptr<BaseTexture> BaseTexture::ToBGRA() const
    }
    else if (m_format == BaseTexture::RGB || m_format == BaseTexture::SRGB)
    {
-      copy_rgb_rgba<true>((unsigned int*)tmp, datac(), (size_t)width() * height());
+      copy_rgb_rgba<true>((unsigned int*)tmp, static_cast<const uint8_t*>(datac()), (size_t)width() * height());
    }
    else if (m_format == BaseTexture::RGBA || m_format == BaseTexture::SRGBA)
    {
-      const uint8_t* const __restrict psrc = datac();
+      const uint8_t* const __restrict psrc = static_cast<const uint8_t*>(datac());
       size_t o = 0;
       for (unsigned int j = 0; j < height(); ++j)
       {
@@ -841,7 +842,7 @@ SDL_Surface* BaseTexture::ToSDLSurface() const
    case RGBA_FP32: format = SDL_PIXELFORMAT_RGBA128_FLOAT; break;
    default: format = SDL_PIXELFORMAT_UNKNOWN; break;
    }
-   return format == SDL_PIXELFORMAT_UNKNOWN ? nullptr : SDL_CreateSurfaceFrom(m_width, m_height, format, const_cast<uint8_t*>(datac()), pitch());
+   return format == SDL_PIXELFORMAT_UNKNOWN ? nullptr : SDL_CreateSurfaceFrom(m_width, m_height, format, const_cast<uint8_t*>(static_cast<const uint8_t*>(datac())), pitch());
 }
 
 void BaseTexture::UpdateMD5() const

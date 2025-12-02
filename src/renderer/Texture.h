@@ -27,6 +27,7 @@ public:
    enum Format
    { // RGB/RGBA formats must be ordered R, G, B (and optionally A)
       BW,        // Linear BW image, 1 byte per texel
+      BW_FP32,   // Linear BW image, 1 float per texel
       RGB,       // Linear RGB without alpha channel, 1 byte per channel
       RGBA,      // Linear RGB with alpha channel, 1 byte per channel
       SRGB,      // sRGB without alpha channel, 1 byte per channel
@@ -44,7 +45,7 @@ public:
    static std::shared_ptr<BaseTexture> CreateFromFile(const string &filename, unsigned int maxTexDimension = 0, bool resizeOnLowMem = false) noexcept;
    static std::shared_ptr<BaseTexture> CreateFromData(const void *data, const size_t size, const bool isImageData = true, unsigned int maxTexDimension = 0, bool resizeOnLowMem = false) noexcept;
    static std::shared_ptr<BaseTexture> CreateFromHBitmap(const HBITMAP hbm, unsigned int maxTexDimension, bool with_alpha = true) noexcept;
-   static void Update(std::shared_ptr<BaseTexture>& texture, const unsigned int w, const unsigned int h, const Format format, const uint8_t *image); // Update eventually recreating the texture
+   static void Update(std::shared_ptr<BaseTexture>& texture, const unsigned int w, const unsigned int h, const Format format, const void *image); // Update eventually recreating the texture
 
    static constexpr bool IsLinearFormat(const Format format) { return (format != SRGB && format != SRGBA && format != SRGB565); }
    static Format GetFormatWithAlpha(const Format format)
@@ -52,6 +53,7 @@ public:
       switch (format)
       {
          case BW:        assert(false); return BW; // return RGBA ?
+         case BW_FP32:   assert(false); return BW_FP32; // return RGBA_FP32 ?
          case RGB:       return RGBA;
          case RGBA:      return RGBA;
          case SRGB:      return SRGBA;
@@ -76,8 +78,8 @@ public:
    unsigned int width() const  { return m_width; }
    unsigned int height() const { return m_height; }
    unsigned int pitch() const; // pitch in bytes
-   uint8_t* data()             { return m_data; }
-   const uint8_t* datac() const{ return m_data; }
+   void* data()                { return m_data; }
+   const void* datac() const   { return m_data; }
    bool HasAlpha() const       { return m_format == RGBA || m_format == SRGBA || m_format == RGBA_FP16 || m_format == RGBA_FP32; }
 
    std::shared_ptr<BaseTexture> GetAlias(Format format) const; // Get an alias of this texture in a different format. Alias share the texture life and update cycle

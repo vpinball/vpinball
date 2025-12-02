@@ -92,7 +92,7 @@ void DMDOverlay::Render(VPXRenderContext2D* ctx)
 
    if (m_vpxApi) {
       m_vpxApi->UpdateTexture(&m_dmdTex, dmd.source->width, dmd.source->height,
-         dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8         ? VPXTextureFormat::VPXTEXFMT_BW
+         dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F       ? VPXTextureFormat::VPXTEXFMT_BW32F
             : dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? VPXTextureFormat::VPXTEXFMT_sRGB565
                                                                       : VPXTextureFormat::VPXTEXFMT_sRGB8,
          dmd.state.frame);
@@ -147,7 +147,7 @@ ivec4 DMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio)
    unsigned int pos_step;
    switch (texInfo->format)
    {
-   case VPXTEXFMT_BW: pos_step = 1; break;
+   case VPXTEXFMT_BW32F: pos_step = 1; break;
    case VPXTEXFMT_sRGB8: pos_step = 3; break;
    case VPXTEXFMT_sRGBA8: pos_step = 4; break;
    default: pos_step = 0;
@@ -166,9 +166,15 @@ ivec4 DMDOverlay::SearchDmdSubFrame(VPXTexture image, float dmdAspectRatio)
          uint8_t lum = 0;
          switch (texInfo->format)
          {
-         case VPXTEXFMT_BW: lum = texInfo->data[pos]; break;
-         case VPXTEXFMT_sRGB8: lum = static_cast<uint8_t>(0.299f * (float)texInfo->data[pos] + 0.587f * (float)texInfo->data[pos + 1] + 0.114f * (float)texInfo->data[pos + 2]); break;
-         case VPXTEXFMT_sRGBA8: lum = static_cast<uint8_t>(0.299f * (float)texInfo->data[pos] + 0.587f * (float)texInfo->data[pos + 1] + 0.114f * (float)texInfo->data[pos + 2]); break;
+         case VPXTEXFMT_BW32F: lum = static_cast<uint8_t>(255.f * static_cast<float*>(texInfo->data)[pos]); break;
+         case VPXTEXFMT_sRGB8:
+            lum = static_cast<uint8_t>(
+               0.299f * static_cast<uint8_t*>(texInfo->data)[pos] + 0.587f * static_cast<uint8_t*>(texInfo->data)[pos + 1] + 0.114f * static_cast<uint8_t*>(texInfo->data)[pos + 2]);
+            break;
+         case VPXTEXFMT_sRGBA8:
+            lum = static_cast<uint8_t>(
+               0.299f * static_cast<uint8_t*>(texInfo->data)[pos] + 0.587f * static_cast<uint8_t*>(texInfo->data)[pos + 1] + 0.114f * static_cast<uint8_t*>(texInfo->data)[pos + 2]);
+            break;
          default: return subFrame;
          }
          if (lum < 8)

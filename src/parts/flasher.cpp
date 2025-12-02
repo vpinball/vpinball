@@ -806,14 +806,14 @@ STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!
    if (psa == nullptr || m_dmdSize.x <= 0 || m_dmdSize.y <= 0)
       return E_FAIL;
 
-   BaseTexture::Update(m_dmdFrame, m_dmdSize.x, m_dmdSize.y, BaseTexture::BW, nullptr);
+   BaseTexture::Update(m_dmdFrame, m_dmdSize.x, m_dmdSize.y, BaseTexture::BW_FP32, nullptr);
    const int size = m_dmdSize.x * m_dmdSize.y;
-   // Convert from gamma compressed [0..100] luminance to linear [0..255] luminance (as internally it's assumed to be linear)
+   // Convert from linear [0..100] luminance
    VARIANT *p;
    SafeArrayAccessData(psa, (void **)&p);
-   uint8_t *const data = m_dmdFrame->data();
+   float *const data = static_cast<float*>(m_dmdFrame->data());
    for (int ofs = 0; ofs < size; ++ofs)
-      data[ofs] = static_cast<uint8_t>(InvsRGB((float)V_UI4(&p[ofs]) * (float)(1.0 / 100.)) * 255.f + 0.5f);
+      data[ofs] = (float)V_UI4(&p[ofs]) * (float)(1.0 / 100.);
    SafeArrayUnaccessData(psa);
    m_dmdFrameId++;
    VPXPluginAPIImpl::GetInstance().UpdateDMDSource(this, true);
@@ -1277,7 +1277,7 @@ void Flasher::Render(const unsigned int renderMask)
                dmd = g_pplayer->m_resURIResolver.GetDisplayState("ctrl://default/display"s);
             if (dmd.state.frame != nullptr)
                BaseTexture::Update(m_renderFrame, dmd.source->width, dmd.source->height,
-                              dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8    ? BaseTexture::BW
+                              dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F  ? BaseTexture::BW_FP32
                             : dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565
                                                                                       : BaseTexture::SRGB, dmd.state.frame);
          }
@@ -1293,7 +1293,7 @@ void Flasher::Render(const unsigned int renderMask)
          else
             m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
          m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-         const vec3 dotTint = m_renderFrame->m_format == BaseTexture::BW ? vec3(color.x, color.y, color.z) : vec3(1.f, 1.f, 1.f);
+         const vec3 dotTint = m_renderFrame->m_format == BaseTexture::BW_FP32 ? vec3(color.x, color.y, color.z) : vec3(1.f, 1.f, 1.f);
          const int dmdProfile = clamp(m_d.m_renderStyle, 0, 7);
          g_pplayer->m_renderer->SetupDMDRender(dmdProfile, false, dotTint, color.w, m_renderFrame, m_d.m_modulate_vs_add, m_backglass ? Renderer::Reinhard : Renderer::Linear, m_transformedVertices,
             vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom),
@@ -1315,7 +1315,7 @@ void Flasher::Render(const unsigned int renderMask)
             return;
          }
          BaseTexture::Update(m_renderFrame, display.source->width, display.source->height, 
-                          display.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8 ? BaseTexture::BW
+                        display.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F ? BaseTexture::BW_FP32
                      : display.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565
                                                                                    : BaseTexture::SRGB,
             display.state.frame);

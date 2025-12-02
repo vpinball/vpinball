@@ -11,7 +11,7 @@ namespace VPX::InGameUI
 
 DisplayProfileSettingsPage::DisplayProfileSettingsPage()
    : InGameUIPage("Display Profile Settings"s, ""s, SaveMode::Both)
-   , m_dmdTexture(BaseTexture::Create(128, 32, BaseTexture::Format::BW))
+   , m_dmdTexture(BaseTexture::Create(128, 32, BaseTexture::Format::BW_FP32))
 {
    BuildPage();
 }
@@ -225,14 +225,14 @@ void DisplayProfileSettingsPage::Render(float elapsed)
       posx = GetWindowPos().x;
       posy = GetWindowPos().y - ImGui::GetStyle().ItemSpacing.y - height;
 
-      memset(m_dmdTexture->data(), 0, 128 * 32);
+      memset(m_dmdTexture->data(), 0, 128 * 32 * 4);
       m_particles.resize(128);
       for (auto& particle : m_particles)
       {
          particle.life += elapsed;
          if (particle.life < particle.lifespan)
          {
-            m_dmdTexture->data()[particle.pos] = static_cast<uint8_t>(255.f * saturate(1.f - 3.f * fabs(particle.life / particle.lifespan - 0.66f)));
+            static_cast<float*>(m_dmdTexture->data())[particle.pos] = saturate(1.f - 3.f * fabs(particle.life / particle.lifespan - 0.66f));
          }
          else
          {
@@ -241,7 +241,7 @@ void DisplayProfileSettingsPage::Render(float elapsed)
             particle.life = 0.f;
          }
       }
-      BaseTexture::Update(m_dmdTexture, 128, 32, BaseTexture::Format::BW, m_dmdTexture->data());
+      BaseTexture::Update(m_dmdTexture, 128, 32, BaseTexture::Format::BW_FP32, m_dmdTexture->data());
 
       m_player->m_renderer->SetupDMDRender(m_selectedProfile, true, vec3(1.f, 1.f, 1.f), m_previewBrightness, m_dmdTexture, 1.0f, Renderer::Reinhard, nullptr, vec4(0.f, 0.f, 0.f, 0.f),
          vec3(1.f, 1.f, 1.f), 0.f, nullptr, vec4(0.f, 0.f, 1.f, 1.f), vec3(0.f, 0.f, 0.f));

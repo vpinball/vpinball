@@ -25,6 +25,7 @@ Sampler::Sampler(RenderDevice* rd, string name, std::shared_ptr<const BaseTextur
    switch (surf->m_format)
    {
    case BaseTexture::BW: m_bgfx_format = bgfx::TextureFormat::Enum::R8; break;
+   case BaseTexture::BW_FP32: m_bgfx_format = bgfx::TextureFormat::Enum::R32F; break;
    case BaseTexture::RGB: m_bgfx_format = bgfx::TextureFormat::Enum::RGB8; break;
    case BaseTexture::SRGB: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA8; break;
    case BaseTexture::RGBA: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA8; break;
@@ -59,6 +60,8 @@ Sampler::Sampler(RenderDevice* rd, string name, std::shared_ptr<const BaseTextur
       format = colorFormat::RGBA16F;
    else if (surf->m_format == BaseTexture::RGB_FP32)
       format = colorFormat::RGB32F;
+   else if (surf->m_format == BaseTexture::BW_FP32)
+      format = colorFormat::RED32F;
    else if (surf->m_format == BaseTexture::BW)
       format = colorFormat::GREY8;
    else
@@ -414,6 +417,7 @@ void Sampler::UpdateTexture(std::shared_ptr<const BaseTexture> surf, const bool 
    switch (surf->m_format)
    {
    case BaseTexture::BW: assert(m_bgfx_format == bgfx::TextureFormat::Enum::R8); break;
+   case BaseTexture::BW_FP32: assert(m_bgfx_format == bgfx::TextureFormat::Enum::R32F); break;
    case BaseTexture::RGB: assert(m_bgfx_format == bgfx::TextureFormat::Enum::RGB8); break;
    case BaseTexture::RGBA: assert(m_bgfx_format == bgfx::TextureFormat::Enum::RGBA8); break;
    case BaseTexture::SRGB:
@@ -445,7 +449,7 @@ void Sampler::UpdateTexture(std::shared_ptr<const BaseTexture> surf, const bool 
    assert(bgfx::isTextureValid(1, false, 1, m_bgfx_format, m_isTextureUpdateLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB));
    assert(bgfx::isTextureValid(1, false, 1, m_bgfx_format, (m_isTextureUpdateLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB) | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST));
 
-   m_textureUpdate = bgfx::makeRef(ref->surf->datac(), static_cast<uint32_t>(ref->surf->height() * ref->surf->pitch()), releaseFn, (void*)ref);
+   m_textureUpdate = bgfx::makeRef(ref->surf->datac(), ref->surf->height() * ref->surf->pitch(), releaseFn, ref);
 
 #elif defined(ENABLE_OPENGL)
    colorFormat format;
@@ -465,6 +469,8 @@ void Sampler::UpdateTexture(std::shared_ptr<const BaseTexture> surf, const bool 
       format = colorFormat::RGBA16F;
    else if (surf->m_format == BaseTexture::RGB_FP32)
       format = colorFormat::RGB32F;
+   else if (surf->m_format == BaseTexture::BW_FP32)
+      format = colorFormat::RED32F;
    else if (surf->m_format == BaseTexture::BW)
       format = colorFormat::GREY8;
    else

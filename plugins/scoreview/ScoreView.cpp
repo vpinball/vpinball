@@ -545,7 +545,7 @@ bool ScoreView::Render(VPXRenderContext2D* ctx)
             continue;
          LoadGlass(visual);
          m_vpxApi->UpdateTexture(&visual.dmdTex, dmd.source->width, dmd.source->height,
-              dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8    ? VPXTextureFormat::VPXTEXFMT_BW
+              dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F  ? VPXTextureFormat::VPXTEXFMT_BW32F
             : dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? VPXTextureFormat::VPXTEXFMT_sRGB565
                                                                       : VPXTextureFormat::VPXTEXFMT_sRGB8,
             dmd.state.frame);

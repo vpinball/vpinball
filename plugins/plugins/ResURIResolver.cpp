@@ -363,7 +363,7 @@ ResURIResolver::DisplayState ResURIResolver::GetDisplayState(const string &link)
                // Priority 2: Favor the highest resolution display
                || (dsSize < sSize)
                // Priority 3: Favor color over monochrome
-               || (dsSize == sSize && displaySource->frameFormat != source.frameFormat && displaySource->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8)
+               || (dsSize == sSize && displaySource->frameFormat != source.frameFormat && displaySource->frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F)
                // Priority 4: Favor RGB8 over other formats
                || (dsSize == sSize && displaySource->frameFormat != source.frameFormat && source.frameFormat == CTLPI_DISPLAY_FORMAT_SRGB888)
                // Priority 5: Favor the first source provided by an endpoint

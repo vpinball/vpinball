@@ -281,17 +281,18 @@ std::vector<uint8_t> Controller::GetRawDmdPixels()
       return pixels;
    const DisplayFrame frame = m_defaultDmd.GetRenderFrame(m_defaultDmd.id);
    const int size = m_defaultDmd.width * m_defaultDmd.height;
-   if (m_defaultDmd.frameFormat == CTLPI_DISPLAY_FORMAT_LUM8)
+   if (m_defaultDmd.frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F)
    {
       pixels.resize(size);
       for (int i = 0; i < size; i++)
-         pixels[i] = (uint32_t)frame.frame[i] * 100u / 255u;
+         pixels[i] = static_cast<uint8_t>(static_cast<const float*>(frame.frame)[i] * 100.f);
    }
    else if (m_defaultDmd.frameFormat == CTLPI_DISPLAY_FORMAT_SRGB888)
    {
       pixels.resize(size);
       for (int i = 0; i < size; i++)
-         pixels[i] = static_cast<uint8_t>(21.26f * (float)frame.frame[i * 3] + 71.52f * (float)frame.frame[i * 3 + 1] + 7.22f * (float)frame.frame[i * 3 + 2]);
+         pixels[i] = static_cast<uint8_t>(21.26f * (float)static_cast<const uint8_t*>(frame.frame)[i * 3] + 71.52f * (float)static_cast<const uint8_t*>(frame.frame)[i * 3 + 1]
+            + 7.22f * (float)static_cast<const uint8_t*>(frame.frame)[i * 3 + 2]);
    }
    return pixels;
 }
@@ -304,13 +305,13 @@ std::vector<uint32_t> Controller::GetRawDmdColoredPixels()
       return pixels;
    const DisplayFrame frame = m_defaultDmd.GetRenderFrame(m_defaultDmd.id);
    const int size = m_defaultDmd.width * m_defaultDmd.height;
-   if (m_defaultDmd.frameFormat == CTLPI_DISPLAY_FORMAT_LUM8)
+   if (m_defaultDmd.frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F)
    {
       pixels.resize(size);
       for (int i = 0; i < size; i++)
       {
          // TODO implement original PinMame / VPinMame coloring
-         const uint32_t lum = frame.frame[i];
+         const uint32_t lum = static_cast<const float*>(frame.frame)[i] * 255.f;
          pixels[i] = (lum << 16) | (lum << 8) | lum;
       }
    }
@@ -318,7 +319,9 @@ std::vector<uint32_t> Controller::GetRawDmdColoredPixels()
    {
       pixels.resize(size);
       for (int i = 0; i < size; i++)
-         pixels[i] = ((uint32_t)frame.frame[i * 3] << 16) | ((uint32_t)frame.frame[i * 3 + 1] << 8) | (frame.frame[i * 3 + 2]);
+         pixels[i] = ((uint32_t)static_cast<const uint8_t*>(frame.frame)[i * 3] << 16) 
+            | ((uint32_t)static_cast<const uint8_t*>(frame.frame)[i * 3 + 1] << 8)
+            | (static_cast<const uint8_t*>(frame.frame)[i * 3 + 2]);
    }
    return pixels;
 }

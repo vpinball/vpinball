@@ -479,12 +479,12 @@ void Textbox::Render(const unsigned int renderMask)
       if (dmd.state.frame == nullptr)
          return;
       BaseTexture::Update(m_texture, dmd.source->width, dmd.source->height, 
-              dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM8    ? BaseTexture::BW
+              dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F  ? BaseTexture::BW_FP32
             : dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565
                                                                       : BaseTexture::SRGB,
          dmd.state.frame);
       // DMD support for textbox is for backward compatibility only, so only use compatibility style #0
-      const vec3 color = m_texture->m_format == BaseTexture::BW ? convertColor(m_d.m_fontcolor) : vec3(1.f, 1.f, 1.f);
+      const vec3 color = m_texture->m_format == BaseTexture::BW_FP32 ? convertColor(m_d.m_fontcolor) : vec3(1.f, 1.f, 1.f);
       g_pplayer->m_renderer->SetupDMDRender(0, true, color, m_d.m_intensity_scale, m_texture, 1.f, Renderer::Reinhard, nullptr,
          vec4(0.f, 0.f, 0.f, 0.f), vec3(1.f, 1.f, 1.f), 0.f,
          nullptr, vec4(), vec3(0.f, 0.f, 0.f));

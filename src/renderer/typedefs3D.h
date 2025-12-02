@@ -109,6 +109,7 @@ enum colorFormat
 {
    GREY8,
    RED16F,
+   RED32F,
 
    GREY_ALPHA,
    RG16F,
@@ -181,6 +182,7 @@ enum clearType
 enum colorFormat {
    GREY8 = GL_R8,
    RED16F = GL_R16F,
+   RED32F = GL_R32F,
 
    GREY_ALPHA = GL_RG8,
    RG16F = GL_RG16F,
@@ -254,6 +256,7 @@ enum colorFormat {
    GREY8 = D3DFMT_L8,
    GREYA8 = D3DFMT_A8L8,
    RED16F = D3DFMT_R16F,
+   RED32F = D3DFMT_R32F,
    RG16F = D3DFMT_G16R16F,
    RGB5 = D3DFMT_R5G6B5,
    RGB8 = D3DFMT_X8R8G8B8,
