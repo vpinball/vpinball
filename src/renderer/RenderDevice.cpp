@@ -250,7 +250,7 @@ void RenderDevice::CaptureDX9Screenshot()
    auto tex = BaseTexture::Create(desc.Width, desc.Height, BaseTexture::SRGBA);
    if (tex)
    {
-      uint8_t* const __restrict bits = tex->data();
+      uint8_t* const __restrict bits = static_cast<uint8_t*>(tex->data());
       const uint8_t* const __restrict pixels = static_cast<uint8_t*>(lockedRect.pBits);
       memcpy(bits, pixels, lockedRect.Pitch * desc.Height);
       for (unsigned int i = 0; i < desc.Height; ++i)

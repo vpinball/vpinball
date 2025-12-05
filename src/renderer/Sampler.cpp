@@ -693,7 +693,7 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(std::shared_ptr<const BaseTextur
    else if ((basetexformat == BaseTexture::BW) && texformat == colorFormat::RGBA8)
    {
       uint8_t* const __restrict pdest = (uint8_t*)locked.pBits;
-      const uint8_t* const __restrict psrc = surf->datac();
+      const uint8_t* const __restrict psrc = (const uint8_t*)surf->datac();
       for (size_t i = 0; i < (size_t)texwidth * texheight; ++i)
       {
          pdest[i * 4 + 0] =
@@ -704,7 +704,7 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(std::shared_ptr<const BaseTextur
    }
    else if ((basetexformat == BaseTexture::RGB || basetexformat == BaseTexture::SRGB) && texformat == colorFormat::RGBA8)
    {
-      copy_rgb_rgba<true>((unsigned int*)locked.pBits, surf->datac(), (size_t)texwidth * texheight);
+      copy_rgb_rgba<true>((unsigned int*)locked.pBits, (const uint8_t*)surf->datac(), (size_t)texwidth * texheight);
    }
    else if ((basetexformat == BaseTexture::RGBA || basetexformat == BaseTexture::SRGBA) && texformat == colorFormat::RGBA8)
    {

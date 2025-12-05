@@ -1584,7 +1584,7 @@ SDL_Rect FormBackglass::GetBoundingRectangle(VPXTexture pImage)
    SDL_LockSurface(surface);
 
    const uint32_t* const __restrict pixels = static_cast<uint32_t*>(surface->pixels);
-   const int pitch = surface->pitch / sizeof(uint32_t);
+   const int pitch = surface->pitch / (int)sizeof(uint32_t);
    const SDL_PixelFormatDetails* const pfd = SDL_GetPixelFormatDetails(surface->format);
    SDL_Palette* const pal = SDL_GetSurfacePalette(surface);
 

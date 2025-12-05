@@ -362,7 +362,7 @@ void VPXGraphics::SetPixelBlended(int x, int y, uint8_t r, uint8_t g, uint8_t b,
    uint8_t existingB = m_pixelBuffer[offset + 2];
    uint8_t existingA = m_pixelBuffer[offset + 3];
 
-   float alpha = (float)a / 255.0f;
+   float alpha = (float)a * (float)(1.0/255.0);
    float invAlpha = 1.0f - alpha;
 
    m_pixelBuffer[offset + 0] = (uint8_t)((float)r * alpha + (float)existingR * invAlpha);

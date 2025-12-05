@@ -311,7 +311,7 @@ std::vector<uint32_t> Controller::GetRawDmdColoredPixels()
       for (int i = 0; i < size; i++)
       {
          // TODO implement original PinMame / VPinMame coloring
-         const uint32_t lum = static_cast<const float*>(frame.frame)[i] * 255.f;
+         const uint32_t lum = static_cast<int32_t>(static_cast<const float*>(frame.frame)[i] * 255.f);
          pixels[i] = (lum << 16) | (lum << 8) | lum;
       }
    }
