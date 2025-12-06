@@ -63,10 +63,9 @@ static std::thread renderThread;
 static std::condition_variable updateCondVar;
 static bool isRunning = false;
 
-static DisplaySrcId dmd128Id, dmd256Id;
+static DisplaySrcId dmd128Id;
 static float renderFrame[128 * 32] = {};
 static float dmd128Frame[128 * 32] = {};
-static float dmd256Frame[256 * 64] = {};
 static unsigned int renderFrameId = 0;
 
 static uint8_t identifyFrame[128*32] = {};
@@ -224,17 +223,17 @@ static constexpr segDisplay segDisplays[6] = {
       } },
 };
 
+template <typename T> constexpr inline T clamp(const T x, const T mn, const T mx) { return std::max(std::min(x, mx), mn); }
+
 static void DrawChar(const int x, const int y, const segDisplay& display, const float* const __restrict lum, const int nSeg)
 {
    for (int seg = 0; seg < nSeg; seg++)
    {
-      const float v = (lum[seg] < 0.01f ? 0.01f : lum[seg] > 1.f ? 1.f : lum[seg]);
+      const float v = clamp(lum[seg], 0.01f, 1.f);
       for (int i = 0; i < display.segs[seg].nDots; i++)
       {
-         const int px = x + display.segs[seg].dots[i][0];
-         const int py = y + display.segs[seg].dots[i][1];
-         float w = renderFrame[py * 128 + px] + v;
-         renderFrame[py * 128 + px] = w < 1.f ? w : 1.f;
+         const int pos = 128 * (y + display.segs[seg].dots[i][1]) + (x + display.segs[seg].dots[i][0]);
+         renderFrame[pos] = std::min(renderFrame[pos] + v, 1.f);
       }
    }
 }
@@ -297,13 +296,10 @@ static void RenderThread()
    while (isRunning)
    {
       std::unique_lock lock(sourceMutex);
-      updateCondVar.wait(lock, [] { return !isRunning; });
+      updateCondVar.wait(lock, [] { return true; });
 
-      if (!isRunning)
+      if (!isRunning || selectedSources.empty() || (dmdLayout == DmdLayouts::Undefined))
          break;
-
-      if (selectedSources.empty() || (dmdLayout == DmdLayouts::Undefined))
-         continue;
 
       // Get segment display state and compute backward compatible binary version
       float* lum = groupLum;
@@ -425,9 +421,6 @@ static void RenderThread()
       {
          //std::lock_guard<std::mutex> lock(renderMutex);
          memcpy(dmd128Frame, renderFrame, sizeof(dmd128Frame));
-         for (int y = 0; y < 64; y++)
-            for (int x = 0; x < 256; x++)
-               dmd256Frame[x + y * 256] = dmd128Frame[(x >> 1) + (y >> 1) * 128];
          renderFrameId++;
       }
       
@@ -478,12 +471,12 @@ static void RenderThread()
    isRunning = false;
 }
 
-static DisplayFrame GetRenderFrame(const CtlResId id) 
+static DisplayFrame GetRenderFrame(const CtlResId id)
 {
    // TODO To be fully clean we should do a lock on sourceLock and return a copy of the render
    //std::lock_guard<std::mutex> lock(renderMutex);
    updateCondVar.notify_one();
-   return { renderFrameId, id.resId == 0 ? dmd128Frame : dmd256Frame };
+   return { renderFrameId, dmd128Frame };
 }
 
 static DisplayFrame GetIdentifyFrame(const CtlResId id)
@@ -502,14 +495,19 @@ static void OnGetDisplaySrc(const unsigned int eventId, void* userData, void* ms
    if (msg.count < msg.maxEntryCount)
       msg.entries[msg.count] = dmd128Id;
    msg.count++;
-   if (msg.count < msg.maxEntryCount)
-      msg.entries[msg.count] = dmd256Id;
-   msg.count++;
+}
+
+static void StopRenderThread()
+{
+   isRunning = false;
+   updateCondVar.notify_all();
+   if (renderThread.joinable())
+      renderThread.join();
 }
 
 static void OnSegSrcChanged(const unsigned int, void* userData, void* msgData)
 {
-   std::lock_guard lock(sourceMutex);
+   std::unique_lock lock(sourceMutex);
    bool wasRendering = !selectedSources.empty();
    selectedSources.clear();
 
@@ -569,14 +567,20 @@ static void OnSegSrcChanged(const unsigned int, void* userData, void* msgData)
       ss << ')';
       LPI_LOGI("%s", ss.str().c_str());
    }
+   lock.unlock();
 
    // If we are starting or stopping rendering, report it
    if (wasRendering != (!selectedSources.empty()))
    {
-      if (selectedSources.empty())
+      if (wasRendering)
          msgApi->UnsubscribeMsg(getDmdSrcId, OnGetDisplaySrc);
-      else
+      StopRenderThread();
+      if (!selectedSources.empty())
+      {
+         isRunning = true;
+         renderThread = std::thread(RenderThread);
          msgApi->SubscribeMsg(endpointId, getDmdSrcId, OnGetDisplaySrc, nullptr);
+      }
       msgApi->BroadcastMsg(endpointId, onDmdSrcChangedId, nullptr);
    }
 }
@@ -601,18 +605,6 @@ MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginLoad(const uint32_t sessionId, const Ms
       .identifyFormat = CTLPI_DISPLAY_ID_FORMAT_BITPLANE2,
       .GetIdentifyFrame = &GetIdentifyFrame
    };
-   dmd256Id = {
-      .id = { { endpointId, 1 } },
-      .groupId = { { endpointId, 0 } },
-      .overrideId = { { 0, 0 } },
-      .width = 256,
-      .height = 64,
-      .hardware = CTLPI_DISPLAY_HARDWARE_UNKNOWN,
-      .frameFormat = CTLPI_DISPLAY_FORMAT_LUM32F,
-      .GetRenderFrame = &GetRenderFrame
-   };
-   isRunning = true;
-   renderThread = std::thread(RenderThread);
    onDmdSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_ON_SRC_CHG_MSG);
    getDmdSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_DISPLAY_GET_SRC_MSG);
    onSegSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_SEG_ON_SRC_CHG_MSG);
@@ -623,16 +615,18 @@ MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginLoad(const uint32_t sessionId, const Ms
 
 MSGPI_EXPORT void MSGPIAPI AlphaDMDPluginUnload()
 {
-   isRunning = false;
-   updateCondVar.notify_all();
-   if (renderThread.joinable())
-      renderThread.join();
-   if (!selectedSources.empty())
-      msgApi->UnsubscribeMsg(getDmdSrcId, OnGetDisplaySrc);
-   msgApi->UnsubscribeMsg(onSegSrcChangedId, OnSegSrcChanged);
-   msgApi->ReleaseMsgID(onDmdSrcChangedId);
+   {
+      std::lock_guard lock(sourceMutex);
+      msgApi->UnsubscribeMsg(onSegSrcChangedId, OnSegSrcChanged);
+      if (!selectedSources.empty())
+         msgApi->UnsubscribeMsg(getDmdSrcId, OnGetDisplaySrc);
+      selectedSources.clear();
+      msgApi->BroadcastMsg(endpointId, onDmdSrcChangedId, nullptr);
+   }
+   StopRenderThread();
    msgApi->ReleaseMsgID(getDmdSrcId);
    msgApi->ReleaseMsgID(onSegSrcChangedId);
    msgApi->ReleaseMsgID(getSegSrcId);
+   msgApi->ReleaseMsgID(onDmdSrcChangedId);
    msgApi = nullptr;
 }
