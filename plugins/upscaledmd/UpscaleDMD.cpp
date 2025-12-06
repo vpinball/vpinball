@@ -81,17 +81,17 @@ static unsigned int renderFrameId = 0;
 
 enum UpscalerMode {
    UM_Disabled,
+   UM_ScaleFX_AA,
+   UM_ScaleFX_3x,
    UM_xBRZ_2x,
    UM_xBRZ_3x,
    UM_xBRZ_4x,
    UM_xBRZ_5x,
    UM_xBRZ_6x,
-   UM_ScaleFX_AA,
-   UM_ScaleFX_3x,
    UM_SuperXBR_2x
 };
-static const char* upscalerNames[] = { "Disabled", "xBRZ 2x", "xBRZ 3x", "xBRZ 4x", "xBRZ 5x", "xBRZ 6x", "ScaleFX AA 1x", "ScaleFX 3x", "Super-XBR 2x" };
-static constexpr int scaleFactors[] = { 1, 2, 3, 4, 5, 6, 1, 3, 2 };
+static const char* upscalerNames[] = { "Disabled", "ScaleFX AA 1x", "ScaleFX 3x", "xBRZ 2x", "xBRZ 3x", "xBRZ 4x", "xBRZ 5x", "xBRZ 6x", "Super-XBR 2x" };
+static constexpr int scaleFactors[] = { 1, 1, 3, 2, 3, 4, 5, 6, 2 };
 static UpscalerMode upscalerMode = UM_Disabled;
 static UpscalerMode nextUpscalerMode = UM_Disabled;
 static int GetUpscalerMode() { return (int)upscalerMode; }

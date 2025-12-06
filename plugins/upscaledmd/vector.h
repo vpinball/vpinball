@@ -13,6 +13,15 @@ public:
    constexpr Vertex2D(const float _x, const float _y) : x(_x), y(_y) {}
 };
 
+class Vertex3Ds final
+{
+public:
+    float x, y, z;
+
+    constexpr Vertex3Ds() {}
+    constexpr Vertex3Ds(const float _x, const float _y, const float _z) : x(_x), y(_y), z(_z) {}
+};
+
 class alignas(16) Vertex4D final
 {
 public:
