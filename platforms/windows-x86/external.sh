@@ -48,7 +48,7 @@ if [ "${SDL3_EXPECTED_SHA}" != "${SDL3_FOUND_SHA}" ]; then
    mv SDL-${SDL_SHA} SDL
    cd SDL
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -A Win32 \
       -DSDL_SHARED=ON \
       -DSDL_STATIC=OFF \
@@ -63,7 +63,7 @@ if [ "${SDL3_EXPECTED_SHA}" != "${SDL3_FOUND_SHA}" ]; then
    cd SDL_image
    ./external/download.sh
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -A Win32 \
       -DBUILD_SHARED_LIBS=ON \
       -DSDLIMAGE_SAMPLES=OFF \
@@ -82,7 +82,7 @@ if [ "${SDL3_EXPECTED_SHA}" != "${SDL3_FOUND_SHA}" ]; then
    cd SDL_ttf
    ./external/download.sh
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -A Win32 \
       -DBUILD_SHARED_LIBS=ON \
       -DSDLTTF_SAMPLES=OFF \
@@ -117,7 +117,7 @@ if [ "${FREEIMAGE_EXPECTED_SHA}" != "${FREEIMAGE_FOUND_SHA}" ]; then
    mv freeimage-${FREEIMAGE_SHA} freeimage
    cd freeimage
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -A Win32 \
       -DPLATFORM=win \
       -DARCH=x86 \
@@ -153,7 +153,7 @@ if [ "${BGFX_EXPECTED_SHA}" != "${BGFX_FOUND_SHA}" ]; then
    cd bgfx.cmake
    rm -rf bgfx
    mv ../bgfx-${BGFX_PATCH_SHA} bgfx
-   cmake -G "Visual Studio 17 2022" \
+   cmake -G "Visual Studio 18 2026" \
       -S. \
       -A Win32 \
       -DBGFX_LIBRARY_TYPE=STATIC \
@@ -191,7 +191,7 @@ if [ "${PINMAME_EXPECTED_SHA}" != "${PINMAME_FOUND_SHA}" ]; then
    cd pinmame
    cp cmake/libpinmame/CMakeLists.txt .
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -A Win32 \
       -DPLATFORM=win \
       -DARCH=x86 \
@@ -225,7 +225,7 @@ if [ "${OPENXR_EXPECTED_SHA}" != "${OPENXR_FOUND_SHA}" ]; then
    mv OpenXR-SDK-Source-${OPENXR_SHA} openxr
    cd openxr
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -A Win32 \
       -DBUILD_TESTS=OFF \
       -DDYNAMIC_LOADER=ON \
@@ -259,7 +259,7 @@ if [ "${LIBDMDUTIL_EXPECTED_SHA}" != "${LIBDMDUTIL_FOUND_SHA}" ]; then
    cd libdmdutil
    ./platforms/win/x86/external.sh
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -A Win32 \
       -DPLATFORM=win \
       -DARCH=x86 \
@@ -293,7 +293,7 @@ if [ "${LIBALTSOUND_EXPECTED_SHA}" != "${LIBALTSOUND_FOUND_SHA}" ]; then
    mv libaltsound-${LIBALTSOUND_SHA} libaltsound
    cd libaltsound
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -A Win32 \
       -DPLATFORM=win \
       -DARCH=x86 \
@@ -328,7 +328,7 @@ if [ "${LIBDOF_EXPECTED_SHA}" != "${LIBDOF_FOUND_SHA}" ]; then
    cd libdof
    ./platforms/win/x86/external.sh
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -A Win32 \
       -DPLATFORM=win \
       -DARCH=x86 \
