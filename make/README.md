@@ -23,7 +23,7 @@ Depending on the platform you are on you will need to install additional build t
 
 * install Bash (e.g. [git-bash](https://gitforwindows.org/))
 * install [CMake](https://cmake.org/)
-* install [build tools v145 for Visual Studio](https://aka.ms/vs/stable/vs_BuildTools.exe) or the full Visual Studio 2026 package ([Community](https://visualstudio.microsoft.com/de/vs/community/) version is enough)
+* install [build tools v145 for Visual Studio](https://aka.ms/vs/stable/vs_BuildTools.exe) or the full Visual Studio 2026 package ([Community](https://visualstudio.microsoft.com/de/vs/community/) version is enough, note that VS 2019 and 2022 are also still supported)
 * install [MSYS2](https://www.msys2.org/)
 * optionally install the Microsoft DirectX SDK from 2021 (currently at [DX SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812)) for DirectX9 rendering / compilation support, should not be necessary.
 
