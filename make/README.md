@@ -35,6 +35,8 @@ Some external dependencies are required to build Visual Pinball. To fetch and bu
 platforms/[platform]/external.sh
 ```
 
+Note that you may need to point bash to the tools folder via `PATH`, e.g. `/c/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin`.
+
 ## Building via CMake
 
 Each target/platform combination has a `CMakeLists_[target]_[platform].txt` file in the `make` directory. Copy this file to `CMakeLists.txt` at the root of the project.
