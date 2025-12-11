@@ -248,14 +248,17 @@ void Controller::UpdateDmdSrc()
    if (m_defaultDmd.id.id == 0)
    {
       unsigned int largest = 128;
-      GetDisplaySrcMsg getSrcMsg = { 1024, 0, new DisplaySrcId[1024] };
+      GetDisplaySrcMsg getSrcMsg = { 0, 0, nullptr };
       m_msgApi->BroadcastMsg(m_endpointId, m_getDmdSrcMsgId, &getSrcMsg);
-      for (unsigned int i = 0; i < getSrcMsg.count; i++)
+      vector<DisplaySrcId> displaySources(getSrcMsg.count);
+      getSrcMsg = { getSrcMsg.count, 0, displaySources.data() };
+      m_msgApi->BroadcastMsg(m_endpointId, m_getDmdSrcMsgId, &getSrcMsg);
+      for (const DisplaySrcId& src : displaySources)
       {
-         if (getSrcMsg.entries[i].width >= largest)
+         if (src.id.endpointId == m_endpointId && src.width >= largest)
          {
-            m_defaultDmd = getSrcMsg.entries[i];
-            largest = getSrcMsg.entries[i].width;
+            m_defaultDmd = src;
+            largest = src.width;
          }
       }
    }
