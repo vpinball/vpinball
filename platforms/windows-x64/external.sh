@@ -49,7 +49,7 @@ if [ "${SDL3_EXPECTED_SHA}" != "${SDL3_FOUND_SHA}" ]; then
    cd SDL
    sed -i.bak 's/OUTPUT_NAME "SDL3"/OUTPUT_NAME "SDL364"/g' CMakeLists.txt
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -DSDL_SHARED=ON \
       -DSDL_STATIC=OFF \
       -DSDL_TEST_LIBRARY=OFF \
@@ -64,7 +64,7 @@ if [ "${SDL3_EXPECTED_SHA}" != "${SDL3_FOUND_SHA}" ]; then
    sed -i.bak 's/OUTPUT_NAME "SDL3_image"/OUTPUT_NAME "SDL3_image64"/g' CMakeLists.txt
    ./external/download.sh
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -DBUILD_SHARED_LIBS=ON \
       -DSDLIMAGE_SAMPLES=OFF \
       -DSDLIMAGE_DEPS_SHARED=ON \
@@ -83,7 +83,7 @@ if [ "${SDL3_EXPECTED_SHA}" != "${SDL3_FOUND_SHA}" ]; then
    sed -i.bak 's/OUTPUT_NAME SDL3_ttf/OUTPUT_NAME SDL3_ttf64/g' CMakeLists.txt
    ./external/download.sh
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -DBUILD_SHARED_LIBS=ON \
       -DSDLTTF_SAMPLES=OFF \
       -DSDLTTF_VENDORED=ON \
@@ -117,7 +117,7 @@ if [ "${FREEIMAGE_EXPECTED_SHA}" != "${FREEIMAGE_FOUND_SHA}" ]; then
    mv freeimage-${FREEIMAGE_SHA} freeimage
    cd freeimage
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -DPLATFORM=win \
       -DARCH=x64 \
       -DBUILD_SHARED=ON \
@@ -157,7 +157,7 @@ if [ "${BGFX_EXPECTED_SHA}" != "${BGFX_FOUND_SHA}" ]; then
    sed -i.bak 's/set_target_properties(bimg_decode PROPERTIES FOLDER "bgfx")/set_target_properties(bimg_decode PROPERTIES FOLDER "bgfx" OUTPUT_NAME "bimg_decode64")/g' cmake/bimg/bimg_decode.cmake
    sed -i.bak 's/set_target_properties(bimg_encode PROPERTIES FOLDER "bgfx")/set_target_properties(bimg_encode PROPERTIES FOLDER "bgfx" OUTPUT_NAME "bimg_encode64")/g' cmake/bimg/bimg_encode.cmake
    sed -i.bak 's/set_target_properties(bgfx PROPERTIES FOLDER "bgfx")/set_target_properties(bgfx PROPERTIES FOLDER "bgfx" OUTPUT_NAME "bgfx64")/g' cmake/bgfx/bgfx.cmake
-   cmake -G "Visual Studio 17 2022" \
+   cmake -G "Visual Studio 18 2026" \
       -S. \
       -DBGFX_LIBRARY_TYPE=STATIC \
       -DBGFX_BUILD_TOOLS=OFF \
@@ -194,7 +194,7 @@ if [ "${PINMAME_EXPECTED_SHA}" != "${PINMAME_FOUND_SHA}" ]; then
    cd pinmame
    cp cmake/libpinmame/CMakeLists.txt .
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -DPLATFORM=win \
       -DARCH=x64 \
       -DBUILD_SHARED=ON \
@@ -229,7 +229,7 @@ if [ "${OPENXR_EXPECTED_SHA}" != "${OPENXR_FOUND_SHA}" ]; then
    sed -i.bak 's/set_target_properties(openxr_loader PROPERTIES FOLDER ${LOADER_FOLDER})/set_target_properties(openxr_loader PROPERTIES FOLDER ${LOADER_FOLDER} OUTPUT_NAME "openxr_loader64")/g' src/loader/CMakeLists.txt
    sed -i.bak 's|\${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>/openxr_loader|\${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>/openxr_loader64|g' src/loader/CMakeLists.txt
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -DBUILD_TESTS=OFF \
       -DDYNAMIC_LOADER=ON \
       -DOPENXR_DEBUG_POSTFIX="" \
@@ -262,7 +262,7 @@ if [ "${LIBDMDUTIL_EXPECTED_SHA}" != "${LIBDMDUTIL_FOUND_SHA}" ]; then
    cd libdmdutil
    ./platforms/win/x64/external.sh
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -DPLATFORM=win \
       -DARCH=x64 \
       -DBUILD_SHARED=ON \
@@ -295,7 +295,7 @@ if [ "${LIBALTSOUND_EXPECTED_SHA}" != "${LIBALTSOUND_FOUND_SHA}" ]; then
    mv libaltsound-${LIBALTSOUND_SHA} libaltsound
    cd libaltsound
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -DPLATFORM=win \
       -DARCH=x64 \
       -DBUILD_SHARED=ON \
@@ -329,7 +329,7 @@ if [ "${LIBDOF_EXPECTED_SHA}" != "${LIBDOF_FOUND_SHA}" ]; then
    cd libdof
    ./platforms/win/x64/external.sh
    cmake \
-      -G "Visual Studio 17 2022" \
+      -G "Visual Studio 18 2026" \
       -DPLATFORM=win \
       -DARCH=x64 \
       -DBUILD_SHARED=ON \
