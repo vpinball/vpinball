@@ -107,7 +107,6 @@ target_link_libraries(vpinball PUBLIC
 
 set_target_properties(vpinball PROPERTIES
    RUNTIME_OUTPUT_NAME "${APP_NAME}"
-   LINK_FLAGS "-Wl,--copy-dt-needed-entries"
 )
 
 add_custom_command(TARGET vpinball POST_BUILD
