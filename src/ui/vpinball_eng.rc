@@ -795,7 +795,7 @@ BEGIN
     COMBOBOX        IDC_MATERIAL_COMBO2,7,112,111,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_MATERIAL_COMBO3,7,136,111,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Animate Slingshot",112,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,153,111,10
-    CONTROL         "Flipbook (don't show if dropped?)",113,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,164,116,10
+    CONTROL         "Flipbook / Hide wall when dropped",113,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,164,116,10
     LTEXT           "Top Image",IDC_STATIC1,7,8,62,8
     LTEXT           "Top Material",IDC_STATIC2,7,45,40,8
     LTEXT           "Side Material",IDC_STATIC3,7,102,42,8
