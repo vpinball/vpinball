@@ -9419,6 +9419,7 @@ FORCE_INLINE __m128i _mm_cmpgt_epi64(__m128i a, __m128i b)
 #endif
 }
 
+#if 0
 /* A function-like macro to generate CRC-32C calculation using Barrett
  * reduction.
  *
@@ -9565,6 +9566,7 @@ FORCE_INLINE uint32_t _mm_crc32_u8(uint32_t crc, uint8_t v)
 #endif
     return crc;
 }
+#endif
 
 /* AES */
 
