@@ -13,8 +13,6 @@
 
 using namespace std::string_literals;
 
-#include <SDL3/SDL_loadso.h>
-
 #if defined(_WIN32) || defined(_WIN64)
    #ifndef WIN32_LEAN_AND_MEAN
       #define WIN32_LEAN_AND_MEAN
@@ -65,6 +63,7 @@ MsgPluginManager& MsgPluginManager::GetInstance()
 }
 
 MsgPluginManager::MsgPluginManager()
+   : m_apiThread(std::this_thread::get_id())
 {
    m_api.GetPluginEndpoint = GetPluginEndpoint;
    m_api.GetEndpointInfo = GetEndpointInfo;
@@ -77,7 +76,6 @@ MsgPluginManager::MsgPluginManager()
    m_api.RegisterSetting = RegisterSetting;
    m_api.SaveSetting = SaveSetting;
    m_api.RunOnMainThread = RunOnMainThread;
-   m_apiThread = std::this_thread::get_id();
 }
 
 MsgPluginManager::~MsgPluginManager()
@@ -326,7 +324,7 @@ std::shared_ptr<MsgPlugin> MsgPluginManager::RegisterPlugin(const std::string& i
    return plugin;
 }
 
-void MsgPluginManager::ScanPluginFolder(const std::string& pluginDir, const std::function<void(MsgPlugin&)>& callback)
+void MsgPluginManager::ScanPluginFolder(std::shared_ptr<MsgModuleLoader> loader, const std::string& pluginDir, const std::function<void(MsgPlugin&)>& callback)
 {
    assert(std::this_thread::get_id() == m_apiThread);
    if (!std::filesystem::exists(pluginDir))
@@ -395,7 +393,7 @@ void MsgPluginManager::ScanPluginFolder(const std::string& pluginDir, const std:
                continue;
             }
             std::shared_ptr<MsgPlugin> plugin = std::make_shared<MsgPlugin>(id, unquote(ini["configuration"s].get("name"s)), unquote(ini["configuration"s].get("description"s)),
-               unquote(ini["configuration"s].get("author"s)), unquote(ini["configuration"s].get("version"s)), unquote(ini["configuration"s].get("link"s)), entry.path().string(), libraryPath,
+               unquote(ini["configuration"s].get("author"s)), unquote(ini["configuration"s].get("version"s)), unquote(ini["configuration"s].get("link"s)), loader, entry.path().string(), libraryPath,
                m_nextEndpointId++);
             m_plugins.push_back(plugin);
             callback(*plugin);
@@ -443,40 +441,31 @@ void MsgPlugin::Load(const MsgPluginAPI* msgAPI)
       PLOGE << "Requested to load plugin '" << m_name << "' which is already loaded";
       return;
    }
-   if (m_isDynamicallyLinked)
+   if (m_loader && m_module == nullptr)
    {
+      const std::string load = m_id + "PluginLoad";
+      const std::string unload = m_id + "PluginUnload";
+      m_module = m_loader->Link(m_directory, m_library);
       if (m_module == nullptr)
       {
-         const std::string load = m_id + "PluginLoad";
-         const std::string unload = m_id + "PluginUnload";
-#if defined(_WIN32) || defined(_WIN64)
-         SetDllDirectory(m_directory.c_str());
-#endif
-         m_module = SDL_LoadObject(m_library.c_str());
-         if (m_module == nullptr)
-         {
-            PLOGE << "Plugin " << m_id << " failed to load library " << m_library << ": " << SDL_GetError();
-            return;
-         }
-         m_loadPlugin = (msgpi_load_plugin)SDL_LoadFunction(static_cast<SDL_SharedObject*>(m_module), load.c_str());
-         m_unloadPlugin = (msgpi_unload_plugin)SDL_LoadFunction(static_cast<SDL_SharedObject*>(m_module), unload.c_str());
-         if (m_loadPlugin == nullptr || m_unloadPlugin == nullptr)
-         {
-            SDL_UnloadObject(static_cast<SDL_SharedObject*>(m_module));
-            m_loadPlugin = nullptr;
-            m_unloadPlugin = nullptr;
-            m_module = nullptr;
-            PLOGE << "Plugin " << m_id << " invalid library " << m_library << ": required " << load << "/" << unload << " functions are not correct.";
-            return;
-         }
-#if defined(_WIN32) || defined(_WIN64)
-         SetDllDirectory(NULL);
-#endif
+         PLOGE << "Plugin " << m_id << " failed to load library " << m_library;
+         return;
+      }
+      m_loadPlugin = (msgpi_load_plugin)m_loader->GetFunction(m_module, load);
+      m_unloadPlugin = (msgpi_unload_plugin)m_loader->GetFunction(m_module, unload);
+      if (m_loadPlugin == nullptr || m_unloadPlugin == nullptr)
+      {
+         m_loader->Unlink(m_module);
+         m_loadPlugin = nullptr;
+         m_unloadPlugin = nullptr;
+         m_module = nullptr;
+         PLOGE << "Plugin " << m_id << " invalid library " << m_library << ": required " << load << "/" << unload << " functions are not correct.";
+         return;
       }
    }
    m_isLoaded = true;
    m_loadPlugin(m_endpointId, msgAPI);
-   if (m_isDynamicallyLinked)
+   if (m_loader)
    {
       PLOGI << "Plugin " << m_id << " loaded (library: " << m_library << ')';
    }
@@ -495,11 +484,9 @@ void MsgPlugin::Unload()
    }
    m_isLoaded = false;
    m_unloadPlugin();
-   if (m_isDynamicallyLinked)
+   if (m_loader)
    {
-      // We use module unload instead of explicit unloading to avoid crashes due to forced unloading of modules with thread that are not yet joined
-      // The only drawback is that the application keep the module (dll file) locked
-      // SDL_UnloadObject(static_cast<SDL_SharedObject*>(m_module));
+      m_loader->Unlink(m_module);
       m_module = nullptr;
       m_loadPlugin = nullptr;
       m_unloadPlugin = nullptr;
