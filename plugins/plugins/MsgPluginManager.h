@@ -67,7 +67,7 @@ public:
 
    void Load(const MsgPluginAPI* msgAPI);
    void Unload();
-   bool IsLoaded() const { return m_isLoaded; }
+   bool IsLoaded() const { return m_msgAPI != nullptr; }
 
    const std::string m_id; // Unique ID of the plugin, used to identify it
    const std::string m_name; // Human-readable name of the plugin
@@ -85,9 +85,9 @@ public:
 private:
    msgpi_load_plugin m_loadPlugin;
    msgpi_unload_plugin m_unloadPlugin;
-   bool m_isLoaded = false;
    void* m_module = nullptr;
    const std::shared_ptr<MsgModuleLoader> m_loader;
+   const MsgPluginAPI* m_msgAPI = nullptr;
 };
 
 class MsgPluginManager final
