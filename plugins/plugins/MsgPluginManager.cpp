@@ -91,7 +91,14 @@ MsgPluginManager::~MsgPluginManager()
 unsigned int MsgPluginManager::GetPluginEndpoint(const char* id)
 {
    MsgPluginManager& pm = GetInstance();
-   const auto item = std::ranges::find_if(pm.m_plugins, [id](const std::shared_ptr<MsgPlugin>& plg) { return plg->IsLoaded() && plg->m_id == id; });
+   std::string searched_id(id);
+   const auto item = std::ranges::find_if(pm.m_plugins,
+      [searched_id](const std::shared_ptr<MsgPlugin>& plg)
+      {
+         return plg->IsLoaded()
+            && std::equal(plg->m_id.begin(), plg->m_id.end(), searched_id.begin(), searched_id.end(),
+               [](char a, char b) { return std::tolower(static_cast<unsigned char>(a)) == std::tolower(static_cast<unsigned char>(b)); });
+      });
    if (item == pm.m_plugins.end())
       return 0;
    return item->get()->m_endpointId;
