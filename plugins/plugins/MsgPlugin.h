@@ -192,6 +192,11 @@ typedef struct MsgSettingDef
    static void varName##_Set(const char* v) { snprintf(varName##_Val, bufferSize, "%s", v); } \
    static MsgSettingDef varName { .propId=id, .name=propName, .description=propDescription, .isUserEditable=propEditable?1:0, .type=MSGPI_SETTING_TYPE_STRING, .stringDef = { defValue, &varName##_Get, &varName##_Set } }
 
+#define MSGPI_NAMESPACE                  "MsgPlugin"
+#define MSGPI_EVT_ON_PLUGIN_LOADED       "OnPluginLoaded"       // Broadcasted when a plugin is loaded
+#define MSGPI_EVT_ON_PLUGIN_UNLOADED     "OnPluginUnloaded"     // Broadcasted when a plugin is unloaded
+
+
 typedef struct MsgPluginAPI
 {
    // Messaging

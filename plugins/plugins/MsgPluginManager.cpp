@@ -436,7 +436,7 @@ MsgPlugin::~MsgPlugin()
 
 void MsgPlugin::Load(const MsgPluginAPI* msgAPI)
 {
-   if (m_isLoaded)
+   if (IsLoaded())
    {
       PLOGE << "Requested to load plugin '" << m_name << "' which is already loaded";
       return;
@@ -463,8 +463,8 @@ void MsgPlugin::Load(const MsgPluginAPI* msgAPI)
          return;
       }
    }
-   m_isLoaded = true;
-   m_loadPlugin(m_endpointId, msgAPI);
+   m_msgAPI = msgAPI;
+   m_loadPlugin(m_endpointId, m_msgAPI);
    if (m_loader)
    {
       PLOGI << "Plugin " << m_id << " loaded (library: " << m_library << ')';
@@ -473,16 +473,18 @@ void MsgPlugin::Load(const MsgPluginAPI* msgAPI)
    {
       PLOGI << "Plugin " << m_id << " loaded (statically linked plugin)";
    }
+   unsigned int msgId = m_msgAPI->GetMsgID(MSGPI_NAMESPACE, MSGPI_EVT_ON_PLUGIN_LOADED);
+   m_msgAPI->BroadcastMsg(m_endpointId, msgId, const_cast<char*>(m_id.c_str()));
+   m_msgAPI->ReleaseMsgID(msgId);
 }
 
 void MsgPlugin::Unload()
 {
-   if (!m_isLoaded)
+   if (!IsLoaded())
    {
       PLOGE << "Requested to unload plugin '" << m_name << "' which is not loaded";
       return;
    }
-   m_isLoaded = false;
    m_unloadPlugin();
    if (m_loader)
    {
@@ -491,6 +493,10 @@ void MsgPlugin::Unload()
       m_loadPlugin = nullptr;
       m_unloadPlugin = nullptr;
    }
+   unsigned int msgId = m_msgAPI->GetMsgID(MSGPI_NAMESPACE, MSGPI_EVT_ON_PLUGIN_UNLOADED);
+   m_msgAPI->BroadcastMsg(m_endpointId, msgId, const_cast<char*>(m_id.c_str()));
+   m_msgAPI->ReleaseMsgID(msgId);
+   m_msgAPI = nullptr;
 }
 
 }
