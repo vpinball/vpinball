@@ -3,7 +3,6 @@
 #pragma once
 
 // This file provides a default C++ implementation of a plugin manager for the 'Generic Message Plugin API'.
-// It includes SDL & Win32 implementations of plugin discovery, loading/unloading and messaging API.
 // 
 // It has 2 strong dependencies beside C++ standard libraries:
 // - mINI from https://github.com/metayeti/mINI
@@ -25,23 +24,32 @@ namespace MsgPI
 typedef void (*msgpi_load_plugin)(const uint32_t pluginId, const MsgPluginAPI* api);
 typedef void (*msgpi_unload_plugin)();
 
+class MsgModuleLoader
+{
+public:
+   virtual ~MsgModuleLoader() { }
+   virtual void* Link(const std::string& directory, const std::string& file) = 0;
+   virtual void Unlink(void* module) = 0;
+   virtual void* GetFunction(void* module, const std::string& functionName) = 0;
+};
+
 class MsgPlugin final
 {
 public:
    MsgPlugin(const std::string& id, const std::string& name, const std::string& description, const std::string& author, const std::string& version, const std::string& link,
-      const std::string& directory, const std::string& library, const unsigned int endpointId)
+      std::shared_ptr<MsgModuleLoader> loader, const std::string& directory, const std::string& library, const unsigned int endpointId)
       : m_id(id)
       , m_name(name)
       , m_description(description)
       , m_author(author)
       , m_version(version)
       , m_link(link)
-      , m_isDynamicallyLinked(true)
       , m_library(library)
       , m_directory(directory)
       , m_endpointId(endpointId)
       , m_loadPlugin(nullptr)
-      , m_unloadPlugin(nullptr) { }
+      , m_unloadPlugin(nullptr)
+      , m_loader(loader) { }
    MsgPlugin(const std::string& id, const std::string& name, const std::string& description, const std::string& author, const std::string& version, const std::string& link,
       msgpi_load_plugin loadPlugin, msgpi_unload_plugin unloadPlugin, const unsigned int endpointId)
       : m_id(id)
@@ -50,7 +58,6 @@ public:
       , m_author(author)
       , m_version(version)
       , m_link(link)
-      , m_isDynamicallyLinked(false)
       , m_library()
       , m_directory()
       , m_endpointId(endpointId)
@@ -62,7 +69,6 @@ public:
    void Unload();
    bool IsLoaded() const { return m_isLoaded; }
 
-
    const std::string m_id; // Unique ID of the plugin, used to identify it
    const std::string m_name; // Human-readable name of the plugin
    const std::string m_description; // Human-readable description of the plugin intent
@@ -70,9 +76,9 @@ public:
    const std::string m_version; // Human-readable version
    const std::string m_link; // Web link to online information
 
-   const bool m_isDynamicallyLinked; // Plugins can be either dynamically linked or statically linked and directly contributed
-   const std::string m_library; // Library implementing this plugin for the current platform
+   bool IsDynamicallyLinked() const { return m_loader != nullptr; }
    const std::string m_directory; // Directory containing this plugin
+   const std::string m_library; // Library implementing this plugin for the current platform
 
    const uint32_t m_endpointId; // Unique 'end point' ID of the plugin, used to identify it for the lifetime of this session
 
@@ -81,6 +87,7 @@ private:
    msgpi_unload_plugin m_unloadPlugin;
    bool m_isLoaded = false;
    void* m_module = nullptr;
+   const std::shared_ptr<MsgModuleLoader> m_loader;
 };
 
 class MsgPluginManager final
@@ -91,9 +98,8 @@ public:
 
    const MsgPluginAPI& GetMsgAPI() const { return m_api; }
 
-   std::shared_ptr<MsgPlugin> RegisterPlugin(const std::string& id, const std::string& name, const std::string& description, const std::string& author, const std::string& version,
-   const std::string& link, msgpi_load_plugin loadPlugin, msgpi_unload_plugin unloadPlugin);
-   void ScanPluginFolder(const std::string& pluginDir, const std::function<void(MsgPlugin&)>& callback);
+   std::shared_ptr<MsgPlugin> RegisterPlugin(const std::string& id, const std::string& name, const std::string& description, const std::string& author, const std::string& version, const std::string& link, msgpi_load_plugin loadPlugin, msgpi_unload_plugin unloadPlugin);
+   void ScanPluginFolder(std::shared_ptr<MsgModuleLoader> loader, const std::string& pluginDir, const std::function<void(MsgPlugin&)>& callback);
    std::shared_ptr<MsgPlugin> GetPlugin(const std::string& pluginId) const;
    const std::vector<std::shared_ptr<MsgPlugin>> GetPlugins() const { return m_plugins; }
    void LoadPlugin(MsgPlugin& plugin);
@@ -162,6 +168,10 @@ private:
    MsgPluginAPI m_api;
    
    uint32_t m_nextEndpointId = 1;
+
+   std::function<void*(const std::string&, const std::string&)> m_dllLink;
+   std::function<void(void*)> m_dllUnlink;
+   std::function<void*(void*, const std::string&)> m_dllGetMethod;
 
    std::thread::id m_apiThread;
 };
