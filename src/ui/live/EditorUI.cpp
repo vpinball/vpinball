@@ -672,9 +672,10 @@ void EditorUI::Update()
       {
          m_selection = Selection();
       }
-      else if (m_useEditorCam && ImGui::IsKeyPressed(ImGuiKey_G))
+      else if (ImGui::IsKeyPressed(ImGuiKey_G))
       {
          // Grab (translate)
+         m_useEditorCam = true;
          if (io.KeyAlt)
          {
             Matrix3D tmp;
@@ -687,9 +688,10 @@ void EditorUI::Update()
             m_gizmoMode = m_gizmoOperation == ImGuizmo::TRANSLATE ? (m_gizmoMode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL) : ImGuizmo::WORLD;
          }
       }
-      else if (m_useEditorCam && ImGui::IsKeyPressed(ImGuiKey_S))
+      else if (ImGui::IsKeyPressed(ImGuiKey_S))
       {
          // Scale
+         m_useEditorCam = true;
          if (io.KeyAlt)
          {
             Matrix3D tmp;
@@ -702,9 +704,10 @@ void EditorUI::Update()
             m_gizmoMode = m_gizmoOperation == ImGuizmo::SCALE ? (m_gizmoMode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL) : ImGuizmo::WORLD;
          }
       }
-      else if (m_useEditorCam && ImGui::IsKeyPressed(ImGuiKey_R))
+      else if (ImGui::IsKeyPressed(ImGuiKey_R))
       {
          // Rotate
+         m_useEditorCam = true;
          if (io.KeyAlt)
          {
             Matrix3D tmp;
