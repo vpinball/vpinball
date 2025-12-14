@@ -279,6 +279,8 @@ public:
 
    DECLARE_REGISTRY_RESOURCEID(IDR_PRIMITIVE)
 
+   bool PhysicUpdate(class PhysicsEngine *physics, const bool isUI) override;
+
    void MoveOffset(const float dx, const float dy) final;
    void SetObjectPos() final;
    // Multi-object manipulation
@@ -335,6 +337,7 @@ private:
    bool m_isBackGlassImage = false;
 
    Matrix3D m_fullMatrix;
+   Matrix3D m_physicMatrix;
    bool m_skipRendering = false;
    bool m_groupdRendering = false;
    int m_numGroupVertices = 0;
