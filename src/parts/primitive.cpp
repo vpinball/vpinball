@@ -341,6 +341,16 @@ void Primitive::WriteRegDefaults()
 
 #pragma region physic
 
+bool Primitive::PhysicUpdate(class PhysicsEngine *physics, const bool isUI)
+{ 
+   // If the transform did not change, then nothing to do
+   RecalculateMatrices();
+   if (m_physicMatrix == m_fullMatrix)
+      return true;
+
+   return false; // Request full physics release/setup
+}
+
 void Primitive::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
    if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::SR_PLAYFIELD)
@@ -355,6 +365,7 @@ void Primitive::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 
    RecalculateMatrices();
    TransformVertices(); //!! could also only do this for the optional reduced variant!
+   m_physicMatrix = m_fullMatrix; // Cache transform to avoid rebuilding everything if not needed
 
    //
 

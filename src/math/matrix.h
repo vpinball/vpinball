@@ -715,6 +715,11 @@ public:
 #endif
    }
 
+   bool operator==(const Matrix3D& _m) const
+   {
+      return memcmp(m, _m.m, 16 * sizeof(float)) == 0;
+   }
+
    // Normalize the 3 defining vector of an orthogonal matrix
    void OrthoNormalize()
    {

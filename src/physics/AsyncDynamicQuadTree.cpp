@@ -164,10 +164,13 @@ void AsyncDynamicQuadTree::Update(IEditable* editable)
    {
       // The updated editable is part of the dynamic data (eventually waiting for inclusion in the static quadtree), update it
       // 'Release' it (this does not delete the editable's hit objects but allow the editable to adjust its internal state)
-      editable->GetIHitable()->PhysicRelease(m_physics, m_isUI);
-      std::ranges::for_each((*dynEdIt)->hitObjects.begin(), (*dynEdIt)->hitObjects.end(), [](HitObject* ho) { delete ho; });
-      (*dynEdIt)->hitObjects.clear();
-      m_physics->CollectColliders(editable, &(*dynEdIt)->hitObjects, m_isUI);
+      if (editable->GetIHitable()->PhysicUpdate(m_physics, m_isUI))
+      {
+         editable->GetIHitable()->PhysicRelease(m_physics, m_isUI);
+         std::ranges::for_each((*dynEdIt)->hitObjects.begin(), (*dynEdIt)->hitObjects.end(), [](HitObject* ho) { delete ho; });
+         (*dynEdIt)->hitObjects.clear();
+         m_physics->CollectColliders(editable, &(*dynEdIt)->hitObjects, m_isUI);
+      }
       if ((*dynEdIt)->pendingStaticInclusion)
          UpdateAsync();
    }
