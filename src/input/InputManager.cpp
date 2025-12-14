@@ -121,7 +121,10 @@ InputManager::InputManager()
       SystemParametersInfo(SPI_GETFILTERKEYS, sizeof(FILTERKEYS), &m_StartupFilterKeys, 0);
       AllowAccessibilityShortcutKeys(false);
       // Disable Windows UI keyboard shortcut through a global hook
+      // Do not apply when debugging as this causes massive mouse lags
+      #ifndef _DEBUG
       m_hKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(nullptr), 0);
+      #endif
    #endif
 }
 
@@ -140,7 +143,8 @@ InputManager::~InputManager()
    VPXPluginAPIImpl::ReleaseMsgID(m_onActionEventMsgId);
 
    #ifdef _WIN32
-      UnhookWindowsHookEx(m_hKeyboardHook);
+      if (m_hKeyboardHook)
+         UnhookWindowsHookEx(m_hKeyboardHook);
       AllowAccessibilityShortcutKeys(true);
    #endif
 }
