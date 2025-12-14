@@ -96,8 +96,6 @@ private:
    // UI Context
    VPinball *m_app;
    Player   *m_player;
-   PinTable *m_table; // The edited table
-   PinTable *m_live_table; // The live copy of the edited table being played by the player (all properties can be changed at any time by the script)
    InputManager *m_pininput;
    Renderer *m_renderer;
 

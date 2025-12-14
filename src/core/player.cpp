@@ -83,8 +83,7 @@ using namespace VPX;
 
 
 Player::Player(PinTable *const editor_table, PinTable *const live_table, const int playMode)
-   : m_pEditorTable(editor_table)
-   , m_ptable(live_table)
+   : m_ptable(live_table)
    , m_backglassOutput(VPXWindowId::VPXWINDOW_Backglass)
    , m_scoreViewOutput(VPXWindowId::VPXWINDOW_ScoreView)
    , m_topperOutput(VPXWindowId::VPXWINDOW_Topper)
@@ -673,7 +672,8 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    g_pvp->GetToolbarDocker()->EnableWindow(FALSE);
    if(g_pvp->GetNotesDocker()!=nullptr)
       g_pvp->GetNotesDocker()->EnableWindow(FALSE);
-   m_pEditorTable->EnableWindow(FALSE);
+   if (m_ptable->m_liveBaseTable)
+      m_ptable->m_liveBaseTable->EnableWindow(FALSE);
    m_progressDialog.Destroy();
    LockForegroundWindow(true);
    if (m_detectScriptHang)
@@ -898,9 +898,44 @@ Player::~Player()
 
    m_changed_vht.clear();
 
-   if (m_ptable->m_isLiveInstance)
+#ifndef __STANDALONE__
+   if (m_progressDialog.IsWindow())
+      m_progressDialog.Destroy();
+
+   // Reactivate edited table or close application if requested
+   if (appExitRequested)
+   {
+      g_pvp->PostMessage(WM_CLOSE, 0, 0);
+   }
+   else
+   {
+      g_pvp->GetPropertiesDocker()->EnableWindow();
+      g_pvp->GetLayersDocker()->EnableWindow();
+      g_pvp->GetToolbarDocker()->EnableWindow();
+      if (g_pvp->GetNotesDocker() != nullptr)
+         g_pvp->GetNotesDocker()->EnableWindow();
+      g_pvp->ToggleToolbar();
+      g_pvp->ShowWindow(SW_SHOW);
+      g_pvp->SetForegroundWindow();
+      if (m_ptable->m_liveBaseTable)
+      {
+         m_ptable->m_liveBaseTable->EnableWindow();
+         m_ptable->m_liveBaseTable->SetFocus();
+         m_ptable->m_liveBaseTable->SetActiveWindow();
+         m_ptable->m_liveBaseTable->SetDirtyDraw();
+         m_ptable->m_liveBaseTable->RefreshProperties();
+         m_ptable->m_liveBaseTable->BeginAutoSaveCounter();
+      }
+   }
+
+   ::UnregisterClass(WIN32_PLAYER_WND_CLASSNAME, g_pvp->theInstance);
+   SDL_UnregisterApp();
+#endif
+
+   // If the table is a shallow copy, then we own it and need to dispose it
+   if (m_ptable->m_liveBaseTable)
       delete m_ptable;
-   //m_ptable = nullptr;
+
    #ifdef ENABLE_XR
    if (m_vrDevice)
       m_vrDevice->DiscardVisibilityMask();
@@ -929,38 +964,6 @@ Player::~Player()
 
    while (ShowCursor(FALSE) >= 0);
    while (ShowCursor(TRUE) < 0);
-
-#ifndef __STANDALONE__
-   if (m_progressDialog.IsWindow())
-      m_progressDialog.Destroy();
-
-   // Reactivate edited table or close application if requested
-   if (appExitRequested)
-   {
-      g_pvp->PostMessage(WM_CLOSE, 0, 0);
-   }
-   else
-   {
-      g_pvp->GetPropertiesDocker()->EnableWindow();
-      g_pvp->GetLayersDocker()->EnableWindow();
-      g_pvp->GetToolbarDocker()->EnableWindow();
-      if (g_pvp->GetNotesDocker() != nullptr)
-         g_pvp->GetNotesDocker()->EnableWindow();
-      g_pvp->ToggleToolbar();
-      g_pvp->ShowWindow(SW_SHOW);
-      g_pvp->SetForegroundWindow();
-      m_pEditorTable->EnableWindow();
-      m_pEditorTable->SetFocus();
-      m_pEditorTable->SetActiveWindow();
-      m_pEditorTable->SetDirtyDraw();
-      m_pEditorTable->RefreshProperties();
-      m_pEditorTable->BeginAutoSaveCounter();
-   }
-
-   ::UnregisterClass(WIN32_PLAYER_WND_CLASSNAME, g_pvp->theInstance);
-   SDL_UnregisterApp();
-#endif
-
    PLOGI << "Player closed.";
 
 #ifdef __LIBVPINBALL__
@@ -1868,7 +1871,8 @@ void Player::FinishFrame()
    if (m_ptable->m_pcv->m_scriptError)
    {
       // Stop playing (send close window message)
-      m_pEditorTable->m_pcv->m_scriptError = true;
+      if (m_ptable->m_liveBaseTable)
+         m_ptable->m_liveBaseTable->m_pcv->m_scriptError = true;
 #ifndef __STANDALONE__
       m_closing = CS_STOP_PLAY;
 #else
