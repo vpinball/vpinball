@@ -151,7 +151,7 @@ static void HelpSplash(const string &text, int rotation)
    ImGui::End();
 }
 
-static void HelpEditableHeader(bool is_live, IEditable *editable, IEditable *live_editable)
+void EditorUI::EditableHeader(bool is_live, IEditable *editable, IEditable *live_editable)
 {
    IEditable *notnull_editable = editable ? editable : live_editable;
    if (notnull_editable == nullptr)
@@ -190,7 +190,10 @@ static void HelpEditableHeader(bool is_live, IEditable *editable, IEditable *liv
       ImGui::BeginDisabled(is_live); // Do not edit name of live objects, it would likely break the script
       string name = select_editable->GetName();
       if (ImGui::InputText("Name", &name))
+      {
          select_editable->SetName(name);
+         m_sortedEditables.clear();
+      }
       ImGui::EndDisabled();
    }
 
@@ -1126,13 +1129,27 @@ void EditorUI::UpdateOutlinerUI()
             }
             if (ImGui::TreeNodeEx("Layers", ImGuiTreeNodeFlags_DefaultOpen))
             {
-               // Sort by path (this is heavy but simple, ensuring part groups appear before their children as well as stable alphabetical ordering)
-               vector<IEditable*> editables = table->m_vedit;
-               std::ranges::sort(editables, [](IEditable *a, IEditable *b) { return a->GetPathString(false) < b->GetPathString(false); });
+               // Sort by path to ensure part groups appear before their children as well as stable alphabetical ordering
+               // As this is really slow and impacts EditorUI experience, we cache the sorted list
+               bool changed = m_sortedEditables.size() != table->m_vedit.size();
+               if (!changed)
+               {
+                  for (IEditable *edit : table->m_vedit)
+                     if (std::ranges::find(m_sortedEditables, edit) == m_sortedEditables.end())
+                     {
+                        changed = true;
+                        break;
+                     }
+               }
+               if (changed)
+               {
+                  m_sortedEditables = table->m_vedit;
+                  std::ranges::sort(m_sortedEditables, [](const IEditable *a, const IEditable *b) { return a->GetPathString(false) < b->GetPathString(false); });
+               }
                // Live objects are the one created at runtime, not parented to any group
                if (is_live && ImGui::TreeNode("Live Objects"))
                {
-                  for (IEditable* edit : editables)
+                  for (IEditable *edit : m_sortedEditables)
                   {
                      if (edit->GetPartGroup() == nullptr && edit->GetItemType() != eItemPartGroup)
                      {
@@ -1150,7 +1167,7 @@ void EditorUI::UpdateOutlinerUI()
                   bool opened;
                };
                vector<Node> stack;
-               for (IEditable* edit : editables)
+               for (IEditable *edit : m_sortedEditables)
                {
                   const PartGroup* parent = edit->GetPartGroup();
                   if ((parent == nullptr) && (edit->GetItemType() != eItemPartGroup))
@@ -1239,7 +1256,7 @@ void EditorUI::UpdatePropertyUI()
                }
                else
                {
-                  HelpEditableHeader(is_live, startup_obj, live_obj);
+                  EditableHeader(is_live, startup_obj, live_obj);
                   switch (m_selection.editable->GetItemType())
                   {
                   // eItemFlipper, eItemTimer, eItemPlunger, eItemTextbox, eItemDecal, eItemGate, eItemSpinner, eItemTable,
@@ -1343,7 +1360,7 @@ void EditorUI::UpdateRendererInspectionModal()
 
 void EditorUI::TableProperties(bool is_live)
 {
-   HelpEditableHeader(is_live, m_table, m_live_table);
+   EditableHeader(is_live, m_table, m_live_table);
    if (ImGui::CollapsingHeader("User", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
       ImGui::EndTable();

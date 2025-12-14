@@ -30,6 +30,7 @@ private:
    PinTable *m_live_table; // The live copy of the edited table being played by the player (all properties can be changed at any time by the script)
    InputManager *m_pininput;
    Renderer *m_renderer;
+   vector<IEditable *> m_sortedEditables;
    struct Selection
    {
       enum SelectionType
@@ -99,6 +100,7 @@ private:
          return false;
       }
    } m_selection;
+   void EditableHeader(bool is_live, IEditable *editable, IEditable *live_editable);
 
    // Main UI frame & panels
    void UpdateOutlinerUI();
