@@ -486,6 +486,7 @@ void LiveUI::Update()
 
    ImDrawData *const draw_data = ImGui::GetDrawData();
 
+   // Update textures
    if (draw_data->Textures != nullptr)
       for (ImTextureData *tex : *draw_data->Textures)
       {
@@ -506,6 +507,7 @@ void LiveUI::Update()
          }
       }
 
+   // Update meshes and renders
    const ImGuiIO &io = ImGui::GetIO();
    const Matrix3D matRotate = Matrix3D::MatrixRotateZ(static_cast<float>(m_rotate * (M_PI / 2.0)));
    Matrix3D matTranslate;
@@ -521,9 +523,8 @@ void LiveUI::Update()
    const float bottom = (m_rotate == 1 || m_rotate == 3) ? io.DisplaySize.x : io.DisplaySize.y;
    const Matrix3D matProj = matRotate * matTranslate * Matrix3D::MatrixOrthoOffCenterRH(0.f, right, bottom, 0.f, 0.f, 1.f);
    m_rd->m_uiShader->SetMatrix(SHADER_matWorldView, &matProj);
-   m_rd->m_uiShader->SetVector(SHADER_staticColor_Alpha, 
-      // Stereo offset for VR (fake depth)
-      m_player->m_vrDevice ? ((float)m_player->m_vrDevice->GetEyeWidth() * 0.15f) : 0.f,
+   m_rd->m_uiShader->SetVector(SHADER_staticColor_Alpha,
+      m_player->m_vrDevice ? ((float)m_player->m_vrDevice->GetEyeWidth() * 0.15f) : 0.f, // Stereo offset for VR (fake depth)
       0.f, // Unused
       0.f, // Unused
       // A value of 1.0 should be sdrWhite * 80, while in the WCG colorspace 80 nits is 0.5
@@ -538,10 +539,8 @@ void LiveUI::Update()
    m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
    m_rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
    m_rd->m_uiShader->SetTechnique(SHADER_TECHNIQUE_LiveUI);
-
-   if ((int)m_meshBuffers.size() < draw_data->CmdListsCount)
+   if (static_cast<int>(m_meshBuffers.size()) < draw_data->CmdListsCount)
       m_meshBuffers.resize(draw_data->CmdListsCount);
-   m_meshBuffers.resize(draw_data->CmdListsCount);
    for (int n = 0; n < draw_data->CmdListsCount; n++)
    {
       const ImDrawList * const cmd_list = draw_data->CmdLists[n];
@@ -550,12 +549,12 @@ void LiveUI::Update()
 
       if ((numVertices != 0) && (numIndices != 0))
       {
-         if (const std::unique_ptr<MeshBuffer> &meshBuffer = m_meshBuffers[n]; meshBuffer == nullptr || meshBuffer->m_ib->m_count < numIndices || meshBuffer->m_vb->m_count < numVertices)
+         if ((m_meshBuffers[n] == nullptr) || (m_meshBuffers[n]->m_ib->m_count < numIndices) || (m_meshBuffers[n]->m_vb->m_count < numVertices))
          {
-            if (meshBuffer)
+            IndexBuffer *ib = new IndexBuffer(m_rd, max(m_meshBuffers[n] ? m_meshBuffers[n]->m_ib->m_count : 0, numIndices), true, IndexBuffer::Format::FMT_INDEX32);
+            VertexBuffer *vb = new VertexBuffer(m_rd, max(m_meshBuffers[n] ? m_meshBuffers[n]->m_vb->m_count : 0, numVertices), nullptr, true);
+            if (m_meshBuffers[n])
                m_rd->AddEndOfFrameCmd([mb = m_meshBuffers[n].release()]() { delete mb; });
-            IndexBuffer *ib = new IndexBuffer(m_rd, numIndices, true, IndexBuffer::Format::FMT_INDEX32);
-            VertexBuffer *vb = new VertexBuffer(m_rd, numVertices, nullptr, true);
             m_meshBuffers[n] = std::make_unique<MeshBuffer>(vb, ib);
          }
 
@@ -585,9 +584,16 @@ void LiveUI::Update()
       {
          if (cmd->ElemCount != 0)
          {
+            #ifdef ENABLE_BGFX
+            // FIXME Hacky forced mesh buffer upload before actually drawing, not sure why this is needed: upload are supposed to happen in the 'preCmd' list (before any render command)
+            // so this should not have any effect, still it does. This definitely needs more investigation...
+            m_rd->m_uiShader->SetVector(SHADER_clip_plane, 0.f, 0.f, 0.f, 0.f);
+            m_rd->DrawMesh(m_rd->m_uiShader, true, Vertex3Ds(), -10000.f, m_meshBuffers[n].get(), RenderDevice::TRIANGLELIST, 0, 1);
+            #endif
+
             m_rd->m_uiShader->SetVector(SHADER_clip_plane, cmd->ClipRect.x, cmd->ClipRect.y, cmd->ClipRect.z, cmd->ClipRect.w);
             m_rd->m_uiShader->SetTexture(SHADER_tex_base_color, cmd->GetTexID());
-            m_rd->DrawMesh(m_rd->m_uiShader, true, Vertex3Ds(), -10000.f, &*m_meshBuffers[n], RenderDevice::TRIANGLELIST, cmd->IdxOffset, cmd->ElemCount);
+            m_rd->DrawMesh(m_rd->m_uiShader, true, Vertex3Ds(), -10000.f, m_meshBuffers[n].get(), RenderDevice::TRIANGLELIST, cmd->IdxOffset, cmd->ElemCount);
          }
       }
    }
