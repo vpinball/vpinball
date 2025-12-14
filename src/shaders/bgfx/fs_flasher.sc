@@ -17,6 +17,9 @@ $input v_tablePos, v_texcoord0
 uniform vec4 staticColor_Alpha;
 uniform vec4 alphaTestValueAB_filterMode_addBlend; // last one bool
 uniform vec4 amount_blend_modulate_vs_add_flasherMode; // vec3 extended to vec4 for BGFX
+#define blendAmount (amount_blend_modulate_vs_add_flasherMode.x)
+#define modulateVsAdd (amount_blend_modulate_vs_add_flasherMode.y)
+#define flasherMode (amount_blend_modulate_vs_add_flasherMode.z)
 
 uniform vec4 lightCenter_doShadow;
 
@@ -33,7 +36,7 @@ EARLY_DEPTH_STENCIL void main()
 
    vec4 pixel1,pixel2;
 
-   BRANCH if (amount_blend_modulate_vs_add_flasherMode.z < 2.) // Mode 0 & 1
+   BRANCH if (flasherMode < 2.) // Mode 0 & 1
    {
       pixel1 = texture2D(tex_flasher_A, v_texcoord0);
       if (pixel1.a <= alphaTestValueAB_filterMode_addBlend.x)
@@ -42,7 +45,7 @@ EARLY_DEPTH_STENCIL void main()
 		return;
 	  }
    }
-   BRANCH if (amount_blend_modulate_vs_add_flasherMode.z == 1.)
+   BRANCH if (flasherMode == 1.)
    {
       pixel2 = texture2D(tex_flasher_B, v_texcoord0);
       if (pixel2.a <= alphaTestValueAB_filterMode_addBlend.y)
@@ -54,19 +57,19 @@ EARLY_DEPTH_STENCIL void main()
 
    vec4 result = staticColor_Alpha; // Mode 2 wires this through
 
-   if (amount_blend_modulate_vs_add_flasherMode.z == 0.) // Mode 0 mods it by Texture
+   if (flasherMode == 0.) // Mode 0 mods it by Texture
    {
       result *= pixel1;
    }
 
-   BRANCH if (amount_blend_modulate_vs_add_flasherMode.z == 1.) // Mode 1 allows blends between Tex 1 & 2, and then mods the staticColor with it
+   BRANCH if (flasherMode == 1.) // Mode 1 allows blends between Tex 1 & 2, and then mods the staticColor with it
    {
       BRANCH if (alphaTestValueAB_filterMode_addBlend.z == Filter_Overlay)
          result *= OverlayHDR(pixel1,pixel2); // could be HDR
       if (alphaTestValueAB_filterMode_addBlend.z == Filter_Multiply)
-         result *= Multiply(pixel1,pixel2, amount_blend_modulate_vs_add_flasherMode.x);
+         result *= Multiply(pixel1,pixel2, blendAmount);
       if (alphaTestValueAB_filterMode_addBlend.z == Filter_Additive)
-         result *= Additive(pixel1,pixel2, amount_blend_modulate_vs_add_flasherMode.x);
+         result *= Additive(pixel1,pixel2, blendAmount);
       if (alphaTestValueAB_filterMode_addBlend.z == Filter_Screen)
          result *= ScreenHDR(pixel1,pixel2); // could be HDR
    }
@@ -82,6 +85,6 @@ EARLY_DEPTH_STENCIL void main()
    if (alphaTestValueAB_filterMode_addBlend.w == 0.)
       gl_FragColor = vec4(result.xyz, saturate(result.a)); // Need to clamp here or we get some saturation artifacts on some tables
    else
-      gl_FragColor = vec4(result.xyz*(-amount_blend_modulate_vs_add_flasherMode.y*result.a), // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
-                     1.0/amount_blend_modulate_vs_add_flasherMode.y - 1.0);
+      gl_FragColor = vec4(result.xyz*(-modulateVsAdd*result.a), // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
+                     1.0/modulateVsAdd - 1.0);
 }

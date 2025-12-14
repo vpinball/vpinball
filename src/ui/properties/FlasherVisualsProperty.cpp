@@ -77,9 +77,7 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
             m_styleCombo.ResetContent();
             m_styleCombo.AddString("Pixelated");
             m_styleCombo.AddString("Smoothed");
-            //m_styleCombo.AddString("ScaleFX");
-            //m_styleCombo.AddString("Horizontal CRT");
-            //m_styleCombo.AddString("Vertical CRT");
+            m_styleCombo.AddString("CRT");
             UpdateVisuals(IDC_DMD);
             break;
          case FlasherData::ALPHASEG:
@@ -113,18 +111,18 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
          m_linkEdit.ShowWindow(isDisplay);
 
          const int isDmdOrAlpha = ((mode == FlasherData::DMD) || (mode == FlasherData::ALPHASEG)) ? SW_SHOWNORMAL : SW_HIDE;
-         GetDlgItem(IDC_STATIC25).ShowWindow(isDmdOrAlpha);
-         m_glassImageCombo.ShowWindow(isDmdOrAlpha);
-         GetDlgItem(IDC_STATIC26).ShowWindow(isDmdOrAlpha);
-         m_glassRoughnessEdit.ShowWindow(isDmdOrAlpha);
-         GetDlgItem(IDC_STATIC27).ShowWindow(isDmdOrAlpha);
-         m_glassAmbientButton.ShowWindow(isDmdOrAlpha);
-         GetDlgItem(IDC_STATIC28).ShowWindow(isDmdOrAlpha);
-         m_glassPadTopEdit.ShowWindow(isDmdOrAlpha);
-         m_glassPadBottomEdit.ShowWindow(isDmdOrAlpha);
-         GetDlgItem(IDC_STATIC29).ShowWindow(isDmdOrAlpha);
-         m_glassPadLeftEdit.ShowWindow(isDmdOrAlpha);
-         m_glassPadRightEdit.ShowWindow(isDmdOrAlpha);
+         GetDlgItem(IDC_STATIC25).ShowWindow(isDisplay);
+         m_glassImageCombo.ShowWindow(isDisplay);
+         GetDlgItem(IDC_STATIC26).ShowWindow(isDisplay);
+         m_glassRoughnessEdit.ShowWindow(isDisplay);
+         GetDlgItem(IDC_STATIC27).ShowWindow(isDisplay);
+         m_glassAmbientButton.ShowWindow(isDisplay);
+         GetDlgItem(IDC_STATIC28).ShowWindow(isDisplay);
+         m_glassPadTopEdit.ShowWindow(isDisplay);
+         m_glassPadBottomEdit.ShowWindow(isDisplay);
+         GetDlgItem(IDC_STATIC29).ShowWindow(isDisplay);
+         m_glassPadLeftEdit.ShowWindow(isDisplay);
+         m_glassPadRightEdit.ShowWindow(isDisplay);
 
          const int isFlasher = mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE;
          GetDlgItem(IDC_STATIC4).ShowWindow(isFlasher);
@@ -263,6 +261,7 @@ void FlasherVisualsProperty::UpdateLightmapComboBox(const PinTable *table, const
 void FlasherVisualsProperty::UpdateProperties(const int dispid)
 {
    FlasherData::RenderMode mode = static_cast<FlasherData::RenderMode>(clamp(m_modeCombo.GetCurSel(), FlasherData::FLASHER, FlasherData::ALPHASEG));
+   const bool isDisplay = mode != FlasherData::FLASHER;
    const bool isDmd = mode == FlasherData::DMD;
    const bool isFlasher = mode == FlasherData::FLASHER;
    for (int i = 0; i < m_pvsel->size(); i++)
@@ -281,7 +280,7 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
       case IDC_DMD:
          PropertyDialog::StartUndo(flash);
          flash->m_d.m_renderStyle = clamp(m_styleCombo.GetCurSel(), 0, flash->m_d.m_renderMode == FlasherData::DMD      ? (7 - 1) 
-                                                                     : flash->m_d.m_renderMode == FlasherData::DISPLAY  ? (2 - 1)
+                                                                     : flash->m_d.m_renderMode == FlasherData::DISPLAY  ? (3 - 1)
                                                                      : flash->m_d.m_renderMode == FlasherData::ALPHASEG ? (5 * 8 - 1)
                                                                      : 0);
          PropertyDialog::EndUndo(flash);
@@ -291,7 +290,10 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
          flash->m_d.m_imageSrcLink = m_linkEdit.GetWindowText().GetString();
          PropertyDialog::EndUndo(flash);
          break;
-      case IDC_GLASS_IMAGE: if (isDmd) CHECK_UPDATE_COMBO_TEXT_STRING(flash->m_d.m_szImageA, m_glassImageCombo, flash); break;
+      case IDC_GLASS_IMAGE:
+         if (isDisplay)
+            CHECK_UPDATE_COMBO_TEXT_STRING(flash->m_d.m_szImageA, m_glassImageCombo, flash);
+         break;
       case IDC_GLASS_DOT_LIGHT: CHECK_UPDATE_ITEM(flash->m_d.m_glassRoughness, PropertyDialog::GetFloatTextbox(m_glassRoughnessEdit), flash); break;
       case IDC_GLASS_AMBIENT:
       {
