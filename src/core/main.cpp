@@ -199,17 +199,23 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
       public:
          ~SDLModuleLoader() override { }
          void* Link(const std::string& directory, const std::string& file) override {
-            #if defined(_WIN32) || defined(_WIN64)
+            #if defined(_MSC_VER)
                SetDllDirectory(directory.c_str());
             #endif
-            void* module = SDL_LoadObject(file.c_str());
-            #if defined(_WIN32) || defined(_WIN64)
+            void* module = static_cast<void*>(SDL_LoadObject(file.c_str()));
+            #if defined(_MSC_VER)
                SetDllDirectory(NULL);
             #endif
             return module;
          }
-         void Unlink(void* module) override { SDL_UnloadObject(static_cast<SDL_SharedObject*>(module)); }
-         void* GetFunction(void* module, const std::string& functionName) override { return SDL_LoadFunction(static_cast<SDL_SharedObject*>(module), functionName.c_str()); }
+         void Unlink(void* module) override
+         {
+            SDL_UnloadObject(static_cast<SDL_SharedObject*>(module));
+         }
+         void* GetFunction(void* module, const std::string& functionName) override
+         {
+            return reinterpret_cast<void*>(SDL_LoadFunction(static_cast<SDL_SharedObject*>(module), functionName.c_str()));
+         }
       };
       MsgPI::MsgPluginManager::GetInstance().ScanPluginFolder(std::make_shared<SDLModuleLoader>(), g_pvp->m_myPath + "plugins",
          [](MsgPI::MsgPlugin& plugin)
