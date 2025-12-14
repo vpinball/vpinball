@@ -101,7 +101,7 @@ PinTable::~PinTable()
    for (IEditable* edit : m_vedit)
       edit->Release();
 
-   if (!m_isLiveInstance)
+   if (m_liveBaseTable == nullptr)
    { // Sounds, Fonts and images are owned by the editor's table, live table instances just use shallow copy, so don't release them
       for (size_t i = 0; i < m_vsound.size(); i++)
          delete m_vsound[i];
@@ -139,6 +139,9 @@ PinTable::~PinTable()
    if (m_hbmOffScreen)
       DeleteObject(m_hbmOffScreen);
 #endif
+
+   if (m_liveBaseTable)
+      m_liveBaseTable->Release();
 }
 
 void PinTable::FVerifySaveToClose()
@@ -747,7 +750,8 @@ PinTable* PinTable::CopyForPlay()
    CComObject<PinTable> *live_table;
    CComObject<PinTable>::CreateInstance(&live_table);
    live_table->AddRef();
-   live_table->m_isLiveInstance = true;
+   live_table->m_liveBaseTable = this;
+   AddRef(); // as the live table holds a re ference on this
 
    CComObject<PinTable> *dst = live_table;
    #ifndef __STANDALONE__
@@ -5234,14 +5238,14 @@ Texture *PinTable::ImportImage(const string &filename, const string &imagename)
    if (existing)
    {
       RemoveFromVectorSingle(m_vimage, existing);
-      if (m_isLiveInstance)
+      if (m_liveBaseTable)
          RemoveFromVectorSingle(m_vliveimage, existing);
       image->m_alphaTestValue = existing->m_alphaTestValue;
       delete existing;
    }
 
    m_vimage.push_back(image);
-   if (m_isLiveInstance)
+   if (m_liveBaseTable)
    {
       m_textureMap[image->m_name] = image;
       m_vliveimage.push_back(image);

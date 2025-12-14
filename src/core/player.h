@@ -104,9 +104,8 @@ public:
    uint32_t m_pauseTimeTarget = 0;
    bool m_step = false; // If set to true, the physics engine will do a single physic step and stop simulation (turning this flag to false)
 
-   PinTable *const m_pEditorTable; // The untouched version of the table, as it is in the editor (The Player needs it to interact with the UI)
-   PinTable *const m_ptable; // The played table, which can be modified by the script
-   bool IsEditorMode() const { return !m_ptable->m_isLiveInstance; }
+   PinTable *const m_ptable; // The played table (which can eventually be a shallow copy of a table to allow being modified by the script without changing the original table)
+   bool IsEditorMode() const { return m_ptable->m_liveBaseTable == nullptr; }
 
    ProgressDialog m_progressDialog;
 
@@ -212,7 +211,7 @@ public:
 #pragma region Rendering
 public:
    VPX::RenderOutput& GetOutput(VPXWindowId window);
-   VPX::Window *m_playfieldWnd = nullptr;
+   VPX::Window* m_playfieldWnd;
    VPX::RenderOutput m_backglassOutput;
    VPX::RenderOutput m_scoreViewOutput;
    VPX::RenderOutput m_topperOutput;

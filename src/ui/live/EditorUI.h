@@ -26,8 +26,8 @@ private:
    LiveUI &m_liveUI;
    VPinball *m_app;
    Player *m_player;
-   PinTable *m_table; // The edited table
-   PinTable *m_live_table; // The live copy of the edited table being played by the player (all properties can be changed at any time by the script)
+   PinTable *m_table; // If the player was started with a shallow copy of an original table, then points to it (nullptr otherwise)
+   PinTable *m_live_table; // The table displayed by the player
    InputManager *m_pininput;
    Renderer *m_renderer;
    vector<IEditable *> m_sortedEditables;

@@ -151,8 +151,6 @@ LiveUI::LiveUI(RenderDevice *const rd)
 {
    m_app = g_pvp;
    m_player = g_pplayer;
-   m_table = m_player->m_pEditorTable;
-   m_live_table = m_player->m_ptable;
    m_pininput = &(m_player->m_pininput);
    m_renderer = m_player->m_renderer;
    
@@ -293,7 +291,7 @@ void LiveUI::MarkdownLinkCallback(ImGui::MarkdownLinkCallbackData data)
 ImGui::MarkdownImageData LiveUI::MarkdownImageCallback(ImGui::MarkdownLinkCallbackData data)
 {
    LiveUI *const ui = (LiveUI *)data.userData;
-   Texture *const ppi = ui->m_live_table->GetImage(std::string(data.link, data.linkLength));
+   Texture *const ppi = ui->m_player->m_ptable->GetImage(std::string(data.link, data.linkLength));
    if (ppi == nullptr)
       return ImGui::MarkdownImageData {};
    std::shared_ptr<Sampler> sampler = ui->m_renderer->m_renderDevice->m_texMan.LoadTexture(ppi, false);
@@ -654,7 +652,7 @@ void LiveUI::HideUI()
    if (m_inGameUI.IsOpened())
       m_inGameUI.Close();
    m_editorUI.Close();
-   m_table->m_settings.Save();
+   m_player->m_ptable->m_settings.Save();
    g_pvp->m_settings.Save();
    m_player->SetPlayState(true);
 }

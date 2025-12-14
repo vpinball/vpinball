@@ -208,7 +208,7 @@ EditorUI::EditorUI(LiveUI &liveUI)
    m_StartTime_msec = msec();
    m_app = g_pvp;
    m_player = g_pplayer;
-   m_table = m_player->m_pEditorTable;
+   m_table = m_player->m_ptable->m_liveBaseTable;
    m_live_table = m_player->m_ptable;
    m_pininput = &(m_player->m_pininput);
    m_renderer = m_player->m_renderer;

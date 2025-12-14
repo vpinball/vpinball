@@ -957,7 +957,7 @@ STDMETHODIMP ScriptGlobalTable::LoadTexture(BSTR imageName, BSTR fileName)
 
    const string szImageName = MakeString(imageName);
    // Do not allow to load an image with the same name as one of the edited table as they would conflict
-   if (g_pplayer->m_pEditorTable->GetImage(szImageName))
+   if (m_pt->GetImage(szImageName))
       return E_FAIL;
 
    Texture *image = m_pt->ImportImage(MakeString(fileName), szImageName);

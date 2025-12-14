@@ -573,7 +573,7 @@ public:
    string m_iniFileName;
    Settings m_settings; // Settings for this table (apply overrides above application settings)
 
-   bool m_isLiveInstance = false; // true for live shallow copy of a table
+   PinTable * m_liveBaseTable = nullptr; // Defined when this table is a live shallow copy of another table
    ankerl::unordered_dense::map<void *, void *> m_startupToLive; // For live table, maps back and forth to startup table editable parts, materials,...
    ankerl::unordered_dense::map<void *, void *> m_liveToStartup;
 
