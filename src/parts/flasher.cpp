@@ -1281,111 +1281,74 @@ void Flasher::Render(const unsigned int renderMask)
                             : dmd.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565
                                                                                       : BaseTexture::SRGB, dmd.state.frame);
          }
-         if (m_renderFrame == nullptr)
+         if (m_renderFrame != nullptr)
          {
-            if (m_backglass)
-               g_pplayer->m_renderer->UpdateBasicShaderMatrix();
-            return;
+            Texture *const glass = m_ptable->GetImage(m_d.m_szImageA);
+            if (m_d.m_modulate_vs_add < 1.f)
+               m_rd->EnableAlphaBlend(m_d.m_addBlend);
+            else
+               m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+            m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+            const vec3 dotTint = m_renderFrame->m_format == BaseTexture::BW_FP32 ? vec3(color.x, color.y, color.z) : vec3(1.f, 1.f, 1.f);
+            const int dmdProfile = clamp(m_d.m_renderStyle, 0, 7);
+            g_pplayer->m_renderer->SetupDMDRender(dmdProfile, false, dotTint, color.w, m_renderFrame, m_d.m_modulate_vs_add, m_backglass ? Renderer::Reinhard : Renderer::Linear,
+               m_transformedVertices, vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom), vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness,
+               glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f), vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
+            // DMD flasher are rendered transparent. They used to be drawn as a separate pass after opaque parts and before other transparents.
+            // There we shift the depthbias to reproduce this behavior for backward compatibility.
+            m_rd->DrawMesh(m_rd->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
          }
-         Texture *const glass = m_ptable->GetImage(m_d.m_szImageA);
-         if (m_d.m_modulate_vs_add < 1.f)
-            m_rd->EnableAlphaBlend(m_d.m_addBlend);
-         else
-            m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-         m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-         const vec3 dotTint = m_renderFrame->m_format == BaseTexture::BW_FP32 ? vec3(color.x, color.y, color.z) : vec3(1.f, 1.f, 1.f);
-         const int dmdProfile = clamp(m_d.m_renderStyle, 0, 7);
-         g_pplayer->m_renderer->SetupDMDRender(dmdProfile, false, dotTint, color.w, m_renderFrame, m_d.m_modulate_vs_add, m_backglass ? Renderer::Reinhard : Renderer::Linear, m_transformedVertices,
-            vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom),
-            vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness, 
-            glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f), vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
-         // DMD flasher are rendered transparent. They used to be drawn as a separate pass after opaque parts and before other transparents.
-         // There we shift the depthbias to reproduce this behavior for backward compatibility.
-         m_rd->DrawMesh(m_rd->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
          break;
       }
 
       case FlasherData::DISPLAY:
       {
          const ResURIResolver::DisplayState display = g_pplayer->m_resURIResolver.GetDisplayState(m_d.m_imageSrcLink);
-         if (display.state.frame == nullptr)
+         if (display.state.frame != nullptr)
          {
-            if (m_backglass)
-               g_pplayer->m_renderer->UpdateBasicShaderMatrix();
-            return;
-         }
-         BaseTexture::Update(m_renderFrame, display.source->width, display.source->height, 
-                        display.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F ? BaseTexture::BW_FP32
-                     : display.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565
-                                                                                   : BaseTexture::SRGB,
-            display.state.frame);
-         if (m_d.m_modulate_vs_add < 1.f)
-            m_rd->EnableAlphaBlend(m_d.m_addBlend);
-         else
-            m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-         const int displayProfile = clamp(m_d.m_renderStyle, 0, 1);  // 4);
-         switch (displayProfile)
-         {
-         case 0: // Pixelated
-            m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, m_renderFrame.get(), false, SF_NONE);
-            m_rd->m_flasherShader->SetVector(SHADER_staticColor_Alpha, color.x * color.w, color.y * color.w, color.z * color.w, 1.f);
-            m_rd->m_flasherShader->SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, -1.f, -1.f, 0.f, m_d.m_addBlend ? 1.f : 0.f);
-            m_rd->m_flasherShader->SetVector(SHADER_amount_blend_modulate_vs_add_flasherMode, 0.f, clampedModulateVsAdd, 0.f, 0.f);
+            BaseTexture::Update(m_renderFrame, display.source->width, display.source->height,
+               display.source->frameFormat == CTLPI_DISPLAY_FORMAT_LUM32F       ? BaseTexture::BW_FP32
+                  : display.source->frameFormat == CTLPI_DISPLAY_FORMAT_SRGB565 ? BaseTexture::SRGB565
+                                                                                : BaseTexture::SRGB,
+               display.state.frame);
+            Texture *const glass = m_ptable->GetImage(m_d.m_szImageA);
+            if (m_d.m_modulate_vs_add < 1.f)
+               m_rd->EnableAlphaBlend(m_d.m_addBlend);
+            else
+               m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
             m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-            m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
-            m_rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
-            m_rd->SetRenderState(RenderState::DESTBLEND, m_d.m_addBlend ? RenderState::INVSRC_COLOR : RenderState::INVSRC_ALPHA);
-            m_rd->SetRenderState(RenderState::BLENDOP, m_d.m_addBlend ? RenderState::BLENDOP_REVSUBTRACT : RenderState::BLENDOP_ADD);
-            m_rd->m_flasherShader->SetTechnique(SHADER_TECHNIQUE_basic_noLight);
-            break;
-         case 1: // Smoothed
-            m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, m_renderFrame.get(), false, SF_TRILINEAR);
-            m_rd->m_flasherShader->SetVector(SHADER_staticColor_Alpha, color.x * color.w, color.y * color.w, color.z * color.w, 1.f);
-            m_rd->m_flasherShader->SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, -1.f, -1.f, 0.f, m_d.m_addBlend ? 1.f : 0.f);
-            m_rd->m_flasherShader->SetVector(SHADER_amount_blend_modulate_vs_add_flasherMode, 0.f, clampedModulateVsAdd, 0.f, 0.f);
-            m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-            m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
-            m_rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
-            m_rd->SetRenderState(RenderState::DESTBLEND, m_d.m_addBlend ? RenderState::INVSRC_COLOR : RenderState::INVSRC_ALPHA);
-            m_rd->SetRenderState(RenderState::BLENDOP, m_d.m_addBlend ? RenderState::BLENDOP_REVSUBTRACT : RenderState::BLENDOP_ADD);
-            m_rd->m_flasherShader->SetTechnique(SHADER_TECHNIQUE_basic_noLight);
-            break;
-         case 2: // ScaleFX
-            assert(false); // Not yet implemented
-            break;
-         case 3: // Vertical CRT
-            assert(false); // Not yet implemented
-            break;
-         case 4: // Horizontal CRT
-            assert(false); // Not yet implemented
-            break;
+            const vec3 crtTint = vec3(color.x, color.y, color.z);
+            const int crtProfile = clamp(m_d.m_renderStyle, 0, 2);
+            g_pplayer->m_renderer->SetupCRTRender(crtProfile, false, crtTint, color.w, m_renderFrame, m_d.m_modulate_vs_add, m_backglass ? Renderer::Reinhard : Renderer::Linear,
+               m_transformedVertices, vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom), vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness,
+               glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f), vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
+            // We also apply the depth bias shift, not for backward compatibility (as display did not exist before 10.8.1) but for consistency between DMD and Display mode
+            m_rd->DrawMesh(m_rd->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
          }
-         // We also apply the depth bias shift, not for backward compatibility (as display did not exist before 10.8.1) but for consistency between DMD and Display mode
-         m_rd->DrawMesh(m_rd->m_flasherShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
          break;
       }
 
       case FlasherData::ALPHASEG:
       {
          const ResURIResolver::SegDisplayState segs = g_pplayer->m_resURIResolver.GetSegDisplayState(m_d.m_imageSrcLink);
-         if (segs.state.frame == nullptr || segs.source->nElements == 0)
-            return;
-         Texture *const glass = m_ptable->GetImage(m_d.m_szImageA);
-         // We always use max blending as segment may overlap in the glass diffuse: we retain the most lighted one which is wrong but looks ok (otherwise we would have to deal with colorspace conversions and layering between glass and emitter)
-         m_rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_MAX);
-         m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
-         m_rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
-         m_rd->SetRenderState(RenderState::DESTBLEND, RenderState::ONE);
-         m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-         const int renderStyle = clamp(m_d.m_renderStyle % 8, 0, 7); // Shading settings
-         const Renderer::SegmentFamily segFamily = static_cast<Renderer::SegmentFamily>(clamp(m_d.m_renderStyle / 8, 0, 4)); // Segments shape
-         g_pplayer->m_renderer->SetupSegmentRenderer(renderStyle, false, vec3(color.x, color.y, color.z), color.w,
-            segFamily, segs.source->elementType[0], segs.state.frame, m_backglass ? Renderer::Reinhard : Renderer::Linear, m_transformedVertices,
-            vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom),
-            vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness, glass ? glass : nullptr, vec4(0.f, 0.f , 1.f, 1.f), 
-            vec3(GetRValue(m_d.m_glassAmbient)/255.f, GetGValue(m_d.m_glassAmbient)/255.f, GetBValue(m_d.m_glassAmbient)/255.f));
-         // We also apply the depth bias shift, not for backward compatibility (as alphaseg display did not exist before 10.8.1) but for consistency between DMD and Display mode
-         m_rd->DrawMesh(m_rd->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
+         if (segs.state.frame != nullptr && segs.source->nElements != 0)
+         {
+            Texture *const glass = m_ptable->GetImage(m_d.m_szImageA);
+            // We always use max blending as segment may overlap in the glass diffuse: we retain the most lighted one which is wrong but looks ok (otherwise we would have to deal with colorspace conversions and layering between glass and emitter)
+            m_rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_MAX);
+            m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+            m_rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
+            m_rd->SetRenderState(RenderState::DESTBLEND, RenderState::ONE);
+            m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+            const int renderStyle = clamp(m_d.m_renderStyle % 8, 0, 7); // Shading settings
+            const Renderer::SegmentFamily segFamily = static_cast<Renderer::SegmentFamily>(clamp(m_d.m_renderStyle / 8, 0, 4)); // Segments shape
+            g_pplayer->m_renderer->SetupSegmentRenderer(renderStyle, false, vec3(color.x, color.y, color.z), color.w, segFamily, segs.source->elementType[0], segs.state.frame,
+               m_backglass ? Renderer::Reinhard : Renderer::Linear, m_transformedVertices, vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom),
+               vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness, glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f),
+               vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
+            // We also apply the depth bias shift, not for backward compatibility (as alphaseg display did not exist before 10.8.1) but for consistency between DMD and Display mode
+            m_rd->DrawMesh(m_rd->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
+         }
          break;
       }
    }

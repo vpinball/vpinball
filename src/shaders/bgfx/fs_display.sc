@@ -92,6 +92,30 @@ vec3 ReinhardToneMap(vec3 color)
 //
 
 #ifdef CRT
+	uniform vec4 vRes_Alpha_time;
+	#define crtSize        (vRes_Alpha_time.xy)   // input display size in pixels
+	#define crtMode        (displayProperties.x)  // main render mode (pixels, smoothed, vertical CRT, horizontal CRT)
+	#define outSize        (displayProperties.yz) // output display size in pixels
+
+	// See definition in include header, and experiment here: https://www.shadertoy.com/view/MtSfRK
+	// #define CRTS_DEBUG 1
+	#define CRTS_GPU 1
+	#define CRTS_GLSL 1
+	//#define CRTS_2_TAP 1
+	#define CRTS_TONE 1
+	#define CRTS_CONTRAST 0
+	#define CRTS_SATURATION 0
+	#define CRTS_WARP 1
+	//#define CRTS_MASK_GRILLE 1
+	//#define CRTS_MASK_GRILLE_LITE 1
+	//#define CRTS_MASK_NONE 1
+	#define CRTS_MASK_SHADOW 1
+	// Setup the function which returns input image color
+	vec3 CrtsFetch(vec2 uv) {
+		return InvGamma(texelFetch(displayTex, uv * crtSize, 0).rgb);
+	}
+	
+	#include "fs_crt_lottes.fs"
 
 #endif
 
@@ -183,9 +207,33 @@ void main()
 			}
 		
 	#elif defined(CRT)
-		// TODO implement CRT shading (see Lottes public domain CRT shader)
 		float unlitLum = 0.0;
-		vec3 litLum = vec3_splat(0.0);
+		vec3 litLum;
+		if (crtMode == 0.0) // Pixelated
+		{
+			litLum = texelFetch(displayTex,  displayUv * crtSize, 0).rgb;
+		}
+		else if (crtMode == 1.0) // Smoothed
+		{
+			litLum = texture2D(displayTex, displayUv).rgb;
+		}
+		else if (crtMode == 2.0) // CRT
+		{
+			litLum = CrtsFilter(
+			  displayUv * outSize, // Input position
+			  crtSize / outSize, // inputSize / outputSize (in pixels)
+			  crtSize * vec2(0.5,0.5), // half input size
+			  1.0 / crtSize, // 1.0 / input size
+			  1.0 / outSize, // 1.0 / output size
+			  2.0 / outSize, // 2.0 / output size
+			  crtSize.y, // input height
+			  vec2(1.0/48.0,1.0/24.0), // x and y warp
+			  0.7, // Scanline thinness (same as third of CrtsTone below)
+			  -2.5, // Horizonal scan blur
+			  0.5, // Shadow mask effect (same as last of CrtsTone below)
+			  CrtsTone(1.0,0.0,0.7,0.5));
+		}
+		litLum *= lit;
 		
 	#endif
 
