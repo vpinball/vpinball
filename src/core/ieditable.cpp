@@ -56,8 +56,12 @@ void IEditable::SetPartGroup(PartGroup* partGroup)
 
 string IEditable::GetPathString(const bool isDirOnly) const
 {
-   vector<const PartGroup*> itemPath;
    const PartGroup* parent = GetPartGroup();
+   if (parent == nullptr)
+      return GetName();
+   if (parent->GetPartGroup() == nullptr)
+      return parent->GetName() + '/' + GetName();
+   vector<const PartGroup *> itemPath;
    while (parent != nullptr)
    {
       itemPath.insert(itemPath.begin(), parent);
