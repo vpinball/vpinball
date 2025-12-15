@@ -232,6 +232,23 @@
 #define SSE2NEON_ARCH_AARCH64 0
 #endif
 
+/* Endianness check
+ *
+ * SSE2NEON assumes little-endian byte ordering for lane-to-memory mappings.
+ * Big-endian ARM targets would produce silently incorrect results because
+ * SSE intrinsics define lane ordering relative to little-endian memory layout.
+ *
+ * GCC/Clang define __BYTE_ORDER__. For compilers that don't (e.g., MSVC),
+ * we check for explicit big-endian ARM macros. MSVC only targets little-endian
+ * ARM, so no additional check is needed there.
+ */
+#if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__)
+#error "sse2neon requires little-endian target; big-endian is not supported"
+#elif defined(__ARMEB__) || defined(__AARCH64EB__) || \
+    defined(__BIG_ENDIAN__) || defined(_BIG_ENDIAN)
+#error "sse2neon requires little-endian target; big-endian is not supported"
+#endif
+
 /* compiler specific definitions */
 #if SSE2NEON_COMPILER_GCC_COMPAT
 #pragma push_macro("FORCE_INLINE")
@@ -527,11 +544,21 @@ FORCE_INLINE void _sse2neon_smp_mb(void)
 #define _MM_ROUND_UP 0x4000
 #define _MM_ROUND_TOWARD_ZERO 0x6000
 #define _MM_ROUND_MASK 0x6000
-/* Flush zero mode macros. */
+/* Flush-to-zero (FTZ) mode macros.
+ * On x86, FTZ (MXCSR bit 15) flushes denormal outputs to zero.
+ * On ARM, FPCR/FPSCR bit 24 provides unified FZ+DAZ behavior.
+ * ARMv7 NEON: Per ARM ARM, Advanced SIMD has "Flush-to-zero mode always
+ *   enabled" - denormals flush regardless of FPSCR.FZ (some impls may vary).
+ * ARMv8: FPCR.FZ correctly controls denormal handling for NEON ops.
+ */
 #define _MM_FLUSH_ZERO_MASK 0x8000
 #define _MM_FLUSH_ZERO_ON 0x8000
 #define _MM_FLUSH_ZERO_OFF 0x0000
-/* Denormals are zeros mode macros. */
+/* Denormals-are-zero (DAZ) mode macros.
+ * On x86, DAZ (MXCSR bit 6) treats denormal inputs as zero.
+ * On ARM, setting DAZ enables the same FPCR/FPSCR bit 24 as FTZ,
+ * providing unified handling for both input and output denormals.
+ */
 #define _MM_DENORMALS_ZERO_MASK 0x0040
 #define _MM_DENORMALS_ZERO_ON 0x0040
 #define _MM_DENORMALS_ZERO_OFF 0x0000
@@ -850,6 +877,27 @@ FORCE_INLINE int64_t _sse2neon_cvtf_s64(float v)
     return _sse2neon_static_cast(int64_t, v);
 }
 
+/* Vectorized helper: apply x86 saturation semantics to NEON conversion result.
+ * ARM returns 0 for NaN and INT32_MAX for positive overflow, but x86 returns
+ * INT32_MIN ("integer indefinite") for both. This function fixes up the result.
+ */
+FORCE_INLINE int32x4_t _sse2neon_cvtps_epi32_fixup(float32x4_t f, int32x4_t cvt)
+{
+    /* Detect values >= 2147483648.0f (out of INT32 range) */
+    float32x4_t max_f = vdupq_n_f32(2147483648.0f);
+    uint32x4_t overflow = vcgeq_f32(f, max_f);
+
+    /* Detect NaN: x != x for NaN values */
+    uint32x4_t is_nan = vmvnq_u32(vceqq_f32(f, f));
+
+    /* Combine: any overflow or NaN should produce INT32_MIN */
+    uint32x4_t need_indefinite = vorrq_u32(overflow, is_nan);
+
+    /* Blend: select INT32_MIN where needed */
+    int32x4_t indefinite = vdupq_n_s32(INT32_MIN);
+    return vbslq_s32(need_indefinite, indefinite, cvt);
+}
+
 /* SSE macros */
 #define _MM_GET_FLUSH_ZERO_MODE _sse2neon_mm_get_flush_zero_mode
 #define _MM_SET_FLUSH_ZERO_MODE _sse2neon_mm_set_flush_zero_mode
@@ -910,6 +958,38 @@ FORCE_INLINE uint8x16x4_t _sse2neon_vld1q_u8_x4(const uint8_t *p)
 }
 #endif
 
+/* Wrapper for vcreate_u64 to handle Apple iOS toolchain variations.
+ * On iOS, vcreate_u64 may be defined as a macro in arm_neon.h, which can
+ * cause parsing issues in complex macro expansions.
+ * This wrapper provides a function-call interface using vdup_n_u64(), which
+ * is bit-exact and avoids macro expansion pitfalls.
+ *
+ * Other AArch64 platforms (Linux, macOS, Android) use native vcreate_u64.
+ *
+ * User override: Define SSE2NEON_IOS_COMPAT=1 to enable,
+ *                or SSE2NEON_IOS_COMPAT=0 to disable.
+ */
+#if defined(__APPLE__) && SSE2NEON_ARCH_AARCH64
+#include <TargetConditionals.h>
+#endif
+
+#ifndef SSE2NEON_IOS_COMPAT
+#if defined(__APPLE__) && SSE2NEON_ARCH_AARCH64 && TARGET_OS_IOS
+#define SSE2NEON_IOS_COMPAT 1
+#else
+#define SSE2NEON_IOS_COMPAT 0
+#endif
+#endif
+
+#if SSE2NEON_IOS_COMPAT
+FORCE_INLINE uint64x1_t _sse2neon_vcreate_u64(uint64_t a)
+{
+    return vdup_n_u64(a);
+}
+#else
+#define _sse2neon_vcreate_u64(a) vcreate_u64(a)
+#endif
+
 #if !SSE2NEON_ARCH_AARCH64
 /* emulate vaddv u8 variant */
 FORCE_INLINE uint8_t _sse2neon_vaddv_u8(uint8x8_t v8)
@@ -958,6 +1038,33 @@ FORCE_INLINE uint16_t _sse2neon_vaddvq_u16(uint16x8_t a)
 FORCE_INLINE uint16_t _sse2neon_vaddvq_u16(uint16x8_t a)
 {
     return vaddvq_u16(a);
+}
+#endif
+
+/* Fast "any nonzero" check for horizontal reduction in PCMPXSTR operations.
+ * These helpers are optimized for the "any match" test pattern common in
+ * string comparison intrinsics. On ARMv7, OR-based reduction is used instead
+ * of max-based reduction for slightly better performance on some cores.
+ *
+ * For NEON comparison results (0x00 or 0xFF per lane), OR-based reduction
+ * correctly detects any nonzero element because: max(a,b) > 0 IFF OR(a,b) != 0
+ */
+#if !SSE2NEON_ARCH_AARCH64
+/* ARMv7: OR-based reduction - 3 ops vs 4 ops for vpmax cascade */
+FORCE_INLINE uint32_t _sse2neon_any_nonzero_u8x16(uint8x16_t v)
+{
+    uint32x4_t as_u32 = vreinterpretq_u32_u8(v);
+    uint32x2_t or_half = vorr_u32(vget_low_u32(as_u32), vget_high_u32(as_u32));
+    uint32x2_t or_final = vorr_u32(or_half, vrev64_u32(or_half));
+    return vget_lane_u32(or_final, 0);
+}
+
+FORCE_INLINE uint32_t _sse2neon_any_nonzero_u16x8(uint16x8_t v)
+{
+    uint32x4_t as_u32 = vreinterpretq_u32_u16(v);
+    uint32x2_t or_half = vorr_u32(vget_low_u32(as_u32), vget_high_u32(as_u32));
+    uint32x2_t or_final = vorr_u32(or_half, vrev64_u32(or_half));
+    return vget_lane_u32(or_final, 0);
 }
 #endif
 
@@ -2003,16 +2110,19 @@ FORCE_INLINE int64_t _mm_cvtss_si64(__m128 a)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cvtt_ps2pi
 FORCE_INLINE __m64 _mm_cvtt_ps2pi(__m128 a)
 {
-    return vreinterpret_m64_s32(
-        vget_low_s32(vcvtq_s32_f32(vreinterpretq_f32_m128(a))));
+    float32x4_t f = vreinterpretq_f32_m128(a);
+    int32x4_t cvt = vcvtq_s32_f32(f);
+    int32x4_t result = _sse2neon_cvtps_epi32_fixup(f, cvt);
+    return vreinterpret_m64_s32(vget_low_s32(result));
 }
 
 // Convert the lower single-precision (32-bit) floating-point element in a to a
 // 32-bit integer with truncation, and store the result in dst.
+// x86 returns INT32_MIN for NaN and out-of-range values.
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cvtt_ss2si
 FORCE_INLINE int _mm_cvtt_ss2si(__m128 a)
 {
-    return vgetq_lane_s32(vcvtq_s32_f32(vreinterpretq_f32_m128(a)), 0);
+    return _sse2neon_cvtf_s32(vgetq_lane_f32(vreinterpretq_f32_m128(a), 0));
 }
 
 // Convert packed single-precision (32-bit) floating-point elements in a to
@@ -2027,11 +2137,11 @@ FORCE_INLINE int _mm_cvtt_ss2si(__m128 a)
 
 // Convert the lower single-precision (32-bit) floating-point element in a to a
 // 64-bit integer with truncation, and store the result in dst.
+// x86 returns INT64_MIN for NaN and out-of-range values.
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cvttss_si64
 FORCE_INLINE int64_t _mm_cvttss_si64(__m128 a)
 {
-    return _sse2neon_static_cast(int64_t,
-                                 vgetq_lane_f32(vreinterpretq_f32_m128(a), 0));
+    return _sse2neon_cvtf_s64(vgetq_lane_f32(vreinterpretq_f32_m128(a), 0));
 }
 
 // Divide packed single-precision (32-bit) floating-point elements in a by
@@ -2808,12 +2918,19 @@ FORCE_INLINE __m128 _mm_set1_ps(float _w)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_setcsr
 // The MXCSR register contains the following fields:
 // - Bits 13-14: Rounding mode
-// - Bit 15: Flush-to-zero mode
-// - Bit 6: Denormals-are-zero mode
+// - Bit 15 (FZ): Flush-to-zero mode - output denormals become zero
+// - Bit 6 (DAZ): Denormals-are-zero mode - input denormals treated as zero
 // Exception flags and masks (bits 0-5, 7-12) are not supported on ARM NEON.
-// Note: On ARM, FPCR bit 24 controls flush-to-zero for both inputs (DAZ-like)
-// and outputs (FZ-like). Setting either FZ or DAZ enables this unified
-// behavior.
+//
+// ARM Platform Limitations:
+// - ARM FPCR/FPSCR bit 24 controls a unified flush-to-zero behavior that
+//   handles both input denormals (like DAZ) and output denormals (like FZ).
+// - Setting either _MM_FLUSH_ZERO_ON or _MM_DENORMALS_ZERO_ON enables the
+//   same ARM bit 24, providing unified FZ+DAZ behavior.
+// - ARMv7 (AArch32) NEON: Per ARM ARM, Advanced SIMD has "Flush-to-zero mode
+//   always enabled" regardless of FPSCR.FZ. Some implementations may vary.
+// - ARMv8 (AArch64): The FPCR.FZ bit correctly controls denormal handling
+//   for both NEON and scalar floating-point operations.
 FORCE_INLINE void _mm_setcsr(unsigned int a)
 {
     _MM_SET_ROUNDING_MODE(a & _MM_ROUND_MASK);
@@ -2827,12 +2944,17 @@ FORCE_INLINE void _mm_setcsr(unsigned int a)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_getcsr
 // The MXCSR register contains the following fields:
 // - Bits 13-14: Rounding mode
-// - Bit 15: Flush-to-zero mode
-// - Bit 6: Denormals-are-zero mode
+// - Bit 15 (FZ): Flush-to-zero mode - output denormals become zero
+// - Bit 6 (DAZ): Denormals-are-zero mode - input denormals treated as zero
 // Exception flags and masks (bits 0-5, 7-12) are not supported on ARM NEON.
-// Note: On ARM, FPCR bit 24 controls both FZ and DAZ behavior. When enabled,
-// both FZ and DAZ bits will be reported as set (cannot distinguish which was
-// originally requested).
+//
+// ARM Platform Limitations:
+// - On ARM, FPCR/FPSCR bit 24 provides unified FZ+DAZ behavior. When enabled,
+//   both _MM_FLUSH_ZERO_ON and _MM_DENORMALS_ZERO_ON bits will be reported
+//   as set (the original setting cannot be distinguished).
+// - ARMv7 (AArch32) NEON: The returned FZ/DAZ bits reflect FPSCR settings,
+//   but per ARM ARM, NEON operations always flush denormals (impl may vary).
+// - See _mm_setcsr documentation for full platform limitation details.
 FORCE_INLINE unsigned int _mm_getcsr(void)
 {
     return _MM_GET_ROUNDING_MODE() | _MM_GET_FLUSH_ZERO_MODE() |
@@ -4280,58 +4402,68 @@ FORCE_INLINE __m128d _mm_cvtpi32_pd(__m64 a)
 
 // Convert packed single-precision (32-bit) floating-point elements in a to
 // packed 32-bit integers, and store the results in dst.
+// x86 returns INT32_MIN ("integer indefinite") for NaN and out-of-range values.
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cvtps_epi32
 // *NOTE*. The default rounding mode on SSE is 'round to even', which ARMv7-A
 // does not support! It is supported on ARMv8-A however.
 FORCE_INLINE __m128i _mm_cvtps_epi32(__m128 a)
 {
 #if defined(__ARM_FEATURE_FRINT)
-    return vreinterpretq_m128i_s32(vcvtq_s32_f32(vrnd32xq_f32(a)));
+    float32x4_t f = vreinterpretq_f32_m128(a);
+    int32x4_t cvt = vcvtq_s32_f32(vrnd32xq_f32(f));
+    return vreinterpretq_m128i_s32(_sse2neon_cvtps_epi32_fixup(f, cvt));
 #elif SSE2NEON_ARCH_AARCH64 || defined(__ARM_FEATURE_DIRECTED_ROUNDING)
+    float32x4_t f = vreinterpretq_f32_m128(a);
+    int32x4_t cvt;
     switch (_MM_GET_ROUNDING_MODE()) {
     case _MM_ROUND_NEAREST:
-        return vreinterpretq_m128i_s32(vcvtnq_s32_f32(a));
+        cvt = vcvtnq_s32_f32(f);
+        break;
     case _MM_ROUND_DOWN:
-        return vreinterpretq_m128i_s32(vcvtmq_s32_f32(a));
+        cvt = vcvtmq_s32_f32(f);
+        break;
     case _MM_ROUND_UP:
-        return vreinterpretq_m128i_s32(vcvtpq_s32_f32(a));
+        cvt = vcvtpq_s32_f32(f);
+        break;
     default:  // _MM_ROUND_TOWARD_ZERO
-        return vreinterpretq_m128i_s32(vcvtq_s32_f32(a));
+        cvt = vcvtq_s32_f32(f);
+        break;
     }
+    return vreinterpretq_m128i_s32(_sse2neon_cvtps_epi32_fixup(f, cvt));
 #else
     float *f = _sse2neon_reinterpret_cast(float *, &a);
     switch (_MM_GET_ROUNDING_MODE()) {
     case _MM_ROUND_NEAREST: {
+        float32x4_t fv = vreinterpretq_f32_m128(a);
         uint32x4_t signmask = vdupq_n_u32(0x80000000);
-        float32x4_t half = vbslq_f32(signmask, vreinterpretq_f32_m128(a),
-                                     vdupq_n_f32(0.5f)); /* +/- 0.5 */
-        int32x4_t r_normal = vcvtq_s32_f32(vaddq_f32(
-            vreinterpretq_f32_m128(a), half)); /* round to integer: [a + 0.5]*/
-        int32x4_t r_trunc = vcvtq_s32_f32(
-            vreinterpretq_f32_m128(a)); /* truncate to integer: [a] */
+        float32x4_t half =
+            vbslq_f32(signmask, fv, vdupq_n_f32(0.5f)); /* +/- 0.5 */
+        int32x4_t r_normal =
+            vcvtq_s32_f32(vaddq_f32(fv, half)); /* round to integer: [a + 0.5]*/
+        int32x4_t r_trunc = vcvtq_s32_f32(fv);  /* truncate to integer: [a] */
         int32x4_t plusone = vreinterpretq_s32_u32(vshrq_n_u32(
             vreinterpretq_u32_s32(vnegq_s32(r_trunc)), 31)); /* 1 or 0 */
         int32x4_t r_even = vbicq_s32(vaddq_s32(r_trunc, plusone),
                                      vdupq_n_s32(1)); /* ([a] + {0,1}) & ~1 */
         float32x4_t delta = vsubq_f32(
-            vreinterpretq_f32_m128(a),
-            vcvtq_f32_s32(r_trunc)); /* compute delta: delta = (a - [a]) */
+            fv, vcvtq_f32_s32(r_trunc)); /* compute delta: delta = (a - [a]) */
         uint32x4_t is_delta_half =
             vceqq_f32(delta, half); /* delta == +/- 0.5 */
-        return vreinterpretq_m128i_s32(
-            vbslq_s32(is_delta_half, r_even, r_normal));
+        int32x4_t result = vbslq_s32(is_delta_half, r_even, r_normal);
+        return vreinterpretq_m128i_s32(_sse2neon_cvtps_epi32_fixup(fv, result));
     }
     case _MM_ROUND_DOWN:
-        return _mm_set_epi32(floorf(f[3]), floorf(f[2]), floorf(f[1]),
-                             floorf(f[0]));
+        return _mm_set_epi32(
+            _sse2neon_cvtf_s32(floorf(f[3])), _sse2neon_cvtf_s32(floorf(f[2])),
+            _sse2neon_cvtf_s32(floorf(f[1])), _sse2neon_cvtf_s32(floorf(f[0])));
     case _MM_ROUND_UP:
-        return _mm_set_epi32(ceilf(f[3]), ceilf(f[2]), ceilf(f[1]),
-                             ceilf(f[0]));
+        return _mm_set_epi32(
+            _sse2neon_cvtf_s32(ceilf(f[3])), _sse2neon_cvtf_s32(ceilf(f[2])),
+            _sse2neon_cvtf_s32(ceilf(f[1])), _sse2neon_cvtf_s32(ceilf(f[0])));
     default:  // _MM_ROUND_TOWARD_ZERO
-        return _mm_set_epi32(_sse2neon_static_cast(int32_t, f[3]),
-                             _sse2neon_static_cast(int32_t, f[2]),
-                             _sse2neon_static_cast(int32_t, f[1]),
-                             _sse2neon_static_cast(int32_t, f[0]));
+        return _mm_set_epi32(_sse2neon_cvtf_s32(f[3]), _sse2neon_cvtf_s32(f[2]),
+                             _sse2neon_cvtf_s32(f[1]),
+                             _sse2neon_cvtf_s32(f[0]));
     }
 #endif
 }
@@ -4573,10 +4705,13 @@ FORCE_INLINE __m64 _mm_cvttpd_pi32(__m128d a)
 
 // Convert packed single-precision (32-bit) floating-point elements in a to
 // packed 32-bit integers with truncation, and store the results in dst.
+// x86 returns INT32_MIN ("integer indefinite") for NaN and out-of-range values.
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_cvttps_epi32
 FORCE_INLINE __m128i _mm_cvttps_epi32(__m128 a)
 {
-    return vreinterpretq_m128i_s32(vcvtq_s32_f32(vreinterpretq_f32_m128(a)));
+    float32x4_t f = vreinterpretq_f32_m128(a);
+    int32x4_t cvt = vcvtq_s32_f32(f);
+    return vreinterpretq_m128i_s32(_sse2neon_cvtps_epi32_fixup(f, cvt));
 }
 
 // Convert the lower double-precision (64-bit) floating-point element in a to a
@@ -5650,7 +5785,7 @@ FORCE_INLINE __m128i _mm_setzero_si128(void)
 FORCE_INLINE __m128i _mm_sll_epi16(__m128i a, __m128i count)
 {
     uint64_t c = vreinterpretq_nth_u64_m128i(count, 0);
-    if (_sse2neon_unlikely(c & ~UINT64_C(15)))
+    if (_sse2neon_unlikely(c > 15))
         return _mm_setzero_si128();
 
     int16x8_t vc = vdupq_n_s16(_sse2neon_static_cast(int16_t, c));
@@ -5663,7 +5798,7 @@ FORCE_INLINE __m128i _mm_sll_epi16(__m128i a, __m128i count)
 FORCE_INLINE __m128i _mm_sll_epi32(__m128i a, __m128i count)
 {
     uint64_t c = vreinterpretq_nth_u64_m128i(count, 0);
-    if (_sse2neon_unlikely(c & ~UINT64_C(31)))
+    if (_sse2neon_unlikely(c > 31))
         return _mm_setzero_si128();
 
     int32x4_t vc = vdupq_n_s32(_sse2neon_static_cast(int32_t, c));
@@ -5676,7 +5811,7 @@ FORCE_INLINE __m128i _mm_sll_epi32(__m128i a, __m128i count)
 FORCE_INLINE __m128i _mm_sll_epi64(__m128i a, __m128i count)
 {
     uint64_t c = vreinterpretq_nth_u64_m128i(count, 0);
-    if (_sse2neon_unlikely(c & ~UINT64_C(63)))
+    if (_sse2neon_unlikely(c > 63))
         return _mm_setzero_si128();
 
     int64x2_t vc = vdupq_n_s64(_sse2neon_static_cast(int64_t, c));
@@ -5768,12 +5903,12 @@ FORCE_INLINE __m128d _mm_sqrt_sd(__m128d a, __m128d b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_sra_epi16
 FORCE_INLINE __m128i _mm_sra_epi16(__m128i a, __m128i count)
 {
-    int64_t c = vgetq_lane_s64(count, 0);
-    if (_sse2neon_unlikely(c & ~15))
+    uint64_t c = vreinterpretq_nth_u64_m128i(count, 0);
+    if (_sse2neon_unlikely(c > 15))
         return _mm_cmplt_epi16(a, _mm_setzero_si128());
     return vreinterpretq_m128i_s16(
         vshlq_s16(vreinterpretq_s16_m128i(a),
-                  vdupq_n_s16(_sse2neon_static_cast(int16_t, -c))));
+                  vdupq_n_s16(-_sse2neon_static_cast(int16_t, c))));
 }
 
 // Shift packed 32-bit integers in a right by count while shifting in sign bits,
@@ -5781,12 +5916,12 @@ FORCE_INLINE __m128i _mm_sra_epi16(__m128i a, __m128i count)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_sra_epi32
 FORCE_INLINE __m128i _mm_sra_epi32(__m128i a, __m128i count)
 {
-    int64_t c = vgetq_lane_s64(count, 0);
-    if (_sse2neon_unlikely(c & ~31))
+    uint64_t c = vreinterpretq_nth_u64_m128i(count, 0);
+    if (_sse2neon_unlikely(c > 31))
         return _mm_cmplt_epi32(a, _mm_setzero_si128());
     return vreinterpretq_m128i_s32(
         vshlq_s32(vreinterpretq_s32_m128i(a),
-                  vdupq_n_s32(_sse2neon_static_cast(int, -c))));
+                  vdupq_n_s32(-_sse2neon_static_cast(int32_t, c))));
 }
 
 // Shift packed 16-bit integers in a right by imm8 while shifting in sign
@@ -5807,7 +5942,8 @@ FORCE_INLINE __m128i _mm_srai_epi16(__m128i a, int imm)
 // imm must be a compile-time constant in range [0, 255]
 #define _mm_srai_epi32(a, imm)                                                \
     _sse2neon_define0(                                                        \
-        __m128i, a, __m128i ret; if (_sse2neon_unlikely((imm) == 0)) {        \
+        __m128i, a, SSE2NEON_REQUIRE_CONST_RANGE(imm, 0, 255); __m128i ret;   \
+        if (_sse2neon_unlikely((imm) == 0)) {                                 \
             ret = _a;                                                         \
         } else if (_sse2neon_likely(0 < (imm) && (imm) < 32)) {               \
             ret = vreinterpretq_m128i_s32(                                    \
@@ -5823,7 +5959,7 @@ FORCE_INLINE __m128i _mm_srai_epi16(__m128i a, int imm)
 FORCE_INLINE __m128i _mm_srl_epi16(__m128i a, __m128i count)
 {
     uint64_t c = vreinterpretq_nth_u64_m128i(count, 0);
-    if (_sse2neon_unlikely(c & ~UINT64_C(15)))
+    if (_sse2neon_unlikely(c > 15))
         return _mm_setzero_si128();
 
     int16x8_t vc = vdupq_n_s16(-_sse2neon_static_cast(int16_t, c));
@@ -5836,7 +5972,7 @@ FORCE_INLINE __m128i _mm_srl_epi16(__m128i a, __m128i count)
 FORCE_INLINE __m128i _mm_srl_epi32(__m128i a, __m128i count)
 {
     uint64_t c = vreinterpretq_nth_u64_m128i(count, 0);
-    if (_sse2neon_unlikely(c & ~UINT64_C(31)))
+    if (_sse2neon_unlikely(c > 31))
         return _mm_setzero_si128();
 
     int32x4_t vc = vdupq_n_s32(-_sse2neon_static_cast(int32_t, c));
@@ -5849,7 +5985,7 @@ FORCE_INLINE __m128i _mm_srl_epi32(__m128i a, __m128i count)
 FORCE_INLINE __m128i _mm_srl_epi64(__m128i a, __m128i count)
 {
     uint64_t c = vreinterpretq_nth_u64_m128i(count, 0);
-    if (_sse2neon_unlikely(c & ~UINT64_C(63)))
+    if (_sse2neon_unlikely(c > 63))
         return _mm_setzero_si128();
 
     int64x2_t vc = vdupq_n_s64(-_sse2neon_static_cast(int64_t, c));
@@ -5859,14 +5995,16 @@ FORCE_INLINE __m128i _mm_srl_epi64(__m128i a, __m128i count)
 // Shift packed 16-bit integers in a right by imm8 while shifting in zeros, and
 // store the results in dst.
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_srli_epi16
-#define _mm_srli_epi16(a, imm)                                          \
-    _sse2neon_define0(                                                  \
-        __m128i, a, __m128i ret; if (_sse2neon_unlikely((imm) & ~15)) { \
-            ret = _mm_setzero_si128();                                  \
-        } else {                                                        \
-            ret = vreinterpretq_m128i_u16(vshlq_u16(                    \
-                vreinterpretq_u16_m128i(_a),                            \
-                vdupq_n_s16(_sse2neon_static_cast(int16_t, -(imm)))));  \
+// imm must be a compile-time constant in range [0, 255]
+#define _mm_srli_epi16(a, imm)                                              \
+    _sse2neon_define0(                                                      \
+        __m128i, a, SSE2NEON_REQUIRE_CONST_RANGE(imm, 0, 255); __m128i ret; \
+        if (_sse2neon_unlikely((imm) & ~15)) {                              \
+            ret = _mm_setzero_si128();                                      \
+        } else {                                                            \
+            ret = vreinterpretq_m128i_u16(vshlq_u16(                        \
+                vreinterpretq_u16_m128i(_a),                                \
+                vdupq_n_s16(_sse2neon_static_cast(int16_t, -(imm)))));      \
         } _sse2neon_return(ret);)
 
 // Shift packed 32-bit integers in a right by imm8 while shifting in zeros, and
@@ -5876,7 +6014,8 @@ FORCE_INLINE __m128i _mm_srl_epi64(__m128i a, __m128i count)
 // imm must be a compile-time constant in range [0, 255]
 #define _mm_srli_epi32(a, imm)                                                \
     _sse2neon_define0(                                                        \
-        __m128i, a, __m128i ret; if (_sse2neon_unlikely((imm) & ~31)) {       \
+        __m128i, a, SSE2NEON_REQUIRE_CONST_RANGE(imm, 0, 255); __m128i ret;   \
+        if (_sse2neon_unlikely((imm) & ~31)) {                                \
             ret = _mm_setzero_si128();                                        \
         } else {                                                              \
             ret = vreinterpretq_m128i_u32(                                    \
@@ -5886,9 +6025,11 @@ FORCE_INLINE __m128i _mm_srl_epi64(__m128i a, __m128i count)
 // Shift packed 64-bit integers in a right by imm8 while shifting in zeros, and
 // store the results in dst.
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_srli_epi64
+// imm must be a compile-time constant in range [0, 255]
 #define _mm_srli_epi64(a, imm)                                                \
     _sse2neon_define0(                                                        \
-        __m128i, a, __m128i ret; if (_sse2neon_unlikely((imm) & ~63)) {       \
+        __m128i, a, SSE2NEON_REQUIRE_CONST_RANGE(imm, 0, 255); __m128i ret;   \
+        if (_sse2neon_unlikely((imm) & ~63)) {                                \
             ret = _mm_setzero_si128();                                        \
         } else {                                                              \
             ret = vreinterpretq_m128i_u64(                                    \
@@ -7730,9 +7871,10 @@ FORCE_INLINE __m128 _mm_floor_ss(__m128 a, __m128 b)
 // element from b into tmp using the control in imm8. Store tmp to dst using
 // the mask in imm8 (elements are zeroed out when the corresponding bit is set).
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=insert_ps
+// imm8 must be a compile-time constant in range [0, 255]
 #define _mm_insert_ps(a, b, imm8)                                              \
     _sse2neon_define2(                                                         \
-        __m128, a, b,                                                          \
+        __m128, a, b, SSE2NEON_REQUIRE_CONST_RANGE(imm8, 0, 255);              \
         float32x4_t tmp1 =                                                     \
             vsetq_lane_f32(vgetq_lane_f32(_b, ((imm8) >> 6) & 0x3),            \
                            vreinterpretq_f32_m128(_a), 0);                     \
@@ -8075,28 +8217,36 @@ FORCE_INLINE __m128 _mm_round_ps(__m128 a, int rounding)
     }
 #else
     float *v_float = _sse2neon_reinterpret_cast(float *, &a);
+    float32x4_t v = vreinterpretq_f32_m128(a);
+
+    /* Detect values safe to convert to int32. Values outside this range
+     * (including infinity, NaN, and large finite values) must be preserved
+     * as-is since integer conversion would produce undefined results. */
+    const float32x4_t max_representable = vdupq_n_f32(2147483520.0f);
+    uint32x4_t is_safe =
+        vcleq_f32(vabsq_f32(v), max_representable); /* |v| <= max int32 */
 
     if (rounding == _MM_FROUND_TO_NEAREST_INT ||
         (rounding == _MM_FROUND_CUR_DIRECTION &&
          _MM_GET_ROUNDING_MODE() == _MM_ROUND_NEAREST)) {
         uint32x4_t signmask = vdupq_n_u32(0x80000000);
-        float32x4_t half = vbslq_f32(signmask, vreinterpretq_f32_m128(a),
-                                     vdupq_n_f32(0.5f)); /* +/- 0.5 */
-        int32x4_t r_normal = vcvtq_s32_f32(vaddq_f32(
-            vreinterpretq_f32_m128(a), half)); /* round to integer: [a + 0.5]*/
-        int32x4_t r_trunc = vcvtq_s32_f32(
-            vreinterpretq_f32_m128(a)); /* truncate to integer: [a] */
+        float32x4_t half =
+            vbslq_f32(signmask, v, vdupq_n_f32(0.5f)); /* +/- 0.5 */
+        int32x4_t r_normal =
+            vcvtq_s32_f32(vaddq_f32(v, half)); /* round to integer: [a + 0.5]*/
+        int32x4_t r_trunc = vcvtq_s32_f32(v);  /* truncate to integer: [a] */
         int32x4_t plusone = vreinterpretq_s32_u32(vshrq_n_u32(
             vreinterpretq_u32_s32(vnegq_s32(r_trunc)), 31)); /* 1 or 0 */
         int32x4_t r_even = vbicq_s32(vaddq_s32(r_trunc, plusone),
                                      vdupq_n_s32(1)); /* ([a] + {0,1}) & ~1 */
         float32x4_t delta = vsubq_f32(
-            vreinterpretq_f32_m128(a),
-            vcvtq_f32_s32(r_trunc)); /* compute delta: delta = (a - [a]) */
+            v, vcvtq_f32_s32(r_trunc)); /* compute delta: delta = (a - [a]) */
         uint32x4_t is_delta_half =
             vceqq_f32(delta, half); /* delta == +/- 0.5 */
-        return vreinterpretq_m128_f32(
-            vcvtq_f32_s32(vbslq_s32(is_delta_half, r_even, r_normal)));
+        float32x4_t rounded =
+            vcvtq_f32_s32(vbslq_s32(is_delta_half, r_even, r_normal));
+        /* Preserve original value for inputs outside int32 range */
+        return vreinterpretq_m128_f32(vbslq_f32(is_safe, rounded, v));
     } else if (rounding == _MM_FROUND_TO_NEG_INF ||
                (rounding == _MM_FROUND_CUR_DIRECTION &&
                 _MM_GET_ROUNDING_MODE() == _MM_ROUND_DOWN)) {
@@ -8470,26 +8620,24 @@ static uint16_t _sse2neon_aggregate_equal_any_8x16(int la,
     ((vmaxvq_u8(vandq_u8(vec, vreinterpretq_u8_m128i(mtx[i]))) ? 1U : 0U) \
      << (i))
     uint16_t res = _sse2neon_static_cast(
-        uint16_t, SSE2NEON_UMAXV_MATCH(0) | SSE2NEON_UMAXV_MATCH(1) |
-                      SSE2NEON_UMAXV_MATCH(2) | SSE2NEON_UMAXV_MATCH(3) |
-                      SSE2NEON_UMAXV_MATCH(4) | SSE2NEON_UMAXV_MATCH(5) |
-                      SSE2NEON_UMAXV_MATCH(6) | SSE2NEON_UMAXV_MATCH(7) |
-                      SSE2NEON_UMAXV_MATCH(8) | SSE2NEON_UMAXV_MATCH(9) |
-                      SSE2NEON_UMAXV_MATCH(10) | SSE2NEON_UMAXV_MATCH(11) |
-                      SSE2NEON_UMAXV_MATCH(12) | SSE2NEON_UMAXV_MATCH(13) |
-                      SSE2NEON_UMAXV_MATCH(14) | SSE2NEON_UMAXV_MATCH(15));
+        uint16_t, (SSE2NEON_UMAXV_MATCH(0) | SSE2NEON_UMAXV_MATCH(1) |
+                   SSE2NEON_UMAXV_MATCH(2) | SSE2NEON_UMAXV_MATCH(3) |
+                   SSE2NEON_UMAXV_MATCH(4) | SSE2NEON_UMAXV_MATCH(5) |
+                   SSE2NEON_UMAXV_MATCH(6) | SSE2NEON_UMAXV_MATCH(7) |
+                   SSE2NEON_UMAXV_MATCH(8) | SSE2NEON_UMAXV_MATCH(9) |
+                   SSE2NEON_UMAXV_MATCH(10) | SSE2NEON_UMAXV_MATCH(11) |
+                   SSE2NEON_UMAXV_MATCH(12) | SSE2NEON_UMAXV_MATCH(13) |
+                   SSE2NEON_UMAXV_MATCH(14) | SSE2NEON_UMAXV_MATCH(15)) &
+                      0xFFFFu);
 #undef SSE2NEON_UMAXV_MATCH
 #else
-    /* ARMv7: Use pairwise max for horizontal reduction */
+    /* ARMv7: Use OR-based horizontal reduction (faster than vpmax cascade).
+     * The _sse2neon_any_nonzero_u8x16 helper uses 3 OR ops vs 4 vpmax ops.
+     */
     uint16_t res = 0;
     for (int j = 0; j < 16; j++) {
         uint8x16_t masked = vandq_u8(vec, vreinterpretq_u8_m128i(mtx[j]));
-        /* Fold 16 bytes to 8 using pairwise max */
-        uint8x8_t fold = vpmax_u8(vget_low_u8(masked), vget_high_u8(masked));
-        fold = vpmax_u8(fold, fold);
-        fold = vpmax_u8(fold, fold);
-        fold = vpmax_u8(fold, fold);
-        res |= (vget_lane_u8(fold, 0) ? 1 : 0) << j;
+        res |= (_sse2neon_any_nonzero_u8x16(masked) ? 1U : 0U) << j;
     }
 #endif
     /* Mask result to valid range based on lb */
@@ -8513,22 +8661,18 @@ static uint16_t _sse2neon_aggregate_equal_any_16x8(int la,
     ((vmaxvq_u16(vandq_u16(vec, vreinterpretq_u16_m128i(mtx[i]))) ? 1U : 0U) \
      << (i))
     uint16_t res = _sse2neon_static_cast(
-        uint16_t, SSE2NEON_UMAXV_MATCH16(0) | SSE2NEON_UMAXV_MATCH16(1) |
-                      SSE2NEON_UMAXV_MATCH16(2) | SSE2NEON_UMAXV_MATCH16(3) |
-                      SSE2NEON_UMAXV_MATCH16(4) | SSE2NEON_UMAXV_MATCH16(5) |
-                      SSE2NEON_UMAXV_MATCH16(6) | SSE2NEON_UMAXV_MATCH16(7));
+        uint16_t, (SSE2NEON_UMAXV_MATCH16(0) | SSE2NEON_UMAXV_MATCH16(1) |
+                   SSE2NEON_UMAXV_MATCH16(2) | SSE2NEON_UMAXV_MATCH16(3) |
+                   SSE2NEON_UMAXV_MATCH16(4) | SSE2NEON_UMAXV_MATCH16(5) |
+                   SSE2NEON_UMAXV_MATCH16(6) | SSE2NEON_UMAXV_MATCH16(7)) &
+                      0xFFu);
 #undef SSE2NEON_UMAXV_MATCH16
 #else
-    /* ARMv7: Use pairwise max for horizontal reduction */
+    /* ARMv7: Use OR-based horizontal reduction */
     uint16_t res = 0;
     for (int j = 0; j < 8; j++) {
         uint16x8_t masked = vandq_u16(vec, vreinterpretq_u16_m128i(mtx[j]));
-        /* Fold 8 u16 to 4 using pairwise max */
-        uint16x4_t fold =
-            vpmax_u16(vget_low_u16(masked), vget_high_u16(masked));
-        fold = vpmax_u16(fold, fold);
-        fold = vpmax_u16(fold, fold);
-        res |= (vget_lane_u16(fold, 0) ? 1 : 0) << j;
+        res |= (_sse2neon_any_nonzero_u16x8(masked) ? 1U : 0U) << j;
     }
 #endif
     /* Mask result to valid range based on lb */
@@ -8568,7 +8712,8 @@ static uint16_t _sse2neon_aggregate_ranges_16x8(int la, int lb, __m128i mtx[16])
         uint16x8_t masked = vandq_u16(vec, vreinterpretq_u16_m128i(mtx[i])); \
         uint16x8_t swapped = vrev32q_u16(masked);                            \
         uint16x8_t pair_and = vandq_u16(masked, swapped);                    \
-        res |= (vmaxvq_u16(pair_and) ? 1U : 0U) << (i);                      \
+        res |= _sse2neon_static_cast(uint16_t,                               \
+                                     (vmaxvq_u16(pair_and) ? 1U : 0U) << i); \
     } while (0)
 
     uint16_t res = 0;
@@ -8627,12 +8772,13 @@ static uint16_t _sse2neon_aggregate_ranges_8x16(int la, int lb, __m128i mtx[16])
      * 3. Pair-AND: AND original with swapped to get [b0&b1, b0&b1, ...]
      * 4. Horizontal OR via vmaxvq_u8 (faster than vmaxvq_u16)
      */
-#define SSE2NEON_RANGES_MATCH8(i)                                          \
-    do {                                                                   \
-        uint8x16_t masked = vandq_u8(vec, vreinterpretq_u8_m128i(mtx[i])); \
-        uint8x16_t swapped = vrev16q_u8(masked);                           \
-        uint8x16_t pair_and = vandq_u8(masked, swapped);                   \
-        res |= (vmaxvq_u8(pair_and) ? 1U : 0U) << (i);                     \
+#define SSE2NEON_RANGES_MATCH8(i)                                              \
+    do {                                                                       \
+        uint8x16_t masked = vandq_u8(vec, vreinterpretq_u8_m128i(mtx[i]));     \
+        uint8x16_t swapped = vrev16q_u8(masked);                               \
+        uint8x16_t pair_and = vandq_u8(masked, swapped);                       \
+        res |= _sse2neon_static_cast(uint16_t, (vmaxvq_u8(pair_and) ? 1U : 0U) \
+                                                   << i);                      \
     } while (0)
 
     uint16_t res = 0;
@@ -9419,7 +9565,6 @@ FORCE_INLINE __m128i _mm_cmpgt_epi64(__m128i a, __m128i b)
 #endif
 }
 
-#if 0
 /* A function-like macro to generate CRC-32C calculation using Barrett
  * reduction.
  *
@@ -9428,6 +9573,7 @@ FORCE_INLINE __m128i _mm_cmpgt_epi64(__m128i a, __m128i b)
  * - 'v' means the element of input message.
  * - 'bit' means the element size of input message (e.g., if each message is one
  * byte then 'bit' will be 8 as 1 byte equals 8 bits.
+ * - 'shift' represents a toggle to perform shifting.
  *
  * For a reminder, the CRC calculation uses bit-reflected sense.
  *
@@ -9447,21 +9593,28 @@ FORCE_INLINE __m128i _mm_cmpgt_epi64(__m128i a, __m128i b)
  *    then shift left by 'bit' bits so that the result of carry-less
  *    multiplication will always appear in the upper half of destination vector.
  *    Doing so can reduce some masking and subtraction operations.
+ *    For one exception is that there is no need to perform shifting if 'bit'
+ *    is 64.
  * 3. Do carry-less multiplication on the lower half of 'tmp' with 'mu'.
  * 4. Do carry-less multiplication on the upper half of 'tmp' with 'p'.
  * 5. Extract the lower (in bit-reflected sense) 32 bits in the upper half of
  *    'tmp'.
  */
-#define SSE2NEON_CRC32C_BASE(crc, v, bit)                                                      \
-    do {                                                                                       \
-        crc ^= v;                                                                              \
-    uint64x2_t orig = vcombine_u64(vcreate_u64((uint64_t) (crc) << ((bit)), vcreate_u64(0x0)); \
-    uint64x2_t tmp = orig; \
-    uint64_t p = 0x105EC76F1; \
-    uint64_t mu = 0x1dea713f1; \
-    tmp = _sse2neon_vmull_p64(vget_low_u64(tmp), vcreate_u64(mu)); \
-    tmp = _sse2neon_vmull_p64(vget_high_u64(tmp), vcreate_u64(p)); \
-    crc = vgetq_lane_u32(vreinterpretq_u32_u64(tmp), 2);                                       \
+#define SSE2NEON_CRC32C_BASE(crc, v, bit, shift)                               \
+    do {                                                                       \
+        crc ^= v;                                                              \
+        uint64x2_t orig =                                                      \
+            vcombine_u64(_sse2neon_vcreate_u64(SSE2NEON_IIF(shift)(            \
+                             (uint64_t) (crc) << (bit), (uint64_t) (crc))),    \
+                         _sse2neon_vcreate_u64(0x0));                          \
+        uint64x2_t tmp = orig;                                                 \
+        uint64_t p = 0x105EC76F1;                                              \
+        uint64_t mu = 0x1dea713f1;                                             \
+        tmp =                                                                  \
+            _sse2neon_vmull_p64(vget_low_u64(tmp), _sse2neon_vcreate_u64(mu)); \
+        tmp =                                                                  \
+            _sse2neon_vmull_p64(vget_high_u64(tmp), _sse2neon_vcreate_u64(p)); \
+        crc = vgetq_lane_u32(vreinterpretq_u32_u64(tmp), 2);                   \
     } while (0)
 
 // Starting with the initial value in crc, accumulates a CRC32 value for
@@ -9478,7 +9631,7 @@ FORCE_INLINE uint32_t _mm_crc32_u16(uint32_t crc, uint16_t v)
      !SSE2NEON_COMPILER_CLANG)
     crc = __crc32ch(crc, v);
 #elif defined(__ARM_FEATURE_CRYPTO)
-    SSE2NEON_CRC32C_BASE(crc, v, 16);
+    SSE2NEON_CRC32C_BASE(crc, v, 16, 1);
 #else
     crc = _mm_crc32_u8(crc, _sse2neon_static_cast(uint8_t, v & 0xff));
     crc = _mm_crc32_u8(crc, _sse2neon_static_cast(uint8_t, (v >> 8) & 0xff));
@@ -9500,7 +9653,7 @@ FORCE_INLINE uint32_t _mm_crc32_u32(uint32_t crc, uint32_t v)
      !SSE2NEON_COMPILER_CLANG)
     crc = __crc32cw(crc, v);
 #elif defined(__ARM_FEATURE_CRYPTO)
-    SSE2NEON_CRC32C_BASE(crc, v, 32);
+    SSE2NEON_CRC32C_BASE(crc, v, 32, 1);
 #else
     crc = _mm_crc32_u16(crc, _sse2neon_static_cast(uint16_t, v & 0xffff));
     crc =
@@ -9521,6 +9674,8 @@ FORCE_INLINE uint64_t _mm_crc32_u64(uint64_t crc, uint64_t v)
 #elif (SSE2NEON_COMPILER_MSVC && SSE2NEON_ARCH_AARCH64 && \
        !SSE2NEON_COMPILER_CLANG)
     crc = __crc32cd(_sse2neon_static_cast(uint32_t, crc), v);
+#elif defined(__ARM_FEATURE_CRYPTO)
+    SSE2NEON_CRC32C_BASE(crc, v, 64, 0);
 #else
     crc = _mm_crc32_u32(_sse2neon_static_cast(uint32_t, crc),
                         _sse2neon_static_cast(uint32_t, v & 0xffffffff));
@@ -9545,7 +9700,7 @@ FORCE_INLINE uint32_t _mm_crc32_u8(uint32_t crc, uint8_t v)
      !SSE2NEON_COMPILER_CLANG)
     crc = __crc32cb(crc, v);
 #elif defined(__ARM_FEATURE_CRYPTO)
-    SSE2NEON_CRC32C_BASE(crc, v, 8);
+    SSE2NEON_CRC32C_BASE(crc, v, 8, 1);
 #else  // Fall back to the generic table lookup approach
     // Adapted from: https://create.stephan-brumme.com/crc32/
     // Apply half-byte comparison algorithm for the best ratio between
@@ -9566,7 +9721,6 @@ FORCE_INLINE uint32_t _mm_crc32_u8(uint32_t crc, uint8_t v)
 #endif
     return crc;
 }
-#endif
 
 /* AES */
 
