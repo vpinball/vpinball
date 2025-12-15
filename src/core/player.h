@@ -90,7 +90,7 @@ struct TimerOnOff
 class Player final
 {
 public:
-   Player(PinTable *const editor_table, PinTable *const live_table, const int playMode);
+   Player(PinTable *const live_table, const int playMode);
    ~Player();
 
    void LockForegroundWindow(const bool enable);
