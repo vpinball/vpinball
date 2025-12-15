@@ -96,7 +96,6 @@ VPinball::VPinball()
    m_open_minimized = false;
    m_disable_pause_menu = false;
    m_povEdit = false;
-   m_primaryDisplay = false;
    m_disEnableTrueFullscreen = -1;
    m_table_played_via_command_line = false;
    m_table_played_via_SelectTableOnStart = false;
@@ -1007,10 +1006,10 @@ void VPinball::DoPlay(const int playMode)
    PLOGI << "Starting Play mode [table: " << table->m_tableName << ", play mode: " << playMode << ']';
    ShowWindow(SW_HIDE);
    bool initError = false;
-   if (false)
+   if (playMode == 3)
    {
       // Editor mode: create a player directly on the loaded table. Only user will be allowed to modify it (no scripting, animation, ...)
-      new Player(table, table, playMode);
+      new Player(table, 2);
    }
    else
    {
@@ -1019,7 +1018,7 @@ void VPinball::DoPlay(const int playMode)
       if (live_table != nullptr)
       {
          table->EndAutoSaveCounter();
-         new Player(table, live_table, playMode);
+         new Player(live_table, playMode);
       }
    }
 

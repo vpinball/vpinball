@@ -25,15 +25,13 @@ private:
    static string GetCommandLineHelp();
    static void OnCommandLineError(const string& title, const string& message);
 
-   bool m_run = true; // Should we run the interactive mode (UI/Player)
-   bool m_play = false; // Should we start the player directly (with the provided file or after asking the user)
-   bool m_extractPov = false;
-   bool m_file = false;
+   bool m_run           = true; // Should we run the main win32 UI or Player or just exit ?
+   bool m_play          = false;
+   bool m_liveedit      = false;
+   bool m_extractPov    = false;
    bool m_extractScript = false;
-   bool m_audit = false;
-   bool m_tournament = false;
-   bool m_listSnd = false;    // Flag for -listsnd option to defer sound device enumeration
-   bool m_listRes = false;    // Flag for -listres option to defer display resolution enumeration
+   bool m_audit         = false;
+   
 #ifdef __STANDALONE__
    bool m_displayId = false;
    string m_prefPath;

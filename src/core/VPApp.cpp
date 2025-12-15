@@ -225,10 +225,12 @@ static const string options[] = { // keep in sync with option_names & option_des
    "EnableTrueFullscreen"s,
    "Minimized"s,
    "ExtMinimized"s,
-   "Primary"s,
    "GLES"s,
    "LessCPUthreads"s,
    "Edit"s,
+   #ifdef _DEBUG
+   "LiveEdit"s,
+   #endif
    "Play"s,
    "PovEdit"s,
    "Pov"s,
@@ -269,10 +271,12 @@ static const string option_descs[] =
    "Force-enable True Fullscreen setting"s,
    "Start VP in the 'invisible' minimized window mode"s,
    "Start VP in the 'invisible' minimized window mode, but with enabled Pause Menu"s,
-   "Force VP to render on the Primary/Pixel(0,0) Monitor"s,
    "[value]  Overrides the global emission scale (day/night setting, value range: 0.115..0.925)"s,
    "Limit the amount of parallel execution"s,
    "[filename]  Load file into VP"s,
+   #ifdef _DEBUG
+   "Start VP in live editor mode. if a filename is provided, loads it as the table to edit instead of the default table"s,
+   #endif
    "[filename]  Load and play file"s,
    "[filename]  Load and run file in live editing mode, then export new pov on exit"s,
    "[filename]  Load, export pov and close"s,
@@ -311,10 +315,12 @@ enum option_names
    OPTION_ENABLETRUEFULLSCREEN,
    OPTION_MINIMIZED,
    OPTION_EXTMINIMIZED,
-   OPTION_PRIMARY,
    OPTION_GLES,
    OPTION_LESSCPUTHREADS,
    OPTION_EDIT,
+   #ifdef _DEBUG
+   OPTION_LIVE_EDIT,
+   #endif
    OPTION_PLAY,
    OPTION_POVEDIT,
    OPTION_POV,
@@ -606,10 +612,12 @@ string VPApp::GetCommandLineHelp()
       "\n-"  +options[OPTION_ENABLETRUEFULLSCREEN]+ "  "+option_descs[OPTION_ENABLETRUEFULLSCREEN]+
       "\n-"  +options[OPTION_MINIMIZED]+            "  "+option_descs[OPTION_MINIMIZED]+
       "\n-"  +options[OPTION_EXTMINIMIZED]+         "  "+option_descs[OPTION_EXTMINIMIZED]+
-      "\n-"  +options[OPTION_PRIMARY]+              "  "+option_descs[OPTION_PRIMARY]+
       "\n\n-"+options[OPTION_GLES]+                 "  "+option_descs[OPTION_GLES]+
       "\n\n-"+options[OPTION_LESSCPUTHREADS]+       "  "+option_descs[OPTION_LESSCPUTHREADS]+
       "\n\n-"+options[OPTION_EDIT]+                 "  "+option_descs[OPTION_EDIT]+
+      #ifdef _DEBUG
+      "\n-"  +options[OPTION_LIVE_EDIT]+            "  "+option_descs[OPTION_LIVE_EDIT]+
+      #endif
       "\n-"  +options[OPTION_PLAY]+                 "  "+option_descs[OPTION_PLAY]+
       "\n-"  +options[OPTION_POVEDIT]+              "  "+option_descs[OPTION_POVEDIT]+
       "\n-"  +options[OPTION_POV]+                  "  "+option_descs[OPTION_POV]+
@@ -656,12 +664,8 @@ void VPApp::ProcessCommandLine(int nArgs, char* szArglist[])
    m_run = true;
    m_play = false;
    m_extractPov = false;
-   m_file = false;
    m_extractScript = false;
    m_audit = false;
-   m_tournament = false;
-   m_listSnd = false;  // Initialize flag for deferred sound device enumeration
-   m_listRes = false;  // Initialize flag for deferred display resolution enumeration
 #ifdef __STANDALONE__
    m_prefPath.clear();
    m_displayId = false;
@@ -744,11 +748,6 @@ void VPApp::ProcessCommandLine(int nArgs, char* szArglist[])
          m_vpinball.m_disEnableTrueFullscreen = 1;
          break;
 
-      case OPTION_PRIMARY:
-         m_vpinball.m_primaryDisplay = true;
-         break;
-
-         
       case OPTION_GLES: // global emission scale parameter handling
          if (i + 1 < nArgs)
          {
@@ -797,24 +796,38 @@ void VPApp::ProcessCommandLine(int nArgs, char* szArglist[])
          m_vpinball.m_open_minimized = true;
          break;
 
+      #ifdef _DEBUG
+      case OPTION_LIVE_EDIT:
+         m_liveedit = opt == OPTION_LIVE_EDIT;
+         if (i + 1 < nArgs)
+         {
+            m_tableFileName = GetPathFromArg(szArglist[i + 1], false);
+            if (FileExists(m_tableFileName))
+               i++;
+            else
+               m_tableFileName = ""s;
+         }
+         break;
+      #endif
+
       case OPTION_POVEDIT:
-         m_vpinball.m_povEdit = true;
       case OPTION_PLAY:
-         m_play = true;
       case OPTION_EDIT:
       case OPTION_AUDIT:
       case OPTION_POV:
       case OPTION_EXTRACTVBS:
+         m_vpinball.m_povEdit = opt == OPTION_POVEDIT;
+         m_play = (opt == OPTION_PLAY) || (opt == OPTION_POVEDIT);
+         m_audit = opt == OPTION_AUDIT;
+         m_extractPov = opt == OPTION_POV;
+         m_extractScript = opt == OPTION_EXTRACTVBS;
+         m_vpinball.m_open_minimized = opt != OPTION_EDIT;
+         m_run = !(opt == OPTION_AUDIT || opt == OPTION_POV || opt == OPTION_EXTRACTVBS); // Don't run the UI
          if (i + 1 >= nArgs)
          {
             OnCommandLineError("Command Line Error"s, "Option '"s + szArglist[i] + "' must be followed by a valid table file path");
             exit(1);
          }
-         m_run = !(opt == OPTION_AUDIT || opt == OPTION_POV || opt == OPTION_EXTRACTVBS); // Don't run the UI
-         m_audit = opt == OPTION_AUDIT;
-         m_extractPov = opt == OPTION_POV;
-         m_extractScript = opt == OPTION_EXTRACTVBS;
-         m_vpinball.m_open_minimized = opt != OPTION_EDIT;
          m_tableFileName = GetPathFromArg(szArglist[i + 1], false);
          i++;
          break;
@@ -860,14 +873,30 @@ void VPApp::ProcessCommandLine(int nArgs, char* szArglist[])
 
       case OPTION_LISTSND:
          // Set flag instead of processing immediately - device enumeration requires SDL initialization
-         m_listSnd = true;
-         m_run = false;
+         PLOGI << "Available sound devices:";
+         for (const VPX::AudioPlayer::AudioDevice& audioDevice : VPX::AudioPlayer::EnumerateAudioDevices())
+         {
+            PLOGI << ". " << audioDevice.name << ", channels=" << audioDevice.channels;
+         }
+         exit(0);
          break;
 
       case OPTION_LISTRES:
-         // Set flag instead of processing immediately - display enumeration requires SDL initialization
-         m_listRes = true;
-         m_run = false;
+         {
+            // SDL display subsystem is initialized in InitInstance (which is supposed to be called before ProcessCommandLine)
+            vector<VPX::Window::DisplayConfig> displays = VPX::Window::GetDisplays();
+            for (const auto& display : displays)
+            {
+               PLOGI << "Display " << display.displayName;
+               const SDL_DisplayMode* displayMode = SDL_GetDesktopDisplayMode(display.display);
+               PLOGI << ". Windowed fullscreen mode: " << displayMode->w << 'x' << displayMode->h << " (refreshRate=" << displayMode->refresh_rate << ", pixelDensity=" << displayMode->pixel_density << ')';
+               for (const auto& mode : VPX::Window::GetDisplayModes(display))
+               {
+                  PLOGI << ". Fullscreen mode: " << mode.width << 'x' << mode.height << " (depth=" << mode.depth << ", refreshRate=" << mode.refreshrate << ')';
+               }
+            }
+         }
+         exit(0);
          break;
 
       #ifndef __STANDALONE__
@@ -999,90 +1028,74 @@ BOOL VPApp::InitInstance()
 
 int VPApp::Run()
 {
-   // Process options that require complete SDL initialization
-   if (m_listSnd)
-   {
-      PLOGI << "Available sound devices:";
-      for (const VPX::AudioPlayer::AudioDevice& audioDevice : VPX::AudioPlayer::EnumerateAudioDevices())
-      {
-         PLOGI << ". " << audioDevice.name << ", channels=" << audioDevice.channels;
-      }
-      return 0;
-   }
-
-   if (m_listRes)
-   {
-      vector<VPX::Window::DisplayConfig> displays = VPX::Window::GetDisplays();
-      for (const auto& display : displays)
-      {
-         PLOGI << "Display " << display.displayName;
-         const SDL_DisplayMode* displayMode = SDL_GetDesktopDisplayMode(display.display);
-         PLOGI << ". Windowed fullscreen mode: " << displayMode->w << 'x' << displayMode->h << " (refreshRate=" << displayMode->refresh_rate << ", pixelDensity=" << displayMode->pixel_density << ')';
-         for (const auto& mode : VPX::Window::GetDisplayModes(display))
-         {
-            PLOGI << ". Fullscreen mode: " << mode.width << 'x' << mode.height << " (depth=" << mode.depth << ", refreshRate=" << mode.refreshrate << ')';
-         }
-      }
-      return 0;
-   }
-
-   // Start VP with file dialog open and then also playing that one?
-   bool loadFileResult = true;
-   const bool selectOnTableStart = m_vpinball.m_settings.GetEditor_SelectTableOnStart();
-   if (!m_tableFileName.empty() || selectOnTableStart)
-   {
-      if (!m_tableFileName.empty())
-      {
-         PLOGI << "Loading table from command line option: " << m_tableFileName;
-         m_vpinball.LoadFileName(m_tableFileName, !m_play && m_run);
-         m_vpinball.m_table_played_via_command_line = m_play;
-         loadFileResult = m_vpinball.m_ptableActive != nullptr;
-         if (m_vpinball.m_ptableActive && !m_tableIniFileName.empty())
-            m_vpinball.m_ptableActive->SetSettingsFileName(m_tableIniFileName);
-         if (!loadFileResult && m_vpinball.m_open_minimized)
-            m_vpinball.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
-      }
-      else
-      {
-         loadFileResult = m_vpinball.LoadFile(false);
-         m_vpinball.m_table_played_via_SelectTableOnStart = loadFileResult;
-      }
-
-      if (m_extractScript && loadFileResult)
-      {
-         string scriptFilename = m_tableFileName;
-         if(ReplaceExtensionFromFilename(scriptFilename, "vbs"s))
-            m_vpinball.m_ptableActive->m_pcv->SaveToFile(scriptFilename);
-      }
-
-      if (m_audit && loadFileResult)
-      {
-         m_vpinball.m_ptableActive->AuditTable(true);
-      }
-
-      if (m_extractPov && loadFileResult)
-      {
-         for (int i = 0; i < 3; i++)
-            m_vpinball.m_ptableActive->mViewSetups[i].SaveToTableOverrideSettings(m_vpinball.m_ptableActive->m_settings, (ViewSetupID) i);
-         m_vpinball.m_ptableActive->m_settings.Save();
-      }
-
-      if (m_tournament && loadFileResult)
-      {
-         m_vpinball.GenerateImageFromTournamentFile(m_tableFileName, m_tournamentFileName);
-      }
-   }
    //SET_CRT_DEBUG_FIELD( _CRTDBG_LEAK_CHECK_DF );
 
-   if ((m_play || m_vpinball.m_table_played_via_SelectTableOnStart) && loadFileResult)
-      m_vpinball.DoPlay(m_vpinball.m_povEdit);
-
-   #ifndef __STANDALONE__
-   if (!m_run)
-      m_vpinball.PostMessage(WM_CLOSE, 0, 0);
+   if (!m_tableFileName.empty())
+   {
+      PLOGI << "Loading table from command line option: " << m_tableFileName;
+      m_vpinball.LoadFileName(m_tableFileName, !m_play && m_run);
+      m_vpinball.m_table_played_via_command_line = m_play;
+      if (m_vpinball.m_ptableActive && !m_tableIniFileName.empty())
+         m_vpinball.m_ptableActive->SetSettingsFileName(m_tableIniFileName);
+      if (!m_vpinball.m_ptableActive && m_vpinball.m_open_minimized)
+         m_vpinball.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
+   }
+   #ifdef _DEBUG
+   else if (!m_liveedit && m_vpinball.m_settings.GetEditor_SelectTableOnStart())
+   #else
+   else if (m_vpinball.m_settings.GetEditor_SelectTableOnStart())
    #endif
+   {
+      m_vpinball.m_table_played_via_SelectTableOnStart = m_vpinball.LoadFile(false);
+   }
 
-   int retval = MainMsgLoop();
+   if (m_extractScript && m_vpinball.m_ptableActive)
+   {
+      string scriptFilename = m_vpinball.m_ptableActive->m_filename;
+      if(ReplaceExtensionFromFilename(scriptFilename, "vbs"s))
+         m_vpinball.m_ptableActive->m_pcv->SaveToFile(scriptFilename);
+   }
+
+   if (m_audit && m_vpinball.m_ptableActive)
+   {
+      m_vpinball.m_ptableActive->AuditTable(true);
+   }
+
+   if (m_extractPov && m_vpinball.m_ptableActive)
+   {
+      for (int i = 0; i < 3; i++)
+         m_vpinball.m_ptableActive->mViewSetups[i].SaveToTableOverrideSettings(m_vpinball.m_ptableActive->m_settings, (ViewSetupID) i);
+      m_vpinball.m_ptableActive->m_settings.Save();
+   }
+
+   if (!m_tournamentFileName.empty() && m_vpinball.m_ptableActive)
+   {
+      m_vpinball.GenerateImageFromTournamentFile(m_vpinball.m_ptableActive->m_filename, m_tournamentFileName);
+   }
+
+   #ifdef _DEBUG
+   if (m_liveedit)
+   {
+      if (m_vpinball.m_ptableActive == nullptr)
+         m_vpinball.ParseCommand(ID_NEW_BLANKTABLE, false);
+      if (m_vpinball.m_ptableActive != nullptr)
+         m_vpinball.DoPlay(3);
+      else
+         m_run = false;
+   }
+   else
+   #endif
+   if ((m_play || m_vpinball.m_table_played_via_SelectTableOnStart) && m_vpinball.m_ptableActive)
+   {
+      m_vpinball.DoPlay(m_vpinball.m_povEdit ? 1 : 0);
+   }
+
+   if (!m_run)
+   {
+      m_vpinball.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
+   }
+
+   const int retval = MainMsgLoop();
 
    m_vpinball.m_settings.Save();
 

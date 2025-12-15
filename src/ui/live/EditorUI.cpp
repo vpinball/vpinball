@@ -287,7 +287,7 @@ void EditorUI::Update()
       // Main menubar
       if (ImGui::BeginMainMenuBar())
       {
-         if (!m_table->IsLocked() && ImGui::BeginMenu("Debug"))
+         if (!m_live_table->IsLocked() && ImGui::BeginMenu("Debug"))
          {
             if (ImGui::MenuItem("Open debugger"))
                m_player->m_showDebugger = true;
@@ -307,7 +307,7 @@ void EditorUI::Update()
          if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Get back to player");
          if (ImGui::Button(ICON_FK_WINDOW_CLOSE))
-            m_table->QuitPlayer(Player::CS_STOP_PLAY);
+            m_live_table->QuitPlayer(Player::CS_STOP_PLAY);
          if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Close editor");
          m_menubar_height = ImGui::GetWindowSize().y;
@@ -1235,7 +1235,7 @@ void EditorUI::UpdatePropertyUI()
       for (int tab = 0; tab < 2; tab++)
       {
          const bool is_live = (tab == 1);
-         if (ImGui::BeginTabItem(is_live ? "Live" : "Startup", nullptr, (is_live && m_propertiesSelectLiveTab) ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None))
+         if (m_table != nullptr && ImGui::BeginTabItem(is_live ? "Live" : "Startup", nullptr, (is_live && m_propertiesSelectLiveTab) ? ImGuiTabItemFlags_SetSelected : ImGuiTabItemFlags_None))
          {
             if (is_live)
                m_propertiesSelectLiveTab = false;

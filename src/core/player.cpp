@@ -82,13 +82,13 @@ using namespace VPX;
 #define WIN32_PLAYER_WND_CLASSNAME _T("VPPlayer")
 
 
-Player::Player(PinTable *const editor_table, PinTable *const live_table, const int playMode)
-   : m_ptable(live_table)
+Player::Player(PinTable *const table, const int playMode)
+   : m_ptable(table)
    , m_backglassOutput(VPXWindowId::VPXWINDOW_Backglass)
    , m_scoreViewOutput(VPXWindowId::VPXWINDOW_ScoreView)
    , m_topperOutput(VPXWindowId::VPXWINDOW_Topper)
    , m_audioPlayer(std::make_unique<VPX::AudioPlayer>(
-        live_table->m_settings.GetPlayer_SoundDeviceBG(), live_table->m_settings.GetPlayer_SoundDevice(), static_cast<VPX::SoundConfigTypes>(live_table->m_settings.GetPlayer_Sound3D())))
+        table->m_settings.GetPlayer_SoundDeviceBG(), table->m_settings.GetPlayer_SoundDevice(), static_cast<VPX::SoundConfigTypes>(table->m_settings.GetPlayer_Sound3D())))
    , m_resURIResolver(MsgPI::MsgPluginManager::GetInstance().GetMsgAPI(), VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), true, true, true, true)
 {
    // For the time being, lots of access are made through the global singleton, so ensure we are unique, and define it as soon as needed
@@ -276,9 +276,9 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       throw hr;
    }
 
-   m_backglassOutput.SetMode(live_table->m_settings, static_cast<RenderOutput::OutputMode>(live_table->m_settings.GetWindow_Mode(VPXWindowId::VPXWINDOW_Backglass)));
-   m_scoreViewOutput.SetMode(live_table->m_settings, static_cast<RenderOutput::OutputMode>(live_table->m_settings.GetWindow_Mode(VPXWindowId::VPXWINDOW_ScoreView)));
-   m_topperOutput.SetMode(live_table->m_settings, static_cast<RenderOutput::OutputMode>(live_table->m_settings.GetWindow_Mode(VPXWindowId::VPXWINDOW_Topper)));
+   m_backglassOutput.SetMode(m_ptable->m_settings, static_cast<RenderOutput::OutputMode>(m_ptable->m_settings.GetWindow_Mode(VPXWindowId::VPXWINDOW_Backglass)));
+   m_scoreViewOutput.SetMode(m_ptable->m_settings, static_cast<RenderOutput::OutputMode>(m_ptable->m_settings.GetWindow_Mode(VPXWindowId::VPXWINDOW_ScoreView)));
+   m_topperOutput.SetMode(m_ptable->m_settings, static_cast<RenderOutput::OutputMode>(m_ptable->m_settings.GetWindow_Mode(VPXWindowId::VPXWINDOW_Topper)));
    #if defined(ENABLE_BGFX)
    if (m_vrDevice == nullptr) // Ancillary windows are not yet supported while in VR mode
    {

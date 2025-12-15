@@ -253,7 +253,6 @@ public:
    bool m_open_minimized;
    bool m_disable_pause_menu;
    bool m_povEdit; // table should be run in camera mode to change the POV (and then export that on exit), nothing else
-   bool m_primaryDisplay; // force use of pixel(0,0) monitor
    bool m_table_played_via_command_line;
    volatile bool m_table_played_via_SelectTableOnStart;
    bool m_bgles = false; // override global emission scale by m_fgles below?
