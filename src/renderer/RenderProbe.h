@@ -35,8 +35,11 @@ public:
    // Reflection plane properties
    void GetReflectionPlane(vec4& plane) const;
    void SetReflectionPlane(const vec4& plane);
-   void GetReflectionPlaneNormal(vec3& normal) const;
-   ReflectionMode GetReflectionMode() const { return m_reflection_mode;  }
+   vec3 GetReflectionPlaneNormal() const;
+   float GetReflectionPlaneDistance() const;
+   void SetReflectionPlaneNormal(const vec3& normal);
+   void SetReflectionPlaneDistance(float distance);
+   ReflectionMode GetReflectionMode() const { return m_reflection_mode; }
    void SetReflectionMode(ReflectionMode mode);
    bool GetReflectionNoLightmaps() const { return m_disableLightReflection; }
    void SetReflectionNoLightmaps(const bool disableLightmaps) { m_disableLightReflection = disableLightmaps; }

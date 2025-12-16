@@ -210,7 +210,6 @@ void Kicker::RenderSetup(RenderDevice *device)
 
    // Ported at: VisualPinball.Engine/VPT/Kicker/KickerMeshGenerator.cs
 
-   if (m_d.m_kickertype == KickerCup || m_d.m_kickertype == KickerHole || m_d.m_kickertype == KickerHoleSimple || m_d.m_kickertype == KickerWilliams || m_d.m_kickertype == KickerGottlieb || m_d.m_kickertype == KickerCup2)
    {
       Vertex3D_NoTex2 *buf = new Vertex3D_NoTex2[kickerPlateNumVertices];
       float rad = m_d.m_radius; 
@@ -236,7 +235,7 @@ void Kicker::RenderSetup(RenderDevice *device)
 
       VertexBuffer *plateVertexBuffer = new VertexBuffer(m_rd, kickerPlateNumVertices, (float*)buf);
       IndexBuffer *plateIndexBuffer = new IndexBuffer(m_rd, kickerPlateNumIndices, kickerPlateIndices);
-      m_plateMeshBuffer = new MeshBuffer(m_wzName + L".Plate"s, plateVertexBuffer, plateIndexBuffer, true);
+      m_plateMeshBuffer = std::make_unique<MeshBuffer>(m_wzName + L".Plate"s, plateVertexBuffer, plateIndexBuffer, true);
 
       delete[] buf;
    }
@@ -306,16 +305,16 @@ void Kicker::RenderSetup(RenderDevice *device)
    GenerateMesh(buf);
    vertexBuffer->Unlock();
    IndexBuffer *indexBuffer = new IndexBuffer(m_rd, m_numIndices, indices);
-   m_meshBuffer = new MeshBuffer(m_wzName + L".Kicker"s, vertexBuffer, indexBuffer, true);
+   m_meshBuffer = std::make_unique<MeshBuffer>(m_wzName + L".Kicker"s, vertexBuffer, indexBuffer, true);
 }
 
 void Kicker::RenderRelease()
 {
    assert(m_rd != nullptr);
-   delete m_meshBuffer;
-   delete m_plateMeshBuffer;
    m_meshBuffer = nullptr;
    m_plateMeshBuffer = nullptr;
+   m_meshEdgeBuffer = nullptr;
+   m_plateMeshEdgeBuffer = nullptr;
    m_texture = nullptr;
    m_rd = nullptr;
 }
@@ -332,28 +331,71 @@ void Kicker::Render(const unsigned int renderMask)
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
+   const bool isUIPass = renderMask & Renderer::UI_EDGES || renderMask & Renderer::UI_FILL;
    TRACE_FUNCTION();
 
    if (isStaticOnly 
-   || isReflectionPass 
-   || !(m_d.m_kickertype == KickerCup || m_d.m_kickertype == KickerHole || m_d.m_kickertype == KickerHoleSimple || m_d.m_kickertype == KickerWilliams || m_d.m_kickertype == KickerGottlieb || m_d.m_kickertype == KickerCup2))
+   || isReflectionPass
+   || m_d.m_kickertype == KickerInvisible)
       return;
 
-   m_rd->ResetRenderState();
-   if (m_d.m_kickertype == KickerHoleSimple)
-      m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-
-   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   m_rd->m_basicShader->SetMaterial(mat);
-   m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_kickerBoolean, *mat);
-   m_rd->SetRenderState(RenderState::ZFUNC, RenderState::Z_ALWAYS);
    const Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
-   m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_plateMeshBuffer, RenderDevice::TRIANGLELIST, 0, kickerPlateNumIndices);
+   if (isUIPass)
+   {
+      if (renderMask & Renderer::UI_FILL)
+      {
+         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_plateMeshBuffer.get(), RenderDevice::TRIANGLELIST, 0, kickerPlateNumIndices);
+         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_meshBuffer.get(), RenderDevice::TRIANGLELIST, 0, m_numIndices);
+      }
+      if (renderMask & Renderer::UI_EDGES)
+      {
+         if (m_meshEdgeBuffer == nullptr)
+         {
+            const WORD *indices;
+            switch (m_d.m_kickertype)
+            {
+            case KickerInvisible: assert(false); break;
+            case KickerCup: indices = kickerCupIndices; break;
+            case KickerWilliams: indices = kickerWilliamsIndices; break;
+            case KickerGottlieb: indices = kickerGottliebIndices; break;
+            case KickerCup2: indices = kickerT1Indices; break;
+            case KickerHole: indices = kickerHoleIndices; break;
+            default:
+            case KickerHoleSimple: indices = kickerSimpleHoleIndices; break;
+            }
+            vector<unsigned int> indices2(m_numIndices);
+            for (unsigned int i = 0; i < m_numIndices; i++)
+               indices2.push_back(indices[i]);
+            m_meshEdgeBuffer = m_meshBuffer->CreateEdgeMeshBuffer(indices2);
+         }
+         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_meshEdgeBuffer.get(), RenderDevice::LINELIST, 0, m_meshEdgeBuffer->m_ib->m_count);
+         if (m_plateMeshEdgeBuffer == nullptr)
+         {
+            vector<unsigned int> indices(kickerPlateNumIndices);
+            for (unsigned int i = 0; i < kickerPlateNumIndices; i++)
+               indices.push_back(kickerPlateIndices[i]);
+            m_plateMeshEdgeBuffer = m_plateMeshBuffer->CreateEdgeMeshBuffer(indices);
+         }
+         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_plateMeshEdgeBuffer.get(), RenderDevice::LINELIST, 0, m_plateMeshEdgeBuffer->m_ib->m_count);
+      }
+   }
+   else if (m_d.m_kickertype != KickerInvisible)
+   {
+      m_rd->ResetRenderState();
+      if (m_d.m_kickertype == KickerHoleSimple)
+         m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
 
-   m_rd->SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
-   m_rd->m_basicShader->SetBasic(mat, m_d.m_kickertype == KickerHoleSimple ? nullptr : m_texture.get());
-   m_rd->EnableAlphaBlend(false);
-   m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+      const Material *const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+      m_rd->m_basicShader->SetMaterial(mat);
+      m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_kickerBoolean, *mat);
+      m_rd->SetRenderState(RenderState::ZFUNC, RenderState::Z_ALWAYS);
+      m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_plateMeshBuffer.get(), RenderDevice::TRIANGLELIST, 0, kickerPlateNumIndices);
+
+      m_rd->SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
+      m_rd->m_basicShader->SetBasic(mat, m_d.m_kickertype == KickerHoleSimple ? nullptr : m_texture.get());
+      m_rd->EnableAlphaBlend(false);
+      m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_meshBuffer.get(), RenderDevice::TRIANGLELIST, 0, m_numIndices);
+   }
 }
 
 #pragma endregion

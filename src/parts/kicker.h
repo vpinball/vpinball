@@ -96,8 +96,10 @@ private:
    PinTable *m_ptable = nullptr;
 
    RenderDevice* m_rd = nullptr;
-   MeshBuffer *m_plateMeshBuffer = nullptr;
-   MeshBuffer *m_meshBuffer = nullptr;
+   std::unique_ptr<MeshBuffer> m_plateMeshBuffer;
+   std::unique_ptr<MeshBuffer> m_meshBuffer;
+   std::unique_ptr<MeshBuffer> m_plateMeshEdgeBuffer;
+   std::unique_ptr<MeshBuffer> m_meshEdgeBuffer;
    unsigned int m_numVertices = 0;
    unsigned int m_numIndices = 0;
    std::unique_ptr<Texture> m_texture;

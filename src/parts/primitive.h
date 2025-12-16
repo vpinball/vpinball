@@ -413,6 +413,7 @@ private:
    vector<Vertex3Ds> m_vertices;
    vector<float> m_normals; // only z component actually
 
-   MeshBuffer *m_meshBuffer = nullptr;
+   std::unique_ptr<MeshBuffer> m_meshBuffer;
+   std::unique_ptr<MeshBuffer> m_meshEdgeBuffer;
    bool m_vertexBufferRegenerate = true;
 };

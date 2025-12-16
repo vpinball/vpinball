@@ -66,6 +66,24 @@ public:
          default:        assert(false); return format;
       }
    }
+   static string GetFormatString(const Format format)
+   {
+      switch (format)
+      {
+      case BW: return "BW"s;
+      case BW_FP32: return "BW FP32"s;
+      case RGB: return "RGB"s;
+      case RGBA: return "RGBA"s;
+      case SRGB: return "sRGB"s;
+      case SRGBA: return "sRGBA"s;
+      case SRGB565: return "sRGB 565"s;
+      case RGB_FP16: return "RGB FP16"s;
+      case RGBA_FP16: return "RGBA FP16"s;
+      case RGB_FP32: return "RGB FP32"s;
+      case RGBA_FP32: return "RGBA FP32"s;
+      default: assert(false); return "Invalid"s;
+      }
+   }
 
    uint64_t GetLiveHash() const override { return m_liveHash; }
    std::shared_ptr<const BaseTexture> GetRawBitmap(bool resizeOnLowMem, unsigned int maxTexDimension) const override { std::shared_ptr<const BaseTexture> ptr = m_selfPointer.lock(); assert(ptr); return ptr; }

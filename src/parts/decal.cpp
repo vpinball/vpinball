@@ -720,6 +720,9 @@ void Decal::Render(const unsigned int renderMask)
    if (m_backglass && !GetPTable()->GetDecalsEnabled())
       return;
 
+   if (!m_d.m_visible)
+      return;
+
    //!! should just check if material has no opacity enabled, but this is crucial for HV setup performance like-is
    const Material *const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    if (!(   (!isDynamicOnly && (m_backglass || !mat->m_bOpacityActive)) // Static prerendering

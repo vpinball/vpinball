@@ -491,6 +491,7 @@ void Light::Render(const unsigned int renderMask)
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isLightBuffer = renderMask & Renderer::LIGHT_BUFFER;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
+   const bool isUIPass = renderMask & Renderer::UI_EDGES || renderMask & Renderer::UI_FILL;
    TRACE_FUNCTION();
 
    // FIXME BGFX DX12 will crash on this
@@ -499,6 +500,11 @@ void Light::Render(const unsigned int renderMask)
          return;
    #endif
 
+   if (isUIPass)
+   {
+
+      return;
+   }
 
    if (m_backglass && !GetPTable()->GetDecalsEnabled())
       return;

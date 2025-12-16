@@ -148,6 +148,7 @@ public:
    bool m_dragging = false;
    bool m_locked = false; // Can not be dragged in the editor
    bool m_isVisible = true; // UI visibility (not the same as rendering visibility which is a member of part data)
+   bool IsVisible(IEditable *editable) const; // UI visibility, applying PartGroup visibility (i.e. a part is visible if it is flagged as such, and its parents are also visibles)
 
 protected:
    VPinball *m_vpinball = nullptr;

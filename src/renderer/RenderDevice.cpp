@@ -278,7 +278,6 @@ static unsigned int ComputePrimitiveCount(const RenderDevice::PrimitiveTypes typ
    case RenderDevice::TRIANGLELIST:
       return vertexCount / 3;
    case RenderDevice::TRIANGLESTRIP:
-   case RenderDevice::TRIANGLEFAN:
       return std::max(0, vertexCount - 2);
    default:
       return 0;

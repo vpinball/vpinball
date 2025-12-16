@@ -253,6 +253,53 @@ set(VPX_SOURCES
    src/ui/live/PlotData.h
    src/ui/live/PlumbOverlay.cpp
    src/ui/live/PlumbOverlay.h
+   
+   src/ui/live/editor/EditableUIPart.h
+   src/ui/live/editor/PropertyPane.h
+   src/ui/live/editor/PropertyPane.cpp
+   src/ui/live/editor/BallUIPart.h
+   src/ui/live/editor/BallUIPart.cpp
+   src/ui/live/editor/BumperUIPart.h
+   src/ui/live/editor/BumperUIPart.cpp
+   src/ui/live/editor/DecalUIPart.h
+   src/ui/live/editor/DecalUIPart.cpp
+   src/ui/live/editor/DispReelUIPart.h
+   src/ui/live/editor/DispReelUIPart.cpp
+   src/ui/live/editor/FlasherUIPart.h
+   src/ui/live/editor/FlasherUIPart.cpp
+   src/ui/live/editor/FlipperUIPart.h
+   src/ui/live/editor/FlipperUIPart.cpp
+   src/ui/live/editor/GateUIPart.h
+   src/ui/live/editor/GateUIPart.cpp
+   src/ui/live/editor/HitTargetUIPart.h
+   src/ui/live/editor/HitTargetUIPart.cpp
+   src/ui/live/editor/KickerUIPart.h
+   src/ui/live/editor/KickerUIPart.cpp
+   src/ui/live/editor/LightUIPart.h
+   src/ui/live/editor/LightUIPart.cpp
+   src/ui/live/editor/LightSeqUIPart.h
+   src/ui/live/editor/LightSeqUIPart.cpp
+   src/ui/live/editor/PartGroupUIPart.h
+   src/ui/live/editor/PartGroupUIPart.cpp
+   src/ui/live/editor/PlungerUIPart.h
+   src/ui/live/editor/PlungerUIPart.cpp
+   src/ui/live/editor/PrimitiveUIPart.h
+   src/ui/live/editor/PrimitiveUIPart.cpp
+   src/ui/live/editor/RampUIPart.h
+   src/ui/live/editor/RampUIPart.cpp
+   src/ui/live/editor/RubberUIPart.h
+   src/ui/live/editor/RubberUIPart.cpp
+   src/ui/live/editor/SpinnerUIPart.h
+   src/ui/live/editor/SpinnerUIPart.cpp
+   src/ui/live/editor/SurfaceUIPart.h
+   src/ui/live/editor/SurfaceUIPart.cpp
+   src/ui/live/editor/TextBoxUIPart.h
+   src/ui/live/editor/TextBoxUIPart.cpp
+   src/ui/live/editor/TimerUIPart.h
+   src/ui/live/editor/TimerUIPart.cpp
+   src/ui/live/editor/TriggerUIPart.h
+   src/ui/live/editor/TriggerUIPart.cpp
+   
    src/ui/live/ingameui/InGameUI.cpp
    src/ui/live/ingameui/InGameUI.h
    src/ui/live/ingameui/AudioSettingsPage.h

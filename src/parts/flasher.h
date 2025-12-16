@@ -182,7 +182,8 @@ private:
    PropertyPane *m_propVisual = nullptr;
 
    bool m_dynamicVertexBufferRegenerate = true;
-   MeshBuffer *m_meshBuffer = nullptr;
+   std::unique_ptr<MeshBuffer> m_meshBuffer;
+   std::unique_ptr<MeshBuffer> m_meshEdgeBuffer;
 
    void ResetVideoCap();
    bool m_isVideoCap = false;

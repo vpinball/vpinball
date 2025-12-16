@@ -29,6 +29,7 @@ public:
 
    void OpenEditorUI() { m_editorUI.Open(); }
    bool IsEditorUIOpened() const { return m_editorUI.IsOpened(); }
+   bool IsEditorViewMode() const { return m_editorUI.IsOpened() && !m_editorUI.IsPreview(); }
 
    void OpenInGameUI(const string& page = "homepage"s);
    void OpenMainSplash() { OpenInGameUI("exit"); }
@@ -68,7 +69,7 @@ private:
    vector<std::unique_ptr<MeshBuffer>> m_meshBuffers;
 
    // Editor UI
-   EditorUI m_editorUI;
+   VPX::EditorUI::EditorUI m_editorUI;
 
    // Touch UI overlay
    void UpdateTouchUI();

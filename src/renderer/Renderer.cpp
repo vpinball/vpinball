@@ -1414,6 +1414,26 @@ void Renderer::DrawSprite(const float posx, const float posy, const float width,
    m_renderDevice->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
 }
 
+void Renderer::DrawWireframe(IEditable* renderable, const vec4& color, bool withDepthMask)
+{
+   unsigned int prevRenderMask = m_render_mask;
+   m_render_mask = Renderer::RenderMask::UI_FILL;
+   m_renderDevice->ResetRenderState();
+   m_renderDevice->EnableAlphaBlend(false);
+   m_renderDevice->SetRenderState(RenderState::ZENABLE, withDepthMask ? RenderState::RS_TRUE : RenderState::RS_FALSE);
+   m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, withDepthMask ? RenderState::RS_TRUE : RenderState::RS_FALSE);
+   m_renderDevice->SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
+   m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+   m_renderDevice->m_basicShader->SetTechnique(SHADER_TECHNIQUE_unshaded_without_texture);
+   m_renderDevice->m_basicShader->SetVector(SHADER_staticColor_Alpha, color.x, color.y, color.z, color.w);
+   RenderItem(renderable, false);
+   m_render_mask = Renderer::RenderMask::UI_EDGES;
+   m_renderDevice->m_basicShader->SetVector(SHADER_staticColor_Alpha, color.x, color.y, color.z, 1.f);
+   RenderItem(renderable, false);
+   m_renderDevice->m_basicShader->SetVector(SHADER_staticColor_Alpha, 1.f, 1.f, 1.f, 1.f);
+   m_render_mask = prevRenderMask;
+}
+
 void Renderer::RenderItem(IEditable* renderable, bool isNoBackdrop)
 {
    if ((isNoBackdrop && renderable->m_backglass) // Don't render backdrop items in reflections or VR & cabinet modes
@@ -1729,13 +1749,22 @@ void Renderer::RenderDynamics()
       m_backGlass->Render();
    #endif
 
-   const unsigned int mask = m_render_mask;
-   const bool isNoBackdrop = m_noBackdrop || ((m_render_mask & Renderer::REFLECTION_PASS) != 0);
-   m_render_mask |= IsUsingStaticPrepass() ? Renderer::DYNAMIC_ONLY : Renderer::DEFAULT;
-   DrawBulbLightBuffer();
-   for (IEditable* renderable : g_pplayer->m_vhitables)
-      RenderItem(renderable, isNoBackdrop);
-   m_render_mask = mask;
+   if (m_shadeMode == ShadeMode::Default)
+   {
+      const unsigned int mask = m_render_mask;
+      const bool isNoBackdrop = m_noBackdrop || ((m_render_mask & Renderer::REFLECTION_PASS) != 0);
+      m_render_mask |= IsUsingStaticPrepass() ? Renderer::DYNAMIC_ONLY : Renderer::DEFAULT;
+      DrawBulbLightBuffer();
+      for (IEditable* renderable : g_pplayer->m_vhitables)
+         RenderItem(renderable, isNoBackdrop);
+      m_render_mask = mask;
+   }
+   else
+   {
+      const vec4 color(0.f, 0.f, 0.f, 32.f/255.f);
+      for (IEditable* renderable : g_pplayer->m_vhitables)
+         DrawWireframe(renderable, color, m_shadeMode == ShadeMode::Wireframe);
+   }
    
    m_renderDevice->m_basicShader->SetTextureNull(SHADER_tex_base_transmission); // need to reset the bulb light texture, as its used as render target for bloom again
 
@@ -2690,11 +2719,14 @@ void Renderer::RenderFrame()
    }
    m_playfieldView = m_mvp->GetView();
 
-   // Start from the prerendered parts/background or a clear background for VR
-   if (m_stereo3D == STEREO_VR || g_pplayer->GetInfoMode() == IF_DYNAMIC_ONLY)
+   // Start from the prerendered parts/background or a clear background for VR & editor
+   if (m_stereo3D == STEREO_VR || g_pplayer->GetInfoMode() == IF_DYNAMIC_ONLY || g_pplayer->m_liveUI->IsEditorViewMode())
    {
       m_renderDevice->SetRenderTarget("Render Scene"s, GetMSAABackBufferTexture());
-      m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
+      if (g_pplayer->m_liveUI->IsEditorViewMode())
+         m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0x000D0D0D);
+      else
+         m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
       #ifdef ENABLE_XR
       if (g_pplayer->m_vrDevice && m_stereo3D == STEREO_VR)
       {

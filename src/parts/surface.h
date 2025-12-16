@@ -161,7 +161,8 @@ private:
    unsigned int m_numVertices = 0, m_numPolys = 0;
 
    MeshBuffer *m_slingshotMeshBuffer = nullptr;
-   MeshBuffer *m_meshBuffer = nullptr;
+   std::unique_ptr<MeshBuffer> m_meshBuffer;
+   std::unique_ptr<MeshBuffer> m_meshEdgeBuffer;
 
    bool m_isWall = true;
    bool m_isDynamic = false;

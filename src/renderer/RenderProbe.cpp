@@ -267,12 +267,18 @@ void RenderProbe::SetReflectionPlane(const vec4& plane) {
    m_reflection_plane = plane;
 }
 
-void RenderProbe::GetReflectionPlaneNormal(vec3& normal) const
+vec3 RenderProbe::GetReflectionPlaneNormal() const { return vec3(m_reflection_plane.x, m_reflection_plane.y, m_reflection_plane.z); }
+
+float RenderProbe::GetReflectionPlaneDistance() const { return m_reflection_plane.w; }
+
+void RenderProbe::SetReflectionPlaneNormal(const vec3& normal)
 {
-   normal.x = m_reflection_plane.x;
-   normal.y = m_reflection_plane.y;
-   normal.z = m_reflection_plane.z;
+   m_reflection_plane.x = normal.x;
+   m_reflection_plane.y = normal.y;
+   m_reflection_plane.z = normal.z;
 }
+
+void RenderProbe::SetReflectionPlaneDistance(float distance) { m_reflection_plane.w = distance; }
 
 void RenderProbe::SetReflectionMode(ReflectionMode mode) 
 {
