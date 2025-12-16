@@ -200,6 +200,11 @@ void Ball::RenderBlueprint(Sur *psur, const bool solid)
 
 #pragma region Physics
 
+bool Ball::PhysicUpdate(class PhysicsEngine *physics, const bool isUI)
+{
+   return true; // We are always dynamic, so discard any update
+}
+
 void Ball::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
    if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::SR_PLAYFIELD)

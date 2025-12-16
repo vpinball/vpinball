@@ -574,8 +574,14 @@ public:
    Settings m_settings; // Settings for this table (apply overrides above application settings)
 
    PinTable * m_liveBaseTable = nullptr; // Defined when this table is a live shallow copy of another table
+   template <class T> T *GetLiveFromStartup(T *obj) { return static_cast<T *>(m_startupToLive[obj]); }
+   template <class T> T *GetStartupFromLive(T *obj) { return static_cast<T *>(m_liveToStartup[obj]); }
+
+private:
    ankerl::unordered_dense::map<void *, void *> m_startupToLive; // For live table, maps back and forth to startup table editable parts, materials,...
    ankerl::unordered_dense::map<void *, void *> m_liveToStartup;
+
+public:
 
    // editor viewport
    Vertex2D m_offset;

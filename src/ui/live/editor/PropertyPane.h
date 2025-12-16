@@ -1,0 +1,557 @@
+#pragma once
+
+#include "fonts/IconsForkAwesome.h"
+#include "parts/pintable.h"
+
+namespace VPX::EditorUI
+{
+
+class PropertyPane
+{
+public:
+   PropertyPane(PinTable* table);
+   ~PropertyPane();
+
+   void SetShowStartup(bool showStartup);
+
+   enum class Section
+   {
+      Lighting,
+      Position,
+      Physics,
+      Transparency,
+      Timer,
+      Users,
+      Visual
+   };
+   bool BeginSection(Section section);
+   void EndSection();
+   template <class T> T* GetEditedPart(T* obj) const;
+   template <class T> void TimerSection(T* obj, const std::function<TimerDataRoot*(T*)>& getTimerData);
+
+   enum class Unit
+   {
+      None,
+      Percent, // 0..1 value
+      PercentX100, // 0..100 value
+      VPLength,
+      VPMass,
+      VPSpeed,
+      Degree,
+      Inches,
+      Millimeters
+   };
+   static string GetUnitLabel(Unit unit);
+   static void ConvertUnit(Unit from, Unit& to, float& value, int& nDecimalAdjust);
+   void SetLengthUnit(Unit lengthUnit) { m_lengthUnit = lengthUnit; }
+
+   void Header(const string& typeName, const std::function<string()>& getName, const std::function<void(const string&)>& setName) const;
+   void EditableHeader(const string& typeName, IEditable* editable) const;
+   void Separator(const string& label) const;
+   template <class T> void Checkbox(T* obj, const string& label, const std::function<bool(const T*)>& getter, const std::function<void(T*, bool)>& setter);
+   template <class T> void InputInt(T* obj, const string& label, const std::function<int(const T*)>& getter, const std::function<void(T*, int)>& setter);
+   template <class T> void InputFloat(T* obj, const string& label, const std::function<float(const T*)>& getter, const std::function<void(T*, float)>& setter, Unit unit, int nDecimals);
+   template <class T> void InputFloat3(T* obj, const string& label, const std::function<vec3(const T*)>& getter, const std::function<void(T*, const vec3&)>& setter, Unit unit, int nDecimals);
+   template <class T> void InputRGB(T* obj, const string& label, const std::function<vec3(const T*)>& getter, const std::function<void(T*, const vec3&)>& setter);
+   template <class T> void Combo(T* obj, const string& label, const std::vector<string>& values, const std::function<int(const T*)>& getter, const std::function<void(T*, int)>& setter);
+   template <class T> void ImageCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
+   template <class T> void MaterialCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
+   template <class T> void SurfaceCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
+   template <class T> void LightmapCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
+   template <class T> void RenderProbeCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
+
+   bool IsModified() const { return m_modified; }
+   void ResetModified() { m_modified = false; }
+
+private:
+   const char* ICON_SAVE = ICON_FK_FLOPPY_O;
+
+   bool IsStartup() const { return m_table->m_liveBaseTable && m_showStartup; }
+   template <class T> T* GetStartupObj(T* obj) const;
+
+   bool m_modified = false;
+
+   Unit m_lengthUnit = Unit::None;
+   bool m_showStartup = false;
+   PinTable* const m_table;
+   bool m_inSection = false;
+   bool m_sectionHasSync = false;
+};
+
+
+// Inline deifnition of template functions
+
+template <class T> T* PropertyPane::GetStartupObj(T* obj) const
+{
+   T* startupObj = nullptr;
+   if constexpr (std::is_base_of_v<IEditable, T>)
+      startupObj = static_cast<T*>(m_table->GetStartupFromLive<IEditable>(obj));
+   else if constexpr (std::is_base_of_v<PinTable, T>)
+      startupObj = m_table->m_liveBaseTable;
+   else
+      startupObj = m_table->GetStartupFromLive<T>(obj);
+   return startupObj;
+}
+
+template <class T> T* PropertyPane::GetEditedPart(T* obj) const
+{
+   if (m_showStartup)
+   {
+      T* startupObj = GetStartupObj<T>(obj);
+      if (startupObj)
+         return startupObj;
+   }
+   return obj;
+}
+
+template <class T> void PropertyPane::TimerSection(T* obj, const std::function<TimerDataRoot*(T*)>& getTimerData)
+{
+   if (BeginSection(PropertyPane::Section::Timer))
+   {
+      Checkbox<T>(
+         obj, "Enable"s, //
+         [getTimerData](const T* pObj) { return getTimerData((T*)pObj)->m_TimerEnabled; }, //
+         [getTimerData](T* pObj, bool v) { getTimerData(pObj)->m_TimerEnabled = v; });
+
+      Combo<T>(
+         obj, "Timer mode"s, vector { "Fixed interval"s, "Per Frame"s, "Game Logic Sync"s }, //
+         [getTimerData](const T* pObj)
+         {
+            int interval = getTimerData((T*)pObj)->m_TimerInterval;
+            return interval == -2 ? 2 : interval == -1 ? 1 : 0;
+         }, //
+         [getTimerData](T* pObj, int v)
+         {
+            if (v == 2)
+               getTimerData(pObj)->m_TimerInterval = -2;
+            else if (v == 1)
+               getTimerData(pObj)->m_TimerInterval = -1;
+            else
+               getTimerData(pObj)->m_TimerInterval = 100;
+         });
+      if (getTimerData(GetEditedPart<T>(obj))->m_TimerInterval >= 0)
+      {
+         InputInt<T>(
+            obj, "Interval (ms)"s, //
+            [getTimerData](const T* pObj) { return getTimerData((T*)pObj)->m_TimerInterval; }, //
+            [getTimerData](T* pObj, int v) { getTimerData(pObj)->m_TimerInterval = v; });
+      }
+      EndSection();
+   }
+}
+
+template <class T> inline void PropertyPane::Checkbox(T* obj, const string& label, const std::function<bool(const T*)>& getter, const std::function<void(T*, bool)>& setter)
+{
+   assert(m_inSection);
+   T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
+   if (startupObj)
+   {
+      T* displayObj = m_showStartup ? startupObj : obj;
+      T* otherObj = m_showStartup ? obj : startupObj;
+      ImGui::PushID(label.c_str());
+      ImGui::TableNextColumn();
+      bool value = getter(displayObj);
+      if (ImGui::Checkbox(label.c_str(), &value))
+      {
+         // FIXME implement undo
+         setter(displayObj, value);
+         m_modified = true;
+      }
+      ImGui::TableNextColumn();
+      ImGui::BeginDisabled(value == getter(otherObj));
+      if (ImGui::Button(ICON_SAVE))
+      {
+         // FIXME implement undo
+         setter(otherObj, getter(displayObj));
+         m_modified = true;
+      }
+      if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+      {
+         ImGui::BeginTooltip();
+         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+         ImGui::Text("Copy this value to the %s version", m_showStartup ? "live" : "startup");
+         ImGui::PopTextWrapPos();
+         ImGui::EndTooltip();
+      }
+      ImGui::EndDisabled();
+      ImGui::PopID();
+   }
+   else
+   {
+      ImGui::TableNextColumn();
+      bool value = getter(obj);
+      if (ImGui::Checkbox(label.c_str(), &value))
+      {
+         // FIXME implement undo
+         setter(obj, value);
+         m_modified = true;
+      }
+      if (m_sectionHasSync)
+      {
+         ImGui::TableNextColumn();
+      }
+   }
+}
+
+template <class T> inline void PropertyPane::InputInt(T* obj, const string& label, const std::function<int(const T*)>& getter, const std::function<void(T*, int)>& setter)
+{
+   assert(m_inSection);
+   T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
+   if (startupObj)
+   {
+      T* displayObj = m_showStartup ? startupObj : obj;
+      T* otherObj = m_showStartup ? obj : startupObj;
+      ImGui::PushID(label.c_str());
+      ImGui::TableNextColumn();
+      int value = getter(displayObj);
+      if (ImGui::InputInt(label.c_str(), &value))
+      {
+         // FIXME implement undo
+         setter(displayObj, value);
+         m_modified = true;
+      }
+      ImGui::TableNextColumn();
+      ImGui::BeginDisabled(value == getter(otherObj));
+      if (ImGui::Button(ICON_SAVE))
+      {
+         // FIXME implement undo
+         setter(otherObj, getter(displayObj));
+         m_modified = true;
+      }
+      if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+      {
+         ImGui::BeginTooltip();
+         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+         ImGui::Text("Copy this value to the %s version", m_showStartup ? "live" : "startup");
+         ImGui::PopTextWrapPos();
+         ImGui::EndTooltip();
+      }
+      ImGui::EndDisabled();
+      ImGui::PopID();
+   }
+   else
+   {
+      ImGui::TableNextColumn();
+      int value = getter(obj);
+      if (ImGui::InputInt(label.c_str(), &value))
+      {
+         // FIXME implement undo
+         setter(obj, value);
+         m_modified = true;
+      }
+      if (m_sectionHasSync)
+      {
+         ImGui::TableNextColumn();
+      }
+   }
+}
+
+template <class T>
+inline void PropertyPane::InputFloat(T* obj, const string& label, const std::function<float(const T*)>& getter, const std::function<void(T*, float)>& setter, Unit unit, int nDecimals)
+{
+   assert(m_inSection);
+   float displayValue = 0.f, value;
+   int nDecimalAdjust;
+   Unit displayUnit = m_lengthUnit; // ConvertUnit will set it to the supported converted display unit
+   ConvertUnit(unit, displayUnit, value, nDecimalAdjust);
+   string format = "%."s + std::to_string(max(0, nDecimals + nDecimalAdjust)) + 'f';
+   const string unitLabel = GetUnitLabel(displayUnit);
+   const string labelWithUnit = unitLabel.empty() ? label : (label + " (" + unitLabel + ')');
+   T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
+   if (startupObj)
+   {
+      T* displayObj = m_showStartup ? startupObj : obj;
+      T* otherObj = m_showStartup ? obj : startupObj;
+      ImGui::PushID(label.c_str());
+      ImGui::TableNextColumn();
+      displayValue = value = getter(displayObj);
+      ConvertUnit(unit, displayUnit, displayValue, nDecimalAdjust);
+      if (ImGui::InputFloat(labelWithUnit.c_str(), &displayValue, 0.f, 0.f, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
+      {
+         // FIXME implement undo
+         value = displayValue;
+         ConvertUnit(displayUnit, unit, value, nDecimalAdjust);
+         setter(displayObj, value);
+         m_modified = true;
+      }
+      ImGui::TableNextColumn();
+      ImGui::BeginDisabled(value == getter(otherObj));
+      if (ImGui::Button(ICON_SAVE))
+      {
+         // FIXME implement undo
+         setter(otherObj, getter(displayObj));
+         m_modified = true;
+      }
+      if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+      {
+         ImGui::BeginTooltip();
+         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+         ImGui::Text("Copy this value to the %s version", m_showStartup ? "live" : "startup");
+         ImGui::PopTextWrapPos();
+         ImGui::EndTooltip();
+      }
+      ImGui::EndDisabled();
+      ImGui::PopID();
+   }
+   else
+   {
+      ImGui::TableNextColumn();
+      displayValue = value = getter(obj);
+      ConvertUnit(unit, displayUnit, displayValue, nDecimalAdjust);
+      if (ImGui::InputFloat(labelWithUnit.c_str(), &displayValue, 0.f, 0.f, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
+      {
+         // FIXME implement undo
+         value = displayValue;
+         ConvertUnit(displayUnit, unit, value, nDecimalAdjust);
+         setter(obj, value);
+         m_modified = true;
+      }
+      if (m_sectionHasSync)
+      {
+         ImGui::TableNextColumn();
+      }
+   }
+}
+
+template <class T>
+inline void PropertyPane::InputFloat3(T* obj, const string& label, const std::function<vec3(const T*)>& getter, const std::function<void(T*, const vec3&)>& setter, Unit unit, int nDecimals)
+{
+   assert(m_inSection);
+   float displayValue = 0.f, value;
+   int nDecimalAdjust;
+   Unit displayUnit = m_lengthUnit; // ConvertUnit will set it to the supported converted display unit
+   ConvertUnit(unit, displayUnit, value, nDecimalAdjust);
+   string format = "%."s + std::to_string(max(0, nDecimals + nDecimalAdjust)) + 'f';
+   const string unitLabel = GetUnitLabel(displayUnit);
+   const string labelWithUnit = unitLabel.empty() ? label : (label + " (" + unitLabel + ')');
+   T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
+   if (startupObj)
+   {
+      T* displayObj = m_showStartup ? startupObj : obj;
+      T* otherObj = m_showStartup ? obj : startupObj;
+      ImGui::PushID(label.c_str());
+      ImGui::TableNextColumn();
+      vec3 value = getter(displayObj);
+      if (ImGui::InputFloat3(labelWithUnit.c_str(), &value.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
+      {
+         // FIXME implement undo
+         setter(displayObj, value);
+         m_modified = true;
+      }
+      ImGui::TableNextColumn();
+      ImGui::BeginDisabled(value == getter(otherObj));
+      if (ImGui::Button(ICON_SAVE))
+      {
+         // FIXME implement undo
+         setter(otherObj, getter(displayObj));
+         m_modified = true;
+      }
+      if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+      {
+         ImGui::BeginTooltip();
+         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+         ImGui::Text("Copy this value to the %s version", m_showStartup ? "live" : "startup");
+         ImGui::PopTextWrapPos();
+         ImGui::EndTooltip();
+      }
+      ImGui::EndDisabled();
+      ImGui::PopID();
+   }
+   else
+   {
+      ImGui::TableNextColumn();
+      vec3 value = getter(obj);
+      if (ImGui::InputFloat3(labelWithUnit.c_str(), &value.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
+      {
+         // FIXME implement undo
+         setter(obj, value);
+         m_modified = true;
+      }
+      if (m_sectionHasSync)
+      {
+         ImGui::TableNextColumn();
+      }
+   }
+}
+
+template <class T> inline void PropertyPane::InputRGB(T* obj, const string& label, const std::function<vec3(const T*)>& getter, const std::function<void(T*, const vec3&)>& setter)
+{
+   assert(m_inSection);
+   T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
+   if (startupObj)
+   {
+      T* displayObj = m_showStartup ? startupObj : obj;
+      T* otherObj = m_showStartup ? obj : startupObj;
+      ImGui::PushID(label.c_str());
+      ImGui::TableNextColumn();
+      vec3 value = getter(displayObj);
+      if (ImGui::ColorEdit3(label.c_str(), &value.x))
+      {
+         // FIXME implement undo
+         setter(displayObj, value);
+         m_modified = true;
+      }
+      ImGui::TableNextColumn();
+      ImGui::BeginDisabled(value == getter(otherObj));
+      if (ImGui::Button(ICON_SAVE))
+      {
+         // FIXME implement undo
+         setter(otherObj, getter(displayObj));
+         m_modified = true;
+      }
+      if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+      {
+         ImGui::BeginTooltip();
+         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+         ImGui::Text("Copy this value to the %s version", m_showStartup ? "live" : "startup");
+         ImGui::PopTextWrapPos();
+         ImGui::EndTooltip();
+      }
+      ImGui::EndDisabled();
+      ImGui::PopID();
+   }
+   else
+   {
+      ImGui::TableNextColumn();
+      vec3 value = getter(obj);
+      if (ImGui::ColorEdit3(label.c_str(), &value.x))
+      {
+         // FIXME implement undo
+         setter(obj, value);
+         m_modified = true;
+      }
+      if (m_sectionHasSync)
+      {
+         ImGui::TableNextColumn();
+      }
+   }
+}
+
+template <class T>
+inline void PropertyPane::Combo(T* obj, const string& label, const std::vector<string>& values, const std::function<int(const T*)>& getter, const std::function<void(T*, int)>& setter)
+{
+   assert(m_inSection);
+   T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
+   if (startupObj)
+   {
+      T* displayObj = m_showStartup ? startupObj : obj;
+      T* otherObj = m_showStartup ? obj : startupObj;
+      ImGui::PushID(label.c_str());
+      ImGui::TableNextColumn();
+      int value = getter(displayObj);
+      if (ImGui::BeginCombo(label.c_str(), values[value].c_str()))
+      {
+         for (size_t i = 0; i < values.size(); i++)
+         {
+            if (ImGui::Selectable((values[i] + "##Item"s + std::to_string(i)).c_str()))
+            {
+               // FIXME implement undo
+               setter(displayObj, static_cast<int>(i));
+               value = static_cast<int>(i);
+               m_modified = true;
+            }
+         }
+         ImGui::EndCombo();
+      }
+      ImGui::TableNextColumn();
+      ImGui::BeginDisabled(value == getter(otherObj));
+      if (ImGui::Button(ICON_SAVE))
+      {
+         // FIXME implement undo
+         setter(otherObj, getter(displayObj));
+         m_modified = true;
+      }
+      if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+      {
+         ImGui::BeginTooltip();
+         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+         ImGui::Text("Copy this value to the %s version", m_showStartup ? "live" : "startup");
+         ImGui::PopTextWrapPos();
+         ImGui::EndTooltip();
+      }
+      ImGui::EndDisabled();
+      ImGui::PopID();
+   }
+   else
+   {
+      ImGui::TableNextColumn();
+      string value = values[getter(obj)];
+      if (ImGui::BeginCombo(label.c_str(), value.c_str()))
+      {
+         for (size_t i = 0; i < values.size(); i++)
+         {
+            if (ImGui::Selectable((values[i] + "##Item"s + std::to_string(i)).c_str()))
+            {
+               // FIXME implement undo
+               setter(obj, static_cast<int>(i));
+               m_modified = true;
+            }
+         }
+         ImGui::EndCombo();
+      }
+      if (m_sectionHasSync)
+      {
+         ImGui::TableNextColumn();
+      }
+   }
+}
+
+template <class T> inline void PropertyPane::ImageCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter)
+{
+   std::vector<string> images(m_table->m_vimage.size());
+   const std::function<string(Texture*)> map = [](const Texture* image) -> string { return image->m_name; };
+   std::transform(m_table->m_vimage.begin(), m_table->m_vimage.end(), images.begin(), map);
+   std::sort(images.begin(), images.end(), [](const std::string& a, const std::string& b)
+      { return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end(), [](char c1, char c2) { return tolower(c1) < tolower(c2); }); });
+   images.insert(images.begin(), ""s);
+   Combo<T>(obj, label, images, [&](const T* obj) { return max(0, FindIndexOf(images, getter(obj))); }, [&](T* obj, int v) { setter(obj, images[v]); });
+}
+
+template <class T> inline void PropertyPane::MaterialCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter)
+{
+   std::vector<string> materials(m_table->m_materials.size());
+   const std::function<string(Material*)> map = [](const Material* material) -> string { return material->m_name; };
+   std::transform(m_table->m_materials.begin(), m_table->m_materials.end(), materials.begin(), map);
+   std::sort(materials.begin(), materials.end(), [](const std::string& a, const std::string& b)
+      { return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end(), [](char c1, char c2) { return tolower(c1) < tolower(c2); }); });
+   materials.insert(materials.begin(), ""s);
+   Combo<T>(obj, label, materials, [&](const T* obj) { return max(0, FindIndexOf(materials, getter(obj))); }, [&](T* obj, int v) { setter(obj, materials[v]); });
+}
+
+template <class T> inline void PropertyPane::SurfaceCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter)
+{
+   std::vector<string> surfaces;
+   for (const IEditable* pe : m_table->m_vedit)
+      if (pe->GetItemType() == ItemTypeEnum::eItemSurface || pe->GetItemType() == ItemTypeEnum::eItemRamp || pe->GetItemType() == ItemTypeEnum::eItemFlasher)
+         surfaces.push_back(pe->GetName());
+   std::sort(surfaces.begin(), surfaces.end(), [](const std::string& a, const std::string& b)
+      { return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end(), [](char c1, char c2) { return tolower(c1) < tolower(c2); }); });
+   surfaces.insert(surfaces.begin(), ""s);
+   Combo<T>(obj, label, surfaces, [&](const T* obj) { return max(0, FindIndexOf(surfaces, getter(obj))); }, [&](T* obj, int v) { setter(obj, surfaces[v]); });
+}
+
+template <class T> inline void PropertyPane::LightmapCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter)
+{
+   std::vector<string> lightmaps;
+   for (const IEditable* pe : m_table->m_vedit)
+      if (pe->GetItemType() == ItemTypeEnum::eItemLight)
+         lightmaps.push_back(pe->GetName());
+   std::sort(lightmaps.begin(), lightmaps.end(), [](const std::string& a, const std::string& b)
+      { return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end(), [](char c1, char c2) { return tolower(c1) < tolower(c2); }); });
+   lightmaps.insert(lightmaps.begin(), ""s);
+   Combo<T>(obj, label, lightmaps, [&](const T* obj) { return max(0, FindIndexOf(lightmaps, getter(obj))); }, [&](T* obj, int v) { setter(obj, lightmaps[v]); });
+}
+
+template <class T>
+inline void PropertyPane::RenderProbeCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter)
+{
+   std::vector<string> renderprobes;
+   const std::function<string(RenderProbe*)> map = [](RenderProbe* probe) -> string { return probe->GetName(); };
+   std::transform(m_table->m_vrenderprobe.begin(), m_table->m_vrenderprobe.end(), renderprobes.begin(), map);
+   std::sort(renderprobes.begin(), renderprobes.end(), [](const std::string& a, const std::string& b)
+      { return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end(), [](char c1, char c2) { return tolower(c1) < tolower(c2); }); });
+   renderprobes.insert(renderprobes.begin(), ""s);
+   Combo<T>(obj, label, renderprobes, [&](const T* obj) { return max(0, FindIndexOf(renderprobes, getter(obj))); }, [&](T* obj, int v) { setter(obj, renderprobes[v]); });
+}
+
+}

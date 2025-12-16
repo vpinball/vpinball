@@ -216,8 +216,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
          case RenderDevice::LINELIST: np = m_indicesCount / 2; break;
          case RenderDevice::LINESTRIP: np = std::max(0u, m_indicesCount - 1); break;
          case RenderDevice::TRIANGLELIST: np = m_indicesCount / 3; break;
-         case RenderDevice::TRIANGLESTRIP:
-         case RenderDevice::TRIANGLEFAN: np = std::max(0u, m_indicesCount - 2); break;
+         case RenderDevice::TRIANGLESTRIP: np = std::max(0u, m_indicesCount - 2); break;
          default: assert(false);
          }
          m_rd->m_curDrawnTriangles += np;
@@ -268,12 +267,15 @@ void RenderCommand::Execute(const int nInstances, const bool log)
             else
                bgfx::setIndexBuffer(m_mb->m_ib->GetDynamicBuffer(), m_mb->m_ib->GetIndexOffset() + m_startIndex, m_indicesCount);
             bgfx::setInstanceCount(nInstances);
-            if (m_primitiveType == RenderDevice::TRIANGLELIST)
-               bgfx::setState(m_rd->m_bgfxState);
-            else if (m_primitiveType == RenderDevice::TRIANGLESTRIP)
-               bgfx::setState(m_rd->m_bgfxState | BGFX_STATE_PT_TRISTRIP);
-            else
-               assert(false); // Unsupported primitive type
+            switch (m_primitiveType)
+            {
+            case RenderDevice::TRIANGLELIST: bgfx::setState(m_rd->m_bgfxState); break;
+            case RenderDevice::TRIANGLESTRIP: bgfx::setState(m_rd->m_bgfxState | BGFX_STATE_PT_TRISTRIP); break;
+            case RenderDevice::LINELIST: bgfx::setState(m_rd->m_bgfxState | BGFX_STATE_LINEAA | BGFX_STATE_PT_LINES); break;
+            case RenderDevice::LINESTRIP: bgfx::setState(m_rd->m_bgfxState | BGFX_STATE_LINEAA | BGFX_STATE_PT_LINESTRIP); break;
+            case RenderDevice::POINTLIST: bgfx::setState(m_rd->m_bgfxState | BGFX_STATE_PT_POINTS); break;
+            default: assert(false); break; // Unsupported primitive type
+            }
             bgfx::submit(m_rd->m_activeViewId, m_shader->GetCore());
 
             #elif defined(ENABLE_OPENGL)

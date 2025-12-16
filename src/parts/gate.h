@@ -113,8 +113,10 @@ private:
    float m_lastAngle = FLT_MAX;
 
    float m_vertexbuffer_angle = FLT_MAX;
-   MeshBuffer *m_wireMeshBuffer = nullptr;
-   MeshBuffer *m_bracketMeshBuffer = nullptr;
+   std::unique_ptr<MeshBuffer> m_wireMeshBuffer;
+   std::unique_ptr<MeshBuffer> m_bracketMeshBuffer;
+   std::unique_ptr<MeshBuffer> m_wireEdgeMeshBuffer;
+   std::unique_ptr<MeshBuffer> m_bracketEdgeMeshBuffer;
 
    const Vertex3D_NoTex2 *m_vertices = nullptr;
    const WORD            *m_indices = nullptr;

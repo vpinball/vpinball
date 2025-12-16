@@ -1004,7 +1004,6 @@ void VPinball::DoPlay(const int playMode)
       return;
 
    PLOGI << "Starting Play mode [table: " << table->m_tableName << ", play mode: " << playMode << ']';
-   ShowWindow(SW_HIDE);
    bool initError = false;
    if (playMode == 3)
    {

@@ -144,6 +144,8 @@ public:
 
    DECLARE_REGISTRY_RESOURCEID(IDR_BALL)
 
+   bool PhysicUpdate(class PhysicsEngine *physics, const bool isUI) override;
+
    // ISelect implementation
    void MoveOffset(const float dx, const float dy) final;
    void SetObjectPos() final;

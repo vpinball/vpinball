@@ -359,3 +359,10 @@ void ISelect::UpdateStatusBarInfo()
 {
    m_vpinball->SetStatusBarUnitInfo(string(), false);
 }
+
+bool ISelect::IsVisible(IEditable *editable) const
+{
+   return m_isVisible
+      && (editable == nullptr || editable->GetPartGroup() == nullptr || editable->GetPartGroup()->GetISelect() == nullptr
+         || editable->GetPartGroup()->GetISelect()->IsVisible(editable->GetPartGroup()));
+}

@@ -35,6 +35,14 @@ inline vec3 convertColor(const COLORREF c)
    return vec3(r, g, b);
 }
 
+inline COLORREF convertColorRGB(const vec3& color)
+{
+   const int r = clamp((int)(color.x * 255.f + 0.5f), 0, 255);
+   const int g = clamp((int)(color.y * 255.f + 0.5f), 0, 255);
+   const int b = clamp((int)(color.z * 255.f + 0.5f), 0, 255);
+   return RGB(r, g, b);
+}
+
 inline COLORREF convertColorRGB(const vec4& color)
 {
    const int r = clamp((int)(color.x * 255.f + 0.5f), 0, 255);

@@ -77,7 +77,6 @@ public:
    #if defined(ENABLE_BGFX)
       enum PrimitiveTypes
       {
-         TRIANGLEFAN,
          TRIANGLESTRIP,
          TRIANGLELIST,
          POINTLIST,
@@ -88,7 +87,6 @@ public:
    #elif defined(ENABLE_OPENGL)
       enum PrimitiveTypes
       {
-         TRIANGLEFAN = GL_TRIANGLE_FAN,
          TRIANGLESTRIP = GL_TRIANGLE_STRIP,
          TRIANGLELIST = GL_TRIANGLES,
          POINTLIST = GL_POINTS,
@@ -99,7 +97,6 @@ public:
    #elif defined(ENABLE_DX9)
       enum PrimitiveTypes
       {
-         TRIANGLEFAN = D3DPT_TRIANGLEFAN,
          TRIANGLESTRIP = D3DPT_TRIANGLESTRIP,
          TRIANGLELIST = D3DPT_TRIANGLELIST,
          POINTLIST = D3DPT_POINTLIST,

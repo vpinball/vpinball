@@ -285,11 +285,11 @@ void Gate::PhysicSetup(PhysicsEngine* physics, const bool isUI)
    if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::SR_PLAYFIELD)
       return;
 
-   if (isUI)
+   /* if (isUI)
    {
       // FIXME implement UI picking
    }
-   else
+   else*/
    {
       const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
       const float h = m_d.m_height; // relative height of the gate
@@ -365,23 +365,23 @@ void Gate::RenderSetup(RenderDevice *device)
    bracketVertexBuffer->Lock(buf);
    GenerateBracketMesh(buf);
    bracketVertexBuffer->Unlock();
-   m_bracketMeshBuffer = new MeshBuffer(m_wzName + L".Bracket"s, bracketVertexBuffer, bracketIndexBuffer, true);
+   m_bracketMeshBuffer = std::make_unique<MeshBuffer>(m_wzName + L".Bracket"s, bracketVertexBuffer, bracketIndexBuffer, true);
 
    IndexBuffer *wireIndexBuffer = new IndexBuffer(m_rd, m_numIndices, m_indices);
    VertexBuffer *wireVertexBuffer = new VertexBuffer(m_rd, m_numVertices, nullptr, true);
    wireVertexBuffer->Lock(buf);
    GenerateWireMesh(buf);
    wireVertexBuffer->Unlock();
-   m_wireMeshBuffer = new MeshBuffer(m_wzName + L".Wire"s, wireVertexBuffer, wireIndexBuffer, true);
+   m_wireMeshBuffer = std::make_unique<MeshBuffer>(m_wzName + L".Wire"s, wireVertexBuffer, wireIndexBuffer, true);
 }
 
 void Gate::RenderRelease()
 {
    assert(m_rd != nullptr);
-   delete m_wireMeshBuffer;
    m_wireMeshBuffer = nullptr;
-   delete m_bracketMeshBuffer;
    m_bracketMeshBuffer = nullptr;
+   m_wireEdgeMeshBuffer = nullptr;
+   m_bracketEdgeMeshBuffer = nullptr;
    m_vertexbuffer_angle = FLT_MAX;
    m_rd = nullptr;
 }
@@ -405,6 +405,7 @@ void Gate::Render(const unsigned int renderMask)
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
+   const bool isUIPass = renderMask & Renderer::UI_EDGES || renderMask & Renderer::UI_FILL;
    TRACE_FUNCTION();
 
    if (isStaticOnly 
@@ -428,12 +429,53 @@ void Gate::Render(const unsigned int renderMask)
       m_wireMeshBuffer->m_vb->Unlock();
    }
 
-   m_rd->ResetRenderState();
-   m_rd->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), nullptr);
    Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
-   if (m_d.m_showBracket)
-      m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, gateBracketNumIndices);
-   m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_wireMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+
+   if (isUIPass)
+   {
+      if (renderMask & Renderer::UI_FILL)
+      {
+         if (m_d.m_showBracket)
+            m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_bracketMeshBuffer.get(), RenderDevice::TRIANGLELIST, 0, gateBracketNumIndices);
+         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_wireMeshBuffer.get(), RenderDevice::TRIANGLELIST, 0, m_numIndices);
+      }
+      if (renderMask & Renderer::UI_EDGES)
+      {
+         if (m_wireEdgeMeshBuffer == nullptr)
+         {
+            vector<unsigned int> indices;
+            vector<Vertex3D_NoTex2> vertices;
+            for (unsigned int i = 0; i < m_numIndices; i++)
+               indices.push_back(m_indices[i]);
+            for (unsigned int i = 0; i < m_numVertices; i++)
+               vertices.push_back(m_vertices[i]);
+            m_wireEdgeMeshBuffer = m_wireMeshBuffer->CreateEdgeMeshBuffer(indices, vertices);
+         }
+         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_wireEdgeMeshBuffer.get(), RenderDevice::LINELIST, 0, m_wireEdgeMeshBuffer->m_ib->m_count);
+         if (m_d.m_showBracket)
+         {
+            if (m_bracketEdgeMeshBuffer == nullptr)
+            {
+               vector<unsigned int> indices;
+               vector<Vertex3D_NoTex2> vertices;
+               for (unsigned int i = 0; i < gateBracketNumIndices; i++)
+                  indices.push_back(gateBracketIndices[i]);
+               for (unsigned int i = 0; i < gateBracketNumVertices; i++)
+                  vertices.push_back(gateBracket[i]);
+               m_bracketEdgeMeshBuffer = m_bracketMeshBuffer->CreateEdgeMeshBuffer(indices, vertices);
+            }
+            m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_bracketEdgeMeshBuffer.get(), RenderDevice::LINELIST, 0, m_bracketEdgeMeshBuffer->m_ib->m_count);
+         }
+      }
+   }
+   else
+   {
+      m_rd->ResetRenderState();
+      m_rd->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), nullptr);
+      if (m_d.m_showBracket)
+         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_bracketMeshBuffer.get(), RenderDevice::TRIANGLELIST, 0, gateBracketNumIndices);
+      m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_wireMeshBuffer.get(), RenderDevice::TRIANGLELIST, 0, m_numIndices);
+   }
 }
 
 #pragma endregion

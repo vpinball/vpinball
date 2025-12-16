@@ -16,6 +16,10 @@ public:
    void bind();
    unsigned int GetSortKey() const;
 
+   std::unique_ptr<MeshBuffer> CreateEdgeMeshBuffer(const vector<unsigned int>& indices) const;
+   std::unique_ptr<MeshBuffer> CreateEdgeMeshBuffer(const vector<unsigned int>& indices, const vector<Vertex3D_NoTex2>& vertices) const;
+   std::unique_ptr<MeshBuffer> CreateSharedVertexMeshBuffer(IndexBuffer* ib) const;
+
    const wstring m_wname;
    VertexBuffer* const m_vb;
    IndexBuffer* const m_ib;
@@ -30,4 +34,7 @@ private:
    GLuint m_vao = 0;
    SharedVAO* m_sharedVAO = nullptr;
 #endif
+
+private:
+   bool m_sharedVB = false;
 };

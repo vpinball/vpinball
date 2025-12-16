@@ -1033,7 +1033,7 @@ int VPApp::Run()
    if (!m_tableFileName.empty())
    {
       PLOGI << "Loading table from command line option: " << m_tableFileName;
-      m_vpinball.LoadFileName(m_tableFileName, !m_play && m_run);
+      m_vpinball.LoadFileName(m_tableFileName, !m_liveedit && !m_play && m_run);
       m_vpinball.m_table_played_via_command_line = m_play;
       if (m_vpinball.m_ptableActive && !m_tableIniFileName.empty())
          m_vpinball.m_ptableActive->SetSettingsFileName(m_tableIniFileName);

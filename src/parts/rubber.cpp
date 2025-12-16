@@ -677,7 +677,7 @@ void Rubber::RenderSetup(RenderDevice *device)
 
    VertexBuffer *dynamicVertexBuffer = new VertexBuffer(m_rd, m_numVertices, (float *)m_vertices.data() , !m_d.m_staticRendering);
    IndexBuffer *dynamicIndexBuffer = new IndexBuffer(m_rd, m_ringIndices);
-   m_meshBuffer = new MeshBuffer(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);
+   m_meshBuffer = std::make_unique<MeshBuffer>(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);
    UpdateRubber(true, m_d.m_height);
 
    const Vertex2D center2D = GetPointCenter();
@@ -688,8 +688,8 @@ void Rubber::RenderRelease()
 {
    assert(m_rd != nullptr);
    m_rd = nullptr;
-   delete m_meshBuffer;
    m_meshBuffer = nullptr;
+   m_meshEdgeBuffer = nullptr;
    m_dynamicVertexBufferRegenerate = true;
 }
 
@@ -704,6 +704,7 @@ void Rubber::Render(const unsigned int renderMask)
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
+   const bool isUIPass = renderMask & Renderer::UI_EDGES || renderMask & Renderer::UI_FILL;
    TRACE_FUNCTION();
 
    if (!m_d.m_visible
@@ -716,9 +717,35 @@ void Rubber::Render(const unsigned int renderMask)
    if (m_dynamicVertexBufferRegenerate && !m_d.m_staticRendering)
       UpdateRubber(true, m_d.m_height);
 
-   m_rd->ResetRenderState();
-   m_rd->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), m_ptable->GetImage(m_d.m_szImage));
-   m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+   if (isUIPass)
+   {
+      if (renderMask & Renderer::UI_FILL)
+         m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer.get(), RenderDevice::TRIANGLELIST, 0, m_numIndices);
+      if (renderMask & Renderer::UI_EDGES && m_meshEdgeBuffer == nullptr)
+      {
+         vector<WORD> indices(8 * m_numVertices);
+         for (int i = 0; i < m_numVertices; i++)
+         {
+            indices[i * 8 + 0] = m_ringIndices[i * 6 + 0];
+            indices[i * 8 + 1] = m_ringIndices[i * 6 + 1];
+            indices[i * 8 + 2] = m_ringIndices[i * 6 + 1];
+            indices[i * 8 + 3] = m_ringIndices[i * 6 + 3];
+            indices[i * 8 + 4] = m_ringIndices[i * 6 + 3];
+            indices[i * 8 + 5] = m_ringIndices[i * 6 + 2];
+            indices[i * 8 + 6] = m_ringIndices[i * 6 + 2];
+            indices[i * 8 + 7] = m_ringIndices[i * 6 + 0];
+         }
+         m_meshEdgeBuffer = m_meshBuffer->CreateSharedVertexMeshBuffer(new IndexBuffer(m_rd, indices));
+      }
+      if (renderMask & Renderer::UI_EDGES)
+         m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshEdgeBuffer.get(), RenderDevice::LINELIST, 0, 8 * m_numVertices);
+   }
+   else
+   {
+      m_rd->ResetRenderState();
+      m_rd->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), m_ptable->GetImage(m_d.m_szImage));
+      m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer.get(), RenderDevice::TRIANGLELIST, 0, m_numIndices);
+   }
 }
 
 #pragma endregion

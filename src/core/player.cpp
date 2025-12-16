@@ -204,6 +204,7 @@ Player::Player(PinTable *const table, const int playMode)
       
       const Settings& settings = g_pvp->m_settings; // Always use main application settings (not overridable per table)
       m_playfieldWnd = new VPX::Window("Visual Pinball Player"s, settings, stereo3D == STEREO_VR ? VPXWindowId::VPXWINDOW_VRPreview : VPXWindowId::VPXWINDOW_Playfield);
+      g_pvp->ShowWindow(SW_HIDE);
 
       const float pfRefreshRate = m_playfieldWnd->GetRefreshRate(); 
       m_maxFramerate = static_cast<float>(m_ptable->m_settings.GetPlayer_MaxFramerate());

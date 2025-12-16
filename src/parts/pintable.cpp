@@ -875,21 +875,10 @@ PinTable* PinTable::CopyForPlay()
 
    PLOGI << "Duplicating parts for live instance"; // For profiling
    for (IEditable* editable : src->m_vedit)
-      if (editable->GetItemType() == eItemPartGroup)
-      {
-         PartGroup *edit_dst = static_cast<PartGroup *>(editable)->CopyForPlay(live_table);
-         if (editable->GetPartGroup())
-            edit_dst->SetPartGroup(static_cast<PartGroup*>(dst->m_startupToLive[editable->GetPartGroup()]));
-         live_table->m_vedit.push_back(edit_dst);
-         dst->m_startupToLive[editable] = edit_dst;
-         dst->m_liveToStartup[edit_dst] = editable;
-      }
-   for (IEditable* editable : src->m_vedit)
    {
       IEditable* edit_dst = nullptr;
       switch (editable->GetItemType())
       {
-      case eItemPartGroup: continue;
       case eItemBall:      edit_dst = static_cast<Ball*>(editable)->CopyForPlay(live_table); break;
       case eItemBumper:    edit_dst = static_cast<Bumper*>(editable)->CopyForPlay(live_table); break;
       case eItemDecal:     edit_dst = static_cast<Decal*>(editable)->CopyForPlay(live_table); break;
@@ -901,6 +890,7 @@ PinTable* PinTable::CopyForPlay()
       case eItemKicker:    edit_dst = static_cast<Kicker*>(editable)->CopyForPlay(live_table); break;
       case eItemLight:     edit_dst = static_cast<Light*>(editable)->CopyForPlay(live_table); break;
       case eItemLightSeq:  edit_dst = static_cast<LightSeq*>(editable)->CopyForPlay(live_table); break;
+      case eItemPartGroup: edit_dst = static_cast<PartGroup*>(editable)->CopyForPlay(live_table); break;
       case eItemPlunger:   edit_dst = static_cast<Plunger*>(editable)->CopyForPlay(live_table); break;
       case eItemPrimitive: edit_dst = static_cast<Primitive*>(editable)->CopyForPlay(live_table); break;
       case eItemRamp:      edit_dst = static_cast<Ramp*>(editable)->CopyForPlay(live_table); break;
@@ -913,7 +903,11 @@ PinTable* PinTable::CopyForPlay()
       default: assert(false); // Unexpected table part
       }
       if (editable->GetPartGroup())
-         edit_dst->SetPartGroup(static_cast<PartGroup *>(dst->m_startupToLive[static_cast<IEditable*>(editable->GetPartGroup())]));
+      {
+         PartGroup *dstParent = static_cast<PartGroup *>(dst->GetLiveFromStartup<IEditable>(editable->GetPartGroup()));
+         assert(dstParent != nullptr);
+         edit_dst->SetPartGroup(dstParent);
+      }
       live_table->m_vedit.push_back(edit_dst);
       dst->m_startupToLive[editable] = edit_dst;
       dst->m_liveToStartup[edit_dst] = editable;
@@ -998,6 +992,8 @@ PinTable* PinTable::CopyForPlay()
       rp->SetReflectionPlane(plane);
       rp->SetReflectionNoLightmaps(m_vrenderprobe[i]->GetReflectionNoLightmaps());
       live_table->m_vrenderprobe.push_back(rp);
+      dst->m_startupToLive[m_vrenderprobe[i]] = rp;
+      dst->m_liveToStartup[rp] = m_vrenderprobe[i];
    }
 
    // get the load path from the table filename
@@ -2251,7 +2247,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& filename, VPXFileFeedback& 
 
          // Since 10.8.1, layers have been replaced by groups with properties, remove temporary groups created during loading, and keep partgroups at the beginning of the list.
          std::stable_partition(m_vedit.begin(), m_vedit.end(), [](IEditable *p) { return p->GetItemType() == ItemTypeEnum::eItemPartGroup; });
-         auto removeLegacyLayers = std::partition(m_vedit.begin(), m_vedit.end(),
+         auto removeLegacyLayers = std::stable_partition(m_vedit.begin(), m_vedit.end(),
             [&](IEditable *editable)
             {
                if (editable->GetItemType() != eItemPartGroup)
