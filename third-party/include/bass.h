@@ -76,6 +76,7 @@ typedef DWORD HPLUGIN;		// plugin handle
 #define BASS_ERROR_START	9	// BASS_Start has not been successfully called
 #define BASS_ERROR_SSL		10	// SSL/HTTPS support isn't available
 #define BASS_ERROR_REINIT	11	// device needs to be reinitialized
+#define BASS_ERROR_TRACK	13	// invalid track number
 #define BASS_ERROR_ALREADY	14	// already initialized/paused/whatever
 #define BASS_ERROR_NOTAUDIO	17	// file does not contain audio
 #define BASS_ERROR_NOCHAN	18	// can't get a free channel
@@ -862,6 +863,7 @@ typedef const WAVEFORMATEX *LPCWAVEFORMATEX;
 #define BASS_POS_BYTE			0		// byte position
 #define BASS_POS_MUSIC_ORDER	1		// order.row position, MAKELONG(order,row)
 #define BASS_POS_OGG			3		// OGG bitstream number
+#define BASS_POS_TRACK			4		// track number
 #define BASS_POS_RAW			6		// monotonic byte position
 #define BASS_POS_END			0x10	// trimmed end position
 #define BASS_POS_LOOP			0x11	// loop start positiom
