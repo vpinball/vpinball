@@ -1,6 +1,7 @@
 // MIT License
 
-// Copyright (c) 2023 Evan Pezent
+// Copyright (c) 2020-2024 Evan Pezent
+// Copyright (c) 2025 Breno Cunha Queiroz
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// ImPlot v0.17
+// ImPlot v0.18 WIP
 
 /*
 
@@ -96,7 +97,7 @@ You can read releases logs https://github.com/epezent/implot/releases for more d
 - 2020/09/07 (0.8)  - Plotting functions which accept a custom getter function pointer have been post-fixed with a G (e.g. PlotLineG)
 - 2020/09/06 (0.7)  - Several flags under ImPlotFlags and ImPlotAxisFlags were inverted (e.g. ImPlotFlags_Legend -> ImPlotFlags_NoLegend) so that the default flagset
                       is simply 0. This more closely matches ImGui's style and makes it easier to enable non-default but commonly used flags (e.g. ImPlotAxisFlags_Time).
-- 2020/08/28 (0.5)  - ImPlotMarker_ can no longer be combined with bitwise OR, |. This features caused unecessary slow-down, and almost no one used it.
+- 2020/08/28 (0.5)  - ImPlotMarker_ can no longer be combined with bitwise OR, |. This features caused unnecessary slow-down, and almost no one used it.
 - 2020/08/25 (0.5)  - ImPlotAxisFlags_Scientific was removed. Logarithmic axes automatically uses scientific notation.
 - 2020/08/17 (0.5)  - PlotText was changed so that text is centered horizontally and vertically about the desired point.
 - 2020/08/16 (0.5)  - An ImPlotContext must be explicitly created and destroyed now with `CreateContext` and `DestroyContext`. Previously, the context was statically initialized in this source file.
@@ -318,7 +319,7 @@ static const ImPlotStyleVarInfo GPlotStyleVarInfo[] =
     { ImGuiDataType_Float, 2, (ImU32)offsetof(ImPlotStyle, MajorGridSize)      }, // ImPlotStyleVar_MajorGridSize
     { ImGuiDataType_Float, 2, (ImU32)offsetof(ImPlotStyle, MinorGridSize)      }, // ImPlotStyleVar_MinorGridSize
     { ImGuiDataType_Float, 2, (ImU32)offsetof(ImPlotStyle, PlotPadding)        }, // ImPlotStyleVar_PlotPadding
-    { ImGuiDataType_Float, 2, (ImU32)offsetof(ImPlotStyle, LabelPadding)       }, // ImPlotStyleVar_LabelPaddine
+    { ImGuiDataType_Float, 2, (ImU32)offsetof(ImPlotStyle, LabelPadding)       }, // ImPlotStyleVar_LabelPadding
     { ImGuiDataType_Float, 2, (ImU32)offsetof(ImPlotStyle, LegendPadding)      }, // ImPlotStyleVar_LegendPadding
     { ImGuiDataType_Float, 2, (ImU32)offsetof(ImPlotStyle, LegendInnerPadding) }, // ImPlotStyleVar_LegendInnerPadding
     { ImGuiDataType_Float, 2, (ImU32)offsetof(ImPlotStyle, LegendSpacing)      }, // ImPlotStyleVar_LegendSpacing
@@ -654,7 +655,7 @@ bool ShowLegendEntries(ImPlotItemGroup& items, const ImRect& legend_bb, bool hov
     }
     // render
     for (int i = 0; i < num_items; ++i) {
-        const int idx           = indices[i];
+        const int idx           = ImHasFlag(items.Legend.Flags, ImPlotLegendFlags_Reverse) ? indices[num_items - 1 - i] : indices[i];
         ImPlotItem* item        = items.GetLegendItem(idx);
         const char* label       = items.GetLegendLabel(idx);
         const float label_width = ImGui::CalcTextSize(label, nullptr, true).x;
@@ -3635,7 +3636,7 @@ void EndSubplots() {
     // remove items
     if (gp.CurrentItems == &subplot.Items)
         gp.CurrentItems = nullptr;
-    // reset the plot items for the next frame (TODO: put this elswhere)
+    // reset the plot items for the next frame (TODO: put this elsewhere)
     for (int i = 0; i < subplot.Items.GetItemCount(); ++i) {
         subplot.Items.GetItemByIndex(i)->SeenThisFrame = false;
     }
@@ -4104,31 +4105,34 @@ bool DragRect(int n_id, double* x_min, double* y_min, double* x_max, double* y_m
 
     bool modified = false;
     bool clicked = false, hovered = false, held = false;
-    ImRect b_rect(pc.x-DRAG_GRAB_HALF_SIZE,pc.y-DRAG_GRAB_HALF_SIZE,pc.x+DRAG_GRAB_HALF_SIZE,pc.y+DRAG_GRAB_HALF_SIZE);
 
-    ImGui::KeepAliveID(id);
-    if (input) {
-        // middle point
-        clicked = ImGui::ButtonBehavior(b_rect,id,&hovered,&held);
-        if (out_clicked) *out_clicked = clicked;
-        if (out_hovered) *out_hovered = hovered;
-        if (out_held)    *out_held    = held;
-    }
-
-    if ((hovered || held) && show_curs)
-        ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
-    if (held && ImGui::IsMouseDragging(0)) {
-        for (int i = 0; i < 4; ++i) {
-            ImPlotPoint pp = PixelsToPlot(p[i] + ImGui::GetIO().MouseDelta,IMPLOT_AUTO,IMPLOT_AUTO);
-            *y[i] = pp.y;
-            *x[i] = pp.x;
+    const bool is_movable = *x_min != *x_max || *y_min != *y_max;
+    if (is_movable) {
+        ImGui::KeepAliveID(id);
+        if (input) {
+            // middle point
+            ImRect b_rect(pc.x-DRAG_GRAB_HALF_SIZE,pc.y-DRAG_GRAB_HALF_SIZE,pc.x+DRAG_GRAB_HALF_SIZE,pc.y+DRAG_GRAB_HALF_SIZE);
+            clicked = ImGui::ButtonBehavior(b_rect,id,&hovered,&held);
+            if (out_clicked) *out_clicked = clicked;
+            if (out_hovered) *out_hovered = hovered;
+            if (out_held)    *out_held    = held;
         }
-        modified = true;
+
+        if ((hovered || held) && show_curs)
+            ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
+        if (held && ImGui::IsMouseDragging(0)) {
+            for (int i = 0; i < 4; ++i) {
+                ImPlotPoint pp = PixelsToPlot(p[i] + ImGui::GetIO().MouseDelta,IMPLOT_AUTO,IMPLOT_AUTO);
+                *y[i] = pp.y;
+                *x[i] = pp.x;
+            }
+            modified = true;
+        }
     }
 
     for (int i = 0; i < 4; ++i) {
         // points
-        b_rect = ImRect(p[i].x-DRAG_GRAB_HALF_SIZE,p[i].y-DRAG_GRAB_HALF_SIZE,p[i].x+DRAG_GRAB_HALF_SIZE,p[i].y+DRAG_GRAB_HALF_SIZE);
+        ImRect b_rect(p[i].x - DRAG_GRAB_HALF_SIZE, p[i].y - DRAG_GRAB_HALF_SIZE, p[i].x + DRAG_GRAB_HALF_SIZE, p[i].y + DRAG_GRAB_HALF_SIZE);
         ImGuiID p_id = id + i + 1;
         ImGui::KeepAliveID(p_id);
         if (input) {
@@ -5220,7 +5224,7 @@ void ShowAxisMetrics(const ImPlotPlot& plot, const ImPlotAxis& axis) {
     ImGui::BulletText("Range: [%f,%f]",axis.Range.Min, axis.Range.Max);
     ImGui::BulletText("Pixels: %f", axis.PixelSize());
     ImGui::BulletText("Aspect: %f", axis.GetAspect());
-    ImGui::BulletText(axis.OrthoAxis == nullptr ? "OrtherAxis: NULL" : "OrthoAxis: 0x%08X", axis.OrthoAxis->ID);
+    ImGui::BulletText(axis.OrthoAxis == nullptr ? "OrthoAxis: NULL" : "OrthoAxis: 0x%08X", axis.OrthoAxis->ID);
     ImGui::BulletText("LinkedMin: %p", (void*)axis.LinkedMin);
     ImGui::BulletText("LinkedMax: %p", (void*)axis.LinkedMax);
     ImGui::BulletText("HasRange: %s", axis.HasRange ? "true" : "false");
