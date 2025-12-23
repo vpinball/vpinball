@@ -14536,7 +14536,7 @@ static MA_INLINE void ma_atomic_spinlock_unlock(volatile ma_atomic_spinlock* pSp
 {
     ma_atomic_flag_clear_explicit(pSpinlock, ma_atomic_memory_order_release);
 }
-ma_atomic_spinlock ma_atomic_global_lock;
+static ma_atomic_spinlock ma_atomic_global_lock;
 #if defined(MA_ATOMIC_MODERN_MSVC) || defined(MA_ATOMIC_LEGACY_MSVC) || defined(MA_ATOMIC_LEGACY_MSVC_ASM) || defined(MA_ATOMIC_LEGACY_GCC) || defined(MA_ATOMIC_LEGACY_GCC_ASM)
     #if defined(MA_X64) || (defined(MA_X86) && ((defined(__GNUC__) && defined(__i486__)) || (defined(_M_IX86) && _M_IX86 >= 400)))
         #if defined(MA_ATOMIC_LEGACY_MSVC) && defined(MA_X64)
