@@ -105,6 +105,9 @@ std::tuple<uri::Authority, uri::Error, uri::string_view_type> parse_authority(ur
     }
 
     auto pos = uri.substr(2).find('/');
+    if (pos == uri::npos) {
+        pos = uri.length()-2;
+    }
     auto auth_string = uri.substr(2, pos);
     auto rem = uri.substr(pos + 2);
     authority.authority = auth_string;
