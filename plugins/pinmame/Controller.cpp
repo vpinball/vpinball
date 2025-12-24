@@ -68,6 +68,7 @@ Game* Controller::GetGames(const string& name) const
 
 void Controller::SetGameName(const string& name)
 {
+   m_szGameName = name;
    delete m_pPinmameGame;
    m_pPinmameGame = nullptr;
    PINMAME_STATUS status = PinmameGetGame(name.c_str(), [](PinmameGame* pPinmameGame, void* const pUserData) {

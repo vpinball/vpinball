@@ -26,8 +26,9 @@ public:
    // TODO may also be accessed as a collection object
    Game* GetGames(const string& name) const;
 
-   string GetGameName() const { if (m_pPinmameGame) return m_pPinmameGame->name; else return string(); }
+   string GetGameName() const { return m_szGameName; }
    void SetGameName(const string& name);
+   string GetROMName() const { if (m_pPinmameGame) return m_pPinmameGame->name; else return string(); }
 
    string GetSplashInfoLine() const { return m_splashInfoLine; }
    void SetSplashInfoLine(const string& text) { m_splashInfoLine = text; }
@@ -151,7 +152,8 @@ public:
 
 private:
    string m_vpmPath;
-   PinmameGame* m_pPinmameGame = nullptr; // Game selected by setting GameName property
+   string m_szGameName;
+   PinmameGame* m_pPinmameGame = nullptr;
    PinmameMechConfig* m_pPinmameMechConfig = nullptr;
    vector<PinmameLampState> m_lampStates;
    vector<PinmameLEDState> m_ledStates;

@@ -138,6 +138,7 @@ PSC_CLASS_START(Controller)
    // Overall setup
    PSC_PROP_R(Controller, string, Version)
    PSC_PROP_RW(Controller, string, GameName)
+   PSC_PROP_R(Controller, string, ROMName)
    PSC_PROP_RW(Controller, string, SplashInfoLine)
    PSC_PROP_RW(Controller, bool, ShowTitle)
    PSC_PROP_RW(Controller, bool, HandleKeyboard)
