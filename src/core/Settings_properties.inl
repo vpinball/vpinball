@@ -173,6 +173,13 @@ PropString(Player, BallImage, "Ball image override"s, "Image to use for the ball
 PropString(Player, DecalImage, "Decal image override"s, "Image to use for the ball's decal instead of the table's provide one"s, ""s);
 
 // Misc player settings
+PropEnum(Player, TouchDetection, "Touch Detection"s,
+   "Touch screen detection mode:\n"
+   "- Disabled: No touch support\n"
+   "- Enabled: Detect all touch devices\n"
+   "- Filter Pen: Ignore pen/stylus devices (e.g. RustDesk)\n"
+   "- Filter Virtual: Ignore virtual devices (negative IDs)"s,
+   int, 1, "Disabled"s, "Enabled"s, "Filter Pen"s, "Filter Virtual"s);
 PropBool(Player, TouchOverlay, "Touch Overlay"s, "Display an overlay showing touch regions"s, false);
 PropBool(Player, EnableCameraModeFlyAround, "Legacy Fly Over Mode"s, "Enable moving camera when using the Tweak menu (legacy, replaced by LiveUI fly mode)"s, false);
 PropBool(Player, DetectHang, "Detect Script Hang"s, ""s, false);

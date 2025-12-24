@@ -30,17 +30,56 @@ InputManager::InputManager()
    CreateInputActions();
 
    // Touch screen support
-   int nTouchDevices;
-   SDL_TouchID* touchDevices = SDL_GetTouchDevices(&nTouchDevices);
-   for (int i = 0; i < nTouchDevices; i++)
+   // 0 = Disabled, 1 = Enabled (all), 2 = Filter Pen, 3 = Filter Virtual (negative IDs)
+   const int touchDetectionMode = settings.GetPlayer_TouchDetection();
+   if (touchDetectionMode > 0)
    {
-      PLOGI << "Touch device detected: '" << SDL_GetTouchDeviceName(touchDevices[i]) << "' "
-            << ((SDL_GetTouchDeviceType(touchDevices[i]) == SDL_TOUCH_DEVICE_DIRECT) ? " - Enabling touch support" : " - Skipping (not a touch screen)");
-      if (SDL_GetTouchDeviceType(touchDevices[i]) == SDL_TOUCH_DEVICE_DIRECT)
-         m_supportsTouch = true;
+      int nTouchDevices;
+      SDL_TouchID* touchDevices = SDL_GetTouchDevices(&nTouchDevices);
+      for (int i = 0; i < nTouchDevices; i++)
+      {
+         const SDL_TouchID touchId = touchDevices[i];
+         const char* name = SDL_GetTouchDeviceName(touchId);
+         const SDL_TouchDeviceType type = SDL_GetTouchDeviceType(touchId);
+
+         if (type != SDL_TOUCH_DEVICE_DIRECT)
+         {
+            PLOGI << "Touch device detected: '" << (name ? name : "(null)") << "' (ID: " << touchId << ") - Skipping (not a touch screen)";
+            continue;
+         }
+
+         bool accepted = true;
+         const char* filterReason = nullptr;
+
+         // Apply filters based on detection mode
+         if (touchDetectionMode == 2 && name && strstr(name, "pen"))
+         {
+            accepted = false;
+            filterReason = "filtered (pen device)";
+         }
+         else if (touchDetectionMode == 3 && touchId < 0)
+         {
+            accepted = false;
+            filterReason = "filtered (virtual device)";
+         }
+
+         if (accepted)
+         {
+            PLOGI << "Touch device detected: '" << (name ? name : "(null)") << "' (ID: " << touchId << ") - Enabling touch support";
+            m_supportsTouch = true;
+         }
+         else
+         {
+            PLOGI << "Touch device detected: '" << (name ? name : "(null)") << "' (ID: " << touchId << ") - " << filterReason;
+         }
+      }
+      if (touchDevices)
+         SDL_free(touchDevices);
    }
-   if (touchDevices)
-      SDL_free(touchDevices);
+   else
+   {
+      PLOGI << "Touch detection disabled by user setting";
+   }
    auto addTouchRegion = [this](const RECT& region, unsigned int actionId) { m_touchRegionMap.emplace_back(region, actionId, m_inputActions[actionId]->NewDirectStateSlot()); };
    // RECT definition is left, top, right, bottom in % of screen
    addTouchRegion(RECT { 0, 0, 50, 10 }, GetAddCreditActionId(0));
