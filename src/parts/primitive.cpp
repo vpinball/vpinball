@@ -1116,7 +1116,8 @@ void Primitive::RenderSetup(RenderDevice *device)
       {
          m_groupdRendering = true;
 
-         IndexBuffer *indexBuffer = new IndexBuffer(m_rd, static_cast<unsigned int>(overall_size), false, overall_size < 65536 ? IndexBuffer::FMT_INDEX16 : IndexBuffer::FMT_INDEX32);
+         std::shared_ptr<IndexBuffer> indexBuffer
+            = std::make_shared<IndexBuffer>(m_rd, static_cast<unsigned int>(overall_size), false, overall_size < 65536 ? IndexBuffer::FMT_INDEX16 : IndexBuffer::FMT_INDEX32);
          void *indices;
          indexBuffer->Lock(indices);
          m_numGroupVertices = 0;
@@ -1176,7 +1177,7 @@ void Primitive::RenderSetup(RenderDevice *device)
    m_isBackGlassImage = IsBackglass();
 
    std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_rd, (unsigned int)m_mesh.NumVertices(), nullptr, !(m_d.m_staticRendering || m_mesh.m_animationFrames.empty()));
-   IndexBuffer *indexBuffer = new IndexBuffer(m_rd, m_mesh.m_indices);
+   std::shared_ptr<IndexBuffer> indexBuffer = std::make_shared<IndexBuffer>(m_rd, m_mesh.m_indices);
    m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName, vertexBuffer, indexBuffer, true);
 
    // Compute and upload mesh to let a chance for renderdevice to share the buffers with other static objects

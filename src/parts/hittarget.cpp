@@ -554,7 +554,7 @@ void HitTarget::RenderSetup(RenderDevice *device)
 
    GenerateMesh(m_transformedVertices);
    std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_rd, m_numVertices, (float *)m_transformedVertices.data(), true);
-   IndexBuffer *indexBuffer = new IndexBuffer(m_rd, m_numIndices, m_indices);
+   std::shared_ptr<IndexBuffer> indexBuffer = std::make_shared<IndexBuffer>(m_rd, m_numIndices, m_indices);
    m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName, vertexBuffer, indexBuffer, true);
 
    m_moveAnimationOffset = 0.0f;

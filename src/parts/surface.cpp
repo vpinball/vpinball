@@ -829,7 +829,7 @@ void Surface::RenderSetup(RenderDevice *device)
       slingshotVBuffer->Unlock();
       delete[] rgv3D;
 
-      IndexBuffer *slingIBuffer = new IndexBuffer(m_rd, n_lines * 24);
+      std::shared_ptr<IndexBuffer> slingIBuffer = std::make_shared<IndexBuffer>(m_rd, n_lines * 24);
       unsigned short *ibuf;
       slingIBuffer->Lock(ibuf);
       memcpy(ibuf, rgIdx, m_vlinesling.size() * 24 * sizeof(unsigned short));
@@ -863,7 +863,7 @@ void Surface::RenderSetup(RenderDevice *device)
       for (unsigned int i = 0; i < m_numPolys * 3; i++)
          topBottomIndices.push_back(topBottomIndices[i] + m_numVertices * 2);
 
-      IndexBuffer *IBuffer = new IndexBuffer(m_rd, (unsigned int)topBottomIndices.size() + (unsigned int)sideIndices.size());
+      std::shared_ptr<IndexBuffer> IBuffer = std::make_shared<IndexBuffer>(m_rd, (unsigned int)topBottomIndices.size() + (unsigned int)sideIndices.size());
       WORD* buf;
       IBuffer->Lock(buf);
       memcpy(buf, sideIndices.data(), sideIndices.size() * sizeof(WORD));
@@ -929,7 +929,7 @@ void Surface::Render(const unsigned int renderMask)
             indices[i * 8 + 6] = i * 4 + 3;
             indices[i * 8 + 7] = i * 4;
          }
-         m_meshEdgeBuffer = m_meshBuffer->CreateSharedVertexMeshBuffer(new IndexBuffer(m_rd, indices));
+         m_meshEdgeBuffer = m_meshBuffer->CreateSharedVertexMeshBuffer(std::make_shared<IndexBuffer>(m_rd, indices));
       }
       if (renderMask & Renderer::UI_EDGES)
          m_rd->DrawMesh(m_rd->m_basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_numVertices * 8);
