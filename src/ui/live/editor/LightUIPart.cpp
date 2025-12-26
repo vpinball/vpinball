@@ -40,8 +40,7 @@ void LightUIPart::Render(const EditorRenderContext& ctx)
    if (isUIVisible && (ctx.IsSelected() || (!m_visible && ctx.GetViewMode() != ViewMode::PreviewCam)))
    {
       m_light->m_d.m_visible = true;
-      // FIXME ctx.DrawWireframe(m_light);
-      //ctx.DrawHitObjects(m_light);
+      ctx.DrawWireframe(m_light);
    }
 
    m_light->m_d.m_visible = isUIVisible && m_visible;
@@ -50,126 +49,201 @@ void LightUIPart::Render(const EditorRenderContext& ctx)
 void LightUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("Light", m_light);
-   
-   /*
-   Light *const light = (is_live ? live_light : startup_light);
-   if (light && ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
+
+   if (props.BeginSection("Light Settings"s))
    {
-      auto upd_intensity = [startup_light, live_light, light](bool is_live, float prev, float v)
-      {
-         if (prev > 0.1f && v > 0.1f)
+      props.Combo<Light>(
+         m_light, "Shape", vector<string> { "None"s, "Linear"s, "Incandescent"s }, //
+         [](const Light* light) { return static_cast<int>(light->m_d.m_fader); }, //
+         [](Light* light, int v) { light->m_d.m_fader = static_cast<Fader>(v); });
+      props.InputFloat<Light>(
+         m_light, "Intensity"s, //
+         [](const Light* light) { return light->m_d.m_intensity; }, //
+         [](Light* light, float v) { light->m_d.m_intensity = v; }, PropertyPane::Unit::None, 1);
+      props.InputFloat<Light>(
+         m_light, "Fade Up (ms)"s, //
+         [](const Light* light) { return light->m_d.m_fadeSpeedUp > 0.1f ? light->m_d.m_intensity * light->m_d.m_intensity_scale / light->m_d.m_fadeSpeedUp : 100000.0f; }, //
+         [](Light* light, float v) { light->m_d.m_fadeSpeedUp = v > 0.001f ? light->m_d.m_intensity * light->m_d.m_intensity_scale / v : 100000.0f; }, PropertyPane::Unit::None, 1);
+      props.InputFloat<Light>(
+         m_light, "Fade Down (ms)"s, //
+         [](const Light* light) { return light->m_d.m_fadeSpeedDown > 0.1f ? light->m_d.m_intensity * light->m_d.m_intensity_scale / light->m_d.m_fadeSpeedDown : 100000.0f; }, //
+         [](Light* light, float v) { light->m_d.m_fadeSpeedDown = v > 0.001f ? light->m_d.m_intensity * light->m_d.m_intensity_scale / v : 100000.0f; }, PropertyPane::Unit::None, 1);
+      props.InputRGB<Light>(
+         m_light, "Light Color"s, //
+         [](const Light* light) { return convertColor(light->m_d.m_color2); }, //
+         [](Light* light, const vec3& v) { light->m_d.m_color = convertColorRGB(v); });
+      props.InputRGB<Light>(
+         m_light, "Center Burst Color"s, //
+         [](const Light* light) { return convertColor(light->m_d.m_color2); }, //
+         [](Light* light, const vec3& v) { light->m_d.m_color = convertColorRGB(v); });
+      props.InputFloat<Light>(
+         m_light, "Fall Off Range"s, //
+         [](const Light* light) { return light->m_d.m_falloff; }, //
+         [](Light* light, float v) { light->m_d.m_falloff = v; }, PropertyPane::Unit::VPLength, 1);
+      props.InputFloat<Light>(
+         m_light, "Fall Off Power"s, //
+         [](const Light* light) { return light->m_d.m_falloff_power; }, //
+         [](Light* light, float v) { light->m_d.m_falloff_power = v; }, PropertyPane::Unit::None, 1);
+      props.EndSection();
+   }
+
+   if (props.BeginSection("Render Mode"s))
+   {
+      props.Combo<Light>(
+         m_light, "Type"s, vector<string> { "Hidden"s, "Classic"s, "Halo"s }, //
+         [this](const Light* light)
          {
-            const float fade_up_ms = prev / light->m_d.m_fadeSpeedUp;
-            light->m_d.m_fadeSpeedUp = fade_up_ms < 0.1f ? 100000.0f : v / fade_up_ms;
-            const float fade_down_ms = prev / light->m_d.m_fadeSpeedDown;
-            light->m_d.m_fadeSpeedDown = fade_down_ms < 0.1f ? 100000.0f : v / fade_down_ms;
+            const bool visible = light == m_light ? m_visible : light->m_d.m_visible;
+            return visible ? light->m_d.m_BulbLight ? 2 : 1 : 0;
+         },
+         [this](Light* light, int v)
+         {
+            light->m_d.m_visible = v != 0;
+            (light == m_light ? m_visible : light->m_d.m_visible) = v != 0;
+            light->m_d.m_BulbLight = v == 2;
+         });
+      if (const Light* light = props.GetEditedPart<Light>(m_light); light == m_light ? m_visible : light->m_d.m_visible)
+      {
+         props.Checkbox<Light>(
+            m_light, "Reflection Enabled"s, //
+            [](const Light* light) { return light->m_d.m_reflectionEnabled; }, //
+            [](Light* light, bool v) { light->m_d.m_reflectionEnabled = v; });
+         props.InputFloat<Light>(
+            m_light, "Depth Bias"s, //
+            [](const Light* light) { return light->m_d.m_depthBias; }, //
+            [](Light* light, float v) { light->m_d.m_depthBias = v; }, PropertyPane::Unit::None, 1);
+         if (light->m_d.m_BulbLight)
+         {
+            props.InputFloat<Light>(
+               m_light, "Halo Height"s, //
+               [](const Light* light) { return light->m_d.m_bulbHaloHeight; }, //
+               [](Light* light, float v) { light->m_d.m_bulbHaloHeight = v; }, PropertyPane::Unit::VPLength, 1);
+            props.InputFloat<Light>(
+               m_light, "Modulate"s, //
+               [](const Light* light) { return light->m_d.m_modulate_vs_add; }, //
+               [](Light* light, float v) { light->m_d.m_modulate_vs_add = v; }, PropertyPane::Unit::Percent, 1);
+            props.InputFloat<Light>(
+               m_light, "Transmit"s, //
+               [](const Light* light) { return light->m_d.m_transmissionScale; }, //
+               [](Light* light, float v) { light->m_d.m_transmissionScale = v; }, PropertyPane::Unit::Percent, 1);
          }
-         startup_light->m_currentIntensity = startup_light->m_d.m_intensity * startup_light->m_d.m_intensity_scale * startup_light->m_inPlayState;
-         live_light->m_currentIntensity = live_light->m_d.m_intensity * live_light->m_d.m_intensity_scale * live_light->m_inPlayState;
-      };
-      float startup_fadeup = startup_light ? (startup_light->m_d.m_intensity / startup_light->m_d.m_fadeSpeedUp) : 0.f;
-      float live_fadeup = live_light ? (live_light->m_d.m_intensity / live_light->m_d.m_fadeSpeedUp) : 0.f;
-      auto upd_fade_up = [light](bool is_live, float prev, float v) { light->m_d.m_fadeSpeedUp = v < 0.1f ? 100000.0f : light->m_d.m_intensity / v;  };
-      float startup_fadedown = startup_light ? (startup_light->m_d.m_intensity / startup_light->m_d.m_fadeSpeedDown) : 0.f;
-      float live_fadedown = live_light ? (live_light->m_d.m_intensity / live_light->m_d.m_fadeSpeedDown) : 0.f;
-      auto upd_fade_down = [light](bool is_live, float prev, float v) { light->m_d.m_fadeSpeedDown = v < 0.1f ? 100000.0f : light->m_d.m_intensity / v; };
-      bool startup_shadow = startup_light ? (startup_light->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS) : ShadowMode::NONE;
-      bool live_shadow = live_light ? (live_light->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS) : ShadowMode::NONE;
-      auto upd_shadow = [light](bool is_live, bool prev, bool v) { light->m_d.m_shadows = v ? ShadowMode::RAYTRACED_BALL_SHADOWS : ShadowMode::NONE; };
-
-      PropSeparator("Light Settings");
-      PropFloat("Intensity", startup_light, is_live, startup_light ? &(startup_light->m_d.m_intensity) : nullptr, live_light ? &(live_light->m_d.m_intensity) : nullptr, 0.1f, 1.0f, "%.1f", ImGuiInputTextFlags_CharsDecimal, upd_intensity);
-      static const string faders[] = { "None"s, "Linear"s, "Incandescent"s };
-      PropCombo("Fader", startup_light, is_live, startup_light ? (int *)&(startup_light->m_d.m_fader) : nullptr, live_light ? (int *)&(live_light->m_d.m_fader) : nullptr, std::size(faders), faders);
-      PropFloat("Fade Up (ms)", startup_light, is_live, startup_light ? &startup_fadeup : nullptr, live_light ? &live_fadeup : nullptr, 10.0f, 50.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal, upd_fade_up);
-      PropFloat("Fade Down (ms)", startup_light, is_live, startup_light ? &startup_fadedown : nullptr, live_light ? &live_fadedown : nullptr, 10.0f, 50.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal, upd_fade_down);
-      PropRGB("Light Color", startup_light, is_live, startup_light ? &(startup_light->m_d.m_color) : nullptr, live_light ? &(live_light->m_d.m_color) : nullptr);
-      PropRGB("Center Burst", startup_light, is_live, startup_light ? &(startup_light->m_d.m_color2) : nullptr, live_light ? &(live_light->m_d.m_color2) : nullptr);
-      PropFloat("Falloff Range", startup_light, is_live, startup_light ? &(startup_light->m_d.m_falloff) : nullptr, live_light ? &(live_light->m_d.m_falloff) : nullptr, 10.f, 100.f, "%.0f");
-      PropFloat("Falloff Power", startup_light, is_live, startup_light ? &(startup_light->m_d.m_falloff_power) : nullptr, live_light ? &(live_light->m_d.m_falloff_power) : nullptr, 0.1f, 0.5f, "%.2f");
-
-      PropSeparator("Render Mode");
-      static const string modes[] = { "Hidden"s, "Classic"s, "Halo"s };
-      int startup_mode = startup_light ? startup_light->m_d.m_visible ? startup_light->m_d.m_BulbLight ? 2 : 1 : 0 : -1;
-      int live_mode = live_light ? live_light->m_d.m_visible ? live_light->m_d.m_BulbLight ? 2 : 1 : 0 : -1;
-      auto upd_mode = [light](bool is_live, bool prev, int v) { light->m_d.m_visible = (v != 0); light->m_d.m_BulbLight = (v != 1); };
-      PropCombo("Type", startup_light, is_live, startup_mode >= 0 ? &startup_mode : nullptr, live_mode >= 0 ? &live_mode : nullptr, std::size(modes), modes, upd_mode);
-      if (!light->m_d.m_visible)
-      {
+         else
+         {
+            props.Checkbox<Light>(
+               m_light, "PassThrough"s, //
+               [](const Light* light) { return light->m_d.m_imageMode; }, //
+               [](Light* light, bool v) { light->m_d.m_imageMode = v; });
+            props.ImageCombo<Light>(
+               m_light, "Image", //
+               [](const Light* light) { return light->m_d.m_szImage; }, //
+               [](Light* light, const string& v) { light->m_d.m_szImage = v; });
+         }
       }
-      else if (light->m_d.m_BulbLight)
+      props.EndSection();
+   }
+
+   if (props.BeginSection("Bulb"s))
+   {
+      props.Checkbox<Light>(
+         m_light, "Show Bulb"s, //
+         [](const Light* light) { return light->m_d.m_showBulbMesh; }, //
+         [](Light* light, bool v) { light->m_d.m_showBulbMesh = v; });
+      props.Checkbox<Light>(
+         m_light, "Static Mesh"s, //
+         [](const Light* light) { return light->m_d.m_staticBulbMesh; }, //
+         [](Light* light, bool v) { light->m_d.m_staticBulbMesh = v; });
+      props.InputFloat<Light>(
+         m_light, "Radius"s, //
+         [](const Light* light) { return light->m_d.m_meshRadius; }, //
+         [](Light* light, float v) { light->m_d.m_meshRadius = v; }, PropertyPane::Unit::VPLength, 1);
+      props.EndSection();
+   }
+
+   if (props.BeginSection("Ball Reflections & Shadows"s))
+   {
+      props.Checkbox<Light>(
+         m_light, "Show Reflection on Balls"s, //
+         [](const Light* light) { return light->m_d.m_showReflectionOnBall; }, //
+         [](Light* light, bool v) { light->m_d.m_showReflectionOnBall = v; });
+      props.Checkbox<Light>(
+         m_light, "Raytraced Ball Shadows"s, //
+         [](const Light* light) { return light->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS; }, //
+         [](Light* light, bool v) { light->m_d.m_shadows = v ? ShadowMode::RAYTRACED_BALL_SHADOWS : ShadowMode::NONE; });
+      props.EndSection();
+   }
+
+   if (props.BeginSection("Position"s))
+   {
+      props.InputFloat<Light>(
+         m_light, "X", //
+         [](const Light* light) { return light->m_d.m_vCenter.x; }, //
+         [](Light* light, float v) { light->Translate(Vertex2D(v - light->m_d.m_vCenter.x, 0.f)); }, PropertyPane::Unit::VPLength, 1);
+      props.InputFloat<Light>(
+         m_light, "Y", //
+         [](const Light* light) { return light->m_d.m_vCenter.y; }, //
+         [](Light* light, float v) { light->Translate(Vertex2D(0.f, v - light->m_d.m_vCenter.y)); }, PropertyPane::Unit::VPLength, 1);
+      props.SurfaceCombo<Light>(
+         m_light, "Surface", //
+         [](const Light* light) { return light->m_d.m_szSurface; }, //
+         [](Light* light, const string& v) { light->m_d.m_szSurface = v; });
+      props.EndSection();
+   }
+
+   if (props.BeginSection("States"s))
+   {
+      props.Checkbox<Light>(
+         m_light, "Blinking Light"s, //
+         [](const Light* light) { return light->m_d.m_state == 2; }, //
+         [](Light* light, bool v)
+         {
+            if (v)
+               light->m_d.m_state = 2.f;
+            else if (light->m_d.m_state == 2.f)
+               light->m_d.m_state = 1.f;
+         });
+      if (const Light* light = props.GetEditedPart<Light>(m_light); light->m_d.m_state == 2.f)
       {
-         PropCheckbox("Reflection Enabled", startup_light, is_live, startup_light ? &(startup_light->m_d.m_reflectionEnabled) : nullptr, live_light ? &(live_light->m_d.m_reflectionEnabled) : nullptr);
-         PropFloat("Depth Bias", startup_light, is_live, startup_light ? &(startup_light->m_d.m_depthBias) : nullptr, live_light ? &(live_light->m_d.m_depthBias) : nullptr, 10.f, 50.f, "%.0f");
-         PropFloat("Halo Height", startup_light, is_live, startup_light ? &(startup_light->m_d.m_bulbHaloHeight) : nullptr, live_light ? &(live_light->m_d.m_bulbHaloHeight) : nullptr, 1.f, 5.f, "%.1f");
-         PropFloat("Modulate", startup_light, is_live, startup_light ? &(startup_light->m_d.m_modulate_vs_add) : nullptr, live_light ? &(live_light->m_d.m_modulate_vs_add) : nullptr, 0.1f, 0.5f, "%.1f");
-         PropFloat("Transmission", startup_light, is_live, startup_light ? &(startup_light->m_d.m_transmissionScale) : nullptr, live_light ? &(live_light->m_d.m_transmissionScale) : nullptr, 0.1f, 0.5f, "%.1f");
+         props.InputString<Light>(
+            m_light, "Blink Pattern"s, //
+            [](const Light* light) { return light->m_d.m_rgblinkpattern; }, //
+            [](Light* light, const string& v) { light->m_d.m_rgblinkpattern = v; });
+         props.InputInt<Light>(
+            m_light, "Blink Interval (ms)"s, //
+            [](const Light* light) { return light->m_d.m_blinkinterval; }, //
+            [](Light* light, int v) { light->m_d.m_blinkinterval = v; });
       }
       else
       {
-         PropCheckbox("Reflection Enabled", startup_light, is_live, startup_light ? &(startup_light->m_d.m_reflectionEnabled) : nullptr, live_light ? &(live_light->m_d.m_reflectionEnabled) : nullptr);
-         PropFloat("Depth Bias", startup_light, is_live, startup_light ? &(startup_light->m_d.m_depthBias) : nullptr, live_light ? &(live_light->m_d.m_depthBias) : nullptr, 10.f, 50.f, "%.0f");
-         PropCheckbox("PassThrough", startup_light, is_live, startup_light ? &(startup_light->m_d.m_imageMode) : nullptr, live_light ? &(live_light->m_d.m_imageMode) : nullptr);
-         PropImageCombo("Image", startup_light, is_live, startup_light ? &(startup_light->m_d.m_szImage) : nullptr, live_light ? &(live_light->m_d.m_szImage) : nullptr, m_table);
+         props.InputFloat<Light>(
+            m_light, "State", //
+            [](const Light* light) { return light->m_d.m_state; }, //
+            [](Light* light, float v)
+            {
+               light->m_d.m_state = v;
+               light->setInPlayState(v > 1.f ? (float)LightStateBlinking : v);
+            },
+            PropertyPane::Unit::Percent, 1);
       }
-
-      PropSeparator("Bulb");
-      PropCheckbox("Render bulb", startup_light, is_live, startup_light ? &(startup_light->m_d.m_showBulbMesh) : nullptr, live_light ? &(live_light->m_d.m_showBulbMesh) : nullptr);
-      PropCheckbox("Static rendering", startup_light, is_live, startup_light ? &(startup_light->m_d.m_staticBulbMesh) : nullptr, live_light ? &(live_light->m_d.m_staticBulbMesh) : nullptr);
-      PropFloat("Bulb Size", startup_light, is_live, startup_light ? &(startup_light->m_d.m_meshRadius) : nullptr, live_light ? &(live_light->m_d.m_meshRadius) : nullptr, 1.0f, 5.0f, "%.0f");
-
-      PropSeparator("Ball reflections & Shadows");
-      PropCheckbox("Show Reflection on Balls", startup_light, is_live, startup_light ? &(startup_light->m_d.m_showReflectionOnBall) : nullptr, live_light ? &(live_light->m_d.m_showReflectionOnBall) : nullptr);
-      PropCheckbox("Raytraced ball shadows", startup_light, is_live, startup_light ? &startup_shadow : nullptr, live_light ? &live_shadow : nullptr, upd_shadow);
-
-      PropSeparator("Position");
-      // FIXME This allows to edit the center but does not update dragpoint coordinates accordingly => add a callback and use Translate
-      // FIXME we also need to save dragpoint change when saving x/y to startup table as well as center pos => add a save callback and copy to startup table
-      PropFloat("X", startup_light, is_live, startup_light ? &(startup_light->m_d.m_vCenter.x) : nullptr, live_light ? &(live_light->m_d.m_vCenter.x) : nullptr, 0.1f, 0.5f, "%.1f");
-      PropFloat("Y", startup_light, is_live, startup_light ? &(startup_light->m_d.m_vCenter.y) : nullptr, live_light ? &(live_light->m_d.m_vCenter.y) : nullptr, 0.1f, 0.5f, "%.1f");
-      PropFloat("Z", startup_light, is_live, startup_light ? &(startup_light->m_d.m_height) : nullptr, live_light ? &(live_light->m_d.m_height) : nullptr, 0.1f, 0.5f, "%.1f");
-
-      ImGui::EndTable();
-   }
-   if (light && ImGui::CollapsingHeader("States", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
-   {
-      auto upd_inplaystate = [startup_light, live_light](bool is_live, float prev, float v)
-      {
-         Light * const light = (is_live ? live_light : startup_light);
-         light->setInPlayState(v > 1.f ? (float)LightStateBlinking : v);
-      };
-      PropFloat("State", startup_light, is_live, startup_light ? &(startup_light->m_d.m_state) : nullptr, live_light ? &(live_light->m_d.m_state) : nullptr, 0.1f, 0.5f, "%.1f", ImGuiInputTextFlags_CharsDecimal, upd_inplaystate);
-      // Missing blink pattern
-      PropInt("Blink interval", startup_light, is_live, startup_light ? &(startup_light->m_d.m_blinkinterval) : nullptr, live_light ? &(live_light->m_d.m_blinkinterval) : nullptr);
-      ImGui::EndTable();
-   }
-   PROP_TIMER(is_live, startup_light, live_light)
-   if (is_live && ImGui::CollapsingHeader("Live state", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
-   {
-      PROP_TABLE_SETUP
-      ImGui::BeginDisabled();
-      ImGui::TableNextColumn();
-      ImGui::InputFloat("Intensity", &live_light->m_currentIntensity);
-      ImGui::TableNextColumn();
-      ImGui::Button(ICON_SAVE "##t2");
-      if (live_light->m_d.m_fader == FADER_INCANDESCENT)
-      {
-         ImGui::TableNextColumn();
-         float temperature = (float)live_light->m_currentFilamentTemperature;
-         ImGui::InputFloat("Filament Temperature", &temperature);
-         ImGui::TableNextColumn();
-         ImGui::Button(ICON_SAVE "##t1");
-      }
-      ImGui::EndDisabled();
-      ImGui::EndTable();
-   }
-   
-   */
-   if (props.BeginSection(PropertyPane::Section::Visual))
-   {
       props.EndSection();
    }
-   
+
+   if (m_light->GetPTable()->m_liveBaseTable && props.BeginSection("Transient state"s))
+   {
+      props.InputFloat<Light>(
+         m_light, "Intensity Scale"s, //
+         [](const Light* light) { return light->m_d.m_intensity_scale; }, //
+         [](Light* light, float v) { light->m_d.m_intensity_scale = v; }, PropertyPane::Unit::None, 1);
+      props.InputFloat<Light>(
+         m_light, "Current Intensity"s, //
+         [](const Light* light) { return light->m_currentIntensity; }, //
+         [](Light* light, float v) { light->m_currentIntensity = v; }, PropertyPane::Unit::None, 1);
+      props.InputFloat<Light>(
+         m_light, "Filament Temperature"s, //
+         [](const Light* light) { return static_cast<float>(light->m_currentFilamentTemperature); }, //
+         [](Light* light, float v) { light->m_currentFilamentTemperature = static_cast<double>(v); }, PropertyPane::Unit::None, 1);
+      props.EndSection();
+   }
+
    props.TimerSection<Light>(m_light, [](Light* obj) { return &(obj->m_d.m_tdr); });
 }
 

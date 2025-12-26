@@ -763,51 +763,20 @@ void Decal::Render(const unsigned int renderMask)
 
    m_rd->EnableAlphaBlend(false);
 
-   if (!m_backglass)
-   {
-      m_rd->SetRenderStateDepthBias(-5.f);
-   }
-   else
+   if (m_backglass)
    {
       m_rd->SetRenderStateDepthBias(0.0f);
       static constexpr vec4 staticColor { 1.0f, 1.0f, 1.0f, 1.0f };
       m_rd->m_basicShader->SetVector(SHADER_cBase_Alpha, &staticColor);
-   }
-
-   if (m_backglass)
-   {
-      Matrix3D matWorldViewProj[2];
-      matWorldViewProj[0] = Matrix3D::MatrixIdentity(); // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
-      matWorldViewProj[0]._11 = 2.0f / (float)m_rd->GetCurrentRenderTarget()->GetWidth();
-      matWorldViewProj[0]._41 = -1.0f;
-      matWorldViewProj[0]._22 = -2.0f / (float)m_rd->GetCurrentRenderTarget()->GetHeight();
-      matWorldViewProj[0]._42 = 1.0f;
-      #if defined(ENABLE_BGFX)
-      const int eyes = m_rd->GetCurrentRenderTarget()->m_nLayers;
-      if (eyes > 1)
-         matWorldViewProj[1] = matWorldViewProj[0];
-      m_rd->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
-      #elif defined(ENABLE_OPENGL)
-      struct
-      {
-         Matrix3D matWorld;
-         Matrix3D matView;
-         Matrix3D matWorldView;
-         Matrix3D matWorldViewInverseTranspose;
-         Matrix3D matWorldViewProj[2];
-      } matrices;
-      memcpy(&matrices.matWorldViewProj[0].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
-      memcpy(&matrices.matWorldViewProj[1].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
-      m_rd->m_basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
-      #elif defined(ENABLE_DX9)
-      m_rd->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0]);
-      #endif
-   }
-
-   m_rd->DrawMesh(m_rd->m_basicShader, !m_backglass, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLESTRIP, 0, 4);
-
-   if (m_backglass)
+      g_pplayer->m_renderer->UpdateDesktopBackdropShaderMatrix(true, false, false);
+      m_rd->DrawMesh(m_rd->m_basicShader, !m_backglass, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLESTRIP, 0, 4);
       g_pplayer->m_renderer->UpdateBasicShaderMatrix();
+   }
+   else
+   {
+      m_rd->SetRenderStateDepthBias(-5.f);
+      m_rd->DrawMesh(m_rd->m_basicShader, !m_backglass, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLESTRIP, 0, 4);
+   }
 }
 
 #pragma endregion

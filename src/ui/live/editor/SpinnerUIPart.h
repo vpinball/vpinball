@@ -27,6 +27,7 @@ public:
 private:
    Spinner* const m_spinner;
    string m_outlinerPath;
+   bool m_visible;
 };
 
 }

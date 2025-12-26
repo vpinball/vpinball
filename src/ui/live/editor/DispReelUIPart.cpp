@@ -29,7 +29,7 @@ void DispReelUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("DispReel", m_dispreel);
    
-   if (props.BeginSection(PropertyPane::Section::Visual))
+   if (props.BeginSection("Visual"s))
    {
       props.EndSection();
    }

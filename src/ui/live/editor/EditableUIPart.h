@@ -26,6 +26,7 @@ public:
    virtual ImDrawList* GetDrawList() const = 0;
    virtual ImVec2 Project(const Vertex3Ds& point) const = 0;
 
+   virtual void DrawLine(const Vertex3Ds& a, const Vertex3Ds& b, ImU32 color) const = 0;
    virtual void DrawCircle(const Vertex3Ds& center, const Vertex3Ds& x, const Vertex3Ds& y, float radius, ImU32 color) const = 0;
    virtual void DrawHitObjects(IEditable* editable) const = 0;
    virtual void DrawWireframe(IEditable* editable) const = 0;

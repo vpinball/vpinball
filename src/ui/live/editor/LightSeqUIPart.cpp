@@ -29,12 +29,12 @@ void LightSeqUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("LightSeq", m_lightSeq);
    
-   if (props.BeginSection(PropertyPane::Section::Visual))
+   if (props.BeginSection("Visual"s))
    {
       props.EndSection();
    }
    
-   if (props.BeginSection(PropertyPane::Section::Position))
+   if (props.BeginSection("Position"s))
    {
       // Missing position
       props.EndSection();

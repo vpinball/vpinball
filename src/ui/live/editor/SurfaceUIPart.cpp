@@ -60,7 +60,7 @@ void SurfaceUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("Surface", m_surface);
 
-   if (props.BeginSection(PropertyPane::Section::Visual))
+   if (props.BeginSection("Visual"s))
    {
       props.Checkbox<Surface>(
          m_surface, "Top Visible"s, //
@@ -124,8 +124,60 @@ void SurfaceUIPart::UpdatePropertyPane(PropertyPane& props)
       props.EndSection();
    }
 
-   if (props.BeginSection(PropertyPane::Section::Physics))
+   if (props.BeginSection("Physics"s))
    {
+      props.Checkbox<Surface>(
+         m_surface, "Has Hit Event"s, //
+         [](const Surface* surf) { return surf->m_d.m_hitEvent; }, //
+         [](Surface* surf, bool v) { surf->m_d.m_hitEvent = v; });
+      props.InputFloat<Surface>(
+         m_surface, "Hit Threshold"s, //
+         [](const Surface* surf) { return surf->m_d.m_threshold; }, //
+         [](Surface* surf, float v) { surf->m_d.m_threshold = v; }, PropertyPane::Unit::None, 2);
+      props.InputFloat<Surface>(
+         m_surface, "Slingshot Force"s, //
+         [](const Surface* surf) { return surf->m_d.m_slingshotforce; }, //
+         [](Surface* surf, float v) { surf->m_d.m_slingshotforce = v; }, PropertyPane::Unit::None, 2);
+      props.InputFloat<Surface>(
+         m_surface, "Slignshot Threshold"s, //
+         [](const Surface* surf) { return surf->m_d.m_slingshot_threshold; }, //
+         [](Surface* surf, float v) { surf->m_d.m_slingshot_threshold = v; }, PropertyPane::Unit::None, 2);
+      props.MaterialCombo<Surface>(
+         m_surface, "Physics Material"s, //
+         [](const Surface* surf) { return surf->m_d.m_szPhysicsMaterial; }, //
+         [](Surface* surf, const string& v) { surf->m_d.m_szPhysicsMaterial = v; });
+      props.Checkbox<Surface>(
+         m_surface, "Overwrite Material"s, //
+         [](const Surface* surf) { return surf->m_d.m_overwritePhysics; }, //
+         [](Surface* surf, bool v) { surf->m_d.m_overwritePhysics = v; });
+      props.InputFloat<Surface>(
+         m_surface, "Elasticity", //
+         [](const Surface* surface) { return surface->m_d.m_elasticity; }, //
+         [](Surface* surface, float v) { surface->m_d.m_elasticity = v; }, PropertyPane::Unit::None, 3);
+      props.InputFloat<Surface>(
+         m_surface, "Elasticity Fall Off", //
+         [](const Surface* surface) { return surface->m_d.m_elasticityFalloff; }, //
+         [](Surface* surface, float v) { surface->m_d.m_elasticityFalloff = v; }, PropertyPane::Unit::None, 3);
+      props.InputFloat<Surface>(
+         m_surface, "Friction", //
+         [](const Surface* surface) { return surface->m_d.m_friction; }, //
+         [](Surface* surface, float v) { surface->m_d.m_friction = v; }, PropertyPane::Unit::None, 3);
+      props.InputFloat<Surface>(
+         m_surface, "Scatter Angle", //
+         [](const Surface* surface) { return surface->m_d.m_scatter; }, //
+         [](Surface* surface, float v) { surface->m_d.m_scatter = v; }, PropertyPane::Unit::None, 3);
+      props.Checkbox<Surface>(
+         m_surface, "Can Drop"s, //
+         [](const Surface* surf) { return surf->m_d.m_droppable; }, //
+         [](Surface* surf, bool v) { surf->m_d.m_droppable = v; });
+      props.Checkbox<Surface>(
+         m_surface, "Collidable"s, //
+         [](const Surface* surf) { return surf->m_d.m_collidable; }, //
+         [](Surface* surf, bool v) { surf->m_d.m_collidable = v; });
+      props.Checkbox<Surface>(
+         m_surface, "Bottom Collidable"s, //
+         [](const Surface* surf) { return surf->m_d.m_isBottomSolid; }, //
+         [](Surface* surf, bool v) { surf->m_d.m_isBottomSolid = v; });
       props.EndSection();
    }
 

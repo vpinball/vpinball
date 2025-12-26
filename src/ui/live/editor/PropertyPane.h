@@ -14,17 +14,7 @@ public:
 
    void SetShowStartup(bool showStartup);
 
-   enum class Section
-   {
-      Lighting,
-      Position,
-      Physics,
-      Transparency,
-      Timer,
-      Users,
-      Visual
-   };
-   bool BeginSection(Section section);
+   bool BeginSection(const string& name);
    void EndSection();
    template <class T> T* GetEditedPart(T* obj) const;
    template <class T> void TimerSection(T* obj, const std::function<TimerDataRoot*(T*)>& getTimerData);
@@ -51,8 +41,10 @@ public:
    template <class T> void Checkbox(T* obj, const string& label, const std::function<bool(const T*)>& getter, const std::function<void(T*, bool)>& setter);
    template <class T> void InputInt(T* obj, const string& label, const std::function<int(const T*)>& getter, const std::function<void(T*, int)>& setter);
    template <class T> void InputFloat(T* obj, const string& label, const std::function<float(const T*)>& getter, const std::function<void(T*, float)>& setter, Unit unit, int nDecimals);
-   template <class T> void InputFloat3(T* obj, const string& label, const std::function<vec3(const T*)>& getter, const std::function<void(T*, const vec3&)>& setter, Unit unit, int nDecimals);
+   template <class T>
+   void InputFloat3(T* obj, const string& label, const std::function<vec3(const T*)>& getter, const std::function<void(T*, const vec3&)>& setter, Unit unit, int nDecimals);
    template <class T> void InputRGB(T* obj, const string& label, const std::function<vec3(const T*)>& getter, const std::function<void(T*, const vec3&)>& setter);
+   template <class T> void InputString(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
    template <class T> void Combo(T* obj, const string& label, const std::vector<string>& values, const std::function<int(const T*)>& getter, const std::function<void(T*, int)>& setter);
    template <class T> void ImageCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
    template <class T> void MaterialCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
@@ -106,7 +98,7 @@ template <class T> T* PropertyPane::GetEditedPart(T* obj) const
 
 template <class T> void PropertyPane::TimerSection(T* obj, const std::function<TimerDataRoot*(T*)>& getTimerData)
 {
-   if (BeginSection(PropertyPane::Section::Timer))
+   if (BeginSection("Timer"s))
    {
       Checkbox<T>(
          obj, "Enable"s, //
@@ -317,10 +309,10 @@ template <class T>
 inline void PropertyPane::InputFloat3(T* obj, const string& label, const std::function<vec3(const T*)>& getter, const std::function<void(T*, const vec3&)>& setter, Unit unit, int nDecimals)
 {
    assert(m_inSection);
-   float displayValue = 0.f, value;
+   vec3 displayValue, value;
    int nDecimalAdjust;
    Unit displayUnit = m_lengthUnit; // ConvertUnit will set it to the supported converted display unit
-   ConvertUnit(unit, displayUnit, value, nDecimalAdjust);
+   ConvertUnit(unit, displayUnit, value.x, nDecimalAdjust);
    string format = "%."s + std::to_string(max(0, nDecimals + nDecimalAdjust)) + 'f';
    const string unitLabel = GetUnitLabel(displayUnit);
    const string labelWithUnit = unitLabel.empty() ? label : (label + " (" + unitLabel + ')');
@@ -331,10 +323,17 @@ inline void PropertyPane::InputFloat3(T* obj, const string& label, const std::fu
       T* otherObj = m_showStartup ? obj : startupObj;
       ImGui::PushID(label.c_str());
       ImGui::TableNextColumn();
-      vec3 value = getter(displayObj);
-      if (ImGui::InputFloat3(labelWithUnit.c_str(), &value.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
+      displayValue = value = getter(displayObj);
+      ConvertUnit(unit, displayUnit, displayValue.x, nDecimalAdjust);
+      ConvertUnit(unit, displayUnit, displayValue.y, nDecimalAdjust);
+      ConvertUnit(unit, displayUnit, displayValue.z, nDecimalAdjust);
+      if (ImGui::InputFloat3(labelWithUnit.c_str(), &displayValue.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
       {
          // FIXME implement undo
+         value = displayValue;
+         ConvertUnit(displayUnit, unit, value.x, nDecimalAdjust);
+         ConvertUnit(displayUnit, unit, value.y, nDecimalAdjust);
+         ConvertUnit(displayUnit, unit, value.z, nDecimalAdjust);
          setter(displayObj, value);
          m_modified = true;
       }
@@ -360,10 +359,17 @@ inline void PropertyPane::InputFloat3(T* obj, const string& label, const std::fu
    else
    {
       ImGui::TableNextColumn();
-      vec3 value = getter(obj);
-      if (ImGui::InputFloat3(labelWithUnit.c_str(), &value.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
+      displayValue = value = getter(obj);
+      ConvertUnit(unit, displayUnit, displayValue.x, nDecimalAdjust);
+      ConvertUnit(unit, displayUnit, displayValue.y, nDecimalAdjust);
+      ConvertUnit(unit, displayUnit, displayValue.z, nDecimalAdjust);
+      if (ImGui::InputFloat3(labelWithUnit.c_str(), &displayValue.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
       {
          // FIXME implement undo
+         value = displayValue;
+         ConvertUnit(displayUnit, unit, value.x, nDecimalAdjust);
+         ConvertUnit(displayUnit, unit, value.y, nDecimalAdjust);
+         ConvertUnit(displayUnit, unit, value.z, nDecimalAdjust);
          setter(obj, value);
          m_modified = true;
       }
@@ -417,6 +423,65 @@ template <class T> inline void PropertyPane::InputRGB(T* obj, const string& labe
       if (ImGui::ColorEdit3(label.c_str(), &value.x))
       {
          // FIXME implement undo
+         setter(obj, value);
+         m_modified = true;
+      }
+      if (m_sectionHasSync)
+      {
+         ImGui::TableNextColumn();
+      }
+   }
+}
+
+template <class T>
+inline void PropertyPane::InputString(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter)
+{
+   assert(m_inSection);
+   vector<char> buffer(256);
+   T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
+   if (startupObj)
+   {
+      T* displayObj = m_showStartup ? startupObj : obj;
+      T* otherObj = m_showStartup ? obj : startupObj;
+      ImGui::PushID(label.c_str());
+      ImGui::TableNextColumn();
+      string value = getter(displayObj);
+      memcpy(buffer.data(), value.c_str(), min(value.length(), buffer.size() - 1));
+      if (ImGui::InputText(label.c_str(), buffer.data(), buffer.size()))
+      {
+         // FIXME implement undo
+         value = string(buffer.data());
+         setter(displayObj, value);
+         m_modified = true;
+      }
+      ImGui::TableNextColumn();
+      ImGui::BeginDisabled(value == getter(otherObj));
+      if (ImGui::Button(ICON_SAVE))
+      {
+         // FIXME implement undo
+         setter(otherObj, getter(displayObj));
+         m_modified = true;
+      }
+      if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
+      {
+         ImGui::BeginTooltip();
+         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+         ImGui::Text("Copy this value to the %s version", m_showStartup ? "live" : "startup");
+         ImGui::PopTextWrapPos();
+         ImGui::EndTooltip();
+      }
+      ImGui::EndDisabled();
+      ImGui::PopID();
+   }
+   else
+   {
+      ImGui::TableNextColumn();
+      string value = getter(obj);
+      memcpy(buffer.data(), value.c_str(), min(value.length(), buffer.size() - 1));
+      if (ImGui::InputText(label.c_str(), buffer.data(), buffer.size()))
+      {
+         // FIXME implement undo
+         value = string(buffer.data());
          setter(obj, value);
          m_modified = true;
       }
@@ -510,7 +575,7 @@ template <class T> inline void PropertyPane::ImageCombo(T* obj, const string& la
 template <class T> inline void PropertyPane::MaterialCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter)
 {
    std::vector<string> materials(m_table->m_materials.size());
-   const std::function<string(Material*)> map = [](const Material* material) -> string { return material->m_name; };
+   const std::function<string(Material*)> map = [](const Material* material) { return material->m_name; };
    std::transform(m_table->m_materials.begin(), m_table->m_materials.end(), materials.begin(), map);
    std::sort(materials.begin(), materials.end(), [](const std::string& a, const std::string& b)
       { return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end(), [](char c1, char c2) { return tolower(c1) < tolower(c2); }); });
@@ -546,8 +611,8 @@ template <class T>
 inline void PropertyPane::RenderProbeCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter)
 {
    std::vector<string> renderprobes;
-   const std::function<string(RenderProbe*)> map = [](RenderProbe* probe) -> string { return probe->GetName(); };
-   std::transform(m_table->m_vrenderprobe.begin(), m_table->m_vrenderprobe.end(), renderprobes.begin(), map);
+   for (const RenderProbe* probe : m_table->m_vrenderprobe)
+      renderprobes.push_back(probe->GetName());
    std::sort(renderprobes.begin(), renderprobes.end(), [](const std::string& a, const std::string& b)
       { return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end(), [](char c1, char c2) { return tolower(c1) < tolower(c2); }); });
    renderprobes.insert(renderprobes.begin(), ""s);

@@ -1118,6 +1118,49 @@ void Renderer::UpdateBallShaderMatrix()
 #endif
 }
 
+void Renderer::UpdateDesktopBackdropShaderMatrix(bool basic, bool light, bool flasherDMD)
+{
+   Matrix3D matWorldViewProj[2]; // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
+   matWorldViewProj[0].SetIdentity();
+   matWorldViewProj[0]._11 = 2.0f / (float)m_renderDevice->GetCurrentRenderTarget()->GetWidth();
+   matWorldViewProj[0]._41 = -1.0f;
+   matWorldViewProj[0]._22 = -2.0f / (float)m_renderDevice->GetCurrentRenderTarget()->GetHeight();
+   matWorldViewProj[0]._42 = 1.0f;
+   const int eyes = m_renderDevice->GetCurrentRenderTarget()->m_nLayers;
+   if (eyes > 1)
+      matWorldViewProj[1] = matWorldViewProj[0];
+
+   if (basic)
+   {
+   #if defined(ENABLE_BGFX)
+      m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
+   #elif defined(ENABLE_OPENGL)
+      struct
+      {
+         Matrix3D matWorld;
+         Matrix3D matView;
+         Matrix3D matWorldView;
+         Matrix3D matWorldViewInverseTranspose;
+         Matrix3D matWorldViewProj[2];
+      } matrices;
+      memcpy(&matrices.matWorldViewProj[0].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
+      memcpy(&matrices.matWorldViewProj[1].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
+      m_renderDevice->m_basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
+   #elif defined(ENABLE_DX9)
+      m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0]);
+   #endif
+   }
+
+   if (light)
+      m_renderDevice->m_lightShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
+   
+   if (flasherDMD)
+   {
+      m_renderDevice->m_flasherShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
+      m_renderDevice->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
+   }
+}
+
 void Renderer::UpdateStereoShaderState()
 {
    if (m_renderDevice->m_stereoShader == nullptr)
@@ -1416,22 +1459,33 @@ void Renderer::DrawSprite(const float posx, const float posy, const float width,
    m_renderDevice->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
 }
 
-void Renderer::DrawWireframe(IEditable* renderable, const vec4& color, bool withDepthMask)
+void Renderer::DrawWireframe(IEditable* renderable, const vec4& fillColor, const vec4& edgeColor, bool withDepthMask)
 {
    unsigned int prevRenderMask = m_render_mask;
-   m_render_mask = Renderer::RenderMask::UI_FILL;
    m_renderDevice->ResetRenderState();
    m_renderDevice->EnableAlphaBlend(false);
    m_renderDevice->SetRenderState(RenderState::ZENABLE, withDepthMask ? RenderState::RS_TRUE : RenderState::RS_FALSE);
    m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, withDepthMask ? RenderState::RS_TRUE : RenderState::RS_FALSE);
-   m_renderDevice->SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
    m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
    m_renderDevice->m_basicShader->SetTechnique(SHADER_TECHNIQUE_unshaded_without_texture);
-   m_renderDevice->m_basicShader->SetVector(SHADER_staticColor_Alpha, color.x, color.y, color.z, color.w);
-   RenderItem(renderable, false);
-   m_render_mask = Renderer::RenderMask::UI_EDGES;
-   m_renderDevice->m_basicShader->SetVector(SHADER_staticColor_Alpha, color.x, color.y, color.z, 1.f);
-   RenderItem(renderable, false);
+   if (fillColor.w > 0.f)
+   {
+      m_render_mask = Renderer::RenderMask::UI_FILL;
+      m_renderDevice->SetRenderState(RenderState::ZFUNC, RenderState::Z_LESS);
+      m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, fillColor.w == 1.f ? RenderState::RS_FALSE : RenderState::RS_TRUE);
+      m_renderDevice->m_basicShader->SetVector(SHADER_staticColor_Alpha, &fillColor);
+      RenderItem(renderable, false);
+   }
+   if (edgeColor.w > 0.f)
+   {
+      //UpdateBasicShaderMatrix(Matrix3D::MatrixTranslate(-GetMVP().GetModelView().GetOrthoNormalDir()));
+      m_render_mask = Renderer::RenderMask::UI_EDGES;
+      m_renderDevice->SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
+      m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, edgeColor.w == 1.f ? RenderState::RS_FALSE : RenderState::RS_TRUE);
+      m_renderDevice->m_basicShader->SetVector(SHADER_staticColor_Alpha, &edgeColor);
+      RenderItem(renderable, false);
+      //UpdateBasicShaderMatrix();
+   }
    m_renderDevice->m_basicShader->SetVector(SHADER_staticColor_Alpha, 1.f, 1.f, 1.f, 1.f);
    m_render_mask = prevRenderMask;
 }
@@ -1763,9 +1817,10 @@ void Renderer::RenderDynamics()
    }
    else
    {
-      const vec4 color(0.f, 0.f, 0.f, 32.f/255.f);
+      const vec4 fillColor = m_shadeMode == ShadeMode::NoDepthWireframe ? vec4(0.f, 0.f, 0.f, 32.f / 255.f) : vec4(32.f / 255.f, 32.f / 255.f, 32.f / 255.f, 1.f);
+      const vec4 edgeColor(0.f, 0.f, 0.f, 1.f);
       for (IEditable* renderable : g_pplayer->m_vhitables)
-         DrawWireframe(renderable, color, m_shadeMode == ShadeMode::Wireframe);
+         DrawWireframe(renderable, fillColor, edgeColor, m_shadeMode != ShadeMode::NoDepthWireframe);
    }
    
    m_renderDevice->m_basicShader->SetTextureNull(SHADER_tex_base_transmission); // need to reset the bulb light texture, as its used as render target for bloom again
@@ -2759,6 +2814,8 @@ void Renderer::RenderFrame()
 
    RenderDynamics();
 
+   g_pplayer->m_liveUI->Render3D();
+
    // Keep latency low by proceeding input, ... (as next passes are not affected by the game logic)
    g_pplayer->UpdateGameLogic();
    
@@ -2831,7 +2888,7 @@ void Renderer::RenderFrame()
    if (uiBeforeStero)
    {
       m_renderDevice->SetRenderTarget("LiveUI"s, renderedRT, true, true);
-      g_pplayer->m_liveUI->Update();
+      g_pplayer->m_liveUI->RenderUI();
    }
 
    // Apply stereo
@@ -2840,7 +2897,7 @@ void Renderer::RenderFrame()
    if (!uiBeforeStero)
    {
       m_renderDevice->SetRenderTarget("LiveUI"s, renderedRT, true, true);
-      g_pplayer->m_liveUI->Update();
+      g_pplayer->m_liveUI->RenderUI();
    }
 
    // The last rendered render target must be the output back buffer

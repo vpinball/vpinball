@@ -30,7 +30,7 @@ public:
    float m_falloff;
    float m_falloff_power;
    float m_intensity;
-   float m_intensity_scale;
+   float m_intensity_scale; // FIXME this is a transient state (not persisted, and as such, should not be part of the data block)
    float m_fadeSpeedUp;
    float m_fadeSpeedDown;
 
@@ -204,7 +204,8 @@ private:
 
    LightCenter m_lightcenter;
 
-   std::shared_ptr<MeshBuffer>m_lightmapMeshBuffer;
+   std::shared_ptr<MeshBuffer> m_lightmapMeshBuffer;
+   std::shared_ptr<MeshBuffer> m_lightmapMeshEdgeBuffer;
    std::shared_ptr<MeshBuffer> m_bulbSocketMeshBuffer;
    std::shared_ptr<MeshBuffer> m_bulbLightMeshBuffer;
    PropertyPane *m_propVisual;
@@ -214,6 +215,7 @@ private:
    float m_initSurfaceHeight = 0.0f;
    float m_maxDist = 0.0f;
    bool  m_lightmapMeshBufferDirty = false;
+   void UpdateMeshBuffer();
 
    bool  m_roundLight; // pre-VPX compatibility
 

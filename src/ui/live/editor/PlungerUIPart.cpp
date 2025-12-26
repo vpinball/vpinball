@@ -38,7 +38,7 @@ void PlungerUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("Plunger", m_plunger);
 
-   if (props.BeginSection(PropertyPane::Section::Visual))
+   if (props.BeginSection("Visual"s))
    {
 
       props.Checkbox<Plunger>(
@@ -48,7 +48,7 @@ void PlungerUIPart::UpdatePropertyPane(PropertyPane& props)
       props.EndSection();
    }
 
-   if (props.BeginSection(PropertyPane::Section::Position))
+   if (props.BeginSection("Position"s))
    {
       // Missing position
       props.EndSection();

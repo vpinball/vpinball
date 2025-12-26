@@ -307,6 +307,7 @@ void Bumper::Render(const unsigned int renderMask)
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
+   const bool isUIPass = renderMask & Renderer::UI_EDGES || renderMask & Renderer::UI_FILL;
    TRACE_FUNCTION();
 
    if (isReflectionPass && !m_d.m_reflectionEnabled)
@@ -314,60 +315,96 @@ void Bumper::Render(const unsigned int renderMask)
 
    if (m_d.m_baseVisible)
    {
-      const Material * const mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
-      if ((!mat->m_bOpacityActive && !isDynamicOnly) || (mat->m_bOpacityActive && !isStaticOnly))
+      Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
+      if (isUIPass)
       {
-         m_rd->ResetRenderState();
-         if (mat->m_bOpacityActive)
-            m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-         m_rd->m_basicShader->SetBasic(mat, m_baseTexture.get());
-         Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
-         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_baseMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperBaseNumIndices);
+         if (renderMask & Renderer::UI_FILL)
+            m_rd->DrawMesh(m_rd->m_basicShader, true, pos, 0.f, m_baseMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperBaseNumIndices);
+         // FIXME render wireframe
+      }
+      else
+      {
+         const Material *const mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
+         if ((!mat->m_bOpacityActive && !isDynamicOnly) || (mat->m_bOpacityActive && !isStaticOnly))
+         {
+            m_rd->ResetRenderState();
+            if (mat->m_bOpacityActive)
+               m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+            m_rd->m_basicShader->SetBasic(mat, m_baseTexture.get());
+            m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_baseMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperBaseNumIndices);
+         }
       }
    }
 
    if (m_d.m_capVisible)
    {
-      const Material * const mat = m_ptable->GetMaterial(m_d.m_szCapMaterial);
-      if ((!mat->m_bOpacityActive && !isDynamicOnly) || (mat->m_bOpacityActive && !isStaticOnly))
+      Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
+      if (isUIPass)
       {
-         m_rd->ResetRenderState();
-         if (mat->m_bOpacityActive)
-            m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-         m_rd->m_basicShader->SetBasic(mat, m_capTexture.get());
-         Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight);
-         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_capMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperCapNumIndices);
+         if (renderMask & Renderer::UI_FILL)
+            m_rd->DrawMesh(m_rd->m_basicShader, true, pos, 0.f, m_capMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperCapNumIndices);
+         // FIXME render wireframe
+      }
+      else
+      {
+         const Material *const mat = m_ptable->GetMaterial(m_d.m_szCapMaterial);
+         if ((!mat->m_bOpacityActive && !isDynamicOnly) || (mat->m_bOpacityActive && !isStaticOnly))
+         {
+            m_rd->ResetRenderState();
+            if (mat->m_bOpacityActive)
+               m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+            m_rd->m_basicShader->SetBasic(mat, m_capTexture.get());
+            m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_capMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperCapNumIndices);
+         }
       }
    }
 
    if (m_d.m_ringVisible && !isStaticOnly)
    {
-      Material ringMaterial;
-      if (m_d.m_szRingMaterial[0] != '\0')
+      Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight + m_pbumperhitcircle->m_bumperanim_ringAnimOffset);
+      if (isUIPass)
       {
-         ringMaterial = *(m_ptable->GetMaterial(m_d.m_szRingMaterial));
+         if (renderMask & Renderer::UI_FILL)
+            m_rd->DrawMesh(m_rd->m_basicShader, true, pos, 0.f, m_ringMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperRingNumIndices);
+         // FIXME render wireframe
       }
       else
       {
-         ringMaterial.m_cBase = 0xFFFFFFFF; //!! set properly
-         ringMaterial.m_cGlossy = 0;
-         ringMaterial.m_type = Material::MaterialType::METAL;
+         Material ringMaterial;
+         if (m_d.m_szRingMaterial[0] != '\0')
+         {
+            ringMaterial = *(m_ptable->GetMaterial(m_d.m_szRingMaterial));
+         }
+         else
+         {
+            ringMaterial.m_cBase = 0xFFFFFFFF; //!! set properly
+            ringMaterial.m_cGlossy = 0;
+            ringMaterial.m_type = Material::MaterialType::METAL;
+         }
+         m_rd->ResetRenderState();
+         m_rd->m_basicShader->SetBasic(&ringMaterial, m_ringTexture.get());
+         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_ringMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperRingNumIndices);
       }
-      m_rd->ResetRenderState();
-      m_rd->m_basicShader->SetBasic(&ringMaterial, m_ringTexture.get());
-      Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight + m_pbumperhitcircle->m_bumperanim_ringAnimOffset);
-      m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_ringMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperRingNumIndices);
    }
 
    if (m_d.m_skirtVisible && !isStaticOnly)
    {
-      const Material * const mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
-      m_rd->ResetRenderState();
-      if (mat->m_bOpacityActive)
-         m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-      m_rd->m_basicShader->SetBasic(mat, m_skirtTexture.get());
       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_baseHeight + 5.0f);
-      m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_socketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperSocketNumIndices);
+      if (isUIPass)
+      {
+         if (renderMask & Renderer::UI_FILL)
+            m_rd->DrawMesh(m_rd->m_basicShader, true, pos, 0.f, m_socketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperSocketNumIndices);
+         // FIXME render wireframe
+      }
+      else
+      {
+         const Material *const mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
+         m_rd->ResetRenderState();
+         if (mat->m_bOpacityActive)
+            m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+         m_rd->m_basicShader->SetBasic(mat, m_skirtTexture.get());
+         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_socketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bumperSocketNumIndices);
+      }
    }
 }
 
