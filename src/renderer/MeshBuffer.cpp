@@ -10,12 +10,12 @@
 #include <locale>
 #include <codecvt>
 
-MeshBuffer::MeshBuffer(VertexBuffer* vb, IndexBuffer* ib, const bool applyVertexBufferOffsetToIndexBuffer)
+MeshBuffer::MeshBuffer(std::shared_ptr<VertexBuffer> vb, IndexBuffer* ib, const bool applyVertexBufferOffsetToIndexBuffer)
    : MeshBuffer(L""s, vb, ib, applyVertexBufferOffsetToIndexBuffer)
 {
 }
 
-MeshBuffer::MeshBuffer(const wstring& name, VertexBuffer* vb, IndexBuffer* ib, const bool applyVertexBufferOffsetToIndexBuffer)
+MeshBuffer::MeshBuffer(const wstring& name, std::shared_ptr<VertexBuffer> vb, IndexBuffer* ib, const bool applyVertexBufferOffsetToIndexBuffer)
    : m_wname(name)
    , m_vb(vb)
    , m_ib(ib)
@@ -43,8 +43,6 @@ MeshBuffer::~MeshBuffer()
       glDeleteVertexArrays(1, &m_vao);
    }
 #endif
-   if (!m_sharedVB)
-      delete m_vb;
    delete m_ib;
 }
 

@@ -121,7 +121,7 @@ public:
    void Unlock();
    void Upload();
 
-   void ApplyOffset(VertexBuffer* vb);
+   void ApplyOffset(std::shared_ptr<VertexBuffer> vb);
 
    RenderDevice* const m_rd;
    const unsigned int m_count;

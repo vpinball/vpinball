@@ -393,7 +393,7 @@ void Light::RenderSetup(RenderDevice *device)
       const float bulb_z = m_surfaceHeight;
 
       IndexBuffer *bulbLightIndexBuffer = new IndexBuffer(m_rd, bulbLightNumFaces, bulbLightIndices);
-      VertexBuffer *bulbLightVBuffer = new VertexBuffer(m_rd, bulbLightNumVertices);
+      std::shared_ptr<VertexBuffer> bulbLightVBuffer = std::make_shared<VertexBuffer>(m_rd, bulbLightNumVertices);
       m_bulbLightMeshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Bulb"s, bulbLightVBuffer, bulbLightIndexBuffer, true);
 
       Vertex3D_NoTex2 *buf;
@@ -412,7 +412,7 @@ void Light::RenderSetup(RenderDevice *device)
       bulbLightVBuffer->Unlock();
 
       IndexBuffer *bulbSocketIndexBuffer = new IndexBuffer(m_rd, bulbSocketNumFaces, bulbSocketIndices);
-      VertexBuffer *bulbSocketVBuffer = new VertexBuffer(m_rd, bulbSocketNumVertices);
+      std::shared_ptr<VertexBuffer> bulbSocketVBuffer = std::make_shared<VertexBuffer>(m_rd, bulbSocketNumVertices);
       m_bulbSocketMeshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Socket"s, bulbSocketVBuffer, bulbSocketIndexBuffer, true);
 
       bulbSocketVBuffer->Lock(buf);
@@ -461,7 +461,7 @@ void Light::RenderSetup(RenderDevice *device)
       return;
    }
 
-   VertexBuffer *customMoverVBuffer = new VertexBuffer(m_rd, (unsigned int) m_vvertex.size(), nullptr, true);
+   std::shared_ptr<VertexBuffer> customMoverVBuffer = std::make_shared<VertexBuffer>(m_rd, (unsigned int)m_vvertex.size(), nullptr, true);
    IndexBuffer* customMoverIBuffer = new IndexBuffer(m_rd, (unsigned int) vtri.size(), false, IndexBuffer::FMT_INDEX16);
    WORD* bufi;
    customMoverIBuffer->Lock(bufi);

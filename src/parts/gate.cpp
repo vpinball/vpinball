@@ -360,7 +360,7 @@ void Gate::RenderSetup(RenderDevice *device)
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
    IndexBuffer *bracketIndexBuffer = new IndexBuffer(m_rd, gateBracketNumIndices, gateBracketIndices);
-   VertexBuffer *bracketVertexBuffer = new VertexBuffer(m_rd, gateBracketNumVertices);
+   std::shared_ptr<VertexBuffer> bracketVertexBuffer = std::make_shared<VertexBuffer>(m_rd, gateBracketNumVertices);
    Vertex3D_NoTex2 *buf;
    bracketVertexBuffer->Lock(buf);
    GenerateBracketMesh(buf);
@@ -368,7 +368,7 @@ void Gate::RenderSetup(RenderDevice *device)
    m_bracketMeshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Bracket"s, bracketVertexBuffer, bracketIndexBuffer, true);
 
    IndexBuffer *wireIndexBuffer = new IndexBuffer(m_rd, m_numIndices, m_indices);
-   VertexBuffer *wireVertexBuffer = new VertexBuffer(m_rd, m_numVertices, nullptr, true);
+   std::shared_ptr<VertexBuffer> wireVertexBuffer = std::make_shared<VertexBuffer>(m_rd, m_numVertices, nullptr, true);
    wireVertexBuffer->Lock(buf);
    GenerateWireMesh(buf);
    wireVertexBuffer->Unlock();

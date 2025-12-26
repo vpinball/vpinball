@@ -472,7 +472,7 @@ void Trigger::RenderSetup(RenderDevice *device)
 
    GenerateMesh();
    IndexBuffer *triggerIndexBuffer = new IndexBuffer(m_rd, m_numIndices, indices);
-   VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, m_numVertices, (float*) m_triggerVertices, true);
+   std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_rd, m_numVertices, (float *)m_triggerVertices, true);
    m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName, vertexBuffer, triggerIndexBuffer, true);
 }
 

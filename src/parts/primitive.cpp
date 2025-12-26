@@ -125,7 +125,7 @@ void Mesh::SaveWavefrontObj(const string& fname, const string& description)
    loader.Save(fname, description.empty() ? fname : description, *this);
 }
 
-void Mesh::UploadToVB(VertexBuffer * vb, const float frame) 
+void Mesh::UploadToVB(std::shared_ptr<VertexBuffer> vb, const float frame) 
 {
    if(!vb)
       return;
@@ -1141,7 +1141,7 @@ void Primitive::RenderSetup(RenderDevice *device)
          }
          indexBuffer->Unlock();
 
-         VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, m_numGroupVertices);
+         std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_rd, m_numGroupVertices);
          unsigned int ofs = 0;
          Vertex3D_NoTex2 *buf;
          vertexBuffer->Lock(buf);
@@ -1175,7 +1175,7 @@ void Primitive::RenderSetup(RenderDevice *device)
    m_currentFrame = -1.f;
    m_isBackGlassImage = IsBackglass();
 
-   VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, (unsigned int)m_mesh.NumVertices(), nullptr, !(m_d.m_staticRendering || m_mesh.m_animationFrames.empty()));
+   std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_rd, (unsigned int)m_mesh.NumVertices(), nullptr, !(m_d.m_staticRendering || m_mesh.m_animationFrames.empty()));
    IndexBuffer *indexBuffer = new IndexBuffer(m_rd, m_mesh.m_indices);
    m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName, vertexBuffer, indexBuffer, true);
 

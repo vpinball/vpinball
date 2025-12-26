@@ -553,7 +553,7 @@ void HitTarget::RenderSetup(RenderDevice *device)
    m_transformedVertices.resize(m_numVertices);
 
    GenerateMesh(m_transformedVertices);
-   VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, m_numVertices, (float *)m_transformedVertices.data(), true);
+   std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_rd, m_numVertices, (float *)m_transformedVertices.data(), true);
    IndexBuffer *indexBuffer = new IndexBuffer(m_rd, m_numIndices, m_indices);
    m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName, vertexBuffer, indexBuffer, true);
 

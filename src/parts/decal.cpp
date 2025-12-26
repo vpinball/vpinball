@@ -644,7 +644,7 @@ void Decal::RenderSetup(RenderDevice *device)
    const float sn = sinf(radangle);
    const float cs = cosf(radangle);
 
-   VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, 4);
+   std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_rd, 4);
    Vertex3D_NoTex2 *vertices;
    vertexBuffer->Lock(vertices);
    const float z = m_backglass ? 0.f : (height + 0.2f);

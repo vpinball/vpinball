@@ -1037,7 +1037,7 @@ void Flasher::RenderSetup(RenderDevice *device)
    memcpy(bufi, vtri.data(), vtri.size()*sizeof(WORD));
    dynamicIndexBuffer->Unlock();
 
-   VertexBuffer* dynamicVertexBuffer = new VertexBuffer(m_rd, m_numVertices, nullptr, true);
+   std::shared_ptr<VertexBuffer> dynamicVertexBuffer = std::make_shared<VertexBuffer>(m_rd, m_numVertices, nullptr, true);
 
    m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);
 

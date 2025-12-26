@@ -233,7 +233,7 @@ void Kicker::RenderSetup(RenderDevice *device)
          buf[i].tv = 0.0f;
       }
 
-      VertexBuffer *plateVertexBuffer = new VertexBuffer(m_rd, kickerPlateNumVertices, (float*)buf);
+      std::shared_ptr<VertexBuffer> plateVertexBuffer = std::make_shared<VertexBuffer>(m_rd, kickerPlateNumVertices, (float *)buf);
       IndexBuffer *plateIndexBuffer = new IndexBuffer(m_rd, kickerPlateNumIndices, kickerPlateIndices);
       m_plateMeshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Plate"s, plateVertexBuffer, plateIndexBuffer, true);
 
@@ -299,7 +299,7 @@ void Kicker::RenderSetup(RenderDevice *device)
 
    //
 
-   VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, m_numVertices);
+   std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_rd, m_numVertices);
    Vertex3D_NoTex2 *buf;
    vertexBuffer->Lock(buf);
    GenerateMesh(buf);
