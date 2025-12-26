@@ -27,6 +27,7 @@ public:
 private:
    HitTarget* const m_hitTarget;
    string m_outlinerPath;
+   bool m_visible;
 };
 
 }

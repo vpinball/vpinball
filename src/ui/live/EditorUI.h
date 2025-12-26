@@ -22,7 +22,8 @@ public:
 
    void Open();
    bool IsOpened() const { return m_isOpened; }
-   void Update();
+   void Render3D();
+   void RenderUI();
    void Close();
    
    bool IsPreview() const { return m_camMode == ViewMode::PreviewCam; }
@@ -179,6 +180,34 @@ private:
    } m_predefinedView = PredefinedView::None;
    Matrix3D m_camView, m_camProj;
    float m_camDistance;
+
+   class RenderContext : public EditorRenderContext
+   {
+   public:
+      RenderContext(Player *player, ImDrawList *drawlist, ViewMode viewMode, Renderer::ShadeMode shadeMode, bool needsLiveTableSync);
+      ~RenderContext() override = default;
+
+      bool NeedsLiveTableSync() const { return m_needsLiveTableSync; }
+      ImU32 GetColor(bool selected) const { return selected ? IM_COL32(255, 128, 0, 255) : IM_COL32_BLACK; };
+      bool IsSelected() const override { return m_isSelected; }
+      ViewMode GetViewMode() const override { return m_viewMode; }
+      ImDrawList *GetDrawList() const override { return m_drawlist; }
+
+      ImVec2 Project(const Vertex3Ds &v) const override;
+      void DrawLine(const Vertex3Ds &a, const Vertex3Ds &b, ImU32 color) const override;
+      void DrawCircle(const Vertex3Ds &center, const Vertex3Ds &x, const Vertex3Ds &y, float radius, ImU32 color) const override;
+      void DrawHitObjects(IEditable *editable) const override;
+      void DrawWireframe(IEditable *editable) const override;
+
+      bool m_isSelected = false;
+
+   private:
+      Player *m_player;
+      ImDrawList *const m_drawlist;
+      const ViewMode m_viewMode;
+      const Renderer::ShadeMode m_shadeMode;
+      const bool m_needsLiveTableSync;
+   };
 };
 
 }

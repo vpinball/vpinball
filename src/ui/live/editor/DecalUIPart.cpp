@@ -47,7 +47,7 @@ void DecalUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("Decal", m_decal);
    
-   if (props.BeginSection(PropertyPane::Section::Visual))
+   if (props.BeginSection("Visual"s))
    {
       props.Checkbox<Decal>(m_decal, "Reflection Enabled"s, //
          [](const Decal* decal) { return decal->m_d.m_reflectionEnabled; }, //
@@ -55,7 +55,7 @@ void DecalUIPart::UpdatePropertyPane(PropertyPane& props)
       props.EndSection();
    }
    
-   if (props.BeginSection(PropertyPane::Section::Position))
+   if (props.BeginSection("Position"s))
    {
       // Missing position
       props.EndSection();

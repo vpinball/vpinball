@@ -283,6 +283,7 @@ void Ball::Render(const unsigned int renderMask)
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
+   const bool isUIPass = renderMask & Renderer::UI_EDGES || renderMask & Renderer::UI_FILL;
    TRACE_FUNCTION();
    
    if (!m_d.m_visible
@@ -292,11 +293,20 @@ void Ball::Render(const unsigned int renderMask)
 
    // Adapt z position of ball
    const float zheight = m_hitBall.m_d.m_lockedInKicker ? (m_hitBall.m_d.m_pos.z - m_hitBall.m_d.m_radius) : m_hitBall.m_d.m_pos.z;
+   Vertex3Ds pos(m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y, zheight);
 
    // Don't draw reflection if the ball is not on the playfield (e.g. on a ramp/kicker), except if explicitly asked too
    if (isReflectionPass && !m_d.m_forceReflection 
       && ((zheight > m_hitBall.m_d.m_radius + 3.0f) || m_hitBall.m_d.m_lockedInKicker || (m_hitBall.m_d.m_pos.z < m_hitBall.m_d.m_radius - 0.1f)))
       return;
+
+   if (isUIPass)
+   {
+      if (renderMask & Renderer::UI_FILL)
+         m_rd->DrawMesh(m_rd->m_basicShader, true, pos, 0.f, g_pplayer->m_renderer->m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, g_pplayer->m_renderer->m_ballMeshBuffer->m_ib->m_count);
+      // FIXME render wireframe
+      return;
+   }
 
    m_rd->ResetRenderState();
    
@@ -453,7 +463,6 @@ void Ball::Render(const unsigned int renderMask)
       m_rd->m_ballShader->SetTextureNull(SHADER_tex_ball_decal);
    m_rd->m_ballShader->SetTechnique(sphericalMapping ? m_d.m_decalMode ? SHADER_TECHNIQUE_RenderBall_SphericalMap_DecalMode : SHADER_TECHNIQUE_RenderBall_SphericalMap
                                                      : m_d.m_decalMode ? SHADER_TECHNIQUE_RenderBall_DecalMode : SHADER_TECHNIQUE_RenderBall);
-   Vertex3Ds pos(m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y, zheight);
    m_rd->DrawMesh(m_rd->m_ballShader, false, pos, 0.f, g_pplayer->m_renderer->m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, g_pplayer->m_renderer->m_ballMeshBuffer->m_ib->m_count);
 
    // Update render command with the ball position at the render frame submission time

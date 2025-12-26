@@ -15,7 +15,6 @@
 #include "core/VPXPluginAPIImpl.h"
 
 #include "imgui/imgui.h"
-#include "imgui/imgui_internal.h" // Needed for FindRenderedTextEnd in HelpSplash (should be adapted when this function will refactored in ImGui)
 #include "imgui/imgui_impl_sdl3.h"
 #include "imgui/imgui_stdlib.h"
 #include "imgui_markdown/imgui_markdown.h"
@@ -23,121 +22,6 @@
 #ifndef __STANDALONE__
 #include "BAM/BAMView.h"
 #endif
-
-#define ICON_SAVE ICON_FK_FLOPPY_O
-
-
-void LiveUI::CenteredText(const string &text)
-{
-   const ImVec2 win_size = ImGui::GetWindowSize();
-   const ImVec2 text_size = ImGui::CalcTextSize(text.c_str());
-
-   // calculate the indentation that centers the text on one line, relative
-   // to window left, regardless of the `ImGuiStyleVar_WindowPadding` value
-   float text_indentation = (win_size.x - text_size.x) * 0.5f;
-
-   // if text is too long to be drawn on one line, `text_indentation` can
-   // become too small or even negative, so we check a minimum indentation
-   constexpr float min_indentation = 20.0f;
-   if (text_indentation <= min_indentation)
-      text_indentation = min_indentation;
-
-   ImGui::SameLine(text_indentation);
-   ImGui::PushTextWrapPos(win_size.x - text_indentation);
-   ImGui::TextWrapped("%s", text.c_str());
-   ImGui::PopTextWrapPos();
-}
-
-static void SetupImGuiStyle(const float overall_alpha)
-{
-   // Rounded Visual Studio style by RedNicStone from ImThemes
-   ImGuiStyle &style = ImGui::GetStyle();
-
-   style.Alpha = 1.0f;
-   style.DisabledAlpha = 0.6000000238418579f;
-   style.WindowPadding = ImVec2(8.0f, 8.0f);
-   style.WindowRounding = 4.0f;
-   style.WindowBorderSize = 0.0f;
-   style.WindowMinSize = ImVec2(32.0f, 32.0f);
-   style.WindowTitleAlign = ImVec2(0.0f, 0.5f);
-   style.WindowMenuButtonPosition = ImGuiDir_Left;
-   style.ChildRounding = 0.0f;
-   style.ChildBorderSize = 1.0f;
-   style.PopupRounding = 4.0f;
-   style.PopupBorderSize = 1.0f;
-   style.FramePadding = ImVec2(4.0f, 3.0f);
-   style.FrameRounding = 2.5f;
-   style.FrameBorderSize = 0.0f;
-   style.ItemSpacing = ImVec2(8.0f, 4.0f);
-   style.ItemInnerSpacing = ImVec2(4.0f, 4.0f);
-   style.CellPadding = ImVec2(4.0f, 2.0f);
-   style.IndentSpacing = 21.0f;
-   style.ColumnsMinSpacing = 6.0f;
-   style.ScrollbarSize = 11.0f;
-   style.ScrollbarRounding = 2.5f;
-   style.GrabMinSize = 10.0f;
-   style.GrabRounding = 2.0f;
-   style.TabRounding = 3.5f;
-   style.TabBorderSize = 0.0f;
-   style.TabCloseButtonMinWidthUnselected = 0.0f;
-   style.ColorButtonPosition = ImGuiDir_Right;
-   style.ButtonTextAlign = ImVec2(0.5f, 0.5f);
-   style.SelectableTextAlign = ImVec2(0.0f, 0.0f);
-
-   style.Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-   style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.592f, 0.592f, 0.592f, overall_alpha);
-   style.Colors[ImGuiCol_WindowBg] = ImVec4(0.145f, 0.145f, 0.149f, overall_alpha);
-   style.Colors[ImGuiCol_ChildBg] = ImVec4(0.145f, 0.145f, 0.149f, overall_alpha);
-   style.Colors[ImGuiCol_PopupBg] = ImVec4(0.145f, 0.145f, 0.149f, overall_alpha);
-   style.Colors[ImGuiCol_Border] = ImVec4(0.306f, 0.306f, 0.306f, overall_alpha);
-   style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.306f, 0.306f, 0.306f, overall_alpha);
-   style.Colors[ImGuiCol_FrameBg] = ImVec4(0.2f, 0.2f, 0.216f, overall_alpha);
-   style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.114f, 0.592f, 0.925f, overall_alpha);
-   style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.0f, 0.467f, 0.784f, overall_alpha);
-   style.Colors[ImGuiCol_TitleBg] = ImVec4(0.145f, 0.145f, 0.149f, overall_alpha);
-   style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.145f, 0.145f, 0.149f, overall_alpha);
-   style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.145f, 0.145f, 0.149f, overall_alpha);
-   style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.2f, 0.2f, 0.216f, overall_alpha);
-   style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.2f, 0.2f, 0.216f, overall_alpha);
-   style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.322f, 0.322f, 0.333f, overall_alpha);
-   style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.353f, 0.353f, 0.373f, overall_alpha);
-   style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.353f, 0.353f, 0.373f, overall_alpha);
-   style.Colors[ImGuiCol_CheckMark] = ImVec4(0.0f, 0.467f, 0.784f, overall_alpha);
-   style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.114f, 0.592f, 0.925f, overall_alpha);
-   style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.0f, 0.467f, 0.784f, overall_alpha);
-   style.Colors[ImGuiCol_Button] = ImVec4(0.2f, 0.2f, 0.216f, overall_alpha);
-   style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.114f, 0.592f, 0.925f, overall_alpha);
-   style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.114f, 0.592f, 0.925f, overall_alpha);
-   style.Colors[ImGuiCol_Header] = ImVec4(0.2f, 0.2f, 0.216f, overall_alpha);
-   style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.114f, 0.592f, 0.925f, overall_alpha);
-   style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.0f, 0.467f, 0.784f, overall_alpha);
-   style.Colors[ImGuiCol_Separator] = ImVec4(0.306f, 0.306f, 0.306f, overall_alpha);
-   style.Colors[ImGuiCol_SeparatorHovered] = ImVec4(0.306f, 0.306f, 0.306f, overall_alpha);
-   style.Colors[ImGuiCol_SeparatorActive] = ImVec4(0.306f, 0.306f, 0.306f, overall_alpha);
-   style.Colors[ImGuiCol_ResizeGrip] = ImVec4(0.145f, 0.145f, 0.149f, overall_alpha);
-   style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.2f, 0.2f, 0.216f, overall_alpha);
-   style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.322f, 0.322f, 0.333f, overall_alpha);
-   style.Colors[ImGuiCol_Tab] = ImVec4(0.145f, 0.145f, 0.149f, overall_alpha);
-   style.Colors[ImGuiCol_TabHovered] = ImVec4(0.114f, 0.592f, 0.925f, overall_alpha);
-   style.Colors[ImGuiCol_TabActive] = ImVec4(0.0f, 0.467f, 0.784f, overall_alpha);
-   style.Colors[ImGuiCol_TabUnfocused] = ImVec4(0.145f, 0.145f, 0.149f, overall_alpha);
-   style.Colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.0f, 0.467f, 0.784f, overall_alpha);
-   style.Colors[ImGuiCol_PlotLines] = ImVec4(0.0f, 0.467f, 0.784f, overall_alpha);
-   style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.114f, 0.592f, 0.925f, overall_alpha);
-   style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.0f, 0.467f, 0.784f, overall_alpha);
-   style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(0.114f, 0.592f, 0.925f, overall_alpha);
-   style.Colors[ImGuiCol_TableHeaderBg] = ImVec4(0.188f, 0.188f, 0.2f, overall_alpha);
-   style.Colors[ImGuiCol_TableBorderStrong] = ImVec4(0.310f, 0.310f, 0.349f, overall_alpha);
-   style.Colors[ImGuiCol_TableBorderLight] = ImVec4(0.227f, 0.227f, 0.247f, overall_alpha);
-   style.Colors[ImGuiCol_TableRowBg] = ImVec4(0.0f, 0.0f, 0.0f, 0.0f * overall_alpha);
-   style.Colors[ImGuiCol_TableRowBgAlt] = ImVec4(1.0f, 1.0f, 1.0f, 0.060f * overall_alpha);
-   style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.0f, 0.467f, 0.784f, overall_alpha);
-   style.Colors[ImGuiCol_DragDropTarget] = ImVec4(0.145f, 0.145f, 0.149f, overall_alpha);
-   style.Colors[ImGuiCol_NavHighlight] = ImVec4(0.145f, 0.145f, 0.149f, overall_alpha);
-   style.Colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.0f, 1.0f, 1.0f, 0.700f * overall_alpha);
-   style.Colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.800f, 0.800f, 0.800f, 0.20f * overall_alpha);
-   style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.145f, 0.145f, 0.149f, 0.35f * overall_alpha);
-}
 
 
 ImGui::MarkdownConfig LiveUI::markdown_config;
@@ -424,7 +308,13 @@ void LiveUI::NewFrame()
    ImGui::NewFrame();
 }
 
-void LiveUI::Update()
+void LiveUI::Render3D()
+{
+   if (m_editorUI.IsOpened())
+      m_editorUI.Render3D();
+}
+
+void LiveUI::RenderUI()
 {
    // For the time being, the UI is only available inside a running player
    if (m_player == nullptr || m_player->GetCloseState() != Player::CS_PLAYING || m_rd->GetCurrentPass() == nullptr)
@@ -460,7 +350,7 @@ void LiveUI::Update()
    }
    else if (m_editorUI.IsOpened())
    { // Editor UI (aligned to desktop, using traditional mouse interaction)
-      m_editorUI.Update();
+      m_editorUI.RenderUI();
    }
    else if (!m_inGameUI.IsOpened())
    { // No UI displayed: process ball control & throw balls
@@ -549,9 +439,8 @@ void LiveUI::Update()
       {
          if ((m_meshBuffers[n] == nullptr) || (m_meshBuffers[n]->m_ib->m_count < numIndices) || (m_meshBuffers[n]->m_vb->m_count < numVertices))
          {
-            std::shared_ptr<IndexBuffer> ib
-               = std::make_shared<IndexBuffer>(m_rd, max(m_meshBuffers[n] ? m_meshBuffers[n]->m_ib->m_count : 0, numIndices), true, IndexBuffer::Format::FMT_INDEX32);
-            std::shared_ptr<VertexBuffer> vb = std::make_shared<VertexBuffer>(m_rd, max(m_meshBuffers[n] ? m_meshBuffers[n]->m_vb->m_count : 0, numVertices), nullptr, true);
+            auto ib = std::make_shared<IndexBuffer>(m_rd, max(m_meshBuffers[n] ? m_meshBuffers[n]->m_ib->m_count : 0, numIndices), true, IndexBuffer::Format::FMT_INDEX32);
+            auto vb = std::make_shared<VertexBuffer>(m_rd, max(m_meshBuffers[n] ? m_meshBuffers[n]->m_vb->m_count : 0, numVertices), nullptr, true);
             m_meshBuffers[n] = std::make_shared<MeshBuffer>(vb, ib, true);
          }
 
@@ -700,3 +589,114 @@ ImGuiKey LiveUI::GetImGuiKeyFromSDLScancode(const SDL_Scancode sdlk)
    return ImGui_ImplSDL3_KeyEventToImGuiKey(SDL_GetKeyFromScancode(sdlk, SDL_KMOD_NONE, false), sdlk);
 }
 
+void LiveUI::CenteredText(const string &text)
+{
+   const ImVec2 win_size = ImGui::GetWindowSize();
+   const ImVec2 text_size = ImGui::CalcTextSize(text.c_str());
+
+   // calculate the indentation that centers the text on one line, relative
+   // to window left, regardless of the `ImGuiStyleVar_WindowPadding` value
+   float text_indentation = (win_size.x - text_size.x) * 0.5f;
+
+   // if text is too long to be drawn on one line, `text_indentation` can
+   // become too small or even negative, so we check a minimum indentation
+   constexpr float min_indentation = 20.0f;
+   if (text_indentation <= min_indentation)
+      text_indentation = min_indentation;
+
+   ImGui::SameLine(text_indentation);
+   ImGui::PushTextWrapPos(win_size.x - text_indentation);
+   ImGui::TextWrapped("%s", text.c_str());
+   ImGui::PopTextWrapPos();
+}
+
+void LiveUI::SetupImGuiStyle(const float overall_alpha)
+{
+   // Rounded Visual Studio style by RedNicStone from ImThemes
+   ImGuiStyle &style = ImGui::GetStyle();
+
+   style.Alpha = 1.0f;
+   style.DisabledAlpha = 0.6000000238418579f;
+   style.WindowPadding = ImVec2(8.0f, 8.0f);
+   style.WindowRounding = 4.0f;
+   style.WindowBorderSize = 0.0f;
+   style.WindowMinSize = ImVec2(32.0f, 32.0f);
+   style.WindowTitleAlign = ImVec2(0.0f, 0.5f);
+   style.WindowMenuButtonPosition = ImGuiDir_Left;
+   style.ChildRounding = 0.0f;
+   style.ChildBorderSize = 1.0f;
+   style.PopupRounding = 4.0f;
+   style.PopupBorderSize = 1.0f;
+   style.FramePadding = ImVec2(4.0f, 3.0f);
+   style.FrameRounding = 2.5f;
+   style.FrameBorderSize = 0.0f;
+   style.ItemSpacing = ImVec2(8.0f, 4.0f);
+   style.ItemInnerSpacing = ImVec2(4.0f, 4.0f);
+   style.CellPadding = ImVec2(4.0f, 2.0f);
+   style.IndentSpacing = 21.0f;
+   style.ColumnsMinSpacing = 6.0f;
+   style.ScrollbarSize = 11.0f;
+   style.ScrollbarRounding = 2.5f;
+   style.GrabMinSize = 10.0f;
+   style.GrabRounding = 2.0f;
+   style.TabRounding = 3.5f;
+   style.TabBorderSize = 0.0f;
+   style.TabCloseButtonMinWidthUnselected = 0.0f;
+   style.ColorButtonPosition = ImGuiDir_Right;
+   style.ButtonTextAlign = ImVec2(0.5f, 0.5f);
+   style.SelectableTextAlign = ImVec2(0.0f, 0.0f);
+
+   style.Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+   style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.592f, 0.592f, 0.592f, overall_alpha);
+   style.Colors[ImGuiCol_WindowBg] = ImVec4(0.145f, 0.145f, 0.149f, overall_alpha);
+   style.Colors[ImGuiCol_ChildBg] = ImVec4(0.145f, 0.145f, 0.149f, overall_alpha);
+   style.Colors[ImGuiCol_PopupBg] = ImVec4(0.145f, 0.145f, 0.149f, overall_alpha);
+   style.Colors[ImGuiCol_Border] = ImVec4(0.306f, 0.306f, 0.306f, overall_alpha);
+   style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.306f, 0.306f, 0.306f, overall_alpha);
+   style.Colors[ImGuiCol_FrameBg] = ImVec4(0.2f, 0.2f, 0.216f, overall_alpha);
+   style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.114f, 0.592f, 0.925f, overall_alpha);
+   style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.0f, 0.467f, 0.784f, overall_alpha);
+   style.Colors[ImGuiCol_TitleBg] = ImVec4(0.145f, 0.145f, 0.149f, overall_alpha);
+   style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.145f, 0.145f, 0.149f, overall_alpha);
+   style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.145f, 0.145f, 0.149f, overall_alpha);
+   style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.2f, 0.2f, 0.216f, overall_alpha);
+   style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.2f, 0.2f, 0.216f, overall_alpha);
+   style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.322f, 0.322f, 0.333f, overall_alpha);
+   style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.353f, 0.353f, 0.373f, overall_alpha);
+   style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.353f, 0.353f, 0.373f, overall_alpha);
+   style.Colors[ImGuiCol_CheckMark] = ImVec4(0.0f, 0.467f, 0.784f, overall_alpha);
+   style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.114f, 0.592f, 0.925f, overall_alpha);
+   style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.0f, 0.467f, 0.784f, overall_alpha);
+   style.Colors[ImGuiCol_Button] = ImVec4(0.2f, 0.2f, 0.216f, overall_alpha);
+   style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.114f, 0.592f, 0.925f, overall_alpha);
+   style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.114f, 0.592f, 0.925f, overall_alpha);
+   style.Colors[ImGuiCol_Header] = ImVec4(0.2f, 0.2f, 0.216f, overall_alpha);
+   style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.114f, 0.592f, 0.925f, overall_alpha);
+   style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.0f, 0.467f, 0.784f, overall_alpha);
+   style.Colors[ImGuiCol_Separator] = ImVec4(0.306f, 0.306f, 0.306f, overall_alpha);
+   style.Colors[ImGuiCol_SeparatorHovered] = ImVec4(0.306f, 0.306f, 0.306f, overall_alpha);
+   style.Colors[ImGuiCol_SeparatorActive] = ImVec4(0.306f, 0.306f, 0.306f, overall_alpha);
+   style.Colors[ImGuiCol_ResizeGrip] = ImVec4(0.145f, 0.145f, 0.149f, overall_alpha);
+   style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.2f, 0.2f, 0.216f, overall_alpha);
+   style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.322f, 0.322f, 0.333f, overall_alpha);
+   style.Colors[ImGuiCol_Tab] = ImVec4(0.145f, 0.145f, 0.149f, overall_alpha);
+   style.Colors[ImGuiCol_TabHovered] = ImVec4(0.114f, 0.592f, 0.925f, overall_alpha);
+   style.Colors[ImGuiCol_TabActive] = ImVec4(0.0f, 0.467f, 0.784f, overall_alpha);
+   style.Colors[ImGuiCol_TabUnfocused] = ImVec4(0.145f, 0.145f, 0.149f, overall_alpha);
+   style.Colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.0f, 0.467f, 0.784f, overall_alpha);
+   style.Colors[ImGuiCol_PlotLines] = ImVec4(0.0f, 0.467f, 0.784f, overall_alpha);
+   style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.114f, 0.592f, 0.925f, overall_alpha);
+   style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.0f, 0.467f, 0.784f, overall_alpha);
+   style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(0.114f, 0.592f, 0.925f, overall_alpha);
+   style.Colors[ImGuiCol_TableHeaderBg] = ImVec4(0.188f, 0.188f, 0.2f, overall_alpha);
+   style.Colors[ImGuiCol_TableBorderStrong] = ImVec4(0.310f, 0.310f, 0.349f, overall_alpha);
+   style.Colors[ImGuiCol_TableBorderLight] = ImVec4(0.227f, 0.227f, 0.247f, overall_alpha);
+   style.Colors[ImGuiCol_TableRowBg] = ImVec4(0.0f, 0.0f, 0.0f, 0.0f * overall_alpha);
+   style.Colors[ImGuiCol_TableRowBgAlt] = ImVec4(1.0f, 1.0f, 1.0f, 0.060f * overall_alpha);
+   style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.0f, 0.467f, 0.784f, overall_alpha);
+   style.Colors[ImGuiCol_DragDropTarget] = ImVec4(0.145f, 0.145f, 0.149f, overall_alpha);
+   style.Colors[ImGuiCol_NavHighlight] = ImVec4(0.145f, 0.145f, 0.149f, overall_alpha);
+   style.Colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.0f, 1.0f, 1.0f, 0.700f * overall_alpha);
+   style.Colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.800f, 0.800f, 0.800f, 0.20f * overall_alpha);
+   style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.145f, 0.145f, 0.149f, 0.35f * overall_alpha);
+}

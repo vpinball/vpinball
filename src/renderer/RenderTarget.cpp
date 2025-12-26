@@ -29,7 +29,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
    , m_width(width)
    , m_height(height)
    , m_nMSAASamples(1)
-   , m_has_depth(false)
+   , m_has_depth(true)
    , m_shared_depth(false)
 {
    assert((type == RT_DEFAULT) || (type == RT_STEREO));

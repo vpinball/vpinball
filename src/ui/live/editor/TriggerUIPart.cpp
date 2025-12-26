@@ -38,8 +38,7 @@ void TriggerUIPart::Render(const EditorRenderContext& ctx)
    if (isUIVisible && (ctx.IsSelected() || (!visible && ctx.GetViewMode() != ViewMode::PreviewCam)))
    {
       m_trigger->m_d.m_visible = true;
-      // FIXME ctx.DrawWireframe(m_flipper);
-      //ctx.DrawHitObjects(m_trigger);
+      ctx.DrawHitObjects(m_trigger);
    }
 
    m_trigger->m_d.m_visible = isUIVisible && visible;
@@ -49,7 +48,7 @@ void TriggerUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("Trigger", m_trigger);
 
-   if (props.BeginSection(PropertyPane::Section::Visual))
+   if (props.BeginSection("Visual"s))
    {
       props.Checkbox<Trigger>(
          m_trigger, "Visible", //
@@ -86,7 +85,7 @@ void TriggerUIPart::UpdatePropertyPane(PropertyPane& props)
       props.EndSection();
    }
 
-   if (props.BeginSection(PropertyPane::Section::Physics))
+   if (props.BeginSection("Physics"s))
    {
       props.Checkbox<Trigger>(
          m_trigger, "Enabled", //
@@ -99,7 +98,7 @@ void TriggerUIPart::UpdatePropertyPane(PropertyPane& props)
       props.EndSection();
    }
 
-   if (props.BeginSection(PropertyPane::Section::Position))
+   if (props.BeginSection("Position"s))
    {
       props.InputFloat<Trigger>(
          m_trigger, "X", //

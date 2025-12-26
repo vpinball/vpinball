@@ -22,7 +22,8 @@ public:
    LiveUI(RenderDevice* const rd);
    ~LiveUI();
 
-   void Update();
+   void Render3D(); // Called to contribute to 3D Scene
+   void RenderUI(); // Called to render UI overlay
 
    bool IsOpened() const { return IsEditorUIOpened() || IsInGameUIOpened(); }
    void HideUI();
@@ -63,6 +64,8 @@ public:
    static void CenteredText(const string &text);
 
 private:
+   void SetupImGuiStyle(const float overall_alpha);
+   
    void NewFrame();
    void UpdateScale();
 

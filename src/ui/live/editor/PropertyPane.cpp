@@ -51,18 +51,10 @@ void PropertyPane::Separator(const string& label) const
       ImGui::TableNextColumn();
 }
 
-bool PropertyPane::BeginSection(Section section)
+bool PropertyPane::BeginSection(const string& name)
 {
    assert(!m_inSection);
-   const char* name = section == Section::Visual ? "Visual"
-      : section == Section::Lighting             ? "Lighting"
-      : section == Section::Physics              ? "Physics"
-      : section == Section::Position             ? "Position"
-      : section == Section::Timer                ? "Timer"
-      : section == Section::Transparency         ? "Transparency"
-      : section == Section::Users                ? "Users"
-                                                 : nullptr;
-   const bool opened = ImGui::CollapsingHeader(name, ImGuiTreeNodeFlags_DefaultOpen);
+   const bool opened = ImGui::CollapsingHeader(name.c_str(), ImGuiTreeNodeFlags_DefaultOpen);
 
    // Add a white line above
    const ImVec2 headerMin = ImGui::GetItemRectMin();

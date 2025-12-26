@@ -1177,6 +1177,9 @@ void Flasher::Render(const unsigned int renderMask)
 
    const Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height);
 
+   if (m_backglass)
+      g_pplayer->m_renderer->UpdateDesktopBackdropShaderMatrix(false, false, true);
+
    if (isUIPass)
    {
       if (renderMask & Renderer::UI_FILL)
@@ -1192,23 +1195,10 @@ void Flasher::Render(const unsigned int renderMask)
          m_meshEdgeBuffer = std::make_shared<MeshBuffer>(m_meshBuffer->m_vb, std::make_shared<IndexBuffer>(m_rd, indices), true);
       }
       if (renderMask & Renderer::UI_EDGES)
-         m_rd->DrawMesh(m_rd->m_basicShader, true, pos, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_numVertices * 2);
+         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_numVertices * 2);
+      if (m_backglass)
+         g_pplayer->m_renderer->UpdateBasicShaderMatrix();
       return;
-   }
-
-   if (m_backglass)
-   {
-      Matrix3D matWorldViewProj[2];
-      matWorldViewProj[0] = Matrix3D::MatrixIdentity(); // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
-      matWorldViewProj[0]._11 = 2.0f / static_cast<float>(EDITOR_BG_WIDTH /* m_rd->GetCurrentRenderTarget()->GetWidth() */);
-      matWorldViewProj[0]._41 = -1.0f;
-      matWorldViewProj[0]._22 = -2.0f / static_cast<float>(EDITOR_BG_HEIGHT /* m_rd->GetCurrentRenderTarget()->GetHeight() */);
-      matWorldViewProj[0]._42 = 1.0f;
-      const int eyes = m_rd->GetCurrentRenderTarget()->m_nLayers;
-      if (eyes > 1)
-         matWorldViewProj[1] = matWorldViewProj[0];
-      m_rd->m_flasherShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
-      m_rd->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
    }
 
    m_rd->ResetRenderState();

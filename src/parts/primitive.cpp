@@ -1276,7 +1276,7 @@ void Primitive::Render(const unsigned int renderMask)
       if (renderMask & Renderer::UI_EDGES && m_meshEdgeBuffer == nullptr)
          m_meshEdgeBuffer = m_meshBuffer->CreateEdgeMeshBuffer(m_mesh.m_indices, m_mesh.m_vertices);
       if (renderMask & Renderer::UI_EDGES)
-         m_rd->DrawMesh(m_rd->m_basicShader, true, Vertex3Ds(), 10000.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_meshEdgeBuffer->m_ib->m_count);
+         m_rd->DrawMesh(m_rd->m_basicShader, false, Vertex3Ds(), 10000.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_meshEdgeBuffer->m_ib->m_count);
       g_pplayer->m_renderer->UpdateBasicShaderMatrix();
       return;
    }

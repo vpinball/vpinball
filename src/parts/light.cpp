@@ -476,10 +476,76 @@ void Light::RenderRelease()
    assert(m_rd != nullptr);
    m_vvertex.clear();
    m_lightmapMeshBuffer = nullptr;
+   m_lightmapMeshEdgeBuffer = nullptr;
    m_bulbSocketMeshBuffer = nullptr;
    m_bulbLightMeshBuffer = nullptr;
    m_rd = nullptr;
 }
+
+void Light::UpdateMeshBuffer()
+{
+   if (m_lightmapMeshBufferDirty)
+   {
+      m_lightmapMeshBufferDirty = false;
+      float height = m_initSurfaceHeight;
+      if (m_d.m_BulbLight)
+      {
+         height += m_d.m_bulbHaloHeight;
+         m_surfaceHeight = height;
+      }
+
+      Texture *const pin = m_ptable->GetImage(m_d.m_szImage);
+
+      const float inv_maxdist = (m_maxDist > 0.0f) ? 0.5f / sqrtf(m_maxDist) : 0.0f;
+      const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
+      const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
+
+      const float xmult = m_backglass ? ((float)m_rd->GetCurrentRenderTarget()->GetWidth() * (float)(1.0 / EDITOR_BG_WIDTH)) : 1.f;
+      const float ymult = m_backglass ? ((float)m_rd->GetCurrentRenderTarget()->GetHeight() * (float)(1.0 / EDITOR_BG_HEIGHT)) : 1.f;
+
+      Vertex3D_NoTex2 *buf;
+      m_lightmapMeshBuffer->m_vb->Lock(buf);
+      for (unsigned int t = 0; t < m_vvertex.size(); t++)
+      {
+         const RenderVertex *const pv0 = &m_vvertex[t];
+         if (!m_backglass)
+         {
+            buf[t].x = pv0->x;
+            buf[t].y = pv0->y;
+            buf[t].z = height + 0.1f;
+
+            // Check if we are using a custom texture.
+            if (pin != nullptr)
+            {
+               buf[t].tu = pv0->x * inv_tablewidth;
+               buf[t].tv = pv0->y * inv_tableheight;
+            }
+            else
+            {
+               // Set texture coordinates for default light.
+               buf[t].tu = 0.5f + (pv0->x - m_d.m_vCenter.x) * inv_maxdist;
+               buf[t].tv = 0.5f + (pv0->y - m_d.m_vCenter.y) * inv_maxdist;
+            }
+         }
+         else
+         {
+            // Backdrop position
+            buf[t].x = pv0->x * xmult - 0.5f;
+            buf[t].y = pv0->y * ymult - 0.5f;
+            buf[t].z = 0.0f;
+
+            buf[t].tu = pv0->x * (float)(1.0 / EDITOR_BG_WIDTH);
+            buf[t].tv = pv0->y * (float)(1.0 / EDITOR_BG_HEIGHT);
+         }
+
+         buf[t].nx = 0;
+         buf[t].ny = 0;
+         buf[t].nz = 1.0f;
+      }
+      m_lightmapMeshBuffer->m_vb->Unlock();
+   }
+}
+
 
 void Light::Render(const unsigned int renderMask)
 {
@@ -491,22 +557,49 @@ void Light::Render(const unsigned int renderMask)
    const bool isUIPass = renderMask & Renderer::UI_EDGES || renderMask & Renderer::UI_FILL;
    TRACE_FUNCTION();
 
-   // FIXME BGFX DX12 will crash on this
-   #ifdef ENABLE_BGFX
-      if (bgfx::getRendererType() == bgfx::RendererType::Direct3D12)
-         return;
-   #endif
-
    if (isUIPass)
    {
+      if (!m_d.m_visible)
+         return;
 
+      UpdateMeshBuffer();
+
+      if (m_backglass)
+         g_pplayer->m_renderer->UpdateDesktopBackdropShaderMatrix(true, false, false);
+      const vec3 pos = m_backglass ? vec3(0.f, 0.f, 0.f) : vec3(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_surfaceHeight);
+      if (renderMask & Renderer::UI_FILL)
+      {
+         m_rd->DrawMesh(m_rd->m_basicShader, true, pos, 0.f, m_lightmapMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_lightmapMeshBuffer->m_ib->m_count);
+      }
+      if (renderMask & Renderer::UI_EDGES && m_lightmapMeshEdgeBuffer == nullptr)
+      {
+         const unsigned int numVertices = m_lightmapMeshBuffer->m_vb->m_count;
+         vector<unsigned int> indices(numVertices * 2);
+         for (unsigned int i = 0; i < numVertices; i++)
+         {
+            indices[i * 2] = i;
+            indices[i * 2 + 1] = (i + 1) % numVertices;
+         }
+         m_lightmapMeshEdgeBuffer = std::make_shared<MeshBuffer>(m_lightmapMeshBuffer->m_vb, std::make_shared<IndexBuffer>(m_rd, indices), true);
+      }
+      if (renderMask & Renderer::UI_EDGES)
+         m_rd->DrawMesh(m_rd->m_basicShader, true, pos, 0.f, m_lightmapMeshEdgeBuffer, RenderDevice::LINELIST, 0, m_lightmapMeshEdgeBuffer->m_ib->m_count);
+
+      // FIXME render bulb
+
+      if (m_backglass)
+         g_pplayer->m_renderer->UpdateBasicShaderMatrix();
       return;
    }
 
    if (m_backglass && !GetPTable()->GetDecalsEnabled())
       return;
 
-   m_rd->ResetRenderState();
+   // FIXME BGFX DX12 will crash on this
+#ifdef ENABLE_BGFX
+   if (bgfx::getRendererType() == bgfx::RendererType::Direct3D12)
+      return;
+#endif
 
    if (isLightBuffer)
    {
@@ -585,6 +678,7 @@ void Light::Render(const unsigned int renderMask)
          mat.m_fGlossyImageLerp = 1.0f;
          mat.m_fThickness = 0.05f;
          mat.m_cClearcoat = 0;
+         m_rd->ResetRenderState();
          m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
          m_rd->m_basicShader->SetMaterial(&mat, false);
          m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, m_d.m_depthBias, m_bulbSocketMeshBuffer, RenderDevice::TRIANGLELIST, 0, bulbSocketNumFaces);
@@ -603,6 +697,7 @@ void Light::Render(const unsigned int renderMask)
          mat.m_fGlossyImageLerp = 1.0f;
          mat.m_fThickness = 0.05f;
          mat.m_cClearcoat = 0xFFFFFF;
+         m_rd->ResetRenderState();
          m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_basic_without_texture, mat);
          m_rd->m_basicShader->SetMaterial(&mat, false);
          const Vertex3Ds bulbPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_boundingSphereCenter.z + m_d.m_height);
@@ -613,7 +708,7 @@ void Light::Render(const unsigned int renderMask)
    // Lightmap
    if (!isStaticOnly
       && m_d.m_visible
-      && ((m_d.m_reflectionEnabled && ! m_backglass) || !isReflectionPass)
+      && ((m_d.m_reflectionEnabled && !m_backglass) || !isReflectionPass)
       && (m_lightmapMeshBuffer != nullptr)) // in case of degenerate light
    {
       Texture * const offTexel = m_d.m_BulbLight ? nullptr : m_ptable->GetImage(m_d.m_szImage);
@@ -645,6 +740,7 @@ void Light::Render(const unsigned int renderMask)
          lightColor2_falloff_power.z *= tint[2] / tint2700[2];
       }
 
+      m_rd->ResetRenderState();
       if (m_backglass)
       {
          m_rd->SetRenderStateDepthBias(0.0f);
@@ -701,63 +797,7 @@ void Light::Render(const unsigned int renderMask)
          return;
 
       // Lazily update the position of the vertex buffer (done here instead of setup since this halo height is a dynamic property of bulb lights)
-      if (m_lightmapMeshBufferDirty)
-      {
-         m_lightmapMeshBufferDirty = false;
-         float height = m_initSurfaceHeight;
-         if (m_d.m_BulbLight)
-         {
-            height += m_d.m_bulbHaloHeight;
-            m_surfaceHeight = height;
-         }
-
-         Texture* const pin = m_ptable->GetImage(m_d.m_szImage);
-
-         const float inv_maxdist = (m_maxDist > 0.0f) ? 0.5f / sqrtf(m_maxDist) : 0.0f;
-         const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
-         const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
-
-         Vertex3D_NoTex2 *buf;
-         m_lightmapMeshBuffer->m_vb->Lock(buf);
-         for (unsigned int t = 0; t < m_vvertex.size(); t++)
-         {
-            const RenderVertex * const pv0 = &m_vvertex[t];
-            if (!m_backglass)
-            {
-               buf[t].x = pv0->x;
-               buf[t].y = pv0->y;
-               buf[t].z = height + 0.1f;
-
-               // Check if we are using a custom texture.
-               if (pin != nullptr)
-               {
-                  buf[t].tu = pv0->x * inv_tablewidth;
-                  buf[t].tv = pv0->y * inv_tableheight;
-               }
-               else
-               {
-                  // Set texture coordinates for default light.
-                  buf[t].tu = 0.5f + (pv0->x - m_d.m_vCenter.x) * inv_maxdist;
-                  buf[t].tv = 0.5f + (pv0->y - m_d.m_vCenter.y) * inv_maxdist;
-               }
-            }
-            else
-            {
-               // Backdrop position
-               buf[t].x = pv0->x * xmult - 0.5f;
-               buf[t].y = pv0->y * ymult - 0.5f;
-               buf[t].z = 0.0f;
-
-               buf[t].tu = pv0->x * (float)(1.0 / EDITOR_BG_WIDTH);
-               buf[t].tv = pv0->y * (float)(1.0 / EDITOR_BG_HEIGHT);
-            }
-
-            buf[t].nx = 0;
-            buf[t].ny = 0;
-            buf[t].nz = 1.0f;
-         }
-         m_lightmapMeshBuffer->m_vb->Unlock();
-      }
+      UpdateMeshBuffer();
 
       Shader *const shader = m_d.m_BulbLight ? m_rd->m_lightShader : m_rd->m_basicShader;
       shader->SetLightData(center_range);
@@ -797,53 +837,17 @@ void Light::Render(const unsigned int renderMask)
          shader->SetTechnique(m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS ? SHADER_TECHNIQUE_bulb_light_with_ball_shadows : SHADER_TECHNIQUE_bulb_light);
       }
 
-      if (m_backglass)
-      {
-         Matrix3D matWorldViewProj[2]; // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
-         matWorldViewProj[0].SetIdentity();
-         matWorldViewProj[0]._11 = 2.0f / (float)m_rd->GetCurrentRenderTarget()->GetWidth();
-         matWorldViewProj[0]._41 = -1.0f;
-         matWorldViewProj[0]._22 = -2.0f / (float)m_rd->GetCurrentRenderTarget()->GetHeight();
-         matWorldViewProj[0]._42 = 1.0f;
-         #if defined(ENABLE_BGFX)
-         const int eyes = m_rd->GetCurrentRenderTarget()->m_nLayers;
-         if (eyes > 1)
-            matWorldViewProj[1] = matWorldViewProj[0];
-         shader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
-         #elif defined(ENABLE_OPENGL)
-         if (shader == m_rd->m_lightShader)
-         {
-            const int eyes = m_rd->GetCurrentRenderTarget()->m_nLayers;
-            if (eyes > 1)
-               matWorldViewProj[1] = matWorldViewProj[0];
-            shader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
-         }
-         else
-         {
-            struct
-            {
-               Matrix3D matWorld;
-               Matrix3D matView;
-               Matrix3D matWorldView;
-               Matrix3D matWorldViewInverseTranspose;
-               Matrix3D matWorldViewProj[2];
-            } matrices;
-            memcpy(&matrices.matWorldViewProj[0].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
-            memcpy(&matrices.matWorldViewProj[1].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
-            shader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
-         }
-         #elif defined(ENABLE_DX9)
-         shader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0]);
-         #endif
-      }
-
       Vertex3Ds pos0(0.f, 0.f, 0.f);
       Vertex3Ds haloPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_surfaceHeight);
-      m_rd->DrawMesh(shader, m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive), m_backglass ? pos0 : haloPos, m_backglass ? 0.f : m_d.m_depthBias, m_lightmapMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_lightmapMeshBuffer->m_ib->m_count);
-
-      // Restore state
       if (m_backglass)
+      {
+         g_pplayer->m_renderer->UpdateDesktopBackdropShaderMatrix(shader == m_rd->m_basicShader, shader == m_rd->m_lightShader, false);
+         m_rd->DrawMesh(shader, m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive), m_backglass ? pos0 : haloPos, m_backglass ? 0.f : m_d.m_depthBias,
+            m_lightmapMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_lightmapMeshBuffer->m_ib->m_count);
          g_pplayer->m_renderer->UpdateBasicShaderMatrix();
+      }
+      else
+         m_rd->DrawMesh(shader, m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive), m_backglass ? pos0 : haloPos, m_backglass ? 0.f : m_d.m_depthBias, m_lightmapMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_lightmapMeshBuffer->m_ib->m_count);
    }
 }
 

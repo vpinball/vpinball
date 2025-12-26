@@ -32,6 +32,7 @@ public:
    void MarkShaderDirty() { m_shaderDirty = true; }
    void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D::MatrixIdentity());
    void UpdateBallShaderMatrix();
+   void UpdateDesktopBackdropShaderMatrix(bool basic, bool light, bool flasherDMD);
    void UpdateStereoShaderState();
 
    void DisableStaticPrePass(const bool disable) { bool wasUsingStaticPrepass = IsUsingStaticPrepass(); m_disableStaticPrepass += disable ? 1 : -1; m_isStaticPrepassDirty |= wasUsingStaticPrepass != IsUsingStaticPrepass(); }
@@ -45,6 +46,7 @@ public:
       NoDepthWireframe
    };
    void SetShadeMode(ShadeMode mode) { m_shadeMode = mode; };
+   ShadeMode GetShadeMode() const { return m_shadeMode; };
 
    void RenderFrame();
 
@@ -79,7 +81,7 @@ public:
    void DrawStatics();
    void DrawDynamics(bool onlyBalls);
    void DrawSprite(const float posx, const float posy, const float width, const float height, const COLORREF color, const std::shared_ptr<const Sampler>& tex, const float intensity, const bool backdrop = false);
-   void DrawWireframe(IEditable* renderable, const vec4& color, bool withDepthMask);
+   void DrawWireframe(IEditable* renderable, const vec4& fillColor, const vec4& edgeColor, bool withDepthMask);
 
    void ReinitRenderable(Renderable* part) { m_renderableToInit.push_back(part); }
 

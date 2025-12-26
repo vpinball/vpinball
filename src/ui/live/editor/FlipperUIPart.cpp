@@ -48,7 +48,7 @@ void FlipperUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("Flipper", m_flipper);
 
-   if (props.BeginSection(PropertyPane::Section::Visual))
+   if (props.BeginSection("Visual"s))
    {
 
       props.EndSection();

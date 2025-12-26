@@ -720,7 +720,7 @@ void Rubber::Render(const unsigned int renderMask)
    if (isUIPass)
    {
       if (renderMask & Renderer::UI_FILL)
-         m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+         m_rd->DrawMesh(m_rd->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
       if (renderMask & Renderer::UI_EDGES && m_meshEdgeBuffer == nullptr)
       {
          vector<WORD> indices(8 * m_numVertices);

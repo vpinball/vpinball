@@ -882,11 +882,11 @@ void Ramp::Render(const unsigned int renderMask)
       if (isUIPass)
       {
          if (renderMask & Renderer::UI_FILL)
-            m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
+            m_rd->DrawMesh(m_rd->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
          /* if (renderMask & Renderer::UI_EDGES)
          {
             // FIXME create line list index buffer and reuse vertex buffer
-            m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::LINELIST, 0, m_numIndices);
+            m_rd->DrawMesh(m_rd->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::LINELIST, 0, m_numIndices);
          }*/
          return;
       }
@@ -920,7 +920,7 @@ void Ramp::Render(const unsigned int renderMask)
       if (isUIPass)
       {
          if (renderMask & Renderer::UI_FILL)
-            m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6 * 3);
+            m_rd->DrawMesh(m_rd->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, (m_rampVertex - 1) * 6 * 3);
          if (renderMask & Renderer::UI_EDGES && m_meshEdgeBuffer == nullptr)
          {
             vector<unsigned int> indices(8 * m_meshIndices.size() / 6);

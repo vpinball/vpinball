@@ -911,28 +911,34 @@ void Surface::Render(const unsigned int renderMask)
    {
       if (renderMask & Renderer::UI_FILL)
       {
-         m_rd->DrawMesh(m_rd->m_basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numVertices * 6);
-         m_rd->DrawMesh(m_rd->m_basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + 0, m_numPolys * 3);
-         m_rd->DrawMesh(m_rd->m_basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (m_numPolys * 3 * 2), m_numPolys * 3);
-      }
-      if (renderMask & Renderer::UI_EDGES && m_meshEdgeBuffer == nullptr)
-      {
-         vector<unsigned int> indices(m_numVertices * 8);
-         for (unsigned int i = 0; i < m_numVertices; i++)
+         if (m_d.m_sideVisible)
+            m_rd->DrawMesh(m_rd->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numVertices * 6);
+         if (m_d.m_topBottomVisible)
          {
-            indices[i * 8 + 0] = i * 4;
-            indices[i * 8 + 1] = i * 4 + 1;
-            indices[i * 8 + 2] = i * 4 + 1;
-            indices[i * 8 + 3] = i * 4 + 2;
-            indices[i * 8 + 4] = i * 4 + 2;
-            indices[i * 8 + 5] = i * 4 + 3;
-            indices[i * 8 + 6] = i * 4 + 3;
-            indices[i * 8 + 7] = i * 4;
+            m_rd->DrawMesh(m_rd->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + 0, m_numPolys * 3);
+            m_rd->DrawMesh(m_rd->m_basicShader, true, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, m_numVertices * 6 + (m_numPolys * 3 * 2), m_numPolys * 3);
          }
-         m_meshEdgeBuffer = std::make_shared<MeshBuffer>(m_meshBuffer->m_vb, std::make_shared<IndexBuffer>(m_rd, indices), true);
       }
-      if (renderMask & Renderer::UI_EDGES)
-         m_rd->DrawMesh(m_rd->m_basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_numVertices * 8);
+      if (renderMask & Renderer::UI_EDGES && (m_d.m_sideVisible || m_d.m_topBottomVisible))
+      {
+         if (m_meshEdgeBuffer == nullptr)
+         {
+            vector<unsigned int> indices(m_numVertices * 8);
+            for (unsigned int i = 0; i < m_numVertices; i++)
+            {
+               indices[i * 8 + 0] = i * 4;
+               indices[i * 8 + 1] = i * 4 + 1;
+               indices[i * 8 + 2] = i * 4 + 1;
+               indices[i * 8 + 3] = i * 4 + 2;
+               indices[i * 8 + 4] = i * 4 + 2;
+               indices[i * 8 + 5] = i * 4 + 3;
+               indices[i * 8 + 6] = i * 4 + 3;
+               indices[i * 8 + 7] = i * 4;
+            }
+            m_meshEdgeBuffer = std::make_shared<MeshBuffer>(m_meshBuffer->m_vb, std::make_shared<IndexBuffer>(m_rd, indices), true);
+         }
+         m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_numVertices * 8);
+      }
    }
    else if (!m_isDropped || StaticRendering())
    {

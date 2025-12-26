@@ -9,10 +9,11 @@ namespace VPX::EditorUI
 
 HitTargetUIPart::HitTargetUIPart(HitTarget* hitTarget)
    : m_hitTarget(hitTarget)
+   , m_visible(hitTarget->m_d.m_visible)
 {
 }
 
-HitTargetUIPart::~HitTargetUIPart() { }
+HitTargetUIPart::~HitTargetUIPart() { m_hitTarget->m_d.m_visible = m_visible; }
 
 HitTargetUIPart::TransformMask HitTargetUIPart::GetTransform(Matrix3D& transform) { return TM_None; }
 
@@ -20,15 +21,24 @@ void HitTargetUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec
 
 void HitTargetUIPart::Render(const EditorRenderContext& ctx)
 {
-   if (ctx.IsSelected())
-      ctx.DrawHitObjects(m_hitTarget);
+   if (ctx.NeedsLiveTableSync())
+      m_visible = m_hitTarget->m_d.m_visible;
+
+   const bool isUIVisible = m_hitTarget->IsVisible(m_hitTarget);
+   if (isUIVisible && (ctx.IsSelected() || (!m_visible && ctx.GetViewMode() != ViewMode::PreviewCam)))
+   {
+      m_hitTarget->m_d.m_visible = true;
+      ctx.DrawWireframe(m_hitTarget);
+   }
+
+   m_hitTarget->m_d.m_visible = isUIVisible && m_visible;
 }
 
 void HitTargetUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("HitTarget", m_hitTarget);
 
-   if (props.BeginSection(PropertyPane::Section::Visual))
+   if (props.BeginSection("Visual"s))
    {
 
       props.Checkbox<HitTarget>(
@@ -38,7 +48,7 @@ void HitTargetUIPart::UpdatePropertyPane(PropertyPane& props)
       props.EndSection();
    }
 
-   if (props.BeginSection(PropertyPane::Section::Position))
+   if (props.BeginSection("Position"s))
    {
       // Missing position
       props.EndSection();

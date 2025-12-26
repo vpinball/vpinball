@@ -32,8 +32,7 @@ void BallUIPart::Render(const EditorRenderContext& ctx)
    if (isUIVisible && (ctx.IsSelected() || (!m_visible && ctx.GetViewMode() != ViewMode::PreviewCam)))
    {
       m_ball->m_d.m_visible = true;
-      // FIXME implement wireframe
-      ctx.DrawHitObjects(m_ball);
+      ctx.DrawWireframe(m_ball);
    }
 
    m_ball->m_d.m_visible = isUIVisible && m_visible;
@@ -43,7 +42,7 @@ void BallUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("Ball", m_ball);
 
-   if (props.BeginSection(PropertyPane::Section::Visual))
+   if (props.BeginSection("Visual"s))
    {
       props.Checkbox<Ball>(
          m_ball, "Visible"s, //
@@ -99,7 +98,7 @@ void BallUIPart::UpdatePropertyPane(PropertyPane& props)
       props.EndSection();
    }
 
-   if (props.BeginSection(PropertyPane::Section::Physics))
+   if (props.BeginSection("Physics"s))
    {
       props.InputFloat3<Ball>(
          m_ball, "Position"s, //

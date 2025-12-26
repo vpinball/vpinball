@@ -121,7 +121,18 @@ void EditorUI::ResetCameraFromPlayer()
    m_camView = Matrix3D::MatrixScale(1.f, 1.f, -1.f) * m_renderer->GetMVP().GetView() * Matrix3D::MatrixScale(1.f, -1.f, 1.f);
 }
 
-void EditorUI::Update()
+void EditorUI::Render3D()
+{
+   RenderContext ctx(m_player, nullptr, m_camMode, m_shadeMode, (m_table->m_liveBaseTable != nullptr) && m_player->IsPlaying());
+   for (const auto &uiPart : m_editables)
+   {
+      if ((m_camMode == ViewMode::DesktopBackdrop && !uiPart->GetEditable()->m_backglass) || (m_camMode != ViewMode::DesktopBackdrop && uiPart->GetEditable()->m_backglass))
+         continue;
+      uiPart->Render(ctx);
+   }
+}
+
+void EditorUI::RenderUI()
 {
    const ImGuiIO &io = ImGui::GetIO();
    ImGuizmo::SetOrthographic(m_camMode == ViewMode::DesktopBackdrop || (m_camMode == ViewMode::EditorCam && !m_perspectiveCam));
@@ -386,110 +397,18 @@ void EditorUI::Update()
          SetSelectionTransform(transform);
    }
 
+   m_renderer->SetShadeMode(m_shadeMode);
+
    // Selection and physic colliders overlay
    {
-      class RenderContext : public EditorRenderContext
-      {
-      public:
-         RenderContext(Player *player, ImDrawList *drawlist, ViewMode viewMode, Renderer::ShadeMode shadeMode, bool needsLiveTableSync)
-            : m_player(player)
-            , m_drawlist(drawlist)
-            , m_viewMode(viewMode)
-            , m_shadeMode(shadeMode)
-            , m_needsLiveTableSync(needsLiveTableSync)
-         {
-         }
-         ~RenderContext() override = default;
-
-         bool NeedsLiveTableSync() const { return m_needsLiveTableSync; }
-         ImU32 GetColor(bool selected) const { return selected ? IM_COL32(255, 128, 0, 255) : IM_COL32_BLACK; };
-         bool IsSelected() const override { return m_isSelected; }
-         ViewMode GetViewMode() const override { return m_viewMode; }
-         ImDrawList *GetDrawList() const override { return m_drawlist; }
-
-         ImVec2 Project(const Vertex3Ds &v) const override
-         {
-            const float rClipWidth = (float)m_player->m_playfieldWnd->GetWidth() * 0.5f;
-            const float rClipHeight = (float)m_player->m_playfieldWnd->GetHeight() * 0.5f;
-            const Matrix3D mvp = m_player->m_renderer->GetMVP().GetModelViewProj(0);
-            const float xp = mvp._11 * v.x + mvp._21 * v.y + mvp._31 * v.z + mvp._41;
-            const float yp = mvp._12 * v.x + mvp._22 * v.y + mvp._32 * v.z + mvp._42;
-            //const float zp = mvp._13 * v.x + mvp._23 * v.y + mvp._33 * v.z + mvp._43;
-            const float wp = mvp._14 * v.x + mvp._24 * v.y + mvp._34 * v.z + mvp._44;
-            if (wp <= 1e-10f) // behind camera (or degenerated)
-               return ImVec2 { FLT_MAX, FLT_MAX };
-            const float inv_wp = 1.0f / wp;
-            return ImVec2 { (wp + xp) * rClipWidth * inv_wp, (wp - yp) * rClipHeight * inv_wp };
-         }
-
-         void DrawCircle(const Vertex3Ds &center, const Vertex3Ds &x, const Vertex3Ds &y, float radius, ImU32 color) const override
-         {
-            ImVec2 prev;
-            const int n = 32;
-            for (int i = 0; i <= n; i++)
-            {
-               float c = radius * cos(2.f * i * M_PIf / n);
-               float s = radius * sin(2.f * i * M_PIf / n);
-               const ImVec2 p = Project(Vertex3Ds(center.x + c * x.x + s * y.x, center.y + c * x.y + s * y.y, center.z + c * x.z + s * y.z));
-               if (i > 0)
-                  GetDrawList()->AddLine(prev, p, color, 1.f);
-               prev = p;
-            }
-         }
-
-         void DrawHitObjects(IEditable *editable) const override
-         {
-            auto project = [this](Vertex3Ds v)
-            {
-               const ImVec2 pt = Project(v);
-               return Vertex2D(pt.x, pt.y);
-            };
-            ImU32 color = GetColor(m_isSelected);
-            ImU32 alpha = (color & 0x00FFFFFF) | 0x20000000;
-            ImGui::PushStyleColor(ImGuiCol_PlotLines, color);
-            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, alpha);
-            for (auto pho : m_player->m_physics->GetUIHitObjects(editable))
-               pho->DrawUI(project, m_drawlist, true);
-            ImGui::PopStyleColor(2);
-         }
-
-         void DrawWireframe(IEditable *editable) const override
-         {
-            g_pplayer->m_renderer->DrawWireframe(editable, convertColor(GetColor(IsSelected()), 32.f / 255.f), m_shadeMode != Renderer::ShadeMode::NoDepthWireframe);
-         }
-
-         bool m_isSelected = false;
-
-      private:
-         Player *m_player;
-         ImDrawList *const m_drawlist;
-         const ViewMode m_viewMode;
-         const Renderer::ShadeMode m_shadeMode;
-         const bool m_needsLiveTableSync;
-      };
-
-      m_renderer->SetShadeMode(m_shadeMode);
-
-      // Render overlays and, if in inspection mode, update cached state modified by script
       RenderContext ctx(m_player, overlayDrawList, m_camMode, m_shadeMode, (m_table->m_liveBaseTable != nullptr) && m_player->IsPlaying());
-      for (const auto &uiPart : m_editables)
+      if (m_selection.type == Selection::S_EDITABLE)
       {
-         ctx.m_isSelected = m_selection.type == Selection::S_EDITABLE && m_selection.uiPart->GetEditable() == uiPart->GetEditable();
-         if (uiPart->GetEditable()->GetISelect())
-         {
-            const bool wasVisible = uiPart->GetEditable()->GetISelect()->m_isVisible;
-            if (m_camMode == ViewMode::DesktopBackdrop)
-               uiPart->GetEditable()->GetISelect()->m_isVisible &= uiPart->GetEditable()->m_backglass;
-            else
-               uiPart->GetEditable()->GetISelect()->m_isVisible &= !uiPart->GetEditable()->m_backglass;
-            uiPart->Render(ctx);
-            uiPart->GetEditable()->GetISelect()->m_isVisible = wasVisible;
-         }
-         else
-         {
-            // Is this possible ? a non selectable editable ?
-            uiPart->Render(ctx);
-         }
+         if (m_renderer->m_renderDevice->GetCurrentRenderTarget()->HasDepth())
+            m_renderer->m_renderDevice->Clear(clearType::ZBUFFER, 0);
+         ctx.m_isSelected = true;
+         m_selection.uiPart->Render(ctx);
+         ctx.m_isSelected = false;
       }
 
       if (isSelectionTransformValid)
@@ -783,11 +702,11 @@ void EditorUI::Update()
             m_camMode = ViewMode::EditorCam;
             ResetCameraFromPlayer();
             break;
-         #ifdef _DEBUG
+#ifdef _DEBUG
          case ViewMode::EditorCam: m_camMode = ViewMode::DesktopBackdrop; break; // Desktop backdrop editor is not yet operational
-         #else
+#else
          case ViewMode::EditorCam: m_camMode = ViewMode::PreviewCam; break;
-         #endif
+#endif
          case ViewMode::DesktopBackdrop: m_camMode = ViewMode::PreviewCam; break;
          }
       }
@@ -1319,25 +1238,25 @@ void EditorUI::TableProperties(PropertyPane &props)
    PinTable *table = props.GetEditedPart<PinTable>(m_table);
    props.Header("Table"s, [table]() { return table->GetName(); }, [table](const string &v) { table->SetName(v); });
 
-   if (props.BeginSection(PropertyPane::Section::Users))
+   if (props.BeginSection("User Settings"s))
    {
 
       props.EndSection();
    }
 
-   if (props.BeginSection(PropertyPane::Section::Visual))
+   if (props.BeginSection("Visual"s))
    {
 
       props.EndSection();
    }
 
-   if (props.BeginSection(PropertyPane::Section::Physics))
+   if (props.BeginSection("Physics"s))
    {
 
       props.EndSection();
    }
 
-   if (props.BeginSection(PropertyPane::Section::Lighting))
+   if (props.BeginSection("Lighting"s))
    {
       props.InputRGB<PinTable>(
          table, "Ambient Color", //
@@ -1428,9 +1347,9 @@ void EditorUI::CameraProperties(PropertyPane &props, int bgSet)
       ImGui::NewLine();
    }
 
-   if (props.BeginSection(PropertyPane::Section::Visual))
+   if (props.BeginSection("Visual"s))
    {
-      ViewSetup* vs = &m_table->mViewSetups[bgSet];
+      ViewSetup *vs = &m_table->mViewSetups[bgSet];
       props.Combo<ViewSetup>(
          vs, "View Mode"s, vector { "Legacy"s, "Camera"s, "Window"s }, //
          [](const ViewSetup *viewSetup) { return static_cast<int>(viewSetup->mMode); }, //
@@ -1488,7 +1407,7 @@ void EditorUI::ImageProperties(PropertyPane &props, Texture *texture)
    ImTextureID image = m_renderer->m_renderDevice->m_texMan.LoadTexture(texture, false);
    if (image)
    {
-      if (props.BeginSection(PropertyPane::Section::Visual))
+      if (props.BeginSection("Visual"s))
       {
          std::shared_ptr<const BaseTexture> tex = texture->GetRawBitmap(false, 0);
 
@@ -1521,7 +1440,7 @@ void EditorUI::RenderProbeProperties(PropertyPane &props, RenderProbe *probe)
    RenderProbe *editedProbe = props.GetEditedPart<RenderProbe>(probe);
    props.Header("Render Probe"s, [editedProbe]() { return editedProbe->GetName(); }, [editedProbe](const string &v) { editedProbe->SetName(v); });
 
-   if (props.BeginSection(PropertyPane::Section::Visual))
+   if (props.BeginSection("Visual"s))
    {
       props.Combo<RenderProbe>(
          probe, "Type"s, vector { "Reflection"s, "Refraction"s }, //
@@ -1552,7 +1471,7 @@ void EditorUI::RenderProbeProperties(PropertyPane &props, RenderProbe *probe)
       {
          if (editable->GetItemType() != eItemPrimitive)
             continue;
-         const Primitive *const primitive = static_cast<const Primitive*>(editable);
+         const Primitive *const primitive = static_cast<const Primitive *>(editable);
          if (probe->GetType() == RenderProbe::PLANE_REFLECTION && primitive->m_d.m_szReflectionProbe != probe->GetName())
             continue;
          if (probe->GetType() == RenderProbe::SCREEN_SPACE_TRANSPARENCY && primitive->m_d.m_szRefractionProbe == probe->GetName())
@@ -1571,7 +1490,7 @@ void EditorUI::MaterialProperties(PropertyPane &props, Material *material)
    Material *editedMaterial = props.GetEditedPart<Material>(material);
    props.Header("Material"s, [editedMaterial]() { return editedMaterial->m_name; }, [editedMaterial](const string &v) { editedMaterial->m_name = v; });
 
-   if (props.BeginSection(PropertyPane::Section::Visual))
+   if (props.BeginSection("Visual"s))
    {
       props.Combo<Material>(
          material, "Type"s, vector { "Default"s, "Metal"s }, //
@@ -1611,7 +1530,7 @@ void EditorUI::MaterialProperties(PropertyPane &props, Material *material)
       props.EndSection();
    }
 
-   if (props.BeginSection(PropertyPane::Section::Transparency))
+   if (props.BeginSection("Transparency"s))
    {
       props.Checkbox<Material>(
          material, "Enable Transparency"s, //
@@ -1634,6 +1553,96 @@ void EditorUI::MaterialProperties(PropertyPane &props, Material *material)
          [](const Material *material) { return convertColor(material->m_cRefractionTint); }, //
          [](Material *material, const vec3 &v) { material->m_cRefractionTint = convertColorRGB(v); });
       props.EndSection();
+   }
+}
+
+
+EditorUI::RenderContext::RenderContext(Player *player, ImDrawList *drawlist, ViewMode viewMode, Renderer::ShadeMode shadeMode, bool needsLiveTableSync)
+   : m_player(player)
+   , m_drawlist(drawlist)
+   , m_viewMode(viewMode)
+   , m_shadeMode(shadeMode)
+   , m_needsLiveTableSync(needsLiveTableSync)
+{
+}
+
+ImVec2 EditorUI::RenderContext::Project(const Vertex3Ds &v) const
+{
+   const float rClipWidth = (float)m_player->m_playfieldWnd->GetWidth() * 0.5f;
+   const float rClipHeight = (float)m_player->m_playfieldWnd->GetHeight() * 0.5f;
+   const Matrix3D mvp = m_player->m_renderer->GetMVP().GetModelViewProj(0);
+   const float xp = mvp._11 * v.x + mvp._21 * v.y + mvp._31 * v.z + mvp._41;
+   const float yp = mvp._12 * v.x + mvp._22 * v.y + mvp._32 * v.z + mvp._42;
+   //const float zp = mvp._13 * v.x + mvp._23 * v.y + mvp._33 * v.z + mvp._43;
+   const float wp = mvp._14 * v.x + mvp._24 * v.y + mvp._34 * v.z + mvp._44;
+   if (wp <= 1e-10f) // behind camera (or degenerated)
+      return ImVec2 { FLT_MAX, FLT_MAX };
+   const float inv_wp = 1.0f / wp;
+   return ImVec2 { (wp + xp) * rClipWidth * inv_wp, (wp - yp) * rClipHeight * inv_wp };
+}
+
+void EditorUI::RenderContext::DrawLine(const Vertex3Ds &a, const Vertex3Ds &b, ImU32 color) const
+{
+   if (m_drawlist)
+   {
+      ImVec2 p1 = Project(a);
+      ImVec2 p2 = Project(b);
+      m_drawlist->AddLine(p1, p2, color);
+   }
+   // TODO also render when running in 3D (for logic parts like timers,...)
+}
+
+void EditorUI::RenderContext::DrawCircle(const Vertex3Ds &center, const Vertex3Ds &x, const Vertex3Ds &y, float radius, ImU32 color) const
+{
+   if (m_drawlist)
+   {
+      ImVec2 prev;
+      const int n = 32;
+      for (int i = 0; i <= n; i++)
+      {
+         float c = radius * cos(2.f * i * M_PIf / n);
+         float s = radius * sin(2.f * i * M_PIf / n);
+         const ImVec2 p = Project(Vertex3Ds(center.x + c * x.x + s * y.x, center.y + c * x.y + s * y.y, center.z + c * x.z + s * y.z));
+         if (i > 0)
+            GetDrawList()->AddLine(prev, p, color, 1.f);
+         prev = p;
+      }
+   }
+   // TODO also render when running in 3D (for logic parts like timers,...)
+}
+
+void EditorUI::RenderContext::DrawHitObjects(IEditable *editable) const
+{
+   if (m_drawlist)
+   {
+      auto project = [this](Vertex3Ds v)
+      {
+         const ImVec2 pt = Project(v);
+         return Vertex2D(pt.x, pt.y);
+      };
+      ImU32 color = GetColor(m_isSelected);
+      ImU32 alpha = (color & 0x00FFFFFF) | 0x20000000;
+      ImGui::PushStyleColor(ImGuiCol_PlotLines, color);
+      ImGui::PushStyleColor(ImGuiCol_PlotHistogram, alpha);
+      for (auto pho : m_player->m_physics->GetUIHitObjects(editable))
+         pho->DrawUI(project, m_drawlist, true);
+      ImGui::PopStyleColor(2);
+   }
+}
+
+void EditorUI::RenderContext::DrawWireframe(IEditable *editable) const
+{
+   if (IsSelected())
+   {
+      // Selection overlay
+      g_pplayer->m_renderer->DrawWireframe(editable, convertColor(GetColor(true), 32.f / 255.f), convertColor(GetColor(true), 1.f), false);
+   }
+   else
+   {
+      // "Invisible" part, but UI visible
+      const vec4 fillColor = m_shadeMode == Renderer::ShadeMode::NoDepthWireframe ? vec4(0.f, 0.f, 0.f, 32.f / 255.f) : vec4(32.f / 255.f, 32.f / 255.f, 32.f / 255.f, 1.f);
+      const vec4 edgeColor(0.f, 0.f, 0.f, 1.f);
+      g_pplayer->m_renderer->DrawWireframe(editable, fillColor, edgeColor, m_shadeMode != Renderer::ShadeMode::NoDepthWireframe);
    }
 }
 

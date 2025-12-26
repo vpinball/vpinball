@@ -54,8 +54,7 @@ void BumperUIPart::Render(const EditorRenderContext& ctx)
       m_bumper->m_d.m_capVisible = true;
       m_bumper->m_d.m_skirtVisible = true;
       m_bumper->m_d.m_ringVisible = true;
-      // FIXME implement wireframe rendering
-      ctx.DrawHitObjects(m_bumper);
+      ctx.DrawWireframe(m_bumper);
    }
 
    m_bumper->m_d.m_baseVisible = isUIVisible && m_baseVisible;
@@ -68,7 +67,7 @@ void BumperUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("Bumper", m_bumper);
 
-   if (props.BeginSection(PropertyPane::Section::Visual))
+   if (props.BeginSection("Visuals"s))
    {
       props.InputFloat<Bumper>(
          m_bumper, "Radius"s, //
@@ -134,9 +133,45 @@ void BumperUIPart::UpdatePropertyPane(PropertyPane& props)
       props.EndSection();
    }
 
-   if (props.BeginSection(PropertyPane::Section::Position))
+   if (props.BeginSection("Position"s))
    {
-      // Missing position
+      props.InputFloat<Bumper>(
+         m_bumper, "X", //
+         [](const Bumper* bumper) { return bumper->m_d.m_vCenter.x; }, //
+         [](Bumper* bumper, float v) { bumper->Translate(Vertex2D(v - bumper->m_d.m_vCenter.x, 0.f)); }, PropertyPane::Unit::VPLength, 1);
+      props.InputFloat<Bumper>(
+         m_bumper, "Y", //
+         [](const Bumper* bumper) { return bumper->m_d.m_vCenter.y; }, //
+         [](Bumper* bumper, float v) { bumper->Translate(Vertex2D(0.f, v - bumper->m_d.m_vCenter.y)); }, PropertyPane::Unit::VPLength, 1);
+      props.SurfaceCombo<Bumper>(
+         m_bumper, "Surface", //
+         [](const Bumper* bumper) { return bumper->m_d.m_szSurface; }, //
+         [](Bumper* bumper, const string& v) { bumper->m_d.m_szSurface = v; });
+      props.EndSection();
+   }
+
+   if (props.BeginSection("Physics"s))
+   {
+      props.Checkbox<Bumper>(
+         m_bumper, "Has Hit Event"s, //
+         [](const Bumper* bumper) { return bumper->m_d.m_hitEvent; }, //
+         [](Bumper* bumper, bool v) { bumper->m_d.m_hitEvent = v; });
+      props.InputFloat<Bumper>(
+         m_bumper, "Force"s, //
+         [](const Bumper* bumper) { return bumper->m_d.m_force; }, //
+         [](Bumper* bumper, float v) { bumper->m_d.m_force = v; }, PropertyPane::Unit::VPLength, 3);
+      props.InputFloat<Bumper>(
+         m_bumper, "Hit Threshold"s, //
+         [](const Bumper* bumper) { return bumper->m_d.m_heightScale; }, //
+         [](Bumper* bumper, float v) { bumper->m_d.m_heightScale = v; }, PropertyPane::Unit::None, 3);
+      props.InputFloat<Bumper>(
+         m_bumper, "Scatter Angle"s, //
+         [](const Bumper* bumper) { return bumper->m_d.m_scatter; }, //
+         [](Bumper* bumper, float v) { bumper->m_d.m_scatter = v; }, PropertyPane::Unit::None, 3);
+      props.Checkbox<Bumper>(
+         m_bumper, "Collidable"s, //
+         [](const Bumper* bumper) { return bumper->m_d.m_collidable; }, //
+         [](Bumper* bumper, bool v) { bumper->m_d.m_collidable = v; });
       props.EndSection();
    }
 

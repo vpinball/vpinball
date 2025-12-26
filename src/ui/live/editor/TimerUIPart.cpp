@@ -31,15 +31,12 @@ void TimerUIPart::Render(const EditorRenderContext& ctx)
          const float angle = (float)(M_PI * 2.0 / 12.0) * (float)i;
          const float sn = sinf(angle);
          const float cs = cosf(angle);
-         ImVec2 p1 = ctx.Project(Vertex3Ds(m_timer->m_d.m_v.x + sn * 9.0f, m_timer->m_d.m_v.y - cs * 9.0f, 0.f));
-         ImVec2 p2 = ctx.Project(Vertex3Ds(m_timer->m_d.m_v.x + sn * 15.0f, m_timer->m_d.m_v.y - cs * 15.0f, 0.f));
-         ctx.GetDrawList()->AddLine(p1, p2, color);
+         ctx.DrawLine(
+            Vertex3Ds(m_timer->m_d.m_v.x + sn * 9.0f, m_timer->m_d.m_v.y - cs * 9.0f, 0.f), Vertex3Ds(m_timer->m_d.m_v.x + sn * 15.0f, m_timer->m_d.m_v.y - cs * 15.0f, 0.f), color);
       }
 
       //angle = ((PI*2)/24) * 3;
-      ImVec2 p1 = ctx.Project(Vertex3Ds(m_timer->m_d.m_v.x, m_timer->m_d.m_v.y, 0.f));
-      ImVec2 p2 = ctx.Project(Vertex3Ds(m_timer->m_d.m_v.x + 10.5f, m_timer->m_d.m_v.y - 7.5f, 0.f));
-      ctx.GetDrawList()->AddLine(p1, p2, color);
+      ctx.DrawLine(Vertex3Ds(m_timer->m_d.m_v.x, m_timer->m_d.m_v.y, 0.f), Vertex3Ds(m_timer->m_d.m_v.x + 10.5f, m_timer->m_d.m_v.y - 7.5f, 0.f), color);
    }
 }
 
