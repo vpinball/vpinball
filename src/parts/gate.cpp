@@ -365,14 +365,14 @@ void Gate::RenderSetup(RenderDevice *device)
    bracketVertexBuffer->Lock(buf);
    GenerateBracketMesh(buf);
    bracketVertexBuffer->Unlock();
-   m_bracketMeshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Bracket"s, bracketVertexBuffer, bracketIndexBuffer, true);
+   m_bracketMeshBuffer = std::make_shared<MeshBuffer>(GetName() + ".Bracket"s, bracketVertexBuffer, bracketIndexBuffer, true);
 
    std::shared_ptr<IndexBuffer> wireIndexBuffer = std::make_shared<IndexBuffer>(m_rd, m_numIndices, m_indices);
    std::shared_ptr<VertexBuffer> wireVertexBuffer = std::make_shared<VertexBuffer>(m_rd, m_numVertices, nullptr, true);
    wireVertexBuffer->Lock(buf);
    GenerateWireMesh(buf);
    wireVertexBuffer->Unlock();
-   m_wireMeshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Wire"s, wireVertexBuffer, wireIndexBuffer, true);
+   m_wireMeshBuffer = std::make_shared<MeshBuffer>(GetName() + ".Wire"s, wireVertexBuffer, wireIndexBuffer, true);
 }
 
 void Gate::RenderRelease()

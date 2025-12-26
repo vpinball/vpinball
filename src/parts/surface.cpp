@@ -836,7 +836,7 @@ void Surface::RenderSetup(RenderDevice *device)
       delete[] rgIdx;
       slingIBuffer->Unlock();
 
-      m_slingshotMeshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Slingshot"s, slingshotVBuffer, slingIBuffer, true);
+      m_slingshotMeshBuffer = std::make_shared<MeshBuffer>(GetName() + ".Slingshot"s, slingshotVBuffer, slingIBuffer, true);
    }
 
    // Prepare mesh buffer for dropped and non-dropped surfaces
@@ -870,7 +870,7 @@ void Surface::RenderSetup(RenderDevice *device)
       memcpy(buf + sideIndices.size(), topBottomIndices.data(), topBottomIndices.size() * sizeof(WORD));
       IBuffer->Unlock();
 
-      m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName, VBuffer, IBuffer, true);
+      m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), VBuffer, IBuffer, true);
    }
 
    m_d.m_heightbottom = oldBottomHeight;
@@ -929,7 +929,7 @@ void Surface::Render(const unsigned int renderMask)
             indices[i * 8 + 6] = i * 4 + 3;
             indices[i * 8 + 7] = i * 4;
          }
-         m_meshEdgeBuffer = m_meshBuffer->CreateSharedVertexMeshBuffer(std::make_shared<IndexBuffer>(m_rd, indices));
+         m_meshEdgeBuffer = std::make_shared<MeshBuffer>(m_meshBuffer->m_vb, std::make_shared<IndexBuffer>(m_rd, indices), true);
       }
       if (renderMask & Renderer::UI_EDGES)
          m_rd->DrawMesh(m_rd->m_basicShader, m_isDynamic, m_boundingSphereCenter, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_numVertices * 8);

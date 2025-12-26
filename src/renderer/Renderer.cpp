@@ -245,7 +245,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       = std::make_shared<IndexBuffer>(m_renderDevice, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces, lowDetailBall ? basicBallLoIndices : basicBallMidIndices);
    std::shared_ptr<VertexBuffer> ballVertexBuffer
       = std::make_shared<VertexBuffer>(m_renderDevice, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, (const float*)(lowDetailBall ? basicBallLo : basicBallMid));
-   m_ballMeshBuffer = std::make_shared<MeshBuffer>(L"Ball"s, ballVertexBuffer, ballIndexBuffer, true);
+   m_ballMeshBuffer = std::make_shared<MeshBuffer>("Ball"s, ballVertexBuffer, ballIndexBuffer, true);
 #ifdef DEBUG_BALL_SPIN
    {
       vector<Vertex3D_NoTex2> ballDbgVtx;
@@ -270,12 +270,12 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       }
 
       std::shared_ptr<VertexBuffer> ballDebugPoints = std::make_shared<VertexBuffer>(m_renderDevice, (unsigned int)ballDbgVtx.size(), (float*)ballDbgVtx.data(), false);
-      m_ballDebugPoints = std::make_shared<MeshBuffer>(L"Ball.Debug"s, ballDebugPoints);
+      m_ballDebugPoints = std::make_shared<MeshBuffer>("Ball.Debug"s, ballDebugPoints);
    }
 #endif
    // Support up to 64 balls, that should be sufficient
    std::shared_ptr<VertexBuffer> ballTrailVertexBuffer = std::make_shared<VertexBuffer>(m_renderDevice, 64 * (MAX_BALL_TRAIL_POS - 2) * 2 + 4, nullptr, true);
-   m_ballTrailMeshBuffer = std::make_shared<MeshBuffer>(L"Ball.Trail"s, ballTrailVertexBuffer);
+   m_ballTrailMeshBuffer = std::make_shared<MeshBuffer>("Ball.Trail"s, ballTrailVertexBuffer);
 
    // Cache DMD renderer properties
    for (int profile = 0; profile < (int)std::size(m_dmdUseLegacyRenderer); profile++)

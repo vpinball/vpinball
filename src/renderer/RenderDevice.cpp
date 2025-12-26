@@ -1227,7 +1227,7 @@ RenderDevice::RenderDevice(
       -1.0f, -1.0f, 0.0f, 0.0f, 1.0f
    };
    std::shared_ptr<VertexBuffer> quadVertexBuffer = std::make_shared<VertexBuffer>(this, 4, verts, false, VertexFormat::VF_POS_TEX);
-   m_quadMeshBuffer = std::make_shared<MeshBuffer>(L"Fullscreen Quad"s, quadVertexBuffer);
+   m_quadMeshBuffer = std::make_shared<MeshBuffer>("Fullscreen Quad"s, quadVertexBuffer);
 
    #if defined(ENABLE_OPENGL)
    std::shared_ptr<VertexBuffer> quadPNTDynVertexBuffer = std::make_shared<VertexBuffer>(this, 4, nullptr, true, VertexFormat::VF_POS_NORMAL_TEX);

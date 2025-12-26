@@ -235,7 +235,7 @@ void Kicker::RenderSetup(RenderDevice *device)
 
       std::shared_ptr<VertexBuffer> plateVertexBuffer = std::make_shared<VertexBuffer>(m_rd, kickerPlateNumVertices, (float *)buf);
       std::shared_ptr<IndexBuffer> plateIndexBuffer = std::make_shared<IndexBuffer>(m_rd, kickerPlateNumIndices, kickerPlateIndices);
-      m_plateMeshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Plate"s, plateVertexBuffer, plateIndexBuffer, true);
+      m_plateMeshBuffer = std::make_shared<MeshBuffer>(GetName() + ".Plate"s, plateVertexBuffer, plateIndexBuffer, true);
 
       delete[] buf;
    }
@@ -305,7 +305,7 @@ void Kicker::RenderSetup(RenderDevice *device)
    GenerateMesh(buf);
    vertexBuffer->Unlock();
    std::shared_ptr<IndexBuffer> indexBuffer = std::make_shared<IndexBuffer>(m_rd, m_numIndices, indices);
-   m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Kicker"s, vertexBuffer, indexBuffer, true);
+   m_meshBuffer = std::make_shared<MeshBuffer>(GetName() + ".Kicker"s, vertexBuffer, indexBuffer, true);
 }
 
 void Kicker::RenderRelease()

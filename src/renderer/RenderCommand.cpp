@@ -351,7 +351,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
          if (m_command == RC_DRAW_MESH)
          {
             ss << " MB:" << std::setw(4) << std::hex << m_mb->GetSortKey() << std::dec;
-            ss << " IndCount: " << std::setw(8) << m_indicesCount << ' ' << MakeString(m_mb->m_wname);
+            ss << " IndCount: " << std::setw(8) << m_indicesCount << ' ' << m_mb->m_name.c_str();
          }
          PLOGI << ss.str();
       }

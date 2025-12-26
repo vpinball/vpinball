@@ -1165,7 +1165,7 @@ void Primitive::RenderSetup(RenderDevice *device)
             }
          }
          vertexBuffer->Unlock();
-         m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".RenderGroup"s, vertexBuffer, indexBuffer, true);
+         m_meshBuffer = std::make_shared<MeshBuffer>(GetName() + ".RenderGroup"s, vertexBuffer, indexBuffer, true);
       }
       return;
    }
@@ -1178,7 +1178,7 @@ void Primitive::RenderSetup(RenderDevice *device)
 
    std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_rd, (unsigned int)m_mesh.NumVertices(), nullptr, !(m_d.m_staticRendering || m_mesh.m_animationFrames.empty()));
    std::shared_ptr<IndexBuffer> indexBuffer = std::make_shared<IndexBuffer>(m_rd, m_mesh.m_indices);
-   m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName, vertexBuffer, indexBuffer, true);
+   m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), vertexBuffer, indexBuffer, true);
 
    // Compute and upload mesh to let a chance for renderdevice to share the buffers with other static objects
    RecalculateMatrices();

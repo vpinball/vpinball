@@ -935,7 +935,7 @@ void Ramp::Render(const unsigned int renderMask)
                indices[i * 8 + 6] = m_meshIndices[i * 6 + 5];
                indices[i * 8 + 7] = m_meshIndices[i * 6 + 4];
             }
-            m_meshEdgeBuffer = m_meshBuffer->CreateSharedVertexMeshBuffer(std::make_shared<IndexBuffer>(m_rd, indices));
+            m_meshEdgeBuffer = std::make_shared<MeshBuffer>(m_meshBuffer->m_vb, std::make_shared<IndexBuffer>(m_rd, indices), true);
          }
          if (renderMask & Renderer::UI_EDGES)
             m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive, m_boundingSphereCenter, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_meshEdgeBuffer->m_ib->m_count);
@@ -1200,7 +1200,7 @@ void Ramp::PrepareHabitrail()
    {
       std::shared_ptr<IndexBuffer> dynamicIndexBuffer = std::make_shared<IndexBuffer>(m_rd, m_meshIndices);
       std::shared_ptr<VertexBuffer> dynamicVertexBuffer = std::make_shared<VertexBuffer>(m_rd, m_numVertices, (float *)tmpBuf1);
-      m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);
+      m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), dynamicVertexBuffer, dynamicIndexBuffer, true);
       break;
    }
    case RampType2Wire:
@@ -1220,7 +1220,7 @@ void Ramp::PrepareHabitrail()
          indices[m_numIndices + i] = indices[i] + m_numVertices;
       std::shared_ptr<IndexBuffer> dynamicIndexBuffer = std::make_shared<IndexBuffer>(m_rd, m_numIndices * 2, indices);
       std::shared_ptr<VertexBuffer> dynamicVertexBuffer = std::make_shared<VertexBuffer>(m_rd, m_numVertices * 2, (float *)vertices);
-      m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);
+      m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), dynamicVertexBuffer, dynamicIndexBuffer, true);
       m_numVertices *= 2;
       m_numIndices *= 2;
       delete[] vertices;
@@ -1250,7 +1250,7 @@ void Ramp::PrepareHabitrail()
       }
       std::shared_ptr<IndexBuffer> dynamicIndexBuffer = std::make_shared<IndexBuffer>(m_rd, m_numIndices * 3, indices);
       std::shared_ptr<VertexBuffer> dynamicVertexBuffer = std::make_shared<VertexBuffer>(m_rd, m_numVertices * 3, (float *)vertices);
-      m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);
+      m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), dynamicVertexBuffer, dynamicIndexBuffer, true);
       m_numVertices *= 3;
       m_numIndices *= 3;
       delete[] vertices;
@@ -1283,7 +1283,7 @@ void Ramp::PrepareHabitrail()
       }
       std::shared_ptr<IndexBuffer> dynamicIndexBuffer = std::make_shared<IndexBuffer>(m_rd, m_numIndices * 4, indices);
       std::shared_ptr<VertexBuffer> dynamicVertexBuffer = std::make_shared<VertexBuffer>(m_rd, m_numVertices * 4, (float *)vertices);
-      m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);
+      m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), dynamicVertexBuffer, dynamicIndexBuffer, true);
       m_numVertices *= 4;
       m_numIndices *= 4;
       delete[] vertices;
@@ -2345,5 +2345,5 @@ void Ramp::GenerateVertexBuffer()
 
    std::shared_ptr<IndexBuffer> dynamicIndexBuffer = std::make_shared<IndexBuffer>(m_rd, m_meshIndices);
    
-   m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);
+   m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), dynamicVertexBuffer, dynamicIndexBuffer, true);
 }

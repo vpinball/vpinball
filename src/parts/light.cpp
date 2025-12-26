@@ -394,7 +394,7 @@ void Light::RenderSetup(RenderDevice *device)
 
       std::shared_ptr<IndexBuffer> bulbLightIndexBuffer = std::make_shared<IndexBuffer>(m_rd, bulbLightNumFaces, bulbLightIndices);
       std::shared_ptr<VertexBuffer> bulbLightVBuffer = std::make_shared<VertexBuffer>(m_rd, bulbLightNumVertices);
-      m_bulbLightMeshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Bulb"s, bulbLightVBuffer, bulbLightIndexBuffer, true);
+      m_bulbLightMeshBuffer = std::make_shared<MeshBuffer>(GetName() + ".Bulb"s, bulbLightVBuffer, bulbLightIndexBuffer, true);
 
       Vertex3D_NoTex2 *buf;
       bulbLightVBuffer->Lock(buf);
@@ -413,7 +413,7 @@ void Light::RenderSetup(RenderDevice *device)
 
       std::shared_ptr<IndexBuffer> bulbSocketIndexBuffer = std::make_shared<IndexBuffer>(m_rd, bulbSocketNumFaces, bulbSocketIndices);
       std::shared_ptr<VertexBuffer> bulbSocketVBuffer = std::make_shared<VertexBuffer>(m_rd, bulbSocketNumVertices);
-      m_bulbSocketMeshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Socket"s, bulbSocketVBuffer, bulbSocketIndexBuffer, true);
+      m_bulbSocketMeshBuffer = std::make_shared<MeshBuffer>(GetName() + ".Socket"s, bulbSocketVBuffer, bulbSocketIndexBuffer, true);
 
       bulbSocketVBuffer->Lock(buf);
       for (unsigned int i = 0; i < bulbSocketNumVertices; i++)
@@ -467,7 +467,7 @@ void Light::RenderSetup(RenderDevice *device)
    customMoverIBuffer->Lock(bufi);
    memcpy(bufi, vtri.data(), vtri.size()*sizeof(WORD));
    customMoverIBuffer->Unlock();
-   m_lightmapMeshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Lightmap"s, customMoverVBuffer, customMoverIBuffer, true);
+   m_lightmapMeshBuffer = std::make_shared<MeshBuffer>(GetName() + ".Lightmap"s, customMoverVBuffer, customMoverIBuffer, true);
    m_lightmapMeshBufferDirty = true;
 }
 
