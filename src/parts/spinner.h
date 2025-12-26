@@ -97,8 +97,8 @@ private:
    PinTable *m_ptable;
 
    RenderDevice *m_rd = nullptr;
-   MeshBuffer *m_bracketMeshBuffer = nullptr;
-   MeshBuffer *m_plateMeshBuffer = nullptr;
+   std::shared_ptr<MeshBuffer> m_bracketMeshBuffer;
+   std::shared_ptr<MeshBuffer> m_plateMeshBuffer;
    Matrix3D m_fullMatrix;
 
    float m_posZ;

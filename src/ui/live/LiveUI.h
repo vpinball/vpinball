@@ -66,7 +66,7 @@ private:
    void NewFrame();
    void UpdateScale();
 
-   vector<std::unique_ptr<MeshBuffer>> m_meshBuffers;
+   vector<std::shared_ptr<MeshBuffer>> m_meshBuffers;
 
    // Editor UI
    VPX::EditorUI::EditorUI m_editorUI;

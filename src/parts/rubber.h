@@ -116,8 +116,8 @@ private:
    PinTable *m_ptable;
 
    RenderDevice *m_rd = nullptr;
-   std::unique_ptr<MeshBuffer> m_meshBuffer;
-   std::unique_ptr<MeshBuffer> m_meshEdgeBuffer;
+   std::shared_ptr<MeshBuffer> m_meshBuffer;
+   std::shared_ptr<MeshBuffer> m_meshEdgeBuffer;
    bool m_dynamicVertexBufferRegenerate;
    bool m_bboxDirty = true;
    Vertex3Ds m_bboxMin;

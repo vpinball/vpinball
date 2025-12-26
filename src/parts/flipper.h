@@ -162,9 +162,9 @@ public:
 
 private:
    RenderDevice *m_rd = nullptr;
-   std::unique_ptr<MeshBuffer> m_meshBuffer;
-   std::unique_ptr<MeshBuffer> m_meshEdgeBuffer;
-   std::unique_ptr<MeshBuffer> m_meshEdgeRubberBuffer;
+   std::shared_ptr<MeshBuffer> m_meshBuffer;
+   std::shared_ptr<MeshBuffer> m_meshEdgeBuffer;
+   std::shared_ptr<MeshBuffer> m_meshEdgeRubberBuffer;
    Vertex3Ds m_boundingSphereCenter;
    //float m_boundingSphereRadius = -1.f;
 

@@ -731,7 +731,7 @@ void Flipper::RenderSetup(RenderDevice *device)
    vertexBuffer->Lock(buf);
    GenerateBaseMesh(buf);
    vertexBuffer->Unlock();
-   m_meshBuffer = std::make_unique<MeshBuffer>(m_wzName, vertexBuffer, indexBuffer, true);
+   m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName, vertexBuffer, indexBuffer, true);
    m_lastAngle = 123486.0f;
 }
 
@@ -784,9 +784,9 @@ void Flipper::Render(const unsigned int renderMask)
    {
       if (renderMask & Renderer::UI_FILL)
       {
-         m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer.get(), RenderDevice::TRIANGLELIST, 0, flipperBaseNumIndices);
+         m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, flipperBaseNumIndices);
          if (m_d.m_rubberthickness > 0.f)
-            m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer.get(), RenderDevice::TRIANGLELIST, flipperBaseNumIndices, flipperBaseNumIndices);
+            m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, flipperBaseNumIndices, flipperBaseNumIndices);
       }
       if (renderMask & Renderer::UI_EDGES)
       {
@@ -806,9 +806,9 @@ void Flipper::Render(const unsigned int renderMask)
                m_meshEdgeRubberBuffer = m_meshBuffer->CreateEdgeMeshBuffer(indices, vertices);
             }
          }
-         m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshEdgeBuffer.get(), RenderDevice::LINELIST, 0, m_meshEdgeBuffer->m_ib->m_count);
+         m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_meshEdgeBuffer->m_ib->m_count);
          if (m_d.m_rubberthickness > 0.f)
-            m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshEdgeRubberBuffer.get(), RenderDevice::LINELIST, 0, m_meshEdgeRubberBuffer->m_ib->m_count);
+            m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshEdgeRubberBuffer, RenderDevice::LINELIST, 0, m_meshEdgeRubberBuffer->m_ib->m_count);
       }
    }
    else
@@ -816,12 +816,12 @@ void Flipper::Render(const unsigned int renderMask)
       m_rd->ResetRenderState();
       Texture *const pin = m_ptable->GetImage(m_d.m_szImage);
       m_rd->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), pin);
-      m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer.get(), RenderDevice::TRIANGLELIST, 0, flipperBaseNumIndices);
+      m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, flipperBaseNumIndices);
 
       if (m_d.m_rubberthickness > 0.f)
       {
          m_rd->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szRubberMaterial), pin);
-         m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer.get(), RenderDevice::TRIANGLELIST, flipperBaseNumIndices, flipperBaseNumIndices);
+         m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, flipperBaseNumIndices, flipperBaseNumIndices);
       }
    }
 

@@ -15,13 +15,15 @@ public:
    RenderCommand(RenderDevice* const m_rd);
    ~RenderCommand();
 
+   void Clear();
+
    bool IsFullClear(const bool hasDepth) const;
    bool IsTransparent() const { return m_isTransparent; }
    bool IsDrawCommand() const { return m_command == RC_DRAW_MESH || m_command == RC_DRAW_QUAD_PT || m_command == RC_DRAW_QUAD_PNT; }
    bool IsDrawMeshCommand() const { return m_command == RC_DRAW_MESH; }
    RenderState GetRenderState() const { return m_renderState; }
    ShaderState* GetShaderState() const { return m_shaderState; }
-   MeshBuffer* GetMeshBuffer() const { return m_mb; }
+   std::shared_ptr<MeshBuffer> GetMeshBuffer() const { return m_mb; }
    float GetDepth() const { return m_depth; }
    void SetTransparent(bool t) { m_isTransparent = t; }
    void SetDepth(float d) { m_depth = d; }
@@ -34,7 +36,7 @@ public:
                 const int x1 = -1, const int y1 = -1, const int w1 = -1, const int h1 = -1,
                 const int x2 = -1, const int y2 = -1, const int w2 = -1, const int h2 = -1, const int srcLayer = -1, const int dstLayer = -1);
    void SetSubmitVR(RenderTarget* from);
-   void SetDrawMesh(Shader* shader, MeshBuffer* mb, const RenderDevice::PrimitiveTypes type, const uint32_t startIndex, const uint32_t indexCount, const bool isTransparent, const float depth);
+   void SetDrawMesh(Shader* shader, std::shared_ptr<MeshBuffer> mb, const RenderDevice::PrimitiveTypes type, const uint32_t startIndex, const uint32_t indexCount, const bool isTransparent, const float depth);
    void SetDrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices, const bool isTransparent = false, const float depth = 0.f);
    void SetDrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices, const bool isTransparent = false, const float depth = 0.f);
 
@@ -77,7 +79,7 @@ private:
    uint8_t m_vertices[4 * sizeof(Vertex3D_NoTex2)]; 
 
    // For RC_DRAW_MESH
-   MeshBuffer* m_mb = nullptr;
+   std::shared_ptr<MeshBuffer> m_mb;
    RenderDevice::PrimitiveTypes m_primitiveType;
    unsigned int m_indicesCount = 0;
    unsigned int m_startIndex = 0;

@@ -243,7 +243,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    const bool lowDetailBall = (m_table->GetDetailLevel() < 10);
    IndexBuffer* ballIndexBuffer = new IndexBuffer(m_renderDevice, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces, lowDetailBall ? basicBallLoIndices : basicBallMidIndices);
    VertexBuffer* ballVertexBuffer = new VertexBuffer(m_renderDevice, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, (const float*)(lowDetailBall ? basicBallLo : basicBallMid));
-   m_ballMeshBuffer = new MeshBuffer(L"Ball"s, ballVertexBuffer, ballIndexBuffer, true);
+   m_ballMeshBuffer = std::make_shared<MeshBuffer>(L"Ball"s, ballVertexBuffer, ballIndexBuffer, true);
 #ifdef DEBUG_BALL_SPIN
    {
       vector<Vertex3D_NoTex2> ballDbgVtx;
@@ -268,12 +268,12 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       }
 
       VertexBuffer* ballDebugPoints = new VertexBuffer(m_renderDevice, (unsigned int)ballDbgVtx.size(), (float*)ballDbgVtx.data(), false);
-      m_ballDebugPoints = new MeshBuffer(L"Ball.Debug"s, ballDebugPoints);
+      m_ballDebugPoints = std::make_shared<MeshBuffer>(L"Ball.Debug"s, ballDebugPoints);
    }
 #endif
    // Support up to 64 balls, that should be sufficient
    VertexBuffer* ballTrailVertexBuffer = new VertexBuffer(m_renderDevice, 64 * (MAX_BALL_TRAIL_POS - 2) * 2 + 4, nullptr, true);
-   m_ballTrailMeshBuffer = new MeshBuffer(L"Ball.Trail"s, ballTrailVertexBuffer);
+   m_ballTrailMeshBuffer = std::make_shared<MeshBuffer>(L"Ball.Trail"s, ballTrailVertexBuffer);
 
    // Cache DMD renderer properties
    for (int profile = 0; profile < (int)std::size(m_dmdUseLegacyRenderer); profile++)
@@ -339,11 +339,11 @@ Renderer::~Renderer()
    delete m_mvp;
    m_gpu_profiler.Shutdown();
    delete m_backGlass;
-   delete m_ballMeshBuffer;
+   m_ballMeshBuffer = nullptr;
    #ifdef DEBUG_BALL_SPIN
-   delete m_ballDebugPoints;
+   m_ballDebugPoints = nullptr;
    #endif
-   delete m_ballTrailMeshBuffer;
+   m_ballTrailMeshBuffer = nullptr;
    delete m_tonemapLUT;
    delete m_staticPrepassRT;
    delete m_pOffscreenBackBufferTexture1;
@@ -2730,7 +2730,7 @@ void Renderer::RenderFrame()
       #ifdef ENABLE_XR
       if (g_pplayer->m_vrDevice && m_stereo3D == STEREO_VR)
       {
-         if (MeshBuffer* mask = g_pplayer->m_vrDevice->GetVisibilityMask(); mask)
+         if (std::shared_ptr<MeshBuffer> mask = g_pplayer->m_vrDevice->GetVisibilityMask(); mask)
          {
             Vertex3Ds pos(0.f, 0.f, 200000.0f); // Very high depth bias to ensure being rendered before other opaque parts (which are sorted front to back)
             m_renderDevice->ResetRenderState();

@@ -235,7 +235,7 @@ void Kicker::RenderSetup(RenderDevice *device)
 
       VertexBuffer *plateVertexBuffer = new VertexBuffer(m_rd, kickerPlateNumVertices, (float*)buf);
       IndexBuffer *plateIndexBuffer = new IndexBuffer(m_rd, kickerPlateNumIndices, kickerPlateIndices);
-      m_plateMeshBuffer = std::make_unique<MeshBuffer>(m_wzName + L".Plate"s, plateVertexBuffer, plateIndexBuffer, true);
+      m_plateMeshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Plate"s, plateVertexBuffer, plateIndexBuffer, true);
 
       delete[] buf;
    }
@@ -305,7 +305,7 @@ void Kicker::RenderSetup(RenderDevice *device)
    GenerateMesh(buf);
    vertexBuffer->Unlock();
    IndexBuffer *indexBuffer = new IndexBuffer(m_rd, m_numIndices, indices);
-   m_meshBuffer = std::make_unique<MeshBuffer>(m_wzName + L".Kicker"s, vertexBuffer, indexBuffer, true);
+   m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Kicker"s, vertexBuffer, indexBuffer, true);
 }
 
 void Kicker::RenderRelease()
@@ -344,8 +344,8 @@ void Kicker::Render(const unsigned int renderMask)
    {
       if (renderMask & Renderer::UI_FILL)
       {
-         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_plateMeshBuffer.get(), RenderDevice::TRIANGLELIST, 0, kickerPlateNumIndices);
-         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_meshBuffer.get(), RenderDevice::TRIANGLELIST, 0, m_numIndices);
+         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_plateMeshBuffer, RenderDevice::TRIANGLELIST, 0, kickerPlateNumIndices);
+         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
       }
       if (renderMask & Renderer::UI_EDGES)
       {
@@ -368,7 +368,7 @@ void Kicker::Render(const unsigned int renderMask)
                indices2.push_back(indices[i]);
             m_meshEdgeBuffer = m_meshBuffer->CreateEdgeMeshBuffer(indices2);
          }
-         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_meshEdgeBuffer.get(), RenderDevice::LINELIST, 0, m_meshEdgeBuffer->m_ib->m_count);
+         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_meshEdgeBuffer->m_ib->m_count);
          if (m_plateMeshEdgeBuffer == nullptr)
          {
             vector<unsigned int> indices(kickerPlateNumIndices);
@@ -376,7 +376,7 @@ void Kicker::Render(const unsigned int renderMask)
                indices.push_back(kickerPlateIndices[i]);
             m_plateMeshEdgeBuffer = m_plateMeshBuffer->CreateEdgeMeshBuffer(indices);
          }
-         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_plateMeshEdgeBuffer.get(), RenderDevice::LINELIST, 0, m_plateMeshEdgeBuffer->m_ib->m_count);
+         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_plateMeshEdgeBuffer, RenderDevice::LINELIST, 0, m_plateMeshEdgeBuffer->m_ib->m_count);
       }
    }
    else if (m_d.m_kickertype != KickerInvisible)
@@ -389,12 +389,12 @@ void Kicker::Render(const unsigned int renderMask)
       m_rd->m_basicShader->SetMaterial(mat);
       m_rd->m_basicShader->SetTechniqueMaterial(SHADER_TECHNIQUE_kickerBoolean, *mat);
       m_rd->SetRenderState(RenderState::ZFUNC, RenderState::Z_ALWAYS);
-      m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_plateMeshBuffer.get(), RenderDevice::TRIANGLELIST, 0, kickerPlateNumIndices);
+      m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_plateMeshBuffer, RenderDevice::TRIANGLELIST, 0, kickerPlateNumIndices);
 
       m_rd->SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
       m_rd->m_basicShader->SetBasic(mat, m_d.m_kickertype == KickerHoleSimple ? nullptr : m_texture.get());
       m_rd->EnableAlphaBlend(false);
-      m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_meshBuffer.get(), RenderDevice::TRIANGLELIST, 0, m_numIndices);
+      m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
    }
 }
 

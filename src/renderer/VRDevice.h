@@ -89,8 +89,8 @@ public:
    bool UseDepthBuffer() const { return m_depthExtensionSupported; }
    bgfx::TextureFormat::Enum GetDepthFormat() const { return m_depthSwapchainInfo.format; }
 
-   void DiscardVisibilityMask() { delete m_visibilityMask; m_visibilityMask = nullptr; }
-   MeshBuffer* GetVisibilityMask() const { return m_visibilityMask; }
+   void DiscardVisibilityMask() { m_visibilityMask = nullptr; }
+   std::shared_ptr<MeshBuffer> GetVisibilityMask() const { return m_visibilityMask; }
 
    float GetPredictedDisplayDelayInS() const { return m_predictedDisplayDelayInS; }
 
@@ -169,7 +169,7 @@ private:
    bool m_visibilityMaskExtensionSupported = false;
    PFN_xrGetVisibilityMaskKHR xrGetVisibilityMaskKHR;
    bool m_visibilityMaskDirty = true;
-   MeshBuffer* m_visibilityMask = nullptr;
+   std::shared_ptr<MeshBuffer> m_visibilityMask;
 
    bool m_passthroughExtensionSupported = false;
    XrPassthroughFB m_passthrough = XR_NULL_HANDLE;
