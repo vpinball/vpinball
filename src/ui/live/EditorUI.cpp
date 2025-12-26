@@ -471,7 +471,6 @@ void EditorUI::Update()
       m_renderer->SetShadeMode(m_shadeMode);
 
       // Render overlays and, if in inspection mode, update cached state modified by script
-      m_renderer->m_renderDevice->Clear(clearType::ZBUFFER, 0);
       RenderContext ctx(m_player, overlayDrawList, m_camMode, m_shadeMode, (m_table->m_liveBaseTable != nullptr) && m_player->IsPlaying());
       for (const auto &uiPart : m_editables)
       {
