@@ -392,7 +392,7 @@ void Light::RenderSetup(RenderDevice *device)
       // Note: the distance between the light (emitting point) and the bulb base (bulb mesh origin) is 28 for a bulb with a radius of 20
       const float bulb_z = m_surfaceHeight;
 
-      IndexBuffer *bulbLightIndexBuffer = new IndexBuffer(m_rd, bulbLightNumFaces, bulbLightIndices);
+      std::shared_ptr<IndexBuffer> bulbLightIndexBuffer = std::make_shared<IndexBuffer>(m_rd, bulbLightNumFaces, bulbLightIndices);
       std::shared_ptr<VertexBuffer> bulbLightVBuffer = std::make_shared<VertexBuffer>(m_rd, bulbLightNumVertices);
       m_bulbLightMeshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Bulb"s, bulbLightVBuffer, bulbLightIndexBuffer, true);
 
@@ -411,7 +411,7 @@ void Light::RenderSetup(RenderDevice *device)
       }
       bulbLightVBuffer->Unlock();
 
-      IndexBuffer *bulbSocketIndexBuffer = new IndexBuffer(m_rd, bulbSocketNumFaces, bulbSocketIndices);
+      std::shared_ptr<IndexBuffer> bulbSocketIndexBuffer = std::make_shared<IndexBuffer>(m_rd, bulbSocketNumFaces, bulbSocketIndices);
       std::shared_ptr<VertexBuffer> bulbSocketVBuffer = std::make_shared<VertexBuffer>(m_rd, bulbSocketNumVertices);
       m_bulbSocketMeshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Socket"s, bulbSocketVBuffer, bulbSocketIndexBuffer, true);
 
@@ -462,7 +462,7 @@ void Light::RenderSetup(RenderDevice *device)
    }
 
    std::shared_ptr<VertexBuffer> customMoverVBuffer = std::make_shared<VertexBuffer>(m_rd, (unsigned int)m_vvertex.size(), nullptr, true);
-   IndexBuffer* customMoverIBuffer = new IndexBuffer(m_rd, (unsigned int) vtri.size(), false, IndexBuffer::FMT_INDEX16);
+   std::shared_ptr<IndexBuffer> customMoverIBuffer = std::make_shared<IndexBuffer>(m_rd, (unsigned int)vtri.size(), false, IndexBuffer::FMT_INDEX16);
    WORD* bufi;
    customMoverIBuffer->Lock(bufi);
    memcpy(bufi, vtri.data(), vtri.size()*sizeof(WORD));

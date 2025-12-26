@@ -719,7 +719,7 @@ void Flipper::RenderSetup(RenderDevice *device)
 {
    assert(m_rd == nullptr);
    m_rd = device;
-   IndexBuffer *indexBuffer = new IndexBuffer(m_rd, flipperBaseNumIndices * 2);
+   std::shared_ptr<IndexBuffer> indexBuffer = std::make_shared<IndexBuffer>(m_rd, flipperBaseNumIndices * 2);
    WORD *bufI;
    indexBuffer->Lock(bufI);
    memcpy(bufI, flipperBaseIndices, flipperBaseNumIndices * sizeof(flipperBaseIndices[0]));

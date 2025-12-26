@@ -10,12 +10,12 @@
 #include <locale>
 #include <codecvt>
 
-MeshBuffer::MeshBuffer(std::shared_ptr<VertexBuffer> vb, IndexBuffer* ib, const bool applyVertexBufferOffsetToIndexBuffer)
+MeshBuffer::MeshBuffer(std::shared_ptr<VertexBuffer> vb, std::shared_ptr<IndexBuffer> ib, const bool applyVertexBufferOffsetToIndexBuffer)
    : MeshBuffer(L""s, vb, ib, applyVertexBufferOffsetToIndexBuffer)
 {
 }
 
-MeshBuffer::MeshBuffer(const wstring& name, std::shared_ptr<VertexBuffer> vb, IndexBuffer* ib, const bool applyVertexBufferOffsetToIndexBuffer)
+MeshBuffer::MeshBuffer(const wstring& name, std::shared_ptr<VertexBuffer> vb, std::shared_ptr<IndexBuffer> ib, const bool applyVertexBufferOffsetToIndexBuffer)
    : m_wname(name)
    , m_vb(vb)
    , m_ib(ib)
@@ -43,7 +43,6 @@ MeshBuffer::~MeshBuffer()
       glDeleteVertexArrays(1, &m_vao);
    }
 #endif
-   delete m_ib;
 }
 
 unsigned int MeshBuffer::GetSortKey() const
@@ -61,7 +60,7 @@ unsigned int MeshBuffer::GetSortKey() const
    #endif
 }
 
-std::unique_ptr<MeshBuffer> MeshBuffer::CreateSharedVertexMeshBuffer(IndexBuffer* ib) const
+std::unique_ptr<MeshBuffer> MeshBuffer::CreateSharedVertexMeshBuffer(std::shared_ptr<IndexBuffer> ib) const
 {
    MeshBuffer* meshBuffer = new MeshBuffer(m_wname, m_vb, ib, true);
    meshBuffer->m_sharedVB = true;
@@ -80,7 +79,7 @@ std::unique_ptr<MeshBuffer> MeshBuffer::CreateEdgeMeshBuffer(const vector<unsign
       edgeIndices[i * 2 + 4] = indices[i + 2];
       edgeIndices[i * 2 + 5] = indices[i + 0];
    }
-   return CreateSharedVertexMeshBuffer(new IndexBuffer(m_vb->m_rd, edgeIndices));
+   return CreateSharedVertexMeshBuffer(std::make_shared<IndexBuffer>(m_vb->m_rd, edgeIndices));
 }
 
 std::unique_ptr<MeshBuffer> MeshBuffer::CreateEdgeMeshBuffer(const vector<unsigned int>& indices, const vector<Vertex3D_NoTex2>& vertices) const
@@ -161,7 +160,7 @@ std::unique_ptr<MeshBuffer> MeshBuffer::CreateEdgeMeshBuffer(const vector<unsign
          edgeIndices.push_back(id.edges.edge2);
       }
    }
-   return CreateSharedVertexMeshBuffer(new IndexBuffer(m_vb->m_rd, edgeIndices));
+   return CreateSharedVertexMeshBuffer(std::make_shared<IndexBuffer>(m_vb->m_rd, edgeIndices));
 }
 
 void MeshBuffer::bind()

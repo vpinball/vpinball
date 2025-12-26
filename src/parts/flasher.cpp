@@ -1030,7 +1030,7 @@ void Flasher::RenderSetup(RenderDevice *device)
       return;
    }
 
-   IndexBuffer* dynamicIndexBuffer = new IndexBuffer(m_rd, m_numPolys * 3, false, IndexBuffer::FMT_INDEX16);
+   std::shared_ptr<IndexBuffer> dynamicIndexBuffer = std::make_shared<IndexBuffer>(m_rd, m_numPolys * 3, false, IndexBuffer::FMT_INDEX16);
 
    WORD* bufi;
    dynamicIndexBuffer->Lock(bufi);
@@ -1189,7 +1189,7 @@ void Flasher::Render(const unsigned int renderMask)
             indices[i * 2] = i;
             indices[i * 2 + 1] = (i + 1) % m_numVertices;
          }
-         m_meshEdgeBuffer = m_meshBuffer->CreateSharedVertexMeshBuffer(new IndexBuffer(m_rd, indices));
+         m_meshEdgeBuffer = m_meshBuffer->CreateSharedVertexMeshBuffer(std::make_shared<IndexBuffer>(m_rd, indices));
       }
       if (renderMask & Renderer::UI_EDGES)
          m_rd->DrawMesh(m_rd->m_basicShader, true, pos, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_numVertices * 2);

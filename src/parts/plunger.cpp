@@ -771,7 +771,7 @@ void Plunger::RenderSetup(RenderDevice *device)
    vertexBuffer->Unlock();
 
    // create the new index buffer
-   IndexBuffer* indexBuffer = new IndexBuffer(m_rd, k, indices);
+   std::shared_ptr<IndexBuffer> indexBuffer = std::make_shared<IndexBuffer>(m_rd, k, indices);
    delete[] indices;
 
    // Create the mesh buffer
