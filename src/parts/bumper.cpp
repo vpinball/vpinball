@@ -233,8 +233,7 @@ void Bumper::RenderSetup(RenderDevice *device)
       baseVertexBuffer->Lock(buf);
       GenerateBaseMesh(buf);
       baseVertexBuffer->Unlock();
-      delete m_baseMeshBuffer;
-      m_baseMeshBuffer = new MeshBuffer(m_wzName + L".Base"s, baseVertexBuffer, baseIndexBuffer, true);
+      m_baseMeshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Base"s, baseVertexBuffer, baseIndexBuffer, true);
    }
 
    if (m_d.m_skirtVisible)
@@ -246,8 +245,7 @@ void Bumper::RenderSetup(RenderDevice *device)
       socketVertexBuffer->Lock(buf);
       GenerateSocketMesh(buf);
       socketVertexBuffer->Unlock();
-      delete m_socketMeshBuffer;
-      m_socketMeshBuffer = new MeshBuffer(m_wzName + L".Socket"s, socketVertexBuffer, socketIndexBuffer, true);
+      m_socketMeshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Socket"s, socketVertexBuffer, socketIndexBuffer, true);
    }
 
    if (m_d.m_ringVisible)
@@ -261,8 +259,7 @@ void Bumper::RenderSetup(RenderDevice *device)
       ringVertexBuffer->Lock(buf);
       memcpy(buf, m_ringVertices, bumperRingNumVertices*sizeof(Vertex3D_NoTex2));
       ringVertexBuffer->Unlock();
-      delete m_ringMeshBuffer;
-      m_ringMeshBuffer = new MeshBuffer(m_wzName + L".Ring"s, ringVertexBuffer, ringIndexBuffer, true);
+      m_ringMeshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Ring"s, ringVertexBuffer, ringIndexBuffer, true);
    }
 
    if (m_d.m_capVisible)
@@ -274,18 +271,13 @@ void Bumper::RenderSetup(RenderDevice *device)
       capVertexBuffer->Lock(buf);
       GenerateCapMesh(buf);
       capVertexBuffer->Unlock();
-      delete m_capMeshBuffer;
-      m_capMeshBuffer = new MeshBuffer(m_wzName + L".Cap"s, capVertexBuffer, capIndexBuffer, true);
+      m_capMeshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Cap"s, capVertexBuffer, capIndexBuffer, true);
    }
 }
 
 void Bumper::RenderRelease()
 {
    assert(m_rd != nullptr);
-   delete m_baseMeshBuffer;
-   delete m_ringMeshBuffer;
-   delete m_capMeshBuffer;
-   delete m_socketMeshBuffer;
    m_baseMeshBuffer = nullptr;
    m_ringMeshBuffer = nullptr;
    m_capMeshBuffer = nullptr;

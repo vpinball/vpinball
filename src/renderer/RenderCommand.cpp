@@ -16,6 +16,13 @@ RenderCommand::~RenderCommand()
    delete m_shaderState;
 }
 
+void RenderCommand::Clear()
+{
+   if (GetShaderState())
+      GetShaderState()->m_samplers.clear();
+   m_mb = nullptr;
+}
+
 bool RenderCommand::IsFullClear(const bool hasDepth) const
 {
    if (m_command == RC_CLEAR)
@@ -395,7 +402,7 @@ void RenderCommand::SetSubmitVR(RenderTarget* from)
 }
 
 void RenderCommand::SetDrawMesh(
-   Shader* shader, MeshBuffer* mb, const RenderDevice::PrimitiveTypes type, 
+   Shader* shader, std::shared_ptr<MeshBuffer> mb, const RenderDevice::PrimitiveTypes type, 
    const uint32_t startIndex, const uint32_t indexCount, const bool isTransparent, const float depth)
 {
    assert(mb != nullptr);

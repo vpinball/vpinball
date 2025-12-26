@@ -1227,14 +1227,14 @@ RenderDevice::RenderDevice(
       -1.0f, -1.0f, 0.0f, 0.0f, 1.0f
    };
    VertexBuffer* quadVertexBuffer = new VertexBuffer(this, 4, verts, false, VertexFormat::VF_POS_TEX);
-   m_quadMeshBuffer = new MeshBuffer(L"Fullscreen Quad"s, quadVertexBuffer);
+   m_quadMeshBuffer = std::make_shared<MeshBuffer>(L"Fullscreen Quad"s, quadVertexBuffer);
 
    #if defined(ENABLE_OPENGL)
    VertexBuffer* quadPNTDynVertexBuffer = new VertexBuffer(this, 4, nullptr, true, VertexFormat::VF_POS_NORMAL_TEX);
-   m_quadPNTDynMeshBuffer = new MeshBuffer(quadPNTDynVertexBuffer);
+   m_quadPNTDynMeshBuffer = std::make_shared<MeshBuffer>(quadPNTDynVertexBuffer);
 
    VertexBuffer* quadPTDynVertexBuffer = new VertexBuffer(this, 4, nullptr, true, VertexFormat::VF_POS_TEX);
-   m_quadPTDynMeshBuffer = new MeshBuffer(quadPTDynVertexBuffer);
+   m_quadPTDynMeshBuffer = std::make_shared<MeshBuffer>(quadPTDynVertexBuffer);
    #endif
 
    // Force applying a defined initial render state
@@ -1326,7 +1326,6 @@ RenderDevice::~RenderDevice()
       m_frameReadySem.post();
    #endif
 
-   delete m_quadMeshBuffer;
    m_quadMeshBuffer = nullptr;
 
    #if defined(ENABLE_DX9)
@@ -2073,7 +2072,7 @@ void RenderDevice::DrawFullscreenTexturedQuad(Shader* shader)
    DrawMesh(shader, false, pos, 0.f, m_quadMeshBuffer, TRIANGLESTRIP, 0, 4);
 }
 
-void RenderDevice::DrawMesh(Shader* shader, const bool isTranparentPass, const Vertex3Ds& center, const float depthBias, MeshBuffer* mb, const PrimitiveTypes type, const uint32_t startIndex, const uint32_t indexCount)
+void RenderDevice::DrawMesh(Shader* shader, const bool isTranparentPass, const Vertex3Ds& center, const float depthBias, std::shared_ptr<MeshBuffer> mb, const PrimitiveTypes type, const uint32_t startIndex, const uint32_t indexCount)
 {
    RenderCommand* cmd = m_renderFrame->NewCommand();
    // Legacy sorting order (only along negative z axis, which is reversed for reflections).

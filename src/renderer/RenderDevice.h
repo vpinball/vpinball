@@ -119,7 +119,7 @@ public:
                          const int x2 = -1, const int y2 = -1, const int w2 = -1, const int h2 = -1,
                          const int srcLayer = -1, const int dstLayer = -1);
    void SubmitVR(RenderTarget* source);
-   void DrawMesh(Shader* shader, const bool isTranparentPass, const Vertex3Ds& center, const float depthBias, MeshBuffer* mb, const PrimitiveTypes type, const uint32_t startIndex, const uint32_t indexCount);
+   void DrawMesh(Shader* shader, const bool isTranparentPass, const Vertex3Ds& center, const float depthBias, std::shared_ptr<MeshBuffer> mb, const PrimitiveTypes type, const uint32_t startIndex, const uint32_t indexCount);
    void DrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices, const bool isTransparent = false, const float depth = 0.f);
    void DrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices, const bool isTransparent = false, const float depth = 0.f);
    void DrawFullscreenTexturedQuad(Shader* shader);
@@ -236,7 +236,7 @@ private:
    bool m_dwm_enabled;
 #endif
 
-   MeshBuffer* m_quadMeshBuffer = nullptr; // internal mesh buffer for rendering quads
+   std::shared_ptr<MeshBuffer> m_quadMeshBuffer; // internal mesh buffer for rendering quads
 
    void UploadAndSetSMAATextures();
    std::shared_ptr<Sampler> m_SMAAsearchTexture = nullptr;
@@ -327,8 +327,8 @@ public:
    #ifndef __STANDALONE__
       IDXGIOutput* m_DXGIOutput = nullptr;
    #endif
-   MeshBuffer* m_quadPNTDynMeshBuffer = nullptr; // internal vb for rendering dynamic quads (position/normal/texture)
-   MeshBuffer* m_quadPTDynMeshBuffer = nullptr; // internal vb for rendering dynamic quads (position/texture)
+   std::shared_ptr<MeshBuffer> m_quadPNTDynMeshBuffer; // internal vb for rendering dynamic quads (position/normal/texture)
+   std::shared_ptr<MeshBuffer> m_quadPTDynMeshBuffer; // internal vb for rendering dynamic quads (position/texture)
 
 private:
    GLfloat m_maxaniso;

@@ -130,8 +130,8 @@ private:
    Vertex3D_NoTex2* m_vertBuffer = nullptr;
    Vertex3D_NoTex2* m_vertBuffer2 = nullptr;
    vector<WORD> m_meshIndices;
-   std::unique_ptr<MeshBuffer> m_meshBuffer;
-   std::unique_ptr<MeshBuffer> m_meshEdgeBuffer;
+   std::shared_ptr<MeshBuffer> m_meshBuffer;
+   std::shared_ptr<MeshBuffer> m_meshEdgeBuffer;
    bool m_dynamicVertexBufferRegenerate = false;
 
    vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable

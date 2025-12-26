@@ -139,10 +139,10 @@ public:
 
    // Ball rendering
    vector<Light*> m_ballReflectedLights;
-   MeshBuffer* m_ballMeshBuffer = nullptr;
-   MeshBuffer* m_ballTrailMeshBuffer = nullptr;
+   std::shared_ptr<MeshBuffer> m_ballMeshBuffer;
+   std::shared_ptr<MeshBuffer> m_ballTrailMeshBuffer;
    #ifdef DEBUG_BALL_SPIN
-   MeshBuffer* m_ballDebugPoints = nullptr;
+   std::shared_ptr<MeshBuffer> m_ballDebugPoints;
    #endif
    int m_ballTrailMeshBufferPos = 0;
    bool m_trailForBalls = false;

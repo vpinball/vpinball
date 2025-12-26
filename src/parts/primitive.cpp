@@ -1164,7 +1164,7 @@ void Primitive::RenderSetup(RenderDevice *device)
             }
          }
          vertexBuffer->Unlock();
-         m_meshBuffer = std::make_unique<MeshBuffer>(m_wzName + L".RenderGroup"s, vertexBuffer, indexBuffer, true);
+         m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".RenderGroup"s, vertexBuffer, indexBuffer, true);
       }
       return;
    }
@@ -1177,7 +1177,7 @@ void Primitive::RenderSetup(RenderDevice *device)
 
    VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, (unsigned int)m_mesh.NumVertices(), nullptr, !(m_d.m_staticRendering || m_mesh.m_animationFrames.empty()));
    IndexBuffer *indexBuffer = new IndexBuffer(m_rd, m_mesh.m_indices);
-   m_meshBuffer = std::make_unique<MeshBuffer>(m_wzName, vertexBuffer, indexBuffer, true);
+   m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName, vertexBuffer, indexBuffer, true);
 
    // Compute and upload mesh to let a chance for renderdevice to share the buffers with other static objects
    RecalculateMatrices();
@@ -1271,11 +1271,11 @@ void Primitive::Render(const unsigned int renderMask)
       g_pplayer->m_renderer->UpdateBasicShaderMatrix(m_fullMatrix);
       if (renderMask & Renderer::UI_FILL)
          m_rd->DrawMesh(
-            m_rd->m_basicShader, true, Vertex3Ds(), 10000.f, m_meshBuffer.get(), RenderDevice::TRIANGLELIST, 0, m_groupdRendering ? m_numGroupIndices : (uint32_t)m_mesh.NumIndices());
+            m_rd->m_basicShader, true, Vertex3Ds(), 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_groupdRendering ? m_numGroupIndices : (uint32_t)m_mesh.NumIndices());
       if (renderMask & Renderer::UI_EDGES && m_meshEdgeBuffer == nullptr)
          m_meshEdgeBuffer = m_meshBuffer->CreateEdgeMeshBuffer(m_mesh.m_indices, m_mesh.m_vertices);
       if (renderMask & Renderer::UI_EDGES)
-         m_rd->DrawMesh(m_rd->m_basicShader, true, Vertex3Ds(), 10000.f, m_meshEdgeBuffer.get(), RenderDevice::LINELIST, 0, m_meshEdgeBuffer->m_ib->m_count);
+         m_rd->DrawMesh(m_rd->m_basicShader, true, Vertex3Ds(), 10000.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_meshEdgeBuffer->m_ib->m_count);
       g_pplayer->m_renderer->UpdateBasicShaderMatrix();
       return;
    }
@@ -1349,7 +1349,7 @@ void Primitive::Render(const unsigned int renderMask)
       m_rd->m_basicShader->SetVector(SHADER_staticColor_Alpha, color.x * color.w, color.y * color.w, color.z * color.w, color.w);
       m_rd->m_basicShader->SetTechnique(lightmap ? (pin ? SHADER_TECHNIQUE_unshaded_with_texture_shadow : SHADER_TECHNIQUE_unshaded_without_texture_shadow)
                                                  : (pin ? SHADER_TECHNIQUE_unshaded_with_texture : SHADER_TECHNIQUE_unshaded_without_texture));
-      m_rd->DrawMesh(m_rd->m_basicShader, true, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer.get(), RenderDevice::TRIANGLELIST, 0, m_groupdRendering ? m_numGroupIndices : (uint32_t)m_mesh.NumIndices());
+      m_rd->DrawMesh(m_rd->m_basicShader, true, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_groupdRendering ? m_numGroupIndices : (uint32_t)m_mesh.NumIndices());
    }
    else
    {
@@ -1412,7 +1412,7 @@ void Primitive::Render(const unsigned int renderMask)
                m_rd->m_basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, 
                   *mat, pin ? pinAlphaTest >= 0.f && !pin->IsOpaque() : false, nMap, false, false);
                m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive && !m_d.m_staticRendering, m_d.m_vPosition, m_d.m_depthBias, 
-                  m_meshBuffer.get(), RenderDevice::TRIANGLELIST, 0, m_groupdRendering ? m_numGroupIndices : (uint32_t)m_mesh.NumIndices());
+                  m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_groupdRendering ? m_numGroupIndices : (uint32_t)m_mesh.NumIndices());
                is_reflection_only_pass = true;
             }
             if (is_reflection_only_pass)
@@ -1440,7 +1440,7 @@ void Primitive::Render(const unsigned int renderMask)
             is_reflection_only_pass // The reflection pass is an additive (so transparent) pass to be drawn after the opaque one
          || refractions // Refractions must be rendered back to front since they rely on what is behind
          || (mat->m_bOpacityActive && !m_d.m_staticRendering /* && !m_rd->GetRenderState().IsOpaque() */), // We can not use the real render state opaque state since Blood Machine and other tables use depth masks
-         m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer.get(), RenderDevice::TRIANGLELIST, 0, m_groupdRendering ? m_numGroupIndices : (uint32_t)m_mesh.NumIndices());
+         m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_groupdRendering ? m_numGroupIndices : (uint32_t)m_mesh.NumIndices());
    }
 
    // Draw the front of the primitive if backface enabled
@@ -1448,7 +1448,7 @@ void Primitive::Render(const unsigned int renderMask)
    {
       m_rd->SetRenderState(RenderState::CULLMODE, cullMode);
       m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive, m_d.m_vPosition, m_d.m_depthBias, 
-         m_meshBuffer.get(), RenderDevice::TRIANGLELIST, 0,
+         m_meshBuffer, RenderDevice::TRIANGLELIST, 0,
          m_groupdRendering ? m_numGroupIndices : (uint32_t)m_mesh.NumIndices());
    }
 

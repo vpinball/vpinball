@@ -116,7 +116,7 @@ private:
    Hit3DPoly *m_ptriggerhitpoly = nullptr;
 
    RenderDevice *m_rd = nullptr;
-   MeshBuffer *m_meshBuffer = nullptr;
+   std::shared_ptr<MeshBuffer> m_meshBuffer;
    vector<Vertex3Ds> m_vertices;
    const WORD *m_faceIndices = nullptr;
    Vertex3D_NoTex2 *m_triggerVertices = nullptr;

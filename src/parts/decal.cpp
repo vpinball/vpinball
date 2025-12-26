@@ -692,14 +692,12 @@ void Decal::RenderSetup(RenderDevice *device)
 
    vertexBuffer->Unlock();
 
-   delete m_meshBuffer;
-   m_meshBuffer = new MeshBuffer(m_wzName, vertexBuffer);
+   m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName, vertexBuffer);
 }
 
 void Decal::RenderRelease()
 {
    assert(m_rd != nullptr);
-   delete m_meshBuffer;
    m_textImg = nullptr;
    m_meshBuffer = nullptr;
    m_rd = nullptr;

@@ -204,9 +204,9 @@ private:
 
    LightCenter m_lightcenter;
 
-   MeshBuffer *m_lightmapMeshBuffer = nullptr;
-   MeshBuffer *m_bulbSocketMeshBuffer = nullptr;
-   MeshBuffer *m_bulbLightMeshBuffer = nullptr;
+   std::shared_ptr<MeshBuffer>m_lightmapMeshBuffer;
+   std::shared_ptr<MeshBuffer> m_bulbSocketMeshBuffer;
+   std::shared_ptr<MeshBuffer> m_bulbLightMeshBuffer;
    PropertyPane *m_propVisual;
 
    vector<RenderVertex> m_vvertex;

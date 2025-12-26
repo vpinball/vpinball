@@ -192,7 +192,7 @@ private:
    const WORD      *m_indices = nullptr; // dto.
    unsigned int     m_numVertices = 0;
    unsigned int     m_numIndices = 0;
-   MeshBuffer      *m_meshBuffer = nullptr;
+   std::shared_ptr<MeshBuffer> m_meshBuffer;
 
    PropertyPane *m_propVisual = nullptr;
    PropertyPane *m_propPosition = nullptr;

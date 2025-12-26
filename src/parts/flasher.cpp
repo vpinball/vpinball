@@ -1039,7 +1039,7 @@ void Flasher::RenderSetup(RenderDevice *device)
 
    VertexBuffer* dynamicVertexBuffer = new VertexBuffer(m_rd, m_numVertices, nullptr, true);
 
-   m_meshBuffer = std::make_unique<MeshBuffer>(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);
+   m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);
 
    m_vertices = new Vertex3D_NoTex2[m_numVertices];
    m_transformedVertices = new Vertex3D_NoTex2[m_numVertices];
@@ -1180,7 +1180,7 @@ void Flasher::Render(const unsigned int renderMask)
    if (isUIPass)
    {
       if (renderMask & Renderer::UI_FILL)
-         m_rd->DrawMesh(m_rd->m_basicShader, true, pos, 0.f, m_meshBuffer.get(), RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
+         m_rd->DrawMesh(m_rd->m_basicShader, true, pos, 0.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
       if (renderMask & Renderer::UI_EDGES && m_meshEdgeBuffer == nullptr)
       {
          vector<unsigned int> indices(m_numVertices * 2);
@@ -1192,7 +1192,7 @@ void Flasher::Render(const unsigned int renderMask)
          m_meshEdgeBuffer = m_meshBuffer->CreateSharedVertexMeshBuffer(new IndexBuffer(m_rd, indices));
       }
       if (renderMask & Renderer::UI_EDGES)
-         m_rd->DrawMesh(m_rd->m_basicShader, true, pos, 0.f, m_meshEdgeBuffer.get(), RenderDevice::LINELIST, 0, m_numVertices * 2);
+         m_rd->DrawMesh(m_rd->m_basicShader, true, pos, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_numVertices * 2);
       return;
    }
 
@@ -1279,7 +1279,7 @@ void Flasher::Render(const unsigned int renderMask)
          m_rd->SetRenderState(RenderState::DESTBLEND, m_d.m_addBlend ? RenderState::INVSRC_COLOR : RenderState::INVSRC_ALPHA);
          m_rd->SetRenderState(RenderState::BLENDOP, m_d.m_addBlend ? RenderState::BLENDOP_REVSUBTRACT : RenderState::BLENDOP_ADD);
 
-         m_rd->DrawMesh(m_rd->m_flasherShader, true, pos, m_d.m_depthBias, m_meshBuffer.get(), RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
+         m_rd->DrawMesh(m_rd->m_flasherShader, true, pos, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
 
          m_rd->m_flasherShader->SetVector(SHADER_lightCenter_doShadow, 0.0f, 0.0f, 0.0f, 0.0f);
          break;
@@ -1317,7 +1317,7 @@ void Flasher::Render(const unsigned int renderMask)
                glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f), vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
             // DMD flasher are rendered transparent. They used to be drawn as a separate pass after opaque parts and before other transparents.
             // There we shift the depthbias to reproduce this behavior for backward compatibility.
-            m_rd->DrawMesh(m_rd->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer.get(), RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
+            m_rd->DrawMesh(m_rd->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
          }
          break;
       }
@@ -1344,7 +1344,7 @@ void Flasher::Render(const unsigned int renderMask)
                m_transformedVertices, vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom), vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness,
                glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f), vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
             // We also apply the depth bias shift, not for backward compatibility (as display did not exist before 10.8.1) but for consistency between DMD and Display mode
-            m_rd->DrawMesh(m_rd->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer.get(), RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
+            m_rd->DrawMesh(m_rd->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
          }
          break;
       }
@@ -1368,7 +1368,7 @@ void Flasher::Render(const unsigned int renderMask)
                vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness, glass ? glass : nullptr, vec4(0.f, 0.f, 1.f, 1.f),
                vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
             // We also apply the depth bias shift, not for backward compatibility (as alphaseg display did not exist before 10.8.1) but for consistency between DMD and Display mode
-            m_rd->DrawMesh(m_rd->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer.get(), RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
+            m_rd->DrawMesh(m_rd->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
          }
          break;
       }

@@ -159,7 +159,7 @@ private:
    PinTable *m_ptable = nullptr;
 
    RenderDevice *m_rd = nullptr;
-   MeshBuffer *m_meshBuffer = nullptr;
+   std::shared_ptr<MeshBuffer> m_meshBuffer;
 
    HitPlunger *m_phitplunger = nullptr;
 

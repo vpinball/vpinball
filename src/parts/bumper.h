@@ -156,10 +156,10 @@ private:
    PinTable *m_ptable;
 
    RenderDevice *m_rd = nullptr;
-   MeshBuffer *m_baseMeshBuffer = nullptr;
-   MeshBuffer *m_socketMeshBuffer = nullptr;
-   MeshBuffer *m_ringMeshBuffer = nullptr;
-   MeshBuffer *m_capMeshBuffer = nullptr;
+   std::shared_ptr<MeshBuffer> m_baseMeshBuffer;
+   std::shared_ptr<MeshBuffer> m_socketMeshBuffer;
+   std::shared_ptr<MeshBuffer> m_ringMeshBuffer;
+   std::shared_ptr<MeshBuffer> m_capMeshBuffer;
 
    Matrix3D m_fullMatrix;
    Vertex3D_NoTex2 *m_ringVertices = nullptr;

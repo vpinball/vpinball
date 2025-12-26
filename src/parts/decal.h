@@ -75,7 +75,7 @@ private:
    PinTable *m_ptable = nullptr;
 
    RenderDevice *m_rd = nullptr;
-   MeshBuffer *m_meshBuffer = nullptr;
+   std::shared_ptr<MeshBuffer> m_meshBuffer;
    std::shared_ptr<BaseTexture> m_textImg = nullptr;
    float m_leading = 0.0f, m_descent = 0.0f;
    float m_realwidth = 0.0f, m_realheight = 0.0f;

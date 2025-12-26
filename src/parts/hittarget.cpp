@@ -553,10 +553,9 @@ void HitTarget::RenderSetup(RenderDevice *device)
    m_transformedVertices.resize(m_numVertices);
 
    GenerateMesh(m_transformedVertices);
-   delete m_meshBuffer;
    VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, m_numVertices, (float *)m_transformedVertices.data(), true);
    IndexBuffer *indexBuffer = new IndexBuffer(m_rd, m_numIndices, m_indices);
-   m_meshBuffer = new MeshBuffer(m_wzName, vertexBuffer, indexBuffer, true);
+   m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName, vertexBuffer, indexBuffer, true);
 
    m_moveAnimationOffset = 0.0f;
    if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple || m_d.m_targetType == DropTargetFlatSimple)
@@ -574,7 +573,6 @@ void HitTarget::RenderSetup(RenderDevice *device)
 void HitTarget::RenderRelease()
 {
    assert(m_rd != nullptr);
-   delete m_meshBuffer;
    m_meshBuffer = nullptr;
    m_rd = nullptr;
 }

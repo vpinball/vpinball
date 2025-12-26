@@ -473,16 +473,15 @@ void Trigger::RenderSetup(RenderDevice *device)
    GenerateMesh();
    IndexBuffer *triggerIndexBuffer = new IndexBuffer(m_rd, m_numIndices, indices);
    VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, m_numVertices, (float*) m_triggerVertices, true);
-   m_meshBuffer = new MeshBuffer(m_wzName, vertexBuffer, triggerIndexBuffer, true);
+   m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName, vertexBuffer, triggerIndexBuffer, true);
 }
 
 void Trigger::RenderRelease()
 {
    assert(m_rd != nullptr);
    m_rd = nullptr;
-   delete m_meshBuffer;
-   delete[] m_triggerVertices;
    m_meshBuffer = nullptr;
+   delete[] m_triggerVertices;
    m_triggerVertices = nullptr;
 }
 

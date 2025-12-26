@@ -365,14 +365,14 @@ void Gate::RenderSetup(RenderDevice *device)
    bracketVertexBuffer->Lock(buf);
    GenerateBracketMesh(buf);
    bracketVertexBuffer->Unlock();
-   m_bracketMeshBuffer = std::make_unique<MeshBuffer>(m_wzName + L".Bracket"s, bracketVertexBuffer, bracketIndexBuffer, true);
+   m_bracketMeshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Bracket"s, bracketVertexBuffer, bracketIndexBuffer, true);
 
    IndexBuffer *wireIndexBuffer = new IndexBuffer(m_rd, m_numIndices, m_indices);
    VertexBuffer *wireVertexBuffer = new VertexBuffer(m_rd, m_numVertices, nullptr, true);
    wireVertexBuffer->Lock(buf);
    GenerateWireMesh(buf);
    wireVertexBuffer->Unlock();
-   m_wireMeshBuffer = std::make_unique<MeshBuffer>(m_wzName + L".Wire"s, wireVertexBuffer, wireIndexBuffer, true);
+   m_wireMeshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Wire"s, wireVertexBuffer, wireIndexBuffer, true);
 }
 
 void Gate::RenderRelease()
@@ -436,8 +436,8 @@ void Gate::Render(const unsigned int renderMask)
       if (renderMask & Renderer::UI_FILL)
       {
          if (m_d.m_showBracket)
-            m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_bracketMeshBuffer.get(), RenderDevice::TRIANGLELIST, 0, gateBracketNumIndices);
-         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_wireMeshBuffer.get(), RenderDevice::TRIANGLELIST, 0, m_numIndices);
+            m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, gateBracketNumIndices);
+         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_wireMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
       }
       if (renderMask & Renderer::UI_EDGES)
       {
@@ -451,7 +451,7 @@ void Gate::Render(const unsigned int renderMask)
                vertices.push_back(m_vertices[i]);
             m_wireEdgeMeshBuffer = m_wireMeshBuffer->CreateEdgeMeshBuffer(indices, vertices);
          }
-         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_wireEdgeMeshBuffer.get(), RenderDevice::LINELIST, 0, m_wireEdgeMeshBuffer->m_ib->m_count);
+         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_wireEdgeMeshBuffer, RenderDevice::LINELIST, 0, m_wireEdgeMeshBuffer->m_ib->m_count);
          if (m_d.m_showBracket)
          {
             if (m_bracketEdgeMeshBuffer == nullptr)
@@ -464,7 +464,7 @@ void Gate::Render(const unsigned int renderMask)
                   vertices.push_back(gateBracket[i]);
                m_bracketEdgeMeshBuffer = m_bracketMeshBuffer->CreateEdgeMeshBuffer(indices, vertices);
             }
-            m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_bracketEdgeMeshBuffer.get(), RenderDevice::LINELIST, 0, m_bracketEdgeMeshBuffer->m_ib->m_count);
+            m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_bracketEdgeMeshBuffer, RenderDevice::LINELIST, 0, m_bracketEdgeMeshBuffer->m_ib->m_count);
          }
       }
    }
@@ -473,8 +473,8 @@ void Gate::Render(const unsigned int renderMask)
       m_rd->ResetRenderState();
       m_rd->m_basicShader->SetBasic(m_ptable->GetMaterial(m_d.m_szMaterial), nullptr);
       if (m_d.m_showBracket)
-         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_bracketMeshBuffer.get(), RenderDevice::TRIANGLELIST, 0, gateBracketNumIndices);
-      m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_wireMeshBuffer.get(), RenderDevice::TRIANGLELIST, 0, m_numIndices);
+         m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_bracketMeshBuffer, RenderDevice::TRIANGLELIST, 0, gateBracketNumIndices);
+      m_rd->DrawMesh(m_rd->m_basicShader, false, pos, 0.f, m_wireMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_numIndices);
    }
 }
 

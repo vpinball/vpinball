@@ -551,9 +551,7 @@ void LiveUI::Update()
          {
             IndexBuffer *ib = new IndexBuffer(m_rd, max(m_meshBuffers[n] ? m_meshBuffers[n]->m_ib->m_count : 0, numIndices), true, IndexBuffer::Format::FMT_INDEX32);
             VertexBuffer *vb = new VertexBuffer(m_rd, max(m_meshBuffers[n] ? m_meshBuffers[n]->m_vb->m_count : 0, numVertices), nullptr, true);
-            if (m_meshBuffers[n])
-               m_rd->AddEndOfFrameCmd([mb = m_meshBuffers[n].release()]() { delete mb; });
-            m_meshBuffers[n] = std::make_unique<MeshBuffer>(vb, ib);
+            m_meshBuffers[n] = std::make_shared<MeshBuffer>(vb, ib);
          }
 
          Vertex3D_NoTex2 *vb;
@@ -586,12 +584,12 @@ void LiveUI::Update()
             // FIXME Hacky forced mesh buffer upload before actually drawing, not sure why this is needed: upload are supposed to happen in the 'preCmd' list (before any render command)
             // so this should not have any effect, still it does. This definitely needs more investigation...
             m_rd->m_uiShader->SetVector(SHADER_clip_plane, 0.f, 0.f, 0.f, 0.f);
-            m_rd->DrawMesh(m_rd->m_uiShader, true, Vertex3Ds(), -10000.f, m_meshBuffers[n].get(), RenderDevice::TRIANGLELIST, 0, 1);
+            m_rd->DrawMesh(m_rd->m_uiShader, true, Vertex3Ds(), -10000.f, m_meshBuffers[n], RenderDevice::TRIANGLELIST, 0, 1);
             #endif
 
             m_rd->m_uiShader->SetVector(SHADER_clip_plane, cmd->ClipRect.x, cmd->ClipRect.y, cmd->ClipRect.z, cmd->ClipRect.w);
             m_rd->m_uiShader->SetTexture(SHADER_tex_base_color, cmd->GetTexID());
-            m_rd->DrawMesh(m_rd->m_uiShader, true, Vertex3Ds(), -10000.f, m_meshBuffers[n].get(), RenderDevice::TRIANGLELIST, cmd->IdxOffset, cmd->ElemCount);
+            m_rd->DrawMesh(m_rd->m_uiShader, true, Vertex3Ds(), -10000.f, m_meshBuffers[n], RenderDevice::TRIANGLELIST, cmd->IdxOffset, cmd->ElemCount);
          }
       }
    }
