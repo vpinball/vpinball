@@ -726,7 +726,7 @@ void Flipper::RenderSetup(RenderDevice *device)
    for (int i = 0; i < (int)flipperBaseNumIndices; i++)
       bufI[flipperBaseNumIndices + i] = flipperBaseIndices[i] + flipperBaseVertices;
    indexBuffer->Unlock();
-   VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, flipperBaseVertices * 2);
+   std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_rd, flipperBaseVertices * 2);
    Vertex3D_NoTex2 *buf;
    vertexBuffer->Lock(buf);
    GenerateBaseMesh(buf);

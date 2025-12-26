@@ -822,7 +822,7 @@ void Surface::RenderSetup(RenderDevice *device)
          ComputeNormals(rgv3D + offset, 9, rgiSlingshot, 24);
       }
 
-      VertexBuffer *slingshotVBuffer = new VertexBuffer(m_rd, n_lines * 9);
+      std::shared_ptr<VertexBuffer> slingshotVBuffer = std::make_shared<VertexBuffer>(m_rd, n_lines * 9);
       Vertex3D_NoTex2 *buf;
       slingshotVBuffer->Lock(buf);
       memcpy(buf, rgv3D, m_vlinesling.size() * 9 * sizeof(Vertex3D_NoTex2));
@@ -845,7 +845,7 @@ void Surface::RenderSetup(RenderDevice *device)
       vector<WORD> topBottomIndices, sideIndices;
       GenerateMesh(topBottomBuf, sideBuf, topBottomIndices, sideIndices);
 
-      VertexBuffer *VBuffer = new VertexBuffer(m_rd, static_cast<const unsigned int>(sideBuf.size() + topBottomBuf.size()));
+      std::shared_ptr<VertexBuffer> VBuffer = std::make_shared<VertexBuffer>(m_rd, static_cast<const unsigned int>(sideBuf.size() + topBottomBuf.size()));
       Vertex3D_NoTex2 *verts;
       VBuffer->Lock(verts);
       memcpy(verts, sideBuf.data(), sizeof(Vertex3D_NoTex2) * sideBuf.size());

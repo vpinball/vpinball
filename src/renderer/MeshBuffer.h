@@ -10,8 +10,8 @@ class IndexBuffer;
 class MeshBuffer final
 {
 public:
-   MeshBuffer(const wstring& name, VertexBuffer* vb, IndexBuffer* ib = nullptr, const bool applyVertexBufferOffsetToIndexBuffer = false);
-   MeshBuffer(VertexBuffer* vb, IndexBuffer* ib = nullptr, const bool applyVertexBufferOffsetToIndexBuffer = false);
+   MeshBuffer(const wstring& name, std::shared_ptr<VertexBuffer> vb, IndexBuffer* ib = nullptr, const bool applyVertexBufferOffsetToIndexBuffer = false);
+   MeshBuffer(std::shared_ptr<VertexBuffer> vb, IndexBuffer* ib = nullptr, const bool applyVertexBufferOffsetToIndexBuffer = false);
    ~MeshBuffer();
    void bind();
    unsigned int GetSortKey() const;
@@ -21,7 +21,7 @@ public:
    std::unique_ptr<MeshBuffer> CreateSharedVertexMeshBuffer(IndexBuffer* ib) const;
 
    const wstring m_wname;
-   VertexBuffer* const m_vb;
+   const std::shared_ptr<VertexBuffer> m_vb;
    IndexBuffer* const m_ib;
    const bool m_isVBOffsetApplied; // True if vertex buffer offset is already applied to index buffer
 

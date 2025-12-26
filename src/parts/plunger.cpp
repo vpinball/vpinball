@@ -461,7 +461,7 @@ void Plunger::RenderSetup(RenderDevice *device)
    // figure the relative spring gauge, in terms of the overall width
    const float springGaugeRel = springGauge / m_d.m_width;
 
-   VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, m_cframes * m_vtsPerFrame);
+   std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(m_rd, m_cframes * m_vtsPerFrame);
 
    Vertex3D_NoTex2 *buf;
    vertexBuffer->Lock(buf);

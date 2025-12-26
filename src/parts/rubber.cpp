@@ -675,7 +675,7 @@ void Rubber::RenderSetup(RenderDevice *device)
 
    GenerateMesh();
 
-   VertexBuffer *dynamicVertexBuffer = new VertexBuffer(m_rd, m_numVertices, (float *)m_vertices.data() , !m_d.m_staticRendering);
+   std::shared_ptr<VertexBuffer> dynamicVertexBuffer = std::make_shared<VertexBuffer>(m_rd, m_numVertices, (float *)m_vertices.data(), !m_d.m_staticRendering);
    IndexBuffer *dynamicIndexBuffer = new IndexBuffer(m_rd, m_ringIndices);
    m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);
    UpdateRubber(true, m_d.m_height);

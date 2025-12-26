@@ -304,7 +304,7 @@ void Spinner::RenderSetup(RenderDevice *device)
    m_posZ = height + m_d.m_height;
 
    IndexBuffer *bracketIndexBuffer = new IndexBuffer(m_rd, spinnerBracketNumFaces, spinnerBracketIndices);
-   VertexBuffer *bracketVertexBuffer = new VertexBuffer(m_rd, spinnerBracketNumVertices);
+   std::shared_ptr<VertexBuffer> bracketVertexBuffer = std::make_shared<VertexBuffer>(m_rd, spinnerBracketNumVertices);
    m_bracketMeshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Bracket"s, bracketVertexBuffer, bracketIndexBuffer, true);
 
    m_fullMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation));
@@ -329,7 +329,7 @@ void Spinner::RenderSetup(RenderDevice *device)
    bracketVertexBuffer->Unlock();
 
    IndexBuffer* plateIndexBuffer = new IndexBuffer(m_rd, spinnerPlateNumFaces, spinnerPlateIndices);
-   VertexBuffer* plateVertexBuffer = new VertexBuffer(m_rd, spinnerPlateNumVertices, nullptr, true);
+   std::shared_ptr<VertexBuffer> plateVertexBuffer = std::make_shared<VertexBuffer>(m_rd, spinnerPlateNumVertices, nullptr, true);
    m_plateMeshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Plate"s, plateVertexBuffer, plateIndexBuffer, true);
 
    m_vertexBuffer_spinneranimangle = -FLT_MAX;

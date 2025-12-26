@@ -252,7 +252,7 @@ void IndexBuffer::Unlock()
    m_sharedBuffer->Unlock();
 }
 
-void IndexBuffer::ApplyOffset(VertexBuffer* vb)
+void IndexBuffer::ApplyOffset(std::shared_ptr<VertexBuffer> vb)
 {
    const unsigned int offset = vb->GetVertexOffset();
    if (offset == 0)

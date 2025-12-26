@@ -1598,7 +1598,7 @@ void VRDevice::UpdateVisibilityMask(RenderDevice* rd)
       if ((indexCount > 0) && (vertexCount > 0))
       {
          IndexBuffer* indexBuffer = new IndexBuffer(rd, indexCount, false, IndexBuffer::FMT_INDEX32);
-         VertexBuffer* vertexBuffer = new VertexBuffer(rd, vertexCount);
+         std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>(rd, vertexCount);
          XrVector2f* const vert2d = new XrVector2f[maxVertexCount];
          uint32_t* indices;
          indexBuffer->Lock(indices);

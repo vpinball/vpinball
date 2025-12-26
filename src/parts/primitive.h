@@ -35,7 +35,7 @@ public:
 
    size_t NumVertices() const    { return m_vertices.size(); }
    size_t NumIndices() const     { return m_indices.size(); }
-   void UploadToVB(VertexBuffer * vb, const float frame);
+   void UploadToVB(std::shared_ptr<VertexBuffer>, const float frame);
    void UpdateBounds();
 };
 
