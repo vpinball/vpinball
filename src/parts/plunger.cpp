@@ -775,7 +775,7 @@ void Plunger::RenderSetup(RenderDevice *device)
    delete[] indices;
 
    // Create the mesh buffer
-   m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName, vertexBuffer, indexBuffer, true);
+   m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), vertexBuffer, indexBuffer, true);
 
    // delete our custom descriptor, if we created one
    if (customDesc != 0)

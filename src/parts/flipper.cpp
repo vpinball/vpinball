@@ -731,7 +731,7 @@ void Flipper::RenderSetup(RenderDevice *device)
    vertexBuffer->Lock(buf);
    GenerateBaseMesh(buf);
    vertexBuffer->Unlock();
-   m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName, vertexBuffer, indexBuffer, true);
+   m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), vertexBuffer, indexBuffer, true);
    m_lastAngle = 123486.0f;
 }
 

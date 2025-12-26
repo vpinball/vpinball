@@ -1636,7 +1636,7 @@ void VRDevice::UpdateVisibilityMask(RenderDevice* rd)
          indexBuffer->Unlock();
          vertexBuffer->Unlock();
          delete[] vert2d;
-         m_visibilityMask = std::make_shared<MeshBuffer>(L"VisibilityMask", vertexBuffer, indexBuffer, true);
+         m_visibilityMask = std::make_shared<MeshBuffer>("VisibilityMask"s, vertexBuffer, indexBuffer, true);
          m_visibilityMaskDirty = false;
          PLOGI << "Headset visibility mask acquired";
       }

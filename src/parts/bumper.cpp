@@ -233,7 +233,7 @@ void Bumper::RenderSetup(RenderDevice *device)
       baseVertexBuffer->Lock(buf);
       GenerateBaseMesh(buf);
       baseVertexBuffer->Unlock();
-      m_baseMeshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Base"s, baseVertexBuffer, baseIndexBuffer, true);
+      m_baseMeshBuffer = std::make_shared<MeshBuffer>(GetName() + ".Base", baseVertexBuffer, baseIndexBuffer, true);
    }
 
    if (m_d.m_skirtVisible)
@@ -245,7 +245,7 @@ void Bumper::RenderSetup(RenderDevice *device)
       socketVertexBuffer->Lock(buf);
       GenerateSocketMesh(buf);
       socketVertexBuffer->Unlock();
-      m_socketMeshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Socket"s, socketVertexBuffer, socketIndexBuffer, true);
+      m_socketMeshBuffer = std::make_shared<MeshBuffer>(GetName() + ".Socket"s, socketVertexBuffer, socketIndexBuffer, true);
    }
 
    if (m_d.m_ringVisible)
@@ -259,7 +259,7 @@ void Bumper::RenderSetup(RenderDevice *device)
       ringVertexBuffer->Lock(buf);
       memcpy(buf, m_ringVertices, bumperRingNumVertices*sizeof(Vertex3D_NoTex2));
       ringVertexBuffer->Unlock();
-      m_ringMeshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Ring"s, ringVertexBuffer, ringIndexBuffer, true);
+      m_ringMeshBuffer = std::make_shared<MeshBuffer>(GetName() + ".Ring"s, ringVertexBuffer, ringIndexBuffer, true);
    }
 
    if (m_d.m_capVisible)
@@ -271,7 +271,7 @@ void Bumper::RenderSetup(RenderDevice *device)
       capVertexBuffer->Lock(buf);
       GenerateCapMesh(buf);
       capVertexBuffer->Unlock();
-      m_capMeshBuffer = std::make_shared<MeshBuffer>(m_wzName + L".Cap"s, capVertexBuffer, capIndexBuffer, true);
+      m_capMeshBuffer = std::make_shared<MeshBuffer>(GetName() + ".Cap"s, capVertexBuffer, capIndexBuffer, true);
    }
 }
 

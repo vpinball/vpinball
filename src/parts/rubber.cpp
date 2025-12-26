@@ -677,7 +677,7 @@ void Rubber::RenderSetup(RenderDevice *device)
 
    std::shared_ptr<VertexBuffer> dynamicVertexBuffer = std::make_shared<VertexBuffer>(m_rd, m_numVertices, (float *)m_vertices.data(), !m_d.m_staticRendering);
    std::shared_ptr<IndexBuffer> dynamicIndexBuffer = std::make_shared<IndexBuffer>(m_rd, m_ringIndices);
-   m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);
+   m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), dynamicVertexBuffer, dynamicIndexBuffer, true);
    UpdateRubber(true, m_d.m_height);
 
    const Vertex2D center2D = GetPointCenter();
@@ -735,7 +735,7 @@ void Rubber::Render(const unsigned int renderMask)
             indices[i * 8 + 6] = m_ringIndices[i * 6 + 2];
             indices[i * 8 + 7] = m_ringIndices[i * 6 + 0];
          }
-         m_meshEdgeBuffer = m_meshBuffer->CreateSharedVertexMeshBuffer(std::make_shared<IndexBuffer>(m_rd, indices));
+         m_meshEdgeBuffer = std::make_shared<MeshBuffer>(m_meshBuffer->m_vb, std::make_shared<IndexBuffer>(m_rd, indices), true);
       }
       if (renderMask & Renderer::UI_EDGES)
          m_rd->DrawMesh(m_rd->m_basicShader, false, m_boundingSphereCenter, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, 8 * m_numVertices);

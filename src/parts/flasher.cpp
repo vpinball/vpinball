@@ -1039,7 +1039,7 @@ void Flasher::RenderSetup(RenderDevice *device)
 
    std::shared_ptr<VertexBuffer> dynamicVertexBuffer = std::make_shared<VertexBuffer>(m_rd, m_numVertices, nullptr, true);
 
-   m_meshBuffer = std::make_shared<MeshBuffer>(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);
+   m_meshBuffer = std::make_shared<MeshBuffer>(GetName(), dynamicVertexBuffer, dynamicIndexBuffer, true);
 
    m_vertices = new Vertex3D_NoTex2[m_numVertices];
    m_transformedVertices = new Vertex3D_NoTex2[m_numVertices];
@@ -1189,7 +1189,7 @@ void Flasher::Render(const unsigned int renderMask)
             indices[i * 2] = i;
             indices[i * 2 + 1] = (i + 1) % m_numVertices;
          }
-         m_meshEdgeBuffer = m_meshBuffer->CreateSharedVertexMeshBuffer(std::make_shared<IndexBuffer>(m_rd, indices));
+         m_meshEdgeBuffer = std::make_shared<MeshBuffer>(m_meshBuffer->m_vb, std::make_shared<IndexBuffer>(m_rd, indices), true);
       }
       if (renderMask & Renderer::UI_EDGES)
          m_rd->DrawMesh(m_rd->m_basicShader, true, pos, 0.f, m_meshEdgeBuffer, RenderDevice::LINELIST, 0, m_numVertices * 2);
