@@ -56,7 +56,7 @@ unsigned int MeshBuffer::GetSortKey() const
    #elif defined(ENABLE_OPENGL)
    return m_vao;
    #elif defined(ENABLE_DX9)
-   return (unsigned int) ((reinterpret_cast<uintptr_t>(m_vb)) ^ (reinterpret_cast<uintptr_t>(m_ib)));
+   return (unsigned int)((reinterpret_cast<uintptr_t>(m_vb.get())) ^ (reinterpret_cast<uintptr_t>(m_ib.get())));
    #endif
 }
 

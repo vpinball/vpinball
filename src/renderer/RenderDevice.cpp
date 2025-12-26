@@ -1399,10 +1399,7 @@ RenderDevice::~RenderDevice()
          m_samplerStateCache[i] = 0;
       }
    }
-
-   delete m_quadPTDynMeshBuffer;
-   delete m_quadPNTDynMeshBuffer;
-
+   
    SDL_GL_DestroyContext(m_sdl_context);
 
    assert(m_sharedVAOs.empty());

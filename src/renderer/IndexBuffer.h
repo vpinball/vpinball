@@ -146,6 +146,6 @@ public:
 private:
    unsigned int m_offset = 0; // Offset in bytes of the data inside the native GPU array
    unsigned int m_indexOffset = 0; // Offset in indices of the data inside the native GPU array
-   SharedIndexBuffer* m_sharedBuffer = nullptr;
+   std::shared_ptr<SharedIndexBuffer> m_sharedBuffer;
    void LockUntyped(void*& data, const unsigned int offset = 0, const unsigned int size = 0);
 };

@@ -163,10 +163,11 @@ IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const 
    , m_size(numIndices * (format == FMT_INDEX16 ? 2 : 4))
 {
    assert(m_count > 0);
-   assert((numIndices < 65536) || (format == IndexBuffer::FMT_INDEX32));
-   for (SharedIndexBuffer* block : m_rd->m_pendingSharedIndexBuffers)
+   const unsigned int maxCount = format == IndexBuffer::FMT_INDEX16 ? UINT16_MAX : UINT32_MAX;
+   assert(numIndices <= maxCount);
+   for (std::shared_ptr<SharedIndexBuffer> block : m_rd->m_pendingSharedIndexBuffers)
    {
-      if (block->m_format == m_indexFormat && block->m_isStatic == m_isStatic)
+      if (block->m_format == m_indexFormat && block->m_isStatic == m_isStatic && (block->GetCount() + numIndices) <= maxCount)
       {
          m_sharedBuffer = block;
          break;
@@ -174,7 +175,7 @@ IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const 
    }
    if (m_sharedBuffer == nullptr)
    {
-      m_sharedBuffer = new SharedIndexBuffer(m_indexFormat, m_isStatic);
+      m_sharedBuffer = std::make_shared<SharedIndexBuffer>(m_indexFormat, m_isStatic);
       m_rd->m_pendingSharedIndexBuffers.push_back(m_sharedBuffer);
    }
    m_indexOffset = m_sharedBuffer->Add(this);
@@ -212,10 +213,7 @@ IndexBuffer::IndexBuffer(RenderDevice* rd, const vector<unsigned int>& indices)
 IndexBuffer::~IndexBuffer()
 {
    if (m_sharedBuffer->Remove(this))
-   {
       RemoveFromVectorSingle(m_rd->m_pendingSharedIndexBuffers, m_sharedBuffer);
-      delete m_sharedBuffer;
-   }
 }
 
 bool IndexBuffer::IsSharedBuffer() const { return m_sharedBuffer->IsShared(); }

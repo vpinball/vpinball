@@ -47,6 +47,6 @@ public:
 private:
    unsigned int m_offset = 0; // Offset in bytes of the data inside the native GPU array
    unsigned int m_vertexOffset = 0; // Offset in vertices of the data inside the native GPU array
-   SharedVertexBuffer* m_sharedBuffer = nullptr;
+   std::shared_ptr<SharedVertexBuffer> m_sharedBuffer;
    void LockUntyped(void*& data, const unsigned int offset = 0, const unsigned int size = 0);
 };

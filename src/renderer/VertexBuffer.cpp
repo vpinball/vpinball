@@ -182,7 +182,7 @@ VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, con
 {
    assert(m_count > 0);
    // Disabled since OpenGL ES does not support glDrawElementsBaseVertex, but now that we remap the indices when creating the index buffer it should be good
-   for (SharedVertexBuffer* block : m_rd->m_pendingSharedVertexBuffers)
+   for (std::shared_ptr<SharedVertexBuffer> block : m_rd->m_pendingSharedVertexBuffers)
    {
       if (block->m_format == fmt && block->m_isStatic == m_isStatic && block->GetCount() + vertexCount <= 65535)
       {
@@ -193,7 +193,7 @@ VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, con
    // Also create a new buffer when using dynamic buffers as all backends do not support vertex offsets
    if (!m_isStatic || m_sharedBuffer == nullptr)
    {
-      m_sharedBuffer = new SharedVertexBuffer(rd, fmt, m_isStatic);
+      m_sharedBuffer = std::make_shared<SharedVertexBuffer>(rd, fmt, m_isStatic);
       m_rd->m_pendingSharedVertexBuffers.push_back(m_sharedBuffer);
    }
    m_vertexOffset = m_sharedBuffer->Add(this);
@@ -210,10 +210,7 @@ VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, con
 VertexBuffer::~VertexBuffer()
 {
    if (m_sharedBuffer->Remove(this))
-   {
       RemoveFromVectorSingle(m_rd->m_pendingSharedVertexBuffers, m_sharedBuffer);
-      delete m_sharedBuffer;
-   }
 }
 
 bool VertexBuffer::IsSharedBuffer() const { return m_sharedBuffer->IsShared(); }

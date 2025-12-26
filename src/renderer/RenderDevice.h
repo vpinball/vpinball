@@ -178,8 +178,8 @@ public:
 
    unsigned int m_vsyncCount = 0;
 
-   vector<SharedIndexBuffer*> m_pendingSharedIndexBuffers;
-   vector<SharedVertexBuffer*> m_pendingSharedVertexBuffers;
+   vector<std::shared_ptr<SharedIndexBuffer>> m_pendingSharedIndexBuffers;
+   vector<std::shared_ptr<SharedVertexBuffer>> m_pendingSharedVertexBuffers;
 
    bool m_framePending = false;
 
