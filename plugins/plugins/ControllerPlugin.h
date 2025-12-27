@@ -71,13 +71,18 @@ typedef struct DeviceDef
 
 #define CTLPI_EVT_ON_GAME_START       "OnGameStart"       // Broadcasted when controller starts, msgData is a pointer to a CtlOnGameStartMsg struct
 #define CTLPI_EVT_ON_GAME_END         "OnGameEnd"         // Broadcasted when controller ends
+#define CTLPI_EVT_ON_SOUND_COMMAND    "OnSoundCommand"    // Broadcasted when controller receives sound command, msgData is a pointer to a CtlOnSoundCommandMsg struct
 
 struct CtlOnGameStartMsg
 {
    const char* gameId;
 };
 
-
+struct CtlOnSoundCommandMsg
+{
+   unsigned int boardNo;
+   unsigned int cmd;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 //
