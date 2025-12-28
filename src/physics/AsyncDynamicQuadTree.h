@@ -31,6 +31,7 @@ public:
    void SetDynamic(IEditable* editable);
    void Update(IEditable* editable);
    void SetStatic(IEditable* editable);
+   void Remove(IEditable* editable);
 
    void HitTestBall(const HitBall* const pball, CollisionEvent& coll);
    void HitTestXRay(const HitBall* const pball, vector<HitTestResult>& pvhoHit, CollisionEvent& coll);
@@ -47,22 +48,30 @@ private:
    HitQuadtree* m_quadTree;
 
    // Dynamic parts datas
-   struct DynamicEditable
+   class DynamicEditable
    {
+   public:
+      DynamicEditable(IEditable* editable, PhysicsEngine* physics, bool isUI);
+      ~DynamicEditable();
+
+      IEditable* editable;
       bool pendingStaticInclusion = false;
-      IEditable* editable = nullptr;
       vector<HitObject*> hitObjects;
 
       void HitTestBall(const HitBall* const pball, CollisionEvent& coll) const;
       void HitTestXRay(const HitBall* const pball, vector<HitTestResult>& pvhoHit, CollisionEvent& coll) const;
+
+   private:
+      PhysicsEngine* const m_physics;
+      const bool m_isUI;
    };
-   vector<std::shared_ptr<DynamicEditable>> m_dynamicEditables;
+   vector<std::unique_ptr<DynamicEditable>> m_dynamicEditables;
    vector<size_t> m_nullSlots; // null slots in static QuadTree (created when removing the parts that have been switched to dynamic)
 
    // Asynchronous thread that update the static quadtree with parts switched back to static
    bool m_quadTreeUpdateInProgress = false;
    HitQuadtree* m_pendingQuadTree = nullptr; // Result of async update
-   vector<std::shared_ptr<DynamicEditable>> m_updatedEditables; // Objects that are being processed or have been updated by the update thread
+   vector<std::unique_ptr<DynamicEditable>> m_updatedEditables; // Objects that are being processed or have been updated by the update thread
    vector<HitObject*>* m_quadTreeHitobjects = nullptr; // List of objects of the updated quadtree
    vector<HitObject*> m_deferredDeleteHitObjects; // HitObjects that have been recreated (their editable was updated) but not deleted as they were part of an in progress update
    std::binary_semaphore m_quadtreeUpdateWaiting { 0 };

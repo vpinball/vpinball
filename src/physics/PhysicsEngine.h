@@ -20,6 +20,9 @@ public:
    void Update(IEditable *editable) { GetUIQuadTree()->Update(editable); }
    void SetStatic(IEditable *editable) { GetUIQuadTree()->SetStatic(editable); }
 
+   // Allow to add/remove parts after initial setup
+   void Remove(IEditable *editable);
+
    // Add or remove a collider, as a consequence of PhysicSetup/Release
    // Colliders are given to the physics engine which owns them, except for balls which always owns their HitBall (therefore, being the only one using RemoveCollider)
    void AddCollider(HitObject * collider, const bool isUI);
