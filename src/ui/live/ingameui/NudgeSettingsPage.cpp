@@ -37,6 +37,24 @@ NudgeSettingsPage::NudgeSettingsPage()
          [this, i]() { return GetInput().IsNudgeFiltered(i); }, //
          [this, i](bool v) { GetInput().SetNudgeFiltered(i, v); }));
    }
+   ////////////////////////////////////////////////////////////////////////////////////////////////
+
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Hardware sensor based visual nudge"s));
+
+   AddItem(std::make_unique<InGameUIItem>(
+      Settings::m_propPlayer_EnableHardwareVisualNudge, //
+      [this]() { return m_player->m_physics->IsHardwareVisualNudge(); }, //
+      [this](bool v) { m_player->m_physics->SetHardwareVisualNudge(v); }));
+
+   AddItem(std::make_unique<InGameUIItem>(
+      Settings::m_propPlayer_HardwareVisualNudgeThreshold, 1.f, "%0.3f"s, //
+      [this]() { return m_player->m_physics->GetHardwareVisualNudgeThreshold(); }, //
+      [this](float, float v) { m_player->m_physics->SetHardwareVisualNudgeThreshold(v); }));
+
+   AddItem(std::make_unique<InGameUIItem>(
+      Settings::m_propPlayer_HardwareVisualNudgeScale, 100.f, "%4.0f %%"s, //
+      [this]() { return m_player->m_physics->GetHardwareVisualNudgeScale(); }, //
+      [this](float, float v) { m_player->m_physics->SetHardwareVisualNudgeScale(v); }));
 
    ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -212,7 +230,7 @@ void NudgeSettingsPage::Render(float elapsed)
       ImPlot::SetAxes(ImAxis_X1, ImAxis_Y1);
       for (int i = 0; i < 2; i++)
          if (m_player->m_pininput.GetNudgeXSensor(i)->IsMapped() && m_nudgeXRawPlot[i].HasData())
-            ImPlot::PlotLine(("Sensor X" + std::to_string(i + 1) + " - " + m_player->m_pininput.GetNudgeXSensor(i)->GetMappingLabel()).c_str(), 
+            ImPlot::PlotLine(("Sensor X" + std::to_string(i + 1) + " - " + m_player->m_pininput.GetNudgeXSensor(i)->GetMappingLabel()).c_str(),
                &m_nudgeXRawPlot[i].m_data[0].x, //
                &m_nudgeXRawPlot[i].m_data[0].y, //
                m_nudgeXRawPlot[i].m_data.size(),  //
@@ -227,7 +245,7 @@ void NudgeSettingsPage::Render(float elapsed)
    ImGui::PopFont();
 
    ImGui::SameLine();
-   
+
    renderSensorInfo(0);
 
    ImGui::PushFont(nullptr, style.FontSizeBase * 0.5f); // Smaller font to keep graphics readable
@@ -242,7 +260,7 @@ void NudgeSettingsPage::Render(float elapsed)
       ImPlot::SetAxes(ImAxis_X1, ImAxis_Y1);
       for (int i = 0; i < 2; i++)
          if (m_player->m_pininput.GetNudgeYSensor(i)->IsMapped() && m_nudgeYRawPlot[i].HasData())
-            ImPlot::PlotLine(("Sensor Y" + std::to_string(i + 1) + " - " + m_player->m_pininput.GetNudgeYSensor(i)->GetMappingLabel()).c_str(), 
+            ImPlot::PlotLine(("Sensor Y" + std::to_string(i + 1) + " - " + m_player->m_pininput.GetNudgeYSensor(i)->GetMappingLabel()).c_str(),
                &m_nudgeYRawPlot[i].m_data[0].x, //
                &m_nudgeYRawPlot[i].m_data[0].y, //
                m_nudgeYRawPlot[i].m_data.size(), //

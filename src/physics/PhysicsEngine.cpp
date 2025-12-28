@@ -25,7 +25,7 @@ PhysicsEngine::PhysicsEngine(PinTable *const table)
    m_plumbVel.Set(0.f, 0.f, 0.f);
 
    // Initialize legacy nudging.
-   m_legacyNudgeBack = Vertex2D(0.f, 0.f); 
+   m_legacyNudgeBack = Vertex2D(0.f, 0.f);
    m_nudgeAcceleration.SetZero();
 
    // Initialize new nudging.
@@ -119,9 +119,9 @@ PhysicsEngine::~PhysicsEngine()
    if (m_pendingHitObjects)
       ReleaseVHO(*m_pendingHitObjects, false);
    ReleaseVHO(m_hitoctree.GetHitObjects(), false);
-   
+
    VPXPluginAPIImpl::ReleaseMsgID(m_onUpdatePhysicsMsgId);
-   
+
    // We should release objects from the dynamic tree except HitBall (but there are only HitBall...)
 }
 
@@ -187,7 +187,7 @@ void PhysicsEngine::CollectColliders(IEditable *editable, vector<HitObject *> *h
 void PhysicsEngine::AddCabinetBoundingHitShapes(PinTable *const table)
 {
    // TODO these are the only colliders that are added without an associated editable. We could enforce one here to guarantee m_editable != nullptr and simplify the code
-   
+
    // simple outer borders:
    AddCollider(new LineSeg(table, Vertex2D(table->m_right, table->m_top), Vertex2D(table->m_right, table->m_bottom), 0.f, table->m_glassTopHeight), false);
    AddCollider(new LineSeg(table, Vertex2D(table->m_left, table->m_bottom), Vertex2D(table->m_left, table->m_top), 0.f, table->m_glassBottomHeight), false);
@@ -264,7 +264,7 @@ void PhysicsEngine::Nudge(float angle, float force)
 
 // For the time being, there are 2 models available for nudge simulation (from keyboard or cabinet sensor).
 // 1. Legacy nudge:
-//    - Perform keyboard nudge by applying a force directly to the balls, first in the forward direction, 
+//    - Perform keyboard nudge by applying a force directly to the balls, first in the forward direction,
 //      then, after a little while, in the opposite direction
 //    - No hardware nudging support
 // 2. New acceleration based nudge:
@@ -290,6 +290,17 @@ void PhysicsEngine::UpdateNudge(float dtime)
       // Simulate hardware nudge by getting the cabinet acceleration (optionally through velocity sensor) and applying it directly to the ball
       Vertex2D sensor = g_pplayer->m_pininput.GetNudge(); // Acquire from sensor input
       m_nudgeAcceleration.Set(sensor.x, sensor.y, 0.f);
+
+      // If wanted, figure visual shake from hardware accelerometer
+      if(m_enableHardwareVisualNudge) {
+        // If sensor moves above the threshold
+        if (fabsf(sensor.x) > m_hardwareVisualNudgeThreshold || fabsf(sensor.y) > m_hardwareVisualNudgeThreshold)
+        {
+          // Scale the sensor's impulse and apply a system like the keyboard nudges
+          m_tableVel.x += sensor.x * m_hardwareVisualNudgeScale;
+          m_tableVel.y += sensor.y * m_hardwareVisualNudgeScale;
+        }
+      }
    }
    // legacy/VP9 style keyboard nudging, by directly applying a force to the balls
    else if (m_legacyNudgeTime != 0)
@@ -323,7 +334,7 @@ void PhysicsEngine::UpdateNudge(float dtime)
       // - simulate a simplified pendulum with 3 (simplified) forces: gravity, nudge and pole, and some velocity dampening
       // - send mechanical tilt like the plumb on real machine, triggering rom tile (instead of a fake keyboard central nudge like in previous implementation. not sure why previous implementation did that: isn't the point of a plumb to actually tilt ?)
       // Consequently NudgePlugIn_xxx scripts were also removed, support VBS script were also adapted to handle nudging and tilting separately.
-      // 
+      //
       // Simple Newton model:
       // . solid pole enforced by nullifying acceleration and velocity along pole axis, while keeping pole length constant
       // . gravity force, simply applied at pole tail
@@ -367,7 +378,7 @@ void PhysicsEngine::UpdateNudge(float dtime)
       {
          m_plumbTiltHigh = tilted;
          if (tilted)
-            m_plumbTiltIndex++; 
+            m_plumbTiltIndex++;
          if (m_plumbTiltInputSlot == -1)
             m_plumbTiltInputSlot = g_pplayer->m_pininput.GetInputActions()[g_pplayer->m_pininput.GetTiltActionId()]->NewDirectStateSlot();
          g_pplayer->m_pininput.GetInputActions()[g_pplayer->m_pininput.GetTiltActionId()]->SetDirectState(m_plumbTiltInputSlot, m_plumbTiltHigh);
@@ -396,6 +407,9 @@ void PhysicsEngine::ReadNudgeSettings(const Settings& settings)
 
    m_legacyNudge = settings.GetPlayer_EnableLegacyNudge();
    m_legacyNudgeStrength = settings.GetPlayer_LegacyNudgeStrength();
+   m_enableHardwareVisualNudge = settings.GetPlayer_EnableHardwareVisualNudge();
+   m_hardwareVisualNudgeThreshold = settings.GetPlayer_HardwareVisualNudgeThreshold();
+   m_hardwareVisualNudgeScale = settings.GetPlayer_HardwareVisualNudgeScale();
 }
 
 Vertex2D PhysicsEngine::GetScreenNudge() const
@@ -668,7 +682,7 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
 
    while (dtime > 0.f)
    {
-      // first find hits, if any +++++++++++++++++++++ 
+      // first find hits, if any +++++++++++++++++++++
       #ifdef DEBUGPHYSICS
          c_timesearch++;
       #endif
@@ -769,7 +783,7 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
 
       m_recordContacts = false;
 
-      // hittime now set ... or full frame if no hit 
+      // hittime now set ... or full frame if no hit
       // now update displacements to collide-contact or end of physics frame
       // !!!!! 2) move objects to hittime
 
@@ -799,7 +813,7 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
             pho->Collide(pball->m_coll);                 //!!!!! 3) collision on active ball
             pball->m_coll.m_obj = nullptr;               // remove trial hit object pointer
 
-            // Collide may have changed the velocity of the ball, 
+            // Collide may have changed the velocity of the ball,
             // and therefore the bounding box for the next hit cycle
             if (i >= g_pplayer->m_vball.size() || g_pplayer->m_vball[i] != pball) // Ball still exists? may have been deleted from list
             {

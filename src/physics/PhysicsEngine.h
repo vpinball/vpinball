@@ -37,6 +37,12 @@ public:
    void Nudge(float angle, float force);
    Vertex3Ds GetNudgeAcceleration() const { return m_tableAcceleration + m_nudgeAcceleration; } // Table acceleration (due to nudge) expressed in VP units
    Vertex2D GetScreenNudge() const; // Table displacement
+   bool IsHardwareVisualNudge() const { return m_enableHardwareVisualNudge; }
+   void SetHardwareVisualNudge(bool visualNudge) { m_enableHardwareVisualNudge = visualNudge; }
+   float GetHardwareVisualNudgeThreshold() const { return m_hardwareVisualNudgeThreshold; }
+   void SetHardwareVisualNudgeThreshold(float threshold) { m_hardwareVisualNudgeThreshold = threshold; }
+   float GetHardwareVisualNudgeScale() const { return m_hardwareVisualNudgeScale; }
+   void SetHardwareVisualNudgeScale(float scale) { m_hardwareVisualNudgeScale = scale; }
    bool IsLegacyKeyboardNudge() const { return m_legacyNudge; }
    void SetLegacyKeyboardNudge(bool legacyNudge) { m_legacyNudge = legacyNudge; }
    float GetLegacyKeyboardNudgeStrength() const { return m_legacyNudgeStrength; }
@@ -122,6 +128,10 @@ private:
    float m_legacyNudgeStrength = 0.f;
    Vertex2D m_legacyNudgeBack;
    int m_legacyNudgeTime = 0;
+
+   bool m_enableHardwareVisualNudge = false;
+   float m_hardwareVisualNudgeThreshold = 0.015f;
+   float m_hardwareVisualNudgeScale = 0.25f;
 
    // New keyboard nudge: the table is modeled as a spring, Nudge(x,y) apply an initial velocity (m_tableVel) which results in some oscillations
    Vertex3Ds m_tableVel;
