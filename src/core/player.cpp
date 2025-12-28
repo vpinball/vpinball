@@ -351,6 +351,7 @@ Player::Player(PinTable *const table, const int playMode)
          m_implicitPlayfieldMesh->m_mesh.m_indices[5] = 3;
          m_implicitPlayfieldMesh->m_mesh.m_validBounds = false;
          m_ptable->m_vedit.push_back(m_implicitPlayfieldMesh);
+         m_ptable->m_undo.Undo(true);
       }
    }
 

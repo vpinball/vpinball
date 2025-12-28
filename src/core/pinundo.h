@@ -30,26 +30,21 @@ private:
 class PinUndo final
 {
 public:
-   PinUndo();
-   ~PinUndo();
+   PinUndo(PinTable* table);
 
    void BeginUndo();
    void MarkForUndo(IEditable * const pie, const bool saveForUndo = false);
    void MarkForCreate(IEditable *const pie);
    void MarkForDelete(IEditable *const pie);
    void EndUndo();
-   void Undo();
+   void Undo(bool discard = false);
 
    void SetCleanPoint(const SaveDirtyState sds);
 
-   PinTable *m_ptable;
-
 private:
-   vector<UndoRecord*> m_vur;
-
-   int m_cUndoLayer;
-
-   SaveDirtyState m_sdsDirty; // Dirty flag for saving on close
-
-   size_t m_cleanpoint; // Undo record at which table is in a non-dirty state.  When negative, clean state can not be reached
+   PinTable *const m_table;
+   vector<std::unique_ptr<UndoRecord>> m_undoRecords;
+   int m_cUndoLayer = 0;
+   SaveDirtyState m_sdsDirty = eSaveClean; // Dirty flag for saving on close
+   size_t m_cleanpoint = 0; // Undo record at which table is in a non-dirty state (if bigger than undo records size, clean state can not be reached)
 };

@@ -27,6 +27,7 @@ void FlasherUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3&
 {
    const float px = m_flasher->m_d.m_vCenter.x, py = m_flasher->m_d.m_vCenter.y;
    m_flasher->TranslatePoints(Vertex2D { pos.x - px, pos.y - py });
+   m_flasher->GetPTable()->m_undo.Undo(true);
    m_flasher->put_Height(pos.z);
    m_flasher->put_RotX(rot.x);
    m_flasher->put_RotY(rot.y);
@@ -202,6 +203,7 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
             const float py = flasher->m_d.m_vCenter.y;
             flasher->TranslatePoints(Vertex2D { v.x - px, v.y - py });
             flasher->put_Height(v.z);
+            flasher->GetPTable()->m_undo.Undo(true);
          },
          PropertyPane::Unit::VPLength, 1);
       props.InputFloat3<Flasher>(

@@ -124,6 +124,11 @@ private:
    // Enter/Exit edit mode (manage table backup, dynamic mode,...)
    void ResetCameraFromPlayer();
 
+   // Undo support
+   void PushUndo(IEditable *part, unsigned int editId);
+   IEditable *m_lastUndoPart = nullptr;
+   unsigned int m_lastUndoId = 0;
+
    // Outliner
    float m_outliner_width = 0.0f;
    string m_outlinerFilter;

@@ -3,213 +3,176 @@
 #include "core/stdafx.h"
 #include "vpversion.h"
 
-PinUndo::PinUndo()
+PinUndo::PinUndo(PinTable *table)
+   : m_table(table)
 {
-   m_cUndoLayer = 0;
-   m_sdsDirty = eSaveClean;
-   m_cleanpoint = 0;
-}
-
-PinUndo::~PinUndo()
-{
-   for (size_t i = 0; i < m_vur.size(); ++i)
-      delete m_vur[i];
 }
 
 void PinUndo::SetCleanPoint(const SaveDirtyState sds)
 {
    if (sds == eSaveClean)
-      m_cleanpoint = m_vur.size();
+      m_cleanpoint = m_undoRecords.size();
    m_sdsDirty = sds;
-   m_ptable->SetDirty(sds);
+   m_table->SetDirty(sds);
 }
 
 void PinUndo::BeginUndo()
-{ 
-   if(g_pplayer)
-       return;
+{
+   if (m_table->m_liveBaseTable)
+      return;
 
    m_cUndoLayer++;
-
    if (m_cUndoLayer == 1)
    {
-      if (m_vur.size() == MAXUNDO)
+      if (m_undoRecords.size() == MAXUNDO)
       {
-         delete m_vur[0];
-         m_vur.erase(m_vur.begin());
+         m_undoRecords.erase(m_undoRecords.begin());
          m_cleanpoint--;
       }
-
-      UndoRecord * const pur = new UndoRecord();
-
-      m_vur.push_back(pur);
+      m_undoRecords.push_back(std::make_unique<UndoRecord>());
    }
 }
 
-void PinUndo::MarkForUndo(IEditable * const pie, const bool saveForUndo)
+void PinUndo::MarkForUndo(IEditable *const pie, const bool saveForUndo)
 {
-   if (g_pplayer)
+   if (m_table->m_liveBaseTable)
       return;
 
-   if (m_vur.empty())
-   {
-      _ASSERTE(false);
+   assert(!m_undoRecords.empty());
+   assert(m_cUndoLayer > 0);
+   if (m_undoRecords.empty())
       return;
-   }
-
    if (m_cUndoLayer <= 0)
-   {
-      _ASSERTE(false);
       BeginUndo();
-   }
 
-   UndoRecord * const pur = m_vur[m_vur.size() - 1];
-
-   pur->MarkForUndo(pie, saveForUndo);
+   m_undoRecords.back()->MarkForUndo(pie, saveForUndo);
 }
 
-void PinUndo::MarkForCreate(IEditable * const pie)
+void PinUndo::MarkForCreate(IEditable *const pie)
 {
-   if (m_vur.empty())
-   {
-      _ASSERTE(false);
+   if (m_table->m_liveBaseTable)
       return;
-   }
 
+   assert(!m_undoRecords.empty());
+   assert(m_cUndoLayer > 0);
+   if (m_undoRecords.empty())
+      return;
    if (m_cUndoLayer <= 0)
-   {
-      _ASSERTE(false);
       BeginUndo();
-   }
 
-   UndoRecord * const pur = m_vur[m_vur.size() - 1];
-
-   pur->MarkForCreate(pie);
+   m_undoRecords.back()->MarkForCreate(pie);
 }
 
-void PinUndo::MarkForDelete(IEditable * const pie)
+void PinUndo::MarkForDelete(IEditable *const pie)
 {
-   if (m_vur.empty())
-   {
-      _ASSERTE(false);
+   if (m_table->m_liveBaseTable)
       return;
-   }
 
+   assert(!m_undoRecords.empty());
+   assert(m_cUndoLayer > 0);
+   if (m_undoRecords.empty())
+      return;
    if (m_cUndoLayer <= 0)
-   {
-      _ASSERTE(false);
       BeginUndo();
-   }
 
-   UndoRecord * const pur = m_vur[m_vur.size() - 1];
-
-   pur->MarkForDelete(pie);
+   m_undoRecords.back()->MarkForDelete(pie);
 }
 
-void PinUndo::Undo()
+void PinUndo::Undo(bool discard)
 {
-   if (m_vur.empty())
-   {
-      //_ASSERTE(false);
+   if (m_undoRecords.empty())
       return;
-   }
 
-   if (m_cUndoLayer > 0)
-   {
-      _ASSERTE(false);
-      m_cUndoLayer = 0;
-   }
+   assert(m_cUndoLayer == 0);
+   while (m_cUndoLayer > 0)
+      EndUndo();
 
-   if (m_vur.size() == m_cleanpoint)
+   if (g_pplayer == nullptr && m_undoRecords.size() == m_cleanpoint)
    {
-      const int result = m_ptable->ShowMessageBox(LocalString(IDS_UNDOPASTSAVE).m_szbuffer);
+      const int result = m_table->ShowMessageBox(LocalString(IDS_UNDOPASTSAVE).m_szbuffer);
       if (result != IDYES)
          return;
    }
 
-   UndoRecord * const pur = m_vur[m_vur.size() - 1];
-
-   for (size_t i = 0; i < pur->m_vieDelete.size(); i++)
-      m_ptable->Undelete(pur->m_vieDelete[i]);
-
-   pur->m_vieDelete.clear(); // Don't want these released when this record gets deleted
-
-   for (size_t i = 0; i < pur->m_vstm.size(); i++)
+   if (!discard)
    {
-      IStream * const pstm = pur->m_vstm[i];
+      for (IEditable *editable : m_undoRecords.back()->m_vieDelete)
+      {
+         m_table->Undelete(editable);
+         editable->AddRef(); // As undelete does not add the reference on the undeleted part (should be fixed there ?)
+      }
 
-      // Go back to beginning of stream to load
-      LARGE_INTEGER foo;
-      foo.QuadPart = 0;
-      pstm->Seek(foo, STREAM_SEEK_SET, nullptr);
+      for (IStream *const pstm : m_undoRecords.back()->m_vstm)
+      {
+         // Go back to beginning of stream to load
+         LARGE_INTEGER foo;
+         foo.QuadPart = 0;
+         pstm->Seek(foo, STREAM_SEEK_SET, nullptr);
 
-      DWORD read;
-      IEditable *pie;
-      pstm->Read(&pie, sizeof(IEditable *), &read);
+         DWORD read;
+         IEditable *pie;
+         pstm->Read(&pie, sizeof(IEditable *), &read);
+         pie->ClearForOverwrite();
 
-      pie->ClearForOverwrite();
+         pie->InitLoad(pstm, m_table, CURRENT_FILE_FORMAT_VERSION, 0, 0);
+         pie->InitPostLoad();
+         if (g_pplayer)
+         {
+            if (pie->GetIHitable())
+               g_pplayer->m_renderer->ReinitRenderable(pie->GetIHitable());
+            g_pplayer->m_physics->Update(pie);
+         }
+      }
 
-      pie->InitLoad(pstm, m_ptable, CURRENT_FILE_FORMAT_VERSION, 0, 0);
-      pie->InitPostLoad();
-      // Stream gets released when undo record is deleted
-      //pstm->Release();
+      for (size_t i = 0; i < m_undoRecords.back()->m_vieCreate.size(); i++)
+         m_table->Uncreate(m_undoRecords.back()->m_vieCreate[i]);
    }
+   m_undoRecords.pop_back();
 
-   for (size_t i = 0; i<pur->m_vieCreate.size(); i++)
-      m_ptable->Uncreate(pur->m_vieCreate[i]);
-
-   RemoveFromVectorSingle(m_vur, pur);
-   delete pur;
-
-   if ((m_vur.size() == m_cleanpoint) && (m_sdsDirty > eSaveClean)) // UNDONE - how could we get here without m_fDirty being true?
+   if ((m_undoRecords.size() == m_cleanpoint) && (m_sdsDirty > eSaveClean)) // UNDONE - how could we get here without m_fDirty being true?
    {
       m_sdsDirty = eSaveClean;
-      m_ptable->SetDirty(eSaveClean);
+      m_table->SetDirty(eSaveClean);
    }
-   else if (/*m_vur.size() < m_cleanpoint && */(m_sdsDirty < eSaveDirty))
+   else if (/*m_vur.size() < m_cleanpoint && */ (m_sdsDirty < eSaveDirty))
    {
       // If we're not clean, we must be dirty (always process this case for autosave, even though to the user it wouldn't appear to matter)
-      if (m_vur.size() < m_cleanpoint)
+      if (m_undoRecords.size() < m_cleanpoint)
       {
          m_cleanpoint = -1; // Can't redo yet
       }
       m_sdsDirty = eSaveDirty;
-      m_ptable->SetDirty(eSaveDirty);
+      m_table->SetDirty(eSaveDirty);
    }
 }
 
 void PinUndo::EndUndo()
 {
-   if(g_pplayer)
+   if (m_table->m_liveBaseTable)
       return;
 
-   _ASSERTE(m_cUndoLayer > 0);
+   assert(m_cUndoLayer > 0);
    if (m_cUndoLayer > 0)
-   {
       m_cUndoLayer--;
-   }
-
    if (m_cUndoLayer == 0 && (m_sdsDirty < eSaveDirty))
    {
       m_sdsDirty = eSaveDirty;
-      m_ptable->SetDirty(eSaveDirty);
+      m_table->SetDirty(eSaveDirty);
    }
 }
 
-UndoRecord::UndoRecord()
-{
-}
+UndoRecord::UndoRecord() { }
 
 UndoRecord::~UndoRecord()
 {
-   for (size_t i = 0; i < m_vstm.size(); i++)
-      m_vstm[i]->Release();
+   for (FastIStream *stream : m_vstm)
+      stream->Release();
 
-   for (size_t i = 0; i < m_vieDelete.size(); i++)
-      m_vieDelete[i]->Release();
+   for (IEditable *editable : m_vieDelete)
+      editable->Release();
 }
 
-void UndoRecord::MarkForUndo(IEditable * const pie, const bool saveForUndo)
+void UndoRecord::MarkForUndo(IEditable *const pie, const bool saveForUndo)
 {
 #ifndef __STANDALONE__
    if (FindIndexOf(m_vieMark, pie) != -1) // Been marked already
@@ -220,7 +183,7 @@ void UndoRecord::MarkForUndo(IEditable * const pie, const bool saveForUndo)
 
    m_vieMark.push_back(pie);
 
-   FastIStream * const pstm = new FastIStream();
+   FastIStream *const pstm = new FastIStream();
    pstm->AddRef();
 
    DWORD write;
@@ -232,29 +195,16 @@ void UndoRecord::MarkForUndo(IEditable * const pie, const bool saveForUndo)
 #endif
 }
 
-void UndoRecord::MarkForCreate(IEditable * const pie)
+void UndoRecord::MarkForCreate(IEditable *const pie)
 {
-#ifdef _DEBUG
-   if (FindIndexOf(m_vieCreate, pie) != -1) // Created twice?
-   {
-      _ASSERTE(false);
-      return;
-   }
-#endif
-
+   assert(FindIndexOf(m_vieCreate, pie) == -1); // Created twice?
    m_vieCreate.push_back(pie);
 }
 
-void UndoRecord::MarkForDelete(IEditable * const pie)
+void UndoRecord::MarkForDelete(IEditable *const pie)
 {
-#ifdef _DEBUG
-   if (FindIndexOf(m_vieDelete, pie) != -1) // Already deleted - bad thing
-   {
-      _ASSERTE(false);
-      return;
-   }
-#endif
-
+   assert(FindIndexOf(m_vieDelete, pie) == -1); // Already deleted - bad thing
+   
    const int pie_pos = FindIndexOf(m_vieCreate, pie);
    if (pie_pos != -1) // Created and deleted in the same step
    {
