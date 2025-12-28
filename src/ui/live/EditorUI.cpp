@@ -366,21 +366,22 @@ void EditorUI::RenderUI()
       m_renderer->GetMVP().SetProj(0, proj);
       m_renderer->GetMVP().SetProj(1, proj);
 
-      // Convert from right handed (ImGuizmo view manipulate is right handed) to VPX's left handed coordinate system
-      // Right Hand to Left Hand (note that RH2LH = inverse(RH2LH), so RH2LH.RH2LH is identity, which property is used below)
-      //const Matrix3D RH2LH = Matrix3D::MatrixScale(1.f, 1.f, -1.f);
-      //const Matrix3D YAxis = Matrix3D::MatrixScale(1.f, -1.f, -1.f);
-      //float zNear, zFar;
-      //m_table->ComputeNearFarPlane(RH2LH * m_camView * YAxis, 1.f, zNear, zFar);
-      const float zNear = 5.f;
-      const float zFar = 50000.f;
-
       if (m_perspectiveCam)
       {
+         // Convert from right handed (ImGuizmo view manipulate is right handed) to VPX's left handed coordinate system
+         // Right Hand to Left Hand (note that RH2LH = inverse(RH2LH), so RH2LH.RH2LH is identity, which property is used below)
+         //const Matrix3D RH2LH = Matrix3D::MatrixScale(1.f, 1.f, -1.f);
+         //const Matrix3D YAxis = Matrix3D::MatrixScale(1.f, -1.f, -1.f);
+         //float zNear, zFar;
+         //m_table->ComputeNearFarPlane(RH2LH * m_camView * YAxis, 1.f, zNear, zFar);
+         const float zNear = 5.f;
+         const float zFar = 50000.f;
          m_camProj = Matrix3D::MatrixPerspectiveFovRH(39.6f, io.DisplaySize.x / io.DisplaySize.y, zNear, zFar);
       }
       else
       {
+         const float zNear = 0.5f;
+         const float zFar = 50000.f;
          float viewHeight = m_camDistance;
          float viewWidth = viewHeight * io.DisplaySize.x / io.DisplaySize.y;
          m_camProj = Matrix3D::MatrixOrthoOffCenterRH(-viewWidth, viewWidth, -viewHeight, viewHeight, zNear, -zFar);
@@ -1151,7 +1152,7 @@ void EditorUI::UpdatePropertyUI()
       return;
 
    const ImGuiViewport *const viewport = ImGui::GetMainViewport();
-   const float pane_width = 250.f * m_liveUI.GetDPI();
+   const float pane_width = 280.f * m_liveUI.GetDPI();
    ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x + viewport->Size.x - pane_width, viewport->Pos.y + m_menubar_height + m_toolbar_height));
    ImGui::SetNextWindowSize(ImVec2(pane_width, viewport->Size.y - m_menubar_height - m_toolbar_height));
    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(4.0f * m_liveUI.GetDPI(), 4.0f * m_liveUI.GetDPI()));

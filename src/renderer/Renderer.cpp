@@ -1808,7 +1808,7 @@ void Renderer::RenderDynamics()
    if (m_shadeMode == ShadeMode::Default)
    {
       const unsigned int mask = m_render_mask;
-      const bool isNoBackdrop = m_noBackdrop || ((m_render_mask & Renderer::REFLECTION_PASS) != 0);
+      const bool isNoBackdrop = m_noBackdrop || ((m_render_mask & Renderer::REFLECTION_PASS) != 0) || g_pplayer->m_liveUI->IsEditorViewMode();
       m_render_mask |= IsUsingStaticPrepass() ? Renderer::DYNAMIC_ONLY : Renderer::DEFAULT;
       DrawBulbLightBuffer();
       for (IEditable* renderable : g_pplayer->m_vhitables)

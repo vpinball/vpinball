@@ -64,7 +64,7 @@ public:
    static void CenteredText(const string &text);
 
 private:
-   void SetupImGuiStyle(const float overall_alpha);
+   void SetupImGuiStyle(const bool isEditor) const;
    
    void NewFrame();
    void UpdateScale();

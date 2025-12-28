@@ -48,7 +48,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
    ImGui_ImplSDL3_InitForOther(m_player->m_playfieldWnd->GetCore());
    //int displayIndex = SDL_GetDisplayForWindow(m_player->m_playfieldWnd->GetCore());
 
-   SetupImGuiStyle(1.0f);
+   SetupImGuiStyle(false);
 
    UpdateScale();
 
@@ -350,7 +350,9 @@ void LiveUI::RenderUI()
    }
    else if (m_editorUI.IsOpened())
    { // Editor UI (aligned to desktop, using traditional mouse interaction)
+      SetupImGuiStyle(true);
       m_editorUI.RenderUI();
+      SetupImGuiStyle(false);
    }
    else if (!m_inGameUI.IsOpened())
    { // No UI displayed: process ball control & throw balls
@@ -535,7 +537,6 @@ void LiveUI::OpenInGameUI(const string& page)
 
 void LiveUI::HideUI()
 { 
-   SetupImGuiStyle(1.0f);
    m_renderer->InitLayout();
    if (m_inGameUI.IsOpened())
       m_inGameUI.Close();
@@ -610,13 +611,14 @@ void LiveUI::CenteredText(const string &text)
    ImGui::PopTextWrapPos();
 }
 
-void LiveUI::SetupImGuiStyle(const float overall_alpha)
+void LiveUI::SetupImGuiStyle(const bool isEditor) const
 {
-   // Rounded Visual Studio style by RedNicStone from ImThemes
+   // Theme looking somewhat like Blender's style, based on 'Rounded Visual Studio' style by RedNicStone from ImThemes
    ImGuiStyle &style = ImGui::GetStyle();
+   const float overall_alpha = 1.f;
 
    style.Alpha = 1.0f;
-   style.DisabledAlpha = 0.6000000238418579f;
+   style.DisabledAlpha = 0.6f;
    style.WindowPadding = ImVec2(8.0f, 8.0f);
    style.WindowRounding = 4.0f;
    style.WindowBorderSize = 0.0f;
@@ -648,12 +650,12 @@ void LiveUI::SetupImGuiStyle(const float overall_alpha)
 
    style.Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
    style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.592f, 0.592f, 0.592f, overall_alpha);
-   style.Colors[ImGuiCol_WindowBg] = ImVec4(0.145f, 0.145f, 0.149f, overall_alpha);
+   style.Colors[ImGuiCol_WindowBg] = isEditor ? ImColor(0xFF363636) : ImColor(0.145f, 0.145f, 0.149f, overall_alpha);
    style.Colors[ImGuiCol_ChildBg] = ImVec4(0.145f, 0.145f, 0.149f, overall_alpha);
    style.Colors[ImGuiCol_PopupBg] = ImVec4(0.145f, 0.145f, 0.149f, overall_alpha);
    style.Colors[ImGuiCol_Border] = ImVec4(0.306f, 0.306f, 0.306f, overall_alpha);
    style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.306f, 0.306f, 0.306f, overall_alpha);
-   style.Colors[ImGuiCol_FrameBg] = ImVec4(0.2f, 0.2f, 0.216f, overall_alpha);
+   style.Colors[ImGuiCol_FrameBg] = isEditor ? ImColor(0xFF545454) : ImColor(0.2f, 0.2f, 0.216f, overall_alpha);
    style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.114f, 0.592f, 0.925f, overall_alpha);
    style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.0f, 0.467f, 0.784f, overall_alpha);
    style.Colors[ImGuiCol_TitleBg] = ImVec4(0.145f, 0.145f, 0.149f, overall_alpha);
@@ -664,13 +666,13 @@ void LiveUI::SetupImGuiStyle(const float overall_alpha)
    style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.322f, 0.322f, 0.333f, overall_alpha);
    style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.353f, 0.353f, 0.373f, overall_alpha);
    style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.353f, 0.353f, 0.373f, overall_alpha);
-   style.Colors[ImGuiCol_CheckMark] = ImVec4(0.0f, 0.467f, 0.784f, overall_alpha);
+   style.Colors[ImGuiCol_CheckMark] = isEditor ? ImColor(0xFFdddddd) : ImColor(0.0f, 0.467f, 0.784f, overall_alpha);
    style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.114f, 0.592f, 0.925f, overall_alpha);
    style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.0f, 0.467f, 0.784f, overall_alpha);
    style.Colors[ImGuiCol_Button] = ImVec4(0.2f, 0.2f, 0.216f, overall_alpha);
    style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.114f, 0.592f, 0.925f, overall_alpha);
    style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.114f, 0.592f, 0.925f, overall_alpha);
-   style.Colors[ImGuiCol_Header] = ImVec4(0.2f, 0.2f, 0.216f, overall_alpha);
+   style.Colors[ImGuiCol_Header] = isEditor ? ImColor(0xFF3d3d3d) : ImColor(0.2f, 0.2f, 0.216f, overall_alpha);
    style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.114f, 0.592f, 0.925f, overall_alpha);
    style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.0f, 0.467f, 0.784f, overall_alpha);
    style.Colors[ImGuiCol_Separator] = ImVec4(0.306f, 0.306f, 0.306f, overall_alpha);
