@@ -43,8 +43,8 @@ void SpinnerUIPart::Render(const EditorRenderContext& ctx)
 
 void SpinnerUIPart::UpdatePropertyPane(PropertyPane& props)
 {
-   props.EditableHeader("Spinner", m_spinner);
-   
+   props.EditableHeader("Spinner"s, m_spinner);
+
    if (props.BeginSection("Visual"s))
    {
       props.Checkbox<Spinner>(
@@ -73,19 +73,19 @@ void SpinnerUIPart::UpdatePropertyPane(PropertyPane& props)
          [](Spinner* spinner, bool v) { spinner->m_d.m_reflectionEnabled = v; });
       props.EndSection();
    }
-   
+
    if (props.BeginSection("Position"s))
    {
       props.InputFloat<Spinner>(
-         m_spinner, "X", //
+         m_spinner, "X"s, //
          [](const Spinner* spinner) { return spinner->m_d.m_vCenter.x; }, //
          [](Spinner* spinner, float v) { spinner->Translate(Vertex2D(v - spinner->m_d.m_vCenter.x, 0.f)); }, PropertyPane::Unit::VPLength, 1);
       props.InputFloat<Spinner>(
-         m_spinner, "Y", //
+         m_spinner, "Y"s, //
          [](const Spinner* spinner) { return spinner->m_d.m_vCenter.y; }, //
          [](Spinner* spinner, float v) { spinner->Translate(Vertex2D(0.f, v - spinner->m_d.m_vCenter.y)); }, PropertyPane::Unit::VPLength, 1);
       props.SurfaceCombo<Spinner>(
-         m_spinner, "Surface", //
+         m_spinner, "Surface"s, //
          [](const Spinner* spinner) { return spinner->m_d.m_szSurface; }, //
          [](Spinner* spinner, const string& v) { spinner->m_d.m_szSurface = v; });
       props.InputFloat<Spinner>(
@@ -110,7 +110,7 @@ void SpinnerUIPart::UpdatePropertyPane(PropertyPane& props)
          [](Spinner* spinner, float v) { spinner->m_d.m_angleMin = v; }, PropertyPane::Unit::Degree, 1);
       props.EndSection();
    }
-   
+
    if (props.BeginSection("Physics"s))
    {
       props.InputFloat<Spinner>(

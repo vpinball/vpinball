@@ -34,11 +34,10 @@ void HitTargetUIPart::Render(const EditorRenderContext& ctx)
 
 void HitTargetUIPart::UpdatePropertyPane(PropertyPane& props)
 {
-   props.EditableHeader("HitTarget", m_hitTarget);
+   props.EditableHeader("HitTarget"s, m_hitTarget);
 
    if (props.BeginSection("Visual"s))
    {
-
       props.Checkbox<HitTarget>(
          m_hitTarget, "Reflection Enabled"s, //
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_reflectionEnabled; }, //

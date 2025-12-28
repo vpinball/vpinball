@@ -38,7 +38,7 @@ void BallUIPart::Render(const EditorRenderContext& ctx)
 
 void BallUIPart::UpdatePropertyPane(PropertyPane& props)
 {
-   props.EditableHeader("Ball", m_ball);
+   props.EditableHeader("Ball"s, m_ball);
 
    if (props.BeginSection("Visual"s))
    {

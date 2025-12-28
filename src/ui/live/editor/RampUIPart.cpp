@@ -46,7 +46,7 @@ void RampUIPart::Render(const EditorRenderContext& ctx)
 
 void RampUIPart::UpdatePropertyPane(PropertyPane& props)
 {
-   props.EditableHeader("Ramp", m_ramp);
+   props.EditableHeader("Ramp"s, m_ramp);
 
    if (props.BeginSection("Visuals"s))
    {
@@ -161,15 +161,15 @@ void RampUIPart::UpdatePropertyPane(PropertyPane& props)
          [](const Ramp* surf) { return surf->m_d.m_overwritePhysics; }, //
          [](Ramp* surf, bool v) { surf->m_d.m_overwritePhysics = v; });
       props.InputFloat<Ramp>(
-         m_ramp, "Elasticity", //
+         m_ramp, "Elasticity"s, //
          [](const Ramp* ramp) { return ramp->m_d.m_elasticity; }, //
          [](Ramp* ramp, float v) { ramp->m_d.m_elasticity = v; }, PropertyPane::Unit::None, 3);
       props.InputFloat<Ramp>(
-         m_ramp, "Friction", //
+         m_ramp, "Friction"s, //
          [](const Ramp* ramp) { return ramp->m_d.m_friction; }, //
          [](Ramp* ramp, float v) { ramp->m_d.m_friction = v; }, PropertyPane::Unit::None, 3);
       props.InputFloat<Ramp>(
-         m_ramp, "Scatter Angle", //
+         m_ramp, "Scatter Angle"s, //
          [](const Ramp* ramp) { return ramp->m_d.m_scatter; }, //
          [](Ramp* ramp, float v) { ramp->m_d.m_scatter = v; }, PropertyPane::Unit::None, 3);
       props.Checkbox<Ramp>(

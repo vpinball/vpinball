@@ -50,7 +50,7 @@ void FlasherUIPart::Render(const EditorRenderContext& ctx)
 
 void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
 {
-   props.EditableHeader("Flasher", m_flasher);
+   props.EditableHeader("Flasher"s, m_flasher);
 
    if (props.BeginSection("Visual"s))
    {
@@ -67,7 +67,7 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
          [](const Flasher* flasher) { return flasher->m_d.m_renderMode; }, //
          [](Flasher* flasher, int v) { flasher->m_d.m_renderMode = static_cast<FlasherData::RenderMode>(v); });
       props.InputRGB<Flasher>(
-         m_flasher, "Color", //
+         m_flasher, "Color"s, //
          [](const Flasher* flasher) { return convertColor(flasher->m_d.m_color); }, //
          [](Flasher* flasher, const vec3& v) { flasher->m_d.m_color = convertColorRGB(v); });
       props.InputFloat<Flasher>(
@@ -194,7 +194,7 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
    if (props.BeginSection("Position"s))
    {
       props.InputFloat3<Flasher>(
-         m_flasher, "Position", //
+         m_flasher, "Position"s, //
          [](const Flasher* flasher) { return vec3(flasher->m_d.m_vCenter.x, flasher->m_d.m_vCenter.y, flasher->m_d.m_height); }, //
          [](Flasher* flasher, const vec3& v)
          {
@@ -205,7 +205,7 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
          },
          PropertyPane::Unit::VPLength, 1);
       props.InputFloat3<Flasher>(
-         m_flasher, "Rotation", //
+         m_flasher, "Rotation"s, //
          [](const Flasher* flasher) { return vec3(flasher->m_d.m_rotX, flasher->m_d.m_rotY, flasher->m_d.m_rotZ); }, //
          [](Flasher* flasher, const vec3& v)
          {

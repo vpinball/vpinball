@@ -44,8 +44,8 @@ void KickerUIPart::Render(const EditorRenderContext& ctx)
 
 void KickerUIPart::UpdatePropertyPane(PropertyPane& props)
 {
-   props.EditableHeader("Kicker", m_kicker);
-   
+   props.EditableHeader("Kicker"s, m_kicker);
+
    if (props.BeginSection("Visual"s))
    {
       props.MaterialCombo<Kicker>(
@@ -53,7 +53,7 @@ void KickerUIPart::UpdatePropertyPane(PropertyPane& props)
          [](const Kicker* kicker) { return kicker->m_d.m_szMaterial; }, //
          [](Kicker* kicker, const string& v) { kicker->m_d.m_szMaterial = v; });
       props.Combo<Kicker>(
-         m_kicker, "Shape", vector<string> { "Invisible"s, "Hole"s, "Cup"s, "Hole Simple"s, "Williams"s, "Gottlieb"s, "Cup 2"s }, //
+         m_kicker, "Shape"s, vector<string> { "Invisible"s, "Hole"s, "Cup"s, "Hole Simple"s, "Williams"s, "Gottlieb"s, "Cup 2"s }, //
          [this](const Kicker* kicker) { return kicker == m_kicker ? m_kickerType : kicker->m_d.m_kickertype; }, //
          [this](Kicker* kicker, int v) { kicker->m_d.m_kickertype = static_cast<KickerType>(v); (kicker == m_kicker ? m_kickerType : kicker->m_d.m_kickertype) = static_cast<KickerType>(v); });
       props.InputFloat<Kicker>(
@@ -70,15 +70,15 @@ void KickerUIPart::UpdatePropertyPane(PropertyPane& props)
    if (props.BeginSection("Position"s))
    {
       props.InputFloat<Kicker>(
-         m_kicker, "X", //
+         m_kicker, "X"s, //
          [](const Kicker* kicker) { return kicker->m_d.m_vCenter.x; }, //
          [](Kicker* kicker, float v) { kicker->Translate(Vertex2D(v - kicker->m_d.m_vCenter.x, 0.f)); }, PropertyPane::Unit::VPLength, 1);
       props.InputFloat<Kicker>(
-         m_kicker, "Y", //
+         m_kicker, "Y"s, //
          [](const Kicker* kicker) { return kicker->m_d.m_vCenter.y; }, //
          [](Kicker* kicker, float v) { kicker->Translate(Vertex2D(0.f, v - kicker->m_d.m_vCenter.y)); }, PropertyPane::Unit::VPLength, 1);
       props.SurfaceCombo<Kicker>(
-         m_kicker, "Surface", //
+         m_kicker, "Surface"s, //
          [](const Kicker* kicker) { return kicker->m_d.m_szSurface; }, //
          [](Kicker* kicker, const string& v) { kicker->m_d.m_szSurface = v; });
       props.EndSection();
@@ -87,27 +87,27 @@ void KickerUIPart::UpdatePropertyPane(PropertyPane& props)
    if (props.BeginSection("Physics"s))
    {
       props.Checkbox<Kicker>(
-         m_kicker, "Enabled", //
+         m_kicker, "Enabled"s, //
          [](const Kicker* kicker) { return kicker->m_d.m_enabled; }, //
          [](Kicker* kicker, bool v) { kicker->m_d.m_enabled = v; });
       props.Checkbox<Kicker>(
-         m_kicker, "Fall Through", //
+         m_kicker, "Fall Through"s, //
          [](const Kicker* kicker) { return kicker->m_d.m_fallThrough; }, //
          [](Kicker* kicker, bool v) { kicker->m_d.m_fallThrough = v; });
       props.Checkbox<Kicker>(
-         m_kicker, "Legacy (approx. physics)", //
+         m_kicker, "Legacy (approx. physics)"s, //
          [](const Kicker* kicker) { return kicker->m_d.m_legacyMode; }, //
          [](Kicker* kicker, bool v) { kicker->m_d.m_legacyMode = v; });
       props.InputFloat<Kicker>(
-         m_kicker, "Scatter angle", //
+         m_kicker, "Scatter angle"s, //
          [](const Kicker* kicker) { return kicker->m_d.m_scatter; }, //
          [](Kicker* kicker, float v) { kicker->m_d.m_scatter = v; }, PropertyPane::Unit::None, 2);
       props.InputFloat<Kicker>(
-         m_kicker, "Hit Accuracy", //
+         m_kicker, "Hit Accuracy"s, //
          [](const Kicker* kicker) { return kicker->m_d.m_hitAccuracy; }, //
          [](Kicker* kicker, float v) { kicker->m_d.m_hitAccuracy = v; }, PropertyPane::Unit::Percent, 2);
       props.InputFloat<Kicker>(
-         m_kicker, "Hit Height", //
+         m_kicker, "Hit Height"s, //
          [](const Kicker* kicker) { return kicker->m_d.m_hit_height; }, //
          [](Kicker* kicker, float v) { kicker->m_d.m_scatter = v; }, PropertyPane::Unit::VPLength, 1);
       props.EndSection();

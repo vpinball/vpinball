@@ -44,7 +44,7 @@ void RubberUIPart::Render(const EditorRenderContext& ctx)
 
 void RubberUIPart::UpdatePropertyPane(PropertyPane& props)
 {
-   props.EditableHeader("Rubber", m_rubber);
+   props.EditableHeader("Rubber"s, m_rubber);
 
    if (props.BeginSection("Visual"s))
    {
@@ -113,7 +113,7 @@ void RubberUIPart::UpdatePropertyPane(PropertyPane& props)
          [](const Rubber* rubber) { return rubber->m_d.m_elasticity; }, //
          [](Rubber* rubber, float v) { rubber->m_d.m_elasticity = v; }, PropertyPane::Unit::None, 2);
       props.InputFloat<Rubber>(
-         m_rubber, "Elasticy Fall Off"s, //
+         m_rubber, "Elasticy Falloff"s, //
          [](const Rubber* rubber) { return rubber->m_d.m_elasticityFalloff; }, //
          [](Rubber* rubber, float v) { rubber->m_d.m_elasticityFalloff = v; }, PropertyPane::Unit::None, 2);
       props.InputFloat<Rubber>(

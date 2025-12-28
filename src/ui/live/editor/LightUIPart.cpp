@@ -46,12 +46,12 @@ void LightUIPart::Render(const EditorRenderContext& ctx)
 
 void LightUIPart::UpdatePropertyPane(PropertyPane& props)
 {
-   props.EditableHeader("Light", m_light);
+   props.EditableHeader("Light"s, m_light);
 
    if (props.BeginSection("Light Settings"s))
    {
       props.Combo<Light>(
-         m_light, "Shape", vector<string> { "None"s, "Linear"s, "Incandescent"s }, //
+         m_light, "Shape"s, vector<string> { "None"s, "Linear"s, "Incandescent"s }, //
          [](const Light* light) { return static_cast<int>(light->m_d.m_fader); }, //
          [](Light* light, int v) { light->m_d.m_fader = static_cast<Fader>(v); });
       props.InputFloat<Light>(
@@ -75,11 +75,11 @@ void LightUIPart::UpdatePropertyPane(PropertyPane& props)
          [](const Light* light) { return convertColor(light->m_d.m_color2); }, //
          [](Light* light, const vec3& v) { light->m_d.m_color = convertColorRGB(v); });
       props.InputFloat<Light>(
-         m_light, "Fall Off Range"s, //
+         m_light, "Falloff Range"s, //
          [](const Light* light) { return light->m_d.m_falloff; }, //
          [](Light* light, float v) { light->m_d.m_falloff = v; }, PropertyPane::Unit::VPLength, 1);
       props.InputFloat<Light>(
-         m_light, "Fall Off Power"s, //
+         m_light, "Falloff Power"s, //
          [](const Light* light) { return light->m_d.m_falloff_power; }, //
          [](Light* light, float v) { light->m_d.m_falloff_power = v; }, PropertyPane::Unit::None, 1);
       props.EndSection();
@@ -132,7 +132,7 @@ void LightUIPart::UpdatePropertyPane(PropertyPane& props)
                [](const Light* light) { return light->m_d.m_imageMode; }, //
                [](Light* light, bool v) { light->m_d.m_imageMode = v; });
             props.ImageCombo<Light>(
-               m_light, "Image", //
+               m_light, "Image"s, //
                [](const Light* light) { return light->m_d.m_szImage; }, //
                [](Light* light, const string& v) { light->m_d.m_szImage = v; });
          }
@@ -173,15 +173,15 @@ void LightUIPart::UpdatePropertyPane(PropertyPane& props)
    if (props.BeginSection("Position"s))
    {
       props.InputFloat<Light>(
-         m_light, "X", //
+         m_light, "X"s, //
          [](const Light* light) { return light->m_d.m_vCenter.x; }, //
          [](Light* light, float v) { light->Translate(Vertex2D(v - light->m_d.m_vCenter.x, 0.f)); }, PropertyPane::Unit::VPLength, 1);
       props.InputFloat<Light>(
-         m_light, "Y", //
+         m_light, "Y"s, //
          [](const Light* light) { return light->m_d.m_vCenter.y; }, //
          [](Light* light, float v) { light->Translate(Vertex2D(0.f, v - light->m_d.m_vCenter.y)); }, PropertyPane::Unit::VPLength, 1);
       props.SurfaceCombo<Light>(
-         m_light, "Surface", //
+         m_light, "Surface"s, //
          [](const Light* light) { return light->m_d.m_szSurface; }, //
          [](Light* light, const string& v) { light->m_d.m_szSurface = v; });
       props.EndSection();
@@ -213,7 +213,7 @@ void LightUIPart::UpdatePropertyPane(PropertyPane& props)
       else
       {
          props.InputFloat<Light>(
-            m_light, "State", //
+            m_light, "State"s, //
             [](const Light* light) { return light->m_d.m_state; }, //
             [](Light* light, float v)
             {

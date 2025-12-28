@@ -31,7 +31,7 @@ public:
       Inches,
       Millimeters
    };
-   static string GetUnitLabel(Unit unit);
+   static const char* GetUnitLabel(Unit unit);
    static void ConvertUnit(Unit from, Unit& to, float& value, int& nDecimalAdjust);
    void SetLengthUnit(Unit lengthUnit) { m_lengthUnit = lengthUnit; }
 
@@ -246,9 +246,9 @@ inline void PropertyPane::InputFloat(T* obj, const string& label, const std::fun
    int nDecimalAdjust;
    Unit displayUnit = m_lengthUnit; // ConvertUnit will set it to the supported converted display unit
    ConvertUnit(unit, displayUnit, value, nDecimalAdjust);
-   string format = "%."s + std::to_string(max(0, nDecimals + nDecimalAdjust)) + 'f';
-   const string unitLabel = GetUnitLabel(displayUnit);
-   const string labelWithUnit = unitLabel.empty() ? label : (label + " (" + unitLabel + ')');
+   string format = "%." + std::to_string(max(0, nDecimals + nDecimalAdjust)) + 'f';
+   const char* unitLabel = GetUnitLabel(displayUnit);
+   const string labelWithUnit = unitLabel ? label : (label + " (" + unitLabel + ')');
    T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
    if (startupObj)
    {
@@ -313,9 +313,9 @@ inline void PropertyPane::InputFloat3(T* obj, const string& label, const std::fu
    int nDecimalAdjust;
    Unit displayUnit = m_lengthUnit; // ConvertUnit will set it to the supported converted display unit
    ConvertUnit(unit, displayUnit, value.x, nDecimalAdjust);
-   string format = "%."s + std::to_string(max(0, nDecimals + nDecimalAdjust)) + 'f';
-   const string unitLabel = GetUnitLabel(displayUnit);
-   const string labelWithUnit = unitLabel.empty() ? label : (label + " (" + unitLabel + ')');
+   string format = "%." + std::to_string(max(0, nDecimals + nDecimalAdjust)) + 'f';
+   const char* unitLabel = GetUnitLabel(displayUnit);
+   const string labelWithUnit = unitLabel ? label : (label + " (" + unitLabel + ')');
    T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
    if (startupObj)
    {
@@ -508,7 +508,7 @@ inline void PropertyPane::Combo(T* obj, const string& label, const std::vector<s
       {
          for (size_t i = 0; i < values.size(); i++)
          {
-            if (ImGui::Selectable((values[i] + "##Item"s + std::to_string(i)).c_str()))
+            if (ImGui::Selectable((values[i] + "##Item" + std::to_string(i)).c_str()))
             {
                // FIXME implement undo
                setter(displayObj, static_cast<int>(i));
@@ -545,7 +545,7 @@ inline void PropertyPane::Combo(T* obj, const string& label, const std::vector<s
       {
          for (size_t i = 0; i < values.size(); i++)
          {
-            if (ImGui::Selectable((values[i] + "##Item"s + std::to_string(i)).c_str()))
+            if (ImGui::Selectable((values[i] + "##Item" + std::to_string(i)).c_str()))
             {
                // FIXME implement undo
                setter(obj, static_cast<int>(i));

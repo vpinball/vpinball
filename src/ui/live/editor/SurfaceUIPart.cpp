@@ -56,7 +56,7 @@ void SurfaceUIPart::Render(const EditorRenderContext& ctx)
 
 void SurfaceUIPart::UpdatePropertyPane(PropertyPane& props)
 {
-   props.EditableHeader("Surface", m_surface);
+   props.EditableHeader("Surface"s, m_surface);
 
    if (props.BeginSection("Visual"s))
    {
@@ -149,19 +149,19 @@ void SurfaceUIPart::UpdatePropertyPane(PropertyPane& props)
          [](const Surface* surf) { return surf->m_d.m_overwritePhysics; }, //
          [](Surface* surf, bool v) { surf->m_d.m_overwritePhysics = v; });
       props.InputFloat<Surface>(
-         m_surface, "Elasticity", //
+         m_surface, "Elasticity"s, //
          [](const Surface* surface) { return surface->m_d.m_elasticity; }, //
          [](Surface* surface, float v) { surface->m_d.m_elasticity = v; }, PropertyPane::Unit::None, 3);
       props.InputFloat<Surface>(
-         m_surface, "Elasticity Fall Off", //
+         m_surface, "Elasticity Falloff"s, //
          [](const Surface* surface) { return surface->m_d.m_elasticityFalloff; }, //
          [](Surface* surface, float v) { surface->m_d.m_elasticityFalloff = v; }, PropertyPane::Unit::None, 3);
       props.InputFloat<Surface>(
-         m_surface, "Friction", //
+         m_surface, "Friction"s, //
          [](const Surface* surface) { return surface->m_d.m_friction; }, //
          [](Surface* surface, float v) { surface->m_d.m_friction = v; }, PropertyPane::Unit::None, 3);
       props.InputFloat<Surface>(
-         m_surface, "Scatter Angle", //
+         m_surface, "Scatter Angle"s, //
          [](const Surface* surface) { return surface->m_d.m_scatter; }, //
          [](Surface* surface, float v) { surface->m_d.m_scatter = v; }, PropertyPane::Unit::None, 3);
       props.Checkbox<Surface>(

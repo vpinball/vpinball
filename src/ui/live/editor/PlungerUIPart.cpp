@@ -34,7 +34,7 @@ void PlungerUIPart::Render(const EditorRenderContext& ctx)
 
 void PlungerUIPart::UpdatePropertyPane(PropertyPane& props)
 {
-   props.EditableHeader("Plunger", m_plunger);
+   props.EditableHeader("Plunger"s, m_plunger);
 
    if (props.BeginSection("Visual"s))
    {

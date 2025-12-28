@@ -50,95 +50,95 @@ void PrimitiveUIPart::Render(const EditorRenderContext& ctx)
 
 void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
 {
-   props.EditableHeader("Primitive", m_primitive);
+   props.EditableHeader("Primitive"s, m_primitive);
 
    if (props.BeginSection("Visual"s))
    {
-      props.Separator("Render Options");
+      props.Separator("Render Options"s);
       props.Checkbox<Primitive>(
-         m_primitive, "Visible", //
+         m_primitive, "Visible"s, //
          [this](const Primitive* primitive) { return primitive == m_primitive ? m_visible : primitive->m_d.m_visible; }, //
          [this](Primitive* primitive, bool v) { primitive->m_d.m_visible = v; (primitive == m_primitive ? m_visible : primitive->m_d.m_visible) = v; });
       props.Checkbox<Primitive>(
-         m_primitive, "Static Rendering", //
+         m_primitive, "Static Rendering"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_staticRendering; }, //
          [](Primitive* primitive, bool v) { primitive->m_d.m_staticRendering = v; });
       props.Checkbox<Primitive>(
-         m_primitive, "Reflection Enabled", //
+         m_primitive, "Reflection Enabled"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_reflectionEnabled; }, //
          [](Primitive* primitive, bool v) { primitive->m_d.m_reflectionEnabled = v; });
       props.InputFloat<Primitive>(
-         m_primitive, "Depth Bias", //
+         m_primitive, "Depth Bias"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_depthBias; }, //
          [](Primitive* primitive, float v) { primitive->m_d.m_depthBias = v; }, PropertyPane::Unit::None, 0);
       props.Checkbox<Primitive>(
-         m_primitive, "Depth Mask", //
+         m_primitive, "Depth Mask"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_useDepthMask; }, //
          [](Primitive* primitive, bool v) { primitive->m_d.m_useDepthMask = v; });
       props.Checkbox<Primitive>(
-         m_primitive, "Render Backfaces", //
+         m_primitive, "Render Backfaces"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_backfacesEnabled; }, //
          [](Primitive* primitive, bool v) { primitive->m_d.m_backfacesEnabled = v; });
       props.Checkbox<Primitive>(
-         m_primitive, "Additive Blend", //
+         m_primitive, "Additive Blend"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_addBlend; }, //
          [](Primitive* primitive, bool v) { primitive->m_d.m_addBlend = v; });
       props.LightmapCombo<Primitive>(
-         m_primitive, "Lightmap", //
+         m_primitive, "Lightmap"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_szLightmap; }, //
          [](Primitive* primitive, const string& v) { primitive->m_d.m_szLightmap = v; });
 
-      props.Separator("Material");
+      props.Separator("Material"s);
       props.MaterialCombo<Primitive>(
-         m_primitive, "Material", //
+         m_primitive, "Material"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_szMaterial; }, //
          [](Primitive* primitive, const string& v) { primitive->m_d.m_szMaterial = v; });
       props.ImageCombo<Primitive>(
-         m_primitive, "Image", //
+         m_primitive, "Image"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_szImage; }, //
          [](Primitive* primitive, const string& v) { primitive->m_d.m_szImage = v; });
       props.ImageCombo<Primitive>(
-         m_primitive, "Normal Map", //
+         m_primitive, "Normal Map"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_szNormalMap; }, //
          [](Primitive* primitive, const string& v) { primitive->m_d.m_szNormalMap = v; });
       props.Checkbox<Primitive>(
-         m_primitive, "Object Space NM", //
+         m_primitive, "Object Space NM"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_objectSpaceNormalMap; }, //
          [](Primitive* primitive, bool v) { primitive->m_d.m_objectSpaceNormalMap = v; });
       props.InputFloat<Primitive>(
-         m_primitive, "Disable Spot Lights", //
+         m_primitive, "Disable Spot Lights"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_disableLightingTop; }, //
          [](Primitive* primitive, float v) { primitive->m_d.m_disableLightingTop = v; }, PropertyPane::Unit::None, 3);
       props.InputFloat<Primitive>(
-         m_primitive, "Translucency", //
+         m_primitive, "Translucency"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_disableLightingBelow; }, //
          [](Primitive* primitive, float v) { primitive->m_d.m_disableLightingBelow = v; }, PropertyPane::Unit::None, 3);
       props.InputFloat<Primitive>(
-         m_primitive, "Modulate Opacity", //
+         m_primitive, "Modulate Opacity"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_alpha; }, //
          [](Primitive* primitive, float v) { primitive->m_d.m_alpha = v; }, PropertyPane::Unit::None, 3);
       props.InputRGB<Primitive>(
-         m_primitive, "Modulate Opacity", //
+         m_primitive, "Modulate Color"s, //
          [](const Primitive* primitive) { return convertColor(primitive->m_d.m_color); }, //
          [](Primitive* primitive, const vec3& v) { primitive->m_d.m_color = convertColorRGB(v); });
 
       props.Separator("Reflections");
       props.RenderProbeCombo<Primitive>(
-         m_primitive, "Reflection Probe", //
+         m_primitive, "Reflection Probe"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_szReflectionProbe; }, //
          [](Primitive* primitive, const string& v) { primitive->m_d.m_szReflectionProbe = v; });
       props.InputFloat<Primitive>(
-         m_primitive, "Reflection strength", //
+         m_primitive, "Reflection Strength"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_reflectionStrength; }, //
          [](Primitive* primitive, float v) { primitive->m_d.m_reflectionStrength = v; }, PropertyPane::Unit::None, 3);
 
-      props.Separator("Refractions");
+      props.Separator("Refractions"s);
       props.RenderProbeCombo<Primitive>(
-         m_primitive, "Refraction Probe", //
+         m_primitive, "Refraction Probe"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_szRefractionProbe; }, //
          [](Primitive* primitive, const string& v) { primitive->m_d.m_szRefractionProbe = v; });
       props.InputFloat<Primitive>(
-         m_primitive, "Refraction thickness", //
+         m_primitive, "Refraction Thickness"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_refractionThickness; }, //
          [](Primitive* primitive, float v) { primitive->m_d.m_refractionThickness = v; }, PropertyPane::Unit::None, 3);
 
@@ -147,13 +147,13 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
 
    if (props.BeginSection("Position"s))
    {
-      props.Separator("Position, Rotation & Size");
+      props.Separator("Position, Rotation & Size"s);
       props.InputFloat3<Primitive>(
-         m_primitive, "Position", //
+         m_primitive, "Position"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_vPosition; }, //
          [](Primitive* primitive, const vec3& v) { primitive->m_d.m_vPosition = v; }, PropertyPane::Unit::VPLength, 1);
       props.InputFloat3<Primitive>(
-         m_primitive, "Orientation", //
+         m_primitive, "Orientation"s, //
          [](const Primitive* primitive) { return vec3(primitive->m_d.m_aRotAndTra[0], primitive->m_d.m_aRotAndTra[1], primitive->m_d.m_aRotAndTra[2]); }, //
          [](Primitive* primitive, const vec3& v) { 
             primitive->m_d.m_aRotAndTra[0] = v.x; 
@@ -162,13 +162,13 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
          },
          PropertyPane::Unit::Degree, 2);
       props.InputFloat3<Primitive>(
-         m_primitive, "Scale", //
+         m_primitive, "Scale"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_vSize; }, //
          [](Primitive* primitive, const vec3& v) { primitive->m_d.m_vSize = v; }, PropertyPane::Unit::Percent, 2);
 
-      props.Separator("Additional Transform");
+      props.Separator("Additional Transform"s);
       props.InputFloat3<Primitive>(
-         m_primitive, "Translation", //
+         m_primitive, "Translation"s, //
          [](const Primitive* primitive) { return vec3(primitive->m_d.m_aRotAndTra[3], primitive->m_d.m_aRotAndTra[4], primitive->m_d.m_aRotAndTra[5]); }, //
          [](Primitive* primitive, const vec3& v)
          {
@@ -178,7 +178,7 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
          },
          PropertyPane::Unit::VPLength, 1);
       props.InputFloat3<Primitive>(
-         m_primitive, "Rotation", //
+         m_primitive, "Rotation"s, //
          [](const Primitive* primitive) { return vec3(primitive->m_d.m_aRotAndTra[6], primitive->m_d.m_aRotAndTra[7], primitive->m_d.m_aRotAndTra[8]); }, //
          [](Primitive* primitive, const vec3& v)
          {
@@ -193,15 +193,15 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
    if (props.BeginSection("Physics"s))
    {
       props.Checkbox<Primitive>(
-         m_primitive, "Has Hit Event", //
+         m_primitive, "Has Hit Event"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_hitEvent; }, //
          [](Primitive* primitive, bool v) { primitive->m_d.m_hitEvent = v; });
       props.InputFloat<Primitive>(
-         m_primitive, "Hit Threshold", //
+         m_primitive, "Hit Threshold"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_threshold; }, //
          [](Primitive* primitive, float v) { primitive->m_d.m_threshold = v; }, PropertyPane::Unit::None, 3);
       props.MaterialCombo<Primitive>(
-         m_primitive, "Physics Material", //
+         m_primitive, "Physics Material"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_szPhysicsMaterial; }, //
          [](Primitive* primitive, const string& v) { primitive->m_d.m_szPhysicsMaterial = v; });
       props.Checkbox<Primitive>(
@@ -209,19 +209,19 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
          [](const Primitive* surf) { return surf->m_d.m_overwritePhysics; }, //
          [](Primitive* surf, bool v) { surf->m_d.m_overwritePhysics = v; });
       props.InputFloat<Primitive>(
-         m_primitive, "Elasticity", //
+         m_primitive, "Elasticity"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_elasticity; }, //
          [](Primitive* primitive, float v) { primitive->m_d.m_elasticity = v; }, PropertyPane::Unit::None, 3);
       props.InputFloat<Primitive>(
-         m_primitive, "Elasticity Fall Off", //
+         m_primitive, "Elasticity Falloff"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_elasticityFalloff; }, //
          [](Primitive* primitive, float v) { primitive->m_d.m_elasticityFalloff = v; }, PropertyPane::Unit::None, 3);
       props.InputFloat<Primitive>(
-         m_primitive, "Friction", //
+         m_primitive, "Friction"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_friction; }, //
          [](Primitive* primitive, float v) { primitive->m_d.m_friction = v; }, PropertyPane::Unit::None, 3);
       props.InputFloat<Primitive>(
-         m_primitive, "Scatter Angle", //
+         m_primitive, "Scatter Angle"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_scatter; }, //
          [](Primitive* primitive, float v) { primitive->m_d.m_scatter = v; }, PropertyPane::Unit::None, 3);
       props.Checkbox<Primitive>(
@@ -233,7 +233,7 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
          [](const Primitive* surf) { return surf->m_d.m_toy; }, //
          [](Primitive* surf, bool v) { surf->m_d.m_toy = v; });
       props.InputFloat<Primitive>(
-         m_primitive, "Reduction Factor", //
+         m_primitive, "Reduction Factor"s, //
          [](const Primitive* primitive) { return primitive->m_d.m_collision_reductionFactor; }, //
          [](Primitive* primitive, float v) { primitive->m_d.m_collision_reductionFactor = v; }, PropertyPane::Unit::None, 3);
       props.EndSection();

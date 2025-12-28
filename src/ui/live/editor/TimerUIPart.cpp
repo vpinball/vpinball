@@ -40,7 +40,7 @@ void TimerUIPart::Render(const EditorRenderContext& ctx)
 
 void TimerUIPart::UpdatePropertyPane(PropertyPane& props)
 {
-   props.EditableHeader("Timer", m_timer);
+   props.EditableHeader("Timer"s, m_timer);
 
    props.TimerSection<Timer>(m_timer, [](Timer* obj) { return &(obj->m_d.m_tdr); });
 }

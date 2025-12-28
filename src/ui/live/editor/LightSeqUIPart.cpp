@@ -25,19 +25,19 @@ void LightSeqUIPart::Render(const EditorRenderContext& ctx) { }
 
 void LightSeqUIPart::UpdatePropertyPane(PropertyPane& props)
 {
-   props.EditableHeader("LightSeq", m_lightSeq);
-   
+   props.EditableHeader("LightSeq"s, m_lightSeq);
+
    if (props.BeginSection("Visual"s))
    {
       props.EndSection();
    }
-   
+
    if (props.BeginSection("Position"s))
    {
       // Missing position
       props.EndSection();
    }
-   
+
    props.TimerSection<LightSeq>(m_lightSeq, [](LightSeq* obj) { return &(obj->m_d.m_tdr); });
 }
 

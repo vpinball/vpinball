@@ -25,13 +25,13 @@ void DispReelUIPart::Render(const EditorRenderContext& ctx) { }
 
 void DispReelUIPart::UpdatePropertyPane(PropertyPane& props)
 {
-   props.EditableHeader("DispReel", m_dispreel);
-   
+   props.EditableHeader("DispReel"s, m_dispreel);
+
    if (props.BeginSection("Visual"s))
    {
       props.EndSection();
    }
-   
+
    props.TimerSection<DispReel>(m_dispreel, [](DispReel* obj) { return &(obj->m_d.m_tdr); });
 }
 

@@ -44,11 +44,10 @@ void FlipperUIPart::Render(const EditorRenderContext& ctx)
 
 void FlipperUIPart::UpdatePropertyPane(PropertyPane& props)
 {
-   props.EditableHeader("Flipper", m_flipper);
+   props.EditableHeader("Flipper"s, m_flipper);
 
    if (props.BeginSection("Visual"s))
    {
-
       props.EndSection();
    }
 

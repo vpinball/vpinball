@@ -43,12 +43,12 @@ void GateUIPart::Render(const EditorRenderContext& ctx)
 
 void GateUIPart::UpdatePropertyPane(PropertyPane& props)
 {
-   props.EditableHeader("Gate", m_gate);
+   props.EditableHeader("Gate"s, m_gate);
 
    if (props.BeginSection("Visuals"s))
    {
       props.Combo<Gate>(
-         m_gate, "Shape", vector<string> { "Wire W"s, "Wire Rectangle"s, "Gate Plate"s, "Long Plate"s }, //
+         m_gate, "Shape"s, vector<string> { "Wire W"s, "Wire Rectangle"s, "Gate Plate"s, "Long Plate"s }, //
          [](const Gate* gate) { return static_cast<int>(gate->m_d.m_type) - 1; }, //
          [](Gate* gate, int v) { gate->m_d.m_type = static_cast<GateType>(v + 1); });
       props.Checkbox<Gate>(
@@ -77,19 +77,19 @@ void GateUIPart::UpdatePropertyPane(PropertyPane& props)
    if (props.BeginSection("Geometry"s))
    {
       props.InputFloat<Gate>(
-         m_gate, "Length", //
+         m_gate, "Length"s, //
          [](const Gate* gate) { return gate->m_d.m_length; }, //
          [](Gate* gate, float v) { gate->m_d.m_length = v; }, PropertyPane::Unit::VPLength, 1);
       props.InputFloat<Gate>(
-         m_gate, "Height", //
+         m_gate, "Height"s, //
          [](const Gate* gate) { return gate->m_d.m_height; }, //
          [](Gate* gate, float v) { gate->m_d.m_height = v; }, PropertyPane::Unit::VPLength, 1);
       props.InputFloat<Gate>(
-         m_gate, "Open Angle", //
+         m_gate, "Open Angle"s, //
          [](const Gate* gate) { return gate->m_d.m_angleMax; }, //
          [](Gate* gate, float v) { gate->m_d.m_angleMax = v; }, PropertyPane::Unit::Degree, 1);
       props.InputFloat<Gate>(
-         m_gate, "Close Angle", //
+         m_gate, "Close Angle"s, //
          [](const Gate* gate) { return gate->m_d.m_angleMin; }, //
          [](Gate* gate, float v) { gate->m_d.m_angleMin = v; }, PropertyPane::Unit::Degree, 1);
       props.EndSection();
@@ -98,19 +98,19 @@ void GateUIPart::UpdatePropertyPane(PropertyPane& props)
    if (props.BeginSection("Position"s))
    {
       props.InputFloat<Gate>(
-         m_gate, "X", //
+         m_gate, "X"s, //
          [](const Gate* gate) { return gate->m_d.m_vCenter.x; }, //
          [](Gate* gate, float v) { gate->Translate(Vertex2D(v - gate->m_d.m_vCenter.x, 0.f)); }, PropertyPane::Unit::VPLength, 1);
       props.InputFloat<Gate>(
-         m_gate, "Y", //
+         m_gate, "Y"s, //
          [](const Gate* gate) { return gate->m_d.m_vCenter.y; }, //
          [](Gate* gate, float v) { gate->Translate(Vertex2D(0.f, v - gate->m_d.m_vCenter.y)); }, PropertyPane::Unit::VPLength, 1);
       props.SurfaceCombo<Gate>(
-         m_gate, "Surface", //
+         m_gate, "Surface"s, //
          [](const Gate* gate) { return gate->m_d.m_szSurface; }, //
          [](Gate* gate, const string& v) { gate->m_d.m_szSurface = v; });
       props.InputFloat<Gate>(
-         m_gate, "Rotation", //
+         m_gate, "Rotation"s, //
          [](const Gate* gate) { return gate->m_d.m_rotation; }, //
          [](Gate* gate, float v) { gate->m_d.m_rotation = v; }, PropertyPane::Unit::Degree, 1);
       props.EndSection();
@@ -119,19 +119,19 @@ void GateUIPart::UpdatePropertyPane(PropertyPane& props)
    if (props.BeginSection("Physics"s))
    {
       props.InputFloat<Gate>(
-         m_gate, "Elasticity", //
+         m_gate, "Elasticity"s, //
          [](const Gate* gate) { return gate->m_d.m_elasticity; }, //
          [](Gate* gate, float v) { gate->m_d.m_elasticity = v; }, PropertyPane::Unit::None, 3);
       props.InputFloat<Gate>(
-         m_gate, "Friction", //
+         m_gate, "Friction"s, //
          [](const Gate* gate) { return gate->m_d.m_friction; }, //
          [](Gate* gate, float v) { gate->m_d.m_friction = v; }, PropertyPane::Unit::None, 3);
       props.InputFloat<Gate>(
-         m_gate, "Damping", //
+         m_gate, "Damping"s, //
          [](const Gate* gate) { return gate->m_d.m_damping; }, //
          [](Gate* gate, float v) { gate->m_d.m_damping = v; }, PropertyPane::Unit::None, 3);
       props.InputFloat<Gate>(
-         m_gate, "Gravity Factor", //
+         m_gate, "Gravity Factor"s, //
          [](const Gate* gate) { return gate->m_d.m_gravityfactor; }, //
          [](Gate* gate, float v) { gate->m_d.m_gravityfactor = v; }, PropertyPane::Unit::None, 3);
       props.Checkbox<Gate>(

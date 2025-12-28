@@ -63,7 +63,7 @@ void BumperUIPart::Render(const EditorRenderContext& ctx)
 
 void BumperUIPart::UpdatePropertyPane(PropertyPane& props)
 {
-   props.EditableHeader("Bumper", m_bumper);
+   props.EditableHeader("Bumper"s, m_bumper);
 
    if (props.BeginSection("Visuals"s))
    {
@@ -134,15 +134,15 @@ void BumperUIPart::UpdatePropertyPane(PropertyPane& props)
    if (props.BeginSection("Position"s))
    {
       props.InputFloat<Bumper>(
-         m_bumper, "X", //
+         m_bumper, "X"s, //
          [](const Bumper* bumper) { return bumper->m_d.m_vCenter.x; }, //
          [](Bumper* bumper, float v) { bumper->Translate(Vertex2D(v - bumper->m_d.m_vCenter.x, 0.f)); }, PropertyPane::Unit::VPLength, 1);
       props.InputFloat<Bumper>(
-         m_bumper, "Y", //
+         m_bumper, "Y"s, //
          [](const Bumper* bumper) { return bumper->m_d.m_vCenter.y; }, //
          [](Bumper* bumper, float v) { bumper->Translate(Vertex2D(0.f, v - bumper->m_d.m_vCenter.y)); }, PropertyPane::Unit::VPLength, 1);
       props.SurfaceCombo<Bumper>(
-         m_bumper, "Surface", //
+         m_bumper, "Surface"s, //
          [](const Bumper* bumper) { return bumper->m_d.m_szSurface; }, //
          [](Bumper* bumper, const string& v) { bumper->m_d.m_szSurface = v; });
       props.EndSection();

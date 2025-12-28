@@ -160,21 +160,20 @@ void PropertyPane::ConvertUnit(Unit from, Unit& to, float& value, int& nDecimalA
    }
 }
 
-string PropertyPane::GetUnitLabel(Unit unit)
+const char* PropertyPane::GetUnitLabel(Unit unit)
 {
    switch (unit)
    {
-   case Unit::Inches: return "inches"s;
-   case Unit::Millimeters: return "mm"s;
-   case Unit::Degree: return "deg"s;
-   case Unit::Percent: return "%"s;
-   case Unit::PercentX100: return "%"s;
-   case Unit::VPLength: return "vpu"s;
-   case Unit::VPMass: return "vpu"s;
-   case Unit::VPSpeed: return "vpu"s;
-   default: return ""s;
+   case Unit::Inches: return "inches";
+   case Unit::Millimeters: return "mm";
+   case Unit::Degree: return "deg";
+   case Unit::Percent:
+   case Unit::PercentX100: return "%";
+   case Unit::VPLength:
+   case Unit::VPMass:
+   case Unit::VPSpeed: return "vpu";
+   default: return "";
    }
 }
-
 
 }
