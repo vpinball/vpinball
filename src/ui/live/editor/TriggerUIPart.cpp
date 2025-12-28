@@ -1,5 +1,3 @@
-#pragma once
-
 #include "core/stdafx.h"
 
 #include "TriggerUIPart.h"

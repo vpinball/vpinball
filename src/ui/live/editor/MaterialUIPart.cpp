@@ -1,5 +1,3 @@
-#pragma once
-
 #include "core/stdafx.h"
 
 #include "MaterialUIPart.h"
@@ -16,7 +14,8 @@ MaterialUIPart::~MaterialUIPart()
 {
 }
 
-void MaterialUIPart::Render(const EditorRenderContext& ctx) {
+void MaterialUIPart::Render(const EditorRenderContext& ctx)
+{
 }
 
 void MaterialUIPart::UpdatePropertyPane(PropertyPane& props)

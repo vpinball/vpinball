@@ -1,5 +1,3 @@
-#pragma once
-
 #include "core/stdafx.h"
 
 #include "LightSeqUIPart.h"
@@ -20,7 +18,7 @@ LightSeqUIPart::TransformMask LightSeqUIPart::GetTransform(Matrix3D& transform)
 }
 
 void LightSeqUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3& rot)
-{ 
+{
 }
 
 void LightSeqUIPart::Render(const EditorRenderContext& ctx) { }
