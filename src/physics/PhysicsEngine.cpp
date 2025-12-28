@@ -148,6 +148,29 @@ void PhysicsEngine::SetGravity(float slopeDeg, float strength)
    m_gravity.z = -cosf(ANGTORAD(slopeDeg)) * strength;
 }
 
+void PhysicsEngine::Remove(IEditable* editable)
+{
+   assert(editable->GetItemType() != eItemBall); // As they own the hit object
+   assert(editable->GetIHitable() != nullptr);
+
+   editable->GetIHitable()->PhysicRelease(this, false);
+   vector<HitObject *> &vho = m_hitoctree.BeginReset();
+   std::erase_if(vho,
+      [editable](HitObject *ho)
+      {
+         if (ho->m_editable == editable)
+         {
+            delete ho;
+            return true;
+         }
+         return false;
+      });
+   m_hitoctree.EndReset();
+
+   if (m_UIQuadTtree)
+      m_UIQuadTtree->Remove(editable);
+}
+
 void PhysicsEngine::AddCollider(HitObject *collider, const bool isUI)
 {
    assert(collider->m_editable != nullptr);

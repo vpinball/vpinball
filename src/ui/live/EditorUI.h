@@ -129,6 +129,9 @@ private:
    IEditable *m_lastUndoPart = nullptr;
    unsigned int m_lastUndoId = 0;
 
+   // Add/Remove parts
+   void DeleteSelection();
+
    // Outliner
    float m_outliner_width = 0.0f;
    string m_outlinerFilter;

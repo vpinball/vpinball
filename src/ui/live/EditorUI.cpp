@@ -123,6 +123,7 @@ void EditorUI::ResetCameraFromPlayer()
 
 void EditorUI::Render3D()
 {
+   UpdateEditableList();
    RenderContext ctx(m_player, nullptr, m_camMode, m_shadeMode, (m_table->m_liveBaseTable != nullptr) && m_player->IsPlaying());
    for (const auto &uiPart : m_editables)
    {
@@ -142,9 +143,6 @@ void EditorUI::RenderUI()
    Selection previousSelection = m_selection;
 
 #if !((defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__))
-   m_menubar_height = 0.0f;
-   m_toolbar_height = 0.0f;
-
    UpdateEditableList();
 
    // Gives some transparency when positioning camera to better view camera view bounds
@@ -154,6 +152,9 @@ void EditorUI::RenderUI()
    bool showFullUI = true;
    showFullUI &= !m_showRendererInspection;
    showFullUI &= !m_flyMode;
+
+   m_menubar_height = 0.0f;
+   m_toolbar_height = showFullUI ? 20.f * m_liveUI.GetDPI() : 0.f;
 
    if (showFullUI)
    {
@@ -202,7 +203,6 @@ void EditorUI::RenderUI()
       }
 
       // Main toolbar
-      m_toolbar_height = 20.f * m_liveUI.GetDPI();
       const ImGuiViewport *const viewport = ImGui::GetMainViewport();
       ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x, viewport->Pos.y + m_menubar_height));
       ImGui::SetNextWindowSize(ImVec2(viewport->Size.x, m_toolbar_height));
@@ -221,7 +221,12 @@ void EditorUI::RenderUI()
             m_player->m_step = true;
          ImGui::EndDisabled();
       }
-      float buttonWidth = //
+      else
+      {
+         if (m_selection.type == Selection::S_EDITABLE && ImGui::Button(ICON_FK_TRASH_O))
+            DeleteSelection();
+      }
+      const float buttonWidth = //
          ImGui::CalcTextSize(ICON_FK_EXCHANGE, nullptr, true).x + ImGui::GetStyle().FramePadding.x * 2.0f //
          + ImGui::CalcTextSize(ICON_FK_STICKY_NOTE, nullptr, true).x + ImGui::GetStyle().FramePadding.x * 2.0f //
          + ImGui::CalcTextSize(ICON_FK_FILTER, nullptr, true).x + ImGui::GetStyle().FramePadding.x * 2.0f;
@@ -596,9 +601,15 @@ void EditorUI::RenderUI()
       {
          m_flyMode = !m_flyMode;
       }
-      else if (ImGui::IsKeyPressed(ImGuiKey_A) && io.KeyAlt)
+      else if (ImGui::IsKeyPressed(ImGuiKey_A))
       {
-         m_selection = Selection();
+         if (io.KeyAlt && !io.KeyCtrl && !io.KeyShift)
+            m_selection = Selection();
+      }
+      else if (ImGui::IsKeyPressed(ImGuiKey_Delete))
+      {
+         if (!io.KeyAlt && !io.KeyCtrl && !io.KeyShift)
+            DeleteSelection();
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_H))
       {
@@ -787,7 +798,9 @@ void EditorUI::RenderUI()
 
    if (m_selection != previousSelection)
    {
-      if ((previousSelection.type == Selection::S_EDITABLE) && (previousSelection.uiPart->GetEditable()->GetIHitable() != nullptr)
+      if ((previousSelection.type == Selection::S_EDITABLE) //
+         && FindIndexOf(m_table->m_vedit, previousSelection.uiPart->GetEditable()) != -1 // Not deleted
+         && (previousSelection.uiPart->GetEditable()->GetIHitable() != nullptr)
          && (previousSelection.uiPart->GetEditable()->GetItemType() != eItemBall))
          m_player->m_physics->SetStatic(previousSelection.uiPart->GetEditable());
       if ((m_selection.type == Selection::S_EDITABLE) && (m_selection.uiPart->GetEditable()->GetIHitable() != nullptr) && (m_selection.uiPart->GetEditable()->GetItemType() != eItemBall))
@@ -810,6 +823,24 @@ void EditorUI::PushUndo(IEditable *part, unsigned int undoId)
    m_table->m_undo.BeginUndo();
    m_table->m_undo.MarkForUndo(part);
    m_table->m_undo.EndUndo();
+}
+
+void EditorUI::DeleteSelection()
+{
+   if (m_selection.type == Selection::S_EDITABLE && m_selection.uiPart->GetEditable()->GetItemType() != eItemBall && m_selection.uiPart->GetEditable()->GetPartGroup() != nullptr)
+   {
+      IEditable* edit = m_selection.uiPart->GetEditable();
+      RemoveFromVectorSingle(m_editables, m_selection.uiPart);
+      m_selection = Selection();
+      if (edit->GetIHitable())
+      {
+         m_player->m_physics->Remove(edit);
+         edit->GetIHitable()->RenderRelease();
+      }
+      RemoveFromVectorSingle(g_pplayer->m_vhitables, edit);
+      RemoveFromVectorSingle(m_table->m_vedit, edit);
+      edit->Release();
+   }
 }
 
 void EditorUI::UpdateEditableList()

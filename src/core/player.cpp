@@ -874,11 +874,11 @@ Player::~Player()
    assert(m_vballDelete.empty());
    m_vball.clear();
 
-   if (m_implicitPlayfieldMesh)
+   if (m_implicitPlayfieldMesh && FindIndexOf(m_ptable->m_vedit, (IEditable *)m_implicitPlayfieldMesh) != -1)
    {
       RemoveFromVectorSingle(m_ptable->m_vedit, (IEditable *)m_implicitPlayfieldMesh);
       m_ptable->m_pcv->RemoveItem(m_implicitPlayfieldMesh->GetScriptable());
-      delete m_implicitPlayfieldMesh;
+      m_implicitPlayfieldMesh->Release();
       m_implicitPlayfieldMesh = nullptr;
    }
 
