@@ -1244,7 +1244,7 @@ void EditorUI::TableProperties(PropertyPane &props)
       props.EndSection();
    }
 
-   if (props.BeginSection("Visual"s))
+   if (props.BeginSection("Visuals"s))
    {
 
       props.EndSection();
@@ -1347,7 +1347,7 @@ void EditorUI::CameraProperties(PropertyPane &props, int bgSet)
       ImGui::NewLine();
    }
 
-   if (props.BeginSection("Visual"s))
+   if (props.BeginSection("Visuals"s))
    {
       ViewSetup *vs = &m_table->mViewSetups[bgSet];
       props.Combo<ViewSetup>(
@@ -1407,7 +1407,7 @@ void EditorUI::ImageProperties(PropertyPane &props, Texture *texture)
    ImTextureID image = m_renderer->m_renderDevice->m_texMan.LoadTexture(texture, false);
    if (image)
    {
-      if (props.BeginSection("Visual"s))
+      if (props.BeginSection("Visuals"s))
       {
          std::shared_ptr<const BaseTexture> tex = texture->GetRawBitmap(false, 0);
 
@@ -1440,7 +1440,7 @@ void EditorUI::RenderProbeProperties(PropertyPane &props, RenderProbe *probe)
    RenderProbe *editedProbe = props.GetEditedPart<RenderProbe>(probe);
    props.Header("Render Probe"s, [editedProbe]() { return editedProbe->GetName(); }, [editedProbe](const string &v) { editedProbe->SetName(v); });
 
-   if (props.BeginSection("Visual"s))
+   if (props.BeginSection("Visuals"s))
    {
       props.Combo<RenderProbe>(
          probe, "Type"s, vector { "Reflection"s, "Refraction"s }, //
@@ -1490,7 +1490,7 @@ void EditorUI::MaterialProperties(PropertyPane &props, Material *material)
    Material *editedMaterial = props.GetEditedPart<Material>(material);
    props.Header("Material"s, [editedMaterial]() { return editedMaterial->m_name; }, [editedMaterial](const string &v) { editedMaterial->m_name = v; });
 
-   if (props.BeginSection("Visual"s))
+   if (props.BeginSection("Visuals"s))
    {
       props.Combo<Material>(
          material, "Type"s, vector { "Default"s, "Metal"s }, //

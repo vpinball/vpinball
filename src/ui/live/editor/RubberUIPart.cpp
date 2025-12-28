@@ -46,7 +46,7 @@ void RubberUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("Rubber"s, m_rubber);
 
-   if (props.BeginSection("Visual"s))
+   if (props.BeginSection("Visuals"s))
    {
       props.ImageCombo<Rubber>(
          m_rubber, "Image"s, //

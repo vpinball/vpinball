@@ -15,15 +15,21 @@ GateUIPart::~GateUIPart() { m_gate->m_d.m_visible = m_visible; }
 
 GateUIPart::TransformMask GateUIPart::GetTransform(Matrix3D& transform)
 {
-   const float height = m_gate->GetPTable()->GetSurfaceHeight(m_gate->m_d.m_szSurface, m_gate->m_d.m_vCenter.x, m_gate->m_d.m_vCenter.y);
-   transform = Matrix3D::MatrixTranslate(m_gate->m_d.m_vCenter.x, m_gate->m_d.m_vCenter.y, height);
-   return TM_TransAny;
+   const Matrix3D Smatrix = Matrix3D::MatrixScale(m_gate->m_d.m_length);
+   const float height = m_gate->GetPTable()->GetSurfaceHeight(m_gate->m_d.m_szSurface, m_gate->m_d.m_vCenter.x, m_gate->m_d.m_vCenter.y) + m_gate->m_d.m_height;
+   const Matrix3D Tmatrix = Matrix3D::MatrixTranslate(m_gate->m_d.m_vCenter.x, m_gate->m_d.m_vCenter.y, height);
+   const Matrix3D Rmatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_gate->m_d.m_rotation));
+   transform = (Smatrix * Rmatrix) * Tmatrix;
+   return static_cast<TransformMask>(static_cast<int>(TM_TransAny) | static_cast<int>(TM_ScaleAll) | static_cast<int>(TM_RotZ));
 }
 
 void GateUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3& rot)
 {
    m_gate->m_d.m_vCenter.x = pos.x;
    m_gate->m_d.m_vCenter.y = pos.y;
+   m_gate->m_d.m_height = pos.z - m_gate->GetPTable()->GetSurfaceHeight(m_gate->m_d.m_szSurface, m_gate->m_d.m_vCenter.x, m_gate->m_d.m_vCenter.y);
+   m_gate->m_d.m_length = (scale.x + scale.y + scale.z) / 3.f;
+   m_gate->m_d.m_rotation = rot.z;
 }
 
 void GateUIPart::Render(const EditorRenderContext& ctx)
@@ -36,6 +42,7 @@ void GateUIPart::Render(const EditorRenderContext& ctx)
    {
       m_gate->m_d.m_visible = true;
       ctx.DrawWireframe(m_gate);
+      ctx.DrawHitObjects(m_gate);
    }
 
    m_gate->m_d.m_visible = isUIVisible && m_visible;
@@ -97,14 +104,10 @@ void GateUIPart::UpdatePropertyPane(PropertyPane& props)
 
    if (props.BeginSection("Position"s))
    {
-      props.InputFloat<Gate>(
-         m_gate, "X"s, //
-         [](const Gate* gate) { return gate->m_d.m_vCenter.x; }, //
-         [](Gate* gate, float v) { gate->Translate(Vertex2D(v - gate->m_d.m_vCenter.x, 0.f)); }, PropertyPane::Unit::VPLength, 1);
-      props.InputFloat<Gate>(
-         m_gate, "Y"s, //
-         [](const Gate* gate) { return gate->m_d.m_vCenter.y; }, //
-         [](Gate* gate, float v) { gate->Translate(Vertex2D(0.f, v - gate->m_d.m_vCenter.y)); }, PropertyPane::Unit::VPLength, 1);
+      props.InputFloat2<Gate>(
+         m_gate, "Position"s, //
+         [](const Gate* gate) { return gate->m_d.m_vCenter; }, //
+         [](Gate* gate, const Vertex2D& v) { gate->Translate(Vertex2D(v.x - gate->m_d.m_vCenter.x, v.y - gate->m_d.m_vCenter.y)); }, PropertyPane::Unit::VPLength, 1);
       props.SurfaceCombo<Gate>(
          m_gate, "Surface"s, //
          [](const Gate* gate) { return gate->m_d.m_szSurface; }, //

@@ -26,8 +26,8 @@ void DispReelUIPart::Render(const EditorRenderContext& ctx) { }
 void DispReelUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("DispReel"s, m_dispreel);
-
-   if (props.BeginSection("Visual"s))
+   
+   if (props.BeginSection("Visuals"s))
    {
       props.EndSection();
    }

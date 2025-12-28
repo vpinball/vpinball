@@ -41,8 +41,8 @@ void TextBoxUIPart::Render(const EditorRenderContext& ctx)
 void TextBoxUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("TextBox"s, m_textbox);
-
-   if (props.BeginSection("Visual"s))
+   
+   if (props.BeginSection("Visuals"s))
    {
       props.EndSection();
    }

@@ -172,14 +172,10 @@ void LightUIPart::UpdatePropertyPane(PropertyPane& props)
 
    if (props.BeginSection("Position"s))
    {
-      props.InputFloat<Light>(
-         m_light, "X"s, //
-         [](const Light* light) { return light->m_d.m_vCenter.x; }, //
-         [](Light* light, float v) { light->Translate(Vertex2D(v - light->m_d.m_vCenter.x, 0.f)); }, PropertyPane::Unit::VPLength, 1);
-      props.InputFloat<Light>(
-         m_light, "Y"s, //
-         [](const Light* light) { return light->m_d.m_vCenter.y; }, //
-         [](Light* light, float v) { light->Translate(Vertex2D(0.f, v - light->m_d.m_vCenter.y)); }, PropertyPane::Unit::VPLength, 1);
+      props.InputFloat2<Light>(
+         m_light, "Position"s, //
+         [](const Light* light) { return light->m_d.m_vCenter; }, //
+         [](Light* light, const Vertex2D& v) { light->Translate(Vertex2D(v.x - light->m_d.m_vCenter.x, v.y - light->m_d.m_vCenter.y)); }, PropertyPane::Unit::VPLength, 1);
       props.SurfaceCombo<Light>(
          m_light, "Surface"s, //
          [](const Light* light) { return light->m_d.m_szSurface; }, //

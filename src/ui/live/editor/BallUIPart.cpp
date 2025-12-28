@@ -40,7 +40,7 @@ void BallUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("Ball"s, m_ball);
 
-   if (props.BeginSection("Visual"s))
+   if (props.BeginSection("Visuals"s))
    {
       props.Checkbox<Ball>(
          m_ball, "Visible"s, //
