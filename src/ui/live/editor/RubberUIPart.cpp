@@ -24,6 +24,7 @@ void RubberUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3& 
 {
    const Vertex2D center = m_rubber->GetPointCenter();
    m_rubber->TranslatePoints(Vertex2D { pos.x - center.x, pos.y - center.y });
+   m_rubber->GetPTable()->m_undo.Undo(true);
    m_rubber->m_d.m_height += pos.z - m_rubber->m_d.m_height;
 }
 

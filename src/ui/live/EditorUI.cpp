@@ -394,7 +394,10 @@ void EditorUI::RenderUI()
       const Matrix3D prevTransform(transform);
       ImGuizmo::Manipulate(camViewLH, (float *)(m_camProj.m), m_gizmoOperation, m_gizmoMode, (float *)(transform.m));
       if (memcmp(transform.m, prevTransform.m, 16 * sizeof(float)) != 0)
+      {
+         PushUndo(m_selection.type == EditorUI::Selection::SelectionType::S_EDITABLE ? m_selection.uiPart->GetEditable() : m_table, 0x1000);
          SetSelectionTransform(transform);
+      }
    }
 
    m_renderer->SetShadeMode(m_shadeMode);
@@ -582,15 +585,12 @@ void EditorUI::RenderUI()
    }
    if (!io.WantCaptureKeyboard)
    {
-      if (ImGui::IsKeyReleased(ImGuiKey_Escape) && m_gizmoOperation != ImGuizmo::NONE)
+      if (ImGui::IsKeyReleased(ImGuiKey_Escape))
       {
-         // Cancel current operation
-         m_gizmoOperation = ImGuizmo::NONE;
-      }
-      else if (ImGui::IsKeyReleased(ImGuiKey_Escape) && m_selection.type != Selection::S_NONE)
-      {
-         // Cancel current selection
-         m_selection = Selection();
+         if (m_gizmoOperation != ImGuizmo::NONE)
+            m_gizmoOperation = ImGuizmo::NONE; // Cancel current operation
+         else if (m_selection.type != Selection::S_NONE)
+            m_selection = Selection(); // Cancel current selection
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_F))
       {
@@ -686,11 +686,21 @@ void EditorUI::RenderUI()
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_Z))
       {
-         switch (m_shadeMode)
-         {
-         case Renderer::ShadeMode::Default: m_shadeMode = Renderer::ShadeMode::Wireframe; break;
-         case Renderer::ShadeMode::Wireframe: m_shadeMode = Renderer::ShadeMode::NoDepthWireframe; break;
-         case Renderer::ShadeMode::NoDepthWireframe: m_shadeMode = Renderer::ShadeMode::Default; break;
+         if (io.KeyCtrl)
+         { // Undo
+            m_lastUndoPart = nullptr;
+            m_lastUndoId = 0;
+            if (m_table->m_liveBaseTable == nullptr)
+               m_table->m_undo.Undo();
+         }
+         else if (!io.KeyShift && !io.KeyAlt)
+         { // Wireframe shade mode selection
+            switch (m_shadeMode)
+            {
+            case Renderer::ShadeMode::Default: m_shadeMode = Renderer::ShadeMode::Wireframe; break;
+            case Renderer::ShadeMode::Wireframe: m_shadeMode = Renderer::ShadeMode::NoDepthWireframe; break;
+            case Renderer::ShadeMode::NoDepthWireframe: m_shadeMode = Renderer::ShadeMode::Default; break;
+            }
          }
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_Keypad0))
@@ -783,6 +793,23 @@ void EditorUI::RenderUI()
       if ((m_selection.type == Selection::S_EDITABLE) && (m_selection.uiPart->GetEditable()->GetIHitable() != nullptr) && (m_selection.uiPart->GetEditable()->GetItemType() != eItemBall))
          m_player->m_physics->SetDynamic(m_selection.uiPart->GetEditable());
    }
+}
+
+void EditorUI::PushUndo(IEditable *part, unsigned int undoId)
+{
+   // No undo support in inspection mode (not implemented as it needs to handle both version of the table)
+   if (m_table->m_liveBaseTable)
+      return;
+
+   // Filter out continuous modification after first one (dragging a part, editing values,...)
+   if (part == m_lastUndoPart && undoId == m_lastUndoId)
+      return;
+
+   m_lastUndoPart = part;
+   m_lastUndoId = undoId;
+   m_table->m_undo.BeginUndo();
+   m_table->m_undo.MarkForUndo(part);
+   m_table->m_undo.EndUndo();
 }
 
 void EditorUI::UpdateEditableList()
@@ -1125,7 +1152,14 @@ void EditorUI::UpdatePropertyUI()
                switch (m_selection.type)
                {
                case Selection::SelectionType::S_NONE: TableProperties(props); break;
-               case Selection::SelectionType::S_EDITABLE: m_selection.uiPart->UpdatePropertyPane(props); break;
+               case Selection::SelectionType::S_EDITABLE:
+                  m_selection.uiPart->UpdatePropertyPane(props);
+                  if (props.GetModifiedField() > 0)
+                  {
+                     m_renderer->ReinitRenderable(m_selection.uiPart->GetEditable()->GetIHitable());
+                     m_player->m_physics->Update(m_selection.uiPart->GetEditable());
+                  }
+                  break;
                case Selection::SelectionType::S_IMAGE: ImageProperties(props, m_selection.image); break;
                case Selection::SelectionType::S_CAMERA: CameraProperties(props, m_selection.camera); break;
                case Selection::SelectionType::S_MATERIAL: MaterialProperties(props, m_selection.material); break;
@@ -1143,8 +1177,20 @@ void EditorUI::UpdatePropertyUI()
       {
       case Selection::SelectionType::S_NONE: TableProperties(props); break;
       case Selection::SelectionType::S_EDITABLE:
+         m_table->m_undo.BeginUndo();
+         m_table->m_undo.MarkForUndo(m_selection.uiPart->GetEditable());
+         m_table->m_undo.EndUndo();
          m_selection.uiPart->UpdatePropertyPane(props);
-         if (props.IsModified())
+         if (props.GetModifiedField() > 0 && (m_lastUndoPart != m_selection.uiPart->GetEditable() || m_lastUndoId != (0x2000 | props.GetModifiedField())))
+         {
+            m_lastUndoPart = m_selection.uiPart->GetEditable();
+            m_lastUndoId = 0x2000 | props.GetModifiedField();
+         }
+         else
+         {
+            m_table->m_undo.Undo(true);
+         }
+         if (props.GetModifiedField() > 0)
          {
             m_renderer->ReinitRenderable(m_selection.uiPart->GetEditable()->GetIHitable());
             m_player->m_physics->Update(m_selection.uiPart->GetEditable());

@@ -55,8 +55,12 @@ public:
    template <class T> void RenderProbeCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
    template <class T> void CollectionCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter);
 
-   bool IsModified() const { return m_modified; }
-   void ResetModified() { m_modified = false; }
+   int GetModifiedField() const { return m_modified; }
+   void ResetModified()
+   {
+      m_modified = -1;
+      m_modifyFieldId = 0;
+   }
 
 private:
    const char* ICON_SAVE = ICON_FK_FLOPPY_O;
@@ -64,7 +68,8 @@ private:
    bool IsStartup() const { return m_table->m_liveBaseTable && m_showStartup; }
    template <class T> T* GetStartupObj(T* obj) const;
 
-   bool m_modified = false;
+   int m_modified = 0;
+   int m_modifyFieldId = 1;
 
    Unit m_lengthUnit = Unit::None;
    bool m_showStartup = false;
@@ -138,6 +143,7 @@ template <class T> void PropertyPane::TimerSection(T* obj, const std::function<T
 template <class T> inline void PropertyPane::Checkbox(T* obj, const string& label, const std::function<bool(const T*)>& getter, const std::function<void(T*, bool)>& setter)
 {
    assert(m_inSection);
+   m_modifyFieldId++;
    T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
    if (startupObj)
    {
@@ -150,7 +156,7 @@ template <class T> inline void PropertyPane::Checkbox(T* obj, const string& labe
       {
          // FIXME implement undo
          setter(displayObj, value);
-         m_modified = true;
+         m_modified = m_modifyFieldId;
       }
       ImGui::TableNextColumn();
       ImGui::BeginDisabled(value == getter(otherObj));
@@ -158,7 +164,7 @@ template <class T> inline void PropertyPane::Checkbox(T* obj, const string& labe
       {
          // FIXME implement undo
          setter(otherObj, getter(displayObj));
-         m_modified = true;
+         m_modified = m_modifyFieldId;
       }
       if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
       {
@@ -179,7 +185,7 @@ template <class T> inline void PropertyPane::Checkbox(T* obj, const string& labe
       {
          // FIXME implement undo
          setter(obj, value);
-         m_modified = true;
+         m_modified = m_modifyFieldId;
       }
       if (m_sectionHasSync)
       {
@@ -191,6 +197,7 @@ template <class T> inline void PropertyPane::Checkbox(T* obj, const string& labe
 template <class T> inline void PropertyPane::InputInt(T* obj, const string& label, const std::function<int(const T*)>& getter, const std::function<void(T*, int)>& setter)
 {
    assert(m_inSection);
+   m_modifyFieldId++;
    T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
    if (startupObj)
    {
@@ -203,7 +210,7 @@ template <class T> inline void PropertyPane::InputInt(T* obj, const string& labe
       {
          // FIXME implement undo
          setter(displayObj, value);
-         m_modified = true;
+         m_modified = m_modifyFieldId;
       }
       ImGui::TableNextColumn();
       ImGui::BeginDisabled(value == getter(otherObj));
@@ -211,7 +218,7 @@ template <class T> inline void PropertyPane::InputInt(T* obj, const string& labe
       {
          // FIXME implement undo
          setter(otherObj, getter(displayObj));
-         m_modified = true;
+         m_modified = m_modifyFieldId;
       }
       if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
       {
@@ -232,7 +239,7 @@ template <class T> inline void PropertyPane::InputInt(T* obj, const string& labe
       {
          // FIXME implement undo
          setter(obj, value);
-         m_modified = true;
+         m_modified = m_modifyFieldId;
       }
       if (m_sectionHasSync)
       {
@@ -245,6 +252,7 @@ template <class T>
 inline void PropertyPane::InputFloat(T* obj, const string& label, const std::function<float(const T*)>& getter, const std::function<void(T*, float)>& setter, Unit unit, int nDecimals)
 {
    assert(m_inSection);
+   m_modifyFieldId++;
    float displayValue = 0.f, value;
    int nDecimalAdjust;
    Unit displayUnit = m_lengthUnit; // ConvertUnit will set it to the supported converted display unit
@@ -267,7 +275,7 @@ inline void PropertyPane::InputFloat(T* obj, const string& label, const std::fun
          value = displayValue;
          ConvertUnit(displayUnit, unit, value, nDecimalAdjust);
          setter(displayObj, value);
-         m_modified = true;
+         m_modified = m_modifyFieldId;
       }
       ImGui::TableNextColumn();
       ImGui::BeginDisabled(value == getter(otherObj));
@@ -275,7 +283,7 @@ inline void PropertyPane::InputFloat(T* obj, const string& label, const std::fun
       {
          // FIXME implement undo
          setter(otherObj, getter(displayObj));
-         m_modified = true;
+         m_modified = m_modifyFieldId;
       }
       if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
       {
@@ -299,7 +307,7 @@ inline void PropertyPane::InputFloat(T* obj, const string& label, const std::fun
          value = displayValue;
          ConvertUnit(displayUnit, unit, value, nDecimalAdjust);
          setter(obj, value);
-         m_modified = true;
+         m_modified = m_modifyFieldId;
       }
       if (m_sectionHasSync)
       {
@@ -313,6 +321,7 @@ inline void PropertyPane::InputFloat2(
    T* obj, const string& label, const std::function<Vertex2D(const T*)>& getter, const std::function<void(T*, const Vertex2D&)>& setter, Unit unit, int nDecimals)
 {
    assert(m_inSection);
+   m_modifyFieldId++;
    Vertex2D displayValue, value;
    int nDecimalAdjust;
    Unit displayUnit = m_lengthUnit; // ConvertUnit will set it to the supported converted display unit
@@ -337,7 +346,7 @@ inline void PropertyPane::InputFloat2(
          ConvertUnit(displayUnit, unit, value.x, nDecimalAdjust);
          ConvertUnit(displayUnit, unit, value.y, nDecimalAdjust);
          setter(displayObj, value);
-         m_modified = true;
+         m_modified = m_modifyFieldId;
       }
       ImGui::TableNextColumn();
       ImGui::BeginDisabled(value == getter(otherObj));
@@ -345,7 +354,7 @@ inline void PropertyPane::InputFloat2(
       {
          // FIXME implement undo
          setter(otherObj, getter(displayObj));
-         m_modified = true;
+         m_modified = m_modifyFieldId;
       }
       if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
       {
@@ -371,7 +380,7 @@ inline void PropertyPane::InputFloat2(
          ConvertUnit(displayUnit, unit, value.x, nDecimalAdjust);
          ConvertUnit(displayUnit, unit, value.y, nDecimalAdjust);
          setter(obj, value);
-         m_modified = true;
+         m_modified = m_modifyFieldId;
       }
       if (m_sectionHasSync)
       {
@@ -384,6 +393,7 @@ template <class T>
 inline void PropertyPane::InputFloat3(T* obj, const string& label, const std::function<vec3(const T*)>& getter, const std::function<void(T*, const vec3&)>& setter, Unit unit, int nDecimals)
 {
    assert(m_inSection);
+   m_modifyFieldId++;
    vec3 displayValue, value;
    int nDecimalAdjust;
    Unit displayUnit = m_lengthUnit; // ConvertUnit will set it to the supported converted display unit
@@ -410,7 +420,7 @@ inline void PropertyPane::InputFloat3(T* obj, const string& label, const std::fu
          ConvertUnit(displayUnit, unit, value.y, nDecimalAdjust);
          ConvertUnit(displayUnit, unit, value.z, nDecimalAdjust);
          setter(displayObj, value);
-         m_modified = true;
+         m_modified = m_modifyFieldId;
       }
       ImGui::TableNextColumn();
       ImGui::BeginDisabled(value == getter(otherObj));
@@ -418,7 +428,7 @@ inline void PropertyPane::InputFloat3(T* obj, const string& label, const std::fu
       {
          // FIXME implement undo
          setter(otherObj, getter(displayObj));
-         m_modified = true;
+         m_modified = m_modifyFieldId;
       }
       if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
       {
@@ -446,7 +456,7 @@ inline void PropertyPane::InputFloat3(T* obj, const string& label, const std::fu
          ConvertUnit(displayUnit, unit, value.y, nDecimalAdjust);
          ConvertUnit(displayUnit, unit, value.z, nDecimalAdjust);
          setter(obj, value);
-         m_modified = true;
+         m_modified = m_modifyFieldId;
       }
       if (m_sectionHasSync)
       {
@@ -458,6 +468,7 @@ inline void PropertyPane::InputFloat3(T* obj, const string& label, const std::fu
 template <class T> inline void PropertyPane::InputRGB(T* obj, const string& label, const std::function<vec3(const T*)>& getter, const std::function<void(T*, const vec3&)>& setter)
 {
    assert(m_inSection);
+   m_modifyFieldId++;
    T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
    if (startupObj)
    {
@@ -470,7 +481,7 @@ template <class T> inline void PropertyPane::InputRGB(T* obj, const string& labe
       {
          // FIXME implement undo
          setter(displayObj, value);
-         m_modified = true;
+         m_modified = m_modifyFieldId;
       }
       ImGui::TableNextColumn();
       ImGui::BeginDisabled(value == getter(otherObj));
@@ -478,7 +489,7 @@ template <class T> inline void PropertyPane::InputRGB(T* obj, const string& labe
       {
          // FIXME implement undo
          setter(otherObj, getter(displayObj));
-         m_modified = true;
+         m_modified = m_modifyFieldId;
       }
       if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
       {
@@ -499,7 +510,7 @@ template <class T> inline void PropertyPane::InputRGB(T* obj, const string& labe
       {
          // FIXME implement undo
          setter(obj, value);
-         m_modified = true;
+         m_modified = m_modifyFieldId;
       }
       if (m_sectionHasSync)
       {
@@ -511,6 +522,7 @@ template <class T> inline void PropertyPane::InputRGB(T* obj, const string& labe
 template <class T> inline void PropertyPane::InputString(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter)
 {
    assert(m_inSection);
+   m_modifyFieldId++;
    vector<char> buffer(256);
    T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
    if (startupObj)
@@ -526,7 +538,7 @@ template <class T> inline void PropertyPane::InputString(T* obj, const string& l
          // FIXME implement undo
          value = string(buffer.data());
          setter(displayObj, value);
-         m_modified = true;
+         m_modified = m_modifyFieldId;
       }
       ImGui::TableNextColumn();
       ImGui::BeginDisabled(value == getter(otherObj));
@@ -534,7 +546,7 @@ template <class T> inline void PropertyPane::InputString(T* obj, const string& l
       {
          // FIXME implement undo
          setter(otherObj, getter(displayObj));
-         m_modified = true;
+         m_modified = m_modifyFieldId;
       }
       if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
       {
@@ -557,7 +569,7 @@ template <class T> inline void PropertyPane::InputString(T* obj, const string& l
          // FIXME implement undo
          value = string(buffer.data());
          setter(obj, value);
-         m_modified = true;
+         m_modified = m_modifyFieldId;
       }
       if (m_sectionHasSync)
       {
@@ -570,6 +582,7 @@ template <class T>
 inline void PropertyPane::Combo(T* obj, const string& label, const std::vector<string>& values, const std::function<int(const T*)>& getter, const std::function<void(T*, int)>& setter)
 {
    assert(m_inSection);
+   m_modifyFieldId++;
    T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
    if (startupObj)
    {
@@ -587,7 +600,7 @@ inline void PropertyPane::Combo(T* obj, const string& label, const std::vector<s
                // FIXME implement undo
                setter(displayObj, static_cast<int>(i));
                value = static_cast<int>(i);
-               m_modified = true;
+               m_modified = m_modifyFieldId;
             }
          }
          ImGui::EndCombo();
@@ -598,7 +611,7 @@ inline void PropertyPane::Combo(T* obj, const string& label, const std::vector<s
       {
          // FIXME implement undo
          setter(otherObj, getter(displayObj));
-         m_modified = true;
+         m_modified = m_modifyFieldId;
       }
       if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
       {
@@ -623,7 +636,7 @@ inline void PropertyPane::Combo(T* obj, const string& label, const std::vector<s
             {
                // FIXME implement undo
                setter(obj, static_cast<int>(i));
-               m_modified = true;
+               m_modified = m_modifyFieldId;
             }
          }
          ImGui::EndCombo();
@@ -696,7 +709,7 @@ inline void PropertyPane::RenderProbeCombo(T* obj, const string& label, const st
 template <class T> void PropertyPane::CollectionCombo(T* obj, const string& label, const std::function<string(const T*)>& getter, const std::function<void(T*, const string&)>& setter)
 {
    std::vector<string> collections;
-   for (size_t i = 0; i < m_table->m_vcollection.size(); i++)
+   for (int i = 0; i < m_table->m_vcollection.size(); i++)
       collections.push_back(MakeString(m_table->m_vcollection[i].m_wzName));
    std::sort(collections.begin(), collections.end(), [](const std::string& a, const std::string& b)
       { return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end(), [](char c1, char c2) { return tolower(c1) < tolower(c2); }); });

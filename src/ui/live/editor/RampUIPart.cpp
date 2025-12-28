@@ -24,6 +24,7 @@ void RampUIPart::SetTransform(const vec3& pos, const vec3& scale, const vec3& ro
 {
    const Vertex2D center = m_ramp->GetPointCenter();
    m_ramp->TranslatePoints(Vertex2D { pos.x - center.x, pos.y - center.y });
+   m_ramp->GetPTable()->m_undo.Undo(true);
    const float pz = 0.5f * (m_ramp->m_d.m_heightbottom + m_ramp->m_d.m_heighttop);
    m_ramp->m_d.m_heightbottom += pos.z - pz;
    m_ramp->m_d.m_heighttop += pos.z - pz;
