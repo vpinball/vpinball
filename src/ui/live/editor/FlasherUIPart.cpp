@@ -52,7 +52,7 @@ void FlasherUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("Flasher"s, m_flasher);
 
-   if (props.BeginSection("Visual"s))
+   if (props.BeginSection("Visuals"s))
    {
       props.Checkbox<Flasher>(
          m_flasher, "Visible"s, //

@@ -45,8 +45,8 @@ void KickerUIPart::Render(const EditorRenderContext& ctx)
 void KickerUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("Kicker"s, m_kicker);
-
-   if (props.BeginSection("Visual"s))
+   
+   if (props.BeginSection("Visuals"s))
    {
       props.MaterialCombo<Kicker>(
          m_kicker, "Material"s, //
@@ -69,14 +69,10 @@ void KickerUIPart::UpdatePropertyPane(PropertyPane& props)
 
    if (props.BeginSection("Position"s))
    {
-      props.InputFloat<Kicker>(
-         m_kicker, "X"s, //
-         [](const Kicker* kicker) { return kicker->m_d.m_vCenter.x; }, //
-         [](Kicker* kicker, float v) { kicker->Translate(Vertex2D(v - kicker->m_d.m_vCenter.x, 0.f)); }, PropertyPane::Unit::VPLength, 1);
-      props.InputFloat<Kicker>(
-         m_kicker, "Y"s, //
-         [](const Kicker* kicker) { return kicker->m_d.m_vCenter.y; }, //
-         [](Kicker* kicker, float v) { kicker->Translate(Vertex2D(0.f, v - kicker->m_d.m_vCenter.y)); }, PropertyPane::Unit::VPLength, 1);
+      props.InputFloat2<Kicker>(
+         m_kicker, "Position"s, //
+         [](const Kicker* kicker) { return kicker->m_d.m_vCenter; }, //
+         [](Kicker* kicker, const Vertex2D& v) { kicker->Translate(Vertex2D(v.x - kicker->m_d.m_vCenter.x, v.y - kicker->m_d.m_vCenter.y)); }, PropertyPane::Unit::VPLength, 1);
       props.SurfaceCombo<Kicker>(
          m_kicker, "Surface"s, //
          [](const Kicker* kicker) { return kicker->m_d.m_szSurface; }, //

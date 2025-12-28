@@ -17,7 +17,9 @@ public:
    void Set(const float a, const float b) { x = a; y = b; }
    void SetZero() { Set(0.f, 0.f); }
 
-   Vertex2D operator+ (const Vertex2D& v) const
+   bool operator==(const Vertex2D& v) const { return (x == v.x) && (y == v.y); }
+
+   Vertex2D operator+(const Vertex2D& v) const
    {
       return {x + v.x, y + v.y};
    }

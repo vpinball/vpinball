@@ -44,8 +44,8 @@ void SpinnerUIPart::Render(const EditorRenderContext& ctx)
 void SpinnerUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("Spinner"s, m_spinner);
-
-   if (props.BeginSection("Visual"s))
+   
+   if (props.BeginSection("Visuals"s))
    {
       props.Checkbox<Spinner>(
          m_spinner, "Visible"s, //
@@ -76,14 +76,10 @@ void SpinnerUIPart::UpdatePropertyPane(PropertyPane& props)
 
    if (props.BeginSection("Position"s))
    {
-      props.InputFloat<Spinner>(
-         m_spinner, "X"s, //
-         [](const Spinner* spinner) { return spinner->m_d.m_vCenter.x; }, //
-         [](Spinner* spinner, float v) { spinner->Translate(Vertex2D(v - spinner->m_d.m_vCenter.x, 0.f)); }, PropertyPane::Unit::VPLength, 1);
-      props.InputFloat<Spinner>(
-         m_spinner, "Y"s, //
-         [](const Spinner* spinner) { return spinner->m_d.m_vCenter.y; }, //
-         [](Spinner* spinner, float v) { spinner->Translate(Vertex2D(0.f, v - spinner->m_d.m_vCenter.y)); }, PropertyPane::Unit::VPLength, 1);
+      props.InputFloat2<Spinner>(
+         m_spinner, "Position"s, //
+         [](const Spinner* spinner) { return spinner->m_d.m_vCenter; }, //
+         [](Spinner* spinner, const Vertex2D& v) { spinner->Translate(Vertex2D(v.x - spinner->m_d.m_vCenter.x, v.y - spinner->m_d.m_vCenter.y)); }, PropertyPane::Unit::VPLength, 1);
       props.SurfaceCombo<Spinner>(
          m_spinner, "Surface"s, //
          [](const Spinner* spinner) { return spinner->m_d.m_szSurface; }, //

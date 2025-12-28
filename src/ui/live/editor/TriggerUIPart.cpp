@@ -46,12 +46,16 @@ void TriggerUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("Trigger"s, m_trigger);
 
-   if (props.BeginSection("Visual"s))
+   if (props.BeginSection("Visuals"s))
    {
       props.Checkbox<Trigger>(
          m_trigger, "Visible"s, //
          [this](const Trigger* trigger) { return trigger == m_trigger ? m_visible : trigger->m_d.m_visible; }, //
-         [this](Trigger* trigger, bool v) { trigger->m_d.m_visible = v; (trigger == m_trigger ? m_visible : trigger->m_d.m_visible) = v; });
+         [this](Trigger* trigger, bool v)
+         {
+            trigger->m_d.m_visible = v;
+            (trigger == m_trigger ? m_visible : trigger->m_d.m_visible) = v;
+         });
       props.Checkbox<Trigger>(
          m_trigger, "Reflection Enabled"s, //
          [](const Trigger* trigger) { return trigger->m_d.m_reflectionEnabled; }, //
@@ -98,14 +102,10 @@ void TriggerUIPart::UpdatePropertyPane(PropertyPane& props)
 
    if (props.BeginSection("Position"s))
    {
-      props.InputFloat<Trigger>(
-         m_trigger, "X"s, //
-         [](const Trigger* trigger) { return trigger->m_d.m_vCenter.x; }, //
-         [](Trigger* trigger, float v) { trigger->Translate(Vertex2D(v - trigger->m_d.m_vCenter.x, 0.f)); }, PropertyPane::Unit::VPLength, 1);
-      props.InputFloat<Trigger>(
-         m_trigger, "Y"s, //
-         [](const Trigger* trigger) { return trigger->m_d.m_vCenter.y; }, //
-         [](Trigger* trigger, float v) { trigger->Translate(Vertex2D(0.f, v - trigger->m_d.m_vCenter.y)); }, PropertyPane::Unit::VPLength, 1);
+      props.InputFloat2<Trigger>(
+         m_trigger, "Position"s, //
+         [](const Trigger* trigger) { return trigger->m_d.m_vCenter; }, //
+         [](Trigger* trigger, const Vertex2D& v) { trigger->Translate(Vertex2D(v.x - trigger->m_d.m_vCenter.x, v.y - trigger->m_d.m_vCenter.y)); }, PropertyPane::Unit::VPLength, 1);
       props.SurfaceCombo<Trigger>(
          m_trigger, "Surface"s, //
          [](const Trigger* trigger) { return trigger->m_d.m_szSurface; }, //

@@ -58,7 +58,7 @@ void SurfaceUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("Surface"s, m_surface);
 
-   if (props.BeginSection("Visual"s))
+   if (props.BeginSection("Visuals"s))
    {
       props.Checkbox<Surface>(
          m_surface, "Top Visible"s, //

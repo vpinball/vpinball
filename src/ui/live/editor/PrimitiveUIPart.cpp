@@ -16,7 +16,7 @@ PrimitiveUIPart::~PrimitiveUIPart() { m_primitive->m_d.m_visible = m_visible; }
 PrimitiveUIPart::TransformMask PrimitiveUIPart::GetTransform(Matrix3D& transform)
 {
    const Matrix3D Smatrix = Matrix3D::MatrixScale(m_primitive->m_d.m_vSize.x, m_primitive->m_d.m_vSize.y, m_primitive->m_d.m_vSize.z);
-   const Matrix3D Tmatrix = Matrix3D::MatrixTranslate(m_primitive->m_d.m_vPosition.x, m_primitive->m_d.m_vPosition.y, m_primitive->m_d.m_vPosition.z);
+   const Matrix3D Tmatrix = Matrix3D::MatrixTranslate(m_primitive->m_d.m_vPosition);
    const Matrix3D Rmatrix = (Matrix3D::MatrixRotateZ(ANGTORAD(m_primitive->m_d.m_aRotAndTra[2])) //
                                * Matrix3D::MatrixRotateY(ANGTORAD(m_primitive->m_d.m_aRotAndTra[1]))) //
       * Matrix3D::MatrixRotateX(ANGTORAD(m_primitive->m_d.m_aRotAndTra[0]));
@@ -52,7 +52,7 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("Primitive"s, m_primitive);
 
-   if (props.BeginSection("Visual"s))
+   if (props.BeginSection("Visuals"s))
    {
       props.Separator("Render Options"s);
       props.Checkbox<Primitive>(

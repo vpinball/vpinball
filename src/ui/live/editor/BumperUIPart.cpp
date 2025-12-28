@@ -133,14 +133,10 @@ void BumperUIPart::UpdatePropertyPane(PropertyPane& props)
 
    if (props.BeginSection("Position"s))
    {
-      props.InputFloat<Bumper>(
-         m_bumper, "X"s, //
-         [](const Bumper* bumper) { return bumper->m_d.m_vCenter.x; }, //
-         [](Bumper* bumper, float v) { bumper->Translate(Vertex2D(v - bumper->m_d.m_vCenter.x, 0.f)); }, PropertyPane::Unit::VPLength, 1);
-      props.InputFloat<Bumper>(
-         m_bumper, "Y"s, //
-         [](const Bumper* bumper) { return bumper->m_d.m_vCenter.y; }, //
-         [](Bumper* bumper, float v) { bumper->Translate(Vertex2D(0.f, v - bumper->m_d.m_vCenter.y)); }, PropertyPane::Unit::VPLength, 1);
+      props.InputFloat2<Bumper>(
+         m_bumper, "Position"s, //
+         [](const Bumper* bumper) { return bumper->m_d.m_vCenter; }, //
+         [](Bumper* bumper, const Vertex2D& v) { bumper->Translate(Vertex2D(v.x - bumper->m_d.m_vCenter.x, v.y - bumper->m_d.m_vCenter.y)); }, PropertyPane::Unit::VPLength, 1);
       props.SurfaceCombo<Bumper>(
          m_bumper, "Surface"s, //
          [](const Bumper* bumper) { return bumper->m_d.m_szSurface; }, //

@@ -43,8 +43,8 @@ void PartGroupUIPart::Render(const EditorRenderContext& ctx) { }
 void PartGroupUIPart::UpdatePropertyPane(PropertyPane& props)
 {
    props.EditableHeader("PartGroup"s, m_partGroup);
-
-   if (props.BeginSection("Visual"s))
+   
+   if (props.BeginSection("Visuals"s))
    {
 
       props.EndSection();
