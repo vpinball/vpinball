@@ -19,25 +19,57 @@ void PropertyPane::SetShowStartup(bool showStartup)
    m_showStartup = showStartup;
 }
 
-void PropertyPane::Header(const string& typeName, const std::function<string()>& getName, const std::function<void(const string&)>& setName) const
+void PropertyPane::PropertyLabel(const string& label)
+{
+   const ImVec2 pos = ImGui::GetCursorScreenPos();
+   const float xSpacing = ImGui::GetStyle().ItemSpacing.x;
+   const float xWidth = ImGui::GetContentRegionAvail().x * 0.5f - m_syncWidth;
+
+   float textWidth = ImGui::CalcTextSize(label.c_str()).x;
+   if (textWidth + xSpacing > xWidth)
+   {
+      string ellipsis = label;
+      size_t n = label.length();
+      while (n > 1 && textWidth + xSpacing > xWidth)
+      {
+         n--;
+         ellipsis = trim_string(label.substr(0, n)) + "..."s;
+         textWidth = ImGui::CalcTextSize(ellipsis.c_str()).x;
+      }
+      ImGui::SetCursorScreenPos(ImVec2(pos.x + max(0.0f, xWidth - textWidth - xSpacing), pos.y + ImGui::GetStyle().FramePadding.y));
+      ImGui::TextUnformatted(ellipsis.c_str());
+      ImGui::SetItemTooltip("%s", label.c_str());
+   }
+   else
+   {
+      ImGui::SetCursorScreenPos(ImVec2(pos.x + xWidth - textWidth - xSpacing, pos.y + ImGui::GetStyle().FramePadding.y));
+      ImGui::TextUnformatted(label.c_str());
+   }
+
+   ImGui::SetCursorScreenPos(ImVec2(pos.x + xWidth, pos.y));
+   ImGui::SetNextItemWidth(xWidth);
+   m_syncPos = ImVec2(pos.x + xWidth + xWidth, pos.y);
+}
+
+void PropertyPane::Header(const string& typeName, const std::function<string()>& getName, const std::function<void(const string&)>& setName)
 {
    ImGui::NewLine();
    LiveUI::CenteredText(typeName);
    ImGui::BeginDisabled(m_table->m_liveBaseTable); // Do not edit name of live objects as it would break the script
-   if (string name = getName(); ImGui::InputText("Name", &name))
+   PropertyLabel("Name"s);
+   if (string name = getName(); ImGui::InputText("##Name", &name))
       setName(name);
    ImGui::EndDisabled();
    ImGui::Separator();
 }
 
-void PropertyPane::EditableHeader(const string& typeName, IEditable* editable) const
+void PropertyPane::EditableHeader(const string& typeName, IEditable* editable)
 {
    Header(typeName, [editable]() { return editable->GetName(); }, [editable](const string& v) { editable->SetName(v); });
 }
 
 void PropertyPane::Separator(const string& label) const
 {
-   ImGui::TableNextColumn();
    ImGui::TextUnformatted(label.c_str());
    // Underline the text
    const ImVec2 headerMin = ImGui::GetItemRectMin();
@@ -46,9 +78,6 @@ void PropertyPane::Separator(const string& label) const
    const ImVec2 lineStart(headerMin.x, headerMax.y);
    const ImVec2 lineEnd(headerMax.x, headerMax.y);
    drawList->AddLine(lineStart, lineEnd, ImGui::GetColorU32(ImGuiCol_Text), 1.0f);
-
-   if (m_sectionHasSync)
-      ImGui::TableNextColumn();
 }
 
 bool PropertyPane::BeginSection(const string& name)
@@ -69,17 +98,9 @@ bool PropertyPane::BeginSection(const string& name)
 
    m_inSection = true;
    m_sectionHasSync = m_table->m_liveBaseTable;
-   if (m_sectionHasSync)
-   {
-      ImGui::BeginTable("props", 2, ImGuiTableFlags_None);
-      ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthStretch);
-      ImGui::TableSetupColumn("Sync", ImGuiTableColumnFlags_WidthFixed);
-   }
-   else
-   {
-      ImGui::BeginTable("props", 1, ImGuiTableFlags_None);
-      ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthStretch);
-   }
+   // for some reason I don't really get, the computed size is too large
+   //m_syncWidth = m_sectionHasSync ? (ImGui::CalcTextSize(ICON_SAVE).x + ImGui::GetStyle().ItemSpacing.x) : 0.f;
+   m_syncWidth = m_sectionHasSync ? (ImGui::CalcTextSize(ICON_SAVE).x * 0.5f) : 0.f;
    return true;
 }
 
@@ -87,7 +108,6 @@ void PropertyPane::EndSection()
 {
    assert(m_inSection);
    m_inSection = false;
-   ImGui::EndTable();
 }
 
 void PropertyPane::ConvertUnit(Unit from, Unit& to, float& value, int& nDecimalAdjust)
@@ -172,7 +192,7 @@ const char* PropertyPane::GetUnitLabel(Unit unit)
    case Unit::VPLength:
    case Unit::VPMass:
    case Unit::VPSpeed: return "vpu";
-   default: return "";
+   default: return nullptr;
    }
 }
 

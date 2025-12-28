@@ -35,8 +35,8 @@ public:
    static void ConvertUnit(Unit from, Unit& to, float& value, int& nDecimalAdjust);
    void SetLengthUnit(Unit lengthUnit) { m_lengthUnit = lengthUnit; }
 
-   void Header(const string& typeName, const std::function<string()>& getName, const std::function<void(const string&)>& setName) const;
-   void EditableHeader(const string& typeName, IEditable* editable) const;
+   void Header(const string& typeName, const std::function<string()>& getName, const std::function<void(const string&)>& setName);
+   void EditableHeader(const string& typeName, IEditable* editable);
    void Separator(const string& label) const;
    template <class T> void Checkbox(T* obj, const string& label, const std::function<bool(const T*)>& getter, const std::function<void(T*, bool)>& setter);
    template <class T> void InputInt(T* obj, const string& label, const std::function<int(const T*)>& getter, const std::function<void(T*, int)>& setter);
@@ -68,6 +68,8 @@ private:
    bool IsStartup() const { return m_table->m_liveBaseTable && m_showStartup; }
    template <class T> T* GetStartupObj(T* obj) const;
 
+   void PropertyLabel(const string& label);
+
    int m_modified = 0;
    int m_modifyFieldId = 1;
 
@@ -76,6 +78,8 @@ private:
    PinTable* const m_table;
    bool m_inSection = false;
    bool m_sectionHasSync = false;
+   float m_syncWidth = 0.f;
+   ImVec2 m_syncPos;
 };
 
 
@@ -145,24 +149,22 @@ template <class T> inline void PropertyPane::Checkbox(T* obj, const string& labe
    assert(m_inSection);
    m_modifyFieldId++;
    T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
+   PropertyLabel(label);
    if (startupObj)
    {
       T* displayObj = m_showStartup ? startupObj : obj;
       T* otherObj = m_showStartup ? obj : startupObj;
       ImGui::PushID(label.c_str());
-      ImGui::TableNextColumn();
       bool value = getter(displayObj);
       if (ImGui::Checkbox(label.c_str(), &value))
       {
-         // FIXME implement undo
          setter(displayObj, value);
          m_modified = m_modifyFieldId;
       }
-      ImGui::TableNextColumn();
+      ImGui::SetCursorScreenPos(m_syncPos);
       ImGui::BeginDisabled(value == getter(otherObj));
       if (ImGui::Button(ICON_SAVE))
       {
-         // FIXME implement undo
          setter(otherObj, getter(displayObj));
          m_modified = m_modifyFieldId;
       }
@@ -179,17 +181,11 @@ template <class T> inline void PropertyPane::Checkbox(T* obj, const string& labe
    }
    else
    {
-      ImGui::TableNextColumn();
       bool value = getter(obj);
-      if (ImGui::Checkbox(label.c_str(), &value))
+      if (ImGui::Checkbox(("##"s + label).c_str(), &value))
       {
-         // FIXME implement undo
          setter(obj, value);
          m_modified = m_modifyFieldId;
-      }
-      if (m_sectionHasSync)
-      {
-         ImGui::TableNextColumn();
       }
    }
 }
@@ -199,24 +195,22 @@ template <class T> inline void PropertyPane::InputInt(T* obj, const string& labe
    assert(m_inSection);
    m_modifyFieldId++;
    T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
+   PropertyLabel(label);
    if (startupObj)
    {
       T* displayObj = m_showStartup ? startupObj : obj;
       T* otherObj = m_showStartup ? obj : startupObj;
       ImGui::PushID(label.c_str());
-      ImGui::TableNextColumn();
       int value = getter(displayObj);
       if (ImGui::InputInt(label.c_str(), &value))
       {
-         // FIXME implement undo
          setter(displayObj, value);
          m_modified = m_modifyFieldId;
       }
-      ImGui::TableNextColumn();
+      ImGui::SetCursorScreenPos(m_syncPos);
       ImGui::BeginDisabled(value == getter(otherObj));
       if (ImGui::Button(ICON_SAVE))
       {
-         // FIXME implement undo
          setter(otherObj, getter(displayObj));
          m_modified = m_modifyFieldId;
       }
@@ -233,17 +227,11 @@ template <class T> inline void PropertyPane::InputInt(T* obj, const string& labe
    }
    else
    {
-      ImGui::TableNextColumn();
       int value = getter(obj);
-      if (ImGui::InputInt(label.c_str(), &value))
+      if (ImGui::InputInt(("##s" +  label).c_str(), &value))
       {
-         // FIXME implement undo
          setter(obj, value);
          m_modified = m_modifyFieldId;
-      }
-      if (m_sectionHasSync)
-      {
-         ImGui::TableNextColumn();
       }
    }
 }
@@ -259,29 +247,26 @@ inline void PropertyPane::InputFloat(T* obj, const string& label, const std::fun
    ConvertUnit(unit, displayUnit, value, nDecimalAdjust);
    string format = "%." + std::to_string(max(0, nDecimals + nDecimalAdjust)) + 'f';
    const char* unitLabel = GetUnitLabel(displayUnit);
-   const string labelWithUnit = unitLabel ? label : (label + " (" + unitLabel + ')');
+   PropertyLabel(unitLabel ? (label + " (" + unitLabel + ')') : label);
    T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
    if (startupObj)
    {
       T* displayObj = m_showStartup ? startupObj : obj;
       T* otherObj = m_showStartup ? obj : startupObj;
       ImGui::PushID(label.c_str());
-      ImGui::TableNextColumn();
       displayValue = value = getter(displayObj);
       ConvertUnit(unit, displayUnit, displayValue, nDecimalAdjust);
-      if (ImGui::InputFloat(labelWithUnit.c_str(), &displayValue, 0.f, 0.f, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
+      if (ImGui::InputFloat(("##s" + label).c_str(), &displayValue, 0.f, 0.f, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
       {
-         // FIXME implement undo
          value = displayValue;
          ConvertUnit(displayUnit, unit, value, nDecimalAdjust);
          setter(displayObj, value);
          m_modified = m_modifyFieldId;
       }
-      ImGui::TableNextColumn();
+      ImGui::SetCursorScreenPos(m_syncPos);
       ImGui::BeginDisabled(value == getter(otherObj));
       if (ImGui::Button(ICON_SAVE))
       {
-         // FIXME implement undo
          setter(otherObj, getter(displayObj));
          m_modified = m_modifyFieldId;
       }
@@ -298,20 +283,14 @@ inline void PropertyPane::InputFloat(T* obj, const string& label, const std::fun
    }
    else
    {
-      ImGui::TableNextColumn();
       displayValue = value = getter(obj);
       ConvertUnit(unit, displayUnit, displayValue, nDecimalAdjust);
-      if (ImGui::InputFloat(labelWithUnit.c_str(), &displayValue, 0.f, 0.f, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
+      if (ImGui::InputFloat(("##s" +  label).c_str(), &displayValue, 0.f, 0.f, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
       {
-         // FIXME implement undo
          value = displayValue;
          ConvertUnit(displayUnit, unit, value, nDecimalAdjust);
          setter(obj, value);
          m_modified = m_modifyFieldId;
-      }
-      if (m_sectionHasSync)
-      {
-         ImGui::TableNextColumn();
       }
    }
 }
@@ -327,32 +306,29 @@ inline void PropertyPane::InputFloat2(
    Unit displayUnit = m_lengthUnit; // ConvertUnit will set it to the supported converted display unit
    ConvertUnit(unit, displayUnit, value.x, nDecimalAdjust);
    string format = "%."s + std::to_string(max(0, nDecimals + nDecimalAdjust)) + 'f';
-   const string unitLabel = GetUnitLabel(displayUnit);
-   const string labelWithUnit = unitLabel.empty() ? label : (label + " (" + unitLabel + ')');
+   const char* unitLabel = GetUnitLabel(displayUnit);
+   PropertyLabel(unitLabel ? (label + " (" + unitLabel + ')') : label);
    T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
    if (startupObj)
    {
       T* displayObj = m_showStartup ? startupObj : obj;
       T* otherObj = m_showStartup ? obj : startupObj;
       ImGui::PushID(label.c_str());
-      ImGui::TableNextColumn();
       displayValue = value = getter(displayObj);
       ConvertUnit(unit, displayUnit, displayValue.x, nDecimalAdjust);
       ConvertUnit(unit, displayUnit, displayValue.y, nDecimalAdjust);
-      if (ImGui::InputFloat2(labelWithUnit.c_str(), &displayValue.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
+      if (ImGui::InputFloat2(("##"s + label).c_str(), &displayValue.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
       {
-         // FIXME implement undo
          value = displayValue;
          ConvertUnit(displayUnit, unit, value.x, nDecimalAdjust);
          ConvertUnit(displayUnit, unit, value.y, nDecimalAdjust);
          setter(displayObj, value);
          m_modified = m_modifyFieldId;
       }
-      ImGui::TableNextColumn();
+      ImGui::SetCursorScreenPos(m_syncPos);
       ImGui::BeginDisabled(value == getter(otherObj));
       if (ImGui::Button(ICON_SAVE))
       {
-         // FIXME implement undo
          setter(otherObj, getter(displayObj));
          m_modified = m_modifyFieldId;
       }
@@ -369,22 +345,16 @@ inline void PropertyPane::InputFloat2(
    }
    else
    {
-      ImGui::TableNextColumn();
       displayValue = value = getter(obj);
       ConvertUnit(unit, displayUnit, displayValue.x, nDecimalAdjust);
       ConvertUnit(unit, displayUnit, displayValue.y, nDecimalAdjust);
-      if (ImGui::InputFloat2(labelWithUnit.c_str(), &displayValue.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
+      if (ImGui::InputFloat2(("##"s + label).c_str(), &displayValue.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
       {
-         // FIXME implement undo
          value = displayValue;
          ConvertUnit(displayUnit, unit, value.x, nDecimalAdjust);
          ConvertUnit(displayUnit, unit, value.y, nDecimalAdjust);
          setter(obj, value);
          m_modified = m_modifyFieldId;
-      }
-      if (m_sectionHasSync)
-      {
-         ImGui::TableNextColumn();
       }
    }
 }
@@ -400,21 +370,19 @@ inline void PropertyPane::InputFloat3(T* obj, const string& label, const std::fu
    ConvertUnit(unit, displayUnit, value.x, nDecimalAdjust);
    string format = "%." + std::to_string(max(0, nDecimals + nDecimalAdjust)) + 'f';
    const char* unitLabel = GetUnitLabel(displayUnit);
-   const string labelWithUnit = unitLabel ? label : (label + " (" + unitLabel + ')');
+   PropertyLabel(unitLabel ? (label + " (" + unitLabel + ')') : label);
    T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
    if (startupObj)
    {
       T* displayObj = m_showStartup ? startupObj : obj;
       T* otherObj = m_showStartup ? obj : startupObj;
       ImGui::PushID(label.c_str());
-      ImGui::TableNextColumn();
       displayValue = value = getter(displayObj);
       ConvertUnit(unit, displayUnit, displayValue.x, nDecimalAdjust);
       ConvertUnit(unit, displayUnit, displayValue.y, nDecimalAdjust);
       ConvertUnit(unit, displayUnit, displayValue.z, nDecimalAdjust);
-      if (ImGui::InputFloat3(labelWithUnit.c_str(), &displayValue.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
+      if (ImGui::InputFloat3(("##"s + label).c_str(), &displayValue.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
       {
-         // FIXME implement undo
          value = displayValue;
          ConvertUnit(displayUnit, unit, value.x, nDecimalAdjust);
          ConvertUnit(displayUnit, unit, value.y, nDecimalAdjust);
@@ -422,11 +390,10 @@ inline void PropertyPane::InputFloat3(T* obj, const string& label, const std::fu
          setter(displayObj, value);
          m_modified = m_modifyFieldId;
       }
-      ImGui::TableNextColumn();
+      ImGui::SetCursorScreenPos(m_syncPos);
       ImGui::BeginDisabled(value == getter(otherObj));
       if (ImGui::Button(ICON_SAVE))
       {
-         // FIXME implement undo
          setter(otherObj, getter(displayObj));
          m_modified = m_modifyFieldId;
       }
@@ -443,24 +410,18 @@ inline void PropertyPane::InputFloat3(T* obj, const string& label, const std::fu
    }
    else
    {
-      ImGui::TableNextColumn();
       displayValue = value = getter(obj);
       ConvertUnit(unit, displayUnit, displayValue.x, nDecimalAdjust);
       ConvertUnit(unit, displayUnit, displayValue.y, nDecimalAdjust);
       ConvertUnit(unit, displayUnit, displayValue.z, nDecimalAdjust);
-      if (ImGui::InputFloat3(labelWithUnit.c_str(), &displayValue.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
+      if (ImGui::InputFloat3(("##"s + label).c_str(), &displayValue.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
       {
-         // FIXME implement undo
          value = displayValue;
          ConvertUnit(displayUnit, unit, value.x, nDecimalAdjust);
          ConvertUnit(displayUnit, unit, value.y, nDecimalAdjust);
          ConvertUnit(displayUnit, unit, value.z, nDecimalAdjust);
          setter(obj, value);
          m_modified = m_modifyFieldId;
-      }
-      if (m_sectionHasSync)
-      {
-         ImGui::TableNextColumn();
       }
    }
 }
@@ -470,24 +431,22 @@ template <class T> inline void PropertyPane::InputRGB(T* obj, const string& labe
    assert(m_inSection);
    m_modifyFieldId++;
    T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
+   PropertyLabel(label);
    if (startupObj)
    {
       T* displayObj = m_showStartup ? startupObj : obj;
       T* otherObj = m_showStartup ? obj : startupObj;
       ImGui::PushID(label.c_str());
-      ImGui::TableNextColumn();
       vec3 value = getter(displayObj);
-      if (ImGui::ColorEdit3(label.c_str(), &value.x))
+      if (ImGui::ColorEdit3(("##"s + label).c_str(), &value.x))
       {
-         // FIXME implement undo
          setter(displayObj, value);
          m_modified = m_modifyFieldId;
       }
-      ImGui::TableNextColumn();
+      ImGui::SetCursorScreenPos(m_syncPos);
       ImGui::BeginDisabled(value == getter(otherObj));
       if (ImGui::Button(ICON_SAVE))
       {
-         // FIXME implement undo
          setter(otherObj, getter(displayObj));
          m_modified = m_modifyFieldId;
       }
@@ -504,17 +463,11 @@ template <class T> inline void PropertyPane::InputRGB(T* obj, const string& labe
    }
    else
    {
-      ImGui::TableNextColumn();
       vec3 value = getter(obj);
-      if (ImGui::ColorEdit3(label.c_str(), &value.x))
+      if (ImGui::ColorEdit3(("##"s + label).c_str(), &value.x))
       {
-         // FIXME implement undo
          setter(obj, value);
          m_modified = m_modifyFieldId;
-      }
-      if (m_sectionHasSync)
-      {
-         ImGui::TableNextColumn();
       }
    }
 }
@@ -525,26 +478,24 @@ template <class T> inline void PropertyPane::InputString(T* obj, const string& l
    m_modifyFieldId++;
    vector<char> buffer(256);
    T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
+   PropertyLabel(label);
    if (startupObj)
    {
       T* displayObj = m_showStartup ? startupObj : obj;
       T* otherObj = m_showStartup ? obj : startupObj;
       ImGui::PushID(label.c_str());
-      ImGui::TableNextColumn();
       string value = getter(displayObj);
       memcpy(buffer.data(), value.c_str(), min(value.length(), buffer.size() - 1));
-      if (ImGui::InputText(label.c_str(), buffer.data(), buffer.size()))
+      if (ImGui::InputText(("##"s + label).c_str(), buffer.data(), buffer.size()))
       {
-         // FIXME implement undo
          value = string(buffer.data());
          setter(displayObj, value);
          m_modified = m_modifyFieldId;
       }
-      ImGui::TableNextColumn();
+      ImGui::SetCursorScreenPos(m_syncPos);
       ImGui::BeginDisabled(value == getter(otherObj));
       if (ImGui::Button(ICON_SAVE))
       {
-         // FIXME implement undo
          setter(otherObj, getter(displayObj));
          m_modified = m_modifyFieldId;
       }
@@ -561,19 +512,13 @@ template <class T> inline void PropertyPane::InputString(T* obj, const string& l
    }
    else
    {
-      ImGui::TableNextColumn();
       string value = getter(obj);
       memcpy(buffer.data(), value.c_str(), min(value.length(), buffer.size() - 1));
-      if (ImGui::InputText(label.c_str(), buffer.data(), buffer.size()))
+      if (ImGui::InputText(("##"s + label).c_str(), buffer.data(), buffer.size()))
       {
-         // FIXME implement undo
          value = string(buffer.data());
          setter(obj, value);
          m_modified = m_modifyFieldId;
-      }
-      if (m_sectionHasSync)
-      {
-         ImGui::TableNextColumn();
       }
    }
 }
@@ -584,20 +529,19 @@ inline void PropertyPane::Combo(T* obj, const string& label, const std::vector<s
    assert(m_inSection);
    m_modifyFieldId++;
    T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
+   PropertyLabel(label);
    if (startupObj)
    {
       T* displayObj = m_showStartup ? startupObj : obj;
       T* otherObj = m_showStartup ? obj : startupObj;
       ImGui::PushID(label.c_str());
-      ImGui::TableNextColumn();
       int value = getter(displayObj);
-      if (ImGui::BeginCombo(label.c_str(), values[value].c_str()))
+      if (ImGui::BeginCombo(("##"s + label).c_str(), values[value].c_str()))
       {
          for (size_t i = 0; i < values.size(); i++)
          {
             if (ImGui::Selectable((values[i] + "##Item" + std::to_string(i)).c_str()))
             {
-               // FIXME implement undo
                setter(displayObj, static_cast<int>(i));
                value = static_cast<int>(i);
                m_modified = m_modifyFieldId;
@@ -605,11 +549,10 @@ inline void PropertyPane::Combo(T* obj, const string& label, const std::vector<s
          }
          ImGui::EndCombo();
       }
-      ImGui::TableNextColumn();
+      ImGui::SetCursorScreenPos(m_syncPos);
       ImGui::BeginDisabled(value == getter(otherObj));
       if (ImGui::Button(ICON_SAVE))
       {
-         // FIXME implement undo
          setter(otherObj, getter(displayObj));
          m_modified = m_modifyFieldId;
       }
@@ -626,24 +569,18 @@ inline void PropertyPane::Combo(T* obj, const string& label, const std::vector<s
    }
    else
    {
-      ImGui::TableNextColumn();
       string value = values[getter(obj)];
-      if (ImGui::BeginCombo(label.c_str(), value.c_str()))
+      if (ImGui::BeginCombo(("##"s + label).c_str(), value.c_str()))
       {
          for (size_t i = 0; i < values.size(); i++)
          {
             if (ImGui::Selectable((values[i] + "##Item" + std::to_string(i)).c_str()))
             {
-               // FIXME implement undo
                setter(obj, static_cast<int>(i));
                m_modified = m_modifyFieldId;
             }
          }
          ImGui::EndCombo();
-      }
-      if (m_sectionHasSync)
-      {
-         ImGui::TableNextColumn();
       }
    }
 }
