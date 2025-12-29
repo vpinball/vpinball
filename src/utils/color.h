@@ -29,25 +29,25 @@ inline vec4 convertColor(const COLORREF c, const float w)
 
 inline vec3 convertColor(const COLORREF c)
 {
-   const float r = (float)(c & 255) * (float)(1.0 / 255.0);
-   const float g = (float)(c & 65280) * (float)(1.0 / 65280.0);
-   const float b = (float)(c & 16711680) * (float)(1.0 / 16711680.0);
+   const float r = (float)(c & 255) * (float)(1.0/255.0);
+   const float g = (float)(c & 65280) * (float)(1.0/65280.0);
+   const float b = (float)(c & 16711680) * (float)(1.0/16711680.0);
    return vec3(r, g, b);
 }
 
 inline COLORREF convertColorRGB(const vec3& color)
 {
-   const int r = clamp((int)(color.x * 255.f + 0.5f), 0, 255);
-   const int g = clamp((int)(color.y * 255.f + 0.5f), 0, 255);
-   const int b = clamp((int)(color.z * 255.f + 0.5f), 0, 255);
+   const int r = (int)clamp(color.x * 255.f + 0.5f, 0.f, 255.f);
+   const int g = (int)clamp(color.y * 255.f + 0.5f, 0.f, 255.f);
+   const int b = (int)clamp(color.z * 255.f + 0.5f, 0.f, 255.f);
    return RGB(r, g, b);
 }
 
 inline COLORREF convertColorRGB(const vec4& color)
 {
-   const int r = clamp((int)(color.x * 255.f + 0.5f), 0, 255);
-   const int g = clamp((int)(color.y * 255.f + 0.5f), 0, 255);
-   const int b = clamp((int)(color.z * 255.f + 0.5f), 0, 255);
+   const int r = (int)clamp(color.x * 255.f + 0.5f, 0.f, 255.f);
+   const int g = (int)clamp(color.y * 255.f + 0.5f, 0.f, 255.f);
+   const int b = (int)clamp(color.z * 255.f + 0.5f, 0.f, 255.f);
    return RGB(r, g, b);
 }
 

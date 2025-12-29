@@ -988,6 +988,11 @@ float4 ps_main_fxaa3(const in VS_OUTPUT_2D IN) : COLOR
 	return float4(texStereoNoLod(tex_fb_filtered, un).xyz, 1.0);
 }
 
+#include "FAAA.fxh"
+float4 ps_main_faaa(const in VS_OUTPUT_2D IN) : COLOR
+{
+	return float4(faaa(IN.tex0), 1.0);
+}
 
 float4 ps_main_CAS(const in VS_OUTPUT_2D IN) : COLOR
 {

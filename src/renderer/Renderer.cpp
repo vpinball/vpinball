@@ -255,7 +255,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
          const float theta = (float)(j * (M_PI / 4.0));
          for (int i = 0; i < numPts; ++i)
          {
-            const float phi = (float)(i * (2.0 * M_PI) / numPts);
+            const float phi = (float)(i * (2.0 * M_PI / numPts));
             Vertex3D_NoTex2 vtx;
             vtx.nx = cosf(theta) * cosf(phi);
             vtx.ny = cosf(theta) * sinf(phi);
@@ -471,7 +471,7 @@ RenderTarget* Renderer::GetPostProcessRenderTarget1()
    }
    return m_pPostProcessRenderTarget1;
 }
-   
+
 RenderTarget* Renderer::GetPostProcessRenderTarget2()
 {
    if (m_pPostProcessRenderTarget2 == nullptr)
@@ -1764,7 +1764,7 @@ void Renderer::RenderDynamics()
 {
    if (g_pplayer->GetInfoMode() == IF_STATIC_ONLY)
       return;
-      
+
    TRACE_FUNCTION();
 
    // Mark all probes to be re-rendered for this frame (only if needed, lazily rendered)
@@ -1817,12 +1817,12 @@ void Renderer::RenderDynamics()
    }
    else
    {
-      const vec4 fillColor = m_shadeMode == ShadeMode::NoDepthWireframe ? vec4(0.f, 0.f, 0.f, 32.f / 255.f) : vec4(32.f / 255.f, 32.f / 255.f, 32.f / 255.f, 1.f);
+      const vec4 fillColor = m_shadeMode == ShadeMode::NoDepthWireframe ? vec4(0.f, 0.f, 0.f, (float)(32. / 255.)) : vec4((float)(32. / 255.), (float)(32. / 255.), (float)(32. / 255.), 1.f);
       const vec4 edgeColor(0.f, 0.f, 0.f, 1.f);
       for (IEditable* renderable : g_pplayer->m_vhitables)
          DrawWireframe(renderable, fillColor, edgeColor, m_shadeMode != ShadeMode::NoDepthWireframe);
    }
-   
+
    m_renderDevice->m_basicShader->SetTextureNull(SHADER_tex_base_transmission); // need to reset the bulb light texture, as its used as render target for bloom again
 
    for (size_t i = 0; i < m_table->m_vrenderprobe.size(); ++i)
@@ -2221,29 +2221,29 @@ ShaderTechniques Renderer::ApplyTonemapping(RenderTarget* renderedRT, RenderTarg
       tonemapTechnique = SHADER_TECHNIQUE_fb_AO;
    else if (infoMode == IF_RENDER_PROBES)
       tonemapTechnique = m_toneMapper == TM_REINHARD     ? SHADER_TECHNIQUE_fb_rhtonemap
-                        : m_toneMapper == TM_FILMIC       ? SHADER_TECHNIQUE_fb_fmtonemap
-                        : m_toneMapper == TM_NEUTRAL      ? SHADER_TECHNIQUE_fb_nttonemap
-                        : m_toneMapper == TM_AGX          ? SHADER_TECHNIQUE_fb_agxtonemap
-                        : m_toneMapper == TM_AGX_PUNCHY   ? SHADER_TECHNIQUE_fb_agxptonemap
-                        : /*m_toneMapper == TM_WCG_SPLINE ?*/ SHADER_TECHNIQUE_fb_wcgtonemap;
+                       : m_toneMapper == TM_FILMIC       ? SHADER_TECHNIQUE_fb_fmtonemap
+                       : m_toneMapper == TM_NEUTRAL      ? SHADER_TECHNIQUE_fb_nttonemap
+                       : m_toneMapper == TM_AGX          ? SHADER_TECHNIQUE_fb_agxtonemap
+                       : m_toneMapper == TM_AGX_PUNCHY   ? SHADER_TECHNIQUE_fb_agxptonemap
+                       : /*m_toneMapper == TM_WCG_SPLINE ?*/ SHADER_TECHNIQUE_fb_wcgtonemap;
    else if (m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer() && m_HDRforceDisableToneMapper)
       tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_wcgtonemap_AO : SHADER_TECHNIQUE_fb_wcgtonemap_AO_no_filter
-                                 : useAA ? SHADER_TECHNIQUE_fb_wcgtonemap    : SHADER_TECHNIQUE_fb_wcgtonemap_no_filter;
+                               : useAA ? SHADER_TECHNIQUE_fb_wcgtonemap    : SHADER_TECHNIQUE_fb_wcgtonemap_no_filter;
    else if (m_toneMapper == TM_REINHARD)
       tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_rhtonemap_AO : SHADER_TECHNIQUE_fb_rhtonemap_AO_no_filter
-                                 : useAA ? SHADER_TECHNIQUE_fb_rhtonemap    : SHADER_TECHNIQUE_fb_rhtonemap_no_filter;
+                               : useAA ? SHADER_TECHNIQUE_fb_rhtonemap    : SHADER_TECHNIQUE_fb_rhtonemap_no_filter;
    else if (m_toneMapper == TM_FILMIC)
       tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_fmtonemap_AO : SHADER_TECHNIQUE_fb_fmtonemap_AO_no_filter
-                                 : useAA ? SHADER_TECHNIQUE_fb_fmtonemap    : SHADER_TECHNIQUE_fb_fmtonemap_no_filter;
+                               : useAA ? SHADER_TECHNIQUE_fb_fmtonemap    : SHADER_TECHNIQUE_fb_fmtonemap_no_filter;
    else if (m_toneMapper == TM_NEUTRAL)
       tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_nttonemap_AO : SHADER_TECHNIQUE_fb_nttonemap_AO_no_filter
-                                 : useAA ? SHADER_TECHNIQUE_fb_nttonemap    : SHADER_TECHNIQUE_fb_nttonemap_no_filter;
+                               : useAA ? SHADER_TECHNIQUE_fb_nttonemap    : SHADER_TECHNIQUE_fb_nttonemap_no_filter;
    else if (m_toneMapper == TM_AGX)
       tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_agxtonemap_AO : SHADER_TECHNIQUE_fb_agxtonemap_AO_no_filter
-                                 : useAA ? SHADER_TECHNIQUE_fb_agxtonemap    : SHADER_TECHNIQUE_fb_agxtonemap_no_filter;
+                               : useAA ? SHADER_TECHNIQUE_fb_agxtonemap    : SHADER_TECHNIQUE_fb_agxtonemap_no_filter;
    else if (m_toneMapper == TM_AGX_PUNCHY)
       tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_agxptonemap_AO : SHADER_TECHNIQUE_fb_agxptonemap_AO_no_filter
-                                 : useAA ? SHADER_TECHNIQUE_fb_agxptonemap    : SHADER_TECHNIQUE_fb_agxptonemap_no_filter;
+                               : useAA ? SHADER_TECHNIQUE_fb_agxptonemap    : SHADER_TECHNIQUE_fb_agxptonemap_no_filter;
    else
       assert(!"unknown tonemapper");
 
@@ -2431,6 +2431,7 @@ RenderTarget* Renderer::ApplyPostProcessedAntialiasing(RenderTarget* renderedRT,
    const bool FXAA1 = m_FXAA == Fast_FXAA;
    const bool FXAA2 = m_FXAA == Standard_FXAA;
    const bool FXAA3 = m_FXAA == Quality_FXAA;
+   const bool FAAA = m_FXAA == Standard_FAAA;
 
    m_renderDevice->ResetRenderState();
    m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
@@ -2438,7 +2439,7 @@ RenderTarget* Renderer::ApplyPostProcessedAntialiasing(RenderTarget* renderedRT,
    m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
    m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
 
-   if (NFAA || FXAA1 || FXAA2 || FXAA3)
+   if (NFAA || FXAA1 || FXAA2 || FXAA3 || FAAA)
    {
       assert(renderedRT == GetPostProcessRenderTarget1());
       RenderTarget* outputRT = outputBackBuffer ? outputBackBuffer : GetPostProcessRenderTarget(renderedRT);
@@ -2449,7 +2450,7 @@ RenderTarget* Renderer::ApplyPostProcessedAntialiasing(RenderTarget* renderedRT,
       m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, renderedRT->GetColorSampler());
       m_renderDevice->AddRenderTargetDependency(GetBackBufferTexture(), true); // Depth is always taken from the MSAA resolved render buffer
       m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetWidth(), 1.f);
-      m_renderDevice->m_FBShader->SetTechnique(NFAA ? SHADER_TECHNIQUE_NFAA : FXAA3 ? SHADER_TECHNIQUE_FXAA3 : FXAA2 ? SHADER_TECHNIQUE_FXAA2 : SHADER_TECHNIQUE_FXAA1);
+      m_renderDevice->m_FBShader->SetTechnique(NFAA ? SHADER_TECHNIQUE_NFAA : FXAA3 ? SHADER_TECHNIQUE_FXAA3 : FXAA2 ? SHADER_TECHNIQUE_FXAA2 : FXAA1 ? SHADER_TECHNIQUE_FXAA1 : SHADER_TECHNIQUE_FAAA);
       m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
       return outputRT;
    }
@@ -2835,7 +2836,7 @@ void Renderer::RenderFrame()
       {
          if (std::shared_ptr<MeshBuffer> mask = g_pplayer->m_vrDevice->GetVisibilityMask(); mask)
          {
-            Vertex3Ds pos(0.f, 0.f, 200000.0f); // Very high depth bias to ensure being rendered before other opaque parts (which are sorted front to back)
+            static constexpr Vertex3Ds pos{0.f, 0.f, 200000.0f}; // Very high depth bias to ensure being rendered before other opaque parts (which are sorted front to back)
             m_renderDevice->ResetRenderState();
             m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
             m_renderDevice->SetRenderState(RenderState::COLORWRITEENABLE, RenderState::RS_FALSE);
@@ -2864,7 +2865,7 @@ void Renderer::RenderFrame()
 
    // Keep latency low by proceeding input, ... (as next passes are not affected by the game logic)
    g_pplayer->UpdateGameLogic();
-   
+
    // Resolve MSAA buffer to a normal one (noop if not using MSAA), allowing sampling it for postprocessing
    if (GetMSAABackBufferTexture() != GetBackBufferTexture())
    {

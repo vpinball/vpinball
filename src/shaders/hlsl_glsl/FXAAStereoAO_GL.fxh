@@ -1027,6 +1027,15 @@ void main()
 	color = float4(texStereoNoLod(tex_fb_filtered, un).xyz, 1.0);
 }
 
+////ps_main_faaa
+
+#include "FAAA.fxh"
+void main()
+{
+	FS_LAYER_TO_GLOBAL;
+	color = float4(faaa(tex0), 1.0);
+}
+
 ////ps_main_CAS
 
 void main()

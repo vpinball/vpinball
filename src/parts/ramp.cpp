@@ -924,7 +924,7 @@ void Ramp::Render(const unsigned int renderMask)
          if (renderMask & Renderer::UI_EDGES && m_meshEdgeBuffer == nullptr)
          {
             vector<unsigned int> indices(8 * m_meshIndices.size() / 6);
-            for (int i = 0; i < m_meshIndices.size() / 6; i++)
+            for (int i = 0; i < (int)m_meshIndices.size() / 6; i++)
             {
                indices[i * 8 + 0] = m_meshIndices[i * 6 + 0];
                indices[i * 8 + 1] = m_meshIndices[i * 6 + 1];

@@ -1227,6 +1227,9 @@
     <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_dlaa_edge.sc">
       <FileType>Document</FileType>
     </None>
+    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_faaa.sc">
+      <FileType>Document</FileType>
+    </None>
     <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_fxaa.sc">
       <FileType>Document</FileType>
     </None>
@@ -1344,6 +1347,9 @@
     <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FlasherShader.glfx">
       <FileType>Document</FileType>
     </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FAAA.fxh">
+      <FileType>Document</FileType>
+    </None>
     <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FXAAStereoAO_GL.fxh">
       <FileType>Document</FileType>
     </None>
@@ -1366,6 +1372,9 @@
       <FileType>Document</FileType>
     </None>
     <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/UIShader.glfx">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FAAA.fxh">
       <FileType>Document</FileType>
     </None>
     <None Include="$(SolutionDir)/../../src/shaders/hlsl_glsl/FXAAStereoAO.fxh">

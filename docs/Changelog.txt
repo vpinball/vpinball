@@ -20,9 +20,11 @@ FEATURES:
   and 'AgX Punchy' which is a variation of AgX with more contrast/saturation
 - also add a new 'exposure' property that adjusts the overall scene exposure (like the corresponding camera control in Blender)
 
+- add new FAAA postprocessing anti-aliasing mode (its mostly subtle, but also rather fast and less blurry)
+
 - balls can now be created and edited directly from the editor like all other parts, and not only from the script
 
-- Moved the plumb simulation to VPX's physics engine with an improved physics model. NudgePlugIn_xxx.vbs files that were used depending on each user setup are not needed anymore and were removed.
+- move the plumb simulation to VPX's physics engine with an improved physics model. NudgePlugIn_xxx.vbs files that were used depending on each user setup are not needed anymore and were removed.
   Emulation of the plumb must be enabled in the settings, and adjusted to user setup. The LiveUI offers a dedicated UI with live feedback to ease this process.
   When plumb emulation is enabled, in the lower left corner, a little overlay with the live plumb position will fade in/out when the plumb is approaching the Tilt threshold.
   For reference, there are 3 models available for nudge simulation (from keyboard or the cabinet sensor) with increasing quality:
@@ -145,7 +147,7 @@ FEATURES:
 
 - Performance overlay has been improved with better insights and its display state is now persistent
 
-- Table settings override will only save actual overrides, that is to say settings different from application settings and from default value
+- Table settings override will only save actual overrides, so only those settings that are different from application settings and default values
 
 - After many years of great service, 'Fake' 3D stereo mode has been removed, replaced by real stereo. Note that the 'Reshade' app could be used to get approximate 3D stereo if still wanted.
 

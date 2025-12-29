@@ -39,7 +39,7 @@ private:
    string m_tableFileName;
    string m_tableIniFileName;
    string m_iniFileName;
-   string m_tournamentFileName;
+   string m_tournamentFileName; // if not empty, tournament mode is/can be active
 
    VPinball m_vpinball;
    int m_idleIndex = 0;

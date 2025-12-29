@@ -996,6 +996,7 @@ DLAA:P0:vs_main_no_trafo():gs_main():ps_main_dlaa()
 FXAA1:P0:vs_main_no_trafo():gs_main():ps_main_fxaa1()
 FXAA2:P0:vs_main_no_trafo():gs_main():ps_main_fxaa2()
 FXAA3:P0:vs_main_no_trafo():gs_main():ps_main_fxaa3()
+FAAA:P0:vs_main_no_trafo():gs_main():ps_main_faaa()
 fb_bloom:P0:vs_main_no_trafo():gs_main():ps_main_fb_bloom()
 
 fb_AO:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_AO()

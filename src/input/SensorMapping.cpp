@@ -73,7 +73,7 @@ void SensorMapping::CaptureFFT()
    assert(sampleMs > m_fftCaptureHeadTimestampMs);
    const int nSteps = static_cast<int>(sampleMs - m_fftCaptureHeadTimestampMs);
    const float prevValue = static_cast<float>((*m_fftCaptureBuffer)[m_fftCapturePosition].real());
-   for (int i = 0; i < nSteps && m_fftCapturePosition < m_fftCaptureBuffer->size(); i++)
+   for (int i = 0; i < nSteps && m_fftCapturePosition < (int)m_fftCaptureBuffer->size(); i++)
    {
       (*m_fftCaptureBuffer)[m_fftCapturePosition] = lerp(prevValue, m_rawValue, static_cast<float>(i + 1) / static_cast<float>(nSteps));
       m_fftCapturePosition++;
@@ -89,7 +89,7 @@ void SensorMapping::CaptureFFT()
          fft(*samples.get());
          double maxVal = 0.0;
          float maxFreq = 0.f;
-         for (int i = 1; i < samples->size() / 2; i++)
+         for (int i = 1; i < (int)samples->size() / 2; i++)
          {
             double val = (*samples)[i].real() * (*samples)[i].real()+(*samples)[i].imag() * (*samples)[i].imag();
             if (val > maxVal)

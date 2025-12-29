@@ -275,6 +275,7 @@ Shader::TechniqueDef Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT] {
    SHADER_TECHNIQUE(FXAA1, SHADER_w_h_height, SHADER_tex_fb_filtered, SHADER_tex_depth),
    SHADER_TECHNIQUE(FXAA2, SHADER_w_h_height, SHADER_tex_fb_filtered, SHADER_tex_depth),
    SHADER_TECHNIQUE(FXAA3, SHADER_w_h_height, SHADER_tex_fb_filtered, SHADER_tex_depth),
+   SHADER_TECHNIQUE(FAAA, SHADER_w_h_height, SHADER_tex_fb_filtered, SHADER_tex_depth),
    SHADER_TECHNIQUE(CAS, SHADER_w_h_height, SHADER_tex_fb_unfiltered, SHADER_tex_depth),
    SHADER_TECHNIQUE(BilateralSharp_CAS, SHADER_w_h_height, SHADER_tex_fb_unfiltered, SHADER_tex_depth),
 #ifndef __OPENGLES__
@@ -1473,6 +1474,7 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_ST(fs_pp_fxaa1),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_fxaa2),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_fxaa3),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_faaa),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_cas),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_bilateral_cas),
       BGFX_EMBEDDED_SHADER(vs_pp_smaa_edgedetection),
@@ -1645,7 +1647,7 @@ void Shader::Load()
 
       // Postprocessed motion blur
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_motionblur, STEREO(vs_postprocess), STEREO(fs_pp_motionblur));
-      
+
       // Postprocessed antialiasing
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_NFAA, STEREO(vs_postprocess), STEREO(fs_pp_nfaa));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_DLAA_edge, STEREO(vs_postprocess), STEREO(fs_pp_dlaa_edge));
@@ -1653,6 +1655,7 @@ void Shader::Load()
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_FXAA1, STEREO(vs_postprocess), STEREO(fs_pp_fxaa1));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_FXAA2, STEREO(vs_postprocess), STEREO(fs_pp_fxaa2));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_FXAA3, STEREO(vs_postprocess), STEREO(fs_pp_fxaa3));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_FAAA, STEREO(vs_postprocess), STEREO(fs_pp_faaa));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_CAS, STEREO(vs_postprocess), STEREO(fs_pp_cas));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_BilateralSharp_CAS, STEREO(vs_postprocess), STEREO(fs_pp_bilateral_cas));
       // FIXME add stereo support to SMAA

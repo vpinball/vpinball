@@ -230,6 +230,7 @@ if [ "$gen_antialiasing" = true ]; then
         process_shader "fs_pp_nfaa.sc" "antialiasing.h" "fs_pp_nfaa${st_output[$k]}" "fragment" "${stereo[$k]}"
         process_shader "fs_pp_dlaa_edge.sc" "antialiasing.h" "fs_pp_dlaa_edge${st_output[$k]}" "fragment" "${stereo[$k]}"
         process_shader "fs_pp_dlaa.sc" "antialiasing.h" "fs_pp_dlaa${st_output[$k]}" "fragment" "${stereo[$k]}"
+        process_shader "fs_pp_faaa.sc" "antialiasing.h" "fs_pp_dlaa${st_output[$k]}" "fragment" "${stereo[$k]}"
         for variant in "FXAA1" "FXAA2" "FXAA3"; do
             variant_lower=$(echo "$variant" | tr '[:upper:]' '[:lower:]')
             process_shader "fs_pp_fxaa.sc" "antialiasing.h" "fs_pp_${variant_lower}${st_output[$k]}" "fragment" "${stereo[$k]}" "$variant"

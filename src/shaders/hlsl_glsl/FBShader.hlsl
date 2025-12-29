@@ -981,6 +981,15 @@ technique FXAA3
    }
 }
 
+technique FAAA
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main_no_trafo();
+      PixelShader  = compile ps_3_0 ps_main_faaa();
+   }
+}
+
 technique fb_bloom
 {
    pass P0

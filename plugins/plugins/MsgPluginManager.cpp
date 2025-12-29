@@ -466,7 +466,7 @@ void MsgPlugin::Load(const MsgPluginAPI* msgAPI)
          m_loadPlugin = nullptr;
          m_unloadPlugin = nullptr;
          m_module = nullptr;
-         PLOGE << "Plugin " << m_id << " invalid library " << m_library << ": required " << load << "/" << unload << " functions are not correct.";
+         PLOGE << "Plugin " << m_id << " invalid library " << m_library << ": required " << load << '/' << unload << " functions are not correct.";
          return;
       }
    }
