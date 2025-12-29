@@ -441,9 +441,9 @@ void Ball::Render(const unsigned int renderMask)
                 m_hitBall.m_orientation.m_d[0][2], m_hitBall.m_orientation.m_d[1][2], m_hitBall.m_orientation.m_d[2][2], 0.0f,
                 0.f, 0.f, 0.f, 1.f);
    const Matrix3D scale = Matrix3D::MatrixScale(m_hitBall.m_d.m_radius * antiStretch.x, m_hitBall.m_d.m_radius * antiStretch.y, m_hitBall.m_d.m_radius * antiStretch.y);
-   const Matrix3D trans = Matrix3D::MatrixTranslate(m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y, zheight);
-   const Matrix3D m3D_full = rot * scale * trans;
-   m_rd->m_ballShader->SetMatrix(SHADER_orientation, &m3D_full);
+   //const Matrix3D trans = Matrix3D::MatrixTranslate(m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y, zheight);
+   //const Matrix3D m3D_full = rot * scale * trans;
+   //m_rd->m_ballShader->SetMatrix(SHADER_orientation, &m3D_full);
 
    m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
    bool sphericalMapping;
@@ -470,21 +470,17 @@ void Ball::Render(const unsigned int renderMask)
    // ball movement smoothness by aligning its update to the very last moment before submitting render command to the GPU driver.
    // The command is executed on the render thread, while the game thread is performing continuous physics. therefore the ball object
    // may be modified while the update command is executed.
-   // FIXME this conflicts with the ball motion blur which does not update accordingly (we may move the ball out of the blur area and the blur is computed with the wrong ball position), so disable if ball motion blur is used
-   if (g_pplayer->m_renderer->m_motionBlurOff)
-   {
-      ShaderState *ss = m_rd->GetCurrentPass()->m_commands.back()->GetShaderState();
-      m_rd->AddBeginOfFrameCmd(
-         [this, rot, scale, ss]()
-         {
-            vec3 posl(m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y, m_hitBall.m_d.m_lockedInKicker ? (m_hitBall.m_d.m_pos.z - m_hitBall.m_d.m_radius) : m_hitBall.m_d.m_pos.z);
-            float delay = m_rd->GetPredictedDisplayDelayInS();
-            posl += delay * m_hitBall.m_d.m_vel;
-            //PLOGD << "Ball position advanced to display predicted time by " << delay << "s > " << m_hitBall.m_d.m_vel;
-            Matrix3D m3D_fulll = rot * scale * Matrix3D::MatrixTranslate(posl.x, posl.y, posl.z);
-            ss->SetMatrix(SHADER_orientation, &m3D_fulll.m[0][0]);
-         });
-   }
+   // Note that this code must be kept in sync with the ball motion blur code
+   ShaderState *ss = m_rd->GetCurrentPass()->m_commands.back()->GetShaderState();
+   m_rd->AddBeginOfFrameCmd(
+      [this, rot, scale, ss]()
+      {
+         vec3 posl = m_hitBall.m_d.m_pos + m_rd->GetPredictedDisplayDelayInS() * m_hitBall.m_d.m_vel;
+         if (m_hitBall.m_d.m_lockedInKicker)
+            posl.z -= m_hitBall.m_d.m_radius;
+         Matrix3D m3D_fulll = rot * scale * Matrix3D::MatrixTranslate(posl);
+         ss->SetMatrix(SHADER_orientation, &m3D_fulll.m[0][0]);
+      });
 
    // draw debug points for visualizing ball rotation (this uses point rendering which is a deprecated feature, not available in OpenGL ES)
    #if defined(DEBUG_BALL_SPIN) && !defined(__OPENGLES__)
