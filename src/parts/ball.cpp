@@ -470,15 +470,21 @@ void Ball::Render(const unsigned int renderMask)
    // ball movement smoothness by aligning its update to the very last moment before submitting render command to the GPU driver.
    // The command is executed on the render thread, while the game thread is performing continuous physics. therefore the ball object
    // may be modified while the update command is executed.
-   ShaderState* ss = m_rd->GetCurrentPass()->m_commands.back()->GetShaderState();
-   m_rd->AddBeginOfFrameCmd([this, rot, scale, ss](){
-      vec3 posl(m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y, m_hitBall.m_d.m_lockedInKicker ? (m_hitBall.m_d.m_pos.z - m_hitBall.m_d.m_radius) : m_hitBall.m_d.m_pos.z);
-      float delay = m_rd->GetPredictedDisplayDelayInS();
-      posl += delay * m_hitBall.m_d.m_vel;
-      //PLOGD << "Ball position advanced to display predicted time by " << delay << "s > " << m_hitBall.m_d.m_vel;
-      Matrix3D m3D_fulll = rot * scale * Matrix3D::MatrixTranslate(posl.x, posl.y, posl.z);
-      ss->SetMatrix(SHADER_orientation, &m3D_fulll.m[0][0]);
-   });
+   // FIXME this conflicts with the ball motion blur which does not update accordingly (we may move the ball out of the blur area and the blur is computed with the wrong ball position), so disable if ball motion blur is used
+   if (g_pplayer->m_renderer->m_motionBlurOff)
+   {
+      ShaderState *ss = m_rd->GetCurrentPass()->m_commands.back()->GetShaderState();
+      m_rd->AddBeginOfFrameCmd(
+         [this, rot, scale, ss]()
+         {
+            vec3 posl(m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y, m_hitBall.m_d.m_lockedInKicker ? (m_hitBall.m_d.m_pos.z - m_hitBall.m_d.m_radius) : m_hitBall.m_d.m_pos.z);
+            float delay = m_rd->GetPredictedDisplayDelayInS();
+            posl += delay * m_hitBall.m_d.m_vel;
+            //PLOGD << "Ball position advanced to display predicted time by " << delay << "s > " << m_hitBall.m_d.m_vel;
+            Matrix3D m3D_fulll = rot * scale * Matrix3D::MatrixTranslate(posl.x, posl.y, posl.z);
+            ss->SetMatrix(SHADER_orientation, &m3D_fulll.m[0][0]);
+         });
+   }
 
    // draw debug points for visualizing ball rotation (this uses point rendering which is a deprecated feature, not available in OpenGL ES)
    #if defined(DEBUG_BALL_SPIN) && !defined(__OPENGLES__)
