@@ -78,7 +78,9 @@
 
 //#define DEBUGPHYSICS          // enables detailed physics/collision handling output for the 'F11' stats/debug texts
 
+#if defined(_DEBUG)
 #define DEBUG_BALL_SPIN         // enables dots glued to balls if in 'F11' mode
+#endif
 
 //
 
