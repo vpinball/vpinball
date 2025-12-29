@@ -2297,16 +2297,27 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
    }
    m_renderDevice->m_FBShader->SetMatrix(SHADER_matProjInv, &matProjInv[0], nEyes);
    m_renderDevice->m_FBShader->SetMatrix(SHADER_matProj, &matProj[0], nEyes);
-   vec4 balls[MAX_BALL_SHADOW];
    Vertex3D_TexelOnly quads[4 * 16];
+   Vertex3D_TexelOnly* updatedVertices[16];
    int nQuads = 0;
-   for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
+   for (size_t i = 0; i < g_pplayer->m_vball.size() && nQuads < 16; i++)
    {
       HitBall* const pball = g_pplayer->m_vball[i];
       if (!pball->m_pBall->m_d.m_visible || pball->m_d.m_lockedInKicker)
          continue;
-      if (i >= 16)
-         break;
+
+      // Discard stable balls or balls that have moved too much (which means the ball was likely created/moved)
+      // We supposes that velocity won't change before rendering (which is wrong) but extends it by a magic factor of 10
+      const Matrix3D view = GetMVP().GetView();
+      const vec3 posl = pball->m_d.m_pos + 0.5f * pball->m_d.m_vel;
+      const vec3 newPos = view.MultiplyVectorNoPerspective(posl);
+      const vec3 delta = newPos - pball->m_lastRenderedPos;
+      const float deltaSquared = delta.Dot(delta);
+      if (deltaSquared < 0.01f || deltaSquared > 1000.f)
+      {
+         pball->m_lastRenderedPos = newPos;
+         continue;
+      }
 
       // Compute a quad bound. This is fairly suboptimal and would benefit from a simple convex hull (at least from the 2 bounding rects)
       float xMin = FLT_MAX, xMax = -FLT_MAX, yMin = FLT_MAX, yMax = -FLT_MAX;
@@ -2314,19 +2325,12 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
          Ball::m_ash.computeProjBounds(
             GetMVP().GetProj(eye), pball->m_lastRenderedPos.x, pball->m_lastRenderedPos.y, pball->m_lastRenderedPos.z, pball->m_d.m_radius, xMin, xMax, yMin, yMax);
       const float prevLen = Vertex2D((xMax - xMin) * static_cast<float>(tempRT->GetWidth()), (yMax - yMin) * static_cast<float>(tempRT->GetHeight())).Length();
-      balls[1] = vec4(pball->m_lastRenderedPos.x, pball->m_lastRenderedPos.y, pball->m_lastRenderedPos.z, pball->m_d.m_radius);
-      pball->m_lastRenderedPos = GetMVP().GetView().MultiplyVectorNoPerspective(pball->m_d.m_pos);
       for (int eye = 0; eye < nEyes; eye++)
-         Ball::m_ash.computeProjBounds(
-            GetMVP().GetProj(eye), pball->m_lastRenderedPos.x, pball->m_lastRenderedPos.y, pball->m_lastRenderedPos.z, pball->m_d.m_radius, xMin, xMax, yMin, yMax);
-      balls[0] = vec4(pball->m_lastRenderedPos.x, pball->m_lastRenderedPos.y, pball->m_lastRenderedPos.z, pball->m_d.m_radius);
-      if (((xMax - xMin) > 0.3f) || ((yMax - yMin) > 0.3f)) // Large delta means the ball was likely created/moved, so skip it
-         continue;
+         Ball::m_ash.computeProjBounds(GetMVP().GetProj(eye), newPos.x, newPos.y, newPos.z, pball->m_d.m_radius, xMin, xMax, yMin, yMax);
       const float fullLen = Vertex2D((xMax - xMin) * static_cast<float>(tempRT->GetWidth()), (yMax - yMin) * static_cast<float>(tempRT->GetHeight())).Length() - prevLen;
-      const int nSamples = static_cast<int>(0.5f * fullLen);
-      if (nSamples <= 1) // Stable position
-         continue;
-      // xMin = yMin = -1.f; xMax = yMax = 1.f;
+      const int nSamples = max(2, static_cast<int>(0.5f * fullLen));
+      //xMin = yMin = -1.f; xMax = yMax = 1.f;
+
       const Vertex3D_TexelOnly verts[4] =
       {
          { xMax, yMax, 0.0f, xMax * 0.5f + 0.5f, 0.5f - yMax * 0.5f },
@@ -2335,13 +2339,50 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
          { xMin, yMin, 0.0f, xMin * 0.5f + 0.5f, 0.5f - yMin * 0.5f }
       };
       memcpy(quads + nQuads * 4, verts, sizeof(verts));
-      nQuads++;
 
-      m_renderDevice->m_FBShader->SetFloat4v(SHADER_balls, balls, MAX_BALL_SHADOW);
+      vec4* balls = new vec4[MAX_BALL_SHADOW];
+      balls[1] = vec4(pball->m_lastRenderedPos.x, pball->m_lastRenderedPos.y, pball->m_lastRenderedPos.z, pball->m_d.m_radius);
       m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, static_cast<float>(1.0 / beforeTonemapRT->GetWidth()), static_cast<float>(1.0 / beforeTonemapRT->GetHeight()),
          0.f /* unused */ ,static_cast<float>(min(32, nSamples)));
       m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_motionblur);
       m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, verts);
+
+      // Update drawn rect bounds and ball position to account for late adjustment
+      ShaderState* ss = m_renderDevice->GetCurrentPass()->m_commands.back()->GetShaderState();
+      Vertex3D_TexelOnly* vertices = (Vertex3D_TexelOnly*)m_renderDevice->GetCurrentPass()->m_commands.back()->GetQuadVertices();
+      updatedVertices[nQuads] = vertices;
+      m_renderDevice->AddBeginOfFrameCmd(
+         [this, pball, view, ss, vertices, balls]()
+         {
+            RenderTarget* tempRT = GetMotionBlurBufferTexture();
+            const vec3 posl = pball->m_d.m_pos + m_renderDevice->GetPredictedDisplayDelayInS() * pball->m_d.m_vel;
+            const vec3 newPos = view.MultiplyVectorNoPerspective(posl);
+            const int nEyes = m_renderDevice->m_nEyes;
+
+            float xMin = FLT_MAX, xMax = -FLT_MAX, yMin = FLT_MAX, yMax = -FLT_MAX;
+            for (int eye = 0; eye < nEyes; eye++)
+               Ball::m_ash.computeProjBounds(
+                  GetMVP().GetProj(eye), pball->m_lastRenderedPos.x, pball->m_lastRenderedPos.y, pball->m_lastRenderedPos.z, pball->m_d.m_radius, xMin, xMax, yMin, yMax);
+            const float prevLen = Vertex2D((xMax - xMin) * static_cast<float>(tempRT->GetWidth()), (yMax - yMin) * static_cast<float>(tempRT->GetHeight())).Length();
+            for (int eye = 0; eye < nEyes; eye++)
+               Ball::m_ash.computeProjBounds(GetMVP().GetProj(eye), newPos.x, newPos.y, newPos.z, pball->m_d.m_radius, xMin, xMax, yMin, yMax);
+
+            const Vertex3D_TexelOnly verts[4] =
+            {
+               { xMax, yMax, 0.0f, xMax * 0.5f + 0.5f, 0.5f - yMax * 0.5f },
+               { xMin, yMax, 0.0f, xMin * 0.5f + 0.5f, 0.5f - yMax * 0.5f },
+               { xMax, yMin, 0.0f, xMax * 0.5f + 0.5f, 0.5f - yMin * 0.5f },
+               { xMin, yMin, 0.0f, xMin * 0.5f + 0.5f, 0.5f - yMin * 0.5f }
+            };
+            memcpy(vertices, verts, sizeof(verts));
+
+            pball->m_lastRenderedPos = newPos;
+            balls[0] = vec4(newPos.x, newPos.y, newPos.z, pball->m_d.m_radius);
+            ss->SetVector(SHADER_balls, balls, MAX_BALL_SHADOW);
+            delete[] balls;
+         });
+
+      nQuads++;
    }
 
    // Then copy back from temporary buffer, applying tonemap since destination buffer is the tonemapped one
@@ -2371,7 +2412,12 @@ RenderTarget* Renderer::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Rende
          quads[i].y += m_ScreenOffset.y;
       }
       for (int i = 0; i < nQuads; i++)
+      {
          m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, quads + i * 4);
+         // Update drawn rect bounds and ball position to account for late adjustment
+         Vertex3D_TexelOnly* vertices = (Vertex3D_TexelOnly*)m_renderDevice->GetCurrentPass()->m_commands.back()->GetQuadVertices();
+         m_renderDevice->AddBeginOfFrameCmd([vertices, newVerts = updatedVertices[i]]() { memcpy(vertices, newVerts, 4 * sizeof(Vertex3D_TexelOnly)); });
+      }
    }
 
    return afterTonemapRT;

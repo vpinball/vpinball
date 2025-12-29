@@ -23,6 +23,7 @@ public:
    bool IsDrawMeshCommand() const { return m_command == RC_DRAW_MESH; }
    RenderState GetRenderState() const { return m_renderState; }
    ShaderState* GetShaderState() const { return m_shaderState; }
+   void* GetQuadVertices() { return m_vertices; }
    std::shared_ptr<MeshBuffer> GetMeshBuffer() const { return m_mb; }
    float GetDepth() const { return m_depth; }
    void SetTransparent(bool t) { m_isTransparent = t; }
