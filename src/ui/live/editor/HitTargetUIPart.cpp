@@ -73,7 +73,7 @@ void HitTargetUIPart::UpdatePropertyPane(PropertyPane& props)
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_raiseDelay; }, //
          [](HitTarget* hitTarget, int v) { hitTarget->m_d.m_raiseDelay = v; });
       props.InputFloat<HitTarget>(
-         m_hitTarget, "Depth bias"s, //
+         m_hitTarget, "Depth Bias"s, //
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_depthBias; }, //
          [](HitTarget* hitTarget, float v) { hitTarget->m_d.m_depthBias = v; }, PropertyPane::Unit::None, 0);
       props.InputFloat<HitTarget>(
@@ -135,19 +135,19 @@ void HitTargetUIPart::UpdatePropertyPane(PropertyPane& props)
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_overwritePhysics; }, //
          [](HitTarget* hitTarget, bool v) { hitTarget->m_d.m_overwritePhysics = v; });
       props.InputFloat<HitTarget>(
-         m_hitTarget, "Elasticity", //
+         m_hitTarget, "Elasticity"s, //
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_elasticity; }, //
          [](HitTarget* hitTarget, float v) { hitTarget->m_d.m_elasticity = v; }, PropertyPane::Unit::None, 3);
       props.InputFloat<HitTarget>(
-         m_hitTarget, "Elasticity Fall Off", //
+         m_hitTarget, "Elasticity Falloff"s, //
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_elasticityFalloff; }, //
          [](HitTarget* hitTarget, float v) { hitTarget->m_d.m_elasticityFalloff = v; }, PropertyPane::Unit::None, 3);
       props.InputFloat<HitTarget>(
-         m_hitTarget, "Friction", //
+         m_hitTarget, "Friction"s, //
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_friction; }, //
          [](HitTarget* hitTarget, float v) { hitTarget->m_d.m_friction = v; }, PropertyPane::Unit::None, 3);
       props.InputFloat<HitTarget>(
-         m_hitTarget, "Scatter Angle", //
+         m_hitTarget, "Scatter Angle"s, //
          [](const HitTarget* hitTarget) { return hitTarget->m_d.m_scatter; }, //
          [](HitTarget* hitTarget, float v) { hitTarget->m_d.m_scatter = v; }, PropertyPane::Unit::None, 3);
       props.Checkbox<HitTarget>(

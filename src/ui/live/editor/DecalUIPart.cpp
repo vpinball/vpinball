@@ -67,11 +67,11 @@ void DecalUIPart::UpdatePropertyPane(PropertyPane& props)
          [](Decal* decal, const string& v) { decal->m_d.m_szImage = v; });
       // Missing sizing
       props.InputFloat<Decal>(
-         m_decal, "Width", //
+         m_decal, "Width"s, //
          [](const Decal* decal) { return decal->m_d.m_width; }, //
          [](Decal* decal, float v) { decal->m_d.m_width = v; }, PropertyPane::Unit::VPLength, 1);
       props.InputFloat<Decal>(
-         m_decal, "Height", //
+         m_decal, "Height"s, //
          [](const Decal* decal) { return decal->m_d.m_height; }, //
          [](Decal* decal, float v) { decal->m_d.m_height = v; }, PropertyPane::Unit::VPLength, 1);
       props.EndSection();
@@ -80,15 +80,15 @@ void DecalUIPart::UpdatePropertyPane(PropertyPane& props)
    if (props.BeginSection("Position"s))
    {
       props.InputFloat2<Decal>(
-         m_decal, "Position", //
+         m_decal, "Position"s, //
          [](const Decal* decal) { return decal->m_d.m_vCenter; }, //
          [](Decal* decal, const Vertex2D& v) { decal->Translate(Vertex2D(v.x - decal->m_d.m_vCenter.x, v.y - decal->m_d.m_vCenter.y)); }, PropertyPane::Unit::VPLength, 1);
       props.SurfaceCombo<Decal>(
-         m_decal, "Surface", //
+         m_decal, "Surface"s, //
          [](const Decal* decal) { return decal->m_d.m_szSurface; }, //
          [](Decal* decal, const string& v) { decal->m_d.m_szSurface = v; });
       props.InputFloat<Decal>(
-         m_decal, "Rotation", //
+         m_decal, "Rotation"s, //
          [](const Decal* decal) { return decal->m_d.m_rotation; }, //
          [](Decal* decal, float v) { decal->m_d.m_rotation = v; }, PropertyPane::Unit::Degree, 1);
       props.EndSection();

@@ -30,7 +30,6 @@ void LightSeqUIPart::Render(const EditorRenderContext& ctx)
    if (isUIVisible && ctx.GetViewMode() != ViewMode::PreviewCam)
    {
       const ImU32 color = ctx.GetColor(ctx.IsSelected());
-
    }
 }
 
@@ -41,7 +40,7 @@ void LightSeqUIPart::UpdatePropertyPane(PropertyPane& props)
    if (props.BeginSection("Visuals"s))
    {
       props.CollectionCombo<LightSeq>(
-         m_lightSeq, "Collection", //
+         m_lightSeq, "Collection"s, //
          [](const LightSeq* lightSeq) { return MakeString(lightSeq->m_d.m_wzCollection); }, //
          [](LightSeq* lightSeq, const string& v) { lightSeq->m_d.m_wzCollection = MakeWString(v); });
       props.InputFloat2<LightSeq>(

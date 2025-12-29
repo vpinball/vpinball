@@ -61,15 +61,15 @@ void FlipperUIPart::UpdatePropertyPane(PropertyPane& props)
          [](const Flipper* flipper) { return flipper->m_d.m_szRubberMaterial; }, //
          [](Flipper* flipper, const string& v) { flipper->m_d.m_szRubberMaterial = v; });
       props.InputFloat<Flipper>(
-         m_flipper, "Rubber Thickness", //
+         m_flipper, "Rubber Thickness"s, //
          [](const Flipper* flipper) { return flipper->m_d.m_rubberthickness; }, //
          [](Flipper* flipper, float v) { flipper->m_d.m_rubberthickness = v; }, PropertyPane::Unit::VPLength, 1);
       props.InputFloat<Flipper>(
-         m_flipper, "Rubber Offset", //
+         m_flipper, "Rubber Offset"s, //
          [](const Flipper* flipper) { return flipper->m_d.m_rubberheight; }, //
          [](Flipper* flipper, float v) { flipper->m_d.m_rubberheight = v; }, PropertyPane::Unit::VPLength, 1);
       props.InputFloat<Flipper>(
-         m_flipper, "Rubber Width", //
+         m_flipper, "Rubber Width"s, //
          [](const Flipper* flipper) { return flipper->m_d.m_rubberwidth; }, //
          [](Flipper* flipper, float v) { flipper->m_d.m_rubberwidth = v; }, PropertyPane::Unit::VPLength, 1);
       props.Checkbox<Flipper>(
@@ -94,31 +94,31 @@ void FlipperUIPart::UpdatePropertyPane(PropertyPane& props)
    if (props.BeginSection("Geometry"s))
    {
       props.InputFloat<Flipper>(
-         m_flipper, "Base Radius", //
+         m_flipper, "Base Radius"s, //
          [](const Flipper* flipper) { return flipper->m_d.m_BaseRadius; }, //
          [](Flipper* flipper, float v) { flipper->m_d.m_BaseRadius = v; }, PropertyPane::Unit::VPLength, 1);
       props.InputFloat<Flipper>(
-         m_flipper, "End Radius", //
+         m_flipper, "End Radius"s, //
          [](const Flipper* flipper) { return flipper->m_d.m_EndRadius; }, //
          [](Flipper* flipper, float v) { flipper->m_d.m_EndRadius = v; }, PropertyPane::Unit::VPLength, 1);
       props.InputFloat<Flipper>(
-         m_flipper, "Length (min difficulty)", //
+         m_flipper, "Length (min difficulty)"s, //
          [](const Flipper* flipper) { return flipper->m_d.m_FlipperRadiusMax; }, //
          [](Flipper* flipper, float v) { flipper->m_d.m_FlipperRadiusMax = v; }, PropertyPane::Unit::VPLength, 1);
       props.InputFloat<Flipper>(
-         m_flipper, "Length (max difficulty)", //
+         m_flipper, "Length (max difficulty)"s, //
          [](const Flipper* flipper) { return flipper->m_d.m_FlipperRadiusMin; }, //
          [](Flipper* flipper, float v) { flipper->m_d.m_FlipperRadiusMin = v; }, PropertyPane::Unit::VPLength, 1);
       props.InputFloat<Flipper>(
-         m_flipper, "Height", //
+         m_flipper, "Height"s, //
          [](const Flipper* flipper) { return flipper->m_d.m_height; }, //
          [](Flipper* flipper, float v) { flipper->m_d.m_height = v; }, PropertyPane::Unit::VPLength, 1);
       props.InputFloat<Flipper>(
-         m_flipper, "Start Angle", //
+         m_flipper, "Start Angle"s, //
          [](const Flipper* flipper) { return flipper->m_d.m_StartAngle; }, //
          [](Flipper* flipper, float v) { flipper->m_d.m_StartAngle = v; }, PropertyPane::Unit::Degree, 1);
       props.InputFloat<Flipper>(
-         m_flipper, "End Angle", //
+         m_flipper, "End Angle"s, //
          [](const Flipper* flipper) { return flipper->m_d.m_EndAngle; }, //
          [](Flipper* flipper, float v) { flipper->m_d.m_EndAngle = v; }, PropertyPane::Unit::Degree, 1);
       props.EndSection();
@@ -127,11 +127,11 @@ void FlipperUIPart::UpdatePropertyPane(PropertyPane& props)
    if (props.BeginSection("Position"s))
    {
       props.InputFloat2<Flipper>(
-         m_flipper, "Position", //
+         m_flipper, "Position"s, //
          [](const Flipper* flipper) { return flipper->m_d.m_Center; }, //
          [](Flipper* flipper, const Vertex2D& v) { flipper->Translate(Vertex2D(v.x - flipper->m_d.m_Center.x, v.y - flipper->m_d.m_Center.y)); }, PropertyPane::Unit::VPLength, 1);
       props.SurfaceCombo<Flipper>(
-         m_flipper, "Surface", //
+         m_flipper, "Surface"s, //
          [](const Flipper* flipper) { return flipper->m_d.m_szSurface; }, //
          [](Flipper* flipper, const string& v) { flipper->m_d.m_szSurface = v; });
       props.EndSection();
@@ -152,7 +152,7 @@ void FlipperUIPart::UpdatePropertyPane(PropertyPane& props)
          [](const Flipper* flipper) { return flipper->m_d.m_elasticity; }, //
          [](Flipper* flipper, float v) { flipper->m_d.m_elasticity = v; }, PropertyPane::Unit::None, 3);
       props.InputFloat<Flipper>(
-         m_flipper, "Elasticity Fall Off"s, //
+         m_flipper, "Elasticity Falloff"s, //
          [](const Flipper* flipper) { return flipper->m_d.m_elasticityFalloff; }, //
          [](Flipper* flipper, float v) { flipper->m_d.m_elasticityFalloff = v; }, PropertyPane::Unit::None, 3);
       props.InputFloat<Flipper>(

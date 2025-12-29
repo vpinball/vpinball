@@ -62,7 +62,7 @@ void PlungerUIPart::UpdatePropertyPane(PropertyPane& props)
             (plunger == m_plunger ? m_visible : plunger->m_d.m_visible) = v;
          });
       props.Combo<Plunger>(
-         m_plunger, "Type", vector<string> { "Modern"s, "Flat"s, "Custom"s }, //
+         m_plunger, "Type"s, vector<string> { "Modern"s, "Flat"s, "Custom"s }, //
          [](const Plunger* plunger) { return static_cast<int>(plunger->m_d.m_type) - 1; }, //
          [](Plunger* plunger, int v) { plunger->m_d.m_type = static_cast<PlungerType>(v + 1); });
       props.MaterialCombo<Plunger>(
@@ -136,7 +136,7 @@ void PlungerUIPart::UpdatePropertyPane(PropertyPane& props)
    if (props.BeginSection("Position"s))
    {
       props.InputFloat3<Plunger>(
-         m_plunger, "Position", //
+         m_plunger, "Position"s, //
          [](const Plunger* plunger) { return vec3(plunger->m_d.m_v.x, plunger->m_d.m_v.y, plunger->m_d.m_zAdjust); }, //
          [](Plunger* plunger, const vec3& v)
          {
@@ -145,7 +145,7 @@ void PlungerUIPart::UpdatePropertyPane(PropertyPane& props)
          },
          PropertyPane::Unit::VPLength, 1);
       props.SurfaceCombo<Plunger>(
-         m_plunger, "Surface", //
+         m_plunger, "Surface"s, //
          [](const Plunger* plunger) { return plunger->m_d.m_szSurface; }, //
          [](Plunger* plunger, const string& v) { plunger->m_d.m_szSurface = v; });
       props.EndSection();

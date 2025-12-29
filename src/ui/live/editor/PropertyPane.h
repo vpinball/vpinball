@@ -182,7 +182,7 @@ template <class T> inline void PropertyPane::Checkbox(T* obj, const string& labe
    else
    {
       bool value = getter(obj);
-      if (ImGui::Checkbox(("##"s + label).c_str(), &value))
+      if (ImGui::Checkbox(("##" + label).c_str(), &value))
       {
          setter(obj, value);
          m_modified = m_modifyFieldId;
@@ -228,7 +228,7 @@ template <class T> inline void PropertyPane::InputInt(T* obj, const string& labe
    else
    {
       int value = getter(obj);
-      if (ImGui::InputInt(("##s" +  label).c_str(), &value))
+      if (ImGui::InputInt(("##" + label).c_str(), &value))
       {
          setter(obj, value);
          m_modified = m_modifyFieldId;
@@ -256,7 +256,7 @@ inline void PropertyPane::InputFloat(T* obj, const string& label, const std::fun
       ImGui::PushID(label.c_str());
       displayValue = value = getter(displayObj);
       ConvertUnit(unit, displayUnit, displayValue, nDecimalAdjust);
-      if (ImGui::InputFloat(("##s" + label).c_str(), &displayValue, 0.f, 0.f, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
+      if (ImGui::InputFloat(("##" + label).c_str(), &displayValue, 0.f, 0.f, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
       {
          value = displayValue;
          ConvertUnit(displayUnit, unit, value, nDecimalAdjust);
@@ -285,7 +285,7 @@ inline void PropertyPane::InputFloat(T* obj, const string& label, const std::fun
    {
       displayValue = value = getter(obj);
       ConvertUnit(unit, displayUnit, displayValue, nDecimalAdjust);
-      if (ImGui::InputFloat(("##s" +  label).c_str(), &displayValue, 0.f, 0.f, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
+      if (ImGui::InputFloat(("##" + label).c_str(), &displayValue, 0.f, 0.f, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
       {
          value = displayValue;
          ConvertUnit(displayUnit, unit, value, nDecimalAdjust);
@@ -305,7 +305,7 @@ inline void PropertyPane::InputFloat2(
    int nDecimalAdjust;
    Unit displayUnit = m_lengthUnit; // ConvertUnit will set it to the supported converted display unit
    ConvertUnit(unit, displayUnit, value.x, nDecimalAdjust);
-   string format = "%."s + std::to_string(max(0, nDecimals + nDecimalAdjust)) + 'f';
+   string format = "%." + std::to_string(max(0, nDecimals + nDecimalAdjust)) + 'f';
    const char* unitLabel = GetUnitLabel(displayUnit);
    PropertyLabel(unitLabel ? (label + " (" + unitLabel + ')') : label);
    T* startupObj = m_sectionHasSync ? GetStartupObj<T>(obj) : nullptr;
@@ -317,7 +317,7 @@ inline void PropertyPane::InputFloat2(
       displayValue = value = getter(displayObj);
       ConvertUnit(unit, displayUnit, displayValue.x, nDecimalAdjust);
       ConvertUnit(unit, displayUnit, displayValue.y, nDecimalAdjust);
-      if (ImGui::InputFloat2(("##"s + label).c_str(), &displayValue.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
+      if (ImGui::InputFloat2(("##" + label).c_str(), &displayValue.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
       {
          value = displayValue;
          ConvertUnit(displayUnit, unit, value.x, nDecimalAdjust);
@@ -348,7 +348,7 @@ inline void PropertyPane::InputFloat2(
       displayValue = value = getter(obj);
       ConvertUnit(unit, displayUnit, displayValue.x, nDecimalAdjust);
       ConvertUnit(unit, displayUnit, displayValue.y, nDecimalAdjust);
-      if (ImGui::InputFloat2(("##"s + label).c_str(), &displayValue.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
+      if (ImGui::InputFloat2(("##" + label).c_str(), &displayValue.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
       {
          value = displayValue;
          ConvertUnit(displayUnit, unit, value.x, nDecimalAdjust);
@@ -381,7 +381,7 @@ inline void PropertyPane::InputFloat3(T* obj, const string& label, const std::fu
       ConvertUnit(unit, displayUnit, displayValue.x, nDecimalAdjust);
       ConvertUnit(unit, displayUnit, displayValue.y, nDecimalAdjust);
       ConvertUnit(unit, displayUnit, displayValue.z, nDecimalAdjust);
-      if (ImGui::InputFloat3(("##"s + label).c_str(), &displayValue.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
+      if (ImGui::InputFloat3(("##" + label).c_str(), &displayValue.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
       {
          value = displayValue;
          ConvertUnit(displayUnit, unit, value.x, nDecimalAdjust);
@@ -414,7 +414,7 @@ inline void PropertyPane::InputFloat3(T* obj, const string& label, const std::fu
       ConvertUnit(unit, displayUnit, displayValue.x, nDecimalAdjust);
       ConvertUnit(unit, displayUnit, displayValue.y, nDecimalAdjust);
       ConvertUnit(unit, displayUnit, displayValue.z, nDecimalAdjust);
-      if (ImGui::InputFloat3(("##"s + label).c_str(), &displayValue.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
+      if (ImGui::InputFloat3(("##" + label).c_str(), &displayValue.x, format.c_str(), ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank))
       {
          value = displayValue;
          ConvertUnit(displayUnit, unit, value.x, nDecimalAdjust);
@@ -438,7 +438,7 @@ template <class T> inline void PropertyPane::InputRGB(T* obj, const string& labe
       T* otherObj = m_showStartup ? obj : startupObj;
       ImGui::PushID(label.c_str());
       vec3 value = getter(displayObj);
-      if (ImGui::ColorEdit3(("##"s + label).c_str(), &value.x))
+      if (ImGui::ColorEdit3(("##" + label).c_str(), &value.x))
       {
          setter(displayObj, value);
          m_modified = m_modifyFieldId;
@@ -464,7 +464,7 @@ template <class T> inline void PropertyPane::InputRGB(T* obj, const string& labe
    else
    {
       vec3 value = getter(obj);
-      if (ImGui::ColorEdit3(("##"s + label).c_str(), &value.x))
+      if (ImGui::ColorEdit3(("##" + label).c_str(), &value.x))
       {
          setter(obj, value);
          m_modified = m_modifyFieldId;
@@ -486,7 +486,7 @@ template <class T> inline void PropertyPane::InputString(T* obj, const string& l
       ImGui::PushID(label.c_str());
       string value = getter(displayObj);
       memcpy(buffer.data(), value.c_str(), min(value.length(), buffer.size() - 1));
-      if (ImGui::InputText(("##"s + label).c_str(), buffer.data(), buffer.size()))
+      if (ImGui::InputText(("##" + label).c_str(), buffer.data(), buffer.size()))
       {
          value = string(buffer.data());
          setter(displayObj, value);
@@ -514,7 +514,7 @@ template <class T> inline void PropertyPane::InputString(T* obj, const string& l
    {
       string value = getter(obj);
       memcpy(buffer.data(), value.c_str(), min(value.length(), buffer.size() - 1));
-      if (ImGui::InputText(("##"s + label).c_str(), buffer.data(), buffer.size()))
+      if (ImGui::InputText(("##" + label).c_str(), buffer.data(), buffer.size()))
       {
          value = string(buffer.data());
          setter(obj, value);
@@ -536,7 +536,7 @@ inline void PropertyPane::Combo(T* obj, const string& label, const std::vector<s
       T* otherObj = m_showStartup ? obj : startupObj;
       ImGui::PushID(label.c_str());
       int value = getter(displayObj);
-      if (ImGui::BeginCombo(("##"s + label).c_str(), values[value].c_str()))
+      if (ImGui::BeginCombo(("##" + label).c_str(), values[value].c_str()))
       {
          for (size_t i = 0; i < values.size(); i++)
          {
@@ -570,7 +570,7 @@ inline void PropertyPane::Combo(T* obj, const string& label, const std::vector<s
    else
    {
       string value = values[getter(obj)];
-      if (ImGui::BeginCombo(("##"s + label).c_str(), value.c_str()))
+      if (ImGui::BeginCombo(("##" + label).c_str(), value.c_str()))
       {
          for (size_t i = 0; i < values.size(); i++)
          {

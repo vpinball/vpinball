@@ -33,7 +33,7 @@ void PropertyPane::PropertyLabel(const string& label)
       while (n > 1 && textWidth + xSpacing > xWidth)
       {
          n--;
-         ellipsis = trim_string(label.substr(0, n)) + "..."s;
+         ellipsis = trim_string(label.substr(0, n)) + "...";
          textWidth = ImGui::CalcTextSize(ellipsis.c_str()).x;
       }
       ImGui::SetCursorScreenPos(ImVec2(pos.x + max(0.0f, xWidth - textWidth - xSpacing), pos.y + ImGui::GetStyle().FramePadding.y));

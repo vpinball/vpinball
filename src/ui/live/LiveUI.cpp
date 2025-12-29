@@ -615,7 +615,7 @@ void LiveUI::SetupImGuiStyle(const bool isEditor) const
 {
    // Theme looking somewhat like Blender's style, based on 'Rounded Visual Studio' style by RedNicStone from ImThemes
    ImGuiStyle &style = ImGui::GetStyle();
-   const float overall_alpha = 1.f;
+   constexpr float overall_alpha = 1.f;
 
    style.Alpha = 1.0f;
    style.DisabledAlpha = 0.6f;
