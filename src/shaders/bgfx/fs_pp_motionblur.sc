@@ -64,7 +64,7 @@ void main()
 	{
 		// Optimized ray / sphere intersection for a ray origin at origin (camera is always at origin)
 		const float b = dot(rayDirection, ball_pos);
-		const float c = dot(ball_pos,     ball_pos) - ball_r2;
+		const float c = dot(ball_pos,     ball_pos) - ball_r2 * 1.15; // 1.15 is a magic number to avoid acne at the border of the ball (wrongly considering there is no intersection when the pixel is partially occluded by the ball)
 		const float det = b * b - c;
 		if (det < 0.0) {
 			// No intersection with current ball pos: background of the ball is available in current render
@@ -72,7 +72,7 @@ void main()
 		} else {
 			// Nearest intersection (other intersection is b + sqrt(det) which is always farther from camera with our setup)
 			const float intersect_pos_z = (b - sqrt(det)) * rayDirection.z;
-			if (pixelPos.z > intersect_pos_z)
+			if (pixelPos.z > intersect_pos_z + 1.0) // 1.0 is a magic value to avoid surface acnee
 			{
 				// Ball is behind something, disable motion blur (not fully correct as it may be a transparent object with depth write enabled)
 				gl_FragColor = vec4(color, 1.);
