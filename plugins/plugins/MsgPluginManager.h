@@ -158,7 +158,7 @@ private:
    {
       msgpi_timer_callback callback;
       void* userData;
-      std::chrono::high_resolution_clock::time_point time;
+      std::chrono::steady_clock::time_point time;
    };
    std::vector<TimerEntry> m_timers;
    std::mutex m_timerListMutex;

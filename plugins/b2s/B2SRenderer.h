@@ -51,8 +51,8 @@ private:
    B2SDMDOverlay m_scoreViewDmdOverlay;
    B2SDMDOverlay m_backglassDmdOverlay;
 
-   std::chrono::time_point<std::chrono::high_resolution_clock> m_lastBackglassRenderTick;
-   std::chrono::time_point<std::chrono::high_resolution_clock> m_lastDmdRenderTick;
+   std::chrono::time_point<std::chrono::steady_clock> m_lastBackglassRenderTick;
+   std::chrono::time_point<std::chrono::steady_clock> m_lastDmdRenderTick;
 
    float m_b2sWidth = 0.f;
    float m_b2sHeight = 0.f;

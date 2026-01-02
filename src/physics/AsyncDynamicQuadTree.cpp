@@ -239,7 +239,7 @@ void AsyncDynamicQuadTree::UpdateQuadtreeThread()
       /* static int nCall = 0;
       static std::chrono::duration<double> total;
       nCall++;
-      const auto start = std::chrono::high_resolution_clock::now();
+      const auto start = std::chrono::steady_clock::now();
       std::chrono::duration<double> elapsed;*/
 
       // Move pending hit objects into the static quadtree, reusing free slots if possible
@@ -268,7 +268,7 @@ void AsyncDynamicQuadTree::UpdateQuadtreeThread()
       // Reset quadtree with the updated hit object list
       m_pendingQuadTree->EndReset();
 
-      /* elapsed = std::chrono::high_resolution_clock::now() - start; total += elapsed;
+      /* elapsed = std::chrono::steady_clock::now() - start; total += elapsed;
       PLOGD << "UI quadtree update: " << (total / nCall) << " (" << m_pendingUIOctree->GetHitObjects().size() << " objects)";*/
 
       m_quadtreeUpdateReady.release();
