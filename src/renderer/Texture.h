@@ -176,8 +176,8 @@ public:
 public:
    string m_name; // Image name (used as a unique identifier)
    float m_alphaTestValue = static_cast<float>(-1.0 / 255.0); // Alpha test value (defaults to negative, that is to say disabled)
-   const unsigned int m_width = 0;
-   const unsigned int m_height = 0;
+   unsigned int m_width = 0; // FIME this should be const, but some files have invalid size data and we fix them when decoding the image datablock
+   unsigned int m_height = 0; // FIME this should be const, but some files have invalid size data and we fix them when decoding the image datablock
 
 private:
    Texture(string name, PinBinary* ppb, unsigned int width, unsigned int height); // Private to forbid uninitialized objects
