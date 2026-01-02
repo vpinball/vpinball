@@ -83,6 +83,7 @@ public:
    bool AddScreen(std::shared_ptr<PUPScreen> pScreen);
    bool AddScreen(int screenNum);
    std::shared_ptr<PUPScreen> GetScreen(int screenNum, bool logMissing = false) const;
+   void SendScreenToFront(const PUPScreen* screen);
    bool AddFont(TTF_Font* pFont, const string& szFilename);
    TTF_Font* GetFont(const string& szFont);
 
@@ -98,6 +99,7 @@ private:
 
    string m_szRootPath;
    string m_szPath;
+   vector<std::shared_ptr<PUPScreen>> m_screens;
    ankerl::unordered_dense::map<int, std::shared_ptr<PUPScreen>> m_screenMap;
    vector<TTF_Font*> m_fonts;
    ankerl::unordered_dense::map<string, TTF_Font*> m_fontMap;
