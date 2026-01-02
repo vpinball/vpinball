@@ -146,6 +146,7 @@ void PUPManager::Unload()
 {
    Stop();
 
+   m_screens.clear();
    m_screenMap.clear();
 
    UnloadFonts();
@@ -244,6 +245,7 @@ bool PUPManager::AddScreen(std::shared_ptr<PUPScreen> pScreen)
       pScreen = existing;
    }
    m_screenMap[pScreen->GetScreenNum()] = pScreen;
+   m_screens.push_back(pScreen);
 
    const std::unique_ptr<PUPCustomPos>& pCustomPos = pScreen->GetCustomPos();
    if (pCustomPos) {
@@ -287,6 +289,17 @@ bool PUPManager::AddScreen(int screenNum)
       return false;
 
    return AddScreen(std::move(pScreen));
+}
+
+void PUPManager::SendScreenToFront(const PUPScreen* screen)
+{
+   auto it = std::ranges::find_if(m_screens, [screen](std::shared_ptr<PUPScreen> s) { return s.get() == screen; });
+   if (it != m_screens.end())
+   {
+      auto item = std::move(*it);
+      m_screens.erase(it);
+      m_screens.push_back(item);
+   }
 }
 
 std::shared_ptr<PUPScreen> PUPManager::GetScreen(int screenNum, bool logMissing) const
@@ -468,7 +481,7 @@ void PUPManager::ProcessQueue()
          }
       }
 
-      for (auto& [key, screen] : m_screenMap)
+      for (auto screen : m_screens)
       {
          for (auto& [cmd, triggers] : screen->GetTriggers())
          {
@@ -624,15 +637,15 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
 {
    PUPManager* me = static_cast<PUPManager*>(context);
 
-   std::shared_ptr<PUPScreen> screen = nullptr;
+   std::shared_ptr<PUPScreen> rootScreen = nullptr;
    switch (renderCtx->window)
    {
-   case VPXWindowId::VPXWINDOW_Topper: screen = me->GetScreen(0); break;
-   case VPXWindowId::VPXWINDOW_Backglass: screen = me->GetScreen(2); break;
-   case VPXWindowId::VPXWINDOW_ScoreView: screen = me->GetScreen(5); break; // TODO select 1 or 5 (user settings ?)
+   case VPXWindowId::VPXWINDOW_Topper: rootScreen = me->GetScreen(0); break;
+   case VPXWindowId::VPXWINDOW_Backglass: rootScreen = me->GetScreen(2); break;
+   case VPXWindowId::VPXWINDOW_ScoreView: rootScreen = me->GetScreen(5); break; // TODO select 1 or 5 (user settings ?)
    default: break;
    }
-   if (screen == nullptr || screen->GetCustomPos() != nullptr)
+   if (rootScreen == nullptr || rootScreen->GetCustomPos() != nullptr)
       return false;
 
    if (!LibAV::LibAV::GetInstance().isLoaded)
@@ -640,8 +653,17 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
 
    renderCtx->srcWidth = renderCtx->outWidth;
    renderCtx->srcHeight = renderCtx->outHeight;
-   screen->SetSize(static_cast<int>(renderCtx->outWidth), static_cast<int>(renderCtx->outHeight));
-   screen->Render(renderCtx);
+   rootScreen->SetSize(static_cast<int>(renderCtx->outWidth), static_cast<int>(renderCtx->outHeight));
+
+   // Render all children of rootScreen according to the global shared render order
+   for (auto screen : me->m_screens)
+   {
+      const PUPScreen* parent = screen.get();
+      while (parent && parent != rootScreen.get())
+         parent = parent->GetParent();
+      if (parent)
+         screen->Render(renderCtx);
+   }
    return true;
 }
 

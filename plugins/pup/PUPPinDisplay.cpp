@@ -297,7 +297,7 @@ void PUPPinDisplay::SendMSG(const string& szMsg)
                      case 6:
                         // Bring screen to the front
                         LOGD("Bring screen to front requested: screen={%s}, fn=%d, szMsg=%s", pScreen->ToString(false).c_str(), fn, szMsg.c_str());
-                        pScreen->SendToFront();
+                        m_pupManager.SendScreenToFront(pScreen.get());
                         break;
                      case 10:
                         // set all displays all volume { "mt":301, "SN": XX, "FN":10, "VL":9}  VL=volume level

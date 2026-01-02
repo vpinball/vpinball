@@ -58,7 +58,7 @@ public:
    void SetSize(int w, int h);
 
    void AddChild(std::shared_ptr<PUPScreen> pScreen);
-   void SendToFront();
+   const PUPScreen* GetParent() const { return m_pParent; }
 
    void AddTrigger(PUPTrigger* pTrigger);
    vector<PUPTrigger*>* GetTriggers(const string& szTrigger);
@@ -121,9 +121,7 @@ private:
    int m_defaultPagenum = 0;
    SDL_TimerID m_pageTimer = 0;
    PUPScreen* m_pParent = nullptr;
-   vector<std::shared_ptr<PUPScreen>> m_topChildren;
-   vector<std::shared_ptr<PUPScreen>> m_backChildren;
-   vector<std::shared_ptr<PUPScreen>> m_defaultChildren;
+   vector<std::shared_ptr<PUPScreen>> m_children;
    const std::thread::id m_apiThread;
 };
 

@@ -159,36 +159,8 @@ void PUPScreen::SetVolumeCurrent(float volume)
 void PUPScreen::AddChild(std::shared_ptr<PUPScreen> pScreen)
 {
    assert(std::this_thread::get_id() == m_apiThread);
-   switch (pScreen->GetMode()) {
-      case PUPScreen::Mode::ForceOn:
-      case PUPScreen::Mode::ForcePop:
-         m_topChildren.push_back(pScreen);
-         break;
-      case PUPScreen::Mode::ForceBack:
-      case PUPScreen::Mode::ForcePopBack:
-         m_backChildren.push_back(pScreen);
-         break;
-      default:
-          m_defaultChildren.push_back(pScreen);
-   }
+   m_children.push_back(pScreen);
    pScreen->m_pParent = this;
-}
-
-void PUPScreen::SendToFront()
-{
-   assert(std::this_thread::get_id() == m_apiThread);
-   if (m_pParent) {
-      if (m_mode == PUPScreen::Mode::ForceOn || m_mode == PUPScreen::Mode::ForcePop) {
-         auto it = std::ranges::find_if(m_pParent->m_topChildren, [this](std::shared_ptr<PUPScreen> a) { return a.get() == this; });
-         if (it != m_pParent->m_topChildren.end())
-            std::rotate(it, it + 1, m_pParent->m_topChildren.end());
-      }
-      else if (m_mode == PUPScreen::Mode::ForceBack || m_mode == PUPScreen::Mode::ForcePopBack) {
-         auto it = std::ranges::find_if(m_pParent->m_backChildren, [this](std::shared_ptr<PUPScreen> a) { return a.get() == this; });
-         if (it != m_pParent->m_backChildren.end())
-            std::rotate(it, it + 1, m_pParent->m_backChildren.end());
-      }
-   }
 }
 
 void PUPScreen::AddPlaylist(PUPPlaylist* pPlaylist)
@@ -290,10 +262,8 @@ void PUPScreen::SetSize(int w, int h)
    m_rect = m_pCustomPos ? m_pCustomPos->ScaledRect(w, h) : SDL_Rect { 0, 0, w, h };
    m_pMediaPlayerManager->SetBounds(m_rect);
 
-   for (auto pChildren : { &m_defaultChildren, &m_backChildren, &m_topChildren }) {
-      for (auto pScreen : *pChildren)
-          pScreen->SetSize(w, h);
-   }
+   for (auto pChildren : m_children)
+      pChildren->SetSize(w, h);
 }
 
 void PUPScreen::SetCustomPos(const string& szCustomPos)
@@ -323,17 +293,10 @@ void PUPScreen::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, float vol
    {
    case PUPPlaylist::Function::Default:
       // In original PupPlayer, Pop screens are recreated when play is call and therefore placed at the top of there z order stack (normal or topmost)
-      if (m_pParent && IsPop())
-      {
-         vector<std::shared_ptr<PUPScreen>>& childrens = m_mode == PUPScreen::Mode::ForcePop ? m_pParent->m_topChildren : m_pParent->m_backChildren;
-         auto it = std::ranges::find_if(childrens, [this](std::shared_ptr<PUPScreen> s) { return s.get() == this; });
-         if (it != childrens.end())
-         {
-            auto item = std::move(*it);
-            childrens.erase(it);
-            childrens.push_back(item);
-         }
-      }
+      // TODO PopBack is somewhat unclear: it pops (i.e. creates the window, defaulting to in front) but keeping at the back of... what ? VPX ?
+      // At least, on The Getaway pup back, it shows that a ForcePopBack can be in front of a ForcePop if created afterward (so back is not against the parent Pup window)
+      if (IsPop())
+         m_pManager->SendScreenToFront(this);
       m_pMediaPlayerManager->Play(pPlaylist, szPlayFile, m_pParent ? (volume / 100.0f) * m_pParent->GetVolume() : volume, priority, skipSamePriority, length);
       break;
 
@@ -417,22 +380,16 @@ bool PUPScreen::IsPlaying() {
 
 void PUPScreen::Render(VPXRenderContext2D* const ctx) {
    assert(std::this_thread::get_id() == m_apiThread);
-   for (auto pScreen : m_backChildren)
-      pScreen->Render(ctx);
-
-   for (auto pScreen : m_defaultChildren)
-      pScreen->Render(ctx);
-
-   m_background.Render(ctx, m_rect);
-   m_pMediaPlayerManager->Render(ctx);
-   // FIXME port SDL_SetRenderClipRect(m_pRenderer, &m_rect);
-   for (PUPLabel* pLabel : m_labels)
-      pLabel->Render(ctx, m_rect, m_pagenum);
-   // FIXME port SDL_SetRenderClipRect(m_pRenderer, NULL);
-   m_overlay.Render(ctx, m_rect);
-
-   for (auto pScreen : m_topChildren)
-      pScreen->Render(ctx);
+   if (!IsPop() || IsPlaying())
+   {
+      m_background.Render(ctx, m_rect);
+      m_pMediaPlayerManager->Render(ctx);
+      // FIXME port SDL_SetRenderClipRect(m_pRenderer, &m_rect);
+      for (PUPLabel* pLabel : m_labels)
+         pLabel->Render(ctx, m_rect, m_pagenum);
+      // FIXME port SDL_SetRenderClipRect(m_pRenderer, NULL);
+      m_overlay.Render(ctx, m_rect);
+   }
 }
 
 string PUPScreen::ToString(bool full) const
