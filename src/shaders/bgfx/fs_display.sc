@@ -112,7 +112,11 @@ vec3 ReinhardToneMap(vec3 color)
 	#define CRTS_MASK_SHADOW 1
 	// Setup the function which returns input image color
 	vec3 CrtsFetch(vec2 uv) {
+		#if defined(TARGET_essl)
 		return InvGamma(texelFetch(displayTex, uv * crtSize, 0).rgb);
+		#else
+		return InvGamma(texture2DLod(displayTex, uv, 0.0).rgb);
+		#endif
 	}
 	
 	#include "fs_crt_lottes.fs"
