@@ -607,9 +607,9 @@ PropFloat(Player, ScreenHeight, "Screen Height"s, "Physical height (cm) of the d
 PropFloat(Player, ScreenInclination, "Screen Inclination"s, "Inclination (degree) of the playfield (main) screen, 0 is horizontal"s, -30.f, 30.f, 0.f);
 PropFloat(Player, LockbarWidth, "Lockbar Width"s, "Lockbar width in centimeters (measured on the cabinet)"s, 10.f, 150.f, 70.f);
 PropFloat(Player, LockbarHeight, "Lockbar Height"s, "Lockbar height in centimeters (measured on the cabinet, from ground to top of lockbar)"s, 0.f, 250.f, 85.f);
-PropFloat(Player, ScreenPlayerX, "Player X"s, "Player X position in real world, expressed from the bottom center of the playfield, in centimeters"s, -30.f, 30.f, 0.f);
-PropFloat(Player, ScreenPlayerY, "Player Y"s, "Player Y position in real world, expressed from the bottom center of the playfield, in centimeters"s, -70.f, 30.f, -10.f);
-PropFloat(Player, ScreenPlayerZ, "Player Z"s, "Player Z position in real world, expressed from the bottom center of the playfield, in centimeters"s, 30.f, 100.f, 70.f);
+PropFloatDyn(Player, ScreenPlayerX, "Player X"s, "Player X position in real world, expressed from the bottom center of the playfield, in centimeters"s, -30.f, 30.f, 0.f);
+PropFloatDyn(Player, ScreenPlayerY, "Player Y"s, "Player Y position in real world, expressed from the bottom center of the playfield, in centimeters"s, -70.f, 30.f, -10.f);
+PropFloatDyn(Player, ScreenPlayerZ, "Player Z"s, "Player Z position in real world, expressed from the bottom center of the playfield, in centimeters"s, 30.f, 100.f, 70.f);
 
 // Overall scene lighting settings
 PropBool(Player, OverrideTableEmissionScale, "Override Table Light Level"s, "Replace default table light level by a fixed/custom one"s, false);

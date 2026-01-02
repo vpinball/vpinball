@@ -71,6 +71,7 @@ CabinetSettingsPage ::CabinetSettingsPage()
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Player position"s));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
+   Settings::SetPlayer_ScreenPlayerX_Default(0.f);
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_ScreenPlayerX, 1.f, "%4.1f cm"s, //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_ScreenPlayerX(); }, //
@@ -81,6 +82,7 @@ CabinetSettingsPage ::CabinetSettingsPage()
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
+   Settings::SetPlayer_ScreenPlayerY_Default(-10.f);
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_ScreenPlayerY, 1.f, "%4.1f cm"s, //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_ScreenPlayerY(); }, //
@@ -91,6 +93,7 @@ CabinetSettingsPage ::CabinetSettingsPage()
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
+   Settings::SetPlayer_ScreenPlayerZ_Default(70.f);
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_ScreenPlayerZ, 1.f, "%4.1f cm"s, //
       [this]() { return m_player->m_ptable->m_settings.GetPlayer_ScreenPlayerZ(); }, //

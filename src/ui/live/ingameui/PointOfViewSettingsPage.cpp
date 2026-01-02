@@ -303,6 +303,7 @@ void PointOfViewSettingsPage::BuildPage()
          BuildPage();
       });
 
+   Settings::SetPlayer_ScreenPlayerX_Default(m_player->m_ptable->m_settings.GetPlayer_ScreenPlayerX());
    auto playerX = std::make_unique<InGameUIItem>(
       Settings::m_propPlayer_ScreenPlayerX, 1.f, "%4.1f cm"s, //
       [this]() { return m_playerPos.x; },
@@ -315,6 +316,7 @@ void PointOfViewSettingsPage::BuildPage()
          BuildPage();
       });
 
+   Settings::SetPlayer_ScreenPlayerY_Default(m_player->m_ptable->m_settings.GetPlayer_ScreenPlayerY());
    auto playerY = std::make_unique<InGameUIItem>(
       Settings::m_propPlayer_ScreenPlayerY, 1.f, "%4.1f cm"s, //
       [this]() { return m_playerPos.y; },
@@ -327,6 +329,7 @@ void PointOfViewSettingsPage::BuildPage()
          BuildPage();
       });
 
+   Settings::SetPlayer_ScreenPlayerZ_Default(m_player->m_ptable->m_settings.GetPlayer_ScreenPlayerZ());
    auto playerZ = std::make_unique<InGameUIItem>(
       Settings::m_propPlayer_ScreenPlayerZ, 1.f, "%4.1f cm"s, //
       [this]() { return m_playerPos.z; },
