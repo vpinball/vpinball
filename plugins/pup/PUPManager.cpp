@@ -478,8 +478,9 @@ void PUPManager::ProcessQueue()
                switch (trigger.m_type)
                {
                case 'W': // PinMAME switch state
-                  if (trigger.m_number < static_cast<int>(m_pinmameInputSrc.nInputs))
-                     trigger.m_value = m_pinmameInputSrc.GetInputState(trigger.m_number - 1) ? 1 : 0;
+                  for (unsigned int i = 0; i < m_pinmameInputSrc.nInputs; i++)
+                     if (m_pinmameInputSrc.inputDefs[i].groupId == 0x0001 && m_pinmameInputSrc.inputDefs[i].deviceId == trigger.m_number)
+                        trigger.m_value = m_pinmameInputSrc.GetInputState(i) ? 1 : 0;
                   break;
                case 'N': // PinMAME mech state
                   // FIXME implement
